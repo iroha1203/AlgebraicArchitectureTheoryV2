@@ -2433,7 +2433,7 @@ tracking_issue: 4520
 selection:
   proof_state_ref: "Cycle 16 covered arbitrary one-object word quotients but not endpoint-typed multiobject hom-sets"
   proof_obligation: "Derive Cycle 14's list-surjection premise from an injective finite tagged-primitive serialization of every endomorphism type in an arbitrary multiobject category"
-  selection_reason: "This removes the one-object restriction from the categorical obstruction and isolates the concrete typed-syntax obligation as construction of one injection per endomorphism type."
+  selection_reason: "Cycle 14 already quantified over arbitrary multiobject categories; this supplies the missing API that converts a candidate typed-syntax injection into Cycle 14's list-surjection premise and isolates the concrete syntax obligation as construction of one injection per endomorphism type."
   expected_result_type: proof-obligation-discharged
   lean_targets:
     - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCEndomorphismEmbeddingObstruction.lean
@@ -2493,13 +2493,13 @@ result:
     named_target_build: "ResearchLean.AG.RealizationReconstruction.MandatoryCEndomorphismEmbeddingObstruction passed"
     namespace_axiom_audit: "3 declarations, standard axioms only"
     research_full_build: not-run
-  verdict: "Cycle 17 removes the one-object restriction from the obstruction transfer but leaves the actual typed serialization and final semantic-category membership as material premises. G-123 remains neither proved nor refuted."
+  verdict: "Cycle 17 converts an injective typed-syntax serialization into Cycle 14's already-multiobject list-surjection premise. It does not add a new categorical scope or discharge cardinality until encode is constructed; actual typed serialization and final semantic-category membership remain material premises. G-123 remains neither proved nor refuted."
 audits:
   premise_delta:
     discharged:
       - "injective endomorphism serialization implies a finite tagged-list surjection for arbitrary categories"
       - "category identity supplies the Nonempty premise required by invFun"
-      - "the Cycle 14 no-go transfers to multiobject presentations"
+      - "an endomorphism embedding supplies the list-surjection premise of Cycle 14's already-multiobject no-go"
     remaining:
       - "construct the injection family from endpoint-typed finite syntax"
       - "classify all legal source-provenanced parameter roles"
