@@ -605,7 +605,7 @@ selection:
     - "Cycle 2 independent protocol semantics over fixed Q,L,O"
     - "G-117 fixed uniform tagged-operation family"
     - "G-122 fixed finite-axis-fold primitive source indices"
-  proof_obligation: "A: replace arbitrary carrier dispatch by one closed four-branch family parameter, preserve the order theta then arbitrary semantic X, and generate endpoint/object-dependent primitive names without a constructor for completed AAT maps"
+  proof_obligation: "A/C: replace arbitrary carrier dispatch by one closed four-branch family parameter, preserve the order theta then arbitrary semantic X in the CS branches, generate endpoint/object-dependent primitive names without a constructor for completed AAT maps, and construct the fixed G-117 uniform operation action"
   selection_reason: "The closed dispatch is required before a source-derived presentation can be stated without letting a caller choose arbitrary carrier roles that quote the desired answer."
   expected_result_type: target-proof-checkpoint
   lean_targets:
@@ -621,13 +621,13 @@ selection:
     - "general G-122 primitive input decomposition without sourceTransport or completed geometry"
     - "closed finite presentation Sigma and intrinsic D_Theta"
     - "AAT complete-geometry res/ext/J and four reconstruction properties"
-    - "C evaluation against the actual uniform flip package"
+    - "C comparison of the constructed uniform flip with normalization, including commutation and inequality"
     - "D comparison-group recovery"
     - "E bidirectional AAT translations"
     - "F classification and fixed finite examples"
 result:
   proposed_result_type: target-proof-checkpoint
-  proof_obligation_delta: "Constructed one closed tagged union containing G-117, fixed G-122, lens, and protocol branches. Lens theta contains only V,v0; protocol theta contains only Q,L,O. FamilyRealization then quantifies arbitrary independent semantic X. Defined role-specific Atom, Source, Object, endpoint-indexed Operation, and object-indexed Context constructors, including all-endpoint G-117 uniformFlip, actual finite G-122 Atom/source/cell indices, lens get/put roles, and typed protocol edges."
+  proof_obligation_delta: "Constructed one closed tagged union containing G-117, fixed G-122, lens, and protocol branches. Lens theta contains only V,v0; protocol theta contains only Q,L,O, after which their arbitrary independent semantic X is quantified. Defined role-specific Atom, Source, Object, endpoint-indexed Operation, and object-indexed Context constructors. The fixed G-117 branch now uses its actual ArchitectureObject endpoints and existing tagged operations; its uniform Boolean flip is separately constructed as one actual package endomorphism. Lens Read and Write=CxV endpoints are distinct, protocol edges retain typed endpoints, and every listed fixed G-122 finite role is branch-indexed."
   completion_candidate: no
   lean_artifacts:
     - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
@@ -641,14 +641,24 @@ result:
     - AAT.AG.RealizationReconstruction.PrimitiveObject
     - AAT.AG.RealizationReconstruction.PrimitiveOperation
     - AAT.AG.RealizationReconstruction.PrimitiveContext
-    - AAT.AG.RealizationReconstruction.uniformFlip
+    - AAT.AG.RealizationReconstruction.taggedOperation
+    - AAT.AG.RealizationReconstruction.taggedUniformFlipAction
+    - AAT.AG.RealizationReconstruction.taggedUniformFlipAction_involutive
+    - AAT.AG.RealizationReconstruction.taggedUniformFlipTotal
+    - AAT.AG.RealizationReconstruction.taggedUniformFlipTotal_operationMap
+    - AAT.AG.RealizationReconstruction.taggedUniformFlipSquare_operationMap
     - AAT.AG.RealizationReconstruction.protocolEdge
     - AAT.AG.RealizationReconstruction.FiniteAxisFoldSignatureAxis
+    - AAT.AG.RealizationReconstruction.PrimitiveSignatureAxis
+    - AAT.AG.RealizationReconstruction.PrimitiveEquationIndex
+    - AAT.AG.RealizationReconstruction.PrimitiveInvariantIndex
+    - AAT.AG.RealizationReconstruction.PrimitiveCoordinateIndex
+    - AAT.AG.RealizationReconstruction.PrimitiveRelationIndex
   claim_mapping:
     source_labels:
       - "GOAL A: one common declaration and mandatory input families"
-      - "GOAL C: one uniform flip at every endpoint pair"
-      - "GOAL E: independent lens and protocol inputs with arbitrary semantic objects and morphisms"
+      - "GOAL C: one uniform package self-map acting at every endpoint pair"
+      - "GOAL E: independent lens and protocol inputs and arbitrary semantic objects"
       - "n1015 L1-L2 and protocol section 3.1"
       - "fixed G-122 finite-axis-fold primitive indices"
     input_premises:
@@ -660,19 +670,22 @@ result:
       - "semantic object family depending on theta"
       - "source sorts depending on both theta and X"
       - "endpoint-indexed operation names and object-indexed contexts"
+      - "one actual G-117 package self-map whose operation action is involutive at every endpoint"
     proof_use:
       - "LensRealization and ProtocolRealization occur as independently quantified FamilyRealization branches"
       - "protocolEdge retains source, target, and the original edge value"
-      - "uniformFlip is constructible for every source and target name in the same object family"
-      - "the G-122 branch uses FiniteModel.FiniteAtom, FiniteModel.ExtractionSource, Fin 3, PUnit, and the fixed DoubleDiamondTwoCell PUnit index"
+      - "taggedOperation takes the actual fixed package operation at its actual ArchitectureObject endpoints"
+      - "taggedUniformFlipTotal applies taggedUniformFlipAction to every such operation and its action is involutive"
+      - "lensGet has Read-to-View endpoints and lensPut has Write=CxV-to-State endpoints"
+      - "the G-122 branch indexes FiniteModel.FiniteAtom, FiniteModel.ExtractionSource, Fin 3, four distinct PUnit roles, and the fixed DoubleDiamondTwoCell PUnit contexts"
     unfinished:
       - "this closed family signature is not yet the finite presentation Sigma"
       - "no branch interpretation, decoder, D_Theta, res, ext, J, or reconstruction proof is asserted"
       - "the general G-122 source input is not represented; the nullary branch records only the required fixed example"
   validation:
     focused_checks: "1/1 pass"
-    namespace_axiom_audit: "259 declarations, standard axioms only"
-    declaration_scan: "no completed AAT map type occurs in a data constructor; restricted terms occur only in module documentation"
+    namespace_axiom_audit: "337 declarations, standard axioms only"
+    declaration_scan: "no data constructor accepts a completed AAT/core/geometry map, decoder, extension, comparison element, splitting, or retract; the constructed taggedUniformFlipTotal occurs only as a derived def result"
     research_full_build: not-run
   verdict: "Cycle 5 fixes the common family quantification and role-dependent primitive-name layer only; GOAL A and G-123 remain incomplete"
 audits:
@@ -681,7 +694,9 @@ audits:
       - "the common parameter family is a closed four-constructor union rather than an arbitrary carrier shape"
       - "lens and protocol semantic objects occur after theta and are not stored in theta"
       - "primitive CS values depend on X where their source types require it"
-      - "G-117 operation names range uniformly over all endpoint names"
+      - "the G-117 branch is fixed to the actual source-derived object and operation families, closing the former arbitrary-Type quote escape"
+      - "one uniform G-117 action and package self-map are constructed for every actual endpoint and operation"
+      - "lens Read and Write endpoint roles retain get:C->V and put:CxV->C arities"
       - "protocol operation names retain their typed endpoints"
     remaining:
       - "construct every primitive interpretation and prove that role-specific arbitrary values cannot be consumed as completed AAT maps"
@@ -698,7 +713,7 @@ audits:
       - "protocol Q,L,O in ProtocolRealization and typed primitive roles"
       - "fixed G-122 finite Atom, extraction source, signature-axis, singleton, and diagnostic-cell types"
     unused: []
-  structure_field_escape: "no completed AAT/core/geometry map, decoder, extension, comparison element, splitting, or retract field; arbitrary CS values have only role-specific constructors"
+  structure_field_escape: "no completed AAT/core/geometry map, decoder, extension, comparison element, splitting, or retract field; the G-117 arbitrary-Type escape was removed; authorized arbitrary CS values have only role-specific constructors"
   route_integrity: "checkpoint-only; the closed presentation and interpretations remain future obligations"
   target_fitting: "partial GOAL A source-signature construction; no final Sigma or reconstruction claim"
   vacuity: "mandatory branches and typed constructors are inhabited directly"
@@ -708,4 +723,18 @@ audits:
     - "focused AATClosedFamilySignature.lean: standard axioms only"
   blocking_findings: []
   next_obligation: "Construct branch-specific primitive interpretations and the general G-122 raw primitive input before defining the finite presentation Sigma or intrinsic D_Theta."
+initial_review:
+  fixed_head: df5a75ecd0e7351b4c46de1e8cec477f7525a46e
+  verdict: major-revisions
+  central_findings:
+    - "the G-117 branch accepted arbitrary ObjectName types and values, permitting renamed completed-map quotation"
+    - "uniformFlip was incorrectly represented as an operation token rather than one action on every actual tagged operation"
+    - "lens put had State-to-State endpoints rather than Write=CxV-to-State"
+    - "G-122 Fin 3 and singleton roles were global aliases rather than branch-indexed primitive roles"
+  direct_response:
+    - "fixed the G-117 branch to the source ArchitectureObject and taggedOperationPackage operation families"
+    - "constructed taggedUniformFlipAction, its involutivity theorem, and taggedUniformFlipTotal as an actual package endomorphism"
+    - "added distinct lensRead and lensWrite object roles and corrected get/put endpoints"
+    - "added five branch-indexed G-122 role families"
+  rerun_required: true
 ```

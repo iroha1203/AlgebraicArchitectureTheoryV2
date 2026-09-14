@@ -1,6 +1,7 @@
 import ResearchLean.AG.RealizationReconstruction.AATFiniteReferenceSyntax
 import ResearchLean.AG.RealizationReconstruction.LensSemantics
 import ResearchLean.AG.RealizationReconstruction.ProtocolSemantics
+import ResearchLean.AG.DoctrineFiberProduct.LaxDiagnosticProjectorModificationCounterexample
 import Formal.Util.AssertStandardAxioms
 
 /-!
@@ -25,11 +26,16 @@ finite presentation `Sigma`.
 namespace AAT.AG.RealizationReconstruction
 
 open CategoryTheory TransportCoherence
+open AtomFoundation DoctrineFiberProduct
 
 universe u
 
 /-- The fixed G-122 outer diagnostic-cell index. -/
 abbrev FiniteAxisFoldCell : Type := DoubleDiamondTwoCell PUnit
+
+/-- The fixed one-element G-122 index used separately in its equation,
+invariant, coordinate, and relation roles. -/
+abbrev FiniteAxisFoldSingletonIndex : Type := PUnit
 
 /-- A universe-lifted singleton used only as the semantic-object index of the
 fixed G-122 branch. -/
@@ -64,7 +70,7 @@ quantified after it.  The two CS branches are their independently defined
 semantic object types, not decoder images.  The AAT branches are only source
 indexing families at this checkpoint. -/
 def FamilyRealization : ClosedFamilyParameter.{u} → Type (u + 1)
-  | .taggedOperation => Type u
+  | .taggedOperation => FiniteAxisFoldRealization.{u}
   | .finiteAxisFold => FiniteAxisFoldRealization
   | .lens input => LensRealization input.View input.reference
   | .protocol input => ProtocolRealization input.schema input.observation
@@ -74,8 +80,8 @@ branch currently has the AAT Atom carrier itself; CS constructors are role
 tags and do not accept arbitrary AAT values. -/
 inductive PrimitiveAtom :
     (θ : ClosedFamilyParameter.{u}) → FamilyRealization θ → Type (u + 1)
-  | taggedOperation {ObjectName : Type u} :
-      PrimitiveAtom .taggedOperation ObjectName
+  | taggedOperation (atom : FiniteModel.FiniteAtom) :
+      PrimitiveAtom .taggedOperation (ULift.up ())
   | finiteAxisFold (atom : FiniteModel.FiniteAtom) :
       PrimitiveAtom .finiteAxisFold (ULift.up ())
   | lensState {input : LensFamilyInput.{u}}
@@ -99,8 +105,8 @@ are accepted only in their declared source roles.  No eliminator in this
 module can consume such a value as an AAT map. -/
 inductive PrimitiveSource :
     (θ : ClosedFamilyParameter.{u}) → FamilyRealization θ → Type (u + 1)
-  | taggedOperation {ObjectName : Type u} (object : ObjectName) :
-      PrimitiveSource .taggedOperation ObjectName
+  | taggedOperation (source : FiniteModel.ExtractionSource) :
+      PrimitiveSource .taggedOperation (ULift.up ())
   | finiteAxisFold (source : FiniteModel.ExtractionSource) :
       PrimitiveSource .finiteAxisFold (ULift.up ())
   | lensPoint {input : LensFamilyInput.{u}}
@@ -139,8 +145,8 @@ explicit.  The G-117 branch ranges over every name in the object family rather
 than selecting endpoints after seeing a morphism. -/
 inductive PrimitiveObject :
     (θ : ClosedFamilyParameter.{u}) → FamilyRealization θ → Type (u + 1)
-  | tagged {ObjectName : Type u} (name : ObjectName) :
-      PrimitiveObject .taggedOperation ObjectName
+  | tagged (object : ArchitectureObject FiniteModel.carrier) :
+      PrimitiveObject .taggedOperation (ULift.up ())
   | finiteCore : PrimitiveObject .finiteAxisFold (ULift.up ())
   | finiteContext (cell : FiniteAxisFoldCell) :
       PrimitiveObject .finiteAxisFold (ULift.up ())
@@ -148,6 +154,12 @@ inductive PrimitiveObject :
       {X : LensRealization input.View input.reference} :
       PrimitiveObject (.lens input) X
   | lensView {input : LensFamilyInput.{u}}
+      {X : LensRealization input.View input.reference} :
+      PrimitiveObject (.lens input) X
+  | lensRead {input : LensFamilyInput.{u}}
+      {X : LensRealization input.View input.reference} :
+      PrimitiveObject (.lens input) X
+  | lensWrite {input : LensFamilyInput.{u}}
       {X : LensRealization input.View input.reference} :
       PrimitiveObject (.lens input) X
   | protocolState {input : ProtocolFamilyInput.{u}}
@@ -161,23 +173,25 @@ inductive PrimitiveObject :
 
 /-- Endpoint-indexed primitive operation names.
 
-`uniformFlip` is one constructor valid at every pair of G-117 object names.
+The tagged constructor contains an actual operation of the fixed G-117
+package, retaining both endpoints and the pre-existing operation identity.
 Protocol edges retain their original typed endpoints.  These constructors are
-operation *names*, not completed semantic maps. -/
+operation names/values, not completed semantic maps. -/
 inductive PrimitiveOperation :
     (θ : ClosedFamilyParameter.{u}) → (X : FamilyRealization θ) →
       PrimitiveObject θ X → PrimitiveObject θ X → Type (u + 1)
-  | uniformFlip {ObjectName : Type u} (source target : ObjectName) :
-      PrimitiveOperation .taggedOperation ObjectName (.tagged source) (.tagged target)
+  | tagged {source target : ArchitectureObject FiniteModel.carrier}
+      (operation : taggedOperationPackage.reading.operationReading.Op source target) :
+      PrimitiveOperation .taggedOperation (ULift.up ()) (.tagged source) (.tagged target)
   | lensGet {input : LensFamilyInput.{u}}
       {X : LensRealization input.View input.reference} :
       PrimitiveOperation (.lens input) X
-        (PrimitiveObject.lensState (input := input) (X := X))
+        (PrimitiveObject.lensRead (input := input) (X := X))
         (PrimitiveObject.lensView (input := input) (X := X))
   | lensPut {input : LensFamilyInput.{u}}
       {X : LensRealization input.View input.reference} :
       PrimitiveOperation (.lens input) X
-        (PrimitiveObject.lensState (input := input) (X := X))
+        (PrimitiveObject.lensWrite (input := input) (X := X))
         (PrimitiveObject.lensState (input := input) (X := X))
   | protocolEdge {input : ProtocolFamilyInput.{u}}
       {X : ProtocolRealization input.schema input.observation}
@@ -206,12 +220,76 @@ def finiteAxisFoldAtom (atom : FiniteModel.FiniteAtom) :
       (ULift.up ()) :=
   .finiteAxisFold atom
 
-/-- Every endpoint pair in the G-117 branch has the same generated flip name. -/
-def uniformFlip {ObjectName : Type u} (source target : ObjectName) :
-    PrimitiveOperation .taggedOperation ObjectName
-      (PrimitiveObject.tagged source : PrimitiveObject .taggedOperation ObjectName)
-      (PrimitiveObject.tagged target : PrimitiveObject .taggedOperation ObjectName) :=
-  .uniformFlip source target
+/-- The fixed G-117 operation family is represented at every pair of its
+actual architecture-object endpoints. -/
+def taggedOperation {source target : ArchitectureObject FiniteModel.carrier}
+    (operation : taggedOperationPackage.reading.operationReading.Op source target) :
+    PrimitiveOperation .taggedOperation (ULift.up ())
+      (PrimitiveObject.tagged source)
+      (PrimitiveObject.tagged target) :=
+  .tagged operation
+
+/-- The single G-123(C) candidate action flips the Boolean tag uniformly on
+every operation at every pair of endpoints. -/
+def taggedUniformFlipAction
+    {source target : ArchitectureObject FiniteModel.carrier}
+    (operation : taggedOperationPackage.reading.operationReading.Op source target) :
+    taggedOperationPackage.reading.operationReading.Op source target :=
+  (operation.1, !operation.2)
+
+/-- The uniform action is involutive on every operation, independently of its
+endpoints. -/
+theorem taggedUniformFlipAction_involutive
+    {source target : ArchitectureObject FiniteModel.carrier}
+    (operation : taggedOperationPackage.reading.operationReading.Op source target) :
+    taggedUniformFlipAction (taggedUniformFlipAction operation) = operation := by
+  rcases operation with ⟨operation, tag⟩
+  cases tag <;> rfl
+
+/-- The uniform operation action extends to one actual endomorphism of the
+fixed G-117 package; exactness is constructed because configuration reading
+forgets the Boolean tag. -/
+noncomputable def taggedUniformFlipUpper :
+    SignedExactCoreReadingHom taggedOperationPackage taggedOperationPackage :=
+  { SignedExactCoreReadingHom.refl taggedOperationPackage with
+    operationMap := taggedUniformFlipAction
+    operation_naturality := by
+      intro first second operation
+      change ConfigurationHom.comp
+          (finiteAxisFoldSupportPackage.reading.operationReading.configurationMap
+            operation.1)
+          (ConfigurationHom.id first.configuration) =
+        ConfigurationHom.comp
+          (ConfigurationHom.id second.configuration)
+          (finiteAxisFoldSupportPackage.reading.operationReading.configurationMap
+            operation.1)
+      apply ConfigurationHom.ext
+      rfl }
+
+/-- The G-123(C) uniform flip as one actual package self-map. -/
+noncomputable def taggedUniformFlipTotal :
+    PackageTotalHom taggedOperationPackage taggedOperationPackage where
+  base := ExtInstHom.id (packagePoint taggedOperationPackage)
+  upper := taggedUniformFlipUpper
+  atomEquiv_eq := rfl
+
+/-- No-unfold evaluation of the uniform package self-map at every endpoint. -/
+@[simp] theorem taggedUniformFlipTotal_operationMap
+    {source target : ArchitectureObject FiniteModel.carrier}
+    (operation : taggedOperationPackage.reading.operationReading.Op source target) :
+    taggedUniformFlipTotal.upper.operationMap operation =
+      taggedUniformFlipAction operation :=
+  rfl
+
+/-- Composition of the uniform flip evaluates by applying its same action
+twice; no endpoint-dependent choice enters the composite. -/
+theorem taggedUniformFlipSquare_operationMap
+    {source target : ArchitectureObject FiniteModel.carrier}
+    (operation : taggedOperationPackage.reading.operationReading.Op source target) :
+    (taggedUniformFlipTotal.comp taggedUniformFlipTotal).upper.operationMap operation =
+      operation := by
+  change taggedUniformFlipAction (taggedUniformFlipAction operation) = operation
+  exact taggedUniformFlipAction_involutive operation
 
 /-- Every named protocol edge occurs with its original endpoints. -/
 def protocolEdge {input : ProtocolFamilyInput.{u}}
@@ -226,9 +304,35 @@ def protocolEdge {input : ProtocolFamilyInput.{u}}
 three-element source index, not by a completed signature map. -/
 abbrev FiniteAxisFoldSignatureAxis := Fin 3
 
-/-- The fixed G-122 equation, invariant, raw-coordinate, and raw-relation
-index families are each the actual one-element source type. -/
-abbrev FiniteAxisFoldSingletonIndex := PUnit
+/-- Role-indexed access to the actual three-element G-122 signature axis. -/
+inductive PrimitiveSignatureAxis :
+    (θ : ClosedFamilyParameter.{u}) → FamilyRealization θ → Type (u + 1)
+  | finiteAxisFold (axis : FiniteAxisFoldSignatureAxis) :
+      PrimitiveSignatureAxis .finiteAxisFold (ULift.up ())
+
+/-- Role-indexed access to the actual singleton G-122 equation family. -/
+inductive PrimitiveEquationIndex :
+    (θ : ClosedFamilyParameter.{u}) → FamilyRealization θ → Type (u + 1)
+  | finiteAxisFold (index : FiniteAxisFoldSingletonIndex) :
+      PrimitiveEquationIndex .finiteAxisFold (ULift.up ())
+
+/-- Role-indexed access to the actual singleton G-122 invariant family. -/
+inductive PrimitiveInvariantIndex :
+    (θ : ClosedFamilyParameter.{u}) → FamilyRealization θ → Type (u + 1)
+  | finiteAxisFold (index : FiniteAxisFoldSingletonIndex) :
+      PrimitiveInvariantIndex .finiteAxisFold (ULift.up ())
+
+/-- Role-indexed access to the actual singleton G-122 raw-coordinate family. -/
+inductive PrimitiveCoordinateIndex :
+    (θ : ClosedFamilyParameter.{u}) → FamilyRealization θ → Type (u + 1)
+  | finiteAxisFold (index : FiniteAxisFoldSingletonIndex) :
+      PrimitiveCoordinateIndex .finiteAxisFold (ULift.up ())
+
+/-- Role-indexed access to the actual singleton G-122 raw-relation family. -/
+inductive PrimitiveRelationIndex :
+    (θ : ClosedFamilyParameter.{u}) → FamilyRealization θ → Type (u + 1)
+  | finiteAxisFold (index : FiniteAxisFoldSingletonIndex) :
+      PrimitiveRelationIndex .finiteAxisFold (ULift.up ())
 
 #assert_standard_axioms_only AAT.AG.RealizationReconstruction
 
