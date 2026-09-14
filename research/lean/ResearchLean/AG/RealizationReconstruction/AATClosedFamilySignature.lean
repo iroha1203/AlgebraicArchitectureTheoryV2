@@ -47,7 +47,7 @@ abbrev FiniteAxisFoldRawCoordinateIndex : Type := Unit
 abbrev FiniteAxisFoldRawRelationIndex : Type := Unit
 
 /-- A universe-lifted singleton used only as the semantic-object index of the
-fixed G-122 branch. -/
+two fixed AAT branches. -/
 abbrev FiniteAxisFoldRealization : Type (u + 1) := ULift.{u + 1, 0} Unit
 
 /-- The independently fixed parameter data for the lens branch of G-123(E).
@@ -84,9 +84,9 @@ def FamilyRealization : ClosedFamilyParameter.{u} → Type (u + 1)
   | .lens input => LensRealization input.View input.reference
   | .protocol input => ProtocolRealization input.schema input.observation
 
-/-- Primitive Atom names generated for each family.  Only the fixed G-122
-branch currently has the AAT Atom carrier itself; CS constructors are role
-tags and do not accept arbitrary AAT values. -/
+/-- Primitive Atom names generated for each family.  Both fixed AAT branches
+use the source `FiniteModel.FiniteAtom`; CS constructors are role tags and do
+not accept arbitrary AAT values. -/
 inductive PrimitiveAtom :
     (θ : ClosedFamilyParameter.{u}) → FamilyRealization θ → Type (u + 1)
   | taggedOperation (atom : FiniteModel.FiniteAtom) :
@@ -143,32 +143,53 @@ inductive PrimitiveSource :
       {source target : input.schema.Vertex}
       (edge : input.schema.Edge source target) (state : X.State source) :
       PrimitiveSource (.protocol input) X
-  | protocolObservation {input : ProtocolFamilyInput.{u}}
-      {X : ProtocolRealization input.schema input.observation}
-      (vertex : input.schema.Vertex)
-      (value : input.observation.obj (input.schema.vertexObject vertex)) :
-      PrimitiveSource (.protocol input) X
+
+/-- Protocol observations are evaluations of generating states, not an
+additional source summand.  This realizes the fixed n1015 decomposition
+`1 + Sigma_v X(v) + Sigma_e X(s(e))` without admitting unattached `O(v)`
+values as source terms. -/
+def protocolObservationValue {input : ProtocolFamilyInput.{u}}
+    {X : ProtocolRealization input.schema input.observation}
+    (vertex : input.schema.Vertex) (state : X.State vertex) :
+    input.observation.obj (input.schema.vertexObject vertex) :=
+  X.observe vertex state
 
 /-- Generated object names.  Their dependence on the semantic object is
 explicit.  The G-117 branch ranges over every name in the object family rather
 than selecting endpoints after seeing a morphism. -/
+inductive LensPrimitiveObject (input : LensFamilyInput.{u})
+    (X : LensRealization input.View input.reference)
+  | state
+  | view
+  | read
+  | write
+
+namespace LensPrimitiveObject
+
+/-- The closed interpretation of each lens object role.  In particular Read
+is the very same carrier `C` as State, while Write is definitionally `C x V`;
+these domains cannot be chosen independently by a later interpreter. -/
+def Carrier {input : LensFamilyInput.{u}}
+    {X : LensRealization input.View input.reference} :
+    LensPrimitiveObject input X → Type u
+  | .state => X.Carrier
+  | .view => input.View
+  | .read => X.Carrier
+  | .write => X.Carrier × input.View
+
+end LensPrimitiveObject
+
+/-- Generated object names.  Lens roles carry the closed carrier
+interpretation above; other branches retain their source-specific owners. -/
 inductive PrimitiveObject :
     (θ : ClosedFamilyParameter.{u}) → FamilyRealization θ → Type (u + 1)
   | tagged (object : ArchitectureObject FiniteModel.carrier) :
       PrimitiveObject .taggedOperation (ULift.up ())
   | finiteArchitecture (object : ArchitectureObject FiniteModel.carrier) :
       PrimitiveObject .finiteAxisFold (ULift.up ())
-  | lensState {input : LensFamilyInput.{u}}
-      {X : LensRealization input.View input.reference} :
-      PrimitiveObject (.lens input) X
-  | lensView {input : LensFamilyInput.{u}}
-      {X : LensRealization input.View input.reference} :
-      PrimitiveObject (.lens input) X
-  | lensRead {input : LensFamilyInput.{u}}
-      {X : LensRealization input.View input.reference} :
-      PrimitiveObject (.lens input) X
-  | lensWrite {input : LensFamilyInput.{u}}
-      {X : LensRealization input.View input.reference} :
+  | lens {input : LensFamilyInput.{u}}
+      {X : LensRealization input.View input.reference}
+      (role : LensPrimitiveObject input X) :
       PrimitiveObject (.lens input) X
   | protocolState {input : ProtocolFamilyInput.{u}}
       {X : ProtocolRealization input.schema input.observation}
@@ -194,13 +215,13 @@ inductive PrimitiveOperation :
   | lensGet {input : LensFamilyInput.{u}}
       {X : LensRealization input.View input.reference} :
       PrimitiveOperation (.lens input) X
-        (PrimitiveObject.lensRead (input := input) (X := X))
-        (PrimitiveObject.lensView (input := input) (X := X))
+        (PrimitiveObject.lens (.read : LensPrimitiveObject input X))
+        (PrimitiveObject.lens (.view : LensPrimitiveObject input X))
   | lensPut {input : LensFamilyInput.{u}}
       {X : LensRealization input.View input.reference} :
       PrimitiveOperation (.lens input) X
-        (PrimitiveObject.lensWrite (input := input) (X := X))
-        (PrimitiveObject.lensState (input := input) (X := X))
+        (PrimitiveObject.lens (.write : LensPrimitiveObject input X))
+        (PrimitiveObject.lens (.state : LensPrimitiveObject input X))
   | protocolEdge {input : ProtocolFamilyInput.{u}}
       {X : ProtocolRealization input.schema input.observation}
       {source target : input.schema.Vertex}
@@ -217,7 +238,7 @@ inductive PrimitiveContext :
       PrimitiveContext .finiteAxisFold (ULift.up ()) (.finiteArchitecture object)
   | lensState {input : LensFamilyInput.{u}}
       {X : LensRealization input.View input.reference} :
-      PrimitiveContext (.lens input) X .lensState
+      PrimitiveContext (.lens input) X (.lens .state)
   | protocolVertex {input : ProtocolFamilyInput.{u}}
       {X : ProtocolRealization input.schema input.observation}
       (vertex : input.schema.Vertex) :
@@ -332,9 +353,12 @@ inductive PrimitiveSignatureAxis :
 /-- Role-indexed access to the actual three-element G-122 signature
 coordinate family, kept distinct from the axis role. -/
 inductive PrimitiveSignatureCoordinate :
-    (θ : ClosedFamilyParameter.{u}) → FamilyRealization θ → Type (u + 1)
-  | finiteAxisFold (coordinate : FiniteAxisFoldSignatureCoordinate) :
+    (θ : ClosedFamilyParameter.{u}) → (X : FamilyRealization θ) →
+      PrimitiveSignatureAxis θ X → Type (u + 1)
+  | finiteAxisFold (axis : FiniteAxisFoldSignatureAxis)
+      (coordinate : FiniteAxisFoldSignatureCoordinate) :
       PrimitiveSignatureCoordinate .finiteAxisFold (ULift.up ())
+        (.finiteAxisFold axis)
 
 /-- Role-indexed access to the actual singleton G-122 equation family. -/
 inductive PrimitiveEquationIndex :

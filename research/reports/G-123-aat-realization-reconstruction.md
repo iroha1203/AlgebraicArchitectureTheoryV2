@@ -29,7 +29,7 @@
 | B 冪等完備性 | 各意味圏の冪等射を個別に分裂する | `lensRealization_isIdempotentComplete`, `protocolRealization_isIdempotentComplete`; `karoubiReconstructionEquivalence` | 各具体入力条件と任意の冪等射 | lens固定点; objectwise protocol固定点functor | lens/protocolのKaroubi延長とarrow再構成 | AAT意味圏での分裂構成と共通再構成への適用 |
 | B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract`; `karoubiObjectOfRetract`, `karoubiMapEssSurj` | 各具体入力条件のみ | fiber列挙; vertexwise列挙; retractからpresentation側冪等元を逆像構成 | `karoubiCompletionEquivalence`, lens/protocolのKaroubi再構成 | AAT完全幾何への適用 |
 | B1 | `Kar(P) ≃ R`、decoderの延長、一意性、arrow圏での再構成を同じ四証拠から得る | `karoubiReconstructionEquivalence`, `karoubiReconstructionRestrictionIso`, `karoubiExtensionComparison`, `karoubiExtensionComparison_unique`, `karoubiExtensionComparison_self`, `karoubiExtensionComparison_trans`, `karoubiArrowReconstructionEquivalence`; lens/protocol各適用 | full、faithful、意味圏の冪等完備性、decoder像によるretract生成 | `functorExtension₂`のfull/faithful/essentially-surjective証明、`toKaroubiEquivalence`による延長、fully faithfulな制限から比較同型を逆像構成 | lens/protocol双方のobject・任意arrow再構成 | AAT共通decoderへの同じ適用、分裂選択を明示する具体比較、完全幾何への適用 |
-| C | 一様operation flipと同じ射の二つのreading | — | G-117の固定入力 | — | operation保持の必要性 | 全項目未完了 |
+| C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipAction`, `taggedUniformFlipAction_involutive`, `taggedUniformFlipTotal`, `taggedUniformFlipSquare_operationMap` | G-117の固定`taggedOperationPackage` | 全端点・全operationのBool tag反転、operation-map上の二乗 | operation保持の必要性 | package射としての`t²=1`、`et=te`、`et≠e`、Karoubi内の同じ射、二readingの分離は未完了 |
 | D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | — | G-122の固定版 | — | n1012第7章から第8章 | 全項目未完了 |
 | E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
 | E protocol | 有限schemaの関手意味論と生成辺tableの再構成 | `ProtocolSchema.ExecutionCategory`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.presentationEquivalence` | 有限vertex・typed edge・有限parallel path relations `Q,L`; 任意の`O:C_Q⥤Type`; vertexwise有限carrier | 自由path評価、relation quotient、全path `ext`、vertexwise列挙normal form | AAT翻訳、Fのprotocol適用 | operation名変更版、adapter square (P1)、AATとの双方向翻訳、Fへの適用 |
@@ -603,7 +603,7 @@ selection:
   proof_dag_predecessors:
     - "Cycle 1 independent lens semantics over fixed V,v0"
     - "Cycle 2 independent protocol semantics over fixed Q,L,O"
-    - "G-117 fixed uniform tagged-operation family"
+    - "G-117 fixed tagged-operation package and operation family"
     - "G-122 fixed finite-axis-fold primitive source indices"
   proof_obligation: "A/C: replace arbitrary carrier dispatch by one closed four-branch family parameter, preserve the order theta then arbitrary semantic X in the CS branches, generate endpoint/object-dependent primitive names without a constructor for completed AAT maps, and construct the fixed G-117 uniform operation action"
   selection_reason: "The closed dispatch is required before a source-derived presentation can be stated without letting a caller choose arbitrary carrier roles that quote the desired answer."
@@ -638,6 +638,8 @@ result:
     - AAT.AG.RealizationReconstruction.FamilyRealization
     - AAT.AG.RealizationReconstruction.PrimitiveAtom
     - AAT.AG.RealizationReconstruction.PrimitiveSource
+    - AAT.AG.RealizationReconstruction.protocolObservationValue
+    - AAT.AG.RealizationReconstruction.LensPrimitiveObject.Carrier
     - AAT.AG.RealizationReconstruction.PrimitiveObject
     - AAT.AG.RealizationReconstruction.PrimitiveOperation
     - AAT.AG.RealizationReconstruction.PrimitiveContext
@@ -679,6 +681,8 @@ result:
       - "taggedOperation takes the actual fixed package operation at its actual ArchitectureObject endpoints"
       - "taggedUniformFlipTotal applies taggedUniformFlipAction to every such operation and its action is involutive"
       - "lensGet has Read-to-View endpoints and lensPut has Write=CxV-to-State endpoints"
+      - "LensPrimitiveObject.Carrier makes Read and State the same X.Carrier and Write definitionally X.Carrier x View"
+      - "protocol observations are derived by protocolObservationValue from a generating state and are not an independent Source summand"
       - "the G-122 branch separately indexes FiniteModel.FiniteAtom, FiniteModel.ExtractionSource, signature Axis and Coordinate as Fin 3, equation/invariant as PUnit, raw coordinate/relation as Unit, every source ArchCtx, and the outer DoubleDiamondTwoCell PUnit diagnostic role"
     unfinished:
       - "this closed family signature is not yet the finite presentation Sigma"
@@ -686,7 +690,7 @@ result:
       - "the general G-122 source input is not represented; the nullary branch records only the required fixed example"
   validation:
     focused_checks: "1/1 pass"
-    namespace_axiom_audit: "364 declarations, standard axioms only"
+    namespace_axiom_audit: "371 declarations, standard axioms only"
     declaration_scan: "no data constructor accepts a completed AAT/core/geometry map, decoder, extension, comparison element, splitting, or retract; the constructed taggedUniformFlipTotal occurs only as a derived def result"
     research_full_build: not-run
   verdict: "Cycle 5 fixes the common family quantification and role-dependent primitive-name layer only; GOAL A and G-123 remain incomplete"
@@ -753,5 +757,20 @@ review_round_2:
     - "made PrimitiveContext range over every source ArchCtx and moved DoubleDiamondTwoCell to PrimitiveDiagnosticCell"
     - "listed package-level t^2=1 explicitly among the unfinished C obligations"
     - "renamed the rejected-snapshot report key to head"
+  rerun_required: true
+review_round_3:
+  head: 76a27c0daf4aa22e1d06e4665f6f80c2b40f0ed3
+  verdict: major-revisions
+  central_findings:
+    - "lens Read/Write were distinct names but their C and CxV carrier interpretation was not yet fixed"
+    - "signature Coordinate did not retain its parent Axis dependency"
+    - "protocol Source incorrectly included arbitrary unattached O(v) values beyond the fixed n1015 source sum"
+  noncentral_findings:
+    - "the top-level C ledger had not recorded the partial uniform-flip construction"
+  direct_response:
+    - "introduced LensPrimitiveObject.Carrier with Read=State=X.Carrier and Write=X.Carrier x View definitionally"
+    - "indexed PrimitiveSignatureCoordinate by its PrimitiveSignatureAxis parent"
+    - "removed protocolObservation from PrimitiveSource and derived protocolObservationValue from a generating state"
+    - "synchronized the top-level C ledger while retaining package-level square and comparison obligations as unfinished"
   rerun_required: true
 ```
