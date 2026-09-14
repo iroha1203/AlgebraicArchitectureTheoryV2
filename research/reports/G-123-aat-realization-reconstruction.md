@@ -1494,4 +1494,21 @@ audits:
     - "named target ResearchLean.AG.RealizationReconstruction.OperationFiniteReferenceObstruction: pass"
   blocking_findings: []
   next_obligation: "Formulate the strongest intrinsic, syntax-independent finite-generation condition that does not contain the requested reconstruction conclusion, then prove or disprove it for each mandatory D_Theta input from its primitive data."
+initial_review:
+  head: 8f4aa1b0949cda25eaa88ed01de3cfd664cbaa74
+  verdict: revisions-required
+  independent_lanes:
+    math_a: pass
+    math_b: pass-after-noncentral-fix
+    lean_a: pass-after-noncentral-fix
+    lean_b: revisions-required
+  central_findings:
+    - "the generic Code universe was Type 0 while the report stated the bridge without that universe restriction"
+  noncentral_findings:
+    - "the report called the conditional list-generated Code bridge an unconditional finite-tree result"
+  direct_response:
+    reviewed_delta: "8f4aa1b0949cda25eaa88ed01de3cfd664cbaa74..pending"
+    lean: "generalized Code to Type w"
+    report: "replaced every unconditional tree claim by List OperationTag and code types separately proved to be its surjective image"
+  rerun_required: true
 ```

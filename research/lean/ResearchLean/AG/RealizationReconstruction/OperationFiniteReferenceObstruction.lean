@@ -6,6 +6,8 @@ namespace AAT.AG.RealizationReconstruction
 
 open CategoryTheory AtomFoundation DoctrineFiberProduct
 
+universe w
+
 /-!
 # Finite operation-reference obstruction
 
@@ -132,7 +134,7 @@ theorem sequencePackageEndomorphisms_not_listTagEnumerable
   exact listOperationTags_not_surjective_transformations _ transformSurjective
 
 theorem no_surjectiveEndomorphismDecoder_of_listGeneratedCode
-    {Code : Type}
+    {Code : Type w}
     (ofList : List OperationTag → Code)
     (ofList_surjective : Function.Surjective ofList)
     (decode : Code →
