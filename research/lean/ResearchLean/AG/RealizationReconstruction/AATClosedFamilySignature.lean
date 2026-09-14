@@ -9,7 +9,7 @@ import Formal.Util.AssertStandardAxioms
 # A closed family signature for realization reconstruction
 
 This module starts the source-provenance part of G-123(A).  The single
-parameter type is a closed tagged union of the two required AAT examples and
+parameter type is a closed tagged union of the two required AAT branches and
 the two independently specified CS families.  Lens parameters contain only a
 view type and reference view; protocol parameters contain only the finite
 schema and observation functor fixed in n1015.  Semantic objects remain
