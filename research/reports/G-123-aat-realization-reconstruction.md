@@ -1732,6 +1732,39 @@ result:
     - AAT.AG.RealizationReconstruction.retractEndomorphismMap
     - AAT.AG.RealizationReconstruction.retractEndomorphismMap_surjective_of_full
     - AAT.AG.RealizationReconstruction.exists_retractEndomorphismMap_surjective
+  claim_mapping:
+    source_labels:
+      - "GOAL B property 1: fullness of the decoder"
+      - "GOAL B property 4: every semantic object is a retract of one decoded presentation object"
+      - "Cycle 11 unfinished bridge from a mandatory-C semantic endomorphism family to presentation endomorphisms"
+      - "n1014 section 4.3 reconstruction through Karoubi retracts"
+    input_premises:
+      - "ambient categories P and R and a decoder functor F"
+      - "direction-hypothesis for the general bridge: F.Full"
+      - "direction-hypothesis for the local bridge: explicit i, r, and i then r equals the identity"
+      - "direction-hypothesis for the global bridge: RetractGeneratedBy F"
+      - "for the fixed AAT application, fullness and retract generation are discharge-required and remain unproved"
+    constructed_evidence:
+      - "the sandwich decoder f maps to i then F.map f then r"
+      - "for every h, a presentation endomorphism obtained as a fullness preimage of r then h then i"
+      - "for every X, one p, i, and r chosen before and shared by the surjection over all endomorphisms h"
+    proof_use:
+      - "F.Full supplies the preimage of r then h then i"
+      - "both retract arrows occur in the lifted semantic arrow and the decoded sandwich"
+      - "the retract equation is used twice to simplify the decoded preimage to h"
+      - "RetractGeneratedBy F supplies p, i, r, and the equation at the arbitrary X"
+    unfinished:
+      - "construct the fixed AAT decoder and prove its fullness from the fixed input"
+      - "construct the mandatory-C object's retract from that decoder"
+      - "prove the Cycle 11 ambient source-choice maps are morphisms of the independently defined R_Theta"
+      - "combine the bridge with an actual syntax provenance/cardinal theorem"
+    undischarged_assumptions:
+      - "fixed-AAT decoder fullness"
+      - "fixed-AAT retract generation and the mandatory-C object's retract"
+      - "mandatory-C source-choice membership in R_Theta"
+      - "actual finite syntax alphabet provenance/cardinal bound"
+    acceptance_point: "Only the assumption-relative categorical implication is discharged: once fullness and the retract data are supplied, endomorphism surjectivity is constructed and those premises are visibly used. No fixed-AAT premise is marked discharged by this cycle."
+    port_status: not-applicable
   validation:
     focused_checks: "1/1 pass"
     named_target_build: "ResearchLean.AG.RealizationReconstruction.RetractEndomorphismLift passed"
