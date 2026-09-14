@@ -13,7 +13,7 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 2 protocol realization and finite-presentation reconstruction
+- current proof obligation: Cycle 3 common Karoubi and arrow reconstruction principle
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
 - next proof obligation: AAT common realization declaration and operation-aware complete geometry
@@ -26,8 +26,9 @@
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full` | 各具体入力条件のみ | 任意の完成射を制限して有限tableを構成 | 各direct equivalence | AAT完全幾何への適用 |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
-| B 冪等完備性 | 各意味圏の冪等射を個別に分裂する | `lensRealization_isIdempotentComplete`, `protocolRealization_isIdempotentComplete` | 各具体入力条件と任意の冪等射 | lens固定点; objectwise protocol固定点functor | 共通Karoubi延長とarrow再構成 | 共通Karoubi延長、arrow再構成、分裂選択の自然同型、AAT完全幾何への適用 |
-| B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract` | 各具体入力条件のみ | fiber列挙; vertexwise列挙とpath自然同型 | 共通Karoubi延長とarrow再構成 | 共通Karoubi延長、arrow再構成、分裂選択の自然同型、AAT完全幾何への適用 |
+| B 冪等完備性 | 各意味圏の冪等射を個別に分裂する | `lensRealization_isIdempotentComplete`, `protocolRealization_isIdempotentComplete`; `karoubiReconstructionEquivalence` | 各具体入力条件と任意の冪等射 | lens固定点; objectwise protocol固定点functor | lens/protocolのKaroubi延長とarrow再構成 | AAT意味圏での分裂構成と共通再構成への適用 |
+| B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract`; `karoubiObjectOfRetract`, `karoubiMapEssSurj` | 各具体入力条件のみ | fiber列挙; vertexwise列挙; retractからpresentation側冪等元を逆像構成 | `karoubiCompletionEquivalence`, lens/protocolのKaroubi再構成 | AAT完全幾何への適用 |
+| B1 | `Kar(P) ≃ R`、decoderの延長、一意性、arrow圏での再構成を同じ四証拠から得る | `karoubiReconstructionEquivalence`, `karoubiReconstructionRestrictionIso`, `karoubiExtensionComparison`, `karoubiExtensionComparison_unique`, `karoubiExtensionComparison_self`, `karoubiExtensionComparison_trans`, `karoubiArrowReconstructionEquivalence`; lens/protocol各適用 | full、faithful、意味圏の冪等完備性、decoder像によるretract生成 | `functorExtension₂`のfull/faithful/essentially-surjective証明、`toKaroubiEquivalence`による延長、fully faithfulな制限から比較同型を逆像構成 | lens/protocol双方のobject・任意arrow再構成 | AAT共通decoderへの同じ適用、分裂選択を明示する具体比較、完全幾何への適用 |
 | C | 一様operation flipと同じ射の二つのreading | — | G-117の固定入力 | — | operation保持の必要性 | 全項目未完了 |
 | D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | — | G-122の固定版 | — | n1012第7章から第8章 | 全項目未完了 |
 | E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
@@ -331,4 +332,136 @@ audits:
     - "focused ProtocolIdempotents.lean: standard axioms only"
   blocking_findings: []
   next_obligation: "Construct the common AAT realization declaration and operation-aware complete-geometry res/ext/J while preserving the lens and protocol translations as actual two-way applications."
+```
+
+## Cycle 3 — Common Karoubi and arrow reconstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 3
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 9155fc9a2396d53469e3db0f6827fedd29a0440c
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 2 merged at 9155fc9a2; B1 common extension, uniqueness, coherence, and arrow reconstruction remained unchecked"
+  proof_dag_predecessors:
+    - "Cycles 1 and 2: separately constructed full, faithful, idempotent-complete, and retract-generation evidence"
+    - "Mathlib functorExtension₂ and toKaroubiEquivalence"
+    - "G-119 karoubiArrowEquivalence and Mathlib mapArrowEquivalence"
+  proof_obligation: "B1: from the four separate reconstruction properties construct Kar(P) ≃ R, identify its restriction with the original decoder, prove coherent uniqueness of extensions, and reconstruct arbitrary arrows; apply the same theorem to both CS models without using their direct equivalences as a shortcut"
+  selection_reason: "This discharges the shared categorical engine before the AAT-wide presentation is built and makes proof-use of idempotent completeness and retract generation explicit for both existing CS models."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/KaroubiReconstruction.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/KaroubiArrowReconstruction.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSKaroubiReconstruction.lean
+  risks:
+    - "redefining R as a decoder image or as Kar(P)"
+    - "accepting fullness, faithfulness, splitting, or retract data inside syntax or semantic objects"
+    - "using the direct lens/protocol equivalence and leaving the required four proofs unused"
+    - "proving object equivalence while dropping noninvertible arrows"
+    - "asserting uniqueness without a restriction equation or coherence laws"
+  unchecked:
+    - "AAT common declaration and complete-geometry res/ext/J"
+    - "application of B1 to the future AAT decoder and explicit comparison of concrete splitting choices"
+    - "C uniform flip"
+    - "D G-122 comparison-group recovery"
+    - "E AAT translations in both directions, lens L5/section variant, and protocol adapter square"
+    - "F common classification and fixed finite examples"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed the induced functor Kar(P) ⟶ Kar(R); proved its faithfulness, fullness, and essential surjectivity from the corresponding decoder proofs and explicit retract generation; removed Kar(R) using separately supplied idempotent completeness; identified restriction with F; constructed the unique comparison of any two extensions with restriction, identity, and transitivity coherence; transported G-119 through the resulting equivalence to reconstruct arbitrary arrows; instantiated all results for the independent lens and protocol models from their named evidence."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/KaroubiReconstruction.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/KaroubiArrowReconstruction.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSKaroubiReconstruction.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.RetractGeneratedBy
+    - AAT.AG.RealizationReconstruction.karoubiMapFull
+    - AAT.AG.RealizationReconstruction.karoubiMapFaithful
+    - AAT.AG.RealizationReconstruction.karoubiObjectOfRetract
+    - AAT.AG.RealizationReconstruction.karoubiObjectOfRetractIso
+    - AAT.AG.RealizationReconstruction.karoubiMapEssSurj
+    - AAT.AG.RealizationReconstruction.karoubiReconstructionEquivalence
+    - AAT.AG.RealizationReconstruction.karoubiReconstructionRestrictionIso
+    - AAT.AG.RealizationReconstruction.karoubiExtensionComparison
+    - AAT.AG.RealizationReconstruction.karoubiExtensionComparison_restrict_hom
+    - AAT.AG.RealizationReconstruction.karoubiExtensionComparison_unique
+    - AAT.AG.RealizationReconstruction.karoubiExtensionComparison_self
+    - AAT.AG.RealizationReconstruction.karoubiExtensionComparison_trans
+    - AAT.AG.RealizationReconstruction.karoubiArrowReconstructionEquivalence
+    - AAT.AG.RealizationReconstruction.LensRealization.lensKaroubiReconstructionEquivalence
+    - AAT.AG.RealizationReconstruction.LensRealization.lensKaroubiArrowReconstructionEquivalence
+    - AAT.AG.RealizationReconstruction.ProtocolPresentation.protocolKaroubiReconstructionEquivalence
+    - AAT.AG.RealizationReconstruction.ProtocolPresentation.protocolKaroubiArrowReconstructionEquivalence
+  claim_mapping:
+    source_labels:
+      - "GOAL B1: Kar(P) ≃ R and arrow reconstruction"
+      - "GOAL B: four separately required reconstruction properties"
+      - "GOAL E: both CS models and noninvertible changes"
+      - "G-119(A1): Kar(Arrow E) ≃ Arrow(Kar E)"
+    conjuncts:
+      - "full plus faithful -> every Karoubi morphism is lifted by F.preimage and its corner equation is reflected"
+      - "retract generation -> every Kar(R) object is represented by the preimage of r ≫ p ≫ i"
+      - "idempotent completeness of the independently defined R -> Kar(R) ≃ R"
+      - "extension equation -> restriction of the reconstruction functor is naturally isomorphic to F"
+      - "extension uniqueness -> fully faithful restriction constructs the comparison and proves self/trans coherence"
+      - "arrow reconstruction -> G-119 karoubiArrowEquivalence followed by mapArrowEquivalence"
+      - "lens application -> four named lens constructions, not lensPresentationEquivalence"
+      - "protocol application -> four named protocol constructions, not presentationEquivalence"
+    undischarged_assumptions: []
+    acceptance_point: "The common theorem is assumption-relative as permitted by B1, while each CS application discharges all four assumptions from the fixed model input. No semantic category, morphism class, or presentation membership condition is changed."
+    port_status: not-applicable
+review:
+  fixed_head: pending
+  audit_comment: pending
+  independent_lanes:
+    math_a: pending
+    math_b: pending
+    lean_a: pending
+    lean_b: pending
+  validation:
+    focused_checks: "3/3 pass before review"
+    namespace_axiom_audits: "18 / 1 / 8 declarations, standard axioms only"
+    pr_ci: pending
+    research_full_build: not-run
+  verdict: "Cycle 3 B1 common and two-CS application proof obligation implemented; review pending; G-123 remains target-proof-checkpoint"
+audits:
+  premise_delta:
+    discharged:
+      - "fullness and faithfulness of Karoubi extension from the corresponding decoder properties"
+      - "essential surjectivity of Kar(P) ⟶ Kar(R) from explicit semantic retract generation"
+      - "removal of Kar(R) from the separately constructed IsIdempotentComplete proof"
+      - "two-CS application assumptions from the exact Cycle 1 and Cycle 2 declarations"
+    remaining:
+      - "all AAT-wide, comparison, translation, adapter, and common-classification obligations listed above"
+  certificate_provenance:
+    discharged:
+      - "the generic theorem accepts exactly the four B1 properties and does not add them to P or R"
+      - "lens/protocol application modules pass named, already constructed proofs from fixed input data"
+      - "Karoubi object idempotents are constructed by preimage from the actual retract and Karoubi projector"
+    unresolved: []
+  proof_use:
+    used:
+      - "F.Full in morphism and idempotent preimages"
+      - "F.Faithful in corner equations and lifted-idempotent proof"
+      - "RetractGeneratedBy in essential surjectivity"
+      - "IsIdempotentComplete R in toKaroubiEquivalence and the extension restriction isomorphism"
+      - "G-119 arrow/Karoubi equivalence in the arrow-level result"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused KaroubiReconstruction.lean: standard axioms only"
+    - "focused KaroubiArrowReconstruction.lean: standard axioms only"
+    - "focused CSKaroubiReconstruction.lean: standard axioms only"
+  blocking_findings: []
+  next_obligation: "Construct the common AAT realization declaration and operation-aware complete-geometry res/ext/J, then apply the same B1 theorem from AAT-specific discharged evidence."
 ```
