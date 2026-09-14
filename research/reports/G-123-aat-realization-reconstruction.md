@@ -1507,7 +1507,7 @@ initial_review:
   noncentral_findings:
     - "the report called the conditional list-generated Code bridge an unconditional finite-tree result"
   direct_response:
-    reviewed_delta: "8f4aa1b0949cda25eaa88ed01de3cfd664cbaa74..pending"
+    reviewed_delta: "8f4aa1b0949cda25eaa88ed01de3cfd664cbaa74..59ef33389"
     lean: "generalized Code to Type w"
     report: "replaced every unconditional tree claim by List OperationTag and code types separately proved to be its surjective image"
   rerun_required: true
