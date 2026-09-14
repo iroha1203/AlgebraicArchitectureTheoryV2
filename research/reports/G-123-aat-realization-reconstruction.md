@@ -13,23 +13,23 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 13 mandatory-C membership in an independent admissible-package category and combined conditional obstruction
+- current proof obligation: Cycle 14 full tagged-branch primitive alphabet cardinal bound
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: decide and construct the final AAT semantic category R_Theta and prove the actual source-provenanced finite syntax endomorphism bound without adding completed endpoint-choice maps as parameters
+- next proof obligation: connect the full tagged primitive alphabet to an actual finitary syntax/quotient presentation, and decide the final AAT semantic category R_Theta without excluding required maps by decoder-image fitting
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`とG-122のsignature/equation/invariant/raw各role; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価; 全tag変換を実際のpackage endomorphismへ埋め込み、有限tag参照listからの全射decoderを対角化で否定 | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持 | Cycle 10 obstructionを避ける内在的生成条件と必須入力からの放電、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
+| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`とG-122のsignature/equation/invariant/raw各role; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体 | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化 | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | tagged branchの実finitary term/quotient presentationとdecoder、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full`; `retractEndomorphismMap_surjective_of_full`, `exists_retractEndomorphismMap_surjective`; `not_full_and_retractGenerated_of_listObjectGeneratedEndomorphisms` | 各具体入力条件のみ; 一般transferでは明示的な`F.Full`; combined no-goでは各presentation自己射が有限object参照listの全射像であること | 任意の完成射を制限して有限tableを構成; retract上の任意自己射を`r ≫ h ≫ i`のfullness preimageから持ち上げる; admissible-package categoryのmandatory対象でlist decoder非全射と合成 | 各direct equivalence; mandatory-C obstructionを独立な実AAT package categoryへ接続する categorical bridge | final `R_Theta` decoderの充満性を固定入力から放電し、actual syntax endomorphism boundと接続すること |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
 | B 冪等完備性 | 各意味圏の冪等射を個別に分裂する | `lensRealization_isIdempotentComplete`, `protocolRealization_isIdempotentComplete`; `karoubiReconstructionEquivalence` | 各具体入力条件と任意の冪等射 | lens固定点; objectwise protocol固定点functor | lens/protocolのKaroubi延長とarrow再構成 | AAT意味圏での分裂構成と共通再構成への適用 |
 | B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract`; `karoubiObjectOfRetract`, `karoubiMapEssSurj`; `retractEndomorphismMap`, `exists_retractEndomorphismMap_surjective` | 各具体入力条件のみ; 一般transferでは明示的な`RetractGeneratedBy F` | fiber列挙; vertexwise列挙; retractからpresentation側冪等元を逆像構成; 同じ`i,r,i≫r=𝟙`を自己射decoderの全射性に実使用 | `karoubiCompletionEquivalence`, lens/protocolのKaroubi再構成; Cycle 11 cardinal obstructionとの将来接続 | AAT完全幾何でretractを固定入力から構成し、mandatory-C対象へ同じwitnessを与えること |
 | B1 | `Kar(P) ≃ R`、decoderの延長、一意性、arrow圏での再構成を同じ四証拠から得る | `karoubiReconstructionEquivalence`, `karoubiReconstructionRestrictionIso`, `karoubiExtensionComparison`, `karoubiExtensionComparison_unique`, `karoubiExtensionComparison_self`, `karoubiExtensionComparison_trans`, `karoubiArrowReconstructionEquivalence`; lens/protocol各適用 | full、faithful、意味圏の冪等完備性、decoder像によるretract生成 | `functorExtension₂`のfull/faithful/essentially-surjective証明、`toKaroubiEquivalence`による延長、fully faithfulな制限から比較同型を逆像構成 | lens/protocol双方のobject・任意arrow再構成 | AAT共通decoderへの同じ適用、分裂選択を明示する具体比較、完全幾何への適用 |
-| C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipTotal_square`, `taggedUniformFlipTotal_commutes_normalization`, `taggedNormalizationThenUniformFlip_ne_normalization`, `taggedNormalizationThenUniformFlipKaroubiAut`, `fixedArchitectureObjectFunctor`, `fixedArchitectureObjectFunctor_identifies_uniform_flip`, `fixedArchitectureObjectFunctor_not_injective_at_tagged`, `taggedUniformFlipTotal_ne_endpointFlipTotal`; `taggedSourceChoiceTotal`, `readTaggedSourceChoice_taggedSourceChoiceTotal`, `taggedSourceChoiceTotal_injective`, `taggedSourceChoiceEndomorphisms_not_listObjectEnumerable`; `taggedSourceChoiceAdmissibleMorphism`, `taggedSourceChoiceAdmissibleEndomorphisms_not_listObjectEnumerable` | G-117の固定`taggedOperationPackage`とadmissibility; 任意の`ArchitectureObject FiniteModel.carrier → Bool`; G-119で独立定義済みの全admissible-package category | 全端点・全operationの一様Bool tag反転、package射の`t²=1`、`et=te`、指定operation評価による`et≠e`、Karoubi自己同型、固定点関手と非忠実性witness; sourceごとの任意Bool選択から実package自己射を構成し恒等operationで全選択を読戻し、有限object参照list decoderの全射性を対角化で否定; 全source-choice射をdecoder像でない実category homとして構成 | 固定点関手は同じKaroubi二射`et,e`の像を同一視する; Aの全保存射と有限syntaxの両立可能性を独立package category内で検査するmandatory-C witness | final `R_Theta`とadmissible-package categoryの関係、actual syntax alphabetのprovenance/cardinal bound、追加の固定入力由来D構造がsource-choice射を除けるかの判定 |
+| C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipTotal_square`, `taggedUniformFlipTotal_commutes_normalization`, `taggedNormalizationThenUniformFlip_ne_normalization`, `taggedNormalizationThenUniformFlipKaroubiAut`, `fixedArchitectureObjectFunctor`, `fixedArchitectureObjectFunctor_identifies_uniform_flip`, `fixedArchitectureObjectFunctor_not_injective_at_tagged`, `taggedUniformFlipTotal_ne_endpointFlipTotal`; `taggedSourceChoiceTotal`, `readTaggedSourceChoice_taggedSourceChoiceTotal`, `taggedSourceChoiceTotal_injective`; `taggedSourceChoiceAdmissibleMorphism`; `TaggedPrimitiveReference`, `taggedSourceChoiceAdmissibleEndomorphisms_not_listPrimitiveEnumerable`, `not_full_and_retractGenerated_of_listPrimitiveGeneratedEndomorphisms` | G-117の固定`taggedOperationPackage`とadmissibility; 任意の`ArchitectureObject FiniteModel.carrier → Bool`; G-119で独立定義済みの全admissible-package category; tagged branchの既存primitive全4種 | 一様flipの全package/Karoubi証拠; sourceごとの任意Bool選択から実category自己射と完全readback; Atom/Source/Object/全端点Operationのdisjoint alphabetと有限list embedding; full alphabet decoderの非全射と条件付きfullness/retract矛盾 | 固定点関手の同一視とoperation readerでの分離; Aの全primitive有限syntaxと全保存射の両立可能性を独立package category内で検査するmandatory-C witness | final `R_Theta`とadmissible-package categoryの関係、actual finitary term/quotientからfull-alphabet list-generationを導くこと、追加の固定入力由来D構造がsource-choice射を除けるかの判定 |
 | D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | `G122FamilyInput`, `G122CellInput`, `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, `PrimitiveOperation.g122Ref`, `G122CellInput.fixedGeometry`, `G122CellInput.sourceTransport`, `G122CellInput.compatibleProblemData`, `G122CellInput.barBeta`, `finiteAxisFoldParameter`, `finiteAxisFoldRealization`, `finiteAxisFoldOperationReference` | G-122の固定版にある任意の`A,z,omega,k,g_z`; 固定有限axis-fold例 | 原入力と生成出力を分離し、任意のcell inputを共通familyの意味対象にし、元の有限例を同じ一般branchへ入れ、supportの全端点の各operation identityを参照し、同じ実際の`barBeta`を生成する証拠 | 将来のG-122 branch interpretationと表示回復 | operation族の有限生成・全域写像回復とprimitive interpretation、比較群・section・底/係数成分・二種類の核・各lift fiberの全元の表示回復と三場合分類は未完了 |
 | E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
 | E protocol | 有限schemaの関手意味論と生成辺tableの再構成 | `ProtocolSchema.ExecutionCategory`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.presentationEquivalence` | 有限vertex・typed edge・有限parallel path relations `Q,L`; 任意の`O:C_Q⥤Type`; vertexwise有限carrier | 自由path評価、relation quotient、全path `ext`、vertexwise列挙normal form | AAT翻訳、Fのprotocol適用 | operation名変更版、adapter square (P1)、AATとの双方向翻訳、Fへの適用 |
@@ -1959,4 +1959,171 @@ audits:
     - "named target ResearchLean.AG.RealizationReconstruction.MandatoryCAdmissibleCategoryObstruction: pass"
   blocking_findings: []
   next_obligation: "Determine the final common R_Theta and prove the actual primitive-reference syntax bound, or exhibit a fixed-input law that legitimately excludes the source-choice family while preserving every card-mandated morphism."
+```
+
+## Cycle 14 — Full tagged-branch primitive alphabet obstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 14
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: d55dc83372e3ffa36d503938c49047d8c80ae4e6
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 13 left open whether the object-list obstruction survives the complete primitive alphabet actually declared for the mandatory tagged branch"
+  proof_dag_predecessors:
+    - "Cycle 5: closed family signature with branch-indexed PrimitiveAtom, PrimitiveSource, PrimitiveObject, and PrimitiveOperation"
+    - "Cycle 9: endpoint-indexed tagged operation references"
+    - "Cycle 13: source-choice endomorphisms in an independently defined admissible-package category"
+  proof_obligation: "Enumerate every existing primitive role of the mandatory tagged branch without storing a completed semantic map, prove that finite lists over the resulting alphabet still have architecture-object cardinality, and transport the Cycle 13 fullness/retract obstruction to that full alphabet under an explicit actual-syntax generation premise"
+  selection_reason: "This tests the cardinal obstruction against the whole source-declared tagged primitive alphabet rather than the earlier object-only grammar, while keeping the missing term/quotient provenance theorem visible."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCPrimitiveAlphabet.lean
+  risks:
+    - "omitting a tagged primitive role or erasing operation endpoints"
+    - "placing a completed source predicate, operation map, or semantic endomorphism in the primitive alphabet"
+    - "assuming the final presentation homs are generated by primitive lists rather than deriving it from an actual syntax"
+    - "calling failure of this candidate grammar a refutation of G-123"
+  unchecked:
+    - "construction of the actual finitary term/quotient presentation and proof that its endomorphisms are generated by the declared primitive alphabet"
+    - "selection and construction of final R_Theta and its relation to the independently defined admissible-package category"
+    - "fixed-input fullness, faithfulness, idempotent completeness, and retract generation for the final decoder"
+    - "remaining A--F obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed one disjoint reference type covering the actual tagged Atom, extraction Source, complete ArchitectureObject, and endpoint-indexed Operation primitive families; added translations from each closed-signature primitive type; encoded every occurrence injectively by a finite architecture-object list while retaining operation endpoints and its exact dependent value; and proved that a decoder whose presentation endomorphisms are generated by lists over this complete existing alphabet cannot be both full and retract-generating into the independent admissible-package category."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCPrimitiveAlphabet.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.typeValueArchitectureObject
+    - AAT.AG.RealizationReconstruction.readTypeValueArchitectureObject_typeValueArchitectureObject
+    - AAT.AG.RealizationReconstruction.TaggedPrimitiveReference
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveAtomReference
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveSourceReference
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveObjectReference
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveOperationReference
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveReferenceObjects_injective
+    - AAT.AG.RealizationReconstruction.listTaggedPrimitiveReferenceEmbedding
+    - AAT.AG.RealizationReconstruction.listTaggedPrimitiveReferences_not_surjective_choices
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceAdmissibleEndomorphisms_not_listPrimitiveEnumerable
+    - AAT.AG.RealizationReconstruction.not_full_and_retractGenerated_of_listPrimitiveGeneratedEndomorphisms
+  claim_mapping:
+    theorem_names:
+      - typeValueArchitectureObject
+      - readTypeValueArchitectureObject_typeValueArchitectureObject
+      - TaggedPrimitiveReference
+      - taggedPrimitiveAtomReference
+      - taggedPrimitiveSourceReference
+      - taggedPrimitiveObjectReference
+      - taggedPrimitiveOperationReference
+      - taggedPrimitiveReferenceObjects_injective
+      - listTaggedPrimitiveReferenceEmbedding
+      - listTaggedPrimitiveReferences_not_surjective_choices
+      - taggedSourceChoiceAdmissibleEndomorphisms_not_listPrimitiveEnumerable
+      - not_full_and_retractGenerated_of_listPrimitiveGeneratedEndomorphisms
+    source_labels:
+      - "GOAL A: finite source-provenanced syntax under one common declaration"
+      - "GOAL B properties 1 and 4: fullness and retract generation"
+      - "GOAL C: exact mandatory taggedOperationPackage input and all its permitted morphisms"
+      - "user anti-weakening clauses 1--4 and 7"
+      - "n1014 sections 2, 4.3, and 6.2--6.4"
+    conjuncts:
+      - "coverage of every tagged PrimitiveAtom occurrence -> taggedPrimitiveAtomReference"
+      - "coverage of every tagged PrimitiveSource occurrence -> taggedPrimitiveSourceReference"
+      - "coverage of every tagged PrimitiveObject occurrence -> taggedPrimitiveObjectReference"
+      - "coverage of every endpoint-indexed tagged PrimitiveOperation occurrence with both endpoints retained -> taggedPrimitiveOperationReference"
+      - "injective finite architecture-object-list encoding of the four-way disjoint alphabet -> taggedPrimitiveReferenceObjects_injective"
+      - "finite lists over the full existing alphabet embed into ArchitectureObject -> listTaggedPrimitiveReferenceEmbedding"
+      - "no such list decoder enumerates all actual mandatory-C source-choice category endomorphisms -> taggedSourceChoiceAdmissibleEndomorphisms_not_listPrimitiveEnumerable"
+      - "fullness plus retract generation conflicts with a presentation endomorphism type generated by these lists -> not_full_and_retractGenerated_of_listPrimitiveGeneratedEndomorphisms"
+      - "actual term/quotient construction, its list-generation theorem, and identification of final R_Theta -> deliberately not established"
+    input_premises:
+      - "the fixed closed family declaration and its mandatory taggedOperation branch"
+      - "the actual branch-indexed PrimitiveAtom, PrimitiveSource, PrimitiveObject, and endpoint-indexed PrimitiveOperation types"
+      - "the full ArchitectureObject type, full extraction-source type, and exact dependent tagged operation values"
+      - "Cycle 13's independently defined admissible-package category and every source-choice endomorphism in it"
+      - "for the combined candidate theorem, an arbitrary decoder F plus a separate surjection from primitive-reference lists onto each presentation endomorphism type"
+      - "no completed predicate, endpoint-map family, semantic endomorphism, fullness witness, or retract witness is a primitive reference"
+    constructed_evidence:
+      - "a left-invertible small type-value encoding used only for one primitive value at a time"
+      - "one disjoint full tagged primitive-reference alphabet with explicit translations from all four actual closed-signature types"
+      - "an injective encoding of each primitive reference and each finite primitive list into ArchitectureObject"
+      - "Cantor non-surjectivity for full-alphabet list decoders into the actual mandatory-C hom-set"
+      - "a contradiction between full-alphabet-list-generated presentation endomorphisms and simultaneous decoder fullness plus retract generation"
+    proof_use:
+      - "constructor-distinguishing list lengths preserve Atom, Source, Object, and Operation roles"
+      - "the readback recovers exact Atom, Source, and dependent Operation values"
+      - "operation encoding stores and recovers both source and target before comparing its dependent value"
+      - "the list embedding reindexes the source-choice Cantor contradiction without discarding any primitive occurrence"
+      - "the combined theorem applies the Cycle 12 retract endomorphism surjection at the mandatory Cycle 13 object and composes it with listGenerated"
+    unfinished:
+      - "the final presentation syntax has not been constructed as a term/quotient grammar"
+      - "listGenerated is not discharged from that actual presentation construction"
+      - "the independent admissible-package category is not identified as final R_Theta"
+      - "the final decoder and the remaining A--F conclusions are not constructed"
+      - "no target refutation or target-theorem-proved status is claimed"
+    undischarged_assumptions:
+      - "actual finitary syntax and quotient provenance sufficient to derive the endomorphism list-generation theorem"
+      - "final R_Theta selection and connection to CanonicalNormalizationAdmissiblePackage"
+      - "fixed-AAT decoder's four reconstruction obligations"
+      - "remaining A--F obligations"
+    acceptance_point: "The complete primitive alphabet already declared for the mandatory tagged branch has been covered and its finite-list cardinal obstruction proved in the independent category. Acceptance neither supplies the missing actual-syntax generation premise nor elevates the candidate failure to a fixed-target refutation."
+    port_status: not-applicable
+  candidate_failure_record:
+    candidate: "Use a presentation whose endomorphisms are generated by finite lists over all existing tagged Atom, Source, Object, and endpoint-indexed Operation primitive references, while decoding fully and retract-generating into the admissible-package category"
+    obstacle: "the full existing primitive alphabet and all of its finite lists still embed into ArchitectureObject, whereas the mandatory semantic object has a distinguishable actual endomorphism for every Boolean predicate on ArchitectureObject"
+    tried_construction: "Explicit four-way dependent primitive sum, translations from every actual tagged primitive family, injective role-preserving list encoding, and composition with Cycles 12--13"
+    forbidden_shortcuts:
+      - "add a completed source predicate, all-endpoint operation map, or arbitrary semantic endomorphism as one primitive value"
+      - "erase operation endpoints or keep only a selected displayable subset"
+      - "define final R_Theta or its hom-set by decoder image"
+      - "treat this candidate syntax failure as refuting all parameter-relative finite presentations or G-123"
+    status: "full existing primitive-list grammar conditionally refuted for this independent semantic category; actual syntax connection and fixed target remain open"
+  validation:
+    focused_checks: "1/1 pass"
+    named_target_build: "ResearchLean.AG.RealizationReconstruction.MandatoryCPrimitiveAlphabet passed"
+    namespace_axiom_audit: "51 declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 14 closes coverage and the cardinal bound for the complete primitive alphabet presently declared on the mandatory tagged branch. The actual term/quotient generation theorem and final R_Theta remain open, so G-123 is neither proved nor refuted."
+audits:
+  premise_delta:
+    discharged:
+      - "all actual tagged Atom, Source, Object, and endpoint-indexed Operation primitive occurrences map into one explicit disjoint alphabet"
+      - "finite lists over that complete existing alphabet have an injective ArchitectureObject encoding"
+      - "under the explicit per-presentation list-generation premise, fullness and retract generation cannot both hold in the independent admissible-package category"
+    remaining:
+      - "construct the actual term/quotient syntax and derive its endomorphism generation bound"
+      - "construct or identify final R_Theta without target fitting"
+      - "construct the fixed decoder and its four reconstruction properties"
+      - "all remaining A--F obligations"
+  certificate_provenance:
+    discharged:
+      - "primitive translations eliminate the actual closed-signature tagged constructors rather than accepting a completeness certificate"
+      - "injectivity is proved through literal role lengths and left-inverse value readback"
+      - "the semantic contradiction reuses actual category morphisms and a separately proved retract transfer"
+    unresolved:
+      - "the actual term/quotient syntax-to-list provenance theorem"
+  proof_use:
+    used:
+      - "every tagged primitive role and every value in those roles"
+      - "both endpoints and the exact dependent value of every tagged operation reference"
+      - "every arbitrary source predicate in the Cycle 13 category hom family"
+      - "decoder fullness and retract generation through Cycle 12"
+      - "listGenerated at the presentation object selected by the retract"
+    unused: []
+  structure_field_escape: "the primitive alphabet contains one existing source-declared occurrence at a time; it has no field for a completed semantic map, decoder image, or reconstruction certificate"
+  route_integrity: "the semantic category and source-choice morphism family predate this full-alphabet encoding; the alphabet does not define or shrink their hom-set"
+  target_fitting: "the exact mandatory-C package, all of its actual existing tagged primitive roles, every endpoint, and every source-choice map are retained; only the candidate grammar is constrained by the explicit listGenerated premise"
+  vacuity: "the primitive encoding is injective, source-choice readback is a left inverse, and the final contradiction composes genuine surjections"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused MandatoryCPrimitiveAlphabet.lean: pass, 51 declarations, standard axioms only"
+    - "named target ResearchLean.AG.RealizationReconstruction.MandatoryCPrimitiveAlphabet: pass"
+  blocking_findings: []
+  next_obligation: "Construct an actual finitary term/quotient presentation over the full primitive alphabet and derive its endomorphism code bound, then decide whether the final required R_Theta legitimately contains the independent mandatory-C source-choice family."
 ```
