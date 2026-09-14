@@ -1301,7 +1301,7 @@ result:
       - "the full fixed finite-axis-fold Op family specializes through the general branch"
     proof_use:
       - "the dependent Op type fixes both source and target indices of g122Ref"
-      - "g122Value prevents replacement of operation identity by configuration action"
+      - "g122Value keeps operation identity available independently of configuration action"
       - "g122ConfigurationMap consumes g122Value and the original operation reading"
       - "the fixed specialization theorem verifies identity readback rather than only equality after configuration forgetting"
     unfinished:
