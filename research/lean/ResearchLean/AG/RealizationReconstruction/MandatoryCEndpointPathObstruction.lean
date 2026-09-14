@@ -62,6 +62,7 @@ abbrev TaggedPrimitiveEdge (source target : TaggedPrimitiveVertex) :=
   { reference : TaggedPrimitiveReference //
     taggedPrimitiveEndpoints reference = (source, target) }
 
+/-- The typed primitive edges form the hom-types of the candidate quiver. -/
 instance : Quiver TaggedPrimitiveVertex where
   Hom := TaggedPrimitiveEdge
 
