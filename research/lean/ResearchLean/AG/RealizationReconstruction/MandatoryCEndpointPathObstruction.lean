@@ -17,6 +17,24 @@ supplying Cycle 17's endomorphism embedding.  The parameter root is a syntax
 vertex, not a semantic architecture object.  Its chosen placement of Atom and
 Source references, and the absence of quotient relations or additional legal
 parameter roles, prevent promotion to the final G-123 presentation.
+
+## Implementation notes
+
+A named `parameterRoot` is used instead of `Option.none` so that the auxiliary
+syntax vertex cannot be mistaken for missing semantic data.  Atom and Source
+references have no architecture-object endpoints in the fixed primitive
+declaration, so this candidate places them as root loops; placing each at every
+architecture object would introduce an additional occurrence parameter whose
+source provenance has not yet been constructed.  Object references are loops
+at their exact objects, while Operation references use their existing dependent
+source and target without transport or endpoint erasure.
+
+Mathlib's `Quiver.Path.toList` was rejected because it records vertices and its
+injectivity API assumes subsingleton hom-types, which would collapse parallel
+primitive edges.  `taggedPrimitivePathReferences` instead records each exact
+edge value.  A custom path category was also unnecessary: `CategoryTheory.Paths`
+already supplies identity, composition, and their laws independently of any
+semantic decoder.
 -/
 
 namespace AAT.AG.RealizationReconstruction
