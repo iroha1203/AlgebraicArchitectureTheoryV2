@@ -13,10 +13,10 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 11 mandatory-C source-choice obstruction
+- current proof obligation: Cycle 12 fullness/retract endomorphism-lift transfer
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: connect the mandatory-C endomorphism family through retract generation and fullness, and prove the source-provenance cardinal bound for the actual finite presentation syntax without adding completed endpoint-choice maps as parameters
+- next proof obligation: construct the actual AAT semantic category and prove mandatory-C source-choice morphism membership, then prove the source-provenance cardinal bound for the actual finite presentation syntax without adding completed endpoint-choice maps as parameters
 
 ## Requirement ledger
 
@@ -24,10 +24,10 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`とG-122のsignature/equation/invariant/raw各role; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価; 全tag変換を実際のpackage endomorphismへ埋め込み、有限tag参照listからの全射decoderを対角化で否定 | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持 | Cycle 10 obstructionを避ける内在的生成条件と必須入力からの放電、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
-| B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full` | 各具体入力条件のみ | 任意の完成射を制限して有限tableを構成 | 各direct equivalence | AAT完全幾何への適用 |
+| B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full`; `retractEndomorphismMap_surjective_of_full`, `exists_retractEndomorphismMap_surjective` | 各具体入力条件のみ; 一般transferでは明示的な`F.Full` | 任意の完成射を制限して有限tableを構成; retract上の任意自己射を`r ≫ h ≫ i`のfullness preimageから持ち上げる | 各direct equivalence; mandatory-C obstructionを将来の実AAT decoderへ接続する categorical bridge | AAT完全幾何decoderの充満性を固定入力から放電し、source-choice射へ適用すること |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
 | B 冪等完備性 | 各意味圏の冪等射を個別に分裂する | `lensRealization_isIdempotentComplete`, `protocolRealization_isIdempotentComplete`; `karoubiReconstructionEquivalence` | 各具体入力条件と任意の冪等射 | lens固定点; objectwise protocol固定点functor | lens/protocolのKaroubi延長とarrow再構成 | AAT意味圏での分裂構成と共通再構成への適用 |
-| B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract`; `karoubiObjectOfRetract`, `karoubiMapEssSurj` | 各具体入力条件のみ | fiber列挙; vertexwise列挙; retractからpresentation側冪等元を逆像構成 | `karoubiCompletionEquivalence`, lens/protocolのKaroubi再構成 | AAT完全幾何への適用 |
+| B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract`; `karoubiObjectOfRetract`, `karoubiMapEssSurj`; `retractEndomorphismMap`, `exists_retractEndomorphismMap_surjective` | 各具体入力条件のみ; 一般transferでは明示的な`RetractGeneratedBy F` | fiber列挙; vertexwise列挙; retractからpresentation側冪等元を逆像構成; 同じ`i,r,i≫r=𝟙`を自己射decoderの全射性に実使用 | `karoubiCompletionEquivalence`, lens/protocolのKaroubi再構成; Cycle 11 cardinal obstructionとの将来接続 | AAT完全幾何でretractを固定入力から構成し、mandatory-C対象へ同じwitnessを与えること |
 | B1 | `Kar(P) ≃ R`、decoderの延長、一意性、arrow圏での再構成を同じ四証拠から得る | `karoubiReconstructionEquivalence`, `karoubiReconstructionRestrictionIso`, `karoubiExtensionComparison`, `karoubiExtensionComparison_unique`, `karoubiExtensionComparison_self`, `karoubiExtensionComparison_trans`, `karoubiArrowReconstructionEquivalence`; lens/protocol各適用 | full、faithful、意味圏の冪等完備性、decoder像によるretract生成 | `functorExtension₂`のfull/faithful/essentially-surjective証明、`toKaroubiEquivalence`による延長、fully faithfulな制限から比較同型を逆像構成 | lens/protocol双方のobject・任意arrow再構成 | AAT共通decoderへの同じ適用、分裂選択を明示する具体比較、完全幾何への適用 |
 | C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipTotal_square`, `taggedUniformFlipTotal_commutes_normalization`, `taggedNormalizationThenUniformFlip_ne_normalization`, `taggedNormalizationThenUniformFlipKaroubiAut`, `fixedArchitectureObjectFunctor`, `fixedArchitectureObjectFunctor_identifies_uniform_flip`, `fixedArchitectureObjectFunctor_not_injective_at_tagged`, `taggedUniformFlipTotal_ne_endpointFlipTotal`; `taggedSourceChoiceTotal`, `readTaggedSourceChoice_taggedSourceChoiceTotal`, `taggedSourceChoiceTotal_injective`, `taggedSourceChoiceEndomorphisms_not_listObjectEnumerable` | G-117の固定`taggedOperationPackage`とadmissibility; 任意の`ArchitectureObject FiniteModel.carrier → Bool` | 全端点・全operationの一様Bool tag反転、package射の`t²=1`、`et=te`、指定operation評価による`et≠e`、Karoubi自己同型、固定点関手と非忠実性witness; sourceごとの任意Bool選択から実package自己射を構成し恒等operationで全選択を読戻し、有限object参照list decoderの全射性を対角化で否定 | 固定点関手は同じKaroubi二射`et,e`の像を同一視する; Aの全保存射と有限syntaxの両立可能性を検査するmandatory-C witness | Aで構成するoperation保持実現へ同じ二射を送り、像が異なることの接続; retract/fullnessを介した一般presentationへの非全射移送、actual syntax alphabetのprovenance/cardinal bound、追加の合法的D構造がsource-choice射を除けるかの判定 |
 | D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | `G122FamilyInput`, `G122CellInput`, `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, `PrimitiveOperation.g122Ref`, `G122CellInput.fixedGeometry`, `G122CellInput.sourceTransport`, `G122CellInput.compatibleProblemData`, `G122CellInput.barBeta`, `finiteAxisFoldParameter`, `finiteAxisFoldRealization`, `finiteAxisFoldOperationReference` | G-122の固定版にある任意の`A,z,omega,k,g_z`; 固定有限axis-fold例 | 原入力と生成出力を分離し、任意のcell inputを共通familyの意味対象にし、元の有限例を同じ一般branchへ入れ、supportの全端点の各operation identityを参照し、同じ実際の`barBeta`を生成する証拠 | 将来のG-122 branch interpretationと表示回復 | operation族の有限生成・全域写像回復とprimitive interpretation、比較群・section・底/係数成分・二種類の核・各lift fiberの全元の表示回復と三場合分類は未完了 |
@@ -1688,4 +1688,87 @@ third_review:
     reviewed_delta: "2978f27f532a628a97f690356427a3b3a384df65..edc81b4ac682896f37556d04528e69d696282685"
     lean: "expanded every declaration docstring to identify its Cycle 11 or fixed-GOAL role, its place in the construction/readback/cardinal/no-go chain, and whether each input is fixed, constructed, arbitrary, or separately discharge-required"
   rerun_required: true
+```
+
+## Cycle 12 — Fullness/retract transfer for semantic endomorphisms
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 12
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: ddce9d06a0307dd2928e10a2171a994a85b926b6
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 11 left the categorical transfer from fullness plus retract generation to semantic endomorphism surjectivity explicitly unfinished"
+  proof_dag_predecessors:
+    - "KaroubiReconstruction.RetractGeneratedBy: explicit p, i, r with i then r equal to the identity"
+    - "Mathlib CategoryTheory.Functor.Full: preimages for all semantic arrows between decoded objects"
+    - "Cycle 11: mandatory-C source-choice family and finite object-reference obstruction"
+  proof_obligation: "Prove that decoder fullness and an explicit retract of X from F.obj p construct a surjection from presentation endomorphisms p to semantic endomorphisms X, and then consume RetractGeneratedBy to obtain this data for every X"
+  selection_reason: "This closes the abstract categorical bridge required before the Cycle 11 semantic family can constrain an actual G-123 decoder; it keeps fullness and retract generation separate and exposes their proof-use."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/RetractEndomorphismLift.lean
+  risks:
+    - "assuming the semantic endomorphism itself as a presentation code"
+    - "calling retract generation automatic from fullness"
+    - "hiding either B premise in a structure or typeclass field"
+    - "claiming the future AAT semantic category or mandatory-C morphism membership has been constructed"
+  unchecked:
+    - "construction of D_Theta, R_Theta, P_Theta, and F_Theta for the fixed AAT input"
+    - "fixed-input discharge of AAT decoder fullness and retract generation"
+    - "membership of all mandatory-C source-choice package maps in the future R_Theta hom-set"
+    - "actual finite syntax alphabet provenance/cardinal bound"
+    - "remaining A--F obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Defined the explicit retract endomorphism decoder f maps to i then F.map f then r. For an arbitrary h, fullness lifts r then h then i to f, and the retract equation simplifies the decoded result to h. Consuming RetractGeneratedBy then returns p, i, r, the retract equation, and this surjectivity for every semantic object."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/RetractEndomorphismLift.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.retractEndomorphismMap
+    - AAT.AG.RealizationReconstruction.retractEndomorphismMap_surjective_of_full
+    - AAT.AG.RealizationReconstruction.exists_retractEndomorphismMap_surjective
+  validation:
+    focused_checks: "1/1 pass"
+    named_target_build: "ResearchLean.AG.RealizationReconstruction.RetractEndomorphismLift passed"
+    namespace_axiom_audit: "3 declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "The abstract B transfer obligation is discharged. This does not discharge fullness or retract generation for a future AAT decoder and does not place the Cycle 11 ambient package endomorphisms in R_Theta, so the fixed G-123 target remains a proof checkpoint."
+audits:
+  premise_delta:
+    discharged:
+      - "given explicit fullness and a displayed retract, every endomorphism of the retract object has a presentation endomorphism preimage"
+      - "given RetractGeneratedBy, the displayed retract and the local surjection are constructed for every semantic object"
+    remaining:
+      - "construct and discharge the same premises from the fixed AAT input"
+      - "identify the mandatory-C object and source-choice maps inside the independently constructed R_Theta"
+      - "prove the actual source-provenanced syntax alphabet bound"
+      - "all remaining A--F obligations"
+  certificate_provenance:
+    discharged:
+      - "the lifted presentation arrow comes from F.map_surjective applied to r then h then i"
+      - "the retract data comes from the explicit RetractGeneratedBy proposition"
+    unresolved:
+      - "future AAT fullness and retract certificates must still be constructed from fixed input data"
+  proof_use:
+    used:
+      - "F.Full in the preimage of r then h then i"
+      - "i, r, and i then r equals identity in the simplification back to h"
+      - "RetractGeneratedBy F at the arbitrary semantic object X"
+    unused: []
+  structure_field_escape: "fullness and retract generation are explicit theorem hypotheses in this general bridge and are not reported as discharged for the fixed AAT application"
+  route_integrity: "the theorem transfers semantic endomorphisms along an independently supplied decoder and retract; it does not define the semantic category as the decoder image"
+  target_fitting: "all objects X and all endomorphisms h of X are quantified; the presentation object p is chosen once from the retract witness, not per h"
+  vacuity: "the proof constructs a preimage for an arbitrary h and simplifies its actual decoded composite to h"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused RetractEndomorphismLift.lean: pass, 3 declarations, standard axioms only"
+    - "named target ResearchLean.AG.RealizationReconstruction.RetractEndomorphismLift: pass"
+  blocking_findings: []
+  next_obligation: "Construct the fixed-input AAT semantic morphism condition strongly enough to test source-choice membership, then combine this transfer with an actual syntax provenance/cardinal theorem."
 ```
