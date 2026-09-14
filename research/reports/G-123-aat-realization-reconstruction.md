@@ -13,16 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 7 preservation of the original G-122 input range
+- current proof obligation: Cycle 7 standalone decomposition of the original G-122 input range
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: branch-specific primitive interpretations of the preserved G-122 input, without quoting completed maps
+- next proof obligation: integrate the preserved G-122 input into the common family declaration, then construct branch-specific primitive interpretations without quoting completed maps
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `ClosedFamilyParameter`, `FamilyRealization`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveOperation`/`PrimitiveContext`; `G122FamilyInput`, `G122CellInput` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117/G-122のnullary tag; G-122の任意の`A,z,omega,k,g_z` | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatchとrole-specific constructor; G-122の原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`を出力として組み立てる依存分解 | Bの二具体適用、Eのモデル同期; 後続のbranch別interpretationとclosed presentation設計; Dの量化保持 | branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
+| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `ClosedFamilyParameter`, `FamilyRealization`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveOperation`/`PrimitiveContext`; standalone前駆体`G122FamilyInput`, `G122CellInput` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117/G-122のnullary tag; standalone bundleではG-122の任意の`A,z,omega,k,g_z` | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatchとrole-specific constructor; standalone bundleではG-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立てる依存分解 | Bの二具体適用、Eのモデル同期; 後続のcommon-family統合、branch別interpretationとclosed presentation設計; Dの量化保持 | `ClosedFamilyParameter.finiteAxisFold`はなおnullaryでありstandalone bundleとの接続が未完了; branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full` | 各具体入力条件のみ | 任意の完成射を制限して有限tableを構成 | 各direct equivalence | AAT完全幾何への適用 |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
@@ -938,9 +938,9 @@ selection:
     - "G-122 fixed theorem input: arbitrary AuthoredBCDatumSquare A, cell z, DefectCochain omega, coefficient ring k, and FixedCoefficientGeometryAt g_z"
     - "G-122 authoredExactSourceTransportAt and authoredExactCompatibleProblemDataAt constructions"
     - "G-122(C) finiteAxisFoldBCDatumSquare, second cell, initial cochain, and fixed integral geometry family"
-  proof_obligation: "A/D input preservation: represent the exact original G-122 quantifier dependencies while keeping source transport, compatible problem data, comparisons, normalization, groups, sections, kernels, and fibers on the constructed-output side"
+  proof_obligation: "Construct a standalone, dependency-equivalent representation of the exact original G-122 input range while keeping source transport, compatible problem data, comparisons, normalization, groups, sections, kernels, and fibers on the constructed-output side; common-family integration remains a later obligation"
   selection_reason: "Any later finite syntax and decoder must range over the original G-122 family, not only the fixed finite witness or the subset already known to display. Fixing this dependency split first makes input shrinkage and conclusion-as-input errors visible."
-  expected_result_type: proof-obligation-discharged
+  expected_result_type: proof-checkpoint
   lean_targets:
     - research/lean/ResearchLean/AG/RealizationReconstruction/G122OriginalInput.lean
   risks:
@@ -951,14 +951,15 @@ selection:
     - "conflating selected geometry/raw source fields with the generated complete comparison data"
   unchecked:
     - "primitive finite syntax and interpretation for the preserved G-122 semantic inputs"
+    - "integration of the standalone G-122 bundles into ClosedFamilyParameter and FamilyRealization"
     - "closed finite presentation Sigma and intrinsic D_Theta"
     - "AAT complete-geometry res/ext/J and four reconstruction properties"
     - "D comparison-group, section, kernel, and lift-fiber recovery and three-case classification"
     - "E bidirectional AAT translations"
     - "F classification and fixed finite examples"
 result:
-  proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "Constructed a two-level dependent input family that quantifies arbitrary Atom carrier, decidable equality, authored square, coefficient carrier/ring, cell, cochain, selected geometry, and raw restrictions in the same order as G-122. Reassembled FixedCoefficientGeometryAt and generated source transport, compatible problem data, and the actual barBeta only after receiving those original fields. Instantiated the same general decomposition with G-122(C)'s original finite axis-fold square, required second cell, generated cochain, and integral geometry/raw data. No finite-syntax reconstruction claim is made."
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Constructed a standalone two-level dependent input family with a dependency-equivalent quantifier range for arbitrary Atom carrier, decidable equality, authored square, coefficient carrier/ring, cell, cochain, selected geometry, and raw restrictions. Reassembled FixedCoefficientGeometryAt and generated source transport, compatible problem data, and the actual barBeta only after receiving those original fields. Instantiated the same general decomposition with G-122(C)'s original finite axis-fold square, required second cell, generated cochain, and integral geometry/raw data. The existing closed-family G-122 branch remains nullary and is not yet connected to these bundles; no finite-syntax reconstruction claim is made."
   completion_candidate: no
   lean_artifacts:
     - research/lean/ResearchLean/AG/RealizationReconstruction/G122OriginalInput.lean
@@ -977,10 +978,9 @@ result:
     - AAT.AG.RealizationReconstruction.finiteAxisFoldG122CellInput_barBeta
   claim_mapping:
     source_labels:
-      - "GOAL A: mandatory G-122 input family under one declaration"
-      - "GOAL D: preserve the original G-122 input range and fixed finite axis-fold example"
-      - "GOAL anti-weakening 1--3 and 5"
-      - "n1014 section 4"
+      - "GOAL A and D: mandatory general G-122 input family and fixed finite axis-fold example"
+      - "user instruction: anti-weakening clauses 1--3 and 5"
+      - "n1014 sections 6.3 and 6.5"
     input_premises:
       - "arbitrary AtomCarrier U and the exact DecidableEq U.Atom input"
       - "arbitrary AuthoredBCDatumSquare A"
@@ -1004,6 +1004,7 @@ result:
       - "G122FamilyInput and G122CellInput are semantic input bundles, not finite primitive syntax"
       - "no claim that arbitrary authored squares or geometry/raw data have already been finitely presented"
       - "no Sigma, D_Theta, interpretation, decoder, res, ext, J, comparison recovery, or classification theorem is asserted"
+      - "the standalone bundles are not yet constructors or branches of ClosedFamilyParameter and FamilyRealization"
   validation:
     focused_checks: "1/1 pass"
     namespace_axiom_audit: "44 declarations, standard axioms only"
@@ -1011,16 +1012,16 @@ result:
       - "ResearchLean.AG.FullGeometryNormalization.ExactDerivedRefinementBC passed as a bounded named target"
       - "ResearchLean.AG.FullGeometryNormalization.ExactBarBetaFiniteWitness passed as a bounded named target"
     research_full_build: not-run
-  verdict: "Cycle 7 discharges only the exact G-122 semantic-input range and dependency split needed before primitive interpretation. It does not discharge finite presentation, reconstruction, display recovery, or any remaining A--F conclusion."
+  verdict: "Cycle 7 is a proof checkpoint: it constructs the exact standalone G-122 semantic-input range and dependency split needed before common-family integration and primitive interpretation. It does not discharge the one-declaration requirement, finite presentation, reconstruction, display recovery, or any remaining A--F conclusion."
 audits:
   premise_delta:
     discharged:
-      - "the G-122 branch is no longer represented solely by a nullary fixed-example tag"
-      - "arbitrary A,z,omega,k,g_z remain in the general semantic-input range"
+      - "a standalone semantic bundle now represents arbitrary A,z,omega,k,g_z without narrowing their dependency range"
       - "the fixed finite branch inhabits the general range without defining it"
       - "source transport and compatible problem data are constructed outputs, not input fields"
       - "the actual barBeta comparison is a constructed output using the arbitrary cochain"
     remaining:
+      - "connect the standalone bundle to the still-nullary G-122 branch of ClosedFamilyParameter and FamilyRealization"
       - "construct primitive syntax and interpretation without embedding arbitrary completed AAT/core/geometry maps"
       - "all presentation, geometry, reconstruction, comparison, translation, and classification obligations listed above"
   certificate_provenance:
@@ -1035,7 +1036,7 @@ audits:
       - "the same fixed geometry family and mandated second cell in the finite witness specialization"
     unused: []
   structure_field_escape: "no source transport, compatible problem data, generated mate, barAlpha, barBeta, normalization, comparison element, section, kernel, or lift fiber is an input field"
-  route_integrity: "checkpoint-only; the semantic input is preserved but has not yet been reached from primitive finite syntax"
+  route_integrity: "checkpoint-only; the standalone semantic input is preserved but has not yet been connected to the common family declaration or reached from primitive finite syntax"
   target_fitting: "exact original G-122 quantifier range and exact G-122(C) finite input; no subgroup or displayed-subset restriction"
   vacuity: "the fixed finite witness inhabits the same general dependent structures and reassembles the exact fixed geometry"
   one_way_as_equivalence: none-found
@@ -1043,5 +1044,19 @@ audits:
   validation_refs:
     - "focused G122OriginalInput.lean: standard axioms only"
   blocking_findings: []
-  next_obligation: "Construct branch-specific primitive interpretations of the preserved G-122 input without accepting completed transports or comparisons, then define the closed finite presentation only after those interpretations are fixed."
+  next_obligation: "Integrate the preserved G-122 bundles into ClosedFamilyParameter and FamilyRealization, then construct branch-specific primitive interpretations without accepting completed transports or comparisons; define the closed finite presentation only after those interpretations are fixed."
+initial_review:
+  head: fcacee5e99470cd66537c5aece05c517431e4b31
+  verdict: major-revisions
+  central_findings:
+    - "the standalone G122FamilyInput and G122CellInput were not connected to the still-nullary ClosedFamilyParameter.finiteAxisFold branch, so the report could not call the one-declaration A/D obligation discharged"
+  noncentral_findings:
+    - "the report said same quantifier order although the dependency-equivalent bundle moves independent k before z and omega"
+    - "the n1014 source label pointed to section 4 instead of the direct sections 6.3 and 6.5"
+  direct_response:
+    - "reclassified Cycle 7 from proof-obligation-discharged to proof-checkpoint"
+    - "described the new structures consistently as standalone semantic bundles and kept common-family integration explicit and unfinished"
+    - "replaced same-order wording with dependency-equivalent quantifier range"
+    - "corrected the n1014 provenance and distinguished the user-supplied anti-weakening clauses"
+  rerun_required: true
 ```
