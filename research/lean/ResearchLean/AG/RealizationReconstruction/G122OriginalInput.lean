@@ -32,8 +32,8 @@ local instance finiteAxisFoldAtomDecidableEq :
   change DecidableEq FiniteModel.FiniteAtom
   infer_instance
 
-/-- The parameters that precede the cell-specific semantic input in the fixed
-G-122 quantifier order. -/
+/-- The cell-independent parameters in a dependency-equivalent rearrangement
+of the fixed G-122 quantifier range. -/
 structure G122FamilyInput where
   /-- Arbitrary Atom carrier; no finiteness is imposed. -/
   Carrier : AtomCarrier.{u}
