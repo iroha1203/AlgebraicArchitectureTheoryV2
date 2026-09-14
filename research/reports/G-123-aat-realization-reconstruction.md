@@ -13,10 +13,10 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 16 arbitrary word-relation quotient obstruction over the full tagged primitive alphabet
+- current proof obligation: Cycle 17 multiobject endomorphism-serialization transfer
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct a multiobject endpoint-typed representative serialization and its per-object endomorphism bound, then decide from the fixed Sigma,D laws whether every mandatory-C source-choice map is an actual final R_Theta morphism
+- next proof obligation: construct the endpoint-typed syntax's per-object endomorphism embeddings into tagged primitive lists, then decide from the fixed Sigma,D laws whether every mandatory-C source-choice map is an actual final R_Theta morphism
 
 ## Requirement ledger
 
@@ -24,7 +24,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`とG-122のsignature/equation/invariant/raw各role; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective`; `TaggedPrimitivePresentedMonoid`, `TaggedPrimitiveRelationPresentation`, `taggedPrimitiveRelationEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体; Cycle 16ではそのfinite word間の任意の生成関係 | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; 全finite wordのfree monoidと、その任意の生成関係によるactual presented-monoid quotient category | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | multiobject endpoint-typed representative serializationとdecoder、合法な追加parameter roleの判定、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
-| B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full`; `retractEndomorphismMap_surjective_of_full`, `exists_retractEndomorphismMap_surjective`; `not_full_and_retractGenerated_of_listObjectGeneratedEndomorphisms` | 各具体入力条件のみ; 一般transferでは明示的な`F.Full`; combined no-goでは各presentation自己射が有限object参照listの全射像であること | 任意の完成射を制限して有限tableを構成; retract上の任意自己射を`r ≫ h ≫ i`のfullness preimageから持ち上げる; admissible-package categoryのmandatory対象でlist decoder非全射と合成 | 各direct equivalence; mandatory-C obstructionを独立な実AAT package categoryへ接続する categorical bridge | final `R_Theta` decoderの充満性を固定入力から放電し、actual syntax endomorphism boundと接続すること |
+| B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full`; `retractEndomorphismMap_surjective_of_full`, `exists_retractEndomorphismMap_surjective`; `not_full_and_retractGenerated_of_listObjectGeneratedEndomorphisms`; `not_full_and_retractGenerated_of_endomorphismEmbedding` | 各具体入力条件のみ; 一般transferでは明示的な`F.Full`; combined no-goでは各presentation自己射が有限primitive listの全射像またはそこへの単射を持つこと | 任意の完成射を制限して有限tableを構成; retract上の任意自己射を`r ≫ h ≫ i`のfullness preimageから持ち上げる; injective endomorphism serializationの`invFun`からlist decoder全射を構成; mandatory対象の非全射と合成 | 各direct equivalence; mandatory-C obstructionを任意のmultiobject presentation categoryへ移す categorical/cardinal bridge | final `R_Theta` decoderの充満性を固定入力から放電し、actual endpoint-typed syntaxの各自己射embeddingと接続すること |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
 | B 冪等完備性 | 各意味圏の冪等射を個別に分裂する | `lensRealization_isIdempotentComplete`, `protocolRealization_isIdempotentComplete`; `karoubiReconstructionEquivalence` | 各具体入力条件と任意の冪等射 | lens固定点; objectwise protocol固定点functor | lens/protocolのKaroubi延長とarrow再構成 | AAT意味圏での分裂構成と共通再構成への適用 |
 | B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract`; `karoubiObjectOfRetract`, `karoubiMapEssSurj`; `retractEndomorphismMap`, `exists_retractEndomorphismMap_surjective` | 各具体入力条件のみ; 一般transferでは明示的な`RetractGeneratedBy F` | fiber列挙; vertexwise列挙; retractからpresentation側冪等元を逆像構成; 同じ`i,r,i≫r=𝟙`を自己射decoderの全射性に実使用 | `karoubiCompletionEquivalence`, lens/protocolのKaroubi再構成; Cycle 11 cardinal obstructionとの将来接続 | AAT完全幾何でretractを固定入力から構成し、mandatory-C対象へ同じwitnessを与えること |
@@ -2419,4 +2419,108 @@ audits:
     - "focused MandatoryCPresentedMonoidObstruction.lean: pass, 8 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "Construct a multiobject endpoint-typed representative syntax and prove a list bound for every endomorphism type, while independently constructing final Sigma,D,R_Theta and proving the mandatory-C source-choice membership required to transfer the no-go to the fixed target."
+```
+
+## Cycle 17 — Multiobject endomorphism-serialization transfer
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 17
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: b4b146b01e1c8376a025b3f9e27fb976793a9921
+tracking_issue: 4520
+selection:
+  proof_state_ref: "Cycle 16 covered arbitrary one-object word quotients but not endpoint-typed multiobject hom-sets"
+  proof_obligation: "Derive Cycle 14's list-surjection premise from an injective finite tagged-primitive serialization of every endomorphism type in an arbitrary multiobject category"
+  selection_reason: "This removes the one-object restriction from the categorical obstruction and isolates the concrete typed-syntax obligation as construction of one injection per endomorphism type."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCEndomorphismEmbeddingObstruction.lean
+  risks:
+    - "accept the embedding as a final presentation certificate rather than construct it from syntax"
+    - "encode a completed semantic endomorphism in one list token"
+    - "claim final R_Theta membership from a cardinal transfer theorem"
+  unchecked:
+    - "construction of the endpoint-typed syntax and each endomorphism embedding"
+    - "exhaustion of legal final-Sigma parameter provenance"
+    - "final Sigma,D,R_Theta and mandatory-C source-choice preservation"
+    - "remaining A--F obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "For an arbitrary multiobject category P, converted every injective serialization (p -> p) into finite tagged primitive lists into a surjective decoder by Function.invFun, using the categorical identity to discharge Nonempty; then instantiated Cycle 14 to rule out simultaneous fullness and retract generation for any functor into the independent mandatory-C category."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCEndomorphismEmbeddingObstruction.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveListDecoderOfEndomorphismEmbedding
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveListDecoderOfEndomorphismEmbedding_surjective
+    - AAT.AG.RealizationReconstruction.not_full_and_retractGenerated_of_endomorphismEmbedding
+  claim_mapping:
+    source_labels:
+      - "GOAL A: endpoint-typed finite morphism syntax and parameter-relative finite references"
+      - "GOAL B properties 1 and 4: fullness and retract generation"
+      - "GOAL C: retain all mandatory operation-changing morphisms"
+      - "n1014 section 6.4: typed finite trees and substitution"
+    conjuncts:
+      - "arbitrary multiobject presentation category and every object -> theorem quantification"
+      - "injective per-endomorphism serialization -> encode"
+      - "constructed reverse list decoder and surjectivity -> invFun declarations"
+      - "fullness/retract no-go -> headline theorem"
+      - "actual endpoint syntax, provenance, and final semantic membership -> deliberately not established"
+    input_premises:
+      - "an arbitrary category P and functor F into the independent mandatory-C category"
+      - "for every p, an injection from (p -> p) into lists of existing tagged primitive references"
+      - "no surjection, fullness proof, retract proof, or semantic decoder image is received"
+    constructed_evidence:
+      - "Nonempty (p -> p) from the actual identity morphism"
+      - "the inverse-function list decoder"
+      - "surjectivity from the left-inverse theorem for an injective encoding"
+      - "the Cycle 14 incompatibility for arbitrary multiobject P"
+    proof_use:
+      - "encode p is used by Function.invFun and invFun_surjective"
+      - "the constructed decoder is passed at every object to Cycle 14"
+      - "Cycle 14 uses the same object selected by retract generation and decoder fullness"
+    unfinished:
+      - "the injection family is a direction hypothesis in this generic lemma, not a final syntax field or discharged AAT application"
+      - "the endpoint-typed tree/substitution syntax and its serialization are not constructed"
+      - "additional legal parameter tokens are not classified"
+      - "final Sigma,D,R_Theta and source-choice membership are not constructed"
+      - "no fixed-target refutation or target-theorem-proved status is claimed"
+    acceptance_point: "Acceptance establishes the multiobject cardinal transfer only. A final application must construct encode from the fixed syntax and prove that its alphabet contains no conclusion-equivalent semantic data."
+  validation:
+    focused_checks: "1/1 pass"
+    named_target_build: "ResearchLean.AG.RealizationReconstruction.MandatoryCEndomorphismEmbeddingObstruction passed"
+    namespace_axiom_audit: "3 declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 17 removes the one-object restriction from the obstruction transfer but leaves the actual typed serialization and final semantic-category membership as material premises. G-123 remains neither proved nor refuted."
+audits:
+  premise_delta:
+    discharged:
+      - "injective endomorphism serialization implies a finite tagged-list surjection for arbitrary categories"
+      - "category identity supplies the Nonempty premise required by invFun"
+      - "the Cycle 14 no-go transfers to multiobject presentations"
+    remaining:
+      - "construct the injection family from endpoint-typed finite syntax"
+      - "classify all legal source-provenanced parameter roles"
+      - "construct final Sigma,D,R_Theta and prove mandatory-C membership"
+      - "all remaining A--F obligations"
+  certificate_provenance:
+    discharged:
+      - "the reverse decoder and its surjectivity are constructed from encode, not accepted separately"
+    unresolved:
+      - "the fixed-syntax construction and provenance of encode"
+  proof_use:
+    used:
+      - "each encode p"
+      - "each categorical identity"
+      - "the resulting decoder at the retract-selected object"
+      - "fullness and retract generation through Cycle 14"
+    unused: []
+  structure_field_escape: "encode is an explicit hypothesis of a generic transfer theorem; the report does not claim it as a discharged final presentation certificate"
+  route_integrity: "the semantic category remains independent; the final application must construct encode before invoking the transfer"
+  target_fitting: "multiobject quantification is retained, but actual typed syntax and legal token provenance remain open"
+  vacuity: "each endomorphism type contains its identity, and injectivity gives a genuine left inverse"
+  blocking_findings: []
+  next_obligation: "Construct the endpoint-typed syntax's endomorphism embeddings into tagged primitive lists without semantic answer encoding, and separately establish the exact final Sigma,D,R_Theta source-choice membership theorem."
 ```
