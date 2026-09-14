@@ -621,13 +621,13 @@ selection:
     - "general G-122 primitive input decomposition without sourceTransport or completed geometry"
     - "closed finite presentation Sigma and intrinsic D_Theta"
     - "AAT complete-geometry res/ext/J and four reconstruction properties"
-    - "C comparison of the constructed uniform flip with normalization, including commutation and inequality"
+    - "C package-morphism equality t^2=1 and comparison with normalization, including commutation and inequality"
     - "D comparison-group recovery"
     - "E bidirectional AAT translations"
     - "F classification and fixed finite examples"
 result:
   proposed_result_type: target-proof-checkpoint
-  proof_obligation_delta: "Constructed one closed tagged union containing G-117, fixed G-122, lens, and protocol branches. Lens theta contains only V,v0; protocol theta contains only Q,L,O, after which their arbitrary independent semantic X is quantified. Defined role-specific Atom, Source, Object, endpoint-indexed Operation, and object-indexed Context constructors. The fixed G-117 branch now uses its actual ArchitectureObject endpoints and existing tagged operations; its uniform Boolean flip is separately constructed as one actual package endomorphism. Lens Read and Write=CxV endpoints are distinct, protocol edges retain typed endpoints, and every listed fixed G-122 finite role is branch-indexed."
+  proof_obligation_delta: "Constructed one closed tagged union containing G-117, fixed G-122, lens, and protocol branches. Lens theta contains only V,v0; protocol theta contains only Q,L,O, after which their arbitrary independent semantic X is quantified. Defined role-specific Atom, Source, Object, endpoint-indexed Operation, and object-indexed Context constructors. The fixed G-117 branch now uses its actual ArchitectureObject endpoints and existing tagged operations; its uniform Boolean flip is separately constructed as one actual package endomorphism. Lens Read and Write=CxV endpoints are distinct, protocol edges retain typed endpoints, and every listed fixed G-122 source role is branch-indexed."
   completion_candidate: no
   lean_artifacts:
     - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
@@ -641,6 +641,7 @@ result:
     - AAT.AG.RealizationReconstruction.PrimitiveObject
     - AAT.AG.RealizationReconstruction.PrimitiveOperation
     - AAT.AG.RealizationReconstruction.PrimitiveContext
+    - AAT.AG.RealizationReconstruction.PrimitiveDiagnosticCell
     - AAT.AG.RealizationReconstruction.taggedOperation
     - AAT.AG.RealizationReconstruction.taggedUniformFlipAction
     - AAT.AG.RealizationReconstruction.taggedUniformFlipAction_involutive
@@ -650,6 +651,7 @@ result:
     - AAT.AG.RealizationReconstruction.protocolEdge
     - AAT.AG.RealizationReconstruction.FiniteAxisFoldSignatureAxis
     - AAT.AG.RealizationReconstruction.PrimitiveSignatureAxis
+    - AAT.AG.RealizationReconstruction.PrimitiveSignatureCoordinate
     - AAT.AG.RealizationReconstruction.PrimitiveEquationIndex
     - AAT.AG.RealizationReconstruction.PrimitiveInvariantIndex
     - AAT.AG.RealizationReconstruction.PrimitiveCoordinateIndex
@@ -677,14 +679,14 @@ result:
       - "taggedOperation takes the actual fixed package operation at its actual ArchitectureObject endpoints"
       - "taggedUniformFlipTotal applies taggedUniformFlipAction to every such operation and its action is involutive"
       - "lensGet has Read-to-View endpoints and lensPut has Write=CxV-to-State endpoints"
-      - "the G-122 branch indexes FiniteModel.FiniteAtom, FiniteModel.ExtractionSource, Fin 3, four distinct PUnit roles, and the fixed DoubleDiamondTwoCell PUnit contexts"
+      - "the G-122 branch separately indexes FiniteModel.FiniteAtom, FiniteModel.ExtractionSource, signature Axis and Coordinate as Fin 3, equation/invariant as PUnit, raw coordinate/relation as Unit, every source ArchCtx, and the outer DoubleDiamondTwoCell PUnit diagnostic role"
     unfinished:
       - "this closed family signature is not yet the finite presentation Sigma"
       - "no branch interpretation, decoder, D_Theta, res, ext, J, or reconstruction proof is asserted"
       - "the general G-122 source input is not represented; the nullary branch records only the required fixed example"
   validation:
     focused_checks: "1/1 pass"
-    namespace_axiom_audit: "337 declarations, standard axioms only"
+    namespace_axiom_audit: "364 declarations, standard axioms only"
     declaration_scan: "no data constructor accepts a completed AAT/core/geometry map, decoder, extension, comparison element, splitting, or retract; the constructed taggedUniformFlipTotal occurs only as a derived def result"
     research_full_build: not-run
   verdict: "Cycle 5 fixes the common family quantification and role-dependent primitive-name layer only; GOAL A and G-123 remain incomplete"
@@ -711,7 +713,8 @@ audits:
     used:
       - "lens V,v0 in the LensRealization branch and lens primitive roles"
       - "protocol Q,L,O in ProtocolRealization and typed primitive roles"
-      - "fixed G-122 finite Atom, extraction source, signature-axis, singleton, and diagnostic-cell types"
+      - "fixed G-122 Atom, extraction source, signature axis/coordinate, equation/invariant, raw coordinate/relation, and diagnostic-cell source types"
+      - "all fixed G-122 ArchCtx values are context names, while outer diagnostic cells remain a distinct role"
     unused: []
   structure_field_escape: "no completed AAT/core/geometry map, decoder, extension, comparison element, splitting, or retract field; the G-117 arbitrary-Type escape was removed; authorized arbitrary CS values have only role-specific constructors"
   route_integrity: "checkpoint-only; the closed presentation and interpretations remain future obligations"
@@ -735,6 +738,20 @@ initial_review:
     - "fixed the G-117 branch to the source ArchitectureObject and taggedOperationPackage operation families"
     - "constructed taggedUniformFlipAction, its involutivity theorem, and taggedUniformFlipTotal as an actual package endomorphism"
     - "added distinct lensRead and lensWrite object roles and corrected get/put endpoints"
-    - "added five branch-indexed G-122 role families"
+    - "added the missing branch-indexed G-122 signature-coordinate role"
+  rerun_required: true
+review_round_2:
+  head: d86c710e633888b3e16ae08877d03ec85fb5f161
+  verdict: major-revisions
+  central_findings:
+    - "the fixed G-122 signature Coordinate role was missing and raw Unit roles were conflated with PUnit equation/invariant roles"
+    - "outer diagnostic cells were incorrectly used as complete-geometry contexts instead of being separated from all source ArchCtx values"
+  noncentral_findings:
+    - "the report key for the rejected first-round snapshot was named fixed_head"
+  direct_response:
+    - "added branch-indexed signature Coordinate and distinct PUnit/Unit roles"
+    - "made PrimitiveContext range over every source ArchCtx and moved DoubleDiamondTwoCell to PrimitiveDiagnosticCell"
+    - "listed package-level t^2=1 explicitly among the unfinished C obligations"
+    - "renamed the rejected-snapshot report key to head"
   rerun_required: true
 ```
