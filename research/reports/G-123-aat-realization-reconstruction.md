@@ -13,23 +13,23 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 15 actual free-word presentation obstruction over the full tagged primitive alphabet
+- current proof obligation: Cycle 16 arbitrary word-relation quotient obstruction over the full tagged primitive alphabet
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the endpoint-typed finite-tree/substitution quotient or another richer source-provenanced syntax, and decide from the fixed Sigma,D laws whether every mandatory-C source-choice map is an actual final R_Theta morphism
+- next proof obligation: construct a multiobject endpoint-typed representative serialization and its per-object endomorphism bound, then decide from the fixed Sigma,D laws whether every mandatory-C source-choice map is an actual final R_Theta morphism
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`とG-122のsignature/equation/invariant/raw各role; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体 | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; その全有限wordを射とするdecoder非依存な一対象自由モノイド圏 | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | endpoint-typed finite-tree/substitution合同商とdecoder、合法な追加parameter roleの判定、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
+| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`とG-122のsignature/equation/invariant/raw各role; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective`; `TaggedPrimitivePresentedMonoid`, `TaggedPrimitiveRelationPresentation`, `taggedPrimitiveRelationEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体; Cycle 16ではそのfinite word間の任意の生成関係 | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; 全finite wordのfree monoidと、その任意の生成関係によるactual presented-monoid quotient category | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | multiobject endpoint-typed representative serializationとdecoder、合法な追加parameter roleの判定、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full`; `retractEndomorphismMap_surjective_of_full`, `exists_retractEndomorphismMap_surjective`; `not_full_and_retractGenerated_of_listObjectGeneratedEndomorphisms` | 各具体入力条件のみ; 一般transferでは明示的な`F.Full`; combined no-goでは各presentation自己射が有限object参照listの全射像であること | 任意の完成射を制限して有限tableを構成; retract上の任意自己射を`r ≫ h ≫ i`のfullness preimageから持ち上げる; admissible-package categoryのmandatory対象でlist decoder非全射と合成 | 各direct equivalence; mandatory-C obstructionを独立な実AAT package categoryへ接続する categorical bridge | final `R_Theta` decoderの充満性を固定入力から放電し、actual syntax endomorphism boundと接続すること |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
 | B 冪等完備性 | 各意味圏の冪等射を個別に分裂する | `lensRealization_isIdempotentComplete`, `protocolRealization_isIdempotentComplete`; `karoubiReconstructionEquivalence` | 各具体入力条件と任意の冪等射 | lens固定点; objectwise protocol固定点functor | lens/protocolのKaroubi延長とarrow再構成 | AAT意味圏での分裂構成と共通再構成への適用 |
 | B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract`; `karoubiObjectOfRetract`, `karoubiMapEssSurj`; `retractEndomorphismMap`, `exists_retractEndomorphismMap_surjective` | 各具体入力条件のみ; 一般transferでは明示的な`RetractGeneratedBy F` | fiber列挙; vertexwise列挙; retractからpresentation側冪等元を逆像構成; 同じ`i,r,i≫r=𝟙`を自己射decoderの全射性に実使用 | `karoubiCompletionEquivalence`, lens/protocolのKaroubi再構成; Cycle 11 cardinal obstructionとの将来接続 | AAT完全幾何でretractを固定入力から構成し、mandatory-C対象へ同じwitnessを与えること |
 | B1 | `Kar(P) ≃ R`、decoderの延長、一意性、arrow圏での再構成を同じ四証拠から得る | `karoubiReconstructionEquivalence`, `karoubiReconstructionRestrictionIso`, `karoubiExtensionComparison`, `karoubiExtensionComparison_unique`, `karoubiExtensionComparison_self`, `karoubiExtensionComparison_trans`, `karoubiArrowReconstructionEquivalence`; lens/protocol各適用 | full、faithful、意味圏の冪等完備性、decoder像によるretract生成 | `functorExtension₂`のfull/faithful/essentially-surjective証明、`toKaroubiEquivalence`による延長、fully faithfulな制限から比較同型を逆像構成 | lens/protocol双方のobject・任意arrow再構成 | AAT共通decoderへの同じ適用、分裂選択を明示する具体比較、完全幾何への適用 |
-| C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipTotal_square`, `taggedUniformFlipTotal_commutes_normalization`, `taggedNormalizationThenUniformFlip_ne_normalization`, `taggedNormalizationThenUniformFlipKaroubiAut`, `fixedArchitectureObjectFunctor`, `fixedArchitectureObjectFunctor_identifies_uniform_flip`, `fixedArchitectureObjectFunctor_not_injective_at_tagged`, `taggedUniformFlipTotal_ne_endpointFlipTotal`; `taggedSourceChoiceTotal`, `readTaggedSourceChoice_taggedSourceChoiceTotal`, `taggedSourceChoiceTotal_injective`; `taggedSourceChoiceAdmissibleMorphism`; `TaggedPrimitiveReference`, `taggedSourceChoiceAdmissibleEndomorphisms_not_listPrimitiveEnumerable`, `not_full_and_retractGenerated_of_listPrimitiveGeneratedEndomorphisms`; `taggedPrimitiveWordPresentation_not_full_and_retractGenerated` | G-117の固定`taggedOperationPackage`とadmissibility; 任意の`ArchitectureObject FiniteModel.carrier → Bool`; G-119で独立定義済みの全admissible-package category; tagged branchの既存primitive全4種; その全有限wordから構成した自由モノイド圏 | 一様flipの全package/Karoubi証拠; sourceごとの任意Bool選択から実category自己射と完全readback; Atom/Source/Object/全端点Operationのdisjoint alphabetと有限list embedding; 実free-word presentationでlist-generationを恒等decoderから放電しfullness/retract矛盾 | 固定点関手の同一視とoperation readerでの分離; Aの全primitive有限syntaxと全保存射の両立可能性を独立package category内で検査するmandatory-C witness | final `R_Theta`とadmissible-package categoryの関係、endpoint-typed finite-tree/substitution合同商または合法な追加parameter syntaxの検査、追加の固定入力由来D構造がsource-choice射を除けるかの判定 |
+| C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipTotal_square`, `taggedUniformFlipTotal_commutes_normalization`, `taggedNormalizationThenUniformFlip_ne_normalization`, `taggedNormalizationThenUniformFlipKaroubiAut`, `fixedArchitectureObjectFunctor`, `fixedArchitectureObjectFunctor_identifies_uniform_flip`, `fixedArchitectureObjectFunctor_not_injective_at_tagged`, `taggedUniformFlipTotal_ne_endpointFlipTotal`; `taggedSourceChoiceTotal`, `readTaggedSourceChoice_taggedSourceChoiceTotal`, `taggedSourceChoiceTotal_injective`; `taggedSourceChoiceAdmissibleMorphism`; `TaggedPrimitiveReference`, `taggedSourceChoiceAdmissibleEndomorphisms_not_listPrimitiveEnumerable`, `not_full_and_retractGenerated_of_listPrimitiveGeneratedEndomorphisms`; `taggedPrimitiveWordPresentation_not_full_and_retractGenerated`; `taggedPrimitiveRelationPresentation_not_full_and_retractGenerated` | G-117の固定`taggedOperationPackage`とadmissibility; 任意の`ArchitectureObject FiniteModel.carrier → Bool`; G-119で独立定義済みの全admissible-package category; tagged branchの既存primitive全4種; その全有限wordから構成した自由モノイド圏と任意relationsによる商 | 一様flipの全package/Karoubi証拠; sourceごとの任意Bool選択から実category自己射と完全readback; Atom/Source/Object/全端点Operationのdisjoint alphabetと有限list embedding; actual free-wordおよび任意word-relation quotientでgenerationをcanonical quotient mapから放電しfullness/retract矛盾 | 固定点関手の同一視とoperation readerでの分離; Aの全primitive有限syntaxと全保存射の両立可能性を独立package category内で検査するmandatory-C witness | final `R_Theta`とadmissible-package categoryの関係、multiobject endpoint-typed syntaxまたは合法な追加parameter syntaxの検査、追加の固定入力由来D構造がsource-choice射を除けるかの判定 |
 | D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | `G122FamilyInput`, `G122CellInput`, `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, `PrimitiveOperation.g122Ref`, `G122CellInput.fixedGeometry`, `G122CellInput.sourceTransport`, `G122CellInput.compatibleProblemData`, `G122CellInput.barBeta`, `finiteAxisFoldParameter`, `finiteAxisFoldRealization`, `finiteAxisFoldOperationReference` | G-122の固定版にある任意の`A,z,omega,k,g_z`; 固定有限axis-fold例 | 原入力と生成出力を分離し、任意のcell inputを共通familyの意味対象にし、元の有限例を同じ一般branchへ入れ、supportの全端点の各operation identityを参照し、同じ実際の`barBeta`を生成する証拠 | 将来のG-122 branch interpretationと表示回復 | operation族の有限生成・全域写像回復とprimitive interpretation、比較群・section・底/係数成分・二種類の核・各lift fiberの全元の表示回復と三場合分類は未完了 |
 | E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
 | E protocol | 有限schemaの関手意味論と生成辺tableの再構成 | `ProtocolSchema.ExecutionCategory`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.presentationEquivalence` | 有限vertex・typed edge・有限parallel path relations `Q,L`; 任意の`O:C_Q⥤Type`; vertexwise有限carrier | 自由path評価、relation quotient、全path `ext`、vertexwise列挙normal form | AAT翻訳、Fのprotocol適用 | operation名変更版、adapter square (P1)、AATとの双方向翻訳、Fへの適用 |
@@ -2279,4 +2279,144 @@ audits:
     - "named target ResearchLean.AG.RealizationReconstruction.MandatoryCFreeWordPresentationObstruction: pass"
   blocking_findings: []
   next_obligation: "Construct the endpoint-typed finite-tree/substitution syntactic quotient and separately prove whether all mandatory-C source-choice maps preserve the exact final Sigma,D laws; only the conjunction can elevate the cardinal result toward a fixed-target stop condition."
+```
+
+## Cycle 16 — Arbitrary word-relation quotient obstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 16
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: c23f1d1e73a90cc668499e4a764a5e930a02de44
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 15 refuted the free-word presentation but did not test syntactic congruence quotients"
+  proof_dag_predecessors:
+    - "Cycle 14: complete tagged primitive alphabet and list-cardinality obstruction"
+    - "Cycle 15: actual free-word category and internally constructed word surjection"
+    - "Mathlib PresentedMonoid: quotient by the multiplicative congruence generated by arbitrary word relations"
+  proof_obligation: "Construct the actual quotient category for arbitrary relations between finite tagged primitive words, derive its word-representative surjection by quotient induction, and instantiate the mandatory-C obstruction without accepting a generation certificate"
+  selection_reason: "This tests every one-object finite-word syntax obtained by adding syntactic equations to the Cycle 15 grammar; quotienting can identify words but cannot add the mandatory-C endomorphisms required by fullness and retract generation."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCPresentedMonoidObstruction.lean
+  risks:
+    - "define relations by equality after a completed semantic decoder and call that a legal syntactic congruence"
+    - "claim that one-object word quotients cover a proper endpoint-typed multiobject sublanguage"
+    - "claim exhaustion of additional source-provenanced parameter roles, binders, or higher-order syntax"
+    - "identify the independent admissible-package category with final R_Theta"
+  unchecked:
+    - "multiobject endpoint-typed representative serialization and the per-object endomorphism bound"
+    - "additional legal parameter roles fixed by final Sigma"
+    - "construction of final Sigma,D,R_Theta and mandatory-C source-choice preservation"
+    - "remaining A--F obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed, for every binary family of relations on finite tagged primitive words, the Mathlib presented monoid and its one-object category; exposed identity and composition; constructed the canonical word decoder and its surjectivity; and proved that no functor from any such actual quotient presentation into the independent mandatory-C category is both full and retract-generating."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCPresentedMonoidObstruction.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.TaggedPrimitivePresentedMonoid
+    - AAT.AG.RealizationReconstruction.TaggedPrimitiveRelationPresentation
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveRelationObject
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveRelationEndomorphismDecoder
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveRelationEndomorphismDecoder_surjective
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveRelationPresentation_id
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveRelationPresentation_comp
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveRelationPresentation_not_full_and_retractGenerated
+  claim_mapping:
+    source_labels:
+      - "GOAL A: finite morphism syntax, table/typed-generation/parameter-equality congruence, identity, composition, and independent evaluation"
+      - "GOAL B properties 1 and 4: fullness and retract generation"
+      - "GOAL C: mandatory tagged operation separation"
+      - "n1014 sections 4.2 and 6.4: syntactic congruence and finite typed syntax"
+      - "user anti-weakening clauses 1--4 and 7"
+    conjuncts:
+      - "arbitrary generating relations on the complete existing tagged word alphabet -> TaggedPrimitivePresentedMonoid"
+      - "actual one-object quotient category -> TaggedPrimitiveRelationPresentation"
+      - "finite word representative for every quotient endomorphism -> taggedPrimitiveRelationEndomorphismDecoder_surjective"
+      - "quotient identity and gf composition -> taggedPrimitiveRelationPresentation_id/comp"
+      - "fullness and retract generation remain incompatible for every such quotient -> headline theorem"
+      - "legal relation provenance, endpoint-typed multiobject syntax, and final R_Theta -> deliberately not established"
+    input_premises:
+      - "Cycle 14 complete existing mandatory tagged primitive alphabet"
+      - "an arbitrary binary relation on finite words, supplied before any semantic functor"
+      - "an arbitrary functor from the constructed quotient category into the independent admissible-package category"
+      - "no semantic decoder, generation certificate, fullness witness, or retract witness is stored in the presentation"
+    constructed_evidence:
+      - "the multiplicative congruence generated by the supplied relations"
+      - "the quotient monoid and one-object category"
+      - "the canonical word quotient map and its quotient-induction surjectivity"
+      - "the unconditional Cycle 14 no-go for every such actual relation quotient"
+    proof_use:
+      - "PresentedMonoid.mk evaluates each finite word into its congruence class"
+      - "PresentedMonoid.surjective_mk supplies an actual representative for every quotient element"
+      - "SingleObj turns quotient multiplication into categorical identity and composition in the fixed order"
+      - "the headline theorem passes the constructed quotient map to Cycle 14 at the object selected by retract generation"
+    unfinished:
+      - "relations are arbitrary in the theorem; a final legal syntax must construct them from table, typed generating relations, and parameter equalities rather than semantic equality"
+      - "a proper endpoint-typed multiobject language is not itself a quotient of all words in this one-object category"
+      - "the existing tagged alphabet does not yet include every possible legal source-provenanced role of final Sigma"
+      - "final Sigma,D,R_Theta and source-choice membership are not constructed"
+      - "no fixed-target refutation or target-theorem-proved status is claimed"
+    undischarged_assumptions:
+      - "serialization/cardinality transfer for every endpoint-typed presentation hom-set"
+      - "exhaustion of the legal parameter provenance fixed by final Sigma"
+      - "proof that every mandatory-C source-choice map preserves exact final Sigma,D laws and lies in final R_Theta"
+      - "remaining A--F obligations"
+    acceptance_point: "Acceptance extends the concrete cardinal obstruction from the free word category to every one-object presented monoid on the existing alphabet. It does not certify any semantically defined relation as legal and does not cover endpoint-typed or richer parameter-relative syntax."
+  candidate_failure_record:
+    candidate: "Any one-object presentation whose morphisms are finite words over the complete existing tagged primitive alphabet modulo arbitrary generated word relations"
+    obstacle: "the canonical quotient map is surjective, so Cycle 14's Cantor/retract theorem excludes simultaneous fullness and retract generation for every semantic functor into the independent mandatory-C category"
+    tried_construction: "Mathlib PresentedMonoid, its canonical quotient map and surjectivity theorem, CategoryTheory.SingleObj, and direct Cycle 14 instantiation"
+    forbidden_shortcuts:
+      - "define relations as equality after a completed decoder and treat this as target-compliant syntax"
+      - "infer coverage of endpoint-typed multiobject syntax without constructing its representatives and per-object bound"
+      - "add an arbitrary completed source-choice function as a primitive parameter"
+      - "call failure of this quotient class a refutation of the fixed target"
+    status: "all existing-alphabet one-object word-relation quotient candidates refuted for the independent semantic category; fixed target remains open"
+  validation:
+    focused_checks: "1/1 pass"
+    named_target_build: "ResearchLean.AG.RealizationReconstruction.MandatoryCPresentedMonoidObstruction passed"
+    namespace_axiom_audit: "8 declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 16 proves that adding any word equations to the Cycle 15 presentation cannot restore fullness plus retract generation. Multiobject typed serialization, legal parameter-provenance exhaustion, and final R_Theta membership remain necessary before a fixed-target stop condition is available."
+audits:
+  premise_delta:
+    discharged:
+      - "every element of an arbitrary generated word-relation quotient has a finite tagged primitive representative"
+      - "identity and composition descend through the constructed multiplicative congruence"
+      - "the relation-quotient generation premise is derived rather than stored"
+      - "no functor from any such quotient presentation is both full and retract-generating"
+    remaining:
+      - "construct the multiobject endpoint-typed representative serialization"
+      - "construct and exhaust every legal source-provenanced parameter role"
+      - "construct final Sigma,D,R_Theta and decide the full source-choice family's membership"
+      - "all remaining A--F obligations"
+  certificate_provenance:
+    discharged:
+      - "word representatives come from quotient induction in PresentedMonoid.surjective_mk"
+      - "category laws come from the quotient monoid and SingleObj"
+    unresolved:
+      - "legal syntactic origin of final relations and final semantic-category membership"
+  proof_use:
+    used:
+      - "all finite words over every existing tagged primitive role"
+      - "the arbitrary relation through the generated multiplicative congruence"
+      - "the canonical quotient map at the presentation object selected by retract generation"
+      - "decoder fullness and retract generation through Cycle 14"
+    unused: []
+  structure_field_escape: "no generation, semantic-map, fullness, or retract field is introduced; arbitrary relations are a generic theorem input and are not claimed to be a legal final congruence"
+  route_integrity: "relations and the actual quotient category are fixed before the arbitrary semantic functor F"
+  target_fitting: "all words on the existing alphabet are retained before quotienting; the result is explicitly not promoted to endpoint-typed or richer syntax"
+  vacuity: "the quotient has the empty-word identity and every congruence class has an actual word representative"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused MandatoryCPresentedMonoidObstruction.lean: pass, 8 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "Construct a multiobject endpoint-typed representative syntax and prove a list bound for every endomorphism type, while independently constructing final Sigma,D,R_Theta and proving the mandatory-C source-choice membership required to transfer the no-go to the fixed target."
 ```
