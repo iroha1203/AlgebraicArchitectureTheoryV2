@@ -1599,7 +1599,7 @@ result:
       - "keep only uniform or syntax-generated tag maps in R_Theta without a source-derived preservation law"
       - "put extension adequacy or decoder coverage into D_Theta"
     status: "mandatory-input candidate grammar refuted; fixed target not yet refuted because the categorical retract/fullness bridge and actual full-alphabet cardinal bound remain unproved"
-    paper_conclusion_at_risk: "restricting to uniform tag changes would preserve the one C witness but lose recovery of the other comparison-preserving operation changes whose information loss motivates the paper"
+    paper_conclusion_at_risk: "if the future independently defined D and comparison laws admit these source-choice package maps, restricting instead to the uniform tag change would preserve the one C witness but lose recovery of the other admitted operation changes"
   validation:
     focused_checks: "1/1 pass"
     named_target_build: "ResearchLean.AG.RealizationReconstruction.MandatoryCFiniteReferenceObstruction passed"
@@ -1632,7 +1632,7 @@ audits:
       - "decoder surjectivity in the semantic readback contradiction"
     unused: []
   structure_field_escape: "no endpoint predicate is accepted by the finite decoder; it occurs only as the universally quantified semantic endomorphism family"
-  route_integrity: "the no-go targets End_R of the mandatory package, not only normalization-commuting Karoubi endomorphisms"
+  route_integrity: "the no-go targets the ambient PackageTotalHom endomorphisms of the mandatory package; membership of all these maps in the still-unconstructed R_Theta remains a separate obligation"
   target_fitting: "the exact taggedOperationPackage and all ArchitectureObject source endpoints are retained"
   vacuity: "readback is a literal left inverse and the infinite object family has pairwise distinct StructureMaps cardinalities"
   one_way_as_equivalence: none-found
@@ -1642,4 +1642,20 @@ audits:
     - "named target ResearchLean.AG.RealizationReconstruction.MandatoryCFiniteReferenceObstruction: pass"
   blocking_findings: []
   next_obligation: "Prove the abstract retract/fullness transfer and replace the object-list alphabet by an explicit source-provenanced tagged-branch alphabet dominating every allowed primitive reference sort."
+initial_review:
+  head: 2df5c20bd058f352b3135bf4b81afc426c161ab7
+  verdict: revisions-required
+  independent_lanes:
+    math_a: revisions-required
+    math_b: pass-after-central-scope-fix
+    lean_a: revisions-required
+    lean_b: revisions-required
+  central_findings:
+    - "the report called ambient PackageTotalHom values End_R morphisms before R_Theta and D_Theta membership were constructed"
+    - "the paper-risk sentence called the source-choice maps comparison-preserving before any future D or comparison law was proved to admit them"
+  noncentral_findings: []
+  direct_response:
+    reviewed_delta: "2df5c20bd058f352b3135bf4b81afc426c161ab7..pending"
+    report: "restricted the established route to ambient total-package endomorphisms and made both R_Theta membership and the paper consequence explicitly conditional"
+  rerun_required: true
 ```
