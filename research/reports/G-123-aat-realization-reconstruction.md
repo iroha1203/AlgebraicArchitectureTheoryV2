@@ -232,6 +232,8 @@ result:
     - research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolIdempotents.lean
   evidence:
     - AAT.AG.RealizationReconstruction.ProtocolSchema.relation_sound
+    - AAT.AG.RealizationReconstruction.ProtocolSchema.namedEdgeFintype
+    - AAT.AG.RealizationReconstruction.ProtocolSchema.relationFintype
     - AAT.AG.RealizationReconstruction.ProtocolRealization.generatorPathNatTrans
     - AAT.AG.RealizationReconstruction.ProtocolRealization.generator_path_naturality
     - AAT.AG.RealizationReconstruction.ProtocolRealization.homEquivGeneratorMap
@@ -240,6 +242,8 @@ result:
     - AAT.AG.RealizationReconstruction.ProtocolPresentation.decoder_full
     - AAT.AG.RealizationReconstruction.ProtocolPresentation.decoder_faithful
     - AAT.AG.RealizationReconstruction.ProtocolPresentation.normalFormIso
+    - AAT.AG.RealizationReconstruction.ProtocolPresentation.normalFormIso_hom_app_vertex
+    - AAT.AG.RealizationReconstruction.ProtocolPresentation.normalFormIso_inv_app_vertex
     - AAT.AG.RealizationReconstruction.ProtocolPresentation.exists_decoder_retract
     - AAT.AG.RealizationReconstruction.ProtocolPresentation.presentationEquivalence
     - AAT.AG.RealizationReconstruction.ProtocolRealization.fixedPoint_split_id
@@ -254,6 +258,7 @@ result:
       - "n1015 §3.1"
     conjuncts:
       - "finite Q,L with preserved operation names -> ProtocolSchema and ExecutionCategory"
+      - "finite reference families -> vertexFintype, namedEdgeFintype, and relationFintype"
       - "independent finite-carrier functors and all observation-preserving natural transformations -> ProtocolRealization and Hom"
       - "vertex maps plus named-edge/observation equations only -> ProtocolRealization.GeneratorMap"
       - "all-path and quotient extension -> generatorPathNatTrans and ProtocolRealization.ext"
@@ -290,6 +295,7 @@ audits:
       - "edge squares in path-inductive naturality and decoderMap"
       - "observation equations in decodedObservation and all semantic Hom constructions"
       - "vertexwise finiteness in presentationCard/stateEquivFin and normalFormIso"
+      - "schema vertex/edge/relation finiteness in the explicit finite reference APIs vertexFintype, namedEdgeFintype, and relationFintype"
       - "idempotence equation in fixedPointRetraction"
     unused: []
   structure_field_escape: none-found

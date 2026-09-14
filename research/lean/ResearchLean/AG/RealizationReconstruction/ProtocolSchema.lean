@@ -1,6 +1,8 @@
 import Mathlib.CategoryTheory.PathCategory.Basic
 import Mathlib.CategoryTheory.Types.Basic
-import Mathlib.Data.Finite.Defs
+import Mathlib.Data.Finite.Card
+import Mathlib.Data.Finite.Sigma
+import Mathlib.Data.Fintype.EquivFin
 import Formal.Util.AssertStandardAxioms
 
 /-!
@@ -57,6 +59,59 @@ structure ProtocolSchema where
     @Quiver.Path Vertex ⟨Edge⟩ (relationSource r) (relationTarget r)
 
 namespace ProtocolSchema
+
+/-- The fixed control-point family is available to downstream finite enumeration.
+
+This instance is the proof-use API for the `vertex_finite` premise of
+G-123(E), n1015 §3.1; it adds no new assumption. -/
+instance (S : ProtocolSchema.{u}) : Finite S.Vertex := S.vertex_finite
+
+/-- Every fixed typed family of named operations is available to finite enumeration.
+
+This instance exposes the `edge_finite` premise of G-123(E), n1015 §3.1 at
+each ordered pair of endpoints; it adds no completed execution data. -/
+instance (S : ProtocolSchema.{u}) (v w : S.Vertex) : Finite (S.Edge v w) :=
+  S.edge_finite v w
+
+/-- The fixed generating equation family is available to finite enumeration.
+
+This instance is the proof-use API for the `relation_finite` premise of
+G-123(E), n1015 §3.1; it does not assert finiteness of the path category. -/
+instance (S : ProtocolSchema.{u}) : Finite S.RelationIndex := S.relation_finite
+
+/-- All endpoint-labelled named operations of a finite protocol schema.
+
+This is the finite reference family for the operation part of `Q`; endpoint
+labels are retained in the dependent sum. -/
+abbrev NamedEdge (S : ProtocolSchema.{u}) :=
+  Σ v : S.Vertex, Σ w : S.Vertex, S.Edge v w
+
+/-- The total endpoint-labelled operation family of `Q` is finite.
+
+The proof consumes vertex finiteness and every typed edge-family finiteness,
+making the finite-schema premise available as a single downstream fact. -/
+instance (S : ProtocolSchema.{u}) : Finite S.NamedEdge := inferInstance
+
+/-- A finite enumeration of the fixed control points.
+
+This API turns the accepted finite input into an explicit finite reference
+type without choosing or storing any semantic state data. -/
+noncomputable def vertexFintype (S : ProtocolSchema.{u}) : Fintype S.Vertex :=
+  Fintype.ofFinite S.Vertex
+
+/-- A finite enumeration of the endpoint-labelled named operations.
+
+This API witnesses finiteness of the whole operation signature while
+preserving each edge's source and target in `NamedEdge`. -/
+noncomputable def namedEdgeFintype (S : ProtocolSchema.{u}) : Fintype S.NamedEdge :=
+  Fintype.ofFinite S.NamedEdge
+
+/-- A finite enumeration of the fixed generating relation indices.
+
+Only the generators `L` are enumerated; their contextual quotient closure is
+constructed separately by `ExecutionCategory`. -/
+noncomputable def relationFintype (S : ProtocolSchema.{u}) : Fintype S.RelationIndex :=
+  Fintype.ofFinite S.RelationIndex
 
 /-- The Mathlib quiver carried by the named operations of a protocol schema.
 

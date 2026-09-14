@@ -356,6 +356,16 @@ noncomputable def presentationEdgeTable (X : ProtocolRealization S O)
     Fin (presentationCard X v) → Fin (presentationCard X w) :=
   stateEquivFin X w ∘ X.edgeAction e ∘ (stateEquivFin X v).symm
 
+/-- Computation rule for an enumerated named-operation table.
+
+This no-unfold API exposes the conjugation used by G-123(E) while retaining
+the original named edge and both endpoint enumerations. -/
+@[simp]
+theorem presentationEdgeTable_apply (X : ProtocolRealization S O)
+    {v w : S.Vertex} (e : S.Edge v w) (k : Fin (presentationCard X v)) :
+    presentationEdgeTable X e k =
+      stateEquivFin X w (X.edgeAction e ((stateEquivFin X v).symm k)) := rfl
+
 /-- Transport the semantic observation through the finite enumeration.
 
 This constructs the state-observation field of the selected presentation and
@@ -511,8 +521,7 @@ noncomputable def normalFormBackwardGenerator (X : ProtocolRealization S O) :
     apply ULift.down_injective
     change stateEquivFin X w (X.edgeAction e x) =
       presentationEdgeTable X e (stateEquivFin X v x)
-    unfold presentationEdgeTable
-    simp only [Function.comp_apply, Equiv.symm_apply_apply]
+    rw [presentationEdgeTable_apply, Equiv.symm_apply_apply]
   observation_naturality := fun v => by
     funext x
     change presentationObservationValue X v (stateEquivFin X v x) = X.observe v x
@@ -539,6 +548,26 @@ noncomputable def normalFormIso (X : ProtocolRealization S O) :
     ext q x
     change (stateEquivFin X q.as).symm (stateEquivFin X q.as x) = x
     exact (stateEquivFin X q.as).symm_apply_apply x
+
+/-- Vertex-component computation for the finite normal-form isomorphism.
+
+This no-unfold API states that the forward map decodes the selected finite
+state index through the enumeration of the original semantic carrier. -/
+@[simp]
+theorem normalFormIso_hom_app_vertex (X : ProtocolRealization S O)
+    (v : S.Vertex) (k : ULift.{u} (Fin (presentationCard X v))) :
+    ProtocolRealization.app (normalFormIso X).hom (S.vertexObject v) k =
+      (stateEquivFin X v).symm k.down := rfl
+
+/-- Vertex-component computation for the inverse finite normal-form map.
+
+This no-unfold API states that the inverse enumerates an original semantic
+state and lifts its finite index, without changing the represented state. -/
+@[simp]
+theorem normalFormIso_inv_app_vertex (X : ProtocolRealization S O)
+    (v : S.Vertex) (x : X.State v) :
+    ProtocolRealization.app (normalFormIso X).inv (S.vertexObject v) x =
+      ULift.up (stateEquivFin X v x) := rfl
 
 /-- Main G-123(B) retract-generation theorem for protocol realizations.
 
