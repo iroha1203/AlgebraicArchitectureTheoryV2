@@ -13,10 +13,10 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 10 finite operation-reference obstruction and admissible-range decision
+- current proof obligation: Cycle 11 mandatory-C source-choice obstruction
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct an intrinsic non-circular `D_Theta` whose required input families have finite recursive presentations, or prove that a mandatory input family contains the Cycle 10 obstruction without re-inputting a completed operationMap
+- next proof obligation: connect the mandatory-C endomorphism family through retract generation and fullness, and prove the source-provenance cardinal bound for the actual finite presentation syntax without adding completed endpoint-choice maps as parameters
 
 ## Requirement ledger
 
@@ -29,7 +29,7 @@
 | B 冪等完備性 | 各意味圏の冪等射を個別に分裂する | `lensRealization_isIdempotentComplete`, `protocolRealization_isIdempotentComplete`; `karoubiReconstructionEquivalence` | 各具体入力条件と任意の冪等射 | lens固定点; objectwise protocol固定点functor | lens/protocolのKaroubi延長とarrow再構成 | AAT意味圏での分裂構成と共通再構成への適用 |
 | B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract`; `karoubiObjectOfRetract`, `karoubiMapEssSurj` | 各具体入力条件のみ | fiber列挙; vertexwise列挙; retractからpresentation側冪等元を逆像構成 | `karoubiCompletionEquivalence`, lens/protocolのKaroubi再構成 | AAT完全幾何への適用 |
 | B1 | `Kar(P) ≃ R`、decoderの延長、一意性、arrow圏での再構成を同じ四証拠から得る | `karoubiReconstructionEquivalence`, `karoubiReconstructionRestrictionIso`, `karoubiExtensionComparison`, `karoubiExtensionComparison_unique`, `karoubiExtensionComparison_self`, `karoubiExtensionComparison_trans`, `karoubiArrowReconstructionEquivalence`; lens/protocol各適用 | full、faithful、意味圏の冪等完備性、decoder像によるretract生成 | `functorExtension₂`のfull/faithful/essentially-surjective証明、`toKaroubiEquivalence`による延長、fully faithfulな制限から比較同型を逆像構成 | lens/protocol双方のobject・任意arrow再構成 | AAT共通decoderへの同じ適用、分裂選択を明示する具体比較、完全幾何への適用 |
-| C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipTotal_square`, `taggedUniformFlipTotal_commutes_normalization`, `taggedNormalizationThenUniformFlip_ne_normalization`, `taggedNormalizationThenUniformFlipKaroubiAut`, `fixedArchitectureObjectFunctor`, `fixedArchitectureObjectFunctor_identifies_uniform_flip`, `fixedArchitectureObjectFunctor_not_injective_at_tagged`, `taggedUniformFlipTotal_ne_endpointFlipTotal` | G-117の固定`taggedOperationPackage`とadmissibility | 全端点・全operationの一様Bool tag反転、package射の`t²=1`、`et=te`、指定operation評価による`et≠e`、Karoubi自己同型、固定点関手と非忠実性witness | 固定点関手は同じKaroubi二射`et,e`の像を同一視する | Aで構成するoperation保持実現へ同じ二射を送り、像が異なることの接続 |
+| C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipTotal_square`, `taggedUniformFlipTotal_commutes_normalization`, `taggedNormalizationThenUniformFlip_ne_normalization`, `taggedNormalizationThenUniformFlipKaroubiAut`, `fixedArchitectureObjectFunctor`, `fixedArchitectureObjectFunctor_identifies_uniform_flip`, `fixedArchitectureObjectFunctor_not_injective_at_tagged`, `taggedUniformFlipTotal_ne_endpointFlipTotal`; `taggedSourceChoiceTotal`, `readTaggedSourceChoice_taggedSourceChoiceTotal`, `taggedSourceChoiceTotal_injective`, `taggedSourceChoiceEndomorphisms_not_listObjectEnumerable` | G-117の固定`taggedOperationPackage`とadmissibility; 任意の`ArchitectureObject FiniteModel.carrier → Bool` | 全端点・全operationの一様Bool tag反転、package射の`t²=1`、`et=te`、指定operation評価による`et≠e`、Karoubi自己同型、固定点関手と非忠実性witness; sourceごとの任意Bool選択から実package自己射を構成し恒等operationで全選択を読戻し、有限object参照list decoderの全射性を対角化で否定 | 固定点関手は同じKaroubi二射`et,e`の像を同一視する; Aの全保存射と有限syntaxの両立可能性を検査するmandatory-C witness | Aで構成するoperation保持実現へ同じ二射を送り、像が異なることの接続; retract/fullnessを介した一般presentationへの非全射移送、actual syntax alphabetのprovenance/cardinal bound、追加の合法的D構造がsource-choice射を除けるかの判定 |
 | D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | `G122FamilyInput`, `G122CellInput`, `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, `PrimitiveOperation.g122Ref`, `G122CellInput.fixedGeometry`, `G122CellInput.sourceTransport`, `G122CellInput.compatibleProblemData`, `G122CellInput.barBeta`, `finiteAxisFoldParameter`, `finiteAxisFoldRealization`, `finiteAxisFoldOperationReference` | G-122の固定版にある任意の`A,z,omega,k,g_z`; 固定有限axis-fold例 | 原入力と生成出力を分離し、任意のcell inputを共通familyの意味対象にし、元の有限例を同じ一般branchへ入れ、supportの全端点の各operation identityを参照し、同じ実際の`barBeta`を生成する証拠 | 将来のG-122 branch interpretationと表示回復 | operation族の有限生成・全域写像回復とprimitive interpretation、比較群・section・底/係数成分・二種類の核・各lift fiberの全元の表示回復と三場合分類は未完了 |
 | E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
 | E protocol | 有限schemaの関手意味論と生成辺tableの再構成 | `ProtocolSchema.ExecutionCategory`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.presentationEquivalence` | 有限vertex・typed edge・有限parallel path relations `Q,L`; 任意の`O:C_Q⥤Type`; vertexwise有限carrier | 自由path評価、relation quotient、全path `ext`、vertexwise列挙normal form | AAT翻訳、Fのprotocol適用 | operation名変更版、adapter square (P1)、AATとの双方向翻訳、Fへの適用 |
@@ -1510,5 +1510,182 @@ initial_review:
     reviewed_delta: "8f4aa1b0949cda25eaa88ed01de3cfd664cbaa74..59ef33389"
     lean: "generalized Code to Type w"
     report: "replaced every unconditional tree claim by List OperationTag and code types separately proved to be its surjective image"
+  rerun_required: true
+```
+
+## Cycle 11 — Mandatory-C source-choice obstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 11
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 7131f365536e07e0b6f63bedcb9a9ddadd684b3f
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 10 proved a list-reference obstruction only for an auxiliary sequence-tagged package whose D_Theta membership was not mandatory"
+  proof_dag_predecessors:
+    - "the fixed G-123(C) taggedOperationPackage is a mandatory D_Theta input"
+    - "its operation family is the original endpoint-indexed operation family times a configuration-invisible Bool tag"
+    - "G-123(A) requires all maps preserving the selected structure and forbids a completed operationMap as a primitive constant"
+  proof_obligation: "Construct the full source-indexed Boolean choice family as actual endomorphisms of the mandatory-C package, read every choice back, and prove that finite architecture-object-reference list codes cannot enumerate all those endomorphisms"
+  selection_reason: "This moves the obstruction from an optional enlarged package to the exact package that the fixed GOAL requires D_Theta to contain, while still distinguishing one failed code alphabet from target refutation."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCFiniteReferenceObstruction.lean
+  risks:
+    - "testing only the fixed uniform flip rather than every structure-preserving source choice"
+    - "assuming ArchitectureObject is infinite without a constructed injection"
+    - "calling a List ArchitectureObject theorem a no-go for richer source-provenanced alphabets"
+    - "counting only normalization-commuting Karoubi maps although arbitrary source choices need not commute with normalization"
+    - "claiming target refutation before connecting retract generation, fullness, and the actual syntax cardinal bound"
+  unchecked:
+    - "transport of the endomorphism obstruction through B retract generation and decoder fullness"
+    - "a cardinal/provenance bound for every primitive reference sort in the fixed tagged parameter"
+    - "whether an independently source-derived D law may legitimately exclude nonuniform source choices while retaining mandatory C"
+    - "positive common D/Sigma/presentation if such a law exists"
+    - "all remaining D display recovery, E translation, and F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "For every predicate on all ArchitectureObject endpoints, constructed an actual PackageTotalHom of the exact mandatory-C taggedOperationPackage that conditionally flips the invisible operation Bool tag at that source. Constructed a tagged identity operation at every source and proved exact predicate readback, hence injectivity into actual package endomorphisms. Constructed Nat injectively inside ArchitectureObject through the authored StructureMaps field, derived an embedding of finite object-reference lists into ArchitectureObject, and used diagonalization to prove that no List ArchitectureObject decoder reaches every mandatory-C endomorphism. Extended the result conditionally to every code type separately proved to be a surjective image of that list type."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCFiniteReferenceObstruction.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceUpper
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceTotal
+    - AAT.AG.RealizationReconstruction.taggedIdentityOperation
+    - AAT.AG.RealizationReconstruction.readTaggedSourceChoice
+    - AAT.AG.RealizationReconstruction.readTaggedSourceChoice_taggedSourceChoiceTotal
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceTotal_injective
+    - AAT.AG.RealizationReconstruction.naturalArchitectureObject_injective
+    - AAT.AG.RealizationReconstruction.architectureObjectListEnumeration_surjective
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceEndomorphisms_not_listObjectEnumerable
+    - AAT.AG.RealizationReconstruction.no_surjectiveTaggedEndomorphismDecoder_of_listObjectGeneratedCode
+  claim_mapping:
+    source_labels:
+      - "GOAL A: all maps preserving the specified structure and finite source-provenanced syntax"
+      - "GOAL B: decoder fullness and retract generation"
+      - "GOAL C: the fixed taggedOperationPackage and operation-visible change"
+      - "user anti-weakening clauses 1--4 and 7"
+      - "n1014 sections 2 and 6.2--6.4"
+    input_premises:
+      - "the exact existing mandatory-C taggedOperationPackage"
+      - "an arbitrary predicate on the full ArchitectureObject FiniteModel.carrier type"
+      - "for the generic bridge only, a separately proved surjection from List ArchitectureObject onto Code"
+      - "no completed operationMap, decoder/fullness witness, D_Theta membership certificate, or selected endpoint subset"
+    constructed_evidence:
+      - "one actual package total endomorphism for every full source predicate"
+      - "a tagged identity operation at every source and exact predicate readback"
+      - "an explicit Nat injection proving the full ArchitectureObject type infinite"
+      - "diagonal non-surjectivity for object-reference lists and their separately proved surjective images"
+    proof_use:
+      - "operation_naturality uses the original configuration action, which forgets only the Bool tag"
+      - "readback evaluates each total operationMap at the identity operation of the same arbitrary source"
+      - "ArchitectureObject.StructureMaps records Fin (n+1), whose cardinal recovers n"
+      - "decoder surjectivity would cover taggedSourceChoiceTotal for every predicate and contradict diagonalization"
+    unfinished:
+      - "the theorem does not cover a richer primitive-reference alphabet merely from the word finite"
+      - "it does not prove that every future D_Theta morphism condition must admit all source-choice endomorphisms"
+      - "it does not yet combine fullness with a retract of this mandatory object"
+      - "it is not target-refuted and supplies no positive common reconstruction"
+  candidate_failure_record:
+    candidate: "represent every mandatory-C package endomorphism using a finite list of architecture-object references, or a code separately generated by those lists"
+    obstacle: "the same mandatory package has one distinguishable actual endomorphism for every Boolean predicate on its infinite source-object type, while finite lists of those references have only the source-object cardinality"
+    tried_construction: "Cycle 9 individual operation references, Cycle 10 auxiliary sequence tags, then direct source-indexed toggles on the fixed mandatory-C package"
+    forbidden_shortcuts:
+      - "supply the endpoint predicate or completed operationMap as one higher-order parameter reference"
+      - "keep only uniform or syntax-generated tag maps in R_Theta without a source-derived preservation law"
+      - "put extension adequacy or decoder coverage into D_Theta"
+    status: "mandatory-input candidate grammar refuted; fixed target not yet refuted because the categorical retract/fullness bridge and actual full-alphabet cardinal bound remain unproved"
+    paper_conclusion_at_risk: "if the future independently defined D and comparison laws admit these source-choice package maps, restricting instead to the uniform tag change would preserve the one C witness but lose recovery of the other admitted operation changes"
+  validation:
+    focused_checks: "1/1 pass"
+    named_target_build: "ResearchLean.AG.RealizationReconstruction.MandatoryCFiniteReferenceObstruction passed"
+    namespace_axiom_audit: "18 declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 11 is a proof checkpoint on the exact mandatory-C package: finite ArchitectureObject-reference list codes cannot be full for its actual package endomorphisms. The result does not yet bound every permitted primitive-reference alphabet or connect through retract generation, so G-123 is neither proved nor refuted."
+audits:
+  premise_delta:
+    discharged:
+      - "the obstruction package is now the exact mandatory C package"
+      - "the semantic family quantifies over every source object and constructs actual package endomorphisms"
+      - "source predicates are recoverable by operation-map evaluation"
+      - "ArchitectureObject infinitude and finite-list cardinal reduction are constructed rather than assumed"
+    remaining:
+      - "formal categorical transfer from fullness plus retract generation to a surjection onto End_R(X)"
+      - "full source-provenanced syntax alphabet bound at the mandatory tagged parameter"
+      - "audit any proposed extra D law that excludes source-choice endomorphisms"
+      - "all remaining A--F obligations"
+  certificate_provenance:
+    discharged:
+      - "all endomorphisms come from the existing mandatory package and explicit source predicates"
+      - "non-surjectivity is proved by construction and diagonalization"
+    unresolved:
+      - "the actual future syntax and its complete primitive provenance"
+  proof_use:
+    used:
+      - "every source predicate in taggedSourceChoiceTotal"
+      - "every source endpoint in taggedIdentityOperation and readTaggedSourceChoice"
+      - "StructureMaps type cardinality in naturalArchitectureObject_injective"
+      - "decoder surjectivity in the semantic readback contradiction"
+    unused: []
+  structure_field_escape: "no endpoint predicate is accepted by the finite decoder; it occurs only as the universally quantified semantic endomorphism family"
+  route_integrity: "the no-go targets the ambient PackageTotalHom endomorphisms of the mandatory package; membership of all these maps in the still-unconstructed R_Theta remains a separate obligation"
+  target_fitting: "the exact taggedOperationPackage and all ArchitectureObject source endpoints are retained"
+  vacuity: "readback is a literal left inverse and the infinite object family has pairwise distinct StructureMaps cardinalities"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused MandatoryCFiniteReferenceObstruction.lean: pass, 18 declarations, standard axioms only"
+    - "named target ResearchLean.AG.RealizationReconstruction.MandatoryCFiniteReferenceObstruction: pass"
+  blocking_findings: []
+  next_obligation: "Prove the abstract retract/fullness transfer and replace the object-list alphabet by an explicit source-provenanced tagged-branch alphabet dominating every allowed primitive reference sort."
+initial_review:
+  head: 2df5c20bd058f352b3135bf4b81afc426c161ab7
+  verdict: revisions-required
+  independent_lanes:
+    math_a: revisions-required
+    math_b: revisions-required
+    lean_a: revisions-required
+    lean_b: revisions-required
+  central_findings:
+    - "the report called ambient PackageTotalHom values End_R morphisms before R_Theta and D_Theta membership were constructed"
+    - "the paper-risk sentence called the source-choice maps comparison-preserving before any future D or comparison law was proved to admit them"
+  noncentral_findings: []
+  direct_response:
+    reviewed_delta: "2df5c20bd058f352b3135bf4b81afc426c161ab7..8ad33455c"
+    report: "restricted the established route to ambient total-package endomorphisms and made both R_Theta membership and the paper consequence explicitly conditional"
+  rerun_required: true
+second_review:
+  head: 68c7147381dd69a8a4d59c23dd07b38dcc8e395d
+  verdict: pass-after-noncentral-fix
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass-after-noncentral-fix
+    lean_b: pass-after-noncentral-fix
+  central_findings: []
+  noncentral_findings:
+    - "the new registered module had a module docstring but no declaration-level API docstrings"
+  direct_response:
+    reviewed_delta: "68c7147381dd69a8a4d59c23dd07b38dcc8e395d..dc8a0f13d"
+    lean: "added declaration-level docstrings; a later fresh lane found that several generic helpers still needed explicit source-label, API-position, and premise-origin documentation"
+  rerun_required: true
+third_review:
+  head: 2978f27f532a628a97f690356427a3b3a384df65
+  verdict: revisions-required
+  independent_lanes:
+    math_a: superseded-by-head-change
+    math_b: revisions-required
+    lean_a: superseded-by-head-change
+    lean_b: superseded-by-head-change
+  central_findings: []
+  noncentral_findings:
+    - "all 18 declarations had docstrings, but several generic diagonal/cardinal helpers did not yet state their Cycle 11 source-label, API position, and premise origin explicitly enough for lean_quality_standard section 3.2"
+  direct_response:
+    reviewed_delta: "2978f27f532a628a97f690356427a3b3a384df65..edc81b4ac682896f37556d04528e69d696282685"
+    lean: "expanded every declaration docstring to identify its Cycle 11 or fixed-GOAL role, its place in the construction/readback/cardinal/no-go chain, and whether each input is fixed, constructed, arbitrary, or separately discharge-required"
   rerun_required: true
 ```
