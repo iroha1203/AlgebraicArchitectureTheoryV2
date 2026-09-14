@@ -13,23 +13,23 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 4 AAT common realization and operation-aware complete geometry
+- current proof obligation: Cycle 5 closed family dispatch and source-generated primitive signature
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: AAT common realization declaration and operation-aware complete geometry
+- next proof obligation: primitive interpretations for all four branches and the general G-122 primitive input decomposition
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton` | lens入力; protocolの有限`Q,L`と任意の観測functor `O`; 任意の依存reference carrier shape | product lens decoder; path/quotient protocol decoder; 有限参照tableの型付けscaffold | Bの二具体適用、Eのモデル同期; 後続のclosed AAT宣言候補の型設計 | primitive由来を固定して完成射の再入力を排除する閉じた`Σ`、AAT parameter interpretation、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何、必須三入力族の同一宣言への収録 |
+| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `ClosedFamilyParameter`, `FamilyRealization`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveOperation`/`PrimitiveContext` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117/G-122のnullary tag | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatchとrole-specific constructor | Bの二具体適用、Eのモデル同期; 後続のbranch別interpretationとclosed presentation設計 | branch別primitive interpretation、一般G-122 primitive input分解、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full` | 各具体入力条件のみ | 任意の完成射を制限して有限tableを構成 | 各direct equivalence | AAT完全幾何への適用 |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
 | B 冪等完備性 | 各意味圏の冪等射を個別に分裂する | `lensRealization_isIdempotentComplete`, `protocolRealization_isIdempotentComplete`; `karoubiReconstructionEquivalence` | 各具体入力条件と任意の冪等射 | lens固定点; objectwise protocol固定点functor | lens/protocolのKaroubi延長とarrow再構成 | AAT意味圏での分裂構成と共通再構成への適用 |
 | B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract`; `karoubiObjectOfRetract`, `karoubiMapEssSurj` | 各具体入力条件のみ | fiber列挙; vertexwise列挙; retractからpresentation側冪等元を逆像構成 | `karoubiCompletionEquivalence`, lens/protocolのKaroubi再構成 | AAT完全幾何への適用 |
 | B1 | `Kar(P) ≃ R`、decoderの延長、一意性、arrow圏での再構成を同じ四証拠から得る | `karoubiReconstructionEquivalence`, `karoubiReconstructionRestrictionIso`, `karoubiExtensionComparison`, `karoubiExtensionComparison_unique`, `karoubiExtensionComparison_self`, `karoubiExtensionComparison_trans`, `karoubiArrowReconstructionEquivalence`; lens/protocol各適用 | full、faithful、意味圏の冪等完備性、decoder像によるretract生成 | `functorExtension₂`のfull/faithful/essentially-surjective証明、`toKaroubiEquivalence`による延長、fully faithfulな制限から比較同型を逆像構成 | lens/protocol双方のobject・任意arrow再構成 | AAT共通decoderへの同じ適用、分裂選択を明示する具体比較、完全幾何への適用 |
-| C | 一様operation flipと同じ射の二つのreading | — | G-117の固定入力 | — | operation保持の必要性 | 全項目未完了 |
+| C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipAction`, `taggedUniformFlipAction_involutive`, `taggedUniformFlipTotal`, `taggedUniformFlipSquare_operationMap` | G-117の固定`taggedOperationPackage` | 全端点・全operationのBool tag反転、operation-map上の二乗 | operation保持の必要性 | package射としての`t²=1`、`et=te`、`et≠e`、Karoubi内の同じ射、二readingの分離は未完了 |
 | D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | — | G-122の固定版 | — | n1012第7章から第8章 | 全項目未完了 |
 | E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
 | E protocol | 有限schemaの関手意味論と生成辺tableの再構成 | `ProtocolSchema.ExecutionCategory`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.presentationEquivalence` | 有限vertex・typed edge・有限parallel path relations `Q,L`; 任意の`O:C_Q⥤Type`; vertexwise有限carrier | 自由path評価、relation quotient、全path `ext`、vertexwise列挙normal form | AAT翻訳、Fのprotocol適用 | operation名変更版、adapter square (P1)、AATとの双方向翻訳、Fへの適用 |
@@ -586,4 +586,191 @@ audits:
     - "focused AATFiniteReferenceSyntax.lean: standard axioms only"
   blocking_findings: []
   next_obligation: "Construct the closed source-provenanced Sigma that rules out completed-map answer encoding, then its primitive interpretation and intrinsic D_Theta before the all-object, all-endpoint, and all-context syntax recursors and AAT res/ext/J."
+```
+
+## Cycle 5 — Closed family dispatch and object-dependent primitive sorts
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 5
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 6ac24eeb055bee6287911c2ff1c3bc1556d34e87
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 4 merged at 6ac24eeb0; its unrestricted carrier shape was explicitly not the final source-provenanced Sigma"
+  proof_dag_predecessors:
+    - "Cycle 1 independent lens semantics over fixed V,v0"
+    - "Cycle 2 independent protocol semantics over fixed Q,L,O"
+    - "G-117 fixed tagged-operation package and operation family"
+    - "G-122 fixed finite-axis-fold primitive source indices"
+  proof_obligation: "A/C: replace arbitrary carrier dispatch by one closed four-branch family parameter, preserve the order theta then arbitrary semantic X in the CS branches, generate endpoint/object-dependent primitive names without a constructor for completed AAT maps, and construct the fixed G-117 uniform operation action"
+  selection_reason: "The closed dispatch is required before a source-derived presentation can be stated without letting a caller choose arbitrary carrier roles that quote the desired answer."
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+  risks:
+    - "calling the closed family tag alone the final finite Sigma"
+    - "placing a completed lens, protocol realization, AAT package, geometry map, or comparison element in theta"
+    - "making source sorts depend only on theta although CS values depend on X"
+    - "losing typed protocol endpoints or reducing the G-117 flip to selected endpoints"
+    - "using the fixed G-122 witness tag as the general G-122 input family"
+  unchecked:
+    - "branch-specific primitive interpretation and generated equations"
+    - "general G-122 primitive input decomposition without sourceTransport or completed geometry"
+    - "closed finite presentation Sigma and intrinsic D_Theta"
+    - "AAT complete-geometry res/ext/J and four reconstruction properties"
+    - "C package-morphism equality t^2=1 and comparison with normalization, including commutation and inequality"
+    - "D comparison-group recovery"
+    - "E bidirectional AAT translations"
+    - "F classification and fixed finite examples"
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: "Constructed one closed tagged union containing G-117, fixed G-122, lens, and protocol branches. Lens theta contains only V,v0; protocol theta contains only Q,L,O, after which their arbitrary independent semantic X is quantified. Defined role-specific Atom, Source, Object, endpoint-indexed Operation, and object-indexed Context constructors. The fixed G-117 branch now uses its actual ArchitectureObject endpoints and existing tagged operations; its uniform Boolean flip is separately constructed as one actual package endomorphism. Lens Read and Write=CxV endpoints are distinct, protocol edges retain typed endpoints, and every listed fixed G-122 source role is branch-indexed."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.LensFamilyInput
+    - AAT.AG.RealizationReconstruction.ProtocolFamilyInput
+    - AAT.AG.RealizationReconstruction.ClosedFamilyParameter
+    - AAT.AG.RealizationReconstruction.FamilyRealization
+    - AAT.AG.RealizationReconstruction.PrimitiveAtom
+    - AAT.AG.RealizationReconstruction.PrimitiveSource
+    - AAT.AG.RealizationReconstruction.protocolObservationValue
+    - AAT.AG.RealizationReconstruction.LensPrimitiveObject.Carrier
+    - AAT.AG.RealizationReconstruction.PrimitiveObject
+    - AAT.AG.RealizationReconstruction.PrimitiveOperation
+    - AAT.AG.RealizationReconstruction.PrimitiveContext
+    - AAT.AG.RealizationReconstruction.PrimitiveDiagnosticCell
+    - AAT.AG.RealizationReconstruction.taggedOperation
+    - AAT.AG.RealizationReconstruction.taggedUniformFlipAction
+    - AAT.AG.RealizationReconstruction.taggedUniformFlipAction_involutive
+    - AAT.AG.RealizationReconstruction.taggedUniformFlipTotal
+    - AAT.AG.RealizationReconstruction.taggedUniformFlipTotal_operationMap
+    - AAT.AG.RealizationReconstruction.taggedUniformFlipSquare_operationMap
+    - AAT.AG.RealizationReconstruction.protocolEdge
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldSignatureAxis
+    - AAT.AG.RealizationReconstruction.PrimitiveSignatureAxis
+    - AAT.AG.RealizationReconstruction.PrimitiveSignatureCoordinate
+    - AAT.AG.RealizationReconstruction.PrimitiveEquationIndex
+    - AAT.AG.RealizationReconstruction.PrimitiveInvariantIndex
+    - AAT.AG.RealizationReconstruction.PrimitiveCoordinateIndex
+    - AAT.AG.RealizationReconstruction.PrimitiveRelationIndex
+  claim_mapping:
+    source_labels:
+      - "GOAL A: one common declaration and mandatory input families"
+      - "GOAL C: one uniform package self-map acting at every endpoint pair"
+      - "GOAL E: independent lens and protocol inputs and arbitrary semantic objects"
+      - "n1015 L1-L2 and protocol section 3.1"
+      - "fixed G-122 finite-axis-fold primitive indices"
+    input_premises:
+      - "lens View type and reference value only"
+      - "finite protocol schema and arbitrary observation functor only"
+      - "no payload for the two fixed AAT branch tags"
+    constructed_evidence:
+      - "closed parameter dispatch"
+      - "semantic object family depending on theta"
+      - "source sorts depending on both theta and X"
+      - "endpoint-indexed operation names and object-indexed contexts"
+      - "one actual G-117 package self-map whose operation action is involutive at every endpoint"
+    proof_use:
+      - "LensRealization and ProtocolRealization occur as independently quantified FamilyRealization branches"
+      - "protocolEdge retains source, target, and the original edge value"
+      - "taggedOperation takes the actual fixed package operation at its actual ArchitectureObject endpoints"
+      - "taggedUniformFlipTotal applies taggedUniformFlipAction to every such operation and its action is involutive"
+      - "lensGet has Read-to-View endpoints and lensPut has Write=CxV-to-State endpoints"
+      - "LensPrimitiveObject.Carrier makes Read and State the same X.Carrier and Write definitionally X.Carrier x View"
+      - "protocol observations are derived by protocolObservationValue from a generating state and are not an independent Source summand"
+      - "the G-122 branch separately indexes FiniteModel.FiniteAtom, FiniteModel.ExtractionSource, signature Axis and Coordinate as Fin 3, equation/invariant as PUnit, raw coordinate/relation as Unit, every source ArchCtx, and the outer DoubleDiamondTwoCell PUnit diagnostic role"
+    unfinished:
+      - "this closed family signature is not yet the finite presentation Sigma"
+      - "no branch interpretation, decoder, D_Theta, res, ext, J, or reconstruction proof is asserted"
+      - "the general G-122 source input is not represented; the nullary branch records only the required fixed example"
+  validation:
+    focused_checks: "1/1 pass"
+    namespace_axiom_audit: "371 declarations, standard axioms only"
+    declaration_scan: "no data constructor accepts a completed AAT/core/geometry map, decoder, extension, comparison element, splitting, or retract; the constructed taggedUniformFlipTotal occurs only as a derived def result"
+    research_full_build: not-run
+  verdict: "Cycle 5 fixes the common family quantification and role-dependent primitive-name layer only; GOAL A and G-123 remain incomplete"
+audits:
+  premise_delta:
+    discharged:
+      - "the common parameter family is a closed four-constructor union rather than an arbitrary carrier shape"
+      - "lens and protocol semantic objects occur after theta and are not stored in theta"
+      - "primitive CS values depend on X where their source types require it"
+      - "the G-117 branch is fixed to the actual source-derived object and operation families, closing the former arbitrary-Type quote escape"
+      - "one uniform G-117 action and package self-map are constructed for every actual endpoint and operation"
+      - "lens Read and Write endpoint roles retain get:C->V and put:CxV->C arities"
+      - "protocol operation names retain their typed endpoints"
+    remaining:
+      - "construct every primitive interpretation and prove that role-specific arbitrary values cannot be consumed as completed AAT maps"
+      - "derive the general G-122 input from raw finite data without accepting sourceTransport or completed comparison data"
+      - "all presentation, geometry, reconstruction, comparison, translation, and classification obligations"
+  certificate_provenance:
+    discharged:
+      - "theta stores only the independent CS inputs admitted by n1015 and nullary tags for the fixed AAT examples"
+    unresolved:
+      - "future presentation adequacy and interpretation must be constructed rather than stored"
+  proof_use:
+    used:
+      - "lens V,v0 in the LensRealization branch and lens primitive roles"
+      - "protocol Q,L,O in ProtocolRealization and typed primitive roles"
+      - "fixed G-122 Atom, extraction source, signature axis/coordinate, equation/invariant, raw coordinate/relation, and diagnostic-cell source types"
+      - "all fixed G-122 ArchCtx values are context names, while outer diagnostic cells remain a distinct role"
+    unused: []
+  structure_field_escape: "no completed AAT/core/geometry map, decoder, extension, comparison element, splitting, or retract field; the G-117 arbitrary-Type escape was removed; authorized arbitrary CS values have only role-specific constructors"
+  route_integrity: "checkpoint-only; the closed presentation and interpretations remain future obligations"
+  target_fitting: "partial GOAL A source-signature construction; no final Sigma or reconstruction claim"
+  vacuity: "mandatory branches and typed constructors are inhabited directly"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused AATClosedFamilySignature.lean: standard axioms only"
+  blocking_findings: []
+  next_obligation: "Construct branch-specific primitive interpretations and the general G-122 raw primitive input before defining the finite presentation Sigma or intrinsic D_Theta."
+initial_review:
+  head: df5a75ecd0e7351b4c46de1e8cec477f7525a46e
+  verdict: major-revisions
+  central_findings:
+    - "the G-117 branch accepted arbitrary ObjectName types and values, permitting renamed completed-map quotation"
+    - "uniformFlip was incorrectly represented as an operation token rather than one action on every actual tagged operation"
+    - "lens put had State-to-State endpoints rather than Write=CxV-to-State"
+    - "G-122 Fin 3 and singleton roles were global aliases rather than branch-indexed primitive roles"
+  direct_response:
+    - "fixed the G-117 branch to the source ArchitectureObject and taggedOperationPackage operation families"
+    - "constructed taggedUniformFlipAction, its involutivity theorem, and taggedUniformFlipTotal as an actual package endomorphism"
+    - "added distinct lensRead and lensWrite object roles and corrected get/put endpoints"
+    - "added the missing branch-indexed G-122 signature-coordinate role"
+  rerun_required: true
+review_round_2:
+  head: d86c710e633888b3e16ae08877d03ec85fb5f161
+  verdict: major-revisions
+  central_findings:
+    - "the fixed G-122 signature Coordinate role was missing and raw Unit roles were conflated with PUnit equation/invariant roles"
+    - "outer diagnostic cells were incorrectly used as complete-geometry contexts instead of being separated from all source ArchCtx values"
+  noncentral_findings:
+    - "the report key for the rejected first-round snapshot was named fixed_head"
+  direct_response:
+    - "added branch-indexed signature Coordinate and distinct PUnit/Unit roles"
+    - "made PrimitiveContext range over every source ArchCtx and moved DoubleDiamondTwoCell to PrimitiveDiagnosticCell"
+    - "listed package-level t^2=1 explicitly among the unfinished C obligations"
+    - "renamed the rejected-snapshot report key to head"
+  rerun_required: true
+review_round_3:
+  head: 76a27c0daf4aa22e1d06e4665f6f80c2b40f0ed3
+  verdict: major-revisions
+  central_findings:
+    - "lens Read/Write were distinct names but their C and CxV carrier interpretation was not yet fixed"
+    - "signature Coordinate did not retain its parent Axis dependency"
+    - "protocol Source incorrectly included arbitrary unattached O(v) values beyond the fixed n1015 source sum"
+  noncentral_findings:
+    - "the top-level C ledger had not recorded the partial uniform-flip construction"
+  direct_response:
+    - "introduced LensPrimitiveObject.Carrier with Read=State=X.Carrier and Write=X.Carrier x View definitionally"
+    - "indexed PrimitiveSignatureCoordinate by its PrimitiveSignatureAxis parent"
+    - "removed protocolObservation from PrimitiveSource and derived protocolObservationValue from a generating state"
+    - "synchronized the top-level C ledger while retaining package-level square and comparison obligations as unfinished"
+  rerun_required: true
 ```
