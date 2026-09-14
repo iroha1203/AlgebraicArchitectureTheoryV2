@@ -1658,4 +1658,19 @@ initial_review:
     reviewed_delta: "2df5c20bd058f352b3135bf4b81afc426c161ab7..8ad33455c"
     report: "restricted the established route to ambient total-package endomorphisms and made both R_Theta membership and the paper consequence explicitly conditional"
   rerun_required: true
+second_review:
+  head: 68c7147381dd69a8a4d59c23dd07b38dcc8e395d
+  verdict: pass-after-noncentral-fix
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass-after-noncentral-fix
+    lean_b: pass-after-noncentral-fix
+  central_findings: []
+  noncentral_findings:
+    - "the new registered module had a module docstring but no declaration-level API docstrings"
+  direct_response:
+    reviewed_delta: "68c7147381dd69a8a4d59c23dd07b38dcc8e395d..pending"
+    lean: "added declaration-level docstrings describing each construction, premise, proof role, and conditional no-go scope"
+  rerun_required: true
 ```
