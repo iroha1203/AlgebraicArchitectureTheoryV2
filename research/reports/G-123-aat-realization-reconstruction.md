@@ -1671,6 +1671,21 @@ second_review:
     - "the new registered module had a module docstring but no declaration-level API docstrings"
   direct_response:
     reviewed_delta: "68c7147381dd69a8a4d59c23dd07b38dcc8e395d..dc8a0f13d"
-    lean: "added declaration-level docstrings describing each construction, premise, proof role, and conditional no-go scope"
+    lean: "added declaration-level docstrings; a later fresh lane found that several generic helpers still needed explicit source-label, API-position, and premise-origin documentation"
+  rerun_required: true
+third_review:
+  head: 2978f27f532a628a97f690356427a3b3a384df65
+  verdict: revisions-required
+  independent_lanes:
+    math_a: superseded-by-head-change
+    math_b: revisions-required
+    lean_a: superseded-by-head-change
+    lean_b: superseded-by-head-change
+  central_findings: []
+  noncentral_findings:
+    - "all 18 declarations had docstrings, but several generic diagonal/cardinal helpers did not yet state their Cycle 11 source-label, API position, and premise origin explicitly enough for lean_quality_standard section 3.2"
+  direct_response:
+    reviewed_delta: "2978f27f532a628a97f690356427a3b3a384df65..WORKTREE"
+    lean: "expanded every declaration docstring to identify its Cycle 11 or fixed-GOAL role, its place in the construction/readback/cardinal/no-go chain, and whether each input is fixed, constructed, arbitrary, or separately discharge-required"
   rerun_required: true
 ```
