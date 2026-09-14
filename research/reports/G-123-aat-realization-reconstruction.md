@@ -13,25 +13,25 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 1 lens realization and finite-presentation reconstruction
+- current proof obligation: Cycle 2 protocol realization and finite-presentation reconstruction
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: protocol realization and finite-presentation reconstruction
+- next proof obligation: AAT common realization declaration and operation-aware complete geometry
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | `LensData`, `IsTotalLens`, `LensRealization`, `LensPresentation`, `lensDecoder` | `V`, `v₀`, 三つのlens法則、有限な基準fiber | product decoderと有限table構文 | Bのlens具体適用、Eのモデル同期 | AAT共通宣言、完全幾何、必須三入力族の同一宣言への収録 |
-| B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | `res`, `ext`, `homEquivFiberMap`, `displayedRes`, `displayedExt`, `displayedHomEquivGeneratorMap`, `evaluationEquiv`, `lensDecoder_map_eq_displayedExt_evaluation` | 完成射は`get`と`put`を保存。生成写像は有限fiber間の関数のみ | `res_ext`, `ext_res`, `displayedRes_displayedExt`, `displayedExt_displayedRes`, `F_Θ(f)=ext(J(f))` | decoderの充満性・忠実性 | protocolとAAT完全幾何の対応する構成 |
-| B 充満性 | decoderの充満性を個別に放電する | `lensDecoder_full` | lens入力条件のみ | 任意の完成射を制限してfinite tableを構成 | `lensDecoder_isEquivalence`, `lensPresentationEquivalence` | AAT完全幾何とprotocolへの適用 |
-| B 忠実性 | decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `displayedRes_lensDecoder_map` | lens入力条件のみ | `res`で各table entryを回復 | `lensDecoder_isEquivalence`, `lensPresentationEquivalence` | AAT完全幾何とprotocolへの適用 |
-| B 冪等完備性 | 意味圏の冪等射を個別に分裂する | `lensRealization_isIdempotentComplete` | lens入力条件と任意の冪等射 | 固定点lensと包含・retraction | 共通Karoubi延長とarrow再構成 | 共通Karoubi延長、arrow再構成、分裂選択の自然同型、AAT完全幾何への適用 |
-| B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | `exists_decoder_retract` | lens入力条件のみ | fiber列挙と正準normal formからretractを構成 | 共通Karoubi延長とarrow再構成 | 共通Karoubi延長、arrow再構成、分裂選択の自然同型、AAT完全幾何への適用 |
+| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder` | lens入力; protocolの有限`Q,L`と任意の観測functor `O` | product lens decoder; path/quotient protocol decoder | Bの二具体適用、Eのモデル同期 | AAT共通宣言、完全幾何、必須三入力族の同一宣言への収録 |
+| B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
+| B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full` | 各具体入力条件のみ | 任意の完成射を制限して有限tableを構成 | 各direct equivalence | AAT完全幾何への適用 |
+| B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
+| B 冪等完備性 | 各意味圏の冪等射を個別に分裂する | `lensRealization_isIdempotentComplete`, `protocolRealization_isIdempotentComplete` | 各具体入力条件と任意の冪等射 | lens固定点; objectwise protocol固定点functor | 共通Karoubi延長とarrow再構成 | 共通Karoubi延長、arrow再構成、分裂選択の自然同型、AAT完全幾何への適用 |
+| B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract` | 各具体入力条件のみ | fiber列挙; vertexwise列挙とpath自然同型 | 共通Karoubi延長とarrow再構成 | 共通Karoubi延長、arrow再構成、分裂選択の自然同型、AAT完全幾何への適用 |
 | C | 一様operation flipと同じ射の二つのreading | — | G-117の固定入力 | — | operation保持の必要性 | 全項目未完了 |
 | D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | — | G-122の固定版 | — | n1012第7章から第8章 | 全項目未完了 |
 | E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
-| E protocol | 有限schemaの関手意味論と生成辺tableの再構成 | — | `Q,L,O` | — | AAT翻訳、Fのprotocol適用 | 全項目未完了 |
+| E protocol | 有限schemaの関手意味論と生成辺tableの再構成 | `ProtocolSchema.ExecutionCategory`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.presentationEquivalence` | 有限vertex・typed edge・有限parallel path relations `Q,L`; 任意の`O:C_Q⥤Type`; vertexwise有限carrier | 自由path評価、relation quotient、全path `ext`、vertexwise列挙normal form | AAT翻訳、Fのprotocol適用 | operation名変更版、adapter square (P1)、AATとの双方向翻訳、Fへの適用 |
 | F | 操作連結性による分裂短完全列・核・torsor、二つのCS適用、三有限例 | — | `Q,K,H` | — | D・Eとの共通分類 | 全項目未完了 |
 
 ## Cycle 1 — Lens semantics and finite-presentation reconstruction
@@ -179,4 +179,156 @@ audits:
     - "focused LensFinitePresentation.lean: standard axioms only"
   blocking_findings: []
   next_obligation: "Construct protocol semantics, finite generator tables, res/ext/J, and the four reconstruction properties without restricting the independently defined natural transformations."
+```
+
+## Cycle 2 — Protocol semantics and finite-presentation reconstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 2
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 53b68dcd3d44f45f1a3727d12a39f7c62a1d40f7
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 1 merged at 53b68dcd3; protocol reconstruction remained unchecked"
+  proof_dag_predecessors:
+    - "n1015 §3.1: finite typed schema, quotient path category, finite-carrier functors over O"
+    - "Mathlib.CategoryTheory.Paths: free paths, lift, and generator naturality induction"
+    - "Mathlib.CategoryTheory.Quotient: quotient category, soundness, lift, and induction"
+    - "Cycle 1 res/ext and fixed-point construction pattern"
+  proof_obligation: "A/B/E-protocol: construct the independent protocol category for fixed finite Q,L and arbitrary O, finite generator-table syntax and quotient-path decoder, res/ext/J, fullness, faithfulness, objectwise idempotent splitting, retract generation, and direct category equivalence"
+  selection_reason: "This is the second mandatory CS model and preserves named operations, every finite execution, arbitrary observations, and noninvertible adapters before any AAT translation is introduced."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolSchema.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolSemantics.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolReconstruction.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolFinitePresentation.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolIdempotents.lean
+  risks:
+    - "identifying named edges merely because a realization gives equal functions"
+    - "storing a completed path functor or natural transformation in finite syntax"
+    - "proving naturality only for named edges and reporting all-execution reconstruction"
+    - "requiring the arbitrary observation values O(v) to be finite"
+    - "restricting semantic morphisms to isomorphisms or already displayed maps"
+    - "deriving idempotent completeness or retract generation only from the direct equivalence"
+  unchecked:
+    - "AAT common declaration and complete-geometry res/ext/J"
+    - "C uniform flip"
+    - "D G-122 comparison-group recovery"
+    - "E AAT translations in both directions, lens L5/section variant, and protocol adapter square"
+    - "F common classification and fixed finite examples"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed a finite named schema and Mathlib quotient path category; defined independent finite-carrier functor semantics over arbitrary O with all observation-preserving natural transformations; extended vertex/edge generator maps to all paths and quotient executions; decoded finite state/edge/observation tables; proved res/ext/J, fullness, faithfulness, finite normal form, explicit retract, objectwise fixed-point splitting, and the protocol presentation equivalence."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolSchema.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolSemantics.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolReconstruction.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolFinitePresentation.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolIdempotents.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.ProtocolSchema.relation_sound
+    - AAT.AG.RealizationReconstruction.ProtocolSchema.namedEdgeFintype
+    - AAT.AG.RealizationReconstruction.ProtocolSchema.relationFintype
+    - AAT.AG.RealizationReconstruction.ProtocolRealization.generatorPathNatTrans
+    - AAT.AG.RealizationReconstruction.ProtocolRealization.generator_path_naturality
+    - AAT.AG.RealizationReconstruction.ProtocolRealization.homEquivGeneratorMap
+    - AAT.AG.RealizationReconstruction.ProtocolPresentation.pathFunctor_relation
+    - AAT.AG.RealizationReconstruction.ProtocolPresentation.decoder_map_eq_displayedExt_evaluation
+    - AAT.AG.RealizationReconstruction.ProtocolPresentation.decoder_full
+    - AAT.AG.RealizationReconstruction.ProtocolPresentation.decoder_faithful
+    - AAT.AG.RealizationReconstruction.ProtocolPresentation.normalFormIso
+    - AAT.AG.RealizationReconstruction.ProtocolPresentation.normalFormIso_hom_app_vertex
+    - AAT.AG.RealizationReconstruction.ProtocolPresentation.normalFormIso_inv_app_vertex
+    - AAT.AG.RealizationReconstruction.ProtocolPresentation.exists_decoder_retract
+    - AAT.AG.RealizationReconstruction.ProtocolPresentation.presentationEquivalence
+    - AAT.AG.RealizationReconstruction.ProtocolRealization.fixedPoint_split_id
+    - AAT.AG.RealizationReconstruction.ProtocolRealization.fixedPoint_split_e
+    - AAT.AG.RealizationReconstruction.ProtocolRealization.protocolRealization_isIdempotentComplete
+  claim_mapping:
+    source_labels:
+      - "GOAL A: protocol mandatory input family"
+      - "GOAL B0: res/ext/J and F_Theta(f)=ext(J(f))"
+      - "GOAL B: four separately required reconstruction properties"
+      - "GOAL E: protocol reconstruction and model synchronization"
+      - "n1015 §3.1"
+    conjuncts:
+      - "finite Q,L with preserved operation names -> ProtocolSchema and ExecutionCategory"
+      - "finite reference families -> vertexFintype, namedEdgeFintype, and relationFintype"
+      - "independent finite-carrier functors and all observation-preserving natural transformations -> ProtocolRealization and Hom"
+      - "vertex maps plus named-edge/observation equations only -> ProtocolRealization.GeneratorMap"
+      - "all-path and quotient extension -> generatorPathNatTrans and ProtocolRealization.ext"
+      - "finite syntax without completed executions -> ProtocolPresentation"
+      - "syntax evaluation and decoder equation -> evaluationEquiv and decoder_map_eq_displayedExt_evaluation"
+      - "fullness and faithfulness -> decoder_full and decoder_faithful"
+      - "finite presentation and retract -> presentationOf, normalFormIso, exists_decoder_retract"
+      - "objectwise idempotent splitting -> fixedPoint, both split equations, protocolRealization_isIdempotentComplete"
+      - "direct protocol equivalence -> presentationEquivalence"
+    undischarged_assumptions: []
+    acceptance_point: "The protocol-family obligation is derived from the fixed Q,L,O inputs. O(v) is not finite; completed path maps, natural transformations, representation, splitting, and retract data are constructed rather than accepted as fields."
+    port_status: not-applicable
+review:
+  initial_head: 8197f349c98def47b5c0646f1be45a483856d9c2
+  fixed_head: 3918f3063dbeec697b99cac1f49315f94c5b996e
+  audit_comment: "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4524#issuecomment-5667034655"
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass-after-central-fix
+    lean_b: pass-after-noncentral-fix
+  resolved_findings:
+    - "connected vertex_finite, edge_finite, and relation_finite to Finite instances and explicit finite reference enumerations"
+    - "constructed finite endpoint-labelled NamedEdge without asserting finiteness of observations, all paths, or the quotient category"
+    - "added presentationEdgeTable_apply and exact normalFormIso hom/inv vertex-component APIs, removing downstream unfolding"
+  validation:
+    focused_checks: "5/5 pass"
+    namespace_axiom_audits: "43 / 41 / 26 / 81 / 8 declarations, standard axioms only"
+    pr_ci: "7/7 pass at fixed_head"
+    research_full_build: not-run
+  verdict: "Cycle 2 A/B/E-protocol proof obligation discharged; G-123 remains target-proof-checkpoint"
+audits:
+  premise_delta:
+    discharged:
+      - "all-path naturality from named-edge squares via Paths.liftNatTrans"
+      - "quotient-execution naturality from path naturality via Quotient.induction"
+      - "relation descent from the finite generating equations via Quotient.lift"
+      - "finite presentation existence from vertexwise finite carriers and transported edge/observation data"
+      - "idempotent splitting from the objectwise fixed-point functor and actual idempotence equation"
+      - "retract generation from the explicitly constructed finite normal-form isomorphism"
+    remaining:
+      - "all AAT-wide, comparison, translation, adapter, and common-classification obligations listed above"
+  certificate_provenance:
+    discharged:
+      - "ProtocolSchema relation equations are fixed input L, not completed execution data"
+      - "ProtocolPresentation relation and observation proofs are constructed for presentationOf from quotient soundness and semantic naturality"
+      - "normalFormIso is constructed from vertexwise finite enumerations and generator extension"
+      - "fixedPoint is constructed from the original functor, observation, morphism naturality, and idempotence"
+    unresolved: []
+  proof_use:
+    used:
+      - "fixed path relations in quotient soundness, decoder descent, and presentationOf relation compatibility"
+      - "edge squares in path-inductive naturality and decoderMap"
+      - "observation equations in decodedObservation and all semantic Hom constructions"
+      - "vertexwise finiteness in presentationCard/stateEquivFin and normalFormIso"
+      - "schema vertex/edge/relation finiteness in the explicit finite reference APIs vertexFintype, namedEdgeFintype, and relationFintype"
+      - "idempotence equation in fixedPointRetraction"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused ProtocolSchema.lean: standard axioms only"
+    - "focused ProtocolSemantics.lean: standard axioms only"
+    - "focused ProtocolReconstruction.lean: standard axioms only"
+    - "focused ProtocolFinitePresentation.lean: standard axioms only"
+    - "focused ProtocolIdempotents.lean: standard axioms only"
+  blocking_findings: []
+  next_obligation: "Construct the common AAT realization declaration and operation-aware complete-geometry res/ext/J while preserving the lens and protocol translations as actual two-way applications."
 ```
