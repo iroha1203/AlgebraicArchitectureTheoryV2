@@ -28,7 +28,7 @@ namespace LensRealization
 
 variable {V : Type u} {v₀ : V}
 
-/-- G-123(B4) premise discharge for lenses, constructed by the finite-fiber
+/-- G-123(B), property 4 premise discharge for lenses, constructed by the finite-fiber
 normal form rather than assumed as an application certificate. -/
 theorem lensRetractGeneratedBy :
     RetractGeneratedBy (lensDecoder V v₀) :=
@@ -65,7 +65,7 @@ namespace ProtocolPresentation
 
 variable {S : ProtocolSchema.{u}} {O : S.ExecutionCategory ⥤ Type u}
 
-/-- G-123(B4) premise discharge for protocols, constructed vertexwise from the
+/-- G-123(B), property 4 premise discharge for protocols, constructed vertexwise from the
 finite-carrier enumeration and its explicit normal-form isomorphism. -/
 theorem protocolRetractGeneratedBy :
     RetractGeneratedBy (decoder S O) :=

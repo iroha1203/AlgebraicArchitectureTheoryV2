@@ -380,6 +380,7 @@ result:
     - research/lean/ResearchLean/AG/RealizationReconstruction/CSKaroubiReconstruction.lean
   evidence:
     - AAT.AG.RealizationReconstruction.RetractGeneratedBy
+    - AAT.AG.RealizationReconstruction.not_retractGeneratedBy_emptyPresentationDecoder
     - AAT.AG.RealizationReconstruction.karoubiMapFull
     - AAT.AG.RealizationReconstruction.karoubiMapFaithful
     - AAT.AG.RealizationReconstruction.karoubiObjectOfRetract
@@ -425,7 +426,7 @@ review:
     lean_b: pending
   validation:
     focused_checks: "3/3 pass before review"
-    namespace_axiom_audits: "18 / 1 / 8 declarations, standard axioms only"
+    namespace_axiom_audits: "20 / 1 / 8 declarations, standard axioms only"
     pr_ci: pending
     research_full_build: not-run
   verdict: "Cycle 3 B1 common and two-CS application proof obligation implemented; review pending; G-123 remains target-proof-checkpoint"
@@ -455,7 +456,7 @@ audits:
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: none-found
-  vacuity: none-found
+  vacuity: "positive lens/protocol instances and the empty-presentation/nonempty-semantics negative witness are proved"
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:

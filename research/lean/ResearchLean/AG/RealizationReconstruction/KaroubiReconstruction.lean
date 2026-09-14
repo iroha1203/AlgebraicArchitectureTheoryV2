@@ -27,11 +27,26 @@ universe uP uR vP vR
 variable {P : Type uP} {R : Type uR}
   [Category.{vP} P] [Category.{vR} R]
 
-/-- G-123(B4): every independently defined semantic object is a retract of a
+/-- G-123(B), property 4: every independently defined semantic object is a retract of a
 decoded presentation object.  This is a proposition to be proved for each
 fixed input family, not a field of the syntax or semantic category. -/
 def RetractGeneratedBy (F : P ⥤ R) : Prop :=
   ∀ X : R, ∃ (p : P) (i : X ⟶ F.obj p) (r : F.obj p ⟶ X), i ≫ r = 𝟙 X
+
+/-- Negative API witness for the G-123(B) retract-generation predicate: an
+empty presentation category cannot generate the nonempty semantic category.
+This confirms that `RetractGeneratedBy` is not vacuously true. -/
+def emptyPresentationDecoder : Discrete Empty ⥤ Discrete PUnit where
+  obj X := nomatch X.as
+  map {X} _ := nomatch X.as
+
+/-- The empty decoder fails G-123(B), property 4, because the semantic unit
+object has no presentation object from which a retract could be constructed. -/
+theorem not_retractGeneratedBy_emptyPresentationDecoder :
+    ¬ RetractGeneratedBy emptyPresentationDecoder := by
+  intro h
+  rcases h (Discrete.mk PUnit.unit) with ⟨p, _⟩
+  exact p.as.elim
 
 /-- The functor induced by a decoder on Karoubi completions. -/
 noncomputable def karoubiMap (F : P ⥤ R) : Karoubi P ⥤ Karoubi R :=
@@ -42,7 +57,7 @@ noncomputable def karoubiMap (F : P ⥤ R) : Karoubi P ⥤ Karoubi R :=
 theorem karoubiMap_map_f (F : P ⥤ R) {X Y : Karoubi P} (f : X ⟶ Y) :
     ((karoubiMap F).map f).f = F.map f.f := rfl
 
-/-- G-123(B3): faithfulness of the decoder implies faithfulness after Karoubi
+/-- G-123(B), property 2: faithfulness of the decoder implies faithfulness after Karoubi
 completion.  The proof reflects equality of the underlying semantic arrows. -/
 noncomputable def karoubiMapFaithful (F : P ⥤ R) (hfaithful : F.Faithful) :
     (karoubiMap F).Faithful := by
@@ -53,7 +68,7 @@ noncomputable def karoubiMapFaithful (F : P ⥤ R) (hfaithful : F.Faithful) :
         apply F.map_injective
         exact congrArg Karoubi.Hom.f h }
 
-/-- G-123(B2): fullness and faithfulness of the decoder construct every
+/-- G-123(B), property 1: fullness and faithfulness of the decoder construct every
 Karoubi morphism from its underlying semantic arrow. -/
 noncomputable def karoubiMapFull (F : P ⥤ R) (hfull : F.Full)
     (hfaithful : F.Faithful) : (karoubiMap F).Full := by
@@ -122,7 +137,7 @@ noncomputable def karoubiObjectOfRetractIso (F : P ⥤ R) (hfull : F.Full)
         simp only [Category.assoc]
         rw [← Category.assoc i r, hir, Category.id_comp, Y.idem] }
 
-/-- G-123(B4): retract generation supplies essential surjectivity of the
+/-- G-123(B), property 4: retract generation supplies essential surjectivity of the
 induced functor on Karoubi completions. -/
 noncomputable def karoubiMapEssSurj (F : P ⥤ R) (hfull : F.Full)
     (hfaithful : F.Faithful) (hgen : RetractGeneratedBy F) :
