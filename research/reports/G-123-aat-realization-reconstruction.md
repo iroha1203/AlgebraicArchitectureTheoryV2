@@ -1733,11 +1733,21 @@ result:
     - AAT.AG.RealizationReconstruction.retractEndomorphismMap_surjective_of_full
     - AAT.AG.RealizationReconstruction.exists_retractEndomorphismMap_surjective
   claim_mapping:
+    theorem_names:
+      - retractEndomorphismMap
+      - retractEndomorphismMap_surjective_of_full
+      - exists_retractEndomorphismMap_surjective
     source_labels:
       - "GOAL B property 1: fullness of the decoder"
       - "GOAL B property 4: every semantic object is a retract of one decoded presentation object"
       - "Cycle 11 unfinished bridge from a mandatory-C semantic endomorphism family to presentation endomorphisms"
       - "n1014 section 4.3 reconstruction through Karoubi retracts"
+    conjuncts:
+      - "explicit endomorphism restriction along one displayed retract -> retractEndomorphismMap"
+      - "fullness plus the displayed retract equation -> retractEndomorphismMap_surjective_of_full"
+      - "one presentation object and retract chosen per semantic object, before quantifying over all its endomorphisms -> exists_retractEndomorphismMap_surjective"
+      - "fixed-AAT fullness and retract generation -> deliberately not discharged by this abstract bridge"
+      - "Cycle 11 ambient PackageTotalHom family membership in future R_Theta -> deliberately not established"
     input_premises:
       - "ambient categories P and R and a decoder functor F"
       - "direction-hypothesis for the general bridge: F.Full"
