@@ -22,7 +22,7 @@
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder` | lens入力; protocolの有限`Q,L`と任意の観測functor `O` | product lens decoder; path/quotient protocol decoder | Bの二具体適用、Eのモデル同期 | AAT共通宣言、完全幾何、必須三入力族の同一宣言への収録 |
+| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; `AATParameterSignature`, `FiniteReferenceSkeleton` | lens入力; protocolの有限`Q,L`と任意の観測functor `O`; 任意のAAT parameterと依存primitive carrier | product lens decoder; path/quotient protocol decoder; 完成射を含まない有限参照surface | Bの二具体適用、Eのモデル同期; 後続AAT構文・評価の型付け | AAT parameter interpretation、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何、必須三入力族の同一宣言への収録 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full` | 各具体入力条件のみ | 任意の完成射を制限して有限tableを構成 | 各direct equivalence | AAT完全幾何への適用 |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
@@ -180,6 +180,108 @@ audits:
     - "focused LensFinitePresentation.lean: standard axioms only"
   blocking_findings: []
   next_obligation: "Construct protocol semantics, finite generator tables, res/ext/J, and the four reconstruction properties without restricting the independently defined natural transformations."
+```
+
+## Cycle 4 — Parameter-relative AAT primitive references
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 4
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 77213e96e0f90216355640ca842fefc32f794e7b
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 3 merge 77213e96e0f90216355640ca842fefc32f794e7b; common AAT declaration and complete-geometry res/ext/J unconstructed"
+  proof_dag_predecessors:
+    - "n1014 sections 6.2--6.4: all-object, all-endpoint, and all-context generation obligations"
+    - "G-122 fixed finite-axis-fold two-cell family"
+    - "existing GeometryTotalHom component extensionality, usable only after the component maps are constructed"
+  proof_obligation: "A: define a parameter-relative primitive reference surface that retains typed operation endpoints and all context-local sorts without storing a completed core/geometry morphism or forcing parameter carriers to be finite"
+  selection_reason: "A sound common AAT syntax must expose the dependent source types before an evaluator or extension can be defined. Existing extensionality lemmas compare already completed maps and therefore cannot supply the missing generators."
+  expected_result_type: proof-obligation-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATFiniteReferenceSyntax.lean
+  risks:
+    - "storing a PackageTotalHom, SignedExactCoreReadingHom, GeomReadHom, or GeometryTotalHom under a renamed field"
+    - "making the whole parameter, context, coefficient, or local carrier finite"
+    - "dropping dependent operation endpoints or the context owner of local data"
+    - "treating reference-table completeness as complete-morphism extension"
+    - "calling a two-cell reference witness the inclusion of the full G-122 geometry"
+  unchecked:
+    - "interpretation of primitive references into AAT objects and intrinsic D_Theta"
+    - "independent R_Theta and all of P_Theta, F_Theta, G_Theta, C_Theta"
+    - "all-object, all-endpoint, and all-context term recursors and evaluation"
+    - "AAT complete-geometry res/ext/J and four reconstruction properties"
+    - "C uniform flip, D full comparison recovery, E AAT translations, and F classification/examples"
+result:
+  proposed_result_type: proof-obligation-checkpoint
+  proof_obligation_delta: "Defined the dependent primitive carrier signature and finite occurrence tables for atoms, objects, typed operations, laws, contexts, Support, Axis, Observable, coefficients, raw coordinates, relations, and restrictions. Finiteness is confined to each table. Added a positive complete table for the fixed two-cell family and a negative first-only table showing that completeness is not embedded in the table definition."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATFiniteReferenceSyntax.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.AATParameterSignature
+    - AAT.AG.RealizationReconstruction.AATParameterSignature.NamedOperation
+    - AAT.AG.RealizationReconstruction.AATParameterSignature.NamedContext
+    - AAT.AG.RealizationReconstruction.AATParameterSignature.NamedRestriction
+    - AAT.AG.RealizationReconstruction.FiniteReferenceTable
+    - AAT.AG.RealizationReconstruction.FiniteReferenceTable.Complete
+    - AAT.AG.RealizationReconstruction.FiniteReferenceSkeleton
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldTwoCellReferences_complete
+    - AAT.AG.RealizationReconstruction.firstOnlyTwoCellReferences_not_complete
+  claim_mapping:
+    source_labels:
+      - "GOAL A: parameter types, finite generator data, typed operation endpoints, and complete-geometry local sorts"
+      - "n1014 section 6.2: recovery targets must not be stored as input"
+      - "n1014 section 6.3: fixed finite-axis-fold two-cell reference"
+    input_premises:
+      - "an arbitrary AATParameterSignature and parameter theta"
+      - "the accepted DoubleDiamondTwoCell PUnit carrier from the fixed finite input"
+    constructed_evidence:
+      - "dependent occurrence types retaining owners and endpoints"
+      - "finite tables into possibly infinite carriers"
+      - "separately proved positive and negative completeness propositions"
+    proof_use:
+      - "the occurrence types constrain later syntax and evaluator fields to the fixed endpoint/context types"
+      - "the positive table supplies the two fixed cell references; the negative witness prevents a hidden-completeness reading"
+    unfinished:
+      - "no semantic realization, decoder, completed morphism, res, ext, or J is constructed in this cycle"
+      - "the full finite-axis-fold core/geometry and its comparisons have not yet been included"
+  validation:
+    focused_checks: "1/1 pass"
+    namespace_axiom_audit: "standard axioms only"
+    prerequisite_target_build: "ResearchLean.AG.TransportCoherence.FiniteWitnesses passed as a bounded named target"
+    research_full_build: not-run
+  verdict: "Cycle 4 establishes a source-faithful primitive reference surface only; G-123 remains target-proof-checkpoint"
+audits:
+  premise_delta:
+    discharged:
+      - "finite reference tables do not require finite parameter carriers"
+      - "operation occurrences retain both typed endpoints"
+      - "local occurrences retain their owning object and context"
+    remaining:
+      - "all interpretation, generation, semantic-category, reconstruction, comparison, translation, and classification obligations listed above"
+  certificate_provenance:
+    discharged:
+      - "FiniteReferenceSkeleton stores data only; completeness is an external Prop proved for the selected table"
+    unresolved:
+      - "construct completeness and adequacy from each fixed input, rather than accepting either in a presentation record"
+  proof_use:
+    used:
+      - "the fixed two-cell constructors in the positive and negative table theorems"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: "positive two-entry completeness and negative one-entry incompleteness are both proved"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused AATFiniteReferenceSyntax.lean: standard axioms only"
+  blocking_findings: []
+  next_obligation: "Construct the primitive interpretation and intrinsic D_Theta, then build all-object, all-endpoint, and all-context syntax recursors before defining AAT res/ext/J."
 ```
 
 ## Cycle 2 — Protocol semantics and finite-presentation reconstruction
