@@ -13,10 +13,10 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 5 closed family dispatch and source-generated primitive signature
+- current proof obligation: Cycle 6 fixed G-123(C) package and Karoubi witness
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: primitive interpretations for all four branches and the general G-122 primitive input decomposition
+- next proof obligation: general G-122 primitive input decomposition and branch-specific primitive interpretations
 
 ## Requirement ledger
 
@@ -29,7 +29,7 @@
 | B 冪等完備性 | 各意味圏の冪等射を個別に分裂する | `lensRealization_isIdempotentComplete`, `protocolRealization_isIdempotentComplete`; `karoubiReconstructionEquivalence` | 各具体入力条件と任意の冪等射 | lens固定点; objectwise protocol固定点functor | lens/protocolのKaroubi延長とarrow再構成 | AAT意味圏での分裂構成と共通再構成への適用 |
 | B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract`; `karoubiObjectOfRetract`, `karoubiMapEssSurj` | 各具体入力条件のみ | fiber列挙; vertexwise列挙; retractからpresentation側冪等元を逆像構成 | `karoubiCompletionEquivalence`, lens/protocolのKaroubi再構成 | AAT完全幾何への適用 |
 | B1 | `Kar(P) ≃ R`、decoderの延長、一意性、arrow圏での再構成を同じ四証拠から得る | `karoubiReconstructionEquivalence`, `karoubiReconstructionRestrictionIso`, `karoubiExtensionComparison`, `karoubiExtensionComparison_unique`, `karoubiExtensionComparison_self`, `karoubiExtensionComparison_trans`, `karoubiArrowReconstructionEquivalence`; lens/protocol各適用 | full、faithful、意味圏の冪等完備性、decoder像によるretract生成 | `functorExtension₂`のfull/faithful/essentially-surjective証明、`toKaroubiEquivalence`による延長、fully faithfulな制限から比較同型を逆像構成 | lens/protocol双方のobject・任意arrow再構成 | AAT共通decoderへの同じ適用、分裂選択を明示する具体比較、完全幾何への適用 |
-| C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipAction`, `taggedUniformFlipAction_involutive`, `taggedUniformFlipTotal`, `taggedUniformFlipSquare_operationMap` | G-117の固定`taggedOperationPackage` | 全端点・全operationのBool tag反転、operation-map上の二乗 | operation保持の必要性 | package射としての`t²=1`、`et=te`、`et≠e`、Karoubi内の同じ射、二readingの分離は未完了 |
+| C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipTotal_square`, `taggedUniformFlipTotal_commutes_normalization`, `taggedNormalizationThenUniformFlip_ne_normalization`, `taggedNormalizationThenUniformFlipKaroubiAut`, `fixedArchitectureObjectFunctor`, `fixedArchitectureObjectFunctor_identifies_uniform_flip`, `fixedArchitectureObjectFunctor_not_injective_at_tagged`, `taggedUniformFlipTotal_ne_endpointFlipTotal` | G-117の固定`taggedOperationPackage`とadmissibility | 全端点・全operationの一様Bool tag反転、package射の`t²=1`、`et=te`、指定operation評価による`et≠e`、Karoubi自己同型、固定点関手と非忠実性witness | 固定点関手は同じKaroubi二射`et,e`の像を同一視する | Aで構成するoperation保持実現へ同じ二射を送り、像が異なることの接続 |
 | D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | — | G-122の固定版 | — | n1012第7章から第8章 | 全項目未完了 |
 | E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
 | E protocol | 有限schemaの関手意味論と生成辺tableの再構成 | `ProtocolSchema.ExecutionCategory`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.presentationEquivalence` | 有限vertex・typed edge・有限parallel path relations `Q,L`; 任意の`O:C_Q⥤Type`; vertexwise有限carrier | 自由path評価、relation quotient、全path `ext`、vertexwise列挙normal form | AAT翻訳、Fのprotocol適用 | operation名変更版、adapter square (P1)、AATとの双方向翻訳、Fへの適用 |
@@ -773,4 +773,151 @@ review_round_3:
     - "removed protocolObservation from PrimitiveSource and derived protocolObservationValue from a generating state"
     - "synchronized the top-level C ledger while retaining package-level square and comparison obligations as unfinished"
   rerun_required: true
+```
+
+## Cycle 6 — Uniform package flip and the fixed Karoubi witness
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 6
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: f6c26ae4b7820e04d0d02a57c602603bb94366b3
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 5 merged at f6c26ae4b; it constructed the uniform action and package self-map but left every package-level C equation open"
+  proof_dag_predecessors:
+    - "G-117 fixed taggedOperationPackage, canonical normalization, admissibility, and taggedBoolOperation"
+    - "Cycle 5 taggedUniformFlipAction and taggedUniformFlipTotal at all actual endpoints"
+    - "G-119 canonicalPackageNormalization and normalizedPackageKaroubiObject"
+  proof_obligation: "C: prove the uniform flip is a package involution, commutes with the fixed canonical normalization, gives et distinct from e at the mandated false-tag operation, forms a nonidentity Karoubi automorphism, and is identified only by the object-only reader"
+  selection_reason: "These are the remaining fixed equations for C and use the already constructed all-endpoint action without shrinking the object or morphism family."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATUniformFlipKaroubi.lean
+  risks:
+    - "proving involutivity only at one operation rather than as PackageTotalHom equality"
+    - "using absorption in place of the required two-sided commutation"
+    - "changing the endpoint or operation used for et != e"
+    - "calling an arbitrary raw endomorphism a Karoubi automorphism without constructing its sandwich law and inverse"
+    - "conflating the new uniform flip with the old endpoint-dependent G-117 counterexample"
+  unchecked:
+    - "general G-122 raw primitive input and branch interpretations"
+    - "closed finite presentation Sigma and intrinsic D_Theta"
+    - "AAT complete-geometry res/ext/J and four reconstruction properties"
+    - "D comparison-group recovery"
+    - "E bidirectional AAT translations"
+    - "F classification and fixed finite examples"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Lifted the pointwise uniform action to a complete package equality t^2=1; proved et=te by commuting the dependent tagged-operation cast with Boolean negation; evaluated et and e on the original taggedBoolOperation to prove et!=e; constructed et with its sandwich law and itself as inverse in the actual normalized Karoubi object; constructed the fixed-architecture-object functor on the Karoubi category and its explicit nonfaithfulness witness at et/e; and separately proved the uniform flip is not the old endpoint-dependent flip. The direct operation evaluation is not claimed to be A's unfinished operation-preserving realization."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATUniformFlipKaroubi.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.taggedOperationCast_uniformFlip
+    - AAT.AG.RealizationReconstruction.taggedUniformFlipTotal_square
+    - AAT.AG.RealizationReconstruction.taggedUniformFlipTotal_commutes_normalization
+    - AAT.AG.RealizationReconstruction.taggedNormalizationThenUniformFlip_snd
+    - AAT.AG.RealizationReconstruction.taggedNormalization_snd
+    - AAT.AG.RealizationReconstruction.taggedNormalizationThenUniformFlip_ne_normalization
+    - AAT.AG.RealizationReconstruction.taggedUniformFlipTotal_ne_endpointFlipTotal
+    - AAT.AG.RealizationReconstruction.taggedNormalizationThenUniformFlipKaroubiHom
+    - AAT.AG.RealizationReconstruction.taggedNormalizationThenUniformFlipKaroubiHom_ne_id
+    - AAT.AG.RealizationReconstruction.taggedUniformFlipMorphism_square
+    - AAT.AG.RealizationReconstruction.taggedUniformFlipMorphism_commutes_normalization
+    - AAT.AG.RealizationReconstruction.taggedNormalizationThenUniformFlipKaroubiAut
+    - AAT.AG.RealizationReconstruction.FixedArchitectureObject
+    - AAT.AG.RealizationReconstruction.fixedArchitectureObjectFunctor
+    - AAT.AG.RealizationReconstruction.fixedArchitectureObjectFunctor_identifies_uniform_flip
+    - AAT.AG.RealizationReconstruction.fixedArchitectureObjectFunctor_not_injective_at_tagged
+    - AAT.AG.RealizationReconstruction.taggedOperationReader_distinguishes_uniform_flip
+  claim_mapping:
+    source_labels:
+      - "GOAL C: uniform flip on the fixed G-117 tagged package"
+      - "GOAL C: t^2=1, et=te, and et!=e at taggedBoolOperation with initial false"
+      - "GOAL C: et is an automorphism of (P,e)"
+      - "GOAL C: object-only fixed-point reading versus operation-preserving reading"
+      - "n1014 section 3"
+    input_premises:
+      - "the fixed taggedOperationPackage and its already proved canonical-normalization admissibility"
+      - "no new theorem argument, typeclass, certificate, selected subgroup, or selected endpoint family"
+    constructed_evidence:
+      - "full PackageTotalHom equalities for involution and commutation"
+      - "a direct false-to-true evaluation on taggedBoolOperation"
+      - "the Karoubi sandwich morphism and both inverse laws"
+      - "an actual fixed-point functor on the Karoubi category and an explicit noninjective Hom-map witness"
+      - "a direct operation evaluation separating the underlying package maps, retained only as input for the future A-realization bridge"
+    proof_use:
+      - "pointwise involutivity is consumed by SignedExactCoreReadingHom extensionality to prove package involutivity"
+      - "the tagged cast commutation is consumed by operation-map extensionality to prove et=te"
+      - "normalization idempotence, t commutation, and t involutivity are all consumed by the Karoubi inverse proof"
+      - "the original false-tag evaluation proves et!=e and the raw operation-map separation needed by the future A-realization bridge"
+      - "taggedUnitOperation only separates the uniform action from the old endpoint-dependent action and does not replace the mandated taggedBoolOperation inequality"
+    unfinished:
+      - "send the same Karoubi morphisms et and e through G-123(A)'s still-unconstructed operation-preserving realization and prove their images differ"
+  validation:
+    focused_checks: "1/1 pass"
+    namespace_axiom_audit: "23 declarations, standard axioms only"
+    prerequisite_target_build: "ResearchLean.AG.RealizationComparisonIdempotents.NormalizationCategory passed as a bounded named target"
+    research_full_build: not-run
+  verdict: "Cycle 6 discharges C1, the Karoubi automorphism, and the fixed-point functor nonfaithfulness witness on the original data. The required image inequality under A's operation-preserving realization remains open, so C and G-123 remain target-proof-checkpoint."
+audits:
+  premise_delta:
+    discharged:
+      - "package-level t^2=1 for the one uniform all-endpoint self-map"
+      - "two-sided commutation et=te, not merely one-sided normalization absorption"
+      - "et!=e on the original taggedBoolOperation with initial false"
+      - "nonidentity automorphism of the actual Karoubi object (P,e)"
+      - "same-pair identification by the actual fixed-architecture-object functor and its nonfaithfulness witness"
+      - "formal distinction from the earlier endpoint-dependent flip"
+    remaining:
+      - "the same-pair image inequality under A's operation-preserving realization"
+      - "all non-C obligations listed above"
+  certificate_provenance:
+    discharged:
+      - "all C evidence is constructed from the fixed package and prior admissibility theorem; no conclusion is stored as input"
+    unresolved: []
+  proof_use:
+    used:
+      - "G-117 admissibility operation_type_eq in cast/flip commutation"
+      - "G-119 canonical normalization idempotence and absorption in the Karoubi construction"
+      - "Cycle 5 uniform action involutivity in package extensionality"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: "C1 and the fixed-point functor pass; the A-realization bridge remains explicitly unfinished"
+  target_fitting: "exact fixed package, all endpoints and operations, exact taggedBoolOperation evaluation"
+  vacuity: "et!=e and nonidentity Karoubi hom are explicit"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: "the initial Cycle 6 snapshot overclaimed the raw Bool evaluator as A's realization; independent review caught it and this report now keeps that bridge unfinished"
+  validation_refs:
+    - "focused AATUniformFlipKaroubi.lean: standard axioms only"
+  blocking_findings: []
+  next_obligation: "Construct the general G-122 raw primitive input decomposition and branch-specific primitive interpretations before the closed finite presentation and AAT reconstruction."
+initial_review:
+  head: 3fc3b8f99f23847b36f80d74a299b563246e9b4a
+  verdict: major-revisions
+  central_findings:
+    - "the raw objectMap projection was not the required fixed-point functor on the Karoubi category"
+    - "the raw Bool evaluator was incorrectly reported as A's operation-preserving realization"
+  noncentral_findings:
+    - "the n1014 source label pointed to nonexistent section 5.3 instead of section 3"
+  direct_response:
+    - "constructed FixedArchitectureObject and fixedArchitectureObjectFunctor on every admissible-package Karoubi object and morphism"
+    - "proved equality of the et/e functor images and a concrete Hom-map noninjectivity witness"
+    - "retained direct Bool evaluation only as package-level separation and restored the A-realization image inequality to unfinished status"
+    - "corrected the n1014 source label"
+  rerun_required: true
+review_round_2:
+  head: 23c421b11fb882cb973e7c89e5c1bae01c6937ab
+  verdict: pass-with-noncentral-report-fix
+  central_findings: []
+  noncentral_findings:
+    - "a broad replacement changed Cycle 1 expected_result_type and left Cycle 6 expected/proposed result types inconsistent"
+    - "target-proof-checkpoint is the overall GOAL state, not the selected cycle-result type"
+  direct_response:
+    - "restored the historical Cycle 1 expected result"
+    - "recorded Cycle 6's selected C1, Karoubi, and fixed-point-reader obligation as proof-obligation-discharged while retaining the overall target state and A-realization bridge as unfinished"
+  rerun_required: false
 ```
