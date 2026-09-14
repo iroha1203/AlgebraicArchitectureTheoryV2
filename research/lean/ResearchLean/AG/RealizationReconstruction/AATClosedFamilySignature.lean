@@ -145,7 +145,7 @@ inductive PrimitiveSource :
       PrimitiveSource (.protocol input) X
 
 /-- Protocol observations are evaluations of generating states, not an
-additional source summand.  This realizes the fixed n1015 decomposition
+additional source summand.  This generated-source decomposition implements
 `1 + Sigma_v X(v) + Sigma_e X(s(e))` without admitting unattached `O(v)`
 values as source terms. -/
 def protocolObservationValue {input : ProtocolFamilyInput.{u}}
