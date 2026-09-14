@@ -13,16 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 9 endpoint-indexed G-122 operation references and source evaluation
+- current proof obligation: Cycle 10 finite operation-reference obstruction and admissible-range decision
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: determine a genuine finite generating grammar for arbitrary opaque G-122 operation families, or prove a target-level obstruction rather than re-inputting a completed operationMap
+- next proof obligation: construct an intrinsic non-circular `D_Theta` whose required input families have finite recursive presentations, or prove that a mandatory input family contains the Cycle 10 obstruction without re-inputting a completed operationMap
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`とG-122のsignature/equation/invariant/raw各role; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z` | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価 | Bの二具体適用、Eのモデル同期; 後続のG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持 | G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
+| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`とG-122のsignature/equation/invariant/raw各role; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価; 全tag変換を実際のpackage endomorphismへ埋め込み、有限tag参照listからの全射decoderを対角化で否定 | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持 | Cycle 10 obstructionを避ける内在的生成条件と必須入力からの放電、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full` | 各具体入力条件のみ | 任意の完成射を制限して有限tableを構成 | 各direct equivalence | AAT完全幾何への適用 |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
@@ -1367,4 +1367,131 @@ initial_review:
     reviewed_delta: "3a714f99ae1a1e0774b7c77918004daa9382589d..98b36ac19"
     report: "replaced prevents replacement with keeps identity available independently of configuration action"
   rerun_required: true
+```
+
+## Cycle 10 — Finite operation-reference obstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 10
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 47beb94b1bcf69e5a259c9dc5829eb4e1d3a0ad9
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 9 retained every individual source operation but left open whether finite source references can recover every admissible operationMap"
+  proof_dag_predecessors:
+    - "Cycle 9 endpoint-indexed PrimitiveOperation.g122Ref and literal source readback"
+    - "the fixed target requires a finite presentation and decoder fullness for all admissible maps"
+    - "the fixed target forbids carrying a completed full operationMap or arbitrary comparison element as one primitive constant"
+  proof_obligation: "Test the finite-reference strategy against an actual AATCorePackage whose configuration-invisible operation tags admit every endotransformation, and separate failure of that strategy from refutation of the fixed target"
+  selection_reason: "The operation component is opaque in the current authored reading. Before designing D_Theta around references, the loop must establish whether finite parameter references can possibly make its decoder full."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/OperationFiniteReferenceObstruction.lean
+  risks:
+    - "calling a failed list grammar a refutation of G-123 without proving membership in mandatory D_Theta"
+    - "escaping the diagonal by storing an arbitrary OperationTag-to-OperationTag function as one code leaf"
+    - "restricting semantic morphisms to syntax-generated maps and thereby defining fullness into the input class"
+    - "forgetting that the semantic endomorphisms must be actual PackageTotalHom values"
+    - "silently replacing the paper claim by a finite or selected subgroup"
+  unchecked:
+    - "an intrinsic non-circular D_Theta and construction of its evidence from every mandatory input family"
+    - "whether the Cycle 10 package or an equivalent opaque family is mandatory in D_Theta"
+    - "a finite recursive presentation of every D_Theta-admissible operationMap"
+    - "closed Sigma, R_Theta, P_Theta, F_Theta, AAT res/ext/J, and all four B properties"
+    - "D display recovery and classification; E translations; F"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Constructed a sequence-tagged AATCorePackage in which operation configuration actions ignore an opaque OperationTag = Nat -> Bool component. Every arbitrary transformation of OperationTag induces an actual PackageTotalHom, and readSequenceTransform is a left inverse, hence this family embeds into package endomorphisms. Cantor diagonalization, together with an embedding of finite OperationTag lists into OperationTag, proves that no decoder from List OperationTag is surjective. The generic bridge extends this failure to every code type surjectively generated by such finite lists."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/OperationFiniteReferenceObstruction.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.operationTags_not_surjective_transformations
+    - AAT.AG.RealizationReconstruction.listOperationTags_not_surjective_transformations
+    - AAT.AG.RealizationReconstruction.sequenceTaggedOperationPackage
+    - AAT.AG.RealizationReconstruction.sequenceTransformTotal
+    - AAT.AG.RealizationReconstruction.readSequenceTransform_sequenceTransformTotal
+    - AAT.AG.RealizationReconstruction.sequenceTransformTotal_injective
+    - AAT.AG.RealizationReconstruction.sequencePackageEndomorphisms_not_listTagEnumerable
+    - AAT.AG.RealizationReconstruction.no_surjectiveEndomorphismDecoder_of_listGeneratedCode
+  claim_mapping:
+    source_labels:
+      - "GOAL A finite presentation, independent semantic category, and all admissible maps"
+      - "GOAL B decoder fullness and faithfulness"
+      - "GOAL C operation information invisible to configuration-only reading"
+      - "user anti-weakening clauses 1--4"
+      - "n1014 sections 2, 6.3, and 6.4"
+    input_premises:
+      - "the existing taggedOperationPackage semantic reading"
+      - "an opaque authored OperationTag = Nat -> Bool attached to every operation"
+      - "finite list codes contain only finitely many OperationTag references"
+      - "no completed operationMap, decoder fullness witness, or D_Theta membership certificate"
+    constructed_evidence:
+      - "a genuine AATCorePackage retaining exact endpoint-indexed operations"
+      - "one actual PackageTotalHom for every arbitrary OperationTag endotransformation"
+      - "a readback left inverse and injectivity of the transformation embedding"
+      - "a diagonal non-surjectivity theorem for list-reference decoders and list-generated code types"
+    proof_use:
+      - "operation_naturality uses the unchanged first component and the source configurationMap"
+      - "readSequenceTransform evaluates the operationMap on the fixed tagged Bool operation at every tag"
+      - "decoder surjectivity would cover every sequenceTransformTotal and therefore surject onto all tag transformations"
+      - "operationTagNot supplies the diagonal value that differs at its own index"
+    unfinished:
+      - "the sequence-tagged package is not proved to satisfy the still-unconstructed D_Theta"
+      - "the theorem blocks list/tree grammars generated by finitely many tag references, not every possible finite parameter-relative grammar"
+      - "no target-level impossibility is claimed"
+      - "no positive common grammar, interpretation, res/ext/J, or display recovery is constructed"
+  candidate_failure_record:
+    candidate: "generate every operationMap from a finite list or finite tree whose leaves are only source-provenanced opaque operation tags"
+    obstacle: "the semantic package has one distinct actual endomorphism for every OperationTag endotransformation, but a finite tag-reference list has cardinality at most OperationTag and cannot enumerate that function space"
+    tried_construction: "Cycle 9 endpoint-indexed source references followed by a proposed finite list/tree closure; Cycle 10 internalizes the resulting cardinality test in Lean"
+    forbidden_shortcuts:
+      - "put the arbitrary tag transformation or completed operationMap into a primitive leaf"
+      - "define admissible morphisms as exactly those already decoded by the syntax"
+      - "replace all semantic endomorphisms by a selected finite-support subgroup"
+    status: "candidate grammar refuted; fixed target not refuted because mandatory D_Theta membership has not been established"
+    paper_conclusion_at_risk: "excluding opaque comparison-preserving changes or storing each completed change as input would remove the claimed finite recovery of information loss and its transfer to the two CS models"
+  validation:
+    focused_checks: "1/1 pass"
+    named_target_build: "ResearchLean.AG.RealizationReconstruction.OperationFiniteReferenceObstruction passed"
+    namespace_axiom_audit: "19 declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 10 is a proof checkpoint: it rigorously rules out finite tag-reference list/tree codes for an actual operation-rich AAT package, while preserving the distinction between candidate failure and target refutation. Until a mandatory D_Theta input is shown to contain this obstruction, or an intrinsic non-circular D_Theta is constructed and discharged from all required inputs, A, B, D, and G-123 remain unproved."
+audits:
+  premise_delta:
+    discharged:
+      - "the finite-reference candidate is tested against actual PackageTotalHom values rather than an external function toy model"
+      - "the impossibility covers arbitrary finite lists of parameter tags and every code type surjectively generated by them"
+      - "candidate failure and fixed-target refutation are explicitly separated"
+    remaining:
+      - "define D_Theta without decoder-image, extension, idempotent-splitting, or retract-generation fields"
+      - "derive the intrinsic finite-recursion evidence from the fixed examples, C operation family, and both E families"
+      - "decide whether arbitrary G-122 inputs required by the GOAL necessarily admit the opaque operation family used here"
+      - "all remaining A--F obligations"
+  certificate_provenance:
+    discharged:
+      - "semantic endomorphisms are constructed from the authored operation reading and explicit tag transformations"
+      - "non-surjectivity is proved by diagonalization and cardinal arithmetic, not accepted as a record field"
+    unresolved:
+      - "positive finite presentation evidence for the mandatory common family"
+  proof_use:
+    used:
+      - "all arbitrary tag transformations in sequenceTransformTotal"
+      - "the operationMap component in readSequenceTransform"
+      - "finite-list generation in operationTagListEnumeration_surjective and the composed decoder contradiction"
+    unused: []
+  structure_field_escape: "no decoder, full-map family, extension witness, fullness certificate, or D_Theta membership is stored in the package"
+  route_integrity: "the result narrows candidate syntax design only; it is not used to assert target-refuted or to discharge A/B"
+  target_fitting: "the actual package keeps all endpoints and all operation tags, and its semantic morphism range contains every tag transformation"
+  vacuity: "the contradiction quantifies over every proposed decoder and exhibits a concrete diagonal transformation outside its range"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused OperationFiniteReferenceObstruction.lean: pass, 19 declarations, standard axioms only"
+    - "named target ResearchLean.AG.RealizationReconstruction.OperationFiniteReferenceObstruction: pass"
+  blocking_findings: []
+  next_obligation: "Formulate the strongest intrinsic, syntax-independent finite-generation condition that does not contain the requested reconstruction conclusion, then prove or disprove it for each mandatory D_Theta input from its primitive data."
 ```
