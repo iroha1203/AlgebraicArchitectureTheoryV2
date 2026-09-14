@@ -153,7 +153,7 @@ CS側の整合性・互換性などの条件は、AATへの翻訳に先立って
 完全幾何とG-122の生成比較への接続は、[n1014の設計](n1014_aat_realization_reconstruction_design.md)で
 別途具体化する。これらのCSの圏を完全幾何の実現圏と同一視せず、接続の証明を揃えて収録する。
 S5の研究目標・要求命題・完了条件は
-[G-123のdraftカード](../../research/goals/G-123-aat-realization-reconstruction.md) にまとめる。
+[G-123のGOALカード](../../research/goals/G-123-aat-realization-reconstruction.md) にまとめる。
 
 ## 4. 全体構成
 
