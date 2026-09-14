@@ -1655,7 +1655,7 @@ initial_review:
     - "the paper-risk sentence called the source-choice maps comparison-preserving before any future D or comparison law was proved to admit them"
   noncentral_findings: []
   direct_response:
-    reviewed_delta: "2df5c20bd058f352b3135bf4b81afc426c161ab7..pending"
+    reviewed_delta: "2df5c20bd058f352b3135bf4b81afc426c161ab7..8ad33455c"
     report: "restricted the established route to ambient total-package endomorphisms and made both R_Theta membership and the paper consequence explicitly conditional"
   rerun_required: true
 ```
