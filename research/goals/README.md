@@ -23,6 +23,9 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
 
 ## draft（人間の確認待ち）
+- [G-123-aat-realization-reconstruction](G-123-aat-realization-reconstruction.md)
+  (S5。独立な実現と有限表示から対象・比較・変更の分類を再構成し、
+  モデル同期とプロトコルの追随変更へ接続する)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
