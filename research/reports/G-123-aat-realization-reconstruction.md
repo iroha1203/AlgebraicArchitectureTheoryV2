@@ -773,20 +773,6 @@ review_round_3:
     - "removed protocolObservation from PrimitiveSource and derived protocolObservationValue from a generating state"
     - "synchronized the top-level C ledger while retaining package-level square and comparison obligations as unfinished"
   rerun_required: true
-review_round_2:
-  head: 1283e9cb511b4cd870bea783d8682d6611465f15
-  verdict: pass-after-noncentral-fix
-  independent_lanes:
-    math_a: pass
-    math_b: pass
-    lean_a: pass
-    lean_b: pass-after-noncentral-fix
-  noncentral_findings:
-    - "the Lean docstring still described the dependency-equivalent rearrangement as the literal fixed G-122 quantifier order"
-  direct_response:
-    reviewed_delta: "1283e9cb511b4cd870bea783d8682d6611465f15..ef4da6d9938598979645784c21b2398553a98d95"
-    verdict: pass
-    new_findings: []
 ```
 
 ## Cycle 6 — Uniform package flip and the fixed Karoubi witness
@@ -1073,4 +1059,18 @@ initial_review:
     - "replaced same-order wording with dependency-equivalent quantifier range"
     - "corrected the n1014 provenance and distinguished the user-supplied anti-weakening clauses"
   rerun_required: true
+review_round_2:
+  head: 1283e9cb511b4cd870bea783d8682d6611465f15
+  verdict: pass-after-noncentral-fix
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass-after-noncentral-fix
+  noncentral_findings:
+    - "the Lean docstring still described the dependency-equivalent rearrangement as the literal fixed G-122 quantifier order"
+  direct_response:
+    reviewed_delta: "1283e9cb511b4cd870bea783d8682d6611465f15..ef4da6d9938598979645784c21b2398553a98d95"
+    verdict: pass
+    new_findings: []
 ```
