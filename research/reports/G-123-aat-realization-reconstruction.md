@@ -1647,7 +1647,7 @@ initial_review:
   verdict: revisions-required
   independent_lanes:
     math_a: revisions-required
-    math_b: pass-after-central-scope-fix
+    math_b: revisions-required
     lean_a: revisions-required
     lean_b: revisions-required
   central_findings:
