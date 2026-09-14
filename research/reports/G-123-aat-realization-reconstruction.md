@@ -724,7 +724,7 @@ audits:
   blocking_findings: []
   next_obligation: "Construct branch-specific primitive interpretations and the general G-122 raw primitive input before defining the finite presentation Sigma or intrinsic D_Theta."
 initial_review:
-  fixed_head: df5a75ecd0e7351b4c46de1e8cec477f7525a46e
+  head: df5a75ecd0e7351b4c46de1e8cec477f7525a46e
   verdict: major-revisions
   central_findings:
     - "the G-117 branch accepted arbitrary ObjectName types and values, permitting renamed completed-map quotation"
