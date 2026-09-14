@@ -23,11 +23,11 @@
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
 | A | 一つの宣言の下で意味圏と有限構文を独立に構成する | `LensData`, `IsTotalLens`, `LensRealization`, `LensPresentation`, `lensDecoder` | `V`, `v₀`, 三つのlens法則、有限な基準fiber | product decoderと有限table構文 | Bのlens具体適用、Eのモデル同期 | AAT共通宣言、完全幾何、必須三入力族の同一宣言への収録 |
-| B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | `res`, `ext`, `homEquivFiberMap`, `displayedRes`, `displayedExt`, `displayedHomEquivGeneratorMap`, `evaluationEquiv` | 完成射は`get`と`put`を保存。生成写像は有限fiber間の関数のみ | `res_ext`, `ext_res`, `displayedRes_displayedExt`, `displayedExt_displayedRes` | decoderの充満性・忠実性 | protocolとAAT完全幾何の対応する構成 |
+| B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | `res`, `ext`, `homEquivFiberMap`, `displayedRes`, `displayedExt`, `displayedHomEquivGeneratorMap`, `evaluationEquiv`, `lensDecoder_map_eq_displayedExt_evaluation` | 完成射は`get`と`put`を保存。生成写像は有限fiber間の関数のみ | `res_ext`, `ext_res`, `displayedRes_displayedExt`, `displayedExt_displayedRes`, `F_Θ(f)=ext(J(f))` | decoderの充満性・忠実性 | protocolとAAT完全幾何の対応する構成 |
 | B1 | 充満性、忠実性、冪等完備性、retract生成を個別に放電する | `lensDecoder_full`, `lensDecoder_faithful`, `lensRealization_isIdempotentComplete`, `exists_decoder_retract` | lens入力条件のみ | finite table、固定点lens、fiber列挙によるnormal form | `lensPresentationEquivalence` | 共通Karoubi延長、arrow再構成、分裂選択の自然同型、AAT完全幾何への適用 |
 | C | 一様operation flipと同じ射の二つのreading | — | G-117の固定入力 | — | operation保持の必要性 | 全項目未完了 |
 | D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | — | G-122の固定版 | — | n1012第7章から第8章 | 全項目未完了 |
-| E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | `c ↦ (get c, put c v₀)`に相当する`normalFormIso`; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
+| E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
 | E protocol | 有限schemaの関手意味論と生成辺tableの再構成 | — | `Q,L,O` | — | AAT翻訳、Fのprotocol適用 | 全項目未完了 |
 | F | 操作連結性による分裂短完全列・核・torsor、二つのCS適用、三有限例 | — | `Q,K,H` | — | D・Eとの共通分類 | 全項目未完了 |
 
@@ -76,6 +76,11 @@ result:
   evidence:
     - AAT.AG.RealizationReconstruction.LensRealization.homEquivFiberMap
     - AAT.AG.RealizationReconstruction.LensRealization.displayedHomEquivGeneratorMap
+    - AAT.AG.RealizationReconstruction.LensRealization.lensDecoder_map_eq_displayedExt_evaluation
+    - AAT.AG.RealizationReconstruction.LensRealization.canonicalNormalFormEquiv
+    - AAT.AG.RealizationReconstruction.LensRealization.canonicalNormalFormIso
+    - AAT.AG.RealizationReconstruction.LensRealization.canonicalNormalFormIso_hom_apply
+    - AAT.AG.RealizationReconstruction.LensRealization.canonicalNormalFormIso_inv_apply
     - AAT.AG.RealizationReconstruction.LensRealization.lensDecoder_full
     - AAT.AG.RealizationReconstruction.LensRealization.lensDecoder_faithful
     - AAT.AG.RealizationReconstruction.LensRealization.normalFormIso
@@ -88,6 +93,11 @@ result:
     theorem_names:
       - homEquivFiberMap
       - displayedHomEquivGeneratorMap
+      - lensDecoder_map_eq_displayedExt_evaluation
+      - canonicalNormalFormEquiv
+      - canonicalNormalFormIso
+      - canonicalNormalFormIso_hom_apply
+      - canonicalNormalFormIso_inv_apply
       - lensDecoder_full
       - lensDecoder_faithful
       - exists_decoder_retract
@@ -104,9 +114,11 @@ result:
       - "finite generator data without completed maps -> Fiber maps and LensPresentation.GeneratorMap"
       - "restriction/extension inverse -> res_ext and ext_res"
       - "finite syntax evaluation bijection -> evaluationEquiv and displayedHomEquivGeneratorMap"
+      - "decoder equation -> lensDecoder_map_eq_displayedExt_evaluation proves F_Theta(f)=ext(J(f))"
+      - "exact canonical L4 normal form -> canonicalNormalFormEquiv and canonicalNormalFormIso"
       - "fullness/faithfulness -> lensDecoder_full and lensDecoder_faithful"
       - "idempotent splitting -> fixedPointLens and split equations"
-      - "retract generation -> normalFormIso and exists_decoder_retract"
+      - "finite enumeration connection and retract generation -> normalFormIso and exists_decoder_retract"
       - "category equivalence -> lensPresentationEquivalence"
     undischarged_assumptions: []
     acceptance_point: "The lens-family obligation is derived from the fixed CS inputs; none of fullness, faithfulness, splitting, retract generation, or completed morphism data is a theorem input or object-membership condition."
@@ -115,7 +127,8 @@ audits:
   premise_delta:
     discharged:
       - "extension existence and uniqueness from the three lens laws via res_ext/ext_res"
-      - "finite presentation existence from finite reference fiber via presentationOf/normalFormIso"
+      - "exact canonical L4 normal form from the lens laws via canonicalNormalFormEquiv/canonicalNormalFormIso"
+      - "finite presentation existence from finite reference fiber by transporting the complement into the exact canonical normal form"
       - "idempotent splitting from the fixed-point carrier and the actual idempotent map"
       - "retract generation from the explicitly constructed normal-form isomorphism"
     remaining:
@@ -123,7 +136,8 @@ audits:
   certificate_provenance:
     discharged:
       - "IsTotalLens laws are the fixed n1015 semantic inputs, not reconstruction conclusions"
-      - "normalFormIso is constructed from Fiber enumeration and res/ext"
+      - "canonicalNormalFormIso is constructed directly from get/put and the lens laws"
+      - "normalFormIso composes finite Fiber enumeration with canonicalNormalFormIso.symm"
       - "fixedPointCondition is constructed from the original lens laws and idempotent"
     unresolved: []
   proof_use:
