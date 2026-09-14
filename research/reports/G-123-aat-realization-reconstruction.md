@@ -24,7 +24,10 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | A | 一つの宣言の下で意味圏と有限構文を独立に構成する | `LensData`, `IsTotalLens`, `LensRealization`, `LensPresentation`, `lensDecoder` | `V`, `v₀`, 三つのlens法則、有限な基準fiber | product decoderと有限table構文 | Bのlens具体適用、Eのモデル同期 | AAT共通宣言、完全幾何、必須三入力族の同一宣言への収録 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | `res`, `ext`, `homEquivFiberMap`, `displayedRes`, `displayedExt`, `displayedHomEquivGeneratorMap`, `evaluationEquiv`, `lensDecoder_map_eq_displayedExt_evaluation` | 完成射は`get`と`put`を保存。生成写像は有限fiber間の関数のみ | `res_ext`, `ext_res`, `displayedRes_displayedExt`, `displayedExt_displayedRes`, `F_Θ(f)=ext(J(f))` | decoderの充満性・忠実性 | protocolとAAT完全幾何の対応する構成 |
-| B1 | 充満性、忠実性、冪等完備性、retract生成を個別に放電する | `lensDecoder_full`, `lensDecoder_faithful`, `lensRealization_isIdempotentComplete`, `exists_decoder_retract` | lens入力条件のみ | finite table、固定点lens、fiber列挙によるnormal form | `lensPresentationEquivalence` | 共通Karoubi延長、arrow再構成、分裂選択の自然同型、AAT完全幾何への適用 |
+| B 充満性 | decoderの充満性を個別に放電する | `lensDecoder_full` | lens入力条件のみ | 任意の完成射を制限してfinite tableを構成 | `lensDecoder_isEquivalence`, `lensPresentationEquivalence` | AAT完全幾何とprotocolへの適用 |
+| B 忠実性 | decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `displayedRes_lensDecoder_map` | lens入力条件のみ | `res`で各table entryを回復 | `lensDecoder_isEquivalence`, `lensPresentationEquivalence` | AAT完全幾何とprotocolへの適用 |
+| B 冪等完備性 | 意味圏の冪等射を個別に分裂する | `lensRealization_isIdempotentComplete` | lens入力条件と任意の冪等射 | 固定点lensと包含・retraction | 共通Karoubi延長とarrow再構成 | 共通Karoubi延長、arrow再構成、分裂選択の自然同型、AAT完全幾何への適用 |
+| B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | `exists_decoder_retract` | lens入力条件のみ | fiber列挙と正準normal formからretractを構成 | 共通Karoubi延長とarrow再構成 | 共通Karoubi延長、arrow再構成、分裂選択の自然同型、AAT完全幾何への適用 |
 | C | 一様operation flipと同じ射の二つのreading | — | G-117の固定入力 | — | operation保持の必要性 | 全項目未完了 |
 | D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | — | G-122の固定版 | — | n1012第7章から第8章 | 全項目未完了 |
 | E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
@@ -106,7 +109,7 @@ result:
     source_labels:
       - "GOAL A: lens mandatory input family"
       - "GOAL B0: res/ext/J"
-      - "GOAL B(1)--(4): four reconstruction properties"
+      - "GOAL B: four separately required reconstruction properties"
       - "GOAL E: model synchronization"
       - "n1015 (L1)--(L4)"
     conjuncts:

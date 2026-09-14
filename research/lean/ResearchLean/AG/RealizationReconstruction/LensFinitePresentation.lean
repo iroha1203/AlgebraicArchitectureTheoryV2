@@ -160,16 +160,26 @@ theorem lensDecoder_map_eq_displayedExt_evaluation
   cases c
   rfl
 
-/-- Main G-123(B2) instance: decoder faithfulness is proved entry by entry from
-the displayed restriction API, with no injectivity certificate in the syntax. -/
+/-- No-unfold API for G-123(B0): restricting a decoded syntax map recovers its
+generator-table evaluation `J`.  It combines the decoder equation with the
+displayed restriction/extension inverse law. -/
+@[simp]
+theorem displayedRes_lensDecoder_map
+    {P Q : LensPresentation} (f : P ⟶ Q) :
+    displayedRes ((lensDecoder V v₀).map f) =
+      (LensPresentation.evaluationEquiv P Q) f := by
+  rw [lensDecoder_map_eq_displayedExt_evaluation, displayedRes_displayedExt]
+
+/-- Main G-123(B) faithfulness instance: equality is reflected entry by entry
+through the B0 restriction API, with no injectivity certificate in the syntax. -/
 instance lensDecoder_faithful : (lensDecoder V v₀).Faithful where
   map_injective {P Q} f g h := by
-    funext k
-    have := congrArg (fun hom => displayedRes hom k) h
-    simpa only [displayedRes, lensDecoder, product, productData, ULift.up_down] using this
+    apply (LensPresentation.evaluationEquiv P Q).injective
+    have hres := congrArg displayedRes h
+    simpa only [displayedRes_lensDecoder_map] using hres
 
-/-- Main G-123(B1) instance: decoder fullness is constructed by restriction and
-the B0 decoder equation, with no representability premise on semantic maps. -/
+/-- Main G-123(B) fullness instance: a representing table is constructed by
+restriction and the B0 decoder equation, with no representability premise. -/
 instance lensDecoder_full : (lensDecoder V v₀).Full where
   map_surjective {P Q} h :=
     ⟨displayedRes h, by
@@ -221,13 +231,14 @@ noncomputable instance lensDecoder_isEquivalence : (lensDecoder V v₀).IsEquiva
 
 /-- The finite presentation category reconstructs the independent semantic lens category.
 
-This is the lens-family equivalence of G-123(E), n1015 (L1)--(L4), obtained only
-after the four reconstruction obligations have been constructed separately. -/
+This is the lens-family equivalence of G-123(E), n1015 (L1)--(L4), obtained from
+the separately constructed fullness, faithfulness, and essential surjectivity.
+Idempotent completeness and retract generation remain separate G-123(B) results. -/
 noncomputable def lensPresentationEquivalence :
     LensPresentation ≌ LensRealization V v₀ :=
   (lensDecoder V v₀).asEquivalence
 
-/-- Main G-123(B4) theorem: every semantic object is an explicit retract of the
+/-- Main G-123(B) retract-generation theorem: every semantic object is an explicit retract of the
 decoder object selected from its finite fiber; no retract data is an input. -/
 theorem exists_decoder_retract (L : LensRealization V v₀) :
     ∃ (P : LensPresentation)
@@ -239,7 +250,7 @@ theorem exists_decoder_retract (L : LensRealization V v₀) :
 
 /-- The fixed-point carrier of an idempotent semantic lens morphism.
 
-This begins the constructed idempotent splitting required by G-123(B3); the
+This begins the constructed idempotent splitting required by G-123(B); the
 fixed points are derived from the actual endomorphism, not supplied as data. -/
 def fixedPointData (L : LensRealization V v₀) (e : L ⟶ L) : LensData V where
   Carrier := {c : L.Carrier // e c = c}
@@ -250,7 +261,7 @@ def fixedPointData (L : LensRealization V v₀) (e : L ⟶ L) : LensData V where
 
 /-- The fixed-point construction inherits the lens laws and finite reference fiber.
 
-This discharges the n1015 (L1) premises for the G-123(B3) splitting object from
+This discharges the n1015 (L1) premises for the G-123(B) splitting object from
 the original lens laws and the endomorphism naturality fields. -/
 def fixedPointCondition (L : LensRealization V v₀) (e : L ⟶ L) :
     IsTotalLens v₀ (fixedPointData L e) where
@@ -271,13 +282,13 @@ def fixedPointCondition (L : LensRealization V v₀) (e : L ⟶ L) :
       apply Subtype.ext
       exact congrArg (fun z : L.Fiber => z.1) hab)
 
-/-- Object-construction API for G-123(B3): the fixed-point data and its derived
+/-- Object-construction API for G-123(B) idempotent splitting: the fixed-point data and its derived
 n1015 (L1) proof are packaged as a semantic lens. -/
 def fixedPointLens (L : LensRealization V v₀) (e : L ⟶ L) : LensRealization V v₀ where
   toLensData := fixedPointData L e
   condition := fixedPointCondition L e
 
-/-- Splitting API for G-123(B3): inclusion is constructed from subtype
+/-- Splitting API for G-123(B) idempotent completeness: inclusion is constructed from subtype
 inclusion and preserves the n1015 (L2) operations definitionally. -/
 def fixedPointInclusion (L : LensRealization V v₀) (e : L ⟶ L) :
     fixedPointLens L e ⟶ L where
@@ -287,7 +298,7 @@ def fixedPointInclusion (L : LensRealization V v₀) (e : L ⟶ L) :
 
 /-- An idempotent retracts the original lens onto its fixed-point lens.
 
-This is the constructed retraction for G-123(B3); the sole extra premise is the
+This is the constructed retraction for G-123(B) idempotent completeness; the sole extra premise is the
 defining idempotence equation, which is used to prove fixed-point membership. -/
 def fixedPointRetraction (L : LensRealization V v₀) (e : L ⟶ L)
     (he : e ≫ e = e) : L ⟶ fixedPointLens L e where
@@ -300,7 +311,7 @@ def fixedPointRetraction (L : LensRealization V v₀) (e : L ⟶ L)
     apply Subtype.ext
     exact e.put_naturality c v
 
-/-- First splitting equation for the main G-123(B3) construction; it uses
+/-- First splitting equation for the main G-123(B) idempotent construction; it uses
 fixed-point membership and is separate from the second split equation. -/
 theorem fixedPoint_split_id
     (L : LensRealization V v₀) (e : L ⟶ L) (he : e ≫ e = e) :
@@ -310,7 +321,7 @@ theorem fixedPoint_split_id
   apply Subtype.ext
   exact c.property
 
-/-- Second splitting equation for the main G-123(B3) construction; it identifies
+/-- Second splitting equation for the main G-123(B) idempotent construction; it identifies
 the composite with the supplied endomorphism on every state. -/
 theorem fixedPoint_split_e
     (L : LensRealization V v₀) (e : L ⟶ L) (he : e ≫ e = e) :
@@ -319,7 +330,7 @@ theorem fixedPoint_split_e
   funext c
   rfl
 
-/-- Main G-123(B3) instance: every idempotent in the independent semantic lens
+/-- Main G-123(B) idempotent-completeness instance: every idempotent in the independent semantic lens
 category splits through the constructed fixed-point lens. -/
 instance lensRealization_isIdempotentComplete :
     IsIdempotentComplete (LensRealization V v₀) where
