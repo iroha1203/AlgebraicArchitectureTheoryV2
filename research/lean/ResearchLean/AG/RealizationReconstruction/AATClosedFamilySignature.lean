@@ -242,8 +242,8 @@ inductive PrimitiveContext :
       (vertex : input.schema.Vertex) :
       PrimitiveContext (.protocol input) (.protocol X) (.protocolState vertex)
 
-/-- The finite double-diamond cell family is a diagnostic combinatorial role,
-not the AAT complete-geometry context family. -/
+/-- The source G-122 diagnostic-cell family is a combinatorial role, not the
+AAT complete-geometry context family. -/
 inductive PrimitiveDiagnosticCell :
     (θ : ClosedFamilyParameter.{u, v}) → FamilyRealization θ →
       Type (max (u + 1) (v + 1))
@@ -347,14 +347,6 @@ def protocolEdge {input : ProtocolFamilyInput.{u}}
       (PrimitiveObject.protocolState source : PrimitiveObject (.protocol input) (.protocol X))
       (PrimitiveObject.protocolState target : PrimitiveObject (.protocol input) (.protocol X)) :=
   .protocolEdge edge
-
-/-- The mandated finite G-122 specialization has a three-element signature
-axis. -/
-abbrev FiniteAxisFoldSignatureAxis := Fin 3
-
-/-- The mandated finite G-122 specialization has three signature
-coordinates. -/
-abbrev FiniteAxisFoldSignatureCoordinate := Fin 3
 
 /-- Role-indexed access to the actual source G-122 signature axis. -/
 inductive PrimitiveSignatureAxis :

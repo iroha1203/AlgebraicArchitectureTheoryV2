@@ -1151,10 +1151,10 @@ result:
       - "ClosedFamilyParameter.g122 carries the family input without narrowing it"
       - "FamilyRealization.g122 injects each original cell input under the already fixed parameter without adding a premise"
       - "the fixed finite-axis-fold parameter and realization inhabit the same general constructors"
-      - "each added primitive role is read from the original authored/support/geometry/raw structures"
+      - "each added primitive role is read from the original carrier or authored/support/geometry/raw structures"
     proof_use:
       - "the G-122 parameter payload determines the carrier, coefficient universe, authored square, and all dependent primitive role types"
-      - "the semantic-object constructor determines the cell, cochain, selected geometry, and raw role types"
+      - "the semantic-object constructor carries the cell, cochain, selected geometry, and raw inputs unchanged; the cell, selected geometry, and raw inputs determine the corresponding added role types, while the cochain remains available to the already constructed barBeta output"
       - "the fixed finite Atom specialization passes through the general g122 parameter and realization constructors"
     unfinished:
       - "FamilyRealization is only a property-free common index; it is not the realization category, a decoder image, or a reconstruction theorem"
@@ -1165,7 +1165,7 @@ result:
     focused_checks: "2/2 pass"
     namespace_axiom_audits:
       - "G122OriginalInput: 44 declarations, standard axioms only"
-      - "AATClosedFamilySignature: 399 declarations, standard axioms only"
+      - "AATClosedFamilySignature: 397 declarations, standard axioms only"
     bounded_target_builds:
       - "ResearchLean.AG.RealizationReconstruction.AATClosedFamilySignature passed"
       - "ResearchLean.AG.RealizationReconstruction.AATUniformFlipKaroubi passed"
@@ -1185,7 +1185,7 @@ audits:
   certificate_provenance:
     discharged:
       - "the common constructors carry only the Cycle 7 original inputs"
-      - "source-derived role payloads are selected from the authored square, its support package, selected geometry, or raw restrictions"
+      - "source-derived role payloads are selected from the carrier, authored square, its support package, selected geometry, or raw restrictions"
     unresolved:
       - "finite generation and interpretation adequacy of all G-122 roles"
   proof_use:
