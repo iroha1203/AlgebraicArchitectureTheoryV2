@@ -1670,7 +1670,7 @@ second_review:
   noncentral_findings:
     - "the new registered module had a module docstring but no declaration-level API docstrings"
   direct_response:
-    reviewed_delta: "68c7147381dd69a8a4d59c23dd07b38dcc8e395d..pending"
+    reviewed_delta: "68c7147381dd69a8a4d59c23dd07b38dcc8e395d..dc8a0f13d"
     lean: "added declaration-level docstrings describing each construction, premise, proof role, and conditional no-go scope"
   rerun_required: true
 ```
