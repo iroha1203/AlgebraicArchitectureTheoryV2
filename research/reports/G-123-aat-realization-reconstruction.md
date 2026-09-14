@@ -22,7 +22,7 @@
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder` | lens入力; protocolの有限`Q,L`と任意の観測functor `O` | product lens decoder; path/quotient protocol decoder | Bの二具体適用、Eのモデル同期 | AAT共通宣言、完全幾何、必須三入力族の同一宣言への収録 |
+| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton` | lens入力; protocolの有限`Q,L`と任意の観測functor `O`; 任意の依存reference carrier shape | product lens decoder; path/quotient protocol decoder; 有限参照tableの型付けscaffold | Bの二具体適用、Eのモデル同期; 後続のclosed AAT宣言候補の型設計 | primitive由来を固定して完成射の再入力を排除する閉じた`Σ`、AAT parameter interpretation、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何、必須三入力族の同一宣言への収録 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full` | 各具体入力条件のみ | 任意の完成射を制限して有限tableを構成 | 各direct equivalence | AAT完全幾何への適用 |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
@@ -469,4 +469,121 @@ audits:
     - "focused CSKaroubiReconstruction.lean: standard axioms only"
   blocking_findings: []
   next_obligation: "Construct the common AAT realization declaration and operation-aware complete-geometry res/ext/J, then apply the same B1 theorem from AAT-specific discharged evidence."
+```
+
+
+## Cycle 4 — Parameter-relative AAT primitive references
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 4
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 77213e96e0f90216355640ca842fefc32f794e7b
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 3 merge 77213e96e0f90216355640ca842fefc32f794e7b; common AAT declaration and complete-geometry res/ext/J unconstructed"
+  proof_dag_predecessors:
+    - "n1014 sections 6.2--6.4: all-object, all-endpoint, and all-context generation obligations"
+    - "G-122 fixed finite-axis-fold two-cell family"
+    - "existing GeometryTotalHom component extensionality, usable only after the component maps are constructed"
+  proof_obligation: "A checkpoint: define an unrestricted dependent reference-shape scaffold retaining typed operation endpoints and context owners, keep finiteness at the table level, and connect the fixed G-122 context-object carrier directly; construction of the closed source-provenanced Sigma remains a later obligation"
+  selection_reason: "The dependency shape and the fixed input type must be exposed before the closed source-derived declaration, evaluator, or extension can be defined. Existing extensionality lemmas compare already completed maps and therefore cannot supply the missing generators."
+  expected_result_type: proof-obligation-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATFiniteReferenceSyntax.lean
+  risks:
+    - "storing a PackageTotalHom, SignedExactCoreReadingHom, GeomReadHom, or GeometryTotalHom under a renamed field"
+    - "making the whole parameter, context, coefficient, or local carrier finite"
+    - "dropping dependent operation endpoints or the context owner of local data"
+    - "treating reference-table completeness as complete-morphism extension"
+    - "calling a two-cell reference witness the inclusion of the full G-122 geometry"
+  unchecked:
+    - "interpretation of primitive references into AAT objects and intrinsic D_Theta"
+    - "independent R_Theta and all of P_Theta, F_Theta, G_Theta, C_Theta"
+    - "all-object, all-endpoint, and all-context term recursors and evaluation"
+    - "AAT complete-geometry res/ext/J and four reconstruction properties"
+    - "C uniform flip, D full comparison recovery, E AAT translations, and F classification/examples"
+result:
+  proposed_result_type: proof-obligation-checkpoint
+  proof_obligation_delta: "Defined an unrestricted dependent reference-shape scaffold and finite occurrence tables for source, configuration, object formation, typed operations, laws, invariants, signature axes, contexts, coverage, overlap, Support, Axis, Observable, coefficients, raw coordinates, relations, and restrictions. Finiteness is confined to each table. The generic scaffold does not certify primitive provenance. Added a positive complete table whose carrier is the actual fixed finiteAxisFoldBCDatumSquare context category and a negative first-only table."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATFiniteReferenceSyntax.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.AATReferenceShape
+    - AAT.AG.RealizationReconstruction.AATReferenceShape.NamedObjectFormation
+    - AAT.AG.RealizationReconstruction.AATReferenceShape.NamedOperation
+    - AAT.AG.RealizationReconstruction.AATReferenceShape.NamedContext
+    - AAT.AG.RealizationReconstruction.AATReferenceShape.NamedRestriction
+    - AAT.AG.RealizationReconstruction.FiniteReferenceTable
+    - AAT.AG.RealizationReconstruction.FiniteReferenceTable.Complete
+    - AAT.AG.RealizationReconstruction.FiniteReferenceSkeleton
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldContextReferences_complete
+    - AAT.AG.RealizationReconstruction.firstOnlyFiniteAxisFoldContextReferences_not_complete
+  claim_mapping:
+    source_labels:
+      - "GOAL A: finite generator references and typed operation/context dependency requirements"
+      - "n1014 section 6.2: recovery targets remain future construction obligations"
+      - "n1014 section 6.3: fixed finite-axis-fold context-object carrier"
+    input_premises:
+      - "an arbitrary AATReferenceShape and parameter theta; no primitive provenance is inferred"
+      - "the actual finiteAxisFoldBCDatumSquare.context.Category from the fixed input"
+    constructed_evidence:
+      - "dependent occurrence types retaining owners and endpoints"
+      - "finite tables into possibly infinite carriers"
+      - "separately proved positive and negative completeness propositions"
+    proof_use:
+      - "the occurrence types expose the endpoint/context dependencies which the future closed syntax and evaluator must retain"
+      - "the positive table supplies both actual fixed context objects; the negative witness prevents a hidden-completeness reading"
+    unfinished:
+      - "no semantic realization, decoder, completed morphism, res, ext, or J is constructed in this cycle"
+      - "the generic shape does not prove primitive provenance or exclude answer-encoding through arbitrary carrier choices; the closed Sigma must do so"
+      - "the full finite-axis-fold core/geometry and its comparisons have not yet been included"
+  validation:
+    focused_checks: "1/1 pass"
+    namespace_axiom_audit: "standard axioms only"
+    prerequisite_target_build: "ResearchLean.AG.DoctrineFiberProduct.BCDiagnosticAxisFoldComparisonWitnesses passed as a bounded named target"
+    named_target_build: "ResearchLean.AG.RealizationReconstruction.AATFiniteReferenceSyntax passed"
+    research_full_build: not-run
+  initial_review:
+    head: c3e644829a5303fae36c49abb4b5f4f27d46f273
+    verdict: "major revisions / reject"
+    resolved_findings:
+      - "removed the unsupported claim that an unrestricted carrier shape itself proves primitive provenance or excludes type-parameter answer encoding; the closed source-derived Sigma remains explicitly unconstructed"
+      - "expanded the shape to distinguish source, configuration, object formation, invariant, signature-axis, coverage, and overlap reference sorts"
+      - "retyped the positive and negative tables over the actual finiteAxisFoldBCDatumSquare.context.Category"
+      - "added the missing theorem docstring"
+      - "restored chronological Cycle 1--4 report order"
+  verdict: "Cycle 4 establishes a dependency-shape scaffold and direct fixed-context reference only; primitive provenance and the closed Sigma remain unconstructed, and G-123 remains target-proof-checkpoint"
+audits:
+  premise_delta:
+    discharged:
+      - "finite reference tables do not require finite parameter carriers"
+      - "operation occurrences retain both typed endpoints"
+      - "local occurrences retain their owning object and context"
+      - "the fixed reference table is typed by finiteAxisFoldBCDatumSquare.context.Category rather than an unattached two-constructor carrier"
+    remaining:
+      - "source-derived primitive provenance and exclusion of completed-map answer encoding in the closed Sigma"
+      - "all interpretation, generation, semantic-category, reconstruction, comparison, translation, and classification obligations listed above"
+  certificate_provenance:
+    discharged:
+      - "FiniteReferenceSkeleton stores data only; completeness is an external Prop proved for the selected table"
+    unresolved:
+      - "construct completeness and adequacy from each fixed input, rather than accepting either in a presentation record"
+  proof_use:
+    used:
+      - "the fixed two-cell constructors in the positive and negative table theorems"
+    unused: []
+  structure_field_escape: "the generic scaffold has unrestricted carriers and therefore is not itself an anti-answer-encoding certificate; this remains explicit and unresolved"
+  route_integrity: "checkpoint-only; closed source-derived Sigma not yet constructed"
+  target_fitting: "partial reference-shape scaffold; no discharge of GOAL A"
+  vacuity: "positive two-entry completeness and negative one-entry incompleteness are both proved"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused AATFiniteReferenceSyntax.lean: standard axioms only"
+  blocking_findings: []
+  next_obligation: "Construct the closed source-provenanced Sigma that rules out completed-map answer encoding, then its primitive interpretation and intrinsic D_Theta before the all-object, all-endpoint, and all-context syntax recursors and AAT res/ext/J."
 ```
