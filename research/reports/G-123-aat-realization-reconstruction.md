@@ -13,10 +13,10 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 12 fullness/retract endomorphism-lift transfer
+- current proof obligation: Cycle 13 mandatory-C membership in an independent admissible-package category and combined conditional obstruction
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the actual AAT semantic category and prove mandatory-C source-choice morphism membership, then prove the source-provenance cardinal bound for the actual finite presentation syntax without adding completed endpoint-choice maps as parameters
+- next proof obligation: decide and construct the final AAT semantic category R_Theta and prove the actual source-provenanced finite syntax endomorphism bound without adding completed endpoint-choice maps as parameters
 
 ## Requirement ledger
 
@@ -24,12 +24,12 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`とG-122のsignature/equation/invariant/raw各role; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価; 全tag変換を実際のpackage endomorphismへ埋め込み、有限tag参照listからの全射decoderを対角化で否定 | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持 | Cycle 10 obstructionを避ける内在的生成条件と必須入力からの放電、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
-| B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full`; `retractEndomorphismMap_surjective_of_full`, `exists_retractEndomorphismMap_surjective` | 各具体入力条件のみ; 一般transferでは明示的な`F.Full` | 任意の完成射を制限して有限tableを構成; retract上の任意自己射を`r ≫ h ≫ i`のfullness preimageから持ち上げる | 各direct equivalence; mandatory-C obstructionを将来の実AAT decoderへ接続する categorical bridge | AAT完全幾何decoderの充満性を固定入力から放電し、source-choice射へ適用すること |
+| B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full`; `retractEndomorphismMap_surjective_of_full`, `exists_retractEndomorphismMap_surjective`; `not_full_and_retractGenerated_of_listObjectGeneratedEndomorphisms` | 各具体入力条件のみ; 一般transferでは明示的な`F.Full`; combined no-goでは各presentation自己射が有限object参照listの全射像であること | 任意の完成射を制限して有限tableを構成; retract上の任意自己射を`r ≫ h ≫ i`のfullness preimageから持ち上げる; admissible-package categoryのmandatory対象でlist decoder非全射と合成 | 各direct equivalence; mandatory-C obstructionを独立な実AAT package categoryへ接続する categorical bridge | final `R_Theta` decoderの充満性を固定入力から放電し、actual syntax endomorphism boundと接続すること |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
 | B 冪等完備性 | 各意味圏の冪等射を個別に分裂する | `lensRealization_isIdempotentComplete`, `protocolRealization_isIdempotentComplete`; `karoubiReconstructionEquivalence` | 各具体入力条件と任意の冪等射 | lens固定点; objectwise protocol固定点functor | lens/protocolのKaroubi延長とarrow再構成 | AAT意味圏での分裂構成と共通再構成への適用 |
 | B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract`; `karoubiObjectOfRetract`, `karoubiMapEssSurj`; `retractEndomorphismMap`, `exists_retractEndomorphismMap_surjective` | 各具体入力条件のみ; 一般transferでは明示的な`RetractGeneratedBy F` | fiber列挙; vertexwise列挙; retractからpresentation側冪等元を逆像構成; 同じ`i,r,i≫r=𝟙`を自己射decoderの全射性に実使用 | `karoubiCompletionEquivalence`, lens/protocolのKaroubi再構成; Cycle 11 cardinal obstructionとの将来接続 | AAT完全幾何でretractを固定入力から構成し、mandatory-C対象へ同じwitnessを与えること |
 | B1 | `Kar(P) ≃ R`、decoderの延長、一意性、arrow圏での再構成を同じ四証拠から得る | `karoubiReconstructionEquivalence`, `karoubiReconstructionRestrictionIso`, `karoubiExtensionComparison`, `karoubiExtensionComparison_unique`, `karoubiExtensionComparison_self`, `karoubiExtensionComparison_trans`, `karoubiArrowReconstructionEquivalence`; lens/protocol各適用 | full、faithful、意味圏の冪等完備性、decoder像によるretract生成 | `functorExtension₂`のfull/faithful/essentially-surjective証明、`toKaroubiEquivalence`による延長、fully faithfulな制限から比較同型を逆像構成 | lens/protocol双方のobject・任意arrow再構成 | AAT共通decoderへの同じ適用、分裂選択を明示する具体比較、完全幾何への適用 |
-| C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipTotal_square`, `taggedUniformFlipTotal_commutes_normalization`, `taggedNormalizationThenUniformFlip_ne_normalization`, `taggedNormalizationThenUniformFlipKaroubiAut`, `fixedArchitectureObjectFunctor`, `fixedArchitectureObjectFunctor_identifies_uniform_flip`, `fixedArchitectureObjectFunctor_not_injective_at_tagged`, `taggedUniformFlipTotal_ne_endpointFlipTotal`; `taggedSourceChoiceTotal`, `readTaggedSourceChoice_taggedSourceChoiceTotal`, `taggedSourceChoiceTotal_injective`, `taggedSourceChoiceEndomorphisms_not_listObjectEnumerable` | G-117の固定`taggedOperationPackage`とadmissibility; 任意の`ArchitectureObject FiniteModel.carrier → Bool` | 全端点・全operationの一様Bool tag反転、package射の`t²=1`、`et=te`、指定operation評価による`et≠e`、Karoubi自己同型、固定点関手と非忠実性witness; sourceごとの任意Bool選択から実package自己射を構成し恒等operationで全選択を読戻し、有限object参照list decoderの全射性を対角化で否定 | 固定点関手は同じKaroubi二射`et,e`の像を同一視する; Aの全保存射と有限syntaxの両立可能性を検査するmandatory-C witness | Aで構成するoperation保持実現へ同じ二射を送り、像が異なることの接続; retract/fullnessを介した一般presentationへの非全射移送、actual syntax alphabetのprovenance/cardinal bound、追加の合法的D構造がsource-choice射を除けるかの判定 |
+| C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipTotal_square`, `taggedUniformFlipTotal_commutes_normalization`, `taggedNormalizationThenUniformFlip_ne_normalization`, `taggedNormalizationThenUniformFlipKaroubiAut`, `fixedArchitectureObjectFunctor`, `fixedArchitectureObjectFunctor_identifies_uniform_flip`, `fixedArchitectureObjectFunctor_not_injective_at_tagged`, `taggedUniformFlipTotal_ne_endpointFlipTotal`; `taggedSourceChoiceTotal`, `readTaggedSourceChoice_taggedSourceChoiceTotal`, `taggedSourceChoiceTotal_injective`, `taggedSourceChoiceEndomorphisms_not_listObjectEnumerable`; `taggedSourceChoiceAdmissibleMorphism`, `taggedSourceChoiceAdmissibleEndomorphisms_not_listObjectEnumerable` | G-117の固定`taggedOperationPackage`とadmissibility; 任意の`ArchitectureObject FiniteModel.carrier → Bool`; G-119で独立定義済みの全admissible-package category | 全端点・全operationの一様Bool tag反転、package射の`t²=1`、`et=te`、指定operation評価による`et≠e`、Karoubi自己同型、固定点関手と非忠実性witness; sourceごとの任意Bool選択から実package自己射を構成し恒等operationで全選択を読戻し、有限object参照list decoderの全射性を対角化で否定; 全source-choice射をdecoder像でない実category homとして構成 | 固定点関手は同じKaroubi二射`et,e`の像を同一視する; Aの全保存射と有限syntaxの両立可能性を独立package category内で検査するmandatory-C witness | final `R_Theta`とadmissible-package categoryの関係、actual syntax alphabetのprovenance/cardinal bound、追加の固定入力由来D構造がsource-choice射を除けるかの判定 |
 | D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | `G122FamilyInput`, `G122CellInput`, `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, `PrimitiveOperation.g122Ref`, `G122CellInput.fixedGeometry`, `G122CellInput.sourceTransport`, `G122CellInput.compatibleProblemData`, `G122CellInput.barBeta`, `finiteAxisFoldParameter`, `finiteAxisFoldRealization`, `finiteAxisFoldOperationReference` | G-122の固定版にある任意の`A,z,omega,k,g_z`; 固定有限axis-fold例 | 原入力と生成出力を分離し、任意のcell inputを共通familyの意味対象にし、元の有限例を同じ一般branchへ入れ、supportの全端点の各operation identityを参照し、同じ実際の`barBeta`を生成する証拠 | 将来のG-122 branch interpretationと表示回復 | operation族の有限生成・全域写像回復とprimitive interpretation、比較群・section・底/係数成分・二種類の核・各lift fiberの全元の表示回復と三場合分類は未完了 |
 | E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
 | E protocol | 有限schemaの関手意味論と生成辺tableの再構成 | `ProtocolSchema.ExecutionCategory`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.presentationEquivalence` | 有限vertex・typed edge・有限parallel path relations `Q,L`; 任意の`O:C_Q⥤Type`; vertexwise有限carrier | 自由path評価、relation quotient、全path `ext`、vertexwise列挙normal form | AAT翻訳、Fのprotocol適用 | operation名変更版、adapter square (P1)、AATとの双方向翻訳、Fへの適用 |
@@ -1814,4 +1814,149 @@ audits:
     - "named target ResearchLean.AG.RealizationReconstruction.RetractEndomorphismLift: pass"
   blocking_findings: []
   next_obligation: "Construct the fixed-input AAT semantic morphism condition strongly enough to test source-choice membership, then combine this transfer with an actual syntax provenance/cardinal theorem."
+```
+
+## Cycle 13 — Mandatory-C obstruction in an independent AAT package category
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 13
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 981fc5a089c730901fed2d811ed7c585292eae9a
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycles 11--12 left membership of the source-choice semantic family in an independently defined AAT category as the next required bridge"
+  proof_dag_predecessors:
+    - "G-119 CanonicalNormalizationAdmissiblePackage: independently defined full subcategory whose morphisms are all package total morphisms"
+    - "Cycle 11: source-choice PackageTotalHom family and finite object-reference no-go"
+    - "Cycle 12: fullness plus retract generation transfers presentation endomorphisms surjectively onto semantic endomorphisms"
+  proof_obligation: "Place every mandatory-C source-choice map in an actual independently defined AAT package category, preserve predicate readback there, and combine the list obstruction with the fullness/retract transfer under an explicit candidate syntax bound"
+  selection_reason: "This removes the ambient-hom versus actual-category-membership gap without defining the category as a decoder image, while leaving the choice of the final R_Theta and the real syntax provenance theorem open."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCAdmissibleCategoryObstruction.lean
+  risks:
+    - "calling the G-119 admissible-package category the final R_Theta without constructing the common G-123 declaration"
+    - "moving source-choice membership into a morphism certificate"
+    - "assuming every presentation hom is list-generated without proving it for the actual syntax"
+    - "turning the conditional candidate no-go into a target refutation"
+  unchecked:
+    - "selection and construction of the final common AAT semantic category R_Theta"
+    - "proof that actual presentation endomorphisms are bounded by the full source-provenanced finite alphabet"
+    - "fixed-input fullness and retract generation for the final decoder"
+    - "remaining A--F obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Wrapped every exact Cycle 11 source-choice PackageTotalHom as a morphism of G-119's independently defined full admissible-package category, transported the literal predicate readback and injectivity, reproved finite object-list non-surjectivity on that actual hom-set, and combined it with Cycle 12 to show that a decoder whose every presentation endomorphism is list-generated cannot be both full and retract-generating."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCAdmissibleCategoryObstruction.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceAdmissibleMorphism
+    - AAT.AG.RealizationReconstruction.readTaggedSourceChoiceAdmissible
+    - AAT.AG.RealizationReconstruction.readTaggedSourceChoiceAdmissible_taggedSourceChoiceAdmissibleMorphism
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceAdmissibleMorphism_injective
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceAdmissibleEndomorphisms_not_listObjectEnumerable
+    - AAT.AG.RealizationReconstruction.not_full_and_retractGenerated_of_listObjectGeneratedEndomorphisms
+  claim_mapping:
+    theorem_names:
+      - taggedSourceChoiceAdmissibleMorphism
+      - readTaggedSourceChoiceAdmissible
+      - readTaggedSourceChoiceAdmissible_taggedSourceChoiceAdmissibleMorphism
+      - taggedSourceChoiceAdmissibleMorphism_injective
+      - taggedSourceChoiceAdmissibleEndomorphisms_not_listObjectEnumerable
+      - not_full_and_retractGenerated_of_listObjectGeneratedEndomorphisms
+    source_labels:
+      - "GOAL A: semantic category independent of the decoder and all morphisms preserving its specified structure"
+      - "GOAL B properties 1 and 4: fullness and retract generation"
+      - "GOAL C: exact mandatory taggedOperationPackage input"
+      - "user anti-weakening clauses 1--4 and 7"
+      - "n1014 sections 2, 4.3, and 6.2--6.4"
+    conjuncts:
+      - "actual category membership of every source-choice map -> taggedSourceChoiceAdmissibleMorphism"
+      - "full predicate readback and injectivity inside that hom-set -> readback left inverse and taggedSourceChoiceAdmissibleMorphism_injective"
+      - "finite object-reference list non-surjectivity on the actual hom-set -> taggedSourceChoiceAdmissibleEndomorphisms_not_listObjectEnumerable"
+      - "list-generated presentation endomorphisms plus fullness and retract generation are incompatible -> not_full_and_retractGenerated_of_listObjectGeneratedEndomorphisms"
+      - "identification with final R_Theta and actual full-alphabet syntax bound -> deliberately not established"
+    input_premises:
+      - "fixed G-117 taggedOperationPackage and its accepted canonical-normalization admissibility"
+      - "G-119's independently defined CanonicalNormalizationAdmissiblePackage full subcategory"
+      - "arbitrary source predicate on the full ArchitectureObject type"
+      - "for the combined candidate theorem, an arbitrary decoder F and a separate surjective list-generation witness for each presentation endomorphism type"
+      - "no decoder image, completed operation map, R_Theta membership certificate, fullness certificate, or retract certificate is stored in the category or source-choice morphism"
+    constructed_evidence:
+      - "one actual admissible-package category endomorphism for every source predicate"
+      - "literal readback left inverse and injectivity in the category hom-set"
+      - "Cantor non-surjectivity for finite source-object reference list decoders into that hom-set"
+      - "a contradiction between list-generated presentation endomorphisms and simultaneous decoder fullness plus retract generation"
+    proof_use:
+      - "ObjectProperty.homMk uses only the existing object property because the subcategory is full on morphisms"
+      - "category-hom readback evaluates the underlying actual PackageTotalHom operation map"
+      - "the combined theorem applies Cycle 12 at taggedUniformFlipPackage and composes both surjections"
+      - "listGenerated is used only at the single presentation object supplied by the retract witness, but quantifies over every p before that choice"
+    unfinished:
+      - "the independently defined admissible-package category is not yet proved to be the final common R_Theta"
+      - "listGenerated is not discharged for the actual G-123 presentation syntax or its richer primitive alphabet"
+      - "the final fixed-input decoder's fullness and retract generation are not constructed"
+      - "no target refutation or positive realization reconstruction is claimed"
+    undischarged_assumptions:
+      - "final R_Theta selection and its relation to CanonicalNormalizationAdmissiblePackage"
+      - "actual syntax endomorphism cardinal/provenance bound"
+      - "fixed-AAT decoder fullness and retract generation"
+      - "remaining A--F obligations"
+    acceptance_point: "The semantic-family membership and conditional list-grammar incompatibility are constructed inside a pre-existing decoder-independent AAT category. Acceptance does not identify that category with final R_Theta or discharge the candidate syntax premise."
+    port_status: not-applicable
+  candidate_failure_record:
+    candidate: "Use a presentation category whose every endomorphism is a surjective image of finite lists of mandatory-C architecture-object references, while decoding fully and retract-generating into the admissible-package category"
+    obstacle: "the fixed semantic object has one distinguishable actual category endomorphism for every Boolean source predicate, and Cycle 12 would make a single presentation endomorphism type surject onto all of them"
+    tried_construction: "Cycle 11 ambient source-choice family, Cycle 12 abstract transfer, then full-subcategory membership and surjection composition in Cycle 13"
+    forbidden_shortcuts:
+      - "place the complete source predicate or operationMap in one presentation reference"
+      - "define the semantic hom-set as the decoder image"
+      - "discard source-choice maps without a fixed-input-derived preservation law"
+      - "call this candidate failure a refutation of richer alphabets or of G-123"
+    status: "candidate grammar refuted for this independent semantic category; fixed target not refuted"
+  validation:
+    focused_checks: "1/1 pass"
+    named_target_build: "ResearchLean.AG.RealizationReconstruction.MandatoryCAdmissibleCategoryObstruction passed"
+    namespace_axiom_audit: "6 declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 13 closes actual category membership and the conditional combination of Cycles 11--12. The final R_Theta choice and actual full syntax bound remain open, so G-123 is neither proved nor refuted."
+audits:
+  premise_delta:
+    discharged:
+      - "every mandatory-C source-choice PackageTotalHom is a morphism of the independently defined full admissible-package category"
+      - "predicate readback and finite object-list non-surjectivity hold on that actual category hom-set"
+      - "under the explicit per-presentation list-generation premise, fullness and retract generation cannot both hold"
+    remaining:
+      - "construct or identify final R_Theta without target fitting"
+      - "derive the endomorphism-code bound from the actual source-provenanced syntax"
+      - "construct the fixed decoder and remaining B properties"
+      - "all remaining A--F obligations"
+  certificate_provenance:
+    discharged:
+      - "category membership is inherited from a pre-existing full subcategory, not accepted as a new morphism field"
+      - "the combined contradiction composes the separately constructed Cycle 11 and Cycle 12 surjections"
+    unresolved:
+      - "the actual presentation syntax provenance theorem"
+  proof_use:
+    used:
+      - "every arbitrary source predicate in the category-morphism constructor"
+      - "every source endpoint in the inherited readback"
+      - "decoder fullness and retract generation through Cycle 12"
+      - "listGenerated at the presentation object selected by the retract"
+    unused: []
+  structure_field_escape: "the admissible-package category is a full subcategory on an object property; morphisms have no added membership certificate"
+  route_integrity: "the semantic category predates this decoder analysis and contains all package total morphisms between its admissible objects"
+  target_fitting: "the exact mandatory-C package and every source-choice map are retained; only the candidate presentation grammar is restricted by the explicit listGenerated premise"
+  vacuity: "predicate readback is a left inverse and the final contradiction composes two genuine surjections"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused MandatoryCAdmissibleCategoryObstruction.lean: pass, 6 declarations, standard axioms only"
+    - "named target ResearchLean.AG.RealizationReconstruction.MandatoryCAdmissibleCategoryObstruction: pass"
+  blocking_findings: []
+  next_obligation: "Determine the final common R_Theta and prove the actual primitive-reference syntax bound, or exhibit a fixed-input law that legitimately excludes the source-choice family while preserving every card-mandated morphism."
 ```
