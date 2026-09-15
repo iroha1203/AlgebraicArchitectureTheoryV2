@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 55 source-constructed inverse syntax and invertible/noninvertible comparison separation in the quotient category
+- current proof obligation: Cycle 56 fixed finite-axis-fold ambient-kernel recipes and their normalization-kernel membership
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: extend the source-provenanced presentation beyond the comparison generators to the required dependent core, equation, operation, and context morphism data, and prove its restriction/extension theorem without importing completed maps as constants
+- next proof obligation: prove the two fixed endpoint kernel generators preserve or fail to preserve the actual `barAlpha` and generated `barBeta`, then connect the preserving pairs to the original and base-fixing comparison groups without treating an arbitrary group element as a syntax constant
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 56 delta | 固定finite axis-foldのdirect/via-base両端で、canonical正規化に消えるambientな核の元を、完成自己同型・admissibility証拠・比較群要素を入力せず有限recipeから構成する | `finiteAxisFoldDirectEndpointAdmissible`, `finiteAxisFoldViaBaseEndpointAdmissible`, `FiniteAxisFoldAmbientKernelCode`, `endpoint`, `admissibleEndpoint`, `evaluate`, `evaluateAut`, `evaluate_ne_identity`, `evaluate_comp_self`, `normalization_comp_evaluate`, `evaluate_comp_normalization`, `admissibleEvaluateAut`, `admissibleEvaluateAut_ne_one`, `normalization_map_admissibleEvaluateAut`, `admissibleEvaluateAut_mem_normalizationKernel`, `no_code_evaluates_to_identity` | カード固定の`finiteAxisFoldBCDatumSquare`、cell `second`、係数`Int`、同じgeometry/raw input; 固定support packageの既存admissibilityとexact pull/pushによるadmissibility transport | endpoint tagだけを持つ2要素code、元southwest admissibilityから両endpoint admissibilityを構成、各codeを非恒等な位数2のcomplete-geometry自己同型へ評価、canonical正規化の左右吸収、独立admissible-geometry category上のnormalization automorphism homのkernel membership | Dでambientな核を正規化結果から推測せず表示側source recipeとして回復する固定例; 後続の比較保存判定と二種類の核の分離 | この2元はまだ実`barAlpha`/`barBeta`を保つpairとして未分類; 元の全比較群・底固定群の全元、restriction kernel、section、全lift fiber、一般入力へのsyntax、B/E/Fは未完了 |
 | A/D Cycle 55 delta | 実`barAlpha`の逆を元入力から生成するtyped syntaxとして表示し、source-law商圏内で可逆比較と固定generated `barBeta`の非可逆比較を同じdecoder上で分離する | `G122GeneratedComparisonSyntax.barAlphaInv`, `evaluate_barAlphaInv`, `evaluate_barAlpha_barAlphaInv`, `evaluate_barAlphaInv_barAlpha`, `Congruent.barAlpha_hom_inv`, `Congruent.barAlpha_inv_hom`, `G122GeneratedComparisonPresentation.barAlphaIso`, `finiteAxisFold_barBeta_class_not_isIso` | 任意のG-122 family/cell inputと、そこから既に構成済みの実`barAlphaIso`; Cycle 54 source-law quotient category/decoder; 固定generated-cochain `barBeta`のsemantic非可逆性 | exact逆向きendpointの有限leaf、元入力からの評価、両inverse lawのsource-law合同、商圏内の明示的Iso、decoderがIsIsoを保つことを使う固定`barBeta`非可逆性 | Dの三分類のうち可逆・非可逆を表示圏自身の射性質として保持し、比較群表示へ進む基礎 | 全比較群と底固定群の全元、section、底/係数成分、二核・全lift fiber、全許容Homのsyntax、res/ext/J、B/E/Fは未完了 |
 | A/D Cycle 54 delta | Cycle 51構文をCycle 52のsource-law合同でHomごとに商し、既存の全complete-Hom圏を置換せず別の表示圏とdecoderを構成し、固定正負例を保つ | `G122GeneratedComparisonPresentation`, `ofObject`, `congruentSetoid`, `Hom`, `classOf`, `comp`, `instCategory`, `decoder`, `decoder_map_classOf`, `finiteAxisFold_barBeta_factor_class_eq`, `finiteAxisFold_barD_class_ne_identity_class`, `decoder_map_finiteAxisFold_barD` | 任意のG-122 family/cellからのendpoint-typed syntax; source-law `Congruent` の同値・合成閉包、評価soundness、固定factorization正例とprojector非同値負例 | exact生成objectを保持する別object wrapper、source-law quotient Hom、商上の恒等・合成・圏律、独立全Hom圏へのwell-defined decoder、固定barBeta factorization等号とbarD対identity非等号 | Dの生成比較fragmentを実際の商圏とsemantic decoderへ接続し、後続の全成分syntax拡張の基礎にする | 四operation fragmentは全許容Homを覆わず、合同complete/decoder full・faithful、全成分res/ext/J、冪等分裂、retract生成、D全群・二核・全fiber、E/Fは未完了 |
 | D Cycle 53 delta | 固定finite axis-foldのfive-factor・generated-cochain・constant-oneをCycle 51のsource-provenanced syntax経由で同一semantic Hom面へ評価し、同じ三分類を回復する | `finiteAxisFoldTransportIdentityCochainHom`, `finiteAxisFoldComparisonSyntaxEvaluate`, `finiteAxisFoldComparisonSyntaxSize`, `_eq_one`, `_eq_evaluate`, `finiteAxisFoldSyntax_generatedBarBeta_ne_barAlpha`, `finiteAxisFoldSyntax_identityBarBeta_eq_barAlpha`, 二つのexact fiber iff、`finiteAxisFoldComparisonSyntaxEvaluate_not_injective` | カード固定の同じfamily/cell/ℤ/geometry/raw、generated cochainとconstant-one cochain; Cycle 44のpackage同一性、Cycle 45の実比較分類、Cycle 51 syntax evaluator | 三caseを各1-node syntax leafで表し、constant-one endpoint packageをgenerated endpoint packageへtransportし、旧semantic evaluatorとの全case一致、相違・一致・二fiber・非単射をsyntax経由で証明 | Dの固定三例を有限recipe fragmentへ実接続する回帰面 | transportは固定case専用; 一般syntax quotient/category、全比較群・section・底/係数・二核・全lift fiber、全許容射、B/E/Fは未完了 |
@@ -5504,4 +5505,128 @@ audits:
     - "fresh Math A/B and Lean A/B review: PASS; no findings after direct documentation fixes"
   blocking_findings: []
   next_obligation: "Extend the source-provenanced presentation beyond selected comparisons to the required dependent core, equation, operation, and context morphism data, then prove restriction/extension rather than importing completed maps."
+```
+
+## Cycle 56 — Fixed ambient-kernel endpoint recipes
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 56
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 1b0172d2a8501ea9fce0e12b835d16ad4d879baa
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 55 left all comparison-group elements and the two kernels unrepresented"
+  proof_dag_predecessors:
+    - "G-122 fixed finite-axis-fold input and finiteCanonicalObjectNormalization_admissible"
+    - "authoredExactDirectGeometryAt_admissible and authoredExactViaBaseGeometryAt_admissible"
+    - "AmbientKernelGeometryLift nonidentity, involution, two-sided absorption, and normalization-map theorem"
+  proof_obligation: "Construct fixed presentation-side recipes for the ambient normalization-kernel elements at both actual G-122 endpoints without accepting completed automorphisms or admissibility certificates as syntax data"
+  selection_reason: "D requires recovery of information erased by normalization and explicitly distinguishes the ambient kernel from the comparison-restriction kernel; a nontrivial source recipe for the former is needed before comparison preservation can be classified."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldAmbientKernelPresentation.lean
+  risks:
+    - "accept an arbitrary comparison-group or automorphism element as a syntax leaf"
+    - "accept endpoint admissibility as a constructor field instead of deriving it from the fixed original input"
+    - "infer the lost element only from equality after normalization"
+    - "call two selected kernel elements recovery of either full comparison group"
+  unchecked:
+    - "whether the endpoint kernel pair preserves actual barAlpha or generated barBeta"
+    - "all elements of the original and base-fixing comparison groups"
+    - "restriction homomorphism, section, restriction kernel, and every lift fiber"
+    - "general-input presentation, res/ext/J, four reconstruction properties, remaining E/F connections"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Derived admissibility of the actual fixed direct and via-base endpoints from the original southwest admissibility through exact transport. Added a two-code finite source recipe carrying only the endpoint tag. Evaluated each code to the existing constructed ambient-kernel geometry involution, proved it is nonidentity and squares to identity, proved both-sided canonical-normalization absorption, reconstructed it inside the independent admissible-geometry category, and proved explicit membership in the kernel of the normalization-induced automorphism homomorphism."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldAmbientKernelPresentation.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldDirectEndpointAdmissible
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldViaBaseEndpointAdmissible
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAmbientKernelCode
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAmbientKernelCode.evaluate
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAmbientKernelCode.evaluate_ne_identity
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAmbientKernelCode.evaluate_comp_self
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAmbientKernelCode.normalization_comp_evaluate
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAmbientKernelCode.evaluate_comp_normalization
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAmbientKernelCode.admissibleEvaluateAut_ne_one
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAmbientKernelCode.normalization_map_admissibleEvaluateAut
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAmbientKernelCode.admissibleEvaluateAut_mem_normalizationKernel
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAmbientKernelCode.no_code_evaluates_to_identity
+  claim_mapping:
+    theorem_names:
+      - FiniteAxisFoldAmbientKernelCode.evaluate_ne_identity
+      - FiniteAxisFoldAmbientKernelCode.evaluate_comp_self
+      - FiniteAxisFoldAmbientKernelCode.normalization_comp_evaluate
+      - FiniteAxisFoldAmbientKernelCode.evaluate_comp_normalization
+      - FiniteAxisFoldAmbientKernelCode.admissibleEvaluateAut_mem_normalizationKernel
+    source_labels:
+      - "GOAL D: ambient kernel element erased by normalization"
+      - "GOAL D fixed generated example: finiteAxisFoldBCDatumSquare, cell second, coefficient Int"
+      - "n1014: distinguish ambient normalization kernel from the comparison restriction kernel"
+    conjuncts:
+      - "fixed original input -> direct/via-base endpoint admissibility"
+      - "two endpoint tags -> finite source recipes with no completed map fields"
+      - "recipe evaluation -> nonidentity involutive complete-geometry automorphisms"
+      - "actual normalization -> left/right absorption and kernel membership"
+    undischarged_assumptions:
+      - "comparison preservation by the endpoint pair has not been proved"
+      - "the restriction-kernel element and all lift fibers have not been displayed"
+      - "the two recipes do not enumerate either full comparison group"
+    acceptance_point: "This is a fixed D ambient-kernel checkpoint. It constructs lost information before normalization and proves its actual kernel membership, but it is not comparison-group recovery or G-123 completion."
+    port_status: not-applicable
+review:
+  independent_lanes:
+    math_a: pass-after-noncentral-fixes
+    math_b: pass
+    lean_a: pass-after-noncentral-fixes
+    lean_b: pass
+  resolved_findings:
+    - "registered the active module in the Research AG aggregate as well as research-modules.txt, without running the prohibited aggregate build"
+    - "changed the two Prop-valued endpoint admissibility proofs from noncomputable definitions to theorem declarations"
+  direct_response:
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "fixed direct and via-base admissibility from original finite support data"
+      - "finite source recipes for nontrivial ambient-kernel elements on both endpoints"
+      - "nonidentity, order two, two-sided absorption, and normalization-kernel membership"
+    remaining:
+      - "actual barAlpha/barBeta comparison-preservation or failure for the endpoint pair"
+      - "full original/base-fixing groups, section, restriction kernel, and all fibers"
+      - "general source syntax, total reconstruction, and remaining B/E/F obligations"
+  certificate_provenance:
+    discharged:
+      - "FiniteAxisFoldAmbientKernelCode carries only direct/viaBase; no semantic map, automorphism, admissibility proof, group element, or normalized equality is an input"
+      - "endpoint admissibility is built from finiteCanonicalObjectNormalization_admissible by the exact-route transport theorems"
+      - "kernel membership uses the constructed automorphism and the actual normalization functor"
+    unresolved:
+      - "the relation of the pair to the actual selected comparisons remains to be calculated"
+  proof_use:
+    used:
+      - "finiteCanonicalObjectNormalization_admissible in both endpoint admissibility constructions"
+      - "ambientKernelGeometry_ne_id and ambientKernelGeometry_comp_self in semantic evaluation"
+      - "both canonical normalization absorption theorems"
+      - "geometryNormalizationFunctor_map_ambientKernelAdmissibleGeometryAut in explicit MonoidHom.ker membership"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check for FiniteAxisFoldAmbientKernelPresentation: PASS"
+    - "registered exact target build: PASS (4279 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 41 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh Math A/B and Lean A/B review: PASS after two noncentral integration/Lean-style fixes"
+  blocking_findings: []
+  next_obligation: "Calculate whether the two fixed endpoint kernel generators preserve barAlpha and generated barBeta, then place each preserving pair in the exact original/base-fixing comparison subgroup and keep failures distinct from the restriction kernel."
 ```
