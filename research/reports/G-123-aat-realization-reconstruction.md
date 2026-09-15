@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 73 computes the fixed pull--push endpoint's composition and detector readings back to the original ordered finite reading and proves that every element of the full residual axis-and-signature kernel fixes the complete nine-point Atom equivalence; source coverage and the remaining object/operation/equation/context/local-geometry data remain to construct
+- current proof obligation: Cycle 74 uses the Cycle 73 Atom identity and the normalized Karoubi sandwich law to prove that every residual element's all-object map is exactly canonical object normalization, its all-object configuration comparison is identity after the proved endpoint cast, and its all-endpoint/all-operation map is the canonical normalization operation after the separately proved object casts; source coverage and the remaining equation/context/local-geometry data remain to construct
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: derive the residual object and all-endpoint operation constraints from the proved Atom identity, then classify the equation/context/local-geometry freedom; separately formalize the extension-changing context-action candidate and test it against the current presentation without treating candidate failure as target refutation
+- next proof obligation: classify the residual equation/context/local-geometry freedom and formalize the extension-changing context-action candidate against the current presentation, without treating candidate failure as target refutation
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 74 delta | Cycle 73の同じ残余kernel全元について、Atom identityを実際に使用し、全ArchitectureObjectと全端点の全selected operationに対するobject/operation成分をcanonical normalizationへ固定する | `finiteAxisFoldResidual_objectMap_apply`, `finiteAxisFoldResidual_objectMap_eq_canonicalObjectNormalization`, `finiteAxisFoldResidual_object_configuration_eq`, `finiteAxisFoldResidual_canonicalObjectNormalization_objectMap`, `finiteAxisFoldResidual_configurationMap_eq_id`, `finiteAxisFoldResidual_operation_configurationMap_atomMap`, `finiteAxisFoldResidual_operation_configurationMap_eq`, `finiteAxisFoldResidual_operationMap_eq_canonicalNormalization` | 固定actual direct endpoint; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元; Cycle 73のcomplete Atom identity; normalized Karoubi sandwich law; actual endpoint operation readingが元の全`ConfigurationHom` readingの三段transportであること | sandwich等式を全objectで評価してraw objectMapをcanonical normalizationへ固定; `configuration_eq`とAtom identityから全configuration一致; operation naturalityから全operationのrealized Atom map一致; 三段transportがAtom-map faithfulnessを保存することからdependent endpoint cast後のoperationそのものをcanonical normalization operationへ固定 | 残余kernelのobject/operation成分を入力certificateなしに消去し、equation/context/local geometryの真の残余解析とsource coverageへ渡す | equation transport、context equivalence、local support/axis/observable comparison、残余source coverageは未構成; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 73 delta | Cycle 72の同じ残余kernel全元について、固定pull--push endpointのAtom equivalenceを元のordered identification・ordered detector・substitution graphから完全に放電する | `finiteAxisFoldSupport_atomEquiv_componentA`, `finiteAxisFoldSupport_atomEquiv_componentB`, `finiteAxisFoldSupport_atomEquiv_eq_refl`, `finiteAxisFoldDirectEndpoint_atomEquiv_eq_refl`, `finiteAxisFoldResidual_atomEquiv_eq_refl` | 固定finite axis-fold/`Int`; actual direct endpointを構成するexact left pull/top transport; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元 | support readingのordered identification、三つのordered detector query、三辺substitution graph、Atom Equivの全単射性; さらにactual endpointのcomposition/detectorを二段transportから元readingへ計算する証拠 | residual元のcomplete `atomEquiv`をidentityへ固定し、object/operation/equation/context/local-geometryの残余解析へ渡す | residual source coverageは未構成; object/operation/equation/context/local geometryは未放電; extension-changing context actionは候補のみ; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 72 delta | Cycle 71の残余kernelについて、kernel membershipが固定するaxis/全coordinate成分を明示し、固定singleton invariant indexと`Int`係数成分を任意の残余元について入力なしに放電する | `finiteAxisFoldResidual_axisMap_eq_id`, `finiteAxisFoldResidual_coordinateEquiv_eq_refl`, `finiteAxisFoldResidual_invariantMap_eq_id`, `finiteAxisFoldResidual_coefficientHom_eq_id` | 固定finite axis-fold/`Int`; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元; Cycle 69/70の二段kernel membership | 第一kernelから全axis関数のidentity、第二kernelの有限table等号を全axis/coordinateで評価した各coordinate Equivのidentity、singleton eliminationによる全invariant map、`RingHom.ext_int`による全係数準同型identity | 残余元の型を縮小せず、既に放電された計算成分と本当に残る成分を分離して次のsource生成・剛性証明へ渡す | 残余全元のsource coverageは未構成; Atom/object/operation/equation/context/local geometryは未放電; extension-changing context actionは候補のみで未形式化; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 71 delta | Cycle 70の有限signature-fiber table全体をsemantic Autではなくsource constructorへ追加し、source/category/inverse lawだけの商圏decoderから各canonical-section preimageを構成し、full normalized Aut coverageを残余double kernel coverageへ同値還元する | `FiniteAxisFoldSignatureFiberSyntax`, `evaluate`, `Congruent`, `evaluate_eq_of_congruent`, `FiniteAxisFoldSignatureFiberPresentation`, `decoder`, `directSignatureFiberAut`, `sectionedDirectSignatureFiberAut`, `sectionedDirectAxisPermutationAut`, `directAutomorphismEvaluationHom`, `sectionedDirectSignatureFiberAut_evaluation`, `sectionedDirectAxisPermutationAut_evaluation`, `SignatureFiberSourceCovered`, `finiteAxisFoldSignatureFiber_canonicalSection_sourceCovered`, `finiteAxisFoldAxisKernel_sourceCovered_all_iff_signatureKernel`, `finiteAxisFoldAll_sourceCovered_iff_signatureKernel` | 固定finite axis-fold/`Int`; Cycle 68の全axis source term; Cycle 70の有限signature-fiber subgroupとsection/right inverse; canonical normalization section; 全full normalized Autと全残余kernel | 旧source syntaxを保持するouter grammar、有限tableだけをpayloadとするprimitive leaf、一般normalization-section演算、両leaf族のsource inverse law、quotient decoder、全table exact evaluation、kernel source witnessと有限section termの順序付き積、二段分解によるfull Aut coverage iff residual kernel coverage | Dのfull endpoint全量化を同じ新presentationで保持し、既知のaxisおよびcoordinate finite componentsをすべてsource側へ回復する | `FiniteAxisFoldNormalizedAxisSignatureKernel`全元のsource coverageは未構成; atom/object/operation/context/equation/local geometry、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
@@ -7761,4 +7762,118 @@ audits:
     - "fresh final-snapshot Math A/B and Lean A/B review: PASS"
   blocking_findings: []
   next_obligation: "Use the proved full Atom identity to derive actual endpoint object-map and all-operation constraints, then classify equation/context/local-geometry freedom and formalize the extension-changing context-action candidate."
+```
+
+## Cycle 74 — Residual object and all-operation rigidity
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 74
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 3591f831385b166804b4384a192f5ce120145b1d
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 73 fixed the complete Atom equivalence of every residual element while leaving object and operation maps open"
+  proof_dag_predecessors:
+    - "Cycle 73 residual Atom rigidity at the actual pull--push endpoint"
+    - "G-122 normalized complete-geometry category and its Karoubi sandwich equation"
+    - "fixed actual endpoint operation reading obtained by three transports of the finite ConfigurationHom reading"
+  proof_obligation: "Derive all-object and all-endpoint/all-operation residual constraints from the fixed input, without declaring raw object identity or assuming operation-map faithfulness as a certificate"
+  selection_reason: "Object and operation data are complete core components.  The Karoubi identity is canonical normalization rather than raw identity, and operation uniqueness is valid only after proving faithfulness for this fixed transported reading."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualObjectOperationRigidity.lean
+  risks:
+    - "claim raw objectMap identity even though ArchitectureObject has arbitrary auxiliary decorations"
+    - "derive operation equality from naturality in an arbitrary nonfaithful OperationReading"
+    - "hide the dependent endpoint change in an untracked cast"
+    - "confuse component rigidity with residual source coverage or G-123 completion"
+  unchecked:
+    - "equation transport and context equivalence"
+    - "local support, axis, and observable comparisons"
+    - "source coverage of the residual kernel and all remaining A-F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Evaluating the normalized Karoubi sandwich on every ArchitectureObject and using the already discharged Atom identity proves that the residual objectMap is exactly canonical object normalization.  Configuration transport is identity after the resulting endpoint equality.  Naturality fixes the realized Atom map of every selected operation.  Independently, Atom-map faithfulness is proved for the fixed actual endpoint by showing that each of its three operation-reading transports preserves the original ConfigurationHom reading's faithfulness.  This upgrades the realized equality to equality of every operation with the canonical normalization operation after explicit source and target casts."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualObjectOperationRigidity.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidual_objectMap_apply
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidual_objectMap_eq_canonicalObjectNormalization
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidual_configurationMap_eq_id
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidual_operation_configurationMap_eq
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidual_operationMap_eq_canonicalNormalization
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldResidual_objectMap_eq_canonicalObjectNormalization
+      - finiteAxisFoldResidual_configurationMap_eq_id
+      - finiteAxisFoldResidual_operation_configurationMap_eq
+      - finiteAxisFoldResidual_operationMap_eq_canonicalNormalization
+    source_labels:
+      - "GOAL D: retain every element of the original endpoint and comparison groups"
+      - "user conditions 1, 2, 4, and 5: preserve full quantification, discharge premises from fixed input, separate reconstruction obligations, and keep the original finite axis-fold input"
+    conjuncts:
+      - "every residual element and every ArchitectureObject -> objectMap equals canonical object normalization"
+      - "every residual element and every ArchitectureObject -> configuration comparison equals identity after the proved endpoint cast"
+      - "every residual element, every source/target pair, and every selected operation -> realized configuration hom is unchanged after endpoint casts"
+      - "fixed transported operation reading faithfulness -> mapped operation equals canonical normalization operation after explicit object casts"
+    undischarged_assumptions:
+      - "equation/context/local-geometry components are not yet classified"
+      - "no source witness for an arbitrary residual element is constructed"
+    acceptance_point: "This cycle discharges object and operation components for the whole residual quantifier at the actual endpoint.  It is not residual source coverage and is not G-123 completion."
+    port_status: not-applicable
+review:
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass-after-noncentral-fix
+  resolved_findings:
+    - "corrected the module documentation to say that the raw object map equals canonical normalization rather than the identity"
+  direct_response:
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "Karoubi sandwich plus Cycle 73 Atom identity determines the all-object map as canonical normalization"
+      - "all-object configuration comparisons are identities after their proved dependent casts"
+      - "operation naturality determines every realized operation configuration map"
+      - "three successive operation-reading transports preserve the base ConfigurationHom atom-map faithfulness"
+      - "every mapped operation equals the canonical normalization operation after the separately proved source and target object casts"
+    remaining:
+      - "equation/context/local-geometry classification and source construction"
+      - "residual-kernel source coverage"
+      - "bottom/full comparison-kernel/lift recovery, general coefficient/input, and B/E/F"
+  certificate_provenance:
+    discharged:
+      - "object rigidity consumes the actual sandwich law and the previously proved Atom identity; no object equality field is added"
+      - "operation uniqueness is derived from the fixed endpoint's three transported ConfigurationHom readings, not assumed for arbitrary OperationReading"
+      - "dependent operation endpoints are changed only by the explicit object equalities proved in the same module"
+    unresolved:
+      - "the context Extension carrier remains a candidate residual action; construction and source invariant remain to formalize"
+  proof_use:
+    used:
+      - "the Karoubi comm equation is projected through complete geometry, package total, and exact upper object maps and evaluated at every object"
+      - "Cycle 73 Atom identity rewrites the selected transported object back to canonical normalization"
+      - "operation_naturality is projected to Atom maps for every source, target, and operation"
+      - "Equiv injectivity cancels each operation-reading conjugation, and ConfigurationHom.ext supplies base faithfulness"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check for FiniteAxisFoldResidualObjectOperationRigidity: PASS"
+    - "registered exact target build for FiniteAxisFoldResidualObjectOperationRigidity: PASS (4303 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 8 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh final-snapshot Math A/B and Lean A/B review: PASS"
+  blocking_findings: []
+  next_obligation: "Classify equation/context/local-geometry freedom and formalize the extension-changing context-action candidate against the current source presentation."
 ```
