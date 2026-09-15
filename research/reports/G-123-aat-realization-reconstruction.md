@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 74 uses the Cycle 73 Atom identity and the normalized Karoubi sandwich law to prove that every residual element's all-object map is exactly canonical object normalization, its all-object configuration comparison is identity after the proved endpoint cast, and its all-endpoint/all-operation map is the canonical normalization operation after the separately proved object casts; source coverage and the remaining equation/context/local-geometry data remain to construct
+- current proof obligation: Cycle 75 proves that every residual element fixes the actual endpoint's complete singleton equation-index family, then projects the unrestricted residual action on every context object and isolates its context-trivial kernel; observable transport, local geometry, a concrete Extension-changing residual generator, and source coverage remain to construct
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: classify the residual equation/context/local-geometry freedom and formalize the extension-changing context-action candidate against the current presentation, without treating candidate failure as target refutation
+- next proof obligation: construct the fixed-input Extension-value toggle through exact core, complete geometry, actual pull/push, and normalization; prove that it lies in the axis-signature residual kernel but moves a concrete Bool context, then extend the source presentation rather than shrinking the semantic group
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 75 delta | Cycle 74の同じ残余kernel全元について、equation indexの剛性を固定入力から放電し、なお残る全context-object作用を縮小せず群準同型として射影し、そのkernelを分離する | `finiteAxisFoldResidual_equationEquiv_eq_refl`, `finiteAxisFoldResidual_equationMap_apply`, `finiteAxisFoldResidual_equationRole_eq`, `FiniteAxisFoldResidualContextObject`, `finiteAxisFoldNormalizedContextEquiv`, `finiteAxisFoldNormalizedContextProjection`, `finiteAxisFoldResidualContextProjection`, `FiniteAxisFoldNormalizedAxisSignatureContextKernel`, `finiteAxisFoldResidualContextKernel_contextForward_eq_id` | 固定actual direct endpoint; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元; actual endpointをsupport readingから作る三段transport | equation indexを各transportの逆方向へ引き戻して元の`PUnit`へ還元; residual automorphismとそのinverseのcontextForwardから全context object上の実際の置換と群準同型を構成; kernel membershipを全contextのidentityへ評価 | equation index成分を消去しつつcontext equivalenceを勝手にidentity化せず、context-trivial kernel上のfiberwise local action解析とExtension-changing generator構成へ渡す | observable値のdependent transport、context actionの像・source generator、local support/axis/observable comparison、残余source coverageは未構成; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 74 delta | Cycle 73の同じ残余kernel全元について、Atom identityを実際に使用し、全ArchitectureObjectと全端点の全selected operationに対するobject/operation成分をcanonical normalizationへ固定する | `finiteAxisFoldResidual_objectMap_apply`, `finiteAxisFoldResidual_objectMap_eq_canonicalObjectNormalization`, `finiteAxisFoldResidual_object_configuration_eq`, `finiteAxisFoldResidual_canonicalObjectNormalization_objectMap`, `finiteAxisFoldResidual_configurationMap_eq_id`, `finiteAxisFoldResidual_operation_configurationMap_atomMap`, `finiteAxisFoldResidual_operation_configurationMap_eq`, `finiteAxisFoldResidual_operationMap_eq_canonicalNormalization` | 固定actual direct endpoint; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元; Cycle 73のcomplete Atom identity; normalized Karoubi sandwich law; actual endpoint operation readingが元の全`ConfigurationHom` readingの三段transportであること | sandwich等式を全objectで評価してraw objectMapをcanonical normalizationへ固定; `configuration_eq`とAtom identityから全configuration一致; operation naturalityから全operationのrealized Atom map一致; 三段transportがAtom-map faithfulnessを保存することからdependent endpoint cast後のoperationそのものをcanonical normalization operationへ固定 | 残余kernelのobject/operation成分を入力certificateなしに消去し、equation/context/local geometryの真の残余解析とsource coverageへ渡す | equation transport、context equivalence、local support/axis/observable comparison、残余source coverageは未構成; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 73 delta | Cycle 72の同じ残余kernel全元について、固定pull--push endpointのAtom equivalenceを元のordered identification・ordered detector・substitution graphから完全に放電する | `finiteAxisFoldSupport_atomEquiv_componentA`, `finiteAxisFoldSupport_atomEquiv_componentB`, `finiteAxisFoldSupport_atomEquiv_eq_refl`, `finiteAxisFoldDirectEndpoint_atomEquiv_eq_refl`, `finiteAxisFoldResidual_atomEquiv_eq_refl` | 固定finite axis-fold/`Int`; actual direct endpointを構成するexact left pull/top transport; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元 | support readingのordered identification、三つのordered detector query、三辺substitution graph、Atom Equivの全単射性; さらにactual endpointのcomposition/detectorを二段transportから元readingへ計算する証拠 | residual元のcomplete `atomEquiv`をidentityへ固定し、object/operation/equation/context/local-geometryの残余解析へ渡す | residual source coverageは未構成; object/operation/equation/context/local geometryは未放電; extension-changing context actionは候補のみ; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 72 delta | Cycle 71の残余kernelについて、kernel membershipが固定するaxis/全coordinate成分を明示し、固定singleton invariant indexと`Int`係数成分を任意の残余元について入力なしに放電する | `finiteAxisFoldResidual_axisMap_eq_id`, `finiteAxisFoldResidual_coordinateEquiv_eq_refl`, `finiteAxisFoldResidual_invariantMap_eq_id`, `finiteAxisFoldResidual_coefficientHom_eq_id` | 固定finite axis-fold/`Int`; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元; Cycle 69/70の二段kernel membership | 第一kernelから全axis関数のidentity、第二kernelの有限table等号を全axis/coordinateで評価した各coordinate Equivのidentity、singleton eliminationによる全invariant map、`RingHom.ext_int`による全係数準同型identity | 残余元の型を縮小せず、既に放電された計算成分と本当に残る成分を分離して次のsource生成・剛性証明へ渡す | 残余全元のsource coverageは未構成; Atom/object/operation/equation/context/local geometryは未放電; extension-changing context actionは候補のみで未形式化; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
@@ -7876,4 +7877,124 @@ audits:
     - "fresh final-snapshot Math A/B and Lean A/B review: PASS"
   blocking_findings: []
   next_obligation: "Classify equation/context/local-geometry freedom and formalize the extension-changing context-action candidate against the current source presentation."
+```
+
+## Cycle 75 — Equation-index rigidity and complete context-action projection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 75
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 3b8ae2f4718827a03022bfe383f6b1e8fe711acf
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 74 fixed every residual object and operation component as canonical normalization while leaving equation, context, and local geometry open"
+  proof_dag_predecessors:
+    - "Cycle 74 residual object and operation rigidity"
+    - "the fixed support equation family and its exact left-pull/top-transport endpoint"
+    - "the actual normalized endpoint automorphism group and axis-signature residual kernel"
+  proof_obligation: "Separate equation-index rigidity from the unrestricted complete context-object action, and isolate its kernel without assuming context identity, finiteness, source coverage, or observable rigidity"
+  selection_reason: "The actual equation index can be discharged from the fixed singleton source family, whereas the context equivalence is a genuine independent component.  Keeping these apart prevents constant equation readings from being used to erase Extension-changing actions."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualEquationRigidity.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualContextProjection.lean
+  risks:
+    - "claim observable values are fixed without resolving their dependent casts along contextForward"
+    - "infer context identity from a context-constant equation reading"
+    - "replace all contexts by a finite or source-covered subset"
+    - "put source coverage or triviality into the context-kernel definition"
+  unchecked:
+    - "dependent observable transport and local support/axis/observable comparisons"
+    - "construction and source representation of an Extension-changing context action"
+    - "source coverage of the residual kernel and all remaining A--F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Pulled arbitrary actual endpoint equation indices backwards through the top transport, inverse exact pull, and support transport to the original PUnit family, proving the complete residual equation equivalence is reflexive and every role remains attached to the same index.  Independently constructed the permutation of the complete context-object carrier induced by every normalized automorphism, proved its group laws from the actual hom/inverse equations, restricted it to the full axis-signature residual kernel, and isolated the exact context-trivial kernel.  No context subset, source witness, finiteness premise, or completed action certificate is supplied."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualEquationRigidity.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualContextProjection.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidual_equationEquiv_eq_refl
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidual_equationMap_apply
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidual_equationRole_eq
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedContextProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernel_contextForward_eq_id
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldResidual_equationEquiv_eq_refl
+      - finiteAxisFoldResidual_equationMap_apply
+      - finiteAxisFoldResidual_equationRole_eq
+      - finiteAxisFoldNormalizedContextProjection
+      - finiteAxisFoldResidualContextProjection
+      - finiteAxisFoldResidualContextKernel_contextForward_eq_id
+    source_labels:
+      - "GOAL D: retain every element of the original endpoint and comparison groups"
+      - "user conditions 1, 2, 4, and 5: preserve quantification, discharge from fixed input, separate reconstruction obligations, and retain the original finite axis-fold input"
+    conjuncts:
+      - "every residual element -> complete equation-index equivalence is identity"
+      - "every residual element and equation index -> equation map fixes the index and preserves its role"
+      - "every normalized endpoint automorphism -> permutation of every actual context object"
+      - "every axis-signature residual element -> complete context permutation, with an explicitly isolated identity-action kernel"
+    undischarged_assumptions:
+      - "observable values retain dependent casts along the context action"
+      - "the context action is not proved trivial, finite, source-covered, or split"
+      - "local geometry and arbitrary residual source coverage remain open"
+    acceptance_point: "This cycle discharges the complete equation-index component and records, rather than erases, the action on the complete context-object carrier.  It does not package the context-morphism action, is not residual source coverage, and is not G-123 completion."
+    port_status: not-applicable
+review:
+  fixed_head: 6bb9379bd9ac509330c87b68fbe481877f8dc510
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass-after-noncentral-fix
+  resolved_findings:
+    - "removed module documentation that had overstated observable-value rigidity; dependent observable transport remains explicit"
+    - "scoped the context projection documentation and report to the complete context-object carrier and expressly did not claim a packaged context-morphism action"
+  direct_response:
+    reviewed_delta: "3b8ae2f4718827a03022bfe383f6b1e8fe711acf..6bb9379bd9ac509330c87b68fbe481877f8dc510"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "the actual endpoint equation-index carrier is subsingleton by explicit backward transport to the fixed PUnit source"
+      - "the action on the complete context-object carrier and its inverse are obtained from each actual automorphism and inverse"
+      - "context-kernel membership is evaluated pointwise to obtain contextForward identity"
+    remaining:
+      - "dependent observable transport and local support/axis/observable comparisons"
+      - "Extension-changing residual generator and its source syntax"
+      - "residual-kernel source coverage"
+      - "bottom/full comparison-kernel/lift recovery, general coefficient/input, and B/E/F"
+  certificate_provenance:
+    discharged:
+      - "equation rigidity is computed through the actual fixed construction rather than stored in a residual certificate"
+      - "the context projection consumes the complete actual context equivalence; no finite subcarrier is selected"
+    unresolved:
+      - "the context Extension field admits a concrete value-toggle candidate whose full geometry lift remains to formalize"
+  proof_use:
+    used:
+      - "each equation-equivalence inverse is used injectively in reverse construction order until the source PUnit index remains"
+      - "automorphism hom-inverse and inverse-hom equations prove both inverse laws for the context permutation"
+      - "kernel membership is projected by evaluation at every context object"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused checks for both Cycle 75 modules: PASS"
+    - "registered exact target build for FiniteAxisFoldResidualContextProjection: PASS (4305 jobs; not a Research aggregate build)"
+    - "namespace axiom audits: equation module 4 declarations and context module 6 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh final-snapshot Math A/B and Lean A/B review: PASS"
+  blocking_findings: []
+  next_obligation: "Construct the fixed-input Extension-value toggle as an actual residual normalized automorphism, prove a concrete Bool context moves, and add the corresponding source generator without shrinking the semantic context-object action."
 ```
