@@ -50,9 +50,13 @@ The present construction is intentionally limited to primitive operations in
 one support cell; path closure and comparison with all admissible morphisms
 remain separate obligations.  The chosen target occurrence is unique only at
 the evaluated Atom-value level: duplicate target occurrences can make its raw
-`Fin` index choice-dependent, so strict identity/composition for these raw
-actions requires a later canonical-occurrence construction or value-level
-quotient rather than following from `Classical.choose`.
+`Fin` index choice-dependent.  A canonical-occurrence construction would be
+needed to prove strict laws for raw indices.  The distinct value-level route
+used here instead identifies duplicate occurrences through the
+generated-family subtype: configuration homomorphisms act on it without an
+occurrence choice, obey identity and composition, and the primitive finite
+action induces exactly this canonical map.  Raw-index functoriality is neither
+asserted nor needed for these value-level laws.
 -/
 
 namespace AAT.AG.RealizationReconstruction
@@ -1548,6 +1552,72 @@ theorem familyMap_identificationRight
 
 end G122FiniteObjectFormationAction
 
+/-- The value-level map between two displayed generated families induced by a
+configuration homomorphism at their evaluated object terms.  Its definition
+uses the Atom value itself, not a chosen occurrence index, so duplicate
+occurrences are identified by the generated-family subtype. -/
+def generatedFamilyMapOfConfigurationHom
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : G122FiniteObjectFormationDisplay input X}
+    {sourceObjectIndex : Fin source.objectCard}
+    {targetObjectIndex : Fin target.objectCard}
+    (map : ConfigurationHom
+      (source.objectValue sourceObjectIndex).configuration
+      (target.objectValue targetObjectIndex).configuration) :
+    G122FiniteObjectFormationAction.GeneratedFamilyMember source sourceObjectIndex →
+      G122FiniteObjectFormationAction.GeneratedFamilyMember target targetObjectIndex := by
+  intro atom
+  refine ⟨map.atomMap atom.1, ?_⟩
+  rw [← target.objectValue_family_eq]
+  apply map.maps_family
+  rw [source.objectValue_family_eq]
+  exact atom.property
+
+/-- The value-level generated-family map of an identity configuration
+homomorphism is the identity, including when the display repeats an Atom at
+several occurrence indices. -/
+theorem generatedFamilyMapOfConfigurationHom_id
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    (objectIndex : Fin display.objectCard) :
+    generatedFamilyMapOfConfigurationHom
+      (source := display) (target := display)
+      (sourceObjectIndex := objectIndex) (targetObjectIndex := objectIndex)
+      (ConfigurationHom.id (display.objectValue objectIndex).configuration) =
+        _root_.id := by
+  funext atom
+  rfl
+
+/-- Value-level generated-family maps preserve composition of configuration
+homomorphisms.  This law is independent of every finite occurrence choice. -/
+theorem generatedFamilyMapOfConfigurationHom_comp
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source middle target : G122FiniteObjectFormationDisplay input X}
+    {sourceObjectIndex : Fin source.objectCard}
+    {middleObjectIndex : Fin middle.objectCard}
+    {targetObjectIndex : Fin target.objectCard}
+    (first : ConfigurationHom
+      (source.objectValue sourceObjectIndex).configuration
+      (middle.objectValue middleObjectIndex).configuration)
+    (second : ConfigurationHom
+      (middle.objectValue middleObjectIndex).configuration
+      (target.objectValue targetObjectIndex).configuration) :
+    generatedFamilyMapOfConfigurationHom
+        (source := source) (target := target)
+        (sourceObjectIndex := sourceObjectIndex)
+        (targetObjectIndex := targetObjectIndex)
+        (ConfigurationHom.comp second first) =
+      generatedFamilyMapOfConfigurationHom
+          (source := middle) (target := target)
+          (sourceObjectIndex := middleObjectIndex)
+          (targetObjectIndex := targetObjectIndex) second ∘
+        generatedFamilyMapOfConfigurationHom
+          (source := source) (target := middle)
+          (sourceObjectIndex := sourceObjectIndex)
+          (targetObjectIndex := middleObjectIndex) first := by
+  funext atom
+  rfl
+
 /-- Source-provenanced primitive-operation syntax between two finite displays
 over one fixed G-122 cell.  Each source object term selects a target term and
 an actual operation from the original authored support at those exact
@@ -1622,6 +1692,19 @@ theorem atomValue_atomIndexMap
       exact (transform.configurationMap objectIndex).maps_family
         (source.occurrenceValue_mem_objectValue ⟨objectIndex, atomIndex⟩))
 
+/-- The canonical value-level map of a primitive operation.  In contrast to
+`atomIndexMap`, it does not choose a target occurrence and therefore is
+insensitive to duplicate target occurrences. -/
+def generatedFamilyMap
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : G122FiniteObjectFormationDisplay input X}
+    (transform : G122PrimitiveOperationActionSyntax source target)
+    (objectIndex : Fin source.objectCard) :
+    G122FiniteObjectFormationAction.GeneratedFamilyMember source objectIndex →
+      G122FiniteObjectFormationAction.GeneratedFamilyMember target
+        (transform.objectIndexMap objectIndex) :=
+  generatedFamilyMapOfConfigurationHom (transform.configurationMap objectIndex)
+
 /-- Evaluate the primitive-operation transform to a total finite action between
 the conservative edge completions.  Edge images use only the mapped endpoint
 pair and the predicate-independent appended summand. -/
@@ -1660,6 +1743,29 @@ theorem action_valueCoherent
     target.atomValue (transform.objectIndexMap objectIndex)
       (transform.atomIndexMap objectIndex secondAtom)
   rw [transform.atomValue_atomIndexMap, transform.atomValue_atomIndexMap, hvalue]
+
+/-- After passing from occurrences to their generated-family Atom values, the
+finite action evaluated from a primitive operation is exactly the canonical
+map induced by the original configuration homomorphism.  This proves that its
+value-level result is independent of the occurrence selected by
+`Classical.choose`. -/
+theorem action_familyMap_eq_generatedFamilyMap
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : G122FiniteObjectFormationDisplay input X}
+    (transform : G122PrimitiveOperationActionSyntax source target)
+    (objectIndex : Fin source.objectCard) :
+    transform.action.familyMap objectIndex =
+      transform.generatedFamilyMap objectIndex := by
+  funext atom
+  apply Subtype.ext
+  unfold G122FiniteObjectFormationAction.familyMap generatedFamilyMap
+    generatedFamilyMapOfConfigurationHom
+  change target.atomValue (transform.objectIndexMap objectIndex)
+      (transform.atomIndexMap objectIndex (Classical.choose atom.property)) =
+    (transform.configurationMap objectIndex).atomMap atom.1
+  rw [transform.atomValue_atomIndexMap]
+  congr 1
+  exact Classical.choose_spec atom.property
 
 /-- The evaluated action preserves both endpoints of every relation edge by
 construction of its image in the appended pair summand. -/
