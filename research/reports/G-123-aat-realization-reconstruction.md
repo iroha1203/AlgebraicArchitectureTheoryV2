@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 69 constructs the normalized endpoint axis projection, its source-derived finite-table section, the exact kernel-times-section decomposition, and an iff reducing source coverage of every canonical-section value to coverage of the entire axis-trivial kernel; that kernel coverage itself remains to construct
+- current proof obligation: Cycle 70 constructs the full joint axis-coordinate signature projection, identifies the nontrivial finite coordinate-fiber quotient inside the Cycle 69 axis kernel, builds its fixed-input section, and decomposes every axis-kernel element into a signature-trivial remainder and that finite component; source syntax for this component and coverage of the smaller kernel remain to construct
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct source coverage for every element of `FiniteAxisFoldNormalizedAxisKernel` from the fixed primitive input without semantic automorphism leaves or a post-hoc image definition; afterwards extend the same coverage to bottom-qualified comparison, kernel, and lift-fiber elements
+- next proof obligation: extend the source grammar by the finite signature-fiber table and prove its exact canonical-section preimages, then reduce universal axis-kernel source coverage to `FiniteAxisFoldNormalizedAxisSignatureKernel` and continue with its atom/context/local-geometry components without semantic automorphism leaves
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 70 delta | Cycle 69のaxis kernelを座標成分まで保持して解析し、各軸を保ち選択座標を固定する有限signature-fiber作用を元入力から構成し、任意axis-kernel元をさらに小さいsignature-trivial kernelと有限成分へ分解する | `finiteAxisFoldNormalizedSignatureEquiv`, `finiteAxisFoldNormalizedSignatureProjection`, `finiteAxisFoldSignatureFiberPermutationSubgroup`, `finiteAxisFoldNormalizedAxisKernelSignatureProjection`, `finiteAxisFoldSignatureFiberEquiv`, `finiteAxisFoldSignatureFiberUpper`, `finiteAxisFoldSignatureFiberTotal`, `finiteAxisFoldSignatureFiberGeometry`, `finiteAxisFoldSouthwestSignatureFiberSectionHom`, `finiteAxisFoldActualDirectSignatureFiberSectionHom`, `finiteAxisFoldNormalizedSignatureFiberSectionHom`, `finiteAxisFoldNormalizedSignatureProjection_section`, `finiteAxisFoldNormalizedAxisKernelSignatureSectionHom`, `FiniteAxisFoldNormalizedAxisSignatureKernel`, `finiteAxisFoldNormalizedAxisSignatureKernelRemainder`, `finiteAxisFoldNormalizedAxisSignatureKernelRemainder_mul_section`, `finiteAxisFoldNormalizedAxisKernel_coordinateAction_ne_one` | 固定finite axis-fold/`Int`; full normalized endpoint AutとCycle 69 axis kernel; fixed signatureの軸・座標 carrier `Fin 3`; 各軸の選択値が対角値であること; exact pull/top transport; normalization | Autのhom/invからjoint `(axis,coordinate)` Equiv、axis-kernelの全元が属するfirst-coordinate/diagonal保存Subgroup、有限tableからidentity core fieldsを保ったcoordinateEquiv、complete geometryとactual transport、projection right inverse、二重kernel remainder分解、off-diagonal swapによる非自明axis-kernel元 | axis mapだけでは失われる座標情報を保持し、全axis-kernel量化を有限signature quotientと残余kernelへ分ける | この有限tableのsource syntax/preimageは未構成; 残余signature kernelのsource coverage、atom/context/local geometry、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 69 delta | full normalized direct Autをglobal三軸作用へ射影し、元finite axis tableから構成したsectionで任意元をaxis-trivial kernelと表示済みaxis成分へ分解し、全canonical-section source coverageを全kernel coverageへexactに還元する | `FiniteAxisFoldNormalizedDirectGeometry`, `finiteAxisFoldNormalizedAxisEquiv`, `finiteAxisFoldNormalizedAxisProjection`, `finiteAxisFoldSouthwestPermutationSectionHom`, `finiteAxisFoldActualDirectPermutationSectionHom`, `finiteAxisFoldActualDirectAdmissibleAutomorphismHom`, `finiteAxisFoldNormalizedAxisSectionHom`, `finiteAxisFoldNormalizedAxisProjection_section`, `FiniteAxisFoldNormalizedAxisKernel`, `finiteAxisFoldNormalizedAxisKernelRemainder`, `finiteAxisFoldNormalizedAxisKernelRemainder_mul_section`, `FiniteAxisFoldCanonicalSectionSourceCovered`, `finiteAxisFoldCanonicalSectionSourceCovered_all_iff_kernel` | 固定finite axis-fold/`Int`; full normalized endpoint Aut; 元の`Equiv.Perm (Fin 3)` table; actual exact pull/top transport; canonical normalization functor; Cycle 68 source term/evaluation | 任意Autのhom/inv axis mapから実際の有限置換、原始table→southwest→actual direct→admissible→normalizedの群準同型section、projection right inverse、kernel remainderと積分解、kernel source witnessと表示済みaxis termの積による全Aut witness | arbitrary endpoint coverageの未放電部分を、全量化を保ったままaxis-trivial kernel coverageだけへ同値に切り分ける | kernel全元のsource coverageをまだ構成していない; kernelが有限・自明・coveredとは主張しない; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 68 delta | 元の有限axis table族 `Equiv.Perm (Fin 3)` の全元を一つのsource grammarでcomplete geometry、actual pull/push、normalization、canonical raw sectionへ運び、rawとnormalizedのpreimageを各全元について別々に構成する | `finiteAxisFoldPermutation_rawReindex`, `finiteAxisFoldPermutationGeometryReadHom`, `finiteAxisFoldPermutationGeometry`, `finiteAxisFoldPermutationGeometry_comp`, `finiteAxisFoldPermutationGeometry_refl`, `finiteAxisFoldPermutationGeometryAut`, `finiteAxisFoldSouthwestPermutationHom`, `finiteAxisFoldSouthwestPermutationAut`, `finiteAxisFoldActualDirectPermutationAut`, `finiteAxisFoldActualDirectPermutationAut_axisMap`, `finiteAxisFoldActualDirectPermutationAdmissibleAut`, `finiteAxisFoldNormalizedDirectPermutationAut`, `FiniteAxisFoldAxisSwapSyntax.axisDirect`, `axisDirect_evaluate_comp_inverse`, `normalizedAxisDirect_evaluate_comp_inverse`, `directAxisPermutationAut`, `sectionedDirectAxisPermutationAut`, `axisPermutationComparisonElement`, `sectionedAxisPermutationComparisonElement`, `finiteAxisFoldNormalizedPermutation_canonicalSection_has_source_preimage`, `finiteAxisFoldNormalizedComparisonPermutation`, `finiteAxisFoldNormalizedComparisonPermutation_has_source_preimage` | 固定finite axis-fold/`Int`; 元入力の有限表 `p : Equiv.Perm (Fin 3)`; fixed vacuous coverage・raw geometry; actual exact left pull/top transport; canonical normalization section; actual `barAlpha` | 任意`p`から全`GeomReadHom` fieldを持つcomplete lift、`p.symm`によるactual/sectioned source inverse law、有限表をpayloadとする単一primitive constructor、両endpointを含むcanonical raw comparison exact equality、restriction後のnormalized pair exact equality | Dの元finite axis-fold生成族について、同じ一つのpresentationが全6 axis permutationと各canonical liftを表示側へ読み戻す | S3由来部分のみで全normalized Autを覆わない; 非axis kernelのsource coverage、bottom/全kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 67 delta | Cycle 66の同じ元axis swapについて、semantic自己同型を引数・専用定数へ入れずsource-law構文をprimitive recipeと一般normalization-section演算で拡張し、raw transported swapの正規化preimageとcanonical comparison sectionのexact raw preimageを別々に構成する | `FiniteAxisFoldAxisSwapSyntax`, `evaluate`, `Congruent`, `axisDirect_evaluate_comp_inverse`, `normalizedAxisDirect_evaluate_comp_inverse`, `evaluate_eq_of_congruent`, `axisDirect_not_congruent_identity`, `FiniteAxisFoldAxisSwapPresentation`, `decoder`, `barAlphaIso`, `directAxisSwapAut`, `sectionedDirectAxisSwapAut`, `directAutomorphismEvaluationHom`, `viaBaseAutomorphismEvaluationHom`, `comparisonEvaluationHom`, `axisSwapComparisonElement`, `normalizedEvaluationHom`, `axisSwapComparisonElement_normalized_evaluation`, `sectionedAxisSwapComparisonElement`, `comparisonEvaluation_section`, `sectionedDirectAxisSwapAut_ne_one`, `sectionedAxisSwapComparisonElement_evaluation`, `finiteAxisFoldNormalizedComparisonSwap_canonicalSection_has_source_preimage` | 固定finite axis-fold/`Int`; Cycle 59のsource-law構文; 原始`Fin 3` swap complete-geometry recipe; actual left pull/top push functor; independently constructed canonical normalization sectionとactual `barAlpha` | primitive swap evaluator内で明示するpull/push chain、任意の表示direct termへ作用する`normalizeSectionDirect`構文演算、source/category/inverse lawだけの合同、商圏decoder、raw比較評価、restriction後のexact normalized pair等号、canonical section raw pairの両endpoint exact等号、source/semantic双方の非恒等性 | Dの元finite axis-fold generatorについて、非自明normalized comparisonとそのcanonical liftをsource表示側へ実際に読み戻す | 固定一元から開始したsuccessor presentationであり最終の共通`D`ではない; 任意normalized/bottom元、全比較群・kernel・lift fiber、一般係数/入力、B/E/Fは未完了 |
@@ -7282,4 +7283,130 @@ audits:
     - "fresh final-snapshot Math A/B and Lean A/B review: PASS after two documentation-only wording corrections"
   blocking_findings: []
   next_obligation: "Construct source coverage for every element of FiniteAxisFoldNormalizedAxisKernel from the fixed primitive input, without semantic automorphism leaves, an image-defined realization category, or a coverage certificate field."
+```
+
+## Cycle 70 — Finite signature-fiber quotient inside the axis kernel
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 70
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 0635a05aa4a5696158fed9c5004720454d5f75d0
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 69 isolated the full axis kernel but did not analyze the coordinateEquiv fields that remain independent when axisMap is identity"
+  proof_dag_predecessors:
+    - "Cycle 69 full normalized axis projection, primitive section, and kernel decomposition"
+    - "the fixed finite-axis signature with Axis = Fin 3 and Coordinate i = Fin 3"
+    - "the complete SignedExactCoreReadingHom coordinateEquiv and coordinate_eq fields"
+  proof_obligation: "Project every normalized endpoint automorphism to its joint axis-coordinate action, construct the entire finite axis-preserving diagonal-fixing coordinate quotient from the fixed signature table, and decompose every Cycle 69 axis-kernel element without asserting coverage of the remaining kernel"
+  selection_reason: "Axis identity does not force coordinate identity.  The fixed input already supplies finite coordinate carriers, so this independent finite quotient can be constructed without receiving a completed semantic automorphism or shrinking the full axis-kernel quantifier."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNormalizedSignatureFiberProjection.lean
+  risks:
+    - "identify axis-triviality with complete signature-triviality"
+    - "ignore dependent coordinate composition or reverse category/Aut multiplication order"
+    - "take a semantic endpoint automorphism as the finite-table section input"
+    - "claim the remaining double kernel is trivial or covered"
+  unchecked:
+    - "source syntax and exact canonical-section preimages for every finite signature-fiber table"
+    - "source coverage of the remaining axis-and-signature-trivial kernel"
+    - "bottom/full comparison-kernel/lift recovery, general coefficient/input, and B/E/F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed the joint action of every full normalized endpoint automorphism on Fin 3 x Fin 3 from its actual axisMap and dependent coordinateEquiv, with inverse laws read from the inverse automorphism.  Restricted this homomorphism to the full Cycle 69 axis kernel and proved its values preserve the first coordinate and fix each selected diagonal coordinate.  Conversely, every table in that finite subgroup is evaluated from the fixed signature by retaining all identity core fields and replacing only coordinateEquiv, then transported through complete geometry, exact pull, top transport, admissible packaging, and normalization.  This construction is a right inverse of the restricted projection.  Hence every axis-kernel element splits into an axis-and-signature-trivial remainder times its constructed finite component.  An explicit off-diagonal coordinate swap proves that the axis kernel is genuinely nontrivial beyond the Cycle 68 axis tables.  This cycle does not yet add those finite tables to source syntax or prove any new universal source coverage."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNormalizedSignatureFiberProjection.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedSignatureProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedAxisKernel_signature_mem
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedAxisKernelSignatureProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSignatureFiberUpper
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSignatureFiberGeometry
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldActualDirectSignatureFiberSectionHom
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedSignatureProjection_section
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedAxisKernelSignatureProjection_section
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedAxisSignatureKernelRemainder_mul_section
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedAxisKernel_coordinateAction_ne_one
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldNormalizedSignatureProjection
+      - finiteAxisFoldNormalizedAxisKernel_signature_mem
+      - finiteAxisFoldNormalizedSignatureProjection_section
+      - finiteAxisFoldNormalizedAxisKernelSignatureProjection_section
+      - finiteAxisFoldNormalizedAxisSignatureKernelRemainder_mul_section
+      - finiteAxisFoldNormalizedAxisKernel_coordinateAction_ne_one
+    source_labels:
+      - "GOAL D: retain the original finite axis-fold signature data and all comparison-side changes"
+      - "GOAL D: do not replace the full group by the already displayed axis subgroup"
+      - "n1014: parameter-relative finite tables are allowed when their type, contents, and source are explicit"
+    conjuncts:
+      - "every full normalized endpoint Aut -> actual joint axis-coordinate permutation"
+      - "every full axis-kernel element -> first-coordinate-preserving and diagonal-fixing finite table"
+      - "every such finite table -> fixed-input complete-geometry and normalized axis-kernel automorphism"
+      - "every full axis-kernel element -> signature-trivial remainder times the finite section"
+      - "a concrete axis-identity coordinate-nonidentity element exists"
+    undischarged_assumptions:
+      - "the current source grammar has no primitive for this coordinate-fiber table and no preimage theorem for its section"
+      - "the remaining double kernel still contains possible atom, object, operation, context, invariant, coefficient, overlap, and local geometry components"
+      - "no theorem says the smaller kernel is finite, trivial, generated, or covered"
+    acceptance_point: "This cycle constructs and classifies one further finite quotient of the full axis kernel.  It does not prove source coverage of that quotient or of the residual kernel and is not G-123 completion."
+    port_status: not-applicable
+review:
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "full joint axis-coordinate Equiv and group homomorphism"
+      - "membership of every axis-kernel signature action in the full finite fiber subgroup"
+      - "fixed-input construction and right inverse for every finite signature-fiber table"
+      - "exact residual double-kernel decomposition for every axis-kernel element"
+      - "nontrivial coordinate action inside the axis kernel"
+    remaining:
+      - "source syntax/preimages for the finite signature-fiber section"
+      - "source coverage of every axis-and-signature-trivial kernel element"
+      - "bottom/full comparison-kernel/lift recovery, general coefficient/input, and B/E/F"
+  certificate_provenance:
+    discharged:
+      - "the semantic projection reads actual complete morphism fields and derives inverse laws from Aut equations"
+      - "the section input is only a finite permutation of the fixed Fin 3 x Fin 3 signature table satisfying structural preservation laws"
+      - "the section constructs SignedExactCoreReadingHom from the identity primitive fields, then constructs geometry and fixed transports"
+    unresolved:
+      - "no source presentation term yet evaluates to the newly constructed coordinate-fiber section"
+      - "no source-owned generators yet cover the residual atom/context/local-geometry components"
+  proof_use:
+    used:
+      - "Aut inverse equations prove both dependent joint-signature inverse laws"
+      - "coordinate_eq and axis-kernel membership force diagonal and first-coordinate preservation"
+      - "the subgroup laws and dependent coordinate composition prove the fixed-input construction is group-homomorphic"
+      - "exact pull and top transport preservation identify the constructed joint signature table after normalization"
+      - "the projection right inverse proves the smaller-kernel remainder membership and factorization"
+      - "the explicit off-diagonal swap and projection right inverse prove nonidentity in the axis kernel"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check for FiniteAxisFoldNormalizedSignatureFiberProjection: PASS"
+    - "registered exact target build for FiniteAxisFoldNormalizedSignatureFiberProjection: PASS (4299 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 40 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh final-snapshot Math A/B and Lean A/B review: PASS"
+  blocking_findings: []
+  next_obligation: "Add the finite signature-fiber table to the source grammar, prove exact canonical-section source preimages for every table, and reduce universal axis-kernel coverage to the remaining axis-and-signature-trivial kernel without semantic leaves."
 ```
