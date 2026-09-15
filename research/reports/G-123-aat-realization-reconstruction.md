@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 53 syntax-mediated common-endpoint evaluation of the fixed three comparison cases
+- current proof obligation: Cycle 54 source-law quotient category and descended decoder for the generated-comparison syntax fragment
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the quotient category of generated comparison syntax by the source-law congruence and prove its decoder is well-defined, while retaining the fixed three-case classification
+- next proof obligation: construct the next source-provenanced syntax layer for arbitrary required dependent core, equation, operation, and context morphism data, and prove its restriction/extension theorem without importing completed maps as constants
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/D Cycle 54 delta | Cycle 51構文をCycle 52のsource-law合同でHomごとに商し、既存の全complete-Hom圏を置換せず別の表示圏とdecoderを構成し、固定正負例を保つ | `G122GeneratedComparisonPresentation`, `ofObject`, `congruentSetoid`, `Hom`, `classOf`, `comp`, `instCategory`, `decoder`, `decoder_map_classOf`, `finiteAxisFold_barBeta_factor_class_eq`, `finiteAxisFold_barD_class_ne_identity_class`, `decoder_map_finiteAxisFold_barD` | 任意のG-122 family/cellからのendpoint-typed syntax; source-law `Congruent` の同値・合成閉包、評価soundness、固定factorization正例とprojector非同値負例 | exact生成objectを保持する別object wrapper、source-law quotient Hom、商上の恒等・合成・圏律、独立全Hom圏へのwell-defined decoder、固定barBeta factorization等号とbarD対identity非等号 | Dの生成比較fragmentを実際の商圏とsemantic decoderへ接続し、後続の全成分syntax拡張の基礎にする | 四operation fragmentは全許容Homを覆わず、合同complete/decoder full・faithful、全成分res/ext/J、冪等分裂、retract生成、D全群・二核・全fiber、E/Fは未完了 |
 | D Cycle 53 delta | 固定finite axis-foldのfive-factor・generated-cochain・constant-oneをCycle 51のsource-provenanced syntax経由で同一semantic Hom面へ評価し、同じ三分類を回復する | `finiteAxisFoldTransportIdentityCochainHom`, `finiteAxisFoldComparisonSyntaxEvaluate`, `finiteAxisFoldComparisonSyntaxSize`, `_eq_one`, `_eq_evaluate`, `finiteAxisFoldSyntax_generatedBarBeta_ne_barAlpha`, `finiteAxisFoldSyntax_identityBarBeta_eq_barAlpha`, 二つのexact fiber iff、`finiteAxisFoldComparisonSyntaxEvaluate_not_injective` | カード固定の同じfamily/cell/ℤ/geometry/raw、generated cochainとconstant-one cochain; Cycle 44のpackage同一性、Cycle 45の実比較分類、Cycle 51 syntax evaluator | 三caseを各1-node syntax leafで表し、constant-one endpoint packageをgenerated endpoint packageへtransportし、旧semantic evaluatorとの全case一致、相違・一致・二fiber・非単射をsyntax経由で証明 | Dの固定三例を有限recipe fragmentへ実接続する回帰面 | transportは固定case専用; 一般syntax quotient/category、全比較群・section・底/係数・二核・全lift fiber、全許容射、B/E/Fは未完了 |
 | A/D Cycle 52 delta | Cycle 51構文の合同をdecoder像の等号で定義せず、圏律とG-122生成法則だけから閉じ、評価soundnessと固定正負例を与える | `G122GeneratedComparisonSyntax.Congruent` と12 constructors、`evaluate_eq_of_congruent`, `finiteAxisFold_barD_ne_identity`, `finiteAxisFold_barBeta_factor_congruent`, `finiteAxisFold_barD_not_congruent_identity` | 任意のG-122 family/cell構文; 圏律と既存`barBeta_factor`・二冪等・二吸収; 固定generated-cochainの`barBeta`非可逆性と`barAlphaIso` | typed反射・対称・推移・合成閉包、source-law generators、評価等号soundness、固定factorization正例、非自明target projector対identityの負例 | D比較fragmentのsource-derived quotient候補と、固定三caseを構文等号で分類する前段 | completeness/decidability/quotient category、constant-oneとの共通endpoint transport、全許容射、res/ext/J、四義務、D全群、E/Fは未完了 |
 | A/D Cycle 51 delta | 全点列挙を避け、G-122原入力をleaf parameterとして保持する有限typed構文で、生成された比較とprojectorを同じ文法に置く | `G122GeneratedComparisonSyntax`, `.identity`, `.compose`, `.barAlpha`, `.barBeta`, `.barE`, `.barD`, `evaluate`, `size`, `size_pos`, 各`evaluate_*` law | 任意の一つの`G122FamilyInput`と任意の`G122CellInput`; leafは原cell/cochain/selected geometry/rawを保持するが完成`GeometryTotalHom`を受け取らない | exact endpoint-indexed finite syntax tree、独立意味圏への評価、有限node数、source-derived `barBeta=barAlpha≫barD`、二projector冪等、source/target吸収の評価後等式 | Dの生成比較をparameter-relative有限recipeへ送る最初のfragment; 将来のsource-derived合同と三固定case表示 | 全許容射のsyntax、合同、res/ext/J・全射性/単射性、固定三caseを同一syntax fiberで比較するtransport、全比較群・section・二核・fiber、A全成分、B/E/Fは未完了 |
@@ -5294,4 +5295,108 @@ audits:
   vacuity: "the generated syntax value differs from barAlpha, while the distinct constant-one code has the same value; both exact fibers and noninjectivity are proved"
   blocking_findings: []
   next_obligation: "Form the typed quotient of generated comparison syntax by Congruent, descend evaluation using soundness, and preserve the fixed positive/negative classification without identifying quotient equality with semantic equality."
+```
+
+## Cycle 54 — Source-law quotient category and descended decoder
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 54
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 31543a0cacea2a7b350998a879de5e4a74b88a94
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 53 next_obligation and Issue #4520 accepted Cycle 53 checkpoint"
+  proof_dag_predecessors:
+    - "Cycle 51 endpoint-typed generated comparison syntax and evaluation"
+    - "Cycle 52 source-law Congruent relation, semantic soundness, and fixed positive/negative instances"
+  proof_obligation: "Form a typed quotient category from the generated comparison syntax and source-law congruence, descend evaluation by proved soundness, and retain fixed positive and negative quotient instances"
+  selection_reason: "This closes the explicit Cycle 53 quotient/category obligation and creates the first actual presentation-category decoder on the G-122 comparison fragment without importing completed maps."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122GeneratedComparisonQuotient.lean
+  risks:
+    - "define quotient equality by semantic evaluation equality"
+    - "reuse G122GeneratedGeometryObject itself and replace its independently defined complete-Hom category"
+    - "claim fullness, faithfulness, or a complete presentation from a four-operation fragment"
+  unchecked:
+    - "coverage of arbitrary admissible complete Hom and dependent core/equation/operation/context components"
+    - "congruence completeness, decoder fullness/faithfulness, idempotent splitting, and retract generation"
+    - "all-group D recovery, remaining CS connection, and F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed a presentation-object wrapper retaining each exact generated G-122 object, a Hom-wise Setoid from the Cycle 52 source-law Congruent relation, quotient identities and composition, and all category laws from congruence constructors. Descended evaluation to a functor into the pre-existing all-complete-Hom category using semantic soundness for quotient well-definedness, and used the soundness-certified fixed negative theorem to retain barD-versus-identity inequality. Proved the fixed barBeta factorization equality and exact decoding of represented terms."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122GeneratedComparisonQuotient.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonPresentation
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonPresentation.congruentSetoid
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonPresentation.Hom
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonPresentation.classOf
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonPresentation.comp
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonPresentation.instCategory
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonPresentation.decoder
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonPresentation.decoder_map_classOf
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonPresentation.finiteAxisFold_barBeta_factor_class_eq
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonPresentation.finiteAxisFold_barD_class_ne_identity_class
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonPresentation.decoder_map_finiteAxisFold_barD
+  claim_mapping:
+    theorem_names:
+      - G122GeneratedComparisonPresentation.instCategory
+      - G122GeneratedComparisonPresentation.decoder
+      - G122GeneratedComparisonPresentation.decoder_map_classOf
+      - G122GeneratedComparisonPresentation.finiteAxisFold_barBeta_factor_class_eq
+      - G122GeneratedComparisonPresentation.finiteAxisFold_barD_class_ne_identity_class
+    source_labels:
+      - "GOAL A: finite typed syntax and congruence generated from source laws"
+      - "GOAL A: decoder construction for the generated-comparison presentation fragment; prerequisite toward B0, whose res/ext/J remain unproved"
+      - "GOAL D: preserve the fixed G-122 comparison and information-loss case"
+    conjuncts:
+      - "typed quotient Hom and category laws -> congruentSetoid, Hom, classOf, comp, instCategory"
+      - "semantic evaluation descends -> decoder and decoder_map_classOf"
+      - "fixed positive/negative instances -> finiteAxisFold_barBeta_factor_class_eq and finiteAxisFold_barD_class_ne_identity_class"
+    undischarged_assumptions:
+      - "the four-operation syntax fragment does not yet cover every admissible complete Hom"
+      - "congruence completeness, full/faithful reconstruction, idempotent splitting, retract generation, all-group D recovery, E, and F remain unproved"
+    acceptance_point: "A genuine source-law quotient category and descended decoder are constructed with fixed nonvacuity, but this is only one presentation fragment and not the fixed G-123 conclusion."
+    port_status: not-applicable
+  verdict: "Cycle 54 constructs a genuine typed quotient category and descended decoder from source laws without making decoder-image equality the congruence. It remains a generated-comparison fragment and therefore is not the fixed full presentation or G-123 completion."
+audits:
+  premise_delta:
+    discharged:
+      - "source-law quotient category construction for the generated-comparison fragment"
+      - "well-defined semantic decoder and exact decoding on represented terms"
+      - "fixed positive and negative quotient instances"
+    remaining:
+      - "coverage of every required admissible complete morphism and dependent component"
+      - "full B reconstruction, idempotent completeness, retract generation, all-group D recovery, and E/F completion"
+  certificate_provenance:
+    discharged:
+      - "Setoid equivalence and composition closure come from Cycle 52 Congruent constructors"
+      - "decoder quotient well-definedness comes from evaluate_eq_of_congruent"
+      - "fixed quotient equality and inequality come from the fixed Cycle 52 positive/negative congruence theorems"
+    unresolved:
+      - "no completeness certificate for Congruent or coverage certificate for every complete Hom has been constructed"
+  proof_use:
+    used:
+      - "Congruent.comp/id_comp/comp_id/assoc in quotient category laws"
+      - "evaluate_eq_of_congruent in decoder descent"
+      - "finiteAxisFold_barBeta_factor_congruent and finiteAxisFold_barD_not_congruent_identity in fixed quotient examples"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/RealizationReconstruction/G122GeneratedComparisonQuotient.lean: PASS; 24 declarations standard axioms only"
+    - "lake build ResearchLean.AG.RealizationReconstruction.G122GeneratedComparisonQuotient: PASS; 4267 registered jobs; not Research aggregate build"
+    - "git diff --check and changed-file hidden/BiDi scan: PASS"
+    - "fresh Math A/B and Lean A/B review: PASS; no findings after direct report fixes"
+  blocking_findings: []
+  next_obligation: "Determine and construct the next source-provenanced syntax layer needed to represent arbitrary required dependent core, equation, operation, and context morphism data, then prove its restriction/extension theorem rather than importing completed maps as constants."
 ```
