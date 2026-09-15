@@ -373,8 +373,10 @@ theorem atom_maps_entry
       (targetDisplay.atoms.value (action.atomIndexMap i)) :=
   ⟨i, rfl, rfl⟩
 
-/-- Two finite generator actions with the same Atom and object index maps are
-equal.  The remaining fields are propositions over those fixed finite maps. -/
+/-- Cycle 30 presentation-level extensionality: two finite generator actions
+with the same Atom and object index maps are equal.  The only remaining fields
+are propositions over those fixed finite maps, so this uses proof irrelevance
+and no semantic extension or completeness premise. -/
 @[ext] theorem ext
     {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
     {sourceDisplay : G122FiniteObjectGeneratorDisplay input X}
@@ -388,7 +390,9 @@ equal.  The remaining fields are propositions over those fixed finite maps. -/
   cases hobject
   rfl
 
-/-- Identity action on one finite G-122 display. -/
+/-- Cycle 30 presentation-level identity on one finite G-122 display.  It is
+constructed from identity index maps and reuses the source local equations;
+no additional premise or semantic carrier map is supplied. -/
 def id {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
     (display : G122FiniteObjectGeneratorDisplay input X) :
     G122FiniteObjectGeneratorAction display display where
@@ -398,8 +402,9 @@ def id {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
   mapsRelation _ _ _ h := h
   mapsIdentification _ _ _ h := h
 
-/-- Composition of finite G-122 display actions, using only composition of
-their finite index maps and successive use of their local equations. -/
+/-- Cycle 30 presentation-level composition of finite G-122 display actions.
+It uses only composition of their finite index maps and successive use of the
+two actions' local equations, leaving semantic extension for a later stage. -/
 def comp
     {input : G122FamilyInput.{u, v}} {X Y Z : G122CellInput input}
     {firstDisplay : G122FiniteObjectGeneratorDisplay input X}
@@ -422,7 +427,8 @@ def comp
       (first.atomIndexMap firstAtom) (first.atomIndexMap secondAtom)
       (first.mapsIdentification objectIndex firstAtom secondAtom h)
 
-/-- Identity is a left unit for finite generator actions. -/
+/-- Simp normal form removes a presentation-level identity on the source side:
+`comp (id sourceDisplay) action` reduces to `action`. -/
 @[simp] theorem id_comp
     {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
     {sourceDisplay : G122FiniteObjectGeneratorDisplay input X}
@@ -431,7 +437,8 @@ def comp
     comp (id sourceDisplay) action = action := by
   apply ext <;> rfl
 
-/-- Identity is a right unit for finite generator actions. -/
+/-- Simp normal form removes a presentation-level identity on the target side:
+`comp action (id targetDisplay)` reduces to `action`. -/
 @[simp] theorem comp_id
     {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
     {sourceDisplay : G122FiniteObjectGeneratorDisplay input X}
@@ -440,7 +447,9 @@ def comp
     comp action (id targetDisplay) = action := by
   apply ext <;> rfl
 
-/-- Composition of finite generator actions is associative. -/
+/-- Simp normal form reassociates finite generator-action composition to the
+right: `comp (comp first second) third` reduces to
+`comp first (comp second third)`. -/
 @[simp] theorem comp_assoc
     {input : G122FamilyInput.{u, v}} {W X Y Z : G122CellInput input}
     {firstDisplay : G122FiniteObjectGeneratorDisplay input W}
