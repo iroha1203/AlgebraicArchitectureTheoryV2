@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 59 kernel-extended finite presentation and a nontrivial raw-comparison element constructed from source recipes
+- current proof obligation: Cycle 60 source-displayed nontrivial comparison restriction-kernel element and its action on every fixed lift fiber
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: prove that the Cycle 59 raw comparison element lies nontrivially in the actual comparison restriction kernel, then extend source coverage toward the canonical section and every lift fiber without treating semantic group elements as syntax constants
+- next proof obligation: lift the canonical normalized comparison section into source syntax and extend kernel coverage beyond the one ambient generator, while retaining the fixed bottom/coefficient classification and every lift fiber
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 60 delta | Cycle 59の同じsource-displayed raw比較元について両endpointの正規化identityを証明し、実比較制限準同型の非自明kernel元を構成して、任意のnormalized比較元上のlift fiberへ非自明作用させる | `FiniteAxisFoldComparisonRestrictionKernel.RawComparison`, `NormalizedComparison`, `restrictionHom`, `rawElement`, `endpointNormalization_source`, `endpointNormalization_target`, `endpointNormalization`, `restrictionHom_rawElement`, `rawElement_ne_one`, `element`, `element_ne_one`, `canonicalLift`, `shiftedLift`, `shiftedLift_ne_canonicalLift` | 固定finite axis-fold入力; Cycle 59のsource-conjugation raw比較元とsource exact evaluation; Cycle 56のsource normalization identity; accepted canonical section/right inverseと全fiber kernel action/free theorem | source正規化identity、raw比較可換式を正規化しmapped `barAlpha` inverseで消去して得るtarget正規化identity、同じraw pairのrestriction-kernel membershipと非自明性、任意normalized比較元のcanonical lift、同じ表示kernel元で移した第二liftとその相違 | Dのambient kernelとcomparison restriction kernelを同じ構成元で区別しつつ接続し、全fixed lift fiberに表示由来の非自明変位を与える | 表示kernelは一元のみで全kernel元coverageではない; canonical section lift自体のsource syntax表示、全fiber全liftの表示回復、底固定群・係数分類、一般入力、B/E/Fは未完了 |
 | D Cycle 59 delta | Cycle 56のambient endpoint recipeを既存source-law構文へ有限leafとして加え、意味的等号を合同へ入れず商圏・decoder・比較群を再構成し、同じambient sourceをraw比較保存pairへ延長する | `FiniteAxisFoldKernelExtendedSyntax`, `evaluate`, `size`, `Congruent`, `evaluate_eq_of_congruent`, `ambientDirect_not_congruent_identity`, `FiniteAxisFoldKernelExtendedPresentation`, `decoder`, `barAlphaIso`, `directAmbientAut`, `viaBaseAmbientAut`, `directAmbientAut_ne_one`, `ComparisonSubgroup`, `ambientComparisonElement`, `directAutomorphismEvaluationHom`, `viaBaseAutomorphismEvaluationHom`, `endpointAutomorphisms_preserve_actualBarAlpha`, `comparisonEvaluationHom`, `ambientComparisonElement_evaluation_source`, `_source_ne_one`, `_target_ne_one`, `_ne_ambientPair` | 固定finite axis-fold入力; Cycle 54/55のsource-law構文・合同・商圏; Cycle 56の入力由来ambient recipeと位数2/nonidentity; Cycle 58の一般表示比較群section | 旧構文を保つ`base`、二つの固定recipe leaf、source lawだけの合同とambient対identityの固定負例、商圏とdecoder、表示ambient自己同型、source conjugationから作る表示比較元、全表示比較元のraw評価、この元の両端非自明性、Cycle 57のtarget恒等pairとの差 | Dの失われたambient変更について、raw比較を保つ相手側変更が表示構文から実際に構成でき、単なるsyntactic distinctionでないことを示す | 一つの固定raw比較元のみでsemantic endpoint Aut/raw比較群の全元coverageではない; canonical normalization section、actual restriction kernel membershipと全lift fiber、底固定群、一般入力、B/E/Fは未完了 |
 | D Cycle 58 delta | `barAlpha`を含むsource-law quotient圏の内部で比較群を定め、表示群の全元を有限syntax quotientのsource自己同型で分類し、固定G-122 raw比較群へ同じ両端pairを評価する | `GeneratedArrowComparisonSubgroup`, `presentationIsoConjugationAutomorphismHom`, `generatedArrowComparisonSectionHom`, `generatedArrowComparisonSourceHom`, `generatedArrowComparisonSection_source_rightInverse`, `generatedArrowComparisonSourceEquiv`, `FiniteAxisFoldGeneratedComparisonSubgroup`, `finiteAxisFoldDirectPresentationAutomorphismHom`, `finiteAxisFoldViaBasePresentationAutomorphismHom`, `finiteAxisFoldPresentationEndpointAutomorphisms_preserve_barAlpha`, `finiteAxisFoldGeneratedComparisonEvaluationHom`, `finiteAxisFoldGeneratedComparisonEvaluation_section` | 一般の圏と表示Iso; 固定例ではCycle 54/55のsource-law quotientとsource-constructed `barAlphaIso`、同じfinite axis-fold入力、既存endpoint admissibility | decoder等号で定義しない表示比較部分群、その全元のsource-conjugation分類と群同型、両endpoint decoderの群準同型、表示可換正方形をdecoderで運んだ実raw比較群membership、sectionのpair全体での可換性 | Dの「表示側の全比較群元」を意味側群元の再入力なしに定式化し、raw比較群への群準同型を固定する | endpoint decoderのAut全射性が未証明のためsemantic raw群の全元回復は未完了; canonical normalization section、restriction kernel、全lift fiber、底固定群、一般入力、B/E/Fは未完了 |
 | D Cycle 57 delta | Cycle 56の固定source recipeから得たambient核元を実`barAlpha`のendpoint pairへ接続し、正規化後の比較は保つが元比較は保たないこと、底・係数成分を固定することを同じpairで証明する | `finiteAxisFoldDirectAdmissibleEndpoint_eq`, `finiteAxisFoldViaBaseAdmissibleEndpoint_eq`, `finiteAxisFoldDisplayedAmbientKernelComparisonPair`, `_eq_authored`, `_fst`, `_fst_ne_one`, `_normalization`, `_normalized_mem`, `_not_raw_mem`, `_component_packet` | カード固定finite axis-fold入力とCycle 56の`direct` recipe評価; G-122のaccepted `authoredExactAmbientKernelComparisonPair`と比較群定理 | 表示recipe由来pairと既存G-122 witnessのexact equality、source非恒等、normalization endpoint homでidentity、normalized比較群membership、raw比較群nonmembership、両端の底と係数identity packet | Dの「ambient核元は元比較を保たない」を表示側の同じ固定pairへ戻し、ambient核とrestriction kernelを型・membershipで分離 | generated `barBeta`側の判定、section/その表示、restriction kernel、全lift fiber、元/底固定全比較群の全元、一般入力、B/E/Fは未完了 |
@@ -6016,4 +6017,136 @@ audits:
     - "fresh Math A/B and Lean A/B review: PASS after noncentral fixes"
   blocking_findings: []
   next_obligation: "Show that the constructed raw comparison pair maps to identity under the actual normalization comparison hom while remaining nonidentity, thereby constructing a source-provenanced nontrivial restriction-kernel element."
+```
+
+## Cycle 60 — Displayed nontrivial restriction-kernel element and all-fiber action
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 60
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: b09159dfabd4d7e61395c9461313d7c7a58d4591
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 59 produced one source-displayed nontrivial raw comparison pair but had not shown that it belongs to the kernel of the actual restricted normalization homomorphism"
+  proof_dag_predecessors:
+    - "Cycle 56 source recipe and exact source normalization-to-identity theorem"
+    - "Cycle 59 source-conjugation raw comparison element with exact nontrivial source"
+    - "accepted G-122 canonical comparison section, right inverse, and free kernel action on every actual lift fiber"
+  proof_obligation: "Prove both normalized endpoint components of the same source-displayed raw pair are identity, construct its nontrivial actual comparison restriction-kernel element, and connect it nontrivially to every fixed lift fiber"
+  selection_reason: "D explicitly distinguishes the ambient endpoint kernel from the kernel of the comparison restriction. The Cycle 59 pair is the first source-displayed raw member with the required ambient source, so its restriction image and use in the existing all-fiber torsor structure are the next material obligations."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldComparisonRestrictionKernel.lean
+  risks:
+    - "infer target normalization from source normalization without using the raw comparison equation"
+    - "reuse the Cycle 57 target-identity pair, which is not a raw comparison member"
+    - "store kernel membership or a completed lift in the presentation syntax"
+    - "call one constructed kernel element full kernel or full lift-fiber recovery"
+  unchecked:
+    - "source-syntax lift of the canonical normalized comparison section"
+    - "coverage of every actual restriction-kernel element and every lift"
+    - "bottom-fixed comparison group and coefficient-component classification"
+    - "general G-122 input and remaining B/E/F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Specialized the actual raw and normalized comparison groups and restricted normalization homomorphism to the mandated finite-axis-fold input. Reused the exact Cycle 59 raw element. Proved its source normalization is identity from the Cycle 56 recipe theorem; proved its target normalization is identity by applying normalization to the raw comparison square and cancelling the mapped barAlpha with its mapped inverse. Constructed the resulting actual restriction-kernel element and proved it nonidentity from the exact source evaluation. For every normalized comparison element, constructed the canonical section lift and the lift shifted by this same kernel element, then used the accepted free kernel action to prove the two lifts differ."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldComparisonRestrictionKernel.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel.RawComparison
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel.NormalizedComparison
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel.restrictionHom
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel.rawElement
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel.endpointNormalization_source
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel.endpointNormalization_target
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel.endpointNormalization
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel.restrictionHom_rawElement
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel.rawElement_ne_one
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel.element
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel.element_ne_one
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel.canonicalLift
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel.shiftedLift
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel.shiftedLift_ne_canonicalLift
+  claim_mapping:
+    theorem_names:
+      - endpointNormalization_source
+      - endpointNormalization_target
+      - restrictionHom_rawElement
+      - rawElement_ne_one
+      - element_ne_one
+      - shiftedLift_ne_canonicalLift
+    source_labels:
+      - "GOAL D2: distinguish ambient normalization kernel and comparison restriction kernel"
+      - "GOAL D2: recover each lift fiber and its information-loss displacement"
+      - "GOAL D: retain the original finite-axis-fold generating example"
+      - "n1014: trace certificate provenance and actual proof use"
+    conjuncts:
+      - "source-displayed raw pair -> identity normalized source endpoint"
+      - "raw comparison square plus source identity -> identity normalized target endpoint"
+      - "same raw pair -> actual comparison restriction-kernel member"
+      - "exact nontrivial source -> nonidentity kernel element"
+      - "arbitrary normalized comparison element -> canonical lift and distinct displayed-kernel shift in the same fiber"
+    undischarged_assumptions:
+      - "only one fixed restriction-kernel element is source-displayed"
+      - "the canonical section lift is constructed semantically and has no source-syntax preimage yet"
+      - "not every element of every lift fiber has been recovered by the presentation"
+      - "bottom-fixed group, coefficient classification, general input, and remaining B/E/F obligations remain open"
+    acceptance_point: "This constructs a nontrivial element of the actual comparison restriction kernel from the fixed source presentation and applies that same element in every fixed lift fiber. It is not full kernel coverage, not full lift-fiber recovery, and not G-123 completion."
+    port_status: not-applicable
+review:
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "target endpoint normalization-to-identity from the raw comparison square and mapped barAlpha inverse"
+      - "actual comparison restriction-kernel membership of the source-displayed pair"
+      - "semantic nontriviality of that restricted-kernel element"
+      - "a canonical lift and a distinct shift by the same displayed kernel element in every normalized lift fiber"
+    remaining:
+      - "source-syntax lift of the canonical comparison section"
+      - "coverage of every actual restricted-kernel element and every lift"
+      - "bottom-fixed group, coefficient classification, general input, and remaining B/E/F"
+  certificate_provenance:
+    discharged:
+      - "rawElement is exactly the decoder image of the Cycle 59 displayed source-conjugation element"
+      - "kernel membership is proved after evaluation from endpoint normalization equations and is not a syntax field"
+      - "canonicalLift is built from the accepted section and its right-inverse theorem for each quantified normalized element"
+    unresolved:
+      - "the accepted semantic section output is not yet represented by finite source syntax"
+      - "arbitrary kernel and lift elements do not yet have displayed preimages"
+  proof_use:
+    used:
+      - "Cycle 56 source endpoint normalization theorem in endpointNormalization_source"
+      - "Cycle 59 raw subgroup membership in endpointNormalization_target"
+      - "mapped barAlpha inverse to cancel the normalized comparison arrow and force target identity"
+      - "Cycle 59 exact semantic source nonidentity in rawElement_ne_one and element_ne_one"
+      - "accepted canonical section right inverse to construct canonicalLift for arbitrary normalized t"
+      - "accepted free restricted-kernel action to separate shiftedLift from canonicalLift in every fiber"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check for FiniteAxisFoldComparisonRestrictionKernel: PASS"
+    - "registered exact target build: PASS (4294 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 15 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh Math A/B and Lean A/B review: PASS with no findings"
+  blocking_findings: []
+  next_obligation: "Construct source-syntax preimages for the canonical normalized comparison section and extend the displayed restriction-kernel generators without replacing arbitrary semantic group elements by syntax constants."
 ```
