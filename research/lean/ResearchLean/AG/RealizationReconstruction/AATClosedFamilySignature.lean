@@ -196,6 +196,69 @@ inductive PrimitiveObject :
       (vertex : input.schema.Vertex) :
       PrimitiveObject (.protocol input) (.protocol X)
 
+namespace PrimitiveObject
+
+/-- Read back the exact architecture object stored by a tagged-branch object
+primitive.  The object already owns its configuration, structure-map type and
+value, and selected-quantity type and value; none is accepted a second time. -/
+def taggedValue
+    (object : PrimitiveObject .taggedOperation .taggedOperation) :
+    ArchitectureObject FiniteModel.carrier := by
+  cases object with
+  | tagged value => exact value
+
+/-- Read back the exact authored-support architecture object stored by a
+G-122 object primitive. -/
+def g122Value {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (object : PrimitiveObject (.g122 input) (.g122 X)) :
+    ArchitectureObject input.Carrier := by
+  cases object with
+  | g122 value => exact value
+
+/-- Evaluate the configuration component of a tagged object primitive from
+the same stored architecture object. -/
+def taggedConfiguration
+    (object : PrimitiveObject .taggedOperation .taggedOperation) :
+    AtomConfiguration FiniteModel.carrier :=
+  object.taggedValue.configuration
+
+/-- Evaluate the selected structure-map value of a tagged object primitive.
+Its dependent carrier is the one owned by that exact architecture object. -/
+def taggedStructureMaps
+    (object : PrimitiveObject .taggedOperation .taggedOperation) :
+    object.taggedValue.StructureMaps :=
+  object.taggedValue.structureMaps
+
+/-- Evaluate the selected-quantity value of a tagged object primitive. -/
+def taggedSelectedQuantities
+    (object : PrimitiveObject .taggedOperation .taggedOperation) :
+    object.taggedValue.SelectedQuantities :=
+  object.taggedValue.selectedQuantities
+
+/-- Evaluate the configuration component of a G-122 object primitive from
+the same original authored-support architecture object. -/
+def g122Configuration {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (object : PrimitiveObject (.g122 input) (.g122 X)) :
+    AtomConfiguration input.Carrier :=
+  object.g122Value.configuration
+
+/-- Evaluate the selected structure-map value of a G-122 object primitive,
+retaining its exact dependent carrier. -/
+def g122StructureMaps {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (object : PrimitiveObject (.g122 input) (.g122 X)) :
+    object.g122Value.StructureMaps :=
+  object.g122Value.structureMaps
+
+/-- Evaluate the selected-quantity value of a G-122 object primitive,
+retaining its exact dependent carrier. -/
+def g122SelectedQuantities
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (object : PrimitiveObject (.g122 input) (.g122 X)) :
+    object.g122Value.SelectedQuantities :=
+  object.g122Value.selectedQuantities
+
+end PrimitiveObject
+
 /-- Endpoint-indexed primitive operation names.
 
 The tagged constructor contains an actual operation of the fixed G-117
