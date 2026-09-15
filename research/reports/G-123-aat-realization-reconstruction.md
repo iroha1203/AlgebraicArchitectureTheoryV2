@@ -13,10 +13,10 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 18 actual endpoint-typed free-path candidate obstruction
+- current proof obligation: Cycle 19 arbitrary Hom-relation quotient of the endpoint-typed path candidate
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: add a source-derived typed congruence/substitution layer or classify additional legal parameter placements, then decide from fixed Sigma,D laws whether every mandatory-C source-choice map is an actual final R_Theta morphism
+- next proof obligation: derive the quotient relation and any additional parameter roles from the fixed source laws, then decide from fixed Sigma,D laws whether every mandatory-C source-choice map is an actual final R_Theta morphism
 
 ## Requirement ledger
 
@@ -29,7 +29,7 @@
 | B 冪等完備性 | 各意味圏の冪等射を個別に分裂する | `lensRealization_isIdempotentComplete`, `protocolRealization_isIdempotentComplete`; `karoubiReconstructionEquivalence` | 各具体入力条件と任意の冪等射 | lens固定点; objectwise protocol固定点functor | lens/protocolのKaroubi延長とarrow再構成 | AAT意味圏での分裂構成と共通再構成への適用 |
 | B retract生成 | 全意味対象をdecoder像のretractとして個別に構成する | lens/protocol各`exists_decoder_retract`; `karoubiObjectOfRetract`, `karoubiMapEssSurj`; `retractEndomorphismMap`, `exists_retractEndomorphismMap_surjective` | 各具体入力条件のみ; 一般transferでは明示的な`RetractGeneratedBy F` | fiber列挙; vertexwise列挙; retractからpresentation側冪等元を逆像構成; 同じ`i,r,i≫r=𝟙`を自己射decoderの全射性に実使用 | `karoubiCompletionEquivalence`, lens/protocolのKaroubi再構成; Cycle 11 cardinal obstructionとの将来接続 | AAT完全幾何でretractを固定入力から構成し、mandatory-C対象へ同じwitnessを与えること |
 | B1 | `Kar(P) ≃ R`、decoderの延長、一意性、arrow圏での再構成を同じ四証拠から得る | `karoubiReconstructionEquivalence`, `karoubiReconstructionRestrictionIso`, `karoubiExtensionComparison`, `karoubiExtensionComparison_unique`, `karoubiExtensionComparison_self`, `karoubiExtensionComparison_trans`, `karoubiArrowReconstructionEquivalence`; lens/protocol各適用 | full、faithful、意味圏の冪等完備性、decoder像によるretract生成 | `functorExtension₂`のfull/faithful/essentially-surjective証明、`toKaroubiEquivalence`による延長、fully faithfulな制限から比較同型を逆像構成 | lens/protocol双方のobject・任意arrow再構成 | AAT共通decoderへの同じ適用、分裂選択を明示する具体比較、完全幾何への適用 |
-| C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipTotal_square`, `taggedUniformFlipTotal_commutes_normalization`, `taggedNormalizationThenUniformFlip_ne_normalization`, `taggedNormalizationThenUniformFlipKaroubiAut`, `fixedArchitectureObjectFunctor`, `fixedArchitectureObjectFunctor_identifies_uniform_flip`, `fixedArchitectureObjectFunctor_not_injective_at_tagged`, `taggedUniformFlipTotal_ne_endpointFlipTotal`; `taggedSourceChoiceTotal`, `readTaggedSourceChoice_taggedSourceChoiceTotal`, `taggedSourceChoiceTotal_injective`; `taggedSourceChoiceAdmissibleMorphism`; `TaggedPrimitiveReference`, `taggedSourceChoiceAdmissibleEndomorphisms_not_listPrimitiveEnumerable`, `not_full_and_retractGenerated_of_listPrimitiveGeneratedEndomorphisms`; `taggedPrimitiveWordPresentation_not_full_and_retractGenerated`; `taggedPrimitiveRelationPresentation_not_full_and_retractGenerated`; `TaggedPrimitiveVertex`, `taggedPrimitiveEndpoints`, `TaggedPrimitivePathPresentation`, `taggedPrimitivePathEndomorphismEmbedding`, `taggedPrimitivePathPresentation_not_full_and_retractGenerated` | G-117の固定`taggedOperationPackage`とadmissibility; 任意の`ArchitectureObject FiniteModel.carrier → Bool`; G-119で独立定義済みの全admissible-package category; tagged branchの既存primitive全4種; free word/relation quotient; Cycle 18のnamed parameter rootと全ArchitectureObject頂点 | 一様flipの全package/Karoubi証拠; source-choice実category射とreadback; disjoint alphabet/list embedding; actual free-word/relation quotient; 全4roleをedgeに保持しoperationのexact endpointsを使うmultiobject free path category、parallel edgeを保持するexact-reference serializationと単射、Cycle 17 transfer適用 | 固定点関手の同一視とoperation readerでの分離; Aの全primitive有限syntaxと全保存射の両立可能性を独立package category内で検査するmandatory-C witness | final `R_Theta`との関係、typed congruence/substitution、Atom/Sourceの最終placement、合法な追加parameter syntax、固定入力由来D構造がsource-choice射を除けるかの判定 |
+| C | 一様operation flipと同じ射の二つのreading | `taggedUniformFlipTotal_square`, `taggedUniformFlipTotal_commutes_normalization`, `taggedNormalizationThenUniformFlip_ne_normalization`, `taggedNormalizationThenUniformFlipKaroubiAut`, `fixedArchitectureObjectFunctor`, `fixedArchitectureObjectFunctor_identifies_uniform_flip`, `fixedArchitectureObjectFunctor_not_injective_at_tagged`, `taggedUniformFlipTotal_ne_endpointFlipTotal`; `taggedSourceChoiceTotal`, `readTaggedSourceChoice_taggedSourceChoiceTotal`, `taggedSourceChoiceTotal_injective`; `taggedSourceChoiceAdmissibleMorphism`; `TaggedPrimitiveReference`, `taggedSourceChoiceAdmissibleEndomorphisms_not_listPrimitiveEnumerable`, `not_full_and_retractGenerated_of_listPrimitiveGeneratedEndomorphisms`; `taggedPrimitiveWordPresentation_not_full_and_retractGenerated`; `taggedPrimitiveRelationPresentation_not_full_and_retractGenerated`; `TaggedPrimitiveVertex`, `taggedPrimitiveEndpoints`, `TaggedPrimitivePathPresentation`, `taggedPrimitivePathEndomorphismEmbedding`, `taggedPrimitivePathPresentation_not_full_and_retractGenerated`; `TaggedPrimitivePathQuotientPresentation`, `taggedPrimitivePathQuotientEndomorphismDecoder_surjective`, `taggedPrimitivePathQuotientPresentation_not_full_and_retractGenerated` | G-117の固定`taggedOperationPackage`とadmissibility; 任意の`ArchitectureObject FiniteModel.carrier → Bool`; G-119で独立定義済みの全admissible-package category; tagged branchの既存primitive全4種; free word/relation quotient; Cycle 18のnamed parameter rootと全ArchitectureObject頂点; Cycle 19の任意のtyped `HomRel` | 一様flipの全package/Karoubi証拠; source-choice実category射とreadback; disjoint alphabet/list embedding; actual free-word/relation quotient; 全4roleをedgeに保持しoperationのexact endpointsを使うmultiobject free path category、parallel edgeを保持するexact-reference serializationと単射; 任意のHom関係を合成閉包したactual quotient category、代表raw pathとexact-reference decoderの合成による各自己射へのlist全射、Cycle 14 transfer適用 | 固定点関手の同一視とoperation readerでの分離; Aの全primitive有限syntaxと全保存射の両立可能性を独立package category内で検査するmandatory-C witness | final `R_Theta`との関係、relationの固定source lawsからの導出とsubstitutionの適切性、Atom/Sourceの最終placement、合法な追加parameter syntax、固定入力由来D構造がsource-choice射を除けるかの判定 |
 | D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | `G122FamilyInput`, `G122CellInput`, `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, `PrimitiveOperation.g122Ref`, `G122CellInput.fixedGeometry`, `G122CellInput.sourceTransport`, `G122CellInput.compatibleProblemData`, `G122CellInput.barBeta`, `finiteAxisFoldParameter`, `finiteAxisFoldRealization`, `finiteAxisFoldOperationReference` | G-122の固定版にある任意の`A,z,omega,k,g_z`; 固定有限axis-fold例 | 原入力と生成出力を分離し、任意のcell inputを共通familyの意味対象にし、元の有限例を同じ一般branchへ入れ、supportの全端点の各operation identityを参照し、同じ実際の`barBeta`を生成する証拠 | 将来のG-122 branch interpretationと表示回復 | operation族の有限生成・全域写像回復とprimitive interpretation、比較群・section・底/係数成分・二種類の核・各lift fiberの全元の表示回復と三場合分類は未完了 |
 | E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
 | E protocol | 有限schemaの関手意味論と生成辺tableの再構成 | `ProtocolSchema.ExecutionCategory`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.presentationEquivalence` | 有限vertex・typed edge・有限parallel path relations `Q,L`; 任意の`O:C_Q⥤Type`; vertexwise有限carrier | 自由path評価、relation quotient、全path `ext`、vertexwise列挙normal form | AAT翻訳、Fのprotocol適用 | operation名変更版、adapter square (P1)、AATとの双方向翻訳、Fへの適用 |
@@ -2618,4 +2618,95 @@ audits:
   vacuity: "the category contains identities and every well-typed finite path; parallel references are distinguished by their exact values"
   blocking_findings: []
   next_obligation: "Construct a source-derived typed congruence/substitution quotient with an actual representative embedding or normal form, and separately prove the final Sigma,D,R_Theta membership of all mandatory-C source-choice maps."
+```
+
+## Cycle 19 — Arbitrary relation quotients of the endpoint-typed path candidate
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 19
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 10a88b618811fcc63b2bdf724e3e25542daba701
+tracking_issue: 4520
+selection:
+  proof_state_ref: "Cycle 18 left quotient relations and representative decoding open for the actual endpoint-typed path candidate"
+  proof_obligation: "Form the actual multiobject category quotient by any typed Hom relation, construct a finite exact-reference list decoder onto every quotient endomorphism type, and apply Cycle 14 without receiving generation as a certificate"
+  selection_reason: "This tests the maximally permissive relation layer over the concrete Cycle 18 grammar before source-law provenance and additional parameter roles are classified."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCEndpointPathQuotientObstruction.lean
+  risks:
+    - "define the quotient relation as equality after a completed semantic decoder"
+    - "confuse fullness of the canonical syntactic quotient functor with fullness of the semantic decoder"
+    - "accept a representative or surjectivity certificate as an input field"
+    - "call arbitrary candidate relations the final source-derived D_Theta congruence"
+    - "promote failure of this fixed primitive grammar to a refutation of legal richer syntax or G-123"
+  unchecked:
+    - "derivation of the relation and substitution laws from the fixed source declaration"
+    - "final placement and exhaustive classification of additional legal parameter roles"
+    - "final Sigma,D_Theta,R_Theta and mandatory-C source-choice membership"
+    - "remaining A--F obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed the quotient category of Cycle 18's endpoint-typed path presentation by an arbitrary typed HomRel; composed Cycle 17's raw-path decoder with the canonical quotient functor; proved every quotient endomorphism has a finite exact-reference list representative; and applied Cycle 14 to refute simultaneous semantic fullness and retract generation for every such quotient."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCEndpointPathQuotientObstruction.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.TaggedPrimitivePathQuotientPresentation
+    - AAT.AG.RealizationReconstruction.taggedPrimitivePathQuotientEndomorphismDecoder
+    - AAT.AG.RealizationReconstruction.taggedPrimitivePathQuotientEndomorphismDecoder_surjective
+    - AAT.AG.RealizationReconstruction.taggedPrimitivePathQuotientPresentation_not_full_and_retractGenerated
+  claim_mapping:
+    input_premises:
+      - "Cycle 18 endpoint-typed path category with all four existing tagged primitive roles and exact operation endpoints"
+      - "an arbitrary typed Hom relation fixed on the syntax category before the semantic functor"
+      - "an arbitrary functor from the constructed quotient category into the independently defined mandatory-C category"
+    constructed_evidence:
+      - "Mathlib's composition closure and actual quotient category for the supplied Hom relation"
+      - "the raw-path decoder already constructed from Cycle 18's exact-reference embedding"
+      - "the composite from exact-reference lists through raw paths to quotient morphisms"
+      - "a surjectivity proof using a quotient representative and the raw decoder preimage"
+    proof_use:
+      - "canonical syntactic quotient-functor fullness supplies a raw representative for each quotient endomorphism"
+      - "Cycle 17 surjectivity supplies a list representing that raw path"
+      - "the resulting per-object list surjection is passed directly to Cycle 14"
+      - "Cycle 14 uses it at the presentation object selected by mandatory-C retract generation"
+    unfinished:
+      - "the arbitrary relation is not yet derived from the fixed AAT source laws or certified as the final legal congruence"
+      - "the Cycle 18 parameter-root and Atom/Source placement remain candidate-specific"
+      - "no additional legally source-provenanced parameter roles are exhausted or ruled out"
+      - "final Sigma,D_Theta,R_Theta and mandatory-C source-choice membership are not constructed"
+      - "no fixed-target refutation or target-theorem-proved status is claimed"
+    acceptance_point: "Acceptance rules out every relation quotient of this concrete endpoint-typed grammar, including arbitrary relation generators closed under composition. It does not establish that the grammar exhausts every legal parameter-relative presentation allowed by the fixed target."
+  validation:
+    focused_checks: "1/1 pass"
+    named_target_build: "ResearchLean.AG.RealizationReconstruction.MandatoryCEndpointPathQuotientObstruction passed (4275 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "4 declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 19 closes representative decoding and the cardinal obstruction for arbitrary typed relation quotients of the actual Cycle 18 endpoint-path candidate. Source-law provenance, legal-role exhaustion, final category membership, and A--F remain open; G-123 is neither proved nor refuted."
+audits:
+  premise_delta:
+    discharged:
+      - "actual quotient category laws for every Hom relation via composition closure"
+      - "a quotient endomorphism representative for every object"
+      - "finite exact-reference list surjectivity for every quotient endomorphism type"
+      - "fullness/retract incompatibility for every quotient of the Cycle 18 grammar"
+    remaining:
+      - "fixed-source derivation and appropriateness of the final congruence and substitution rules"
+      - "exhaustion or construction of additional legal parameter roles"
+      - "final Sigma,D_Theta,R_Theta and mandatory-C membership"
+      - "all remaining A--F obligations"
+  certificate_provenance:
+    discharged:
+      - "the decoder and surjectivity are constructed from the raw-path embedding and canonical quotient-functor representative extraction, not accepted as fields"
+    unresolved:
+      - "the supplied relation's source-law provenance and the final grammar's completeness"
+  structure_field_escape: "the quotient stores only syntactic relation classes; it has no semantic morphism, decoder image, fullness, retract, representative, or generation field"
+  route_integrity: "the endpoint quiver, free path category, and Hom relation are parameters independent of the later arbitrary semantic functor; circular semantic-kernel relations are explicitly excluded from final use"
+  target_fitting: "all existing tagged roles and exact operation endpoints are retained through the quotient, while the possible need for additional legal roles remains explicitly unresolved"
+  vacuity: "every quotient hom is represented by a raw path by construction, and the raw-path list decoder was already proved surjective from an injective exact-edge serialization"
+  blocking_findings: []
+  next_obligation: "Derive the candidate relation/substitution and any additional parameter roles from fixed Sigma,D source laws, or prove those laws force this grammar; then establish or refute actual final R_Theta membership of the complete mandatory-C source-choice family."
 ```
