@@ -413,6 +413,140 @@ same finite Atom-occurrence term. -/
 
 end G122FiniteObjectFormationDisplay
 
+/-- Purely finite maps between G-122 Atom-occurrence object terms.  The maps
+choose a target object term and, inside it, a target occurrence for every
+source occurrence.  They contain no function on the Atom carrier or any
+semantic evaluation/naturality certificate. -/
+structure G122FiniteObjectFormationAction
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    (source : G122FiniteObjectFormationDisplay input X)
+    (target : G122FiniteObjectFormationDisplay input Y) where
+  /-- Target term index for each source object term. -/
+  objectIndexMap : Fin source.objectCard → Fin target.objectCard
+  /-- Target occurrence index for each Atom occurrence of each source term. -/
+  atomIndexMap : ∀ objectIndex,
+    Fin (source.atomCard objectIndex) →
+      Fin (target.atomCard (objectIndexMap objectIndex))
+
+namespace G122FiniteObjectFormationAction
+
+/-- Extensionality for finite object-formation actions. -/
+@[ext] theorem ext
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {target : G122FiniteObjectFormationDisplay input Y}
+    {first second : G122FiniteObjectFormationAction source target}
+    (hobject : first.objectIndexMap = second.objectIndexMap)
+    (hatom : HEq first.atomIndexMap second.atomIndexMap) : first = second := by
+  cases first
+  cases second
+  cases hobject
+  cases hatom
+  rfl
+
+/-- Identity finite action on one Atom-occurrence object display. -/
+def id {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X) :
+    G122FiniteObjectFormationAction display display where
+  objectIndexMap objectIndex := objectIndex
+  atomIndexMap _ atomIndex := atomIndex
+
+/-- Composition of finite object-term and occurrence-index maps. -/
+def comp
+    {input : G122FamilyInput.{u, v}} {X Y Z : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {middle : G122FiniteObjectFormationDisplay input Y}
+    {target : G122FiniteObjectFormationDisplay input Z}
+    (first : G122FiniteObjectFormationAction source middle)
+    (second : G122FiniteObjectFormationAction middle target) :
+    G122FiniteObjectFormationAction source target where
+  objectIndexMap objectIndex := second.objectIndexMap (first.objectIndexMap objectIndex)
+  atomIndexMap objectIndex atomIndex :=
+    second.atomIndexMap (first.objectIndexMap objectIndex)
+      (first.atomIndexMap objectIndex atomIndex)
+
+/-- Simp normal form removes the left identity finite formation action. -/
+@[simp] theorem id_comp
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {target : G122FiniteObjectFormationDisplay input Y}
+    (action : G122FiniteObjectFormationAction source target) :
+    comp (id source) action = action := by
+  apply ext rfl
+  apply heq_of_eq
+  rfl
+
+/-- Simp normal form removes the right identity finite formation action. -/
+@[simp] theorem comp_id
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {target : G122FiniteObjectFormationDisplay input Y}
+    (action : G122FiniteObjectFormationAction source target) :
+    comp action (id target) = action := by
+  apply ext rfl
+  apply heq_of_eq
+  rfl
+
+/-- Simp normal form reassociates finite formation-action composition to the
+right. -/
+@[simp] theorem comp_assoc
+    {input : G122FamilyInput.{u, v}} {W X Y Z : G122CellInput input}
+    {firstDisplay : G122FiniteObjectFormationDisplay input W}
+    {secondDisplay : G122FiniteObjectFormationDisplay input X}
+    {thirdDisplay : G122FiniteObjectFormationDisplay input Y}
+    {fourthDisplay : G122FiniteObjectFormationDisplay input Z}
+    (first : G122FiniteObjectFormationAction firstDisplay secondDisplay)
+    (second : G122FiniteObjectFormationAction secondDisplay thirdDisplay)
+    (third : G122FiniteObjectFormationAction thirdDisplay fourthDisplay) :
+    comp (comp first second) third = comp first (comp second third) := by
+  apply ext rfl
+  apply heq_of_eq
+  rfl
+
+/-- The finite relation on object-term indices selected by an action. -/
+def Maps
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {target : G122FiniteObjectFormationDisplay input Y}
+    (action : G122FiniteObjectFormationAction source target)
+    (sourceIndex : Fin source.objectCard) (targetIndex : Fin target.objectCard) : Prop :=
+  action.objectIndexMap sourceIndex = targetIndex
+
+/-- The endpoint-indexed finite relation on Atom occurrences selected by an
+action; it compares indices only and does not assert equality of Atom values. -/
+def AtomMaps
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {target : G122FiniteObjectFormationDisplay input Y}
+    (action : G122FiniteObjectFormationAction source target)
+    (objectIndex : Fin source.objectCard)
+    (sourceAtom : Fin (source.atomCard objectIndex))
+    (targetAtom : Fin (target.atomCard (action.objectIndexMap objectIndex))) : Prop :=
+  action.atomIndexMap objectIndex sourceAtom = targetAtom
+
+/-- Every source object term has its action-selected target term. -/
+@[simp] theorem maps_entry
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {target : G122FiniteObjectFormationDisplay input Y}
+    (action : G122FiniteObjectFormationAction source target)
+    (objectIndex : Fin source.objectCard) :
+    action.Maps objectIndex (action.objectIndexMap objectIndex) :=
+  rfl
+
+/-- Every source Atom occurrence has its action-selected target occurrence. -/
+@[simp] theorem atom_maps_entry
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {target : G122FiniteObjectFormationDisplay input Y}
+    (action : G122FiniteObjectFormationAction source target)
+    (objectIndex : Fin source.objectCard)
+    (atomIndex : Fin (source.atomCard objectIndex)) :
+    action.AtomMaps objectIndex atomIndex (action.atomIndexMap objectIndex atomIndex) :=
+  rfl
+
+end G122FiniteObjectFormationAction
+
 /-- The Atom and architecture-object generator tables owned by one finite
 G-122 display.  These tables make no claim that every semantic Atom or object
 is listed. -/
