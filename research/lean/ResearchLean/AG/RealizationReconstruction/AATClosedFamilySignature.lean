@@ -37,6 +37,9 @@ can discharge them.  Canonical occurrence-pair codes enumerate possible
 endpoints without storing relation truth values; relation and identification
 are re-evaluated from the original composition reader.  This rejects the
 alternative of copying a completed semantic predicate graph into syntax.
+Each independent edge has a canonical occurrence-pair code, and endpoint-
+coherent finite actions commute with those codes before any semantic
+preservation claim is made.
 -/
 
 namespace AAT.AG.RealizationReconstruction
@@ -599,6 +602,76 @@ theorem configurationValue_identification_iff_exists_occurrencePairCode
   · rintro ⟨code, rfl, rfl, hidentification⟩
     exact hidentification
 
+/-- The canonical occurrence-pair code carried by one independently generated
+relation edge.  This records only the two declared occurrence endpoints. -/
+def relationEdgePairCode
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    {objectIndex : Fin display.objectCard}
+    (relationIndex : Fin (display.relationCard objectIndex)) :
+    display.OccurrencePairCode objectIndex :=
+  ⟨display.relationLeft objectIndex relationIndex,
+    display.relationRight objectIndex relationIndex⟩
+
+/-- The canonical occurrence-pair code carried by one independently generated
+identification edge. -/
+def identificationEdgePairCode
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    {objectIndex : Fin display.objectCard}
+    (identificationIndex : Fin (display.identificationCard objectIndex)) :
+    display.OccurrencePairCode objectIndex :=
+  ⟨display.identificationLeft objectIndex identificationIndex,
+    display.identificationRight objectIndex identificationIndex⟩
+
+/-- Evaluating the left endpoint of a relation-edge code recovers the edge's
+declared left occurrence value. -/
+@[simp] theorem occurrencePairLeftValue_relationEdgePairCode
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    {objectIndex : Fin display.objectCard}
+    (relationIndex : Fin (display.relationCard objectIndex)) :
+    display.occurrencePairLeftValue (display.relationEdgePairCode relationIndex) =
+      display.atomValue objectIndex (display.relationLeft objectIndex relationIndex) :=
+  rfl
+
+/-- Evaluating the right endpoint of a relation-edge code recovers the edge's
+declared right occurrence value. -/
+@[simp] theorem occurrencePairRightValue_relationEdgePairCode
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    {objectIndex : Fin display.objectCard}
+    (relationIndex : Fin (display.relationCard objectIndex)) :
+    display.occurrencePairRightValue (display.relationEdgePairCode relationIndex) =
+      display.atomValue objectIndex (display.relationRight objectIndex relationIndex) :=
+  rfl
+
+/-- Evaluating the left endpoint of an identification-edge code recovers the
+edge's declared left occurrence value. -/
+@[simp] theorem occurrencePairLeftValue_identificationEdgePairCode
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    {objectIndex : Fin display.objectCard}
+    (identificationIndex : Fin (display.identificationCard objectIndex)) :
+    display.occurrencePairLeftValue
+        (display.identificationEdgePairCode identificationIndex) =
+      display.atomValue objectIndex
+        (display.identificationLeft objectIndex identificationIndex) :=
+  rfl
+
+/-- Evaluating the right endpoint of an identification-edge code recovers the
+edge's declared right occurrence value. -/
+@[simp] theorem occurrencePairRightValue_identificationEdgePairCode
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    {objectIndex : Fin display.objectCard}
+    (identificationIndex : Fin (display.identificationCard objectIndex)) :
+    display.occurrencePairRightValue
+        (display.identificationEdgePairCode identificationIndex) =
+      display.atomValue objectIndex
+        (display.identificationRight objectIndex identificationIndex) :=
+  rfl
+
 end G122FiniteObjectFormationDisplay
 
 /-- Purely finite maps between G-122 object terms.  They choose a target term,
@@ -776,6 +849,46 @@ def mapOccurrence
     source.Occurrence → target.Occurrence
   | ⟨objectIndex, atomIndex⟩ =>
       ⟨action.objectIndexMap objectIndex, action.atomIndexMap objectIndex atomIndex⟩
+
+/-- Map both endpoints of a canonical occurrence-pair code by the finite Atom
+index action.  No assertion about the source predicates is included. -/
+def mapOccurrencePairCode
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {target : G122FiniteObjectFormationDisplay input Y}
+    (action : G122FiniteObjectFormationAction source target)
+    (objectIndex : Fin source.objectCard) :
+    source.OccurrencePairCode objectIndex →
+      target.OccurrencePairCode (action.objectIndexMap objectIndex)
+  | ⟨left, right⟩ =>
+      ⟨action.atomIndexMap objectIndex left, action.atomIndexMap objectIndex right⟩
+
+/-- Identity finite actions fix every occurrence-pair code. -/
+@[simp] theorem mapOccurrencePairCode_id
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    (objectIndex : Fin display.objectCard)
+    (code : display.OccurrencePairCode objectIndex) :
+    (id display).mapOccurrencePairCode objectIndex code = code := by
+  cases code
+  rfl
+
+/-- Mapping an occurrence-pair code by a composite is successive pair-code
+mapping. -/
+@[simp] theorem mapOccurrencePairCode_comp
+    {input : G122FamilyInput.{u, v}} {X Y Z : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {middle : G122FiniteObjectFormationDisplay input Y}
+    {target : G122FiniteObjectFormationDisplay input Z}
+    (first : G122FiniteObjectFormationAction source middle)
+    (second : G122FiniteObjectFormationAction middle target)
+    (objectIndex : Fin source.objectCard)
+    (code : source.OccurrencePairCode objectIndex) :
+    (comp first second).mapOccurrencePairCode objectIndex code =
+      second.mapOccurrencePairCode (first.objectIndexMap objectIndex)
+        (first.mapOccurrencePairCode objectIndex code) := by
+  cases code
+  rfl
 
 /-- Mapping occurrences by the identity formation action is the identity. -/
 @[simp] theorem mapOccurrence_id
@@ -1006,6 +1119,46 @@ theorem IdentificationEndpointsCoherent.comp
       (hfirst objectIndex identificationIndex).2).trans
       (hsecond (first.objectIndexMap objectIndex)
         (first.identificationIndexMap objectIndex identificationIndex)).2
+
+/-- Under relation-endpoint coherence, mapping the canonical code of a source
+relation edge gives the canonical code of its selected target relation edge.
+This is an index-level statement and does not assert semantic relation
+preservation. -/
+theorem mapOccurrencePairCode_relationEdgePairCode
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {target : G122FiniteObjectFormationDisplay input Y}
+    (action : G122FiniteObjectFormationAction source target)
+    (hrelation : action.RelationEndpointsCoherent)
+    (objectIndex : Fin source.objectCard)
+    (relationIndex : Fin (source.relationCard objectIndex)) :
+    action.mapOccurrencePairCode objectIndex
+        (source.relationEdgePairCode relationIndex) =
+      target.relationEdgePairCode
+        (action.relationIndexMap objectIndex relationIndex) := by
+  apply Prod.ext
+  · exact (hrelation objectIndex relationIndex).1
+  · exact (hrelation objectIndex relationIndex).2
+
+/-- Under identification-endpoint coherence, mapping the canonical code of a
+source identification edge gives the canonical code of its selected target
+identification edge.  Semantic identification preservation remains a separate
+obligation. -/
+theorem mapOccurrencePairCode_identificationEdgePairCode
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {target : G122FiniteObjectFormationDisplay input Y}
+    (action : G122FiniteObjectFormationAction source target)
+    (hidentification : action.IdentificationEndpointsCoherent)
+    (objectIndex : Fin source.objectCard)
+    (identificationIndex : Fin (source.identificationCard objectIndex)) :
+    action.mapOccurrencePairCode objectIndex
+        (source.identificationEdgePairCode identificationIndex) =
+      target.identificationEdgePairCode
+        (action.identificationIndexMap objectIndex identificationIndex) := by
+  apply Prod.ext
+  · exact (hidentification objectIndex identificationIndex).1
+  · exact (hidentification objectIndex identificationIndex).2
 
 /-- The member subtype of one occurrence-generated family. -/
 abbrev GeneratedFamilyMember
