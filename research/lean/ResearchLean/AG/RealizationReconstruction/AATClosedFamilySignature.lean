@@ -335,6 +335,51 @@ inductive PrimitiveObservable :
       (observable : context.ctx.Observable) :
       PrimitiveObservable (.g122 input) (.g122 X)
 
+/-- A source context restriction with both endpoints retained.  The payload is
+an actual hom of the original authored support core's context preorder, exposed
+through the selected site's category; it is not a component of a later
+`GeomReadHom` between two completed geometry packages. -/
+inductive PrimitiveContextRestriction :
+    (theta : ClosedFamilyParameter.{u, v}) → FamilyRealization theta →
+      Type (max (u + 1) (v + 1))
+  | g122 {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+      (source target : let _ := input.atomDecidableEq
+        X.selectedGeometry.toAATSite.category)
+      (restriction : source ⟶ target) :
+      PrimitiveContextRestriction (.g122 input) (.g122 X)
+
+/-- Read a primitive restriction back as the identical pair of support-core
+context endpoints and the identical thin-category hom. -/
+def PrimitiveContextRestriction.g122Value
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (reference : PrimitiveContextRestriction (.g122 input) (.g122 X)) :
+    let _ := input.atomDecidableEq
+    Σ source target : X.selectedGeometry.toAATSite.category, source ⟶ target := by
+  cases reference with
+  | g122 source target restriction => exact ⟨source, target, restriction⟩
+
+/-- The readable context morphism exposed by a primitive restriction is
+constructed from the original authored support core's context preorder. -/
+def PrimitiveContextRestriction.g122Morphism
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (reference : PrimitiveContextRestriction (.g122 input) (.g122 X)) := by
+  letI := input.atomDecidableEq
+  let value := reference.g122Value
+  exact X.selectedGeometry.toAATSite.contextPreorder.morphism
+    (CategoryTheory.leOfHom value.2.2)
+
+/-- Every primitive context restriction recovers the source readability laws
+from the authored support core preorder's accepted proof field; the primitive
+adds no separate certificate. -/
+theorem PrimitiveContextRestriction.g122Morphism_isRestriction
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (reference : PrimitiveContextRestriction (.g122 input) (.g122 X)) :
+    reference.g122Morphism.IsRestriction := by
+  letI := input.atomDecidableEq
+  let value := reference.g122Value
+  exact X.selectedGeometry.toAATSite.contextPreorder.morphism_isRestriction
+    (CategoryTheory.leOfHom value.2.2)
+
 /-- A nullary role naming the exact coverage-requirements datum selected in an
 original G-122 geometry input.  The datum is read from `X`; it is not accepted
 again as a payload or as preservation evidence for a geometry morphism. -/
