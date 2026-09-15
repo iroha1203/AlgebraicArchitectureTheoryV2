@@ -6,12 +6,13 @@ import Formal.Util.AssertStandardAxioms
 
 After the finite axis, signature, Atom, object, operation, and equation-index
 components have been fixed, an actual normalized endpoint automorphism still
-acts on the complete context category.  Its inverse automorphism supplies the
-inverse context action, giving a genuine permutation of all context objects.
+acts on the complete context-object carrier.  Its inverse automorphism supplies
+the inverse object action, giving a genuine permutation of all context objects.
 
-This module records that full action and its kernel.  It does not assert that
-the action is finite, trivial, source-covered, or split.  In particular, the
-context `Extension` field remains a possible source of surviving action.
+This module records that full object action and its kernel.  It does not package
+the action on context morphisms, and it does not assert that the object action
+is finite, trivial, source-covered, or split.  In particular, the context
+`Extension` field remains a possible source of surviving action.
 -/
 
 namespace AAT.AG.RealizationReconstruction
@@ -74,7 +75,7 @@ noncomputable def finiteAxisFoldNormalizedContextProjection :
     intro context
     rfl
 
-/-- Restriction of the complete context action to the residual
+/-- Restriction of the complete context-object action to the residual
 axis-and-signature kernel. -/
 noncomputable def finiteAxisFoldResidualContextProjection :
     FiniteAxisFoldNormalizedAxisSignatureKernel →*

@@ -7895,7 +7895,7 @@ selection:
     - "Cycle 74 residual object and operation rigidity"
     - "the fixed support equation family and its exact left-pull/top-transport endpoint"
     - "the actual normalized endpoint automorphism group and axis-signature residual kernel"
-  proof_obligation: "Separate equation-index rigidity from the unrestricted complete context action, and isolate the context-trivial kernel without assuming context identity, finiteness, source coverage, or observable rigidity"
+  proof_obligation: "Separate equation-index rigidity from the unrestricted complete context-object action, and isolate its kernel without assuming context identity, finiteness, source coverage, or observable rigidity"
   selection_reason: "The actual equation index can be discharged from the fixed singleton source family, whereas the context equivalence is a genuine independent component.  Keeping these apart prevents constant equation readings from being used to erase Extension-changing actions."
   expected_result_type: proof-checkpoint
   lean_targets:
@@ -7944,7 +7944,7 @@ result:
       - "observable values retain dependent casts along the context action"
       - "the context action is not proved trivial, finite, source-covered, or split"
       - "local geometry and arbitrary residual source coverage remain open"
-    acceptance_point: "This cycle discharges the complete equation-index component and records, rather than erases, the complete context action.  It is not residual source coverage and is not G-123 completion."
+    acceptance_point: "This cycle discharges the complete equation-index component and records, rather than erases, the action on the complete context-object carrier.  It does not package the context-morphism action, is not residual source coverage, and is not G-123 completion."
     port_status: not-applicable
 review:
   independent_lanes:
@@ -7961,7 +7961,7 @@ audits:
   premise_delta:
     discharged:
       - "the actual endpoint equation-index carrier is subsingleton by explicit backward transport to the fixed PUnit source"
-      - "the complete context action and its inverse are obtained from each actual automorphism and inverse"
+      - "the action on the complete context-object carrier and its inverse are obtained from each actual automorphism and inverse"
       - "context-kernel membership is evaluated pointwise to obtain contextForward identity"
     remaining:
       - "dependent observable transport and local support/axis/observable comparisons"
@@ -7992,5 +7992,5 @@ audits:
     - "namespace axiom audits: equation module 4 declarations and context module 6 declarations; standard axioms only"
     - "Research aggregate/full build: not run"
   blocking_findings: []
-  next_obligation: "Construct the fixed-input Extension-value toggle as an actual residual normalized automorphism, prove a concrete Bool context moves, and add the corresponding source generator without shrinking the semantic context action."
+  next_obligation: "Construct the fixed-input Extension-value toggle as an actual residual normalized automorphism, prove a concrete Bool context moves, and add the corresponding source generator without shrinking the semantic context-object action."
 ```
