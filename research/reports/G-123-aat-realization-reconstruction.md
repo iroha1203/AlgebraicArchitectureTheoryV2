@@ -13,16 +13,17 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 67 adds the fixed primitive axis recipe plus a general normalization-section syntax operator, constructs a new quotient presentation and decoder, and proves exact raw and normalized comparison preimages for the fixed nonidentity value; arbitrary endpoint coverage remains to construct
+- current proof obligation: Cycle 68 generalizes the fixed primitive axis recipe to every finite table in `Equiv.Perm (Fin 3)` and proves exact raw canonical-section and normalized comparison preimages uniformly for all six axis permutations; arbitrary non-axis endpoint coverage remains to construct
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: replace the fixed-value recipe checkpoint by one presentation chosen uniformly from the fixed primitive family input and prove coverage for every `canonicalNormalizationAutomorphismSectionHom` value, then extend that same coverage to bottom-qualified comparison, kernel, and lift-fiber elements
+- next proof obligation: construct the normalized axis projection and section-retraction decomposition, then prove source coverage for the remaining kernel of that projection without enumerating semantic automorphisms; afterwards extend the same coverage to bottom-qualified comparison, kernel, and lift-fiber elements
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| D Cycle 67 delta | Cycle 66の同じ元axis swapについて、semantic自己同型を引数・専用定数へ入れずsource-law構文をprimitive recipeと一般normalization-section演算で拡張し、raw transported swapの正規化preimageとcanonical comparison sectionのexact raw preimageを別々に構成する | `FiniteAxisFoldAxisSwapSyntax`, `evaluate`, `Congruent`, `axisDirect_evaluate_comp_self`, `normalizedAxisDirect_evaluate_comp_self`, `evaluate_eq_of_congruent`, `axisDirect_not_congruent_identity`, `FiniteAxisFoldAxisSwapPresentation`, `decoder`, `barAlphaIso`, `directAxisSwapAut`, `sectionedDirectAxisSwapAut`, `directAutomorphismEvaluationHom`, `viaBaseAutomorphismEvaluationHom`, `comparisonEvaluationHom`, `axisSwapComparisonElement`, `normalizedEvaluationHom`, `axisSwapComparisonElement_normalized_evaluation`, `sectionedAxisSwapComparisonElement`, `comparisonEvaluation_section`, `sectionedDirectAxisSwapAut_ne_one`, `sectionedAxisSwapComparisonElement_evaluation`, `finiteAxisFoldNormalizedComparisonSwap_canonicalSection_has_source_preimage` | 固定finite axis-fold/`Int`; Cycle 59のsource-law構文; 原始`Fin 3` swap complete-geometry recipe; actual left pull/top push functor; independently constructed canonical normalization sectionとactual `barAlpha` | primitive swap evaluator内で明示するpull/push chain、任意の表示direct termへ作用する`normalizeSectionDirect`構文演算、source/category/inverse lawだけの合同、商圏decoder、raw比較評価、restriction後のexact normalized pair等号、canonical section raw pairの両endpoint exact等号、source/semantic双方の非恒等性 | Dの元finite axis-fold generatorについて、非自明normalized comparisonとそのcanonical liftをsource表示側へ実際に読み戻す | 固定一元から開始したsuccessor presentationであり最終の共通`D`ではない; 任意normalized/bottom元、全比較群・kernel・lift fiber、一般係数/入力、B/E/Fは未完了 |
+| D Cycle 68 delta | 元の有限axis table族 `Equiv.Perm (Fin 3)` の全元を一つのsource grammarでcomplete geometry、actual pull/push、normalization、canonical raw sectionへ運び、rawとnormalizedのpreimageを各全元について別々に構成する | `finiteAxisFoldPermutation_rawReindex`, `finiteAxisFoldPermutationGeometryReadHom`, `finiteAxisFoldPermutationGeometry`, `finiteAxisFoldPermutationGeometry_comp`, `finiteAxisFoldPermutationGeometry_refl`, `finiteAxisFoldPermutationGeometryAut`, `finiteAxisFoldSouthwestPermutationHom`, `finiteAxisFoldSouthwestPermutationAut`, `finiteAxisFoldActualDirectPermutationAut`, `finiteAxisFoldActualDirectPermutationAut_axisMap`, `finiteAxisFoldActualDirectPermutationAdmissibleAut`, `finiteAxisFoldNormalizedDirectPermutationAut`, `FiniteAxisFoldAxisSwapSyntax.axisDirect`, `axisDirect_evaluate_comp_inverse`, `normalizedAxisDirect_evaluate_comp_inverse`, `directAxisPermutationAut`, `sectionedDirectAxisPermutationAut`, `axisPermutationComparisonElement`, `sectionedAxisPermutationComparisonElement`, `finiteAxisFoldNormalizedPermutation_canonicalSection_has_source_preimage`, `finiteAxisFoldNormalizedComparisonPermutation`, `finiteAxisFoldNormalizedComparisonPermutation_has_source_preimage` | 固定finite axis-fold/`Int`; 元入力の有限表 `p : Equiv.Perm (Fin 3)`; fixed vacuous coverage・raw geometry; actual exact left pull/top transport; canonical normalization section; actual `barAlpha` | 任意`p`から全`GeomReadHom` fieldを持つcomplete lift、`p.symm`によるactual/sectioned source inverse law、有限表をpayloadとする単一primitive constructor、両endpointを含むcanonical raw comparison exact equality、restriction後のnormalized pair exact equality | Dの元finite axis-fold生成族について、同じ一つのpresentationが全6 axis permutationと各canonical liftを表示側へ読み戻す | S3由来部分のみで全normalized Autを覆わない; 非axis kernelのsource coverage、bottom/全kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
+| D Cycle 67 delta | Cycle 66の同じ元axis swapについて、semantic自己同型を引数・専用定数へ入れずsource-law構文をprimitive recipeと一般normalization-section演算で拡張し、raw transported swapの正規化preimageとcanonical comparison sectionのexact raw preimageを別々に構成する | `FiniteAxisFoldAxisSwapSyntax`, `evaluate`, `Congruent`, `axisDirect_evaluate_comp_inverse`, `normalizedAxisDirect_evaluate_comp_inverse`, `evaluate_eq_of_congruent`, `axisDirect_not_congruent_identity`, `FiniteAxisFoldAxisSwapPresentation`, `decoder`, `barAlphaIso`, `directAxisSwapAut`, `sectionedDirectAxisSwapAut`, `directAutomorphismEvaluationHom`, `viaBaseAutomorphismEvaluationHom`, `comparisonEvaluationHom`, `axisSwapComparisonElement`, `normalizedEvaluationHom`, `axisSwapComparisonElement_normalized_evaluation`, `sectionedAxisSwapComparisonElement`, `comparisonEvaluation_section`, `sectionedDirectAxisSwapAut_ne_one`, `sectionedAxisSwapComparisonElement_evaluation`, `finiteAxisFoldNormalizedComparisonSwap_canonicalSection_has_source_preimage` | 固定finite axis-fold/`Int`; Cycle 59のsource-law構文; 原始`Fin 3` swap complete-geometry recipe; actual left pull/top push functor; independently constructed canonical normalization sectionとactual `barAlpha` | primitive swap evaluator内で明示するpull/push chain、任意の表示direct termへ作用する`normalizeSectionDirect`構文演算、source/category/inverse lawだけの合同、商圏decoder、raw比較評価、restriction後のexact normalized pair等号、canonical section raw pairの両endpoint exact等号、source/semantic双方の非恒等性 | Dの元finite axis-fold generatorについて、非自明normalized comparisonとそのcanonical liftをsource表示側へ実際に読み戻す | 固定一元から開始したsuccessor presentationであり最終の共通`D`ではない; 任意normalized/bottom元、全比較群・kernel・lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 66 delta | 固定finite axis-foldの元の三軸swapをcomplete geometryへ持ち上げ、actual `left^*`/`top_!` endpoint、canonical normalization、actual normalized comparison groupまで同じ元を運び、正規化比較群を自明化する近道が成立しないことを示す | `finiteAxisFoldSwap_rawReindex`, `finiteAxisFoldSwapGeometryReadHom`, `finiteAxisFoldSwapGeometry`, `finiteAxisFoldSwapGeometry_comp_self`, `finiteAxisFoldSwapGeometryAut`, `finiteAxisFoldSwapGeometry_axis_zero`, `finiteAxisFoldSwapGeometryAut_ne_one`, `finiteAxisFoldSouthwestSwapHom`, `finiteAxisFoldSouthwestSwapAut`, `geomFiberTransportMap_axisMap`, `exactGeometryPullMap_axisMap`, `finiteAxisFoldLeftPulledSwapFiberAut`, `finiteAxisFoldActualDirectSwapFiberAut`, `finiteAxisFoldActualDirectSwapFiberAut_axisMap`, `finiteAxisFoldActualDirectSwapFiberAut_ne_one`, `finiteAxisFoldActualDirectSwapAdmissibleAut`, `finiteAxisFoldNormalizedDirectSwapAut`, `finiteAxisFoldNormalizedDirectSwapAut_ne_one`, `finiteAxisFoldNormalizedBarAlphaIso`, `finiteAxisFoldNormalizedComparisonSwap`, `finiteAxisFoldNormalizedComparisonSwap_source`, `finiteAxisFoldNormalizedComparisonSwap_ne_one` | カード固定finite axis-fold/`Int`; 元の`finiteAxisFoldSwapTotal`; fixed vacuous coverage・Unit raw geometry; exact pull/push adjunctionの構成済みunit/counit可逆性; actual `barAlpha` | swap上の全`GeomReadHom` fieldとraw reindex不変性、complete/fiber involution、pull/pushのaxis-map保存、unit/counitから導く両functorのfaithfulness、正規化後も`0 ↦ 1`を保持する非恒等Aut、actual normalized `barAlpha`を保つ非恒等pair | Dの元finite axis-fold生成例と全normalized比較群を保持し、Cycle 65のsource coverage義務が非自明なsemantic値を実際に含むことを固定する | このsemantic swap pairのsource-syntax preimageは未構成; bottom qualification、任意normalized比較元のsource coverage、全kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 65 delta | semantic canonical sectionの右逆をsource表示と混同せず、section値全体の表示可能性をsource endpoint lift全体の表示可能性へ正確に還元し、実在するidentity/C2範囲をsource syntaxから構成する | `FiniteAxisFoldCanonicalSectionSourceObligation.ActualDirectEndpoint`, `ActualBarAlphaIso`, `comparisonEvaluation_section`, `exists_canonicalSection_preimage_iff_sourceEndpoint_preimage`, `exists_bottomCanonicalSection_preimage_iff_sourceEndpoint_preimage`, `restrictionEvaluation_surjective_of_canonicalSection_preimages`, `canonicalSection_identity_sourcePreimage`, `sourceIdentity_bottomQualified`, `bottomCanonicalSection_identity_sourcePreimage`, `BottomLiftFiberAtOne`, `sourceLiftAtOne`, `sourceLiftAtOne_underlying_evaluation`, `sourceLiftAtOne_identity`, `sourceLiftAtOne_sourceGenerator`, `sourceLiftAtOne_cases`, `displayedIdentityLifts_have_sourcePreimages` | 固定finite axis-fold/`Int`; source-law quotientの全source-conjugation sectionとdecoder; actual canonical comparison/bottom sectionとright inverse; Cycle 64 C2 equivalence | kernel-extended evaluatorとsource-conjugationの全元可換性、任意semantic section値のsource preimageとそのsource endpoint automorphism preimageのiff、全section preimageがrestriction/evaluation全射性を含むこと、identityのraw/bottom source preimage、identity fiberのcanonical/shifted二liftのsource C2 preimageと各underlying decoder評価等号 | Dのcanonical section回復に必要な未放電premiseを正確に切り出し、既存のsemantic sectionをsource表示と誤認する経路を閉じる | arbitrary normalized/bottom `t`のsource endpoint lift coverage自体、全比較群・全kernel/fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 64 delta | source-law quotient内の同じC2 fragmentと実bottom restriction kernel内のC2 fragmentの両方向対応を構成し、forwardがactual decoder evaluationであることを全元について示す | `FiniteAxisFoldDisplayedKernelEquiv.sourceSubgroup`, `actualSubgroup`, `sourceGenerator`, `actualGenerator`, `ambientComparisonElement_ne_one`, `sourceGenerator_ne_one`, `actualGenerator_ne_one`, `toActual`, `toSource`, `toSource_toActual`, `toActual_toSource`, `toActual_mul`, `toActual_underlying_evaluation`, `sourceActualEquiv`, `sourceActualEquiv_sourceGenerator` | 固定finite axis-fold/`Int`; Cycle 59 source comparison generatorとactual evaluation; Cycle 61 actual bottom kernel element; Cycle 62両側の二乗則と非自明性 | 両側のexact two-element Subgroup、identity/generator case map、左右inverse、積保存、全source C2元でunderlying actual evaluationとの一致、generator対応 | Dの表示側回復について、このC2 fragment全元の表示→実現と読み戻しを群同型として固定する | C2 fragmentのみで全比較群・全kernelではない; semantic normalized/bottom section全元のsource syntax、一般係数/一般入力、B/E/Fは未完了 |
@@ -6950,8 +6951,8 @@ result:
     - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.finiteAxisFoldNormalizedComparisonSwap_canonicalSection_has_source_preimage
   claim_mapping:
     theorem_names:
-      - axisDirect_evaluate_comp_self
-      - normalizedAxisDirect_evaluate_comp_self
+      - axisDirect_evaluate_comp_inverse
+      - normalizedAxisDirect_evaluate_comp_inverse
       - evaluate_eq_of_congruent
       - axisDirect_not_congruent_identity
       - axisSwapComparisonElement_normalized_evaluation
@@ -7025,4 +7026,138 @@ audits:
     - "fresh final-snapshot Math A/B and Lean A/B review: PASS after the same-cycle anti-encoding redesign"
   blocking_findings: []
   next_obligation: "Construct a uniformly selected source presentation and prove coverage for every canonicalNormalizationAutomorphismSectionHom value from the fixed primitive family input, without per-value semantic leaves."
+```
+
+## Cycle 68 — Uniform source preimages for all finite axis permutations
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 68
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 3e36dec02f8fbe069ec603b2e61e810fd002fd22
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 67 displayed one fixed adjacent swap, while the original finite-axis input supplies the whole six-element family Equiv.Perm (Fin 3)"
+  proof_dag_predecessors:
+    - "the original finiteAxisFoldPermutationTotal primitive table and its composition/identity laws"
+    - "Cycle 66 complete-geometry and actual pull-push route for the fixed swap"
+    - "Cycle 67 quotient presentation, decoder, general normalizeSectionDirect operator, and exact raw comparison evaluation"
+    - "constructed canonical normalization automorphism and comparison sections"
+  proof_obligation: "Generalize the same source-derived construction to every primitive three-axis table, using one uniformly chosen grammar and no semantic automorphism leaves, then prove exact raw canonical-section and normalized comparison preimages for every table"
+  selection_reason: "This replaces the fixed-value fragment by the entire existing primitive finite axis-table family on the fixed package while preserving the original input, inverse table, both raw endpoints, and the distinction between raw section and normalized restriction."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNormalizedPermutation.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldAxisSwapPresentation.lean
+  risks:
+    - "store a completed semantic automorphism or comparison element instead of the finite axis table"
+    - "claim six axis permutations cover arbitrary normalized endpoint automorphisms"
+    - "prove only the source axis map and omit complete geometry or the target comparison endpoint"
+    - "identify normalized preimage with the stronger exact raw canonical-section preimage"
+  unchecked:
+    - "source coverage of the non-axis kernel of the normalized endpoint automorphism group"
+    - "bottom-qualified source coverage and all kernel/lift elements"
+    - "general coefficient/input and remaining B/E/F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed the complete geometry lift of every p : Equiv.Perm (Fin 3) from the original package-level finite table and all geometry fields, carried p and p.symm through the actual exact left pull and top transport, and normalized the resulting actual admissible automorphism.  The one Cycle 67 primitive constructor now takes only that finite table; its evaluator spells out the same pull-push route.  Generated inverse laws use p.symm and the independently constructed actual and canonical-section isomorphisms.  For every p the same quotient presentation supplies both an exact canonical raw comparison lift, including both endpoints, and a separate exact normalized comparison preimage after restriction."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNormalizedPermutation.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldAxisSwapPresentation.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldPermutationGeometry_comp
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldPermutationGeometryAut
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldActualDirectPermutationAut_axisMap
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedDirectPermutationAut
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapSyntax.axisDirect_evaluate_comp_inverse
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapSyntax.normalizedAxisDirect_evaluate_comp_inverse
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.decoder_map_directAxisPermutationAut_hom
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.sectionedDirectAxisPermutationAut_evaluation
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.sectionedAxisPermutationComparisonElement_evaluation
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.finiteAxisFoldNormalizedPermutation_canonicalSection_has_source_preimage
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.axisPermutationComparisonElement_normalized_evaluation
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.finiteAxisFoldNormalizedComparisonPermutation_has_source_preimage
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldPermutationGeometry_comp
+      - finiteAxisFoldPermutationGeometry_refl
+      - finiteAxisFoldActualDirectPermutationAut_axisMap
+      - axisDirect_evaluate_comp_inverse
+      - normalizedAxisDirect_evaluate_comp_inverse
+      - sectionedAxisPermutationComparisonElement_evaluation
+      - finiteAxisFoldNormalizedPermutation_canonicalSection_has_source_preimage
+      - axisPermutationComparisonElement_normalized_evaluation
+      - finiteAxisFoldNormalizedComparisonPermutation_has_source_preimage
+    source_labels:
+      - "GOAL D: retain the original finite axis-fold generating input; the existing package-level primitive axis-table family supplies a stronger uniform checkpoint"
+      - "GOAL D: recover the same comparison and its canonical section on the presentation side"
+      - "n1014: parameter-relative finite tables are permitted but completed semantic arrows are not"
+    conjuncts:
+      - "every primitive finite axis table -> complete geometry automorphism with the same full input table"
+      - "every table and inverse table -> displayed raw and sectioned direct automorphisms"
+      - "every displayed sectioned table -> exact canonical raw comparison pair"
+      - "every displayed raw table -> exact normalized comparison pair after restriction"
+    undischarged_assumptions:
+      - "the finite axis family need not exhaust automorphisms carried by context equivalences, equations, invariant maps, coefficient maps, overlaps, or context-indexed geometry maps"
+      - "source coverage for the remaining non-axis kernel has not been constructed"
+      - "bottom/full kernel/lift coverage and general input/coefficient remain open"
+    acceptance_point: "This cycle proves uniform coverage of the complete six-element primitive axis family in one source presentation.  It does not identify that family with the full normalized automorphism group and is not G-123 completion."
+    port_status: not-applicable
+review:
+  independent_lanes:
+    math_a: pass-after-fix
+    math_b: pass-after-fix
+    lean_a: pass-after-fix
+    lean_b: pass
+  resolved_findings:
+    - "Lean A and Math B found that generic p/p.symm declarations were described as a swap/involution or fixed swap recipe.  The comments now state the general finite table followed by its inverse; fresh Lean A and Math B passed."
+    - "Math A found that the report called all S3 tables a mandatory GOAL D family.  The report now distinguishes the mandatory fixed example from the existing package-level primitive family and calls all-S3 coverage a stronger checkpoint; fresh Math A passed."
+  direct_response:
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "uniform source syntax and exact raw canonical-section preimages for all p : Equiv.Perm (Fin 3)"
+      - "separate exact normalized comparison preimages for the same full finite family"
+      - "actual complete-geometry provenance and inverse construction for p and p.symm"
+    remaining:
+      - "coverage of arbitrary normalized automorphisms outside the S3 axis family"
+      - "bottom/full comparison/kernel/lift recovery"
+      - "general coefficient/input and B/E/F"
+  certificate_provenance:
+    discharged:
+      - "the only new constructor payload is the original finite permutation table"
+      - "complete geometry local fields and raw invariance are constructed explicitly for every table"
+      - "actual pull-push transport and canonical normalization section are applied by the evaluator rather than received as syntax data"
+      - "comparison target endpoints are forced by displayed barAlpha conjugation and decoder preservation"
+    unresolved:
+      - "no source grammar or classification theorem yet supplies preimages for semantic non-axis endpoint automorphisms"
+  proof_use:
+    used:
+      - "finiteAxisFoldPermutationTotal_comp and refl construct complete geometry composition and inverse laws"
+      - "exact pull and top transport map the source-derived southwest automorphism to the actual direct endpoint"
+      - "the canonical normalization automorphism section gives the general source operator its inverse law"
+      - "comparisonEvaluation_section carries each displayed direct table to the full actual raw comparison pair"
+      - "generatedArrowComparisonSection_source_rightInverse identifies each normalized pair from its proved source component"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check for FiniteAxisFoldNormalizedPermutation: PASS"
+    - "focused check for FiniteAxisFoldAxisSwapPresentation: PASS"
+    - "registered exact target build for FiniteAxisFoldNormalizedPermutation: PASS (4296 jobs; not a Research aggregate build)"
+    - "registered exact target build for FiniteAxisFoldAxisSwapPresentation: PASS (4297 jobs; not a Research aggregate build)"
+    - "namespace axiom audits: 15 and 138 declarations respectively; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh final-snapshot Math A/B and Lean A/B review: PASS after two documentation-only corrections"
+  blocking_findings: []
+  next_obligation: "Construct a normalized axis projection and section-retraction decomposition, then reduce arbitrary endpoint source coverage to the non-axis kernel and construct that kernel coverage without semantic leaves."
 ```
