@@ -380,6 +380,53 @@ theorem PrimitiveContextRestriction.g122Morphism_isRestriction
   exact X.selectedGeometry.toAATSite.contextPreorder.morphism_isRestriction
     (CategoryTheory.leOfHom value.2.2)
 
+/-- The raw-coordinate restriction attached to one exact source context
+restriction.  The constructor is nullary over its restriction index: it does
+not accept a polynomial map or an ideal-preservation certificate as payload. -/
+inductive PrimitiveRawRestriction :
+    (theta : ClosedFamilyParameter.{u, v}) →
+      (realization : FamilyRealization theta) →
+      PrimitiveContextRestriction theta realization →
+        Type (max (u + 1) (v + 1))
+  | g122 {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+      (source target : let _ := input.atomDecidableEq
+        X.selectedGeometry.toAATSite.category)
+      (restriction : source ⟶ target) :
+      PrimitiveRawRestriction (.g122 input) (.g122 X)
+        (.g122 source target restriction)
+
+/-- Recover the exact raw typed-coordinate restriction and structural-ideal
+stability datum selected by the original `G122CellInput.raw` field. -/
+def PrimitiveRawRestriction.g122Value
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : let _ := input.atomDecidableEq
+      X.selectedGeometry.toAATSite.category}
+    {restriction : source ⟶ target}
+    (_reference : PrimitiveRawRestriction (.g122 input) (.g122 X)
+      (.g122 source target restriction)) := by
+  letI := input.atomDecidableEq
+  letI := input.coefficientCommRing
+  exact X.raw.restrictionStable restriction
+
+/-- The recovered raw restriction sends every target structural-ideal element
+to the source structural ideal.  This consumes the accepted source `raw`
+field; the primitive itself carries no preservation proof. -/
+theorem PrimitiveRawRestriction.g122Value_maps_JStruct
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : let _ := input.atomDecidableEq
+      X.selectedGeometry.toAATSite.category}
+    {restriction : source ⟶ target}
+    (reference : PrimitiveRawRestriction (.g122 input) (.g122 X)
+      (.g122 source target restriction)) :
+    let _ := input.atomDecidableEq
+    let _ := input.coefficientCommRing
+    ∀ p, p ∈ (X.raw.relationFamily target).JStruct →
+      reference.g122Value.restriction.polynomialMap p ∈
+        (X.raw.relationFamily source).JStruct := by
+  letI := input.atomDecidableEq
+  letI := input.coefficientCommRing
+  exact reference.g122Value.maps_JStruct
+
 /-- A nullary role naming the exact coverage-requirements datum selected in an
 original G-122 geometry input.  The datum is read from `X`; it is not accepted
 again as a payload or as preservation evidence for a geometry morphism. -/

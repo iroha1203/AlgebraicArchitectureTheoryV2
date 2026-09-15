@@ -13,16 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 23 source context-restriction role and exact readability recovery
+- current proof obligation: Cycle 24 raw coordinate restriction and structural-ideal preservation recovery
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: expose raw coordinate restriction and its source preservation equation separately from completed geometry maps
+- next proof obligation: recover raw restriction identity/composition coherence and coefficient provenance without accepting a completed geometry map
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`/`PrimitiveSupport`/`PrimitiveGeometryAxis`/`PrimitiveObservable`/`PrimitiveContextRestriction`/`PrimitiveCoverageRequirements`/`PrimitiveOverlapSelection`とG-122のsignature/equation/invariant/raw各role; `PrimitiveContextRestriction.g122Value`, `g122Morphism`, `g122Morphism_isRestriction`; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `ClosedPrimitiveReference`, `closedTaggedPrimitiveReferenceEquiv`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective`; `TaggedPrimitivePresentedMonoid`, `TaggedPrimitiveRelationPresentation`, `taggedPrimitiveRelationEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体; Cycle 16ではそのfinite word間の任意の生成関係 | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価; authored support coreのcontext preorder（`selectedGeometry.toAATSite`経由で型付け）の任意homから両端付きcontext restrictionと元入力の全readability lawを回復; 現行closed signatureの全18 roleの依存sumとtagged branchで4 roleが全体である同値; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; 全finite wordのfree monoidと、その任意の生成関係によるactual presented-monoid quotient category | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | complete-geometry coverage/overlap保存式・map-side reading・raw restriction・係数/transport roleの追加とtagged inhabitant判定、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
+| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`/`PrimitiveSupport`/`PrimitiveGeometryAxis`/`PrimitiveObservable`/`PrimitiveContextRestriction`/`PrimitiveRawRestriction`/`PrimitiveCoverageRequirements`/`PrimitiveOverlapSelection`とG-122のsignature/equation/invariant/raw各role; `PrimitiveContextRestriction.g122Value`, `g122Morphism`, `g122Morphism_isRestriction`; `PrimitiveRawRestriction.g122Value`, `g122Value_maps_JStruct`; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `ClosedPrimitiveReference`, `closedTaggedPrimitiveReferenceEquiv`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective`; `TaggedPrimitivePresentedMonoid`, `TaggedPrimitiveRelationPresentation`, `taggedPrimitiveRelationEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体; Cycle 16ではそのfinite word間の任意の生成関係 | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価; authored support coreのcontext preorder（`selectedGeometry.toAATSite`経由で型付け）の任意homから両端付きcontext restrictionと元入力の全readability lawを回復; 同じrestrictionをindexとして元`raw.restrictionStable`値と`maps_JStruct`を回復; 現行closed signatureの全19 roleの依存sumとtagged branchで4 roleが全体である同値; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; 全finite wordのfree monoidと、その任意の生成関係によるactual presented-monoid quotient category | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | complete-geometry coverage/overlap保存式・map-side reading・raw restrictionの恒等/合成・係数map/transport roleの追加とtagged inhabitant判定、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full`; `retractEndomorphismMap_surjective_of_full`, `exists_retractEndomorphismMap_surjective`; `not_full_and_retractGenerated_of_listObjectGeneratedEndomorphisms`; `not_full_and_retractGenerated_of_endomorphismEmbedding` | 各具体入力条件のみ; 一般transferでは明示的な`F.Full`; combined no-goでは各presentation自己射が有限primitive listの全射像またはそこへの単射を持つこと | 任意の完成射を制限して有限tableを構成; retract上の任意自己射を`r ≫ h ≫ i`のfullness preimageから持ち上げる; injective endomorphism serializationの`invFun`からlist decoder全射を構成; mandatory対象の非全射と合成 | 各direct equivalence; mandatory-C obstructionを任意のmultiobject presentation categoryへ移す categorical/cardinal bridge | final `R_Theta` decoderの充満性を固定入力から放電し、actual endpoint-typed syntaxの各自己射embeddingと接続すること |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
@@ -2976,4 +2976,73 @@ audits:
   vacuity: "identity homs inhabit the role for every selected context, while the constructor ranges over every available source hom"
   blocking_findings: []
   next_obligation: "Expose the original raw coordinate restriction with exact endpoint/context ownership and derive its structural-ideal preservation separately from any completed GeomReadHom."
+```
+
+## Cycle 24 — Raw coordinate restriction and ideal preservation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 24
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: c84dd8d32fcbfe3bc6b67fb1d1516988d8b6f702
+tracking_issue: 4520
+selection:
+  proof_obligation: "Index the original raw coordinate restriction by the exact Cycle 23 context restriction and recover its typed polynomial map and structural-ideal preservation from the allowed raw source field"
+  selection_reason: "G122CellInput.raw is accepted original input and already supplies a restrictionStable value at every context hom; a nullary dependent role can expose that datum without accepting a completed geometry morphism or duplicating its preservation proof."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/ClosedPrimitiveRoleExhaustion.lean
+  risks:
+    - "accept a separate polynomial map or maps_JStruct certificate as primitive payload"
+    - "change the source context hom or lose its endpoints"
+    - "claim raw within-object restriction is a completed cross-geometry map"
+result:
+  proposed_result_type: proof-obligation-discharged
+  completion_candidate: no
+  proof_obligation_delta: "Added a nullary primitive indexed by an exact PrimitiveContextRestriction; recovered X.raw.restrictionStable at that same hom; projected and used its maps_JStruct field to prove structural-ideal preservation; extended the current closed role sum from 18 to 19 while retaining the exact mandatory-C four-role specialization."
+  evidence:
+    - AAT.AG.RealizationReconstruction.PrimitiveRawRestriction
+    - AAT.AG.RealizationReconstruction.PrimitiveRawRestriction.g122Value
+    - AAT.AG.RealizationReconstruction.PrimitiveRawRestriction.g122Value_maps_JStruct
+    - AAT.AG.RealizationReconstruction.closedTaggedPrimitiveReferenceEquiv
+  claim_mapping:
+    input_premises:
+      - "the original G122CellInput.raw field, including its accepted restrictionStable family"
+      - "one exact source/target/context hom already represented by PrimitiveContextRestriction"
+    constructed_evidence:
+      - "a nullary reference tied definitionally to that exact restriction index"
+      - "the identical RestrictionStableStructuralRelations value selected by X.raw"
+      - "structural-ideal preservation for every target polynomial, recovered from that accepted source value and used in a theorem"
+      - "19-role dependent sum and tagged-index elimination"
+    proof_use:
+      - "g122Value evaluates X.raw.restrictionStable at the exact hom stored in the index"
+      - "g122Value_maps_JStruct applies the recovered value's maps_JStruct field to arbitrary p and membership proof"
+      - "the extended equivalence confirms this G-122-only role is absent from mandatory C"
+    unfinished:
+      - "raw restriction identity and composition coherence are not yet separately represented or recovered"
+      - "coefficient maps, coverage/overlap preservation, and completed GeomReadHom component-map reconstruction remain open"
+      - "final syntax/categories/decoder/membership and remaining A--F obligations remain open"
+  validation:
+    focused_checks: "AATClosedFamilySignature 1/1 pass"
+    named_target_build: "ClosedPrimitiveRoleExhaustion passed (4276 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "494 and 128 generated/named declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 24 recovers the exact raw coordinate restriction and its accepted structural-ideal preservation at every original context hom. It does not construct a cross-geometry map or discharge G-123."
+audits:
+  premise_delta:
+    discharged:
+      - "same-hom indexing of the raw restriction reference"
+      - "exact recovery and actual proof-use of raw structural-ideal preservation"
+    remaining:
+      - "raw identity/composition coherence and coefficient-map provenance"
+      - "map-side geometry preservation, final syntax/decoder/membership, and all remaining A--F obligations"
+  certificate_provenance: "restrictionStable and maps_JStruct are accepted fields of the allowed original G122CellInput.raw input; PrimitiveRawRestriction is nullary over its context-restriction index and accepts neither field again"
+  structure_field_escape: "the primitive has no payload beyond its dependent index; no polynomial map, preservation proof, completed morphism, decoder, extension, or reconstruction evidence is stored"
+  route_integrity: "the exact context hom indexes both PrimitiveContextRestriction and the X.raw.restrictionStable lookup, preventing post-hoc endpoint or restriction replacement"
+  target_fitting: "raw restriction data and its preservation are retained for every original context hom, while identity/composition and all cross-object map reconstruction stay open"
+  vacuity: "the preservation theorem quantifies over every target polynomial and actual target-ideal membership; it is the original maps_JStruct implication rather than True"
+  blocking_findings: []
+  next_obligation: "Recover raw identity/composition polynomial-map coherence and expose coefficient provenance, keeping both as accepted source data rather than final map reconstruction."
 ```
