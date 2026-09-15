@@ -8201,7 +8201,8 @@ review:
     math_b: pass
     lean_a: pass
     lean_b: pass
-  resolved_findings: []
+  resolved_findings:
+    - "clarified that the four-lane review fixed the content head c06ffe657, distinct from the later ledger-only head"
   direct_response:
     reviewed_delta: "82265e195c57a6b81cfffe5292a76196447992b6..c06ffe657b4a2ebce945e48c8e77a684c18a72e9"
     verdict: pass
@@ -8241,8 +8242,8 @@ audits:
     - "focused exact target build for FiniteAxisFoldResidualJointLocalProjection: PASS (4306 jobs; not a Research aggregate build)"
     - "namespace axiom audit: 21 declarations; standard axioms only"
     - "Research aggregate/full build: not run"
-    - "fresh PR-head Math A/B and Lean A/B review: PASS"
-    - "GitHub CI: 7/7 PASS"
+    - "fresh fixed-content-head c06ffe657b4a2ebce945e48c8e77a684c18a72e9 Math A/B and Lean A/B review: PASS"
+    - "GitHub CI: 7/7 PASS on the reviewed content head and the ledger-only final head"
   blocking_findings: []
   next_obligation: "Analyze the three complete joint-local projections on the context-object kernel, then construct a source generator only through a complete local action satisfying the actual selected-morphism naturality."
 ```
