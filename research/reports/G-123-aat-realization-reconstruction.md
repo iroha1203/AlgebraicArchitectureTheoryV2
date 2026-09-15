@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 42 independent all-component original-cell package semantic subcategory
+- current proof obligation: Cycle 43 display-independent G-122 generated comparison objects and actual comparison arrows
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: enlarge the semantic object class independently of displays so that it contains the generated northeast endpoints and the actual `barAlpha`, `barBeta`, and idempotent comparisons required by D
+- next proof obligation: connect finite displays to the generated-object category by constructing restriction of every all-component morphism without assuming extension or image membership
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/D Cycle 43 delta | 元southwest packageと実生成northeast direct/via-base端点をdisplay非依存の同一object型に収録し、実`barAlpha`・`barBeta`・両冪等射をその全成分Homへ接続する | `G122GeneratedGeometryObject`, `.package`, `.Hom`, `.id`, `.comp`, `.id_comp`, `.comp_id`, `.comp_assoc`, `.category`, `.barAlpha`, `.barBeta`, `.barE`, `.barD`, `.barBeta_factor`, `.barE_idem`, `.barD_idem`, `.barBeta_source_factorization`, `.barBeta_target_factorization` | 一つの任意の`G122FamilyInput`と、その下の任意の`G122CellInput`; cochainを含む元入力全量化 | original/direct/viaBaseの3 constructor、source transport/pullbackからの実package評価、任意端点間の全`GeometryTotalHom` category、実5-factor `barAlpha`、cochain-selected `barBeta`、source/target projectorsと因子化・冪等・吸収 | Dの実生成比較を将来の`R_Θ`候補へ収録し、同じ射を有限表示側で回復するためのsemantic domain | final `D_Θ,R_Θ`はC/Eを含め未構成; 有限restriction/ext/J、fullness/faithfulness、冪等分裂/retract生成、比較群・section・二核・lift fiberの表示側回復 |
 | A/B Cycle 42 delta | 表示とは独立にG-122の元southwest入力package上の全許容射を定め、その範囲を生成端点と区別する | `G122OriginalCellGeometryHom`, `G122OriginalCellGeometryHom.id`, `comp`, `ext`, `id_comp`, `comp_id`, `comp_assoc`, `g122OriginalCellGeometryCategory` | 一つの任意の`G122FamilyInput`と、その下の任意の二つ以上の`G122CellInput`; 各cellの元selected geometry/rawから構成される`geometryPackage` | 元入力package間の既存`GeometryTotalHom`全成分をそのままHomとするsubcategory、全成分による射の等号、恒等・合成・圏律 | final `R_Θ` を構成する際のoriginal-cell package部分 | generated northeastのdirect/via-base端点、実`barAlpha`/`barBeta`/冪等端点を含む独立対象型、有限restriction/ext/J、fullness/faithfulness、冪等分裂/retract生成 |
 | A Cycle 41 delta | 同一cellの元operationを恒等・合成で閉じ、値レベル評価を保つ | `G122OperationPath`, `G122OperationPath.configurationMap`, `G122OperationPathActionSyntax`, `id`, `comp`, `configurationMap`, `generatedFamilyMap`, `generatedFamilyMap_id`, `generatedFamilyMap_comp`, `generatedFamilyMap_id_comp`, `generatedFamilyMap_comp_id`, `generatedFamilyMap_comp_assoc`, `ofPrimitive`, `configurationMap_ofPrimitive`, `generatedFamilyMap_ofPrimitive` | 任意のG-122入力/cell、任意の同一cell上のsource/middle/target display、元authored-supportのendpoint-indexed `Op` | typed free path、`ConfigurationHom.id/comp`評価、全source object termの同時path action、値レベルの恒等・合成・左右単位・結合、Cycle 39 primitiveのexact readback | Aの有限operation生成規則と将来の`res/J`候補 | source equation quotient、独立な全admissible morphismとの一致・fullness、全端点operationMap、structure/quantity/geometry保存、AAT `res/ext/J` |
 | A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`/`PrimitiveSupport`/`PrimitiveGeometryAxis`/`PrimitiveObservable`/`PrimitiveContextRestriction`/`PrimitiveRawRestriction`/`PrimitiveCoefficientRing`/`PrimitiveCoverageRequirements`/`PrimitiveCoverageFact`/`PrimitiveOverlapSelection`とG-122のsignature/equation/invariant/raw各role; `PrimitiveAtom.g122Value`; `PrimitiveObject.taggedValue`/`g122Value`とconfiguration/structure/selected-quantity各評価; `G122FiniteObjectFormationDisplay`, `family`, `family_listFinite`, `configurationValue`, `configurationValue_family_eq`, `objectValue`, `primitiveObject`, `objectValue_configuration_eq`, `objectValue_family_eq`, `structureMaps`, `selectedQuantities`, `objectTable`; `G122FiniteObjectFormationAction`とその`ext`/`id`/`comp`/圏律/`Maps`/`AtomMaps`/`maps_entry`/`atom_maps_entry`、`Occurrence`/`occurrenceValue`/membership証拠/`configurationValue_familySupported`/`OccurrencePairCode`/relation・identification edge pair code/`edgeCompletion`とoriginal/pair index埋込み・単射性・像非交差; `G122PrimitiveOperationActionSyntax`と`configurationMap`/`atomIndexMap`/`action`/三coherence定理/全Atom predicate保存/`generatedFamilyMap`/`action_familyMap_eq_generatedFamilyMap`; `generatedFamilyMapOfConfigurationHom`と恒等・合成則; `mapOccurrence`/`mapOccurrencePairCode`/`ValueCoherent`/`GeneratedFamilyMember`/`familyMap`/occurrence・恒等・合成則; `G122FiniteObjectGeneratorDisplay`, `G122FiniteObjectGeneratorAction`, `Maps`, `AtomMaps`, `maps_entry`, `atom_maps_entry`, `ext`, `id`, `comp`, `id_comp`, `comp_id`, `comp_assoc`; `PrimitiveContextRestriction.g122Value`, `g122Morphism`, `g122Morphism_isRestriction`; `PrimitiveRawRestriction.g122Value`, `g122Value_maps_JStruct`, `g122Value_identity_polynomialMap`, `g122Value_composition_polynomialMap`; `PrimitiveCoefficientRing.g122Carrier`, `g122CommRing`; `PrimitiveCoverageFact.g122Statement`, `g122Proof`; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `ClosedPrimitiveReference`, `closedTaggedPrimitiveReferenceEquiv`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective`; `TaggedPrimitivePresentedMonoid`, `TaggedPrimitiveRelationPresentation`, `taggedPrimitiveRelationEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体; Cycle 16ではそのfinite word間の任意の生成関係; Cycle 26では元selected geometryの9 predicateに対するexact typed argumentsとaccepted source proof; Cycle 28–29では同じG-122 parameter下の二実現、各displayが所有する有限Atom/object table、そのsource indexからtarget table indexへの写像とfinite index上のfamily/relation/identification整合式; Cycle 30では同じparameter下の任意の合成可能な3–4実現/display列と各arrowの同じ有限index action; Cycle 32ではobject termごとの有限Atom occurrence table; Cycle 33では同じparameter下の任意の合成可能な3–4 formation display列とobject/各term内Atom occurrenceの有限index map; Cycle 34では同じ任意の両端displayと有限occurrence値合同（固定入力からの由来は未放電）; Cycle 35では各object termの有限relation/identification edge endpointsとそのaction map/coherence（source relationへのadequacyは未放電）; Cycle 36では任意のobject term/全Atom対に対する有限occurrence-pair codeと元composition readerのfamily-supportedness; Cycle 37では全独立edgeのcanonical pair code、任意pair codeの有限action、対応するendpoint coherence; Cycle 38では任意displayと述語非依存の全pair edge保守的completion; Cycle 39では同一cellの全object termに対する元authored-support primitive operation; Cycle 40では任意の端点整合ConfigurationHomと、その元operation評価 | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; tagged/G-122のexact object primitiveから同じArchitectureObjectとそのconfiguration・structureMaps・selectedQuantitiesを重複入力なしで評価; 有限Atom occurrenceからAtomFamilyを構成し、G-122原supportの`composition.compose`と`objectReading.object`で順次評価してfamily/configuration lawと評価後objectが所有するstructure/quantity選択値を回復しobject tableへ変換; formation term/occurrence index actionの恒等・合成・圏律と有限index relation、occurrence評価・generated-family subtype写像・その恒等/合成則、独立relation/identification edgeの有限index action・endpoint coherence・familyMap endpoint値保存、source relation/identificationの全true pairに対する有限code存在とcode上のfresh predicate評価による往復（全域predicate graph保存なし）、全独立edgeのcanonical pair code化とpair-code actionの恒等・合成、endpoint coherence両成分を実使用したedge-code可換性、元edgeをdisjoint summandに保持し全pairを別summandへ追加する有限completion、configuration/object評価不変性と元endpoint/pair-code回復; 元primitive operationのmaps_familyからoccurrence actionを構成し三coherenceを放電、maps_relation/maps_identificationから全true Atom pairのsemantic保存; generated-family subtype上でConfigurationHomのAtom mapをoccurrence choiceなしに構成し恒等・合成を証明、primitive finite actionのfamilyMapがそのcanonical mapと一致することを証明; G-122二実現のdisplay-owned有限Atom/object generator table間のtotal index action、finite index上だけのconfiguration predicate整合、有限index mapの恒等・合成と圏律（semantic全域Atom/object map・`ConfigurationHom`・延長・完全性なし）; 原supportの各operation identityとconfiguration作用の端点付き評価; authored support coreのcontext preorder（`selectedGeometry.toAATSite`経由で型付け）の任意homから両端付きcontext restrictionと元入力の全readability lawを回復; 同じrestrictionをindexとして元`raw.restrictionStable`値・`maps_JStruct`・恒等/合成polynomial map式を回復; 元G-122 familyの係数carrierとCommRing構造をnullary roleから回復; coverageの9 predicateについてexact argumentを保持したsource occurrenceを明示し格納済みproofを同一命題として読み戻す; 現行closed signatureの全21 roleの依存sumとtagged branchで4 roleが全体である同値; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; 全finite wordのfree monoidと、その任意の生成関係によるactual presented-monoid quotient category | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | raw Fin indexのstrict functoriality（value-levelでは放電）、primitive operation pathを越える全許容射でのrelation/identification semantic保存と三coherence放電、configuration/structure/quantityの射整合、全域Atom/object actionと`ConfigurationHom`のext構成、CS object-formationのAAT評価、cross-realization coverage/overlap保存式・map-side reading・係数map/transport roleの追加とtagged inhabitant判定、coverage source premiseのmap-side実使用、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
@@ -4403,4 +4404,83 @@ audits:
     - "Fresh Math B found that G122CellInput.geometryPackage covers only original southwest packages and does not contain the generated northeast direct/via-base endpoints of the required barBeta; the code and report were renamed and narrowed rather than treating this as the complete G-122 semantic branch."
   blocking_findings: []
   next_obligation: "Construct an independent display-free semantic object class containing original southwest packages and the generated northeast direct/via-base endpoints, then embed the actual barAlpha, barBeta, and idempotent comparisons as its GeometryTotalHom arrows before defining finite restriction."
+```
+
+## Cycle 43 — Generated comparison objects and actual arrows
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 43
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: e15e0891fbce58fb35f2c87d08f707a577984eed
+tracking_issue: 4520
+selection:
+  proof_obligation: "Enlarge the display-independent G-122 semantic object range to include each arbitrary original southwest package and its actual generated northeast direct/via-base endpoints, then place the actual comparison and projectors in the same all-component Hom type"
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122OriginalInput.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+  risks:
+    - "treat the original southwest package subcategory as already containing generated northeast endpoints"
+    - "define semantic arrows as only the named barAlpha/barBeta arrows or a decoder image"
+    - "accept generated endpoints or comparison arrows as new input fields"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Added a three-constructor source-generated object type for every arbitrary original G122CellInput: its original southwest package, generated direct northeast endpoint, and generated via-base northeast endpoint. Its category uses every existing GeometryTotalHom between interpreted packages. Embedded the actual five-factor barAlpha, cochain-selected barBeta, and both projectors, and transported their factorization, idempotence, and two absorption laws into that same Hom type."
+  evidence:
+    - AAT.AG.RealizationReconstruction.G122GeneratedGeometryObject
+    - AAT.AG.RealizationReconstruction.G122GeneratedGeometryObject.package
+    - AAT.AG.RealizationReconstruction.G122GeneratedGeometryObject.Hom
+    - AAT.AG.RealizationReconstruction.G122GeneratedGeometryObject.category
+    - AAT.AG.RealizationReconstruction.G122GeneratedGeometryObject.barAlpha
+    - AAT.AG.RealizationReconstruction.G122GeneratedGeometryObject.barBeta
+    - AAT.AG.RealizationReconstruction.G122GeneratedGeometryObject.barE
+    - AAT.AG.RealizationReconstruction.G122GeneratedGeometryObject.barD
+    - AAT.AG.RealizationReconstruction.G122GeneratedGeometryObject.barBeta_factor
+    - AAT.AG.RealizationReconstruction.G122GeneratedGeometryObject.barE_idem
+    - AAT.AG.RealizationReconstruction.G122GeneratedGeometryObject.barD_idem
+    - AAT.AG.RealizationReconstruction.G122GeneratedGeometryObject.barBeta_source_factorization
+    - AAT.AG.RealizationReconstruction.G122GeneratedGeometryObject.barBeta_target_factorization
+  claim_mapping:
+    input_premises:
+      - "one arbitrary G122FamilyInput and every G122CellInput under it, including every authored cell, arbitrary allowed cochain, selected southwest geometry, and raw restriction input"
+      - "the fixed source constructions authoredExactDirectGeometryAt, authoredExactViaBaseGeometryAt, authoredExactBarAlphaIsoAt, authoredExactBarBetaAt, authoredExactBarEAt, and authoredExactBarDAt"
+    constructed_evidence:
+      - "a display-independent tagged object range containing original, direct, and via-base packages for every original cell input"
+      - "all GeometryTotalHom values between every pair of those interpreted packages, with category laws"
+      - "the actual generated barAlpha/barBeta/projector values as arrows of that category"
+      - "the actual beta factorization, both projector idempotence laws, and both beta absorption laws after forgetting only the fiber-incidence subtype proof"
+    proof_use:
+      - "direct and viaBase package evaluation calls the fixed transport/pullback endpoint constructors rather than accepting endpoint packages"
+      - "barAlpha, barBeta, barE, and barD call the corresponding fixed G-122 generated declarations and take their underlying full GeometryTotalHom"
+      - "congrArg Subtype.val transports the existing source equalities into the new all-component Hom type"
+    unfinished:
+      - "this generated G-122 category is a required branch of, but is not yet identified with, the final cross-family R_Theta required to contain C and E inputs"
+      - "no finite display restriction or extension is constructed for arbitrary Hom values"
+      - "no fullness, faithfulness, idempotent splitting object, or retract generation theorem follows from merely retaining the projectors"
+      - "the comparison group, section, ambient and compatible kernels, and every lift fiber remain unrecovered on the display side"
+      - "CS translation and F classification remain open"
+  validation:
+    focused_checks: "G122OriginalInput and AATClosedFamilySignature 2/2 pass"
+    named_target_build: "ClosedPrimitiveRoleExhaustion passed (4276 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "96 declarations in G122OriginalInput and 842 declarations in AATClosedFamilySignature, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 43 closes the Cycle 42 object-range gap for the mandatory G-122 generated comparison branch without using displays or restricting the Hom image. It does not construct the final general realization category or any finite reconstruction inverse, so G-123 remains unproved."
+audits:
+  premise_delta:
+    discharged:
+      - "all arbitrary original G122 cell inputs generate original/direct/via-base objects in one display-independent category"
+      - "the actual barAlpha, cochain-selected barBeta, source projector, and target projector inhabit that category with their factorization, idempotence, and absorption laws"
+    remaining:
+      - "finite restrictions for every component of arbitrary Hom values and construction of ext/J"
+      - "all four reconstruction obligations and final A/C/E/F integration"
+  certificate_provenance: "the generated endpoints and arrows are outputs of fixed source constructors from G122FamilyInput/G122CellInput; no endpoint, comparison, representation, extension, splitting, or retract certificate is accepted as a field"
+  structure_field_escape: "the object inductive stores only an original G122CellInput; direct/viaBase are constructor tags interpreted by source generation, while Hom is the unrestricted existing GeometryTotalHom between interpreted packages"
+  route_integrity: "the arbitrary cochain is retained and used only in barBeta/barE/barD; barAlpha uses the actual five-factor source comparison; the complete all-component arrow is retained by Subtype.val"
+  target_fitting: "the mandatory D generated comparison object range is included for every original input and arbitrary cochain; the finite-axis-fold example is not substituted for the general construction"
+  vacuity: "direct and viaBase are inhabited for every input by source constructions, and the four named arrows are actual values; category laws alone are not used to infer representation or splitting"
+  blocking_findings: []
+  next_obligation: "Define finite display data sufficient to restrict every PackageTotalHom upper/base component and every GeomReadHom context-indexed component of an arbitrary G122GeneratedGeometryObject.Hom, without assuming extension or choosing only the named comparison arrows."
 ```

@@ -28,6 +28,12 @@ display or operation-path syntax.  This fixes an all-component semantic
 subcategory on the southwest input packages whose later enlargement must also
 contain the generated northeast comparison endpoints; the abbrev itself
 supplies neither that enlargement, representability, nor fullness.
+
+The generated-object type later in the file performs exactly that first
+enlargement from the same original input: constructor tags are interpreted by
+the fixed transport and pullback constructions, and its Hom contains every
+`GeometryTotalHom` between the resulting packages.  It is a required G-122
+branch, not yet the cross-family final realization category.
 -/
 
 namespace AAT.AG.RealizationReconstruction
@@ -231,6 +237,190 @@ noncomputable def initialCochain (Θ : G122FamilyInput.{u, v}) :
   exact initialRawDefectCochain Θ.authored.toTransportData
 
 end G122CellInput
+
+/-! ## Display-independent objects for the generated G-122 comparison -/
+
+/-- The source-generated geometry objects required to place the actual G-122
+comparison in one category.  The constructors retain an arbitrary original
+cell input and add its direct and via-base northeast endpoints; they do not
+depend on a finite display or on successful decoding. -/
+inductive G122GeneratedGeometryObject (Θ : G122FamilyInput.{u, v})
+  /-- The original southwest package before generated transport. -/
+  | original (input : G122CellInput Θ)
+  /-- The direct-route generated northeast endpoint. -/
+  | direct (input : G122CellInput Θ)
+  /-- The via-base generated northeast endpoint. -/
+  | viaBase (input : G122CellInput Θ)
+
+namespace G122GeneratedGeometryObject
+
+/-- Interpret a generated-object constructor as its actual complete geometry
+package.  The northeast branches are constructed by the fixed G-122 transport
+and pullback routes from the original input. -/
+noncomputable def package
+    (Θ : G122FamilyInput.{u, v}) :
+    G122GeneratedGeometryObject Θ → GeometryPackage.{u, v} Θ.Carrier
+  | .original input => input.geometryPackage Θ
+  | .direct input => by
+      letI := Θ.atomDecidableEq
+      letI := Θ.coefficientCommRing
+      exact (authoredExactDirectGeometryAt Θ.authored input.cell Θ.Coefficient
+        (input.fixedGeometry Θ)).1
+  | .viaBase input => by
+      letI := Θ.atomDecidableEq
+      letI := Θ.coefficientCommRing
+      exact (authoredExactViaBaseGeometryAt Θ.authored input.cell Θ.Coefficient
+        (input.fixedGeometry Θ)).1
+
+/-- All complete-geometry morphisms between two generated G-122 objects.  The
+Hom type is independent of finite syntax and is not restricted to the actual
+`barAlpha` or `barBeta` images. -/
+abbrev Hom (Θ : G122FamilyInput.{u, v})
+    (X Y : G122GeneratedGeometryObject Θ) :=
+  GeometryTotalHom (X.package Θ) (Y.package Θ)
+
+/-- Identity generated-object morphism. -/
+noncomputable def id (Θ : G122FamilyInput.{u, v})
+    (X : G122GeneratedGeometryObject Θ) : Hom Θ X X :=
+  GeometryTotalHom.id (X.package Θ)
+
+/-- Composition of arbitrary complete-geometry morphisms between generated
+objects. -/
+noncomputable def comp (Θ : G122FamilyInput.{u, v})
+    {X Y Z : G122GeneratedGeometryObject Θ}
+    (first : Hom Θ X Y) (second : Hom Θ Y Z) : Hom Θ X Z :=
+  GeometryTotalHom.comp first second
+
+/-- Left identity for generated-object morphisms. -/
+theorem id_comp (Θ : G122FamilyInput.{u, v})
+    {X Y : G122GeneratedGeometryObject Θ} (f : Hom Θ X Y) :
+    comp Θ (id Θ X) f = f := by
+  change (𝟙 (X.package Θ)) ≫ f = f
+  simp
+
+/-- Right identity for generated-object morphisms. -/
+theorem comp_id (Θ : G122FamilyInput.{u, v})
+    {X Y : G122GeneratedGeometryObject Θ} (f : Hom Θ X Y) :
+    comp Θ f (id Θ Y) = f := by
+  change f ≫ (𝟙 (Y.package Θ)) = f
+  simp
+
+/-- Associativity for generated-object morphisms. -/
+theorem comp_assoc (Θ : G122FamilyInput.{u, v})
+    {W X Y Z : G122GeneratedGeometryObject Θ}
+    (first : Hom Θ W X) (second : Hom Θ X Y) (third : Hom Θ Y Z) :
+    comp Θ (comp Θ first second) third =
+      comp Θ first (comp Θ second third) := by
+  change GeometryTotalHom.comp (GeometryTotalHom.comp first second) third =
+    GeometryTotalHom.comp first (GeometryTotalHom.comp second third)
+  exact @Category.assoc
+    (GeomReadCategory Θ.Carrier) (geometryTotalCategory Θ.Carrier)
+    (W.package Θ) (X.package Θ) (Y.package Θ) (Z.package Θ)
+    first second third
+
+/-- Original and generated endpoint packages form a category with every
+existing complete-geometry morphism between them. -/
+noncomputable instance category (Θ : G122FamilyInput.{u, v}) :
+    Category (G122GeneratedGeometryObject Θ) where
+  Hom := Hom Θ
+  id := id Θ
+  comp := comp Θ
+  id_comp := id_comp Θ
+  comp_id := comp_id Θ
+  assoc := comp_assoc Θ
+
+/-- The actual five-factor `barAlpha` is a morphism between the two generated
+northeast endpoint objects. -/
+noncomputable def barAlpha (Θ : G122FamilyInput.{u, v})
+    (input : G122CellInput Θ) :
+    Hom Θ (.direct input) (.viaBase input) := by
+  letI := Θ.atomDecidableEq
+  letI := Θ.coefficientCommRing
+  exact (authoredExactBarAlphaIsoAt Θ.authored input.cell Θ.Coefficient
+    (input.fixedGeometry Θ)).hom.1
+
+/-- The actual cochain-selected `barBeta` is a morphism between the same two
+generated northeast endpoint objects. -/
+noncomputable def barBeta (Θ : G122FamilyInput.{u, v})
+    (input : G122CellInput Θ) :
+    Hom Θ (.direct input) (.viaBase input) := by
+  letI := Θ.atomDecidableEq
+  letI := Θ.coefficientCommRing
+  exact (authoredExactBarBetaAt Θ.authored input.cell input.cochain Θ.Coefficient
+    (input.fixedGeometry Θ)).1
+
+/-- The source projector generated from the actual cochain is an endomorphism
+of the direct endpoint object. -/
+noncomputable def barE (Θ : G122FamilyInput.{u, v})
+    (input : G122CellInput Θ) : Hom Θ (.direct input) (.direct input) := by
+  letI := Θ.atomDecidableEq
+  letI := Θ.coefficientCommRing
+  exact (authoredExactBarEAt Θ.authored input.cell input.cochain Θ.Coefficient
+    (input.fixedGeometry Θ)).1
+
+/-- The target projector generated from the actual cochain is an endomorphism
+of the via-base endpoint object. -/
+noncomputable def barD (Θ : G122FamilyInput.{u, v})
+    (input : G122CellInput Θ) : Hom Θ (.viaBase input) (.viaBase input) := by
+  letI := Θ.atomDecidableEq
+  letI := Θ.coefficientCommRing
+  exact (authoredExactBarDAt Θ.authored input.cell input.cochain Θ.Coefficient
+    (input.fixedGeometry Θ)).1
+
+/-- The embedded selected comparison is the embedded actual `barAlpha`
+followed by the target projector. -/
+theorem barBeta_factor (Θ : G122FamilyInput.{u, v})
+    (input : G122CellInput Θ) :
+    barBeta Θ input = comp Θ (barAlpha Θ input) (barD Θ input) := by
+  letI := Θ.atomDecidableEq
+  letI := Θ.coefficientCommRing
+  exact congrArg Subtype.val
+    (authoredExactBarBetaAt_factor Θ.authored input.cell input.cochain
+      Θ.Coefficient (input.fixedGeometry Θ))
+
+/-- The generated source projector remains idempotent in the enlarged
+display-independent category. -/
+theorem barE_idem (Θ : G122FamilyInput.{u, v})
+    (input : G122CellInput Θ) :
+    comp Θ (barE Θ input) (barE Θ input) = barE Θ input := by
+  letI := Θ.atomDecidableEq
+  letI := Θ.coefficientCommRing
+  exact congrArg Subtype.val
+    (authoredExactBarEAt_idem Θ.authored input.cell input.cochain Θ.Coefficient
+      (input.fixedGeometry Θ))
+
+/-- The generated target projector remains idempotent in the enlarged
+display-independent category. -/
+theorem barD_idem (Θ : G122FamilyInput.{u, v})
+    (input : G122CellInput Θ) :
+    comp Θ (barD Θ input) (barD Θ input) = barD Θ input := by
+  letI := Θ.atomDecidableEq
+  letI := Θ.coefficientCommRing
+  exact congrArg Subtype.val
+    (authoredExactBarDAt_idem Θ.authored input.cell input.cochain Θ.Coefficient
+      (input.fixedGeometry Θ))
+
+/-- The embedded selected comparison is fixed by its source projector. -/
+theorem barBeta_source_factorization (Θ : G122FamilyInput.{u, v})
+    (input : G122CellInput Θ) :
+    comp Θ (barE Θ input) (barBeta Θ input) = barBeta Θ input := by
+  letI := Θ.atomDecidableEq
+  letI := Θ.coefficientCommRing
+  exact congrArg Subtype.val
+    (authoredExactBarBetaAt_source_factorization Θ.authored input.cell
+      input.cochain Θ.Coefficient (input.fixedGeometry Θ))
+
+/-- The embedded selected comparison is fixed by its target projector. -/
+theorem barBeta_target_factorization (Θ : G122FamilyInput.{u, v})
+    (input : G122CellInput Θ) :
+    comp Θ (barBeta Θ input) (barD Θ input) = barBeta Θ input := by
+  letI := Θ.atomDecidableEq
+  letI := Θ.coefficientCommRing
+  exact congrArg Subtype.val
+    (authoredExactBarBetaAt_target_factorization Θ.authored input.cell
+      input.cochain Θ.Coefficient (input.fixedGeometry Θ))
+
+end G122GeneratedGeometryObject
 
 /-- The original finite axis-fold family is an instance of the general G-122
 family input; the general branch is not defined by this witness. -/
