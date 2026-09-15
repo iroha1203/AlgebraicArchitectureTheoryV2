@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 82 retains the stored inverse-functor context-object action of every actual normalized endpoint automorphism, restricts it to the existing forward-context kernel, and proves that the resulting bidirectional kernel has the complete actual context equivalence equal to `refl`; equation-observable transport, local images/generators, coverage, and a surviving Extension-changing residual element remain open
+- current proof obligation: Cycle 83 follows the actual three-stage inverse transport chain to identify every endpoint observable fiber with `Int`, then proves on the full Cycle 75 forward-context kernel that every context-indexed actual `observableEquiv` is the inverse canonical dependent cast and hence becomes identity after casting back; local images/generators, coverage, and a surviving Extension-changing residual element remain open
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: project and discharge the complete context-indexed equation-observable equivalence family, then combine the bidirectional context kernel with the local-fiber kernel and test faithful complete-morphism reconstruction before constructing source generators; the Cycle 77 canonical-preorder toggle failure remains a failed candidate, not target refutation
+- next proof obligation: combine the bidirectional context kernel, the Cycle 80 local-fiber kernel, and the new observable rigidity, then test whether all remaining fields of the actual complete morphism are faithful before constructing source-owned residual generators; the Cycle 77 canonical-preorder toggle failure remains a failed candidate, not target refutation
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 83 delta | actual endpointのcontext-indexed observable carrierを完成型として再入力せず固定構成鎖から`Int`へ戻し、full forward-context kernel上の全`observableEquiv`をcanonical dependent castの逆として同定する | `finiteAxisFoldEndpointObservableEquivInt`, `finiteAxisFoldResidualObservableSelfEquiv`, `finiteAxisFoldResidualContextKernel_observableSelfEquiv_eq_refl`, `finiteAxisFoldResidualContextKernel_observableEquiv_eq_cast_symm` | 固定finite axis-fold/`Int`; support transport、exact-left inverse package、top transportからなるactual endpoint; Cycle 75のforward-context equality; context kernelの任意の全元・全context | actual inverse top、exact-left forward upper、actual inverse supportのobservable equivalenceを順に合成して各endpoint fiberと`Int`の環同型を構成; kernel membershipから得るforward context equalityでactual observable equivalenceを明示castして自己同型化; `Int`の環自己同型剛性を共役して恒等化し、raw equivalenceをcastの逆へ戻す | equation transportのdependent observable fieldを入力certificateなしに消去し、bidirectional/local-fiber kernelとの統合およびcomplete morphism忠実性検査へ渡す | raw dependent family全体とcanonical comparisonとのHEq/equality、local kernelとの交わり上のcomplete morphism equality、三local image/source generator、Cycle 76 toggleのactual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 82 delta | actual equation transportが保持するforward context作用だけでなくstored inverse functorの全context-object作用も保持し、両作用が恒等となるkernel上でcontext equivalence全体を`refl`へ戻す | `finiteAxisFoldNormalizedContextBackwardEquiv`, `finiteAxisFoldNormalizedContextBackwardProjection`, `finiteAxisFoldResidualContextKernelBackwardProjection`, `FiniteAxisFoldResidualBidirectionalContextKernel`, `finiteAxisFoldResidualBidirectionalContextKernel_contextBackward_eq_id`, `finiteAxisFoldResidualBidirectionalContextKernel_contextEquivalence_eq_refl` | 固定actual normalized direct endpoint; 任意の全Autとそのinverse; Cycle 75のforward-context kernel; actual `EquationSystemExactTransport.contextEquivalence.inverse` | hom/invのstored `contextBackward`から全context置換を構成; compositionの反変性をopposite permutation groupへの群準同型として保持; そのkernelからstored inverse object functionを恒等化; Cycle 75のforward恒等性とthin homの一意性から両functorおよびunit/counitを放電 | 非skeletal preorderでforward object作用だけからequivalence全体をidentity視する誤りを防ぎ、equation observable familyとlocal kernelを含むcomplete morphism忠実性の検査へ渡す | equation-observable equivalence、三local familyの像・source generator、Cycle 76 toggleのcomplete naturality/actual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 81 delta | actual normalized endpointの全自己同型について、upperのAtom作用とは別のlower exact-doctrine `sourceMap` を全Source carrier上の作用として保持し、固定入力から恒等へ放電する | `FiniteAxisFoldResidualDoctrineSource`, `finiteAxisFoldNormalizedDoctrineSourceEquiv`, `finiteAxisFoldNormalizedDoctrineSourceProjection`, `finiteAxisFoldNormalizedDoctrineSourceEquiv_selected`, `finiteAxisFoldNormalizedDoctrineSourceEquiv_eq_refl`, `finiteAxisFoldNormalizedDoctrineSourceProjection_apply`, `finiteAxisFoldNormalizedDoctrineSourceMap_eq_id`, `finiteAxisFoldResidual_doctrineSourceMap_eq_id` | 固定actual normalized direct endpoint; 任意の全Autとそのinverse; endpointのpointed-source equation; 固定decoded Source carrier `ULift (Fin 2)` と選択点 `1` | hom/invのactual `sourceMap`から全Source置換を構成し、Karoubi自己同型の両逆式をsourceで評価; pointed-source lawで`1`を固定; 残る`0`は置換の単射性で固定; 全Autのsource projectionとsourceMapを恒等化 | lower base成分を未追跡のまま最深kernelを自明視する誤りを防ぎ、既存のupper/context/local剛性との統合とresidual source coverageへ渡す | context/local作用の像・source generator、Cycle 76 toggleのcomplete naturality/actual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 80 delta | Cycle 79の三local-fiber作用を全context同時の群準同型としてpackagingし、三作用が同時に不可視となるexact combined kernelを構成・特徴づける | `finiteAxisFoldResidualContextKernelSupportFiberProjection`, `finiteAxisFoldResidualContextKernelAxisFiberProjection`, `finiteAxisFoldResidualContextKernelObservableFiberProjection`, 三つの`_apply`, 三つの`FiberFamilyProjection`, `FiniteAxisFoldResidualLocalFiberActionFamily`, `finiteAxisFoldResidualContextKernelLocalFiberProjection`, `FiniteAxisFoldResidualLocalFiberKernel`, `finiteAxisFoldResidualLocalFiberKernel_eq`, `finiteAxisFoldResidualLocalFiberKernel_mem_iff` | 固定actual normalized endpoint; `FiniteAxisFoldNormalizedAxisSignatureContextKernel`の任意の全元; 任意の全context; Cycle 78のcomplete Sigma群作用; Cycle 79のactual fiber自己同値 | base-fixed Sigma permutationのsubgroupを構成し、各fiberへのrestrictionを群準同型化、canonical fiber equivalenceで共役; 三familyをPi群準同型と積へpackaging; combined kernelを三kernelの交わりおよび全contextで三actual作用が恒等となる条件と同値化 | 局所作用の乗法性を仮定せずactual joint actionから放電し、combined-kernel分類とsource image/generator探索へ渡す | 三familyの像・非自明元・source generatorは未構成; Cycle 76 toggleのcomplete naturality/actual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
@@ -8737,4 +8738,123 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Project and discharge the complete context-indexed equation-observable equivalence family, then combine the bidirectional context kernel with the local-fiber kernel and test faithful complete-morphism reconstruction before constructing source generators."
+```
+
+## Cycle 83 — Actual endpoint observable reconstruction and fiber rigidity
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 83
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 02676d4d8470864c837eb0663a88235d1a707cfd
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 75 fixed every forwarded context on the full context kernel, while the dependent equation-observable equivalence family remained unclassified; Cycle 82 later fixed the stored inverse context action on a smaller kernel"
+  proof_dag_predecessors:
+    - "Cycle 75 equation-index rigidity and forward-context kernel"
+    - "Cycle 75 forward-context projection and context-kernel equality"
+    - "the fixed support, exact-left-pull, and top transport construction of the actual endpoint"
+  proof_obligation: "Recover every actual endpoint observable fiber from the fixed Int source through the real inverse transport chain, then identify every actual observable equivalence on the full forward-context kernel without narrowing to the later bidirectional kernel"
+  selection_reason: "Context equality alone does not identify a dependent observable equivalence.  The observable carrier and its self-map must be reconstructed and proved rigid separately, without adding an endpoint identification or transport certificate as input."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualEquationObservableRigidity.lean
+  risks:
+    - "treat the actual endpoint observable carrier as definitionally Int"
+    - "rewrite the dependent transport unsafely from context equality"
+    - "accept a context-indexed observable identification or automorphism certificate as input"
+    - "identify a pointwise cast-normalized result with raw family HEq without proving the dependent comparison"
+    - "call observable rigidity complete-morphism faithfulness or source coverage"
+  unchecked:
+    - "whole-family dependent equality against the intended canonical equation transport"
+    - "intersection with the complete local-fiber kernel and equality of the remaining complete morphism fields"
+    - "images and source generators of the three complete local-fiber actions"
+    - "Cycle 76 toggle survival through a complete naturality-respecting geometry morphism"
+    - "residual source coverage and the remaining D/B/E/F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed an explicit ring equivalence from every actual endpoint observable fiber to Int by composing the observable fields of the actual inverse top transport, the forward map of the exact-left inverse package, and the inverse support transport.  On the full Cycle 75 forward-context kernel, kernel membership supplies an equality of each forwarded context with itself.  Composing the actual observable equivalence with the corresponding dependent RingEquiv.cast produces a self-equivalence of the same actual fiber.  Conjugation through the constructed Int equivalence and rigidity of Int ring automorphisms proves this self-equivalence is identity for every context and every kernel element.  Cancelling the cast then identifies the raw actual observable equivalence with the inverse canonical cast."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualEquationObservableRigidity.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldEndpointObservableEquivInt
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualObservableSelfEquiv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernel_observableSelfEquiv_eq_refl
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernel_observableEquiv_eq_cast_symm
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldEndpointObservableEquivInt
+      - finiteAxisFoldResidualObservableSelfEquiv
+      - finiteAxisFoldResidualContextKernel_observableSelfEquiv_eq_refl
+      - finiteAxisFoldResidualContextKernel_observableEquiv_eq_cast_symm
+    source_labels:
+      - "GOAL A/D: retain the complete equation transport and recover the comparison action from the fixed construction"
+      - "user conditions 1, 2, 3, 4, and 5: keep full quantifiers, construct evidence from fixed input, do not re-input completed maps, and separate reconstruction obligations"
+    conjuncts:
+      - "every endpoint context -> actual observable fiber equivalence to the fixed Int coefficient carrier through the three-stage construction"
+      - "every forward-context-kernel element and every endpoint context -> actual observable transport normalized by the proved dependent context equality"
+      - "every such normalized observable self-equivalence -> identity"
+      - "every raw actual observable equivalence -> inverse of the canonical cast generated by context-kernel membership"
+    undischarged_assumptions:
+      - "raw dependent-family equality or HEq against the intended canonical equation transport has not yet been proved"
+      - "the observable result has not yet been combined with the local-fiber kernel to prove equality of a complete morphism"
+      - "the local-family images and source-owned generators are not constructed"
+      - "the Cycle 76 Extension toggle has not been lifted to an actual normalized automorphism"
+      - "residual source coverage and broader G-123 reconstruction remain open"
+    acceptance_point: "This cycle closes each context-indexed observable equivalence on the full forward-context kernel, both after explicit cast-normalization and as a raw equality to the inverse canonical cast.  It is not yet a whole-transport equality, local-kernel faithfulness, source coverage, or G-123 completion."
+    port_status: not-applicable
+review:
+  fixed_head: pending
+  independent_lanes:
+    math_a: pending
+    math_b: pending
+    lean_a: pending
+    lean_b: pending
+  resolved_findings: []
+  direct_response:
+    reviewed_delta: pending
+    verdict: pending
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "the endpoint observable identification is generated by the actual inverse top, exact-left, and support transports"
+      - "the dependent target-context equality comes from actual Cycle 75 forward-context-kernel membership"
+      - "observable self-equivalence rigidity comes from conjugation to the fixed Int coefficient carrier"
+    remaining:
+      - "whole dependent-family equality and integration with the complete local-fiber kernel"
+      - "local images/source generators, Cycle 76 actual survival, and residual source coverage"
+      - "bottom/full comparison-kernel/lift recovery, general coefficient/input, and remaining B/E/F"
+  certificate_provenance:
+    discharged:
+      - "all three endpoint-to-Int stages are fields of canonical maps already constructed from the fixed input"
+      - "the cast is generated from the proved actual forward-context equality, not supplied externally"
+      - "the observable automorphism being classified is the actual morphism field"
+    unresolved:
+      - "source generation and survival through the fixed complete construction remain open"
+  proof_use:
+    used:
+      - "the inverse top transport, exact-left forward upper, and inverse support transport are composed at their successive actual forwarded contexts"
+      - "Cycle 75 forward-context-kernel equality is evaluated on every context to construct the dependent cast"
+      - "the actual observableEquiv is composed with that cast"
+      - "the constructed endpoint-to-Int equivalence conjugates the self-map to an Int ring automorphism"
+      - "cast injectivity returns the normalized identity to a raw equality with the inverse canonical cast"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check for FiniteAxisFoldResidualEquationObservableRigidity: PASS"
+    - "focused exact target build for FiniteAxisFoldResidualEquationObservableRigidity: PASS (4311 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 5 declarations; standard axioms only"
+    - "fresh fixed-content Math A/B and Lean A/B review: pending"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Combine bidirectional context rigidity, local-fiber kernel membership, and equation-observable rigidity to test equality of every remaining complete morphism field before constructing source-owned residual generators."
 ```
