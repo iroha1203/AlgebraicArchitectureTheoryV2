@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 40 choice-independent value-level identity and composition for evaluated primitive operations
+- current proof obligation: Cycle 41 source-provenanced identity/composite operation paths and their value-level evaluation laws
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: close source-provenanced operation paths under identity/composition at the value level, then compare their evaluated maps with the full admissible morphism class
+- next proof obligation: define the independent admissible morphism class required by the fixed target and prove whether every such morphism is represented by the source-generated operation-path syntax
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A Cycle 41 delta | 同一cellの元operationを恒等・合成で閉じ、値レベル評価を保つ | `G122OperationPath`, `G122OperationPath.configurationMap`, `G122OperationPathActionSyntax`, `id`, `comp`, `configurationMap`, `generatedFamilyMap`, `generatedFamilyMap_id`, `generatedFamilyMap_comp`, `generatedFamilyMap_id_comp`, `generatedFamilyMap_comp_id`, `generatedFamilyMap_comp_assoc`, `ofPrimitive`, `configurationMap_ofPrimitive`, `generatedFamilyMap_ofPrimitive` | 任意のG-122入力/cell、任意の同一cell上のsource/middle/target display、元authored-supportのendpoint-indexed `Op` | typed free path、`ConfigurationHom.id/comp`評価、全source object termの同時path action、値レベルの恒等・合成・左右単位・結合、Cycle 39 primitiveのexact readback | Aの有限operation生成規則と将来の`res/J`候補 | source equation quotient、独立な全admissible morphismとの一致・fullness、全端点operationMap、structure/quantity/geometry保存、AAT `res/ext/J` |
 | A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`/`PrimitiveSupport`/`PrimitiveGeometryAxis`/`PrimitiveObservable`/`PrimitiveContextRestriction`/`PrimitiveRawRestriction`/`PrimitiveCoefficientRing`/`PrimitiveCoverageRequirements`/`PrimitiveCoverageFact`/`PrimitiveOverlapSelection`とG-122のsignature/equation/invariant/raw各role; `PrimitiveAtom.g122Value`; `PrimitiveObject.taggedValue`/`g122Value`とconfiguration/structure/selected-quantity各評価; `G122FiniteObjectFormationDisplay`, `family`, `family_listFinite`, `configurationValue`, `configurationValue_family_eq`, `objectValue`, `primitiveObject`, `objectValue_configuration_eq`, `objectValue_family_eq`, `structureMaps`, `selectedQuantities`, `objectTable`; `G122FiniteObjectFormationAction`とその`ext`/`id`/`comp`/圏律/`Maps`/`AtomMaps`/`maps_entry`/`atom_maps_entry`、`Occurrence`/`occurrenceValue`/membership証拠/`configurationValue_familySupported`/`OccurrencePairCode`/relation・identification edge pair code/`edgeCompletion`とoriginal/pair index埋込み・単射性・像非交差; `G122PrimitiveOperationActionSyntax`と`configurationMap`/`atomIndexMap`/`action`/三coherence定理/全Atom predicate保存/`generatedFamilyMap`/`action_familyMap_eq_generatedFamilyMap`; `generatedFamilyMapOfConfigurationHom`と恒等・合成則; `mapOccurrence`/`mapOccurrencePairCode`/`ValueCoherent`/`GeneratedFamilyMember`/`familyMap`/occurrence・恒等・合成則; `G122FiniteObjectGeneratorDisplay`, `G122FiniteObjectGeneratorAction`, `Maps`, `AtomMaps`, `maps_entry`, `atom_maps_entry`, `ext`, `id`, `comp`, `id_comp`, `comp_id`, `comp_assoc`; `PrimitiveContextRestriction.g122Value`, `g122Morphism`, `g122Morphism_isRestriction`; `PrimitiveRawRestriction.g122Value`, `g122Value_maps_JStruct`, `g122Value_identity_polynomialMap`, `g122Value_composition_polynomialMap`; `PrimitiveCoefficientRing.g122Carrier`, `g122CommRing`; `PrimitiveCoverageFact.g122Statement`, `g122Proof`; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `ClosedPrimitiveReference`, `closedTaggedPrimitiveReferenceEquiv`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective`; `TaggedPrimitivePresentedMonoid`, `TaggedPrimitiveRelationPresentation`, `taggedPrimitiveRelationEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体; Cycle 16ではそのfinite word間の任意の生成関係; Cycle 26では元selected geometryの9 predicateに対するexact typed argumentsとaccepted source proof; Cycle 28–29では同じG-122 parameter下の二実現、各displayが所有する有限Atom/object table、そのsource indexからtarget table indexへの写像とfinite index上のfamily/relation/identification整合式; Cycle 30では同じparameter下の任意の合成可能な3–4実現/display列と各arrowの同じ有限index action; Cycle 32ではobject termごとの有限Atom occurrence table; Cycle 33では同じparameter下の任意の合成可能な3–4 formation display列とobject/各term内Atom occurrenceの有限index map; Cycle 34では同じ任意の両端displayと有限occurrence値合同（固定入力からの由来は未放電）; Cycle 35では各object termの有限relation/identification edge endpointsとそのaction map/coherence（source relationへのadequacyは未放電）; Cycle 36では任意のobject term/全Atom対に対する有限occurrence-pair codeと元composition readerのfamily-supportedness; Cycle 37では全独立edgeのcanonical pair code、任意pair codeの有限action、対応するendpoint coherence; Cycle 38では任意displayと述語非依存の全pair edge保守的completion; Cycle 39では同一cellの全object termに対する元authored-support primitive operation; Cycle 40では任意の端点整合ConfigurationHomと、その元operation評価 | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; tagged/G-122のexact object primitiveから同じArchitectureObjectとそのconfiguration・structureMaps・selectedQuantitiesを重複入力なしで評価; 有限Atom occurrenceからAtomFamilyを構成し、G-122原supportの`composition.compose`と`objectReading.object`で順次評価してfamily/configuration lawと評価後objectが所有するstructure/quantity選択値を回復しobject tableへ変換; formation term/occurrence index actionの恒等・合成・圏律と有限index relation、occurrence評価・generated-family subtype写像・その恒等/合成則、独立relation/identification edgeの有限index action・endpoint coherence・familyMap endpoint値保存、source relation/identificationの全true pairに対する有限code存在とcode上のfresh predicate評価による往復（全域predicate graph保存なし）、全独立edgeのcanonical pair code化とpair-code actionの恒等・合成、endpoint coherence両成分を実使用したedge-code可換性、元edgeをdisjoint summandに保持し全pairを別summandへ追加する有限completion、configuration/object評価不変性と元endpoint/pair-code回復; 元primitive operationのmaps_familyからoccurrence actionを構成し三coherenceを放電、maps_relation/maps_identificationから全true Atom pairのsemantic保存; generated-family subtype上でConfigurationHomのAtom mapをoccurrence choiceなしに構成し恒等・合成を証明、primitive finite actionのfamilyMapがそのcanonical mapと一致することを証明; G-122二実現のdisplay-owned有限Atom/object generator table間のtotal index action、finite index上だけのconfiguration predicate整合、有限index mapの恒等・合成と圏律（semantic全域Atom/object map・`ConfigurationHom`・延長・完全性なし）; 原supportの各operation identityとconfiguration作用の端点付き評価; authored support coreのcontext preorder（`selectedGeometry.toAATSite`経由で型付け）の任意homから両端付きcontext restrictionと元入力の全readability lawを回復; 同じrestrictionをindexとして元`raw.restrictionStable`値・`maps_JStruct`・恒等/合成polynomial map式を回復; 元G-122 familyの係数carrierとCommRing構造をnullary roleから回復; coverageの9 predicateについてexact argumentを保持したsource occurrenceを明示し格納済みproofを同一命題として読み戻す; 現行closed signatureの全21 roleの依存sumとtagged branchで4 roleが全体である同値; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; 全finite wordのfree monoidと、その任意の生成関係によるactual presented-monoid quotient category | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | raw Fin indexのstrict functoriality（value-levelでは放電）、primitive operation pathを越える全許容射でのrelation/identification semantic保存と三coherence放電、configuration/structure/quantityの射整合、全域Atom/object actionと`ConfigurationHom`のext構成、CS object-formationのAAT評価、cross-realization coverage/overlap保存式・map-side reading・係数map/transport roleの追加とtagged inhabitant判定、coverage source premiseのmap-side実使用、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full`; `retractEndomorphismMap_surjective_of_full`, `exists_retractEndomorphismMap_surjective`; `not_full_and_retractGenerated_of_listObjectGeneratedEndomorphisms`; `not_full_and_retractGenerated_of_endomorphismEmbedding` | 各具体入力条件のみ; 一般transferでは明示的な`F.Full`; combined no-goでは各presentation自己射が有限primitive listの全射像またはそこへの単射を持つこと | 任意の完成射を制限して有限tableを構成; retract上の任意自己射を`r ≫ h ≫ i`のfullness preimageから持ち上げる; injective endomorphism serializationの`invFun`からlist decoder全射を構成; mandatory対象の非全射と合成 | 各direct equivalence; mandatory-C obstructionを任意のmultiobject presentation categoryへ移す categorical/cardinal bridge | final `R_Theta` decoderの充満性を固定入力から放電し、actual endpoint-typed syntaxの各自己射embeddingと接続すること |
@@ -4235,4 +4236,90 @@ audits:
   vacuity: "empty generated families give empty functions but the theorems also quantify over every member of every inhabited generated family; no final coverage conclusion is inferred"
   blocking_findings: []
   next_obligation: "Define source-provenanced operation paths with identity and composition, evaluate them by ConfigurationHom.id/comp and the canonical generated-family action, then audit whether their image spans the required admissible morphisms."
+```
+
+## Cycle 41 — Source-provenanced operation paths
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 41
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 1314644312fb52efba90e030589ee612c190eaeb
+tracking_issue: 4520
+selection:
+  proof_obligation: "Close original authored operations under typed identities and composition and prove the evaluation laws on the Cycle 40 choice-independent generated-family action"
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+  risks:
+    - "store an evaluated map beyond the original authored Op, or conceal that the required finite-axis-fold reading defines Op itself to be ConfigurationHom"
+    - "erase source, target, or the selected middle object term during path composition"
+    - "call free path closure full for the independently required admissible morphism class"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Defined endpoint-indexed paths generated only by identities, original authored-support operations, and typed sequencing through an explicit middle display term. Evaluated paths recursively to ConfigurationHom.id/comp. Defined simultaneous path actions over every source object term, their identity/composition, and their canonical generated-family evaluation. Proved evaluated identity, composition, both unit laws, and associativity, and embedded every Cycle 39 primitive-operation action as a length-one path with exact configuration and family-map readback."
+  evidence:
+    - AAT.AG.RealizationReconstruction.G122OperationPath
+    - AAT.AG.RealizationReconstruction.G122OperationPath.configurationMap
+    - AAT.AG.RealizationReconstruction.G122OperationPath.configurationMap_nil
+    - AAT.AG.RealizationReconstruction.G122OperationPath.configurationMap_seq
+    - AAT.AG.RealizationReconstruction.G122OperationPathActionSyntax
+    - AAT.AG.RealizationReconstruction.G122OperationPathActionSyntax.id
+    - AAT.AG.RealizationReconstruction.G122OperationPathActionSyntax.comp
+    - AAT.AG.RealizationReconstruction.G122OperationPathActionSyntax.configurationMap
+    - AAT.AG.RealizationReconstruction.G122OperationPathActionSyntax.generatedFamilyMap
+    - AAT.AG.RealizationReconstruction.G122OperationPathActionSyntax.generatedFamilyMap_id
+    - AAT.AG.RealizationReconstruction.G122OperationPathActionSyntax.generatedFamilyMap_comp
+    - AAT.AG.RealizationReconstruction.G122OperationPathActionSyntax.generatedFamilyMap_id_comp
+    - AAT.AG.RealizationReconstruction.G122OperationPathActionSyntax.generatedFamilyMap_comp_id
+    - AAT.AG.RealizationReconstruction.G122OperationPathActionSyntax.generatedFamilyMap_comp_assoc
+    - AAT.AG.RealizationReconstruction.G122OperationPathActionSyntax.ofPrimitive
+    - AAT.AG.RealizationReconstruction.G122OperationPathActionSyntax.configurationMap_ofPrimitive
+    - AAT.AG.RealizationReconstruction.G122OperationPathActionSyntax.generatedFamilyMap_ofPrimitive
+  claim_mapping:
+    input_premises:
+      - "one arbitrary G-122 input/cell and arbitrary finite displays over that same cell"
+      - "operation constructors accept only original authored-support Op values at their exact evaluated endpoints"
+      - "no map beyond the source Op is added; in the required finite-axis-fold reading Op is itself ConfigurationHom and is retained as primitive input, while composition law, identity law, admissibility certificate, and all-arrow map families are not stored"
+    constructed_evidence:
+      - "a typed free path through arbitrary intermediate display object terms"
+      - "recursive ConfigurationHom evaluation using only the original operation reader plus id/comp"
+      - "simultaneous object-term path actions closed under identity/composition"
+      - "choice-independent family-map identity, composition, left/right unit, and associativity"
+      - "exact inclusion and evaluator readback for every Cycle 39 primitive transform"
+    proof_use:
+      - "the operation constructor's dependent type fixes both evaluated endpoints"
+      - "the seq constructor shares one typed middle object index and evaluates with ConfigurationHom.comp"
+      - "Cycle 40 generic identity/composition theorems prove all value-level action laws"
+      - "ofPrimitive uses the existing source Op field directly and both readback theorems are definitional"
+    unfinished:
+      - "free path syntax trees are not quotiented by source equations; only their evaluated maps satisfy category laws"
+      - "the independently required complete-geometry admissible morphism class is not yet defined here"
+      - "no fullness/span theorem says every required admissible morphism has an authored path"
+      - "operationMap at all endpoints, structure/quantity/geometry preservation, res/ext/J, and remaining A--F obligations remain open"
+  validation:
+    focused_checks: "AATClosedFamilySignature pass"
+    named_target_build: "ClosedPrimitiveRoleExhaustion passed (4276 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "842 declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 41 provides the source-provenanced identity/composite closure and functorial value-level evaluator requested after Cycle 40. It does not identify this free path class with all admissible morphisms and therefore does not prove G-123."
+audits:
+  premise_delta:
+    discharged:
+      - "source-provenanced identity and composite path construction over arbitrary same-cell displays"
+      - "ConfigurationHom and generated-family evaluation of those paths"
+      - "value-level identity, composition, unit, associativity, and primitive readback"
+    remaining:
+      - "define complete-geometry admissible morphisms independently of this syntax"
+      - "prove restriction/extension between those morphisms and finite path presentations, including fullness and faithfulness"
+      - "discharge operation, structure, quantity, geometry, D/E/F, and all remaining fixed obligations"
+  certificate_provenance: "path constructors store only identity shape, original endpoint-indexed Op values, and typed composition; after transport the required finite-axis-fold Op reduces to ConfigurationHom and its authored evaluator is the canonical transported/cast map descending from the finite model identity reading, while path composition and all stated laws are outputs"
+  structure_field_escape: "the simultaneous syntax adds only a finite object-index map and source-generated paths; it adds no map beyond the original Op and has no all-admissible map family, law proof, decoder, extension, or fullness field. Since the required finite model has Op = ConfigurationHom, primitive retention is not counted as construction of later span/fullness evidence"
+  route_integrity: "identity evaluates by ConfigurationHom.id, operation by the original reader, sequencing by ConfigurationHom.comp, and the same evaluated map feeds Cycle 40 generated-family functoriality"
+  target_fitting: "source/target/middle displays, every object term, and arbitrary finite path length remain quantified; no path image is declared to be the final semantic category"
+  vacuity: "empty object tables produce no simultaneous components but do not imply completeness; every inhabited component is an actual typed path and no final span theorem is inferred"
+  blocking_findings: []
+  next_obligation: "Define the fixed target's complete-geometry admissible morphism data independently of path syntax, then construct restriction to finite generators and test whether authored paths span every such morphism without importing the conclusion."
 ```
