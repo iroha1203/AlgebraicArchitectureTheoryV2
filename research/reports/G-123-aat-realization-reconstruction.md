@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 50 exhaustive finite-coverage bridge and its finiteness cost
+- current proof obligation: Cycle 51 source-provenanced finite syntax for the generated G-122 comparison fragment
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: replace exhaustive point coverage by parameter-relative finite generator syntax whose extension laws are constructed from the fixed G-123 inputs, including the dependent operation/context/geometry components
+- next proof obligation: add a source-derived congruence and exact fixed three-case syntax/evaluation connection, then enlarge the grammar beyond the four generated comparisons without admitting arbitrary completed Hom values
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/D Cycle 51 delta | 全点列挙を避け、G-122原入力をleaf parameterとして保持する有限typed構文で、生成された比較とprojectorを同じ文法に置く | `G122GeneratedComparisonSyntax`, `.identity`, `.compose`, `.barAlpha`, `.barBeta`, `.barE`, `.barD`, `evaluate`, `size`, `size_pos`, 各`evaluate_*` law | 任意の一つの`G122FamilyInput`と任意の`G122CellInput`; leafは原cell/cochain/selected geometry/rawを保持するが完成`GeometryTotalHom`を受け取らない | exact endpoint-indexed finite syntax tree、独立意味圏への評価、有限node数、source-derived `barBeta=barAlpha≫barD`、二projector冪等、source/target吸収の評価後等式 | Dの生成比較をparameter-relative有限recipeへ送る最初のfragment; 将来のsource-derived合同と三固定case表示 | 全許容射のsyntax、合同、res/ext/J・全射性/単射性、固定三caseを同一syntax fiberで比較するtransport、全比較群・section・二核・fiber、A全成分、B/E/Fは未完了 |
 | A/B Cycle 50 delta | finite restrictionの一致から全域map一致へ進むためのcoverage使用を実証し、全点列挙方式が許容された無限primitive parameterと両立しないことを型レベルで固定する | `sourceMap_eq_of_surjective`, `lowerAtomEquiv_eq_of_surjective`, `upperAtomEquiv_eq_of_surjective`, `objectMap_eq_of_surjective`, `equationMap_eq_of_surjective`, `invariantMap_eq_of_surjective`, `axisMap_eq_of_surjective`, `finite_source_of_surjective`, `finite_atom_of_surjective`, `finite_object_of_surjective` | Cycle 49の任意probe・任意の二つの全`GeometryTotalHom`・18族`Agreement`; 各対象carrierへのprobe値写像の全射性を外部前提とする | 全射から各source値の有限index preimageを取り、実restriction一致を用いて7つの非依存core map全域一致を構成; source/Atom/object全点coverageから各carrierの`Finite`を構成 | finite observationからextensional equalityへ進む正確なproof-useと、parameter-relative syntaxへ切り替える必要性 | 全射coverageは固定入力から未放電で、無限許容carrierには使用不可; dependent operation/coordinate、equation equivalence、geometry local maps、全Hom equality、res/ext/Jと四義務、D/E/Fは未完了 |
 | A/B/D Cycle 49 delta | Cycles 46--48のprobe選択だけを統合し、全有限観測一致と射分離を外部命題として正確に切り出す | `G122FiniteTotalHomProbe`, `empty`, `Agreement`, `Separates`, `empty_agreement`, `separates_of_subsingleton`, `empty_not_separates_of_ne`, `finiteAxisFoldEmptyTotalHomProbe`, `finiteAxisFoldEmptyTotalHomProbe_not_separates` | 任意の一つの`G122FamilyInput`、任意のgenerated source/targetと全`GeometryTotalHom`; core/equation source/equation target/geometryのprobe選択のみ | 18族のpointwise観測一致predicate、分離性の外部predicate、空probeの全射対一致、subsingleton Homでのみ成立する条件付き正例、固定generated `barBeta ≠ barAlpha`による具体的負例 | source-generated finite coverageを何が放電すべきかのexact proof obligation; 将来の`res`の等号判定面 | 非空固定source probe、required Hom rangeでの分離放電、unit/counitを含むequation transport全体、ext/J・延長・一意性、endpoint表示、四再構成義務、D全体、CS/F |
 | A/B/D Cycle 48 delta | `EquationSystemExactTransport`のforward/inverse context functorとobservable equivalenceを有限source/target点へ制限し、context arrowの両端依存を保持する | `G122FiniteEquationTransportProbe`, `forwardContextRestriction`, `forwardArrowRestriction`, `backwardContextRestriction`, `backwardArrowRestriction`, `observableRestriction`, 五つのidentity law、五つのcomposition law | 任意の一つの`G122FamilyInput`、任意のgenerated source/target object、任意の全`GeometryTotalHom`; 各packageのcontext、両端index付きreadable arrow、context依存observable値の有限族 | 実context equivalenceのforward/inverse object/arrow評価、実observable ring equivalence評価、identityとforward/observable・inverse逆順composition | Cycle 47 equation-index restrictionを内部equation transportのmap評価へ拡張し、将来のtotal `res`へ統合 | equivalence unit/counitの有限扱い、全域分離/coverage、total res/ext/J、延長・一意性、endpoint表示、四再構成義務、D全体、CS/F |
@@ -5064,4 +5065,82 @@ audits:
   vacuity: "a surjective map from Fin n cannot be empty when the covered carrier is inhabited, and the consequence is explicitly Finite rather than a success claim for G-123"
   blocking_findings: []
   next_obligation: "Construct a finite grammar whose leaves reference arbitrary primitive parameters and whose fixed-input laws extend generator images to the dependent operation/context/geometry maps, without enumerating the full primitive carriers or accepting completed maps."
+```
+
+## Cycle 51 — Source-provenanced generated-comparison syntax
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 51
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 333e515cab5c85819cdb6e8dfe027417baf5b0c0
+tracking_issue: 4520
+selection:
+  proof_obligation: "Begin the parameter-relative route with a finite endpoint-typed grammar for the four comparisons constructed from arbitrary original G-122 cell input, with semantic evaluation and source-derived laws"
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122GeneratedComparisonSyntax.lean
+  risks:
+    - "accept a completed GeometryTotalHom as a syntax leaf"
+    - "erase direct/viaBase endpoints or specialize the arbitrary family/cell input"
+    - "call a four-generator fragment the full presentation or decoder"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed an endpoint-indexed finite syntax generated by identity, composition, and barAlpha/barBeta/barE/barD leaves parameterized only by the original G122CellInput. Defined evaluation into the independently fixed complete-Hom category, a recursive finite node count, and evaluation laws using the actual G-122 factorization, projector idempotence, and source/target absorption theorems."
+  evidence:
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.evaluate
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.size
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.size_pos
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.evaluate_identity
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.evaluate_compose
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.evaluate_barAlpha
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.evaluate_barBeta
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.evaluate_barBeta_factor
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.evaluate_barE_idem
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.evaluate_barD_idem
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.evaluate_barBeta_source_factorization
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.evaluate_barBeta_target_factorization
+  claim_mapping:
+    input_premises:
+      - "one arbitrary G122FamilyInput and arbitrary G122CellInput values, retaining arbitrary Carrier, authored square, coefficient type, cell, cochain, selected geometry, and raw data"
+      - "the accepted source-generated barAlpha, barBeta, barE, barD constructions and their factorization/idempotence laws"
+    constructed_evidence:
+      - "a finite inductive syntax tree indexed by exact generated source and target objects"
+      - "semantic evaluation of each leaf from original input and recursive evaluation of composition"
+      - "positive finite node count for every term"
+      - "evaluated factorization, both projector idempotence laws, and both barBeta absorption laws"
+    proof_use:
+      - "the evaluator invokes G122GeneratedGeometryObject.barAlpha/barBeta/barE/barD, each of which constructs its complete morphism from the original family/cell input"
+      - "the law theorems use the accepted corresponding G122GeneratedGeometryObject law rather than decoder-image equality"
+    unfinished:
+      - "the grammar covers only the four generated comparison operations and composites, not every admissible complete Hom"
+      - "no source-derived congruence or quotient category is constructed"
+      - "the fixed generated, constant-one, and five-factor cases are not yet transported into one common typed syntax comparison surface"
+      - "no res/ext/J, fullness, faithfulness, idempotent splitting, or retract generation follows"
+      - "the full D comparison groups, section, two kernels, lift fibers, CS connections, and F remain open"
+  validation:
+    focused_checks: "G122GeneratedComparisonSyntax passes"
+    named_target_build: "G122GeneratedComparisonSyntax passed (4265 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "52 declarations in G122GeneratedComparisonSyntax, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 51 replaces exhaustive point enumeration on the required generated-comparison fragment by finite source-provenanced terms. It is a real parameter-relative recipe fragment, not the full P_Theta or a proof of separation/reconstruction, so G-123 remains unproved."
+audits:
+  premise_delta:
+    discharged:
+      - "finite endpoint-typed syntax and evaluation for arbitrary-input barAlpha, barBeta, barE, and barD"
+      - "source-derived semantic laws for factorization, idempotence, and absorption"
+    remaining:
+      - "source-derived congruence and category construction"
+      - "all admissible maps and every dependent core/equation/geometry component"
+      - "the fixed three-case syntax comparison and all B/D/E/F completion obligations"
+  certificate_provenance: "syntax leaves carry G122CellInput original data and never a completed Hom, equality certificate, inverse, extension, or decoder value; evaluation constructs semantic arrows after receiving that source data"
+  structure_field_escape: none-found
+  route_integrity: "direct/viaBase endpoint indices are retained by the inductive family and compose accepts only exactly matching intermediate objects"
+  target_fitting: "this is the first D-specific parameter-relative grammar fragment; it neither narrows the original G-122 input nor claims to cover the arbitrary complete-Hom range"
+  vacuity: "all four nonidentity leaves evaluate to the actual generated arrows, and the law proofs use their accepted nontrivial factorization/idempotence statements"
+  blocking_findings: []
+  next_obligation: "Construct a source-law-generated congruence for this typed grammar, connect the fixed three comparison cases without endpoint erasure, and then test extension of the grammar to the complete required morphism data."
 ```
