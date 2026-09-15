@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 78 projects every actual normalized residual automorphism to its complete dependent context-support, context-axis, and context-observable actions and isolates the three kernels; source coverage and the construction of a surviving Extension-changing residual element remain open
+- current proof obligation: Cycle 79 uses context-kernel membership to restrict the complete dependent Support, Axis, and Observable actions to genuine reading-preserving permutations of every fixed local fiber; multiplicative packaging, source coverage, and a surviving Extension-changing residual element remain open
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: analyze the three joint-local projections on the context-object kernel and construct a source generator only after its complete local action is shown to satisfy the actual geometry naturality; the Cycle 77 canonical-preorder toggle failure is a failed candidate, not target refutation
+- next proof obligation: package the three fiberwise families multiplicatively or identify their exact combined kernel, then construct a source generator only after its complete local action is shown to satisfy the actual geometry naturality; the Cycle 77 canonical-preorder toggle failure remains a failed candidate, not target refutation
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 79 delta | context-object kernelの全元について、Cycle 78のdependent Sigma作用を全contextごとのSupport・Axis・Observable fiber自己同値へ降ろし、actual local componentとの計算則とreading保存を証明する | `finiteAxisFoldResidualContextKernel_context_eq`, `finiteAxisFoldResidualContextKernelSupportEquiv`, `finiteAxisFoldResidualContextKernelSupportEquiv_apply`, `finiteAxisFoldResidualContextKernelSupportEquiv_reads`, `finiteAxisFoldResidualContextKernelAxisEquiv`, `finiteAxisFoldResidualContextKernelAxisEquiv_apply`, `finiteAxisFoldResidualContextKernelAxisEquiv_reads`, `finiteAxisFoldResidualContextKernelObservableEquiv`, `finiteAxisFoldResidualContextKernelObservableEquiv_apply`, `finiteAxisFoldResidualContextKernelObservableEquiv_reads` | 固定actual normalized endpoint; `FiniteAxisFoldNormalizedAxisSignatureContextKernel`の任意の全元; 任意の全context; Cycle 78の三complete Sigma permutation; Cycle 73のresidual Atom identity | base-fixed Sigma permutationを各fiberのsubtypeへ制限して元fiberと共役する一般構成; context-kernel等式を全contextで評価; actual local componentをその等式でcastした明示計算則; SupportではAtom identityを実使用し、三reading保存を証明 | context actionをidentityと仮定せずkernel membershipから放電した上で、残る純粋なfiberwise local actionの分類・combined kernel・source generator探索へ渡す | 三familyの乗法的packaging/combined kernel、像・source generatorは未構成; Cycle 76 toggleのcomplete naturality/actual survivalは未証明; residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 78 delta | 同じactual normalized residual全元について、contextと局所値の依存を切らず、全context上の全support・axis・observable作用をそれぞれ完全なSigma carrier上の群作用として保持し、そのkernelを分離する | `FiniteAxisFoldResidualContextSupport`, `FiniteAxisFoldResidualContextAxis`, `FiniteAxisFoldResidualContextObservable`, `finiteAxisFoldContextSupportMap`, `finiteAxisFoldContextAxisMap`, `finiteAxisFoldContextObservableMap`, `finiteAxisFoldNormalizedContextSupportEquiv`, `finiteAxisFoldNormalizedContextAxisEquiv`, `finiteAxisFoldNormalizedContextObservableEquiv`, 三つのnormalized/residual projection、三つのkernelと`_apply`定理 | 固定actual normalized direct endpoint; 任意のfull normalized Autとそのinverse; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元; actual `GeomReadHom`の完全なlocal comparison data | automorphismのcontextForwardとlocal componentをdependent pairに同時適用し、inverse automorphismから逆写像を構成; `hom_inv_id`/`inv_hom_id`をcomplete geometry morphismへ評価して両逆則を放電; 三つの群準同型とkernel membershipの全dependent pair評価 | Cycle 75のcontext-object projectionを局所値まで縮小せず精密化し、context-trivial kernel上のfiberwise local action解析とsource coverageへ渡す | 三projectionの像・相互関係・source generatorは未構成; Cycle 76 toggleのcomplete naturality/actual survivalは未証明; residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 76 delta | Extensionが現source exact dataで実際に動き得ることを、有限context部分や完成したcontext equivalenceの入力なしに構成する | `finiteAxisFoldExtensionValueToggle`, `finiteAxisFoldExtensionValueToggle_involutive`, `finiteAxisFoldExtensionToggleContext`, `finiteAxisFoldExtensionToggleContext_involutive`, `finiteAxisFoldBooleanFalseContext`, `finiteAxisFoldBooleanFalseContext_toggle_ne`, `finiteAxisFoldExtensionToggleContextFunctor`, `finiteAxisFoldExtensionToggleContextEquivalence`, `finiteAxisFoldExtensionToggleEquationTransport`, `finiteAxisFoldExtensionToggleUpper`, `finiteAxisFoldExtensionToggleTotal`, `finiteAxisFoldExtensionToggleTotal_comp_self`, `finiteAxisFoldExtensionToggle_rawReindex`, `finiteAxisFoldExtensionToggleTotal_ne_id` | 固定`finiteWitnessSourcePackage`とsource geometry/raw input; 全ArchitectureContext; `Bool`型判定だけを使う一様recipe | 全型上のBool限定value toggleとinvolution; minimal readingを保つ全context写像; Extensionを読まない両向きrestriction; thin context autoequivalence; equation dataがExtension非依存であることによるexact transport; exact upper/total involution; 明示`Bool.false` contextの移動による非恒等性; Unit raw systemのreindex不変性 | Cycle 75で分離したcontext-object actionが空の候補ではないことをsource exact coreで実証し、complete geometry/actual endpoint/source syntax構成へ渡す | complete `GeomReadHom`のoverlap/local自然性、source→southwest fiber同一視またはsouthwest上の再構成、exact pull/top/normalization後の生存、axis-signature kernel membership、source syntaxは未構成; actual residual元やG-123 completionは未主張 |
 | D Cycle 75 delta | Cycle 74の同じ残余kernel全元について、equation indexの剛性を固定入力から放電し、なお残る全context-object作用を縮小せず群準同型として射影し、そのkernelを分離する | `finiteAxisFoldResidual_equationEquiv_eq_refl`, `finiteAxisFoldResidual_equationMap_apply`, `finiteAxisFoldResidual_equationRole_eq`, `FiniteAxisFoldResidualContextObject`, `finiteAxisFoldNormalizedContextEquiv`, `finiteAxisFoldNormalizedContextProjection`, `finiteAxisFoldResidualContextProjection`, `FiniteAxisFoldNormalizedAxisSignatureContextKernel`, `finiteAxisFoldResidualContextKernel_contextForward_eq_id` | 固定actual direct endpoint; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元; actual endpointをsupport readingから作る三段transport | equation indexを各transportの逆方向へ引き戻して元の`PUnit`へ還元; residual automorphismとそのinverseのcontextForwardから全context object上の実際の置換と群準同型を構成; kernel membershipを全contextのidentityへ評価 | equation index成分を消去しつつcontext equivalenceを勝手にidentity化せず、context-trivial kernel上のfiberwise local action解析とExtension-changing generator構成へ渡す | observable値のdependent transport、context actionの像・source generator、local support/axis/observable comparison、残余source coverageは未構成; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
@@ -218,7 +219,6 @@ audits:
   blocking_findings: []
   next_obligation: "Construct protocol semantics, finite generator tables, res/ext/J, and the four reconstruction properties without restricting the independently defined natural transformations."
 ```
-
 
 ## Cycle 2 — Protocol semantics and finite-presentation reconstruction
 
@@ -8246,4 +8246,127 @@ audits:
     - "GitHub CI: 7/7 PASS on the reviewed content head and the ledger-only final head"
   blocking_findings: []
   next_obligation: "Analyze the three complete joint-local projections on the context-object kernel, then construct a source generator only through a complete local action satisfying the actual selected-morphism naturality."
+```
+
+## Cycle 79 — Reading-preserving actions on every fixed local fiber
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 79
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 881d5c8e775c852dffa661d9a5046f1b44056dc6
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 78 constructed complete dependent context-local actions on the full residual kernel and isolated the context-object kernel as the locus where every base context is fixed"
+  proof_dag_predecessors:
+    - "Cycle 73 residual Atom rigidity"
+    - "Cycle 75 context-object kernel and pointwise context identity"
+    - "Cycle 78 complete dependent Support, Axis, and Observable permutations"
+  proof_obligation: "Use actual context-kernel membership to construct, for every context and every context-kernel element, genuine self-equivalences of the three local fibers and prove their reading preservation"
+  selection_reason: "The failed Cycle 77 source toggle showed that local naturality cannot be inferred from equal minimal readings.  Restricting actual complete morphisms after proving their context action is identity exposes the true residual fiber action without supplying any new comparison map."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualLocalFiberAction.lean
+  risks:
+    - "assume each local carrier is inhabited and thereby omit empty fibers"
+    - "replace dependent transport by a common post-hoc carrier"
+    - "accept a family of local equivalences as new input rather than deriving it from the actual automorphism"
+    - "call one-way reading preservation local rigidity or source coverage"
+  unchecked:
+    - "multiplicative packaging of the three fiberwise families and their exact combined kernel"
+    - "images and source generators of the residual local actions"
+    - "Cycle 76 toggle survival and residual source coverage"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed a general restriction of any base-fixed dependent-sum permutation to every individual fiber, then applied it to all three actual Cycle 78 actions for every element of the complete context-object kernel.  Public computation theorems identify each resulting fiber permutation with the actual local geometry component transported along the proved context equality.  Support, Axis, and Observable readings are preserved; Support preservation explicitly uses the accepted residual Atom identity."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualLocalFiberAction.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernel_context_eq
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelSupportEquiv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelSupportEquiv_apply
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelSupportEquiv_reads
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelAxisEquiv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelAxisEquiv_apply
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelAxisEquiv_reads
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelObservableEquiv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelObservableEquiv_apply
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelObservableEquiv_reads
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldResidualContextKernel_context_eq
+      - finiteAxisFoldResidualContextKernelSupportEquiv
+      - finiteAxisFoldResidualContextKernelSupportEquiv_reads
+      - finiteAxisFoldResidualContextKernelAxisEquiv
+      - finiteAxisFoldResidualContextKernelAxisEquiv_reads
+      - finiteAxisFoldResidualContextKernelObservableEquiv
+      - finiteAxisFoldResidualContextKernelObservableEquiv_reads
+    source_labels:
+      - "GOAL D: recover the complete comparison action without restricting to selected displayed components"
+      - "user conditions 1, 2, 4, and 5: preserve all contexts and local data, construct evidence, keep obligations separate, and retain the original G-122 scope"
+    conjuncts:
+      - "every context-kernel element and every context -> a permutation of its complete Support fiber"
+      - "every context-kernel element and every context -> a permutation of its complete Axis fiber"
+      - "every context-kernel element and every context -> a permutation of its complete Observable fiber"
+      - "all three extracted permutations are the actual local components after the proved context cast and preserve the relevant reading"
+    undischarged_assumptions:
+      - "multiplicativity of the cast-normalized fiber families is not yet packaged"
+      - "no source generator or nontrivial image is constructed"
+      - "the Cycle 76 Extension toggle has not been lifted to an actual normalized automorphism"
+    acceptance_point: "This cycle derives the complete reading-preserving fiber actions of actual context-kernel elements.  It is not local rigidity, residual source coverage, or G-123 completion."
+    port_status: not-applicable
+review:
+  fixed_head: 9f748ededa95208d9cb09fe9c604af38efe04681
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    reviewed_delta: "881d5c8e775c852dffa661d9a5046f1b44056dc6..9f748ededa95208d9cb09fe9c604af38efe04681"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "context identity is derived pointwise from actual context-kernel membership"
+      - "each fiber inverse is inherited from the inverse of the complete dependent permutation, with no inhabitedness premise"
+      - "the public computation laws expose the actual supportComp, axisComp, and observableComp fields and their context casts"
+      - "reading preservation follows from actual GeomReadHom preservation; Support also consumes residual Atom rigidity"
+    remaining:
+      - "multiplicative packaging and exact intersection of the fiber-action kernels"
+      - "a source-generated nonidentity actual local action and residual source coverage"
+      - "bottom/full comparison-kernel/lift recovery, general coefficient/input, and B/E/F"
+  certificate_provenance:
+    discharged:
+      - "the base-fixed premise is generated from the existing context-kernel proof, not supplied as a new theorem argument"
+      - "the local maps and their inverses come from the actual complete automorphism and inverse"
+    unresolved:
+      - "source generation and survival through the fixed construction remain open"
+  proof_use:
+    used:
+      - "context-kernel equality is used to type every local action back in its original fiber"
+      - "the complete Sigma permutation and inverse prove each fiber equivalence without selecting a fiber element"
+      - "actual local preservation fields prove the three reading theorems"
+      - "residual Atom identity removes the transported Atom in Support reading preservation"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check for FiniteAxisFoldResidualLocalFiberAction: PASS"
+    - "focused exact target build for FiniteAxisFoldResidualLocalFiberAction: PASS (4307 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 10 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh fixed-content-head 9f748ededa95208d9cb09fe9c604af38efe04681 Math A/B and Lean A/B review: PASS"
+    - "GitHub CI: 7/7 PASS on the fixed content head"
+  blocking_findings: []
+  next_obligation: "Package the three fiberwise families multiplicatively or identify their exact combined kernel, then test source-owned local generators only through complete naturality-respecting geometry morphisms."
 ```
