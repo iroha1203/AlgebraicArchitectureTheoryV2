@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 52 source-law congruence and semantic soundness for the generated comparison fragment
+- current proof obligation: Cycle 53 syntax-mediated common-endpoint evaluation of the fixed three comparison cases
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: transport the generated-cochain, constant-one, and five-factor terms to one fixed semantic endpoint surface and prove the exact three-case equality/non-equality classification there
+- next proof obligation: construct the quotient category of generated comparison syntax by the source-law congruence and prove its decoder is well-defined, while retaining the fixed three-case classification
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 53 delta | 固定finite axis-foldのfive-factor・generated-cochain・constant-oneをCycle 51のsource-provenanced syntax経由で同一semantic Hom面へ評価し、同じ三分類を回復する | `finiteAxisFoldTransportIdentityCochainHom`, `finiteAxisFoldComparisonSyntaxEvaluate`, `finiteAxisFoldComparisonSyntaxSize`, `_eq_one`, `_eq_evaluate`, `finiteAxisFoldSyntax_generatedBarBeta_ne_barAlpha`, `finiteAxisFoldSyntax_identityBarBeta_eq_barAlpha`, 二つのexact fiber iff、`finiteAxisFoldComparisonSyntaxEvaluate_not_injective` | カード固定の同じfamily/cell/ℤ/geometry/raw、generated cochainとconstant-one cochain; Cycle 44のpackage同一性、Cycle 45の実比較分類、Cycle 51 syntax evaluator | 三caseを各1-node syntax leafで表し、constant-one endpoint packageをgenerated endpoint packageへtransportし、旧semantic evaluatorとの全case一致、相違・一致・二fiber・非単射をsyntax経由で証明 | Dの固定三例を有限recipe fragmentへ実接続する回帰面 | transportは固定case専用; 一般syntax quotient/category、全比較群・section・底/係数・二核・全lift fiber、全許容射、B/E/Fは未完了 |
 | A/D Cycle 52 delta | Cycle 51構文の合同をdecoder像の等号で定義せず、圏律とG-122生成法則だけから閉じ、評価soundnessと固定正負例を与える | `G122GeneratedComparisonSyntax.Congruent` と12 constructors、`evaluate_eq_of_congruent`, `finiteAxisFold_barD_ne_identity`, `finiteAxisFold_barBeta_factor_congruent`, `finiteAxisFold_barD_not_congruent_identity` | 任意のG-122 family/cell構文; 圏律と既存`barBeta_factor`・二冪等・二吸収; 固定generated-cochainの`barBeta`非可逆性と`barAlphaIso` | typed反射・対称・推移・合成閉包、source-law generators、評価等号soundness、固定factorization正例、非自明target projector対identityの負例 | D比較fragmentのsource-derived quotient候補と、固定三caseを構文等号で分類する前段 | completeness/decidability/quotient category、constant-oneとの共通endpoint transport、全許容射、res/ext/J、四義務、D全群、E/Fは未完了 |
 | A/D Cycle 51 delta | 全点列挙を避け、G-122原入力をleaf parameterとして保持する有限typed構文で、生成された比較とprojectorを同じ文法に置く | `G122GeneratedComparisonSyntax`, `.identity`, `.compose`, `.barAlpha`, `.barBeta`, `.barE`, `.barD`, `evaluate`, `size`, `size_pos`, 各`evaluate_*` law | 任意の一つの`G122FamilyInput`と任意の`G122CellInput`; leafは原cell/cochain/selected geometry/rawを保持するが完成`GeometryTotalHom`を受け取らない | exact endpoint-indexed finite syntax tree、独立意味圏への評価、有限node数、source-derived `barBeta=barAlpha≫barD`、二projector冪等、source/target吸収の評価後等式 | Dの生成比較をparameter-relative有限recipeへ送る最初のfragment; 将来のsource-derived合同と三固定case表示 | 全許容射のsyntax、合同、res/ext/J・全射性/単射性、固定三caseを同一syntax fiberで比較するtransport、全比較群・section・二核・fiber、A全成分、B/E/Fは未完了 |
 | A/B Cycle 50 delta | finite restrictionの一致から全域map一致へ進むためのcoverage使用を実証し、全点列挙方式が許容された無限primitive parameterと両立しないことを型レベルで固定する | `sourceMap_eq_of_surjective`, `lowerAtomEquiv_eq_of_surjective`, `upperAtomEquiv_eq_of_surjective`, `objectMap_eq_of_surjective`, `equationMap_eq_of_surjective`, `invariantMap_eq_of_surjective`, `axisMap_eq_of_surjective`, `finite_source_of_surjective`, `finite_atom_of_surjective`, `finite_object_of_surjective` | Cycle 49の任意probe・任意の二つの全`GeometryTotalHom`・18族`Agreement`; 各対象carrierへのprobe値写像の全射性を外部前提とする | 全射から各source値の有限index preimageを取り、実restriction一致を用いて7つの非依存core map全域一致を構成; source/Atom/object全点coverageから各carrierの`Finite`を構成 | finite observationからextensional equalityへ進む正確なproof-useと、parameter-relative syntaxへ切り替える必要性 | 全射coverageは固定入力から未放電で、無限許容carrierには使用不可; dependent operation/coordinate、equation equivalence、geometry local maps、全Hom equality、res/ext/Jと四義務、D/E/Fは未完了 |
@@ -5216,4 +5217,81 @@ audits:
   vacuity: "the fixed barBeta factorization is related, while the fixed nonidentity barD cannot be related to identity by soundness"
   blocking_findings: []
   next_obligation: "Construct explicit package-equality transport of the constant-one syntax evaluation to the generated-cochain endpoints and connect the three fixed comparison cases to Congruent without defining syntax equality semantically."
+```
+
+## Cycle 53 — Fixed three-case syntax evaluation on common endpoints
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 53
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: d5aea893602778fb094a8319eee8192f7ed923cc
+tracking_issue: 4520
+selection:
+  proof_obligation: "Evaluate the fixed five-factor, generated-cochain, and constant-one cases through Cycle 51 syntax on one common endpoint-package Hom type, and recover the exact three-case classification"
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldComparisonSyntaxEvaluation.lean
+  risks:
+    - "erase the distinct generated and constant-one original inputs"
+    - "replace the fixed comparisons by identities or a new easy example"
+    - "claim a general endpoint transport or full finite decoder from the fixed specialization"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Defined a fixed package-equality transport from the constant-one syntax endpoints to the generated-cochain endpoint-package Hom type. Evaluated all three Cycle 45 codes through actual Cycle 51 syntax leaves, proved exact equality with the existing semantic evaluator, one-node size for each case, generated-versus-five-factor inequality, constant-one-versus-five-factor equality, both exact fibers, and evaluator noninjectivity."
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldTransportIdentityCochainHom
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldComparisonSyntaxEvaluate
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldComparisonSyntaxSize
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldComparisonSyntaxSize_eq_one
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldComparisonSyntaxEvaluate_eq_evaluate
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSyntax_generatedBarBeta_ne_barAlpha
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSyntax_identityBarBeta_eq_barAlpha
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSyntax_evaluate_eq_barAlpha_iff
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSyntax_evaluate_eq_generatedBarBeta_iff
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldComparisonSyntaxEvaluate_not_injective
+  claim_mapping:
+    input_premises:
+      - "the exact fixed finiteAxisFoldG122FamilyInput, generated-cochain cell input, and constant-one cell input"
+      - "Cycle 44 definitional equality of direct and via-base endpoint package values when only the cochain changes"
+      - "Cycle 45 semantic equality/non-equality classification of the same three actual arrows"
+      - "Cycle 51 source-provenanced syntax leaves and evaluator"
+    constructed_evidence:
+      - "explicit fixed transport of the constant-one syntax evaluation to the common generated-cochain package Hom"
+      - "three syntax-mediated evaluations and exact agreement with the prior semantic evaluator"
+      - "exact one-node reference count for each fixed syntax term"
+      - "the two semantic fibers and noninjectivity on the same three codes"
+    proof_use:
+      - "the transport rewrites both actual endpoint package equalities before returning the constant-one complete morphism"
+      - "each evaluator branch invokes the matching barAlpha or barBeta syntax leaf; no semantic arrow is a code field"
+      - "classification proofs reuse the accepted Cycle 45 theorems only after proving pointwise equality of the syntax-mediated and semantic evaluators"
+    unfinished:
+      - "the endpoint transport is specialized to this fixed pair of cochains"
+      - "the three-code index is not the full presentation Hom and the one-node count does not prove full decoder finiteness/fullness"
+      - "no quotient category by Congruent or general endpoint transport is constructed"
+      - "the full comparison group, base-fixing subgroup, section, two kernels, and every lift fiber are not yet represented"
+      - "all remaining A/B/E/F obligations remain open"
+  validation:
+    focused_checks: "FiniteAxisFoldComparisonSyntaxEvaluation passes"
+    named_target_build: "FiniteAxisFoldComparisonSyntaxEvaluation passed (4267 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "10 declarations in FiniteAxisFoldComparisonSyntaxEvaluation, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 53 connects the exact fixed three comparison cases to the source-provenanced syntax fragment and preserves their specified evaluations and fibers. It is a fixed D example checkpoint, not a general presentation or G-123 completion."
+audits:
+  premise_delta:
+    discharged:
+      - "syntax-mediated representation and one-node size of the exact fixed three comparison cases"
+      - "common-endpoint evaluation preserving the generated/noninvertible and constant-one/five-factor classification"
+    remaining:
+      - "general congruence quotient/category and arbitrary endpoint transport"
+      - "all-group D recovery and every B/E/F obligation"
+  certificate_provenance: "codes select source-provenanced syntax leaves; the only transport evidence is the fixed source-proved equality of endpoint package constructions, and no completed target arrow or classification certificate is stored"
+  structure_field_escape: none-found
+  route_integrity: "generated and constant-one cochains remain distinct G122CellInput values inside their syntax leaves even though their evaluated endpoint packages are transported to one common Hom type"
+  target_fitting: "the exact card-mandated finite axis-fold geometry, cell, coefficient ring, three cases, evaluations, and two fibers are preserved"
+  vacuity: "the generated syntax value differs from barAlpha, while the distinct constant-one code has the same value; both exact fibers and noninjectivity are proved"
+  blocking_findings: []
+  next_obligation: "Form the typed quotient of generated comparison syntax by Congruent, descend evaluation using soundness, and preserve the fixed positive/negative classification without identifying quotient equality with semantic equality."
 ```
