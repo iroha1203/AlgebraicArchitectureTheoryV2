@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 75 proves that every residual element fixes the actual endpoint's complete singleton equation-index family, then projects the unrestricted residual action on every context object and isolates its context-trivial kernel; observable transport, local geometry, a concrete Extension-changing residual generator, and source coverage remain to construct
+- current proof obligation: Cycle 76 constructs from the fixed source exact core a uniform Extension-value involution on every context, proves that it moves a concrete Bool context, packages it as a nonidentity involutive exact package map, and proves raw-data invariance; its complete-geometry lift and transport to the actual normalized residual kernel remain to construct
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the fixed-input Extension-value toggle through exact core, complete geometry, actual pull/push, and normalization; prove that it lies in the axis-signature residual kernel but moves a concrete Bool context, then extend the source presentation rather than shrinking the semantic group
+- next proof obligation: construct the complete-geometry lift of the fixed source Extension toggle with the product-overlap dependent Iso, then transport or reconstruct it on the southwest geometry package before the existing exact left-pull/top/normalization route; only after proving survival may it be called an actual residual-kernel element
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 76 delta | Extensionが現source exact dataで実際に動き得ることを、有限context部分や完成したcontext equivalenceの入力なしに構成する | `finiteAxisFoldExtensionValueToggle`, `finiteAxisFoldExtensionValueToggle_involutive`, `finiteAxisFoldExtensionToggleContext`, `finiteAxisFoldExtensionToggleContext_involutive`, `finiteAxisFoldBooleanFalseContext`, `finiteAxisFoldBooleanFalseContext_toggle_ne`, `finiteAxisFoldExtensionToggleContextFunctor`, `finiteAxisFoldExtensionToggleContextEquivalence`, `finiteAxisFoldExtensionToggleEquationTransport`, `finiteAxisFoldExtensionToggleUpper`, `finiteAxisFoldExtensionToggleTotal`, `finiteAxisFoldExtensionToggleTotal_comp_self`, `finiteAxisFoldExtensionToggle_rawReindex`, `finiteAxisFoldExtensionToggleTotal_ne_id` | 固定`finiteWitnessSourcePackage`とsource geometry/raw input; 全ArchitectureContext; `Bool`型判定だけを使う一様recipe | 全型上のBool限定value toggleとinvolution; minimal readingを保つ全context写像; Extensionを読まない両向きrestriction; thin context autoequivalence; equation dataがExtension非依存であることによるexact transport; exact upper/total involution; 明示`Bool.false` contextの移動による非恒等性; Unit raw systemのreindex不変性 | Cycle 75で分離したcontext-object actionが空の候補ではないことをsource exact coreで実証し、complete geometry/actual endpoint/source syntax構成へ渡す | complete `GeomReadHom`のoverlap/local自然性、source→southwest fiber同一視またはsouthwest上の再構成、exact pull/top/normalization後の生存、axis-signature kernel membership、source syntaxは未構成; actual residual元やG-123 completionは未主張 |
 | D Cycle 75 delta | Cycle 74の同じ残余kernel全元について、equation indexの剛性を固定入力から放電し、なお残る全context-object作用を縮小せず群準同型として射影し、そのkernelを分離する | `finiteAxisFoldResidual_equationEquiv_eq_refl`, `finiteAxisFoldResidual_equationMap_apply`, `finiteAxisFoldResidual_equationRole_eq`, `FiniteAxisFoldResidualContextObject`, `finiteAxisFoldNormalizedContextEquiv`, `finiteAxisFoldNormalizedContextProjection`, `finiteAxisFoldResidualContextProjection`, `FiniteAxisFoldNormalizedAxisSignatureContextKernel`, `finiteAxisFoldResidualContextKernel_contextForward_eq_id` | 固定actual direct endpoint; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元; actual endpointをsupport readingから作る三段transport | equation indexを各transportの逆方向へ引き戻して元の`PUnit`へ還元; residual automorphismとそのinverseのcontextForwardから全context object上の実際の置換と群準同型を構成; kernel membershipを全contextのidentityへ評価 | equation index成分を消去しつつcontext equivalenceを勝手にidentity化せず、context-trivial kernel上のfiberwise local action解析とExtension-changing generator構成へ渡す | observable値のdependent transport、context actionの像・source generator、local support/axis/observable comparison、残余source coverageは未構成; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 74 delta | Cycle 73の同じ残余kernel全元について、Atom identityを実際に使用し、全ArchitectureObjectと全端点の全selected operationに対するobject/operation成分をcanonical normalizationへ固定する | `finiteAxisFoldResidual_objectMap_apply`, `finiteAxisFoldResidual_objectMap_eq_canonicalObjectNormalization`, `finiteAxisFoldResidual_object_configuration_eq`, `finiteAxisFoldResidual_canonicalObjectNormalization_objectMap`, `finiteAxisFoldResidual_configurationMap_eq_id`, `finiteAxisFoldResidual_operation_configurationMap_atomMap`, `finiteAxisFoldResidual_operation_configurationMap_eq`, `finiteAxisFoldResidual_operationMap_eq_canonicalNormalization` | 固定actual direct endpoint; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元; Cycle 73のcomplete Atom identity; normalized Karoubi sandwich law; actual endpoint operation readingが元の全`ConfigurationHom` readingの三段transportであること | sandwich等式を全objectで評価してraw objectMapをcanonical normalizationへ固定; `configuration_eq`とAtom identityから全configuration一致; operation naturalityから全operationのrealized Atom map一致; 三段transportがAtom-map faithfulnessを保存することからdependent endpoint cast後のoperationそのものをcanonical normalization operationへ固定 | 残余kernelのobject/operation成分を入力certificateなしに消去し、equation/context/local geometryの真の残余解析とsource coverageへ渡す | equation transport、context equivalence、local support/axis/observable comparison、残余source coverageは未構成; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 73 delta | Cycle 72の同じ残余kernel全元について、固定pull--push endpointのAtom equivalenceを元のordered identification・ordered detector・substitution graphから完全に放電する | `finiteAxisFoldSupport_atomEquiv_componentA`, `finiteAxisFoldSupport_atomEquiv_componentB`, `finiteAxisFoldSupport_atomEquiv_eq_refl`, `finiteAxisFoldDirectEndpoint_atomEquiv_eq_refl`, `finiteAxisFoldResidual_atomEquiv_eq_refl` | 固定finite axis-fold/`Int`; actual direct endpointを構成するexact left pull/top transport; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元 | support readingのordered identification、三つのordered detector query、三辺substitution graph、Atom Equivの全単射性; さらにactual endpointのcomposition/detectorを二段transportから元readingへ計算する証拠 | residual元のcomplete `atomEquiv`をidentityへ固定し、object/operation/equation/context/local-geometryの残余解析へ渡す | residual source coverageは未構成; object/operation/equation/context/local geometryは未放電; extension-changing context actionは候補のみ; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
@@ -7997,4 +7998,124 @@ audits:
     - "fresh final-snapshot Math A/B and Lean A/B review: PASS"
   blocking_findings: []
   next_obligation: "Construct the fixed-input Extension-value toggle as an actual residual normalized automorphism, prove a concrete Bool context moves, and add the corresponding source generator without shrinking the semantic context-object action."
+```
+
+## Cycle 76 — Fixed-source Extension-value involution
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 76
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: fbb29cefd2f5263fb04cdbbb381d9bf4190e458d
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 75 retained the complete residual context-object action and isolated its kernel without proving whether a nonidentity context action exists"
+  proof_dag_predecessors:
+    - "Cycle 75 complete context-object action projection"
+    - "the fixed finiteWitnessSourcePackage and its Extension-blind canonical context preorder"
+    - "the fixed constant equation observables and Unit raw restriction system"
+  proof_obligation: "Construct a genuine Extension-changing exact source action from the fixed input, over all contexts and without taking an equivalence or completed residual element as an input"
+  selection_reason: "Before extending the source presentation, the suspected context direction must be shown to exist in the independent source semantics.  Separating this primitive construction from its complete-geometry and actual-endpoint transport prevents an unproved survival claim."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualContextAction.lean
+  risks:
+    - "select only the explicit Bool context instead of defining an action on every context"
+    - "change the Extension carrier and hide dependent casts in completed input data"
+    - "infer a complete-geometry or actual residual automorphism from an exact-core action without constructing overlap/local geometry"
+    - "treat a source candidate or a failed lift as G-123 refutation"
+  unchecked:
+    - "complete-geometry lift and its product-overlap Iso"
+    - "transport or reconstruction on the southwest fiber and survival through exact pull/top/normalization"
+    - "actual axis-signature residual-kernel membership and source syntax"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Defined a uniform value involution on every Extension carrier which negates values exactly when the carrier is Bool.  It preserves every context's full minimal reading and Extension type, has readable restriction maps in both directions, and induces an autoequivalence of the complete source context category.  The fixed equation family is Extension-independent, so this yields an exact core map and package-total involution.  A concrete Bool-false context is moved, proving the total map is nonidentity, while the fixed Unit raw restriction system is unchanged by reindexing.  No complete-geometry or actual normalized residual element is claimed."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualContextAction.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionValueToggle_involutive
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionToggleContext_involutive
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldBooleanFalseContext_toggle_ne
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionToggleContextEquivalence
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionToggleUpper_comp_self
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionToggleTotal_comp_self
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionToggle_rawReindex
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionToggleTotal_ne_id
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldExtensionValueToggle_involutive
+      - finiteAxisFoldExtensionToggleContext_involutive
+      - finiteAxisFoldBooleanFalseContext_toggle_ne
+      - finiteAxisFoldExtensionToggleContextEquivalence
+      - finiteAxisFoldExtensionToggleTotal_comp_self
+      - finiteAxisFoldExtensionToggle_rawReindex
+      - finiteAxisFoldExtensionToggleTotal_ne_id
+    source_labels:
+      - "GOAL D: retain the original finite-axis-fold input and recover comparison information rather than shrinking to displayed components"
+      - "user conditions 1, 2, 4, and 5: full quantification, constructed evidence, separate obligations, and original input preservation"
+    conjuncts:
+      - "every source context -> same minimal reading and Extension carrier with a uniformly toggled Extension value"
+      - "all source contexts -> involutive context autoequivalence with actual morphism action in the thin category"
+      - "fixed source equation system -> exact transport with identity Atom/object/equation/observable data and constructed context equivalence"
+      - "fixed source package -> nonidentity involutive total map and invariant fixed raw restriction system"
+    undischarged_assumptions:
+      - "no complete local geometry lift has yet been accepted"
+      - "no claim that the action survives the initial doctrine transport, exact pull/top transport, or normalization"
+      - "no source term for an actual residual element is constructed"
+    acceptance_point: "This cycle proves existence of a nonidentity Extension direction at the fixed source exact core.  It is a predecessor to, not a substitute for, an actual residual normalized automorphism or source coverage."
+    port_status: not-applicable
+review:
+  independent_lanes:
+    math_a: pending
+    math_b: pending
+    lean_a: pending
+    lean_b: pending
+  resolved_findings:
+    - "removed the unchecked complete-geometry draft after focused checking exposed dependent overlap and local-naturality obligations"
+    - "scoped the module and report to the fixed source exact-core action rather than an actual residual-kernel element"
+  direct_response:
+    verdict: pending
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "a uniform Extension-value involution exists on every source context without restricting the context family"
+      - "the canonical source context preorder admits both readable directions and hence the full autoequivalence"
+      - "the fixed equation data are compatible with this context action"
+      - "the total source action is involutive, nonidentity, and preserves the fixed raw system"
+    remaining:
+      - "complete geometry overlap and local comparison construction"
+      - "source-to-southwest fiber identification or direct southwest reconstruction"
+      - "actual pull/top/normalization survival and residual-kernel membership"
+      - "source presentation extension and all broader remaining A--F obligations"
+  certificate_provenance:
+    discharged:
+      - "the context equivalence is built from a type-directed Bool recipe and the original Extension-blind preorder"
+      - "nonidentity is witnessed by the explicitly constructed Bool-false context"
+      - "raw invariance is proved by extensionality of the original constant Unit raw system"
+    unresolved:
+      - "complete-geometry and actual-endpoint transport require new dependent constructions, not certificates"
+  proof_use:
+    used:
+      - "the uniform value involution proves the context functor squares to identity"
+      - "the explicit forward/backward restriction maps construct the functor on all thin-category morphisms"
+      - "the context-equivalence square is consumed by exact-transport and package composition laws"
+      - "the moved Bool context refutes equality with PackageTotalHom.id"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check for FiniteAxisFoldResidualContextAction: PASS"
+    - "namespace axiom audit: 28 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct and focused-check the complete-geometry lift, then rebuild or transport the toggle on the southwest geometry fiber before applying the already fixed exact left-pull/top/normalization route."
 ```
