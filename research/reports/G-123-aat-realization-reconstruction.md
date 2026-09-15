@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 58 source-law quotient comparison group, all-elements source classification, and fixed raw-group evaluation
+- current proof obligation: Cycle 59 kernel-extended finite presentation and a nontrivial raw-comparison element constructed from source recipes
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: prove endpoint-automorphism coverage from source syntax or record its exact obstruction, then lift the canonical normalization section and restricted-kernel fibers without treating semantic group elements as syntax constants
+- next proof obligation: prove that the Cycle 59 raw comparison element lies nontrivially in the actual comparison restriction kernel, then extend source coverage toward the canonical section and every lift fiber without treating semantic group elements as syntax constants
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 59 delta | Cycle 56のambient endpoint recipeを既存source-law構文へ有限leafとして加え、意味的等号を合同へ入れず商圏・decoder・比較群を再構成し、同じambient sourceをraw比較保存pairへ延長する | `FiniteAxisFoldKernelExtendedSyntax`, `evaluate`, `size`, `Congruent`, `evaluate_eq_of_congruent`, `ambientDirect_not_congruent_identity`, `FiniteAxisFoldKernelExtendedPresentation`, `decoder`, `barAlphaIso`, `directAmbientAut`, `viaBaseAmbientAut`, `directAmbientAut_ne_one`, `ComparisonSubgroup`, `ambientComparisonElement`, `directAutomorphismEvaluationHom`, `viaBaseAutomorphismEvaluationHom`, `endpointAutomorphisms_preserve_actualBarAlpha`, `comparisonEvaluationHom`, `ambientComparisonElement_evaluation_source`, `_source_ne_one`, `_target_ne_one`, `_ne_ambientPair` | 固定finite axis-fold入力; Cycle 54/55のsource-law構文・合同・商圏; Cycle 56の入力由来ambient recipeと位数2/nonidentity; Cycle 58の一般表示比較群section | 旧構文を保つ`base`、二つの固定recipe leaf、source lawだけの合同とambient対identityの固定負例、商圏とdecoder、表示ambient自己同型、source conjugationから作る表示比較元、全表示比較元のraw評価、この元の両端非自明性、Cycle 57のtarget恒等pairとの差 | Dの失われたambient変更について、raw比較を保つ相手側変更が表示構文から実際に構成でき、単なるsyntactic distinctionでないことを示す | 一つの固定raw比較元のみでsemantic endpoint Aut/raw比較群の全元coverageではない; canonical normalization section、actual restriction kernel membershipと全lift fiber、底固定群、一般入力、B/E/Fは未完了 |
 | D Cycle 58 delta | `barAlpha`を含むsource-law quotient圏の内部で比較群を定め、表示群の全元を有限syntax quotientのsource自己同型で分類し、固定G-122 raw比較群へ同じ両端pairを評価する | `GeneratedArrowComparisonSubgroup`, `presentationIsoConjugationAutomorphismHom`, `generatedArrowComparisonSectionHom`, `generatedArrowComparisonSourceHom`, `generatedArrowComparisonSection_source_rightInverse`, `generatedArrowComparisonSourceEquiv`, `FiniteAxisFoldGeneratedComparisonSubgroup`, `finiteAxisFoldDirectPresentationAutomorphismHom`, `finiteAxisFoldViaBasePresentationAutomorphismHom`, `finiteAxisFoldPresentationEndpointAutomorphisms_preserve_barAlpha`, `finiteAxisFoldGeneratedComparisonEvaluationHom`, `finiteAxisFoldGeneratedComparisonEvaluation_section` | 一般の圏と表示Iso; 固定例ではCycle 54/55のsource-law quotientとsource-constructed `barAlphaIso`、同じfinite axis-fold入力、既存endpoint admissibility | decoder等号で定義しない表示比較部分群、その全元のsource-conjugation分類と群同型、両endpoint decoderの群準同型、表示可換正方形をdecoderで運んだ実raw比較群membership、sectionのpair全体での可換性 | Dの「表示側の全比較群元」を意味側群元の再入力なしに定式化し、raw比較群への群準同型を固定する | endpoint decoderのAut全射性が未証明のためsemantic raw群の全元回復は未完了; canonical normalization section、restriction kernel、全lift fiber、底固定群、一般入力、B/E/Fは未完了 |
 | D Cycle 57 delta | Cycle 56の固定source recipeから得たambient核元を実`barAlpha`のendpoint pairへ接続し、正規化後の比較は保つが元比較は保たないこと、底・係数成分を固定することを同じpairで証明する | `finiteAxisFoldDirectAdmissibleEndpoint_eq`, `finiteAxisFoldViaBaseAdmissibleEndpoint_eq`, `finiteAxisFoldDisplayedAmbientKernelComparisonPair`, `_eq_authored`, `_fst`, `_fst_ne_one`, `_normalization`, `_normalized_mem`, `_not_raw_mem`, `_component_packet` | カード固定finite axis-fold入力とCycle 56の`direct` recipe評価; G-122のaccepted `authoredExactAmbientKernelComparisonPair`と比較群定理 | 表示recipe由来pairと既存G-122 witnessのexact equality、source非恒等、normalization endpoint homでidentity、normalized比較群membership、raw比較群nonmembership、両端の底と係数identity packet | Dの「ambient核元は元比較を保たない」を表示側の同じ固定pairへ戻し、ambient核とrestriction kernelを型・membershipで分離 | generated `barBeta`側の判定、section/その表示、restriction kernel、全lift fiber、元/底固定全比較群の全元、一般入力、B/E/Fは未完了 |
 | D Cycle 56 delta | 固定finite axis-foldのdirect/via-base両端で、canonical正規化に消えるambientな核の元を、完成自己同型・admissibility証拠・比較群要素を入力せず有限recipeから構成する | `finiteAxisFoldDirectEndpointAdmissible`, `finiteAxisFoldViaBaseEndpointAdmissible`, `FiniteAxisFoldAmbientKernelCode`, `endpoint`, `admissibleEndpoint`, `evaluate`, `evaluateAut`, `evaluate_ne_identity`, `evaluate_comp_self`, `normalization_comp_evaluate`, `evaluate_comp_normalization`, `admissibleEvaluateAut`, `admissibleEvaluateAut_ne_one`, `normalization_map_admissibleEvaluateAut`, `admissibleEvaluateAut_mem_normalizationKernel`, `no_code_evaluates_to_identity` | カード固定の`finiteAxisFoldBCDatumSquare`、cell `second`、係数`Int`、同じgeometry/raw input; 固定support packageの既存admissibilityとexact pull/pushによるadmissibility transport | endpoint tagだけを持つ2要素code、元southwest admissibilityから両endpoint admissibilityを構成、各codeを非恒等な位数2のcomplete-geometry自己同型へ評価、canonical正規化の左右吸収、独立admissible-geometry category上のnormalization automorphism homのkernel membership | Dでambientな核を正規化結果から推測せず表示側source recipeとして回復する固定例; 後続の比較保存判定と二種類の核の分離 | この2元はまだ実`barAlpha`/`barBeta`を保つpairとして未分類; 元の全比較群・底固定群の全元、restriction kernel、section、全lift fiber、一般入力へのsyntax、B/E/Fは未完了 |
@@ -199,6 +200,7 @@ audits:
   blocking_findings: []
   next_obligation: "Construct protocol semantics, finite generator tables, res/ext/J, and the four reconstruction properties without restricting the independently defined natural transformations."
 ```
+
 
 ## Cycle 2 — Protocol semantics and finite-presentation reconstruction
 
@@ -5874,4 +5876,144 @@ audits:
     - "fresh Math A/B and Lean A/B review: PASS with no findings"
   blocking_findings: []
   next_obligation: "Establish source-syntax coverage for fixed endpoint automorphisms or isolate an exact counterexample, then use that result to decide whether the semantic raw group and canonical normalization section can be lifted without answer encoding."
+```
+
+## Cycle 59 — Kernel-extended presentation and nontrivial raw comparison
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 59
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 2b73406ca83fc4e257cfe54ad54d3a6aaff223ce
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 58 classified every displayed comparison element but had no displayed preimage for the fixed nontrivial ambient endpoint automorphism"
+  proof_dag_predecessors:
+    - "Cycle 54/55 source-law quotient category and source-constructed barAlpha isomorphism"
+    - "Cycle 56 finite source recipes for the two nontrivial ambient endpoint involutions"
+    - "Cycle 58 source-conjugation section for every displayed source automorphism"
+  proof_obligation: "Extend the fixed finite presentation by source-provenanced ambient leaves, reconstruct its quotient category and decoder, and use the source-conjugation section to construct a nontrivial actual raw comparison pair"
+  selection_reason: "The endpoint-coverage gap can first be reduced by adjoining the already constructed fixed-input recipes. This tests that a lost ambient change can be displayed and paired across barAlpha without accepting a completed semantic automorphism or comparison element as input."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldKernelExtendedPresentation.lean
+  risks:
+    - "use semantic equality as a congruence constructor"
+    - "accept a completed semantic automorphism or raw comparison-group element as a syntax leaf"
+    - "drop terms or laws from the old source syntax instead of retaining them through the base constructor"
+    - "identify the raw-preserving conjugate pair with the Cycle 57 ambient pair having trivial target"
+    - "claim endpoint or raw-group surjectivity from one constructed element"
+  unchecked:
+    - "membership and nontriviality in the actual comparison restriction kernel"
+    - "surjectivity of the extended endpoint syntax decoders on actual admissible automorphisms"
+    - "full recovery of the semantic raw and normalized comparison groups"
+    - "canonical normalization section, every lift fiber, bottom-fixed group, general input, and remaining B/E/F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Added a specialized finite syntax extension whose only new leaves are the two fixed Cycle 56 source recipes, embedded the entire old source syntax, generated congruence only from source laws, reconstructed the quotient category and decoder, and retained the source-constructed barAlpha isomorphism. Constructed a nonidentity displayed direct automorphism and its source-conjugate comparison element, decoded every extended displayed comparison element into the exact raw G-122 group, and proved that the selected element has the exact nontrivial ambient source, a forced nonidentity target, and is distinct from the Cycle 57 source-ambient/target-identity pair that failed raw preservation."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldKernelExtendedPresentation.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldKernelExtendedSyntax
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldKernelExtendedSyntax.evaluate_eq_of_congruent
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldKernelExtendedSyntax.ambientDirect_not_congruent_identity
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldKernelExtendedPresentation
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldKernelExtendedPresentation.decoder
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldKernelExtendedPresentation.barAlphaIso
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldKernelExtendedPresentation.directAmbientAut
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldKernelExtendedPresentation.directAmbientAut_ne_one
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldKernelExtendedPresentation.ambientComparisonElement
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldKernelExtendedPresentation.endpointAutomorphisms_preserve_actualBarAlpha
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldKernelExtendedPresentation.comparisonEvaluationHom
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldKernelExtendedPresentation.ambientComparisonElement_evaluation_source
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldKernelExtendedPresentation.ambientComparisonElement_evaluation_source_ne_one
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldKernelExtendedPresentation.ambientComparisonElement_evaluation_target_ne_one
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldKernelExtendedPresentation.ambientComparisonElement_evaluation_ne_ambientPair
+  claim_mapping:
+    theorem_names:
+      - FiniteAxisFoldKernelExtendedSyntax.evaluate_eq_of_congruent
+      - FiniteAxisFoldKernelExtendedSyntax.ambientDirect_not_congruent_identity
+      - FiniteAxisFoldKernelExtendedPresentation.directAmbientAut_ne_one
+      - FiniteAxisFoldKernelExtendedPresentation.endpointAutomorphisms_preserve_actualBarAlpha
+      - FiniteAxisFoldKernelExtendedPresentation.ambientComparisonElement_evaluation_source
+      - FiniteAxisFoldKernelExtendedPresentation.ambientComparisonElement_evaluation_target_ne_one
+      - FiniteAxisFoldKernelExtendedPresentation.ambientComparisonElement_evaluation_ne_ambientPair
+    source_labels:
+      - "GOAL D1: comparison-preserving endpoint automorphism pairs"
+      - "GOAL D2: distinguish ambient normalization loss from comparison-restriction loss"
+      - "GOAL A/D: finite presentation relative to fixed primitive input"
+      - "n1014: do not re-input completed semantic morphisms or comparison elements"
+    conjuncts:
+      - "fixed source recipes -> finite endpoint-typed syntax leaves"
+      - "source laws only -> sound quotient category and decoder"
+      - "direct ambient leaf versus retained identity -> fixed negative congruence instance"
+      - "displayed source involution -> displayed barAlpha-preserving conjugate pair"
+      - "displayed comparison pair -> actual raw G-122 comparison pair"
+      - "same ambient source -> forced nonidentity target and distinction from the non-preserving target-identity pair"
+    undischarged_assumptions:
+      - "only one fixed ambient source automorphism has been given a raw-preserving displayed lift"
+      - "the actual comparison restriction kernel membership has not yet been proved"
+      - "semantic endpoint and comparison-group surjectivity remain open"
+      - "the canonical normalization section, every lift fiber, bottom-fixed group, general input, and remaining B/E/F obligations remain open"
+    acceptance_point: "This is a source-provenanced nontrivial element in the fixed actual raw comparison group and an extension retaining every old syntax term and source law through the base constructor. Faithfulness of an induced old-quotient map is not claimed. It is not full semantic group recovery, not the actual restriction-kernel theorem, and not G-123 completion."
+    port_status: not-applicable
+review:
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass-after-noncentral-fix
+    lean_b: pass-after-noncentral-fix
+  resolved_findings:
+    - "added the required Implementation notes and declaration-level documentation"
+    - "replaced the unproved conservative-extension wording by the exact constructor-level retention claim and disclaimed induced quotient faithfulness"
+    - "added ambientDirect_not_congruent_identity as a fixed negative instance for the new public congruence predicate"
+    - "synchronized the post-fix validation count at 104 declarations"
+  direct_response:
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "finite source-provenanced leaves for the two fixed ambient endpoint involutions"
+      - "source-law quotient category, decoder, and source-constructed barAlpha isomorphism after the extension"
+      - "a nonidentity displayed source automorphism and its displayed comparison conjugate"
+      - "actual raw comparison membership for every extended displayed comparison element"
+      - "exact source evaluation, target nonidentity, and separation from the Cycle 57 non-preserving pair"
+    remaining:
+      - "actual restriction-kernel membership and nontriviality"
+      - "semantic endpoint-automorphism coverage and full raw/normalized-group recovery"
+      - "canonical normalization section and all lift fibers"
+      - "bottom-fixed group, general input, and remaining B/E/F"
+  certificate_provenance:
+    discharged:
+      - "the new leaves are endpoint tags evaluating fixed Cycle 56 recipes constructed from the original finite-axis-fold input"
+      - "the congruence has no semantic-equality constructor"
+      - "the raw pair is produced by the general source-conjugation section and decoder, not accepted as input"
+    unresolved:
+      - "no construction of displayed preimages for arbitrary semantic endpoint or comparison automorphisms"
+  proof_use:
+    used:
+      - "both Cycle 56 involution-square proofs in the new source congruence soundness theorem"
+      - "Cycle 56 direct semantic nonidentity and congruence soundness in the fixed negative congruence theorem"
+      - "Cycle 56 semantic nonidentity to prove the quotient automorphism is nonidentity"
+      - "the displayed comparison equation to establish actual raw membership"
+      - "raw comparison membership and cancellation by barAlpha to force target nonidentity"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check for FiniteAxisFoldKernelExtendedPresentation: PASS"
+    - "registered exact target build: PASS (4291 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 104 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh Math A/B and Lean A/B review: PASS after noncentral fixes"
+  blocking_findings: []
+  next_obligation: "Show that the constructed raw comparison pair maps to identity under the actual normalization comparison hom while remaining nonidentity, thereby constructing a source-provenanced nontrivial restriction-kernel element."
 ```
