@@ -427,6 +427,69 @@ theorem PrimitiveRawRestriction.g122Value_maps_JStruct
   letI := input.coefficientCommRing
   exact reference.g122Value.maps_JStruct
 
+/-- The recovered raw restriction on an identity context hom has exactly the
+identity polynomial map supplied by the original raw system. -/
+theorem PrimitiveRawRestriction.g122Value_identity_polynomialMap
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (context : let _ := input.atomDecidableEq
+      X.selectedGeometry.toAATSite.category)
+    (reference : PrimitiveRawRestriction (.g122 input) (.g122 X)
+      (.g122 context context (𝟙 context))) :
+    let _ := input.atomDecidableEq
+    let _ := input.coefficientCommRing
+    reference.g122Value.restriction.polynomialMap =
+      RingHom.id (LawAlgebra.FreeTypedCommAlg
+        (X.raw.coordFamily context) input.Coefficient) := by
+  letI := input.atomDecidableEq
+  letI := input.coefficientCommRing
+  exact X.raw.identity_polynomialMap context
+
+/-- The recovered raw restriction on a composite has exactly the composite
+polynomial map of the recovered restrictions on its two source factors. -/
+theorem PrimitiveRawRestriction.g122Value_composition_polynomialMap
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {first middle last : let _ := input.atomDecidableEq
+      X.selectedGeometry.toAATSite.category}
+    (f : first ⟶ middle) (g : middle ⟶ last)
+    (firstReference : PrimitiveRawRestriction (.g122 input) (.g122 X)
+      (.g122 first middle f))
+    (secondReference : PrimitiveRawRestriction (.g122 input) (.g122 X)
+      (.g122 middle last g))
+    (compositeReference : PrimitiveRawRestriction (.g122 input) (.g122 X)
+      (.g122 first last (f ≫ g))) :
+    let _ := input.atomDecidableEq
+    let _ := input.coefficientCommRing
+    compositeReference.g122Value.restriction.polynomialMap =
+      firstReference.g122Value.restriction.polynomialMap.comp
+        secondReference.g122Value.restriction.polynomialMap := by
+  letI := input.atomDecidableEq
+  letI := input.coefficientCommRing
+  exact X.raw.composition_polynomialMap f g
+
+/-- A nullary role naming the exact coefficient carrier and commutative-ring
+structure fixed by an original G-122 family input.  No coefficient map between
+two realizations is accepted here. -/
+inductive PrimitiveCoefficientRing :
+    (theta : ClosedFamilyParameter.{u, v}) → FamilyRealization theta →
+      Type (max (u + 1) (v + 1))
+  | g122 {input : G122FamilyInput.{u, v}} {X : G122CellInput input} :
+      PrimitiveCoefficientRing (.g122 input) (.g122 X)
+
+/-- Recover the identical coefficient carrier from the original G-122 family
+input named by a coefficient primitive. -/
+def PrimitiveCoefficientRing.g122Carrier
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (_reference : PrimitiveCoefficientRing (.g122 input) (.g122 X)) :=
+  input.Coefficient
+
+/-- Recover the accepted commutative-ring structure on the original G-122
+coefficient carrier; this constructs no coefficient homomorphism. -/
+def PrimitiveCoefficientRing.g122CommRing
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (_reference : PrimitiveCoefficientRing (.g122 input) (.g122 X)) :
+    CommRing input.Coefficient :=
+  input.coefficientCommRing
+
 /-- A nullary role naming the exact coverage-requirements datum selected in an
 original G-122 geometry input.  The datum is read from `X`; it is not accepted
 again as a payload or as preservation evidence for a geometry morphism. -/
