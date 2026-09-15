@@ -373,7 +373,7 @@ theorem atom_maps_entry
       (targetDisplay.atoms.value (action.atomIndexMap i)) :=
   ⟨i, rfl, rfl⟩
 
-/-- Cycle 30 presentation-level extensionality: two finite generator actions
+/-- Cycle 30 finite generator-action-level extensionality: two finite actions
 with the same Atom and object index maps are equal.  The only remaining fields
 are propositions over those fixed finite maps, so this uses proof irrelevance
 and no semantic extension or completeness premise. -/
@@ -390,7 +390,7 @@ and no semantic extension or completeness premise. -/
   cases hobject
   rfl
 
-/-- Cycle 30 presentation-level identity on one finite G-122 display.  It is
+/-- Cycle 30 finite generator-action-level identity on one G-122 display.  It is
 constructed from identity index maps and reuses the source local equations;
 no additional premise or semantic carrier map is supplied. -/
 def id {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
@@ -402,7 +402,7 @@ def id {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
   mapsRelation _ _ _ h := h
   mapsIdentification _ _ _ h := h
 
-/-- Cycle 30 presentation-level composition of finite G-122 display actions.
+/-- Cycle 30 finite generator-action-level composition of G-122 display actions.
 It uses only composition of their finite index maps and successive use of the
 two actions' local equations, leaving semantic extension for a later stage. -/
 def comp
@@ -427,7 +427,7 @@ def comp
       (first.atomIndexMap firstAtom) (first.atomIndexMap secondAtom)
       (first.mapsIdentification objectIndex firstAtom secondAtom h)
 
-/-- Simp normal form removes a presentation-level identity on the source side:
+/-- Simp normal form removes a finite generator-action identity on the source side:
 `comp (id sourceDisplay) action` reduces to `action`. -/
 @[simp] theorem id_comp
     {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
@@ -437,7 +437,7 @@ def comp
     comp (id sourceDisplay) action = action := by
   apply ext <;> rfl
 
-/-- Simp normal form removes a presentation-level identity on the target side:
+/-- Simp normal form removes a finite generator-action identity on the target side:
 `comp action (id targetDisplay)` reduces to `action`. -/
 @[simp] theorem comp_id
     {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
