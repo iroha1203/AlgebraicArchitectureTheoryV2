@@ -2700,7 +2700,7 @@ audits:
       - "all remaining A--F obligations"
   certificate_provenance:
     discharged:
-      - "the decoder and surjectivity are constructed from the raw-path embedding and quotient induction, not accepted as fields"
+      - "the decoder and surjectivity are constructed from the raw-path embedding and canonical quotient-functor representative extraction, not accepted as fields"
     unresolved:
       - "the supplied relation's source-law provenance and the final grammar's completeness"
   structure_field_escape: "the quotient stores only syntactic relation classes; it has no semantic morphism, decoder image, fullness, retract, representative, or generation field"

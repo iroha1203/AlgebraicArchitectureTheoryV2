@@ -27,9 +27,10 @@ Source loops, or establish final `Sigma`, `D_Theta`, or `R_Theta` membership.
 ## Implementation notes
 
 The decoder is the composite of the already constructed raw-path decoder and
-the canonical quotient functor.  Surjectivity is proved by quotient induction,
-so no representative, normalization, completed semantic morphism, or
-surjectivity certificate is stored in the presentation.  An arbitrary
+the canonical quotient functor.  Surjectivity is proved by extracting a raw
+representative through canonical quotient-functor fullness, so no
+normalization, completed semantic morphism, or surjectivity certificate is
+stored in the presentation.  An arbitrary
 `CategoryTheory.HomRel` is deliberately accepted at the syntactic layer;
 Mathlib's quotient construction supplies the composition closure and category
 laws.  This maximizes the relation freedom of this candidate while keeping the
