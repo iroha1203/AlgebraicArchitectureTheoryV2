@@ -39,6 +39,7 @@ branch, not yet the cross-family final realization category.
 namespace AAT.AG.RealizationReconstruction
 
 open CategoryTheory AtomFoundation DoctrineFiberProduct GeometryTransport
+open CrossStageCoherence
 open FullGeometryNormalization TransportCoherence
 
 universe u v
@@ -339,6 +340,24 @@ noncomputable def barAlpha (Θ : G122FamilyInput.{u, v})
   exact (authoredExactBarAlphaIsoAt Θ.authored input.cell Θ.Coefficient
     (input.fixedGeometry Θ)).hom.1
 
+/-- The actual five-factor `barAlpha` remains an isomorphism after embedding
+both generated endpoints and all complete-geometry morphisms in this category.
+The inverse is the underlying morphism of the source-generated inverse, not an
+additional input or a display certificate. -/
+noncomputable def barAlphaIso (Θ : G122FamilyInput.{u, v})
+    (input : G122CellInput Θ) :
+    G122GeneratedGeometryObject.direct input ≅
+      G122GeneratedGeometryObject.viaBase input := by
+  letI := Θ.atomDecidableEq
+  letI := Θ.coefficientCommRing
+  let comparison := authoredExactBarAlphaIsoAt Θ.authored input.cell
+    Θ.Coefficient (input.fixedGeometry Θ)
+  exact
+    { hom := comparison.hom.1
+      inv := comparison.inv.1
+      hom_inv_id := congrArg Subtype.val comparison.hom_inv_id
+      inv_hom_id := congrArg Subtype.val comparison.inv_hom_id }
+
 /-- The actual cochain-selected `barBeta` is a morphism between the same two
 generated northeast endpoint objects. -/
 noncomputable def barBeta (Θ : G122FamilyInput.{u, v})
@@ -445,11 +464,53 @@ noncomputable def finiteAxisFoldG122CellInput :
     (finiteAxisFoldFixedCoefficientGeometryFamily
       (Discrete.mk DoubleDiamondTwoCell.second)).raw
 
+/-- The card-mandated constant-one cochain case on exactly the same finite
+axis-fold cell and geometry input. -/
+noncomputable def finiteAxisFoldIdentityCochainG122CellInput :
+    G122CellInput finiteAxisFoldG122FamilyInput where
+  cell := Discrete.mk DoubleDiamondTwoCell.second
+  cochain := identityDefectCochain finiteAxisFoldBCDatumSquare.toTransportData
+  selectedGeometry :=
+    (finiteAxisFoldFixedCoefficientGeometryFamily
+      (Discrete.mk DoubleDiamondTwoCell.second)).geometry
+  raw :=
+    (finiteAxisFoldFixedCoefficientGeometryFamily
+      (Discrete.mk DoubleDiamondTwoCell.second)).raw
+
 /-- Reassembly preserves the exact fixed geometry input used by G-122(C). -/
 theorem finiteAxisFoldG122CellInput_fixedGeometry :
     finiteAxisFoldG122CellInput.fixedGeometry finiteAxisFoldG122FamilyInput =
       finiteAxisFoldFixedCoefficientGeometryFamily
         (Discrete.mk DoubleDiamondTwoCell.second) :=
+  rfl
+
+/-- Reassembly of the constant-one case preserves the same fixed geometry
+input; only the cochain differs from the generated-cochain case. -/
+theorem finiteAxisFoldIdentityCochainG122CellInput_fixedGeometry :
+    finiteAxisFoldIdentityCochainG122CellInput.fixedGeometry
+        finiteAxisFoldG122FamilyInput =
+      finiteAxisFoldFixedCoefficientGeometryFamily
+        (Discrete.mk DoubleDiamondTwoCell.second) :=
+  rfl
+
+/-- The generated direct endpoint package is unchanged when only the cochain
+is replaced by the constant-one cochain. -/
+theorem finiteAxisFold_direct_package_identityCochain :
+    (G122GeneratedGeometryObject.direct finiteAxisFoldG122CellInput).package
+        finiteAxisFoldG122FamilyInput =
+      (G122GeneratedGeometryObject.direct
+        finiteAxisFoldIdentityCochainG122CellInput).package
+          finiteAxisFoldG122FamilyInput :=
+  rfl
+
+/-- The generated via-base endpoint package is unchanged when only the
+cochain is replaced by the constant-one cochain. -/
+theorem finiteAxisFold_viaBase_package_identityCochain :
+    (G122GeneratedGeometryObject.viaBase finiteAxisFoldG122CellInput).package
+        finiteAxisFoldG122FamilyInput =
+      (G122GeneratedGeometryObject.viaBase
+        finiteAxisFoldIdentityCochainG122CellInput).package
+          finiteAxisFoldG122FamilyInput :=
   rfl
 
 /-- The finite specialization generates the same actual comparison classified
@@ -463,6 +524,178 @@ theorem finiteAxisFoldG122CellInput_barBeta :
         (finiteAxisFoldFixedCoefficientGeometryFamily
           (Discrete.mk DoubleDiamondTwoCell.second)) :=
   rfl
+
+/-- Cycle 43's embedded comparison at the generated-cochain input is exactly
+the fixed nontrivial G-122 comparison, with only the fiber-incidence proof
+forgotten. -/
+theorem finiteAxisFold_generatedGeometry_barBeta :
+    G122GeneratedGeometryObject.barBeta finiteAxisFoldG122FamilyInput
+        finiteAxisFoldG122CellInput =
+      (authoredExactBarBetaAt finiteAxisFoldBCDatumSquare
+        (Discrete.mk DoubleDiamondTwoCell.second)
+        (initialRawDefectCochain finiteAxisFoldBCDatumSquare.toTransportData)
+        Int
+        (finiteAxisFoldFixedCoefficientGeometryFamily
+          (Discrete.mk DoubleDiamondTwoCell.second))).1 :=
+  rfl
+
+/-- The actual five-factor `barAlpha` is shared by the generated and
+constant-one cochain cases on the same fixed geometry. -/
+theorem finiteAxisFold_barAlpha_identityCochain :
+    G122GeneratedGeometryObject.barAlpha finiteAxisFoldG122FamilyInput
+        finiteAxisFoldG122CellInput =
+      G122GeneratedGeometryObject.barAlpha finiteAxisFoldG122FamilyInput
+        finiteAxisFoldIdentityCochainG122CellInput :=
+  rfl
+
+/-- In the generated-cochain case, the embedded target projector is the
+actual transported canonical normalization route selected by G-122. -/
+theorem finiteAxisFold_generatedGeometry_barD_eq_normalizationRoute :
+    G122GeneratedGeometryObject.barD finiteAxisFoldG122FamilyInput
+        finiteAxisFoldG122CellInput =
+      ((exactGeometryPullFunctor
+          (authoredExactRightInput finiteAxisFoldBCDatumSquare)).map
+        ((geomFiberTransportFunctor
+          finiteAxisFoldBCDatumSquare.context.square.semantic.square.bottom).map
+          (canonicalGeometryFiberNormalization
+            (authoredSouthwestGeometryFiberAt finiteAxisFoldBCDatumSquare
+              (Discrete.mk DoubleDiamondTwoCell.second) Int
+              (finiteAxisFoldFixedCoefficientGeometryFamily
+                (Discrete.mk DoubleDiamondTwoCell.second)))
+            (by
+              exact
+                (finiteAxisFold_idempotentExchange_witnessPacket).2.1)))).1 := by
+  exact congrArg Subtype.val
+    (authoredExactBarDAt_eq_normalization_route finiteAxisFoldBCDatumSquare
+      (Discrete.mk DoubleDiamondTwoCell.second)
+      (initialRawDefectCochain finiteAxisFoldBCDatumSquare.toTransportData)
+      Int
+      (finiteAxisFoldFixedCoefficientGeometryFamily
+        (Discrete.mk DoubleDiamondTwoCell.second))
+      ⟨(finiteAxisFold_idempotentExchange_witnessPacket).1,
+        (finiteAxisFold_idempotentExchange_witnessPacket).2.1⟩)
+
+/-- For the constant-one cochain on the same input geometry, the embedded
+target projector is the identity. -/
+theorem finiteAxisFold_identityCochain_barD_eq_id :
+    G122GeneratedGeometryObject.barD finiteAxisFoldG122FamilyInput
+        finiteAxisFoldIdentityCochainG122CellInput =
+      G122GeneratedGeometryObject.id finiteAxisFoldG122FamilyInput
+        (.viaBase finiteAxisFoldIdentityCochainG122CellInput) := by
+  exact congrArg Subtype.val
+    (authoredExactBarDAt_eq_id finiteAxisFoldBCDatumSquare
+      (Discrete.mk DoubleDiamondTwoCell.second)
+      (identityDefectCochain finiteAxisFoldBCDatumSquare.toTransportData)
+      Int
+      (finiteAxisFoldFixedCoefficientGeometryFamily
+        (Discrete.mk DoubleDiamondTwoCell.second))
+      (by
+        intro selected
+        exact selected.1 rfl))
+
+/-- Thus the constant-one cochain comparison on the fixed input is exactly
+the same actual `barAlpha`, not a substituted comparison. -/
+theorem finiteAxisFold_identityCochain_barBeta_eq_barAlpha :
+    G122GeneratedGeometryObject.barBeta finiteAxisFoldG122FamilyInput
+        finiteAxisFoldIdentityCochainG122CellInput =
+      G122GeneratedGeometryObject.barAlpha finiteAxisFoldG122FamilyInput
+        finiteAxisFoldIdentityCochainG122CellInput := by
+  rw [G122GeneratedGeometryObject.barBeta_factor,
+    finiteAxisFold_identityCochain_barD_eq_id,
+    G122GeneratedGeometryObject.comp_id]
+
+/-- The fixed generated-cochain `barBeta` remains noninvertible in the
+generated-object category.  Any inverse of its underlying complete-geometry
+arrow would induce an inverse of the original fiber arrow, contradicting the
+accepted G-122 finite witness. -/
+theorem finiteAxisFold_generatedGeometry_barBeta_not_isIso :
+    ¬ @IsIso
+      (G122GeneratedGeometryObject finiteAxisFoldG122FamilyInput)
+      (G122GeneratedGeometryObject.category finiteAxisFoldG122FamilyInput)
+      (G122GeneratedGeometryObject.direct finiteAxisFoldG122CellInput)
+      (G122GeneratedGeometryObject.viaBase finiteAxisFoldG122CellInput)
+      (G122GeneratedGeometryObject.barBeta finiteAxisFoldG122FamilyInput
+        finiteAxisFoldG122CellInput) := by
+  intro generatedIso
+  letI : @IsIso
+      (G122GeneratedGeometryObject finiteAxisFoldG122FamilyInput)
+      (G122GeneratedGeometryObject.category finiteAxisFoldG122FamilyInput)
+      (G122GeneratedGeometryObject.direct finiteAxisFoldG122CellInput)
+      (G122GeneratedGeometryObject.viaBase finiteAxisFoldG122CellInput)
+      (G122GeneratedGeometryObject.barBeta finiteAxisFoldG122FamilyInput
+        finiteAxisFoldG122CellInput) := generatedIso
+  let inverse := @inv
+    (G122GeneratedGeometryObject finiteAxisFoldG122FamilyInput)
+    (G122GeneratedGeometryObject.category finiteAxisFoldG122FamilyInput)
+    (G122GeneratedGeometryObject.direct finiteAxisFoldG122CellInput)
+    (G122GeneratedGeometryObject.viaBase finiteAxisFoldG122CellInput)
+    (G122GeneratedGeometryObject.barBeta finiteAxisFoldG122FamilyInput
+      finiteAxisFoldG122CellInput) _
+  letI : @IsIso
+      (GeomReadCategory FiniteModel.carrier)
+      (geometryTotalCategory FiniteModel.carrier)
+      _ _
+      (G122GeneratedGeometryObject.barBeta finiteAxisFoldG122FamilyInput
+        finiteAxisFoldG122CellInput) :=
+    ⟨⟨inverse, by
+      exact @IsIso.hom_inv_id
+        (G122GeneratedGeometryObject finiteAxisFoldG122FamilyInput)
+        (G122GeneratedGeometryObject.category finiteAxisFoldG122FamilyInput)
+        (G122GeneratedGeometryObject.direct finiteAxisFoldG122CellInput)
+        (G122GeneratedGeometryObject.viaBase finiteAxisFoldG122CellInput)
+        (G122GeneratedGeometryObject.barBeta finiteAxisFoldG122FamilyInput
+          finiteAxisFoldG122CellInput) _, by
+      exact @IsIso.inv_hom_id
+        (G122GeneratedGeometryObject finiteAxisFoldG122FamilyInput)
+        (G122GeneratedGeometryObject.category finiteAxisFoldG122FamilyInput)
+        (G122GeneratedGeometryObject.direct finiteAxisFoldG122CellInput)
+        (G122GeneratedGeometryObject.viaBase finiteAxisFoldG122CellInput)
+        (G122GeneratedGeometryObject.barBeta finiteAxisFoldG122FamilyInput
+          finiteAxisFoldG122CellInput) _⟩⟩
+  letI : IsIso
+      (authoredExactBarBetaAt finiteAxisFoldBCDatumSquare
+        (Discrete.mk DoubleDiamondTwoCell.second)
+        (initialRawDefectCochain finiteAxisFoldBCDatumSquare.toTransportData)
+        Int
+        (finiteAxisFoldFixedCoefficientGeometryFamily
+          (Discrete.mk DoubleDiamondTwoCell.second))).1 := by
+    change @IsIso
+      (GeomReadCategory FiniteModel.carrier)
+      (geometryTotalCategory FiniteModel.carrier)
+      _ _
+      (G122GeneratedGeometryObject.barBeta finiteAxisFoldG122FamilyInput
+        finiteAxisFoldG122CellInput)
+    infer_instance
+  have fiberIso : IsIso
+      (authoredExactBarBetaAt finiteAxisFoldBCDatumSquare
+        (Discrete.mk DoubleDiamondTwoCell.second)
+        (initialRawDefectCochain finiteAxisFoldBCDatumSquare.toTransportData)
+        Int
+        (finiteAxisFoldFixedCoefficientGeometryFamily
+          (Discrete.mk DoubleDiamondTwoCell.second))) :=
+    geomFiberHom_isIso_of_total_isIso _
+  exact finiteAxisFold_authoredExactBarBetaAt_not_isIso fiberIso
+
+/-- The constant-one `barBeta` is invertible in the same generated-object
+category, because it is the unchanged five-factor `barAlpha`. -/
+noncomputable def finiteAxisFoldIdentityCochainBarBetaIso :
+    G122GeneratedGeometryObject.direct
+        finiteAxisFoldIdentityCochainG122CellInput ≅
+      G122GeneratedGeometryObject.viaBase
+        finiteAxisFoldIdentityCochainG122CellInput := by
+  let comparison := G122GeneratedGeometryObject.barAlphaIso
+    finiteAxisFoldG122FamilyInput finiteAxisFoldIdentityCochainG122CellInput
+  exact
+    { hom := G122GeneratedGeometryObject.barBeta
+          finiteAxisFoldG122FamilyInput
+          finiteAxisFoldIdentityCochainG122CellInput
+      inv := comparison.inv
+      hom_inv_id := by
+        rw [finiteAxisFold_identityCochain_barBeta_eq_barAlpha]
+        exact comparison.hom_inv_id
+      inv_hom_id := by
+        rw [finiteAxisFold_identityCochain_barBeta_eq_barAlpha]
+        exact comparison.inv_hom_id }
 
 #assert_standard_axioms_only AAT.AG.RealizationReconstruction
 
