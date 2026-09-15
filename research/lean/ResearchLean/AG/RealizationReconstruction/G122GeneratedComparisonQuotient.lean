@@ -4,10 +4,11 @@ import Formal.Util.AssertStandardAxioms
 /-!
 # Quotient category for source-generated G-122 comparisons
 
-This module forms the typed quotient of the Cycle 51 comparison syntax by the
-Cycle 52 source-law congruence.  The relation was generated independently of
-semantic evaluation; semantic soundness is used afterwards to descend the
-decoder to the quotient and to certify the fixed negative instance.
+This module forms the typed quotient of the comparison syntax begun in Cycle
+51 by the source-law congruence begun in Cycle 52; both are extended here with
+the source-constructed `barAlpha` inverse and its laws.  The relation is
+generated independently of semantic evaluation; semantic soundness is used
+afterwards to descend the decoder and certify the fixed negative instance.
 
 The quotient category keeps the exact generated G-122 objects as object data.
 Its arrows are finite syntax classes, composition is induced by typed syntax
@@ -20,8 +21,9 @@ category containing every complete geometry morphism between those objects.
 The object wrapper prevents this finite-presentation category from replacing
 the pre-existing complete-Hom category on `G122GeneratedGeometryObject`.
 Neither quotient equality nor a syntax constructor accepts equality of decoded
-morphisms.  The fixed positive and negative instances show respectively that a
-source law is imposed and that semantic soundness does not collapse the target
+morphisms.  The quotient contains the source-constructed `barAlpha` inverse,
+while the fixed positive and negative instances show respectively that a source
+law is imposed and that semantic soundness does not collapse the target
 projector to the identity.  No fullness, faithfulness, or completeness of the
 source-law congruence is asserted.
 -/
@@ -136,6 +138,34 @@ evaluation. -/
     (term : G122GeneratedComparisonSyntax Θ X Y) :
     decoder.map (classOf term) = term.evaluate :=
   rfl
+
+/-- The source-constructed five-factor comparison is an isomorphism already
+in the quotient presentation category. -/
+noncomputable def barAlphaIso {Θ : G122FamilyInput.{u, v}}
+    (input : G122CellInput Θ) :
+    ofObject (.direct input) ≅ ofObject (.viaBase input) where
+  hom := classOf (.barAlpha input)
+  inv := classOf (.barAlphaInv input)
+  hom_inv_id := Quotient.sound
+    (G122GeneratedComparisonSyntax.Congruent.barAlpha_hom_inv input)
+  inv_hom_id := Quotient.sound
+    (G122GeneratedComparisonSyntax.Congruent.barAlpha_inv_hom input)
+
+/-- The fixed generated cochain comparison remains noninvertible in the
+quotient presentation category. -/
+theorem finiteAxisFold_barBeta_class_not_isIso :
+    ¬ @IsIso
+      (G122GeneratedComparisonPresentation finiteAxisFoldG122FamilyInput)
+      instCategory
+      (ofObject (.direct finiteAxisFoldG122CellInput))
+      (ofObject (.viaBase finiteAxisFoldG122CellInput))
+      (classOf (.barBeta finiteAxisFoldG122CellInput)) := by
+  intro quotientIsIso
+  letI := quotientIsIso
+  have semanticIsIso : IsIso
+      (decoder.map (classOf (.barBeta finiteAxisFoldG122CellInput))) :=
+    Functor.map_isIso decoder _
+  exact finiteAxisFold_generatedGeometry_barBeta_not_isIso semanticIsIso
 
 /-- The fixed generated comparison equals its source-derived factorization in
 the quotient category. -/

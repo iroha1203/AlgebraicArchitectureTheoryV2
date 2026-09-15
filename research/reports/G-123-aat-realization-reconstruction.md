@@ -13,18 +13,19 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 54 source-law quotient category and descended decoder for the generated-comparison syntax fragment
+- current proof obligation: Cycle 55 source-constructed inverse syntax and invertible/noninvertible comparison separation in the quotient category
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the next source-provenanced syntax layer for arbitrary required dependent core, equation, operation, and context morphism data, and prove its restriction/extension theorem without importing completed maps as constants
+- next proof obligation: extend the source-provenanced presentation beyond the comparison generators to the required dependent core, equation, operation, and context morphism data, and prove its restriction/extension theorem without importing completed maps as constants
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/D Cycle 55 delta | 実`barAlpha`の逆を元入力から生成するtyped syntaxとして表示し、source-law商圏内で可逆比較と固定generated `barBeta`の非可逆比較を同じdecoder上で分離する | `G122GeneratedComparisonSyntax.barAlphaInv`, `evaluate_barAlphaInv`, `evaluate_barAlpha_barAlphaInv`, `evaluate_barAlphaInv_barAlpha`, `Congruent.barAlpha_hom_inv`, `Congruent.barAlpha_inv_hom`, `G122GeneratedComparisonPresentation.barAlphaIso`, `finiteAxisFold_barBeta_class_not_isIso` | 任意のG-122 family/cell inputと、そこから既に構成済みの実`barAlphaIso`; Cycle 54 source-law quotient category/decoder; 固定generated-cochain `barBeta`のsemantic非可逆性 | exact逆向きendpointの有限leaf、元入力からの評価、両inverse lawのsource-law合同、商圏内の明示的Iso、decoderがIsIsoを保つことを使う固定`barBeta`非可逆性 | Dの三分類のうち可逆・非可逆を表示圏自身の射性質として保持し、比較群表示へ進む基礎 | 全比較群と底固定群の全元、section、底/係数成分、二核・全lift fiber、全許容Homのsyntax、res/ext/J、B/E/Fは未完了 |
 | A/D Cycle 54 delta | Cycle 51構文をCycle 52のsource-law合同でHomごとに商し、既存の全complete-Hom圏を置換せず別の表示圏とdecoderを構成し、固定正負例を保つ | `G122GeneratedComparisonPresentation`, `ofObject`, `congruentSetoid`, `Hom`, `classOf`, `comp`, `instCategory`, `decoder`, `decoder_map_classOf`, `finiteAxisFold_barBeta_factor_class_eq`, `finiteAxisFold_barD_class_ne_identity_class`, `decoder_map_finiteAxisFold_barD` | 任意のG-122 family/cellからのendpoint-typed syntax; source-law `Congruent` の同値・合成閉包、評価soundness、固定factorization正例とprojector非同値負例 | exact生成objectを保持する別object wrapper、source-law quotient Hom、商上の恒等・合成・圏律、独立全Hom圏へのwell-defined decoder、固定barBeta factorization等号とbarD対identity非等号 | Dの生成比較fragmentを実際の商圏とsemantic decoderへ接続し、後続の全成分syntax拡張の基礎にする | 四operation fragmentは全許容Homを覆わず、合同complete/decoder full・faithful、全成分res/ext/J、冪等分裂、retract生成、D全群・二核・全fiber、E/Fは未完了 |
 | D Cycle 53 delta | 固定finite axis-foldのfive-factor・generated-cochain・constant-oneをCycle 51のsource-provenanced syntax経由で同一semantic Hom面へ評価し、同じ三分類を回復する | `finiteAxisFoldTransportIdentityCochainHom`, `finiteAxisFoldComparisonSyntaxEvaluate`, `finiteAxisFoldComparisonSyntaxSize`, `_eq_one`, `_eq_evaluate`, `finiteAxisFoldSyntax_generatedBarBeta_ne_barAlpha`, `finiteAxisFoldSyntax_identityBarBeta_eq_barAlpha`, 二つのexact fiber iff、`finiteAxisFoldComparisonSyntaxEvaluate_not_injective` | カード固定の同じfamily/cell/ℤ/geometry/raw、generated cochainとconstant-one cochain; Cycle 44のpackage同一性、Cycle 45の実比較分類、Cycle 51 syntax evaluator | 三caseを各1-node syntax leafで表し、constant-one endpoint packageをgenerated endpoint packageへtransportし、旧semantic evaluatorとの全case一致、相違・一致・二fiber・非単射をsyntax経由で証明 | Dの固定三例を有限recipe fragmentへ実接続する回帰面 | transportは固定case専用; 一般syntax quotient/category、全比較群・section・底/係数・二核・全lift fiber、全許容射、B/E/Fは未完了 |
-| A/D Cycle 52 delta | Cycle 51構文の合同をdecoder像の等号で定義せず、圏律とG-122生成法則だけから閉じ、評価soundnessと固定正負例を与える | `G122GeneratedComparisonSyntax.Congruent` と12 constructors、`evaluate_eq_of_congruent`, `finiteAxisFold_barD_ne_identity`, `finiteAxisFold_barBeta_factor_congruent`, `finiteAxisFold_barD_not_congruent_identity` | 任意のG-122 family/cell構文; 圏律と既存`barBeta_factor`・二冪等・二吸収; 固定generated-cochainの`barBeta`非可逆性と`barAlphaIso` | typed反射・対称・推移・合成閉包、source-law generators、評価等号soundness、固定factorization正例、非自明target projector対identityの負例 | D比較fragmentのsource-derived quotient候補と、固定三caseを構文等号で分類する前段 | completeness/decidability/quotient category、constant-oneとの共通endpoint transport、全許容射、res/ext/J、四義務、D全群、E/Fは未完了 |
+| A/D Cycle 52 delta | Cycle 51構文の合同をdecoder像の等号で定義せず、圏律とG-122生成法則だけから閉じ、評価soundnessと固定正負例を与える | `G122GeneratedComparisonSyntax.Congruent` のCycle 52時点の12 constructors（Cycle 55でinverse law 2 constructorsを追加）、`evaluate_eq_of_congruent`, `finiteAxisFold_barD_ne_identity`, `finiteAxisFold_barBeta_factor_congruent`, `finiteAxisFold_barD_not_congruent_identity` | 任意のG-122 family/cell構文; 圏律と既存`barBeta_factor`・二冪等・二吸収; 固定generated-cochainの`barBeta`非可逆性と`barAlphaIso` | typed反射・対称・推移・合成閉包、source-law generators、評価等号soundness、固定factorization正例、非自明target projector対identityの負例 | D比較fragmentのsource-derived quotient候補と、固定三caseを構文等号で分類する前段 | completeness/decidability/quotient category、constant-oneとの共通endpoint transport、全許容射、res/ext/J、四義務、D全群、E/Fは未完了 |
 | A/D Cycle 51 delta | 全点列挙を避け、G-122原入力をleaf parameterとして保持する有限typed構文で、生成された比較とprojectorを同じ文法に置く | `G122GeneratedComparisonSyntax`, `.identity`, `.compose`, `.barAlpha`, `.barBeta`, `.barE`, `.barD`, `evaluate`, `size`, `size_pos`, 各`evaluate_*` law | 任意の一つの`G122FamilyInput`と任意の`G122CellInput`; leafは原cell/cochain/selected geometry/rawを保持するが完成`GeometryTotalHom`を受け取らない | exact endpoint-indexed finite syntax tree、独立意味圏への評価、有限node数、source-derived `barBeta=barAlpha≫barD`、二projector冪等、source/target吸収の評価後等式 | Dの生成比較をparameter-relative有限recipeへ送る最初のfragment; 将来のsource-derived合同と三固定case表示 | 全許容射のsyntax、合同、res/ext/J・全射性/単射性、固定三caseを同一syntax fiberで比較するtransport、全比較群・section・二核・fiber、A全成分、B/E/Fは未完了 |
 | A/B Cycle 50 delta | finite restrictionの一致から全域map一致へ進むためのcoverage使用を実証し、全点列挙方式が許容された無限primitive parameterと両立しないことを型レベルで固定する | `sourceMap_eq_of_surjective`, `lowerAtomEquiv_eq_of_surjective`, `upperAtomEquiv_eq_of_surjective`, `objectMap_eq_of_surjective`, `equationMap_eq_of_surjective`, `invariantMap_eq_of_surjective`, `axisMap_eq_of_surjective`, `finite_source_of_surjective`, `finite_atom_of_surjective`, `finite_object_of_surjective` | Cycle 49の任意probe・任意の二つの全`GeometryTotalHom`・18族`Agreement`; 各対象carrierへのprobe値写像の全射性を外部前提とする | 全射から各source値の有限index preimageを取り、実restriction一致を用いて7つの非依存core map全域一致を構成; source/Atom/object全点coverageから各carrierの`Finite`を構成 | finite observationからextensional equalityへ進む正確なproof-useと、parameter-relative syntaxへ切り替える必要性 | 全射coverageは固定入力から未放電で、無限許容carrierには使用不可; dependent operation/coordinate、equation equivalence、geometry local maps、全Hom equality、res/ext/Jと四義務、D/E/Fは未完了 |
 | A/B/D Cycle 49 delta | Cycles 46--48のprobe選択だけを統合し、全有限観測一致と射分離を外部命題として正確に切り出す | `G122FiniteTotalHomProbe`, `empty`, `Agreement`, `Separates`, `empty_agreement`, `separates_of_subsingleton`, `empty_not_separates_of_ne`, `finiteAxisFoldEmptyTotalHomProbe`, `finiteAxisFoldEmptyTotalHomProbe_not_separates` | 任意の一つの`G122FamilyInput`、任意のgenerated source/targetと全`GeometryTotalHom`; core/equation source/equation target/geometryのprobe選択のみ | 18族のpointwise観測一致predicate、分離性の外部predicate、空probeの全射対一致、subsingleton Homでのみ成立する条件付き正例、固定generated `barBeta ≠ barAlpha`による具体的負例 | source-generated finite coverageを何が放電すべきかのexact proof obligation; 将来の`res`の等号判定面 | 非空固定source probe、required Hom rangeでの分離放電、unit/counitを含むequation transport全体、ext/J・延長・一意性、endpoint表示、四再構成義務、D全体、CS/F |
@@ -5399,4 +5400,108 @@ audits:
     - "fresh Math A/B and Lean A/B review: PASS; no findings after direct report fixes"
   blocking_findings: []
   next_obligation: "Determine and construct the next source-provenanced syntax layer needed to represent arbitrary required dependent core, equation, operation, and context morphism data, then prove its restriction/extension theorem rather than importing completed maps as constants."
+```
+
+## Cycle 55 — Source-constructed inverse and quotient isomorphism separation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 55
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: baaa313bfb0529308be28021c3fe5a0ec5f78dc8
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 54 next_obligation and Issue #4520 accepted Cycle 54 checkpoint"
+  proof_dag_predecessors:
+    - "Cycle 43 source-constructed semantic barAlphaIso"
+    - "Cycles 51-52 generated comparison syntax, source-law congruence, and semantic soundness"
+    - "Cycle 54 quotient presentation category and decoder"
+  proof_obligation: "Represent the source-constructed inverse of barAlpha in the finite typed syntax, impose its two source inverse laws, construct the quotient isomorphism, and prove the fixed generated barBeta remains noninvertible in that same presentation category"
+  selection_reason: "The fixed D classification distinguishes the invertible five-factor comparison from the noninvertible generated comparison; realizing that distinction as a property of presentation arrows is a necessary step toward recovering comparison groups rather than merely comparing decoder values."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122GeneratedComparisonSyntax.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122GeneratedComparisonCongruence.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122GeneratedComparisonQuotient.lean
+  risks:
+    - "accept the completed semantic inverse as syntax data rather than construct it from G122CellInput"
+    - "infer presentation invertibility only from semantic invertibility without a quotient inverse"
+    - "replace all-group D recovery by the selected barAlpha/barBeta pair"
+  unchecked:
+    - "all elements of the original and base-fixing comparison groups, their section, components, two kernels, and every lift fiber"
+    - "coverage of arbitrary admissible complete Hom and dependent core/equation/operation/context components"
+    - "res/ext/J, fullness, faithfulness, idempotent splitting, retract generation, remaining CS connections, and F"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Added a reverse-endpoint barAlphaInv syntax leaf whose evaluator constructs the inverse from the original G122CellInput through the accepted barAlphaIso. Proved both evaluated inverse equations, added them as source-law congruence generators, built an explicit quotient-category barAlpha isomorphism, and showed the fixed generated-cochain barBeta quotient class is not an isomorphism because the decoder preserves isomorphisms while its actual semantic image is noninvertible."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122GeneratedComparisonSyntax.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122GeneratedComparisonCongruence.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122GeneratedComparisonQuotient.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.barAlphaInv
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.evaluate_barAlphaInv
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.evaluate_barAlpha_barAlphaInv
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.evaluate_barAlphaInv_barAlpha
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.Congruent.barAlpha_hom_inv
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.Congruent.barAlpha_inv_hom
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonPresentation.barAlphaIso
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonPresentation.finiteAxisFold_barBeta_class_not_isIso
+  claim_mapping:
+    theorem_names:
+      - G122GeneratedComparisonSyntax.evaluate_barAlpha_barAlphaInv
+      - G122GeneratedComparisonSyntax.evaluate_barAlphaInv_barAlpha
+      - G122GeneratedComparisonPresentation.barAlphaIso
+      - G122GeneratedComparisonPresentation.finiteAxisFold_barBeta_class_not_isIso
+    source_labels:
+      - "GOAL A: finite typed generators, evaluation, and source-law congruence"
+      - "GOAL D: retain the invertible five-factor and noninvertible generated comparison cases"
+    conjuncts:
+      - "source-provenanced inverse generator and evaluation -> barAlphaInv and evaluate_barAlphaInv"
+      - "two inverse relations independent of decoder equality -> Congruent.barAlpha_hom_inv and barAlpha_inv_hom"
+      - "presentation-side invertibility -> G122GeneratedComparisonPresentation.barAlphaIso"
+      - "presentation-side fixed noninvertibility -> finiteAxisFold_barBeta_class_not_isIso"
+    undischarged_assumptions:
+      - "the selected comparison generators do not enumerate the full original or base-fixing comparison groups"
+      - "arbitrary complete-Hom reconstruction and all remaining B/D/E/F obligations remain unproved"
+    acceptance_point: "The quotient presentation now internally distinguishes the required fixed invertible and noninvertible comparison cases, but this selected pair is not the all-group recovery or G-123 completion."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "barAlpha inverse syntax evaluation and both inverse laws from arbitrary original G122CellInput"
+      - "explicit quotient-category isomorphism for barAlpha"
+      - "fixed generated barBeta noninvertibility in the same quotient presentation category"
+    remaining:
+      - "all comparison-group elements, base-fixing subgroup, section, components, both kernels, and every lift fiber"
+      - "full syntax coverage, res/ext/J, four reconstruction obligations, E, and F"
+  certificate_provenance:
+    discharged:
+      - "the inverse leaf contains only G122CellInput and evaluates via the source-constructed G122GeneratedGeometryObject.barAlphaIso"
+      - "quotient inverse laws are generated explicitly from the two accepted semantic inverse equations"
+      - "fixed noninvertibility uses the existing semantic noninvertibility theorem after Functor.map_isIso"
+    unresolved:
+      - "no all-group presentation or arbitrary-Hom extension certificate has been constructed"
+  proof_use:
+    used:
+      - "G122GeneratedGeometryObject.barAlphaIso in inverse evaluation and both semantic inverse laws"
+      - "Congruent.barAlpha_hom_inv and barAlpha_inv_hom in the explicit quotient Iso"
+      - "decoder, Functor.map_isIso, and finiteAxisFold_generatedGeometry_barBeta_not_isIso in quotient noninvertibility"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused checks for G122GeneratedComparisonSyntax, G122GeneratedComparisonCongruence, and G122GeneratedComparisonQuotient: PASS"
+    - "registered exact target builds for syntax (4265), congruence (4266), and quotient (4267): PASS; not Research aggregate builds"
+    - "namespace axiom audits: syntax 59, congruence 40, quotient 26 declarations; standard axioms only"
+    - "fresh Math A/B and Lean A/B review: PASS; no findings after direct documentation fixes"
+  blocking_findings: []
+  next_obligation: "Extend the source-provenanced presentation beyond selected comparisons to the required dependent core, equation, operation, and context morphism data, then prove restriction/extension rather than importing completed maps."
 ```
