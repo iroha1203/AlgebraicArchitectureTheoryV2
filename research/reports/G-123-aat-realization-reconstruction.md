@@ -9340,7 +9340,7 @@ selection:
   proof_dag_predecessors:
     - "Cycle 86 source-owned backward-only complete involution and actual transport"
     - "Cycle 87 normalized stored-backward survival"
-    - "Cycles 69, 71, and 75 axis, signature, and context projections"
+    - "Cycles 69, 70, and 75 axis, signature, and context projections"
   proof_obligation: "Prove the same candidate fixes all axes, signature coordinates, and forward context objects, then construct full residual-kernel membership"
   selection_reason: "The candidate must enter the full Cycle 85 action domain before its local and backward factors can be classified."
   expected_result_type: proof-checkpoint
