@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 49 combined total-Hom observation agreement and exact separation obligation
+- current proof obligation: Cycle 50 exhaustive finite-coverage bridge and its finiteness cost
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct nonempty fixed-source probe families and discharge or refute their separation of the required Hom range without accepting full-domain maps or extension certificates
+- next proof obligation: replace exhaustive point coverage by parameter-relative finite generator syntax whose extension laws are constructed from the fixed G-123 inputs, including the dependent operation/context/geometry components
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/B Cycle 50 delta | finite restrictionの一致から全域map一致へ進むためのcoverage使用を実証し、全点列挙方式が許容された無限primitive parameterと両立しないことを型レベルで固定する | `sourceMap_eq_of_surjective`, `lowerAtomEquiv_eq_of_surjective`, `upperAtomEquiv_eq_of_surjective`, `objectMap_eq_of_surjective`, `equationMap_eq_of_surjective`, `invariantMap_eq_of_surjective`, `axisMap_eq_of_surjective`, `finite_source_of_surjective`, `finite_atom_of_surjective`, `finite_object_of_surjective` | Cycle 49の任意probe・任意の二つの全`GeometryTotalHom`・18族`Agreement`; 各対象carrierへのprobe値写像の全射性を外部前提とする | 全射から各source値の有限index preimageを取り、実restriction一致を用いて7つの非依存core map全域一致を構成; source/Atom/object全点coverageから各carrierの`Finite`を構成 | finite observationからextensional equalityへ進む正確なproof-useと、parameter-relative syntaxへ切り替える必要性 | 全射coverageは固定入力から未放電で、無限許容carrierには使用不可; dependent operation/coordinate、equation equivalence、geometry local maps、全Hom equality、res/ext/Jと四義務、D/E/Fは未完了 |
 | A/B/D Cycle 49 delta | Cycles 46--48のprobe選択だけを統合し、全有限観測一致と射分離を外部命題として正確に切り出す | `G122FiniteTotalHomProbe`, `empty`, `Agreement`, `Separates`, `empty_agreement`, `separates_of_subsingleton`, `empty_not_separates_of_ne`, `finiteAxisFoldEmptyTotalHomProbe`, `finiteAxisFoldEmptyTotalHomProbe_not_separates` | 任意の一つの`G122FamilyInput`、任意のgenerated source/targetと全`GeometryTotalHom`; core/equation source/equation target/geometryのprobe選択のみ | 18族のpointwise観測一致predicate、分離性の外部predicate、空probeの全射対一致、subsingleton Homでのみ成立する条件付き正例、固定generated `barBeta ≠ barAlpha`による具体的負例 | source-generated finite coverageを何が放電すべきかのexact proof obligation; 将来の`res`の等号判定面 | 非空固定source probe、required Hom rangeでの分離放電、unit/counitを含むequation transport全体、ext/J・延長・一意性、endpoint表示、四再構成義務、D全体、CS/F |
 | A/B/D Cycle 48 delta | `EquationSystemExactTransport`のforward/inverse context functorとobservable equivalenceを有限source/target点へ制限し、context arrowの両端依存を保持する | `G122FiniteEquationTransportProbe`, `forwardContextRestriction`, `forwardArrowRestriction`, `backwardContextRestriction`, `backwardArrowRestriction`, `observableRestriction`, 五つのidentity law、五つのcomposition law | 任意の一つの`G122FamilyInput`、任意のgenerated source/target object、任意の全`GeometryTotalHom`; 各packageのcontext、両端index付きreadable arrow、context依存observable値の有限族 | 実context equivalenceのforward/inverse object/arrow評価、実observable ring equivalence評価、identityとforward/observable・inverse逆順composition | Cycle 47 equation-index restrictionを内部equation transportのmap評価へ拡張し、将来のtotal `res`へ統合 | equivalence unit/counitの有限扱い、全域分離/coverage、total res/ext/J、延長・一意性、endpoint表示、四再構成義務、D全体、CS/F |
 | A/B/D Cycle 47 delta | 任意の全成分`GeometryTotalHom`を保持したまま、lower doctrineとupper exact-coreの外側map fieldをsource側有限点へ制限する | `G122FiniteCoreProbe`, `sourceRestriction`, `lowerAtomRestriction`, `upperAtomRestriction`, `objectRestriction`, `equationRestriction`, `operationRestriction`, `invariantRestriction`, `axisRestriction`, `coordinateRestriction`, `lowerAtomRestriction_eq_upperAtomRestriction`, 九つのrestriction composition law | 任意の一つの`G122FamilyInput`、任意のgenerated source/target object、任意の全`GeometryTotalHom`; source値・Atom・object・equation index・endpoint付きoperation・invariant index・axis・coordinateの有限族 | lower/upperの各実map field評価、実`atomEquiv_eq`による二Atom restriction一致、実合成に沿うpointwise restriction | 将来の`res`候補のcore外層とCycle 46 geometry restrictionの統合 | `EquationSystemExactTransport`内部のcontext/observable equivalence restriction、有限probe分離/coverage、ext/J・延長・一意性、endpoint表示、四再構成義務、D全体、CS/F |
@@ -4990,4 +4991,77 @@ audits:
   vacuity: "empty probes are proved observationally vacuous and concretely nonseparating on the fixed D Hom; no success follows from zero-card tables"
   blocking_findings: []
   next_obligation: "Construct nonempty probe families from the fixed G-123 primitive/object/context/operation generators, then test whether Agreement separates the mandatory full Hom range; record any failure as a candidate-construction obstruction rather than a target refutation."
+```
+
+## Cycle 50 — Exhaustive finite coverage bridge and finiteness cost
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 50
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 786b7338e464f79d5d237171af08b210b29a3ffe
+tracking_issue: 4520
+selection:
+  proof_obligation: "Use finite restriction agreement to recover complete nondependent core maps exactly when the selected source points are exhaustive, and expose the finiteness consequence of that premise"
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122FiniteCoverageBridge.lean
+  risks:
+    - "store coverage, map equality, or a completed Hom in the probe"
+    - "credit exhaustive finite coverage as discharged for arbitrary fixed inputs"
+    - "infer complete-Hom equality while dependent and equivalence components remain untreated"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "For seven nondependent outer-core maps, proved that Cycle 49 Agreement plus surjectivity of the corresponding finite source-value family determines the entire map. Separately proved that exhaustive finite source, Atom, or architecture-object coverage forces the covered carrier to be finite. This identifies exhaustive point sampling as an unsuitable final route for the fixed target's allowed infinite primitive parameters; it does not refute parameter-relative finite syntax or G-123."
+  evidence:
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe.sourceMap_eq_of_surjective
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe.lowerAtomEquiv_eq_of_surjective
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe.upperAtomEquiv_eq_of_surjective
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe.objectMap_eq_of_surjective
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe.equationMap_eq_of_surjective
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe.invariantMap_eq_of_surjective
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe.axisMap_eq_of_surjective
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe.finite_source_of_surjective
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe.finite_atom_of_surjective
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe.finite_object_of_surjective
+  claim_mapping:
+    input_premises:
+      - "one arbitrary G122FamilyInput, arbitrary generated source/target objects, and two arbitrary complete Hom values"
+      - "the existing Cycle 49 Agreement proof over a probe"
+      - "surjectivity of exactly the finite source-value family used by the selected map; this premise is external and is not a probe field"
+    constructed_evidence:
+      - "whole-map equality for sourceMap, lower atomEquiv, upper atomEquiv, objectMap, equationMap, invariantMap, and axisMap"
+      - "Finite instances for the doctrine Source, primitive Atom, and ArchitectureObject carriers whenever the corresponding finite value family is surjective"
+    proof_use:
+      - "each equality proof uses surjectivity to rewrite an arbitrary source value as an actual probe value, then uses the matching field of Agreement"
+      - "each finiteness theorem applies Finite.of_surjective to the actual Fin-indexed probe value function"
+    unfinished:
+      - "no surjectivity premise is discharged from the fixed G-123 inputs"
+      - "the fixed target permits primitive parameter data to be infinite, so exhaustive finite point coverage is not the final general construction"
+      - "dependent operation and coordinate maps, context equivalence, observable equivalence, and geometry-local maps need generator-relative rather than exhaustive coverage"
+      - "complete-Hom equality, Separates, res/ext/J, extension/uniqueness, four reconstruction obligations, D recovery, CS translations, and F remain open"
+  validation:
+    focused_checks: "G122FiniteCoverageBridge passes"
+    named_target_build: "G122FiniteCoverageBridge passed (4264 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "10 declarations in G122FiniteCoverageBridge, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 50 validates the coverage-to-map-equality proof pattern and proves its unavoidable finiteness cost. It rules out exhaustive finite point enumeration as a universal candidate strategy, not the fixed G-123 target; parameter-relative finite generator syntax remains the next construction route."
+audits:
+  premise_delta:
+    discharged:
+      - "exact proof-use from Agreement plus per-carrier surjectivity to seven whole-map equalities"
+      - "formal finiteness consequence for exhaustive finite coverage of Source, Atom, and ArchitectureObject carriers"
+    remaining:
+      - "fixed-input construction of parameter-relative generator syntax and extension laws"
+      - "dependent component coverage without finite enumeration of all primitive parameter values"
+      - "all complete-Hom separation and reconstruction obligations"
+  certificate_provenance: "surjectivity is an explicit theorem premise and is used to obtain each arbitrary input's probe index; it is neither stored in G122FiniteTotalHomProbe nor claimed from fixed inputs"
+  structure_field_escape: none-found
+  route_integrity: "theorems conclude equality only of the named map field whose restriction and source coverage are used; no complete-Hom equality is inferred"
+  target_fitting: "the finiteness theorems explain why the target's permitted infinite primitive parameters require parameter-relative syntax rather than exhaustive point tables"
+  vacuity: "a surjective map from Fin n cannot be empty when the covered carrier is inhabited, and the consequence is explicitly Finite rather than a success claim for G-123"
+  blocking_findings: []
+  next_obligation: "Construct a finite grammar whose leaves reference arbitrary primitive parameters and whose fixed-input laws extend generator images to the dependent operation/context/geometry maps, without enumerating the full primitive carriers or accepting completed maps."
 ```
