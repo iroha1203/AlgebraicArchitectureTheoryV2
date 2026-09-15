@@ -335,6 +335,37 @@ inductive PrimitiveObservable :
       (observable : context.ctx.Observable) :
       PrimitiveObservable (.g122 input) (.g122 X)
 
+/-- A nullary role naming the exact coverage-requirements datum selected in an
+original G-122 geometry input.  The datum is read from `X`; it is not accepted
+again as a payload or as preservation evidence for a geometry morphism. -/
+inductive PrimitiveCoverageRequirements :
+    (theta : ClosedFamilyParameter.{u, v}) → FamilyRealization theta →
+      Type (max (u + 1) (v + 1))
+  | g122 {input : G122FamilyInput.{u, v}} {X : G122CellInput input} :
+      PrimitiveCoverageRequirements (.g122 input) (.g122 X)
+
+/-- Read back the identical selected coverage requirements from the original
+G-122 input named by its nullary primitive role. -/
+def PrimitiveCoverageRequirements.g122Value
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (_reference : PrimitiveCoverageRequirements (.g122 input) (.g122 X)) :=
+  X.selectedGeometry.requirements
+
+/-- A nullary role naming the exact overlap datum selected in an original
+G-122 geometry input, independently of any later overlap transport. -/
+inductive PrimitiveOverlapSelection :
+    (theta : ClosedFamilyParameter.{u, v}) → FamilyRealization theta →
+      Type (max (u + 1) (v + 1))
+  | g122 {input : G122FamilyInput.{u, v}} {X : G122CellInput input} :
+      PrimitiveOverlapSelection (.g122 input) (.g122 X)
+
+/-- Read back the identical selected overlap datum from the original G-122
+input named by its nullary primitive role. -/
+def PrimitiveOverlapSelection.g122Value
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (_reference : PrimitiveOverlapSelection (.g122 input) (.g122 X)) :=
+  X.selectedGeometry.overlap
+
 /-- The source G-122 diagnostic-cell family is a combinatorial role, not the
 AAT complete-geometry context family. -/
 inductive PrimitiveDiagnosticCell :
