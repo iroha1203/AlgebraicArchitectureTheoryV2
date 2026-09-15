@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 65 exact reduction of canonical-section source displayability to source-endpoint automorphism coverage, with the identity and its displayed C2 lift orbit constructed positively
+- current proof obligation: Cycle 66 constructs the fixed axis swap through complete geometry, the actual direct pull-push endpoint, canonical normalization, and the full normalized comparison group; this refutes the attempted trivial-group discharge and leaves source syntax for this nonidentity value and arbitrary endpoint coverage to construct
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct normalized source endpoint-automorphism syntax and prove decoder coverage for every `canonicalNormalizationAutomorphismSectionHom` value from the fixed primitive input, without semantic automorphism or section leaves
+- next proof obligation: extend the source-law presentation by a primitive finite recipe for the same fixed normalized axis-swap comparison and prove its decoder equality; then construct coverage for every `canonicalNormalizationAutomorphismSectionHom` value without semantic automorphism or section leaves
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 66 delta | 固定finite axis-foldの元の三軸swapをcomplete geometryへ持ち上げ、actual `left^*`/`top_!` endpoint、canonical normalization、actual normalized comparison groupまで同じ元を運び、正規化比較群を自明化する近道が成立しないことを示す | `finiteAxisFoldSwap_rawReindex`, `finiteAxisFoldSwapGeometryReadHom`, `finiteAxisFoldSwapGeometry`, `finiteAxisFoldSwapGeometry_comp_self`, `finiteAxisFoldSwapGeometryAut`, `finiteAxisFoldSwapGeometry_axis_zero`, `finiteAxisFoldSwapGeometryAut_ne_one`, `finiteAxisFoldSouthwestSwapHom`, `finiteAxisFoldSouthwestSwapAut`, `geomFiberTransportMap_axisMap`, `exactGeometryPullMap_axisMap`, `finiteAxisFoldLeftPulledSwapFiberAut`, `finiteAxisFoldActualDirectSwapFiberAut`, `finiteAxisFoldActualDirectSwapFiberAut_axisMap`, `finiteAxisFoldActualDirectSwapFiberAut_ne_one`, `finiteAxisFoldActualDirectSwapAdmissibleAut`, `finiteAxisFoldNormalizedDirectSwapAut`, `finiteAxisFoldNormalizedDirectSwapAut_ne_one`, `finiteAxisFoldNormalizedBarAlphaIso`, `finiteAxisFoldNormalizedComparisonSwap`, `finiteAxisFoldNormalizedComparisonSwap_source`, `finiteAxisFoldNormalizedComparisonSwap_ne_one` | カード固定finite axis-fold/`Int`; 元の`finiteAxisFoldSwapTotal`; fixed vacuous coverage・Unit raw geometry; exact pull/push adjunctionの構成済みunit/counit可逆性; actual `barAlpha` | swap上の全`GeomReadHom` fieldとraw reindex不変性、complete/fiber involution、pull/pushのaxis-map保存、unit/counitから導く両functorのfaithfulness、正規化後も`0 ↦ 1`を保持する非恒等Aut、actual normalized `barAlpha`を保つ非恒等pair | Dの元finite axis-fold生成例と全normalized比較群を保持し、Cycle 65のsource coverage義務が非自明なsemantic値を実際に含むことを固定する | このsemantic swap pairのsource-syntax preimageは未構成; bottom qualification、任意normalized比較元のsource coverage、全kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 65 delta | semantic canonical sectionの右逆をsource表示と混同せず、section値全体の表示可能性をsource endpoint lift全体の表示可能性へ正確に還元し、実在するidentity/C2範囲をsource syntaxから構成する | `FiniteAxisFoldCanonicalSectionSourceObligation.ActualDirectEndpoint`, `ActualBarAlphaIso`, `comparisonEvaluation_section`, `exists_canonicalSection_preimage_iff_sourceEndpoint_preimage`, `exists_bottomCanonicalSection_preimage_iff_sourceEndpoint_preimage`, `restrictionEvaluation_surjective_of_canonicalSection_preimages`, `canonicalSection_identity_sourcePreimage`, `sourceIdentity_bottomQualified`, `bottomCanonicalSection_identity_sourcePreimage`, `BottomLiftFiberAtOne`, `sourceLiftAtOne`, `sourceLiftAtOne_underlying_evaluation`, `sourceLiftAtOne_identity`, `sourceLiftAtOne_sourceGenerator`, `sourceLiftAtOne_cases`, `displayedIdentityLifts_have_sourcePreimages` | 固定finite axis-fold/`Int`; source-law quotientの全source-conjugation sectionとdecoder; actual canonical comparison/bottom sectionとright inverse; Cycle 64 C2 equivalence | kernel-extended evaluatorとsource-conjugationの全元可換性、任意semantic section値のsource preimageとそのsource endpoint automorphism preimageのiff、全section preimageがrestriction/evaluation全射性を含むこと、identityのraw/bottom source preimage、identity fiberのcanonical/shifted二liftのsource C2 preimageと各underlying decoder評価等号 | Dのcanonical section回復に必要な未放電premiseを正確に切り出し、既存のsemantic sectionをsource表示と誤認する経路を閉じる | arbitrary normalized/bottom `t`のsource endpoint lift coverage自体、全比較群・全kernel/fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 64 delta | source-law quotient内の同じC2 fragmentと実bottom restriction kernel内のC2 fragmentの両方向対応を構成し、forwardがactual decoder evaluationであることを全元について示す | `FiniteAxisFoldDisplayedKernelEquiv.sourceSubgroup`, `actualSubgroup`, `sourceGenerator`, `actualGenerator`, `ambientComparisonElement_ne_one`, `sourceGenerator_ne_one`, `actualGenerator_ne_one`, `toActual`, `toSource`, `toSource_toActual`, `toActual_toSource`, `toActual_mul`, `toActual_underlying_evaluation`, `sourceActualEquiv`, `sourceActualEquiv_sourceGenerator` | 固定finite axis-fold/`Int`; Cycle 59 source comparison generatorとactual evaluation; Cycle 61 actual bottom kernel element; Cycle 62両側の二乗則と非自明性 | 両側のexact two-element Subgroup、identity/generator case map、左右inverse、積保存、全source C2元でunderlying actual evaluationとの一致、generator対応 | Dの表示側回復について、このC2 fragment全元の表示→実現と読み戻しを群同型として固定する | C2 fragmentのみで全比較群・全kernelではない; semantic normalized/bottom section全元のsource syntax、一般係数/一般入力、B/E/Fは未完了 |
 | D Cycle 63 delta | Cycle 62で残したformal orbit gapを閉じ、同じbottom kernel involutionのidentityとgeneratorからなる部分群を構成して、その標準作用orbitが任意のbottom lift fiberで先の二点集合と一致することを示す | `FiniteAxisFoldBottomKernelOrbit.oppositeElement_mul_self`, `displayedInvolutionSubgroup`, `mem_displayedInvolutionSubgroup_iff`, `orbit_canonicalLift_eq_pair`, `orbit_canonicalLift_ncard` | 固定finite axis-fold入力と係数`Int`; Cycle 62のsource由来`element_mul_self`、`canonicalShiftedPair`、cardinality 2; Cycle 61のbottom lift action | opposite kernel内の二乗identity、`{1, op element}`をcarrierとする実Subgroup、そのmembership iff、標準`MulAction.orbit`と二点FinsetのSet等号、orbitのncard 2 | Dの同一構成について、表示されたrestriction-kernel C2部分群が各bottom lift fiberに作るorbitを形式的に分類する | このC2は全bottom kernelではなくorbitも全lift fiberとは限らない; semantic sectionのsource syntax、他kernel元、一般係数/一般入力、B/E/Fは未完了 |
@@ -6764,4 +6765,136 @@ audits:
     - "fresh Math A/B and final-snapshot Lean A/B: PASS after the same-cycle decoder-equality fix"
   blocking_findings: []
   next_obligation: "Construct normalized source endpoint-automorphism syntax and prove decoder coverage for every canonicalNormalizationAutomorphismSectionHom value from fixed primitive inputs, without semantic automorphism or section leaves."
+```
+
+## Cycle 66 — Fixed normalized axis swap and nontrivial comparison
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 66
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 5b40fc4c35dee40bb083f2635f9a855a653a4a7b
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 65 reduced arbitrary canonical-section displayability to source endpoint coverage; a possible triviality discharge had to be tested against the original fixed three-axis symmetry"
+  proof_dag_predecessors:
+    - "G-122 fixed finite-axis-fold support package and its authored adjacent Fin 3 swap"
+    - "fixed complete geometry/raw family used by the actual exact comparison"
+    - "exact complete-geometry pull/push adjunction with invertible counit/unit"
+    - "actual canonical normalization and normalized barAlpha comparison group"
+  proof_obligation: "Construct the original fixed swap at complete-geometry level, transport it through the actual left pull/top push route, prove that normalization retains it, and place it in the actual full normalized comparison group"
+  selection_reason: "The fixed target forbids shrinking to an easy subgroup or assuming coverage. Before constructing source coverage, the full semantic codomain must be tested for nonidentity values retained from the original G-122 input."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNormalizedAxisSwap.lean
+  risks:
+    - "infer comparison-group triviality merely from the absence of an existing nonidentity declaration"
+    - "replace the actual pull-push endpoint by the southwest geometry package"
+    - "infer normalized nonidentity from raw nonidentity without following a retained component"
+    - "call a semantic comparison element a source-syntax preimage"
+  unchecked:
+    - "source-syntax preimage of the constructed nonidentity normalized comparison"
+    - "bottom qualification of the new normalized comparison"
+    - "arbitrary normalized/bottom endpoint and comparison coverage"
+    - "general coefficient/input and remaining B/E/F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Lifted the original adjacent axis permutation to the fixed complete geometry from its primitive core map and fixed local data; proved raw invariance, involution, 0-to-1 axis evaluation, and nonidentity. Packaged it vertically in the original southwest fiber, mapped it through the actual exact left pull and top transport, proved both map operations preserve the global axis map, and independently reflected nonidentity through the fully faithful adjoints. Wrapped the resulting actual direct automorphism in the admissible category, proved canonical normalization retains its nonidentity axis action, and conjugated it across the normalized actual barAlpha to construct a nonidentity element of the full actual normalized comparison group."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNormalizedAxisSwap.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSwap_rawReindex
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSwapGeometry
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSwapGeometry_comp_self
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSwapGeometryAut_ne_one
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSouthwestSwapAut
+    - AAT.AG.RealizationReconstruction.geomFiberTransportMap_axisMap
+    - AAT.AG.RealizationReconstruction.exactGeometryPullMap_axisMap
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldActualDirectSwapFiberAut_axisMap
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldActualDirectSwapFiberAut_ne_one
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedDirectSwapAut_ne_one
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedComparisonSwap
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedComparisonSwap_ne_one
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldSwapGeometry_comp_self
+      - finiteAxisFoldSwapGeometryAut_ne_one
+      - geomFiberTransportMap_axisMap
+      - exactGeometryPullMap_axisMap
+      - finiteAxisFoldActualDirectSwapFiberAut_axisMap
+      - finiteAxisFoldActualDirectSwapFiberAut_ne_one
+      - finiteAxisFoldNormalizedDirectSwapAut_ne_one
+      - finiteAxisFoldNormalizedComparisonSwap_source
+      - finiteAxisFoldNormalizedComparisonSwap_ne_one
+    source_labels:
+      - "GOAL D: retain the original finite axis-fold generated input and all elements of the full comparison groups"
+      - "GOAL D: distinguish normalization loss from comparison-preserving classification"
+      - "n1014: recover comparison changes on the display side without post-hoc semantic membership"
+    conjuncts:
+      - "same original Fin 3 swap -> fixed complete geometry involution"
+      - "same swap -> actual left-pull/top-push direct endpoint automorphism"
+      - "same global axis map -> nonidentity after canonical normalization"
+      - "same normalized source automorphism -> actual normalized barAlpha-preserving pair"
+    undischarged_assumptions:
+      - "the constructed semantic comparison has no source-syntax preimage yet"
+      - "no bottom-qualified membership or arbitrary comparison coverage is proved"
+      - "general input/coefficient and B/E/F remain open"
+    acceptance_point: "This cycle proves a fixed nontrivial semantic normalized comparison and rules out subsingleton/trivial-group discharge of Cycle 65's coverage obligation. It does not prove source displayability, bottom qualification, or G-123 completion."
+    port_status: not-applicable
+review:
+  independent_lanes:
+    math_a: pass-after-fix
+    math_b: pass
+    lean_a: pass-after-fix
+    lean_b: pass-after-fix
+  resolved_findings:
+    - "Math A and Lean A/B required the aggregate import and Cycle 66 canonical ledger; both were added."
+    - "Lean A/B found the private heterogeneous extensionality theorem lacked a declaration docstring; it was documented."
+  direct_response:
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "complete-geometry lift of the original fixed adjacent axis permutation"
+      - "non-erasure through the actual exact pull-push route"
+      - "non-erasure under canonical geometry normalization"
+      - "nontriviality of the full actual normalized comparison group"
+    remaining:
+      - "source term evaluating to the constructed normalized comparison"
+      - "all normalized/bottom comparison and endpoint automorphism coverage"
+      - "full kernel/lift recovery, general coefficient/input, and B/E/F"
+  certificate_provenance:
+    discharged:
+      - "geometry morphism fields are built from finiteAxisFoldSwapTotal and the fixed vacuous/Unit/identity geometry"
+      - "fiber transport uses the actual authored left/top functors"
+      - "faithfulness is derived from the already constructed invertible adjunction counit/unit"
+      - "normalized comparison membership is constructed by conjugation across the actual normalized barAlpha"
+    unresolved:
+      - "no source grammar constructor or decoder coverage theorem yet represents the new semantic value"
+  proof_use:
+    used:
+      - "finiteAxisFoldSwapTotal_square builds the complete-geometry and fiber involution"
+      - "exactGeometryPullMap_fac and geomFiberTransportMap_fac prove exact preservation of the global axis map"
+      - "invertible counit and unit supply fully faithful pull and push functors for independent non-erasure"
+      - "canonical normalization's identity axis map turns normalized equality into a contradiction at Fin 3 axis zero"
+      - "generatedArrowComparisonSectionHom constructs the actual comparison pair and its source projection proves nonidentity"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check for FiniteAxisFoldNormalizedAxisSwap: PASS"
+    - "registered exact target build: PASS (4295 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 27 audited declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh Math A/B and Lean A/B review: PASS after same-cycle integration/doc fixes"
+  blocking_findings: []
+  next_obligation: "Extend the source-law presentation with a primitive recipe for this same normalized axis-swap comparison and prove decoder equality, then continue toward arbitrary source endpoint coverage without semantic leaves."
 ```
