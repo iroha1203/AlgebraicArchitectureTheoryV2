@@ -75,11 +75,15 @@ noncomputable def finiteAxisFoldExtensionToggleContext
   Extension := W.Extension
   extension := finiteAxisFoldExtensionValueToggle W.extension
 
+/-- The toggle's canonical simplification preserves the complete minimal
+reading definitionally. -/
 @[simp] theorem finiteAxisFoldExtensionToggleContext_minimal
     (W : Site.ArchCtx FiniteAxisFoldContextSourceCore.object) :
     (finiteAxisFoldExtensionToggleContext W).minimal = W.minimal :=
   rfl
 
+/-- The toggle's canonical simplification preserves the Extension carrier
+definitionally; only its selected value changes. -/
 @[simp] theorem finiteAxisFoldExtensionToggleContext_extensionType
     (W : Site.ArchCtx FiniteAxisFoldContextSourceCore.object) :
     (finiteAxisFoldExtensionToggleContext W).Extension = W.Extension :=
@@ -280,7 +284,7 @@ theorem finiteAxisFoldExtensionToggleContextEquivalence_trans_self :
     rw [hfunctor, hinverse]
     rfl
 
-/-! ## Primitive exact-core and complete-geometry actions -/
+/-! ## Primitive exact-core action and raw invariance -/
 
 /-- Exact equation transport whose only nonidentity datum is the constructed
 context autoequivalence.  The fixed equation observables and residuals are
