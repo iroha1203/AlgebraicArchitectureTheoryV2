@@ -33,7 +33,10 @@ for later extension constructions.  Relation and identification edges are
 independent finite endpoint tables rather than copies of evaluated semantic
 predicates.  Their coherence conditions remain external Props, with explicit
 positive and negative instances, until source-provenanced transform syntax
-can discharge them.
+can discharge them.  Canonical occurrence-pair codes enumerate possible
+endpoints without storing relation truth values; relation and identification
+are re-evaluated from the original composition reader.  This rejects the
+alternative of copying a completed semantic predicate graph into syntax.
 -/
 
 namespace AAT.AG.RealizationReconstruction
@@ -500,6 +503,101 @@ theorem configurationValue_familySupported
   exact
     (input.authored.context.supportPackage X.cell.as).reading.composition.family_supported
       (display.family objectIndex) (display.family_listFinite objectIndex)
+
+/-- The canonical finite code type for every ordered pair of occurrences in
+one object term.  It is independent of whether the source configuration later
+declares the evaluated pair related or identified. -/
+abbrev OccurrencePairCode
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    (objectIndex : Fin display.objectCard) :=
+  Fin (display.atomCard objectIndex) × Fin (display.atomCard objectIndex)
+
+/-- Evaluate the left endpoint of a canonical occurrence-pair code using the
+original Atom occurrence table. -/
+def occurrencePairLeftValue
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    (code : display.OccurrencePairCode objectIndex) : input.Carrier.Atom :=
+  display.atomValue objectIndex code.1
+
+/-- Evaluate the right endpoint of a canonical occurrence-pair code using the
+same original Atom occurrence table. -/
+def occurrencePairRightValue
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    (code : display.OccurrencePairCode objectIndex) : input.Carrier.Atom :=
+  display.atomValue objectIndex code.2
+
+/-- Both endpoints of every canonical pair code belong to its
+occurrence-generated family. -/
+theorem occurrencePairValues_mem_family
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    (code : display.OccurrencePairCode objectIndex) :
+    (display.family objectIndex).mem (display.occurrencePairLeftValue code) ∧
+      (display.family objectIndex).mem (display.occurrencePairRightValue code) :=
+  ⟨⟨code.1, rfl⟩, ⟨code.2, rfl⟩⟩
+
+/-- Cycle 36 source-evaluation theorem: the full relation predicate of a
+generated configuration is recovered by a finite occurrence-pair code plus a
+fresh evaluation of that same source predicate at the coded endpoints.  The
+truth value or global relation graph is not stored in the code. -/
+theorem configurationValue_relation_iff_exists_occurrencePairCode
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    (objectIndex : Fin display.objectCard)
+    (left right : input.Carrier.Atom) :
+    (display.configurationValue objectIndex).relation left right ↔
+      ∃ code : display.OccurrencePairCode objectIndex,
+        display.occurrencePairLeftValue code = left ∧
+          display.occurrencePairRightValue code = right ∧
+            (display.configurationValue objectIndex).relation
+              (display.occurrencePairLeftValue code)
+              (display.occurrencePairRightValue code) := by
+  constructor
+  · intro hrelation
+    have hsupported :=
+      (display.configurationValue_familySupported objectIndex).1 hrelation
+    rw [display.configurationValue_family_eq] at hsupported
+    rcases hsupported.1 with ⟨leftIndex, hleft⟩
+    rcases hsupported.2 with ⟨rightIndex, hright⟩
+    refine ⟨⟨leftIndex, rightIndex⟩, hleft, hright, ?_⟩
+    simpa [occurrencePairLeftValue, occurrencePairRightValue, hleft, hright]
+      using hrelation
+  · rintro ⟨code, rfl, rfl, hrelation⟩
+    exact hrelation
+
+/-- Cycle 36 source-evaluation theorem for identification: every true
+identification has a finite occurrence-pair code, and conversely a coded pair
+is accepted only by re-evaluating the original source predicate. -/
+theorem configurationValue_identification_iff_exists_occurrencePairCode
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    (objectIndex : Fin display.objectCard)
+    (left right : input.Carrier.Atom) :
+    (display.configurationValue objectIndex).identification left right ↔
+      ∃ code : display.OccurrencePairCode objectIndex,
+        display.occurrencePairLeftValue code = left ∧
+          display.occurrencePairRightValue code = right ∧
+            (display.configurationValue objectIndex).identification
+              (display.occurrencePairLeftValue code)
+              (display.occurrencePairRightValue code) := by
+  constructor
+  · intro hidentification
+    have hsupported :=
+      (display.configurationValue_familySupported objectIndex).2 hidentification
+    rw [display.configurationValue_family_eq] at hsupported
+    rcases hsupported.1 with ⟨leftIndex, hleft⟩
+    rcases hsupported.2 with ⟨rightIndex, hright⟩
+    refine ⟨⟨leftIndex, rightIndex⟩, hleft, hright, ?_⟩
+    simpa [occurrencePairLeftValue, occurrencePairRightValue, hleft, hright]
+      using hidentification
+  · rintro ⟨code, rfl, rfl, hidentification⟩
+    exact hidentification
 
 end G122FiniteObjectFormationDisplay
 
