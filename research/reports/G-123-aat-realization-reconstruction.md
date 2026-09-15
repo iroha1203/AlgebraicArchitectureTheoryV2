@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 45 finite case index and exact semantic classification for the fixed finite-axis-fold comparisons
+- current proof obligation: Cycle 46 finite source probes for the four map fields used by `GeomReadHom.ext` on arbitrary generated-object geometry morphisms
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct finite restriction data for arbitrary all-component `GeometryTotalHom` values and connect it to the fixed comparison case evaluator without assuming extension or image membership
+- next proof obligation: extend the finite restriction surface to every computational field of `PackageTotalHom`, then test separation and coverage from fixed source generators without assuming extension or image membership
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/B/D Cycle 46 delta | 任意の全成分`GeometryTotalHom`を保持したまま、その`GeomReadHom.ext`が使う四map fieldをsource側有限点へ制限し、固定D比較へ接続する | `G122FiniteGeometryProbe`, `singleLocal`, `coefficientRestriction`, `supportRestriction`, `axisRestriction`, `observableRestriction`, 四つの`_comp`, `hom_ne_of_coefficientRestriction_ne`, `FiniteAxisFoldGeometryProbe`, 四つの`finiteAxisFold*Restriction`, 四つのconstant-one/`barAlpha` restriction一致定理 | 任意の一つの`G122FamilyInput`、任意のgenerated source/target object、任意の全`GeometryTotalHom`; probeはsource係数値・context・そのsupport/axis/observable値のみ | 各有限indexで実`GeomReadHom`成分を評価するrestriction、合成時のpointwise評価則、係数restriction差から元Hom差へのsoundness、固定三比較case evaluatorへの同じrestriction適用 | 将来の`res`候補の幾何層と、固定D比較の有限観測 | `PackageTotalHom`の全計算成分restriction、有限probeの分離/coverage、ext/J、有限延長・一意性、endpoint表示、四再構成義務、D比較群全体、CS/F |
 | D Cycle 45 delta | 固定finite axis-foldの実`barAlpha`、generated `barBeta`、定数1 `barBeta`を有限なケース型で索引し、三者の意味的な一致・相違を正確に分類する | `FiniteAxisFoldComparisonCode`, `.evaluate`, `evaluate_barAlpha`, `evaluate_generatedBarBeta`, `evaluate_identityBarBeta`, `generatedBarBeta_ne_barAlpha`, `evaluate_identityBarBeta_eq_barAlpha`, `evaluate_eq_barAlpha_iff`, `evaluate_eq_generatedBarBeta_iff`, `evaluate_not_injective` | Cycle 44で同じfamily/cell/selected geometry/raw dataを保ち、generated cochainと定数1 cochainだけを異ならせた二入力上の三比較と可逆・非可逆分類 | 三constructor有限case index、実射への評価、generated比較と`barAlpha`の相違、定数1比較と`barAlpha`の一致、二つのexact case-index fiber、由来ラベルのsyntactic aliasing | 今後の本物の有限recipe/displayが保持すべき固定D三分類の回帰点 | 三射のsource-provenanced有限recipe、任意Homの有限restriction、endpoint object表示、一般decoderのext/J、比較群全元・section・二核・lift fiber、一般D/B/E/F |
 | D Cycle 44 delta | 指定された同一finite axis-fold geometryでgenerated cochain、定数1 cochain、実`barAlpha`とcanonical normalization routeの三場合を保持する | `G122GeneratedGeometryObject.barAlphaIso`, `finiteAxisFoldIdentityCochainG122CellInput`, `_fixedGeometry`, `finiteAxisFold_direct_package_identityCochain`, `finiteAxisFold_viaBase_package_identityCochain`, `finiteAxisFold_generatedGeometry_barBeta`, `finiteAxisFold_barAlpha_identityCochain`, `finiteAxisFold_generatedGeometry_barD_eq_normalizationRoute`, `finiteAxisFold_identityCochain_barD_eq_id`, `finiteAxisFold_identityCochain_barBeta_eq_barAlpha`, `finiteAxisFold_generatedGeometry_barBeta_not_isIso`, `finiteAxisFoldIdentityCochainBarBetaIso` | カード指定の`finiteAxisFoldBCDatumSquare`、cell `second`、係数`Int`、同じ`finiteAxisFoldFixedCoefficientGeometryFamily`; generated cochainと`identityDefectCochain` | cochain以外がdefinitionally同じ二入力、同一direct/viaBase package、同一実5-factor `barAlpha`; generated側の実`barBeta`とcanonical normalization routeおよび新category内の非可逆性、定数1側の`barD=id`と`barBeta=barAlpha`および同category内の可逆性 | D三分類を同じCycle43 semantic category上で有限表示へ接続する固定対象 | 表示構文・decoder上の同じ三射、比較群全元・section・二核・lift fiber、一般Dへの接続 |
 | A/D Cycle 43 delta | 元southwest packageと実生成northeast direct/via-base端点をdisplay非依存の同一object型に収録し、実`barAlpha`・`barBeta`・両冪等射をその全成分Homへ接続する | `G122GeneratedGeometryObject`, `.package`, `.Hom`, `.id`, `.comp`, `.id_comp`, `.comp_id`, `.comp_assoc`, `.category`, `.barAlpha`, `.barBeta`, `.barE`, `.barD`, `.barBeta_factor`, `.barE_idem`, `.barD_idem`, `.barBeta_source_factorization`, `.barBeta_target_factorization` | 一つの任意の`G122FamilyInput`と、その下の任意の`G122CellInput`; cochainを含む元入力全量化 | original/direct/viaBaseの3 constructor、source transport/pullbackからの実package評価、任意端点間の全`GeometryTotalHom` category、実5-factor `barAlpha`、cochain-selected `barBeta`、source/target projectorsと因子化・冪等・吸収 | Dの実生成比較を将来の`R_Θ`候補へ収録し、同じ射を有限表示側で回復するためのsemantic domain | final `D_Θ,R_Θ`はC/Eを含め未構成; 有限restriction/ext/J、fullness/faithfulness、冪等分裂/retract生成、比較群・section・二核・lift fiberの表示側回復 |
@@ -4645,4 +4646,93 @@ audits:
     - "RESOLVED: recast the nullary-label evaluator from a finite-display/decoder claim to a finite case index; target information-loss recovery remains open"
     - "RESOLVED: added individual docstrings to all three public constructors"
   next_obligation: "Construct a parameter-relative finite probe/restriction of all computational components used by GeometryTotalHom extensionality, then determine which coverage premises can be discharged from original G-123 inputs rather than accepted as extension or representability certificates."
+```
+
+## Cycle 46 — Finite source probes for the geometry comparison layer
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 46
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 509639dbb47f9bbd6a37a7ca86837dd33964b394
+tracking_issue: 4520
+selection:
+  proof_obligation: "Retain every arbitrary GeometryTotalHom while constructing genuinely finite source-side restrictions of the four map fields used by GeomReadHom.ext, and apply those restrictions to the fixed D comparison evaluator"
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122FiniteGeometryProbe.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+  risks:
+    - "store a completed morphism or its complete target table in the probe"
+    - "claim finite restriction equality is sufficient for full morphism equality"
+    - "confuse the fixed three-case evaluator with a source recipe or decoder"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Added a parameter-relative finite probe containing only finitely indexed source coefficient values and context-local support, axis, and observable values. Defined restrictions of the four map fields used by GeomReadHom.ext for every arbitrary generated-object GeometryTotalHom and proved pointwise composition laws. Coverage, overlap, raw compatibility, and preservation-law proof fields are not called additional computational maps or stored in the probe. Connected the same restrictions to the fixed finite-axis-fold comparison evaluator and proved that the actual constant-one beta/barAlpha equality is preserved by every probe. No separation, extension, uniqueness, or representation converse is asserted."
+  evidence:
+    - AAT.AG.RealizationReconstruction.G122FiniteGeometryProbe
+    - AAT.AG.RealizationReconstruction.G122FiniteGeometryProbe.singleLocal
+    - AAT.AG.RealizationReconstruction.G122FiniteGeometryProbe.coefficientRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteGeometryProbe.supportRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteGeometryProbe.axisRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteGeometryProbe.observableRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteGeometryProbe.coefficientRestriction_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteGeometryProbe.supportRestriction_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteGeometryProbe.axisRestriction_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteGeometryProbe.observableRestriction_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteGeometryProbe.hom_ne_of_coefficientRestriction_ne
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldGeometryProbe
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldCoefficientRestriction
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSupportRestriction
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldAxisRestriction
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldObservableRestriction
+    - AAT.AG.RealizationReconstruction.finiteAxisFold_identityBarBeta_coefficientRestriction_eq
+    - AAT.AG.RealizationReconstruction.finiteAxisFold_identityBarBeta_supportRestriction_eq
+    - AAT.AG.RealizationReconstruction.finiteAxisFold_identityBarBeta_axisRestriction_eq
+    - AAT.AG.RealizationReconstruction.finiteAxisFold_identityBarBeta_observableRestriction_eq
+  claim_mapping:
+    input_premises:
+      - "one arbitrary G122FamilyInput, arbitrary generated source and target objects, and every existing GeometryTotalHom between their interpreted packages"
+      - "a finite family of source coefficients and source context-local support, axis, and observable values; the entries may reference the retained parameter-relative source data"
+      - "for the fixed application, the already-proved exact equality of the constant-one barBeta and actual five-factor barAlpha"
+    constructed_evidence:
+      - "four finite-indexed evaluations of the actual coefficientHom, supportComp, axisComp, and observableComp fields"
+      - "pointwise composition equations showing that each observed value is passed through the actual second morphism component"
+      - "one-way soundness from a detected coefficient restriction difference to inequality of the complete morphisms"
+      - "restriction of each fixed comparison case and preservation of the actual constant-one beta/barAlpha equality in all four geometry components"
+    proof_use:
+      - "each restriction definition applies a field of the supplied arbitrary morphism directly to a source probe entry"
+      - "the composition laws unfold GeometryTotalHom.comp and GeomReadHom.comp rather than reading a stored target table"
+      - "the fixed-case equalities rewrite by FiniteAxisFoldComparisonCode.evaluate_identityBarBeta_eq_barAlpha after evaluation"
+    unfinished:
+      - "the probe does not yet cover ExactDoctrineHom sourceMap/atomEquiv or SignedExactCoreReadingHom object/equation/operation/invariant/axis/coordinate maps"
+      - "finite restrictions are not proved separating, and no extension or uniqueness function is constructed"
+      - "no finite endpoint display, res/ext/J, fullness, faithfulness, idempotent splitting, or retract generation is obtained"
+      - "the generated beta/barAlpha inequality is not claimed detectable by every or any currently constructed probe"
+      - "comparison groups, section, both kernels, all lift fibers, CS translations, and F remain open"
+  validation:
+    focused_checks: "G122FiniteGeometryProbe passes"
+    named_target_build: "G122FiniteGeometryProbe passed (4260 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "41 declarations in G122FiniteGeometryProbe, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 46 constructs the first noncircular finite restriction surface for arbitrary semantic arrows, covering exactly the four map fields used by GeomReadHom.ext and the fixed D equality case. Because the package/core layer and every sufficiency or reconstruction converse remain absent, G-123 remains unproved."
+audits:
+  premise_delta:
+    discharged:
+      - "finite source restriction for all four computational fields used by GeomReadHom.ext"
+      - "pointwise functoriality under composition for each restricted geometry component"
+      - "connection of the fixed three comparison cases to the same restriction operations"
+    remaining:
+      - "finite restriction of all PackageTotalHom computational fields"
+      - "source-derived finite coverage sufficient for equality, extension, and uniqueness"
+      - "all four AAT reconstruction obligations and D/E/F integration"
+  certificate_provenance: "the probe stores only source points; it has no arrow, target image, extension, equality, coverage, or representability field, and every target value is computed by applying the arbitrary semantic morphism"
+  structure_field_escape: none-found
+  route_integrity: "arbitrary GeometryTotalHom quantification is retained; the fixed comparison connection evaluates the actual Cycle 45 arrows before restricting them"
+  target_fitting: "this is a necessary geometry-layer res component, not a replacement for the full all-component restriction or reconstruction theorem"
+  vacuity: "singleLocal constructs an inhabited one-coefficient/one-context probe with one support, axis, and observable point whenever those source values are supplied; no global separation conclusion is inferred from existence of that constructor"
+  blocking_findings: []
+  next_obligation: "Construct finite source probes for every computational map in PackageTotalHom.base and PackageTotalHom.upper, then investigate a fixed-source coverage theorem that can assemble component restrictions into GeometryTotalHom equality without accepting full-domain maps or an extension certificate."
 ```
