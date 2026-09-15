@@ -2739,7 +2739,7 @@ selection:
     - "remaining A--F obligations"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "Constructed a 12-constructor dependent sum of every primitive family currently declared in AATClosedFamilySignature; constructed both translations at the mandatory tagged parameter; eliminated every impossible G-122-only indexed role; and proved an equivalence with the exact four-role TaggedPrimitiveReference alphabet used by Cycles 14--19."
+  proof_obligation_delta: "Constructed a 12-constructor dependent sum of every primitive family currently declared in AATClosedFamilySignature; constructed both translations at the mandatory tagged parameter; eliminated every currently declared role without a tagged constructor; and proved an equivalence with the exact four-role TaggedPrimitiveReference alphabet used by Cycles 14--19."
   completion_candidate: no
   lean_artifacts:
     - research/lean/ResearchLean/AG/RealizationReconstruction/ClosedPrimitiveRoleExhaustion.lean
@@ -2778,7 +2778,7 @@ audits:
     discharged:
       - "one indexed carrier for every currently declared primitive role"
       - "exact tagged-branch specialization and inverse translations"
-      - "nonexistence of every current G-122-only role on the tagged branch"
+      - "nonexistence at the tagged index of every current role without a tagged constructor"
     remaining:
       - "declaration and provenance of missing fixed-GOAL roles"
       - "final congruence/substitution and semantic-category membership"
