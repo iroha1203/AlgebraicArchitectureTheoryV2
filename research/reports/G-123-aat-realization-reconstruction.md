@@ -16,7 +16,7 @@
 - current proof obligation: Cycle 32 intrinsically finite Atom-occurrence object terms and source-evaluated selected readings
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: define finite maps between object-formation configuration terms and prove their evaluation equations without adding reading-carrier functions
+- next proof obligation: define finite maps between Atom-occurrence object terms and prove family/configuration/object evaluation equations without adding semantic-total maps
 
 ## Requirement ledger
 
@@ -3611,7 +3611,7 @@ audits:
   certificate_provenance: "ListFinite is proved from finite occurrence indices; family/configuration/object laws come from explicit source evaluators and their accepted laws, not from decoder or extension certificates"
   structure_field_escape: "the display stores only Nat/Fin shapes and individual original Atom occurrences; AtomFamily, AtomConfiguration, ArchitectureObject, dependent readings, and object table are constructed outputs"
   route_integrity: "finite occurrences generate the family, source composition generates the configuration, source object formation generates the object, and every later readback factors through that chain"
-  target_fitting: "this provides an intrinsically finite source-derived object-formation syntax component for A while leaving morphism equations and C_Theta construction explicit"
+  target_fitting: "this provides intrinsically finite primitive-Atom object syntax with source-derived family/configuration/object evaluation for A, while leaving morphism equations and C_Theta construction explicit"
   vacuity: "empty object/Atom tables are permitted but prove only their own empty generated families; no semantic coverage or completeness follows"
   blocking_findings:
     - "FIXED: Math B and Lean A rejected the initial full AtomConfiguration table as an opaque infinite predicate payload; it was replaced by nested finite Atom occurrences before merge"
