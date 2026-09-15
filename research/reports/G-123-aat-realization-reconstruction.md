@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 84 intersects the bidirectional-context kernel with the complete three-family local-fiber kernel, reconstructs equality of every computational field with canonical geometry normalization, and proves that exact joint kernel is trivial; projection images/source generators, coverage, and a surviving Extension-changing residual element remain open
+- current proof obligation: Cycle 85 packages the actual stored backward-context action and all three complete local-fiber actions into one faithful representation of the full forward-context kernel and classifies every residual element uniquely by the actual range; source-owned generators, intrinsic image characterization, coverage, and a surviving Extension-changing residual element remain open
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: use the new trivial joint kernel to classify the images and source-owned generators of the stored backward-context and three local-fiber projections, then decompose every residual element toward source coverage; the Cycle 77 canonical-preorder toggle failure remains a failed candidate, not target refutation
+- next proof obligation: construct the source-owned backward-only Extension toggle candidate with forward context identity, prove complete naturality and involutivity through the actual normalized endpoint, and test that it gives a nontrivial backward action with trivial local action; then continue image generation and residual source coverage
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 85 delta | full forward-context kernelの任意の全元について、stored backward-context作用と三つのcomplete local-fiber作用を同一のactual actionとして保持し、その作用がfaithfulであることを証明する | `FiniteAxisFoldResidualCompleteAction`, `finiteAxisFoldResidualCompleteProjection`, `finiteAxisFoldResidualCompleteProjection_ker`, `finiteAxisFoldResidualCompleteProjection_injective`, `finiteAxisFoldResidualCompleteProjectionEquivRange` | 固定actual normalized endpoint; full `FiniteAxisFoldNormalizedAxisSignatureContextKernel`の任意の全元; Cycle 84のexact joint-kernel triviality | backward-context permutationと全context上のSupport/Axis/Observable familyの積準同型を構成; そのkernelをCycle 84のcomplete kernelへ同定; `ker = ⊥`から単射性を導出; domain全体をactual rangeへ群同型化 | residual元の等号をactual complete actionの等号へ還元し、source-owned generatorのsurvival・像生成・分解を検査する忠実な表示へ渡す | actual rangeはsource syntaxでも有限表示でもない; backward/local各像の内在的特徴付け、source generator、section/decomposition、Cycle 76 toggleのactual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 84 delta | stored backward-context作用と三つのcomplete local-fiber作用が同時に不可視なactual residual元について、全computational fieldをcanonical normalizationへ戻しexact joint kernelの忠実性を証明する | `FiniteAxisFoldResidualCompleteKernel`, `finiteAxisFoldResidualCompleteKernel_raw_eq_canonical`, `finiteAxisFoldResidualCompleteKernel_hom_eq_id`, `finiteAxisFoldResidualCompleteKernel_element_eq_one`, `finiteAxisFoldResidualCompleteKernel_eq_bot` | 固定actual normalized endpoint; bidirectional-context kernelとlocal-fiber kernelの交わりの任意の全元; Cycles 72--83の各独立field rigidity | lower source/Atom、upper Atom/object/equation family/operation/invariant/axis/coordinate、geometry coefficient/Support/Axis/Observableの15 computational条件をactual元とkernel membershipから個別に構成; complete extensionalityでraw morphismをcanonical normalizationへ同定; normalized Karoubi identityへ持ち上げて全元を`1`へ固定 | residual representationのjoint actionがfaithfulであることを固定し、各projectionの像・source generator・全residual元の分解とcoverageへ渡す | backward-context/local-family各projectionの像・source-owned generator・section/decomposition、Cycle 76 toggleのactual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 83 delta | actual endpointのcontext-indexed observable carrierを完成型として再入力せず固定構成鎖から`Int`へ戻し、full forward-context kernel上の全`observableEquiv`をcanonical dependent castの逆として同定する | `finiteAxisFoldEndpointObservableEquivInt`, `finiteAxisFoldResidualObservableSelfEquiv`, `finiteAxisFoldResidualContextKernel_observableSelfEquiv_eq_refl`, `finiteAxisFoldResidualContextKernel_observableEquiv_eq_cast_symm` | 固定finite axis-fold/`Int`; support transport、exact-left inverse package、top transportからなるactual endpoint; Cycle 75のforward-context equality; context kernelの任意の全元・全context | actual inverse top、exact-left forward upper、actual inverse supportのobservable equivalenceを順に合成して各endpoint fiberと`Int`の環同型を構成; kernel membershipから得るforward context equalityでactual observable equivalenceを明示castして自己同型化; `Int`の環自己同型剛性を共役して恒等化し、raw equivalenceをcastの逆へ戻す | equation transportのdependent observable fieldを入力certificateなしに消去し、bidirectional/local-fiber kernelとの統合およびcomplete morphism忠実性検査へ渡す | raw dependent family全体とcanonical comparisonとのHEq/equality、local kernelとの交わり上のcomplete morphism equality、三local image/source generator、Cycle 76 toggleのactual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 82 delta | actual equation transportが保持するforward context作用だけでなくstored inverse functorの全context-object作用も保持し、両作用が恒等となるkernel上でcontext equivalence全体を`refl`へ戻す | `finiteAxisFoldNormalizedContextBackwardEquiv`, `finiteAxisFoldNormalizedContextBackwardProjection`, `finiteAxisFoldResidualContextKernelBackwardProjection`, `FiniteAxisFoldResidualBidirectionalContextKernel`, `finiteAxisFoldResidualBidirectionalContextKernel_contextBackward_eq_id`, `finiteAxisFoldResidualBidirectionalContextKernel_contextEquivalence_eq_refl` | 固定actual normalized direct endpoint; 任意の全Autとそのinverse; Cycle 75のforward-context kernel; actual `EquationSystemExactTransport.contextEquivalence.inverse` | hom/invのstored `contextBackward`から全context置換を構成; compositionの反変性をopposite permutation groupへの群準同型として保持; そのkernelからstored inverse object functionを恒等化; Cycle 75のforward恒等性とthin homの一意性から両functorおよびunit/counitを放電 | 非skeletal preorderでforward object作用だけからequivalence全体をidentity視する誤りを防ぎ、equation observable familyとlocal kernelを含むcomplete morphism忠実性の検査へ渡す | equation-observable equivalence、三local familyの像・source generator、Cycle 76 toggleのcomplete naturality/actual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
@@ -225,7 +226,6 @@ audits:
   next_obligation: "Construct protocol semantics, finite generator tables, res/ext/J, and the four reconstruction properties without restricting the independently defined natural transformations."
 ```
 
-## Cycle 2 — Protocol semantics and finite-presentation reconstruction
 
 ```yaml
 ledger_type: target_cycle_result
@@ -8981,4 +8981,116 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Classify the images and construct source-owned generators or sections for the backward-context and three local-fiber projections, then use joint-kernel triviality to decompose every residual element toward source coverage."
+```
+
+## Cycle 85 — Faithful complete residual action
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 85
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 9636aea93fd6e38fe94380e39ff5c7073992ea8c
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 84 proved the exact stored bidirectional-context and complete local-family joint kernel is bottom"
+  proof_dag_predecessors:
+    - "Cycle 82 actual stored backward-context projection"
+    - "Cycle 80 all-context Support, Axis, and Observable local-family projection"
+    - "Cycle 84 complete joint-kernel rigidity"
+  proof_obligation: "Package both actual actions on their full common domain and derive a faithful representation of every forward-context residual element"
+  selection_reason: "Source generation must be tested against an action that loses no residual element, while the actual range must remain distinct from independently generated source syntax."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualFaithfulAction.lean
+  risks:
+    - "shrink the domain to actions already known representable"
+    - "treat actual range membership as source syntax or a finite presentation"
+    - "infer generators, a section, image finiteness, or coverage from injectivity"
+  unchecked:
+    - "intrinsic image descriptions and source-owned generators"
+    - "sections or decompositions for all residual elements"
+    - "Cycle 76 Extension toggle survival through an actual complete normalized automorphism"
+    - "residual source coverage and the remaining D/B/E/F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed the product of the actual stored backward-context permutation and every Support, Axis, and Observable local-fiber action family.  Constructed its homomorphism on the entire forward-context kernel, identified its kernel with the exact Cycle 84 complete kernel, and used that kernel's proved triviality to derive injectivity.  Constructed a group equivalence with the literal actual range; this semantic image is not reused as source syntax, finite presentation, generator family, or section."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualFaithfulAction.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldResidualCompleteAction
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualCompleteProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualCompleteProjection_ker
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualCompleteProjection_injective
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualCompleteProjectionEquivRange
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldResidualCompleteProjection_ker
+      - finiteAxisFoldResidualCompleteProjection_injective
+      - finiteAxisFoldResidualCompleteProjectionEquivRange
+    source_labels:
+      - "GOAL A/D: preserve full comparison action and reconstruct its information on the displayed side"
+      - "user conditions 1, 2, 3, 4, and 5"
+    conjuncts:
+      - "every full forward-context-kernel element -> actual backward and three-family local actions"
+      - "combined action kernel -> exact complete joint kernel"
+      - "Cycle 84 kernel bottom -> injective combined action"
+      - "each residual element -> unique element of the literal actual range"
+    undischarged_assumptions:
+      - "the range has no independently generated source syntax or intrinsic image characterization"
+      - "no source-owned generator, section, or decomposition is constructed"
+      - "Cycle 76 Extension toggle has not survived the complete normalized construction"
+    acceptance_point: "Faithful semantic representation only; no source generation, finite presentation, action-pair surjectivity, coverage, or G-123 completion."
+    port_status: not-applicable
+review:
+  fixed_head: 5006eaaa3
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    reviewed_delta: "9636aea93fd6e38fe94380e39ff5c7073992ea8c..5006eaaa3"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "the combined action is defined on every full forward-context-kernel element"
+      - "both factors are actual stored action projections"
+      - "faithfulness is derived from exact kernel equality and Cycle 84"
+    remaining:
+      - "source generators, intrinsic image conditions, sections, and residual decomposition"
+      - "Cycle 76 actual survival and residual source coverage"
+      - "bottom/full comparison-kernel/lift recovery, general coefficient/input, and remaining B/E/F"
+  certificate_provenance:
+    discharged:
+      - "no injectivity, generator, section, or completed-action certificate is an input"
+      - "the kernel is computed from independently constructed actual action components"
+      - "range surjectivity is asserted only onto the literal range"
+    unresolved:
+      - "range membership contains an actual residual preimage and cannot be source syntax"
+  proof_use:
+    used:
+      - "Cycles 80 and 82 supply the two actual action homomorphisms"
+      - "Cycle 84 supplies exact complete-kernel triviality"
+      - "kernel equality and ker-equals-bottom characterize injectivity"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-faithfulness-checkpoint
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4313 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 5 declarations; standard axioms only"
+    - "fresh fixed-content Math A/B and Lean A/B: PASS; no findings"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct the forward-identity/stored-backward Extension toggle as an actual complete normalized automorphism; prove local action trivial and backward action nontrivial; then begin source-owned image generation and residual decomposition."
 ```
