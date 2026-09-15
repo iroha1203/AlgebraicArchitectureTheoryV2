@@ -368,9 +368,9 @@ def PrimitiveContextRestriction.g122Morphism
   exact X.selectedGeometry.toAATSite.contextPreorder.morphism
     (CategoryTheory.leOfHom value.2.2)
 
-/-- Every primitive context restriction carries all source readability laws
-because it is interpreted through the original preorder's restriction proof,
-not through a separately supplied certificate. -/
+/-- Every primitive context restriction recovers the source readability laws
+from the authored support core preorder's accepted proof field; the primitive
+adds no separate certificate. -/
 theorem PrimitiveContextRestriction.g122Morphism_isRestriction
     {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
     (reference : PrimitiveContextRestriction (.g122 input) (.g122 X)) :

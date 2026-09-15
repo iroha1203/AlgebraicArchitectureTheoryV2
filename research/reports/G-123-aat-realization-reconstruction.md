@@ -13,7 +13,7 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 23 source context-restriction role and readability discharge
+- current proof obligation: Cycle 23 source context-restriction role and exact readability recovery
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
 - next proof obligation: expose raw coordinate restriction and its source preservation equation separately from completed geometry maps
@@ -22,7 +22,7 @@
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`/`PrimitiveSupport`/`PrimitiveGeometryAxis`/`PrimitiveObservable`/`PrimitiveContextRestriction`/`PrimitiveCoverageRequirements`/`PrimitiveOverlapSelection`とG-122のsignature/equation/invariant/raw各role; `PrimitiveContextRestriction.g122Value`, `g122Morphism`, `g122Morphism_isRestriction`; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `ClosedPrimitiveReference`, `closedTaggedPrimitiveReferenceEquiv`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective`; `TaggedPrimitivePresentedMonoid`, `TaggedPrimitiveRelationPresentation`, `taggedPrimitiveRelationEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体; Cycle 16ではそのfinite word間の任意の生成関係 | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価; authored support coreのcontext preorder（`selectedGeometry.toAATSite`経由で型付け）の任意homから両端付きcontext restrictionと全readability lawを構成; 現行closed signatureの全18 roleの依存sumとtagged branchで4 roleが全体である同値; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; 全finite wordのfree monoidと、その任意の生成関係によるactual presented-monoid quotient category | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | complete-geometry coverage/overlap保存式・map-side reading・raw restriction・係数/transport roleの追加とtagged inhabitant判定、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
+| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`/`PrimitiveSupport`/`PrimitiveGeometryAxis`/`PrimitiveObservable`/`PrimitiveContextRestriction`/`PrimitiveCoverageRequirements`/`PrimitiveOverlapSelection`とG-122のsignature/equation/invariant/raw各role; `PrimitiveContextRestriction.g122Value`, `g122Morphism`, `g122Morphism_isRestriction`; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `ClosedPrimitiveReference`, `closedTaggedPrimitiveReferenceEquiv`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective`; `TaggedPrimitivePresentedMonoid`, `TaggedPrimitiveRelationPresentation`, `taggedPrimitiveRelationEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体; Cycle 16ではそのfinite word間の任意の生成関係 | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価; authored support coreのcontext preorder（`selectedGeometry.toAATSite`経由で型付け）の任意homから両端付きcontext restrictionと元入力の全readability lawを回復; 現行closed signatureの全18 roleの依存sumとtagged branchで4 roleが全体である同値; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; 全finite wordのfree monoidと、その任意の生成関係によるactual presented-monoid quotient category | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | complete-geometry coverage/overlap保存式・map-side reading・raw restriction・係数/transport roleの追加とtagged inhabitant判定、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full`; `retractEndomorphismMap_surjective_of_full`, `exists_retractEndomorphismMap_surjective`; `not_full_and_retractGenerated_of_listObjectGeneratedEndomorphisms`; `not_full_and_retractGenerated_of_endomorphismEmbedding` | 各具体入力条件のみ; 一般transferでは明示的な`F.Full`; combined no-goでは各presentation自己射が有限primitive listの全射像またはそこへの単射を持つこと | 任意の完成射を制限して有限tableを構成; retract上の任意自己射を`r ≫ h ≫ i`のfullness preimageから持ち上げる; injective endomorphism serializationの`invFun`からlist decoder全射を構成; mandatory対象の非全射と合成 | 各direct equivalence; mandatory-C obstructionを任意のmultiobject presentation categoryへ移す categorical/cardinal bridge | final `R_Theta` decoderの充満性を固定入力から放電し、actual endpoint-typed syntaxの各自己射embeddingと接続すること |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
@@ -2920,7 +2920,7 @@ goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
 base_oid: 0ad9be31c3e21a9366cb195f719637cdba81ac63
 tracking_issue: 4520
 selection:
-  proof_obligation: "Represent every hom of the original authored support core's context preorder with both endpoints, recover its exact readable ContextMorphism, and construct the source restriction laws without accepting a completed geometry map"
+  proof_obligation: "Represent every hom of the original authored support core's context preorder with both endpoints and recover its exact readable ContextMorphism and accepted source restriction laws without accepting a completed geometry map"
   selection_reason: "The fixed source already supplies a readable context preorder before GeometryPackage morphisms; exposing that hom and deriving its restriction proof separates source restriction data from later map-side reconstruction."
   expected_result_type: proof-obligation-discharged
   lean_targets:
@@ -2933,7 +2933,7 @@ selection:
 result:
   proposed_result_type: proof-obligation-discharged
   completion_candidate: no
-  proof_obligation_delta: "Added a primitive family containing an arbitrary hom of the original authored support core's context preorder, typed through X.selectedGeometry.toAATSite, with both endpoints; recovered the identical endpoint/hom triple and the preorder-generated ContextMorphism; derived IsRestriction from the original preorder proof; extended the current closed sum from 17 to 18 roles while preserving the exact four-role mandatory-C specialization."
+  proof_obligation_delta: "Added a primitive family containing an arbitrary hom of the original authored support core's context preorder, typed through X.selectedGeometry.toAATSite, with both endpoints; recovered the identical endpoint/hom triple and the preorder-generated ContextMorphism; recovered IsRestriction from the accepted source preorder proof field; extended the current closed sum from 17 to 18 roles while preserving the exact four-role mandatory-C specialization."
   evidence:
     - AAT.AG.RealizationReconstruction.PrimitiveContextRestriction
     - AAT.AG.RealizationReconstruction.PrimitiveContextRestriction.g122Value
@@ -2946,10 +2946,10 @@ result:
     constructed_evidence:
       - "the exact source endpoint, target endpoint, and same category hom"
       - "the original preorder's readable ContextMorphism, hence its supportMap, axisMap, and observableRestrict"
-      - "IsRestriction and its support/axis/observable readability plus non-generation clauses, derived from readableMorphism_isRestriction"
+      - "IsRestriction and its support/axis/observable readability plus non-generation clauses, recovered from the accepted source field readableMorphism_isRestriction"
       - "18-role dependent sum and tagged-index elimination"
     proof_use:
-      - "the restriction theorem uses the original source preorder proof rather than a certificate field"
+      - "the restriction theorem consumes the original source preorder's accepted proof field and the primitive adds no new certificate"
       - "the extended equivalence confirms this G-122-only role does not enlarge mandatory C"
     unfinished:
       - "this is within-object context restriction, not a map between two completed geometries"
@@ -2960,16 +2960,16 @@ result:
     named_target_build: "ClosedPrimitiveRoleExhaustion passed (4276 registered jobs; not Research aggregate build)"
     namespace_axiom_audit: "482 and 122 generated/named declarations, standard axioms only"
     research_full_build: not-run
-  verdict: "Cycle 23 constructs source context restriction readability from the original authored support core's preorder only. It does not construct a completed geometry morphism or discharge G-123."
+  verdict: "Cycle 23 recovers source context restriction readability from the original authored support core's preorder only. It does not construct a completed geometry morphism or discharge G-123."
 audits:
   premise_delta:
     discharged:
       - "all selected-preorder homs occur with exact endpoints"
-      - "their readable ContextMorphism and IsRestriction laws are recovered from fixed source data"
+      - "their readable ContextMorphism and accepted IsRestriction laws are recovered from fixed source data"
     remaining:
       - "raw restriction and map-side geometry preservation equations"
       - "final syntax, decoder, membership, and all remaining A--F obligations"
-  certificate_provenance: "IsRestriction is obtained from ContextPreorderCategory.morphism_isRestriction; no proof field is accepted by PrimitiveContextRestriction"
+  certificate_provenance: "IsRestriction is obtained by consuming ContextPreorderCategory.readableMorphism_isRestriction, an allowed source-input field; PrimitiveContextRestriction accepts no additional proof field"
   structure_field_escape: "the constructor stores only two original support-core contexts, typed through the selected site, and their original thin-category hom; no completed geometry map, decoder, extension, or reconstruction evidence"
   route_integrity: "the context hom exists in G122CellInput.selectedGeometry.toAATSite.contextPreorder before geometryPackage and its later morphisms are constructed"
   target_fitting: "context restriction is retained for every source hom; map-side preservation and the final all-context map remain expressly open"
