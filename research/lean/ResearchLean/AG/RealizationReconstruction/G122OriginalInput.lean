@@ -18,6 +18,16 @@ inputs of the fixed G-122 theorem.  This file does not claim that they have
 already been reconstructed from G-123 finite syntax.  In particular no source
 transport, generated mate, `barAlpha`, `barBeta`, normalization, comparison
 group element, section, kernel, or lift fiber is an input field.
+
+## Implementation notes
+
+The original-cell geometry hom below is deliberately the existing
+`GeometryTotalHom` between the packages assembled from two arbitrary original
+cell inputs.  It is defined before, and without reference to, any finite
+display or operation-path syntax.  This fixes an all-component semantic
+subcategory on the southwest input packages whose later enlargement must also
+contain the generated northeast comparison endpoints; the abbrev itself
+supplies neither that enlargement, representability, nor fullness.
 -/
 
 namespace AAT.AG.RealizationReconstruction
@@ -89,6 +99,100 @@ def geometryPackage (Θ : G122FamilyInput.{u, v}) (X : G122CellInput Θ) :
   letI := Θ.atomDecidableEq
   letI := Θ.coefficientCommRing
   exact (X.fixedGeometry Θ).package
+
+/-- The independent complete-geometry morphism type for two arbitrary G-122
+original-cell inputs under one family input.  This is the existing all-component
+geometry morphism and is not defined by finite-display representability. -/
+abbrev G122OriginalCellGeometryHom
+    (Θ : G122FamilyInput.{u, v}) (X Y : G122CellInput Θ) :=
+  let _ := Θ.atomDecidableEq
+  let _ := Θ.coefficientCommRing
+  GeometryTotalHom (X.geometryPackage Θ) (Y.geometryPackage Θ)
+
+namespace G122OriginalCellGeometryHom
+
+/-- Identity in the independent original-cell geometry hom type. -/
+noncomputable def id
+    (Θ : G122FamilyInput.{u, v}) (X : G122CellInput Θ) :
+    G122OriginalCellGeometryHom Θ X X := by
+  letI := Θ.atomDecidableEq
+  letI := Θ.coefficientCommRing
+  exact GeometryTotalHom.id (X.geometryPackage Θ)
+
+/-- Composition in the independent original-cell geometry hom type. -/
+noncomputable def comp
+    (Θ : G122FamilyInput.{u, v}) {X Y Z : G122CellInput Θ}
+    (first : G122OriginalCellGeometryHom Θ X Y)
+    (second : G122OriginalCellGeometryHom Θ Y Z) :
+    G122OriginalCellGeometryHom Θ X Z := by
+  letI := Θ.atomDecidableEq
+  letI := Θ.coefficientCommRing
+  exact GeometryTotalHom.comp first second
+
+/-- Complete-geometry morphisms are equal from equality of the full core map
+and heterogeneous equality of the geometry comparison, rather than from a
+finite restriction equality. -/
+theorem ext
+    (Θ : G122FamilyInput.{u, v}) {X Y : G122CellInput Θ}
+    {first second : G122OriginalCellGeometryHom Θ X Y}
+    (hbase : first.base = second.base)
+    (hgeometry : HEq first.geometry second.geometry) : first = second := by
+  letI := Θ.atomDecidableEq
+  letI := Θ.coefficientCommRing
+  exact GeometryTotalHom.ext hbase hgeometry
+
+/-- Left identity for independently fixed complete-geometry morphisms. -/
+theorem id_comp
+    (Θ : G122FamilyInput.{u, v}) {X Y : G122CellInput Θ}
+    (f : G122OriginalCellGeometryHom Θ X Y) :
+    comp Θ (id Θ X) f = f := by
+  letI := Θ.atomDecidableEq
+  letI := Θ.coefficientCommRing
+  change (𝟙 (X.geometryPackage Θ)) ≫ f = f
+  simp
+
+/-- Right identity for independently fixed complete-geometry morphisms. -/
+theorem comp_id
+    (Θ : G122FamilyInput.{u, v}) {X Y : G122CellInput Θ}
+    (f : G122OriginalCellGeometryHom Θ X Y) :
+    comp Θ f (id Θ Y) = f := by
+  letI := Θ.atomDecidableEq
+  letI := Θ.coefficientCommRing
+  change f ≫ (𝟙 (Y.geometryPackage Θ)) = f
+  simp
+
+/-- Associativity for independently fixed complete-geometry morphisms. -/
+theorem comp_assoc
+    (Θ : G122FamilyInput.{u, v}) {W X Y Z : G122CellInput Θ}
+    (first : G122OriginalCellGeometryHom Θ W X)
+    (second : G122OriginalCellGeometryHom Θ X Y)
+    (third : G122OriginalCellGeometryHom Θ Y Z) :
+    comp Θ (comp Θ first second) third =
+      comp Θ first (comp Θ second third) := by
+  letI := Θ.atomDecidableEq
+  letI := Θ.coefficientCommRing
+  change GeometryTotalHom.comp (GeometryTotalHom.comp first second) third =
+    GeometryTotalHom.comp first (GeometryTotalHom.comp second third)
+  exact @Category.assoc
+    (GeomReadCategory Θ.Carrier) (geometryTotalCategory Θ.Carrier)
+    (W.geometryPackage Θ) (X.geometryPackage Θ)
+    (Y.geometryPackage Θ) (Z.geometryPackage Θ) first second third
+
+end G122OriginalCellGeometryHom
+
+/-- Arbitrary original G-122 cell inputs form an independent semantic
+subcategory whose arrows are all existing `GeometryTotalHom`s between their
+assembled southwest packages.  This does not yet include the generated
+northeast comparison endpoints.  No finite presentation or decoder image
+occurs in this category instance. -/
+noncomputable instance g122OriginalCellGeometryCategory
+    (Θ : G122FamilyInput.{u, v}) : Category (G122CellInput Θ) where
+  Hom := G122OriginalCellGeometryHom Θ
+  id := G122OriginalCellGeometryHom.id Θ
+  comp := G122OriginalCellGeometryHom.comp Θ
+  id_comp := G122OriginalCellGeometryHom.id_comp Θ
+  comp_id := G122OriginalCellGeometryHom.comp_id Θ
+  assoc := G122OriginalCellGeometryHom.comp_assoc Θ
 
 /-- The exact-derived local transport is generated from the original inputs;
 it is not a field of either input structure. -/
