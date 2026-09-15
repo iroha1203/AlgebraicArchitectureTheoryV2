@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 48 finite source probes for equation-transport context and observable maps of arbitrary generated-object morphisms
+- current proof obligation: Cycle 49 combined total-Hom observation agreement and exact separation obligation
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: combine Cycles 46--48 into one total restriction interface and determine whether fixed source generators provide finite separation without accepting full-domain maps or extension certificates
+- next proof obligation: construct nonempty fixed-source probe families and discharge or refute their separation of the required Hom range without accepting full-domain maps or extension certificates
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/B/D Cycle 49 delta | Cycles 46--48のprobe選択だけを統合し、全有限観測一致と射分離を外部命題として正確に切り出す | `G122FiniteTotalHomProbe`, `empty`, `Agreement`, `Separates`, `empty_agreement`, `separates_of_subsingleton`, `empty_not_separates_of_ne`, `finiteAxisFoldEmptyTotalHomProbe`, `finiteAxisFoldEmptyTotalHomProbe_not_separates` | 任意の一つの`G122FamilyInput`、任意のgenerated source/targetと全`GeometryTotalHom`; core/equation source/equation target/geometryのprobe選択のみ | 18族のpointwise観測一致predicate、分離性の外部predicate、空probeの全射対一致、subsingleton Homでのみ成立する条件付き正例、固定generated `barBeta ≠ barAlpha`による具体的負例 | source-generated finite coverageを何が放電すべきかのexact proof obligation; 将来の`res`の等号判定面 | 非空固定source probe、required Hom rangeでの分離放電、unit/counitを含むequation transport全体、ext/J・延長・一意性、endpoint表示、四再構成義務、D全体、CS/F |
 | A/B/D Cycle 48 delta | `EquationSystemExactTransport`のforward/inverse context functorとobservable equivalenceを有限source/target点へ制限し、context arrowの両端依存を保持する | `G122FiniteEquationTransportProbe`, `forwardContextRestriction`, `forwardArrowRestriction`, `backwardContextRestriction`, `backwardArrowRestriction`, `observableRestriction`, 五つのidentity law、五つのcomposition law | 任意の一つの`G122FamilyInput`、任意のgenerated source/target object、任意の全`GeometryTotalHom`; 各packageのcontext、両端index付きreadable arrow、context依存observable値の有限族 | 実context equivalenceのforward/inverse object/arrow評価、実observable ring equivalence評価、identityとforward/observable・inverse逆順composition | Cycle 47 equation-index restrictionを内部equation transportのmap評価へ拡張し、将来のtotal `res`へ統合 | equivalence unit/counitの有限扱い、全域分離/coverage、total res/ext/J、延長・一意性、endpoint表示、四再構成義務、D全体、CS/F |
 | A/B/D Cycle 47 delta | 任意の全成分`GeometryTotalHom`を保持したまま、lower doctrineとupper exact-coreの外側map fieldをsource側有限点へ制限する | `G122FiniteCoreProbe`, `sourceRestriction`, `lowerAtomRestriction`, `upperAtomRestriction`, `objectRestriction`, `equationRestriction`, `operationRestriction`, `invariantRestriction`, `axisRestriction`, `coordinateRestriction`, `lowerAtomRestriction_eq_upperAtomRestriction`, 九つのrestriction composition law | 任意の一つの`G122FamilyInput`、任意のgenerated source/target object、任意の全`GeometryTotalHom`; source値・Atom・object・equation index・endpoint付きoperation・invariant index・axis・coordinateの有限族 | lower/upperの各実map field評価、実`atomEquiv_eq`による二Atom restriction一致、実合成に沿うpointwise restriction | 将来の`res`候補のcore外層とCycle 46 geometry restrictionの統合 | `EquationSystemExactTransport`内部のcontext/observable equivalence restriction、有限probe分離/coverage、ext/J・延長・一意性、endpoint表示、四再構成義務、D全体、CS/F |
 | A/B/D Cycle 46 delta | 任意の全成分`GeometryTotalHom`を保持したまま、その`GeomReadHom.ext`が使う四map fieldをsource側有限点へ制限し、固定D比較へ接続する | `G122FiniteGeometryProbe`, `singleLocal`, `coefficientRestriction`, `supportRestriction`, `axisRestriction`, `observableRestriction`, 四つの`_comp`, `hom_ne_of_coefficientRestriction_ne`, `FiniteAxisFoldGeometryProbe`, 四つの`finiteAxisFold*Restriction`, 四つのconstant-one/`barAlpha` restriction一致定理 | 任意の一つの`G122FamilyInput`、任意のgenerated source/target object、任意の全`GeometryTotalHom`; probeはsource係数値・context・そのsupport/axis/observable値のみ | 各有限indexで実`GeomReadHom`成分を評価するrestriction、合成時のpointwise評価則、係数restriction差から元Hom差へのsoundness、固定三比較case evaluatorへの同じrestriction適用 | 将来の`res`候補の幾何層と、固定D比較の有限観測 | `PackageTotalHom`の全計算成分restriction、有限probeの分離/coverage、ext/J、有限延長・一意性、endpoint表示、四再構成義務、D比較群全体、CS/F |
@@ -4908,4 +4909,85 @@ audits:
   vacuity: "probe cards may be zero and no coverage conclusion follows; nonempty finite generators and separation remain explicit future obligations"
   blocking_findings: []
   next_obligation: "Bundle the Cycle 46 geometry, Cycle 47 outer-core, and Cycle 48 equation-transport probe choices without bundling target images; define a coherent total restriction interface and identify the exact source-generated coverage predicates needed for full GeometryTotalHom extensionality."
+```
+
+## Cycle 49 — Combined observation agreement and separation obligation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 49
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 932a81ec516e2233ae4981014ec0a464c39646e8
+tracking_issue: 4520
+selection:
+  proof_obligation: "Combine the finite probe choices from Cycles 46--48 without bundling observed target values, define exact pointwise agreement and separation, and exhibit a fixed negative instance preventing empty-probe vacuity"
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122FiniteTotalRestriction.lean
+  risks:
+    - "put separation, extension, equality, or target observations into the probe structure"
+    - "define agreement as equality of the original Hom and make separation tautological"
+    - "leave empty probes unchallenged and infer a vacuous coverage result"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Bundled only the core, source/target equation-transport, and geometry probe choices. Defined Agreement as eighteen families of actual pointwise restriction equalities, using HEq at dependent outputs, and Separates as the external implication from that agreement to equality of arbitrary complete morphisms. Constructed the empty probe and proved all morphisms agree on it. Supplied a conditional positive separation theorem only for already-subsingleton Hom types, and a concrete fixed finite-axis-fold negative theorem using the actual generated barBeta/barAlpha inequality."
+  evidence:
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe.empty
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe.Agreement
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe.Separates
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe.empty_agreement
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe.separates_of_subsingleton
+    - AAT.AG.RealizationReconstruction.G122FiniteTotalHomProbe.empty_not_separates_of_ne
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldEmptyTotalHomProbe
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldEmptyTotalHomProbe_not_separates
+  claim_mapping:
+    input_premises:
+      - "one arbitrary G122FamilyInput, arbitrary generated source/target objects, and every existing complete Hom"
+      - "four source/target probe-choice structures from Cycles 46--48; no observed target value is a field"
+      - "for the concrete negative instance, the accepted actual inequality between generated barBeta and five-factor barAlpha"
+    constructed_evidence:
+      - "pointwise agreement across lower source/Atom, upper Atom/object/equation/operation/invariant/axis/coordinate, equation forward/backward context object/arrow and observable, and geometry coefficient/support/axis/observable restrictions"
+      - "an external separation proposition over every pair of arbitrary complete morphisms"
+      - "an empty-probe agreement proof for every pair and its generic nonseparation consequence"
+      - "a fixed nonseparation theorem for the actual finite-axis-fold generated barBeta and barAlpha"
+      - "a positive theorem explicitly conditional on the entire Hom type already being subsingleton"
+    proof_use:
+      - "Agreement calls the Cycle 46--48 restriction functions rather than comparing completed morphisms directly"
+      - "empty_agreement eliminates every Fin 0 probe index"
+      - "the fixed negative theorem passes FiniteAxisFoldComparisonCode.generatedBarBeta_ne_barAlpha to empty_not_separates_of_ne"
+    unfinished:
+      - "Separates is not a field and is not proved for any required nontrivial Hom range"
+      - "the subsingleton positive theorem does not discharge the fixed G-123 coverage obligation"
+      - "no nonempty fixed-source total probe is yet constructed"
+      - "unit/counit equation-equivalence data remain outside Agreement"
+      - "no total decoder res/ext/J, extension, uniqueness, fullness, faithfulness, idempotent splitting, or retract generation is constructed"
+      - "D group/kernel/fiber recovery, CS translations, and F remain open"
+  validation:
+    focused_checks: "G122FiniteTotalRestriction passes"
+    named_target_build: "G122FiniteTotalRestriction passed (4263 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "46 declarations in G122FiniteTotalRestriction, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 49 makes finite separation an explicit non-tautological obligation over actual sampled maps and proves that the empty choice fails on the fixed D comparison Hom. It does not discharge nonempty source-generated separation or any reconstruction inverse, so G-123 remains unproved."
+audits:
+  premise_delta:
+    discharged:
+      - "one combined source/target probe-choice type with no target observations"
+      - "exact pointwise agreement predicate over all maps sampled in Cycles 46--48"
+      - "conditional subsingleton separation and one fixed nontrivial negative separation instance"
+    remaining:
+      - "a negative Agreement instance is not supplied in Cycle 49: empty probes make Agreement hold for every pair, while constructing a nonempty probe that detects an actual difference is the next open source-generation obligation"
+      - "a concrete positive Separates instance for the required nontrivial Hom range is not supplied: the available theorem is conditional on an already-subsingleton Hom type, and the missing fixed-input instance is the separation theorem still to be proved"
+      - "construction of nonempty probe families from the fixed source generators"
+      - "separation of the required nontrivial complete-Hom ranges"
+      - "unit/counit handling, total res/ext/J, extension/uniqueness, and all remaining A--F obligations"
+  certificate_provenance: "Separates is external and has no role in constructing Agreement; the only positive theorem assumes semantic Hom subsingletonity and is explicitly not credited as fixed-input discharge; the negative fixed theorem uses the actual accepted arrow inequality"
+  structure_field_escape: none-found
+  route_integrity: "Agreement compares eighteen actual restriction outputs pointwise and never includes first=second as a field; dependent outputs use HEq"
+  target_fitting: "the combined interface exposes the exact missing separation obligation instead of moving it into input data or calling finite sampling reconstruction"
+  vacuity: "empty probes are proved observationally vacuous and concretely nonseparating on the fixed D Hom; no success follows from zero-card tables"
+  blocking_findings: []
+  next_obligation: "Construct nonempty probe families from the fixed G-123 primitive/object/context/operation generators, then test whether Agreement separates the mandatory full Hom range; record any failure as a candidate-construction obstruction rather than a target refutation."
 ```
