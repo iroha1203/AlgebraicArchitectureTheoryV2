@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 80 packages the complete Support, Axis, and Observable fiber actions multiplicatively over all contexts and identifies their exact combined kernel; source image/generators, coverage, and a surviving Extension-changing residual element remain open
+- current proof obligation: Cycle 81 constructs the complete lower doctrine-source action of every actual normalized endpoint automorphism and proves it is identity from the fixed two-element source carrier and pointed-source law; source image/generators, coverage, and a surviving Extension-changing residual element remain open
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: determine the images of the three complete fiber-action families and construct a source generator only after its complete local action is shown to satisfy the actual geometry naturality; the Cycle 77 canonical-preorder toggle failure remains a failed candidate, not target refutation
+- next proof obligation: combine the new lower-source rigidity with the existing upper/context/local kernel tower, determine the images of the three complete fiber-action families, and construct a source generator only after its complete local action satisfies actual geometry naturality; the Cycle 77 canonical-preorder toggle failure remains a failed candidate, not target refutation
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 81 delta | actual normalized endpointの全自己同型について、upperのAtom作用とは別のlower exact-doctrine `sourceMap` を全Source carrier上の作用として保持し、固定入力から恒等へ放電する | `FiniteAxisFoldResidualDoctrineSource`, `finiteAxisFoldNormalizedDoctrineSourceEquiv`, `finiteAxisFoldNormalizedDoctrineSourceProjection`, `finiteAxisFoldNormalizedDoctrineSourceEquiv_selected`, `finiteAxisFoldNormalizedDoctrineSourceEquiv_eq_refl`, `finiteAxisFoldNormalizedDoctrineSourceProjection_apply`, `finiteAxisFoldNormalizedDoctrineSourceMap_eq_id`, `finiteAxisFoldResidual_doctrineSourceMap_eq_id` | 固定actual normalized direct endpoint; 任意の全Autとそのinverse; endpointのpointed-source equation; 固定decoded Source carrier `ULift (Fin 2)` と選択点 `1` | hom/invのactual `sourceMap`から全Source置換を構成し、Karoubi自己同型の両逆式をsourceで評価; pointed-source lawで`1`を固定; 残る`0`は置換の単射性で固定; 全Autのsource projectionとsourceMapを恒等化 | lower base成分を未追跡のまま最深kernelを自明視する誤りを防ぎ、既存のupper/context/local剛性との統合とresidual source coverageへ渡す | context/local作用の像・source generator、Cycle 76 toggleのcomplete naturality/actual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 80 delta | Cycle 79の三local-fiber作用を全context同時の群準同型としてpackagingし、三作用が同時に不可視となるexact combined kernelを構成・特徴づける | `finiteAxisFoldResidualContextKernelSupportFiberProjection`, `finiteAxisFoldResidualContextKernelAxisFiberProjection`, `finiteAxisFoldResidualContextKernelObservableFiberProjection`, 三つの`_apply`, 三つの`FiberFamilyProjection`, `FiniteAxisFoldResidualLocalFiberActionFamily`, `finiteAxisFoldResidualContextKernelLocalFiberProjection`, `FiniteAxisFoldResidualLocalFiberKernel`, `finiteAxisFoldResidualLocalFiberKernel_eq`, `finiteAxisFoldResidualLocalFiberKernel_mem_iff` | 固定actual normalized endpoint; `FiniteAxisFoldNormalizedAxisSignatureContextKernel`の任意の全元; 任意の全context; Cycle 78のcomplete Sigma群作用; Cycle 79のactual fiber自己同値 | base-fixed Sigma permutationのsubgroupを構成し、各fiberへのrestrictionを群準同型化、canonical fiber equivalenceで共役; 三familyをPi群準同型と積へpackaging; combined kernelを三kernelの交わりおよび全contextで三actual作用が恒等となる条件と同値化 | 局所作用の乗法性を仮定せずactual joint actionから放電し、combined-kernel分類とsource image/generator探索へ渡す | 三familyの像・非自明元・source generatorは未構成; Cycle 76 toggleのcomplete naturality/actual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 79 delta | context-object kernelの全元について、Cycle 78のdependent Sigma作用を全contextごとのSupport・Axis・Observable fiber自己同値へ降ろし、actual local componentとの計算則とreading保存を証明する | `finiteAxisFoldResidualContextKernel_context_eq`, `finiteAxisFoldResidualContextKernelSupportEquiv`, `finiteAxisFoldResidualContextKernelSupportEquiv_apply`, `finiteAxisFoldResidualContextKernelSupportEquiv_reads`, `finiteAxisFoldResidualContextKernelAxisEquiv`, `finiteAxisFoldResidualContextKernelAxisEquiv_apply`, `finiteAxisFoldResidualContextKernelAxisEquiv_reads`, `finiteAxisFoldResidualContextKernelObservableEquiv`, `finiteAxisFoldResidualContextKernelObservableEquiv_apply`, `finiteAxisFoldResidualContextKernelObservableEquiv_reads` | 固定actual normalized endpoint; `FiniteAxisFoldNormalizedAxisSignatureContextKernel`の任意の全元; 任意の全context; Cycle 78の三complete Sigma permutation; Cycle 73のresidual Atom identity | base-fixed Sigma permutationを各fiberのsubtypeへ制限して元fiberと共役する一般構成; context-kernel等式を全contextで評価; actual local componentをその等式でcastした明示計算則; SupportではAtom identityを実使用し、三reading保存を証明 | context actionをidentityと仮定せずkernel membershipから放電した上で、残る純粋なfiberwise local actionの分類・combined kernel・source generator探索へ渡す | 三familyの乗法的packaging/combined kernel、像・source generatorは未構成; Cycle 76 toggleのcomplete naturality/actual survivalは未証明; residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 78 delta | 同じactual normalized residual全元について、contextと局所値の依存を切らず、全context上の全support・axis・observable作用をそれぞれ完全なSigma carrier上の群作用として保持し、そのkernelを分離する | `FiniteAxisFoldResidualContextSupport`, `FiniteAxisFoldResidualContextAxis`, `FiniteAxisFoldResidualContextObservable`, `finiteAxisFoldContextSupportMap`, `finiteAxisFoldContextAxisMap`, `finiteAxisFoldContextObservableMap`, `finiteAxisFoldNormalizedContextSupportEquiv`, `finiteAxisFoldNormalizedContextAxisEquiv`, `finiteAxisFoldNormalizedContextObservableEquiv`, 三つのnormalized/residual projection、三つのkernelと`_apply`定理 | 固定actual normalized direct endpoint; 任意のfull normalized Autとそのinverse; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元; actual `GeomReadHom`の完全なlocal comparison data | automorphismのcontextForwardとlocal componentをdependent pairに同時適用し、inverse automorphismから逆写像を構成; `hom_inv_id`/`inv_hom_id`をcomplete geometry morphismへ評価して両逆則を放電; 三つの群準同型とkernel membershipの全dependent pair評価 | Cycle 75のcontext-object projectionを局所値まで縮小せず精密化し、context-trivial kernel上のfiberwise local action解析とsource coverageへ渡す | 三projectionの像・相互関係・source generatorは未構成; Cycle 76 toggleのcomplete naturality/actual survivalは未証明; residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
@@ -8497,4 +8498,121 @@ audits:
     - "GitHub CI: 7/7 PASS on the fixed content head"
   blocking_findings: []
   next_obligation: "Determine the images of the three complete fiber-action families and construct source-owned generators only through complete naturality-respecting geometry morphisms."
+```
+
+## Cycle 81 — Lower doctrine-source rigidity
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 81
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: d4e3bb7142ba99018ae96e7fe0a5fd4d33bc144d
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 80 isolated the complete local-fiber kernel, but the lower exact-doctrine source map had not been projected or discharged independently of the upper Atom and geometry components"
+  proof_dag_predecessors:
+    - "Cycle 72--75 residual upper-component rigidity and complete context-object action"
+    - "Cycle 78--80 complete local actions and their exact joint kernel"
+    - "the fixed decoded finite-axis-fold doctrine with Source carrier ULift (Fin 2) and selected point 1"
+  proof_obligation: "Construct the actual action of every normalized endpoint automorphism on the complete lower doctrine-source carrier and discharge that action from the fixed pointed two-source input"
+  selection_reason: "A deepest-kernel or source-coverage claim cannot identify a complete morphism while its lower sourceMap remains untracked.  This component is independent of the already proved Atom equivalence and must be discharged separately."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualSourceRigidity.lean
+  risks:
+    - "infer source-map identity from Atom identity"
+    - "check only the selected source rather than all Source values"
+    - "accept an inverse source map or finite permutation table as input"
+    - "call lower-source rigidity residual source coverage or complete morphism rigidity"
+  unchecked:
+    - "images and source generators of the context and three complete local-fiber actions"
+    - "Cycle 76 toggle survival through a complete naturality-respecting geometry morphism"
+    - "residual source coverage and the remaining D/B/E/F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed the complete source permutation of every actual normalized endpoint automorphism from the hom sourceMap and the inverse automorphism sourceMap, with inverse laws obtained by evaluating the actual Karoubi automorphism equations.  The pointed-source equation fixes the selected decoded source 1.  Exhaustion of the fixed two-element carrier and injectivity then fix source 0, so the entire permutation and the underlying lower sourceMap are identity.  The final residual theorem applies this stronger all-automorphism result and does not use kernel membership as a certificate."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualSourceRigidity.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldResidualDoctrineSource
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedDoctrineSourceEquiv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedDoctrineSourceProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedDoctrineSourceEquiv_selected
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedDoctrineSourceEquiv_eq_refl
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedDoctrineSourceProjection_apply
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedDoctrineSourceMap_eq_id
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidual_doctrineSourceMap_eq_id
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldNormalizedDoctrineSourceEquiv
+      - finiteAxisFoldNormalizedDoctrineSourceProjection
+      - finiteAxisFoldNormalizedDoctrineSourceEquiv_eq_refl
+      - finiteAxisFoldNormalizedDoctrineSourceMap_eq_id
+      - finiteAxisFoldResidual_doctrineSourceMap_eq_id
+    source_labels:
+      - "GOAL A/D: retain every primitive input component and preserve the complete comparison action"
+      - "user conditions 1, 2, 4, and 5: keep full quantifiers, construct evidence from fixed input, and do not conflate separate reconstruction obligations"
+    conjuncts:
+      - "every full normalized endpoint automorphism -> actual permutation of every lower doctrine Source value"
+      - "the selected source 1 is fixed by the existing pointed-source law"
+      - "the remaining source 0 is fixed by full permutation injectivity"
+      - "every full normalized sourceMap, hence every residual sourceMap, is identity"
+    undischarged_assumptions:
+      - "no context/local image or source generator is constructed"
+      - "the Cycle 76 Extension toggle has not been lifted to an actual normalized automorphism"
+      - "residual source coverage and broader G-123 reconstruction remain open"
+    acceptance_point: "This cycle discharges the previously untracked lower doctrine-source component on the full normalized automorphism group.  It is not context/local image classification, residual source coverage, or G-123 completion."
+    port_status: not-applicable
+review:
+  fixed_head: pending
+  independent_lanes:
+    math_a: pending
+    math_b: pending
+    lean_a: pending
+    lean_b: pending
+  resolved_findings: []
+  direct_response:
+    reviewed_delta: pending
+    verdict: pending
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "the inverse source action comes from the actual inverse automorphism"
+      - "the selected source is fixed by the pre-existing ExtInstHom source equation"
+      - "the other source is fixed by exhaustive Fin 2 elimination and permutation injectivity"
+      - "the function-level sourceMap identity is derived from the complete permutation equality"
+    remaining:
+      - "context/local action images and source generators"
+      - "Cycle 76 actual survival and residual source coverage"
+      - "bottom/full comparison-kernel/lift recovery, general coefficient/input, and remaining B/E/F"
+  certificate_provenance:
+    discharged:
+      - "both directions of the source permutation are projections of actual hom/inverse morphisms"
+      - "two-source exhaustion is the fixed decoded doctrine carrier, not a replacement input"
+    unresolved:
+      - "source generation and survival through the fixed complete construction remain open"
+  proof_use:
+    used:
+      - "hom_inv_id and inv_hom_id are evaluated at every source value to prove both inverse laws"
+      - "the actual pointed-source equation fixes source 1"
+      - "Equiv.injective excludes sending source 0 to the already fixed source 1"
+      - "the residual theorem consumes the stronger full-Aut sourceMap theorem"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check for FiniteAxisFoldResidualSourceRigidity: PASS"
+    - "focused exact target build for FiniteAxisFoldResidualSourceRigidity: PASS (4309 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 8 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Combine lower-source rigidity with the existing upper/context/local tower, then determine actual context/local images and source-owned generators without bypassing complete geometry naturality."
 ```
