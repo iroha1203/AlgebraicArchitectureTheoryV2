@@ -13,10 +13,10 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 30 identity, composition, and category laws for finite G-122 generator actions
+- current proof obligation: Cycle 31 candidate failure — finite outer indexing does not make arbitrary reading-carrier functions finite syntax
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: add source-derived structure/quantity reading equations and integrate the display/action data into the actual presentation category
+- next proof obligation: define source-provenanced finite reading codes and evaluation, or an intrinsic preservation language, without storing total carrier functions or a semantic realization in presentation objects
 
 ## Requirement ledger
 
@@ -3461,4 +3461,76 @@ audits:
   vacuity: "empty displays still admit category laws, but no semantic coverage or completion conclusion is drawn from them"
   blocking_findings: []
   next_obligation: "Add source-derived structure/quantity reading equations and integrate finite displays/actions into the actual presentation category."
+```
+
+## Cycle 31 — Rejected arbitrary reading-function payloads
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 31
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 09837c0d21ba8c1f9c2e6cd1c1d8ded717db86ab
+tracking_issue: 4520
+selection:
+  proof_obligation: "Test whether a finite object-indexed family of total StructureMaps/SelectedQuantities carrier functions with selected-value equations is valid parameter-relative finite generator data"
+  selection_reason: "A requires structure and quantity readings, but the fixed target forbids repackaging completed map families as finite constants. The candidate had to be checked before becoming part of C_Theta."
+  expected_result_type: proof-checkpoint
+  risks:
+    - "mistake a finite outer Fin index for finite information content"
+    - "constrain functions only at the selected value while retaining arbitrary off-selected information"
+    - "call unproven raw payloads candidate C_Theta syntax"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "The proposed G122ObjectGeneratorReadingAction and its integration into G122FiniteObjectGeneratorAction were rejected and removed. Each entry stored unrestricted total functions on potentially infinite reading carriers; no Sigma/Theta provenance, finite code, generation rule, information-size account, or evaluator derived those functions. A selected-value equation constrained only one input and did not determine the retained off-selected behavior."
+  lean_artifacts: []
+  evidence:
+    - "four-lane review of rejected head 1aed42514dd23c7f99143d8b297ac753b56c06da"
+  claim_mapping:
+    input_premises:
+      - "arbitrary StructureMaps and SelectedQuantities carrier types and their selected values, owned by each original ArchitectureObject"
+    rejected_candidate:
+      - "one unrestricted total function on each reading carrier for every finite object-table index"
+      - "one equality only at the selected source value for each function"
+    obstacle:
+      - "finite outer indexing does not make the arbitrary function payloads finite syntax"
+      - "the single selected-value equation permits constant-to-target maps and leaves all off-selected information unconstrained"
+      - "function extensionality would make those unconstrained values observable in action equality, threatening future res/ext/J faithfulness"
+    unfinished:
+      - "a source-provenanced finite reading code or intrinsic preservation language and its evaluator"
+      - "proof that eventual syntax determines exactly the semantic reading component without extra choices"
+      - "all presentation, semantic extension, and remaining A--F obligations"
+  validation:
+    rejected_head_focused_check: "AATClosedFamilySignature passed; 648 declarations, standard axioms only"
+    rejected_head_named_target: "ClosedPrimitiveRoleExhaustion passed (4276 registered jobs; not Research aggregate build)"
+    accepted_delta: "report-only candidate-failure record; rejected Lean declarations removed"
+    research_full_build: not-run
+  verdict: "Cycle 31 rejects this candidate finite encoding. The fixed G-123 target is not refuted: other source-provenanced syntaxes or intrinsic preservation languages remain to be constructed and tested."
+candidate_failure_record:
+  candidate: "Finite object-indexed unrestricted total reading-carrier functions plus selected-value equations"
+  obstacle: "The payload retains arbitrary information over potentially infinite carriers, and preservation at one selected point neither supplies a finite representation nor a substantive whole-reading preservation law."
+  tried_construction: "Typed StructureMaps and SelectedQuantities functions were attached at each displayed object index; identity/composition were locally valid, but four-lane review found the information-content and provenance defect before merge."
+  forbidden_shortcuts:
+    - "rename the same total functions as codes or references without an independent syntax and evaluator"
+    - "define admissible semantic morphisms as precisely those already represented by the proposed payload"
+    - "use constant-to-target functions to claim preservation of the full reading"
+  status: "candidate encoding rejected; fixed target not refuted"
+  paper_conclusion_at_risk: "Retaining arbitrary completed reading functions as finite data would make the claimed reconstruction circular and erase the information-recovery contribution."
+audits:
+  premise_delta:
+    discharged: []
+    remaining:
+      - "construct a non-circular finite reading syntax and its source provenance"
+      - "prove the actual preservation equations and future res/ext/J determination"
+      - "all remaining A--F obligations"
+  certificate_provenance: "the rejected total functions had no acceptable source provenance or evaluator; none remains in the accepted Lean surface"
+  structure_field_escape: "rejected and removed before merge"
+  route_integrity: "candidate failure only; no target-level impossibility is claimed"
+  target_fitting: "the rejection enforces anti-weakening clause 3 and preserves the requirement to recover reading maps rather than accept them as opaque payloads"
+  vacuity: "constant-to-target inhabitants demonstrate why selected-value equality alone is too weak"
+  blocking_findings:
+    - "FIXED by removal: unrestricted total reading-carrier functions were not finite syntax"
+    - "FIXED by report correction: the rejected payload is not counted as candidate C_Theta evidence"
+  next_obligation: "Define source-provenanced finite reading codes and evaluation, or an intrinsic preservation language, without storing total carrier functions or a semantic realization in presentation objects."
 ```
