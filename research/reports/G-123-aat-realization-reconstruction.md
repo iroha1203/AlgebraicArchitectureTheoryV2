@@ -3596,8 +3596,9 @@ result:
       - "the finite term family is not complete and is not final presentation syntax"
       - "semantic object-map extension, res/ext/J, and remaining A--F obligations remain open"
   validation:
-    focused_checks: "AATClosedFamilySignature passed"
-    namespace_axiom_audit: "652 declarations, standard axioms only"
+    focused_checks: "AATClosedFamilySignature and ClosedPrimitiveRoleExhaustion 2/2 pass"
+    named_target_build: "ClosedPrimitiveRoleExhaustion passed (4276 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "652 and 140 declarations, standard axioms only"
     research_full_build: not-run
   verdict: "Cycle 32 constructs intrinsically finite Atom-occurrence object terms and source-derived family/configuration/object/selected-reading evaluation. It does not construct morphism preservation, completeness, or semantic extension and does not discharge G-123."
 audits:
