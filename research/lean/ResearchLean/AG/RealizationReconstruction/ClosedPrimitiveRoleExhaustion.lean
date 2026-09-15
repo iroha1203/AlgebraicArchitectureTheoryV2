@@ -8,8 +8,9 @@ This module combines every role actually declared in
 `AATClosedFamilySignature` into one dependent tagged sum.  It then proves that
 on the mandatory G-123(C) tagged-operation branch this entire current sum is
 exactly the four-role `TaggedPrimitiveReference` alphabet used in Cycles
-14--19: every currently declared context, diagnostic, signature, equation,
-invariant, coordinate, and relation family has no constructor at that index.
+14--19: every currently declared context, Support, geometry-Axis, Observable,
+diagnostic, signature, equation, invariant, coordinate, and relation family
+has no constructor at that index.
 
 This is a source-declaration audit, not final role exhaustion.  Among other
 components, the fixed GOAL also requires complete-geometry coverage, overlap,
