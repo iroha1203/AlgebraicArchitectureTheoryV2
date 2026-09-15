@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 63 exact two-element subgroup of the same displayed bottom-kernel involution and its formal orbit in every bottom lift fiber
+- current proof obligation: Cycle 64 explicit source-to-actual group equivalence for the same displayed C2 bottom restriction-kernel fragment
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: lift the canonical normalized and bottom-qualified comparison sections into source syntax and extend displayed kernel coverage beyond this exact C2 subgroup without completed semantic group-element leaves
+- next proof obligation: lift the canonical normalized and bottom-qualified comparison sections into source syntax and extend displayed kernel coverage beyond the source-equivalent C2 fragment without completed semantic group-element leaves
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 64 delta | source-law quotient内の同じC2 fragmentと実bottom restriction kernel内のC2 fragmentの両方向対応を構成し、forwardがactual decoder evaluationであることを全元について示す | `FiniteAxisFoldDisplayedKernelEquiv.sourceSubgroup`, `actualSubgroup`, `sourceGenerator`, `actualGenerator`, `ambientComparisonElement_ne_one`, `sourceGenerator_ne_one`, `actualGenerator_ne_one`, `toActual`, `toSource`, `toSource_toActual`, `toActual_toSource`, `toActual_mul`, `toActual_underlying_evaluation`, `sourceActualEquiv`, `sourceActualEquiv_sourceGenerator` | 固定finite axis-fold/`Int`; Cycle 59 source comparison generatorとactual evaluation; Cycle 61 actual bottom kernel element; Cycle 62両側の二乗則と非自明性 | 両側のexact two-element Subgroup、identity/generator case map、左右inverse、積保存、全source C2元でunderlying actual evaluationとの一致、generator対応 | Dの表示側回復について、このC2 fragment全元の表示→実現と読み戻しを群同型として固定する | C2 fragmentのみで全比較群・全kernelではない; semantic normalized/bottom section全元のsource syntax、一般係数/一般入力、B/E/Fは未完了 |
 | D Cycle 63 delta | Cycle 62で残したformal orbit gapを閉じ、同じbottom kernel involutionのidentityとgeneratorからなる部分群を構成して、その標準作用orbitが任意のbottom lift fiberで先の二点集合と一致することを示す | `FiniteAxisFoldBottomKernelOrbit.oppositeElement_mul_self`, `displayedInvolutionSubgroup`, `mem_displayedInvolutionSubgroup_iff`, `orbit_canonicalLift_eq_pair`, `orbit_canonicalLift_ncard` | 固定finite axis-fold入力と係数`Int`; Cycle 62のsource由来`element_mul_self`、`canonicalShiftedPair`、cardinality 2; Cycle 61のbottom lift action | opposite kernel内の二乗identity、`{1, op element}`をcarrierとする実Subgroup、そのmembership iff、標準`MulAction.orbit`と二点FinsetのSet等号、orbitのncard 2 | Dの同一構成について、表示されたrestriction-kernel C2部分群が各bottom lift fiberに作るorbitを形式的に分類する | このC2は全bottom kernelではなくorbitも全lift fiberとは限らない; semantic sectionのsource syntax、他kernel元、一般係数/一般入力、B/E/Fは未完了 |
 | D Cycle 62 delta | Cycle 61の同じbottom restriction-kernel元の位数2をsource congruenceから運び、任意のbottom lift fiberでcanonical/shiftedの相異なる2点と二回shift後の復帰を示す | `FiniteAxisFoldBottomKernelInvolution.directAmbientAut_mul_self`, `ambientComparisonElement_mul_self`, `rawElement_mul_self`, `bottomRawElement_mul_self`, `element_mul_self`, `shifted_twice_eq_canonicalLift`, `canonicalShiftedPair`, `canonical_shifted_pair_card` | 固定finite axis-fold入力と係数`Int`; source-law合同`ambientDirect_sq`; Cycle 59の表示比較section/evaluation; Cycle 61の同じbottom raw/kernel元と全fiber非自明作用 | source quotient内の二乗identity、表示比較group・実raw group・bottom raw group・restriction kernelへの順次移送、各bottom fiberで二回shiftの復帰、canonical/shiftedからなるcardinality 2のFinset | Dの同一構成について、表示された情報損失元が各bottom lift fiberに与える非自明な二段作用を回復する | 生成部分群orbitとFinsetの等号は未定義でorbit分類ではない; 全bottom kernel/全lift fiber、semantic sectionのsource syntax、一般係数/一般入力、B/E/Fは未完了 |
 | D Cycle 61 delta | Cycle 60の同じraw/kernel元について両endpointのbottom identityと係数identityを示し、bottom-qualified比較制限kernelへ持ち上げ、任意のbottom-qualified lift fiberで非自明に作用させる | `FiniteAxisFoldBottomRestrictionKernel.rawElement_source_bottom`, `rawElement_target_bottom`, `rawElement_source_coefficient`, `rawElement_target_coefficient`, `RawBottomComparison`, `NormalizedBottomComparison`, `bottomRestrictionHom`, `bottomRawElement`, `bottomRestrictionHom_bottomRawElement`, `bottomRawElement_ne_one`, `element`, `element_ne_one`, `bottom_coefficient_packet`, `canonicalLift`, `shiftedLift`, `shiftedLift_ne_canonicalLift` | 固定finite axis-fold入力と係数`Int`; Cycle 60の同じraw元・restriction kernel証明; Cycle 56/57のsource bottom/coefficient identity; accepted bottom-qualified section/right inverseとfree kernel action | source bottom/係数identity、raw比較式をbottom functorで運びmapped `barAlpha` inverseで消去して得るtarget bottom identity、`Int`からのRingHom一意性によるtarget係数identity、bottom-qualified raw/kernel元と非自明性、任意bottom-normalized元のcanonical liftと異なるshift | Dの同一対応について底固定比較群・係数成分・restriction kernel・各bottom lift fiberを接続する | 一つの表示kernel元のみで全bottom kernel/全lift coverageではない; semantic canonical sectionのsource syntax、一般係数/一般入力、B/E/Fは未完了 |
@@ -6521,4 +6522,122 @@ audits:
     - "fresh Math A/B and Lean A/B review: PASS with no findings"
   blocking_findings: []
   next_obligation: "Construct source-syntax preimages for the canonical normalized and bottom-qualified comparison sections, then expand displayed kernel coverage beyond the exact C2 subgroup without semantic group-element leaves."
+```
+
+## Cycle 64 — Source-to-actual equivalence for the displayed C2 kernel
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 64
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 03b3113b56e32d1838d1065795f6139a0f40da7f
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 63 constructed the actual displayed C2 orbit, but the source-law C2 fragment and actual bottom-kernel C2 fragment were not yet connected by an explicit two-way group equivalence"
+  proof_dag_predecessors:
+    - "Cycle 59 source-law comparison generator and actual comparisonEvaluationHom"
+    - "Cycle 61 same actual bottom restriction-kernel element"
+    - "Cycles 62/63 source-derived involution laws and exact actual C2 orbit"
+  proof_obligation: "Construct exact C2 subgroups on the source and actual sides, prove explicit evaluation/readback inverse maps and multiplication preservation, and identify the forward map with actual decoder evaluation on every source-fragment element"
+  selection_reason: "D requires display-side recovery in both directions. This proves it for the complete two-element fragment already constructed, rather than merely placing analogous groups side by side."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldDisplayedKernelEquiv.lean
+  risks:
+    - "define two C2 groups without proving the forward map is actual decoder evaluation"
+    - "accept a bijectivity certificate or completed semantic group element as input"
+    - "confuse fragment equivalence with full comparison-group or kernel recovery"
+  unchecked:
+    - "source-syntax preimages of every semantic normalized and bottom-qualified section value"
+    - "coverage of all comparison-group and restriction-kernel elements"
+    - "general coefficient/input and remaining B/E/F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed exact identity/generator subgroups in the source comparison presentation and actual bottom restriction kernel. Defined forward evaluation and inverse readback case maps, proved both inverse laws and multiplication preservation, packaged them as a MulEquiv, and proved that forgetting qualifications makes the forward map equal to comparisonEvaluationHom on every source C2 element."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldDisplayedKernelEquiv.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldDisplayedKernelEquiv.sourceSubgroup
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldDisplayedKernelEquiv.actualSubgroup
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldDisplayedKernelEquiv.toActual
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldDisplayedKernelEquiv.toSource
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldDisplayedKernelEquiv.toSource_toActual
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldDisplayedKernelEquiv.toActual_toSource
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldDisplayedKernelEquiv.toActual_mul
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldDisplayedKernelEquiv.toActual_underlying_evaluation
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldDisplayedKernelEquiv.sourceActualEquiv
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldDisplayedKernelEquiv.sourceActualEquiv_sourceGenerator
+  claim_mapping:
+    theorem_names:
+      - toSource_toActual
+      - toActual_toSource
+      - toActual_mul
+      - toActual_underlying_evaluation
+      - sourceActualEquiv_sourceGenerator
+    source_labels:
+      - "GOAL D1/D2: preserve comparison changes, restricted kernel, and display-side recovery"
+      - "GOAL D: transport all elements of each claimed displayed subgroup, not a selected witness only"
+      - "n1014: comparison-group translation and readback"
+    conjuncts:
+      - "all source C2 values -> actual kernel C2 by a multiplicative map"
+      - "all actual C2 values -> source C2 with both inverse laws"
+      - "forward underlying raw comparison -> actual comparisonEvaluationHom"
+      - "source generator -> same actual bottom-kernel generator"
+    undischarged_assumptions:
+      - "equivalence covers only the exact displayed C2 fragments"
+      - "full semantic normalized and bottom section values lack source-syntax preimages"
+      - "all comparison/kernel coverage, general input/coefficient, and B/E/F remain open"
+    acceptance_point: "This is a genuine two-way, multiplication-preserving source/actual equivalence and actual-evaluation compatibility for every element of the displayed C2 fragment. It is not full comparison-group or kernel recovery and is not G-123 completion."
+    port_status: not-applicable
+review:
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass-after-fix
+    lean_b: pass
+  resolved_findings:
+    - "Lean A found missing declaration docstrings on the two local DecidableEq instances; both instance declarations were documented and the focused check was rerun successfully in the same cycle."
+  direct_response:
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "two-way group equivalence for all elements of the source/actual displayed C2 fragments"
+      - "forward map compatibility with actual comparison decoder evaluation"
+    remaining:
+      - "source syntax for arbitrary canonical normalized and bottom-qualified section values"
+      - "full comparison/kernel/lift coverage"
+      - "general coefficient/input and remaining B/E/F"
+  certificate_provenance:
+    discharged:
+      - "both subgroup carriers and closure laws are constructed from source and transported square laws"
+      - "inverse and multiplicative laws are proved by exhaustive identity/generator cases"
+      - "actual-evaluation compatibility unfolds the same traced raw/bottom/kernel element"
+    unresolved:
+      - "arbitrary semantic section and kernel outputs still lack source syntax"
+  proof_use:
+    used:
+      - "ambientComparisonElement_mul_self and element_mul_self construct subgroup closure and map_mul"
+      - "source and actual nonidentity theorems distinguish case-map branches"
+      - "comparisonEvaluationHom and the definitions of rawElement/bottomRawElement/element prove forward compatibility"
+      - "both inverse laws and map_mul build sourceActualEquiv"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check for FiniteAxisFoldDisplayedKernelEquiv: PASS"
+    - "registered exact target build: PASS (4301 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 18 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh Math A/B and Lean A/B review: PASS after the same-cycle declaration-docstring fix"
+  blocking_findings: []
+  next_obligation: "Construct source-syntax preimages for the canonical normalized and bottom-qualified comparison sections, then expand displayed kernel coverage beyond the source-equivalent C2 fragment without semantic group-element leaves."
 ```
