@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 60 source-displayed nontrivial comparison restriction-kernel element and its action on every fixed lift fiber
+- current proof obligation: Cycle 61 bottom-qualified form of the same source-displayed restriction-kernel element, endpoint coefficient packet, and all-bottom-fiber action
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: lift the canonical normalized comparison section into source syntax and extend kernel coverage beyond the one ambient generator, while retaining the fixed bottom/coefficient classification and every lift fiber
+- next proof obligation: lift the canonical normalized and bottom-qualified comparison sections into source syntax and extend kernel coverage beyond the one ambient generator without completed semantic group-element leaves
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 61 delta | Cycle 60の同じraw/kernel元について両endpointのbottom identityと係数identityを示し、bottom-qualified比較制限kernelへ持ち上げ、任意のbottom-qualified lift fiberで非自明に作用させる | `FiniteAxisFoldBottomRestrictionKernel.rawElement_source_bottom`, `rawElement_target_bottom`, `rawElement_source_coefficient`, `rawElement_target_coefficient`, `RawBottomComparison`, `NormalizedBottomComparison`, `bottomRestrictionHom`, `bottomRawElement`, `bottomRestrictionHom_bottomRawElement`, `bottomRawElement_ne_one`, `element`, `element_ne_one`, `bottom_coefficient_packet`, `canonicalLift`, `shiftedLift`, `shiftedLift_ne_canonicalLift` | 固定finite axis-fold入力と係数`Int`; Cycle 60の同じraw元・restriction kernel証明; Cycle 56/57のsource bottom/coefficient identity; accepted bottom-qualified section/right inverseとfree kernel action | source bottom/係数identity、raw比較式をbottom functorで運びmapped `barAlpha` inverseで消去して得るtarget bottom identity、`Int`からのRingHom一意性によるtarget係数identity、bottom-qualified raw/kernel元と非自明性、任意bottom-normalized元のcanonical liftと異なるshift | Dの同一対応について底固定比較群・係数成分・restriction kernel・各bottom lift fiberを接続する | 一つの表示kernel元のみで全bottom kernel/全lift coverageではない; semantic canonical sectionのsource syntax、一般係数/一般入力、B/E/Fは未完了 |
 | D Cycle 60 delta | Cycle 59の同じsource-displayed raw比較元について両endpointの正規化identityを証明し、実比較制限準同型の非自明kernel元を構成して、任意のnormalized比較元上のlift fiberへ非自明作用させる | `FiniteAxisFoldComparisonRestrictionKernel.RawComparison`, `NormalizedComparison`, `restrictionHom`, `rawElement`, `endpointNormalization_source`, `endpointNormalization_target`, `endpointNormalization`, `restrictionHom_rawElement`, `rawElement_ne_one`, `element`, `element_ne_one`, `canonicalLift`, `shiftedLift`, `shiftedLift_ne_canonicalLift` | 固定finite axis-fold入力; Cycle 59のsource-conjugation raw比較元とsource exact evaluation; Cycle 56のsource normalization identity; accepted canonical section/right inverseと全fiber kernel action/free theorem | source正規化identity、raw比較可換式を正規化しmapped `barAlpha` inverseで消去して得るtarget正規化identity、同じraw pairのrestriction-kernel membershipと非自明性、任意normalized比較元のcanonical lift、同じ表示kernel元で移した第二liftとその相違 | Dのambient kernelとcomparison restriction kernelを同じ構成元で区別しつつ接続し、全fixed lift fiberに表示由来の非自明変位を与える | 表示kernelは一元のみで全kernel元coverageではない; canonical section lift自体のsource syntax表示、全fiber全liftの表示回復、底固定群・係数分類、一般入力、B/E/Fは未完了 |
 | D Cycle 59 delta | Cycle 56のambient endpoint recipeを既存source-law構文へ有限leafとして加え、意味的等号を合同へ入れず商圏・decoder・比較群を再構成し、同じambient sourceをraw比較保存pairへ延長する | `FiniteAxisFoldKernelExtendedSyntax`, `evaluate`, `size`, `Congruent`, `evaluate_eq_of_congruent`, `ambientDirect_not_congruent_identity`, `FiniteAxisFoldKernelExtendedPresentation`, `decoder`, `barAlphaIso`, `directAmbientAut`, `viaBaseAmbientAut`, `directAmbientAut_ne_one`, `ComparisonSubgroup`, `ambientComparisonElement`, `directAutomorphismEvaluationHom`, `viaBaseAutomorphismEvaluationHom`, `endpointAutomorphisms_preserve_actualBarAlpha`, `comparisonEvaluationHom`, `ambientComparisonElement_evaluation_source`, `_source_ne_one`, `_target_ne_one`, `_ne_ambientPair` | 固定finite axis-fold入力; Cycle 54/55のsource-law構文・合同・商圏; Cycle 56の入力由来ambient recipeと位数2/nonidentity; Cycle 58の一般表示比較群section | 旧構文を保つ`base`、二つの固定recipe leaf、source lawだけの合同とambient対identityの固定負例、商圏とdecoder、表示ambient自己同型、source conjugationから作る表示比較元、全表示比較元のraw評価、この元の両端非自明性、Cycle 57のtarget恒等pairとの差 | Dの失われたambient変更について、raw比較を保つ相手側変更が表示構文から実際に構成でき、単なるsyntactic distinctionでないことを示す | 一つの固定raw比較元のみでsemantic endpoint Aut/raw比較群の全元coverageではない; canonical normalization section、actual restriction kernel membershipと全lift fiber、底固定群、一般入力、B/E/Fは未完了 |
 | D Cycle 58 delta | `barAlpha`を含むsource-law quotient圏の内部で比較群を定め、表示群の全元を有限syntax quotientのsource自己同型で分類し、固定G-122 raw比較群へ同じ両端pairを評価する | `GeneratedArrowComparisonSubgroup`, `presentationIsoConjugationAutomorphismHom`, `generatedArrowComparisonSectionHom`, `generatedArrowComparisonSourceHom`, `generatedArrowComparisonSection_source_rightInverse`, `generatedArrowComparisonSourceEquiv`, `FiniteAxisFoldGeneratedComparisonSubgroup`, `finiteAxisFoldDirectPresentationAutomorphismHom`, `finiteAxisFoldViaBasePresentationAutomorphismHom`, `finiteAxisFoldPresentationEndpointAutomorphisms_preserve_barAlpha`, `finiteAxisFoldGeneratedComparisonEvaluationHom`, `finiteAxisFoldGeneratedComparisonEvaluation_section` | 一般の圏と表示Iso; 固定例ではCycle 54/55のsource-law quotientとsource-constructed `barAlphaIso`、同じfinite axis-fold入力、既存endpoint admissibility | decoder等号で定義しない表示比較部分群、その全元のsource-conjugation分類と群同型、両endpoint decoderの群準同型、表示可換正方形をdecoderで運んだ実raw比較群membership、sectionのpair全体での可換性 | Dの「表示側の全比較群元」を意味側群元の再入力なしに定式化し、raw比較群への群準同型を固定する | endpoint decoderのAut全射性が未証明のためsemantic raw群の全元回復は未完了; canonical normalization section、restriction kernel、全lift fiber、底固定群、一般入力、B/E/Fは未完了 |
@@ -6149,4 +6150,139 @@ audits:
     - "fresh Math A/B and Lean A/B review: PASS with no findings"
   blocking_findings: []
   next_obligation: "Construct source-syntax preimages for the canonical normalized comparison section and extend the displayed restriction-kernel generators without replacing arbitrary semantic group elements by syntax constants."
+```
+
+## Cycle 61 — Bottom-qualified displayed restriction kernel
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 61
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: f5f486e8f5dd6149780c610e5982805ce40a47f6
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 60 constructed one source-displayed actual restriction-kernel element but had not connected that same raw pair to the bottom-qualified comparison group and endpoint coefficient packet"
+  proof_dag_predecessors:
+    - "Cycle 56/57 exact source ambient recipe with bottom and coefficient identity"
+    - "Cycle 60 actual nontrivial comparison restriction-kernel element"
+    - "accepted G-122 bottom-qualified comparison section and free kernel action on every bottom-qualified lift fiber"
+  proof_obligation: "Prove bottom and coefficient identity at both endpoints of the same source-displayed raw pair, place it nontrivially in the bottom-qualified restriction kernel, and act nontrivially in every fixed bottom-qualified lift fiber"
+  selection_reason: "D requires the same correspondence to carry the bottom-fixed comparison group, coefficient components, restricted kernel, and lift fibers. Cycle 61 follows the already constructed pair rather than choosing a new bottom-friendly witness."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldBottomRestrictionKernel.lean
+  risks:
+    - "switch to the Cycle 57 bottom-trivial pair that is not a raw comparison member"
+    - "assume target bottom identity instead of deriving it from the raw comparison square"
+    - "hide bottom qualification or coefficient identity in a structure input"
+    - "claim one displayed generator covers the full bottom kernel or every lift"
+  unchecked:
+    - "source-syntax preimages of the canonical normalized and bottom-qualified sections"
+    - "coverage of every bottom-qualified restriction-kernel element and every lift"
+    - "general coefficient ring and general G-122 input"
+    - "remaining B/E/F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Kept the exact Cycle 60 raw pair. Proved its source bottom and coefficient identities from the fixed ambient recipe. Derived target bottom identity by mapping the actual raw comparison square through the bottom functor and cancelling mapped barAlpha with its mapped inverse. Proved target coefficient identity from uniqueness of ring homomorphisms out of the mandated coefficient ring Int. Constructed the same pair as a nonidentity element of the actual bottom-qualified comparison restriction kernel. For every bottom-qualified normalized comparison element, constructed the accepted canonical lift and a distinct shift by this same displayed kernel element."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldBottomRestrictionKernel.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBottomRestrictionKernel.rawElement_source_bottom
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBottomRestrictionKernel.rawElement_target_bottom
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBottomRestrictionKernel.rawElement_source_coefficient
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBottomRestrictionKernel.rawElement_target_coefficient
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBottomRestrictionKernel.RawBottomComparison
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBottomRestrictionKernel.NormalizedBottomComparison
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBottomRestrictionKernel.bottomRestrictionHom
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBottomRestrictionKernel.bottomRawElement
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBottomRestrictionKernel.bottomRestrictionHom_bottomRawElement
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBottomRestrictionKernel.bottomRawElement_ne_one
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBottomRestrictionKernel.element
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBottomRestrictionKernel.element_ne_one
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBottomRestrictionKernel.bottom_coefficient_packet
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBottomRestrictionKernel.canonicalLift
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBottomRestrictionKernel.shiftedLift
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBottomRestrictionKernel.shiftedLift_ne_canonicalLift
+  claim_mapping:
+    theorem_names:
+      - rawElement_source_bottom
+      - rawElement_target_bottom
+      - rawElement_source_coefficient
+      - rawElement_target_coefficient
+      - bottomRestrictionHom_bottomRawElement
+      - element_ne_one
+      - bottom_coefficient_packet
+      - shiftedLift_ne_canonicalLift
+    source_labels:
+      - "GOAL D1: bottom-fixed comparison group and endpoint components"
+      - "GOAL D2: comparison restriction kernel and lift fibers"
+      - "GOAL D: retain the original finite-axis-fold example and coefficient Int"
+      - "n1014: use the same comparison correspondence across classifications"
+    conjuncts:
+      - "same source-displayed raw pair -> source bottom and coefficient identities"
+      - "raw comparison square -> target bottom identity"
+      - "fixed coefficient Int -> target coefficient identity"
+      - "two-ended bottom qualification -> actual bottom-qualified raw and kernel elements"
+      - "arbitrary bottom-normalized comparison -> canonical lift and distinct shift in the same bottom-qualified fiber"
+    undischarged_assumptions:
+      - "only one fixed bottom-qualified restriction-kernel element is source-displayed"
+      - "canonical bottom section outputs remain semantic and have no source-syntax preimages"
+      - "not every bottom-qualified kernel or lift element has been recovered"
+      - "general coefficient/input and remaining B/E/F obligations remain open"
+    acceptance_point: "This connects the same source-displayed raw pair to the bottom-fixed group, both coefficient components, the actual bottom-qualified restriction kernel, and every fixed bottom lift fiber. It does not enumerate the full kernel or fibers and is not G-123 completion."
+    port_status: not-applicable
+review:
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "source and target bottom identity for the same Cycle 60 raw pair"
+      - "source and target coefficient identity for the same fixed-Int pair"
+      - "actual bottom-qualified restriction-kernel membership and nontriviality"
+      - "a canonical lift and distinct displayed-kernel shift in every bottom-qualified lift fiber"
+    remaining:
+      - "source-syntax preimages for canonical normalized and bottom-qualified sections"
+      - "coverage of every bottom-qualified kernel element and every lift"
+      - "general coefficient/input and remaining B/E/F"
+  certificate_provenance:
+    discharged:
+      - "bottomRawElement wraps the existing rawElement only after both bottom equations are proved"
+      - "bottom restriction-kernel membership is proved from Cycle 60 restriction identity, not accepted as a field of source syntax"
+      - "coefficient identity is a theorem of the fixed Int input, not a membership condition"
+    unresolved:
+      - "arbitrary semantic bottom-section and kernel outputs still lack source-syntax preimages"
+  proof_use:
+    used:
+      - "Cycle 56/57 exact ambient source bottom and coefficient identities"
+      - "Cycle 60 raw comparison membership mapped through rawGeometryBottomProjection"
+      - "mapped barAlpha inverse to cancel the bottom comparison arrow and force target bottom identity"
+      - "RingHom.ext_int for the mandated Int target coefficient"
+      - "Cycle 60 restriction identity and nontriviality in the bottom kernel construction"
+      - "accepted bottom section right inverse and free action for arbitrary normalized bottom t"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check for FiniteAxisFoldBottomRestrictionKernel: PASS"
+    - "registered exact target build: PASS (4298 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 17 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh Math A/B and Lean A/B review: PASS with no findings"
+  blocking_findings: []
+  next_obligation: "Construct source-syntax preimages for the canonical normalized and bottom-qualified comparison sections, then expand displayed kernel coverage without semantic group-element leaves."
 ```
