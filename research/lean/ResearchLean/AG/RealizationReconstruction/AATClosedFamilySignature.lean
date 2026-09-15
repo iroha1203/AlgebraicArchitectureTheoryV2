@@ -277,6 +277,89 @@ def g122SelectedQuantities
 
 end PrimitiveObject
 
+/-- Finite object-formation syntax for one G-122 realization.  The table stores
+only configurations; architecture objects and their dependent structure/quantity
+readings are evaluated by the original authored support package. -/
+structure G122FiniteObjectFormationDisplay
+    (input : G122FamilyInput.{u, v}) (X : G122CellInput input) where
+  /-- Finitely many configuration terms presented to the source object reader. -/
+  configurations : FiniteReferenceTable (AtomConfiguration input.Carrier)
+
+namespace G122FiniteObjectFormationDisplay
+
+/-- Evaluate one finite configuration term by the original G-122 object
+formation rule.  No architecture object or reading component is an input. -/
+def objectValue {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    (i : Fin display.configurations.card) : ArchitectureObject input.Carrier := by
+  letI := input.atomDecidableEq
+  exact (input.authored.context.supportPackage X.cell.as).reading.objectReading.object
+    (display.configurations.value i)
+
+/-- The evaluated architecture object as an endpoint-typed G-122 primitive. -/
+def primitiveObject {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    (i : Fin display.configurations.card) :
+    PrimitiveObject (.g122 input) (.g122 X) :=
+  .g122 (display.objectValue i)
+
+/-- Evaluation retains the exact object produced by the source object reader. -/
+@[simp] theorem primitiveObject_g122Value
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    (i : Fin display.configurations.card) :
+    (display.primitiveObject i).g122Value = display.objectValue i :=
+  rfl
+
+/-- The evaluated object's configuration is exactly the finite source term.
+This is the original `ObjectReading.configuration_eq` law, not a display
+completeness or decoder-extension assumption. -/
+theorem objectValue_configuration_eq
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    (i : Fin display.configurations.card) :
+    (display.objectValue i).configuration = display.configurations.value i := by
+  letI := input.atomDecidableEq
+  exact
+    (input.authored.context.supportPackage X.cell.as).reading.objectReading.configuration_eq
+      (display.configurations.value i)
+
+/-- The structure-map reading selected by finite object-formation evaluation is
+the exact value owned by the source-produced architecture object. -/
+def structureMaps {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    (i : Fin display.configurations.card) :
+    (display.objectValue i).StructureMaps :=
+  (display.objectValue i).structureMaps
+
+/-- The quantity reading selected by finite object-formation evaluation is the
+exact value owned by the source-produced architecture object. -/
+def selectedQuantities
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    (i : Fin display.configurations.card) :
+    (display.objectValue i).SelectedQuantities :=
+  (display.objectValue i).selectedQuantities
+
+/-- Convert the evaluated finite object-formation terms into the object part of
+a generator table; Atom occurrences remain a separate syntax component. -/
+def objectTable {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X) :
+    FiniteReferenceTable (PrimitiveObject (.g122 input) (.g122 X)) where
+  card := display.configurations.card
+  value := display.primitiveObject
+
+/-- Every converted object-table entry is definitionally the evaluation of the
+same finite configuration term. -/
+@[simp] theorem objectTable_value
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    (i : Fin display.objectTable.card) :
+    display.objectTable.value i = display.primitiveObject i :=
+  rfl
+
+end G122FiniteObjectFormationDisplay
+
 /-- The Atom and architecture-object generator tables owned by one finite
 G-122 display.  These tables make no claim that every semantic Atom or object
 is listed. -/
