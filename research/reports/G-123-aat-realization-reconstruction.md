@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 87 proves that the source-owned stored-backward Extension toggle survives the fixed southwest, exact-left, top, admissible, and normalization chain as a nonidentity actual normalized automorphism
+- current proof obligation: Cycle 88 proves that the same nonidentity source-owned backward toggle is invisible on every global axis, every signature coordinate, and every forward context object, hence lies in the full normalized axis/signature/context residual kernel
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: prove the normalized backward-toggle candidate lies in the full forward-context/axis/signature residual kernel, compute its three local-family actions as identity, and package the already-proved nontrivial backward action as a source-owned element of the Cycle 85 faithful representation
+- next proof obligation: compute the candidate's Support, Axis, and Observable local-family actions as identity and package its already-proved nontrivial stored-backward action in the Cycle 85 faithful representation
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 88 delta | Cycle 87の同じactual normalized非自明候補について、全global axis・全signature coordinate・全forward context objectで不可視であることを構成から証明し、full residual kernelへ格納する | `finiteAxisFoldNormalizedExtensionBackward_axisMap`, `finiteAxisFoldNormalizedExtensionBackward_coordinateEquiv`, `finiteAxisFoldSouthwestExtensionBackward_contextForward_eq_id`, `finiteAxisFoldExactLeftExtensionBackward_contextForward_eq_id`, `finiteAxisFoldActualDirectExtensionBackward_contextForward_eq_id`, `finiteAxisFoldNormalizedExtensionBackward_contextForward_eq_id`, `finiteAxisFoldNormalizedExtensionBackwardAxisKernel`, `finiteAxisFoldNormalizedExtensionBackwardAxisSignatureKernel`, `finiteAxisFoldNormalizedExtensionBackwardContextKernel` | 固定source-owned backward toggle; 固定source→southwest、exact-left、top、normalization route; opcartesian/exact-pull factorization; canonical sectionとgenerated exact backward-forward cancellation | 全`Fin 3` axis map恒等; 全`Fin 3 × Fin 3` coordinate作用恒等; 各段の全context forward関数恒等; 三段のkernel membershipを順に構成 | 三local-family恒等性を証明してCycle 85 faithful actionの非自明性をstored-backward因子へ集中させる | Support/Axis/Observable local-family恒等性、local kernel membership、backward projectionの明示、像生成・分解・coverage、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
 | D Cycle 87 delta | Cycle 86のsource-owned backward toggleが固定actual routeの各opaque transportとcanonical normalizationを通過しても消えないことを、完成したnormalized witnessを入力せず証明する | `finiteAxisFoldSouthwestBackwardToggleContext`, `finiteAxisFoldTransportedExtensionBackward_moves_southwestContext`, `finiteAxisFoldExactLeftBackwardToggleContext`, `finiteAxisFoldExactLeftExtensionBackward_moves_context`, `finiteAxisFoldActualBackwardToggleContext`, `finiteAxisFoldActualDirectExtensionBackward_moves_context`, `finiteAxisFoldNormalizedExtensionBackward_moves_context`, `finiteAxisFoldNormalizedExtensionBackwardAut_ne_one` | 固定source Bool-false context; Cycle 86のsource involutionとactual functorial transport; source-to-southwest/topのopcartesian factorization; generated exact-left factorizationとcontext cancellation; canonical normalization | 同じsource-owned witnessをsouthwest、exact-left、actual directへ順に輸送; 各段でfactorization equationとsection/retraction cancellationからstored backward actionの不動点否定を導出; normalization後の実射をwitnessで評価して`Aut ≠ 1`を証明 | Cycle 85 faithful actionのbackward因子へsource-owned非自明元を配置し、local因子の恒等性と合わせて最初のactual generatorを分類する | forward/axis/signature kernel membership、三local-family恒等性、backward projectionの群要素としての明示、像生成・分解・coverage、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
 | D Cycle 86 delta | source原始データからforward context恒等・stored backward Extension toggleのcomplete geometry involutionを構成し、固定actual normalized endpointまで完成した射を再入力せず輸送する | `finiteAxisFoldExtensionBackwardContextEquivalence`, `finiteAxisFoldExtensionBackwardGeometry`, `finiteAxisFoldExtensionBackwardGeometryAut`, `finiteAxisFoldExtensionBackwardGeometryAut_ne_one`, `finiteAxisFoldTransportedExtensionBackwardAut`, `finiteAxisFoldSouthwestExtensionBackwardAut`, `finiteAxisFoldActualDirectExtensionBackwardAut`, `finiteAxisFoldNormalizedExtensionBackwardAut` | 固定source geometry; Cycle 76の全context一様Extension-value recipeと両方向readable arrow; 固定source→southwest、exact-left、top、admissible、normalization functor | forward=id/inverse=toggleのequivalenceとunit/counit; 任意overlap三組の両方向restriction; raw invarianceとidentity local geometry naturality; complete involution; Bool-false contextによるsource非自明性; geometry-fiber functorと固定actual routeによるnormalized `Aut` | Cycle 85 faithful actionに対してactual candidateのbackward/local projectionを計算し、最初のsource-owned nontrivial image generatorを確立する | normalized非自明性、forward/axis/signature kernel membership、backward projection値、三local-family恒等性、像生成・分解・coverage、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
 | D Cycle 85 delta | full forward-context kernelの任意の全元について、stored backward-context作用と三つのcomplete local-fiber作用を同一のactual actionとして保持し、その作用がfaithfulであることを証明する | `FiniteAxisFoldResidualCompleteAction`, `finiteAxisFoldResidualCompleteProjection`, `finiteAxisFoldResidualCompleteProjection_ker`, `finiteAxisFoldResidualCompleteProjection_injective`, `finiteAxisFoldResidualCompleteProjectionEquivRange` | 固定actual normalized endpoint; full `FiniteAxisFoldNormalizedAxisSignatureContextKernel`の任意の全元; Cycle 84のexact joint-kernel triviality | backward-context permutationと全context上のSupport/Axis/Observable familyの積準同型を構成; そのkernelをCycle 84のcomplete kernelへ同定; `ker = ⊥`から単射性を導出; domain全体をactual rangeへ群同型化 | residual元の等号をactual complete actionの等号へ還元し、source-owned generatorのsurvival・像生成・分解を検査する忠実な表示へ渡す | actual rangeはsource syntaxでも有限表示でもない; backward/local各像の内在的特徴付け、source generator、section/decomposition、Cycle 76 toggleのactual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
@@ -9322,4 +9323,113 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Prove forward-context, axis, and signature residual membership and all three local-family identities; then show the faithful Cycle 85 action is concentrated in the nontrivial stored-backward factor."
+```
+
+## Cycle 88 — Residual-kernel membership of the backward toggle
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 88
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 4e82a7c9be4948bcda5e696ab216e28db3826ce5
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 87 proved actual normalized nonidentity but did not place the candidate in the forward residual kernel"
+  proof_dag_predecessors:
+    - "Cycle 86 source-owned backward-only complete involution and actual transport"
+    - "Cycle 87 normalized stored-backward survival"
+    - "Cycles 69, 71, and 75 axis, signature, and context projections"
+  proof_obligation: "Prove the same candidate fixes all axes, signature coordinates, and forward context objects, then construct full residual-kernel membership"
+  selection_reason: "The candidate must enter the full Cycle 85 action domain before its local and backward factors can be classified."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldBackwardToggleResidual.lean
+  risks:
+    - "use only selected axes, coordinates, or contexts"
+    - "infer forward identity from the single moved backward witness"
+    - "accept kernel membership as an input certificate"
+    - "claim local-family identity or source generation prematurely"
+  unchecked:
+    - "identity of the three complete local-family actions"
+    - "local-fiber kernel membership and explicit backward-factor value"
+    - "source image generation, decomposition, coverage, and remaining D/B/E/F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Proved the candidate's axis map is identity through all three fixed transports.  Proved every dependent coordinate value over every axis is fixed using the same factorization equations.  Proved forward context identity at southwest and top using canonical sections and at exact-left using generated backward-forward cancellation, all for arbitrary contexts.  Packaged the unchanged actual automorphism successively in the axis, axis-signature, and axis-signature-context kernels."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldBackwardToggleResidual.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedExtensionBackward_axisMap
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedExtensionBackward_coordinateEquiv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedExtensionBackward_contextForward_eq_id
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedExtensionBackwardContextKernel
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldNormalizedExtensionBackward_axisMap
+      - finiteAxisFoldNormalizedExtensionBackward_coordinateEquiv
+      - finiteAxisFoldNormalizedExtensionBackward_contextForward_eq_id
+      - finiteAxisFoldNormalizedExtensionBackwardContextKernel
+    source_labels:
+      - "GOAL D and user conditions 1, 2, 4, 5, and 7"
+    conjuncts:
+      - "all global axes -> identity"
+      - "all axis-coordinate pairs -> identity"
+      - "all forward context objects -> identity"
+      - "same actual candidate -> full axis/signature/context residual-kernel element"
+    undischarged_assumptions:
+      - "three local-family actions remain uncomputed"
+      - "backward projection is nontrivial by Cycle 87 but not yet packaged in the Cycle 85 action"
+      - "source generation, coverage, and broader G-123 obligations remain open"
+    acceptance_point: "The surviving source-owned candidate is now in the full forward residual domain; local classification and generation are not asserted."
+    port_status: not-applicable
+review:
+  fixed_head: adf38d774
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    reviewed_delta: "4e82a7c9be4948bcda5e696ab216e28db3826ce5..adf38d774"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "axis and signature identity hold on their complete fixed finite carriers"
+      - "forward context identity holds on every actual endpoint context object"
+      - "all nested kernel memberships are constructed from those equalities"
+    remaining:
+      - "three local-family identities and local-kernel membership"
+      - "backward-factor packaging, source generation, decomposition, coverage, and remaining D/B/E/F"
+  certificate_provenance:
+    discharged:
+      - "no completed kernel element or identity certificate is input"
+      - "the exact same Cycle 87 actual automorphism is packaged at every kernel level"
+    unresolved:
+      - "local action and source image characterization"
+  proof_use:
+    used:
+      - "transport and exact-pull factorization preserve axis and coordinate components"
+      - "canonical context sections cancel source-to-southwest and top transport"
+      - "generated exact backward-forward cancellation proves exact-left forward identity"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-residual-membership-checkpoint
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4317 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 10 declarations; standard axioms only"
+    - "fresh fixed-content Math A/B and Lean A/B: PASS; no findings"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Prove the Support, Axis, and Observable local-family actions are identity and package the already-proved nontrivial stored-backward factor in the Cycle 85 faithful action."
 ```
