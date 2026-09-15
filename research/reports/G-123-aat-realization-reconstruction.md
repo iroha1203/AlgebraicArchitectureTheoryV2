@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 51 source-provenanced finite syntax for the generated G-122 comparison fragment
+- current proof obligation: Cycle 52 source-law congruence and semantic soundness for the generated comparison fragment
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: add a source-derived congruence and exact fixed three-case syntax/evaluation connection, then enlarge the grammar beyond the four generated comparisons without admitting arbitrary completed Hom values
+- next proof obligation: transport the generated-cochain, constant-one, and five-factor terms to one fixed semantic endpoint surface and prove the exact three-case equality/non-equality classification there
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/D Cycle 52 delta | Cycle 51構文の合同をdecoder像の等号で定義せず、圏律とG-122生成法則だけから閉じ、評価soundnessと固定正負例を与える | `G122GeneratedComparisonSyntax.Congruent` と12 constructors、`evaluate_eq_of_congruent`, `finiteAxisFold_barD_ne_identity`, `finiteAxisFold_barBeta_factor_congruent`, `finiteAxisFold_barD_not_congruent_identity` | 任意のG-122 family/cell構文; 圏律と既存`barBeta_factor`・二冪等・二吸収; 固定generated-cochainの`barBeta`非可逆性と`barAlphaIso` | typed反射・対称・推移・合成閉包、source-law generators、評価等号soundness、固定factorization正例、非自明target projector対identityの負例 | D比較fragmentのsource-derived quotient候補と、固定三caseを構文等号で分類する前段 | completeness/decidability/quotient category、constant-oneとの共通endpoint transport、全許容射、res/ext/J、四義務、D全群、E/Fは未完了 |
 | A/D Cycle 51 delta | 全点列挙を避け、G-122原入力をleaf parameterとして保持する有限typed構文で、生成された比較とprojectorを同じ文法に置く | `G122GeneratedComparisonSyntax`, `.identity`, `.compose`, `.barAlpha`, `.barBeta`, `.barE`, `.barD`, `evaluate`, `size`, `size_pos`, 各`evaluate_*` law | 任意の一つの`G122FamilyInput`と任意の`G122CellInput`; leafは原cell/cochain/selected geometry/rawを保持するが完成`GeometryTotalHom`を受け取らない | exact endpoint-indexed finite syntax tree、独立意味圏への評価、有限node数、source-derived `barBeta=barAlpha≫barD`、二projector冪等、source/target吸収の評価後等式 | Dの生成比較をparameter-relative有限recipeへ送る最初のfragment; 将来のsource-derived合同と三固定case表示 | 全許容射のsyntax、合同、res/ext/J・全射性/単射性、固定三caseを同一syntax fiberで比較するtransport、全比較群・section・二核・fiber、A全成分、B/E/Fは未完了 |
 | A/B Cycle 50 delta | finite restrictionの一致から全域map一致へ進むためのcoverage使用を実証し、全点列挙方式が許容された無限primitive parameterと両立しないことを型レベルで固定する | `sourceMap_eq_of_surjective`, `lowerAtomEquiv_eq_of_surjective`, `upperAtomEquiv_eq_of_surjective`, `objectMap_eq_of_surjective`, `equationMap_eq_of_surjective`, `invariantMap_eq_of_surjective`, `axisMap_eq_of_surjective`, `finite_source_of_surjective`, `finite_atom_of_surjective`, `finite_object_of_surjective` | Cycle 49の任意probe・任意の二つの全`GeometryTotalHom`・18族`Agreement`; 各対象carrierへのprobe値写像の全射性を外部前提とする | 全射から各source値の有限index preimageを取り、実restriction一致を用いて7つの非依存core map全域一致を構成; source/Atom/object全点coverageから各carrierの`Finite`を構成 | finite observationからextensional equalityへ進む正確なproof-useと、parameter-relative syntaxへ切り替える必要性 | 全射coverageは固定入力から未放電で、無限許容carrierには使用不可; dependent operation/coordinate、equation equivalence、geometry local maps、全Hom equality、res/ext/Jと四義務、D/E/Fは未完了 |
 | A/B/D Cycle 49 delta | Cycles 46--48のprobe選択だけを統合し、全有限観測一致と射分離を外部命題として正確に切り出す | `G122FiniteTotalHomProbe`, `empty`, `Agreement`, `Separates`, `empty_agreement`, `separates_of_subsingleton`, `empty_not_separates_of_ne`, `finiteAxisFoldEmptyTotalHomProbe`, `finiteAxisFoldEmptyTotalHomProbe_not_separates` | 任意の一つの`G122FamilyInput`、任意のgenerated source/targetと全`GeometryTotalHom`; core/equation source/equation target/geometryのprobe選択のみ | 18族のpointwise観測一致predicate、分離性の外部predicate、空probeの全射対一致、subsingleton Homでのみ成立する条件付き正例、固定generated `barBeta ≠ barAlpha`による具体的負例 | source-generated finite coverageを何が放電すべきかのexact proof obligation; 将来の`res`の等号判定面 | 非空固定source probe、required Hom rangeでの分離放電、unit/counitを含むequation transport全体、ext/J・延長・一意性、endpoint表示、四再構成義務、D全体、CS/F |
@@ -5143,4 +5144,76 @@ audits:
   vacuity: "all four nonidentity leaves evaluate to the actual generated arrows, and the law proofs use their accepted nontrivial factorization/idempotence statements"
   blocking_findings: []
   next_obligation: "Construct a source-law-generated congruence for this typed grammar, connect the fixed three comparison cases without endpoint erasure, and then test extension of the grammar to the complete required morphism data."
+```
+
+## Cycle 52 — Source-law congruence and semantic soundness
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 52
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 3c6afd158e9de9e0a538eb4c3aa348e68a7f7d4a
+tracking_issue: 4520
+selection:
+  proof_obligation: "Generate a typed congruence for Cycle 51 syntax from category laws and the actual G-122 comparison laws, prove evaluation soundness, and provide fixed positive and negative instances"
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122GeneratedComparisonCongruence.lean
+  risks:
+    - "define congruence as equality of semantic evaluations"
+    - "add arbitrary semantic equalities or completed morphisms as relation constructors"
+    - "supply only vacuous positive cases without a fixed negative instance"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Defined Congruent inductively from reflexive/symmetric/transitive/typed-composition closure, category laws, and the five accepted G-122 comparison laws. Proved semantic soundness by induction. For the fixed generated-cochain input, derived that barD is not identity from noninvertibility of barBeta and invertibility of barAlpha, then supplied a positive factorization instance and a negative barD-versus-identity congruence instance."
+  evidence:
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.Congruent
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.evaluate_eq_of_congruent
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.finiteAxisFold_barD_ne_identity
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.finiteAxisFold_barBeta_factor_congruent
+    - AAT.AG.RealizationReconstruction.G122GeneratedComparisonSyntax.finiteAxisFold_barD_not_congruent_identity
+  claim_mapping:
+    input_premises:
+      - "Cycle 51 endpoint-typed source-provenanced syntax and its evaluator"
+      - "category identity/associativity laws and actual arbitrary-input G-122 factorization, projector-idempotence, and absorption laws"
+      - "for the fixed negative instance, accepted noninvertibility of generated barBeta and constructed barAlpha isomorphism on the same finite-axis-fold input"
+    constructed_evidence:
+      - "a source-law-generated typed equivalence/congruence relation with no semantic-equality constructor"
+      - "evaluation soundness for every derivation"
+      - "semantic nonidentity of the fixed generated target projector"
+      - "one fixed positive factorization congruence and one fixed negative projector/identity pair"
+    proof_use:
+      - "soundness induction maps each relation constructor to the matching category or G-122 theorem"
+      - "barD identity would rewrite barBeta=barAlpha≫barD to barBeta=barAlpha, contradicting barBeta noninvertibility because barAlpha is an isomorphism"
+      - "the negative congruence theorem applies evaluation soundness to the fixed semantic inequality"
+    unfinished:
+      - "no completeness or decidability theorem for Congruent is proved"
+      - "no quotient category or equality normal form is constructed"
+      - "constant-one and generated-cochain terms still have distinct object indices despite definitionally equal package values"
+      - "the syntax still omits arbitrary complete Hom values and all full reconstruction obligations"
+  validation:
+    focused_checks: "G122GeneratedComparisonCongruence passes"
+    named_target_build: "G122GeneratedComparisonCongruence passed (4266 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "36 declarations in G122GeneratedComparisonCongruence, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 52 gives a non-semantic source-law congruence with proved soundness and fixed nonvacuity. It remains a comparison fragment, not the final presentation congruence or G-123 reconstruction theorem."
+audits:
+  premise_delta:
+    discharged:
+      - "source-law generation and typed closure of the comparison-fragment congruence"
+      - "semantic soundness for every congruence derivation"
+      - "fixed positive and negative congruence instances"
+    remaining:
+      - "congruence completeness/decidability and quotient category laws"
+      - "common typed endpoint surface for the fixed generated, constant-one, and five-factor cases"
+      - "all arbitrary-Hom and B/D/E/F obligations"
+  certificate_provenance: "Congruent constructors contain only syntax terms, derivations, category laws, and named G-122 source laws; there is no field or constructor accepting evaluate(first)=evaluate(second)"
+  structure_field_escape: none-found
+  route_integrity: "composition closure is endpoint-indexed, and every nonstructural generator has the exact direct/viaBase endpoints of one original cell input"
+  target_fitting: "the relation is a lawful fragment of the required source-derived syntax congruence and does not identify syntax by decoder image"
+  vacuity: "the fixed barBeta factorization is related, while the fixed nonidentity barD cannot be related to identity by soundness"
+  blocking_findings: []
+  next_obligation: "Construct explicit package-equality transport of the constant-one syntax evaluation to the generated-cochain endpoints and connect the three fixed comparison cases to Congruent without defining syntax equality semantically."
 ```
