@@ -301,6 +301,40 @@ inductive PrimitiveContext :
       (vertex : input.schema.Vertex) :
       PrimitiveContext (.protocol input) (.protocol X) (.protocolState vertex)
 
+/-- Role-indexed access to the actual Support carrier at one original G-122
+complete-geometry context.  The context owner is retained in the constructor;
+no support component of a completed geometry morphism is stored. -/
+inductive PrimitiveSupport :
+    (theta : ClosedFamilyParameter.{u, v}) → FamilyRealization theta →
+      Type (max (u + 1) (v + 1))
+  | g122 {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+      (context : let _ := input.atomDecidableEq
+        X.selectedGeometry.toAATSite.category)
+      (support : context.ctx.Support) :
+      PrimitiveSupport (.g122 input) (.g122 X)
+
+/-- Role-indexed access to the actual Axis carrier at one original G-122
+complete-geometry context, distinct from the global signature-axis role. -/
+inductive PrimitiveGeometryAxis :
+    (theta : ClosedFamilyParameter.{u, v}) → FamilyRealization theta →
+      Type (max (u + 1) (v + 1))
+  | g122 {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+      (context : let _ := input.atomDecidableEq
+        X.selectedGeometry.toAATSite.category)
+      (axis : context.ctx.Axis) :
+      PrimitiveGeometryAxis (.g122 input) (.g122 X)
+
+/-- Role-indexed access to the actual Observable carrier at one original
+G-122 complete-geometry context. -/
+inductive PrimitiveObservable :
+    (theta : ClosedFamilyParameter.{u, v}) → FamilyRealization theta →
+      Type (max (u + 1) (v + 1))
+  | g122 {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+      (context : let _ := input.atomDecidableEq
+        X.selectedGeometry.toAATSite.category)
+      (observable : context.ctx.Observable) :
+      PrimitiveObservable (.g122 input) (.g122 X)
+
 /-- The source G-122 diagnostic-cell family is a combinatorial role, not the
 AAT complete-geometry context family. -/
 inductive PrimitiveDiagnosticCell :

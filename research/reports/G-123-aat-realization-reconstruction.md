@@ -13,10 +13,10 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 20 currently declared closed-role exhaustion on mandatory C
+- current proof obligation: Cycle 21 G-122 complete-geometry carrier roles
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: add and source-provenance the still-undeclared complete-geometry/coefficient/transport roles, then determine their tagged-branch inhabitants before final Sigma,D,R_Theta membership
+- next proof obligation: declare coverage/overlap/read/restriction and coefficient/transport information separately from the new Support/Axis/Observable carriers
 
 ## Requirement ledger
 
@@ -2794,4 +2794,61 @@ audits:
   vacuity: "four tagged constructors are inhabited by their original payload types; the equivalence is two-sided"
   blocking_findings: []
   next_obligation: "Declare and provenance the missing complete-geometry/coefficient/transport roles required by GOAL A, then determine their mandatory-C inhabitants before extending or rejecting the Cycle 18--19 grammar."
+```
+
+## Cycle 21 — G-122 complete-geometry carrier roles
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 21
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 9b14b6ee70eb800b30481eb8279421072761976f
+tracking_issue: 4520
+selection:
+  proof_obligation: "Add source-provenanced Support, geometry-Axis, and Observable primitive families at every original G-122 selected-geometry context, and recheck mandatory-C specialization"
+  selection_reason: "These are explicit missing GOAL-A carrier roles already present in the original G-122 selected geometry; they can be added without accepting a completed geometry morphism."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/ClosedPrimitiveRoleExhaustion.lean
+  risks:
+    - "store supportComp, axisComp, observableComp, coverage, or overlap from a completed GeomReadHom"
+    - "conflate global signature Axis with context-local geometry Axis"
+    - "claim the three carriers discharge their reading, restriction, coverage, or overlap laws"
+result:
+  proposed_result_type: proof-obligation-discharged
+  completion_candidate: no
+  proof_obligation_delta: "Added three context-owned primitive families directly from each original G-122 selectedGeometry context; extended the closed-role sum from 12 to 15 constructors; and proved the three new G-122-only roles are empty at the mandatory tagged index by dependent elimination, preserving the tagged four-role equivalence."
+  evidence:
+    - AAT.AG.RealizationReconstruction.PrimitiveSupport
+    - AAT.AG.RealizationReconstruction.PrimitiveGeometryAxis
+    - AAT.AG.RealizationReconstruction.PrimitiveObservable
+    - AAT.AG.RealizationReconstruction.closedTaggedPrimitiveReferenceEquiv
+  claim_mapping:
+    input_premises:
+      - "the original G122CellInput.selectedGeometry"
+      - "an arbitrary context of selectedGeometry.toAATSite.category"
+    constructed_evidence:
+      - "individual Support, Axis, and Observable values with their exact context owner"
+      - "separate geometry-Axis type, not reuse of PrimitiveSignatureAxis"
+      - "updated 15-role dependent sum and tagged-index elimination"
+    proof_use:
+      - "the extended equivalence confirms these source-derived additions do not enlarge the mandatory-C tagged alphabet"
+    unfinished:
+      - "coverage, overlap, readings, restrictions, coefficient and transport data remain separate undeclared obligations"
+      - "no component map of a completed GeomReadHom is reconstructed"
+      - "final Sigma,D_Theta,R_Theta, membership, and remaining A--F are open"
+  validation:
+    focused_checks: "AATClosedFamilySignature 1/1 pass"
+    named_target_build: "ClosedPrimitiveRoleExhaustion passed (4276 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "AATClosedFamilySignature 445 and ClosedPrimitiveRoleExhaustion 104 generated/named declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 21 adds three actual complete-geometry carrier roles without importing completed geometry maps. It does not discharge their laws or G-123."
+audits:
+  structure_field_escape: "constructors store only one original context and one carrier value; no map family or preservation certificate"
+  route_integrity: "all data comes from G122CellInput.selectedGeometry, before generated transports/comparisons"
+  target_fitting: "three missing carriers are added; all associated laws and remaining A--F stay open"
+  blocking_findings: []
+  next_obligation: "Represent coverage/overlap and read/restriction information as source equations or finite generation rules without storing completed geometry morphisms."
 ```
