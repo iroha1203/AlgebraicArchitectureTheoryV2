@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 79 uses context-kernel membership to restrict the complete dependent Support, Axis, and Observable actions to genuine reading-preserving permutations of every fixed local fiber; multiplicative packaging, source coverage, and a surviving Extension-changing residual element remain open
+- current proof obligation: Cycle 80 packages the complete Support, Axis, and Observable fiber actions multiplicatively over all contexts and identifies their exact combined kernel; source image/generators, coverage, and a surviving Extension-changing residual element remain open
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: package the three fiberwise families multiplicatively or identify their exact combined kernel, then construct a source generator only after its complete local action is shown to satisfy the actual geometry naturality; the Cycle 77 canonical-preorder toggle failure remains a failed candidate, not target refutation
+- next proof obligation: determine the images of the three complete fiber-action families and construct a source generator only after its complete local action is shown to satisfy the actual geometry naturality; the Cycle 77 canonical-preorder toggle failure remains a failed candidate, not target refutation
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 80 delta | Cycle 79の三local-fiber作用を全context同時の群準同型としてpackagingし、三作用が同時に不可視となるexact combined kernelを構成・特徴づける | `finiteAxisFoldResidualContextKernelSupportFiberProjection`, `finiteAxisFoldResidualContextKernelAxisFiberProjection`, `finiteAxisFoldResidualContextKernelObservableFiberProjection`, 三つの`_apply`, 三つの`FiberFamilyProjection`, `FiniteAxisFoldResidualLocalFiberActionFamily`, `finiteAxisFoldResidualContextKernelLocalFiberProjection`, `FiniteAxisFoldResidualLocalFiberKernel`, `finiteAxisFoldResidualLocalFiberKernel_eq`, `finiteAxisFoldResidualLocalFiberKernel_mem_iff` | 固定actual normalized endpoint; `FiniteAxisFoldNormalizedAxisSignatureContextKernel`の任意の全元; 任意の全context; Cycle 78のcomplete Sigma群作用; Cycle 79のactual fiber自己同値 | base-fixed Sigma permutationのsubgroupを構成し、各fiberへのrestrictionを群準同型化、canonical fiber equivalenceで共役; 三familyをPi群準同型と積へpackaging; combined kernelを三kernelの交わりおよび全contextで三actual作用が恒等となる条件と同値化 | 局所作用の乗法性を仮定せずactual joint actionから放電し、combined-kernel分類とsource image/generator探索へ渡す | 三familyの像・非自明元・source generatorは未構成; Cycle 76 toggleのcomplete naturality/actual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 79 delta | context-object kernelの全元について、Cycle 78のdependent Sigma作用を全contextごとのSupport・Axis・Observable fiber自己同値へ降ろし、actual local componentとの計算則とreading保存を証明する | `finiteAxisFoldResidualContextKernel_context_eq`, `finiteAxisFoldResidualContextKernelSupportEquiv`, `finiteAxisFoldResidualContextKernelSupportEquiv_apply`, `finiteAxisFoldResidualContextKernelSupportEquiv_reads`, `finiteAxisFoldResidualContextKernelAxisEquiv`, `finiteAxisFoldResidualContextKernelAxisEquiv_apply`, `finiteAxisFoldResidualContextKernelAxisEquiv_reads`, `finiteAxisFoldResidualContextKernelObservableEquiv`, `finiteAxisFoldResidualContextKernelObservableEquiv_apply`, `finiteAxisFoldResidualContextKernelObservableEquiv_reads` | 固定actual normalized endpoint; `FiniteAxisFoldNormalizedAxisSignatureContextKernel`の任意の全元; 任意の全context; Cycle 78の三complete Sigma permutation; Cycle 73のresidual Atom identity | base-fixed Sigma permutationを各fiberのsubtypeへ制限して元fiberと共役する一般構成; context-kernel等式を全contextで評価; actual local componentをその等式でcastした明示計算則; SupportではAtom identityを実使用し、三reading保存を証明 | context actionをidentityと仮定せずkernel membershipから放電した上で、残る純粋なfiberwise local actionの分類・combined kernel・source generator探索へ渡す | 三familyの乗法的packaging/combined kernel、像・source generatorは未構成; Cycle 76 toggleのcomplete naturality/actual survivalは未証明; residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 78 delta | 同じactual normalized residual全元について、contextと局所値の依存を切らず、全context上の全support・axis・observable作用をそれぞれ完全なSigma carrier上の群作用として保持し、そのkernelを分離する | `FiniteAxisFoldResidualContextSupport`, `FiniteAxisFoldResidualContextAxis`, `FiniteAxisFoldResidualContextObservable`, `finiteAxisFoldContextSupportMap`, `finiteAxisFoldContextAxisMap`, `finiteAxisFoldContextObservableMap`, `finiteAxisFoldNormalizedContextSupportEquiv`, `finiteAxisFoldNormalizedContextAxisEquiv`, `finiteAxisFoldNormalizedContextObservableEquiv`, 三つのnormalized/residual projection、三つのkernelと`_apply`定理 | 固定actual normalized direct endpoint; 任意のfull normalized Autとそのinverse; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元; actual `GeomReadHom`の完全なlocal comparison data | automorphismのcontextForwardとlocal componentをdependent pairに同時適用し、inverse automorphismから逆写像を構成; `hom_inv_id`/`inv_hom_id`をcomplete geometry morphismへ評価して両逆則を放電; 三つの群準同型とkernel membershipの全dependent pair評価 | Cycle 75のcontext-object projectionを局所値まで縮小せず精密化し、context-trivial kernel上のfiberwise local action解析とsource coverageへ渡す | 三projectionの像・相互関係・source generatorは未構成; Cycle 76 toggleのcomplete naturality/actual survivalは未証明; residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 76 delta | Extensionが現source exact dataで実際に動き得ることを、有限context部分や完成したcontext equivalenceの入力なしに構成する | `finiteAxisFoldExtensionValueToggle`, `finiteAxisFoldExtensionValueToggle_involutive`, `finiteAxisFoldExtensionToggleContext`, `finiteAxisFoldExtensionToggleContext_involutive`, `finiteAxisFoldBooleanFalseContext`, `finiteAxisFoldBooleanFalseContext_toggle_ne`, `finiteAxisFoldExtensionToggleContextFunctor`, `finiteAxisFoldExtensionToggleContextEquivalence`, `finiteAxisFoldExtensionToggleEquationTransport`, `finiteAxisFoldExtensionToggleUpper`, `finiteAxisFoldExtensionToggleTotal`, `finiteAxisFoldExtensionToggleTotal_comp_self`, `finiteAxisFoldExtensionToggle_rawReindex`, `finiteAxisFoldExtensionToggleTotal_ne_id` | 固定`finiteWitnessSourcePackage`とsource geometry/raw input; 全ArchitectureContext; `Bool`型判定だけを使う一様recipe | 全型上のBool限定value toggleとinvolution; minimal readingを保つ全context写像; Extensionを読まない両向きrestriction; thin context autoequivalence; equation dataがExtension非依存であることによるexact transport; exact upper/total involution; 明示`Bool.false` contextの移動による非恒等性; Unit raw systemのreindex不変性 | Cycle 75で分離したcontext-object actionが空の候補ではないことをsource exact coreで実証し、complete geometry/actual endpoint/source syntax構成へ渡す | complete `GeomReadHom`のoverlap/local自然性、source→southwest fiber同一視またはsouthwest上の再構成、exact pull/top/normalization後の生存、axis-signature kernel membership、source syntaxは未構成; actual residual元やG-123 completionは未主張 |
@@ -8369,4 +8370,131 @@ audits:
     - "GitHub CI: 7/7 PASS on the fixed content head"
   blocking_findings: []
   next_obligation: "Package the three fiberwise families multiplicatively or identify their exact combined kernel, then test source-owned local generators only through complete naturality-respecting geometry morphisms."
+```
+
+## Cycle 80 — Multiplicative local-fiber families and exact combined kernel
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 80
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: dc9781dc04984ef65e87b151650d9b77e2280a6c
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 79 constructed the actual reading-preserving Support, Axis, and Observable self-equivalence over every context for every context-kernel element, but did not prove multiplicativity of the cast-normalized families"
+  proof_dag_predecessors:
+    - "Cycle 75 context-object kernel and pointwise context identity"
+    - "Cycle 78 complete dependent Sigma group actions"
+    - "Cycle 79 actual self-equivalences of every fixed local fiber"
+  proof_obligation: "Derive the three all-context fiber-action families as group homomorphisms from the actual complete Sigma actions and identify the exact kernel where all three are simultaneously invisible"
+  selection_reason: "Multiplicativity cannot be inferred by treating dependent equality casts as definitional.  Factoring through the subgroup of base-fixed complete Sigma permutations constructs the law before conjugating to each original fiber."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualLocalFiberProjection.lean
+  risks:
+    - "accept multiplicativity as an additional field on a family of completed local maps"
+    - "package only selected or inhabited contexts"
+    - "replace the actual Cycle 79 maps by merely isomorphic post-hoc actions"
+    - "call an exact kernel description source coverage or image classification"
+  unchecked:
+    - "images and nontrivial elements of the three complete fiber-action families"
+    - "source generators satisfying actual complete geometry naturality"
+    - "Cycle 76 toggle survival and residual source coverage"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed the subgroup of complete dependent-sum permutations fixing every base context; restriction to every Sigma fiber is a group homomorphism and conjugation along the canonical fiber equivalence returns a group homomorphism on the original fiber.  The actual Cycle 78 Support, Axis, and Observable Sigma projections of every context-kernel element factor through these subgroups.  Their pointwise projections are definitionally the Cycle 79 actual fiber actions, all-context families are multiplicative, and their product kernel is exactly the intersection of the three family kernels, equivalently the elements whose three actual actions are identity at every context."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualLocalFiberProjection.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelSupportFiberProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelSupportFiberProjection_apply
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelAxisFiberProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelAxisFiberProjection_apply
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelObservableFiberProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelObservableFiberProjection_apply
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelSupportFiberFamilyProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelAxisFiberFamilyProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelObservableFiberFamilyProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelLocalFiberProjection
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldResidualLocalFiberKernel
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualLocalFiberKernel_eq
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualLocalFiberKernel_mem_iff
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldResidualContextKernelSupportFiberProjection
+      - finiteAxisFoldResidualContextKernelAxisFiberProjection
+      - finiteAxisFoldResidualContextKernelObservableFiberProjection
+      - finiteAxisFoldResidualContextKernelLocalFiberProjection
+      - finiteAxisFoldResidualLocalFiberKernel_eq
+      - finiteAxisFoldResidualLocalFiberKernel_mem_iff
+    source_labels:
+      - "GOAL D: preserve and classify the complete comparison action and its information-loss kernels"
+      - "user conditions 1, 2, 4, and 5: retain all contexts and actual maps, construct rather than accept evidence, keep obligations separate, and distinguish the relevant kernels"
+    conjuncts:
+      - "every context-kernel element -> multiplicative family of actual Support actions over every context"
+      - "every context-kernel element -> multiplicative family of actual Axis actions over every context"
+      - "every context-kernel element -> multiplicative family of actual Observable actions over every context"
+      - "joint kernel = intersection of the three family kernels = pointwise identity of all three actual families"
+    undischarged_assumptions:
+      - "no image or nonidentity source-generated element is constructed"
+      - "the Cycle 76 Extension toggle has not been lifted to an actual normalized automorphism"
+      - "residual source coverage and the broader D classification remain open"
+    acceptance_point: "This cycle discharges multiplicative packaging and the exact combined-kernel description for the actual Cycle 79 maps.  It is not image classification, source coverage, local rigidity, or G-123 completion."
+    port_status: not-applicable
+review:
+  fixed_head: 0fb680b7694c6aebb7204832c2edda8696107c14
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    reviewed_delta: "dc9781dc04984ef65e87b151650d9b77e2280a6c..0fb680b7694c6aebb7204832c2edda8696107c14"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "base-fixing is generated from actual context-kernel membership and made subgroup-closed"
+      - "fiber restriction is multiplicative before dependent casts are transported back to the original fibers"
+      - "the three single-context projections are definitionally the actual Cycle 79 maps"
+      - "the all-context and combined products are group homomorphisms on the entire context kernel"
+      - "combined-kernel membership has both an intersection form and an all-context pointwise identity form"
+    remaining:
+      - "images and nonidentity source-generated elements of the three families"
+      - "Cycle 76 actual survival and residual source coverage"
+      - "bottom/full comparison-kernel/lift recovery, general coefficient/input, and B/E/F"
+  certificate_provenance:
+    discharged:
+      - "the subgroup witness is the existing kernel-derived context equality evaluated on every dependent pair"
+      - "multiplicativity is inherited from the Cycle 78 group projections and generic restriction/conjugation homomorphisms"
+    unresolved:
+      - "source generation and survival through the fixed construction remain open"
+  proof_use:
+    used:
+      - "Cycle 78 Sigma projections supply the complete group actions"
+      - "Cycle 75/79 context identity supplies subgroup membership for every base point"
+      - "canonical fiber equivalence conjugates the restricted Sigma action to the original local type"
+      - "Cycle 79 definitional comparison prevents replacement by a merely unrelated isomorphic action"
+      - "kernel extensionality and function extensionality prove the two exact kernel characterizations"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check for FiniteAxisFoldResidualLocalFiberProjection: PASS"
+    - "focused exact target build for FiniteAxisFoldResidualLocalFiberProjection: PASS (4308 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 14 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh fixed-content-head 0fb680b7694c6aebb7204832c2edda8696107c14 Math A/B and Lean A/B review: PASS"
+    - "GitHub CI: 7/7 PASS on the fixed content head"
+  blocking_findings: []
+  next_obligation: "Determine the images of the three complete fiber-action families and construct source-owned generators only through complete naturality-respecting geometry morphisms."
 ```
