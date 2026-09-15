@@ -226,6 +226,7 @@ audits:
   next_obligation: "Construct protocol semantics, finite generator tables, res/ext/J, and the four reconstruction properties without restricting the independently defined natural transformations."
 ```
 
+## Cycle 2 — Protocol semantics and finite-presentation reconstruction
 
 ```yaml
 ledger_type: target_cycle_result
