@@ -13,7 +13,8 @@ every selected operation.
 
 The raw `ArchitectureObject` also contains auxiliary type-valued structure-map
 and selected-quantity data.  Canonical normalization deliberately forgets that
-data, so no equality of raw object maps is asserted here.
+data, so the raw object map is identified with canonical normalization rather
+than incorrectly identified with the identity function.
 -/
 
 namespace AAT.AG.RealizationReconstruction
