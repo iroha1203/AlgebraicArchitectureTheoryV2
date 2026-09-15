@@ -39,7 +39,10 @@ are re-evaluated from the original composition reader.  This rejects the
 alternative of copying a completed semantic predicate graph into syntax.
 Each independent edge has a canonical occurrence-pair code, and endpoint-
 coherent finite actions commute with those codes before any semantic
-preservation claim is made.
+preservation claim is made.  A conservative edge completion retains every
+declared edge and appends every occurrence pair independently of predicate
+truth; this provides targets for later constructed finite actions without
+discarding the original edge syntax.
 -/
 
 namespace AAT.AG.RealizationReconstruction
@@ -671,6 +674,217 @@ edge's declared right occurrence value. -/
       display.atomValue objectIndex
         (display.identificationRight objectIndex identificationIndex) :=
   rfl
+
+/-- Conservatively complete each edge table by retaining every original edge
+and appending every ordered pair of occurrences.  The appended portion is
+independent of relation and identification truth, so this is finite syntax
+completion rather than a copied semantic graph. -/
+def edgeCompletion
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X) :
+    G122FiniteObjectFormationDisplay input X where
+  objectCard := display.objectCard
+  atomCard := display.atomCard
+  atomValue := display.atomValue
+  relationCard objectIndex :=
+    display.relationCard objectIndex +
+      display.atomCard objectIndex * display.atomCard objectIndex
+  relationLeft objectIndex relationIndex :=
+    match finSumFinEquiv.symm relationIndex with
+    | .inl original => display.relationLeft objectIndex original
+    | .inr pair => (finProdFinEquiv.symm pair).1
+  relationRight objectIndex relationIndex :=
+    match finSumFinEquiv.symm relationIndex with
+    | .inl original => display.relationRight objectIndex original
+    | .inr pair => (finProdFinEquiv.symm pair).2
+  identificationCard objectIndex :=
+    display.identificationCard objectIndex +
+      display.atomCard objectIndex * display.atomCard objectIndex
+  identificationLeft objectIndex identificationIndex :=
+    match finSumFinEquiv.symm identificationIndex with
+    | .inl original => display.identificationLeft objectIndex original
+    | .inr pair => (finProdFinEquiv.symm pair).1
+  identificationRight objectIndex identificationIndex :=
+    match finSumFinEquiv.symm identificationIndex with
+    | .inl original => display.identificationRight objectIndex original
+    | .inr pair => (finProdFinEquiv.symm pair).2
+
+/-- Embed an original relation edge into the retained summand of the
+conservative edge completion. -/
+def relationOriginalIndex
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    (relationIndex : Fin (display.relationCard objectIndex)) :
+    Fin (display.edgeCompletion.relationCard objectIndex) :=
+  finSumFinEquiv (.inl relationIndex)
+
+/-- Embed an original identification edge into the retained summand of the
+conservative edge completion. -/
+def identificationOriginalIndex
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    (identificationIndex : Fin (display.identificationCard objectIndex)) :
+    Fin (display.edgeCompletion.identificationCard objectIndex) :=
+  finSumFinEquiv (.inl identificationIndex)
+
+/-- Embed any occurrence-pair code into the appended relation-edge summand. -/
+def relationPairIndex
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    (code : display.OccurrencePairCode objectIndex) :
+    Fin (display.edgeCompletion.relationCard objectIndex) :=
+  finSumFinEquiv (.inr (finProdFinEquiv code))
+
+/-- Embed any occurrence-pair code into the appended identification-edge
+summand. -/
+def identificationPairIndex
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    (code : display.OccurrencePairCode objectIndex) :
+    Fin (display.edgeCompletion.identificationCard objectIndex) :=
+  finSumFinEquiv (.inr (finProdFinEquiv code))
+
+/-- Distinct original relation edges remain distinct in the retained
+completion summand, including parallel edges with equal endpoints. -/
+theorem relationOriginalIndex_injective
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    {first second : Fin (display.relationCard objectIndex)}
+    (h : relationOriginalIndex first = relationOriginalIndex second) :
+    first = second := by
+  exact Sum.inl.inj (finSumFinEquiv.injective h)
+
+/-- Distinct occurrence-pair codes remain distinct in the appended relation
+summand. -/
+theorem relationPairIndex_injective
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    {first second : display.OccurrencePairCode objectIndex}
+    (h : relationPairIndex first = relationPairIndex second) : first = second := by
+  exact finProdFinEquiv.injective (Sum.inr.inj (finSumFinEquiv.injective h))
+
+/-- The retained-original and appended-pair relation summands have disjoint
+images. -/
+theorem relationOriginalIndex_ne_relationPairIndex
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    (original : Fin (display.relationCard objectIndex))
+    (code : display.OccurrencePairCode objectIndex) :
+    relationOriginalIndex original ≠ relationPairIndex code := by
+  intro h
+  exact Sum.inl_ne_inr (finSumFinEquiv.injective h)
+
+/-- Distinct original identification edges remain distinct in the retained
+completion summand, including parallel edges with equal endpoints. -/
+theorem identificationOriginalIndex_injective
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    {first second : Fin (display.identificationCard objectIndex)}
+    (h : identificationOriginalIndex first = identificationOriginalIndex second) :
+    first = second := by
+  exact Sum.inl.inj (finSumFinEquiv.injective h)
+
+/-- Distinct occurrence-pair codes remain distinct in the appended
+identification summand. -/
+theorem identificationPairIndex_injective
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    {first second : display.OccurrencePairCode objectIndex}
+    (h : identificationPairIndex first = identificationPairIndex second) :
+    first = second := by
+  exact finProdFinEquiv.injective (Sum.inr.inj (finSumFinEquiv.injective h))
+
+/-- The retained-original and appended-pair identification summands have
+disjoint images. -/
+theorem identificationOriginalIndex_ne_identificationPairIndex
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    (original : Fin (display.identificationCard objectIndex))
+    (code : display.OccurrencePairCode objectIndex) :
+    identificationOriginalIndex original ≠ identificationPairIndex code := by
+  intro h
+  exact Sum.inl_ne_inr (finSumFinEquiv.injective h)
+
+/-- Conservative edge completion leaves the source-generated configuration
+of every object term definitionally unchanged. -/
+@[simp] theorem edgeCompletion_configurationValue
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    (objectIndex : Fin display.objectCard) :
+    display.edgeCompletion.configurationValue objectIndex =
+      display.configurationValue objectIndex :=
+  rfl
+
+/-- Conservative edge completion likewise leaves every source-generated
+architecture object unchanged. -/
+@[simp] theorem edgeCompletion_objectValue
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X)
+    (objectIndex : Fin display.objectCard) :
+    display.edgeCompletion.objectValue objectIndex = display.objectValue objectIndex :=
+  rfl
+
+/-- The retained relation-edge summand preserves both original endpoints. -/
+theorem edgeCompletion_relationOriginalEndpoints
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    (relationIndex : Fin (display.relationCard objectIndex)) :
+    display.edgeCompletion.relationLeft objectIndex
+        (relationOriginalIndex relationIndex) =
+        display.relationLeft objectIndex relationIndex ∧
+      display.edgeCompletion.relationRight objectIndex
+        (relationOriginalIndex relationIndex) =
+        display.relationRight objectIndex relationIndex := by
+  simp [edgeCompletion, relationOriginalIndex]
+
+/-- The retained identification-edge summand preserves both original
+endpoints. -/
+theorem edgeCompletion_identificationOriginalEndpoints
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    (identificationIndex : Fin (display.identificationCard objectIndex)) :
+    display.edgeCompletion.identificationLeft objectIndex
+        (identificationOriginalIndex identificationIndex) =
+        display.identificationLeft objectIndex identificationIndex ∧
+      display.edgeCompletion.identificationRight objectIndex
+        (identificationOriginalIndex identificationIndex) =
+        display.identificationRight objectIndex identificationIndex := by
+  simp [edgeCompletion, identificationOriginalIndex]
+
+/-- Every occurrence-pair code is exactly the canonical code of its appended
+relation edge. -/
+theorem edgeCompletion_relationPairCode
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    (code : display.OccurrencePairCode objectIndex) :
+    display.edgeCompletion.relationEdgePairCode (relationPairIndex code) = code := by
+  simp only [edgeCompletion, relationEdgePairCode, relationPairIndex,
+    Equiv.symm_apply_apply]
+
+/-- Every occurrence-pair code is exactly the canonical code of its appended
+identification edge. -/
+theorem edgeCompletion_identificationPairCode
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {display : G122FiniteObjectFormationDisplay input X}
+    {objectIndex : Fin display.objectCard}
+    (code : display.OccurrencePairCode objectIndex) :
+    display.edgeCompletion.identificationEdgePairCode
+        (identificationPairIndex code) = code := by
+  simp only [edgeCompletion, identificationEdgePairCode, identificationPairIndex,
+    Equiv.symm_apply_apply]
 
 end G122FiniteObjectFormationDisplay
 
