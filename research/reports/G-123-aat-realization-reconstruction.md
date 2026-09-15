@@ -3854,7 +3854,8 @@ audits:
   route_integrity: "every source edge keeps its left and right occurrence endpoints, the action maps its edge index, and the endpoint equations are separately proved through familyMap"
   target_fitting: "the construction retains nonidentity and many-to-one Atom actions while adding relation/identification syntax needed before semantic preservation"
   vacuity: "empty edge tables yield no endpoint claim and do not imply semantic relation/identification emptiness or completeness"
-  blocking_findings:
+  blocking_findings: []
+  resolved_findings:
     - "FIXED: public display/action docstrings and the structure-field audit now enumerate the new edge surface precisely"
     - "FIXED: explicit non-satisfying finite instances were added for ValueCoherent and both endpoint-coherence predicates"
   next_obligation: "Connect the finite edge generators to the source-generated configuration predicates by source-derived soundness/completeness, without storing those predicates or their global graphs as syntax."
