@@ -411,7 +411,7 @@ def PrimitiveRawRestriction.g122Value
 /-- The recovered raw restriction sends every target structural-ideal element
 to the source structural ideal.  This consumes the accepted source `raw`
 field; the primitive itself carries no preservation proof. -/
-theorem PrimitiveRawRestriction.g122MapsJStruct
+theorem PrimitiveRawRestriction.g122Value_maps_JStruct
     {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
     {source target : let _ := input.atomDecidableEq
       X.selectedGeometry.toAATSite.category}
