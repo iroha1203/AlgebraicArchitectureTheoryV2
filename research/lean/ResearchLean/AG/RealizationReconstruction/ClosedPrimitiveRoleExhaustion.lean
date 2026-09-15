@@ -9,13 +9,13 @@ This module combines every role actually declared in
 on the mandatory G-123(C) tagged-operation branch this entire current sum is
 exactly the four-role `TaggedPrimitiveReference` alphabet used in Cycles
 14--19: every currently declared context, Support, geometry-Axis, Observable,
-context-restriction, raw-restriction, coverage, overlap, diagnostic,
+context-restriction, raw-restriction, coefficient, coverage, overlap, diagnostic,
 signature, equation, invariant, coordinate, and relation family has no
 constructor at that index.
 
 This is a source-declaration audit, not final role exhaustion.  Among other
 components, the fixed GOAL also requires complete-geometry map-side reading;
-coefficient maps and transport; raw identity/composition coherence;
+coefficient maps and transport;
 and Atom/object/Law evaluation data not yet all declared by
 `AATClosedFamilySignature`.  Consequently the equivalence below closes only
 the possibility that an *already declared* role was omitted from the tagged
@@ -50,6 +50,7 @@ inductive ClosedPrimitiveReference
   | contextRestriction (value : PrimitiveContextRestriction theta realization)
   | rawRestriction {restriction : PrimitiveContextRestriction theta realization}
       (value : PrimitiveRawRestriction theta realization restriction)
+  | coefficientRing (value : PrimitiveCoefficientRing theta realization)
   | coverageRequirements
       (value : PrimitiveCoverageRequirements theta realization)
   | overlapSelection (value : PrimitiveOverlapSelection theta realization)
@@ -77,6 +78,7 @@ def closedTaggedPrimitiveReferenceToTagged :
   | .observable value => nomatch value
   | .contextRestriction value => nomatch value
   | .rawRestriction value => nomatch value
+  | .coefficientRing value => nomatch value
   | .coverageRequirements value => nomatch value
   | .overlapSelection value => nomatch value
   | .diagnosticCell value => nomatch value
@@ -130,6 +132,7 @@ same dependent constructor; impossible roles have already been eliminated. -/
   | observable value => cases value
   | contextRestriction value => cases value
   | rawRestriction value => cases value
+  | coefficientRing value => cases value
   | coverageRequirements value => cases value
   | overlapSelection value => cases value
   | diagnosticCell value => cases value
