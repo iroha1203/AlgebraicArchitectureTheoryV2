@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 46 finite source probes for the four map fields used by `GeomReadHom.ext` on arbitrary generated-object geometry morphisms
+- current proof obligation: Cycle 47 finite source probes for the lower doctrine maps and outer exact-core map fields of arbitrary generated-object morphisms
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: extend the finite restriction surface to every computational field of `PackageTotalHom`, then test separation and coverage from fixed source generators without assuming extension or image membership
+- next proof obligation: restrict the context and observable equivalence maps inside `EquationSystemExactTransport`, then test separation and coverage from fixed source generators without assuming extension or image membership
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/B/D Cycle 47 delta | 任意の全成分`GeometryTotalHom`を保持したまま、lower doctrineとupper exact-coreの外側map fieldをsource側有限点へ制限する | `G122FiniteCoreProbe`, `sourceRestriction`, `lowerAtomRestriction`, `upperAtomRestriction`, `objectRestriction`, `equationRestriction`, `operationRestriction`, `invariantRestriction`, `axisRestriction`, `coordinateRestriction`, `lowerAtomRestriction_eq_upperAtomRestriction`, 九つのrestriction composition law | 任意の一つの`G122FamilyInput`、任意のgenerated source/target object、任意の全`GeometryTotalHom`; source値・Atom・object・equation index・endpoint付きoperation・invariant index・axis・coordinateの有限族 | lower/upperの各実map field評価、実`atomEquiv_eq`による二Atom restriction一致、実合成に沿うpointwise restriction | 将来の`res`候補のcore外層とCycle 46 geometry restrictionの統合 | `EquationSystemExactTransport`内部のcontext/observable equivalence restriction、有限probe分離/coverage、ext/J・延長・一意性、endpoint表示、四再構成義務、D全体、CS/F |
 | A/B/D Cycle 46 delta | 任意の全成分`GeometryTotalHom`を保持したまま、その`GeomReadHom.ext`が使う四map fieldをsource側有限点へ制限し、固定D比較へ接続する | `G122FiniteGeometryProbe`, `singleLocal`, `coefficientRestriction`, `supportRestriction`, `axisRestriction`, `observableRestriction`, 四つの`_comp`, `hom_ne_of_coefficientRestriction_ne`, `FiniteAxisFoldGeometryProbe`, 四つの`finiteAxisFold*Restriction`, 四つのconstant-one/`barAlpha` restriction一致定理 | 任意の一つの`G122FamilyInput`、任意のgenerated source/target object、任意の全`GeometryTotalHom`; probeはsource係数値・context・そのsupport/axis/observable値のみ | 各有限indexで実`GeomReadHom`成分を評価するrestriction、合成時のpointwise評価則、係数restriction差から元Hom差へのsoundness、固定三比較case evaluatorへの同じrestriction適用 | 将来の`res`候補の幾何層と、固定D比較の有限観測 | `PackageTotalHom`の全計算成分restriction、有限probeの分離/coverage、ext/J、有限延長・一意性、endpoint表示、四再構成義務、D比較群全体、CS/F |
 | D Cycle 45 delta | 固定finite axis-foldの実`barAlpha`、generated `barBeta`、定数1 `barBeta`を有限なケース型で索引し、三者の意味的な一致・相違を正確に分類する | `FiniteAxisFoldComparisonCode`, `.evaluate`, `evaluate_barAlpha`, `evaluate_generatedBarBeta`, `evaluate_identityBarBeta`, `generatedBarBeta_ne_barAlpha`, `evaluate_identityBarBeta_eq_barAlpha`, `evaluate_eq_barAlpha_iff`, `evaluate_eq_generatedBarBeta_iff`, `evaluate_not_injective` | Cycle 44で同じfamily/cell/selected geometry/raw dataを保ち、generated cochainと定数1 cochainだけを異ならせた二入力上の三比較と可逆・非可逆分類 | 三constructor有限case index、実射への評価、generated比較と`barAlpha`の相違、定数1比較と`barAlpha`の一致、二つのexact case-index fiber、由来ラベルのsyntactic aliasing | 今後の本物の有限recipe/displayが保持すべき固定D三分類の回帰点 | 三射のsource-provenanced有限recipe、任意Homの有限restriction、endpoint object表示、一般decoderのext/J、比較群全元・section・二核・lift fiber、一般D/B/E/F |
 | D Cycle 44 delta | 指定された同一finite axis-fold geometryでgenerated cochain、定数1 cochain、実`barAlpha`とcanonical normalization routeの三場合を保持する | `G122GeneratedGeometryObject.barAlphaIso`, `finiteAxisFoldIdentityCochainG122CellInput`, `_fixedGeometry`, `finiteAxisFold_direct_package_identityCochain`, `finiteAxisFold_viaBase_package_identityCochain`, `finiteAxisFold_generatedGeometry_barBeta`, `finiteAxisFold_barAlpha_identityCochain`, `finiteAxisFold_generatedGeometry_barD_eq_normalizationRoute`, `finiteAxisFold_identityCochain_barD_eq_id`, `finiteAxisFold_identityCochain_barBeta_eq_barAlpha`, `finiteAxisFold_generatedGeometry_barBeta_not_isIso`, `finiteAxisFoldIdentityCochainBarBetaIso` | カード指定の`finiteAxisFoldBCDatumSquare`、cell `second`、係数`Int`、同じ`finiteAxisFoldFixedCoefficientGeometryFamily`; generated cochainと`identityDefectCochain` | cochain以外がdefinitionally同じ二入力、同一direct/viaBase package、同一実5-factor `barAlpha`; generated側の実`barBeta`とcanonical normalization routeおよび新category内の非可逆性、定数1側の`barD=id`と`barBeta=barAlpha`および同category内の可逆性 | D三分類を同じCycle43 semantic category上で有限表示へ接続する固定対象 | 表示構文・decoder上の同じ三射、比較群全元・section・二核・lift fiber、一般Dへの接続 |
@@ -4735,4 +4736,91 @@ audits:
   vacuity: "singleLocal constructs an inhabited one-coefficient/one-context probe with one support, axis, and observable point whenever those source values are supplied; no global separation conclusion is inferred from existence of that constructor"
   blocking_findings: []
   next_obligation: "Construct finite source probes for every computational map in PackageTotalHom.base and PackageTotalHom.upper, then investigate a fixed-source coverage theorem that can assemble component restrictions into GeometryTotalHom equality without accepting full-domain maps or an extension certificate."
+```
+
+## Cycle 47 — Finite source probes for outer core maps
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 47
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 2e5267c6c4fc1f6750bc3cf0f34d3a35a8090a91
+tracking_issue: 4520
+selection:
+  proof_obligation: "Extend Cycle 46 finite source restrictions to the lower exact-doctrine maps and the outer map fields used by SignedExactCoreReadingHom.ext, without storing a completed core morphism or target table"
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122FiniteCoreProbe.lean
+  risks:
+    - "accept a completed PackageTotalHom or full-domain map family as probe data"
+    - "erase operation endpoints or dependent coordinate typing"
+    - "claim that sampling only the equation index map determines EquationSystemExactTransport"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Added a parameter-relative finite core probe containing only source values for extraction sources, Atoms, architecture objects, equation indices, endpoint-typed operations, invariant indices, axes, and axis-dependent coordinates. Defined nine restrictions of the actual lower and upper maps for every arbitrary generated-object GeometryTotalHom. Derived agreement of lower and upper Atom restrictions from the existing PackageTotalHom compatibility equality and proved all nine pointwise composition laws. Context and observable equivalence maps internal to EquationSystemExactTransport remain explicitly unsampled."
+  evidence:
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.sourceRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.lowerAtomRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.upperAtomRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.objectRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.equationRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.operationRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.invariantRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.axisRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.coordinateRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.lowerAtomRestriction_eq_upperAtomRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.sourceRestriction_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.lowerAtomRestriction_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.upperAtomRestriction_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.objectRestriction_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.equationRestriction_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.operationRestriction_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.invariantRestriction_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.axisRestriction_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteCoreProbe.coordinateRestriction_comp
+  claim_mapping:
+    input_premises:
+      - "one arbitrary G122FamilyInput, arbitrary generated source and target objects, and every existing GeometryTotalHom between their interpreted packages"
+      - "finite source-point families for each named lower/upper map; operations retain both architecture-object endpoints and coordinates retain their selected source axis"
+    constructed_evidence:
+      - "pointwise finite evaluations of the lower doctrine source and Atom maps"
+      - "pointwise finite evaluations of the upper Atom, object, equation-index, operation, invariant, axis, and coordinate maps"
+      - "pointwise lower/upper Atom agreement derived from the actual package compatibility field"
+      - "composition equations for each of the nine restrictions, including dependent operation and coordinate values"
+    proof_use:
+      - "each target value is computed by applying a field of the arbitrary supplied semantic morphism to one probe entry"
+      - "the Atom agreement theorem applies PackageTotalHom.atomEquiv_eq to each selected source Atom"
+      - "the composition laws unfold PackageTotalHom.comp and SignedExactCoreReadingHom.comp at the corresponding source value"
+    unfinished:
+      - "the full EquationSystemExactTransport value required by SignedExactCoreReadingHom.ext is not reconstructed from its equation-index restriction"
+      - "context functor object/morphism maps and observable equivalences inside equation transport remain unsampled"
+      - "finite restrictions are not proved separating and no extension or uniqueness map is constructed"
+      - "Cycles 46 and 47 are not yet bundled into a complete total-Hom res operation or connected to ext/J"
+      - "endpoint displays, all four reconstruction obligations, the D group/kernel/fiber recovery, CS translations, and F remain open"
+  validation:
+    focused_checks: "G122FiniteCoreProbe passes"
+    named_target_build: "G122FiniteCoreProbe passed (4261 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "49 declarations in G122FiniteCoreProbe, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 47 adds noncircular finite restrictions for the lower doctrine maps and outer exact-core maps while preserving arbitrary all-component Hom quantification and dependent endpoint data. It does not cover the internal equation transport or prove any finite sufficiency/reconstruction converse, so G-123 remains unproved."
+audits:
+  premise_delta:
+    discharged:
+      - "finite source restriction for nine named lower/upper core map projections"
+      - "lower/upper Atom compatibility on every selected probe Atom"
+      - "pointwise functoriality under composition for all nine restrictions"
+    remaining:
+      - "finite restriction of context/observable equivalence data inside EquationSystemExactTransport"
+      - "source-derived finite coverage sufficient for full core and total-Hom equality"
+      - "extension, uniqueness, res/ext/J, and all remaining A--F obligations"
+  certificate_provenance: "the probe stores only source values and dependent source operations/coordinates; no morphism, target image, equivalence, extension, equality, coverage, or representability certificate is a probe field"
+  structure_field_escape: none-found
+  route_integrity: "arbitrary GeometryTotalHom values remain the arguments of restriction; operation endpoints and coordinate axis dependency are retained in both input and output types"
+  target_fitting: "the outer projections are necessary components of a future res operation but are not called a complete PackageTotalHom restriction or a decoder"
+  vacuity: "probe cards may be zero and no separation conclusion is drawn; nonempty source coverage and its construction from fixed G-123 input remain explicit future obligations"
+  blocking_findings: []
+  next_obligation: "Construct finite source restrictions of EquationSystemExactTransport context-object/context-arrow and observable-equivalence maps, retaining their dependent typing, then combine Cycles 46--48 into a total restriction surface and test which source-generated coverage conditions are provable."
 ```
