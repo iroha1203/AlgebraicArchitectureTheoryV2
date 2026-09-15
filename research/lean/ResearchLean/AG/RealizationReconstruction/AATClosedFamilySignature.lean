@@ -43,6 +43,16 @@ preservation claim is made.  A conservative edge completion retains every
 declared edge and appends every occurrence pair independently of predicate
 truth; this provides targets for later constructed finite actions without
 discarding the original edge syntax.
+Primitive-operation transforms store original authored `Op` values at exact
+evaluated endpoints.  Their configuration maps, occurrence choices, edge
+actions, coherence proofs, and semantic preservation are evaluator outputs.
+The present construction is intentionally limited to primitive operations in
+one support cell; path closure and comparison with all admissible morphisms
+remain separate obligations.  The chosen target occurrence is unique only at
+the evaluated Atom-value level: duplicate target occurrences can make its raw
+`Fin` index choice-dependent, so strict identity/composition for these raw
+actions requires a later canonical-occurrence construction or value-level
+quotient rather than following from `Classical.choose`.
 -/
 
 namespace AAT.AG.RealizationReconstruction
@@ -1537,6 +1547,268 @@ theorem familyMap_identificationRight
   rw [(hidentification objectIndex identificationIndex).2]
 
 end G122FiniteObjectFormationAction
+
+/-- Source-provenanced primitive-operation syntax between two finite displays
+over one fixed G-122 cell.  Each source object term selects a target term and
+an actual operation from the original authored support at those exact
+evaluated endpoints.  It stores neither the operation's configuration map nor
+any completed Atom or edge action. -/
+structure G122PrimitiveOperationActionSyntax
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (source target : G122FiniteObjectFormationDisplay input X) where
+  /-- Target object term of each source object term. -/
+  objectIndexMap : Fin source.objectCard → Fin target.objectCard
+  /-- Original authored-support operation at the selected evaluated endpoints. -/
+  operation : ∀ objectIndex,
+    let _ := input.atomDecidableEq
+    (input.authored.context.supportPackage X.cell.as).reading.operationReading.Op
+      (source.objectValue objectIndex)
+      (target.objectValue (objectIndexMap objectIndex))
+
+namespace G122PrimitiveOperationActionSyntax
+
+/-- Evaluate a primitive operation through the original G-122 operation
+reader.  The resulting configuration homomorphism is constructed output, not
+a transform field. -/
+def configurationMap
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : G122FiniteObjectFormationDisplay input X}
+    (transform : G122PrimitiveOperationActionSyntax source target)
+    (objectIndex : Fin source.objectCard) :
+    ConfigurationHom (source.objectValue objectIndex).configuration
+      (target.objectValue (transform.objectIndexMap objectIndex)).configuration := by
+  letI := input.atomDecidableEq
+  exact
+    (input.authored.context.supportPackage X.cell.as).reading.operationReading.configurationMap
+      (transform.operation objectIndex)
+
+/-- Choose the finite target occurrence witnessing the image, under the
+source operation, of one source occurrence.  Existence is discharged from the
+operation reader's `ConfigurationHom.maps_family` law and the exact generated-
+family equations of both displays. -/
+noncomputable def atomIndexMap
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : G122FiniteObjectFormationDisplay input X}
+    (transform : G122PrimitiveOperationActionSyntax source target)
+    (objectIndex : Fin source.objectCard)
+    (atomIndex : Fin (source.atomCard objectIndex)) :
+    Fin (target.atomCard (transform.objectIndexMap objectIndex)) := by
+  have hsource :
+      (source.objectValue objectIndex).configuration.family.mem
+        (source.atomValue objectIndex atomIndex) :=
+    source.occurrenceValue_mem_objectValue ⟨objectIndex, atomIndex⟩
+  have htarget := (transform.configurationMap objectIndex).maps_family hsource
+  rw [target.objectValue_family_eq] at htarget
+  exact Classical.choose htarget
+
+/-- The selected target occurrence evaluates to the exact Atom image of the
+original source operation. -/
+theorem atomValue_atomIndexMap
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : G122FiniteObjectFormationDisplay input X}
+    (transform : G122PrimitiveOperationActionSyntax source target)
+    (objectIndex : Fin source.objectCard)
+    (atomIndex : Fin (source.atomCard objectIndex)) :
+    target.atomValue (transform.objectIndexMap objectIndex)
+        (transform.atomIndexMap objectIndex atomIndex) =
+      (transform.configurationMap objectIndex).atomMap
+        (source.atomValue objectIndex atomIndex) := by
+  unfold atomIndexMap
+  exact Classical.choose_spec
+    (show (target.family (transform.objectIndexMap objectIndex)).mem
+      ((transform.configurationMap objectIndex).atomMap
+        (source.atomValue objectIndex atomIndex)) by
+      rw [← target.objectValue_family_eq]
+      exact (transform.configurationMap objectIndex).maps_family
+        (source.occurrenceValue_mem_objectValue ⟨objectIndex, atomIndex⟩))
+
+/-- Evaluate the primitive-operation transform to a total finite action between
+the conservative edge completions.  Edge images use only the mapped endpoint
+pair and the predicate-independent appended summand. -/
+noncomputable def action
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : G122FiniteObjectFormationDisplay input X}
+    (transform : G122PrimitiveOperationActionSyntax source target) :
+    G122FiniteObjectFormationAction source.edgeCompletion target.edgeCompletion where
+  objectIndexMap := transform.objectIndexMap
+  atomIndexMap objectIndex atomIndex := transform.atomIndexMap objectIndex atomIndex
+  relationIndexMap objectIndex relationIndex :=
+    target.relationPairIndex
+      ⟨transform.atomIndexMap objectIndex
+          (source.edgeCompletion.relationLeft objectIndex relationIndex),
+        transform.atomIndexMap objectIndex
+          (source.edgeCompletion.relationRight objectIndex relationIndex)⟩
+  identificationIndexMap objectIndex identificationIndex :=
+    target.identificationPairIndex
+      ⟨transform.atomIndexMap objectIndex
+          (source.edgeCompletion.identificationLeft objectIndex identificationIndex),
+        transform.atomIndexMap objectIndex
+          (source.edgeCompletion.identificationRight objectIndex identificationIndex)⟩
+
+/-- The evaluated finite action is value coherent because all occurrences
+with the same source Atom are evaluated by the same original operation map. -/
+theorem action_valueCoherent
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : G122FiniteObjectFormationDisplay input X}
+    (transform : G122PrimitiveOperationActionSyntax source target) :
+    transform.action.ValueCoherent := by
+  intro objectIndex firstAtom secondAtom hvalue
+  change source.atomValue objectIndex firstAtom =
+    source.atomValue objectIndex secondAtom at hvalue
+  change target.atomValue (transform.objectIndexMap objectIndex)
+      (transform.atomIndexMap objectIndex firstAtom) =
+    target.atomValue (transform.objectIndexMap objectIndex)
+      (transform.atomIndexMap objectIndex secondAtom)
+  rw [transform.atomValue_atomIndexMap, transform.atomValue_atomIndexMap, hvalue]
+
+/-- The evaluated action preserves both endpoints of every relation edge by
+construction of its image in the appended pair summand. -/
+theorem action_relationEndpointsCoherent
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : G122FiniteObjectFormationDisplay input X}
+    (transform : G122PrimitiveOperationActionSyntax source target) :
+    transform.action.RelationEndpointsCoherent := by
+  intro objectIndex relationIndex
+  let code : target.OccurrencePairCode (transform.objectIndexMap objectIndex) :=
+    ⟨transform.atomIndexMap objectIndex
+        (source.edgeCompletion.relationLeft objectIndex relationIndex),
+      transform.atomIndexMap objectIndex
+        (source.edgeCompletion.relationRight objectIndex relationIndex)⟩
+  have hcode := target.edgeCompletion_relationPairCode code
+  exact ⟨(congrArg Prod.fst hcode).symm, (congrArg Prod.snd hcode).symm⟩
+
+/-- The evaluated action preserves both endpoints of every identification
+edge by the same predicate-independent pair-summand construction. -/
+theorem action_identificationEndpointsCoherent
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : G122FiniteObjectFormationDisplay input X}
+    (transform : G122PrimitiveOperationActionSyntax source target) :
+    transform.action.IdentificationEndpointsCoherent := by
+  intro objectIndex identificationIndex
+  let code : target.OccurrencePairCode (transform.objectIndexMap objectIndex) :=
+    ⟨transform.atomIndexMap objectIndex
+        (source.edgeCompletion.identificationLeft objectIndex identificationIndex),
+      transform.atomIndexMap objectIndex
+        (source.edgeCompletion.identificationRight objectIndex identificationIndex)⟩
+  have hcode := target.edgeCompletion_identificationPairCode code
+  exact ⟨(congrArg Prod.fst hcode).symm, (congrArg Prod.snd hcode).symm⟩
+
+/-- The original primitive operation preserves the freshly evaluated source
+relation on every pair of displayed occurrences.  This semantic proof is
+separate from endpoint coherence and uses `ConfigurationHom.maps_relation`. -/
+theorem maps_configurationValue_relation
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : G122FiniteObjectFormationDisplay input X}
+    (transform : G122PrimitiveOperationActionSyntax source target)
+    (objectIndex : Fin source.objectCard)
+    {left right : Fin (source.atomCard objectIndex)}
+    (hrelation : (source.configurationValue objectIndex).relation
+      (source.atomValue objectIndex left) (source.atomValue objectIndex right)) :
+    (target.configurationValue (transform.objectIndexMap objectIndex)).relation
+      (target.atomValue (transform.objectIndexMap objectIndex)
+        (transform.atomIndexMap objectIndex left))
+      (target.atomValue (transform.objectIndexMap objectIndex)
+        (transform.atomIndexMap objectIndex right)) := by
+  have hsource : (source.objectValue objectIndex).configuration.relation
+      (source.atomValue objectIndex left) (source.atomValue objectIndex right) := by
+    rw [source.objectValue_configuration_eq]
+    exact hrelation
+  have htarget := (transform.configurationMap objectIndex).maps_relation hsource
+  let leftImage := (transform.configurationMap objectIndex).atomMap
+    (source.atomValue objectIndex left)
+  let rightImage := (transform.configurationMap objectIndex).atomMap
+    (source.atomValue objectIndex right)
+  have htarget' :
+      (target.configurationValue (transform.objectIndexMap objectIndex)).relation
+        leftImage rightImage :=
+    Eq.mp (congrArg (fun configuration : AtomConfiguration input.Carrier =>
+      configuration.relation leftImage rightImage)
+      (target.objectValue_configuration_eq (transform.objectIndexMap objectIndex))) htarget
+  rw [transform.atomValue_atomIndexMap, transform.atomValue_atomIndexMap]
+  exact htarget'
+
+/-- The original primitive operation likewise preserves the freshly evaluated
+source identification predicate on every pair of displayed occurrences. -/
+theorem maps_configurationValue_identification
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : G122FiniteObjectFormationDisplay input X}
+    (transform : G122PrimitiveOperationActionSyntax source target)
+    (objectIndex : Fin source.objectCard)
+    {left right : Fin (source.atomCard objectIndex)}
+    (hidentification : (source.configurationValue objectIndex).identification
+      (source.atomValue objectIndex left) (source.atomValue objectIndex right)) :
+    (target.configurationValue (transform.objectIndexMap objectIndex)).identification
+      (target.atomValue (transform.objectIndexMap objectIndex)
+        (transform.atomIndexMap objectIndex left))
+      (target.atomValue (transform.objectIndexMap objectIndex)
+        (transform.atomIndexMap objectIndex right)) := by
+  have hsource : (source.objectValue objectIndex).configuration.identification
+      (source.atomValue objectIndex left) (source.atomValue objectIndex right) := by
+    rw [source.objectValue_configuration_eq]
+    exact hidentification
+  have htarget := (transform.configurationMap objectIndex).maps_identification hsource
+  let leftImage := (transform.configurationMap objectIndex).atomMap
+    (source.atomValue objectIndex left)
+  let rightImage := (transform.configurationMap objectIndex).atomMap
+    (source.atomValue objectIndex right)
+  have htarget' :
+      (target.configurationValue (transform.objectIndexMap objectIndex)).identification
+        leftImage rightImage :=
+    Eq.mp (congrArg (fun configuration : AtomConfiguration input.Carrier =>
+      configuration.identification leftImage rightImage)
+      (target.objectValue_configuration_eq (transform.objectIndexMap objectIndex))) htarget
+  rw [transform.atomValue_atomIndexMap, transform.atomValue_atomIndexMap]
+  exact htarget'
+
+/-- All-Atom form of primitive-operation relation preservation: every true
+source relation pair has displayed endpoint witnesses whose constructed target
+occurrences satisfy the target relation. -/
+theorem maps_configurationValue_relation_allAtoms
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : G122FiniteObjectFormationDisplay input X}
+    (transform : G122PrimitiveOperationActionSyntax source target)
+    (objectIndex : Fin source.objectCard)
+    {left right : input.Carrier.Atom}
+    (hrelation : (source.configurationValue objectIndex).relation left right) :
+    ∃ leftIndex rightIndex,
+      source.atomValue objectIndex leftIndex = left ∧
+      source.atomValue objectIndex rightIndex = right ∧
+      (target.configurationValue (transform.objectIndexMap objectIndex)).relation
+        (target.atomValue (transform.objectIndexMap objectIndex)
+          (transform.atomIndexMap objectIndex leftIndex))
+        (target.atomValue (transform.objectIndexMap objectIndex)
+          (transform.atomIndexMap objectIndex rightIndex)) := by
+  rcases (source.configurationValue_relation_iff_exists_occurrencePairCode
+    objectIndex left right).mp hrelation with
+    ⟨code, hleft, hright, hcode⟩
+  exact ⟨code.1, code.2, hleft, hright,
+    transform.maps_configurationValue_relation objectIndex hcode⟩
+
+/-- All-Atom form of primitive-operation identification preservation, with
+finite occurrence witnesses for both arbitrary source endpoints. -/
+theorem maps_configurationValue_identification_allAtoms
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    {source target : G122FiniteObjectFormationDisplay input X}
+    (transform : G122PrimitiveOperationActionSyntax source target)
+    (objectIndex : Fin source.objectCard)
+    {left right : input.Carrier.Atom}
+    (hidentification :
+      (source.configurationValue objectIndex).identification left right) :
+    ∃ leftIndex rightIndex,
+      source.atomValue objectIndex leftIndex = left ∧
+      source.atomValue objectIndex rightIndex = right ∧
+      (target.configurationValue (transform.objectIndexMap objectIndex)).identification
+        (target.atomValue (transform.objectIndexMap objectIndex)
+          (transform.atomIndexMap objectIndex leftIndex))
+        (target.atomValue (transform.objectIndexMap objectIndex)
+          (transform.atomIndexMap objectIndex rightIndex)) := by
+  rcases (source.configurationValue_identification_iff_exists_occurrencePairCode
+    objectIndex left right).mp hidentification with
+    ⟨code, hleft, hright, hcode⟩
+  exact ⟨code.1, code.2, hleft, hright,
+    transform.maps_configurationValue_identification objectIndex hcode⟩
+
+end G122PrimitiveOperationActionSyntax
 
 /-- The Atom and architecture-object generator tables owned by one finite
 G-122 display.  These tables make no claim that every semantic Atom or object
