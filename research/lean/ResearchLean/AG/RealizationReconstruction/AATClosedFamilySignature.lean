@@ -373,6 +373,95 @@ theorem atom_maps_entry
       (targetDisplay.atoms.value (action.atomIndexMap i)) :=
   ⟨i, rfl, rfl⟩
 
+/-- Cycle 30 finite generator-action-level extensionality: two finite actions
+with the same Atom and object index maps are equal.  The only remaining fields
+are propositions over those fixed finite maps, so this uses proof irrelevance
+and no semantic extension or completeness premise. -/
+@[ext] theorem ext
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {sourceDisplay : G122FiniteObjectGeneratorDisplay input X}
+    {targetDisplay : G122FiniteObjectGeneratorDisplay input Y}
+    {first second : G122FiniteObjectGeneratorAction sourceDisplay targetDisplay}
+    (hatom : first.atomIndexMap = second.atomIndexMap)
+    (hobject : first.objectIndexMap = second.objectIndexMap) : first = second := by
+  cases first
+  cases second
+  cases hatom
+  cases hobject
+  rfl
+
+/-- Cycle 30 finite generator-action-level identity on one G-122 display.  It is
+constructed from identity index maps and reuses the source local equations;
+no additional premise or semantic carrier map is supplied. -/
+def id {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectGeneratorDisplay input X) :
+    G122FiniteObjectGeneratorAction display display where
+  atomIndexMap i := i
+  objectIndexMap i := i
+  mapsFamily _ _ h := h
+  mapsRelation _ _ _ h := h
+  mapsIdentification _ _ _ h := h
+
+/-- Cycle 30 finite generator-action-level composition of G-122 display actions.
+It uses only composition of their finite index maps and successive use of the
+two actions' local equations, leaving semantic extension for a later stage. -/
+def comp
+    {input : G122FamilyInput.{u, v}} {X Y Z : G122CellInput input}
+    {firstDisplay : G122FiniteObjectGeneratorDisplay input X}
+    {middleDisplay : G122FiniteObjectGeneratorDisplay input Y}
+    {lastDisplay : G122FiniteObjectGeneratorDisplay input Z}
+    (first : G122FiniteObjectGeneratorAction firstDisplay middleDisplay)
+    (second : G122FiniteObjectGeneratorAction middleDisplay lastDisplay) :
+    G122FiniteObjectGeneratorAction firstDisplay lastDisplay where
+  atomIndexMap i := second.atomIndexMap (first.atomIndexMap i)
+  objectIndexMap i := second.objectIndexMap (first.objectIndexMap i)
+  mapsFamily objectIndex atomIndex h :=
+    second.mapsFamily (first.objectIndexMap objectIndex)
+      (first.atomIndexMap atomIndex) (first.mapsFamily objectIndex atomIndex h)
+  mapsRelation objectIndex firstAtom secondAtom h :=
+    second.mapsRelation (first.objectIndexMap objectIndex)
+      (first.atomIndexMap firstAtom) (first.atomIndexMap secondAtom)
+      (first.mapsRelation objectIndex firstAtom secondAtom h)
+  mapsIdentification objectIndex firstAtom secondAtom h :=
+    second.mapsIdentification (first.objectIndexMap objectIndex)
+      (first.atomIndexMap firstAtom) (first.atomIndexMap secondAtom)
+      (first.mapsIdentification objectIndex firstAtom secondAtom h)
+
+/-- Simp normal form removes a finite generator-action identity on the source side:
+`comp (id sourceDisplay) action` reduces to `action`. -/
+@[simp] theorem id_comp
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {sourceDisplay : G122FiniteObjectGeneratorDisplay input X}
+    {targetDisplay : G122FiniteObjectGeneratorDisplay input Y}
+    (action : G122FiniteObjectGeneratorAction sourceDisplay targetDisplay) :
+    comp (id sourceDisplay) action = action := by
+  apply ext <;> rfl
+
+/-- Simp normal form removes a finite generator-action identity on the target side:
+`comp action (id targetDisplay)` reduces to `action`. -/
+@[simp] theorem comp_id
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {sourceDisplay : G122FiniteObjectGeneratorDisplay input X}
+    {targetDisplay : G122FiniteObjectGeneratorDisplay input Y}
+    (action : G122FiniteObjectGeneratorAction sourceDisplay targetDisplay) :
+    comp action (id targetDisplay) = action := by
+  apply ext <;> rfl
+
+/-- Simp normal form reassociates finite generator-action composition to the
+right: `comp (comp first second) third` reduces to
+`comp first (comp second third)`. -/
+@[simp] theorem comp_assoc
+    {input : G122FamilyInput.{u, v}} {W X Y Z : G122CellInput input}
+    {firstDisplay : G122FiniteObjectGeneratorDisplay input W}
+    {secondDisplay : G122FiniteObjectGeneratorDisplay input X}
+    {thirdDisplay : G122FiniteObjectGeneratorDisplay input Y}
+    {fourthDisplay : G122FiniteObjectGeneratorDisplay input Z}
+    (first : G122FiniteObjectGeneratorAction firstDisplay secondDisplay)
+    (second : G122FiniteObjectGeneratorAction secondDisplay thirdDisplay)
+    (third : G122FiniteObjectGeneratorAction thirdDisplay fourthDisplay) :
+    comp (comp first second) third = comp first (comp second third) := by
+  apply ext <;> rfl
+
 end G122FiniteObjectGeneratorAction
 
 /-- Endpoint-indexed primitive operation names.
