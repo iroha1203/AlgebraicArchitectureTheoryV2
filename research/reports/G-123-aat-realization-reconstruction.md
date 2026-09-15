@@ -13,16 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 34 descent of finite occurrence actions to generated-family subtype maps
+- current proof obligation: Cycle 35 independent finite relation/identification edges and endpoint preservation
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: add independently generated finite relation/identification syntax and prove its preservation under the generated-family maps
+- next proof obligation: connect finite relation/identification generators to source-generated configuration relation/identification without accepting semantic predicates as syntax
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`/`PrimitiveSupport`/`PrimitiveGeometryAxis`/`PrimitiveObservable`/`PrimitiveContextRestriction`/`PrimitiveRawRestriction`/`PrimitiveCoefficientRing`/`PrimitiveCoverageRequirements`/`PrimitiveCoverageFact`/`PrimitiveOverlapSelection`とG-122のsignature/equation/invariant/raw各role; `PrimitiveAtom.g122Value`; `PrimitiveObject.taggedValue`/`g122Value`とconfiguration/structure/selected-quantity各評価; `G122FiniteObjectFormationDisplay`, `family`, `family_listFinite`, `configurationValue`, `configurationValue_family_eq`, `objectValue`, `primitiveObject`, `objectValue_configuration_eq`, `objectValue_family_eq`, `structureMaps`, `selectedQuantities`, `objectTable`; `G122FiniteObjectFormationAction`とその`ext`/`id`/`comp`/圏律/`Maps`/`AtomMaps`/`maps_entry`/`atom_maps_entry`、`Occurrence`/`occurrenceValue`/membership証拠/`configurationValue_familySupported`/`mapOccurrence`/`ValueCoherent`/`GeneratedFamilyMember`/`familyMap`/occurrence・恒等・合成則; `G122FiniteObjectGeneratorDisplay`, `G122FiniteObjectGeneratorAction`, `Maps`, `AtomMaps`, `maps_entry`, `atom_maps_entry`, `ext`, `id`, `comp`, `id_comp`, `comp_id`, `comp_assoc`; `PrimitiveContextRestriction.g122Value`, `g122Morphism`, `g122Morphism_isRestriction`; `PrimitiveRawRestriction.g122Value`, `g122Value_maps_JStruct`, `g122Value_identity_polynomialMap`, `g122Value_composition_polynomialMap`; `PrimitiveCoefficientRing.g122Carrier`, `g122CommRing`; `PrimitiveCoverageFact.g122Statement`, `g122Proof`; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `ClosedPrimitiveReference`, `closedTaggedPrimitiveReferenceEquiv`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective`; `TaggedPrimitivePresentedMonoid`, `TaggedPrimitiveRelationPresentation`, `taggedPrimitiveRelationEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体; Cycle 16ではそのfinite word間の任意の生成関係; Cycle 26では元selected geometryの9 predicateに対するexact typed argumentsとaccepted source proof; Cycle 28–29では同じG-122 parameter下の二実現、各displayが所有する有限Atom/object table、そのsource indexからtarget table indexへの写像とfinite index上のfamily/relation/identification整合式; Cycle 30では同じparameter下の任意の合成可能な3–4実現/display列と各arrowの同じ有限index action; Cycle 32ではobject termごとの有限Atom occurrence table; Cycle 33では同じparameter下の任意の合成可能な3–4 formation display列とobject/各term内Atom occurrenceの有限index map; Cycle 34では同じ任意の両端displayと有限occurrence値合同（固定入力からの由来は未放電） | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; tagged/G-122のexact object primitiveから同じArchitectureObjectとそのconfiguration・structureMaps・selectedQuantitiesを重複入力なしで評価; 有限Atom occurrenceからAtomFamilyを構成し、G-122原supportの`composition.compose`と`objectReading.object`で順次評価してfamily/configuration lawと評価後objectが所有するstructure/quantity選択値を回復しobject tableへ変換; formation term/occurrence index actionの恒等・合成・圏律と有限index relation、occurrence評価・generated-family subtype写像・その恒等/合成則（全域Atom mapなし）; G-122二実現のdisplay-owned有限Atom/object generator table間のtotal index action、finite index上だけのconfiguration predicate整合、有限index mapの恒等・合成と圏律（semantic全域Atom/object map・`ConfigurationHom`・延長・完全性なし）; 原supportの各operation identityとconfiguration作用の端点付き評価; authored support coreのcontext preorder（`selectedGeometry.toAATSite`経由で型付け）の任意homから両端付きcontext restrictionと元入力の全readability lawを回復; 同じrestrictionをindexとして元`raw.restrictionStable`値・`maps_JStruct`・恒等/合成polynomial map式を回復; 元G-122 familyの係数carrierとCommRing構造をnullary roleから回復; coverageの9 predicateについてexact argumentを保持したsource occurrenceを明示し格納済みproofを同一命題として読み戻す; 現行closed signatureの全21 roleの依存sumとtagged branchで4 roleが全体である同値; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; 全finite wordのfree monoidと、その任意の生成関係によるactual presented-monoid quotient category | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | finite relation/identification生成とgenerated-family写像による保存、ValueCoherentを固定入力由来のAtom-transform構文から放電、configuration/structure/quantityの射整合、全域Atom/object actionと`ConfigurationHom`のext構成、CS object-formationのAAT評価、cross-realization coverage/overlap保存式・map-side reading・係数map/transport roleの追加とtagged inhabitant判定、coverage source premiseのmap-side実使用、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
+| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`/`PrimitiveSupport`/`PrimitiveGeometryAxis`/`PrimitiveObservable`/`PrimitiveContextRestriction`/`PrimitiveRawRestriction`/`PrimitiveCoefficientRing`/`PrimitiveCoverageRequirements`/`PrimitiveCoverageFact`/`PrimitiveOverlapSelection`とG-122のsignature/equation/invariant/raw各role; `PrimitiveAtom.g122Value`; `PrimitiveObject.taggedValue`/`g122Value`とconfiguration/structure/selected-quantity各評価; `G122FiniteObjectFormationDisplay`, `family`, `family_listFinite`, `configurationValue`, `configurationValue_family_eq`, `objectValue`, `primitiveObject`, `objectValue_configuration_eq`, `objectValue_family_eq`, `structureMaps`, `selectedQuantities`, `objectTable`; `G122FiniteObjectFormationAction`とその`ext`/`id`/`comp`/圏律/`Maps`/`AtomMaps`/`maps_entry`/`atom_maps_entry`、`Occurrence`/`occurrenceValue`/membership証拠/`configurationValue_familySupported`/`mapOccurrence`/`ValueCoherent`/`GeneratedFamilyMember`/`familyMap`/occurrence・恒等・合成則; `G122FiniteObjectGeneratorDisplay`, `G122FiniteObjectGeneratorAction`, `Maps`, `AtomMaps`, `maps_entry`, `atom_maps_entry`, `ext`, `id`, `comp`, `id_comp`, `comp_id`, `comp_assoc`; `PrimitiveContextRestriction.g122Value`, `g122Morphism`, `g122Morphism_isRestriction`; `PrimitiveRawRestriction.g122Value`, `g122Value_maps_JStruct`, `g122Value_identity_polynomialMap`, `g122Value_composition_polynomialMap`; `PrimitiveCoefficientRing.g122Carrier`, `g122CommRing`; `PrimitiveCoverageFact.g122Statement`, `g122Proof`; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `ClosedPrimitiveReference`, `closedTaggedPrimitiveReferenceEquiv`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective`; `TaggedPrimitivePresentedMonoid`, `TaggedPrimitiveRelationPresentation`, `taggedPrimitiveRelationEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体; Cycle 16ではそのfinite word間の任意の生成関係; Cycle 26では元selected geometryの9 predicateに対するexact typed argumentsとaccepted source proof; Cycle 28–29では同じG-122 parameter下の二実現、各displayが所有する有限Atom/object table、そのsource indexからtarget table indexへの写像とfinite index上のfamily/relation/identification整合式; Cycle 30では同じparameter下の任意の合成可能な3–4実現/display列と各arrowの同じ有限index action; Cycle 32ではobject termごとの有限Atom occurrence table; Cycle 33では同じparameter下の任意の合成可能な3–4 formation display列とobject/各term内Atom occurrenceの有限index map; Cycle 34では同じ任意の両端displayと有限occurrence値合同（固定入力からの由来は未放電）; Cycle 35では各object termの有限relation/identification edge endpointsとそのaction map/coherence（source relationへのadequacyは未放電） | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; tagged/G-122のexact object primitiveから同じArchitectureObjectとそのconfiguration・structureMaps・selectedQuantitiesを重複入力なしで評価; 有限Atom occurrenceからAtomFamilyを構成し、G-122原supportの`composition.compose`と`objectReading.object`で順次評価してfamily/configuration lawと評価後objectが所有するstructure/quantity選択値を回復しobject tableへ変換; formation term/occurrence index actionの恒等・合成・圏律と有限index relation、occurrence評価・generated-family subtype写像・その恒等/合成則、独立relation/identification edgeの有限index action・endpoint coherence・familyMap endpoint値保存（全域Atom mapなし）; G-122二実現のdisplay-owned有限Atom/object generator table間のtotal index action、finite index上だけのconfiguration predicate整合、有限index mapの恒等・合成と圏律（semantic全域Atom/object map・`ConfigurationHom`・延長・完全性なし）; 原supportの各operation identityとconfiguration作用の端点付き評価; authored support coreのcontext preorder（`selectedGeometry.toAATSite`経由で型付け）の任意homから両端付きcontext restrictionと元入力の全readability lawを回復; 同じrestrictionをindexとして元`raw.restrictionStable`値・`maps_JStruct`・恒等/合成polynomial map式を回復; 元G-122 familyの係数carrierとCommRing構造をnullary roleから回復; coverageの9 predicateについてexact argumentを保持したsource occurrenceを明示し格納済みproofを同一命題として読み戻す; 現行closed signatureの全21 roleの依存sumとtagged branchで4 roleが全体である同値; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; 全finite wordのfree monoidと、その任意の生成関係によるactual presented-monoid quotient category | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | finite relation/identification生成のsource configurationへのsoundness/completenessとgenerated-family写像によるsemantic保存、ValueCoherentとendpoint coherenceを固定入力由来のAtom-transform構文から放電、configuration/structure/quantityの射整合、全域Atom/object actionと`ConfigurationHom`のext構成、CS object-formationのAAT評価、cross-realization coverage/overlap保存式・map-side reading・係数map/transport roleの追加とtagged inhabitant判定、coverage source premiseのmap-side実使用、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full`; `retractEndomorphismMap_surjective_of_full`, `exists_retractEndomorphismMap_surjective`; `not_full_and_retractGenerated_of_listObjectGeneratedEndomorphisms`; `not_full_and_retractGenerated_of_endomorphismEmbedding` | 各具体入力条件のみ; 一般transferでは明示的な`F.Full`; combined no-goでは各presentation自己射が有限primitive listの全射像またはそこへの単射を持つこと | 任意の完成射を制限して有限tableを構成; retract上の任意自己射を`r ≫ h ≫ i`のfullness preimageから持ち上げる; injective endomorphism serializationの`invFun`からlist decoder全射を構成; mandatory対象の非全射と合成 | 各direct equivalence; mandatory-C obstructionを任意のmultiobject presentation categoryへ移す categorical/cardinal bridge | final `R_Theta` decoderの充満性を固定入力から放電し、actual endpoint-typed syntaxの各自己射embeddingと接続すること |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
@@ -3769,4 +3769,84 @@ audits:
   vacuity: "empty generated families produce the unique empty-domain map only; no coverage, semantic totality, or completeness follows"
   blocking_findings: []
   next_obligation: "Add source-provenanced finite relation and identification generators and lift their preservation to the generated-family maps before attempting ConfigurationHom extension."
+```
+
+## Cycle 35 — Independent finite relation and identification edges
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 35
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 40141c7f304f7ba6d3494d5758a0fbb643b506f3
+tracking_issue: 4520
+selection:
+  proof_obligation: "Add finite relation and identification generators independently of evaluated configuration predicates, map them with all endpoints retained, and prove endpoint preservation on the Cycle 34 generated-family maps"
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+  risks:
+    - "store configurationValue.relation or identification as presentation data"
+    - "map edge names while dropping or changing either endpoint"
+    - "call finite endpoint preservation a semantic ConfigurationHom"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Extended each finite object term with independently generated finite relation and identification edge tables, each carrying two occurrence endpoints. Extended formation actions with relation and identification index maps and rebuilt extensionality, identity, composition, and category laws. Added external finite endpoint-coherence predicates with identity/composition closure. Used ValueCoherent plus endpoint coherence to prove that generated-family maps carry all four source endpoint values to the corresponding selected target endpoint values."
+  evidence:
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationDisplay.relationCard
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationDisplay.relationLeft
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationDisplay.relationRight
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationDisplay.identificationCard
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationDisplay.identificationLeft
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationDisplay.identificationRight
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.relationIndexMap
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.identificationIndexMap
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.RelationEndpointsCoherent
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.IdentificationEndpointsCoherent
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.relationEndpointsCoherent_id
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.RelationEndpointsCoherent.comp
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.identificationEndpointsCoherent_id
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.IdentificationEndpointsCoherent.comp
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.familyMap_relationLeft
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.familyMap_relationRight
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.familyMap_identificationLeft
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.familyMap_identificationRight
+  claim_mapping:
+    input_premises:
+      - "arbitrary G-122 cells/displays under one fixed family input"
+      - "finite per-object relation and identification indices with both endpoints in the same finite occurrence table"
+      - "finite edge index maps plus ValueCoherent and endpoint-coherence predicates; their fixed-source provenance is not discharged"
+    constructed_evidence:
+      - "identity and composition for relation/identification index maps"
+      - "identity and composition closure for both endpoint-coherence predicates"
+      - "exact familyMap images of left/right relation and identification endpoint values"
+    proof_use:
+      - "action composition routes each edge through the mapped middle object and middle edge index"
+      - "endpoint-coherence composition maps first-stage endpoint equations through the second Atom index map and then applies second-stage coherence"
+      - "each endpoint theorem first invokes familyMap_occurrence using ValueCoherent, then rewrites by the corresponding endpoint equation"
+    unfinished:
+      - "no theorem yet relates the independent finite edge tables to configurationValue.relation or configurationValue.identification"
+      - "ValueCoherent and both endpoint-coherence predicates remain undischarged from source-provenanced transform syntax"
+      - "no total Atom map, ConfigurationHom, configuration naturality, res/ext/J, or remaining A--F completion"
+  validation:
+    focused_checks: "AATClosedFamilySignature and ClosedPrimitiveRoleExhaustion 2/2 pass"
+    named_target_build: "ClosedPrimitiveRoleExhaustion passed (4276 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "714 and 140 declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 35 preserves both endpoints of independently generated finite relation and identification edges on generated-family maps. It does not identify those edges with semantic configuration predicates or discharge their provenance, so G-123 remains unproved."
+audits:
+  premise_delta:
+    discharged: []
+    remaining:
+      - "prove source-derived soundness and completeness of finite relation/identification generators for evaluated configurations"
+      - "construct source-provenanced Atom-transform syntax discharging all finite coherence predicates"
+      - "semantic extension, res/ext/J, and all remaining A--F obligations"
+  certificate_provenance: "finite edge endpoints are raw indices, not semantic predicates; ValueCoherent and endpoint coherence are explicitly undischarged external conditions and are used only in endpoint descent theorems"
+  structure_field_escape: "display fields contain only Nat/Fin shapes and endpoints; action fields contain only Fin maps; no configuration predicate or completed semantic map is stored"
+  route_integrity: "every source edge keeps its left and right occurrence endpoints, the action maps its edge index, and the endpoint equations are separately proved through familyMap"
+  target_fitting: "the construction retains nonidentity and many-to-one Atom actions while adding relation/identification syntax needed before semantic preservation"
+  vacuity: "empty edge tables yield no endpoint claim and do not imply semantic relation/identification emptiness or completeness"
+  blocking_findings: []
+  next_obligation: "Connect the finite edge generators to the source-generated configuration predicates by source-derived soundness/completeness, without storing those predicates or their global graphs as syntax."
 ```

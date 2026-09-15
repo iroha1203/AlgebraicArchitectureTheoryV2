@@ -289,6 +289,20 @@ structure G122FiniteObjectFormationDisplay
   atomCard : Fin objectCard → Nat
   /-- The actual primitive Atom occurrence at each finite position. -/
   atomValue : ∀ objectIndex, Fin (atomCard objectIndex) → input.Carrier.Atom
+  /-- Number of independently generated relation edges in each object term. -/
+  relationCard : Fin objectCard → Nat
+  /-- Left occurrence endpoint of each generated relation edge. -/
+  relationLeft : ∀ objectIndex, Fin (relationCard objectIndex) → Fin (atomCard objectIndex)
+  /-- Right occurrence endpoint of each generated relation edge. -/
+  relationRight : ∀ objectIndex, Fin (relationCard objectIndex) → Fin (atomCard objectIndex)
+  /-- Number of independently generated identification edges in each object term. -/
+  identificationCard : Fin objectCard → Nat
+  /-- Left occurrence endpoint of each generated identification edge. -/
+  identificationLeft : ∀ objectIndex,
+    Fin (identificationCard objectIndex) → Fin (atomCard objectIndex)
+  /-- Right occurrence endpoint of each generated identification edge. -/
+  identificationRight : ∀ objectIndex,
+    Fin (identificationCard objectIndex) → Fin (atomCard objectIndex)
 
 namespace G122FiniteObjectFormationDisplay
 
@@ -497,6 +511,14 @@ structure G122FiniteObjectFormationAction
   atomIndexMap : ∀ objectIndex,
     Fin (source.atomCard objectIndex) →
       Fin (target.atomCard (objectIndexMap objectIndex))
+  /-- Target generated-relation index for each source generated relation. -/
+  relationIndexMap : ∀ objectIndex,
+    Fin (source.relationCard objectIndex) →
+      Fin (target.relationCard (objectIndexMap objectIndex))
+  /-- Target generated-identification index for each source identification. -/
+  identificationIndexMap : ∀ objectIndex,
+    Fin (source.identificationCard objectIndex) →
+      Fin (target.identificationCard (objectIndexMap objectIndex))
 
 namespace G122FiniteObjectFormationAction
 
@@ -507,11 +529,16 @@ namespace G122FiniteObjectFormationAction
     {target : G122FiniteObjectFormationDisplay input Y}
     {first second : G122FiniteObjectFormationAction source target}
     (hobject : first.objectIndexMap = second.objectIndexMap)
-    (hatom : HEq first.atomIndexMap second.atomIndexMap) : first = second := by
+    (hatom : HEq first.atomIndexMap second.atomIndexMap)
+    (hrelation : HEq first.relationIndexMap second.relationIndexMap)
+    (hidentification : HEq first.identificationIndexMap second.identificationIndexMap) :
+    first = second := by
   cases first
   cases second
   cases hobject
   cases hatom
+  cases hrelation
+  cases hidentification
   rfl
 
 /-- Identity finite action on one Atom-occurrence object display. -/
@@ -520,6 +547,8 @@ def id {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
     G122FiniteObjectFormationAction display display where
   objectIndexMap objectIndex := objectIndex
   atomIndexMap _ atomIndex := atomIndex
+  relationIndexMap _ relationIndex := relationIndex
+  identificationIndexMap _ identificationIndex := identificationIndex
 
 /-- Composition of finite object-term and occurrence-index maps. -/
 def comp
@@ -534,6 +563,12 @@ def comp
   atomIndexMap objectIndex atomIndex :=
     second.atomIndexMap (first.objectIndexMap objectIndex)
       (first.atomIndexMap objectIndex atomIndex)
+  relationIndexMap objectIndex relationIndex :=
+    second.relationIndexMap (first.objectIndexMap objectIndex)
+      (first.relationIndexMap objectIndex relationIndex)
+  identificationIndexMap objectIndex identificationIndex :=
+    second.identificationIndexMap (first.objectIndexMap objectIndex)
+      (first.identificationIndexMap objectIndex identificationIndex)
 
 /-- Simp normal form removes the left identity finite formation action. -/
 @[simp] theorem id_comp
@@ -545,6 +580,10 @@ def comp
   apply ext rfl
   apply heq_of_eq
   rfl
+  · apply heq_of_eq
+    rfl
+  · apply heq_of_eq
+    rfl
 
 /-- Simp normal form removes the right identity finite formation action. -/
 @[simp] theorem comp_id
@@ -556,6 +595,10 @@ def comp
   apply ext rfl
   apply heq_of_eq
   rfl
+  · apply heq_of_eq
+    rfl
+  · apply heq_of_eq
+    rfl
 
 /-- Simp normal form reassociates finite formation-action composition to the
 right. -/
@@ -572,6 +615,10 @@ right. -/
   apply ext rfl
   apply heq_of_eq
   rfl
+  · apply heq_of_eq
+    rfl
+  · apply heq_of_eq
+    rfl
 
 /-- The finite relation on object-term indices selected by an action. -/
 def Maps
@@ -687,6 +734,100 @@ theorem ValueCoherent.comp
     (first.atomIndexMap objectIndex secondAtom)
     (hfirst objectIndex firstAtom secondAtom hvalue)
 
+/-- Finite relation-endpoint coherence says that mapping either endpoint of a
+source relation edge gives the corresponding endpoint of its selected target
+relation edge.  It mentions only independently generated finite syntax. -/
+def RelationEndpointsCoherent
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {target : G122FiniteObjectFormationDisplay input Y}
+    (action : G122FiniteObjectFormationAction source target) : Prop :=
+  ∀ objectIndex relationIndex,
+    action.atomIndexMap objectIndex (source.relationLeft objectIndex relationIndex) =
+        target.relationLeft (action.objectIndexMap objectIndex)
+          (action.relationIndexMap objectIndex relationIndex) ∧
+      action.atomIndexMap objectIndex (source.relationRight objectIndex relationIndex) =
+        target.relationRight (action.objectIndexMap objectIndex)
+          (action.relationIndexMap objectIndex relationIndex)
+
+/-- Finite identification-endpoint coherence is the analogous condition for
+independently generated identification edges. -/
+def IdentificationEndpointsCoherent
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {target : G122FiniteObjectFormationDisplay input Y}
+    (action : G122FiniteObjectFormationAction source target) : Prop :=
+  ∀ objectIndex identificationIndex,
+    action.atomIndexMap objectIndex
+        (source.identificationLeft objectIndex identificationIndex) =
+      target.identificationLeft (action.objectIndexMap objectIndex)
+        (action.identificationIndexMap objectIndex identificationIndex) ∧
+    action.atomIndexMap objectIndex
+        (source.identificationRight objectIndex identificationIndex) =
+      target.identificationRight (action.objectIndexMap objectIndex)
+        (action.identificationIndexMap objectIndex identificationIndex)
+
+/-- Identity actions preserve all generated relation endpoints. -/
+theorem relationEndpointsCoherent_id
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X) :
+    (id display).RelationEndpointsCoherent := by
+  intro objectIndex relationIndex
+  exact ⟨rfl, rfl⟩
+
+/-- Relation-endpoint coherence is closed under finite action composition. -/
+theorem RelationEndpointsCoherent.comp
+    {input : G122FamilyInput.{u, v}} {X Y Z : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {middle : G122FiniteObjectFormationDisplay input Y}
+    {target : G122FiniteObjectFormationDisplay input Z}
+    {first : G122FiniteObjectFormationAction source middle}
+    {second : G122FiniteObjectFormationAction middle target}
+    (hfirst : first.RelationEndpointsCoherent)
+    (hsecond : second.RelationEndpointsCoherent) :
+    (comp first second).RelationEndpointsCoherent := by
+  intro objectIndex relationIndex
+  constructor
+  · exact (congrArg (second.atomIndexMap (first.objectIndexMap objectIndex))
+      (hfirst objectIndex relationIndex).1).trans
+      (hsecond (first.objectIndexMap objectIndex)
+        (first.relationIndexMap objectIndex relationIndex)).1
+  · exact (congrArg (second.atomIndexMap (first.objectIndexMap objectIndex))
+      (hfirst objectIndex relationIndex).2).trans
+      (hsecond (first.objectIndexMap objectIndex)
+        (first.relationIndexMap objectIndex relationIndex)).2
+
+/-- Identity actions preserve all generated identification endpoints. -/
+theorem identificationEndpointsCoherent_id
+    {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectFormationDisplay input X) :
+    (id display).IdentificationEndpointsCoherent := by
+  intro objectIndex identificationIndex
+  exact ⟨rfl, rfl⟩
+
+/-- Identification-endpoint coherence is closed under finite action
+composition. -/
+theorem IdentificationEndpointsCoherent.comp
+    {input : G122FamilyInput.{u, v}} {X Y Z : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {middle : G122FiniteObjectFormationDisplay input Y}
+    {target : G122FiniteObjectFormationDisplay input Z}
+    {first : G122FiniteObjectFormationAction source middle}
+    {second : G122FiniteObjectFormationAction middle target}
+    (hfirst : first.IdentificationEndpointsCoherent)
+    (hsecond : second.IdentificationEndpointsCoherent) :
+    (comp first second).IdentificationEndpointsCoherent := by
+  intro objectIndex identificationIndex
+  constructor
+  · exact (congrArg (second.atomIndexMap (first.objectIndexMap objectIndex))
+      (hfirst objectIndex identificationIndex).1).trans
+      (hsecond (first.objectIndexMap objectIndex)
+        (first.identificationIndexMap objectIndex identificationIndex)).1
+  · exact (congrArg (second.atomIndexMap (first.objectIndexMap objectIndex))
+      (hfirst objectIndex identificationIndex).2).trans
+      (hsecond (first.objectIndexMap objectIndex)
+        (first.identificationIndexMap objectIndex identificationIndex)).2
+
 /-- The member subtype of one occurrence-generated family. -/
 abbrev GeneratedFamilyMember
     {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
@@ -764,6 +905,87 @@ theorem familyMap_comp
   apply hsecond (first.objectIndexMap objectIndex)
   exact (Classical.choose_spec
     (first.familyMap objectIndex atom).property).symm
+
+/-- The generated-family map sends the left endpoint of every source relation
+edge to the left endpoint value of its selected target relation edge. -/
+theorem familyMap_relationLeft
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {target : G122FiniteObjectFormationDisplay input Y}
+    (action : G122FiniteObjectFormationAction source target)
+    (hvalue : action.ValueCoherent)
+    (hrelation : action.RelationEndpointsCoherent)
+    (objectIndex : Fin source.objectCard)
+    (relationIndex : Fin (source.relationCard objectIndex)) :
+    (action.familyMap objectIndex
+      ⟨source.atomValue objectIndex (source.relationLeft objectIndex relationIndex),
+        ⟨source.relationLeft objectIndex relationIndex, rfl⟩⟩).1 =
+      target.atomValue (action.objectIndexMap objectIndex)
+        (target.relationLeft (action.objectIndexMap objectIndex)
+          (action.relationIndexMap objectIndex relationIndex)) := by
+  rw [action.familyMap_occurrence hvalue]
+  rw [(hrelation objectIndex relationIndex).1]
+
+/-- The generated-family map likewise preserves right relation endpoints. -/
+theorem familyMap_relationRight
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {target : G122FiniteObjectFormationDisplay input Y}
+    (action : G122FiniteObjectFormationAction source target)
+    (hvalue : action.ValueCoherent)
+    (hrelation : action.RelationEndpointsCoherent)
+    (objectIndex : Fin source.objectCard)
+    (relationIndex : Fin (source.relationCard objectIndex)) :
+    (action.familyMap objectIndex
+      ⟨source.atomValue objectIndex (source.relationRight objectIndex relationIndex),
+        ⟨source.relationRight objectIndex relationIndex, rfl⟩⟩).1 =
+      target.atomValue (action.objectIndexMap objectIndex)
+        (target.relationRight (action.objectIndexMap objectIndex)
+          (action.relationIndexMap objectIndex relationIndex)) := by
+  rw [action.familyMap_occurrence hvalue]
+  rw [(hrelation objectIndex relationIndex).2]
+
+/-- The generated-family map sends the left endpoint of every source
+identification edge to its selected target endpoint value. -/
+theorem familyMap_identificationLeft
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {target : G122FiniteObjectFormationDisplay input Y}
+    (action : G122FiniteObjectFormationAction source target)
+    (hvalue : action.ValueCoherent)
+    (hidentification : action.IdentificationEndpointsCoherent)
+    (objectIndex : Fin source.objectCard)
+    (identificationIndex : Fin (source.identificationCard objectIndex)) :
+    (action.familyMap objectIndex
+      ⟨source.atomValue objectIndex
+          (source.identificationLeft objectIndex identificationIndex),
+        ⟨source.identificationLeft objectIndex identificationIndex, rfl⟩⟩).1 =
+      target.atomValue (action.objectIndexMap objectIndex)
+        (target.identificationLeft (action.objectIndexMap objectIndex)
+          (action.identificationIndexMap objectIndex identificationIndex)) := by
+  rw [action.familyMap_occurrence hvalue]
+  rw [(hidentification objectIndex identificationIndex).1]
+
+/-- The generated-family map likewise preserves right identification
+endpoints. -/
+theorem familyMap_identificationRight
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {source : G122FiniteObjectFormationDisplay input X}
+    {target : G122FiniteObjectFormationDisplay input Y}
+    (action : G122FiniteObjectFormationAction source target)
+    (hvalue : action.ValueCoherent)
+    (hidentification : action.IdentificationEndpointsCoherent)
+    (objectIndex : Fin source.objectCard)
+    (identificationIndex : Fin (source.identificationCard objectIndex)) :
+    (action.familyMap objectIndex
+      ⟨source.atomValue objectIndex
+          (source.identificationRight objectIndex identificationIndex),
+        ⟨source.identificationRight objectIndex identificationIndex, rfl⟩⟩).1 =
+      target.atomValue (action.objectIndexMap objectIndex)
+        (target.identificationRight (action.objectIndexMap objectIndex)
+          (action.identificationIndexMap objectIndex identificationIndex)) := by
+  rw [action.familyMap_occurrence hvalue]
+  rw [(hidentification objectIndex identificationIndex).2]
 
 end G122FiniteObjectFormationAction
 
