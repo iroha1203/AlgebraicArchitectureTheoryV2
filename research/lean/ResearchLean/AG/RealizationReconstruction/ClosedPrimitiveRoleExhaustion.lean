@@ -9,12 +9,12 @@ This module combines every role actually declared in
 on the mandatory G-123(C) tagged-operation branch this entire current sum is
 exactly the four-role `TaggedPrimitiveReference` alphabet used in Cycles
 14--19: every currently declared context, Support, geometry-Axis, Observable,
-coverage, overlap, diagnostic, signature, equation, invariant, coordinate,
-and relation family has no constructor at that index.
+context-restriction, coverage, overlap, diagnostic, signature, equation,
+invariant, coordinate, and relation family has no constructor at that index.
 
 This is a source-declaration audit, not final role exhaustion.  Among other
-components, the fixed GOAL also requires complete-geometry reading and
-restriction; coefficient and transport;
+components, the fixed GOAL also requires complete-geometry map-side reading;
+coefficient and transport;
 and Atom/object/Law evaluation data not yet all declared by
 `AATClosedFamilySignature`.  Consequently the equivalence below closes only
 the possibility that an *already declared* role was omitted from the tagged
@@ -46,6 +46,7 @@ inductive ClosedPrimitiveReference
   | support (value : PrimitiveSupport theta realization)
   | geometryAxis (value : PrimitiveGeometryAxis theta realization)
   | observable (value : PrimitiveObservable theta realization)
+  | contextRestriction (value : PrimitiveContextRestriction theta realization)
   | coverageRequirements
       (value : PrimitiveCoverageRequirements theta realization)
   | overlapSelection (value : PrimitiveOverlapSelection theta realization)
@@ -71,6 +72,7 @@ def closedTaggedPrimitiveReferenceToTagged :
   | .support value => nomatch value
   | .geometryAxis value => nomatch value
   | .observable value => nomatch value
+  | .contextRestriction value => nomatch value
   | .coverageRequirements value => nomatch value
   | .overlapSelection value => nomatch value
   | .diagnosticCell value => nomatch value
@@ -122,6 +124,7 @@ same dependent constructor; impossible roles have already been eliminated. -/
   | support value => cases value
   | geometryAxis value => cases value
   | observable value => cases value
+  | contextRestriction value => cases value
   | coverageRequirements value => cases value
   | overlapSelection value => cases value
   | diagnosticCell value => cases value
