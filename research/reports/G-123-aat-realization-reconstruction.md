@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 71 adds the full finite signature-fiber table to a source-law quotient presentation, proves exact canonical-section source preimages for every such table, and reduces source coverage of every full normalized endpoint automorphism to coverage of the residual axis-and-signature-trivial kernel; that residual coverage remains to construct
+- current proof obligation: Cycle 72 expands membership in the residual axis-and-signature kernel into full axis-function and every-fiber coordinate identities and proves that every residual automorphism also fixes the complete invariant-index and `Int` coefficient components; source coverage of the remaining Atom/object/operation/equation/context/local-geometry data remains to construct
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: analyze and construct source-owned projections/sections for the atom, object/operation, context/equation, and local geometry components of `FiniteAxisFoldNormalizedAxisSignatureKernel`; if a candidate grammar fails, record that candidate failure without treating it as target refutation
+- next proof obligation: prove the fixed finite input forces the residual Atom equivalence and its induced object/operation data, or construct source-owned generators for any surviving action; separately formalize the extension-changing context-action candidate and test it against the current presentation without treating candidate failure as target refutation
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 72 delta | Cycle 71の残余kernelについて、kernel membershipが固定するaxis/全coordinate成分を明示し、固定singleton invariant indexと`Int`係数成分を任意の残余元について入力なしに放電する | `finiteAxisFoldResidual_axisMap_eq_id`, `finiteAxisFoldResidual_coordinateEquiv_eq_refl`, `finiteAxisFoldResidual_invariantMap_eq_id`, `finiteAxisFoldResidual_coefficientHom_eq_id` | 固定finite axis-fold/`Int`; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元; Cycle 69/70の二段kernel membership | 第一kernelから全axis関数のidentity、第二kernelの有限table等号を全axis/coordinateで評価した各coordinate Equivのidentity、singleton eliminationによる全invariant map、`RingHom.ext_int`による全係数準同型identity | 残余元の型を縮小せず、既に放電された計算成分と本当に残る成分を分離して次のsource生成・剛性証明へ渡す | 残余全元のsource coverageは未構成; Atom/object/operation/equation/context/local geometryは未放電; extension-changing context actionは候補のみで未形式化; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 71 delta | Cycle 70の有限signature-fiber table全体をsemantic Autではなくsource constructorへ追加し、source/category/inverse lawだけの商圏decoderから各canonical-section preimageを構成し、full normalized Aut coverageを残余double kernel coverageへ同値還元する | `FiniteAxisFoldSignatureFiberSyntax`, `evaluate`, `Congruent`, `evaluate_eq_of_congruent`, `FiniteAxisFoldSignatureFiberPresentation`, `decoder`, `directSignatureFiberAut`, `sectionedDirectSignatureFiberAut`, `sectionedDirectAxisPermutationAut`, `directAutomorphismEvaluationHom`, `sectionedDirectSignatureFiberAut_evaluation`, `sectionedDirectAxisPermutationAut_evaluation`, `SignatureFiberSourceCovered`, `finiteAxisFoldSignatureFiber_canonicalSection_sourceCovered`, `finiteAxisFoldAxisKernel_sourceCovered_all_iff_signatureKernel`, `finiteAxisFoldAll_sourceCovered_iff_signatureKernel` | 固定finite axis-fold/`Int`; Cycle 68の全axis source term; Cycle 70の有限signature-fiber subgroupとsection/right inverse; canonical normalization section; 全full normalized Autと全残余kernel | 旧source syntaxを保持するouter grammar、有限tableだけをpayloadとするprimitive leaf、一般normalization-section演算、両leaf族のsource inverse law、quotient decoder、全table exact evaluation、kernel source witnessと有限section termの順序付き積、二段分解によるfull Aut coverage iff residual kernel coverage | Dのfull endpoint全量化を同じ新presentationで保持し、既知のaxisおよびcoordinate finite componentsをすべてsource側へ回復する | `FiniteAxisFoldNormalizedAxisSignatureKernel`全元のsource coverageは未構成; atom/object/operation/context/equation/local geometry、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 70 delta | Cycle 69のaxis kernelを座標成分まで保持して解析し、各軸を保ち選択座標を固定する有限signature-fiber作用を元入力から構成し、任意axis-kernel元をさらに小さいsignature-trivial kernelと有限成分へ分解する | `finiteAxisFoldNormalizedSignatureEquiv`, `finiteAxisFoldNormalizedSignatureProjection`, `finiteAxisFoldSignatureFiberPermutationSubgroup`, `finiteAxisFoldNormalizedAxisKernelSignatureProjection`, `finiteAxisFoldSignatureFiberEquiv`, `finiteAxisFoldSignatureFiberUpper`, `finiteAxisFoldSignatureFiberTotal`, `finiteAxisFoldSignatureFiberGeometry`, `finiteAxisFoldSouthwestSignatureFiberSectionHom`, `finiteAxisFoldActualDirectSignatureFiberSectionHom`, `finiteAxisFoldNormalizedSignatureFiberSectionHom`, `finiteAxisFoldNormalizedSignatureProjection_section`, `finiteAxisFoldNormalizedAxisKernelSignatureSectionHom`, `FiniteAxisFoldNormalizedAxisSignatureKernel`, `finiteAxisFoldNormalizedAxisSignatureKernelRemainder`, `finiteAxisFoldNormalizedAxisSignatureKernelRemainder_mul_section`, `finiteAxisFoldNormalizedAxisKernel_coordinateAction_ne_one` | 固定finite axis-fold/`Int`; full normalized endpoint AutとCycle 69 axis kernel; fixed signatureの軸・座標 carrier `Fin 3`; 各軸の選択値が対角値であること; exact pull/top transport; normalization | Autのhom/invからjoint `(axis,coordinate)` Equiv、axis-kernelの全元が属するfirst-coordinate/diagonal保存Subgroup、有限tableからidentity core fieldsを保ったcoordinateEquiv、complete geometryとactual transport、projection right inverse、二重kernel remainder分解、off-diagonal swapによる非自明axis-kernel元 | axis mapだけでは失われる座標情報を保持し、全axis-kernel量化を有限signature quotientと残余kernelへ分ける | この有限tableのsource syntax/preimageは未構成; 残余signature kernelのsource coverage、atom/context/local geometry、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 69 delta | full normalized direct Autをglobal三軸作用へ射影し、元finite axis tableから構成したsectionで任意元をaxis-trivial kernelと表示済みaxis成分へ分解し、全canonical-section source coverageを全kernel coverageへexactに還元する | `FiniteAxisFoldNormalizedDirectGeometry`, `finiteAxisFoldNormalizedAxisEquiv`, `finiteAxisFoldNormalizedAxisProjection`, `finiteAxisFoldSouthwestPermutationSectionHom`, `finiteAxisFoldActualDirectPermutationSectionHom`, `finiteAxisFoldActualDirectAdmissibleAutomorphismHom`, `finiteAxisFoldNormalizedAxisSectionHom`, `finiteAxisFoldNormalizedAxisProjection_section`, `FiniteAxisFoldNormalizedAxisKernel`, `finiteAxisFoldNormalizedAxisKernelRemainder`, `finiteAxisFoldNormalizedAxisKernelRemainder_mul_section`, `FiniteAxisFoldCanonicalSectionSourceCovered`, `finiteAxisFoldCanonicalSectionSourceCovered_all_iff_kernel` | 固定finite axis-fold/`Int`; full normalized endpoint Aut; 元の`Equiv.Perm (Fin 3)` table; actual exact pull/top transport; canonical normalization functor; Cycle 68 source term/evaluation | 任意Autのhom/inv axis mapから実際の有限置換、原始table→southwest→actual direct→admissible→normalizedの群準同型section、projection right inverse、kernel remainderと積分解、kernel source witnessと表示済みaxis termの積による全Aut witness | arbitrary endpoint coverageの未放電部分を、全量化を保ったままaxis-trivial kernel coverageだけへ同値に切り分ける | kernel全元のsource coverageをまだ構成していない; kernelが有限・自明・coveredとは主張しない; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
@@ -7533,4 +7534,116 @@ audits:
     - "fresh final-snapshot Math A/B and Lean A/B review: PASS"
   blocking_findings: []
   next_obligation: "Classify and construct source-owned projections/sections for the residual axis-and-signature-trivial kernel's atom, object/operation, context/equation, and local geometry components without semantic leaves."
+```
+
+## Cycle 72 — Residual axis, coordinate, invariant, and coefficient rigidity
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 72
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 6c42e4b435eb60fc635fd8af7c471095376bf4a5
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 71 reduced full endpoint source coverage exactly to the whole residual axis-and-signature-trivial kernel"
+  proof_dag_predecessors:
+    - "Cycle 69 global-axis kernel and exact axis-function membership theorem"
+    - "Cycle 70 full joint signature projection and its restricted kernel"
+    - "the fixed finite-axis-fold singleton invariant index and coefficient ring Int"
+  proof_obligation: "Determine which complete computational components of every residual element are forced by kernel membership and the fixed input before adding any further source generator"
+  selection_reason: "Component elimination preserves the whole residual quantifier and prevents source syntax from storing maps that the fixed input already determines.  It also separates genuinely surviving context and local-geometry freedom from finite signature data already recovered."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualCoreRigidity.lean
+  risks:
+    - "mistake equality on diagonal signature values for equality of every coordinate equivalence"
+    - "claim an opaque equation-index carrier is singleton without a fixed-input proof"
+    - "infer Atom, object, operation, context, or local comparison rigidity from unrelated kernel membership"
+    - "treat a possible failure of the current finite presentation as refutation of G-123"
+  unchecked:
+    - "Atom equivalence and induced object/operation data for every residual element"
+    - "equation transport, context equivalence, and local support/axis/observable comparisons"
+    - "source coverage of the residual kernel and all remaining A-F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Expanded the two kernel memberships at arbitrary residual elements.  The first gives equality of the entire global axis function.  Evaluating the second kernel equality at every axis-coordinate pair gives equality of each complete coordinate equivalence, rather than only its distinguished diagonal value.  Independently, singleton elimination fixes the complete invariant-index function and RingHom.ext_int fixes the complete Int coefficient homomorphism.  No residual semantic automorphism or component certificate is accepted as input, and no remaining component is declared covered."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualCoreRigidity.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidual_axisMap_eq_id
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidual_coordinateEquiv_eq_refl
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidual_invariantMap_eq_id
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidual_coefficientHom_eq_id
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldResidual_axisMap_eq_id
+      - finiteAxisFoldResidual_coordinateEquiv_eq_refl
+      - finiteAxisFoldResidual_invariantMap_eq_id
+      - finiteAxisFoldResidual_coefficientHom_eq_id
+    source_labels:
+      - "GOAL D: preserve all elements of the original comparison and endpoint groups"
+      - "GOAL D: recover the same coefficient and signature components"
+      - "user condition 4: separate the full reconstruction obligations"
+    conjuncts:
+      - "every residual element -> complete global axis map identity"
+      - "every residual element and every axis -> complete coordinate equivalence identity"
+      - "every residual element -> complete invariant-index map identity"
+      - "every residual element -> complete Int coefficient hom identity"
+    undischarged_assumptions:
+      - "the Atom equivalence and the object/operation maps are not yet proved rigid"
+      - "the equation and context transport and local comparisons are not yet classified"
+      - "no source witness for an arbitrary residual element is constructed"
+    acceptance_point: "This cycle removes four computational components from the residual analysis without changing its carrier or universal quantifier.  It is not residual source coverage and is not G-123 completion."
+    port_status: not-applicable
+review:
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "full axis-function identity for every residual element"
+      - "full coordinate-equivalence identity on every axis for every residual element"
+      - "full invariant-index identity for every residual element"
+      - "full coefficient-ring hom identity for every residual element"
+    remaining:
+      - "Atom/object/operation/equation/context/local-geometry classification and source construction"
+      - "residual-kernel source coverage"
+      - "bottom/full comparison-kernel/lift recovery, general coefficient/input, and B/E/F"
+  certificate_provenance:
+    discharged:
+      - "all conclusions are derived from the actual arbitrary residual element and fixed input"
+      - "no completed map, semantic automorphism, section, or coverage certificate is supplied"
+    unresolved:
+      - "the context Extension carrier permits a candidate action not represented by current finite leaves; construction and source invariant remain to formalize"
+  proof_use:
+    used:
+      - "first kernel membership is consumed by the existing axis-map theorem"
+      - "second kernel membership is evaluated at every pair and projected to its coordinate component"
+      - "the fixed singleton invariant carrier is eliminated pointwise"
+      - "unital Int ring-hom uniqueness is applied to the actual geometry coefficientHom"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check for FiniteAxisFoldResidualCoreRigidity: PASS"
+    - "registered exact target build for FiniteAxisFoldResidualCoreRigidity: PASS (4301 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 4 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh final-snapshot Math A/B and Lean A/B review: PASS"
+  blocking_findings: []
+  next_obligation: "Prove fixed-input Atom rigidity and derive the resulting object/operation constraints, while separately constructing and testing the extension-changing context-action candidate against the current source presentation."
 ```
