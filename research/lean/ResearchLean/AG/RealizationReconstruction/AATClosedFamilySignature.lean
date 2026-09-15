@@ -506,6 +506,108 @@ def PrimitiveCoverageRequirements.g122Value
     (_reference : PrimitiveCoverageRequirements (.g122 input) (.g122 X)) :=
   X.selectedGeometry.requirements
 
+/-- A typed occurrence of one of the nine coverage predicates selected by an
+original G-122 geometry input.  Every constructor retains the exact argument
+and a proof read from that source predicate.  It contains no target
+realization, component map, or cross-realization preservation conclusion. -/
+inductive PrimitiveCoverageFact :
+    (theta : ClosedFamilyParameter.{u, v}) → FamilyRealization theta →
+      Type (max (u + 1) (v + 1))
+  | requiredSupport {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+      (atom : input.Carrier.Atom)
+      (holds : X.selectedGeometry.requirements.requiredSupport atom) :
+      PrimitiveCoverageFact (.g122 input) (.g122 X)
+  | requiredEquationCoordinate
+      {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+      (coordinate : let _ := input.atomDecidableEq
+        (input.authored.context.supportPackage X.cell.as).equationSystem.RequiredCoordinate)
+      (holds : X.selectedGeometry.requirements.requiredEquationCoordinate coordinate) :
+      PrimitiveCoverageFact (.g122 input) (.g122 X)
+  | selectedViolationWitness
+      {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+      (coordinate : let _ := input.atomDecidableEq
+        (input.authored.context.supportPackage X.cell.as).equationSystem.Coordinate)
+      (holds : X.selectedGeometry.requirements.selectedViolationWitness coordinate) :
+      PrimitiveCoverageFact (.g122 input) (.g122 X)
+  | requiredAxis {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+      (axis : let _ := input.atomDecidableEq
+        (input.authored.context.supportPackage X.cell.as).algebra.signatureReading.Axis)
+      (holds : X.selectedGeometry.requirements.requiredAxis axis) :
+      PrimitiveCoverageFact (.g122 input) (.g122 X)
+  | supportVisibleOn
+      {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+      (context : let _ := input.atomDecidableEq
+        Site.ArchCtx (input.authored.context.supportPackage X.cell.as).object)
+      (atom : input.Carrier.Atom)
+      (holds : X.selectedGeometry.requirements.supportVisibleOn context atom) :
+      PrimitiveCoverageFact (.g122 input) (.g122 X)
+  | equationCoordinateVisibleOn
+      {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+      (context : let _ := input.atomDecidableEq
+        Site.ArchCtx (input.authored.context.supportPackage X.cell.as).object)
+      (coordinate : let _ := input.atomDecidableEq
+        (input.authored.context.supportPackage X.cell.as).equationSystem.RequiredCoordinate)
+      (holds : X.selectedGeometry.requirements.equationCoordinateVisibleOn context coordinate) :
+      PrimitiveCoverageFact (.g122 input) (.g122 X)
+  | violationWitnessVisibleOn
+      {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+      (context : let _ := input.atomDecidableEq
+        Site.ArchCtx (input.authored.context.supportPackage X.cell.as).object)
+      (coordinate : let _ := input.atomDecidableEq
+        (input.authored.context.supportPackage X.cell.as).equationSystem.Coordinate)
+      (holds : X.selectedGeometry.requirements.violationWitnessVisibleOn context coordinate) :
+      PrimitiveCoverageFact (.g122 input) (.g122 X)
+  | axisReadableOn
+      {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+      (context : let _ := input.atomDecidableEq
+        Site.ArchCtx (input.authored.context.supportPackage X.cell.as).object)
+      (axis : let _ := input.atomDecidableEq
+        (input.authored.context.supportPackage X.cell.as).algebra.signatureReading.Axis)
+      (holds : X.selectedGeometry.requirements.axisReadableOn context axis) :
+      PrimitiveCoverageFact (.g122 input) (.g122 X)
+  | boundaryVisibleOn
+      {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+      (source target : let _ := input.atomDecidableEq
+        Site.ArchCtx (input.authored.context.supportPackage X.cell.as).object)
+      (holds : X.selectedGeometry.requirements.boundaryVisibleOn source target) :
+      PrimitiveCoverageFact (.g122 input) (.g122 X)
+
+namespace PrimitiveCoverageFact
+
+/-- The exact source predicate proposition named by a G-122 coverage-fact
+occurrence.  This definition forgets only the stored proof, never its typed
+arguments. -/
+def g122Statement {input : G122FamilyInput.{u, v}} {X : G122CellInput input} :
+    PrimitiveCoverageFact (.g122 input) (.g122 X) → Prop
+  | .requiredSupport atom _ =>
+      X.selectedGeometry.requirements.requiredSupport atom
+  | .requiredEquationCoordinate coordinate _ =>
+      X.selectedGeometry.requirements.requiredEquationCoordinate coordinate
+  | .selectedViolationWitness coordinate _ =>
+      X.selectedGeometry.requirements.selectedViolationWitness coordinate
+  | .requiredAxis axis _ =>
+      X.selectedGeometry.requirements.requiredAxis axis
+  | .supportVisibleOn context atom _ =>
+      X.selectedGeometry.requirements.supportVisibleOn context atom
+  | .equationCoordinateVisibleOn context coordinate _ =>
+      X.selectedGeometry.requirements.equationCoordinateVisibleOn context coordinate
+  | .violationWitnessVisibleOn context coordinate _ =>
+      X.selectedGeometry.requirements.violationWitnessVisibleOn context coordinate
+  | .axisReadableOn context axis _ =>
+      X.selectedGeometry.requirements.axisReadableOn context axis
+  | .boundaryVisibleOn source target _ =>
+      X.selectedGeometry.requirements.boundaryVisibleOn source target
+
+/-- Retrieve the accepted source proof stored by a coverage-fact occurrence.
+This constructs no new evidence and gives no preservation result in another
+realization. -/
+def g122Proof {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (reference : PrimitiveCoverageFact (.g122 input) (.g122 X)) :
+    reference.g122Statement := by
+  cases reference <;> assumption
+
+end PrimitiveCoverageFact
+
 /-- A nullary role naming the exact overlap datum selected in an original
 G-122 geometry input, independently of any later overlap transport. -/
 inductive PrimitiveOverlapSelection :

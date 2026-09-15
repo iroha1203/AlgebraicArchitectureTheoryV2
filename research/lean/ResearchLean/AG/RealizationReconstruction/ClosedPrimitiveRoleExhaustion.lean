@@ -9,7 +9,8 @@ This module combines every role actually declared in
 on the mandatory G-123(C) tagged-operation branch this entire current sum is
 exactly the four-role `TaggedPrimitiveReference` alphabet used in Cycles
 14--19: every currently declared context, Support, geometry-Axis, Observable,
-context-restriction, raw-restriction, coefficient, coverage, overlap, diagnostic,
+context-restriction, raw-restriction, coefficient, coverage datum, coverage fact,
+overlap, diagnostic,
 signature, equation, invariant, coordinate, and relation family has no
 constructor at that index.
 
@@ -53,6 +54,7 @@ inductive ClosedPrimitiveReference
   | coefficientRing (value : PrimitiveCoefficientRing theta realization)
   | coverageRequirements
       (value : PrimitiveCoverageRequirements theta realization)
+  | coverageFact (value : PrimitiveCoverageFact theta realization)
   | overlapSelection (value : PrimitiveOverlapSelection theta realization)
   | diagnosticCell (value : PrimitiveDiagnosticCell theta realization)
   | signatureAxis (value : PrimitiveSignatureAxis theta realization)
@@ -80,6 +82,7 @@ def closedTaggedPrimitiveReferenceToTagged :
   | .rawRestriction value => nomatch value
   | .coefficientRing value => nomatch value
   | .coverageRequirements value => nomatch value
+  | .coverageFact value => nomatch value
   | .overlapSelection value => nomatch value
   | .diagnosticCell value => nomatch value
   | .signatureAxis value => nomatch value
@@ -134,6 +137,7 @@ same dependent constructor; impossible roles have already been eliminated. -/
   | rawRestriction value => cases value
   | coefficientRing value => cases value
   | coverageRequirements value => cases value
+  | coverageFact value => cases value
   | overlapSelection value => cases value
   | diagnosticCell value => cases value
   | signatureAxis value => cases value
