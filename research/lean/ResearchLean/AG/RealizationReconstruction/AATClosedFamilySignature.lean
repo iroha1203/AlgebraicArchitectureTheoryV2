@@ -22,6 +22,14 @@ The G-122 branch carries the original arbitrary family input and its semantic
 objects are the arbitrary cell/cochain/geometry inputs constructed in Cycle 7.
 The primitive sorts below expose source-derived roles but do not yet give an
 interpretation, `D_Theta`, or the final finite presentation `Sigma`.
+
+## Implementation notes
+
+Source roles are indexed by both the closed parameter and semantic object.
+Generator actions use explicit `Nat`/`Fin` tables of Atom and object
+occurrences.  Their equations quantify only over those finite indices; total
+Atom maps, total object maps, and completed semantic morphisms are reserved
+for later extension constructions.
 -/
 
 namespace AAT.AG.RealizationReconstruction
@@ -99,6 +107,16 @@ inductive PrimitiveAtom :
       {source target : input.schema.Vertex}
       (edge : input.schema.Edge source target) :
       PrimitiveAtom (.protocol input) (.protocol X)
+
+namespace PrimitiveAtom
+
+/-- Read back the exact original Atom stored by a G-122 primitive occurrence. -/
+def g122Value {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (atom : PrimitiveAtom (.g122 input) (.g122 X)) : input.Carrier.Atom := by
+  cases atom with
+  | g122 value => exact value
+
+end PrimitiveAtom
 
 /-- Primitive source occurrences.  Values from arbitrary CS parameter types
 are accepted only in their declared source roles.  No eliminator in this
@@ -258,6 +276,85 @@ def g122SelectedQuantities
   object.g122Value.selectedQuantities
 
 end PrimitiveObject
+
+/-- Finite generator-level Atom/object action data between two G-122
+realizations under the same original family parameter.  It lists finite Atom
+and object occurrence correspondences and checks configuration predicates only
+on those entries.  It contains no total Atom/object map, `ConfigurationHom`,
+extension, completeness certificate, or completed core/geometry morphism. -/
+structure G122FiniteObjectGeneratorAction
+    (input : G122FamilyInput.{u, v})
+    (X Y : G122CellInput input) where
+  /-- Number of Atom-generator occurrences in this action. -/
+  atomCard : Nat
+  /-- Source occurrence of each listed Atom generator. -/
+  atomSource : Fin atomCard → PrimitiveAtom (.g122 input) (.g122 X)
+  /-- Target occurrence assigned to each listed Atom generator. -/
+  atomTarget : Fin atomCard → PrimitiveAtom (.g122 input) (.g122 Y)
+  /-- Number of object-generator occurrences in this action. -/
+  objectCard : Nat
+  /-- Source occurrence of each listed object generator. -/
+  objectSource : Fin objectCard → PrimitiveObject (.g122 input) (.g122 X)
+  /-- Target occurrence assigned to each listed object generator. -/
+  objectTarget : Fin objectCard → PrimitiveObject (.g122 input) (.g122 Y)
+  /-- Family membership is preserved at each listed object/Atom pair. -/
+  mapsFamily : ∀ objectIndex atomIndex,
+    (objectSource objectIndex).g122Configuration.family.mem
+        (atomSource atomIndex).g122Value →
+      (objectTarget objectIndex).g122Configuration.family.mem
+        (atomTarget atomIndex).g122Value
+  /-- Configuration relations are preserved on every listed pair of Atom
+  occurrences at each listed object occurrence. -/
+  mapsRelation : ∀ objectIndex firstAtom secondAtom,
+    (objectSource objectIndex).g122Configuration.relation
+        (atomSource firstAtom).g122Value (atomSource secondAtom).g122Value →
+      (objectTarget objectIndex).g122Configuration.relation
+        (atomTarget firstAtom).g122Value (atomTarget secondAtom).g122Value
+  /-- Configuration identifications are preserved on every listed pair of
+  Atom occurrences at each listed object occurrence. -/
+  mapsIdentification : ∀ objectIndex firstAtom secondAtom,
+    (objectSource objectIndex).g122Configuration.identification
+        (atomSource firstAtom).g122Value (atomSource secondAtom).g122Value →
+      (objectTarget objectIndex).g122Configuration.identification
+        (atomTarget firstAtom).g122Value (atomTarget secondAtom).g122Value
+
+namespace G122FiniteObjectGeneratorAction
+
+/-- The finite relation on primitive-object occurrences presented by a
+generator action.  Membership is witnessed by an actual finite table index;
+it does not assert that every source object occurs. -/
+def Maps {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    (action : G122FiniteObjectGeneratorAction input X Y)
+    (source : PrimitiveObject (.g122 input) (.g122 X))
+    (target : PrimitiveObject (.g122 input) (.g122 Y)) : Prop :=
+  ∃ i, action.objectSource i = source ∧ action.objectTarget i = target
+
+/-- The finite relation on G-122 Atom occurrences presented by a generator
+action. -/
+def AtomMaps {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    (action : G122FiniteObjectGeneratorAction input X Y)
+    (source : PrimitiveAtom (.g122 input) (.g122 X))
+    (target : PrimitiveAtom (.g122 input) (.g122 Y)) : Prop :=
+  ∃ i, action.atomSource i = source ∧ action.atomTarget i = target
+
+/-- Every table entry belongs to the finite source/target relation defined by
+that same action. -/
+theorem maps_entry {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    (action : G122FiniteObjectGeneratorAction input X Y)
+    (i : Fin action.objectCard) :
+    action.Maps (action.objectSource i) (action.objectTarget i) :=
+  ⟨i, rfl, rfl⟩
+
+/-- Every Atom table entry belongs to the finite Atom relation defined by the
+same action. -/
+theorem atom_maps_entry
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    (action : G122FiniteObjectGeneratorAction input X Y)
+    (i : Fin action.atomCard) :
+    action.AtomMaps (action.atomSource i) (action.atomTarget i) :=
+  ⟨i, rfl, rfl⟩
+
+end G122FiniteObjectGeneratorAction
 
 /-- Endpoint-indexed primitive operation names.
 
