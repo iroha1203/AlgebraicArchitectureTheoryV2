@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 44 fixed finite-axis-fold generated/cochain-one/canonical three-case specialization
+- current proof obligation: Cycle 45 finite case index and exact semantic classification for the fixed finite-axis-fold comparisons
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct finite displays of the fixed direct/via-base endpoints and the same actual arrows, then connect them to general all-component restriction without assuming extension or image membership
+- next proof obligation: construct finite restriction data for arbitrary all-component `GeometryTotalHom` values and connect it to the fixed comparison case evaluator without assuming extension or image membership
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 45 delta | 固定finite axis-foldの実`barAlpha`、generated `barBeta`、定数1 `barBeta`を有限なケース型で索引し、三者の意味的な一致・相違を正確に分類する | `FiniteAxisFoldComparisonCode`, `.evaluate`, `evaluate_barAlpha`, `evaluate_generatedBarBeta`, `evaluate_identityBarBeta`, `generatedBarBeta_ne_barAlpha`, `evaluate_identityBarBeta_eq_barAlpha`, `evaluate_eq_barAlpha_iff`, `evaluate_eq_generatedBarBeta_iff`, `evaluate_not_injective` | Cycle 44で同じfamily/cell/selected geometry/raw dataを保ち、generated cochainと定数1 cochainだけを異ならせた二入力上の三比較と可逆・非可逆分類 | 三constructor有限case index、実射への評価、generated比較と`barAlpha`の相違、定数1比較と`barAlpha`の一致、二つのexact case-index fiber、由来ラベルのsyntactic aliasing | 今後の本物の有限recipe/displayが保持すべき固定D三分類の回帰点 | 三射のsource-provenanced有限recipe、任意Homの有限restriction、endpoint object表示、一般decoderのext/J、比較群全元・section・二核・lift fiber、一般D/B/E/F |
 | D Cycle 44 delta | 指定された同一finite axis-fold geometryでgenerated cochain、定数1 cochain、実`barAlpha`とcanonical normalization routeの三場合を保持する | `G122GeneratedGeometryObject.barAlphaIso`, `finiteAxisFoldIdentityCochainG122CellInput`, `_fixedGeometry`, `finiteAxisFold_direct_package_identityCochain`, `finiteAxisFold_viaBase_package_identityCochain`, `finiteAxisFold_generatedGeometry_barBeta`, `finiteAxisFold_barAlpha_identityCochain`, `finiteAxisFold_generatedGeometry_barD_eq_normalizationRoute`, `finiteAxisFold_identityCochain_barD_eq_id`, `finiteAxisFold_identityCochain_barBeta_eq_barAlpha`, `finiteAxisFold_generatedGeometry_barBeta_not_isIso`, `finiteAxisFoldIdentityCochainBarBetaIso` | カード指定の`finiteAxisFoldBCDatumSquare`、cell `second`、係数`Int`、同じ`finiteAxisFoldFixedCoefficientGeometryFamily`; generated cochainと`identityDefectCochain` | cochain以外がdefinitionally同じ二入力、同一direct/viaBase package、同一実5-factor `barAlpha`; generated側の実`barBeta`とcanonical normalization routeおよび新category内の非可逆性、定数1側の`barD=id`と`barBeta=barAlpha`および同category内の可逆性 | D三分類を同じCycle43 semantic category上で有限表示へ接続する固定対象 | 表示構文・decoder上の同じ三射、比較群全元・section・二核・lift fiber、一般Dへの接続 |
 | A/D Cycle 43 delta | 元southwest packageと実生成northeast direct/via-base端点をdisplay非依存の同一object型に収録し、実`barAlpha`・`barBeta`・両冪等射をその全成分Homへ接続する | `G122GeneratedGeometryObject`, `.package`, `.Hom`, `.id`, `.comp`, `.id_comp`, `.comp_id`, `.comp_assoc`, `.category`, `.barAlpha`, `.barBeta`, `.barE`, `.barD`, `.barBeta_factor`, `.barE_idem`, `.barD_idem`, `.barBeta_source_factorization`, `.barBeta_target_factorization` | 一つの任意の`G122FamilyInput`と、その下の任意の`G122CellInput`; cochainを含む元入力全量化 | original/direct/viaBaseの3 constructor、source transport/pullbackからの実package評価、任意端点間の全`GeometryTotalHom` category、実5-factor `barAlpha`、cochain-selected `barBeta`、source/target projectorsと因子化・冪等・吸収 | Dの実生成比較を将来の`R_Θ`候補へ収録し、同じ射を有限表示側で回復するためのsemantic domain | final `D_Θ,R_Θ`はC/Eを含め未構成; 有限restriction/ext/J、fullness/faithfulness、冪等分裂/retract生成、比較群・section・二核・lift fiberの表示側回復 |
 | A/B Cycle 42 delta | 表示とは独立にG-122の元southwest入力package上の全許容射を定め、その範囲を生成端点と区別する | `G122OriginalCellGeometryHom`, `G122OriginalCellGeometryHom.id`, `comp`, `ext`, `id_comp`, `comp_id`, `comp_assoc`, `g122OriginalCellGeometryCategory` | 一つの任意の`G122FamilyInput`と、その下の任意の二つ以上の`G122CellInput`; 各cellの元selected geometry/rawから構成される`geometryPackage` | 元入力package間の既存`GeometryTotalHom`全成分をそのままHomとするsubcategory、全成分による射の等号、恒等・合成・圏律 | final `R_Θ` を構成する際のoriginal-cell package部分 | generated northeastのdirect/via-base端点、実`barAlpha`/`barBeta`/冪等端点を含む独立対象型、有限restriction/ext/J、fullness/faithfulness、冪等分裂/retract生成 |
@@ -4567,4 +4568,81 @@ audits:
   vacuity: "the generated case uses a proved nonidentity cochain value plus admissibility, while the constant-one case derives the opposite selector branch by direct evaluation"
   blocking_findings: []
   next_obligation: "Construct finite displays for the fixed direct/via-base endpoints and finite arrow syntax evaluating to the same actual barAlpha, generated-cochain barBeta, and constant-one barBeta, then relate that restriction to arbitrary all-component Hom values without adding extension certificates."
+```
+
+## Cycle 45 — Finite comparison case index and exact fibers
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 45
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 1ce633dd696ffc115eb0ffde83bd8faf2080fd6d
+tracking_issue: 4520
+selection:
+  proof_obligation: "Give the three fixed finite-axis-fold comparisons a finite case index in the Cycle 43 semantic category and classify the evaluator fibers without changing any comparison arrow"
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldComparisonIndex.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+  risks:
+    - "replace the actual comparisons by identities or new witness arrows"
+    - "call a three-code fixed witness the general finite presentation"
+    - "hide the equality of the constant-one comparison and barAlpha, or erase the distinction of the generated comparison"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed a three-constructor finite case index whose evaluator names exactly the fixed actual five-factor barAlpha, generated-cochain barBeta, and constant-one-cochain barBeta. Proved the generated comparison is distinct from barAlpha using Cycle 44's generated-category IsIso classification, proved the constant-one comparison equals barAlpha, and classified the two relevant evaluator fibers exactly. The noninjectivity is recorded only as syntactic aliasing of two provenance labels, not as the target's kernel-and-lift information loss."
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonCode
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonCode.evaluate
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonCode.evaluate_barAlpha
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonCode.evaluate_generatedBarBeta
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonCode.evaluate_identityBarBeta
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonCode.generatedBarBeta_ne_barAlpha
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonCode.evaluate_identityBarBeta_eq_barAlpha
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonCode.evaluate_eq_barAlpha_iff
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonCode.evaluate_eq_generatedBarBeta_iff
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonCode.evaluate_not_injective
+  claim_mapping:
+    input_premises:
+      - "the Cycle 44 generated-object category and its two inputs with the same family/cell/geometry/raw data but different generated versus constant-one cochains"
+      - "the proved generated barBeta non-IsIso and actual barAlpha/constant-one beta isomorphisms"
+    constructed_evidence:
+      - "an intrinsically finite three-constructor case index with no completed-arrow field"
+      - "an evaluator naming the corresponding already-constructed actual source arrow for each case"
+      - "the exact two-element case-index fiber over barAlpha and singleton fiber over generated barBeta"
+      - "syntactic aliasing caused exactly by the constant-one beta and barAlpha provenance labels naming one actual arrow"
+    proof_use:
+      - "generatedBarBeta_ne_barAlpha derives inequality by transporting equality into an impossible generated-category IsIso"
+      - "evaluate_identityBarBeta_eq_barAlpha composes the two Cycle 44 same-arrow equalities"
+      - "the fiber theorems perform exhaustive elimination on the finite case index and use both the equality and inequality"
+    unfinished:
+      - "this fixed case index is not a finite source recipe for constructing any of the three arrows and does not restrict arbitrary GeometryTotalHom values"
+      - "the constant-one and generated-cochain endpoint packages are definitionally identical, but their distinct generated-object tags have not been identified or reconstructed by this case index"
+      - "no general res/ext/J, fullness, faithfulness, idempotent splitting, or retract generation follows from this case evaluator"
+      - "comparison-group-wide section, two kernels, lift fibers, general D, CS translations, and F remain open"
+  validation:
+    focused_checks: "FiniteAxisFoldComparisonIndex and AATClosedFamilySignature 2/2 pass after review response"
+    named_target_build: "FiniteAxisFoldComparisonIndex passed after review response (4259 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "35 declarations in FiniteAxisFoldComparisonIndex and 842 in AATClosedFamilySignature, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 45 gives the card-mandated finite D cases an exact finite case classification without changing the semantic arrows. It constructs neither a finite arrow recipe nor the target's kernel-and-lift information-loss recovery, so G-123 remains unproved."
+audits:
+  premise_delta:
+    discharged:
+      - "finite case indexing and exact semantic evaluation for the fixed barAlpha, generated barBeta, and constant-one barBeta cases"
+      - "exact case-index-fiber classification distinguishing the noninvertible generated comparison from the shared invertible comparison"
+    remaining:
+      - "finite restriction of every component of arbitrary generated-object Hom values"
+      - "general endpoint presentation and all AAT reconstruction and integration obligations"
+  certificate_provenance: "the index contains only three nullary constructors; its evaluator refers to already-constructed Cycle 44 arrows and is not credited as a finite construction recipe; no arrow, inverse, equality, or representation certificate is an input field"
+  structure_field_escape: none-found
+  route_integrity: "the semantic distinction is derived from actual IsIso/non-IsIso evidence, while the semantic identification is the actual constant-one beta equality; finite construction of those arrows remains open"
+  target_fitting: "the fixed D example is connected to the same general generated-object category, but is expressly not substituted for arbitrary G122FamilyInput or arbitrary Hom reconstruction"
+  vacuity: "all three case constructors are inhabited and evaluated; the negative and positive fibers use a proved arrow inequality and equality"
+  blocking_findings:
+    - "RESOLVED: recast the nullary-label evaluator from a finite-display/decoder claim to a finite case index; target information-loss recovery remains open"
+    - "RESOLVED: added individual docstrings to all three public constructors"
+  next_obligation: "Construct a parameter-relative finite probe/restriction of all computational components used by GeometryTotalHom extensionality, then determine which coverage premises can be discharged from original G-123 inputs rather than accepted as extension or representability certificates."
 ```
