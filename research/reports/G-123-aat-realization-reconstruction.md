@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 76 constructs from the fixed source exact core a uniform Extension-value involution on every context, proves that it moves a concrete Bool context, packages it as a nonidentity involutive exact package map, and proves raw-data invariance; its complete-geometry lift and transport to the actual normalized residual kernel remain to construct
+- current proof obligation: Cycle 78 projects every actual normalized residual automorphism to its complete dependent context-support, context-axis, and context-observable actions and isolates the three kernels; source coverage and the construction of a surviving Extension-changing residual element remain open
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the complete-geometry lift of the fixed source Extension toggle with the product-overlap dependent Iso, then transport or reconstruct it on the southwest geometry package before the existing exact left-pull/top/normalization route; only after proving survival may it be called an actual residual-kernel element
+- next proof obligation: analyze the three joint-local projections on the context-object kernel and construct a source generator only after its complete local action is shown to satisfy the actual geometry naturality; the Cycle 77 canonical-preorder toggle failure is a failed candidate, not target refutation
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 78 delta | 同じactual normalized residual全元について、contextと局所値の依存を切らず、全context上の全support・axis・observable作用をそれぞれ完全なSigma carrier上の群作用として保持し、そのkernelを分離する | `FiniteAxisFoldResidualContextSupport`, `FiniteAxisFoldResidualContextAxis`, `FiniteAxisFoldResidualContextObservable`, `finiteAxisFoldContextSupportMap`, `finiteAxisFoldContextAxisMap`, `finiteAxisFoldContextObservableMap`, `finiteAxisFoldNormalizedContextSupportEquiv`, `finiteAxisFoldNormalizedContextAxisEquiv`, `finiteAxisFoldNormalizedContextObservableEquiv`, 三つのnormalized/residual projection、三つのkernelと`_apply`定理 | 固定actual normalized direct endpoint; 任意のfull normalized Autとそのinverse; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元; actual `GeomReadHom`の完全なlocal comparison data | automorphismのcontextForwardとlocal componentをdependent pairに同時適用し、inverse automorphismから逆写像を構成; `hom_inv_id`/`inv_hom_id`をcomplete geometry morphismへ評価して両逆則を放電; 三つの群準同型とkernel membershipの全dependent pair評価 | Cycle 75のcontext-object projectionを局所値まで縮小せず精密化し、context-trivial kernel上のfiberwise local action解析とsource coverageへ渡す | 三projectionの像・相互関係・source generatorは未構成; Cycle 76 toggleのcomplete naturality/actual survivalは未証明; residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 76 delta | Extensionが現source exact dataで実際に動き得ることを、有限context部分や完成したcontext equivalenceの入力なしに構成する | `finiteAxisFoldExtensionValueToggle`, `finiteAxisFoldExtensionValueToggle_involutive`, `finiteAxisFoldExtensionToggleContext`, `finiteAxisFoldExtensionToggleContext_involutive`, `finiteAxisFoldBooleanFalseContext`, `finiteAxisFoldBooleanFalseContext_toggle_ne`, `finiteAxisFoldExtensionToggleContextFunctor`, `finiteAxisFoldExtensionToggleContextEquivalence`, `finiteAxisFoldExtensionToggleEquationTransport`, `finiteAxisFoldExtensionToggleUpper`, `finiteAxisFoldExtensionToggleTotal`, `finiteAxisFoldExtensionToggleTotal_comp_self`, `finiteAxisFoldExtensionToggle_rawReindex`, `finiteAxisFoldExtensionToggleTotal_ne_id` | 固定`finiteWitnessSourcePackage`とsource geometry/raw input; 全ArchitectureContext; `Bool`型判定だけを使う一様recipe | 全型上のBool限定value toggleとinvolution; minimal readingを保つ全context写像; Extensionを読まない両向きrestriction; thin context autoequivalence; equation dataがExtension非依存であることによるexact transport; exact upper/total involution; 明示`Bool.false` contextの移動による非恒等性; Unit raw systemのreindex不変性 | Cycle 75で分離したcontext-object actionが空の候補ではないことをsource exact coreで実証し、complete geometry/actual endpoint/source syntax構成へ渡す | complete `GeomReadHom`のoverlap/local自然性、source→southwest fiber同一視またはsouthwest上の再構成、exact pull/top/normalization後の生存、axis-signature kernel membership、source syntaxは未構成; actual residual元やG-123 completionは未主張 |
 | D Cycle 75 delta | Cycle 74の同じ残余kernel全元について、equation indexの剛性を固定入力から放電し、なお残る全context-object作用を縮小せず群準同型として射影し、そのkernelを分離する | `finiteAxisFoldResidual_equationEquiv_eq_refl`, `finiteAxisFoldResidual_equationMap_apply`, `finiteAxisFoldResidual_equationRole_eq`, `FiniteAxisFoldResidualContextObject`, `finiteAxisFoldNormalizedContextEquiv`, `finiteAxisFoldNormalizedContextProjection`, `finiteAxisFoldResidualContextProjection`, `FiniteAxisFoldNormalizedAxisSignatureContextKernel`, `finiteAxisFoldResidualContextKernel_contextForward_eq_id` | 固定actual direct endpoint; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元; actual endpointをsupport readingから作る三段transport | equation indexを各transportの逆方向へ引き戻して元の`PUnit`へ還元; residual automorphismとそのinverseのcontextForwardから全context object上の実際の置換と群準同型を構成; kernel membershipを全contextのidentityへ評価 | equation index成分を消去しつつcontext equivalenceを勝手にidentity化せず、context-trivial kernel上のfiberwise local action解析とExtension-changing generator構成へ渡す | observable値のdependent transport、context actionの像・source generator、local support/axis/observable comparison、残余source coverageは未構成; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 74 delta | Cycle 73の同じ残余kernel全元について、Atom identityを実際に使用し、全ArchitectureObjectと全端点の全selected operationに対するobject/operation成分をcanonical normalizationへ固定する | `finiteAxisFoldResidual_objectMap_apply`, `finiteAxisFoldResidual_objectMap_eq_canonicalObjectNormalization`, `finiteAxisFoldResidual_object_configuration_eq`, `finiteAxisFoldResidual_canonicalObjectNormalization_objectMap`, `finiteAxisFoldResidual_configurationMap_eq_id`, `finiteAxisFoldResidual_operation_configurationMap_atomMap`, `finiteAxisFoldResidual_operation_configurationMap_eq`, `finiteAxisFoldResidual_operationMap_eq_canonicalNormalization` | 固定actual direct endpoint; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元; Cycle 73のcomplete Atom identity; normalized Karoubi sandwich law; actual endpoint operation readingが元の全`ConfigurationHom` readingの三段transportであること | sandwich等式を全objectで評価してraw objectMapをcanonical normalizationへ固定; `configuration_eq`とAtom identityから全configuration一致; operation naturalityから全operationのrealized Atom map一致; 三段transportがAtom-map faithfulnessを保存することからdependent endpoint cast後のoperationそのものをcanonical normalization operationへ固定 | 残余kernelのobject/operation成分を入力certificateなしに消去し、equation/context/local geometryの真の残余解析とsource coverageへ渡す | equation transport、context equivalence、local support/axis/observable comparison、残余source coverageは未構成; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
@@ -8123,4 +8124,126 @@ audits:
     - "fresh final-snapshot Math A/B and Lean A/B review: PASS"
   blocking_findings: []
   next_obligation: "Construct and focused-check the complete-geometry lift, then rebuild or transport the toggle on the southwest geometry fiber before applying the already fixed exact left-pull/top/normalization route."
+```
+
+## Cycle 78 — Complete dependent context-local residual projections
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 78
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 82265e195c57a6b81cfffe5292a76196447992b6
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 75 retained the full context-object action; Cycle 76 built a source exact-core toggle; Cycle 77 showed that the attempted canonical-preorder complete lift does not satisfy the selected-morphism local naturality"
+  proof_dag_predecessors:
+    - "Cycle 75 complete context-object residual projection"
+    - "the actual normalized endpoint GeomReadHom supportComp, axisComp, and observableComp fields"
+    - "the full automorphism and inverse laws in the actual normalized geometry category"
+  proof_obligation: "Retain the actual residual action on every context-local carrier without separating a dependent local value from the context on which its type depends"
+  selection_reason: "After the direct source-toggle lift failed, the next invariant must be extracted from actual residual automorphisms themselves.  The dependent Sigma carriers expose exactly what the complete geometry morphism moves and do not assume a source generator or local rigidity."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualJointLocalProjection.lean
+  risks:
+    - "project only a finite probe or only contexts with inhabited local carriers"
+    - "erase dependent context transport by casting all local values into one post-hoc carrier"
+    - "infer source coverage, triviality, or a splitting from the existence of the projections"
+    - "treat the Cycle 77 failed construction as target refutation"
+  unchecked:
+    - "images and mutual relations of the three complete dependent projections"
+    - "a source-constructed nonidentity element surviving in any actual joint-local quotient"
+    - "residual source coverage and the remaining A--F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed, for every actual normalized endpoint automorphism, permutations of the complete dependent sums of all context-support, context-axis, and context-observable pairs.  Each inverse is constructed from the inverse automorphism and both inverse laws use the actual categorical automorphism equations.  All three actions are group homomorphisms on the full normalized automorphism group and on the entire axis-and-signature residual kernel; their kernels and pointwise consequences are explicit."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualJointLocalProjection.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedContextSupportEquiv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedContextAxisEquiv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedContextObservableEquiv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextSupportProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextAxisProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextObservableProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextSupportKernel_apply
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextAxisKernel_apply
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextObservableKernel_apply
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldNormalizedContextSupportEquiv
+      - finiteAxisFoldNormalizedContextAxisEquiv
+      - finiteAxisFoldNormalizedContextObservableEquiv
+      - finiteAxisFoldResidualContextSupportProjection
+      - finiteAxisFoldResidualContextAxisProjection
+      - finiteAxisFoldResidualContextObservableProjection
+    source_labels:
+      - "GOAL D: preserve and classify the full comparison action rather than a selected displayed subgroup"
+      - "user conditions 1, 2, 4, and 5: preserve all objects and morphism data, construct evidence, separate reconstruction obligations, and retain the original G-122 scope"
+    conjuncts:
+      - "every context and every support in it -> one complete dependent permutation"
+      - "every context and every local axis in it -> one complete dependent permutation"
+      - "every context and every local observable in it -> one complete dependent permutation"
+      - "every axis-and-signature residual element -> all three actual group actions and explicit kernels"
+    undischarged_assumptions:
+      - "no source generator for these actual actions has been constructed"
+      - "no projection is claimed finite, injective, surjective, split, or trivial"
+      - "the Cycle 76 Extension toggle has not been lifted to an actual normalized automorphism"
+    acceptance_point: "This cycle preserves the complete context-dependent local actions of actual residual automorphisms and isolates their kernels.  It is neither residual source coverage nor G-123 completion."
+    port_status: not-applicable
+review:
+  fixed_head: c06ffe657b4a2ebce945e48c8e77a684c18a72e9
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings:
+    - "clarified that the four-lane review fixed the content head c06ffe657, distinct from the later ledger-only head"
+  direct_response:
+    reviewed_delta: "82265e195c57a6b81cfffe5292a76196447992b6..c06ffe657b4a2ebce945e48c8e77a684c18a72e9"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "the local Support, Axis, and Observable types remain indexed by the actual context object in each complete Sigma carrier"
+      - "the inverse of each joint action is obtained from the actual inverse automorphism"
+      - "all three actions are multiplicative on the full normalized group and its complete axis-and-signature residual kernel"
+      - "kernel membership evaluates to identity on every dependent pair"
+    remaining:
+      - "images and relations of the three projections, including their restriction to the context-object kernel"
+      - "an actual source-constructed Extension-changing residual element"
+      - "residual source coverage, bottom/full comparison-kernel/lift recovery, general coefficient/input, and B/E/F"
+  certificate_provenance:
+    discharged:
+      - "all local maps are read from the actual GeomReadHom fields and not accepted as projection certificates"
+      - "inverse laws are derived from the actual complete-morphism automorphism laws"
+    unresolved:
+      - "source generation and survival through the fixed construction remain open"
+  proof_use:
+    used:
+      - "contextForward and each local component jointly define a dependent pair map"
+      - "hom_inv_id and inv_hom_id prove the two inverse laws on all three Sigma carriers"
+      - "complete-morphism composition proves the three group-homomorphism laws definitionally"
+      - "kernel equalities are evaluated at arbitrary dependent pairs"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check for FiniteAxisFoldResidualJointLocalProjection: PASS"
+    - "focused exact target build for FiniteAxisFoldResidualJointLocalProjection: PASS (4306 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 21 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh fixed-content-head c06ffe657b4a2ebce945e48c8e77a684c18a72e9 Math A/B and Lean A/B review: PASS"
+    - "GitHub CI: 7/7 PASS on the reviewed content head and the ledger-only final head"
+  blocking_findings: []
+  next_obligation: "Analyze the three complete joint-local projections on the context-object kernel, then construct a source generator only through a complete local action satisfying the actual selected-morphism naturality."
 ```
