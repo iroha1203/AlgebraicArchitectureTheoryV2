@@ -13,10 +13,10 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 29 display-owned G-122 generator tables and finite index action
+- current proof obligation: Cycle 30 identity, composition, and category laws for finite G-122 generator actions
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: define the display identity/composition action on finite indices and add source-derived structure/quantity reading equations
+- next proof obligation: add source-derived structure/quantity reading equations and integrate the display/action data into the actual presentation category
 
 ## Requirement ledger
 
@@ -3393,4 +3393,72 @@ audits:
   vacuity: "empty source tables yield unique empty index actions and no semantic coverage; no completeness claim is attached to display existence"
   blocking_findings: []
   next_obligation: "Define display identity/composition on finite indices and add source-derived structure/quantity reading equations."
+```
+
+## Cycle 30 — Category laws for finite generator actions
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 30
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 16a6ec2e1ab91a02b75563102aa3efc13f3ef224
+tracking_issue: 4520
+selection:
+  proof_obligation: "Construct identity and composition for display-owned finite G-122 generator actions and prove their category laws without introducing semantic-total maps or extension certificates"
+  selection_reason: "Cycle 29 fixed the object-to-morphism ownership direction. Category structure is the next prerequisite for using those displays and actions as the actual presentation category rather than as isolated finite tables."
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+  risks:
+    - "prove laws by comparing or accepting completed semantic morphisms"
+    - "smuggle extension, completeness, or global preservation into equality data"
+    - "report finite action category laws as semantic res/ext or G-123 completion"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Added action extensionality from the two finite index maps, identity, composition by function composition and successive local-equation use, and left/right unit plus associativity laws."
+  evidence:
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectGeneratorAction.ext
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectGeneratorAction.id
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectGeneratorAction.comp
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectGeneratorAction.id_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectGeneratorAction.comp_id
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectGeneratorAction.comp_assoc
+  claim_mapping:
+    input_premises:
+      - "three composable display-owned actions, each containing only finite index maps and local configuration implications"
+    constructed_evidence:
+      - "identity index maps and reflexive reuse of the three local equations"
+      - "composite index maps and preservation proofs obtained by applying the two actions successively"
+      - "action equality from equality of the Atom and object index maps, with proof fields eliminated by proof irrelevance"
+      - "left unit, right unit, and associativity"
+    proof_use:
+      - "comp applies first.mapsFamily/mapsRelation/mapsIdentification and then the corresponding second field"
+      - "all three laws use extensionality of precisely the two finite index maps"
+    unfinished:
+      - "the finite displays/actions are not yet bundled as the final presentation category"
+      - "no table completeness, semantic Atom/object map, ConfigurationHom, res, or ext has been constructed"
+      - "structure/quantity equations and remaining A--F obligations remain open"
+  validation:
+    focused_checks: "AATClosedFamilySignature and ClosedPrimitiveRoleExhaustion 2/2 pass"
+    named_target_build: "ClosedPrimitiveRoleExhaustion passed (4276 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "624 and 140 declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 30 supplies category laws only for finite generator-index actions. It neither constructs nor assumes a completed semantic morphism and does not discharge G-123."
+audits:
+  premise_delta:
+    discharged: []
+    remaining:
+      - "integrate displays/actions as the actual finite presentation category"
+      - "add source-derived structure/quantity equations"
+      - "derive table completeness and semantic extension from fixed syntax, then prove res/ext"
+      - "all remaining A--F obligations"
+  certificate_provenance: "identity proofs reuse source propositions and composite proofs are successive applications of the two finite actions; no proof payload beyond the existing local generator equations is accepted"
+  structure_field_escape: "the new definitions add no fields and mention neither semantic carrier functions nor ConfigurationHom, extension, completeness, decoder, or retract data"
+  route_integrity: "composition maps every source index through the middle display and then the target display; each local equation follows the same two-stage route"
+  target_fitting: "this makes the Cycle 29 finite action candidate compositional while leaving its integration into P_Theta and all semantic reconstruction obligations explicit"
+  vacuity: "empty displays still admit category laws, but no semantic coverage or completion conclusion is drawn from them"
+  blocking_findings: []
+  next_obligation: "Add source-derived structure/quantity reading equations and integrate finite displays/actions into the actual presentation category."
 ```

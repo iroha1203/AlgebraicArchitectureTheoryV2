@@ -373,6 +373,86 @@ theorem atom_maps_entry
       (targetDisplay.atoms.value (action.atomIndexMap i)) :=
   ⟨i, rfl, rfl⟩
 
+/-- Two finite generator actions with the same Atom and object index maps are
+equal.  The remaining fields are propositions over those fixed finite maps. -/
+@[ext] theorem ext
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {sourceDisplay : G122FiniteObjectGeneratorDisplay input X}
+    {targetDisplay : G122FiniteObjectGeneratorDisplay input Y}
+    {first second : G122FiniteObjectGeneratorAction sourceDisplay targetDisplay}
+    (hatom : first.atomIndexMap = second.atomIndexMap)
+    (hobject : first.objectIndexMap = second.objectIndexMap) : first = second := by
+  cases first
+  cases second
+  cases hatom
+  cases hobject
+  rfl
+
+/-- Identity action on one finite G-122 display. -/
+def id {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
+    (display : G122FiniteObjectGeneratorDisplay input X) :
+    G122FiniteObjectGeneratorAction display display where
+  atomIndexMap i := i
+  objectIndexMap i := i
+  mapsFamily _ _ h := h
+  mapsRelation _ _ _ h := h
+  mapsIdentification _ _ _ h := h
+
+/-- Composition of finite G-122 display actions, using only composition of
+their finite index maps and successive use of their local equations. -/
+def comp
+    {input : G122FamilyInput.{u, v}} {X Y Z : G122CellInput input}
+    {firstDisplay : G122FiniteObjectGeneratorDisplay input X}
+    {middleDisplay : G122FiniteObjectGeneratorDisplay input Y}
+    {lastDisplay : G122FiniteObjectGeneratorDisplay input Z}
+    (first : G122FiniteObjectGeneratorAction firstDisplay middleDisplay)
+    (second : G122FiniteObjectGeneratorAction middleDisplay lastDisplay) :
+    G122FiniteObjectGeneratorAction firstDisplay lastDisplay where
+  atomIndexMap i := second.atomIndexMap (first.atomIndexMap i)
+  objectIndexMap i := second.objectIndexMap (first.objectIndexMap i)
+  mapsFamily objectIndex atomIndex h :=
+    second.mapsFamily (first.objectIndexMap objectIndex)
+      (first.atomIndexMap atomIndex) (first.mapsFamily objectIndex atomIndex h)
+  mapsRelation objectIndex firstAtom secondAtom h :=
+    second.mapsRelation (first.objectIndexMap objectIndex)
+      (first.atomIndexMap firstAtom) (first.atomIndexMap secondAtom)
+      (first.mapsRelation objectIndex firstAtom secondAtom h)
+  mapsIdentification objectIndex firstAtom secondAtom h :=
+    second.mapsIdentification (first.objectIndexMap objectIndex)
+      (first.atomIndexMap firstAtom) (first.atomIndexMap secondAtom)
+      (first.mapsIdentification objectIndex firstAtom secondAtom h)
+
+/-- Identity is a left unit for finite generator actions. -/
+@[simp] theorem id_comp
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {sourceDisplay : G122FiniteObjectGeneratorDisplay input X}
+    {targetDisplay : G122FiniteObjectGeneratorDisplay input Y}
+    (action : G122FiniteObjectGeneratorAction sourceDisplay targetDisplay) :
+    comp (id sourceDisplay) action = action := by
+  apply ext <;> rfl
+
+/-- Identity is a right unit for finite generator actions. -/
+@[simp] theorem comp_id
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    {sourceDisplay : G122FiniteObjectGeneratorDisplay input X}
+    {targetDisplay : G122FiniteObjectGeneratorDisplay input Y}
+    (action : G122FiniteObjectGeneratorAction sourceDisplay targetDisplay) :
+    comp action (id targetDisplay) = action := by
+  apply ext <;> rfl
+
+/-- Composition of finite generator actions is associative. -/
+@[simp] theorem comp_assoc
+    {input : G122FamilyInput.{u, v}} {W X Y Z : G122CellInput input}
+    {firstDisplay : G122FiniteObjectGeneratorDisplay input W}
+    {secondDisplay : G122FiniteObjectGeneratorDisplay input X}
+    {thirdDisplay : G122FiniteObjectGeneratorDisplay input Y}
+    {fourthDisplay : G122FiniteObjectGeneratorDisplay input Z}
+    (first : G122FiniteObjectGeneratorAction firstDisplay secondDisplay)
+    (second : G122FiniteObjectGeneratorAction secondDisplay thirdDisplay)
+    (third : G122FiniteObjectGeneratorAction thirdDisplay fourthDisplay) :
+    comp (comp first second) third = comp first (comp second third) := by
+  apply ext <;> rfl
+
 end G122FiniteObjectGeneratorAction
 
 /-- Endpoint-indexed primitive operation names.
