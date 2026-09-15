@@ -336,8 +336,9 @@ inductive PrimitiveObservable :
       PrimitiveObservable (.g122 input) (.g122 X)
 
 /-- A source context restriction with both endpoints retained.  The payload is
-an actual hom of the original G-122 selected context preorder, not a component
-of a later `GeomReadHom` between two completed geometry packages. -/
+an actual hom of the original authored support core's context preorder, exposed
+through the selected site's category; it is not a component of a later
+`GeomReadHom` between two completed geometry packages. -/
 inductive PrimitiveContextRestriction :
     (theta : ClosedFamilyParameter.{u, v}) → FamilyRealization theta →
       Type (max (u + 1) (v + 1))
@@ -347,8 +348,8 @@ inductive PrimitiveContextRestriction :
       (restriction : source ⟶ target) :
       PrimitiveContextRestriction (.g122 input) (.g122 X)
 
-/-- Read a primitive restriction back as the identical pair of selected-site
-endpoints and the identical thin-category hom. -/
+/-- Read a primitive restriction back as the identical pair of support-core
+context endpoints and the identical thin-category hom. -/
 def PrimitiveContextRestriction.g122Value
     {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
     (reference : PrimitiveContextRestriction (.g122 input) (.g122 X)) :
@@ -358,7 +359,7 @@ def PrimitiveContextRestriction.g122Value
   | g122 source target restriction => exact ⟨source, target, restriction⟩
 
 /-- The readable context morphism exposed by a primitive restriction is
-constructed from the original selected context preorder. -/
+constructed from the original authored support core's context preorder. -/
 def PrimitiveContextRestriction.g122Morphism
     {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
     (reference : PrimitiveContextRestriction (.g122 input) (.g122 X)) := by
