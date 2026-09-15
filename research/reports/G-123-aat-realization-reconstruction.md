@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 83 follows the actual three-stage inverse transport chain to identify every endpoint observable fiber with `Int`, then proves on the full Cycle 75 forward-context kernel that every context-indexed actual `observableEquiv` is the inverse canonical dependent cast and hence becomes identity after casting back; local images/generators, coverage, and a surviving Extension-changing residual element remain open
+- current proof obligation: Cycle 84 intersects the bidirectional-context kernel with the complete three-family local-fiber kernel, reconstructs equality of every computational field with canonical geometry normalization, and proves that exact joint kernel is trivial; projection images/source generators, coverage, and a surviving Extension-changing residual element remain open
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: combine the bidirectional context kernel, the Cycle 80 local-fiber kernel, and the new observable rigidity, then test whether all remaining fields of the actual complete morphism are faithful before constructing source-owned residual generators; the Cycle 77 canonical-preorder toggle failure remains a failed candidate, not target refutation
+- next proof obligation: use the new trivial joint kernel to classify the images and source-owned generators of the stored backward-context and three local-fiber projections, then decompose every residual element toward source coverage; the Cycle 77 canonical-preorder toggle failure remains a failed candidate, not target refutation
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 84 delta | stored backward-context作用と三つのcomplete local-fiber作用が同時に不可視なactual residual元について、全computational fieldをcanonical normalizationへ戻しexact joint kernelの忠実性を証明する | `FiniteAxisFoldResidualCompleteKernel`, `finiteAxisFoldResidualCompleteKernel_raw_eq_canonical`, `finiteAxisFoldResidualCompleteKernel_hom_eq_id`, `finiteAxisFoldResidualCompleteKernel_element_eq_one`, `finiteAxisFoldResidualCompleteKernel_eq_bot` | 固定actual normalized endpoint; bidirectional-context kernelとlocal-fiber kernelの交わりの任意の全元; Cycles 72--83の各独立field rigidity | lower source/Atom、upper Atom/object/equation family/operation/invariant/axis/coordinate、geometry coefficient/Support/Axis/Observableの15 computational条件をactual元とkernel membershipから個別に構成; complete extensionalityでraw morphismをcanonical normalizationへ同定; normalized Karoubi identityへ持ち上げて全元を`1`へ固定 | residual representationのjoint actionがfaithfulであることを固定し、各projectionの像・source generator・全residual元の分解とcoverageへ渡す | backward-context/local-family各projectionの像・source-owned generator・section/decomposition、Cycle 76 toggleのactual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 83 delta | actual endpointのcontext-indexed observable carrierを完成型として再入力せず固定構成鎖から`Int`へ戻し、full forward-context kernel上の全`observableEquiv`をcanonical dependent castの逆として同定する | `finiteAxisFoldEndpointObservableEquivInt`, `finiteAxisFoldResidualObservableSelfEquiv`, `finiteAxisFoldResidualContextKernel_observableSelfEquiv_eq_refl`, `finiteAxisFoldResidualContextKernel_observableEquiv_eq_cast_symm` | 固定finite axis-fold/`Int`; support transport、exact-left inverse package、top transportからなるactual endpoint; Cycle 75のforward-context equality; context kernelの任意の全元・全context | actual inverse top、exact-left forward upper、actual inverse supportのobservable equivalenceを順に合成して各endpoint fiberと`Int`の環同型を構成; kernel membershipから得るforward context equalityでactual observable equivalenceを明示castして自己同型化; `Int`の環自己同型剛性を共役して恒等化し、raw equivalenceをcastの逆へ戻す | equation transportのdependent observable fieldを入力certificateなしに消去し、bidirectional/local-fiber kernelとの統合およびcomplete morphism忠実性検査へ渡す | raw dependent family全体とcanonical comparisonとのHEq/equality、local kernelとの交わり上のcomplete morphism equality、三local image/source generator、Cycle 76 toggleのactual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 82 delta | actual equation transportが保持するforward context作用だけでなくstored inverse functorの全context-object作用も保持し、両作用が恒等となるkernel上でcontext equivalence全体を`refl`へ戻す | `finiteAxisFoldNormalizedContextBackwardEquiv`, `finiteAxisFoldNormalizedContextBackwardProjection`, `finiteAxisFoldResidualContextKernelBackwardProjection`, `FiniteAxisFoldResidualBidirectionalContextKernel`, `finiteAxisFoldResidualBidirectionalContextKernel_contextBackward_eq_id`, `finiteAxisFoldResidualBidirectionalContextKernel_contextEquivalence_eq_refl` | 固定actual normalized direct endpoint; 任意の全Autとそのinverse; Cycle 75のforward-context kernel; actual `EquationSystemExactTransport.contextEquivalence.inverse` | hom/invのstored `contextBackward`から全context置換を構成; compositionの反変性をopposite permutation groupへの群準同型として保持; そのkernelからstored inverse object functionを恒等化; Cycle 75のforward恒等性とthin homの一意性から両functorおよびunit/counitを放電 | 非skeletal preorderでforward object作用だけからequivalence全体をidentity視する誤りを防ぎ、equation observable familyとlocal kernelを含むcomplete morphism忠実性の検査へ渡す | equation-observable equivalence、三local familyの像・source generator、Cycle 76 toggleのcomplete naturality/actual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 81 delta | actual normalized endpointの全自己同型について、upperのAtom作用とは別のlower exact-doctrine `sourceMap` を全Source carrier上の作用として保持し、固定入力から恒等へ放電する | `FiniteAxisFoldResidualDoctrineSource`, `finiteAxisFoldNormalizedDoctrineSourceEquiv`, `finiteAxisFoldNormalizedDoctrineSourceProjection`, `finiteAxisFoldNormalizedDoctrineSourceEquiv_selected`, `finiteAxisFoldNormalizedDoctrineSourceEquiv_eq_refl`, `finiteAxisFoldNormalizedDoctrineSourceProjection_apply`, `finiteAxisFoldNormalizedDoctrineSourceMap_eq_id`, `finiteAxisFoldResidual_doctrineSourceMap_eq_id` | 固定actual normalized direct endpoint; 任意の全Autとそのinverse; endpointのpointed-source equation; 固定decoded Source carrier `ULift (Fin 2)` と選択点 `1` | hom/invのactual `sourceMap`から全Source置換を構成し、Karoubi自己同型の両逆式をsourceで評価; pointed-source lawで`1`を固定; 残る`0`は置換の単射性で固定; 全Autのsource projectionとsourceMapを恒等化 | lower base成分を未追跡のまま最深kernelを自明視する誤りを防ぎ、既存のupper/context/local剛性との統合とresidual source coverageへ渡す | context/local作用の像・source generator、Cycle 76 toggleのcomplete naturality/actual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
@@ -8860,4 +8861,124 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Combine bidirectional context rigidity, local-fiber kernel membership, and equation-observable rigidity to test equality of every remaining complete morphism field before constructing source-owned residual generators."
+```
+
+## Cycle 84 — Complete joint-kernel rigidity
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 84
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: f09847fed47926e40e4906fe56bdeb22a510556a
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 82 fixed the complete context equivalence on the bidirectional kernel, Cycle 80 fixed the exact simultaneous local-family kernel, and Cycle 83 identified every equation-observable component on the full forward-context kernel"
+  proof_dag_predecessors:
+    - "Cycles 72--75 residual core, Atom, object/operation, equation-index, and forward-context rigidity"
+    - "Cycles 80 and 82 complete local-family and bidirectional-context kernels"
+    - "Cycles 81 and 83 lower-source and equation-observable rigidity"
+  proof_obligation: "Intersect the two independently constructed subkernels and determine whether equality of all actual computational fields forces equality of the complete normalized automorphism"
+  selection_reason: "Source coverage cannot be reduced to projection images unless the combined residual action is faithful.  The fixed target requires complete-morphism reconstruction, so all core and geometry computational fields must be assembled rather than inferring whole equality from res/ext or selected generators."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualCompleteKernelRigidity.lean
+  risks:
+    - "compare the normalized identity with the raw GeometryTotalHom identity instead of canonical normalization"
+    - "infer whole equation transport from context and index equality without the observable family HEq"
+    - "infer whole geometry equality from pointwise local values without dependent family HEq"
+    - "accept complete morphism equality or local comparison families as certificate fields"
+    - "call joint-kernel triviality residual source coverage or triviality of the whole residual group"
+  unchecked:
+    - "images and source-owned generators of the backward-context and three local-fiber projections"
+    - "sections or decompositions expressing every residual element through those images"
+    - "Cycle 76 toggle survival through a complete naturality-respecting actual automorphism"
+    - "residual source coverage and the remaining D/B/E/F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Defined the exact intersection of the bidirectional-context kernel and complete local-fiber kernel in their common forward-context ambient group.  For an arbitrary element, constructed all fifteen computational equality conditions required by the accepted complete-geometry extensionality spine: pointed source and Atom; upper Atom, object, complete equation context/index/observable family, operation, invariant, axis, and coordinate; geometry coefficient and the full dependent Support, Axis, and Observable comparison families.  The equation observable and local geometry families are assembled by heterogeneous function extensionality from the kernel-derived dependent casts, not accepted as inputs.  Complete raw morphism equality with canonical geometry normalization follows.  Since canonical normalization is the raw arrow of the normalized Karoubi identity, every intersection element is one and the intersection subgroup is bottom."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualCompleteKernelRigidity.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldResidualCompleteKernel
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualCompleteKernel_raw_eq_canonical
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualCompleteKernel_hom_eq_id
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualCompleteKernel_element_eq_one
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualCompleteKernel_eq_bot
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldResidualCompleteKernel_raw_eq_canonical
+      - finiteAxisFoldResidualCompleteKernel_hom_eq_id
+      - finiteAxisFoldResidualCompleteKernel_element_eq_one
+      - finiteAxisFoldResidualCompleteKernel_eq_bot
+    source_labels:
+      - "GOAL A/D: reconstruct complete comparison morphisms and preserve all context/local geometry information"
+      - "user conditions 1, 2, 4, and 5: keep full quantifiers, discharge separate reconstruction obligations, and retain the entire G-122 comparison action"
+    conjuncts:
+      - "every element of the exact bidirectional-context/local-fiber intersection -> all fifteen actual computational fields equal canonical normalization"
+      - "complete raw GeometryTotalHom -> canonical geometry normalization"
+      - "normalized Karoubi hom -> identity"
+      - "every intersection element -> one, hence exact intersection subgroup -> bottom"
+    undischarged_assumptions:
+      - "no image, section, source generator, or decomposition for the four residual projections is constructed"
+      - "the Cycle 76 Extension toggle has not been lifted to an actual normalized automorphism"
+      - "residual source coverage and broader G-123 reconstruction remain open"
+    acceptance_point: "This cycle proves complete-morphism faithfulness exactly on the joint kernel.  It does not assert that the whole residual kernel is trivial or covered by source syntax."
+    port_status: not-applicable
+review:
+  fixed_head: 123dfd368f71bad684bb67dd7132e32cb591efd2
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    reviewed_delta: "f09847fed47926e40e4906fe56bdeb22a510556a..123dfd368f71bad684bb67dd7132e32cb591efd2"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "both subgroup memberships are actual kernels constructed from the complete residual action"
+      - "every core and geometry computational equality is built from fixed-input rigidity and those memberships"
+      - "proof-only law fields are eliminated only after every computational field has been supplied"
+      - "normalized identity is compared through its actual raw canonical-normalization arrow"
+    remaining:
+      - "projection images, source generators, sections, and residual decomposition"
+      - "Cycle 76 actual survival and residual source coverage"
+      - "bottom/full comparison-kernel/lift recovery, general coefficient/input, and remaining B/E/F"
+  certificate_provenance:
+    discharged:
+      - "no whole-morphism equality or local family is accepted by the theorem"
+      - "equation-observable family HEq is generated from Cycle 83 raw component equality"
+      - "three geometry-family HEqs are generated from Cycle 80 kernel membership and actual local comparison fields"
+      - "the final subgroup equality is derived from pointwise identity of every actual element"
+    unresolved:
+      - "source-owned generators and survival through the fixed complete construction remain open"
+  proof_use:
+    used:
+      - "Cycles 72--75 discharge Atom/object/operation/equation-index/invariant/axis/coordinate fields"
+      - "Cycle 81 discharges the lower source map"
+      - "Cycle 82 supplies whole context-equivalence equality"
+      - "Cycle 83 supplies every raw equation-observable equivalence"
+      - "Cycle 80 local-kernel membership supplies all Support, Axis, and Observable family identities"
+      - "complete extensionality constructs raw equality; Karoubi and subgroup extensionality produce identity and bottom"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check for FiniteAxisFoldResidualCompleteKernelRigidity: PASS"
+    - "focused exact target build for FiniteAxisFoldResidualCompleteKernelRigidity: PASS (4312 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 5 declarations; standard axioms only"
+    - "fresh fixed-content Math A/B and Lean A/B review: PASS; no findings"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Classify the images and construct source-owned generators or sections for the backward-context and three local-fiber projections, then use joint-kernel triviality to decompose every residual element toward source coverage."
 ```
