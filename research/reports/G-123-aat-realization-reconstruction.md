@@ -2733,7 +2733,7 @@ selection:
     - "assume G-122-only indexed families empty through a certificate"
     - "promote current-declaration exhaustion to final Sigma role exhaustion or G-123 refutation"
   unchecked:
-    - "complete-geometry Support, Axis, Observable, reading, restriction, coefficient, and transport roles not yet declared"
+    - "among other missing GOAL-A components: complete-geometry coverage, overlap, Support, Axis, Observable, reading/restriction; coefficient/transport; and Atom/object/Law evaluation data"
     - "source-derived final congruence and substitution"
     - "final Sigma,D_Theta,R_Theta and mandatory-C membership"
     - "remaining A--F obligations"
@@ -2762,7 +2762,7 @@ result:
       - "the equivalence shows that Cycles 14--19 omitted no role already present in the current closed signature on mandatory C"
       - "the explicit unfinished list prevents using this equivalence as final source-role exhaustion"
     unfinished:
-      - "the closed signature itself lacks several complete-geometry/coefficient/transport roles fixed by GOAL A"
+      - "the closed signature still lacks GOAL-A components including complete-geometry coverage/overlap/Support/Axis/Observable/readings/restrictions, coefficient/transport, and Atom/object/Law evaluation data"
       - "inhabitants and syntax effects of those future roles at mandatory C are unknown"
       - "final relation provenance, Sigma,D_Theta,R_Theta, source-choice membership, and A--F remain unconstructed"
       - "no fixed-target refutation or target-theorem-proved status is claimed"
@@ -2780,7 +2780,7 @@ audits:
       - "exact tagged-branch specialization and inverse translations"
       - "nonexistence at the tagged index of every current role without a tagged constructor"
     remaining:
-      - "declaration and provenance of missing fixed-GOAL roles"
+      - "declaration and provenance of the remaining fixed-GOAL information components, including coverage and overlap"
       - "final congruence/substitution and semantic-category membership"
       - "all remaining A--F obligations"
   certificate_provenance:

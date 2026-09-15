@@ -11,9 +11,10 @@ exactly the four-role `TaggedPrimitiveReference` alphabet used in Cycles
 14--19: every currently declared context, diagnostic, signature, equation,
 invariant, coordinate, and relation family has no constructor at that index.
 
-This is a source-declaration audit, not final role exhaustion.  The fixed GOAL
-also requires complete-geometry Support, Axis, Observable, reading,
-restriction, coefficient, and transport roles not yet all declared by
+This is a source-declaration audit, not final role exhaustion.  Among other
+components, the fixed GOAL also requires complete-geometry coverage, overlap,
+Support, Axis, Observable, reading and restriction; coefficient and transport;
+and Atom/object/Law evaluation data not yet all declared by
 `AATClosedFamilySignature`.  Consequently the equivalence below closes only
 the possibility that an *already declared* role was omitted from the tagged
 candidate; it does not prove that final `Sigma` has no additional legal role.
