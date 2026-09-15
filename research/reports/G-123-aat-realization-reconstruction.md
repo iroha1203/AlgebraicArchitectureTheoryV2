@@ -13,16 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 20 currently declared closed-role exhaustion on mandatory C
+- current proof obligation: Cycle 21 G-122 complete-geometry carrier roles
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: add and source-provenance the still-undeclared complete-geometry/coefficient/transport roles, then determine their tagged-branch inhabitants before final Sigma,D,R_Theta membership
+- next proof obligation: declare coverage/overlap/read/restriction and coefficient/transport information separately from the new Support/Axis/Observable carriers
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`とG-122のsignature/equation/invariant/raw各role; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `ClosedPrimitiveReference`, `closedTaggedPrimitiveReferenceEquiv`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective`; `TaggedPrimitivePresentedMonoid`, `TaggedPrimitiveRelationPresentation`, `taggedPrimitiveRelationEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体; Cycle 16ではそのfinite word間の任意の生成関係 | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価; 現行closed signatureの全12 roleの依存sumとtagged branchで4 roleが全体である同値; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; 全finite wordのfree monoidと、その任意の生成関係によるactual presented-monoid quotient category | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | まだ宣言されていないcomplete-geometry Support/Axis/Observable・reading/restriction・係数/transport roleの追加とtagged inhabitant判定、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
+| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`/`PrimitiveSupport`/`PrimitiveGeometryAxis`/`PrimitiveObservable`とG-122のsignature/equation/invariant/raw各role; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `ClosedPrimitiveReference`, `closedTaggedPrimitiveReferenceEquiv`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective`; `TaggedPrimitivePresentedMonoid`, `TaggedPrimitiveRelationPresentation`, `taggedPrimitiveRelationEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体; Cycle 16ではそのfinite word間の任意の生成関係 | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価; 現行closed signatureの全15 roleの依存sumとtagged branchで4 roleが全体である同値; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; 全finite wordのfree monoidと、その任意の生成関係によるactual presented-monoid quotient category | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | complete-geometry coverage/overlap・reading/restriction・係数/transport roleの追加とtagged inhabitant判定、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full`; `retractEndomorphismMap_surjective_of_full`, `exists_retractEndomorphismMap_surjective`; `not_full_and_retractGenerated_of_listObjectGeneratedEndomorphisms`; `not_full_and_retractGenerated_of_endomorphismEmbedding` | 各具体入力条件のみ; 一般transferでは明示的な`F.Full`; combined no-goでは各presentation自己射が有限primitive listの全射像またはそこへの単射を持つこと | 任意の完成射を制限して有限tableを構成; retract上の任意自己射を`r ≫ h ≫ i`のfullness preimageから持ち上げる; injective endomorphism serializationの`invFun`からlist decoder全射を構成; mandatory対象の非全射と合成 | 各direct equivalence; mandatory-C obstructionを任意のmultiobject presentation categoryへ移す categorical/cardinal bridge | final `R_Theta` decoderの充満性を固定入力から放電し、actual endpoint-typed syntaxの各自己射embeddingと接続すること |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
@@ -2794,4 +2794,61 @@ audits:
   vacuity: "four tagged constructors are inhabited by their original payload types; the equivalence is two-sided"
   blocking_findings: []
   next_obligation: "Declare and provenance the missing complete-geometry/coefficient/transport roles required by GOAL A, then determine their mandatory-C inhabitants before extending or rejecting the Cycle 18--19 grammar."
+```
+
+## Cycle 21 — G-122 complete-geometry carrier roles
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 21
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 9b14b6ee70eb800b30481eb8279421072761976f
+tracking_issue: 4520
+selection:
+  proof_obligation: "Add source-provenanced Support, geometry-Axis, and Observable primitive families at every original G-122 selected-geometry context, and recheck mandatory-C specialization"
+  selection_reason: "These are explicit missing GOAL-A carrier roles of arbitrary core-owned contexts, typed through the original G-122 selected geometry's site category; they can be added without accepting a completed geometry morphism."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/ClosedPrimitiveRoleExhaustion.lean
+  risks:
+    - "store supportComp, axisComp, observableComp, coverage, or overlap from a completed GeomReadHom"
+    - "conflate global signature Axis with context-local geometry Axis"
+    - "claim the three carriers discharge their reading, restriction, coverage, or overlap laws"
+result:
+  proposed_result_type: proof-obligation-discharged
+  completion_candidate: no
+  proof_obligation_delta: "Added three primitive families taking an arbitrary core-owned context in the site category exposed through the original G-122 selectedGeometry and one value from that context's carrier; extended the closed-role sum from 12 to 15 constructors; and proved the three new G-122-only roles are empty at the mandatory tagged index by dependent elimination, preserving the tagged four-role equivalence."
+  evidence:
+    - AAT.AG.RealizationReconstruction.PrimitiveSupport
+    - AAT.AG.RealizationReconstruction.PrimitiveGeometryAxis
+    - AAT.AG.RealizationReconstruction.PrimitiveObservable
+    - AAT.AG.RealizationReconstruction.closedTaggedPrimitiveReferenceEquiv
+  claim_mapping:
+    input_premises:
+      - "the original G122CellInput.selectedGeometry as the type-level route to its core's site category"
+      - "an arbitrary core-owned context of selectedGeometry.toAATSite.category and one value of its local carrier"
+    constructed_evidence:
+      - "individual Support, Axis, and Observable values supplied with their exact arbitrary core-owned context owner"
+      - "separate geometry-Axis type, not reuse of PrimitiveSignatureAxis"
+      - "updated 15-role dependent sum and tagged-index elimination"
+    proof_use:
+      - "the extended equivalence confirms these source-derived additions do not enlarge the mandatory-C tagged alphabet"
+    unfinished:
+      - "coverage, overlap, readings, restrictions, coefficient and transport data remain separate undeclared obligations"
+      - "no component map of a completed GeomReadHom is reconstructed"
+      - "final Sigma,D_Theta,R_Theta, membership, and remaining A--F are open"
+  validation:
+    focused_checks: "AATClosedFamilySignature 1/1 pass"
+    named_target_build: "ClosedPrimitiveRoleExhaustion passed (4276 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "AATClosedFamilySignature 445 and ClosedPrimitiveRoleExhaustion 104 generated/named declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 21 adds three actual complete-geometry carrier roles without importing completed geometry maps. It does not discharge their laws or G-123."
+audits:
+  structure_field_escape: "constructors store only one original context and one carrier value; no map family or preservation certificate"
+  route_integrity: "selectedGeometry supplies the site-category typing route; the constructor separately receives an arbitrary core-owned context and one local carrier value, before generated transports/comparisons"
+  target_fitting: "three missing carriers are added; all associated laws and remaining A--F stay open"
+  blocking_findings: []
+  next_obligation: "Represent coverage/overlap and read/restriction information as source equations or finite generation rules without storing completed geometry morphisms."
 ```

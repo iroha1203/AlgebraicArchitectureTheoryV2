@@ -8,12 +8,13 @@ This module combines every role actually declared in
 `AATClosedFamilySignature` into one dependent tagged sum.  It then proves that
 on the mandatory G-123(C) tagged-operation branch this entire current sum is
 exactly the four-role `TaggedPrimitiveReference` alphabet used in Cycles
-14--19: every currently declared context, diagnostic, signature, equation,
-invariant, coordinate, and relation family has no constructor at that index.
+14--19: every currently declared context, Support, geometry-Axis, Observable,
+diagnostic, signature, equation, invariant, coordinate, and relation family
+has no constructor at that index.
 
 This is a source-declaration audit, not final role exhaustion.  Among other
 components, the fixed GOAL also requires complete-geometry coverage, overlap,
-Support, Axis, Observable, reading and restriction; coefficient and transport;
+reading and restriction; coefficient and transport;
 and Atom/object/Law evaluation data not yet all declared by
 `AATClosedFamilySignature`.  Consequently the equivalence below closes only
 the possibility that an *already declared* role was omitted from the tagged
@@ -42,6 +43,9 @@ inductive ClosedPrimitiveReference
       (value : PrimitiveOperation theta realization source target)
   | context {object : PrimitiveObject theta realization}
       (value : PrimitiveContext theta realization object)
+  | support (value : PrimitiveSupport theta realization)
+  | geometryAxis (value : PrimitiveGeometryAxis theta realization)
+  | observable (value : PrimitiveObservable theta realization)
   | diagnosticCell (value : PrimitiveDiagnosticCell theta realization)
   | signatureAxis (value : PrimitiveSignatureAxis theta realization)
   | signatureCoordinate {axis : PrimitiveSignatureAxis theta realization}
@@ -61,6 +65,9 @@ def closedTaggedPrimitiveReferenceToTagged :
   | .object (.tagged value) => .object value
   | .operation (.tagged value) => .operation value
   | .context value => nomatch value
+  | .support value => nomatch value
+  | .geometryAxis value => nomatch value
+  | .observable value => nomatch value
   | .diagnosticCell value => nomatch value
   | .signatureAxis value => nomatch value
   | .signatureCoordinate value => nomatch value
@@ -107,6 +114,9 @@ same dependent constructor; impossible roles have already been eliminated. -/
       cases value
       rfl
   | context value => cases value
+  | support value => cases value
+  | geometryAxis value => cases value
+  | observable value => cases value
   | diagnosticCell value => cases value
   | signatureAxis value => cases value
   | signatureCoordinate value => cases value
