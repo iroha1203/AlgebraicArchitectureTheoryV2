@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 81 constructs the complete lower doctrine-source action of every actual normalized endpoint automorphism and proves it is identity from the fixed two-element source carrier and pointed-source law; source image/generators, coverage, and a surviving Extension-changing residual element remain open
+- current proof obligation: Cycle 82 retains the stored inverse-functor context-object action of every actual normalized endpoint automorphism, restricts it to the existing forward-context kernel, and proves that the resulting bidirectional kernel has the complete actual context equivalence equal to `refl`; equation-observable transport, local images/generators, coverage, and a surviving Extension-changing residual element remain open
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: combine the new lower-source rigidity with the existing upper/context/local kernel tower, determine the images of the three complete fiber-action families, and construct a source generator only after its complete local action satisfies actual geometry naturality; the Cycle 77 canonical-preorder toggle failure remains a failed candidate, not target refutation
+- next proof obligation: project and discharge the complete context-indexed equation-observable equivalence family, then combine the bidirectional context kernel with the local-fiber kernel and test faithful complete-morphism reconstruction before constructing source generators; the Cycle 77 canonical-preorder toggle failure remains a failed candidate, not target refutation
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 82 delta | actual equation transportが保持するforward context作用だけでなくstored inverse functorの全context-object作用も保持し、両作用が恒等となるkernel上でcontext equivalence全体を`refl`へ戻す | `finiteAxisFoldNormalizedContextBackwardEquiv`, `finiteAxisFoldNormalizedContextBackwardProjection`, `finiteAxisFoldResidualContextKernelBackwardProjection`, `FiniteAxisFoldResidualBidirectionalContextKernel`, `finiteAxisFoldResidualBidirectionalContextKernel_contextBackward_eq_id`, `finiteAxisFoldResidualBidirectionalContextKernel_contextEquivalence_eq_refl` | 固定actual normalized direct endpoint; 任意の全Autとそのinverse; Cycle 75のforward-context kernel; actual `EquationSystemExactTransport.contextEquivalence.inverse` | hom/invのstored `contextBackward`から全context置換を構成; compositionの反変性をopposite permutation groupへの群準同型として保持; そのkernelからstored inverse object functionを恒等化; Cycle 75のforward恒等性とthin homの一意性から両functorおよびunit/counitを放電 | 非skeletal preorderでforward object作用だけからequivalence全体をidentity視する誤りを防ぎ、equation observable familyとlocal kernelを含むcomplete morphism忠実性の検査へ渡す | equation-observable equivalence、三local familyの像・source generator、Cycle 76 toggleのcomplete naturality/actual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 81 delta | actual normalized endpointの全自己同型について、upperのAtom作用とは別のlower exact-doctrine `sourceMap` を全Source carrier上の作用として保持し、固定入力から恒等へ放電する | `FiniteAxisFoldResidualDoctrineSource`, `finiteAxisFoldNormalizedDoctrineSourceEquiv`, `finiteAxisFoldNormalizedDoctrineSourceProjection`, `finiteAxisFoldNormalizedDoctrineSourceEquiv_selected`, `finiteAxisFoldNormalizedDoctrineSourceEquiv_eq_refl`, `finiteAxisFoldNormalizedDoctrineSourceProjection_apply`, `finiteAxisFoldNormalizedDoctrineSourceMap_eq_id`, `finiteAxisFoldResidual_doctrineSourceMap_eq_id` | 固定actual normalized direct endpoint; 任意の全Autとそのinverse; endpointのpointed-source equation; 固定decoded Source carrier `ULift (Fin 2)` と選択点 `1` | hom/invのactual `sourceMap`から全Source置換を構成し、Karoubi自己同型の両逆式をsourceで評価; pointed-source lawで`1`を固定; 残る`0`は置換の単射性で固定; 全Autのsource projectionとsourceMapを恒等化 | lower base成分を未追跡のまま最深kernelを自明視する誤りを防ぎ、既存のupper/context/local剛性との統合とresidual source coverageへ渡す | context/local作用の像・source generator、Cycle 76 toggleのcomplete naturality/actual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 80 delta | Cycle 79の三local-fiber作用を全context同時の群準同型としてpackagingし、三作用が同時に不可視となるexact combined kernelを構成・特徴づける | `finiteAxisFoldResidualContextKernelSupportFiberProjection`, `finiteAxisFoldResidualContextKernelAxisFiberProjection`, `finiteAxisFoldResidualContextKernelObservableFiberProjection`, 三つの`_apply`, 三つの`FiberFamilyProjection`, `FiniteAxisFoldResidualLocalFiberActionFamily`, `finiteAxisFoldResidualContextKernelLocalFiberProjection`, `FiniteAxisFoldResidualLocalFiberKernel`, `finiteAxisFoldResidualLocalFiberKernel_eq`, `finiteAxisFoldResidualLocalFiberKernel_mem_iff` | 固定actual normalized endpoint; `FiniteAxisFoldNormalizedAxisSignatureContextKernel`の任意の全元; 任意の全context; Cycle 78のcomplete Sigma群作用; Cycle 79のactual fiber自己同値 | base-fixed Sigma permutationのsubgroupを構成し、各fiberへのrestrictionを群準同型化、canonical fiber equivalenceで共役; 三familyをPi群準同型と積へpackaging; combined kernelを三kernelの交わりおよび全contextで三actual作用が恒等となる条件と同値化 | 局所作用の乗法性を仮定せずactual joint actionから放電し、combined-kernel分類とsource image/generator探索へ渡す | 三familyの像・非自明元・source generatorは未構成; Cycle 76 toggleのcomplete naturality/actual survival、residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 79 delta | context-object kernelの全元について、Cycle 78のdependent Sigma作用を全contextごとのSupport・Axis・Observable fiber自己同値へ降ろし、actual local componentとの計算則とreading保存を証明する | `finiteAxisFoldResidualContextKernel_context_eq`, `finiteAxisFoldResidualContextKernelSupportEquiv`, `finiteAxisFoldResidualContextKernelSupportEquiv_apply`, `finiteAxisFoldResidualContextKernelSupportEquiv_reads`, `finiteAxisFoldResidualContextKernelAxisEquiv`, `finiteAxisFoldResidualContextKernelAxisEquiv_apply`, `finiteAxisFoldResidualContextKernelAxisEquiv_reads`, `finiteAxisFoldResidualContextKernelObservableEquiv`, `finiteAxisFoldResidualContextKernelObservableEquiv_apply`, `finiteAxisFoldResidualContextKernelObservableEquiv_reads` | 固定actual normalized endpoint; `FiniteAxisFoldNormalizedAxisSignatureContextKernel`の任意の全元; 任意の全context; Cycle 78の三complete Sigma permutation; Cycle 73のresidual Atom identity | base-fixed Sigma permutationを各fiberのsubtypeへ制限して元fiberと共役する一般構成; context-kernel等式を全contextで評価; actual local componentをその等式でcastした明示計算則; SupportではAtom identityを実使用し、三reading保存を証明 | context actionをidentityと仮定せずkernel membershipから放電した上で、残る純粋なfiberwise local actionの分類・combined kernel・source generator探索へ渡す | 三familyの乗法的packaging/combined kernel、像・source generatorは未構成; Cycle 76 toggleのcomplete naturality/actual survivalは未証明; residual全元coverage、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
@@ -8616,4 +8617,124 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Combine lower-source rigidity with the existing upper/context/local tower, then determine actual context/local images and source-owned generators without bypassing complete geometry naturality."
+```
+
+## Cycle 82 — Stored inverse-context projection and bidirectional rigidity
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 82
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: f9e176047164ccbd0cc717db9a7f7c650f8a5c8d
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 81 fixed the complete lower doctrine source map, while the residual context/local tower still retained only the forward context-object action and not the inverse functor stored inside the same equation transport"
+  proof_dag_predecessors:
+    - "Cycle 75 forward context-object projection and context kernel"
+    - "Cycles 78--80 complete dependent local actions and exact joint local kernel"
+    - "Cycle 81 lower doctrine-source rigidity"
+  proof_obligation: "Extract the actual stored inverse-functor context-object action, retain its contravariant composition law, and prove the complete context equivalence is identity exactly where both stored object actions are identity"
+  selection_reason: "The fixed context category is a genuine preorder with distinct mutually readable Extension contexts.  Therefore forward-object identity does not imply that the stored inverse functor or the equivalence record is identity; this computational component must be retained before any deepest-kernel faithfulness claim."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualContextInverseProjection.lean
+  risks:
+    - "identify the automorphism inverse's forward action with the hom equation transport's stored inverse action"
+    - "treat a preorder as skeletal and infer equality from mutual readability"
+    - "forget that stored inverse composition reverses order"
+    - "accept an inverse-context function or context-equivalence certificate as input"
+    - "call bidirectional context rigidity complete-morphism faithfulness or source coverage"
+  unchecked:
+    - "the complete context-indexed equation-observable equivalence family"
+    - "images and source generators of the three complete local-fiber actions"
+    - "Cycle 76 toggle survival through a complete naturality-respecting geometry morphism"
+    - "residual source coverage and the remaining D/B/E/F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed the complete stored contextBackward permutation of every actual normalized endpoint automorphism from the hom equation transport and the actual inverse automorphism.  Because contextBackward reverses composition, its group projection lands in the opposite permutation group.  Restricting this projection to the existing forward-context kernel and taking its kernel gives the exact bidirectional context kernel.  Kernel membership fixes the stored inverse object function.  Together with the already proved forward object identity, thinness fixes both functors on all arrows and determines the unit/counit, so the actual context equivalence equals the identity equivalence."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualContextInverseProjection.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedContextBackwardEquiv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedContextBackwardProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualContextKernelBackwardProjection
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldResidualBidirectionalContextKernel
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualBidirectionalContextKernel_contextBackward_eq_id
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualBidirectionalContextKernel_contextEquivalence_eq_refl
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldNormalizedContextBackwardEquiv
+      - finiteAxisFoldNormalizedContextBackwardProjection
+      - finiteAxisFoldResidualBidirectionalContextKernel_contextBackward_eq_id
+      - finiteAxisFoldResidualBidirectionalContextKernel_contextEquivalence_eq_refl
+    source_labels:
+      - "GOAL A/D: retain every primitive comparison component and the complete geometry action"
+      - "user conditions 1, 2, 4, and 5: keep full quantifiers, construct evidence from fixed input, and separate reconstruction obligations"
+    conjuncts:
+      - "every full normalized endpoint automorphism -> actual permutation induced by its stored context inverse functor"
+      - "composition is represented honestly in the opposite permutation group"
+      - "the bidirectional kernel fixes every forward and backward context object"
+      - "both complete context functors, all thin arrows, and the unit/counit determine the identity equivalence"
+    undischarged_assumptions:
+      - "the equation-observable equivalence family has not been identified"
+      - "the local-family images and source-owned generators are not constructed"
+      - "the Cycle 76 Extension toggle has not been lifted to an actual normalized automorphism"
+      - "residual source coverage and broader G-123 reconstruction remain open"
+    acceptance_point: "This cycle closes the stored inverse-context field and proves whole context-equivalence rigidity on the exact bidirectional kernel.  It is not local-kernel faithfulness, source coverage, or G-123 completion."
+    port_status: not-applicable
+review:
+  fixed_head: 483980b01262de9d98b16a9f6bb9a6c059941c7d
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    reviewed_delta: "f9e176047164ccbd0cc717db9a7f7c650f8a5c8d..483980b01262de9d98b16a9f6bb9a6c059941c7d"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "the stored inverse object action comes from the actual hom equation transport"
+      - "its inverse comes from the actual inverse automorphism and both inverse laws come from the automorphism equations"
+      - "contravariant composition is retained through the opposite group"
+      - "forward identity is inherited from actual membership in the Cycle 75 context kernel"
+      - "arrow maps and unit/counit equality follow from the fixed thin context category"
+    remaining:
+      - "equation-observable equivalence and local-family images/generators"
+      - "Cycle 76 actual survival and residual source coverage"
+      - "bottom/full comparison-kernel/lift recovery, general coefficient/input, and remaining B/E/F"
+  certificate_provenance:
+    discharged:
+      - "both directions of the backward permutation are projections of actual hom/inverse morphisms"
+      - "bidirectional kernel membership is derived from the actual opposite-group projection"
+      - "whole-equivalence equality is constructed from both object functions and thinness"
+    unresolved:
+      - "source generation and survival through the fixed complete construction remain open"
+  proof_use:
+    used:
+      - "inv_hom_id and hom_inv_id are evaluated at every stored backward context value"
+      - "opposite multiplication records contextBackward's reversed composition"
+      - "Cycle 75 forward context equality and the new backward kernel equality build the two Functor equalities"
+      - "Equivalence.ext consumes both functor equalities and proof-irrelevant unit/counit data"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check for FiniteAxisFoldResidualContextInverseProjection: PASS"
+    - "focused exact target build for FiniteAxisFoldResidualContextInverseProjection: PASS (4310 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 6 declarations; standard axioms only"
+    - "fresh fixed-content Math A/B and Lean A/B review: PASS; no findings"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Project and discharge the complete context-indexed equation-observable equivalence family, then combine the bidirectional context kernel with the local-fiber kernel and test faithful complete-morphism reconstruction before constructing source generators."
 ```
