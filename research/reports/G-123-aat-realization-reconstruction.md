@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 43 display-independent G-122 generated comparison objects and actual comparison arrows
+- current proof obligation: Cycle 44 fixed finite-axis-fold generated/cochain-one/canonical three-case specialization
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: connect finite displays to the generated-object category by constructing restriction of every all-component morphism without assuming extension or image membership
+- next proof obligation: construct finite displays of the fixed direct/via-base endpoints and the same actual arrows, then connect them to general all-component restriction without assuming extension or image membership
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 44 delta | 指定された同一finite axis-fold geometryでgenerated cochain、定数1 cochain、実`barAlpha`とcanonical normalization routeの三場合を保持する | `G122GeneratedGeometryObject.barAlphaIso`, `finiteAxisFoldIdentityCochainG122CellInput`, `_fixedGeometry`, `finiteAxisFold_direct_package_identityCochain`, `finiteAxisFold_viaBase_package_identityCochain`, `finiteAxisFold_generatedGeometry_barBeta`, `finiteAxisFold_barAlpha_identityCochain`, `finiteAxisFold_generatedGeometry_barD_eq_normalizationRoute`, `finiteAxisFold_identityCochain_barD_eq_id`, `finiteAxisFold_identityCochain_barBeta_eq_barAlpha`, `finiteAxisFold_generatedGeometry_barBeta_not_isIso`, `finiteAxisFoldIdentityCochainBarBetaIso` | カード指定の`finiteAxisFoldBCDatumSquare`、cell `second`、係数`Int`、同じ`finiteAxisFoldFixedCoefficientGeometryFamily`; generated cochainと`identityDefectCochain` | cochain以外がdefinitionally同じ二入力、同一direct/viaBase package、同一実5-factor `barAlpha`; generated側の実`barBeta`とcanonical normalization routeおよび新category内の非可逆性、定数1側の`barD=id`と`barBeta=barAlpha`および同category内の可逆性 | D三分類を同じCycle43 semantic category上で有限表示へ接続する固定対象 | 表示構文・decoder上の同じ三射、比較群全元・section・二核・lift fiber、一般Dへの接続 |
 | A/D Cycle 43 delta | 元southwest packageと実生成northeast direct/via-base端点をdisplay非依存の同一object型に収録し、実`barAlpha`・`barBeta`・両冪等射をその全成分Homへ接続する | `G122GeneratedGeometryObject`, `.package`, `.Hom`, `.id`, `.comp`, `.id_comp`, `.comp_id`, `.comp_assoc`, `.category`, `.barAlpha`, `.barBeta`, `.barE`, `.barD`, `.barBeta_factor`, `.barE_idem`, `.barD_idem`, `.barBeta_source_factorization`, `.barBeta_target_factorization` | 一つの任意の`G122FamilyInput`と、その下の任意の`G122CellInput`; cochainを含む元入力全量化 | original/direct/viaBaseの3 constructor、source transport/pullbackからの実package評価、任意端点間の全`GeometryTotalHom` category、実5-factor `barAlpha`、cochain-selected `barBeta`、source/target projectorsと因子化・冪等・吸収 | Dの実生成比較を将来の`R_Θ`候補へ収録し、同じ射を有限表示側で回復するためのsemantic domain | final `D_Θ,R_Θ`はC/Eを含め未構成; 有限restriction/ext/J、fullness/faithfulness、冪等分裂/retract生成、比較群・section・二核・lift fiberの表示側回復 |
 | A/B Cycle 42 delta | 表示とは独立にG-122の元southwest入力package上の全許容射を定め、その範囲を生成端点と区別する | `G122OriginalCellGeometryHom`, `G122OriginalCellGeometryHom.id`, `comp`, `ext`, `id_comp`, `comp_id`, `comp_assoc`, `g122OriginalCellGeometryCategory` | 一つの任意の`G122FamilyInput`と、その下の任意の二つ以上の`G122CellInput`; 各cellの元selected geometry/rawから構成される`geometryPackage` | 元入力package間の既存`GeometryTotalHom`全成分をそのままHomとするsubcategory、全成分による射の等号、恒等・合成・圏律 | final `R_Θ` を構成する際のoriginal-cell package部分 | generated northeastのdirect/via-base端点、実`barAlpha`/`barBeta`/冪等端点を含む独立対象型、有限restriction/ext/J、fullness/faithfulness、冪等分裂/retract生成 |
 | A Cycle 41 delta | 同一cellの元operationを恒等・合成で閉じ、値レベル評価を保つ | `G122OperationPath`, `G122OperationPath.configurationMap`, `G122OperationPathActionSyntax`, `id`, `comp`, `configurationMap`, `generatedFamilyMap`, `generatedFamilyMap_id`, `generatedFamilyMap_comp`, `generatedFamilyMap_id_comp`, `generatedFamilyMap_comp_id`, `generatedFamilyMap_comp_assoc`, `ofPrimitive`, `configurationMap_ofPrimitive`, `generatedFamilyMap_ofPrimitive` | 任意のG-122入力/cell、任意の同一cell上のsource/middle/target display、元authored-supportのendpoint-indexed `Op` | typed free path、`ConfigurationHom.id/comp`評価、全source object termの同時path action、値レベルの恒等・合成・左右単位・結合、Cycle 39 primitiveのexact readback | Aの有限operation生成規則と将来の`res/J`候補 | source equation quotient、独立な全admissible morphismとの一致・fullness、全端点operationMap、structure/quantity/geometry保存、AAT `res/ext/J` |
@@ -4483,4 +4484,87 @@ audits:
   vacuity: "direct and viaBase are inhabited for every input by source constructions, and the four named arrows are actual values; category laws alone are not used to infer representation or splitting"
   blocking_findings: []
   next_obligation: "Define finite display data sufficient to restrict every PackageTotalHom upper/base component and every GeomReadHom context-indexed component of an arbitrary G122GeneratedGeometryObject.Hom, without assuming extension or choosing only the named comparison arrows."
+```
+
+## Cycle 44 — Fixed three-case cochain specialization
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 44
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 8dd049bfb426d9d1fee6bb0c886de80a4972cd8a
+tracking_issue: 4520
+selection:
+  proof_obligation: "Specialize the Cycle 43 generated-object category to the card-mandated finite-axis-fold input and keep the generated cochain, constant-one cochain, actual barAlpha, and canonical-normalization route on exactly the same geometry"
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122OriginalInput.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+  risks:
+    - "replace the constant-one cochain case by a different geometry or cell"
+    - "replace barAlpha or barBeta by an identity or simpler comparison"
+    - "state canonical normalization without using the selected finite witness premise"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed the constant-one cochain input using the exact same finite axis-fold family, second cell, selected geometry, raw data, and coefficient ring as the generated-cochain input. Proved that direct/via-base endpoint packages and the actual five-factor barAlpha are unchanged. Identified the generated-cochain barBeta with the fixed source comparison and its barD with the transported canonical normalization route using the accepted firing/admissibility witness. Proved the constant-one barD is identity and its barBeta is exactly the same barAlpha."
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldIdentityCochainG122CellInput
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldIdentityCochainG122CellInput_fixedGeometry
+    - AAT.AG.RealizationReconstruction.finiteAxisFold_direct_package_identityCochain
+    - AAT.AG.RealizationReconstruction.finiteAxisFold_viaBase_package_identityCochain
+    - AAT.AG.RealizationReconstruction.finiteAxisFold_generatedGeometry_barBeta
+    - AAT.AG.RealizationReconstruction.finiteAxisFold_barAlpha_identityCochain
+    - AAT.AG.RealizationReconstruction.finiteAxisFold_generatedGeometry_barD_eq_normalizationRoute
+    - AAT.AG.RealizationReconstruction.finiteAxisFold_identityCochain_barD_eq_id
+    - AAT.AG.RealizationReconstruction.finiteAxisFold_identityCochain_barBeta_eq_barAlpha
+    - AAT.AG.RealizationReconstruction.G122GeneratedGeometryObject.barAlphaIso
+    - AAT.AG.RealizationReconstruction.finiteAxisFold_generatedGeometry_barBeta_not_isIso
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldIdentityCochainBarBetaIso
+  claim_mapping:
+    input_premises:
+      - "the original finiteAxisFoldBCDatumSquare, cell second, Int coefficients, and finiteAxisFoldFixedCoefficientGeometryFamily fixed by D"
+      - "initialRawDefectCochain for the firing case and identityDefectCochain, definitionally fun _ => 1, for the constant-one case"
+      - "the accepted finiteAxisFold_idempotentExchange_witnessPacket supplies the same second-cell firing inequality and canonical-normalization admissibility"
+    constructed_evidence:
+      - "two G122CellInput values differing only in cochain"
+      - "definitionally identical fixed geometry and direct/via-base endpoint packages"
+      - "the same actual barAlpha in both cases"
+      - "the actual generated-cochain barBeta and selected transported canonical normalization route"
+      - "identity target projector and beta=barAlpha for the constant-one cochain"
+      - "noninvertibility of the generated-cochain barBeta and invertibility of the constant-one barBeta inside the same generated-object category"
+    proof_use:
+      - "the generated-cochain comparison is definitionally authoredExactBarBetaAt on the fixed D input"
+      - "finiteAxisFold_idempotentExchange_witnessPacket.1 and .2.1 discharge the selector premise of authoredExactBarDAt_eq_normalization_route"
+      - "constant-one evaluation refutes the selector by rfl and uses authoredExactBarDAt_eq_id"
+      - "Cycle 43 barBeta_factor and comp_id derive beta=barAlpha without replacing either arrow"
+      - "the underlying inverse of the actual five-factor barAlpha constructs barAlphaIso in the enlarged category; a hypothetical generated-category inverse for the firing barBeta induces an ambient total inverse and then a fiber inverse, contradicting the accepted fixed witness"
+    unfinished:
+      - "the same three cases have not yet been represented by finite display syntax or decoded back to these arrows"
+      - "comparison groups, section, base/coefficient components, ambient kernel, restricted kernel, and lift fibers remain unrecovered on the display side"
+      - "the general D connection, CS translation, F examples, and all four B obligations remain open"
+  validation:
+    focused_checks: "G122OriginalInput and AATClosedFamilySignature 2/2 pass"
+    named_target_build: "ClosedPrimitiveRoleExhaustion passed (4276 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "108 declarations in G122OriginalInput, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 44 fixes the required three cochain/normalization cases on one unchanged finite-axis-fold geometry inside the Cycle 43 semantic category. It does not yet display or reconstruct those arrows, so G-123 remains unproved."
+audits:
+  premise_delta:
+    discharged:
+      - "the generated and constant-one cases use the same fixed family, second cell, coefficient ring, selected geometry, and raw data"
+      - "the generated case uses the actual barBeta and selected canonical normalization route"
+      - "the constant-one case has barD equal to identity and barBeta equal to the unchanged actual barAlpha"
+      - "the firing and constant-one barBeta values are respectively noninvertible and invertible in the same generated-object category"
+    remaining:
+      - "finite syntax and decoder representation for all three fixed cases"
+      - "comparison-group-wide recovery and general res/ext/J"
+  certificate_provenance: "the only firing/admissibility evidence is reused from the accepted fixed finite witness and is applied to the source-generated projector theorem; no comparison or representation certificate is accepted by a new structure"
+  structure_field_escape: "the constant-one input changes only the existing cochain field; endpoints, projectors, and comparisons remain evaluated outputs"
+  route_integrity: "all equalities use the exact fixed finite-axis-fold source declarations, the selected normalization route is obtained with the actual witness packet, and the IsIso classification uses the same source-generated arrows and inverse"
+  target_fitting: "the same family/cell/geometry/Int input is retained across generated-cochain, constant-one, and actual barAlpha/canonical-normalization cases"
+  vacuity: "the generated case uses a proved nonidentity cochain value plus admissibility, while the constant-one case derives the opposite selector branch by direct evaluation"
+  blocking_findings: []
+  next_obligation: "Construct finite displays for the fixed direct/via-base endpoints and finite arrow syntax evaluating to the same actual barAlpha, generated-cochain barBeta, and constant-one barBeta, then relate that restriction to arbitrary all-component Hom values without adding extension certificates."
 ```
