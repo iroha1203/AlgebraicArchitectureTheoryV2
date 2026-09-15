@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 47 finite source probes for the lower doctrine maps and outer exact-core map fields of arbitrary generated-object morphisms
+- current proof obligation: Cycle 48 finite source probes for equation-transport context and observable maps of arbitrary generated-object morphisms
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: restrict the context and observable equivalence maps inside `EquationSystemExactTransport`, then test separation and coverage from fixed source generators without assuming extension or image membership
+- next proof obligation: combine Cycles 46--48 into one total restriction interface and determine whether fixed source generators provide finite separation without accepting full-domain maps or extension certificates
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/B/D Cycle 48 delta | `EquationSystemExactTransport`のforward/inverse context functorとobservable equivalenceを有限source/target点へ制限し、context arrowの両端依存を保持する | `G122FiniteEquationTransportProbe`, `forwardContextRestriction`, `forwardArrowRestriction`, `backwardContextRestriction`, `backwardArrowRestriction`, `observableRestriction`, 五つのidentity law、五つのcomposition law | 任意の一つの`G122FamilyInput`、任意のgenerated source/target object、任意の全`GeometryTotalHom`; 各packageのcontext、両端index付きreadable arrow、context依存observable値の有限族 | 実context equivalenceのforward/inverse object/arrow評価、実observable ring equivalence評価、identityとforward/observable・inverse逆順composition | Cycle 47 equation-index restrictionを内部equation transportのmap評価へ拡張し、将来のtotal `res`へ統合 | equivalence unit/counitの有限扱い、全域分離/coverage、total res/ext/J、延長・一意性、endpoint表示、四再構成義務、D全体、CS/F |
 | A/B/D Cycle 47 delta | 任意の全成分`GeometryTotalHom`を保持したまま、lower doctrineとupper exact-coreの外側map fieldをsource側有限点へ制限する | `G122FiniteCoreProbe`, `sourceRestriction`, `lowerAtomRestriction`, `upperAtomRestriction`, `objectRestriction`, `equationRestriction`, `operationRestriction`, `invariantRestriction`, `axisRestriction`, `coordinateRestriction`, `lowerAtomRestriction_eq_upperAtomRestriction`, 九つのrestriction composition law | 任意の一つの`G122FamilyInput`、任意のgenerated source/target object、任意の全`GeometryTotalHom`; source値・Atom・object・equation index・endpoint付きoperation・invariant index・axis・coordinateの有限族 | lower/upperの各実map field評価、実`atomEquiv_eq`による二Atom restriction一致、実合成に沿うpointwise restriction | 将来の`res`候補のcore外層とCycle 46 geometry restrictionの統合 | `EquationSystemExactTransport`内部のcontext/observable equivalence restriction、有限probe分離/coverage、ext/J・延長・一意性、endpoint表示、四再構成義務、D全体、CS/F |
 | A/B/D Cycle 46 delta | 任意の全成分`GeometryTotalHom`を保持したまま、その`GeomReadHom.ext`が使う四map fieldをsource側有限点へ制限し、固定D比較へ接続する | `G122FiniteGeometryProbe`, `singleLocal`, `coefficientRestriction`, `supportRestriction`, `axisRestriction`, `observableRestriction`, 四つの`_comp`, `hom_ne_of_coefficientRestriction_ne`, `FiniteAxisFoldGeometryProbe`, 四つの`finiteAxisFold*Restriction`, 四つのconstant-one/`barAlpha` restriction一致定理 | 任意の一つの`G122FamilyInput`、任意のgenerated source/target object、任意の全`GeometryTotalHom`; probeはsource係数値・context・そのsupport/axis/observable値のみ | 各有限indexで実`GeomReadHom`成分を評価するrestriction、合成時のpointwise評価則、係数restriction差から元Hom差へのsoundness、固定三比較case evaluatorへの同じrestriction適用 | 将来の`res`候補の幾何層と、固定D比較の有限観測 | `PackageTotalHom`の全計算成分restriction、有限probeの分離/coverage、ext/J、有限延長・一意性、endpoint表示、四再構成義務、D比較群全体、CS/F |
 | D Cycle 45 delta | 固定finite axis-foldの実`barAlpha`、generated `barBeta`、定数1 `barBeta`を有限なケース型で索引し、三者の意味的な一致・相違を正確に分類する | `FiniteAxisFoldComparisonCode`, `.evaluate`, `evaluate_barAlpha`, `evaluate_generatedBarBeta`, `evaluate_identityBarBeta`, `generatedBarBeta_ne_barAlpha`, `evaluate_identityBarBeta_eq_barAlpha`, `evaluate_eq_barAlpha_iff`, `evaluate_eq_generatedBarBeta_iff`, `evaluate_not_injective` | Cycle 44で同じfamily/cell/selected geometry/raw dataを保ち、generated cochainと定数1 cochainだけを異ならせた二入力上の三比較と可逆・非可逆分類 | 三constructor有限case index、実射への評価、generated比較と`barAlpha`の相違、定数1比較と`barAlpha`の一致、二つのexact case-index fiber、由来ラベルのsyntactic aliasing | 今後の本物の有限recipe/displayが保持すべき固定D三分類の回帰点 | 三射のsource-provenanced有限recipe、任意Homの有限restriction、endpoint object表示、一般decoderのext/J、比較群全元・section・二核・lift fiber、一般D/B/E/F |
@@ -4823,4 +4824,88 @@ audits:
   vacuity: "probe cards may be zero and no separation conclusion is drawn; nonempty source coverage and its construction from fixed G-123 input remain explicit future obligations"
   blocking_findings: []
   next_obligation: "Construct finite source restrictions of EquationSystemExactTransport context-object/context-arrow and observable-equivalence maps, retaining their dependent typing, then combine Cycles 46--48 into a total restriction surface and test which source-generated coverage conditions are provable."
+```
+
+## Cycle 48 — Finite equation-transport context and observable probes
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 48
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 31ee1ebdd77b1030cefe18e21d576265a755229f
+tracking_issue: 4520
+selection:
+  proof_obligation: "Restrict the forward and inverse context functors and the context-indexed observable equivalence inside the actual EquationSystemExactTransport, retaining readable-arrow endpoints and arbitrary Hom quantification"
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122FiniteEquationTransportProbe.lean
+  risks:
+    - "store a target context image or completed category equivalence in the probe"
+    - "sample context objects while dropping the readable-arrow map"
+    - "treat forward observable samples as reconstruction of the full ring equivalence family"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Added a finite per-package probe of source contexts, exact-endpoint readable arrows, and context-dependent observable values. For every arbitrary generated-object GeometryTotalHom, evaluated the actual equation transport's forward context object/arrow maps and observable equivalences on a source probe, and its inverse context object/arrow maps on an independently supplied target-package probe. Proved all five identity and composition evaluations, with inverse composition in the correct reverse order."
+  evidence:
+    - AAT.AG.RealizationReconstruction.G122FiniteEquationTransportProbe
+    - AAT.AG.RealizationReconstruction.G122FiniteEquationTransportProbe.forwardContextRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteEquationTransportProbe.forwardArrowRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteEquationTransportProbe.backwardContextRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteEquationTransportProbe.backwardArrowRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteEquationTransportProbe.observableRestriction
+    - AAT.AG.RealizationReconstruction.G122FiniteEquationTransportProbe.forwardContextRestriction_id
+    - AAT.AG.RealizationReconstruction.G122FiniteEquationTransportProbe.forwardArrowRestriction_id
+    - AAT.AG.RealizationReconstruction.G122FiniteEquationTransportProbe.backwardContextRestriction_id
+    - AAT.AG.RealizationReconstruction.G122FiniteEquationTransportProbe.backwardArrowRestriction_id
+    - AAT.AG.RealizationReconstruction.G122FiniteEquationTransportProbe.observableRestriction_id
+    - AAT.AG.RealizationReconstruction.G122FiniteEquationTransportProbe.forwardContextRestriction_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteEquationTransportProbe.forwardArrowRestriction_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteEquationTransportProbe.backwardContextRestriction_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteEquationTransportProbe.backwardArrowRestriction_comp
+    - AAT.AG.RealizationReconstruction.G122FiniteEquationTransportProbe.observableRestriction_comp
+  claim_mapping:
+    input_premises:
+      - "one arbitrary G122FamilyInput, arbitrary generated source/target objects, and every existing GeometryTotalHom"
+      - "a finite source-package probe for forward context/observable evaluation and an independently chosen finite target-package probe for inverse-context evaluation"
+      - "each readable arrow retains source and target indices into its package's selected context family"
+    constructed_evidence:
+      - "forward context-object and context-arrow images under the actual context equivalence functor"
+      - "inverse context-object and context-arrow images under the actual inverse functor"
+      - "forward images of selected observable values under the actual context-indexed RingEquiv"
+      - "identity laws and pointwise composition laws, with inverse maps composed second-then-first"
+    proof_use:
+      - "all restrictions call fields of f.base.upper.equationTransport directly"
+      - "forward and observable composition unfold EquationSystemExactTransport.comp in forward order"
+      - "backward composition unfolds the inverse functor of the composed equivalence in reverse order"
+    unfinished:
+      - "the complete CategoryTheory.Equivalence value, including unit/counit data, is not reconstructed"
+      - "the forward function samples do not establish equality of the whole context-indexed RingEquiv family"
+      - "no finite source coverage or separation theorem is proved"
+      - "Cycles 46--48 are not yet assembled into a total res type or connected to ext/J, extension, or uniqueness"
+      - "all four reconstruction obligations, D group/kernel/fiber recovery, CS translations, and F remain open"
+  validation:
+    focused_checks: "G122FiniteEquationTransportProbe passes"
+    named_target_build: "G122FiniteEquationTransportProbe passed (4262 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "35 declarations in G122FiniteEquationTransportProbe, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 48 extends the noncircular restriction surface through both context-functor directions and the observable map while retaining dependent arrow/context typing. It is finite evaluation data only, not finite separation or reconstruction, so G-123 remains unproved."
+audits:
+  premise_delta:
+    discharged:
+      - "finite restriction of forward and inverse context object/arrow maps"
+      - "finite restriction of forward observable-equivalence functions"
+      - "identity and composition evaluation laws for all five restrictions"
+    remaining:
+      - "unit/counit handling and full equation-transport equality from finite data"
+      - "source-derived finite coverage sufficient for total-Hom equality"
+      - "total res/ext/J, extension, uniqueness, and remaining A--F obligations"
+  certificate_provenance: "the per-package probe stores only contexts, source-typed readable arrows, and source observables; no morphism, target image, functor, equivalence, inverse observable, unit/counit, or reconstruction certificate is a field"
+  structure_field_escape: none-found
+  route_integrity: "forward restrictions use a source-package probe, inverse restrictions use an independent target-package probe, and all outputs are evaluated from the same arbitrary semantic morphism"
+  target_fitting: "these are missing equation-transport components of a future total res interface, not an extensionality or reconstruction theorem"
+  vacuity: "probe cards may be zero and no coverage conclusion follows; nonempty finite generators and separation remain explicit future obligations"
+  blocking_findings: []
+  next_obligation: "Bundle the Cycle 46 geometry, Cycle 47 outer-core, and Cycle 48 equation-transport probe choices without bundling target images; define a coherent total restriction interface and identify the exact source-generated coverage predicates needed for full GeometryTotalHom extensionality."
 ```
