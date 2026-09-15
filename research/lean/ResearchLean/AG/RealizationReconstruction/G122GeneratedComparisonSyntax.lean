@@ -7,13 +7,13 @@ import Formal.Util.AssertStandardAxioms
 The exhaustive point-probe route stops at infinite primitive carriers.  This
 module starts the parameter-relative alternative on the comparison fragment
 that G-123(D) must retain.  A typed finite term may use identities,
-composition, and the four comparison operations that are constructed from an
-original `G122CellInput`: the five-factor comparison, the cochain-selected
-comparison, and its source and target projectors.
+composition, and five source-constructed comparison leaves from an original
+`G122CellInput`: the five-factor comparison and its inverse, the
+cochain-selected comparison, and its source and target projectors.
 
 No constructor accepts a completed `GeometryTotalHom`.  Evaluation invokes
 the existing mathematical constructions only after the original family and
-cell inputs are supplied.  The source-derived factorization, idempotence, and
+cell inputs are supplied.  The inverse, factorization, idempotence, and
 absorption laws are then proved for the evaluated terms.
 
 ## Implementation notes
@@ -29,8 +29,9 @@ namespace AAT.AG.RealizationReconstruction
 
 universe u v
 
-/-- Finite typed expressions generated from the four canonical comparisons
-constructed from original G-122 family/cell input data. -/
+/-- Finite typed expressions generated from the canonical comparisons,
+projectors, and source-constructed inverse of `barAlpha` from original G-122
+family/cell input data. -/
 inductive G122GeneratedComparisonSyntax (Θ : G122FamilyInput.{u, v}) :
     G122GeneratedGeometryObject Θ → G122GeneratedGeometryObject Θ →
       Type (max (u + 2) (v + 1))
@@ -42,6 +43,8 @@ inductive G122GeneratedComparisonSyntax (Θ : G122FamilyInput.{u, v}) :
       G122GeneratedComparisonSyntax Θ X Z
   | barAlpha (input : G122CellInput Θ) :
       G122GeneratedComparisonSyntax Θ (.direct input) (.viaBase input)
+  | barAlphaInv (input : G122CellInput Θ) :
+      G122GeneratedComparisonSyntax Θ (.viaBase input) (.direct input)
   | barBeta (input : G122CellInput Θ) :
       G122GeneratedComparisonSyntax Θ (.direct input) (.viaBase input)
   | barE (input : G122CellInput Θ) :
@@ -61,6 +64,8 @@ noncomputable def evaluate {Θ : G122FamilyInput.{u, v}}
   | .compose first second =>
       G122GeneratedGeometryObject.comp Θ first.evaluate second.evaluate
   | .barAlpha input => G122GeneratedGeometryObject.barAlpha Θ input
+  | .barAlphaInv input =>
+      (G122GeneratedGeometryObject.barAlphaIso Θ input).inv
   | .barBeta input => G122GeneratedGeometryObject.barBeta Θ input
   | .barE input => G122GeneratedGeometryObject.barE Θ input
   | .barD input => G122GeneratedGeometryObject.barD Θ input
@@ -72,6 +77,7 @@ def size {Θ : G122FamilyInput.{u, v}}
   | .identity _ => 1
   | .compose first second => first.size + second.size + 1
   | .barAlpha _ => 1
+  | .barAlphaInv _ => 1
   | .barBeta _ => 1
   | .barE _ => 1
   | .barD _ => 1
@@ -86,6 +92,7 @@ theorem size_pos {Θ : G122FamilyInput.{u, v}}
       simp only [size]
       omega
   | barAlpha => simp [size]
+  | barAlphaInv => simp [size]
   | barBeta => simp [size]
   | barE => simp [size]
   | barD => simp [size]
@@ -112,6 +119,30 @@ comparison constructed from the original input. -/
     evaluate (.barAlpha input) =
       G122GeneratedGeometryObject.barAlpha Θ input :=
   rfl
+
+/-- Evaluation sends the inverse-comparison leaf to the inverse constructed
+from the original G-122 input. -/
+@[simp] theorem evaluate_barAlphaInv {Θ : G122FamilyInput.{u, v}}
+    (input : G122CellInput Θ) :
+    evaluate (.barAlphaInv input) =
+      (G122GeneratedGeometryObject.barAlphaIso Θ input).inv :=
+  rfl
+
+/-- The evaluated five-factor comparison followed by its source-constructed
+inverse is the actual identity. -/
+theorem evaluate_barAlpha_barAlphaInv {Θ : G122FamilyInput.{u, v}}
+    (input : G122CellInput Θ) :
+    evaluate (.compose (.barAlpha input) (.barAlphaInv input)) =
+      evaluate (.identity (.direct input)) :=
+  (G122GeneratedGeometryObject.barAlphaIso Θ input).hom_inv_id
+
+/-- The evaluated source-constructed inverse followed by the five-factor
+comparison is the actual identity. -/
+theorem evaluate_barAlphaInv_barAlpha {Θ : G122FamilyInput.{u, v}}
+    (input : G122CellInput Θ) :
+    evaluate (.compose (.barAlphaInv input) (.barAlpha input)) =
+      evaluate (.identity (.viaBase input)) :=
+  (G122GeneratedGeometryObject.barAlphaIso Θ input).inv_hom_id
 
 /-- Evaluation sends the `barBeta` leaf to the actual cochain-selected
 comparison constructed from the original input. -/
