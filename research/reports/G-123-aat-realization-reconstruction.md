@@ -13,16 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 31 typed structure-map and selected-quantity actions at listed G-122 object generators
+- current proof obligation: Cycle 31 candidate failure — finite outer indexing does not make arbitrary reading-carrier functions finite syntax
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: derive the listed reading actions from actual finite syntax and connect display/action data to the presentation construction without storing a semantic realization in its objects
+- next proof obligation: define source-provenanced finite reading codes and evaluation, or an intrinsic preservation language, without storing total carrier functions or a semantic realization in presentation objects
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`/`PrimitiveSupport`/`PrimitiveGeometryAxis`/`PrimitiveObservable`/`PrimitiveContextRestriction`/`PrimitiveRawRestriction`/`PrimitiveCoefficientRing`/`PrimitiveCoverageRequirements`/`PrimitiveCoverageFact`/`PrimitiveOverlapSelection`とG-122のsignature/equation/invariant/raw各role; `PrimitiveAtom.g122Value`; `PrimitiveObject.taggedValue`/`g122Value`とconfiguration/structure/selected-quantity各評価; `G122ObjectGeneratorReadingAction`とその`ext`/`id`/`comp`/圏律; `G122FiniteObjectGeneratorDisplay`, `G122FiniteObjectGeneratorAction`, `Maps`, `AtomMaps`, `maps_entry`, `atom_maps_entry`, `ext`, `id`, `comp`, `id_comp`, `comp_id`, `comp_assoc`; `PrimitiveContextRestriction.g122Value`, `g122Morphism`, `g122Morphism_isRestriction`; `PrimitiveRawRestriction.g122Value`, `g122Value_maps_JStruct`, `g122Value_identity_polynomialMap`, `g122Value_composition_polynomialMap`; `PrimitiveCoefficientRing.g122Carrier`, `g122CommRing`; `PrimitiveCoverageFact.g122Statement`, `g122Proof`; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `ClosedPrimitiveReference`, `closedTaggedPrimitiveReferenceEquiv`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective`; `TaggedPrimitivePresentedMonoid`, `TaggedPrimitiveRelationPresentation`, `taggedPrimitiveRelationEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体; Cycle 16ではそのfinite word間の任意の生成関係; Cycle 26では元selected geometryの9 predicateに対するexact typed argumentsとaccepted source proof; Cycle 28–29では同じG-122 parameter下の二実現、各displayが所有する有限Atom/object table、そのsource indexからtarget table indexへの写像とfinite index上のfamily/relation/identification整合式; Cycle 30では同じparameter下の任意の合成可能な3–4実現/display列と各arrowの同じ有限index action; Cycle 31では各listed object occurrenceの元ArchitectureObjectが所有するStructureMaps/SelectedQuantities carrier、それぞれのtyped mapと選択値保存式 | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; tagged/G-122のexact object primitiveから同じArchitectureObjectとそのconfiguration・structureMaps・selectedQuantitiesを重複入力なしで評価; G-122二実現のdisplay-owned有限Atom/object generator table間のtotal index action、finite index上だけのconfiguration predicate整合、有限index mapの恒等・合成と圏律、各listed objectのstructure/quantity carrier map・選択値保存式とその恒等・合成・圏律（semantic全域Atom/object map・`ConfigurationHom`・延長・完全性なし）; 原supportの各operation identityとconfiguration作用の端点付き評価; authored support coreのcontext preorder（`selectedGeometry.toAATSite`経由で型付け）の任意homから両端付きcontext restrictionと元入力の全readability lawを回復; 同じrestrictionをindexとして元`raw.restrictionStable`値・`maps_JStruct`・恒等/合成polynomial map式を回復; 元G-122 familyの係数carrierとCommRing構造をnullary roleから回復; coverageの9 predicateについてexact argumentを保持したsource occurrenceを明示し格納済みproofを同一命題として読み戻す; 現行closed signatureの全21 roleの依存sumとtagged branchで4 roleが全体である同値; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; 全finite wordのfree monoidと、その任意の生成関係によるactual presented-monoid quotient category | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | listed reading actionをactual syntax由来として構成、semantic realizationをobjectに格納せずdisplay table/actionを実presentation構成へ接続、全域structure/quantity actionとAtom/object actionと`ConfigurationHom`のext構成、CS object-formationのAAT評価、cross-realization coverage/overlap保存式・map-side reading・係数map/transport roleの追加とtagged inhabitant判定、coverage source premiseのmap-side実使用、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
+| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`/`PrimitiveSupport`/`PrimitiveGeometryAxis`/`PrimitiveObservable`/`PrimitiveContextRestriction`/`PrimitiveRawRestriction`/`PrimitiveCoefficientRing`/`PrimitiveCoverageRequirements`/`PrimitiveCoverageFact`/`PrimitiveOverlapSelection`とG-122のsignature/equation/invariant/raw各role; `PrimitiveAtom.g122Value`; `PrimitiveObject.taggedValue`/`g122Value`とconfiguration/structure/selected-quantity各評価; `G122FiniteObjectGeneratorDisplay`, `G122FiniteObjectGeneratorAction`, `Maps`, `AtomMaps`, `maps_entry`, `atom_maps_entry`, `ext`, `id`, `comp`, `id_comp`, `comp_id`, `comp_assoc`; `PrimitiveContextRestriction.g122Value`, `g122Morphism`, `g122Morphism_isRestriction`; `PrimitiveRawRestriction.g122Value`, `g122Value_maps_JStruct`, `g122Value_identity_polynomialMap`, `g122Value_composition_polynomialMap`; `PrimitiveCoefficientRing.g122Carrier`, `g122CommRing`; `PrimitiveCoverageFact.g122Statement`, `g122Proof`; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `ClosedPrimitiveReference`, `closedTaggedPrimitiveReferenceEquiv`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective`; `TaggedPrimitivePresentedMonoid`, `TaggedPrimitiveRelationPresentation`, `taggedPrimitiveRelationEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体; Cycle 16ではそのfinite word間の任意の生成関係; Cycle 26では元selected geometryの9 predicateに対するexact typed argumentsとaccepted source proof; Cycle 28–29では同じG-122 parameter下の二実現、各displayが所有する有限Atom/object table、そのsource indexからtarget table indexへの写像とfinite index上のfamily/relation/identification整合式; Cycle 30では同じparameter下の任意の合成可能な3–4実現/display列と各arrowの同じ有限index action | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; tagged/G-122のexact object primitiveから同じArchitectureObjectとそのconfiguration・structureMaps・selectedQuantitiesを重複入力なしで評価; G-122二実現のdisplay-owned有限Atom/object generator table間のtotal index action、finite index上だけのconfiguration predicate整合、有限index mapの恒等・合成と圏律（semantic全域Atom/object map・`ConfigurationHom`・延長・完全性なし）; 原supportの各operation identityとconfiguration作用の端点付き評価; authored support coreのcontext preorder（`selectedGeometry.toAATSite`経由で型付け）の任意homから両端付きcontext restrictionと元入力の全readability lawを回復; 同じrestrictionをindexとして元`raw.restrictionStable`値・`maps_JStruct`・恒等/合成polynomial map式を回復; 元G-122 familyの係数carrierとCommRing構造をnullary roleから回復; coverageの9 predicateについてexact argumentを保持したsource occurrenceを明示し格納済みproofを同一命題として読み戻す; 現行closed signatureの全21 roleの依存sumとtagged branchで4 roleが全体である同値; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; 全finite wordのfree monoidと、その任意の生成関係によるactual presented-monoid quotient category | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | display table/actionを実presentation categoryへ統合、structure/quantity整合、全域Atom/object actionと`ConfigurationHom`のext構成、CS object-formationのAAT評価、cross-realization coverage/overlap保存式・map-side reading・係数map/transport roleの追加とtagged inhabitant判定、coverage source premiseのmap-side実使用、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full`; `retractEndomorphismMap_surjective_of_full`, `exists_retractEndomorphismMap_surjective`; `not_full_and_retractGenerated_of_listObjectGeneratedEndomorphisms`; `not_full_and_retractGenerated_of_endomorphismEmbedding` | 各具体入力条件のみ; 一般transferでは明示的な`F.Full`; combined no-goでは各presentation自己射が有限primitive listの全射像またはそこへの単射を持つこと | 任意の完成射を制限して有限tableを構成; retract上の任意自己射を`r ≫ h ≫ i`のfullness preimageから持ち上げる; injective endomorphism serializationの`invFun`からlist decoder全射を構成; mandatory対象の非全射と合成 | 各direct equivalence; mandatory-C obstructionを任意のmultiobject presentation categoryへ移す categorical/cardinal bridge | final `R_Theta` decoderの充満性を固定入力から放電し、actual endpoint-typed syntaxの各自己射embeddingと接続すること |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
@@ -3463,7 +3463,7 @@ audits:
   next_obligation: "Add source-derived structure/quantity reading equations and integrate finite displays/actions into the actual presentation category."
 ```
 
-## Cycle 31 — Typed reading actions at listed object generators
+## Cycle 31 — Rejected arbitrary reading-function payloads
 
 ```yaml
 ledger_type: target_cycle_result
@@ -3473,65 +3473,64 @@ goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
 base_oid: 09837c0d21ba8c1f9c2e6cd1c1d8ded717db86ab
 tracking_issue: 4520
 selection:
-  proof_obligation: "Add typed maps on structure-map and selected-quantity reading carriers for every listed object generator, require preservation of the exact selected values, and extend finite-action identity/composition laws to this data"
-  selection_reason: "A requires structure and quantity readings and their morphism equations. These components must be attached to finite listed occurrences before any semantic object-family extension, while keeping their arbitrary source carrier types and selected values."
-  expected_result_type: target-proof-checkpoint
-  lean_targets:
-    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+  proof_obligation: "Test whether a finite object-indexed family of total StructureMaps/SelectedQuantities carrier functions with selected-value equations is valid parameter-relative finite generator data"
+  selection_reason: "A requires structure and quantity readings, but the fixed target forbids repackaging completed map families as finite constants. The candidate had to be checked before becoming part of C_Theta."
+  expected_result_type: proof-checkpoint
   risks:
-    - "replace arbitrary reading carriers by a finite or trivial type"
-    - "accept one completed map over every semantic object rather than one component per listed occurrence"
-    - "treat selected-value preservation as table completeness or semantic extension"
+    - "mistake a finite outer Fin index for finite information content"
+    - "constrain functions only at the selected value while retaining arbitrary off-selected information"
+    - "call unproven raw payloads candidate C_Theta syntax"
 result:
-  proposed_result_type: target-proof-checkpoint
+  proposed_result_type: proof-checkpoint
   completion_candidate: no
-  proof_obligation_delta: "Introduced a typed reading action for one listed object occurrence with maps on its exact StructureMaps and SelectedQuantities carriers and equations at their exact selected values. Added extensionality, identity, composition, and category laws, then made every finite object-generator action carry one such component at each source object-table index."
+  proof_obligation_delta: "The proposed G122ObjectGeneratorReadingAction and its integration into G122FiniteObjectGeneratorAction were rejected and removed. Each entry stored unrestricted total functions on potentially infinite reading carriers; no Sigma/Theta provenance, finite code, generation rule, information-size account, or evaluator derived those functions. A selected-value equation constrained only one input and did not determine the retained off-selected behavior."
+  lean_artifacts: []
   evidence:
-    - AAT.AG.RealizationReconstruction.G122ObjectGeneratorReadingAction
-    - AAT.AG.RealizationReconstruction.G122ObjectGeneratorReadingAction.ext
-    - AAT.AG.RealizationReconstruction.G122ObjectGeneratorReadingAction.id
-    - AAT.AG.RealizationReconstruction.G122ObjectGeneratorReadingAction.comp
-    - AAT.AG.RealizationReconstruction.G122ObjectGeneratorReadingAction.id_comp
-    - AAT.AG.RealizationReconstruction.G122ObjectGeneratorReadingAction.comp_id
-    - AAT.AG.RealizationReconstruction.G122ObjectGeneratorReadingAction.comp_assoc
-    - AAT.AG.RealizationReconstruction.G122FiniteObjectGeneratorAction.readingAction
+    - "four-lane review of rejected head 1aed42514dd23c7f99143d8b297ac753b56c06da"
   claim_mapping:
     input_premises:
-      - "the exact source and target ArchitectureObject reading carrier types and selected values already owned by each listed primitive-object occurrence"
-      - "one typed carrier map and selected-value equation for each of the two readings at each finite source object index"
-    constructed_evidence:
-      - "identity maps preserving both exact selected values"
-      - "composite reading maps whose selected-value equations are proved by successive use of the two input equations"
-      - "left/right unit and right-associated composition laws for both reading maps"
-      - "extended finite generator-action composition routing reading data through the same mapped middle object index"
-    proof_use:
-      - "G122ObjectGeneratorReadingAction.comp rewrites first and second selected-value equations for both carriers"
-      - "G122FiniteObjectGeneratorAction.comp uses first.readingAction i followed by second.readingAction (first.objectIndexMap i)"
-      - "finite action extensionality now requires heterogeneous equality of the reading-action family in addition to its two index maps"
+      - "arbitrary StructureMaps and SelectedQuantities carrier types and their selected values, owned by each original ArchitectureObject"
+    rejected_candidate:
+      - "one unrestricted total function on each reading carrier for every finite object-table index"
+      - "one equality only at the selected source value for each function"
+    obstacle:
+      - "finite outer indexing does not make the arbitrary function payloads finite syntax"
+      - "the single selected-value equation permits constant-to-target maps and leaves all off-selected information unconstrained"
+      - "function extensionality would make those unconstrained values observable in action equality, threatening future res/ext/J faithfulness"
     unfinished:
-      - "the listed reading maps are finite morphism data; their derivation from the eventual syntax and their extension to every semantic object are not constructed"
-      - "the presentation object syntax and decoder are not constructed, and no semantic realization is permitted as stored presentation-object data"
-      - "no table completeness, semantic Atom/object/structure/quantity map family, ConfigurationHom, res, or ext is constructed"
-      - "operation/Law/geometry actions and remaining A--F obligations remain open"
+      - "a source-provenanced finite reading code or intrinsic preservation language and its evaluator"
+      - "proof that eventual syntax determines exactly the semantic reading component without extra choices"
+      - "all presentation, semantic extension, and remaining A--F obligations"
   validation:
-    focused_checks: "AATClosedFamilySignature and ClosedPrimitiveRoleExhaustion 2/2 pass"
-    named_target_build: "ClosedPrimitiveRoleExhaustion passed (4276 registered jobs; not Research aggregate build)"
-    namespace_axiom_audit: "648 and 140 declarations, standard axioms only"
+    rejected_head_focused_check: "AATClosedFamilySignature passed; 648 declarations, standard axioms only"
+    rejected_head_named_target: "ClosedPrimitiveRoleExhaustion passed (4276 registered jobs; not Research aggregate build)"
+    accepted_delta: "report-only candidate-failure record; rejected Lean declarations removed"
     research_full_build: not-run
-  verdict: "Cycle 31 preserves the exact arbitrary reading carriers and selected values at finite listed object occurrences and makes their local action compositional. It does not extend those maps to the semantic object family and does not discharge G-123."
+  verdict: "Cycle 31 rejects this candidate finite encoding. The fixed G-123 target is not refuted: other source-provenanced syntaxes or intrinsic preservation languages remain to be constructed and tested."
+candidate_failure_record:
+  candidate: "Finite object-indexed unrestricted total reading-carrier functions plus selected-value equations"
+  obstacle: "The payload retains arbitrary information over potentially infinite carriers, and preservation at one selected point neither supplies a finite representation nor a substantive whole-reading preservation law."
+  tried_construction: "Typed StructureMaps and SelectedQuantities functions were attached at each displayed object index; identity/composition were locally valid, but four-lane review found the information-content and provenance defect before merge."
+  forbidden_shortcuts:
+    - "rename the same total functions as codes or references without an independent syntax and evaluator"
+    - "define admissible semantic morphisms as precisely those already represented by the proposed payload"
+    - "use constant-to-target functions to claim preservation of the full reading"
+  status: "candidate encoding rejected; fixed target not refuted"
+  paper_conclusion_at_risk: "Retaining arbitrary completed reading functions as finite data would make the claimed reconstruction circular and erase the information-recovery contribution."
 audits:
   premise_delta:
     discharged: []
     remaining:
-      - "derive finite listed reading actions from actual syntax and prove congruence"
-      - "construct the presentation and semantic categories without storing decoded realizations in presentation objects"
-      - "derive semantic-total maps from fixed syntax and prove res/ext"
+      - "construct a non-circular finite reading syntax and its source provenance"
+      - "prove the actual preservation equations and future res/ext/J determination"
       - "all remaining A--F obligations"
-  certificate_provenance: "the carrier maps and their equations are explicitly identified as finite C-style generator data; identity and composition proofs are constructed, while syntax origin and semantic extension remain obligations"
-  structure_field_escape: "there is no map quantified over every PrimitiveObject or ArchitectureObject, no completed core/geometry morphism, and no extension/completeness field; the family is indexed only by the finite source object table"
-  route_integrity: "each reading action is typed by the exact source table entry and the exact target entry selected by objectIndexMap; composition uses the corresponding mapped middle entry"
-  target_fitting: "this supplies the structure/quantity portion of candidate C_Theta finite generator data while preserving the separation from semantic R_Theta morphisms and final P_Theta syntax"
-  vacuity: "an empty object table carries no reading actions and proves no semantic coverage; completeness remains an explicit later theorem"
-  blocking_findings: []
-  next_obligation: "Derive the finite reading actions from actual syntax and connect display/action data to the presentation construction without storing a semantic realization in presentation objects."
+  certificate_provenance: "the rejected total functions had no acceptable source provenance or evaluator; none remains in the accepted Lean surface"
+  structure_field_escape: "rejected and removed before merge"
+  route_integrity: "candidate failure only; no target-level impossibility is claimed"
+  target_fitting: "the rejection enforces anti-weakening clause 3 and preserves the requirement to recover reading maps rather than accept them as opaque payloads"
+  vacuity: "constant-to-target inhabitants demonstrate why selected-value equality alone is too weak"
+  blocking_findings:
+    - "FIXED by removal: unrestricted total reading-carrier functions were not finite syntax"
+    - "FIXED by report correction: the rejected payload is not counted as candidate C_Theta evidence"
+  next_obligation: "Define source-provenanced finite reading codes and evaluation, or an intrinsic preservation language, without storing total carrier functions or a semantic realization in presentation objects."
 ```

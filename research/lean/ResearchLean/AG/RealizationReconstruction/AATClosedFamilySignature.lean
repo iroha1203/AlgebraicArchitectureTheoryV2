@@ -277,104 +277,6 @@ def g122SelectedQuantities
 
 end PrimitiveObject
 
-/-- A finite-generator component mapping the two abstract reading carriers of
-one listed G-122 architecture object to those of its listed target.  These are
-maps for one object occurrence, not an object map on the semantic family. -/
-structure G122ObjectGeneratorReadingAction
-    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
-    (source : PrimitiveObject (.g122 input) (.g122 X))
-    (target : PrimitiveObject (.g122 input) (.g122 Y)) where
-  /-- Map on the structure-map reading carrier of this listed object. -/
-  structureMap : source.g122Value.StructureMaps → target.g122Value.StructureMaps
-  /-- The chosen structure-map reading is preserved by `structureMap`. -/
-  structureMap_selected : structureMap source.g122StructureMaps = target.g122StructureMaps
-  /-- Map on the selected-quantity reading carrier of this listed object. -/
-  selectedQuantityMap :
-    source.g122Value.SelectedQuantities → target.g122Value.SelectedQuantities
-  /-- The chosen selected-quantity reading is preserved by
-  `selectedQuantityMap`. -/
-  selectedQuantityMap_selected :
-    selectedQuantityMap source.g122SelectedQuantities = target.g122SelectedQuantities
-
-namespace G122ObjectGeneratorReadingAction
-
-/-- Extensionality for a single listed-object reading action.  Once its two
-carrier maps agree, the selected-value equations are proof-irrelevant. -/
-@[ext] theorem ext
-    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
-    {source : PrimitiveObject (.g122 input) (.g122 X)}
-    {target : PrimitiveObject (.g122 input) (.g122 Y)}
-    {first second : G122ObjectGeneratorReadingAction source target}
-    (hstructure : first.structureMap = second.structureMap)
-    (hquantity : first.selectedQuantityMap = second.selectedQuantityMap) :
-    first = second := by
-  cases first
-  cases second
-  cases hstructure
-  cases hquantity
-  rfl
-
-/-- Identity reading action for one listed G-122 object occurrence. -/
-def id {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
-    (object : PrimitiveObject (.g122 input) (.g122 X)) :
-    G122ObjectGeneratorReadingAction object object where
-  structureMap := _root_.id
-  structureMap_selected := rfl
-  selectedQuantityMap := _root_.id
-  selectedQuantityMap_selected := rfl
-
-/-- Compose two listed-object reading actions by composing their two carrier
-maps; the chosen-value equations are used successively. -/
-def comp
-    {input : G122FamilyInput.{u, v}} {X Y Z : G122CellInput input}
-    {source : PrimitiveObject (.g122 input) (.g122 X)}
-    {middle : PrimitiveObject (.g122 input) (.g122 Y)}
-    {target : PrimitiveObject (.g122 input) (.g122 Z)}
-    (first : G122ObjectGeneratorReadingAction source middle)
-    (second : G122ObjectGeneratorReadingAction middle target) :
-    G122ObjectGeneratorReadingAction source target where
-  structureMap := second.structureMap ∘ first.structureMap
-  structureMap_selected := by
-    rw [Function.comp_apply, first.structureMap_selected, second.structureMap_selected]
-  selectedQuantityMap := second.selectedQuantityMap ∘ first.selectedQuantityMap
-  selectedQuantityMap_selected := by
-    rw [Function.comp_apply, first.selectedQuantityMap_selected,
-      second.selectedQuantityMap_selected]
-
-/-- Simp normal form removes the left identity reading action. -/
-@[simp] theorem id_comp
-    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
-    {source : PrimitiveObject (.g122 input) (.g122 X)}
-    {target : PrimitiveObject (.g122 input) (.g122 Y)}
-    (action : G122ObjectGeneratorReadingAction source target) :
-    comp (id source) action = action := by
-  apply ext <;> rfl
-
-/-- Simp normal form removes the right identity reading action. -/
-@[simp] theorem comp_id
-    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
-    {source : PrimitiveObject (.g122 input) (.g122 X)}
-    {target : PrimitiveObject (.g122 input) (.g122 Y)}
-    (action : G122ObjectGeneratorReadingAction source target) :
-    comp action (id target) = action := by
-  apply ext <;> rfl
-
-/-- Simp normal form reassociates listed-object reading-action composition to
-the right. -/
-@[simp] theorem comp_assoc
-    {input : G122FamilyInput.{u, v}} {W X Y Z : G122CellInput input}
-    {firstObject : PrimitiveObject (.g122 input) (.g122 W)}
-    {secondObject : PrimitiveObject (.g122 input) (.g122 X)}
-    {thirdObject : PrimitiveObject (.g122 input) (.g122 Y)}
-    {fourthObject : PrimitiveObject (.g122 input) (.g122 Z)}
-    (first : G122ObjectGeneratorReadingAction firstObject secondObject)
-    (second : G122ObjectGeneratorReadingAction secondObject thirdObject)
-    (third : G122ObjectGeneratorReadingAction thirdObject fourthObject) :
-    comp (comp first second) third = comp first (comp second third) := by
-  apply ext <;> rfl
-
-end G122ObjectGeneratorReadingAction
-
 /-- The Atom and architecture-object generator tables owned by one finite
 G-122 display.  These tables make no claim that every semantic Atom or object
 is listed. -/
@@ -398,12 +300,6 @@ structure G122FiniteObjectGeneratorAction
   atomIndexMap : Fin source.atoms.card → Fin target.atoms.card
   /-- Image index of each source object generator in the target object table. -/
   objectIndexMap : Fin source.objects.card → Fin target.objects.card
-  /-- Structure-map and selected-quantity reading action at each listed object
-  occurrence.  This is finite in the number of object occurrences and is not a
-  completed semantic object-map family. -/
-  readingAction : ∀ objectIndex,
-    G122ObjectGeneratorReadingAction (source.objects.value objectIndex)
-      (target.objects.value (objectIndexMap objectIndex))
   /-- Family membership is preserved at each listed object/Atom pair. -/
   mapsFamily : ∀ objectIndex atomIndex,
     (source.objects.value objectIndex).g122Configuration.family.mem
@@ -487,13 +383,11 @@ and no semantic extension or completeness premise. -/
     {targetDisplay : G122FiniteObjectGeneratorDisplay input Y}
     {first second : G122FiniteObjectGeneratorAction sourceDisplay targetDisplay}
     (hatom : first.atomIndexMap = second.atomIndexMap)
-    (hobject : first.objectIndexMap = second.objectIndexMap)
-    (hreading : HEq first.readingAction second.readingAction) : first = second := by
+    (hobject : first.objectIndexMap = second.objectIndexMap) : first = second := by
   cases first
   cases second
   cases hatom
   cases hobject
-  cases hreading
   rfl
 
 /-- Cycle 30 finite generator-action-level identity on one G-122 display.  It is
@@ -504,7 +398,6 @@ def id {input : G122FamilyInput.{u, v}} {X : G122CellInput input}
     G122FiniteObjectGeneratorAction display display where
   atomIndexMap i := i
   objectIndexMap i := i
-  readingAction i := G122ObjectGeneratorReadingAction.id (display.objects.value i)
   mapsFamily _ _ h := h
   mapsRelation _ _ _ h := h
   mapsIdentification _ _ _ h := h
@@ -522,8 +415,6 @@ def comp
     G122FiniteObjectGeneratorAction firstDisplay lastDisplay where
   atomIndexMap i := second.atomIndexMap (first.atomIndexMap i)
   objectIndexMap i := second.objectIndexMap (first.objectIndexMap i)
-  readingAction i := G122ObjectGeneratorReadingAction.comp (first.readingAction i)
-    (second.readingAction (first.objectIndexMap i))
   mapsFamily objectIndex atomIndex h :=
     second.mapsFamily (first.objectIndexMap objectIndex)
       (first.atomIndexMap atomIndex) (first.mapsFamily objectIndex atomIndex h)
@@ -544,10 +435,7 @@ def comp
     {targetDisplay : G122FiniteObjectGeneratorDisplay input Y}
     (action : G122FiniteObjectGeneratorAction sourceDisplay targetDisplay) :
     comp (id sourceDisplay) action = action := by
-  apply ext rfl rfl
-  apply heq_of_eq
-  funext i
-  exact G122ObjectGeneratorReadingAction.id_comp (action.readingAction i)
+  apply ext <;> rfl
 
 /-- Simp normal form removes a finite generator-action identity on the target side:
 `comp action (id targetDisplay)` reduces to `action`. -/
@@ -557,10 +445,7 @@ def comp
     {targetDisplay : G122FiniteObjectGeneratorDisplay input Y}
     (action : G122FiniteObjectGeneratorAction sourceDisplay targetDisplay) :
     comp action (id targetDisplay) = action := by
-  apply ext rfl rfl
-  apply heq_of_eq
-  funext i
-  exact G122ObjectGeneratorReadingAction.comp_id (action.readingAction i)
+  apply ext <;> rfl
 
 /-- Simp normal form reassociates finite generator-action composition to the
 right: `comp (comp first second) third` reduces to
@@ -575,13 +460,7 @@ right: `comp (comp first second) third` reduces to
     (second : G122FiniteObjectGeneratorAction secondDisplay thirdDisplay)
     (third : G122FiniteObjectGeneratorAction thirdDisplay fourthDisplay) :
     comp (comp first second) third = comp first (comp second third) := by
-  apply ext rfl rfl
-  apply heq_of_eq
-  funext i
-  exact G122ObjectGeneratorReadingAction.comp_assoc
-    (first.readingAction i)
-    (second.readingAction (first.objectIndexMap i))
-    (third.readingAction (second.objectIndexMap (first.objectIndexMap i)))
+  apply ext <;> rfl
 
 end G122FiniteObjectGeneratorAction
 
