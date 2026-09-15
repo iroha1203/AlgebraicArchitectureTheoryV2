@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 64 explicit source-to-actual group equivalence for the same displayed C2 bottom restriction-kernel fragment
+- current proof obligation: Cycle 65 exact reduction of canonical-section source displayability to source-endpoint automorphism coverage, with the identity and its displayed C2 lift orbit constructed positively
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: lift the canonical normalized and bottom-qualified comparison sections into source syntax and extend displayed kernel coverage beyond the source-equivalent C2 fragment without completed semantic group-element leaves
+- next proof obligation: construct normalized source endpoint-automorphism syntax and prove decoder coverage for every `canonicalNormalizationAutomorphismSectionHom` value from the fixed primitive input, without semantic automorphism or section leaves
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 65 delta | semantic canonical sectionの右逆をsource表示と混同せず、section値全体の表示可能性をsource endpoint lift全体の表示可能性へ正確に還元し、実在するidentity/C2範囲をsource syntaxから構成する | `FiniteAxisFoldCanonicalSectionSourceObligation.ActualDirectEndpoint`, `ActualBarAlphaIso`, `comparisonEvaluation_section`, `exists_canonicalSection_preimage_iff_sourceEndpoint_preimage`, `exists_bottomCanonicalSection_preimage_iff_sourceEndpoint_preimage`, `restrictionEvaluation_surjective_of_canonicalSection_preimages`, `canonicalSection_identity_sourcePreimage`, `sourceIdentity_bottomQualified`, `bottomCanonicalSection_identity_sourcePreimage`, `BottomLiftFiberAtOne`, `sourceLiftAtOne`, `sourceLiftAtOne_underlying_evaluation`, `sourceLiftAtOne_identity`, `sourceLiftAtOne_sourceGenerator`, `sourceLiftAtOne_cases`, `displayedIdentityLifts_have_sourcePreimages` | 固定finite axis-fold/`Int`; source-law quotientの全source-conjugation sectionとdecoder; actual canonical comparison/bottom sectionとright inverse; Cycle 64 C2 equivalence | kernel-extended evaluatorとsource-conjugationの全元可換性、任意semantic section値のsource preimageとそのsource endpoint automorphism preimageのiff、全section preimageがrestriction/evaluation全射性を含むこと、identityのraw/bottom source preimage、identity fiberのcanonical/shifted二liftのsource C2 preimageと各underlying decoder評価等号 | Dのcanonical section回復に必要な未放電premiseを正確に切り出し、既存のsemantic sectionをsource表示と誤認する経路を閉じる | arbitrary normalized/bottom `t`のsource endpoint lift coverage自体、全比較群・全kernel/fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 64 delta | source-law quotient内の同じC2 fragmentと実bottom restriction kernel内のC2 fragmentの両方向対応を構成し、forwardがactual decoder evaluationであることを全元について示す | `FiniteAxisFoldDisplayedKernelEquiv.sourceSubgroup`, `actualSubgroup`, `sourceGenerator`, `actualGenerator`, `ambientComparisonElement_ne_one`, `sourceGenerator_ne_one`, `actualGenerator_ne_one`, `toActual`, `toSource`, `toSource_toActual`, `toActual_toSource`, `toActual_mul`, `toActual_underlying_evaluation`, `sourceActualEquiv`, `sourceActualEquiv_sourceGenerator` | 固定finite axis-fold/`Int`; Cycle 59 source comparison generatorとactual evaluation; Cycle 61 actual bottom kernel element; Cycle 62両側の二乗則と非自明性 | 両側のexact two-element Subgroup、identity/generator case map、左右inverse、積保存、全source C2元でunderlying actual evaluationとの一致、generator対応 | Dの表示側回復について、このC2 fragment全元の表示→実現と読み戻しを群同型として固定する | C2 fragmentのみで全比較群・全kernelではない; semantic normalized/bottom section全元のsource syntax、一般係数/一般入力、B/E/Fは未完了 |
 | D Cycle 63 delta | Cycle 62で残したformal orbit gapを閉じ、同じbottom kernel involutionのidentityとgeneratorからなる部分群を構成して、その標準作用orbitが任意のbottom lift fiberで先の二点集合と一致することを示す | `FiniteAxisFoldBottomKernelOrbit.oppositeElement_mul_self`, `displayedInvolutionSubgroup`, `mem_displayedInvolutionSubgroup_iff`, `orbit_canonicalLift_eq_pair`, `orbit_canonicalLift_ncard` | 固定finite axis-fold入力と係数`Int`; Cycle 62のsource由来`element_mul_self`、`canonicalShiftedPair`、cardinality 2; Cycle 61のbottom lift action | opposite kernel内の二乗identity、`{1, op element}`をcarrierとする実Subgroup、そのmembership iff、標準`MulAction.orbit`と二点FinsetのSet等号、orbitのncard 2 | Dの同一構成について、表示されたrestriction-kernel C2部分群が各bottom lift fiberに作るorbitを形式的に分類する | このC2は全bottom kernelではなくorbitも全lift fiberとは限らない; semantic sectionのsource syntax、他kernel元、一般係数/一般入力、B/E/Fは未完了 |
 | D Cycle 62 delta | Cycle 61の同じbottom restriction-kernel元の位数2をsource congruenceから運び、任意のbottom lift fiberでcanonical/shiftedの相異なる2点と二回shift後の復帰を示す | `FiniteAxisFoldBottomKernelInvolution.directAmbientAut_mul_self`, `ambientComparisonElement_mul_self`, `rawElement_mul_self`, `bottomRawElement_mul_self`, `element_mul_self`, `shifted_twice_eq_canonicalLift`, `canonicalShiftedPair`, `canonical_shifted_pair_card` | 固定finite axis-fold入力と係数`Int`; source-law合同`ambientDirect_sq`; Cycle 59の表示比較section/evaluation; Cycle 61の同じbottom raw/kernel元と全fiber非自明作用 | source quotient内の二乗identity、表示比較group・実raw group・bottom raw group・restriction kernelへの順次移送、各bottom fiberで二回shiftの復帰、canonical/shiftedからなるcardinality 2のFinset | Dの同一構成について、表示された情報損失元が各bottom lift fiberに与える非自明な二段作用を回復する | 生成部分群orbitとFinsetの等号は未定義でorbit分類ではない; 全bottom kernel/全lift fiber、semantic sectionのsource syntax、一般係数/一般入力、B/E/Fは未完了 |
@@ -6640,4 +6641,127 @@ audits:
     - "fresh Math A/B and Lean A/B review: PASS after the same-cycle declaration-docstring fix"
   blocking_findings: []
   next_obligation: "Construct source-syntax preimages for the canonical normalized and bottom-qualified comparison sections, then expand displayed kernel coverage beyond the source-equivalent C2 fragment without semantic group-element leaves."
+```
+
+## Cycle 65 — Canonical-section source obligation and identity-fiber recovery
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 65
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: a46800970779a5841f6cffa2ba5d9f3c01dee1f7
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 64 recovered the exact displayed C2 kernel, while arbitrary canonical normalized and bottom-qualified section values still had no source syntax"
+  proof_dag_predecessors:
+    - "Cycle 58/59 source comparison group, source-conjugation section, and actual decoder evaluation"
+    - "accepted actual canonical comparison and bottom-qualified sections with right inverses"
+    - "Cycles 62--64 exact source/actual C2 kernel and two displayed bottom lifts"
+  proof_obligation: "Separate semantic section split-surjectivity from source displayability; characterize a canonical section preimage by the exact source-endpoint automorphism preimage it requires; and construct the identity/C2 positive range without semantic syntax leaves"
+  selection_reason: "A direct arbitrary-section preimage theorem would silently assume decoder coverage. The exact iff isolates the real missing construction, while the identity fiber records the strongest current positive source recovery."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldCanonicalSectionSourceObligation.lean
+  risks:
+    - "treat the existing semantic canonical section as source syntax"
+    - "take arbitrary normalized comparisons, endpoint automorphisms, or section outputs as syntax leaves"
+    - "replace the full arbitrary-t obligation by the identity C2 fiber"
+  unchecked:
+    - "source endpoint syntax coverage for every canonicalNormalizationAutomorphismSectionHom value"
+    - "all normalized/bottom canonical section values and full comparison/kernel/lift coverage"
+    - "general coefficient/input and remaining B/E/F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Proved that the kernel-extended evaluator commutes with source conjugation on every displayed source automorphism. Proved exact iff reductions from raw and bottom canonical-section preimages to preimages of their lifted source endpoint automorphisms, and that all raw section preimages imply surjectivity of normalization after source evaluation. Constructed source identity preimages on both section levels and both displayed C2 lifts over bottom-normalized identity."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldCanonicalSectionSourceObligation.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldCanonicalSectionSourceObligation.comparisonEvaluation_section
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldCanonicalSectionSourceObligation.exists_canonicalSection_preimage_iff_sourceEndpoint_preimage
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldCanonicalSectionSourceObligation.exists_bottomCanonicalSection_preimage_iff_sourceEndpoint_preimage
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldCanonicalSectionSourceObligation.restrictionEvaluation_surjective_of_canonicalSection_preimages
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldCanonicalSectionSourceObligation.canonicalSection_identity_sourcePreimage
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldCanonicalSectionSourceObligation.bottomCanonicalSection_identity_sourcePreimage
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldCanonicalSectionSourceObligation.sourceLiftAtOne_underlying_evaluation
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldCanonicalSectionSourceObligation.sourceLiftAtOne_identity
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldCanonicalSectionSourceObligation.sourceLiftAtOne_sourceGenerator
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldCanonicalSectionSourceObligation.sourceLiftAtOne_cases
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldCanonicalSectionSourceObligation.displayedIdentityLifts_have_sourcePreimages
+  claim_mapping:
+    theorem_names:
+      - comparisonEvaluation_section
+      - exists_canonicalSection_preimage_iff_sourceEndpoint_preimage
+      - exists_bottomCanonicalSection_preimage_iff_sourceEndpoint_preimage
+      - restrictionEvaluation_surjective_of_canonicalSection_preimages
+      - sourceLiftAtOne_identity
+      - sourceLiftAtOne_sourceGenerator
+      - sourceLiftAtOne_underlying_evaluation
+      - sourceLiftAtOne_cases
+    source_labels:
+      - "GOAL D: recover the comparison section on the display side"
+      - "GOAL D: preserve all elements of each claimed group and lift fiber"
+      - "n1014: do not re-input arbitrary completed comparison elements or maps"
+    conjuncts:
+      - "all displayed source automorphisms -> evaluator commutes with source conjugation"
+      - "one canonical section value has a source preimage iff its lifted source endpoint automorphism does"
+      - "the same exact reduction holds after bottom qualification"
+      - "all section preimages -> source evaluation followed by normalization is surjective"
+      - "identity and the two displayed identity-fiber lifts have actual source terms"
+    undischarged_assumptions:
+      - "no theorem constructs source endpoint preimages for arbitrary semantic normalized values"
+      - "the identity-fiber C2 result is not full canonical-section, kernel, or lift-fiber coverage"
+      - "general input/coefficient and B/E/F remain open"
+    acceptance_point: "This cycle identifies the exact missing source coverage statement and proves the identity/C2 positive range. It neither assumes nor proves arbitrary canonical-section source coverage and is not G-123 completion."
+    port_status: not-applicable
+review:
+  independent_lanes:
+    math_a: pass
+    math_b: pass-after-fix
+    lean_a: pass
+    lean_b: pass
+  resolved_findings:
+    - "Math B found that the identity-fiber preimage statement did not itself expose equality with decoder evaluation; sourceLiftAtOne_underlying_evaluation was added and both final existential witnesses now carry that equality."
+  direct_response:
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "exact reduction of raw and bottom canonical-section source displayability to source-endpoint automorphism displayability"
+      - "source identity preimage for both canonical sections"
+      - "source C2 preimages for both displayed lifts over bottom-normalized identity"
+    remaining:
+      - "construct arbitrary source endpoint preimages from the fixed primitive input"
+      - "full comparison/kernel/lift coverage"
+      - "general coefficient/input and remaining B/E/F"
+  certificate_provenance:
+    discharged:
+      - "source-conjugation compatibility is derived from the quotient decoder and source barAlpha inverse"
+      - "identity bottom qualification is derived from map_one and subgroup one membership"
+      - "the two lift preimages use Cycle 64 all-elements C2 evaluation and actual kernel membership"
+    unresolved:
+      - "no primitive normal form or coverage proof yet constructs arbitrary lifted endpoint automorphisms"
+  proof_use:
+    used:
+      - "comparisonEvaluation_section supplies the backward direction of the exact preimage iff"
+      - "the actual section right inverse turns hypothetical all-section source preimages into restriction/evaluation surjectivity"
+      - "sourceActualEquiv_sourceGenerator and canonical section map_one identify the two identity-fiber lifts; toActual_underlying_evaluation proves each lift is the underlying decoder value of its source term"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check for FiniteAxisFoldCanonicalSectionSourceObligation: PASS"
+    - "registered exact target build: PASS (4302 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 17 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh Math A/B and final-snapshot Lean A/B: PASS after the same-cycle decoder-equality fix"
+  blocking_findings: []
+  next_obligation: "Construct normalized source endpoint-automorphism syntax and prove decoder coverage for every canonicalNormalizationAutomorphismSectionHom value from fixed primitive inputs, without semantic automorphism or section leaves."
 ```
