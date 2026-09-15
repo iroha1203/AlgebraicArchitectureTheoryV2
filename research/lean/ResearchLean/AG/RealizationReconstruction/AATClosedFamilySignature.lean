@@ -277,46 +277,53 @@ def g122SelectedQuantities
 
 end PrimitiveObject
 
-/-- Finite generator-level Atom/object action data between two G-122
-realizations under the same original family parameter.  It lists finite Atom
-and object occurrence correspondences and checks configuration predicates only
-on those entries.  It contains no total Atom/object map, `ConfigurationHom`,
+/-- The Atom and architecture-object generator tables owned by one finite
+G-122 display.  These tables make no claim that every semantic Atom or object
+is listed. -/
+structure G122FiniteObjectGeneratorDisplay
+    (input : G122FamilyInput.{u, v}) (X : G122CellInput input) where
+  /-- Finitely many Atom occurrences named by the display. -/
+  atoms : FiniteReferenceTable (PrimitiveAtom (.g122 input) (.g122 X))
+  /-- Finitely many architecture-object occurrences named by the display. -/
+  objects : FiniteReferenceTable (PrimitiveObject (.g122 input) (.g122 X))
+
+/-- Finite generator-level Atom/object action data between two G-122 displays
+under the same original family parameter.  The action maps source table
+indices into target table indices and checks configuration predicates only on
+those entries.  It contains no total Atom/object map, `ConfigurationHom`,
 extension, completeness certificate, or completed core/geometry morphism. -/
 structure G122FiniteObjectGeneratorAction
-    (input : G122FamilyInput.{u, v})
-    (X Y : G122CellInput input) where
-  /-- Number of Atom-generator occurrences in this action. -/
-  atomCard : Nat
-  /-- Source occurrence of each listed Atom generator. -/
-  atomSource : Fin atomCard → PrimitiveAtom (.g122 input) (.g122 X)
-  /-- Target occurrence assigned to each listed Atom generator. -/
-  atomTarget : Fin atomCard → PrimitiveAtom (.g122 input) (.g122 Y)
-  /-- Number of object-generator occurrences in this action. -/
-  objectCard : Nat
-  /-- Source occurrence of each listed object generator. -/
-  objectSource : Fin objectCard → PrimitiveObject (.g122 input) (.g122 X)
-  /-- Target occurrence assigned to each listed object generator. -/
-  objectTarget : Fin objectCard → PrimitiveObject (.g122 input) (.g122 Y)
+    {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
+    (source : G122FiniteObjectGeneratorDisplay input X)
+    (target : G122FiniteObjectGeneratorDisplay input Y) where
+  /-- Image index of each source Atom generator in the target Atom table. -/
+  atomIndexMap : Fin source.atoms.card → Fin target.atoms.card
+  /-- Image index of each source object generator in the target object table. -/
+  objectIndexMap : Fin source.objects.card → Fin target.objects.card
   /-- Family membership is preserved at each listed object/Atom pair. -/
   mapsFamily : ∀ objectIndex atomIndex,
-    (objectSource objectIndex).g122Configuration.family.mem
-        (atomSource atomIndex).g122Value →
-      (objectTarget objectIndex).g122Configuration.family.mem
-        (atomTarget atomIndex).g122Value
+    (source.objects.value objectIndex).g122Configuration.family.mem
+        (source.atoms.value atomIndex).g122Value →
+      (target.objects.value (objectIndexMap objectIndex)).g122Configuration.family.mem
+        (target.atoms.value (atomIndexMap atomIndex)).g122Value
   /-- Configuration relations are preserved on every listed pair of Atom
   occurrences at each listed object occurrence. -/
   mapsRelation : ∀ objectIndex firstAtom secondAtom,
-    (objectSource objectIndex).g122Configuration.relation
-        (atomSource firstAtom).g122Value (atomSource secondAtom).g122Value →
-      (objectTarget objectIndex).g122Configuration.relation
-        (atomTarget firstAtom).g122Value (atomTarget secondAtom).g122Value
+    (source.objects.value objectIndex).g122Configuration.relation
+        (source.atoms.value firstAtom).g122Value
+        (source.atoms.value secondAtom).g122Value →
+      (target.objects.value (objectIndexMap objectIndex)).g122Configuration.relation
+        (target.atoms.value (atomIndexMap firstAtom)).g122Value
+        (target.atoms.value (atomIndexMap secondAtom)).g122Value
   /-- Configuration identifications are preserved on every listed pair of
   Atom occurrences at each listed object occurrence. -/
   mapsIdentification : ∀ objectIndex firstAtom secondAtom,
-    (objectSource objectIndex).g122Configuration.identification
-        (atomSource firstAtom).g122Value (atomSource secondAtom).g122Value →
-      (objectTarget objectIndex).g122Configuration.identification
-        (atomTarget firstAtom).g122Value (atomTarget secondAtom).g122Value
+    (source.objects.value objectIndex).g122Configuration.identification
+        (source.atoms.value firstAtom).g122Value
+        (source.atoms.value secondAtom).g122Value →
+      (target.objects.value (objectIndexMap objectIndex)).g122Configuration.identification
+        (target.atoms.value (atomIndexMap firstAtom)).g122Value
+        (target.atoms.value (atomIndexMap secondAtom)).g122Value
 
 namespace G122FiniteObjectGeneratorAction
 
@@ -324,34 +331,46 @@ namespace G122FiniteObjectGeneratorAction
 generator action.  Membership is witnessed by an actual finite table index;
 it does not assert that every source object occurs. -/
 def Maps {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
-    (action : G122FiniteObjectGeneratorAction input X Y)
+    {sourceDisplay : G122FiniteObjectGeneratorDisplay input X}
+    {targetDisplay : G122FiniteObjectGeneratorDisplay input Y}
+    (action : G122FiniteObjectGeneratorAction sourceDisplay targetDisplay)
     (source : PrimitiveObject (.g122 input) (.g122 X))
     (target : PrimitiveObject (.g122 input) (.g122 Y)) : Prop :=
-  ∃ i, action.objectSource i = source ∧ action.objectTarget i = target
+  ∃ i, sourceDisplay.objects.value i = source ∧
+    targetDisplay.objects.value (action.objectIndexMap i) = target
 
 /-- The finite relation on G-122 Atom occurrences presented by a generator
 action. -/
 def AtomMaps {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
-    (action : G122FiniteObjectGeneratorAction input X Y)
+    {sourceDisplay : G122FiniteObjectGeneratorDisplay input X}
+    {targetDisplay : G122FiniteObjectGeneratorDisplay input Y}
+    (action : G122FiniteObjectGeneratorAction sourceDisplay targetDisplay)
     (source : PrimitiveAtom (.g122 input) (.g122 X))
     (target : PrimitiveAtom (.g122 input) (.g122 Y)) : Prop :=
-  ∃ i, action.atomSource i = source ∧ action.atomTarget i = target
+  ∃ i, sourceDisplay.atoms.value i = source ∧
+    targetDisplay.atoms.value (action.atomIndexMap i) = target
 
 /-- Every table entry belongs to the finite source/target relation defined by
 that same action. -/
 theorem maps_entry {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
-    (action : G122FiniteObjectGeneratorAction input X Y)
-    (i : Fin action.objectCard) :
-    action.Maps (action.objectSource i) (action.objectTarget i) :=
+    {sourceDisplay : G122FiniteObjectGeneratorDisplay input X}
+    {targetDisplay : G122FiniteObjectGeneratorDisplay input Y}
+    (action : G122FiniteObjectGeneratorAction sourceDisplay targetDisplay)
+    (i : Fin sourceDisplay.objects.card) :
+    action.Maps (sourceDisplay.objects.value i)
+      (targetDisplay.objects.value (action.objectIndexMap i)) :=
   ⟨i, rfl, rfl⟩
 
 /-- Every Atom table entry belongs to the finite Atom relation defined by the
 same action. -/
 theorem atom_maps_entry
     {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
-    (action : G122FiniteObjectGeneratorAction input X Y)
-    (i : Fin action.atomCard) :
-    action.AtomMaps (action.atomSource i) (action.atomTarget i) :=
+    {sourceDisplay : G122FiniteObjectGeneratorDisplay input X}
+    {targetDisplay : G122FiniteObjectGeneratorDisplay input Y}
+    (action : G122FiniteObjectGeneratorAction sourceDisplay targetDisplay)
+    (i : Fin sourceDisplay.atoms.card) :
+    action.AtomMaps (sourceDisplay.atoms.value i)
+      (targetDisplay.atoms.value (action.atomIndexMap i)) :=
   ⟨i, rfl, rfl⟩
 
 end G122FiniteObjectGeneratorAction
