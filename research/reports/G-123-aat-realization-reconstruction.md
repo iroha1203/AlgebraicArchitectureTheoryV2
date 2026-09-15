@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 72 expands membership in the residual axis-and-signature kernel into full axis-function and every-fiber coordinate identities and proves that every residual automorphism also fixes the complete invariant-index and `Int` coefficient components; source coverage of the remaining Atom/object/operation/equation/context/local-geometry data remains to construct
+- current proof obligation: Cycle 73 computes the fixed pull--push endpoint's composition and detector readings back to the original ordered finite reading and proves that every element of the full residual axis-and-signature kernel fixes the complete nine-point Atom equivalence; source coverage and the remaining object/operation/equation/context/local-geometry data remain to construct
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: prove the fixed finite input forces the residual Atom equivalence and its induced object/operation data, or construct source-owned generators for any surviving action; separately formalize the extension-changing context-action candidate and test it against the current presentation without treating candidate failure as target refutation
+- next proof obligation: derive the residual object and all-endpoint operation constraints from the proved Atom identity, then classify the equation/context/local-geometry freedom; separately formalize the extension-changing context-action candidate and test it against the current presentation without treating candidate failure as target refutation
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 73 delta | Cycle 72の同じ残余kernel全元について、固定pull--push endpointのAtom equivalenceを元のordered identification・ordered detector・substitution graphから完全に放電する | `finiteAxisFoldSupport_atomEquiv_componentA`, `finiteAxisFoldSupport_atomEquiv_componentB`, `finiteAxisFoldSupport_atomEquiv_eq_refl`, `finiteAxisFoldDirectEndpoint_atomEquiv_eq_refl`, `finiteAxisFoldResidual_atomEquiv_eq_refl` | 固定finite axis-fold/`Int`; actual direct endpointを構成するexact left pull/top transport; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元 | support readingのordered identification、三つのordered detector query、三辺substitution graph、Atom Equivの全単射性; さらにactual endpointのcomposition/detectorを二段transportから元readingへ計算する証拠 | residual元のcomplete `atomEquiv`をidentityへ固定し、object/operation/equation/context/local-geometryの残余解析へ渡す | residual source coverageは未構成; object/operation/equation/context/local geometryは未放電; extension-changing context actionは候補のみ; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 72 delta | Cycle 71の残余kernelについて、kernel membershipが固定するaxis/全coordinate成分を明示し、固定singleton invariant indexと`Int`係数成分を任意の残余元について入力なしに放電する | `finiteAxisFoldResidual_axisMap_eq_id`, `finiteAxisFoldResidual_coordinateEquiv_eq_refl`, `finiteAxisFoldResidual_invariantMap_eq_id`, `finiteAxisFoldResidual_coefficientHom_eq_id` | 固定finite axis-fold/`Int`; `FiniteAxisFoldNormalizedAxisSignatureKernel`の任意の全元; Cycle 69/70の二段kernel membership | 第一kernelから全axis関数のidentity、第二kernelの有限table等号を全axis/coordinateで評価した各coordinate Equivのidentity、singleton eliminationによる全invariant map、`RingHom.ext_int`による全係数準同型identity | 残余元の型を縮小せず、既に放電された計算成分と本当に残る成分を分離して次のsource生成・剛性証明へ渡す | 残余全元のsource coverageは未構成; Atom/object/operation/equation/context/local geometryは未放電; extension-changing context actionは候補のみで未形式化; bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 71 delta | Cycle 70の有限signature-fiber table全体をsemantic Autではなくsource constructorへ追加し、source/category/inverse lawだけの商圏decoderから各canonical-section preimageを構成し、full normalized Aut coverageを残余double kernel coverageへ同値還元する | `FiniteAxisFoldSignatureFiberSyntax`, `evaluate`, `Congruent`, `evaluate_eq_of_congruent`, `FiniteAxisFoldSignatureFiberPresentation`, `decoder`, `directSignatureFiberAut`, `sectionedDirectSignatureFiberAut`, `sectionedDirectAxisPermutationAut`, `directAutomorphismEvaluationHom`, `sectionedDirectSignatureFiberAut_evaluation`, `sectionedDirectAxisPermutationAut_evaluation`, `SignatureFiberSourceCovered`, `finiteAxisFoldSignatureFiber_canonicalSection_sourceCovered`, `finiteAxisFoldAxisKernel_sourceCovered_all_iff_signatureKernel`, `finiteAxisFoldAll_sourceCovered_iff_signatureKernel` | 固定finite axis-fold/`Int`; Cycle 68の全axis source term; Cycle 70の有限signature-fiber subgroupとsection/right inverse; canonical normalization section; 全full normalized Autと全残余kernel | 旧source syntaxを保持するouter grammar、有限tableだけをpayloadとするprimitive leaf、一般normalization-section演算、両leaf族のsource inverse law、quotient decoder、全table exact evaluation、kernel source witnessと有限section termの順序付き積、二段分解によるfull Aut coverage iff residual kernel coverage | Dのfull endpoint全量化を同じ新presentationで保持し、既知のaxisおよびcoordinate finite componentsをすべてsource側へ回復する | `FiniteAxisFoldNormalizedAxisSignatureKernel`全元のsource coverageは未構成; atom/object/operation/context/equation/local geometry、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
 | D Cycle 70 delta | Cycle 69のaxis kernelを座標成分まで保持して解析し、各軸を保ち選択座標を固定する有限signature-fiber作用を元入力から構成し、任意axis-kernel元をさらに小さいsignature-trivial kernelと有限成分へ分解する | `finiteAxisFoldNormalizedSignatureEquiv`, `finiteAxisFoldNormalizedSignatureProjection`, `finiteAxisFoldSignatureFiberPermutationSubgroup`, `finiteAxisFoldNormalizedAxisKernelSignatureProjection`, `finiteAxisFoldSignatureFiberEquiv`, `finiteAxisFoldSignatureFiberUpper`, `finiteAxisFoldSignatureFiberTotal`, `finiteAxisFoldSignatureFiberGeometry`, `finiteAxisFoldSouthwestSignatureFiberSectionHom`, `finiteAxisFoldActualDirectSignatureFiberSectionHom`, `finiteAxisFoldNormalizedSignatureFiberSectionHom`, `finiteAxisFoldNormalizedSignatureProjection_section`, `finiteAxisFoldNormalizedAxisKernelSignatureSectionHom`, `FiniteAxisFoldNormalizedAxisSignatureKernel`, `finiteAxisFoldNormalizedAxisSignatureKernelRemainder`, `finiteAxisFoldNormalizedAxisSignatureKernelRemainder_mul_section`, `finiteAxisFoldNormalizedAxisKernel_coordinateAction_ne_one` | 固定finite axis-fold/`Int`; full normalized endpoint AutとCycle 69 axis kernel; fixed signatureの軸・座標 carrier `Fin 3`; 各軸の選択値が対角値であること; exact pull/top transport; normalization | Autのhom/invからjoint `(axis,coordinate)` Equiv、axis-kernelの全元が属するfirst-coordinate/diagonal保存Subgroup、有限tableからidentity core fieldsを保ったcoordinateEquiv、complete geometryとactual transport、projection right inverse、二重kernel remainder分解、off-diagonal swapによる非自明axis-kernel元 | axis mapだけでは失われる座標情報を保持し、全axis-kernel量化を有限signature quotientと残余kernelへ分ける | この有限tableのsource syntax/preimageは未構成; 残余signature kernelのsource coverage、atom/context/local geometry、bottom/全比較kernel/lift fiber、一般係数/入力、B/E/Fは未完了 |
@@ -7646,4 +7647,118 @@ audits:
     - "fresh final-snapshot Math A/B and Lean A/B review: PASS"
   blocking_findings: []
   next_obligation: "Prove fixed-input Atom rigidity and derive the resulting object/operation constraints, while separately constructing and testing the extension-changing context-action candidate against the current source presentation."
+```
+
+## Cycle 73 — Residual Atom rigidity at the actual normalized endpoint
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 73
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: b1f4a813d3547e0cd38b3ddb6361d3bd57663077
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 72 fixed the residual axis, all signature coordinates, singleton invariant map, and Int coefficient hom, while leaving Atom equivalence open"
+  proof_dag_predecessors:
+    - "Cycle 71 universal full-endpoint coverage equivalence with residual-kernel coverage"
+    - "Cycle 72 full residual axis/signature/invariant/coefficient rigidity"
+    - "fixed finite support package and its exact left-pull/top-transport endpoint construction"
+  proof_obligation: "Prove the complete Atom equivalence of every residual element is identity from the fixed input, without identifying the actual endpoint definitionally with the support package or adding an Atom-map certificate"
+  selection_reason: "Atom rigidity removes a complete core component before any new source generator is introduced.  The ordered detector and relation data must be used explicitly because extraction or kernel membership alone does not distinguish every finite Atom permutation."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualAtomRigidity.lean
+  risks:
+    - "prove only componentA/componentB or the three detector atoms and call the full equivalence fixed"
+    - "replace the actual pull--push endpoint by the support package through a false definitional identification"
+    - "use residual kernel membership as a certificate containing the desired Atom identity"
+    - "confuse this component rigidity with source coverage or G-123 completion"
+  unchecked:
+    - "object maps and all-endpoint operation maps for every residual element"
+    - "equation transport, context equivalence, and local support/axis/observable comparisons"
+    - "source coverage of the residual kernel and all remaining A-F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "First proved rigidity for arbitrary exact endomorphisms of the independently fixed support package using its ordered identification, ordered three-query detector, asymmetric substitution graph, and Atom-bijection exhaustion.  Then computed the actual exact pull--push endpoint's composition reading and every detector code back to the same fixed finite reading.  Repeating the structural argument at that actual endpoint proves all nine Atom images fixed for every exact endpoint endomorphism.  Applying this stronger theorem to the complete underlying exact core hom of an arbitrary residual-kernel element yields full residual Atom identity.  No kernel field, semantic automorphism, or certificate supplies the conclusion."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldResidualAtomRigidity.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSupport_atomEquiv_componentA
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSupport_atomEquiv_componentB
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSupport_atomEquiv_eq_refl
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldDirectEndpoint_atomEquiv_eq_refl
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidual_atomEquiv_eq_refl
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldSupport_atomEquiv_eq_refl
+      - finiteAxisFoldDirectEndpoint_atomEquiv_eq_refl
+      - finiteAxisFoldResidual_atomEquiv_eq_refl
+    source_labels:
+      - "GOAL D: retain every element of the original endpoint and comparison groups"
+      - "GOAL D: recover the same correspondence rather than only its finite signature shadow"
+      - "user conditions 1, 2, 4, and 5: preserve quantification, discharge from fixed input, separate obligations, and keep the original finite axis-fold input"
+    conjuncts:
+      - "every exact support-package endomorphism -> complete nine-point Atom equivalence identity"
+      - "fixed actual pull--push endpoint -> original composition and detector readings"
+      - "every exact actual-endpoint endomorphism -> complete nine-point Atom equivalence identity"
+      - "every residual axis-and-signature-kernel element -> actual endpoint Atom equivalence identity"
+    undischarged_assumptions:
+      - "object and operation maps are not yet derived from Atom identity"
+      - "equation/context/local-geometry components are not yet classified"
+      - "no source witness for an arbitrary residual element is constructed"
+    acceptance_point: "This cycle discharges the complete Atom component for the whole residual quantifier at the actual endpoint.  It is not residual source coverage and is not G-123 completion."
+    port_status: not-applicable
+review:
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "ordered identification fixes componentA and componentB"
+      - "ordered detector syntax fixes dependsAB, dependsBC, and dependsCA"
+      - "the preserved asymmetric substitution graph fixes substitutesImplBase, contractImpl, and contractBase"
+      - "Atom equivalence bijectivity fixes componentC"
+      - "the same complete rigidity holds at the actual generated pull--push endpoint and hence for every residual element"
+    remaining:
+      - "object/operation/equation/context/local-geometry classification and source construction"
+      - "residual-kernel source coverage"
+      - "bottom/full comparison-kernel/lift recovery, general coefficient/input, and B/E/F"
+  certificate_provenance:
+    discharged:
+      - "support rigidity consumes only fields of an arbitrary exact endomorphism and the fixed finite reading"
+      - "actual endpoint reading equalities are computed from the exact left-pull and top-transport construction"
+      - "the residual theorem applies the stronger arbitrary-endpoint theorem; kernel membership is not used as an Atom certificate"
+    unresolved:
+      - "the context Extension carrier permits a candidate action not represented by current finite leaves; construction and source invariant remain to formalize"
+  proof_use:
+    used:
+      - "composition_eq is evaluated on the fixed extracted family for ordered identification and the three asymmetric substitution edges"
+      - "detectorCode_eq is evaluated at a constructed endpoint equation index; equation equivalence surjectivity and both exact transport layers reduce every endpoint code to the fixed cycle datum"
+      - "injectivity and surjectivity of the actual Atom equivalence discharge the finite leftovers"
+      - "the arbitrary exact endpoint theorem is applied to the actual complete upper hom of every residual element"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check for FiniteAxisFoldResidualAtomRigidity: PASS"
+    - "registered exact target build for FiniteAxisFoldResidualAtomRigidity: PASS (4302 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 6 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh final-snapshot Math A/B and Lean A/B review: PASS"
+  blocking_findings: []
+  next_obligation: "Use the proved full Atom identity to derive actual endpoint object-map and all-operation constraints, then classify equation/context/local-geometry freedom and formalize the extension-changing context-action candidate."
 ```
