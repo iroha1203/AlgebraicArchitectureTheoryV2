@@ -13,16 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 19 arbitrary Hom-relation quotient of the endpoint-typed path candidate
+- current proof obligation: Cycle 20 currently declared closed-role exhaustion on mandatory C
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: derive the quotient relation and any additional parameter roles from the fixed source laws, then decide from fixed Sigma,D laws whether every mandatory-C source-choice map is an actual final R_Theta morphism
+- next proof obligation: add and source-provenance the still-undeclared complete-geometry/coefficient/transport roles, then determine their tagged-branch inhabitants before final Sigma,D,R_Theta membership
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`とG-122のsignature/equation/invariant/raw各role; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective`; `TaggedPrimitivePresentedMonoid`, `TaggedPrimitiveRelationPresentation`, `taggedPrimitiveRelationEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体; Cycle 16ではそのfinite word間の任意の生成関係 | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; 全finite wordのfree monoidと、その任意の生成関係によるactual presented-monoid quotient category | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | multiobject endpoint-typed representative serializationとdecoder、合法な追加parameter roleの判定、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
+| A | 一つの宣言の下で意味圏と有限構文を独立に構成する | lens宣言群; `ProtocolSchema`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.decoder`; 予備的な`AATReferenceShape`, `FiniteReferenceSkeleton`; `G122FamilyInput`, `G122CellInput`; `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, 対象依存の`PrimitiveAtom`/`PrimitiveSource`/`PrimitiveObject`/`PrimitiveContext`とG-122のsignature/equation/invariant/raw各role; `PrimitiveOperation.g122Ref`, `g122Value`, `g122ConfigurationMap`; `ClosedPrimitiveReference`, `closedTaggedPrimitiveReferenceEquiv`; `OperationTag`, `sequenceTaggedOperationPackage`, `no_surjectiveEndomorphismDecoder_of_listGeneratedCode`; `TaggedPrimitiveReference`, tagged branchの4 translation、`listTaggedPrimitiveReferenceEmbedding`; `TaggedPrimitiveWord`, `TaggedPrimitiveWordPresentation`, `taggedPrimitiveWordEndomorphismDecoder_surjective`; `TaggedPrimitivePresentedMonoid`, `TaggedPrimitiveRelationPresentation`, `taggedPrimitiveRelationEndomorphismDecoder_surjective` | lensの`V,v₀`; protocolの有限`Q,L`と任意の観測functor `O`; G-117のnullary tag; G-122の任意の`A,z,omega,k,g_z`; Cycle 10の候補失敗ではopaqueな`Nat → Bool` operation tag; tagged branchでは既存Primitive Atom/Source/Object/Operation全体; Cycle 16ではそのfinite word間の任意の生成関係 | product lens decoder; path/quotient protocol decoder; 閉じた4枝dispatch; G-122原入力から`fixedGeometry`, `sourceTransport`, `compatibleProblemData`, `barBeta`を出力として組み立て、同じ一般branchへ入れる依存分解; 原supportの各operation identityとconfiguration作用の端点付き評価; 現行closed signatureの全12 roleの依存sumとtagged branchで4 roleが全体である同値; tagged branchの全primitive occurrenceをcompleted mapなしで有限object listへ単射化; 全finite wordのfree monoidと、その任意の生成関係によるactual presented-monoid quotient category | Bの二具体適用、Eのモデル同期; 後続の非循環な`D_Theta`とG-122有限operation生成規則、branch別interpretation、closed presentation設計; Dの量化保持; mandatory-C syntax cardinal監査 | まだ宣言されていないcomplete-geometry Support/Axis/Observable・reading/restriction・係数/transport roleの追加とtagged inhabitant判定、G-122 operation族の有限生成・全域operationMap回復、branch別primitive interpretation、G-122原入力の有限構文化とinterpretation、有限`Σ`、`D_Θ,R_Θ,P_Θ,F_Θ`、完全幾何 |
 | B0 | 生成部の写像と全域射の`res/ext`往復、構文評価`J` | lens B0宣言群; `ProtocolRealization.GeneratorMap`, `generatorPathNatTrans`, `res`, `ext`, `homEquivGeneratorMap`; `ProtocolPresentation.evaluationEquiv`, `displayedHomEquivGeneratorMap`, `decoder_map_eq_displayedExt_evaluation` | lens保存則; protocolの生成辺可換式と観測保存だけ | lens全域map; path帰納と商帰納による全execution自然変換 | 各decoderの充満性・忠実性 | AAT完全幾何の対応する構成 |
 | B 充満性 | 各decoderの充満性を個別に放電する | `lensDecoder_full`, `ProtocolPresentation.decoder_full`; `retractEndomorphismMap_surjective_of_full`, `exists_retractEndomorphismMap_surjective`; `not_full_and_retractGenerated_of_listObjectGeneratedEndomorphisms`; `not_full_and_retractGenerated_of_endomorphismEmbedding` | 各具体入力条件のみ; 一般transferでは明示的な`F.Full`; combined no-goでは各presentation自己射が有限primitive listの全射像またはそこへの単射を持つこと | 任意の完成射を制限して有限tableを構成; retract上の任意自己射を`r ≫ h ≫ i`のfullness preimageから持ち上げる; injective endomorphism serializationの`invFun`からlist decoder全射を構成; mandatory対象の非全射と合成 | 各direct equivalence; mandatory-C obstructionを任意のmultiobject presentation categoryへ移す categorical/cardinal bridge | final `R_Theta` decoderの充満性を固定入力から放電し、actual endpoint-typed syntaxの各自己射embeddingと接続すること |
 | B 忠実性 | 各decoderの忠実性を個別に放電する | `lensDecoder_faithful`, `ProtocolPresentation.decoder_faithful` | 各具体入力条件のみ | `res`で各table entryを回復 | 各direct equivalence | AAT完全幾何への適用 |
@@ -2709,4 +2709,89 @@ audits:
   vacuity: "every quotient hom is represented by a raw path by construction, and the raw-path list decoder was already proved surjective from an injective exact-edge serialization"
   blocking_findings: []
   next_obligation: "Derive the candidate relation/substitution and any additional parameter roles from fixed Sigma,D source laws, or prove those laws force this grammar; then establish or refute actual final R_Theta membership of the complete mandatory-C source-choice family."
+```
+
+## Cycle 20 — Current closed-role exhaustion on mandatory C
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 20
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 4151f0da1810208ea86b22c20921247a940507c8
+tracking_issue: 4520
+selection:
+  proof_state_ref: "Cycle 19 left open whether an already declared closed-signature role had been omitted from the mandatory-C alphabet"
+  proof_obligation: "Form one dependent sum of every primitive role currently declared by AATClosedFamilySignature and prove its exact specialization at the tagged-operation parameter"
+  selection_reason: "The relation-quotient obstruction can constrain final syntax only after token provenance and role coverage are audited; this separates current declaration coverage from still-undeclared fixed-GOAL roles."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/ClosedPrimitiveRoleExhaustion.lean
+  risks:
+    - "claim that the current closed signature already contains every role required by GOAL A"
+    - "erase dependent operation endpoints, context owners, or signature-axis owners in the sum"
+    - "assume G-122-only indexed families empty through a certificate"
+    - "promote current-declaration exhaustion to final Sigma role exhaustion or G-123 refutation"
+  unchecked:
+    - "complete-geometry Support, Axis, Observable, reading, restriction, coefficient, and transport roles not yet declared"
+    - "source-derived final congruence and substitution"
+    - "final Sigma,D_Theta,R_Theta and mandatory-C membership"
+    - "remaining A--F obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed a 12-constructor dependent sum of every primitive family currently declared in AATClosedFamilySignature; constructed both translations at the mandatory tagged parameter; eliminated every impossible G-122-only indexed role; and proved an equivalence with the exact four-role TaggedPrimitiveReference alphabet used by Cycles 14--19."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/ClosedPrimitiveRoleExhaustion.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.ClosedPrimitiveReference
+    - AAT.AG.RealizationReconstruction.closedTaggedPrimitiveReferenceToTagged
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveReferenceToClosedTagged
+    - AAT.AG.RealizationReconstruction.closedTaggedPrimitiveReferenceEquiv
+  claim_mapping:
+    input_premises:
+      - "the single already constructed ClosedFamilyParameter and FamilyRealization indices"
+      - "all 12 primitive families actually declared in AATClosedFamilySignature"
+      - "the fixed taggedOperation parameter and realization"
+    constructed_evidence:
+      - "one dependent disjoint sum preserving operation endpoints, context owners, and signature-axis owners"
+      - "forward and inverse translations for every inhabited tagged constructor"
+      - "indexed elimination of context, diagnostic, signature, equation, invariant, coordinate, and relation roles at the tagged parameter"
+      - "two inverse laws and the resulting type equivalence"
+    proof_use:
+      - "the equivalence shows that Cycles 14--19 omitted no role already present in the current closed signature on mandatory C"
+      - "the explicit unfinished list prevents using this equivalence as final source-role exhaustion"
+    unfinished:
+      - "the closed signature itself lacks several complete-geometry/coefficient/transport roles fixed by GOAL A"
+      - "inhabitants and syntax effects of those future roles at mandatory C are unknown"
+      - "final relation provenance, Sigma,D_Theta,R_Theta, source-choice membership, and A--F remain unconstructed"
+      - "no fixed-target refutation or target-theorem-proved status is claimed"
+    acceptance_point: "Acceptance proves exhaustion only relative to the declarations currently present in AATClosedFamilySignature. It does not prove exhaustion relative to the fixed GOAL."
+  validation:
+    focused_checks: "1/1 pass"
+    named_target_build: "ResearchLean.AG.RealizationReconstruction.ClosedPrimitiveRoleExhaustion passed (4276 registered jobs; not Research aggregate build)"
+    namespace_axiom_audit: "86 generated and named declarations, standard axioms only"
+    research_full_build: not-run
+  verdict: "Cycle 20 closes current-declaration role coverage on mandatory C while exposing the still-undeclared fixed-GOAL roles as the next material premise. G-123 remains neither proved nor refuted."
+audits:
+  premise_delta:
+    discharged:
+      - "one indexed carrier for every currently declared primitive role"
+      - "exact tagged-branch specialization and inverse translations"
+      - "nonexistence of every current G-122-only role on the tagged branch"
+    remaining:
+      - "declaration and provenance of missing fixed-GOAL roles"
+      - "final congruence/substitution and semantic-category membership"
+      - "all remaining A--F obligations"
+  certificate_provenance:
+    discharged:
+      - "emptiness is proved by dependent constructor elimination; no role-exhaustion or emptiness certificate is accepted"
+    unresolved:
+      - "completeness of AATClosedFamilySignature against the fixed source"
+  structure_field_escape: "each sum constructor stores exactly one already declared primitive value with its dependent indices; no completed map, decoder, extension, or reconstruction evidence is added"
+  route_integrity: "the sum is defined before any semantic decoder and records current source constructors without interpreting them as completed morphisms"
+  target_fitting: "the tagged branch retains all current roles exactly, but missing GOAL roles are expressly not inferred empty"
+  vacuity: "four tagged constructors are inhabited by their original payload types; the equivalence is two-sided"
+  blocking_findings: []
+  next_obligation: "Declare and provenance the missing complete-geometry/coefficient/transport roles required by GOAL A, then determine their mandatory-C inhabitants before extending or rejecting the Cycle 18--19 grammar."
 ```
