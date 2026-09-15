@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 56 fixed finite-axis-fold ambient-kernel recipes and their normalization-kernel membership
+- current proof obligation: Cycle 57 fixed displayed ambient-kernel pair and its raw/normalized comparison-group separation
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: prove the two fixed endpoint kernel generators preserve or fail to preserve the actual `barAlpha` and generated `barBeta`, then connect the preserving pairs to the original and base-fixing comparison groups without treating an arbitrary group element as a syntax constant
+- next proof obligation: extend the source-provenanced presentation to the comparison-preserving section and the distinct restriction-kernel generators, then recover every element of each fixed lift fiber without treating an arbitrary group element as a syntax constant
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 57 delta | Cycle 56の固定source recipeから得たambient核元を実`barAlpha`のendpoint pairへ接続し、正規化後の比較は保つが元比較は保たないこと、底・係数成分を固定することを同じpairで証明する | `finiteAxisFoldDirectAdmissibleEndpoint_eq`, `finiteAxisFoldViaBaseAdmissibleEndpoint_eq`, `finiteAxisFoldDisplayedAmbientKernelComparisonPair`, `_eq_authored`, `_fst`, `_fst_ne_one`, `_normalization`, `_normalized_mem`, `_not_raw_mem`, `_component_packet` | カード固定finite axis-fold入力とCycle 56の`direct` recipe評価; G-122のaccepted `authoredExactAmbientKernelComparisonPair`と比較群定理 | 表示recipe由来pairと既存G-122 witnessのexact equality、source非恒等、normalization endpoint homでidentity、normalized比較群membership、raw比較群nonmembership、両端の底と係数identity packet | Dの「ambient核元は元比較を保たない」を表示側の同じ固定pairへ戻し、ambient核とrestriction kernelを型・membershipで分離 | generated `barBeta`側の判定、section/その表示、restriction kernel、全lift fiber、元/底固定全比較群の全元、一般入力、B/E/Fは未完了 |
 | D Cycle 56 delta | 固定finite axis-foldのdirect/via-base両端で、canonical正規化に消えるambientな核の元を、完成自己同型・admissibility証拠・比較群要素を入力せず有限recipeから構成する | `finiteAxisFoldDirectEndpointAdmissible`, `finiteAxisFoldViaBaseEndpointAdmissible`, `FiniteAxisFoldAmbientKernelCode`, `endpoint`, `admissibleEndpoint`, `evaluate`, `evaluateAut`, `evaluate_ne_identity`, `evaluate_comp_self`, `normalization_comp_evaluate`, `evaluate_comp_normalization`, `admissibleEvaluateAut`, `admissibleEvaluateAut_ne_one`, `normalization_map_admissibleEvaluateAut`, `admissibleEvaluateAut_mem_normalizationKernel`, `no_code_evaluates_to_identity` | カード固定の`finiteAxisFoldBCDatumSquare`、cell `second`、係数`Int`、同じgeometry/raw input; 固定support packageの既存admissibilityとexact pull/pushによるadmissibility transport | endpoint tagだけを持つ2要素code、元southwest admissibilityから両endpoint admissibilityを構成、各codeを非恒等な位数2のcomplete-geometry自己同型へ評価、canonical正規化の左右吸収、独立admissible-geometry category上のnormalization automorphism homのkernel membership | Dでambientな核を正規化結果から推測せず表示側source recipeとして回復する固定例; 後続の比較保存判定と二種類の核の分離 | この2元はまだ実`barAlpha`/`barBeta`を保つpairとして未分類; 元の全比較群・底固定群の全元、restriction kernel、section、全lift fiber、一般入力へのsyntax、B/E/Fは未完了 |
 | A/D Cycle 55 delta | 実`barAlpha`の逆を元入力から生成するtyped syntaxとして表示し、source-law商圏内で可逆比較と固定generated `barBeta`の非可逆比較を同じdecoder上で分離する | `G122GeneratedComparisonSyntax.barAlphaInv`, `evaluate_barAlphaInv`, `evaluate_barAlpha_barAlphaInv`, `evaluate_barAlphaInv_barAlpha`, `Congruent.barAlpha_hom_inv`, `Congruent.barAlpha_inv_hom`, `G122GeneratedComparisonPresentation.barAlphaIso`, `finiteAxisFold_barBeta_class_not_isIso` | 任意のG-122 family/cell inputと、そこから既に構成済みの実`barAlphaIso`; Cycle 54 source-law quotient category/decoder; 固定generated-cochain `barBeta`のsemantic非可逆性 | exact逆向きendpointの有限leaf、元入力からの評価、両inverse lawのsource-law合同、商圏内の明示的Iso、decoderがIsIsoを保つことを使う固定`barBeta`非可逆性 | Dの三分類のうち可逆・非可逆を表示圏自身の射性質として保持し、比較群表示へ進む基礎 | 全比較群と底固定群の全元、section、底/係数成分、二核・全lift fiber、全許容Homのsyntax、res/ext/J、B/E/Fは未完了 |
 | A/D Cycle 54 delta | Cycle 51構文をCycle 52のsource-law合同でHomごとに商し、既存の全complete-Hom圏を置換せず別の表示圏とdecoderを構成し、固定正負例を保つ | `G122GeneratedComparisonPresentation`, `ofObject`, `congruentSetoid`, `Hom`, `classOf`, `comp`, `instCategory`, `decoder`, `decoder_map_classOf`, `finiteAxisFold_barBeta_factor_class_eq`, `finiteAxisFold_barD_class_ne_identity_class`, `decoder_map_finiteAxisFold_barD` | 任意のG-122 family/cellからのendpoint-typed syntax; source-law `Congruent` の同値・合成閉包、評価soundness、固定factorization正例とprojector非同値負例 | exact生成objectを保持する別object wrapper、source-law quotient Hom、商上の恒等・合成・圏律、独立全Hom圏へのwell-defined decoder、固定barBeta factorization等号とbarD対identity非等号 | Dの生成比較fragmentを実際の商圏とsemantic decoderへ接続し、後続の全成分syntax拡張の基礎にする | 四operation fragmentは全許容Homを覆わず、合同complete/decoder full・faithful、全成分res/ext/J、冪等分裂、retract生成、D全群・二核・全fiber、E/Fは未完了 |
@@ -5629,4 +5630,121 @@ audits:
     - "fresh Math A/B and Lean A/B review: PASS after two noncentral integration/Lean-style fixes"
   blocking_findings: []
   next_obligation: "Calculate whether the two fixed endpoint kernel generators preserve barAlpha and generated barBeta, then place each preserving pair in the exact original/base-fixing comparison subgroup and keep failures distinct from the restriction kernel."
+```
+
+## Cycle 57 — Displayed ambient-kernel comparison separation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 57
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 1e0aa267ba3ffd1688faa31de2ae51043ac7e1a0
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 56 constructed fixed endpoint ambient-kernel recipes but left comparison preservation unclassified"
+  proof_dag_predecessors:
+    - "Cycle 56 direct/via-base source recipes and normalization-kernel membership"
+    - "G-122 authoredExactAmbientKernelComparisonPair and exact barAlpha comparison-group classification"
+  proof_obligation: "Connect the displayed direct endpoint involution paired with target identity to the actual fixed barAlpha groups and prove normalized membership versus raw nonmembership on the same pair"
+  selection_reason: "D requires the ambient normalization kernel and the comparison-restriction kernel to remain distinct. The Cycle 56 source recipe therefore has to be classified against the actual fixed comparison before any section, restriction kernel, or fiber recovery can be claimed."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldAmbientKernelComparison.lean
+  risks:
+    - "replace the displayed recipe with an unrelated accepted witness"
+    - "confuse ambient normalization kernel with comparison-restriction kernel"
+    - "claim a selected pair recovers all comparison-group elements or lift fibers"
+  unchecked:
+    - "generated barBeta comparison preservation"
+    - "the comparison section, restriction kernel, and every lift fiber"
+    - "all elements of the original and base-fixing comparison groups"
+    - "general-input presentation and remaining B/E/F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Proved that the Cycle 56 admissible endpoints are exactly the G-122 authored endpoints. Constructed the endpoint pair directly from the displayed source recipe and target identity, proved it equals the accepted G-122 ambient witness, retains a nontrivial source component, normalizes to identity, lies in the normalized barAlpha comparison group, does not lie in the raw barAlpha comparison group, and fixes the base and coefficient components at both endpoints."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldAmbientKernelComparison.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldDirectAdmissibleEndpoint_eq
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldViaBaseAdmissibleEndpoint_eq
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldDisplayedAmbientKernelComparisonPair
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldDisplayedAmbientKernelComparisonPair_eq_authored
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldDisplayedAmbientKernelComparisonPair_fst_ne_one
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldDisplayedAmbientKernelComparisonPair_normalization
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldDisplayedAmbientKernelComparisonPair_normalized_mem
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldDisplayedAmbientKernelComparisonPair_not_raw_mem
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldDisplayedAmbientKernelComparisonPair_component_packet
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldDisplayedAmbientKernelComparisonPair_eq_authored
+      - finiteAxisFoldDisplayedAmbientKernelComparisonPair_fst_ne_one
+      - finiteAxisFoldDisplayedAmbientKernelComparisonPair_normalization
+      - finiteAxisFoldDisplayedAmbientKernelComparisonPair_normalized_mem
+      - finiteAxisFoldDisplayedAmbientKernelComparisonPair_not_raw_mem
+      - finiteAxisFoldDisplayedAmbientKernelComparisonPair_component_packet
+    source_labels:
+      - "GOAL D: preserve the fixed finite-axis-fold input and distinguish both kernels"
+      - "GOAL D: carry comparison, base, and coefficient components on the same correspondence"
+      - "n1014: recover lost information on the presentation side rather than infer it from normalization alone"
+    conjuncts:
+      - "Cycle 56 direct recipe plus target identity -> the exact authored endpoint pair"
+      - "same pair -> nontrivial source and identity normalized image"
+      - "same pair -> normalized barAlpha membership and raw barAlpha nonmembership"
+      - "same pair -> identity base and coefficient components at both endpoints"
+    undischarged_assumptions:
+      - "generated barBeta preservation has not been classified"
+      - "the comparison section, restriction kernel, and every lift fiber have not been displayed"
+      - "neither full comparison group has been recovered"
+      - "general-input presentation and remaining B/E/F obligations remain open"
+    acceptance_point: "The fixed displayed ambient witness now satisfies the required normalized/raw separation and component calculations; this is not all-group recovery or G-123 completion."
+    port_status: not-applicable
+review:
+  independent_lanes:
+    math_a: pass-after-noncentral-fix
+    math_b: pass-after-noncentral-fix
+    lean_a: pass-after-noncentral-fix
+    lean_b: pass-after-noncentral-fix
+  resolved_findings:
+    - "converted the Cycle 57 packet to the canonical cycle-ledger schema without changing its claims"
+  direct_response:
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "displayed-to-authored witness identity at the exact fixed endpoints"
+      - "normalized membership and raw nonmembership of that same pair"
+      - "base/coefficient component packet"
+    remaining:
+      - "section, restriction kernel, all fibers, all group elements, general input, and remaining B/E/F"
+  certificate_provenance:
+    discharged:
+      - "the displayed pair has no fields or arguments and is constructed from the direct Cycle 56 recipe plus target identity"
+      - "accepted G-122 classification theorems are applied only after exact equality with the recipe-derived pair"
+      - "the nonidentity theorem uses the Cycle 56 evaluated source component rather than the accepted pair as a new input"
+    unresolved:
+      - "source recipes for the comparison section, restriction kernel, and full lift fibers remain absent"
+  proof_use:
+    used:
+      - "finiteAxisFoldDisplayedAmbientKernelComparisonPair_eq_authored before normalization and both subgroup classifications"
+      - "FiniteAxisFoldAmbientKernelCode.direct.admissibleEvaluateAut_ne_one for source nontriviality"
+      - "all four accepted base/coefficient component theorems for the same displayed pair"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check for FiniteAxisFoldAmbientKernelComparison: PASS"
+    - "registered exact target build: PASS (4289 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 11 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh Math A/B and Lean A/B review: PASS after one shared noncentral report-schema fix"
+  blocking_findings: []
+  next_obligation: "Construct source recipes for the actual comparison section and restriction-kernel action, then recover each fixed lift fiber and keep the ambient nonmember distinct."
 ```
