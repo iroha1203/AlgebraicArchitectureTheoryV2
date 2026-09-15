@@ -29,7 +29,11 @@ Source roles are indexed by both the closed parameter and semantic object.
 Generator actions use explicit `Nat`/`Fin` tables of Atom and object
 occurrences.  Their equations quantify only over those finite indices; total
 Atom maps, total object maps, and completed semantic morphisms are reserved
-for later extension constructions.
+for later extension constructions.  Relation and identification edges are
+independent finite endpoint tables rather than copies of evaluated semantic
+predicates.  Their coherence conditions remain external Props, with explicit
+positive and negative instances, until source-provenanced transform syntax
+can discharge them.
 -/
 
 namespace AAT.AG.RealizationReconstruction
@@ -278,9 +282,11 @@ def g122SelectedQuantities
 end PrimitiveObject
 
 /-- Intrinsically finite object-formation syntax for one G-122 realization.
-Each object term is a finite list of Atom occurrences.  Its family,
-configuration, architecture object, and dependent readings are all evaluator
-outputs of the original authored support package. -/
+Each object term contains a finite list of Atom occurrences and independent
+finite relation and identification edges with two occurrence endpoints.  Its
+family, configuration, architecture object, and dependent readings are all
+evaluator outputs of the original authored support package; the edge tables
+are not copied from the evaluated configuration predicates. -/
 structure G122FiniteObjectFormationDisplay
     (input : G122FamilyInput.{u, v}) (X : G122CellInput input) where
   /-- Number of object-formation terms. -/
@@ -497,10 +503,11 @@ theorem configurationValue_familySupported
 
 end G122FiniteObjectFormationDisplay
 
-/-- Purely finite maps between G-122 Atom-occurrence object terms.  The maps
-choose a target object term and, inside it, a target occurrence for every
-source occurrence.  They contain no function on the Atom carrier or any
-semantic evaluation/naturality certificate. -/
+/-- Purely finite maps between G-122 object terms.  They choose a target term,
+a target occurrence for every source occurrence, and target edge indices for
+every relation and identification generator.  They contain no function on the
+Atom carrier, endpoint-preservation proof, or semantic evaluation/naturality
+certificate. -/
 structure G122FiniteObjectFormationAction
     {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
     (source : G122FiniteObjectFormationDisplay input X)
@@ -736,7 +743,8 @@ theorem ValueCoherent.comp
 
 /-- Finite relation-endpoint coherence says that mapping either endpoint of a
 source relation edge gives the corresponding endpoint of its selected target
-relation edge.  It mentions only independently generated finite syntax. -/
+relation edge.  This Cycle 35 API premise mentions only independently generated
+finite syntax and remains undischarged from the fixed G-123 input. -/
 def RelationEndpointsCoherent
     {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
     {source : G122FiniteObjectFormationDisplay input X}
@@ -751,7 +759,8 @@ def RelationEndpointsCoherent
           (action.relationIndexMap objectIndex relationIndex)
 
 /-- Finite identification-endpoint coherence is the analogous condition for
-independently generated identification edges. -/
+independently generated identification edges.  It is an undischarged Cycle 35
+API premise, not a semantic preservation certificate. -/
 def IdentificationEndpointsCoherent
     {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
     {source : G122FiniteObjectFormationDisplay input X}
@@ -766,6 +775,78 @@ def IdentificationEndpointsCoherent
         (source.identificationRight objectIndex identificationIndex) =
       target.identificationRight (action.objectIndexMap objectIndex)
         (action.identificationIndexMap objectIndex identificationIndex)
+
+/-- Finite source display used only as the non-satisfying-instance witness for
+the three Cycle 35 coherence predicates.  Both occurrences evaluate to the
+same original Atom, while both edge kinds start at occurrence zero. -/
+noncomputable def coherenceCounterexampleSourceDisplay :
+    G122FiniteObjectFormationDisplay finiteAxisFoldG122FamilyInput
+      finiteAxisFoldG122CellInput where
+  objectCard := 1
+  atomCard _ := 2
+  atomValue _ atomIndex :=
+    Fin.cases FiniteModel.FiniteAtom.componentA
+      (fun _ => FiniteModel.FiniteAtom.componentA) atomIndex
+  relationCard _ := 1
+  relationLeft _ _ := 0
+  relationRight _ _ := 0
+  identificationCard _ := 1
+  identificationLeft _ _ := 0
+  identificationRight _ _ := 0
+
+/-- Finite target display for the coherence counterexample.  Its two
+occurrences have distinct Atom values, and both edge kinds start at occurrence
+one, so the identity index maps fail all three finite coherences. -/
+noncomputable def coherenceCounterexampleTargetDisplay :
+    G122FiniteObjectFormationDisplay finiteAxisFoldG122FamilyInput
+      finiteAxisFoldG122CellInput where
+  objectCard := 1
+  atomCard _ := 2
+  atomValue _ atomIndex :=
+    Fin.cases FiniteModel.FiniteAtom.componentA
+      (fun _ => FiniteModel.FiniteAtom.componentB) atomIndex
+  relationCard _ := 1
+  relationLeft _ _ := 1
+  relationRight _ _ := 1
+  identificationCard _ := 1
+  identificationLeft _ _ := 1
+  identificationRight _ _ := 1
+
+/-- The finite action used by the coherence counterexample maps every index
+to itself; failure therefore comes from actual value and endpoint mismatch,
+not from partiality or an empty table. -/
+noncomputable def coherenceCounterexampleAction :
+    G122FiniteObjectFormationAction coherenceCounterexampleSourceDisplay
+      coherenceCounterexampleTargetDisplay where
+  objectIndexMap objectIndex := objectIndex
+  atomIndexMap _ atomIndex := atomIndex
+  relationIndexMap _ relationIndex := relationIndex
+  identificationIndexMap _ identificationIndex := identificationIndex
+
+/-- Negative instance for `ValueCoherent`: the two equal source occurrence
+values map to the two distinct target Atom values.  Together with
+`valueCoherent_id`, this supplies the quality-standard instance pair. -/
+theorem coherenceCounterexampleAction_not_valueCoherent :
+    ¬ coherenceCounterexampleAction.ValueCoherent := by
+  intro hcoherent
+  have h := hcoherent (0 : Fin 1) (0 : Fin 2) (1 : Fin 2) rfl
+  exact FiniteModel.FiniteAtom.noConfusion h
+
+/-- Negative instance for relation-endpoint coherence: the source left endpoint
+is zero while its selected target relation starts at one. -/
+theorem coherenceCounterexampleAction_not_relationEndpointsCoherent :
+    ¬ coherenceCounterexampleAction.RelationEndpointsCoherent := by
+  intro hcoherent
+  have h := (hcoherent (0 : Fin 1) (0 : Fin 1)).1
+  exact (by decide : (0 : Fin 2) ≠ 1) h
+
+/-- Negative instance for identification-endpoint coherence: the source left
+endpoint is zero while its selected target identification starts at one. -/
+theorem coherenceCounterexampleAction_not_identificationEndpointsCoherent :
+    ¬ coherenceCounterexampleAction.IdentificationEndpointsCoherent := by
+  intro hcoherent
+  have h := (hcoherent (0 : Fin 1) (0 : Fin 1)).1
+  exact (by decide : (0 : Fin 2) ≠ 1) h
 
 /-- Identity actions preserve all generated relation endpoints. -/
 theorem relationEndpointsCoherent_id
@@ -906,8 +987,9 @@ theorem familyMap_comp
   exact (Classical.choose_spec
     (first.familyMap objectIndex atom).property).symm
 
-/-- The generated-family map sends the left endpoint of every source relation
-edge to the left endpoint value of its selected target relation edge. -/
+/-- Cycle 35 API lemma: under the undischarged finite value and endpoint
+coherence premises, the generated-family map sends every source relation-left
+endpoint to the selected target endpoint value. -/
 theorem familyMap_relationLeft
     {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
     {source : G122FiniteObjectFormationDisplay input X}
@@ -926,7 +1008,8 @@ theorem familyMap_relationLeft
   rw [action.familyMap_occurrence hvalue]
   rw [(hrelation objectIndex relationIndex).1]
 
-/-- The generated-family map likewise preserves right relation endpoints. -/
+/-- Cycle 35 API lemma: the same undischarged finite premises give the exact
+target value for every right relation endpoint. -/
 theorem familyMap_relationRight
     {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
     {source : G122FiniteObjectFormationDisplay input X}
@@ -945,8 +1028,9 @@ theorem familyMap_relationRight
   rw [action.familyMap_occurrence hvalue]
   rw [(hrelation objectIndex relationIndex).2]
 
-/-- The generated-family map sends the left endpoint of every source
-identification edge to its selected target endpoint value. -/
+/-- Cycle 35 API lemma: under the undischarged finite value and endpoint
+coherence premises, every identification-left endpoint maps to its selected
+target endpoint value. -/
 theorem familyMap_identificationLeft
     {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
     {source : G122FiniteObjectFormationDisplay input X}
@@ -966,8 +1050,8 @@ theorem familyMap_identificationLeft
   rw [action.familyMap_occurrence hvalue]
   rw [(hidentification objectIndex identificationIndex).1]
 
-/-- The generated-family map likewise preserves right identification
-endpoints. -/
+/-- Cycle 35 API lemma: the same undischarged finite premises give the exact
+target value for every right identification endpoint. -/
 theorem familyMap_identificationRight
     {input : G122FamilyInput.{u, v}} {X Y : G122CellInput input}
     {source : G122FiniteObjectFormationDisplay input X}

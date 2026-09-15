@@ -3792,7 +3792,7 @@ selection:
 result:
   proposed_result_type: target-proof-checkpoint
   completion_candidate: no
-  proof_obligation_delta: "Extended each finite object term with independently generated finite relation and identification edge tables, each carrying two occurrence endpoints. Extended formation actions with relation and identification index maps and rebuilt extensionality, identity, composition, and category laws. Added external finite endpoint-coherence predicates with identity/composition closure. Used ValueCoherent plus endpoint coherence to prove that generated-family maps carry all four source endpoint values to the corresponding selected target endpoint values."
+  proof_obligation_delta: "Extended each finite object term with independently generated finite relation and identification edge tables, each carrying two occurrence endpoints. Extended formation actions with relation and identification index maps and rebuilt extensionality, identity, composition, and category laws. Added external finite endpoint-coherence predicates with identity/composition closure. Used ValueCoherent plus endpoint coherence to prove that generated-family maps carry all four source endpoint values to the corresponding selected target endpoint values. Added one nonempty finite action that fails ValueCoherent and both endpoint coherences, complementing the identity positive instances."
   evidence:
     - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationDisplay.relationCard
     - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationDisplay.relationLeft
@@ -3804,6 +3804,12 @@ result:
     - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.identificationIndexMap
     - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.RelationEndpointsCoherent
     - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.IdentificationEndpointsCoherent
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.coherenceCounterexampleSourceDisplay
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.coherenceCounterexampleTargetDisplay
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.coherenceCounterexampleAction
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.coherenceCounterexampleAction_not_valueCoherent
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.coherenceCounterexampleAction_not_relationEndpointsCoherent
+    - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.coherenceCounterexampleAction_not_identificationEndpointsCoherent
     - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.relationEndpointsCoherent_id
     - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.RelationEndpointsCoherent.comp
     - AAT.AG.RealizationReconstruction.G122FiniteObjectFormationAction.identificationEndpointsCoherent_id
@@ -3821,6 +3827,7 @@ result:
       - "identity and composition for relation/identification index maps"
       - "identity and composition closure for both endpoint-coherence predicates"
       - "exact familyMap images of left/right relation and identification endpoint values"
+      - "positive identity instances and one explicit non-satisfying finite instance for all three coherence predicates"
     proof_use:
       - "action composition routes each edge through the mapped middle object and middle edge index"
       - "endpoint-coherence composition maps first-stage endpoint equations through the second Atom index map and then applies second-stage coherence"
@@ -3832,7 +3839,7 @@ result:
   validation:
     focused_checks: "AATClosedFamilySignature and ClosedPrimitiveRoleExhaustion 2/2 pass"
     named_target_build: "ClosedPrimitiveRoleExhaustion passed (4276 registered jobs; not Research aggregate build)"
-    namespace_axiom_audit: "714 and 140 declarations, standard axioms only"
+    namespace_axiom_audit: "720 and 140 declarations, standard axioms only"
     research_full_build: not-run
   verdict: "Cycle 35 preserves both endpoints of independently generated finite relation and identification edges on generated-family maps. It does not identify those edges with semantic configuration predicates or discharge their provenance, so G-123 remains unproved."
 audits:
@@ -3843,10 +3850,12 @@ audits:
       - "construct source-provenanced Atom-transform syntax discharging all finite coherence predicates"
       - "semantic extension, res/ext/J, and all remaining A--F obligations"
   certificate_provenance: "finite edge endpoints are raw indices, not semantic predicates; ValueCoherent and endpoint coherence are explicitly undischarged external conditions and are used only in endpoint descent theorems"
-  structure_field_escape: "display fields contain only Nat/Fin shapes and endpoints; action fields contain only Fin maps; no configuration predicate or completed semantic map is stored"
+  structure_field_escape: "the new relation/identification display fields contain only Nat/Fin shapes and endpoints, alongside the pre-existing source Atom occurrences; action fields contain only Fin maps; no configuration predicate or completed semantic map is stored"
   route_integrity: "every source edge keeps its left and right occurrence endpoints, the action maps its edge index, and the endpoint equations are separately proved through familyMap"
   target_fitting: "the construction retains nonidentity and many-to-one Atom actions while adding relation/identification syntax needed before semantic preservation"
   vacuity: "empty edge tables yield no endpoint claim and do not imply semantic relation/identification emptiness or completeness"
-  blocking_findings: []
+  blocking_findings:
+    - "FIXED: public display/action docstrings and the structure-field audit now enumerate the new edge surface precisely"
+    - "FIXED: explicit non-satisfying finite instances were added for ValueCoherent and both endpoint-coherence predicates"
   next_obligation: "Connect the finite edge generators to the source-generated configuration predicates by source-derived soundness/completeness, without storing those predicates or their global graphs as syntax."
 ```
