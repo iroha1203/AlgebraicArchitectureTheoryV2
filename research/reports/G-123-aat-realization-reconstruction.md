@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 57 fixed displayed ambient-kernel pair and its raw/normalized comparison-group separation
+- current proof obligation: Cycle 58 source-law quotient comparison group, all-elements source classification, and fixed raw-group evaluation
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: extend the source-provenanced presentation to the comparison-preserving section and the distinct restriction-kernel generators, then recover every element of each fixed lift fiber without treating an arbitrary group element as a syntax constant
+- next proof obligation: prove endpoint-automorphism coverage from source syntax or record its exact obstruction, then lift the canonical normalization section and restricted-kernel fibers without treating semantic group elements as syntax constants
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 58 delta | `barAlpha`を含むsource-law quotient圏の内部で比較群を定め、表示群の全元を有限syntax quotientのsource自己同型で分類し、固定G-122 raw比較群へ同じ両端pairを評価する | `GeneratedArrowComparisonSubgroup`, `presentationIsoConjugationAutomorphismHom`, `generatedArrowComparisonSectionHom`, `generatedArrowComparisonSourceHom`, `generatedArrowComparisonSection_source_rightInverse`, `generatedArrowComparisonSourceEquiv`, `FiniteAxisFoldGeneratedComparisonSubgroup`, `finiteAxisFoldDirectPresentationAutomorphismHom`, `finiteAxisFoldViaBasePresentationAutomorphismHom`, `finiteAxisFoldPresentationEndpointAutomorphisms_preserve_barAlpha`, `finiteAxisFoldGeneratedComparisonEvaluationHom`, `finiteAxisFoldGeneratedComparisonEvaluation_section` | 一般の圏と表示Iso; 固定例ではCycle 54/55のsource-law quotientとsource-constructed `barAlphaIso`、同じfinite axis-fold入力、既存endpoint admissibility | decoder等号で定義しない表示比較部分群、その全元のsource-conjugation分類と群同型、両endpoint decoderの群準同型、表示可換正方形をdecoderで運んだ実raw比較群membership、sectionのpair全体での可換性 | Dの「表示側の全比較群元」を意味側群元の再入力なしに定式化し、raw比較群への群準同型を固定する | endpoint decoderのAut全射性が未証明のためsemantic raw群の全元回復は未完了; canonical normalization section、restriction kernel、全lift fiber、底固定群、一般入力、B/E/Fは未完了 |
 | D Cycle 57 delta | Cycle 56の固定source recipeから得たambient核元を実`barAlpha`のendpoint pairへ接続し、正規化後の比較は保つが元比較は保たないこと、底・係数成分を固定することを同じpairで証明する | `finiteAxisFoldDirectAdmissibleEndpoint_eq`, `finiteAxisFoldViaBaseAdmissibleEndpoint_eq`, `finiteAxisFoldDisplayedAmbientKernelComparisonPair`, `_eq_authored`, `_fst`, `_fst_ne_one`, `_normalization`, `_normalized_mem`, `_not_raw_mem`, `_component_packet` | カード固定finite axis-fold入力とCycle 56の`direct` recipe評価; G-122のaccepted `authoredExactAmbientKernelComparisonPair`と比較群定理 | 表示recipe由来pairと既存G-122 witnessのexact equality、source非恒等、normalization endpoint homでidentity、normalized比較群membership、raw比較群nonmembership、両端の底と係数identity packet | Dの「ambient核元は元比較を保たない」を表示側の同じ固定pairへ戻し、ambient核とrestriction kernelを型・membershipで分離 | generated `barBeta`側の判定、section/その表示、restriction kernel、全lift fiber、元/底固定全比較群の全元、一般入力、B/E/Fは未完了 |
 | D Cycle 56 delta | 固定finite axis-foldのdirect/via-base両端で、canonical正規化に消えるambientな核の元を、完成自己同型・admissibility証拠・比較群要素を入力せず有限recipeから構成する | `finiteAxisFoldDirectEndpointAdmissible`, `finiteAxisFoldViaBaseEndpointAdmissible`, `FiniteAxisFoldAmbientKernelCode`, `endpoint`, `admissibleEndpoint`, `evaluate`, `evaluateAut`, `evaluate_ne_identity`, `evaluate_comp_self`, `normalization_comp_evaluate`, `evaluate_comp_normalization`, `admissibleEvaluateAut`, `admissibleEvaluateAut_ne_one`, `normalization_map_admissibleEvaluateAut`, `admissibleEvaluateAut_mem_normalizationKernel`, `no_code_evaluates_to_identity` | カード固定の`finiteAxisFoldBCDatumSquare`、cell `second`、係数`Int`、同じgeometry/raw input; 固定support packageの既存admissibilityとexact pull/pushによるadmissibility transport | endpoint tagだけを持つ2要素code、元southwest admissibilityから両endpoint admissibilityを構成、各codeを非恒等な位数2のcomplete-geometry自己同型へ評価、canonical正規化の左右吸収、独立admissible-geometry category上のnormalization automorphism homのkernel membership | Dでambientな核を正規化結果から推測せず表示側source recipeとして回復する固定例; 後続の比較保存判定と二種類の核の分離 | この2元はまだ実`barAlpha`/`barBeta`を保つpairとして未分類; 元の全比較群・底固定群の全元、restriction kernel、section、全lift fiber、一般入力へのsyntax、B/E/Fは未完了 |
 | A/D Cycle 55 delta | 実`barAlpha`の逆を元入力から生成するtyped syntaxとして表示し、source-law商圏内で可逆比較と固定generated `barBeta`の非可逆比較を同じdecoder上で分離する | `G122GeneratedComparisonSyntax.barAlphaInv`, `evaluate_barAlphaInv`, `evaluate_barAlpha_barAlphaInv`, `evaluate_barAlphaInv_barAlpha`, `Congruent.barAlpha_hom_inv`, `Congruent.barAlpha_inv_hom`, `G122GeneratedComparisonPresentation.barAlphaIso`, `finiteAxisFold_barBeta_class_not_isIso` | 任意のG-122 family/cell inputと、そこから既に構成済みの実`barAlphaIso`; Cycle 54 source-law quotient category/decoder; 固定generated-cochain `barBeta`のsemantic非可逆性 | exact逆向きendpointの有限leaf、元入力からの評価、両inverse lawのsource-law合同、商圏内の明示的Iso、decoderがIsIsoを保つことを使う固定`barBeta`非可逆性 | Dの三分類のうち可逆・非可逆を表示圏自身の射性質として保持し、比較群表示へ進む基礎 | 全比較群と底固定群の全元、section、底/係数成分、二核・全lift fiber、全許容Homのsyntax、res/ext/J、B/E/Fは未完了 |
@@ -5747,4 +5748,130 @@ audits:
     - "fresh Math A/B and Lean A/B review: PASS after one shared noncentral report-schema fix"
   blocking_findings: []
   next_obligation: "Construct source recipes for the actual comparison section and restriction-kernel action, then recover each fixed lift fiber and keep the ambient nonmember distinct."
+```
+
+## Cycle 58 — Source-generated comparison group and raw evaluation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 58
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 2d76cc511cc597064ea10e8eb508c428902cd125
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 57 separated the fixed ambient witness from the raw comparison subgroup but did not construct a presentation-side comparison group"
+  proof_dag_predecessors:
+    - "Cycle 54/55 source-law quotient category and source-constructed barAlpha isomorphism"
+    - "Cycle 57 exact identification of the fixed presentation endpoints with the accepted admissible endpoints"
+  proof_obligation: "Define the comparison group inside the source-law quotient, classify all of its elements without semantic group-element leaves, and evaluate the same endpoint pairs into the actual fixed raw comparison group"
+  selection_reason: "D requires all comparison-group elements to be transported by the presentation. Before semantic surjectivity can be attempted, the displayed group itself and its all-elements evaluator must exist independently of the semantic commuting equation."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122GeneratedComparisonGroup.lean
+  risks:
+    - "define displayed membership by equality after decoding"
+    - "accept a completed semantic automorphism or comparison-group element as a syntax leaf"
+    - "prove only a selected pair instead of every displayed group element"
+    - "call a homomorphism onto the raw group surjective without endpoint decoder coverage"
+  unchecked:
+    - "surjectivity of the endpoint syntax decoders on actual admissible automorphisms"
+    - "surjectivity or injectivity of the displayed-to-raw comparison-group homomorphism"
+    - "canonical normalization section and its presentation-side lift"
+    - "restriction kernel, every lift fiber, bottom-fixed group, general input, and remaining B/E/F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed a comparison subgroup from the commuting square in any presentation category. For an isomorphism, constructed conjugation, a source section, a source projection, a right-inverse theorem for every comparison pair, and a group equivalence with the full displayed source automorphism group. Specialized to the fixed source-law quotient, decoded both endpoint automorphism groups into the exact admissible endpoints, proved every displayed comparison square maps to the actual raw barAlpha subgroup, assembled the group homomorphism on all displayed elements, and proved it commutes with source conjugation on the whole endpoint pair."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122GeneratedComparisonGroup.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.GeneratedArrowComparisonSubgroup
+    - AAT.AG.RealizationReconstruction.generatedArrowComparisonSubgroup_one_mem
+    - AAT.AG.RealizationReconstruction.presentationIsoConjugationAutomorphismHom
+    - AAT.AG.RealizationReconstruction.generatedArrowComparisonSectionHom
+    - AAT.AG.RealizationReconstruction.generatedArrowComparisonSourceHom
+    - AAT.AG.RealizationReconstruction.generatedArrowComparisonSection_source_rightInverse
+    - AAT.AG.RealizationReconstruction.generatedArrowComparisonSourceEquiv
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldGeneratedComparisonSubgroup
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldDirectPresentationAutomorphismHom
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldViaBasePresentationAutomorphismHom
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldPresentationEndpointAutomorphisms_preserve_barAlpha
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldGeneratedComparisonEvaluationHom
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldGeneratedComparison_barAlpha_hom_inv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldGeneratedComparisonEvaluation_section
+  claim_mapping:
+    theorem_names:
+      - generatedArrowComparisonSection_source_rightInverse
+      - generatedArrowComparisonSourceEquiv
+      - finiteAxisFoldPresentationEndpointAutomorphisms_preserve_barAlpha
+      - finiteAxisFoldGeneratedComparisonEvaluation_section
+    source_labels:
+      - "GOAL D1: comparison-preserving endpoint automorphism pairs"
+      - "GOAL D: preserve every element of the displayed comparison group"
+      - "GOAL A/D: quotient equality and group membership must not be defined by decoder equality"
+      - "n1014: do not re-input arbitrary completed comparison-group elements"
+    conjuncts:
+      - "displayed commuting square -> independently defined subgroup"
+      - "displayed barAlpha isomorphism -> source-conjugation classification of every displayed pair"
+      - "finite syntax quotient endpoint automorphisms -> exact admissible endpoint automorphisms"
+      - "displayed commuting square -> actual raw barAlpha commuting square"
+      - "displayed section -> actual raw source-conjugation section on both endpoints"
+    undischarged_assumptions:
+      - "the displayed endpoint automorphism decoders have not been proved surjective"
+      - "the semantic raw comparison group therefore has not been fully recovered"
+      - "the canonical normalization section, restricted kernel, and lift fibers are not yet presented"
+      - "the bottom-fixed subgroup, general input, and remaining B/E/F obligations remain open"
+    acceptance_point: "This is an all-elements theorem for the independently defined displayed group and a homomorphism into the fixed actual raw group. It is not an all-elements recovery theorem for the semantic group and not G-123 completion."
+    port_status: not-applicable
+review:
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "independent presentation-side comparison subgroup and identity inhabitant"
+      - "all displayed comparison elements classified by displayed source automorphisms"
+      - "fixed endpoint automorphism evaluation into exact admissible endpoints"
+      - "all displayed comparison elements map to the actual raw subgroup"
+      - "evaluation commutes with the displayed source-conjugation section"
+    remaining:
+      - "semantic endpoint-automorphism coverage and full raw-group recovery"
+      - "canonical normalization section, restricted kernel, and all lift fibers"
+      - "bottom-fixed group, general input, and remaining B/E/F"
+  certificate_provenance:
+    discharged:
+      - "displayed group elements consist of Aut structures whose hom and inverse are quotient classes of finite source syntax"
+      - "membership is the presentation-category commuting square and does not mention decoder equality"
+      - "the fixed evaluation constructs semantic automorphisms by applying the decoder; it accepts no semantic group element"
+    unresolved:
+      - "a construction of displayed preimages for arbitrary semantic raw or normalized comparison elements is absent"
+  proof_use:
+    used:
+      - "the displayed comparison equation in the source-classification and decoder-preservation proofs"
+      - "the source-constructed displayed barAlpha inverse in conjugation and its decoder equality in the section square"
+      - "both endpoint decoder homomorphisms in the group evaluator"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused check for G122GeneratedComparisonGroup: PASS"
+    - "registered exact target build: PASS (4290 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 17 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+    - "fresh Math A/B and Lean A/B review: PASS with no findings"
+  blocking_findings: []
+  next_obligation: "Establish source-syntax coverage for fixed endpoint automorphisms or isolate an exact counterexample, then use that result to decide whether the semantic raw group and canonical normalization section can be lifted without answer encoding."
 ```
