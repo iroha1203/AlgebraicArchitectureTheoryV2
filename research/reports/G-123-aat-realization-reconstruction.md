@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 109 replaces the one-by-one xor witnesses with a faithful uniform Nat xor-mask plus exact finite-support normal form and proves exact recovery of its independently characterized actual image
+- current proof obligation: Cycle 110 constructs the fixed complement algorithm on the provably distinct infinite carrier Set Nat and separates its actual witness from both the all-carrier exact-support union and the Nat xor-mask intrinsic image
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: compare the uniform xor-mask intrinsic image with the full residual kernel and construct a wider permitted finite-algorithm grammar or a new outside witness without treating xor masks as all finite algorithms
+- next proof obligation: construct a carrier-parametric finite-algorithm grammar encompassing rather than enumerating the Nat xor-mask and powerset-complement families, then compare its actual image with the full residual kernel
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| B/D Cycle 110 delta | Nat xor-mask像を別の無限primitive carrier上の固定有限recipeで検査し、全carrier exact-support branchとNat algorithm branchの両方からsame actual route上で分離する | `finiteAxisFoldNatPowerSetComplement`, `finiteAxisFoldNatPowerSetComplement_ne`, `finiteAxisFoldNatPowerSet_ne_nat`, `finiteAxisFoldFiniteSupportSourceAction_exists_fixed_powerSetProbe`, `finiteAxisFoldNatPowerSetComplement_transported_ne_finiteSupport`, `finiteAxisFoldNatSourceAction_fixes_powerSetEmptyProbe`, `finiteAxisFoldNatPowerSetComplement_transported_ne_natAction`, `finiteAxisFoldNatPowerSetComplement_not_mem_exactSupportCarrierUnion`, `finiteAxisFoldNatPowerSetComplement_not_mem_natXorMaskIntrinsicImage` | primitive carrier `Set Nat`; complement formula; Cantor carrier inequality; all decidable carriers; Cycle 109 Nat xor-mask image; same fixed section | 全subset移動; finite-support fixed probe; 全Nat actionのempty-set probe固定; actual projectionを通した両image非所属 | carrier-parametric finite algorithm grammarとfull-kernel比較へ渡す | 二つのfamilyの列挙に留まる; 統一grammar、full-kernel、G-122、一般入力、res/ext/J、CS、残るA--Fは未完了 |
 | B/D Cycle 109 delta | 固定xor algorithmの逐次追加をやめ、有限maskとexact finite tableだけからなる一様構文を作り、source/actual双方の忠実性と独立作用条件で定めた像のexact recoveryを証明する | `finiteAxisFoldNatXorMask`, `FiniteAxisFoldNatXorMaskNormalForm`, `evaluate`, `evaluate_injective`, `actualEvaluate`, `actualEvaluate_injective`, `ofAdjacentNormalForm`, `ofAdjacentNormalForm_evaluate`, `ofAdjacentNormalForm_actualEvaluate`, `ofAdjacentNormalForm_injective`, `secondXorNormalForm`, `secondXorNormalForm_evaluate`, `secondXorNormalForm_actualEvaluate`, `FiniteAxisFoldNatXorMaskIntrinsicImage`, `intrinsicDecode`, `intrinsicDecode_injective`, `intrinsicDecode_surjective`, `equivIntrinsicImage` | 原始`Nat`; 任意の有限`Nat` mask; Cycle 105 exact-support finite code; support union外のNat probe; same fixed actual sectionとbackward-action単射性 | probeでmaskを回収し群消去でfinite tableを回収; actual evaluation単射; xor-1 normal formの評価保存埋め込み; xor-2 witnessのcanonical code; maskとfinite-support source actionによるdecoder非依存actual条件からexact codeを構成する全射 | uniform familyのactual imageとfull residual kernelの比較、より一般のfinite algorithm grammarへ渡す | xor-mask族は全finite algorithmではない; full-kernel coverage/decomposition、original G-122分類、一般入力、res/ext/J、CS、残るA--Fは未完了 |
 | B/D Cycle 108 delta | Cycle 107のenlarged imageがfull residual kernelを覆うかを、既に含めたadjacent witnessではなく別の固定source recipeで検査し、両union branchからの非所属を同じactual route上で証明する | `finiteAxisFoldNatSecondXorAlgorithm`, `finiteAxisFoldNatSecondXorAlgorithm_ne`, `finiteAxisFoldNatAdjacent_mul_secondXor_apply`, `finiteAxisFoldNatSecondXorAlgorithm_not_finiteSupport`, `finiteAxisFoldNatAdjacent_mul_secondXor_not_finiteSupport`, `finiteAxisFoldNatSecondXorAlgorithm_not_mem_algorithmSubgroup`, `finiteAxisFoldNatSecondXorLocalFiberKernel`, `finiteAxisFoldNatSecondXor_transported_ne_finiteSupport`, `finiteAxisFoldNatSecondXor_not_mem_exactSupportCarrierUnion`, `finiteAxisFoldNatSecondXor_not_mem_natAlgorithmNormalFormRange`, `finiteAxisFoldNatSecondXor_not_mem_enlargedPresentedCarrierImage`, `finiteAxisFoldEnlargedPresentedCarrierImage_ne_univ` | 原始`Nat`; 固定有限アルゴリズム`n xor 2`; Cycle 107のliteral exact-support unionとxor-1 normal-form range; Cycle 101の全carrier fixed Nat probe; Cycle 103の二coset分類; arbitrary-carrier backward-action単射性; same fixed section | xor-2と`xor 1 * xor 2 = xor 3`の全点移動と非finite-support; xor-1 algorithm subgroup非所属; 全decidable carrierのfinite-support作用とのprobe分離; actual projectionからsource等号を読み戻すnormal-form range分離; enlarged union外のactual witness | 一固定algorithmの追加では再び不足することを固定し、uniform finite-algorithm syntax・faithful normal form・full-kernel分解へ渡す | 現candidateの非被覆はtarget反証ではない; uniform algorithm family、full-kernel coverage/decomposition、original G-122分類、一般入力、res/ext/J、CS、残るA--Fは未完了 |
 | B/D Cycle 107 delta | Cycle 106の全carrier exact-support code-imageをsemantic aliasではなくliteral existential unionとして固定し、既知のfinite-support actual imageとの一致を証明したうえで、固定Nat adjacent algorithm normal formがその和を真に拡大することを示す | `FiniteAxisFoldExactSupportCarrierUnion`, `finiteAxisFoldExactSupportCarrierUnion_mem_iff`, `finiteAxisFoldExactSupportCarrierUnion_eq_finiteSupportCarrierImage`, `finiteAxisFoldNatAdjacentAlgorithmNormalForm`, `finiteAxisFoldNatAdjacentAlgorithmNormalForm_evaluate`, `finiteAxisFoldNatAdjacentAlgorithmNormalForm_actualEvaluate`, `FiniteAxisFoldEnlargedPresentedCarrierImage`, `finiteAxisFoldExactSupportCarrierUnion_subset_enlarged`, `finiteAxisFoldNatAdjacentSwap_mem_enlargedPresentedCarrierImage`, `finiteAxisFoldExactSupportCarrierUnion_ssubset_enlarged`, `finiteAxisFoldExactSupportCarrierUnion_ne_univ` | 任意の`FiniteAxisFoldDecidableExtensionCarrier`; Cycle 106のexact-support finite codeとactual evaluator; Cycle 101のliteral finite-support carrier imageとadjacent outside theorem; Cycle 105の固定Nat parity normal form | literal code-image membershipとfinite-support actual membershipの双方向; code-image unionと既存unionのset equality; parity=true・identity finite componentのcanonical Nat code; 同じfixed actual routeでadjacent witnessへ評価; 真包含 | 次のfull residual-kernel coverage/noncoverage検査で、既に回復したexact-support方向と追加Nat algorithm方向を明示的に区別する | enlarged imageのfull-kernel coverageもnoncoverageも未証明; Nat以外のinfinite-support finite algorithms、original G-122分類、一般入力、res/ext/J、CS、残るA--Fは未完了 |
@@ -11853,4 +11854,44 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Compare the uniform xor-mask intrinsic image with the full residual kernel and construct a wider source-owned finite-algorithm grammar or a new outside witness; xor masks must not be identified with all finite algorithms."
+```
+
+## Cycle 110 — Powerset complement carrier obstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 110
+base_oid: 1017597a739257611024a849e712b820cc31d5e8
+tracking_issue: 4520
+selection:
+  proof_obligation: "Test the all-carrier exact-support union plus the uniform Nat xor-mask image with a fixed finite algorithm on a provably distinct infinite primitive carrier"
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed complement on Set Nat and its same-section actual witness.  Complement moves every subset.  For every decidable carrier finite-support action, a canonical Set Nat probe is fixed: by infinitude on the same carrier and definitionally on a different carrier.  Cantor proves Set Nat is not literally Nat, so every Nat action fixes the empty-set powerset probe while complement moves it.  Backward projections therefore exclude the witness from both the literal all-carrier exact-support union and the Cycle 109 Nat xor-mask intrinsic image."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldPowerSetComplementObstruction.lean
+  unfinished:
+    - "carrier-parametric finite-algorithm grammar integrating both families"
+    - "full residual-kernel coverage or decomposition"
+    - "G-122 classification, general input, res/ext/J, CS, examples, and remaining A--F"
+review:
+  fixed_head: a0b913e714f9e4d7ff8d5f0f9f0fcdf793350257
+  lanes: {math_a: pass, math_b: pass, lean_a: pass, lean_b: pass}
+  direct_response:
+    reviewed_delta: "1017597a739257611024a849e712b820cc31d5e8..a0b913e714f9e4d7ff8d5f0f9f0fcdf793350257"
+    verdict: pass
+    new_findings: []
+audits:
+  certificate_provenance: "fixed complement formula and Cantor carrier inequality; no completed permutation or residual is a syntax input"
+  route_integrity: same-fixed-source-to-actual-section-and-complete-backward-projection
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4341 dependency jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 12 declarations; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct a carrier-parametric finite-algorithm grammar encompassing the Nat xor-mask and powerset-complement families without semantic-range syntax, then compare its actual image with the full residual kernel."
 ```
