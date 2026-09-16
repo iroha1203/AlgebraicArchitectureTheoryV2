@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 124 interprets both independent CS models as exact typed primitive object/operation families and transports every role along every possibly noninvertible semantic morphism, with operation squares and identity/composition laws
+- current proof obligation: Cycle 125 constructs finite typed AAT Atom carriers, actual ArchitectureObjects and named Formal operations for both CS models, joins each operation to its exact semantic function, and transports every arbitrary semantic morphism into the exact n1015 A1 extraction doctrine
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: extend the exact typed primitive-operation layer into actual AAT Atom/Law/complete-geometry objects and morphisms, then construct the independent readback and prove both directions on all objects and noninvertible morphisms before D-side transport
+- next proof obligation: construct actual AAT Law and ArchitecturalEquationSystem data from the raw lens laws and protocol relations/observations, prove their preservation and reflection, and then extend the same construction to complete geometry and independent readback before D-side transport
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| E Cycle 125 delta | 両CSモデルの原始carrier・role・operation名を有限Atom語彙、actual `ArchitectureObject`、actual Formal `Operation`へ構成し、意味関数との接続と、任意の非可逆semantic morphismのexact n1015 A1 doctrine写像を保持する | `LensAATAtom`, `ProtocolAATAtom`, `lensAATCarrier`, `protocolAATCarrier`, `typedRoleConfiguration`; lens/protocol各`*AATArchitectureObject`, `*AATOperation`, `*AATSemanticOperation`; `LensAATSource`, `ProtocolAATSource`, `lensAATExtractionDoctrine`, `protocolAATExtractionDoctrine`, `lensAATExactDoctrineHom`, `protocolAATExactDoctrineHom`; 各source mapの`id`/`comp`、doctrine homの`id`/`comp`、forward translationのinjectivity | Cycle 124の任意の`LensFamilyInput`/`LensRealization`と`ProtocolFamilyInput Q L O`/`ProtocolRealization`; 射は元の一般`Hom`で非可逆可; completed core/geometry写像、decoder像、presentation membership、readback certificateを入力しない | 全固定Atom語彙を各configuration family内に置き、operation名をtarget roleへrelationで支持; exact carrier型とlens基準値をArchitectureObjectへ格納し、protocol selected quantityは意味値を捏造せず`PUnit`; dependent package内で原primitive名・Formal Operation・exact semantic function・端点等式を同時構成; A1 source写像とextraction preservationを元のsemantic Homから構成し、恒等・合成とstate readbackによる単射を証明 | Eの独立CS意味をAATのactual Atom/ArchitectureObject/Operation層へ結び、次cycleのLaw/AESと完全幾何、独立readbackが使う固定interface | actual `Law`/`ArchitecturalEquationSystem`、その保存・反映、complete core/geometry、AAT側独立射classからのreadbackと両逆、D表示側回復、A--F同一構成統合は未完了。forward単射はreadbackや圏同値ではない |
 | E Cycle 124 delta | lensのstate/view/read/writeとget/put、protocolの各state/observationと元のnamed edge/vertex observationをexactなtyped primitive object/operationとして読み、任意の非可逆semantic morphism上で全roleと全operation squareを恒等・合成込みで運ぶ | `PrimitiveOperation.protocolObservation`; `lensObjectCarrier`, `lensOperationFunction`, `lensObjectMap`, `lensGet_square`, `lensPut_square`, 全4 roleの`id`/`comp`; `PrimitiveObject.protocolState`, `PrimitiveObject.protocolObservation`, `protocolObjectCarrier`, `protocolOperationFunction`, `protocolStateMap`, `protocolObservationMap`, `protocolEdge_square`, `protocolObservation_square`, state/observationの`id`/`comp` | 独立に定義済みの任意の`LensFamilyInput`と`LensRealization`; 任意の`ProtocolFamilyInput Q L O`と`ProtocolRealization`; 射は元の一般`Hom`で、iso・decoder像・presentation membership・完成写像certificateを仮定しない | carrierを元の型へ、operationを元の`get`/`put`/`edgeAction`/`observe`へ定義的に評価; lens全4 roleとprotocol state/fixed observationの写像を構成; semantic Homの定義法則を実使用して全operation squareを証明; 全roleのidentity/compositionを個別に証明 | EのCS意味からAAT側typed operation signatureへ進む最初のobject/morphism layer; 後続のAtom/Law/完全幾何構成とreadbackが接続すべき固定interface | actual AAT `Atom`/`Law`/ArchitectureObject/完全幾何packageとAAT射、独立readbackと両逆、selection/value/関係を含む全translation、D分類の表示側回復、A--F同一構成統合は未完了 |
 | E/F Cycle 123 delta | 任意に与えた`H ≤ Aut(F)`の全元上で独立protocol変更を群にし、同じfixed-F群の積・射影・section・literal kernel・全fiber torsor・component分類へoperation名を保って一致させる | `ProtocolChangeGroup`と`Group`; `projection`, `canonicalSection`; `toFollowingGroup`, `mulEquivFollowingGroup`; `projection_compatibility`, `section_compatibility`; `kernelMulEquiv`; protocol `ProjectionFiber`の右kernel `SMul`/`MulAction`, free/transitive/`∃!`; `projectionFiberEquiv`, `componentGroupEquivProjectionFiber`, `projectionFiberEquiv_smul`; `operationMap_compatibility`, `path_naturality`, `execution_naturality` | 有限`F.Vertex,F.Edge,K`と独立入力`H ≤ FixedFGraphAutomorphism F`; protocol carrierのfieldは`visible`, 頂点別`stateEquiv`, 全typed edge square, `PUnit`観測自然性だけで、fixed-F pair・kernel・component familyを入力しない | 可視作用で再添字化した半直積の積と逆元をedge squareから閉じる; protocol dataからactual preserving pairを構成し、actual pairからfactorizationで同じstate familyを復元して群同値; commuting squareからliteral kernel同値; protocol群自身で全fiberの右kernel作用とfree/transitive/unique displacementを構成; fixed-F作用とのintertwining、全component family分類、元operation名と全executionの互換を証明 | Eの固定F protocol applicationにF1の全`H`群・section・kernel・全fiber分類を適用し、受理済み一般protocol再構成とAAT翻訳へ渡す | 一般`Q,L,O`のpresentation/decoder/圏同値/B四性質はCycle 2で放電済み; 未完了はその一般CSデータとAAT Atom/Law/operation/完全幾何との双方向typed translation、D表示側回復、lens typed translation、残るA--E統合 |
 | E/F Cycle 122 delta | 固定Fの独立protocol意味を定義し、元のoperation名・端点、全pathと商execution、観測、任意の非可逆adapterを保持して、raw/preserving分類とP1を同じF構成へ双方向接続する | `TypedEdge`, `schema`, `renameTypedEdge`, `renamePath`, `renameExecutionFunctor`; `observationFunctor`, `hiddenExecutionFunctor`, `realization`; `ProtocolObservationChange`, `ProtocolInvertibleChange`; `equivFollowingStateChanges`, `equivPreservingFollowingChanges`; `path_naturality`, `execution_naturality`; 一般`InvertibleAdapterSquare`と`invertibleAdapterSquare_iff_totalMaps`; 再添字付き`ProtocolChangeAdapterSquare`, `protocolChangeAdapterSquare_iff_vertices`, `protocolChangeAdapterSquare_path`; protocol側16/4/4と`protocolSessionSwapChange` | 任意の固定directed multigraph `F`、hidden type `K`、graph automorphism; このapplicationでは`RelationIndex = ULift Empty`、観測値`PUnit`、hidden edge actionは恒等; P1の`q,q'`は任意の`ProtocolRealization.Hom`で非可逆可、変更`a,b`のみstate equivalenceを持つ | CS側でraw changeと、全typed edge squareを持つpreserving changeを独立定義; fixed-F changeとの両方向を構成; 生成edge squareを全pathとquotient executionへ拡張; total state上で`q'`を`u(v)`に評価するreindexed P1とrenamed path版を証明; 独立protocol側から16/4/4とsession edge交換・hidden実行・operation adapter一致を算出 | n1015 protocol意味の固定F applicationにF分類を適用し、受理済み一般E protocol再構成とall-H群輸送への基盤にする | 一般`Q,L,O`の構文・意味・decoder・圏同値はCycle 2で放電済み; all-H protocol群はCycle 123で放電; 未完了は一般protocolのtyped AAT translation、D/presentation側回復、lens typed translation、残るA--E統合 |
@@ -12568,4 +12569,59 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct the actual AAT Atom/Law/ArchitectureObject/complete-geometry image of this typed interface, its AAT morphisms, and an independent readback with both inverse laws for lens and protocol objects and arbitrary noninvertible morphisms, reusing rather than recertifying the accepted Cycle 2/3 presentation and Karoubi reconstruction."
+```
+
+## Cycle 125 — Constructed AAT objects, operations, and exact A1 doctrines
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 125
+base_oid: d29019d4eae30f1eb63e12f23a1e926be18ec5d8
+tracking_issue: 4520
+selection:
+  proof_obligation: "Construct actual finite AAT Atom carriers, ArchitectureObjects, and named Formal operations from both independent CS models, connect the operations to exact semantics, and translate every arbitrary semantic morphism into the exact n1015 A1 extraction doctrine"
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed finite Atom vocabularies for lens roles/names and protocol states/observations/named edges.  Every typed-role configuration contains the complete fixed vocabulary, and each transported operation name is a family member related to the selected target role.  Constructed actual ArchitectureObjects retaining each exact carrier type; lens objects retain the fixed reference, while protocol objects use neutral PUnit selected data rather than inventing an observation value.  Constructed actual Formal get/put/edge/observe Operations and dependent semantic-operation packages that contain the original primitive name, Formal Operation, endpoint equalities, and exact original semantic function in one output value.  Constructed the exact n1015 A1 source types, extraction doctrines, and doctrine morphisms for every arbitrary, possibly noninvertible, CS semantic morphism; proved identity, composition, extraction behavior, and injectivity of the forward morphism translation by state readback.  No Law, complete core/geometry, AAT readback, decoder-image membership, or successful-image certificate is accepted as input or claimed as output."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATArchitectureObjects.lean
+  unfinished:
+    - "actual AAT Law and ArchitecturalEquationSystem values generated from the raw lens laws and protocol relations/observations, with preservation and reflection"
+    - "complete core and geometry packages and the corresponding AAT morphism class"
+    - "independent readback from AAT data to both CS models and both inverse laws on all objects and arbitrary noninvertible morphisms"
+    - "D comparison-group transport and presentation/AAT-side recovery of the same groups, sections, two kernels, fibers, and classification data"
+    - "the remaining A--F same-construction integration and final completion audit"
+review:
+  fixed_head: fcbce00890a574797704a7f9227282b74d7a3f7b
+  initial_findings:
+    - "Math A found that singleton role families left transported operation names outside the actual family"
+    - "Math A found that standalone semantic-function declarations did not yet connect the Formal Operation to execution in one constructed value"
+    - "Math A found that protocol selected quantities stored an observation carrier type rather than an actual selected quantity"
+    - "Lean A/B requested declaration-specific docstrings, positive/negative extraction APIs, and exact-doctrine identity/composition laws"
+  resolved_findings:
+    - "replaced singleton families by full fixed typed-role vocabularies and proved transported operation names are members related to the selected target role"
+    - "constructed dependent lens/protocol semantic-operation packages containing primitive name, Formal Operation, endpoint equalities, and exact semantic function"
+    - "changed protocol selected quantities to neutral PUnit while retaining each exact observation carrier in structureMaps"
+    - "added declaration-specific docstrings, positive/negative extraction theorems, and exact-doctrine identity/composition laws"
+  lanes: {math_a: pass-after-direct-response, math_b: pass-after-direct-response, lean_a: pass-after-direct-response, lean_b: pass-after-direct-response}
+  direct_response:
+    reviewed_delta: "d29019d4eae30f1eb63e12f23a1e926be18ec5d8..fcbce00890a574797704a7f9227282b74d7a3f7b"
+    final_repair_deltas: "10b99777b..fcbce0089"
+    verdict: pass
+    new_findings: []
+audits:
+  certificate_provenance: "all Atom, object, operation, source, extraction, and morphism data are constructed from the independently defined CS inputs and their arbitrary semantic morphisms; no completed reconstruction, image membership, or readback witness is supplied"
+  proof_use: "the original carrier types populate ArchitectureObject.structureMaps; original get/put/edgeAction/observe populate the constructed semantic-operation packages; original semantic maps populate A1 source maps; their defining naturality laws prove extraction preservation; state readback proves forward morphism injectivity"
+  structure_field_escape: none-found-for-this-Atom-object-operation-and-A1-doctrine-checkpoint
+  target_fitting: none-found-all-fixed-roles-operation-names-dependent-endpoints-and-arbitrary-semantic-morphisms-retained
+  validation_refs:
+    - "focused CSAATArchitectureObjects file check after major-finding repairs: PASS; 236 namespace declarations, standard axioms only"
+    - "focused exact CSAATArchitectureObjects target build: PASS (4266 jobs; not a Research aggregate build)"
+    - "placeholder, hidden/BiDi, privacy, import-direction, registry, changed-public-artifact, and diff checks: PASS"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct actual AAT Law and ArchitecturalEquationSystem data from raw lens laws and protocol relations/observations, prove preservation and reflection for the same arbitrary morphisms, and only then extend to complete geometry and independent readback."
 ```
