@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 88 proves that the same nonidentity source-owned backward toggle is invisible on every global axis, every signature coordinate, and every forward context object, hence lies in the full normalized axis/signature/context residual kernel
+- current proof obligation: Cycle 89 proves that the same source-owned residual element acts trivially on every Support, Axis, and Observable local fiber while its actual stored-backward projection remains nonidentity
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: compute the candidate's Support, Axis, and Observable local-family actions as identity and package its already-proved nontrivial stored-backward action in the Cycle 85 faithful representation
+- next proof obligation: construct an intrinsic source-owned image and prove generation, decomposition, or coverage for every element of the full residual group, without defining syntax by the actual range or accepting a completed residual element as input
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 89 delta | Cycle 88の同じsource-owned residual候補について、全contextのSupport・Axis・Observable作用を完全なdependent Sigma carrier上で恒等化し、local kernel membershipとactual stored-backward projectionの非自明性を同時に示す | `finiteAxisFoldNormalizedExtensionBackward_supportSigmaMap_eq_id`, `finiteAxisFoldNormalizedExtensionBackward_axisSigmaMap_eq_id`, `finiteAxisFoldNormalizedExtensionBackward_observableSigmaMap_eq_id`, `finiteAxisFoldNormalizedExtensionBackward_supportEquiv_eq_one`, `finiteAxisFoldNormalizedExtensionBackward_axisEquiv_eq_one`, `finiteAxisFoldNormalizedExtensionBackward_observableEquiv_eq_one`, `finiteAxisFoldNormalizedExtensionBackward_mem_localFiberKernel`, `finiteAxisFoldNormalizedExtensionBackward_backwardProjection_ne_one` | 固定source-owned backward toggle; Cycle 88のfull residual element; source local forward成分の恒等性; southwest/topのcanonical context section; exact-leftのgenerated backward-forward cancellation; 各factorization equation; Cycle 87のactual moved context | 三つの完全Sigma作用を各固定transportで恒等化; 全contextの三local-fiber自己同値を恒等化; joint local kernel membershipを構成; 同じactual residual元のstored-backward projectionをmoved contextで評価して`≠ 1`を証明 | 忠実なCycle 85 action内で、同じsource-owned actual元の非自明性がlocal因子ではなくstored-backward因子に集中することを確立し、source image生成・分解・coverageへ渡す | 一つの非自明元のみであり、source imageの内在的特徴付け、generator族、任意residual元の分解・coverage、section/surjectivity、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
 | D Cycle 88 delta | Cycle 87の同じactual normalized非自明候補について、全global axis・全signature coordinate・全forward context objectで不可視であることを構成から証明し、full residual kernelへ格納する | `finiteAxisFoldNormalizedExtensionBackward_axisMap`, `finiteAxisFoldNormalizedExtensionBackward_coordinateEquiv`, `finiteAxisFoldSouthwestExtensionBackward_contextForward_eq_id`, `finiteAxisFoldExactLeftExtensionBackward_contextForward_eq_id`, `finiteAxisFoldActualDirectExtensionBackward_contextForward_eq_id`, `finiteAxisFoldNormalizedExtensionBackward_contextForward_eq_id`, `finiteAxisFoldNormalizedExtensionBackwardAxisKernel`, `finiteAxisFoldNormalizedExtensionBackwardAxisSignatureKernel`, `finiteAxisFoldNormalizedExtensionBackwardContextKernel` | 固定source-owned backward toggle; 固定source→southwest、exact-left、top、normalization route; opcartesian/exact-pull factorization; canonical sectionとgenerated exact backward-forward cancellation | 全`Fin 3` axis map恒等; 全`Fin 3 × Fin 3` coordinate作用恒等; 各段の全context forward関数恒等; 三段のkernel membershipを順に構成 | 三local-family恒等性を証明してCycle 85 faithful actionの非自明性をstored-backward因子へ集中させる | Support/Axis/Observable local-family恒等性、local kernel membership、backward projectionの明示、像生成・分解・coverage、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
 | D Cycle 87 delta | Cycle 86のsource-owned backward toggleが固定actual routeの各opaque transportとcanonical normalizationを通過しても消えないことを、完成したnormalized witnessを入力せず証明する | `finiteAxisFoldSouthwestBackwardToggleContext`, `finiteAxisFoldTransportedExtensionBackward_moves_southwestContext`, `finiteAxisFoldExactLeftBackwardToggleContext`, `finiteAxisFoldExactLeftExtensionBackward_moves_context`, `finiteAxisFoldActualBackwardToggleContext`, `finiteAxisFoldActualDirectExtensionBackward_moves_context`, `finiteAxisFoldNormalizedExtensionBackward_moves_context`, `finiteAxisFoldNormalizedExtensionBackwardAut_ne_one` | 固定source Bool-false context; Cycle 86のsource involutionとactual functorial transport; source-to-southwest/topのopcartesian factorization; generated exact-left factorizationとcontext cancellation; canonical normalization | 同じsource-owned witnessをsouthwest、exact-left、actual directへ順に輸送; 各段でfactorization equationとsection/retraction cancellationからstored backward actionの不動点否定を導出; normalization後の実射をwitnessで評価して`Aut ≠ 1`を証明 | Cycle 85 faithful actionのbackward因子へsource-owned非自明元を配置し、local因子の恒等性と合わせて最初のactual generatorを分類する | forward/axis/signature kernel membership、三local-family恒等性、backward projectionの群要素としての明示、像生成・分解・coverage、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
 | D Cycle 86 delta | source原始データからforward context恒等・stored backward Extension toggleのcomplete geometry involutionを構成し、固定actual normalized endpointまで完成した射を再入力せず輸送する | `finiteAxisFoldExtensionBackwardContextEquivalence`, `finiteAxisFoldExtensionBackwardGeometry`, `finiteAxisFoldExtensionBackwardGeometryAut`, `finiteAxisFoldExtensionBackwardGeometryAut_ne_one`, `finiteAxisFoldTransportedExtensionBackwardAut`, `finiteAxisFoldSouthwestExtensionBackwardAut`, `finiteAxisFoldActualDirectExtensionBackwardAut`, `finiteAxisFoldNormalizedExtensionBackwardAut` | 固定source geometry; Cycle 76の全context一様Extension-value recipeと両方向readable arrow; 固定source→southwest、exact-left、top、admissible、normalization functor | forward=id/inverse=toggleのequivalenceとunit/counit; 任意overlap三組の両方向restriction; raw invarianceとidentity local geometry naturality; complete involution; Bool-false contextによるsource非自明性; geometry-fiber functorと固定actual routeによるnormalized `Aut` | Cycle 85 faithful actionに対してactual candidateのbackward/local projectionを計算し、最初のsource-owned nontrivial image generatorを確立する | normalized非自明性、forward/axis/signature kernel membership、backward projection値、三local-family恒等性、像生成・分解・coverage、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
@@ -9432,4 +9433,118 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Prove the Support, Axis, and Observable local-family actions are identity and package the already-proved nontrivial stored-backward factor in the Cycle 85 faithful action."
+```
+
+## Cycle 89 — Local-trivial and backward-nontrivial residual action
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 89
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 579e454debc69c30636dc69b7ce13e44312e445a
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 88 placed the source-owned candidate in the full forward residual domain but did not compute its complete local-fiber action"
+  proof_dag_predecessors:
+    - "Cycle 86 source-owned backward-only complete involution and fixed actual transport"
+    - "Cycles 87 and 88 actual survival and full axis/signature/forward-context residual membership"
+    - "Cycles 79, 80, and 85 complete local-fiber action and faithful residual representation"
+  proof_obligation: "Prove the same candidate fixes every Support, Axis, and Observable local fiber, construct joint local-kernel membership, and prove its actual stored-backward projection is nonidentity"
+  selection_reason: "A single actual source-owned residual generator candidate is classified only after all complete local factors are computed separately from its backward factor."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldBackwardToggleLocalAction.lean
+  risks:
+    - "check only selected local values rather than the complete dependent Sigma carriers"
+    - "accept local identity or transport surjectivity/injectivity as an input certificate"
+    - "reuse source nontriviality instead of evaluating the actual stored-backward projection"
+    - "infer image generation or residual coverage from one nonidentity element"
+  unchecked:
+    - "intrinsic characterization of the source-owned image"
+    - "a source generator family and decomposition or coverage of every residual element"
+    - "section or surjectivity from source syntax to the full residual group"
+    - "general inputs, bottom and full comparison kernels, lift fibers, and remaining B/E/F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed the complete Support, Axis, and Observable dependent Sigma maps of the same source-owned candidate and proved each is identity through the fixed southwest, exact-left, top, and normalization route.  The opcartesian transports use canonical context sections to construct surjectivity, and the exact-left pull uses generated backward-forward cancellation to construct injectivity.  Derived pointwise identity for every local-fiber equivalence, constructed joint local-kernel membership, and evaluated the actual stored-backward projection at the Cycle 87 moved context to prove it is nonidentity."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldBackwardToggleLocalAction.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedExtensionBackward_supportSigmaMap_eq_id
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedExtensionBackward_axisSigmaMap_eq_id
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedExtensionBackward_observableSigmaMap_eq_id
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedExtensionBackward_mem_localFiberKernel
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedExtensionBackward_backwardProjection_ne_one
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldNormalizedExtensionBackward_supportEquiv_eq_one
+      - finiteAxisFoldNormalizedExtensionBackward_axisEquiv_eq_one
+      - finiteAxisFoldNormalizedExtensionBackward_observableEquiv_eq_one
+      - finiteAxisFoldNormalizedExtensionBackward_mem_localFiberKernel
+      - finiteAxisFoldNormalizedExtensionBackward_backwardProjection_ne_one
+    source_labels:
+      - "GOAL D and user conditions 1, 2, 4, 5, and 7"
+    conjuncts:
+      - "complete Support dependent Sigma carrier and every Support fiber -> identity"
+      - "complete Axis dependent Sigma carrier and every Axis fiber -> identity"
+      - "complete Observable dependent Sigma carrier and every Observable fiber -> identity"
+      - "same full residual element -> joint local kernel"
+      - "same actual residual element -> nonidentity stored-backward projection"
+    undischarged_assumptions:
+      - "one classified nonidentity element does not characterize the source image"
+      - "no generator family, decomposition, section, surjectivity, or residual coverage is yet proved"
+      - "general input and broader G-123 obligations remain open"
+    acceptance_point: "The first actual source-owned residual element is proved local-trivial and stored-backward-nontrivial in the faithful Cycle 85 action; group generation and coverage are not asserted."
+    port_status: not-applicable
+review:
+  fixed_head: 63c9e626b
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    reviewed_delta: "579e454debc69c30636dc69b7ce13e44312e445a..63c9e626b"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "all three local actions are identity on complete dependent Sigma carriers and on every fiber"
+      - "joint local-kernel membership is constructed from the three independent computations"
+      - "stored-backward nontriviality is proved at the actual normalized endpoint"
+    remaining:
+      - "intrinsic source image, generator family, decomposition, section, surjectivity, and coverage"
+      - "general inputs, bottom and full comparison kernels, lift fibers, and remaining D/B/E/F"
+  certificate_provenance:
+    discharged:
+      - "no completed local action, kernel membership, transport bijectivity, or backward nontriviality certificate is input"
+      - "the exact same source-owned Cycle 88 residual element is used for every local and backward computation"
+    unresolved:
+      - "source syntax and intrinsic image characterization"
+  proof_use:
+    used:
+      - "source-local identity and the fixed transport factorization equations prove complete Sigma identity"
+      - "canonical context sections construct opcartesian surjectivity"
+      - "generated exact backward-forward cancellation constructs exact-pull injectivity"
+      - "Cycle 87 actual moved context separates the stored-backward projection from identity"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-local-action-checkpoint
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4318 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 21 declarations; standard axioms only"
+    - "fresh fixed-content Math A/B and Lean A/B: PASS; no findings"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct a source-owned generator family and intrinsic image, then prove decomposition or coverage for every full residual element without defining syntax by the actual range."
 ```
