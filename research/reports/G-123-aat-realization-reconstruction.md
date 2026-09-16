@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 137 proves exact Atom-support preservation and functorial boundary preservation under the full-family endpoint rebase, while keeping signature-axis and global observable transport open
+- current proof obligation: Cycle 138 gives a fixed-input counterexample to using the existing contravariant target-reading restriction as the global observable/signature-axis component of every arbitrary noninvertible CS morphism; this rejects that implementation route, not the fixed target
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: resolve the signature-axis/global-observable variance obstruction and construct honest overlap/Extension coherence without adding target answers or inverse coordinate maps; then assemble the one-way geometry record and prove identity/composition, independent readback, and all-component inverse laws
+- next proof obligation: construct a forward/lax complete-geometry interface retaining the covariant coordinate/raw maps, support, and boundary action without demanding a target-to-source observable inverse; connect its exact/isomorphism subcategory to the existing `GeometryTotalHom`, then prove overlap/Extension coherence, identity/composition, independent readback, and all-component inverse laws
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 138 route-refutation delta | 任意の非可逆CS射を保持したまま、既存の反変`ContextMorphism.observableRestrict`をtarget readingへのglobal observable/signature-axis成分として使えるかを固定入力で判定する | `axisVarianceLensInput`, `axisVarianceEmptyLens`, `axisVarianceUnitLens`, `axisVarianceForward`, `axisVarianceSourceCoordinate_false`, `axisVariance_noTargetReadingRestriction`, `axisVariance_targetAxis_notReadable` | 固定した`View = PUnit`、空状態total lens、一点状態total lens、空型から一点型への唯一の許容`LensAATForwardMorphism`のみ。target restriction、座標逆写像、surjectivity、完成geometry certificateを入力しない | source Law coordinate型が空であることをconstructorごとに証明。一方targetの`putGet unit`座標変数はactual readingで可読なので、target readingからrebased source readingへの任意の`IsRestriction`はsource可読座標を生成して矛盾する。従って現在のtarget-reading restriction predicateではtarget `.point` axisも可読でない | forward/lax geometry interfaceの設計拘束。Cycle 134--136のcovariant coordinate/raw mapを保持し、global componentにはtarget-to-source observable inverseを要求しないことの根拠 | これは一つの実装経路の反証であり固定G-123 targetの反証ではない。forward/lax complete-geometry interface、exact/isomorphism subcategoryと既存`GeometryTotalHom`の接続、overlap/Extension、identity/composition、readback、core provenance、D回復、A--F統合は未完了 |
 | A/E Cycle 137 delta | full-family endpoint rebaseでexact Atom supportを失わず、source context preorderの全boundary restrictionをtargetへ写す | lens/protocol各`*AATForwardSupportVisible`, `*AATForwardBoundaryVisible` | Cycle 129 primitive forward morphismから生成されたendpoint context functorと、source support/boundary witnessのみ。target support witness、boundary certificate、inverse、surjectivityを入力しない | rebaseがsource minimal support type/predicateをdefinitionally保持することから同じsupport witnessを再使用。boundaryはsource preorder homをMathlib thin-category homへ上げ、`lawContextFunctor.map`後にtarget preorder homへ戻して構成 | one-way geometryのsupport componentとboundary functoriality。後続のoverlap/Extension・coverage-family coherence | boundary functorはendpoint-only rebaseでありmorphism固有observable actionではない。signature-axis predicateが要求するtarget-reading restriction、global observable action、overlap object comparison、Extension、共通geometry map、identity/composition/readbackは未完了。coordinate-local constant mapをaxis証明へ流用しない |
 | A/E Cycle 136 repair delta | 一般非単射CS射でsource座標の可視性を写像先required/violation座標へ結ぶ際、弱いexistential visibilityだけでなくgenerated coordinate RingHomによる変数像とsource/target local値の一致を同じwitnessに保持する | `fullFamilyContextToTargetReadingAt`, `ForwardObservableVisibility`, `fullFamilyForwardObservableVisibility`; lens/protocol各`*AATForwardRequiredCoordinate`, `*AATForwardCoordinate`, `*AATForwardEquationCoordinateCoherent`, `*AATForwardViolationCoordinateCoherent` | Cycle 129 primitive forward morphism、Cycle 131 independent endpoint readings/coverage predicates、source座標のactual visibility witness、Cycle 127由来のgenerated variable-image theorem。target restriction、coordinate inverse、surjectivity、完成coverage certificateを入力しない | source/target restrictionとreadabilityに加え、`f.lawCoordinateMap (X sourceCoordinate) = X mappedCoordinate`および両restrictionのselected local値一致を一つのProp witnessとして構成。任意target座標への定数mapだけではこのgenerated forward equationを満たせない | one-way geometryでmapped coordinateを識別するcoherent visibility component。後続のsupport/axis、overlap/Extension、共通geometry action、identity/compositionとの統合 | target ContextMorphism自体はobservable全体で定数の補助mapであり、full observable actionやreadbackではない。target-only座標、単一の共通restriction map、signature-axis/support visibility、overlap boundary、Extension、coverage-family mapは未完了。AATCorePackage/ReadingCore provenance、D回復、A--F統合も未完了。最初のpredicate-only候補は査読で反証され証拠に数えない |
 | A/E Cycle 135 delta | Cycle 134のone-way Law coordinate actionをCycle 131--133のactual reading/raw quotient presheafへ接続し、任意の非単射CS射について全context・restriction上のraw mapを構成する | lens/protocol各`*EquationPolynomialForwardHom`, `*EquationPolynomialForwardHom_app_X`, `*GeometryReadingRawForwardHom` | Cycle 129 primitive forward morphism、Cycle 131 reading sites、Cycle 133 raw/polynomial presheaf isomorphisms。raw NatTrans、index Equiv、逆context functor、coverage certificateを入力しない | `f.lawCoordinateMap`をlifted-`Int` Under morphismへ持ち上げ、全restrictionの自然性を証明。全contextで各Law-index/Atom変数がexact mapped index変数へ送られることを計算。source raw quotient→source polynomial→target polynomial→target raw quotientをpresheaf NatTransとして共役する | 次cycleのone-way complete-geometry recordのraw component、identity/composition、coverage/overlapとのcoherence | morphism由来context reading、coverage/overlap、raw NatTransのidentity/composition、独立readback、`AATCorePackage`/`ReadingCore` provenance、D回復、A--F統合は未完了。endpoint-only context rebaseをmorphism固有作用とは数えない |
@@ -14245,4 +14246,107 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Formalize the variance obstruction for signature-axis/global observable transport or replace the current context-morphism interface with a forward/lax geometry interface, then prove overlap/Extension coherence."
+```
+
+## Cycle 138 — Contravariant target-reading variance counterexample
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 138
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 26561b35f8906f2e51b50c9c7e557953380ad6fa
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 137 proved support and boundary preservation but left signature-axis/global observable transport obstructed by the variance of the existing ContextMorphism interface"
+  proof_dag_predecessors:
+    - "Cycle 129 primitive arbitrary noninvertible lens/protocol forward morphisms"
+    - "Cycle 131 independent endpoint readings and exact axis-readability predicate"
+    - "Cycles 134--136 covariant Law-coordinate and raw-presheaf maps"
+    - "Cycle 137 endpoint support and boundary preservation"
+  proof_obligation: "Decide on a concrete fixed input whether the existing contravariant target-reading restriction can serve as the global observable/signature-axis component for every required noninvertible CS morphism"
+  selection_reason: "The fixed morphism class permits an empty-state total lens to map to a one-point total lens. Its source coordinate type is empty and its target coordinate type is inhabited, so the variance question can be decided without assuming any completed geometry data."
+  expected_result_type: route-refutation-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryAxisVarianceCounterexample.lean
+  risks:
+    - "mistaking failure of the current ContextMorphism route for refutation of the fixed G-123 target"
+    - "replacing the required arbitrary noninvertible morphism class by a surjective or invertible subclass"
+    - "smuggling a target-to-source coordinate inverse or target enumeration into the input"
+    - "discarding the covariant coordinate/raw maps already generated in Cycles 134--136"
+  unchecked:
+    - "the replacement forward/lax complete-geometry interface"
+    - "exact/isomorphism subcategory comparison with existing GeometryTotalHom"
+    - "signature-axis law in the replacement interface"
+    - "overlap object comparison and Extension coherence"
+    - "identity/composition and independent geometry readback"
+    - "AATCorePackage and ReadingCore provenance"
+    - "D-side recovery and final A--F integration"
+result:
+  proposed_result_type: route-refutation-checkpoint
+  proof_obligation_delta: "Constructed the fixed empty-state and one-point total lenses and their unique allowed forward morphism. Proved that every source Law coordinate is impossible, while the target putGet-unit coordinate variable is readable. Therefore no ContextMorphism with IsRestriction exists from the rebased source reading to the independent target reading, and the target point axis is not readable through the current target-reading restriction predicate."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryAxisVarianceCounterexample.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.axisVarianceLensInput
+    - AAT.AG.RealizationReconstruction.axisVarianceEmptyLens
+    - AAT.AG.RealizationReconstruction.axisVarianceUnitLens
+    - AAT.AG.RealizationReconstruction.axisVarianceForward
+    - AAT.AG.RealizationReconstruction.axisVarianceSourceCoordinate_false
+    - AAT.AG.RealizationReconstruction.axisVariance_noTargetReadingRestriction
+    - AAT.AG.RealizationReconstruction.axisVariance_targetAxis_notReadable
+  claim_mapping:
+    source_labels:
+      - "GOAL A: readings, restrictions, and signature-axis coverage"
+      - "GOAL E and n1015 section 5.3: arbitrary noninvertible CS morphisms"
+    conjuncts:
+      - "required morphism range -> the empty-to-unit total-lens morphism is retained"
+      - "independent endpoints -> target reading contains its own actual coordinate"
+      - "variance obstruction -> target readability cannot be pulled back to a nonexistent source coordinate"
+      - "route scope -> only the contravariant target-reading restriction implementation is rejected"
+    undischarged_assumptions:
+      - "a forward/lax observable and signature-axis action has not yet been constructed"
+      - "overlap/Extension, identity/composition, and readback remain open"
+      - "core provenance, D recovery, and final A--F integration remain open"
+    acceptance_point: "The contradiction uses the actual readable target putGet-unit variable and eliminates every possible source Law-coordinate constructor. It does not assume a target restriction or a completed geometry morphism."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "the current contravariant target-reading restriction route fails for an allowed fixed noninvertible lens morphism"
+      - "the corresponding current target-axis readability predicate also fails on that input"
+    remaining:
+      - "construct a covariant forward/lax global observable and signature-axis component"
+      - "connect exact/isomorphism morphisms to existing GeometryTotalHom"
+      - "overlap/Extension, identity/composition, and independent readback"
+      - "AATCorePackage/ReadingCore provenance, D recovery, and A--F integration"
+  certificate_provenance:
+    discharged:
+      - "both endpoint lenses and the forward morphism are constructed directly from PEmpty and PUnit"
+      - "target readability is constructed from the actual target Law coordinate"
+      - "source coordinate impossibility is proved by eliminating each lens-law index constructor"
+    unresolved:
+      - "all positive construction obligations for the replacement complete-geometry interface"
+  proof_use:
+    used:
+      - "the actual target putGet-unit coordinate variable in target readability"
+      - "IsRestriction observable preservation to force a source readability witness"
+      - "the source Law-index state in every constructor to derive PEmpty elimination"
+    unused:
+      - "no target-to-source inverse, surjectivity, target enumeration, or completed geometry certificate is supplied"
+      - "Cycles 134--136 covariant maps remain available for the replacement interface"
+  structure_field_escape: none-found-no-obstruction-certificate-or-target-restriction-is-an-input
+  route_integrity: refuted-for-existing-contravariant-target-reading-restriction-on-an-allowed-forward-morphism
+  target_fitting: pass-the-counterexample-preserves-the-required-morphism-class-and-does-not-weaken-or-refute-the-fixed-target
+  vacuity: none-found-the-target-reading-has-an-explicit-readable-variable-and-the-source-coordinate-type-is-proved-empty
+  one_way_as_equivalence: none-found-the-example-is-deliberately-nonsurjective-and-no-inverse-is-used
+  goal_or_report_reinterpretation: none-found-one-failed-construction-route-is-distinguished-from-the-fixed-target-and-all-positive-obligations-remain-open
+  validation_refs:
+    - "focused CSAATGeometryAxisVarianceCounterexample file check: PASS; 7 namespace declarations, standard axioms only"
+    - "focused exact CSAATGeometryAxisVarianceCounterexample target build: PASS (4280 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct a forward/lax complete-geometry interface retaining the covariant coordinate/raw maps plus support and boundary action without demanding a target-to-source observable inverse; connect its exact/isomorphism subcategory to existing GeometryTotalHom, then prove overlap/Extension coherence."
 ```
