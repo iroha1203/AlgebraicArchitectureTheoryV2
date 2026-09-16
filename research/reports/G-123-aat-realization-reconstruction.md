@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 102 enlarges the independent Nat source grammar by the fixed adjacent-pair algorithm, characterizes its decoder-independent primitive and actual images, and gives the Cycle 101 witness a one-generator preimage
+- current proof obligation: Cycle 103 replaces the Cycle 102 primitive closure description by an exact two-coset classification over the finite-support subgroup and transfers it to actual intrinsic membership
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: analyze the generated Nat subgroup beyond its closure presentation, construct a faithful quotient or canonical normal form, generalize the finite algorithm language across permitted primitive parameters, and continue full-kernel decomposition
+- next proof obligation: construct a source-owned two-coset normal-form type and faithful evaluator for the Nat algorithm subgroup, then generalize the finite algorithm language across permitted primitive parameters and continue full-kernel decomposition
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 103 delta | Cycle 102のprimitive closureをopaqueな生成部分群のままにせず、finite-support部分群と固定adjacent algorithmによる二cosetとして分類し、actual intrinsic membershipへ同じ分類を移す | `finiteAxisFoldNatAdjacent_apply_twice`, `finiteAxisFoldNatAdjacent_mul_self`, `finiteAxisFoldNatAdjacent_conj_mem_finiteSupport`, `finiteAxisFoldNatAlgorithmCosetSubgroup`, `finiteAxisFoldNatAlgorithmPermutationSubgroup_eq_cosetSubgroup`, `finiteAxisFoldNatAlgorithmPermutationSubgroup_mem_iff_coset`, `finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff_coset` | Cycle 100のfinite-support subgroup characterization; Cycle 101の固定`xor 1` algorithm; Cycle 102のprimitive/actual image; same fixed expected actionとfull projection | adjacent involution; conjugationされたmoved setを元moved setのadjacent像へ包含する有限性証明; 二coset predicateのsubgroup closure; generator closureとの双方向包含; source/actual membership iff | raw wordの冗長性を二coset normal formへ圧縮し、faithful quotient/canonical representativeの構成へ渡す | 二cosetのdisjointnessとparity uniqueness、finite-support成分自身のcanonical finite presentation、faithful evaluator、全parameter algorithm family、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
 | D Cycle 102 delta | Cycle 101で不足が証明されたfinite-swap wordを、完成置換やactual residualを入力せず、原始`Nat`上の明示swapと固定`xor 1` algorithmの有限wordへ拡張し、decoder非依存のprimitive/actual imageとexact surjectivityを構成する | `FiniteAxisFoldNatAlgorithmGenerator`, `FiniteAxisFoldNatAlgorithmGenerator.toPerm`, `FiniteAxisFoldNatAlgorithmGenerator.range_toPerm`, `FiniteAxisFoldNatAlgorithmWord`, `finiteAxisFoldNatAlgorithmWordPermutation`, `finiteAxisFoldNatAlgorithmPermutationSubgroup`, `finiteAxisFoldNatAlgorithmWordPermutation_range`, `FiniteAxisFoldNatAlgorithmWordIntrinsicImage`, `finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff`, `finiteAxisFoldNatAlgorithmWordDecoder`, `finiteAxisFoldNatAlgorithmWordDecoder_backwardProjection`, `finiteAxisFoldNatAlgorithmWordIntrinsicDecoder`, `finiteAxisFoldNatAlgorithmWordIntrinsicDecoder_surjective`, `finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff_decoder`, `finiteAxisFoldNatAdjacentSwap_has_algorithmWordPreimage` | 原始`Nat`; 各swapの二値と不等式; 固定algorithm `n xor 1`; Cycle 92--101のsame fixed actual route; full backward projection単射性 | 独立generatorとfree finite word; generator rangeとprimitive closure; expected action経由のactual intrinsic subgroup; decoder landing; primitive rangeとactual faithfulnessによる全射; Cycle 101 outside元の一語preimage | known infinite-support obstructionをsource grammar側で修復し、generated subgroupの構造解析、faithful quotient/canonical normal form、全parameter familyとfull-kernel分解へ渡す | raw FreeGroupのinjectivityは未主張; primitive closureのcanonical description、faithful quotient/normal form、Nat以外を含むalgorithm family、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
 | D Cycle 101 delta | Cycle 100の全decidable carrier上のfinite-support actual imageをliteral unionとして保持し、同じprimitive-to-actual routeから有限アルゴリズムで構成した`Nat` adjacent swapがそのunion外にあることを証明する | `FiniteAxisFoldDecidableExtensionCarrier`, `FiniteAxisFoldFiniteSupportCarrierImage`, `finiteAxisFoldNatAdjacentSwap`, `finiteAxisFoldNatAdjacentSwap_ne`, `finiteAxisFoldNatAdjacentSwapLocalFiberKernel`, `finiteAxisFoldFiniteSupportSourceAction_exists_fixed_natProbe`, `finiteAxisFoldNatAdjacentSwap_transported_ne_finiteSupport`, `finiteAxisFoldNatAdjacentSwap_not_finiteSupportCarrierImage`, `finiteAxisFoldFiniteSupportCarrierImage_not_all` | 任意のdecidable primitive carrierとその全finite-support permutation; 原始`Nat` carrier上の固定有限アルゴリズム`n xor 1`; Cycle 92--100のsame fixed actual routeとintrinsic image; full backward projection | carrier-indexed existential union; `xor 1`のinvolutionと全点移動; same-carrier finite-support作用の固定点、別carrier作用の`Nat` probe固定; route equivalenceによるactual action separation; source-owned actual local-kernel元とunion非被覆 | 有限swap wordだけでは不足することを固定し、permitted primitive parameter上のfinite algorithmic generatorを含むpresentation、faithful quotient、full-kernel分解へ渡す | この非被覆はtarget反証ではない; finite algorithmic syntax/image、faithful quotientまたはcanonical normal form、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
 | D Cycle 100 delta | 任意のprimitive Extension carrier上でcompleted permutationを一つのpayloadとして受け取らず、明示された二値swapの有限wordを独立syntaxとし、finite-support条件でactual imageを特徴付けてexact surjectivityを証明する | `FiniteAxisFoldExtensionSwapGenerator`, `FiniteAxisFoldExtensionSwapGenerator.toPerm`, `FiniteAxisFoldExtensionSwapGenerator.range_toPerm`, `FiniteAxisFoldExtensionSwapWord`, `finiteAxisFoldExtensionSwapWordPermutation`, `finiteAxisFoldFiniteSupportPermutationSubgroup`, `finiteAxisFoldExtensionSwapWordPermutation_range`, `finiteAxisFoldFiniteSupportPermutationSubgroup_mem_iff`, `finiteAxisFoldArbitraryCarrierBackwardAction`, `FiniteAxisFoldFiniteSwapWordIntrinsicImage`, `finiteAxisFoldFiniteSwapWordIntrinsicImage_mem_iff`, `finiteAxisFoldFiniteSwapWordDecoder`, `finiteAxisFoldFiniteSwapWordDecoder_backwardProjection`, `finiteAxisFoldFiniteSwapWordIntrinsicDecoder`, `finiteAxisFoldFiniteSwapWordIntrinsicDecoder_surjective`, `finiteAxisFoldFiniteSwapWordIntrinsicImage_mem_iff_decoder`, `finiteAxisFoldNatZeroOneSwapGenerator`, `finiteAxisFoldNatZeroOneSwap_has_finiteSwapWordPreimage` | 任意の`E`と`[DecidableEq E]`; 各generatorの二値と不等式; Cycle 92--99のsame fixed actual route; Mathlibのfree-group rangeとfinite-support transposition closure定理; full backward projection単射性 | swap generator range = transpositions; free finite word evaluator; evaluator range = finite-support subgroup; decoder非依存のarbitrary-carrier expected action; actual intrinsic subgroup; decoder landing; intrinsic membershipとfinite wordの相互移送; full projection faithfulnessによるsurjectivity; Cycle 99 Nat witnessの一語preimage | carrier-indexed finite-support imageとfull kernelを比較し、残るinfinite-support方向またはcoverage/decompositionへ渡す | free-word decoderのinjectivityは主張しない; 全carrier familyの統合、infinite-support finite recipes、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
@@ -11089,4 +11090,114 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Analyze the generated Nat subgroup as finite-support permutations together with the adjacent coset, then use that structure toward a faithful quotient or canonical normal form before generalizing the finite algorithm language and continuing full-kernel decomposition."
+```
+
+## Cycle 103 — Nat algorithm two-coset classification
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 103
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: a9f17a3421bd5fd241c3517fdccdb97e251b1f4d
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 102 characterized its primitive image only as a closure generated by transpositions and the adjacent algorithm"
+  proof_dag_predecessors:
+    - "Cycle 100 identifies the transposition closure with finite-support permutations"
+    - "Cycle 101 proves the adjacent algorithm is involutive and infinite-support"
+    - "Cycle 102 defines the generated primitive and actual intrinsic images"
+  proof_obligation: "Replace the opaque closure by a readable structural classification suitable for a later faithful quotient or canonical normal form"
+  selection_reason: "The finite-support subgroup is normalized by every permutation, in particular by the adjacent involution, so adjoining that involution should produce exactly two finite-support cosets."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNatAlgorithmCoset.lean
+  risks:
+    - "assume normality or coset closure without proving finite support is preserved"
+    - "confuse left and right cosets or the stored-backward inverse orientation"
+    - "claim disjointness or unique parity without excluding finite support of the adjacent algorithm"
+    - "treat a membership classification as a faithful syntax or canonical representative"
+    - "infer all-parameter or full-kernel coverage from the Nat subgroup structure"
+  unchecked:
+    - "disjointness and uniqueness of the two cosets"
+    - "canonical finite presentation of the finite-support component"
+    - "faithful source evaluator and normal form required by fixed GOAL B"
+    - "all-parameter algorithm language and full-kernel/G-122/D/B/E/F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Proved the adjacent Nat algorithm squares to the identity.  Proved directly that conjugation by it preserves finite support: each moved point of the conjugate lies in the adjacent image of the original finite moved set.  Defined the readable predicate that a permutation is finite-support or becomes finite-support after left multiplication by adjacent, and proved it is a subgroup by explicit four-case multiplication and inverse calculations using conjugation closure.  Proved the Cycle 102 generated subgroup equals this coset subgroup: each generator lands in it, while finite-support permutations and the adjacent generator both lie in the generated subgroup.  Converted the result to an exact finite-moved-set membership iff and substituted it into actual intrinsic membership.  No coset disjointness, unique parity, canonical finite-support code, or faithful normal-form evaluator is yet claimed."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNatAlgorithmCoset.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAdjacent_apply_twice
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAdjacent_mul_self
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAdjacent_conj_mem_finiteSupport
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmCosetSubgroup
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmPermutationSubgroup_eq_cosetSubgroup
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmPermutationSubgroup_mem_iff_coset
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff_coset
+  claim_mapping:
+    source_labels:
+      - "GOAL B requires faithful presentation rather than raw redundant syntax"
+      - "GOAL D requires recovery of the same comparison information through an independent presentation"
+      - "Cycle 102 generated image needs structural analysis before a faithful quotient can be constructed"
+    conjuncts:
+      - "adjacent involution -> order-two coset generator"
+      - "finite moved set -> finite moved set after adjacent conjugation"
+      - "normal finite-support subgroup plus adjacent involution -> closed two-coset predicate"
+      - "explicit generator set -> membership in two-coset subgroup"
+      - "finite-support subgroup and adjacent generator -> reverse inclusion into generated subgroup"
+      - "source two-coset membership -> actual intrinsic membership classification"
+    undischarged_assumptions: []
+    acceptance_point: "The Cycle 102 Nat primitive image is exactly the union of the finite-support subgroup and the permutations whose adjacent left translate is finite-support, and actual intrinsic membership uses the same source classification; uniqueness and faithful normal form remain open."
+    port_status: not-applicable
+review:
+  fixed_head: pending
+  lanes:
+    math_a: pending
+    math_b: pending
+    lean_a: pending
+    lean_b: pending
+audits:
+  premise_delta:
+    discharged:
+      - "closure-only description of the Cycle 102 primitive image"
+      - "adjacent conjugation preservation of finite support"
+      - "two-coset closure and exact generated-subgroup equality"
+      - "readable actual intrinsic membership classification"
+    remaining:
+      - "two-coset disjointness and parity uniqueness"
+      - "canonical finite-support component syntax"
+      - "faithful quotient or canonical normal form required by fixed GOAL B"
+      - "all-parameter algorithm family and full-kernel/G-122/D/B/E/F"
+  certificate_provenance:
+    discharged:
+      - "finite support under conjugation is proved from an explicit moved-set inclusion, not received as a normality certificate"
+      - "subgroup closure is proved by all multiplication and inverse cases"
+      - "both generated-subgroup inclusions use the explicit source generator set"
+    unresolved:
+      - "unique and finite source representation of each finite-support component"
+      - "uniform parameter-relative algorithm representation"
+  proof_use:
+    used:
+      - "Cycle 100 finite-support membership theorem identifies the transposition closure"
+      - "Cycle 101 xor cancellation supplies adjacent involutivity"
+      - "Cycle 102 generator closure is compared in both directions"
+      - "Cycle 102 intrinsic membership theorem receives the new source classification"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: source-classification-only-actual-route-unchanged
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-two-coset-classification
+  one_way_as_equivalence: none-found-exact-subgroup-equality
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4334 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 7 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Prove the two cosets are disjoint using the adjacent algorithm's infinite support, extract unique parity, and construct a source-owned faithful normal-form evaluator whose finite-support component is itself independently and finitely presented."
 ```
