@@ -11038,12 +11038,16 @@ result:
     acceptance_point: "Independent finite words in explicit Nat swaps and the fixed xor-1 algorithm map exactly onto the intrinsic actual subgroup induced by their primitive generated subgroup, and the Cycle 101 witness has a one-generator preimage; faithfulness and full coverage are not asserted."
     port_status: not-applicable
 review:
-  fixed_head: pending
+  fixed_head: 3c15ebaaa1b5f7ea82325c817cb5735254beb162
   lanes:
-    math_a: pending
-    math_b: pending
-    lean_a: pending
-    lean_b: pending
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  direct_response:
+    reviewed_delta: "11a98098ee360c197114f4e9e9edc3a5c10a1d65..3c15ebaaa1b5f7ea82325c817cb5735254beb162"
+    verdict: pass
+    new_findings: []
 audits:
   premise_delta:
     discharged:
