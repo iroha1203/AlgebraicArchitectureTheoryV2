@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 126 constructs actual object-dependent AAT ArchitecturalEquationSystem values for the raw lens laws and protocol relation/observation laws, with equation syntax fixed independently of evaluated operation data and realization discharge proved from the original CS laws
+- current proof obligation: Cycle 127 transports every Cycle 126 lens/protocol law instance and its equation/Atom polynomial coordinate between arbitrary raw operation structures, with identity, composition, and nonvacuous equation-truth preservation proved from the source truth and the original operation/observation squares; every semantic morphism constructs such a raw law morphism
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct typed transport of the Cycle 126 Law indices, contexts, coordinates, and residuals along every arbitrary noninvertible semantic morphism, prove the exact CS-morphism preservation/reflection correspondence, and then extend the same construction to complete geometry and independent readback before D-side transport
+- next proof obligation: construct the actual context/object component and residual commutation of the AAT Law morphism, then prove that its full operation/Law preservation data is equivalent to the original CS morphism conditions before complete geometry and independent readback
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| E Cycle 127 delta | Cycle 126の全law instanceとequation/Atom座標を、元の任意の非可逆CS射に沿って運び、identity・compositionと式の成立保存を元の射法則から証明する | `LensLawHom`, `ProtocolLawHom`と各`id`/`comp`; semantic Homの各`toLawHom`; lens/protocol各`*LawIndexMap`, `*LawIndexMap_id`, `*LawIndexMap_comp`, `*LawIndexMap_holds`, `*LawCoordinateMap`, `*LawCoordinateMap_violation`, `*LawCoordinateMap_id`, `*LawCoordinateMap_comp`, `*LawEquationHolds_map`; `protocolEvaluatePath_naturality` | 任意のraw source/target operation structureと、その間のget/putまたはedge/observation square; source law truth `h`は順方向命題の`direction-hypothesis`; endpoint lawfulness、injective/iso、Law保存certificate、decoder像、completed AAT射を仮定しない。元の任意のsemantic Homからraw Homを構成する | state componentで全量化indexを写し、view/relation/named edge/Atomを保持; 同じmapで多項式変数をrename; source `h`とlensのget/put square、protocolのgenerator squareから導く全path自然性・edge naturality・observation自然性を実使用してraw `Holds`とactual `EquationHolds`の順方向保存を証明 | EのCS射をAAT Law層へ運ぶmorphism-side predecessor; 後続のactual context/object/residual morphismと完全AAT射が使う | actual context/object mapとresidual commutation、CS射条件と完全AAT保存条件の両方向、式真理の反映と「保存条件の反映」の区別、complete geometry/readback、D回復、A--F統合は未完了 |
 | E Cycle 126 delta | raw lens三法則とprotocolの全relation・全named-edge observation自然性を、評価対象objectの実operation dataを読むactual `ArchitecturalEquationSystem`として構成し、独立CS realizationがそのsystemを満たすことを証明する | `LensLawStructure`, `LensLawIndex`, `lensLawObject`, `lensLawStructure?`, `LensLawCoordinateRing`, `lensLawEquationSystem`, `lensLawEquationHolds_iff`, `lensEquationLawful_iff`, `lensRealization_equationLawful`, `ignoredBoolLensLawStructure_not_getPut`; `ProtocolLawStructure`, `ProtocolLawIndex`, `protocolLawObject`, `protocolLawStructure?`, `ProtocolLawCoordinateRing`, `protocolLawEquationSystem`, `protocolLawEquationHolds_iff`, `protocolEquationLawful_iff`, `ProtocolRealization.toLawStructure`, `protocolEvaluatePath_eq_pathAction`, `protocolRealization_equationLawful`, `togglingProtocolLawStructure_not_relation` | Cycle 125のexact carrier/object interfaceと、独立に定義済みの任意の`LensFamilyInput`/`LensRealization`および`ProtocolFamilyInput Q L O`/`ProtocolRealization`; system構成時の`base`と評価対象`data`は別引数; law proof、completed map、decoder像、readback certificateを入力しない | raw operation structureのみをactual ArchitectureObjectの`structureMaps`へ格納し、評価時にそのobjectから型安全に読み戻す; equation instanceとAtomの組を変数とする多項式座標を構成; objectから読んだoperationが各法則を満たす場合に限りresidualが零となるiffを証明; lensはL1三法則、protocolは商relation soundness・path evaluation・observation naturalityを実使用してrealization lawfulnessを放電; Bool lensと一頂点toggle protocolの具体的不成立instanceを固定 | Eの独立CS意味をAATのactual Law/AES層へ接続し、次cycleの任意semantic morphism上のLaw transportと後続complete geometry/readbackが使う固定interface | 任意の非可逆semantic morphismに沿うLaw/index/context/residual transportとCS morphism条件との保存・反映、complete core/geometry、AAT側独立射classからのreadbackと両逆、D表示側回復、A--F同一構成統合は未完了。0/1 residualは評価objectのraw operationから計算されるが、このcycleだけではmorphism transportを主張しない |
 | E Cycle 125 delta | 両CSモデルの原始carrier・role・operation名を有限Atom語彙、actual `ArchitectureObject`、actual Formal `Operation`へ構成し、意味関数との接続と、任意の非可逆semantic morphismのexact n1015 A1 doctrine写像を保持する | `LensAATAtom`, `ProtocolAATAtom`, `lensAATCarrier`, `protocolAATCarrier`, `typedRoleConfiguration`; lens/protocol各`*AATArchitectureObject`, `*AATOperation`, `*AATSemanticOperation`; `LensAATSource`, `ProtocolAATSource`, `lensAATExtractionDoctrine`, `protocolAATExtractionDoctrine`, `lensAATExactDoctrineHom`, `protocolAATExactDoctrineHom`; 各source mapの`id`/`comp`、doctrine homの`id`/`comp`、forward translationのinjectivity | Cycle 124の任意の`LensFamilyInput`/`LensRealization`と`ProtocolFamilyInput Q L O`/`ProtocolRealization`; 射は元の一般`Hom`で非可逆可; completed core/geometry写像、decoder像、presentation membership、readback certificateを入力しない | 全固定Atom語彙を各configuration family内に置き、operation名をtarget roleへrelationで支持; exact carrier型とlens基準値をArchitectureObjectへ格納し、protocol selected quantityは意味値を捏造せず`PUnit`; dependent package内で原primitive名・Formal Operation・exact semantic function・端点等式を同時構成; A1 source写像とextraction preservationを元のsemantic Homから構成し、恒等・合成とstate readbackによる単射を証明 | Eの独立CS意味をAATのactual Atom/ArchitectureObject/Operation層へ結び、次cycleのLaw/AESと完全幾何、独立readbackが使う固定interface | actual `Law`/`ArchitecturalEquationSystem`、その保存・反映、complete core/geometry、AAT側独立射classからのreadbackと両逆、D表示側回復、A--F同一構成統合は未完了。forward単射はreadbackや圏同値ではない |
 | E Cycle 124 delta | lensのstate/view/read/writeとget/put、protocolの各state/observationと元のnamed edge/vertex observationをexactなtyped primitive object/operationとして読み、任意の非可逆semantic morphism上で全roleと全operation squareを恒等・合成込みで運ぶ | `PrimitiveOperation.protocolObservation`; `lensObjectCarrier`, `lensOperationFunction`, `lensObjectMap`, `lensGet_square`, `lensPut_square`, 全4 roleの`id`/`comp`; `PrimitiveObject.protocolState`, `PrimitiveObject.protocolObservation`, `protocolObjectCarrier`, `protocolOperationFunction`, `protocolStateMap`, `protocolObservationMap`, `protocolEdge_square`, `protocolObservation_square`, state/observationの`id`/`comp` | 独立に定義済みの任意の`LensFamilyInput`と`LensRealization`; 任意の`ProtocolFamilyInput Q L O`と`ProtocolRealization`; 射は元の一般`Hom`で、iso・decoder像・presentation membership・完成写像certificateを仮定しない | carrierを元の型へ、operationを元の`get`/`put`/`edgeAction`/`observe`へ定義的に評価; lens全4 roleとprotocol state/fixed observationの写像を構成; semantic Homの定義法則を実使用して全operation squareを証明; 全roleのidentity/compositionを個別に証明 | EのCS意味からAAT側typed operation signatureへ進む最初のobject/morphism layer; 後続のAtom/Law/完全幾何構成とreadbackが接続すべき固定interface | actual AAT `Atom`/`Law`/ArchitectureObject/完全幾何packageとAAT射、独立readbackと両逆、selection/value/関係を含む全translation、D分類の表示側回復、A--F同一構成統合は未完了 |
@@ -12735,4 +12736,121 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct actual typed Law/index/context/coordinate/residual transport along every arbitrary noninvertible lens/protocol semantic morphism and prove its exact preservation/reflection correspondence before complete geometry or readback."
+```
+
+## Cycle 127 — Law-index and coordinate transport along arbitrary CS morphisms
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 127
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 6e6a49b74fe3aab91340e1e43e142b1b1bc26300
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 126 accepted object-dependent Law/AES checkpoint; morphism-level transport remained open"
+  proof_dag_predecessors:
+    - "Cycle 124 arbitrary noninvertible semantic morphisms and their operation squares"
+    - "Cycle 125 exact A1 source/doctrine morphisms"
+    - "Cycle 126 object-dependent law indices, coordinates, residual iff, and realization lawfulness"
+  proof_obligation: "Transport every Cycle 126 law instance and equation/Atom coordinate along the original arbitrary semantic morphisms, prove identity/composition, and prove equation-truth preservation from the original CS morphism laws"
+  selection_reason: "This directly connects the accepted object-level AES to the already accepted arbitrary morphism layer without introducing a supplied AAT preservation certificate."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATLawTransport.lean
+  risks:
+    - "restricting morphisms to injections or equivalences"
+    - "dropping view values, relations, dependent named edges, or Atom coordinates"
+    - "accepting Law preservation as a certificate rather than deriving it from CS squares"
+    - "calling one-way truth preservation reflection for noninjective raw maps"
+  unchecked:
+    - "actual AAT context/object component and residual commutation"
+    - "both directions between full AAT morphism preservation data and original CS Hom conditions"
+    - "complete core/geometry and independent readback"
+    - "D-side recovery and final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "For lens and protocol, defined morphisms between arbitrary raw operation structures, with no endpoint lawfulness field, and proved identity and composition.  Constructed total maps on every fully quantified law index by their state components, renamed every equation-instance/Atom polynomial variable, and proved coordinate identity/composition.  Derived target Holds from the direction-hypothesis source truth plus the actual get/put squares or protocol edge/path and observation naturality, then lifted it through the Cycle 126 iff to actual EquationHolds preservation.  Every original arbitrary noninjective semantic morphism constructs one of these raw morphisms.  Reverse truth and the later full preservation-condition correspondence remain open."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATLawTransport.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.LensLawHom
+    - AAT.AG.RealizationReconstruction.LensLawHom.id
+    - AAT.AG.RealizationReconstruction.LensLawHom.comp
+    - AAT.AG.RealizationReconstruction.LensRealization.Hom.toLawHom
+    - AAT.AG.RealizationReconstruction.lensLawIndexMap
+    - AAT.AG.RealizationReconstruction.lensLawIndexMap_id
+    - AAT.AG.RealizationReconstruction.lensLawIndexMap_comp
+    - AAT.AG.RealizationReconstruction.lensLawIndexMap_holds
+    - AAT.AG.RealizationReconstruction.lensLawCoordinateMap
+    - AAT.AG.RealizationReconstruction.lensLawCoordinateMap_violation
+    - AAT.AG.RealizationReconstruction.lensLawCoordinateMap_id
+    - AAT.AG.RealizationReconstruction.lensLawCoordinateMap_comp
+    - AAT.AG.RealizationReconstruction.lensLawEquationHolds_map
+    - AAT.AG.RealizationReconstruction.ProtocolLawHom
+    - AAT.AG.RealizationReconstruction.ProtocolLawHom.id
+    - AAT.AG.RealizationReconstruction.ProtocolLawHom.comp
+    - AAT.AG.RealizationReconstruction.ProtocolRealization.Hom.toLawHom
+    - AAT.AG.RealizationReconstruction.protocolLawIndexMap
+    - AAT.AG.RealizationReconstruction.protocolLawIndexMap_id
+    - AAT.AG.RealizationReconstruction.protocolLawIndexMap_comp
+    - AAT.AG.RealizationReconstruction.protocolEvaluatePath_naturality
+    - AAT.AG.RealizationReconstruction.protocolLawIndexMap_holds
+    - AAT.AG.RealizationReconstruction.protocolLawCoordinateMap
+    - AAT.AG.RealizationReconstruction.protocolLawCoordinateMap_violation
+    - AAT.AG.RealizationReconstruction.protocolLawCoordinateMap_id
+    - AAT.AG.RealizationReconstruction.protocolLawCoordinateMap_comp
+    - AAT.AG.RealizationReconstruction.protocolLawEquationHolds_map
+  claim_mapping:
+    source_labels:
+      - "GOAL E: CS laws and AAT preservation conditions in both directions"
+      - "n1015 L2: get/put-preserving arbitrary lens maps"
+      - "n1015 §3.1: arbitrary protocol natural transformations over observation"
+    conjuncts:
+      - "all lens instances -> transported state with every view retained"
+      - "all protocol relation and observation instances -> transported state with relation/edge retained"
+      - "all Atom coordinates -> polynomial rename retaining the identical Atom"
+      - "identity/composition -> index maps and ring maps obey the category laws"
+      - "CS preservation laws -> raw Holds and actual EquationHolds preservation"
+    undischarged_assumptions:
+      - "actual context/object/residual component of the complete AAT Law morphism"
+      - "reflection from complete AAT preservation data back to the CS Hom equations"
+    acceptance_point: "The preservation theorem is stated between arbitrary raw operation structures, so target truth is not available a priori.  It accepts only the source truth as the direction-hypothesis and the operation/observation squares of a raw law morphism.  Every original semantic Hom constructs that morphism; no injectivity, equivalence, endpoint Law, decoder membership, completed AAT map, or preservation certificate is supplied.  The result is intentionally a morphism-side predecessor rather than the completed bidirectional translation."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "index and coordinate transport for all lens/protocol instances"
+      - "one-way equation-truth preservation from the original CS Hom laws"
+    remaining:
+      - "actual residual/context commutation and full AAT morphism packaging"
+      - "reflection of the AAT preservation conditions back to the original CS Hom conditions"
+  certificate_provenance:
+    discharged:
+      - "raw law morphisms store only operation/observation squares, and every semantic Hom constructs them"
+      - "transport maps are definitions from raw Hom state components"
+      - "truth preservation is proved from source truth plus get/put or edge/path/observation naturality"
+    unresolved: []
+  proof_use:
+    used:
+      - "direction-hypothesis: source index.Holds or source EquationHolds"
+      - "LensLawHom.get_naturality and put_naturality"
+      - "ProtocolLawHom.edge_naturality, derived protocolEvaluatePath_naturality, and observation_naturality"
+      - "semantic get/put, edge, and observation laws construct the corresponding toLawHom values"
+    unused: []
+  structure_field_escape: none-found-no-new-certificate-or-membership-field
+  route_integrity: pass-for-index-coordinate-and-equation-truth-transport
+  target_fitting: none-found-arbitrary-noninjective-morphisms-and-all-indices-retained
+  vacuity: none-found-target-endpoint-is-an-arbitrary-raw-structure-with-no-lawfulness-field-and-source-truth-plus-each-relevant-morphism-law-is-used
+  one_way_as_equivalence: none-found-reverse-correspondence-remains-explicitly-open
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused CSAATLawTransport file check after central repair: PASS; 55 namespace declarations, standard axioms only"
+    - "focused exact CSAATLawTransport target build: PASS (4268 jobs; not a Research aggregate build)"
+    - "placeholder, registry, hidden/BiDi, privacy, import-direction, and diff checks: PASS"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct the actual AAT context/object and residual-commutation component and prove that the resulting full preservation package is equivalent to the original lens/protocol Hom conditions."
 ```
