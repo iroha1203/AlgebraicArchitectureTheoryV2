@@ -10802,7 +10802,7 @@ audits:
       - "decoder landing and surjectivity onto that subgroup"
       - "Cycle 99 Nat witness preimage"
     remaining:
-      - "faithful quotient or canonical normal form if an injective presentation is required"
+      - "the faithful quotient or canonical normal form required by fixed GOAL B for the final presentation; not discharged by this raw FreeGroup checkpoint"
       - "carrier-indexed integration and infinite-support recipe analysis"
       - "full-kernel coverage/decomposition and original G-122/D/B/E/F"
   certificate_provenance:
