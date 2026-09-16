@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 152 proves identity and composition for exact typed raw transport over a fixed coefficient ring, deriving composite coordinate, relation, and restriction coherence from the two constituent transports
+- current proof obligation: Cycle 153 constructs a coefficient-aware, target-indexed exact raw map with identity/composition and a strict-geometry bridge, retaining arbitrary coefficient homomorphisms and every typed coordinate, relation generator, and restriction square
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: add the parallel typed geometry morphism/category whose raw field is the functorial exact transport, embed existing strict geometry morphisms, and assemble the full CS core/geometry bridges without changing accepted G-108/G-122 results; coefficient-changing geometry composition remains a separate explicit obligation
+- next proof obligation: add the parallel typed geometry morphism/category using the coefficient-aware exact raw map, embed the full existing strict geometry morphisms, and adapt the genuine lens/protocol exact transports to its inverse-context orientation before assembling the CS core/geometry bridges
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 153 delta | 非可逆な係数準同型とinverse-context reindexを保持し、全typed coordinate・relation generator・restriction squareを同じdirected raw mapで運ぶ | `CoordinateFamilyExactEquiv.polynomialHom`, `.polynomialHom_C`, `.polynomialHom_X`, `.polynomialHom_trans`; `StructuralRelationFamilyExactEquiv.relationBaseChange_comp`, `.baseChange`; `RawAmbientRestrictionSystemExactMapAgainst`, `.refl`, `.trans`, `.ofGeometryRawEquality`, `.ofGeomReadHom` | generic interfaceはsource/target raw system、inverse context functor、係数準同型、全coordinate/relation/restriction coherenceを受ける。identity/compositionは完成合成証拠を受けない。strict特殊化は既存`GeomReadHom`のみ | coefficient map後の全coordinate renameをring homとして構成し、定数・変数・合成を証明。relation base changeと合成を構成。target arrow全体のrestriction squareを合成し、既存strict `raw_eq`からcoordinate/relation/restrictionの全fieldを生成 | parallel typed geometry hom/categoryのraw fieldと、既存strict geometry categoryからの埋め込み | genuine lens/protocol transportのinverse-context版、parallel geometryの非raw field・category laws・full strict embedding、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 152 delta | Cycle 151のtyped raw transportをidentity/compositionで閉じ、合成時にも全coordinate・relation generator・restriction squareを保持する | `CoordinateFamilyExactEquiv.refl`, `.trans`, `.polynomialEquiv_trans`; `StructuralRelationFamilyExactEquiv.refl`, `.trans`; `RawAmbientRestrictionSystemExactTransportAlong.refl`, `.trans` | 任意のtyped raw system、または同一係数環上で合成可能な二つのexact transport。合成済みcoordinate/relation/restriction certificateを入力しない | coordinate/local-dataとrelationの同値を合成し、polynomial renameの合成則を証明。各context arrowの合成restriction squareを第一段のsquareと、その像に対する第二段のsquareから導出 | 次cycleのparallel typed geometry hom/categoryの恒等射・合成射、およびgenuine lens/protocol geometry bridge | 係数変更を伴うtyped geometry composition、strict embedding、full core/geometry hom、independent readback、D回復、A--F統合は未完了 |
 | A/E Cycle 151 delta | carrier-changing genuine CS同型の実際の全Law座標作用を、raw座標・label・local data・structural relation・全restrictionと同じ対応で保持する | `CoordinateFamilyExactEquiv`, `.polynomialEquiv`, `.polynomialEquiv_X`, `StructuralRelationFamilyExactEquiv`, `RawAmbientRestrictionSystemExactTransportAlong`, `equationCoordinateRawExactTransportAlong`; lens/protocol各`*IsoRawExactTransport`, `*IsoRawExactTransport_coordinate_apply`, `*IsoEquationPolynomialIso`, `*IsoActualRawPresheafIso`, `*IsoActualRawPresheafIso_hom`; lens固定反例への`lensIsoRawExactTransport_boolSwap_coordinate_ne` | 任意の二つのAAT site・context functor・全coordinate型同値に対する一般構成。CS特殊化は独立なlawful realization間のgenuine semantic isoのみ。完成raw transport、raw presheaf iso、geometry hom、carrier/type equalityを入力しない | 全coordinateのEquivから変数renameを構成し、label/local data、relation generator polynomial、全context restrictionの可換squareを保持。lens/protocolではCycle149の実Law-index×Atom同値からexact transportを生成し、既存の全coordinate forward raw mapをforward halfとするraw-presheaf Isoを構成。Bool hidden swapで修正版が実際に同じ非自明座標を動かすことを証明 | Aのtyped raw data transportとEの両CS翻訳。次cycleのtyped geometry hom raw component | concrete CS raw systemsの追加relationは空だが、Law equationsはsite equation systemに保持。typed geometry category、strict embedding、full core/geometry hom、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 150 route-refutation delta | carrier cardinalityだけでcanonical coordinate型を同一化し、constant raw identity actionを実際のCS同型による全Law-index×Atom transportとして使えるか判定する | candidateの`constantRawCoordinateFamily`, `constantRawSystemOn`, `constantRawSystemOn_reindex`; canonicalizationの`LensCanonicalCarrier`, `LensCanonicalRawCoordinate`, `lensCanonicalRawCoordinateEquiv`, `lensIsoCanonicalRawCoordinate_eq`; 反例の`constantRawRouteBoolInput`, `constantRawRouteBoolLens`, `constantRawRouteBoolSwap`, `constantRawRouteBoolSwap_lawIndex_ne`, `constantRawRouteBoolSwap_canonicalCoordinate_ne` | 固定`View = PUnit`、hidden complement `Bool`のsource-owned product lensと非自明swap。完成coordinate集合、carrier等式、raw equality、geometry homを入力しない | constant raw systemが全変数を恒等に保つ一方、同じobject上のgenuine lens automorphismが`putGet (unit,false)`を異なるLaw indexへ運び、objectwise canonical equivalenceで共役しても非自明であることを証明 | cardinal equality routeを固定targetの解から除外し、次cycleのtyped raw transport設計を拘束する | 固定target自体は反証されていない。morphism-specific coordinate action・relation・restrictionを保つ新しい必須項目または構成、protocol、full geometry bridge、readback、D回復、A--F統合は未完了 |
@@ -15911,4 +15912,110 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct the parallel typed geometry morphism/category over the functorial exact raw field and define the strict embedding; keep coefficient-changing composition explicit rather than inferred from this fixed-coefficient layer."
+```
+
+## Cycle 153 — Coefficient-aware target-indexed exact raw maps
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 153
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: bed56e9061baf9c0bd379cbab19847f0ed735f99
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 152 closed fixed-coefficient forward typed transport under identity/composition, while a full geometry hom has a possibly noninvertible coefficient map and reindexes along its inverse context functor"
+  proof_dag_predecessors:
+    - "Cycles 151--152 complete typed coordinate/relation/restriction transport and its fixed-coefficient calculus"
+    - "G-108 GeometryTransport rawReindex/rawTransport and strict GeomReadHom.raw_eq"
+  proof_obligation: "Construct a directed coefficient-aware exact raw map with the inverse-context orientation needed by geometry, prove identity/composition, and recover it from every existing strict raw equality"
+  selection_reason: "An arbitrary coefficient homomorphism is not invertible, so demanding a raw-presheaf isomorphism would weaken the allowed geometry morphisms. Target indexing makes the independently constructed target raw system explicit and aligns the strict embedding with rawReindex."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATCoefficientRawExactMap.lean
+  risks:
+    - "silently requiring coefficient invertibility"
+    - "dropping target contexts or using only image contexts"
+    - "accepting a completed composite restriction certificate"
+    - "using strict raw equality as the new generic interface"
+  unchecked:
+    - "genuine lens/protocol constructors in inverse-context orientation"
+    - "parallel typed geometry hom/category and full strict embedding"
+    - "full CS core/geometry bridges, independent readback, D recovery, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Defined the directed polynomial ring hom as coefficient map followed by the complete coordinate rename, with constant, variable, and composition laws. Proved exact relation transport is stable under coefficient base change. Defined the target-indexed exact raw map and constructed its identity and composition, deriving the composite relation and restriction laws. Finally consumed existing strict raw equality to construct every typed raw field and exposed this construction for any GeomReadHom."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATCoefficientRawExactMap.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.CoordinateFamilyExactEquiv.polynomialHom
+    - AAT.AG.RealizationReconstruction.CoordinateFamilyExactEquiv.polynomialHom_C
+    - AAT.AG.RealizationReconstruction.CoordinateFamilyExactEquiv.polynomialHom_X
+    - AAT.AG.RealizationReconstruction.CoordinateFamilyExactEquiv.polynomialHom_trans
+    - AAT.AG.RealizationReconstruction.StructuralRelationFamilyExactEquiv.relationBaseChange_comp
+    - AAT.AG.RealizationReconstruction.StructuralRelationFamilyExactEquiv.baseChange
+    - AAT.AG.RealizationReconstruction.RawAmbientRestrictionSystemExactMapAgainst
+    - AAT.AG.RealizationReconstruction.RawAmbientRestrictionSystemExactMapAgainst.refl
+    - AAT.AG.RealizationReconstruction.RawAmbientRestrictionSystemExactMapAgainst.trans
+    - AAT.AG.RealizationReconstruction.RawAmbientRestrictionSystemExactMapAgainst.ofGeometryRawEquality
+    - AAT.AG.RealizationReconstruction.RawAmbientRestrictionSystemExactMapAgainst.ofGeomReadHom
+  claim_mapping:
+    source_labels:
+      - "GOAL A: coefficient-aware raw coordinates, relations, restrictions, and transport"
+      - "GOAL E and n1015: preserve possibly noninvertible coefficient maps inside an exact-coordinate/relation raw interface"
+    conjuncts:
+      - "arbitrary coefficient ring hom -> directed polynomial map, not an assumed isomorphism"
+      - "every target context -> complete source/target coordinate and local-data equivalence"
+      - "every relation generator -> coefficient-changed polynomial correspondence"
+      - "every target context arrow and source polynomial -> restriction square"
+      - "two primitive exact maps -> composite exact map with composed coefficient and inverse-context functors"
+      - "strict GeomReadHom.raw_eq -> constructed exact typed raw map"
+    undischarged_assumptions:
+      - "generic exact-map constructors remain conditional on their primitive coordinate/relation/restriction data"
+      - "the genuine lens/protocol inverse-context constructors are not yet supplied"
+      - "integration of arbitrary noninjective CS coordinate maps remains unresolved; this exact interface requires coordinate and relation equivalences"
+      - "the parallel geometry structure and its non-raw fields are not yet assembled"
+    acceptance_point: "The raw field needed by a parallel typed geometry category now supports arbitrary coefficient homomorphisms, identity/composition, and strict embedding at the raw layer. It is not yet the full geometry category or a CS bridge."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "coefficient-aware complete polynomial action and its composition"
+      - "relation exactness under coefficient base change"
+      - "identity/composition for target-indexed exact raw maps"
+      - "typed raw extraction from every existing strict GeomReadHom"
+    remaining:
+      - "concrete genuine-CS constructors, parallel typed geometry non-raw fields/category, full strict embedding, readback, D recovery, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "the generic structure accepts primitive coordinate/relation equivalences and all-arrow restriction coherence"
+    discharged:
+      - "identity and composition construct all their fields without a completed result certificate"
+      - "the strict specialization consumes the already accepted G-108 raw equality and reconstructs its complete typed action"
+    unresolved:
+      - "construction of the concrete non-strict CS exact maps and all non-raw geometry components"
+  proof_use:
+    used:
+      - "the arbitrary coefficient hom on constants"
+      - "the complete coordinate equivalence on every variable"
+      - "every relation generator polynomial"
+      - "every target context arrow and arbitrary source polynomial"
+      - "both constituent exact maps in composition"
+      - "the strict raw equality only in the strict embedding constructor"
+    unused:
+      - "no coefficient inverse, selected coordinate subset, completed composite certificate, decoder membership, or readback is accepted"
+  structure_field_escape: none-found-the-generic-fields-are-primitive-coherence-data-and-the-strict-specialization-constructs-them-from-existing-rawTransport
+  route_integrity: pass-noninvertible-coefficients-and-all-target-contexts-coordinates-relations-restrictions-are-retained
+  target_fitting: partial-the-coefficient-map-may-be-noninvertible-but-coordinate-and-relation-actions-remain-exact-equivalences-and-arbitrary-noninjective-CS-map-integration-is-open
+  vacuity: none-found-the-restriction-law-is-quantified-over-every-target-arrow-and-source-polynomial
+  one_way_as_equivalence: none-found-the-coefficient action-is-a-RingHom-and-no-generic-raw-Iso-is-claimed
+  goal_or_report_reinterpretation: none-found-parallel-geometry-concrete-CS-bridges-readback-D-and-final-integration-remain-open
+  validation_refs:
+    - "focused CSAATCoefficientRawExactMap file check: PASS; 25 namespace declarations, standard axioms only"
+    - "focused exact CSAATCoefficientRawExactMap target build: PASS (4284 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct the parallel typed geometry hom/category with this exact raw field, embed the full strict geometry hom, and adapt genuine lens/protocol transports to the target-indexed inverse-context form."
 ```
