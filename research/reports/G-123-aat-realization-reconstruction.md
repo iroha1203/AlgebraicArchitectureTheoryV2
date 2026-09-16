@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 96 proves that every permutation of an independently supplied finite Extension carrier remains distinguishable after the fixed complete-geometry and normalization route and after codRestriction into the actual joint local-fiber kernel
+- current proof obligation: Cycle 97 identifies the arbitrary finite-permutation section at Bool exactly with the independent Cycle 91 C2 evaluator and proves by a source three-cycle that the full constructed family is strictly larger than that fragment inside the same actual local-fiber kernel
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: specialize the arbitrary finite-carrier section to Bool, identify its toggle image with the independent Cycle 91 evaluator, use a non-involutive finite permutation to separate the larger source-generated image from the C2 fragment, and then construct an intrinsic image presentation without treating the semantic range as syntax
+- next proof obligation: characterize the fixed-carrier permutation image intrinsically through its complete stored-backward context action, construct an independent table presentation and decoder equivalence for that subgroup without defining syntax as a semantic range, then test whether the actual full local-fiber kernel contains directions outside all such finite-carrier actions
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 97 delta | arbitrary Extension-permutation familyのBool特殊化をCycle 91の独立C2 evaluatorとexactに同定し、同じactual local-fiber kernel内で非involutive source元によりC2 fragmentからの真の拡大を示す | `finiteAxisFoldExtensionValuePermutation_boolNot`, `finiteAxisFoldSourceBackwardPermutationGeometry_boolNot`, `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_boolNot`, `FiniteAxisFoldBackwardToggleSyntax.boolPerm`, `finiteAxisFoldBackwardToggleSyntax_evaluate_eq_boolPermutationSection`, `finiteAxisFoldBackwardToggleSyntax_evaluate_range_eq_boolPermutation_range`, `finiteAxisFoldExtensionThreeCycle_not_mem_backwardToggleSyntax_range` | 固定source/southwest/exact-left/top/normalization route; Cycle 91の独立二記号syntax/evaluator; Cycles 92--96の全有限carrier permutation sectionとactual単射性 | primitive value recipeから全context functor・equivalence・complete geometry・固定actual routeを通したBool同一性; Bool permutation全射によるrange exact equality; 原始`Fin 3`隣接swap積の非involutivityとactual section単射性によるC2 range外元 | intrinsic image predicate、独立table presentation、decoder equivalence、full local-kernel coverage検査へ渡す | fixed-carrier imageの内在的特徴付け、全kernelに対するsection/surjectivity/decomposition/coverage、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
 | D Cycle 96 delta | Cycle 95の全Extension-permutation familyについて、fixed actual route後の等号をsource probeへ読み戻し、normalized geometry sectionとactual local-fiber-kernel sectionの単射性を証明する | `finiteAxisFoldPermutationSouthwestProbe`, `finiteAxisFoldPermutationExactLeftProbe`, `finiteAxisFoldPermutationActualProbe`, `finiteAxisFoldNormalizedPermutationGeometrySectionHom_injective`, `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_injective` | 任意の有限`E`; Cycle 92のsource probesとsource action単射性; Cycles 93--95の同じsectionと固定southwest/exact-left/top/normalization route | 二つのopcartesian transportをcanonical retractionで消去し、exact-left pullをgenerated cancellationで消去; normalizationが保持するstored backward作用をsourceへ戻し、`p⁻¹=q⁻¹`から`p=q`を回復; subgroup equalityからunderlying normalized automorphism equalityを射影 | constructed Extension-permutation familyのactual faithfulnessを固定し、Bool/Cycle 91像比較と内在的image presentationへ渡す | Bool特殊化とCycle 91 evaluator像の同定、image characterization、section/surjectivity/decomposition/full-kernel coverage、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
 | D Cycle 95 delta | Cycle 94の全familyについて、全contextのSupport・Axis・Observable作用をcomplete dependent Sigma carrier上で恒等化し、actual joint local-fiber kernelへ同じhomを着地させる | `finiteAxisFoldNormalizedGenericPermutation_supportSigmaMap_eq_id`, `finiteAxisFoldNormalizedGenericPermutation_axisSigmaMap_eq_id`, `finiteAxisFoldNormalizedGenericPermutation_observableSigmaMap_eq_id`, 三つの`_*Equiv_eq_one`, `finiteAxisFoldNormalizedGenericPermutation_mem_localFiberKernel`, `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom` | 任意の`E`と全`Equiv.Perm E`; Cycle 93のcomplete geometry section; Cycle 94のcontext-kernel section; fixed transport factorizationとlocal cancellation | source/southwest/exact-left/top/normalizedの三Sigma-map恒等; 各contextの三local equivalence恒等; その証拠によるactual joint-kernel membershipとcodRestriction | Cycle 96のprobe readbackとactual injectivityへ渡す | actual injectivity、Bool evaluator比較、image characterization/coverage、一般入力と残るD/B/E/Fは未完了 |
 | D Cycle 94 delta | Cycle 93の全familyについて、normalized axis・signature coordinate・forward context作用を実計算し、三段のresidual context kernelへ着地させる | `finiteAxisFoldNormalizedGenericPermutation_axisMap`, `finiteAxisFoldNormalizedGenericPermutation_coordinateEquiv`, `finiteAxisFoldNormalizedGenericPermutation_contextForward_eq_id`, `finiteAxisFoldNormalizedPermutationContextKernelSectionHom` | 任意の`E`と全`Equiv.Perm E`; Cycle 93の同じnormalized section; fixed factorizationとcontext cancellation | axis、全coordinate、全forward context作用の恒等式; それぞれからaxis/signature/context kernel membershipを構成 | Cycle 95の三local-family恒等化とjoint kernel landingへ渡す | dependent Support/Axis/Observable、actual injectivity、image/coverage、一般入力と残るD/B/E/Fは未完了 |
@@ -10347,4 +10348,121 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Specialize the arbitrary finite-carrier section to Bool, identify its generated element with the existing Extension-toggle residual element, and compare its image exactly with the Cycle 91 evaluator fragment before constructing an intrinsic image presentation."
+```
+
+## Cycle 97 — Boolean image comparison and strict finite-permutation enlargement
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 97
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: acf283f9297d7b4cea97d485ba4fdc7c848ad50e
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 96 proved actual injectivity for every finite Extension-permutation section but had not related the new family to the independent Cycle 91 C2 evaluator or shown a strictly larger source-generated image"
+  proof_dag_predecessors:
+    - "Cycle 91 independently defined the two-symbol source syntax and its actual local-kernel evaluator"
+    - "Cycles 92--95 constructed the arbitrary finite-carrier action through the same fixed actual route"
+    - "Cycle 96 proved the actual local-fiber-kernel section injective"
+  proof_obligation: "Prove the Bool specialization is the old toggle at every construction stage, identify the two images exactly, and construct a non-involutive finite source element outside the C2 image"
+  selection_reason: "The old toggle and new arbitrary family must be shown to be one construction rather than merely two residual models; strict image growth is needed before an intrinsic presentation can classify the constructed family."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldPermutationImageSeparation.lean
+  risks:
+    - "compare only the distinguished Bool probe instead of all source contexts and complete geometry"
+    - "identify images after forgetting the actual local-kernel carrier"
+    - "define the new syntax as the semantic range"
+    - "replace the required original C2 evaluator with a new convenient evaluator"
+  unchecked:
+    - "intrinsic fixed-carrier image characterization and independent table decoder equivalence"
+    - "full local-kernel section, surjectivity, decomposition, and coverage"
+    - "general inputs, bottom/full comparison kernels, lift fibers, and remaining D/B/E/F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Proved Boolean negation equality at the primitive Extension-value recipe, every complete source context, the full context functor/equivalence, complete source geometry, and every fixed semantic transport through the actual normalized local-fiber kernel.  Constructed an independent syntax-to-Bool-permutation hom, proved it surjective, and proved exact range equality between the Cycle 91 evaluator and the Bool specialization.  Constructed an independent Fin 3 Extension three-cycle from two adjacent swaps; actual section injectivity preserves its non-involutivity, placing its normalized local-kernel image outside the C2 evaluator range."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldPermutationImageSeparation.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionValuePermutation_boolNot
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSourceBackwardPermutationGeometry_boolNot
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_boolNot
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldBackwardToggleSyntax_evaluate_eq_boolPermutationSection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldBackwardToggleSyntax_evaluate_range_eq_boolPermutation_range
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionThreeCycle_localFiberKernel_mul_self_ne_one
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionThreeCycle_not_mem_backwardToggleSyntax_range
+  claim_mapping:
+    source_labels:
+      - "GOAL D prerequisite: distinguish the constructed finite Extension-permutation family before the still-open recovery of the original finite-axis-fold classification data"
+      - "preserve the Cycle 91 evaluator and compare it inside the same actual local-fiber kernel"
+      - "retain non-involutive finite source permutations rather than shrink to the convenient C2 subgroup"
+    conjuncts:
+      - "all source contexts -> generic Bool recipe equals the original uniform toggle recipe"
+      - "same fixed source-to-normalization route -> exact equality of actual local-kernel elements"
+      - "independent C2 syntax -> all Bool permutations -> exact evaluator range equality"
+      - "independently presented Fin 3 Extension swap product -> non-involutive actual element -> outside C2 range"
+    undischarged_assumptions: []
+    acceptance_point: "The independent C2 fragment is exactly the Bool specialization and is strictly contained in the broader constructed finite-permutation family; no full-kernel coverage is claimed."
+    port_status: not-applicable
+review:
+  initial_fixed_head: 20ad2e01e4ed3e19e3a71278eab3bd32d6d28ef7
+  initial_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: minor-issues-noncentral
+    lean_b: minor-issues-noncentral
+  revised_fixed_head: 4b91222118cf993865fe40e36d004622820f090a
+  revised_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings:
+    - "replaced the singular same-section wording with the carrier-indexed family distinction between the Bool and Fin 3 sections"
+    - "removed attribution of the independent Extension three-cycle to the original G-122 finite-axis-fold example and kept that recovery explicitly open"
+  direct_response:
+    reviewed_delta: "20ad2e01e4ed3e19e3a71278eab3bd32d6d28ef7..4b91222118cf993865fe40e36d004622820f090a"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "exact relation of the Bool specialization to the Cycle 91 evaluator"
+      - "exact equality of their images"
+      - "existence of a source-generated actual local-kernel element outside the C2 fragment"
+    remaining:
+      - "intrinsic image predicate and independent table decoder equivalence"
+      - "full-kernel coverage, section, surjectivity, and decomposition"
+      - "general inputs, bottom/full comparison kernels, lift fibers, and remaining D/B/E/F"
+  certificate_provenance:
+    discharged:
+      - "Bool equality starts at the primitive value recipe and is transported through constructed functors"
+      - "the three-cycle is an explicit source table, not a semantic residual witness"
+      - "range equality is proved from the independent two-symbol syntax and Bool permutation exhaustion"
+    unresolved:
+      - "intrinsic characterization and full residual coverage"
+  proof_use:
+    used:
+      - "the primitive value equality determines the full source context functor"
+      - "complete geometry extensionality transports the equality into the source automorphism"
+      - "the fixed southwest/exact-left/top/admissible/normalization route transports the same equality"
+      - "Cycle 96 injectivity reflects the three-cycle order at the actual endpoint"
+      - "Cycle 91 involution theorem excludes every old evaluator value"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-through-fixed-source-southwest-exact-left-top-normalization-route
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-image-comparison-checkpoint
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4327 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 21 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Characterize a fixed finite-carrier image intrinsically by its complete stored-backward context action, construct its independent table decoder equivalence, and only then compare that union of constructed families with the full actual local-fiber kernel."
 ```
