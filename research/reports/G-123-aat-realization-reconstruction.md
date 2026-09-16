@@ -10111,3 +10111,105 @@ audits:
   blocking_findings: []
   next_obligation: "Prove the dependent Support, Axis, and Observable Sigma actions are identity for this entire family, codRestrict into the actual local-fiber kernel, then transport the Cycle 92 probes to prove actual injectivity."
 ```
+
+## Cycle 95 — Finite Extension permutations in the residual local-fiber kernel
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 95
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 29472792092f83ac47487c79d59a664685890b95
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 94 placed every transported Extension permutation in the residual context kernel but left all three dependent local actions unchecked"
+  proof_dag_predecessors:
+    - "Cycle 93 complete source-geometry permutation section and fixed normalized transport"
+    - "Cycle 94 axis/signature/forward-context kernel landing"
+    - "Cycle 89 dependent Support/Axis/Observable cancellation for the original Bool candidate"
+  proof_obligation: "Prove the complete dependent Support, Axis, and Observable actions are identities for every independently supplied Extension permutation and codRestrict the same family into the actual joint residual local-fiber kernel"
+  selection_reason: "Actual residual faithfulness and evaluator-image classification must first be stated on the genuine local-fiber kernel rather than the weaker context kernel."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldBackwardToggleLocalAction.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldPermutationLocalFiberKernel.lean
+  risks:
+    - "accept local-component identity or kernel membership as an argument or certificate"
+    - "prove only generator-level or forgotten-context equality instead of the complete dependent Sigma maps"
+    - "specialize back to Bool or an involution and lose the full arbitrary-permutation family"
+    - "infer normalized injectivity, image coverage, or G-123 completion from kernel landing"
+  unchecked:
+    - "probe-based injectivity of the normalized local-kernel section"
+    - "Bool specialization and Cycle 91 evaluator image comparison"
+    - "intrinsic image characterization, section, surjectivity, decomposition, and coverage"
+    - "general inputs, bottom/full comparison kernels, lift fibers, and remaining B/E/F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Promoted the generic dependent Support, Axis, and Observable Sigma-map transport/cancellation lemmas from the fixed Bool example to reusable API.  For every independent Extension carrier and every permutation, constructed identity equations for each complete dependent Sigma map at the primitive source, southwest transport, exact-left pull, top transport, and normalized endpoint.  Converted those total equalities into pointwise identity equivalences at every residual context and codRestricted the Cycle 94 homomorphism into the actual joint local-fiber kernel."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldBackwardToggleLocalAction.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldPermutationLocalFiberKernel.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedGenericPermutation_supportSigmaMap_eq_id
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedGenericPermutation_axisSigmaMap_eq_id
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedGenericPermutation_observableSigmaMap_eq_id
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedGenericPermutation_mem_localFiberKernel
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom
+  claim_mapping:
+    source_labels:
+      - "GOAL D and user conditions 1, 2, 3, 4, and 5"
+    conjuncts:
+      - "every source permutation -> complete normalized dependent Support action identity"
+      - "every source permutation -> complete normalized dependent Axis action identity"
+      - "every source permutation -> complete normalized dependent Observable action identity"
+      - "same constructed family -> homomorphism into the actual joint residual local-fiber kernel"
+    undischarged_assumptions:
+      - "no finiteness premise is needed for construction or local-fiber-kernel landing"
+      - "injectivity of the normalized/local-kernel homomorphism is not yet proved"
+      - "no evaluator image characterization, section, surjectivity, decomposition, or coverage is asserted"
+      - "general input and broader G-123 obligations remain open"
+    acceptance_point: "The complete arbitrary permutation family now lands constructively in the actual local-fiber kernel; this cycle does not claim faithfulness or coverage."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "uniform normalized dependent Support identity"
+      - "uniform normalized dependent Axis identity"
+      - "uniform normalized dependent Observable identity"
+      - "actual joint local-fiber-kernel homomorphism landing"
+    remaining:
+      - "normalized probe readback and actual injectivity"
+      - "image characterization, section, surjectivity, decomposition, and coverage"
+      - "general inputs, bottom/full comparison kernels, lift fibers, and remaining D/B/E/F"
+  certificate_provenance:
+    discharged:
+      - "local identities are derived from the primitive source action and fixed transport factorizations, not supplied as fields, instances, memberships, or certificates"
+      - "joint kernel membership is constructed from the three complete dependent identities"
+      - "the input remains only an independently supplied carrier permutation"
+    unresolved:
+      - "actual normalized/local-kernel injectivity and intrinsic image"
+  proof_use:
+    used:
+      - "source component definitions establish the three primitive Sigma-map identities"
+      - "canonical section surjectivity transports identities across both opcartesian steps"
+      - "generated exact local-component injectivity cancels the exact-left pull"
+      - "dependent Sigma equalities recover every context-indexed local equivalence"
+      - "the three pointwise equivalence identities witness actual local-fiber-kernel membership"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-through-fixed-normalization-endpoint
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-local-kernel-checkpoint
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused helper file check: PASS"
+    - "focused new file check: PASS"
+    - "focused exact target build: PASS (4322 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 21 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Transport the Cycle 92 source probes through the same fixed route and prove the actual normalized local-fiber-kernel section injective for every finite Extension carrier."
+```
