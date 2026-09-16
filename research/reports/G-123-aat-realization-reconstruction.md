@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 119 instantiates the three fixed F examples with their prescribed state maps, failure evaluations, operation adapters, and exact counts
+- current proof obligation: Cycle 120 connects the independent E product-lens change condition to the same fixed-F construction in both directions and proves the constructive L6 normal form
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: transport the same fixed-F classification through the independently defined E lens/protocol models in both directions, then recover it through D and the presentation side
+- next proof obligation: construct the corresponding bidirectional protocol connection with named operations, executions, observations, and adapters, then recover both E classifications through D and the presentation side
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| E/F Cycle 120 delta | 独立lens意味の同じ`h,u`によるget/put二図式(L5)をcomplete-update F分類と双方向に一致させ、L6とsection版を構成する | `LensInvertibleChange`, `toFollowingStateChange`, `toFollowingStateChange_preserves`, `ofFollowingStateChange`, `equivPreservingFollowingChanges`, `hiddenPermutation`, `fiberPerm_eq_hiddenPermutation`, `normalForm`, `hiddenPermutation_unique`, `ofHiddenPermutation`, `equivHiddenPermutations`, `natCard_productLensChanges`, `productSection`, `preservesSection_iff` | 独立な`LensRealization.product V K reference`; 任意の`visible : Perm V`（reference固定不要）; 有限`K`; Cycle111--120のactual F分類 | get式からobservation、put式から全ordered-pair named execution squareを構成し逆向きも同じ`h`で回復; reference fiberでhidden permutationを`h`から構成; 全edge constancyから全状態normal form; 任意候補の一意性と任意`Perm K`からの逆構成; actual section式とpoint stabilizerのiff | E product lensに同じF1を適用し、将来のD/AAT比較群へL5の同一変更を渡す | protocol E接続、lensのAAT typed Read/Write・一般非可逆射への双方向翻訳、D/AAT表示側回復、残るA--E統合は未完了 |
 | F Cycle 119 delta | 固定lens、選択値保存lens、protocolの指定データ・評価・個数を同じF分類へ接続する | `followingEquivVertexPermutationFamilies`, `natCard_followingStateChange`, `PointedFollowingStateChange`, `pointedFollowingEquivVertexFamilies`, `natCard_pointedFollowingStateChange`; complete-update graph/automorphism/component equivalence; `boolLensTwistChange`とget/put評価・id/flip各4/2; `pointedLensTwistChange`とsection/put評価・二つの非恒等witness・4/2; `protocolGraph`, `protocolSessionSwapAutomorphism`, `protocolSessionSwapLift`, operation-map計算, `protocolComponentEquivBool`, 16/4/4 | カード指定の`Bool×Bool` product lens、`Bool×Fin 3`と基準値0、`Fin 4`のnamed edges `0→1`,`2→3`; Cycle111--118のactual source/fiber分類 | raw following changeと頂点別全置換族の往復; pointed raw changeと全point stabilizer族の往復; complete graph一成分とprotocol二成分のsource relation由来証明; xor/true-fiber swapの具体評価; session交換のvertex/edge/operation adapter; 一般濃度式の特殊化 | Fの三固定例を完了し、同じ構成をEの独立lens/protocol意味へ翻訳する | Eとの対象・射・get/put・adapterの双方向翻訳、D/AAT表示側回復、残るA--Eの同一構成統合は未完了 |
 | F Cycle 118 delta | 有限`F.Vertex`と有限`K`について、任意の独立`H`と各`u : H`上のfull/pointed actual projection fiberを数える | `pointedPermutationEquivFixedOutside`, `pointedPermutationEquivComplement`, `natCard_pointedPermutation`, `natCard_componentGroup`, `natCard_projectionFiber`, `natCard_pointedComponentGroup`, `natCard_pointedProjectionFiber` | 任意の`F,K,k₀,H,u`; `[Finite F.Vertex] [Finite K]`; Cycle116--117のactual fiber equivalence。`F.Edge`と`H`の有限性は仮定しない | literal point stabilizerを`{k // k ≠ k₀}`の置換群と同値化し、その濃度を`(|K|-1)!`と算定; actual component-family/fiber同値へ`Nat.card_congr`を適用し、full fiberを`(|K|!)^|π₀(F)|`、pointed fiberを`((|K|-1)!)^|π₀(F)|`と証明 | F1の有限個数公式と三固定例の期待個数 | lens・pointed lens・protocolの指定入力/写像/評価/個数、E/D/AAT表示側回復は未完了 |
 | F Cycle 117 delta | `k₀ : K`を保つ版でactual following group、componentごとのpoint stabilizer kernel、split exactness、全visible fiberのtorsor/完全分類を同一構成から証明する | `PointedPermutation`, `PointedComponentGroup`, `PointedFollowingGroup`, `mem_pointedFollowingGroup_iff_state`, `pointedProjection`, `pointedCanonicalSection`, `forgetPointedComponentGroup`, `pointedComponentKernelHom`, `pointedComponentFamilyOfPair`, `range_pointedComponentKernelHom_eq_ker_pointedProjection`, `isGroupShortExact`, `PointedProjectionFiber`, pointed kernel `SMul`/`MulAction`, free/transitive/`∃!`, normalization, `pointedComponentGroupEquivProjectionFiber` | 任意の`F,K,k₀`、独立入力`H ≤ Aut(F)`、全`u : H`; Cycle111--116のactual group/component kernel/split fiber構成 | 全頂点fiberの`k₀`固定条件からactual subgroupを積・逆元に閉じて構成; 実state section `(v,k₀)↦(u(v),k₀)`保存との同値; literal stabilizer familyからactual kernel元を構成し逆抽出; `range = ker`; canonical section; literal pointed kernelの右作用と完全往復 | F1のbasepoint-preserving variantと後続の固定section例 | 通常/pointed有限個数公式、3固定例、lens/protocol適用、AAT/E/D表示側回復は未完了 |
@@ -12319,4 +12320,48 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Use the independently defined LensRealization and ProtocolRealization semantics to prove both translations, preservation/reflection of get/put or named execution/adapter conditions, and application of this same F classification before any D or presentation-side transport."
+```
+
+## Cycle 120 — Bidirectional product-lens connection and L6
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 120
+base_oid: b0d1e81ecc109d4c539ea1815132e999f0ed945d
+tracking_issue: 4520
+selection:
+  proof_obligation: "Define the independent product-lens change condition first, identify it bidirectionally with the same fixed-F actual changes, and construct rather than assume the L6 hidden permutation"
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Defined n1015 (L5) directly on the independent LensRealization operations using one common state equivalence h and one common visible permutation u for both get and put.  Proved that get supplies exactly the complete-update graph observation law and put supplies exactly every named execution square, with a two-sided equivalence back to the same lens change.  Constructed the L6 hidden permutation by evaluating h in the reference fiber, used every ordered-pair update edge to prove it is independent of the visible vertex, recovered h on all states, proved uniqueness against every candidate permutation, and constructed the inverse change from every hidden permutation.  This yields every fixed-u lens fiber equivalent to Perm(K), its factorial count, and an iff between actual product-section preservation and the literal all-fiber point-stabilizer condition.  No assumption that u fixes the reference view is added."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FixedFLensConnection.lean
+  unfinished:
+    - "the corresponding bidirectional connection for independent ProtocolRealization semantics, including operation names, executions, observations, and adapters"
+    - "lens typed Read/Write AAT translation and recovery of general noninvertible LensRealization.Hom"
+    - "D comparison-group transport and presentation/AAT-side recovery of the same lens and protocol groups"
+    - "the remaining A--E target obligations and final same-construction integration"
+review:
+  fixed_head: e5add38824ab5e4864ed28a36f5ed28ac79e87c9
+  lanes: {math_a: pass, math_b: pass, lean_a: pass, lean_b: pass}
+  direct_response:
+    reviewed_delta: "b0d1e81ecc109d4c539ea1815132e999f0ed945d..e5add38824ab5e4864ed28a36f5ed28ac79e87c9"
+    verdict: pass
+    new_findings: []
+audits:
+  certificate_provenance: "L5 is defined from independent get and put operations; the hidden permutation is extracted from h through the actual fiberPerm construction and proved unique; neither h, the factorization, nor a preservation certificate is accepted as finite syntax"
+  proof_use: "the get equation builds the observation field; the put equation is used on every authored complete-update edge; actual preservation reconstructs the same put equation; edge constancy proves the global L6 factorization; the factorization and reference-fiber evaluation prove both equivalence inverse laws"
+  structure_field_escape: none-found
+  target_fitting: none-found-all-visible-permutations-and-all-product-states-and-updates-retained
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (3202 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 30 declarations in the new module; standard axioms only"
+    - "CI: all 7 checks PASS, including research integrity gates"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct the finite-schema constant-session ProtocolRealization corresponding to the F graph, retain named edges and observations independently, and prove both directions between protocol change/adapter execution equations and the same F following-change classification."
 ```
