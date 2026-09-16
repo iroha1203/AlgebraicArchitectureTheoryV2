@@ -116,8 +116,8 @@ def finiteAxisFoldNatAlgorithmCosetSubgroup :
         (FiniteAxisFoldNatFiniteSupportSubgroup.inv_mem adjacentFinite)
       simpa [mul_assoc] using conjugated
 
-/-- The independent algorithm-word primitive subgroup has exactly two
-finite-support cosets. -/
+/-- The independent algorithm-word primitive subgroup is the union of the
+finite-support subgroup and its adjacent left coset. -/
 theorem finiteAxisFoldNatAlgorithmPermutationSubgroup_eq_cosetSubgroup :
     finiteAxisFoldNatAlgorithmPermutationSubgroup =
       finiteAxisFoldNatAlgorithmCosetSubgroup := by

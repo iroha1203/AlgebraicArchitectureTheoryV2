@@ -13,7 +13,7 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 103 replaces the Cycle 102 primitive closure description by an exact two-coset classification over the finite-support subgroup and transfers it to actual intrinsic membership
+- current proof obligation: Cycle 103 replaces the Cycle 102 primitive closure description by an exact union decomposition into the finite-support subgroup and its adjacent left coset, and transfers it to actual intrinsic membership
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
 - next proof obligation: construct a source-owned two-coset normal-form type and faithful evaluator for the Nat algorithm subgroup, then generalize the finite algorithm language across permitted primitive parameters and continue full-kernel decomposition
@@ -11092,7 +11092,7 @@ audits:
   next_obligation: "Analyze the generated Nat subgroup as finite-support permutations together with the adjacent coset, then use that structure toward a faithful quotient or canonical normal form before generalizing the finite algorithm language and continuing full-kernel decomposition."
 ```
 
-## Cycle 103 — Nat algorithm two-coset classification
+## Cycle 103 — Nat algorithm coset-union decomposition
 
 ```yaml
 ledger_type: target_cycle_result
@@ -11109,7 +11109,7 @@ selection:
     - "Cycle 101 proves the adjacent algorithm is involutive and infinite-support"
     - "Cycle 102 defines the generated primitive and actual intrinsic images"
   proof_obligation: "Replace the opaque closure by a readable structural classification suitable for a later faithful quotient or canonical normal form"
-  selection_reason: "The finite-support subgroup is normalized by every permutation, in particular by the adjacent involution, so adjoining that involution should produce exactly two finite-support cosets."
+  selection_reason: "The finite-support subgroup is normalized by every permutation, in particular by the adjacent involution, so adjoining that involution should produce a union of the finite-support subgroup and its adjacent left coset."
   expected_result_type: proof-checkpoint
   lean_targets:
     - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNatAlgorithmCoset.lean
