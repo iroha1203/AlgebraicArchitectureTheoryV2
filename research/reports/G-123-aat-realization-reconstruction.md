@@ -10407,6 +10407,26 @@ result:
     undischarged_assumptions: []
     acceptance_point: "The independent C2 fragment is exactly the Bool specialization and is strictly contained in the broader constructed finite-permutation family; no full-kernel coverage is claimed."
     port_status: not-applicable
+review:
+  initial_fixed_head: 20ad2e01e4ed3e19e3a71278eab3bd32d6d28ef7
+  initial_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: minor-issues-noncentral
+    lean_b: minor-issues-noncentral
+  revised_fixed_head: 4b91222118cf993865fe40e36d004622820f090a
+  revised_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings:
+    - "replaced the singular same-section wording with the carrier-indexed family distinction between the Bool and Fin 3 sections"
+    - "removed attribution of the independent Extension three-cycle to the original G-122 finite-axis-fold example and kept that recovery explicitly open"
+  direct_response:
+    reviewed_delta: "20ad2e01e4ed3e19e3a71278eab3bd32d6d28ef7..4b91222118cf993865fe40e36d004622820f090a"
+    verdict: pass
+    new_findings: []
 audits:
   premise_delta:
     discharged:
