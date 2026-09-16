@@ -10171,6 +10171,21 @@ result:
     undischarged_assumptions: []
     acceptance_point: "The complete arbitrary permutation family now lands constructively in the actual local-fiber kernel; this cycle does not claim faithfulness or coverage."
     port_status: not-applicable
+review:
+  fixed_head: 2beec5e80831a9a32493156e432ec17db3dde1f8
+  independent_lanes:
+    math_a: minor-issues-noncentral
+    math_b: minor-issues-noncentral
+    lean_a: minor-issues-noncentral
+    lean_b: minor-issues-noncentral
+  resolved_findings:
+    - "replaced finite-permutation wording with Extension-carrier wording matching `E : Type`"
+    - "made source labels self-contained and moved later obligations out of undischarged assumptions"
+    - "documented the reusable Sigma-map API position, premise provenance, and use sites"
+  direct_response:
+    reviewed_delta: "2beec5e80831a9a32493156e432ec17db3dde1f8..a2147ff62"
+    verdict: pass
+    new_findings: []
 audits:
   premise_delta:
     discharged:
