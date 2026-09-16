@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 144 propagates full equation-transport and raw-presheaf identity/composition to the canonical forward-image aggregate for both CS models without accepting an aggregate certificate
+- current proof obligation: Cycle 145 constructs semantic coordinate-visibility identity/composition through the actual intermediate restriction and proves direct-composite support/boundary transport for both CS models
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct genuine coverage identity/composition from required-coordinate and restriction transport rather than proof irrelevance; then construct endpoint `ReadingCore` provenance and derive the genuine-CS-isomorphism bridge to the existing `GeometryTotalHom`
+- next proof obligation: package all nine canonical coverage fields into semantic identity/composition laws, including axis and required-role clauses, without proof-record equality; then address overlap/Extension and endpoint `ReadingCore` provenance
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 145 delta | coverageのidentity/compositionをproof irrelevanceで済ませず、required/violation coordinateとlocal restriction値を実際にidentity/compositeへ運ぶ | `flattenSuccessiveFullFamilyContextMap`, `_isRestriction`, `ForwardObservableVisibility.compOfForwardEquation`; lens/protocol各`forwardRequiredCoordinate_id/comp`, `forwardCoordinate_id/comp`, `forwardEquationCoordinateCoherent_id/comp`, `forwardViolationCoordinateCoherent_id/comp`, `forwardSupportVisible_comp`, `forwardBoundaryVisible_comp` | 任意のlens/protocol realization、任意の合成可能なprimitive forward morphism、sourceのactual visibility witness。第二段coverage witness、aggregate certificate、inverse、surjectivityを入力しない | 第一段が生成したtarget restrictionを第二段のsource restrictionとして再使用し、第二段target restrictionを内部構成。successive full-family rebaseの全map成分と`IsRestriction`をdirect targetへflattenし、二つのlocal値等式を推移。全required/violation coordinateのid/comp、support/boundaryのstaged-to-direct compを証明 | canonical forward coverageのsemantic functoriality。次cycleの全9field aggregate law | arbitraryな二つのcoverage recordは中間witness同一性を保持しないため合成しない。axis・required-role clausesを含む全field packaging、chosen `ContextMorphism` representative-map equality、overlap/Extension、ReadingCore、bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 144 delta | canonical forward-image aggregateのequation/raw成分について、primitive identity/compositionから全fieldのunit/compositorを構成する | `EndpointEquationForwardTransport.contextIdentityFunctor`, `.identity`, `.comp`, `.ext`; lens/protocol各`equationTransport_id/comp`; `*AATForwardEquationRawUnitLaw`, `*AATForwardEquationRawCompLaw`とcanonical constructors | 任意のlens/protocol realizationと合成可能なprimitive forward morphism。aggregate law certificate、coverage composition、inverse、surjectivityを入力しない | equation transportのcontext/index/role/observable naturality/violation/residual-zeroをidentity/compositionで構成し、Cycle 143のraw global lawとともにcanonical aggregate projectionへ接続 | canonical forward-image aggregateのequation/raw coherence。次cycleのcoverage coherenceおよび後続ReadingCore/GeometryTotalHom bridge | coverageはmorphism-indexed Prop recordのproof irrelevanceでは証明しない。required-coordinate/coordinate/restrictionの実質的なidentity/composition、overlap/Extension、ReadingCore、bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 143 delta | realizationごとに異なるcontext categoryを暗黙同一視せず、context actionとpolynomial/raw NatTransのglobal unit/compositor lawを明示transport付きで証明する | lens/protocol各`lawContextDataIdentityFunctor`, `lawContextFunctor_id`, `lawContextFunctor_comp`, `equationPolynomialTarget_id/comp`, `equationPolynomialForwardHom_id/comp`, `rawTarget_id/comp`, `rawForwardHom_id/comp` | 任意のrealizationと合成可能なprimitive forward morphism。global functoriality recordや等式certificateを入力しない | endpoint Law category間のidentity-on-data functorを構成し、generated context functorとの全object/arrow等号を証明。direct/successive context functorを全体として同一視。polynomial/raw target functorのreindex等号を構成し、`eqToHom`後のNatTrans全体の恒等・合成をCycle 142の全component lawから証明 | Cycle 139 canonical forward-image aggregateのglobal coherence。後続ReadingCore/GeometryTotalHom bridge | identity-on-data functorはopaque site包装のためcategorical `𝟭`とliteralには書かない。underlying chosen `ContextMorphism` representative maps、coverage/overlap/Extension aggregate law、ReadingCore、bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 142 delta | object-dependent context category上のpolynomial/raw forward mapについて、全contextで恒等・合成を証明し、raw共役のendpoint cancellationを実証する | lens/protocol各`equationPolynomialForwardHom_id_app`, `equationPolynomialForwardHom_comp_app`, `rawForwardHom_id_app`, `rawForwardHom_comp_app` | 任意のlens/protocol realization、任意の合成可能なprimitive forward morphism、任意context。inverse CS射、aggregate record、functoriality certificate、座標部分集合を入力しない | identityではCycle 141のcontext-object equalityに沿う`eqToHom` transportを明示。polynomialは全`Under` component morphismを`MvPolynomial` extensionalityで証明。rawはsource endpointの`hom_inv_id_app`と中間endpointの`inv_hom_id_app`を実際に使用し、全raw quotient component morphismの恒等・合成を証明 | Cycle 139 aggregate raw fieldのfunctoriality、後続のtransported global NatTrans lawとaggregate law | object-dependent functor間のtransportを含むglobal NatTrans等式、underlying `ContextMorphism` representative map、coverage/overlap/Extension aggregate composition、ReadingCore、GeometryTotalHom bridge、readback、D回復、A--F統合は未完了 |
@@ -15023,4 +15024,119 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct genuine coverage identity/composition from required-coordinate and restriction transport rather than proof irrelevance; then construct ReadingCore provenance and the genuine-CS-isomorphism GeometryTotalHom bridge."
+```
+
+## Cycle 145 — Semantic forward-coverage functoriality
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 145
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: d31ffedc7f9e76265c91ccf2b43b4c86c6d4c37c
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 144 deliberately left semantic coverage identity/composition open rather than identifying morphism-indexed Prop proofs"
+  proof_dag_predecessors:
+    - "Cycle 136 exact generated coordinate visibility"
+    - "Cycle 137 support and boundary transport"
+    - "Cycle 141 coordinate and context-object identity/composition"
+    - "Cycle 144 canonical equation/raw aggregate laws"
+  proof_obligation: "Construct required/violation coordinate visibility identity/composition through a shared intermediate restriction, then connect staged support/boundary transport to the direct composite context"
+  selection_reason: "Two arbitrary coverage records do not retain equality of the intermediate existential witnesses. The canonical route must reuse the first generated target restriction and internally construct the second stage."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardCoverageFunctoriality.lean
+  risks:
+    - "using proof irrelevance of the coverage record as semantic composition"
+    - "combining unrelated existential intermediate restrictions"
+    - "proving only coordinate labels without transporting local values and IsRestriction"
+    - "claiming equality of chosen ContextMorphism representatives from thin-category equality"
+  unchecked:
+    - "all-nine-field canonical coverage identity/composition packaging"
+    - "axis and required-role clauses in that aggregate law"
+    - "chosen ContextMorphism representative-map identity/composition"
+    - "overlap/Extension, ReadingCore provenance, GeometryTotalHom bridge, readback, D recovery, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Proved all eight lens/protocol required/violation coordinate id/comp laws; built a successive-to-direct restriction map preserving every ContextMorphism component and IsRestriction; composed visibility using the first witness's actual target restriction; proved identity/direct-composite visibility for all four CS coordinate families; and proved staged-to-direct support and boundary composition for both CS models."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardCoverageFunctoriality.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.flattenSuccessiveFullFamilyContextMap
+    - AAT.AG.RealizationReconstruction.flattenSuccessiveFullFamilyContextMap_isRestriction
+    - AAT.AG.RealizationReconstruction.ForwardObservableVisibility.compOfForwardEquation
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.forwardRequiredCoordinate_id
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.forwardRequiredCoordinate_comp
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.forwardCoordinate_id
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.forwardCoordinate_comp
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.forwardEquationCoordinateCoherent_id
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.forwardEquationCoordinateCoherent_comp
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.forwardViolationCoordinateCoherent_id
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.forwardViolationCoordinateCoherent_comp
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.forwardSupportVisible_comp
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.forwardBoundaryVisible_comp
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.forwardRequiredCoordinate_id
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.forwardRequiredCoordinate_comp
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.forwardCoordinate_id
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.forwardCoordinate_comp
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.forwardEquationCoordinateCoherent_id
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.forwardEquationCoordinateCoherent_comp
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.forwardViolationCoordinateCoherent_id
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.forwardViolationCoordinateCoherent_comp
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.forwardSupportVisible_comp
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.forwardBoundaryVisible_comp
+  claim_mapping:
+    source_labels:
+      - "GOAL A: full-context coordinate and restriction data"
+      - "GOAL E and n1015: arbitrary CS morphism functoriality"
+    conjuncts:
+      - "required and violation coordinate labels -> identity and composition"
+      - "visibility witness -> shared intermediate restriction and transitive local-value equality"
+      - "successive full-family rebase -> direct target restriction"
+      - "support and boundary -> staged-to-direct composite context"
+    undischarged_assumptions:
+      - "axis and required-role clauses are not yet packaged with these semantic laws"
+      - "representative ContextMorphism equality and all later bridges remain open"
+    acceptance_point: "The compositor does not accept a second visibility witness. It reuses the first target map, constructs the next restriction from it, and transports every map component to the direct rebase."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "all required/violation coordinate map identity and composition laws"
+      - "all four lens/protocol coordinate-visibility identity and direct-composite laws"
+      - "support and boundary direct-composite laws"
+    remaining:
+      - "all-nine-field canonical coverage packaging and representative-map laws"
+      - "overlap/Extension, ReadingCore, GeometryTotalHom bridge, readback, D recovery, and A--F integration"
+  certificate_provenance:
+    discharged:
+      - "second-stage restriction is constructed internally from the first-stage target restriction"
+      - "direct target restriction copies every successive ContextMorphism map component"
+      - "IsRestriction and both local-value equations are used"
+    unresolved:
+      - "full coverage aggregate and later provenance obligations"
+  proof_use:
+    used:
+      - "every source required/violation coordinate"
+      - "the first visibility source/target restrictions and both readability proofs"
+      - "primitive second observable equation and exact coordinate-map composition"
+      - "successive support and boundary transports"
+    unused:
+      - "no arbitrary second coverage witness, coverage equality certificate, inverse, surjectivity, or target enumeration is accepted"
+      - "proof irrelevance is not used to compose visibility witnesses"
+  structure_field_escape: none-found-no-coverage-law-certificate-is-an-input
+  route_integrity: pass-for-coordinate-visibility-and-structural-composition
+  target_fitting: none-found-all-required-and-violation-coordinates-and-source-contexts-are-quantified
+  vacuity: none-found-map-components-IsRestriction-readability-and-local-value-equalities-are-used
+  one_way_as_equivalence: none-found-only-forward-coverage-laws-are-proved
+  goal_or_report_reinterpretation: none-found-full-coverage-packaging-overlap-core-provenance-D-and-final-integration-remain-open
+  validation_refs:
+    - "focused CSAATGeometryForwardCoverageFunctoriality file check: PASS; 24 namespace declarations, standard axioms only"
+    - "focused exact CSAATGeometryForwardCoverageFunctoriality target build: PASS (4286 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Package all nine canonical coverage fields into semantic identity/composition laws, including axis and required-role clauses, without proof-record equality; then address overlap/Extension and ReadingCore provenance."
 ```
