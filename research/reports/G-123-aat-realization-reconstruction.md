@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 103 replaces the Cycle 102 primitive closure description by an exact union decomposition into the finite-support subgroup and its adjacent left coset, and transfers it to actual intrinsic membership
+- current proof obligation: Cycle 104 proves the Cycle 103 coset branches are disjoint, derives unique outer parity for every generated source permutation, and transfers that uniqueness to actual intrinsic membership
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct a source-owned two-coset normal-form type and faithful evaluator for the Nat algorithm subgroup, then generalize the finite algorithm language across permitted primitive parameters and continue full-kernel decomposition
+- next proof obligation: construct an independently finite canonical representation of the finite-support component and combine it with the unique outer parity into a faithful source normal-form evaluator, then generalize across permitted primitive parameters
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 104 delta | Cycle 103のcoset unionについてadjacent branchとfinite-support branchのdisjointnessを元入力から証明し、全generated source permutationとactual intrinsic memberのsource witnessおよびouter parity一意性を構成する | `finiteAxisFoldNatAdjacent_not_mem_finiteSupport`, `finiteAxisFoldNatAlgorithmCoset_branches_disjoint`, `finiteAxisFoldNatAlgorithmPermutationSubgroup_unique_parity`, `finiteAxisFoldNatAlgorithmPermutationSubgroup_unique_parity_finite`, `finiteAxisFoldTransportedNatSourceContextPermutation_injective`, `finiteAxisFoldNatArbitraryCarrierBackwardAction_injective`, `finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff_uniqueParity` | Cycle 101の全`Nat`点移動定理; Cycle 100のfinite-support characterization; Cycle 103のcoset-union equality; same actual intrinsic membershipと全Nat source probe | adjacentのmoved setが`univ`で非finite; 両branch所属から`(a*p)*p⁻¹=a`をfinite-supportへ入れる矛盾; branch存在と排他性; 全probe readbackによるtransported actionとexpected backward actionの単射性; actual source witnessの`∃!` | faithful normal formのouter Bool/parity成分を固定し、finite-support成分のcanonical finite code構成へ渡す | finite-support成分自身の独立canonical codeとfaithful evaluator、全parameter algorithm family、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
 | D Cycle 103 delta | Cycle 102のprimitive closureをopaqueな生成部分群のままにせず、finite-support部分群と固定adjacent algorithmによる二cosetとして分類し、actual intrinsic membershipへ同じ分類を移す | `finiteAxisFoldNatAdjacent_apply_twice`, `finiteAxisFoldNatAdjacent_mul_self`, `finiteAxisFoldNatAdjacent_conj_mem_finiteSupport`, `finiteAxisFoldNatAlgorithmCosetSubgroup`, `finiteAxisFoldNatAlgorithmPermutationSubgroup_eq_cosetSubgroup`, `finiteAxisFoldNatAlgorithmPermutationSubgroup_mem_iff_coset`, `finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff_coset` | Cycle 100のfinite-support subgroup characterization; Cycle 101の固定`xor 1` algorithm; Cycle 102のprimitive/actual image; same fixed expected actionとfull projection | adjacent involution; conjugationされたmoved setを元moved setのadjacent像へ包含する有限性証明; 二coset predicateのsubgroup closure; generator closureとの双方向包含; source/actual membership iff | raw wordの冗長性を二coset normal formへ圧縮し、faithful quotient/canonical representativeの構成へ渡す | 二cosetのdisjointnessとparity uniqueness、finite-support成分自身のcanonical finite presentation、faithful evaluator、全parameter algorithm family、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
 | D Cycle 102 delta | Cycle 101で不足が証明されたfinite-swap wordを、完成置換やactual residualを入力せず、原始`Nat`上の明示swapと固定`xor 1` algorithmの有限wordへ拡張し、decoder非依存のprimitive/actual imageとexact surjectivityを構成する | `FiniteAxisFoldNatAlgorithmGenerator`, `FiniteAxisFoldNatAlgorithmGenerator.toPerm`, `FiniteAxisFoldNatAlgorithmGenerator.range_toPerm`, `FiniteAxisFoldNatAlgorithmWord`, `finiteAxisFoldNatAlgorithmWordPermutation`, `finiteAxisFoldNatAlgorithmPermutationSubgroup`, `finiteAxisFoldNatAlgorithmWordPermutation_range`, `FiniteAxisFoldNatAlgorithmWordIntrinsicImage`, `finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff`, `finiteAxisFoldNatAlgorithmWordDecoder`, `finiteAxisFoldNatAlgorithmWordDecoder_backwardProjection`, `finiteAxisFoldNatAlgorithmWordIntrinsicDecoder`, `finiteAxisFoldNatAlgorithmWordIntrinsicDecoder_surjective`, `finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff_decoder`, `finiteAxisFoldNatAdjacentSwap_has_algorithmWordPreimage` | 原始`Nat`; 各swapの二値と不等式; 固定algorithm `n xor 1`; Cycle 92--101のsame fixed actual route; full backward projection単射性 | 独立generatorとfree finite word; generator rangeとprimitive closure; expected action経由のactual intrinsic subgroup; decoder landing; primitive rangeとactual faithfulnessによる全射; Cycle 101 outside元の一語preimage | known infinite-support obstructionをsource grammar側で修復し、generated subgroupの構造解析、faithful quotient/canonical normal form、全parameter familyとfull-kernel分解へ渡す | raw FreeGroupのinjectivityは未主張; primitive closureのcanonical description、faithful quotient/normal form、Nat以外を含むalgorithm family、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
 | D Cycle 101 delta | Cycle 100の全decidable carrier上のfinite-support actual imageをliteral unionとして保持し、同じprimitive-to-actual routeから有限アルゴリズムで構成した`Nat` adjacent swapがそのunion外にあることを証明する | `FiniteAxisFoldDecidableExtensionCarrier`, `FiniteAxisFoldFiniteSupportCarrierImage`, `finiteAxisFoldNatAdjacentSwap`, `finiteAxisFoldNatAdjacentSwap_ne`, `finiteAxisFoldNatAdjacentSwapLocalFiberKernel`, `finiteAxisFoldFiniteSupportSourceAction_exists_fixed_natProbe`, `finiteAxisFoldNatAdjacentSwap_transported_ne_finiteSupport`, `finiteAxisFoldNatAdjacentSwap_not_finiteSupportCarrierImage`, `finiteAxisFoldFiniteSupportCarrierImage_not_all` | 任意のdecidable primitive carrierとその全finite-support permutation; 原始`Nat` carrier上の固定有限アルゴリズム`n xor 1`; Cycle 92--100のsame fixed actual routeとintrinsic image; full backward projection | carrier-indexed existential union; `xor 1`のinvolutionと全点移動; same-carrier finite-support作用の固定点、別carrier作用の`Nat` probe固定; route equivalenceによるactual action separation; source-owned actual local-kernel元とunion非被覆 | 有限swap wordだけでは不足することを固定し、permitted primitive parameter上のfinite algorithmic generatorを含むpresentation、faithful quotient、full-kernel分解へ渡す | この非被覆はtarget反証ではない; finite algorithmic syntax/image、faithful quotientまたはcanonical normal form、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
@@ -11212,4 +11213,126 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Prove the two cosets are disjoint using the adjacent algorithm's infinite support, extract unique parity, and construct a source-owned faithful normal-form evaluator whose finite-support component is itself independently and finitely presented."
+```
+
+## Cycle 104 — Nat algorithm unique outer parity
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 104
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 3c17288e9f8caec01671cdacc3e197bd9f48d437
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 103 proved a union decomposition but deliberately left coset disjointness and parity uniqueness open"
+  proof_dag_predecessors:
+    - "Cycle 100 characterizes finite support by finiteness of the moved set"
+    - "Cycle 101 proves the adjacent xor-1 algorithm moves every Nat"
+    - "Cycle 103 identifies the generated subgroup with the finite-support/adjacent-coset union"
+  proof_obligation: "Prove branch disjointness and unique outer parity without assuming a semantic parity certificate"
+  selection_reason: "If both branches contained p, closure of finite support under multiplication and inverse would make adjacent=(adjacent*p)*p⁻¹ finite-support, contradicting its all-Nat moved set."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNatAlgorithmParity.lean
+  risks:
+    - "assume adjacent is not finite-support instead of proving it from the fixed xor recipe"
+    - "claim a canonical finite-support representative from parity uniqueness alone"
+    - "move a completed permutation or parity certificate into source syntax"
+    - "infer all-parameter or full-kernel coverage from the Nat fragment"
+  unchecked:
+    - "independent canonical finite code for the finite-support component"
+    - "faithful normal-form evaluator required by fixed GOAL B"
+    - "all-parameter algorithm language and full-kernel/G-122/D/B/E/F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Proved that the adjacent xor-1 permutation is not finite-support by identifying its moved set with all of Nat and using infinitude of Nat.  Proved the two Cycle 103 branches cannot overlap: simultaneous membership makes (adjacent*p)*p⁻¹=adjacent a member of the finite-support subgroup.  Combined this disjointness with the Cycle 103 union equality to give every generated primitive permutation an existent and exclusive outer branch, then rewrote both branches by finite moved-set conditions.  Proved the transported Nat action injective by reading equality back at every canonical source probe, hence proved the expected backward action injective despite its inverse/opposite orientation.  Strengthened actual intrinsic membership to an `∃!` source permutation carrying the exclusive parity and the same expected-action equality.  No canonical code for the finite-support component or faithful total normal-form evaluator is claimed."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNatAlgorithmParity.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAdjacent_not_mem_finiteSupport
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmCoset_branches_disjoint
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmPermutationSubgroup_unique_parity
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmPermutationSubgroup_unique_parity_finite
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldTransportedNatSourceContextPermutation_injective
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatArbitraryCarrierBackwardAction_injective
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff_uniqueParity
+  claim_mapping:
+    source_labels:
+      - "GOAL B requires a faithful presentation or canonical normal form"
+      - "Cycle 103 supplied the outer coset union but not uniqueness"
+      - "actual recovery must preserve source classification through the same expected action"
+    conjuncts:
+      - "fixed xor-1 recipe -> every Nat moved -> adjacent not finite-support"
+      - "simultaneous branch membership -> adjacent finite-support contradiction"
+      - "coset union plus disjointness -> unique outer parity"
+      - "finite-support characterization -> finite moved-set parity formulation"
+      - "canonical-probe readback -> transported and expected action injectivity"
+      - "source unique parity plus expected action injectivity -> unique actual source witness and classification"
+    undischarged_assumptions: []
+    acceptance_point: "Every permutation in the Cycle 102 Nat generated subgroup belongs to exactly one branch, and every actual intrinsic member has a unique source permutation witness carrying that exclusive classification; the finite-support component is not yet canonically encoded."
+    port_status: not-applicable
+review:
+  initial_fixed_head: 93bf1549cab378af08949dc399904a812a318e96
+  initial_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: blocking
+    lean_b: pass
+  revised_fixed_head: 745a70e34a92cab61266cee1acfa697d53061aa9
+  revised_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings:
+    - "the initial actual-membership theorem gave only an existential source witness with exclusive parity inside that witness; canonical Nat probe readback now proves the expected action injective, and the revised theorem proves a unique source permutation witness"
+  direct_response:
+    reviewed_delta: "3c17288e9f8caec01671cdacc3e197bd9f48d437..745a70e34a92cab61266cee1acfa697d53061aa9"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "adjacent nonmembership in the finite-support subgroup"
+      - "disjointness of the Cycle 103 branches"
+      - "unique outer parity for generated source permutations"
+      - "unique source permutation witness and outer parity retained by actual intrinsic membership"
+    remaining:
+      - "independent canonical finite code for each finite-support component"
+      - "faithful source normal-form evaluator required by fixed GOAL B"
+      - "all-parameter algorithm family and full-kernel/G-122/D/B/E/F"
+  certificate_provenance:
+    discharged:
+      - "adjacent non-finite-support follows from the fixed xor formula and Nat infinitude"
+      - "parity disjointness follows from subgroup multiplication/inverse closure and cancellation"
+      - "no parity field or semantic representative is accepted as input"
+      - "source-witness uniqueness is derived from canonical source probes rather than accepted as a certificate"
+    unresolved:
+      - "canonical finite data and equality for the finite-support component"
+      - "uniform parameter-relative normal forms"
+  proof_use:
+    used:
+      - "Cycle 101 all-point movement proves the adjacent moved set is univ"
+      - "Cycle 100 finite-support iff converts moved-set finiteness to subgroup membership"
+      - "Cycle 103 union equality supplies branch existence"
+      - "Cycle 102 intrinsic membership transports the exclusive source classification to actual elements"
+      - "canonical Nat probes make the transported action faithful; op/inverse cancellation makes the expected backward action faithful"
+      - "expected-action faithfulness turns equality of actual projections into uniqueness of the source permutation witness"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: source-parity-classification-only-actual-route-unchanged
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-unique-parity-checkpoint
+  one_way_as_equivalence: none-found-exact-iff
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4335 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 7 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct an independent finite canonical representation of finite-support Nat permutations and combine it with the unique parity into a faithful source normal form before generalizing across primitive parameters."
 ```
