@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 128 constructs the actual source/target Law objects, transports every context and selected restriction map between their complete fixed vocabularies, and proves violation-coordinate naturality plus nonvacuous residual-zero preservation for arbitrary raw lens/protocol morphisms; a fixed collapse witness refutes only unconditional characteristic-residual equality
+- current proof obligation: Cycle 129 defines independent preservation interfaces for the actual named AAT get/put and protocol edge/observation operations, proves exact equivalences with the original arbitrary CS Hom classes, and generates A1 doctrine, Law Hom, all-context, index, coordinate, and residual-zero components from those operation squares
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: combine the accepted A1 source, named-operation squares, Law object/context/index/coordinate/residual components into one generated forward AAT morphism, then prove its operation-preservation data is equivalent to the original CS morphism conditions before complete geometry and independent readback
+- next proof obligation: extend the generated forward interface with coverage, overlap, coefficient, raw-restriction, Support, Axis, and Observable data to a complete-geometry morphism, then construct an independent readback and prove both inverse laws on all object, operation, Law, and geometry components
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| E Cycle 129 delta | actual named operationの保存条件をAAT側で独立に定め、元のCS Homとの両方向を証明し、同じprimitive dataからA1・Law・context・coordinate・residual成分を一つのforward interfaceとして生成する | `LensAATForwardMorphism`, `ProtocolAATForwardMorphism`; 各`toSemanticHom`, `ofSemanticHom`, `semanticHomEquiv`, `toSemanticHom_ofSemanticHom`, `ofSemanticHom_toSemanticHom`; 各`sourceMap`, `doctrineHom`, `lawHom`, `lawContextFunctor`, `lawIndexMap`, `lawCoordinateMap`, `lawResidual_zero_map`, `id`, `comp`, `toSemanticHom_id`, `toSemanticHom_comp`; protocol `toGeneratorMap` | lensは一つのstate mapとactual `lensGetAATFunction`/`lensPutAATFunction`の二square; protocolは頂点別state mapと全actual named edge/observation square。semantic Hom、全path自然変換、A1 map、Law Hom、residual certificate、decoder像、invertibilityは入力しない | lensは二squareから元のL2 Homを直接再構成; protocolはnamed generator squaresを`GeneratorMap`へ移し、受理済みpath/quotient extensionで全execution上のHomを構成; forward/readback両逆を全morphismとして証明; 復元HomからA1 source/doctrine、raw Law Hom、all-context functor、全index/Atom coordinate、residual-zero保存を生成; identity/compositionを保持 | n1015 §5.3の「CS射からAAT operation/Law成分」と「AAT named-operation保存からCS射」の両方向を同じprimitive dataで閉じ、次のcomplete geometry morphism/readbackが使う | coverage/overlap/係数/raw restriction/Support/Axis/Observableを含むcomplete geometry morphism、そこからの独立readback、全geometry成分上の両逆、D回復、A--F統合は未完了。`ForwardMorphism`はcomplete AAT morphismとの達成主張ではなく、actual named-operationから既証明A1/Law成分を生成するinterface |
 | E Cycle 128 delta | Cycle 127のindex/coordinate/truth transportをactual Law objectと全contextへ接続し、任意の非可逆射で正しい残差保存条件を構成する | `HeterogeneousContextMap`, `fullFamilyContextRebase`, `fullFamilyContextMorphismRebase`, `fullFamilyContextFunctor`; lens/protocol各`*LawSourceObject`, `*LawTargetObject`, `*LawConfigurationMap`, `*LawContextFunctor`, `*LawViolationCoordinate_map`, `*LawCoordinateMap_restrict`, `*LawResidual_zero_iff`, `*LawResidual_zero_map`, `*LawResidual_zero_map_contextFunctor`, `*LawResidual_commutes_of_zero`, `*LawResidual_zero_map_comp`; `collapseBoolLens_residual_not_commute` | 任意のraw source/target operation structureとCycle127 raw Hom; source residual zeroは順方向命題の`direction-hypothesis`; endpoint lawfulness、単射、同値、exact residual equality、completed AAT射を仮定しない | actual source/target `ArchitectureObject`とidentity configuration mapを構成; complete vocabularyによりsourceの任意contextとrestrictionをtargetへ全成分コピー; 同じindex/ring mapでviolation coordinateとrestrictionを可換化; source residual zeroをsource `Holds`へ戻し、raw Hom squaresからtarget `Holds`とtarget residual zeroを構成; identity/composition済みindex mapに沿う残差零保存の合成を証明; Bool→PUnit collapseで無条件残差等号候補だけを反証 | Cycle124--125のA1/operation componentとCycle127 Law transportをactual all-context residual layerへ結ぶ; 次cycleの一つのforward AAT morphism packageが使用 | 一つの生成forward AAT射への統合、operation保存条件からCS Hom法則への逆向き、coverage/overlap/係数/Support・Axis・Observableの完全幾何、readback、D回復、A--F統合は未完了。無条件残差等号の失敗は固定targetの反証ではなく、非単射射に不適切な`EquationSystemExactTransport`型候補の反証 |
 | E Cycle 127 delta | Cycle 126の全law instanceとequation/Atom座標を、元の任意の非可逆CS射に沿って運び、identity・compositionと式の成立保存を元の射法則から証明する | `LensLawHom`, `ProtocolLawHom`と各`id`/`comp`; semantic Homの各`toLawHom`; lens/protocol各`*LawIndexMap`, `*LawIndexMap_id`, `*LawIndexMap_comp`, `*LawIndexMap_holds`, `*LawCoordinateMap`, `*LawCoordinateMap_violation`, `*LawCoordinateMap_id`, `*LawCoordinateMap_comp`, `*LawEquationHolds_map`; `protocolEvaluatePath_naturality` | 任意のraw source/target operation structureと、その間のget/putまたはedge/observation square; source law truth `h`は順方向命題の`direction-hypothesis`; endpoint lawfulness、injective/iso、Law保存certificate、decoder像、completed AAT射を仮定しない。元の任意のsemantic Homからraw Homを構成する | state componentで全量化indexを写し、view/relation/named edge/Atomを保持; 同じmapで多項式変数をrename; source `h`とlensのget/put square、protocolのgenerator squareから導く全path自然性・edge naturality・observation自然性を実使用してraw `Holds`とactual `EquationHolds`の順方向保存を証明 | EのCS射をAAT Law層へ運ぶmorphism-side predecessor; 後続のactual context/object/residual morphismと完全AAT射が使う | actual context/object mapとresidual commutation、CS射条件と完全AAT保存条件の両方向、式真理の反映と「保存条件の反映」の区別、complete geometry/readback、D回復、A--F統合は未完了 |
 | E Cycle 126 delta | raw lens三法則とprotocolの全relation・全named-edge observation自然性を、評価対象objectの実operation dataを読むactual `ArchitecturalEquationSystem`として構成し、独立CS realizationがそのsystemを満たすことを証明する | `LensLawStructure`, `LensLawIndex`, `lensLawObject`, `lensLawStructure?`, `LensLawCoordinateRing`, `lensLawEquationSystem`, `lensLawEquationHolds_iff`, `lensEquationLawful_iff`, `lensRealization_equationLawful`, `ignoredBoolLensLawStructure_not_getPut`; `ProtocolLawStructure`, `ProtocolLawIndex`, `protocolLawObject`, `protocolLawStructure?`, `ProtocolLawCoordinateRing`, `protocolLawEquationSystem`, `protocolLawEquationHolds_iff`, `protocolEquationLawful_iff`, `ProtocolRealization.toLawStructure`, `protocolEvaluatePath_eq_pathAction`, `protocolRealization_equationLawful`, `togglingProtocolLawStructure_not_relation` | Cycle 125のexact carrier/object interfaceと、独立に定義済みの任意の`LensFamilyInput`/`LensRealization`および`ProtocolFamilyInput Q L O`/`ProtocolRealization`; system構成時の`base`と評価対象`data`は別引数; law proof、completed map、decoder像、readback certificateを入力しない | raw operation structureのみをactual ArchitectureObjectの`structureMaps`へ格納し、評価時にそのobjectから型安全に読み戻す; equation instanceとAtomの組を変数とする多項式座標を構成; objectから読んだoperationが各法則を満たす場合に限りresidualが零となるiffを証明; lensはL1三法則、protocolは商relation soundness・path evaluation・observation naturalityを実使用してrealization lawfulnessを放電; Bool lensと一頂点toggle protocolの具体的不成立instanceを固定 | Eの独立CS意味をAATのactual Law/AES層へ接続し、次cycleの任意semantic morphism上のLaw transportと後続complete geometry/readbackが使う固定interface | 任意の非可逆semantic morphismに沿うLaw/index/context/residual transportとCS morphism条件との保存・反映、complete core/geometry、AAT側独立射classからのreadbackと両逆、D表示側回復、A--F同一構成統合は未完了。0/1 residualは評価objectのraw operationから計算されるが、このcycleだけではmorphism transportを主張しない |
@@ -12981,4 +12982,129 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Combine the accepted A1 source maps, typed named-operation squares, and the Law object/context/index/coordinate/residual components into one generated forward AAT morphism, then prove the reverse correspondence from its operation-preservation components to the original lens/protocol Hom laws."
+```
+
+## Cycle 129 — Named-operation forward interfaces and exact CS readback
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 129
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 3cae812174c1831ac1a4cd82a49c8b19e6743fdb
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 128 accepted actual Law objects, all-context transport, and residual-zero preservation; the A1, named-operation, and Law components were not yet generated from one independent operation-preservation interface or read back to the original CS Hom"
+  proof_dag_predecessors:
+    - "Cycle 2 protocol generator restriction/extension on every quotient execution"
+    - "Cycle 124 actual typed get/put/edge/observation functions and squares"
+    - "Cycle 125 A1 source and exact-doctrine maps"
+    - "Cycles 127--128 raw Law Hom, all-context, index, coordinate, and residual transport"
+  proof_obligation: "Define preservation of the actual named AAT operations independently of the CS Hom records, prove both directions and both inverse laws for the full original morphism classes, and generate all accepted A1/Law components from that same primitive data"
+  selection_reason: "The fixed target requires an actual two-way CS connection.  Named operation squares are the nonvacuous data that recover L2 or the complete protocol natural transformation; Law truth alone cannot recover those equations between lawful endpoints."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATForwardMorphisms.lean
+  risks:
+    - "storing the original semantic Hom, completed natural transformation, A1 map, Law Hom, or residual certificate as an input field"
+    - "letting get and put use unrelated state maps"
+    - "checking protocol naturality only on named edges without constructing all-path and quotient-execution naturality"
+    - "proving inverse laws only on state components rather than equality of complete semantic morphisms"
+    - "calling the generated operation/Law interface a complete-geometry AAT morphism"
+  unchecked:
+    - "coverage, overlap, coefficient, raw restriction, Support, Axis, and Observable complete-geometry components"
+    - "independent readback from the completed geometry morphism and inverse laws on every geometry component"
+    - "D-side comparison recovery and final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Defined lens forward data as one state map satisfying the actual named AAT get and put squares, so both state occurrences are forced to use the same map.  Proved an exact equivalence with every arbitrary n1015 L2 Hom and both inverse laws.  Defined protocol forward data as one vertex-indexed state family satisfying every actual named edge and observation square, converted it to the independent GeneratorMap, and used the accepted path/quotient extension to recover a complete observation-preserving natural transformation on every execution.  Proved the forward/readback inverse laws as equalities of complete semantic morphisms.  From each interface, generated rather than accepted the A1 source map and ExactDoctrineHom, raw Law Hom, all-context Law functor, complete law-index map, equation-instance/Atom coordinate ring hom, and residual-zero transport.  Defined identity and composition and proved their semantic readbacks are the original identity and composition."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATForwardMorphisms.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.toSemanticHom
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.ofSemanticHom
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.semanticHomEquiv
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.toSemanticHom_ofSemanticHom
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.ofSemanticHom_toSemanticHom
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.sourceMap
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.doctrineHom
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.lawHom
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.lawContextFunctor
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.lawIndexMap
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.lawCoordinateMap
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.lawResidual_zero_map
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.toGeneratorMap
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.toSemanticHom
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.ofSemanticHom
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.semanticHomEquiv
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.toSemanticHom_ofSemanticHom
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.ofSemanticHom_toSemanticHom
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.sourceMap
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.doctrineHom
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.lawHom
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.lawContextFunctor
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.lawIndexMap
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.lawCoordinateMap
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.lawResidual_zero_map
+  claim_mapping:
+    source_labels:
+      - "GOAL E: CS laws and AAT preservation conditions in both directions"
+      - "n1015 section 5.1: same lens state map preserves actual Read/get and Write/put"
+      - "n1015 section 5.2: vertex state maps preserve every named edge and observation"
+      - "n1015 section 5.3: CS morphism to AAT operation/Law components and AAT preservation readback"
+    conjuncts:
+      - "lens forward -> exact named get/put preservation with one shared state map"
+      - "lens reverse -> complete arbitrary L2 Hom and both inverse laws"
+      - "protocol forward -> every named edge and observation square"
+      - "protocol reverse -> path induction and quotient induction construct the complete natural transformation"
+      - "derived AAT components -> A1 doctrine, Law Hom, all contexts, all indices/Atoms, residual zero"
+      - "identity/composition -> reconstructed semantic Homs preserve categorical identity and composition"
+    undischarged_assumptions:
+      - "complete geometry morphism beyond the present operation/Law context layer"
+      - "readback from that complete geometry morphism and inverse laws on its additional components"
+    acceptance_point: "The structures contain only the carrier/state maps and preservation equations of the actual named AAT operations.  A semantic Hom, completed protocol natural transformation, source/doctrine map, Law Hom, context functor, index map, coordinate map, and residual preservation are all constructed methods.  The exact equivalences retain arbitrary noninjective Homs and quantify the complete original morphism classes."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "independent actual named-operation preservation interfaces for both CS models"
+      - "both directions and both inverse laws with the complete original CS Hom classes"
+      - "all-path and quotient-execution protocol extension from named generators"
+      - "single-source generation of A1 doctrine and Law/context/index/coordinate/residual components"
+      - "identity and composition at the semantic readback"
+    remaining:
+      - "complete geometry components and morphism"
+      - "independent complete-geometry readback and all-component inverse laws"
+      - "D recovery and A--F integration"
+  certificate_provenance:
+    discharged:
+      - "semantic Homs are reconstructed from actual named-operation squares"
+      - "protocol all-execution naturality is constructed by the accepted generator extension"
+      - "A1 and Law components are definitions from the reconstructed semantic Hom"
+      - "residual preservation is the Cycle 128 theorem applied to the generated raw Law Hom"
+    unresolved: []
+  proof_use:
+    used:
+      - "lens get_naturality and put_naturality become the exact L2 Hom fields"
+      - "protocol edge_naturality and observation_naturality build GeneratorMap and then the complete Hom"
+      - "ProtocolRealization.ext/res inverse theorems prove equality on all quotient executions"
+      - "the reconstructed Hom supplies A1 and raw Law constructions"
+      - "source residual zero is materially used by the generated residual theorem"
+    unused: []
+  structure_field_escape: none-found-no-semantic-hom-completed-nattrans-a1-law-or-residual-certificate-field
+  route_integrity: pass-for-named-operation-to-cs-hom-and-generated-a1-law-components
+  target_fitting: none-found-arbitrary-noninjective-homs-and-all-named-operations-retained
+  vacuity: none-found-operation-squares-recover-the-original-hom-laws-and-are-not-derived-from-endpoint-lawfulness
+  one_way_as_equivalence: none-found-both-forward-readback-directions-and-inverse-laws-are-proved-for-the-operation-interface
+  goal_or_report_reinterpretation: none-found-complete-geometry-and-its-readback-remain-open
+  validation_refs:
+    - "focused CSAATForwardMorphisms file check: PASS; 67 namespace declarations, standard axioms only"
+    - "focused exact CSAATForwardMorphisms target build: PASS (4271 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Extend the generated forward interface with coverage, overlap, coefficient, raw-restriction, Support, Axis, and Observable data to a complete-geometry morphism, then construct its independent readback and prove both inverse laws on every object, operation, Law, and geometry component."
 ```
