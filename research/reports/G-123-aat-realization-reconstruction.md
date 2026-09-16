@@ -13,15 +13,20 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 91 constructs an independent two-symbol C2 source syntax, proves the source-owned toggle remains an involution through the entire fixed route, and evaluates that syntax injectively into the actual local-fiber kernel
+- current proof obligation: Cycle 96 proves that every permutation of an independently supplied finite Extension carrier remains distinguishable after the fixed complete-geometry and normalization route and after codRestriction into the actual joint local-fiber kernel
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: enlarge the independent primitive recipe family beyond the Bool toggle, beginning with finite Extension-carrier permutations, and prove their source construction, actual survival, local-kernel membership, and injective evaluation toward a genuine image/decomposition theorem
+- next proof obligation: specialize the arbitrary finite-carrier section to Bool, identify its toggle image with the independent Cycle 91 evaluator, use a non-involutive finite permutation to separate the larger source-generated image from the C2 fragment, and then construct an intrinsic image presentation without treating the semantic range as syntax
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 96 delta | Cycle 95の全Extension-permutation familyについて、fixed actual route後の等号をsource probeへ読み戻し、normalized geometry sectionとactual local-fiber-kernel sectionの単射性を証明する | `finiteAxisFoldPermutationSouthwestProbe`, `finiteAxisFoldPermutationExactLeftProbe`, `finiteAxisFoldPermutationActualProbe`, `finiteAxisFoldNormalizedPermutationGeometrySectionHom_injective`, `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_injective` | 任意の有限`E`; Cycle 92のsource probesとsource action単射性; Cycles 93--95の同じsectionと固定southwest/exact-left/top/normalization route | 二つのopcartesian transportをcanonical retractionで消去し、exact-left pullをgenerated cancellationで消去; normalizationが保持するstored backward作用をsourceへ戻し、`p⁻¹=q⁻¹`から`p=q`を回復; subgroup equalityからunderlying normalized automorphism equalityを射影 | constructed Extension-permutation familyのactual faithfulnessを固定し、Bool/Cycle 91像比較と内在的image presentationへ渡す | Bool特殊化とCycle 91 evaluator像の同定、image characterization、section/surjectivity/decomposition/full-kernel coverage、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
+| D Cycle 95 delta | Cycle 94の全familyについて、全contextのSupport・Axis・Observable作用をcomplete dependent Sigma carrier上で恒等化し、actual joint local-fiber kernelへ同じhomを着地させる | `finiteAxisFoldNormalizedGenericPermutation_supportSigmaMap_eq_id`, `finiteAxisFoldNormalizedGenericPermutation_axisSigmaMap_eq_id`, `finiteAxisFoldNormalizedGenericPermutation_observableSigmaMap_eq_id`, 三つの`_*Equiv_eq_one`, `finiteAxisFoldNormalizedGenericPermutation_mem_localFiberKernel`, `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom` | 任意の`E`と全`Equiv.Perm E`; Cycle 93のcomplete geometry section; Cycle 94のcontext-kernel section; fixed transport factorizationとlocal cancellation | source/southwest/exact-left/top/normalizedの三Sigma-map恒等; 各contextの三local equivalence恒等; その証拠によるactual joint-kernel membershipとcodRestriction | Cycle 96のprobe readbackとactual injectivityへ渡す | actual injectivity、Bool evaluator比較、image characterization/coverage、一般入力と残るD/B/E/Fは未完了 |
+| D Cycle 94 delta | Cycle 93の全familyについて、normalized axis・signature coordinate・forward context作用を実計算し、三段のresidual context kernelへ着地させる | `finiteAxisFoldNormalizedGenericPermutation_axisMap`, `finiteAxisFoldNormalizedGenericPermutation_coordinateEquiv`, `finiteAxisFoldNormalizedGenericPermutation_contextForward_eq_id`, `finiteAxisFoldNormalizedPermutationContextKernelSectionHom` | 任意の`E`と全`Equiv.Perm E`; Cycle 93の同じnormalized section; fixed factorizationとcontext cancellation | axis、全coordinate、全forward context作用の恒等式; それぞれからaxis/signature/context kernel membershipを構成 | Cycle 95の三local-family恒等化とjoint kernel landingへ渡す | dependent Support/Axis/Observable、actual injectivity、image/coverage、一般入力と残るD/B/E/Fは未完了 |
+| D Cycle 93 delta | Cycle 92の原始actionをcomplete source geometryへ持ち上げ、stored-backwardの反乗法順序を`p⁻¹`で補正し、fixed normalized endpointまで同じ群準同型を輸送する | `finiteAxisFoldSourceBackwardPermutationContextEquivalence_trans`, `finiteAxisFoldSourceBackwardPermutationGeometry_comp`, `finiteAxisFoldSourcePermutationGeometrySectionHom`, `finiteAxisFoldSourcePermutationGeometrySectionHom_injective`, `finiteAxisFoldNormalizedPermutationGeometrySectionHom` | 任意の`E`と全`Equiv.Perm E`; Cycle 92の全source context actionとprobes; fixed source/southwest/exact-left/top/admissible/normalization data | exact equation/package/geometry maps、ordinary group homとしてのsource section、有限carrierでのsource faithfulness、固定route上のnormalized homomorphism | Cycle 94--96のkernel landing・local identity・actual injectivityへ渡す | normalized側のcomponent計算とinjectivity、Bool evaluator比較、image/coverage、一般入力と残るD/B/E/Fは未完了 |
+| D Cycle 92 delta | semantic rangeから独立に、一つのExtension carrierの全置換を全source contextへ作用させ、群則とfinite probe readbackを構成する | `finiteAxisFoldExtensionValuePermutation`, `finiteAxisFoldSourceContextPermutation`, `finiteAxisFoldSourceContextObjectPermHom`, `finiteAxisFoldSourceExtensionProbe`, `finiteAxisFoldSourceContextObjectPermHom_injective` | 任意の`E`と`Equiv.Perm E`; 単射性だけ`[Fintype E]`; 固定source context preorder | carrier型判定による原始value recipe、全context action、両方向readable restriction、恒等・合成・逆、各`e:E`の独立probeによるtable回復 | Cycle 93のcomplete geometry liftと後続actual routeへ渡す | complete geometry lift、kernel landing、actual injectivityはCycles 93--96で放電; Bool evaluator比較、image/coverage、一般入力と残るD/B/E/Fは未完了 |
 | D Cycle 91 delta | semantic subgroupやrangeから定義しない独立な二記号source syntaxを構成し、source-owned toggleの位数2とactual local-kernelへの忠実な評価を固定routeから証明する | `FiniteAxisFoldBackwardToggleSyntax`, `FiniteAxisFoldBackwardToggleSyntax.mul`, `finiteAxisFoldNormalizedExtensionBackwardAut_mul_self`, `finiteAxisFoldNormalizedExtensionBackwardLocalFiberKernel_mul_self`, `FiniteAxisFoldBackwardToggleSyntax.evaluate`, `evaluate_identity`, `evaluate_toggle`, `evaluate_injective` | sourceで構成済みのcomplete geometry involution; source→southwest transportとendpoint retag; exact-left pull; top transport; admissible wrapper; canonical normalization; Cycle 89/90の同じactual local-kernel candidateと非自明性 | `identity|toggle`の独立有限型と明示C2群則; source involutionを各functorの`mapAut`とretagで順に輸送; 四subtype層へ位数2を保持; exact evaluatorと二つの計算則; actual非自明性による単射性 | stored-backward/local-fiber residual fragmentに対する独立source presentationとactual actionの対応を確立し、finite Extension permutation recipe族への拡張と像・分解・coverageへ渡す | 二元fragmentのみ; finite Extension permutation一般化、像の内在的特徴付け、任意local-kernel/residual元の生成・分解・coverage、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
 | D Cycle 90 delta | full local-fiber kernelの任意の全元についてstored backward-context作用だけで元を一意に識別し、Cycle 89候補を同じdomainのactual非自明元として保持する | `finiteAxisFoldResidualLocalFiberKernelBackwardProjection`, `finiteAxisFoldResidualLocalFiberKernelBackwardProjection_injective`, `finiteAxisFoldNormalizedExtensionBackwardLocalFiberKernel`, `finiteAxisFoldNormalizedExtensionBackwardLocalFiberKernel_ne_one` | full `FiniteAxisFoldResidualLocalFiberKernel`の任意の二元; Cycle 85のcomplete action単射性; 各元自身のlocal-kernel membership; Cycle 89の同じsource-owned candidateとactual backward projection非自明性 | 両元のlocal成分が各々`1`であることをmembershipから導き、backward成分の等号と合わせてcomplete actionの等号を構成; complete faithfulnessから元を同定; 同じ候補をsubtypeへ格納しbackward評価から`≠ 1`を証明 | local不可視なresidual全元の分類をactual stored-backward作用へ忠実に還元し、独立source syntaxのevaluation/readbackと像・分解検査へ渡す | backward projection像の内在的特徴付け・全射性、独立source syntax、generator族、任意residual元の分解・coverage、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
 | D Cycle 89 delta | Cycle 88の同じsource-owned residual候補について、全contextのSupport・Axis・Observable作用を完全なdependent Sigma carrier上で恒等化し、local kernel membershipとactual stored-backward projectionの非自明性を同時に示す | `finiteAxisFoldNormalizedExtensionBackward_supportSigmaMap_eq_id`, `finiteAxisFoldNormalizedExtensionBackward_axisSigmaMap_eq_id`, `finiteAxisFoldNormalizedExtensionBackward_observableSigmaMap_eq_id`, `finiteAxisFoldNormalizedExtensionBackward_supportEquiv_eq_one`, `finiteAxisFoldNormalizedExtensionBackward_axisEquiv_eq_one`, `finiteAxisFoldNormalizedExtensionBackward_observableEquiv_eq_one`, `finiteAxisFoldNormalizedExtensionBackward_mem_localFiberKernel`, `finiteAxisFoldNormalizedExtensionBackward_backwardProjection_ne_one` | 固定source-owned backward toggle; Cycle 88のfull residual element; source local forward成分の恒等性; southwest/topのcanonical context section; exact-leftのgenerated backward-forward cancellation; 各factorization equation; Cycle 87のactual moved context | 三つの完全Sigma作用を各固定transportで恒等化; 全contextの三local-fiber自己同値を恒等化; joint local kernel membershipを構成; 同じactual residual元のstored-backward projectionをmoved contextで評価して`≠ 1`を証明 | 忠実なCycle 85 action内で、同じsource-owned actual元の非自明性がlocal因子ではなくstored-backward因子に集中することを確立し、source image生成・分解・coverageへ渡す | 一つの非自明元のみであり、source imageの内在的特徴付け、generator族、任意residual元の分解・coverage、section/surjectivity、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
@@ -231,7 +236,6 @@ audits:
   blocking_findings: []
   next_obligation: "Construct protocol semantics, finite generator tables, res/ext/J, and the four reconstruction properties without restricting the independently defined natural transformations."
 ```
-
 ## Cycle 2 — Protocol semantics and finite-presentation reconstruction
 
 ```yaml
@@ -10226,4 +10230,121 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Transport the Cycle 92 source probes through the same fixed route and prove the actual normalized local-fiber-kernel section injective for every finite Extension carrier."
+```
+
+## Cycle 96 — Faithful finite Extension-permutation local-kernel section
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 96
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 23103e2b3148ee732319e266c691593f78bd4704
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 95 constructed the arbitrary Extension-carrier permutation homomorphism into the actual joint local-fiber kernel but did not prove it faithful after the semantic route"
+  proof_dag_predecessors:
+    - "Cycle 92 independently defined source Extension probes and proved source context-action injectivity"
+    - "Cycle 93 constructed the complete source-geometry permutation section and its fixed southwest/exact-left/top/normalization route"
+    - "Cycle 95 proved complete local-fiber identity and actual joint-kernel landing for the same family"
+  proof_obligation: "Transport the independent source probes through the fixed route, cancel each constructed lift, and prove the normalized geometry and actual local-fiber-kernel sections injective for every finite Extension carrier"
+  selection_reason: "Image classification requires actual equality reflection at the normalized endpoint; source injectivity alone and kernel membership alone cannot supply it."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldPermutationLocalFiberKernelInjective.lean
+  risks:
+    - "assume faithfulness of a transport functor or normalization rather than cancel the fixed lifts"
+    - "read back only the Bool toggle instead of every element of every finite independent carrier"
+    - "replace source syntax by the semantic image or pass a completed inverse action as input"
+    - "infer image coverage, surjectivity, decomposition, or G-123 completion from injectivity"
+  unchecked:
+    - "Bool specialization and exact comparison with the Cycle 91 evaluator image"
+    - "intrinsic image characterization, section, surjectivity, decomposition, and coverage"
+    - "general inputs, bottom/full comparison kernels, lift fibers, and remaining B/E/F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Defined transported probes for every independently supplied source context.  Proved equality-reflection lemmas that cancel the source-to-southwest opcartesian lift, the generated exact-left lift, and the top opcartesian lift in order.  Canonical normalization is then unfolded at the same actual endpoint, and the resulting source backward-action equality is discharged by the pre-existing finite source-probe theorem.  The complete normalized geometry section and its codRestriction into the actual joint local-fiber kernel are therefore injective for every finite Extension carrier."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldPermutationLocalFiberKernelInjective.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldPermutationSouthwestProbe
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldPermutationExactLeftProbe
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldPermutationActualProbe
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedPermutationGeometrySectionHom_injective
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_injective
+  claim_mapping:
+    source_labels:
+      - "GOAL D prerequisite: retain every element of the constructed Extension-permutation family through the fixed actual route before display-side recovery and full comparison-group coverage"
+      - "preserve one independent carrier and all of its permutations rather than selecting a representable subgroup"
+      - "construct equality reflection from source probes rather than accept a semantic inverse or faithfulness certificate"
+      - "keep injectivity separate from kernel landing, image coverage, and surjectivity"
+    conjuncts:
+      - "every finite E -> transported probe at every source context"
+      - "normalized stored-backward equality on all transported probes -> source stored-backward equality"
+      - "source probe equality -> equality of the complete input permutation tables"
+      - "same constructed family -> injective homomorphism into the actual joint residual local-fiber kernel"
+    undischarged_assumptions: []
+    acceptance_point: "The actual normalized local-fiber-kernel section is faithful for every finite independent Extension carrier; this cycle does not claim that its image is the full kernel."
+    port_status: not-applicable
+review:
+  initial_fixed_head: 339a6a589b8d292e014cea42e0201cc1d31f25ce
+  initial_lanes:
+    math_a: minor-issues-noncentral
+    math_b: minor-issues-noncentral
+    lean_a: minor-issues-noncentral
+    lean_b: pass
+  revised_fixed_head: df3d817df54113a5d32be49c022fb9ae775c23a2
+  revised_lanes:
+    math_a: pass
+    math_b: minor-issues-noncentral
+    lean_a: pass
+    lean_b: pass
+  resolved_findings:
+    - "limited the GOAL D source label to the constructed Extension-permutation family on the fixed actual route, before display-side recovery and full comparison-group coverage"
+    - "removed the unused direct import of FiniteAxisFoldLocalKernelBackwardFaithfulness and re-ran the focused check"
+    - "synchronized the report proof state and requirement ledger from Cycle 91 through Cycles 92--96"
+  direct_response:
+    reviewed_delta: "df3d817df54113a5d32be49c022fb9ae775c23a2..cf1fa56cf376dd597d10ab5f22335b1644f9c04c"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "normalized equality reflection through the three fixed semantic lifts"
+      - "finite source-probe readback for the complete arbitrary-permutation family"
+      - "actual local-fiber-kernel section injectivity"
+    remaining:
+      - "relation of the Bool specialization to the Cycle 91 evaluator image"
+      - "intrinsic image characterization, section, surjectivity, decomposition, and coverage"
+      - "general inputs, bottom/full comparison kernels, lift fibers, and remaining D/B/E/F"
+  certificate_provenance:
+    discharged:
+      - "the only new typeclass premise is Fintype E, used by the already constructed source probe theorem"
+      - "no faithfulness, inverse, representability, semantic range, or kernel certificate is accepted as input"
+      - "all equality reflection is derived from the fixed factorization and cancellation laws"
+    unresolved:
+      - "intrinsic semantic image and full-kernel coverage"
+  proof_use:
+    used:
+      - "canonicalContextRetraction_eq cancels both opcartesian transports"
+      - "generatedExactContextForward_backward_ctx cancels the exact-left pull"
+      - "normalization unfolds to the same stored backward context action at the actual endpoint"
+      - "finiteAxisFoldSourceContextObjectPermHom_injective consumes all finite source probes"
+      - "subgroup projection transports local-kernel equality back to normalized geometry equality"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-through-fixed-source-southwest-exact-left-top-normalization-route
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-injectivity-checkpoint
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4324 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 6 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Specialize the arbitrary finite-carrier section to Bool, identify its generated element with the existing Extension-toggle residual element, and compare its image exactly with the Cycle 91 evaluator fragment before constructing an intrinsic image presentation."
 ```
