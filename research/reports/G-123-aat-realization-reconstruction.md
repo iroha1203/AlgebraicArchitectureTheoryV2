@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 147 proves direct and staged overlap/selected-Extension identity and composition for both CS models, retaining both comparison directions and every named operation
+- current proof obligation: Cycle 148 constructs lens/protocol `AATCorePackage` and dependent `ReadingCore` endpoints from the original n1015 sources, with exact Law/geometry provenance transported as one dependent bundle
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct endpoint `ReadingCore` provenance and the genuine-CS-isomorphism bridge, then independent readback
+- next proof obligation: connect genuine CS isomorphisms between the new endpoint `ReadingCore`s to `GeometryTotalHom`, then construct independent readback
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 148 delta | n1015の原始sourceと実データからlens/protocolの`AATCorePackage`・`ReadingCore`を構成し、完成Law objectやgeometryをcore入力へ移さず既存endpointとのprovenanceを証明する | `supportedPointConfiguration`, `pointCompositionReading`, `CSAATCoreGeometryData`; lens/protocol各`*AATAtomization_listFinite`, `*CoreObjectReading`, `*CoreGeneratedObject_eq_lawObject`, `*AATCoreEndpointGeometryData`, `*AATCoreGeneratedGeometryData`, `*AATCoreGeneratedGeometryData_heq`, `*AATCoreReading`, `*AATCorePackage`, `*AATReadingCore`; named-operation selected APIs | 任意のlawful lens/protocol realizationと固定inputのみ。完成core、Law certificate、coverage certificate、operation family、decoder像を入力しない。compositionは任意のlist-finite familyを受け取る | canonical sourceの全Atomを明示有限列挙し、任意familyをそのまま保持するsupported configurationを構成。canonical specializationが既存typed-role configuration/Law objectと一致することを証明。Law equation reading・signature・actual coverage・overlapを一つのdependent bundleとしてその等式に沿ってtransportし、同じbundleからcoreとgeometryを構成。raw systemもderived site上に構成。get/putと全edge/observationのconfiguration mapをcore operation readingへ保持 | Cycle 131--133のactual endpoint geometry/rawを`ReadingCore`へ接続し、次cycleのgenuine-CS-isomorphismから`GeometryTotalHom`への橋 | reject circuitはsoundだが`RequiredComplete`を主張しない。invariant familyは空。一般CS射のcore change、genuine-isomorphism bridge、独立readback、D回復、A--F統合は未完了 |
 | A/E Cycle 147 delta | overlapとselected Extensionについてidentity/compositionを実データ上で証明し、lensのget/putとprotocolの全edge/observationを落とさない | `FullFamilyProductComparisonSemanticLaws`, `fullFamilyProductComparisonSemanticLaws`; lens/protocol各`*AATForwardOverlapExtensionSemanticUnit`, `*AATForwardOverlapExtensionSemanticCompositor`とcanonical constructors | 任意のrealizationまたは任意の合成可能なprimitive forward morphism、任意のsource context pair/tripleのみ。overlap/Extension certificate、whole-Extension map、inverse、surjectivityを入力しない | forward/backward比較のsupport/axis/observable恒等作用、direct-vs-successive合成、両`IsRestriction`、readable equivalence、Extension carrier/valueを一つの出力へ構成。CS compositorはdirect overlapとf段/g段、両primitive Extension coherence、direct compositeのpoint/get/putまたはpoint/全edge/全observationを二段のproof-useから構成 | Cycle 139 forward geometryのoverlap/Extension componentのsemantic functoriality。次cycleのendpoint ReadingCore provenance | context proof-record equality、chosen representative equality、arbitrary Extension value map、ReadingCore、GeometryTotalHom bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 146 delta | canonical coverageの9fieldすべてをidentity/compositionで保持し、proof-record equalityではなくprimitive入力から生成するsemantic lawとして束ねる | `ForwardObservableVisibilityChainData`, `ForwardObservableVisibility.explicitChain`; lens/protocol各`*AATForwardCoverageSemanticUnit`, `*AATForwardCoverageSemanticCompositor`と同名canonical theorem constructors | 任意のrealizationまたは任意の合成可能なprimitive forward morphismのみ。coverage record、unit/compositor certificate、第二段visibility witness、inverse、surjectivityを入力しない | unitはcanonical identity coverageとexact unchanged coordinate/visibilityを構成。compositorはrequired support/coordinate/violation/axisを二段で運び、source/middle/direct-targetの三restriction、両forward equation、middle-sourceとtarget-middleのlocal-value等式を存在結論に保持し、support/boundary staged-to-direct、axisのdirect identity actionと合わせて一つの出力へ構成 | Cycle 139 forward aggregateのcoverage componentに対する全field semantic coherence。次cycleのoverlap/Extension aggregate law | Prop record equalityは主張しない。chosen `ContextMorphism` representative equality、target-only/inverse coverage、overlap/Extensionのunit/comp、ReadingCore、bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 145 delta | coverageのidentity/compositionをproof irrelevanceで済ませず、required/violation coordinateとlocal restriction値を実際にidentity/compositeへ運ぶ | `flattenSuccessiveFullFamilyContextMap`, `_isRestriction`, `ForwardObservableVisibility.compOfForwardEquation`; lens/protocol各`forwardRequiredCoordinate_id/comp`, `forwardCoordinate_id/comp`, `forwardEquationCoordinateCoherent_id/comp`, `forwardViolationCoordinateCoherent_id/comp`, `forwardSupportVisible_comp`, `forwardBoundaryVisible_comp` | 任意のlens/protocol realization、任意の合成可能なprimitive forward morphism、sourceのactual visibility witness。第二段coverage witness、aggregate certificate、inverse、surjectivityを入力しない | 第一段が生成したtarget restrictionを第二段のsource restrictionとして再使用し、第二段target restrictionを内部構成。successive full-family rebaseの全map成分と`IsRestriction`をdirect targetへflattenし、二つのlocal値等式を推移。全required/violation coordinateのid/comp、support/boundaryのstaged-to-direct compを証明 | canonical forward coverageのsemantic functoriality。次cycleの全9field aggregate law | arbitraryな二つのcoverage recordは中間witness同一性を保持しないため合成しない。axis・required-role clausesを含む全field packaging、chosen `ContextMorphism` representative-map equality、overlap/Extension、ReadingCore、bridge、readback、D回復、A--F統合は未完了 |
@@ -287,8 +288,6 @@ audits:
   blocking_findings: []
   next_obligation: "Construct protocol semantics, finite generator tables, res/ext/J, and the four reconstruction properties without restricting the independently defined natural transformations."
 ```
-
-
 ## Cycle 2 — Protocol semantics and finite-presentation reconstruction
 
 ```yaml
@@ -15353,4 +15352,119 @@ audits:
     - "resolved before final review: initial backward support/axis/observable composition fields stated the reverse staged order, masked by the current identity-on-data implementation; field types were corrected"
     - "resolved before final review: five Prop constructors were changed from def to theorem and the universal-constructor reason for no negative instances was documented"
   next_obligation: "Construct endpoint ReadingCore provenance from independently defined AAT core/reading data and connect genuine CS isomorphisms to GeometryTotalHom, then prove independent readback."
+```
+
+## Cycle 148 — Source-generated ReadingCore provenance
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 148
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 49c947cc9657d0aa3a2b2549ec7b102e43b0979b
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 147 completed endpoint overlap/Extension functoriality while no dependent ReadingCore had been generated from the original CS sources"
+  proof_dag_predecessors:
+    - "Cycle 125 source doctrines and actual architecture objects"
+    - "Cycle 126 object-dependent Law equation systems"
+    - "Cycles 131--133 concrete coverage, site, and raw-presheaf endpoints"
+  proof_obligation: "Construct lens and protocol AATCorePackage/ReadingCore endpoints from their original n1015 source data, and prove that their dependent Law/geometry data are exactly the existing endpoints rather than re-entered conclusions"
+  selection_reason: "The later genuine-isomorphism bridge and readback must start from actual ReadingCore values whose object, equation, coverage, overlap, and raw data have fixed-input provenance."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATReadingCoreProvenance.lean
+  risks:
+    - "defining the core object as the decoder image or completed Law object"
+    - "putting family support, Law equations, or coverage into input certificates"
+    - "supporting only the canonical family rather than every list-finite family"
+    - "transporting object/equation/coverage/overlap separately and losing their common dependency"
+    - "dropping get/put or protocol edge/observation maps from the core operation reading"
+  unchecked:
+    - "circuit RequiredComplete"
+    - "genuine CS isomorphism to GeometryTotalHom"
+    - "independent readback, D recovery, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Constructed source-generated core and ReadingCore endpoints for both independent CS models. The composition rule preserves every caller-supplied list-finite family; canonical point atomization is explicitly finite and reconstructs the existing typed-role Law object. The exact equation reading, signature, concrete coverage, and overlap are transported together as one dependent geometry bundle, whose HEq provenance is proved. The derived geometry selects that same bundle, and the raw system is constructed on its derived site."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATReadingCoreProvenance.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.pointCompositionReading
+    - AAT.AG.RealizationReconstruction.CSAATCoreGeometryData
+    - AAT.AG.RealizationReconstruction.lensAATAtomization_listFinite
+    - AAT.AG.RealizationReconstruction.lensCoreGeneratedObject_eq_lawObject
+    - AAT.AG.RealizationReconstruction.lensAATCoreGeneratedGeometryData_heq
+    - AAT.AG.RealizationReconstruction.lensAATCorePackage
+    - AAT.AG.RealizationReconstruction.lensAATReadingCore
+    - AAT.AG.RealizationReconstruction.protocolAATAtomization_listFinite
+    - AAT.AG.RealizationReconstruction.protocolCoreGeneratedObject_eq_lawObject
+    - AAT.AG.RealizationReconstruction.protocolAATCoreGeneratedGeometryData_heq
+    - AAT.AG.RealizationReconstruction.protocolAATCorePackage
+    - AAT.AG.RealizationReconstruction.protocolAATReadingCore
+    - AAT.AG.RealizationReconstruction.lensAATCoreSelectedGet
+    - AAT.AG.RealizationReconstruction.lensAATCoreSelectedPut
+    - AAT.AG.RealizationReconstruction.protocolAATCoreSelectedEdge
+    - AAT.AG.RealizationReconstruction.protocolAATCoreSelectedObserve
+  claim_mapping:
+    source_labels:
+      - "GOAL A: AAT core and complete geometry must be constructed from primitive data"
+      - "GOAL E and n1015: two independent CS semantics with their original sources and named operations"
+    conjuncts:
+      - "primitive source -> exact extraction doctrine and explicit finite canonical atomization"
+      - "all list-finite families -> family-preserving supported configuration"
+      - "canonical family -> existing typed-role configuration and Law object"
+      - "Law object equality -> one transport of equation/signature/coverage/overlap bundle"
+      - "generated bundle -> CoreReading equation/signature and SelectedGeometryReading requirements/overlap"
+      - "derived site -> coherent Int raw system"
+      - "named CS operations -> selected core configuration maps at the original endpoints"
+    undischarged_assumptions:
+      - "the rejecting finite detector is sound but no circuit completeness is claimed"
+      - "the core invariant family is empty because no independent invariant was fixed here"
+      - "no CoreReadingHom or GeometryTotalHom between distinct endpoints is constructed in this cycle"
+    acceptance_point: "The completed Law object and geometry are not fields accepted from the theorem caller. They are existing constructions from X, bundled and transported only after the canonical source-generated object equality is proved."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "lens endpoint AATCorePackage and ReadingCore existence from original source input"
+      - "protocol endpoint AATCorePackage and ReadingCore existence from original source input"
+      - "exact endpoint Law object, equation, signature, concrete coverage, overlap, and raw provenance"
+      - "family-generic composition and canonical finite-source specialization"
+    remaining:
+      - "circuit completeness if later required by the fixed target"
+      - "genuine-isomorphism CoreReadingHom/GeometryTotalHom bridge"
+      - "independent readback, D recovery, and final A--F theorem"
+  certificate_provenance:
+    discharged:
+      - "family finiteness is constructed by explicit Atom enumeration"
+      - "family support is proved from relation membership for every supplied family"
+      - "Law/coverage/overlap provenance is one dependent transport along a proved object equality"
+      - "named operations are selected by the internally constructed all-configuration-hom reading"
+    unresolved:
+      - "cross-endpoint reading change and independent reconstruction"
+  proof_use:
+    used:
+      - "original LensAATSource and ProtocolAATSource point values"
+      - "all lens Atom constructors, all finite protocol vertices, and all finite named edges"
+      - "original raw get/put, edge action, observations, and reference value in object formation"
+      - "actual Law equation systems, exact geometry signatures, concrete coverage requirements, and product overlap"
+      - "get/put and every protocol edge/observe configuration map"
+    unused:
+      - "no completed core, geometry certificate, decoder image, inverse CS morphism, or readback is accepted"
+      - "no Law proof is stored in the raw object or equation reading"
+  structure_field_escape: none-found-the-dependent-bundle-is-constructed-before-the-core-and-transported-from-fixed-input-data
+  route_integrity: pass-arbitrary-family-composition-and-canonical-specialization-are-distinct
+  target_fitting: none-found-both-independent-CS-models-and-all-named-operation-families-are-retained
+  vacuity: none-found-core-object-equalities-and-dependent-geometry-provenance-are-explicit
+  one_way_as_equivalence: not-applicable-no-cross-endpoint-equivalence-is-claimed
+  goal_or_report_reinterpretation: none-found-bridge-readback-D-and-final-integration-remain-open
+  validation_refs:
+    - "focused CSAATReadingCoreProvenance file check: PASS; 57 namespace declarations, standard axioms only"
+    - "focused exact CSAATReadingCoreProvenance target build: PASS (4271 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct the genuine-CS-isomorphism bridge between the new endpoint ReadingCores and existing GeometryTotalHom, then prove independent readback."
 ```
