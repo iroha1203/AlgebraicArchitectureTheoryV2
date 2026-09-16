@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 149 constructs complete state, raw-Law-index, and Law-coordinate equivalences from genuine lens/protocol isomorphisms, and identifies their forward halves with the maps generated from every named CS operation
+- current proof obligation: Cycle 150 refutes the constant-coordinate/cardinality-equality route by a source-owned Boolean hidden-state automorphism whose semantic Law-coordinate action is nontrivial while the proposed raw action is identity
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: use the exact index/coordinate data to construct the full `SignedExactCoreReadingHom` and `GeometryTotalHom`, then construct independent readback
+- next proof obligation: construct a typed raw-system transport contract (or another source-derived raw presentation) that carries the actual morphism-specific coordinate action, relation data, and restrictions, then resume the full `SignedExactCoreReadingHom` and `GeometryTotalHom` bridge
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 150 route-refutation delta | carrier cardinalityだけでcanonical coordinate型を同一化し、constant raw identity actionを実際のCS同型による全Law-index×Atom transportとして使えるか判定する | candidateの`constantRawCoordinateFamily`, `constantRawSystemOn`, `constantRawSystemOn_reindex`; canonicalizationの`LensCanonicalCarrier`, `LensCanonicalRawCoordinate`, `lensCanonicalRawCoordinateEquiv`, `lensIsoCanonicalRawCoordinate_eq`; 反例の`constantRawRouteBoolInput`, `constantRawRouteBoolLens`, `constantRawRouteBoolSwap`, `constantRawRouteBoolSwap_lawIndex_ne`, `constantRawRouteBoolSwap_canonicalCoordinate_ne` | 固定`View = PUnit`、hidden complement `Bool`のsource-owned product lensと非自明swap。完成coordinate集合、carrier等式、raw equality、geometry homを入力しない | constant raw systemが全変数を恒等に保つ一方、同じobject上のgenuine lens automorphismが`putGet (unit,false)`を異なるLaw indexへ運び、objectwise canonical equivalenceで共役しても非自明であることを証明 | cardinal equality routeを固定targetの解から除外し、次cycleのtyped raw transport設計を拘束する | 固定target自体は反証されていない。morphism-specific coordinate action・relation・restrictionを保つ新しい必須項目または構成、protocol、full geometry bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 149 delta | genuine lens/protocol isomorphismから全state・全raw Law instance・全Law/Atom coordinateのexact dataを構成し、既存の全named-operation由来forward mapと一致させる | raw一般の`lensLawIndexEquivOfInverse`, `lensLawIndex_holds_iff_of_inverse`, `protocolLawIndexEquivOfInverse`, `protocolLawIndex_holds_iff_of_inverse`; そのCS specializationである`lensIsoStateEquiv`, `lensIsoLawIndexEquiv`, `lensIsoLawIndex_holds_iff`, `lensIsoLawCoordinateIndexEquiv`, `lensIsoLawCoordinateEquiv`, `lensIsoLawCoordinateEquiv_toRingHom`; protocolの同名対応宣言 | raw一般theoremは任意のLaw structureと相互逆raw homを受け、endpoint lawfulnessを仮定しない。CS specializationはlawfulなlens/protocol realization間の真のCS isomorphismを受けるが、endpointに含まれるlawfulness以外の追加lawfulness certificate、state/index/coordinateの逆写像、exactness certificate、完成core hom、geometry homを入力しない | 任意raw endpoint上で三種lens law indexと全protocol relation/observation indexの同値、およびraw `Holds`の保存・反映を相互逆homから証明。CS同型ではcategorical inverseからその入力を構成。ULift全index×全Atomの変数名変更を代数同型にし、そのforward ring homが既存のget/putまたは全edge/observationから生成されたmapと等しいことを証明 | Cycle 148のsource-generated `ReadingCore`間にfull exact transportを組み立てるためのstate/index/coordinate成分 | `SignedExactCoreReadingHom`のobject/configuration/operation/invariant/axis成分と全object residual exactness、`GeometryTotalHom`のcoverage/overlap/raw成分、独立readback、D回復、A--F統合は未完了 |
 | A/E Cycle 148 delta | n1015の原始sourceと実データからlens/protocolの`AATCorePackage`・`ReadingCore`を構成し、完成Law objectやgeometryをcore入力へ移さず既存endpointとのprovenanceを証明する | `supportedPointConfiguration`, `pointCompositionReading`, `CSAATCoreGeometryData`; lens/protocol各`*AATAtomization_listFinite`, `*CoreObjectReading`, `*CoreGeneratedObject_eq_lawObject`, `*AATCoreEndpointGeometryData`, `*AATCoreGeneratedGeometryData`, `*AATCoreGeneratedGeometryData_heq`, `*AATCoreReading`, `*AATCorePackage`, `*AATReadingCore`; named-operation selected APIs | 任意のlawful lens/protocol realizationと固定inputのみ。完成core、Law certificate、coverage certificate、operation family、decoder像を入力しない。compositionは任意のlist-finite familyを受け取る | canonical sourceの全Atomを明示有限列挙し、任意familyをそのまま保持するsupported configurationを構成。canonical specializationが既存typed-role configuration/Law objectと一致することを証明。Law equation reading・signature・actual coverage・overlapを一つのdependent bundleとしてその等式に沿ってtransportし、同じbundleからcoreとgeometryを構成。raw systemもderived site上に構成。get/putと全edge/observationのconfiguration mapをcore operation readingへ保持 | Cycle 131--133のactual endpoint geometry/rawを`ReadingCore`へ接続し、次cycleのgenuine-CS-isomorphismから`GeometryTotalHom`への橋 | reject circuitはsoundだが`RequiredComplete`を主張しない。invariant familyは空。一般CS射のcore change、genuine-isomorphism bridge、独立readback、D回復、A--F統合は未完了 |
 | A/E Cycle 147 delta | overlapとselected Extensionについてidentity/compositionを実データ上で証明し、lensのget/putとprotocolの全edge/observationを落とさない | `FullFamilyProductComparisonSemanticLaws`, `fullFamilyProductComparisonSemanticLaws`; lens/protocol各`*AATForwardOverlapExtensionSemanticUnit`, `*AATForwardOverlapExtensionSemanticCompositor`とcanonical constructors | 任意のrealizationまたは任意の合成可能なprimitive forward morphism、任意のsource context pair/tripleのみ。overlap/Extension certificate、whole-Extension map、inverse、surjectivityを入力しない | forward/backward比較のsupport/axis/observable恒等作用、direct-vs-successive合成、両`IsRestriction`、readable equivalence、Extension carrier/valueを一つの出力へ構成。CS compositorはdirect overlapとf段/g段、両primitive Extension coherence、direct compositeのpoint/get/putまたはpoint/全edge/全observationを二段のproof-useから構成 | Cycle 139 forward geometryのoverlap/Extension componentのsemantic functoriality。次cycleのendpoint ReadingCore provenance | context proof-record equality、chosen representative equality、arbitrary Extension value map、ReadingCore、GeometryTotalHom bridge、readback、D回復、A--F統合は未完了 |
@@ -15582,4 +15583,116 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct the full SignedExactCoreReadingHom and GeometryTotalHom from the source-generated ReadingCores and the exact state/index/coordinate data, then prove independent readback."
+```
+
+## Cycle 150 — Refutation of constant-coordinate lens raw transport
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 150
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 38d53c34565240f640899ce9a4aa4ed908622a6b
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 149 supplied the actual coordinate equivalences, while GeometryTotalHom.raw_eq still required a typed raw-system comparison across carrier-changing endpoints"
+  proof_dag_predecessors:
+    - "Cycle 148 source-generated ReadingCore endpoints"
+    - "Cycle 149 complete Law-index and coordinate equivalences for genuine CS isomorphisms"
+    - "LensFinitePresentation finite-complement normal form over the possibly infinite View parameter"
+  proof_obligation: "Test whether complement-cardinality equality and a constant-coordinate raw system can retain the actual morphism-specific transport of every original Law-index/Atom coordinate without assuming carrier type equality"
+  selection_reason: "Restricting to definitionally equal carriers would weaken E, while an untyped presheaf isomorphism would lose the typed coordinate/relation/restriction presentation. The candidate therefore had to be tested against a genuine carrier automorphism with nontrivial coordinate action, not only against equality of endpoint coordinate types."
+  expected_result_type: proof-checkpoint-or-route-refutation
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATCanonicalRawCoordinates.lean
+  risks:
+    - "replacing all original coordinates by a selected subset"
+    - "using a completed morphism or carrier equality as input"
+    - "making the raw coordinate type depend on a chosen enumeration rather than only its finite cardinal"
+    - "claiming strict raw equality from an equivalence without eliminating cardinal equality"
+    - "moving Law equations into or out of the wrong quotient layer"
+  unchecked:
+    - "a sound typed raw-system transport carrying morphism-specific coordinate action"
+    - "the PackageTotalHom construction used by a final GeometryTotalHom"
+    - "remaining geometry fields, readback, D recovery, and A--F integration"
+result:
+  proposed_result_type: route-refutation
+  proof_obligation_delta: "Constructed the constant-coordinate candidate and its cardinality-based canonical lens endpoint, then tested it against the source-owned product lens with Boolean hidden complement and its nontrivial swap automorphism. The candidate raw restriction fixes every variable, but the genuine semantic isomorphism moves the complete putGet Law index. Injectivity of the objectwise normal-form coordinate equivalence proves that this action remains nontrivial after canonicalization. Hence endpoint coordinate-type equality does not supply the required natural transport square, and the constant-coordinate/cardinality route is rejected as a solution of A/E."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATCanonicalRawCoordinates.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.constantRawCoordinateFamily
+    - AAT.AG.RealizationReconstruction.constantRawSystemOn
+    - AAT.AG.RealizationReconstruction.constantRawSystemOn_reindex
+    - AAT.AG.RealizationReconstruction.LensCanonicalCarrier
+    - AAT.AG.RealizationReconstruction.LensCanonicalRawCoordinate
+    - AAT.AG.RealizationReconstruction.lensCanonicalRawCoordinateEquiv
+    - AAT.AG.RealizationReconstruction.lensIsoFiberEquiv
+    - AAT.AG.RealizationReconstruction.lensIsoPresentationCard_eq
+    - AAT.AG.RealizationReconstruction.lensIsoCanonicalRawCoordinate_eq
+    - AAT.AG.RealizationReconstruction.lensAATCanonicalRawReadingCore
+    - AAT.AG.RealizationReconstruction.lensAATCanonicalRawReadingCore_reindex
+    - AAT.AG.RealizationReconstruction.constantRawRouteBoolInput
+    - AAT.AG.RealizationReconstruction.constantRawRouteBoolLens
+    - AAT.AG.RealizationReconstruction.constantRawRouteBoolSwap
+    - AAT.AG.RealizationReconstruction.constantRawRouteBoolSwap_moves_false
+    - AAT.AG.RealizationReconstruction.constantRawRouteBoolSwap_lawIndex_ne
+    - AAT.AG.RealizationReconstruction.constantRawRouteBoolSwap_canonicalCoordinate_ne
+  claim_mapping:
+    source_labels:
+      - "GOAL A: complete typed raw geometry including coordinates and their transport"
+      - "GOAL E and n1015 L1-L4: genuine semantic isomorphisms and bidirectional preservation"
+    conjuncts:
+      - "constant raw candidate -> identity action on every coordinate variable"
+      - "source-owned Boolean hidden swap -> genuine lens automorphism moving the selected concrete state"
+      - "genuine automorphism -> nonidentity transport of a complete putGet Law index"
+      - "objectwise canonical coordinate equivalence -> conjugated semantic action remains nonidentity"
+      - "identity raw action differs from actual semantic action -> required naturality square fails"
+    undischarged_assumptions:
+      - "the candidate strict theorem is conditional on a package hom and does not encode its semantic coordinate action"
+      - "no replacement typed raw transport is constructed in this cycle"
+      - "protocol, complete geometry hom, and readback remain open"
+    acceptance_point: "The failed candidate is retained with an explicit fixed-input counterexample. This is not target failure: only the claim that complement-cardinality equality plus constant identity raw transport solves A/E is rejected."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "generic constant-coordinate raw construction and its identity action"
+      - "lens original-to-canonical complete coordinate equivalence"
+      - "nontrivial Boolean hidden-state automorphism and nonidentity semantic Law-index action"
+      - "failure of the identity action to agree with conjugated semantic transport"
+    remaining:
+      - "typed raw-system transport preserving coordinate action, relations, and restrictions"
+      - "protocol transport, full core package hom, geometry fields, independent readback, D recovery, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "the candidate strict raw reindex theorem accepts a package hom but forgets its semantic coordinate action; this is the refuted step"
+    discharged:
+      - "the counterexample lens, genuine swap, moved Law index, and failure after canonical equivalence are constructed from fixed source data"
+      - "the failure does not rely on a supplied carrier equality, coordinate equality, or completed geometry certificate"
+    unresolved:
+      - "construction of a sound raw transport contract and then the full package and geometry morphisms"
+  proof_use:
+    used:
+      - "the concrete putGet index at `(unit, false)` and an arbitrary LensAATAtom"
+      - "the source-owned product lens and Boolean complement swap"
+      - "the actual genuine-isomorphism Law-index action"
+      - "injectivity of the objectwise canonical coordinate equivalence"
+    unused:
+      - "no selected coordinate subset, completed geometry hom, raw equality certificate, decoder image membership, or readback is accepted"
+  structure_field_escape: candidate-rejected-its-raw-field-erases-the-morphism-specific-coordinate-action
+  route_integrity: fail-cardinality-equality-identifies-types-but-does-not-naturalize-the-objectwise-coordinate-equivalences
+  target_fitting: route-refuted-the-fixed-target-requires-actual-coordinate-transport-not-only-equal-endpoint-types
+  vacuity: candidate-strict-equality-is-vacuous-with-respect-to-semantic-coordinate-action-because-all-variables-are-fixed
+  one_way_as_equivalence: not-applicable-the-specialized-input-is-a-genuine-CS-isomorphism
+  goal_or_report_reinterpretation: none-found-the-failed-route-is-not-counted-as-target-progress-or-target-refutation
+  validation_refs:
+    - "focused CSAATCanonicalRawCoordinates file check: PASS; 22 namespace declarations, standard axioms only"
+    - "focused exact CSAATCanonicalRawCoordinates target build: PASS (4278 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "The constant raw action is identity for every package hom, while the fixed Boolean hidden-state automorphism acts nontrivially on semantic Law coordinates; the required naturality square cannot commute."
+  next_obligation: "Replace the failed constant-coordinate route by a typed raw-system transport carrying the genuine coordinate equivalence together with relation and restriction coherence, or construct another source-derived faithful raw presentation; then resume the full PackageTotalHom/GeometryTotalHom bridge."
 ```
