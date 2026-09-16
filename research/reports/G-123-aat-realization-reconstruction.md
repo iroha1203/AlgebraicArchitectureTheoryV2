@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 153 constructs a coefficient-aware, target-indexed exact raw map with identity/composition and a strict-geometry bridge, retaining arbitrary coefficient homomorphisms and every typed coordinate, relation generator, and restriction square
+- current proof obligation: Cycle 154 constructs parallel exact geometry morphisms and total morphisms with identity/composition, retaining all accepted non-raw G-108 components and the Cycle 153 actual typed raw action, plus a full strict-morphism embedding
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: add the parallel typed geometry morphism/category using the coefficient-aware exact raw map, embed the full existing strict geometry morphisms, and adapt the genuine lens/protocol exact transports to its inverse-context orientation before assembling the CS core/geometry bridges
+- next proof obligation: prove extensionality and category laws for the exact total morphisms, then adapt genuine lens/protocol transports to the inverse-context raw field and assemble their full core/geometry bridges
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 154 delta | strict raw equalityに限定されないparallel geometry morphismで、既存G-108の全非raw成分とactual typed raw actionを一体化する | `RealizationTransportSupply.exactId`, `.exactComp`, `.ofGeomReadHom`; `ExactGeomReadHom`, `.id`, `.comp`, `.ofStrict`; `ExactGeometryTotalHom`, `.id`, `.comp`, `.ofStrict` | 任意のaccepted core package hom、coverage、overlap、係数写像、Cycle 153 exact raw map、support/axis/observable supply。strict特殊化は既存`GeomReadHom`/`GeometryTotalHom` | identity/compositionで全成分を構成。strict homからbase・coverage・overlap・係数・全realization比較を保持し、raw equalityからactual typed raw mapを生成 | parallel exact geometry categoryとgenuine CS core/geometry bridge | extensionality・category laws、任意非単射CS coordinate map統合、concrete lens/protocol bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 153 delta | 非可逆な係数準同型とinverse-context reindexを保持し、全typed coordinate・relation generator・restriction squareを同じdirected raw mapで運ぶ | `CoordinateFamilyExactEquiv.polynomialHom`, `.polynomialHom_C`, `.polynomialHom_X`, `.polynomialHom_trans`; `StructuralRelationFamilyExactEquiv.relationBaseChange_comp`, `.baseChange`; `RawAmbientRestrictionSystemExactMapAgainst`, `.refl`, `.trans`, `.ofGeometryRawEquality`, `.ofGeomReadHom` | generic interfaceはsource/target raw system、inverse context functor、係数準同型、全coordinate/relation/restriction coherenceを受ける。identity/compositionは完成合成証拠を受けない。strict特殊化は既存`GeomReadHom`のみ | coefficient map後の全coordinate renameをring homとして構成し、定数・変数・合成を証明。relation base changeと合成を構成。target arrow全体のrestriction squareを合成し、既存strict `raw_eq`からcoordinate/relation/restrictionの全fieldを生成 | parallel typed geometry hom/categoryのraw fieldと、既存strict geometry categoryからの埋め込み | genuine lens/protocol transportのinverse-context版、parallel geometryの非raw field・category laws・full strict embedding、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 152 delta | Cycle 151のtyped raw transportをidentity/compositionで閉じ、合成時にも全coordinate・relation generator・restriction squareを保持する | `CoordinateFamilyExactEquiv.refl`, `.trans`, `.polynomialEquiv_trans`; `StructuralRelationFamilyExactEquiv.refl`, `.trans`; `RawAmbientRestrictionSystemExactTransportAlong.refl`, `.trans` | 任意のtyped raw system、または同一係数環上で合成可能な二つのexact transport。合成済みcoordinate/relation/restriction certificateを入力しない | coordinate/local-dataとrelationの同値を合成し、polynomial renameの合成則を証明。各context arrowの合成restriction squareを第一段のsquareと、その像に対する第二段のsquareから導出 | 次cycleのparallel typed geometry hom/categoryの恒等射・合成射、およびgenuine lens/protocol geometry bridge | 係数変更を伴うtyped geometry composition、strict embedding、full core/geometry hom、independent readback、D回復、A--F統合は未完了 |
 | A/E Cycle 151 delta | carrier-changing genuine CS同型の実際の全Law座標作用を、raw座標・label・local data・structural relation・全restrictionと同じ対応で保持する | `CoordinateFamilyExactEquiv`, `.polynomialEquiv`, `.polynomialEquiv_X`, `StructuralRelationFamilyExactEquiv`, `RawAmbientRestrictionSystemExactTransportAlong`, `equationCoordinateRawExactTransportAlong`; lens/protocol各`*IsoRawExactTransport`, `*IsoRawExactTransport_coordinate_apply`, `*IsoEquationPolynomialIso`, `*IsoActualRawPresheafIso`, `*IsoActualRawPresheafIso_hom`; lens固定反例への`lensIsoRawExactTransport_boolSwap_coordinate_ne` | 任意の二つのAAT site・context functor・全coordinate型同値に対する一般構成。CS特殊化は独立なlawful realization間のgenuine semantic isoのみ。完成raw transport、raw presheaf iso、geometry hom、carrier/type equalityを入力しない | 全coordinateのEquivから変数renameを構成し、label/local data、relation generator polynomial、全context restrictionの可換squareを保持。lens/protocolではCycle149の実Law-index×Atom同値からexact transportを生成し、既存の全coordinate forward raw mapをforward halfとするraw-presheaf Isoを構成。Bool hidden swapで修正版が実際に同じ非自明座標を動かすことを証明 | Aのtyped raw data transportとEの両CS翻訳。次cycleのtyped geometry hom raw component | concrete CS raw systemsの追加relationは空だが、Law equationsはsite equation systemに保持。typed geometry category、strict embedding、full core/geometry hom、readback、D回復、A--F統合は未完了 |
@@ -16018,4 +16019,96 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct the parallel typed geometry hom/category with this exact raw field, embed the full strict geometry hom, and adapt genuine lens/protocol transports to the target-indexed inverse-context form."
+```
+
+## Cycle 154 — Parallel exact geometry morphisms and strict embedding
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 154
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 2feb7016fd041def81c7cdb22cf7fdcb8a74bb27
+tracking_issue: 4520
+selection:
+  proof_state_ref: "Cycle 153 supplied the coefficient-aware target-indexed raw field but no geometry morphism carrying the accepted non-raw G-108 components"
+  proof_obligation: "Construct parallel exact geometry and total morphisms with identity/composition and embed every existing strict geometry morphism without changing its base or non-raw data"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExactGeometryMorphisms.lean
+  risks:
+    - "dropping coverage, overlap, or support/axis/observable reading and naturality data"
+    - "reintroducing literal raw equality"
+    - "claiming category laws before extensionality is proved"
+    - "claiming arbitrary noninjective CS coordinate maps fit an exact-equivalence raw field"
+  unchecked:
+    - "exact morphism extensionality and category laws"
+    - "genuine lens/protocol full exact geometry constructors"
+    - "arbitrary noninjective CS integration, readback, D recovery, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Bundled all accepted realization comparison data into identity/composition supplies. Defined ExactGeomReadHom with the original coverage, overlap, coefficient, and full realization supply plus the Cycle 153 actual typed raw map. Constructed identity/composition and strict embedding. Defined total exact geometry morphisms with the same operations and an embedding from every existing GeometryTotalHom."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExactGeometryMorphisms.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.RealizationTransportSupply.exactId
+    - AAT.AG.RealizationReconstruction.RealizationTransportSupply.exactComp
+    - AAT.AG.RealizationReconstruction.RealizationTransportSupply.ofGeomReadHom
+    - AAT.AG.RealizationReconstruction.ExactGeomReadHom
+    - AAT.AG.RealizationReconstruction.ExactGeomReadHom.id
+    - AAT.AG.RealizationReconstruction.ExactGeomReadHom.comp
+    - AAT.AG.RealizationReconstruction.ExactGeomReadHom.ofStrict
+    - AAT.AG.RealizationReconstruction.ExactGeometryTotalHom
+    - AAT.AG.RealizationReconstruction.ExactGeometryTotalHom.id
+    - AAT.AG.RealizationReconstruction.ExactGeometryTotalHom.comp
+    - AAT.AG.RealizationReconstruction.ExactGeometryTotalHom.ofStrict
+  claim_mapping:
+    source_labels:
+      - "GOAL A: complete geometry comparison including actual typed raw action"
+      - "GOAL E: one geometry interface for the two CS translations and accepted strict maps"
+    conjuncts:
+      - "accepted base/coverage/overlap/coefficient data -> retained unchanged"
+      - "all support/axis/observable maps, reading laws, and naturality -> retained in realization supply"
+      - "actual typed raw map -> geometry raw component"
+      - "identity/composable exact geometry data -> identity/composite exact hom"
+      - "strict geometry hom -> exact hom with generated typed raw action"
+    undischarged_assumptions:
+      - "generic exact hom receives its primitive non-raw and raw components"
+      - "category laws and concrete genuine-CS constructors are not proved here"
+      - "arbitrary noninjective CS coordinate maps remain outside the exact-equivalence raw interface"
+    acceptance_point: "The parallel morphism and total-morphism types, operations, and full strict embedding exist. A Category instance is not yet claimed."
+audits:
+  premise_delta:
+    discharged:
+      - "parallel exact geometry and total hom structures"
+      - "identity/composition for every stored component"
+      - "full componentwise embedding of existing strict geometry morphisms"
+    remaining:
+      - "extensionality/category laws, genuine CS geometry constructors, noninjective-CS integration, readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "generic exact geometry hom accepts the same primitive G-108 components plus the primitive exact raw map"
+    discharged:
+      - "identity/composition construct result components rather than accepting completed homs"
+      - "strict embedding derives the raw component through Cycle 153 and copies every accepted non-raw field"
+  proof_use:
+    used:
+      - "coverage, overlap, coefficient map, complete typed raw map, and all realization comparison fields"
+      - "both constituent homs in composition"
+      - "the accepted strict raw equality is consumed only by the strict embedding to construct its exact typed raw action"
+    unused:
+      - "the generic exact-hom interface and its identity/composition accept no raw equality, completed composite hom, category law certificate, decoder membership, or readback"
+  structure_field_escape: none-found-the-new-structure-retains-primitive-G108-components-and-actual-typed-raw-action
+  route_integrity: pass-strict-embedding-preserves-base-and-all-nonraw-components-and-constructs-raw-action
+  target_fitting: partial-exact-coordinate-relation-geometry-is-built-but-arbitrary-noninjective-CS-integration-is-open
+  vacuity: none-found-all-realization-reading-and-naturality-fields-are-retained
+  one_way_as_equivalence: none-found-coefficient-action-remains-a-RingHom
+  goal_or_report_reinterpretation: none-found-category-laws-CS-bridges-readback-D-and-final-integration-remain-open
+  validation_refs:
+    - "focused CSAATExactGeometryMorphisms file check: PASS; 40 namespace declarations, standard axioms only"
+    - "focused exact CSAATExactGeometryMorphisms target build: PASS (4285 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Prove extensionality and category laws, then construct the genuine lens/protocol exact geometry bridges."
 ```
