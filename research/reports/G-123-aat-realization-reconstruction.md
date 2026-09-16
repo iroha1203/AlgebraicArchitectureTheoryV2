@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 151 constructs exact typed raw transport for both genuine CS isomorphism families, preserving every actual Law-index/Atom coordinate, label, local-data type, structural relation, and restriction square, and derives the actual raw-presheaf isomorphisms
+- current proof obligation: Cycle 152 proves identity and composition for exact typed raw transport over a fixed coefficient ring, deriving composite coordinate, relation, and restriction coherence from the two constituent transports
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: add the parallel typed geometry morphism/category whose raw field is the constructed exact transport, embed existing strict geometry morphisms, and assemble the full CS core/geometry bridges without changing accepted G-108/G-122 results
+- next proof obligation: add the parallel typed geometry morphism/category whose raw field is the functorial exact transport, embed existing strict geometry morphisms, and assemble the full CS core/geometry bridges without changing accepted G-108/G-122 results; coefficient-changing geometry composition remains a separate explicit obligation
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 152 delta | Cycle 151のtyped raw transportをidentity/compositionで閉じ、合成時にも全coordinate・relation generator・restriction squareを保持する | `CoordinateFamilyExactEquiv.refl`, `.trans`, `.polynomialEquiv_trans`; `StructuralRelationFamilyExactEquiv.refl`, `.trans`; `RawAmbientRestrictionSystemExactTransportAlong.refl`, `.trans` | 任意のtyped raw system、または同一係数環上で合成可能な二つのexact transport。合成済みcoordinate/relation/restriction certificateを入力しない | coordinate/local-dataとrelationの同値を合成し、polynomial renameの合成則を証明。各context arrowの合成restriction squareを第一段のsquareと、その像に対する第二段のsquareから導出 | 次cycleのparallel typed geometry hom/categoryの恒等射・合成射、およびgenuine lens/protocol geometry bridge | 係数変更を伴うtyped geometry composition、strict embedding、full core/geometry hom、independent readback、D回復、A--F統合は未完了 |
 | A/E Cycle 151 delta | carrier-changing genuine CS同型の実際の全Law座標作用を、raw座標・label・local data・structural relation・全restrictionと同じ対応で保持する | `CoordinateFamilyExactEquiv`, `.polynomialEquiv`, `.polynomialEquiv_X`, `StructuralRelationFamilyExactEquiv`, `RawAmbientRestrictionSystemExactTransportAlong`, `equationCoordinateRawExactTransportAlong`; lens/protocol各`*IsoRawExactTransport`, `*IsoRawExactTransport_coordinate_apply`, `*IsoEquationPolynomialIso`, `*IsoActualRawPresheafIso`, `*IsoActualRawPresheafIso_hom`; lens固定反例への`lensIsoRawExactTransport_boolSwap_coordinate_ne` | 任意の二つのAAT site・context functor・全coordinate型同値に対する一般構成。CS特殊化は独立なlawful realization間のgenuine semantic isoのみ。完成raw transport、raw presheaf iso、geometry hom、carrier/type equalityを入力しない | 全coordinateのEquivから変数renameを構成し、label/local data、relation generator polynomial、全context restrictionの可換squareを保持。lens/protocolではCycle149の実Law-index×Atom同値からexact transportを生成し、既存の全coordinate forward raw mapをforward halfとするraw-presheaf Isoを構成。Bool hidden swapで修正版が実際に同じ非自明座標を動かすことを証明 | Aのtyped raw data transportとEの両CS翻訳。次cycleのtyped geometry hom raw component | concrete CS raw systemsの追加relationは空だが、Law equationsはsite equation systemに保持。typed geometry category、strict embedding、full core/geometry hom、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 150 route-refutation delta | carrier cardinalityだけでcanonical coordinate型を同一化し、constant raw identity actionを実際のCS同型による全Law-index×Atom transportとして使えるか判定する | candidateの`constantRawCoordinateFamily`, `constantRawSystemOn`, `constantRawSystemOn_reindex`; canonicalizationの`LensCanonicalCarrier`, `LensCanonicalRawCoordinate`, `lensCanonicalRawCoordinateEquiv`, `lensIsoCanonicalRawCoordinate_eq`; 反例の`constantRawRouteBoolInput`, `constantRawRouteBoolLens`, `constantRawRouteBoolSwap`, `constantRawRouteBoolSwap_lawIndex_ne`, `constantRawRouteBoolSwap_canonicalCoordinate_ne` | 固定`View = PUnit`、hidden complement `Bool`のsource-owned product lensと非自明swap。完成coordinate集合、carrier等式、raw equality、geometry homを入力しない | constant raw systemが全変数を恒等に保つ一方、同じobject上のgenuine lens automorphismが`putGet (unit,false)`を異なるLaw indexへ運び、objectwise canonical equivalenceで共役しても非自明であることを証明 | cardinal equality routeを固定targetの解から除外し、次cycleのtyped raw transport設計を拘束する | 固定target自体は反証されていない。morphism-specific coordinate action・relation・restrictionを保つ新しい必須項目または構成、protocol、full geometry bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 149 delta | genuine lens/protocol isomorphismから全state・全raw Law instance・全Law/Atom coordinateのexact dataを構成し、既存の全named-operation由来forward mapと一致させる | raw一般の`lensLawIndexEquivOfInverse`, `lensLawIndex_holds_iff_of_inverse`, `protocolLawIndexEquivOfInverse`, `protocolLawIndex_holds_iff_of_inverse`; そのCS specializationである`lensIsoStateEquiv`, `lensIsoLawIndexEquiv`, `lensIsoLawIndex_holds_iff`, `lensIsoLawCoordinateIndexEquiv`, `lensIsoLawCoordinateEquiv`, `lensIsoLawCoordinateEquiv_toRingHom`; protocolの同名対応宣言 | raw一般theoremは任意のLaw structureと相互逆raw homを受け、endpoint lawfulnessを仮定しない。CS specializationはlawfulなlens/protocol realization間の真のCS isomorphismを受けるが、endpointに含まれるlawfulness以外の追加lawfulness certificate、state/index/coordinateの逆写像、exactness certificate、完成core hom、geometry homを入力しない | 任意raw endpoint上で三種lens law indexと全protocol relation/observation indexの同値、およびraw `Holds`の保存・反映を相互逆homから証明。CS同型ではcategorical inverseからその入力を構成。ULift全index×全Atomの変数名変更を代数同型にし、そのforward ring homが既存のget/putまたは全edge/observationから生成されたmapと等しいことを証明 | Cycle 148のsource-generated `ReadingCore`間にfull exact transportを組み立てるためのstate/index/coordinate成分 | `SignedExactCoreReadingHom`のobject/configuration/operation/invariant/axis成分と全object residual exactness、`GeometryTotalHom`のcoverage/overlap/raw成分、独立readback、D回復、A--F統合は未完了 |
@@ -15814,4 +15815,100 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct the parallel typed geometry morphism/category with exact raw transport, define the strict embedding from existing GeometryTotalHom, and then assemble the genuine lens/protocol core and geometry morphisms."
+```
+
+## Cycle 152 — Identity and composition for exact typed raw transport
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 152
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 79f7d7a7b96aecb07c09d1a508b2ded8ad808742
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 151 constructed genuine coordinate-changing typed raw transports and actual raw-presheaf isomorphisms, but no identity/composition calculus for the primitive typed transports"
+  proof_dag_predecessors:
+    - "Cycle 151 exact coordinate-family, relation-family, and raw restriction-system transports"
+    - "Cycle 143--147 identity/composition laws for the earlier forward-image construction"
+  proof_obligation: "Construct identity and composition for exact typed raw transports while deriving, rather than accepting, the composite polynomial and restriction coherence"
+  selection_reason: "A parallel typed geometry category cannot have identity or composition until its raw field is closed under those operations. The two CS families use the fixed coefficient ring Int, so the fixed-coefficient layer is the smallest sound prerequisite without pretending to solve coefficient-changing geometry."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATTypedRawTransportFunctoriality.lean
+  risks:
+    - "accepting a completed composite transport or restriction square"
+    - "proving only coordinate equivalence while dropping relations or restrictions"
+    - "identifying endpoint coordinate types by equality and erasing the actual action"
+    - "claiming fixed-coefficient composition solves coefficient-changing geometry"
+  unchecked:
+    - "parallel typed geometry hom/category and strict embedding"
+    - "coefficient-changing typed geometry composition"
+    - "full CS core/geometry bridges, independent readback, D recovery, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Constructed identity and composition for complete typed coordinate-family equivalences, including dependent local-data transport, and proved that the resulting polynomial equivalence is the composite rename. Constructed identity and composition for structural-relation generator equivalences. Finally constructed identity and composition for full raw restriction-system transports; the composite restriction square is proved by applying the first square and then the second square to the transported polynomial."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATTypedRawTransportFunctoriality.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.CoordinateFamilyExactEquiv.refl
+    - AAT.AG.RealizationReconstruction.CoordinateFamilyExactEquiv.trans
+    - AAT.AG.RealizationReconstruction.CoordinateFamilyExactEquiv.polynomialEquiv_trans
+    - AAT.AG.RealizationReconstruction.StructuralRelationFamilyExactEquiv.refl
+    - AAT.AG.RealizationReconstruction.StructuralRelationFamilyExactEquiv.trans
+    - AAT.AG.RealizationReconstruction.RawAmbientRestrictionSystemExactTransportAlong.refl
+    - AAT.AG.RealizationReconstruction.RawAmbientRestrictionSystemExactTransportAlong.trans
+  claim_mapping:
+    source_labels:
+      - "GOAL A: raw coordinate, relation, and restriction transport"
+      - "GOAL E and n1015: composable bidirectional preservation for the two CS families"
+    conjuncts:
+      - "identity coordinate transport -> identity labels and dependent local data"
+      - "composite coordinate transport -> composite complete polynomial rename"
+      - "identity/composite relation transport -> every generator polynomial preserved"
+      - "identity raw transport -> every restriction square"
+      - "composite raw transport -> restriction coherence derived from both constituent squares"
+    undischarged_assumptions:
+      - "the coefficient ring is fixed in this layer"
+      - "the parallel typed geometry hom/category and strict embedding are not yet constructed"
+      - "no full CS core/geometry bridge, readback, D recovery, or final theorem is claimed"
+    acceptance_point: "The primitive typed raw transports now supply lawful identity and composition data for the fixed-Int CS applications. This is a prerequisite for, not a substitute for, the typed geometry category."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "identity exact transport for coordinates, relations, and raw restriction systems"
+      - "composition of exact coordinate and relation transports"
+      - "composition of full raw transports with all-context restriction coherence"
+    remaining:
+      - "typed geometry category, strict embedding, coefficient-changing geometry, full core package hom, independent readback, D recovery, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "composition receives the two primitive exact transports that are to be composed"
+    discharged:
+      - "no caller supplies the composite coordinate equivalence, relation equivalence, polynomial law, or restriction square"
+      - "all composite fields are constructed from the two constituent transports"
+    unresolved:
+      - "the non-raw geometry fields and their identity/composition laws"
+  proof_use:
+    used:
+      - "both directions of each complete coordinate and relation equivalence"
+      - "dependent local-data equivalences at every coordinate"
+      - "both constituent polynomial restriction squares for every context arrow and polynomial"
+    unused:
+      - "no selected coordinate subset, completed composite certificate, carrier equality, geometry hom, decoder membership, or readback is accepted"
+  structure_field_escape: none-found-composite-fields-and-squares-are-derived-from-the-two-primitive-transports
+  route_integrity: pass-all-coordinate-relation-and-restriction-data-remain-present-under-identity-and-composition
+  target_fitting: none-found-the-fixed-coefficient-scope-is-explicit-and-matches-the-two-Int-CS-families
+  vacuity: none-found-restriction-composition-is-quantified-over-every-context-arrow-and-polynomial
+  one_way_as_equivalence: none-found-coordinate-and-relation-components-use-composed-equivalences
+  goal_or_report_reinterpretation: none-found-typed-geometry-coefficient-change-readback-D-and-final-integration-remain-open
+  validation_refs:
+    - "focused CSAATTypedRawTransportFunctoriality file check: PASS; 8 namespace declarations, standard axioms only"
+    - "focused exact CSAATTypedRawTransportFunctoriality target build: PASS (4283 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct the parallel typed geometry morphism/category over the functorial exact raw field and define the strict embedding; keep coefficient-changing composition explicit rather than inferred from this fixed-coefficient layer."
 ```
