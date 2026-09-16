@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 141 proves identity and composition for the primitive state action, every generated Law index, the full coordinate RingHom, every context object, and the induced thin-category arrows of the lens/protocol context functors
+- current proof obligation: Cycle 142 proves identity and composition of the complete polynomial and raw-quotient component morphisms at every lens/protocol context, with explicit identity transport and endpoint-isomorphism cancellation
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: prove raw-presheaf identity/composition by cancelling the endpoint raw/polynomial isomorphisms and aligning rebased context indices; then construct endpoint `ReadingCore` provenance and derive the genuine-CS-isomorphism bridge to the existing `GeometryTotalHom`
+- next proof obligation: package the component laws as transported global natural-transformation laws and propagate them to the canonical forward-image aggregate; then construct endpoint `ReadingCore` provenance and derive the genuine-CS-isomorphism bridge to the existing `GeometryTotalHom`
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 142 delta | object-dependent context category上のpolynomial/raw forward mapについて、全contextで恒等・合成を証明し、raw共役のendpoint cancellationを実証する | lens/protocol各`equationPolynomialForwardHom_id_app`, `equationPolynomialForwardHom_comp_app`, `rawForwardHom_id_app`, `rawForwardHom_comp_app` | 任意のlens/protocol realization、任意の合成可能なprimitive forward morphism、任意context。inverse CS射、aggregate record、functoriality certificate、座標部分集合を入力しない | identityではCycle 141のcontext-object equalityに沿う`eqToHom` transportを明示。polynomialは全`Under` component morphismを`MvPolynomial` extensionalityで証明。rawはsource endpointの`hom_inv_id_app`と中間endpointの`inv_hom_id_app`を実際に使用し、全raw quotient component morphismの恒等・合成を証明 | Cycle 139 aggregate raw fieldのfunctoriality、後続のtransported global NatTrans lawとaggregate law | object-dependent functor間のtransportを含むglobal NatTrans等式、underlying `ContextMorphism` representative map、coverage/overlap/Extension aggregate composition、ReadingCore、GeometryTotalHom bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 141 delta | canonical forward-image作用の恒等・合成を、primitive stateから全Law index・全coordinate polynomial・全context objectと誘導されたthin-category arrowへ証明する | `LensAATForwardMorphism`/`ProtocolAATForwardMorphism` namespaceの各`id_stateMap_apply`, `comp_stateMap_apply`, `lawIndexMap_id`, `lawIndexMap_comp`, `lawCoordinateMap_id`, `lawCoordinateMap_comp`, `lawContextFunctor_id_obj`, `lawContextFunctor_id_map`, `lawContextFunctor_comp_obj`, `lawContextFunctor_comp_map` | 任意のlens/protocol realizationと任意の合成可能なprimitive forward morphism。aggregate record、inverse、surjectivity、完成functoriality certificateを入力しない | primitive `id`/`comp`を展開し、全state/vertex、全Law-index constructor、`MvPolynomial.ringHom_ext`による全定数・変数、任意context objectで恒等・合成式を証明。arrowはcontext preorder categoryのsubsingleton性により、誘導されたthin arrowの恒等・合成coherenceを証明 | Cycle 139 forward-imageのequation/coordinate/context functoriality。次cycleのpolynomial/raw NatTrans合成とaggregate coherence | thin categoryが忘却する元の`ContextMorphism`のsupport/axis/observable map witness自体の恒等・合成、raw quotient NatTransのidentity/composition、coverage/overlap/Extension record全体の合成、ReadingCore、GeometryTotalHom bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 140 delta | arbitrary noninvertible CS射のforward-image geometryについて、source-generated overlapを保持し、canonical Extensionの選択値と全named operationのcoherenceを証明する | `fullFamilyProductComparisonForward`/`Backward`と各`_isRestriction`, `fullFamilyProductComparison_readableEquivalent`, `fullFamilyProductComparison_extensionType`, `fullFamilyProductComparison_extension`, `fullFamilyCompleteLawOverlap_readableEquivalent`; lens/protocol各`*AATForwardCompleteLawOverlap_readableEquivalent`, `*AATForwardExtensionCoherence` | 任意のsource context三つとfull-family target object、任意のprimitive lens/protocol morphism。target overlap/Extension map、inverse、surjectivity、section、完成geometry certificateを入力しない | rebase(product)とproduct(rebase,rebase)の間にidentity-on-dataの両方向`ContextMorphism`を構成し、双方の`IsRestriction`を全support/axis/observableで証明。product Extension carrier/valueを保持。lensではA1 point・全get/put、protocolではA1 point・全named edge/observationの式をprimitive射から構成 | Cycle 139 forward-image geometryのoverlap/Extension層。後続identity/compositionとexact/isomorphism bridge | proof field差を隠すcontext等号は主張しない。independent target canonical reading全体へのExtension map、target-wide cover、identity/composition、raw conjugation coherence、readback、`ReadingCore`、`GeometryTotalHom` bridge、D回復、A--F統合は未完了 |
 | A/E Cycle 139 delta | 任意の非可逆CS射について、target全域coverや逆observable mapを要求せず、sourceの全required roleをexact generated imageへ運ぶforward/lax interfaceを構成する | `ForwardAxisVisibility`; lens/protocol各`*AATForwardAxisCoherent`, `*AATForwardCoverageImage`, `*AATForwardGeometryImage` | 任意のprimitive lens/protocol forward morphismのみ。Cycle 134のgenerated equation transport、Cycle 135のraw NatTrans、Cycle 136のcoordinate coherence、Cycle 137のsupport/boundary、independent endpoint readingsを使用。target-wide cover、inverse、surjectivity、overlap、`ReadingCore`、`GeometryTotalHom`を入力しない | source restrictionとrebased target local-axis readabilityとexact covariant axis equationを持つaxis witnessを構成。全source support・required equation coordinate・violation coordinate・axis・boundaryを量化するcoverage-image recordを固定入力から生成し、同じprimitive射からequation transport・raw NatTrans・coverage imageを一つのaggregate recordへ組み立てる | arbitrary noninvertible CS射のone-way geometry層。次cycleのidentity/compositionとlax overlap/Extension、および後続exact/isomorphism subcategory bridge | target-only coordinateのcoverage、target-wide`AATCoverageFamily`、overlap/Extension比較、identity/composition、independent readback、endpoint `ReadingCore` provenance、exact/isomorphismから`GeometryTotalHom`への接続、D回復、A--F統合は未完了。aggregate recordを外部certificateとして仮定せず、canonical constructorを使用する |
@@ -14702,4 +14703,105 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Prove polynomial-presheaf and raw-presheaf identity/composition by explicit endpoint-iso conjugation cancellation and context-index alignment, then proceed to endpoint ReadingCore provenance and the genuine-CS-isomorphism GeometryTotalHom bridge."
+```
+
+## Cycle 142 — Polynomial and raw component functoriality
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 142
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 167a28646e8d77848dabf780db15299ce5f08202
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 141 proved primitive, coordinate-ring, and context-object laws; polynomial and raw presheaf components had no identity/composition theorem"
+  proof_dag_predecessors:
+    - "Cycle 133 endpoint raw/polynomial presheaf isomorphisms"
+    - "Cycle 135 polynomial and raw forward natural transformations"
+    - "Cycle 141 coordinate-ring and context-object identity/composition"
+  proof_obligation: "Prove full component-morphism identity and composition at every context, including actual endpoint-isomorphism cancellation in the raw quotient layer"
+  selection_reason: "Raw functoriality must use hom-inverse cancellation at identity and inverse-hom cancellation at the intermediate endpoint, not be inferred from coordinate laws alone."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardPresheafFunctoriality.lean
+  risks:
+    - "checking only selected generators or elements rather than full Under component morphisms"
+    - "omitting the identity-rebase transport"
+    - "claiming raw composition without intermediate endpoint cancellation"
+    - "claiming literal global NatTrans equality across differently indexed target functors"
+  unchecked:
+    - "transported global natural-transformation identity/composition packaging"
+    - "underlying ContextMorphism representative-map identity/composition"
+    - "coverage, overlap, and Extension aggregate composition"
+    - "endpoint ReadingCore provenance and genuine-CS-isomorphism GeometryTotalHom bridge"
+    - "independent readback, D-side recovery, and final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "For lens and protocol, proved equality of the full polynomial and raw-quotient Under component morphisms at identity and composition for every context. Identity includes explicit eqToHom transport. Raw identity uses endpoint hom_inv cancellation; raw composition uses intermediate inv_hom cancellation."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardPresheafFunctoriality.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.equationPolynomialForwardHom_id_app
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.equationPolynomialForwardHom_comp_app
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.rawForwardHom_id_app
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.rawForwardHom_comp_app
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.equationPolynomialForwardHom_id_app
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.equationPolynomialForwardHom_comp_app
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.rawForwardHom_id_app
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.rawForwardHom_comp_app
+  claim_mapping:
+    source_labels:
+      - "GOAL A: raw coordinate and restriction data over all contexts"
+      - "GOAL E and n1015: arbitrary noninvertible CS morphisms and translation functoriality"
+    conjuncts:
+      - "polynomial identity -> transported identity of the complete component morphism"
+      - "polynomial composition -> direct component equals successive full components"
+      - "raw identity -> source endpoint isomorphism cancels its inverse after transport"
+      - "raw composition -> intermediate endpoint inverse/isomorphism pair cancels"
+    undischarged_assumptions:
+      - "global NatTrans equality still requires explicit transport between object-dependent target functors"
+      - "aggregate composition and later bridges remain open"
+    acceptance_point: "Theorems are equalities of full Under component morphisms at every context; raw proofs use actual endpoint NatIso cancellation laws."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "polynomial component identity and composition at every lens/protocol context"
+      - "raw quotient component identity and composition at every lens/protocol context"
+      - "identity transport and endpoint conjugation cancellation"
+    remaining:
+      - "transported global NatTrans identity/composition"
+      - "underlying ContextMorphism representative-map identity/composition"
+      - "coverage/overlap/Extension aggregate composition"
+      - "ReadingCore provenance, GeometryTotalHom bridge, readback, D recovery, and A--F integration"
+  certificate_provenance:
+    discharged:
+      - "polynomial laws come from the canonical coordinate RingHom and context rebase"
+      - "raw laws unfold canonical conjugation and use endpoint presheaf-isomorphism triangle laws"
+    unresolved:
+      - "global transport packaging and all later aggregate/provenance obligations"
+  proof_use:
+    used:
+      - "full polynomial and raw Under morphisms via category and ring-hom extensionality"
+      - "Cycle 141 coordinate-ring identity/composition and context-object identity"
+      - "hom_inv_id_app at raw identity and inv_hom_id_app at raw composition"
+      - "every lens/protocol source context"
+    unused:
+      - "no inverse CS morphism, aggregate record, surjectivity, target enumeration, or selected coordinate subset is accepted"
+      - "global NatTrans equality is not inferred without index transport"
+  structure_field_escape: none-found-no-functoriality-certificate-is-an-input
+  route_integrity: pass-for-full-presheaf-components
+  target_fitting: none-found-all-contexts-and-full-component-morphisms-are-quantified
+  vacuity: none-found-endpoint-iso-cancellation-and-full-morphism-extensionality-are-used
+  one_way_as_equivalence: none-found-only-forward-identity-and-composition-are-proved
+  goal_or_report_reinterpretation: none-found-global-packaging-aggregate-laws-readback-core-provenance-D-and-final-integration-remain-open
+  validation_refs:
+    - "focused CSAATGeometryForwardPresheafFunctoriality file check: PASS; 8 namespace declarations, standard axioms only"
+    - "focused exact CSAATGeometryForwardPresheafFunctoriality target build: PASS (4283 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Package component laws as transported global natural-transformation laws and propagate them to the canonical forward-image aggregate; then construct ReadingCore provenance and the genuine-CS-isomorphism GeometryTotalHom bridge."
 ```
