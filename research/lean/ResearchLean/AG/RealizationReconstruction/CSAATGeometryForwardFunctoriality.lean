@@ -7,7 +7,10 @@ import Formal.Util.AssertStandardAxioms
 The one-way geometry components are generated from the primitive named-operation
 morphisms.  This file proves their identity and composition laws directly for
 the primitive state action, every Law index, the full Law coordinate ring, and
-every object and arrow of the context functor.  No aggregate geometry record is
+every object of the context functor.  On arrows, the context categories are
+thin, so the proved identity and composition statements are the corresponding
+thin-category coherence equalities; they do not recover extra data from a
+chosen representative of a preorder arrow.  No aggregate geometry record is
 accepted as input.
 
 The raw quotient transformation is obtained later by conjugating the polynomial
@@ -79,6 +82,29 @@ composition. -/
     simp [lawCoordinateMap, lensLawCoordinateMap]
     exact lawIndexMap_comp f g index
 
+/-- Identity full-family rebasing retains every field of every lens context;
+the only replaced field is a proof of membership in the already-full family. -/
+@[simp] theorem lawContextFunctor_id_obj {input : LensFamilyInput.{u}}
+    (X : LensRealization input.View input.reference)
+    (W : Site.ContextCategoryObject
+      (Site.contextMorphismPreorderCategory
+        (lensLawObject input X.Carrier X.toLensData.toLawStructure))) :
+    ((id X).lawContextFunctor).obj W = W := by
+  rcases W with ⟨⟨⟨Support, Axis, Observable, supportReads,
+    supportReads_objectFamily, axisReads, observableReads⟩, Extension, extension⟩⟩
+  rfl
+
+/-- On the thin lens context category, identity rebasing has the unique arrow
+with the retained endpoints. -/
+@[simp] theorem lawContextFunctor_id_map {input : LensFamilyInput.{u}}
+    (X : LensRealization input.View input.reference)
+    {W V : Site.ContextCategoryObject
+      (Site.contextMorphismPreorderCategory
+        (lensLawObject input X.Carrier X.toLensData.toLawStructure))}
+    (h : W ⟶ V) :
+    ((id X).lawContextFunctor).map h = h :=
+  Subsingleton.elim _ _
+
 /-- Direct and successive lens full-family rebasing agree on every context
 object. -/
 @[simp] theorem lawContextFunctor_comp_obj {input : LensFamilyInput.{u}}
@@ -91,8 +117,8 @@ object. -/
       g.lawContextFunctor.obj (f.lawContextFunctor.obj W) :=
   rfl
 
-/-- Direct and successive lens full-family rebasing agree on every selected
-restriction arrow. -/
+/-- Direct and successive lens full-family rebasing give the same arrow by
+thin-category uniqueness, after their endpoint contexts agree. -/
 @[simp] theorem lawContextFunctor_comp_map {input : LensFamilyInput.{u}}
     {X Y Z : LensRealization input.View input.reference}
     (f : LensAATForwardMorphism X Y) (g : LensAATForwardMorphism Y Z)
@@ -166,6 +192,29 @@ composition. -/
     simp [lawCoordinateMap, protocolLawCoordinateMap]
     exact lawIndexMap_comp f g index
 
+/-- Identity full-family rebasing retains every field of every protocol
+context; only the proof of membership in the full family is replaced. -/
+@[simp] theorem lawContextFunctor_id_obj {input : ProtocolFamilyInput.{u}}
+    (X : ProtocolRealization input.schema input.observation)
+    (W : Site.ContextCategoryObject
+      (Site.contextMorphismPreorderCategory
+        (protocolLawObject input X.State X.toLawStructure))) :
+    ((id X).lawContextFunctor).obj W = W := by
+  rcases W with ⟨⟨⟨Support, Axis, Observable, supportReads,
+    supportReads_objectFamily, axisReads, observableReads⟩, Extension, extension⟩⟩
+  rfl
+
+/-- On the thin protocol context category, identity rebasing has the unique
+arrow with the retained endpoints. -/
+@[simp] theorem lawContextFunctor_id_map {input : ProtocolFamilyInput.{u}}
+    (X : ProtocolRealization input.schema input.observation)
+    {W V : Site.ContextCategoryObject
+      (Site.contextMorphismPreorderCategory
+        (protocolLawObject input X.State X.toLawStructure))}
+    (h : W ⟶ V) :
+    ((id X).lawContextFunctor).map h = h :=
+  Subsingleton.elim _ _
+
 /-- Direct and successive protocol full-family rebasing agree on every context
 object. -/
 @[simp] theorem lawContextFunctor_comp_obj {input : ProtocolFamilyInput.{u}}
@@ -178,8 +227,8 @@ object. -/
       g.lawContextFunctor.obj (f.lawContextFunctor.obj W) :=
   rfl
 
-/-- Direct and successive protocol full-family rebasing agree on every
-selected restriction arrow. -/
+/-- Direct and successive protocol full-family rebasing give the same arrow by
+thin-category uniqueness, after their endpoint contexts agree. -/
 @[simp] theorem lawContextFunctor_comp_map {input : ProtocolFamilyInput.{u}}
     {X Y Z : ProtocolRealization input.schema input.observation}
     (f : ProtocolAATForwardMorphism X Y) (g : ProtocolAATForwardMorphism Y Z)

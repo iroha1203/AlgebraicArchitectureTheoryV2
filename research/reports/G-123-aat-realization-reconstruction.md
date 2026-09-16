@@ -13,7 +13,7 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 141 proves identity and composition for the primitive state action, every generated Law index, the full coordinate RingHom, and every object and arrow of the lens/protocol context functors
+- current proof obligation: Cycle 141 proves identity and composition for the primitive state action, every generated Law index, the full coordinate RingHom, every context object, and the induced thin-category arrows of the lens/protocol context functors
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
 - next proof obligation: prove raw-presheaf identity/composition by cancelling the endpoint raw/polynomial isomorphisms and aligning rebased context indices; then construct endpoint `ReadingCore` provenance and derive the genuine-CS-isomorphism bridge to the existing `GeometryTotalHom`
@@ -22,7 +22,7 @@
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A/E Cycle 141 delta | canonical forward-image作用の恒等・合成を、primitive stateから全Law index・全coordinate polynomial・全contextへ証明する | `LensAATForwardMorphism`/`ProtocolAATForwardMorphism` namespaceの各`id_stateMap_apply`, `comp_stateMap_apply`, `lawIndexMap_id`, `lawIndexMap_comp`, `lawCoordinateMap_id`, `lawCoordinateMap_comp`, `lawContextFunctor_comp_obj`, `lawContextFunctor_comp_map` | 任意のlens/protocol realizationと任意の合成可能なprimitive forward morphism。aggregate record、inverse、surjectivity、完成functoriality certificateを入力しない | primitive `id`/`comp`を展開し、全state/vertex、全Law-index constructor、`MvPolynomial.ringHom_ext`による全定数・変数、任意context object/arrowで恒等・合成式を証明。arrowはthin categoryのsubsingleton性を使用 | Cycle 139 forward-imageのequation/coordinate/context functoriality。次cycleのpolynomial/raw NatTrans合成とaggregate coherence | self-rebase context全体の等号はproof field差のため主張しない。raw quotient NatTransのidentity/composition、coverage/overlap/Extension record全体の合成、ReadingCore、GeometryTotalHom bridge、readback、D回復、A--F統合は未完了 |
+| A/E Cycle 141 delta | canonical forward-image作用の恒等・合成を、primitive stateから全Law index・全coordinate polynomial・全context objectと誘導されたthin-category arrowへ証明する | `LensAATForwardMorphism`/`ProtocolAATForwardMorphism` namespaceの各`id_stateMap_apply`, `comp_stateMap_apply`, `lawIndexMap_id`, `lawIndexMap_comp`, `lawCoordinateMap_id`, `lawCoordinateMap_comp`, `lawContextFunctor_id_obj`, `lawContextFunctor_id_map`, `lawContextFunctor_comp_obj`, `lawContextFunctor_comp_map` | 任意のlens/protocol realizationと任意の合成可能なprimitive forward morphism。aggregate record、inverse、surjectivity、完成functoriality certificateを入力しない | primitive `id`/`comp`を展開し、全state/vertex、全Law-index constructor、`MvPolynomial.ringHom_ext`による全定数・変数、任意context objectで恒等・合成式を証明。arrowはcontext preorder categoryのsubsingleton性により、誘導されたthin arrowの恒等・合成coherenceを証明 | Cycle 139 forward-imageのequation/coordinate/context functoriality。次cycleのpolynomial/raw NatTrans合成とaggregate coherence | thin categoryが忘却する元の`ContextMorphism`のsupport/axis/observable map witness自体の恒等・合成、raw quotient NatTransのidentity/composition、coverage/overlap/Extension record全体の合成、ReadingCore、GeometryTotalHom bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 140 delta | arbitrary noninvertible CS射のforward-image geometryについて、source-generated overlapを保持し、canonical Extensionの選択値と全named operationのcoherenceを証明する | `fullFamilyProductComparisonForward`/`Backward`と各`_isRestriction`, `fullFamilyProductComparison_readableEquivalent`, `fullFamilyProductComparison_extensionType`, `fullFamilyProductComparison_extension`, `fullFamilyCompleteLawOverlap_readableEquivalent`; lens/protocol各`*AATForwardCompleteLawOverlap_readableEquivalent`, `*AATForwardExtensionCoherence` | 任意のsource context三つとfull-family target object、任意のprimitive lens/protocol morphism。target overlap/Extension map、inverse、surjectivity、section、完成geometry certificateを入力しない | rebase(product)とproduct(rebase,rebase)の間にidentity-on-dataの両方向`ContextMorphism`を構成し、双方の`IsRestriction`を全support/axis/observableで証明。product Extension carrier/valueを保持。lensではA1 point・全get/put、protocolではA1 point・全named edge/observationの式をprimitive射から構成 | Cycle 139 forward-image geometryのoverlap/Extension層。後続identity/compositionとexact/isomorphism bridge | proof field差を隠すcontext等号は主張しない。independent target canonical reading全体へのExtension map、target-wide cover、identity/composition、raw conjugation coherence、readback、`ReadingCore`、`GeometryTotalHom` bridge、D回復、A--F統合は未完了 |
 | A/E Cycle 139 delta | 任意の非可逆CS射について、target全域coverや逆observable mapを要求せず、sourceの全required roleをexact generated imageへ運ぶforward/lax interfaceを構成する | `ForwardAxisVisibility`; lens/protocol各`*AATForwardAxisCoherent`, `*AATForwardCoverageImage`, `*AATForwardGeometryImage` | 任意のprimitive lens/protocol forward morphismのみ。Cycle 134のgenerated equation transport、Cycle 135のraw NatTrans、Cycle 136のcoordinate coherence、Cycle 137のsupport/boundary、independent endpoint readingsを使用。target-wide cover、inverse、surjectivity、overlap、`ReadingCore`、`GeometryTotalHom`を入力しない | source restrictionとrebased target local-axis readabilityとexact covariant axis equationを持つaxis witnessを構成。全source support・required equation coordinate・violation coordinate・axis・boundaryを量化するcoverage-image recordを固定入力から生成し、同じprimitive射からequation transport・raw NatTrans・coverage imageを一つのaggregate recordへ組み立てる | arbitrary noninvertible CS射のone-way geometry層。次cycleのidentity/compositionとlax overlap/Extension、および後続exact/isomorphism subcategory bridge | target-only coordinateのcoverage、target-wide`AATCoverageFamily`、overlap/Extension比較、identity/composition、independent readback、endpoint `ReadingCore` provenance、exact/isomorphismから`GeometryTotalHom`への接続、D回復、A--F統合は未完了。aggregate recordを外部certificateとして仮定せず、canonical constructorを使用する |
 | A/E Cycle 138 route-refutation delta | 任意の非可逆CS射を保持したまま、既存の反変`ContextMorphism.observableRestrict`をtarget readingへのglobal observable/signature-axis成分として使えるかを固定入力で判定する | `axisVarianceLensInput`, `axisVarianceEmptyLens`, `axisVarianceUnitLens`, `axisVarianceForward`, `axisVarianceSourceCoordinate_false`, `axisVariance_noTargetReadingRestriction`, `axisVariance_targetAxis_notReadable` | 固定した`View = PUnit`、空状態total lens、一点状態total lens、空型から一点型への唯一の許容`LensAATForwardMorphism`のみ。target restriction、座標逆写像、surjectivity、完成geometry certificateを入力しない | source Law coordinate型が空であることをconstructorごとに証明。一方targetの`putGet unit`座標変数はactual readingで可読なので、target readingからrebased source readingへの任意の`IsRestriction`はsource可読座標を生成して矛盾する。従って現在のtarget-reading restriction predicateではtarget `.point` axisも可読でない | forward/lax geometry interfaceの設計拘束。Cycle 134--136のcovariant coordinate/raw mapを保持し、global componentにはtarget-to-source observable inverseを要求しないことの根拠 | これは一つの実装経路の反証であり固定G-123 targetの反証ではない。forward/lax complete-geometry interface、exact/isomorphism subcategoryと既存`GeometryTotalHom`の接続、overlap/Extension、identity/composition、readback、core provenance、D回復、A--F統合は未完了 |
@@ -14601,7 +14601,7 @@ selection:
     - "Cycle 135 polynomial and raw natural transformations"
     - "Cycle 139 aggregate forward-image geometry"
     - "Cycle 140 overlap and distinguished Extension coherence"
-  proof_obligation: "Prove identity and composition directly for the canonical primitive-generated state, Law-index, full coordinate-ring, and all-context actions without accepting aggregate functoriality as input"
+  proof_obligation: "Prove identity and composition directly for the canonical primitive-generated state, Law-index, full coordinate-ring, every context object, and the induced thin-category arrows without accepting aggregate functoriality as input"
   selection_reason: "These are the computational components on which the later raw conjugation and aggregate laws depend. Proving the full RingHom, rather than only selected variables, prevents generator-only equality from being reused as whole-observable functoriality."
   expected_result_type: proof-checkpoint
   lean_targets:
@@ -14609,7 +14609,7 @@ selection:
   risks:
     - "proving only selected coordinate variables and claiming a full RingHom law"
     - "using arbitrary aggregate records as functoriality certificates"
-    - "claiming self-rebase context equality despite reconstructed proof fields"
+    - "claiming equality of chosen ContextMorphism representatives from equality of induced thin-category arrows"
     - "lifting polynomial laws to raw quotient NatTrans without cancelling endpoint isomorphisms"
   unchecked:
     - "polynomial-presheaf and raw-presheaf identity/composition"
@@ -14620,7 +14620,7 @@ selection:
     - "D-side recovery and final A--F integration"
 result:
   proposed_result_type: proof-checkpoint
-  proof_obligation_delta: "For lens and protocol, proved primitive state-map identity/composition, every Law-index identity/composition, equality of the complete coordinate RingHom at identity and composition by polynomial extensionality, and direct-versus-successive context rebase equality on every object and arrow. All statements use the canonical primitive id/comp and accept no aggregate record."
+  proof_obligation_delta: "For lens and protocol, proved primitive state-map identity/composition, every Law-index identity/composition, equality of the complete coordinate RingHom at identity and composition by polynomial extensionality, identity/direct-versus-successive context rebase equality on every object, and the corresponding coherence of induced thin-category arrows. All statements use the canonical primitive id/comp and accept no aggregate record."
   completion_candidate: no
   lean_artifacts:
     - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardFunctoriality.lean
@@ -14631,6 +14631,8 @@ result:
     - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.lawIndexMap_comp
     - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.lawCoordinateMap_id
     - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.lawCoordinateMap_comp
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.lawContextFunctor_id_obj
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.lawContextFunctor_id_map
     - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.lawContextFunctor_comp_obj
     - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.lawContextFunctor_comp_map
     - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.id_stateMap_apply
@@ -14639,6 +14641,8 @@ result:
     - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.lawIndexMap_comp
     - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.lawCoordinateMap_id
     - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.lawCoordinateMap_comp
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.lawContextFunctor_id_obj
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.lawContextFunctor_id_map
     - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.lawContextFunctor_comp_obj
     - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.lawContextFunctor_comp_map
   claim_mapping:
@@ -14649,12 +14653,12 @@ result:
       - "primitive state action -> identity and successive composition on every state"
       - "Law instances -> identity and composition on every constructor and parameter"
       - "observable polynomial algebra -> equality of the full RingHom on constants and all variables"
-      - "contexts -> direct and successive rebase agree on every object and every selected restriction arrow"
+      - "contexts -> identity and direct/successive rebase agree on every object; induced thin-category arrows satisfy identity/composition coherence"
     undischarged_assumptions:
       - "raw quotient NatTrans still requires conjugation cancellation"
-      - "self-rebase context equality is not asserted"
+      - "identity and composition of chosen underlying ContextMorphism support/axis/observable maps are not asserted by the thin-arrow laws"
       - "aggregate coverage/overlap/Extension composition and later bridges remain open"
-    acceptance_point: "The coordinate laws are RingHom equalities proved with MvPolynomial.ringHom_ext, not statements only about required or visible generators. The context laws quantify every object and arrow."
+    acceptance_point: "The coordinate laws are RingHom equalities proved with MvPolynomial.ringHom_ext, not statements only about required or visible generators. Context-object identity/composition is explicit; arrow identity/composition is scoped to the proof-irrelevant arrows of the context preorder category."
     port_status: not-applicable
 audits:
   premise_delta:
@@ -14662,9 +14666,11 @@ audits:
       - "state-map identity and composition for lens and protocol"
       - "all Law-index identity and composition"
       - "full coordinate-ring identity and composition"
-      - "all-context object and arrow composition"
+      - "all-context object identity and composition"
+      - "identity and composition coherence for induced thin-category arrows"
     remaining:
       - "polynomial and raw presheaf identity/composition"
+      - "identity and composition of the support/axis/observable maps in chosen underlying ContextMorphism representatives"
       - "coverage/overlap/Extension aggregate composition"
       - "ReadingCore provenance and genuine-CS-isomorphism GeometryTotalHom bridge"
       - "independent readback, D recovery, and final A--F integration"
@@ -14672,7 +14678,7 @@ audits:
     discharged:
       - "all equations unfold the canonical LensAATForwardMorphism/ProtocolAATForwardMorphism id and comp"
       - "RingHom laws are generated from the actual Law-index action"
-      - "context arrow equality uses only the generated context functors and thin-category subsingleton law"
+      - "context object equality unfolds the generated rebase; induced arrow equality uses thin-category subsingleton uniqueness"
     unresolved:
       - "raw-presheaf conjugation and all later aggregate/provenance obligations"
   proof_use:
@@ -14680,18 +14686,18 @@ audits:
       - "every primitive state map in the state and Law-index laws"
       - "every Law-index constructor in cases proofs"
       - "constant and arbitrary variable branches of MvPolynomial.ringHom_ext"
-      - "every source context object and selected restriction arrow"
+      - "every source context object; arrow coherence is obtained only after passage to the thin context preorder category"
     unused:
       - "no arbitrary aggregate record, inverse, surjectivity, or target enumeration is accepted"
       - "the raw NatTrans is deliberately not inferred from the polynomial RingHom law"
   structure_field_escape: none-found-no-aggregate-record-or-functoriality-certificate-is-an-input
   route_integrity: pass-for-generated-computational-components
-  target_fitting: none-found-all-indices-polynomials-contexts-and-arrows-are-quantified
-  vacuity: none-found-full-polynomial-extensionality-and-all-context-quantification-are-used
+  target_fitting: none-found-for-stated-component-laws-underlying-context-morphism-map-composition-remains-open
+  vacuity: none-found-for-state-index-ring-and-context-object-laws-thin-arrow-laws-use-preorder-subsingleton-only
   one_way_as_equivalence: none-found-only-identity-and-forward-composition-are-proved
   goal_or_report_reinterpretation: none-found-raw-conjugation-aggregate-laws-readback-core-provenance-D-and-final-integration-remain-open
   validation_refs:
-    - "focused CSAATGeometryForwardFunctoriality file check: PASS; 16 namespace declarations, standard axioms only"
+    - "focused CSAATGeometryForwardFunctoriality file check after review repair: PASS; 20 namespace declarations, standard axioms only"
     - "focused exact CSAATGeometryForwardFunctoriality target build: PASS (4282 jobs; not a Research aggregate build)"
     - "Research aggregate/full build: not run"
   blocking_findings: []
