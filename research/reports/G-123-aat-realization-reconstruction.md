@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 112 constructs the undirected component quotient from the fixed raw graph and classifies operation-preserving following changes by component-indexed hidden permutations
+- current proof obligation: Cycle 113 constructs the actual all-automorphism preserving-pair group, its visible projection and canonical section, and proves the non-pointwise reindexed fiber composition law
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: define identity and composition for all visible automorphisms in H, prove the component reindexing law in composition, and construct the kernel, section, split exact sequence, and fibers without replacing the semidirect action by pointwise multiplication
+- next proof obligation: restrict the visible projection along an independently supplied subgroup H, construct the component-family kernel homomorphism, and prove its range is exactly the projection kernel before forming split exactness and torsors
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| F Cycle 113 delta | 固定graphの全automorphism上のactual preserving pairを群にし、visible projectionとidentity-hidden sectionを構成し、合成のcomponent reindexingを保つ | graph automorphismの`One`/`Mul`/`Inv`/`Group`; following changeの`comp`, `inverse`, `comp_fiberPerm`, `inverse_fiberPerm`, preservationの積・逆元閉性; `FixedFPreservingFollowingPair`とその`Group`; `mul_fiberPerm`, `automorphismProjection`, `visibleRename`, `visibleRenameSection`, `automorphismProjection_visibleRenameSection`, `visibleRename_fiberPerm` | 任意の`F,K`; actual graph automorphismとactual state equivalence/execution square全体 | endpoint lawから逆automorphismを構成; actual state equivalenceの合成・逆元とoperation保存の閉性; `φ_(ab),v = φ_a,bv * φ_b,v`; visible projection GroupHom; `h(v,k)=(u(v),k)`のcanonical section GroupHomと右逆 | 独立に与える`H ≤ Aut(Q)`への制限、kernel/section/split exactness/torsor | H制限後の完全性、component上のreindexing GroupHom、kernel range等式、exact sequence、torsor、個数・例・CS/AAT/D接続は未完了 |
 | F Cycle 112 delta | 固定graphの向きだけを忘れた連結成分`π₀(Q)`を原edge関係から構成し、edge-constant familyとcomponent-indexed permutation familyを往復する | `fixedFDirectedEdgeStep`, `FixedFUndirectedReachable`, `fixedFComponentSetoid`, `FixedFComponent`, `fixedFComponentMk`, `fixedFComponentMk_eq_iff`, `fixedFComponent_source_eq_target`, `FixedFComponentPermutationFamily`, `perm_eq_of_reachable`, `descendToComponents`, `equivComponentPermutationFamilies`, `preservingEquivComponentPermutationFamilies` | 任意の`F,K,u`; Cycle 111で構成した全operation-preserving following changeとedge-constant familyの同値 | directed endpoint relationの`Relation.EqvGen`、source/targetの同一component性、generated reachability全体に沿うpermutation一定性、`Quotient.lift`による降下、component引戻しとの両逆、Cycle 111同値との合成 | F1の核`∏ Sym(K)`と各visible automorphism上のfiber分類 | Hのcomponent作用を伴う合成、群構造、section、split exact sequence、torsor、有限個数、basepoint固定版、CS/AAT/D接続は未完了 |
 | F Cycle 111 delta | 固定directed multigraphとgraph automorphismに従う全state同値からhidden permutationとoperation adapterを構成し、named-operation保存をedge-constant familyと分類する | `FixedFDirectedMultigraph`, `FixedFGraphAutomorphism`, `FixedFFollowingStateChange`, `symm_observation`, `fiberPerm`, `factorization`, `fiberPerm_unique`, `FixedFOperationPoint`, `operationMap`, `sourceState_operationMap`, `PreservesNamedOperations`, `operationMap_formula`, `preservesNamedOperations_iff`, `FixedFEdgeConstantPermutationFamily`, `ofFamily`, `fiberPerm_ofFamily`, `preservingEquivEdgeConstantFamilies` | 任意のdirected multigraph `F`、任意のhidden type `K`、vertex/edge双方と両endpointを保つ固定automorphism `u`、全state同値 `h`と観測則 `q ∘ h = u ∘ q` | `h`/`h.symm`から各vertexの`fiberPerm`を構成し、可視変更とhidden置換への分解・一意性、source側fiberを使うoperation adapter、source square、actual execution squareとedge constancyの同値、保存変更とedge-constant familyの`Equiv` | F1のcomponent-indexed kernelとsemidirect-product構成、lens/protocol両CSへの適用、D分類との接続のsource側基盤 | undirected connected componentsによる再表示、恒等元上の核群、section、split exact sequence、torsor、Fin4の3例と個数、AAT表示側回復、D/E接続は未完了 |
 | B/D Cycle 110 delta | Nat xor-mask像を別の無限primitive carrier上の固定有限recipeで検査し、全carrier exact-support branchとNat algorithm branchの両方からsame actual route上で分離する | `finiteAxisFoldNatPowerSetComplement`, `finiteAxisFoldNatPowerSetComplement_ne`, `finiteAxisFoldNatPowerSet_ne_nat`, `finiteAxisFoldFiniteSupportSourceAction_exists_fixed_powerSetProbe`, `finiteAxisFoldNatPowerSetComplement_transported_ne_finiteSupport`, `finiteAxisFoldNatSourceAction_fixes_powerSetEmptyProbe`, `finiteAxisFoldNatPowerSetComplement_transported_ne_natAction`, `finiteAxisFoldNatPowerSetComplement_not_mem_exactSupportCarrierUnion`, `finiteAxisFoldNatPowerSetComplement_not_mem_natXorMaskIntrinsicImage` | primitive carrier `Set Nat`; complement formula; Cantor carrier inequality; all decidable carriers; Cycle 109 Nat xor-mask image; same fixed section | 全subset移動; finite-support fixed probe; 全Nat actionのempty-set probe固定; actual projectionを通した両image非所属 | carrier-parametric finite algorithm grammarとfull-kernel比較へ渡す | 二つのfamilyの列挙に留まる; 統一grammar、full-kernel、G-122、一般入力、res/ext/J、CS、残るA--Fは未完了 |
@@ -12004,4 +12005,47 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct the group of all preserving pairs over H, prove composition reindexes the first fiber family by the second visible automorphism on components, and then identify kernel and section before stating split exactness."
+```
+
+## Cycle 113 — All-automorphism preserving-pair group and section
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 113
+base_oid: 4a2c79ad7a2267f312ff0c71f7f3a0073e129a18
+tracking_issue: 4520
+selection:
+  proof_obligation: "Construct the actual preserving-pair group over all graph automorphisms and retain the visible reindexing action in fiber composition"
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed the graph-automorphism group from actual vertex/edge equivalences and endpoint laws; constructed composition and inverse of following state equivalences and proved operation preservation is closed under both.  The all-automorphism preserving pairs form a group from actual h and execution squares.  Their visible projection is a GroupHom, and visible renaming with identity hidden action is an explicit homomorphic section.  The fiber formula reindexes the first family by the second visible automorphism before multiplication."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FixedFAllAutomorphismGroup.lean
+  unfinished:
+    - "restriction along an independently supplied H subgroup"
+    - "component action hom, kernel identification, split exactness, and torsors"
+    - "basepoint-fixed variant, cardinality formula, and three fixed examples"
+    - "lens/protocol applications, AAT translation, presentation-side recovery, and D connection"
+review:
+  fixed_head: 3525739e2f8a1c04969a08414239c3e919bb9f69
+  lanes: {math_a: pass, math_b: pass, lean_a: pass, lean_b: pass}
+  direct_response:
+    reviewed_delta: "4a2c79ad7a2267f312ff0c71f7f3a0073e129a18..3525739e2f8a1c04969a08414239c3e919bb9f69"
+    verdict: pass
+    new_findings: []
+audits:
+  certificate_provenance: "pair elements retain actual graph automorphism, state equivalence, observation law, and execution square; group operations are constructed on those data rather than on a semidirect-product alias"
+  proof_use: "endpoint laws construct inverse automorphisms; Cycle111 execution/edge-constancy equivalence proves preservation closure; state factorization proves the reindexed fiber formula; the section constructs h and its execution square directly"
+  structure_field_escape: none-found
+  target_fitting: none-found-pairs-range-over-all-actual-preserving-h
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (570 dependency jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 57 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "For arbitrary independent H <= Aut(Q), restrict the actual pair group by projection preimage, restrict the explicit section, construct the component-family kernel map, and prove its range equals the actual projection kernel."
 ```
