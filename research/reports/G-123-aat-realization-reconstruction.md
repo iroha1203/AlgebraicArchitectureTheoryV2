@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 113 constructs the actual all-automorphism preserving-pair group, its visible projection and canonical section, and proves the non-pointwise reindexed fiber composition law
+- current proof obligation: Cycle 114 restricts the actual preserving-pair group along an independently supplied H and constructs both the restricted split projection and the actual component action
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: restrict the visible projection along an independently supplied subgroup H, construct the component-family kernel homomorphism, and prove its range is exactly the projection kernel before forming split exactness and torsors
+- next proof obligation: construct the component-family kernel homomorphism into the H-restricted actual group and prove its range is exactly the restricted projection kernel before forming split exactness and torsors
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| F Cycle 114 delta | 独立入力`H ≤ Aut(Q)`にactual pair群を制限し、各`u∈H`のidentity-hidden liftとcomponent作用を構成する | `FollowingGroup`, `projection`, `canonicalSection`, `projection_section`, `projection_surjective`; `map_directedEdgeStep`, `map_undirectedReachable`, `componentMap`, `componentPerm`, `componentPerm_mk`, `componentAction`, `restrictedComponentAction` | 任意の`F,K`と独立に与えられる`H : Subgroup (FixedFGraphAutomorphism F)` | actual visible projectionの`H.comap`; Cycle113 sectionのH所属を元のsubtype proofから放電; restricted projectionの全射; raw edge-step/reachability保存; quotient上のcomponent permutationとGroupHom | F1のactual projection、Hのcomponent再添字作用、kernel同定 | component-family kernel mapとrange=ker、exactness、torsor、basepoint/個数/例、CS/AAT/D接続は未完了 |
 | F Cycle 113 delta | 固定graphの全automorphism上のactual preserving pairを群にし、visible projectionとidentity-hidden sectionを構成し、合成のcomponent reindexingを保つ | graph automorphismの`One`/`Mul`/`Inv`/`Group`; following changeの`comp`, `inverse`, `comp_fiberPerm`, `inverse_fiberPerm`, preservationの積・逆元閉性; `FixedFPreservingFollowingPair`とその`Group`; `mul_fiberPerm`, `automorphismProjection`, `visibleRename`, `visibleRenameSection`, `automorphismProjection_visibleRenameSection`, `visibleRename_fiberPerm` | 任意の`F,K`; actual graph automorphismとactual state equivalence/execution square全体 | endpoint lawから逆automorphismを構成; actual state equivalenceの合成・逆元とoperation保存の閉性; `φ_(ab),v = φ_a,bv * φ_b,v`; visible projection GroupHom; `h(v,k)=(u(v),k)`のcanonical section GroupHomと右逆 | 独立に与える`H ≤ Aut(Q)`への制限、kernel/section/split exactness/torsor | H制限後の完全性、component上のreindexing GroupHom、kernel range等式、exact sequence、torsor、個数・例・CS/AAT/D接続は未完了 |
 | F Cycle 112 delta | 固定graphの向きだけを忘れた連結成分`π₀(Q)`を原edge関係から構成し、edge-constant familyとcomponent-indexed permutation familyを往復する | `fixedFDirectedEdgeStep`, `FixedFUndirectedReachable`, `fixedFComponentSetoid`, `FixedFComponent`, `fixedFComponentMk`, `fixedFComponentMk_eq_iff`, `fixedFComponent_source_eq_target`, `FixedFComponentPermutationFamily`, `perm_eq_of_reachable`, `descendToComponents`, `equivComponentPermutationFamilies`, `preservingEquivComponentPermutationFamilies` | 任意の`F,K,u`; Cycle 111で構成した全operation-preserving following changeとedge-constant familyの同値 | directed endpoint relationの`Relation.EqvGen`、source/targetの同一component性、generated reachability全体に沿うpermutation一定性、`Quotient.lift`による降下、component引戻しとの両逆、Cycle 111同値との合成 | F1の核`∏ Sym(K)`と各visible automorphism上のfiber分類 | Hのcomponent作用を伴う合成、群構造、section、split exact sequence、torsor、有限個数、basepoint固定版、CS/AAT/D接続は未完了 |
 | F Cycle 111 delta | 固定directed multigraphとgraph automorphismに従う全state同値からhidden permutationとoperation adapterを構成し、named-operation保存をedge-constant familyと分類する | `FixedFDirectedMultigraph`, `FixedFGraphAutomorphism`, `FixedFFollowingStateChange`, `symm_observation`, `fiberPerm`, `factorization`, `fiberPerm_unique`, `FixedFOperationPoint`, `operationMap`, `sourceState_operationMap`, `PreservesNamedOperations`, `operationMap_formula`, `preservesNamedOperations_iff`, `FixedFEdgeConstantPermutationFamily`, `ofFamily`, `fiberPerm_ofFamily`, `preservingEquivEdgeConstantFamilies` | 任意のdirected multigraph `F`、任意のhidden type `K`、vertex/edge双方と両endpointを保つ固定automorphism `u`、全state同値 `h`と観測則 `q ∘ h = u ∘ q` | `h`/`h.symm`から各vertexの`fiberPerm`を構成し、可視変更とhidden置換への分解・一意性、source側fiberを使うoperation adapter、source square、actual execution squareとedge constancyの同値、保存変更とedge-constant familyの`Equiv` | F1のcomponent-indexed kernelとsemidirect-product構成、lens/protocol両CSへの適用、D分類との接続のsource側基盤 | undirected connected componentsによる再表示、恒等元上の核群、section、split exact sequence、torsor、Fin4の3例と個数、AAT表示側回復、D/E接続は未完了 |
@@ -12048,4 +12049,47 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "For arbitrary independent H <= Aut(Q), restrict the actual pair group by projection preimage, restrict the explicit section, construct the component-family kernel map, and prove its range equals the actual projection kernel."
+```
+
+## Cycle 114 — Independent-H restriction and component action
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 114
+base_oid: d978b083544422a8cfb3748e982ca93c80fefc94
+tracking_issue: 4520
+selection:
+  proof_obligation: "Restrict the actual group along an independently supplied H and construct the component action without defining H by lift existence"
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "For arbitrary independent H <= Aut(F), defined the actual following group as the literal comap of H under the Cycle113 visible projection, constructed the restricted projection and restricted canonical section, proved their right-inverse equation and surjectivity, and separately descended every actual graph automorphism to a permutation of the Cycle112 component quotient.  The full and H-restricted component actions are GroupHoms with multiplication orientation checked on quotient representatives."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FixedFRestrictedAutomorphismGroup.lean
+  unfinished:
+    - "component-family kernel map and exact range=kernel theorem"
+    - "split exact sequence packaging and projection-fiber torsors"
+    - "basepoint-fixed variant, cardinality formula, and three fixed examples"
+    - "lens/protocol applications, AAT translation, presentation-side recovery, and D connection"
+review:
+  fixed_head: 74c579c69813204ac6b14920b25756513ada9457
+  lanes: {math_a: pass, math_b: pass, lean_a: pass, lean_b: pass}
+  direct_response:
+    reviewed_delta: "d978b083544422a8cfb3748e982ca93c80fefc94..74c579c69813204ac6b14920b25756513ada9457"
+    verdict: pass
+    new_findings: []
+audits:
+  certificate_provenance: "H is an independent arbitrary subgroup; lift existence is constructed by the inherited explicit visibleRename section and is not part of H membership"
+  proof_use: "comap membership forms the restricted actual group; the section reuses the actual identity-hidden execution square; raw renamed edges prove EqvGen compatibility before Quotient.map descent"
+  structure_field_escape: none-found
+  target_fitting: none-found-H-is-not-defined-by-lift-existence
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (621 dependency jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 12 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct the component-indexed identity-visible actual pair homomorphism into FollowingGroup H, prove injectivity and exact range equality with ker projection, then connect to G-120 restriction packaging."
 ```
