@@ -12,9 +12,12 @@ Law-index, and Law-coordinate families.  The forward maps of those
 equivalences are proved to be exactly the maps previously generated from the
 named-operation interfaces.
 
-No completed core hom, geometry hom, inverse certificate, selected subset, or
-finite presentation is accepted as input.  Construction of the full
-`SignedExactCoreReadingHom` and `GeometryTotalHom` remains the next obligation.
+The raw auxiliary theorems explicitly take mutually inverse homomorphisms and
+their inverse laws.  In the CS specialization those inputs are constructed
+from the genuine categorical isomorphism; no additional inverse certificate,
+completed core hom, geometry hom, selected subset, or finite presentation is
+accepted.  Construction of the full `SignedExactCoreReadingHom` and
+`GeometryTotalHom` remains the next obligation.
 -/
 
 namespace AAT.AG.RealizationReconstruction
