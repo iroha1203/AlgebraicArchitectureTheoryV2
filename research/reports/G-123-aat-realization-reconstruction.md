@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 114 restricts the actual preserving-pair group along an independently supplied H and constructs both the restricted split projection and the actual component action
+- current proof obligation: Cycle 115 constructs the component-family kernel homomorphism and proves its literal range equals the actual restricted projection kernel
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the component-family kernel homomorphism into the H-restricted actual group and prove its range is exactly the restricted projection kernel before forming split exactness and torsors
+- next proof obligation: package the proved projection, kernel, exact range equality, and section into the fixed split short exact sequence, then classify each projection fiber as a kernel torsor
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| F Cycle 115 delta | component-indexed permutation群をidentity-visible actual pairとして構成し、そのrangeがrestricted projectionのactual kernelと一致することを双方向に証明する | `ComponentGroup`, `identityVisiblePair`, `restrictedIdentityVisiblePair`, `componentKernelHom`, `componentKernelHom_fiberPerm`, `componentKernelHom_injective`, `projection_componentKernelHom`, `componentFamilyOfPair`, `componentFamilyOfPair_mk`, `range_componentKernelHom_eq_ker_projection` | 任意の`F,K`と独立`H`; Cycle111--114のactual pair/fiber/component/projection | component同一性からactual execution squareを構成; Pi群のGroupHom; 全component上のfiber評価で単射; kernel内actual pairのfiberをquotient descent; original `h` factorizationで再構成pairとの等式 | F1のkernel inclusion/exactnessと各fiberのkernel torsor | split exact sequenceのひとまとめ化、torsor、basepoint/個数/例、CS/AAT/D接続は未完了 |
 | F Cycle 114 delta | 独立入力`H ≤ Aut(Q)`にactual pair群を制限し、各`u∈H`のidentity-hidden liftとcomponent作用を構成する | `FollowingGroup`, `projection`, `canonicalSection`, `projection_section`, `projection_surjective`; `map_directedEdgeStep`, `map_undirectedReachable`, `componentMap`, `componentPerm`, `componentPerm_mk`, `componentAction`, `restrictedComponentAction` | 任意の`F,K`と独立に与えられる`H : Subgroup (FixedFGraphAutomorphism F)` | actual visible projectionの`H.comap`; Cycle113 sectionのH所属を元のsubtype proofから放電; restricted projectionの全射; raw edge-step/reachability保存; quotient上のcomponent permutationとGroupHom | F1のactual projection、Hのcomponent再添字作用、kernel同定 | component-family kernel mapとrange=ker、exactness、torsor、basepoint/個数/例、CS/AAT/D接続は未完了 |
 | F Cycle 113 delta | 固定graphの全automorphism上のactual preserving pairを群にし、visible projectionとidentity-hidden sectionを構成し、合成のcomponent reindexingを保つ | graph automorphismの`One`/`Mul`/`Inv`/`Group`; following changeの`comp`, `inverse`, `comp_fiberPerm`, `inverse_fiberPerm`, preservationの積・逆元閉性; `FixedFPreservingFollowingPair`とその`Group`; `mul_fiberPerm`, `automorphismProjection`, `visibleRename`, `visibleRenameSection`, `automorphismProjection_visibleRenameSection`, `visibleRename_fiberPerm` | 任意の`F,K`; actual graph automorphismとactual state equivalence/execution square全体 | endpoint lawから逆automorphismを構成; actual state equivalenceの合成・逆元とoperation保存の閉性; `φ_(ab),v = φ_a,bv * φ_b,v`; visible projection GroupHom; `h(v,k)=(u(v),k)`のcanonical section GroupHomと右逆 | 独立に与える`H ≤ Aut(Q)`への制限、kernel/section/split exactness/torsor | H制限後の完全性、component上のreindexing GroupHom、kernel range等式、exact sequence、torsor、個数・例・CS/AAT/D接続は未完了 |
 | F Cycle 112 delta | 固定graphの向きだけを忘れた連結成分`π₀(Q)`を原edge関係から構成し、edge-constant familyとcomponent-indexed permutation familyを往復する | `fixedFDirectedEdgeStep`, `FixedFUndirectedReachable`, `fixedFComponentSetoid`, `FixedFComponent`, `fixedFComponentMk`, `fixedFComponentMk_eq_iff`, `fixedFComponent_source_eq_target`, `FixedFComponentPermutationFamily`, `perm_eq_of_reachable`, `descendToComponents`, `equivComponentPermutationFamilies`, `preservingEquivComponentPermutationFamilies` | 任意の`F,K,u`; Cycle 111で構成した全operation-preserving following changeとedge-constant familyの同値 | directed endpoint relationの`Relation.EqvGen`、source/targetの同一component性、generated reachability全体に沿うpermutation一定性、`Quotient.lift`による降下、component引戻しとの両逆、Cycle 111同値との合成 | F1の核`∏ Sym(K)`と各visible automorphism上のfiber分類 | Hのcomponent作用を伴う合成、群構造、section、split exact sequence、torsor、有限個数、basepoint固定版、CS/AAT/D接続は未完了 |
@@ -12092,4 +12093,43 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct the component-indexed identity-visible actual pair homomorphism into FollowingGroup H, prove injectivity and exact range equality with ker projection, then connect to G-120 restriction packaging."
+```
+
+## Cycle 115 — Actual kernel identification
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 115
+base_oid: 8129b58f75d58b6664d10da618034cf4755b6303
+tracking_issue: 4520
+selection:
+  proof_obligation: "Construct the component-family map into the actual restricted group and prove its range is exactly the independently defined projection kernel"
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed identity-visible actual preserving pairs from arbitrary component-indexed permutations, packaged them into FollowingGroup H without changing H, proved the resulting GroupHom injective and its projection trivial, descended the actual fiber family of any preserving pair back to components, and proved literal range=kernel.  The reverse inclusion uses the kernel equation to identify the visible automorphism with identity and Cycle111 factorization to recover the original actual h."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FixedFRestrictedKernelIdentification.lean
+  unfinished:
+    - "split short exact sequence packaging and projection-fiber torsors"
+    - "G-120 GroupHomRestriction connection"
+    - "basepoint-fixed variant, cardinality formula, and three fixed examples"
+    - "lens/protocol applications, AAT translation, presentation-side recovery, and D connection"
+review:
+  fixed_head: pending
+  lanes: {math_a: pending, math_b: pending, lean_a: pending, lean_b: pending}
+audits:
+  certificate_provenance: "component families construct actual h and execution; kernel pairs supply only the equation defining membership in the independently defined projection kernel"
+  proof_use: "component quotient equality proves operation preservation; fiber evaluation proves injectivity; actual preservation supplies edge constancy; quotient descent recovers the family; factorization and visible identity recover the full original state equivalence"
+  structure_field_escape: none-found
+  target_fitting: none-found-kernel-is-not-defined-as-the-component-range
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (624 dependency jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 10 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Package the injective kernel hom, exact range equality, surjective projection, and canonical section as the fixed split sequence, then construct explicit equivalences between each projection fiber and the kernel."
 ```
