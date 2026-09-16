@@ -11269,17 +11269,30 @@ result:
       - "simultaneous branch membership -> adjacent finite-support contradiction"
       - "coset union plus disjointness -> unique outer parity"
       - "finite-support characterization -> finite moved-set parity formulation"
-      - "source unique parity plus unchanged action equality -> actual intrinsic classification"
+      - "canonical-probe readback -> transported and expected action injectivity"
+      - "source unique parity plus expected action injectivity -> unique actual source witness and classification"
     undischarged_assumptions: []
     acceptance_point: "Every permutation in the Cycle 102 Nat generated subgroup belongs to exactly one branch, and every actual intrinsic member has a unique source permutation witness carrying that exclusive classification; the finite-support component is not yet canonically encoded."
     port_status: not-applicable
 review:
-  fixed_head: pending
-  lanes:
-    math_a: pending
-    math_b: pending
-    lean_a: pending
-    lean_b: pending
+  initial_fixed_head: 93bf1549cab378af08949dc399904a812a318e96
+  initial_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: blocking
+    lean_b: pass
+  revised_fixed_head: 745a70e34a92cab61266cee1acfa697d53061aa9
+  revised_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings:
+    - "the initial actual-membership theorem gave only an existential source witness with exclusive parity inside that witness; canonical Nat probe readback now proves the expected action injective, and the revised theorem proves a unique source permutation witness"
+  direct_response:
+    reviewed_delta: "3c17288e9f8caec01671cdacc3e197bd9f48d437..745a70e34a92cab61266cee1acfa697d53061aa9"
+    verdict: pass
+    new_findings: []
 audits:
   premise_delta:
     discharged:
@@ -11296,6 +11309,7 @@ audits:
       - "adjacent non-finite-support follows from the fixed xor formula and Nat infinitude"
       - "parity disjointness follows from subgroup multiplication/inverse closure and cancellation"
       - "no parity field or semantic representative is accepted as input"
+      - "source-witness uniqueness is derived from canonical source probes rather than accepted as a certificate"
     unresolved:
       - "canonical finite data and equality for the finite-support component"
       - "uniform parameter-relative normal forms"
@@ -11305,6 +11319,8 @@ audits:
       - "Cycle 100 finite-support iff converts moved-set finiteness to subgroup membership"
       - "Cycle 103 union equality supplies branch existence"
       - "Cycle 102 intrinsic membership transports the exclusive source classification to actual elements"
+      - "canonical Nat probes make the transported action faithful; op/inverse cancellation makes the expected backward action faithful"
+      - "expected-action faithfulness turns equality of actual projections into uniqueness of the source permutation witness"
     unused: []
   structure_field_escape: none-found
   route_integrity: source-parity-classification-only-actual-route-unchanged
