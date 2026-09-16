@@ -9774,3 +9774,120 @@ audits:
   blocking_findings: []
   next_obligation: "Generalize the source-owned recipe from Bool negation to finite Extension-carrier permutations, transport them to the actual local kernel, and prove injective evaluation without using the semantic range as syntax."
 ```
+
+## Cycle 92 — Faithful finite Extension-permutation action on source contexts
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 92
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 04df3a3d94d49d39a7d742b225aba3cd4676c707
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 91 presented only the independent Bool identity/toggle fragment and left larger primitive Extension-permutation recipes open"
+  proof_dag_predecessors:
+    - "Cycle 76 source Extension-value recipe on every fixed source context"
+    - "Cycles 86--91 fixed transport and faithful C2 evaluation into the actual local-fiber kernel"
+  proof_obligation: "Construct, before semantic transport, the action of every permutation of an independently supplied finite Extension carrier on all source contexts, prove the source group law, and prove faithful readback by canonical probes"
+  selection_reason: "A later evaluator into the actual residual kernel must begin from a genuine source language larger than the Bool toggle, rather than from an actual semantic range."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldSourceContextPermutationAction.lean
+  risks:
+    - "take a completed normalized automorphism or local-kernel element as input"
+    - "define source syntax by the semantic image or range"
+    - "use the involution shortcut for a general non-self-inverse permutation"
+    - "restrict the source context carrier to contexts already known to be representable"
+    - "claim normalized/local-kernel landing or residual coverage from a source-only action"
+  unchecked:
+    - "lift the generic source action through complete geometry and the fixed actual normalization route"
+    - "prove actual local-kernel membership and faithful evaluation there"
+    - "characterize the full source image or prove section, surjectivity, decomposition, and coverage"
+    - "general inputs, bottom and full comparison kernels, lift fibers, and remaining B/E/F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "For arbitrary `E : Type` and `permutation : Equiv.Perm E`, defined a classical source recipe which changes exactly Extension values whose carrier is `E` and fixes every other carrier.  Proved identity, ordinary-orientation multiplication, inverse, and exact specialization on `E`; lifted the recipe over every complete source context while retaining its minimal reading and Extension carrier; constructed readable restrictions in both directions; packaged the induced permutation and group homomorphism on the entire original source context-object carrier; and proved the homomorphism injective by evaluating at independently defined probe contexts for every value of finite `E`."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldSourceContextPermutationAction.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionValuePermutation
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSourceContextPermutation
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSourceContextObjectPermHom
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSourceExtensionProbe
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSourceContextObjectPermHom_injective
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldExtensionValuePermutation_mul
+      - finiteAxisFoldExtensionValuePermutation_inv
+      - finiteAxisFoldSourceContextPermutationForwardMorphism_isRestriction
+      - finiteAxisFoldSourceContextPermutationBackwardMorphism_isRestriction
+      - finiteAxisFoldSourceContextObjectPermHom_injective
+    source_labels:
+      - "GOAL A/D and user conditions 1, 2, 3, 4, and 5"
+    conjuncts:
+      - "independently supplied finite carrier and arbitrary permutation -> uniform primitive source value recipe"
+      - "one fixed source package -> action on every complete source context object"
+      - "permutation multiplication and inverse -> actual source context-object permutation group action"
+      - "canonical source probes -> faithful readback of every input permutation"
+    undischarged_assumptions:
+      - "`E` is finite only for the injectivity theorem; the source action and group homomorphism themselves require no finiteness"
+      - "no complete-geometry lift, normalized automorphism, actual local-kernel membership, or semantic evaluator is constructed in this cycle"
+      - "no image characterization, surjectivity, decomposition, or coverage is proved"
+      - "general input and broader G-123 obligations remain open"
+    acceptance_point: "The primitive source action now accepts every permutation of any independently supplied finite Extension carrier and is faithful on the full fixed source context-object carrier; no semantic landing or coverage is asserted."
+    port_status: not-applicable
+review:
+  fixed_head: 50e2edaef
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings:
+    - "Lean B: replaced the inaccurate comment phrase `definitionally equal` with the actual classical propositional type-equality test."
+  direct_response:
+    reviewed_delta: "04df3a3d94d49d39a7d742b225aba3cd4676c707..50e2edaef"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "all permutations of an independently supplied Extension carrier have a uniform source-owned action"
+      - "the action retains the full original source context-object quantifier and has readable restrictions both ways"
+      - "identity, composition, inverse, and finite-carrier faithfulness are constructed rather than supplied"
+    remaining:
+      - "generic complete-geometry and actual normalized/local-kernel transport"
+      - "actual evaluator image characterization, section, surjectivity, decomposition, and coverage"
+      - "general inputs, bottom and full comparison kernels, lift fibers, and remaining D/B/E/F"
+  certificate_provenance:
+    discharged:
+      - "the input is only an independently supplied carrier permutation, not a completed geometry map, residual element, or kernel certificate"
+      - "the source carrier is the complete original context-object carrier, not a post-hoc representable subset"
+      - "canonical probes are constructed directly from source context data and not from a semantic image"
+    unresolved:
+      - "transport of the generic action to the actual local-fiber kernel and intrinsic characterization of its image"
+  proof_use:
+    used:
+      - "classical carrier equality applies the permutation exactly on Extension carrier `E` and fixes other carriers"
+      - "readable context morphisms ignore Extension values, yielding restrictions in both directions"
+      - "ordinary permutation multiplication gives the source group homomorphism"
+      - "probe contexts with Extension value `e : E` recover pointwise permutation equality"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-for-source-context-stage
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-source-action-checkpoint
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4305 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 27 declarations; standard axioms only"
+    - "fresh fixed-content Math A/B and Lean A/B: PASS; no findings"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Lift this same generic source action through complete geometry and the fixed actual route, prove local-kernel landing and faithful evaluation, then use a non-involutive finite permutation to prove the Cycle 91 C2 evaluator does not cover the actual source-generated fragment."
+```
