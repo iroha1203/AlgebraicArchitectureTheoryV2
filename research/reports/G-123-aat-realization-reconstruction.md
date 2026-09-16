@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 136 repair strengthens coordinate visibility with the generated polynomial-map equation and equality of source/target local values, after fresh review refuted the original coordinate-insensitive predicate-only candidate
+- current proof obligation: Cycle 137 proves exact Atom-support preservation and functorial boundary preservation under the full-family endpoint rebase, while keeping signature-axis and global observable transport open
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct honest overlap/Extension coherence and support/axis laws without adding target answers or inverse coordinate maps; then assemble the one-way geometry record and prove identity/composition, independent readback, and all-component inverse laws
+- next proof obligation: resolve the signature-axis/global-observable variance obstruction and construct honest overlap/Extension coherence without adding target answers or inverse coordinate maps; then assemble the one-way geometry record and prove identity/composition, independent readback, and all-component inverse laws
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 137 delta | full-family endpoint rebaseでexact Atom supportを失わず、source context preorderの全boundary restrictionをtargetへ写す | lens/protocol各`*AATForwardSupportVisible`, `*AATForwardBoundaryVisible` | Cycle 129 primitive forward morphismから生成されたendpoint context functorと、source support/boundary witnessのみ。target support witness、boundary certificate、inverse、surjectivityを入力しない | rebaseがsource minimal support type/predicateをdefinitionally保持することから同じsupport witnessを再使用。boundaryはsource preorder homをMathlib thin-category homへ上げ、`lawContextFunctor.map`後にtarget preorder homへ戻して構成 | one-way geometryのsupport componentとboundary functoriality。後続のoverlap/Extension・coverage-family coherence | boundary functorはendpoint-only rebaseでありmorphism固有observable actionではない。signature-axis predicateが要求するtarget-reading restriction、global observable action、overlap object comparison、Extension、共通geometry map、identity/composition/readbackは未完了。coordinate-local constant mapをaxis証明へ流用しない |
 | A/E Cycle 136 repair delta | 一般非単射CS射でsource座標の可視性を写像先required/violation座標へ結ぶ際、弱いexistential visibilityだけでなくgenerated coordinate RingHomによる変数像とsource/target local値の一致を同じwitnessに保持する | `fullFamilyContextToTargetReadingAt`, `ForwardObservableVisibility`, `fullFamilyForwardObservableVisibility`; lens/protocol各`*AATForwardRequiredCoordinate`, `*AATForwardCoordinate`, `*AATForwardEquationCoordinateCoherent`, `*AATForwardViolationCoordinateCoherent` | Cycle 129 primitive forward morphism、Cycle 131 independent endpoint readings/coverage predicates、source座標のactual visibility witness、Cycle 127由来のgenerated variable-image theorem。target restriction、coordinate inverse、surjectivity、完成coverage certificateを入力しない | source/target restrictionとreadabilityに加え、`f.lawCoordinateMap (X sourceCoordinate) = X mappedCoordinate`および両restrictionのselected local値一致を一つのProp witnessとして構成。任意target座標への定数mapだけではこのgenerated forward equationを満たせない | one-way geometryでmapped coordinateを識別するcoherent visibility component。後続のsupport/axis、overlap/Extension、共通geometry action、identity/compositionとの統合 | target ContextMorphism自体はobservable全体で定数の補助mapであり、full observable actionやreadbackではない。target-only座標、単一の共通restriction map、signature-axis/support visibility、overlap boundary、Extension、coverage-family mapは未完了。AATCorePackage/ReadingCore provenance、D回復、A--F統合も未完了。最初のpredicate-only候補は査読で反証され証拠に数えない |
 | A/E Cycle 135 delta | Cycle 134のone-way Law coordinate actionをCycle 131--133のactual reading/raw quotient presheafへ接続し、任意の非単射CS射について全context・restriction上のraw mapを構成する | lens/protocol各`*EquationPolynomialForwardHom`, `*EquationPolynomialForwardHom_app_X`, `*GeometryReadingRawForwardHom` | Cycle 129 primitive forward morphism、Cycle 131 reading sites、Cycle 133 raw/polynomial presheaf isomorphisms。raw NatTrans、index Equiv、逆context functor、coverage certificateを入力しない | `f.lawCoordinateMap`をlifted-`Int` Under morphismへ持ち上げ、全restrictionの自然性を証明。全contextで各Law-index/Atom変数がexact mapped index変数へ送られることを計算。source raw quotient→source polynomial→target polynomial→target raw quotientをpresheaf NatTransとして共役する | 次cycleのone-way complete-geometry recordのraw component、identity/composition、coverage/overlapとのcoherence | morphism由来context reading、coverage/overlap、raw NatTransのidentity/composition、独立readback、`AATCorePackage`/`ReadingCore` provenance、D回復、A--F統合は未完了。endpoint-only context rebaseをmorphism固有作用とは数えない |
 | A/E Cycle 134 repair delta | equation-index同値を持たない一般非単射Law/CS射について、actual Law equation systemの全source context・restriction・index・observable・violation generatorとraw endpoint residual zeroを同一のone-way transportへまとめる | `EndpointEquationForwardTransport`; `observablePresheafHom`, `required_map`, `equationHolds_map`; raw `lensLawEndpointEquationForwardTransport`, `protocolLawEndpointEquationForwardTransport`; CS specialization `lensAATEndpointEquationForwardTransport`, `protocolAATEndpointEquationForwardTransport`; lens/protocol各observable presheaf Homとendpoint equation-holds map | 任意のraw source/target Law structureとraw Law Hom。CS specializationではCycle 129 primitive morphismからLaw Homを生成する。完成transport certificate、endpoint lawfulness、index Equiv、observable inverse、target-surjectivityを入力しない | context indexingはendpointだけに依存するcanonical full-family rebaseでありmorphism actionとは数えない。morphism固有の全index map・RingHom・restriction自然性・mapped violation variableを同じrecordで実使用する。任意の非lawful raw endpointを許したままsource residual zeroからmapped target residual zeroを導出し、contextwise RingHomをactual presheaf NatTransへ組み立てる | Cycle 133 raw presheafとの共役によるraw NatTrans、および非逆coverage/overlap保存則の型を構成する | target側のindex全体へのsurjectivity・lawfulnessは主張しない。morphism由来context-reading map、coverage/overlap、raw quotient接続、identity/composition、独立readback、`AATCorePackage`/`ReadingCore` provenance、D回復、A--F統合は未完了。target canonical dataをsource contextへ付加する棄却候補は証拠に数えない |
@@ -14148,4 +14149,100 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct support/signature-axis laws and overlap/Extension coherence without inverse coordinate maps or target-answer enrichment, then assemble the one-way geometry record and prove identity/composition."
+```
+
+## Cycle 137 — Support and boundary preservation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 137
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: e9fc7b2ed8c952f96dccbb0fde013f70f52c76fc
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 136 repaired mapped-coordinate coherence but left the other coverage roles and overlap/Extension entirely open"
+  proof_dag_predecessors:
+    - "Cycle 127 full-family context rebase and context functor"
+    - "Cycle 129 primitive lens/protocol forward morphisms"
+    - "Cycle 131 exact support and boundary predicates on independent endpoint readings"
+  proof_obligation: "Prove the structural coverage components that follow from the endpoint rebase itself, without using coordinate-local constant restrictions as a global observable or axis map"
+  selection_reason: "The rebase retains minimal support data definitionally and is a genuine functor on the full source context preorder. These facts discharge exact support and boundary preservation independently of the still-obstructed contravariant observable component."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardStructural.lean
+  risks:
+    - "calling endpoint-only boundary functoriality morphism-specific observable transport"
+    - "using the Cycle 136 per-coordinate constant map to claim signature-axis preservation"
+    - "mistaking boundary hom preservation for overlap-object comparison"
+    - "claiming a complete coverage-family map"
+  unchecked:
+    - "signature-axis preservation"
+    - "global observable/context-reading action"
+    - "overlap object comparison and Extension coherence"
+    - "coverage-family map and assembled one-way geometry record"
+    - "identity/composition and independent readback"
+    - "AATCorePackage/ReadingCore provenance, D recovery, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Proved for lens and protocol that every exact Atom-support witness on an arbitrary source context is retained by the full-family target rebase. Proved every selected source boundary preorder hom is sent to the corresponding target boundary hom by the generated endpoint context functor."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardStructural.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.lensAATForwardSupportVisible
+    - AAT.AG.RealizationReconstruction.lensAATForwardBoundaryVisible
+    - AAT.AG.RealizationReconstruction.protocolAATForwardSupportVisible
+    - AAT.AG.RealizationReconstruction.protocolAATForwardBoundaryVisible
+  claim_mapping:
+    source_labels:
+      - "GOAL A: support and context restriction components"
+      - "GOAL E: the same arbitrary noninvertible CS morphisms"
+    conjuncts:
+      - "all source contexts and Atom supports -> the identical support witness survives the rebase"
+      - "all source boundary restrictions -> functor.map produces the target boundary restriction"
+      - "noninvertibility -> neither result requires a coordinate inverse or target surjectivity"
+    undischarged_assumptions:
+      - "signature-axis requires a target-reading restriction with a global contravariant observable map"
+      - "boundary hom preservation does not yet identify source-rebased and target-selected overlap objects"
+      - "Extension, common geometry action, identity/composition, and readback"
+    acceptance_point: "Only support and boundary are counted. The endpoint-only context functor does not depend on the morphism value, and the report does not classify it as the missing observable action."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "exact Atom-support preservation on every rebased source context"
+      - "boundary preorder-hom preservation for every source pair"
+    remaining:
+      - "signature-axis preservation"
+      - "global observable/context-reading action"
+      - "overlap object and Extension coherence"
+      - "coverage-family packaging, identity/composition, and readback"
+      - "AATCorePackage/ReadingCore provenance, D recovery, and A--F integration"
+  certificate_provenance:
+    discharged:
+      - "support uses the supplied source visibility witness unchanged because rebase preserves the minimal predicate"
+      - "target boundary hom is constructed by the context functor from the supplied source boundary hom"
+    unresolved:
+      - "signature-axis and complete coverage-family preservation"
+  proof_use:
+    used:
+      - "source support witness in the target support conclusion"
+      - "source boundary hom through homOfLE, lawContextFunctor.map, and leOfHom"
+    unused:
+      - "the endpoint-only functor does not use the primitive morphism value and is not counted as morphism-specific observable transport"
+      - "Cycle 136 coordinate-local maps are not reused as a common axis/global observable map"
+  structure_field_escape: none-found-no-target-support-or-boundary-certificate-is-input
+  route_integrity: pass-for-support-and-boundary-only
+  target_fitting: none-found-no-target-observable-or-axis-answer-is-added
+  vacuity: none-found-the-boundary-result-quantifies-every-source-preorder-hom-and-support-retains-the-exact-Atom
+  one_way_as_equivalence: none-found-only-forward-functoriality-is-proved
+  goal_or_report_reinterpretation: none-found-axis-global-observable-overlap-extension-readback-core-provenance-D-and-final-integration-remain-open
+  validation_refs:
+    - "focused CSAATGeometryForwardStructural file check: PASS; 4 namespace declarations, standard axioms only"
+    - "focused exact CSAATGeometryForwardStructural target build: PASS (4279 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Formalize the variance obstruction for signature-axis/global observable transport or replace the current context-morphism interface with a forward/lax geometry interface, then prove overlap/Extension coherence."
 ```
