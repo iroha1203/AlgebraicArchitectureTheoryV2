@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 99 forms the literal union of all Cycle 98 fixed-finite-carrier images and proves, with a source-owned `Nat` zero/one swap transported through the same route, that this union does not cover the full actual local-fiber kernel
+- current proof obligation: Cycle 100 replaces completed arbitrary permutations by independent finite words of explicit swaps on any primitive carrier, characterizes their primitive image by finite support, and proves exact surjectivity onto the corresponding decoder-independent actual subgroup
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: enlarge the parameter-relative source presentation beyond fixed finite carriers using explicit finite recipes on permitted infinite primitive carriers, characterize that enlarged actual image without semantic leaves, and continue full-kernel decomposition while retaining the original G-122 classification obligations separately
+- next proof obligation: compare the carrier-indexed family of finite-swap-word intrinsic images with the full actual local-fiber kernel, isolate any remaining infinite-support direction by an explicit source recipe, and continue the presentation/decomposition analysis without treating one failed recipe class as target refutation
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 100 delta | 任意のprimitive Extension carrier上でcompleted permutationを一つのpayloadとして受け取らず、明示された二値swapの有限wordを独立syntaxとし、finite-support条件でactual imageを特徴付けてexact surjectivityを証明する | `FiniteAxisFoldExtensionSwapGenerator`, `FiniteAxisFoldExtensionSwapGenerator.toPerm`, `FiniteAxisFoldExtensionSwapGenerator.range_toPerm`, `FiniteAxisFoldExtensionSwapWord`, `finiteAxisFoldExtensionSwapWordPermutation`, `finiteAxisFoldFiniteSupportPermutationSubgroup`, `finiteAxisFoldExtensionSwapWordPermutation_range`, `finiteAxisFoldFiniteSupportPermutationSubgroup_mem_iff`, `finiteAxisFoldArbitraryCarrierBackwardAction`, `FiniteAxisFoldFiniteSwapWordIntrinsicImage`, `finiteAxisFoldFiniteSwapWordIntrinsicImage_mem_iff`, `finiteAxisFoldFiniteSwapWordDecoder`, `finiteAxisFoldFiniteSwapWordDecoder_backwardProjection`, `finiteAxisFoldFiniteSwapWordIntrinsicDecoder`, `finiteAxisFoldFiniteSwapWordIntrinsicDecoder_surjective`, `finiteAxisFoldFiniteSwapWordIntrinsicImage_mem_iff_decoder`, `finiteAxisFoldNatZeroOneSwapGenerator`, `finiteAxisFoldNatZeroOneSwap_has_finiteSwapWordPreimage` | 任意の`E`と`[DecidableEq E]`; 各generatorの二値と不等式; Cycle 92--99のsame fixed actual route; Mathlibのfree-group rangeとfinite-support transposition closure定理; full backward projection単射性 | swap generator range = transpositions; free finite word evaluator; evaluator range = finite-support subgroup; decoder非依存のarbitrary-carrier expected action; actual intrinsic subgroup; decoder landing; intrinsic membershipとfinite wordの相互移送; full projection faithfulnessによるsurjectivity; Cycle 99 Nat witnessの一語preimage | carrier-indexed finite-support imageとfull kernelを比較し、残るinfinite-support方向またはcoverage/decompositionへ渡す | free-word decoderのinjectivityは主張しない; 全carrier familyの統合、infinite-support finite recipes、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
 | D Cycle 99 delta | Cycle 98の全fixed finite carrier imageのliteral unionを定式化し、同じprimitive-to-actual routeから有限recipeで構成した`Nat` zero/one swapがそのunion外にあることを証明する | `FiniteAxisFoldFiniteExtensionCarrier`, `FiniteAxisFoldFiniteCarrierExtensionImage`, `finiteAxisFoldNatZeroOneSwap`, `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_backwardProjection`, `finiteAxisFoldNatZeroOneSwapLocalFiberKernel`, `finiteAxisFoldFiniteCarrierSourceAction_fixes_natZeroProbe`, `finiteAxisFoldNatZeroOneSwap_transported_ne_finiteCarrier`, `finiteAxisFoldNatZeroOneSwap_not_finiteCarrierExtensionImage`, `finiteAxisFoldFiniteCarrierExtensionImage_not_all` | 任意のfinite carrierとその全permutation; 原始`Nat` carrier上の明示`0/1` swap; Cycle 92--96のarbitrary-carrier same fixed route; Cycle 98のintrinsic image; full backward projection | carrier-indexed existential union; arbitrary carrierに対するdecoder projection計算; finite carrierと`Nat`の型非同一性; canonical `Nat` probe上でfinite actionは固定し`Nat` swapは移動; route equivalenceによるactual action separation; source-owned actual local-kernel元とunion非被覆 | finite-carrier presentationでは不足することを固定し、infinite primitive carrier上のfinite recipeを含む拡張presentationとfull-kernel分解へ渡す | 拡張syntax/image characterization、全kernelのcoverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
 | D Cycle 98 delta | fixed finite Extension carrierごとにsemantic rangeから独立なforward/backward lookup-table syntaxを定め、primitive source actionをdecoder非依存の固定routeで運び、actual full stored-backward context actionで特徴付けたsubgroupとのdecoder同値を構成する | `FiniteAxisFoldExtensionPermutationCode`, `FiniteAxisFoldExtensionPermutationCode.toPerm`, `FiniteAxisFoldExtensionPermutationCode.tableMulEquiv`, `finiteAxisFoldSourceToSouthwestContextEquiv`, `finiteAxisFoldSouthwestToExactLeftContextEquiv`, `finiteAxisFoldExactLeftToActualContextEquiv`, `finiteAxisFoldSourceToActualContextEquiv`, `finiteAxisFoldTransportedSourceContextPermutationHom`, `finiteAxisFoldSouthwestPermutation_contextBackward`, `finiteAxisFoldExactLeftPermutation_contextBackward`, `finiteAxisFoldActualPermutation_contextBackward`, `finiteAxisFoldExtensionPermutationDecoder`, `finiteAxisFoldExtensionPermutationBackwardAction`, `finiteAxisFoldExtensionPermutationDecoder_backwardProjection`, `FiniteAxisFoldExtensionPermutationIntrinsicImage`, `finiteAxisFoldExtensionPermutationIntrinsicImage_mem_iff`, `finiteAxisFoldExtensionPermutationIntrinsicDecoder`, `finiteAxisFoldExtensionPermutationIntrinsicDecoder_injective`, `finiteAxisFoldExtensionPermutationIntrinsicDecoder_surjective`, `finiteAxisFoldExtensionPermutationIntrinsicDecoderEquiv`, `finiteAxisFoldExtensionPermutationIntrinsicImage_mem_iff_decoder` | 任意の有限`E`; explicit lookup tablesと両inverse law; Cycles 92--97のsame fixed actual section; source→southwest→exact-left→actualの固定context equivalence; Cycle 90のfull local-kernel backward projection単射性 | lookup-table code自身の群構造; decoderとは独立に定義したprimitive source actionの固定route共役; 三段factorizationによるdecoder projectionとの一致; action-rangeのpreimageによるactual subgroup; decoder landing; section単射性によるdecoder単射; full backward faithfulnessによるintrinsic membershipからdecoder全射; `MulEquiv` | carrier-indexed family全体とfull actual local-fiber kernelのcoverage/decomposition検査へ渡す | 全有限carrier unionの定式化とfull-kernel比較、coverage/section/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
 | D Cycle 97 delta | arbitrary Extension-permutation familyのBool特殊化をCycle 91の独立C2 evaluatorとexactに同定し、同じactual local-fiber kernel内で非involutive source元によりC2 fragmentからの真の拡大を示す | `finiteAxisFoldExtensionValuePermutation_boolNot`, `finiteAxisFoldSourceBackwardPermutationGeometry_boolNot`, `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_boolNot`, `FiniteAxisFoldBackwardToggleSyntax.boolPerm`, `finiteAxisFoldBackwardToggleSyntax_evaluate_eq_boolPermutationSection`, `finiteAxisFoldBackwardToggleSyntax_evaluate_range_eq_boolPermutation_range`, `finiteAxisFoldExtensionThreeCycle_not_mem_backwardToggleSyntax_range` | 固定source/southwest/exact-left/top/normalization route; Cycle 91の独立二記号syntax/evaluator; Cycles 92--96の全有限carrier permutation sectionとactual単射性 | primitive value recipeから全context functor・equivalence・complete geometry・固定actual routeを通したBool同一性; Bool permutation全射によるrange exact equality; 原始`Fin 3`隣接swap積の非involutivityとactual section単射性によるC2 range外元 | intrinsic image predicate、独立table presentation、decoder equivalence、full local-kernel coverage検査へ渡す | fixed-carrier imageの内在的特徴付け、全kernelに対するsection/surjectivity/decomposition/coverage、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
@@ -10719,4 +10720,118 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct an enlarged independent parameter-relative syntax containing explicit finite recipes on permitted infinite primitive carriers, characterize its actual image without semantic leaves, and continue decomposition of the full local-fiber kernel while preserving the original G-122 obligations."
+```
+
+## Cycle 100 — Finite swap-word image on arbitrary carriers
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 100
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: c59a0daa3ff4444f85c1051f9c22270ae1c835fd
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 99 proved that fixed-finite-carrier tables omit a source-owned Nat swap and required a presentation containing explicit finite recipes on permitted infinite primitive carriers"
+  proof_dag_predecessors:
+    - "Cycle 92 constructed primitive Extension actions for every carrier"
+    - "Cycles 93--96 transported those actions into the actual local-fiber kernel"
+    - "Cycles 98--99 supplied the decoder-independent actual action and separated the literal finite-carrier union"
+  proof_obligation: "Construct independent finite syntax on arbitrary primitive carriers without a completed all-domain map payload, characterize its source and actual images independently, and recover the Cycle 99 witness"
+  selection_reason: "Finite words of explicit transpositions retain only finitely many named primitive values, admit an independent finite-support characterization, and include the Nat zero/one witness without moving a completed semantic permutation into syntax."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldFiniteSwapWordImage.lean
+  risks:
+    - "accept an arbitrary completed permutation of E as a primitive constructor"
+    - "define syntax or congruence by equality of the actual decoder"
+    - "define the intrinsic subgroup as the decoder range and obtain surjectivity by definition"
+    - "claim free-word injectivity despite source-law redundancy"
+    - "infer full local-kernel coverage from finite-support image surjectivity"
+  unchecked:
+    - "carrier-indexed integration of the finite-support images"
+    - "explicit infinite-support source recipes and their relation to finite presentation"
+    - "full-kernel coverage/decomposition and the original G-122/D/B/E/F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Defined a primitive generator by two named distinct values of an arbitrary carrier E and used FreeGroup only as independent finite-word syntax.  Its evaluator range is proved equal to the transposition-generated subgroup, which Mathlib independently characterizes by finite support.  Defined the arbitrary-carrier expected actual action before the word decoder, mapped the finite-support subgroup through it, and pulled that subgroup back along the faithful actual backward projection.  Intrinsic membership is therefore an existential finite-support primitive action condition rather than decoder range.  The word decoder lands by the previously proved projection computation.  Conversely, every intrinsic actual member supplies a finite-support permutation, the free-word range theorem supplies a word, and full backward-projection injectivity identifies the decoded actual element; hence the decoder is surjective and an exact decoder-range iff is derived afterward.  The Cycle 99 Nat zero/one swap is recovered by one explicit generator.  No free-word injectivity or full-kernel coverage is claimed."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldFiniteSwapWordImage.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldExtensionSwapGenerator
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldExtensionSwapGenerator.range_toPerm
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldExtensionSwapWord
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionSwapWordPermutation
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldFiniteSupportPermutationSubgroup
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionSwapWordPermutation_range
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldFiniteSupportPermutationSubgroup_mem_iff
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldArbitraryCarrierBackwardAction
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldFiniteSwapWordIntrinsicImage
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldFiniteSwapWordIntrinsicImage_mem_iff
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldFiniteSwapWordDecoder
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldFiniteSwapWordDecoder_backwardProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldFiniteSwapWordIntrinsicDecoder
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldFiniteSwapWordIntrinsicDecoder_surjective
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldFiniteSwapWordIntrinsicImage_mem_iff_decoder
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatZeroOneSwapGenerator
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatZeroOneSwap_has_finiteSwapWordPreimage
+  claim_mapping:
+    source_labels:
+      - "GOAL D prerequisite: independent parameter-relative finite presentation on permitted primitive carriers"
+      - "completed core or geometry maps and all-domain map families may not be re-input as one constant"
+      - "actual image recovery must use the same fixed construction and complete action"
+    conjuncts:
+      - "two named distinct primitive values -> one swap generator"
+      - "finite free word -> primitive carrier permutation"
+      - "word range -> exactly finite-support permutations"
+      - "finite-support primitive action -> decoder-independent actual subgroup membership"
+      - "same fixed actual route -> finite-word decoder landing"
+      - "intrinsic finite-support membership plus source range and actual faithfulness -> decoder surjectivity"
+      - "one Nat generator -> exact Cycle 99 witness recovery"
+    undischarged_assumptions: []
+    acceptance_point: "For every decidable primitive carrier E, independent finite swap words map exactly onto the actual subgroup whose complete backward action comes from a finite-support E-permutation, and the Nat zero/one witness has a one-generator preimage; injectivity and full-kernel coverage are not asserted."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "arbitrary-carrier independent finite swap-word syntax"
+      - "primitive finite-support image characterization"
+      - "decoder-independent actual intrinsic subgroup"
+      - "decoder landing and surjectivity onto that subgroup"
+      - "Cycle 99 Nat witness preimage"
+    remaining:
+      - "faithful quotient or canonical normal form if an injective presentation is required"
+      - "carrier-indexed integration and infinite-support recipe analysis"
+      - "full-kernel coverage/decomposition and original G-122/D/B/E/F"
+  certificate_provenance:
+    discharged:
+      - "each primitive generator stores only two E-values and their inequality"
+      - "finite support is a theorem about the FreeGroup evaluator range, not an input certificate on actual arrows"
+      - "actual membership uses the primitive finite-support subgroup mapped by the independently defined expected action"
+      - "surjectivity uses source range and full actual backward faithfulness"
+    unresolved:
+      - "whether every required actual direction admits a permitted finite source recipe"
+  proof_use:
+    used:
+      - "FreeGroup.range_lift_eq_closure identifies the finite-word source range"
+      - "mem_closure_isSwap' identifies that closure with finite support"
+      - "Cycle 99 arbitrary-carrier projection theorem proves decoder landing"
+      - "Cycle 90 full backward-projection injectivity converts action equality to actual equality"
+      - "Cycle 99 Nat swap definition is recovered by the explicit zero/one generator"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: reuses-the-same-fixed-source-southwest-exact-left-top-normalization-route
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-finite-support-image-checkpoint
+  one_way_as_equivalence: none-found-surjectivity-only
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4328 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 33 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Compare the carrier-indexed finite-support actual images with the full local-fiber kernel, construct an explicit source-owned infinite-support direction if present, and determine the next permitted finite recipe class without weakening the fixed target."
 ```
