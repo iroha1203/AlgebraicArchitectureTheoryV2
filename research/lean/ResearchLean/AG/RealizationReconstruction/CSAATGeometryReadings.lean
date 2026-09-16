@@ -68,7 +68,7 @@ def lensAATGeometryReadingContext (input : LensFamilyInput.{u})
     ULift.{u + 1, u} (LensLawStructure input.View X.Carrier) × LensAATSource X
   extension := (ULift.up X.toLensData.toLawStructure, .point)
 
-/-- Coverage requirements expose exact A1 support, exact polynomial variables,
+/-- Coverage requirements expose exact Atom support, exact polynomial variables,
 and exact atom axes through restrictions into the canonical lens context. -/
 def lensAATGeometryCoverageRequirements (input : LensFamilyInput.{u})
     (X : LensRealization input.View input.reference) :
@@ -189,7 +189,7 @@ def protocolAATGeometryReadingContext (input : ProtocolFamilyInput.{u})
     ULift.{u + 1, u} (ProtocolLawStructure input X.State) × ProtocolAATSource X
   extension := (ULift.up X.toLawStructure, .point)
 
-/-- Coverage requirements expose exact A1 support, exact polynomial variables,
+/-- Coverage requirements expose exact Atom support, exact polynomial variables,
 and exact atom axes through restrictions into the canonical protocol context. -/
 def protocolAATGeometryCoverageRequirements (input : ProtocolFamilyInput.{u})
     (X : ProtocolRealization input.schema input.observation) :
