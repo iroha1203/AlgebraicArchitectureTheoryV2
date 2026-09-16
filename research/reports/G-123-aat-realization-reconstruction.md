@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 101 proves that the carrier-indexed union of all Cycle 100 finite-support images still omits the source-owned `Nat` adjacent-pair algorithm transported through the same actual route
+- current proof obligation: Cycle 102 enlarges the independent Nat source grammar by the fixed adjacent-pair algorithm, characterizes its decoder-independent primitive and actual images, and gives the Cycle 101 witness a one-generator preimage
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: enlarge the independent syntax by finite algorithmic generators on permitted primitive parameters, give a decoder-independent intrinsic image and faithful quotient or canonical normal form, and continue full-kernel decomposition without treating finite-swap-word noncoverage as target refutation
+- next proof obligation: analyze the generated Nat subgroup beyond its closure presentation, construct a faithful quotient or canonical normal form, generalize the finite algorithm language across permitted primitive parameters, and continue full-kernel decomposition
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 102 delta | Cycle 101で不足が証明されたfinite-swap wordを、完成置換やactual residualを入力せず、原始`Nat`上の明示swapと固定`xor 1` algorithmの有限wordへ拡張し、decoder非依存のprimitive/actual imageとexact surjectivityを構成する | `FiniteAxisFoldNatAlgorithmGenerator`, `FiniteAxisFoldNatAlgorithmGenerator.toPerm`, `FiniteAxisFoldNatAlgorithmGenerator.range_toPerm`, `FiniteAxisFoldNatAlgorithmWord`, `finiteAxisFoldNatAlgorithmWordPermutation`, `finiteAxisFoldNatAlgorithmPermutationSubgroup`, `finiteAxisFoldNatAlgorithmWordPermutation_range`, `FiniteAxisFoldNatAlgorithmWordIntrinsicImage`, `finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff`, `finiteAxisFoldNatAlgorithmWordDecoder`, `finiteAxisFoldNatAlgorithmWordDecoder_backwardProjection`, `finiteAxisFoldNatAlgorithmWordIntrinsicDecoder`, `finiteAxisFoldNatAlgorithmWordIntrinsicDecoder_surjective`, `finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff_decoder`, `finiteAxisFoldNatAdjacentSwap_has_algorithmWordPreimage` | 原始`Nat`; 各swapの二値と不等式; 固定algorithm `n xor 1`; Cycle 92--101のsame fixed actual route; full backward projection単射性 | 独立generatorとfree finite word; generator rangeとprimitive closure; expected action経由のactual intrinsic subgroup; decoder landing; primitive rangeとactual faithfulnessによる全射; Cycle 101 outside元の一語preimage | known infinite-support obstructionをsource grammar側で修復し、generated subgroupの構造解析、faithful quotient/canonical normal form、全parameter familyとfull-kernel分解へ渡す | raw FreeGroupのinjectivityは未主張; primitive closureのcanonical description、faithful quotient/normal form、Nat以外を含むalgorithm family、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
 | D Cycle 101 delta | Cycle 100の全decidable carrier上のfinite-support actual imageをliteral unionとして保持し、同じprimitive-to-actual routeから有限アルゴリズムで構成した`Nat` adjacent swapがそのunion外にあることを証明する | `FiniteAxisFoldDecidableExtensionCarrier`, `FiniteAxisFoldFiniteSupportCarrierImage`, `finiteAxisFoldNatAdjacentSwap`, `finiteAxisFoldNatAdjacentSwap_ne`, `finiteAxisFoldNatAdjacentSwapLocalFiberKernel`, `finiteAxisFoldFiniteSupportSourceAction_exists_fixed_natProbe`, `finiteAxisFoldNatAdjacentSwap_transported_ne_finiteSupport`, `finiteAxisFoldNatAdjacentSwap_not_finiteSupportCarrierImage`, `finiteAxisFoldFiniteSupportCarrierImage_not_all` | 任意のdecidable primitive carrierとその全finite-support permutation; 原始`Nat` carrier上の固定有限アルゴリズム`n xor 1`; Cycle 92--100のsame fixed actual routeとintrinsic image; full backward projection | carrier-indexed existential union; `xor 1`のinvolutionと全点移動; same-carrier finite-support作用の固定点、別carrier作用の`Nat` probe固定; route equivalenceによるactual action separation; source-owned actual local-kernel元とunion非被覆 | 有限swap wordだけでは不足することを固定し、permitted primitive parameter上のfinite algorithmic generatorを含むpresentation、faithful quotient、full-kernel分解へ渡す | この非被覆はtarget反証ではない; finite algorithmic syntax/image、faithful quotientまたはcanonical normal form、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
 | D Cycle 100 delta | 任意のprimitive Extension carrier上でcompleted permutationを一つのpayloadとして受け取らず、明示された二値swapの有限wordを独立syntaxとし、finite-support条件でactual imageを特徴付けてexact surjectivityを証明する | `FiniteAxisFoldExtensionSwapGenerator`, `FiniteAxisFoldExtensionSwapGenerator.toPerm`, `FiniteAxisFoldExtensionSwapGenerator.range_toPerm`, `FiniteAxisFoldExtensionSwapWord`, `finiteAxisFoldExtensionSwapWordPermutation`, `finiteAxisFoldFiniteSupportPermutationSubgroup`, `finiteAxisFoldExtensionSwapWordPermutation_range`, `finiteAxisFoldFiniteSupportPermutationSubgroup_mem_iff`, `finiteAxisFoldArbitraryCarrierBackwardAction`, `FiniteAxisFoldFiniteSwapWordIntrinsicImage`, `finiteAxisFoldFiniteSwapWordIntrinsicImage_mem_iff`, `finiteAxisFoldFiniteSwapWordDecoder`, `finiteAxisFoldFiniteSwapWordDecoder_backwardProjection`, `finiteAxisFoldFiniteSwapWordIntrinsicDecoder`, `finiteAxisFoldFiniteSwapWordIntrinsicDecoder_surjective`, `finiteAxisFoldFiniteSwapWordIntrinsicImage_mem_iff_decoder`, `finiteAxisFoldNatZeroOneSwapGenerator`, `finiteAxisFoldNatZeroOneSwap_has_finiteSwapWordPreimage` | 任意の`E`と`[DecidableEq E]`; 各generatorの二値と不等式; Cycle 92--99のsame fixed actual route; Mathlibのfree-group rangeとfinite-support transposition closure定理; full backward projection単射性 | swap generator range = transpositions; free finite word evaluator; evaluator range = finite-support subgroup; decoder非依存のarbitrary-carrier expected action; actual intrinsic subgroup; decoder landing; intrinsic membershipとfinite wordの相互移送; full projection faithfulnessによるsurjectivity; Cycle 99 Nat witnessの一語preimage | carrier-indexed finite-support imageとfull kernelを比較し、残るinfinite-support方向またはcoverage/decompositionへ渡す | free-word decoderのinjectivityは主張しない; 全carrier familyの統合、infinite-support finite recipes、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
 | D Cycle 99 delta | Cycle 98の全fixed finite carrier imageのliteral unionを定式化し、同じprimitive-to-actual routeから有限recipeで構成した`Nat` zero/one swapがそのunion外にあることを証明する | `FiniteAxisFoldFiniteExtensionCarrier`, `FiniteAxisFoldFiniteCarrierExtensionImage`, `finiteAxisFoldNatZeroOneSwap`, `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_backwardProjection`, `finiteAxisFoldNatZeroOneSwapLocalFiberKernel`, `finiteAxisFoldFiniteCarrierSourceAction_fixes_natZeroProbe`, `finiteAxisFoldNatZeroOneSwap_transported_ne_finiteCarrier`, `finiteAxisFoldNatZeroOneSwap_not_finiteCarrierExtensionImage`, `finiteAxisFoldFiniteCarrierExtensionImage_not_all` | 任意のfinite carrierとその全permutation; 原始`Nat` carrier上の明示`0/1` swap; Cycle 92--96のarbitrary-carrier same fixed route; Cycle 98のintrinsic image; full backward projection | carrier-indexed existential union; arbitrary carrierに対するdecoder projection計算; finite carrierと`Nat`の型非同一性; canonical `Nat` probe上でfinite actionは固定し`Nat` swapは移動; route equivalenceによるactual action separation; source-owned actual local-kernel元とunion非被覆 | finite-carrier presentationでは不足することを固定し、infinite primitive carrier上のfinite recipeを含む拡張presentationとfull-kernel分解へ渡す | 拡張syntax/image characterization、全kernelのcoverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
@@ -10966,4 +10967,126 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct an independent finite algorithmic generator language over permitted primitive parameters, derive a faithful quotient or canonical normal form and decoder-independent actual image, then continue full-kernel decomposition without weakening the fixed target."
+```
+
+## Cycle 102 — Nat finite-algorithm word image
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 102
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 11a98098ee360c197114f4e9e9edc3a5c10a1d65
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 101 proved that all carrier-indexed finite-swap-word images omit the fixed Nat adjacent-pair algorithm"
+  proof_dag_predecessors:
+    - "Cycle 100 supplies independent finite swap words and a decoder-independent finite-support actual image"
+    - "Cycle 101 constructs n xor 1 as a source-owned finite algorithm and proves its actual element lies outside every such image"
+  proof_obligation: "Enlarge the independent source grammar by the explicit missing finite algorithm, characterize its image before the decoder, and recover the outside element without a semantic leaf"
+  selection_reason: "Adding the literal adjacent-pair recipe to explicit swaps repairs the proved obstruction while retaining a finite grammar whose constructors contain only primitive data and a fixed operation."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNatAlgorithmWordImage.lean
+  risks:
+    - "accept a completed arbitrary Nat permutation or actual residual as a generator"
+    - "define the primitive or actual subgroup as decoder range"
+    - "define congruence by actual decoder equality"
+    - "claim raw FreeGroup injectivity despite source-law redundancy"
+    - "infer full-kernel coverage from repair of one explicit outside element"
+  unchecked:
+    - "canonical description of the generated Nat subgroup"
+    - "faithful quotient or canonical normal form required by fixed GOAL B"
+    - "algorithm language across all permitted primitive parameters"
+    - "full-kernel coverage/decomposition and original G-122/D/B/E/F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Defined an independent Nat generator with exactly two constructors: an explicit transposition carrying two values and their inequality, and the fixed adjacent-pair algorithm from Cycle 101.  Its FreeGroup word evaluator has range equal to the independently defined closure of transpositions together with the adjacent algorithm.  Mapped that primitive subgroup through the pre-existing expected backward action and pulled it back along the faithful actual projection to define an intrinsic actual subgroup before the decoder.  Proved intrinsic membership as a primitive subgroup/action condition, decoder landing from the projection theorem, and surjectivity from the primitive range theorem plus actual projection injectivity.  Derived the decoder-range iff only afterward.  The Cycle 101 actual outside element is the image of the single adjacent generator.  No raw-word injectivity, canonical normal form, all-parameter algorithm family, or full-kernel coverage is claimed."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNatAlgorithmWordImage.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmGenerator
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmGenerator.range_toPerm
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmWord
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmWordPermutation
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmPermutationSubgroup
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmWordPermutation_range
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmWordIntrinsicImage
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmWordDecoder
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmWordDecoder_backwardProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmWordIntrinsicDecoder
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmWordIntrinsicDecoder_surjective
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff_decoder
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAdjacentSwap_has_algorithmWordPreimage
+  claim_mapping:
+    source_labels:
+      - "GOAL D prerequisite: parameter-relative finite presentation may retain primitive parameters but may not receive completed reconstructed maps"
+      - "Cycle 101 proved a concrete missing finite algorithm rather than target refutation"
+      - "actual image recovery must use the same fixed route and complete action"
+    conjuncts:
+      - "explicit Nat swap or fixed adjacent algorithm -> primitive generator"
+      - "finite generator word -> primitive Nat permutation"
+      - "generator range -> transpositions union the fixed algorithm"
+      - "word range -> independently defined primitive closure"
+      - "primitive subgroup plus expected action -> decoder-independent actual subgroup"
+      - "same fixed actual route plus primitive range and projection faithfulness -> decoder surjectivity"
+      - "one adjacent generator -> exact Cycle 101 witness recovery"
+    undischarged_assumptions: []
+    acceptance_point: "Independent finite words in explicit Nat swaps and the fixed xor-1 algorithm map exactly onto the intrinsic actual subgroup induced by their primitive generated subgroup, and the Cycle 101 witness has a one-generator preimage; faithfulness and full coverage are not asserted."
+    port_status: not-applicable
+review:
+  fixed_head: 3c15ebaaa1b5f7ea82325c817cb5735254beb162
+  lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  direct_response:
+    reviewed_delta: "11a98098ee360c197114f4e9e9edc3a5c10a1d65..3c15ebaaa1b5f7ea82325c817cb5735254beb162"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "independent source grammar containing the explicit Cycle 101 finite algorithm"
+      - "decoder-independent primitive and actual image for that grammar"
+      - "decoder landing and surjectivity onto the intrinsic actual image"
+      - "Cycle 101 witness preimage"
+    remaining:
+      - "canonical structure of the generated Nat subgroup"
+      - "faithful quotient or canonical normal form required by fixed GOAL B"
+      - "algorithm family for all permitted primitive parameters"
+      - "full-kernel coverage/decomposition and original G-122/D/B/E/F"
+  certificate_provenance:
+    discharged:
+      - "swap generators store only two Nat values and their inequality"
+      - "the adjacent generator stores no semantic data and evaluates to the previously fixed xor expression"
+      - "actual intrinsic membership is obtained by mapping the primitive closure through the independent expected action"
+      - "surjectivity uses source range and full actual backward faithfulness"
+    unresolved:
+      - "faithful source equations and a canonical representative system"
+      - "sufficiency of a uniform finite algorithm language for all required actual directions"
+  proof_use:
+    used:
+      - "FreeGroup.range_lift_eq_closure identifies the independent word range"
+      - "Cycle 99 arbitrary-carrier projection theorem proves decoder landing"
+      - "Cycle 90 full backward-projection injectivity converts expected-action equality to actual equality"
+      - "Cycle 101 adjacent algorithm and actual element are recovered by one generator"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: reuses-the-same-fixed-source-southwest-exact-left-top-normalization-route
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-generated-image-checkpoint
+  one_way_as_equivalence: none-found-surjectivity-only
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4333 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 33 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Analyze the generated Nat subgroup as finite-support permutations together with the adjacent coset, then use that structure toward a faithful quotient or canonical normal form before generalizing the finite algorithm language and continuing full-kernel decomposition."
 ```
