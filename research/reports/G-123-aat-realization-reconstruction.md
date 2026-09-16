@@ -12548,7 +12548,7 @@ review:
     - "added an immediately attached declaration docstring to each of lensObjectMap_id_read, lensObjectMap_id_write, lensObjectMap_comp_read, lensObjectMap_comp_view, and lensObjectMap_comp_write without changing statements or proofs"
     - "replaced the three ledger names by lensOperationFunction, PrimitiveObject.protocolState/protocolObservation, and protocolOperationFunction"
     - "made every affected theorem docstring declaration-specific and documented the vertex-indexed protocol observation endpoint without changing any declaration or proof"
-  lanes: {math_a: pass, math_b: pass, lean_a: pass, lean_b: pass-after-direct-response}
+  lanes: {math_a: pass-after-direct-response, math_b: pass-after-direct-response, lean_a: pass-after-direct-response, lean_b: pass-after-direct-response}
   direct_response:
     reviewed_delta: "acbbb393d4a3f0a8d7710c65f8fd92b43c87f3ce..66c6c1833"
     final_repair_deltas: "0f1f1213c..373129779; 373129779..106927f14"
