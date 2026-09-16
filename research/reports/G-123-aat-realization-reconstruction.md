@@ -10383,7 +10383,7 @@ selection:
 result:
   proposed_result_type: proof-checkpoint
   completion_candidate: no
-  proof_obligation_delta: "Proved Boolean negation equality at the primitive Extension-value recipe, every complete source context, the full context functor/equivalence, complete source geometry, and every fixed semantic transport through the actual normalized local-fiber kernel.  Constructed an independent syntax-to-Bool-permutation hom, proved it surjective, and proved exact range equality between the Cycle 91 evaluator and the Bool specialization.  Constructed an original Fin 3 three-cycle from two adjacent swaps; actual section injectivity preserves its non-involutivity, placing its normalized local-kernel image outside the C2 evaluator range."
+  proof_obligation_delta: "Proved Boolean negation equality at the primitive Extension-value recipe, every complete source context, the full context functor/equivalence, complete source geometry, and every fixed semantic transport through the actual normalized local-fiber kernel.  Constructed an independent syntax-to-Bool-permutation hom, proved it surjective, and proved exact range equality between the Cycle 91 evaluator and the Bool specialization.  Constructed an independent Fin 3 Extension three-cycle from two adjacent swaps; actual section injectivity preserves its non-involutivity, placing its normalized local-kernel image outside the C2 evaluator range."
   lean_artifacts:
     - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldPermutationImageSeparation.lean
   evidence:
@@ -10396,14 +10396,14 @@ result:
     - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionThreeCycle_not_mem_backwardToggleSyntax_range
   claim_mapping:
     source_labels:
-      - "GOAL D prerequisite: recover the same original finite-axis-fold classification data through one source-generated family"
+      - "GOAL D prerequisite: distinguish the constructed finite Extension-permutation family before the still-open recovery of the original finite-axis-fold classification data"
       - "preserve the Cycle 91 evaluator and compare it inside the same actual local-fiber kernel"
       - "retain non-involutive finite source permutations rather than shrink to the convenient C2 subgroup"
     conjuncts:
       - "all source contexts -> generic Bool recipe equals the original uniform toggle recipe"
       - "same fixed source-to-normalization route -> exact equality of actual local-kernel elements"
       - "independent C2 syntax -> all Bool permutations -> exact evaluator range equality"
-      - "original Fin 3 swap product -> non-involutive actual element -> outside C2 range"
+      - "independently presented Fin 3 Extension swap product -> non-involutive actual element -> outside C2 range"
     undischarged_assumptions: []
     acceptance_point: "The independent C2 fragment is exactly the Bool specialization and is strictly contained in the broader constructed finite-permutation family; no full-kernel coverage is claimed."
     port_status: not-applicable

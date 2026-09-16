@@ -12,7 +12,8 @@ comparison is proved first at the primitive source-value recipe, then through
 the complete source geometry and the fixed actual normalization route.  Thus
 the old two-element evaluator is not a second semantic input.
 
-The same finite-permutation section also contains a non-involutive permutation
+The same carrier-indexed finite-permutation family also contains a
+non-involutive permutation
 of `Fin 3`.  Since every value of the two-symbol evaluator is involutive and
 the arbitrary section is injective, that element is outside the old evaluator
 range.  This separates the independently generated permutation family from
