@@ -1,4 +1,4 @@
-import ResearchLean.AG.RealizationReconstruction.CSAATForwardMorphisms
+import ResearchLean.AG.RealizationReconstruction.CSAATLawSystems
 import Formal.AG.LawAlgebra.StructureSheaf
 import Formal.AG.Site.Geometry
 import Formal.Util.AssertStandardAxioms
@@ -201,10 +201,10 @@ noncomputable def completeLawRawSystem {U : AtomCarrier.{u}}
     exact (RingHom.id_comp _).symm
 
 /-- An endpoint scaffold assembled from actual Formal AAT component types.
-The coefficient ring is fixed to `Int`, as in the CS Law coordinates.  The
-historical name is retained for downstream compatibility; no `ReadingCore` or
-admissible-cover completeness theorem is part of this structure. -/
-structure CSAATCompleteGeometryObject (U : AtomCarrier.{u}) where
+The coefficient ring is fixed to `Int`, as in the CS Law coordinates.  No
+`ReadingCore` or admissible-cover completeness theorem is part of this
+structure. -/
+structure CSAATGeometryScaffold (U : AtomCarrier.{u}) where
   /-- The actual object whose operation data the Law residual evaluates. -/
   object : ArchitectureObject U
   /-- Its selected context, equation, coverage, signature, and overlap site. -/
@@ -215,9 +215,9 @@ structure CSAATCompleteGeometryObject (U : AtomCarrier.{u}) where
 /-! ## Lens endpoint geometry -/
 
 /-- The actual lens Law object with its site/raw endpoint scaffold. -/
-noncomputable def lensAATCompleteGeometry (input : LensFamilyInput.{u})
+noncomputable def lensAATGeometryScaffold (input : LensFamilyInput.{u})
     (X : LensRealization input.View input.reference) :
-    CSAATCompleteGeometryObject (lensAATCarrier input) where
+    CSAATGeometryScaffold (lensAATCarrier input) where
   object := lensLawObject input X.Carrier X.toLensData.toLawStructure
   site := completeLawSite _
     (lensLawEquationSystem input X.Carrier X.toLensData.toLawStructure)
@@ -225,40 +225,40 @@ noncomputable def lensAATCompleteGeometry (input : LensFamilyInput.{u})
     (lensLawEquationSystem input X.Carrier X.toLensData.toLawStructure)
 
 /-- Lens endpoint geometry uses the actual object-dependent Law system. -/
-@[simp] theorem lensAATCompleteGeometry_equationSystem
+@[simp] theorem lensAATGeometryScaffold_equationSystem
     (input : LensFamilyInput.{u})
     (X : LensRealization input.View input.reference) :
-    (lensAATCompleteGeometry input X).site.equationSystem =
+    (lensAATGeometryScaffold input X).site.equationSystem =
       lensLawEquationSystem input X.Carrier X.toLensData.toLawStructure :=
   rfl
 
 /-- Lens raw coordinates are exactly the complete Law-index/Atom pairs. -/
-@[simp] theorem lensAATCompleteGeometry_rawCoordinate
+@[simp] theorem lensAATGeometryScaffold_rawCoordinate
     (input : LensFamilyInput.{u})
     (X : LensRealization input.View input.reference)
-    (W : (lensAATCompleteGeometry input X).site.category) :
-    ((lensAATCompleteGeometry input X).raw.coordFamily W).Coord =
+    (W : (lensAATGeometryScaffold input X).site.category) :
+    ((lensAATGeometryScaffold input X).raw.coordFamily W).Coord =
       (lensLawEquationSystem input X.Carrier
         X.toLensData.toLawStructure).Coordinate :=
   rfl
 
 /-- The lens pre-quotient raw presentation is the existing polynomial Law
 coordinate ring, not a one-coordinate or empty replacement. -/
-theorem lensAATCompleteGeometry_rawFreePresentation
+theorem lensAATGeometryScaffold_rawFreePresentation
     (input : LensFamilyInput.{u})
     (X : LensRealization input.View input.reference)
-    (W : (lensAATCompleteGeometry input X).site.category) :
+    (W : (lensAATGeometryScaffold input X).site.category) :
     LawAlgebra.FreeTypedCommAlg
-        ((lensAATCompleteGeometry input X).raw.coordFamily W) Int =
+        ((lensAATGeometryScaffold input X).raw.coordFamily W) Int =
       LensLawCoordinateRing input X.Carrier :=
   rfl
 
 /-! ## Protocol endpoint geometry -/
 
 /-- The actual protocol Law object with its site/raw endpoint scaffold. -/
-noncomputable def protocolAATCompleteGeometry (input : ProtocolFamilyInput.{u})
+noncomputable def protocolAATGeometryScaffold (input : ProtocolFamilyInput.{u})
     (X : ProtocolRealization input.schema input.observation) :
-    CSAATCompleteGeometryObject (protocolAATCarrier input) where
+    CSAATGeometryScaffold (protocolAATCarrier input) where
   object := protocolLawObject input X.State X.toLawStructure
   site := completeLawSite _
     (protocolLawEquationSystem input X.State X.toLawStructure)
@@ -266,30 +266,30 @@ noncomputable def protocolAATCompleteGeometry (input : ProtocolFamilyInput.{u})
     (protocolLawEquationSystem input X.State X.toLawStructure)
 
 /-- Protocol endpoint geometry uses the actual object-dependent Law system. -/
-@[simp] theorem protocolAATCompleteGeometry_equationSystem
+@[simp] theorem protocolAATGeometryScaffold_equationSystem
     (input : ProtocolFamilyInput.{u})
     (X : ProtocolRealization input.schema input.observation) :
-    (protocolAATCompleteGeometry input X).site.equationSystem =
+    (protocolAATGeometryScaffold input X).site.equationSystem =
       protocolLawEquationSystem input X.State X.toLawStructure :=
   rfl
 
 /-- Protocol raw coordinates are exactly the complete Law-index/Atom pairs. -/
-@[simp] theorem protocolAATCompleteGeometry_rawCoordinate
+@[simp] theorem protocolAATGeometryScaffold_rawCoordinate
     (input : ProtocolFamilyInput.{u})
     (X : ProtocolRealization input.schema input.observation)
-    (W : (protocolAATCompleteGeometry input X).site.category) :
-    ((protocolAATCompleteGeometry input X).raw.coordFamily W).Coord =
+    (W : (protocolAATGeometryScaffold input X).site.category) :
+    ((protocolAATGeometryScaffold input X).raw.coordFamily W).Coord =
       (protocolLawEquationSystem input X.State X.toLawStructure).Coordinate :=
   rfl
 
 /-- The protocol pre-quotient raw presentation is the existing polynomial Law
 coordinate ring on every original named relation, edge, observation, and Atom. -/
-theorem protocolAATCompleteGeometry_rawFreePresentation
+theorem protocolAATGeometryScaffold_rawFreePresentation
     (input : ProtocolFamilyInput.{u})
     (X : ProtocolRealization input.schema input.observation)
-    (W : (protocolAATCompleteGeometry input X).site.category) :
+    (W : (protocolAATGeometryScaffold input X).site.category) :
     LawAlgebra.FreeTypedCommAlg
-        ((protocolAATCompleteGeometry input X).raw.coordFamily W) Int =
+        ((protocolAATGeometryScaffold input X).raw.coordFamily W) Int =
       ProtocolLawCoordinateRing input X.State :=
   rfl
 

@@ -22,7 +22,7 @@
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A/E Cycle 130 delta | 二つのCS対象からmorphismやdecoder像に依存しないactual Law object上のAATSite/raw endpoint scaffoldを構成し、complete geometryまでの未放電義務を分離する | `completeLawSignature`, `completeLawCoverageRequirements`と4つのrequired-role定理、`completeLawOverlap`, `completeLawSite`; `completeLawRawCoordinateFamily`, `completeLawRawRelationFamily`, `completeLawRawCoordinateRestriction`, `completeLawRawRestrictionStable`, `completeLawRawSystem`; `CSAATCompleteGeometryObject`; `lensAATCompleteGeometry`, `protocolAATCompleteGeometry`と各equation/raw-coordinate/pre-quotient presentation同定 | Cycle 126のactual object-dependent Law object/equation systemと固定Atom語彙のみ。semantic Hom、完成geometry射、index同値、decoder像、lawfulness、coverage certificateを入力しない。endpointは各`X`から独立に構成し、targetをsourceと射のpushforwardで定義しない | canonical restriction-context preorder上にactual `AATSite` scaffoldを構成し、全Atom support・全required equation coordinate・全violation coordinate・全Atom axisをrequired/selectedとして記録; overlapはproduct-context finite meetから構成; 係数を`Int`に固定; raw coordinateを全`E.Coordinate = E.Index × Atom`とし、Law witness equationとは別層の追加structural relationだけを`PEmpty`とする; 全context restrictionを全変数上のidentity polynomial homとして構成しidentity/compositionを証明; lens/protocolのquotient前自由表示が既存Law coordinate ringであることを証明 | 次cycleでCS入力からactual componentwise readingsとadmissible coversを構成し、その後Cycle 129 primitive interfaceから一般非単射射を保つone-way geometry transportを作る固定scaffold | 現在のvisibility述語の一部はmarkerであり、要求axisの同一性を証明しない。actual `AATCoverageFamily`/`AdmissibleCover`、CS由来Support/Axis/Observable carrier・reading・restriction、raw quotientと自由表示の同値、`AATCorePackage`/`ReadingCore` provenance、射上保存、独立readback、D回復、A--F統合は未完了。`PUnit` signature coordinate/local dataをcomplete readingと扱わない。既存`GeometryTotalHom`はequation-index `Equiv`を要求するため一般非単射CS射には使わず、可逆部分への後段接続だけを許す |
+| A/E Cycle 130 delta | 二つのCS対象からmorphismやdecoder像に依存しないactual Law object上のAATSite/raw endpoint scaffoldを構成し、complete geometryまでの未放電義務を分離する | `completeLawSignature`, `completeLawCoverageRequirements`と4つのrequired-role定理、`completeLawOverlap`, `completeLawSite`; `completeLawRawCoordinateFamily`, `completeLawRawRelationFamily`, `completeLawRawCoordinateRestriction`, `completeLawRawRestrictionStable`, `completeLawRawSystem`; `CSAATGeometryScaffold`; `lensAATGeometryScaffold`, `protocolAATGeometryScaffold`と各equation/raw-coordinate/pre-quotient presentation同定 | Cycle 126のactual object-dependent Law object/equation system、固定Atom語彙、および固定targetが要求するlawful lens/protocol realization。realization内のlawfulness fieldはambient inputだが本scaffold構成本体では使用しない。semantic Hom、完成geometry射、index同値、decoder像、追加の`EquationLawful`/coverage/completion certificateを入力しない。endpointは各`X`から独立に構成し、targetをsourceと射のpushforwardで定義しない | canonical restriction-context preorder上にactual `AATSite` scaffoldを構成し、全Atom support・全required equation coordinate・全violation coordinate・全Atom axisをrequired/selectedとして記録; overlapはproduct-context finite meetから構成; 係数を`Int`に固定; raw coordinateを全`E.Coordinate = E.Index × Atom`とし、Law witness equationとは別層の追加structural relationだけを`PEmpty`とする; 全context restrictionを全変数上のidentity polynomial homとして構成しidentity/compositionを証明; lens/protocolのquotient前自由表示が既存Law coordinate ringであることを証明 | 次cycleでCS入力からactual componentwise readingsとadmissible coversを構成し、その後Cycle 129 primitive interfaceから一般非単射射を保つone-way geometry transportを作る固定scaffold | 現在のvisibility述語の一部はmarkerであり、要求axisの同一性を証明しない。actual `AATCoverageFamily`/`AdmissibleCover`、CS由来Support/Axis/Observable carrier・reading・restriction、raw quotientと自由表示の同値、`AATCorePackage`/`ReadingCore` provenance、射上保存、独立readback、D回復、A--F統合は未完了。`PUnit` signature coordinate/local dataをcomplete readingと扱わない。既存`GeometryTotalHom`はequation-index `Equiv`を要求するため一般非単射CS射には使わず、可逆部分への後段接続だけを許す |
 | E Cycle 129 delta | actual named operationの保存条件をAAT側で独立に定め、元のCS Homとの両方向を証明し、同じprimitive dataからA1・Law・context・coordinate・residual成分を一つのforward interfaceとして生成する | `LensAATForwardMorphism`, `ProtocolAATForwardMorphism`; 各`toSemanticHom`, `ofSemanticHom`, `semanticHomEquiv`, `toSemanticHom_ofSemanticHom`, `ofSemanticHom_toSemanticHom`; 各`sourceMap`, `doctrineHom`, `lawHom`, `lawContextFunctor`, `lawIndexMap`, `lawCoordinateMap`, `lawResidual_zero_map`, `id`, `comp`, `toSemanticHom_id`, `toSemanticHom_comp`, `ofSemanticHom_id`, `ofSemanticHom_comp`; protocol `toGeneratorMap` | lensは一つのstate mapとactual `lensGetAATFunction`/`lensPutAATFunction`の二square; protocolは頂点別state mapと全actual named edge/observation square。semantic Hom、全path自然変換、A1 map、Law Hom、residual certificate、decoder像、invertibilityは入力しない | lensは二squareから元のL2 Homを直接再構成; protocolはnamed generator squaresを`GeneratorMap`へ移し、受理済みpath/quotient extensionで全execution上のHomを構成; semantic-Hom側の逆をcomplete semantic Homの等式として、primitive-interface側の逆をforward structureの等式として証明; 復元HomからA1 source/doctrine、raw Law Hom、all-context functor、全index/Atom coordinate、residual-zero保存を生成; translationとreadbackの両方向でidentity/compositionを保持 | n1015 §5.3の「CS射からAAT operation/Law成分」と「AAT named-operation保存からCS射」の両方向を同じprimitive dataで閉じ、次のcomplete geometry morphism/readbackが使う | coverage/overlap/係数/raw restriction/Support/Axis/Observableを含むcomplete geometry morphism、そこからの独立readback、全geometry成分上の両逆、D回復、A--F統合は未完了。`ForwardMorphism`はcomplete AAT morphismとの達成主張ではなく、actual named-operationから既証明A1/Law成分を生成するinterface |
 | E Cycle 128 delta | Cycle 127のindex/coordinate/truth transportをactual Law objectと全contextへ接続し、任意の非可逆射で正しい残差保存条件を構成する | `HeterogeneousContextMap`, `fullFamilyContextRebase`, `fullFamilyContextMorphismRebase`, `fullFamilyContextFunctor`; lens/protocol各`*LawSourceObject`, `*LawTargetObject`, `*LawConfigurationMap`, `*LawContextFunctor`, `*LawViolationCoordinate_map`, `*LawCoordinateMap_restrict`, `*LawResidual_zero_iff`, `*LawResidual_zero_map`, `*LawResidual_zero_map_contextFunctor`, `*LawResidual_commutes_of_zero`, `*LawResidual_zero_map_comp`; `collapseBoolLens_residual_not_commute` | 任意のraw source/target operation structureとCycle127 raw Hom; source residual zeroは順方向命題の`direction-hypothesis`; endpoint lawfulness、単射、同値、exact residual equality、completed AAT射を仮定しない | actual source/target `ArchitectureObject`とidentity configuration mapを構成; complete vocabularyによりsourceの任意contextとrestrictionをtargetへ全成分コピー; 同じindex/ring mapでviolation coordinateとrestrictionを可換化; source residual zeroをsource `Holds`へ戻し、raw Hom squaresからtarget `Holds`とtarget residual zeroを構成; identity/composition済みindex mapに沿う残差零保存の合成を証明; Bool→PUnit collapseで無条件残差等号候補だけを反証 | Cycle124--125のA1/operation componentとCycle127 Law transportをactual all-context residual layerへ結ぶ; 次cycleの一つのforward AAT morphism packageが使用 | 一つの生成forward AAT射への統合、operation保存条件からCS Hom法則への逆向き、coverage/overlap/係数/Support・Axis・Observableの完全幾何、readback、D回復、A--F統合は未完了。無条件残差等号の失敗は固定targetの反証ではなく、非単射射に不適切な`EquationSystemExactTransport`型候補の反証 |
 | E Cycle 127 delta | Cycle 126の全law instanceとequation/Atom座標を、元の任意の非可逆CS射に沿って運び、identity・compositionと式の成立保存を元の射法則から証明する | `LensLawHom`, `ProtocolLawHom`と各`id`/`comp`; semantic Homの各`toLawHom`; lens/protocol各`*LawIndexMap`, `*LawIndexMap_id`, `*LawIndexMap_comp`, `*LawIndexMap_holds`, `*LawCoordinateMap`, `*LawCoordinateMap_violation`, `*LawCoordinateMap_id`, `*LawCoordinateMap_comp`, `*LawEquationHolds_map`; `protocolEvaluatePath_naturality` | 任意のraw source/target operation structureと、その間のget/putまたはedge/observation square; source law truth `h`は順方向命題の`direction-hypothesis`; endpoint lawfulness、injective/iso、Law保存certificate、decoder像、completed AAT射を仮定しない。元の任意のsemantic Homからraw Homを構成する | state componentで全量化indexを写し、view/relation/named edge/Atomを保持; 同じmapで多項式変数をrename; source `h`とlensのget/put square、protocolのgenerator squareから導く全path自然性・edge naturality・observation自然性を実使用してraw `Holds`とactual `EquationHolds`の順方向保存を証明 | EのCS射をAAT Law層へ運ぶmorphism-side predecessor; 後続のactual context/object/residual morphismと完全AAT射が使う | actual context/object mapとresidual commutation、CS射条件と完全AAT保存条件の両方向、式真理の反映と「保存条件の反映」の区別、complete geometry/readback、D回復、A--F統合は未完了 |
@@ -13129,13 +13129,13 @@ selection:
   proof_dag_predecessors:
     - "Cycle 124 actual typed named operations"
     - "Cycles 125--126 actual A1 source, Law object, and object-dependent equation system"
-    - "Cycles 127--129 arbitrary one-way Law coordinate transport and exact CS readback"
+    - "Cycle 125 actual CS architecture objects and Cycle 126 object-dependent Law systems"
     - "Formal AATSite, CoverageRequirements, product-context overlap, and RawAmbientRestrictionSystem definitions"
   proof_obligation: "Construct each lens/protocol AATSite/raw endpoint scaffold independently from its semantic object, retaining every actual Law index and Atom in the pre-quotient raw presentation with coherent all-context restrictions; keep actual covers/readings explicitly open"
   selection_reason: "Defining the target geometry as a pushforward of the source would make preservation tautological and morphism-dependent.  Existing GeometryTotalHom is also unavailable for the fixed arbitrary CS morphisms because its exact base requires an equation-index equivalence."
   expected_result_type: proof-checkpoint
   lean_targets:
-    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATCompleteGeometryObjects.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryScaffolds.lean
   risks:
     - "mistaking PUnit signature/local data or required-role markers for componentwise readings and admissible coverage"
     - "putting Law witness equations into the raw structural quotient and killing their coordinates"
@@ -13154,7 +13154,7 @@ result:
   proof_obligation_delta: "Constructed a reusable actual AATSite/raw scaffold on each actual Law object with the canonical all-restriction context preorder, object-dependent Law equation system, primitive-Atom signature axes, required-role selectors, and product-context overlap.  Constructed a coherent Int-valued raw restriction system whose pre-quotient coordinate type at every context is exactly the full Law equation coordinate type.  The additional raw structural-relation family is PEmpty; Law witness equations remain in the separate equation system.  Every context restriction fixes all variables and satisfies identity/composition.  Specialized the scaffold independently for every lens and protocol realization and identified their equation systems, coordinate types, and pre-quotient free presentations with the accepted Law constructions.  This does not construct an admissible cover, componentwise CS-derived Support/Axis/Observable readings, or an equivalence for the actual raw quotient."
   completion_candidate: no
   lean_artifacts:
-    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATCompleteGeometryObjects.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryScaffolds.lean
   evidence:
     - AAT.AG.RealizationReconstruction.completeLawSignature
     - AAT.AG.RealizationReconstruction.completeLawCoverageRequirements
@@ -13170,15 +13170,15 @@ result:
     - AAT.AG.RealizationReconstruction.completeLawRawCoordinateRestriction_polynomialMap
     - AAT.AG.RealizationReconstruction.completeLawRawRestrictionStable
     - AAT.AG.RealizationReconstruction.completeLawRawSystem
-    - AAT.AG.RealizationReconstruction.CSAATCompleteGeometryObject
-    - AAT.AG.RealizationReconstruction.lensAATCompleteGeometry
-    - AAT.AG.RealizationReconstruction.lensAATCompleteGeometry_equationSystem
-    - AAT.AG.RealizationReconstruction.lensAATCompleteGeometry_rawCoordinate
-    - AAT.AG.RealizationReconstruction.lensAATCompleteGeometry_rawFreePresentation
-    - AAT.AG.RealizationReconstruction.protocolAATCompleteGeometry
-    - AAT.AG.RealizationReconstruction.protocolAATCompleteGeometry_equationSystem
-    - AAT.AG.RealizationReconstruction.protocolAATCompleteGeometry_rawCoordinate
-    - AAT.AG.RealizationReconstruction.protocolAATCompleteGeometry_rawFreePresentation
+    - AAT.AG.RealizationReconstruction.CSAATGeometryScaffold
+    - AAT.AG.RealizationReconstruction.lensAATGeometryScaffold
+    - AAT.AG.RealizationReconstruction.lensAATGeometryScaffold_equationSystem
+    - AAT.AG.RealizationReconstruction.lensAATGeometryScaffold_rawCoordinate
+    - AAT.AG.RealizationReconstruction.lensAATGeometryScaffold_rawFreePresentation
+    - AAT.AG.RealizationReconstruction.protocolAATGeometryScaffold
+    - AAT.AG.RealizationReconstruction.protocolAATGeometryScaffold_equationSystem
+    - AAT.AG.RealizationReconstruction.protocolAATGeometryScaffold_rawCoordinate
+    - AAT.AG.RealizationReconstruction.protocolAATGeometryScaffold_rawFreePresentation
   claim_mapping:
     source_labels:
       - "GOAL A: complete geometry and coefficient/raw input components"
@@ -13196,7 +13196,7 @@ result:
       - "one-way geometry transport and its preservation laws"
       - "complete-geometry readback and all-component inverse laws"
       - "core-package/ReadingCore provenance"
-    acceptance_point: "No completed map, semantic Hom, decoder membership, law certificate, or index equivalence is an endpoint input.  The pre-quotient raw coordinate family is the entire accepted Law coordinate type rather than an empty or one-coordinate substitute; required-role markers are not counted as coverage discharge."
+    acceptance_point: "The fixed target's lawful lens/protocol realization is an ambient input, but its lawfulness fields are unused by this scaffold construction.  No completed map, semantic Hom, decoder membership, additional EquationLawful/coverage/completion certificate, or index equivalence is an endpoint input.  The pre-quotient raw coordinate family is the entire accepted Law coordinate type rather than an empty or one-coordinate substitute; required-role markers are not counted as coverage discharge."
     port_status: not-applicable
 audits:
   premise_delta:
@@ -13227,8 +13227,9 @@ audits:
       - "the actual full Atom carrier supplies signature axes and coverage support roles"
       - "the canonical context restriction preorder supplies all contexts and product overlap"
       - "PEmpty applies only to extra raw structural equations; Law witness equations remain in the equation system"
-    unused: []
-  structure_field_escape: none-found-no-morphism-decoder-lawfulness-or-completion-certificate-field
+    unused:
+      - "lawfulness and finiteness fields carried by the fixed-target lens/protocol realization are ambient inputs but are not used to construct this site/raw scaffold"
+  structure_field_escape: none-found-no-morphism-decoder-additional-equation-lawfulness-coverage-or-completion-certificate-field
   route_integrity: pass-for-independent-aat-site-and-raw-endpoint-scaffold-only
   target_fitting: open-required-role-visibility-does-not-yet-identify-components
   vacuity: found-and-not-counted-true-visibility-markers-and-unused-requested-axis-remain-to-be-replaced-by-actual-readings-and-covers
@@ -13236,8 +13237,8 @@ audits:
   one_way_as_equivalence: not-applicable-no-morphism-claim-in-this-cycle
   goal_or_report_reinterpretation: repaired-complete-geometry-and-coverage-overclaims; readings-covers-quotient-morphism-readback-core-provenance-and-D-A-F-integration-remain-open
   validation_refs:
-    - "focused CSAATCompleteGeometryObjects file check: PASS; 37 namespace declarations, standard axioms only"
-    - "focused exact CSAATCompleteGeometryObjects target build: PASS (4272 jobs; not a Research aggregate build)"
+    - "focused CSAATGeometryScaffolds file check: PASS; 37 namespace declarations, standard axioms only"
+    - "focused exact CSAATGeometryScaffolds target build: PASS (4268 jobs; not a Research aggregate build)"
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct CS-derived componentwise Support/Axis/Observable readings and actual admissible covers, prove the empty-structural-relation quotient identification if the free-algebra claim is needed, then construct one-way geometry transport from each Cycle 129 primitive interface without equation-index equivalences."
