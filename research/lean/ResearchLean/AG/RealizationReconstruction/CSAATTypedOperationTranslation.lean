@@ -101,22 +101,53 @@ theorem lensPut_square {input : LensFamilyInput.{u}}
         (lensObjectMap f .write (state, view)).2 := by
   exact f.put_naturality state view
 
-/-- Role maps of the semantic identity are pointwise identities. -/
-@[simp] theorem lensObjectMap_id {input : LensFamilyInput.{u}}
-    (X : LensRealization input.View input.reference)
-    (role : LensPrimitiveObject input X) (value : role.Carrier) :
-    lensObjectMap (𝟙 X) role value = value := by
-  cases role <;> rfl
+/-- State and read role maps preserve semantic identities. -/
+@[simp] theorem lensObjectMap_id_state {input : LensFamilyInput.{u}}
+    (X : LensRealization input.View input.reference) (value : X.Carrier) :
+    lensObjectMap (𝟙 X) (.state : LensPrimitiveObject input X) value = value := rfl
 
-/-- Role maps preserve composition of arbitrary semantic lens morphisms. -/
-@[simp] theorem lensObjectMap_comp {input : LensFamilyInput.{u}}
+@[simp] theorem lensObjectMap_id_read {input : LensFamilyInput.{u}}
+    (X : LensRealization input.View input.reference) (value : X.Carrier) :
+    lensObjectMap (𝟙 X) (.read : LensPrimitiveObject input X) value = value := rfl
+
+/-- View and write role maps preserve semantic identities. -/
+@[simp] theorem lensObjectMap_id_view {input : LensFamilyInput.{u}}
+    (X : LensRealization input.View input.reference) (value : input.View) :
+    lensObjectMap (𝟙 X) (.view : LensPrimitiveObject input X) value = value := rfl
+
+@[simp] theorem lensObjectMap_id_write {input : LensFamilyInput.{u}}
+    (X : LensRealization input.View input.reference)
+    (value : X.Carrier × input.View) :
+    lensObjectMap (𝟙 X) (.write : LensPrimitiveObject input X) value = value := rfl
+
+/-- All four role maps preserve composition of arbitrary semantic lens morphisms. -/
+@[simp] theorem lensObjectMap_comp_state {input : LensFamilyInput.{u}}
     {X Y Z : LensRealization input.View input.reference}
-    (f : X ⟶ Y) (g : Y ⟶ Z) (role : LensPrimitiveObject input X)
-    (value : role.Carrier) :
-    lensObjectMap (f ≫ g) role value =
-      lensObjectMap g (lensRoleTransport (Y := Y) role)
-        (lensObjectMap f role value) := by
-  cases role <;> rfl
+    (f : X ⟶ Y) (g : Y ⟶ Z) (value : X.Carrier) :
+    lensObjectMap (f ≫ g) (.state : LensPrimitiveObject input X) value =
+      lensObjectMap g (.state : LensPrimitiveObject input Y)
+        (lensObjectMap f (.state : LensPrimitiveObject input X) value) := rfl
+
+@[simp] theorem lensObjectMap_comp_read {input : LensFamilyInput.{u}}
+    {X Y Z : LensRealization input.View input.reference}
+    (f : X ⟶ Y) (g : Y ⟶ Z) (value : X.Carrier) :
+    lensObjectMap (f ≫ g) (.read : LensPrimitiveObject input X) value =
+      lensObjectMap g (.read : LensPrimitiveObject input Y)
+        (lensObjectMap f (.read : LensPrimitiveObject input X) value) := rfl
+
+@[simp] theorem lensObjectMap_comp_view {input : LensFamilyInput.{u}}
+    {X Y Z : LensRealization input.View input.reference}
+    (f : X ⟶ Y) (g : Y ⟶ Z) (value : input.View) :
+    lensObjectMap (f ≫ g) (.view : LensPrimitiveObject input X) value =
+      lensObjectMap g (.view : LensPrimitiveObject input Y)
+        (lensObjectMap f (.view : LensPrimitiveObject input X) value) := rfl
+
+@[simp] theorem lensObjectMap_comp_write {input : LensFamilyInput.{u}}
+    {X Y Z : LensRealization input.View input.reference}
+    (f : X ⟶ Y) (g : Y ⟶ Z) (value : X.Carrier × input.View) :
+    lensObjectMap (f ≫ g) (.write : LensPrimitiveObject input X) value =
+      lensObjectMap g (.write : LensPrimitiveObject input Y)
+        (lensObjectMap f (.write : LensPrimitiveObject input X) value) := rfl
 
 /-! ## Protocol objects and primitive operations -/
 
