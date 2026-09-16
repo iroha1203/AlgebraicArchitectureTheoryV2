@@ -13,7 +13,7 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 98 gives each fixed finite Extension carrier an independent complete-table syntax and identifies it with the actual subgroup characterized by the complete stored-backward context action
+- current proof obligation: Cycle 98 gives each fixed finite Extension carrier explicit forward/backward lookup-table syntax, independently transports its primitive source-context action through the fixed route, and identifies it with the actual subgroup characterized by that decoder-independent complete action
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
 - next proof obligation: compare the carrier-indexed union of intrinsically characterized finite Extension-permutation subgroups with the full actual local-fiber kernel, construct either a coverage/decomposition theorem or an explicit source-owned residual direction outside that union, and retain the original G-122 classification obligations separately
@@ -22,7 +22,7 @@
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| D Cycle 98 delta | fixed finite Extension carrierごとにsemantic rangeから独立なcomplete table syntaxを定め、actual full stored-backward context actionで特徴付けたsubgroupとのdecoder同値を構成する | `FiniteAxisFoldExtensionPermutationCode`, `FiniteAxisFoldExtensionPermutationCode.tableMulEquiv`, `finiteAxisFoldExtensionPermutationDecoder`, `finiteAxisFoldExtensionPermutationBackwardAction`, `FiniteAxisFoldExtensionPermutationIntrinsicImage`, `finiteAxisFoldExtensionPermutationIntrinsicImage_mem_iff`, `finiteAxisFoldExtensionPermutationIntrinsicDecoderEquiv`, `finiteAxisFoldExtensionPermutationIntrinsicImage_mem_iff_decoder` | 任意の`E`; decoder単射・全射と同値だけ`[Fintype E]`; Cycles 92--97のsame fixed actual section; Cycle 90のfull local-kernel backward projection単射性 | table自身の群構造; derived complete backward action; action-rangeのpreimageによるactual subgroup; decoder landing; section単射性によるdecoder単射; full backward faithfulnessによるintrinsic membershipからdecoder全射; `MulEquiv` | carrier-indexed family全体とfull actual local-kernelのcoverage/decomposition検査へ渡す | 全有限carrier unionの定式化とfull-kernel比較、coverage/section/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
+| D Cycle 98 delta | fixed finite Extension carrierごとにsemantic rangeから独立なforward/backward lookup-table syntaxを定め、primitive source actionをdecoder非依存の固定routeで運び、actual full stored-backward context actionで特徴付けたsubgroupとのdecoder同値を構成する | `FiniteAxisFoldExtensionPermutationCode`, `FiniteAxisFoldExtensionPermutationCode.toPerm`, `FiniteAxisFoldExtensionPermutationCode.tableMulEquiv`, `finiteAxisFoldSourceToSouthwestContextEquiv`, `finiteAxisFoldSouthwestToExactLeftContextEquiv`, `finiteAxisFoldExactLeftToActualContextEquiv`, `finiteAxisFoldSourceToActualContextEquiv`, `finiteAxisFoldTransportedSourceContextPermutationHom`, `finiteAxisFoldSouthwestPermutation_contextBackward`, `finiteAxisFoldExactLeftPermutation_contextBackward`, `finiteAxisFoldActualPermutation_contextBackward`, `finiteAxisFoldExtensionPermutationDecoder`, `finiteAxisFoldExtensionPermutationBackwardAction`, `finiteAxisFoldExtensionPermutationDecoder_backwardProjection`, `FiniteAxisFoldExtensionPermutationIntrinsicImage`, `finiteAxisFoldExtensionPermutationIntrinsicImage_mem_iff`, `finiteAxisFoldExtensionPermutationIntrinsicDecoder`, `finiteAxisFoldExtensionPermutationIntrinsicDecoder_injective`, `finiteAxisFoldExtensionPermutationIntrinsicDecoder_surjective`, `finiteAxisFoldExtensionPermutationIntrinsicDecoderEquiv`, `finiteAxisFoldExtensionPermutationIntrinsicImage_mem_iff_decoder` | 任意の有限`E`; explicit lookup tablesと両inverse law; Cycles 92--97のsame fixed actual section; source→southwest→exact-left→actualの固定context equivalence; Cycle 90のfull local-kernel backward projection単射性 | lookup-table code自身の群構造; decoderとは独立に定義したprimitive source actionの固定route共役; 三段factorizationによるdecoder projectionとの一致; action-rangeのpreimageによるactual subgroup; decoder landing; section単射性によるdecoder単射; full backward faithfulnessによるintrinsic membershipからdecoder全射; `MulEquiv` | carrier-indexed family全体とfull actual local-fiber kernelのcoverage/decomposition検査へ渡す | 全有限carrier unionの定式化とfull-kernel比較、coverage/section/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
 | D Cycle 97 delta | arbitrary Extension-permutation familyのBool特殊化をCycle 91の独立C2 evaluatorとexactに同定し、同じactual local-fiber kernel内で非involutive source元によりC2 fragmentからの真の拡大を示す | `finiteAxisFoldExtensionValuePermutation_boolNot`, `finiteAxisFoldSourceBackwardPermutationGeometry_boolNot`, `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_boolNot`, `FiniteAxisFoldBackwardToggleSyntax.boolPerm`, `finiteAxisFoldBackwardToggleSyntax_evaluate_eq_boolPermutationSection`, `finiteAxisFoldBackwardToggleSyntax_evaluate_range_eq_boolPermutation_range`, `finiteAxisFoldExtensionThreeCycle_not_mem_backwardToggleSyntax_range` | 固定source/southwest/exact-left/top/normalization route; Cycle 91の独立二記号syntax/evaluator; Cycles 92--96の全有限carrier permutation sectionとactual単射性 | primitive value recipeから全context functor・equivalence・complete geometry・固定actual routeを通したBool同一性; Bool permutation全射によるrange exact equality; 原始`Fin 3`隣接swap積の非involutivityとactual section単射性によるC2 range外元 | intrinsic image predicate、独立table presentation、decoder equivalence、full local-kernel coverage検査へ渡す | fixed-carrier imageの内在的特徴付け、全kernelに対するsection/surjectivity/decomposition/coverage、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
 | D Cycle 96 delta | Cycle 95の全Extension-permutation familyについて、fixed actual route後の等号をsource probeへ読み戻し、normalized geometry sectionとactual local-fiber-kernel sectionの単射性を証明する | `finiteAxisFoldPermutationSouthwestProbe`, `finiteAxisFoldPermutationExactLeftProbe`, `finiteAxisFoldPermutationActualProbe`, `finiteAxisFoldNormalizedPermutationGeometrySectionHom_injective`, `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_injective` | 任意の有限`E`; Cycle 92のsource probesとsource action単射性; Cycles 93--95の同じsectionと固定southwest/exact-left/top/normalization route | 二つのopcartesian transportをcanonical retractionで消去し、exact-left pullをgenerated cancellationで消去; normalizationが保持するstored backward作用をsourceへ戻し、`p⁻¹=q⁻¹`から`p=q`を回復; subgroup equalityからunderlying normalized automorphism equalityを射影 | constructed Extension-permutation familyのactual faithfulnessを固定し、Bool/Cycle 91像比較と内在的image presentationへ渡す | Bool特殊化とCycle 91 evaluator像の同定、image characterization、section/surjectivity/decomposition/full-kernel coverage、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
 | D Cycle 95 delta | Cycle 94の全familyについて、全contextのSupport・Axis・Observable作用をcomplete dependent Sigma carrier上で恒等化し、actual joint local-fiber kernelへ同じhomを着地させる | `finiteAxisFoldNormalizedGenericPermutation_supportSigmaMap_eq_id`, `finiteAxisFoldNormalizedGenericPermutation_axisSigmaMap_eq_id`, `finiteAxisFoldNormalizedGenericPermutation_observableSigmaMap_eq_id`, 三つの`_*Equiv_eq_one`, `finiteAxisFoldNormalizedGenericPermutation_mem_localFiberKernel`, `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom` | 任意の`E`と全`Equiv.Perm E`; Cycle 93のcomplete geometry section; Cycle 94のcontext-kernel section; fixed transport factorizationとlocal cancellation | source/southwest/exact-left/top/normalizedの三Sigma-map恒等; 各contextの三local equivalence恒等; その証拠によるactual joint-kernel membershipとcodRestriction | Cycle 96のprobe readbackとactual injectivityへ渡す | actual injectivity、Bool evaluator比較、image characterization/coverage、一般入力と残るD/B/E/Fは未完了 |
@@ -10501,16 +10501,27 @@ selection:
 result:
   proposed_result_type: proof-checkpoint
   completion_candidate: no
-  proof_obligation_delta: "Defined an independent wrapper around one complete permutation table with its group law inherited directly from table composition.  Evaluated that syntax through the constructed actual section, derived its complete stored-backward context action, and defined the intrinsic actual subgroup as the preimage of the independently indexed action family under the full backward projection.  Decoder landing is constructed.  Actual section injectivity proves decoder injectivity, while faithfulness of the full backward projection turns every intrinsic action witness into equality with the decoded table and proves surjectivity.  The resulting MulEquiv is followed by, rather than defined from, an equivalent semantic decoder-range theorem."
+  proof_obligation_delta: "Defined finite source code by explicit forward and backward lookup functions with both inverse laws, not by a semantic arrow or image membership.  Independently of the complete-geometry decoder, constructed the fixed source-to-southwest, southwest-to-exact-left, and exact-left-to-actual context equivalences and conjugated the primitive source action through their composite.  Three factorization theorems compute the stored-backward action at each route stage, yielding a bridge theorem that the actual decoder projection equals this independently defined expected action.  The intrinsic actual subgroup is the preimage of the expected-action range under the full backward projection.  The bridge constructs decoder landing; actual section injectivity proves decoder injectivity; full backward faithfulness turns every intrinsic action witness into equality with the decoded table and proves surjectivity.  The resulting MulEquiv is followed by, rather than defined from, an equivalent semantic decoder-range theorem."
   lean_artifacts:
     - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldPermutationIntrinsicImage.lean
   evidence:
     - AAT.AG.RealizationReconstruction.FiniteAxisFoldExtensionPermutationCode
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldExtensionPermutationCode.toPerm
     - AAT.AG.RealizationReconstruction.FiniteAxisFoldExtensionPermutationCode.tableMulEquiv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSourceToSouthwestContextEquiv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSouthwestToExactLeftContextEquiv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExactLeftToActualContextEquiv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSourceToActualContextEquiv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldTransportedSourceContextPermutationHom
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSouthwestPermutation_contextBackward
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExactLeftPermutation_contextBackward
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldActualPermutation_contextBackward
     - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionPermutationDecoder
     - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionPermutationBackwardAction
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionPermutationDecoder_backwardProjection
     - AAT.AG.RealizationReconstruction.FiniteAxisFoldExtensionPermutationIntrinsicImage
     - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionPermutationIntrinsicImage_mem_iff
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionPermutationIntrinsicDecoder
     - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionPermutationIntrinsicDecoder_injective
     - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionPermutationIntrinsicDecoder_surjective
     - AAT.AG.RealizationReconstruction.finiteAxisFoldExtensionPermutationIntrinsicDecoderEquiv
@@ -10521,18 +10532,21 @@ result:
       - "do not treat the actual semantic range as source syntax"
       - "use the complete stored-backward action rather than selected probes or forgotten data"
     conjuncts:
-      - "one independent complete table -> source syntax code"
+      - "one pair of explicit finite forward/backward lookup tables with inverse laws -> source syntax code"
       - "same fixed actual route -> actual local-kernel decoder"
-      - "complete stored-backward action induced by a table -> intrinsic subgroup membership"
+      - "primitive source-context action conjugated through the fixed route without the decoder -> expected complete stored-backward action"
+      - "three route factorization laws -> decoder projection equals the independently expected action"
+      - "expected complete stored-backward action induced by a table -> intrinsic subgroup membership"
       - "full backward faithfulness -> every intrinsic member equals its decoded table"
       - "decoder injective and surjective -> fixed-carrier MulEquiv"
     undischarged_assumptions: []
-    acceptance_point: "For each finite E, the independent complete-table syntax is equivalent to the actual subgroup characterized by the complete stored-backward action; no union or full-kernel coverage is claimed."
+    acceptance_point: "For each finite E, the independent forward/backward lookup-table syntax is equivalent to the actual subgroup characterized by the decoder-independent transported source action; no union or full-kernel coverage is claimed."
     port_status: not-applicable
 audits:
   premise_delta:
     discharged:
-      - "independent fixed-carrier syntax"
+      - "independent fixed-carrier forward/backward lookup-table syntax"
+      - "decoder-independent transported source action and its equality with the actual decoder projection"
       - "intrinsic complete-action membership criterion"
       - "decoder landing, injectivity, surjectivity, and subgroup equivalence"
     remaining:
@@ -10541,8 +10555,9 @@ audits:
       - "original G-122 classification and remaining D/B/E/F"
   certificate_provenance:
     discharged:
-      - "syntax contains only a primitive permutation table and no semantic residual field"
-      - "backward action is derived by composing the constructed decoder with the actual projection"
+      - "syntax contains only explicit primitive forward/backward lookup functions with inverse laws and no semantic residual field"
+      - "backward action is constructed from the primitive source-context action and fixed context equivalences before the decoder is mentioned"
+      - "the decoder/action bridge is proved from the source-to-southwest, exact-left, and top-transport factorization laws"
       - "surjectivity is proved from intrinsic membership plus full projection faithfulness"
     unresolved:
       - "coverage of arbitrary full-kernel elements by any finite Extension carrier"
@@ -10550,6 +10565,7 @@ audits:
     used:
       - "Cycle 96 actual section injectivity distinguishes source tables"
       - "Cycle 90 full local-kernel backward projection injectivity converts action equality into actual element equality"
+      - "the three fixed-route factorization theorems compute the actual stored-backward projection as the independently transported primitive action"
       - "Subgroup comap and range encode the intrinsic action condition, not the source code type"
       - "the semantic decoder-range iff is derived only after the intrinsic decoder equivalence"
     unused: []
@@ -10561,8 +10577,8 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "focused file check: PASS"
-    - "focused exact target build: PASS (4328 jobs; not a Research aggregate build)"
-    - "namespace axiom audit: 29 declarations in the new module; standard axioms only"
+    - "focused exact target build: PASS (4325 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 49 declarations in the new module; standard axioms only"
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Formulate the carrier-indexed union of these intrinsic subgroups and either prove full local-kernel coverage/decomposition or construct an explicit source-owned residual direction outside every finite-carrier Extension action."
