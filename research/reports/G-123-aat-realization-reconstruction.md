@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 116 packages the fixed-F actual sequence as split short exact and proves every literal projection fiber is a torsor for the actual projection kernel
+- current proof obligation: Cycle 117 constructs the basepoint-preserving actual subgroup and proves its split exact sequence, literal kernel torsors, and complete pointed-fiber classification
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the basepoint-preserving variant and finite cardinality formula, then instantiate the three fixed F examples before transporting the same classification through E and D
+- next proof obligation: prove the finite cardinality formulas for the full and basepoint-preserving fibers, then instantiate the three fixed F examples before transporting the same classification through E and D
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| F Cycle 117 delta | `k₀ : K`を保つ版でactual following group、componentごとのpoint stabilizer kernel、split exactness、全visible fiberのtorsor/完全分類を同一構成から証明する | `PointedPermutation`, `PointedComponentGroup`, `PointedFollowingGroup`, `mem_pointedFollowingGroup_iff_state`, `pointedProjection`, `pointedCanonicalSection`, `forgetPointedComponentGroup`, `pointedComponentKernelHom`, `pointedComponentFamilyOfPair`, `range_pointedComponentKernelHom_eq_ker_pointedProjection`, `isGroupShortExact`, `PointedProjectionFiber`, pointed kernel `SMul`/`MulAction`, free/transitive/`∃!`, normalization, `pointedComponentGroupEquivProjectionFiber` | 任意の`F,K,k₀`、独立入力`H ≤ Aut(F)`、全`u : H`; Cycle111--116のactual group/component kernel/split fiber構成 | 全頂点fiberの`k₀`固定条件からactual subgroupを積・逆元に閉じて構成; 実state section `(v,k₀)↦(u(v),k₀)`保存との同値; literal stabilizer familyからactual kernel元を構成し逆抽出; `range = ker`; canonical section; literal pointed kernelの右作用と完全往復 | F1のbasepoint-preserving variantと後続の固定section例 | 通常/pointed有限個数公式、3固定例、lens/protocol適用、AAT/E/D表示側回復は未完了 |
 | F Cycle 116 delta | component-family inclusion、actual following group、visible projectionをsplit short exact sequenceとしてまとめ、全`u : H`上のliteral fiberがactual kernelのtorsorであることとcomponent familyによる全選択肢を証明する | `ProjectionFiber`, `projectionFiberSMul`, `projectionFiberMulAction`, `projectionFiber_action_free`, `projectionFiber_action_transitive`, `projectionFiber_existsUnique_smul_eq`, `isGroupShortExact`, `canonicalSection_rightInverse`, `componentKernelHom_componentFamilyOfPair_of_projection_eq_one`, `normalizedKernelElement`, `componentFamilyToFiber`, `componentFamilyOfFiber`, `componentGroupEquivProjectionFiber` | 任意の`F,K`、独立入力`H ≤ Aut(F)`、全`u : H`; Cycle111--115のactual group、section、component kernel mapと`range = ker` | G-120 `IsGroupShortExact`への単射・exact・全射の実装; homomorphic sectionの右逆; literal kernelの右乗法をopposite group作用として構成しfree/transitive/`∃!` displacementを証明; canonical liftを除去しcomponent quotientからfamilyを読み戻す完全な往復 | F1のsplit exactness、全visible automorphism上の追随変更のkernel-torsor分類、G-120の完全性・fiber整理 | basepoint固定版、有限個数公式、3固定例、lens/protocol適用、AAT/E/D表示側回復は未完了 |
 | F Cycle 115 delta | component-indexed permutation群をidentity-visible actual pairとして構成し、そのrangeがrestricted projectionのactual kernelと一致することを双方向に証明する | `ComponentGroup`, `identityVisiblePair`, `restrictedIdentityVisiblePair`, `componentKernelHom`, `componentKernelHom_fiberPerm`, `componentKernelHom_injective`, `projection_componentKernelHom`, `componentFamilyOfPair`, `componentFamilyOfPair_mk`, `range_componentKernelHom_eq_ker_projection` | 任意の`F,K`と独立`H`; Cycle111--114のactual pair/fiber/component/projection | component同一性からactual execution squareを構成; Pi群のGroupHom; 全component上のfiber評価で単射; kernel内actual pairのfiberをquotient descent; original `h` factorizationで再構成pairとの等式 | F1のkernel inclusion/exactnessと各fiberのkernel torsor | split exact sequenceのひとまとめ化、torsor、basepoint/個数/例、CS/AAT/D接続は未完了 |
 | F Cycle 114 delta | 独立入力`H ≤ Aut(Q)`にactual pair群を制限し、各`u∈H`のidentity-hidden liftとcomponent作用を構成する | `FollowingGroup`, `projection`, `canonicalSection`, `projection_section`, `projection_surjective`; `map_directedEdgeStep`, `map_undirectedReachable`, `componentMap`, `componentPerm`, `componentPerm_mk`, `componentAction`, `restrictedComponentAction` | 任意の`F,K`と独立に与えられる`H : Subgroup (FixedFGraphAutomorphism F)` | actual visible projectionの`H.comap`; Cycle113 sectionのH所属を元のsubtype proofから放電; restricted projectionの全射; raw edge-step/reachability保存; quotient上のcomponent permutationとGroupHom | F1のactual projection、Hのcomponent再添字作用、kernel同定 | component-family kernel mapとrange=ker、exactness、torsor、basepoint/個数/例、CS/AAT/D接続は未完了 |
@@ -12184,4 +12185,47 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct the basepoint-preserving subgroup version and finite cardinality formula, then instantiate the three fixed F examples before D/E/AAT transport."
+```
+
+## Cycle 117 — Basepoint-preserving split sequence and fibers
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 117
+base_oid: bfc6e1d875171fa6c9feb22ef92fac0ff686ce41
+tracking_issue: 4520
+selection:
+  proof_obligation: "Construct the basepoint-preserving fixed-F actual subgroup and replace every hidden permutation factor by its literal point stabilizer without changing H or the visible fibers"
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "For arbitrary F, K, basepoint k0, independent H <= Aut(F), and every u : H, constructed the actual subgroup whose fiber permutations fix k0 at every vertex and proved this is equivalent to preservation of the actual state section (v,k0).  Constructed the component-indexed product of literal point stabilizers, its faithful actual kernel map, reverse extraction, literal range=kernel, short exactness, and canonical split section.  Defined the full pointed projection fiber, literal right kernel action, free/transitive/unique displacement, and an explicit equivalence between pointed component families and every pointed projection fiber."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FixedFPointedSplitExactSequenceAndTorsor.lean
+  unfinished:
+    - "full and basepoint-preserving finite cardinality formulas"
+    - "three fixed lens/section/protocol examples and exact counts/failure evaluations"
+    - "lens/protocol applications, AAT translation, presentation-side recovery, and D/E group isomorphism transport"
+review:
+  fixed_head: 1a878058718879a55365a4d66b4ad45793095884
+  lanes: {math_a: pass, math_b: pass, lean_a: pass, lean_b: pass}
+  direct_response:
+    reviewed_delta: "bfc6e1d875171fa6c9feb22ef92fac0ff686ce41..1a878058718879a55365a4d66b4ad45793095884"
+    verdict: pass
+    new_findings: []
+audits:
+  certificate_provenance: "point preservation is the defining source condition for this requested variant and is computed from every actual fiber map; the state-section bridge proves it is not a stored lift or reconstruction certificate"
+  proof_use: "semidirect fiber multiplication and inverse reindexing prove subgroup closure; Cycle116 actual reconstruction proves pointed reverse extraction; literal pointed projection equations prove exactness and torsor displacement; the canonical identity-hidden h supplies every visible lift"
+  structure_field_escape: none-found
+  target_fitting: none-found-all-independent-H-elements-and-full-pointed-fibers-retained
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (1155 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 31 declarations in the new module; standard axioms only"
+    - "CI: all 7 checks PASS, including research integrity gates"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Prove the full fiber count (|K|!)^|pi0(F)| and pointed fiber count ((|K|-1)!)^|pi0(F)|, then instantiate the three fixed F examples."
 ```
