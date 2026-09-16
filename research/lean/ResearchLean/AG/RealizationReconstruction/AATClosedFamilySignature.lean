@@ -2381,6 +2381,12 @@ inductive PrimitiveOperation :
       (edge : input.schema.Edge source target) :
       PrimitiveOperation (.protocol input) (.protocol X) (PrimitiveObject.protocolState source)
         (PrimitiveObject.protocolState target)
+  | protocolObservation {input : ProtocolFamilyInput.{u}}
+      {X : ProtocolRealization input.schema input.observation}
+      (vertex : input.schema.Vertex) :
+      PrimitiveOperation (.protocol input) (.protocol X)
+        (PrimitiveObject.protocolState vertex)
+        (PrimitiveObject.protocolObservation vertex)
 
 namespace PrimitiveOperation
 
@@ -2894,6 +2900,17 @@ def protocolEdge {input : ProtocolFamilyInput.{u}}
       (PrimitiveObject.protocolState source : PrimitiveObject (.protocol input) (.protocol X))
       (PrimitiveObject.protocolState target : PrimitiveObject (.protocol input) (.protocol X)) :=
   .protocolEdge edge
+
+/-- Every named protocol observation occurs from the state carrier at its
+original vertex to the exact fixed observation carrier at that vertex. -/
+def protocolObservation {input : ProtocolFamilyInput.{u}}
+    {X : ProtocolRealization input.schema input.observation}
+    (vertex : input.schema.Vertex) :
+    PrimitiveOperation (.protocol input) (.protocol X)
+      (PrimitiveObject.protocolState vertex : PrimitiveObject (.protocol input) (.protocol X))
+      (PrimitiveObject.protocolObservation vertex :
+        PrimitiveObject (.protocol input) (.protocol X)) :=
+  .protocolObservation vertex
 
 /-- Role-indexed access to the actual source G-122 signature axis. -/
 inductive PrimitiveSignatureAxis :
