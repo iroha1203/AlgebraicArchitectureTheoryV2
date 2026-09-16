@@ -6,9 +6,11 @@ import Formal.Util.AssertStandardAxioms
 # CS-derived geometry readings and admissible endpoint covers
 
 This module replaces the marker-only visibility predicates of the Cycle 130
-scaffold by readings derived from the actual lens and protocol data.  A
-support is an exact n1015 (A1) source together with the exact Atom it reads.
-Axes are the actual AAT atoms.  Observables are the
+scaffold by readings derived from the actual lens and protocol data.  Support
+and axes are the actual AAT atoms, with support readability given by exact
+equality rather than an unconditional marker.  The n1015 (A1) selected point
+is retained separately in the context extension together with the raw Law
+operations.  Observables are the
 actual Law polynomial rings, and a readable observable is exactly a named
 polynomial variable.
 
@@ -41,17 +43,17 @@ def lensAATGeometrySignature (input : LensFamilyInput.{u}) :
   selected _ := True
   coordinate _ axis := axis
 
-/-- The lens context reads the actual A1 source, actual atom axes, actual Law
-polynomial variables, and the original raw get/put structure. -/
+/-- The lens context reads exact Atom supports and axes and actual Law
+polynomial variables.  Its extension retains the n1015 A1 selected point and
+the original raw get/put structure as separate data. -/
 def lensAATGeometryReadingContext (input : LensFamilyInput.{u})
     (X : LensRealization input.View input.reference) :
     Site.ArchCtx (lensLawObject input X.Carrier X.toLensData.toLawStructure) where
   minimal := {
-    Support := LensAATSource X × LensAATAtom input
+    Support := LensAATAtom input
     Axis := LensAATAtom input
     Observable := LensLawCoordinateRing input X.Carrier
-    supportReads := fun support atom =>
-      lensAATExtracts support.1 support.2 ∧ support.2 = atom
+    supportReads := fun support atom => support = atom
     supportReads_objectFamily := fun {_ atom} _ =>
       typedRoleConfiguration_mem _ atom
     axisReads := fun axis =>
@@ -62,8 +64,9 @@ def lensAATGeometryReadingContext (input : LensFamilyInput.{u})
           (lensLawEquationSystem input X.Carrier
             X.toLensData.toLawStructure).Coordinate,
         polynomial = MvPolynomial.X coordinate }
-  Extension := ULift.{u + 1, u} (LensLawStructure input.View X.Carrier)
-  extension := ULift.up X.toLensData.toLawStructure
+  Extension :=
+    ULift.{u + 1, u} (LensLawStructure input.View X.Carrier) × LensAATSource X
+  extension := (ULift.up X.toLensData.toLawStructure, .point)
 
 /-- Coverage requirements expose exact A1 support, exact polynomial variables,
 and exact atom axes through restrictions into the canonical lens context. -/
@@ -123,8 +126,7 @@ noncomputable def lensAATGeometryReadingCover (input : LensFamilyInput.{u})
   admissible := {
     atomSupportCoverage := by
       intro atom _
-      exact ⟨PUnit.unit, ((.point : LensAATSource X), atom),
-        lensAATExtracts_point (X := X) atom, rfl⟩
+      exact ⟨PUnit.unit, atom, rfl⟩
     equationCoordinateCoverage := by
       intro coordinate _
       left
@@ -163,17 +165,17 @@ def protocolAATGeometrySignature (input : ProtocolFamilyInput.{u}) :
   selected _ := True
   coordinate _ axis := axis
 
-/-- The protocol context reads the actual A1 source, actual atom axes, actual
-Law polynomial variables, and the original edge-action/observation structure. -/
+/-- The protocol context reads exact Atom supports and axes and actual Law
+polynomial variables.  Its extension retains the n1015 A1 selected point and
+the original edge-action/observation structure as separate data. -/
 def protocolAATGeometryReadingContext (input : ProtocolFamilyInput.{u})
     (X : ProtocolRealization input.schema input.observation) :
     Site.ArchCtx (protocolLawObject input X.State X.toLawStructure) where
   minimal := {
-    Support := ProtocolAATSource X × ProtocolAATAtom input
+    Support := ProtocolAATAtom input
     Axis := ProtocolAATAtom input
     Observable := ProtocolLawCoordinateRing input X.State
-    supportReads := fun support atom =>
-      protocolAATExtracts support.1 support.2 ∧ support.2 = atom
+    supportReads := fun support atom => support = atom
     supportReads_objectFamily := fun {_ atom} _ =>
       typedRoleConfiguration_mem _ atom
     axisReads := fun axis =>
@@ -183,8 +185,9 @@ def protocolAATGeometryReadingContext (input : ProtocolFamilyInput.{u})
       ∃ coordinate :
           (protocolLawEquationSystem input X.State X.toLawStructure).Coordinate,
         polynomial = MvPolynomial.X coordinate }
-  Extension := ULift.{u + 1, u} (ProtocolLawStructure input X.State)
-  extension := ULift.up X.toLawStructure
+  Extension :=
+    ULift.{u + 1, u} (ProtocolLawStructure input X.State) × ProtocolAATSource X
+  extension := (ULift.up X.toLawStructure, .point)
 
 /-- Coverage requirements expose exact A1 support, exact polynomial variables,
 and exact atom axes through restrictions into the canonical protocol context. -/
@@ -246,8 +249,7 @@ noncomputable def protocolAATGeometryReadingCover
   admissible := {
     atomSupportCoverage := by
       intro atom _
-      exact ⟨PUnit.unit, ((.point : ProtocolAATSource X), atom),
-        protocolAATExtracts_point (X := X) atom, rfl⟩
+      exact ⟨PUnit.unit, atom, rfl⟩
     equationCoordinateCoverage := by
       intro coordinate _
       left
