@@ -4,16 +4,16 @@ import ResearchLean.AG.GeometryTransport.Basic
 import Formal.Util.AssertStandardAxioms
 
 /-!
-# Isomorphism-invariant raw coordinates for CS reading cores
+# Constant-coordinate raw route and its semantic obstruction
 
 The strict `GeometryTotalHom.raw_eq` contract compares raw systems by equality,
-not merely by an equivalence of their coordinate types.  This module begins a
-fixed-target-preserving solution: raw coordinates are indexed by canonical
-finite-complement normal-form carriers whose complement cardinal is determined
-by the original CS input.  The primitive `View`, total carrier, and resulting
-Law-coordinate family may all be infinite.  The original complete
-Law-index/Atom coordinate family remains
-equivalent to the canonical one; it is not replaced by a selected subset.
+not merely by an equivalence of their coordinate types.  This module tests the
+candidate route of indexing raw coordinates by canonical finite-complement
+normal-form carriers whose complement cardinal is determined by the original
+CS input.  The primitive `View`, total carrier, and resulting Law-coordinate
+family may all be infinite.  The original complete Law-index/Atom coordinate
+family remains equivalent to the canonical one; it is not replaced by a
+selected subset.
 
 The generic constant-coordinate raw system below has empty additional
 structural relations and identity restriction maps.  Its strict reindex law is
@@ -21,8 +21,12 @@ proved for every package hom.  The lens specialization then proves that a
 genuine CS isomorphism preserves the finite reference-fiber cardinal, so the
 canonical coordinate types agree literally after eliminating that equality.
 
-This is the raw-coordinate layer only.  It does not yet construct a
-`SignedExactCoreReadingHom`, `GeometryTotalHom`, or readback.
+The final section refutes this route as a fixed-target solution.  A nontrivial
+Boolean hidden-state automorphism acts nontrivially on the semantic Law
+coordinates, while the constant raw restriction fixes every variable.  Thus
+literal equality obtained only from the complement cardinal does not preserve
+the required coordinate transport.  This is a candidate-route refutation, not
+a refutation of G-123 and not a `GeometryTotalHom` construction.
 -/
 
 namespace AAT.AG.RealizationReconstruction
@@ -222,6 +226,68 @@ theorem lensAATCanonicalRawReadingCore_reindex
   unfold lensAATCanonicalRawReadingCore
   rw [← hcoord]
   exact constantRawSystemOn_reindex f (LensCanonicalRawCoordinate input X)
+
+/-! ## Refutation of the constant-coordinate transport route
+
+Literal equality of the canonical coordinate *types* does not identify the
+semantic action of an isomorphism with the identity action used by
+`constantRawSystemOn`.  The following source-owned product lens makes that
+failure explicit.  It refutes this candidate route only; it is not a
+refutation of the fixed G-123 target. -/
+
+/-- The smallest fixed lens parameter with a nontrivial finite complement. -/
+def constantRawRouteBoolInput : LensFamilyInput where
+  View := PUnit
+  reference := PUnit.unit
+
+/-- The product lens whose hidden Boolean complement admits a nontrivial
+automorphism while its visible value is fixed. -/
+abbrev constantRawRouteBoolLens :
+    LensRealization constantRawRouteBoolInput.View
+      constantRawRouteBoolInput.reference :=
+  LensRealization.product PUnit Bool PUnit.unit
+
+/-- The source-owned hidden Boolean swap, as a genuine semantic lens
+automorphism. -/
+def constantRawRouteBoolSwap :
+    constantRawRouteBoolLens ≅ constantRawRouteBoolLens :=
+  LensRealization.productIsoOfEquiv PUnit PUnit.unit (Equiv.swap false true)
+
+/-- The hidden swap moves the selected concrete state. -/
+theorem constantRawRouteBoolSwap_moves_false :
+    constantRawRouteBoolSwap.hom.toFun (PUnit.unit, false) =
+      (PUnit.unit, true) := by
+  rfl
+
+/-- Consequently the complete semantic Law-index transport is nontrivial. -/
+theorem constantRawRouteBoolSwap_lawIndex_ne :
+    lensIsoLawIndexEquiv constantRawRouteBoolSwap
+        (.putGet (PUnit.unit, false)) ≠
+      (.putGet (PUnit.unit, false)) := by
+  intro h
+  have hstate : constantRawRouteBoolSwap.hom.toFun (PUnit.unit, false) =
+      (PUnit.unit, false) := by
+    injection h
+  rw [constantRawRouteBoolSwap_moves_false] at hstate
+  exact Bool.noConfusion (Prod.mk.inj hstate).2
+
+/-- Transporting the complete Law coordinate through the objectwise canonical
+normal form remains nontrivial.  Thus it cannot commute with the identity
+coordinate action of `constantRawSystemOn`. -/
+theorem constantRawRouteBoolSwap_canonicalCoordinate_ne
+    (atom : LensAATAtom constantRawRouteBoolInput) :
+    lensCanonicalRawCoordinateEquiv constantRawRouteBoolInput
+        constantRawRouteBoolLens
+        (ULift.up (lensIsoLawIndexEquiv constantRawRouteBoolSwap
+          (.putGet (PUnit.unit, false))), atom) ≠
+      lensCanonicalRawCoordinateEquiv constantRawRouteBoolInput
+        constantRawRouteBoolLens
+        (ULift.up (.putGet (PUnit.unit, false)), atom) := by
+  intro h
+  have hsource := (lensCanonicalRawCoordinateEquiv
+    constantRawRouteBoolInput constantRawRouteBoolLens).injective h
+  exact constantRawRouteBoolSwap_lawIndex_ne (ULift.up.inj
+    (Prod.mk.inj hsource).1)
 
 #assert_standard_axioms_only AAT.AG.RealizationReconstruction
 
