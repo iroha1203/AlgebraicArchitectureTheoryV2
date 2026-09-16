@@ -4,25 +4,27 @@ import Formal.AG.Site.Geometry
 import Formal.Util.AssertStandardAxioms
 
 /-!
-# Complete geometry objects for the two CS semantics
+# Geometry endpoint scaffolds for the two CS semantics
 
-This module constructs the object side of the complete geometry required by
-G-123(E).  Each independently given lens or protocol realization produces an
-actual `AATSite` on its actual Law object.  The site keeps every Law index and
-Atom as a raw coordinate, selects the complete fixed Atom vocabulary and all
-Law coordinates for coverage, uses the canonical product overlap, and carries
-a coherent raw restriction system over `Int`.
+This module constructs a morphism-independent endpoint scaffold toward the
+complete geometry required by G-123(E).  Each independently given lens or
+protocol realization produces an actual `AATSite` on its actual Law object.
+The site marks the fixed Atom vocabulary and Law-coordinate roles as required,
+uses the canonical product overlap, and carries a coherent raw restriction
+system over `Int` whose pre-quotient variables keep every Law index and Atom.
 
 The raw structural-relation family is empty on purpose: in the Formal AAT
 contract, Law witness equations remain outside the raw structural quotient.
-Thus the raw algebra is the free polynomial algebra on all Law/Atom
-coordinates rather than a quotient that erases them.
+Thus the pre-quotient raw presentation is the free polynomial algebra on all
+Law/Atom coordinates.  This file does not yet identify the actual quotient
+with that presentation.
 
 This file constructs endpoint geometry independently of any morphism.  It does
 not use `GeometryTotalHom`: that exact-change API requires an equivalence of
 equation indices and would exclude the arbitrary noninjective CS morphisms
-fixed by n1015.  One-way coverage, overlap, raw, and Support/Axis/Observable
-transport is the next morphism-side obligation.
+fixed by n1015.  Actual admissible covers, componentwise
+Support/Axis/Observable readings, ReadingCore provenance, and one-way
+morphism transport remain obligations.
 -/
 
 namespace AAT.AG.RealizationReconstruction
@@ -31,7 +33,7 @@ open CategoryTheory
 
 universe u
 
-/-! ## Generic complete Law geometry -/
+/-! ## Generic Law endpoint scaffold -/
 
 /-- Every primitive Atom is retained as a distinct signature axis. -/
 def completeLawSignature (U : AtomCarrier.{u}) : ArchitectureSignature U where
@@ -40,10 +42,9 @@ def completeLawSignature (U : AtomCarrier.{u}) : ArchitectureSignature U where
   selected _ := True
   coordinate _ _ := PUnit.unit
 
-/-- Coverage data selecting the complete Atom vocabulary and every Law
-coordinate.  Support and axis visibility are read from the actual local
-context; equation coordinates are globally present in the raw coordinate
-family constructed below. -/
+/-- Required-role predicates for the complete Atom vocabulary and every Law
+coordinate.  These predicates do not by themselves construct an
+`AATCoverageFamily` or an admissible cover. -/
 def completeLawCoverageRequirements {U : AtomCarrier.{u}}
     {A : ArchitectureObject U} {C : Site.ContextPreorderCategory A}
     (E : ArchitecturalEquationSystem C) :
@@ -58,7 +59,7 @@ def completeLawCoverageRequirements {U : AtomCarrier.{u}}
   axisReadableOn W _ := ∃ axis, W.minimal.axisReads axis
   boundaryVisibleOn _ _ := True
 
-/-- Every Atom is a required support coordinate; coverage is not empty. -/
+/-- Every Atom is marked as a required support role. -/
 @[simp] theorem completeLawCoverageRequirements_requiredSupport
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {C : Site.ContextPreorderCategory A} (E : ArchitecturalEquationSystem C)
@@ -66,7 +67,7 @@ def completeLawCoverageRequirements {U : AtomCarrier.{u}}
     (completeLawCoverageRequirements E).requiredSupport atom :=
   trivial
 
-/-- Every required Law coordinate is retained by coverage. -/
+/-- Every required Law coordinate is marked as required. -/
 @[simp] theorem completeLawCoverageRequirements_requiredCoordinate
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {C : Site.ContextPreorderCategory A} (E : ArchitecturalEquationSystem C)
@@ -74,7 +75,7 @@ def completeLawCoverageRequirements {U : AtomCarrier.{u}}
     (completeLawCoverageRequirements E).requiredEquationCoordinate coordinate :=
   trivial
 
-/-- Every Law/Atom violation coordinate remains selected. -/
+/-- Every Law/Atom violation coordinate is marked as selected. -/
 @[simp] theorem completeLawCoverageRequirements_selectedViolation
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {C : Site.ContextPreorderCategory A} (E : ArchitecturalEquationSystem C)
@@ -82,7 +83,7 @@ def completeLawCoverageRequirements {U : AtomCarrier.{u}}
     (completeLawCoverageRequirements E).selectedViolationWitness coordinate :=
   trivial
 
-/-- Every primitive Atom axis remains required by the full signature. -/
+/-- Every primitive Atom axis is marked as required by the signature. -/
 @[simp] theorem completeLawCoverageRequirements_requiredAxis
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {C : Site.ContextPreorderCategory A} (E : ArchitecturalEquationSystem C)
@@ -97,8 +98,9 @@ noncomputable def completeLawOverlap {U : AtomCarrier.{u}}
   Site.meetOverlapPullback (Site.contextMorphismPreorderCategory A)
     Site.productContextFiniteMeet
 
-/-- The selected AAT site attached directly to an actual Law object and its
-object-dependent equation system. -/
+/-- The AAT-site scaffold attached directly to an actual Law object and its
+object-dependent equation system.  Its requirements are selectors, not an
+existence proof of admissible covers. -/
 noncomputable def completeLawSite {U : AtomCarrier.{u}}
     (A : ArchitectureObject U)
     (E : ArchitecturalEquationSystem
@@ -198,8 +200,10 @@ noncomputable def completeLawRawSystem {U : AtomCarrier.{u}}
       completeLawRawCoordinateRestriction_polynomialMap E g]
     exact (RingHom.id_comp _).symm
 
-/-- A complete endpoint geometry assembled from actual Formal AAT component
-types.  The coefficient ring is fixed to `Int`, as in the CS Law coordinates. -/
+/-- An endpoint scaffold assembled from actual Formal AAT component types.
+The coefficient ring is fixed to `Int`, as in the CS Law coordinates.  The
+historical name is retained for downstream compatibility; no `ReadingCore` or
+admissible-cover completeness theorem is part of this structure. -/
 structure CSAATCompleteGeometryObject (U : AtomCarrier.{u}) where
   /-- The actual object whose operation data the Law residual evaluates. -/
   object : ArchitectureObject U
@@ -210,8 +214,7 @@ structure CSAATCompleteGeometryObject (U : AtomCarrier.{u}) where
 
 /-! ## Lens endpoint geometry -/
 
-/-- The actual lens Law object and its full context, coverage, overlap,
-coefficient, raw-coordinate, Support, Axis, and Observable geometry. -/
+/-- The actual lens Law object with its site/raw endpoint scaffold. -/
 noncomputable def lensAATCompleteGeometry (input : LensFamilyInput.{u})
     (X : LensRealization input.View input.reference) :
     CSAATCompleteGeometryObject (lensAATCarrier input) where
@@ -239,9 +242,9 @@ noncomputable def lensAATCompleteGeometry (input : LensFamilyInput.{u})
         X.toLensData.toLawStructure).Coordinate :=
   rfl
 
-/-- The lens raw free algebra is the existing polynomial Law coordinate ring,
-not a one-coordinate or empty replacement. -/
-theorem lensAATCompleteGeometry_rawFreeAlgebra
+/-- The lens pre-quotient raw presentation is the existing polynomial Law
+coordinate ring, not a one-coordinate or empty replacement. -/
+theorem lensAATCompleteGeometry_rawFreePresentation
     (input : LensFamilyInput.{u})
     (X : LensRealization input.View input.reference)
     (W : (lensAATCompleteGeometry input X).site.category) :
@@ -252,8 +255,7 @@ theorem lensAATCompleteGeometry_rawFreeAlgebra
 
 /-! ## Protocol endpoint geometry -/
 
-/-- The actual protocol Law object and its full context, coverage, overlap,
-coefficient, raw-coordinate, Support, Axis, and Observable geometry. -/
+/-- The actual protocol Law object with its site/raw endpoint scaffold. -/
 noncomputable def protocolAATCompleteGeometry (input : ProtocolFamilyInput.{u})
     (X : ProtocolRealization input.schema input.observation) :
     CSAATCompleteGeometryObject (protocolAATCarrier input) where
@@ -280,9 +282,9 @@ noncomputable def protocolAATCompleteGeometry (input : ProtocolFamilyInput.{u})
       (protocolLawEquationSystem input X.State X.toLawStructure).Coordinate :=
   rfl
 
-/-- The protocol raw free algebra is the existing polynomial Law coordinate
-ring on every original named relation, edge, observation, and Atom. -/
-theorem protocolAATCompleteGeometry_rawFreeAlgebra
+/-- The protocol pre-quotient raw presentation is the existing polynomial Law
+coordinate ring on every original named relation, edge, observation, and Atom. -/
+theorem protocolAATCompleteGeometry_rawFreePresentation
     (input : ProtocolFamilyInput.{u})
     (X : ProtocolRealization input.schema input.observation)
     (W : (protocolAATCompleteGeometry input X).site.category) :
