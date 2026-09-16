@@ -106,6 +106,7 @@ theorem lensPut_square {input : LensFamilyInput.{u}}
     (X : LensRealization input.View input.reference) (value : X.Carrier) :
     lensObjectMap (𝟙 X) (.state : LensPrimitiveObject input X) value = value := rfl
 
+/-- The read-role map preserves semantic identities. -/
 @[simp] theorem lensObjectMap_id_read {input : LensFamilyInput.{u}}
     (X : LensRealization input.View input.reference) (value : X.Carrier) :
     lensObjectMap (𝟙 X) (.read : LensPrimitiveObject input X) value = value := rfl
@@ -115,6 +116,7 @@ theorem lensPut_square {input : LensFamilyInput.{u}}
     (X : LensRealization input.View input.reference) (value : input.View) :
     lensObjectMap (𝟙 X) (.view : LensPrimitiveObject input X) value = value := rfl
 
+/-- The write-role map preserves semantic identities. -/
 @[simp] theorem lensObjectMap_id_write {input : LensFamilyInput.{u}}
     (X : LensRealization input.View input.reference)
     (value : X.Carrier × input.View) :
@@ -128,6 +130,7 @@ theorem lensPut_square {input : LensFamilyInput.{u}}
       lensObjectMap g (.state : LensPrimitiveObject input Y)
         (lensObjectMap f (.state : LensPrimitiveObject input X) value) := rfl
 
+/-- The read-role map preserves composition of arbitrary semantic lens morphisms. -/
 @[simp] theorem lensObjectMap_comp_read {input : LensFamilyInput.{u}}
     {X Y Z : LensRealization input.View input.reference}
     (f : X ⟶ Y) (g : Y ⟶ Z) (value : X.Carrier) :
@@ -135,6 +138,7 @@ theorem lensPut_square {input : LensFamilyInput.{u}}
       lensObjectMap g (.read : LensPrimitiveObject input Y)
         (lensObjectMap f (.read : LensPrimitiveObject input X) value) := rfl
 
+/-- The view-role map preserves composition of arbitrary semantic lens morphisms. -/
 @[simp] theorem lensObjectMap_comp_view {input : LensFamilyInput.{u}}
     {X Y Z : LensRealization input.View input.reference}
     (f : X ⟶ Y) (g : Y ⟶ Z) (value : input.View) :
@@ -142,6 +146,7 @@ theorem lensPut_square {input : LensFamilyInput.{u}}
       lensObjectMap g (.view : LensPrimitiveObject input Y)
         (lensObjectMap f (.view : LensPrimitiveObject input X) value) := rfl
 
+/-- The write-role map preserves composition of arbitrary semantic lens morphisms. -/
 @[simp] theorem lensObjectMap_comp_write {input : LensFamilyInput.{u}}
     {X Y Z : LensRealization input.View input.reference}
     (f : X ⟶ Y) (g : Y ⟶ Z) (value : X.Carrier × input.View) :
