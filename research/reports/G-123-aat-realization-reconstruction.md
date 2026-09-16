@@ -12539,14 +12539,19 @@ result:
     - "D comparison-group transport and presentation/AAT-side recovery of the same groups, sections, kernels, fibers, and classification data"
     - "the remaining A--F same-construction integration and final completion audit"
 review:
-  fixed_head: 66c6c1833
+  fixed_head: 106927f14
   initial_findings:
     - "Lean B found five exported lens identity/composition theorems without individually attached docstrings"
+    - "the final-snapshot reviewers found three nonexistent declaration names in the requirement ledger"
+    - "the final-snapshot Lean reviewers found three grouped theorem docstrings broader than their attached declarations and a PrimitiveOperation docstring that did not mention protocol observations"
   resolved_findings:
     - "added an immediately attached declaration docstring to each of lensObjectMap_id_read, lensObjectMap_id_write, lensObjectMap_comp_read, lensObjectMap_comp_view, and lensObjectMap_comp_write without changing statements or proofs"
+    - "replaced the three ledger names by lensOperationFunction, PrimitiveObject.protocolState/protocolObservation, and protocolOperationFunction"
+    - "made every affected theorem docstring declaration-specific and documented the vertex-indexed protocol observation endpoint without changing any declaration or proof"
   lanes: {math_a: pass, math_b: pass, lean_a: pass, lean_b: pass-after-direct-response}
   direct_response:
     reviewed_delta: "acbbb393d4a3f0a8d7710c65f8fd92b43c87f3ce..66c6c1833"
+    final_repair_deltas: "0f1f1213c..373129779; 373129779..106927f14"
     verdict: pass
     new_findings: []
 audits:
@@ -12555,9 +12560,9 @@ audits:
   structure_field_escape: none-found-for-this-typed-primitive-operation-checkpoint
   target_fitting: none-found-all-original-operation-names-dependent-endpoints-and-arbitrary-semantic-morphisms-retained
   validation_refs:
-    - "focused AATClosedFamilySignature file check: PASS; 847 declarations, standard axioms only"
+    - "focused AATClosedFamilySignature file check after final review repairs: PASS; 847 declarations, standard axioms only"
     - "focused exact AATClosedFamilySignature target build: PASS (4264 jobs; not a Research aggregate build)"
-    - "focused CSAATTypedOperationTranslation file check after review repair: PASS; 28 declarations, standard axioms only"
+    - "focused CSAATTypedOperationTranslation file check after final review repairs: PASS; 28 declarations, standard axioms only"
     - "focused exact CSAATTypedOperationTranslation target build before doc-only repair: PASS (4265 jobs; not a Research aggregate build)"
     - "placeholder, hidden/BiDi, privacy, import-direction, registry, and diff checks: PASS"
     - "Research aggregate/full build: not run"
