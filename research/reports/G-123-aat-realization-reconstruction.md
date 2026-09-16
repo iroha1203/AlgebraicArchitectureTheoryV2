@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 90 proves on the full local-fiber kernel that the actual stored-backward action is faithful, and retains the Cycle 89 source-owned candidate as an explicit nonidentity element of that domain
+- current proof obligation: Cycle 91 constructs an independent two-symbol C2 source syntax, proves the source-owned toggle remains an involution through the entire fixed route, and evaluates that syntax injectively into the actual local-fiber kernel
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct an independent finite source syntax for the identity/backward-toggle fragment, prove its exact evaluation and order-two laws, then enlarge the primitive recipe family toward a genuine image/decomposition theorem without using the actual semantic range as syntax
+- next proof obligation: enlarge the independent primitive recipe family beyond the Bool toggle, beginning with finite Extension-carrier permutations, and prove their source construction, actual survival, local-kernel membership, and injective evaluation toward a genuine image/decomposition theorem
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 91 delta | semantic subgroupやrangeから定義しない独立な二記号source syntaxを構成し、source-owned toggleの位数2とactual local-kernelへの忠実な評価を固定routeから証明する | `FiniteAxisFoldBackwardToggleSyntax`, `FiniteAxisFoldBackwardToggleSyntax.mul`, `finiteAxisFoldNormalizedExtensionBackwardAut_mul_self`, `finiteAxisFoldNormalizedExtensionBackwardLocalFiberKernel_mul_self`, `FiniteAxisFoldBackwardToggleSyntax.evaluate`, `evaluate_identity`, `evaluate_toggle`, `evaluate_injective` | sourceで構成済みのcomplete geometry involution; source→southwest transportとendpoint retag; exact-left pull; top transport; admissible wrapper; canonical normalization; Cycle 89/90の同じactual local-kernel candidateと非自明性 | `identity|toggle`の独立有限型と明示C2群則; source involutionを各functorの`mapAut`とretagで順に輸送; 四subtype層へ位数2を保持; exact evaluatorと二つの計算則; actual非自明性による単射性 | stored-backward/local-fiber residual fragmentに対する独立source presentationとactual actionの対応を確立し、finite Extension permutation recipe族への拡張と像・分解・coverageへ渡す | 二元fragmentのみ; finite Extension permutation一般化、像の内在的特徴付け、任意local-kernel/residual元の生成・分解・coverage、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
 | D Cycle 90 delta | full local-fiber kernelの任意の全元についてstored backward-context作用だけで元を一意に識別し、Cycle 89候補を同じdomainのactual非自明元として保持する | `finiteAxisFoldResidualLocalFiberKernelBackwardProjection`, `finiteAxisFoldResidualLocalFiberKernelBackwardProjection_injective`, `finiteAxisFoldNormalizedExtensionBackwardLocalFiberKernel`, `finiteAxisFoldNormalizedExtensionBackwardLocalFiberKernel_ne_one` | full `FiniteAxisFoldResidualLocalFiberKernel`の任意の二元; Cycle 85のcomplete action単射性; 各元自身のlocal-kernel membership; Cycle 89の同じsource-owned candidateとactual backward projection非自明性 | 両元のlocal成分が各々`1`であることをmembershipから導き、backward成分の等号と合わせてcomplete actionの等号を構成; complete faithfulnessから元を同定; 同じ候補をsubtypeへ格納しbackward評価から`≠ 1`を証明 | local不可視なresidual全元の分類をactual stored-backward作用へ忠実に還元し、独立source syntaxのevaluation/readbackと像・分解検査へ渡す | backward projection像の内在的特徴付け・全射性、独立source syntax、generator族、任意residual元の分解・coverage、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
 | D Cycle 89 delta | Cycle 88の同じsource-owned residual候補について、全contextのSupport・Axis・Observable作用を完全なdependent Sigma carrier上で恒等化し、local kernel membershipとactual stored-backward projectionの非自明性を同時に示す | `finiteAxisFoldNormalizedExtensionBackward_supportSigmaMap_eq_id`, `finiteAxisFoldNormalizedExtensionBackward_axisSigmaMap_eq_id`, `finiteAxisFoldNormalizedExtensionBackward_observableSigmaMap_eq_id`, `finiteAxisFoldNormalizedExtensionBackward_supportEquiv_eq_one`, `finiteAxisFoldNormalizedExtensionBackward_axisEquiv_eq_one`, `finiteAxisFoldNormalizedExtensionBackward_observableEquiv_eq_one`, `finiteAxisFoldNormalizedExtensionBackward_mem_localFiberKernel`, `finiteAxisFoldNormalizedExtensionBackward_backwardProjection_ne_one` | 固定source-owned backward toggle; Cycle 88のfull residual element; source local forward成分の恒等性; southwest/topのcanonical context section; exact-leftのgenerated backward-forward cancellation; 各factorization equation; Cycle 87のactual moved context | 三つの完全Sigma作用を各固定transportで恒等化; 全contextの三local-fiber自己同値を恒等化; joint local kernel membershipを構成; 同じactual residual元のstored-backward projectionをmoved contextで評価して`≠ 1`を証明 | 忠実なCycle 85 action内で、同じsource-owned actual元の非自明性がlocal因子ではなくstored-backward因子に集中することを確立し、source image生成・分解・coverageへ渡す | 一つの非自明元のみであり、source imageの内在的特徴付け、generator族、任意residual元の分解・coverage、section/surjectivity、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
 | D Cycle 88 delta | Cycle 87の同じactual normalized非自明候補について、全global axis・全signature coordinate・全forward context objectで不可視であることを構成から証明し、full residual kernelへ格納する | `finiteAxisFoldNormalizedExtensionBackward_axisMap`, `finiteAxisFoldNormalizedExtensionBackward_coordinateEquiv`, `finiteAxisFoldSouthwestExtensionBackward_contextForward_eq_id`, `finiteAxisFoldExactLeftExtensionBackward_contextForward_eq_id`, `finiteAxisFoldActualDirectExtensionBackward_contextForward_eq_id`, `finiteAxisFoldNormalizedExtensionBackward_contextForward_eq_id`, `finiteAxisFoldNormalizedExtensionBackwardAxisKernel`, `finiteAxisFoldNormalizedExtensionBackwardAxisSignatureKernel`, `finiteAxisFoldNormalizedExtensionBackwardContextKernel` | 固定source-owned backward toggle; 固定source→southwest、exact-left、top、normalization route; opcartesian/exact-pull factorization; canonical sectionとgenerated exact backward-forward cancellation | 全`Fin 3` axis map恒等; 全`Fin 3 × Fin 3` coordinate作用恒等; 各段の全context forward関数恒等; 三段のkernel membershipを順に構成 | 三local-family恒等性を証明してCycle 85 faithful actionの非自明性をstored-backward因子へ集中させる | Support/Axis/Observable local-family恒等性、local kernel membership、backward projectionの明示、像生成・分解・coverage、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
@@ -9656,4 +9657,120 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct an independent finite identity/toggle source syntax with exact evaluation and order-two laws, then enlarge the source recipe family toward real image generation and decomposition."
+```
+
+## Cycle 91 — Independent C2 syntax for the backward toggle
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 91
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 79af3d7ffc587ba1f6950bfcb08b4b2487c29828
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 90 supplied faithful actual backward readback but no independent syntax for that stored-backward/local-fiber residual fragment"
+  proof_dag_predecessors:
+    - "Cycle 86 source-owned complete-geometry involution and fixed transport chain"
+    - "Cycles 87--89 actual survival, residual/local-kernel membership, and backward nontriviality"
+    - "Cycle 90 faithful backward readback on the full local-fiber kernel"
+  proof_obligation: "Construct an independent finite identity/toggle syntax, prove the toggle's order-two law through the fixed source-to-normalized route, and evaluate the syntax injectively into the actual local-fiber kernel"
+  selection_reason: "The semantic subgroup or homomorphism range cannot serve as source syntax; the displayed stored-backward fragment must be generated independently and connected by a proved evaluator."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldBackwardToggleSyntax.lean
+  risks:
+    - "define the syntax as a semantic subgroup or actual homomorphism range"
+    - "accept the order-two law or target candidate as a theorem argument or certificate field"
+    - "replace the Cycle 89 actual candidate with a simpler involution"
+    - "claim that the two-element fragment generates or covers the full residual group"
+  unchecked:
+    - "finite Extension-carrier permutation recipes beyond the Bool toggle"
+    - "intrinsic characterization or surjectivity of the full source image"
+    - "decomposition or coverage of every local-kernel or residual element"
+    - "general inputs, bottom and full comparison kernels, lift fibers, and remaining B/E/F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Defined a two-constructor inductive source syntax with explicit C2 multiplication, inverse, Fintype, and Group laws, independently of every semantic subgroup and range.  Proved the source geometry-fiber automorphism squares to identity, transported that equation through source-to-southwest mapAut, endpoint retagging, exact-left pull, top transport, the admissible wrapper, canonical normalization, and all four residual subtype layers.  Defined an exact multiplicative evaluator into the actual local-fiber kernel, proved the identity/toggle computation rules, and proved evaluator injectivity from the already constructed actual backward nontriviality witness."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldBackwardToggleSyntax.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBackwardToggleSyntax
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedExtensionBackwardAut_mul_self
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedExtensionBackwardLocalFiberKernel_mul_self
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBackwardToggleSyntax.evaluate
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldBackwardToggleSyntax.evaluate_injective
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldNormalizedExtensionBackwardAut_mul_self
+      - finiteAxisFoldNormalizedExtensionBackwardLocalFiberKernel_mul_self
+      - FiniteAxisFoldBackwardToggleSyntax.evaluate_identity
+      - FiniteAxisFoldBackwardToggleSyntax.evaluate_toggle
+      - FiniteAxisFoldBackwardToggleSyntax.evaluate_injective
+    source_labels:
+      - "GOAL A/D and user conditions 1, 2, 3, 4, and 5"
+    conjuncts:
+      - "independent two-symbol finite syntax -> explicit C2 group"
+      - "source-owned involution -> actual normalized involution through every fixed transport"
+      - "identity syntax -> actual identity"
+      - "toggle syntax -> the same Cycle 90 actual local-kernel element"
+      - "distinct syntax codes -> distinct actual elements"
+    undischarged_assumptions:
+      - "the source syntax has only the identity/toggle fragment"
+      - "no full image characterization, section, surjectivity, arbitrary-element decomposition, or coverage is proved"
+      - "general input and broader G-123 obligations remain open"
+    acceptance_point: "One genuinely independent finite source-presentation fragment is connected faithfully to the actual residual action; it is not claimed to be the full source image or full residual presentation."
+    port_status: not-applicable
+review:
+  fixed_head: ebfff2508
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    reviewed_delta: "79af3d7ffc587ba1f6950bfcb08b4b2487c29828..ebfff2508"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "the displayed backward toggle has an independently defined finite source syntax"
+      - "its order-two law is constructed from the source involution through every fixed transport"
+      - "evaluation is multiplicative and faithful on both source codes"
+    remaining:
+      - "larger primitive Extension-permutation recipe family"
+      - "full source image characterization, section, surjectivity, decomposition, and coverage"
+      - "general inputs, bottom and full comparison kernels, lift fibers, and remaining D/B/E/F"
+  certificate_provenance:
+    discharged:
+      - "the syntax carrier does not mention the semantic subgroup, image, or range"
+      - "no order-two proof, semantic element, evaluator law, injectivity proof, or coverage certificate is input"
+      - "the evaluator's toggle case uses the exact previously constructed source-owned actual candidate"
+    unresolved:
+      - "a source language large enough to describe every actual residual action"
+  proof_use:
+    used:
+      - "source hom=inv construction and hom_inv_id start the involution proof"
+      - "mapAut multiplication laws transport it through source, exact pull, top transport, and normalization"
+      - "endpoint retagging and admissible/subtype extensionality preserve the same equation"
+      - "Cycle 90 actual nonidentity proves evaluator injectivity"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-two-element-source-fragment
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4320 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 38 declarations; standard axioms only"
+    - "fresh fixed-content Math A/B and Lean A/B: PASS; no findings"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Generalize the source-owned recipe from Bool negation to finite Extension-carrier permutations, transport them to the actual local kernel, and prove injective evaluation without using the semantic range as syntax."
 ```
