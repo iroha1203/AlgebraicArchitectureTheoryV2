@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 105 constructs an exact-support finite table normal form, proves faithful source evaluation with unique outer parity, and proves the same normal form is an equivalence onto the actual intrinsic image
+- current proof obligation: Cycle 106 generalizes exact-support finite normal forms and actual intrinsic recovery to every decidable primitive carrier without a finite ambient-carrier assumption
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: generalize the exact-support/algorithm normal form across the permitted primitive parameter family and compare its literal actual-image union with the full residual kernel before restoring the original G-122 classification data
+- next proof obligation: compare the literal union of all arbitrary-carrier exact-support actual images with the full residual kernel, isolate remaining non-finite-support directions, and preserve the original G-122 classification data
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| B/D Cycle 106 delta | Cycle 105のexact-support finite normal formをambient finite carrierに制限せず任意のdecidable primitive carrierへ一般化し、同じfixed actual route上のdecoder-independent intrinsic imageまでfaithfulに回復する | `FiniteAxisFoldArbitraryCarrierFiniteSupportCode`, `evaluate_ne_iff_mem`, `evaluate_finite`, `evaluate_injective`, `encode`, `decode_encode`, `encode_decode`, `equivFiniteSupport`, `finiteAxisFoldTransportedArbitraryCarrierSourceContextPermutation_injective`, `finiteAxisFoldArbitraryCarrierBackwardAction_injective_forCarrier`, `actualEvaluate_backwardProjection`, `intrinsicDecode_injective`, `intrinsicDecode_surjective`, `equivIntrinsicImage` | 任意の`E : Type`と`[DecidableEq E]`; support subtype上のexplicit finite table; 全table点のmove条件; Cycle 100のarbitrary-carrier finite-support characterization; canonical `E` probes; same source-to-actual context equivalenceとfull backward projection | exact moved supportとcode単射; 全finite-support permutationからのfinite restriction table構成; ambient `Fintype E`なしのtransported/expected action単射; actual intrinsic imageへの単射・全射 | 全carrier actual-image族のliteral unionとfull residual kernelのcoverage/decomposition比較へ渡す | finite-support方向のみ; carrier横断unionとfull-kernel coverage、infinite-support finite algorithmsの統合normal form、original G-122分類、一般入力、res/ext/J、CS、残るA--Fは未完了 |
 | B/D Cycle 105 delta | completed `Perm Nat`やactual residualをsyntax fieldへ入れず、finite-support成分の独立有限正規形を構成し、Cycle 104 parityと結合してsource/actual双方でfaithfulかつ全射な表示を証明する | `FiniteAxisFoldNatFiniteSupportCode`, `evaluate_ne_iff_mem`, `evaluate_finite`, `evaluate_injective`, `encode`, `decode_encode`, `encode_decode`, `equivFiniteSupport`, `FiniteAxisFoldNatAlgorithmNormalForm`, `FiniteAxisFoldNatAlgorithmNormalForm.evaluate_injective`, `evaluate_surjective`, `equivPermutationSubgroup`, `actualEvaluate_backwardProjection`, `intrinsicDecode_injective`, `intrinsicDecode_surjective`, `equivIntrinsicImage` | 原始`Nat`; exact finite support; support subtype上の有限forward/backward tableと両inverse law; 全table点がmoveする条件; Cycles 100--104のfinite-support characterization、coset分解、branch disjointness、actual action faithfulness | evaluatorのmoved setがsupportとexactに一致; semantic finite-support元からmoved setを有限列挙してrestriction tableを構成; encode/decode両逆; Bool parity付きsource normal formの単射・全射; same fixed sectionとfull backward projectionからactual intrinsic imageとの同値 | raw FreeGroup wordをfaithful finite normal formへ置換し、全parameter familyとfull residual-kernel image比較へ渡す | `Nat`一carrierのgenerated subgroup/intrinsic imageに限定; 全permitted primitive parameter family、full-kernel coverage/decomposition、original G-122の全比較群・二核・lift fibers、一般入力、res/ext/J、CS、残るA--Fは未完了 |
 | D Cycle 104 delta | Cycle 103のcoset unionについてadjacent branchとfinite-support branchのdisjointnessを元入力から証明し、全generated source permutationとactual intrinsic memberのsource witnessおよびouter parity一意性を構成する | `finiteAxisFoldNatAdjacent_not_mem_finiteSupport`, `finiteAxisFoldNatAlgorithmCoset_branches_disjoint`, `finiteAxisFoldNatAlgorithmPermutationSubgroup_unique_parity`, `finiteAxisFoldNatAlgorithmPermutationSubgroup_unique_parity_finite`, `finiteAxisFoldTransportedNatSourceContextPermutation_injective`, `finiteAxisFoldNatArbitraryCarrierBackwardAction_injective`, `finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff_uniqueParity` | Cycle 101の全`Nat`点移動定理; Cycle 100のfinite-support characterization; Cycle 103のcoset-union equality; same actual intrinsic membershipと全Nat source probe | adjacentのmoved setが`univ`で非finite; 両branch所属から`(a*p)*p⁻¹=a`をfinite-supportへ入れる矛盾; branch存在と排他性; 全probe readbackによるtransported actionとexpected backward actionの単射性; actual source witnessの`∃!` | faithful normal formのouter Bool/parity成分を固定し、finite-support成分のcanonical finite code構成へ渡す | finite-support成分自身の独立canonical codeとfaithful evaluator、全parameter algorithm family、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
 | D Cycle 103 delta | Cycle 102のprimitive closureをopaqueな生成部分群のままにせず、finite-support部分群と固定adjacent algorithmによる二cosetとして分類し、actual intrinsic membershipへ同じ分類を移す | `finiteAxisFoldNatAdjacent_apply_twice`, `finiteAxisFoldNatAdjacent_mul_self`, `finiteAxisFoldNatAdjacent_conj_mem_finiteSupport`, `finiteAxisFoldNatAlgorithmCosetSubgroup`, `finiteAxisFoldNatAlgorithmPermutationSubgroup_eq_cosetSubgroup`, `finiteAxisFoldNatAlgorithmPermutationSubgroup_mem_iff_coset`, `finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff_coset` | Cycle 100のfinite-support subgroup characterization; Cycle 101の固定`xor 1` algorithm; Cycle 102のprimitive/actual image; same fixed expected actionとfull projection | adjacent involution; conjugationされたmoved setを元moved setのadjacent像へ包含する有限性証明; 二coset predicateのsubgroup closure; generator closureとの双方向包含; source/actual membership iff | raw wordの冗長性を二coset normal formへ圧縮し、faithful quotient/canonical representativeの構成へ渡す | 二cosetのdisjointnessとparity uniqueness、finite-support成分自身のcanonical finite presentation、faithful evaluator、全parameter algorithm family、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
@@ -11462,4 +11463,98 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Generalize the exact-support/algorithm normal form across the permitted primitive parameter family, then compare the literal union of its actual images with the full residual kernel and preserve the original G-122 classification data."
+```
+
+## Cycle 106 — Arbitrary-carrier exact-support recovery
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 106
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: aea1591546282f5912dd70c992bcb77cc7a2b692
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 105 proved faithful exact-support recovery only for Nat; Cycle 100 already quantified finite-support actions over every decidable carrier"
+  proof_dag_predecessors:
+    - "Cycle 98 explicit finite forward/backward table syntax"
+    - "Cycle 100 arbitrary-carrier finite-support subgroup and actual intrinsic image"
+    - "Cycle 105 exact-support encode/decode and actual recovery pattern"
+  proof_obligation: "Generalize exact-support finite normal forms and actual recovery to arbitrary decidable primitive carriers without assuming the ambient carrier finite"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldArbitraryCarrierNormalForm.lean
+  risks:
+    - "add Fintype E and thereby shrink permitted primitive carriers"
+    - "store a completed Perm E or actual residual element as syntax"
+    - "reuse Nat-specific action faithfulness without proving arbitrary-carrier probe readback"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Defined exact-support finite code for every E with DecidableEq, using only a Finset E and explicit forward/backward tables on its finite subtype.  Proved exact moved support, evaluator injectivity, and encode/decode inverse laws with no Fintype E.  Proved transported full-context action injective for arbitrary E by evaluating every canonical E probe and reading dependent Sigma equality back, then derived expected backward-action injectivity through op and inverse.  Used the same fixed actual section and full backward projection to prove the generic code equivalent to the pre-existing decoder-independent arbitrary-carrier intrinsic image."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldArbitraryCarrierNormalForm.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldArbitraryCarrierFiniteSupportCode
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldArbitraryCarrierFiniteSupportCode.evaluate_ne_iff_mem
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldArbitraryCarrierFiniteSupportCode.evaluate_injective
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldArbitraryCarrierFiniteSupportCode.equivFiniteSupport
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldTransportedArbitraryCarrierSourceContextPermutation_injective
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldArbitraryCarrierBackwardAction_injective_forCarrier
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldArbitraryCarrierFiniteSupportCode.intrinsicDecode_injective
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldArbitraryCarrierFiniteSupportCode.intrinsicDecode_surjective
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldArbitraryCarrierFiniteSupportCode.equivIntrinsicImage
+  claim_mapping:
+    input_premises:
+      - "arbitrary E : Type with DecidableEq E; no Fintype E"
+      - "finite support subtype table with inverse laws and every-point-moves"
+      - "same fixed source-to-actual route and complete backward projection"
+    constructed_evidence:
+      - "exact-support finite syntax equivalent to every finite-support source permutation"
+      - "arbitrary-carrier transported and expected action faithfulness from canonical probes"
+      - "same syntax equivalent to the decoder-independent actual intrinsic image"
+    unfinished:
+      - "literal union of all carrier images versus the full residual kernel"
+      - "integration of finite-algorithm infinite-support directions with the carrier family"
+      - "original G-122 full classification and remaining A--F"
+review:
+  fixed_head: pending
+  lanes:
+    math_a: pending
+    math_b: pending
+    lean_a: pending
+    lean_b: pending
+audits:
+  premise_delta:
+    discharged:
+      - "ambient finite-carrier restriction for exact-support normal forms"
+      - "arbitrary-carrier source and actual action faithfulness"
+      - "actual intrinsic recovery for each decidable carrier"
+    remaining:
+      - "carrier-family union/full residual-kernel coverage or decomposition"
+      - "non-finite-support finite algorithm family beyond the Nat checkpoint"
+      - "original G-122 groups, bottom-fixed group, two kernels, and all lift fibers"
+      - "general input, res/ext/J, CS, examples, and remaining A--F"
+  certificate_provenance: "code stores only finite subtype data; finite support and actual landing are derived; semantic permutations occur only as inputs to the proved inverse encode construction"
+  proof_use:
+    used:
+      - "Cycle 100 finite-support iff for arbitrary carrier landing and extraction"
+      - "canonical E probes for pointwise readback of transported actions"
+      - "op/inverse cancellation for expected backward-action injectivity"
+      - "full residual backward-projection injectivity for actual recovery"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: same-fixed-source-to-actual-section-and-complete-backward-projection
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found-bijectivity-proved
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4329 dependency jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 32 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Compare the literal union of arbitrary-carrier exact-support actual images with the full residual kernel and isolate the remaining non-finite-support directions without shrinking the input family."
 ```
