@@ -10011,3 +10011,103 @@ audits:
   blocking_findings: []
   next_obligation: "Compute the normalized Support, Axis, Observable, and forward-context actions uniformly for every source permutation, package actual local-fiber-kernel landing, and prove actual injectivity by transporting the Cycle 92 probes through the same route."
 ```
+
+## Cycle 94 — Finite Extension permutations in the residual context kernel
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 94
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 738243238800fb12c76235307f06d00c87e6c2bd
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 93 constructed the normalized permutation homomorphism but did not prove that its forward residual components are trivial"
+  proof_obligation: "Compute axis, signature-coordinate, and forward-context actions for every transported permutation and restrict the homomorphism through the three corresponding residual kernels"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldPermutationResidualKernel.lean
+  risks:
+    - "treat functorial transport as kernel membership without component calculations"
+    - "confuse the stored backward `p⁻¹` action with the forward identity components"
+    - "infer dependent local-fiber identity, injectivity, or coverage from context-kernel landing"
+  unchecked:
+    - "dependent Support, Axis, and Observable local self-equivalences"
+    - "actual local-fiber-kernel landing and normalized probe injectivity"
+    - "Bool specialization, image characterization, section, surjectivity, decomposition, and coverage"
+    - "general inputs, bottom/full comparison kernels, lift fibers, and remaining B/E/F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "For every independent Extension permutation, computed the normalized forward axis map, every signature coordinate map, and the full forward context-object action as identities through the fixed southwest, exact-left, top, admissible, and normalization route.  Used those constructed equalities to codRestrict the Cycle 93 homomorphism successively into the axis kernel, axis-signature kernel, and axis-signature-context kernel."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldPermutationResidualKernel.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedGenericPermutation_axisMap
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedGenericPermutation_coordinateEquiv
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedGenericPermutation_contextForward_eq_id
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedPermutationContextKernelSectionHom
+  claim_mapping:
+    source_labels:
+      - "GOAL D and user conditions 1, 2, 4, and 5"
+    conjuncts:
+      - "every source permutation -> normalized axis action identity"
+      - "every source permutation -> normalized signature-coordinate action identity"
+      - "every source permutation -> normalized forward context action identity"
+      - "same family -> homomorphism into the full three-stage residual context kernel"
+    undischarged_assumptions:
+      - "no finiteness premise is needed for this kernel landing"
+      - "dependent local Support/Axis/Observable identities are not proved"
+      - "normalized/local-kernel injectivity and coverage remain open"
+    acceptance_point: "The full Cycle 93 permutation family lands constructively in the residual context kernel; no local-fiber or image theorem is asserted."
+review:
+  fixed_head: d409b84b9
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    reviewed_delta: "738243238800fb12c76235307f06d00c87e6c2bd..d409b84b9"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "uniform normalized axis identity"
+      - "uniform normalized signature-coordinate identity"
+      - "uniform normalized forward-context identity"
+      - "axis, axis-signature, and context kernel homomorphism landing"
+    remaining:
+      - "dependent local Support/Axis/Observable identity and local-fiber-kernel landing"
+      - "actual injectivity, image characterization, section, surjectivity, decomposition, and coverage"
+      - "general inputs, bottom/full comparison kernels, lift fibers, and remaining D/B/E/F"
+  certificate_provenance:
+    discharged:
+      - "kernel memberships are derived from component equations and not accepted as fields or arguments"
+      - "the same Cycle 93 primitive source permutation and fixed transport route are used"
+    unresolved:
+      - "dependent local-fiber action and actual image"
+  proof_use:
+    used:
+      - "transport factorization calculates axis and coordinate components"
+      - "canonical sections and exact-left cancellation calculate the full forward context action"
+      - "the three component identities witness successive codRestrict memberships"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-through-fixed-normalization-endpoint
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-context-kernel-checkpoint
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4318 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 13 declarations; standard axioms only"
+    - "fresh fixed-content Math A/B and Lean A/B: PASS; no findings"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Prove the dependent Support, Axis, and Observable Sigma actions are identity for this entire family, codRestrict into the actual local-fiber kernel, then transport the Cycle 92 probes to prove actual injectivity."
+```
