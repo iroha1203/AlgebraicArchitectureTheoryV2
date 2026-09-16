@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 145 constructs semantic coordinate-visibility identity/composition through the actual intermediate restriction and proves direct-composite support/boundary transport for both CS models
+- current proof obligation: Cycle 146 packages all nine canonical forward-coverage fields into semantic unit/compositor outputs for both CS models, retaining the actual source/middle/target restriction chain and both local-value equations
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: package all nine canonical coverage fields into semantic identity/composition laws, including axis and required-role clauses, without proof-record equality; then address overlap/Extension and endpoint `ReadingCore` provenance
+- next proof obligation: construct overlap/Extension identity/composition from the canonical comparison and selected extension data; then construct endpoint `ReadingCore` provenance and the genuine-CS-isomorphism bridge
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 146 delta | canonical coverageの9fieldすべてをidentity/compositionで保持し、proof-record equalityではなくprimitive入力から生成するsemantic lawとして束ねる | `ForwardObservableVisibilityChainData`, `ForwardObservableVisibility.explicitChain`; lens/protocol各`*AATForwardCoverageSemanticUnit`, `*AATForwardCoverageSemanticCompositor`と同名canonical theorem constructors | 任意のrealizationまたは任意の合成可能なprimitive forward morphismのみ。coverage record、unit/compositor certificate、第二段visibility witness、inverse、surjectivityを入力しない | unitはcanonical identity coverageとexact unchanged coordinate/visibilityを構成。compositorはrequired support/coordinate/violation/axisを二段で運び、source/middle/direct-targetの三restriction、両forward equation、middle-sourceとtarget-middleのlocal-value等式を存在結論に保持し、support/boundary staged-to-direct、axisのdirect identity actionと合わせて一つの出力へ構成 | Cycle 139 forward aggregateのcoverage componentに対する全field semantic coherence。次cycleのoverlap/Extension aggregate law | Prop record equalityは主張しない。chosen `ContextMorphism` representative equality、target-only/inverse coverage、overlap/Extensionのunit/comp、ReadingCore、bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 145 delta | coverageのidentity/compositionをproof irrelevanceで済ませず、required/violation coordinateとlocal restriction値を実際にidentity/compositeへ運ぶ | `flattenSuccessiveFullFamilyContextMap`, `_isRestriction`, `ForwardObservableVisibility.compOfForwardEquation`; lens/protocol各`forwardRequiredCoordinate_id/comp`, `forwardCoordinate_id/comp`, `forwardEquationCoordinateCoherent_id/comp`, `forwardViolationCoordinateCoherent_id/comp`, `forwardSupportVisible_comp`, `forwardBoundaryVisible_comp` | 任意のlens/protocol realization、任意の合成可能なprimitive forward morphism、sourceのactual visibility witness。第二段coverage witness、aggregate certificate、inverse、surjectivityを入力しない | 第一段が生成したtarget restrictionを第二段のsource restrictionとして再使用し、第二段target restrictionを内部構成。successive full-family rebaseの全map成分と`IsRestriction`をdirect targetへflattenし、二つのlocal値等式を推移。全required/violation coordinateのid/comp、support/boundaryのstaged-to-direct compを証明 | canonical forward coverageのsemantic functoriality。次cycleの全9field aggregate law | arbitraryな二つのcoverage recordは中間witness同一性を保持しないため合成しない。axis・required-role clausesを含む全field packaging、chosen `ContextMorphism` representative-map equality、overlap/Extension、ReadingCore、bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 144 delta | canonical forward-image aggregateのequation/raw成分について、primitive identity/compositionから全fieldのunit/compositorを構成する | `EndpointEquationForwardTransport.contextIdentityFunctor`, `.identity`, `.comp`, `.ext`; lens/protocol各`equationTransport_id/comp`; `*AATForwardEquationRawUnitLaw`, `*AATForwardEquationRawCompLaw`とcanonical constructors | 任意のlens/protocol realizationと合成可能なprimitive forward morphism。aggregate law certificate、coverage composition、inverse、surjectivityを入力しない | equation transportのcontext/index/role/observable naturality/violation/residual-zeroをidentity/compositionで構成し、Cycle 143のraw global lawとともにcanonical aggregate projectionへ接続 | canonical forward-image aggregateのequation/raw coherence。次cycleのcoverage coherenceおよび後続ReadingCore/GeometryTotalHom bridge | coverageはmorphism-indexed Prop recordのproof irrelevanceでは証明しない。required-coordinate/coordinate/restrictionの実質的なidentity/composition、overlap/Extension、ReadingCore、bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 143 delta | realizationごとに異なるcontext categoryを暗黙同一視せず、context actionとpolynomial/raw NatTransのglobal unit/compositor lawを明示transport付きで証明する | lens/protocol各`lawContextDataIdentityFunctor`, `lawContextFunctor_id`, `lawContextFunctor_comp`, `equationPolynomialTarget_id/comp`, `equationPolynomialForwardHom_id/comp`, `rawTarget_id/comp`, `rawForwardHom_id/comp` | 任意のrealizationと合成可能なprimitive forward morphism。global functoriality recordや等式certificateを入力しない | endpoint Law category間のidentity-on-data functorを構成し、generated context functorとの全object/arrow等号を証明。direct/successive context functorを全体として同一視。polynomial/raw target functorのreindex等号を構成し、`eqToHom`後のNatTrans全体の恒等・合成をCycle 142の全component lawから証明 | Cycle 139 canonical forward-image aggregateのglobal coherence。後続ReadingCore/GeometryTotalHom bridge | identity-on-data functorはopaque site包装のためcategorical `𝟭`とliteralには書かない。underlying chosen `ContextMorphism` representative maps、coverage/overlap/Extension aggregate law、ReadingCore、bridge、readback、D回復、A--F統合は未完了 |
@@ -15139,4 +15140,112 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Package all nine canonical coverage fields into semantic identity/composition laws, including axis and required-role clauses, without proof-record equality; then address overlap/Extension and ReadingCore provenance."
+```
+
+## Cycle 146 — All-field semantic coverage aggregate laws
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 146
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 454dbb26d7d660e7c5c7e66fe7ce9c25cd3a7817
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 145 proved semantic coordinate visibility and structural composition but had not packaged the nine canonical coverage fields into one generated law"
+  proof_dag_predecessors:
+    - "Cycle 139 canonical lens/protocol forward coverage records"
+    - "Cycle 141 generated coordinate and context identity/composition"
+    - "Cycle 145 no-second-witness visibility and staged support/boundary composition"
+  proof_obligation: "Construct canonical unit/compositor outputs containing all nine coverage conclusions and exact coordinate laws, without proof-record equality or an input certificate"
+  selection_reason: "Coverage coherence is meaningful only when every required role and visibility clause is generated from the same primitive identity or composable pair. Equality of Prop witnesses would erase that construction."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardCoverageAggregate.lean
+  risks:
+    - "wrapping the canonical composite record without using staged support/boundary/visibility proofs"
+    - "accepting a coverage record or compositor certificate as an argument"
+    - "using proof irrelevance to claim semantic composition"
+    - "claiming chosen ContextMorphism representative equality or inverse coverage"
+  unchecked:
+    - "chosen ContextMorphism representative-map identity/composition"
+    - "target-only or inverse coverage"
+    - "overlap/Extension unit and composition"
+    - "endpoint ReadingCore provenance, GeometryTotalHom bridge, readback, D recovery, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "For lens and protocol, constructed semantic identity and compositor propositions extending all nine canonical coverage fields; supplied exact required/violation coordinate id/comp laws; generated unit outputs from primitive identity; and built compositor fields by chaining required markers, retaining source/middle/direct-target restriction data plus both forward and both local-value equations, using Cycle 145 staged support/boundary construction, and the canonical direct axis action."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardCoverageAggregate.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.ForwardObservableVisibilityChainData
+    - AAT.AG.RealizationReconstruction.ForwardObservableVisibility.explicitChain
+    - AAT.AG.RealizationReconstruction.LensAATForwardCoverageSemanticUnit
+    - AAT.AG.RealizationReconstruction.lensAATForwardCoverageSemanticUnit
+    - AAT.AG.RealizationReconstruction.LensAATForwardCoverageSemanticCompositor
+    - AAT.AG.RealizationReconstruction.lensAATForwardCoverageSemanticCompositor
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardCoverageSemanticUnit
+    - AAT.AG.RealizationReconstruction.protocolAATForwardCoverageSemanticUnit
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardCoverageSemanticCompositor
+    - AAT.AG.RealizationReconstruction.protocolAATForwardCoverageSemanticCompositor
+  claim_mapping:
+    source_labels:
+      - "GOAL A: complete source-role coverage data"
+      - "GOAL E and n1015: arbitrary CS morphism identity/composition"
+    conjuncts:
+      - "required support -> chained primitive preservation"
+      - "required equation coordinate -> exact direct/successive coordinate and chained marker"
+      - "selected violation witness -> exact direct/successive coordinate and chained marker"
+      - "required axis -> chained primitive preservation"
+      - "support visibility -> staged-to-direct composite"
+      - "equation visibility -> typed source/middle/direct-target restriction chain with both forward and local-value equations"
+      - "violation visibility -> typed source/middle/direct-target restriction chain with both forward and local-value equations"
+      - "axis readability -> canonical direct identity action"
+      - "boundary visibility -> staged-to-direct composite"
+    undischarged_assumptions:
+      - "coverage remains one-way and does not supply target-only or inverse data"
+      - "representative maps and all overlap/core/reconstruction bridges remain open"
+    acceptance_point: "Each law is a theorem output from primitive X or f,g. The compositor record is filled fieldwise with staged constructions, and its visibility fields require existence of explicit chain data retaining the actual intermediate restriction; no coverage law is an argument and no equality of Prop records is asserted."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "all-nine-field lens coverage unit and compositor"
+      - "all-nine-field protocol coverage unit and compositor"
+      - "exact coordinate identity/composition within each output law"
+    remaining:
+      - "representative ContextMorphism equality and inverse/target-only coverage"
+      - "overlap/Extension, ReadingCore, GeometryTotalHom bridge, readback, D recovery, and A--F integration"
+  certificate_provenance:
+    discharged:
+      - "unit outputs use only primitive identity"
+      - "compositor required fields chain canonical f and g coverage"
+      - "compositor coordinate visibility exposes a Nonempty chain-data conclusion containing Cycle 145's actual intermediate restriction, a flattened direct-target restriction, and both stage equations"
+      - "support and boundary use the staged-to-direct theorems"
+    unresolved:
+      - "overlap/Extension and later provenance obligations"
+  proof_use:
+    used:
+      - "all nine coverage clauses for both CS models"
+      - "both primitive morphisms in required marker, support, coordinate visibility, and boundary fields"
+      - "exact coordinate id/comp equations"
+      - "middle restriction and both local-value equalities are required by the compositor statement itself, not only its proof term"
+    unused:
+      - "no coverage record, law certificate, inverse, surjectivity, or target enumeration is accepted"
+      - "no Prop-record equality is asserted"
+  structure_field_escape: none-found-law-structures-are-output-propositions-with-canonical-theorem-constructors-and-chain-data-is-an-existential-output-not-an-input
+  route_integrity: pass-for-all-nine-canonical-coverage-fields
+  target_fitting: none-found-every-source-role-and-context-coordinate-is-quantified
+  vacuity: none-found-staged-and-no-second-witness-theorems-fill-the-computationally-relevant-fields-and-the-intermediate-route-is-type-enforced
+  one_way_as_equivalence: none-found-forward-coverage-is-not-promoted-to-inverse-coverage
+  goal_or_report_reinterpretation: none-found-overlap-core-provenance-D-and-final-integration-remain-open
+  validation_refs:
+    - "focused CSAATGeometryForwardCoverageAggregate file check after statement-strength repair: PASS; 84 namespace declarations including chain-data and structure projections, standard axioms only"
+    - "focused exact CSAATGeometryForwardCoverageAggregate target build: PASS (4287 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "resolved before final review: the initial compositor proposition exposed only direct composite coverage plus coordinate equations; repaired by adding nine staged fields and explicit Nonempty visibility chain data to both CS statements"
+  next_obligation: "Construct overlap/Extension identity/composition from the canonical comparison and selected extension data; then construct endpoint ReadingCore provenance and the genuine-CS-isomorphism bridge."
 ```
