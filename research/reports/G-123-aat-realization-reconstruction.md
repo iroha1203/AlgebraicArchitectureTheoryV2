@@ -11727,15 +11727,15 @@ result:
       - "coverage or decomposition of that uniform image against the full residual kernel"
       - "original G-122 full classification and remaining A--F"
 review:
-  fixed_head: pending
+  fixed_head: f1257b28c0417f69d3b41de60170da3d0a5efa01
   lanes:
-    math_a: pending
-    math_b: pending
-    lean_a: pending
-    lean_b: pending
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
   direct_response:
-    reviewed_delta: pending
-    verdict: pending
+    reviewed_delta: "4dee9d93bceaee840a653ea6cd23995d7415300e..f1257b28c0417f69d3b41de60170da3d0a5efa01"
+    verdict: pass
     new_findings: []
 audits:
   premise_delta:
