@@ -91,12 +91,69 @@ theorem finiteAxisFoldNatAlgorithmPermutationSubgroup_unique_parity_finite
   rw [finiteAxisFoldFiniteSupportPermutationSubgroup_mem_iff,
     finiteAxisFoldFiniteSupportPermutationSubgroup_mem_iff]
 
-/-- Actual intrinsic membership retains the unique source parity and the same
-expected-action equality. -/
+private theorem finiteAxisFoldNatAlgorithmParityContextObject_eq_of_ctx_eq
+    {A : ArchitectureObject FiniteModel.carrier}
+    {C : Site.ContextPreorderCategory A}
+    {first second : Site.ContextCategoryObject C}
+    (equality : first.ctx = second.ctx) : first = second := by
+  cases first
+  cases second
+  cases equality
+  rfl
+
+/-- The transported complete context action is faithful on the primitive Nat
+carrier.  Equality is read back at every canonical Nat probe. -/
+theorem finiteAxisFoldTransportedNatSourceContextPermutation_injective :
+    Function.Injective
+      (finiteAxisFoldTransportedSourceContextPermutationHom Nat) := by
+  intro first second equality
+  apply Equiv.ext
+  intro atom
+  have evaluated := congrArg
+    (fun actualPermutation : Equiv.Perm FiniteAxisFoldResidualContextObject =>
+      actualPermutation
+        (finiteAxisFoldSourceToActualContextEquiv
+          (⟨finiteAxisFoldSourceExtensionProbe atom⟩ :
+            FiniteAxisFoldSourceContextObject)))
+    equality
+  simp only [finiteAxisFoldTransportedSourceContextPermutationHom,
+    MonoidHom.coe_mk, OneHom.coe_mk,
+    finiteAxisFoldTransportedSourceContextPermutation,
+    Equiv.trans_apply, Equiv.symm_apply_apply] at evaluated
+  have sourceEquality :=
+    finiteAxisFoldSourceToActualContextEquiv.injective evaluated
+  have extensionSigmaEquality := congrArg
+    (fun W : FiniteAxisFoldSourceContextObject =>
+      (⟨W.ctx.Extension, W.ctx.extension⟩ :
+        Sigma fun carrier : Type => carrier))
+    sourceEquality
+  simpa [finiteAxisFoldSourceContextObjectPermHom,
+    finiteAxisFoldSourceContextObjectPerm,
+    finiteAxisFoldSourceContextObjectPermutation,
+    finiteAxisFoldSourceContextPermutation,
+    finiteAxisFoldSourceExtensionProbe] using extensionSigmaEquality
+
+/-- The independently defined expected backward action is faithful on Nat;
+therefore an actual element cannot acquire two different source witnesses. -/
+theorem finiteAxisFoldNatArbitraryCarrierBackwardAction_injective :
+    Function.Injective (finiteAxisFoldArbitraryCarrierBackwardAction Nat) := by
+  intro first second equality
+  have transportedInverseEquality :
+      finiteAxisFoldTransportedSourceContextPermutation first⁻¹ =
+        finiteAxisFoldTransportedSourceContextPermutation second⁻¹ := by
+    exact MulOpposite.op_injective equality
+  have inverseEquality :=
+    finiteAxisFoldTransportedNatSourceContextPermutation_injective
+      transportedInverseEquality
+  exact inv_injective inverseEquality
+
+/-- Actual intrinsic membership has a unique source witness, whose outer
+parity is exclusive.  Uniqueness uses faithfulness of the complete Nat action,
+not merely exclusivity inside a chosen witness. -/
 theorem finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff_uniqueParity
     (remainder : FiniteAxisFoldResidualLocalFiberKernel) :
     remainder ∈ FiniteAxisFoldNatAlgorithmWordIntrinsicImage ↔
-      ∃ permutation : Equiv.Perm Nat,
+      ∃! permutation : Equiv.Perm Nat,
         ((((fixedBy Nat permutation)ᶜ.Finite ∨
           (fixedBy Nat
             (finiteAxisFoldNatAdjacentSwap * permutation))ᶜ.Finite) ∧
@@ -108,11 +165,14 @@ theorem finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff_uniqueParity
   rw [finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff]
   constructor
   · rintro ⟨permutation, membership, actionEquality⟩
-    exact ⟨permutation,
+    refine ⟨permutation, ⟨
       (finiteAxisFoldNatAlgorithmPermutationSubgroup_unique_parity_finite
         permutation).1 membership,
-      actionEquality⟩
-  · rintro ⟨permutation, parity, actionEquality⟩
+      actionEquality⟩, ?_⟩
+    intro other otherWitness
+    apply finiteAxisFoldNatArbitraryCarrierBackwardAction_injective
+    exact otherWitness.2.symm.trans actionEquality
+  · rintro ⟨permutation, ⟨parity, actionEquality⟩, _⟩
     exact ⟨permutation,
       (finiteAxisFoldNatAlgorithmPermutationSubgroup_unique_parity_finite
         permutation).2 parity,
