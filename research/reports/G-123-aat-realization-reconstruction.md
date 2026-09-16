@@ -12227,5 +12227,5 @@ audits:
     - "CI: all 7 checks PASS, including research integrity gates"
     - "Research aggregate/full build: not run"
   blocking_findings: []
-  next_obligation: "Prove the full fiber count (|K|!)^|pi0(F)| and pointed fiber count ((|K|-1)!)^|pi0(F)|, then instantiate the three fixed F examples."
+  next_obligation: "When the vertex and hidden carriers V,K are finite, prove the full fiber count (|K|!)^|pi0(F)| and pointed fiber count ((|K|-1)!)^|pi0(F)|, then instantiate the three fixed F examples."
 ```
