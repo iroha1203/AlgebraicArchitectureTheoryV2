@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 118 derives the full and basepoint-preserving projection-fiber cardinality formulas from the actual component/fiber equivalences
+- current proof obligation: Cycle 119 instantiates the three fixed F examples with their prescribed state maps, failure evaluations, operation adapters, and exact counts
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: instantiate the three fixed F examples with their specified maps, failure evaluations, and exact counts, then transport the same classification through E and D
+- next proof obligation: transport the same fixed-F classification through the independently defined E lens/protocol models in both directions, then recover it through D and the presentation side
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| F Cycle 119 delta | 固定lens、選択値保存lens、protocolの指定データ・評価・個数を同じF分類へ接続する | `followingEquivVertexPermutationFamilies`, `natCard_followingStateChange`, `PointedFollowingStateChange`, `pointedFollowingEquivVertexFamilies`, `natCard_pointedFollowingStateChange`; complete-update graph/automorphism/component equivalence; `boolLensTwistChange`とget/put評価・id/flip各4/2; `pointedLensTwistChange`とsection/put評価・二つの非恒等witness・4/2; `protocolGraph`, `protocolSessionSwapAutomorphism`, `protocolSessionSwapLift`, operation-map計算, `protocolComponentEquivBool`, 16/4/4 | カード指定の`Bool×Bool` product lens、`Bool×Fin 3`と基準値0、`Fin 4`のnamed edges `0→1`,`2→3`; Cycle111--118のactual source/fiber分類 | raw following changeと頂点別全置換族の往復; pointed raw changeと全point stabilizer族の往復; complete graph一成分とprotocol二成分のsource relation由来証明; xor/true-fiber swapの具体評価; session交換のvertex/edge/operation adapter; 一般濃度式の特殊化 | Fの三固定例を完了し、同じ構成をEの独立lens/protocol意味へ翻訳する | Eとの対象・射・get/put・adapterの双方向翻訳、D/AAT表示側回復、残るA--Eの同一構成統合は未完了 |
 | F Cycle 118 delta | 有限`F.Vertex`と有限`K`について、任意の独立`H`と各`u : H`上のfull/pointed actual projection fiberを数える | `pointedPermutationEquivFixedOutside`, `pointedPermutationEquivComplement`, `natCard_pointedPermutation`, `natCard_componentGroup`, `natCard_projectionFiber`, `natCard_pointedComponentGroup`, `natCard_pointedProjectionFiber` | 任意の`F,K,k₀,H,u`; `[Finite F.Vertex] [Finite K]`; Cycle116--117のactual fiber equivalence。`F.Edge`と`H`の有限性は仮定しない | literal point stabilizerを`{k // k ≠ k₀}`の置換群と同値化し、その濃度を`(|K|-1)!`と算定; actual component-family/fiber同値へ`Nat.card_congr`を適用し、full fiberを`(|K|!)^|π₀(F)|`、pointed fiberを`((|K|-1)!)^|π₀(F)|`と証明 | F1の有限個数公式と三固定例の期待個数 | lens・pointed lens・protocolの指定入力/写像/評価/個数、E/D/AAT表示側回復は未完了 |
 | F Cycle 117 delta | `k₀ : K`を保つ版でactual following group、componentごとのpoint stabilizer kernel、split exactness、全visible fiberのtorsor/完全分類を同一構成から証明する | `PointedPermutation`, `PointedComponentGroup`, `PointedFollowingGroup`, `mem_pointedFollowingGroup_iff_state`, `pointedProjection`, `pointedCanonicalSection`, `forgetPointedComponentGroup`, `pointedComponentKernelHom`, `pointedComponentFamilyOfPair`, `range_pointedComponentKernelHom_eq_ker_pointedProjection`, `isGroupShortExact`, `PointedProjectionFiber`, pointed kernel `SMul`/`MulAction`, free/transitive/`∃!`, normalization, `pointedComponentGroupEquivProjectionFiber` | 任意の`F,K,k₀`、独立入力`H ≤ Aut(F)`、全`u : H`; Cycle111--116のactual group/component kernel/split fiber構成 | 全頂点fiberの`k₀`固定条件からactual subgroupを積・逆元に閉じて構成; 実state section `(v,k₀)↦(u(v),k₀)`保存との同値; literal stabilizer familyからactual kernel元を構成し逆抽出; `range = ker`; canonical section; literal pointed kernelの右作用と完全往復 | F1のbasepoint-preserving variantと後続の固定section例 | 通常/pointed有限個数公式、3固定例、lens/protocol適用、AAT/E/D表示側回復は未完了 |
 | F Cycle 116 delta | component-family inclusion、actual following group、visible projectionをsplit short exact sequenceとしてまとめ、全`u : H`上のliteral fiberがactual kernelのtorsorであることとcomponent familyによる全選択肢を証明する | `ProjectionFiber`, `projectionFiberSMul`, `projectionFiberMulAction`, `projectionFiber_action_free`, `projectionFiber_action_transitive`, `projectionFiber_existsUnique_smul_eq`, `isGroupShortExact`, `canonicalSection_rightInverse`, `componentKernelHom_componentFamilyOfPair_of_projection_eq_one`, `normalizedKernelElement`, `componentFamilyToFiber`, `componentFamilyOfFiber`, `componentGroupEquivProjectionFiber` | 任意の`F,K`、独立入力`H ≤ Aut(F)`、全`u : H`; Cycle111--115のactual group、section、component kernel mapと`range = ker` | G-120 `IsGroupShortExact`への単射・exact・全射の実装; homomorphic sectionの右逆; literal kernelの右乗法をopposite group作用として構成しfree/transitive/`∃!` displacementを証明; canonical liftを除去しcomponent quotientからfamilyを読み戻す完全な往復 | F1のsplit exactness、全visible automorphism上の追随変更のkernel-torsor分類、G-120の完全性・fiber整理 | basepoint固定版、有限個数公式、3固定例、lens/protocol適用、AAT/E/D表示側回復は未完了 |
@@ -12274,4 +12275,48 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Instantiate the three fixed F examples using the same general theorems: the Bool lens with get/put failure and counts 4 versus 2, the Fin 3 pointed lens with section preservation but put failure and counts 4 versus 2, and the Fin 4 protocol with counts 16 versus 4 and edge-exchange fiber count 4."
+```
+
+## Cycle 119 — The three fixed finite F examples
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 119
+base_oid: 0acd90fef8469b7c1f4dedc35374ae69dde97c24
+tracking_issue: 4520
+selection:
+  proof_obligation: "Instantiate the card-specified Bool lens, selected-value-preserving Fin 3 lens, and two-session Fin 4 protocol without replacing their maps, evaluations, or counts"
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed the complete-update graph for both product-lens examples and the exact two-edge Fin 4 protocol graph.  For the Bool lens, retained h(v,k)=(v,k xor v), proved get preservation and the prescribed (true,true)/(true,false) put-order failure, and counted the raw and operation-preserving fibers as 4 and 2 for both identity and Bool flip.  For the pointed Fin 3 lens, retained section value 0 and the true-fiber-only swap of 1 and 2, proved section preservation, the prescribed (true,2)/(true,1) put-order failure, nonidentity witnesses in both qualifications, and counts 4 and 2.  For the protocol, proved the generated component quotient is Bool, counted identity observation/operation fibers as 16/4, constructed the actual vertex-and-edge session exchange, calculated its two named operation adapters, and counted its operation-preserving fiber as 4.  All operation-preserving counts specialize the Cycle118 actual fiber theorems."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FixedFFiniteExamples.lean
+  unfinished:
+    - "bidirectional translation between this fixed-F construction and the independently defined E lens model, including get and put morphism conditions"
+    - "bidirectional translation between this fixed-F construction and the independently defined E protocol model, including names, executions, and adapters"
+    - "D comparison-group transport and presentation/AAT-side recovery of the same section, kernels, and fibers"
+    - "the remaining A--E target obligations and final same-construction integration"
+review:
+  fixed_head: b5991524232c415463a05c28a8107f218357a62c
+  lanes: {math_a: pass, math_b: pass, lean_a: pass, lean_b: pass}
+  direct_response:
+    reviewed_delta: "0acd90fef8469b7c1f4dedc35374ae69dde97c24..b5991524232c415463a05c28a8107f218357a62c"
+    verdict: pass
+    new_findings: []
+audits:
+  certificate_provenance: "raw counts are derived from constructed fiberPerm/ofFamily inverse laws; operation counts use the literal actual projection fibers; component counts are proved from the authored endpoint relations; no example is defined as a post-hoc successful-image subset"
+  proof_use: "the xor and Fin 3 swaps are evaluated in the actual state maps; preservation failure uses the actual named execution square; protocol session exchange carries both vertex and named-edge maps into the operation adapter; Cycle118 full and pointed cardinality theorems supply the operation-preserving counts"
+  structure_field_escape: none-found
+  target_fitting: none-found-all-three-fixed-inputs-maps-evaluations-and-counts-retained
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (3114 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 71 declarations in the new module; standard axioms only"
+    - "CI: all 7 checks PASS, including research integrity gates"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Use the independently defined LensRealization and ProtocolRealization semantics to prove both translations, preservation/reflection of get/put or named execution/adapter conditions, and application of this same F classification before any D or presentation-side transport."
 ```
