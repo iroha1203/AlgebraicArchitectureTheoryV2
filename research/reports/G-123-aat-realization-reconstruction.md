@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 100 replaces completed arbitrary permutations by independent finite words of explicit swaps on any primitive carrier, characterizes their primitive image by finite support, and proves exact surjectivity onto the corresponding decoder-independent actual subgroup
+- current proof obligation: Cycle 101 proves that the carrier-indexed union of all Cycle 100 finite-support images still omits the source-owned `Nat` adjacent-pair algorithm transported through the same actual route
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: compare the carrier-indexed family of finite-swap-word intrinsic images with the full actual local-fiber kernel, isolate any remaining infinite-support direction by an explicit source recipe, and continue the presentation/decomposition analysis without treating one failed recipe class as target refutation
+- next proof obligation: enlarge the independent syntax by finite algorithmic generators on permitted primitive parameters, give a decoder-independent intrinsic image and faithful quotient or canonical normal form, and continue full-kernel decomposition without treating finite-swap-word noncoverage as target refutation
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 101 delta | Cycle 100の全decidable carrier上のfinite-support actual imageをliteral unionとして保持し、同じprimitive-to-actual routeから有限アルゴリズムで構成した`Nat` adjacent swapがそのunion外にあることを証明する | `FiniteAxisFoldDecidableExtensionCarrier`, `FiniteAxisFoldFiniteSupportCarrierImage`, `finiteAxisFoldNatAdjacentSwap`, `finiteAxisFoldNatAdjacentSwap_ne`, `finiteAxisFoldNatAdjacentSwapLocalFiberKernel`, `finiteAxisFoldFiniteSupportSourceAction_exists_fixed_natProbe`, `finiteAxisFoldNatAdjacentSwap_transported_ne_finiteSupport`, `finiteAxisFoldNatAdjacentSwap_not_finiteSupportCarrierImage`, `finiteAxisFoldFiniteSupportCarrierImage_not_all` | 任意のdecidable primitive carrierとその全finite-support permutation; 原始`Nat` carrier上の固定有限アルゴリズム`n xor 1`; Cycle 92--100のsame fixed actual routeとintrinsic image; full backward projection | carrier-indexed existential union; `xor 1`のinvolutionと全点移動; same-carrier finite-support作用の固定点、別carrier作用の`Nat` probe固定; route equivalenceによるactual action separation; source-owned actual local-kernel元とunion非被覆 | 有限swap wordだけでは不足することを固定し、permitted primitive parameter上のfinite algorithmic generatorを含むpresentation、faithful quotient、full-kernel分解へ渡す | この非被覆はtarget反証ではない; finite algorithmic syntax/image、faithful quotientまたはcanonical normal form、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
 | D Cycle 100 delta | 任意のprimitive Extension carrier上でcompleted permutationを一つのpayloadとして受け取らず、明示された二値swapの有限wordを独立syntaxとし、finite-support条件でactual imageを特徴付けてexact surjectivityを証明する | `FiniteAxisFoldExtensionSwapGenerator`, `FiniteAxisFoldExtensionSwapGenerator.toPerm`, `FiniteAxisFoldExtensionSwapGenerator.range_toPerm`, `FiniteAxisFoldExtensionSwapWord`, `finiteAxisFoldExtensionSwapWordPermutation`, `finiteAxisFoldFiniteSupportPermutationSubgroup`, `finiteAxisFoldExtensionSwapWordPermutation_range`, `finiteAxisFoldFiniteSupportPermutationSubgroup_mem_iff`, `finiteAxisFoldArbitraryCarrierBackwardAction`, `FiniteAxisFoldFiniteSwapWordIntrinsicImage`, `finiteAxisFoldFiniteSwapWordIntrinsicImage_mem_iff`, `finiteAxisFoldFiniteSwapWordDecoder`, `finiteAxisFoldFiniteSwapWordDecoder_backwardProjection`, `finiteAxisFoldFiniteSwapWordIntrinsicDecoder`, `finiteAxisFoldFiniteSwapWordIntrinsicDecoder_surjective`, `finiteAxisFoldFiniteSwapWordIntrinsicImage_mem_iff_decoder`, `finiteAxisFoldNatZeroOneSwapGenerator`, `finiteAxisFoldNatZeroOneSwap_has_finiteSwapWordPreimage` | 任意の`E`と`[DecidableEq E]`; 各generatorの二値と不等式; Cycle 92--99のsame fixed actual route; Mathlibのfree-group rangeとfinite-support transposition closure定理; full backward projection単射性 | swap generator range = transpositions; free finite word evaluator; evaluator range = finite-support subgroup; decoder非依存のarbitrary-carrier expected action; actual intrinsic subgroup; decoder landing; intrinsic membershipとfinite wordの相互移送; full projection faithfulnessによるsurjectivity; Cycle 99 Nat witnessの一語preimage | carrier-indexed finite-support imageとfull kernelを比較し、残るinfinite-support方向またはcoverage/decompositionへ渡す | free-word decoderのinjectivityは主張しない; 全carrier familyの統合、infinite-support finite recipes、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
 | D Cycle 99 delta | Cycle 98の全fixed finite carrier imageのliteral unionを定式化し、同じprimitive-to-actual routeから有限recipeで構成した`Nat` zero/one swapがそのunion外にあることを証明する | `FiniteAxisFoldFiniteExtensionCarrier`, `FiniteAxisFoldFiniteCarrierExtensionImage`, `finiteAxisFoldNatZeroOneSwap`, `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_backwardProjection`, `finiteAxisFoldNatZeroOneSwapLocalFiberKernel`, `finiteAxisFoldFiniteCarrierSourceAction_fixes_natZeroProbe`, `finiteAxisFoldNatZeroOneSwap_transported_ne_finiteCarrier`, `finiteAxisFoldNatZeroOneSwap_not_finiteCarrierExtensionImage`, `finiteAxisFoldFiniteCarrierExtensionImage_not_all` | 任意のfinite carrierとその全permutation; 原始`Nat` carrier上の明示`0/1` swap; Cycle 92--96のarbitrary-carrier same fixed route; Cycle 98のintrinsic image; full backward projection | carrier-indexed existential union; arbitrary carrierに対するdecoder projection計算; finite carrierと`Nat`の型非同一性; canonical `Nat` probe上でfinite actionは固定し`Nat` swapは移動; route equivalenceによるactual action separation; source-owned actual local-kernel元とunion非被覆 | finite-carrier presentationでは不足することを固定し、infinite primitive carrier上のfinite recipeを含む拡張presentationとfull-kernel分解へ渡す | 拡張syntax/image characterization、全kernelのcoverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
 | D Cycle 98 delta | fixed finite Extension carrierごとにsemantic rangeから独立なforward/backward lookup-table syntaxを定め、primitive source actionをdecoder非依存の固定routeで運び、actual full stored-backward context actionで特徴付けたsubgroupとのdecoder同値を構成する | `FiniteAxisFoldExtensionPermutationCode`, `FiniteAxisFoldExtensionPermutationCode.toPerm`, `FiniteAxisFoldExtensionPermutationCode.tableMulEquiv`, `finiteAxisFoldSourceToSouthwestContextEquiv`, `finiteAxisFoldSouthwestToExactLeftContextEquiv`, `finiteAxisFoldExactLeftToActualContextEquiv`, `finiteAxisFoldSourceToActualContextEquiv`, `finiteAxisFoldTransportedSourceContextPermutationHom`, `finiteAxisFoldSouthwestPermutation_contextBackward`, `finiteAxisFoldExactLeftPermutation_contextBackward`, `finiteAxisFoldActualPermutation_contextBackward`, `finiteAxisFoldExtensionPermutationDecoder`, `finiteAxisFoldExtensionPermutationBackwardAction`, `finiteAxisFoldExtensionPermutationDecoder_backwardProjection`, `FiniteAxisFoldExtensionPermutationIntrinsicImage`, `finiteAxisFoldExtensionPermutationIntrinsicImage_mem_iff`, `finiteAxisFoldExtensionPermutationIntrinsicDecoder`, `finiteAxisFoldExtensionPermutationIntrinsicDecoder_injective`, `finiteAxisFoldExtensionPermutationIntrinsicDecoder_surjective`, `finiteAxisFoldExtensionPermutationIntrinsicDecoderEquiv`, `finiteAxisFoldExtensionPermutationIntrinsicImage_mem_iff_decoder` | 任意の有限`E`; explicit lookup tablesと両inverse law; Cycles 92--97のsame fixed actual section; source→southwest→exact-left→actualの固定context equivalence; Cycle 90のfull local-kernel backward projection単射性 | lookup-table code自身の群構造; decoderとは独立に定義したprimitive source actionの固定route共役; 三段factorizationによるdecoder projectionとの一致; action-rangeのpreimageによるactual subgroup; decoder landing; section単射性によるdecoder単射; full backward faithfulnessによるintrinsic membershipからdecoder全射; `MulEquiv` | carrier-indexed family全体とfull actual local-fiber kernelのcoverage/decomposition検査へ渡す | 全有限carrier unionの定式化とfull-kernel比較、coverage/section/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
@@ -10853,4 +10854,116 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Compare the carrier-indexed finite-support actual images with the full local-fiber kernel, construct an explicit source-owned infinite-support direction if present, and determine the next permitted finite recipe class without weakening the fixed target."
+```
+
+## Cycle 101 — Infinite-support finite-algorithm obstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 101
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 868f11fa30215c0434022e75b5b760bb41ac78a6
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 100 characterized the image of finite swap words on every decidable primitive carrier but left carrier-indexed coverage open"
+  proof_dag_predecessors:
+    - "Cycles 92--96 construct and faithfully transport every primitive-carrier permutation through the same actual route"
+    - "Cycle 99 gives the decoder-independent backward-projection computation"
+    - "Cycle 100 identifies finite swap-word images exactly with finite-support primitive actions"
+  proof_obligation: "Compare the carrier-indexed family of finite-support intrinsic images with the full actual local-fiber kernel and isolate a missing permitted finite source recipe if coverage fails"
+  selection_reason: "The adjacent-pair algorithm n xor 1 is a finite primitive recipe, moves every Nat, and therefore tests the actual gap between finite words naming finitely many values and finite algorithms over an allowed infinite parameter."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldFiniteSupportUnionObstruction.lean
+  risks:
+    - "supply an arbitrary completed all-domain permutation as presentation payload"
+    - "compare only different carriers and miss same-carrier finite-support actions"
+    - "define the union or syntax from the semantic decoder range"
+    - "treat noncoverage of one recipe class as refutation of the fixed target"
+    - "infer a faithful presentation or full-kernel decomposition from one outside element"
+  unchecked:
+    - "finite algorithmic syntax and decoder-independent intrinsic image"
+    - "faithful quotient or canonical normal form required by fixed GOAL B"
+    - "full-kernel coverage/decomposition and original G-122/D/B/E/F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Formed the literal existential union of Cycle 100 intrinsic images over every primitive carrier carrying only DecidableEq.  Constructed the source-owned Nat adjacent-pair action by the fixed finite algorithm n xor 1, proved involutivity and that every Nat is moved, and transported it through the existing normalized local-fiber-kernel section.  For an arbitrary finite-support action, proved existence of a fixed Nat probe: if its carrier is Nat, finiteness of the moved set and infinitude of Nat yield a fixed point; if its carrier differs from Nat, the primitive action fixes every Nat probe definitionally.  Evaluating a hypothetical equality after the fixed source-to-actual equivalence at this probe separates the transported actions.  The Cycle 100 intrinsic membership theorem, inverse closure of its finite-support subgroup, and the Cycle 99 backward-projection computation then prove the adjacent-pair actual element lies outside every carrier-indexed finite-support image.  This is noncoverage of the current finite-swap-word class, not target refutation."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldFiniteSupportUnionObstruction.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldDecidableExtensionCarrier
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldFiniteSupportCarrierImage
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAdjacentSwap
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAdjacentSwap_ne
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAdjacentSwapLocalFiberKernel
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldFiniteSupportSourceAction_exists_fixed_natProbe
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAdjacentSwap_transported_ne_finiteSupport
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAdjacentSwap_not_finiteSupportCarrierImage
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldFiniteSupportCarrierImage_not_all
+  claim_mapping:
+    source_labels:
+      - "GOAL D prerequisite: parameter-relative finite presentation may retain permitted infinite primitive parameters but may not re-input completed all-domain maps"
+      - "same fixed construction must handle all carrier choices and all represented actions"
+      - "failure of one syntax candidate is not refutation of the fixed target"
+    conjuncts:
+      - "all decidable carriers -> literal family of finite-support intrinsic images"
+      - "finite xor recipe on Nat -> infinite-support primitive action"
+      - "finite support on the same Nat carrier -> existence of a fixed probe"
+      - "different carrier -> every Nat probe is fixed"
+      - "fixed source-to-actual route and faithful backward projection -> actual separation"
+      - "one explicit actual member -> strict noncoverage of the carrier-indexed family"
+    undischarged_assumptions: []
+    acceptance_point: "The union over all primitive carriers of actual elements induced by finite swap words is strictly smaller than the actual local-fiber kernel, witnessed by the finite algorithm n xor 1 on Nat; no fixed-target refutation or full-kernel classification is asserted."
+    port_status: not-applicable
+review:
+  fixed_head: 2198178ce938b91e0921ee1c472ae5308e19f97b
+  lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  direct_response:
+    reviewed_delta: "868f11fa30215c0434022e75b5b760bb41ac78a6..2198178ce938b91e0921ee1c472ae5308e19f97b"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "carrier-indexed integration of the Cycle 100 finite-support images"
+      - "explicit infinite-support primitive direction given by a finite source algorithm"
+      - "same-carrier and cross-carrier separation from every finite-support image"
+    remaining:
+      - "independent finite algorithmic syntax and its decoder-independent intrinsic image"
+      - "faithful quotient or canonical normal form required by fixed GOAL B"
+      - "full-kernel coverage/decomposition and original G-122/D/B/E/F"
+  certificate_provenance:
+    discharged:
+      - "the outside action is defined by xor with the literal constant 1 and not received as a theorem input or record field"
+      - "finite-support membership is obtained from Cycle 100 intrinsic membership and preserved under inverse by subgroup closure"
+      - "same-carrier fixed-point existence is proved from finite support and Nat infinitude"
+    unresolved:
+      - "which finite algorithm language is sufficient for the required presentation and all actual directions"
+  proof_use:
+    used:
+      - "Cycle 100 intrinsic membership supplies the primitive permutation, its finite support, and expected action equality"
+      - "finite-support subgroup inverse closure handles the backward-action inverse orientation"
+      - "Cycle 99 projection theorem computes the actual adjacent-pair backward action"
+      - "the fixed context equivalence reads action equality back at a source Nat probe"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: reuses-the-same-fixed-source-southwest-exact-left-top-normalization-route
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-noncoverage-checkpoint
+  one_way_as_equivalence: not-applicable
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4332 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 24 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct an independent finite algorithmic generator language over permitted primitive parameters, derive a faithful quotient or canonical normal form and decoder-independent actual image, then continue full-kernel decomposition without weakening the fixed target."
 ```
