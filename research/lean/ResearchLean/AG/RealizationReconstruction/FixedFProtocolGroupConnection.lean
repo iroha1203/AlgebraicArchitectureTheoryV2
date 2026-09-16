@@ -31,6 +31,12 @@ open FixedFProtocolConnection
 variable {F : FixedFDirectedMultigraph.{u, u}} [Finite F.Vertex] [Finite F.Edge]
   {K : Type u} [Finite K]
 
+/-- The endpoint-typed operation quiver, repeated here because the instance in
+the fixed-visible connection is intentionally local to that module. -/
+local instance fixedFProtocolGroupQuiver
+    (F : FixedFDirectedMultigraph.{u, u}) : Quiver F.Vertex where
+  Hom := TypedEdge F
+
 /-- The independent CS-side carrier over every visible automorphism in `H`.
 Its fields are precisely the semantic state equivalences and the squares for
 every original typed operation name; no fixed-F change is stored as input. -/
@@ -109,9 +115,9 @@ instance : Inv (ProtocolChangeGroup (K := K) H) where
               change.stateEquiv (change.visible.1.vertex.symm source) := by
           simpa using change.stateEquiv_edge_constant
             (renameTypedEdge change.visible.1⁻¹ edge)
-        exact congrFun
-          (congrArg (fun permutation : Equiv.Perm K => permutation.symm)
-            constant) state
+        exact congrArg
+          (fun permutation : Equiv.Perm K => permutation.symm state)
+          constant
       observation_naturality := fun _ _ => Subsingleton.elim _ _ }
 
 instance : Group (ProtocolChangeGroup (K := K) H) where
@@ -161,7 +167,9 @@ def canonicalSection : H →* ProtocolChangeGroup (K := K) H where
     apply ProtocolChangeGroup.ext
     · rfl
     · funext vertex
-      simp
+      apply Equiv.ext
+      intro state
+      rfl
 
 theorem projection_section (visible : H) :
     projection (K := K) (canonicalSection (K := K) visible) = visible :=
