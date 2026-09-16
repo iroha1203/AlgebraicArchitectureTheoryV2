@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 106 generalizes exact-support finite normal forms and actual intrinsic recovery to every decidable primitive carrier without a finite ambient-carrier assumption
+- current proof obligation: Cycle 107 identifies the literal union of all arbitrary-carrier exact-support code images with the existing finite-support carrier image and proves that the fixed Nat adjacent-algorithm normal form strictly enlarges it
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: compare the literal union of all arbitrary-carrier exact-support actual images with the full residual kernel, isolate remaining non-finite-support directions, and preserve the original G-122 classification data
+- next proof obligation: characterize the enlarged exact-support-plus-Nat-algorithm image against the full residual kernel, proving coverage or constructing a new source-owned outside direction, while preserving the original G-122 classification data
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| B/D Cycle 107 delta | Cycle 106の全carrier exact-support code-imageをsemantic aliasではなくliteral existential unionとして固定し、既知のfinite-support actual imageとの一致を証明したうえで、固定Nat adjacent algorithm normal formがその和を真に拡大することを示す | `FiniteAxisFoldExactSupportCarrierUnion`, `finiteAxisFoldExactSupportCarrierUnion_mem_iff`, `finiteAxisFoldExactSupportCarrierUnion_eq_finiteSupportCarrierImage`, `finiteAxisFoldNatAdjacentAlgorithmNormalForm`, `finiteAxisFoldNatAdjacentAlgorithmNormalForm_evaluate`, `finiteAxisFoldNatAdjacentAlgorithmNormalForm_actualEvaluate`, `FiniteAxisFoldEnlargedPresentedCarrierImage`, `finiteAxisFoldExactSupportCarrierUnion_subset_enlarged`, `finiteAxisFoldNatAdjacentSwap_mem_enlargedPresentedCarrierImage`, `finiteAxisFoldExactSupportCarrierUnion_ssubset_enlarged`, `finiteAxisFoldExactSupportCarrierUnion_ne_univ` | 任意の`FiniteAxisFoldDecidableExtensionCarrier`; Cycle 106のexact-support finite codeとactual evaluator; Cycle 101のliteral finite-support carrier imageとadjacent outside theorem; Cycle 105の固定Nat parity normal form | literal code-image membershipとfinite-support actual membershipの双方向; code-image unionと既存unionのset equality; parity=true・identity finite componentのcanonical Nat code; 同じfixed actual routeでadjacent witnessへ評価; 真包含 | 次のfull residual-kernel coverage/noncoverage検査で、既に回復したexact-support方向と追加Nat algorithm方向を明示的に区別する | enlarged imageのfull-kernel coverageもnoncoverageも未証明; Nat以外のinfinite-support finite algorithms、original G-122分類、一般入力、res/ext/J、CS、残るA--Fは未完了 |
 | B/D Cycle 106 delta | Cycle 105のexact-support finite normal formをambient finite carrierに制限せず任意のdecidable primitive carrierへ一般化し、同じfixed actual route上のdecoder-independent intrinsic imageまでfaithfulに回復する | `FiniteAxisFoldArbitraryCarrierFiniteSupportCode`, `evaluate_ne_iff_mem`, `evaluate_finite`, `evaluate_injective`, `encode`, `decode_encode`, `encode_decode`, `equivFiniteSupport`, `finiteAxisFoldTransportedArbitraryCarrierSourceContextPermutation_injective`, `finiteAxisFoldArbitraryCarrierBackwardAction_injective_forCarrier`, `actualEvaluate_backwardProjection`, `intrinsicDecode_injective`, `intrinsicDecode_surjective`, `equivIntrinsicImage` | 任意の`E : Type`と`[DecidableEq E]`; support subtype上のexplicit finite table; 全table点のmove条件; Cycle 100のarbitrary-carrier finite-support characterization; canonical `E` probes; same source-to-actual context equivalenceとfull backward projection | exact moved supportとcode単射; 全finite-support permutationからのfinite restriction table構成; ambient `Fintype E`なしのtransported/expected action単射; actual intrinsic imageへの単射・全射 | 全carrier actual-image族のliteral unionとfull residual kernelのcoverage/decomposition比較へ渡す | finite-support方向のみ; carrier横断unionとfull-kernel coverage、infinite-support finite algorithmsの統合normal form、original G-122分類、一般入力、res/ext/J、CS、残るA--Fは未完了 |
 | B/D Cycle 105 delta | completed `Perm Nat`やactual residualをsyntax fieldへ入れず、finite-support成分の独立有限正規形を構成し、Cycle 104 parityと結合してsource/actual双方でfaithfulかつ全射な表示を証明する | `FiniteAxisFoldNatFiniteSupportCode`, `evaluate_ne_iff_mem`, `evaluate_finite`, `evaluate_injective`, `encode`, `decode_encode`, `encode_decode`, `equivFiniteSupport`, `FiniteAxisFoldNatAlgorithmNormalForm`, `FiniteAxisFoldNatAlgorithmNormalForm.evaluate_injective`, `evaluate_surjective`, `equivPermutationSubgroup`, `actualEvaluate_backwardProjection`, `intrinsicDecode_injective`, `intrinsicDecode_surjective`, `equivIntrinsicImage` | 原始`Nat`; exact finite support; support subtype上の有限forward/backward tableと両inverse law; 全table点がmoveする条件; Cycles 100--104のfinite-support characterization、coset分解、branch disjointness、actual action faithfulness | evaluatorのmoved setがsupportとexactに一致; semantic finite-support元からmoved setを有限列挙してrestriction tableを構成; encode/decode両逆; Bool parity付きsource normal formの単射・全射; same fixed sectionとfull backward projectionからactual intrinsic imageとの同値 | raw FreeGroup wordをfaithful finite normal formへ置換し、全parameter familyとfull residual-kernel image比較へ渡す | `Nat`一carrierのgenerated subgroup/intrinsic imageに限定; 全permitted primitive parameter family、full-kernel coverage/decomposition、original G-122の全比較群・二核・lift fibers、一般入力、res/ext/J、CS、残るA--Fは未完了 |
 | D Cycle 104 delta | Cycle 103のcoset unionについてadjacent branchとfinite-support branchのdisjointnessを元入力から証明し、全generated source permutationとactual intrinsic memberのsource witnessおよびouter parity一意性を構成する | `finiteAxisFoldNatAdjacent_not_mem_finiteSupport`, `finiteAxisFoldNatAlgorithmCoset_branches_disjoint`, `finiteAxisFoldNatAlgorithmPermutationSubgroup_unique_parity`, `finiteAxisFoldNatAlgorithmPermutationSubgroup_unique_parity_finite`, `finiteAxisFoldTransportedNatSourceContextPermutation_injective`, `finiteAxisFoldNatArbitraryCarrierBackwardAction_injective`, `finiteAxisFoldNatAlgorithmWordIntrinsicImage_mem_iff_uniqueParity` | Cycle 101の全`Nat`点移動定理; Cycle 100のfinite-support characterization; Cycle 103のcoset-union equality; same actual intrinsic membershipと全Nat source probe | adjacentのmoved setが`univ`で非finite; 両branch所属から`(a*p)*p⁻¹=a`をfinite-supportへ入れる矛盾; branch存在と排他性; 全probe readbackによるtransported actionとexpected backward actionの単射性; actual source witnessの`∃!` | faithful normal formのouter Bool/parity成分を固定し、finite-support成分のcanonical finite code構成へ渡す | finite-support成分自身の独立canonical codeとfaithful evaluator、全parameter algorithm family、full-kernel coverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るD/B/E/Fは未完了 |
@@ -11561,4 +11562,104 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Compare the literal union of arbitrary-carrier exact-support actual images with the full residual kernel and isolate the remaining non-finite-support directions without shrinking the input family."
+```
+
+## Cycle 107 — Exact-support carrier union and strict algorithmic enlargement
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 107
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 23a6b6d63f04118f51edb6650205506b76a91da2
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 106 supplied exact-support code equivalences for each decidable carrier, but their literal carrier-indexed union and its relation to the known Nat algorithm direction were not yet fixed"
+  proof_dag_predecessors:
+    - "Cycle 101 literal finite-support carrier image and fixed adjacent-algorithm outside theorem"
+    - "Cycle 105 faithful Nat algorithm normal form and actual evaluator"
+    - "Cycle 106 arbitrary-carrier exact-support code and actual intrinsic equivalence"
+  proof_obligation: "Define the literal union of arbitrary-carrier exact-support actual code images independently of the old semantic union, identify it exactly, and test whether the fixed Nat algorithm gives a genuine enlargement"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldExactSupportCarrierUnion.lean
+  risks:
+    - "define the new union by aliasing the pre-existing semantic finite-support union"
+    - "store a completed carrier permutation or residual-kernel member as presentation syntax"
+    - "treat one strict enlargement as full residual-kernel coverage"
+    - "reuse the adjacent witness as an outside witness after explicitly adding it"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Defined the exact-support carrier union literally by existential quantification over a decidable carrier and a Cycle 106 finite code whose actual evaluation is the residual-kernel member.  Used the per-carrier code/intrinsic equivalence to prove this literal union equals the independently existing Cycle 101 finite-support carrier image.  Constructed the canonical Nat normal form with true outer parity and identity finite component, proved that its source and actual evaluations are the fixed adjacent algorithm and its actual local-kernel witness, and defined the enlarged presented image as the exact-support union together with the range of the Nat normal-form actual evaluator.  The adjacent outside theorem then proves strict inclusion.  No coverage or noncoverage theorem for the enlarged image is asserted."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldExactSupportCarrierUnion.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldExactSupportCarrierUnion
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExactSupportCarrierUnion_mem_iff
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExactSupportCarrierUnion_eq_finiteSupportCarrierImage
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAdjacentAlgorithmNormalForm
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAdjacentAlgorithmNormalForm_evaluate
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAdjacentAlgorithmNormalForm_actualEvaluate
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldEnlargedPresentedCarrierImage
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExactSupportCarrierUnion_subset_enlarged
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatAdjacentSwap_mem_enlargedPresentedCarrierImage
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExactSupportCarrierUnion_ssubset_enlarged
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldExactSupportCarrierUnion_ne_univ
+  claim_mapping:
+    input_premises:
+      - "all decidable primitive carriers, without finite ambient-carrier restriction"
+      - "Cycle 106 exact-support finite code and same fixed actual evaluator"
+      - "fixed Nat xor-1 algorithm and its Cycle 105 faithful normal form"
+    constructed_evidence:
+      - "literal code-image carrier union equals the independently defined finite-support carrier image"
+      - "canonical Nat normal form evaluates to the fixed adjacent source and actual witnesses"
+      - "the exact-support union is a strict subset of the enlarged presented image"
+    unfinished:
+      - "coverage or noncoverage of the enlarged image against the full residual kernel"
+      - "integration of further permitted infinite-support finite algorithms"
+      - "original G-122 full classification and remaining A--F"
+review:
+  fixed_head: 5b8fe7cc25a45b6233ae0c21e459e3e49d11efdf
+  lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  direct_response:
+    reviewed_delta: "23a6b6d63f04118f51edb6650205506b76a91da2..5b8fe7cc25a45b6233ae0c21e459e3e49d11efdf"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "literal carrier-indexed union of exact-support actual code images"
+      - "identification of that literal union with the old finite-support carrier image"
+      - "strict enlargement by the fixed Nat adjacent-algorithm normal form"
+    remaining:
+      - "enlarged-image/full residual-kernel coverage or a new outside witness"
+      - "uniform language for further non-finite-support finite algorithms"
+      - "original G-122 groups, bottom-fixed group, two kernels, and all lift fibers"
+      - "general input, res/ext/J, CS, examples, and remaining A--F"
+  certificate_provenance: "the literal union quantifies only primitive carrier descriptors and exact-support finite codes; the Nat addition uses the independent Cycle 105 normal-form syntax; semantic residual members occur only as evaluator outputs"
+  proof_use:
+    used:
+      - "Cycle 106 code/intrinsic equivalence proves both directions of literal-union identification"
+      - "Cycle 105 normal-form evaluation computes the canonical Nat code"
+      - "Cycle 101 adjacent outside theorem supplies strictness"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: same-fixed-source-to-actual-section-and-complete-backward-projection
+  target_fitting: none-found
+  vacuity: none-found-strict-inclusion-witness-is-the-fixed-source-algorithm
+  one_way_as_equivalence: none-found-set-equality-proved-bidirectionally
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4338 dependency jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 12 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Characterize the enlarged exact-support-plus-Nat-algorithm image against the full residual kernel.  Prove coverage or construct a different source-owned finite algorithm outside it; the adjacent witness cannot serve again because it is now included."
 ```
