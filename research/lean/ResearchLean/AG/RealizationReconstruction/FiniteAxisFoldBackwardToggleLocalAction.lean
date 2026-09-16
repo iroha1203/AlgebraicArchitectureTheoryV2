@@ -16,6 +16,13 @@ The result is pointwise over every context and every local value.  It does not
 assume a local-action certificate: the three identities are constructed from
 the same source automorphism and place it in the actual joint local-fiber
 kernel.
+
+The dependent Sigma-map declarations below are reusable API for transporting
+complete local-component equalities.  Their only premises are the geometry
+morphisms in their signatures; canonical surjectivity is constructed from the
+specified transport section, while exact-pull injectivity is constructed from
+the generated exact comparison.  The fixed toggle proof and the arbitrary
+Extension-carrier permutation proof both use this API.
 -/
 
 namespace AAT.AG.RealizationReconstruction
@@ -36,7 +43,10 @@ local instance finiteAxisFoldBackwardLocalActionAtomDecidableEq :
 
 /-! ## Complete dependent Support maps -/
 
-private noncomputable def geometrySupportSigmaMap
+/-- Reusable local-action API: the total dependent Support map carried by a
+geometry morphism.  It is used to compare complete Support actions through the
+fixed transport route. -/
+noncomputable def geometrySupportSigmaMap
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (hom : GeometryTotalHom G H) :
     (Sigma fun context : G.site.category => context.ctx.Support) ->
@@ -44,14 +54,18 @@ private noncomputable def geometrySupportSigmaMap
   | ⟨context, support⟩ =>
       ⟨contextForward hom.base context, hom.geometry.supportComp context support⟩
 
-private theorem geometrySupportSigmaMap_comp
+/-- API lemma for `geometrySupportSigmaMap`: total dependent Support maps
+respect geometry-morphism composition without additional premises. -/
+theorem geometrySupportSigmaMap_comp
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
     (first : GeometryTotalHom G H) (second : GeometryTotalHom H K) :
     geometrySupportSigmaMap (first.comp second) =
       geometrySupportSigmaMap second ∘ geometrySupportSigmaMap first :=
   rfl
 
-private theorem support_eq_of_sigma_eq
+/-- API destructor for `geometrySupportSigmaMap`: equality in the dependent
+Support total space determines the transported fiber equality. -/
+theorem support_eq_of_sigma_eq
     {U : AtomCarrier.{u}} {P : AATCorePackage U}
     {first second : Site.ContextCategoryObject P.contextPreorder}
     {support : first.ctx.Support} {support' : second.ctx.Support}
@@ -62,7 +76,9 @@ private theorem support_eq_of_sigma_eq
   cases equality
   rfl
 
-private theorem context_object_eq_of_ctx_eq
+/-- Transport API lemma: context-category objects are determined by their
+underlying contexts; it supports generated exact Sigma-map cancellation. -/
+theorem context_object_eq_of_ctx_eq
     {U : AtomCarrier.{u}} {A : ArchitectureObject U}
     {C : Site.ContextPreorderCategory A}
     {first second : Site.ContextCategoryObject C}
@@ -72,7 +88,9 @@ private theorem context_object_eq_of_ctx_eq
   cases equality
   rfl
 
-private theorem canonicalGeometrySupportSigmaMap_surjective
+/-- Support transport API: the specified canonical section constructs
+surjectivity on the dependent Support total space. -/
+theorem canonicalGeometrySupportSigmaMap_surjective
     {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U)
     {E : ExtractionDoctrine U}
     (sigma : ExactDoctrineHom G.core.reading.doctrine E) :
@@ -91,7 +109,9 @@ private theorem canonicalGeometrySupportSigmaMap_surjective
     (canonicalSectionSupportEquiv G sigma context).apply_symm_apply support
   exact (cast_heq _ _).symm.trans (heq_of_eq sectionEquality)
 
-private theorem geomFiberLiftSupportSigmaMap_surjective
+/-- Support transport API specialized to a geometry-fiber lift; surjectivity is
+derived from the canonical section rather than accepted as a premise. -/
+theorem geomFiberLiftSupportSigmaMap_surjective
     {U : AtomCarrier.{u}} {X Y : ExtractionInstance U}
     (sigma : X ⟶ Y) (source : GeomFiber.{u, v} X) :
     Function.Surjective
@@ -100,7 +120,9 @@ private theorem geomFiberLiftSupportSigmaMap_surjective
     canonicalGeometrySupportSigmaMap_surjective source.1
       (geomFiberBaseHom sigma source).doctrineHom
 
-private theorem exactGeometryPullSupportSigmaMap_injective
+/-- Support exact-pull API: injectivity is derived from generated exact context
+cancellation and generated exact Support-component injectivity. -/
+theorem exactGeometryPullSupportSigmaMap_injective
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (input : RealizableHom U)
     (target : GeomFiber.{u, v} input.semantic.target) :
@@ -298,7 +320,9 @@ theorem finiteAxisFoldNormalizedExtensionBackward_supportEquiv_eq_one
 
 /-! ## Complete dependent Axis maps -/
 
-private noncomputable def geometryAxisSigmaMap
+/-- Reusable local-action API: the total dependent Axis map carried by a
+geometry morphism and used along the fixed transport route. -/
+noncomputable def geometryAxisSigmaMap
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (hom : GeometryTotalHom G H) :
     (Sigma fun context : G.site.category => context.ctx.Axis) ->
@@ -306,14 +330,18 @@ private noncomputable def geometryAxisSigmaMap
   | ⟨context, axis⟩ =>
       ⟨contextForward hom.base context, hom.geometry.axisComp context axis⟩
 
-private theorem geometryAxisSigmaMap_comp
+/-- API lemma for `geometryAxisSigmaMap`: total dependent Axis maps respect
+geometry-morphism composition without additional premises. -/
+theorem geometryAxisSigmaMap_comp
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
     (first : GeometryTotalHom G H) (second : GeometryTotalHom H K) :
     geometryAxisSigmaMap (first.comp second) =
       geometryAxisSigmaMap second ∘ geometryAxisSigmaMap first :=
   rfl
 
-private theorem axis_eq_of_sigma_eq
+/-- API destructor for `geometryAxisSigmaMap`: equality in the dependent Axis
+total space determines the transported fiber equality. -/
+theorem axis_eq_of_sigma_eq
     {U : AtomCarrier.{u}} {P : AATCorePackage U}
     {first second : Site.ContextCategoryObject P.contextPreorder}
     {axis : first.ctx.Axis} {axis' : second.ctx.Axis}
@@ -324,7 +352,9 @@ private theorem axis_eq_of_sigma_eq
   cases equality
   rfl
 
-private theorem canonicalGeometryAxisSigmaMap_surjective
+/-- Axis transport API: the specified canonical section constructs
+surjectivity on the dependent Axis total space. -/
+theorem canonicalGeometryAxisSigmaMap_surjective
     {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U)
     {E : ExtractionDoctrine U}
     (sigma : ExactDoctrineHom G.core.reading.doctrine E) :
@@ -341,7 +371,9 @@ private theorem canonicalGeometryAxisSigmaMap_surjective
     (canonicalSectionAxisEquiv G sigma context).apply_symm_apply axis
   exact (cast_heq _ _).symm.trans (heq_of_eq sectionEquality)
 
-private theorem geomFiberLiftAxisSigmaMap_surjective
+/-- Axis transport API specialized to a geometry-fiber lift; surjectivity is
+derived from the canonical section rather than accepted as a premise. -/
+theorem geomFiberLiftAxisSigmaMap_surjective
     {U : AtomCarrier.{u}} {X Y : ExtractionInstance U}
     (sigma : X ⟶ Y) (source : GeomFiber.{u, v} X) :
     Function.Surjective (geometryAxisSigmaMap (geomFiberLift sigma source)) := by
@@ -349,7 +381,9 @@ private theorem geomFiberLiftAxisSigmaMap_surjective
     canonicalGeometryAxisSigmaMap_surjective source.1
       (geomFiberBaseHom sigma source).doctrineHom
 
-private theorem exactGeometryPullAxisSigmaMap_injective
+/-- Axis exact-pull API: injectivity is derived from generated exact context
+cancellation and generated exact Axis-component injectivity. -/
+theorem exactGeometryPullAxisSigmaMap_injective
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (input : RealizableHom U)
     (target : GeomFiber.{u, v} input.semantic.target) :
@@ -520,7 +554,9 @@ theorem finiteAxisFoldNormalizedExtensionBackward_axisEquiv_eq_one
 
 /-! ## Complete dependent Observable maps -/
 
-private noncomputable def geometryObservableSigmaMap
+/-- Reusable local-action API: the total dependent Observable map carried by a
+geometry morphism and used along the fixed transport route. -/
+noncomputable def geometryObservableSigmaMap
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (hom : GeometryTotalHom G H) :
     (Sigma fun context : G.site.category => context.ctx.Observable) ->
@@ -529,14 +565,18 @@ private noncomputable def geometryObservableSigmaMap
       ⟨contextForward hom.base context,
         hom.geometry.observableComp context observable⟩
 
-private theorem geometryObservableSigmaMap_comp
+/-- API lemma for `geometryObservableSigmaMap`: total dependent Observable maps
+respect geometry-morphism composition without additional premises. -/
+theorem geometryObservableSigmaMap_comp
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
     (first : GeometryTotalHom G H) (second : GeometryTotalHom H K) :
     geometryObservableSigmaMap (first.comp second) =
       geometryObservableSigmaMap second ∘ geometryObservableSigmaMap first :=
   rfl
 
-private theorem observable_eq_of_sigma_eq
+/-- API destructor for `geometryObservableSigmaMap`: equality in the dependent
+Observable total space determines the transported fiber equality. -/
+theorem observable_eq_of_sigma_eq
     {U : AtomCarrier.{u}} {P : AATCorePackage U}
     {first second : Site.ContextCategoryObject P.contextPreorder}
     {observable : first.ctx.Observable} {observable' : second.ctx.Observable}
@@ -548,7 +588,9 @@ private theorem observable_eq_of_sigma_eq
   cases equality
   rfl
 
-private theorem canonicalGeometryObservableSigmaMap_surjective
+/-- Observable transport API: the specified canonical section constructs
+surjectivity on the dependent Observable total space. -/
+theorem canonicalGeometryObservableSigmaMap_surjective
     {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U)
     {E : ExtractionDoctrine U}
     (sigma : ExactDoctrineHom G.core.reading.doctrine E) :
@@ -567,7 +609,10 @@ private theorem canonicalGeometryObservableSigmaMap_surjective
     (canonicalSectionObservableEquiv G sigma context).apply_symm_apply observable
   exact (cast_heq _ _).symm.trans (heq_of_eq sectionEquality)
 
-private theorem geomFiberLiftObservableSigmaMap_surjective
+/-- Observable transport API specialized to a geometry-fiber lift;
+surjectivity is derived from the canonical section rather than accepted as a
+premise. -/
+theorem geomFiberLiftObservableSigmaMap_surjective
     {U : AtomCarrier.{u}} {X Y : ExtractionInstance U}
     (sigma : X ⟶ Y) (source : GeomFiber.{u, v} X) :
     Function.Surjective
@@ -576,7 +621,9 @@ private theorem geomFiberLiftObservableSigmaMap_surjective
     canonicalGeometryObservableSigmaMap_surjective source.1
       (geomFiberBaseHom sigma source).doctrineHom
 
-private theorem exactGeometryPullObservableSigmaMap_injective
+/-- Observable exact-pull API: injectivity is derived from generated exact
+context cancellation and generated exact Observable-component injectivity. -/
+theorem exactGeometryPullObservableSigmaMap_injective
     {U : AtomCarrier.{u}} [DecidableEq U.Atom]
     (input : RealizableHom U)
     (target : GeomFiber.{u, v} input.semantic.target) :
