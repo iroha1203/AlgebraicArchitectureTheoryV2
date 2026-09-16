@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 111 constructs the fixed-F source-side classification of operation-preserving following state changes from the complete state equivalence itself
+- current proof obligation: Cycle 112 constructs the undirected component quotient from the fixed raw graph and classifies operation-preserving following changes by component-indexed hidden permutations
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: quotient edge-constant vertex permutations by the undirected connected-component relation, then construct the component-indexed group, section, kernel, split exact sequence, torsor, and fixed finite counts without losing the graph-automorphism reindexing action
+- next proof obligation: define identity and composition for all visible automorphisms in H, prove the component reindexing law in composition, and construct the kernel, section, split exact sequence, and fibers without replacing the semidirect action by pointwise multiplication
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| F Cycle 112 delta | 固定graphの向きだけを忘れた連結成分`π₀(Q)`を原edge関係から構成し、edge-constant familyとcomponent-indexed permutation familyを往復する | `fixedFDirectedEdgeStep`, `FixedFUndirectedReachable`, `fixedFComponentSetoid`, `FixedFComponent`, `fixedFComponentMk`, `fixedFComponentMk_eq_iff`, `fixedFComponent_source_eq_target`, `FixedFComponentPermutationFamily`, `perm_eq_of_reachable`, `descendToComponents`, `equivComponentPermutationFamilies`, `preservingEquivComponentPermutationFamilies` | 任意の`F,K,u`; Cycle 111で構成した全operation-preserving following changeとedge-constant familyの同値 | directed endpoint relationの`Relation.EqvGen`、source/targetの同一component性、generated reachability全体に沿うpermutation一定性、`Quotient.lift`による降下、component引戻しとの両逆、Cycle 111同値との合成 | F1の核`∏ Sym(K)`と各visible automorphism上のfiber分類 | Hのcomponent作用を伴う合成、群構造、section、split exact sequence、torsor、有限個数、basepoint固定版、CS/AAT/D接続は未完了 |
 | F Cycle 111 delta | 固定directed multigraphとgraph automorphismに従う全state同値からhidden permutationとoperation adapterを構成し、named-operation保存をedge-constant familyと分類する | `FixedFDirectedMultigraph`, `FixedFGraphAutomorphism`, `FixedFFollowingStateChange`, `symm_observation`, `fiberPerm`, `factorization`, `fiberPerm_unique`, `FixedFOperationPoint`, `operationMap`, `sourceState_operationMap`, `PreservesNamedOperations`, `operationMap_formula`, `preservesNamedOperations_iff`, `FixedFEdgeConstantPermutationFamily`, `ofFamily`, `fiberPerm_ofFamily`, `preservingEquivEdgeConstantFamilies` | 任意のdirected multigraph `F`、任意のhidden type `K`、vertex/edge双方と両endpointを保つ固定automorphism `u`、全state同値 `h`と観測則 `q ∘ h = u ∘ q` | `h`/`h.symm`から各vertexの`fiberPerm`を構成し、可視変更とhidden置換への分解・一意性、source側fiberを使うoperation adapter、source square、actual execution squareとedge constancyの同値、保存変更とedge-constant familyの`Equiv` | F1のcomponent-indexed kernelとsemidirect-product構成、lens/protocol両CSへの適用、D分類との接続のsource側基盤 | undirected connected componentsによる再表示、恒等元上の核群、section、split exact sequence、torsor、Fin4の3例と個数、AAT表示側回復、D/E接続は未完了 |
 | B/D Cycle 110 delta | Nat xor-mask像を別の無限primitive carrier上の固定有限recipeで検査し、全carrier exact-support branchとNat algorithm branchの両方からsame actual route上で分離する | `finiteAxisFoldNatPowerSetComplement`, `finiteAxisFoldNatPowerSetComplement_ne`, `finiteAxisFoldNatPowerSet_ne_nat`, `finiteAxisFoldFiniteSupportSourceAction_exists_fixed_powerSetProbe`, `finiteAxisFoldNatPowerSetComplement_transported_ne_finiteSupport`, `finiteAxisFoldNatSourceAction_fixes_powerSetEmptyProbe`, `finiteAxisFoldNatPowerSetComplement_transported_ne_natAction`, `finiteAxisFoldNatPowerSetComplement_not_mem_exactSupportCarrierUnion`, `finiteAxisFoldNatPowerSetComplement_not_mem_natXorMaskIntrinsicImage` | primitive carrier `Set Nat`; complement formula; Cantor carrier inequality; all decidable carriers; Cycle 109 Nat xor-mask image; same fixed section | 全subset移動; finite-support fixed probe; 全Nat actionのempty-set probe固定; actual projectionを通した両image非所属 | carrier-parametric finite algorithm grammarとfull-kernel比較へ渡す | 二つのfamilyの列挙に留まる; 統一grammar、full-kernel、G-122、一般入力、res/ext/J、CS、残るA--Fは未完了 |
 | B/D Cycle 109 delta | 固定xor algorithmの逐次追加をやめ、有限maskとexact finite tableだけからなる一様構文を作り、source/actual双方の忠実性と独立作用条件で定めた像のexact recoveryを証明する | `finiteAxisFoldNatXorMask`, `FiniteAxisFoldNatXorMaskNormalForm`, `evaluate`, `evaluate_injective`, `actualEvaluate`, `actualEvaluate_injective`, `ofAdjacentNormalForm`, `ofAdjacentNormalForm_evaluate`, `ofAdjacentNormalForm_actualEvaluate`, `ofAdjacentNormalForm_injective`, `secondXorNormalForm`, `secondXorNormalForm_evaluate`, `secondXorNormalForm_actualEvaluate`, `FiniteAxisFoldNatXorMaskIntrinsicImage`, `intrinsicDecode`, `intrinsicDecode_injective`, `intrinsicDecode_surjective`, `equivIntrinsicImage` | 原始`Nat`; 任意の有限`Nat` mask; Cycle 105 exact-support finite code; support union外のNat probe; same fixed actual sectionとbackward-action単射性 | probeでmaskを回収し群消去でfinite tableを回収; actual evaluation単射; xor-1 normal formの評価保存埋め込み; xor-2 witnessのcanonical code; maskとfinite-support source actionによるdecoder非依存actual条件からexact codeを構成する全射 | uniform familyのactual imageとfull residual kernelの比較、より一般のfinite algorithm grammarへ渡す | xor-mask族は全finite algorithmではない; full-kernel coverage/decomposition、original G-122分類、一般入力、res/ext/J、CS、残るA--Fは未完了 |
@@ -103,7 +104,7 @@
 | D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | `G122FamilyInput`, `G122CellInput`, `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, `PrimitiveOperation.g122Ref`, `G122CellInput.fixedGeometry`, `G122CellInput.sourceTransport`, `G122CellInput.compatibleProblemData`, `G122CellInput.barBeta`, `finiteAxisFoldParameter`, `finiteAxisFoldRealization`, `finiteAxisFoldOperationReference` | G-122の固定版にある任意の`A,z,omega,k,g_z`; 固定有限axis-fold例 | 原入力と生成出力を分離し、任意のcell inputを共通familyの意味対象にし、元の有限例を同じ一般branchへ入れ、supportの全端点の各operation identityを参照し、同じ実際の`barBeta`を生成する証拠 | 将来のG-122 branch interpretationと表示回復 | operation族の有限生成・全域写像回復とprimitive interpretation、比較群・section・底/係数成分・二種類の核・各lift fiberの全元の表示回復と三場合分類は未完了 |
 | E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
 | E protocol | 有限schemaの関手意味論と生成辺tableの再構成 | `ProtocolSchema.ExecutionCategory`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.presentationEquivalence` | 有限vertex・typed edge・有限parallel path relations `Q,L`; 任意の`O:C_Q⥤Type`; vertexwise有限carrier | 自由path評価、relation quotient、全path `ext`、vertexwise列挙normal form | AAT翻訳、Fのprotocol適用 | operation名変更版、adapter square (P1)、AATとの双方向翻訳、Fへの適用 |
-| F | 操作連結性による分裂短完全列・核・torsor、二つのCS適用、三有限例 | `FixedFDirectedMultigraph`, `FixedFGraphAutomorphism`, `FixedFFollowingStateChange`, `fiberPerm`, `operationMap`, `PreservesNamedOperations`, `preservesNamedOperations_iff`, `FixedFEdgeConstantPermutationFamily`, `preservingEquivEdgeConstantFamilies` | 任意の`Q,K`と固定graph automorphism `u`; `h`と観測則のみを持つfollowing change | `h`/`h.symm`からfiber permutationを構成し、source側operation adapterのactual execution保存が全edge上の一定性と同値であること、固定`u`上の保存変更全体がedge-constant familyと同値であること | component分類、kernel/group/section/torsor、D・Eとの共通分類 | connected-component再表示、群演算とgraph-automorphism reindexing action、分裂短完全列、各fiberの群torsor、lens/protocolのAAT接続、三有限例と個数、表示側での回復は未完了 |
+| F | 操作連結性による分裂短完全列・核・torsor、二つのCS適用、三有限例 | `FixedFDirectedMultigraph`, `FixedFGraphAutomorphism`, `FixedFFollowingStateChange`, `fiberPerm`, `operationMap`, `PreservesNamedOperations`, `preservesNamedOperations_iff`, `FixedFEdgeConstantPermutationFamily`, `preservingEquivEdgeConstantFamilies`; `FixedFUndirectedReachable`, `FixedFComponent`, `fixedFComponentMk_eq_iff`, `perm_eq_of_reachable`, `descendToComponents`, `equivComponentPermutationFamilies`, `preservingEquivComponentPermutationFamilies` | 任意の`Q,K`と固定graph automorphism `u`; `h`と観測則のみを持つfollowing change | `h`/`h.symm`からfiber permutationを構成し、source側operation adapterのactual execution保存が全edge上の一定性と同値であること、固定`u`上の保存変更全体がraw edge relationから構成したundirected component-indexed familyと同値であること | kernel/group/section/torsor、D・Eとの共通分類 | 群演算とgraph-automorphism component reindexing action、分裂短完全列、各fiberの群torsor、lens/protocolのAAT接続、三有限例と個数、basepoint固定版、表示側での回復は未完了 |
 
 ## Cycle 1 — Lens semantics and finite-presentation reconstruction
 
@@ -11949,4 +11950,58 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct the undirected connected-component relation and prove edge-constant families equivalent to component-indexed permutations; retain the nontrivial vertex/component reindexing in composition before forming the kernel, section, split exact sequence, torsor, and fixed examples."
+```
+
+## Cycle 112 — Fixed-F connected-component classification
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 112
+base_oid: 3e53389cc5818bb902d93e5b30b930973bf2adb5
+tracking_issue: 4520
+selection:
+  proof_obligation: "Construct pi_0(Q) from the raw fixed graph and descend the Cycle111 edge-constant classification to component-indexed permutations without accepting representatives or a component certificate"
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Defined directed endpoint steps and their equivalence closure, used that generated setoid to construct the undirected component quotient, proved every named edge has equal source and target components, extended edge constancy along all generated reachability, and descended the family by Quotient.lift.  Pullback along the quotient map is proved inverse in both directions.  Composing with Cycle111 classifies every operation-preserving following change over fixed u by one permutation per generated component."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FixedFComponentClassification.lean
+  unfinished:
+    - "identity/composition and the graph-automorphism action on components"
+    - "group kernel, section, split exact sequence, torsor, and basepoint-fixed variant"
+    - "finite cardinality formula and all three fixed examples"
+    - "lens/protocol applications, AAT translation, presentation-side recovery, and D connection"
+    - "remaining A--F and G-122 full classification"
+review:
+  fixed_head: ec505efcc1b24a24a6366358a082a42e17f149e5
+  lanes: {math_a: pass, math_b: pass, lean_a: pass, lean_b: pass}
+  direct_response:
+    reviewed_delta: "3e53389cc5818bb902d93e5b30b930973bf2adb5..ec505efcc1b24a24a6366358a082a42e17f149e5"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "undirected component quotient constructed from the fixed directed endpoint relation"
+      - "edge-constant vertex families equivalent to all component-indexed permutations"
+      - "fixed-u preserving following changes classified by all component-indexed permutations"
+    remaining:
+      - "the H action on components and the semidirect composition law"
+      - "kernel/section/exactness/torsor/cardinality and basepoint-fixed conclusions"
+      - "same F1 applied through both CS models and recovered on the AAT presentation side"
+  certificate_provenance: "components are the Quotient of Relation.EqvGen on actual named-edge endpoints; no representative, partition, or reachability certificate is an input"
+  proof_use: "edge constancy is extended by EqvGen induction; quotient soundness identifies every edge endpoint pair; Quotient.lift performs descent and Quotient.induction proves the inverse"
+  structure_field_escape: none-found
+  target_fitting: none-found-all-original-vertices-and-named-directed-edges-remain-in-F
+  vacuity: none-found-arbitrary-F-K-u-including-empty-and-disconnected-cases
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (305 dependency jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 12 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct the group of all preserving pairs over H, prove composition reindexes the first fiber family by the second visible automorphism on components, and then identify kernel and section before stating split exactness."
 ```
