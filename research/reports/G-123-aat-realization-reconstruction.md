@@ -246,118 +246,6 @@ audits:
   next_obligation: "Construct protocol semantics, finite generator tables, res/ext/J, and the four reconstruction properties without restricting the independently defined natural transformations."
 ```
 
-## Cycle 105 — Exact-support finite normal form and actual recovery
-
-```yaml
-ledger_type: target_cycle_result
-goal: G-123-aat-realization-reconstruction
-cycle: 105
-goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
-base_oid: 299a8c1624bd327ef696b49c86ac994831fe35b7
-tracking_issue: 4520
-report_path: research/reports/G-123-aat-realization-reconstruction.md
-selection:
-  proof_state_ref: "Cycle 104 supplied unique outer parity and a unique source permutation witness, but the finite-support component still lacked an independent faithful finite representation"
-  proof_dag_predecessors:
-    - "Cycle 98 supplies explicit finite forward/backward lookup tables and proves their finite-carrier permutation reading faithful"
-    - "Cycle 100 characterizes the finite-swap subgroup by finite moved set"
-    - "Cycles 103--104 prove the Nat generated subgroup is a disjoint finite-support/adjacent-coset union"
-    - "Cycle 104 proves the expected actual backward action injective"
-  proof_obligation: "Construct exact finite source data for every finite-support Nat permutation, combine it with the unique outer parity, and prove source and actual evaluation are equivalences without quotienting by decoder equality"
-  selection_reason: "A finite table with an arbitrary ambient support is padded and nonfaithful.  Requiring every authored table point to move makes the authored Finset exactly the semantic moved set, so support and table are both recoverable from evaluation."
-  expected_result_type: proof-checkpoint
-  lean_targets:
-    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNatAlgorithmNormalForm.lean
-  risks:
-    - "store a completed all-Nat permutation or actual residual as finite syntax"
-    - "permit fixed-point padding and call a noninjective table representation canonical"
-    - "define syntax equality by decoder equality"
-    - "prove only source normal-form faithfulness and omit the same actual intrinsic image"
-result:
-  proposed_result_type: target-proof-checkpoint
-  completion_candidate: no
-  proof_obligation_delta: "Defined an exact-support finite syntax containing only a finite Nat Finset and explicit forward/backward lookup tables on its finite subtype, with inverse laws and a requirement that every authored point moves.  Proved its evaluation moves exactly that Finset, lands in the independently defined finite-support subgroup, and is injective.  Conversely extracted the exact finite moved set of every subgroup element, restricted the permutation to it, constructed the finite tables, and proved both encode/decode inverse laws.  Combined this finite code with a Bool outer parity, proved its evaluator is bijective onto the Cycle 102 generated Nat subgroup using Cycle 103 coverage and Cycle 104 branch disjointness, then evaluated through the same fixed actual section and used full backward faithfulness to prove an equivalence with the decoder-independent actual intrinsic image."
-  lean_artifacts:
-    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNatAlgorithmNormalForm.lean
-  evidence:
-    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatFiniteSupportCode
-    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatFiniteSupportCode.evaluate_ne_iff_mem
-    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatFiniteSupportCode.evaluate_injective
-    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatFiniteSupportCode.decode_encode
-    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatFiniteSupportCode.encode_decode
-    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatFiniteSupportCode.equivFiniteSupport
-    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmNormalForm.evaluate_injective
-    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmNormalForm.evaluate_surjective
-    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmNormalForm.equivPermutationSubgroup
-    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmNormalForm.actualEvaluate_backwardProjection
-    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmNormalForm.intrinsicDecode_injective
-    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmNormalForm.intrinsicDecode_surjective
-    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmNormalForm.equivIntrinsicImage
-  claim_mapping:
-    source_labels:
-      - "GOAL B requires a faithful finite presentation or canonical normal form, not only a surjective raw word evaluator"
-      - "GOAL D requires the same comparison information to be recoverable on the displayed side"
-      - "Cycle 104 requires the finite component to be independent rather than a completed Nat permutation input"
-    conjuncts:
-      - "fixed-point-free finite table -> authored support equals moved set"
-      - "exact moved support -> evaluator injectivity and no padding ambiguity"
-      - "finite semantic support -> constructed exact Finset and restricted finite table"
-      - "encode/decode inverse laws -> finite-support equivalence"
-      - "unique outer branch plus finite-code injectivity -> faithful Bool normal form"
-      - "coset coverage plus exact finite encoding -> source normal-form surjectivity"
-      - "same fixed actual section plus expected-action/full-projection faithfulness -> actual intrinsic equivalence"
-    undischarged_assumptions: []
-    acceptance_point: "The Cycle 102 Nat generated subgroup and its actual intrinsic image now have one independent faithful exact-support/parity normal-form type; this does not cover the full residual kernel or generalize across all permitted primitive parameters."
-    port_status: not-applicable
-review:
-  fixed_head: pending
-  lanes:
-    math_a: pending
-    math_b: pending
-    lean_a: pending
-    lean_b: pending
-audits:
-  premise_delta:
-    discharged:
-      - "independent exact finite code for the Nat finite-support component"
-      - "faithful and surjective finite-support evaluation"
-      - "faithful and surjective outer-parity source normal form"
-      - "faithful and surjective normal-form evaluation onto the same actual intrinsic image"
-    remaining:
-      - "uniform finite normal-form family across all permitted primitive parameters"
-      - "literal union/full residual-kernel coverage or decomposition"
-      - "original G-122 full comparison classification, both kernels, and every lift fiber"
-      - "general AAT inputs, res/ext/J, CS connection, fixed examples, and remaining A--F"
-  certificate_provenance:
-    discharged:
-      - "the syntax stores a finite Finset and explicit finite lookup tables only, never a completed Perm Nat or actual residual element"
-      - "finite support is proved from the code and exact support is recovered from the evaluator"
-      - "the semantic-to-code direction constructs its Finset from the already proved finite moved set and restricts the source permutation"
-      - "actual equality is read back through the existing complete backward projection and proved action injectivity"
-    unresolved:
-      - "uniform parameter-relative table language and coverage of directions outside the Nat generated image"
-  proof_use:
-    used:
-      - "Cycle 98 finite table reading supplies explicit forward/backward table semantics and injectivity"
-      - "Cycle 100 finite-support iff supplies landing and exact extraction premises"
-      - "Cycle 103 coset theorem supplies source normal-form coverage"
-      - "Cycle 104 disjointness excludes mixed parity equality"
-      - "Cycle 104 expected-action injectivity plus Cycle 90 full projection injectivity proves actual faithfulness and recovery"
-    unused: []
-  structure_field_escape: "none-found: support is finite Nat data; table functions have finite subtype domain and inverse laws; table_moves removes padding; no semantic image membership, completed Nat permutation, or residual element is a field"
-  route_integrity: reuses-the-same-fixed-source-to-actual-section-and-complete-backward-projection
-  target_fitting: none-found
-  vacuity: none-found-exact-support-and-bijectivity
-  one_way_as_equivalence: none-found-both-inverse-laws-or-bijectivity-proved
-  goal_or_report_reinterpretation: none-found
-  validation_refs:
-    - "focused file check: PASS"
-    - "focused exact target build: PASS (4336 jobs; not a Research aggregate build)"
-    - "namespace axiom audit: 49 declarations in the new module; standard axioms only"
-    - "Research aggregate/full build: not run"
-  blocking_findings: []
-  next_obligation: "Generalize the exact-support/algorithm normal form across the permitted primitive parameter family, then compare the literal union of its actual images with the full residual kernel and preserve the original G-122 classification data."
-```
 ## Cycle 2 — Protocol semantics and finite-presentation reconstruction
 
 ```yaml
@@ -11449,4 +11337,117 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct an independent finite canonical representation of finite-support Nat permutations and combine it with the unique parity into a faithful source normal form before generalizing across primitive parameters."
+```
+
+## Cycle 105 — Exact-support finite normal form and actual recovery
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 105
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 299a8c1624bd327ef696b49c86ac994831fe35b7
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 104 supplied unique outer parity and a unique source permutation witness, but the finite-support component still lacked an independent faithful finite representation"
+  proof_dag_predecessors:
+    - "Cycle 98 supplies explicit finite forward/backward lookup tables and proves their finite-carrier permutation reading faithful"
+    - "Cycle 100 characterizes the finite-swap subgroup by finite moved set"
+    - "Cycles 103--104 prove the Nat generated subgroup is a disjoint finite-support/adjacent-coset union"
+    - "Cycle 104 proves the expected actual backward action injective"
+  proof_obligation: "Construct exact finite source data for every finite-support Nat permutation, combine it with the unique outer parity, and prove source and actual evaluation are equivalences without quotienting by decoder equality"
+  selection_reason: "A finite table with an arbitrary ambient support is padded and nonfaithful.  Requiring every authored table point to move makes the authored Finset exactly the semantic moved set, so support and table are both recoverable from evaluation."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNatAlgorithmNormalForm.lean
+  risks:
+    - "store a completed all-Nat permutation or actual residual as finite syntax"
+    - "permit fixed-point padding and call a noninjective table representation canonical"
+    - "define syntax equality by decoder equality"
+    - "prove only source normal-form faithfulness and omit the same actual intrinsic image"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Defined an exact-support finite syntax containing only a finite Nat Finset and explicit forward/backward lookup tables on its finite subtype, with inverse laws and a requirement that every authored point moves.  Proved its evaluation moves exactly that Finset, lands in the independently defined finite-support subgroup, and is injective.  Conversely extracted the exact finite moved set of every subgroup element, restricted the permutation to it, constructed the finite tables, and proved both encode/decode inverse laws.  Combined this finite code with a Bool outer parity, proved its evaluator is bijective onto the Cycle 102 generated Nat subgroup using Cycle 103 coverage and Cycle 104 branch disjointness, then evaluated through the same fixed actual section and used full backward faithfulness to prove an equivalence with the decoder-independent actual intrinsic image."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNatAlgorithmNormalForm.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatFiniteSupportCode
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatFiniteSupportCode.evaluate_ne_iff_mem
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatFiniteSupportCode.evaluate_injective
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatFiniteSupportCode.decode_encode
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatFiniteSupportCode.encode_decode
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatFiniteSupportCode.equivFiniteSupport
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmNormalForm.evaluate_injective
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmNormalForm.evaluate_surjective
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmNormalForm.equivPermutationSubgroup
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmNormalForm.actualEvaluate_backwardProjection
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmNormalForm.intrinsicDecode_injective
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmNormalForm.intrinsicDecode_surjective
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatAlgorithmNormalForm.equivIntrinsicImage
+  claim_mapping:
+    source_labels:
+      - "GOAL B requires a faithful finite presentation or canonical normal form, not only a surjective raw word evaluator"
+      - "GOAL D requires the same comparison information to be recoverable on the displayed side"
+      - "Cycle 104 requires the finite component to be independent rather than a completed Nat permutation input"
+    conjuncts:
+      - "fixed-point-free finite table -> authored support equals moved set"
+      - "exact moved support -> evaluator injectivity and no padding ambiguity"
+      - "finite semantic support -> constructed exact Finset and restricted finite table"
+      - "encode/decode inverse laws -> finite-support equivalence"
+      - "unique outer branch plus finite-code injectivity -> faithful Bool normal form"
+      - "coset coverage plus exact finite encoding -> source normal-form surjectivity"
+      - "same fixed actual section plus expected-action/full-projection faithfulness -> actual intrinsic equivalence"
+    undischarged_assumptions: []
+    acceptance_point: "The Cycle 102 Nat generated subgroup and its actual intrinsic image now have one independent faithful exact-support/parity normal-form type; this does not cover the full residual kernel or generalize across all permitted primitive parameters."
+    port_status: not-applicable
+review:
+  fixed_head: pending
+  lanes:
+    math_a: pending
+    math_b: pending
+    lean_a: pending
+    lean_b: pending
+audits:
+  premise_delta:
+    discharged:
+      - "independent exact finite code for the Nat finite-support component"
+      - "faithful and surjective finite-support evaluation"
+      - "faithful and surjective outer-parity source normal form"
+      - "faithful and surjective normal-form evaluation onto the same actual intrinsic image"
+    remaining:
+      - "uniform finite normal-form family across all permitted primitive parameters"
+      - "literal union/full residual-kernel coverage or decomposition"
+      - "original G-122 full comparison classification, both kernels, and every lift fiber"
+      - "general AAT inputs, res/ext/J, CS connection, fixed examples, and remaining A--F"
+  certificate_provenance:
+    discharged:
+      - "the syntax stores a finite Finset and explicit finite lookup tables only, never a completed Perm Nat or actual residual element"
+      - "finite support is proved from the code and exact support is recovered from the evaluator"
+      - "the semantic-to-code direction constructs its Finset from the already proved finite moved set and restricts the source permutation"
+      - "actual equality is read back through the existing complete backward projection and proved action injectivity"
+    unresolved:
+      - "uniform parameter-relative table language and coverage of directions outside the Nat generated image"
+  proof_use:
+    used:
+      - "Cycle 98 finite table reading supplies explicit forward/backward table semantics and injectivity"
+      - "Cycle 100 finite-support iff supplies landing and exact extraction premises"
+      - "Cycle 103 coset theorem supplies source normal-form coverage"
+      - "Cycle 104 disjointness excludes mixed parity equality"
+      - "Cycle 104 expected-action injectivity plus Cycle 90 full projection injectivity proves actual faithfulness and recovery"
+    unused: []
+  structure_field_escape: "none-found: support is finite Nat data; table functions have finite subtype domain and inverse laws; table_moves removes padding; no semantic image membership, completed Nat permutation, or residual element is a field"
+  route_integrity: reuses-the-same-fixed-source-to-actual-section-and-complete-backward-projection
+  target_fitting: none-found
+  vacuity: none-found-exact-support-and-bijectivity
+  one_way_as_equivalence: none-found-both-inverse-laws-or-bijectivity-proved
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4336 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 49 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Generalize the exact-support/algorithm normal form across the permitted primitive parameter family, then compare the literal union of its actual images with the full residual kernel and preserve the original G-122 classification data."
 ```
