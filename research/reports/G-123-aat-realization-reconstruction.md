@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 110 constructs the fixed complement algorithm on the provably distinct infinite carrier Set Nat and separates its actual witness from both the all-carrier exact-support union and the Nat xor-mask intrinsic image
+- current proof obligation: Cycle 111 constructs the fixed-F source-side classification of operation-preserving following state changes from the complete state equivalence itself
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct a carrier-parametric finite-algorithm grammar encompassing rather than enumerating the Nat xor-mask and powerset-complement families, then compare its actual image with the full residual kernel
+- next proof obligation: quotient edge-constant vertex permutations by the undirected connected-component relation, then construct the component-indexed group, section, kernel, split exact sequence, torsor, and fixed finite counts without losing the graph-automorphism reindexing action
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| F Cycle 111 delta | 固定directed multigraphとgraph automorphismに従う全state同値からhidden permutationとoperation adapterを構成し、named-operation保存をedge-constant familyと分類する | `FixedFDirectedMultigraph`, `FixedFGraphAutomorphism`, `FixedFFollowingStateChange`, `symm_observation`, `fiberPerm`, `factorization`, `fiberPerm_unique`, `FixedFOperationPoint`, `operationMap`, `sourceState_operationMap`, `PreservesNamedOperations`, `operationMap_formula`, `preservesNamedOperations_iff`, `FixedFEdgeConstantPermutationFamily`, `ofFamily`, `fiberPerm_ofFamily`, `preservingEquivEdgeConstantFamilies` | 任意のdirected multigraph `F`、任意のhidden type `K`、vertex/edge双方と両endpointを保つ固定automorphism `u`、全state同値 `h`と観測則 `q ∘ h = u ∘ q` | `h`/`h.symm`から各vertexの`fiberPerm`を構成し、可視変更とhidden置換への分解・一意性、source側fiberを使うoperation adapter、source square、actual execution squareとedge constancyの同値、保存変更とedge-constant familyの`Equiv` | F1のcomponent-indexed kernelとsemidirect-product構成、lens/protocol両CSへの適用、D分類との接続のsource側基盤 | undirected connected componentsによる再表示、恒等元上の核群、section、split exact sequence、torsor、Fin4の3例と個数、AAT表示側回復、D/E接続は未完了 |
 | B/D Cycle 110 delta | Nat xor-mask像を別の無限primitive carrier上の固定有限recipeで検査し、全carrier exact-support branchとNat algorithm branchの両方からsame actual route上で分離する | `finiteAxisFoldNatPowerSetComplement`, `finiteAxisFoldNatPowerSetComplement_ne`, `finiteAxisFoldNatPowerSet_ne_nat`, `finiteAxisFoldFiniteSupportSourceAction_exists_fixed_powerSetProbe`, `finiteAxisFoldNatPowerSetComplement_transported_ne_finiteSupport`, `finiteAxisFoldNatSourceAction_fixes_powerSetEmptyProbe`, `finiteAxisFoldNatPowerSetComplement_transported_ne_natAction`, `finiteAxisFoldNatPowerSetComplement_not_mem_exactSupportCarrierUnion`, `finiteAxisFoldNatPowerSetComplement_not_mem_natXorMaskIntrinsicImage` | primitive carrier `Set Nat`; complement formula; Cantor carrier inequality; all decidable carriers; Cycle 109 Nat xor-mask image; same fixed section | 全subset移動; finite-support fixed probe; 全Nat actionのempty-set probe固定; actual projectionを通した両image非所属 | carrier-parametric finite algorithm grammarとfull-kernel比較へ渡す | 二つのfamilyの列挙に留まる; 統一grammar、full-kernel、G-122、一般入力、res/ext/J、CS、残るA--Fは未完了 |
 | B/D Cycle 109 delta | 固定xor algorithmの逐次追加をやめ、有限maskとexact finite tableだけからなる一様構文を作り、source/actual双方の忠実性と独立作用条件で定めた像のexact recoveryを証明する | `finiteAxisFoldNatXorMask`, `FiniteAxisFoldNatXorMaskNormalForm`, `evaluate`, `evaluate_injective`, `actualEvaluate`, `actualEvaluate_injective`, `ofAdjacentNormalForm`, `ofAdjacentNormalForm_evaluate`, `ofAdjacentNormalForm_actualEvaluate`, `ofAdjacentNormalForm_injective`, `secondXorNormalForm`, `secondXorNormalForm_evaluate`, `secondXorNormalForm_actualEvaluate`, `FiniteAxisFoldNatXorMaskIntrinsicImage`, `intrinsicDecode`, `intrinsicDecode_injective`, `intrinsicDecode_surjective`, `equivIntrinsicImage` | 原始`Nat`; 任意の有限`Nat` mask; Cycle 105 exact-support finite code; support union外のNat probe; same fixed actual sectionとbackward-action単射性 | probeでmaskを回収し群消去でfinite tableを回収; actual evaluation単射; xor-1 normal formの評価保存埋め込み; xor-2 witnessのcanonical code; maskとfinite-support source actionによるdecoder非依存actual条件からexact codeを構成する全射 | uniform familyのactual imageとfull residual kernelの比較、より一般のfinite algorithm grammarへ渡す | xor-mask族は全finite algorithmではない; full-kernel coverage/decomposition、original G-122分類、一般入力、res/ext/J、CS、残るA--Fは未完了 |
 | B/D Cycle 108 delta | Cycle 107のenlarged imageがfull residual kernelを覆うかを、既に含めたadjacent witnessではなく別の固定source recipeで検査し、両union branchからの非所属を同じactual route上で証明する | `finiteAxisFoldNatSecondXorAlgorithm`, `finiteAxisFoldNatSecondXorAlgorithm_ne`, `finiteAxisFoldNatAdjacent_mul_secondXor_apply`, `finiteAxisFoldNatSecondXorAlgorithm_not_finiteSupport`, `finiteAxisFoldNatAdjacent_mul_secondXor_not_finiteSupport`, `finiteAxisFoldNatSecondXorAlgorithm_not_mem_algorithmSubgroup`, `finiteAxisFoldNatSecondXorLocalFiberKernel`, `finiteAxisFoldNatSecondXor_transported_ne_finiteSupport`, `finiteAxisFoldNatSecondXor_not_mem_exactSupportCarrierUnion`, `finiteAxisFoldNatSecondXor_not_mem_natAlgorithmNormalFormRange`, `finiteAxisFoldNatSecondXor_not_mem_enlargedPresentedCarrierImage`, `finiteAxisFoldEnlargedPresentedCarrierImage_ne_univ` | 原始`Nat`; 固定有限アルゴリズム`n xor 2`; Cycle 107のliteral exact-support unionとxor-1 normal-form range; Cycle 101の全carrier fixed Nat probe; Cycle 103の二coset分類; arbitrary-carrier backward-action単射性; same fixed section | xor-2と`xor 1 * xor 2 = xor 3`の全点移動と非finite-support; xor-1 algorithm subgroup非所属; 全decidable carrierのfinite-support作用とのprobe分離; actual projectionからsource等号を読み戻すnormal-form range分離; enlarged union外のactual witness | 一固定algorithmの追加では再び不足することを固定し、uniform finite-algorithm syntax・faithful normal form・full-kernel分解へ渡す | 現candidateの非被覆はtarget反証ではない; uniform algorithm family、full-kernel coverage/decomposition、original G-122分類、一般入力、res/ext/J、CS、残るA--Fは未完了 |
@@ -102,7 +103,7 @@
 | D | G-122の全比較群・底固定群・二種類の核・fiberを表示へ回復する | `G122FamilyInput`, `G122CellInput`, `ClosedFamilyParameter.g122`, `FamilyRealization.g122`, `PrimitiveOperation.g122Ref`, `G122CellInput.fixedGeometry`, `G122CellInput.sourceTransport`, `G122CellInput.compatibleProblemData`, `G122CellInput.barBeta`, `finiteAxisFoldParameter`, `finiteAxisFoldRealization`, `finiteAxisFoldOperationReference` | G-122の固定版にある任意の`A,z,omega,k,g_z`; 固定有限axis-fold例 | 原入力と生成出力を分離し、任意のcell inputを共通familyの意味対象にし、元の有限例を同じ一般branchへ入れ、supportの全端点の各operation identityを参照し、同じ実際の`barBeta`を生成する証拠 | 将来のG-122 branch interpretationと表示回復 | operation族の有限生成・全域写像回復とprimitive interpretation、比較群・section・底/係数成分・二種類の核・各lift fiberの全元の表示回復と三場合分類は未完了 |
 | E lens | CSで独立に定めた全域get/put lensと全ての保存射を有限補完tableから再構成する | `LensData`, `IsTotalLens`, `Hom`, `canonicalNormalFormEquiv`, `canonicalNormalFormIso`, `lensPresentationEquivalence` | 任意の`V`, `v₀`; 非可逆な一般の`Hom`を含む | 正確な`c ↦ (get c, put c v₀)`と逆写像`(v,k) ↦ put k v`; finite列挙との合成; 射の往復 | AATへのlens翻訳、Fの積lens適用 | AATのAtom・Law・operation・完全幾何への往復翻訳、可視変更版、section保存版 |
 | E protocol | 有限schemaの関手意味論と生成辺tableの再構成 | `ProtocolSchema.ExecutionCategory`, `ProtocolRealization`, `ProtocolPresentation`, `ProtocolPresentation.presentationEquivalence` | 有限vertex・typed edge・有限parallel path relations `Q,L`; 任意の`O:C_Q⥤Type`; vertexwise有限carrier | 自由path評価、relation quotient、全path `ext`、vertexwise列挙normal form | AAT翻訳、Fのprotocol適用 | operation名変更版、adapter square (P1)、AATとの双方向翻訳、Fへの適用 |
-| F | 操作連結性による分裂短完全列・核・torsor、二つのCS適用、三有限例 | — | `Q,K,H` | — | D・Eとの共通分類 | 全項目未完了 |
+| F | 操作連結性による分裂短完全列・核・torsor、二つのCS適用、三有限例 | `FixedFDirectedMultigraph`, `FixedFGraphAutomorphism`, `FixedFFollowingStateChange`, `fiberPerm`, `operationMap`, `PreservesNamedOperations`, `preservesNamedOperations_iff`, `FixedFEdgeConstantPermutationFamily`, `preservingEquivEdgeConstantFamilies` | 任意の`Q,K`と固定graph automorphism `u`; `h`と観測則のみを持つfollowing change | `h`/`h.symm`からfiber permutationを構成し、source側operation adapterのactual execution保存が全edge上の一定性と同値であること、固定`u`上の保存変更全体がedge-constant familyと同値であること | component分類、kernel/group/section/torsor、D・Eとの共通分類 | connected-component再表示、群演算とgraph-automorphism reindexing action、分裂短完全列、各fiberの群torsor、lens/protocolのAAT接続、三有限例と個数、表示側での回復は未完了 |
 
 ## Cycle 1 — Lens semantics and finite-presentation reconstruction
 
@@ -11894,4 +11895,58 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct a carrier-parametric finite-algorithm grammar encompassing the Nat xor-mask and powerset-complement families without semantic-range syntax, then compare its actual image with the full residual kernel."
+```
+
+## Cycle 111 — Fixed-F source classification
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 111
+base_oid: f148d99b54eff96c750dee36988503fca8f5cac8
+tracking_issue: 4520
+selection:
+  proof_obligation: "Construct the source-side fixed-F classification from the complete state equivalence, preserving named operations and their actual execution rather than accepting fiber permutations or an adapter certificate as inputs"
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Defined a raw directed multigraph and endpoint-preserving vertex/edge automorphism; a following change stores only the complete state equivalence and q-h=u-q observation law.  Constructed every vertex fiber permutation from h and h.symm, proved factorization and uniqueness, constructed the source-fiber operation adapter and unconditional source square, and proved that the actual renamed-edge execution square is equivalent to edge constancy.  Restricted this construction to an equivalence between all operation-preserving following changes over the fixed visible automorphism and all edge-constant source-owned permutation families."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FixedFSourceClassification.lean
+  unfinished:
+    - "undirected connected-component quotient and component-indexed family equivalence"
+    - "identity/composition and graph-automorphism reindexing action"
+    - "kernel group, section, split exact sequence, torsor, and fixed Fin4 cardinalities"
+    - "lens/protocol applications, AAT translation, presentation-side recovery, and D connection"
+    - "remaining A--F and G-122 full classification"
+review:
+  fixed_head: f87afae2261065757b063bf4e51f30cec8de4815
+  lanes: {math_a: pass, math_b: pass, lean_a: pass, lean_b: pass}
+  direct_response:
+    reviewed_delta: "f148d99b54eff96c750dee36988503fca8f5cac8..f87afae2261065757b063bf4e51f30cec8de4815"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "fixed-u following changes classified by edge-constant vertex permutations"
+      - "fiber permutations and operation adapter constructed rather than supplied"
+      - "actual named-edge execution preservation separated from observation and source compatibility"
+    remaining:
+      - "component classification and all group-theoretic F1 consequences"
+      - "same classification applied through both CS models and the AAT presentation"
+      - "fixed three examples and required counts"
+  certificate_provenance: "fiberPerm is computed from h and h.symm; operationMap is computed from edge renaming and the source fiber; neither is a structure field"
+  proof_use: "the observation law determines visible coordinates; equivalence inverse laws construct each fiber permutation; the actual execution square yields and is yielded by edge constancy; factorization proves the classification left inverse"
+  structure_field_escape: none-found
+  target_fitting: none-found-fixed-F-retains-all-vertices-edges-and-following-state-equivalences
+  vacuity: none-found-arbitrary-Q-K-u-and-all-following-equivalences
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (304 dependency jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 79 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct the undirected connected-component relation and prove edge-constant families equivalent to component-indexed permutations; retain the nontrivial vertex/component reindexing in composition before forming the kernel, section, split exact sequence, torsor, and fixed examples."
 ```
