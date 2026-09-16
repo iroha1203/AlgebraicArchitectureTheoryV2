@@ -12453,7 +12453,7 @@ review:
     new_findings: []
 audits:
   certificate_provenance: "the protocol structures are defined independently from typed vertices, original named edges, state types, execution functions, and observation maps; operation preservation is the square for every authored typed edge and is used to construct rather than assumed as a fixed-F preservation certificate"
-  proof_use: "edge naturality constructs the fixed-F preservation theorem and inductively supplies all path and quotient-execution squares; observation naturality constructs the fixed-F observation law; both are used in the inverse equivalence; total-state P1 uses the actual visible vertex renaming and the path theorem uses the actual renamed path"
+  proof_use: "edge naturality constructs the fixed-F preservation theorem, is used in the inverse equivalence, and inductively supplies all path and quotient-execution squares; for this explicitly PUnit-valued fixed-F application, observation preservation is definitionally or propositionally trivial and is not used to manufacture a nontrivial fixed-F law; total-state P1 uses the actual visible vertex renaming and the path theorem uses the actual renamed path"
   structure_field_escape: none-found
   target_fitting: none-found-fixed-F-application-only-and-general-Q-L-O-remains-explicitly-unfinished
   vacuity: "PUnit makes only this fixed-F observation map trivial; state equivalences, original edge names, endpoint renaming, every edge square, paths, quotient executions, arbitrary adapters, and fixed counts remain nontrivial and are proved"
