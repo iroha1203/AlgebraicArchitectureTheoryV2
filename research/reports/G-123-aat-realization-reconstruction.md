@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 108 constructs the independent fixed Nat xor-2 algorithm through the same actual section and proves that it lies outside both branches of the Cycle 107 enlarged presented image
+- current proof obligation: Cycle 109 replaces the one-by-one xor witnesses with a faithful uniform Nat xor-mask plus exact finite-support normal form and proves exact recovery of its independently characterized actual image
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: replace one-by-one fixed-algorithm enlargement with a uniform source-owned finite algorithm family and faithful presentation, then compare its actual image with the full residual kernel while preserving the original G-122 classification data
+- next proof obligation: compare the uniform xor-mask intrinsic image with the full residual kernel and construct a wider permitted finite-algorithm grammar or a new outside witness without treating xor masks as all finite algorithms
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| B/D Cycle 109 delta | 固定xor algorithmの逐次追加をやめ、有限maskとexact finite tableだけからなる一様構文を作り、source/actual双方の忠実性と独立作用条件で定めた像のexact recoveryを証明する | `finiteAxisFoldNatXorMask`, `FiniteAxisFoldNatXorMaskNormalForm`, `evaluate`, `evaluate_injective`, `actualEvaluate`, `actualEvaluate_injective`, `ofAdjacentNormalForm`, `ofAdjacentNormalForm_evaluate`, `ofAdjacentNormalForm_actualEvaluate`, `ofAdjacentNormalForm_injective`, `secondXorNormalForm`, `secondXorNormalForm_evaluate`, `secondXorNormalForm_actualEvaluate`, `FiniteAxisFoldNatXorMaskIntrinsicImage`, `intrinsicDecode`, `intrinsicDecode_injective`, `intrinsicDecode_surjective`, `equivIntrinsicImage` | 原始`Nat`; 任意の有限`Nat` mask; Cycle 105 exact-support finite code; support union外のNat probe; same fixed actual sectionとbackward-action単射性 | probeでmaskを回収し群消去でfinite tableを回収; actual evaluation単射; xor-1 normal formの評価保存埋め込み; xor-2 witnessのcanonical code; maskとfinite-support source actionによるdecoder非依存actual条件からexact codeを構成する全射 | uniform familyのactual imageとfull residual kernelの比較、より一般のfinite algorithm grammarへ渡す | xor-mask族は全finite algorithmではない; full-kernel coverage/decomposition、original G-122分類、一般入力、res/ext/J、CS、残るA--Fは未完了 |
 | B/D Cycle 108 delta | Cycle 107のenlarged imageがfull residual kernelを覆うかを、既に含めたadjacent witnessではなく別の固定source recipeで検査し、両union branchからの非所属を同じactual route上で証明する | `finiteAxisFoldNatSecondXorAlgorithm`, `finiteAxisFoldNatSecondXorAlgorithm_ne`, `finiteAxisFoldNatAdjacent_mul_secondXor_apply`, `finiteAxisFoldNatSecondXorAlgorithm_not_finiteSupport`, `finiteAxisFoldNatAdjacent_mul_secondXor_not_finiteSupport`, `finiteAxisFoldNatSecondXorAlgorithm_not_mem_algorithmSubgroup`, `finiteAxisFoldNatSecondXorLocalFiberKernel`, `finiteAxisFoldNatSecondXor_transported_ne_finiteSupport`, `finiteAxisFoldNatSecondXor_not_mem_exactSupportCarrierUnion`, `finiteAxisFoldNatSecondXor_not_mem_natAlgorithmNormalFormRange`, `finiteAxisFoldNatSecondXor_not_mem_enlargedPresentedCarrierImage`, `finiteAxisFoldEnlargedPresentedCarrierImage_ne_univ` | 原始`Nat`; 固定有限アルゴリズム`n xor 2`; Cycle 107のliteral exact-support unionとxor-1 normal-form range; Cycle 101の全carrier fixed Nat probe; Cycle 103の二coset分類; arbitrary-carrier backward-action単射性; same fixed section | xor-2と`xor 1 * xor 2 = xor 3`の全点移動と非finite-support; xor-1 algorithm subgroup非所属; 全decidable carrierのfinite-support作用とのprobe分離; actual projectionからsource等号を読み戻すnormal-form range分離; enlarged union外のactual witness | 一固定algorithmの追加では再び不足することを固定し、uniform finite-algorithm syntax・faithful normal form・full-kernel分解へ渡す | 現candidateの非被覆はtarget反証ではない; uniform algorithm family、full-kernel coverage/decomposition、original G-122分類、一般入力、res/ext/J、CS、残るA--Fは未完了 |
 | B/D Cycle 107 delta | Cycle 106の全carrier exact-support code-imageをsemantic aliasではなくliteral existential unionとして固定し、既知のfinite-support actual imageとの一致を証明したうえで、固定Nat adjacent algorithm normal formがその和を真に拡大することを示す | `FiniteAxisFoldExactSupportCarrierUnion`, `finiteAxisFoldExactSupportCarrierUnion_mem_iff`, `finiteAxisFoldExactSupportCarrierUnion_eq_finiteSupportCarrierImage`, `finiteAxisFoldNatAdjacentAlgorithmNormalForm`, `finiteAxisFoldNatAdjacentAlgorithmNormalForm_evaluate`, `finiteAxisFoldNatAdjacentAlgorithmNormalForm_actualEvaluate`, `FiniteAxisFoldEnlargedPresentedCarrierImage`, `finiteAxisFoldExactSupportCarrierUnion_subset_enlarged`, `finiteAxisFoldNatAdjacentSwap_mem_enlargedPresentedCarrierImage`, `finiteAxisFoldExactSupportCarrierUnion_ssubset_enlarged`, `finiteAxisFoldExactSupportCarrierUnion_ne_univ` | 任意の`FiniteAxisFoldDecidableExtensionCarrier`; Cycle 106のexact-support finite codeとactual evaluator; Cycle 101のliteral finite-support carrier imageとadjacent outside theorem; Cycle 105の固定Nat parity normal form | literal code-image membershipとfinite-support actual membershipの双方向; code-image unionと既存unionのset equality; parity=true・identity finite componentのcanonical Nat code; 同じfixed actual routeでadjacent witnessへ評価; 真包含 | 次のfull residual-kernel coverage/noncoverage検査で、既に回復したexact-support方向と追加Nat algorithm方向を明示的に区別する | enlarged imageのfull-kernel coverageもnoncoverageも未証明; Nat以外のinfinite-support finite algorithms、original G-122分類、一般入力、res/ext/J、CS、残るA--Fは未完了 |
 | B/D Cycle 106 delta | Cycle 105のexact-support finite normal formをambient finite carrierに制限せず任意のdecidable primitive carrierへ一般化し、同じfixed actual route上のdecoder-independent intrinsic imageまでfaithfulに回復する | `FiniteAxisFoldArbitraryCarrierFiniteSupportCode`, `evaluate_ne_iff_mem`, `evaluate_finite`, `evaluate_injective`, `encode`, `decode_encode`, `encode_decode`, `equivFiniteSupport`, `finiteAxisFoldTransportedArbitraryCarrierSourceContextPermutation_injective`, `finiteAxisFoldArbitraryCarrierBackwardAction_injective_forCarrier`, `actualEvaluate_backwardProjection`, `intrinsicDecode_injective`, `intrinsicDecode_surjective`, `equivIntrinsicImage` | 任意の`E : Type`と`[DecidableEq E]`; support subtype上のexplicit finite table; 全table点のmove条件; Cycle 100のarbitrary-carrier finite-support characterization; canonical `E` probes; same source-to-actual context equivalenceとfull backward projection | exact moved supportとcode単射; 全finite-support permutationからのfinite restriction table構成; ambient `Fintype E`なしのtransported/expected action単射; actual intrinsic imageへの単射・全射 | 全carrier actual-image族のliteral unionとfull residual kernelのcoverage/decomposition比較へ渡す | finite-support方向のみ; carrier横断unionとfull-kernel coverage、infinite-support finite algorithmsの統合normal form、original G-122分類、一般入力、res/ext/J、CS、残るA--Fは未完了 |
@@ -11768,4 +11769,81 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct a uniform source-owned finite algorithm family and faithful presentation rather than adjoining fixed masks one at a time, then compare its actual image with the full residual kernel while preserving the original G-122 classification."
+```
+
+## Cycle 109 — Uniform Nat xor-mask normal form
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 109
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 17f95e52f086efe65fb94f33622d6c71804c8d90
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 108 showed that adjoining fixed xor-1 alone misses the equally finite xor-2 recipe"
+  proof_obligation: "Replace one-by-one xor witnesses by one faithful finite-parameter syntax, recover its same-route actual image exactly, and retain the distinction between this family and all permitted finite algorithms"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNatXorMaskNormalForm.lean
+  risks:
+    - "store a completed Nat permutation or residual member as syntax"
+    - "define the intrinsic image as decoder range"
+    - "claim xor masks exhaust all finite algorithms or the full residual kernel"
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Defined uniform syntax consisting only of a Nat mask and an exact-support finite table.  Evaluation applies the fixed xor-mask formula followed by the finite table.  Equality is evaluated at a Nat probe outside the union of the two finite supports, recovering the mask by xor injectivity; group cancellation and exact-support faithfulness then recover the finite code.  The same fixed actual section remains injective by full backward-action faithfulness.  The old Bool/xor-1 normal form embeds with source and actual evaluation preserved, while mask 2 plus the encoded identity recovers the Cycle 108 witness.  Independently characterized actual membership by existence of a finite mask and finite-support primitive permutation inducing the complete backward action; every such witness is converted to exact finite code, giving a proved equivalence rather than a range definition."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldNatXorMaskNormalForm.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatXorMask
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatXorMaskNormalForm.evaluate_injective
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatXorMaskNormalForm.actualEvaluate_injective
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatXorMaskNormalForm.ofAdjacentNormalForm_injective
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatXorMaskNormalForm.secondXorNormalForm_actualEvaluate
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatXorMaskIntrinsicImage
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatXorMaskNormalForm.intrinsicDecode_surjective
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldNatXorMaskNormalForm.equivIntrinsicImage
+  claim_mapping:
+    input_premises:
+      - "finite Nat mask and exact-support finite table"
+      - "same fixed source-to-actual section and complete backward projection"
+    constructed_evidence:
+      - "faithful uniform source and actual evaluation"
+      - "evaluation-preserving inclusion of xor-1 normal forms and canonical recovery of xor-2"
+      - "exact recovery of the independently action-characterized xor-mask actual image"
+    unfinished:
+      - "algorithms beyond xor masks modulo finite support"
+      - "full residual-kernel coverage or decomposition"
+      - "original G-122 full classification and remaining A--F"
+review:
+  fixed_head: pending
+  lanes: {math_a: pending, math_b: pending, lean_a: pending, lean_b: pending}
+  direct_response: {reviewed_delta: pending, verdict: pending, new_findings: []}
+audits:
+  premise_delta:
+    discharged:
+      - "uniform finite parameter family containing the fixed xor-1 and xor-2 directions"
+      - "faithful exact-support normal form and same-route actual recovery for that family"
+    remaining:
+      - "wider permitted finite-algorithm grammar and its faithful quotient or normal form"
+      - "full residual-kernel coverage or decomposition"
+      - "original G-122 groups, bottom-fixed group, two kernels, and all lift fibers"
+      - "general input, res/ext/J, CS, examples, and remaining A--F"
+  certificate_provenance: "syntax fields are only a Nat mask and finite subtype tables; the semantic finite-support permutation appears only in the independently stated image condition and is converted to exact code in the surjectivity proof"
+  proof_use: "outside-support probe recovers masks; group cancellation recovers finite evaluations; complete backward projection recovers source evaluation; finite-support iff and encode/decode construct the inverse"
+  structure_field_escape: none-found
+  route_integrity: same-fixed-source-to-actual-section-and-complete-backward-projection
+  target_fitting: none-found
+  vacuity: none-found-all-Nat-masks-and-all-exact-finite-codes
+  goal_or_report_reinterpretation: none-found-xor-family-not-called-all-finite-algorithms
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4340 dependency jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 36 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Compare the uniform xor-mask intrinsic image with the full residual kernel and construct a wider source-owned finite-algorithm grammar or a new outside witness; xor masks must not be identified with all finite algorithms."
 ```
