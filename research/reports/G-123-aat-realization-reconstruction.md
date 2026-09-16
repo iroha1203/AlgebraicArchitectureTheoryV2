@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 120 connects the independent E product-lens change condition to the same fixed-F construction in both directions and proves the constructive L6 normal form
+- current proof obligation: Cycle 121 lifts the independent product-lens correspondence to the full change group over arbitrary `H ≤ Sym(V)` and identifies its projection, split section, kernel, and every literal fiber torsor with the same fixed-F construction
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: lift the fixed-visible lens correspondence to the all-`H` lens change group and transport multiplication, projection, split section, kernel, and torsors before constructing the corresponding protocol connection
+- next proof obligation: construct the bidirectional protocol connection for the independently defined `ProtocolRealization` semantics, retaining operation names, all executions, observations, and adapters, before D or AAT presentation-side transport
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| E/F Cycle 121 delta | 任意の独立`H ≤ Sym(V)`について、同じ`h,u`でget/putを保つ全lens変更を群として構成し、同じcomplete-update fixed-F群の積・射影・split section・核・全fiber torsorへ一致させる | `completeUpdateAutomorphismHom`, `completeUpdateGraphSubgroup`, `LensChangeGroup`と`Group`, `projection`, `canonicalSection`, `toFollowingGroup`, `mulEquivFollowingGroup`, `visibleMulEquivGraphSubgroup`, `projection_compatibility`, `section_compatibility`, `kernelMulEquiv`, lens `ProjectionFiber`, literal kernel `SMul`/`MulAction`, free/transitive/`∃!`, `projectionFiberEquiv`, `projectionFiberEquiv_smul` | 任意の`V,K`、独立入力`H ≤ Equiv.Perm V`; product lensの基準値は`toLensInvertibleChange`にだけ用い、`H`に基準値固定を仮定しない; Cycle111--120のactual F群と固定`u`対応 | get/put式からactual preserving pairを構成し、任意のactual pairのgraph-image witnessから同じ`h,u`のlens変更を逆構成; 二方向から群同値; projection commuting squareからliteral kernel同値; lens群自身で右kernel作用を構成してfree/transitive/unique displacement; fixed-F作用とのintertwining | E product lensにF1の全`H`群・section・kernel・全fiber torsorを適用し、D/AAT表示側輸送とprotocol共通化へ渡す | protocolの独立意味との双方向接続、lens typed Read/Write AAT翻訳と一般非可逆射、D比較群・presentation側回復、残るA--E統合は未完了 |
 | E/F Cycle 120 delta | 独立lens意味の同じ`h,u`によるget/put二図式(L5)を、各固定`u`上でcomplete-update F分類と双方向に一致させ、L6とsection版を構成する | `LensInvertibleChange`, `toFollowingStateChange`, `toFollowingStateChange_preserves`, `ofFollowingStateChange`, `equivPreservingFollowingChanges`, `hiddenPermutation`, `fiberPerm_eq_hiddenPermutation`, `normalForm`, `hiddenPermutation_unique`, `ofHiddenPermutation`, `equivHiddenPermutations`, `natCard_productLensChanges`, `productSection`, `preservesSection_iff` | 独立な`LensRealization.product V K reference`; 任意の`visible : Perm V`（reference固定不要）; 有限`K`; Cycle111--120のactual F分類 | get式からobservation、put式から全ordered-pair named execution squareを構成し逆向きも同じ`h`で回復; reference fiberでhidden permutationを`h`から構成; 全edge constancyから全状態normal form; 任意候補の一意性と任意`Perm K`からの逆構成; actual section式とpoint stabilizerのiff | E product lensの各固定可視変更上のfiber分類とL6を確立し、all-`H`群接続へ渡す | 任意`H ≤ Sym(V)`上のlens change groupと積・projection・split section・kernel・torsorの同型、protocol E接続、lensのAAT typed Read/Write・一般非可逆射への双方向翻訳、D/AAT表示側回復、残るA--E統合は未完了 |
 | F Cycle 119 delta | 固定lens、選択値保存lens、protocolの指定データ・評価・個数を同じF分類へ接続する | `followingEquivVertexPermutationFamilies`, `natCard_followingStateChange`, `PointedFollowingStateChange`, `pointedFollowingEquivVertexFamilies`, `natCard_pointedFollowingStateChange`; complete-update graph/automorphism/component equivalence; `boolLensTwistChange`とget/put評価・id/flip各4/2; `pointedLensTwistChange`とsection/put評価・二つの非恒等witness・4/2; `protocolGraph`, `protocolSessionSwapAutomorphism`, `protocolSessionSwapLift`, operation-map計算, `protocolComponentEquivBool`, 16/4/4 | カード指定の`Bool×Bool` product lens、`Bool×Fin 3`と基準値0、`Fin 4`のnamed edges `0→1`,`2→3`; Cycle111--118のactual source/fiber分類 | raw following changeと頂点別全置換族の往復; pointed raw changeと全point stabilizer族の往復; complete graph一成分とprotocol二成分のsource relation由来証明; xor/true-fiber swapの具体評価; session交換のvertex/edge/operation adapter; 一般濃度式の特殊化 | Fの三固定例を完了し、同じ構成をEの独立lens/protocol意味へ翻訳する | Eとの対象・射・get/put・adapterの双方向翻訳、D/AAT表示側回復、残るA--Eの同一構成統合は未完了 |
 | F Cycle 118 delta | 有限`F.Vertex`と有限`K`について、任意の独立`H`と各`u : H`上のfull/pointed actual projection fiberを数える | `pointedPermutationEquivFixedOutside`, `pointedPermutationEquivComplement`, `natCard_pointedPermutation`, `natCard_componentGroup`, `natCard_projectionFiber`, `natCard_pointedComponentGroup`, `natCard_pointedProjectionFiber` | 任意の`F,K,k₀,H,u`; `[Finite F.Vertex] [Finite K]`; Cycle116--117のactual fiber equivalence。`F.Edge`と`H`の有限性は仮定しない | literal point stabilizerを`{k // k ≠ k₀}`の置換群と同値化し、その濃度を`(|K|-1)!`と算定; actual component-family/fiber同値へ`Nat.card_congr`を適用し、full fiberを`(|K|!)^|π₀(F)|`、pointed fiberを`((|K|-1)!)^|π₀(F)|`と証明 | F1の有限個数公式と三固定例の期待個数 | lens・pointed lens・protocolの指定入力/写像/評価/個数、E/D/AAT表示側回復は未完了 |
@@ -12365,4 +12366,49 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "For arbitrary H <= Perm(V), construct the independent lens change group of all (u,h), identify it with the fixed-F following group over the mapped graph subgroup, and transport multiplication, projection, split section, kernel, and every projection-fiber torsor before proceeding to the protocol connection."
+```
+
+## Cycle 121 — All-H product-lens group, literal kernels, and torsors
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 121
+base_oid: 55c2241576b624d91af440eec6728ffbf7c2fedb
+tracking_issue: 4520
+selection:
+  proof_obligation: "Lift the fixed-visible product-lens correspondence to every change over arbitrary H and preserve the entire split group and torsor structure"
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "For arbitrary V, K and independently supplied H <= Perm(V), defined the group of all pairs (u,h) satisfying the same independent get and put equations, without requiring finiteness or a reference value.  Constructed its projection and identity-hidden homomorphic section.  Mapped H faithfully to the complete-update graph automorphism subgroup and proved a genuine group equivalence from every independent lens change to every actual fixed-F preserving change over that subgroup.  Proved the equivalence commutes with visible projection and canonical section, restricts to a two-sided equivalence of the literal projection kernels, and identifies every literal projection equality fiber.  On the lens group itself, independently constructed the literal right-kernel action and proved it free, transitive, and uniquely displacing; finally proved the fiber equivalence intertwines the two kernel actions."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FixedFLensGroupConnection.lean
+  unfinished:
+    - "bidirectional connection for independent ProtocolRealization semantics, including operation names, all executions, observations, and adapters"
+    - "lens typed Read/Write AAT translation and recovery of general noninvertible LensRealization.Hom"
+    - "D comparison-group transport and presentation/AAT-side recovery of the same groups, sections, kernels, and fibers"
+    - "the remaining A--E target obligations and final same-construction integration"
+review:
+  fixed_head: e27919e9f975952f2af0355d2849bcb9a0486f5e
+  lanes: {math_a: pass, math_b: pass, lean_a: pass, lean_b: pass}
+  direct_response:
+    reviewed_delta: "55c2241576b624d91af440eec6728ffbf7c2fedb..e27919e9f975952f2af0355d2849bcb9a0486f5e"
+    verdict: pass
+    new_findings: []
+audits:
+  certificate_provenance: "H is an arbitrary independent subgroup; get and put equations are the independent CS change laws and construct the fixed-F observation/execution fields; graph-image membership supplies only the original visible u and never the state equivalence or preservation conclusion; kernel membership and torsor displacement are constructed from the two literal projections"
+  proof_use: "get is used for every state observation; put is used for every ordered-pair complete-update operation; actual observation and execution preservation reconstruct the same independent laws; the projection commuting square constructs both kernel directions; group multiplication constructs the lens-side kernel action and displacement; the group-hom law proves equivariance of the two torsors"
+  structure_field_escape: none-found
+  target_fitting: none-found-all-H-elements-all-qualifying-h-and-all-literal-fibers-retained
+  vacuity: "every visible fiber is inhabited by the constructed canonical section; free and transitive action is proved on the actual equality fiber"
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (3203 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 45 declarations in the new module; standard axioms only"
+    - "placeholder, hidden/BiDi, privacy, import-direction, and diff checks: PASS"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct the corresponding bidirectional protocol connection from independently defined ProtocolRealization semantics to the same fixed-F classification, retaining named operations, all executions, observations, and adapter squares before D or AAT presentation-side transport."
 ```
