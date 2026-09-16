@@ -17,9 +17,9 @@ equivalence.
 The architecture objects retain the exact carrier type of every typed role.
 Lens objects also retain the independently fixed reference view as their
 selected quantity.  Named primitive operations have actual AAT endpoints and
-configuration maps, while their exact semantic functions are exposed by
-separate typed APIs.  This module does not construct a complete core, Law,
-geometry, or a readback from arbitrary AAT morphisms.
+configuration maps, and constructed dependent packages join each such Formal
+operation to its exact semantic function.  This module does not construct a
+complete core, Law, geometry, or a readback from arbitrary AAT morphisms.
 -/
 
 namespace AAT.AG.RealizationReconstruction
@@ -59,13 +59,21 @@ def lensAATCarrier (input : LensFamilyInput.{u}) : AtomCarrier.{u + 1} where
   predicate := id
   payload := id
 
-/-- A singleton configuration for one typed primitive role.  Relation and
-identification data are empty, hence are supported by the selected family. -/
-def singletonRoleConfiguration {U : AtomCarrier.{u}} (selected : U.Atom) :
+/-- A typed-role configuration containing the complete fixed Atom vocabulary.
+Its relation points every vocabulary atom to the selected role, so operation
+names transported by a configuration map remain inside the actual family and
+are attached to the target role rather than hidden in an off-family value. -/
+def typedRoleConfiguration {U : AtomCarrier.{u}} (selected : U.Atom) :
     AtomConfiguration U where
-  family.mem atom := atom = selected
-  relation _ _ := False
+  family.mem _ := True
+  relation _ target := target = selected
   identification _ _ := False
+
+/-- Every Atom in the fixed vocabulary belongs to a typed-role configuration. -/
+@[simp] theorem typedRoleConfiguration_mem {U : AtomCarrier.{u}}
+    (selected atom : U.Atom) :
+    (typedRoleConfiguration selected).family.mem atom :=
+  trivial
 
 /-- The Atom naming a closed lens object role. -/
 def lensRoleAtom {input : LensFamilyInput.{u}}
@@ -82,12 +90,13 @@ selected quantity is the fixed reference view. -/
 def lensAATArchitectureObject {input : LensFamilyInput.{u}}
     {X : LensRealization input.View input.reference}
     (role : LensPrimitiveObject input X) : ArchitectureObject (lensAATCarrier input) where
-  configuration := singletonRoleConfiguration (lensRoleAtom role)
+  configuration := typedRoleConfiguration (lensRoleAtom role)
   StructureMaps := Type u
   SelectedQuantities := ULift.{u + 1, u} input.View
   structureMaps := role.Carrier
   selectedQuantities := ULift.up input.reference
 
+/-- Reading a lens AAT role object recovers its exact semantic carrier type. -/
 @[simp] theorem lensAATArchitectureObject_structureMaps
     {input : LensFamilyInput.{u}}
     {X : LensRealization input.View input.reference}
@@ -95,6 +104,7 @@ def lensAATArchitectureObject {input : LensFamilyInput.{u}}
     (lensAATArchitectureObject role).structureMaps = role.Carrier :=
   rfl
 
+/-- Every lens AAT role object retains the fixed reference view. -/
 @[simp] theorem lensAATArchitectureObject_selectedQuantities
     {input : LensFamilyInput.{u}}
     {X : LensRealization input.View input.reference}
@@ -109,16 +119,16 @@ and `put` remain distinct AAT operations. -/
 def lensNamedConfigurationHom {input : LensFamilyInput.{u}}
     (name source target : LensAATAtom input) (source_ne_point : source ≠ .point) :
     ConfigurationHom
-      (singletonRoleConfiguration (U := lensAATCarrier input) source)
-      (singletonRoleConfiguration (U := lensAATCarrier input) target) where
+      (typedRoleConfiguration (U := lensAATCarrier input) source)
+      (typedRoleConfiguration (U := lensAATCarrier input) target) where
   atomMap atom := match atom with
     | .point => name
     | _ => target
-  maps_family := by
-    intro atom hatom
-    subst atom
-    cases source <;> simp_all [singletonRoleConfiguration]
-  maps_relation := False.elim
+  maps_family := by simp [typedRoleConfiguration]
+  maps_relation := by
+    intro left right hright
+    subst right
+    cases source <;> simp_all [typedRoleConfiguration]
   maps_identification := False.elim
 
 /-- The point Atom records the exact authored lens operation name. -/
@@ -126,6 +136,16 @@ def lensNamedConfigurationHom {input : LensFamilyInput.{u}}
     (name source target : LensAATAtom input) (source_ne_point : source ≠ .point) :
     (lensNamedConfigurationHom name source target source_ne_point).atomMap .point = name :=
   rfl
+
+/-- A transported lens operation name is an actual member of the target
+configuration and is related to its selected target role. -/
+theorem lensNamedConfigurationHom_name_supported {input : LensFamilyInput.{u}}
+    (name source target : LensAATAtom input) (source_ne_point : source ≠ .point) :
+    (typedRoleConfiguration target).family.mem
+        ((lensNamedConfigurationHom name source target source_ne_point).atomMap .point) ∧
+      (typedRoleConfiguration target).relation
+        ((lensNamedConfigurationHom name source target source_ne_point).atomMap .point) target := by
+  simp [typedRoleConfiguration]
 
 /-- The actual Formal AAT operation carrying the named lens `get` endpoint. -/
 def lensGetAATOperation {input : LensFamilyInput.{u}}
@@ -152,14 +172,66 @@ def lensPutAATFunction {input : LensFamilyInput.{u}}
     X.Carrier × input.View → X.Carrier :=
   fun stateView => X.put stateView.1 stateView.2
 
+/-- The semantic function attached to the named AAT get operation is the original get. -/
 @[simp] theorem lensGetAATFunction_eq {input : LensFamilyInput.{u}}
     (X : LensRealization input.View input.reference) :
     lensGetAATFunction X = X.get :=
   rfl
 
+/-- The semantic function attached to the named AAT put operation is the original put. -/
 @[simp] theorem lensPutAATFunction_eq {input : LensFamilyInput.{u}}
     (X : LensRealization input.View input.reference) :
     lensPutAATFunction X = fun stateView => X.put stateView.1 stateView.2 :=
+  rfl
+
+/-- A constructed bridge joining one endpoint-indexed primitive name, its
+actual Formal AAT operation, and its exact semantic function.  This is output
+of the translation, not an additional premise on a lens realization. -/
+structure LensAATSemanticOperation {input : LensFamilyInput.{u}}
+    (X : LensRealization input.View input.reference) where
+  source : LensPrimitiveObject input X
+  target : LensPrimitiveObject input X
+  primitive : PrimitiveOperation (.lens input) (.lens X) (.lens source) (.lens target)
+  operation : Operation (lensAATCarrier input)
+  operation_source : operation.source = lensAATArchitectureObject source
+  operation_target : operation.target = lensAATArchitectureObject target
+  semanticFunction : source.Carrier → target.Carrier
+
+/-- The named get primitive, Formal operation, and original get function in
+one constructed AAT translation value. -/
+def lensGetAATSemanticOperation {input : LensFamilyInput.{u}}
+    (X : LensRealization input.View input.reference) : LensAATSemanticOperation X where
+  source := .read
+  target := .view
+  primitive := .lensGet
+  operation := lensGetAATOperation X
+  operation_source := rfl
+  operation_target := rfl
+  semanticFunction := X.get
+
+/-- The named put primitive, Formal operation, and original put function in
+one constructed AAT translation value. -/
+def lensPutAATSemanticOperation {input : LensFamilyInput.{u}}
+    (X : LensRealization input.View input.reference) : LensAATSemanticOperation X where
+  source := .write
+  target := .state
+  primitive := .lensPut
+  operation := lensPutAATOperation X
+  operation_source := rfl
+  operation_target := rfl
+  semanticFunction := fun stateView => X.put stateView.1 stateView.2
+
+/-- The constructed get package evaluates by the original semantic get. -/
+@[simp] theorem lensGetAATSemanticOperation_function {input : LensFamilyInput.{u}}
+    (X : LensRealization input.View input.reference) :
+    (lensGetAATSemanticOperation X).semanticFunction = X.get :=
+  rfl
+
+/-- The constructed put package evaluates by the original semantic put. -/
+@[simp] theorem lensPutAATSemanticOperation_function {input : LensFamilyInput.{u}}
+    (X : LensRealization input.View input.reference) :
+    (lensPutAATSemanticOperation X).semanticFunction =
+      fun stateView => X.put stateView.1 stateView.2 :=
   rfl
 
 /-! ## Lens n1015 (A1) source and exact doctrine morphisms -/
@@ -183,35 +255,41 @@ def lensAATSourceMap {input : LensFamilyInput.{u}}
       .write (lensObjectMap f .write (state, view)).1
         (lensObjectMap f .write (state, view)).2
 
+/-- Every lens semantic morphism fixes the distinguished A1 point. -/
 @[simp] theorem lensAATSourceMap_point {input : LensFamilyInput.{u}}
     {X Y : LensRealization input.View input.reference} (f : X ⟶ Y) :
     lensAATSourceMap f (.point : LensAATSource X) = .point :=
   rfl
 
+/-- The state summand of the lens A1 source is mapped by the original state map. -/
 @[simp] theorem lensAATSourceMap_state {input : LensFamilyInput.{u}}
     {X Y : LensRealization input.View input.reference} (f : X ⟶ Y)
     (value : X.Carrier) :
     lensAATSourceMap f (.state value) = .state (f.toFun value) :=
   rfl
 
+/-- The fixed view summand of the lens A1 source is mapped identically. -/
 @[simp] theorem lensAATSourceMap_view {input : LensFamilyInput.{u}}
     {X Y : LensRealization input.View input.reference} (f : X ⟶ Y)
     (value : input.View) :
     lensAATSourceMap f (.view value) = .view value :=
   rfl
 
+/-- The write summand uses the original state map and the identity view map. -/
 @[simp] theorem lensAATSourceMap_write {input : LensFamilyInput.{u}}
     {X Y : LensRealization input.View input.reference} (f : X ⟶ Y)
     (state : X.Carrier) (view : input.View) :
     lensAATSourceMap f (.write state view) = .write (f.toFun state) view :=
   rfl
 
+/-- The lens A1 source construction preserves semantic identities. -/
 @[simp] theorem lensAATSourceMap_id {input : LensFamilyInput.{u}}
     (X : LensRealization input.View input.reference) :
     lensAATSourceMap (𝟙 X) = id := by
   funext source
   cases source <;> rfl
 
+/-- The lens A1 source construction preserves composition. -/
 @[simp] theorem lensAATSourceMap_comp {input : LensFamilyInput.{u}}
     {X Y Z : LensRealization input.View input.reference}
     (f : X ⟶ Y) (g : Y ⟶ Z) :
@@ -226,6 +304,7 @@ def lensAATSourceState? {input : LensFamilyInput.{u}}
   | .state value => some value
   | _ => none
 
+/-- State readback after source transport is the original semantic state map. -/
 @[simp] theorem lensAATSourceState_map {input : LensFamilyInput.{u}}
     {X Y : LensRealization input.View input.reference} (f : X ⟶ Y)
     (value : X.Carrier) :
@@ -243,6 +322,18 @@ def lensAATExtracts {input : LensFamilyInput.{u}}
   | .state _ => atom = .state ∨ atom = .read ∨ atom = .get
   | .view _ => atom = .view
   | .write _ _ => atom = .write ∨ atom = .put
+
+/-- The distinguished lens source extracts every atom in the fixed finite vocabulary. -/
+theorem lensAATExtracts_point {input : LensFamilyInput.{u}}
+    {X : LensRealization input.View input.reference} (atom : LensAATAtom input) :
+    lensAATExtracts (.point : LensAATSource X) atom :=
+  trivial
+
+/-- A state source does not extract the distinct view-role atom. -/
+theorem lensAATExtracts_state_not_view {input : LensFamilyInput.{u}}
+    {X : LensRealization input.View input.reference} (value : X.Carrier) :
+    ¬ lensAATExtracts (.state value) (.view : LensAATAtom input) := by
+  simp [lensAATExtracts]
 
 /-- The AAT extraction doctrine whose source is exactly n1015 (A1). -/
 def lensAATExtractionDoctrine {input : LensFamilyInput.{u}}
@@ -274,6 +365,25 @@ def lensAATExactDoctrineHom {input : LensFamilyInput.{u}}
     cases source <;> simp [ExtractionDoctrine.extracts, lensAATExtractionDoctrine,
       lensAATExtracts, lensAATSourceMap]
 
+/-- The exact-doctrine translation preserves the lens identity morphism. -/
+@[simp] theorem lensAATExactDoctrineHom_id {input : LensFamilyInput.{u}}
+    (X : LensRealization input.View input.reference) :
+    lensAATExactDoctrineHom (𝟙 X) = ExactDoctrineHom.id (lensAATExtractionDoctrine X) := by
+  apply ExactDoctrineHom.ext
+  · exact lensAATSourceMap_id X
+  · rfl
+
+/-- The exact-doctrine translation preserves composition of arbitrary lens morphisms. -/
+@[simp] theorem lensAATExactDoctrineHom_comp {input : LensFamilyInput.{u}}
+    {X Y Z : LensRealization input.View input.reference}
+    (f : X ⟶ Y) (g : Y ⟶ Z) :
+    lensAATExactDoctrineHom (f ≫ g) =
+      ExactDoctrineHom.comp (lensAATExactDoctrineHom f) (lensAATExactDoctrineHom g) := by
+  apply ExactDoctrineHom.ext
+  · exact lensAATSourceMap_comp f g
+  · rfl
+
+/-- The doctrine translation exposes the original lens state map on sources. -/
 @[simp] theorem lensAATExactDoctrineHom_sourceMap_state
     {input : LensFamilyInput.{u}}
     {X Y : LensRealization input.View input.reference} (f : X ⟶ Y)
@@ -323,22 +433,31 @@ def protocolAATCarrier (input : ProtocolFamilyInput.{u}) : AtomCarrier.{u + 1} w
 def protocolStateAATArchitectureObject {input : ProtocolFamilyInput.{u}}
     (X : ProtocolRealization input.schema input.observation)
     (vertex : input.schema.Vertex) : ArchitectureObject (protocolAATCarrier input) where
-  configuration := singletonRoleConfiguration (.state vertex)
+  configuration := typedRoleConfiguration (.state vertex)
   StructureMaps := Type u
-  SelectedQuantities := Type u
+  SelectedQuantities := PUnit
   structureMaps := X.State vertex
-  selectedQuantities := input.observation.obj (input.schema.vertexObject vertex)
+  selectedQuantities := PUnit.unit
 
 /-- The actual AAT observation object at a named protocol vertex. -/
 def protocolObservationAATArchitectureObject {input : ProtocolFamilyInput.{u}}
     (_X : ProtocolRealization input.schema input.observation)
     (vertex : input.schema.Vertex) : ArchitectureObject (protocolAATCarrier input) where
-  configuration := singletonRoleConfiguration (.observation vertex)
+  configuration := typedRoleConfiguration (.observation vertex)
   StructureMaps := Type u
-  SelectedQuantities := Type u
+  SelectedQuantities := PUnit
   structureMaps := input.observation.obj (input.schema.vertexObject vertex)
-  selectedQuantities := input.observation.obj (input.schema.vertexObject vertex)
+  selectedQuantities := PUnit.unit
 
+/-- Interpret either protocol primitive object role as its actual AAT object. -/
+def protocolAATArchitectureObject {input : ProtocolFamilyInput.{u}}
+    (X : ProtocolRealization input.schema input.observation) :
+    PrimitiveObject (.protocol input) (.protocol X) →
+      ArchitectureObject (protocolAATCarrier input)
+  | .protocolState vertex => protocolStateAATArchitectureObject X vertex
+  | .protocolObservation vertex => protocolObservationAATArchitectureObject X vertex
+
+/-- A protocol state AAT object stores the exact state carrier at its vertex. -/
 @[simp] theorem protocolStateAATArchitectureObject_structureMaps
     {input : ProtocolFamilyInput.{u}}
     (X : ProtocolRealization input.schema input.observation)
@@ -346,6 +465,7 @@ def protocolObservationAATArchitectureObject {input : ProtocolFamilyInput.{u}}
     (protocolStateAATArchitectureObject X vertex).structureMaps = X.State vertex :=
   rfl
 
+/-- A protocol observation AAT object stores the fixed observation carrier. -/
 @[simp] theorem protocolObservationAATArchitectureObject_structureMaps
     {input : ProtocolFamilyInput.{u}}
     (X : ProtocolRealization input.schema input.observation)
@@ -359,16 +479,16 @@ image of the point Atom. -/
 def protocolNamedConfigurationHom {input : ProtocolFamilyInput.{u}}
     (name source target : ProtocolAATAtom input) (source_ne_point : source ≠ .point) :
     ConfigurationHom
-      (singletonRoleConfiguration (U := protocolAATCarrier input) source)
-      (singletonRoleConfiguration (U := protocolAATCarrier input) target) where
+      (typedRoleConfiguration (U := protocolAATCarrier input) source)
+      (typedRoleConfiguration (U := protocolAATCarrier input) target) where
   atomMap atom := match atom with
     | .point => name
     | _ => target
-  maps_family := by
-    intro atom hatom
-    subst atom
-    cases source <;> simp_all [singletonRoleConfiguration]
-  maps_relation := False.elim
+  maps_family := by simp [typedRoleConfiguration]
+  maps_relation := by
+    intro left right hright
+    subst right
+    cases source <;> simp_all [typedRoleConfiguration]
   maps_identification := False.elim
 
 /-- The point Atom records the exact named protocol edge or observation. -/
@@ -376,6 +496,16 @@ def protocolNamedConfigurationHom {input : ProtocolFamilyInput.{u}}
     (name source target : ProtocolAATAtom input) (source_ne_point : source ≠ .point) :
     (protocolNamedConfigurationHom name source target source_ne_point).atomMap .point = name :=
   rfl
+
+/-- A transported protocol operation name is an actual member of the target
+configuration and is related to its selected target role. -/
+theorem protocolNamedConfigurationHom_name_supported {input : ProtocolFamilyInput.{u}}
+    (name source target : ProtocolAATAtom input) (source_ne_point : source ≠ .point) :
+    (typedRoleConfiguration target).family.mem
+        ((protocolNamedConfigurationHom name source target source_ne_point).atomMap .point) ∧
+      (typedRoleConfiguration target).relation
+        ((protocolNamedConfigurationHom name source target source_ne_point).atomMap .point) target := by
+  simp [typedRoleConfiguration]
 
 /-- The actual Formal AAT operation for a named protocol edge. -/
 def protocolEdgeAATOperation {input : ProtocolFamilyInput.{u}}
@@ -410,16 +540,71 @@ def protocolObserveAATFunction {input : ProtocolFamilyInput.{u}}
     X.State vertex → input.observation.obj (input.schema.vertexObject vertex) :=
   X.observe vertex
 
+/-- A named protocol edge operation carries the original edge action. -/
 @[simp] theorem protocolEdgeAATFunction_eq {input : ProtocolFamilyInput.{u}}
     (X : ProtocolRealization input.schema input.observation)
     {source target : input.schema.Vertex} (edge : input.schema.Edge source target) :
     protocolEdgeAATFunction X edge = X.edgeAction edge :=
   rfl
 
+/-- A named protocol observation operation carries the original observation map. -/
 @[simp] theorem protocolObserveAATFunction_eq {input : ProtocolFamilyInput.{u}}
     (X : ProtocolRealization input.schema input.observation)
     (vertex : input.schema.Vertex) :
     protocolObserveAATFunction X vertex = X.observe vertex :=
+  rfl
+
+/-- A constructed bridge joining one dependent protocol primitive name, its
+actual Formal AAT operation, and its exact semantic function. -/
+structure ProtocolAATSemanticOperation {input : ProtocolFamilyInput.{u}}
+    (X : ProtocolRealization input.schema input.observation) where
+  source : PrimitiveObject (.protocol input) (.protocol X)
+  target : PrimitiveObject (.protocol input) (.protocol X)
+  primitive : PrimitiveOperation (.protocol input) (.protocol X) source target
+  operation : Operation (protocolAATCarrier input)
+  operation_source : operation.source = protocolAATArchitectureObject X source
+  operation_target : operation.target = protocolAATArchitectureObject X target
+  semanticFunction : protocolObjectCarrier source → protocolObjectCarrier target
+
+/-- Package one original named edge as a dependent AAT semantic operation. -/
+def protocolEdgeAATSemanticOperation {input : ProtocolFamilyInput.{u}}
+    (X : ProtocolRealization input.schema input.observation)
+    {source target : input.schema.Vertex} (edge : input.schema.Edge source target) :
+    ProtocolAATSemanticOperation X where
+  source := .protocolState source
+  target := .protocolState target
+  primitive := .protocolEdge edge
+  operation := protocolEdgeAATOperation X edge
+  operation_source := rfl
+  operation_target := rfl
+  semanticFunction := X.edgeAction edge
+
+/-- Package one original vertex observation as a dependent AAT semantic operation. -/
+def protocolObserveAATSemanticOperation {input : ProtocolFamilyInput.{u}}
+    (X : ProtocolRealization input.schema input.observation)
+    (vertex : input.schema.Vertex) : ProtocolAATSemanticOperation X where
+  source := .protocolState vertex
+  target := .protocolObservation vertex
+  primitive := .protocolObservation vertex
+  operation := protocolObserveAATOperation X vertex
+  operation_source := rfl
+  operation_target := rfl
+  semanticFunction := X.observe vertex
+
+/-- The constructed edge package evaluates by the original named edge action. -/
+@[simp] theorem protocolEdgeAATSemanticOperation_function
+    {input : ProtocolFamilyInput.{u}}
+    (X : ProtocolRealization input.schema input.observation)
+    {source target : input.schema.Vertex} (edge : input.schema.Edge source target) :
+    (protocolEdgeAATSemanticOperation X edge).semanticFunction = X.edgeAction edge :=
+  rfl
+
+/-- The constructed observation package evaluates by the original observation map. -/
+@[simp] theorem protocolObserveAATSemanticOperation_function
+    {input : ProtocolFamilyInput.{u}}
+    (X : ProtocolRealization input.schema input.observation)
+    (vertex : input.schema.Vertex) :
+    (protocolObserveAATSemanticOperation X vertex).semanticFunction = X.observe vertex :=
   rfl
 
 /-! ## Protocol n1015 (A1) source and exact doctrine morphisms -/
@@ -442,11 +627,13 @@ def protocolAATSourceMap {input : ProtocolFamilyInput.{u}}
   | .state vertex value => .state vertex (protocolStateMap a vertex value)
   | .step edge value => .step edge (protocolStateMap a _ value)
 
+/-- Every protocol semantic morphism fixes the distinguished A1 point. -/
 @[simp] theorem protocolAATSourceMap_point {input : ProtocolFamilyInput.{u}}
     {X Y : ProtocolRealization input.schema input.observation} (a : X ⟶ Y) :
     protocolAATSourceMap a (.point : ProtocolAATSource X) = .point :=
   rfl
 
+/-- Each protocol state summand is mapped by the original component map. -/
 @[simp] theorem protocolAATSourceMap_state {input : ProtocolFamilyInput.{u}}
     {X Y : ProtocolRealization input.schema input.observation} (a : X ⟶ Y)
     (vertex : input.schema.Vertex) (value : X.State vertex) :
@@ -454,6 +641,7 @@ def protocolAATSourceMap {input : ProtocolFamilyInput.{u}}
       .state vertex (protocolStateMap a vertex value) :=
   rfl
 
+/-- Each protocol step retains its edge name and maps its source state component. -/
 @[simp] theorem protocolAATSourceMap_step {input : ProtocolFamilyInput.{u}}
     {X Y : ProtocolRealization input.schema input.observation} (a : X ⟶ Y)
     {source target : input.schema.Vertex} (edge : input.schema.Edge source target)
@@ -462,12 +650,14 @@ def protocolAATSourceMap {input : ProtocolFamilyInput.{u}}
       .step edge (protocolStateMap a source value) :=
   rfl
 
+/-- The protocol A1 source construction preserves semantic identities. -/
 @[simp] theorem protocolAATSourceMap_id {input : ProtocolFamilyInput.{u}}
     (X : ProtocolRealization input.schema input.observation) :
     protocolAATSourceMap (𝟙 X) = id := by
   funext source
   cases source <;> rfl
 
+/-- The protocol A1 source construction preserves composition. -/
 @[simp] theorem protocolAATSourceMap_comp {input : ProtocolFamilyInput.{u}}
     {X Y Z : ProtocolRealization input.schema input.observation}
     (a : X ⟶ Y) (b : Y ⟶ Z) :
@@ -483,6 +673,7 @@ def protocolAATSourceState? {input : ProtocolFamilyInput.{u}}
   | .state vertex value => some ⟨vertex, value⟩
   | _ => none
 
+/-- Protocol state readback after transport is the original component map. -/
 @[simp] theorem protocolAATSourceState_map {input : ProtocolFamilyInput.{u}}
     {X Y : ProtocolRealization input.schema input.observation} (a : X ⟶ Y)
     (vertex : input.schema.Vertex) (value : X.State vertex) :
@@ -499,6 +690,20 @@ def protocolAATExtracts {input : ProtocolFamilyInput.{u}}
   | .state vertex _ =>
       atom = .state vertex ∨ atom = .observation vertex ∨ atom = .observe vertex
   | .step edge _ => atom = .edge edge
+
+/-- The distinguished protocol source extracts every atom in the fixed vocabulary. -/
+theorem protocolAATExtracts_point {input : ProtocolFamilyInput.{u}}
+    {X : ProtocolRealization input.schema input.observation}
+    (atom : ProtocolAATAtom input) :
+    protocolAATExtracts (.point : ProtocolAATSource X) atom :=
+  trivial
+
+/-- A protocol state source does not extract the distinguished point atom. -/
+theorem protocolAATExtracts_state_not_point {input : ProtocolFamilyInput.{u}}
+    {X : ProtocolRealization input.schema input.observation}
+    (vertex : input.schema.Vertex) (value : X.State vertex) :
+    ¬ protocolAATExtracts (.state vertex value) (.point : ProtocolAATAtom input) := by
+  simp [protocolAATExtracts]
 
 /-- The protocol extraction doctrine with exactly the n1015 (A1) source. -/
 def protocolAATExtractionDoctrine {input : ProtocolFamilyInput.{u}}
@@ -530,6 +735,27 @@ def protocolAATExactDoctrineHom {input : ProtocolFamilyInput.{u}}
     cases source <;> simp [ExtractionDoctrine.extracts, protocolAATExtractionDoctrine,
       protocolAATExtracts, protocolAATSourceMap]
 
+/-- The exact-doctrine translation preserves the protocol identity morphism. -/
+@[simp] theorem protocolAATExactDoctrineHom_id {input : ProtocolFamilyInput.{u}}
+    (X : ProtocolRealization input.schema input.observation) :
+    protocolAATExactDoctrineHom (𝟙 X) =
+      ExactDoctrineHom.id (protocolAATExtractionDoctrine X) := by
+  apply ExactDoctrineHom.ext
+  · exact protocolAATSourceMap_id X
+  · rfl
+
+/-- The exact-doctrine translation preserves composition of protocol morphisms. -/
+@[simp] theorem protocolAATExactDoctrineHom_comp {input : ProtocolFamilyInput.{u}}
+    {X Y Z : ProtocolRealization input.schema input.observation}
+    (a : X ⟶ Y) (b : Y ⟶ Z) :
+    protocolAATExactDoctrineHom (a ≫ b) =
+      ExactDoctrineHom.comp (protocolAATExactDoctrineHom a)
+        (protocolAATExactDoctrineHom b) := by
+  apply ExactDoctrineHom.ext
+  · exact protocolAATSourceMap_comp a b
+  · rfl
+
+/-- The doctrine translation exposes each original protocol state component map. -/
 @[simp] theorem protocolAATExactDoctrineHom_sourceMap_state
     {input : ProtocolFamilyInput.{u}}
     {X Y : ProtocolRealization input.schema input.observation} (a : X ⟶ Y)
