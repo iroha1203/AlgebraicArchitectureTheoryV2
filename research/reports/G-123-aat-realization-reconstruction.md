@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 146 packages all nine canonical forward-coverage fields into semantic unit/compositor outputs for both CS models, retaining the actual source/middle/target restriction chain and both local-value equations
+- current proof obligation: Cycle 147 proves direct and staged overlap/selected-Extension identity and composition for both CS models, retaining both comparison directions and every named operation
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct overlap/Extension identity/composition from the canonical comparison and selected extension data; then construct endpoint `ReadingCore` provenance and the genuine-CS-isomorphism bridge
+- next proof obligation: construct endpoint `ReadingCore` provenance and the genuine-CS-isomorphism bridge, then independent readback
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 147 delta | overlapとselected Extensionについてidentity/compositionを実データ上で証明し、lensのget/putとprotocolの全edge/observationを落とさない | `FullFamilyProductComparisonSemanticLaws`, `fullFamilyProductComparisonSemanticLaws`; lens/protocol各`*AATForwardOverlapExtensionSemanticUnit`, `*AATForwardOverlapExtensionSemanticCompositor`とcanonical constructors | 任意のrealizationまたは任意の合成可能なprimitive forward morphism、任意のsource context pair/tripleのみ。overlap/Extension certificate、whole-Extension map、inverse、surjectivityを入力しない | forward/backward比較のsupport/axis/observable恒等作用、direct-vs-successive合成、両`IsRestriction`、readable equivalence、Extension carrier/valueを一つの出力へ構成。CS compositorはdirect overlapとf段/g段、両primitive Extension coherence、direct compositeのpoint/get/putまたはpoint/全edge/全observationを二段のproof-useから構成 | Cycle 139 forward geometryのoverlap/Extension componentのsemantic functoriality。次cycleのendpoint ReadingCore provenance | context proof-record equality、chosen representative equality、arbitrary Extension value map、ReadingCore、GeometryTotalHom bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 146 delta | canonical coverageの9fieldすべてをidentity/compositionで保持し、proof-record equalityではなくprimitive入力から生成するsemantic lawとして束ねる | `ForwardObservableVisibilityChainData`, `ForwardObservableVisibility.explicitChain`; lens/protocol各`*AATForwardCoverageSemanticUnit`, `*AATForwardCoverageSemanticCompositor`と同名canonical theorem constructors | 任意のrealizationまたは任意の合成可能なprimitive forward morphismのみ。coverage record、unit/compositor certificate、第二段visibility witness、inverse、surjectivityを入力しない | unitはcanonical identity coverageとexact unchanged coordinate/visibilityを構成。compositorはrequired support/coordinate/violation/axisを二段で運び、source/middle/direct-targetの三restriction、両forward equation、middle-sourceとtarget-middleのlocal-value等式を存在結論に保持し、support/boundary staged-to-direct、axisのdirect identity actionと合わせて一つの出力へ構成 | Cycle 139 forward aggregateのcoverage componentに対する全field semantic coherence。次cycleのoverlap/Extension aggregate law | Prop record equalityは主張しない。chosen `ContextMorphism` representative equality、target-only/inverse coverage、overlap/Extensionのunit/comp、ReadingCore、bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 145 delta | coverageのidentity/compositionをproof irrelevanceで済ませず、required/violation coordinateとlocal restriction値を実際にidentity/compositeへ運ぶ | `flattenSuccessiveFullFamilyContextMap`, `_isRestriction`, `ForwardObservableVisibility.compOfForwardEquation`; lens/protocol各`forwardRequiredCoordinate_id/comp`, `forwardCoordinate_id/comp`, `forwardEquationCoordinateCoherent_id/comp`, `forwardViolationCoordinateCoherent_id/comp`, `forwardSupportVisible_comp`, `forwardBoundaryVisible_comp` | 任意のlens/protocol realization、任意の合成可能なprimitive forward morphism、sourceのactual visibility witness。第二段coverage witness、aggregate certificate、inverse、surjectivityを入力しない | 第一段が生成したtarget restrictionを第二段のsource restrictionとして再使用し、第二段target restrictionを内部構成。successive full-family rebaseの全map成分と`IsRestriction`をdirect targetへflattenし、二つのlocal値等式を推移。全required/violation coordinateのid/comp、support/boundaryのstaged-to-direct compを証明 | canonical forward coverageのsemantic functoriality。次cycleの全9field aggregate law | arbitraryな二つのcoverage recordは中間witness同一性を保持しないため合成しない。axis・required-role clausesを含む全field packaging、chosen `ContextMorphism` representative-map equality、overlap/Extension、ReadingCore、bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 144 delta | canonical forward-image aggregateのequation/raw成分について、primitive identity/compositionから全fieldのunit/compositorを構成する | `EndpointEquationForwardTransport.contextIdentityFunctor`, `.identity`, `.comp`, `.ext`; lens/protocol各`equationTransport_id/comp`; `*AATForwardEquationRawUnitLaw`, `*AATForwardEquationRawCompLaw`とcanonical constructors | 任意のlens/protocol realizationと合成可能なprimitive forward morphism。aggregate law certificate、coverage composition、inverse、surjectivityを入力しない | equation transportのcontext/index/role/observable naturality/violation/residual-zeroをidentity/compositionで構成し、Cycle 143のraw global lawとともにcanonical aggregate projectionへ接続 | canonical forward-image aggregateのequation/raw coherence。次cycleのcoverage coherenceおよび後続ReadingCore/GeometryTotalHom bridge | coverageはmorphism-indexed Prop recordのproof irrelevanceでは証明しない。required-coordinate/coordinate/restrictionの実質的なidentity/composition、overlap/Extension、ReadingCore、bridge、readback、D回復、A--F統合は未完了 |
@@ -286,6 +287,7 @@ audits:
   blocking_findings: []
   next_obligation: "Construct protocol semantics, finite generator tables, res/ext/J, and the four reconstruction properties without restricting the independently defined natural transformations."
 ```
+
 
 ## Cycle 2 — Protocol semantics and finite-presentation reconstruction
 
@@ -15248,4 +15250,107 @@ audits:
   blocking_findings:
     - "resolved before final review: the initial compositor proposition exposed only direct composite coverage plus coordinate equations; repaired by adding nine staged fields and explicit Nonempty visibility chain data to both CS statements"
   next_obligation: "Construct overlap/Extension identity/composition from the canonical comparison and selected extension data; then construct endpoint ReadingCore provenance and the genuine-CS-isomorphism bridge."
+```
+
+## Cycle 147 — Overlap and selected Extension functoriality
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 147
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 57c93fe3b6bdc46e39061303e0c6057fbb02a12b
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 146 completed canonical coverage functoriality while overlap/Extension identity and composition remained open"
+  proof_dag_predecessors:
+    - "Cycle 140 canonical forward/backward product-overlap comparisons and selected Extension coherence"
+    - "Cycle 141 primitive state/context identity and composition"
+    - "Cycle 146 all-field coverage semantic aggregate"
+  proof_obligation: "Prove exact direct-versus-successive comparison behavior and package direct plus staged overlap/selected-Extension unit/compositor laws for lens and protocol"
+  selection_reason: "The CS correspondence must retain lens get/put and protocol operation/observation semantics through composition; a bare readable-equivalence existence statement or two unrelated model records is insufficient."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardOverlapExtensionFunctoriality.lean
+  risks:
+    - "using proof-record equality instead of semantic map components"
+    - "proving only the direct composite without retaining f and g stages"
+    - "dropping noninvertible named operations or replacing them with identity maps"
+    - "accepting overlap/Extension coherence as an input certificate"
+  unchecked:
+    - "chosen ContextMorphism representative equality"
+    - "whole-Extension carrier map for arbitrary values"
+    - "endpoint ReadingCore provenance, GeometryTotalHom bridge, readback, D recovery, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Constructed a generic product-comparison semantic law retaining both comparison directions, all support/axis/observable components, direction-correct direct-versus-successive composition (including the contravariant observable order), restriction proofs, readable equivalence, and Extension carrier/value. For lens and protocol, constructed unit and compositor outputs containing direct overlap, both staged overlaps, both primitive Extension coherences, and direct-composite point plus every named operation equation."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardOverlapExtensionFunctoriality.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FullFamilyProductComparisonSemanticLaws
+    - AAT.AG.RealizationReconstruction.fullFamilyProductComparisonSemanticLaws
+    - AAT.AG.RealizationReconstruction.LensAATForwardOverlapExtensionSemanticUnit
+    - AAT.AG.RealizationReconstruction.lensAATForwardOverlapExtensionSemanticUnit
+    - AAT.AG.RealizationReconstruction.LensAATForwardOverlapExtensionSemanticCompositor
+    - AAT.AG.RealizationReconstruction.lensAATForwardOverlapExtensionSemanticCompositor
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardOverlapExtensionSemanticUnit
+    - AAT.AG.RealizationReconstruction.protocolAATForwardOverlapExtensionSemanticUnit
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardOverlapExtensionSemanticCompositor
+    - AAT.AG.RealizationReconstruction.protocolAATForwardOverlapExtensionSemanticCompositor
+  claim_mapping:
+    source_labels:
+      - "GOAL A: complete overlap and Extension data"
+      - "GOAL E and n1015: lens get/put and protocol named-operation translation under arbitrary morphisms"
+    conjuncts:
+      - "forward/backward overlap comparison -> exact identity-on-data components and actual restrictions"
+      - "comparison composition -> forward support/axis use middle then target and backward support/axis use target then middle; observable restriction follows the corresponding contravariant order"
+      - "overlap -> direct composite and both primitive stages for every source-generated context triple"
+      - "lens Extension -> selected point, every get, and every put under direct and staged composition"
+      - "protocol Extension -> selected point, every named edge, and every observation under direct and staged composition"
+    undischarged_assumptions:
+      - "mutual readable refinement is not context equality or a chosen representative equality"
+      - "selected operation coherence is not a map on every arbitrary Extension value"
+      - "ReadingCore and the completed geometry/readback bridge remain open"
+    acceptance_point: "Every output is constructed from a realization or primitive f,g. The compositor statement includes direct and both staged overlap/Extension evidence, while the generic law relates direct and successive comparison components."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "lens overlap/selected Extension identity and composition"
+      - "protocol overlap/selected Extension identity and composition"
+      - "forward/backward product comparison identity and direct-versus-successive composition"
+    remaining:
+      - "chosen representative equality and arbitrary whole-Extension mapping"
+      - "ReadingCore, GeometryTotalHom bridge, readback, D recovery, and A--F integration"
+  certificate_provenance:
+    discharged:
+      - "comparison laws use only full-family membership and arbitrary source contexts"
+      - "unit outputs use primitive identity"
+      - "compositor outputs generate both primitive coherence stages and direct laws from f,g"
+    unresolved:
+      - "endpoint core/reading provenance and later reconstruction obligations"
+  proof_use:
+    used:
+      - "both overlap comparison directions and all three semantic map components"
+      - "both primitive morphisms in direct point/get/put and point/edge/observation equations"
+      - "every source context pair/triple, every lens state/view, every protocol edge/state/observation"
+    unused:
+      - "no overlap or Extension certificate, inverse, surjectivity, target answer, or completed geometry is accepted"
+      - "no context proof-record equality is asserted"
+  structure_field_escape: none-found-all-law-records-are-generated-outputs
+  route_integrity: pass-direct-and-both-staged-overlap-extension-evidence-retained
+  target_fitting: none-found-all-named-operations-and-arbitrary-composable-morphisms-are-quantified
+  vacuity: none-found-componentwise-comparison-and-operation-equations-are-explicit
+  one_way_as_equivalence: none-found-readable-equivalence-is-only-the-product-overlap-comparison-and-does-not-invert-the-CS-map
+  goal_or_report_reinterpretation: none-found-core-provenance-readback-D-and-final-integration-remain-open
+  validation_refs:
+    - "focused CSAATGeometryForwardOverlapExtensionFunctoriality file check: PASS; 71 namespace declarations, standard axioms only"
+    - "focused exact CSAATGeometryForwardOverlapExtensionFunctoriality target build: PASS (4288 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "resolved before final review: initial backward support/axis/observable composition fields stated the reverse staged order, masked by the current identity-on-data implementation; field types were corrected"
+    - "resolved before final review: five Prop constructors were changed from def to theorem and the universal-constructor reason for no negative instances was documented"
+  next_obligation: "Construct endpoint ReadingCore provenance from independently defined AAT core/reading data and connect genuine CS isomorphisms to GeometryTotalHom, then prove independent readback."
 ```
