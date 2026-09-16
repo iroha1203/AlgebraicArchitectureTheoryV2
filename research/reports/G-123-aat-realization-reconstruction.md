@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 135 lifts the Cycle 134 coordinate RingHom to a natural transformation of full coordinate-polynomial presheaves and conjugates it with the Cycle 133 isomorphisms to obtain actual raw quotient-presheaf maps
+- current proof obligation: Cycle 136 repair strengthens coordinate visibility with the generated polynomial-map equation and equality of source/target local values, after fresh review refuted the original coordinate-insensitive predicate-only candidate
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: define the noninvertible coordinate-specific coverage and overlap preservation law over the endpoint-only rebase without adding target coordinates or an inverse; then prove identity/composition, independent readback, and all-component inverse laws
+- next proof obligation: construct honest overlap/Extension coherence and support/axis laws without adding target answers or inverse coordinate maps; then assemble the one-way geometry record and prove identity/composition, independent readback, and all-component inverse laws
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 136 repair delta | 一般非単射CS射でsource座標の可視性を写像先required/violation座標へ結ぶ際、弱いexistential visibilityだけでなくgenerated coordinate RingHomによる変数像とsource/target local値の一致を同じwitnessに保持する | `fullFamilyContextToTargetReadingAt`, `ForwardObservableVisibility`, `fullFamilyForwardObservableVisibility`; lens/protocol各`*AATForwardRequiredCoordinate`, `*AATForwardCoordinate`, `*AATForwardEquationCoordinateCoherent`, `*AATForwardViolationCoordinateCoherent` | Cycle 129 primitive forward morphism、Cycle 131 independent endpoint readings/coverage predicates、source座標のactual visibility witness、Cycle 127由来のgenerated variable-image theorem。target restriction、coordinate inverse、surjectivity、完成coverage certificateを入力しない | source/target restrictionとreadabilityに加え、`f.lawCoordinateMap (X sourceCoordinate) = X mappedCoordinate`および両restrictionのselected local値一致を一つのProp witnessとして構成。任意target座標への定数mapだけではこのgenerated forward equationを満たせない | one-way geometryでmapped coordinateを識別するcoherent visibility component。後続のsupport/axis、overlap/Extension、共通geometry action、identity/compositionとの統合 | target ContextMorphism自体はobservable全体で定数の補助mapであり、full observable actionやreadbackではない。target-only座標、単一の共通restriction map、signature-axis/support visibility、overlap boundary、Extension、coverage-family mapは未完了。AATCorePackage/ReadingCore provenance、D回復、A--F統合も未完了。最初のpredicate-only候補は査読で反証され証拠に数えない |
 | A/E Cycle 135 delta | Cycle 134のone-way Law coordinate actionをCycle 131--133のactual reading/raw quotient presheafへ接続し、任意の非単射CS射について全context・restriction上のraw mapを構成する | lens/protocol各`*EquationPolynomialForwardHom`, `*EquationPolynomialForwardHom_app_X`, `*GeometryReadingRawForwardHom` | Cycle 129 primitive forward morphism、Cycle 131 reading sites、Cycle 133 raw/polynomial presheaf isomorphisms。raw NatTrans、index Equiv、逆context functor、coverage certificateを入力しない | `f.lawCoordinateMap`をlifted-`Int` Under morphismへ持ち上げ、全restrictionの自然性を証明。全contextで各Law-index/Atom変数がexact mapped index変数へ送られることを計算。source raw quotient→source polynomial→target polynomial→target raw quotientをpresheaf NatTransとして共役する | 次cycleのone-way complete-geometry recordのraw component、identity/composition、coverage/overlapとのcoherence | morphism由来context reading、coverage/overlap、raw NatTransのidentity/composition、独立readback、`AATCorePackage`/`ReadingCore` provenance、D回復、A--F統合は未完了。endpoint-only context rebaseをmorphism固有作用とは数えない |
 | A/E Cycle 134 repair delta | equation-index同値を持たない一般非単射Law/CS射について、actual Law equation systemの全source context・restriction・index・observable・violation generatorとraw endpoint residual zeroを同一のone-way transportへまとめる | `EndpointEquationForwardTransport`; `observablePresheafHom`, `required_map`, `equationHolds_map`; raw `lensLawEndpointEquationForwardTransport`, `protocolLawEndpointEquationForwardTransport`; CS specialization `lensAATEndpointEquationForwardTransport`, `protocolAATEndpointEquationForwardTransport`; lens/protocol各observable presheaf Homとendpoint equation-holds map | 任意のraw source/target Law structureとraw Law Hom。CS specializationではCycle 129 primitive morphismからLaw Homを生成する。完成transport certificate、endpoint lawfulness、index Equiv、observable inverse、target-surjectivityを入力しない | context indexingはendpointだけに依存するcanonical full-family rebaseでありmorphism actionとは数えない。morphism固有の全index map・RingHom・restriction自然性・mapped violation variableを同じrecordで実使用する。任意の非lawful raw endpointを許したままsource residual zeroからmapped target residual zeroを導出し、contextwise RingHomをactual presheaf NatTransへ組み立てる | Cycle 133 raw presheafとの共役によるraw NatTrans、および非逆coverage/overlap保存則の型を構成する | target側のindex全体へのsurjectivity・lawfulnessは主張しない。morphism由来context-reading map、coverage/overlap、raw quotient接続、identity/composition、独立readback、`AATCorePackage`/`ReadingCore` provenance、D回復、A--F統合は未完了。target canonical dataをsource contextへ付加する棄却候補は証拠に数えない |
 | A/E Cycle 133 delta | Cycle 132のobjectwise raw quotient equivalenceをselected siteの全context射に関して自然化し、actual algebra-valued presheaf同型として構成する | `equationCoordinateRawQuotientEquiv_natural`, `equationCoordinateRawQuotientEquiv_natural_identity`, `equationCoordinateRawQuotientEquiv_quotientDesc`; lens/protocol各pointwise specialization; `equationCoordinatePolynomialObject`, `equationCoordinatePolynomialPresheaf`, `equationCoordinatePolynomialObjectIso`, `equationCoordinateRawPresheafIso`; lens/protocol各presheaf iso | 任意のselected `AATSite`とCycle 132で構成済みのraw system/quotient equivalenceのみ。自然性certificate、完成geometry morphism、site cast、index equivalenceを入力しない | `Ideal.Quotient.ringHom_ext`でquotient generatorへ戻し、`quotientDesc_mk`とCycle 132 quotient-map計算則からpolynomial restrictionとのRingHom squareを証明。全restrictionのpolynomial mapがidentityである証明を実使用してidentity squareとpointwise式を得る。さらにfull coordinate polynomial algebraをlifted-Int under-objectとして構成し、identity restrictionを持つpresheafと全objectのUnder isoを構成し、同じRingHom squareを`NatIso.ofComponents`の自然性に使用 | lens/protocol両readingのraw quotient layerを同じgeneric constructionでpresheaf-level full Law-coordinate endpointへ接続し、次cycleのone-way coverage/overlap/raw geometry transportが使う | 完成geometry morphism、非自明localization、CS primitive interfaceからのcoverage/overlap/raw保存、独立readback、`AATCorePackage`/`ReadingCore` provenance、D回復、A--F統合は未完了。このpresheaf isoはgeometry射やreadbackを自動生成しない |
@@ -13926,4 +13927,225 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct coordinate-specific forward coverage and honest overlap/Extension coherence over the endpoint-only rebase; then prove identity/composition for the assembled one-way geometry data."
+```
+
+## Cycle 136 rejected candidate — Predicate-only coordinate visibility
+
+```yaml
+ledger_type: rejected_target_cycle_candidate
+goal: G-123-aat-realization-reconstruction
+cycle: 136
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 1338a7618ec8422755aac4ddc65bbbf0aa41c69b
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 135 constructed actual raw quotient-presheaf maps but left the independent endpoint coverage predicates disconnected from the primitive noninvertible CS morphisms"
+  proof_dag_predecessors:
+    - "Cycle 129 primitive lens/protocol forward morphisms and generated complete Law-index maps"
+    - "Cycle 131 independent endpoint readings and actual coordinate-visibility predicates"
+    - "Cycles 134--135 endpoint-only context rebase and one-way equation/raw maps"
+  proof_obligation: "Transport source visibility of every mapped required and violation coordinate to the independently constructed target reading without accepting target readability, a coordinate inverse, or a completed coverage certificate"
+  selection_reason: "Rejected rationale: the candidate treated the existing existential visibility predicate as sufficient and reused one readable local value in a constant target restriction."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardCoverage.lean
+  risks:
+    - "misstating coordinate-specific visibility as visibility of target-only coordinates"
+    - "treating a constant-on-observables auxiliary restriction as the geometry observable action"
+    - "claiming signature-axis or overlap preservation from the coordinate result"
+    - "accepting the target restriction or a completed coverage map as input"
+  unchecked:
+    - "support and signature-axis preservation"
+    - "overlap boundary and Extension coherence"
+    - "coverage-family map and assembled one-way geometry record"
+    - "identity/composition and independent geometry readback"
+    - "AATCorePackage and ReadingCore provenance"
+    - "D-side recovery and final A--F integration"
+result:
+  proposed_result_type: proposed_but_not_accepted
+  proof_obligation_delta: "Constructed a generic target-reading ContextMorphism from a source restriction and one selected locally readable source observable.  Proved the constructed map is a restriction and computes to the selected local value for every target observable.  Specialized it to lens and protocol primitive morphisms, mapped every source required and violation coordinate by the generated complete Law-index map, and proved visibility of each exact mapped coordinate on the endpoint-only rebased context."
+  completion_candidate: no
+  rejection_reason: "Fresh Math A/B and Lean A/B independently showed that the target restriction ignores its observable argument. The same source witness proves the weak predicate for every target coordinate, so the mapped index is only a conclusion label and target-only coordinates are not excluded."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardCoverage.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.fullFamilyContextToTargetReadingAt
+    - AAT.AG.RealizationReconstruction.fullFamilyContextToTargetReadingAt_isRestriction
+    - AAT.AG.RealizationReconstruction.fullFamilyContextToTargetReadingAt_selected
+    - AAT.AG.RealizationReconstruction.lensAATForwardRequiredCoordinate
+    - AAT.AG.RealizationReconstruction.lensAATForwardCoordinate
+    - AAT.AG.RealizationReconstruction.lensAATForwardEquationCoordinateVisible
+    - AAT.AG.RealizationReconstruction.lensAATForwardViolationCoordinateVisible
+    - AAT.AG.RealizationReconstruction.protocolAATForwardRequiredCoordinate
+    - AAT.AG.RealizationReconstruction.protocolAATForwardCoordinate
+    - AAT.AG.RealizationReconstruction.protocolAATForwardEquationCoordinateVisible
+    - AAT.AG.RealizationReconstruction.protocolAATForwardViolationCoordinateVisible
+  claim_mapping:
+    source_labels:
+      - "GOAL A: coverage of every required equation and violation coordinate"
+      - "GOAL E and n1015 section 5.3: retain arbitrary noninvertible CS morphisms"
+    conjuncts:
+      - "each visible source required coordinate -> its exact index-mapped target required coordinate is visible"
+      - "each visible source violation coordinate -> its exact index-mapped target violation coordinate is visible"
+      - "actual target reading -> the witness is a ContextMorphism into the independently constructed Cycle 131 target context"
+      - "noninvertibility -> no reverse index map, injectivity, surjectivity, or target-coordinate enumeration is used"
+    undischarged_assumptions:
+      - "target-only coordinates are outside this source-to-image implication"
+      - "support/axis visibility and overlap/Extension coherence"
+      - "one common geometry map and its identity/composition/readback laws"
+    acceptance_point: "Every target restriction is constructed from an actual source visibility witness.  The helper's constant observable restriction is used only to witness the named mapped coordinate; it is not classified as the morphism's full observable action or as a completed coverage transport."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "mapped required-coordinate visibility for lens and protocol morphisms"
+      - "mapped violation-coordinate visibility for lens and protocol morphisms"
+      - "restriction proof for the selected-observable target map"
+      - "exact selected-local-value computation"
+    remaining:
+      - "target-only coordinate visibility"
+      - "support and signature-axis laws"
+      - "overlap boundary and Extension coherence"
+      - "coverage-family packaging, identity/composition, and independent readback"
+      - "AATCorePackage/ReadingCore provenance, D recovery, and A--F integration"
+  certificate_provenance:
+    discharged:
+      - "the target ContextMorphism is constructed from the source visibility witness rather than accepted as a field"
+      - "its restriction laws are proved from the source IsRestriction proof, fixed full-family membership, and the selected local readability proof"
+      - "mapped coordinate identities are generated by the Cycle 129 Law-index map"
+    unresolved:
+      - "overlap/Extension and complete coverage-family preservation"
+  proof_use:
+    used:
+      - "source ContextMorphism and IsRestriction in construction of each target witness"
+      - "source local readability proof as the target local readability proof for the selected coordinate"
+      - "f.lawIndexMap in both required and violation coordinate maps"
+      - "endpoint-only f.lawContextFunctor object in the theorem conclusions"
+    unused:
+      - "the raw quotient NatTrans is not needed for this predicate-level visibility result and remains a separate component"
+      - "A1 sourceMap remains reserved for Extension/context-reading coherence"
+  structure_field_escape: none-found-no-target-restriction-or-completed-coverage-certificate-is-input
+  route_integrity: fail-coordinate-insensitive-constant-restriction
+  target_fitting: none-found-no-target observable is adjoined to the source context and no target-only coordinate is claimed
+  vacuity: failed-the-same-witness-proves-the-weak-predicate-for-arbitrary-target-coordinates
+  one_way_as_equivalence: none-found-the-results-are-forward-implications-on-image-coordinates-only
+  goal_or_report_reinterpretation: none-found-axis-overlap-extension-readback-core-provenance-D-and-final-integration-remain-open
+  validation_refs:
+    - "focused CSAATGeometryForwardCoverage file check: PASS; 11 namespace declarations, standard axioms only"
+    - "focused exact CSAATGeometryForwardCoverage target build: PASS (4278 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "The auxiliary target ContextMorphism maps every target observable to one selected source-local value."
+    - "The four candidate visibility proofs do not use the generated coordinate map in their witness or readability proof."
+    - "An arbitrary-target-coordinate refutation theorem typechecks, contradicting the intended mapped-coordinate distinction."
+  next_obligation: "Strengthen the witness with the generated forward-variable equation and equality of selected local values before counting any coordinate transport."
+```
+
+## Cycle 136 repair — Coordinate-coherent forward visibility
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 136-repair
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 1338a7618ec8422755aac4ddc65bbbf0aa41c69b
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Fresh Math A/B and Lean A/B refuted the predicate-only candidate by constructing the same visibility witness for arbitrary target coordinates"
+  proof_dag_predecessors:
+    - "Cycle 127 generated Law coordinate RingHoms and exact variable-image theorems"
+    - "Cycle 129 primitive lens/protocol forward morphisms"
+    - "Cycle 131 independent endpoint readings and source visibility witnesses"
+  proof_obligation: "Retain source and target readability while proving that the named target variable is exactly the image of the source variable and that both restrictions select the same local value"
+  selection_reason: "The forward-variable equation is morphism-specific and cannot be obtained for an arbitrary target-only coordinate. Pairing it with both restriction witnesses repairs the coordinate-insensitivity found by review without requiring an inverse map."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardCoverage.lean
+  risks:
+    - "counting the constant auxiliary target restriction as a full observable action"
+    - "forgetting to use the generated coordinate RingHom theorem"
+    - "projecting back to the weak predicate and discarding coherence"
+    - "claiming support/axis/overlap/Extension preservation"
+  unchecked:
+    - "support and signature-axis preservation"
+    - "overlap boundary and Extension coherence"
+    - "one common geometry map rather than per-coordinate coherent witnesses"
+    - "identity/composition and independent geometry readback"
+    - "AATCorePackage and ReadingCore provenance"
+    - "D-side recovery and final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Defined ForwardObservableVisibility as a Prop-valued witness containing source and target restriction maps, both readability proofs, the generated forward-observable equality, and equality of the selected local values. Constructed it from each source visibility witness. For every lens/protocol required and violation coordinate, proved the forward equality with the existing generated Law-coordinate variable theorem, so an arbitrary target-only coordinate cannot replace the named image without an additional equality proof."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardCoverage.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.ForwardObservableVisibility
+    - AAT.AG.RealizationReconstruction.fullFamilyForwardObservableVisibility
+    - AAT.AG.RealizationReconstruction.lensAATForwardRequiredCoordinate
+    - AAT.AG.RealizationReconstruction.lensAATForwardCoordinate
+    - AAT.AG.RealizationReconstruction.lensAATForwardEquationCoordinateCoherent
+    - AAT.AG.RealizationReconstruction.lensAATForwardViolationCoordinateCoherent
+    - AAT.AG.RealizationReconstruction.protocolAATForwardRequiredCoordinate
+    - AAT.AG.RealizationReconstruction.protocolAATForwardCoordinate
+    - AAT.AG.RealizationReconstruction.protocolAATForwardEquationCoordinateCoherent
+    - AAT.AG.RealizationReconstruction.protocolAATForwardViolationCoordinateCoherent
+  claim_mapping:
+    source_labels:
+      - "GOAL A: coordinates, readings, and restrictions"
+      - "GOAL E and n1015 section 5.3: arbitrary noninvertible CS morphisms"
+    conjuncts:
+      - "source visibility -> actual source restriction and local readability are retained"
+      - "mapped target visibility -> actual target restriction and local readability are retained"
+      - "coordinate identity -> generated RingHom sends the source variable to the exact named target variable"
+      - "local compatibility -> target restriction of that target variable equals source restriction of the source variable"
+      - "noninvertibility -> no inverse, injectivity, surjectivity, or target enumeration is required"
+    undischarged_assumptions:
+      - "target-only coordinates have no preimage equation and are not covered"
+      - "the auxiliary target map is not a global observable action"
+      - "support/axis, overlap/Extension, shared geometry action, identity/composition, and readback"
+    acceptance_point: "The generated coordinate-map equality is a field of the witness and is proved from lensLawCoordinateMap_violation or protocolLawCoordinateMap_violation. It is not merely present in the result index."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "coherent mapped required-coordinate visibility for lens and protocol"
+      - "coherent mapped violation-coordinate visibility for lens and protocol"
+      - "exact forward variable-image equality"
+      - "equality of selected source and target local values"
+    remaining:
+      - "target-only coordinates"
+      - "global observable action and a common map across all coordinates"
+      - "support/signature-axis and overlap/Extension laws"
+      - "coverage-family packaging, identity/composition, and independent readback"
+      - "AATCorePackage/ReadingCore provenance, D recovery, and A--F integration"
+  certificate_provenance:
+    discharged:
+      - "source restriction/readability come from the actual Cycle 131 visibility witness"
+      - "target restriction and its IsRestriction proof are constructed"
+      - "forward-variable equations are generated from primitive CS morphisms through their Law coordinate maps"
+    unresolved:
+      - "complete geometry and coverage-family preservation"
+  proof_use:
+    used:
+      - "source ContextMorphism, IsRestriction, and local readability"
+      - "f.lawCoordinateMap and f.lawIndexMap through the exact variable-image theorem"
+      - "the selected local-value equality in the coherent witness"
+    unused:
+      - "the constant auxiliary target map is not claimed as the full observable action"
+      - "A1 sourceMap remains reserved for Extension/context-reading coherence"
+  structure_field_escape: none-found-the-coherent-witness-is-constructed-and-its-forward-equation-is-proved-from-the-primitive-generated-coordinate-map
+  route_integrity: pass-for-coordinate-coherent-image-visibility-only
+  target_fitting: none-found-the-target-variable-must-be-proved-equal-to-the-generated-forward-image
+  vacuity: repaired-the-arbitrary-target-refutation-no-longer-supplies-the-required-forward-variable-equation
+  one_way_as_equivalence: none-found-no-inverse-or-target-surjectivity-is-used
+  goal_or_report_reinterpretation: none-found-global-observable-axis-overlap-extension-readback-core-provenance-D-and-final-integration-remain-open
+  validation_refs:
+    - "focused CSAATGeometryForwardCoverage file check after repair: PASS; 13 namespace declarations, standard axioms only"
+    - "focused exact CSAATGeometryForwardCoverage target build after repair: PASS (4278 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct support/signature-axis laws and overlap/Extension coherence without inverse coordinate maps or target-answer enrichment, then assemble the one-way geometry record and prove identity/composition."
 ```
