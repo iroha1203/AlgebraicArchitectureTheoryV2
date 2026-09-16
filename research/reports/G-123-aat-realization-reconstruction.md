@@ -22,7 +22,7 @@
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A/E Cycle 149 delta | genuine lens/protocol isomorphismから全state・全raw Law instance・全Law/Atom coordinateのexact dataを構成し、既存の全named-operation由来forward mapと一致させる | `lensIsoStateEquiv`, `lensIsoLawIndexEquiv`, `lensIsoLawIndex_holds_iff`, `lensIsoLawCoordinateIndexEquiv`, `lensIsoLawCoordinateEquiv`, `lensIsoLawCoordinateEquiv_toRingHom`; protocolの同名対応宣言 | 任意のlens/protocol realization間の真のCS isomorphismのみ。state/index/coordinateの逆写像、exactness certificate、完成core hom、geometry homを入力しない | categorical inverseから全stateの逆関数律を構成し、三種lens law indexと全protocol relation/observation indexへ持ち上げる。raw `Holds`の保存・反映を両向CS射から証明。ULift全index×全Atomの変数名変更を代数同型にし、そのforward ring homが既存のget/putまたは全edge/observationから生成されたmapと等しいことを証明 | Cycle 148のsource-generated `ReadingCore`間にfull exact transportを組み立てるためのstate/index/coordinate成分 | `SignedExactCoreReadingHom`のobject/configuration/operation/invariant/axis成分と全object residual exactness、`GeometryTotalHom`のcoverage/overlap/raw成分、独立readback、D回復、A--F統合は未完了 |
+| A/E Cycle 149 delta | genuine lens/protocol isomorphismから全state・全raw Law instance・全Law/Atom coordinateのexact dataを構成し、既存の全named-operation由来forward mapと一致させる | raw一般の`lensLawIndexEquivOfInverse`, `lensLawIndex_holds_iff_of_inverse`, `protocolLawIndexEquivOfInverse`, `protocolLawIndex_holds_iff_of_inverse`; そのCS specializationである`lensIsoStateEquiv`, `lensIsoLawIndexEquiv`, `lensIsoLawIndex_holds_iff`, `lensIsoLawCoordinateIndexEquiv`, `lensIsoLawCoordinateEquiv`, `lensIsoLawCoordinateEquiv_toRingHom`; protocolの同名対応宣言 | raw一般theoremは任意のLaw structureと相互逆raw hom。CS specializationは任意のlens/protocol realization間の真のCS isomorphismのみ。lawfulness、state/index/coordinateの逆写像、exactness certificate、完成core hom、geometry homを入力しない | 任意raw endpoint上で三種lens law indexと全protocol relation/observation indexの同値、およびraw `Holds`の保存・反映を相互逆homから証明。CS同型ではcategorical inverseからその入力を構成。ULift全index×全Atomの変数名変更を代数同型にし、そのforward ring homが既存のget/putまたは全edge/observationから生成されたmapと等しいことを証明 | Cycle 148のsource-generated `ReadingCore`間にfull exact transportを組み立てるためのstate/index/coordinate成分 | `SignedExactCoreReadingHom`のobject/configuration/operation/invariant/axis成分と全object residual exactness、`GeometryTotalHom`のcoverage/overlap/raw成分、独立readback、D回復、A--F統合は未完了 |
 | A/E Cycle 148 delta | n1015の原始sourceと実データからlens/protocolの`AATCorePackage`・`ReadingCore`を構成し、完成Law objectやgeometryをcore入力へ移さず既存endpointとのprovenanceを証明する | `supportedPointConfiguration`, `pointCompositionReading`, `CSAATCoreGeometryData`; lens/protocol各`*AATAtomization_listFinite`, `*CoreObjectReading`, `*CoreGeneratedObject_eq_lawObject`, `*AATCoreEndpointGeometryData`, `*AATCoreGeneratedGeometryData`, `*AATCoreGeneratedGeometryData_heq`, `*AATCoreReading`, `*AATCorePackage`, `*AATReadingCore`; named-operation selected APIs | 任意のlawful lens/protocol realizationと固定inputのみ。完成core、Law certificate、coverage certificate、operation family、decoder像を入力しない。compositionは任意のlist-finite familyを受け取る | canonical sourceの全Atomを明示有限列挙し、任意familyをそのまま保持するsupported configurationを構成。canonical specializationが既存typed-role configuration/Law objectと一致することを証明。Law equation reading・signature・actual coverage・overlapを一つのdependent bundleとしてその等式に沿ってtransportし、同じbundleからcoreとgeometryを構成。raw systemもderived site上に構成。get/putと全edge/observationのconfiguration mapをcore operation readingへ保持 | Cycle 131--133のactual endpoint geometry/rawを`ReadingCore`へ接続し、次cycleのgenuine-CS-isomorphismから`GeometryTotalHom`への橋 | reject circuitはsoundだが`RequiredComplete`を主張しない。invariant familyは空。一般CS射のcore change、genuine-isomorphism bridge、独立readback、D回復、A--F統合は未完了 |
 | A/E Cycle 147 delta | overlapとselected Extensionについてidentity/compositionを実データ上で証明し、lensのget/putとprotocolの全edge/observationを落とさない | `FullFamilyProductComparisonSemanticLaws`, `fullFamilyProductComparisonSemanticLaws`; lens/protocol各`*AATForwardOverlapExtensionSemanticUnit`, `*AATForwardOverlapExtensionSemanticCompositor`とcanonical constructors | 任意のrealizationまたは任意の合成可能なprimitive forward morphism、任意のsource context pair/tripleのみ。overlap/Extension certificate、whole-Extension map、inverse、surjectivityを入力しない | forward/backward比較のsupport/axis/observable恒等作用、direct-vs-successive合成、両`IsRestriction`、readable equivalence、Extension carrier/valueを一つの出力へ構成。CS compositorはdirect overlapとf段/g段、両primitive Extension coherence、direct compositeのpoint/get/putまたはpoint/全edge/全observationを二段のproof-useから構成 | Cycle 139 forward geometryのoverlap/Extension componentのsemantic functoriality。次cycleのendpoint ReadingCore provenance | context proof-record equality、chosen representative equality、arbitrary Extension value map、ReadingCore、GeometryTotalHom bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 146 delta | canonical coverageの9fieldすべてをidentity/compositionで保持し、proof-record equalityではなくprimitive入力から生成するsemantic lawとして束ねる | `ForwardObservableVisibilityChainData`, `ForwardObservableVisibility.explicitChain`; lens/protocol各`*AATForwardCoverageSemanticUnit`, `*AATForwardCoverageSemanticCompositor`と同名canonical theorem constructors | 任意のrealizationまたは任意の合成可能なprimitive forward morphismのみ。coverage record、unit/compositor certificate、第二段visibility witness、inverse、surjectivityを入力しない | unitはcanonical identity coverageとexact unchanged coordinate/visibilityを構成。compositorはrequired support/coordinate/violation/axisを二段で運び、source/middle/direct-targetの三restriction、両forward equation、middle-sourceとtarget-middleのlocal-value等式を存在結論に保持し、support/boundary staged-to-direct、axisのdirect identity actionと合わせて一つの出力へ構成 | Cycle 139 forward aggregateのcoverage componentに対する全field semantic coherence。次cycleのoverlap/Extension aggregate law | Prop record equalityは主張しない。chosen `ContextMorphism` representative equality、target-only/inverse coverage、overlap/Extensionのunit/comp、ReadingCore、bridge、readback、D回復、A--F統合は未完了 |
@@ -15503,11 +15503,15 @@ selection:
     - "GeometryTotalHom geometry fields, independent readback, D recovery, and A--F integration"
 result:
   proposed_result_type: proof-checkpoint
-  proof_obligation_delta: "Constructed carrier equivalences directly from categorical inverse laws for genuine lens and protocol isomorphisms. Lifted them to the complete lens putGet/getPut/putPut and protocol relation/observation index families; proved raw Law meaning in both directions; retained every Atom while lifting to polynomial-coordinate algebra equivalences; and proved that forgetting invertibility gives exactly the previously generated named-operation forward coordinate map."
+  proof_obligation_delta: "For arbitrary raw Law structures, constructed complete lens/protocol index equivalences and nonvacuous raw Holds equivalences from mutually inverse raw homomorphisms, without endpoint lawfulness. Specialized these to carrier equivalences built directly from genuine categorical isomorphism laws. Retained every Atom while lifting to polynomial-coordinate algebra equivalences, and proved that forgetting invertibility gives exactly the previously generated named-operation forward coordinate map."
   completion_candidate: no
   lean_artifacts:
     - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGenuineIsoExactData.lean
   evidence:
+    - AAT.AG.RealizationReconstruction.lensLawIndexEquivOfInverse
+    - AAT.AG.RealizationReconstruction.lensLawIndex_holds_iff_of_inverse
+    - AAT.AG.RealizationReconstruction.protocolLawIndexEquivOfInverse
+    - AAT.AG.RealizationReconstruction.protocolLawIndex_holds_iff_of_inverse
     - AAT.AG.RealizationReconstruction.lensIsoStateEquiv
     - AAT.AG.RealizationReconstruction.lensIsoLawIndexEquiv
     - AAT.AG.RealizationReconstruction.lensIsoLawIndex_holds_iff
@@ -15527,7 +15531,8 @@ result:
     conjuncts:
       - "genuine CS isomorphism -> equivalence on every carrier state or every vertex state"
       - "state equivalence -> equivalence on every raw lens or protocol Law index"
-      - "forward and inverse named-operation squares -> preservation and reflection of raw Law meaning"
+      - "arbitrary raw mutually inverse named-operation squares -> nonvacuous preservation and reflection of raw Law meaning"
+      - "genuine CS isomorphism -> specialization of the raw theorem without using endpoint lawfulness"
       - "complete Law-index equivalence times unchanged complete Atom family -> coordinate algebra equivalence"
       - "coordinate equivalence forward hom -> exactly the existing get/put or all-edge/all-observation generated coordinate map"
     undischarged_assumptions:
@@ -15541,7 +15546,7 @@ audits:
     discharged:
       - "complete state equivalence for genuine lens/protocol isomorphisms"
       - "complete raw Law-index equivalence"
-      - "raw Law meaning preservation and reflection"
+      - "raw Law meaning preservation and reflection over arbitrary, not assumed lawful, endpoints"
       - "complete Law/Atom coordinate algebra equivalence and forward-map identification"
     remaining:
       - "full SignedExactCoreReadingHom including all-object residual exactness"
@@ -15549,6 +15554,7 @@ audits:
   certificate_provenance:
     discharged:
       - "inverse maps are the categorical inverse morphisms, not caller-supplied functions"
+      - "raw Holds equivalence is first proved without lawful endpoint premises"
       - "index inverse laws are constructed constructor-by-constructor from state inverse laws"
       - "coordinate equivalences are generated by the complete index equivalence and identity on every Atom"
     unresolved:
@@ -15565,11 +15571,11 @@ audits:
   structure_field_escape: none-found-all-equivalences-are-constructed-from-the-categorical-isomorphism
   route_integrity: pass-complete-index-families-and-all-atom-coordinates-retained
   target_fitting: none-found-forward-maps-are-identified-with-the-existing-named-operation-generated-maps
-  vacuity: none-found-both-inverse-laws-and-law-reflection-are-proved
+  vacuity: none-found-law-reflection-is-proved-first-for-arbitrary-raw-endpoints-without-lawfulness
   one_way_as_equivalence: none-found-the-equivalence-uses-the-genuine-categorical-inverse
   goal_or_report_reinterpretation: none-found-full-core-hom-geometry-readback-D-and-final-integration-remain-open
   validation_refs:
-    - "focused CSAATGenuineIsoExactData file check: PASS; 16 namespace declarations, standard axioms only"
+    - "focused CSAATGenuineIsoExactData file check: PASS; 20 namespace declarations, standard axioms only"
     - "focused exact CSAATGenuineIsoExactData target build: PASS (4276 jobs; not a Research aggregate build)"
     - "Research aggregate/full build: not run"
   blocking_findings: []
