@@ -15,6 +15,19 @@ instance and Atom.
 
 The construction is prior to a complete AAT core or geometry.  It does not
 claim Law transport along arbitrary AAT morphisms or an AAT-to-CS readback.
+
+## Implementation notes
+
+The system's `base` object fixes only the context-category type.  Residuals
+deliberately inspect the object supplied at evaluation time: closing over the
+base operations would make every later object test the same equations.  The
+typed `Option` readers reject an incompatible `StructureMaps` carrier by a
+nonzero residual instead of accepting a cast-free default.  Raw structures
+store operations and observations but never a law certificate.  Finally,
+coordinates use one polynomial variable for each equation instance and Atom;
+a single coordinate would erase precisely the indexing later transport must
+preserve, even though the present characteristic residual is shared across
+Atoms for one equation instance.
 -/
 
 namespace AAT.AG.RealizationReconstruction
@@ -177,6 +190,18 @@ theorem lensRealization_equationLawful {input : LensFamilyInput.{u}}
   (lensEquationLawful_iff input X.Carrier X.toLensData.toLawStructure
     X.toLensData.toLawStructure).mpr
       ⟨X.condition.put_get, X.condition.get_put, X.condition.put_put⟩
+
+/-! ### A concrete non-lawful lens object -/
+
+/-- A raw Bool lens candidate whose updates ignore the requested view. -/
+def ignoredBoolLensLawStructure : LensLawStructure Bool Bool where
+  get := id
+  put := fun state _ => state
+
+/-- The raw Bool candidate fails the requested-view instance of `get-put`. -/
+theorem ignoredBoolLensLawStructure_not_getPut :
+    ¬ (LensLawIndex.getPut false true).Holds ignoredBoolLensLawStructure := by
+  simp [LensLawIndex.Holds, ignoredBoolLensLawStructure]
 
 /-! ## Protocol laws -/
 
@@ -375,6 +400,54 @@ theorem protocolRealization_equationLawful {input : ProtocolFamilyInput.{u}}
   · intro source target edge state
     exact DFunLike.congr_fun
       (NatTrans.naturality X.observation (input.schema.edgeMorphism edge)).symm state
+
+/-! ### A concrete non-lawful protocol object -/
+
+/-- The sole vertex of the concrete negative protocol schema. -/
+inductive TogglingProtocolVertex
+  | point
+  deriving DecidableEq, Fintype
+
+/-- One vertex and one named edge, with the generating equation `id = edge`. -/
+def togglingProtocolSchema : ProtocolSchema where
+  Vertex := TogglingProtocolVertex
+  vertex_finite := inferInstance
+  Edge := fun _ _ => PUnit
+  edge_finite := fun _ _ => inferInstance
+  RelationIndex := PUnit
+  relation_finite := inferInstance
+  relationSource := fun _ => .point
+  relationTarget := fun _ => .point
+  relationLeft := fun _ =>
+    @Quiver.Path.nil TogglingProtocolVertex ⟨fun _ _ => PUnit⟩ .point
+  relationRight := fun _ =>
+    @Quiver.Hom.toPath TogglingProtocolVertex ⟨fun _ _ => PUnit⟩
+      .point .point PUnit.unit
+
+/-- The constant one-point observation functor for the negative protocol example. -/
+def togglingProtocolObservation : togglingProtocolSchema.ExecutionCategory ⥤ Type where
+  obj _ := PUnit
+  map _ _ := PUnit.unit
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/-- Fixed protocol input for the concrete relation failure. -/
+def togglingProtocolInput : ProtocolFamilyInput where
+  schema := togglingProtocolSchema
+  observation := togglingProtocolObservation
+
+/-- The named edge toggles Bool, so it cannot satisfy the equation `id = edge`. -/
+def togglingProtocolLawStructure :
+    ProtocolLawStructure togglingProtocolInput (fun _ => Bool) where
+  edgeAction := fun _ state => !state
+  observe := fun _ _ => PUnit.unit
+
+/-- The concrete protocol candidate fails its generating relation at `false`. -/
+theorem togglingProtocolLawStructure_not_relation :
+    ¬ (ProtocolLawIndex.relation (input := togglingProtocolInput)
+      PUnit.unit false).Holds togglingProtocolLawStructure := by
+  change ¬ (false = true)
+  decide
 
 #assert_standard_axioms_only AAT.AG.RealizationReconstruction
 
