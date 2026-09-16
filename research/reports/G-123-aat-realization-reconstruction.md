@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 127 transports every Cycle 126 lens/protocol law instance and its equation/Atom polynomial coordinate between arbitrary raw operation structures, with identity, composition, and nonvacuous equation-truth preservation proved from the source truth and the original operation/observation squares; every semantic morphism constructs such a raw law morphism
+- current proof obligation: Cycle 128 constructs the actual source/target Law objects, transports every context and selected restriction map between their complete fixed vocabularies, and proves violation-coordinate naturality plus nonvacuous residual-zero preservation for arbitrary raw lens/protocol morphisms; a fixed collapse witness refutes only unconditional characteristic-residual equality
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the actual context/object component and residual commutation of the AAT Law morphism, then prove that its full operation/Law preservation data is equivalent to the original CS morphism conditions before complete geometry and independent readback
+- next proof obligation: combine the accepted A1 source, named-operation squares, Law object/context/index/coordinate/residual components into one generated forward AAT morphism, then prove its operation-preservation data is equivalent to the original CS morphism conditions before complete geometry and independent readback
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| E Cycle 128 delta | Cycle 127のindex/coordinate/truth transportをactual Law objectと全contextへ接続し、任意の非可逆射で正しい残差保存条件を構成する | `HeterogeneousContextMap`, `fullFamilyContextRebase`, `fullFamilyContextMorphismRebase`, `fullFamilyContextFunctor`; lens/protocol各`*LawSourceObject`, `*LawTargetObject`, `*LawConfigurationMap`, `*LawContextFunctor`, `*LawViolationCoordinate_map`, `*LawCoordinateMap_restrict`, `*LawResidual_zero_iff`, `*LawResidual_zero_map`, `*LawResidual_zero_map_contextFunctor`, `*LawResidual_commutes_of_zero`, `*LawResidual_zero_map_comp`; `collapseBoolLens_residual_not_commute` | 任意のraw source/target operation structureとCycle127 raw Hom; source residual zeroは順方向命題の`direction-hypothesis`; endpoint lawfulness、単射、同値、exact residual equality、completed AAT射を仮定しない | actual source/target `ArchitectureObject`とidentity configuration mapを構成; complete vocabularyによりsourceの任意contextとrestrictionをtargetへ全成分コピー; 同じindex/ring mapでviolation coordinateとrestrictionを可換化; source residual zeroをsource `Holds`へ戻し、raw Hom squaresからtarget `Holds`とtarget residual zeroを構成; identity/composition済みindex mapに沿う残差零保存の合成を証明; Bool→PUnit collapseで無条件残差等号候補だけを反証 | Cycle124--125のA1/operation componentとCycle127 Law transportをactual all-context residual layerへ結ぶ; 次cycleの一つのforward AAT morphism packageが使用 | 一つの生成forward AAT射への統合、operation保存条件からCS Hom法則への逆向き、coverage/overlap/係数/Support・Axis・Observableの完全幾何、readback、D回復、A--F統合は未完了。無条件残差等号の失敗は固定targetの反証ではなく、非単射射に不適切な`EquationSystemExactTransport`型候補の反証 |
 | E Cycle 127 delta | Cycle 126の全law instanceとequation/Atom座標を、元の任意の非可逆CS射に沿って運び、identity・compositionと式の成立保存を元の射法則から証明する | `LensLawHom`, `ProtocolLawHom`と各`id`/`comp`; semantic Homの各`toLawHom`; lens/protocol各`*LawIndexMap`, `*LawIndexMap_id`, `*LawIndexMap_comp`, `*LawIndexMap_holds`, `*LawCoordinateMap`, `*LawCoordinateMap_violation`, `*LawCoordinateMap_id`, `*LawCoordinateMap_comp`, `*LawEquationHolds_map`; `protocolEvaluatePath_naturality` | 任意のraw source/target operation structureと、その間のget/putまたはedge/observation square; source law truth `h`は順方向命題の`direction-hypothesis`; endpoint lawfulness、injective/iso、Law保存certificate、decoder像、completed AAT射を仮定しない。元の任意のsemantic Homからraw Homを構成する | state componentで全量化indexを写し、view/relation/named edge/Atomを保持; 同じmapで多項式変数をrename; source `h`とlensのget/put square、protocolのgenerator squareから導く全path自然性・edge naturality・observation自然性を実使用してraw `Holds`とactual `EquationHolds`の順方向保存を証明 | EのCS射をAAT Law層へ運ぶmorphism-side predecessor; 後続のactual context/object/residual morphismと完全AAT射が使う | actual context/object mapとresidual commutation、CS射条件と完全AAT保存条件の両方向、式真理の反映と「保存条件の反映」の区別、complete geometry/readback、D回復、A--F統合は未完了 |
 | E Cycle 126 delta | raw lens三法則とprotocolの全relation・全named-edge observation自然性を、評価対象objectの実operation dataを読むactual `ArchitecturalEquationSystem`として構成し、独立CS realizationがそのsystemを満たすことを証明する | `LensLawStructure`, `LensLawIndex`, `lensLawObject`, `lensLawStructure?`, `LensLawCoordinateRing`, `lensLawEquationSystem`, `lensLawEquationHolds_iff`, `lensEquationLawful_iff`, `lensRealization_equationLawful`, `ignoredBoolLensLawStructure_not_getPut`; `ProtocolLawStructure`, `ProtocolLawIndex`, `protocolLawObject`, `protocolLawStructure?`, `ProtocolLawCoordinateRing`, `protocolLawEquationSystem`, `protocolLawEquationHolds_iff`, `protocolEquationLawful_iff`, `ProtocolRealization.toLawStructure`, `protocolEvaluatePath_eq_pathAction`, `protocolRealization_equationLawful`, `togglingProtocolLawStructure_not_relation` | Cycle 125のexact carrier/object interfaceと、独立に定義済みの任意の`LensFamilyInput`/`LensRealization`および`ProtocolFamilyInput Q L O`/`ProtocolRealization`; system構成時の`base`と評価対象`data`は別引数; law proof、completed map、decoder像、readback certificateを入力しない | raw operation structureのみをactual ArchitectureObjectの`structureMaps`へ格納し、評価時にそのobjectから型安全に読み戻す; equation instanceとAtomの組を変数とする多項式座標を構成; objectから読んだoperationが各法則を満たす場合に限りresidualが零となるiffを証明; lensはL1三法則、protocolは商relation soundness・path evaluation・observation naturalityを実使用してrealization lawfulnessを放電; Bool lensと一頂点toggle protocolの具体的不成立instanceを固定 | Eの独立CS意味をAATのactual Law/AES層へ接続し、次cycleの任意semantic morphism上のLaw transportと後続complete geometry/readbackが使う固定interface | 任意の非可逆semantic morphismに沿うLaw/index/context/residual transportとCS morphism条件との保存・反映、complete core/geometry、AAT側独立射classからのreadbackと両逆、D表示側回復、A--F同一構成統合は未完了。0/1 residualは評価objectのraw operationから計算されるが、このcycleだけではmorphism transportを主張しない |
 | E Cycle 125 delta | 両CSモデルの原始carrier・role・operation名を有限Atom語彙、actual `ArchitectureObject`、actual Formal `Operation`へ構成し、意味関数との接続と、任意の非可逆semantic morphismのexact n1015 A1 doctrine写像を保持する | `LensAATAtom`, `ProtocolAATAtom`, `lensAATCarrier`, `protocolAATCarrier`, `typedRoleConfiguration`; lens/protocol各`*AATArchitectureObject`, `*AATOperation`, `*AATSemanticOperation`; `LensAATSource`, `ProtocolAATSource`, `lensAATExtractionDoctrine`, `protocolAATExtractionDoctrine`, `lensAATExactDoctrineHom`, `protocolAATExactDoctrineHom`; 各source mapの`id`/`comp`、doctrine homの`id`/`comp`、forward translationのinjectivity | Cycle 124の任意の`LensFamilyInput`/`LensRealization`と`ProtocolFamilyInput Q L O`/`ProtocolRealization`; 射は元の一般`Hom`で非可逆可; completed core/geometry写像、decoder像、presentation membership、readback certificateを入力しない | 全固定Atom語彙を各configuration family内に置き、operation名をtarget roleへrelationで支持; exact carrier型とlens基準値をArchitectureObjectへ格納し、protocol selected quantityは意味値を捏造せず`PUnit`; dependent package内で原primitive名・Formal Operation・exact semantic function・端点等式を同時構成; A1 source写像とextraction preservationを元のsemantic Homから構成し、恒等・合成とstate readbackによる単射を証明 | Eの独立CS意味をAATのactual Atom/ArchitectureObject/Operation層へ結び、次cycleのLaw/AESと完全幾何、独立readbackが使う固定interface | actual `Law`/`ArchitecturalEquationSystem`、その保存・反映、complete core/geometry、AAT側独立射classからのreadbackと両逆、D表示側回復、A--F同一構成統合は未完了。forward単射はreadbackや圏同値ではない |
@@ -12853,4 +12854,131 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct the actual AAT context/object and residual-commutation component and prove that the resulting full preservation package is equivalent to the original lens/protocol Hom conditions."
+```
+## Cycle 128 — Actual Law objects, all-context transport, and residual-zero preservation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 128
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: f7c254680d1292cf6a3c3dd7f77da0f2a5bf9bf7
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 127 accepted raw Law-index, coordinate, and truth transport; actual endpoint objects, all contexts, and residual-level compatibility remained open"
+  proof_dag_predecessors:
+    - "Cycle 124 arbitrary semantic morphisms and named operation squares"
+    - "Cycle 125 actual A1 sources, ArchitectureObjects, Operations, and doctrine maps"
+    - "Cycle 126 object-dependent 0/1 residual systems"
+    - "Cycle 127 nonvacuous raw Hom law/index/coordinate/truth transport"
+  proof_obligation: "Construct actual source/target Law objects and all-context transport, prove restriction and violation-coordinate naturality, and derive the strongest valid residual compatibility for every arbitrary noninjective raw Hom"
+  selection_reason: "This fills the missing object/context/residual layer without forcing the arbitrary CS morphisms into the exact-equivalence API or accepting residual preservation as an input certificate."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATLawResidualTransport.lean
+  risks:
+    - "using homogeneous Site.ContextMorphism across distinct ArchitectureObjects"
+    - "copying only the canonical unit context instead of every context and selected restriction"
+    - "requiring equation-index, ring, or state-map equivalences and thereby dropping noninjective semantic maps"
+    - "claiming unconditional residual equality for a characteristic residual that can change from 1 to 0 under collapse"
+    - "treating failure of that exact-equality candidate as a refutation of the fixed target"
+  unchecked:
+    - "one generated forward AAT morphism combining A1, named operations, and the Law components"
+    - "reverse recovery of the original CS Hom equations from the complete operation-preservation data"
+    - "coverage, overlap, coefficient, raw-restriction, Support, Axis, and Observable complete geometry"
+    - "independent AAT-to-CS readback, D-side recovery, and final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Constructed the actual source and target Law ArchitectureObjects and identity maps on their complete fixed Atom vocabularies.  Constructed a heterogeneous canonical context component and, more strongly, a functor carrying every source context and every selected restriction map to the target by retaining all support, axis, observable, predicate, extension, and map data.  Proved that the Cycle 127 polynomial hom commutes with every restriction and every violation coordinate.  At arbitrary independently chosen contexts and at the functorially transported context, proved source residual zero implies target residual zero by converting source residual zero to raw Holds, using the raw operation/observation squares, and converting back.  Proved the residual square itself on the source zero locus and composition of residual-zero transport.  Fixed a Bool-to-PUnit noninjective raw lens morphism whose source PutGet residual is 1 and mapped target residual is 0, proving that unconditional exact residual equality is the wrong candidate for the required arbitrary-map class."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATLawResidualTransport.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.HeterogeneousContextMap
+    - AAT.AG.RealizationReconstruction.fullFamilyContextRebase
+    - AAT.AG.RealizationReconstruction.fullFamilyContextMorphismRebase
+    - AAT.AG.RealizationReconstruction.fullFamilyContextMorphismRebase_isRestriction
+    - AAT.AG.RealizationReconstruction.fullFamilyContextFunctor
+    - AAT.AG.RealizationReconstruction.lensLawSourceObject
+    - AAT.AG.RealizationReconstruction.lensLawTargetObject
+    - AAT.AG.RealizationReconstruction.lensLawConfigurationMap
+    - AAT.AG.RealizationReconstruction.lensLawContextFunctor
+    - AAT.AG.RealizationReconstruction.lensLawViolationCoordinate_map
+    - AAT.AG.RealizationReconstruction.lensLawCoordinateMap_restrict
+    - AAT.AG.RealizationReconstruction.lensLawResidual_zero_iff
+    - AAT.AG.RealizationReconstruction.lensLawResidual_zero_map
+    - AAT.AG.RealizationReconstruction.lensLawResidual_zero_map_contextFunctor
+    - AAT.AG.RealizationReconstruction.lensLawResidual_commutes_of_zero
+    - AAT.AG.RealizationReconstruction.lensLawResidual_zero_map_comp
+    - AAT.AG.RealizationReconstruction.protocolLawSourceObject
+    - AAT.AG.RealizationReconstruction.protocolLawTargetObject
+    - AAT.AG.RealizationReconstruction.protocolLawConfigurationMap
+    - AAT.AG.RealizationReconstruction.protocolLawContextFunctor
+    - AAT.AG.RealizationReconstruction.protocolLawViolationCoordinate_map
+    - AAT.AG.RealizationReconstruction.protocolLawCoordinateMap_restrict
+    - AAT.AG.RealizationReconstruction.protocolLawResidual_zero_iff
+    - AAT.AG.RealizationReconstruction.protocolLawResidual_zero_map
+    - AAT.AG.RealizationReconstruction.protocolLawResidual_zero_map_contextFunctor
+    - AAT.AG.RealizationReconstruction.protocolLawResidual_commutes_of_zero
+    - AAT.AG.RealizationReconstruction.protocolLawResidual_zero_map_comp
+    - AAT.AG.RealizationReconstruction.collapseBoolLens_residual_not_commute
+  claim_mapping:
+    source_labels:
+      - "GOAL A Law/invariant/signature: indices, evaluation, residuals, coordinates, and transport"
+      - "GOAL E: both CS families map to AAT Law and preservation conditions"
+      - "n1015 section 5.3: context and Law preservation as constructed components"
+    conjuncts:
+      - "actual objects -> source and target lens/protocol Law ArchitectureObjects"
+      - "all contexts -> fullFamilyContextFunctor retains every context component and selected restriction"
+      - "coordinates -> restriction and violation-coordinate naturality under the Cycle 127 ring hom"
+      - "residual preservation -> source zero implies mapped target zero at every context and Atom"
+      - "composition -> residual-zero preservation follows successive index transport"
+      - "candidate failure -> explicit noninjective collapse refutes only unconditional residual equality"
+    undischarged_assumptions:
+      - "integration with the already constructed A1 and named-operation components"
+      - "reverse recovery of CS Hom laws from complete AAT operation preservation"
+      - "complete geometry and independent readback"
+    acceptance_point: "The only direction-hypothesis is the source residual being zero.  Target residual zero is constructed using the raw Hom squares and the Cycle 126 residual iff; no endpoint lawfulness, injectivity, equivalence, exact-transport package, completed AAT morphism, or residual-preservation certificate is accepted.  The context functor copies all source contexts, not a post-selected displayable subset."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "actual source/target Law objects and complete-vocabulary configuration maps"
+      - "all-context and all-selected-restriction transport"
+      - "restriction and violation-coordinate naturality"
+      - "forward residual-zero preservation at arbitrary and functorially mapped contexts"
+      - "conditional residual commutation and composition"
+      - "concrete failure of unconditional exact residual equality"
+    remaining:
+      - "single generated forward AAT morphism across source, operation, object, Law, and context components"
+      - "reverse operation-preservation correspondence and readback"
+      - "complete geometry, D recovery, and A--F integration"
+  certificate_provenance:
+    discharged:
+      - "context functors are constructed from complete target vocabularies and copied source context data"
+      - "residual-zero preservation is proved from source residual zero and raw operation/observation squares"
+      - "the exact-equality candidate failure is an evaluated actual residual inequality"
+    unresolved: []
+  proof_use:
+    used:
+      - "direction-hypothesis: source equationResidual equals zero"
+      - "lensLawResidual_zero_iff or protocolLawResidual_zero_iff recovers source Holds"
+      - "Cycle 127 lensLawIndexMap_holds or protocolLawIndexMap_holds uses every relevant raw Hom square"
+      - "target residual iff returns target equationResidual equals zero"
+      - "complete-family membership constructs every rebased target context and restriction"
+    unused: []
+  structure_field_escape: none-found-no-lawfulness-residual-certificate-or-completed-morphism-field
+  route_integrity: pass-for-actual-object-all-context-coordinate-and-forward-residual-transport
+  target_fitting: none-found-arbitrary-noninjective-raw-and-semantic-morphisms-remain-in-scope
+  vacuity: none-found-raw-endpoints-need-not-be-lawful-and-source-residual-is-materially-used
+  candidate_failure_scope: "collapseBoolLens_residual_not_commute refutes unconditional characteristic-residual equality for arbitrary noninjective raw maps; it does not refute the fixed target or the proved forward zero-locus preservation"
+  one_way_as_equivalence: none-found-reverse-operation-correspondence-remains-explicitly-open
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused CSAATLawResidualTransport file check: PASS; 59 namespace declarations, standard axioms only"
+    - "focused exact CSAATLawResidualTransport target build: PASS (4269 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Combine the accepted A1 source maps, typed named-operation squares, and the Law object/context/index/coordinate/residual components into one generated forward AAT morphism, then prove the reverse correspondence from its operation-preservation components to the original lens/protocol Hom laws."
 ```
