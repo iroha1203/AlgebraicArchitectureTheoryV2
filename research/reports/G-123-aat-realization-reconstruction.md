@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 150 refutes the constant-coordinate/cardinality-equality route by a source-owned Boolean hidden-state automorphism whose semantic Law-coordinate action is nontrivial while the proposed raw action is identity
+- current proof obligation: Cycle 151 constructs exact typed raw transport for both genuine CS isomorphism families, preserving every actual Law-index/Atom coordinate, label, local-data type, structural relation, and restriction square, and derives the actual raw-presheaf isomorphisms
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct a typed raw-system transport contract (or another source-derived raw presentation) that carries the actual morphism-specific coordinate action, relation data, and restrictions, then resume the full `SignedExactCoreReadingHom` and `GeometryTotalHom` bridge
+- next proof obligation: add the parallel typed geometry morphism/category whose raw field is the constructed exact transport, embed existing strict geometry morphisms, and assemble the full CS core/geometry bridges without changing accepted G-108/G-122 results
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 151 delta | carrier-changing genuine CS同型の実際の全Law座標作用を、raw座標・label・local data・structural relation・全restrictionと同じ対応で保持する | `CoordinateFamilyExactEquiv`, `.polynomialEquiv`, `.polynomialEquiv_X`, `StructuralRelationFamilyExactEquiv`, `RawAmbientRestrictionSystemExactTransportAlong`, `equationCoordinateRawExactTransportAlong`; lens/protocol各`*IsoRawExactTransport`, `*IsoRawExactTransport_coordinate_apply`, `*IsoEquationPolynomialIso`, `*IsoActualRawPresheafIso`, `*IsoActualRawPresheafIso_hom`; lens固定反例への`lensIsoRawExactTransport_boolSwap_coordinate_ne` | 任意の二つのAAT site・context functor・全coordinate型同値に対する一般構成。CS特殊化は独立なlawful realization間のgenuine semantic isoのみ。完成raw transport、raw presheaf iso、geometry hom、carrier/type equalityを入力しない | 全coordinateのEquivから変数renameを構成し、label/local data、relation generator polynomial、全context restrictionの可換squareを保持。lens/protocolではCycle149の実Law-index×Atom同値からexact transportを生成し、既存の全coordinate forward raw mapをforward halfとするraw-presheaf Isoを構成。Bool hidden swapで修正版が実際に同じ非自明座標を動かすことを証明 | Aのtyped raw data transportとEの両CS翻訳。次cycleのtyped geometry hom raw component | concrete CS raw systemsの追加relationは空だが、Law equationsはsite equation systemに保持。typed geometry category、strict embedding、full core/geometry hom、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 150 route-refutation delta | carrier cardinalityだけでcanonical coordinate型を同一化し、constant raw identity actionを実際のCS同型による全Law-index×Atom transportとして使えるか判定する | candidateの`constantRawCoordinateFamily`, `constantRawSystemOn`, `constantRawSystemOn_reindex`; canonicalizationの`LensCanonicalCarrier`, `LensCanonicalRawCoordinate`, `lensCanonicalRawCoordinateEquiv`, `lensIsoCanonicalRawCoordinate_eq`; 反例の`constantRawRouteBoolInput`, `constantRawRouteBoolLens`, `constantRawRouteBoolSwap`, `constantRawRouteBoolSwap_lawIndex_ne`, `constantRawRouteBoolSwap_canonicalCoordinate_ne` | 固定`View = PUnit`、hidden complement `Bool`のsource-owned product lensと非自明swap。完成coordinate集合、carrier等式、raw equality、geometry homを入力しない | constant raw systemが全変数を恒等に保つ一方、同じobject上のgenuine lens automorphismが`putGet (unit,false)`を異なるLaw indexへ運び、objectwise canonical equivalenceで共役しても非自明であることを証明 | cardinal equality routeを固定targetの解から除外し、次cycleのtyped raw transport設計を拘束する | 固定target自体は反証されていない。morphism-specific coordinate action・relation・restrictionを保つ新しい必須項目または構成、protocol、full geometry bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 149 delta | genuine lens/protocol isomorphismから全state・全raw Law instance・全Law/Atom coordinateのexact dataを構成し、既存の全named-operation由来forward mapと一致させる | raw一般の`lensLawIndexEquivOfInverse`, `lensLawIndex_holds_iff_of_inverse`, `protocolLawIndexEquivOfInverse`, `protocolLawIndex_holds_iff_of_inverse`; そのCS specializationである`lensIsoStateEquiv`, `lensIsoLawIndexEquiv`, `lensIsoLawIndex_holds_iff`, `lensIsoLawCoordinateIndexEquiv`, `lensIsoLawCoordinateEquiv`, `lensIsoLawCoordinateEquiv_toRingHom`; protocolの同名対応宣言 | raw一般theoremは任意のLaw structureと相互逆raw homを受け、endpoint lawfulnessを仮定しない。CS specializationはlawfulなlens/protocol realization間の真のCS isomorphismを受けるが、endpointに含まれるlawfulness以外の追加lawfulness certificate、state/index/coordinateの逆写像、exactness certificate、完成core hom、geometry homを入力しない | 任意raw endpoint上で三種lens law indexと全protocol relation/observation indexの同値、およびraw `Holds`の保存・反映を相互逆homから証明。CS同型ではcategorical inverseからその入力を構成。ULift全index×全Atomの変数名変更を代数同型にし、そのforward ring homが既存のget/putまたは全edge/observationから生成されたmapと等しいことを証明 | Cycle 148のsource-generated `ReadingCore`間にfull exact transportを組み立てるためのstate/index/coordinate成分 | `SignedExactCoreReadingHom`のobject/configuration/operation/invariant/axis成分と全object residual exactness、`GeometryTotalHom`のcoverage/overlap/raw成分、独立readback、D回復、A--F統合は未完了 |
 | A/E Cycle 148 delta | n1015の原始sourceと実データからlens/protocolの`AATCorePackage`・`ReadingCore`を構成し、完成Law objectやgeometryをcore入力へ移さず既存endpointとのprovenanceを証明する | `supportedPointConfiguration`, `pointCompositionReading`, `CSAATCoreGeometryData`; lens/protocol各`*AATAtomization_listFinite`, `*CoreObjectReading`, `*CoreGeneratedObject_eq_lawObject`, `*AATCoreEndpointGeometryData`, `*AATCoreGeneratedGeometryData`, `*AATCoreGeneratedGeometryData_heq`, `*AATCoreReading`, `*AATCorePackage`, `*AATReadingCore`; named-operation selected APIs | 任意のlawful lens/protocol realizationと固定inputのみ。完成core、Law certificate、coverage certificate、operation family、decoder像を入力しない。compositionは任意のlist-finite familyを受け取る | canonical sourceの全Atomを明示有限列挙し、任意familyをそのまま保持するsupported configurationを構成。canonical specializationが既存typed-role configuration/Law objectと一致することを証明。Law equation reading・signature・actual coverage・overlapを一つのdependent bundleとしてその等式に沿ってtransportし、同じbundleからcoreとgeometryを構成。raw systemもderived site上に構成。get/putと全edge/observationのconfiguration mapをcore operation readingへ保持 | Cycle 131--133のactual endpoint geometry/rawを`ReadingCore`へ接続し、次cycleのgenuine-CS-isomorphismから`GeometryTotalHom`への橋 | reject circuitはsoundだが`RequiredComplete`を主張しない。invariant familyは空。一般CS射のcore change、genuine-isomorphism bridge、独立readback、D回復、A--F統合は未完了 |
@@ -290,6 +291,7 @@ audits:
   blocking_findings: []
   next_obligation: "Construct protocol semantics, finite generator tables, res/ext/J, and the four reconstruction properties without restricting the independently defined natural transformations."
 ```
+
 ## Cycle 2 — Protocol semantics and finite-presentation reconstruction
 
 ```yaml
@@ -15695,4 +15697,121 @@ audits:
   blocking_findings:
     - "The constant raw action is identity for every package hom, while the fixed Boolean hidden-state automorphism acts nontrivially on semantic Law coordinates; the required naturality square cannot commute."
   next_obligation: "Replace the failed constant-coordinate route by a typed raw-system transport carrying the genuine coordinate equivalence together with relation and restriction coherence, or construct another source-derived faithful raw presentation; then resume the full PackageTotalHom/GeometryTotalHom bridge."
+```
+## Cycle 151 — Exact typed raw transport with actual CS coordinate action
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 151
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 2ff8dfeea141e48842d56be2f6da6eb3961afde2
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 150 refuted complement-cardinality equality plus identity raw action because it erased a genuine nontrivial Law-coordinate action"
+  proof_dag_predecessors:
+    - "Cycle 133 actual equation-coordinate raw systems and raw/polynomial presheaf isomorphisms"
+    - "Cycles 134--144 actual all-coordinate forward maps and their identity/composition laws"
+    - "Cycle 149 genuine lens/protocol Law-index and coordinate equivalences"
+    - "Cycle 150 fixed Boolean counterexample to constant-coordinate transport"
+  proof_obligation: "Construct a typed raw transport that retains the genuine morphism-specific coordinate action together with label, local-data, structural-relation, and restriction coherence, and derive the actual raw-presheaf equivalence for both CS families"
+  selection_reason: "Literal endpoint raw-system equality preserves only the source coordinate type and contains no field for a nontrivial coordinate action. The fixed target requires coordinates and their transport, so the replacement must retain the typed generators and prove their restriction coherence before quotienting."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATTypedRawTransport.lean
+  risks:
+    - "accepting a completed raw presheaf isomorphism instead of deriving it"
+    - "retaining only a selected coordinate subset"
+    - "recording coordinate equivalence without relation or restriction coherence"
+    - "falling back to cardinal equality or identity coordinate action"
+    - "claiming the current strict GeometryTotalHom contract is already discharged"
+  unchecked:
+    - "typed geometry morphism/category and strict embedding"
+    - "full PackageTotalHom construction and all non-raw geometry fields"
+    - "independent readback, D recovery, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Defined exact coordinate-family equivalence with label and dependent local-data preservation, derived the complete polynomial rename equivalence, defined exact structural-relation generator preservation, and packaged their all-context restriction square as typed raw transport along a context functor. For the actual lens and protocol raw systems, constructed this transport from the genuine CS Law-index/Atom equivalence. Derived polynomial-presheaf and actual raw-presheaf isomorphisms whose forward halves are definitionally the previously constructed all-coordinate forward maps. On the fixed Boolean hidden swap, proved that the repaired typed raw action moves the same complete Law variable that the rejected constant route fixed."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATTypedRawTransport.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.CoordinateFamilyExactEquiv
+    - AAT.AG.RealizationReconstruction.CoordinateFamilyExactEquiv.polynomialEquiv
+    - AAT.AG.RealizationReconstruction.CoordinateFamilyExactEquiv.polynomialEquiv_X
+    - AAT.AG.RealizationReconstruction.StructuralRelationFamilyExactEquiv
+    - AAT.AG.RealizationReconstruction.RawAmbientRestrictionSystemExactTransportAlong
+    - AAT.AG.RealizationReconstruction.equationCoordinateRawExactTransportAlong
+    - AAT.AG.RealizationReconstruction.lensIsoRawExactTransport
+    - AAT.AG.RealizationReconstruction.lensIsoRawExactTransport_coordinate_apply
+    - AAT.AG.RealizationReconstruction.lensIsoEquationPolynomialIso
+    - AAT.AG.RealizationReconstruction.lensIsoActualRawPresheafIso
+    - AAT.AG.RealizationReconstruction.lensIsoActualRawPresheafIso_hom
+    - AAT.AG.RealizationReconstruction.lensIsoRawExactTransport_boolSwap_coordinate_ne
+    - AAT.AG.RealizationReconstruction.protocolIsoRawExactTransport
+    - AAT.AG.RealizationReconstruction.protocolIsoRawExactTransport_coordinate_apply
+    - AAT.AG.RealizationReconstruction.protocolIsoEquationPolynomialIso
+    - AAT.AG.RealizationReconstruction.protocolIsoActualRawPresheafIso
+    - AAT.AG.RealizationReconstruction.protocolIsoActualRawPresheafIso_hom
+  claim_mapping:
+    source_labels:
+      - "GOAL A: Law/invariant/signature coordinates and their transport"
+      - "GOAL A: raw coordinates, relations, restrictions, and their coherence"
+      - "GOAL E and n1015: bidirectional preservation for both genuine CS isomorphism families"
+    conjuncts:
+      - "all source coordinates -> all target coordinates by an Equiv"
+      - "every coordinate label and dependent local-data type -> exact preservation"
+      - "every structural-relation generator -> exact renamed polynomial"
+      - "every context arrow -> polynomial restriction square"
+      - "genuine lens/protocol iso -> actual complete Law-index/Atom action"
+      - "typed action -> derived polynomial and raw-presheaf isomorphisms"
+      - "derived forward raw map -> exact equality with the existing source-generated all-coordinate map"
+      - "fixed Boolean hidden swap -> nonidentity typed raw coordinate action"
+    undischarged_assumptions:
+      - "the parallel typed geometry hom/category is not constructed in this cycle"
+      - "the final CS PackageTotalHom and remaining geometry components are not constructed"
+      - "no independent readback or final A--F theorem is claimed"
+    acceptance_point: "Both CS families now carry the genuine coordinate action through typed raw data and the actual quotient presheaves. This replaces the failed identity-action route but does not yet supply a full geometry morphism."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "generic typed coordinate, relation-generator, and restriction transport interface"
+      - "lens and protocol exact raw transports from genuine semantic isomorphisms"
+      - "lens and protocol actual raw-presheaf isomorphisms"
+      - "exact identification of both forward halves with the previously generated raw maps"
+      - "nontrivial action on the fixed Cycle 150 Boolean witness"
+    remaining:
+      - "typed geometry category and strict embedding"
+      - "full core package hom, geometry fields, independent readback, D recovery, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "the generic interface accepts primitive coordinate/relation equivalences and restriction coherence; the concrete CS constructors discharge all of them from the genuine semantic isomorphism and the already constructed source data"
+    discharged:
+      - "no concrete CS constructor accepts a completed raw transport, raw presheaf isomorphism, raw equality, carrier equality, or geometry morphism"
+      - "the presheaf isomorphisms are derived from the actual coordinate equivalences and endpoint quotient comparisons"
+    unresolved:
+      - "construction of the typed geometry hom and its full non-raw components"
+  proof_use:
+    used:
+      - "every lens putGet/getPut/putPut index and every LensAATAtom"
+      - "every protocol relation/observation index and every ProtocolAATAtom"
+      - "both directions of each genuine coordinate equivalence"
+      - "all selected context arrows in the restriction square"
+      - "the existing endpoint raw/polynomial presheaf isomorphisms and generated forward maps"
+    unused:
+      - "no selected coordinate subset, cardinal-only identification, completed geometry hom, decoder image membership, or readback is accepted"
+  structure_field_escape: none-found-concrete-transports-construct-every-generic-field-from-the-genuine-CS-isomorphism-and-empty-additional-relations
+  route_integrity: pass-actual-morphism-specific-coordinate-actions-are-retained-and-connected-to-the-existing-forward-raw-maps
+  target_fitting: none-found-both-CS-families-and-all-coordinate-constructors-are-covered
+  vacuity: none-found-the-fixed-Boolean-swap-proves-the-typed-action-is-genuinely-nonidentity
+  one_way_as_equivalence: none-found-inverses-are-constructed-from-the-genuine-categorical-inverses
+  goal_or_report_reinterpretation: none-found-typed-geometry-readback-D-and-final-integration-remain-open
+  validation_refs:
+    - "focused CSAATTypedRawTransport file check: PASS; 58 namespace declarations, standard axioms only"
+    - "focused exact CSAATTypedRawTransport target build: PASS (4282 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct the parallel typed geometry morphism/category with exact raw transport, define the strict embedding from existing GeometryTotalHom, and then assemble the genuine lens/protocol core and geometry morphisms."
 ```
