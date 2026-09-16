@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 138 gives a fixed-input counterexample to using the existing contravariant target-reading restriction as the global observable/signature-axis component of every arbitrary noninvertible CS morphism; this rejects that implementation route, not the fixed target
+- current proof obligation: Cycle 139 constructs a forward-image geometry interface for every primitive lens/protocol morphism, combining the generated equation transport, raw natural transformation, and all source-role image coverage without a target-to-source observable inverse
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct a forward/lax complete-geometry interface retaining the covariant coordinate/raw maps, support, and boundary action without demanding a target-to-source observable inverse; connect its exact/isomorphism subcategory to the existing `GeometryTotalHom`, then prove overlap/Extension coherence, identity/composition, independent readback, and all-component inverse laws
+- next proof obligation: prove identity/composition for the generated forward-image interface and construct lax overlap/Extension comparison; then derive the exact/isomorphism subcategory from genuine CS inverse data and connect it to the existing `GeometryTotalHom` after constructing endpoint `ReadingCore` provenance
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 139 delta | 任意の非可逆CS射について、target全域coverや逆observable mapを要求せず、sourceの全required roleをexact generated imageへ運ぶforward/lax interfaceを構成する | `ForwardAxisVisibility`; lens/protocol各`*AATForwardAxisCoherent`, `*AATForwardCoverageImage`, `*AATForwardGeometryImage` | 任意のprimitive lens/protocol forward morphismのみ。Cycle 134のgenerated equation transport、Cycle 135のraw NatTrans、Cycle 136のcoordinate coherence、Cycle 137のsupport/boundary、independent endpoint readingsを使用。target-wide cover、inverse、surjectivity、overlap、`ReadingCore`、`GeometryTotalHom`を入力しない | source restrictionとrebased target local-axis readabilityとexact covariant axis equationを持つaxis witnessを構成。全source support・required equation coordinate・violation coordinate・axis・boundaryを量化するcoverage-image recordを固定入力から生成し、同じprimitive射からequation transport・raw NatTrans・coverage imageを一つのaggregate recordへ組み立てる | arbitrary noninvertible CS射のone-way geometry層。次cycleのidentity/compositionとlax overlap/Extension、および後続exact/isomorphism subcategory bridge | target-only coordinateのcoverage、target-wide`AATCoverageFamily`、overlap/Extension比較、identity/composition、independent readback、endpoint `ReadingCore` provenance、exact/isomorphismから`GeometryTotalHom`への接続、D回復、A--F統合は未完了。aggregate recordを外部certificateとして仮定せず、canonical constructorを使用する |
 | A/E Cycle 138 route-refutation delta | 任意の非可逆CS射を保持したまま、既存の反変`ContextMorphism.observableRestrict`をtarget readingへのglobal observable/signature-axis成分として使えるかを固定入力で判定する | `axisVarianceLensInput`, `axisVarianceEmptyLens`, `axisVarianceUnitLens`, `axisVarianceForward`, `axisVarianceSourceCoordinate_false`, `axisVariance_noTargetReadingRestriction`, `axisVariance_targetAxis_notReadable` | 固定した`View = PUnit`、空状態total lens、一点状態total lens、空型から一点型への唯一の許容`LensAATForwardMorphism`のみ。target restriction、座標逆写像、surjectivity、完成geometry certificateを入力しない | source Law coordinate型が空であることをconstructorごとに証明。一方targetの`putGet unit`座標変数はactual readingで可読なので、target readingからrebased source readingへの任意の`IsRestriction`はsource可読座標を生成して矛盾する。従って現在のtarget-reading restriction predicateではtarget `.point` axisも可読でない | forward/lax geometry interfaceの設計拘束。Cycle 134--136のcovariant coordinate/raw mapを保持し、global componentにはtarget-to-source observable inverseを要求しないことの根拠 | これは一つの実装経路の反証であり固定G-123 targetの反証ではない。forward/lax complete-geometry interface、exact/isomorphism subcategoryと既存`GeometryTotalHom`の接続、overlap/Extension、identity/composition、readback、core provenance、D回復、A--F統合は未完了 |
 | A/E Cycle 137 delta | full-family endpoint rebaseでexact Atom supportを失わず、source context preorderの全boundary restrictionをtargetへ写す | lens/protocol各`*AATForwardSupportVisible`, `*AATForwardBoundaryVisible` | Cycle 129 primitive forward morphismから生成されたendpoint context functorと、source support/boundary witnessのみ。target support witness、boundary certificate、inverse、surjectivityを入力しない | rebaseがsource minimal support type/predicateをdefinitionally保持することから同じsupport witnessを再使用。boundaryはsource preorder homをMathlib thin-category homへ上げ、`lawContextFunctor.map`後にtarget preorder homへ戻して構成 | one-way geometryのsupport componentとboundary functoriality。後続のoverlap/Extension・coverage-family coherence | boundary functorはendpoint-only rebaseでありmorphism固有observable actionではない。signature-axis predicateが要求するtarget-reading restriction、global observable action、overlap object comparison、Extension、共通geometry map、identity/composition/readbackは未完了。coordinate-local constant mapをaxis証明へ流用しない |
 | A/E Cycle 136 repair delta | 一般非単射CS射でsource座標の可視性を写像先required/violation座標へ結ぶ際、弱いexistential visibilityだけでなくgenerated coordinate RingHomによる変数像とsource/target local値の一致を同じwitnessに保持する | `fullFamilyContextToTargetReadingAt`, `ForwardObservableVisibility`, `fullFamilyForwardObservableVisibility`; lens/protocol各`*AATForwardRequiredCoordinate`, `*AATForwardCoordinate`, `*AATForwardEquationCoordinateCoherent`, `*AATForwardViolationCoordinateCoherent` | Cycle 129 primitive forward morphism、Cycle 131 independent endpoint readings/coverage predicates、source座標のactual visibility witness、Cycle 127由来のgenerated variable-image theorem。target restriction、coordinate inverse、surjectivity、完成coverage certificateを入力しない | source/target restrictionとreadabilityに加え、`f.lawCoordinateMap (X sourceCoordinate) = X mappedCoordinate`および両restrictionのselected local値一致を一つのProp witnessとして構成。任意target座標への定数mapだけではこのgenerated forward equationを満たせない | one-way geometryでmapped coordinateを識別するcoherent visibility component。後続のsupport/axis、overlap/Extension、共通geometry action、identity/compositionとの統合 | target ContextMorphism自体はobservable全体で定数の補助mapであり、full observable actionやreadbackではない。target-only座標、単一の共通restriction map、signature-axis/support visibility、overlap boundary、Extension、coverage-family mapは未完了。AATCorePackage/ReadingCore provenance、D回復、A--F統合も未完了。最初のpredicate-only候補は査読で反証され証拠に数えない |
@@ -14349,4 +14350,118 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct a forward/lax complete-geometry interface retaining the covariant coordinate/raw maps plus support and boundary action without demanding a target-to-source observable inverse; connect its exact/isomorphism subcategory to existing GeometryTotalHom, then prove overlap/Extension coherence."
+```
+
+## Cycle 139 — Generated forward-image geometry interface
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 139
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 2a62a52fe6fc8baef3f6ba5c40d6999f7c9b6a6b
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 138 ruled out the existing contravariant target-reading restriction for an allowed non-surjective morphism but retained the covariant coordinate/raw constructions"
+  proof_dag_predecessors:
+    - "Cycle 129 primitive arbitrary noninvertible lens/protocol forward morphisms"
+    - "Cycle 134 generated equation transport"
+    - "Cycle 135 raw presheaf natural transformation"
+    - "Cycle 136 exact mapped-coordinate visibility"
+    - "Cycle 137 support and boundary preservation"
+    - "Cycle 138 target-reading variance counterexample"
+  proof_obligation: "Construct one honest forward-image geometry interface from every primitive CS morphism, covering every source required role without asserting target-wide coverage or accepting inverse/completion data"
+  selection_reason: "Source-role image coverage is covariant and survives arbitrary non-surjective morphisms. It retains every required source role while leaving target-only coordinates as independent endpoint obligations, exactly avoiding the false contravariant route isolated in Cycle 138."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardImage.lean
+  risks:
+    - "calling image coverage a target-wide AATCoverageFamily"
+    - "hiding a target-to-source observable inverse in axis visibility"
+    - "accepting the aggregate record as an un-discharged external certificate"
+    - "claiming overlap, Extension, ReadingCore, GeometryTotalHom, identity/composition, or readback"
+  unchecked:
+    - "identity and composition laws for the generated forward-image interface"
+    - "lax overlap-object and Extension comparison"
+    - "endpoint ReadingCore provenance"
+    - "exact/isomorphism subcategory bridge to GeometryTotalHom"
+    - "independent readback and all-component inverse laws"
+    - "D-side recovery and final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Defined covariant axis visibility using an actual source restriction, readability of the same local axis after full-family target rebase, and an exact forward-axis equation. Constructed lens and protocol coverage-image records quantifying all source supports, required coordinates, violation coordinates, axes, and boundaries. Constructed aggregate forward-image records combining the generated equation transport, raw natural transformation, and coverage image from the same primitive CS morphism with no additional certificate input."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardImage.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.ForwardAxisVisibility
+    - AAT.AG.RealizationReconstruction.lensAATForwardAxisCoherent
+    - AAT.AG.RealizationReconstruction.protocolAATForwardAxisCoherent
+    - AAT.AG.RealizationReconstruction.LensAATForwardCoverageImage
+    - AAT.AG.RealizationReconstruction.lensAATForwardCoverageImage
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardCoverageImage
+    - AAT.AG.RealizationReconstruction.protocolAATForwardCoverageImage
+    - AAT.AG.RealizationReconstruction.LensAATForwardGeometryImage
+    - AAT.AG.RealizationReconstruction.lensAATForwardGeometryImage
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardGeometryImage
+    - AAT.AG.RealizationReconstruction.protocolAATForwardGeometryImage
+  claim_mapping:
+    source_labels:
+      - "GOAL A: complete source readings and forward preservation data"
+      - "GOAL E and n1015 section 5.3: arbitrary noninvertible lens/protocol morphisms"
+    conjuncts:
+      - "all source supports -> visible in the rebased target context"
+      - "all source required and violation coordinates -> coherent visibility at the exact generated coordinate"
+      - "all source axes -> readable after rebase with the exact covariant axis equation"
+      - "all source boundaries -> mapped by the generated context functor"
+      - "equation and raw layers -> the previously generated transport and natural transformation are retained in the same aggregate"
+      - "non-surjectivity -> target-only coordinates are not falsely claimed to lie in the image"
+    undischarged_assumptions:
+      - "target-wide coverage and overlap/Extension are not supplied"
+      - "identity/composition and independent readback remain open"
+      - "ReadingCore provenance and exact/isomorphism GeometryTotalHom bridge remain open"
+      - "D recovery and final A--F integration remain open"
+    acceptance_point: "The only input to each canonical aggregate constructor is the primitive lens/protocol morphism. Every proof field is filled by a generated theorem from Cycles 134--139; callers do not provide a coverage or completion certificate."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "covariant signature-axis image visibility for every source-readable axis"
+      - "one record quantifying every source support, required equation coordinate, violation coordinate, axis, and boundary"
+      - "one generated aggregate retaining equation, raw, and coverage-image data from the same primitive morphism"
+    remaining:
+      - "target-only roles and target-wide admissible coverage"
+      - "lax overlap and Extension coherence"
+      - "identity/composition and independent readback"
+      - "ReadingCore provenance and exact/isomorphism GeometryTotalHom bridge"
+      - "D recovery and final A--F integration"
+  certificate_provenance:
+    discharged:
+      - "axis evidence is reconstructed from the actual source axisReadableOn witness and definitional rebase readability"
+      - "coordinate evidence comes from the generated Law-coordinate map and exact variable-image equations"
+      - "support and boundary evidence comes from the generated endpoint rebase functor"
+      - "equation and raw fields are the canonical transports generated by the same primitive morphism"
+    unresolved:
+      - "all positive construction obligations beyond source-role image geometry"
+  proof_use:
+    used:
+      - "source restriction, IsRestriction proof, local-axis readability, and source axis equation in ForwardAxisVisibility"
+      - "generated required-coordinate and violation-coordinate maps in the coverage-image field types"
+      - "the actual coherent visibility, support, and boundary theorems in the canonical constructors"
+      - "the generated equation transport and raw NatTrans in the aggregate constructors"
+    unused:
+      - "target-wide AATCoverageFamily, overlap, ReadingCore, GeometryTotalHom, inverse, and target-surjectivity are absent"
+  structure_field_escape: none-found-the-public-records-have-canonical-constructors-from-each-primitive-morphism-and-no-additional-certificate-argument
+  route_integrity: pass-for-source-role-forward-image-geometry
+  target_fitting: none-found-every-source-role-is-quantified-and-target-only-data-is-left-independent-rather-than-deleted-or-preloaded
+  vacuity: none-found-material-visibility-fields-consume-the-actual-source-witnesses-and-identify-exact-generated-target-images
+  one_way_as_equivalence: none-found-no-inverse-injectivity-surjectivity-or-target-enumeration-is-used
+  goal_or_report_reinterpretation: none-found-target-wide-coverage-overlap-extension-readback-core-provenance-D-and-final-integration-remain-open
+  validation_refs:
+    - "focused CSAATGeometryForwardImage file check: PASS; 65 namespace declarations including structure projections, standard axioms only"
+    - "focused exact CSAATGeometryForwardImage target build: PASS (4280 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Prove identity/composition for the canonical forward-image constructions and build lax overlap/Extension comparison, then derive the exact/isomorphism subcategory and its GeometryTotalHom bridge from genuine CS inverse data after endpoint ReadingCore provenance."
 ```
