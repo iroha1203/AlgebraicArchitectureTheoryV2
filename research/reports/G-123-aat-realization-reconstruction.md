@@ -11819,9 +11819,16 @@ result:
       - "full residual-kernel coverage or decomposition"
       - "original G-122 full classification and remaining A--F"
 review:
-  fixed_head: pending
-  lanes: {math_a: pending, math_b: pending, lean_a: pending, lean_b: pending}
-  direct_response: {reviewed_delta: pending, verdict: pending, new_findings: []}
+  initial_fixed_head: 0a6b865da5279d5e1023bbebfcd3c52fd536342f
+  initial_lanes: {math_a: pass, math_b: pass, lean_a: pass, lean_b: minor-issues-noncentral}
+  revised_fixed_head: b5f294c5bcdfa958a0894e2d513538e3236895f9
+  revised_lanes: {math_a: pass, math_b: pass, lean_a: pass, lean_b: pass}
+  resolved_findings:
+    - "corrected three descriptions of xorMask * finite so that the finite table/permutation acts first and the xor mask second; no declaration or proof changed"
+  direct_response:
+    reviewed_delta: "0a6b865da5279d5e1023bbebfcd3c52fd536342f..b5f294c5bcdfa958a0894e2d513538e3236895f9"
+    verdict: pass
+    new_findings: []
 audits:
   premise_delta:
     discharged:
