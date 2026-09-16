@@ -10919,12 +10919,16 @@ result:
     acceptance_point: "The union over all primitive carriers of actual elements induced by finite swap words is strictly smaller than the actual local-fiber kernel, witnessed by the finite algorithm n xor 1 on Nat; no fixed-target refutation or full-kernel classification is asserted."
     port_status: not-applicable
 review:
-  fixed_head: pending
+  fixed_head: 2198178ce938b91e0921ee1c472ae5308e19f97b
   lanes:
-    math_a: pending
-    math_b: pending
-    lean_a: pending
-    lean_b: pending
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  direct_response:
+    reviewed_delta: "868f11fa30215c0434022e75b5b760bb41ac78a6..2198178ce938b91e0921ee1c472ae5308e19f97b"
+    verdict: pass
+    new_findings: []
 audits:
   premise_delta:
     discharged:
