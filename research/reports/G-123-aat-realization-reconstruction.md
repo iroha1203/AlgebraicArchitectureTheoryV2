@@ -11403,12 +11403,24 @@ result:
     acceptance_point: "The Cycle 102 Nat generated subgroup and its actual intrinsic image now have one independent faithful exact-support/parity normal-form type; this does not cover the full residual kernel or generalize across all permitted primitive parameters."
     port_status: not-applicable
 review:
-  fixed_head: pending
-  lanes:
-    math_a: pending
-    math_b: pending
-    lean_a: pending
-    lean_b: pending
+  initial_fixed_head: 94bb3c269500aafee5a61c976eb9d182d26f49b7
+  initial_lanes:
+    math_a: blocking-noncentral-report-order
+    math_b: blocking-noncentral-report-order
+    lean_a: pass
+    lean_b: pass
+  revised_fixed_head: 06e52c18e7b7f1a4fd30ddc3acd7010ab825c10b
+  revised_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings:
+    - "moved the byte-identical Cycle 105 ledger block from between Cycles 1 and 2 to immediately after Cycle 104; no mathematical or claim content changed"
+  direct_response:
+    reviewed_delta: "299a8c1624bd327ef696b49c86ac994831fe35b7..06e52c18e7b7f1a4fd30ddc3acd7010ab825c10b"
+    verdict: pass
+    new_findings: []
 audits:
   premise_delta:
     discharged:
