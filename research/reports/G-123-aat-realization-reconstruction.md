@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 98 gives each fixed finite Extension carrier explicit forward/backward lookup-table syntax, independently transports its primitive source-context action through the fixed route, and identifies it with the actual subgroup characterized by that decoder-independent complete action
+- current proof obligation: Cycle 99 forms the literal union of all Cycle 98 fixed-finite-carrier images and proves, with a source-owned `Nat` zero/one swap transported through the same route, that this union does not cover the full actual local-fiber kernel
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: compare the carrier-indexed union of intrinsically characterized finite Extension-permutation subgroups with the full actual local-fiber kernel, construct either a coverage/decomposition theorem or an explicit source-owned residual direction outside that union, and retain the original G-122 classification obligations separately
+- next proof obligation: enlarge the parameter-relative source presentation beyond fixed finite carriers using explicit finite recipes on permitted infinite primitive carriers, characterize that enlarged actual image without semantic leaves, and continue full-kernel decomposition while retaining the original G-122 classification obligations separately
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 99 delta | Cycle 98の全fixed finite carrier imageのliteral unionを定式化し、同じprimitive-to-actual routeから有限recipeで構成した`Nat` zero/one swapがそのunion外にあることを証明する | `FiniteAxisFoldFiniteExtensionCarrier`, `FiniteAxisFoldFiniteCarrierExtensionImage`, `finiteAxisFoldNatZeroOneSwap`, `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_backwardProjection`, `finiteAxisFoldNatZeroOneSwapLocalFiberKernel`, `finiteAxisFoldFiniteCarrierSourceAction_fixes_natZeroProbe`, `finiteAxisFoldNatZeroOneSwap_transported_ne_finiteCarrier`, `finiteAxisFoldNatZeroOneSwap_not_finiteCarrierExtensionImage`, `finiteAxisFoldFiniteCarrierExtensionImage_not_all` | 任意のfinite carrierとその全permutation; 原始`Nat` carrier上の明示`0/1` swap; Cycle 92--96のarbitrary-carrier same fixed route; Cycle 98のintrinsic image; full backward projection | carrier-indexed existential union; arbitrary carrierに対するdecoder projection計算; finite carrierと`Nat`の型非同一性; canonical `Nat` probe上でfinite actionは固定し`Nat` swapは移動; route equivalenceによるactual action separation; source-owned actual local-kernel元とunion非被覆 | finite-carrier presentationでは不足することを固定し、infinite primitive carrier上のfinite recipeを含む拡張presentationとfull-kernel分解へ渡す | 拡張syntax/image characterization、全kernelのcoverage/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
 | D Cycle 98 delta | fixed finite Extension carrierごとにsemantic rangeから独立なforward/backward lookup-table syntaxを定め、primitive source actionをdecoder非依存の固定routeで運び、actual full stored-backward context actionで特徴付けたsubgroupとのdecoder同値を構成する | `FiniteAxisFoldExtensionPermutationCode`, `FiniteAxisFoldExtensionPermutationCode.toPerm`, `FiniteAxisFoldExtensionPermutationCode.tableMulEquiv`, `finiteAxisFoldSourceToSouthwestContextEquiv`, `finiteAxisFoldSouthwestToExactLeftContextEquiv`, `finiteAxisFoldExactLeftToActualContextEquiv`, `finiteAxisFoldSourceToActualContextEquiv`, `finiteAxisFoldTransportedSourceContextPermutationHom`, `finiteAxisFoldSouthwestPermutation_contextBackward`, `finiteAxisFoldExactLeftPermutation_contextBackward`, `finiteAxisFoldActualPermutation_contextBackward`, `finiteAxisFoldExtensionPermutationDecoder`, `finiteAxisFoldExtensionPermutationBackwardAction`, `finiteAxisFoldExtensionPermutationDecoder_backwardProjection`, `FiniteAxisFoldExtensionPermutationIntrinsicImage`, `finiteAxisFoldExtensionPermutationIntrinsicImage_mem_iff`, `finiteAxisFoldExtensionPermutationIntrinsicDecoder`, `finiteAxisFoldExtensionPermutationIntrinsicDecoder_injective`, `finiteAxisFoldExtensionPermutationIntrinsicDecoder_surjective`, `finiteAxisFoldExtensionPermutationIntrinsicDecoderEquiv`, `finiteAxisFoldExtensionPermutationIntrinsicImage_mem_iff_decoder` | 任意の有限`E`; explicit lookup tablesと両inverse law; Cycles 92--97のsame fixed actual section; source→southwest→exact-left→actualの固定context equivalence; Cycle 90のfull local-kernel backward projection単射性 | lookup-table code自身の群構造; decoderとは独立に定義したprimitive source actionの固定route共役; 三段factorizationによるdecoder projectionとの一致; action-rangeのpreimageによるactual subgroup; decoder landing; section単射性によるdecoder単射; full backward faithfulnessによるintrinsic membershipからdecoder全射; `MulEquiv` | carrier-indexed family全体とfull actual local-fiber kernelのcoverage/decomposition検査へ渡す | 全有限carrier unionの定式化とfull-kernel比較、coverage/section/decomposition、original G-122分類、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
 | D Cycle 97 delta | arbitrary Extension-permutation familyのBool特殊化をCycle 91の独立C2 evaluatorとexactに同定し、同じactual local-fiber kernel内で非involutive source元によりC2 fragmentからの真の拡大を示す | `finiteAxisFoldExtensionValuePermutation_boolNot`, `finiteAxisFoldSourceBackwardPermutationGeometry_boolNot`, `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_boolNot`, `FiniteAxisFoldBackwardToggleSyntax.boolPerm`, `finiteAxisFoldBackwardToggleSyntax_evaluate_eq_boolPermutationSection`, `finiteAxisFoldBackwardToggleSyntax_evaluate_range_eq_boolPermutation_range`, `finiteAxisFoldExtensionThreeCycle_not_mem_backwardToggleSyntax_range` | 固定source/southwest/exact-left/top/normalization route; Cycle 91の独立二記号syntax/evaluator; Cycles 92--96の全有限carrier permutation sectionとactual単射性 | primitive value recipeから全context functor・equivalence・complete geometry・固定actual routeを通したBool同一性; Bool permutation全射によるrange exact equality; 原始`Fin 3`隣接swap積の非involutivityとactual section単射性によるC2 range外元 | intrinsic image predicate、独立table presentation、decoder equivalence、full local-kernel coverage検査へ渡す | fixed-carrier imageの内在的特徴付け、全kernelに対するsection/surjectivity/decomposition/coverage、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
 | D Cycle 96 delta | Cycle 95の全Extension-permutation familyについて、fixed actual route後の等号をsource probeへ読み戻し、normalized geometry sectionとactual local-fiber-kernel sectionの単射性を証明する | `finiteAxisFoldPermutationSouthwestProbe`, `finiteAxisFoldPermutationExactLeftProbe`, `finiteAxisFoldPermutationActualProbe`, `finiteAxisFoldNormalizedPermutationGeometrySectionHom_injective`, `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_injective` | 任意の有限`E`; Cycle 92のsource probesとsource action単射性; Cycles 93--95の同じsectionと固定southwest/exact-left/top/normalization route | 二つのopcartesian transportをcanonical retractionで消去し、exact-left pullをgenerated cancellationで消去; normalizationが保持するstored backward作用をsourceへ戻し、`p⁻¹=q⁻¹`から`p=q`を回復; subgroup equalityからunderlying normalized automorphism equalityを射影 | constructed Extension-permutation familyのactual faithfulnessを固定し、Bool/Cycle 91像比較と内在的image presentationへ渡す | Bool特殊化とCycle 91 evaluator像の同定、image characterization、section/surjectivity/decomposition/full-kernel coverage、一般入力、bottom/full comparison kernel、lift fiber、残るB/E/Fは未完了 |
@@ -10605,4 +10606,117 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Formulate the carrier-indexed union of these intrinsic subgroups and either prove full local-kernel coverage/decomposition or construct an explicit source-owned residual direction outside every finite-carrier Extension action."
+```
+
+## Cycle 99 — Finite-carrier union obstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 99
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 10c40bb9502337f8a59b845531b445323dd72955
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 98 characterized every fixed finite-carrier image but left its carrier-indexed union and relation to the full actual local-fiber kernel open"
+  proof_dag_predecessors:
+    - "Cycle 92 constructed primitive Extension permutations for arbitrary carriers, without a finiteness premise"
+    - "Cycles 93--96 transported every such action through the same complete source-to-actual route and landed it in the actual local-fiber kernel"
+    - "Cycle 98 characterized each fixed finite-carrier image by a decoder-independent complete stored-backward action"
+  proof_obligation: "Form the literal union of all fixed finite-carrier intrinsic images and prove either coverage or a source-owned actual direction outside it without shrinking the full local-fiber-kernel domain"
+  selection_reason: "The finite-carrier family must be tested against the full actual domain before it can be used as a reconstruction presentation; an explicit infinite-carrier finite recipe decides this comparison without assuming a semantic residual witness."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldFiniteCarrierUnionObstruction.lean
+  risks:
+    - "replace the full kernel by the finite-carrier union and obtain coverage by definition"
+    - "supply the outside residual element as input rather than construct it from a primitive source action"
+    - "use an opaque arbitrary permutation table on Nat instead of a finite zero/one swap recipe"
+    - "confuse strict noncoverage of the current union with failure of every possible parameter-relative presentation"
+  unchecked:
+    - "an enlarged independent syntax for finite recipes on permitted infinite primitive carriers"
+    - "intrinsic image characterization and decomposition for that enlarged syntax"
+    - "original G-122 classification recovery, general inputs, bottom/full comparison kernels, lift fibers, and remaining D/B/E/F"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Packaged the literal existential union over every type equipped with Fintype and its Cycle 98 intrinsic subgroup.  Defined the source-owned Nat zero/one swap by the explicit finite recipe Equiv.swap 0 1, transported it through the existing arbitrary-carrier section into the actual local-fiber kernel, and proved the actual backward projection formula without a finiteness premise.  Every finite-carrier source action fixes the canonical Nat zero probe because a finite type cannot equal Nat, whereas the Nat swap moves it.  The fixed source-to-actual context equivalence preserves this separation.  Hence the constructed actual Nat-swap element lies outside every member of the finite-carrier union, so that union does not cover the full actual local-fiber kernel."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldFiniteCarrierUnionObstruction.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldFiniteExtensionCarrier
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldFiniteCarrierExtensionImage
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatZeroOneSwap
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_backwardProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatZeroOneSwapLocalFiberKernel
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldFiniteCarrierSourceAction_fixes_natZeroProbe
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatZeroOneSwap_transported_ne_finiteCarrier
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNatZeroOneSwap_not_finiteCarrierExtensionImage
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldFiniteCarrierExtensionImage_not_all
+  claim_mapping:
+    source_labels:
+      - "GOAL D prerequisite: preserve the complete actual local-fiber-kernel quantifier while testing a proposed source presentation"
+      - "parameter-relative finite presentation may retain permitted infinite primitive data, but may not re-input completed semantic arrows"
+      - "candidate failure is not target refutation; it selects the next enlarged source construction"
+    conjuncts:
+      - "all fixed finite carriers and all their permutations -> literal union predicate"
+      - "explicit Nat zero/one swap recipe -> primitive source action"
+      - "same fixed complete route -> actual local-fiber-kernel element"
+      - "finite carrier versus Nat type inequality -> every finite action fixes the Nat zero probe"
+      - "Nat swap moves the same probe -> transported actual action differs from every finite-carrier action"
+      - "Cycle 98 intrinsic membership plus projection computation -> contradiction"
+    undischarged_assumptions: []
+    acceptance_point: "The literal union of all Cycle 98 fixed-finite-carrier intrinsic images is strictly smaller than the full actual local-fiber kernel, witnessed by a source-constructed finite-recipe Nat swap; no claim is made that every enlarged presentation fails."
+    port_status: not-applicable
+review:
+  fixed_head: edca806b9464812b519742b7a33c834012808143
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    reviewed_delta: "10c40bb9502337f8a59b845531b445323dd72955..edca806b9464812b519742b7a33c834012808143"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "carrier-indexed union formulation"
+      - "comparison of that union with the full actual local-fiber kernel"
+      - "explicit source-owned actual direction outside the union"
+    remaining:
+      - "enlarged parameter-relative syntax and intrinsic image for finite recipes on infinite primitive carriers"
+      - "full-kernel coverage, section, or decomposition for the enlarged syntax"
+      - "original G-122 classification and remaining D/B/E/F"
+  certificate_provenance:
+    discharged:
+      - "the outside element is constructed from Equiv.swap 0 1 at source and the existing fixed route"
+      - "finite-carrier fixedness is proved from Fintype.false and the canonical Nat probe, not accepted as a certificate"
+      - "actual separation is read through the independently fixed source-to-actual context equivalence"
+    unresolved:
+      - "classification of the full backward-projection image by an enlarged source grammar"
+  proof_use:
+    used:
+      - "Cycle 92 arbitrary-carrier primitive action evaluates the finite Nat recipe"
+      - "Cycles 93--95 carry that action into the actual local-fiber kernel without requiring Fintype Nat"
+      - "Cycle 98 three factorization laws compute the actual backward projection for arbitrary carriers"
+      - "Cycle 98 intrinsic membership exposes a finite lookup code whose independent expected action would have to match the Nat action"
+      - "the canonical Nat probe separates those transported actions"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: reuses-the-same-fixed-source-southwest-exact-left-top-normalization-route
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-finite-carrier-union-noncoverage-checkpoint
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4326 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 24 declarations in the new module; standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct an enlarged independent parameter-relative syntax containing explicit finite recipes on permitted infinite primitive carriers, characterize its actual image without semantic leaves, and continue decomposition of the full local-fiber kernel while preserving the original G-122 obligations."
 ```
