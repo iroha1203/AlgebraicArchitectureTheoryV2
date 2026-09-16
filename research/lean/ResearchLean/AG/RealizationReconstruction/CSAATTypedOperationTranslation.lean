@@ -101,7 +101,7 @@ theorem lensPut_square {input : LensFamilyInput.{u}}
         (lensObjectMap f .write (state, view)).2 := by
   exact f.put_naturality state view
 
-/-- State and read role maps preserve semantic identities. -/
+/-- The state-role map preserves semantic identities. -/
 @[simp] theorem lensObjectMap_id_state {input : LensFamilyInput.{u}}
     (X : LensRealization input.View input.reference) (value : X.Carrier) :
     lensObjectMap (𝟙 X) (.state : LensPrimitiveObject input X) value = value := rfl
@@ -111,7 +111,7 @@ theorem lensPut_square {input : LensFamilyInput.{u}}
     (X : LensRealization input.View input.reference) (value : X.Carrier) :
     lensObjectMap (𝟙 X) (.read : LensPrimitiveObject input X) value = value := rfl
 
-/-- View and write role maps preserve semantic identities. -/
+/-- The view-role map preserves semantic identities. -/
 @[simp] theorem lensObjectMap_id_view {input : LensFamilyInput.{u}}
     (X : LensRealization input.View input.reference) (value : input.View) :
     lensObjectMap (𝟙 X) (.view : LensPrimitiveObject input X) value = value := rfl
@@ -122,7 +122,7 @@ theorem lensPut_square {input : LensFamilyInput.{u}}
     (value : X.Carrier × input.View) :
     lensObjectMap (𝟙 X) (.write : LensPrimitiveObject input X) value = value := rfl
 
-/-- All four role maps preserve composition of arbitrary semantic lens morphisms. -/
+/-- The state-role map preserves composition of arbitrary semantic lens morphisms. -/
 @[simp] theorem lensObjectMap_comp_state {input : LensFamilyInput.{u}}
     {X Y Z : LensRealization input.View input.reference}
     (f : X ⟶ Y) (g : Y ⟶ Z) (value : X.Carrier) :

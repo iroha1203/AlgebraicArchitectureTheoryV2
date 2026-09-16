@@ -2350,8 +2350,10 @@ The tagged constructor contains an actual operation of the fixed G-117
 package, retaining both endpoints and the pre-existing operation identity.
 The G-122 reference constructor likewise contains one operation from the
 original authored support package at its actual endpoints.  Protocol edges
-retain their original typed endpoints.  These constructors are individual
-operation names/values, not completed operation-map families. -/
+retain their original typed endpoints, while protocol observations retain the
+vertex-indexed endpoint from its state object to its fixed observation object.
+These constructors are individual operation names/values, not completed
+operation-map families. -/
 inductive PrimitiveOperation :
     (θ : ClosedFamilyParameter.{u, v}) → (X : FamilyRealization θ) →
       PrimitiveObject θ X → PrimitiveObject θ X →
