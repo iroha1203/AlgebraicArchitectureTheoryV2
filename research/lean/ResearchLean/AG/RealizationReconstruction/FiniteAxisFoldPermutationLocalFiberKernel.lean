@@ -3,7 +3,7 @@ import ResearchLean.AG.RealizationReconstruction.FiniteAxisFoldBackwardToggleLoc
 import Formal.Util.AssertStandardAxioms
 
 /-!
-# Arbitrary finite Extension permutations in the residual local-fiber kernel
+# Arbitrary Extension-carrier permutations in the finite-axis-fold local-fiber kernel
 
 Every independently supplied permutation of an Extension carrier acts trivially
 on the complete dependent Support, Axis, and Observable families after the fixed
@@ -431,7 +431,7 @@ theorem finiteAxisFoldNormalizedGenericPermutation_observableEquiv_eq_one
   have localEquality := observable_eq_of_sigma_eq pairEquality
   convert localEquality using 1
 
-/-- The complete arbitrary finite permutation family lands in the actual joint
+/-- The complete arbitrary Extension-carrier permutation family lands in the actual joint
 residual local-fiber kernel. -/
 theorem finiteAxisFoldNormalizedGenericPermutation_mem_localFiberKernel :
     finiteAxisFoldNormalizedPermutationContextKernelSectionHom E permutation ∈
@@ -441,7 +441,7 @@ theorem finiteAxisFoldNormalizedGenericPermutation_mem_localFiberKernel :
     finiteAxisFoldNormalizedGenericPermutation_axisEquiv_eq_one permutation,
       finiteAxisFoldNormalizedGenericPermutation_observableEquiv_eq_one permutation⟩
 
-/-- The arbitrary finite Extension action as a homomorphism into the actual
+/-- The arbitrary Extension-carrier action as a homomorphism into the actual
 joint residual local-fiber kernel. -/
 noncomputable def finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom
     (E : Type) :

@@ -10112,7 +10112,7 @@ audits:
   next_obligation: "Prove the dependent Support, Axis, and Observable Sigma actions are identity for this entire family, codRestrict into the actual local-fiber kernel, then transport the Cycle 92 probes to prove actual injectivity."
 ```
 
-## Cycle 95 — Finite Extension permutations in the residual local-fiber kernel
+## Cycle 95 — Extension-carrier permutations in the finite-axis-fold local-fiber kernel
 
 ```yaml
 ledger_type: target_cycle_result
@@ -10159,17 +10159,16 @@ result:
     - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom
   claim_mapping:
     source_labels:
-      - "GOAL D and user conditions 1, 2, 3, 4, and 5"
+      - "GOAL D: preserve the original finite-axis-fold input and recover its comparison data"
+      - "preserve the full carrier/permutation/context/local-value quantifiers"
+      - "construct local identities and kernel membership rather than accepting them as inputs"
+      - "keep Support, Axis, and Observable reconstruction obligations separate"
     conjuncts:
       - "every source permutation -> complete normalized dependent Support action identity"
       - "every source permutation -> complete normalized dependent Axis action identity"
       - "every source permutation -> complete normalized dependent Observable action identity"
       - "same constructed family -> homomorphism into the actual joint residual local-fiber kernel"
-    undischarged_assumptions:
-      - "no finiteness premise is needed for construction or local-fiber-kernel landing"
-      - "injectivity of the normalized/local-kernel homomorphism is not yet proved"
-      - "no evaluator image characterization, section, surjectivity, decomposition, or coverage is asserted"
-      - "general input and broader G-123 obligations remain open"
+    undischarged_assumptions: []
     acceptance_point: "The complete arbitrary permutation family now lands constructively in the actual local-fiber kernel; this cycle does not claim faithfulness or coverage."
     port_status: not-applicable
 audits:
