@@ -11878,8 +11878,12 @@ result:
     - "full residual-kernel coverage or decomposition"
     - "G-122 classification, general input, res/ext/J, CS, examples, and remaining A--F"
 review:
-  fixed_head: pending
-  lanes: {math_a: pending, math_b: pending, lean_a: pending, lean_b: pending}
+  fixed_head: a0b913e714f9e4d7ff8d5f0f9f0fcdf793350257
+  lanes: {math_a: pass, math_b: pass, lean_a: pass, lean_b: pass}
+  direct_response:
+    reviewed_delta: "1017597a739257611024a849e712b820cc31d5e8..a0b913e714f9e4d7ff8d5f0f9f0fcdf793350257"
+    verdict: pass
+    new_findings: []
 audits:
   certificate_provenance: "fixed complement formula and Cantor carrier inequality; no completed permutation or residual is a syntax input"
   route_integrity: same-fixed-source-to-actual-section-and-complete-backward-projection
