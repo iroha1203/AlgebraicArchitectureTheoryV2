@@ -10793,6 +10793,25 @@ result:
     undischarged_assumptions: []
     acceptance_point: "For every decidable primitive carrier E, independent finite swap words map exactly onto the actual subgroup whose complete backward action comes from a finite-support E-permutation, and the Nat zero/one witness has a one-generator preimage; injectivity and full-kernel coverage are not asserted."
     port_status: not-applicable
+review:
+  initial_fixed_head: 2f14e8757a3b554740833c52a723376f70ee6e37
+  initial_lanes:
+    math_a: pass
+    math_b: minor-issues-noncentral
+    lean_a: pass
+    lean_b: pass
+  revised_fixed_head: 2804b95516ad3fcbc3f5b0d7968dd15acc324e72
+  revised_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings:
+    - "changed the optional-sounding injective-presentation wording to state that fixed GOAL B requires a faithful quotient or canonical normal form and that this raw FreeGroup checkpoint has not discharged it"
+  direct_response:
+    reviewed_delta: "2f14e8757a3b554740833c52a723376f70ee6e37..2804b95516ad3fcbc3f5b0d7968dd15acc324e72"
+    verdict: pass
+    new_findings: []
 audits:
   premise_delta:
     discharged:
