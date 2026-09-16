@@ -69,7 +69,7 @@ structure FiniteAxisFoldNatXorMaskNormalForm where
 
 namespace FiniteAxisFoldNatXorMaskNormalForm
 
-/-- Evaluate a mask followed by the exact-support finite permutation. -/
+/-- Evaluate the exact-support finite permutation followed by the xor mask. -/
 def evaluate (normal : FiniteAxisFoldNatXorMaskNormalForm) : Equiv.Perm Nat :=
   finiteAxisFoldNatXorMask normal.mask * normal.finite.evaluate
 
@@ -215,8 +215,8 @@ theorem secondXorNormalForm_actualEvaluate :
 end FiniteAxisFoldNatXorMaskNormalForm
 
 /-- Decoder-independent actual image: a residual element belongs when its
-complete backward action is induced by a xor-mask algorithm followed by an
-arbitrary finite-support Nat permutation. -/
+complete backward action is induced by an arbitrary finite-support Nat
+permutation followed by a xor-mask algorithm. -/
 def FiniteAxisFoldNatXorMaskIntrinsicImage :
     Set FiniteAxisFoldResidualLocalFiberKernel :=
   { remainder |
