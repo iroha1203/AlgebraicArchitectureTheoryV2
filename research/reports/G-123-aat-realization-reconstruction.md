@@ -12438,7 +12438,7 @@ result:
     - "D comparison-group transport and presentation/AAT-side recovery of the same groups, sections, kernels, fibers, and classification data"
     - "the remaining A--E target obligations and final same-construction integration"
 review:
-  fixed_head: b112feb458be1243a04d4e6d0490c7732c1bbfac
+  fixed_head: b112feb45c855f789d088ecb9073f117a31030ed
   initial_findings:
     - "the first implementation erased visible renaming in the specialized P1 by coercing changes to same-index homs, so it incorrectly compared q'_v instead of q'_{u(v)}"
     - "the first implementation did not separately derive the protocol-side 16/4/4 cardinalities"
@@ -12447,7 +12447,7 @@ review:
     - "added raw and operation-preserving protocol cardinality equivalences and exact identity/session-swap 16/4/4 specializations"
   lanes: {math_a: pass, math_b: pass, lean_a: pass, lean_b: pass}
   direct_response:
-    reviewed_delta: "1170c4078..b112feb458be1243a04d4e6d0490c7732c1bbfac"
+    reviewed_delta: "1170c40780bf1a1aaf1adf46b97a6615054fee3f..b112feb45c855f789d088ecb9073f117a31030ed"
     verdict: pass
     new_findings: []
 audits:
