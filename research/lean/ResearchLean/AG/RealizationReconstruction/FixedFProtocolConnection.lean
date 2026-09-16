@@ -212,6 +212,63 @@ theorem realization_edgeAction {F : FixedFDirectedMultigraph.{u, u}}
 
 /-! ## Independent fixed-automorphism protocol changes -/
 
+/-- Observation-preserving protocol changes before imposing named-operation
+execution squares.  This is the protocol-side source of the raw F count. -/
+@[ext]
+structure ProtocolObservationChange
+    (F : FixedFDirectedMultigraph.{u, u})
+    [Finite F.Vertex] [Finite F.Edge]
+    (K : Type u) [Finite K]
+    (automorphism : FixedFGraphAutomorphism F) where
+  stateEquiv : ∀ vertex : F.Vertex,
+    (realization F K).State vertex ≃
+      (realization F K).State (automorphism.vertex vertex)
+  observation_naturality : ∀ vertex state,
+    (realization F K).observe (automorphism.vertex vertex)
+        (stateEquiv vertex state) =
+      (realization F K).observe vertex state
+
+namespace ProtocolObservationChange
+
+variable {F : FixedFDirectedMultigraph.{u, u}}
+  [Finite F.Vertex] [Finite F.Edge]
+  {K : Type u} [Finite K]
+  {automorphism : FixedFGraphAutomorphism F}
+
+/-- Raw protocol observation changes and raw fixed-F following changes carry
+the same independently authored state information. -/
+def equivFollowingStateChanges :
+    ProtocolObservationChange F K automorphism ≃
+      FixedFFollowingStateChange F K automorphism where
+  toFun change := FixedFFollowingStateChange.ofFamily change.stateEquiv
+  invFun change :=
+    { stateEquiv := change.fiberPerm
+      observation_naturality := fun _ _ => Subsingleton.elim _ _ }
+  left_inv change := by
+    apply ProtocolObservationChange.ext
+    funext vertex
+    exact congrFun
+      (FixedFFollowingStateChange.fiberPerm_ofFamily change.stateEquiv) vertex
+  right_inv change := by
+    apply FixedFFollowingStateChange.ext
+    apply Equiv.ext
+    rintro ⟨vertex, hidden⟩
+    exact (change.factorization vertex hidden).symm
+
+/-- Raw protocol changes have one arbitrary hidden permutation at every
+visible control point. -/
+theorem natCard
+    (automorphism : FixedFGraphAutomorphism F) :
+    Nat.card (ProtocolObservationChange F K automorphism) =
+      Nat.factorial (Nat.card K) ^ Nat.card F.Vertex := by
+  calc
+    Nat.card (ProtocolObservationChange F K automorphism) =
+        Nat.card (FixedFFollowingStateChange F K automorphism) :=
+      Nat.card_congr equivFollowingStateChanges
+    _ = _ := FixedFFiniteExamples.natCard_followingStateChange automorphism
+
+end ProtocolObservationChange
+
 /-- A protocol-side invertible change following one fixed graph
 automorphism.  The state maps and the squares for the original typed operation
 names are the independent CS-side conditions; no fixed-`F` change or hidden
@@ -312,6 +369,24 @@ def equivPreservingFollowingChanges :
     rintro ⟨vertex, hidden⟩
     exact (change.1.factorization vertex hidden).symm
 
+/-- Operation-preserving protocol changes have one hidden permutation per
+generated undirected component. -/
+theorem natCard
+    (automorphism : FixedFGraphAutomorphism F) :
+    Nat.card (ProtocolInvertibleChange F K automorphism) =
+      Nat.factorial (Nat.card K) ^ Nat.card (FixedFComponent F) := by
+  calc
+    Nat.card (ProtocolInvertibleChange F K automorphism) =
+        Nat.card
+          { actual : FixedFFollowingStateChange F K automorphism //
+            actual.PreservesNamedOperations } :=
+      Nat.card_congr equivPreservingFollowingChanges
+    _ = Nat.card (FixedFComponentPermutationFamily F K) :=
+      Nat.card_congr
+        FixedFFollowingStateChange.preservingEquivComponentPermutationFamilies
+    _ = _ := by
+      rw [Nat.card_fun, Nat.card_perm]
+
 /-- The protocol state map is exactly the hidden component of the complete
 fixed-`F` state map. -/
 theorem stateEquiv_eq_following_hidden
@@ -393,21 +468,6 @@ theorem execution_naturality
   intro pathSource pathTarget path state
   exact change.path_naturality path state
 
-/-- Forget the visible operation-name rename while retaining its induced
-state adapter as a complete morphism of the independent protocol semantic
-category.  Naturality on all quotient executions is constructed by the
-existing `ext` theorem from the named-edge squares. -/
-def asHom (change : ProtocolInvertibleChange F K automorphism) :
-    realization F K ⟶ realization F K :=
-  ProtocolRealization.ext
-    { component := fun vertex state => change.stateEquiv vertex state
-      edge_naturality := fun edge => by
-        funext state
-        exact change.edge_naturality edge state
-      observation_naturality := fun vertex => by
-        funext state
-        exact change.observation_naturality vertex state }
-
 end ProtocolInvertibleChange
 
 /-! ## Arbitrary, possibly noninvertible protocol adapters -/
@@ -474,10 +534,36 @@ theorem invertibleAdapterSquare_iff_totalMaps
             (a.hom.toNatTrans.app object state) :=
   adapterSquare_iff_totalMaps q q' a.hom b.hom
 
-/-- P1 for the fixed-graph protocol: the pre-existing adapters `q,q'` remain
-arbitrary semantic morphisms (and may be noninvertible), while `a,b` are the
-independently constructed invertible endpoint changes following the same
-visible operation-name rename. -/
+/-- Total state carrier with the control point retained. -/
+abbrev TotalState (F : FixedFDirectedMultigraph.{u, u}) (K : Type u) :=
+  F.Vertex × K
+
+/-- An arbitrary semantic adapter acts at the same named control point. -/
+def adapterTotalMap
+    {F : FixedFDirectedMultigraph.{u, u}}
+    [Finite F.Vertex] [Finite F.Edge]
+    {KX KY : Type u} [Finite KX] [Finite KY]
+    (q : realization F KX ⟶ realization F KY) :
+    TotalState F KX → TotalState F KY :=
+  fun state =>
+    (state.1,
+      ProtocolRealization.app q ((schema F).vertexObject state.1) state.2)
+
+/-- An independent invertible change acts on both the visible control point
+and its hidden state. -/
+def changeTotalMap
+    {F : FixedFDirectedMultigraph.{u, u}}
+    [Finite F.Vertex] [Finite F.Edge]
+    {K : Type u} [Finite K]
+    {automorphism : FixedFGraphAutomorphism F}
+    (change : ProtocolInvertibleChange F K automorphism) :
+    TotalState F K → TotalState F K :=
+  fun state =>
+    (automorphism.vertex state.1, change.stateEquiv state.1 state.2)
+
+/-- The literal reindexed P1 square for the fixed-graph protocol.  The
+pre-existing adapters `q,q'` remain arbitrary semantic morphisms, while
+`a,b` retain the same visible vertex and operation-name automorphism. -/
 def ProtocolChangeAdapterSquare
     {F : FixedFDirectedMultigraph.{u, u}}
     [Finite F.Vertex] [Finite F.Edge]
@@ -486,29 +572,11 @@ def ProtocolChangeAdapterSquare
     (q q' : realization F KX ⟶ realization F KY)
     (a : ProtocolInvertibleChange F KX automorphism)
     (b : ProtocolInvertibleChange F KY automorphism) : Prop :=
-  AdapterSquare q q' a.asHom b.asHom
+  changeTotalMap b ∘ adapterTotalMap q =
+    adapterTotalMap q' ∘ changeTotalMap a
 
-/-- The fixed-graph P1 square is exactly the statewise adapter equation at
-every quotient execution object.  No inverse for `q` or `q'` is assumed. -/
-theorem protocolChangeAdapterSquare_iff_allExecutions
-    {F : FixedFDirectedMultigraph.{u, u}}
-    [Finite F.Vertex] [Finite F.Edge]
-    {KX KY : Type u} [Finite KX] [Finite KY]
-    {automorphism : FixedFGraphAutomorphism F}
-    (q q' : realization F KX ⟶ realization F KY)
-    (a : ProtocolInvertibleChange F KX automorphism)
-    (b : ProtocolInvertibleChange F KY automorphism) :
-    ProtocolChangeAdapterSquare q q' a b ↔
-      ∀ object state,
-        b.asHom.toNatTrans.app object
-            (q.toNatTrans.app object state) =
-          q'.toNatTrans.app object
-            (a.asHom.toNatTrans.app object state) :=
-  adapterSquare_iff_totalMaps q q' a.asHom b.asHom
-
-/-- Equivalently, P1 can be checked state-by-state at every named control
-point; the completed equality then holds on all quotient executions because
-all four sides are actual `ProtocolRealization.Hom`s. -/
+/-- The total-state P1 square is exactly the correctly reindexed component
+equation `b_v q_v = q'_{u(v)} a_v`. -/
 theorem protocolChangeAdapterSquare_iff_vertices
     {F : FixedFDirectedMultigraph.{u, u}}
     [Finite F.Vertex] [Finite F.Edge]
@@ -521,18 +589,52 @@ theorem protocolChangeAdapterSquare_iff_vertices
       ∀ vertex state,
         b.stateEquiv vertex
             (ProtocolRealization.app q ((schema F).vertexObject vertex) state) =
-          ProtocolRealization.app q' ((schema F).vertexObject vertex)
+          ProtocolRealization.app q'
+            ((schema F).vertexObject (automorphism.vertex vertex))
             (a.stateEquiv vertex state) := by
   constructor
   · intro square vertex state
-    simpa [ProtocolRealization.app, ProtocolInvertibleChange.asHom] using
-      (protocolChangeAdapterSquare_iff_allExecutions q q' a b).1 square
-        ((schema F).vertexObject vertex) state
+    have totalEquality := congrFun square (vertex, state)
+    exact congrArg Prod.snd totalEquality
   · intro component
-    apply (protocolChangeAdapterSquare_iff_allExecutions q q' a b).2
-    intro object state
-    simpa [ProtocolRealization.app, ProtocolInvertibleChange.asHom] using
-      component object.as state
+    funext state
+    rcases state with ⟨vertex, hidden⟩
+    apply Prod.ext
+    · rfl
+    · exact component vertex hidden
+
+/-- The reindexed P1 equation remains compatible with every renamed finite
+execution.  This uses the constructed all-path law for the invertible change;
+`q,q'` remain arbitrary, possibly noninvertible semantic adapters. -/
+theorem protocolChangeAdapterSquare_path
+    {F : FixedFDirectedMultigraph.{u, u}}
+    [Finite F.Vertex] [Finite F.Edge]
+    {KX KY : Type u} [Finite KX] [Finite KY]
+    {automorphism : FixedFGraphAutomorphism F}
+    (q q' : realization F KX ⟶ realization F KY)
+    (a : ProtocolInvertibleChange F KX automorphism)
+    (b : ProtocolInvertibleChange F KY automorphism)
+    (square : ProtocolChangeAdapterSquare q q' a b)
+    {source target : F.Vertex} (path : Quiver.Path source target)
+    (state : (realization F KX).State source) :
+    b.stateEquiv target
+        (ProtocolRealization.app q ((schema F).vertexObject target)
+          ((realization F KX).pathAction path state)) =
+      ProtocolRealization.app q'
+          ((schema F).vertexObject (automorphism.vertex target))
+        ((realization F KX).pathAction (renamePath automorphism path)
+          (a.stateEquiv source state)) := by
+  calc
+    _ = ProtocolRealization.app q'
+          ((schema F).vertexObject (automorphism.vertex target))
+          (a.stateEquiv target
+            ((realization F KX).pathAction path state)) :=
+      (protocolChangeAdapterSquare_iff_vertices q q' a b).1 square
+        target ((realization F KX).pathAction path state)
+    _ = _ := congrArg
+      (ProtocolRealization.app q'
+        ((schema F).vertexObject (automorphism.vertex target)))
+      (a.path_naturality path state)
 
 /-! ## The fixed two-session `Fin 4` protocol -/
 
@@ -541,6 +643,36 @@ open FixedFFiniteExamples
 local instance : Finite protocolGraph.Edge := by
   change Finite Bool
   infer_instance
+
+/-- The protocol-side raw observation-preserving identity fiber has the
+specified sixteen changes. -/
+theorem protocolObservationChange_count_identity :
+    Nat.card
+      (ProtocolObservationChange protocolGraph Bool
+        protocolIdentityAutomorphism) = 16 := by
+  rw [ProtocolObservationChange.natCard,
+    FixedFFiniteExamples.natCard_protocolVertex]
+  norm_num
+
+/-- Imposing all named-operation executions reduces the identity fiber from
+sixteen changes to the specified four. -/
+theorem protocolInvertibleChange_count_identity :
+    Nat.card
+      (ProtocolInvertibleChange protocolGraph Bool
+        protocolIdentityAutomorphism) = 4 := by
+  rw [ProtocolInvertibleChange.natCard,
+    FixedFFiniteExamples.natCard_protocolComponent]
+  norm_num
+
+/-- The exact session-exchange visible change also has four protocol-side
+following changes. -/
+theorem protocolInvertibleChange_count_sessionSwap :
+    Nat.card
+      (ProtocolInvertibleChange protocolGraph Bool
+        protocolSessionSwapAutomorphism) = 4 := by
+  rw [ProtocolInvertibleChange.natCard,
+    FixedFFiniteExamples.natCard_protocolComponent]
+  norm_num
 
 /-- The independent protocol-side representative of the exact visible
 session exchange used in the fixed `Fin 4` example. -/
