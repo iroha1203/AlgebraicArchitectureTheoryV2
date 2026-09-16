@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 139 constructs a forward-image geometry interface for every primitive lens/protocol morphism, combining the generated equation transport, raw natural transformation, and all source-role image coverage without a target-to-source observable inverse
+- current proof obligation: Cycle 140 proves that full-family rebase preserves every source-generated complete-Law product overlap up to explicit mutual readable refinement and proves operation-wise coherence of the distinguished lens/protocol Extension data
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: prove identity/composition for the generated forward-image interface and construct lax overlap/Extension comparison; then derive the exact/isomorphism subcategory from genuine CS inverse data and connect it to the existing `GeometryTotalHom` after constructing endpoint `ReadingCore` provenance
+- next proof obligation: prove identity/composition for the generated forward-image interface, including raw-presheaf conjugation coherence; then construct endpoint `ReadingCore` provenance and derive the genuine-CS-isomorphism bridge to the existing `GeometryTotalHom`
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 140 delta | arbitrary noninvertible CS射のforward-image geometryについて、source-generated overlapを保持し、canonical Extensionの選択値と全named operationのcoherenceを証明する | `fullFamilyProductComparisonForward`/`Backward`と各`_isRestriction`, `fullFamilyProductComparison_readableEquivalent`, `fullFamilyProductComparison_extensionType`, `fullFamilyProductComparison_extension`, `fullFamilyCompleteLawOverlap_readableEquivalent`; lens/protocol各`*AATForwardCompleteLawOverlap_readableEquivalent`, `*AATForwardExtensionCoherence` | 任意のsource context三つとfull-family target object、任意のprimitive lens/protocol morphism。target overlap/Extension map、inverse、surjectivity、section、完成geometry certificateを入力しない | rebase(product)とproduct(rebase,rebase)の間にidentity-on-dataの両方向`ContextMorphism`を構成し、双方の`IsRestriction`を全support/axis/observableで証明。product Extension carrier/valueを保持。lensではA1 point・全get/put、protocolではA1 point・全named edge/observationの式をprimitive射から構成 | Cycle 139 forward-image geometryのoverlap/Extension層。後続identity/compositionとexact/isomorphism bridge | proof field差を隠すcontext等号は主張しない。independent target canonical reading全体へのExtension map、target-wide cover、identity/composition、raw conjugation coherence、readback、`ReadingCore`、`GeometryTotalHom` bridge、D回復、A--F統合は未完了 |
 | A/E Cycle 139 delta | 任意の非可逆CS射について、target全域coverや逆observable mapを要求せず、sourceの全required roleをexact generated imageへ運ぶforward/lax interfaceを構成する | `ForwardAxisVisibility`; lens/protocol各`*AATForwardAxisCoherent`, `*AATForwardCoverageImage`, `*AATForwardGeometryImage` | 任意のprimitive lens/protocol forward morphismのみ。Cycle 134のgenerated equation transport、Cycle 135のraw NatTrans、Cycle 136のcoordinate coherence、Cycle 137のsupport/boundary、independent endpoint readingsを使用。target-wide cover、inverse、surjectivity、overlap、`ReadingCore`、`GeometryTotalHom`を入力しない | source restrictionとrebased target local-axis readabilityとexact covariant axis equationを持つaxis witnessを構成。全source support・required equation coordinate・violation coordinate・axis・boundaryを量化するcoverage-image recordを固定入力から生成し、同じprimitive射からequation transport・raw NatTrans・coverage imageを一つのaggregate recordへ組み立てる | arbitrary noninvertible CS射のone-way geometry層。次cycleのidentity/compositionとlax overlap/Extension、および後続exact/isomorphism subcategory bridge | target-only coordinateのcoverage、target-wide`AATCoverageFamily`、overlap/Extension比較、identity/composition、independent readback、endpoint `ReadingCore` provenance、exact/isomorphismから`GeometryTotalHom`への接続、D回復、A--F統合は未完了。aggregate recordを外部certificateとして仮定せず、canonical constructorを使用する |
 | A/E Cycle 138 route-refutation delta | 任意の非可逆CS射を保持したまま、既存の反変`ContextMorphism.observableRestrict`をtarget readingへのglobal observable/signature-axis成分として使えるかを固定入力で判定する | `axisVarianceLensInput`, `axisVarianceEmptyLens`, `axisVarianceUnitLens`, `axisVarianceForward`, `axisVarianceSourceCoordinate_false`, `axisVariance_noTargetReadingRestriction`, `axisVariance_targetAxis_notReadable` | 固定した`View = PUnit`、空状態total lens、一点状態total lens、空型から一点型への唯一の許容`LensAATForwardMorphism`のみ。target restriction、座標逆写像、surjectivity、完成geometry certificateを入力しない | source Law coordinate型が空であることをconstructorごとに証明。一方targetの`putGet unit`座標変数はactual readingで可読なので、target readingからrebased source readingへの任意の`IsRestriction`はsource可読座標を生成して矛盾する。従って現在のtarget-reading restriction predicateではtarget `.point` axisも可読でない | forward/lax geometry interfaceの設計拘束。Cycle 134--136のcovariant coordinate/raw mapを保持し、global componentにはtarget-to-source observable inverseを要求しないことの根拠 | これは一つの実装経路の反証であり固定G-123 targetの反証ではない。forward/lax complete-geometry interface、exact/isomorphism subcategoryと既存`GeometryTotalHom`の接続、overlap/Extension、identity/composition、readback、core provenance、D回復、A--F統合は未完了 |
 | A/E Cycle 137 delta | full-family endpoint rebaseでexact Atom supportを失わず、source context preorderの全boundary restrictionをtargetへ写す | lens/protocol各`*AATForwardSupportVisible`, `*AATForwardBoundaryVisible` | Cycle 129 primitive forward morphismから生成されたendpoint context functorと、source support/boundary witnessのみ。target support witness、boundary certificate、inverse、surjectivityを入力しない | rebaseがsource minimal support type/predicateをdefinitionally保持することから同じsupport witnessを再使用。boundaryはsource preorder homをMathlib thin-category homへ上げ、`lawContextFunctor.map`後にtarget preorder homへ戻して構成 | one-way geometryのsupport componentとboundary functoriality。後続のoverlap/Extension・coverage-family coherence | boundary functorはendpoint-only rebaseでありmorphism固有observable actionではない。signature-axis predicateが要求するtarget-reading restriction、global observable action、overlap object comparison、Extension、共通geometry map、identity/composition/readbackは未完了。coordinate-local constant mapをaxis証明へ流用しない |
@@ -14464,4 +14465,119 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Prove identity/composition for the canonical forward-image constructions and build lax overlap/Extension comparison, then derive the exact/isomorphism subcategory and its GeometryTotalHom bridge from genuine CS inverse data after endpoint ReadingCore provenance."
+```
+
+## Cycle 140 — Overlap and distinguished Extension coherence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 140
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: edc715ed14cc1f6b769b2a72e5d1fb6fcee01ed5
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 139 assembled generated equation, raw, and source-role image coverage but left overlap and Extension coherence open"
+  proof_dag_predecessors:
+    - "Cycle 127 full-family context rebase"
+    - "Cycle 129 primitive lens/protocol morphisms"
+    - "Cycle 131 canonical readings and their distinguished Extensions"
+    - "Cycle 137 boundary preservation"
+    - "Cycle 139 generated forward-image geometry"
+  proof_obligation: "Compare source-generated complete-Law overlaps after rebase and relate the distinguished Extension data through every primitive named operation without inventing a whole-Extension map"
+  selection_reason: "The canonical overlap is the product context. Full-family rebase retains its data but reconstructs proof fields, so mutual readable refinement is the honest equality notion. The selected Extension values expose exactly the A1 point and raw named operations that primitive CS morphisms preserve."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardOverlapExtension.lean
+  risks:
+    - "asserting brittle context equality despite different proof fields"
+    - "calling endpoint-only overlap comparison morphism-specific"
+    - "inventing a total map between arbitrary Extension carrier values"
+    - "using overlap/readable equivalence as identity/composition or readback"
+  unchecked:
+    - "identity/composition for equation, raw, coverage, overlap, and Extension components"
+    - "raw-presheaf conjugation cancellation"
+    - "endpoint ReadingCore provenance"
+    - "genuine-CS-isomorphism bridge to GeometryTotalHom"
+    - "independent readback and all-component inverse laws"
+    - "D-side recovery and final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Constructed explicit identity-on-data context morphisms in both directions between the rebase of a product and the product of rebased contexts, proved both are selected restrictions, and obtained mutual readable refinement for every complete-Law overlap. Proved the product Extension carrier and selected value are retained. For lens and protocol, generated operation-wise coherence records for the distinguished A1 point and every get/put or named edge/observation directly from the same primitive morphism."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryForwardOverlapExtension.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.fullFamilyProductComparisonForward
+    - AAT.AG.RealizationReconstruction.fullFamilyProductComparisonForward_isRestriction
+    - AAT.AG.RealizationReconstruction.fullFamilyProductComparisonBackward
+    - AAT.AG.RealizationReconstruction.fullFamilyProductComparisonBackward_isRestriction
+    - AAT.AG.RealizationReconstruction.fullFamilyProductComparison_readableEquivalent
+    - AAT.AG.RealizationReconstruction.fullFamilyProductComparison_extensionType
+    - AAT.AG.RealizationReconstruction.fullFamilyProductComparison_extension
+    - AAT.AG.RealizationReconstruction.fullFamilyCompleteLawOverlap_readableEquivalent
+    - AAT.AG.RealizationReconstruction.lensAATForwardCompleteLawOverlap_readableEquivalent
+    - AAT.AG.RealizationReconstruction.protocolAATForwardCompleteLawOverlap_readableEquivalent
+    - AAT.AG.RealizationReconstruction.LensAATForwardExtensionCoherence
+    - AAT.AG.RealizationReconstruction.lensAATForwardExtensionCoherence
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardExtensionCoherence
+    - AAT.AG.RealizationReconstruction.protocolAATForwardExtensionCoherence
+  claim_mapping:
+    source_labels:
+      - "GOAL A: overlap and Extension components of complete geometry"
+      - "GOAL E and n1015: arbitrary noninvertible lens/protocol morphisms and named operations"
+    conjuncts:
+      - "all source context triples -> rebase(source overlap) and overlap(rebased contexts) refine each other"
+      - "all overlap support/axis/observable data -> explicit identity-on-data restriction maps"
+      - "product Extension -> carrier and selected pair are retained"
+      - "lens distinguished Extension -> A1 point and every get/put equation commute"
+      - "protocol distinguished Extension -> A1 point and every named edge/observation equation commute"
+    undischarged_assumptions:
+      - "no map of all arbitrary Extension values to the independent target reading is available"
+      - "identity/composition and raw conjugation coherence remain open"
+      - "ReadingCore provenance, exact/isomorphism bridge, readback, D recovery, and final integration remain open"
+    acceptance_point: "The overlap witnesses are actual ContextMorphism values with IsRestriction proofs in both directions. The Extension records are canonically constructed from f; callers do not supply operation equations."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "source-generated complete-Law overlap preservation up to mutual readable refinement"
+      - "exact retention of the product Extension carrier and selected value"
+      - "lens A1 point and all raw get/put Extension equations"
+      - "protocol A1 point and all named edge/observation Extension equations"
+    remaining:
+      - "whole independent-target Extension transport beyond the selected operation-wise data"
+      - "identity/composition and raw-presheaf conjugation cancellation"
+      - "ReadingCore provenance and genuine-CS-isomorphism GeometryTotalHom bridge"
+      - "independent readback, D recovery, and final A--F integration"
+  certificate_provenance:
+    discharged:
+      - "both overlap restrictions are constructed with identity carrier maps and verified on all readings"
+      - "lens Extension equations are exactly f.get_naturality and f.put_naturality"
+      - "protocol Extension equations are exactly f.edge_naturality and f.observation_naturality"
+      - "both selected A1 points are mapped by the generated sourceMap"
+    unresolved:
+      - "complete target reading/Extension comparison and all later integration"
+  proof_use:
+    used:
+      - "all three identity component maps and all four IsRestriction clauses in each overlap direction"
+      - "target full-family membership in non-generation"
+      - "the primitive state map in every named-operation Extension equation"
+      - "the actual canonical reading Extension fields rather than a duplicate external payload"
+    unused:
+      - "the overlap object comparison depends only on endpoints/rebase and is not counted as morphism-specific"
+      - "no whole-Extension map, inverse, target answer, ReadingCore, or GeometryTotalHom is present"
+  structure_field_escape: none-found-the-extension-coherence-records-have-canonical-constructors-from-the-primitive-morphism-and-no-external-equation-certificate
+  route_integrity: pass-for-source-generated-overlap-and-distinguished-extension-data
+  target_fitting: none-found-context-equality-is-not-claimed-and-the-required-noninvertible-morphism-range-is-retained
+  vacuity: none-found-the-context-morphisms-and-operation-equations-are-explicit-and-quantify-all-inputs
+  one_way_as_equivalence: none-found-readable-equivalence-is-only-between-two-constructions-of-the-same-target-overlap-not-between-source-and-target-CS-objects
+  goal_or_report_reinterpretation: none-found-whole-extension-transport-identity-composition-readback-core-provenance-D-and-final-integration-remain-open
+  validation_refs:
+    - "focused CSAATGeometryForwardOverlapExtension file check: PASS; 28 namespace declarations including projections, standard axioms only"
+    - "focused exact CSAATGeometryForwardOverlapExtension target build: PASS (4281 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Prove identity/composition for the generated forward-image components, including raw-presheaf conjugation coherence; then construct endpoint ReadingCore provenance and the genuine-CS-isomorphism GeometryTotalHom bridge."
 ```
