@@ -11154,12 +11154,24 @@ result:
     acceptance_point: "The Cycle 102 Nat primitive image is exactly the union of the finite-support subgroup and the permutations whose adjacent left translate is finite-support, and actual intrinsic membership uses the same source classification; uniqueness and faithful normal form remain open."
     port_status: not-applicable
 review:
-  fixed_head: pending
-  lanes:
-    math_a: pending
-    math_b: pending
-    lean_a: pending
-    lean_b: pending
+  initial_fixed_head: 3735fd21d2e96371efcc4aca432b554005c98e1b
+  initial_lanes:
+    math_a: pass
+    math_b: minor-issues-noncentral
+    lean_a: pass
+    lean_b: minor-issues-noncentral
+  revised_fixed_head: dcf9f6f7bc8ad2da968a5244097d86ec03f40cb5
+  revised_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings:
+    - "replaced exactly-two-cosets wording by the proved union of the finite-support subgroup and its adjacent left coset; disjointness and parity uniqueness remain open"
+  direct_response:
+    reviewed_delta: "a9f17a3421bd5fd241c3517fdccdb97e251b1f4d..dcf9f6f7bc8ad2da968a5244097d86ec03f40cb5"
+    verdict: pass
+    new_findings: []
 audits:
   premise_delta:
     discharged:
