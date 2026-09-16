@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 89 proves that the same source-owned residual element acts trivially on every Support, Axis, and Observable local fiber while its actual stored-backward projection remains nonidentity
+- current proof obligation: Cycle 90 proves on the full local-fiber kernel that the actual stored-backward action is faithful, and retains the Cycle 89 source-owned candidate as an explicit nonidentity element of that domain
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct an intrinsic source-owned image and prove generation, decomposition, or coverage for every element of the full residual group, without defining syntax by the actual range or accepting a completed residual element as input
+- next proof obligation: construct an independent finite source syntax for the identity/backward-toggle fragment, prove its exact evaluation and order-two laws, then enlarge the primitive recipe family toward a genuine image/decomposition theorem without using the actual semantic range as syntax
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 90 delta | full local-fiber kernelの任意の全元についてstored backward-context作用だけで元を一意に識別し、Cycle 89候補を同じdomainのactual非自明元として保持する | `finiteAxisFoldResidualLocalFiberKernelBackwardProjection`, `finiteAxisFoldResidualLocalFiberKernelBackwardProjection_injective`, `finiteAxisFoldNormalizedExtensionBackwardLocalFiberKernel`, `finiteAxisFoldNormalizedExtensionBackwardLocalFiberKernel_ne_one` | full `FiniteAxisFoldResidualLocalFiberKernel`の任意の二元; Cycle 85のcomplete action単射性; 各元自身のlocal-kernel membership; Cycle 89の同じsource-owned candidateとactual backward projection非自明性 | 両元のlocal成分が各々`1`であることをmembershipから導き、backward成分の等号と合わせてcomplete actionの等号を構成; complete faithfulnessから元を同定; 同じ候補をsubtypeへ格納しbackward評価から`≠ 1`を証明 | local不可視なresidual全元の分類をactual stored-backward作用へ忠実に還元し、独立source syntaxのevaluation/readbackと像・分解検査へ渡す | backward projection像の内在的特徴付け・全射性、独立source syntax、generator族、任意residual元の分解・coverage、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
 | D Cycle 89 delta | Cycle 88の同じsource-owned residual候補について、全contextのSupport・Axis・Observable作用を完全なdependent Sigma carrier上で恒等化し、local kernel membershipとactual stored-backward projectionの非自明性を同時に示す | `finiteAxisFoldNormalizedExtensionBackward_supportSigmaMap_eq_id`, `finiteAxisFoldNormalizedExtensionBackward_axisSigmaMap_eq_id`, `finiteAxisFoldNormalizedExtensionBackward_observableSigmaMap_eq_id`, `finiteAxisFoldNormalizedExtensionBackward_supportEquiv_eq_one`, `finiteAxisFoldNormalizedExtensionBackward_axisEquiv_eq_one`, `finiteAxisFoldNormalizedExtensionBackward_observableEquiv_eq_one`, `finiteAxisFoldNormalizedExtensionBackward_mem_localFiberKernel`, `finiteAxisFoldNormalizedExtensionBackward_backwardProjection_ne_one` | 固定source-owned backward toggle; Cycle 88のfull residual element; source local forward成分の恒等性; southwest/topのcanonical context section; exact-leftのgenerated backward-forward cancellation; 各factorization equation; Cycle 87のactual moved context | 三つの完全Sigma作用を各固定transportで恒等化; 全contextの三local-fiber自己同値を恒等化; joint local kernel membershipを構成; 同じactual residual元のstored-backward projectionをmoved contextで評価して`≠ 1`を証明 | 忠実なCycle 85 action内で、同じsource-owned actual元の非自明性がlocal因子ではなくstored-backward因子に集中することを確立し、source image生成・分解・coverageへ渡す | 一つの非自明元のみであり、source imageの内在的特徴付け、generator族、任意residual元の分解・coverage、section/surjectivity、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
 | D Cycle 88 delta | Cycle 87の同じactual normalized非自明候補について、全global axis・全signature coordinate・全forward context objectで不可視であることを構成から証明し、full residual kernelへ格納する | `finiteAxisFoldNormalizedExtensionBackward_axisMap`, `finiteAxisFoldNormalizedExtensionBackward_coordinateEquiv`, `finiteAxisFoldSouthwestExtensionBackward_contextForward_eq_id`, `finiteAxisFoldExactLeftExtensionBackward_contextForward_eq_id`, `finiteAxisFoldActualDirectExtensionBackward_contextForward_eq_id`, `finiteAxisFoldNormalizedExtensionBackward_contextForward_eq_id`, `finiteAxisFoldNormalizedExtensionBackwardAxisKernel`, `finiteAxisFoldNormalizedExtensionBackwardAxisSignatureKernel`, `finiteAxisFoldNormalizedExtensionBackwardContextKernel` | 固定source-owned backward toggle; 固定source→southwest、exact-left、top、normalization route; opcartesian/exact-pull factorization; canonical sectionとgenerated exact backward-forward cancellation | 全`Fin 3` axis map恒等; 全`Fin 3 × Fin 3` coordinate作用恒等; 各段の全context forward関数恒等; 三段のkernel membershipを順に構成 | 三local-family恒等性を証明してCycle 85 faithful actionの非自明性をstored-backward因子へ集中させる | Support/Axis/Observable local-family恒等性、local kernel membership、backward projectionの明示、像生成・分解・coverage、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
 | D Cycle 87 delta | Cycle 86のsource-owned backward toggleが固定actual routeの各opaque transportとcanonical normalizationを通過しても消えないことを、完成したnormalized witnessを入力せず証明する | `finiteAxisFoldSouthwestBackwardToggleContext`, `finiteAxisFoldTransportedExtensionBackward_moves_southwestContext`, `finiteAxisFoldExactLeftBackwardToggleContext`, `finiteAxisFoldExactLeftExtensionBackward_moves_context`, `finiteAxisFoldActualBackwardToggleContext`, `finiteAxisFoldActualDirectExtensionBackward_moves_context`, `finiteAxisFoldNormalizedExtensionBackward_moves_context`, `finiteAxisFoldNormalizedExtensionBackwardAut_ne_one` | 固定source Bool-false context; Cycle 86のsource involutionとactual functorial transport; source-to-southwest/topのopcartesian factorization; generated exact-left factorizationとcontext cancellation; canonical normalization | 同じsource-owned witnessをsouthwest、exact-left、actual directへ順に輸送; 各段でfactorization equationとsection/retraction cancellationからstored backward actionの不動点否定を導出; normalization後の実射をwitnessで評価して`Aut ≠ 1`を証明 | Cycle 85 faithful actionのbackward因子へsource-owned非自明元を配置し、local因子の恒等性と合わせて最初のactual generatorを分類する | forward/axis/signature kernel membership、三local-family恒等性、backward projectionの群要素としての明示、像生成・分解・coverage、一般入力、bottom/全比較kernel/lift、B/E/Fは未完了 |
@@ -9547,4 +9548,112 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct a source-owned generator family and intrinsic image, then prove decomposition or coverage for every full residual element without defining syntax by the actual range."
+```
+
+## Cycle 90 — Faithful backward action on the full local-fiber kernel
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 90
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: f4d77e4fc20c38bc1161ca5041a7098b2f9dc6ed
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 89 exhibited one local-trivial, backward-nontrivial residual element but did not classify arbitrary local-trivial residual elements"
+  proof_dag_predecessors:
+    - "Cycle 80 full joint local-fiber kernel"
+    - "Cycle 85 faithful complete backward/local action on the full residual group"
+    - "Cycle 89 same source-owned candidate in the local kernel with actual backward projection nonidentity"
+  proof_obligation: "Prove for every element of the full local-fiber kernel that stored-backward action alone is faithful, and retain the Cycle 89 candidate as an explicit nonidentity element"
+  selection_reason: "A source image or decomposition theorem needs an injective actual readback on its intended residual domain; this full-domain uniqueness result is independent of any source syntax or image range."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldLocalKernelBackwardFaithfulness.lean
+  risks:
+    - "restrict the domain to the one constructed candidate or to an actual image"
+    - "accept backward faithfulness as a certificate instead of deriving it from complete action faithfulness"
+    - "infer surjectivity, generation, or coverage from injectivity"
+    - "identify the semantic subgroup itself with an independent finite syntax"
+  unchecked:
+    - "intrinsic characterization or surjectivity of the backward projection image"
+    - "independent source syntax and an evaluation/readback theorem"
+    - "a source generator family and decomposition or coverage of every residual element"
+    - "general inputs, bottom and full comparison kernels, lift fibers, and remaining B/E/F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Restricted the already constructed actual stored-backward projection to the entire local-fiber kernel.  For arbitrary two elements with equal backward actions, used each element's genuine kernel membership to show both complete local components are identity, combined those equalities with the backward equality, and applied Cycle 85 complete-action injectivity.  Packaged the unchanged Cycle 89 source-owned candidate in this subgroup and derived its nonidentity from the actual stored-backward projection witness."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldLocalKernelBackwardFaithfulness.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualLocalFiberKernelBackwardProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldResidualLocalFiberKernelBackwardProjection_injective
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedExtensionBackwardLocalFiberKernel
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedExtensionBackwardLocalFiberKernel_ne_one
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldResidualLocalFiberKernelBackwardProjection_injective
+      - finiteAxisFoldNormalizedExtensionBackwardLocalFiberKernel_ne_one
+    source_labels:
+      - "GOAL D and user conditions 1, 2, 4, and 5"
+    conjuncts:
+      - "all elements of the full local-fiber kernel -> equality is detected by actual stored-backward action"
+      - "same Cycle 89 source-owned actual element -> member of that full domain"
+      - "same actual element -> nonidentity"
+    undischarged_assumptions:
+      - "injectivity does not characterize which backward permutations occur"
+      - "no independent source syntax, generator family, section, surjectivity, decomposition, or coverage is yet proved"
+      - "general input and broader G-123 obligations remain open"
+    acceptance_point: "Every local-invisible residual element is uniquely determined by its actual stored-backward action, and the source-owned toggle supplies one nonidentity element; image and source coverage are not asserted."
+    port_status: not-applicable
+review:
+  fixed_head: 0daebbce8
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    reviewed_delta: "f4d77e4fc20c38bc1161ca5041a7098b2f9dc6ed..0daebbce8"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "backward faithfulness holds for arbitrary elements of the complete local-fiber kernel"
+      - "local-component equality is derived from each element's kernel membership"
+      - "the Cycle 89 candidate is a nonidentity element of this exact full-domain subgroup"
+    remaining:
+      - "backward image characterization and surjectivity"
+      - "independent source syntax, generator family, decomposition, section, and coverage"
+      - "general inputs, bottom and full comparison kernels, lift fibers, and remaining D/B/E/F"
+  certificate_provenance:
+    discharged:
+      - "no backward-faithfulness, local-equality, range-membership, or nonidentity certificate is input"
+      - "the complete action and local-kernel membership are previously constructed actual structures"
+    unresolved:
+      - "source syntax and intrinsic image characterization"
+  proof_use:
+    used:
+      - "Cycle 85 complete-action injectivity identifies arbitrary residual elements"
+      - "both local-kernel memberships force the complete local components to identity"
+      - "Cycle 89 actual backward projection witness proves the packaged candidate nonidentity"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-full-local-kernel-faithfulness-checkpoint
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4319 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 4 declarations; standard axioms only"
+    - "fresh fixed-content Math A/B and Lean A/B: PASS; no findings"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct an independent finite identity/toggle source syntax with exact evaluation and order-two laws, then enlarge the source recipe family toward real image generation and decomposition."
 ```
