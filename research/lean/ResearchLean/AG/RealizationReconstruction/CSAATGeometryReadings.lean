@@ -6,8 +6,9 @@ import Formal.Util.AssertStandardAxioms
 # CS-derived geometry readings and admissible endpoint covers
 
 This module replaces the marker-only visibility predicates of the Cycle 130
-scaffold by readings derived from the actual lens and protocol data.  Support
-is the exact n1015 (A1) source.  Axes are the actual AAT atoms.  Observables are the
+scaffold by readings derived from the actual lens and protocol data.  A
+support is an exact n1015 (A1) source together with the exact Atom it reads.
+Axes are the actual AAT atoms.  Observables are the
 actual Law polynomial rings, and a readable observable is exactly a named
 polynomial variable.
 
@@ -46,11 +47,11 @@ def lensAATGeometryReadingContext (input : LensFamilyInput.{u})
     (X : LensRealization input.View input.reference) :
     Site.ArchCtx (lensLawObject input X.Carrier X.toLensData.toLawStructure) where
   minimal := {
-    Support := LensAATSource X
+    Support := LensAATSource X × LensAATAtom input
     Axis := LensAATAtom input
     Observable := LensLawCoordinateRing input X.Carrier
-    supportReads := fun source atom =>
-      lensAATExtracts source atom
+    supportReads := fun support atom =>
+      lensAATExtracts support.1 support.2 ∧ support.2 = atom
     supportReads_objectFamily := fun {_ atom} _ =>
       typedRoleConfiguration_mem _ atom
     axisReads := fun axis =>
@@ -122,8 +123,8 @@ noncomputable def lensAATGeometryReadingCover (input : LensFamilyInput.{u})
   admissible := {
     atomSupportCoverage := by
       intro atom _
-      exact ⟨PUnit.unit, (.point : LensAATSource X),
-        lensAATExtracts_point (X := X) atom⟩
+      exact ⟨PUnit.unit, ((.point : LensAATSource X), atom),
+        lensAATExtracts_point (X := X) atom, rfl⟩
     equationCoordinateCoverage := by
       intro coordinate _
       left
@@ -168,11 +169,11 @@ def protocolAATGeometryReadingContext (input : ProtocolFamilyInput.{u})
     (X : ProtocolRealization input.schema input.observation) :
     Site.ArchCtx (protocolLawObject input X.State X.toLawStructure) where
   minimal := {
-    Support := ProtocolAATSource X
+    Support := ProtocolAATSource X × ProtocolAATAtom input
     Axis := ProtocolAATAtom input
     Observable := ProtocolLawCoordinateRing input X.State
-    supportReads := fun source atom =>
-      protocolAATExtracts source atom
+    supportReads := fun support atom =>
+      protocolAATExtracts support.1 support.2 ∧ support.2 = atom
     supportReads_objectFamily := fun {_ atom} _ =>
       typedRoleConfiguration_mem _ atom
     axisReads := fun axis =>
@@ -245,8 +246,8 @@ noncomputable def protocolAATGeometryReadingCover
   admissible := {
     atomSupportCoverage := by
       intro atom _
-      exact ⟨PUnit.unit, (.point : ProtocolAATSource X),
-        protocolAATExtracts_point (X := X) atom⟩
+      exact ⟨PUnit.unit, ((.point : ProtocolAATSource X), atom),
+        protocolAATExtracts_point (X := X) atom, rfl⟩
     equationCoordinateCoverage := by
       intro coordinate _
       left
