@@ -9891,3 +9891,123 @@ audits:
   blocking_findings: []
   next_obligation: "Lift this same generic source action through complete geometry and the fixed actual route, prove local-kernel landing and faithful evaluation, then use a non-involutive finite permutation to prove the Cycle 91 C2 evaluator does not cover the actual source-generated fragment."
 ```
+
+## Cycle 93 — Finite Extension permutations through complete geometry
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 93
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 6aaa03c2b4d0fd9e086df54ad866ba0d91308f45
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 92 supplied a faithful source context-object action for every finite Extension permutation but did not lift that family to complete geometry or the fixed actual endpoint"
+  proof_dag_predecessors:
+    - "Cycle 92 arbitrary source Extension-permutation context action and probes"
+    - "Cycles 86--91 backward-only Bool transport through the fixed actual route"
+  proof_obligation: "Lift arbitrary independently supplied Extension permutations to complete source-geometry automorphisms, resolve the stored-backward composition order without assuming involutivity, and carry the resulting group homomorphism through the fixed actual normalization route"
+  selection_reason: "Local-kernel membership and actual faithfulness require a uniform transported family first; the Bool involution cannot justify multiplication for noncommuting finite permutation groups."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldSourcePermutationGeometryAction.lean
+  risks:
+    - "reuse the Bool self-inverse shortcut for arbitrary permutations"
+    - "give the stored-backward construction the wrong multiplication orientation"
+    - "accept a completed geometry automorphism or normalized element as input"
+    - "infer normalized injectivity or local-kernel membership merely from functorial transport"
+    - "claim full residual image characterization or coverage"
+  unchecked:
+    - "uniform identity of all normalized local Support, Axis, and Observable components"
+    - "landing of every transported permutation in the actual local-fiber kernel"
+    - "probe-based injectivity of the normalized/local-kernel evaluator"
+    - "Bool specialization equality with the exact Cycle 86--91 candidate"
+    - "image characterization, section, surjectivity, decomposition, and coverage"
+    - "general inputs, bottom and full comparison kernels, lift fibers, and remaining B/E/F obligations"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Constructed the context functor for every independently supplied permutation, an asymmetric context equivalence with identity forward functor and the permutation stored backward, and its exact two-parameter composition law.  Lifted this data through equation transport, the exact core, total package, and complete geometry while proving identity and composition.  Because raw stored-backward geometry automorphisms are anti-multiplicative, defined the ordinary source section by storing `p⁻¹` in the hom and `p` in the inverse; proved this is a group homomorphism and injective on finite carriers from the Cycle 92 source probes.  Lifted the same homomorphism vertically and then functorially through the fixed source-to-southwest transport, endpoint retagging, exact-left pull, top transport, admissible wrapper, and canonical normalization."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldSourcePermutationGeometryAction.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSourceBackwardPermutationContextEquivalence_trans
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSourceBackwardPermutationGeometry_comp
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSourcePermutationGeometrySectionHom
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldSourcePermutationGeometrySectionHom_injective
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedPermutationGeometrySectionHom
+  claim_mapping:
+    theorem_names:
+      - finiteAxisFoldSourceContextPermutationFunctor_comp
+      - finiteAxisFoldSourceBackwardPermutationContextEquivalence_trans
+      - finiteAxisFoldSourceBackwardPermutationGeometry_comp
+      - finiteAxisFoldSourcePermutationGeometrySectionHom_injective
+    source_labels:
+      - "GOAL A/D and user conditions 1, 2, 3, 4, and 5"
+    conjuncts:
+      - "arbitrary independent Extension permutation -> complete source-geometry automorphism"
+      - "stored backward composition reversal -> ordinary group homomorphism via `p⁻¹`"
+      - "canonical source probes -> faithfulness of the complete source section for finite carriers"
+      - "same source section -> fixed southwest, exact-left, top, admissible, and normalized automorphism homomorphisms"
+    undischarged_assumptions:
+      - "`E` is finite only on the source-section injectivity theorem; construction of the homomorphisms is uniform without finiteness"
+      - "functorial transport alone does not prove the normalized homomorphism injective"
+      - "no actual local-fiber-kernel membership, local component identity, or image coverage is established"
+      - "general input and broader G-123 obligations remain open"
+    acceptance_point: "Every independently supplied finite Extension permutation now has a coherently multiplied complete source action and a canonical image at the fixed normalized endpoint; only the source action is proved faithful in this cycle."
+    port_status: not-applicable
+review:
+  fixed_head: 90f165873
+  independent_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings: []
+  direct_response:
+    reviewed_delta: "6aaa03c2b4d0fd9e086df54ad866ba0d91308f45..90f165873"
+    verdict: pass
+    new_findings: []
+audits:
+  premise_delta:
+    discharged:
+      - "arbitrary source Extension permutations lift to complete source geometry without a completed map input"
+      - "the non-involutive multiplication orientation is proved and corrected by explicit inverse tables"
+      - "the complete source section is faithful on every finite carrier"
+      - "the source section is transported as a group homomorphism to the fixed normalized endpoint"
+    remaining:
+      - "normalized probe readback and injectivity"
+      - "uniform actual local-component identities and local-fiber-kernel landing"
+      - "actual image characterization, section, surjectivity, decomposition, and coverage"
+      - "general inputs, bottom and full comparison kernels, lift fibers, and remaining D/B/E/F"
+  certificate_provenance:
+    discharged:
+      - "only the primitive carrier permutation is input; all equivalences, complete geometry maps, automorphisms, and transports are constructed"
+      - "no actual residual element, semantic range, kernel membership, or faithfulness certificate is accepted"
+      - "the same fixed source, G-122 endpoint data, admissible wrapper, and normalization functor are retained"
+    unresolved:
+      - "actual local-kernel landing and intrinsic image characterization"
+  proof_use:
+    used:
+      - "Cycle 92 two-way readability constructs the context equivalences"
+      - "the two-parameter context-equivalence law proves exact-core and complete-geometry composition"
+      - "inverse reversal converts the raw anti-action into an ordinary source group homomorphism"
+      - "Cycle 92 probe injectivity proves the source complete-geometry section faithful"
+      - "mapAut, endpoint conjugation, admissible packaging, and normalization transport the homomorphism to the fixed endpoint"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-through-fixed-normalization-endpoint
+  target_fitting: none-found
+  vacuity: none-found-for-the-stated-complete-geometry-transport-checkpoint
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused file check: PASS"
+    - "focused exact target build: PASS (4317 jobs; not a Research aggregate build)"
+    - "namespace axiom audit: 25 declarations; standard axioms only"
+    - "fresh fixed-content Math A/B and Lean A/B: PASS; no findings"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Compute the normalized Support, Axis, Observable, and forward-context actions uniformly for every source permutation, package actual local-fiber-kernel landing, and prove actual injectivity by transporting the Cycle 92 probes through the same route."
+```
