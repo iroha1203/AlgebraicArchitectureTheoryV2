@@ -10271,7 +10271,7 @@ result:
     - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_injective
   claim_mapping:
     source_labels:
-      - "GOAL D: retain every element of the original finite-axis-fold comparison family through the representation route"
+      - "GOAL D prerequisite: retain every element of the constructed Extension-permutation family through the fixed actual route before display-side recovery and full comparison-group coverage"
       - "preserve one independent carrier and all of its permutations rather than selecting a representable subgroup"
       - "construct equality reflection from source probes rather than accept a semantic inverse or faithfulness certificate"
       - "keep injectivity separate from kernel landing, image coverage, and surjectivity"

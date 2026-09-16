@@ -1,5 +1,4 @@
 import ResearchLean.AG.RealizationReconstruction.FiniteAxisFoldPermutationLocalFiberKernel
-import ResearchLean.AG.RealizationReconstruction.FiniteAxisFoldLocalKernelBackwardFaithfulness
 import Formal.Util.AssertStandardAxioms
 
 /-!
