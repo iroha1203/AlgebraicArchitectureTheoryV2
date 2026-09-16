@@ -13,7 +13,7 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 150 constructs canonical finite raw coordinates for lens ReadingCores, proves equivalence with every original Law-index/Atom coordinate, and establishes strict raw reindex equality for genuine carrier-changing lens isomorphisms
+- current proof obligation: Cycle 150 constructs parameter-relative finitely presented raw coordinates for lens ReadingCores, proves equivalence with every original Law-index/Atom coordinate, and establishes strict raw reindex equality for genuine carrier-changing lens isomorphisms
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
 - next proof obligation: construct the protocol canonical raw-coordinate analogue, then use both strict raw equalities in the full `SignedExactCoreReadingHom` and `GeometryTotalHom`
@@ -22,7 +22,7 @@
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A/E Cycle 150 delta | carrier-changing CS同型をdefinitionally same carrierへ縮小せず`GeometryTotalHom.raw_eq`の文字通りのraw equalityを準備し、元の全Law-index×Atom座標を保持する | `constantRawCoordinateFamily`, `constantRawSystemOn`, `constantRawSystemOn_reindex`; `LensCanonicalCarrier`, `LensCanonicalRawCoordinate`, `lensCanonicalRawCoordinateEquiv`, `lensIsoFiberEquiv`, `lensIsoPresentationCard_eq`, `lensIsoCanonicalRawCoordinate_eq`, `lensAATCanonicalRawReadingCore`, `lensAATCanonicalRawReadingCore_reindex` | generic rawは任意のsite・完全coordinate型・core package hom。lens特殊化は元のfinite reference fiberを持つlawful realizationと真のCS同型。完成coordinate集合、carrier等式、raw equality、geometry homを入力しない | 任意の固定coordinate型を全contextで保つempty-relation/identity-restriction raw systemを構成し、任意core homでstrict reindex equalityを証明。元の全lens Law index×全Atomとfinite normal-form carrier上の全index×Atomの同値を構成。genuine isoからreference-fiber同値とcardinality equalityを導き、canonical coordinate型の文字通りの等式とsource-generated core/geometry間のstrict raw reindex等式を証明 | lens側`GeomReadHom.raw_eq`成分。次cycleのprotocol対応とfull geometry bridge | 追加structural relationsは空だがLaw equationsはsite equation systemに保持。protocol版、full `SignedExactCoreReadingHom`、他のgeometry fields、readback、D回復、A--F統合は未完了 |
+| A/E Cycle 150 delta | carrier-changing CS同型をdefinitionally same carrierへ縮小せず`GeometryTotalHom.raw_eq`の文字通りのraw equalityを準備し、元の全Law-index×Atom座標を保持する | `constantRawCoordinateFamily`, `constantRawSystemOn`, `constantRawSystemOn_reindex`; `LensCanonicalCarrier`, `LensCanonicalRawCoordinate`, `lensCanonicalRawCoordinateEquiv`, `lensIsoFiberEquiv`, `lensIsoPresentationCard_eq`, `lensIsoCanonicalRawCoordinate_eq`, `lensAATCanonicalRawReadingCore`, `lensAATCanonicalRawReadingCore_reindex` | generic rawは任意のsite・完全coordinate型・core package hom。lens特殊化は元のfinite reference fiberを持つlawful realizationと真のCS同型。原始`View`や全carrierの有限性は仮定しない。完成coordinate集合、carrier等式、raw equality、geometry homを入力しない | 任意の固定coordinate型を全contextで保つempty-relation/identity-restriction raw systemを構成し、任意core homでstrict reindex equalityを証明。元の全lens Law index×全Atomとfinite-complement normal-form carrier上の全index×Atomの同値を構成。genuine isoからreference-fiber同値とcardinality equalityを導き、canonical coordinate型の文字通りの等式とsource-generated core/geometry間のstrict raw reindex等式を証明 | lens側`GeomReadHom.raw_eq`成分。次cycleのprotocol対応とfull geometry bridge | `View`、total carrier、Law-coordinate型は無限でもよい。追加structural relationsは空だがLaw equationsはsite equation systemに保持。protocol版、full `SignedExactCoreReadingHom`、他のgeometry fields、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 149 delta | genuine lens/protocol isomorphismから全state・全raw Law instance・全Law/Atom coordinateのexact dataを構成し、既存の全named-operation由来forward mapと一致させる | raw一般の`lensLawIndexEquivOfInverse`, `lensLawIndex_holds_iff_of_inverse`, `protocolLawIndexEquivOfInverse`, `protocolLawIndex_holds_iff_of_inverse`; そのCS specializationである`lensIsoStateEquiv`, `lensIsoLawIndexEquiv`, `lensIsoLawIndex_holds_iff`, `lensIsoLawCoordinateIndexEquiv`, `lensIsoLawCoordinateEquiv`, `lensIsoLawCoordinateEquiv_toRingHom`; protocolの同名対応宣言 | raw一般theoremは任意のLaw structureと相互逆raw homを受け、endpoint lawfulnessを仮定しない。CS specializationはlawfulなlens/protocol realization間の真のCS isomorphismを受けるが、endpointに含まれるlawfulness以外の追加lawfulness certificate、state/index/coordinateの逆写像、exactness certificate、完成core hom、geometry homを入力しない | 任意raw endpoint上で三種lens law indexと全protocol relation/observation indexの同値、およびraw `Holds`の保存・反映を相互逆homから証明。CS同型ではcategorical inverseからその入力を構成。ULift全index×全Atomの変数名変更を代数同型にし、そのforward ring homが既存のget/putまたは全edge/observationから生成されたmapと等しいことを証明 | Cycle 148のsource-generated `ReadingCore`間にfull exact transportを組み立てるためのstate/index/coordinate成分 | `SignedExactCoreReadingHom`のobject/configuration/operation/invariant/axis成分と全object residual exactness、`GeometryTotalHom`のcoverage/overlap/raw成分、独立readback、D回復、A--F統合は未完了 |
 | A/E Cycle 148 delta | n1015の原始sourceと実データからlens/protocolの`AATCorePackage`・`ReadingCore`を構成し、完成Law objectやgeometryをcore入力へ移さず既存endpointとのprovenanceを証明する | `supportedPointConfiguration`, `pointCompositionReading`, `CSAATCoreGeometryData`; lens/protocol各`*AATAtomization_listFinite`, `*CoreObjectReading`, `*CoreGeneratedObject_eq_lawObject`, `*AATCoreEndpointGeometryData`, `*AATCoreGeneratedGeometryData`, `*AATCoreGeneratedGeometryData_heq`, `*AATCoreReading`, `*AATCorePackage`, `*AATReadingCore`; named-operation selected APIs | 任意のlawful lens/protocol realizationと固定inputのみ。完成core、Law certificate、coverage certificate、operation family、decoder像を入力しない。compositionは任意のlist-finite familyを受け取る | canonical sourceの全Atomを明示有限列挙し、任意familyをそのまま保持するsupported configurationを構成。canonical specializationが既存typed-role configuration/Law objectと一致することを証明。Law equation reading・signature・actual coverage・overlapを一つのdependent bundleとしてその等式に沿ってtransportし、同じbundleからcoreとgeometryを構成。raw systemもderived site上に構成。get/putと全edge/observationのconfiguration mapをcore operation readingへ保持 | Cycle 131--133のactual endpoint geometry/rawを`ReadingCore`へ接続し、次cycleのgenuine-CS-isomorphismから`GeometryTotalHom`への橋 | reject circuitはsoundだが`RequiredComplete`を主張しない。invariant familyは空。一般CS射のcore change、genuine-isomorphism bridge、独立readback、D回復、A--F統合は未完了 |
 | A/E Cycle 147 delta | overlapとselected Extensionについてidentity/compositionを実データ上で証明し、lensのget/putとprotocolの全edge/observationを落とさない | `FullFamilyProductComparisonSemanticLaws`, `fullFamilyProductComparisonSemanticLaws`; lens/protocol各`*AATForwardOverlapExtensionSemanticUnit`, `*AATForwardOverlapExtensionSemanticCompositor`とcanonical constructors | 任意のrealizationまたは任意の合成可能なprimitive forward morphism、任意のsource context pair/tripleのみ。overlap/Extension certificate、whole-Extension map、inverse、surjectivityを入力しない | forward/backward比較のsupport/axis/observable恒等作用、direct-vs-successive合成、両`IsRestriction`、readable equivalence、Extension carrier/valueを一つの出力へ構成。CS compositorはdirect overlapとf段/g段、両primitive Extension coherence、direct compositeのpoint/get/putまたはpoint/全edge/全observationを二段のproof-useから構成 | Cycle 139 forward geometryのoverlap/Extension componentのsemantic functoriality。次cycleのendpoint ReadingCore provenance | context proof-record equality、chosen representative equality、arbitrary Extension value map、ReadingCore、GeometryTotalHom bridge、readback、D回復、A--F統合は未完了 |
@@ -15585,7 +15585,7 @@ audits:
   next_obligation: "Construct the full SignedExactCoreReadingHom and GeometryTotalHom from the source-generated ReadingCores and the exact state/index/coordinate data, then prove independent readback."
 ```
 
-## Cycle 150 — Canonical finite lens raw coordinates and strict reindexing
+## Cycle 150 — Parameter-relative lens raw coordinates and strict reindexing
 
 ```yaml
 ledger_type: target_cycle_result
@@ -15600,9 +15600,9 @@ selection:
   proof_dag_predecessors:
     - "Cycle 148 source-generated ReadingCore endpoints"
     - "Cycle 149 complete Law-index and coordinate equivalences for genuine CS isomorphisms"
-    - "LensFinitePresentation finite reference-fiber normal form"
-  proof_obligation: "Construct an isomorphism-invariant finite raw-coordinate presentation that retains every original Law-index/Atom coordinate and proves strict lens raw reindex equality without assuming carrier type equality"
-  selection_reason: "Restricting to definitionally equal carriers would weaken E. Weakening raw_eq to an untyped presheaf isomorphism would lose the typed coordinate/relation/restriction presentation. Canonical finite cardinal coordinates preserve the fixed target and satisfy the existing strict contract."
+    - "LensFinitePresentation finite-complement normal form over the possibly infinite View parameter"
+  proof_obligation: "Construct an isomorphism-invariant, parameter-relative finitely presented raw-coordinate family that retains every original Law-index/Atom coordinate and proves strict lens raw reindex equality without assuming carrier type equality"
+  selection_reason: "Restricting to definitionally equal carriers would weaken E. Weakening raw_eq to an untyped presheaf isomorphism would lose the typed coordinate/relation/restriction presentation. Coordinates indexed by the finite-complement normal form preserve the possibly infinite primitive View parameter and satisfy the existing strict contract."
   expected_result_type: proof-checkpoint
   lean_targets:
     - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATCanonicalRawCoordinates.lean
@@ -15618,7 +15618,7 @@ selection:
     - "remaining geometry fields, readback, D recovery, and A--F integration"
 result:
   proposed_result_type: proof-checkpoint
-  proof_obligation_delta: "Constructed a generic raw system with one fixed complete coordinate type at every context, empty additional structural relations, and identity restrictions, and proved strict reindex equality along every package hom. For lenses, chose the full Law-index/Atom family of the finite normal-form carrier, proved it equivalent to the original full coordinate family, constructed the genuine-isomorphism equivalence of reference fibers, derived exact presentation-card and canonical-coordinate type equality, and used that equality to prove strict raw reindexing for source-generated core/geometry endpoints without assuming equality of the original carrier types."
+  proof_obligation_delta: "Constructed a generic raw system with one fixed complete coordinate type at every context, empty additional structural relations, and identity restrictions, and proved strict reindex equality along every package hom. For lenses, chose the full Law-index/Atom family of the finite-complement normal-form carrier, whose View factor and total coordinate family may be infinite; proved it equivalent to the original full coordinate family; constructed the genuine-isomorphism equivalence of reference fibers; derived exact presentation-card and canonical-coordinate type equality; and used that equality to prove strict raw reindexing for source-generated core/geometry endpoints without assuming equality of the original carrier types."
   completion_candidate: no
   lean_artifacts:
     - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATCanonicalRawCoordinates.lean
@@ -15641,14 +15641,14 @@ result:
     conjuncts:
       - "arbitrary fixed complete coordinate type -> coherent raw system on every selected context"
       - "arbitrary package hom -> strict reindex equality for that fixed coordinate type"
-      - "original lens state Law indices times all Atoms -> equivalence with finite-normal-form state Law indices times all Atoms"
+      - "original lens state Law indices times all Atoms -> equivalence with finite-complement-normal-form state Law indices times all Atoms, retaining a possibly infinite View factor"
       - "genuine lens isomorphism -> reference-fiber equivalence -> equal finite cardinal -> literal canonical coordinate type equality"
       - "source-generated core/geometry plus canonical coordinates -> ReadingCore satisfying strict raw reindex equality once the core hom is constructed"
     undischarged_assumptions:
       - "the generic strict theorem is conditional on a package hom; this cycle does not construct that hom"
       - "only the lens canonical raw endpoint is constructed; protocol remains open"
       - "no complete geometry hom or readback is claimed"
-    acceptance_point: "The canonical coordinate type is derived from the original finite reference-fiber cardinal and contains every Law index on the decoded finite carrier paired with every Atom. The original complete coordinate type is connected by a constructed equivalence. Carrier equality and raw equality are not caller premises."
+    acceptance_point: "The canonical coordinate type is derived from the original finite reference-fiber cardinal and contains every Law index on the decoded finite-complement carrier paired with every Atom. View, the total carrier, and the coordinate type may be infinite. The original complete coordinate type is connected by a constructed equivalence. Carrier equality and raw equality are not caller premises."
     port_status: not-applicable
 audits:
   premise_delta:
@@ -15664,7 +15664,7 @@ audits:
     conditional:
       - "the generic and lens strict raw reindex theorems accept the package hom whose other fields remain a later obligation"
     discharged:
-      - "the raw system, original-to-canonical coordinate equivalence, reference-fiber equivalence, and cardinal equality are constructed from the site, original realization, finite normal form, and genuine isomorphism"
+      - "the raw system, original-to-canonical coordinate equivalence, reference-fiber equivalence, and cardinal equality are constructed from the site, original realization, finite-complement normal form, and genuine isomorphism"
       - "the specialized theorem does not accept a carrier equality, coordinate equality, or raw equality certificate"
     unresolved:
       - "construction of the full package and geometry morphisms"
@@ -15676,7 +15676,7 @@ audits:
       - "the proved cardinal equality to rewrite the canonical coordinate type before strict raw reindexing"
     unused:
       - "no original carrier equality, selected coordinate subset, completed geometry hom, raw equality certificate, decoder image membership, or readback is accepted"
-  structure_field_escape: none-found-the-canonical-ReadingCore-raw-field-is-constructed-from-the-original-source-generated-core-and-finite-cardinal
+  structure_field_escape: none-found-the-canonical-ReadingCore-raw-field-is-constructed-from-the-original-source-generated-core-and-finite-complement-cardinal
   route_integrity: pass-original-complete-coordinates-are-connected-to-canonical-complete-coordinates-by-an-explicit-equivalence
   target_fitting: none-found-carrier-changing-isomorphisms-are-not-restricted-to-definitionally-equal-types
   vacuity: none-found-strict-raw-equality-is-proved-by-extensionality-after-constructed-coordinate-type-equality

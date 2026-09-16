@@ -9,8 +9,10 @@ import Formal.Util.AssertStandardAxioms
 The strict `GeometryTotalHom.raw_eq` contract compares raw systems by equality,
 not merely by an equivalence of their coordinate types.  This module begins a
 fixed-target-preserving solution: raw coordinates are indexed by canonical
-finite normal-form carriers whose cardinal is determined by the original CS
-input.  The original complete Law-index/Atom coordinate family remains
+finite-complement normal-form carriers whose complement cardinal is determined
+by the original CS input.  The primitive `View`, total carrier, and resulting
+Law-coordinate family may all be infinite.  The original complete
+Law-index/Atom coordinate family remains
 equivalent to the canonical one; it is not replaced by a selected subset.
 
 The generic constant-coordinate raw system below has empty additional
@@ -117,25 +119,25 @@ theorem constantRawSystemOn_reindex {U : AtomCarrier.{u}}
   · rfl
   · rfl
 
-/-! ## Lens canonical finite coordinates -/
+/-! ## Lens canonical parameter-relative coordinates -/
 
-/-- The canonical finite-state carrier decoded from the cardinality of the
-original lens reference fiber. -/
+/-- The canonical finite-complement carrier decoded from the cardinality of
+the original lens reference fiber.  Its `View` factor may be infinite. -/
 abbrev LensCanonicalCarrier (input : LensFamilyInput.{u})
     (X : LensRealization input.View input.reference) : Type u :=
   ((LensRealization.lensDecoder input.View input.reference).obj
     (LensRealization.presentationOf X)).Carrier
 
-/-- Every raw Law index of the canonical finite-state lens, paired with every
-original AAT Atom. -/
+/-- Every raw Law index of the canonical finite-complement lens, paired with
+every original AAT Atom.  This coordinate type need not be finite. -/
 abbrev LensCanonicalRawCoordinate (input : LensFamilyInput.{u})
     (X : LensRealization input.View input.reference) : Type (u + 1) :=
   ULift.{u + 1, u} (LensLawIndex input.View (LensCanonicalCarrier input X)) ×
     LensAATAtom input
 
 /-- The original complete Law-index/Atom family is equivalent to the canonical
-finite-state coordinate family through the already constructed normal-form
-isomorphism. -/
+parameter-relative finitely presented coordinate family through the already
+constructed normal-form isomorphism. -/
 noncomputable def lensCanonicalRawCoordinateEquiv (input : LensFamilyInput.{u})
     (X : LensRealization input.View input.reference) :
     (ULift.{u + 1, u} (LensLawIndex input.View X.Carrier) × LensAATAtom input) ≃
@@ -192,8 +194,8 @@ theorem lensIsoCanonicalRawCoordinate_eq {input : LensFamilyInput.{u}}
   rw [hp]
 
 /-- The source-generated lens core and geometry equipped with the canonical
-finite raw coordinates.  Only the raw presentation changes; core and geometry
-remain exactly those constructed from the original CS source. -/
+finite-complement raw presentation.  Only the raw presentation changes; core
+and geometry remain exactly those constructed from the original CS source. -/
 noncomputable def lensAATCanonicalRawReadingCore (input : LensFamilyInput.{u})
     (X : LensRealization input.View input.reference) :
     ReadingCore (lensAATCarrier input) where
