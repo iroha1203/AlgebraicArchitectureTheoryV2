@@ -12447,7 +12447,8 @@ review:
     - "added raw and operation-preserving protocol cardinality equivalences and exact identity/session-swap 16/4/4 specializations"
   lanes: {math_a: pass, math_b: pass, lean_a: pass, lean_b: pass}
   direct_response:
-    reviewed_delta: "1170c40780bf1a1aaf1adf46b97a6615054fee3f..b112feb45c855f789d088ecb9073f117a31030ed"
+    reviewed_delta: "b3a8e5f4701a2bdec5bf4050deac5a320227771d..b112feb45c855f789d088ecb9073f117a31030ed"
+    repair_delta: "1170c40780bf1a1aaf1adf46b97a6615054fee3f..b112feb45c855f789d088ecb9073f117a31030ed"
     verdict: pass
     new_findings: []
 audits:
