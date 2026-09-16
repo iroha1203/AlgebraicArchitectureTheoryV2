@@ -13,17 +13,18 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 123 lifts the independent fixed-F protocol correspondence over every element of an arbitrary supplied `H ≤ Aut(F)` to a genuine group equivalence preserving projection, section, literal kernels, every fiber torsor, component-family classification, operation names, and all executions
+- current proof obligation: Cycle 124 interprets both independent CS models as exact typed primitive object/operation families and transports every role along every possibly noninvertible semantic morphism, with operation squares and identity/composition laws
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the general finite `Q,L,O` protocol presentation, decoder, and bidirectional AAT translation with nonempty relation language and nontrivial observations, discharging B's four properties rather than promoting the fixed-F empty-relation/PUnit application to completion of E
+- next proof obligation: extend the exact typed primitive-operation layer into actual AAT Atom/Law/complete-geometry objects and morphisms, then construct the independent readback and prove both directions on all objects and noninvertible morphisms before D-side transport
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| E/F Cycle 123 delta | 任意に与えた`H ≤ Aut(F)`の全元上で独立protocol変更を群にし、同じfixed-F群の積・射影・section・literal kernel・全fiber torsor・component分類へoperation名を保って一致させる | `ProtocolChangeGroup`と`Group`; `projection`, `canonicalSection`; `toFollowingGroup`, `mulEquivFollowingGroup`; `projection_compatibility`, `section_compatibility`; `kernelMulEquiv`; protocol `ProjectionFiber`の右kernel `SMul`/`MulAction`, free/transitive/`∃!`; `projectionFiberEquiv`, `componentGroupEquivProjectionFiber`, `projectionFiberEquiv_smul`; `operationMap_compatibility`, `path_naturality`, `execution_naturality` | 有限`F.Vertex,F.Edge,K`と独立入力`H ≤ FixedFGraphAutomorphism F`; protocol carrierのfieldは`visible`, 頂点別`stateEquiv`, 全typed edge square, `PUnit`観測自然性だけで、fixed-F pair・kernel・component familyを入力しない | 可視作用で再添字化した半直積の積と逆元をedge squareから閉じる; protocol dataからactual preserving pairを構成し、actual pairからfactorizationで同じstate familyを復元して群同値; commuting squareからliteral kernel同値; protocol群自身で全fiberの右kernel作用とfree/transitive/unique displacementを構成; fixed-F作用とのintertwining、全component family分類、元operation名と全executionの互換を証明 | Eの固定F protocol applicationにF1の全`H`群・section・kernel・全fiber分類を適用し、一般protocol/AAT翻訳へ渡す | nonempty relationとnontrivial observationを含む任意`Q,L,O`のpresentation/decoder/圏同値/B四性質、AAT translation、D表示側回復、lens typed translation、残るA--E統合は未完了 |
-| E/F Cycle 122 delta | 固定Fの独立protocol意味を定義し、元のoperation名・端点、全pathと商execution、観測、任意の非可逆adapterを保持して、raw/preserving分類とP1を同じF構成へ双方向接続する | `TypedEdge`, `schema`, `renameTypedEdge`, `renamePath`, `renameExecutionFunctor`; `observationFunctor`, `hiddenExecutionFunctor`, `realization`; `ProtocolObservationChange`, `ProtocolInvertibleChange`; `equivFollowingStateChanges`, `equivPreservingFollowingChanges`; `path_naturality`, `execution_naturality`; 一般`InvertibleAdapterSquare`と`invertibleAdapterSquare_iff_totalMaps`; 再添字付き`ProtocolChangeAdapterSquare`, `protocolChangeAdapterSquare_iff_vertices`, `protocolChangeAdapterSquare_path`; protocol側16/4/4と`protocolSessionSwapChange` | 任意の固定directed multigraph `F`、hidden type `K`、graph automorphism; このapplicationでは`RelationIndex = ULift Empty`、観測値`PUnit`、hidden edge actionは恒等; P1の`q,q'`は任意の`ProtocolRealization.Hom`で非可逆可、変更`a,b`のみstate equivalenceを持つ | CS側でraw changeと、全typed edge squareを持つpreserving changeを独立定義; fixed-F changeとの両方向を構成; 生成edge squareを全pathとquotient executionへ拡張; total state上で`q'`を`u(v)`に評価するreindexed P1とrenamed path版を証明; 独立protocol側から16/4/4とsession edge交換・hidden実行・operation adapter一致を算出 | n1015 protocol意味の固定F applicationにF分類を適用し、一般E protocol接続とall-H群輸送への基盤にする | empty relation/PUnitに限定しない任意`Q,L,O`のprotocol構文・意味・翻訳、all-H protocol change groupとsection/kernel/torsor、typed AAT translation、D/presentation側回復、残るA--E統合は未完了 |
+| E Cycle 124 delta | lensのstate/view/read/writeとget/put、protocolの各state/observationと元のnamed edge/vertex observationをexactなtyped primitive object/operationとして読み、任意の非可逆semantic morphism上で全roleと全operation squareを恒等・合成込みで運ぶ | `PrimitiveOperation.protocolObservation`; `lensObjectCarrier`, `lensOperationFunction`, `lensObjectMap`, `lensGet_square`, `lensPut_square`, 全4 roleの`id`/`comp`; `PrimitiveObject.protocolState`, `PrimitiveObject.protocolObservation`, `protocolObjectCarrier`, `protocolOperationFunction`, `protocolStateMap`, `protocolObservationMap`, `protocolEdge_square`, `protocolObservation_square`, state/observationの`id`/`comp` | 独立に定義済みの任意の`LensFamilyInput`と`LensRealization`; 任意の`ProtocolFamilyInput Q L O`と`ProtocolRealization`; 射は元の一般`Hom`で、iso・decoder像・presentation membership・完成写像certificateを仮定しない | carrierを元の型へ、operationを元の`get`/`put`/`edgeAction`/`observe`へ定義的に評価; lens全4 roleとprotocol state/fixed observationの写像を構成; semantic Homの定義法則を実使用して全operation squareを証明; 全roleのidentity/compositionを個別に証明 | EのCS意味からAAT側typed operation signatureへ進む最初のobject/morphism layer; 後続のAtom/Law/完全幾何構成とreadbackが接続すべき固定interface | actual AAT `Atom`/`Law`/ArchitectureObject/完全幾何packageとAAT射、独立readbackと両逆、selection/value/関係を含む全translation、D分類の表示側回復、A--F同一構成統合は未完了 |
+| E/F Cycle 123 delta | 任意に与えた`H ≤ Aut(F)`の全元上で独立protocol変更を群にし、同じfixed-F群の積・射影・section・literal kernel・全fiber torsor・component分類へoperation名を保って一致させる | `ProtocolChangeGroup`と`Group`; `projection`, `canonicalSection`; `toFollowingGroup`, `mulEquivFollowingGroup`; `projection_compatibility`, `section_compatibility`; `kernelMulEquiv`; protocol `ProjectionFiber`の右kernel `SMul`/`MulAction`, free/transitive/`∃!`; `projectionFiberEquiv`, `componentGroupEquivProjectionFiber`, `projectionFiberEquiv_smul`; `operationMap_compatibility`, `path_naturality`, `execution_naturality` | 有限`F.Vertex,F.Edge,K`と独立入力`H ≤ FixedFGraphAutomorphism F`; protocol carrierのfieldは`visible`, 頂点別`stateEquiv`, 全typed edge square, `PUnit`観測自然性だけで、fixed-F pair・kernel・component familyを入力しない | 可視作用で再添字化した半直積の積と逆元をedge squareから閉じる; protocol dataからactual preserving pairを構成し、actual pairからfactorizationで同じstate familyを復元して群同値; commuting squareからliteral kernel同値; protocol群自身で全fiberの右kernel作用とfree/transitive/unique displacementを構成; fixed-F作用とのintertwining、全component family分類、元operation名と全executionの互換を証明 | Eの固定F protocol applicationにF1の全`H`群・section・kernel・全fiber分類を適用し、受理済み一般protocol再構成とAAT翻訳へ渡す | 一般`Q,L,O`のpresentation/decoder/圏同値/B四性質はCycle 2で放電済み; 未完了はその一般CSデータとAAT Atom/Law/operation/完全幾何との双方向typed translation、D表示側回復、lens typed translation、残るA--E統合 |
+| E/F Cycle 122 delta | 固定Fの独立protocol意味を定義し、元のoperation名・端点、全pathと商execution、観測、任意の非可逆adapterを保持して、raw/preserving分類とP1を同じF構成へ双方向接続する | `TypedEdge`, `schema`, `renameTypedEdge`, `renamePath`, `renameExecutionFunctor`; `observationFunctor`, `hiddenExecutionFunctor`, `realization`; `ProtocolObservationChange`, `ProtocolInvertibleChange`; `equivFollowingStateChanges`, `equivPreservingFollowingChanges`; `path_naturality`, `execution_naturality`; 一般`InvertibleAdapterSquare`と`invertibleAdapterSquare_iff_totalMaps`; 再添字付き`ProtocolChangeAdapterSquare`, `protocolChangeAdapterSquare_iff_vertices`, `protocolChangeAdapterSquare_path`; protocol側16/4/4と`protocolSessionSwapChange` | 任意の固定directed multigraph `F`、hidden type `K`、graph automorphism; このapplicationでは`RelationIndex = ULift Empty`、観測値`PUnit`、hidden edge actionは恒等; P1の`q,q'`は任意の`ProtocolRealization.Hom`で非可逆可、変更`a,b`のみstate equivalenceを持つ | CS側でraw changeと、全typed edge squareを持つpreserving changeを独立定義; fixed-F changeとの両方向を構成; 生成edge squareを全pathとquotient executionへ拡張; total state上で`q'`を`u(v)`に評価するreindexed P1とrenamed path版を証明; 独立protocol側から16/4/4とsession edge交換・hidden実行・operation adapter一致を算出 | n1015 protocol意味の固定F applicationにF分類を適用し、受理済み一般E protocol再構成とall-H群輸送への基盤にする | 一般`Q,L,O`の構文・意味・decoder・圏同値はCycle 2で放電済み; all-H protocol群はCycle 123で放電; 未完了は一般protocolのtyped AAT translation、D/presentation側回復、lens typed translation、残るA--E統合 |
 | E/F Cycle 121 delta | 任意の独立`H ≤ Sym(V)`について、同じ`h,u`でget/putを保つ全lens変更を群として構成し、同じcomplete-update fixed-F群の積・射影・split section・核・全fiber torsorへ一致させる | `completeUpdateAutomorphismHom`, `completeUpdateGraphSubgroup`, `LensChangeGroup`と`Group`, `projection`, `canonicalSection`, `toFollowingGroup`, `mulEquivFollowingGroup`, `visibleMulEquivGraphSubgroup`, `projection_compatibility`, `section_compatibility`, `kernelMulEquiv`, lens `ProjectionFiber`, literal kernel `SMul`/`MulAction`, free/transitive/`∃!`, `projectionFiberEquiv`, `projectionFiberEquiv_smul` | 任意の`V,K`、独立入力`H ≤ Equiv.Perm V`; product lensの基準値は`toLensInvertibleChange`にだけ用い、`H`に基準値固定を仮定しない; Cycle111--120のactual F群と固定`u`対応 | get/put式からactual preserving pairを構成し、任意のactual pairのgraph-image witnessから同じ`h,u`のlens変更を逆構成; 二方向から群同値; projection commuting squareからliteral kernel同値; lens群自身で右kernel作用を構成してfree/transitive/unique displacement; fixed-F作用とのintertwining | E product lensにF1の全`H`群・section・kernel・全fiber torsorを適用し、D/AAT表示側輸送とprotocol共通化へ渡す | protocolの独立意味との双方向接続、lens typed Read/Write AAT翻訳と一般非可逆射、D比較群・presentation側回復、残るA--E統合は未完了 |
 | E/F Cycle 120 delta | 独立lens意味の同じ`h,u`によるget/put二図式(L5)を、各固定`u`上でcomplete-update F分類と双方向に一致させ、L6とsection版を構成する | `LensInvertibleChange`, `toFollowingStateChange`, `toFollowingStateChange_preserves`, `ofFollowingStateChange`, `equivPreservingFollowingChanges`, `hiddenPermutation`, `fiberPerm_eq_hiddenPermutation`, `normalForm`, `hiddenPermutation_unique`, `ofHiddenPermutation`, `equivHiddenPermutations`, `natCard_productLensChanges`, `productSection`, `preservesSection_iff` | 独立な`LensRealization.product V K reference`; 任意の`visible : Perm V`（reference固定不要）; 有限`K`; Cycle111--120のactual F分類 | get式からobservation、put式から全ordered-pair named execution squareを構成し逆向きも同じ`h`で回復; reference fiberでhidden permutationを`h`から構成; 全edge constancyから全状態normal form; 任意候補の一意性と任意`Perm K`からの逆構成; actual section式とpoint stabilizerのiff | E product lensの各固定可視変更上のfiber分類とL6を確立し、all-`H`群接続へ渡す | 任意`H ≤ Sym(V)`上のlens change groupと積・projection・split section・kernel・torsorの同型、protocol E接続、lensのAAT typed Read/Write・一般非可逆射への双方向翻訳、D/AAT表示側回復、残るA--E統合は未完了 |
 | F Cycle 119 delta | 固定lens、選択値保存lens、protocolの指定データ・評価・個数を同じF分類へ接続する | `followingEquivVertexPermutationFamilies`, `natCard_followingStateChange`, `PointedFollowingStateChange`, `pointedFollowingEquivVertexFamilies`, `natCard_pointedFollowingStateChange`; complete-update graph/automorphism/component equivalence; `boolLensTwistChange`とget/put評価・id/flip各4/2; `pointedLensTwistChange`とsection/put評価・二つの非恒等witness・4/2; `protocolGraph`, `protocolSessionSwapAutomorphism`, `protocolSessionSwapLift`, operation-map計算, `protocolComponentEquivBool`, 16/4/4 | カード指定の`Bool×Bool` product lens、`Bool×Fin 3`と基準値0、`Fin 4`のnamed edges `0→1`,`2→3`; Cycle111--118のactual source/fiber分類 | raw following changeと頂点別全置換族の往復; pointed raw changeと全point stabilizer族の往復; complete graph一成分とprotocol二成分のsource relation由来証明; xor/true-fiber swapの具体評価; session交換のvertex/edge/operation adapter; 一般濃度式の特殊化 | Fの三固定例を完了し、同じ構成をEの独立lens/protocol意味へ翻訳する | Eとの対象・射・get/put・adapterの双方向翻訳、D/AAT表示側回復、残るA--Eの同一構成統合は未完了 |
@@ -12434,7 +12435,7 @@ result:
     - research/lean/ResearchLean/AG/RealizationReconstruction/FixedFProtocolConnection.lean
   unfinished:
     - "the all-H protocol change group and compatibility with multiplication, projection, split section, kernels, and every projection fiber"
-    - "general protocol syntax and realization for arbitrary Q, L, and O, including nonempty relations and nontrivial observations, with bidirectional AAT translation"
+    - "the bidirectional typed translation of the already accepted general Q,L,O protocol syntax and realization, including nonempty relations and nontrivial observations, into actual AAT Atom/Law/complete-geometry data"
     - "lens typed Read/Write AAT translation and recovery of general noninvertible lens morphisms"
     - "D comparison-group transport and presentation/AAT-side recovery of the same groups, sections, kernels, fibers, and classification data"
     - "the remaining A--E target obligations and final same-construction integration"
@@ -12456,7 +12457,7 @@ audits:
   certificate_provenance: "the protocol structures are defined independently from typed vertices, original named edges, state types, execution functions, and observation maps; operation preservation is the square for every authored typed edge and is used to construct rather than assumed as a fixed-F preservation certificate"
   proof_use: "edge naturality constructs the fixed-F preservation theorem, is used in the inverse equivalence, and inductively supplies all path and quotient-execution squares; for this explicitly PUnit-valued fixed-F application, observation preservation is definitionally or propositionally trivial and is not used to manufacture a nontrivial fixed-F law; total-state P1 uses the actual visible vertex renaming and the path theorem uses the actual renamed path"
   structure_field_escape: none-found
-  target_fitting: none-found-fixed-F-application-only-and-general-Q-L-O-remains-explicitly-unfinished
+  target_fitting: none-found-fixed-F-application-only-and-general-Q-L-O-presentation-reconstruction-is-reused-from-accepted-Cycle-2
   vacuity: "PUnit makes only this fixed-F observation map trivial; state equivalences, original edge names, endpoint renaming, every edge square, paths, quotient executions, arbitrary adapters, and fixed counts remain nontrivial and are proved"
   validation_refs:
     - "focused file check: PASS"
@@ -12465,7 +12466,7 @@ audits:
     - "placeholder, hidden/BiDi, privacy, import-direction, and diff checks: PASS"
     - "Research aggregate/full build: not run"
   blocking_findings: []
-  next_obligation: "Lift the protocol correspondence over arbitrary visible H to its full change group, projection, split section, kernel, and fibers, then construct the general Q,L,O protocol/AAT translation instead of promoting this empty-relation/PUnit application to completion of E."
+  next_obligation: "Lift the protocol correspondence over arbitrary visible H to its full change group, projection, split section, kernel, and fibers, then reuse the accepted Cycle 2 general Q,L,O presentation reconstruction while constructing its missing typed AAT translation instead of promoting this empty-relation/PUnit application to completion of E."
 ```
 
 ## Cycle 123 — All-H protocol group, literal kernels, and fibers
@@ -12486,9 +12487,8 @@ result:
   lean_artifacts:
     - research/lean/ResearchLean/AG/RealizationReconstruction/FixedFProtocolGroupConnection.lean
   unfinished:
-    - "general finite protocol syntax and presentation for arbitrary Q, nonempty relation language L, and nontrivial observation O"
-    - "the general protocol decoder, bidirectional morphism translation, category equivalence, and discharge of all four B properties"
-    - "protocol and lens typed AAT translation, including general noninvertible morphisms"
+    - "the bidirectional typed translation of the already accepted general Q,L,O protocol semantics and presentation into AAT Atom, Law, operation, and complete-geometry data"
+    - "the corresponding lens typed AAT translation, retaining general noninvertible morphisms"
     - "D comparison-group transport and presentation/AAT-side recovery of the same groups, sections, kernels, fibers, and classification data"
     - "the remaining A--E target obligations and final same-construction integration"
 review:
@@ -12511,5 +12511,61 @@ audits:
     - "placeholder, hidden/BiDi, privacy, import-direction, registry, and diff checks: PASS"
     - "Research aggregate/full build: not run"
   blocking_findings: []
-  next_obligation: "Construct the general Q,L,O protocol presentation and decoder with authored nonempty relations and nontrivial observations, prove the bidirectional object and morphism translations and all four B properties from those finite inputs, and only then connect that general result to AAT/D."
+  next_obligation: "Reuse the accepted Cycle 2 general Q,L,O presentation equivalence and B-property discharges, and construct the missing bidirectional typed object and morphism translations between both CS models and AAT Atom/Law/operation/complete-geometry data before D-side recovery."
+```
+
+## Cycle 124 — Typed CS primitive operations and arbitrary semantic morphisms
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 124
+base_oid: 94096c9bc5eef8f56c90efffcc595726e9ee62b3
+tracking_issue: 4520
+selection:
+  proof_obligation: "Construct an exact typed object/operation interpretation for both independent CS models and transport it along every arbitrary, possibly noninvertible, semantic morphism before building the actual AAT objects"
+  expected_result_type: proof-checkpoint
+result:
+  proposed_result_type: target-proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Added the missing protocol observation primitive with its dependent endpoint from the state at vertex v to the fixed observation carrier O(v).  Interpreted all lens roles state/view/read/write by the exact carriers C/V/C/CxV and get/put by the original semantic functions.  Interpreted every protocol state and fixed observation role, every original named edge with its dependent endpoints, and every vertex-indexed observation by edgeAction and observe.  For every arbitrary LensRealization.Hom, constructed all four role maps and proved both operation squares from the defining get/put naturality laws; for every arbitrary ProtocolRealization.Hom, constructed the state and fixed-observation maps and proved every named-edge and observation square from the defining naturality laws.  Proved identity and composition separately for every lens role and both protocol carrier kinds.  No isomorphism, decoder-image membership, presentation-image restriction, completed map, or successful-image certificate is accepted as input."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedFamilySignature.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATTypedOperationTranslation.lean
+  unfinished:
+    - "actual AAT Atom, Law, ArchitectureObject, and complete-geometry packages and their morphisms"
+    - "independent readback from AAT data to each CS model and both inverse laws on all objects and noninvertible morphisms"
+    - "the full selection/value/relation translation beyond this primitive object/operation layer"
+    - "D comparison-group transport and presentation/AAT-side recovery of the same groups, sections, kernels, fibers, and classification data"
+    - "the remaining A--F same-construction integration and final completion audit"
+review:
+  fixed_head: 106927f14
+  initial_findings:
+    - "Lean B found five exported lens identity/composition theorems without individually attached docstrings"
+    - "the final-snapshot reviewers found three nonexistent declaration names in the requirement ledger"
+    - "the final-snapshot Lean reviewers found three grouped theorem docstrings broader than their attached declarations and a PrimitiveOperation docstring that did not mention protocol observations"
+  resolved_findings:
+    - "added an immediately attached declaration docstring to each of lensObjectMap_id_read, lensObjectMap_id_write, lensObjectMap_comp_read, lensObjectMap_comp_view, and lensObjectMap_comp_write without changing statements or proofs"
+    - "replaced the three ledger names by lensOperationFunction, PrimitiveObject.protocolState/protocolObservation, and protocolOperationFunction"
+    - "made every affected theorem docstring declaration-specific and documented the vertex-indexed protocol observation endpoint without changing any declaration or proof"
+  lanes: {math_a: pass-after-direct-response, math_b: pass-after-direct-response, lean_a: pass-after-direct-response, lean_b: pass-after-direct-response}
+  direct_response:
+    reviewed_delta: "acbbb393d4a3f0a8d7710c65f8fd92b43c87f3ce..66c6c1833"
+    final_repair_deltas: "0f1f1213c..373129779; 373129779..106927f14"
+    verdict: pass
+    new_findings: []
+audits:
+  certificate_provenance: "all carriers and operation maps are computed from the independent semantic realizations; the only preservation laws consumed are the defining laws of arbitrary CS semantic morphisms; no AAT reconstruction result or successful-image certificate is supplied"
+  proof_use: "get_naturality, put_naturality, protocol edge naturality, and observation naturality prove the corresponding operation squares; all four lens roles and both protocol carrier kinds have explicit identity and composition laws"
+  structure_field_escape: none-found-for-this-typed-primitive-operation-checkpoint
+  target_fitting: none-found-all-original-operation-names-dependent-endpoints-and-arbitrary-semantic-morphisms-retained
+  validation_refs:
+    - "focused AATClosedFamilySignature file check after final review repairs: PASS; 847 declarations, standard axioms only"
+    - "focused exact AATClosedFamilySignature target build: PASS (4264 jobs; not a Research aggregate build)"
+    - "focused CSAATTypedOperationTranslation file check after final review repairs: PASS; 28 declarations, standard axioms only"
+    - "focused exact CSAATTypedOperationTranslation target build before doc-only repair: PASS (4265 jobs; not a Research aggregate build)"
+    - "placeholder, hidden/BiDi, privacy, import-direction, registry, and diff checks: PASS"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct the actual AAT Atom/Law/ArchitectureObject/complete-geometry image of this typed interface, its AAT morphisms, and an independent readback with both inverse laws for lens and protocol objects and arbitrary noninvertible morphisms, reusing rather than recertifying the accepted Cycle 2/3 presentation and Karoubi reconstruction."
 ```

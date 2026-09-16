@@ -2350,8 +2350,10 @@ The tagged constructor contains an actual operation of the fixed G-117
 package, retaining both endpoints and the pre-existing operation identity.
 The G-122 reference constructor likewise contains one operation from the
 original authored support package at its actual endpoints.  Protocol edges
-retain their original typed endpoints.  These constructors are individual
-operation names/values, not completed operation-map families. -/
+retain their original typed endpoints, while protocol observations retain the
+vertex-indexed endpoint from its state object to its fixed observation object.
+These constructors are individual operation names/values, not completed
+operation-map families. -/
 inductive PrimitiveOperation :
     (θ : ClosedFamilyParameter.{u, v}) → (X : FamilyRealization θ) →
       PrimitiveObject θ X → PrimitiveObject θ X →
@@ -2381,6 +2383,12 @@ inductive PrimitiveOperation :
       (edge : input.schema.Edge source target) :
       PrimitiveOperation (.protocol input) (.protocol X) (PrimitiveObject.protocolState source)
         (PrimitiveObject.protocolState target)
+  | protocolObservation {input : ProtocolFamilyInput.{u}}
+      {X : ProtocolRealization input.schema input.observation}
+      (vertex : input.schema.Vertex) :
+      PrimitiveOperation (.protocol input) (.protocol X)
+        (PrimitiveObject.protocolState vertex)
+        (PrimitiveObject.protocolObservation vertex)
 
 namespace PrimitiveOperation
 
@@ -2894,6 +2902,17 @@ def protocolEdge {input : ProtocolFamilyInput.{u}}
       (PrimitiveObject.protocolState source : PrimitiveObject (.protocol input) (.protocol X))
       (PrimitiveObject.protocolState target : PrimitiveObject (.protocol input) (.protocol X)) :=
   .protocolEdge edge
+
+/-- Every named protocol observation occurs from the state carrier at its
+original vertex to the exact fixed observation carrier at that vertex. -/
+def protocolObservation {input : ProtocolFamilyInput.{u}}
+    {X : ProtocolRealization input.schema input.observation}
+    (vertex : input.schema.Vertex) :
+    PrimitiveOperation (.protocol input) (.protocol X)
+      (PrimitiveObject.protocolState vertex : PrimitiveObject (.protocol input) (.protocol X))
+      (PrimitiveObject.protocolObservation vertex :
+        PrimitiveObject (.protocol input) (.protocol X)) :=
+  .protocolObservation vertex
 
 /-- Role-indexed access to the actual source G-122 signature axis. -/
 inductive PrimitiveSignatureAxis :
