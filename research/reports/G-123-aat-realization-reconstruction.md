@@ -13018,7 +13018,7 @@ selection:
     - "D-side comparison recovery and final A--F integration"
 result:
   proposed_result_type: proof-checkpoint
-  proof_obligation_delta: "Defined lens forward data as one state map satisfying the actual named AAT get and put squares, so both state occurrences are forced to use the same map.  Proved an exact equivalence with every arbitrary n1015 L2 Hom and both inverse laws.  Defined protocol forward data as one vertex-indexed state family satisfying every actual named edge and observation square, converted it to the independent GeneratorMap, and used the accepted path/quotient extension to recover a complete observation-preserving natural transformation on every execution.  Proved the forward/readback inverse laws as equalities of complete semantic morphisms.  From each interface, generated rather than accepted the A1 source map and ExactDoctrineHom, raw Law Hom, all-context Law functor, complete law-index map, equation-instance/Atom coordinate ring hom, and residual-zero transport.  Defined identity and composition and proved their semantic readbacks are the original identity and composition."
+  proof_obligation_delta: "Defined lens forward data as one state map satisfying the actual named AAT get and put squares, so both state occurrences are forced to use the same map.  Proved an exact equivalence with every arbitrary n1015 L2 Hom: the semantic-Hom-side inverse is an equality of complete semantic Homs, while the primitive-interface-side inverse is an equality of forward structures.  Defined protocol forward data as one vertex-indexed state family satisfying every actual named edge and observation square, converted it to the independent GeneratorMap, and used the accepted path/quotient extension to recover a complete observation-preserving natural transformation on every execution.  Proved its semantic-Hom-side inverse with ProtocolRealization.ext_res and its primitive-interface-side inverse by structure extensionality.  From each interface, generated rather than accepted the A1 source map and ExactDoctrineHom, raw Law Hom, all-context Law functor, complete law-index map, equation-instance/Atom coordinate ring hom, and residual-zero transport.  Defined identity and composition and proved both translation and readback preserve them."
   completion_candidate: no
   lean_artifacts:
     - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATForwardMorphisms.lean
@@ -13029,6 +13029,8 @@ result:
     - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.semanticHomEquiv
     - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.toSemanticHom_ofSemanticHom
     - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.ofSemanticHom_toSemanticHom
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.ofSemanticHom_id
+    - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.ofSemanticHom_comp
     - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.sourceMap
     - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.doctrineHom
     - AAT.AG.RealizationReconstruction.LensAATForwardMorphism.lawHom
@@ -13043,6 +13045,8 @@ result:
     - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.semanticHomEquiv
     - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.toSemanticHom_ofSemanticHom
     - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.ofSemanticHom_toSemanticHom
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.ofSemanticHom_id
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.ofSemanticHom_comp
     - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.sourceMap
     - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.doctrineHom
     - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.lawHom
@@ -13062,7 +13066,7 @@ result:
       - "protocol forward -> every named edge and observation square"
       - "protocol reverse -> path induction and quotient induction construct the complete natural transformation"
       - "derived AAT components -> A1 doctrine, Law Hom, all contexts, all indices/Atoms, residual zero"
-      - "identity/composition -> reconstructed semantic Homs preserve categorical identity and composition"
+      - "identity/composition -> both translation and readback preserve categorical identity and composition"
     undischarged_assumptions:
       - "complete geometry morphism beyond the present operation/Law context layer"
       - "readback from that complete geometry morphism and inverse laws on its additional components"
@@ -13075,7 +13079,7 @@ audits:
       - "both directions and both inverse laws with the complete original CS Hom classes"
       - "all-path and quotient-execution protocol extension from named generators"
       - "single-source generation of A1 doctrine and Law/context/index/coordinate/residual components"
-      - "identity and composition at the semantic readback"
+      - "identity and composition in both translation and readback directions"
     remaining:
       - "complete geometry components and morphism"
       - "independent complete-geometry readback and all-component inverse laws"
@@ -13091,7 +13095,7 @@ audits:
     used:
       - "lens get_naturality and put_naturality become the exact L2 Hom fields"
       - "protocol edge_naturality and observation_naturality build GeneratorMap and then the complete Hom"
-      - "ProtocolRealization.ext/res inverse theorems prove equality on all quotient executions"
+      - "ProtocolRealization.ext_res proves the complete semantic-Hom inverse; structure extensionality proves the primitive-interface inverse"
       - "the reconstructed Hom supplies A1 and raw Law constructions"
       - "source residual zero is materially used by the generated residual theorem"
     unused: []
@@ -13102,7 +13106,7 @@ audits:
   one_way_as_equivalence: none-found-both-forward-readback-directions-and-inverse-laws-are-proved-for-the-operation-interface
   goal_or_report_reinterpretation: none-found-complete-geometry-and-its-readback-remain-open
   validation_refs:
-    - "focused CSAATForwardMorphisms file check: PASS; 67 namespace declarations, standard axioms only"
+    - "focused CSAATForwardMorphisms file check: PASS; 71 namespace declarations, standard axioms only"
     - "focused exact CSAATForwardMorphisms target build: PASS (4271 jobs; not a Research aggregate build)"
     - "Research aggregate/full build: not run"
   blocking_findings: []

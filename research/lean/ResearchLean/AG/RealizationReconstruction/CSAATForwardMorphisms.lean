@@ -159,16 +159,31 @@ def comp {input : LensFamilyInput.{u}}
     LensAATForwardMorphism X Z :=
   ofSemanticHom (f.toSemanticHom ≫ g.toSemanticHom)
 
+/-- Translating the primitive identity interface recovers the semantic identity. -/
 @[simp] theorem toSemanticHom_id {input : LensFamilyInput.{u}}
     (X : LensRealization input.View input.reference) :
     (id X).toSemanticHom = 𝟙 X :=
   toSemanticHom_ofSemanticHom _
 
+/-- Translating primitive-interface composition recovers semantic composition. -/
 @[simp] theorem toSemanticHom_comp {input : LensFamilyInput.{u}}
     {X Y Z : LensRealization input.View input.reference}
     (f : LensAATForwardMorphism X Y) (g : LensAATForwardMorphism Y Z) :
     (comp f g).toSemanticHom = f.toSemanticHom ≫ g.toSemanticHom :=
   toSemanticHom_ofSemanticHom _
+
+/-- Reading back the semantic identity is the primitive identity interface. -/
+@[simp] theorem ofSemanticHom_id {input : LensFamilyInput.{u}}
+    (X : LensRealization input.View input.reference) :
+    ofSemanticHom (𝟙 X) = id X :=
+  rfl
+
+/-- Readback takes semantic composition to primitive-interface composition. -/
+@[simp] theorem ofSemanticHom_comp {input : LensFamilyInput.{u}}
+    {X Y Z : LensRealization input.View input.reference}
+    (f : X ⟶ Y) (g : Y ⟶ Z) :
+    ofSemanticHom (f ≫ g) = comp (ofSemanticHom f) (ofSemanticHom g) := by
+  simp [comp]
 
 end LensAATForwardMorphism
 
@@ -320,16 +335,31 @@ def comp {input : ProtocolFamilyInput.{u}}
     ProtocolAATForwardMorphism X Z :=
   ofSemanticHom (a.toSemanticHom ≫ b.toSemanticHom)
 
+/-- Translating the primitive protocol identity recovers the semantic identity. -/
 @[simp] theorem toSemanticHom_id {input : ProtocolFamilyInput.{u}}
     (X : ProtocolRealization input.schema input.observation) :
     (id X).toSemanticHom = 𝟙 X :=
   toSemanticHom_ofSemanticHom _
 
+/-- Translating primitive protocol composition recovers semantic composition. -/
 @[simp] theorem toSemanticHom_comp {input : ProtocolFamilyInput.{u}}
     {X Y Z : ProtocolRealization input.schema input.observation}
     (a : ProtocolAATForwardMorphism X Y) (b : ProtocolAATForwardMorphism Y Z) :
     (comp a b).toSemanticHom = a.toSemanticHom ≫ b.toSemanticHom :=
   toSemanticHom_ofSemanticHom _
+
+/-- Reading back the semantic identity is the primitive protocol identity. -/
+@[simp] theorem ofSemanticHom_id {input : ProtocolFamilyInput.{u}}
+    (X : ProtocolRealization input.schema input.observation) :
+    ofSemanticHom (𝟙 X) = id X :=
+  rfl
+
+/-- Protocol readback takes semantic composition to primitive composition. -/
+@[simp] theorem ofSemanticHom_comp {input : ProtocolFamilyInput.{u}}
+    {X Y Z : ProtocolRealization input.schema input.observation}
+    (f : X ⟶ Y) (g : Y ⟶ Z) :
+    ofSemanticHom (f ≫ g) = comp (ofSemanticHom f) (ofSemanticHom g) := by
+  simp [comp]
 
 end ProtocolAATForwardMorphism
 
