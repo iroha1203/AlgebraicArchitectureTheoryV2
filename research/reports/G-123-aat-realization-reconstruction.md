@@ -10542,6 +10542,29 @@ result:
     undischarged_assumptions: []
     acceptance_point: "For each finite E, the independent forward/backward lookup-table syntax is equivalent to the actual subgroup characterized by the decoder-independent transported source action; no union or full-kernel coverage is claimed."
     port_status: not-applicable
+review:
+  initial_fixed_head: 3c095d9c2dd80cbf5dda3ecc717444c600ede571
+  initial_lanes:
+    math_a: major-revisions-central
+    math_b: reject-central
+    lean_a: blocking-central
+    lean_b: minor-issues-noncentral
+  revised_fixed_head: c9d0cc8ddb5fb507f6f62243c37f13e4b2932cab
+  revised_lanes:
+    math_a: pass
+    math_b: pass
+    lean_a: pass
+    lean_b: pass
+  resolved_findings:
+    - "replaced the one-field Equiv.Perm wrapper by explicit finite forward/backward lookup functions and both inverse laws"
+    - "defined the expected stored-backward action from the primitive source action and fixed context route without the decoder"
+    - "proved the decoder/action bridge from the three route factorization laws and used it in landing and surjectivity"
+    - "replaced the broad Cycle 97 import by the exact Cycle 90 and Cycle 96 dependencies"
+    - "expanded the report declaration ledger and proof-use record to cover the route equivalences, factorization theorems, bridge, and decoder"
+  direct_response:
+    reviewed_delta: "3c095d9c2dd80cbf5dda3ecc717444c600ede571..c9d0cc8ddb5fb507f6f62243c37f13e4b2932cab"
+    verdict: pass
+    new_findings: []
 audits:
   premise_delta:
     discharged:
