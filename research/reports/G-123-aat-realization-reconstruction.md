@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 134 repair packages the genuinely one-way equation-system action of every primitive lens/protocol morphism on all contexts, restrictions, indices, observable rings, violation generators, and endpoint residual vanishing
+- current proof obligation: Cycle 135 lifts the Cycle 134 coordinate RingHom to a natural transformation of full coordinate-polynomial presheaves and conjugates it with the Cycle 133 isomorphisms to obtain actual raw quotient-presheaf maps
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: connect the Cycle 134 equation-presheaf map to the Cycle 133 raw presheaves, then define the noninvertible coverage/overlap preservation law without adding target coordinates or an inverse; prove identity/composition, independent readback, and all-component inverse laws
+- next proof obligation: define the noninvertible coordinate-specific coverage and overlap preservation law over the endpoint-only rebase without adding target coordinates or an inverse; then prove identity/composition, independent readback, and all-component inverse laws
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 135 delta | Cycle 134のone-way Law coordinate actionをCycle 131--133のactual reading/raw quotient presheafへ接続し、任意の非単射CS射について全context・restriction上のraw mapを構成する | lens/protocol各`*EquationPolynomialForwardHom`, `*EquationPolynomialForwardHom_app_X`, `*GeometryReadingRawForwardHom` | Cycle 129 primitive forward morphism、Cycle 131 reading sites、Cycle 133 raw/polynomial presheaf isomorphisms。raw NatTrans、index Equiv、逆context functor、coverage certificateを入力しない | `f.lawCoordinateMap`をlifted-`Int` Under morphismへ持ち上げ、全restrictionの自然性を証明。全contextで各Law-index/Atom変数がexact mapped index変数へ送られることを計算。source raw quotient→source polynomial→target polynomial→target raw quotientをpresheaf NatTransとして共役する | 次cycleのone-way complete-geometry recordのraw component、identity/composition、coverage/overlapとのcoherence | morphism由来context reading、coverage/overlap、raw NatTransのidentity/composition、独立readback、`AATCorePackage`/`ReadingCore` provenance、D回復、A--F統合は未完了。endpoint-only context rebaseをmorphism固有作用とは数えない |
 | A/E Cycle 134 repair delta | equation-index同値を持たない一般非単射Law/CS射について、actual Law equation systemの全source context・restriction・index・observable・violation generatorとraw endpoint residual zeroを同一のone-way transportへまとめる | `EndpointEquationForwardTransport`; `observablePresheafHom`, `required_map`, `equationHolds_map`; raw `lensLawEndpointEquationForwardTransport`, `protocolLawEndpointEquationForwardTransport`; CS specialization `lensAATEndpointEquationForwardTransport`, `protocolAATEndpointEquationForwardTransport`; lens/protocol各observable presheaf Homとendpoint equation-holds map | 任意のraw source/target Law structureとraw Law Hom。CS specializationではCycle 129 primitive morphismからLaw Homを生成する。完成transport certificate、endpoint lawfulness、index Equiv、observable inverse、target-surjectivityを入力しない | context indexingはendpointだけに依存するcanonical full-family rebaseでありmorphism actionとは数えない。morphism固有の全index map・RingHom・restriction自然性・mapped violation variableを同じrecordで実使用する。任意の非lawful raw endpointを許したままsource residual zeroからmapped target residual zeroを導出し、contextwise RingHomをactual presheaf NatTransへ組み立てる | Cycle 133 raw presheafとの共役によるraw NatTrans、および非逆coverage/overlap保存則の型を構成する | target側のindex全体へのsurjectivity・lawfulnessは主張しない。morphism由来context-reading map、coverage/overlap、raw quotient接続、identity/composition、独立readback、`AATCorePackage`/`ReadingCore` provenance、D回復、A--F統合は未完了。target canonical dataをsource contextへ付加する棄却候補は証拠に数えない |
 | A/E Cycle 133 delta | Cycle 132のobjectwise raw quotient equivalenceをselected siteの全context射に関して自然化し、actual algebra-valued presheaf同型として構成する | `equationCoordinateRawQuotientEquiv_natural`, `equationCoordinateRawQuotientEquiv_natural_identity`, `equationCoordinateRawQuotientEquiv_quotientDesc`; lens/protocol各pointwise specialization; `equationCoordinatePolynomialObject`, `equationCoordinatePolynomialPresheaf`, `equationCoordinatePolynomialObjectIso`, `equationCoordinateRawPresheafIso`; lens/protocol各presheaf iso | 任意のselected `AATSite`とCycle 132で構成済みのraw system/quotient equivalenceのみ。自然性certificate、完成geometry morphism、site cast、index equivalenceを入力しない | `Ideal.Quotient.ringHom_ext`でquotient generatorへ戻し、`quotientDesc_mk`とCycle 132 quotient-map計算則からpolynomial restrictionとのRingHom squareを証明。全restrictionのpolynomial mapがidentityである証明を実使用してidentity squareとpointwise式を得る。さらにfull coordinate polynomial algebraをlifted-Int under-objectとして構成し、identity restrictionを持つpresheafと全objectのUnder isoを構成し、同じRingHom squareを`NatIso.ofComponents`の自然性に使用 | lens/protocol両readingのraw quotient layerを同じgeneric constructionでpresheaf-level full Law-coordinate endpointへ接続し、次cycleのone-way coverage/overlap/raw geometry transportが使う | 完成geometry morphism、非自明localization、CS primitive interfaceからのcoverage/overlap/raw保存、独立readback、`AATCorePackage`/`ReadingCore` provenance、D回復、A--F統合は未完了。このpresheaf isoはgeometry射やreadbackを自動生成しない |
 | A/E Cycle 132 delta | Cycle 131 reading siteそのものに全Law-index/Atom座標のcoherent raw restriction systemを構成し、空の追加structural relationによるactual raw quotientをpre-quotient polynomial ringと同定する | `equationCoordinateRawFamily`, `emptyStructuralRelationFamilyOn`, `equationCoordinateRawRestriction`, `equationCoordinateRawRestriction_polynomialMap`, `emptyStructuralRestrictionStableOn`, `equationCoordinateRawSystemOn`, `emptyStructuralRelationFamilyOn_JStruct`, `equationCoordinateRawQuotientEquiv`, `equationCoordinateRawQuotientEquiv_quotientMap`; lens/protocol各`*AATGeometryReadingRawSystem`, `*AATGeometryReadingRawQuotientEquiv` | 任意のselected `AATSite`とそのactual `equationSystem.Coordinate`; lens/protocol specializationではCycle 131 reading siteのみ。別siteとの等式、site transport cast、完成morphism、quotient equivalence certificateを入力しない | site自身のcategory/contextPreorder上で全equation-index/Atom coordinateをsemantic coordinateとして構成し、全restrictionで各変数を固定するidentity polynomial mapとidentity/composition coherenceを証明。追加structural relationを`PEmpty`として`JStruct = ⊥`を生成元から証明し、`Ideal.quotientEquivAlgOfEq`と`AlgEquiv.quotientBot`からobjectwise `AlgEquiv`を構成。quotient classの計算則も証明 | Cycle 131のactual reading/coverと同じsite index上にraw layerを置き、次cycleのrestriction naturalityおよびCycle 129 primitive interface由来one-way geometry transportが使う | quotient equivalenceのrestriction naturality/presheaf-level natural iso、非自明localization、CS morphism上のcoverage/overlap/raw transport、独立readback、`AATCorePackage`/`ReadingCore` provenance、D回復、A--F統合は未完了。`PEmpty`は追加structural relationだけでありLaw witness equationはsite equationSystemに残る |
@@ -13822,4 +13823,107 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Conjugate the generated observable-presheaf Hom with the Cycle 133 raw/polynomial isomorphisms, then define and prove the noninvertible coverage/overlap preservation law without adjoining target answer data."
+```
+
+## Cycle 135 — Primitive-generated raw quotient-presheaf maps
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 135
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: d2a0d6e3a7db53067f7293dd6b6f7947fc4f97c6
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 134 repaired the one-way equation layer and isolated the endpoint-only context rebase from morphism-specific coordinate action; Cycle 133 supplied natural raw/polynomial presheaf isomorphisms"
+  proof_dag_predecessors:
+    - "Cycle 129 primitive lens/protocol forward morphisms and generated Law coordinate maps"
+    - "Cycles 131--133 actual reading sites, raw quotient systems, and raw/polynomial presheaf isomorphisms"
+    - "Cycle 134 one-way equation-system transport"
+  proof_obligation: "Construct actual raw quotient-presheaf natural transformations for every primitive noninvertible CS morphism without accepting an inverse or a completed raw map"
+  selection_reason: "The Law coordinate RingHom already maps every source index/Atom variable and preserves integer coefficients.  Lifting it to the under-category and conjugating by independently proved presheaf isomorphisms produces the raw map with all restriction naturality inherited at presheaf level."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryRawForward.lean
+  risks:
+    - "using objectwise quotient maps without proving naturality"
+    - "reversing the noninjective coordinate map"
+    - "assuming an equation-index equivalence or target surjectivity"
+    - "calling the raw NatTrans a complete geometry morphism"
+  unchecked:
+    - "noninvertible coverage and overlap preservation law"
+    - "raw/context/coverage identity and composition coherence"
+    - "independent geometry readback"
+    - "AATCorePackage and ReadingCore provenance"
+    - "D-side recovery and final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Constructed lens and protocol natural transformations between the full Law-coordinate polynomial presheaves by lifting the primitive generated coordinate RingHom to the lifted-integer under-category.  Proved the map sends every Law-index/Atom variable to the exact variable with the mapped index at every context.  Conjugated source and target polynomial maps by the independently proved Cycle 133 raw/polynomial presheaf isomorphisms, producing actual natural transformations between the raw quotient presheaves on every context and restriction."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeometryRawForward.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.lensAATEquationPolynomialForwardHom
+    - AAT.AG.RealizationReconstruction.protocolAATEquationPolynomialForwardHom
+    - AAT.AG.RealizationReconstruction.lensAATEquationPolynomialForwardHom_app_X
+    - AAT.AG.RealizationReconstruction.protocolAATEquationPolynomialForwardHom_app_X
+    - AAT.AG.RealizationReconstruction.lensAATGeometryReadingRawForwardHom
+    - AAT.AG.RealizationReconstruction.protocolAATGeometryReadingRawForwardHom
+  claim_mapping:
+    source_labels:
+      - "GOAL A: raw restriction and complete Law-coordinate action"
+      - "GOAL E and n1015 section 5.3: arbitrary noninvertible CS morphisms"
+    conjuncts:
+      - "all contexts and restrictions -> both maps are presheaf natural transformations over the endpoint-only full-family rebase"
+      - "all source Law coordinates -> the coordinate RingHom is defined on the full polynomial algebra and the variable theorem quantifies every index and Atom"
+      - "actual raw quotients -> source and target raw/polynomial isomorphisms are used in opposite directions around the polynomial map"
+      - "noninvertibility -> no inverse, index equivalence, injectivity, surjectivity, or context equivalence is required"
+    undischarged_assumptions:
+      - "coverage/overlap and context-reading preservation"
+      - "identity/composition of the complete forward geometry package"
+      - "independent readback and core provenance"
+    acceptance_point: "The raw natural transformations are constructed values from primitive CS morphisms and the independent Cycle 133 isomorphisms; no raw NatTrans or completed geometry morphism is an input."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "lifted-integer coefficient compatibility of the Law coordinate maps"
+      - "polynomial-presheaf naturality on every restriction"
+      - "exact mapped-variable computation at every context"
+      - "actual raw quotient-presheaf natural transformations"
+    remaining:
+      - "morphism-specific context readings and coordinate-specific coverage"
+      - "overlap and Extension coherence"
+      - "identity/composition of the raw maps"
+      - "independent all-component readback"
+      - "AATCorePackage/ReadingCore provenance, D recovery, and A--F integration"
+  certificate_provenance:
+    discharged:
+      - "coordinate RingHoms are generated from Cycle 129 primitive operation squares"
+      - "under-category coefficient squares are proved from polynomial renaming preserving constants"
+      - "raw quotient maps are conjugates through Cycle 133 isomorphisms, not supplied certificates"
+    unresolved:
+      - "coverage/overlap and complete one-way geometry packaging"
+  proof_use:
+    used:
+      - "f.lawCoordinateMap in every polynomial component"
+      - "f.lawIndexMap in exact variable-image theorems"
+      - "Cycle 133 source raw/polynomial Iso.hom"
+      - "Cycle 133 target raw/polynomial Iso.inv"
+      - "endpoint-only context functor as the indexing rebase"
+    unused:
+      - "A1 sourceMap and context-reading components remain separate open obligations"
+  structure_field_escape: none-found-no-raw-map-naturality-certificate-or-completed-geometry-morphism-is-input
+  route_integrity: pass-for-one-way-raw-presheaf-checkpoint-only
+  target_fitting: none-found-the-target-raw-presheaf-is-an-independently-constructed-endpoint-and-is-not-adjoined-to-source-contexts
+  vacuity: none-found-the-polynomial-components-map-every-variable-and-the-raw-components-are-conjugated-natural-transformations
+  one_way_as_equivalence: none-found-only-the-independent-endpoint-raw-polynomial-comparisons-are-isomorphisms-the-CS-induced-map-is-a-NatTrans
+  goal_or_report_reinterpretation: none-found-coverage-overlap-readback-core-provenance-and-D-A-F-integration-remain-open
+  validation_refs:
+    - "focused CSAATGeometryRawForward file check: PASS; 6 namespace declarations, standard axioms only"
+    - "focused exact CSAATGeometryRawForward target build: PASS (4277 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct coordinate-specific forward coverage and honest overlap/Extension coherence over the endpoint-only rebase; then prove identity/composition for the assembled one-way geometry data."
 ```
