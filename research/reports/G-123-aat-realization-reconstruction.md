@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 171 assembles the six-component parallel exact geometry hom over the actual retained `ContextMorphism` action and constructs identity and composition operations
+- current proof obligation: Cycle 172 proves extensionality and all three category laws for the actual-restriction exact geometry hom, packages all geometry objects into a distinct category, and exhibits both genuine-CS isomorphism morphisms in it
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: prove extensionality and the identity/associativity laws for the parallel actual-restriction geometry hom, then package the genuine-CS exact realization category
+- next proof obligation: construct the directed noninvertible lens/protocol morphism interface without dropping get/put or operation/execution/adapter data, and connect it to the same explicit exact realization category where the fixed target permits
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 172 delta | actual restrictionを保持するexact homについて計算成分を明示比較してextensionality・左右単位律・結合律を証明し、decoder像でない圏へ包装する | `ExplicitRealizationTransportSupply.ext`; `ExplicitExactGeometryHom.ext`, `.id_comp`, `.comp_id`, `.comp_assoc`; `ExplicitExactGeomCategory`, `.ofGeometryPackage`, `explicitExactGeometryCategory`; lens/protocol `*CategoryHom` | 任意の`GeometryPackage`と任意のcomposable explicit exact hom。category-law certificateは入力に取らず、coverage/overlapだけはbase固定後の既存命題一意性を使う | actual context actionと3 carrier equivalenceの点ごとの等式からsupply extensionalityを証明。base・係数・全typed raw計算作用・realizationを比較して3法則を証明し、全geometry packageをobjectとする独立wrapper圏を構成 | fixed realization category候補と、lens/protocol genuine isoの同じ圏内のmorphism | 一般非可逆CS射、対象・射の独立readback、D、A--F統合は未完了 |
 | A/E Cycle 171 delta | common base、authoritative coverage/overlap、係数写像、全typed raw action、actual restriction上のrealization supplyを同じexact geometry homへ統合し、同じAPI内で恒等射と合成を構成する | `ExplicitExactGeometryHom`; `ExplicitRealizationTransportSupply.id`, `.comp`; `ExplicitExactGeometryHom.id`, `.comp`; `lensIsoExplicitExactGeometryHom`, `protocolIsoExplicitExactGeometryHom` | fixed CS inputとgenuine semantic iso、Cycles 163--170で同じ`e`から構成した6成分。completed geometry hom、category-law certificate、旧chosen-representative supplyは入力に取らない | actual `ContextMorphism`作用を保持したrealization supplyの恒等・合成と、base/coverage/overlap/coefficient/raw/realizationの6成分を持つhomを構成。lens/protocol双方でprimitive isoから全fieldを充足 | parallel exact realization categoryのHomと、後続のgenuine-CS functor/iso | hom extensionality、左右単位律・結合律、Category包装、一般非可逆CS射、独立readback、D、A--F統合は未完了 |
 | A/E Cycle 170 delta | endpoint coverageをgenerated objectへ運び、signature axis作用を既存signed-core transportと同定してauthoritative package coverageへ接続する | `coreGeometrySignatureEq`, `architectureSignatureAxisMapCast`, `coreGeometryAxisMapCast`, `signatureExactTransportCast_axisMap_eq_axisCast`, `coreGeometryCoverageTransportCast`, lens/protocol generated・authoritative constructors, `lensIsoCoverageTransport`, `protocolIsoCoverageTransport` | fixed CS inputとgenuine semantic iso、Cycle 169の全endpoint coverage、generated-object provenance、既存signature/equation/package transports。completed coverage/coherence certificateは取らない | geometry dataのobject castをAxis型castへ分解し、同一signature endpointsを持つ等式証明だけをproof irrelevanceで同定。全9 fieldをgenerated coreへ運び、実際の`PackageTotalHom`に対する`CoverageTransport`へ射影 | 次のparallel exact geometry homのcoverage field | parallel hom/category、一般非可逆CS射、readback、D、A--F統合は未完了 |
 | A/E Cycle 169 delta | concrete lens/protocol endpointでcoverage 9条項を、target observable全体に定義されたactual restrictionから放電する | `CoreGeometryCoverageTransport`, lens/protocol `*IsoCoverageContextMorphism`, lens/protocol `*IsoCoverageContextMorphism_isRestriction`, lens/protocol `*IsoEndpointCoreGeometryCoverageTransport` | fixed CS inputとgenuine semantic iso、exact endpoint equation transport、全carrier equivalence。completed coverage、selected coordinate map、target answerは入力に取らない | target polynomialをgenuine Law-coordinate同値の逆でsourceへ戻してsource restrictionへ合成し、全target readable変数を保つrestrictionを構成。同じmapでequation/violation/axis visibilityを証明し、support/boundaryをfull-family rebaseで運ぶ | 次のgenerated provenance castとauthoritative package `CoverageTransport` | generated geometry/signatureの二つのdependent equality transport経路の同定は未完了。package-level coverage、parallel hom/category、一般非可逆CS射、readback、D、A--F統合も未完了 |
@@ -17807,4 +17808,112 @@ audits:
     - "the function-valued and dependent fields of ExplicitRealizationTransportSupply require a nontrivial extensionality proof"
     - "these are remaining construction obligations, not evidence against the fixed target"
   next_obligation: "Prove extensionality for ExplicitRealizationTransportSupply and ExplicitExactGeometryHom, prove left/right identity and associativity without proof-irrelevance over computational fields, and package the resulting genuine-CS exact realization category."
+```
+
+## Cycle 172 — Explicit exact geometry category laws
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 172
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: e7bc7cb8566e337e8f61e9013bfeeb5b9d4871b9
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 171 constructed identity and composition operations for the six-component actual-restriction hom but left extensionality and the category laws unproved"
+  proof_obligation: "Compare every computational realization and raw component, prove left/right identity and associativity for the parallel hom, package a non-decoder-image category, and exhibit the two genuine-CS exact morphisms in that category"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExplicitExactGeometryCategory.lean
+  risks:
+    - "using proof irrelevance on actual context actions or carrier equivalences"
+    - "silently reverting to the older chosen-representative realization supply"
+    - "letting the new category instance collide with the older exact geometry category on a definitionally equal object type"
+    - "restricting category objects to the decoder image or to already displayed CS objects"
+    - "presenting isomorphism-only CS constructors as general noninvertible translations"
+  unchecked:
+    - "general noninvertible lens/protocol morphisms"
+    - "independent object and morphism readback"
+    - "D recovery and final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Proved explicit realization-supply extensionality from pointwise equality of every actual context action and all three carrier equivalences. Proved full hom extensionality and left identity, right identity, and associativity by comparing the base, coefficient map, every typed raw coordinate/local-data/relation action, and explicit realization action. Introduced a distinct wrapper category whose objects admit every GeometryPackage without a decoder-image condition, and placed both genuine lens and protocol isomorphism constructions in it."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExplicitExactGeometryCategory.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.ExplicitRealizationTransportSupply.ext
+    - AAT.AG.RealizationReconstruction.ExplicitExactGeometryHom.ext
+    - AAT.AG.RealizationReconstruction.ExplicitExactGeometryHom.id_comp
+    - AAT.AG.RealizationReconstruction.ExplicitExactGeometryHom.comp_id
+    - AAT.AG.RealizationReconstruction.ExplicitExactGeometryHom.comp_assoc
+    - AAT.AG.RealizationReconstruction.ExplicitExactGeomCategory
+    - AAT.AG.RealizationReconstruction.ExplicitExactGeomCategory.ofGeometryPackage
+    - AAT.AG.RealizationReconstruction.explicitExactGeometryCategory
+    - AAT.AG.RealizationReconstruction.lensIsoExplicitExactGeometryCategoryHom
+    - AAT.AG.RealizationReconstruction.protocolIsoExplicitExactGeometryCategoryHom
+  claim_mapping:
+    source_labels:
+      - "GOAL A: construct the realization category independently rather than define it as the decoder image"
+      - "GOAL E and n1015: place both genuine CS translations in the same exact geometry category"
+    conjuncts:
+      - "realization extensionality -> every actual context morphism plus Support/Axis/Observable equivalences"
+      - "hom extensionality -> base, coefficient, all typed raw action, and explicit realization action"
+      - "coverage and overlap -> propositionally unique only after the common base is proved equal"
+      - "left and right identity -> direct comparison of all computational fields"
+      - "associativity -> direct comparison of all computational fields"
+      - "category objects -> an independent wrapper admitting every GeometryPackage"
+      - "lens and protocol -> morphisms of the same category from the existing six-component constructors"
+    undischarged_assumptions:
+      - "genuine CS isomorphism remains the allowed input for the two current exported CS morphisms"
+      - "general noninvertible CS morphisms require a separate directed construction"
+      - "readback and D recovery remain independent obligations"
+    acceptance_point: "The actual-restriction exact geometry hom now forms a category on all geometry packages, and both genuine-CS isomorphism subcases inhabit it; the directed and readback obligations remain open."
+audits:
+  premise_delta:
+    discharged:
+      - "extensionality of the explicit actual-restriction realization supply"
+      - "extensionality of the complete six-component hom"
+      - "left identity, right identity, and associativity"
+      - "Category packaging without a decoder-image object predicate"
+      - "lens and protocol genuine-isomorphism morphisms in the same category"
+    remaining:
+      - "general noninvertible CS maps, independent readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "coverage and overlap use their already accepted proposition-valued uniqueness only after base equality"
+      - "the new category reuses previously proved base and typed-raw extensionality lemmas"
+    discharged:
+      - "actual context action equality is a pointwise premise of an internal extensionality theorem and is proved definitionally in each category law"
+      - "all three carrier-equivalence equalities are proved by Equiv.ext in each law"
+      - "no law certificate is a field of the hom and no completed category is accepted by the CS constructors"
+      - "the wrapper prevents instance collision while ofGeometryPackage admits arbitrary geometry packages without a membership proof"
+    unresolved:
+      - "directed noninvertible CS translations and their relation to the exact category"
+  proof_use:
+    used:
+      - "the actual contextMorphism function, not a thin-arrow representative"
+      - "all Support, Axis, and Observable equivalences"
+      - "the base lower and upper maps"
+      - "coefficient, coordinate, local-data, and structural-relation actions"
+      - "the Cycle 171 lens and protocol six-component constructors"
+    unused:
+      - "no decoder-image predicate, representability witness, category-law field, chosen representative coherence, readback, or D classifier is accepted"
+  structure_field_escape: none-found-the-category-object-wrapper-has-only-the-underlying-arbitrary-GeometryPackage-and-the-hom-has-no-law-certificate-field
+  route_integrity: pass-the-CS-category-morphisms-are-definitionally-the-cycle-171-six-component-constructors
+  target_fitting: partial-the-independent-exact-category-and-isomorphism-subcase-are-constructed-but-general-directed-maps-readback-D-and-A--F-remain-open
+  vacuity: none-found-the-category-admits-all-geometry-packages-and-the-laws-compare-every-computational-hom-component
+  one_way_as_equivalence: none-found-the-two-exported-CS-morphisms-remain-explicitly-isomorphism-only-and-no-general-directed-claim-is-made
+  goal_or_report_reinterpretation: none-found-the-report-keeps-the-required-noninvertible-maps-readback-D-and-A--F-open
+  validation_refs:
+    - "focused CSAATExplicitExactGeometryCategory file check: PASS; 22 namespace declarations, standard axioms only"
+    - "focused exact CSAATExplicitExactGeometryCategory target build: PASS (4302 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "the current lens/protocol category morphisms require genuine semantic isomorphisms and therefore do not cover the fixed noninvertible examples"
+    - "no independent readback from arbitrary category objects or morphisms has yet been constructed"
+    - "these are remaining construction obligations, not evidence against the fixed target"
+  next_obligation: "Construct the directed noninvertible lens/protocol morphism interface while preserving get/put and operation-name/execution/adapter data, then determine exactly which directed maps induce the same explicit exact geometry morphism versus a separate one-way geometry interface."
 ```
