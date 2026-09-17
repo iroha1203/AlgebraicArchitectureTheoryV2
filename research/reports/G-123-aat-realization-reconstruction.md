@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 176 removes the primitive-morphism index from the generated package interface and reconstructs the primitive and independent CS semantic morphisms from generated selected-operation payloads
+- current proof obligation: Cycle 177 applies one complete-update fixed-F classifier to bijective independent lens/protocol generated package morphisms and evaluates every resulting hidden permutation through the actual finite-axis-fold intrinsic D route
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: use the independent package Hom equivalences in the common lens/protocol translation statement and connect the resulting same-package classification to D recovery; then continue the full A--F integration
+- next proof obligation: promote the independent package Hom equivalences to composition/identity-compatible functors and Aut group equivalences, then transport the full G-122 comparison groups, section, restricted and ambient kernels, and every lift fiber through the common A--C realization; the present intrinsic D subgroup is not that full recovery
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D/E/F Cycle 177 delta | 独立generated packageのbijective carrier actionを、同じcomplete-update fixed-F分類へlens/protocol両側から適用し、全hidden permutationを有限table経由でactual D intrinsic subgroupへ回復する | `LensIndependentPackageAut`, `ProtocolIndependentPackageAut`; `lensPackageAutEquivInvertibleChange`, `protocolPackageAutEquivInvertibleChange`; `lensProtocolIndependentPackageEquiv`; 両`*IndependentFixedFClassification`; state-map/classifier compatibility; `fixedFClassifierToDCode`, `fixedFClassifierToDIntrinsic`; 両`*PackageDIntrinsicClassification`とvalue/compatibility定理; 両`*PackageDirectedPackage` | product lens、complete-update protocol、identity visible automorphism、bijective package carrier maps。D接続は任意の有限`K`に対する既証明finite-axis-fold Extension-permutation intrinsic image。semantic change、hidden permutation、table code、D element、completed directed packageはfieldに取らない | Cycle176 `semanticHomEquiv`/forward readbackから独立invertible changeを構成し、lens/protocolを同じactual preserving fixed-F changeで同値化。一つのhidden permutation classifierを両側で共有しstate actionを復元。全permutationを明示的finite tableへ戻し、既存decoder equivalenceでcomplete stored-backward actionにより特徴付けられたactual D subgroupの全元へ同値化 | independent packageのAut群化と、A--C fully faithful realizationを介したfull D comparison transport | identity-visible complete-update applicationであり任意`H`全体のpackage群ではない。Dはintrinsic local-fiber subgroup全体を回復するが、元のfull comparison group、section、restricted/ambient二核、全lift fiber、bottom/係数成分との同値は未完了。A--F最終統合も未完了 |
 | E Cycle 176 delta | generated表示側にcarrier mapとnamed operation lawsだけを保持し、primitive `f`やcompleted semantic Homをfieldにせず、lens/protocol独立意味論へ読み戻して両往復を証明する | `LensAATIndependentGeneratedPackageHom`, `.toForwardMorphism`, `.ofForwardMorphism`, 両simp round trip, `.forwardMorphismEquiv`, `.toSemanticHom`, `.ofSemanticHom`, 両semantic round trip, `.semanticHomEquiv`, `.toDirectedPackage`; protocol同名対応 | fixed lens/protocol inputとsource/target realization。lensは一つのstate mapとgenerated Extension payload上のget/put laws、protocolはvertexwise state mapとgenerated payload上の全named edge/observation lawsだけを取る。primitive forward morphism、semantic Hom、equation/raw/coverage/overlap/完成packageはfieldに取らない | generated payload lawsからprimitive interfaceを再構成し、primitive interfaceとの両往復をextensionalityで証明。さらに独立CS semantic Homへ読み戻し、全semantic Homからのforward translationとの両往復・Equivを証明。最後にその再構成primitiveからCycle175の全generated geometry packageを構成 | common lens/protocol translation statementとD分類の表示側回復 | 共通定理として両CSを同じclassificationへ接続する統合、Dの元の全比較群・section・二核・全lift fiber回復、A--F最終統合は未完了 |
 | A/E Cycle 175 delta | source-image coverage、全source tripleのreadable overlap、selected Extensionのnamed operation equationsをendpoint固定型からactual generated coreへ移し、equation/rawと同一packageへ統合する | `GeneratedForwardCoverageLabels`, `GeneratedForwardCoverageImage`, `coreGeometryCoverageLabelsCast`, `coreGeometryCoverageForwardCast`, `GeneratedForwardOverlapReadable`, `coreGeometryOverlapForwardCast`; lens/protocol endpoint/generated constructors; `lensAATGeneratedReadingContext`, `protocolAATGeneratedReadingContext`, generated payload/coherence; `LensAATGeneratedDirectedPackage`, `ProtocolAATGeneratedDirectedPackage`とconstructors | 任意のprimitive lens/protocol forward morphism、固定入力由来selected reading、既構成endpoint coverage/overlap/Extension、generated-object等式。target-wide coverage、whole-Extension map、inverse、completed semantic homは取らない | coverage 9条項をcoherent observable witnessとcovariant axis witnessを落とさずarbitrary carried geometry data上へ一般化し、両object等式でgenerated dataへtransport。overlapをcarried overlap同士の全triple readable equivalenceとしてtransport。generated selected contextのExtension payloadを固定入力型へdecodeし、lens point/get/putおよびprotocol point/全edge/全observation equationsをprimitive射から構成。equation/raw/coverage/overlap/Extensionを同一generated packageへ束ねる | primitive indexを除いたoperation-level package interfaceと独立semantic readback | packageはなお`f`でindexされる。equation/raw/coverage/overlapのみからcarrier mapは復元不能で、次にstateMapとnamed-operation lawsを独立fieldsとして切り出す必要がある。D、A--F統合も未完了 |
 | A/E Cycle 174 delta | endpoint full-context型に固定されたdirected equation/rawを強さを増やさずgenerated `ReadingCore`へ運び、同じprimitive射由来のcoverage/overlap/Extensionとprovenanceを一つに固定する | `coreGeometryDataSite`, `GeneratedEquationForwardTransport`, `.ofEndpoint`, `coreGeometryContextFunctorCast`, `coreGeometryEquationForwardCast`, `coreGeometryRawForwardCast`; lens/protocol `*ReadingCoreForwardContextFunctor`, `*ReadingCoreEquationForwardTransport`, `*ReadingCoreRawForwardHom`, `*ReadingCoreForwardImage` | 任意のprimitive lens/protocol forward morphismと既構成endpoint aggregate、source/target generated-object等式。inverse、index equivalence、target-wide coverage、completed package mapは取らない | 任意のcarried context preorder上で同じone-way equation contractを定義しendpoint contractをstrict embedding。source/target object等式でcontext functor・equation・covariant raw NatTransをactual ReadingCoreへtransport。endpoint-strength source-image coverage、readable overlap、selected Extensionと両Sigma provenanceを同じindexed aggregateに構成 | provenance-generic coverage/overlap/Extensionとone-way generated-package interface | coverage/overlap/Extensionはまだconcrete Law endpoint型で、generated-core型へのliteral transport、package-level独立readback、D、A--F統合は未完了 |
@@ -18398,4 +18399,119 @@ audits:
   blocking_findings:
     - "D and the final common A--F integration remain mathematical construction obligations"
   next_obligation: "State and prove the common lens/protocol application of the same fixed-F classification through the independent package Hom equivalences, then connect it to the original G-122 comparison data and presentation-side recovery required by D."
+```
+
+## Cycle 177 — Common fixed-F package classification and intrinsic D recovery
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 177
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 72c0154613d9df5660387594fd363be2b67554f2
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 176 gave independent generated package Hom equivalences but had not applied one classification through both CS models or connected every classified element to an actual D-side display subgroup"
+  proof_obligation: "Apply the same complete-update fixed-F classification to bijective independent lens and protocol package morphisms, preserve the actual state actions and regenerated geometry packages, and recover every hidden classifier through the finite-axis-fold intrinsic D decoder"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATIndependentFixedFDisplayClassification.lean
+  risks:
+    - "placing two unrelated classifiers side by side rather than factoring both through the same preserving fixed-F change"
+    - "storing the semantic invertible change, hidden permutation, table code, actual D element, or completed generated package as a certificate field"
+    - "calling the finite-axis-fold intrinsic subgroup the full original G-122 comparison group"
+    - "using one selected witness instead of quantifying over every finite hidden permutation"
+    - "silently extending the identity-visible application to arbitrary H"
+  unchecked:
+    - "identity/composition functoriality and Aut group equivalences for independent package Homs"
+    - "full original G-122 comparison group, section, restricted and ambient kernels, every lift fiber, bottom and coefficient transport"
+    - "final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Defined bijective generated-package endomorphisms without stored semantic or classification data. Reconstructed the independently defined identity-visible lens and protocol changes and proved exact equivalences. Factored both package types through the same operation-preserving complete-update fixed-F change, yielding one common hidden-permutation classifier with lens and protocol state-action formulas and classifier compatibility. Reconstructed the complete Cycle 175 directed package from each independent automorphism. Finally converted every finite hidden permutation to an explicit finite table and used the existing intrinsic decoder equivalence to recover the entire actual finite-axis-fold Extension-permutation intrinsic subgroup, with value theorems identifying the actual local-fiber-kernel section evaluation and a commuting lens/protocol theorem."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATIndependentFixedFDisplayClassification.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.LensIndependentPackageAut
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.ProtocolIndependentPackageAut
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.lensPackageAutEquivInvertibleChange
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.protocolPackageAutEquivInvertibleChange
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.lensProtocolIndependentPackageEquiv
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.lensIndependentFixedFClassification
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.protocolIndependentFixedFClassification
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.lens_stateMap_classification
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.protocol_stateMap_classification
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.lensProtocol_classifier_compatibility
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.lensPackageDirectedPackage
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.protocolPackageDirectedPackage
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.fixedFClassifierToDCode
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.fixedFClassifierToDIntrinsic
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.lensPackageDIntrinsicClassification
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.protocolPackageDIntrinsicClassification
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.lensProtocol_DIntrinsic_compatibility
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.lensPackageDIntrinsic_value
+    - AAT.AG.RealizationReconstruction.CSAATIndependentFixedFDisplayClassification.protocolPackageDIntrinsic_value
+  claim_mapping:
+    source_labels:
+      - "GOAL E: both independent CS semantics translate to generated AAT operation packages and read back"
+      - "GOAL F1: the same fixed-F classification applies to both CS models"
+      - "GOAL D: comparison information must be recovered on the display side without replacing all elements by one witness"
+    conjuncts:
+      - "lens package automorphism -> independent identity-visible lens change"
+      - "protocol package automorphism -> independent identity-visible protocol change"
+      - "both changes -> the same actual preserving complete-update fixed-F change"
+      - "common classifier -> one arbitrary hidden permutation, with complete state-action recovery on both sides"
+      - "hidden permutation -> explicit finite table -> every element of the action-characterized actual D intrinsic subgroup"
+      - "generated geometry -> complete Cycle 175 directed package reconstructed only after operation-level readback"
+    undischarged_assumptions:
+      - "this application fixes the visible automorphism to identity; arbitrary-H group structure is not inferred"
+      - "the D target is the previously proved intrinsic Extension-permutation subgroup, not the full original comparison group"
+      - "no common A--C fully faithful realization functor yet transports full comparison subgroups"
+    acceptance_point: "The two independent package interfaces now use one literal fixed-F classifier and recover all of its finite hidden permutations in one actual D intrinsic subgroup; full D and G-123 completion are not claimed."
+audits:
+  premise_delta:
+    discharged:
+      - "same fixed-F classification applied through both independent generated package interfaces"
+      - "complete lens and protocol state-action recovery from the common classifier"
+      - "all finite hidden permutations recovered through explicit tables in the actual intrinsic D subgroup"
+      - "regeneration of complete directed package data on both classified CS sides"
+    remaining:
+      - "package id/comp functoriality and Aut group equivalence"
+      - "arbitrary-H generated package group classification"
+      - "full G-122 comparison groups, section, two distinct kernels, all lift fibers, bottom/coefficient components"
+      - "final A--F theorem"
+  certificate_provenance:
+    discharged:
+      - "package automorphism fields are only the Cycle 176 package Hom and bijectivity of its existing carrier maps"
+      - "semantic changes and hidden permutations are reconstructed through the Cycle 176 equivalences and fixed-F factorization"
+      - "finite table codes and actual D elements are outputs of equivalences, never membership or certificate inputs"
+      - "directed generated packages are derived after reconstructing the primitive forward morphisms"
+    unresolved: []
+  proof_use:
+    used:
+      - "all generated lens get/put laws and protocol edge/observation laws through package readback"
+      - "bijectivity at the complete lens carrier and every protocol vertex"
+      - "the same actual preserving following-change subtype in both CS equivalences"
+      - "fixed-F lens normal form for every visible state and hidden value"
+      - "the complete finite table MulEquiv and intrinsic decoder surjectivity/injectivity"
+      - "the actual normalized permutation local-fiber-kernel section evaluation"
+    unused:
+      - "no stored semantic Hom, invertible change, hidden classifier, component family, D element, full comparison equivalence, or lift certificate"
+  structure_field_escape: none-found-package-aut-subtypes-add-only-bijectivity-to-the-existing-operation-level-package-Hom
+  route_integrity: pass-lens-and-protocol-factor-through-the-same-preserving-complete-update-change-and-the-same-hidden-permutation-before-D-evaluation
+  target_fitting: partial-common-CS-classification-and-full-intrinsic-subgroup-recovery-are-proved-but-full-D-and-A--F-remain-open
+  vacuity: none-found-classifiers-quantify-every-bijective-package-action-and-D-recovery-quantifies-the-entire-finite-permutation-group
+  one_way_as_equivalence: none-found-invertibility-is-explicitly-the-bijective-automorphism-specialization-and-general-noninvertible-Cycle176-Homs-remain-intact
+  goal_or_report_reinterpretation: none-found-the-report-distinguishes-the-intrinsic-local-fiber-subgroup-from-the-full-G122-comparison-group-and-two-kernel-lift-data
+  validation_refs:
+    - "focused CSAATIndependentFixedFDisplayClassification check: PASS; 27 namespace declarations, standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "Cycle176 equivalences are hom-set equivalences; id/comp compatibility and induced Aut group equivalences remain to be constructed"
+    - "the existing generated G122 comparison evaluation is not known surjective onto the full actual comparison group"
+    - "without a common A--C fully faithful realization and commuting restriction square, full section/kernel/fiber transport would be conclusion-as-input"
+  next_obligation: "Make the independent package Hom equivalences identity/composition compatible, construct endpoint Aut and comparison-subgroup transport for a fully faithful common realization, then instantiate it to the full original G-122 data while separately retaining the ambient kernel and bottom/coefficient evaluations."
 ```
