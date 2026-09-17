@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 166 retains the actual full-family restriction action, proves all three naturality laws on both generated CS cores, and isolates the current thin representative API as the remaining integration obstruction
+- current proof obligation: Cycle 167 packages the actual-restriction realization supply on both generated cores and combines it with the genuine base, coefficient, and full typed raw action without importing coverage or overlap
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: define an explicit-restriction realization supply and a parallel exact geometry hom that consume the constructed action without re-selecting representatives; then integrate mapped-context coverage and complete overlap
+- next proof obligation: construct mapped-context coverage and complete-overlap data against the same explicit context action, then assemble the parallel exact geometry hom
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 167 delta | actual restriction actionに対するrealization supplyをgenerated equation transportとpackage baseへ接続し、base・coefficient・rawと同じcheckpointへ統合する | `EquationExplicitRealizationSupply`, lens/protocol `*EndpointExplicitRealizationSupply`, `coreGeometryExplicitRealizationSupplyCast`, lens/protocol `*GeneratedExplicitRealizationSupply`, `ExplicitRealizationTransportSupply`, lens/protocol package constructors, `ExplicitExactGeometryCheckpoint`, lens/protocol checkpoint constructors | fixed CS inputとgenuine semantic iso、Cycles 161/163/164のequation transport・package base・typed raw action、generated-object provenance。completed supply、coverage、overlapは最終constructor入力に取らない | 全actual context morphismのaction・restriction保存、全carrier同値とreading iff、三naturalityをgenerated transportへ接続し、同じ`e`由来のbase/coefficient/rawと統合 | 次のparallel exact geometry homのrealization fieldおよびcoverage/overlap構成 | coverageとcomplete overlapはcheckpoint fieldに含めず未完了。現行`ExactGeomReadHom`への変換、一般非可逆CS射、readback、D、A--F統合も未完了 |
 | A/E Cycle 166 delta | thin Homで消去される前のactual `ContextMorphism`を保持し、全context・全restriction上で三carrier actionとnaturalityを同一構成から与える | `ExplicitFullFamilyContextAction`, `explicitFullFamilyContextAction`, lens/protocol `*EndpointExplicitContextAction`, `explicitFullFamilyContextActionCast`, lens/protocol `*GeneratedExplicitContextAction`; `targetChosenMorphism`, `explicitlyRebasedChosenMorphism`, `ChosenRepresentativeCoherence`, `supplyNaturality_of_chosenRepresentativeCoherence` | fixed CS inputとgenuine semantic iso、既存full-family rebase/morphism rebase、両generated coreのobject provenance等式。carrier/action/naturality証拠はconstructor入力に取らない | sourceの全architecture context、全actual restriction morphismをtargetへrebaseし、Support/Axis/Observable同値、reading iff、restriction保存、三naturalityを構成。generated lens/protocol coreへcast | 次のexplicit-restriction realization supplyとparallel exact geometry hom | 現行`RealizationTransportSupply`はtarget thin arrowから別代表を`Classical.choose`するため直接変換不可。coherenceを仮定入力にせず、explicit supply/homを構成する必要がある。coverage、overlap、total hom、一般非可逆CS射、readback、D、A--F統合も未完了 |
 | A/E Cycle 165 delta | genuine-CS transportの全generated contextでSupport/Axis/Observable carrierと三reading predicateを、表示できた部分集合へ縮小せず保持する | `EquationContextCarrierEquiv`, `lensIsoEndpointContextCarrierEquiv`, `protocolIsoEndpointContextCarrierEquiv`, `coreGeometryContextCarrierEquivCast`, `lensIsoGeneratedContextCarrierEquiv`, `protocolIsoGeneratedContextCarrierEquiv` | fixed CS inputとgenuine semantic iso、Cycle 161のendpoint/generated equation transportおよびsource/target generated-object provenance等式。carrier同値やreading証拠は最終constructorの入力に取らず内部構成する | 全source generated context上のSupport・Axis・Observable同値と、atom同値を含むsupportReads、axisReads、observableReadsの保存反映iff | `RealizationTransportSupply`の三前向きcomponent mapとread保存fieldの構成材料 | context preorderのHomが存在命題から独立に`Classical.choose`された代表を持つためcomponent naturalityは未証明。mapped-context coverage、complete overlap、realization supply、exact total hom、一般非可逆CS射、readback、D、A--F統合も未完了 |
 | A/E Cycle 164 delta | genuine-CS exact geometryのうち構成済みbase・coefficient・全typed raw actionを同じcheckpointに固定し、未構成geometry fieldsを入力へ移さない | `ExactGeometryRawCheckpoint`, `lensIsoExactGeometryRawCheckpoint`, `protocolIsoExactGeometryRawCheckpoint` | fixed CS inputとgenuine semantic iso、Cycle 163 `PackageTotalHom`、Cycle 158 ReadingCore raw constructor。coverage/overlap/realizationは入力にもfieldにも置かない | complete package base、`Int`恒等係数準同型、全Law-index×Atom座標・relation・restrictionを保持するtarget-indexed exact raw map | 後続`ExactGeomReadHom`のbase/coefficient/raw fields | generated contextのSupport/Axis/Observable前向きcomponent map・read保存・naturality、mapped-context上のcoverage preservation、complete overlap比較、realization supply、exact total hom、一般非可逆CS射、readback、D、A--F統合は未完了 |
@@ -17293,4 +17294,106 @@ audits:
     - "restriction representatives are not unique in the underlying contract, so uniqueness cannot derive the missing equality"
     - "the sound route is an explicit-restriction realization supply and parallel exact geometry hom; adding ChosenRepresentativeCoherence as an input would move the conclusion into a certificate"
   next_obligation: "Define ExplicitRealizationTransportSupply and a parallel exact geometry hom whose naturality uses the retained restriction action, then combine it with the Cycle 164 base/coefficient/raw checkpoint and construct coverage and overlap against the same action."
+```
+
+## Cycle 167 — Explicit realization supply and exact-geometry checkpoint
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 167
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 0d82eba41668fc8bbc6883ef304a36996535aebc
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 166 constructed and audited the actual full-family context action and all three naturality laws, while proving that the old thin-representative supply cannot consume them without extra coherence"
+  proof_obligation: "Index the realization supply directly by actual ContextMorphism values, connect it to the genuine generated equation transports and package bases, and combine it with the already constructed coefficient and full typed raw action without hiding coverage or overlap"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExplicitRealizationSupply.lean
+  risks:
+    - "accepting a completed realization supply or chosen-representative coherence in the final lens/protocol constructors"
+    - "assembling a geometry hom while coverage or overlap is still absent"
+    - "using a realization action unrelated to the same generated equation transport or package base"
+    - "dropping the complete typed Law-index-times-Atom raw action when changing realization APIs"
+  unchecked:
+    - "mapped-context coverage and complete overlap against the explicit action"
+    - "parallel exact geometry hom and its category laws"
+    - "general noninvertible maps, readback, D, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Constructed an explicit realization supply indexed by every actual source ContextMorphism and attached it to the exact generated equation transport of each genuine CS isomorphism. Lifted the result to the complete package base and combined it with the identity integer coefficient action and full typed raw action. The resulting checkpoint has no coverage or overlap fields and is not claimed as a geometry hom."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExplicitRealizationSupply.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.EquationExplicitRealizationSupply
+    - AAT.AG.RealizationReconstruction.lensIsoGeneratedExplicitRealizationSupply
+    - AAT.AG.RealizationReconstruction.protocolIsoGeneratedExplicitRealizationSupply
+    - AAT.AG.RealizationReconstruction.ExplicitRealizationTransportSupply
+    - AAT.AG.RealizationReconstruction.lensIsoExplicitRealizationTransportSupply
+    - AAT.AG.RealizationReconstruction.protocolIsoExplicitRealizationTransportSupply
+    - AAT.AG.RealizationReconstruction.ExplicitExactGeometryCheckpoint
+    - AAT.AG.RealizationReconstruction.lensIsoExplicitExactGeometryCheckpoint
+    - AAT.AG.RealizationReconstruction.protocolIsoExplicitExactGeometryCheckpoint
+  claim_mapping:
+    source_labels:
+      - "GOAL A: retain the actual context realization action together with the complete core and raw geometry data"
+      - "GOAL E and n1015: connect both genuine CS translations to the same generated-core and geometry construction"
+    conjuncts:
+      - "every actual source ContextMorphism -> actual mapped ContextMorphism and restriction preservation"
+      - "every context and carrier value -> full equivalences, reading iff, and three naturality equations"
+      - "generated-object provenance -> explicit realization supply on each actual generated equation transport"
+      - "complete package base -> package-level explicit supply"
+      - "same genuine isomorphism -> base, Int coefficient identity, full typed raw action, explicit realization"
+      - "coverage and overlap -> absent and unclaimed"
+    undischarged_assumptions:
+      - "genuine CS isomorphism is the allowed input for this exact-equivalence subcase"
+      - "the parallel exact geometry hom must use explicit-restriction naturality rather than the old re-selected representative contract"
+      - "general noninvertible CS morphisms remain a separate directed construction"
+    acceptance_point: "The realization component is now connected to the actual generated transport and shares the same base with the coefficient and raw components; only coverage and overlap prevent assembly of the parallel hom."
+audits:
+  premise_delta:
+    discharged:
+      - "equation-indexed explicit realization supply for both generated CS cores"
+      - "package-level explicit realization supply for both complete bases"
+      - "common checkpoint containing base, coefficient, typed raw, and explicit realization"
+    remaining:
+      - "coverage, overlap, parallel exact geometry hom/category, noninvertible maps, readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "coreGeometryExplicitRealizationSupplyCast transports a supplied endpoint supply along supplied source/target object equalities"
+    discharged:
+      - "both endpoint supplies construct every action, restriction, carrier, reading, and naturality field directly from full-family rebase"
+      - "both generated constructors internally supply the existing object provenance equalities and endpoint supply"
+      - "both package constructors use the same generated equation transport inside the Cycle 163 PackageTotalHom"
+      - "both final checkpoints construct base, coefficient, raw, and realization from the same genuine CS isomorphism"
+    unresolved:
+      - "coverage and overlap data compatible with the explicit action"
+  proof_use:
+    used:
+      - "both endpoint and generated equation transports"
+      - "both source and target generated-object provenance equalities"
+      - "both complete PackageTotalHom values"
+      - "both full target-indexed typed raw actions from Cycle 164"
+      - "every actual ContextMorphism and all three complete context carriers"
+    unused:
+      - "no ChosenRepresentativeCoherence, old RealizationTransportSupply, CoverageTransport, OverlapTransport, completed geometry hom, readback, or D classifier is accepted"
+  structure_field_escape: none-found-the-checkpoint-contains-only-the-four-constructed-components-and-has-no-coverage-overlap-or-completed-hom-field
+  route_integrity: pass-realization-and-raw-components-use-the-same-generated-equation-transport-and-package-base-from-the-same-genuine-isomorphism
+  target_fitting: partial-the-explicit-realization-component-is-integrated-but-coverage-and-overlap-remain-required
+  vacuity: none-found-the-supply-quantifies-every-context-every-actual-context-morphism-and-every-carrier-value
+  one_way_as_equivalence: none-found-the-equivalence-valued-supply-is-limited-to-the-genuine-isomorphism-subcase
+  goal_or_report_reinterpretation: none-found-the-final-record-is-named-checkpoint-and-explicitly-denies-geometry-hom-status
+  validation_refs:
+    - "focused CSAATExplicitRealizationSupply file check: PASS; 49 namespace declarations, standard axioms only"
+    - "focused exact CSAATExplicitRealizationSupply target build: PASS (4296 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "mapped-context coverage and complete-overlap constructors have not yet been connected to the explicit context action"
+    - "the current ExactGeomReadHom cannot consume the explicit supply because its realization field observes independently re-selected target representatives"
+    - "a parallel exact geometry hom must retain the explicit supply and must not accept missing coverage or overlap as opaque completion certificates"
+  next_obligation: "Construct coverage and complete overlap from the fixed full-family generated geometry against the explicit action, then assemble the parallel exact geometry hom with the four Cycle 167 components."
 ```
