@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 155 proves computational extensionality for every exact typed raw/geometry layer and the coordinate-equivalence unit/associativity laws without collapsing coordinate, local-data, relation, raw, coefficient, or realization actions
+- current proof obligation: Cycle 156 constructs target-indexed inverse-context exact raw maps for both genuine lens and protocol isomorphisms, preserving their actual complete Law-index/Atom action at every target context
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: discharge the dependent transport induced by propositional `PackageTotalHom` unit/associativity equalities and prove exact total category laws, then adapt genuine lens/protocol transports to the inverse-context raw field and assemble their full core/geometry bridges
+- next proof obligation: construct the genuine lens/protocol `PackageTotalHom` and non-raw realization data from the fixed CS inputs, instantiate the raw maps with the resulting `coreContextInverse`, and discharge the dependent transport needed for exact total category laws
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 156 delta | genuine lens/protocol同型の実際の全Law座標作用を、geometryが要求するtarget-indexed inverse-context向きへ移す | `equationCoordinateRawExactMapAgainst`; `lensIsoRawExactMapAgainst`, `_coordinate_apply`; `protocolIsoRawExactMapAgainst`, `_coordinate_apply` | 独立に構成済みのsource/target site/raw system、genuine CS iso、任意のtarget-to-source context functor。完成core hom、geometry hom、raw equality、coordinate subsetは受けない | 全target contextでCS iso由来の全Law-index×Atom同値をcoordinate/local-data actionとして構成し、空の追加relationと両endpointの恒等restrictionから全target arrow/polynomialのsquareを証明 | 後続でCS isoから構成するcore baseの`coreContextInverse`を代入したexact geometry raw field | context functorはgeneric parameterでありCS core bridgeからの生成は未完了。`PackageTotalHom`、coverage/overlap/realization、exact total hom、category laws、一般非可逆CS射、readback、D回復、A--F統合も未完了 |
 | A/E Cycle 155 delta | exact typed geometryの圏法則を非一意な計算成分をproof irrelevanceで消さずに証明するため、全依存層の等値判定を与える | `CoordinateFamilyExactEquiv.ext`, `.refl_trans`, `.trans_refl`, `.trans_assoc`; `StructuralRelationFamilyExactEquiv.ext`; `RawAmbientRestrictionSystemExactMapAgainst.ext`; `RealizationTransportSupply.exactExt`; `ExactGeomReadHom.ext`; `ExactGeometryTotalHom.ext` | 同じ固定endpoint/index上の二つの候補と、各non-subsingleton計算成分の等式または従属`HEq`。overlapにはaccepted thin-category uniquenessを使用し、completed category lawやraw actionのSubsingleton instanceは受けない | coordinate equivalenceと全local-data equivalence、全relation-generator equivalence、全contextのraw coordinate/relation action、係数写像、三realization比較、base/geometry成分を保持したextensionalityを証明。Type値のoverlap comparisonはthinnessによる一意性だけで同定し、coordinate transportの左右単位・結合則も構成 | exact total morphismのunit/associativityを従属transport込みで証明する次cycle | `PackageTotalHom`の命題的unit/associativity等式がraw relation型へ作るcastの消去、`Category` instance、genuine lens/protocol bridge、任意非単射CS統合、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 154 delta | strict raw equalityに限定されないparallel geometry morphismで、既存G-108の全非raw成分とactual typed raw actionを一体化する | `RealizationTransportSupply.exactId`, `.exactComp`, `.ofGeomReadHom`; `ExactGeomReadHom`, `.id`, `.comp`, `.ofStrict`; `ExactGeometryTotalHom`, `.id`, `.comp`, `.ofStrict` | 任意のaccepted core package hom、coverage、overlap、係数写像、Cycle 153 exact raw map、support/axis/observable supply。strict特殊化は既存`GeomReadHom`/`GeometryTotalHom` | identity/compositionで全成分を構成。strict homからbase・coverage・overlap・係数・全realization比較を保持し、raw equalityからactual typed raw mapを生成 | parallel exact geometry categoryとgenuine CS core/geometry bridge | extensionality・category laws、任意非単射CS coordinate map統合、concrete lens/protocol bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 153 delta | 非可逆な係数準同型とinverse-context reindexを保持し、全typed coordinate・relation generator・restriction squareを同じdirected raw mapで運ぶ | `CoordinateFamilyExactEquiv.polynomialHom`, `.polynomialHom_C`, `.polynomialHom_X`, `.polynomialHom_trans`; `StructuralRelationFamilyExactEquiv.relationBaseChange_comp`, `.baseChange`; `RawAmbientRestrictionSystemExactMapAgainst`, `.refl`, `.trans`, `.ofGeometryRawEquality`, `.ofGeomReadHom` | generic interfaceはsource/target raw system、inverse context functor、係数準同型、全coordinate/relation/restriction coherenceを受ける。identity/compositionは完成合成証拠を受けない。strict特殊化は既存`GeomReadHom`のみ | coefficient map後の全coordinate renameをring homとして構成し、定数・変数・合成を証明。relation base changeと合成を構成。target arrow全体のrestriction squareを合成し、既存strict `raw_eq`からcoordinate/relation/restrictionの全fieldを生成 | parallel typed geometry hom/categoryのraw fieldと、既存strict geometry categoryからの埋め込み | genuine lens/protocol transportのinverse-context版、parallel geometryの非raw field・category laws・full strict embedding、readback、D回復、A--F統合は未完了 |
@@ -16209,4 +16210,95 @@ audits:
   blocking_findings:
     - "candidate category-law proof left an explicit cast in the raw relation-family action after the propositional PackageTotalHom left-unit equality; the candidate was removed"
   next_obligation: "Construct explicit dependent transport coherence for exact raw/geometry actions over PackageTotalHom unit and associativity equalities, prove the exact total Category instance, then build genuine lens/protocol exact geometry bridges."
+```
+
+## Cycle 156 — Genuine CS raw maps in inverse-context orientation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 156
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: e5fa157ef2a8955043527b34f258358c8b94f497
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 151 genuine-CS raw transport had source-to-target context orientation, while Cycle 153 exact geometry requires target-indexing along the eventual base morphism's inverse context functor"
+  proof_obligation: "Construct the actual complete Law-coordinate raw action of genuine lens and protocol isomorphisms in the target-indexed inverse-context form required by ExactGeomReadHom"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGenuineIsoRawAgainst.lean
+  risks:
+    - "using strict raw equality or replacing the independent target endpoint"
+    - "making the inverse context functor determine or erase the genuine coordinate action"
+    - "claiming the generic inverse functor has already been generated from a CS core morphism"
+    - "dropping protocol relations/observations or lens get/put Law indices"
+  unchecked:
+    - "construction of the PackageTotalHom and its coreContextInverse from each genuine CS isomorphism"
+    - "coverage, overlap, realization supply, and total exact geometry constructors"
+    - "dependent exact-category laws"
+    - "arbitrary noninvertible CS maps, independent readback, D recovery, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Constructed a generic target-indexed exact map between complete equation-coordinate raw systems for any target-to-source context functor and any complete coordinate equivalence. The coefficient map is the identity on Int; every target context uses the supplied full coordinate equivalence; additional structural relations remain the actual empty relation families; and the all-arrow restriction square is derived from the independently constructed endpoints' identity restrictions. Specialized it to genuine lens and protocol isomorphisms using their actual full Law-index/Atom equivalences and proved the coordinate action formula at every target context."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGenuineIsoRawAgainst.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.equationCoordinateRawExactMapAgainst
+    - AAT.AG.RealizationReconstruction.lensIsoRawExactMapAgainst
+    - AAT.AG.RealizationReconstruction.lensIsoRawExactMapAgainst_coordinate_apply
+    - AAT.AG.RealizationReconstruction.protocolIsoRawExactMapAgainst
+    - AAT.AG.RealizationReconstruction.protocolIsoRawExactMapAgainst_coordinate_apply
+  claim_mapping:
+    source_labels:
+      - "GOAL A: complete typed raw data and target-indexed geometry transport"
+      - "GOAL E and n1015: preserve lens get/put and protocol relation/observation meaning through actual CS isomorphisms"
+    conjuncts:
+      - "every target context -> actual complete source-to-target Law-coordinate equivalence"
+      - "every target context arrow and source polynomial -> exact restriction square"
+      - "lens genuine iso -> all three fully quantified lens Law-index families and every Atom"
+      - "protocol genuine iso -> all relation/observation Law indices and every Atom"
+      - "arbitrary inverse context functor -> no change to the genuine coordinate action because endpoint restrictions are identity"
+    undischarged_assumptions:
+      - "the generic constructor accepts the inverse context functor that a later constructed core base must supply"
+      - "only genuine CS isomorphisms are specialized; arbitrary one-way/noninjective CS maps are not fitted by an equivalence raw field"
+      - "no PackageTotalHom, realization supply, or total geometry hom is constructed here"
+    acceptance_point: "Both independent CS models now have the exact raw component in the orientation demanded by the parallel geometry structure, conditional only on later supplying the constructed core inverse-context functor."
+audits:
+  premise_delta:
+    discharged:
+      - "target-indexed inverse-context exact raw construction for complete equation-coordinate systems"
+      - "genuine lens and protocol specializations with exact all-coordinate action"
+      - "all-target-arrow restriction coherence from endpoint restrictions"
+    remaining:
+      - "CS-derived core base and non-raw geometry fields, total exact hom, category transport laws, noninvertible maps, readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "the generic raw constructor accepts a context functor but no completed raw or geometry comparison"
+    discharged:
+      - "coordinate equivalences are generated from genuine CS categorical isomorphisms"
+      - "relation and restriction fields are constructed from the actual endpoint raw systems"
+    unresolved:
+      - "derive the chosen inverse context functor from the same genuine-CS-generated PackageTotalHom"
+  proof_use:
+    used:
+      - "the genuine lens/protocol Law-index equivalence on every index"
+      - "the unchanged Atom component of every coordinate"
+      - "the arbitrary supplied inverse functor on every target context arrow"
+      - "both endpoint identity raw restrictions"
+    unused:
+      - "no raw equality, endpoint replacement, coordinate subset, completed geometry hom, decoder membership, or readback is accepted"
+  structure_field_escape: none-found-the-context-functor-is-a-primitive-generic-parameter-and-is-explicitly-not-counted-as-the-CS-core-bridge
+  route_integrity: pass-both-CS-models-retain-their-complete-actual-law-coordinate-actions
+  target_fitting: partial-genuine-isomorphism-raw-components-fit-exact-geometry-but-the-core-and-nonraw-bridge-is-open
+  vacuity: none-found-restriction-coherence-quantifies-over-every-target-arrow-and-polynomial
+  one_way_as_equivalence: none-found-only-genuine-CS-isomorphisms-produce-coordinate-equivalence-specializations
+  goal_or_report_reinterpretation: none-found-arbitrary-oneway-CS-maps-core-bridge-readback-D-and-final-integration-remain-open
+  validation_refs:
+    - "focused CSAATGenuineIsoRawAgainst file check: PASS; 5 namespace declarations, standard axioms only"
+    - "focused exact CSAATGenuineIsoRawAgainst target build: PASS (4285 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct genuine lens/protocol PackageTotalHom values and non-raw realization supplies from the fixed CS inputs, then instantiate these raw maps at the resulting coreContextInverse and assemble ExactGeometryTotalHom."
 ```
