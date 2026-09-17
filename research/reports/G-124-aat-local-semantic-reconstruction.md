@@ -15,11 +15,13 @@
   merge commit `094151fda193acd169a08c6a65b8008ffb741b55`
 - Cycle 3 accepted PR: [#4716](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4716),
   merge commit `5b421fe23fd20ed97b8d96645455d11315f197f1`
+- Cycle 4 accepted PR: [#4717](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4717),
+  merge commit `1ce0071826c031fcbd8e5474ca80110078950c82`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: E1 の source-choice morphism を actual automorphism として構成し、
-  pointwise `C₂^Ω` とその像部分群の群同型を証明する
-- next proof obligation: uniform flip の対応、および B の主同値との同定を与える
+- current proof obligation: E1 の constant-true choice を既存 uniform flip と同定し、
+  `t²=1`、`et=te`、`et≠e` を新しい source-choice 群から回収する
+- next proof obligation: E1b の局所再構成を B の主同値による回復と同定する
 
 ## Cycle 1 — rejected
 
@@ -278,11 +280,83 @@ audits:
   next_obligation: "identify the uniform-true choice with the accepted uniform flip and then identify this E1a subgroup through the main equivalence B"
 ```
 
+Cycle 4 は fixed head `875f5c85ee4d48a066963e089befa9e8a1e471b2` の4-lane review で
+全 lane が `Mergeable`、finding なしとなり、CI 7/7 success を確認して mergeした。
+最終監査は PR comment `5718469541`、Cycle 5 選定は Issue comment `5718475885` に固定した。
+
+## Cycle 5 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 5
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 1ce0071826c031fcbd8e5474ca80110078950c82
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 4 accepted evidence: PR comment 5718469541; Issue comment 5718475885"
+  proof_dag_predecessors:
+    - "LocalSemanticReconstruction.taggedSourceChoiceAut"
+    - "RealizationReconstruction.taggedSourceChoiceExplicitExactGeometryHom_uniformFlip_base"
+    - "RealizationReconstruction.taggedUniformFlipTotal_commutes_normalization"
+    - "RealizationReconstruction.taggedNormalizationThenUniformFlip_ne_normalization"
+  proof_obligation: "constant-true source-choice Aut の base を既存 uniform flip と同定し、actual Aut の t²=1 と既存 normalization 上の et=te・et≠e を同じ t で回収する"
+  selection_reason: "Cycle 4 の C₂^Ω 群同型における constant-true の一様非自明元が、固定 GOAL E1 の既存 uniform-flip witness と同じ実射であることを明示する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeGroupLaw.lean"
+  risks:
+    - "actual ExplicitExactGeometry Aut と既存 package/Karoubi normalization の層を混同しないこと"
+    - "base equality を介さず既存 et=te・et≠e を新しい t の結果と呼ばないこと"
+    - "この対応だけで B の主同値との同定を完了扱いしないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the constant-true actual source-choice Aut has taggedUniformFlipTotal as base, squares to one in ExplicitExactGeometry Aut, and its same base recovers the accepted normalization commutation and separation theorems"
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceAut_true_hom_base"
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceAut_true_square"
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceAut_true_base_commutes_normalization"
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceAut_true_normalization_comp_ne_normalization"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL E1: 一様flipの分離"
+    conjuncts:
+      - "constant true image t has accepted uniform-flip base"
+      - "t²=1 in actual ExplicitExactGeometry Aut"
+      - "the same base satisfies et=te and et≠e against accepted normalization e"
+    undischarged_assumptions: []
+    acceptance_point: "the Aut-level square is proved in the actual explicit exact geometry category; normalization commutation and separation are transported through the proved base equality to the already accepted package-level e and t"
+    port_status: unported
+audits:
+  material_premises:
+    discharge_required:
+      - "constant-true/base identification / discharged by accepted constructor computation"
+      - "t²=1 / discharged by Cycle 3 composition and false identity"
+      - "et=te and et≠e / discharged by base equality plus accepted normalization theorems"
+    conclusion_equivalent_risk: []
+  proof_use:
+    used:
+      - "taggedSourceChoiceExplicitExactGeometryHom_uniformFlip_base"
+      - "taggedSourceChoiceExplicitExactGeometryMorphism_comp and _false"
+      - "taggedUniformFlipTotal_commutes_normalization"
+      - "taggedNormalizationThenUniformFlip_ne_normalization"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/TagChangeGroupLaw.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 12 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "identify the E1b finite-restriction reconstruction with recovery through the main equivalence B"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
 - B の対象・射を含む圏同値。Cycle 2 は E1 の指定族における function-level Hom reconstruction。
 - C の投影・正規化・比較群回復。
 - D の三定義と連結成分判定。
-- E1 の uniform flip 対応、および source-choice subgroup と B の主同値との同定。
+- E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の同定。
 - E2 の lens・protocol 二層の決定性と既存 Karoubi 再構成との整合。
