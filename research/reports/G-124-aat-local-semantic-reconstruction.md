@@ -23,11 +23,13 @@
   merge commit `97b586063cb1d217ecdb015027e1ffa6cb9442c3`
 - Cycle 7 accepted PR: [#4720](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4720),
   merge commit `be531fa3c355859cb6b3e28ad78960a3b14cf7c4`
+- Cycle 8 accepted PR: [#4721](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4721),
+  merge commit `41001713273f078bcef9f5b2c0711772d5b35ad0`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: induced-subgraph component map を構成し、その全射性・単射性を D の graph condition と
-  同値化して、component-family restriction の区別・延長判定へ接続する
-- next proof obligation: D の決定集合存在判定、`Equiv.Perm K` への specialization、および有限列挙入力下の実効性へ進む
+- current proof obligation: D の有限 determining vertex set の存在を full component 型の有限性と同値化し、
+  各componentから一頂点を選ぶ有限 determining set を構成する
+- next proof obligation: `Equiv.Perm K` への specialization と、有限列挙入力下の実効性へ進む
 
 ## Cycle 1 — rejected
 
@@ -586,6 +588,85 @@ audits:
     - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.InducedComponent: 12 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "prove the finite determining-set existence criterion, then specialize the value family to Equiv.Perm K and isolate finite-enumeration effectiveness"
+```
+
+Cycle 8 は final head `7241542d33326ca908ea522c03f93a9712035864` の initial formal review で
+全4 lane が `Mergeable`、finding なしとなり、CI 7/7 success を確認して mergeした。
+最終監査は PR comment `5718988569`、Cycle 9 選定は Issue comment `5719007843` に固定した。
+
+## Cycle 9 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 9
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 41001713273f078bcef9f5b2c0711772d5b35ad0
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 8 accepted evidence: PR comment 5718988569; Issue comment 5719007843"
+  proof_dag_predecessors:
+    - "LocalSemanticReconstruction.InducedComponent.precompose_toFull_injective_iff_meetsEveryFullComponent"
+    - "LocalSemanticReconstruction.InducedComponent.precompose_toFull_surjective_iff_retainsFullConnectivity"
+  proof_obligation: "有限な頂点述語 S が MeetsEveryFullComponent と RetainsFullConnectivity を同時に満たすことと full component 型の有限性を同値化する。有限component側では各componentの quotient representative を一つずつ選ぶ有限集合を構成し、同じ同値を actual precomposition の separation-and-extension にも移す"
+  selection_reason: "Cycle 8 の二つの graph criterion を連言し、固定 GOAL D の finite determining-set existence clause を代表元構成まで含めて放電する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FiniteDeterminingComponents.lean"
+  risks:
+    - "vertex type 全体の有限性や DecidableEq を仮定せず、選ばれた代表元集合だけの有限性を証明すること"
+    - "component representatives を入力certificateとして受け取らず、accepted quotient から構成すること"
+    - "graph criteria と actual separation/extension の双方を記録し、片方だけを determining と呼ばないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "a finite subset meeting every component and retaining connectivity exists iff the full component type is finite; the chosen noncomputable Quotient.out representative range supplies one such subset, and for every nontrivial value type this is equivalent to existence of a finite restriction that is both injective and surjective on component families"
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.representative"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.componentMk_representative"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.RepresentativeVertex"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.representativeVertex_finite"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.representativeVertex_meetsEveryFullComponent"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.representativeVertex_retainsFullConnectivity"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.HasFiniteDeterminingVertices"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.hasFiniteDeterminingVertices_iff"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.HasFiniteDeterminingRestriction"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.hasFiniteDeterminingRestriction_iff"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL D: 決定集合の存在 iff π₀(Q) が有限"
+      - "固定 GOAL D: 各componentから一頂点を選ぶ S が決定集合になる"
+    conjuncts:
+      - "a finite meeting-and-connectivity-retaining vertex predicate makes the component type finite through an explicit surjection"
+      - "when the component type is finite, the range of Quotient.out is a finite vertex subset"
+      - "the representative range meets every component and contains only one selected vertex in each component, hence retains connectivity"
+      - "for Nontrivial Value, finite graph determining predicates are equivalent to finite restrictions that are both separating and extending"
+    undischarged_assumptions:
+      - "derive Nontrivial (Equiv.Perm K) from the fixed GOAL premise |K|≥2 and connect to preservingEquivComponentPermutationFamilies"
+      - "supply the separately specified finite-enumeration coherence decision and computable extension"
+    acceptance_point: "the finite subset and both directions are constructed from the actual component quotient and the accepted restriction map; no global vertex finiteness or decision procedure is assumed"
+    port_status: unported
+audits:
+  material_premises:
+    discharge_required:
+      - "finite determining subset implies finite components / discharged by a surjection from its finite subtype"
+      - "finite components imply a finite representative subset / discharged by the finite range of Quotient.out"
+      - "representative subset determining / discharged by Cycle 8 graph criteria and Cycle 7 precomposition criteria"
+    conclusion_equivalent_risk: []
+  proof_use:
+    used:
+      - "noncomputable Quotient.out and Quotient.out_eq, with standard Classical.choice dependency"
+      - "Finite.of_surjective"
+      - "both Cycle 8 precomposition-to-graph equivalences"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/FiniteDeterminingComponents.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.InducedComponent: 10 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "specialize component values to Equiv.Perm K under |K|≥2 and then formalize the finite-enumeration effectiveness clause separately"
 ```
 
 ## 未完了 ledger
