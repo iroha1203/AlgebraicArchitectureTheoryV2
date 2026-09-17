@@ -19031,13 +19031,13 @@ tracking_issue: 4520
 report_path: research/reports/G-123-aat-realization-reconstruction.md
 selection:
   proof_obligation: "Test faithfulness of the current finite-axis-table source congruence before treating it as a candidate for the Cycle 182 direct-endpoint equivalence"
-  expected_result_type: candidate-refutation-checkpoint
+  expected_result_type: blocker-fixed
   risks:
     - "adding semantic evaluator equality as a congruence law"
     - "mistaking failure of the current grammar for refutation of G-123"
     - "repairing faithfulness by shrinking the actual automorphism range"
 result:
-  proposed_result_type: candidate-refutation-checkpoint
+  proposed_result_type: blocker-fixed
   completion_candidate: no
   target_refuted: no
   proof_obligation_delta: "Constructed a Boolean invariant of primitive axis-table occurrences and proved it is preserved by every existing source congruence constructor. It separates the identity-table primitive from the source identity, while functorial evaluation sends both to the actual identity. Therefore the current direct endpoint evaluator is not injective, and the Cycle 182 iff makes the current whole comparison evaluator noninjective as well."
