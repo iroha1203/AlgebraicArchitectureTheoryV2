@@ -385,7 +385,7 @@ selection:
     - "実効性を有限列挙入力なしに主張しないこと"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "common finite-reading separation, extension, and determining predicates are distinct; every finite Bool table extends to an actual source-choice Aut, but no finite reading separates that family, so no finite determining set exists"
+  proof_obligation_delta: "common finite-reading separation and extension predicates are defined separately, with determining as their conjunction; every finite Bool table extends to an actual source-choice Aut, but no finite reading separates that family, so no finite determining set exists"
   completion_candidate: no
   lean_artifacts:
     - "AAT.AG.LocalSemanticReconstruction.FiniteReading.Separates"
