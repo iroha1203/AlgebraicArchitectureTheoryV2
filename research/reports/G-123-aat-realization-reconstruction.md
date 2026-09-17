@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 168 constructs the complete-overlap comparison on both generated cores from explicit two-sided restrictions and projects it to the authoritative `OverlapTransport`
+- current proof obligation: Cycle 169 constructs all nine concrete coverage clauses at both genuine-CS endpoints using an actual total target restriction induced by inverse coordinate transport
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct mapped-context coverage against the same explicit context action, then assemble the parallel exact geometry hom from the six independently constructed components
+- next proof obligation: transport endpoint coverage through generated-object/signature provenance to authoritative package-level `CoverageTransport`, then assemble the parallel exact geometry hom
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 169 delta | concrete lens/protocol endpointでcoverage 9条項を、target observable全体に定義されたactual restrictionから放電する | `CoreGeometryCoverageTransport`, lens/protocol `*IsoCoverageContextMorphism`, lens/protocol `*IsoCoverageContextMorphism_isRestriction`, lens/protocol `*IsoEndpointCoreGeometryCoverageTransport` | fixed CS inputとgenuine semantic iso、exact endpoint equation transport、全carrier equivalence。completed coverage、selected coordinate map、target answerは入力に取らない | target polynomialをgenuine Law-coordinate同値の逆でsourceへ戻してsource restrictionへ合成し、全target readable変数を保つrestrictionを構成。同じmapでequation/violation/axis visibilityを証明し、support/boundaryをfull-family rebaseで運ぶ | 次のgenerated provenance castとauthoritative package `CoverageTransport` | generated geometry/signatureの二つのdependent equality transport経路の同定は未完了。package-level coverage、parallel hom/category、一般非可逆CS射、readback、D、A--F統合も未完了 |
 | A/E Cycle 168 delta | complete-Law product overlapを同一generated equation transportに沿って比較し、完成overlap certificateを入力に取らずauthoritative `OverlapTransport`を構成する | `CoreGeometryOverlapTransport`, lens/protocol `*EndpointCoreGeometryOverlapTransport`, `coreGeometryOverlapTransportCast`, lens/protocol `*GeneratedCoreGeometryOverlapTransport`, lens/protocol `*OverlapTransport` | fixed CS inputとgenuine semantic iso、Cycle 161 equation transport、Cycle 163 package base、generated-object provenance。completed overlap transportやgeometry homは最終constructor入力に取らない | inverseで引き戻した三contextのproduct overlapをforwardしたcontextとtarget product overlapの間に、Support/Axis/Observableを恒等に保つactual restrictionを両方向に構成しthin category isoを得る。生成対象へcastし既存`OverlapTransport`へ射影 | 次のparallel exact geometry homのoverlap field | mapped-context coverageは未構成。parallel hom/category、一般非可逆CS射、readback、D、A--F統合も未完了 |
 | A/E Cycle 167 delta | actual restriction actionに対するrealization supplyをgenerated equation transportとpackage baseへ接続し、base・coefficient・rawと同じcheckpointへ統合する | `EquationExplicitRealizationSupply`, lens/protocol `*EndpointExplicitRealizationSupply`, `coreGeometryExplicitRealizationSupplyCast`, lens/protocol `*GeneratedExplicitRealizationSupply`, `ExplicitRealizationTransportSupply`, lens/protocol package constructors, `ExplicitExactGeometryCheckpoint`, lens/protocol checkpoint constructors | fixed CS inputとgenuine semantic iso、Cycles 161/163/164のequation transport・package base・typed raw action、generated-object provenance。completed supply、coverage、overlapは最終constructor入力に取らない | 全actual context morphismのaction・restriction保存、全carrier同値とreading iff、三naturalityをgenerated transportへ接続し、同じ`e`由来のbase/coefficient/rawと統合 | 次のparallel exact geometry homのrealization fieldおよびcoverage/overlap構成 | coverageとcomplete overlapはcheckpoint fieldに含めず未完了。現行`ExactGeomReadHom`への変換、一般非可逆CS射、readback、D、A--F統合も未完了 |
 | A/E Cycle 166 delta | thin Homで消去される前のactual `ContextMorphism`を保持し、全context・全restriction上で三carrier actionとnaturalityを同一構成から与える | `ExplicitFullFamilyContextAction`, `explicitFullFamilyContextAction`, lens/protocol `*EndpointExplicitContextAction`, `explicitFullFamilyContextActionCast`, lens/protocol `*GeneratedExplicitContextAction`; `targetChosenMorphism`, `explicitlyRebasedChosenMorphism`, `ChosenRepresentativeCoherence`, `supplyNaturality_of_chosenRepresentativeCoherence` | fixed CS inputとgenuine semantic iso、既存full-family rebase/morphism rebase、両generated coreのobject provenance等式。carrier/action/naturality証拠はconstructor入力に取らない | sourceの全architecture context、全actual restriction morphismをtargetへrebaseし、Support/Axis/Observable同値、reading iff、restriction保存、三naturalityを構成。generated lens/protocol coreへcast | 次のexplicit-restriction realization supplyとparallel exact geometry hom | 現行`RealizationTransportSupply`はtarget thin arrowから別代表を`Classical.choose`するため直接変換不可。coherenceを仮定入力にせず、explicit supply/homを構成する必要がある。coverage、overlap、total hom、一般非可逆CS射、readback、D、A--F統合も未完了 |
@@ -17497,4 +17498,105 @@ audits:
     - "the parallel exact geometry hom cannot be assembled until that coverage proof is constructed"
     - "these are remaining construction obligations, not evidence against the fixed target"
   next_obligation: "Construct CoverageTransport for both generated CS isomorphisms from the concrete coverage predicates and explicit context action, then assemble the parallel exact geometry hom from base, coverage, overlap, coefficient, raw, and explicit realization."
+```
+
+## Cycle 169 — Concrete endpoint coverage transport
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 169
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 288625421c4199e9a457ed86480378c194d7c17d
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 168 completed authoritative overlap transport while mapped-context coverage remained the sole missing geometry component"
+  proof_obligation: "Construct all nine concrete coverage clauses at both genuine-CS endpoints from actual total target restrictions, without using a completed coverage certificate or coordinate-specific constant map"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATEndpointCoverageTransport.lean
+  risks:
+    - "using the older coordinate-specific constant-observable map for axis visibility"
+    - "assuming target-wide readability rather than proving it for every readable target polynomial variable"
+    - "accepting completed coverage or generated signature coherence as an input"
+    - "claiming package-level CoverageTransport before dependent provenance transport is proved"
+  unchecked:
+    - "generated-object/signature provenance cast and package-level CoverageTransport"
+    - "parallel exact geometry hom and its category laws"
+    - "general noninvertible maps, readback, D, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Constructed a genuine total target restriction for every source restriction by precomposing its observable map with the inverse Law-coordinate equivalence. Proved restriction preservation for every target readable variable and used that same map to discharge equation-coordinate, violation-coordinate, and axis visibility. Completed all nine coverage fields independently for both concrete lens and protocol endpoint geometry bundles."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATEndpointCoverageTransport.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.CoreGeometryCoverageTransport
+    - AAT.AG.RealizationReconstruction.lensIsoCoverageContextMorphism
+    - AAT.AG.RealizationReconstruction.lensIsoCoverageContextMorphism_isRestriction
+    - AAT.AG.RealizationReconstruction.lensIsoEndpointCoreGeometryCoverageTransport
+    - AAT.AG.RealizationReconstruction.protocolIsoCoverageContextMorphism
+    - AAT.AG.RealizationReconstruction.protocolIsoCoverageContextMorphism_isRestriction
+    - AAT.AG.RealizationReconstruction.protocolIsoEndpointCoreGeometryCoverageTransport
+  claim_mapping:
+    source_labels:
+      - "GOAL A: preserve the selected coverage predicates and all context-side geometric readings"
+      - "GOAL E and n1015: retain the actual lens/protocol meanings under the same genuine translation"
+    conjuncts:
+      - "required support/equation/violation/axis -> corresponding exact target role"
+      - "support visibility -> unchanged readable support on the full-family rebase"
+      - "target polynomial variable -> inverse genuine coordinate variable -> source local readable value"
+      - "equation and violation visibility -> actual target restriction plus exact mapped coordinate"
+      - "axis visibility -> the same actual target restriction, local axis readability, and exact axis equation"
+      - "boundary visibility -> actual rebased source restriction"
+      - "lens and protocol -> all nine clauses from their primitive genuine isomorphism"
+    undischarged_assumptions:
+      - "genuine CS isomorphism remains the allowed input for this exact-equivalence subcase"
+      - "generated object and signature provenance must still be aligned before package-level CoverageTransport"
+      - "general noninvertible CS morphisms require the separate directed construction"
+    acceptance_point: "Every concrete endpoint coverage clause is constructed; only dependent provenance transport prevents authoritative generated/package-level assembly."
+audits:
+  premise_delta:
+    discharged:
+      - "actual total target restriction for every source restriction in both CS models"
+      - "restriction preservation for all target readable polynomial variables"
+      - "all nine endpoint coverage clauses for lens"
+      - "all nine endpoint coverage clauses for protocol"
+    remaining:
+      - "generated provenance cast, package-level coverage, parallel exact geometry hom/category, noninvertible maps, readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "CoreGeometryCoverageTransport is a dependent internal record indexed by one equation transport and one explicit axis map"
+    discharged:
+      - "both exported endpoint constructors internally build every field from the concrete requirements and primitive genuine isomorphism"
+      - "the target restriction uses the inverse constructed coordinate equivalence, not a supplied target answer"
+      - "equation, violation, and axis visibility all consume the same actual target ContextMorphism and IsRestriction proof"
+    unresolved:
+      - "identity axis action transported by generated geometry provenance must be identified with SignedExactCoreReadingHom.axisMap"
+  proof_use:
+    used:
+      - "every source context and actual restriction into the concrete reading"
+      - "the complete Law-index-times-Atom coordinate equivalence and its inverse"
+      - "all target readable polynomial variables"
+      - "Support, Axis, Observable, and boundary restriction data"
+      - "both endpoint context-carrier reading equivalences"
+    unused:
+      - "no completed CoverageTransport, generated-axis coherence certificate, overlap certificate, completed geometry hom, decoder image, readback, or D classifier is accepted"
+  structure_field_escape: none-found-the-internal-record-mirrors-the-nine-authoritative-fields-and-both-CS-endpoint-constructors-fill-all-fields-directly
+  route_integrity: pass-all-visibility-fields-use-the-same-exact-endpoint-equation-transport-and-coordinate-equivalence
+  target_fitting: partial-endpoint-coverage-is-complete-but-generated-package-level-coverage-and-total-geometry-remain-open
+  vacuity: none-found-target-observable-preservation-quantifies-every-readable-target-polynomial-variable-and-axis-visibility-uses-an-actual-total-restriction
+  one_way_as_equivalence: none-found-inverse-coordinate-transport-is-used-only-for-the-genuine-isomorphism-subcase
+  goal_or_report_reinterpretation: none-found-the-module-and-report-explicitly-deny-package-level-coverage-or-geometry-hom-status
+  validation_refs:
+    - "focused CSAATEndpointCoverageTransport file check: PASS; 20 namespace declarations, standard axioms only"
+    - "focused exact CSAATEndpointCoverageTransport target build: PASS (4295 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "the generated geometry-data cast and lens/protocol signature transport encode the same identity axis action through different dependent equality paths"
+    - "those paths are not definitionally equal, so package-level CoverageTransport is not yet constructed"
+    - "this is a remaining provenance-typing obligation, not a failure of any of the nine concrete coverage clauses and not evidence against the fixed target"
+  next_obligation: "Prove that the generated geometry-data axis cast agrees with lensIsoSignatureTransport.axisMap and protocolIsoSignatureTransport.axisMap, transport both endpoint coverage records to the generated cores, and project authoritative package-level CoverageTransport."
 ```
