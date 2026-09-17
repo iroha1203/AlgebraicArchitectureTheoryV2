@@ -31,12 +31,14 @@
   merge commit `24154c67dc37f7a5f047d8dcb88c2181255d0aa4`
 - Cycle 11 accepted PR: [#4724](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4724),
   merge commit `8f9c05ba23746a6644cdd7ef3e427d68a21f87d9`
+- Cycle 12 accepted PR: [#4725](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4725),
+  merge commit `828025931b76550faae107462ab5fd25d85928dd`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: finite vertex/edge tables から actual full/induced component の
-  enumeration と decidable reachability を構成し、既存の `fixedFComponentMk_eq_iff` と判定結果を同定する
-- next proof obligation: vertex-table edge coherence を決定可能にし、coherent table を
-  induced-component family へ計算的に降下させて Cycle 11 の extension algorithm に接続する
+- current proof obligation: vertex-table edge coherence を有限判定し、coherent table を
+  actual induced-component family へ代表元選択なしで降下させ、Cycle 11 の extension algorithm へ接続する
+- next proof obligation: finite `K` table から `Equiv.Perm K` の列挙・等号判定を構成し、
+  actual preserving following changes の有限table実効性へ特殊化する
 
 ## Cycle 1 — rejected
 
@@ -928,13 +930,110 @@ audits:
   next_obligation: "decide vertex-table edge coherence and computationally descend coherent tables to induced-component families, then connect the result to Cycle 11 extension"
 ```
 
+Cycle 12 は final head `f41ac8025f7099341f76d734fc5c35ed12ae2f3a` の formal rerun 1/2 で
+全4 lane が `No major findings`、finding なしとなり、CI 7/7 success を確認して merge した。
+最終監査は PR comment `5719806077`、Cycle 13 選定は Issue comment
+`5719819091` に固定した。
+
+## Cycle 13 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 13
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 828025931b76550faae107462ab5fd25d85928dd
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 12 accepted evidence: PR comment 5719806077; Issue comment 5719819091"
+  proof_dag_predecessors:
+    - "LocalSemanticReconstruction.FiniteComponent induced component enumeration and equality"
+    - "LocalSemanticReconstruction.InducedComponent.toFull_injective_iff_retainsFullConnectivity"
+    - "LocalSemanticReconstruction.FinitePrecomposition.extension and precompose_extension"
+  proof_obligation: "finite actual retained-edge table 上の vertex-value coherence を Bool 判定し、coherent vertex table を actual induced-component family へ降下させる。RetainsFullConnectivity の下で Cycle 11 の finite extension を actual toFull に適用し、得られた full-component family が各 retained vertex で元tableを読み戻すことを証明する"
+  selection_reason: "Cycles 11--12 の generic finite extension と actual component index を接続し、D の graph-table coherence/extension 計算経路を閉じる"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FiniteCoherentExtension.lean"
+  risks:
+    - "coherence を component equality の supplied certificate に置換せず、actual retained named edges の等式として判定すること"
+    - "quotient representative を選ばず、EqvGen 上の等値伝播で降下すること"
+    - "extension の正しさに必要な injectivity を RetainsFullConnectivity から既存定理で生成すること"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "finite retained named-edge enumeration and decidable value equality compute the vertex-table coherence decision; coherent tables descend through the accepted induced-component quotient; when the actual component map retains full connectivity, the Cycle 11 finite extension computes a full-component family whose retained-vertex readback is the original table"
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension.VertexTable"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension.EdgeCoherent"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension.CoherentVertexTable"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension.coherenceTest"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension.coherenceTest_eq_true_iff"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension.value_eq_of_reachable"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension.descend"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension.descend_mk"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension.componentFamilyEquivCoherentVertexTable"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension.extendToFullComponents"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension.extendToFullComponents_mk"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension.exampleGraph"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension.coherentExampleTable"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension.coherentExampleTable_edgeCoherent"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension.incoherentExampleTable"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension.incoherentExampleTable_not_edgeCoherent"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL D: S 上の整合条件は両端が S の辺の等式"
+      - "固定 GOAL D: finite table の整合判定と延長の計算可能性"
+    conjuncts:
+      - "coherence is equality across every actual named edge retained by the induced graph"
+      - "finite retained-edge enumeration and DecidableEq Value yield a verified Bool coherence test"
+      - "one actual retained named edge gives concrete accepting and rejecting coherence-test examples"
+      - "edge coherence propagates through the accepted EqvGen reachability relation"
+      - "Quotient.lift descends the table without selecting component representatives"
+      - "component families are equivalent to coherent retained-vertex tables"
+      - "RetainsFullConnectivity generates injectivity of the actual toFull map"
+      - "the Cycle 11 finite extension reads back to the original table at every retained vertex"
+    undischarged_assumptions:
+      - "construct finite enumeration and decidable equality for Equiv.Perm K from a finite K table"
+      - "specialize the executable table route to accepted actual preserving following changes"
+    acceptance_point: "the coherence equations are computed from the actual named-edge table and the extension is the accepted finite precomposition algorithm applied to the actual component map"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "finite graph enumerations, vertex equality, retained predicate decision, value equality, and fallback value"
+    direction_hypothesis:
+      - "RetainsFullConnectivity for extension correctness"
+    discharge_required:
+      - "edge coherence decision / constructed by finite universal search"
+      - "coherent table descent / constructed by EqvGen induction and Quotient.lift"
+      - "actual component-map injectivity / generated by toFull_injective_iff_retainsFullConnectivity"
+      - "computed extension readback / discharged through the public Cycle 11 precompose_extension API"
+    conclusion_equivalent_risk: []
+  proof_use:
+    used:
+      - "finite retained-edge enumeration and DecidableEq Value"
+      - "EdgeCoherent at each EqvGen.rel step"
+      - "RetainsFullConnectivity through the actual injectivity equivalence"
+      - "FinitePrecomposition.extension and precompose_extension"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/FiniteCoherentExtension.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension: 20 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "specialize finite value tables to Equiv.Perm K and actual operation-preserving following changes"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
 - B の対象・射を含む圏同値。Cycle 2 は E1 の指定族における function-level Hom reconstruction。
 - C の投影・正規化・比較群回復。
-- D の有限列挙入力下の vertex-table coherence 判定、component-family 降下、
-  actual permutation table への実効的延長。区別・延長・決定集合の一般判定と
-  finite graph からの component 列挙・等号判定は Cycles 7--12 で構成済み。
+- D の finite `K` table からの `Equiv.Perm K` 列挙・等号判定と actual preserving
+  following changes への実効性特殊化。一般判定、component 列挙、vertex-table coherence、
+  component-family 降下、finite extension 接続は Cycles 7--13 で構成済み。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の同定。
 - E2 の lens・protocol 二層の決定性と既存 Karoubi 再構成との整合。
