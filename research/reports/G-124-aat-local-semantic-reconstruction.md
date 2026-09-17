@@ -35,12 +35,14 @@
   merge commit `828025931b76550faae107462ab5fd25d85928dd`
 - Cycle 13 accepted PR: [#4726](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4726),
   merge commit `f487b782b7a35b90c5acde4935d9fe81164227eb`
+- Cycle 14 accepted PR: [#4727](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4727),
+  merge commit `cf1a3b4049daf15084169e8fa782a20d325833f2`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: finite `K` table から `Equiv.Perm K` の列挙・等号判定を構成し、
-  actual preserving following changes の有限table実効性へ特殊化する
-- next proof obligation: generic executable route を既存 finite examples と following-change
-  fiber cardinality 宣言へ接続し、D の実効性節の残存 obligation を再監査する
+- current proof obligation: generic executable route を既存 finite examples と following-change
+  fiber cardinality 宣言へ接続し、D の実効性節を閉じる
+- next proof obligation: E1b の finite-restriction reconstruction と、B の主同値による
+  source-choice recovery の同定
 
 ## Cycle 1 — rejected
 
@@ -1129,13 +1131,96 @@ audits:
   next_obligation: "connect the executable preserving-change route to fixed finite examples and following-change fiber cardinality evidence"
 ```
 
+Cycle 14 は initial formal review の全4 laneで中心 finding なし、Math B / Lean B が同一の
+非中心 docstring finding 1件を報告した。`Implementation notes` に actual enumeration、identity
+fallback、classification inverse、internal coherence decision の採用理由と退けた代替案を追加し、
+fresh reviewer が direct correspondence qualification 維持、finding 全解消、新規 finding なしを
+確認した。final head `55c29e182d5195e417e436e23e1a624bfa919ca0`、CI 7/7 success。
+最終監査は PR comment `5720278268`、Cycle 15 選定は Issue comment `5720299363` に固定した。
+
+## Cycle 15 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 15
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: cf1a3b4049daf15084169e8fa782a20d325833f2
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 14 accepted evidence: PR comment 5720278268; Issue comment 5720299363"
+  proof_dag_predecessors:
+    - "LocalSemanticReconstruction.FinitePermutationExtension actual preserving-change output"
+    - "RealizationReconstruction.FixedFSplitExactSequenceAndTorsor.componentGroupEquivProjectionFiber"
+    - "RealizationReconstruction.FixedFFiberCardinality.natCard_componentGroup and natCard_projectionFiber"
+    - "RealizationReconstruction.FixedFFiniteExamples accepted Bool-lens and protocol counts"
+  proof_obligation: "Cycle 14 algorithmのactual PreservingChange codomainをindependently supplied visible subgroup上のactual ProjectionFiberと同値で同定し、一般fiber cardinalityを移送する。固定Bool product-lens identity/flipとtwo-session protocol identity/session-swapで既存count 2,2,4,4を同じactual preserving-change typeについて回復する"
+  selection_reason: "固定GOAL D末尾の既存有限例・fiber個数宣言への接続を閉じ、effectiveness routeがaccepted actual fiber evidenceと同一対象を数えることを固定する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationExampleCardinality.lean"
+  risks:
+    - "algorithm outputとfiber countをcardinality coincidenceだけで結ばずactual equivalenceを構成すること"
+    - "supplied component familyやproxy fiberを新設せずaccepted equivalencesを合成すること"
+    - "fixed examplesの既存countを再計算した別証拠で置換せず、そのtheorem自体へ接続すること"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the exact actual preserving-change output type is equivalent to the accepted actual projection fiber; its generic cardinality is the accepted factorial-per-component count; the fixed Bool-lens and protocol outputs inherit the existing counts 2,2,4,4"
+  completion_candidate: no
+  section_completion_candidate: "D finite determination and effectiveness"
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExampleCardinality.preservingChangeEquivProjectionFiber"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExampleCardinality.natCard_preservingChange_eq_projectionFiber"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExampleCardinality.natCard_preservingChange"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExampleCardinality.boolLens_preservingChange_count_identity"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExampleCardinality.boolLens_preservingChange_count_flip"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExampleCardinality.protocol_preservingChange_count_identity"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExampleCardinality.protocol_preservingChange_count_sessionSwap"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL D: 有限table上の整合判定と延長の計算可能性"
+      - "固定 GOAL D: 既存の有限例・fiber個数の宣言に接続"
+      - "受理済み following-change/component-family classification and projection-fiber torsor"
+    conjuncts:
+      - "the algorithm codomain is equivalent to the accepted actual projection fiber over the same visible automorphism"
+      - "the actual preserving-change codomain has cardinality (|K|!)^|pi0(F)|"
+      - "the fixed Bool-lens identity and flip codomains have the accepted count 2"
+      - "the fixed protocol identity and session-swap codomains have the accepted count 4"
+    undischarged_assumptions: []
+    acceptance_point: "the equivalence identifies the exact PreservingChange subtype returned by Cycle 14 with the exact accepted ProjectionFiber; concrete results reuse the existing finite-example count theorems"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "independently supplied visible subgroup H and automorphism in H"
+      - "finite graph vertices and finite hidden carrier for the generic cardinality formula"
+    direction_hypothesis: []
+    discharge_required:
+      - "actual output/fiber identification / accepted equivalences composed"
+      - "generic output cardinality / transported through accepted component-group cardinality"
+      - "fixed example counts / transported from existing accepted theorems"
+    conclusion_equivalent_risk: []
+  proof_use:
+    used:
+      - "preservingEquivComponentPermutationFamilies"
+      - "componentGroupEquivProjectionFiber"
+      - "FixedFFiberCardinality.natCard_componentGroup"
+      - "four FixedFFiniteExamples operation-count theorems"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationExampleCardinality.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.FinitePermutationExampleCardinality: 7 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "E1b finite-restriction reconstruction and identification with source-choice recovery through the main B equivalence"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
 - B の対象・射を含む圏同値。Cycle 2 は E1 の指定族における function-level Hom reconstruction。
 - C の投影・正規化・比較群回復。
-- D の generic executable preserving-change route と既存 finite examples / fiber cardinality
-  宣言の接続。一般判定、component 列挙、vertex-table coherence、component-family降下、
-  finite `Equiv.Perm K` table、actual preserving-change extension は Cycles 7--14 で構成済み。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の同定。
 - E2 の lens・protocol 二層の決定性と既存 Karoubi 再構成との整合。
