@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 157 removes the dependent cast from exact raw composition and proves left unit, right unit, and associativity for exact total geometry morphisms while retaining every computational raw action
+- current proof obligation: Cycle 158 packages exact total geometry morphisms as a category distinct from the strict category and rebases genuine lens/protocol raw action onto the actual source-generated ReadingCores
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: rebase the genuine lens/protocol raw maps onto the actual source-generated `ReadingCore`s, package the proved exact-total laws as the realization-category interface, and construct the genuine-CS `PackageTotalHom` plus non-raw realization data from the fixed inputs
+- next proof obligation: construct the genuine lens/protocol `PackageTotalHom` values and their coverage, overlap, and realization supplies from the fixed CS inputs, then assemble actual exact total morphisms in the new category
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 158 delta | exact typed geometry morphismをstrict categoryと衝突しない圏として包装し、genuine CS同型の全Law座標作用をendpoint scaffoldではなくsource-generated `ReadingCore`自身へ接続する | `ExactGeomReadCategory`, `.ofGeometryPackage`, `.toGeometryPackage`, `.objectEquiv`, `exactGeometryTotalCategory`, `ExactGeomReadCategory.ofStrictHom`; lens/protocol各`*ReadingCoreCoordinateEquivEndpoint`, `*IsoReadingCoreCoordinateEquiv`, `*IsoReadingCoreRawExactMapAgainst` | category側は任意のconstructed `GeometryPackage`とexact total hom。raw側はprimitive CS inputから構成済みのactual `ReadingCore`、genuine CS iso、および後続で構成される`PackageTotalHom`。completed geometry homやcoordinate subsetを受けない | 別object type上でCycle 157の三法則を`Category` instanceへ包装し、strict homを全field保持で埋め込む。dependent Sigma provenanceからactual ReadingCore equation indexとendpoint Law indexの等価を構成し、それでgenuine full Law-index×Atom作用を共役してtarget-indexed raw mapを生成 | fixed realization category候補のexact morphism interfaceと、後続のgenuine-CS exact total morphism raw field | `ExactGeomReadCategory`はまだ固定`R_Theta`そのものではない。`PackageTotalHom`は条件付き引数で未構成。coverage/overlap/realization、一般非可逆CS射、readback、D回復、A--F統合も未完了 |
 | A/E Cycle 157 delta | exact typed geometry合成で係数base-changeの命題等式がrelationの計算作用へcastを挿入しないようにし、全成分を保持した三つの圏法則を証明する | corrected `RawAmbientRestrictionSystemExactMapAgainst.trans`; `RawAmbientRestrictionSystemExactMapAgainst.hext`; `ExactGeomReadHom.hext`; `ExactGeometryTotalHom.id_comp`, `.comp_id`, `.comp_assoc` | 任意のexact total geometry morphism。完成category-law certificate、raw dataのSubsingleton、relation actionの同一視、追加公理は受けない。coverage/overlapのみ既存のaccepted uniquenessを使用 | relation equivalenceを直接合成し、係数写像の結合律を`polynomial_eq`内部だけで証明。base、係数、全contextのcoordinate/local-data/relation作用、realization比較を明示比較して左右単位律・結合律を構成 | exact geometry realization categoryの法則と、後続のgenuine CS bridgeの合成・同型性 | `Category` interfaceへの包装、actual generated `ReadingCore`上のraw rebasing、genuine `PackageTotalHom`、coverage/overlap/realization供給、一般非可逆CS射、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 156 delta | genuine lens/protocol同型の実際の全Law座標作用を、geometryが要求するtarget-indexed inverse-context向きへ移す | `equationCoordinateRawExactMapAgainst`; `lensIsoRawExactMapAgainst`, `_coordinate_apply`; `protocolIsoRawExactMapAgainst`, `_coordinate_apply` | 独立に構成済みのsource/target site/raw system、genuine CS iso、任意のtarget-to-source context functor。完成core hom、geometry hom、raw equality、coordinate subsetは受けない | 全target contextでCS iso由来の全Law-index×Atom同値をcoordinate/local-data actionとして構成し、空の追加relationと両endpointの恒等restrictionから全target arrow/polynomialのsquareを証明 | 後続でCS isoから構成するcore baseの`coreContextInverse`を代入したexact geometry raw field | context functorはgeneric parameterでありCS core bridgeからの生成は未完了。`PackageTotalHom`、coverage/overlap/realization、exact total hom、category laws、一般非可逆CS射、readback、D回復、A--F統合も未完了 |
 | A/E Cycle 155 delta | exact typed geometryの圏法則を非一意な計算成分をproof irrelevanceで消さずに証明するため、全依存層の等値判定を与える | `CoordinateFamilyExactEquiv.ext`, `.refl_trans`, `.trans_refl`, `.trans_assoc`; `StructuralRelationFamilyExactEquiv.ext`; `RawAmbientRestrictionSystemExactMapAgainst.ext`; `RealizationTransportSupply.exactExt`; `ExactGeomReadHom.ext`; `ExactGeometryTotalHom.ext` | 同じ固定endpoint/index上の二つの候補と、各non-subsingleton計算成分の等式または従属`HEq`。overlapにはaccepted thin-category uniquenessを使用し、completed category lawやraw actionのSubsingleton instanceは受けない | coordinate equivalenceと全local-data equivalence、全relation-generator equivalence、全contextのraw coordinate/relation action、係数写像、三realization比較、base/geometry成分を保持したextensionalityを証明。Type値のoverlap comparisonはthinnessによる一意性だけで同定し、coordinate transportの左右単位・結合則も構成 | exact total morphismのunit/associativityを従属transport込みで証明する次cycle | `PackageTotalHom`の命題的unit/associativity等式がraw relation型へ作るcastの消去、`Category` instance、genuine lens/protocol bridge、任意非単射CS統合、readback、D回復、A--F統合は未完了 |
@@ -16397,4 +16398,103 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Rebase genuine lens/protocol exact raw maps onto their actual source-generated ReadingCores, package the exact-total laws as a category interface, then construct the genuine-CS PackageTotalHom and non-raw fields."
+```
+
+## Cycle 158 — Exact category interface and generated-ReadingCore raw action
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 158
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 084c2e66fae015f9b7a0a15d6f7cfbee4196d6bf
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 157 proved the exact-total category laws; Cycle 156 raw specializations still lived on endpoint scaffolds and accepted a generic inverse-context functor"
+  proof_obligation: "Package the proved exact morphisms without replacing the existing strict category, and transport genuine CS coordinate action through provenance onto the actual source-generated ReadingCores"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExactGeometryCategory.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATReadingCoreRawAgainst.lean
+  risks:
+    - "installing a second incompatible Category instance directly on GeometryPackage"
+    - "using endpoint scaffolds instead of the actual source-generated ReadingCore"
+    - "collapsing the dependent object/equation provenance to a bare type assertion"
+    - "counting an arbitrary PackageTotalHom parameter as a constructed genuine-CS core bridge"
+  unchecked:
+    - "constructing genuine-CS PackageTotalHom values from primitive CS data"
+    - "coverage, overlap, and realization supplies for the same base"
+    - "arbitrary noninvertible CS maps, independent readback, D recovery, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Defined a distinct exact-geometry object type with zero-data object conversions and a Category instance using the Cycle 157 laws, leaving the strict GeometryPackage category simultaneously available. Projected the dependent generated-object/geometry provenance through a Sigma equality to obtain complete ReadingCore-coordinate equivalences. Conjugated genuine lens and protocol Law-index/Atom actions by those equivalences and constructed target-indexed exact raw maps on the actual source-generated ReadingCores for any later constructed core base."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExactGeometryCategory.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATReadingCoreRawAgainst.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.ExactGeomReadCategory
+    - AAT.AG.RealizationReconstruction.ExactGeomReadCategory.objectEquiv
+    - AAT.AG.RealizationReconstruction.exactGeometryTotalCategory
+    - AAT.AG.RealizationReconstruction.ExactGeomReadCategory.ofStrictHom
+    - AAT.AG.RealizationReconstruction.lensReadingCoreCoordinateEquivEndpoint
+    - AAT.AG.RealizationReconstruction.protocolReadingCoreCoordinateEquivEndpoint
+    - AAT.AG.RealizationReconstruction.lensIsoReadingCoreCoordinateEquiv
+    - AAT.AG.RealizationReconstruction.protocolIsoReadingCoreCoordinateEquiv
+    - AAT.AG.RealizationReconstruction.lensIsoReadingCoreRawExactMapAgainst
+    - AAT.AG.RealizationReconstruction.protocolIsoReadingCoreRawExactMapAgainst
+  claim_mapping:
+    source_labels:
+      - "GOAL A: construct an actual realization-category interface without defining it as a decoder image"
+      - "GOAL E and n1015: connect independent lens/protocol semantics to actual AAT ReadingCores while retaining all named Law coordinates"
+    conjuncts:
+      - "exact geometry objects -> explicit wrapper, unchanged underlying package data"
+      - "exact geometry arrows -> ExactGeometryTotalHom with proved identity/composition/category laws"
+      - "strict geometry arrows -> explicit faithful-data embedding into the exact Hom type"
+      - "generated ReadingCore equation coordinates -> endpoint full Law-index times Atom coordinates by dependent provenance"
+      - "genuine CS iso -> conjugated full coordinate equivalence and exact raw map on actual ReadingCores"
+    undischarged_assumptions:
+      - "the raw constructors accept a PackageTotalHom only to select coreContextInverse; that base is not constructed in this cycle"
+      - "the exact wrapper is a generic geometry category, not yet the fixed R_Theta selected by D_Theta"
+      - "no coverage, overlap, realization supply, or total genuine-CS hom is constructed here"
+    acceptance_point: "The exact morphism operations now form a non-conflicting category interface, and genuine lens/protocol raw action reaches the actual generated ReadingCore objects without replacing their endpoints."
+audits:
+  premise_delta:
+    discharged:
+      - "non-conflicting exact geometry Category interface"
+      - "generated-ReadingCore to endpoint coordinate provenance for both CS models"
+      - "genuine CS all-coordinate raw action on actual generated ReadingCores conditional on the later base"
+    remaining:
+      - "CS-derived PackageTotalHom and non-raw fields, noninvertible maps, readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "PackageTotalHom is still a theorem parameter for the raw component and is explicitly not accepted as its own construction"
+    discharged:
+      - "coordinate provenance follows from the existing generated-object equality and dependent geometry HEq"
+      - "coordinate action follows from genuine CS categorical isomorphisms"
+    unresolved:
+      - "construct SignedExactCoreReadingHom and PackageTotalHom from the fixed CS inputs"
+  proof_use:
+    used:
+      - "Cycle 157 left/right/associativity laws in the Category instance"
+      - "generated and endpoint geometry bundles in one dependent Sigma equality"
+      - "every lens get/put Law index or protocol relation/observation Law index and every Atom"
+      - "the supplied base only through coreContextInverse"
+    unused:
+      - "no completed geometry hom, coordinate subset, raw equality, decoder membership, readback, or D classifier is accepted"
+  structure_field_escape: none-found-the-category-wrapper-adds-no-fields-and-the-raw-map-keeps-the-core-base-explicitly-conditional
+  route_integrity: pass-both-CS-models-use-actual-generated-ReadingCores-and-complete-coordinate-equivalences
+  target_fitting: partial-the-category-interface-and-actual-raw-field-exist-but-the-fixed-realization-subcategory-and-core-nonraw-bridge-remain-open
+  vacuity: none-found-coordinate-equivalences-cover-the-complete-equation-index-times-Atom-types
+  one_way_as_equivalence: none-found-only-genuine-CS-isomorphisms-enter-the-equivalence-raw-constructors
+  goal_or_report_reinterpretation: none-found-the-base-parameter-is-not-counted-as-constructed-and-the-wrapper-is-not-called-R_Theta
+  validation_refs:
+    - "focused CSAATExactGeometryCategory file check: PASS; 22 namespace declarations, standard axioms only"
+    - "focused CSAATReadingCoreRawAgainst file check: PASS; 6 namespace declarations, standard axioms only"
+    - "focused exact two-target build: PASS (4288 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct genuine lens/protocol PackageTotalHom values and matching coverage, overlap, and realization supplies from the fixed CS inputs, then assemble actual exact total morphisms in ExactGeomReadCategory."
 ```

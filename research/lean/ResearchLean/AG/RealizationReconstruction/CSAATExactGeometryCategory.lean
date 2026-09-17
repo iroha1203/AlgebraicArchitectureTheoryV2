@@ -349,6 +349,66 @@ theorem comp_assoc
 
 end ExactGeometryTotalHom
 
+/-- Geometry packages equipped with the parallel exact typed morphisms.  This
+is a distinct object type so the existing strict geometry category remains
+available at the same time. -/
+def ExactGeomReadCategory (U : AtomCarrier.{u}) :=
+  GeometryPackage.{u, v} U
+
+namespace ExactGeomReadCategory
+
+/-- Regard a geometry package as an object of the exact-morphism category. -/
+def ofGeometryPackage {U : AtomCarrier.{u}}
+    (G : GeometryPackage.{u, v} U) : ExactGeomReadCategory.{u, v} U :=
+  G
+
+/-- Recover the underlying geometry package. -/
+def toGeometryPackage {U : AtomCarrier.{u}}
+    (G : ExactGeomReadCategory.{u, v} U) : GeometryPackage.{u, v} U :=
+  G
+
+/-- The exact-category wrapper changes no object data. -/
+def objectEquiv (U : AtomCarrier.{u}) :
+    ExactGeomReadCategory.{u, v} U ≃ GeometryPackage.{u, v} U where
+  toFun := toGeometryPackage
+  invFun := ofGeometryPackage
+  left_inv _ := rfl
+  right_inv _ := rfl
+
+@[simp] theorem toGeometryPackage_ofGeometryPackage
+    {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
+    toGeometryPackage (ofGeometryPackage G) = G := rfl
+
+@[simp] theorem ofGeometryPackage_toGeometryPackage
+    {U : AtomCarrier.{u}} (G : ExactGeomReadCategory.{u, v} U) :
+    ofGeometryPackage (toGeometryPackage G) = G := rfl
+
+end ExactGeomReadCategory
+
+/-- Category of geometry packages and exact typed geometry morphisms. -/
+noncomputable instance exactGeometryTotalCategory
+    (U : AtomCarrier.{u}) : Category (ExactGeomReadCategory.{u, v} U) where
+  Hom G H := ExactGeometryTotalHom
+    (ExactGeomReadCategory.toGeometryPackage G)
+    (ExactGeomReadCategory.toGeometryPackage H)
+  id G := ExactGeometryTotalHom.id
+    (ExactGeomReadCategory.toGeometryPackage G)
+  comp first second := ExactGeometryTotalHom.comp first second
+  id_comp := ExactGeometryTotalHom.id_comp
+  comp_id := ExactGeometryTotalHom.comp_id
+  assoc := ExactGeometryTotalHom.comp_assoc
+
+namespace ExactGeomReadCategory
+
+/-- Embed an existing strict geometry morphism into the exact category without
+changing its base or non-raw data. -/
+noncomputable def ofStrictHom {U : AtomCarrier.{u}}
+    {G H : GeometryPackage.{u, v} U} (hom : GeometryTotalHom G H) :
+    ofGeometryPackage G ⟶ ofGeometryPackage H :=
+  ExactGeometryTotalHom.ofStrict hom
+
+end ExactGeomReadCategory
+
 #assert_standard_axioms_only AAT.AG.RealizationReconstruction
 
 end AAT.AG.RealizationReconstruction
