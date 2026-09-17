@@ -40,9 +40,9 @@
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
 - current proof obligation: generic executable route を既存 finite examples と following-change
-  fiber cardinality 宣言へ接続し、D の実効性節を閉じる
-- next proof obligation: E1b の finite-restriction reconstruction と、B の主同値による
-  source-choice recovery の同定
+  fiber cardinality 宣言へ接続する
+- next proof obligation: `FiniteReading` の第三の共通性質 `Effectiveness` を別個に定義し、
+  Cycles 11--15 の decision / extension route がそれを実現することを証明する
 
 ## Cycle 1 — rejected
 
@@ -1167,7 +1167,7 @@ result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: "the exact actual preserving-change output type is equivalent to the accepted actual projection fiber; its generic cardinality is the accepted factorial-per-component count; the fixed Bool-lens and protocol outputs inherit the existing counts 2,2,4,4"
   completion_candidate: no
-  section_completion_candidate: "D finite determination and effectiveness"
+  section_completion_candidate: no
   lean_artifacts:
     - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExampleCardinality.preservingChangeEquivProjectionFiber"
     - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExampleCardinality.natCard_preservingChange_eq_projectionFiber"
@@ -1186,7 +1186,9 @@ result:
       - "the actual preserving-change codomain has cardinality (|K|!)^|pi0(F)|"
       - "the fixed Bool-lens identity and flip codomains have the accepted count 2"
       - "the fixed protocol identity and session-swap codomains have the accepted count 4"
-    undischarged_assumptions: []
+    undischarged_assumptions:
+      - "define the third common FiniteReading Effectiveness property separately from Separates and Extends"
+      - "prove that the executable coherence decision and preserving-change extension realize that common property"
     acceptance_point: "the equivalence identifies the exact PreservingChange subtype returned by Cycle 14 with the exact accepted ProjectionFiber; concrete results reuse the existing finite-example count theorems"
     port_status: unported
 audits:
@@ -1197,14 +1199,15 @@ audits:
     direction_hypothesis: []
     discharge_required:
       - "actual output/fiber identification / accepted equivalences composed"
-      - "generic output cardinality / transported through accepted component-group cardinality"
+      - "generic output cardinality / transported through the exact output/fiber equivalence and accepted projection-fiber cardinality"
       - "fixed example counts / transported from existing accepted theorems"
     conclusion_equivalent_risk: []
   proof_use:
     used:
       - "preservingEquivComponentPermutationFamilies"
       - "componentGroupEquivProjectionFiber"
-      - "FixedFFiberCardinality.natCard_componentGroup"
+      - "natCard_preservingChange_eq_projectionFiber"
+      - "FixedFFiberCardinality.natCard_projectionFiber"
       - "four FixedFFiniteExamples operation-count theorems"
     unused: []
   structure_field_escape: none-found
@@ -1214,7 +1217,7 @@ audits:
     - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationExampleCardinality.lean: pass"
     - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.FinitePermutationExampleCardinality: 7 declarations, standard axioms only"
   blocking_findings: []
-  next_obligation: "E1b finite-restriction reconstruction and identification with source-choice recovery through the main B equivalence"
+  next_obligation: "define the common FiniteReading Effectiveness property and prove that the executable decision/extension route realizes it"
 ```
 
 ## 未完了 ledger
@@ -1222,5 +1225,7 @@ audits:
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
 - B の対象・射を含む圏同値。Cycle 2 は E1 の指定族における function-level Hom reconstruction。
 - C の投影・正規化・比較群回復。
+- D の第三の共通性質 `FiniteReading.Effectiveness` の別個の定義と、Cycles 11--15 の
+  coherence decision / actual preserving-change extension がそれを実現することの証明。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の同定。
 - E2 の lens・protocol 二層の決定性と既存 Karoubi 再構成との整合。

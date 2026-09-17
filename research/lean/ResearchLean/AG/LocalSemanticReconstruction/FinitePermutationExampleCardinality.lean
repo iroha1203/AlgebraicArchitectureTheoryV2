@@ -57,19 +57,15 @@ generated component, matching the accepted following-change fiber formula. -/
 theorem natCard_preservingChange
     {F : FixedFDirectedMultigraph} {K : Type w}
     [Finite F.Vertex] [Finite K]
-    (automorphism : FixedFGraphAutomorphism F) :
-    Nat.card (PermutationRestriction.PreservingChange F K automorphism) =
+    (H : Subgroup (FixedFGraphAutomorphism F)) (automorphism : H) :
+    Nat.card (PermutationRestriction.PreservingChange F K automorphism.1) =
       Nat.factorial (Nat.card K) ^ Nat.card (FixedFComponent F) := by
   calc
-    Nat.card (PermutationRestriction.PreservingChange F K automorphism) =
-        Nat.card
-          (FixedFRestrictedKernelIdentification.ComponentGroup
-            (F := F) (K := K)) :=
-      Nat.card_congr
-        (FixedFFollowingStateChange.preservingEquivComponentPermutationFamilies
-          (F := F) (K := K) (u := automorphism))
+    Nat.card (PermutationRestriction.PreservingChange F K automorphism.1) =
+        Nat.card (ProjectionFiber (K := K) H automorphism) :=
+      natCard_preservingChange_eq_projectionFiber H automorphism
     _ = Nat.factorial (Nat.card K) ^ Nat.card (FixedFComponent F) :=
-      FixedFFiberCardinality.natCard_componentGroup
+      FixedFFiberCardinality.natCard_projectionFiber H automorphism
 
 open RealizationReconstruction.FixedFFiniteExamples
 
