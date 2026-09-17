@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 172 proves extensionality and all three category laws for the actual-restriction exact geometry hom, packages all geometry objects into a distinct category, and exhibits both genuine-CS isomorphism morphisms in it
+- current proof obligation: Cycle 173 constructs the directed CS operation-square layer required beyond the exact isomorphism subcase, retaining common lens state/visible maps and arbitrary protocol adapters through named edges, observations, and all paths
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the directed noninvertible lens/protocol morphism interface without dropping get/put or operation/execution/adapter data, and connect it to the same explicit exact realization category where the fixed target permits
+- next proof obligation: transport the existing directed equation/raw/coverage/overlap aggregate and the Cycle 173 operation squares through generated `ReadingCore` provenance into a one-way package interface, without forcing noninvertible maps into the equivalence-only exact category
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| E Cycle 173 delta | 非可逆な一般射でlensの同一`h,u`をget/put両方に、protocolの任意adapterと同じoperation名・executionを全pathに保持し、L2/L5/P1へ接続する | `LensAATRelativeForwardMorphism`, `.typedObjectMap`, `.get_square`, `.put_square`, `.identityVisibleEquiv`, `.ofLensInvertibleChange`, `.toLensInvertibleChange`と往復定理; `ProtocolAATForwardMorphism.DirectedAdapterSquare`, `.directedAdapterSquare_iff_semantic`, `.state`, `.namedEdge_execution`, `.observation`, `.path_execution`, semantic/P1 specializations | lens側は任意のstate関数`h`とvisible関数`u`が同じget/put squareを満たすこと。L5 specializationだけ既存の`h,u`同値を使う。protocol側は任意の4 forward morphism、P1 specializationでは`q,q'`は任意のままendpoint changeのみiso。completed geometry map/certificateは取らない | lens 4 roleを`h,u,h,h×u`で型付きtransportしactual get/put squareを証明。`u=id` fiberとL2を同値化しL5の既存独立意味論と往復。protocol adapter squareを独立意味論と同値化し、同じvertex/edge/path名でstate・named execution・observation・全path execution等式を構成 | directed generated-package morphismとEのobject/morphism翻訳・readback | directed aggregateのgenerated `ReadingCore` provenance transport、一つのone-way package interface、そこからの独立readback、D、A--F統合は未完了 |
 | A/E Cycle 172 delta | actual restrictionを保持するexact homについて計算成分を明示比較してextensionality・左右単位律・結合律を証明し、decoder像でない圏へ包装する | `ExplicitRealizationTransportSupply.ext`; `ExplicitExactGeometryHom.ext`, `.id_comp`, `.comp_id`, `.comp_assoc`; `ExplicitExactGeomCategory`, `.ofGeometryPackage`, `explicitExactGeometryCategory`; lens/protocol `*CategoryHom` | 任意の`GeometryPackage`と任意のcomposable explicit exact hom。category-law certificateは入力に取らない。base固定後、coverageにはproof irrelevance、Type-valued overlapには既存thin-context `Subsingleton`定理を使う | actual context actionと3 carrier equivalenceの点ごとの等式からsupply extensionalityを証明。base・係数・全typed raw計算作用・realizationを比較して3法則を証明し、全geometry packageをobjectとする独立wrapper圏を構成 | fixed realization category候補と、lens/protocol genuine isoの同じ圏内のmorphism | 一般非可逆CS射、対象・射の独立readback、D、A--F統合は未完了 |
 | A/E Cycle 171 delta | common base、authoritative coverage/overlap、係数写像、全typed raw action、actual restriction上のrealization supplyを同じexact geometry homへ統合し、同じAPI内で恒等射と合成を構成する | `ExplicitExactGeometryHom`; `ExplicitRealizationTransportSupply.id`, `.comp`; `ExplicitExactGeometryHom.id`, `.comp`; `lensIsoExplicitExactGeometryHom`, `protocolIsoExplicitExactGeometryHom` | fixed CS inputとgenuine semantic iso、Cycles 163--170で同じ`e`から構成した6成分。completed geometry hom、category-law certificate、旧chosen-representative supplyは入力に取らない | actual `ContextMorphism`作用を保持したrealization supplyの恒等・合成と、base/coverage/overlap/coefficient/raw/realizationの6成分を持つhomを構成。lens/protocol双方でprimitive isoから全fieldを充足 | parallel exact realization categoryのHomと、後続のgenuine-CS functor/iso | hom extensionality、左右単位律・結合律、Category包装、一般非可逆CS射、独立readback、D、A--F統合は未完了 |
 | A/E Cycle 170 delta | endpoint coverageをgenerated objectへ運び、signature axis作用を既存signed-core transportと同定してauthoritative package coverageへ接続する | `coreGeometrySignatureEq`, `architectureSignatureAxisMapCast`, `coreGeometryAxisMapCast`, `signatureExactTransportCast_axisMap_eq_axisCast`, `coreGeometryCoverageTransportCast`, lens/protocol generated・authoritative constructors, `lensIsoCoverageTransport`, `protocolIsoCoverageTransport` | fixed CS inputとgenuine semantic iso、Cycle 169の全endpoint coverage、generated-object provenance、既存signature/equation/package transports。completed coverage/coherence certificateは取らない | geometry dataのobject castをAxis型castへ分解し、同一signature endpointsを持つ等式証明だけをproof irrelevanceで同定。全9 fieldをgenerated coreへ運び、実際の`PackageTotalHom`に対する`CoverageTransport`へ射影 | 次のparallel exact geometry homのcoverage field | parallel hom/category、一般非可逆CS射、readback、D、A--F統合は未完了 |
@@ -17917,4 +17918,128 @@ audits:
     - "no independent readback from arbitrary category objects or morphisms has yet been constructed"
     - "these are remaining construction obligations, not evidence against the fixed target"
   next_obligation: "Construct the directed noninvertible lens/protocol morphism interface while preserving get/put and operation-name/execution/adapter data, then determine exactly which directed maps induce the same explicit exact geometry morphism versus a separate one-way geometry interface."
+```
+
+## Cycle 173 — Directed CS operation and adapter squares
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 173
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 112edafd0d25a472f8bc89ebd271d88b228b1235
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 172 completed the exact-equivalence category while the fixed target still required noninvertible lens changes and protocol adapters retaining their native CS operations"
+  proof_obligation: "Construct the directed operation-square interface for L2/L5 and P1 without replacing common get/put maps, named edges, observations, paths, or arbitrary adapters by equivalence-only data"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATLensRelativeOperationSquares.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATProtocolAdapterSquares.lean
+  risks:
+    - "using different state or visible maps in the lens get and put squares"
+    - "specializing the visible map to identity before connecting the L5 relative case"
+    - "requiring the pre-existing protocol adapters q and q' to be invertible"
+    - "renaming or forgetting named edges, observations, or quotient-path execution"
+    - "forcing one-way maps into the exact-coordinate and inverse-context geometry category"
+  unchecked:
+    - "transport of the directed aggregate through generated ReadingCore provenance"
+    - "one-way package interface and independent package-level readback"
+    - "D recovery and final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Defined a relative lens forward interface using one common state map h and visible map u in both get and put laws, gave the exact typed maps h, u, h, and h-times-u on the four lens roles, and proved the actual named-operation squares. Identified its identity-visible fiber with the existing arbitrary L2 morphisms and connected equivalence-valued changes bidirectionally to the independent L5 structure. Defined the protocol directed adapter square for four arbitrary forward morphisms, proved its exact equivalence to the independent semantic square, and derived state, literal named-edge execution, observation, and all-path execution equations. Specialized P1 while keeping q and q' arbitrary and requiring only the endpoint changes to be isomorphisms."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATLensRelativeOperationSquares.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATProtocolAdapterSquares.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.LensAATRelativeForwardMorphism
+    - AAT.AG.RealizationReconstruction.LensAATRelativeForwardMorphism.typedObjectMap
+    - AAT.AG.RealizationReconstruction.LensAATRelativeForwardMorphism.get_square
+    - AAT.AG.RealizationReconstruction.LensAATRelativeForwardMorphism.put_square
+    - AAT.AG.RealizationReconstruction.LensAATRelativeForwardMorphism.identityVisibleEquiv
+    - AAT.AG.RealizationReconstruction.LensAATRelativeForwardMorphism.ofLensInvertibleChange
+    - AAT.AG.RealizationReconstruction.LensAATRelativeForwardMorphism.toLensInvertibleChange
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.DirectedAdapterSquare
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.directedAdapterSquare_iff_semantic
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.DirectedAdapterSquare.namedEdge_execution
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.DirectedAdapterSquare.path_execution
+    - AAT.AG.RealizationReconstruction.ProtocolAATForwardMorphism.ofSemanticHom_invertibleAdapterSquare_iff
+  claim_mapping:
+    source_labels:
+      - "GOAL E and n1015 L2: arbitrary possibly noninjective state map preserves both get and put"
+      - "GOAL E and n1015 L5: one common state equivalence and visible automorphism preserve both lens operations"
+      - "GOAL E and n1015 protocol semantics: named operations and every quotient execution remain present"
+      - "GOAL E and n1015 P1: q and q' remain arbitrary while endpoint changes may be invertible"
+    conjuncts:
+      - "lens state role -> h"
+      - "lens view role -> u"
+      - "lens read role -> the same h"
+      - "lens write role -> the same h times u"
+      - "get and put -> both use the same h and u"
+      - "fixed-visible L2 -> exactly the u=id fiber"
+      - "L5 -> the existing independent LensInvertibleChange with nontrivial visible automorphism retained"
+      - "protocol adapter square -> equality of the two composites for arbitrary q, q', a, and b"
+      - "named edge and path -> the identical edge/path name on both routes"
+      - "P1 -> arbitrary q and q' plus isomorphic endpoint changes"
+    undischarged_assumptions:
+      - "LensInvertibleChange uses a visible automorphism of the same fixed view carrier, as required by the current fixed-family formulation"
+      - "the equivalence-valued L5 readback helper receives equivalences whose toFun values identify the already constructed directed actions; the exported forward constructor builds those actions from an independent L5 change"
+      - "directed maps do not yet form a generated ReadingCore-level package morphism"
+    acceptance_point: "The required CS operation and adapter equations, including the noninvertible cases, are retained in the directed AAT-facing interface; geometry-package transport and package-level readback remain separate."
+audits:
+  premise_delta:
+    discharged:
+      - "one common h and u across both lens operation squares"
+      - "typed state/view/read/write maps and actual get/put squares"
+      - "exact recovery of the fixed-visible arbitrary L2 interface"
+      - "bidirectional connection with the independent equivalence-valued L5 structure"
+      - "arbitrary protocol directed adapter square and its independent semantic interpretation"
+      - "same-name named-edge, observation, and all-path execution consequences"
+      - "P1 specialization without invertibility of q or q'"
+    remaining:
+      - "generated ReadingCore transport of the directed aggregate, one-way package interface, package readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "toLensInvertibleChange is a readback helper conditional on explicit equivalences matching the already constructed h and u functions"
+    discharged:
+      - "ofLensInvertibleChange constructs the directed h and u and both laws directly from the independent L5 change"
+      - "identityVisibleEquiv proves both directions rather than merely embedding L2"
+      - "directedAdapterSquare_iff_semantic proves both directions using the existing exact readback of all named protocol operations"
+      - "all-path execution is derived from the reconstructed semantic natural transformations, not accepted as a field"
+      - "the final P1 theorem takes arbitrary q and q' and constructs their forward interfaces"
+    unresolved:
+      - "a single directed generated-package record and readback from that package"
+  proof_use:
+    used:
+      - "the same lens stateMap in get and put"
+      - "the same nontrivial lens visibleMap in get and put"
+      - "all four exact lens primitive object roles"
+      - "the actual lensOperationFunction values for get and put"
+      - "every protocol forward state family, named-edge law, and observation law"
+      - "ProtocolRealization.path_naturality for every finite quotient path"
+      - "the independent AdapterSquare and InvertibleAdapterSquare definitions"
+    unused:
+      - "no completed geometry map, exact-coordinate inverse, target-wide restriction, adapter invertibility, selected edge subset, readback certificate, or D classifier is accepted"
+  structure_field_escape: none-found-the-directed-records-store-only-the-primitive-CS-operation-maps-and-laws-required-to-generate-later-components
+  route_integrity: pass-the-lens-and-protocol-semantic-readbacks-use-the-same-primitive-forward-data-as-the-operation-squares
+  target_fitting: partial-the-CS-directed-operation-layer-is-complete-but-generated-package-transport-readback-D-and-A--F-remain-open
+  vacuity: none-found-lens-laws-quantify-all-state-view-pairs-and-protocol-laws-retain-all-vertices-named-edges-observations-and-finite-paths
+  one_way_as_equivalence: none-found-general-directed-maps-remain-functions-or-forward-morphisms-and-only-the-explicit-L5-endpoint-change-specialization-uses-equivalences
+  goal_or_report_reinterpretation: none-found-the-report-does-not-count-operation-squares-as-complete-directed-geometry-or-package-readback
+  validation_refs:
+    - "focused CSAATLensRelativeOperationSquares file check: PASS; 34 namespace declarations, standard axioms only"
+    - "focused exact CSAATLensRelativeOperationSquares target build: PASS (4284 jobs; not a Research aggregate build)"
+    - "focused CSAATProtocolAdapterSquares file check: PASS; 8 namespace declarations, standard axioms only"
+    - "focused exact CSAATProtocolAdapterSquares target build: PASS (4284 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "noninjective Law index maps cannot inhabit the equivalence-valued equation transport required by ExplicitExactGeometryHom"
+    - "non-surjective directed maps do not provide the target-wide inverse restriction demanded by exact CoverageTransport"
+    - "the honest directed raw map is covariant, whereas the exact API is inverse-context and exact-coordinate oriented"
+    - "these refute using the Cycle 172 exact API for arbitrary directed maps, not the fixed G-123 target"
+  next_obligation: "Transport the already constructed endpoint directed equation/raw/coverage/overlap aggregate and these operation squares through the generated ReadingCore provenance, define one one-way package interface without equivalence-only fields, and prove its object/morphism readback against the independent CS semantics."
 ```
