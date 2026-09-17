@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 167 packages the actual-restriction realization supply on both generated cores and combines it with the genuine base, coefficient, and full typed raw action without importing coverage or overlap
+- current proof obligation: Cycle 168 constructs the complete-overlap comparison on both generated cores from explicit two-sided restrictions and projects it to the authoritative `OverlapTransport`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct mapped-context coverage and complete-overlap data against the same explicit context action, then assemble the parallel exact geometry hom
+- next proof obligation: construct mapped-context coverage against the same explicit context action, then assemble the parallel exact geometry hom from the six independently constructed components
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 168 delta | complete-Law product overlapを同一generated equation transportに沿って比較し、完成overlap certificateを入力に取らずauthoritative `OverlapTransport`を構成する | `CoreGeometryOverlapTransport`, lens/protocol `*EndpointCoreGeometryOverlapTransport`, `coreGeometryOverlapTransportCast`, lens/protocol `*GeneratedCoreGeometryOverlapTransport`, lens/protocol `*OverlapTransport` | fixed CS inputとgenuine semantic iso、Cycle 161 equation transport、Cycle 163 package base、generated-object provenance。completed overlap transportやgeometry homは最終constructor入力に取らない | inverseで引き戻した三contextのproduct overlapをforwardしたcontextとtarget product overlapの間に、Support/Axis/Observableを恒等に保つactual restrictionを両方向に構成しthin category isoを得る。生成対象へcastし既存`OverlapTransport`へ射影 | 次のparallel exact geometry homのoverlap field | mapped-context coverageは未構成。parallel hom/category、一般非可逆CS射、readback、D、A--F統合も未完了 |
 | A/E Cycle 167 delta | actual restriction actionに対するrealization supplyをgenerated equation transportとpackage baseへ接続し、base・coefficient・rawと同じcheckpointへ統合する | `EquationExplicitRealizationSupply`, lens/protocol `*EndpointExplicitRealizationSupply`, `coreGeometryExplicitRealizationSupplyCast`, lens/protocol `*GeneratedExplicitRealizationSupply`, `ExplicitRealizationTransportSupply`, lens/protocol package constructors, `ExplicitExactGeometryCheckpoint`, lens/protocol checkpoint constructors | fixed CS inputとgenuine semantic iso、Cycles 161/163/164のequation transport・package base・typed raw action、generated-object provenance。completed supply、coverage、overlapは最終constructor入力に取らない | 全actual context morphismのaction・restriction保存、全carrier同値とreading iff、三naturalityをgenerated transportへ接続し、同じ`e`由来のbase/coefficient/rawと統合 | 次のparallel exact geometry homのrealization fieldおよびcoverage/overlap構成 | coverageとcomplete overlapはcheckpoint fieldに含めず未完了。現行`ExactGeomReadHom`への変換、一般非可逆CS射、readback、D、A--F統合も未完了 |
 | A/E Cycle 166 delta | thin Homで消去される前のactual `ContextMorphism`を保持し、全context・全restriction上で三carrier actionとnaturalityを同一構成から与える | `ExplicitFullFamilyContextAction`, `explicitFullFamilyContextAction`, lens/protocol `*EndpointExplicitContextAction`, `explicitFullFamilyContextActionCast`, lens/protocol `*GeneratedExplicitContextAction`; `targetChosenMorphism`, `explicitlyRebasedChosenMorphism`, `ChosenRepresentativeCoherence`, `supplyNaturality_of_chosenRepresentativeCoherence` | fixed CS inputとgenuine semantic iso、既存full-family rebase/morphism rebase、両generated coreのobject provenance等式。carrier/action/naturality証拠はconstructor入力に取らない | sourceの全architecture context、全actual restriction morphismをtargetへrebaseし、Support/Axis/Observable同値、reading iff、restriction保存、三naturalityを構成。generated lens/protocol coreへcast | 次のexplicit-restriction realization supplyとparallel exact geometry hom | 現行`RealizationTransportSupply`はtarget thin arrowから別代表を`Classical.choose`するため直接変換不可。coherenceを仮定入力にせず、explicit supply/homを構成する必要がある。coverage、overlap、total hom、一般非可逆CS射、readback、D、A--F統合も未完了 |
 | A/E Cycle 165 delta | genuine-CS transportの全generated contextでSupport/Axis/Observable carrierと三reading predicateを、表示できた部分集合へ縮小せず保持する | `EquationContextCarrierEquiv`, `lensIsoEndpointContextCarrierEquiv`, `protocolIsoEndpointContextCarrierEquiv`, `coreGeometryContextCarrierEquivCast`, `lensIsoGeneratedContextCarrierEquiv`, `protocolIsoGeneratedContextCarrierEquiv` | fixed CS inputとgenuine semantic iso、Cycle 161のendpoint/generated equation transportおよびsource/target generated-object provenance等式。carrier同値やreading証拠は最終constructorの入力に取らず内部構成する | 全source generated context上のSupport・Axis・Observable同値と、atom同値を含むsupportReads、axisReads、observableReadsの保存反映iff | `RealizationTransportSupply`の三前向きcomponent mapとread保存fieldの構成材料 | context preorderのHomが存在命題から独立に`Classical.choose`された代表を持つためcomponent naturalityは未証明。mapped-context coverage、complete overlap、realization supply、exact total hom、一般非可逆CS射、readback、D、A--F統合も未完了 |
@@ -17396,4 +17397,104 @@ audits:
     - "the current ExactGeomReadHom cannot consume the explicit supply because its realization field observes independently re-selected target representatives"
     - "a parallel exact geometry hom must retain the explicit supply and must not accept missing coverage or overlap as opaque completion certificates"
   next_obligation: "Construct coverage and complete overlap from the fixed full-family generated geometry against the explicit action, then assemble the parallel exact geometry hom with the four Cycle 167 components."
+```
+
+## Cycle 168 — Exact complete-overlap transport
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 168
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: af6e5eba35f4c1e8dc595cca570c8cd838b713c5
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 167 connected base, coefficient, full typed raw action, and explicit realization supply but left coverage and overlap unconstructed"
+  proof_obligation: "Construct the complete-Law overlap comparison from the same exact generated equation transport and primitive CS isomorphism, without accepting a completed overlap certificate"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExactOverlapTransport.lean
+  risks:
+    - "using only an abstract thinness argument without constructing the two readable refinements"
+    - "comparing endpoint overlaps unrelated to the generated equation transport"
+    - "accepting OverlapTransport or a completed geometry hom as a constructor input"
+    - "claiming coverage or parallel geometry completion from overlap alone"
+  unchecked:
+    - "mapped-context coverage against the explicit action"
+    - "parallel exact geometry hom and its category laws"
+    - "general noninvertible maps, readback, D, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Constructed both directions of the complete product-overlap comparison as explicit identity-on-data restriction morphisms on the actual full-family rebases. Transported the endpoint construction through the same generated-object provenance as the exact equation transport and projected it to the authoritative OverlapTransport for both lens and protocol. Coverage remains absent and no geometry hom is claimed."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExactOverlapTransport.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.CoreGeometryOverlapTransport
+    - AAT.AG.RealizationReconstruction.lensIsoEndpointCoreGeometryOverlapTransport
+    - AAT.AG.RealizationReconstruction.protocolIsoEndpointCoreGeometryOverlapTransport
+    - AAT.AG.RealizationReconstruction.coreGeometryOverlapTransportCast
+    - AAT.AG.RealizationReconstruction.lensIsoGeneratedCoreGeometryOverlapTransport
+    - AAT.AG.RealizationReconstruction.protocolIsoGeneratedCoreGeometryOverlapTransport
+    - AAT.AG.RealizationReconstruction.lensIsoOverlapTransport
+    - AAT.AG.RealizationReconstruction.protocolIsoOverlapTransport
+  claim_mapping:
+    source_labels:
+      - "GOAL A: preserve complete overlap data in the realization-side geometry"
+      - "GOAL E and n1015: connect both CS translations to the same generated-core geometry construction"
+    conjuncts:
+      - "every target base/left/right context triple -> source inverse-image product overlap"
+      - "forward image of source overlap -> target product overlap by actual restriction"
+      - "target product overlap -> forward source overlap by actual restriction"
+      - "both restrictions -> Support, Axis, Observable identity action with full-family membership"
+      - "endpoint overlap comparison -> generated overlap comparison by proved object provenance"
+      - "generated comparison -> authoritative OverlapTransport on the same PackageTotalHom"
+    undischarged_assumptions:
+      - "genuine CS isomorphism remains the allowed input for this exact-equivalence subcase"
+      - "mapped-context coverage and the parallel explicit geometry hom remain to be constructed"
+      - "general noninvertible CS morphisms require the separate directed construction"
+    acceptance_point: "The overlap component is now fully constructed for the genuine-CS exact subcase; mapped-context coverage is the sole missing geometry component before parallel-hom assembly."
+audits:
+  premise_delta:
+    discharged:
+      - "two-sided complete product-overlap comparison at both CS endpoints"
+      - "generated-core overlap comparison using the existing exact equation transport"
+      - "authoritative OverlapTransport for both complete ReadingCore packages"
+    remaining:
+      - "coverage, parallel exact geometry hom/category, noninvertible maps, readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "coreGeometryOverlapTransportCast transports a supplied endpoint comparison along supplied source/target object equalities"
+    discharged:
+      - "both endpoint constructors build both context restrictions directly from identity carrier maps and full-family membership"
+      - "both generated constructors internally supply the existing source and target object provenance equalities"
+      - "both final constructors obtain the overlap field from the same generated equation transport and PackageTotalHom"
+    unresolved:
+      - "mapped-context coverage preservation compatible with the explicit context action"
+  proof_use:
+    used:
+      - "the forward and inverse functors of each exact generated context equivalence"
+      - "all target base, left, and right contexts"
+      - "the actual completeLawOverlap product context on both endpoints"
+      - "both directions of identity-on-data ContextMorphism and their IsRestriction proofs"
+      - "both generated-object provenance equalities and complete PackageTotalHom values"
+    unused:
+      - "no completed OverlapTransport, CoverageTransport, completed geometry hom, decoder image, readback, or D classifier is accepted"
+  structure_field_escape: none-found-the-generic-record-is-an-internal-dependent-bundle-and-each-exported-CS-constructor-builds-its-single-field-from-explicit-restrictions
+  route_integrity: pass-the-overlap-comparison-uses-the-same-generated-equation-transport-and-package-base-as-cycles-161-and-163
+  target_fitting: partial-overlap-is-complete-for-the-genuine-isomorphism-subcase-but-coverage-and-total-geometry-remain-open
+  vacuity: none-found-the-construction-quantifies-every-target-base-left-right-triple-and-builds-both-readable-directions
+  one_way_as_equivalence: none-found-both-directions-are-explicitly-constructed-and-the-equivalence-is-limited-to-the-genuine-isomorphism-subcase
+  goal_or_report_reinterpretation: none-found-the-module-and-report-explicitly-keep-coverage-and-the-parallel-hom-unfinished
+  validation_refs:
+    - "focused CSAATExactOverlapTransport file check: PASS; 20 namespace declarations, standard axioms only"
+    - "focused exact CSAATExactOverlapTransport target build: PASS (4294 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "mapped-context coverage preservation has not yet been connected to the exact generated equation transport and explicit context action"
+    - "the parallel exact geometry hom cannot be assembled until that coverage proof is constructed"
+    - "these are remaining construction obligations, not evidence against the fixed target"
+  next_obligation: "Construct CoverageTransport for both generated CS isomorphisms from the concrete coverage predicates and explicit context action, then assemble the parallel exact geometry hom from base, coverage, overlap, coefficient, raw, and explicit realization."
 ```
