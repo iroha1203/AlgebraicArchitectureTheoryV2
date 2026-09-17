@@ -17,11 +17,13 @@
   merge commit `5b421fe23fd20ed97b8d96645455d11315f197f1`
 - Cycle 4 accepted PR: [#4717](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4717),
   merge commit `1ce0071826c031fcbd8e5474ca80110078950c82`
+- Cycle 5 accepted PR: [#4718](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4718),
+  merge commit `74b6cfbeb83d494cb7ab43d9995e5df97158b006`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: E1 の constant-true choice を既存 uniform flip と同定し、
-  `t²=1`、`et=te`、`et≠e` を新しい source-choice 群から回収する
-- next proof obligation: E1b の局所再構成を B の主同値による回復と同定する
+- current proof obligation: D の区別・延長を別々に定義し、決定集合をその連言として置いて、E1 の actual
+  source-choice Aut 族について有限延長と有限非区別を同じ定義から証明する
+- next proof obligation: D の一般グラフ判定、実効性、または B の局所モデル主同値へ進む
 
 ## Cycle 1 — rejected
 
@@ -352,11 +354,89 @@ audits:
   next_obligation: "identify the E1b finite-restriction reconstruction with recovery through the main equivalence B"
 ```
 
+Cycle 5 は final head `c671e97c803b3b69f3055ecc64e0e94bd80a073b` の formal rerun 1/2 で
+全4 lane が `Mergeable`、finding なしとなり、CI 7/7 success を確認して mergeした。
+最終監査は PR comment `5718579817`、Cycle 6 選定は Issue comment `5718586575` に固定した。
+
+## Cycle 6 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 6
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 74b6cfbeb83d494cb7ab43d9995e5df97158b006
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 5 accepted evidence: PR comment 5718579817; Issue comment 5718586575"
+  proof_dag_predecessors:
+    - "LocalSemanticReconstruction.taggedSourceChoiceAut"
+    - "LocalSemanticReconstruction.taggedSourceChoiceAut_injective"
+    - "RealizationReconstruction.readTaggedSourceChoiceExplicitExactGeometry_taggedSourceChoice"
+    - "RealizationReconstruction.architectureObjectInfinite"
+  proof_obligation: "finite reading の Separates・Extends を独立に定義し、Determining をその連言として置く。actual source-choice Aut 族では全有限 table が延長する一方、どの有限 S も区別せず、有限 determining set が存在しないことを証明する"
+  selection_reason: "E1 の有限決定不能を function-level witness で止めず、Cycle 4 の actual Aut family と D の共通定義に同時に接続する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FiniteDetermination.lean"
+  risks:
+    - "extension を separation から導かず別 theorem にすること"
+    - "coherence を global extension の存在で定義しないこと"
+    - "実効性を有限列挙入力なしに主張しないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "common finite-reading separation and extension predicates are defined separately, with determining as their conjunction; every finite Bool table extends to an actual source-choice Aut, but no finite reading separates that family, so no finite determining set exists"
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.FiniteReading.Separates"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteReading.Extends"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteReading.Determining"
+    - "AAT.AG.LocalSemanticReconstruction.TaggedSourceChoiceAutFamily"
+    - "AAT.AG.LocalSemanticReconstruction.readTaggedSourceChoiceAutAt"
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceAut_finite_extends"
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceAut_finite_not_separates"
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceAut_no_finite_determining"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL D: 区別・延長の独立な定義と、その連言としての決定集合"
+      - "固定 GOAL E1: 有限決定不能"
+    conjuncts:
+      - "separation = injectivity of the finite restriction map"
+      - "extension = every table satisfying the separately supplied coherence predicate has a global preimage; independence is checked at each application"
+      - "determining = separation and extension"
+      - "edge-free source-choice coherence is True and every finite Bool table extends"
+      - "architectureObjectInfinite supplies an outside point, giving two distinct actual Aut with equal finite readings"
+    undischarged_assumptions: []
+    acceptance_point: "the target collection is the actual range of taggedSourceChoiceAut; local reading evaluates its actual ExplicitExactGeometry hom and recovers the choice through the accepted readback theorem"
+    port_status: unported
+audits:
+  material_premises:
+    discharge_required:
+      - "finite extension / explicit default-false global choice"
+      - "finite non-separation / outside point from architectureObjectInfinite"
+      - "actual Aut distinctness / taggedSourceChoiceAut_injective"
+    conclusion_equivalent_risk: []
+  proof_use:
+    used:
+      - "actual ExplicitExactGeometry readback theorem"
+      - "actual source-choice Aut injectivity"
+      - "architectureObjectInfinite"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/FiniteDetermination.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 11 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "general graph criteria and effectiveness in D, or the common local-model equivalence B required to identify E1b recovery"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
 - B の対象・射を含む圏同値。Cycle 2 は E1 の指定族における function-level Hom reconstruction。
 - C の投影・正規化・比較群回復。
-- D の三定義と連結成分判定。
+- D の一般グラフに対する区別・延長・決定集合判定、および有限列挙入力下の実効性。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の同定。
 - E2 の lens・protocol 二層の決定性と既存 Karoubi 再構成との整合。
