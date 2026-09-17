@@ -37,12 +37,14 @@
   merge commit `f487b782b7a35b90c5acde4935d9fe81164227eb`
 - Cycle 14 accepted PR: [#4727](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4727),
   merge commit `cf1a3b4049daf15084169e8fa782a20d325833f2`
+- Cycle 15 accepted PR: [#4728](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4728),
+  merge commit `41d64b724274968199ba3b61aaeb8e22126dd4ee`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: generic executable route を既存 finite examples と following-change
-  fiber cardinality 宣言へ接続する
-- next proof obligation: `FiniteReading` の第三の共通性質 `Effectiveness` を別個に定義し、
-  Cycles 11--15 の decision / extension route がそれを実現することを証明する
+- current proof obligation: `FiniteReading` の第三の共通性質 `Effective` を別個に定義し、
+  Cycles 11--15 の decision / extension route がそのprogramを与えることを証明する
+- next proof obligation: E1b の finite-restriction reconstruction を共通 `FiniteReading`
+  surface 上に置き、B の主同値による source-choice recovery と同定する
 
 ## Cycle 1 — rejected
 
@@ -1220,12 +1222,110 @@ audits:
   next_obligation: "define the common FiniteReading Effectiveness property and prove that the executable decision/extension route realizes it"
 ```
 
+Cycle 15 は initial formal review で、generic cardinality の projection-fiber route 未使用と、
+共通 `FiniteReading.Effectiveness` 欠落を無視した D completion 過大表示という中心 findingを受けた。
+前者を exact output/fiber equivalence と `natCard_projectionFiber` のproof-useへ修正し、後者は
+Dを未完了へ戻して次 obligationに固定した。formal rerun 1/2 の fresh Math A/B + Lean A/B は
+全4 lane `No major findings`、final head `9932bf3820dc5339b7fcfc2e25dafbd3f8fb5ffd`、
+CI 7/7 success。最終監査は PR comment `5720525362`、Cycle 16 選定は Issue comment
+`5720545472` に固定した。
+
+## Cycle 16 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 16
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 41d64b724274968199ba3b61aaeb8e22126dd4ee
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 15 accepted evidence: PR comment 5720525362; Issue comment 5720545472"
+  proof_dag_predecessors:
+    - "FiniteReading.restrict, Separates, Extends, Determining"
+    - "FiniteCoherentExtension actual retained-edge coherence"
+    - "FinitePermutationExtension raw Bool decision, Option PreservingChange extension, rejection and readback"
+  proof_obligation: "separation/extensionから独立した第三の共通propertyとして、Bool coherence decision、raw Option extension、exact rejection、successful readbackを持つEffectivenessProgramとその存在Effectiveを定義する。finite graph/value tableとRetainsFullConnectivityの下でCycles 11--15のactual retained-edge / actual PreservingChange routeがそのprogramを構成することを証明する"
+  selection_reason: "initial Cycle 15 reviewが発見した固定GOAL Dの共通effectiveness surface欠落を、既存algorithmを弱めず明示的に埋める"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FiniteEffectiveness.lean"
+  risks:
+    - "EffectiveをDeterminingの別名やSeparates/Extendsからの帰結にせず独立propertyにすること"
+    - "coherence proofをraw inputに受け取らずBool decisionとOption extensionをprogram dataに持つこと"
+    - "Finset index adapterがactual retained vertex subtypeとactual named-edge predicateを保存すること"
+    - "outputをactual PreservingChangeからproxy familyへ弱めないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "a reusable EffectivenessProgram now carries the executable decision and raw extension laws; Effective is its independent existence property; the finite retained-permutation reading constructs this exact program from the accepted algorithms and proves successful actual-change readback"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.FiniteReading.EffectivenessProgram"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteReading.Effective"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteReading.emptyGlobal_not_effective"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteEffectiveness.retainedVertices"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteEffectiveness.mem_retainedVertices"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteEffectiveness.readPreservingChangeAt"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteEffectiveness.toPermutationVertexTable"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteEffectiveness.PermutationTableCoherent"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteEffectiveness.permutationEffectivenessProgram"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteEffectiveness.permutation_effective"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL D: 区別・延長・実効の三性質を別個に定義"
+      - "固定 GOAL D: finite table上の整合判定の決定可能性と延長の計算可能性"
+      - "固定 GOAL D: A--BとEの各適用で共通surfaceを使う"
+    conjuncts:
+      - "EffectivenessProgram contains a Bool coherence decision with an iff specification"
+      - "the raw extension program returns Option A and rejects exactly incoherent tables"
+      - "every successful extension restricts to the supplied finite table"
+      - "Effective is independent from Separates, Extends, and Determining"
+      - "the graph specialization uses the actual retained named-edge coherence predicate"
+      - "the graph specialization returns the actual operation-preserving following-change subtype"
+      - "a concrete empty-global example proves that Effective is not automatic"
+    undischarged_assumptions:
+      - "apply the common FiniteReading surface in the remaining A--B and E reconstruction obligations"
+    acceptance_point: "the named computational program itself is available; Effective records its existence without replacing it by separation, extension, or a supplied certificate"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "finite graph vertex/edge tables, vertex equality, decidable retained predicate"
+      - "finite hidden carrier and decidable hidden equality"
+      - "visible automorphism"
+    direction_hypothesis:
+      - "RetainsFullConnectivity for successful readback"
+    discharge_required:
+      - "coherence decision / Cycle 14 permutationCoherenceTest"
+      - "raw extension and exact rejection / Cycle 14 decideAndExtendPreservingChange"
+      - "successful readback / Cycle 14 classification readback with RetainsFullConnectivity"
+    conclusion_equivalent_risk: []
+  proof_use:
+    used:
+      - "actual retained vertex membership conversion"
+      - "permutationCoherenceTest_eq_true_iff"
+      - "decideAndExtendPreservingChange_eq_none_iff"
+      - "decideAndExtendPreservingChange_readback"
+      - "RetainsFullConnectivity"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/FiniteEffectiveness.lean: pass"
+    - "lake build ResearchLean.AG.LocalSemanticReconstruction.FiniteEffectiveness: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.FiniteReading: 19 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.FiniteEffectiveness: 7 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "place E1b finite-restriction reconstruction on the common FiniteReading surface and identify it with source-choice recovery through the main B equivalence"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
 - B の対象・射を含む圏同値。Cycle 2 は E1 の指定族における function-level Hom reconstruction。
 - C の投影・正規化・比較群回復。
-- D の第三の共通性質 `FiniteReading.Effectiveness` の別個の定義と、Cycles 11--15 の
-  coherence decision / actual preserving-change extension がそれを実現することの証明。
+- D の共通 `FiniteReading` surface を A--B と E の各具体的 reconstruction obligation で使用する接続。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の同定。
 - E2 の lens・protocol 二層の決定性と既存 Karoubi 再構成との整合。
