@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 180 embeds every restricted comparison-kernel element into the ambient endpoint-normalization kernel, characterizes the image exactly by raw comparison preservation, and proves strict separation on the fixed finite-axis-fold input while retaining bottom/coefficient triviality
+- current proof obligation: Cycle 181 connects each of the six fixed generated axis permutations to its actual canonical section lift and classifies every actual lift in that fiber by a unique element of the full restricted kernel
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: connect the six fixed generated axis-permutation elements to the actual canonical section and every lift in those fibers, then enrich primitive syntax enough to construct a direct-endpoint automorphism evaluator equivalence rather than assuming presentation completeness
+- next proof obligation: enrich primitive syntax enough to construct a direct-endpoint automorphism evaluator equivalence and thereby extend the six-fiber result to the whole actual comparison group without taking semantic automorphisms as syntax leaves
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 181 delta | 固定finite-axis-foldの全6 axis permutationについてgenerated表示をactual canonical sectionへ接続し、同じnormalized元上の任意actual liftをfull restricted kernelで分類する | `FiniteAxisFoldGeneratedLiftFibers.canonicalLift`, `canonicalLift_val`, `everyLift_unique_kernel_displacement` | 原始`Fin 3` permutation全体、既構成generated section elementとevaluation定理、actual section right inverse、actual全fiber torsor定理。liftやkernel displacementは入力しない | generated evaluationをactual lift fiberに包装し、underlying raw pairがactual canonical sectionそのものと証明。任意actual liftに対しfull actual restricted kernelの一意displacementを構成 | 固定D生成例のsection・fiber接続、および全比較群表示へ拡張するencoder設計 | 6個の固定normalized元に限定。current syntaxが全actual direct endpoint Autをencodeすること、whole comparison MulEquiv、全base fiberの表示同値、A--F統合は未完了 |
 | D Cycle 180 delta | normalizationで消えるambient kernelと、元の比較を保つ領域へ制限したrestricted kernelを全要素について区別し、固定生成例でも差を証明する | `RestrictedAmbientKernel.inclusion`, `inclusion_injective`, `mem_range_inclusion_iff`; `geometryComparisonRestrictedKernelToAmbientKernel`とinjective/range iff; `FiniteAxisFoldRestrictedAmbientKernel.ambientElement`, `ambientElement_not_mem_restrictedKernel_range`, `restrictedKernel_inclusion_not_surjective`, `ambientElement_bottom_coefficient_packet` | 任意のambient hom、source/target subgroup、restricted hom、underlying square。G-122適用ではactual endpoint normalizationとactual raw/normalized comparison subgroup。kernel同一視、ambient元のcomparison membership、surjectivity certificateは入力しない | restricted kernel元をunderlying ambient元へ写し、kernel equationをsquareから構成。像をambient kernel内のsource subgroup membershipと双方向に特徴付ける。固定ambient involutionがnormalization kernelに入る一方raw `barAlpha`比較を保たない既証明を適用し非全射を証明。同じ元の底・係数4成分恒等を保持 | 表示側でrestricted/ambient二核を別々に回復するためのtarget側分類、およびbottom/coefficient接続 | これはactual G-122側の二核分離であり、presentation側の全元回復ではない。full comparison MulEquivにはdirect endpointの全automorphismをprimitive syntaxからencodeする構成が不足。六つの固定axis元を越えるsyntax completeness、全lift fiberの表示同値、A--F統合は未完了 |
 | D/E Cycle 179 delta | comparison-groupとendpoint restrictionの可換正方形から、restricted kernel全体と各base元上の全lift fiberを回復し、fiberのkernel torsor構造も同じ対応で運ぶ | `RestrictionKernelFiberTransport.Fiber`, `rightKernelAction`, action law/free/transitive/unique displacement; `kernelMulEquiv`, `fiberEquiv`, `fiberEquiv_smul`; `generatedArrowComparisonSourceKernelMulEquiv`, `generatedArrowComparisonSourceFiberEquiv`, action compatibility; lens/protocol package specialization | 任意の4群・2準同型・2群同値と点ごとの可換正方形。comparison適用ではCycle 178が固定入力から構成したfully faithful functor、whole comparison MulEquiv、endpoint Aut MulEquiv、source compatibilityだけを使う。kernel membership、chosen lift、torsor certificate、ambient kernelは入力しない | 可換式からkernel membershipを両方向に再構成しMulEquivを証明。任意base元上の全fiberを同値化。literal right multiplicationを名前付き作用として構成し、単位・合成・自由・推移・一意displacementとtransport互換性を証明。lens/protocolの任意package arrowへ同じ定理を適用 | G-122 original comparison/restrictionへの具体的instantiation、および後続のsection・kernel・fiberの表示側回復 | ここでの核は`ker (generatedArrowComparisonSourceHom c)`というrestricted source-projection kernelだけである。G-122 original inputのcommon A--C realization、ambient normalization kernel、bottom/係数成分は別義務として未完了。A--F最終統合も未完了 |
 | B/D/E Cycle 178 delta | independent generated package Hom同値を恒等・合成と両立する圏・full/faithful functorへ上げ、全endpoint Autと任意比較射のcomparison subgroup全体を群同値で輸送する | `LensAATIndependentPackageObject`, `ProtocolAATIndependentPackageObject`; 両Hom namespaceの`id`,`comp`; 両package `Category`; 両`*PackageSemanticFunctor`, `*SemanticFullyFaithful`, Full/Faithful instance, `*PackageAutMulEquiv`; `fullyFaithfulEndpointAutMulEquiv`; `generatedArrowComparisonHomOfFullyFaithful`, injective/surjective, `generatedArrowComparisonMulEquivOfFullyFaithful`; source/section compatibility; lens/protocol package comparison specializations | 任意のCycle176 package objects/Homs。比較輸送は任意の圏・functorと、package round tripから構成したfully faithful data。endpoint Aut、comparison pair、section、surjectivity certificateをstructure fieldに取らない | state map compositionからpackage圏の三法則を証明し、semantic Hom両往復からfull/faithfulを構成。Mathlib Aut同値でendpoint automorphismを全て持上げる。任意の比較式をfunctorで保存し、faithfulnessで反映、fullnessで任意target endpoint pairを持上げてcomparison subgroupの全射・単射を証明。source projectionとiso conjugation sectionの可換性を証明 | full G-122 comparison groupとsection、restriction hom/kernel/fiber transport | generic輸送定理とCS packageへの適用は完成したが、G-122 original inputの共通A--C realization functorへの具体的instantiation、restriction square、restricted/ambient二核、全lift fiber、bottom/係数成分は未完了。A--F最終統合も未完了 |
@@ -18860,4 +18861,80 @@ audits:
     - "because barAlpha is an isomorphism, full comparison recovery reduces to constructing a MulEquiv from the direct presentation endpoint automorphism group to every actual direct endpoint automorphism"
     - "the current primitive syntax has no structural encoder for every such actual automorphism; this candidate insufficiency is not a target refutation"
   next_obligation: "Connect the six fixed generated axis-permutation section elements to every actual lift in their fibers, then construct an enriched primitive syntax encoder and both round trips for every direct endpoint automorphism without adding semantic automorphisms as syntax leaves."
+```
+
+## Cycle 181 — Six generated sections and every lift in their fibers
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 181
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 5033974850515969ac3e677164644b1216c2d5f2
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_obligation: "Connect every one of the six fixed generated axis permutations to the actual canonical section and every actual lift in that fiber"
+  expected_result_type: proof-checkpoint
+  risks:
+    - "replacing every lift by the canonical lift"
+    - "using only a selected kernel element instead of the full actual restricted kernel"
+    - "generalizing six fixed fibers to the whole comparison group"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "For every permutation of Fin 3, packaged the evaluated generated section as the actual canonical lift over the corresponding normalized comparison, proved its raw value is exactly the actual section, and proved every actual lift in that fiber is reached by a unique element of the full actual restricted kernel."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldGeneratedLiftFibers.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldGeneratedLiftFibers.canonicalLift
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldGeneratedLiftFibers.canonicalLift_val
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldGeneratedLiftFibers.everyLift_unique_kernel_displacement
+  claim_mapping:
+    source_labels:
+      - "GOAL D fixed finite-axis-fold generated example"
+      - "GOAL D same correspondence must carry section, restricted kernel, and each lift fiber"
+    conjuncts:
+      - "all six inputs -> arbitrary Equiv.Perm (Fin 3)"
+      - "same correspondence -> generated evaluation equals the actual canonical section"
+      - "every lift -> arbitrary lift in the same actual fiber"
+      - "full restricted kernel -> unique displacement quantifies the whole actual kernel"
+    undischarged_assumptions:
+      - "only the six fixed normalized comparison values have generated canonical representatives here"
+      - "presentation completeness for arbitrary actual endpoint automorphisms remains unconstructed"
+audits:
+  premise_delta:
+    discharged:
+      - "generated canonical section lift for all six primitive axis permutations"
+      - "all actual lifts in each of those six fibers classified by the full restricted kernel"
+    remaining:
+      - "primitive encoder for every actual direct endpoint automorphism"
+      - "whole comparison MulEquiv and every-base displayed fiber Equiv"
+      - "final A--F theorem"
+  certificate_provenance:
+    discharged:
+      - "fiber membership is proved by generated evaluation equality and the actual section right inverse"
+      - "kernel displacement is produced by the existing actual all-fiber torsor theorem"
+    unresolved: []
+  proof_use:
+    used:
+      - "generated section evaluation for every Fin 3 permutation"
+      - "actual canonical section right inverse"
+      - "actual restricted-kernel unique-displacement theorem"
+    unused:
+      - "no evaluator surjectivity, syntax completeness, chosen displacement, or completed D certificate is accepted"
+  structure_field_escape: none-found-canonical-lift-membership-and-every-displacement-are-proved
+  route_integrity: pass-the-same-generated-section-evaluates-to-the-actual-section-used-as-the-basepoint-of-the-actual-fiber
+  target_fitting: partial-the-fixed-six-fibers-are-connected-but-whole-group-display-recovery-remains-open
+  vacuity: none-found-each-fiber-quantifies-an-arbitrary-actual-lift
+  one_way_as_equivalence: not-claimed-the-result-is-a-six-fiber-application-not-a-whole-comparison-equivalence
+  validation_refs:
+    - "focused FiniteAxisFoldGeneratedLiftFibers check: PASS; 4 namespace declarations, standard axioms only"
+    - "registered exact FiniteAxisFoldGeneratedLiftFibers target build: PASS (4298 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "the current basic generated syntax has no encoder for every actual direct endpoint automorphism"
+    - "this candidate insufficiency is not a refutation of the fixed target"
+  next_obligation: "Construct enriched primitive syntax and an evaluator MulEquiv for every actual direct endpoint automorphism without using completed semantic automorphisms as syntax leaves, then lift it to the whole comparison group and every base fiber."
 ```
