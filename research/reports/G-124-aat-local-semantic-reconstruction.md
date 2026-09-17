@@ -11,12 +11,14 @@
 - fixed GOAL blob: `4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`
 - tracking Issue: [#4711](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4711)
 - Cycle 1 rejected PR: [#4714](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4714)
+- Cycle 2 accepted PR: [#4715](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4715),
+  merge commit `094151fda193acd169a08c6a65b8008ffb741b55`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: E1 の実 source-choice 族について、全有限 Bool 読み取りからの
-  再構成と有限非分離を同じ局所値定義で証明する
-- next proof obligation: source-choice 族の群構造、constant-false member と categorical identity の同定、
-  `C₂^Ω` 群同型、および B の主同値との同定
+- current proof obligation: E1 の実 source-choice 族について、constant-false member を
+  categorical identity と同定し、実射の合成が pointwise Bool xor に一致することを証明する
+- next proof obligation: source-choice 族を実 automorphism 群として構成し、
+  `C₂^Ω` との群同型、および B の主同値との同定を与える
 
 ## Cycle 1 — rejected
 
@@ -133,11 +135,74 @@ audits:
 同じ二 morphism の readback が指定有限 `S` 上で一致する定理を追加した。constant-false member と
 categorical identity の同定、および群構造は次 obligation に残す。
 
+Cycle 2 は固定 head `4130792c9ba38376744e8ba1fbb2bbdb58acdf75` の再査読1回目で
+Math A/B・Lean A/B の全 lane が `Mergeable`、finding なしとなり、CI 7/7 success を確認して
+mergeした。最終監査は PR comment `5718237143`、次 cycle 選定は Issue comment
+`5718244279` に固定した。
+
+## Cycle 3 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 3
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 094151fda193acd169a08c6a65b8008ffb741b55
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 2 accepted evidence: PR comment 5718237143; Issue comment 5718244279"
+  proof_dag_predecessors:
+    - "RealizationReconstruction.taggedSourceChoiceExplicitExactGeometryMorphism"
+    - "RealizationReconstruction.taggedSourceChoiceTotal"
+    - "ExplicitExactGeometryHom.id"
+    - "ExplicitExactGeometryHom.comp"
+  proof_obligation: "constant-false source-choice member を categorical identity と同定し、二つの実 ExplicitExactGeometryMorphism の合成が pointwise Bool xor choice に一致することを証明する"
+  selection_reason: "Cycle 2 の concrete source-choice family を関数同値のままにせず、後続の C₂^Ω 群同型が読む実カテゴリの単位元と合成を先に固定する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeGroupLaw.lean"
+  risks:
+    - "Bool の ring multiplication and ではなく xor を群演算として使うこと"
+    - "PackageTotalHom-level の計算だけで exact-geometry morphism equality を主張しないこと"
+    - "この cycle だけで automorphism group や C₂^Ω 群同型を完了したと数えないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "constant-false member is the categorical identity; composition of actual tagged ExplicitExactGeometry morphisms is the morphism induced by pointwise Bool xor"
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceExplicitExactGeometryMorphism_false"
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceExplicitExactGeometryMorphism_comp"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL E1a のための C₂^Ω の点ごとの C₂ 演算"
+      - "固定 GOAL E1: source-choice endomorphism 族の categorical identity/composition law"
+    conjuncts:
+      - "neutral choice -> categorical identity theorem"
+      - "pointwise xor -> actual morphism composition theorem"
+    undischarged_assumptions: []
+    port_status: unported
+audits:
+  proof_use:
+    used:
+      - "ExplicitExactGeometryHom.ext / all computational components"
+      - "PackageTotalHom.ext and SignedExactCoreReadingHom.ext / base and operation action"
+      - "dependent operationMap equality / endpoint-indexed tagged operation"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/TagChangeGroupLaw.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 2 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "package the source-choice members as actual automorphisms and prove the C₂^Ω group equivalence; identification with B remains later"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
 - B の対象・射を含む圏同値。Cycle 2 は E1 の指定族における function-level Hom reconstruction。
 - C の投影・正規化・比較群回復。
 - D の三定義と連結成分判定。
-- E1 の群構造、constant-false/categorical-identity 同定、`C₂^Ω` 群同型、uniform flip、B の主同値との同定。
+- E1 の actual automorphism 群構成、`C₂^Ω` 群同型、uniform flip、B の主同値との同定。
 - E2 の lens・protocol 二層の決定性と既存 Karoubi 再構成との整合。
