@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 163 combines the source-generated lower doctrine maps with the complete upper cores into lens and protocol `PackageTotalHom` values
+- current proof obligation: Cycle 164 fixes the genuine-CS package base, coefficient action, and full typed raw action while isolating the unconstructed geometry provenance components
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: use the genuine-CS `PackageTotalHom` values to discharge coverage, overlap, raw, and realization fields of exact total geometry morphisms
+- next proof obligation: construct generated-context Support/Axis/Observable forward component maps with read preservation and naturality, mapped-context coverage preservation, and generated complete-overlap comparison; then assemble exact total geometry morphisms
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 164 delta | genuine-CS exact geometryのうち構成済みbase・coefficient・全typed raw actionを同じcheckpointに固定し、未構成geometry fieldsを入力へ移さない | `ExactGeometryRawCheckpoint`, `lensIsoExactGeometryRawCheckpoint`, `protocolIsoExactGeometryRawCheckpoint` | fixed CS inputとgenuine semantic iso、Cycle 163 `PackageTotalHom`、Cycle 158 ReadingCore raw constructor。coverage/overlap/realizationは入力にもfieldにも置かない | complete package base、`Int`恒等係数準同型、全Law-index×Atom座標・relation・restrictionを保持するtarget-indexed exact raw map | 後続`ExactGeomReadHom`のbase/coefficient/raw fields | generated contextのSupport/Axis/Observable前向きcomponent map・read保存・naturality、mapped-context上のcoverage preservation、complete overlap比較、realization supply、exact total hom、一般非可逆CS射、readback、D、A--F統合は未完了 |
 | A/E Cycle 163 delta | complete upper coreを同じprimitive Atom作用を持つsource-generated lower doctrine mapと結合し、total package morphismを完成する | `lensIsoExtInstHom`, `lensIsoPackageTotalHom`, `protocolIsoExtInstHom`, `protocolIsoPackageTotalHom` | fixed CS inputとgenuine semantic iso、およびCycle 162 complete upper core。completed lower/upper morphismやcompatibility certificateは受けない | actual semantic homからA1 source mapとexact doctrine homを生成し、distinguished point固定を証明。上下のAtom同値が同じ恒等同値であることを定義的に放電 | genuine-CS exact geometry raw/non-raw fieldsの共通`baseHom` | coverage/overlap/raw integration/realization supply、exact total geometry hom、一般非可逆CS射、readback、D、A--F統合は未完了 |
 | A/E Cycle 162 delta | lens/protocolのcore morphismについてequation fieldだけでなくextraction/composition/object/configuration/detector/operation/invariant/signatureの全fieldを同一構成から完成する | `lensIsoConfigurationMap`, `lensIsoOperationMap`, `lensCoreGeometrySigma_eq`, `lensCoreCircuitCode_reject`, `lensCoreSignature_eq`, `SignatureExactTransport`, `signatureExactTransportCast`, `lensIsoSignatureTransport`, `lensIsoSignedExactCoreReadingHom`; protocolの同名対応宣言と`protocolCore_extraction_eq`, `protocolCore_composition_eq` | fixed CS inputとgenuine semantic iso、Cycles 148/159--161のsource-generated provenance/object/equation構成。generic signature castはcanonical transportに条件付きだが最終constructorが内部構成して渡す。completed core hom/base/certificateは受けない | 恒等Atom mapのconfiguration action、全operation action、生成Sigma等式からreject detectorとsignature等式、空invariant eliminator、全axis/coordinate同値、extraction/compositionとoperation naturalityを構成し全`SignedExactCoreReadingHom` fieldを充足 | lens/protocol genuine-CS `PackageTotalHom.upper` | `ExtInstHom`とのbase compatibility、coverage/overlap/realization supply、non-raw geometry、一般非可逆CS射、independent readback、D、A--F統合は未完了 |
 | A/E Cycle 161 delta | lens/protocolの任意object residualをendpoint scaffoldに留めず、source-generated coreの完全なequation transportとして構成する | `lensIsoEndpointContextEquivalence`, `lensIsoEndpointEquationTransport`, `coreGeometryEquationTransportCast`, `lensIsoGeneratedEquationTransport`; protocolの同名対応宣言 | 各fixed CS inputとgenuine semantic iso、および既存のsource-generated core/object provenance等式。generic cast helperは構成済みendpoint transportに条件付きだが、最終lens/protocol constructorはそのpremiseを内部構成して渡し、completed transport、core hom、geometry homを入力に取らない | hom/invのfull-family context functorからcontext equivalence、全Law index同値、全coordinate環同型、restriction naturality、全generator像、任意object residualを一recordに構成し、生成対象等式だけでendpointからgenerated coreへtransport | lens/protocol `SignedExactCoreReadingHom.equationMap` | detector/operation/invariant/signature action、extraction/composition law、context inverseとの整合を含む完成core hom、total base、non-raw geometry、一般非可逆CS射、readback、D、A--F統合は未完了 |
@@ -17000,4 +17001,95 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct coverage, overlap, raw, and realization supplies from the fixed generated geometry and these genuine-CS package bases, yielding exact total geometry morphisms without accepting completed geometry data."
+```
+
+## Cycle 164 — Exact-geometry base, coefficient, and typed-raw checkpoint
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 164
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: e85e869357f9e8fdbc48c3a72e19bcb46b878a19
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 163 supplied both complete package bases; typed raw maps were already constructible against an arbitrary matching base, but coverage, overlap, and realization provenance remained hidden by generated-object transport"
+  proof_obligation: "Construct and freeze the package base, coefficient action, and complete typed raw action for both CS models without accepting any missing geometry component"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExactGeometryRawCheckpoint.lean
+  risks:
+    - "adding coverage, overlap, or realization as certificate fields merely to form a partial record"
+    - "using a constant or identity raw coordinate action instead of the actual genuine-CS Law-index action"
+    - "constructing the raw map against a package base unrelated to the same CS isomorphism"
+    - "reporting the partial checkpoint as ExactGeomReadHom or ExactGeometryTotalHom"
+  unchecked:
+    - "generated Support/Axis/Observable forward component maps, read preservation, and naturality"
+    - "generated mapped-context coverage preservation and complete-overlap comparison"
+    - "realization supply, exact total geometry hom, noninvertible maps, readback, D, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "For both CS models, combined the Cycle 163 package total with the identity integer coefficient map and the previously constructed source-generated ReadingCore raw map carrying the complete genuine Law-index-times-Atom coordinate action. The checkpoint structure intentionally has no coverage, overlap, or realization fields, so their construction remains explicit rather than certificate input."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExactGeometryRawCheckpoint.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.ExactGeometryRawCheckpoint
+    - AAT.AG.RealizationReconstruction.lensIsoExactGeometryRawCheckpoint
+    - AAT.AG.RealizationReconstruction.protocolIsoExactGeometryRawCheckpoint
+  claim_mapping:
+    source_labels:
+      - "GOAL A: retain the actual typed raw action together with the common realization-package base"
+      - "GOAL E and n1015: preserve every lens/protocol Law coordinate rather than collapsing a genuine CS change to identity raw action"
+    conjuncts:
+      - "same genuine CS isomorphism -> complete PackageTotalHom base"
+      - "fixed Int coefficients -> identity coefficient ring hom"
+      - "every target context, Law-index-times-Atom coordinate, relation, and restriction -> exact typed raw map"
+      - "missing coverage/overlap/realization -> remain absent and unclaimed"
+    undischarged_assumptions:
+      - "genuine CS isomorphism is the allowed input for this exact-equivalence subcase"
+      - "generated geometry component provenance is not yet exposed sufficiently to build the remaining ExactGeomReadHom fields"
+      - "general noninvertible CS morphisms need directed rather than equivalence-valued core/raw actions"
+    acceptance_point: "The three constructed computational components are fixed without importing any of the three missing geometry obligations."
+audits:
+  premise_delta:
+    discharged:
+      - "common genuine-CS PackageTotalHom base"
+      - "coefficient ring map"
+      - "complete target-indexed typed raw coordinate, relation, and restriction action"
+    remaining:
+      - "coverage, overlap, realization supply, exact total geometry, noninvertible maps, readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional: []
+    discharged:
+      - "base is the Cycle 163 constructor from the same e"
+      - "coefficient action is the fixed Int identity hom"
+      - "raw action is generated by the complete ReadingCore equation-coordinate equivalence from the same e and base"
+    unresolved:
+      - "project generated geometry provenance to component carriers, requirements, visibility, and overlap"
+  proof_use:
+    used:
+      - "both Cycle 163 PackageTotalHom values"
+      - "both source-generated ReadingCore raw systems"
+      - "the full lens three-law or protocol relation/observation index equivalence"
+      - "all Atom coordinates and target context arrows"
+    unused:
+      - "no coverage, overlap, RealizationTransportSupply, ExactGeomReadHom, ExactGeometryTotalHom, decoder membership, readback, or D classifier is accepted"
+  structure_field_escape: none-found-the-checkpoint-contains-only-the-three-components-already-constructed-and-no-missing-geometry-certificate
+  route_integrity: pass-base-and-raw-action-come-from-the-same-genuine-CS-isomorphism
+  target_fitting: partial-base-coefficient-and-raw-are-constructed-but-three-material-geometry-components-remain-open
+  vacuity: none-found-the-raw-map-carries-the-complete-Law-index-times-Atom-family-and-all-restriction-squares
+  one_way_as_equivalence: none-found-this-checkpoint-is-explicitly-the-genuine-isomorphism-subcase
+  goal_or_report_reinterpretation: none-found-the-checkpoint-is-not-named-or-counted-as-a-complete-geometry-hom
+  validation_refs:
+    - "focused CSAATExactGeometryRawCheckpoint file check: PASS; 17 namespace declarations including structure-generated declarations, standard axioms only"
+    - "focused exact CSAATExactGeometryRawCheckpoint target build: PASS (4293 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "generated-object dependent transport currently blocks direct construction of the mapped-context Support/Axis/Observable forward component maps, read-preservation proofs, and naturality required by RealizationTransportSupply; carrier equivalences are an optional stronger iso route, not an API requirement"
+    - "generated coverage requirements need explicit forward preservation at each mapped context as required by CoverageTransport; target-wide visibility is an optional stronger iso consequence, not a material API premise"
+    - "completeLawOverlap needs comparison along the full-family context equivalence"
+  next_obligation: "Construct generated Support/Axis/Observable forward component maps with read preservation and naturality, mapped-context CoverageTransport fields, and complete-overlap comparison; use them to assemble the remaining exact geometry fields."
 ```
