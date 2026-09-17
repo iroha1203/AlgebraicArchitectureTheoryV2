@@ -27,11 +27,14 @@
   merge commit `41001713273f078bcef9f5b2c0711772d5b35ad0`
 - Cycle 9 accepted PR: [#4722](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4722),
   merge commit `eb955775e918a5f5e37584e54ba87be14cd23580`
+- Cycle 10 accepted PR: [#4723](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4723),
+  merge commit `24154c67dc37f7a5f047d8dcb88c2181255d0aa4`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: D の component-family criteria を `Equiv.Perm K` と actual operation-preserving
-  following changes へ接続する
-- next proof obligation: D の有限列挙入力下の実効性へ進む
+- current proof obligation: D の有限列挙入力に対する generic precomposition extension algorithm と
+  index map の injectivity・surjectivity 判定を構成する
+- next proof obligation: finite vertex/edge tables から component enumeration と decidable reachability を構成し、
+  generic algorithm を actual induced-component map と coherence table へ接続する
 
 ## Cycle 1 — rejected
 
@@ -750,6 +753,88 @@ audits:
     - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.PermutationRestriction: 11 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "formalize the finite-enumeration coherence decision and computable extension required by D effectiveness"
+```
+
+Cycle 10 は final head `880bb47a6da25afd0cfe2f94b2cf57073eb931f7` の initial formal review で
+全4 lane が `Mergeable`、finding なしとなり、CI 7/7 success を確認して mergeした。
+最終監査は PR comment `5719252080`、Cycle 11 選定は Issue comment `5719266626` に固定した。
+
+## Cycle 11 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 11
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 24154c67dc37f7a5f047d8dcb88c2181255d0aa4
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 10 accepted evidence: PR comment 5719252080; Issue comment 5719266626"
+  proof_dag_predecessors:
+    - "LocalSemanticReconstruction.ComponentRestriction.precompose"
+    - "LocalSemanticReconstruction.ComponentRestriction.precompose_surjective_iff_injective"
+  proof_obligation: "明示的な Fintype local/global indices と decidable equality のもとで、injective index map に沿う local family の global extension を有限探索で計算し、restrictionが元のfamilyになることを証明する。index map のinjectivity・surjectivityをBoolで判定する"
+  selection_reason: "Dの実効性を noncomputable Function.extend から分離し、finite table入力で実行可能なset-theoretic coreを先に固定する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FinitePrecompositionAlgorithm.lean"
+  risks:
+    - "Classical.choose や Finset.toList の noncomputable conversion を使わないこと"
+    - "Fintype enumeration と DecidableEq を明示し、Finiteや古典的Fintype.ofFiniteで置換しないこと"
+    - "generic finite-index resultをgraph-specific effectiveness completionと呼ばないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "finite enumeration and decidable equality compute unique preimages by Finset.choose under proved uniqueness, yielding a total extension program correct under injectivity; injectivity and surjectivity of the finite index map have executable Bool tests"
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.FinitePrecomposition.uniquePreimageProof"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePrecomposition.preimageOfInjective"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePrecomposition.preimageOfInjective_spec"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePrecomposition.extensionOfInjective"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePrecomposition.extensionOfInjective_apply"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePrecomposition.precompose_extensionOfInjective"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePrecomposition.extension"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePrecomposition.precompose_extension"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePrecomposition.injectiveTest"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePrecomposition.injectiveTest_eq_true_iff"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePrecomposition.surjectiveTest"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePrecomposition.surjectiveTest_eq_true_iff"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL D: finite enumeration table と等号判定による extension の計算可能性"
+    conjuncts:
+      - "local indices are supplied as an explicit Fintype enumeration"
+      - "global index equality is decidable, so image membership is finite-search decidable"
+      - "injectivity makes every found preimage unique, allowing computable Finset.choose"
+      - "the computed global family restricts definitionally/propositionally to the original local family"
+      - "finite injectivity and surjectivity conditions are exposed as verified Bool tests"
+    undischarged_assumptions:
+      - "derive explicit Fintype and DecidableEq instances for full and induced component indices from finite vertex/edge tables"
+      - "decide vertex-table edge coherence and descend coherent tables to induced-component families"
+      - "specialize fallback and finite value enumeration to Equiv.Perm K from a finite K table"
+    acceptance_point: "the extension is an executable finite-search definition using Finset.choose under uniqueness; no Classical.choose, noncomputable declaration, or Function.extend occurs"
+    port_status: unported
+audits:
+  material_premises:
+    discharge_required:
+      - "finite local enumeration / explicit Fintype A"
+      - "decidable global equality / explicit DecidableEq B"
+      - "unique preimages / proved from Function.Injective q"
+    conclusion_equivalent_risk: []
+  proof_use:
+    used:
+      - "Finset.univ and Finset.choose under an ExistsUnique proof"
+      - "Fintype decidable injective and surjective instances"
+      - "actual ComponentRestriction.precompose"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/FinitePrecompositionAlgorithm.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.FinitePrecomposition: 12 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct finite component enumerations and decidable reachability from finite graph tables, then connect vertex-edge coherence to the component-family extension algorithm"
 ```
 
 ## 未完了 ledger
