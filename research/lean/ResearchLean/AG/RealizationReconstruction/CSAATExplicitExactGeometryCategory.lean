@@ -58,8 +58,9 @@ end ExplicitRealizationTransportSupply
 
 namespace ExplicitExactGeometryHom
 
-/-- Extensionality compares every computational component.  Coverage and
-overlap are propositions once the common base is fixed. -/
+/-- Extensionality compares every computational component.  Once the common
+base is fixed, coverage is proof-valued and overlap uses its accepted
+thin-context subsingleton theorem. -/
 @[ext (iff := false)] theorem ext
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     {first second : ExplicitExactGeometryHom G H}
