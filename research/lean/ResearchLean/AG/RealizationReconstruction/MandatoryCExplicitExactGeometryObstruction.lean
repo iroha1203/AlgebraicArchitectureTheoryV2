@@ -14,6 +14,14 @@ certificate, to the independently defined explicit exact geometry category.
 This proves membership in the current six-component exact geometry morphism
 contract.  It does not identify that category with the still-unconstructed
 final `R_Theta`, and it does not assume or prove final-syntax generation.
+
+## Implementation notes
+
+The geometry package is fixed before any source choice is supplied: it combines
+the mandatory-C tagged core with the reviewed finite-axis-fold geometry and raw
+data.  A choice-dependent package, or one selected only after a morphism is
+known to exist, would move the preservation obligation into the object being
+constructed and would not test one common realization category.
 -/
 
 namespace AAT.AG.RealizationReconstruction
