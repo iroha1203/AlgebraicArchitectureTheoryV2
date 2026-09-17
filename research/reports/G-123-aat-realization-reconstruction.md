@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 165 constructs generated-context carrier equivalences and exact reading preservation for both genuine CS models while isolating representative coherence as the remaining realization-supply obstruction
+- current proof obligation: Cycle 166 retains the actual full-family restriction action, proves all three naturality laws on both generated CS cores, and isolates the current thin representative API as the remaining integration obstruction
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: prove coherence between the selected target context-morphism representatives and rebased source representatives (or construct an equal representation-preserving context transport), derive component naturality, then construct mapped-context coverage and complete-overlap comparison
+- next proof obligation: define an explicit-restriction realization supply and a parallel exact geometry hom that consume the constructed action without re-selecting representatives; then integrate mapped-context coverage and complete overlap
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 166 delta | thin Homで消去される前のactual `ContextMorphism`を保持し、全context・全restriction上で三carrier actionとnaturalityを同一構成から与える | `ExplicitFullFamilyContextAction`, `explicitFullFamilyContextAction`, lens/protocol `*EndpointExplicitContextAction`, `explicitFullFamilyContextActionCast`, lens/protocol `*GeneratedExplicitContextAction`; `targetChosenMorphism`, `explicitlyRebasedChosenMorphism`, `ChosenRepresentativeCoherence`, `supplyNaturality_of_chosenRepresentativeCoherence` | fixed CS inputとgenuine semantic iso、既存full-family rebase/morphism rebase、両generated coreのobject provenance等式。carrier/action/naturality証拠はconstructor入力に取らない | sourceの全architecture context、全actual restriction morphismをtargetへrebaseし、Support/Axis/Observable同値、reading iff、restriction保存、三naturalityを構成。generated lens/protocol coreへcast | 次のexplicit-restriction realization supplyとparallel exact geometry hom | 現行`RealizationTransportSupply`はtarget thin arrowから別代表を`Classical.choose`するため直接変換不可。coherenceを仮定入力にせず、explicit supply/homを構成する必要がある。coverage、overlap、total hom、一般非可逆CS射、readback、D、A--F統合も未完了 |
 | A/E Cycle 165 delta | genuine-CS transportの全generated contextでSupport/Axis/Observable carrierと三reading predicateを、表示できた部分集合へ縮小せず保持する | `EquationContextCarrierEquiv`, `lensIsoEndpointContextCarrierEquiv`, `protocolIsoEndpointContextCarrierEquiv`, `coreGeometryContextCarrierEquivCast`, `lensIsoGeneratedContextCarrierEquiv`, `protocolIsoGeneratedContextCarrierEquiv` | fixed CS inputとgenuine semantic iso、Cycle 161のendpoint/generated equation transportおよびsource/target generated-object provenance等式。carrier同値やreading証拠は最終constructorの入力に取らず内部構成する | 全source generated context上のSupport・Axis・Observable同値と、atom同値を含むsupportReads、axisReads、observableReadsの保存反映iff | `RealizationTransportSupply`の三前向きcomponent mapとread保存fieldの構成材料 | context preorderのHomが存在命題から独立に`Classical.choose`された代表を持つためcomponent naturalityは未証明。mapped-context coverage、complete overlap、realization supply、exact total hom、一般非可逆CS射、readback、D、A--F統合も未完了 |
 | A/E Cycle 164 delta | genuine-CS exact geometryのうち構成済みbase・coefficient・全typed raw actionを同じcheckpointに固定し、未構成geometry fieldsを入力へ移さない | `ExactGeometryRawCheckpoint`, `lensIsoExactGeometryRawCheckpoint`, `protocolIsoExactGeometryRawCheckpoint` | fixed CS inputとgenuine semantic iso、Cycle 163 `PackageTotalHom`、Cycle 158 ReadingCore raw constructor。coverage/overlap/realizationは入力にもfieldにも置かない | complete package base、`Int`恒等係数準同型、全Law-index×Atom座標・relation・restrictionを保持するtarget-indexed exact raw map | 後続`ExactGeomReadHom`のbase/coefficient/raw fields | generated contextのSupport/Axis/Observable前向きcomponent map・read保存・naturality、mapped-context上のcoverage preservation、complete overlap比較、realization supply、exact total hom、一般非可逆CS射、readback、D、A--F統合は未完了 |
 | A/E Cycle 163 delta | complete upper coreを同じprimitive Atom作用を持つsource-generated lower doctrine mapと結合し、total package morphismを完成する | `lensIsoExtInstHom`, `lensIsoPackageTotalHom`, `protocolIsoExtInstHom`, `protocolIsoPackageTotalHom` | fixed CS inputとgenuine semantic iso、およびCycle 162 complete upper core。completed lower/upper morphismやcompatibility certificateは受けない | actual semantic homからA1 source mapとexact doctrine homを生成し、distinguished point固定を証明。上下のAtom同値が同じ恒等同値であることを定義的に放電 | genuine-CS exact geometry raw/non-raw fieldsの共通`baseHom` | coverage/overlap/raw integration/realization supply、exact total geometry hom、一般非可逆CS射、readback、D、A--F統合は未完了 |
@@ -17189,4 +17190,107 @@ audits:
     - "thin-category Hom proof uniqueness identifies Hom terms but does not identify the component functions inside separately chosen ContextMorphism witnesses"
     - "the next construction must prove representative-coherence lemmas for supportMap, axisMap, and observableRestrict, or replace the transport by an equal representation-preserving context-preorder transport; this is a candidate-construction obstruction, not a refutation of the fixed target"
   next_obligation: "Prove selected-representative coherence for the fullFamilyContextFunctor component functions, or construct an equal representation-preserving context transport; then package the constructed forward maps and reading proofs into RealizationTransportSupply and proceed to coverage and overlap."
+```
+
+## Cycle 166 — Explicit restriction action and thin-representative boundary
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 166
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: f6a53f25455eced4a849921051daf7bf008e4ab3
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 165 constructed all pointwise carrier and reading data but found that the current realization supply observes independently selected target restriction representatives"
+  proof_obligation: "Retain the actual full-family restriction morphism action, construct all three naturality laws rather than assuming representative coherence, connect it to both generated CS cores, and identify the exact old-API boundary"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExplicitContextAction.lean
+  risks:
+    - "adding chosen-representative coherence as a theorem input or certificate field"
+    - "calling thin Hom equality an equality of the internal ContextMorphism functions"
+    - "constructing only canonical unit contexts rather than every context and restriction"
+    - "claiming the explicit action already inhabits RealizationTransportSupply or ExactGeomReadHom"
+  unchecked:
+    - "explicit-restriction realization supply and parallel exact geometry hom"
+    - "mapped-context coverage and complete-overlap integration against the explicit action"
+    - "total geometry, noninvertible maps, readback, D, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Constructed the full-family action on every architecture context and every actual ContextMorphism, including restriction preservation, complete Support/Axis/Observable equivalences, reading iff, and three definitional naturality laws. Transported this action to both actual generated cores using only their proved object provenance. Separately exposed the current target-side re-selection and proved exactly what proof irrelevance supplies and what additional coherence would be needed; that coherence is diagnosed but never accepted by a constructor."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExplicitContextAction.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.ExplicitFullFamilyContextAction
+    - AAT.AG.RealizationReconstruction.explicitFullFamilyContextAction
+    - AAT.AG.RealizationReconstruction.lensIsoGeneratedExplicitContextAction
+    - AAT.AG.RealizationReconstruction.protocolIsoGeneratedExplicitContextAction
+    - AAT.AG.RealizationReconstruction.restrictionRepresentative_not_unique
+    - AAT.AG.RealizationReconstruction.explicitlyRebasedHom_eq_fullFamilyMap
+    - AAT.AG.RealizationReconstruction.targetChosen_eq_chooseExplicitProof
+    - AAT.AG.RealizationReconstruction.ChosenRepresentativeCoherence
+    - AAT.AG.RealizationReconstruction.supplyNaturality_of_chosenRepresentativeCoherence
+  claim_mapping:
+    source_labels:
+      - "GOAL A: preserve the actual realization-side context and restriction action"
+      - "GOAL E and n1015: transport every lens/protocol context without shrinking the semantic carriers"
+    conjuncts:
+      - "every context -> full-family rebased context with all carriers and predicates unchanged"
+      - "every actual restriction morphism -> explicitly rebased actual restriction morphism"
+      - "Support, Axis, Observable -> equivalences and reading iff"
+      - "all three carrier comparisons -> natural with respect to every retained restriction morphism"
+      - "generated lens and protocol cores -> same construction via proved object provenance"
+      - "old target representative choice -> isolated, not assumed coherent"
+    undischarged_assumptions:
+      - "genuine CS isomorphism remains the allowed input for this exact-equivalence subcase"
+      - "the current RealizationTransportSupply contract observes a target ContextMorphism selected after thin-arrow erasure"
+      - "general noninvertible CS morphisms require the parallel directed realization and geometry layer"
+    acceptance_point: "Actual restriction action and naturality are fully constructed; only conversion to an API that discards and independently re-selects that action remains unavailable."
+audits:
+  premise_delta:
+    discharged:
+      - "actual context-object action for every source context"
+      - "actual ContextMorphism action for every source restriction"
+      - "restriction preservation"
+      - "complete carrier equivalences and reading iff"
+      - "Support, Axis, and Observable naturality against the actual mapped restrictions"
+    remaining:
+      - "explicit realization supply/hom integration, coverage, overlap, exact total geometry, noninvertible maps, readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "explicitFullFamilyContextActionCast transports a completed explicit action along supplied object equalities"
+      - "supplyNaturality_of_chosenRepresentativeCoherence shows the consequence of coherence but does not construct or consume it in any final CS constructor"
+    discharged:
+      - "the endpoint explicit action is constructed directly from fullFamilyContextRebase and fullFamilyContextMorphismRebase"
+      - "both generated actions internally supply the existing source and target package-object provenance equalities"
+      - "all naturality fields reduce definitionally to the same retained ContextMorphism functions"
+    unresolved:
+      - "the old target preorder re-selects Classical.choose from an existential after the explicit representative has been erased"
+  proof_use:
+    used:
+      - "every source architecture context and every actual ContextMorphism"
+      - "full Support, Axis, Observable, reading predicates, and Extension-preserving context rebase"
+      - "both generated core object provenance equalities"
+      - "the target chosen representative only to state and audit the old-API boundary"
+    unused:
+      - "no ChosenRepresentativeCoherence proof, RealizationTransportSupply, CoverageTransport, overlap certificate, completed geometry hom, decoder image, readback, or D classifier is accepted"
+  structure_field_escape: none-found-the-explicit-action-fields-are-all-constructed-by-the-exported-full-family-constructor-and-chosen-coherence-is-not-a-field
+  route_integrity: pass-the-generated-actions-are-object-provenance-casts-of-the-same-full-family-endpoint-construction
+  target_fitting: partial-the-mathematical-context-action-and-naturality-are-constructed-but-the-parallel-realization-and-geometry-layer-is-not-yet-assembled
+  vacuity: none-found-the-action-quantifies-every-context-every-context-morphism-and-every-carrier-value
+  one_way_as_equivalence: none-found-the-explicit-carrier-equivalences-are-constructed-for-the-genuine-isomorphism-subcase-only
+  goal_or_report_reinterpretation: none-found-the-module-and-report-explicitly-deny-conversion-to-the-current-supply-without-additional-coherence
+  validation_refs:
+    - "focused CSAATExplicitContextAction file check: PASS; 43 namespace declarations, standard axioms only"
+    - "focused exact CSAATExplicitContextAction target build: PASS (4293 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "proof irrelevance proves targetChosenMorphism equals Classical.choose applied to the explicit existential proof, but does not prove that this choose returns the displayed explicitlyRebasedChosenMorphism"
+    - "restriction representatives are not unique in the underlying contract, so uniqueness cannot derive the missing equality"
+    - "the sound route is an explicit-restriction realization supply and parallel exact geometry hom; adding ChosenRepresentativeCoherence as an input would move the conclusion into a certificate"
+  next_obligation: "Define ExplicitRealizationTransportSupply and a parallel exact geometry hom whose naturality uses the retained restriction action, then combine it with the Cycle 164 base/coefficient/raw checkpoint and construct coverage and overlap against the same action."
 ```
