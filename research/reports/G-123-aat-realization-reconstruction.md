@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 175 types source-image coverage, readable overlap, and selected Extension actions on the actual generated lens/protocol cores and combines them with equation/raw into one directed package
+- current proof obligation: Cycle 176 removes the primitive-morphism index from the generated package interface and reconstructs the primitive and independent CS semantic morphisms from generated selected-operation payloads
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: separate the minimal operation-level computational fields from the primitive-morphism index and reconstruct the independent lens/protocol semantic morphisms from those package fields; then continue D recovery and A--F integration
+- next proof obligation: use the independent package Hom equivalences in the common lens/protocol translation statement and connect the resulting same-package classification to D recovery; then continue the full A--F integration
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| E Cycle 176 delta | generated表示側にcarrier mapとnamed operation lawsだけを保持し、primitive `f`やcompleted semantic Homをfieldにせず、lens/protocol独立意味論へ読み戻して両往復を証明する | `LensAATIndependentGeneratedPackageHom`, `.toForwardMorphism`, `.ofForwardMorphism`, 両simp round trip, `.forwardMorphismEquiv`, `.toSemanticHom`, `.ofSemanticHom`, 両semantic round trip, `.semanticHomEquiv`, `.toDirectedPackage`; protocol同名対応 | fixed lens/protocol inputとsource/target realization。lensは一つのstate mapとgenerated Extension payload上のget/put laws、protocolはvertexwise state mapとgenerated payload上の全named edge/observation lawsだけを取る。primitive forward morphism、semantic Hom、equation/raw/coverage/overlap/完成packageはfieldに取らない | generated payload lawsからprimitive interfaceを再構成し、primitive interfaceとの両往復をextensionalityで証明。さらに独立CS semantic Homへ読み戻し、全semantic Homからのforward translationとの両往復・Equivを証明。最後にその再構成primitiveからCycle175の全generated geometry packageを構成 | common lens/protocol translation statementとD分類の表示側回復 | 共通定理として両CSを同じclassificationへ接続する統合、Dの元の全比較群・section・二核・全lift fiber回復、A--F最終統合は未完了 |
 | A/E Cycle 175 delta | source-image coverage、全source tripleのreadable overlap、selected Extensionのnamed operation equationsをendpoint固定型からactual generated coreへ移し、equation/rawと同一packageへ統合する | `GeneratedForwardCoverageLabels`, `GeneratedForwardCoverageImage`, `coreGeometryCoverageLabelsCast`, `coreGeometryCoverageForwardCast`, `GeneratedForwardOverlapReadable`, `coreGeometryOverlapForwardCast`; lens/protocol endpoint/generated constructors; `lensAATGeneratedReadingContext`, `protocolAATGeneratedReadingContext`, generated payload/coherence; `LensAATGeneratedDirectedPackage`, `ProtocolAATGeneratedDirectedPackage`とconstructors | 任意のprimitive lens/protocol forward morphism、固定入力由来selected reading、既構成endpoint coverage/overlap/Extension、generated-object等式。target-wide coverage、whole-Extension map、inverse、completed semantic homは取らない | coverage 9条項をcoherent observable witnessとcovariant axis witnessを落とさずarbitrary carried geometry data上へ一般化し、両object等式でgenerated dataへtransport。overlapをcarried overlap同士の全triple readable equivalenceとしてtransport。generated selected contextのExtension payloadを固定入力型へdecodeし、lens point/get/putおよびprotocol point/全edge/全observation equationsをprimitive射から構成。equation/raw/coverage/overlap/Extensionを同一generated packageへ束ねる | primitive indexを除いたoperation-level package interfaceと独立semantic readback | packageはなお`f`でindexされる。equation/raw/coverage/overlapのみからcarrier mapは復元不能で、次にstateMapとnamed-operation lawsを独立fieldsとして切り出す必要がある。D、A--F統合も未完了 |
 | A/E Cycle 174 delta | endpoint full-context型に固定されたdirected equation/rawを強さを増やさずgenerated `ReadingCore`へ運び、同じprimitive射由来のcoverage/overlap/Extensionとprovenanceを一つに固定する | `coreGeometryDataSite`, `GeneratedEquationForwardTransport`, `.ofEndpoint`, `coreGeometryContextFunctorCast`, `coreGeometryEquationForwardCast`, `coreGeometryRawForwardCast`; lens/protocol `*ReadingCoreForwardContextFunctor`, `*ReadingCoreEquationForwardTransport`, `*ReadingCoreRawForwardHom`, `*ReadingCoreForwardImage` | 任意のprimitive lens/protocol forward morphismと既構成endpoint aggregate、source/target generated-object等式。inverse、index equivalence、target-wide coverage、completed package mapは取らない | 任意のcarried context preorder上で同じone-way equation contractを定義しendpoint contractをstrict embedding。source/target object等式でcontext functor・equation・covariant raw NatTransをactual ReadingCoreへtransport。endpoint-strength source-image coverage、readable overlap、selected Extensionと両Sigma provenanceを同じindexed aggregateに構成 | provenance-generic coverage/overlap/Extensionとone-way generated-package interface | coverage/overlap/Extensionはまだconcrete Law endpoint型で、generated-core型へのliteral transport、package-level独立readback、D、A--F統合は未完了 |
 | E Cycle 173 delta | 非可逆な一般射でlensの同一`h,u`をget/put両方に、protocolの任意adapterと同じoperation名・executionを全pathに保持し、L2/L5/P1へ接続する | `LensAATRelativeForwardMorphism`, `.typedObjectMap`, `.get_square`, `.put_square`, `.identityVisibleEquiv`, `.ofLensInvertibleChange`, `.toLensInvertibleChange`と往復定理; `ProtocolAATForwardMorphism.DirectedAdapterSquare`, `.directedAdapterSquare_iff_semantic`, `.state`, `.namedEdge_execution`, `.observation`, `.path_execution`, semantic/P1 specializations | lens側は任意のstate関数`h`とvisible関数`u`が同じget/put squareを満たすこと。L5 specializationだけ既存の`h,u`同値を使う。protocol側は任意の4 forward morphism、P1 specializationでは`q,q'`は任意のままendpoint changeのみiso。completed geometry map/certificateは取らない | lens 4 roleを`h,u,h,h×u`で型付きtransportしactual get/put squareを証明。`u=id` fiberとL2を同値化しL5の既存独立意味論と往復。protocol adapter squareを独立意味論と同値化し、同じvertex/edge/path名でstate・named execution・observation・全path execution等式を構成 | directed generated-package morphismとEのobject/morphism翻訳・readback | directed aggregateのgenerated `ReadingCore` provenance transport、一つのone-way package interface、そこからの独立readback、D、A--F統合は未完了 |
@@ -18285,4 +18286,116 @@ audits:
     - "the minimal next fields are lens stateMap plus get/put laws and protocol vertexwise stateMap plus every edge/observation law, not a stored f or completed semantic hom"
     - "this is the next API construction obligation, not evidence against the fixed target"
   next_obligation: "Define f-independent lens/protocol selected-operation action structures, construct them from the generated package, reconstruct the primitive forward morphisms and independent semantic homs from those fields, and prove both round trips without projecting a stored f."
+```
+
+## Cycle 176 — Independent operation-level package readback
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 176
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: c9e6901c22986185fe33497d3c87e752128fb0b7
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 175 constructed all generated geometry fields but its package type remained indexed by the primitive forward morphism f"
+  proof_obligation: "Expose only the minimal generated selected-operation action, reconstruct the primitive and independent semantic morphisms, prove both round trips, and regenerate the whole Cycle 175 package without storing f or a semantic Hom"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATIndependentDirectedReadback.lean
+  risks:
+    - "wrapping or storing the old primitive f and calling its projection readback"
+    - "storing a completed semantic Hom or generated geometry package as a field"
+    - "using only get without put, or only named protocol edges without observations"
+    - "proving only one composite rather than both interface and semantic round trips"
+    - "losing all-path protocol execution when extending the named-edge action"
+  unchecked:
+    - "common same-classification statement using both independent package Hom equivalences"
+    - "D recovery and final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Defined f-independent lens and protocol package Hom types whose laws are stated through the selected Extension payload decoded from the actual generated core contexts. Lens stores only one state map plus get and put laws; protocol stores only one vertexwise state map plus every named-edge and observation law. Reconstructed the primitive forward interfaces, proved both operation-interface round trips, read back the independently defined semantic Homs, proved both semantic round trips and equivalences, and regenerated every Cycle 175 equation/raw/source-image coverage/readable-overlap/selected-Extension component from the reconstructed primitive interface."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATIndependentDirectedReadback.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.LensAATIndependentGeneratedPackageHom
+    - AAT.AG.RealizationReconstruction.LensAATIndependentGeneratedPackageHom.toForwardMorphism
+    - AAT.AG.RealizationReconstruction.LensAATIndependentGeneratedPackageHom.ofForwardMorphism
+    - AAT.AG.RealizationReconstruction.LensAATIndependentGeneratedPackageHom.toForwardMorphism_ofForwardMorphism
+    - AAT.AG.RealizationReconstruction.LensAATIndependentGeneratedPackageHom.ofForwardMorphism_toForwardMorphism
+    - AAT.AG.RealizationReconstruction.LensAATIndependentGeneratedPackageHom.forwardMorphismEquiv
+    - AAT.AG.RealizationReconstruction.LensAATIndependentGeneratedPackageHom.toSemanticHom
+    - AAT.AG.RealizationReconstruction.LensAATIndependentGeneratedPackageHom.ofSemanticHom
+    - AAT.AG.RealizationReconstruction.LensAATIndependentGeneratedPackageHom.toSemanticHom_ofSemanticHom
+    - AAT.AG.RealizationReconstruction.LensAATIndependentGeneratedPackageHom.ofSemanticHom_toSemanticHom
+    - AAT.AG.RealizationReconstruction.LensAATIndependentGeneratedPackageHom.semanticHomEquiv
+    - AAT.AG.RealizationReconstruction.LensAATIndependentGeneratedPackageHom.toDirectedPackage
+    - AAT.AG.RealizationReconstruction.ProtocolAATIndependentGeneratedPackageHom
+    - AAT.AG.RealizationReconstruction.ProtocolAATIndependentGeneratedPackageHom.toForwardMorphism
+    - AAT.AG.RealizationReconstruction.ProtocolAATIndependentGeneratedPackageHom.ofForwardMorphism
+    - AAT.AG.RealizationReconstruction.ProtocolAATIndependentGeneratedPackageHom.toForwardMorphism_ofForwardMorphism
+    - AAT.AG.RealizationReconstruction.ProtocolAATIndependentGeneratedPackageHom.ofForwardMorphism_toForwardMorphism
+    - AAT.AG.RealizationReconstruction.ProtocolAATIndependentGeneratedPackageHom.forwardMorphismEquiv
+    - AAT.AG.RealizationReconstruction.ProtocolAATIndependentGeneratedPackageHom.toSemanticHom
+    - AAT.AG.RealizationReconstruction.ProtocolAATIndependentGeneratedPackageHom.ofSemanticHom
+    - AAT.AG.RealizationReconstruction.ProtocolAATIndependentGeneratedPackageHom.toSemanticHom_ofSemanticHom
+    - AAT.AG.RealizationReconstruction.ProtocolAATIndependentGeneratedPackageHom.ofSemanticHom_toSemanticHom
+    - AAT.AG.RealizationReconstruction.ProtocolAATIndependentGeneratedPackageHom.semanticHomEquiv
+    - AAT.AG.RealizationReconstruction.ProtocolAATIndependentGeneratedPackageHom.toDirectedPackage
+  claim_mapping:
+    source_labels:
+      - "GOAL E lens: preserve the same get and put maps and prove translation/readback in both directions"
+      - "GOAL E protocol: preserve literal operation names, execution generators, observations, and general noninvertible morphisms"
+    conjuncts:
+      - "lens stored data -> one arbitrary state function and both generated-payload get/put squares"
+      - "protocol stored data -> one arbitrary vertexwise state family and every literal named-edge/observation square"
+      - "primitive readback -> reconstructed LensAATForwardMorphism or ProtocolAATForwardMorphism, never a stored f"
+      - "semantic readback -> original independent Hom, including all quotient protocol executions through generator extension"
+      - "round trips -> package-to-forward-to-package, forward-to-package-to-forward, package-to-semantic-to-package, and semantic-to-package-to-semantic"
+      - "geometry reconstruction -> entire Cycle 175 generated directed package derived from the reconstructed primitive interface"
+    undischarged_assumptions:
+      - "the source and target CS realizations remain parameters of the Hom type, as required for any typed morphism"
+      - "the common lens/protocol same-classification and D recovery statements are not yet assembled"
+    acceptance_point: "Independent readback is now literal at the generated selected-operation package level: no f, semantic Hom, or completed geometry package is stored, and both CS directions are equivalences."
+audits:
+  premise_delta:
+    discharged:
+      - "f-independent lens generated-package Hom"
+      - "f-independent protocol generated-package Hom"
+      - "both primitive-interface round trips"
+      - "both independent semantic-Hom round trips"
+      - "reconstruction of the complete generated directed geometry package from operation fields"
+    remaining:
+      - "common same-classification application, D recovery, and final A--F theorem"
+  certificate_provenance:
+    discharged:
+      - "neither independent package Hom stores f, a semantic Hom, equation/raw/coverage/overlap, or a completed generated package"
+      - "all laws are the named-operation equations over canonically decoded generated Extension payloads"
+      - "toForwardMorphism constructs every primitive field from stored state maps and laws"
+      - "toDirectedPackage calls the Cycle 175 constructor only after reconstructing the primitive interface"
+    unresolved: []
+  proof_use:
+    used:
+      - "the lens state map in both get and put squares"
+      - "the protocol vertexwise state map in every named-edge and every observation square"
+      - "generated Extension payload equalities connecting the package laws to the fixed endpoint operations"
+      - "protocol generator extension and ext/res laws for all quotient executions"
+      - "extensionality of every stored computational component in both round trips"
+    unused:
+      - "no invertibility, target-surjectivity, completed semantic natural transformation, stored primitive f, completed geometry field, readback certificate, or D classifier is accepted"
+  structure_field_escape: none-found-independent-package-Hom-fields-are-exactly-the-minimal-carrier-actions-and-named-operation-laws
+  route_integrity: pass-every-generated-geometry-component-is-derived-from-the-same-reconstructed-operation-interface
+  target_fitting: partial-E-independent-directed-readback-is-discharged-at-the-generated-operation-package-level-but-common-classification-D-and-A--F-remain-open
+  vacuity: none-found-lens-quantifies-all-states-and-views-and-protocol-quantifies-all-vertices-named-edges-observations-and-states
+  one_way_as_equivalence: none-found-the-equivalence-is-between-two-presentations-of-arbitrary-directed-Homs-not-an-invertibility-claim-about-each-Hom
+  goal_or_report_reinterpretation: none-found-the-report-does-not-call-the-derived-geometry-package-a-completed-fixed-target-proof
+  validation_refs:
+    - "focused CSAATIndependentDirectedReadback check: PASS; 56 namespace declarations, standard axioms only"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "D and the final common A--F integration remain mathematical construction obligations"
+  next_obligation: "State and prove the common lens/protocol application of the same fixed-F classification through the independent package Hom equivalences, then connect it to the original G-122 comparison data and presentation-side recovery required by D."
 ```
