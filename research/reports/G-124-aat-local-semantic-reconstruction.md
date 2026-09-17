@@ -1355,7 +1355,7 @@ selection:
     - "coherenceをglobal extendabilityで定義しないこと"
     - "B main equivalenceまたはgroup-level E1b isomorphismの完了を主張しないこと"
 result:
-  proposed_result_type: target-proof-checkpoint
+  proposed_result_type: proof-checkpoint
   proof_obligation_delta: "the actual source-choice automorphism image is equivalent to coherent families of all finite readings; every component is exactly the common finite restriction, the inverse is the accepted actual constructor, and this recovery is unique under the finite-readback law. Raw finite tables have a computable global Bool extension under an explicit equality decision, while actual categorical inclusion is recorded only as a noncomputable semantic realization with exact readback"
   completion_candidate: no
   section_completion_candidate: no
