@@ -47,12 +47,14 @@
   merge commit `04eaf8d985bbeb4f6cb1ed66597fb3030e0f1f14`
 - Cycle 19 accepted PR: [#4732](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4732),
   merge commit `338eecddc2f80e3b60dc26f49b5218c954fe381e`
+- Cycle 20 accepted PR: [#4733](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4733),
+  merge commit `78a3fb497bd2807790850ba11cb6cbf9984830b0`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: lens の有限基準 fiber と protocol の各有限 named-state carrier を、
-  accepted closed-family category の全実射上で読む actual local-model slice を構成する
-- next proof obligation: parameter-only な finite-probe nerve を operation・observation・restriction
-  coherence へ拡張し、tagged/G-122 を含む actual `Λ_Θ` と `N_Θ` を構成する
+- current proof obligation: protocol の quotient execution category を parameter-only restriction
+  index とし、有限 state と全 path action を読む non-discrete local-model functorを構成する
+- next proof obligation: observation-preserving local morphismを内在化する値圏または probe 圏を構成し、
+  lens/tagged/G-122 を含む actual `Λ_Θ` と `N_Θ` へ統合する
 
 ## Cycle 1 — rejected
 
@@ -1777,12 +1779,113 @@ audits:
   next_obligation: "construct parameter-only finite CS probes with nontrivial operation/observation restriction arrows, then extend the same non-owner-leaking design to tagged/G-122"
 ```
 
+Cycle 20 の initial formal review は中心 finding なし、非中心 finding として protocol coherence
+theorem を新設 local-reading component 自身の式にすることと、report の proof-use 訂正を要求した。
+修正は theorem signature を変更したため直接対応資格を失い、formal rerun 1/2 を実施した。
+fresh Math A/B・Lean A/B は final head `83660901b002f769b8a6f9101777cce77574e85d`
+で全4 lane `No major findings`、CI 7/7 success。最終監査は PR comment `5721947532`、
+Cycle 21 選定は Issue comment `5721982222` に固定した。
+
+## Cycle 21 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 21
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 78a3fb497bd2807790850ba11cb6cbf9984830b0
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 20 accepted evidence: PR comment 5721947532; Issue comment 5721982222"
+  proof_dag_predecessors:
+    - "ProtocolSchema.ExecutionCategory, vertexObject, edgeMorphism, and pathMorphism"
+    - "ProtocolRealization.toFunctor, state_finite, edgeAction, pathAction, and observation_app"
+    - "Cycle 20 finiteLocalValue and accepted protocol closed-family Hom readback"
+    - "Cycle 19 LocalModelCategory and ClosedFamilyLocalReading"
+  proof_obligation: "protocolのparameter-owned quotient execution categoryのoppositeをrestriction indexとし、各execution objectの有限stateと全quotient path actionからFintypeCat-valued non-discrete local modelを構成する。全accepted closed-family morphismを自然変換として読み、vertex・named edge・arbitrary path・morphism component・observation preservationのexact APIを示す"
+  selection_reason: "二候補探索は、Cycle 20の独立one-point slicesを実operation/path arrowで一つの非離散図式に統合でき、indexにrealizationを入れず全local valueを有限に保てる最小の前進としてprotocol execution diagramを選んだ"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/ProtocolRestrictionReading.lean"
+  risks:
+    - "double-oppositeをfinal all-four Λ_Thetaと表示しないこと"
+    - "observation targetは有限とは限らないためFintypeCat local valueへ偽装しないこと"
+    - "state diagramがobservation-preserving natural transformationsを内在化しない以上、assembly/equivalenceを主張しないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the protocol branch now has an actual parameter-owned non-discrete restriction diagram: every quotient execution object has its accepted finite state value, every quotient morphism acts by the actual execution map, and every admitted global morphism reads as a natural transformation with exact edge, path, component, and observation laws"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolRestrictionIndex"
+    - "AAT.AG.LocalSemanticReconstruction.protocolExecutionStateFinite"
+    - "AAT.AG.LocalSemanticReconstruction.protocolRestrictionDiagram"
+    - "AAT.AG.LocalSemanticReconstruction.protocolRestrictionMap"
+    - "AAT.AG.LocalSemanticReconstruction.protocolRestrictionReading"
+    - "AAT.AG.LocalSemanticReconstruction.protocolRestrictionDiagram_obj_vertex"
+    - "AAT.AG.LocalSemanticReconstruction.protocolRestrictionDiagram_map_edge"
+    - "AAT.AG.LocalSemanticReconstruction.protocolRestrictionDiagram_map_path"
+    - "AAT.AG.LocalSemanticReconstruction.protocolRestrictionReading_map_app"
+    - "AAT.AG.LocalSemanticReconstruction.protocolRestrictionReading_edge_naturality"
+    - "AAT.AG.LocalSemanticReconstruction.protocolRestrictionReading_observation"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL A: protocolの有限carrier、operation作用、restrictionをprimitive local readingとして構成する"
+      - "固定 GOAL B: local modelの射をcomponentwise coherent familyとしidentity/compositionを保つ"
+    conjuncts:
+      - "restriction index depends only on the fixed protocol parameter"
+      - "every execution object carries the accepted finite state value"
+      - "named edges and arbitrary paths are read by exact accepted actions"
+      - "every admitted morphism is read by its exact natural-transformation components"
+      - "the reading preserves identity/composition and exposes edge/observation coherence"
+    undischarged_assumptions:
+      - "internalize observation preservation in the local-model morphism type"
+      - "construct lens, tagged, and G-122 non-owner-leaking restriction diagrams"
+      - "construct the final common N_Theta and D_Theta"
+      - "discharge separation and assembly from A data"
+    acceptance_point: "actual non-discrete protocol restriction reading only; the larger FintypeCat diagram category admits morphisms that need not preserve observation"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "fixed ProtocolFamilyInput and its quotient execution category"
+      - "accepted protocol realization category"
+    direction_hypothesis: []
+    discharge_required:
+      - "all execution-object state values are finite / discharged by quotient-object representation and state_finite"
+      - "restriction functor laws / discharged by the accepted semantic functor"
+      - "local morphism naturality / discharged by the accepted semantic natural transformation"
+      - "observation preservation / discharged externally by accepted observation_app"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "diagram maps / actual quotient execution maps"
+      - "reading components / actual admitted morphism components"
+    unresolved:
+      - "observation-preserving local Hom category and all-four integration"
+  proof_use:
+    used:
+      - "state_finite, Functor.map_id/map_comp, and NatTrans.naturality"
+      - "edgeAction, pathAction, edge_naturality, and observation_app"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "protocol restriction diagram only; no final Λ_Theta, N_Theta, assembly, or equivalence claim"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/ProtocolRestrictionReading.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.ProtocolRestrictionReading: pass (targeted dependency closure only)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 11 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct an observation-aware protocol local-model Hom surface without imposing observation finiteness or storing completed global morphisms"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
 - B の actual `Λ_Theta`・原始 reading `N_Theta` と、A由来の separation/assembly 放電。
   Cycle 19 は独立な restriction-diagram category と一般同値 spine、Cycle 20 は lens fiber と
-  protocol named-state の actual finite slice に限る。
+  protocol named-state の actual finite slice、Cycle 21 は protocol 全executionのnon-discrete
+  finite-state diagram に限る。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
