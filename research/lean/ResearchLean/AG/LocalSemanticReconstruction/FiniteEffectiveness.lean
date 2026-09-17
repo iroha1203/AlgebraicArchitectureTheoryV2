@@ -88,6 +88,14 @@ def retainedVertices
     (S : F.Vertex → Prop) [DecidablePred S] : Finset F.Vertex :=
   Finset.univ.filter S
 
+/-- Membership in the explicit retained-vertex set is the retained
+predicate, without exposing the finite-set implementation downstream. -/
+@[simp] theorem mem_retainedVertices
+    (F : FixedFDirectedMultigraph) [Fintype F.Vertex]
+    (S : F.Vertex → Prop) [DecidablePred S]
+    (vertex : F.Vertex) : vertex ∈ retainedVertices F S ↔ S vertex := by
+  simp [retainedVertices]
+
 /-- Read an actual preserving following change at one visible vertex through
 the accepted component-permutation classification. -/
 def readPreservingChangeAt
@@ -147,10 +155,8 @@ def permutationEffectivenessProgram
       F S K u (toPermutationVertexTable F S K table)
   restrict_eq_of_extend_eq_some table change success := by
     funext vertex
-    have retained : S vertex.1 := by
-      have membership := vertex.2
-      change vertex.1 ∈ Finset.univ.filter S at membership
-      exact (Finset.mem_filter.mp membership).2
+    have retained : S vertex.1 :=
+      (mem_retainedVertices F S vertex.1).1 vertex.2
     exact FinitePermutationExtension.decideAndExtendPreservingChange_readback
       F S K u (toPermutationVertexTable F S K table) retains change success
         ⟨vertex.1, retained⟩

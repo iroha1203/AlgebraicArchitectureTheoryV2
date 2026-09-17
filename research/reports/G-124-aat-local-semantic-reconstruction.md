@@ -1265,6 +1265,7 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.FiniteReading.Effective"
     - "AAT.AG.LocalSemanticReconstruction.FiniteReading.emptyGlobal_not_effective"
     - "AAT.AG.LocalSemanticReconstruction.FiniteEffectiveness.retainedVertices"
+    - "AAT.AG.LocalSemanticReconstruction.FiniteEffectiveness.mem_retainedVertices"
     - "AAT.AG.LocalSemanticReconstruction.FiniteEffectiveness.readPreservingChangeAt"
     - "AAT.AG.LocalSemanticReconstruction.FiniteEffectiveness.toPermutationVertexTable"
     - "AAT.AG.LocalSemanticReconstruction.FiniteEffectiveness.PermutationTableCoherent"
@@ -1315,7 +1316,7 @@ audits:
     - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/FiniteEffectiveness.lean: pass"
     - "lake build ResearchLean.AG.LocalSemanticReconstruction.FiniteEffectiveness: pass"
     - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.FiniteReading: 19 declarations, standard axioms only"
-    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.FiniteEffectiveness: 6 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.FiniteEffectiveness: 7 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "place E1b finite-restriction reconstruction on the common FiniteReading surface and identify it with source-choice recovery through the main B equivalence"
 ```
