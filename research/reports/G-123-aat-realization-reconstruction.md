@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 159 constructs the genuine lens all-object core prefix, including reader some/none reflection and exact residual equality for every context, object, Law index, and Atom
+- current proof obligation: Cycle 160 constructs the genuine protocol all-object core prefix, preserving every named edge, observation, relation instance, and observation instance on arbitrary architecture objects
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: integrate the lens all-object map into `EquationSystemExactTransport` and the remaining `SignedExactCoreReadingHom` fields, construct the protocol analogue, then assemble the genuine-CS `PackageTotalHom`
+- next proof obligation: package the lens and protocol all-object maps into generated-core `EquationSystemExactTransport` values, complete the remaining `SignedExactCoreReadingHom` fields, then assemble the genuine-CS `PackageTotalHom`
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 160 delta | protocol側でも任意`ArchitectureObject`のrecognized/unrecognized両branchを扱い、全named edge・observationと全relation/observation Law instanceの意味およびresidualを厳密に保持する | `protocolIsoTransportLawStructure`, `_actual`, `protocolLawStructure_ext`; `protocolIsoObjectMap`, `_configuration_eq`, `_selectedQuantities_eq`, `_object_formation_eq`, `_reader_eq`; `protocolIsoTransportLawHom`, `...Inv`, `_holds_iff`; `protocolIsoObjectMap_readHolds_iff`, `_equationResidual_eq` | fixed inputのfinite protocol realizationsとgenuine semantic iso。endpoint finiteness/lawfulnessはambient input fieldだが任意raw structureのproofでは未使用。reader result、object-map/residual certificate、完成core homは受けない | 任意raw protocolの全edge actionをhom∘action∘invで、全observationをobserve∘invで共役。recognized objectを共役structureへ、unrecognized objectをCantor-separated markerへ送り、configuration/selected dataを保持。reader Option map、全relation/observation Holds同値、全context/object/index/Atom residual等式を証明 | protocol `SignedExactCoreReadingHom`のobjectMap/configuration/equation-residual fields | 完全なprotocol `EquationSystemExactTransport`包装、extraction/compositionと残るcore fields、lens/protocol total base、non-raw geometry、一般非可逆CS射、readback、D、A--F統合は未完了 |
 | A/E Cycle 159 delta | genuine lens core bridgeのprimitive fieldsを完成recordへ移さず構成し、任意`ArchitectureObject`のrecognized/unrecognized両branchでLaw意味とresidual値を厳密に保持する | `lensCore_extraction_eq`, `lensCore_composition_eq`; `lensIsoTransportLawStructure`, `_actual`; `lensIsoObjectMap`, `_configuration_eq`, `_selectedQuantities_eq`, `_object_formation_eq`; `_reader_eq`, `_reader_some_iff`, `_reader_none_iff`; `lensIsoTransportLawHom`, `...Inv`, `_holds_iff`; `lensIsoObjectMap_readHolds_iff`, `_equationResidual_eq` | fixed inputのlawful lens realizationsとgenuine semantic iso。endpoint lawfulness/finitenessはambient input fieldだが本cycleのproofでは未使用。任意raw structureのlawfulness、reader result、object-map certificate、residual certificate、完成`SignedExactCoreReadingHom`は受けない | 抽出/composition等式と任意raw get/putの共役を構成。recognized objectは共役structureへ、unrecognized objectはCantorでtarget structure型と異なるmarkerへ送り、configuration/selected dataを保持。readerのOption map等式とsome/none反映、任意Law instanceの保存反映、全context/object/index/Atomの多項式residual等式を証明 | lens `SignedExactCoreReadingHom`のextraction/composition/objectMap/configuration/equation-residual fields | 完全な`EquationSystemExactTransport`包装、detector/operation/invariant/signature fields、protocol analogue、non-raw geometry、一般非可逆CS射、readback、D、A--F統合は未完了 |
 | A/E Cycle 158 delta | exact typed geometry morphismをstrict categoryと衝突しない圏として包装し、genuine CS同型の全Law座標作用をendpoint scaffoldではなくsource-generated `ReadingCore`自身へ接続する | `ExactGeomReadCategory`, `.ofGeometryPackage`, `.toGeometryPackage`, `.objectEquiv`, `exactGeometryTotalCategory`, `ExactGeomReadCategory.ofStrictHom`; lens/protocol各`*ReadingCoreCoordinateEquivEndpoint`, `*IsoReadingCoreCoordinateEquiv`, `*IsoReadingCoreRawExactMapAgainst` | category側は任意のconstructed `GeometryPackage`とexact total hom。raw側はprimitive CS inputから構成済みのactual `ReadingCore`、genuine CS iso、および後続で構成される`PackageTotalHom`。completed geometry homやcoordinate subsetを受けない | 別object type上でCycle 157の三法則を`Category` instanceへ包装し、strict homを全field保持で埋め込む。dependent Sigma provenanceからactual ReadingCore equation indexとendpoint Law indexの等価を構成し、それでgenuine full Law-index×Atom作用を共役してtarget-indexed raw mapを生成 | fixed realization category候補のexact morphism interfaceと、後続のgenuine-CS exact total morphism raw field | `ExactGeomReadCategory`はまだ固定`R_Theta`そのものではない。`PackageTotalHom`は条件付き引数で未構成。coverage/overlap/realization、一般非可逆CS射、readback、D回復、A--F統合も未完了 |
 | A/E Cycle 157 delta | exact typed geometry合成で係数base-changeの命題等式がrelationの計算作用へcastを挿入しないようにし、全成分を保持した三つの圏法則を証明する | corrected `RawAmbientRestrictionSystemExactMapAgainst.trans`; `RawAmbientRestrictionSystemExactMapAgainst.hext`; `ExactGeomReadHom.hext`; `ExactGeometryTotalHom.id_comp`, `.comp_id`, `.comp_assoc` | 任意のexact total geometry morphism。完成category-law certificate、raw dataのSubsingleton、relation actionの同一視、追加公理は受けない。coverage/overlapのみ既存のaccepted uniquenessを使用 | relation equivalenceを直接合成し、係数写像の結合律を`polynomial_eq`内部だけで証明。base、係数、全contextのcoordinate/local-data/relation作用、realization比較を明示比較して左右単位律・結合律を構成 | exact geometry realization categoryの法則と、後続のgenuine CS bridgeの合成・同型性 | `Category` interfaceへの包装、actual generated `ReadingCore`上のraw rebasing、genuine `PackageTotalHom`、coverage/overlap/realization供給、一般非可逆CS射、readback、D回復、A--F統合は未完了 |
@@ -16598,4 +16599,105 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Package the lens object map and residual theorem into EquationSystemExactTransport and complete the remaining SignedExactCoreReadingHom fields; then construct the protocol all-object analogue."
+```
+
+## Cycle 160 — Genuine protocol all-object core transport
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 160
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: b111e930df840e67b8761b8c371976549c2647a6
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 159 discharged the lens all-object reader/residual obligation, while the corresponding protocol obligation and both full exact-transport records remained open"
+  proof_obligation: "Construct the protocol all-object map from primitive protocol semantics and prove exact reader, truth-value, and residual transport for every named relation/observation Law instance"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATProtocolCoreExactPrefix.lean
+  risks:
+    - "preserving endpoint residual zero only instead of arbitrary-object residual values"
+    - "forgetting observation indices while transporting named edge relations"
+    - "mapping the unrecognized branch to a target-recognized structure"
+    - "accepting a completed object map, residual theorem, or core hom as input"
+  unchecked:
+    - "full protocol EquationSystemExactTransport and SignedExactCoreReadingHom packaging"
+    - "lens/protocol total bases and non-raw geometry"
+    - "arbitrary noninvertible CS maps, readback, D classification, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Conjugated every edge action and observation of any raw protocol structure through a genuine semantic isomorphism. Constructed an all-ArchitectureObject map whose recognized branch uses that conjugate and whose unrecognized branch uses a Cantor-separated marker. Proved configuration and selected-data preservation, exact reader Option.map equality, relation/observation truth preservation and reflection, and full residual-polynomial equality for every source/target context, object, Law index, and Atom."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATProtocolCoreExactPrefix.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.protocolIsoTransportLawStructure
+    - AAT.AG.RealizationReconstruction.protocolIsoTransportLawStructure_actual
+    - AAT.AG.RealizationReconstruction.protocolLawStructure_ext
+    - AAT.AG.RealizationReconstruction.protocolIsoObjectMap
+    - AAT.AG.RealizationReconstruction.protocolIsoObjectMap_configuration_eq
+    - AAT.AG.RealizationReconstruction.protocolIsoObjectMap_selectedQuantities_eq
+    - AAT.AG.RealizationReconstruction.protocolIsoObjectMap_object_formation_eq
+    - AAT.AG.RealizationReconstruction.protocolIsoObjectMap_reader_eq
+    - AAT.AG.RealizationReconstruction.protocolIsoTransportLawHom
+    - AAT.AG.RealizationReconstruction.protocolIsoTransportLawHomInv
+    - AAT.AG.RealizationReconstruction.protocolIsoTransportLawStructure_holds_iff
+    - AAT.AG.RealizationReconstruction.protocolIsoObjectMap_readHolds_iff
+    - AAT.AG.RealizationReconstruction.protocolIsoObjectMap_equationResidual_eq
+  claim_mapping:
+    source_labels:
+      - "GOAL A: construct the core/object/equation action of realization morphisms from primitive AAT data"
+      - "GOAL E and n1015: retain protocol operation names, execution, observations, relations, and adapters under genuine changes"
+    conjuncts:
+      - "every named edge action -> hom after source action after inverse"
+      - "every named observation -> source observation after inverse"
+      - "recognized object -> recognized conjugate; unrecognized object -> provably unrecognized target marker"
+      - "every relation and observation Law instance -> exact truth equivalence"
+      - "every context, object, Law index, and Atom -> exact residual polynomial equality"
+    undischarged_assumptions:
+      - "a genuine semantic isomorphism is the allowed CS morphism input for this exact-equivalence subcase"
+      - "the full protocol EquationSystemExactTransport and remaining SignedExactCoreReadingHom fields are not assembled here"
+      - "arbitrary noninvertible protocol morphisms are not covered by this exact-isomorphism checkpoint"
+    acceptance_point: "The material all-object protocol reader/residual obligation is discharged from primitive edge/observation data without a completed object map or residual certificate input."
+audits:
+  premise_delta:
+    discharged:
+      - "all-object protocol objectMap with configuration/selected-data compatibility"
+      - "exact reader Option.map equality on recognized and unrecognized branches"
+      - "arbitrary raw ProtocolLawStructure truth preservation and reflection for relation and observation indices"
+      - "all-object exact protocol residual equality"
+    remaining:
+      - "full protocol exact equation/core records, lens/protocol total bases, non-raw geometry, noninvertible maps, readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional: []
+    discharged:
+      - "recognized branch is generated by conjugating the actual raw edge actions and observations read from the source object"
+      - "unrecognized branch is generated by Cantor separation, not supplied as a nonrecognition certificate"
+      - "truth and residual equalities are derived from the forward and inverse raw Law homs"
+    unresolved:
+      - "assemble full lens/protocol EquationSystemExactTransport values and remaining generated-core fields"
+  proof_use:
+    used:
+      - "both hom and inverse state maps of the genuine protocol isomorphism"
+      - "naturality of every named edge action and observation"
+      - "left/right inverse laws on every vertex state"
+      - "the complete relation/observation ProtocolLawIndex equivalence"
+      - "the complete object reader on arbitrary ArchitectureObjects"
+    unused:
+      - "endpoint finiteness and semantic laws are ambient fixed-input fields but unused; no arbitrary-raw lawfulness premise, completed object-map certificate, residual certificate, PackageTotalHom, geometry hom, decoder membership, or readback is accepted"
+  structure_field_escape: none-found-objectMap-is-a-definition-and-reader-truth-residual-properties-are-derived-theorems
+  route_integrity: pass-every-edge-observation-relation-and-observation-instance-is-carried-by-the-same-conjugation
+  target_fitting: partial-the-hard-protocol-all-object-residual-field-is-proved-but-full-equation-core-records-and-total-realization-data-remain-open
+  vacuity: none-found-the-residual-theorem-quantifies-over-all-contexts-objects-indices-and-atoms
+  one_way_as_equivalence: none-found-this-checkpoint-explicitly-uses-a-genuine-protocol-isomorphism
+  goal_or_report_reinterpretation: none-found-protocol-only-progress-is-not-counted-as-the-two-model-CS-bridge-or-final-R_Theta
+  validation_refs:
+    - "focused CSAATProtocolCoreExactPrefix file check: PASS; 13 namespace declarations, standard axioms only"
+    - "focused exact CSAATProtocolCoreExactPrefix target build: PASS (4288 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Package the lens and protocol all-object maps and residual theorems into source-generated EquationSystemExactTransport values, then construct the remaining SignedExactCoreReadingHom fields without importing a completed transport or base."
 ```
