@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 173 constructs the directed CS operation-square layer required beyond the exact isomorphism subcase, retaining common lens state/visible maps and arbitrary protocol adapters through named edges, observations, and all paths
+- current proof obligation: Cycle 174 transports directed context, equation, and raw maps to the actual generated lens/protocol `ReadingCore`s and assembles them with endpoint-strength coverage/overlap/Extension plus explicit Sigma provenance
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: transport the existing directed equation/raw/coverage/overlap aggregate and the Cycle 173 operation squares through generated `ReadingCore` provenance into a one-way package interface, without forcing noninvertible maps into the equivalence-only exact category
+- next proof obligation: define provenance-generic directed coverage, readable-overlap, and selected-Extension contracts on carried generated-core data, adapt the endpoint constructions to them, and then form the one-way package interface with independent semantic readback
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 174 delta | endpoint full-context型に固定されたdirected equation/rawを強さを増やさずgenerated `ReadingCore`へ運び、同じprimitive射由来のcoverage/overlap/Extensionとprovenanceを一つに固定する | `coreGeometryDataSite`, `GeneratedEquationForwardTransport`, `.ofEndpoint`, `coreGeometryContextFunctorCast`, `coreGeometryEquationForwardCast`, `coreGeometryRawForwardCast`; lens/protocol `*ReadingCoreForwardContextFunctor`, `*ReadingCoreEquationForwardTransport`, `*ReadingCoreRawForwardHom`, `*ReadingCoreForwardImage` | 任意のprimitive lens/protocol forward morphismと既構成endpoint aggregate、source/target generated-object等式。inverse、index equivalence、target-wide coverage、completed package mapは取らない | 任意のcarried context preorder上で同じone-way equation contractを定義しendpoint contractをstrict embedding。source/target object等式でcontext functor・equation・covariant raw NatTransをactual ReadingCoreへtransport。endpoint-strength source-image coverage、readable overlap、selected Extensionと両Sigma provenanceを同じindexed aggregateに構成 | provenance-generic coverage/overlap/Extensionとone-way generated-package interface | coverage/overlap/Extensionはまだconcrete Law endpoint型で、generated-core型へのliteral transport、package-level独立readback、D、A--F統合は未完了 |
 | E Cycle 173 delta | 非可逆な一般射でlensの同一`h,u`をget/put両方に、protocolの任意adapterと同じoperation名・executionを全pathに保持し、L2/L5/P1へ接続する | `LensAATRelativeForwardMorphism`, `.typedObjectMap`, `.get_square`, `.put_square`, `.identityVisibleEquiv`, `.ofLensInvertibleChange`, `.toLensInvertibleChange`と往復定理; `ProtocolAATForwardMorphism.DirectedAdapterSquare`, `.directedAdapterSquare_iff_semantic`, `.state`, `.namedEdge_execution`, `.observation`, `.path_execution`, semantic/P1 specializations | lens側は任意のstate関数`h`とvisible関数`u`が同じget/put squareを満たすこと。L5 specializationだけ既存の`h,u`同値を使う。protocol側は任意の4 forward morphism、P1 specializationでは`q,q'`は任意のままendpoint changeのみiso。completed geometry map/certificateは取らない | lens 4 roleを`h,u,h,h×u`で型付きtransportしactual get/put squareを証明。`u=id` fiberとL2を同値化しL5の既存独立意味論と往復。protocol adapter squareを独立意味論と同値化し、同じvertex/edge/path名でstate・named execution・observation・全path execution等式を構成 | directed generated-package morphismとEのobject/morphism翻訳・readback | directed aggregateのgenerated `ReadingCore` provenance transport、一つのone-way package interface、そこからの独立readback、D、A--F統合は未完了 |
 | A/E Cycle 172 delta | actual restrictionを保持するexact homについて計算成分を明示比較してextensionality・左右単位律・結合律を証明し、decoder像でない圏へ包装する | `ExplicitRealizationTransportSupply.ext`; `ExplicitExactGeometryHom.ext`, `.id_comp`, `.comp_id`, `.comp_assoc`; `ExplicitExactGeomCategory`, `.ofGeometryPackage`, `explicitExactGeometryCategory`; lens/protocol `*CategoryHom` | 任意の`GeometryPackage`と任意のcomposable explicit exact hom。category-law certificateは入力に取らない。base固定後、coverageにはproof irrelevance、Type-valued overlapには既存thin-context `Subsingleton`定理を使う | actual context actionと3 carrier equivalenceの点ごとの等式からsupply extensionalityを証明。base・係数・全typed raw計算作用・realizationを比較して3法則を証明し、全geometry packageをobjectとする独立wrapper圏を構成 | fixed realization category候補と、lens/protocol genuine isoの同じ圏内のmorphism | 一般非可逆CS射、対象・射の独立readback、D、A--F統合は未完了 |
 | A/E Cycle 171 delta | common base、authoritative coverage/overlap、係数写像、全typed raw action、actual restriction上のrealization supplyを同じexact geometry homへ統合し、同じAPI内で恒等射と合成を構成する | `ExplicitExactGeometryHom`; `ExplicitRealizationTransportSupply.id`, `.comp`; `ExplicitExactGeometryHom.id`, `.comp`; `lensIsoExplicitExactGeometryHom`, `protocolIsoExplicitExactGeometryHom` | fixed CS inputとgenuine semantic iso、Cycles 163--170で同じ`e`から構成した6成分。completed geometry hom、category-law certificate、旧chosen-representative supplyは入力に取らない | actual `ContextMorphism`作用を保持したrealization supplyの恒等・合成と、base/coverage/overlap/coefficient/raw/realizationの6成分を持つhomを構成。lens/protocol双方でprimitive isoから全fieldを充足 | parallel exact realization categoryのHomと、後続のgenuine-CS functor/iso | hom extensionality、左右単位律・結合律、Category包装、一般非可逆CS射、独立readback、D、A--F統合は未完了 |
@@ -18042,4 +18043,122 @@ audits:
     - "the honest directed raw map is covariant, whereas the exact API is inverse-context and exact-coordinate oriented"
     - "these refute using the Cycle 172 exact API for arbitrary directed maps, not the fixed G-123 target"
   next_obligation: "Transport the already constructed endpoint directed equation/raw/coverage/overlap aggregate and these operation squares through the generated ReadingCore provenance, define one one-way package interface without equivalence-only fields, and prove its object/morphism readback against the independent CS semantics."
+```
+
+## Cycle 174 — Directed equation and raw transport on generated ReadingCores
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 174
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 754e154cf7205aba25208a4944837fa648ab4374
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 173 retained the complete directed CS operation layer, while the directed geometry aggregate was still typed only on concrete endpoint Law objects"
+  proof_obligation: "Transport the honest one-way context, equation, and covariant raw maps to the actual generated lens/protocol ReadingCores, keep the remaining endpoint-strength geometry data with explicit provenance, and avoid exact-equivalence fields"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeneratedDirectedForward.lean
+  risks:
+    - "pretending EndpointEquationForwardTransport can be stated on arbitrary carried context preorders"
+    - "adding inverse index maps or target-surjectivity while generalizing the equation contract"
+    - "casting the raw NatTrans along a context functor unrelated to the equation transport"
+    - "calling endpoint-typed source-image coverage target-wide generated-core coverage"
+    - "calling an aggregate indexed by primitive f an independent readback from package data"
+  unchecked:
+    - "literal generated-core typing for directed coverage, overlap, and selected Extension"
+    - "one-way package interface and independent package-data readback"
+    - "D recovery and final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Generalized the existing endpoint equation-forward contract only over its carried context preorders, preserving the same index map, observable hom, naturality, violation-coordinate equation, and residual-zero implication. Embedded the accepted endpoint contract strictly. Added equality eliminators for context functors, equation transports, and covariant raw presheaf maps. Constructed lens and protocol context/equation/raw maps actually typed on their generated ReadingCores. Assembled each with its canonical endpoint-strength source-image coverage, readable overlap, selected Extension coherence, and both generated-to-endpoint Sigma provenance equalities, all indexed by the same primitive forward morphism."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeneratedDirectedForward.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.coreGeometryDataSite
+    - AAT.AG.RealizationReconstruction.GeneratedEquationForwardTransport
+    - AAT.AG.RealizationReconstruction.GeneratedEquationForwardTransport.ofEndpoint
+    - AAT.AG.RealizationReconstruction.coreGeometryContextFunctorCast
+    - AAT.AG.RealizationReconstruction.coreGeometryEquationForwardCast
+    - AAT.AG.RealizationReconstruction.coreGeometryRawForwardCast
+    - AAT.AG.RealizationReconstruction.lensAATReadingCoreForwardContextFunctor
+    - AAT.AG.RealizationReconstruction.lensAATReadingCoreEquationForwardTransport
+    - AAT.AG.RealizationReconstruction.lensAATReadingCoreRawForwardHom
+    - AAT.AG.RealizationReconstruction.LensAATReadingCoreForwardImage
+    - AAT.AG.RealizationReconstruction.lensAATReadingCoreForwardImage
+    - AAT.AG.RealizationReconstruction.protocolAATReadingCoreForwardContextFunctor
+    - AAT.AG.RealizationReconstruction.protocolAATReadingCoreEquationForwardTransport
+    - AAT.AG.RealizationReconstruction.protocolAATReadingCoreRawForwardHom
+    - AAT.AG.RealizationReconstruction.ProtocolAATReadingCoreForwardImage
+    - AAT.AG.RealizationReconstruction.protocolAATReadingCoreForwardImage
+  claim_mapping:
+    source_labels:
+      - "GOAL A: use the independently generated ReadingCore rather than an endpoint object supplied after the fact"
+      - "GOAL E and n1015: carry arbitrary directed CS maps into the AAT-facing geometry without converting them to equivalences"
+    conjuncts:
+      - "generated source and target -> the existing lens/protocol ReadingCores"
+      - "context action -> covariant functor transported along both generated-object equalities"
+      - "equation action -> arbitrary forward index map, observable ring maps, naturality, violation coordinates, and residual-zero preservation"
+      - "raw action -> covariant presheaf NatTrans over exactly the transported context functor"
+      - "coverage -> existing nine-clause source-image contract, still endpoint-typed"
+      - "overlap -> readable equivalence for every source base/left/right triple, still endpoint-typed"
+      - "Extension -> selected lens get/put or all protocol edge/observation equations, still endpoint-typed"
+      - "provenance -> constructed source and target Sigma equalities tying endpoint data to generated-core data"
+    undischarged_assumptions:
+      - "the aggregate is indexed by the primitive forward morphism f; it does not reconstruct f independently from package data"
+      - "coverage, overlap, and Extension APIs still mention the concrete endpoint Law objects and must be generalized before literal generated-core typing"
+      - "generalized equation transport retains only residual-zero implication, not exact residual equality"
+    acceptance_point: "Context, equation, and raw directed maps are now genuinely typed on both generated ReadingCores; the remaining endpoint-strength geometry data are retained with exact provenance rather than mislabeled as generated-core completion."
+audits:
+  premise_delta:
+    discharged:
+      - "directed context functor on generated lens ReadingCores"
+      - "directed equation transport on generated lens ReadingCores"
+      - "covariant raw presheaf map on generated lens ReadingCores"
+      - "the same three generated-core maps for protocol"
+      - "one indexed aggregate retaining source-image coverage, readable overlap, selected Extension, and both provenance paths for each CS model"
+    remaining:
+      - "provenance-generic generated-core coverage/overlap/Extension, independent package readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "the generic aggregate structures expose fields for internal packaging"
+    discharged:
+      - "both exported aggregate constructors take only a primitive forward morphism and construct every field"
+      - "ofEndpoint copies every computational and logical equation field without adding an inverse"
+      - "all three cast helpers eliminate only the two constructed object equalities"
+      - "the raw map is transported over the same context functor used by the equation transport"
+      - "both Sigma provenance equalities are constructed from the existing object equality and geometry-data HEq"
+    unresolved:
+      - "literal generated-core contracts and independent readback for coverage/overlap/Extension"
+  proof_use:
+    used:
+      - "every source equation index and its mapped target index"
+      - "every source context object and arrow"
+      - "every observable, violation coordinate, and residual-zero premise"
+      - "every raw presheaf component and naturality square"
+      - "all nine source-image coverage clauses"
+      - "all source base/left/right overlap triples"
+      - "selected lens get/put and all protocol edge/observation Extension equations"
+      - "both generated-object equality paths"
+    unused:
+      - "no inverse index map, index equivalence, target-wide CoverageTransport, exact residual equality, whole-Extension map, completed package morphism, independent readback certificate, or D classifier is accepted"
+  structure_field_escape: none-found-final-lens-and-protocol-constructors-build-all-fields-from-the-indexed-primitive-forward-morphism-and-no-equivalence-only-field-is-added
+  route_integrity: pass-generated-context-equation-and-raw-use-the-same-object-equality-paths-and-the-same-primitive-forward-morphism
+  target_fitting: partial-generated-equation-and-raw-are-complete-at-directed-strength-but-generated-coverage-overlap-Extension-readback-D-and-A--F-remain-open
+  vacuity: none-found-equation-and-raw-quantify-all-carried-contexts-indices-observables-and-restrictions-and-the-other-fields-retain-their-full-endpoint-quantifiers
+  one_way_as_equivalence: none-found-the-generalized-contract-has-only-forward-index-context-observable-and-residual-zero-data
+  goal_or_report_reinterpretation: none-found-the-report-explicitly-denies-generated-core-coverage-or-independent-package-readback-status
+  validation_refs:
+    - "focused CSAATGeneratedDirectedForward file check: PASS; 70 namespace declarations, standard axioms only"
+    - "focused exact CSAATGeneratedDirectedForward target build: PASS (4283 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "current coverage, overlap, and selected Extension types embed concrete lens/protocol Law endpoints, so equality casts alone cannot restate them literally on arbitrary carried generated-core data"
+    - "the aggregate's primitive morphism index preserves provenance but is not an independent readback from equation/raw/coverage/overlap/Extension fields"
+    - "these are remaining API construction obligations, not evidence against the fixed target"
+  next_obligation: "Define provenance-generic directed source-image coverage, readable-overlap, and selected-Extension contracts on arbitrary carried core geometry data, embed the existing endpoint theorems, transport them to generated cores, and then construct an independent operation-level readback from the resulting one-way package interface."
 ```
