@@ -49,12 +49,14 @@
   merge commit `338eecddc2f80e3b60dc26f49b5218c954fe381e`
 - Cycle 20 accepted PR: [#4733](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4733),
   merge commit `78a3fb497bd2807790850ba11cb6cbf9984830b0`
+- Cycle 21 accepted PR: [#4734](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4734),
+  merge commit `4534d6044697ec2ab27c8f176b0f7406cbeb1602`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: protocol の quotient execution category を parameter-only restriction
-  index とし、有限 state と全 path action を読む non-discrete local-model functorを構成する
-- next proof obligation: observation-preserving local morphismを内在化する値圏または probe 圏を構成し、
-  lens/tagged/G-122 を含む actual `Λ_Θ` と `N_Θ` へ統合する
+- current proof obligation: protocol の有限 quotient-execution diagram と固定 observation functor から
+  独立な observed local-model 圏を構成し、accepted reading の射の分離・組立てを放電する
+- next proof obligation: protocol local object の assembly を certificate field なしに構成できるか判定し、
+  または finite generator-table / Karoubi reconstruction route へ接続する
 
 ## Cycle 1 — rejected
 
@@ -1879,13 +1881,131 @@ audits:
   next_obligation: "construct an observation-aware protocol local-model Hom surface without imposing observation finiteness or storing completed global morphisms"
 ```
 
+Cycle 21 の fresh Math A/B・Lean A/B は final head
+`00ea17c27116807d2e102685b5ca06a3ef7b9282` で全4 lane `No major findings`、
+CI 7/7 success。最終監査は PR comment `5722068867`、merge commit は
+`4534d6044697ec2ab27c8f176b0f7406cbeb1602`、Cycle 22 選定は Issue comment
+`5722108979` に固定した。
+
+## Cycle 22 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 22
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 4534d6044697ec2ab27c8f176b0f7406cbeb1602
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 21 accepted evidence: PR comment 5722068867; Cycle 22 selection: Issue comment 5722108979"
+  proof_dag_predecessors:
+    - "Cycle 21 ProtocolRestrictionIndex, protocolRestrictionDiagram, protocolRestrictionMap, and protocolRestrictionReading"
+    - "ProtocolRealization.observation and its naturality"
+    - "ProtocolRealization.Hom observation_naturality"
+    - "accepted closed-family protocol Hom semantic readback and round-trip theorems"
+    - "Cycle 19 morphism separation/assembly vocabulary"
+  proof_obligation: "Cycle 21のfinite protocol restriction diagramをobject dataとし、固定observation functorへの観測と自然性を備えた独立local-model categoryを構成する。local Homをlocal natural transformationとobservation-preservation equationだけから定め、accepted closed-family protocol reading、local Homからのassembly、read/assemble両逆則を構成して、このprotocol readingのfull faithfulnessを証明する"
+  selection_reason: "二つの独立候補探索は、Cycle 21で未内在化だったobservation preservationをlocal Homのmembership conditionへ移し、completed global Homをfieldに保存せずprotocol branchのmorphism separationとassemblyを同時に証明できる最短の前進として一致した"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/ProtocolObservedRestrictionModel.lean"
+  risks:
+    - "local object/HomにProtocolRealization、ProtocolRealization.Hom、GeneratorMap、assembler、extension certificateをfieldとして保存しないこと"
+    - "observation targetへ新しいfiniteness premiseを課さずFintypeCat local valueと表示しないこと"
+    - "full faithfulnessをprotocol branchのmorphism separation/assemblyより強いobject assemblyまたはcategory equivalenceと表示しないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the protocol branch now has an independent observation-aware finite restriction-model category; its local morphisms are local natural transformations satisfying the fixed observation equation, and the accepted closed-family reading has explicit read/assemble inverse laws"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.protocolFiniteDiagramUnderlying"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservationDiagram"
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolObservedRestrictionModel"
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolObservedRestrictionHom"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestrictionModelCategory"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestrictionForget"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestrictionObject"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestrictionMap"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestrictionReading"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestrictionAssemble"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestriction_read_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestriction_assemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestrictionHomEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestrictionReadingFaithful"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestrictionReadingFull"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL A: protocolの有限carrier、operation/restriction、Observableをprimitive local readingとして構成する"
+      - "固定 GOAL B: local modelの射を局所射データの整合族として定め、identity/compositionを成分ごとに構成する"
+      - "固定 GOAL B: protocol branchのmorphism separationとmorphism assemblyをAのprimitive dataから放電する"
+    conjuncts:
+      - "each local object contains a finite execution-state diagram and a parameter-referenced observation natural transformation"
+      - "each local Hom contains only a local natural transformation and its observation-preservation equation"
+      - "local identities and composition are componentwise"
+      - "the accepted reading uses the exact Cycle 21 diagram/map and accepted observation"
+      - "every observation-aware local Hom assembles to an admitted closed-family protocol Hom"
+      - "read after assembly and assembly after reading are identity"
+      - "the protocol reading is full and faithful"
+    undischarged_assumptions:
+      - "protocol local-object assembly and essential surjectivity"
+      - "finite generator-table determination and effectiveness"
+      - "Karoubi reconstruction coherence"
+      - "corresponding lens, tagged, and G-122 local categories/readings"
+      - "the final common Lambda_Theta, M_Theta, N_Theta, and D_Theta"
+    acceptance_point: "protocol-branch observation-aware local Hom category and full faithfulness only; no object assembly, protocol equivalence, finite-decision theorem, or all-four reconstruction claim"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "fixed ProtocolFamilyInput, quotient execution category, and observation functor"
+      - "accepted closed-family protocol realization category"
+    direction_hypothesis: []
+    discharge_required:
+      - "finite local state values / Cycle 21 protocolRestrictionDiagram"
+      - "object observation coherence / accepted ProtocolRealization.observation.naturality"
+      - "reading-map observation preservation / accepted semantic Hom observation_naturality"
+      - "local category laws / componentwise NatTrans identity and composition"
+      - "assembly naturality and observation law / supplied local Hom fields"
+      - "closed-family membership / accepted closedFamilyProtocolHom constructor"
+      - "two inverse laws / local extensionality and accepted package semantic readback"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "local object diagram / actual Cycle 21 quotient-execution restriction diagram"
+      - "local object observation / actual accepted realization observation"
+      - "assembled semantic Hom / constructed from the supplied independent local NatTrans and observation equation"
+    unresolved:
+      - "object assembly and essential surjectivity"
+      - "finite generator-table and Karoubi reconstruction coherence"
+      - "all-four local-model integration"
+  proof_use:
+    used:
+      - "protocolRestrictionDiagram and protocolRestrictionMap"
+      - "ProtocolRealization observation naturality"
+      - "accepted closed-family protocol semantic readback"
+      - "NatTrans extensionality, identity, composition, and naturality"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "direct protocol-branch discharge of observation-aware local Hom coherence, morphism separation, and morphism assembly"
+  vacuity: "actual finite execution-state diagrams and observation equations are used; no empty branch or terminal filler is introduced"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/ProtocolObservedRestrictionModel.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.ProtocolObservedRestrictionModel: pass (targeted dependency closure only)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 45 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct protocol local-object assembly without a realizability or extension-certificate field, or connect the fully faithful local Hom reading to the finite generator-table/Karoubi reconstruction route"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
 - B の actual `Λ_Theta`・原始 reading `N_Theta` と、A由来の separation/assembly 放電。
   Cycle 19 は独立な restriction-diagram category と一般同値 spine、Cycle 20 は lens fiber と
   protocol named-state の actual finite slice、Cycle 21 は protocol 全executionのnon-discrete
-  finite-state diagram に限る。
+  finite-state diagram、Cycle 22 は protocol branch の observation-aware local Hom と
+  full faithfulness に限る。object assembly と四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
