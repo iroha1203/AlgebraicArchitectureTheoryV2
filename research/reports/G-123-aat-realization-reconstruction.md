@@ -19831,9 +19831,7 @@ result:
       - "include the G-122 generated northeast endpoints and comparisons, not only arbitrary original southwest cells"
       - "classify the remaining mandatory-C source-choice family under the final common law"
       - "construct P_Theta, decoder, final treeGenerated/provenance, B four obligations, D/E/F recovery, and A--F integration"
-    undischarged_assumptions:
-      - "the branch Hom laws are the correct restrictions of one future common final law"
-      - "all remaining final syntax and reconstruction obligations"
+    undischarged_assumptions: []
     acceptance_point: "All mandatory parameter families now inhabit one decoder-independent dependent category family, and mandatory C coexists with an explicit noninvertible CS map; acceptance does not identify this branchwise scaffold with final R_Theta."
     port_status: not-applicable
 audits:
@@ -19862,7 +19860,7 @@ audits:
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: none-found
-  vacuity: none-found
+  vacuity: "the fixed empty-to-unit lens witness has vacuous source-side lens and preservation laws because its carrier is PEmpty; its state-map non-surjectivity is nevertheless witnessed nonvacuously by the missing preimage of PUnit.unit, while the separate arbitrary-Hom inclusions carry the full quantified CS morphism classes"
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:

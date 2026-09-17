@@ -35,7 +35,9 @@ open CategoryTheory
 
 universe u v
 
-/-- Decoder-independent morphisms in the tagged-operation fiber. -/
+/-- GOAL A/C tagged-fiber Hom: Cycle 188 exact-geometry endomorphisms of the
+fixed mandatory-C geometry.  This branch receives only the fixed tagged
+realization; it is the tagged case used by the closed Hom family below. -/
 def TaggedFamilyRealizationHom :
     FamilyRealization.{u, v} (ClosedFamilyParameter.taggedOperation :
       ClosedFamilyParameter.{u, v}) →
@@ -46,7 +48,9 @@ def TaggedFamilyRealizationHom :
         (ExplicitExactGeometryHom taggedOperationGeometryPackage
           taggedOperationGeometryPackage)
 
-/-- Decoder-independent morphisms in one original G-122 input fiber. -/
+/-- GOAL A/D original-input Hom: all reviewed complete-geometry morphisms
+between arbitrary original G-122 cells under one source `input`.  It is the
+G-122 case of the closed Hom family, not a generated-display membership type. -/
 def G122FamilyRealizationHom (input : G122FamilyInput.{u, v}) :
     FamilyRealization.{u, v} (.g122 input) →
       FamilyRealization.{u, v} (.g122 input) →
@@ -55,7 +59,9 @@ def G122FamilyRealizationHom (input : G122FamilyInput.{u, v}) :
       ULift.{v + 1}
         (G122CellInput.G122OriginalCellGeometryHom input source target)
 
-/-- Decoder-independent morphisms in one lens parameter fiber. -/
+/-- GOAL A/E lens Hom: the independent named-get/put package morphisms under
+one source `input`.  The predecessor equivalence with every semantic lens Hom
+supplies this branch; no invertibility or presentation premise is added. -/
 def LensFamilyRealizationHom (input : LensFamilyInput.{u}) :
     FamilyRealization.{u, v} (.lens input) →
       FamilyRealization.{u, v} (.lens input) →
@@ -64,7 +70,9 @@ def LensFamilyRealizationHom (input : LensFamilyInput.{u}) :
       ULift.{max (u + 1) (v + 1)}
         (LensAATIndependentGeneratedPackageHom input source target)
 
-/-- Decoder-independent morphisms in one protocol parameter fiber. -/
+/-- GOAL A/E protocol Hom: the independent named-edge/observation package
+morphisms under one source `input`.  Its material fields come from the n1015
+semantic interface rather than a completed geometry or decoder certificate. -/
 def ProtocolFamilyRealizationHom (input : ProtocolFamilyInput.{u}) :
     FamilyRealization.{u, v} (.protocol input) →
       FamilyRealization.{u, v} (.protocol input) →
@@ -73,7 +81,9 @@ def ProtocolFamilyRealizationHom (input : ProtocolFamilyInput.{u}) :
       ULift.{max (u + 1) (v + 1)}
         (ProtocolAATIndependentGeneratedPackageHom input source target)
 
-/-- Decoder-independent morphisms in one fixed closed-family fiber. -/
+/-- GOAL A common Hom-family API.  Dependent elimination on the source-defined
+closed parameter selects exactly one of the four branch Hom types above and
+forces both endpoints to retain that same parameter. -/
 def ClosedFamilyRealizationHom {theta : ClosedFamilyParameter.{u, v}} :
     FamilyRealization.{u, v} theta → FamilyRealization.{u, v} theta →
       Type (max (u + 1) (v + 1)) :=
@@ -83,7 +93,9 @@ def ClosedFamilyRealizationHom {theta : ClosedFamilyParameter.{u, v}} :
   | .lens input => LensFamilyRealizationHom input
   | .protocol input => ProtocolFamilyRealizationHom input
 
-/-- Identity morphism in each closed-family fiber. -/
+/-- Identity API for the GOAL A closed Hom family.  Each case is constructed
+from the corresponding reviewed branch identity; no identity certificate is
+stored in `ClosedFamilyParameter` or `FamilyRealization`. -/
 noncomputable def ClosedFamilyRealizationHom.id :
     {theta : ClosedFamilyParameter.{u, v}} →
       (X : FamilyRealization theta) → ClosedFamilyRealizationHom X X
@@ -96,8 +108,9 @@ noncomputable def ClosedFamilyRealizationHom.id :
   | .protocol _, .protocol X =>
       ULift.up (ProtocolAATIndependentGeneratedPackageHom.id X)
 
-/-- Composition uses the independently proved composition of the selected
-branch and never changes the common parameter. -/
+/-- Composition API for the GOAL A closed Hom family.  It unwraps only the
+universe lift and applies the independently proved branch composition, so the
+common parameter and every original morphism field are retained. -/
 noncomputable def ClosedFamilyRealizationHom.comp :
     {theta : ClosedFamilyParameter.{u, v}} →
       {X Y Z : FamilyRealization theta} →
@@ -115,8 +128,10 @@ noncomputable def ClosedFamilyRealizationHom.comp :
       ULift.up (ProtocolAATIndependentGeneratedPackageHom.comp
         first.down second.down)
 
-/-- Every fixed parameter has one category of independently quantified
-realizations and all morphisms admitted by its branch law. -/
+/-- GOAL A category-family checkpoint: every fixed source parameter has the
+independently quantified realizations and all morphisms admitted by its branch
+law.  The laws are proved from the four predecessor categories; this instance
+is not yet the final common `D_Theta` preservation interface. -/
 noncomputable instance closedFamilyRealizationCategory
     (theta : ClosedFamilyParameter.{u, v}) : Category (FamilyRealization theta) where
   Hom := ClosedFamilyRealizationHom
@@ -231,8 +246,9 @@ noncomputable instance closedFamilyRealizationCategory
                 apply ProtocolAATIndependentGeneratedPackageHom.ext
                 rfl
 
-/-- Every mandatory-C source-choice morphism, hence the fixed uniform flip,
-is an actual endomorphism in the tagged fiber of the closed declaration. -/
+/-- GOAL C inclusion API.  An arbitrary source predicate is sent by the Cycle
+188 constructor to an actual endomorphism in the tagged fiber; final syntax or
+final-category membership is not an input. -/
 noncomputable def closedFamilyTaggedSourceChoice
     (choice : ArchitectureObject FiniteModel.carrier → Bool) :
     (FamilyRealization.taggedOperation :
@@ -240,30 +256,35 @@ noncomputable def closedFamilyTaggedSourceChoice
           ClosedFamilyParameter.{0, 0})) ⟶ .taggedOperation :=
   ULift.up (taggedSourceChoiceExplicitExactGeometryHom choice)
 
-/-- The constant-true member in the closed tagged fiber has exactly the fixed
-mandatory uniform-flip base map. -/
+/-- GOAL C mandatory-witness theorem.  The constant-true member constructed by
+`closedFamilyTaggedSourceChoice` has exactly the fixed uniform-flip base map,
+using the Cycle 188 source-derived equality. -/
 theorem closedFamilyTaggedUniformFlip_base :
     (closedFamilyTaggedSourceChoice (fun _ => true)).down.base =
       taggedUniformFlipTotal :=
   taggedSourceChoiceExplicitExactGeometryHom_uniformFlip_base
 
-/-- Every independently specified lens morphism enters the lens fiber without
-an invertibility or presentation-membership premise. -/
+/-- GOAL E lens inclusion API.  Every independently specified n1015 semantic
+Hom enters the lens fiber through the proved operation-package round trip,
+without an invertibility or presentation-membership premise. -/
 def closedFamilyLensHom {input : LensFamilyInput.{u}}
     {X Y : LensRealization input.View input.reference} (f : X ⟶ Y) :
     (FamilyRealization.lens X : FamilyRealization (.lens input)) ⟶
       FamilyRealization.lens Y :=
   ULift.up (LensAATIndependentGeneratedPackageHom.ofSemanticHom f)
 
-/-- Every independently specified protocol natural transformation enters the
-protocol fiber without an invertibility or presentation-membership premise. -/
+/-- GOAL E protocol inclusion API.  Every independently specified observation-
+preserving natural transformation enters through the named-operation package
+round trip, with no adapter invertibility or presentation premise. -/
 def closedFamilyProtocolHom {input : ProtocolFamilyInput.{u}}
     {X Y : ProtocolRealization input.schema input.observation} (f : X ⟶ Y) :
     (FamilyRealization.protocol X : FamilyRealization (.protocol input)) ⟶
       FamilyRealization.protocol Y :=
   ULift.up (ProtocolAATIndependentGeneratedPackageHom.ofSemanticHom f)
 
-/-- The fixed empty-to-unit lens map is retained by the closed declaration. -/
+/-- GOAL E noninvertible-range witness.  The source-defined empty-to-unit
+named-operation map is retained as an actual lens-fiber Hom.  Its preservation
+laws are vacuous on the empty source; non-surjectivity is proved separately. -/
 def closedFamilyAxisVarianceHom :
     (FamilyRealization.lens axisVarianceEmptyLens :
         FamilyRealization (.lens axisVarianceLensInput)) ⟶
@@ -271,7 +292,9 @@ def closedFamilyAxisVarianceHom :
   ULift.up
     (LensAATIndependentGeneratedPackageHom.ofForwardMorphism axisVarianceForward)
 
-/-- The retained fixed lens map is genuinely non-surjective on states. -/
+/-- GOAL E noninvertibility evidence for the preceding Hom.  Surjectivity would
+produce a source state over `PUnit.unit`, contradicting the source `PEmpty`;
+this conclusion does not rely on the vacuous source preservation laws. -/
 theorem closedFamilyAxisVarianceHom_not_surjective :
     ¬ Function.Surjective closedFamilyAxisVarianceHom.down.stateMap := by
   intro surjective
