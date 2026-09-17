@@ -25,11 +25,13 @@ namespace TagChange.CoherentFamily
 
 variable {Ω : Type*}
 
+/-- The neutral coherent family is pointwise the false Bool value. -/
 instance : Zero (TagChange.CoherentFamily Ω) where
   zero :=
     { value := fun _ _ => 0
       coherent := by intros; rfl }
 
+/-- Addition of coherent families is pointwise Bool xor. -/
 instance : Add (TagChange.CoherentFamily Ω) where
   add left right :=
     { value := fun S x => left.value S x + right.value S x
@@ -40,6 +42,7 @@ instance : Add (TagChange.CoherentFamily Ω) where
         have hright := congrFun (right.coherent S T h) x
         exact congrArg₂ (· + ·) hleft hright }
 
+/-- Negation of a coherent family is pointwise Bool negation in the xor group. -/
 instance : Neg (TagChange.CoherentFamily Ω) where
   neg family :=
     { value := fun S x => -family.value S x
@@ -48,6 +51,7 @@ instance : Neg (TagChange.CoherentFamily Ω) where
         funext x
         exact congrArg Neg.neg (congrFun (family.coherent S T h) x) }
 
+/-- Subtraction of coherent families is pointwise subtraction in the Bool xor group. -/
 instance : Sub (TagChange.CoherentFamily Ω) where
   sub left right :=
     { value := fun S x => left.value S x - right.value S x
@@ -58,6 +62,7 @@ instance : Sub (TagChange.CoherentFamily Ω) where
           (congrFun (left.coherent S T h) x)
           (congrFun (right.coherent S T h) x) }
 
+/-- Natural scalar multiplication of coherent families is pointwise. -/
 instance : SMul ℕ (TagChange.CoherentFamily Ω) where
   smul n family :=
     { value := fun S x => n • family.value S x
@@ -66,6 +71,7 @@ instance : SMul ℕ (TagChange.CoherentFamily Ω) where
         funext x
         exact congrArg (n • ·) (congrFun (family.coherent S T h) x) }
 
+/-- Integer scalar multiplication of coherent families is pointwise. -/
 instance : SMul ℤ (TagChange.CoherentFamily Ω) where
   smul n family :=
     { value := fun S x => n • family.value S x
@@ -82,13 +88,39 @@ instance : AddCommGroup (TagChange.CoherentFamily Ω) :=
     rfl (fun _ _ => rfl) (fun _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
     (fun _ _ => rfl)
 
+/-- Simplify the value of the neutral family to the pointwise Bool normal form. -/
 @[simp] theorem value_zero (S : Finset Ω) :
     (0 : TagChange.CoherentFamily Ω).value S = 0 :=
   rfl
 
+/-- Simplify family addition to pointwise Bool xor on each finite table. -/
 @[simp] theorem value_add (left right : TagChange.CoherentFamily Ω)
     (S : Finset Ω) :
     (left + right).value S = left.value S + right.value S :=
+  rfl
+
+/-- Simplify family negation to pointwise Bool negation on each finite table. -/
+@[simp] theorem value_neg (family : TagChange.CoherentFamily Ω)
+    (S : Finset Ω) :
+    (-family).value S = -family.value S :=
+  rfl
+
+/-- Simplify family subtraction to pointwise subtraction on each finite table. -/
+@[simp] theorem value_sub (left right : TagChange.CoherentFamily Ω)
+    (S : Finset Ω) :
+    (left - right).value S = left.value S - right.value S :=
+  rfl
+
+/-- Simplify natural scalar multiplication to its pointwise finite-table form. -/
+@[simp] theorem value_nsmul (n : ℕ) (family : TagChange.CoherentFamily Ω)
+    (S : Finset Ω) :
+    (n • family).value S = n • family.value S :=
+  rfl
+
+/-- Simplify integer scalar multiplication to its pointwise finite-table form. -/
+@[simp] theorem value_zsmul (n : ℤ) (family : TagChange.CoherentFamily Ω)
+    (S : Finset Ω) :
+    (n • family).value S = n • family.value S :=
   rfl
 
 end TagChange.CoherentFamily
@@ -104,11 +136,37 @@ noncomputable def globalTagChangeAddEquivCoherentFamily :
   toEquiv := globalTagChangeEquivCoherentFamily
   map_add' _ _ := rfl
 
+/-- The forward additive equivalence is exactly all-finite reading. -/
+@[simp] theorem globalTagChangeAddEquivCoherentFamily_apply
+    (change : GlobalTagChange Ω) :
+    globalTagChangeAddEquivCoherentFamily change = read change :=
+  rfl
+
+/-- The inverse additive equivalence is exactly singleton assembly. -/
+@[simp] theorem globalTagChangeAddEquivCoherentFamily_symm_apply
+    (family : CoherentFamily Ω) :
+    globalTagChangeAddEquivCoherentFamily.symm family = assemble family :=
+  rfl
+
 /-- Multiplicative form of the group-level E1b equivalence. -/
 noncomputable def globalTagChangeMulEquivCoherentFamily :
     Multiplicative (GlobalTagChange Ω) ≃*
       Multiplicative (CoherentFamily Ω) :=
   globalTagChangeAddEquivCoherentFamily.toMultiplicative
+
+/-- The forward multiplicative equivalence is all-finite reading under type tags. -/
+@[simp] theorem globalTagChangeMulEquivCoherentFamily_apply
+    (change : Multiplicative (GlobalTagChange Ω)) :
+    globalTagChangeMulEquivCoherentFamily change =
+      Multiplicative.ofAdd (read change.toAdd) :=
+  rfl
+
+/-- The inverse multiplicative equivalence is singleton assembly under type tags. -/
+@[simp] theorem globalTagChangeMulEquivCoherentFamily_symm_apply
+    (family : Multiplicative (CoherentFamily Ω)) :
+    globalTagChangeMulEquivCoherentFamily.symm family =
+      Multiplicative.ofAdd (assemble family.toAdd) :=
+  rfl
 
 end TagChange
 
@@ -130,9 +188,7 @@ source choice in the accepted actual subgroup. -/
         (taggedSourceChoiceGroupEquiv choice) =
       Multiplicative.ofAdd (TagChange.read choice.toAdd) := by
   simp [taggedSourceChoiceSubgroupMulEquivCoherentFamily,
-    TagChange.globalTagChangeMulEquivCoherentFamily,
-    TagChange.globalTagChangeAddEquivCoherentFamily,
-    TagChange.globalTagChangeEquivCoherentFamily]
+    TagChange.globalTagChangeMulEquivCoherentFamily_apply]
 
 /-- Read one source from an element of the actual source-choice subgroup. -/
 noncomputable def readTaggedSourceChoiceSubgroupAt

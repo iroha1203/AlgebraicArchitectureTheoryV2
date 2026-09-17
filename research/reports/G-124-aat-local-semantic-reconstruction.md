@@ -1465,11 +1465,25 @@ result:
   completion_candidate: no
   section_completion_candidate: no
   lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.CoherentFamily.instZero"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.CoherentFamily.instAdd"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.CoherentFamily.instNeg"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.CoherentFamily.instSub"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.CoherentFamily.instSMulNat"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.CoherentFamily.instSMulInt"
     - "AAT.AG.LocalSemanticReconstruction.TagChange.CoherentFamily.instAddCommGroup"
     - "AAT.AG.LocalSemanticReconstruction.TagChange.CoherentFamily.value_zero"
     - "AAT.AG.LocalSemanticReconstruction.TagChange.CoherentFamily.value_add"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.CoherentFamily.value_neg"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.CoherentFamily.value_sub"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.CoherentFamily.value_nsmul"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.CoherentFamily.value_zsmul"
     - "AAT.AG.LocalSemanticReconstruction.TagChange.globalTagChangeAddEquivCoherentFamily"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.globalTagChangeAddEquivCoherentFamily_apply"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.globalTagChangeAddEquivCoherentFamily_symm_apply"
     - "AAT.AG.LocalSemanticReconstruction.TagChange.globalTagChangeMulEquivCoherentFamily"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.globalTagChangeMulEquivCoherentFamily_apply"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.globalTagChangeMulEquivCoherentFamily_symm_apply"
     - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceSubgroupMulEquivCoherentFamily"
     - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceSubgroupMulEquivCoherentFamily_apply"
     - "AAT.AG.LocalSemanticReconstruction.readTaggedSourceChoiceSubgroupAt"
@@ -1521,8 +1535,8 @@ audits:
   validation_refs:
     - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/TagChangeFiniteGroupReconstruction.lean: pass"
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeFiniteGroupReconstruction: pass (targeted dependency closure only)"
-    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChange: 11 declarations, standard axioms only"
-    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 17 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChange: 19 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 25 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "construct the A--B local-model category, reading functor, and main equivalence, while retaining the separate actual-output computability blocker"
 ```
