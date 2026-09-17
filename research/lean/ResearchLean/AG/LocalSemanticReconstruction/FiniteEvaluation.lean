@@ -24,7 +24,7 @@ single witness shared over all addresses require a later G-124 construction.
 
 namespace AAT.AG.LocalSemanticReconstruction
 
-universe u v w
+universe u v w s
 
 /-- A typed evaluation address consists of a sort and one source value. -/
 abbrev EvaluationAddress (I : Type u) (X : I → Type v) := Σ i, X i
@@ -76,20 +76,86 @@ theorem finite_value_type [∀ i, Finite (Y i)]
 
 end PartialTable
 
-/-- A primitive preservation condition with explicitly finite evaluation support.
+/-- A many-sorted finitary operation signature. -/
+structure FinitarySignature (I : Type u) where
+  /-- Primitive operation symbols. -/
+  Operation : Type s
+  /-- Every primitive operation has finite arity. -/
+  arity : Operation → Nat
+  /-- Sort of each input position. -/
+  inputSort : ∀ op, Fin (arity op) → I
+  /-- Sort of the output. -/
+  outputSort : Operation → I
 
-`accepts` sees only a table on `support`; it cannot inspect a completed global
-map or assert that the table extends to one. -/
-structure PrimitiveLaw (I : Type u) (X : I → Type v) (Y : I → Type w) where
-  /-- All evaluations needed to state this one preservation condition. -/
+/-- An interpretation of a finitary signature on the target carriers. -/
+structure TargetAlgebra {I : Type u} (signature : FinitarySignature.{u, s} I)
+    (Y : I → Type w) where
+  /-- Interpret one operation using only its finitely many input values. -/
+  interpret : ∀ op,
+    (∀ j, Y (signature.inputSort op j)) → Y (signature.outputSort op)
+
+/-- A typed term whose leaves are addresses in one explicitly finite support.
+
+The inductive syntax is the locality barrier: a term can inspect only supported
+table entries and recursively apply a primitive finitary operation.  In
+particular it has no constructor for a global point map, an existential global
+extension, or an arbitrary proposition. -/
+inductive LocalTerm {I : Type u} (signature : FinitarySignature.{u, s} I)
+    (X : I → Type v) (support : Finset (EvaluationAddress I X)) : I → Type (max u v s)
+  | variable (a : {a // a ∈ support}) : LocalTerm signature X support a.1.1
+  | operation (op : signature.Operation)
+      (args : ∀ j, LocalTerm signature X support (signature.inputSort op j)) :
+      LocalTerm signature X support (signature.outputSort op)
+
+namespace LocalTerm
+
+variable {I : Type u} {signature : FinitarySignature.{u, s} I}
+variable {X : I → Type v} {Y : I → Type w}
+variable {support : Finset (EvaluationAddress I X)}
+
+/-- Evaluate a local term from a finite table and the target algebra. -/
+def evaluate (algebra : TargetAlgebra signature Y) (table : PartialTable X Y support) :
+    {i : I} → LocalTerm signature X support i → Y i
+  | _, .variable a => table a
+  | _, .operation op args =>
+      algebra.interpret op (fun j => evaluate algebra table (args j))
+
+end LocalTerm
+
+/-- One finitely supported typed equation.
+
+Unlike an arbitrary predicate on a finite table, this structure cannot encode
+the existence of a completed global map or an extension certificate: its only
+semantic assertion is equality of two finite local terms. -/
+structure PrimitiveLaw {I : Type u} (signature : FinitarySignature.{u, s} I)
+    (X : I → Type v) where
+  /-- All evaluations needed to state this one preservation equation. -/
   support : Finset (EvaluationAddress I X)
-  /-- The typed equality or relation imposed on the supported table. -/
-  accepts : PartialTable X Y support → Prop
+  /-- The common sort of the two sides. -/
+  sort : I
+  /-- Left side of the typed equation. -/
+  lhs : LocalTerm signature X support sort
+  /-- Right side of the typed equation. -/
+  rhs : LocalTerm signature X support sort
+
+namespace PrimitiveLaw
+
+variable {I : Type u} {signature : FinitarySignature.{u, s} I}
+variable {X : I → Type v} {Y : I → Type w}
+
+/-- Satisfaction is generated only by interpreting the two finite local terms. -/
+def Accepts (algebra : TargetAlgebra signature Y) (law : PrimitiveLaw signature X)
+    (table : PartialTable X Y law.support) : Prop :=
+  law.lhs.evaluate algebra table = law.rhs.evaluate algebra table
+
+end PrimitiveLaw
 
 namespace FiniteEvaluation
 
 variable {I : Type u} {X : I → Type v} {Y : I → Type w}
-variable {K : Type*} (law : K → PrimitiveLaw I X Y)
+variable {signature : FinitarySignature.{u, s} I}
+variable (algebra : TargetAlgebra signature Y)
+variable {K : Type*} (law : K → PrimitiveLaw signature X)
 
 /-- A finite evaluation diagram has finitely many addresses and finitely many
 primitive laws, with every selected law supported by the selected addresses. -/
@@ -167,14 +233,14 @@ structure LocalModel (d : Diagram law) where
   table : PartialTable X Y d.addresses
   /-- Each selected law holds after restriction to its own finite support. -/
   satisfies : ∀ k (hk : k ∈ d.constraints),
-    (law k).accepts (PartialTable.restrict (d.support_subset k hk) table)
+    (law k).Accepts algebra (PartialTable.restrict (d.support_subset k hk) table)
 
 namespace LocalModel
 
 /-- Local models are determined by their finite point tables; law proofs carry
 no additional semantic freedom. -/
 @[ext]
-theorem ext {d : Diagram law} {a b : LocalModel law d} (h : a.table = b.table) :
+theorem ext {d : Diagram law} {a b : LocalModel algebra law d} (h : a.table = b.table) :
     a = b := by
   cases a
   cases b
@@ -182,8 +248,8 @@ theorem ext {d : Diagram law} {a b : LocalModel law d} (h : a.table = b.table) :
   rfl
 
 /-- Restrict a local model along inclusion of finite diagrams. -/
-def restrict {d e : Diagram law} (h : Diagram.LE law d e) (m : LocalModel law e) :
-    LocalModel law d where
+def restrict {d e : Diagram law} (h : Diagram.LE law d e)
+    (m : LocalModel algebra law e) : LocalModel algebra law d where
   table := PartialTable.restrict h.1 m.table
   satisfies := by
     intro k hk
@@ -191,17 +257,17 @@ def restrict {d e : Diagram law} (h : Diagram.LE law d e) (m : LocalModel law e)
 
 /-- Restriction along reflexive diagram inclusion is the identity. -/
 @[simp]
-theorem restrict_refl (d : Diagram law) (m : LocalModel law d) :
-    restrict law (Diagram.le_refl law d) m = m := by
+theorem restrict_refl (d : Diagram law) (m : LocalModel algebra law d) :
+    restrict algebra law (Diagram.le_refl law d) m = m := by
   apply ext
   rfl
 
 /-- Restriction along two inclusions agrees with restriction along their composite. -/
 theorem restrict_trans {d e f : Diagram law}
     (hde : Diagram.LE law d e) (hef : Diagram.LE law e f)
-    (m : LocalModel law f) :
-    restrict law hde (restrict law hef m) =
-      restrict law (Diagram.le_trans law hde hef) m := by
+    (m : LocalModel algebra law f) :
+    restrict algebra law hde (restrict algebra law hef m) =
+      restrict algebra law (Diagram.le_trans law hde hef) m := by
   apply ext
   rfl
 
@@ -211,16 +277,16 @@ end LocalModel
 diagram, compatible with every diagram inclusion. -/
 structure CoherentFamily where
   /-- Local value on each finite evaluation diagram. -/
-  value : ∀ d : Diagram law, LocalModel law d
+  value : ∀ d : Diagram law, LocalModel algebra law d
   /-- Restricting a larger local value recovers the smaller one. -/
   coherent : ∀ (d e : Diagram law) (h : Diagram.LE law d e),
-    LocalModel.restrict law h (value e) = value d
+    LocalModel.restrict algebra law h (value e) = value d
 
 namespace CoherentFamily
 
 /-- A coherent family is determined by its value on every finite diagram. -/
 @[ext]
-theorem ext {a b : CoherentFamily law}
+theorem ext {a b : CoherentFamily algebra law}
     (h : ∀ d, a.value d = b.value d) : a = b := by
   cases a with
   | mk av ac =>
@@ -239,13 +305,14 @@ structure PreservingMap where
   /-- The complete map assembled from or read into finite evaluations. -/
   toPointMap : GlobalPointMap I X Y
   /-- Every primitive law holds on its explicitly finite support. -/
-  preserves : ∀ k, (law k).accepts (PartialTable.read toPointMap (law k).support)
+  preserves : ∀ k,
+    (law k).Accepts algebra (PartialTable.read toPointMap (law k).support)
 
 namespace PreservingMap
 
 /-- Preserving maps are determined by their point values. -/
 @[ext]
-theorem ext {a b : PreservingMap law} (h : a.toPointMap = b.toPointMap) : a = b := by
+theorem ext {a b : PreservingMap algebra law} (h : a.toPointMap = b.toPointMap) : a = b := by
   cases a
   cases b
   cases h
@@ -254,7 +321,7 @@ theorem ext {a b : PreservingMap law} (h : a.toPointMap = b.toPointMap) : a = b 
 end PreservingMap
 
 /-- Read a preserving global map on every finite evaluation diagram. -/
-def read (f : PreservingMap law) : CoherentFamily law where
+def read (f : PreservingMap algebra law) : CoherentFamily algebra law where
   value d :=
     { table := PartialTable.read f.toPointMap d.addresses
       satisfies := by
@@ -269,7 +336,7 @@ def read (f : PreservingMap law) : CoherentFamily law where
 
 Preservation is not assumed as a global extension certificate: for each law it
 is transported from the local model on that law's finite support diagram. -/
-noncomputable def assemble (family : CoherentFamily law) : PreservingMap law where
+noncomputable def assemble (family : CoherentFamily algebra law) : PreservingMap algebra law where
   toPointMap := fun i x =>
     (family.value (Diagram.point law ⟨i, x⟩)).table
       ⟨⟨i, x⟩, by simp [Diagram.point]⟩
@@ -298,7 +365,8 @@ noncomputable def assemble (family : CoherentFamily law) : PreservingMap law whe
 
 /-- Assembling the finite evaluations read from a global map recovers that map. -/
 @[simp]
-theorem assemble_read (f : PreservingMap law) : assemble law (read law f) = f := by
+theorem assemble_read (f : PreservingMap algebra law) :
+    assemble algebra law (read algebra law f) = f := by
   apply PreservingMap.ext
   funext i x
   rfl
@@ -306,8 +374,8 @@ theorem assemble_read (f : PreservingMap law) : assemble law (read law f) = f :=
 /-- Reading the global map assembled from a coherent family recovers every
 finite local model, including its selected preservation conditions. -/
 @[simp]
-theorem read_assemble (family : CoherentFamily law) :
-    read law (assemble law family) = family := by
+theorem read_assemble (family : CoherentFamily algebra law) :
+    read algebra law (assemble algebra law family) = family := by
   apply CoherentFamily.ext
   intro d
   apply LocalModel.ext
@@ -327,28 +395,47 @@ The forward map is restriction to every finite diagram; the inverse is
 singleton assembly.  The two inverse laws separately witness separation and
 assembly for all finitely supported primitive preservation conditions. -/
 noncomputable def preservingMapEquivCoherentFamily :
-    PreservingMap law ≃ CoherentFamily law where
-  toFun := read law
-  invFun := assemble law
-  left_inv := assemble_read law
-  right_inv := read_assemble law
+    PreservingMap algebra law ≃ CoherentFamily algebra law where
+  toFun := read algebra law
+  invFun := assemble algebra law
+  left_inv := assemble_read algebra law
+  right_inv := read_assemble algebra law
 
 end FiniteEvaluation
 
 namespace FiniteEvaluationExample
 
+/-- One unary operation symbol, interpreted below as successor. -/
+inductive NatOperation
+  | successor
+
+/-- The one-sorted signature containing the unary successor operation. -/
+def natSignature : FinitarySignature Unit where
+  Operation := NatOperation
+  arity := fun _ => 1
+  inputSort := fun _ _ => ()
+  outputSort := fun _ => ()
+
+/-- Interpret the primitive operation as successor on natural numbers. -/
+def natAlgebra : TargetAlgebra natSignature (fun _ => Nat) where
+  interpret := fun op args => by
+    cases op
+    exact Nat.succ (args ⟨0, by simp [natSignature]⟩)
+
 /-- A concrete two-address primitive law: the value at `1` is the successor of
-the value at `0`.  It witnesses that `PrimitiveLaw.accepts` is not forced to be
-vacuous and models one pointwise operation-preservation equation. -/
+the value at `0`.  It is built only from supported variables and the finitary
+successor symbol. -/
 noncomputable def natSuccessorLaw :
-    PrimitiveLaw Unit (fun _ => Nat) (fun _ => Nat) where
+    PrimitiveLaw natSignature (fun _ => Nat) where
   support := {⟨(), 0⟩, ⟨(), 1⟩}
-  accepts := fun table =>
-    table ⟨⟨(), 1⟩, by simp⟩ = Nat.succ (table ⟨⟨(), 0⟩, by simp⟩)
+  sort := ()
+  lhs := LocalTerm.variable ⟨⟨(), 1⟩, by simp⟩
+  rhs := LocalTerm.operation NatOperation.successor
+    (fun _ => LocalTerm.variable ⟨⟨(), 0⟩, by simp⟩)
 
 /-- The identity point map satisfies the concrete successor law. -/
 noncomputable def natIdentityPreserving :
-    FiniteEvaluation.PreservingMap (fun _ : Unit => natSuccessorLaw) where
+    FiniteEvaluation.PreservingMap natAlgebra (fun _ : Unit => natSuccessorLaw) where
   toPointMap := fun _ n => n
   preserves := by
     intro k
@@ -357,9 +444,10 @@ noncomputable def natIdentityPreserving :
 
 /-- The constant-zero point map violates the same concrete successor law. -/
 theorem natConstantZero_rejected :
-    ¬natSuccessorLaw.accepts
+    ¬natSuccessorLaw.Accepts natAlgebra
       (PartialTable.read (fun _ _ => 0) natSuccessorLaw.support) := by
-  simp [natSuccessorLaw, PartialTable.read]
+  simp [PrimitiveLaw.Accepts, natSuccessorLaw, natAlgebra, LocalTerm.evaluate,
+    PartialTable.read]
 
 end FiniteEvaluationExample
 

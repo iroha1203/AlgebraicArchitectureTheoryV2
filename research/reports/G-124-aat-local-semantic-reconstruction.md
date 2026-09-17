@@ -23,7 +23,7 @@
 
 | 条項 | 要求 | 対応する定義・Lean 宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
-| A--B Cycle 1 delta | 有限個の原始評価と有限個の型付き保存条件からなる図式を定義し、整合族から全域 Hom の計算成分と保存則を組み立て、`read` / `asm` の両逆を証明する | 実装中: `ResearchLean.AG.LocalSemanticReconstruction.FiniteEvaluation` | sort-indexed carrier `X,Y`、有限 support を持つ原始保存条件族。延長可能性、decoder 像、完成射、全域証人は入力しない | 一点図式から依存関数を組み立て、各保存条件をその有限 constraint 図式から回収し、任意図式で整合性により元の局所表を回復する | 共通局所宣言の Hom 部分、後続の依存写像・可逆成分、タグ・lens・protocol 適用 | AAT 固有 `Σ,D,Λ,M,N`、対象の組立て、共通証人、raw、必須四族、C--E は未接続。Cycle 1 は B 全体でも completion でもない |
+| A--B Cycle 1 delta | 有限個の原始評価と有限個の型付き保存等式からなる図式を定義し、整合族から全域 Hom の計算成分と保存則を組み立て、`read` / `asm` の両逆を証明する | `ResearchLean.AG.LocalSemanticReconstruction.FiniteEvaluation` | sort-indexed carrier `X,Y`、finitary signature、その target algebra、有限 support 上の `LocalTerm` 等式族。延長可能性、decoder 像、完成射、全域証人、任意の table predicate は入力しない | 一点図式から依存関数を組み立て、各保存等式をその有限 constraint 図式から回収し、任意図式で整合性により元の局所表を回復する | 共通局所宣言の Hom 部分、後続の依存写像・可逆成分、タグ・lens・protocol 適用 | AAT 固有 `Σ,D,Λ,M,N`、対象の組立て、共通証人、raw、必須四族、C--E は未接続。Cycle 1 は B 全体でも completion でもない |
 
 ## Cycle 1 selection
 
@@ -57,7 +57,7 @@ selection:
 ```yaml
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "finite address/law diagrams, directed finite union, functorial restriction, coherent local families, singleton assembly, preservation recovery, and both read/asm inverse laws are constructed"
+  proof_obligation_delta: "finite address/law diagrams, a typed finite-term equation syntax, directed finite union, functorial restriction, coherent local families, singleton assembly, preservation recovery, and both read/asm inverse laws are constructed"
   completion_candidate: no
   lean_artifacts:
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FiniteEvaluation.lean"
@@ -65,6 +65,7 @@ result:
   evidence:
     - "Diagram.union with le_union_left/le_union_right"
     - "LocalModel.restrict_refl and LocalModel.restrict_trans"
+    - "LocalTerm and PrimitiveLaw.Accepts generate satisfaction only from supported variables, finitary operations, and equality"
     - "FiniteEvaluation.assemble_read"
     - "FiniteEvaluation.read_assemble"
     - "FiniteEvaluationExample.natIdentityPreserving and natConstantZero_rejected"
@@ -81,8 +82,20 @@ result:
       - "組立て read(asm(a))=a -> read_assemble"
       - "有限 support の保存則 -> assemble.preserves"
       - "有限図式の共通拡大 -> Diagram.union"
+    material_premises:
+      ambient_boundary:
+        - "I, X, Y, finitary signature, target algebra, law index K, and finite LocalTerm equations"
+      direction_hypothesis:
+        - "PreservingMap.preserves on the read side"
+        - "LocalModel.satisfies and CoherentFamily.coherent on the assembly side"
+      discharge_required:
+        - "singleton values assemble a total point map"
+        - "each local equation yields global preservation"
+        - "assemble_read and read_assemble"
+      conclusion_equivalent_risk:
+        - "none after removal of the unrestricted table predicate"
     undischarged_assumptions: []
-    acceptance_point: "一般 Hom 補題そのものには extension/decoder/global-Hom certificate がなく、coherence と各有限 law table から計算成分・保存則を構成する。AAT 適用は別 obligation として残す"
+    acceptance_point: "一般 Hom 補題そのものには extension/decoder/global-Hom certificate がない。PrimitiveLaw は任意 Prop ではなく有限 support 上の LocalTerm 等式であり、coherence と各有限 law table から計算成分・保存則を構成する。AAT 適用は別 obligation として残す"
     port_status: unported
 audits:
   premise_delta:
@@ -97,6 +110,7 @@ audits:
     discharged:
       - "assembled map values / singleton local tables"
       - "assembled preservation proofs / selected finite law diagrams"
+      - "law locality / inductive LocalTerm syntax and equality-only PrimitiveLaw.Accepts"
     unresolved: []
   proof_use:
     used:
@@ -104,7 +118,7 @@ audits:
       - "LocalModel.satisfies / assemble.preserves"
       - "Diagram.support_subset / local restriction typing"
     unused: []
-  structure_field_escape: none-found
+  structure_field_escape: "none-found after replacing unrestricted PrimitiveLaw.accepts with finite LocalTerm equations"
   route_integrity: pass
   target_fitting: none-found
   vacuity: none-found
@@ -112,11 +126,24 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/FiniteEvaluation.lean: pass"
-    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 109 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 178 declarations, standard axioms only"
     - "#print axioms key spine: propext, Classical.choice, Quot.sound only"
   blocking_findings: []
   next_obligation: "dependent total-map reconstruction and forward/inverse evaluation for equivalence-valued primitive components"
 ```
+
+### Cycle 1 initial review remediation
+
+初回の独立4レーン査読では、3レーンが旧
+`PrimitiveLaw.accepts : PartialTable ... → Prop` に中心 finding を認定した。この型は
+有限 table を引数に取りながら、内部で完成した `GlobalPointMap` や全域延長可能性を量化できたため、
+固定 GOAL B の禁止条件を型レベルでは放電していなかった。残る1レーンはこれを局所 model の
+membership として許容したが、固定仕様の anti-weakening 条件を優先して Major revisions と統合した。
+
+修正後は `FinitarySignature`、`TargetAlgebra`、帰納的 `LocalTerm` を導入し、
+`PrimitiveLaw` を同一 sort の二つの有限局所項へ限定した。`PrimitiveLaw.Accepts` はその二項の
+評価値の等式としてのみ生成される。したがって law の構文には任意命題、全域写像、全域延長の
+存在量化を置く constructor がなく、初回査読の certificate escape は型から除かれた。
 
 ## 共通証人の必須四族監査
 
