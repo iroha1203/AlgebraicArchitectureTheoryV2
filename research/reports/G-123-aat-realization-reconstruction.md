@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 154 constructs parallel exact geometry morphisms and total morphisms with identity/composition, retaining all accepted non-raw G-108 components and the Cycle 153 actual typed raw action, plus a full strict-morphism embedding
+- current proof obligation: Cycle 155 proves computational extensionality for every exact typed raw/geometry layer and the coordinate-equivalence unit/associativity laws without collapsing coordinate, local-data, relation, raw, coefficient, or realization actions
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: prove extensionality and category laws for the exact total morphisms, then adapt genuine lens/protocol transports to the inverse-context raw field and assemble their full core/geometry bridges
+- next proof obligation: discharge the dependent transport induced by propositional `PackageTotalHom` unit/associativity equalities and prove exact total category laws, then adapt genuine lens/protocol transports to the inverse-context raw field and assemble their full core/geometry bridges
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 155 delta | exact typed geometryの圏法則を非一意な計算成分をproof irrelevanceで消さずに証明するため、全依存層の等値判定を与える | `CoordinateFamilyExactEquiv.ext`, `.refl_trans`, `.trans_refl`, `.trans_assoc`; `StructuralRelationFamilyExactEquiv.ext`; `RawAmbientRestrictionSystemExactMapAgainst.ext`; `RealizationTransportSupply.exactExt`; `ExactGeomReadHom.ext`; `ExactGeometryTotalHom.ext` | 同じ固定endpoint/index上の二つの候補と、各non-subsingleton計算成分の等式または従属`HEq`。overlapにはaccepted thin-category uniquenessを使用し、completed category lawやraw actionのSubsingleton instanceは受けない | coordinate equivalenceと全local-data equivalence、全relation-generator equivalence、全contextのraw coordinate/relation action、係数写像、三realization比較、base/geometry成分を保持したextensionalityを証明。Type値のoverlap comparisonはthinnessによる一意性だけで同定し、coordinate transportの左右単位・結合則も構成 | exact total morphismのunit/associativityを従属transport込みで証明する次cycle | `PackageTotalHom`の命題的unit/associativity等式がraw relation型へ作るcastの消去、`Category` instance、genuine lens/protocol bridge、任意非単射CS統合、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 154 delta | strict raw equalityに限定されないparallel geometry morphismで、既存G-108の全非raw成分とactual typed raw actionを一体化する | `RealizationTransportSupply.exactId`, `.exactComp`, `.ofGeomReadHom`; `ExactGeomReadHom`, `.id`, `.comp`, `.ofStrict`; `ExactGeometryTotalHom`, `.id`, `.comp`, `.ofStrict` | 任意のaccepted core package hom、coverage、overlap、係数写像、Cycle 153 exact raw map、support/axis/observable supply。strict特殊化は既存`GeomReadHom`/`GeometryTotalHom` | identity/compositionで全成分を構成。strict homからbase・coverage・overlap・係数・全realization比較を保持し、raw equalityからactual typed raw mapを生成 | parallel exact geometry categoryとgenuine CS core/geometry bridge | extensionality・category laws、任意非単射CS coordinate map統合、concrete lens/protocol bridge、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 153 delta | 非可逆な係数準同型とinverse-context reindexを保持し、全typed coordinate・relation generator・restriction squareを同じdirected raw mapで運ぶ | `CoordinateFamilyExactEquiv.polynomialHom`, `.polynomialHom_C`, `.polynomialHom_X`, `.polynomialHom_trans`; `StructuralRelationFamilyExactEquiv.relationBaseChange_comp`, `.baseChange`; `RawAmbientRestrictionSystemExactMapAgainst`, `.refl`, `.trans`, `.ofGeometryRawEquality`, `.ofGeomReadHom` | generic interfaceはsource/target raw system、inverse context functor、係数準同型、全coordinate/relation/restriction coherenceを受ける。identity/compositionは完成合成証拠を受けない。strict特殊化は既存`GeomReadHom`のみ | coefficient map後の全coordinate renameをring homとして構成し、定数・変数・合成を証明。relation base changeと合成を構成。target arrow全体のrestriction squareを合成し、既存strict `raw_eq`からcoordinate/relation/restrictionの全fieldを生成 | parallel typed geometry hom/categoryのraw fieldと、既存strict geometry categoryからの埋め込み | genuine lens/protocol transportのinverse-context版、parallel geometryの非raw field・category laws・full strict embedding、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 152 delta | Cycle 151のtyped raw transportをidentity/compositionで閉じ、合成時にも全coordinate・relation generator・restriction squareを保持する | `CoordinateFamilyExactEquiv.refl`, `.trans`, `.polynomialEquiv_trans`; `StructuralRelationFamilyExactEquiv.refl`, `.trans`; `RawAmbientRestrictionSystemExactTransportAlong.refl`, `.trans` | 任意のtyped raw system、または同一係数環上で合成可能な二つのexact transport。合成済みcoordinate/relation/restriction certificateを入力しない | coordinate/local-dataとrelationの同値を合成し、polynomial renameの合成則を証明。各context arrowの合成restriction squareを第一段のsquareと、その像に対する第二段のsquareから導出 | 次cycleのparallel typed geometry hom/categoryの恒等射・合成射、およびgenuine lens/protocol geometry bridge | 係数変更を伴うtyped geometry composition、strict embedding、full core/geometry hom、independent readback、D回復、A--F統合は未完了 |
@@ -16111,4 +16112,101 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Prove extensionality and category laws, then construct the genuine lens/protocol exact geometry bridges."
+```
+
+## Cycle 155 — Computational extensionality for exact typed geometry
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 155
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 0588ae311cdff45c3f8617b747f38ad20a4c8bb2
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 154 supplied exact geometry identity/composition but no equality principles that retain its computational raw and realization fields"
+  proof_obligation: "Prove component-faithful extensionality through all exact typed layers and the coordinate-transport unit/associativity laws; use them to test the exact total category laws"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExactGeometryCategory.lean
+  risks:
+    - "using Subsingleton on coordinate, relation, raw, coefficient, or realization action"
+    - "discarding dependent components instead of requiring HEq"
+    - "claiming a Category instance before dependent base transports are discharged"
+    - "treating one failed category-law proof candidate as a target refutation"
+  unchecked:
+    - "dependent transport coherence for PackageTotalHom unit/associativity inside raw relation families"
+    - "exact total Category instance"
+    - "genuine lens/protocol full exact geometry constructors"
+    - "arbitrary noninjective CS integration, readback, D recovery, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Proved extensionality for coordinate exact equivalences, structural relation exact equivalences, target-indexed exact raw maps, realization supplies, exact geometry homs, and exact total homs. The lemmas explicitly retain every non-subsingleton computational component. Coverage and coherence proofs are removed by proof irrelevance; the Type-valued overlap comparison is eliminated only by the separately accepted thin-category `OverlapTransport` uniqueness theorem. Proved left/right unit and associativity for complete coordinate transports. A candidate total-category proof was rejected after focused checking exposed an undischarged cast in raw relation families induced by the propositional PackageTotalHom left-unit equality; no Category instance is claimed."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExactGeometryCategory.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.CoordinateFamilyExactEquiv.ext
+    - AAT.AG.RealizationReconstruction.CoordinateFamilyExactEquiv.refl_trans
+    - AAT.AG.RealizationReconstruction.CoordinateFamilyExactEquiv.trans_refl
+    - AAT.AG.RealizationReconstruction.CoordinateFamilyExactEquiv.trans_assoc
+    - AAT.AG.RealizationReconstruction.StructuralRelationFamilyExactEquiv.ext
+    - AAT.AG.RealizationReconstruction.RawAmbientRestrictionSystemExactMapAgainst.ext
+    - AAT.AG.RealizationReconstruction.RealizationTransportSupply.exactExt
+    - AAT.AG.RealizationReconstruction.ExactGeomReadHom.ext
+    - AAT.AG.RealizationReconstruction.ExactGeometryTotalHom.ext
+  claim_mapping:
+    source_labels:
+      - "GOAL A: preserve complete typed raw and geometry actions"
+      - "GOAL E: retain actual CS-induced actions through the geometry comparison layer"
+    conjuncts:
+      - "coordinate equality -> complete coordinate and local-data equivalence equality"
+      - "relation equality -> complete relation-generator equivalence equality"
+      - "raw equality -> all-context coordinate equality plus dependent all-context relation HEq"
+      - "geometry equality -> coefficient, raw, and realization equality"
+      - "total equality -> base equality plus dependent geometry HEq"
+      - "coordinate transport -> left unit, right unit, and associativity"
+    undischarged_assumptions:
+      - "the extensionality lemmas require equality/HEq of every non-subsingleton computational field; overlap is uniquely determined by accepted thin-category uniqueness"
+      - "PackageTotalHom law equalities still require explicit transport through dependent raw relation types"
+      - "no exact total Category instance is constructed in this cycle"
+    acceptance_point: "The equality infrastructure needed to prove category laws exists without collapsing any non-uniquely-determined computational action. The selected overlap comparison is Type-valued but unique by the accepted thin-context theorem. Category laws themselves remain open."
+audits:
+  premise_delta:
+    discharged:
+      - "component-faithful extensionality at all six dependent exact layers"
+      - "coordinate exact-equivalence left/right unit and associativity"
+    remaining:
+      - "base-law transport coherence, total category laws, genuine CS bridges, readback, D recovery, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "extensionality consumes explicit equality or HEq for every non-subsingleton computational component"
+    discharged:
+      - "no category law, raw action, or completed comparison certificate is accepted as an input"
+    unresolved:
+      - "construct the raw relation transport across PackageTotalHom law equalities"
+  proof_use:
+    used:
+      - "complete coordinate equivalence and every local-data equivalence"
+      - "complete relation-generator equivalence"
+      - "all-context coordinate and relation actions"
+      - "coefficient map and all three realization comparison maps"
+      - "base equality and dependent geometry equality"
+      - "the accepted thin-category `OverlapTransport` subsingleton theorem for the uniquely determined selected overlap comparison"
+    unused:
+      - "no non-subsingleton computational component is removed by a Subsingleton instance; coverage/coherence are proof fields and overlap comparison is uniquely determined by thinness"
+  structure_field_escape: none-found-extensionality-demands-all-nonsubsingleton-computational-fields-and-uses-only-accepted-thinness-for-overlap
+  route_integrity: pass-all-coordinate-local-relation-raw-coefficient-and-realization-actions-remain-visible
+  target_fitting: partial-equality-infrastructure-is-proved-but-category-laws-and-CS-bridges-remain-open
+  vacuity: none-found-the-raw-extensionality-quantifies-over-the-entire-context-indexed-families
+  one_way_as_equivalence: none-found-no-new-one-way-map-is-recast-as-an-equivalence
+  goal_or_report_reinterpretation: none-found-the-failed-category-candidate-is-recorded-as-an-undischarged-transport-obligation
+  validation_refs:
+    - "focused CSAATExactGeometryCategory file check: PASS; 9 namespace declarations, standard axioms only"
+    - "focused exact CSAATExactGeometryCategory target build: PASS (4286 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "candidate category-law proof left an explicit cast in the raw relation-family action after the propositional PackageTotalHom left-unit equality; the candidate was removed"
+  next_obligation: "Construct explicit dependent transport coherence for exact raw/geometry actions over PackageTotalHom unit and associativity equalities, prove the exact total Category instance, then build genuine lens/protocol exact geometry bridges."
 ```
