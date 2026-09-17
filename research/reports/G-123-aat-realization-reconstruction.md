@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 181 connects each of the six fixed generated axis permutations to its actual canonical section lift and classifies every actual lift in that fiber by a unique element of the full restricted kernel
+- current proof obligation: Cycle 182 proves that whole comparison-evaluator injectivity, surjectivity, and bijectivity are each equivalent to the corresponding direct-endpoint automorphism-evaluator property
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: enrich primitive syntax enough to construct a direct-endpoint automorphism evaluator equivalence and thereby extend the six-fiber result to the whole actual comparison group without taking semantic automorphisms as syntax leaves
+- next proof obligation: construct an enriched primitive syntax encoder and both evaluator round trips for every actual direct-endpoint automorphism, without accepting completed semantic automorphisms or whole map families as syntax leaves
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| B/D Cycle 182 delta | whole comparison表示のfull/faithful義務を、barAlphaがisoであることを使ってdirect endpoint Aut evaluatorの正確な必要十分条件へ縮約する | `comparisonEvaluation_source`; `comparisonEvaluation_injective_iff_direct`; `comparisonEvaluation_surjective_iff_direct`; `comparisonEvaluation_bijective_iff_direct`; 条件付き`comparisonEvaluationMulEquivOfDirectBijective` | fixed generated/actual barAlpha iso、既構成direct evaluatorとwhole comparison evaluator、両側のsource-conjugation section。direct bijectivityはiff定理の結論であり入力しない。最後の包装だけ明示的な条件付き中間定理 | source projection可換性を証明。各comparison pairがsourceから一意に回復されることによりinjectivityを双方向、任意actual/source Autのsection liftによりsurjectivityを双方向に証明し、bijectivity iffを構成 | primitive syntax encoderの完了判定、および得られたdirect MulEquivからwhole comparison・kernel・fiber輸送へ | direct evaluatorのinjective/surjective自体は未放電。条件付きMulEquivをcompletionとは数えない。primitive encoder、全比較・全fiber表示、A--F統合は未完了 |
 | D Cycle 181 delta | 固定finite-axis-foldの全6 axis permutationについてgenerated表示をactual canonical sectionへ接続し、同じnormalized元上の任意actual liftをfull restricted kernelで分類する | `FiniteAxisFoldGeneratedLiftFibers.canonicalLift`, `canonicalLift_val`, `everyLift_unique_kernel_displacement` | 原始`Fin 3` permutation全体、既構成generated section elementとevaluation定理、actual section right inverse、actual全fiber torsor定理。liftやkernel displacementは入力しない | generated evaluationをactual lift fiberに包装し、underlying raw pairがactual canonical sectionそのものと証明。任意actual liftに対しfull actual restricted kernelの一意displacementを構成 | 固定D生成例のsection・fiber接続、および全比較群表示へ拡張するencoder設計 | 6個の固定normalized元に限定。current syntaxが全actual direct endpoint Autをencodeすること、whole comparison MulEquiv、全base fiberの表示同値、A--F統合は未完了 |
 | D Cycle 180 delta | normalizationで消えるambient kernelと、元の比較を保つ領域へ制限したrestricted kernelを全要素について区別し、固定生成例でも差を証明する | `RestrictedAmbientKernel.inclusion`, `inclusion_injective`, `mem_range_inclusion_iff`; `geometryComparisonRestrictedKernelToAmbientKernel`とinjective/range iff; `FiniteAxisFoldRestrictedAmbientKernel.ambientElement`, `ambientElement_not_mem_restrictedKernel_range`, `restrictedKernel_inclusion_not_surjective`, `ambientElement_bottom_coefficient_packet` | 任意のambient hom、source/target subgroup、restricted hom、underlying square。G-122適用ではactual endpoint normalizationとactual raw/normalized comparison subgroup。kernel同一視、ambient元のcomparison membership、surjectivity certificateは入力しない | restricted kernel元をunderlying ambient元へ写し、kernel equationをsquareから構成。像をambient kernel内のsource subgroup membershipと双方向に特徴付ける。固定ambient involutionがnormalization kernelに入る一方raw `barAlpha`比較を保たない既証明を適用し非全射を証明。同じ元の底・係数4成分恒等を保持 | 表示側でrestricted/ambient二核を別々に回復するためのtarget側分類、およびbottom/coefficient接続 | これはactual G-122側の二核分離であり、presentation側の全元回復ではない。full comparison MulEquivにはdirect endpointの全automorphismをprimitive syntaxからencodeする構成が不足。六つの固定axis元を越えるsyntax completeness、全lift fiberの表示同値、A--F統合は未完了 |
 | D/E Cycle 179 delta | comparison-groupとendpoint restrictionの可換正方形から、restricted kernel全体と各base元上の全lift fiberを回復し、fiberのkernel torsor構造も同じ対応で運ぶ | `RestrictionKernelFiberTransport.Fiber`, `rightKernelAction`, action law/free/transitive/unique displacement; `kernelMulEquiv`, `fiberEquiv`, `fiberEquiv_smul`; `generatedArrowComparisonSourceKernelMulEquiv`, `generatedArrowComparisonSourceFiberEquiv`, action compatibility; lens/protocol package specialization | 任意の4群・2準同型・2群同値と点ごとの可換正方形。comparison適用ではCycle 178が固定入力から構成したfully faithful functor、whole comparison MulEquiv、endpoint Aut MulEquiv、source compatibilityだけを使う。kernel membership、chosen lift、torsor certificate、ambient kernelは入力しない | 可換式からkernel membershipを両方向に再構成しMulEquivを証明。任意base元上の全fiberを同値化。literal right multiplicationを名前付き作用として構成し、単位・合成・自由・推移・一意displacementとtransport互換性を証明。lens/protocolの任意package arrowへ同じ定理を適用 | G-122 original comparison/restrictionへの具体的instantiation、および後続のsection・kernel・fiberの表示側回復 | ここでの核は`ker (generatedArrowComparisonSourceHom c)`というrestricted source-projection kernelだけである。G-122 original inputのcommon A--C realization、ambient normalization kernel、bottom/係数成分は別義務として未完了。A--F最終統合も未完了 |
@@ -18937,4 +18938,82 @@ audits:
     - "the current basic generated syntax has no encoder for every actual direct endpoint automorphism"
     - "this candidate insufficiency is not a refutation of the fixed target"
   next_obligation: "Construct enriched primitive syntax and an evaluator MulEquiv for every actual direct endpoint automorphism without using completed semantic automorphisms as syntax leaves, then lift it to the whole comparison group and every base fiber."
+```
+
+## Cycle 182 — Exact reduction of comparison completeness
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 182
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 627378af558d4fc3a13589f876430cffe27ff287
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_obligation: "Prove the exact necessary-and-sufficient remaining obligation for whole generated-to-actual comparison completeness"
+  expected_result_type: proof-checkpoint
+  risks:
+    - "assuming direct evaluator bijectivity and reporting whole comparison recovery"
+    - "proving only a one-way implication"
+    - "using semantic equality as a syntax congruence"
+result:
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "Used source projection and conjugation sections for the displayed and actual barAlpha isomorphisms to prove that comparison-evaluator injectivity iff direct-evaluator injectivity, comparison-evaluator surjectivity iff direct-evaluator surjectivity, and therefore whole bijectivity iff direct bijectivity. Added only an explicitly conditional MulEquiv packaging for later use."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldComparisonCompletenessReduction.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonCompletenessReduction.comparisonEvaluation_source
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonCompletenessReduction.comparisonEvaluation_injective_iff_direct
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonCompletenessReduction.comparisonEvaluation_surjective_iff_direct
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonCompletenessReduction.comparisonEvaluation_bijective_iff_direct
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonCompletenessReduction.comparisonEvaluationMulEquivOfDirectBijective
+  claim_mapping:
+    source_labels:
+      - "GOAL B: fullness and faithfulness must be discharged rather than supplied"
+      - "GOAL D: recover the whole comparison group, not selected elements"
+    conjuncts:
+      - "faithfulness -> exact iff with direct evaluator injectivity"
+      - "fullness -> exact iff with direct evaluator surjectivity"
+      - "whole comparison -> both endpoints recovered from the source across barAlpha"
+    undischarged_assumptions:
+      - "primitive syntax still lacks an encoder for every actual direct endpoint automorphism"
+      - "the final MulEquiv definition is conditional and is not counted as discharge"
+audits:
+  premise_delta:
+    discharged:
+      - "necessity and sufficiency of direct evaluator injectivity"
+      - "necessity and sufficiency of direct evaluator surjectivity"
+      - "necessity and sufficiency of direct evaluator bijectivity"
+    remaining:
+      - "construct direct evaluator injectivity and surjectivity from enriched primitive syntax"
+      - "instantiate whole comparison/kernel/every-fiber transport"
+      - "final A--F theorem"
+  certificate_provenance:
+    discharged:
+      - "both iff directions use actual source projections and constructed conjugation sections"
+    unresolved:
+      - "conditional directBijective argument remains an explicit future discharge, not a certificate accepted by the target"
+  proof_use:
+    used:
+      - "comparison evaluation/source compatibility"
+      - "displayed and actual section-source inverse laws"
+      - "comparison evaluation/section compatibility"
+    unused:
+      - "no semantic automorphism encoder or evaluator bijectivity is assumed in the iff theorems"
+  structure_field_escape: none-found-no-new-structure-or-certificate-field
+  route_integrity: pass-both-comparison-endpoints-are-recovered-from-the-source-by-the-same-barAlpha-conjugation
+  target_fitting: partial-the-whole-group-obligation-is-exactly-reduced-but-direct-syntax-completeness-remains-open
+  vacuity: none-found-surjectivity-quantifies-arbitrary-actual-comparison-pairs-and-arbitrary-actual-direct-auts
+  one_way_as_equivalence: none-found-injectivity-surjectivity-and-bijectivity-are-all-proved-as-iff
+  validation_refs:
+    - "focused FiniteAxisFoldComparisonCompletenessReduction check: PASS; 7 namespace declarations, standard axioms only"
+    - "registered exact FiniteAxisFoldComparisonCompletenessReduction target build: PASS (4299 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "the current syntax has no primitive encoder for arbitrary actual direct-endpoint automorphisms"
+    - "this is the exact remaining construction obligation, not target refutation"
+  next_obligation: "Construct enriched primitive syntax and both evaluator round trips for every actual direct-endpoint automorphism without semantic automorphisms or completed map families as leaves."
 ```
