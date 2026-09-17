@@ -21,12 +21,13 @@
   merge commit `74b6cfbeb83d494cb7ab43d9995e5df97158b006`
 - Cycle 6 accepted PR: [#4719](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4719),
   merge commit `97b586063cb1d217ecdb015027e1ffa6cb9442c3`
+- Cycle 7 accepted PR: [#4720](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4720),
+  merge commit `be531fa3c355859cb6b3e28ad78960a3b14cf7c4`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: D の component-indexed family restriction について、precomposition の単射性・全射性を
-  index map の全射性・単射性とそれぞれ同値化する
-- next proof obligation: induced-subgraph component map を構成し、その全射性・単射性を D の graph condition と
-  同値化した後、有限列挙入力下の実効性へ進む
+- current proof obligation: induced-subgraph component map を構成し、その全射性・単射性を D の graph condition と
+  同値化して、component-family restriction の区別・延長判定へ接続する
+- next proof obligation: D の決定集合存在判定、`Equiv.Perm K` への specialization、および有限列挙入力下の実効性へ進む
 
 ## Cycle 1 — rejected
 
@@ -501,6 +502,90 @@ audits:
     - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.ComponentRestriction: 3 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "construct the induced-subgraph component map q_S and prove its surjectivity/injectivity equivalent to meeting every full component and retaining full-component connectivity inside S"
+```
+
+Cycle 7 は final head `f4698c8239bf4452396d9ac49b48f5596a521b84` の formal rerun 1/2 で
+全4 lane が `Mergeable`、finding なしとなり、CI 7/7 success を確認して mergeした。
+最終監査は PR comment `5718851609`、Cycle 8 選定は Issue comment `5718862415` に固定した。
+
+## Cycle 8 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 8
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: be531fa3c355859cb6b3e28ad78960a3b14cf7c4
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 7 accepted evidence: PR comment 5718851609; Issue comment 5718862415"
+  proof_dag_predecessors:
+    - "RealizationReconstruction.FixedFComponentClassification"
+    - "LocalSemanticReconstruction.ComponentRestriction.precompose_injective_iff_surjective"
+    - "LocalSemanticReconstruction.ComponentRestriction.precompose_surjective_iff_injective"
+  proof_obligation: "頂点述語 S が誘導する actual directed multigraph と、その component から full component への写像を構成する。写像の全射性を S が全 full component と交わること、単射性を S 内で full connectivity を保持することと同値化し、component-family restriction の区別・延長判定へ接続する"
+  selection_reason: "Cycle 7 の generic precomposition criteria に、D が指定する vertices and edges inside S の actual graph map を供給する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/InducedComponentCriteria.lean"
+  risks:
+    - "full graph の辺ではなく、両 endpoint が S に属する named edges だけを induced graph に残すこと"
+    - "full reachability から induced reachability を無条件には導かず、RetainsFullConnectivity として判定対象にすること"
+    - "finiteness、decidability、effectiveness を graph equivalence へ暗黙に混入しないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the actual S-induced directed multigraph and its component map are constructed; surjectivity is equivalent to meeting every full component, injectivity is equivalent to retaining full connectivity inside S, and the Cycle 7 precomposition criteria yield the corresponding separation and extension equivalences"
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.graph"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.Reachable"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.Component"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.reachable_full"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.toFull"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.toFull_mk"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.MeetsEveryFullComponent"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.RetainsFullConnectivity"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.toFull_surjective_iff_meetsEveryFullComponent"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.toFull_injective_iff_retainsFullConnectivity"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.precompose_toFull_injective_iff_meetsEveryFullComponent"
+    - "AAT.AG.LocalSemanticReconstruction.InducedComponent.precompose_toFull_surjective_iff_retainsFullConnectivity"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL D: 区別 iff S が全連結成分と交わる"
+      - "固定 GOAL D: 延長 iff 同一 full component の S 頂点が S の頂点と辺だけで結ばれる"
+    conjuncts:
+      - "induced graph has vertex subtype S and exactly the named full edges whose source and target satisfy S"
+      - "induced reachability maps to full reachability, so the component map is defined without representatives"
+      - "component map surjectivity iff every full component has a retained vertex"
+      - "component map injectivity iff every full-reachable pair of retained vertices is induced-reachable"
+      - "for any Nontrivial Value, precomposition separation and extension specialize to those two graph conditions"
+    undischarged_assumptions:
+      - "specialize Value to Equiv.Perm K from the fixed GOAL premise |K|≥2 and connect to preservingEquivComponentPermutationFamilies"
+      - "prove existence of a finite determining S iff the full component type is finite"
+      - "supply the separately specified finite-enumeration effectiveness result"
+    acceptance_point: "the graph is an actual FixedFDirectedMultigraph and both graph criteria are connected to the actual precomposition map; finiteness and effectiveness remain separate obligations"
+    port_status: unported
+audits:
+  material_premises:
+    discharge_required:
+      - "induced paths map to full paths / discharged by Relation.EqvGen induction on actual retained named edges"
+      - "component-map surjectivity and injectivity / discharged by quotient representative elimination"
+      - "separation and extension / discharged by the accepted Cycle 7 generic equivalences"
+    conclusion_equivalent_risk: []
+  proof_use:
+    used:
+      - "fixedFComponentMk_eq_iff"
+      - "ComponentRestriction.precompose_injective_iff_surjective"
+      - "ComponentRestriction.precompose_surjective_iff_injective"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/InducedComponentCriteria.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.InducedComponent: 12 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "prove the finite determining-set existence criterion, then specialize the value family to Equiv.Perm K and isolate finite-enumeration effectiveness"
 ```
 
 ## 未完了 ledger
