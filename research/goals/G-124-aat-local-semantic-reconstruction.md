@@ -1,7 +1,7 @@
 # G-124-aat-local-semantic-reconstruction — 局所意味表示からの再構成と有限決定性
 
 - `id`: `G-124-aat-local-semantic-reconstruction`
-- `status`: `draft`
+- `status`: `active`
 - `research mode`: `target-theorem`
 - `tracking issue`: [#4711](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4711)
 - `source`: [G-123の総括とG-124の研究目標案(#4520)](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520#issuecomment-5712533071)、[G-123 report](../reports/G-123-aat-realization-reconstruction.md)
