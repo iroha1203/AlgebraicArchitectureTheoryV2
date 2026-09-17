@@ -1691,7 +1691,7 @@ selection:
   proof_state_ref: "Cycle 19 accepted evidence: PR comment 5721617738; Issue comment 5721667281"
   proof_dag_predecessors:
     - "RealizationReconstruction.closedFamilyRealizationCategory"
-    - "LensRealization.Fiber, res, res_id, and res_comp"
+    - "LensRealization.Fiber and res; package Hom identity/composition and semantic readback"
     - "ProtocolRealization.State, app, edge_naturality, and observation_app"
     - "LocalSemanticReconstruction.LocalModelCategory and ClosedFamilyLocalReading"
   proof_obligation: "lensの有限reference fiberとprotocolの各parameter-owned vertexの有限state carrierについて、accepted closed-family categoryの全objectと全morphismを読むactual FintypeCat-valued functorを構成し、一点restriction category上のlocal-model readingへ接続する。protocolではedge naturalityとobservation preservationをexact component APIとして示す"
@@ -1749,7 +1749,7 @@ audits:
     discharge_required:
       - "finite lens value / accepted finite_fiber premise"
       - "finite protocol value / accepted state_finite premise"
-      - "map identity and composition / accepted package-to-semantic functoriality"
+      - "map identity and composition / package Hom identity/composition and semantic readback compute definitionally"
       - "edge and observation coherence / accepted semantic naturality"
     conclusion_equivalent_risk: []
   certificate_provenance:

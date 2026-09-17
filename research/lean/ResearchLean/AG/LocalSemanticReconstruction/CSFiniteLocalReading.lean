@@ -164,13 +164,14 @@ theorem protocolVertexReading_edge_naturality
     (f : FamilyRealization.protocol X ⟶ FamilyRealization.protocol Y)
     {source target : input.schema.Vertex}
     (edge : input.schema.Edge source target) (state : X.State source) :
-    ProtocolRealization.app f.down.toSemanticHom
-        (input.schema.vertexObject target) (X.edgeAction edge state) =
+    (((protocolVertexLocalReading input target).map f).app
+        (Opposite.op (Discrete.mk PUnit.unit))) (X.edgeAction edge state) =
       Y.edgeAction edge
-        (ProtocolRealization.app f.down.toSemanticHom
-          (input.schema.vertexObject source) state) := by
-  exact congrFun (ProtocolRealization.edge_naturality
-    f.down.toSemanticHom edge) state
+        ((((protocolVertexLocalReading input source).map f).app
+          (Opposite.op (Discrete.mk PUnit.unit))) state) := by
+  simpa only [protocolVertexLocalReading_map_app] using
+    congrFun (ProtocolRealization.edge_naturality
+      f.down.toSemanticHom edge) state
 
 /-- The protocol local component preserves the fixed observation at every
 named vertex. -/
@@ -180,11 +181,12 @@ theorem protocolVertexReading_observation
     (f : FamilyRealization.protocol X ⟶ FamilyRealization.protocol Y)
     (vertex : input.schema.Vertex) (state : X.State vertex) :
     Y.observe vertex
-        (ProtocolRealization.app f.down.toSemanticHom
-          (input.schema.vertexObject vertex) state) =
+        ((((protocolVertexLocalReading input vertex).map f).app
+          (Opposite.op (Discrete.mk PUnit.unit))) state) =
       X.observe vertex state := by
-  exact congrFun (ProtocolRealization.observation_app
-    f.down.toSemanticHom vertex) state
+  simpa only [protocolVertexLocalReading_map_app] using
+    congrFun (ProtocolRealization.observation_app
+      f.down.toSemanticHom vertex) state
 
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction
 
