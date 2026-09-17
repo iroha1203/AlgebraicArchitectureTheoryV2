@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 182 proves that whole comparison-evaluator injectivity, surjectivity, and bijectivity are each equivalent to the corresponding direct-endpoint automorphism-evaluator property
+- current proof obligation: Cycle 183 proves that the present finite-axis-table congruence is not faithful: its identity-table leaf is distinct from the source identity but both have the same actual evaluation
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct an enriched primitive syntax encoder and both evaluator round trips for every actual direct-endpoint automorphism, without accepting completed semantic automorphisms or whole map families as syntax leaves
+- next proof obligation: repair the finite-table fragment with source-derived identity and multiplication laws, then continue toward an enriched primitive encoder for every actual direct-endpoint automorphism; do not promote existing candidate obstructions to target refutation without an exhaustive provenance bound for every allowed parameter-relative syntax
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/B/D Cycle 183 delta | 現行finite-axis-table構文の合同がdecoder忠実性を満たすかを、semantic equalityを合同へ追加せず判定する | `FiniteAxisFoldAxisSwapSyntax.axisLeafParity`, `axisLeafParity_eq_of_congruent`, `identityAxisDirect_not_congruent_identity`; `directIdentityAxisTableAut_ne_one`, `directIdentityAxisTableAut_evaluation`, `directAutomorphismEvaluationHom_not_injective`, `comparisonEvaluationHom_not_injective` | Cycle 182までの固定構文・source congruence・actual evaluator・comparison/direct injectivity iff。非忠実性証明やsemantic equalityは入力しない | 全既存congruence constructorがaxis primitive leaf parityを保つことを帰納し、identity table leafをsource identityから分離。同じleafのactual evaluationはfixed pull-push functorialityからidentityと証明し、direct evaluator非単射、さらにCycle 182 iffからwhole comparison evaluator非単射を導出 | current grammarを完成候補から除外し、source-derived table identity/composition lawsを備えた修正版の設計へ | 現候補だけの反証でありfixed targetの反証ではない。修正版の忠実性・全射性、全actual direct Autのprimitive encoder、許容される全parameter-relative syntaxの網羅的provenance/cardinality bound、A--F統合は未完了 |
 | B/D Cycle 182 delta | whole comparison表示のfull/faithful義務を、barAlphaがisoであることを使ってdirect endpoint Aut evaluatorの正確な必要十分条件へ縮約する | `comparisonEvaluation_source`; `comparisonEvaluation_injective_iff_direct`; `comparisonEvaluation_surjective_iff_direct`; `comparisonEvaluation_bijective_iff_direct`; 条件付き`comparisonEvaluationMulEquivOfDirectBijective` | fixed generated/actual barAlpha iso、既構成direct evaluatorとwhole comparison evaluator、両側のsource-conjugation section。direct bijectivityはiff定理の結論であり入力しない。最後の包装だけ明示的な条件付き中間定理 | source projection可換性を証明。各comparison pairがsourceから一意に回復されることによりinjectivityを双方向、任意actual/source Autのsection liftによりsurjectivityを双方向に証明し、bijectivity iffを構成 | primitive syntax encoderの完了判定、および得られたdirect MulEquivからwhole comparison・kernel・fiber輸送へ | direct evaluatorのinjective/surjective自体は未放電。条件付きMulEquivをcompletionとは数えない。primitive encoder、全比較・全fiber表示、A--F統合は未完了 |
 | D Cycle 181 delta | 固定finite-axis-foldの全6 axis permutationについてgenerated表示をactual canonical sectionへ接続し、同じnormalized元上の任意actual liftをfull restricted kernelで分類する | `FiniteAxisFoldGeneratedLiftFibers.canonicalLift`, `canonicalLift_val`, `everyLift_unique_kernel_displacement` | 原始`Fin 3` permutation全体、既構成generated section elementとevaluation定理、actual section right inverse、actual全fiber torsor定理。liftやkernel displacementは入力しない | generated evaluationをactual lift fiberに包装し、underlying raw pairがactual canonical sectionそのものと証明。任意actual liftに対しfull actual restricted kernelの一意displacementを構成 | 固定D生成例のsection・fiber接続、および全比較群表示へ拡張するencoder設計 | 6個の固定normalized元に限定。current syntaxが全actual direct endpoint Autをencodeすること、whole comparison MulEquiv、全base fiberの表示同値、A--F統合は未完了 |
 | D Cycle 180 delta | normalizationで消えるambient kernelと、元の比較を保つ領域へ制限したrestricted kernelを全要素について区別し、固定生成例でも差を証明する | `RestrictedAmbientKernel.inclusion`, `inclusion_injective`, `mem_range_inclusion_iff`; `geometryComparisonRestrictedKernelToAmbientKernel`とinjective/range iff; `FiniteAxisFoldRestrictedAmbientKernel.ambientElement`, `ambientElement_not_mem_restrictedKernel_range`, `restrictedKernel_inclusion_not_surjective`, `ambientElement_bottom_coefficient_packet` | 任意のambient hom、source/target subgroup、restricted hom、underlying square。G-122適用ではactual endpoint normalizationとactual raw/normalized comparison subgroup。kernel同一視、ambient元のcomparison membership、surjectivity certificateは入力しない | restricted kernel元をunderlying ambient元へ写し、kernel equationをsquareから構成。像をambient kernel内のsource subgroup membershipと双方向に特徴付ける。固定ambient involutionがnormalization kernelに入る一方raw `barAlpha`比較を保たない既証明を適用し非全射を証明。同じ元の底・係数4成分恒等を保持 | 表示側でrestricted/ambient二核を別々に回復するためのtarget側分類、およびbottom/coefficient接続 | これはactual G-122側の二核分離であり、presentation側の全元回復ではない。full comparison MulEquivにはdirect endpointの全automorphismをprimitive syntaxからencodeする構成が不足。六つの固定axis元を越えるsyntax completeness、全lift fiberの表示同値、A--F統合は未完了 |
@@ -19016,4 +19017,89 @@ audits:
     - "the current syntax has no primitive encoder for arbitrary actual direct-endpoint automorphisms"
     - "this is the exact remaining construction obligation, not target refutation"
   next_obligation: "Construct enriched primitive syntax and both evaluator round trips for every actual direct-endpoint automorphism without semantic automorphisms or completed map families as leaves."
+```
+
+## Cycle 183 — Current axis-table congruence is not faithful
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 183
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 0813ff400c5cdb1e854ae3229dfb280e677cffc6
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_obligation: "Test faithfulness of the current finite-axis-table source congruence before treating it as a candidate for the Cycle 182 direct-endpoint equivalence"
+  expected_result_type: candidate-refutation-checkpoint
+  risks:
+    - "adding semantic evaluator equality as a congruence law"
+    - "mistaking failure of the current grammar for refutation of G-123"
+    - "repairing faithfulness by shrinking the actual automorphism range"
+result:
+  proposed_result_type: candidate-refutation-checkpoint
+  completion_candidate: no
+  target_refuted: no
+  proof_obligation_delta: "Constructed a Boolean invariant of primitive axis-table occurrences and proved it is preserved by every existing source congruence constructor. It separates the identity-table primitive from the source identity, while functorial evaluation sends both to the actual identity. Therefore the current direct endpoint evaluator is not injective, and the Cycle 182 iff makes the current whole comparison evaluator noninjective as well."
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldAxisSwapEvaluatorNonfaithful.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapSyntax.axisLeafParity
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapSyntax.axisLeafParity_eq_of_congruent
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapSyntax.identityAxisDirect_not_congruent_identity
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.directIdentityAxisTableAut_ne_one
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.directIdentityAxisTableAut_evaluation
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.directAutomorphismEvaluationHom_not_injective
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.comparisonEvaluationHom_not_injective
+  claim_mapping:
+    source_labels:
+      - "GOAL A: presentation equality is generated syntax congruence, not decoder-image equality"
+      - "GOAL B: faithfulness must be proved for the same decoder"
+      - "GOAL D: recover the whole comparison group rather than selected elements"
+    conjuncts:
+      - "source distinction -> parity is sound for all current congruence constructors"
+      - "same semantic value -> the identity finite table evaluates through the fixed pull-push route to identity"
+      - "direct failure -> two distinct source automorphisms have equal actual evaluations"
+      - "whole comparison failure -> Cycle 182 exact iff transfers noninjectivity"
+    undischarged_assumptions:
+      - "a repaired source congruence with table identity and multiplication laws has not been constructed"
+      - "surjectivity onto every actual direct endpoint automorphism remains unconstructed"
+audits:
+  premise_delta:
+    discharged:
+      - "faithfulness status of the current finite-axis-table grammar"
+      - "faithfulness status of its current whole comparison evaluator"
+    remaining:
+      - "source-derived repair laws and a new faithfulness proof"
+      - "primitive encoder and both round trips for every actual direct endpoint automorphism"
+      - "whole comparison equivalence, all-fiber transport, and final A--F theorem"
+  certificate_provenance:
+    discharged:
+      - "noncongruence follows from a syntax-recursive invariant, not from semantic inequality"
+      - "semantic identity follows from the original identity finite table and functor map-identity laws"
+    unresolved:
+      - "no exhaustive upper bound has yet been proved for every parameter-relative grammar permitted by the fixed target"
+  proof_use:
+    used:
+      - "all constructors of the current source congruence"
+      - "identity finite-axis permutation geometry theorem"
+      - "exact-left and top-transport functoriality"
+      - "Cycle 182 comparison/direct injectivity iff"
+    unused:
+      - "no semantic equality congruence, completed automorphism leaf, evaluator injectivity premise, or restricted actual hom-set is accepted"
+  structure_field_escape: none-found-no-structure-or-certificate-field-is-added
+  route_integrity: pass-the-distinct-source-terms-and-their-common-actual-evaluation-are-both-proved
+  target_fitting: candidate-refutation-only-the-fixed-target-still-allows-a-different-source-derived-congruence-and-richer-parameter-relative-syntax
+  vacuity: none-found-the-counterexample-is-the-explicit-identity-table-source-automorphism
+  one_way_as_equivalence: none-found-the-result-is-a-negative-injectivity-theorem-and-uses-the-prior-exact-iff-only-in-the-valid-direction
+  goal_or_report_reinterpretation: none-found-current-grammar-failure-is-not-labelled-target-refuted
+  validation_refs:
+    - "focused FiniteAxisFoldAxisSwapEvaluatorNonfaithful check: PASS; 9 namespace declarations, standard axioms only"
+    - "registered exact FiniteAxisFoldAxisSwapEvaluatorNonfaithful target build: PASS (4300 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "the current grammar cannot satisfy B faithfulness because it omits source-derived identity-table and table-composition congruence laws"
+    - "existing cardinal obstructions still lack an exhaustive provenance/cardinality theorem for every syntax allowed by the parameter-relative fixed target, so they do not yet refute G-123"
+  next_obligation: "Add source-derived finite-table identity and multiplication laws and prove evaluator soundness for the repaired congruence, then retest injectivity; independently formalize an exhaustive allowed-syntax provenance bound before any target-level impossibility claim."
 ```
