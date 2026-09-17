@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 160 constructs the genuine protocol all-object core prefix, preserving every named edge, observation, relation instance, and observation instance on arbitrary architecture objects
+- current proof obligation: Cycle 161 assembles the lens and protocol all-object constructions into full source-generated equation-system transports
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: package the lens and protocol all-object maps into generated-core `EquationSystemExactTransport` values, complete the remaining `SignedExactCoreReadingHom` fields, then assemble the genuine-CS `PackageTotalHom`
+- next proof obligation: use the generated equation transports to construct the remaining lens/protocol `SignedExactCoreReadingHom` fields and then their genuine-CS `PackageTotalHom` bases
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 161 delta | lens/protocolの任意object residualをendpoint scaffoldに留めず、source-generated coreの完全なequation transportとして構成する | `lensIsoEndpointContextEquivalence`, `lensIsoEndpointEquationTransport`, `coreGeometryEquationTransportCast`, `lensIsoGeneratedEquationTransport`; protocolの同名対応宣言 | 各fixed CS inputとgenuine semantic iso、および既存のsource-generated core/object provenance等式。generic cast helperは構成済みendpoint transportに条件付きだが、最終lens/protocol constructorはそのpremiseを内部構成して渡し、completed transport、core hom、geometry homを入力に取らない | hom/invのfull-family context functorからcontext equivalence、全Law index同値、全coordinate環同型、restriction naturality、全generator像、任意object residualを一recordに構成し、生成対象等式だけでendpointからgenerated coreへtransport | lens/protocol `SignedExactCoreReadingHom.equationMap` | detector/operation/invariant/signature action、extraction/composition law、context inverseとの整合を含む完成core hom、total base、non-raw geometry、一般非可逆CS射、readback、D、A--F統合は未完了 |
 | A/E Cycle 160 delta | protocol側でも任意`ArchitectureObject`のrecognized/unrecognized両branchを扱い、全named edge・observationと全relation/observation Law instanceの意味およびresidualを厳密に保持する | `protocolIsoTransportLawStructure`, `_actual`, `protocolLawStructure_ext`; `protocolIsoObjectMap`, `_configuration_eq`, `_selectedQuantities_eq`, `_object_formation_eq`, `_reader_eq`; `protocolIsoTransportLawHom`, `...Inv`, `_holds_iff`; `protocolIsoObjectMap_readHolds_iff`, `_equationResidual_eq` | fixed inputのfinite protocol realizationsとgenuine semantic iso。endpoint finiteness/lawfulnessはambient input fieldだが任意raw structureのproofでは未使用。reader result、object-map/residual certificate、完成core homは受けない | 任意raw protocolの全edge actionをhom∘action∘invで、全observationをobserve∘invで共役。recognized objectを共役structureへ、unrecognized objectをCantor-separated markerへ送り、configuration/selected dataを保持。reader Option map、全relation/observation Holds同値、全context/object/index/Atom residual等式を証明 | protocol `SignedExactCoreReadingHom`のobjectMap/configuration/equation-residual fields | 完全なprotocol `EquationSystemExactTransport`包装、extraction/compositionと残るcore fields、lens/protocol total base、non-raw geometry、一般非可逆CS射、readback、D、A--F統合は未完了 |
 | A/E Cycle 159 delta | genuine lens core bridgeのprimitive fieldsを完成recordへ移さず構成し、任意`ArchitectureObject`のrecognized/unrecognized両branchでLaw意味とresidual値を厳密に保持する | `lensCore_extraction_eq`, `lensCore_composition_eq`; `lensIsoTransportLawStructure`, `_actual`; `lensIsoObjectMap`, `_configuration_eq`, `_selectedQuantities_eq`, `_object_formation_eq`; `_reader_eq`, `_reader_some_iff`, `_reader_none_iff`; `lensIsoTransportLawHom`, `...Inv`, `_holds_iff`; `lensIsoObjectMap_readHolds_iff`, `_equationResidual_eq` | fixed inputのlawful lens realizationsとgenuine semantic iso。endpoint lawfulness/finitenessはambient input fieldだが本cycleのproofでは未使用。任意raw structureのlawfulness、reader result、object-map certificate、residual certificate、完成`SignedExactCoreReadingHom`は受けない | 抽出/composition等式と任意raw get/putの共役を構成。recognized objectは共役structureへ、unrecognized objectはCantorでtarget structure型と異なるmarkerへ送り、configuration/selected dataを保持。readerのOption map等式とsome/none反映、任意Law instanceの保存反映、全context/object/index/Atomの多項式residual等式を証明 | lens `SignedExactCoreReadingHom`のextraction/composition/objectMap/configuration/equation-residual fields | 完全な`EquationSystemExactTransport`包装、detector/operation/invariant/signature fields、protocol analogue、non-raw geometry、一般非可逆CS射、readback、D、A--F統合は未完了 |
 | A/E Cycle 158 delta | exact typed geometry morphismをstrict categoryと衝突しない圏として包装し、genuine CS同型の全Law座標作用をendpoint scaffoldではなくsource-generated `ReadingCore`自身へ接続する | `ExactGeomReadCategory`, `.ofGeometryPackage`, `.toGeometryPackage`, `.objectEquiv`, `exactGeometryTotalCategory`, `ExactGeomReadCategory.ofStrictHom`; lens/protocol各`*ReadingCoreCoordinateEquivEndpoint`, `*IsoReadingCoreCoordinateEquiv`, `*IsoReadingCoreRawExactMapAgainst` | category側は任意のconstructed `GeometryPackage`とexact total hom。raw側はprimitive CS inputから構成済みのactual `ReadingCore`、genuine CS iso、および後続で構成される`PackageTotalHom`。completed geometry homやcoordinate subsetを受けない | 別object type上でCycle 157の三法則を`Category` instanceへ包装し、strict homを全field保持で埋め込む。dependent Sigma provenanceからactual ReadingCore equation indexとendpoint Law indexの等価を構成し、それでgenuine full Law-index×Atom作用を共役してtarget-indexed raw mapを生成 | fixed realization category候補のexact morphism interfaceと、後続のgenuine-CS exact total morphism raw field | `ExactGeomReadCategory`はまだ固定`R_Theta`そのものではない。`PackageTotalHom`は条件付き引数で未構成。coverage/overlap/realization、一般非可逆CS射、readback、D回復、A--F統合も未完了 |
@@ -16700,4 +16701,101 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Package the lens and protocol all-object maps and residual theorems into source-generated EquationSystemExactTransport values, then construct the remaining SignedExactCoreReadingHom fields without importing a completed transport or base."
+```
+
+## Cycle 161 — Generated-core equation transports for both CS models
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 161
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 3d8c18f2f49405629d1d72dfab27e059dcda2686
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 160 completed the protocol all-object residual theorem, so both CS models had the material object/residual fields but no full generated-core EquationSystemExactTransport"
+  proof_obligation: "Construct lens and protocol context equivalences and package every equation index, coefficient coordinate, restriction square, generator, and arbitrary-object residual into generated-core exact transports"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeneratedEquationTransport.lean
+  risks:
+    - "accepting a completed EquationSystemExactTransport as the CS-specific constructor input"
+    - "transporting endpoint equations without proving their equality to the source-generated core equations"
+    - "using only residual-zero preservation instead of full residual equality"
+    - "omitting either relation/observation protocol indices or a lens Law family"
+  unchecked:
+    - "remaining SignedExactCoreReadingHom fields and the PackageTotalHom base"
+    - "non-raw geometry supply and arbitrary noninvertible CS morphisms"
+    - "independent readback, D classification, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "For lens and protocol separately, constructed the context equivalence from the forward/inverse Law context functors, used the complete semantic Law-index equivalence and coordinate ring isomorphism, proved restriction naturality and every violation generator image, and supplied the Cycle 159/160 all-object residual theorem. Transported the endpoint construction to the actual source-generated AATCorePackage equation systems using only the previously proved generated-object equalities."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeneratedEquationTransport.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.lensIsoEndpointContextEquivalence
+    - AAT.AG.RealizationReconstruction.lensIsoEndpointEquationTransport
+    - AAT.AG.RealizationReconstruction.coreGeometryEquationTransportCast
+    - AAT.AG.RealizationReconstruction.lensIsoGeneratedEquationTransport
+    - AAT.AG.RealizationReconstruction.protocolIsoEndpointContextEquivalence
+    - AAT.AG.RealizationReconstruction.protocolIsoEndpointEquationTransport
+    - AAT.AG.RealizationReconstruction.protocolIsoGeneratedEquationTransport
+  claim_mapping:
+    source_labels:
+      - "GOAL A: source-generate the exact equation component of realization morphisms"
+      - "GOAL E and n1015: connect both independent CS semantics to the same AAT equation transport"
+    conjuncts:
+      - "all source contexts and arrows -> forward Law context functor inside a constructed equivalence"
+      - "every lens Law index or protocol relation/observation index -> genuine semantic index equivalence"
+      - "every Law-index times Atom coordinate -> genuine coordinate ring isomorphism"
+      - "every violation generator and arbitrary-object residual -> exact transported polynomial equality"
+      - "endpoint equation system -> source-generated AATCorePackage equation system by proved object provenance"
+    undischarged_assumptions:
+      - "genuine CS isomorphism is the allowed input for this exact-equivalence subcase"
+      - "the surrounding core hom and PackageTotalHom are not yet constructed"
+      - "general noninvertible CS morphisms require a directed rather than equivalence-valued equation action"
+    acceptance_point: "Both generated equation transports are constructed without accepting a completed transport or completed core/geometry hom."
+audits:
+  premise_delta:
+    discharged:
+      - "lens and protocol context equivalences"
+      - "full equation-index and coefficient-coordinate equivalences"
+      - "restriction naturality and generator preservation"
+      - "all-object residual equality inside the transport record"
+      - "endpoint-to-generated-core provenance cast"
+    remaining:
+      - "remaining generated-core hom fields, total base, non-raw geometry, noninvertible maps, readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "generic coreGeometryEquationTransportCast accepts an already constructed endpoint EquationSystemExactTransport; both exported CS-specific generated constructors discharge it with their internally constructed endpoint transport"
+    discharged:
+      - "context equivalences are built from the actual forward/inverse Law homs"
+      - "equation and observable equivalences are generated by the actual CS isomorphism"
+      - "generated-core conversion uses existing generated-object equalities, not a supplied equation equality"
+    unresolved:
+      - "construct the complete SignedExactCoreReadingHom and PackageTotalHom values"
+  proof_use:
+    used:
+      - "both directions of each genuine CS isomorphism"
+      - "all Law indices and all Atom coordinates"
+      - "full-family context functors on every context and arrow"
+      - "Cycle 159 and 160 arbitrary-object residual theorems"
+      - "source-generated object provenance equalities from Cycle 148"
+    unused:
+      - "the final lens/protocol generated constructors accept no completed equation transport, core hom, PackageTotalHom, geometry hom, decoder membership, readback, or D classifier; only the generic cast helper is conditional on its explicitly recorded endpoint-transport premise"
+  structure_field_escape: none-found-all-EquationSystemExactTransport-fields-are-constructed-in-the-CS-specific-definitions
+  route_integrity: pass-both-CS-models-use-their-source-generated-core-and-complete-Law-coordinate-action
+  target_fitting: partial-the-equation-component-is-complete-for-genuine-isomorphisms-but-the-surrounding-core-and-geometry-morphisms-remain-open
+  vacuity: none-found-residual-equality-quantifies-over-all-contexts-objects-indices-and-atoms
+  one_way_as_equivalence: none-found-this-checkpoint-is-explicitly-the-genuine-isomorphism-subcase
+  goal_or_report_reinterpretation: none-found-equation-transport-is-not-counted-as-a-complete-core-hom-or-final-R_Theta
+  validation_refs:
+    - "focused CSAATGeneratedEquationTransport file check: PASS; 7 namespace declarations, standard axioms only"
+    - "focused exact CSAATGeneratedEquationTransport target build: PASS (4289 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct the remaining lens/protocol SignedExactCoreReadingHom fields around these equation transports, preserving operation/invariant/signature/extraction/composition data before assembling their PackageTotalHom bases."
 ```
