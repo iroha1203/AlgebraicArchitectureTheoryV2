@@ -27,7 +27,6 @@ structure GeneratedForwardCoverageLabels {U : AtomCarrier.{u}}
     (targetData : CSAATCoreGeometryData targetObject) where
   sourceReading : Site.ArchCtx sourceObject
   targetReading : Site.ArchCtx targetObject
-  target_all : ∀ atom, targetObject.configuration.family.mem atom
   requiredCoordinateMap :
     sourceData.equationReading.equationSystem.RequiredCoordinate →
       targetData.equationReading.equationSystem.RequiredCoordinate
@@ -57,6 +56,7 @@ structure GeneratedForwardCoverageImage {U : AtomCarrier.{u}}
     (F : (coreGeometryDataSite sourceData).category ⥤
       (coreGeometryDataSite targetData).category)
     (labels : GeneratedForwardCoverageLabels sourceData targetData) : Prop where
+  target_all : ∀ atom, targetObject.configuration.family.mem atom
   requiredSupport : ∀ atom,
     sourceData.requirements.requiredSupport atom →
       targetData.requirements.requiredSupport atom
@@ -76,19 +76,19 @@ structure GeneratedForwardCoverageImage {U : AtomCarrier.{u}}
       targetData.requirements.supportVisibleOn (F.obj ⟨W⟩).ctx atom
   equationCoordinateVisibleOn : ∀ W coordinate,
     sourceData.requirements.equationCoordinateVisibleOn W coordinate →
-      ForwardObservableVisibility (W := W) labels.target_all
+      ForwardObservableVisibility (W := W) target_all
         labels.sourceReading labels.targetReading labels.forwardObservable
         (labels.sourceRequiredObservable coordinate)
         (labels.targetRequiredObservable (labels.requiredCoordinateMap coordinate))
   violationWitnessVisibleOn : ∀ W coordinate,
     sourceData.requirements.violationWitnessVisibleOn W coordinate →
-      ForwardObservableVisibility (W := W) labels.target_all
+      ForwardObservableVisibility (W := W) target_all
         labels.sourceReading labels.targetReading labels.forwardObservable
         (labels.sourceCoordinateObservable coordinate)
         (labels.targetCoordinateObservable (labels.coordinateMap coordinate))
   axisReadableOn : ∀ W axis,
     sourceData.requirements.axisReadableOn W axis →
-      ForwardAxisVisibility (W := W) labels.target_all labels.sourceReading
+      ForwardAxisVisibility (W := W) target_all labels.sourceReading
         labels.targetReading labels.axisForward
         (labels.targetAxis (labels.axisMap axis))
   boundaryVisibleOn : ∀ W base,
@@ -172,8 +172,6 @@ noncomputable def lensAATEndpointForwardCoverageLabels
       (lensAATCoreEndpointGeometryData input Y) where
   sourceReading := lensAATGeometryReadingContext input X
   targetReading := lensAATGeometryReadingContext input Y
-  target_all := fun atom => typedRoleConfiguration_mem
-    (U := lensAATCarrier input) (.point) atom
   requiredCoordinateMap := lensAATForwardRequiredCoordinate input f
   coordinateMap := lensAATForwardCoordinate input f
   axisMap := _root_.id
@@ -195,6 +193,8 @@ def lensAATEndpointForwardCoverageImageGeneric
       (lensAATCoreEndpointGeometryData input X)
       (lensAATCoreEndpointGeometryData input Y) f.lawContextFunctor
       (lensAATEndpointForwardCoverageLabels input f) where
+  target_all := fun atom => typedRoleConfiguration_mem
+    (U := lensAATCarrier input) (.point) atom
   requiredSupport := (lensAATForwardCoverageImage input f).requiredSupport
   requiredEquationCoordinate :=
     (lensAATForwardCoverageImage input f).requiredEquationCoordinate
@@ -277,8 +277,6 @@ noncomputable def protocolAATEndpointForwardCoverageLabels
       (protocolAATCoreEndpointGeometryData input Y) where
   sourceReading := protocolAATGeometryReadingContext input X
   targetReading := protocolAATGeometryReadingContext input Y
-  target_all := fun atom => typedRoleConfiguration_mem
-    (U := protocolAATCarrier input) (.point) atom
   requiredCoordinateMap := protocolAATForwardRequiredCoordinate input f
   coordinateMap := protocolAATForwardCoordinate input f
   axisMap := _root_.id
@@ -300,6 +298,8 @@ def protocolAATEndpointForwardCoverageImageGeneric
       (protocolAATCoreEndpointGeometryData input X)
       (protocolAATCoreEndpointGeometryData input Y) f.lawContextFunctor
       (protocolAATEndpointForwardCoverageLabels input f) where
+  target_all := fun atom => typedRoleConfiguration_mem
+    (U := protocolAATCarrier input) (.point) atom
   requiredSupport := (protocolAATForwardCoverageImage input f).requiredSupport
   requiredEquationCoordinate :=
     (protocolAATForwardCoverageImage input f).requiredEquationCoordinate

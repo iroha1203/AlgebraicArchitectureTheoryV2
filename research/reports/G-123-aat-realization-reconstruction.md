@@ -18253,6 +18253,7 @@ audits:
       - "the generic coverage and overlap structures expose proof fields for reusable internal packaging"
     discharged:
       - "coverage label records contain only maps/readings, never coverage proofs"
+      - "the proof-bearing coverage layer contains target full-family membership and both fixed CS constructors discharge it by typedRoleConfiguration_mem"
       - "lens/protocol endpoint adapters reuse the already constructed primitive-f evidence, and generated constructors eliminate only object equalities"
       - "selected Extension payloads are equality transports of canonical fixed-input contexts"
       - "all exported Extension and package constructors take only the primitive morphism and construct every proof field"
