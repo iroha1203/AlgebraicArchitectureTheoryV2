@@ -53,12 +53,14 @@
   merge commit `4534d6044697ec2ab27c8f176b0f7406cbeb1602`
 - Cycle 22 accepted PR: [#4735](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4735),
   merge commit `a4622964b281f04fb2e66c2940a91a125dda1d21`
+- Cycle 23 accepted PR: [#4736](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4736),
+  merge commit `2b2ec81ed51cee17a1c89296712680bae294ca1b`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: 任意の observed protocol local object を certificate field なしに実現へ組み立て、
-  essential surjectivity と protocol branch の圏同値を構成する
-- next proof obligation: protocol local-model equivalenceをfinite generator-table decoderと受理済み
+- current proof obligation: protocol local-model equivalenceをfinite generator-table decoderと受理済み
   Karoubi reconstructionへ接続し、restriction・retract・Arrow-level coherenceを示す
+- next proof obligation: lens branch について operation-aware local model と圏同値を構成し、
+  finite decoder・Karoubi reconstruction coherence へ接続する
 
 ## Cycle 1 — rejected
 
@@ -2110,6 +2112,118 @@ audits:
   next_obligation: "connect the protocol local-model equivalence to the finite generator-table decoder and accepted protocol Karoubi reconstruction, including restriction natural isomorphism, retract generation, and Arrow-level compatibility"
 ```
 
+Cycle 23 の fresh Math A/B・Lean A/B は final head
+`9a83a6c1eb49175122ad4cb58a828c1e6d951b55` で全4 lane `No major findings`、
+CI 7/7 success。最終監査は PR comment `5722371088`、merge commit は
+`2b2ec81ed51cee17a1c89296712680bae294ca1b`、Cycle 24 選定は Issue comment
+`5722414921` に固定した。
+
+## Cycle 24 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 24
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 2b2ec81ed51cee17a1c89296712680bae294ca1b
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 23 accepted evidence: PR comment 5722371088; Cycle 24 selection: Issue comment 5722414921"
+  proof_dag_predecessors:
+    - "Cycle 23 protocol observed-restriction category equivalence with explicit object assembly"
+    - "ProtocolPresentation.decoder and accepted protocol Karoubi reconstruction equivalence"
+    - "ProtocolPresentation.protocolRetractGeneratedBy and protocol Karoubi Arrow equivalence"
+    - "accepted closed-family protocol package/semantic round trips"
+  proof_obligation: "protocol observed local-model equivalenceをraw ProtocolRealizationと明示的に接続し、actual finite generator-table decoderのobject・edge・observation・morphism計算式を固定する。受理済みKaroubi reconstructionをobserved local categoryへtransportし、finite presentationへのrestriction natural isomorphism、任意observed objectのdecoder像からのretract、非可逆射を保つArrow equivalenceを構成する"
+  selection_reason: "二候補探索は、Cycle 23で圏同値まで得たprotocol branchを途中で離れず、accepted finite presentation/Karoubi routeへ接続することが最短の未放電obligationであると一致した"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/ProtocolObservedKaroubiCoherence.lean"
+  risks:
+    - "closed-family fiberとraw ProtocolRealizationの同値をwrapper名だけで済ませず、accepted package/semantic round tripsから明示すること"
+    - "retract witnessをlocal objectのfieldへ保存せず、Cycle 23 assemblyとaccepted semantic retract theoremから構成すること"
+    - "arbitrary observation equalityのdecidabilityまたはeffective encodingをfinite carrierだけから主張しないこと"
+    - "protocol branchの結果をlens・tagged・G-122またはfinal all-four equivalenceへ拡張しないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the protocol semantic category is explicitly equivalent to the observed local category; the actual finite presentation decoder has exact vertex, edge, observation, and morphism computation rules there; accepted Karoubi reconstruction transports with restriction Iso, retract generation, and Arrow-level equivalence"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.protocolSemanticClosedFamilyEquivalence"
+    - "AAT.AG.LocalSemanticReconstruction.protocolSemanticObservedRestrictionEquivalence"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedFiniteDecoder"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedFiniteDecoder_obj_vertex"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedFiniteDecoder_map_edge"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedFiniteDecoder_observe"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedFiniteDecoder_map_app_vertex"
+    - "AAT.AG.LocalSemanticReconstruction.protocolKaroubiObservedRestrictionEquivalence"
+    - "AAT.AG.LocalSemanticReconstruction.protocolKaroubiObservedRestrictionRestrictionIso"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedFiniteDecoder_retractGeneratedBy"
+    - "AAT.AG.LocalSemanticReconstruction.protocolKaroubiObservedRestrictionArrowEquivalence"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL B: primitive readingとfinite generator-table decoderをactual protocol local categoryで接続する"
+      - "固定 GOAL B/E2: accepted Karoubi reconstructionとのrestriction・retract・Arrow-level coherenceを示す"
+    conjuncts:
+      - "raw semantic protocol realizations and the closed-family protocol fiber are equivalent by explicit accepted round trips"
+      - "the resulting semantic-to-observed equivalence has the accepted primitive reading as its forward functor"
+      - "finite presentation objects, edge tables, observation values, and morphism components compute exactly in the observed decoder"
+      - "accepted protocol Karoubi reconstruction transports to the observed local category"
+      - "restriction along toKaroubi is naturally isomorphic to the actual observed finite decoder"
+      - "every observed local object is a retract of a decoded finite presentation"
+      - "Arrow-level equivalence retains arbitrary observation-compatible noninvertible transformations"
+    undischarged_assumptions:
+      - "decidability or effective finite encoding of arbitrary observation equality"
+      - "the three common FiniteReading effectiveness clauses"
+      - "corresponding local-model equivalences and decoder/Karoubi coherence for lens, tagged, and G-122"
+      - "the final common Lambda_Theta, M_Theta, N_Theta, and D_Theta"
+    acceptance_point: "protocol-branch finite decoder and Karoubi coherence only; no arbitrary-observation effectiveness, other-family, or all-four reconstruction claim"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "fixed ProtocolFamilyInput and its finite protocol presentation category"
+      - "Cycle 23 observation-aware local category equivalence"
+      - "accepted protocol Karoubi reconstruction, restriction Iso, retract theorem, and Arrow equivalence"
+    direction_hypothesis: []
+    discharge_required:
+      - "raw semantic/closed-family round trips / accepted package-semantic conversion equalities"
+      - "finite decoder computations / actual presentation card, edgeTable, observationValue, and component fields"
+      - "restriction coherence / associator plus whiskering of the accepted restriction Iso"
+      - "observed retract generation / explicit Cycle 23 assembly/readback Iso plus mapped accepted semantic retract"
+      - "Arrow coherence / mapArrowEquivalence applied to the actual semantic-observed equivalence"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "semantic/closed-family equivalence / explicit functors and accepted round-trip equalities"
+      - "observed finite decoder / actual ProtocolPresentation.decoder followed by the established equivalence"
+      - "observed retract / constructed per object from Cycle 23 assembly and accepted semantic retract data"
+      - "Karoubi and Arrow equivalences / transported accepted equivalences"
+    unresolved:
+      - "effective arbitrary-observation comparison or encoding"
+      - "common FiniteReading effectiveness"
+      - "other three branches and all-four integration"
+  proof_use:
+    used:
+      - "closedFamilyProtocolHom and package/semantic round-trip theorems"
+      - "Cycle 23 protocolObservedRestrictionEquivalence and realization Iso"
+      - "ProtocolPresentation.decoder computation data"
+      - "accepted protocol Karoubi restriction Iso, retract generation, and Arrow equivalence"
+      - "functor map laws, associator, whiskering, and mapArrowEquivalence"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "direct protocol-branch finite-presentation/Karoubi coherence with exact observed computation APIs"
+  vacuity: "actual finite presentation tables, observations, semantic morphisms, retract maps, and noninvertible Arrow morphisms are retained; no terminal filler or stored reconstruction certificate is introduced"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/ProtocolObservedKaroubiCoherence.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.ProtocolObservedKaroubiCoherence: pass (targeted dependency closure only)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 14 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct the lens branch operation-aware local model and category equivalence, then connect its finite decoder to accepted Karoubi reconstruction without weakening the fixed all-four target"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -2117,8 +2231,9 @@ audits:
   Cycle 19 は独立な restriction-diagram category と一般同値 spine、Cycle 20 は lens fiber と
   protocol named-state の actual finite slice、Cycle 21 は protocol 全executionのnon-discrete
   finite-state diagram、Cycle 22 は protocol branch の observation-aware local Hom と
-  full faithfulness、Cycle 23 は同branchのobject assemblyと圏同値に限る。finite decoder /
-  Karoubi coherenceと四分枝統合は未完了である。
+  full faithfulness、Cycle 23 は同branchのobject assemblyと圏同値、Cycle 24 はactual finite
+  decoderの計算式とKaroubi restriction・retract・Arrow coherenceに限る。arbitrary observationの
+  effective finite encodingと四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
