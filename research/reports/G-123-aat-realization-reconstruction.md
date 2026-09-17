@@ -16,7 +16,7 @@
 - current proof obligation: Cycle 188 constructs the mandatory-C tagged complete geometry from the reviewed finite-axis-fold geometry/raw data and proves that every source-choice operation change satisfies the current independent six-component explicit exact geometry morphism contract
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct final Sigma,D,R_Theta and prove that its object/morphism laws include this fixed tagged geometry and retain the complete source-choice family, while also accommodating the required noninvertible CS maps; independently derive treeGenerated and all role-provenance embeddings from final syntax
+- next proof obligation: construct final Sigma,D,R_Theta so that the fixed tagged geometry and mandatory uniform flip satisfy its independent laws, then decide from those laws whether the remaining source-choice family is included or excluded; if included, connect the obstruction, while independently accommodating noninvertible CS maps and deriving final treeGenerated/provenance
 
 ## Requirement ledger
 
@@ -19625,7 +19625,7 @@ base_oid: 98c5f5a23d1eb981c2753268abdfca9f10b516aa
 tracking_issue: 4520
 report_path: research/reports/G-123-aat-realization-reconstruction.md
 selection:
-  proof_state_ref: "Cycle 187 leaves final R_Theta membership of the complete mandatory-C source-choice family as an independent material obligation"
+  proof_state_ref: "Cycle 187 leaves it open whether the complete mandatory-C source-choice family survives the independently constructed final R_Theta laws"
   proof_dag_predecessors:
     - AAT.AG.RealizationReconstruction.taggedSourceChoiceTotal
     - AAT.AG.RealizationReconstruction.taggedSourceChoiceTotal_injective
@@ -19642,7 +19642,7 @@ selection:
     - "accepting a completed geometry morphism or preservation certificate as input"
     - "identifying the reversible explicit exact category with final R_Theta despite required noninvertible CS maps"
   unchecked:
-    - "final Sigma,D,R_Theta object and morphism definitions and inclusion of this tagged geometry"
+    - "final Sigma,D,R_Theta object and morphism definitions, inclusion of the mandatory tagged geometry and uniform flip, and classification of the remaining source-choice family"
 result:
   proposed_result_type: theorem-progress
   proof_obligation_delta: "Constructed one choice-independent tagged complete geometry by retaining the reviewed finite-axis-fold coverage, overlap, coefficient ring, and raw system while extending only the operation type by the invisible Boolean tag. For every unrestricted source predicate, constructed all six fields of an ExplicitExactGeometryHom directly from the fixed input, recovered the predicate from its operation action, identified the constant-true base with the mandatory uniform flip, and transferred the bounded-tree Cantor obstruction to this exact-geometry endomorphism family."
@@ -19695,12 +19695,12 @@ result:
       - "operation readback proves injectivity and supplies every predicate in the Cantor argument"
       - "the Cycle 187 list-to-tree surjection transfers the contradiction to bounded trees"
     unfinished:
-      - "construct final Sigma,D,R_Theta and prove this fixed geometry object and all its source-choice maps satisfy those final laws"
+      - "construct final Sigma,D,R_Theta, include the fixed geometry object and mandatory uniform flip, and prove from its laws whether each additional source-choice map is admitted or excluded"
       - "ensure final R_Theta also contains required arbitrary noninvertible CS morphisms; ExplicitExactGeomCategory alone is too reversible"
       - "derive treeGenerated and all aggregate primitive-family provenance from final syntax"
       - "B four obligations, D whole classification recovery, E connection, and A--F integration"
     undischarged_assumptions:
-      - "final R_Theta uses or receives a proved comparison from the current explicit exact geometry contract"
+      - "a final-law theorem classifying which current explicit exact geometry morphisms belong to final R_Theta"
       - "final syntax treeGenerated and final role-provenance coverage"
       - "all remaining fixed-target integration obligations"
     acceptance_point: "All mandatory-C source-choice maps preserve the current decoder-independent six-component exact geometry contract on one fixed source-provenanced geometry object; acceptance does not identify that contract with final R_Theta."
@@ -19712,7 +19712,7 @@ audits:
       - "same-family operation readback after imposing all current geometry fields"
       - "bounded-tree non-surjection for exact-geometry endomorphisms"
     remaining:
-      - "final Sigma,D,R_Theta construction and inclusion theorem"
+      - "final Sigma,D,R_Theta construction, mandatory uniform-flip inclusion, and source-choice inclusion-or-exclusion theorem"
       - "noninvertible CS-compatible final morphism design"
       - "final syntax generation and A--F integration"
   certificate_provenance:
@@ -19731,7 +19731,7 @@ audits:
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: none-found
-  vacuity: none-found
+  vacuity: "the nine coverage predicates of the fixed finite-axis-fold predecessor are empty, so their implication fields do not provide a nonempty preservation test; the choice-dependent base, fixed raw coordinate/relation data, overlap, all-context realization action, and operation readback remain constructed and the endomorphism family is injective"
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
@@ -19741,5 +19741,5 @@ audits:
   blocking_findings:
     - "the complete source-choice family survives every law of the current explicit exact geometry contract, so those laws alone cannot restore bounded finite-tree fullness"
     - "the current exact category cannot be the final R_Theta without a separate construction that also retains required noninvertible CS maps"
-  next_obligation: "Construct final Sigma,D,R_Theta as a common morphism contract broad enough for noninvertible CS maps, prove the fixed tagged geometry and complete source-choice family belong from those exact laws, then derive final syntax treeGenerated/provenance or exhibit a legal higher-information role."
+  next_obligation: "Construct final Sigma,D,R_Theta as an independent common morphism contract broad enough for noninvertible CS maps, prove the fixed tagged geometry and mandatory uniform flip belong, decide from the final laws whether the remaining source-choice maps are included or excluded, and only in the included case connect the obstruction to final treeGenerated/provenance."
 ```

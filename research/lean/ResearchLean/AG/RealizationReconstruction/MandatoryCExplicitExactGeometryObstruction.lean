@@ -100,6 +100,8 @@ noncomputable def readTaggedSourceChoiceExplicitExactGeometry
     ArchitectureObject FiniteModel.carrier → Bool :=
   readTaggedSourceChoice hom.base
 
+/-- Reading the exact-geometry morphism constructed from a source predicate
+recovers that predicate at every architecture-object source. -/
 @[simp] theorem
     readTaggedSourceChoiceExplicitExactGeometry_taggedSourceChoice
     (choice : ArchitectureObject FiniteModel.carrier → Bool) :
