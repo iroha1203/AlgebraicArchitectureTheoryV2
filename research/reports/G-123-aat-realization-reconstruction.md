@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 179 transports the restricted source-projection kernel and every literal lift fiber, including its free/transitive right-kernel action, along the Cycle 178 comparison-group square and applies it to both independent CS package categories
+- current proof obligation: Cycle 180 embeds every restricted comparison-kernel element into the ambient endpoint-normalization kernel, characterizes the image exactly by raw comparison preservation, and proves strict separation on the fixed finite-axis-fold input while retaining bottom/coefficient triviality
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: instantiate the fully faithful comparison transport on the common A--C realization of the original G-122 inputs, then construct and transport the separate ambient normalization kernel and bottom/coefficient commuting equations without identifying them with the restricted source-projection kernel
+- next proof obligation: connect the six fixed generated axis-permutation elements to the actual canonical section and every lift in those fibers, then enrich primitive syntax enough to construct a direct-endpoint automorphism evaluator equivalence rather than assuming presentation completeness
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D Cycle 180 delta | normalizationで消えるambient kernelと、元の比較を保つ領域へ制限したrestricted kernelを全要素について区別し、固定生成例でも差を証明する | `RestrictedAmbientKernel.inclusion`, `inclusion_injective`, `mem_range_inclusion_iff`; `geometryComparisonRestrictedKernelToAmbientKernel`とinjective/range iff; `FiniteAxisFoldRestrictedAmbientKernel.ambientElement`, `ambientElement_not_mem_restrictedKernel_range`, `restrictedKernel_inclusion_not_surjective`, `ambientElement_bottom_coefficient_packet` | 任意のambient hom、source/target subgroup、restricted hom、underlying square。G-122適用ではactual endpoint normalizationとactual raw/normalized comparison subgroup。kernel同一視、ambient元のcomparison membership、surjectivity certificateは入力しない | restricted kernel元をunderlying ambient元へ写し、kernel equationをsquareから構成。像をambient kernel内のsource subgroup membershipと双方向に特徴付ける。固定ambient involutionがnormalization kernelに入る一方raw `barAlpha`比較を保たない既証明を適用し非全射を証明。同じ元の底・係数4成分恒等を保持 | 表示側でrestricted/ambient二核を別々に回復するためのtarget側分類、およびbottom/coefficient接続 | これはactual G-122側の二核分離であり、presentation側の全元回復ではない。full comparison MulEquivにはdirect endpointの全automorphismをprimitive syntaxからencodeする構成が不足。六つの固定axis元を越えるsyntax completeness、全lift fiberの表示同値、A--F統合は未完了 |
 | D/E Cycle 179 delta | comparison-groupとendpoint restrictionの可換正方形から、restricted kernel全体と各base元上の全lift fiberを回復し、fiberのkernel torsor構造も同じ対応で運ぶ | `RestrictionKernelFiberTransport.Fiber`, `rightKernelAction`, action law/free/transitive/unique displacement; `kernelMulEquiv`, `fiberEquiv`, `fiberEquiv_smul`; `generatedArrowComparisonSourceKernelMulEquiv`, `generatedArrowComparisonSourceFiberEquiv`, action compatibility; lens/protocol package specialization | 任意の4群・2準同型・2群同値と点ごとの可換正方形。comparison適用ではCycle 178が固定入力から構成したfully faithful functor、whole comparison MulEquiv、endpoint Aut MulEquiv、source compatibilityだけを使う。kernel membership、chosen lift、torsor certificate、ambient kernelは入力しない | 可換式からkernel membershipを両方向に再構成しMulEquivを証明。任意base元上の全fiberを同値化。literal right multiplicationを名前付き作用として構成し、単位・合成・自由・推移・一意displacementとtransport互換性を証明。lens/protocolの任意package arrowへ同じ定理を適用 | G-122 original comparison/restrictionへの具体的instantiation、および後続のsection・kernel・fiberの表示側回復 | ここでの核は`ker (generatedArrowComparisonSourceHom c)`というrestricted source-projection kernelだけである。G-122 original inputのcommon A--C realization、ambient normalization kernel、bottom/係数成分は別義務として未完了。A--F最終統合も未完了 |
 | B/D/E Cycle 178 delta | independent generated package Hom同値を恒等・合成と両立する圏・full/faithful functorへ上げ、全endpoint Autと任意比較射のcomparison subgroup全体を群同値で輸送する | `LensAATIndependentPackageObject`, `ProtocolAATIndependentPackageObject`; 両Hom namespaceの`id`,`comp`; 両package `Category`; 両`*PackageSemanticFunctor`, `*SemanticFullyFaithful`, Full/Faithful instance, `*PackageAutMulEquiv`; `fullyFaithfulEndpointAutMulEquiv`; `generatedArrowComparisonHomOfFullyFaithful`, injective/surjective, `generatedArrowComparisonMulEquivOfFullyFaithful`; source/section compatibility; lens/protocol package comparison specializations | 任意のCycle176 package objects/Homs。比較輸送は任意の圏・functorと、package round tripから構成したfully faithful data。endpoint Aut、comparison pair、section、surjectivity certificateをstructure fieldに取らない | state map compositionからpackage圏の三法則を証明し、semantic Hom両往復からfull/faithfulを構成。Mathlib Aut同値でendpoint automorphismを全て持上げる。任意の比較式をfunctorで保存し、faithfulnessで反映、fullnessで任意target endpoint pairを持上げてcomparison subgroupの全射・単射を証明。source projectionとiso conjugation sectionの可換性を証明 | full G-122 comparison groupとsection、restriction hom/kernel/fiber transport | generic輸送定理とCS packageへの適用は完成したが、G-122 original inputの共通A--C realization functorへの具体的instantiation、restriction square、restricted/ambient二核、全lift fiber、bottom/係数成分は未完了。A--F最終統合も未完了 |
 | D/E/F Cycle 177 delta | 独立generated packageのbijective carrier actionを、同じcomplete-update fixed-F分類へlens/protocol両側から適用し、全hidden permutationを有限table経由でactual D intrinsic subgroupへ回復する | `LensIndependentPackageAut`, `ProtocolIndependentPackageAut`; `lensPackageAutEquivInvertibleChange`, `protocolPackageAutEquivInvertibleChange`; `lensProtocolIndependentPackageEquiv`; 両`*IndependentFixedFClassification`; state-map/classifier compatibility; `fixedFClassifierToDCode`, `fixedFClassifierToDIntrinsic`; 両`*PackageDIntrinsicClassification`とvalue/compatibility定理; 両`*PackageDirectedPackage` | product lens、complete-update protocol、identity visible automorphism、bijective package carrier maps。D接続は任意の有限`K`に対する既証明finite-axis-fold Extension-permutation intrinsic image。semantic change、hidden permutation、table code、D element、completed directed packageはfieldに取らない | Cycle176 `semanticHomEquiv`/forward readbackから独立invertible changeを構成し、lens/protocolを同じactual preserving fixed-F changeで同値化。一つのhidden permutation classifierを両側で共有しstate actionを復元。全permutationを明示的finite tableへ戻し、既存decoder equivalenceでcomplete stored-backward actionにより特徴付けられたactual D subgroupの全元へ同値化 | independent packageのAut群化と、A--C fully faithful realizationを介したfull D comparison transport | identity-visible complete-update applicationであり任意`H`全体のpackage群ではない。Dはintrinsic local-fiber subgroup全体を回復するが、元のfull comparison group、section、restricted/ambient二核、全lift fiber、bottom/係数成分との同値は未完了。A--F最終統合も未完了 |
@@ -18756,4 +18757,107 @@ audits:
     - "the ambient normalization kernel and bottom/coefficient maps require their own homomorphisms and commuting squares"
     - "these are subsequent construction obligations, not evidence against the fixed target"
   next_obligation: "Instantiate the common comparison transport on the original G-122 data, then construct the separate ambient normalization restriction square and transport its kernel and bottom/coefficient evaluations without identifying it with the restricted source-projection kernel."
+```
+
+## Cycle 180 — Restricted versus ambient kernel separation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 180
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 63edb91d9b76d4077750c0fd7b4d74496452f3c2
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 179 transported restricted kernels abstractly, while G-123(D) requires the actual G-122 restricted kernel and the larger ambient normalization kernel to remain distinct"
+  proof_obligation: "Construct the canonical inclusion of the restricted comparison kernel into the ambient endpoint kernel, classify its entire image, and prove strict separation on the fixed original finite-axis-fold input while tracking bottom and coefficient components"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122RestrictedAmbientKernelSeparation.lean
+  risks:
+    - "identifying the restricted and ambient kernels because both normalize to identity"
+    - "proving only membership of one witness instead of an all-elements image characterization"
+    - "accepting source-subgroup membership or surjectivity as a certificate input"
+    - "using bottom/coefficient triviality to infer raw comparison preservation"
+    - "calling an insufficiency of the current generated syntax a refutation of the fixed target"
+  unchecked:
+    - "primitive-syntax encoder for every actual direct-endpoint automorphism"
+    - "presentation-to-actual comparison MulEquiv and every actual lift-fiber display equivalence"
+    - "final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "For an arbitrary homomorphism restricted to source and target subgroups, constructed the canonical restricted-kernel-to-ambient-kernel hom, proved injectivity, and characterized its full range exactly as ambient-kernel values whose underlying source lies in the source subgroup. Specialized this theorem to actual G-122 normalization, where the source predicate is preservation of the raw comparison. Packaged the mandated finite-axis-fold ambient involution in the ambient kernel, proved it lies outside the entire restricted-kernel range because it does not preserve raw barAlpha, and therefore proved the inclusion is not surjective. Retained the same witness's four bottom/coefficient identity equations."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/G122RestrictedAmbientKernelSeparation.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.RestrictedAmbientKernel.inclusion
+    - AAT.AG.RealizationReconstruction.RestrictedAmbientKernel.inclusion_injective
+    - AAT.AG.RealizationReconstruction.RestrictedAmbientKernel.mem_range_inclusion_iff
+    - AAT.AG.RealizationReconstruction.geometryComparisonRestrictedKernelToAmbientKernel
+    - AAT.AG.RealizationReconstruction.geometryComparisonRestrictedKernelToAmbientKernel_injective
+    - AAT.AG.RealizationReconstruction.mem_geometryComparisonRestrictedKernelToAmbientKernel_range_iff
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldRestrictedAmbientKernel.ambientElement
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldRestrictedAmbientKernel.ambientElement_not_mem_restrictedKernel_range
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldRestrictedAmbientKernel.restrictedKernel_inclusion_not_surjective
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldRestrictedAmbientKernel.ambientElement_bottom_coefficient_packet
+  claim_mapping:
+    source_labels:
+      - "GOAL D: preserve the distinction between the ambient kernel erased by normalization and the restricted kernel classifying compatible lifts"
+      - "GOAL D fixed generated input: retain the original finite-axis-fold comparison and bottom/coefficient evaluations"
+    conjuncts:
+      - "restricted-to-ambient map -> every restricted-kernel element gives an ambient-kernel element"
+      - "image classification -> the image is exactly ambient-kernel elements preserving the original raw comparison"
+      - "strict separation -> the fixed ambient involution normalizes to identity but is outside the restricted range"
+      - "component tracking -> both endpoint bottom/base and coefficient components remain identity for the separating witness"
+    undischarged_assumptions:
+      - "the generic theorem receives a genuine restricted hom and its underlying commuting square; the G-122 specialization uses existing concrete normalization homs"
+      - "no presentation completeness or evaluator bijectivity is available"
+      - "bottom/coefficient identity does not imply comparison preservation"
+    acceptance_point: "The two actual G-122 kernels are related and strictly separated without conflation; this does not yet recover either whole kernel from generated syntax."
+audits:
+  premise_delta:
+    discharged:
+      - "canonical injective restricted-kernel to ambient-kernel map"
+      - "all-elements range characterization by raw comparison preservation"
+      - "fixed finite-axis-fold strict non-surjectivity"
+      - "bottom/coefficient packet for the separating ambient element"
+    remaining:
+      - "direct endpoint automorphism evaluator equivalence from primitive syntax"
+      - "whole presentation-to-actual comparison MulEquiv"
+      - "every actual lift-fiber display equivalence"
+      - "final A--F theorem"
+  certificate_provenance:
+    discharged:
+      - "ambient kernel membership is proved from normalization of the fixed constructed involution"
+      - "restricted image membership is reconstructed exactly from source-subgroup membership"
+      - "non-surjectivity uses the proved failure of raw comparison preservation"
+      - "bottom/coefficient equations reuse the same fixed witness"
+    unresolved: []
+  proof_use:
+    used:
+      - "the underlying-value commuting square for kernel membership"
+      - "the source subgroup predicate in both directions of the range theorem"
+      - "the fixed ambient normalization equation"
+      - "the fixed raw-comparison nonmembership theorem"
+      - "all four endpoint bottom/coefficient equations"
+    unused:
+      - "no evaluator fullness, faithfulness, syntax encoder, completed comparison equivalence, or restricted/ambient identification is accepted"
+  structure_field_escape: none-found-the-inclusion-and-range-theorem-construct-all-kernel-membership-and-take-no-completeness-certificate
+  route_integrity: pass-the-same-endpoint-normalization-underlies-both-kernels-and-the-source-comparison-predicate-exactly-cuts-out-the-restricted-image
+  target_fitting: partial-the-actual-two-kernel-relation-and-fixed-strict-separation-are-proved-but-presentation-side-whole-group-recovery-remains-open
+  vacuity: none-found-the-range-theorem-quantifies-every-ambient-kernel-element-and-the-fixed-outside-element-proves-properness
+  one_way_as_equivalence: none-found-the-map-is-correctly-only-injective-and-is-proved-not-surjective-on-the-fixed-input
+  goal_or_report_reinterpretation: none-found-bottom-and-coefficient-triviality-is-not-used-as-comparison-preservation
+  validation_refs:
+    - "focused G122RestrictedAmbientKernelSeparation file check: PASS; 14 namespace declarations, standard axioms only"
+    - "registered exact G122RestrictedAmbientKernelSeparation target build: PASS (4322 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "existing generated comparison evaluation is only a MonoidHom and its own module disclaims semantic fullness"
+    - "because barAlpha is an isomorphism, full comparison recovery reduces to constructing a MulEquiv from the direct presentation endpoint automorphism group to every actual direct endpoint automorphism"
+    - "the current primitive syntax has no structural encoder for every such actual automorphism; this candidate insufficiency is not a target refutation"
+  next_obligation: "Connect the six fixed generated axis-permutation section elements to every actual lift in their fibers, then construct an enriched primitive syntax encoder and both round trips for every direct endpoint automorphism without adding semantic automorphisms as syntax leaves."
 ```
