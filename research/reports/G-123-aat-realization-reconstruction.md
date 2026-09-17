@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 164 fixes the genuine-CS package base, coefficient action, and full typed raw action while isolating the unconstructed geometry provenance components
+- current proof obligation: Cycle 165 constructs generated-context carrier equivalences and exact reading preservation for both genuine CS models while isolating representative coherence as the remaining realization-supply obstruction
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct generated-context Support/Axis/Observable forward component maps with read preservation and naturality, mapped-context coverage preservation, and generated complete-overlap comparison; then assemble exact total geometry morphisms
+- next proof obligation: prove coherence between the selected target context-morphism representatives and rebased source representatives (or construct an equal representation-preserving context transport), derive component naturality, then construct mapped-context coverage and complete-overlap comparison
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 165 delta | genuine-CS transportの全generated contextでSupport/Axis/Observable carrierと三reading predicateを、表示できた部分集合へ縮小せず保持する | `EquationContextCarrierEquiv`, `lensIsoEndpointContextCarrierEquiv`, `protocolIsoEndpointContextCarrierEquiv`, `coreGeometryContextCarrierEquivCast`, `lensIsoGeneratedContextCarrierEquiv`, `protocolIsoGeneratedContextCarrierEquiv` | fixed CS inputとgenuine semantic iso、Cycle 161のendpoint/generated equation transportおよびsource/target generated-object provenance等式。carrier同値やreading証拠は最終constructorの入力に取らず内部構成する | 全source generated context上のSupport・Axis・Observable同値と、atom同値を含むsupportReads、axisReads、observableReadsの保存反映iff | `RealizationTransportSupply`の三前向きcomponent mapとread保存fieldの構成材料 | context preorderのHomが存在命題から独立に`Classical.choose`された代表を持つためcomponent naturalityは未証明。mapped-context coverage、complete overlap、realization supply、exact total hom、一般非可逆CS射、readback、D、A--F統合も未完了 |
 | A/E Cycle 164 delta | genuine-CS exact geometryのうち構成済みbase・coefficient・全typed raw actionを同じcheckpointに固定し、未構成geometry fieldsを入力へ移さない | `ExactGeometryRawCheckpoint`, `lensIsoExactGeometryRawCheckpoint`, `protocolIsoExactGeometryRawCheckpoint` | fixed CS inputとgenuine semantic iso、Cycle 163 `PackageTotalHom`、Cycle 158 ReadingCore raw constructor。coverage/overlap/realizationは入力にもfieldにも置かない | complete package base、`Int`恒等係数準同型、全Law-index×Atom座標・relation・restrictionを保持するtarget-indexed exact raw map | 後続`ExactGeomReadHom`のbase/coefficient/raw fields | generated contextのSupport/Axis/Observable前向きcomponent map・read保存・naturality、mapped-context上のcoverage preservation、complete overlap比較、realization supply、exact total hom、一般非可逆CS射、readback、D、A--F統合は未完了 |
 | A/E Cycle 163 delta | complete upper coreを同じprimitive Atom作用を持つsource-generated lower doctrine mapと結合し、total package morphismを完成する | `lensIsoExtInstHom`, `lensIsoPackageTotalHom`, `protocolIsoExtInstHom`, `protocolIsoPackageTotalHom` | fixed CS inputとgenuine semantic iso、およびCycle 162 complete upper core。completed lower/upper morphismやcompatibility certificateは受けない | actual semantic homからA1 source mapとexact doctrine homを生成し、distinguished point固定を証明。上下のAtom同値が同じ恒等同値であることを定義的に放電 | genuine-CS exact geometry raw/non-raw fieldsの共通`baseHom` | coverage/overlap/raw integration/realization supply、exact total geometry hom、一般非可逆CS射、readback、D、A--F統合は未完了 |
 | A/E Cycle 162 delta | lens/protocolのcore morphismについてequation fieldだけでなくextraction/composition/object/configuration/detector/operation/invariant/signatureの全fieldを同一構成から完成する | `lensIsoConfigurationMap`, `lensIsoOperationMap`, `lensCoreGeometrySigma_eq`, `lensCoreCircuitCode_reject`, `lensCoreSignature_eq`, `SignatureExactTransport`, `signatureExactTransportCast`, `lensIsoSignatureTransport`, `lensIsoSignedExactCoreReadingHom`; protocolの同名対応宣言と`protocolCore_extraction_eq`, `protocolCore_composition_eq` | fixed CS inputとgenuine semantic iso、Cycles 148/159--161のsource-generated provenance/object/equation構成。generic signature castはcanonical transportに条件付きだが最終constructorが内部構成して渡す。completed core hom/base/certificateは受けない | 恒等Atom mapのconfiguration action、全operation action、生成Sigma等式からreject detectorとsignature等式、空invariant eliminator、全axis/coordinate同値、extraction/compositionとoperation naturalityを構成し全`SignedExactCoreReadingHom` fieldを充足 | lens/protocol genuine-CS `PackageTotalHom.upper` | `ExtInstHom`とのbase compatibility、coverage/overlap/realization supply、non-raw geometry、一般非可逆CS射、independent readback、D、A--F統合は未完了 |
@@ -17092,4 +17093,100 @@ audits:
     - "generated coverage requirements need explicit forward preservation at each mapped context as required by CoverageTransport; target-wide visibility is an optional stronger iso consequence, not a material API premise"
     - "completeLawOverlap needs comparison along the full-family context equivalence"
   next_obligation: "Construct generated Support/Axis/Observable forward component maps with read preservation and naturality, mapped-context CoverageTransport fields, and complete-overlap comparison; use them to assemble the remaining exact geometry fields."
+```
+
+## Cycle 165 — Generated-context carrier equivalences and reading preservation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 165
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: fb9f3ede574d2053954d8cacf30b384d51352473
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 164 isolated Support/Axis/Observable component maps, reading preservation, and naturality as the first missing material part of RealizationTransportSupply"
+  proof_obligation: "Construct the complete generated-context carrier action and reading preservation for both genuine CS models without accepting carrier maps, carrier equivalences, or reading certificates as final-constructor inputs; determine the exact remaining naturality obligation"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeneratedContextCarrierEquiv.lean
+  risks:
+    - "replacing the full generated context carriers by a post-hoc representable subset"
+    - "treating optional carrier equivalences as a required target premise"
+    - "claiming RealizationTransportSupply from pointwise carrier maps while omitting naturality"
+    - "identifying independently chosen context-morphism representatives merely because the context category is thin"
+  unchecked:
+    - "naturality of Support/Axis/Observable maps against the fixed context functor"
+    - "mapped-context CoverageTransport and completeLawOverlap comparison"
+    - "realization supply, exact total geometry hom, noninvertible maps, readback, D, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "For both genuine CS isomorphism models and every source generated context, constructed actual Support, Axis, and Observable equivalences and preservation/reflection iff for all three reading predicates. Endpoint data are reflexive on the full-family rebase and are transported to the source-generated cores solely through the proved generated-object provenance equalities. No naturality or completed realization supply is accepted as input or claimed."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeneratedContextCarrierEquiv.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.EquationContextCarrierEquiv
+    - AAT.AG.RealizationReconstruction.lensIsoEndpointContextCarrierEquiv
+    - AAT.AG.RealizationReconstruction.protocolIsoEndpointContextCarrierEquiv
+    - AAT.AG.RealizationReconstruction.coreGeometryContextCarrierEquivCast
+    - AAT.AG.RealizationReconstruction.lensIsoGeneratedContextCarrierEquiv
+    - AAT.AG.RealizationReconstruction.protocolIsoGeneratedContextCarrierEquiv
+  claim_mapping:
+    source_labels:
+      - "GOAL A: construct the realization-side action on every generated context rather than a post-hoc image"
+      - "GOAL E and n1015: preserve the actual lens/protocol reading data under the same generated-core transport"
+    conjuncts:
+      - "every source generated context -> full Support equivalence and supportReads iff"
+      - "every source generated context -> full Axis equivalence and axisReads iff"
+      - "every source generated context -> full Observable equivalence and observableReads iff"
+      - "endpoint full-family rebase plus generated-object provenance -> generated-core carrier action"
+      - "naturality -> explicitly unclaimed"
+    undischarged_assumptions:
+      - "genuine CS isomorphism is the allowed input for this exact-equivalence subcase"
+      - "the fixed context preorder represents a Hom by independently choosing a ContextMorphism witness"
+      - "general noninvertible CS morphisms still require directed, not equivalence-valued, carrier actions"
+    acceptance_point: "All pointwise carrier and reading-preservation data are constructed from the fixed inputs; representative coherence needed for naturality remains a separate obligation."
+audits:
+  premise_delta:
+    discharged:
+      - "Support forward component maps for every generated context"
+      - "Axis forward component maps for every generated context"
+      - "Observable forward component maps for every generated context"
+      - "supportReads, axisReads, and observableReads forward preservation; reflection is also constructed"
+    remaining:
+      - "component naturality, coverage, overlap, realization supply, exact total geometry, noninvertible maps, readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "the generic coreGeometryContextCarrierEquivCast transports supplied endpoint data along supplied provenance equalities"
+    discharged:
+      - "both endpoint carrier equivalences are internally constructed as reflexive equivalences of the actual full-family rebase"
+      - "both final generated constructors internally supply the exact source and target provenance equalities already proved from the primitive CS inputs"
+    unresolved:
+      - "coherence of context-morphism representatives selected independently by source and target ContextPreorderCategory structures"
+  proof_use:
+    used:
+      - "both genuine-CS endpoint EquationSystemExactTransport values"
+      - "both source and target generated-object provenance equalities"
+      - "the complete Support, Axis, and Observable types at every generated context"
+      - "all atoms for support reading and all axis/observable values"
+    unused:
+      - "no RealizationTransportSupply, CoverageTransport, complete-overlap comparison, completed geometry hom, decoder image, readback, or D classifier is accepted"
+  structure_field_escape: none-found-the-checkpoint-record-contains-only-constructed-pointwise-carrier-and-reading-data-and-does-not-contain-naturality-or-completed-supply
+  route_integrity: pass-final-lens-and-protocol-constructors-use-the-same-genuine-isomorphism-equation-transport-and-generated-object-provenance
+  target_fitting: partial-pointwise-realization-data-are-complete-but-naturality-and-the-other-geometry-components-remain-open
+  vacuity: none-found-all-three-full-carrier-types-and-all-three-reading-predicates-are-quantified-at-every-generated-context
+  one_way_as_equivalence: none-found-the-stronger-equivalence-data-are-constructed-only-for-the-genuine-isomorphism-subcase-and-not-imposed-on-the-general-directed-target
+  goal_or_report_reinterpretation: none-found-the-report-explicitly-distinguishes-pointwise-carrier-data-from-realization-supply-and-total-geometry
+  validation_refs:
+    - "focused CSAATGeneratedContextCarrierEquiv file check: PASS; 23 namespace declarations, standard axioms only"
+    - "focused exact CSAATGeneratedContextCarrierEquiv target build: PASS (4292 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "naturality does not follow definitionally from the pointwise reflexive endpoint maps: ContextPreorderCategory.le stores existence only, and source/target `.morphism` and `.readableMorphism` independently use Classical.choose"
+    - "thin-category Hom proof uniqueness identifies Hom terms but does not identify the component functions inside separately chosen ContextMorphism witnesses"
+    - "the next construction must prove representative-coherence lemmas for supportMap, axisMap, and observableRestrict, or replace the transport by an equal representation-preserving context-preorder transport; this is a candidate-construction obstruction, not a refutation of the fixed target"
+  next_obligation: "Prove selected-representative coherence for the fullFamilyContextFunctor component functions, or construct an equal representation-preserving context transport; then package the constructed forward maps and reading proofs into RealizationTransportSupply and proceed to coverage and overlap."
 ```
