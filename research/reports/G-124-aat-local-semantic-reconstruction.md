@@ -51,12 +51,14 @@
   merge commit `78a3fb497bd2807790850ba11cb6cbf9984830b0`
 - Cycle 21 accepted PR: [#4734](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4734),
   merge commit `4534d6044697ec2ab27c8f176b0f7406cbeb1602`
+- Cycle 22 accepted PR: [#4735](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4735),
+  merge commit `a4622964b281f04fb2e66c2940a91a125dda1d21`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: protocol の有限 quotient-execution diagram と固定 observation functor から
-  独立な observed local-model 圏を構成し、accepted reading の射の分離・組立てを放電する
-- next proof obligation: protocol local object の assembly を certificate field なしに構成できるか判定し、
-  または finite generator-table / Karoubi reconstruction route へ接続する
+- current proof obligation: 任意の observed protocol local object を certificate field なしに実現へ組み立て、
+  essential surjectivity と protocol branch の圏同値を構成する
+- next proof obligation: protocol local-model equivalenceをfinite generator-table decoderと受理済み
+  Karoubi reconstructionへ接続し、restriction・retract・Arrow-level coherenceを示す
 
 ## Cycle 1 — rejected
 
@@ -1998,6 +2000,116 @@ audits:
   next_obligation: "construct protocol local-object assembly without a realizability or extension-certificate field, or connect the fully faithful local Hom reading to the finite generator-table/Karoubi reconstruction route"
 ```
 
+Cycle 22 の fresh Math A/B・Lean A/B は final head
+`b5ec68a984b49ec370cf94719456dd726ed08c8d` で全4 lane `No major findings`、
+CI 7/7 success。最終監査は PR comment `5722236909`、merge commit は
+`a4622964b281f04fb2e66c2940a91a125dda1d21`、Cycle 23 選定は Issue comment
+`5722267343` に固定した。
+
+## Cycle 23 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 23
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: a4622964b281f04fb2e66c2940a91a125dda1d21
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 22 accepted evidence: PR comment 5722236909; Cycle 23 selection: Issue comment 5722267343"
+  proof_dag_predecessors:
+    - "Cycle 22 ProtocolObservedRestrictionModel, protocolObservedRestrictionReading, explicit Hom assembly, and Full/Faithful witnesses"
+    - "ProtocolRealization.toFunctor, state_finite, and observation"
+    - "Cycle 21 finiteLocalValue and double-opposite quotient-execution restriction diagram"
+    - "Mathlib Functor.EssSurj, Functor.IsEquivalence, and Functor.asEquivalence"
+  proof_obligation: "任意のobservation-aware finite protocol restriction modelから、completed realizationまたはextension certificateをfieldとして要求せずProtocolRealizationを構成する。assembled realizationの再読取りが元のlocal objectとidentity-on-carriersで同型になることを示し、accepted readingのessential surjectivityを放電する。Cycle 22のFull/Faithfulと合わせ、functor部が同じaccepted readingであるprotocol branchの圏同値を構成する"
+  selection_reason: "二候補探索は、observed local objectの有限state diagramとparameter-owned observationだけからProtocolRealizationを直接構成でき、既存Karoubi同値を先に使っても任意local objectのpreimageは得られず同じassembly義務を回避できないと一致した。したがってprotocol branchのobject assemblyを先に閉じる"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/ProtocolObservedRestrictionEquivalence.lean"
+  risks:
+    - "Fintype.ofFiniteで再選択されるFintype structureをobject equalityとせず、underlying carrier上の恒等写像によるIsoで比較すること"
+    - "local objectまたはassemblerにProtocolRealization、semantic preimage、GeneratorMap、retract、extension certificateをfieldとして保存しないこと"
+    - "custom observed-model categoryをCycle 19のLocalModelCategory-valued reconstruction theoremへ定義的に一致すると表示しないこと"
+    - "protocol branchの圏同値をfinite generator-table決定、Karoubi整合、またはfinal all-four equivalenceへ拡張しないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "every observation-aware finite protocol restriction object assembles directly to a protocol realization; rereading is isomorphic to the original object by identity maps on the state carriers, so the accepted fully faithful reading is essentially surjective and yields a protocol-branch category equivalence"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestrictionRealization"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestrictionStateIso"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestrictionRealizationIso"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestrictionReadingEssSurj"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestrictionEquivalence"
+    - "AAT.AG.LocalSemanticReconstruction.protocolObservedRestrictionEquivalence_functor"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL B: 任意のprotocol local-model対象に対し、そのreadingが同型になる実現を構成する"
+      - "固定 GOAL B: object assemblyをmorphism separation/assemblyと別個に放電する"
+      - "固定 GOAL B: protocol branchのprimitive readingをfunctor部に持つ圏同値を構成する"
+    conjuncts:
+      - "an arbitrary local finite-state diagram is transported along double opposite to an execution functor"
+      - "bundled Fintype structures supply the finite-state premise at every schema vertex"
+      - "the local observation natural transformation becomes the assembled realization observation"
+      - "rereading is isomorphic to the original local object by identity functions on state carriers"
+      - "the object isomorphism handles different chosen Fintype structures without asserting object equality"
+      - "the accepted protocol reading is essentially surjective"
+      - "Cycle 22 Full/Faithful and Cycle 23 EssSurj produce a category equivalence with the accepted reading as functor"
+    undischarged_assumptions:
+      - "finite generator-table determination and effectiveness"
+      - "compatibility with protocol Karoubi reconstruction, restriction Iso, retract generation, and Arrow equivalence"
+      - "corresponding object assembly and equivalence for lens, tagged, and G-122"
+      - "the final common Lambda_Theta, M_Theta, N_Theta, and D_Theta"
+    acceptance_point: "protocol-branch object assembly, essential surjectivity, and category equivalence only; no finite-decision, Karoubi-coherence, other-family, or all-four reconstruction claim"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "fixed ProtocolFamilyInput, quotient execution category, and observation functor"
+      - "Cycle 22 independent observation-aware finite restriction-model category"
+      - "accepted closed-family protocol realization category and reading functor"
+    direction_hypothesis: []
+    discharge_required:
+      - "assembled execution functor laws / stateDiagram.map_id and map_comp after double-op transport"
+      - "assembled vertex-state finiteness / each bundled FintypeCat object"
+      - "assembled observation naturality / supplied local observe natural transformation"
+      - "readback comparison and Fintype-instance mismatch / componentwise identity Iso"
+      - "essential surjectivity / explicit assembled realization and readback Iso"
+      - "category equivalence / Cycle 22 Full/Faithful plus new EssSurj"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "assembled state functor / directly from the supplied local state diagram"
+      - "assembled finiteness / inherited from local FintypeCat values"
+      - "assembled observation / directly from the supplied local observation map"
+      - "object preimage / explicit realization construction, not a stored witness"
+      - "readback Iso / identity functions on the same underlying carriers"
+    unresolved:
+      - "finite generator-table and executable extension"
+      - "Karoubi restriction and Arrow-level coherence"
+      - "all-four local-model integration"
+  proof_use:
+    used:
+      - "stateDiagram object/map data and functor laws"
+      - "bundled FintypeCat finiteness"
+      - "local observe components and naturality"
+      - "Cycle 22 Full and Faithful witnesses"
+      - "Mathlib essential-surjectivity and equivalence construction"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "direct protocol-branch local-object assembly and category equivalence"
+  vacuity: "every state object, restriction map, and observation component is consumed; no empty index, terminal filler, semantic object field, or chosen preimage certificate is introduced"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/ProtocolObservedRestrictionEquivalence.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.ProtocolObservedRestrictionEquivalence: pass (targeted dependency closure only)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 6 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "connect the protocol local-model equivalence to the finite generator-table decoder and accepted protocol Karoubi reconstruction, including restriction natural isomorphism, retract generation, and Arrow-level compatibility"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -2005,7 +2117,8 @@ audits:
   Cycle 19 は独立な restriction-diagram category と一般同値 spine、Cycle 20 は lens fiber と
   protocol named-state の actual finite slice、Cycle 21 は protocol 全executionのnon-discrete
   finite-state diagram、Cycle 22 は protocol branch の observation-aware local Hom と
-  full faithfulness に限る。object assembly と四分枝統合は未完了である。
+  full faithfulness、Cycle 23 は同branchのobject assemblyと圏同値に限る。finite decoder /
+  Karoubi coherenceと四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
