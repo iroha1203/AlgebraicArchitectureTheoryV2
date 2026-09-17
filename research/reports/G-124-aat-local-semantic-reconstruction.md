@@ -33,12 +33,14 @@
   merge commit `8f9c05ba23746a6644cdd7ef3e427d68a21f87d9`
 - Cycle 12 accepted PR: [#4725](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4725),
   merge commit `828025931b76550faae107462ab5fd25d85928dd`
+- Cycle 13 accepted PR: [#4726](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4726),
+  merge commit `f487b782b7a35b90c5acde4935d9fe81164227eb`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: vertex-table edge coherence を有限判定し、coherent table を
-  actual induced-component family へ代表元選択なしで降下させ、Cycle 11 の extension algorithm へ接続する
-- next proof obligation: finite `K` table から `Equiv.Perm K` の列挙・等号判定を構成し、
+- current proof obligation: finite `K` table から `Equiv.Perm K` の列挙・等号判定を構成し、
   actual preserving following changes の有限table実効性へ特殊化する
+- next proof obligation: generic executable route を既存 finite examples と following-change
+  fiber cardinality 宣言へ接続し、D の実効性節の残存 obligation を再監査する
 
 ## Cycle 1 — rejected
 
@@ -1027,13 +1029,113 @@ audits:
   next_obligation: "specialize finite value tables to Equiv.Perm K and actual operation-preserving following changes"
 ```
 
+Cycle 13 は initial formal review の4 laneすべてで中心 finding なし、非中心 finding 2件となった。
+具体的な coherent / incoherent permutation-free table 例と public `precompose_extension` API による
+proofへ直接対応し、fresh reviewer が correspondence qualification 維持、finding 全解消、新規中心
+finding なしを確認した。final head `1e4e2dbeae941afc643e366a5ae821529a8a8e21`、CI 7/7 success。
+最終監査は PR comment `5720043025`、Cycle 14 選定は Issue comment `5720070426` に固定した。
+
+## Cycle 14 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 14
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: f487b782b7a35b90c5acde4935d9fe81164227eb
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 13 accepted evidence: PR comment 5720043025; Issue comment 5720070426"
+  proof_dag_predecessors:
+    - "LocalSemanticReconstruction.FiniteCoherentExtension executable coherence and full-component extension"
+    - "LocalSemanticReconstruction.PermutationRestriction accepted preserving-change classification"
+    - "Mathlib.Data.Fintype.Perm finite enumeration and cardinality of Equiv.Perm K"
+  proof_obligation: "finite K tableからactual value type Equiv.Perm Kの有限列挙・等号判定を得て、Cycle 13のcoherence判定とextensionを特殊化する。identity fallbackで得たfull component familyをaccepted classificationの逆写像によりactual operation-preserving following changeへ移し、successful raw-table computationのretained-vertex readbackを証明する"
+  selection_reason: "固定GOAL Dが要求する有限value tableをactual hidden permutation valueへ具体化し、一般algorithmをaccepted preserving following-change typeまで接続する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationExtension.lean"
+  risks:
+    - "finite valueをarbitrary supplied listやproxy codeへ置換せずactual Equiv.Perm K全体を列挙すること"
+    - "full familyで停止せずaccepted classificationを通じactual preserving changeを構成すること"
+    - "raw input routeがcoherence certificateを外部供給として要求せずincoherent branchを明示的にrejectすること"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the finite K table induces the complete |K|! table and decidable equality of actual permutations; Cycle 13 coherence and extension specialize to permutation values; identity totalization followed by the accepted classification equivalence computes an actual preserving change; every successful raw-table computation reads back the original retained table"
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.permutationValues"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.mem_permutationValues"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.card_permutationValues"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.permutationCoherenceTest"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.permutationCoherenceTest_eq_true_iff"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.CoherentPermutationTable"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.extendPermutationFamily"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.extendPermutationFamily_mk"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.extendPreservingChange"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.extendPreservingChange_classification_mk"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.decideAndExtendPreservingChange"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.decideAndExtendPreservingChange_eq_none_iff"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.decideAndExtendPreservingChange_readback"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.coherentPermutationExampleTable"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.coherentPermutationExampleTable_edgeCoherent"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.incoherentPermutationExampleTable"
+    - "AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension.incoherentPermutationExampleTable_not_edgeCoherent"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL D: V・E・K の有限性を列挙tableと等号判定として入力に固定"
+      - "固定 GOAL D: S上の整合判定の決定可能性と延長の計算可能性"
+      - "受理済み分類: preserving following changes と component-indexed permutations の同値"
+    conjuncts:
+      - "Finset.univ enumerates every actual Equiv.Perm K value"
+      - "the actual permutation table has cardinality |K|! and decidable equality"
+      - "the specialized Bool test decides equality across every actual retained named edge"
+      - "identity permutation supplies the explicit off-image fallback"
+      - "the accepted classification inverse constructs an actual operation-preserving following change"
+      - "the raw-table computation rejects exactly incoherent input and every success has retained-vertex readback"
+      - "concrete identity/swap tables exercise both Bool coherence outcomes"
+    undischarged_assumptions:
+      - "connect the generic executable route to the existing fixed finite examples and following-change fiber cardinality declarations"
+    acceptance_point: "the output is an actual PreservingChange classified by the accepted equivalence, not a supplied or proxy full-family witness"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "finite graph vertex/edge tables, vertex equality, decidable retained predicate"
+      - "finite hidden carrier K and decidable equality on K"
+      - "visible graph automorphism u"
+    direction_hypothesis:
+      - "RetainsFullConnectivity for retained-vertex readback"
+    discharge_required:
+      - "actual permutation enumeration and equality / generated from Fintype K and DecidableEq K"
+      - "permutation coherence decision / specialized from Cycle 13"
+      - "actual preserving change / constructed through the accepted classification inverse"
+      - "raw successful computation readback / proved from Cycle 13 extension correctness"
+    conclusion_equivalent_risk: []
+  proof_use:
+    used:
+      - "Fintype K and DecidableEq K in permutation enumeration, equality, and finite coherence"
+      - "EdgeCoherent in the successful branch"
+      - "RetainsFullConnectivity in full-family readback"
+      - "preservingEquivComponentPermutationFamilies symm and apply_symm_apply"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationExtension.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.FinitePermutationExtension: 19 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "connect the executable preserving-change route to fixed finite examples and following-change fiber cardinality evidence"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
 - B の対象・射を含む圏同値。Cycle 2 は E1 の指定族における function-level Hom reconstruction。
 - C の投影・正規化・比較群回復。
-- D の finite `K` table からの `Equiv.Perm K` 列挙・等号判定と actual preserving
-  following changes への実効性特殊化。一般判定、component 列挙、vertex-table coherence、
-  component-family 降下、finite extension 接続は Cycles 7--13 で構成済み。
+- D の generic executable preserving-change route と既存 finite examples / fiber cardinality
+  宣言の接続。一般判定、component 列挙、vertex-table coherence、component-family降下、
+  finite `Equiv.Perm K` table、actual preserving-change extension は Cycles 7--14 で構成済み。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の同定。
 - E2 の lens・protocol 二層の決定性と既存 Karoubi 再構成との整合。
