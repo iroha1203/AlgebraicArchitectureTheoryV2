@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 187 proves stability of the mandatory-C finite-tree obstruction under every Type-1 primitive-family extension equipped with an injective provenance encoding into the complete tagged primitive alphabet
+- current proof obligation: Cycle 188 constructs the mandatory-C tagged complete geometry from the reviewed finite-axis-fold geometry/raw data and proves that every source-choice operation change satisfies the current independent six-component explicit exact geometry morphism contract
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the final Sigma,D,R_Theta and prove whether the complete mandatory-C source-choice family survives its exact preservation laws; independently derive treeGenerated and all role-provenance embeddings from the final syntax, or construct and test a legal higher-information role
+- next proof obligation: construct final Sigma,D,R_Theta and prove that its object/morphism laws include this fixed tagged geometry and retain the complete source-choice family, while also accommodating the required noninvertible CS maps; independently derive treeGenerated and all role-provenance embeddings from final syntax
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/B/C Cycle 188 delta | mandatory-Cの全source-choice変更がcoreだけでなく、独立に定義された現行complete geometry保存則を満たすかを、最終圏membership certificateを入力せず判定する | `taggedOperationGeometryPackage`; `taggedSourceChoiceExplicitExactGeometryHom`, base/uniform-flip定理; category object/morphismとreadback/injective; `taggedSourceChoiceExplicitExactGeometryEndomorphisms_not_treeEnumerable` | 固定`taggedOperationPackage`、review済み`finiteAxisFoldGeometryPackage`のgeometry/raw、既構成`taggedSourceChoiceTotal`。decoder像、final `R_Theta` membership、完成geometry射、保存certificateは入力しない | operation tagだけを拡張して元のcoverage/overlap/coefficient/rawを保持する一つのchoice非依存geometry objectを構成。任意choiceについてbase、9 coverage law、overlap iso、係数、raw exact map、全contextのSupport/Axis/Observable explicit realizationを構成し、operation readbackで全predicateを回収。constant-true baseを固定uniform flipに同定し、bounded tree全射からCantor矛盾を導出 | final `D_Theta,R_Theta` のmorphism law設計とmandatory-C収録証明、final syntax fullness判定 | `ExplicitExactGeomCategory`は最終`R_Theta`ではなく、equivalence-valued exact sliceで一般の非可逆CS射を覆わない。final Sigma/D membership、final R laws、treeGenerated、全role provenance、B/D/E統合は未完了。target_refutedでもcompletionでもない |
 | A/B/C Cycle 187 delta | 新しいprimitive roleを追加しても、各payloadが既存原始alphabetへ単射provenance符号化できる限り有限木障害が保存されることを一般化する | `boundedPrimitiveTreeTokenEmbedding`, `boundedPrimitiveTreeTokenListEmbedding`, `boundedPrimitiveFiniteTreeEmbedding`, enumerationとsurjective; `taggedSourceChoiceAdmissibleEndomorphisms_not_boundedPrimitiveTreeEnumerable`; `not_full_and_retractGenerated_of_boundedPrimitiveTreeGeneratedEndomorphisms` | 任意`A : Type 1`と構成済みembedding `A ↪ TaggedPrimitiveReference`、Cycle 185 tree serialization/Cantor obstruction。semantic decoder、whole map、full/retract certificateはembeddingに含めない | primitive embeddingをOption/payload-length token、List token、Tree codeへ順に単射的に持上げ、invFunとsingleton-firstからList TaggedReferenceによる全Tree Aの列挙を構成。仮想tree decoder全射とtreeGeneratedを既存障害へ移す | final Sigmaの各追加roleのprovenance discharge、または非bounded familyの合法性判定 | embeddingは一般定理の明示的未放電前提。これを満たす全role追加はescapeでないが、満たさない高情報roleが固定targetの原始入力として合法か、禁止されたcompleted morphism相当かの最終判定は未完了。target_refutedではない |
 | A/B/C Cycle 186 delta | mandatory tagged branchで現在宣言済みの全primitive roleを個別4-role候補ではなくclosed dependent sum全体として扱い、有限再帰木障害へ接続する | `closedTaggedPrimitiveTreeToTagged`, `taggedPrimitiveTreeToClosedTagged`, 両round trip; `closedTaggedPrimitiveTreeEquiv`; `taggedSourceChoiceAdmissibleEndomorphisms_not_closedPrimitiveTreeEnumerable`, `_not_closedPrimitiveTreeGenerated`; `not_full_and_retractGenerated_of_closedPrimitiveTreeGeneratedEndomorphisms` | `ClosedPrimitiveReference`の21 role dependent sum、tagged branchでの`closedTaggedPrimitiveReferenceEquiv`、Cycle 185 finite-tree obstruction。semantic decoder、completed map、full/retract certificateはtree payloadや同値へ入れない | Tree.mapで全closed role木と4 inhabited role木のtree shape/payloadを双方向に運び、帰納法で両round tripを証明。仮想closed-role tree decoder全射をCycle 185へ移し、任意presentationのclosed-tree generationからfullness/retract同時成立を否定 | 最終Sigmaに追加するmap-side/evaluation/coefficient transport roleごとのprovenance判定 | 現在宣言済みroleについては網羅したが、`ClosedPrimitiveRoleExhaustion`自身が明記する未宣言の最終roleは未固定。closed-tree-generated premiseも最終syntaxから未放電。target_refutedではなく、B四義務、D/E、A--F統合も未完了 |
 | A/B/C Cycle 185 delta | 完全tagged primitive alphabetをnode payloadに持つ再帰的有限構文について、木形・payload・部分木境界をdecoderと独立に保持し、fullness/retract生成との両立を判定する | `taggedPrimitiveFiniteTreeCode`, `taggedPrimitiveFiniteTreeCode_injective`; `taggedPrimitiveReferenceInfinite`; `taggedPrimitiveFiniteTreeTokenListEmbedding`; `taggedPrimitiveFiniteTreeEmbedding`; tree/list enumerationとsurjective; `taggedSourceChoiceAdmissibleEndomorphisms_not_finiteTreeEnumerable`, `_not_finiteTreeGenerated`; `not_full_and_retractGenerated_of_finiteTreeGeneratedEndomorphisms` | Cycle 14の全Atom/Source/Object/endpoint-indexed Operation primitive alphabet、mandatory-C admissible categoryと全source-choice endomorphism、Mathlib finite `Tree`。completed semantic map、predicate family、decoder像、fullness/retract certificateはsyntax tokenへ入れない | universe-polymorphic finite treeを、各nodeにleft subtree code lengthを持つtoken列へ単射符号化。全ArchitectureObjectを含むprimitive alphabetの無限性からtoken列を同alphabetへ単射化し、invFunでlistから全treeへのsurjectionを構成。仮想tree decoder全射を既存Cantor/list obstructionへ移し、presentationのfullnessとretract生成の同時成立を否定 | 最終parameter-relative syntaxの各constructor/payload provenanceをこのtree carrierへ埋める網羅定理、または合法escape syntaxの構成 | Type-1の完全既存alphabetと任意有限再帰木形は覆うが、固定Sigma/Dが許す追加の無限parameter familyすべてをこのalphabetへ還元していない。treeGeneratedは一般presentation theoremではsyntax由来の未放電前提。したがってtarget_refutedではない。B四義務、D/E接続、A--F統合も未完了 |
@@ -19611,4 +19612,134 @@ audits:
     - "conditional on final R_Theta retaining the complete mandatory-C source-choice family and final Homs being tree-generated, every Type-1 role with injective provenance in the complete tagged alphabet is too small for simultaneous fullness and retract generation"
     - "final R_Theta membership, final treeGenerated, final role exhaustion, and the legality of any non-embeddable higher-information primitive are all still independent material obligations"
   next_obligation: "Construct final Sigma,D,R_Theta and decide the complete mandatory-C source-choice family's membership from its exact preservation laws; in parallel derive treeGenerated and each role embedding from final syntax, or construct a concrete legal non-embeddable primitive and test it. Target revision is justified only after these routes close."
+```
+
+## Cycle 188 — Mandatory-C explicit exact geometry survival
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 188
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 98c5f5a23d1eb981c2753268abdfca9f10b516aa
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 187 leaves final R_Theta membership of the complete mandatory-C source-choice family as an independent material obligation"
+  proof_dag_predecessors:
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceTotal
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceTotal_injective
+    - AAT.AG.RealizationReconstruction.ExplicitExactGeometryHom
+    - AAT.AG.RealizationReconstruction.ExplicitExactGeomCategory
+    - AAT.AG.FullGeometryNormalization.finiteAxisFoldGeometryPackage
+  proof_obligation: "Determine constructively whether every mandatory-C source-choice map preserves the nearest existing decoder-independent complete exact geometry contract"
+  selection_reason: "This tests actual coverage, overlap, coefficient, raw, and all-context realization laws before choosing final R_Theta, rather than treating the earlier full core category as final geometry."
+  expected_result_type: theorem-progress
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCExplicitExactGeometryObstruction.lean
+  risks:
+    - "defining the geometry object or morphism class from decoder image or successful source choices"
+    - "accepting a completed geometry morphism or preservation certificate as input"
+    - "identifying the reversible explicit exact category with final R_Theta despite required noninvertible CS maps"
+  unchecked:
+    - "final Sigma,D,R_Theta object and morphism definitions and inclusion of this tagged geometry"
+result:
+  proposed_result_type: theorem-progress
+  proof_obligation_delta: "Constructed one choice-independent tagged complete geometry by retaining the reviewed finite-axis-fold coverage, overlap, coefficient ring, and raw system while extending only the operation type by the invisible Boolean tag. For every unrestricted source predicate, constructed all six fields of an ExplicitExactGeometryHom directly from the fixed input, recovered the predicate from its operation action, identified the constant-true base with the mandatory uniform flip, and transferred the bounded-tree Cantor obstruction to this exact-geometry endomorphism family."
+  completion_candidate: no
+  target_refuted: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCExplicitExactGeometryObstruction.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.taggedOperationGeometryPackage
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceExplicitExactGeometryHom
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceExplicitExactGeometryHom_uniformFlip_base
+    - AAT.AG.RealizationReconstruction.readTaggedSourceChoiceExplicitExactGeometry_taggedSourceChoice
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceExplicitExactGeometryMorphism_injective
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceExplicitExactGeometryEndomorphisms_not_treeEnumerable
+  claim_mapping:
+    theorem_names:
+      - AAT.AG.RealizationReconstruction.taggedOperationGeometryPackage
+      - AAT.AG.RealizationReconstruction.taggedSourceChoiceExplicitExactGeometryHom
+      - AAT.AG.RealizationReconstruction.taggedSourceChoiceExplicitExactGeometryHom_base
+      - AAT.AG.RealizationReconstruction.taggedSourceChoiceExplicitExactGeometryHom_uniformFlip_base
+      - AAT.AG.RealizationReconstruction.readTaggedSourceChoiceExplicitExactGeometry_taggedSourceChoice
+      - AAT.AG.RealizationReconstruction.taggedSourceChoiceExplicitExactGeometryMorphism_injective
+      - AAT.AG.RealizationReconstruction.taggedSourceChoiceExplicitExactGeometryEndomorphisms_not_treeEnumerable
+    source_labels:
+      - "GOAL A complete geometry information and independently defined morphisms"
+      - "GOAL B fullness test for the same fixed realization morphisms"
+      - "GOAL C fixed taggedOperationPackage and uniform all-endpoint flip"
+    conjuncts:
+      - "one fixed geometry object -> reviewed finite-axis-fold coverage, overlap, coefficient, and raw data retained"
+      - "arbitrary source predicate -> actual PackageTotalHom base generated from the fixed operation family"
+      - "complete exact morphism -> coverage, overlap, coefficient, raw, and every context realization action constructed"
+      - "operation readback -> the whole predicate is recovered and the family is injective"
+      - "fixed C witness -> constant-true choice has exactly taggedUniformFlipTotal as base"
+      - "bounded tree decoder -> no surjection onto all exact-geometry source-choice endomorphisms"
+    input_premises:
+      - "the fixed mandatory-C taggedOperationPackage and taggedSourceChoiceTotal constructor"
+      - "the reviewed finiteAxisFoldGeometryPackage from the fixed G-122 input"
+      - "an arbitrary source predicate as the semantic family being embedded, not a certificate"
+      - "only for the final no-surjection theorem, A : Type 1 and a provenance embedding into TaggedPrimitiveReference"
+    constructed_evidence:
+      - "choice-independent tagged complete geometry package"
+      - "all fields of the exact geometry hom for every choice"
+      - "category-level morphism and operation readback"
+      - "injectivity and bounded-tree non-surjectivity"
+    proof_use:
+      - "the original finite geometry/raw data supplies the unchanged non-operation components"
+      - "taggedSourceChoiceTotal supplies the only changed operation map"
+      - "identity context, support, axis, observable, coefficient, and raw transports discharge the exact laws"
+      - "operation readback proves injectivity and supplies every predicate in the Cantor argument"
+      - "the Cycle 187 list-to-tree surjection transfers the contradiction to bounded trees"
+    unfinished:
+      - "construct final Sigma,D,R_Theta and prove this fixed geometry object and all its source-choice maps satisfy those final laws"
+      - "ensure final R_Theta also contains required arbitrary noninvertible CS morphisms; ExplicitExactGeomCategory alone is too reversible"
+      - "derive treeGenerated and all aggregate primitive-family provenance from final syntax"
+      - "B four obligations, D whole classification recovery, E connection, and A--F integration"
+    undischarged_assumptions:
+      - "final R_Theta uses or receives a proved comparison from the current explicit exact geometry contract"
+      - "final syntax treeGenerated and final role-provenance coverage"
+      - "all remaining fixed-target integration obligations"
+    acceptance_point: "All mandatory-C source-choice maps preserve the current decoder-independent six-component exact geometry contract on one fixed source-provenanced geometry object; acceptance does not identify that contract with final R_Theta."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "mandatory-C source-choice membership through current complete exact geometry laws"
+      - "same-family operation readback after imposing all current geometry fields"
+      - "bounded-tree non-surjection for exact-geometry endomorphisms"
+    remaining:
+      - "final Sigma,D,R_Theta construction and inclusion theorem"
+      - "noninvertible CS-compatible final morphism design"
+      - "final syntax generation and A--F integration"
+  certificate_provenance:
+    discharged:
+      - "the geometry object is copied from the reviewed fixed finite-axis-fold geometry/raw input, not selected from successful morphisms"
+      - "every morphism field is constructed from the source predicate and unchanged primitive readings"
+    unresolved:
+      - "final D_Theta membership and final R_Theta comparison are not yet constructed"
+  proof_use:
+    used:
+      - "all six ExplicitExactGeometryHom components"
+      - "the complete unrestricted predicate family and operation readback"
+      - "the fixed constant-true uniform flip"
+    unused:
+      - "no decoder image, representability condition, completed geometry morphism, preservation certificate, fullness proof, retract proof, or final-category membership is accepted"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused MandatoryCExplicitExactGeometryObstruction check: PASS; 10 namespace declarations, standard axioms only"
+    - "registered exact MandatoryCExplicitExactGeometryObstruction target build: PASS (4313 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "the complete source-choice family survives every law of the current explicit exact geometry contract, so those laws alone cannot restore bounded finite-tree fullness"
+    - "the current exact category cannot be the final R_Theta without a separate construction that also retains required noninvertible CS maps"
+  next_obligation: "Construct final Sigma,D,R_Theta as a common morphism contract broad enough for noninvertible CS maps, prove the fixed tagged geometry and complete source-choice family belong from those exact laws, then derive final syntax treeGenerated/provenance or exhibit a legal higher-information role."
 ```
