@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 186 connects Cycle 185 to the dependent sum of all 21 primitive roles currently declared by the closed signature and proves that finite trees over that exhaustive current role sum still cannot support simultaneous decoder fullness and retract generation on mandatory C
+- current proof obligation: Cycle 187 proves stability of the mandatory-C finite-tree obstruction under every Type-1 primitive-family extension equipped with an injective provenance encoding into the complete tagged primitive alphabet
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: decide the final Sigma role extension required by the fixed A geometry/map-side clauses; for each new role, construct its primitive-data provenance embedding into the closed finite-tree bound or exhibit an honest target-compliant family that escapes it, without treating the current declaration audit as final role exhaustion
+- next proof obligation: construct the final Sigma,D,R_Theta and prove whether the complete mandatory-C source-choice family survives its exact preservation laws; independently derive treeGenerated and all role-provenance embeddings from the final syntax, or construct and test a legal higher-information role
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/B/C Cycle 187 delta | 新しいprimitive roleを追加しても、各payloadが既存原始alphabetへ単射provenance符号化できる限り有限木障害が保存されることを一般化する | `boundedPrimitiveTreeTokenEmbedding`, `boundedPrimitiveTreeTokenListEmbedding`, `boundedPrimitiveFiniteTreeEmbedding`, enumerationとsurjective; `taggedSourceChoiceAdmissibleEndomorphisms_not_boundedPrimitiveTreeEnumerable`; `not_full_and_retractGenerated_of_boundedPrimitiveTreeGeneratedEndomorphisms` | 任意`A : Type 1`と構成済みembedding `A ↪ TaggedPrimitiveReference`、Cycle 185 tree serialization/Cantor obstruction。semantic decoder、whole map、full/retract certificateはembeddingに含めない | primitive embeddingをOption/payload-length token、List token、Tree codeへ順に単射的に持上げ、invFunとsingleton-firstからList TaggedReferenceによる全Tree Aの列挙を構成。仮想tree decoder全射とtreeGeneratedを既存障害へ移す | final Sigmaの各追加roleのprovenance discharge、または非bounded familyの合法性判定 | embeddingは一般定理の明示的未放電前提。これを満たす全role追加はescapeでないが、満たさない高情報roleが固定targetの原始入力として合法か、禁止されたcompleted morphism相当かの最終判定は未完了。target_refutedではない |
 | A/B/C Cycle 186 delta | mandatory tagged branchで現在宣言済みの全primitive roleを個別4-role候補ではなくclosed dependent sum全体として扱い、有限再帰木障害へ接続する | `closedTaggedPrimitiveTreeToTagged`, `taggedPrimitiveTreeToClosedTagged`, 両round trip; `closedTaggedPrimitiveTreeEquiv`; `taggedSourceChoiceAdmissibleEndomorphisms_not_closedPrimitiveTreeEnumerable`, `_not_closedPrimitiveTreeGenerated`; `not_full_and_retractGenerated_of_closedPrimitiveTreeGeneratedEndomorphisms` | `ClosedPrimitiveReference`の21 role dependent sum、tagged branchでの`closedTaggedPrimitiveReferenceEquiv`、Cycle 185 finite-tree obstruction。semantic decoder、completed map、full/retract certificateはtree payloadや同値へ入れない | Tree.mapで全closed role木と4 inhabited role木のtree shape/payloadを双方向に運び、帰納法で両round tripを証明。仮想closed-role tree decoder全射をCycle 185へ移し、任意presentationのclosed-tree generationからfullness/retract同時成立を否定 | 最終Sigmaに追加するmap-side/evaluation/coefficient transport roleごとのprovenance判定 | 現在宣言済みroleについては網羅したが、`ClosedPrimitiveRoleExhaustion`自身が明記する未宣言の最終roleは未固定。closed-tree-generated premiseも最終syntaxから未放電。target_refutedではなく、B四義務、D/E、A--F統合も未完了 |
 | A/B/C Cycle 185 delta | 完全tagged primitive alphabetをnode payloadに持つ再帰的有限構文について、木形・payload・部分木境界をdecoderと独立に保持し、fullness/retract生成との両立を判定する | `taggedPrimitiveFiniteTreeCode`, `taggedPrimitiveFiniteTreeCode_injective`; `taggedPrimitiveReferenceInfinite`; `taggedPrimitiveFiniteTreeTokenListEmbedding`; `taggedPrimitiveFiniteTreeEmbedding`; tree/list enumerationとsurjective; `taggedSourceChoiceAdmissibleEndomorphisms_not_finiteTreeEnumerable`, `_not_finiteTreeGenerated`; `not_full_and_retractGenerated_of_finiteTreeGeneratedEndomorphisms` | Cycle 14の全Atom/Source/Object/endpoint-indexed Operation primitive alphabet、mandatory-C admissible categoryと全source-choice endomorphism、Mathlib finite `Tree`。completed semantic map、predicate family、decoder像、fullness/retract certificateはsyntax tokenへ入れない | universe-polymorphic finite treeを、各nodeにleft subtree code lengthを持つtoken列へ単射符号化。全ArchitectureObjectを含むprimitive alphabetの無限性からtoken列を同alphabetへ単射化し、invFunでlistから全treeへのsurjectionを構成。仮想tree decoder全射を既存Cantor/list obstructionへ移し、presentationのfullnessとretract生成の同時成立を否定 | 最終parameter-relative syntaxの各constructor/payload provenanceをこのtree carrierへ埋める網羅定理、または合法escape syntaxの構成 | Type-1の完全既存alphabetと任意有限再帰木形は覆うが、固定Sigma/Dが許す追加の無限parameter familyすべてをこのalphabetへ還元していない。treeGeneratedは一般presentation theoremではsyntax由来の未放電前提。したがってtarget_refutedではない。B四義務、D/E接続、A--F統合も未完了 |
 | A/B/D Cycle 184 delta | completed semantic mapをleafへ入れず、fixed finite-axis-fold actual admissible direct endpointの全自己同型に対する任意のsmall Type-0 finite-reference list decoderの全射性を判定する | `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_injective_arbitrary`; raw/admissibleの`finiteAxisFoldActualDirect*PermutationSectionHom`とinjective; `finiteAxisFoldListPredicateToggle`とinjective; `finiteAxisFoldListChoiceActualDirectAut`とinjective; `not_surjective_of_choice_embedding`; `finiteAxisFoldActualDirectAut_not_listEnumerable`; `finiteAxisFoldActualDirectAut_not_listGeneratedCodeEnumerable` | fixed DのType-0原始Extension carrier action、actual direct pull-push section、admissible packaging、既構成backward projection/readback、Cantor diagonal theorem。Fintype、countability、completed actual Aut、decoder非全射certificateは入力しない | 任意small carrier `E : Type` のsource permutationをCycle 182 evaluatorと同じactual admissible direct endpointへ単射に埋め込む。`E=List A×Bool`で各predicateのfiber toggleを構成し単射を証明。仮想decoder全射をinvFun readbackで`List A → (List A→Bool)`全射へ移してCantor矛盾。任意small surjective `List A→Code`にも合成で拡張 | 最終syntaxのprimitive provenance/list-generationとuniverse coverage theoremに接続したfullness判定 | Type-0の固定alphabet `A` とsmall list-generated `Code`を排除するが、現presentation HomはType 2であり、高universeを含む全target-permitted syntaxをこの範囲へ還元する定理も高universeのsemantic familyも未構成。したがってtarget_refutedではない。修正版syntax、B四義務、whole comparison/fibers、A--F統合も未完了 |
@@ -19489,4 +19490,125 @@ audits:
     - "all currently declared tagged-branch roles reduce exactly to the Cycle-185 tree alphabet, so merely choosing a different current role is not an escape"
     - "future/final Sigma roles remain a genuine construction and provenance obligation"
   next_obligation: "Fix the final additional role inventory required by A, then for each role prove an original-input provenance embedding into the closed finite-tree carrier or record a concrete legal higher-information family and test whether its use violates the prohibition on completed morphism input."
+```
+
+## Cycle 187 — Provenance-bounded primitive-extension obstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 187
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 68a76c7041ec323137119dc37c5f1a5845b5a5ef
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycles 185--186 exclude recursive finite syntax over the complete current tagged/closed alphabets but leave future primitive roles open"
+  proof_dag_predecessors:
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveFiniteTreeCode_injective
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveFiniteTreeTokenListEmbedding
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceAdmissibleEndomorphisms_not_listPrimitiveEnumerable
+  proof_obligation: "Prove that every added Type-1 primitive family with an injective original-primitive provenance encoding remains inside the mandatory-C finite-tree obstruction"
+  selection_reason: "This separates provenance-bounded role extensions from higher-information roles, while leaving final R_Theta membership and final-syntax generation as independent material obligations."
+  expected_result_type: blocker-fixed
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCBoundedPrimitiveTreeObstruction.lean
+  risks:
+    - "accepting a semantic decoder or completed map as the provenance embedding"
+    - "using invFun before proving the tree embedding injective"
+    - "claiming non-embeddable roles are automatically illegal or target-refuted"
+  unchecked:
+    - "legality under fixed A and anti-weakening clause 3 of every higher-information final role that does not admit the provenance embedding"
+result:
+  proposed_result_type: blocker-fixed
+  proof_obligation_delta: "For arbitrary A : Type 1 and a proved embedding A into TaggedPrimitiveReference, lifted the embedding injectively through Option payload/length tokens, finite token lists, and the universe-polymorphic tree serialization. Constructed a surjective list enumeration of every Tree A and transferred both the mandatory-C no-surjection theorem and the categorical Full-plus-RetractGenerated obstruction."
+  completion_candidate: no
+  target_refuted: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCBoundedPrimitiveTreeObstruction.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.boundedPrimitiveTreeTokenEmbedding
+    - AAT.AG.RealizationReconstruction.boundedPrimitiveTreeTokenListEmbedding
+    - AAT.AG.RealizationReconstruction.boundedPrimitiveFiniteTreeEmbedding
+    - AAT.AG.RealizationReconstruction.boundedPrimitiveFiniteTreeEnumeration_surjective
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceAdmissibleEndomorphisms_not_boundedPrimitiveTreeEnumerable
+    - AAT.AG.RealizationReconstruction.not_full_and_retractGenerated_of_boundedPrimitiveTreeGeneratedEndomorphisms
+  claim_mapping:
+    theorem_names:
+      - AAT.AG.RealizationReconstruction.boundedPrimitiveTreeTokenEmbedding
+      - AAT.AG.RealizationReconstruction.boundedPrimitiveTreeTokenListEmbedding
+      - AAT.AG.RealizationReconstruction.boundedPrimitiveFiniteTreeEmbedding
+      - AAT.AG.RealizationReconstruction.boundedPrimitiveFiniteTreeEnumeration_surjective
+      - AAT.AG.RealizationReconstruction.taggedSourceChoiceAdmissibleEndomorphisms_not_boundedPrimitiveTreeEnumerable
+      - AAT.AG.RealizationReconstruction.not_full_and_retractGenerated_of_boundedPrimitiveTreeGeneratedEndomorphisms
+    source_labels:
+      - "GOAL A finite source-provenanced syntax and explicit infinite parameter origins"
+      - "GOAL B fullness and retract generation"
+      - "anti-weakening clause 3 forbidding completed whole-map information as a parameter reference"
+    conjuncts:
+      - "individual primitive provenance embedding -> injective structural token embedding"
+      - "token embedding -> injective list and tree embedding"
+      - "tree embedding -> independently constructed surjective list enumeration"
+      - "semantic/categorical consequence -> no full mandatory-C enumeration and no simultaneous Full plus RetractGenerated"
+    input_premises:
+      - "an arbitrary Type-1 primitive family A"
+      - "a constructed injective provenance map A into the complete tagged primitive alphabet"
+      - "Cycle 185 semantic obstruction"
+      - "for the generic category theorem, treeGenerated for the selected final syntax"
+    constructed_evidence:
+      - "three successive injective provenance lifts and their inverse enumeration"
+      - "bounded-family semantic no-surjection"
+      - "bounded-family categorical full/retract incompatibility"
+    proof_use:
+      - "primitive injectivity proves token and list injectivity"
+      - "tree-code injectivity and token-list embedding construct the final tree embedding"
+      - "invFun is used only after that injectivity proof"
+      - "the list enumeration feeds the actual Cycle-14 mandatory-C contradiction"
+    unfinished:
+      - "construct the embedding for every final Sigma role, or exhibit a concrete non-embeddable legal role"
+      - "derive treeGenerated from the final presentation syntax"
+      - "construct final Sigma,D,R_Theta and prove whether all mandatory-C source-choice endomorphisms preserve its exact laws"
+      - "B/D/E/A--F integration"
+    undischarged_assumptions:
+      - "A embeds injectively in TaggedPrimitiveReference"
+      - "treeGenerated for every presentation endomorphism type"
+      - "the independent mandatory-C admissible category, or its complete source-choice family, connects to final R_Theta"
+      - "all remaining fixed-target integration obligations"
+    acceptance_point: "The obstruction is stable under every explicitly provenance-bounded Type-1 primitive extension; acceptance does not decide the legality or existence of a non-embeddable higher-information role."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "generic lift from individual primitive provenance to finite-tree provenance"
+      - "mandatory-C obstruction for every bounded primitive extension"
+    remaining:
+      - "final per-role embedding discharge or concrete legal non-embeddable role"
+      - "final R_Theta construction and mandatory-C source-choice membership or exclusion from its exact source laws"
+      - "final syntax generation and A--F integration"
+  certificate_provenance:
+    discharged:
+      - "the supplied embedding is used only as primitive provenance and is lifted constructively"
+    unresolved:
+      - "the final Sigma must construct each embedding from original input data"
+  proof_use:
+    used:
+      - "embedding injectivity at token/list/tree layers"
+      - "Cycle 185 explicit tree serialization and Cycle 14 semantic obstruction"
+    unused:
+      - "no semantic decoder, completed morphism, fullness proof, retract proof, or target-refutation certificate is accepted"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused MandatoryCBoundedPrimitiveTreeObstruction check: PASS; 7 namespace declarations, standard axioms only"
+    - "registered exact MandatoryCBoundedPrimitiveTreeObstruction target build: PASS (4274 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "conditional on final R_Theta retaining the complete mandatory-C source-choice family and final Homs being tree-generated, every Type-1 role with injective provenance in the complete tagged alphabet is too small for simultaneous fullness and retract generation"
+    - "final R_Theta membership, final treeGenerated, final role exhaustion, and the legality of any non-embeddable higher-information primitive are all still independent material obligations"
+  next_obligation: "Construct final Sigma,D,R_Theta and decide the complete mandatory-C source-choice family's membership from its exact preservation laws; in parallel derive treeGenerated and each role embedding from final syntax, or construct a concrete legal non-embeddable primitive and test it. Target revision is justified only after these routes close."
 ```
