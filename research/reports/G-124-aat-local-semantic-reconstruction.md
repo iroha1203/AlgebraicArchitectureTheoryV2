@@ -772,7 +772,6 @@ selection:
   proof_state_ref: "Cycle 10 accepted evidence: PR comment 5719252080; Issue comment 5719266626"
   proof_dag_predecessors:
     - "LocalSemanticReconstruction.ComponentRestriction.precompose"
-    - "LocalSemanticReconstruction.ComponentRestriction.precompose_surjective_iff_injective"
   proof_obligation: "明示的な Fintype local/global indices と decidable equality のもとで、injective index map に沿う local family の global extension を有限探索で計算し、restrictionが元のfamilyになることを証明する。index map のinjectivity・surjectivityをBoolで判定する"
   selection_reason: "Dの実効性を noncomputable Function.extend から分離し、finite table入力で実行可能なset-theoretic coreを先に固定する"
   expected_result_type: proof-obligation-discharged
