@@ -619,7 +619,7 @@ selection:
     - "graph criteria と actual separation/extension の双方を記録し、片方だけを determining と呼ばないこと"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "a finite subset meeting every component and retaining connectivity exists iff the full component type is finite; the canonical quotient representative range supplies one such subset, and for every nontrivial value type this is equivalent to existence of a finite restriction that is both injective and surjective on component families"
+  proof_obligation_delta: "a finite subset meeting every component and retaining connectivity exists iff the full component type is finite; the chosen noncomputable Quotient.out representative range supplies one such subset, and for every nontrivial value type this is equivalent to existence of a finite restriction that is both injective and surjective on component families"
   completion_candidate: no
   lean_artifacts:
     - "AAT.AG.LocalSemanticReconstruction.InducedComponent.representative"
@@ -655,7 +655,7 @@ audits:
     conclusion_equivalent_risk: []
   proof_use:
     used:
-      - "Quotient.out and Quotient.out_eq"
+      - "noncomputable Quotient.out and Quotient.out_eq, with standard Classical.choice dependency"
       - "Finite.of_surjective"
       - "both Cycle 8 precomposition-to-graph equivalences"
     unused: []

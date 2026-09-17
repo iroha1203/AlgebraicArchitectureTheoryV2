@@ -8,8 +8,8 @@ import Formal.Util.AssertStandardAxioms
 The graph criteria from the preceding cycle imply that a finite vertex subset
 can both meet every full component and retain full connectivity exactly when
 the full component type is finite.  In the finite direction, the subset is
-constructed as the range of the canonical quotient representative choice, so
-it contains exactly one chosen vertex for each component.
+constructed as the range of a noncomputable quotient representative choice,
+so it contains exactly one chosen vertex for each component.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction
@@ -18,7 +18,7 @@ open RealizationReconstruction
 
 namespace InducedComponent
 
-/-- The canonical chosen vertex representative of a full component. -/
+/-- A noncomputably chosen vertex representative of a full component. -/
 noncomputable def representative (F : FixedFDirectedMultigraph) :
     FixedFComponent F → F.Vertex :=
   Quotient.out
@@ -29,7 +29,7 @@ theorem componentMk_representative (F : FixedFDirectedMultigraph)
     fixedFComponentMk F (representative F component) = component :=
   Quotient.out_eq component
 
-/-- The vertex predicate consisting of one canonical representative from each
+/-- The vertex predicate consisting of one chosen representative from each
 full component. -/
 def RepresentativeVertex (F : FixedFDirectedMultigraph) : F.Vertex → Prop :=
   Set.range (representative F)
