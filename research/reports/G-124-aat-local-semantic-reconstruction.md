@@ -1200,7 +1200,8 @@ audits:
     ambient_boundary:
       - "independently supplied visible subgroup H and automorphism in H"
       - "finite graph vertices and finite hidden carrier for the generic cardinality formula"
-    direction_hypothesis: []
+    direction_hypothesis:
+      - "recovery uniqueness is conditional on the supplied all-finite component law hread"
     discharge_required:
       - "actual output/fiber identification / accepted equivalences composed"
       - "generic output cardinality / transported through the exact output/fiber equivalence and accepted projection-fiber cardinality"
