@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 188 constructs the mandatory-C tagged complete geometry from the reviewed finite-axis-fold geometry/raw data and proves that every source-choice operation change satisfies the current independent six-component explicit exact geometry morphism contract
+- current proof obligation: Cycle 189 equips the single closed parameter declaration with one decoder-independent category family whose tagged, original G-122, lens, and protocol fibers retain their full existing morphism classes, including the mandatory uniform flip and a fixed non-surjective CS map
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct final Sigma,D,R_Theta so that the fixed tagged geometry and mandatory uniform flip satisfy its independent laws, then decide from those laws whether the remaining source-choice family is included or excluded; if included, connect the obstruction, while independently accommodating noninvertible CS maps and deriving final treeGenerated/provenance
+- next proof obligation: replace the Cycle 189 branchwise law selection by one common independently defined D_Theta preservation interface, construct every branch map into it, then classify the remaining mandatory-C source-choice family and derive final treeGenerated/provenance
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/C/D/E Cycle 189 delta | 一つのclosed parameter宣言の各Thetaについてdecoder非依存の実現圏を与え、mandatory-C・元G-122 cell・lens・protocolを同じdependent familyで量化し、固定uniform flipと非可逆CS射を実際に収録する | `ClosedFamilyRealizationHom`; branch Hom 4種; `closedFamilyRealizationCategory`; `closedFamilyTaggedSourceChoice`, `closedFamilyTaggedUniformFlip_base`; `closedFamilyLensHom`, `closedFamilyProtocolHom`; `closedFamilyAxisVarianceHom`, `_not_surjective` | 既構成`ClosedFamilyParameter`, `FamilyRealization`、各branchのdecoder非依存Homと圏法則、Cycle 188 tagged exact Hom、固定empty-to-unit lens map。decoder、表示像、split/retract、完成圏certificateは入力しない | parameterでdependent eliminationし同じTheta内のHomを構成。universe差は情報を加えない`ULift`だけで揃え、4 branchの恒等・合成・圏法則を持上げる。任意source-choice、constant-true uniform flip、任意lens/protocol semantic Hom、固定非全射lens mapを実際のHomとして構成 | final `D_Theta`の共通morphism law設計、mandatory入力の同一宣言内収録、非可逆CS射とCの同時保持 | 現時点のHom lawはbranchごとの既構成lawをparameterで選ぶscaffoldであり、一つの共通`D_Theta` preservation interfaceではない。G-122 generated northeast endpoints、final geometry map law、source-choice inclusion/exclusion、P/F/B/D/E統合は未完了。final `R_Theta`やcompletionとは数えない |
 | A/B/C Cycle 188 delta | mandatory-Cの全source-choice変更がcoreだけでなく、独立に定義された現行complete geometry保存則を満たすかを、最終圏membership certificateを入力せず判定する | `taggedOperationGeometryPackage`; `taggedSourceChoiceExplicitExactGeometryHom`, base/uniform-flip定理; category object/morphismとreadback/injective; `taggedSourceChoiceExplicitExactGeometryEndomorphisms_not_treeEnumerable` | 固定`taggedOperationPackage`、review済み`finiteAxisFoldGeometryPackage`のgeometry/raw、既構成`taggedSourceChoiceTotal`。decoder像、final `R_Theta` membership、完成geometry射、保存certificateは入力しない | operation tagだけを拡張して元のcoverage/overlap/coefficient/rawを保持する一つのchoice非依存geometry objectを構成。任意choiceについてbase、9 coverage law、overlap iso、係数、raw exact map、全contextのSupport/Axis/Observable explicit realizationを構成し、operation readbackで全predicateを回収。constant-true baseを固定uniform flipに同定し、bounded tree全射からCantor矛盾を導出 | final `D_Theta,R_Theta` のmorphism law設計とmandatory-C収録証明、final syntax fullness判定 | `ExplicitExactGeomCategory`は最終`R_Theta`ではなく、equivalence-valued exact sliceで一般の非可逆CS射を覆わない。final Sigma/D membership、final R laws、treeGenerated、全role provenance、B/D/E統合は未完了。target_refutedでもcompletionでもない |
 | A/B/C Cycle 187 delta | 新しいprimitive roleを追加しても、各payloadが既存原始alphabetへ単射provenance符号化できる限り有限木障害が保存されることを一般化する | `boundedPrimitiveTreeTokenEmbedding`, `boundedPrimitiveTreeTokenListEmbedding`, `boundedPrimitiveFiniteTreeEmbedding`, enumerationとsurjective; `taggedSourceChoiceAdmissibleEndomorphisms_not_boundedPrimitiveTreeEnumerable`; `not_full_and_retractGenerated_of_boundedPrimitiveTreeGeneratedEndomorphisms` | 任意`A : Type 1`と構成済みembedding `A ↪ TaggedPrimitiveReference`、Cycle 185 tree serialization/Cantor obstruction。semantic decoder、whole map、full/retract certificateはembeddingに含めない | primitive embeddingをOption/payload-length token、List token、Tree codeへ順に単射的に持上げ、invFunとsingleton-firstからList TaggedReferenceによる全Tree Aの列挙を構成。仮想tree decoder全射とtreeGeneratedを既存障害へ移す | final Sigmaの各追加roleのprovenance discharge、または非bounded familyの合法性判定 | embeddingは一般定理の明示的未放電前提。これを満たす全role追加はescapeでないが、満たさない高情報roleが固定targetの原始入力として合法か、禁止されたcompleted morphism相当かの最終判定は未完了。target_refutedではない |
 | A/B/C Cycle 186 delta | mandatory tagged branchで現在宣言済みの全primitive roleを個別4-role候補ではなくclosed dependent sum全体として扱い、有限再帰木障害へ接続する | `closedTaggedPrimitiveTreeToTagged`, `taggedPrimitiveTreeToClosedTagged`, 両round trip; `closedTaggedPrimitiveTreeEquiv`; `taggedSourceChoiceAdmissibleEndomorphisms_not_closedPrimitiveTreeEnumerable`, `_not_closedPrimitiveTreeGenerated`; `not_full_and_retractGenerated_of_closedPrimitiveTreeGeneratedEndomorphisms` | `ClosedPrimitiveReference`の21 role dependent sum、tagged branchでの`closedTaggedPrimitiveReferenceEquiv`、Cycle 185 finite-tree obstruction。semantic decoder、completed map、full/retract certificateはtree payloadや同値へ入れない | Tree.mapで全closed role木と4 inhabited role木のtree shape/payloadを双方向に運び、帰納法で両round tripを証明。仮想closed-role tree decoder全射をCycle 185へ移し、任意presentationのclosed-tree generationからfullness/retract同時成立を否定 | 最終Sigmaに追加するmap-side/evaluation/coefficient transport roleごとのprovenance判定 | 現在宣言済みroleについては網羅したが、`ClosedPrimitiveRoleExhaustion`自身が明記する未宣言の最終roleは未固定。closed-tree-generated premiseも最終syntaxから未放電。target_refutedではなく、B四義務、D/E、A--F統合も未完了 |
@@ -19742,4 +19743,132 @@ audits:
     - "the complete source-choice family survives every law of the current explicit exact geometry contract, so those laws alone cannot restore bounded finite-tree fullness"
     - "the current exact category cannot be the final R_Theta without a separate construction that also retains required noninvertible CS maps"
   next_obligation: "Construct final Sigma,D,R_Theta as an independent common morphism contract broad enough for noninvertible CS maps, prove the fixed tagged geometry and mandatory uniform flip belong, decide from the final laws whether the remaining source-choice maps are included or excluded, and only in the included case connect the obstruction to final treeGenerated/provenance."
+```
+
+## Cycle 189 — Closed decoder-independent realization category family
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 189
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 3045c44b5bf718d2ed3753eaaf0fc942825a061d
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 188 leaves the fixed tagged exact category separate from the two noninvertible CS categories and the original G-122 input category"
+  proof_dag_predecessors:
+    - AAT.AG.RealizationReconstruction.ClosedFamilyParameter
+    - AAT.AG.RealizationReconstruction.FamilyRealization
+    - AAT.AG.RealizationReconstruction.G122CellInput.G122OriginalCellGeometryHom
+    - AAT.AG.RealizationReconstruction.LensAATIndependentGeneratedPackageHom
+    - AAT.AG.RealizationReconstruction.ProtocolAATIndependentGeneratedPackageHom
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceExplicitExactGeometryHom
+  proof_obligation: "Put all four mandatory input families under one parameter-indexed decoder-independent category construction and verify that mandatory C and a genuinely noninvertible CS map both survive"
+  selection_reason: "This supplies the categorical fiber of the already constructed closed declaration before attempting a common final D_Theta law, while exposing rather than hiding the remaining branch-law mismatch."
+  expected_result_type: theorem-progress
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedRealizationCategory.lean
+  risks:
+    - "accepting four completed categories as certificate fields instead of eliminating the closed parameter"
+    - "forcing arbitrary CS morphisms into the equivalence-valued exact-geometry interface"
+    - "calling branchwise law selection the final common D_Theta preservation contract"
+  unchecked:
+    - "one common final D_Theta law and a proof that each branch morphism satisfies exactly that law"
+result:
+  proposed_result_type: theorem-progress
+  proof_obligation_delta: "Constructed one dependent Hom family and Category instance over the existing closed parameter declaration. The four parameter cases reduce definitionally to the fixed tagged explicit-exact endomorphisms, all original-cell G-122 geometry morphisms, and all independent lens/protocol package morphisms. Constructed the mandatory source-choice family and uniform flip in the tagged fiber, arbitrary semantic CS inclusions, and the fixed empty-to-unit non-surjective lens morphism in its lens fiber."
+  completion_candidate: no
+  target_refuted: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/AATClosedRealizationCategory.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.ClosedFamilyRealizationHom
+    - AAT.AG.RealizationReconstruction.closedFamilyRealizationCategory
+    - AAT.AG.RealizationReconstruction.closedFamilyTaggedSourceChoice
+    - AAT.AG.RealizationReconstruction.closedFamilyTaggedUniformFlip_base
+    - AAT.AG.RealizationReconstruction.closedFamilyLensHom
+    - AAT.AG.RealizationReconstruction.closedFamilyProtocolHom
+    - AAT.AG.RealizationReconstruction.closedFamilyAxisVarianceHom_not_surjective
+  claim_mapping:
+    theorem_names:
+      - AAT.AG.RealizationReconstruction.TaggedFamilyRealizationHom
+      - AAT.AG.RealizationReconstruction.G122FamilyRealizationHom
+      - AAT.AG.RealizationReconstruction.LensFamilyRealizationHom
+      - AAT.AG.RealizationReconstruction.ProtocolFamilyRealizationHom
+      - AAT.AG.RealizationReconstruction.ClosedFamilyRealizationHom
+      - AAT.AG.RealizationReconstruction.closedFamilyRealizationCategory
+      - AAT.AG.RealizationReconstruction.closedFamilyTaggedUniformFlip_base
+      - AAT.AG.RealizationReconstruction.closedFamilyAxisVarianceHom_not_surjective
+    source_labels:
+      - "GOAL A one Sigma followed by arbitrary Theta, objects, and morphisms"
+      - "GOAL C fixed tagged geometry and uniform flip"
+      - "GOAL D original arbitrary G-122 input family"
+      - "GOAL E arbitrary, possibly noninvertible lens and protocol morphisms"
+    conjuncts:
+      - "one closed parameter -> one dependent object and Hom family"
+      - "fixed tagged branch -> every Cycle 188 source-choice exact endomorphism"
+      - "original G-122 branch -> every existing original-cell complete geometry morphism"
+      - "lens/protocol branches -> every independently specified semantic Hom through operation-level readback"
+      - "mandatory uniform flip -> constant-true tagged endomorphism"
+      - "noninvertible CS witness -> empty-to-unit state map retained and proved non-surjective"
+    input_premises:
+      - "the source-defined ClosedFamilyParameter and FamilyRealization"
+      - "the already constructed decoder-independent Hom laws for each branch"
+      - "the fixed axisVariance empty-to-unit lens morphism"
+    constructed_evidence:
+      - "a single parameter-indexed Hom family and its identities, composition, and category laws"
+      - "actual mandatory-C, lens, and protocol inclusion maps"
+      - "a closed-family Hom with a non-surjective state action"
+    proof_use:
+      - "dependent elimination keeps source and target in the same fixed parameter fiber"
+      - "ULift only aligns universe levels and every composition evaluates on the original down-field morphisms"
+      - "the constant-true equality uses the Cycle 188 uniform-flip theorem"
+      - "non-surjectivity is witnessed by the impossible preimage of PUnit.unit in PEmpty"
+    unfinished:
+      - "replace branchwise Hom-law selection by one common source-defined D_Theta preservation interface"
+      - "include the G-122 generated northeast endpoints and comparisons, not only arbitrary original southwest cells"
+      - "classify the remaining mandatory-C source-choice family under the final common law"
+      - "construct P_Theta, decoder, final treeGenerated/provenance, B four obligations, D/E/F recovery, and A--F integration"
+    undischarged_assumptions: []
+    acceptance_point: "All mandatory parameter families now inhabit one decoder-independent dependent category family, and mandatory C coexists with an explicit noninvertible CS map; acceptance does not identify this branchwise scaffold with final R_Theta."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "one closed declaration can index all four existing independent category fibers"
+      - "mandatory uniform flip and arbitrary CS maps can be represented without an invertibility premise in one dependent family"
+      - "a concrete required-style noninvertible CS map survives the construction"
+    remaining:
+      - "one common final D_Theta preservation interface and branchwise discharge into it"
+      - "final source-choice inclusion-or-exclusion theorem"
+      - "final syntax generation, four B obligations, and D/E/F integration"
+  certificate_provenance:
+    discharged:
+      - "the category family is computed by elimination on the source parameter; no category, decoder, or membership certificate is a structure field"
+      - "the fixed noninvertible morphism is constructed from its actual empty state map and named-operation squares"
+    unresolved:
+      - "the final common law is not yet constructed"
+  proof_use:
+    used:
+      - "all four existing branch Hom types and their identity/composition laws"
+      - "Cycle 188 source-choice construction and uniform-flip equality"
+      - "the original arbitrary lens/protocol semantic-Hom round trips"
+    unused:
+      - "no decoder image, presentation membership, splitting, retract, completed final-category membership, or common-law certificate is accepted"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: "the fixed empty-to-unit lens witness has vacuous source-side lens and preservation laws because its carrier is PEmpty; its state-map non-surjectivity is nevertheless witnessed nonvacuously by the missing preimage of PUnit.unit, while the separate arbitrary-Hom inclusions carry the full quantified CS morphism classes"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused AATClosedRealizationCategory check: PASS; 14 namespace declarations, standard axioms only"
+    - "registered exact AATClosedRealizationCategory target build: PASS (4325 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "the category family still selects different previously constructed preservation laws by branch, so it is not final D_Theta or final R_Theta"
+    - "the tagged branch still contains the complete Cycle 188 source-choice family, while final common-law classification and syntax generation remain independent obligations"
+  next_obligation: "Define one source-derived common preservation interface over ClosedFamilyParameter, construct its data for tagged, original G-122, lens, and protocol morphisms, include generated G-122 comparison endpoints, and only then decide source-choice inclusion or exclusion and connect final syntax provenance."
 ```
