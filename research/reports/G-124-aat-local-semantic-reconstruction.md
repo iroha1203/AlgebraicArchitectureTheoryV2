@@ -1200,8 +1200,7 @@ audits:
     ambient_boundary:
       - "independently supplied visible subgroup H and automorphism in H"
       - "finite graph vertices and finite hidden carrier for the generic cardinality formula"
-    direction_hypothesis:
-      - "recovery uniqueness is conditional on the supplied all-finite component law hread"
+    direction_hypothesis: []
     discharge_required:
       - "actual output/fiber identification / accepted equivalences composed"
       - "generic output cardinality / transported through the exact output/fiber equivalence and accepted projection-fiber cardinality"
@@ -1395,7 +1394,8 @@ audits:
     ambient_boundary:
       - "actual source-choice Aut image and actual Bool readback"
       - "finite S conditional on an explicitly supplied decidable equality for the tagged architecture index"
-    direction_hypothesis: []
+    direction_hypothesis:
+      - "recovery uniqueness is conditional on the supplied all-finite component law hread"
     discharge_required:
       - "actual image recovery / accepted constructor and readback"
       - "all-finite-family recovery / accepted E1b read/assemble equivalence"
