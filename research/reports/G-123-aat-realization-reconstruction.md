@@ -16,7 +16,7 @@
 - current proof obligation: Cycle 187 proves stability of the mandatory-C finite-tree obstruction under every Type-1 primitive-family extension equipped with an injective provenance encoding into the complete tagged primitive alphabet
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: a final role that satisfies the Cycle-187 provenance bound cannot restore fullness plus retract generation; the remaining route must exhibit a fixed-target-legal higher-information role and prove that it is not a completed morphism or equivalent whole-map payload, or request human revision of the incompatible finite-presentation/fullness requirements
+- next proof obligation: construct the final Sigma,D,R_Theta and prove whether the complete mandatory-C source-choice family survives its exact preservation laws; independently derive treeGenerated and all role-provenance embeddings from the final syntax, or construct and test a legal higher-information role
 
 ## Requirement ledger
 
@@ -19509,7 +19509,7 @@ selection:
     - AAT.AG.RealizationReconstruction.taggedPrimitiveFiniteTreeTokenListEmbedding
     - AAT.AG.RealizationReconstruction.taggedSourceChoiceAdmissibleEndomorphisms_not_listPrimitiveEnumerable
   proof_obligation: "Prove that every added Type-1 primitive family with an injective original-primitive provenance encoding remains inside the mandatory-C finite-tree obstruction"
-  selection_reason: "This separates harmless source-provenanced role extensions from the only remaining escape, a role with strictly more information than the complete original primitive alphabet."
+  selection_reason: "This separates provenance-bounded role extensions from higher-information roles, while leaving final R_Theta membership and final-syntax generation as independent material obligations."
   expected_result_type: blocker-fixed
   lean_targets:
     - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCBoundedPrimitiveTreeObstruction.lean
@@ -19568,10 +19568,12 @@ result:
     unfinished:
       - "construct the embedding for every final Sigma role, or exhibit a concrete non-embeddable legal role"
       - "derive treeGenerated from the final presentation syntax"
+      - "construct final Sigma,D,R_Theta and prove whether all mandatory-C source-choice endomorphisms preserve its exact laws"
       - "B/D/E/A--F integration"
     undischarged_assumptions:
       - "A embeds injectively in TaggedPrimitiveReference"
       - "treeGenerated for every presentation endomorphism type"
+      - "the independent mandatory-C admissible category, or its complete source-choice family, connects to final R_Theta"
       - "all remaining fixed-target integration obligations"
     acceptance_point: "The obstruction is stable under every explicitly provenance-bounded Type-1 primitive extension; acceptance does not decide the legality or existence of a non-embeddable higher-information role."
     port_status: not-applicable
@@ -19582,6 +19584,7 @@ audits:
       - "mandatory-C obstruction for every bounded primitive extension"
     remaining:
       - "final per-role embedding discharge or concrete legal non-embeddable role"
+      - "final R_Theta construction and mandatory-C source-choice membership or exclusion from its exact source laws"
       - "final syntax generation and A--F integration"
   certificate_provenance:
     discharged:
@@ -19605,7 +19608,7 @@ audits:
     - "registered exact MandatoryCBoundedPrimitiveTreeObstruction target build: PASS (4274 jobs; not a Research aggregate build)"
     - "Research aggregate/full build: not run"
   blocking_findings:
-    - "every Type-1 role with injective provenance in the complete tagged alphabet is too small to restore mandatory-C fullness plus retract generation"
-    - "the only remaining syntax route must justify a non-embeddable higher-information primitive without reintroducing a completed semantic map or equivalent whole-map family"
-  next_obligation: "Either construct such a legal non-embeddable primitive family and complete its syntax tests, or record the fixed A-finiteness/B-fullness incompatibility and the lost paper conclusion for human target revision."
+    - "conditional on final R_Theta retaining the complete mandatory-C source-choice family and final Homs being tree-generated, every Type-1 role with injective provenance in the complete tagged alphabet is too small for simultaneous fullness and retract generation"
+    - "final R_Theta membership, final treeGenerated, final role exhaustion, and the legality of any non-embeddable higher-information primitive are all still independent material obligations"
+  next_obligation: "Construct final Sigma,D,R_Theta and decide the complete mandatory-C source-choice family's membership from its exact preservation laws; in parallel derive treeGenerated and each role embedding from final syntax, or construct a concrete legal non-embeddable primitive and test it. Target revision is justified only after these routes close."
 ```
