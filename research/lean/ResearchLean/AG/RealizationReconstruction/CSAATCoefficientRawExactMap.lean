@@ -219,10 +219,36 @@ noncomputable def trans
       (secondCoefficient.comp firstCoefficient) source target where
   coordinate W := (first.coordinate (secondInverse.obj W)).trans
     (second.coordinate W)
-  relation W := by
-    rw [StructuralRelationFamilyExactEquiv.relationBaseChange_comp]
-    exact ((first.relation (secondInverse.obj W)).baseChange
-      secondCoefficient).trans (second.relation W)
+  relation W := {
+    relationEquiv :=
+      (first.relation (secondInverse.obj W)).relationEquiv.trans
+        (second.relation W).relationEquiv
+    polynomial_eq := fun relation => by
+      rw [CoordinateFamilyExactEquiv.polynomialEquiv_trans]
+      change (second.coordinate W).polynomialEquiv m
+          ((first.coordinate (secondInverse.obj W)).polynomialEquiv m
+            (MvPolynomial.map (secondCoefficient.comp firstCoefficient)
+              ((source.relationFamily
+                (firstInverse.obj (secondInverse.obj W))).polynomial relation))) = _
+      rw [← MvPolynomial.map_map]
+      have hfirst :
+          (first.coordinate (secondInverse.obj W)).polynomialEquiv m
+              (MvPolynomial.map secondCoefficient
+                (MvPolynomial.map firstCoefficient
+                  ((source.relationFamily
+                    (firstInverse.obj (secondInverse.obj W))).polynomial relation))) =
+            MvPolynomial.map secondCoefficient
+              ((middle.relationFamily (secondInverse.obj W)).polynomial
+                ((first.relation
+                  (secondInverse.obj W)).relationEquiv relation)) := by
+        simpa [LawAlgebra.StructuralRelationFamily.baseChange] using
+          (((first.relation (secondInverse.obj W)).baseChange
+            secondCoefficient).polynomial_eq relation)
+      rw [hfirst]
+      simpa [LawAlgebra.StructuralRelationFamily.baseChange] using
+        ((second.relation W).polynomial_eq
+          ((first.relation (secondInverse.obj W)).relationEquiv relation))
+  }
   restriction_polynomial map polynomial := by
     rw [CoordinateFamilyExactEquiv.polynomialHom_trans]
     change (second.coordinate _).polynomialHom secondCoefficient
