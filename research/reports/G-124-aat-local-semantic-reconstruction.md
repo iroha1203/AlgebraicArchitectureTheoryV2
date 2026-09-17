@@ -19,11 +19,14 @@
   merge commit `1ce0071826c031fcbd8e5474ca80110078950c82`
 - Cycle 5 accepted PR: [#4718](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4718),
   merge commit `74b6cfbeb83d494cb7ab43d9995e5df97158b006`
+- Cycle 6 accepted PR: [#4719](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4719),
+  merge commit `97b586063cb1d217ecdb015027e1ffa6cb9442c3`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: D の区別・延長を別々に定義し、決定集合をその連言として置いて、E1 の actual
-  source-choice Aut 族について有限延長と有限非区別を同じ定義から証明する
-- next proof obligation: D の一般グラフ判定、実効性、または B の局所モデル主同値へ進む
+- current proof obligation: D の component-indexed family restriction について、precomposition の単射性・全射性を
+  index map の全射性・単射性とそれぞれ同値化する
+- next proof obligation: induced-subgraph component map を構成し、その全射性・単射性を D の graph condition と
+  同値化した後、有限列挙入力下の実効性へ進む
 
 ## Cycle 1 — rejected
 
@@ -430,6 +433,74 @@ audits:
     - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 11 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "general graph criteria and effectiveness in D, or the common local-model equivalence B required to identify E1b recovery"
+```
+
+Cycle 6 は final head `2b17eb88c723e9eca349e4926b896c8dd80011b6` の formal rerun 2/2 で
+全4 lane が `Mergeable`、finding なしとなり、CI 7/7 success を確認して mergeした。
+最終監査は PR comment `5718717143`、Cycle 7 選定は Issue comment `5718728976` に固定した。
+
+## Cycle 7 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 7
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 97b586063cb1d217ecdb015027e1ffa6cb9442c3
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 6 accepted evidence: PR comment 5718717143; Issue comment 5718728976"
+  proof_dag_predecessors:
+    - "LocalSemanticReconstruction.FiniteReading.Separates"
+    - "LocalSemanticReconstruction.FiniteReading.Extends"
+  proof_obligation: "写像 q に沿う component-indexed family の precomposition が injective であることと q の surjectivity、precomposition が surjective であることと q の injectivity を、非自明な値型についてそれぞれ同値として証明する"
+  selection_reason: "D の一般グラフ判定を、グラフ固有の component map の性質と値族の restriction の性質に分離し、後者の set-theoretic core を先に固定する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/ComponentRestrictionCriteria.lean"
+  risks:
+    - "Nontrivial Value は逆向きに本質的であり、無条件化しないこと"
+    - "generic map q の判定を induced-subgraph component map の graph criterion と同一視しないこと"
+    - "有限列挙入力下の実効性をこの周期で主張しないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "for a nontrivial value type, precomposition along q is injective exactly when q is surjective, and it is surjective exactly when q is injective"
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.ComponentRestriction.precompose"
+    - "AAT.AG.LocalSemanticReconstruction.ComponentRestriction.precompose_injective_iff_surjective"
+    - "AAT.AG.LocalSemanticReconstruction.ComponentRestriction.precompose_surjective_iff_injective"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL D: component-indexed family の restriction に対する区別・延長判定の set-theoretic core"
+    conjuncts:
+      - "separation of all global component families is injectivity of precomposition and is equivalent to surjectivity of q"
+      - "extension of every local component family is surjectivity of precomposition and is equivalent to injectivity of q"
+    undischarged_assumptions:
+      - "q を有限頂点集合 S の induced-subgraph component map として構成し、その injectivity/surjectivity を graph conditions と同値化する"
+    acceptance_point: "the two equivalences are proved for the actual function precomposition map; graph specialization remains an explicit next obligation"
+    port_status: unported
+audits:
+  material_premises:
+    discharge_required:
+      - "missed global index distinguishes two global families / discharged using Nontrivial Value"
+      - "identified local indices obstruct arbitrary extension / discharged using Nontrivial Value"
+      - "injective q extends any local family / discharged using Function.extend"
+    conclusion_equivalent_risk: []
+  proof_use:
+    used:
+      - "pointwise function equality"
+      - "Function.extend for the extension direction"
+      - "two distinct values for both converse directions"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/ComponentRestrictionCriteria.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.ComponentRestriction: 3 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct the induced-subgraph component map q_S and prove its surjectivity/injectivity equivalent to meeting every full component and retaining full-component connectivity inside S"
 ```
 
 ## 未完了 ledger
