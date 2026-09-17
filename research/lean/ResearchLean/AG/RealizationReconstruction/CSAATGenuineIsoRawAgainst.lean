@@ -22,7 +22,7 @@ open CategoryTheory
 
 universe u
 
-/-- Complete equation-coordinate raw systems admit the target-indexed exact
+/-- Complete equation-coordinate raw systems support the target-indexed exact
 map induced by any complete coordinate equivalence.  The inverse context
 functor is arbitrary because both endpoint restrictions are identities, but
 the coordinate action itself is the supplied equivalence on every context. -/
