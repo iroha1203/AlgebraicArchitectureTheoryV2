@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 177 applies one complete-update fixed-F classifier to bijective independent lens/protocol generated package morphisms and evaluates every resulting hidden permutation through the actual finite-axis-fold intrinsic D route
+- current proof obligation: Cycle 178 makes independent generated package Homs into genuine lens/protocol categories, proves semantic readback full and faithful, and transports whole endpoint Aut and comparison subgroups with projection and section compatibility
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: promote the independent package Hom equivalences to composition/identity-compatible functors and Aut group equivalences, then transport the full G-122 comparison groups, section, restricted and ambient kernels, and every lift fiber through the common A--C realization; the present intrinsic D subgroup is not that full recovery
+- next proof obligation: instantiate the fully faithful comparison transport on the common A--C realization of the original G-122 inputs, prove the restriction square, and derive the restricted-kernel MulEquiv, every lift-fiber Equiv/action compatibility, separate ambient-kernel transport, and bottom/coefficient commuting equations
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| B/D/E Cycle 178 delta | independent generated package Hom同値を恒等・合成と両立する圏・full/faithful functorへ上げ、全endpoint Autと任意比較射のcomparison subgroup全体を群同値で輸送する | `LensAATIndependentPackageObject`, `ProtocolAATIndependentPackageObject`; 両Hom namespaceの`id`,`comp`; 両package `Category`; 両`*PackageSemanticFunctor`, `*SemanticFullyFaithful`, Full/Faithful instance, `*PackageAutMulEquiv`; `fullyFaithfulEndpointAutMulEquiv`; `generatedArrowComparisonHomOfFullyFaithful`, injective/surjective, `generatedArrowComparisonMulEquivOfFullyFaithful`; source/section compatibility; lens/protocol package comparison specializations | 任意のCycle176 package objects/Homs。比較輸送は任意の圏・functorと、package round tripから構成したfully faithful data。endpoint Aut、comparison pair、section、surjectivity certificateをstructure fieldに取らない | state map compositionからpackage圏の三法則を証明し、semantic Hom両往復からfull/faithfulを構成。Mathlib Aut同値でendpoint automorphismを全て持上げる。任意の比較式をfunctorで保存し、faithfulnessで反映、fullnessで任意target endpoint pairを持上げてcomparison subgroupの全射・単射を証明。source projectionとiso conjugation sectionの可換性を証明 | full G-122 comparison groupとsection、restriction hom/kernel/fiber transport | generic輸送定理とCS packageへの適用は完成したが、G-122 original inputの共通A--C realization functorへの具体的instantiation、restriction square、restricted/ambient二核、全lift fiber、bottom/係数成分は未完了。A--F最終統合も未完了 |
 | D/E/F Cycle 177 delta | 独立generated packageのbijective carrier actionを、同じcomplete-update fixed-F分類へlens/protocol両側から適用し、全hidden permutationを有限table経由でactual D intrinsic subgroupへ回復する | `LensIndependentPackageAut`, `ProtocolIndependentPackageAut`; `lensPackageAutEquivInvertibleChange`, `protocolPackageAutEquivInvertibleChange`; `lensProtocolIndependentPackageEquiv`; 両`*IndependentFixedFClassification`; state-map/classifier compatibility; `fixedFClassifierToDCode`, `fixedFClassifierToDIntrinsic`; 両`*PackageDIntrinsicClassification`とvalue/compatibility定理; 両`*PackageDirectedPackage` | product lens、complete-update protocol、identity visible automorphism、bijective package carrier maps。D接続は任意の有限`K`に対する既証明finite-axis-fold Extension-permutation intrinsic image。semantic change、hidden permutation、table code、D element、completed directed packageはfieldに取らない | Cycle176 `semanticHomEquiv`/forward readbackから独立invertible changeを構成し、lens/protocolを同じactual preserving fixed-F changeで同値化。一つのhidden permutation classifierを両側で共有しstate actionを復元。全permutationを明示的finite tableへ戻し、既存decoder equivalenceでcomplete stored-backward actionにより特徴付けられたactual D subgroupの全元へ同値化 | independent packageのAut群化と、A--C fully faithful realizationを介したfull D comparison transport | identity-visible complete-update applicationであり任意`H`全体のpackage群ではない。Dはintrinsic local-fiber subgroup全体を回復するが、元のfull comparison group、section、restricted/ambient二核、全lift fiber、bottom/係数成分との同値は未完了。A--F最終統合も未完了 |
 | E Cycle 176 delta | generated表示側にcarrier mapとnamed operation lawsだけを保持し、primitive `f`やcompleted semantic Homをfieldにせず、lens/protocol独立意味論へ読み戻して両往復を証明する | `LensAATIndependentGeneratedPackageHom`, `.toForwardMorphism`, `.ofForwardMorphism`, 両simp round trip, `.forwardMorphismEquiv`, `.toSemanticHom`, `.ofSemanticHom`, 両semantic round trip, `.semanticHomEquiv`, `.toDirectedPackage`; protocol同名対応 | fixed lens/protocol inputとsource/target realization。lensは一つのstate mapとgenerated Extension payload上のget/put laws、protocolはvertexwise state mapとgenerated payload上の全named edge/observation lawsだけを取る。primitive forward morphism、semantic Hom、equation/raw/coverage/overlap/完成packageはfieldに取らない | generated payload lawsからprimitive interfaceを再構成し、primitive interfaceとの両往復をextensionalityで証明。さらに独立CS semantic Homへ読み戻し、全semantic Homからのforward translationとの両往復・Equivを証明。最後にその再構成primitiveからCycle175の全generated geometry packageを構成 | common lens/protocol translation statementとD分類の表示側回復 | 共通定理として両CSを同じclassificationへ接続する統合、Dの元の全比較群・section・二核・全lift fiber回復、A--F最終統合は未完了 |
 | A/E Cycle 175 delta | source-image coverage、全source tripleのreadable overlap、selected Extensionのnamed operation equationsをendpoint固定型からactual generated coreへ移し、equation/rawと同一packageへ統合する | `GeneratedForwardCoverageLabels`, `GeneratedForwardCoverageImage`, `coreGeometryCoverageLabelsCast`, `coreGeometryCoverageForwardCast`, `GeneratedForwardOverlapReadable`, `coreGeometryOverlapForwardCast`; lens/protocol endpoint/generated constructors; `lensAATGeneratedReadingContext`, `protocolAATGeneratedReadingContext`, generated payload/coherence; `LensAATGeneratedDirectedPackage`, `ProtocolAATGeneratedDirectedPackage`とconstructors | 任意のprimitive lens/protocol forward morphism、固定入力由来selected reading、既構成endpoint coverage/overlap/Extension、generated-object等式。target-wide coverage、whole-Extension map、inverse、completed semantic homは取らない | coverage 9条項をcoherent observable witnessとcovariant axis witnessを落とさずarbitrary carried geometry data上へ一般化し、両object等式でgenerated dataへtransport。overlapをcarried overlap同士の全triple readable equivalenceとしてtransport。generated selected contextのExtension payloadを固定入力型へdecodeし、lens point/get/putおよびprotocol point/全edge/全observation equationsをprimitive射から構成。equation/raw/coverage/overlap/Extensionを同一generated packageへ束ねる | primitive indexを除いたoperation-level package interfaceと独立semantic readback | packageはなお`f`でindexされる。equation/raw/coverage/overlapのみからcarrier mapは復元不能で、次にstateMapとnamed-operation lawsを独立fieldsとして切り出す必要がある。D、A--F統合も未完了 |
@@ -18514,4 +18515,131 @@ audits:
     - "the existing generated G122 comparison evaluation is not known surjective onto the full actual comparison group"
     - "without a common A--C fully faithful realization and commuting restriction square, full section/kernel/fiber transport would be conclusion-as-input"
   next_obligation: "Make the independent package Hom equivalences identity/composition compatible, construct endpoint Aut and comparison-subgroup transport for a fully faithful common realization, then instantiate it to the full original G-122 data while separately retaining the ambient kernel and bottom/coefficient evaluations."
+```
+
+## Cycle 178 — Fully faithful package categories and comparison-group transport
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 178
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 86d25170dd971d3c10d8cd180fbf5a1d60db68ff
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 177 used bijective package carrier maps for one fixed-F application, while Cycle176 semantic correspondences remained hom-set Equivs without categorical or group-level transport"
+  proof_obligation: "Prove identity/composition-compatible package categories, full and faithful semantic readback, endpoint Aut group equivalences, and whole comparison-subgroup transport with projection and section compatibility"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATIndependentPackageCategories.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATFullyFaithfulComparisonTransport.lean
+  risks:
+    - "installing a conflicting Category instance directly on the independent semantic realization type"
+    - "treating a hom-set Equiv as composition-compatible without proving functor laws"
+    - "transporting only selected endpoint automorphisms or preserving comparison equations without reflecting them"
+    - "taking target comparison surjectivity or a completed comparison-group equivalence as an input"
+    - "conflating generic comparison transport with the still-missing original G-122 realization instantiation"
+  unchecked:
+    - "concrete common A--C realization of every original G-122 input into the relevant package/display category"
+    - "restriction-hom commuting square, restricted kernel, every lift fiber, separate ambient kernel, bottom/coefficient equations"
+    - "final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Introduced separate lens and protocol package-object wrappers and categories whose Homs are exactly the Cycle176 independent generated package Homs. Defined identities and composition via semantic readback and forward reconstruction, proving category laws on all computational state maps. Constructed semantic functors and their FullyFaithful structures directly from the two Cycle176 round trips, yielding endpoint Aut MulEquivs. For an arbitrary fully faithful functor, constructed the comparison-subgroup MonoidHom, proved injectivity by endpoint Aut equivalences, proved surjectivity by fullness plus faithfulness reflection of the comparison square, and obtained a MulEquiv on the entire comparison subgroup. Proved source-projection and canonical conjugation-section compatibility, then instantiated the result to arbitrary lens and protocol generated package arrows, including noninvertible semantic arrows."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATIndependentPackageCategories.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATFullyFaithfulComparisonTransport.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.LensAATIndependentPackageObject
+    - AAT.AG.RealizationReconstruction.LensAATIndependentGeneratedPackageHom.id
+    - AAT.AG.RealizationReconstruction.LensAATIndependentGeneratedPackageHom.comp
+    - AAT.AG.RealizationReconstruction.lensAATIndependentPackageCategory
+    - AAT.AG.RealizationReconstruction.lensAATIndependentPackageSemanticFunctor
+    - AAT.AG.RealizationReconstruction.lensAATIndependentPackageSemanticFullyFaithful
+    - AAT.AG.RealizationReconstruction.lensAATIndependentPackageAutMulEquiv
+    - AAT.AG.RealizationReconstruction.ProtocolAATIndependentPackageObject
+    - AAT.AG.RealizationReconstruction.ProtocolAATIndependentGeneratedPackageHom.id
+    - AAT.AG.RealizationReconstruction.ProtocolAATIndependentGeneratedPackageHom.comp
+    - AAT.AG.RealizationReconstruction.protocolAATIndependentPackageCategory
+    - AAT.AG.RealizationReconstruction.protocolAATIndependentPackageSemanticFunctor
+    - AAT.AG.RealizationReconstruction.protocolAATIndependentPackageSemanticFullyFaithful
+    - AAT.AG.RealizationReconstruction.protocolAATIndependentPackageAutMulEquiv
+    - AAT.AG.RealizationReconstruction.fullyFaithfulEndpointAutMulEquiv
+    - AAT.AG.RealizationReconstruction.generatedArrowComparisonHomOfFullyFaithful
+    - AAT.AG.RealizationReconstruction.generatedArrowComparisonHomOfFullyFaithful_injective
+    - AAT.AG.RealizationReconstruction.generatedArrowComparisonHomOfFullyFaithful_surjective
+    - AAT.AG.RealizationReconstruction.generatedArrowComparisonMulEquivOfFullyFaithful
+    - AAT.AG.RealizationReconstruction.generatedArrowComparison_source_compatibility
+    - AAT.AG.RealizationReconstruction.generatedArrowComparison_section_compatibility
+    - AAT.AG.RealizationReconstruction.lensAATIndependentPackageComparisonMulEquiv
+    - AAT.AG.RealizationReconstruction.protocolAATIndependentPackageComparisonMulEquiv
+  claim_mapping:
+    source_labels:
+      - "GOAL B: res/ext/J must preserve identities and composition and supply fullness and faithfulness"
+      - "GOAL D: recover the whole comparison group and its section rather than selected witnesses"
+      - "GOAL E: both independent CS morphism classes translate and read back, including general noninvertible morphisms"
+    conjuncts:
+      - "package id/comp -> all stored lens state maps or protocol vertexwise state maps compose in semantic order"
+      - "semantic functor -> map identity and composition on complete Homs"
+      - "full/faithful -> every semantic Hom is lifted and equality is reflected from the existing round trips"
+      - "endpoint Aut -> every package Aut and every semantic Aut correspond as groups"
+      - "comparison preservation -> every source commuting square maps to a target commuting square"
+      - "comparison reflection/surjectivity -> arbitrary target endpoint Autos lift, and faithfulness reflects their commuting square"
+      - "section/projection -> source projection and conjugation section commute with the same group equivalence"
+    undischarged_assumptions:
+      - "the generic comparison theorem receives a fully faithful functor, but the package instances construct that data internally from Cycle176"
+      - "the original G-122 semantic/display endpoints are not yet identified as objects of one instantiated common realization"
+      - "restriction, ambient-kernel, bottom, and coefficient squares are not consequences of comparison transport alone"
+    acceptance_point: "The independent package Homs now form honest categories and transport entire endpoint and comparison groups; no claim is made that the original G-122 full D data has already been instantiated."
+audits:
+  premise_delta:
+    discharged:
+      - "identity and composition laws for independent lens/protocol package Homs"
+      - "full and faithful package-to-semantic functors"
+      - "endpoint Aut MulEquivs"
+      - "whole comparison-subgroup MulEquiv for every arrow under a fully faithful functor"
+      - "source projection and isomorphism-section compatibility"
+      - "lens/protocol package comparison-group specializations"
+    remaining:
+      - "original G-122 common realization instantiation"
+      - "restriction square and restricted-kernel/lift-fiber transport"
+      - "separate ambient-kernel and bottom/coefficient transport"
+      - "final A--F theorem"
+  certificate_provenance:
+    discharged:
+      - "package category Homs are the original Cycle176 operation-level structures, with no new proof fields"
+      - "full/faithful data is constructed from explicit preimage and both round trips"
+      - "endpoint Aut equivalences use Mathlib's fully-faithful construction"
+      - "comparison surjectivity is proved from lifted endpoint Autos and reflected equations, not accepted"
+    unresolved: []
+  proof_use:
+    used:
+      - "both semantic/package Hom round trips"
+      - "identity and composition on all carrier maps"
+      - "functor map_comp at both sides of each comparison square"
+      - "faithfulness to reflect the source comparison equation"
+      - "fullness to lift every target endpoint automorphism"
+      - "both endpoint Aut equivalences in injectivity and surjectivity"
+      - "the actual comparison membership equation for every pair"
+    unused:
+      - "no essential surjectivity, endpoint object iso, restriction square, kernel/fiber equivalence, ambient-kernel witness, or completed D certificate is accepted"
+  structure_field_escape: none-found-wrapper-objects-only-store-independent-realizations-and-Homs-remain-the-minimal-Cycle176-operation-laws
+  route_integrity: pass-the-same-semantic-functor-provides-Hom-round-trips-endpoint-Aut-equivalences-and-both-components-of-the-comparison-equivalence
+  target_fitting: partial-composition-fullness-faithfulness-and-generic-whole-comparison-transport-are-discharged-but-original-G122-D-instantiation-remains-open
+  vacuity: none-found-surjectivity-starts-from-an-arbitrary-target-comparison-pair-and-reflects-its-actual-equation
+  one_way_as_equivalence: none-found-the-MulEquiv-requires-and-uses-both-fullness-and-faithfulness
+  goal_or_report_reinterpretation: none-found-generic-transport-is-not-called-the-original-G122-recovery
+  validation_refs:
+    - "focused CSAATIndependentPackageCategories file check: PASS; 48 namespace declarations, standard axioms only"
+    - "focused CSAATFullyFaithfulComparisonTransport file check: PASS; 9 namespace declarations, standard axioms only"
+    - "registered exact CSAATFullyFaithfulComparisonTransport target build: PASS (4320 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "the original G-122 semantic/display data is not yet an instance of the new common fully faithful transport"
+    - "comparison-group transport alone does not supply a commuting restriction square or distinguish restricted from ambient kernels"
+    - "these are next construction obligations, not evidence against the fixed target"
+  next_obligation: "Construct the common A--C realization on the original G-122 endpoints and comparison arrow, instantiate the whole comparison MulEquiv, then prove the restriction square and derive restricted-kernel and every lift-fiber transport while separately transporting the ambient kernel and bottom/coefficient evaluations."
 ```
