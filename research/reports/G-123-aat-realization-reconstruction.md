@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 184 proves a reusable Type-0 semantic lower bound at the fixed actual direct endpoint: for every small reference alphabet `A : Type`, Boolean predicates on `List A` embed faithfully into endpoint automorphisms, so no small `List A`-generated code can enumerate all of them
+- current proof obligation: Cycle 185 proves that even recursive finite binary-tree syntax over the complete higher-universe tagged primitive alphabet has a decoder-independent injective finite serialization and cannot generate a presentation whose decoder is both full and retract-generating into the mandatory-C category
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: determine whether the fixed target permits essential higher-universe presentation/reference data, then either extend the semantic diagonal family to the required universes or prove an exhaustive reduction of every legal code to the Type-0 list-generated scope; only after that connection may Cycle 184 support a fixed-target stop
+- next proof obligation: enumerate every additional parameter-reference family permitted by the fixed Sigma/D contract and prove that each carries only original primitive data and embeds into the Cycle-185 finite-tree bound, or construct an honest target-compliant escape syntax; only an exhaustive provenance theorem may promote the accumulated candidate no-go results to a fixed-target stop
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/B/C Cycle 185 delta | 完全tagged primitive alphabetをnode payloadに持つ再帰的有限構文について、木形・payload・部分木境界をdecoderと独立に保持し、fullness/retract生成との両立を判定する | `taggedPrimitiveFiniteTreeCode`, `taggedPrimitiveFiniteTreeCode_injective`; `taggedPrimitiveReferenceInfinite`; `taggedPrimitiveFiniteTreeTokenListEmbedding`; `taggedPrimitiveFiniteTreeEmbedding`; tree/list enumerationとsurjective; `taggedSourceChoiceAdmissibleEndomorphisms_not_finiteTreeEnumerable`, `_not_finiteTreeGenerated`; `not_full_and_retractGenerated_of_finiteTreeGeneratedEndomorphisms` | Cycle 14の全Atom/Source/Object/endpoint-indexed Operation primitive alphabet、mandatory-C admissible categoryと全source-choice endomorphism、Mathlib finite `Tree`。completed semantic map、predicate family、decoder像、fullness/retract certificateはsyntax tokenへ入れない | universe-polymorphic finite treeを、各nodeにleft subtree code lengthを持つtoken列へ単射符号化。全ArchitectureObjectを含むprimitive alphabetの無限性からtoken列を同alphabetへ単射化し、invFunでlistから全treeへのsurjectionを構成。仮想tree decoder全射を既存Cantor/list obstructionへ移し、presentationのfullnessとretract生成の同時成立を否定 | 最終parameter-relative syntaxの各constructor/payload provenanceをこのtree carrierへ埋める網羅定理、または合法escape syntaxの構成 | Type-1の完全既存alphabetと任意有限再帰木形は覆うが、固定Sigma/Dが許す追加の無限parameter familyすべてをこのalphabetへ還元していない。treeGeneratedは一般presentation theoremではsyntax由来の未放電前提。したがってtarget_refutedではない。B四義務、D/E接続、A--F統合も未完了 |
 | A/B/D Cycle 184 delta | completed semantic mapをleafへ入れず、fixed finite-axis-fold actual admissible direct endpointの全自己同型に対する任意のsmall Type-0 finite-reference list decoderの全射性を判定する | `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_injective_arbitrary`; raw/admissibleの`finiteAxisFoldActualDirect*PermutationSectionHom`とinjective; `finiteAxisFoldListPredicateToggle`とinjective; `finiteAxisFoldListChoiceActualDirectAut`とinjective; `not_surjective_of_choice_embedding`; `finiteAxisFoldActualDirectAut_not_listEnumerable`; `finiteAxisFoldActualDirectAut_not_listGeneratedCodeEnumerable` | fixed DのType-0原始Extension carrier action、actual direct pull-push section、admissible packaging、既構成backward projection/readback、Cantor diagonal theorem。Fintype、countability、completed actual Aut、decoder非全射certificateは入力しない | 任意small carrier `E : Type` のsource permutationをCycle 182 evaluatorと同じactual admissible direct endpointへ単射に埋め込む。`E=List A×Bool`で各predicateのfiber toggleを構成し単射を証明。仮想decoder全射をinvFun readbackで`List A → (List A→Bool)`全射へ移してCantor矛盾。任意small surjective `List A→Code`にも合成で拡張 | 最終syntaxのprimitive provenance/list-generationとuniverse coverage theoremに接続したfullness判定 | Type-0の固定alphabet `A` とsmall list-generated `Code`を排除するが、現presentation HomはType 2であり、高universeを含む全target-permitted syntaxをこの範囲へ還元する定理も高universeのsemantic familyも未構成。したがってtarget_refutedではない。修正版syntax、B四義務、whole comparison/fibers、A--F統合も未完了 |
 | A/B/D Cycle 183 delta | 現行finite-axis-table構文の合同がdecoder忠実性を満たすかを、semantic equalityを合同へ追加せず判定する | `FiniteAxisFoldAxisSwapSyntax.axisLeafParity`, `axisLeafParity_eq_of_congruent`, `identityAxisDirect_not_congruent_identity`; `directIdentityAxisTableAut_ne_one`, `directIdentityAxisTableAut_evaluation`, `directAutomorphismEvaluationHom_not_injective`, `comparisonEvaluationHom_not_injective` | Cycle 182までの固定構文・source congruence・actual evaluator・comparison/direct injectivity iff。非忠実性証明やsemantic equalityは入力しない | 全既存congruence constructorがaxis primitive leaf parityを保つことを帰納し、identity table leafをsource identityから分離。同じleafのactual evaluationはfixed pull-push functorialityからidentityと証明し、direct evaluator非単射、さらにCycle 182 iffからwhole comparison evaluator非単射を導出 | current grammarを完成候補から除外し、source-derived table identity/composition lawsを備えた修正版の設計へ | 現候補だけの反証でありfixed targetの反証ではない。修正版の忠実性・全射性、全actual direct Autのprimitive encoder、許容される全parameter-relative syntaxの網羅的provenance/cardinality bound、A--F統合は未完了 |
 | B/D Cycle 182 delta | whole comparison表示のfull/faithful義務を、barAlphaがisoであることを使ってdirect endpoint Aut evaluatorの正確な必要十分条件へ縮約する | `comparisonEvaluation_source`; `comparisonEvaluation_injective_iff_direct`; `comparisonEvaluation_surjective_iff_direct`; `comparisonEvaluation_bijective_iff_direct`; 条件付き`comparisonEvaluationMulEquivOfDirectBijective` | fixed generated/actual barAlpha iso、既構成direct evaluatorとwhole comparison evaluator、両側のsource-conjugation section。direct bijectivityはiff定理の結論であり入力しない。最後の包装だけ明示的な条件付き中間定理 | source projection可換性を証明。各comparison pairがsourceから一意に回復されることによりinjectivityを双方向、任意actual/source Autのsection liftによりsurjectivityを双方向に証明し、bijectivity iffを構成 | primitive syntax encoderの完了判定、および得られたdirect MulEquivからwhole comparison・kernel・fiber輸送へ | direct evaluatorのinjective/surjective自体は未放電。条件付きMulEquivをcompletionとは数えない。primitive encoder、全比較・全fiber表示、A--F統合は未完了 |
@@ -19229,4 +19230,135 @@ audits:
     - "every fixed small Type-0 List A grammar is too small for all actual direct endpoint automorphisms, even when A is uncountable"
     - "promotion to target-refuted still requires coverage of higher-universe legal codes, not only exhaustive Type-0 primitive provenance"
   next_obligation: "Define the complete legal primitive-reference universe and finitary syntax provenance contract from fixed Sigma and D; then either reduce every legal higher-universe presentation code to a small List A quotient, extend the semantic diagonal family to the required universes, or construct an honest target-compliant escape syntax."
+```
+
+## Cycle 185 — Recursive finite-tree primitive syntax obstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 185
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 77c51ef632fbb648b1e807b1de27cf1d28cd4d0e
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 184 Type-0 direct-endpoint diagonal obstruction and Cycle 14 complete tagged primitive alphabet obstruction"
+  proof_dag_predecessors:
+    - AAT.AG.RealizationReconstruction.TaggedPrimitiveReference
+    - AAT.AG.RealizationReconstruction.not_full_and_retractGenerated_of_listPrimitiveGeneratedEndomorphisms
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceAdmissibleEndomorphisms_not_listPrimitiveEnumerable
+  proof_obligation: "Decide whether recursive finite constructor shape over the complete higher-universe primitive alphabet can evade the existing word/list obstruction"
+  selection_reason: "The current presentation Hom is higher-universe and recursively generated; an explicit universe-polymorphic tree serialization tests nested syntax without accepting a completed semantic map as a token."
+  expected_result_type: blocker-fixed
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCFiniteTreeSyntaxObstruction.lean
+  risks:
+    - "silently specializing the tree payload to Type 0"
+    - "flattening subtrees without an injective boundary encoding"
+    - "using semantic evaluation equality as syntax equality"
+    - "claiming all parameter-relative syntaxes are covered before enumerating additional primitive parameter families"
+  unchecked:
+    - "exhaustive reduction of every fixed-Sigma/D legal parameter reference to the complete tagged primitive tree alphabet"
+result:
+  proposed_result_type: blocker-fixed
+  proof_obligation_delta: "Constructed a universe-polymorphic injective serialization of finite binary trees into finite payload/length token lists. Proved the complete Type-1 tagged primitive alphabet infinite from its ArchitectureObject constructor, embedded every token list and hence every finite primitive tree back into that alphabet, and transferred the mandatory-C Cantor obstruction to tree decoders, tree-generated codes, and arbitrary multiobject presentation categories whose endomorphisms are tree-generated."
+  completion_candidate: no
+  target_refuted: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/MandatoryCFiniteTreeSyntaxObstruction.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveFiniteTreeCode_injective
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveReferenceInfinite
+    - AAT.AG.RealizationReconstruction.taggedPrimitiveFiniteTreeEmbedding
+    - AAT.AG.RealizationReconstruction.listTaggedPrimitiveFiniteTreeEnumeration_surjective
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceAdmissibleEndomorphisms_not_finiteTreeEnumerable
+    - AAT.AG.RealizationReconstruction.taggedSourceChoiceAdmissibleEndomorphisms_not_finiteTreeGenerated
+    - AAT.AG.RealizationReconstruction.not_full_and_retractGenerated_of_finiteTreeGeneratedEndomorphisms
+  claim_mapping:
+    theorem_names:
+      - AAT.AG.RealizationReconstruction.taggedPrimitiveFiniteTreeCode_injective
+      - AAT.AG.RealizationReconstruction.taggedPrimitiveFiniteTreeEnumeration_surjective
+      - AAT.AG.RealizationReconstruction.listTaggedPrimitiveFiniteTreeEnumeration_surjective
+      - AAT.AG.RealizationReconstruction.taggedSourceChoiceAdmissibleEndomorphisms_not_finiteTreeEnumerable
+      - AAT.AG.RealizationReconstruction.taggedSourceChoiceAdmissibleEndomorphisms_not_finiteTreeGenerated
+      - AAT.AG.RealizationReconstruction.not_full_and_retractGenerated_of_finiteTreeGeneratedEndomorphisms
+    source_labels:
+      - "GOAL A: finite object/morphism syntax, tables, typed generated relations, and parameter equalities"
+      - "GOAL A: completed whole maps may not be primitive constants"
+      - "GOAL B: fullness and retract generation must be discharged separately for the same decoder"
+      - "GOAL C: retain the exact mandatory tagged-operation package and all structure-preserving morphisms"
+    conjuncts:
+      - "finite recursive shape -> explicit Tree payload with nil/node constructors"
+      - "subtree boundary -> node token stores the exact left-code length"
+      - "syntax faithfulness -> tree-code injectivity reconstructs payload and both subtrees"
+      - "higher-universe existing payload -> TaggedPrimitiveReference : Type 1 is accepted directly by the universe-polymorphic serializer"
+      - "semantic obstruction -> no finite-tree decoder reaches every source-choice admissible endomorphism"
+      - "categorical consequence -> tree-generated endomorphism syntax conflicts with simultaneous fullness and retract generation"
+    input_premises:
+      - "the already fixed complete tagged Atom/Source/Object/endpoint-indexed Operation primitive alphabet"
+      - "the independently defined mandatory-C admissible category and all source-choice endomorphisms"
+      - "for the generic final theorem only, a syntax-provenance surjection from primitive trees to each presentation endomorphism type"
+      - "no completed predicate, semantic endomorphism, decoder range, fullness proof, or retract proof is a tree payload"
+    constructed_evidence:
+      - "injective prefix serialization with recoverable concatenation boundary"
+      - "primitive-alphabet infinitude from an injective ArchitectureObject constructor"
+      - "tree embedding and independently constructed inverse enumeration"
+      - "Cantor contradiction transferred through list-to-tree and tree-to-code surjections"
+    proof_use:
+      - "stored left-code length is used to isolate both recursive subcodes"
+      - "all TaggedPrimitiveReference values, including dependent operation endpoints, remain available as payloads"
+      - "the source-choice readback and Cycle 14 no-surjection theorem are used to reject semantic fullness"
+      - "Cycle 14 retract transfer uses the tree generation witness at the presentation object selected by retract generation"
+    unfinished:
+      - "additional infinite parameter families permitted by final Sigma/D have not been exhaustively enumerated or embedded"
+      - "treeGenerated remains a premise in the arbitrary presentation theorem until derived from the final syntax definition"
+      - "no target-compliant escape syntax or universal no-go theorem has yet been constructed"
+      - "B four obligations, D whole comparison recovery, E connection, and final A--F integration remain open"
+    undischarged_assumptions:
+      - "the final presentation syntax must construct treeGenerated from its own recursive syntax rather than accept it as a reconstruction certificate"
+      - "every additional infinite parameter-reference family permitted by fixed Sigma/D must be exhaustively identified and embedded into the complete primitive tree carrier, or a legal escape syntax must be constructed"
+      - "B four obligations, D whole comparison recovery, E connection, and final A--F integration"
+    acceptance_point: "Recursive finite constructor shape and the full existing Type-1 tagged primitive alphabet are now covered without semantic tokens; acceptance does not assert that every additional target-permitted parameter family satisfies this bound."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "universe-polymorphic injective finite-tree serialization"
+      - "recursive finite-tree cardinal/provenance bound for the complete existing tagged primitive alphabet"
+      - "mandatory-C non-fullness and full-plus-retract obstruction for tree-generated presentation endomorphisms"
+    remaining:
+      - "exhaustive fixed-Sigma/D inventory and provenance bound for every additional parameter-reference family"
+      - "either an honest legal escape syntax or a justified fixed-target stop request"
+      - "all remaining A--F integration obligations"
+  certificate_provenance:
+    discharged:
+      - "tree serialization and injectivity are constructed before and independently of decoder evaluation"
+      - "token-list embedding uses only the proved infinitude of the complete primitive alphabet"
+      - "semantic contradiction is inherited from actual mandatory-C source-choice morphisms and readback"
+    unresolved:
+      - "the generic treeGenerated premise is not yet derived from a final target syntax"
+  proof_use:
+    used:
+      - "every recursive constructor and every complete tagged primitive payload"
+      - "exact left subtree code length and list cancellation"
+      - "ArchitectureObject inclusion into TaggedPrimitiveReference"
+      - "Cycle 14 full-alphabet Cantor obstruction and fullness/retract transfer"
+    unused:
+      - "no decoder-image congruence, completed morphism leaf, predicate-family leaf, semantic fullness certificate, or retract certificate is accepted"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused MandatoryCFiniteTreeSyntaxObstruction check: PASS; 15 namespace declarations, standard axioms only"
+    - "registered exact MandatoryCFiniteTreeSyntaxObstruction target build: PASS (4273 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "finite recursive tree shape over the complete current Type-1 primitive alphabet is not an escape from the mandatory-C fullness/retract obstruction"
+    - "target-level refutation still requires an exhaustive theorem for all additional parameter families permitted by the fixed declaration"
+  next_obligation: "Extract the fixed Sigma/D parameter-reference inventory from the actual declarations, classify each family as original primitive data versus forbidden completed morphism information, and prove the former embeds into the finite-tree bound; otherwise construct and test a legal escape syntax."
 ```
