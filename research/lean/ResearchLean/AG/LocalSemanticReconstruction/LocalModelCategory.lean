@@ -1,4 +1,7 @@
 import Mathlib.CategoryTheory.Equivalence
+import Mathlib.CategoryTheory.SingleObj
+import Mathlib.Algebra.Group.Equiv.TypeTags
+import Mathlib.Algebra.Ring.BooleanRing
 import ResearchLean.AG.RealizationReconstruction.AATClosedRealizationCategory
 import Formal.Util.AssertStandardAxioms
 
@@ -73,6 +76,30 @@ of reconstruction and contains no chosen assembler. -/
 def ObjectAssembles (N : R ⥤ LocalModelCategory Λ V) : Prop :=
   ∀ Z, ∃ X, Nonempty (N.obj X ≅ Z)
 
+/-- Identity reading is a positive instance of morphism separation. -/
+theorem identity_morphismSeparates :
+    MorphismSeparates (𝟭 (LocalModelCategory Λ V)) := by
+  intro X Y f g equality
+  simpa using equality
+
+/-- Identity reading is a positive instance of morphism assembly. -/
+theorem identity_morphismAssembles :
+    MorphismAssembles (𝟭 (LocalModelCategory Λ V)) := by
+  intro X Y f
+  exact ⟨f, by simp⟩
+
+/-- Identity reading is a positive instance of object separation. -/
+theorem identity_objectSeparates :
+    ObjectSeparates (𝟭 (LocalModelCategory Λ V)) := by
+  intro X Y e
+  simpa using e
+
+/-- Identity reading is a positive instance of object assembly. -/
+theorem identity_objectAssembles :
+    ObjectAssembles (𝟭 (LocalModelCategory Λ V)) := by
+  intro X
+  exact ⟨X, ⟨Iso.refl X⟩⟩
+
 /-- Morphism separation supplies the faithful-functor interface without
 changing the independently stated separation predicate. -/
 def faithfulOfMorphismSeparates (N : R ⥤ LocalModelCategory Λ V)
@@ -131,6 +158,18 @@ noncomputable def objectIsoOfLocalIso
   letI : N.Full := fullOfMorphismAssembles N hasm
   exact N.preimageIso e
 
+/-- Reading the lifted global isomorphism returns the supplied local
+isomorphism exactly. -/
+@[simp] theorem mapIso_objectIsoOfLocalIso
+    (N : R ⥤ LocalModelCategory Λ V)
+    (hsep : MorphismSeparates N) (hasm : MorphismAssembles N)
+    {X Y : R} (e : N.obj X ≅ N.obj Y) :
+    N.mapIso (objectIsoOfLocalIso N hsep hasm e) = e := by
+  letI : N.Faithful := faithfulOfMorphismSeparates N hsep
+  letI : N.Full := fullOfMorphismAssembles N hasm
+  apply Iso.ext
+  simp [objectIsoOfLocalIso]
+
 /-- The morphism reconstruction laws imply object separation up to
 isomorphism; this conclusion is kept distinct from object assembly. -/
 theorem objectSeparates_of_morphism_reconstruction
@@ -162,6 +201,91 @@ original primitive reading functor. -/
     (hasmObj : ObjectAssembles N) :
     (reconstructionEquivalence N hsep hasmHom hasmObj).functor = N :=
   rfl
+
+namespace PredicateExamples
+
+/-- The local-model category on an empty restriction index and terminal local
+values has a canonical object used by the negative separation examples. -/
+def terminalLocalObject :
+    LocalModelCategory (Discrete Empty) (Discrete PUnit) where
+  obj X := nomatch X.unop.as
+  map {X} := nomatch X.unop.as
+
+/-- Collapsing the two endomorphisms of the Bool one-object category to the
+terminal local model is a concrete non-faithful reading. -/
+def collapseSingleObjBoolReading :
+    SingleObj (Multiplicative Bool) ⥤
+      LocalModelCategory (Discrete Empty) (Discrete PUnit) where
+  obj _ := terminalLocalObject
+  map _ := 𝟙 _
+  map_id _ := rfl
+  map_comp _ _ := (Category.id_comp _).symm
+
+/-- Morphism separation is not automatic: the terminal reading identifies
+the two Bool endomorphisms. -/
+theorem collapseSingleObjBoolReading_not_morphismSeparates :
+    ¬ MorphismSeparates collapseSingleObjBoolReading := by
+  intro h
+  let star := SingleObj.star (Multiplicative Bool)
+  let first : star ⟶ star := Multiplicative.ofAdd false
+  let second : star ⟶ star := Multiplicative.ofAdd true
+  have equality : collapseSingleObjBoolReading.map first =
+      collapseSingleObjBoolReading.map second := by
+    rfl
+  exact Bool.false_ne_true
+    (congrArg Multiplicative.toAdd (h star star equality))
+
+/-- Collapsing the two objects of a discrete Bool category to the terminal
+local model supplies simultaneous negative assembly/separation examples. -/
+def collapseDiscreteBoolReading :
+    Discrete Bool ⥤ LocalModelCategory (Discrete Empty) (Discrete PUnit) where
+  obj _ := terminalLocalObject
+  map _ := 𝟙 _
+  map_id _ := rfl
+  map_comp _ _ := (Category.id_comp _).symm
+
+/-- Morphism assembly is not automatic: the unique local identity between
+the collapsed images of `false` and `true` has no discrete global preimage. -/
+theorem collapseDiscreteBoolReading_not_morphismAssembles :
+    ¬ MorphismAssembles collapseDiscreteBoolReading := by
+  intro h
+  obtain ⟨f, _⟩ := h (Discrete.mk false) (Discrete.mk true)
+    (𝟙 terminalLocalObject)
+  exact Bool.false_ne_true (Discrete.eq_of_hom f)
+
+/-- Object separation is not automatic: the collapsed local images are
+isomorphic although the two discrete Bool objects are not. -/
+theorem collapseDiscreteBoolReading_not_objectSeparates :
+    ¬ ObjectSeparates collapseDiscreteBoolReading := by
+  intro h
+  obtain ⟨e⟩ := h (Discrete.mk false) (Discrete.mk true) ⟨Iso.refl _⟩
+  exact Bool.false_ne_true (Discrete.eq_of_hom e.hom)
+
+/-- Constant Bool-valued local diagram at one point. -/
+def boolLocalObject (value : Bool) :
+    LocalModelCategory (Discrete PUnit) (Discrete Bool) :=
+  (Functor.const _).obj (Discrete.mk value)
+
+/-- The one-object source reading whose only image is the constant-false
+local diagram. -/
+def falseLocalReading :
+    Discrete PUnit ⥤ LocalModelCategory (Discrete PUnit) (Discrete Bool) where
+  obj _ := boolLocalObject false
+  map _ := 𝟙 _
+  map_id _ := rfl
+  map_comp _ _ := (Category.id_comp _).symm
+
+/-- Object assembly is not automatic: the constant-true local diagram is not
+isomorphic to the sole constant-false image. -/
+theorem falseLocalReading_not_objectAssembles :
+    ¬ ObjectAssembles falseLocalReading := by
+  intro h
+  obtain ⟨X, ⟨e⟩⟩ := h (boolLocalObject true)
+  have equality := Discrete.eq_of_hom
+    (e.hom.app (Opposite.op (Discrete.mk PUnit.unit)))
+  exact Bool.false_ne_true equality
+
+end PredicateExamples
 
 end LocalReading
 

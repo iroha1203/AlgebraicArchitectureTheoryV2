@@ -1587,6 +1587,10 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.LocalReading.MorphismAssembles"
     - "AAT.AG.LocalSemanticReconstruction.LocalReading.ObjectSeparates"
     - "AAT.AG.LocalSemanticReconstruction.LocalReading.ObjectAssembles"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.identity_morphismSeparates"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.identity_morphismAssembles"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.identity_objectSeparates"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.identity_objectAssembles"
     - "AAT.AG.LocalSemanticReconstruction.LocalReading.faithfulOfMorphismSeparates"
     - "AAT.AG.LocalSemanticReconstruction.LocalReading.fullOfMorphismAssembles"
     - "AAT.AG.LocalSemanticReconstruction.LocalReading.essSurjOfObjectAssembles"
@@ -1595,9 +1599,19 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.LocalReading.read_assemble"
     - "AAT.AG.LocalSemanticReconstruction.LocalReading.assemble_read"
     - "AAT.AG.LocalSemanticReconstruction.LocalReading.objectIsoOfLocalIso"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.mapIso_objectIsoOfLocalIso"
     - "AAT.AG.LocalSemanticReconstruction.LocalReading.objectSeparates_of_morphism_reconstruction"
     - "AAT.AG.LocalSemanticReconstruction.LocalReading.reconstructionEquivalence"
     - "AAT.AG.LocalSemanticReconstruction.LocalReading.reconstructionEquivalence_functor"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.PredicateExamples.terminalLocalObject"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.PredicateExamples.collapseSingleObjBoolReading"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.PredicateExamples.collapseSingleObjBoolReading_not_morphismSeparates"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.PredicateExamples.collapseDiscreteBoolReading"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.PredicateExamples.collapseDiscreteBoolReading_not_morphismAssembles"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.PredicateExamples.collapseDiscreteBoolReading_not_objectSeparates"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.PredicateExamples.boolLocalObject"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.PredicateExamples.falseLocalReading"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.PredicateExamples.falseLocalReading_not_objectAssembles"
   claim_mapping:
     source_labels:
       - "固定 GOAL B: 局所モデルの対象は整合局所値族、射は整合局所射族、identity/compositionは成分ごと"
@@ -1609,6 +1623,7 @@ result:
       - "object separation and assembly remain distinct predicates"
       - "Hom equivalence forward map is exactly N.map and exposes read_assemble/assemble_read"
       - "the reconstructed equivalence has functor definitionally equal to N"
+      - "identity reading supplies positive instances and bounded collapse/omission readings supply negative instances for all four predicates"
     undischarged_assumptions:
       - "construct the actual AAT restriction category Λ_Theta and finite typed local values from A"
       - "construct the actual primitive reading functor N_Theta on all accepted objects and noninvertible morphisms"
@@ -1648,8 +1663,8 @@ audits:
   validation_refs:
     - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/LocalModelCategory.lean: pass"
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.LocalModelCategory: pass (targeted dependency closure only)"
-    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.LocalReading: 15 declarations, standard axioms only"
-    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 17 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.LocalReading: 29 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 31 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "construct one actual branch-independent AAT local index/value declaration and primitive reading functor from A data, without storing completed global morphisms"
 ```
