@@ -1,4 +1,5 @@
 import ResearchLean.AG.RealizationReconstruction.MandatoryCExplicitExactGeometryObstruction
+import ResearchLean.AG.RealizationReconstruction.AATUniformFlipKaroubi
 import Formal.Util.AssertStandardAxioms
 import Mathlib.Algebra.Ring.BooleanRing
 import Mathlib.Algebra.Group.Subgroup.Ker
@@ -14,7 +15,7 @@ than a function-level proxy.
 
 namespace AAT.AG.LocalSemanticReconstruction
 
-open CategoryTheory AtomFoundation
+open CategoryTheory AtomFoundation DoctrineFiberProduct
 open AAT.AG.RealizationReconstruction
 
 /-- The constant-false source choice is the categorical identity of the fixed
@@ -209,6 +210,55 @@ noncomputable def taggedSourceChoiceGroupEquiv :
     Multiplicative (ArchitectureObject FiniteModel.carrier → Bool) ≃*
       taggedSourceChoiceAutSubgroup :=
   MonoidHom.ofInjective taggedSourceChoiceAutHom_injective
+
+/-- The constant-true point of the reconstructed source-choice group has the
+accepted uniform flip as its complete package-level base map. -/
+@[simp] theorem taggedSourceChoiceAut_true_hom_base :
+    (taggedSourceChoiceAut (fun _ => true)).hom.base =
+      taggedUniformFlipTotal :=
+  taggedSourceChoiceExplicitExactGeometryHom_uniformFlip_base
+
+/-- The constant-true source-choice automorphism has order two in the actual
+explicit exact geometry automorphism group. -/
+@[simp] theorem taggedSourceChoiceAut_true_square :
+    taggedSourceChoiceAut (fun _ => true) *
+        taggedSourceChoiceAut (fun _ => true) = 1 := by
+  apply Iso.ext
+  change taggedSourceChoiceExplicitExactGeometryMorphism (fun _ => true) ≫
+      taggedSourceChoiceExplicitExactGeometryMorphism (fun _ => true) =
+    𝟙 taggedOperationExplicitExactGeometryObject
+  calc
+    _ = taggedSourceChoiceExplicitExactGeometryMorphism
+        (fun source => Bool.xor true true) :=
+      (taggedSourceChoiceExplicitExactGeometryMorphism_comp
+        (fun _ => true) (fun _ => true)).symm
+    _ = taggedSourceChoiceExplicitExactGeometryMorphism (fun _ => false) := by
+      congr 1
+    _ = 𝟙 taggedOperationExplicitExactGeometryObject :=
+      taggedSourceChoiceExplicitExactGeometryMorphism_false
+
+/-- The accepted normalization commutation `et = te` is recovered for the
+base of the constant-true actual source-choice automorphism. -/
+theorem taggedSourceChoiceAut_true_base_commutes_normalization :
+    (canonicalObjectNormalizationTotal taggedOperationPackage
+        taggedOperationPackage_admissible).comp
+          (taggedSourceChoiceAut (fun _ => true)).hom.base =
+      (taggedSourceChoiceAut (fun _ => true)).hom.base.comp
+        (canonicalObjectNormalizationTotal taggedOperationPackage
+          taggedOperationPackage_admissible) := by
+  simpa only [taggedSourceChoiceAut_true_hom_base] using
+    taggedUniformFlipTotal_commutes_normalization
+
+/-- The accepted separation `et ≠ e` is recovered with `t` equal to the base
+of the constant-true actual source-choice automorphism. -/
+theorem taggedSourceChoiceAut_true_normalization_comp_ne_normalization :
+    (canonicalObjectNormalizationTotal taggedOperationPackage
+        taggedOperationPackage_admissible).comp
+          (taggedSourceChoiceAut (fun _ => true)).hom.base ≠
+      canonicalObjectNormalizationTotal taggedOperationPackage
+        taggedOperationPackage_admissible := by
+  simpa only [taggedSourceChoiceAut_true_hom_base] using
+    taggedNormalizationThenUniformFlip_ne_normalization
 
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction
 
