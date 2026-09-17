@@ -2,7 +2,7 @@ import Mathlib.Data.Finset.Powerset
 import Mathlib.Data.Fintype.EquivFin
 import Mathlib.Data.Fintype.Pi
 import Mathlib.Data.Fintype.Sets
-import ResearchLean.AG.RealizationReconstruction.MandatoryCFiniteReferenceObstruction
+import ResearchLean.AG.RealizationReconstruction.MandatoryCExplicitExactGeometryObstruction
 import Formal.Util.AssertStandardAxioms
 
 /-!
@@ -153,6 +153,36 @@ theorem read_assembleTaggedSourceChoiceTotal_on_finite
   have hfamily := congrArg CoherentFamily.value (read_assemble family)
   exact congrFun hfamily S
 
+/-- Assemble the same coherent family into the fixed explicit exact geometry
+category required by G-124(E1). -/
+noncomputable def assembleTaggedSourceChoiceExplicitExactGeometry
+    (family : CoherentFamily TaggedArchitectureIndex) :
+    taggedOperationExplicitExactGeometryObject ⟶
+      taggedOperationExplicitExactGeometryObject :=
+  taggedSourceChoiceExplicitExactGeometryMorphism (assemble family)
+
+/-- Exact-geometry readback recovers the singleton-assembled global choice. -/
+@[simp]
+theorem readTaggedSourceChoiceExplicitExactGeometry_assemble
+    (family : CoherentFamily TaggedArchitectureIndex) :
+    readTaggedSourceChoiceExplicitExactGeometry
+        (assembleTaggedSourceChoiceExplicitExactGeometry family) =
+      assemble family := by
+  exact
+    readTaggedSourceChoiceExplicitExactGeometry_taggedSourceChoice (assemble family)
+
+/-- Every finite readback of the assembled explicit exact geometry morphism is
+the original local table. -/
+theorem read_assembleTaggedSourceChoiceExplicitExactGeometry_on_finite
+    (family : CoherentFamily TaggedArchitectureIndex) (S : Finset TaggedArchitectureIndex) :
+    LocalTagTable.read
+        (readTaggedSourceChoiceExplicitExactGeometry
+          (assembleTaggedSourceChoiceExplicitExactGeometry family)) S =
+      family.value S := by
+  rw [readTaggedSourceChoiceExplicitExactGeometry_assemble]
+  have hfamily := congrArg CoherentFamily.value (read_assemble family)
+  exact congrFun hfamily S
+
 /-- On an infinite index type, every finite reading misses a nontrivial
 pointwise tag change.  The witness flips exactly one point outside the reading. -/
 theorem finite_reading_not_separating [Infinite Ω] (S : Finset Ω) :
@@ -179,6 +209,31 @@ theorem taggedSourceChoice_finite_reading_not_separating
     ∃ choice : TaggedArchitectureIndex → Bool,
       choice ≠ (fun _ => false) ∧ ∀ x ∈ S, choice x = false :=
   finite_reading_not_separating S
+
+/-- The same outside-point witness gives two distinct morphisms in the fixed
+explicit exact geometry category, while their source-choice readbacks agree on
+the prescribed finite set.  The constant-false member is the identity-tag
+member of the source-choice family; its identification with the categorical
+identity is part of the later group-structure obligation. -/
+theorem taggedSourceChoiceExplicitExactGeometry_finite_reading_not_separating
+    (S : Finset TaggedArchitectureIndex) :
+    ∃ choice : TaggedArchitectureIndex → Bool,
+      taggedSourceChoiceExplicitExactGeometryMorphism choice ≠
+          taggedSourceChoiceExplicitExactGeometryMorphism (fun _ => false) ∧
+        ∀ x ∈ S,
+          readTaggedSourceChoiceExplicitExactGeometry
+              (taggedSourceChoiceExplicitExactGeometryMorphism choice) x =
+            readTaggedSourceChoiceExplicitExactGeometry
+              (taggedSourceChoiceExplicitExactGeometryMorphism (fun _ => false)) x := by
+  obtain ⟨choice, hchoice, hagree⟩ :=
+    taggedSourceChoice_finite_reading_not_separating S
+  refine ⟨choice, ?_, ?_⟩
+  · intro hmorphism
+    exact hchoice
+      (taggedSourceChoiceExplicitExactGeometryMorphism_injective hmorphism)
+  · intro x hx
+    simp only [readTaggedSourceChoiceExplicitExactGeometry_taggedSourceChoice]
+    exact hagree x hx
 
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChange
 

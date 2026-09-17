@@ -15,8 +15,8 @@
 - completion candidate: no
 - current proof obligation: E1 の実 source-choice 族について、全有限 Bool 読み取りからの
   再構成と有限非分離を同じ局所値定義で証明する
-- next proof obligation: source-choice 族の群構造と `C₂^Ω` 群同型、および
-  `ExplicitExactGeometryMorphism` 側の read/assemble 同定
+- next proof obligation: source-choice 族の群構造、constant-false member と categorical identity の同定、
+  `C₂^Ω` 群同型、および B の主同値との同定
 
 ## Cycle 1 — rejected
 
@@ -61,14 +61,17 @@ selection:
 ```yaml
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "actual tagged source-choice Bool functions are reconstructed from all finite restriction tables; coherent families assemble to the accepted PackageTotalHom; every finite reading on the infinite actual index misses a nontrivial change"
+  proof_obligation_delta: "actual tagged source-choice Bool functions are reconstructed from all finite restriction tables; coherent families assemble to accepted PackageTotalHom and ExplicitExactGeometry morphisms; every finite reading on the infinite actual index misses a distinct ExplicitExactGeometry source-choice morphism"
   completion_candidate: no
   lean_artifacts:
     - "AAT.AG.LocalSemanticReconstruction.TagChange.globalTagChangeEquivCoherentFamily"
     - "AAT.AG.LocalSemanticReconstruction.TagChange.taggedSourceChoiceEquivCoherentFamily"
     - "AAT.AG.LocalSemanticReconstruction.TagChange.assembleTaggedSourceChoiceTotal"
     - "AAT.AG.LocalSemanticReconstruction.TagChange.read_assembleTaggedSourceChoiceTotal_on_finite"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.assembleTaggedSourceChoiceExplicitExactGeometry"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.read_assembleTaggedSourceChoiceExplicitExactGeometry_on_finite"
     - "AAT.AG.LocalSemanticReconstruction.TagChange.taggedSourceChoice_finite_reading_not_separating"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.taggedSourceChoiceExplicitExactGeometry_finite_reading_not_separating"
   claim_mapping:
     source_labels:
       - "固定 GOAL E1b: C₂^Ω の全有限片からの再構成"
@@ -76,8 +79,8 @@ result:
     conjuncts:
       - "asm(read(choice))=choice -> assemble_read"
       - "read(asm(family))=family -> read_assemble"
-      - "actual PackageTotalHom assembly and finite readback -> assembleTaggedSourceChoiceTotal / read_assembleTaggedSourceChoiceTotal_on_finite"
-      - "finite non-separation on actual infinite index -> taggedSourceChoice_finite_reading_not_separating"
+      - "actual PackageTotalHom and ExplicitExactGeometry assembly with finite readback -> both assemble/readback theorem pairs"
+      - "one distinct actual ExplicitExactGeometry source-choice morphism with identical readback on each finite S -> taggedSourceChoiceExplicitExactGeometry_finite_reading_not_separating"
     undischarged_assumptions: []
     acceptance_point: "局所値は finite subtype から Bool への table、整合 field は restriction equality のみ。実 global choice は singleton table から構成し、受理済み taggedSourceChoiceTotal へ渡す"
     port_status: unported
@@ -90,19 +93,21 @@ audits:
       - "CoherentFamily.coherent / restriction equality only"
     discharge_required:
       - "singleton assembly and both inverse laws / discharged"
-      - "actual package endomorphism construction and finite readback / discharged through accepted source-choice constructor and readback theorem"
-      - "actual finite non-separation / discharged from architectureObjectInfinite"
+      - "actual PackageTotalHom and ExplicitExactGeometry morphism construction and finite readback / discharged through accepted constructors and readback theorems"
+      - "actual finite non-separation / discharged from architectureObjectInfinite and ExplicitExactGeometry source-choice injectivity"
     conclusion_equivalent_risk: []
   certificate_provenance:
     discharged:
       - "assembled choice values / singleton Bool tables"
-      - "actual endomorphism / taggedSourceChoiceTotal applied to the assembled choice"
+      - "actual endomorphisms / taggedSourceChoiceTotal and taggedSourceChoiceExplicitExactGeometryMorphism applied to the assembled choice"
       - "finite non-separation witness / one point outside S"
     unresolved: []
   proof_use:
     used:
       - "CoherentFamily.coherent / read_assemble"
       - "readTaggedSourceChoice_taggedSourceChoiceTotal / actual readback"
+      - "readTaggedSourceChoiceExplicitExactGeometry_taggedSourceChoice / actual exact-geometry readback"
+      - "taggedSourceChoiceExplicitExactGeometryMorphism_injective / distinct actual morphisms"
       - "architectureObjectInfinite / actual non-separation"
     unused: []
   structure_field_escape: none-found
@@ -113,11 +118,20 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/TagChangeFiniteReconstruction.lean: pass"
-    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChange: 34 declarations, standard axioms only"
-    - "targeted dependency build: ResearchLean.AG.RealizationReconstruction.MandatoryCFiniteReferenceObstruction: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChange: 38 declarations, standard axioms only"
+    - "targeted dependency build: ResearchLean.AG.RealizationReconstruction.MandatoryCExplicitExactGeometryObstruction: pass"
   blocking_findings: []
-  next_obligation: "source-choice group structure and C₂^Ω group equivalence, then ExplicitExactGeometryMorphism read/assemble identification"
+  next_obligation: "source-choice group structure, constant-false/categorical-identity identification, C₂^Ω group equivalence, and identification with B"
 ```
+
+### Cycle 2 initial review remediation
+
+初回4レーンのうち1レーンは、非分離定理が `Bool` choice の非自明性で止まり、固定 GOAL が
+指定する `ExplicitExactGeometryMorphism` の同一 witness まで運ばれていない点を中心 finding とした。
+修正では coherent family から実 ExplicitExactGeometry morphism を組み立て、その全有限 readback を
+証明した。さらに外点 choice と constant-false choice の morphism が既存 injectivity により異なり、
+同じ二 morphism の readback が指定有限 `S` 上で一致する定理を追加した。constant-false member と
+categorical identity の同定、および群構造は次 obligation に残す。
 
 ## 未完了 ledger
 
@@ -125,5 +139,5 @@ audits:
 - B の対象・射を含む圏同値。Cycle 2 は E1 の指定族における function-level Hom reconstruction。
 - C の投影・正規化・比較群回復。
 - D の三定義と連結成分判定。
-- E1 の群構造、`C₂^Ω` 群同型、uniform flip、B の主同値との同定。
+- E1 の群構造、constant-false/categorical-identity 同定、`C₂^Ω` 群同型、uniform flip、B の主同値との同定。
 - E2 の lens・protocol 二層の決定性と既存 Karoubi 再構成との整合。
