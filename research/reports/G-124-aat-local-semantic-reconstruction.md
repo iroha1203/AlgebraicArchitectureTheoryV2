@@ -13,12 +13,13 @@
 - Cycle 1 rejected PR: [#4714](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4714)
 - Cycle 2 accepted PR: [#4715](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4715),
   merge commit `094151fda193acd169a08c6a65b8008ffb741b55`
+- Cycle 3 accepted PR: [#4716](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4716),
+  merge commit `5b421fe23fd20ed97b8d96645455d11315f197f1`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: E1 の実 source-choice 族について、constant-false member を
-  categorical identity と同定し、実射の合成が pointwise Bool xor に一致することを証明する
-- next proof obligation: source-choice 族を実 automorphism 群として構成し、
-  `C₂^Ω` との群同型、および B の主同値との同定を与える
+- current proof obligation: E1 の source-choice morphism を actual automorphism として構成し、
+  pointwise `C₂^Ω` とその像部分群の群同型を証明する
+- next proof obligation: uniform flip の対応、および B の主同値との同定を与える
 
 ## Cycle 1 — rejected
 
@@ -198,11 +199,90 @@ audits:
   next_obligation: "package the source-choice members as actual automorphisms and prove the C₂^Ω group equivalence; identification with B remains later"
 ```
 
+Cycle 3 は fixed head `08b5ae20831c2ec44059e40e07e4f8737a6fd1ad` の formal rerun 1/2 で
+Math A/B・Lean A/B の全 lane が `Mergeable`、finding なしとなり、CI 7/7 success を確認して
+mergeした。最終監査は PR comment `5718381557`、Cycle 4 選定は Issue comment
+`5718386793` に固定した。
+
+## Cycle 4 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 4
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 5b421fe23fd20ed97b8d96645455d11315f197f1
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 3 accepted evidence: PR comment 5718381557; Issue comment 5718386793"
+  proof_dag_predecessors:
+    - "LocalSemanticReconstruction.taggedSourceChoiceExplicitExactGeometryMorphism_false"
+    - "LocalSemanticReconstruction.taggedSourceChoiceExplicitExactGeometryMorphism_comp"
+    - "RealizationReconstruction.taggedSourceChoiceExplicitExactGeometryMorphism_injective"
+  proof_obligation: "各 source-choice morphism を自己逆な actual Aut として構成し、pointwise xor を持つ C₂^Ω と source-choice automorphism image subgroup の群同型を証明する"
+  selection_reason: "Cycle 3 で実 category の単位元・合成を固定したため、その同じ射を逆まで備えた Aut として package し、E1a の群同型を実 category 上で成立させられる"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeGroupLaw.lean"
+  risks:
+    - "Aut multiplication の composition orientation を xor の可換性で正しく処理すること"
+    - "Bool ring multiplication and ではなく additive xor を Multiplicative で群演算へ移すこと"
+    - "像部分群との群同型を B 全体の比較群同定として過大表示しないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "every actual tagged source-choice morphism is packaged as a self-inverse Aut; the pointwise xor C₂-power maps injectively to Aut and is group-equivalent to its actual image subgroup"
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceAut"
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceAut_injective"
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceAutHom"
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceAutHom_injective"
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceAutSubgroup"
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceGroupEquiv"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL E1a: source-choice family の群構造と C₂^Ω 群同型"
+    conjuncts:
+      - "each source choice has an actual self-inverse exact-geometry automorphism -> taggedSourceChoiceAut"
+      - "pointwise xor preserves Aut multiplication -> taggedSourceChoiceAutHom"
+      - "choice recovery gives injectivity -> taggedSourceChoiceAutHom_injective"
+      - "C₂^Ω is group-equivalent to the actual image subgroup -> taggedSourceChoiceGroupEquiv"
+    undischarged_assumptions: []
+    acceptance_point: "C₂^Ω is represented by Multiplicative (TaggedArchitectureIndex → Bool), where Bool addition is xor; the codomain is exactly the range subgroup in the actual ExplicitExactGeometry Aut group"
+    port_status: unported
+audits:
+  material_premises:
+    discharge_required:
+      - "self-inverse law / discharged from Cycle 3 xor composition and xor-self"
+      - "group multiplication orientation / discharged by Aut multiplication definition and xor commutativity"
+      - "faithfulness / discharged through existing actual-morphism injectivity"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "Aut inverse / the same constructed actual source-choice morphism"
+      - "image subgroup membership / range witness of the constructed group hom"
+    unresolved: []
+  proof_use:
+    used:
+      - "Cycle 3 categorical identity and composition laws"
+      - "taggedSourceChoiceExplicitExactGeometryMorphism_injective"
+      - "MonoidHom.ofInjective for equivalence with the proved range"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/TagChangeGroupLaw.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 8 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "identify the uniform-true choice with the accepted uniform flip and then identify this E1a subgroup through the main equivalence B"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
 - B の対象・射を含む圏同値。Cycle 2 は E1 の指定族における function-level Hom reconstruction。
 - C の投影・正規化・比較群回復。
 - D の三定義と連結成分判定。
-- E1 の actual automorphism 群構成、`C₂^Ω` 群同型、uniform flip、B の主同値との同定。
+- E1 の uniform flip 対応、および source-choice subgroup と B の主同値との同定。
 - E2 の lens・protocol 二層の決定性と既存 Karoubi 再構成との整合。

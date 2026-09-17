@@ -1,5 +1,7 @@
 import ResearchLean.AG.RealizationReconstruction.MandatoryCExplicitExactGeometryObstruction
 import Formal.Util.AssertStandardAxioms
+import Mathlib.Algebra.Ring.BooleanRing
+import Mathlib.Algebra.Group.Subgroup.Ker
 
 /-!
 # Group laws for the tagged source-choice family
@@ -128,6 +130,85 @@ geometry category. -/
       apply Equiv.ext
       intro observable
       rfl
+
+/-- A source choice gives an actual automorphism: its inverse is the same
+tag-change morphism because pointwise exclusive-or is self-cancelling. -/
+noncomputable def taggedSourceChoiceAut
+    (choice : ArchitectureObject FiniteModel.carrier → Bool) :
+    Aut taggedOperationExplicitExactGeometryObject where
+  hom := taggedSourceChoiceExplicitExactGeometryMorphism choice
+  inv := taggedSourceChoiceExplicitExactGeometryMorphism choice
+  hom_inv_id := by
+    calc
+      _ = taggedSourceChoiceExplicitExactGeometryMorphism
+          (fun source => Bool.xor (choice source) (choice source)) :=
+        (taggedSourceChoiceExplicitExactGeometryMorphism_comp choice choice).symm
+      _ = taggedSourceChoiceExplicitExactGeometryMorphism (fun _ => false) := by
+        congr 1
+        funext source
+        exact Bool.xor_self (choice source)
+      _ = 𝟙 taggedOperationExplicitExactGeometryObject :=
+        taggedSourceChoiceExplicitExactGeometryMorphism_false
+  inv_hom_id := by
+    calc
+      _ = taggedSourceChoiceExplicitExactGeometryMorphism
+          (fun source => Bool.xor (choice source) (choice source)) :=
+        (taggedSourceChoiceExplicitExactGeometryMorphism_comp choice choice).symm
+      _ = taggedSourceChoiceExplicitExactGeometryMorphism (fun _ => false) := by
+        congr 1
+        funext source
+        exact Bool.xor_self (choice source)
+      _ = 𝟙 taggedOperationExplicitExactGeometryObject :=
+        taggedSourceChoiceExplicitExactGeometryMorphism_false
+
+/-- Distinct source choices give distinct actual automorphisms. -/
+theorem taggedSourceChoiceAut_injective :
+    Function.Injective taggedSourceChoiceAut := by
+  intro first second equality
+  apply taggedSourceChoiceExplicitExactGeometryMorphism_injective
+  exact congrArg Iso.hom equality
+
+/-- The pointwise `C₂`-power maps homomorphically to the actual automorphism
+group.  `Multiplicative` turns the additive xor law on Bool-valued functions
+into the group multiplication used by `Aut`. -/
+noncomputable def taggedSourceChoiceAutHom :
+    Multiplicative (ArchitectureObject FiniteModel.carrier → Bool) →*
+      Aut taggedOperationExplicitExactGeometryObject where
+  toFun choice := taggedSourceChoiceAut choice.toAdd
+  map_one' := by
+    apply Iso.ext
+    exact taggedSourceChoiceExplicitExactGeometryMorphism_false
+  map_mul' first second := by
+    apply Iso.ext
+    change taggedSourceChoiceExplicitExactGeometryMorphism
+        (fun source => Bool.xor (first.toAdd source) (second.toAdd source)) =
+      taggedSourceChoiceExplicitExactGeometryMorphism second.toAdd ≫
+        taggedSourceChoiceExplicitExactGeometryMorphism first.toAdd
+    rw [← taggedSourceChoiceExplicitExactGeometryMorphism_comp]
+    congr 1
+    funext source
+    exact Bool.xor_comm (first.toAdd source) (second.toAdd source)
+
+/-- The source-choice group homomorphism is faithful. -/
+theorem taggedSourceChoiceAutHom_injective :
+    Function.Injective taggedSourceChoiceAutHom := by
+  intro first second equality
+  apply Multiplicative.ext
+  apply taggedSourceChoiceAut_injective
+  exact equality
+
+/-- The actual subgroup of exact-geometry automorphisms realized by arbitrary
+source-indexed Boolean tag changes. -/
+noncomputable def taggedSourceChoiceAutSubgroup :
+    Subgroup (Aut taggedOperationExplicitExactGeometryObject) :=
+  taggedSourceChoiceAutHom.range
+
+/-- The pointwise `C₂`-power is the actual source-choice automorphism subgroup,
+as a group rather than merely as a bijection of underlying functions. -/
+noncomputable def taggedSourceChoiceGroupEquiv :
+    Multiplicative (ArchitectureObject FiniteModel.carrier → Bool) ≃*
+      taggedSourceChoiceAutSubgroup :=
+  MonoidHom.ofInjective taggedSourceChoiceAutHom_injective
 
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction
 
