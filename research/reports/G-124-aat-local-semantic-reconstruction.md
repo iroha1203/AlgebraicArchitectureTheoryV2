@@ -45,12 +45,14 @@
   merge commit `d71fd9bda57fba4cfc182e4d3d245ba376907a6c`
 - Cycle 18 accepted PR: [#4731](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4731),
   merge commit `04eaf8d985bbeb4f6cb1ed66597fb3030e0f1f14`
+- Cycle 19 accepted PR: [#4732](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4732),
+  merge commit `338eecddc2f80e3b60dc26f49b5218c954fe381e`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: B の独立な local-model category と、分離・組立てから
-  Hom read/assemble および圏同値を得る一般再構成 spine を構成する
-- next proof obligation: A の原始データから actual `Λ_Θ`、有限 local value、
-  reading functor `N_Θ` を構成し、分離・組立てを個別に放電する
+- current proof obligation: lens の有限基準 fiber と protocol の各有限 named-state carrier を、
+  accepted closed-family category の全実射上で読む actual local-model slice を構成する
+- next proof obligation: parameter-only な finite-probe nerve を operation・observation・restriction
+  coherence へ拡張し、tagged/G-122 を含む actual `Λ_Θ` と `N_Θ` を構成する
 
 ## Cycle 1 — rejected
 
@@ -1669,11 +1671,118 @@ audits:
   next_obligation: "construct one actual branch-independent AAT local index/value declaration and primitive reading functor from A data, without storing completed global morphisms"
 ```
 
+Cycle 19 の initial formal review は中心 finding なし、非中心 finding として4つの新規
+predicate の正負例と object-iso lift の no-unfold readback API を要求した。identity reading の
+正例、有限 collapse/omission reading の負例、`mapIso_objectIsoOfLocalIso` を追加し、新規の
+history-free subagent による直接対応で全 finding の実体解消と修正範囲を確認した。final head
+`192e97544a72b24bd18a8643acb62f06e9be2ac4`、CI 7/7 success。最終監査は PR comment
+`5721617738`、Cycle 20 選定は Issue comment `5721667281` に固定した。
+
+## Cycle 20 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 20
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 338eecddc2f80e3b60dc26f49b5218c954fe381e
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 19 accepted evidence: PR comment 5721617738; Issue comment 5721667281"
+  proof_dag_predecessors:
+    - "RealizationReconstruction.closedFamilyRealizationCategory"
+    - "LensRealization.Fiber and res; package Hom identity/composition and semantic readback"
+    - "ProtocolRealization.State, app, edge_naturality, and observation_app"
+    - "LocalSemanticReconstruction.LocalModelCategory and ClosedFamilyLocalReading"
+  proof_obligation: "lensの有限reference fiberとprotocolの各parameter-owned vertexの有限state carrierについて、accepted closed-family categoryの全objectと全morphismを読むactual FintypeCat-valued functorを構成し、一点restriction category上のlocal-model readingへ接続する。protocolではedge naturalityとobservation preservationをexact component APIとして示す"
+  selection_reason: "二つの独立候補探索は、現存する四分枝共通primitive referenceがrealization Xに依存するため、それをΛ_Thetaに用いると固定量化順を破ると一致した。空のtagged/G-122 componentで四分枝readingを装わず、finite primitive valueとmap APIが既に揃うCS二枝の実在sliceを先に固定する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/CSFiniteLocalReading.lean"
+  risks:
+    - "one-point sliceをfinal Λ_Thetaまたは全protocol restriction diagramと表示しないこと"
+    - "Fintype.ofFiniteによる非計算的enumerationをDのeffectivenessと表示しないこと"
+    - "empty tagged/G-122 branchesを追加してall-four coverageを主張しないこと"
+    - "local valueにcompleted realizationまたはmorphismを保存しないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the accepted lens reference fiber and every accepted protocol named-state carrier are now actual finite local values; every admitted closed-family morphism acts through the exact accepted restriction/component map, and protocol edge/observation coherence is exposed pointwise"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.finiteLocalValue"
+    - "AAT.AG.LocalSemanticReconstruction.lensFiberValueReading"
+    - "AAT.AG.LocalSemanticReconstruction.lensFiberLocalReading"
+    - "AAT.AG.LocalSemanticReconstruction.lensFiberLocalReading_obj"
+    - "AAT.AG.LocalSemanticReconstruction.lensFiberLocalReading_map_app"
+    - "AAT.AG.LocalSemanticReconstruction.protocolVertexValueReading"
+    - "AAT.AG.LocalSemanticReconstruction.protocolVertexLocalReading"
+    - "AAT.AG.LocalSemanticReconstruction.protocolVertexLocalReading_obj"
+    - "AAT.AG.LocalSemanticReconstruction.protocolVertexLocalReading_map_app"
+    - "AAT.AG.LocalSemanticReconstruction.protocolVertexReading_edge_naturality"
+    - "AAT.AG.LocalSemanticReconstruction.protocolVertexReading_observation"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL A: lensの有限基準fiberとprotocolの有限carrierをprimitive local readingとして構成する"
+      - "固定 GOAL A--B: arbitrary noninvertible admitted morphismsをlocal componentへ写しidentity/compositionを保つ"
+    conjuncts:
+      - "lens object value is exactly LensRealization.Fiber and is finite"
+      - "lens morphism component is exactly LensRealization.res of the accepted semantic readback"
+      - "protocol object value at each parameter-owned vertex is exactly ProtocolRealization.State and is finite"
+      - "protocol morphism component is exactly ProtocolRealization.app of the accepted semantic readback"
+      - "both value readings preserve identity and composition"
+      - "protocol components obey accepted edge naturality and observation preservation"
+    undischarged_assumptions:
+      - "construct parameter-only non-discrete restriction/probe indices"
+      - "construct tagged and G-122 finite typed local values and map-side readings"
+      - "combine all required operation/Law/raw/coefficient/overlap readings into actual N_Theta"
+      - "discharge separation and assembly from A data"
+      - "construct final common D_Theta"
+    acceptance_point: "this is an actual finite CS slice on all admitted CS morphisms, not the final four-branch local index or main reading"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "fixed LensFamilyInput or ProtocolFamilyInput"
+      - "accepted closed-family realization category"
+    direction_hypothesis: []
+    discharge_required:
+      - "finite lens value / accepted finite_fiber premise"
+      - "finite protocol value / accepted state_finite premise"
+      - "map identity and composition / package Hom identity/composition and semantic readback compute definitionally"
+      - "edge and observation coherence / accepted semantic naturality"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "lens local map / LensRealization.res on package Hom semantic readback"
+      - "protocol local map / ProtocolRealization.app on package Hom semantic readback"
+    unresolved:
+      - "all-four primitive probe syntax and full local-model coherence"
+  proof_use:
+    used:
+      - "LensRealization finite fiber and restriction API"
+      - "ProtocolRealization finite state, naturality, and observation API"
+      - "closed-family branch Hom semantic readback"
+      - "Cycle 19 ClosedFamilyLocalReading target type"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "actual CS finite-value slices only; no all-four Λ_Theta or N_Theta claim"
+  vacuity: "no empty tagged/G-122 components are defined or counted"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/CSFiniteLocalReading.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.CSFiniteLocalReading: pass (targeted dependency closure only)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 11 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct parameter-only finite CS probes with nontrivial operation/observation restriction arrows, then extend the same non-owner-leaking design to tagged/G-122"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
-- B の actual `Λ_Theta`・有限 local value・原始 reading `N_Theta` と、A由来の
-  separation/assembly 放電。Cycle 19 は独立な restriction-diagram category と一般同値 spine。
+- B の actual `Λ_Theta`・原始 reading `N_Theta` と、A由来の separation/assembly 放電。
+  Cycle 19 は独立な restriction-diagram category と一般同値 spine、Cycle 20 は lens fiber と
+  protocol named-state の actual finite slice に限る。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
