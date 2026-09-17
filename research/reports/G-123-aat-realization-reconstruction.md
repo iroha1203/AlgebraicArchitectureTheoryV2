@@ -16142,7 +16142,7 @@ selection:
     - "arbitrary noninjective CS integration, readback, D recovery, and A--F integration"
 result:
   proposed_result_type: proof-checkpoint
-  proof_obligation_delta: "Proved extensionality for coordinate exact equivalences, structural relation exact equivalences, target-indexed exact raw maps, realization supplies, exact geometry homs, and exact total homs. The lemmas explicitly retain every computational component; only existing proposition-valued coverage/overlap and coherence fields are removed by proof irrelevance. Proved left/right unit and associativity for complete coordinate transports. A candidate total-category proof was rejected after focused checking exposed an undischarged cast in raw relation families induced by the propositional PackageTotalHom left-unit equality; no Category instance is claimed."
+  proof_obligation_delta: "Proved extensionality for coordinate exact equivalences, structural relation exact equivalences, target-indexed exact raw maps, realization supplies, exact geometry homs, and exact total homs. The lemmas explicitly retain every non-subsingleton computational component. Coverage and coherence proofs are removed by proof irrelevance; the Type-valued overlap comparison is eliminated only by the separately accepted thin-category `OverlapTransport` uniqueness theorem. Proved left/right unit and associativity for complete coordinate transports. A candidate total-category proof was rejected after focused checking exposed an undischarged cast in raw relation families induced by the propositional PackageTotalHom left-unit equality; no Category instance is claimed."
   completion_candidate: no
   lean_artifacts:
     - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExactGeometryCategory.lean
@@ -16168,10 +16168,10 @@ result:
       - "total equality -> base equality plus dependent geometry HEq"
       - "coordinate transport -> left unit, right unit, and associativity"
     undischarged_assumptions:
-      - "the extensionality lemmas require equality/HEq of all computational fields"
+      - "the extensionality lemmas require equality/HEq of every non-subsingleton computational field; overlap is uniquely determined by accepted thin-category uniqueness"
       - "PackageTotalHom law equalities still require explicit transport through dependent raw relation types"
       - "no exact total Category instance is constructed in this cycle"
-    acceptance_point: "The equality infrastructure needed to prove category laws exists without collapsing any computational action. Category laws themselves remain open."
+    acceptance_point: "The equality infrastructure needed to prove category laws exists without collapsing any non-uniquely-determined computational action. The selected overlap comparison is Type-valued but unique by the accepted thin-context theorem. Category laws themselves remain open."
 audits:
   premise_delta:
     discharged:
@@ -16181,7 +16181,7 @@ audits:
       - "base-law transport coherence, total category laws, genuine CS bridges, readback, D recovery, and final A--F theorem"
   certificate_provenance:
     conditional:
-      - "extensionality consumes explicit equality or HEq for every computational component"
+      - "extensionality consumes explicit equality or HEq for every non-subsingleton computational component"
     discharged:
       - "no category law, raw action, or completed comparison certificate is accepted as an input"
     unresolved:
@@ -16193,9 +16193,10 @@ audits:
       - "all-context coordinate and relation actions"
       - "coefficient map and all three realization comparison maps"
       - "base equality and dependent geometry equality"
+      - "the accepted thin-category `OverlapTransport` subsingleton theorem for the uniquely determined selected overlap comparison"
     unused:
-      - "no computational component is removed by a Subsingleton instance"
-  structure_field_escape: none-found-extensionality-demands-all-computational-fields
+      - "no non-subsingleton computational component is removed by a Subsingleton instance; coverage/coherence are proof fields and overlap comparison is uniquely determined by thinness"
+  structure_field_escape: none-found-extensionality-demands-all-nonsubsingleton-computational-fields-and-uses-only-accepted-thinness-for-overlap
   route_integrity: pass-all-coordinate-local-relation-raw-coefficient-and-realization-actions-remain-visible
   target_fitting: partial-equality-infrastructure-is-proved-but-category-laws-and-CS-bridges-remain-open
   vacuity: none-found-the-raw-extensionality-quantifies-over-the-entire-context-indexed-families
