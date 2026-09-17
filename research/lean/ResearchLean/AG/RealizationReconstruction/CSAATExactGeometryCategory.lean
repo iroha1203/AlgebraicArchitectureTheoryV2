@@ -130,6 +130,29 @@ namespace RawAmbientRestrictionSystemExactMapAgainst
   cases hrelation
   rfl
 
+/-- Heterogeneous extensionality across propositionally equal inverse-context
+functors and coefficient maps.  The computational coordinate and relation
+actions remain explicit hypotheses. -/
+theorem hext
+    {U : AtomCarrier.{u}} {A B : ArchitectureObject U}
+    {S : Site.AATSite A} {T : Site.AATSite B}
+    {firstInverse secondInverse : T.category ⥤ S.category}
+    {k l : Type v} [CommRing k] [CommRing l]
+    {firstCoefficient secondCoefficient : k →+* l}
+    {source : LawAlgebra.RawAmbientRestrictionSystem S k}
+    {target : LawAlgebra.RawAmbientRestrictionSystem T l}
+    {first : RawAmbientRestrictionSystemExactMapAgainst
+      S T firstInverse firstCoefficient source target}
+    {second : RawAmbientRestrictionSystemExactMapAgainst
+      S T secondInverse secondCoefficient source target}
+    (hinverse : firstInverse = secondInverse)
+    (hcoefficient : firstCoefficient = secondCoefficient)
+    (hcoordinate : HEq first.coordinate second.coordinate)
+    (hrelation : HEq first.relation second.relation) : HEq first second := by
+  cases hinverse
+  cases hcoefficient
+  exact heq_of_eq (ext (eq_of_heq hcoordinate) hrelation)
+
 end RawAmbientRestrictionSystemExactMapAgainst
 
 namespace RealizationTransportSupply
@@ -171,6 +194,19 @@ namespace ExactGeomReadHom
   cases hrealization
   rfl
 
+/-- Heterogeneous extensionality over propositionally equal core-base maps. -/
+theorem hext
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {firstBase secondBase : PackageTotalHom G.core H.core}
+    {first : ExactGeomReadHom G H firstBase}
+    {second : ExactGeomReadHom G H secondBase}
+    (hbase : firstBase = secondBase)
+    (hcoefficient : first.coefficientHom = second.coefficientHom)
+    (hraw : HEq first.raw second.raw)
+    (hrealization : HEq first.realization second.realization) : HEq first second := by
+  cases hbase
+  exact heq_of_eq (ext hcoefficient hraw (eq_of_heq hrealization))
+
 end ExactGeomReadHom
 
 namespace ExactGeometryTotalHom
@@ -185,6 +221,131 @@ namespace ExactGeometryTotalHom
   cases hbase
   cases hgeometry
   rfl
+
+/-- Exact geometry composition has the constructed identity as a left unit.
+The raw proof compares every coordinate and structural-relation generator; it
+does not use subsingleton elimination on computational raw data. -/
+theorem id_comp
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    (hom : ExactGeometryTotalHom G H) : comp (id G) hom = hom := by
+  let composed := comp (id G) hom
+  have hbase : composed.base = hom.base := by
+    apply PackageTotalHom.ext
+    · apply ExtInstHom.ext
+      apply ExactDoctrineHom.ext
+      · rfl
+      · apply Equiv.ext
+        intro atom
+        rfl
+    · exact PackageTotalHom.upper_id_comp hom.base.upper
+  apply ext hbase
+  apply ExactGeomReadHom.hext hbase
+  · rfl
+  · apply RawAmbientRestrictionSystemExactMapAgainst.hext
+    · rfl
+    · rfl
+    · rfl
+    · apply heq_of_eq
+      funext W
+      apply StructuralRelationFamilyExactEquiv.ext
+      apply Equiv.ext
+      intro relation
+      rfl
+  · rfl
+
+/-- Exact geometry composition has the constructed identity as a right unit.
+Every coordinate, local-data, and relation action is compared directly. -/
+theorem comp_id
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    (hom : ExactGeometryTotalHom G H) : comp hom (id H) = hom := by
+  let composed := comp hom (id H)
+  have hbase : composed.base = hom.base := by
+    apply PackageTotalHom.ext
+    · apply ExtInstHom.ext
+      apply ExactDoctrineHom.ext
+      · rfl
+      · apply Equiv.ext
+        intro atom
+        rfl
+    · exact PackageTotalHom.upper_comp_id hom.base.upper
+  apply ext hbase
+  apply ExactGeomReadHom.hext hbase
+  · apply RingHom.ext
+    intro coefficient
+    rfl
+  · apply RawAmbientRestrictionSystemExactMapAgainst.hext
+    · rfl
+    · apply RingHom.ext
+      intro coefficient
+      rfl
+    · apply heq_of_eq
+      funext W
+      apply CoordinateFamilyExactEquiv.ext
+      · apply Equiv.ext
+        intro coordinate
+        rfl
+      · apply heq_of_eq
+        funext coordinate
+        apply Equiv.ext
+        intro datum
+        rfl
+    · apply heq_of_eq
+      funext W
+      apply StructuralRelationFamilyExactEquiv.ext
+      apply Equiv.ext
+      intro relation
+      rfl
+  · rfl
+
+/-- Exact geometry composition is associative.  The proof keeps the full
+coefficient, coordinate, local-data, relation, and realization actions. -/
+theorem comp_assoc
+    {U : AtomCarrier.{u}}
+    {G H K L : GeometryPackage.{u, v} U}
+    (first : ExactGeometryTotalHom G H)
+    (second : ExactGeometryTotalHom H K)
+    (third : ExactGeometryTotalHom K L) :
+    comp (comp first second) third = comp first (comp second third) := by
+  let left := comp (comp first second) third
+  let right := comp first (comp second third)
+  have hbase : left.base = right.base := by
+    apply PackageTotalHom.ext
+    · apply ExtInstHom.ext
+      apply ExactDoctrineHom.ext
+      · rfl
+      · apply Equiv.ext
+        intro atom
+        rfl
+    · exact PackageTotalHom.upper_comp_assoc
+        first.base.upper second.base.upper third.base.upper
+  apply ext hbase
+  apply ExactGeomReadHom.hext hbase
+  · apply RingHom.ext
+    intro coefficient
+    rfl
+  · apply RawAmbientRestrictionSystemExactMapAgainst.hext
+    · rfl
+    · apply RingHom.ext
+      intro coefficient
+      rfl
+    · apply heq_of_eq
+      funext W
+      apply CoordinateFamilyExactEquiv.ext
+      · apply Equiv.ext
+        intro coordinate
+        rfl
+      · apply heq_of_eq
+        funext coordinate
+        apply Equiv.ext
+        intro datum
+        rfl
+    · apply heq_of_eq
+      funext W
+      apply StructuralRelationFamilyExactEquiv.ext
+      apply Equiv.ext
+      intro relation
+      rfl
+  · rfl
 
 end ExactGeometryTotalHom
 

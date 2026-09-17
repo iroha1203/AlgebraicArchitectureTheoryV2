@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 156 constructs target-indexed inverse-context exact raw maps for both genuine lens and protocol isomorphisms, preserving their actual complete Law-index/Atom action at every target context
+- current proof obligation: Cycle 157 removes the dependent cast from exact raw composition and proves left unit, right unit, and associativity for exact total geometry morphisms while retaining every computational raw action
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: construct the genuine lens/protocol `PackageTotalHom` and non-raw realization data from the fixed CS inputs, instantiate the raw maps with the resulting `coreContextInverse`, and discharge the dependent transport needed for exact total category laws
+- next proof obligation: rebase the genuine lens/protocol raw maps onto the actual source-generated `ReadingCore`s, package the proved exact-total laws as the realization-category interface, and construct the genuine-CS `PackageTotalHom` plus non-raw realization data from the fixed inputs
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 157 delta | exact typed geometry合成で係数base-changeの命題等式がrelationの計算作用へcastを挿入しないようにし、全成分を保持した三つの圏法則を証明する | corrected `RawAmbientRestrictionSystemExactMapAgainst.trans`; `RawAmbientRestrictionSystemExactMapAgainst.hext`; `ExactGeomReadHom.hext`; `ExactGeometryTotalHom.id_comp`, `.comp_id`, `.comp_assoc` | 任意のexact total geometry morphism。完成category-law certificate、raw dataのSubsingleton、relation actionの同一視、追加公理は受けない。coverage/overlapのみ既存のaccepted uniquenessを使用 | relation equivalenceを直接合成し、係数写像の結合律を`polynomial_eq`内部だけで証明。base、係数、全contextのcoordinate/local-data/relation作用、realization比較を明示比較して左右単位律・結合律を構成 | exact geometry realization categoryの法則と、後続のgenuine CS bridgeの合成・同型性 | `Category` interfaceへの包装、actual generated `ReadingCore`上のraw rebasing、genuine `PackageTotalHom`、coverage/overlap/realization供給、一般非可逆CS射、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 156 delta | genuine lens/protocol同型の実際の全Law座標作用を、geometryが要求するtarget-indexed inverse-context向きへ移す | `equationCoordinateRawExactMapAgainst`; `lensIsoRawExactMapAgainst`, `_coordinate_apply`; `protocolIsoRawExactMapAgainst`, `_coordinate_apply` | 独立に構成済みのsource/target site/raw system、genuine CS iso、任意のtarget-to-source context functor。完成core hom、geometry hom、raw equality、coordinate subsetは受けない | 全target contextでCS iso由来の全Law-index×Atom同値をcoordinate/local-data actionとして構成し、空の追加relationと両endpointの恒等restrictionから全target arrow/polynomialのsquareを証明 | 後続でCS isoから構成するcore baseの`coreContextInverse`を代入したexact geometry raw field | context functorはgeneric parameterでありCS core bridgeからの生成は未完了。`PackageTotalHom`、coverage/overlap/realization、exact total hom、category laws、一般非可逆CS射、readback、D回復、A--F統合も未完了 |
 | A/E Cycle 155 delta | exact typed geometryの圏法則を非一意な計算成分をproof irrelevanceで消さずに証明するため、全依存層の等値判定を与える | `CoordinateFamilyExactEquiv.ext`, `.refl_trans`, `.trans_refl`, `.trans_assoc`; `StructuralRelationFamilyExactEquiv.ext`; `RawAmbientRestrictionSystemExactMapAgainst.ext`; `RealizationTransportSupply.exactExt`; `ExactGeomReadHom.ext`; `ExactGeometryTotalHom.ext` | 同じ固定endpoint/index上の二つの候補と、各non-subsingleton計算成分の等式または従属`HEq`。overlapにはaccepted thin-category uniquenessを使用し、completed category lawやraw actionのSubsingleton instanceは受けない | coordinate equivalenceと全local-data equivalence、全relation-generator equivalence、全contextのraw coordinate/relation action、係数写像、三realization比較、base/geometry成分を保持したextensionalityを証明。Type値のoverlap comparisonはthinnessによる一意性だけで同定し、coordinate transportの左右単位・結合則も構成 | exact total morphismのunit/associativityを従属transport込みで証明する次cycle | `PackageTotalHom`の命題的unit/associativity等式がraw relation型へ作るcastの消去、`Category` instance、genuine lens/protocol bridge、任意非単射CS統合、readback、D回復、A--F統合は未完了 |
 | A/E Cycle 154 delta | strict raw equalityに限定されないparallel geometry morphismで、既存G-108の全非raw成分とactual typed raw actionを一体化する | `RealizationTransportSupply.exactId`, `.exactComp`, `.ofGeomReadHom`; `ExactGeomReadHom`, `.id`, `.comp`, `.ofStrict`; `ExactGeometryTotalHom`, `.id`, `.comp`, `.ofStrict` | 任意のaccepted core package hom、coverage、overlap、係数写像、Cycle 153 exact raw map、support/axis/observable supply。strict特殊化は既存`GeomReadHom`/`GeometryTotalHom` | identity/compositionで全成分を構成。strict homからbase・coverage・overlap・係数・全realization比較を保持し、raw equalityからactual typed raw mapを生成 | parallel exact geometry categoryとgenuine CS core/geometry bridge | extensionality・category laws、任意非単射CS coordinate map統合、concrete lens/protocol bridge、readback、D回復、A--F統合は未完了 |
@@ -16301,4 +16302,99 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct genuine lens/protocol PackageTotalHom values and non-raw realization supplies from the fixed CS inputs, then instantiate these raw maps at the resulting coreContextInverse and assemble ExactGeometryTotalHom."
+```
+
+## Cycle 157 — Cast-free exact raw composition and total-hom laws
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 157
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: 6ef79cdc0dd0d6c888c03c7262f04829322cafc0
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 155 exposed a dependent cast in relation action after PackageTotalHom unit equality; Cycle 156 completed the target-indexed genuine-CS raw components but did not discharge exact-total composition laws"
+  proof_obligation: "Remove the computational cast at its source and prove both unit laws and associativity without erasing coordinate, local-data, relation, coefficient, or realization actions"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATCoefficientRawExactMap.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExactGeometryCategory.lean
+  risks:
+    - "using proposition-level base-change associativity to transport the entire relation structure"
+    - "using Subsingleton on Type-valued coordinate, local-data, relation, or realization fields"
+    - "proving only a base-map law while ignoring dependent geometry data"
+    - "claiming the CS core/non-raw bridge or the fixed A--F theorem from category laws alone"
+  unchecked:
+    - "packaging the proved laws as the realization-category interface"
+    - "rebasing genuine CS raw maps onto actual source-generated ReadingCores"
+    - "constructing genuine-CS PackageTotalHom, coverage, overlap, and realization supply"
+    - "arbitrary noninvertible CS maps, independent readback, D recovery, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Reimplemented exact raw composition so its relation generator equivalence is direct composition; coefficient base-change associativity now appears only inside polynomial_eq. Added heterogeneous extensionality across equal inverse functors, coefficient maps, and core bases. Proved left identity, right identity, and associativity of ExactGeometryTotalHom composition by comparing every non-subsingleton computational field explicitly."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATCoefficientRawExactMap.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExactGeometryCategory.lean
+  evidence:
+    - AAT.AG.RealizationReconstruction.RawAmbientRestrictionSystemExactMapAgainst.trans
+    - AAT.AG.RealizationReconstruction.RawAmbientRestrictionSystemExactMapAgainst.hext
+    - AAT.AG.RealizationReconstruction.ExactGeomReadHom.hext
+    - AAT.AG.RealizationReconstruction.ExactGeometryTotalHom.id_comp
+    - AAT.AG.RealizationReconstruction.ExactGeometryTotalHom.comp_id
+    - AAT.AG.RealizationReconstruction.ExactGeometryTotalHom.comp_assoc
+  claim_mapping:
+    source_labels:
+      - "GOAL A: the realization category and all of its structure-preserving arrows must have actual category laws"
+      - "GOAL E and n1015: genuine CS changes must compose without losing their actual coordinate/operation meaning"
+    conjuncts:
+      - "relation composition -> direct equivalence on every structural generator"
+      - "coefficient composition -> polynomial equality without transporting computational relation action"
+      - "left and right unit -> base, coefficient, raw, and realization components"
+      - "associativity -> every coordinate, local datum, relation generator, coefficient, inverse-context functor, and realization comparison"
+    undischarged_assumptions:
+      - "coverage and overlap equality use their existing accepted uniqueness; no raw computational field does"
+      - "these are laws for the parallel exact total-hom layer, not yet the final constructed R_Theta or P_Theta"
+      - "no concrete genuine-CS base or non-raw exact total hom is constructed here"
+    acceptance_point: "The exact total geometry morphism operations now satisfy all three category laws with the full typed raw action visible, removing the Cycle 155 dependent-transport blocker."
+audits:
+  premise_delta:
+    discharged:
+      - "cast-free relation-action composition"
+      - "ExactGeometryTotalHom left identity"
+      - "ExactGeometryTotalHom right identity"
+      - "ExactGeometryTotalHom associativity"
+    remaining:
+      - "category-interface packaging, actual ReadingCore rebasing, CS-derived base and non-raw data, noninvertible maps, readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional: []
+    discharged:
+      - "all three laws are derived from the existing constructors and explicit component extensionality"
+      - "base-change associativity is used only as a polynomial proposition"
+    unresolved:
+      - "construct the objects and arrows of the fixed realization category from primitive AAT/CS inputs"
+  proof_use:
+    used:
+      - "PackageTotalHom upper unit and associativity laws"
+      - "the complete coefficient homomorphism"
+      - "every target-context coordinate equivalence and coordinate-indexed LocalData equivalence"
+      - "every target-context relation-generator equivalence"
+      - "all three realization comparison functions"
+    unused:
+      - "no raw equality, completed Category certificate, CS bridge, decoder membership, readback, or D classifier is accepted"
+  structure_field_escape: none-found-the-new-hext-theorems-require-all-nonsubsingleton-computational-actions
+  route_integrity: pass-coordinates-local-data-relations-coefficients-inverse-context-and-realization-functions-remain-explicit
+  target_fitting: partial-the-exact-morphism-layer-now-has-proved-laws-but-the-fixed-realization-and-presentation-categories-remain-unconstructed
+  vacuity: none-found-the-laws-quantify-over-arbitrary-exact-total-morphisms
+  one_way_as_equivalence: none-found-no-new-forward-map-is-upgraded-to-an-equivalence
+  goal_or_report_reinterpretation: none-found-category-laws-are-not-counted-as-the-genuine-CS-bridge-or-final-reconstruction
+  validation_refs:
+    - "focused CSAATCoefficientRawExactMap target build: PASS (4284 jobs; not a Research aggregate build)"
+    - "focused CSAATExactGeometryCategory file check: PASS; 14 namespace declarations, standard axioms only"
+    - "focused CSAATExactGeometryCategory target build: PASS (4286 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Rebase genuine lens/protocol exact raw maps onto their actual source-generated ReadingCores, package the exact-total laws as a category interface, then construct the genuine-CS PackageTotalHom and non-raw fields."
 ```
