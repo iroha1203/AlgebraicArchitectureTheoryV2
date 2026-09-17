@@ -186,13 +186,75 @@ theorem extendToFullComponents_mk
     FiniteComponent.componentDecidableEq F
   have injective : Function.Injective (InducedComponent.toFull F S) :=
     (InducedComponent.toFull_injective_iff_retainsFullConnectivity F S).2 retains
-  change FinitePrecomposition.extension
-      (InducedComponent.toFull F S) (descend table) fallback
-      (InducedComponent.toFull F S
-        (fixedFComponentMk (InducedComponent.graph F S) vertex)) = table.1 vertex
-  rw [FinitePrecomposition.extension, dif_pos injective]
-  rw [FinitePrecomposition.extensionOfInjective_apply]
-  exact descend_mk table vertex
+  have readback := congrFun
+    (FinitePrecomposition.precompose_extension
+      (InducedComponent.toFull F S) (descend table) fallback injective)
+    (fixedFComponentMk (InducedComponent.graph F S) vertex)
+  simpa only [InducedComponent.toFull_mk, descend_mk] using readback
+
+/-! ### Non-vacuity examples for edge coherence -/
+
+/-- The two vertices of the G-124(D) edge-coherence test example. -/
+abbrev ExampleVertex := Bool
+
+/-- The single named edge of the edge-coherence test example. -/
+abbrev ExampleEdge := Unit
+
+/-- A nondegenerate finite graph with one named edge from `source` to
+`target`, used to test both truth values of the new coherence predicate. -/
+def exampleGraph : FixedFDirectedMultigraph where
+  Vertex := ExampleVertex
+  Edge := ExampleEdge
+  source _ := false
+  target _ := true
+
+instance : Fintype exampleGraph.Edge := inferInstanceAs (Fintype Unit)
+
+/-- A concrete retained-vertex table satisfying `EdgeCoherent`: it is
+constant on the endpoints of the actual named edge. -/
+def coherentExampleTable :
+    VertexTable exampleGraph (fun _ => True) Bool :=
+  fun _ => false
+
+/-- The concrete constant table is edge-coherent. -/
+theorem coherentExampleTable_edgeCoherent :
+    EdgeCoherent coherentExampleTable := by
+  intro namedEdge
+  rfl
+
+/-- A concrete retained-vertex table that distinguishes the endpoints of the
+actual named edge. -/
+def incoherentExampleTable :
+    VertexTable exampleGraph (fun _ => True) Bool :=
+  fun vertex =>
+    match vertex.1 with
+    | false => false
+    | true => true
+
+/-- The endpoint-distinguishing table is not edge-coherent. -/
+theorem incoherentExampleTable_not_edgeCoherent :
+    ¬ EdgeCoherent incoherentExampleTable := by
+  intro coherent
+  have endpointEquality := coherent
+    (⟨(), True.intro, True.intro⟩ :
+      (InducedComponent.graph exampleGraph (fun _ => True)).Edge)
+  exact Bool.noConfusion endpointEquality
+
+/-- The executable coherence test accepts the concrete coherent table. -/
+example :
+    coherenceTest exampleGraph (fun _ => True) Bool coherentExampleTable = true := by
+  exact (coherenceTest_eq_true_iff
+    exampleGraph (fun _ => True) Bool coherentExampleTable).2
+      coherentExampleTable_edgeCoherent
+
+/-- The executable coherence test rejects the concrete incoherent table. -/
+example :
+    coherenceTest exampleGraph (fun _ => True) Bool incoherentExampleTable = false := by
+  apply Bool.eq_false_iff.mpr
+  intro testIsTrue
+  exact incoherentExampleTable_not_edgeCoherent
+    ((coherenceTest_eq_true_iff
+      exampleGraph (fun _ => True) Bool incoherentExampleTable).1 testIsTrue)
 
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.FiniteCoherentExtension
 
