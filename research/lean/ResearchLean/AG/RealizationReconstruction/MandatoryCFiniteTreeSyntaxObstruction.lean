@@ -9,7 +9,7 @@ import Formal.Util.AssertStandardAxioms
 The earlier mandatory-C obstruction covers words, quotients of words, and
 endpoint-typed paths over the complete tagged primitive alphabet.  A finite
 term grammar can also use nested constructors.  This module treats the more
-permissive binary-tree carrier whose leaves and internal nodes may contain any
+permissive binary-tree carrier whose internal-node payload may contain any
 tagged primitive reference.
 
 The tree is serialized independently of every semantic decoder.  Each node
@@ -23,7 +23,7 @@ independent mandatory-C category.
 This rules out recursive finite constructor shape as an escape from the
 Cycle-14 obstruction.  It does not prove that every parameter-relative syntax
 allowed by G-123 embeds in this tree type: an additional primitive parameter
-family must still be shown to carry no completed semantic map and to admit the
+family must still be shown to carry no completed semantic map and to satisfy the
 same provenance bound before the result can support a fixed-target stop.
 -/
 
