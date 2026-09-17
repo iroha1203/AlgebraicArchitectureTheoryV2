@@ -838,7 +838,7 @@ audits:
   next_obligation: "construct finite component enumerations and decidable reachability from finite graph tables, then connect vertex-edge coherence to the component-family extension algorithm"
 ```
 
-Cycle 11 は final head `3ca1185749a7b267418151920b470746b24a8939` の formal rerun 2/2 で
+Cycle 11 は final head `3ca118b80b14031bddcc067abc8057fd5d3dd681` の formal rerun 2/2 で
 全4 lane が `Mergeable`、finding なしとなり、CI 7/7 success を確認して merge した。
 最終監査は PR comment `5719438716`、Cycle 12 選定は Issue comment
 `5719450317` に固定した。
@@ -902,10 +902,13 @@ result:
     port_status: unported
 audits:
   material_premises:
+    ambient_boundary:
+      - "finite vertex and named-edge enumerations / explicit Fintype inputs fixed by G-124(D)"
+      - "decidable vertex equality / explicit DecidableEq input fixed by G-124(D)"
+      - "induced vertex predicate and its decision / explicit S and DecidablePred input"
     discharge_required:
-      - "finite vertex and named-edge enumerations / explicit Fintype inputs"
-      - "decidable vertex equality / explicit DecidableEq input"
-      - "induced vertex predicate / explicit DecidablePred input"
+      - "directed endpoint-step and generated-reachability decisions / constructed from the finite tables"
+      - "full and induced component Fintype and DecidableEq / constructed on the accepted quotients"
       - "agreement with accepted component relation / discharged through both equality-test iff theorems"
     conclusion_equivalent_risk: []
   proof_use:
