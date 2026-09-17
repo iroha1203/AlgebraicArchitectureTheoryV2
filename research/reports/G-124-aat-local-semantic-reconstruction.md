@@ -45,8 +45,8 @@
 - completion candidate: no
 - current proof obligation: E1b の actual source-choice Aut image と全 finite restriction の
   coherent family を共通 `FiniteReading` surface 上で同値にし、E1の実効性を構成する
-- next proof obligation: E1b の group-level inverse-limit isomorphism、または A--B の
-  local-model / reading-functor infrastructure を構成して主同値による同定へ進む
+- next proof obligation: actual source-choice Aut packaging までの計算可能性を放電するか
+  明示 blocker として固定し、E1b の group-level isomorphism または A--B 構成へ進む
 
 ## Cycle 1 — rejected
 
@@ -1355,8 +1355,8 @@ selection:
     - "coherenceをglobal extendabilityで定義しないこと"
     - "B main equivalenceまたはgroup-level E1b isomorphismの完了を主張しないこと"
 result:
-  proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "the actual source-choice automorphism image is equivalent to coherent families of all finite readings; every component is exactly the common finite restriction, the inverse is the accepted actual constructor, this recovery is unique under the finite-readback law, and every finite source-choice reading has an explicit raw-table effectiveness program"
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: "the actual source-choice automorphism image is equivalent to coherent families of all finite readings; every component is exactly the common finite restriction, the inverse is the accepted actual constructor, and this recovery is unique under the finite-readback law. Raw finite tables have a computable global Bool extension under an explicit equality decision, while actual categorical inclusion is recorded only as a noncomputable semantic realization with exact readback"
   completion_candidate: no
   section_completion_candidate: no
   lean_artifacts:
@@ -1370,8 +1370,8 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.globalTagChangeEffectivenessProgram"
     - "AAT.AG.LocalSemanticReconstruction.globalTagChange_finite_effective"
     - "AAT.AG.LocalSemanticReconstruction.extendTaggedSourceChoiceAut"
-    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceAutEffectivenessProgram"
-    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceAut_finite_effective"
+    - "AAT.AG.LocalSemanticReconstruction.readTaggedSourceChoiceAutAt_extendTaggedSourceChoiceAut"
+    - "AAT.AG.LocalSemanticReconstruction.restrict_extendTaggedSourceChoiceAut"
   claim_mapping:
     source_labels:
       - "固定 GOAL E1b: 全finite restrictionからのsource-choice再構成"
@@ -1381,22 +1381,25 @@ result:
       - "forward map is actual source-choice readback and inverse is actual source-choice construction"
       - "every coherent-family component equals FiniteReading.restrict of actual readback"
       - "any recovery equivalence with that finite-readback law equals the constructed E1b recovery"
-      - "raw finite Bool tables compute global source choices; categorical inclusion gives actual source-choice Aut extensions with exact True-coherence rejection law and readback"
+      - "raw finite Bool tables compute global source choices under an explicit equality decision"
+      - "noncomputable categorical inclusion gives actual source-choice Aut extensions with exact readback, without being called executable effectiveness"
     undischarged_assumptions:
       - "construct the B local-model category, reading functor, and main equivalence before applying the uniqueness criterion"
       - "promote the E1b type equivalence to the requested group-level inverse-limit isomorphism"
-    acceptance_point: "the actual E1 source-choice Hom slice and its common finite-reading law are fixed without presenting them as the absent B main equivalence"
+      - "supply computable equality/membership for the actual tagged architecture index and computable actual categorical packaging before claiming actual-image Effective"
+    acceptance_point: "the actual E1 source-choice Hom slice and its common finite-reading law are fixed; executable effectiveness is limited to the explicitly decidable global Bool representation"
     port_status: unported
 audits:
   material_premises:
     ambient_boundary:
       - "actual source-choice Aut image and actual Bool readback"
-      - "finite S with explicit decidable equality on the actual tagged architecture index"
+      - "finite S conditional on an explicitly supplied decidable equality for the tagged architecture index"
     direction_hypothesis: []
     discharge_required:
       - "actual image recovery / accepted constructor and readback"
       - "all-finite-family recovery / accepted E1b read/assemble equivalence"
-      - "finite effectiveness / explicit piecewise extension and actual readback"
+      - "conditional global Bool effectiveness / explicit piecewise extension"
+      - "actual categorical extension correctness / exact readback only"
     conclusion_equivalent_risk: []
   proof_use:
     used:
@@ -1409,13 +1412,14 @@ audits:
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
-  target_fitting: none-found
+  target_fitting: "actual-image computable effectiveness remains unfinished"
   validation_refs:
     - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/TagChangeFiniteReadingRecovery.lean: pass"
     - "lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeFiniteReadingRecovery: pass"
     - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 12 declarations, standard axioms only"
-  blocking_findings: []
-  next_obligation: "construct the group-level E1b inverse-limit isomorphism or begin the A--B local-model/read-functor infrastructure needed for literal B identification"
+  blocking_findings:
+    - "initial formal review: actual categorical Aut packaging and its EffectivenessProgram were noncomputable; the actual-image Effective claim was removed rather than weakening computability to existence"
+  next_obligation: "discharge or fix the actual-output computability blocker, then construct the group-level E1b inverse-limit isomorphism or begin the A--B local-model/read-functor infrastructure needed for literal B identification"
 ```
 
 ## 未完了 ledger
@@ -1424,6 +1428,7 @@ audits:
 - B の対象・射を含む圏同値。Cycle 2 は E1 の指定族における function-level Hom reconstruction。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
+- E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の同定。
 - E1b の type equivalence を pointwise xor と整合する group-level inverse-limit isomorphismへ強化。
 - E2 の lens・protocol 二層の決定性と既存 Karoubi 再構成との整合。

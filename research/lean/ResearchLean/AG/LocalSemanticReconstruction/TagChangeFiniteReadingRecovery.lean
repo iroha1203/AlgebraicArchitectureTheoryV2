@@ -139,33 +139,27 @@ noncomputable def extendTaggedSourceChoiceAut
     TaggedSourceChoiceAutFamily :=
   taggedSourceChoiceAutElement (extendGlobalTagChange S table)
 
-/-- Every finite source-choice reading has a common effectiveness program.
-Its independently fixed coherence predicate is `True`, and its extension is
-the explicit global computation followed by categorical inclusion. -/
-noncomputable def taggedSourceChoiceAutEffectivenessProgram
+/-- Readback of the semantic categorical inclusion is exactly the computed
+global source choice.  This is a correctness theorem, not a claim that the
+proof-carrying categorical inclusion itself is executable. -/
+@[simp] theorem readTaggedSourceChoiceAutAt_extendTaggedSourceChoiceAut
     [DecidableEq TagChange.TaggedArchitectureIndex]
-    (S : Finset TagChange.TaggedArchitectureIndex) :
-    FiniteReading.EffectivenessProgram
-      readTaggedSourceChoiceAutAt S (fun _ => True) where
-  coherenceTest _ := true
-  coherenceTest_eq_true_iff _ := by simp
-  extend? table := some (extendTaggedSourceChoiceAut S table)
-  extend_eq_none_iff _ := by simp
-  restrict_eq_of_extend_eq_some table automorphism success := by
-    injection success with equality
-    subst automorphism
-    funext source
-    simp [extendTaggedSourceChoiceAut, extendGlobalTagChange,
-      FiniteReading.restrict]
+    (S : Finset TagChange.TaggedArchitectureIndex)
+    (table : {source // source ∈ S} → Bool) :
+    readTaggedSourceChoiceAutAt (extendTaggedSourceChoiceAut S table) =
+      extendGlobalTagChange S table :=
+  readTaggedSourceChoiceAutAt_element (extendGlobalTagChange S table)
 
-/-- The actual source-choice family realizes the common effectiveness
-property on every finite reading. -/
-theorem taggedSourceChoiceAut_finite_effective
+/-- The noncomputable categorical inclusion still has the exact finite
+readback supplied by the computable global extension core. -/
+theorem restrict_extendTaggedSourceChoiceAut
     [DecidableEq TagChange.TaggedArchitectureIndex]
-    (S : Finset TagChange.TaggedArchitectureIndex) :
-    FiniteReading.Effective
-      readTaggedSourceChoiceAutAt S (fun _ => True) :=
-  ⟨taggedSourceChoiceAutEffectivenessProgram S⟩
+    (S : Finset TagChange.TaggedArchitectureIndex)
+    (table : {source // source ∈ S} → Bool) :
+    FiniteReading.restrict readTaggedSourceChoiceAutAt S
+        (extendTaggedSourceChoiceAut S table) = table := by
+  funext source
+  simp [FiniteReading.restrict, extendGlobalTagChange]
 
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction
 
