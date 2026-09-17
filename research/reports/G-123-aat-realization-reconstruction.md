@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 174 transports directed context, equation, and raw maps to the actual generated lens/protocol `ReadingCore`s and assembles them with endpoint-strength coverage/overlap/Extension plus explicit Sigma provenance
+- current proof obligation: Cycle 175 types source-image coverage, readable overlap, and selected Extension actions on the actual generated lens/protocol cores and combines them with equation/raw into one directed package
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: define provenance-generic directed coverage, readable-overlap, and selected-Extension contracts on carried generated-core data, adapt the endpoint constructions to them, and then form the one-way package interface with independent semantic readback
+- next proof obligation: separate the minimal operation-level computational fields from the primitive-morphism index and reconstruct the independent lens/protocol semantic morphisms from those package fields; then continue D recovery and A--F integration
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 175 delta | source-image coverage、全source tripleのreadable overlap、selected Extensionのnamed operation equationsをendpoint固定型からactual generated coreへ移し、equation/rawと同一packageへ統合する | `GeneratedForwardCoverageLabels`, `GeneratedForwardCoverageImage`, `coreGeometryCoverageLabelsCast`, `coreGeometryCoverageForwardCast`, `GeneratedForwardOverlapReadable`, `coreGeometryOverlapForwardCast`; lens/protocol endpoint/generated constructors; `lensAATGeneratedReadingContext`, `protocolAATGeneratedReadingContext`, generated payload/coherence; `LensAATGeneratedDirectedPackage`, `ProtocolAATGeneratedDirectedPackage`とconstructors | 任意のprimitive lens/protocol forward morphism、固定入力由来selected reading、既構成endpoint coverage/overlap/Extension、generated-object等式。target-wide coverage、whole-Extension map、inverse、completed semantic homは取らない | coverage 9条項をcoherent observable witnessとcovariant axis witnessを落とさずarbitrary carried geometry data上へ一般化し、両object等式でgenerated dataへtransport。overlapをcarried overlap同士の全triple readable equivalenceとしてtransport。generated selected contextのExtension payloadを固定入力型へdecodeし、lens point/get/putおよびprotocol point/全edge/全observation equationsをprimitive射から構成。equation/raw/coverage/overlap/Extensionを同一generated packageへ束ねる | primitive indexを除いたoperation-level package interfaceと独立semantic readback | packageはなお`f`でindexされる。equation/raw/coverage/overlapのみからcarrier mapは復元不能で、次にstateMapとnamed-operation lawsを独立fieldsとして切り出す必要がある。D、A--F統合も未完了 |
 | A/E Cycle 174 delta | endpoint full-context型に固定されたdirected equation/rawを強さを増やさずgenerated `ReadingCore`へ運び、同じprimitive射由来のcoverage/overlap/Extensionとprovenanceを一つに固定する | `coreGeometryDataSite`, `GeneratedEquationForwardTransport`, `.ofEndpoint`, `coreGeometryContextFunctorCast`, `coreGeometryEquationForwardCast`, `coreGeometryRawForwardCast`; lens/protocol `*ReadingCoreForwardContextFunctor`, `*ReadingCoreEquationForwardTransport`, `*ReadingCoreRawForwardHom`, `*ReadingCoreForwardImage` | 任意のprimitive lens/protocol forward morphismと既構成endpoint aggregate、source/target generated-object等式。inverse、index equivalence、target-wide coverage、completed package mapは取らない | 任意のcarried context preorder上で同じone-way equation contractを定義しendpoint contractをstrict embedding。source/target object等式でcontext functor・equation・covariant raw NatTransをactual ReadingCoreへtransport。endpoint-strength source-image coverage、readable overlap、selected Extensionと両Sigma provenanceを同じindexed aggregateに構成 | provenance-generic coverage/overlap/Extensionとone-way generated-package interface | coverage/overlap/Extensionはまだconcrete Law endpoint型で、generated-core型へのliteral transport、package-level独立readback、D、A--F統合は未完了 |
 | E Cycle 173 delta | 非可逆な一般射でlensの同一`h,u`をget/put両方に、protocolの任意adapterと同じoperation名・executionを全pathに保持し、L2/L5/P1へ接続する | `LensAATRelativeForwardMorphism`, `.typedObjectMap`, `.get_square`, `.put_square`, `.identityVisibleEquiv`, `.ofLensInvertibleChange`, `.toLensInvertibleChange`と往復定理; `ProtocolAATForwardMorphism.DirectedAdapterSquare`, `.directedAdapterSquare_iff_semantic`, `.state`, `.namedEdge_execution`, `.observation`, `.path_execution`, semantic/P1 specializations | lens側は任意のstate関数`h`とvisible関数`u`が同じget/put squareを満たすこと。L5 specializationだけ既存の`h,u`同値を使う。protocol側は任意の4 forward morphism、P1 specializationでは`q,q'`は任意のままendpoint changeのみiso。completed geometry map/certificateは取らない | lens 4 roleを`h,u,h,h×u`で型付きtransportしactual get/put squareを証明。`u=id` fiberとL2を同値化しL5の既存独立意味論と往復。protocol adapter squareを独立意味論と同値化し、同じvertex/edge/path名でstate・named execution・observation・全path execution等式を構成 | directed generated-package morphismとEのobject/morphism翻訳・readback | directed aggregateのgenerated `ReadingCore` provenance transport、一つのone-way package interface、そこからの独立readback、D、A--F統合は未完了 |
 | A/E Cycle 172 delta | actual restrictionを保持するexact homについて計算成分を明示比較してextensionality・左右単位律・結合律を証明し、decoder像でない圏へ包装する | `ExplicitRealizationTransportSupply.ext`; `ExplicitExactGeometryHom.ext`, `.id_comp`, `.comp_id`, `.comp_assoc`; `ExplicitExactGeomCategory`, `.ofGeometryPackage`, `explicitExactGeometryCategory`; lens/protocol `*CategoryHom` | 任意の`GeometryPackage`と任意のcomposable explicit exact hom。category-law certificateは入力に取らない。base固定後、coverageにはproof irrelevance、Type-valued overlapには既存thin-context `Subsingleton`定理を使う | actual context actionと3 carrier equivalenceの点ごとの等式からsupply extensionalityを証明。base・係数・全typed raw計算作用・realizationを比較して3法則を証明し、全geometry packageをobjectとする独立wrapper圏を構成 | fixed realization category候補と、lens/protocol genuine isoの同じ圏内のmorphism | 一般非可逆CS射、対象・射の独立readback、D、A--F統合は未完了 |
@@ -18161,4 +18162,126 @@ audits:
     - "the aggregate's primitive morphism index preserves provenance but is not an independent readback from equation/raw/coverage/overlap/Extension fields"
     - "these are remaining API construction obligations, not evidence against the fixed target"
   next_obligation: "Define provenance-generic directed source-image coverage, readable-overlap, and selected-Extension contracts on arbitrary carried core geometry data, embed the existing endpoint theorems, transport them to generated cores, and then construct an independent operation-level readback from the resulting one-way package interface."
+```
+
+## Cycle 175 — Generated coverage, overlap, and selected Extension package
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 175
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: ad26882c6c92d0408adce0ec60215fd33e20f5e1
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 174 typed directed context/equation/raw on generated cores but retained coverage, overlap, and Extension in endpoint-specific types"
+  proof_obligation: "Preserve the full directed source-image strength while moving coverage, readable overlap, and selected named-operation Extension equations to actual generated core data, then assemble one generated one-way package"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeneratedDirectedCoverageOverlap.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeneratedSelectedExtension.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeneratedDirectedPackage.lean
+  risks:
+    - "projecting coherent equation visibility down to ordinary target visibility and losing the exact forward-observable equation"
+    - "strengthening covariant axis visibility to a false target-observable restriction"
+    - "adding an arbitrary whole-Extension map for non-surjective directed morphisms"
+    - "accepting operation coherence as a certificate instead of constructing it from the primitive morphism"
+    - "calling an f-indexed package an independent readback"
+  unchecked:
+    - "operation-level package fields independent of the primitive-morphism index"
+    - "reconstruction of independent lens/protocol semantic morphisms from those fields"
+    - "D recovery and final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Introduced primitive-label and proof-bearing coverage layers for arbitrary CSAATCoreGeometryData, retaining all nine endpoint source-image clauses including full ForwardObservableVisibility and ForwardAxisVisibility. Transported labels and proofs across the two generated-object equalities for lens and protocol. Added arbitrary-carried-overlap readable preservation and its generated constructors. Transported the canonical selected reading contexts to generated core objects, decoded their Extension values into the exact fixed-input lens/protocol payloads, and constructed lens point/get/put and protocol point/every-edge/every-observation equations from the same primitive morphism. Combined generated equation, raw, coverage, overlap, and Extension fields into one directed package for each CS model."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeneratedDirectedCoverageOverlap.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeneratedSelectedExtension.lean
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeneratedDirectedPackage.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.GeneratedForwardCoverageLabels
+    - AAT.AG.RealizationReconstruction.GeneratedForwardCoverageImage
+    - AAT.AG.RealizationReconstruction.coreGeometryCoverageLabelsCast
+    - AAT.AG.RealizationReconstruction.coreGeometryCoverageForwardCast
+    - AAT.AG.RealizationReconstruction.GeneratedForwardOverlapReadable
+    - AAT.AG.RealizationReconstruction.coreGeometryOverlapForwardCast
+    - AAT.AG.RealizationReconstruction.lensAATReadingCoreForwardCoverageImageGeneric
+    - AAT.AG.RealizationReconstruction.protocolAATReadingCoreForwardCoverageImageGeneric
+    - AAT.AG.RealizationReconstruction.lensAATReadingCoreForwardOverlapReadable
+    - AAT.AG.RealizationReconstruction.protocolAATReadingCoreForwardOverlapReadable
+    - AAT.AG.RealizationReconstruction.lensAATGeneratedExtensionPayload
+    - AAT.AG.RealizationReconstruction.LensAATGeneratedExtensionCoherence
+    - AAT.AG.RealizationReconstruction.lensAATGeneratedExtensionCoherence
+    - AAT.AG.RealizationReconstruction.protocolAATGeneratedExtensionPayload
+    - AAT.AG.RealizationReconstruction.ProtocolAATGeneratedExtensionCoherence
+    - AAT.AG.RealizationReconstruction.protocolAATGeneratedExtensionCoherence
+    - AAT.AG.RealizationReconstruction.LensAATGeneratedDirectedPackage
+    - AAT.AG.RealizationReconstruction.lensAATGeneratedDirectedPackage
+    - AAT.AG.RealizationReconstruction.ProtocolAATGeneratedDirectedPackage
+    - AAT.AG.RealizationReconstruction.protocolAATGeneratedDirectedPackage
+  claim_mapping:
+    source_labels:
+      - "GOAL A: every geometry component belongs to the independently generated ReadingCore rather than a post-hoc endpoint"
+      - "GOAL E and n1015: arbitrary directed lens/protocol maps retain their named operations and noninvertible behavior"
+    conjuncts:
+      - "coverage labels -> selected readings and exact coordinate/axis/observable maps only, with no visibility proof hidden in labels"
+      - "coverage proofs -> all nine existing source-image clauses, including coherent local observable equalities and covariant axis witnesses"
+      - "overlap -> readable equivalence for every base/left/right triple of the carried source overlap"
+      - "Extension provenance -> canonical generated context transported from the fixed endpoint reading"
+      - "lens Extension -> point, get, and put equations on the decoded generated payload"
+      - "protocol Extension -> point, every schema edge, and every vertex observation equation on the decoded generated payload"
+      - "package -> generated equation/raw/coverage/overlap/Extension constructed from the same f"
+    undischarged_assumptions:
+      - "the package type remains indexed by f and therefore is not yet an independent readback"
+      - "CSAATCoreGeometryData alone has no distinguished ArchCtx or Extension; selected context provenance is carried separately and canonically"
+      - "generalized equation transport retains residual-zero implication rather than exact residual equality"
+    acceptance_point: "Coverage, overlap, and selected Extension are now literally generated-core data and join equation/raw in one honest directed package; no readback or completion status is inferred."
+audits:
+  premise_delta:
+    discharged:
+      - "provenance-generic source-image coverage on generated lens and protocol core geometry data"
+      - "provenance-generic readable-overlap preservation on generated lens and protocol core geometry data"
+      - "generated selected Extension payload and all named lens/protocol operation equations"
+      - "one directed generated package containing equation/raw/coverage/overlap/Extension"
+    remaining:
+      - "independent operation-level package readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "the generic coverage and overlap structures expose proof fields for reusable internal packaging"
+    discharged:
+      - "coverage label records contain only maps/readings, never coverage proofs"
+      - "lens/protocol endpoint adapters reuse the already constructed primitive-f evidence, and generated constructors eliminate only object equalities"
+      - "selected Extension payloads are equality transports of canonical fixed-input contexts"
+      - "all exported Extension and package constructors take only the primitive morphism and construct every proof field"
+    unresolved:
+      - "remove f as a package index and reconstruct it from minimal stateMap plus named-operation laws"
+  proof_use:
+    used:
+      - "all required support, required equation, violation, axis, and boundary clauses"
+      - "the exact forward-observable equations and selected local-value equalities"
+      - "every source overlap triple"
+      - "lens point/get/put equations"
+      - "protocol point, every named edge, and every observation equation"
+      - "both generated-object equality paths"
+    unused:
+      - "no target-wide coverage, inverse, index equivalence, whole-Extension map, completed semantic hom, readback certificate, or D classifier is accepted"
+  structure_field_escape: none-found-final-lens-and-protocol-generated-package-constructors-build-all-proof-fields-from-the-same-primitive-forward-morphism
+  route_integrity: pass-all-five-package-components-use-the-same-generated-source-target-and-the-same-primitive-forward-morphism
+  target_fitting: partial-generated-directed-package-is-complete-at-current-source-image-strength-but-independent-readback-D-and-A--F-remain-open
+  vacuity: none-found-all-source-coordinates-contexts-overlap-triples-and-named-operations-remain-quantified
+  one_way_as_equivalence: none-found-no-inverse-or-target-surjectivity-field-was-added
+  goal_or_report_reinterpretation: none-found-the-package-is-explicitly-recorded-as-f-indexed-and-not-independent-readback
+  validation_refs:
+    - "focused CSAATGeneratedDirectedCoverageOverlap check: PASS; 60 namespace declarations, standard axioms only"
+    - "focused CSAATGeneratedSelectedExtension check: PASS; 26 namespace declarations, standard axioms only"
+    - "registered exact CSAATGeneratedDirectedPackage target build: PASS (4286 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "equation/raw/coverage/overlap do not contain the CS carrier map; independent readback requires explicit operation-level computational fields"
+    - "the minimal next fields are lens stateMap plus get/put laws and protocol vertexwise stateMap plus every edge/observation law, not a stored f or completed semantic hom"
+    - "this is the next API construction obligation, not evidence against the fixed target"
+  next_obligation: "Define f-independent lens/protocol selected-operation action structures, construct them from the generated package, reconstruct the primitive forward morphisms and independent semantic homs from those fields, and prove both round trips without projecting a stored f."
 ```
