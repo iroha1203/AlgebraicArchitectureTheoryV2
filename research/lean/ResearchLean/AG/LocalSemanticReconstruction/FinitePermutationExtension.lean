@@ -16,6 +16,21 @@ fallback, and transports the computed full component family through the
 accepted classification of operation-preserving following changes.  The final
 raw-table API returns `none` exactly on the incoherent branch and an actual
 preserving change on the coherent branch.
+
+Implementation notes:
+
+* `Finset.univ` is used for the actual `Equiv.Perm K` value table; a supplied
+  list or a separate permutation-code type was rejected because either could
+  omit actual permutations and weaken the fixed finite-input claim.
+* The identity permutation is the explicit off-image fallback.  Requiring an
+  additional arbitrary fallback would add input not needed by the actual
+  permutation specialization.
+* The construction does not stop at a full component family: it applies the
+  inverse of the accepted preserving-change classification so that the output
+  is an actual operation-preserving following change.
+* The raw API decides edge coherence internally.  Accepting a coherence
+  certificate as raw input was rejected because it would bypass the required
+  executable decision on the supplied finite table.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction
