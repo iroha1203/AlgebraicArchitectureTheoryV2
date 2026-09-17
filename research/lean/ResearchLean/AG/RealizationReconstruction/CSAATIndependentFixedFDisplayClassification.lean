@@ -130,7 +130,7 @@ noncomputable def protocolPackageAutToInvertibleChange
     simpa [realization_edgeAction] using h.1.edge_map edge state
   observation_naturality := by
     intro vertex state
-    exact Subsingleton.elim _ _
+    convert h.1.observation_map vertex state using 1
 
 /-- Translate an identity-visible protocol change into the generated package.
 All path and quotient-execution naturality is reconstructed by the existing
