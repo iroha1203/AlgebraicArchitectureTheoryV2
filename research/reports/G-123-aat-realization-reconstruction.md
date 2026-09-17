@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 161 assembles the lens and protocol all-object constructions into full source-generated equation-system transports
+- current proof obligation: Cycle 162 constructs complete lens and protocol `SignedExactCoreReadingHom` values from the fixed CS inputs and genuine isomorphisms
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: use the generated equation transports to construct the remaining lens/protocol `SignedExactCoreReadingHom` fields and then their genuine-CS `PackageTotalHom` bases
+- next proof obligation: use the complete signed exact cores to construct genuine-CS `PackageTotalHom` bases, then discharge coverage, overlap, and realization supplies for exact total geometry morphisms
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 162 delta | lens/protocolのcore morphismについてequation fieldだけでなくextraction/composition/object/configuration/detector/operation/invariant/signatureの全fieldを同一構成から完成する | `lensIsoConfigurationMap`, `lensIsoOperationMap`, `lensCoreGeometrySigma_eq`, `lensCoreCircuitCode_reject`, `lensCoreSignature_eq`, `SignatureExactTransport`, `signatureExactTransportCast`, `lensIsoSignatureTransport`, `lensIsoSignedExactCoreReadingHom`; protocolの同名対応宣言と`protocolCore_extraction_eq`, `protocolCore_composition_eq` | fixed CS inputとgenuine semantic iso、Cycles 148/159--161のsource-generated provenance/object/equation構成。generic signature castはcanonical transportに条件付きだが最終constructorが内部構成して渡す。completed core hom/base/certificateは受けない | 恒等Atom mapのconfiguration action、全operation action、生成Sigma等式からreject detectorとsignature等式、空invariant eliminator、全axis/coordinate同値、extraction/compositionとoperation naturalityを構成し全`SignedExactCoreReadingHom` fieldを充足 | lens/protocol genuine-CS `PackageTotalHom.base` | `ExtInstHom`とのbase compatibility、coverage/overlap/realization supply、non-raw geometry、一般非可逆CS射、independent readback、D、A--F統合は未完了 |
 | A/E Cycle 161 delta | lens/protocolの任意object residualをendpoint scaffoldに留めず、source-generated coreの完全なequation transportとして構成する | `lensIsoEndpointContextEquivalence`, `lensIsoEndpointEquationTransport`, `coreGeometryEquationTransportCast`, `lensIsoGeneratedEquationTransport`; protocolの同名対応宣言 | 各fixed CS inputとgenuine semantic iso、および既存のsource-generated core/object provenance等式。generic cast helperは構成済みendpoint transportに条件付きだが、最終lens/protocol constructorはそのpremiseを内部構成して渡し、completed transport、core hom、geometry homを入力に取らない | hom/invのfull-family context functorからcontext equivalence、全Law index同値、全coordinate環同型、restriction naturality、全generator像、任意object residualを一recordに構成し、生成対象等式だけでendpointからgenerated coreへtransport | lens/protocol `SignedExactCoreReadingHom.equationMap` | detector/operation/invariant/signature action、extraction/composition law、context inverseとの整合を含む完成core hom、total base、non-raw geometry、一般非可逆CS射、readback、D、A--F統合は未完了 |
 | A/E Cycle 160 delta | protocol側でも任意`ArchitectureObject`のrecognized/unrecognized両branchを扱い、全named edge・observationと全relation/observation Law instanceの意味およびresidualを厳密に保持する | `protocolIsoTransportLawStructure`, `_actual`, `protocolLawStructure_ext`; `protocolIsoObjectMap`, `_configuration_eq`, `_selectedQuantities_eq`, `_object_formation_eq`, `_reader_eq`; `protocolIsoTransportLawHom`, `...Inv`, `_holds_iff`; `protocolIsoObjectMap_readHolds_iff`, `_equationResidual_eq` | fixed inputのfinite protocol realizationsとgenuine semantic iso。endpoint finiteness/lawfulnessはambient input fieldだが任意raw structureのproofでは未使用。reader result、object-map/residual certificate、完成core homは受けない | 任意raw protocolの全edge actionをhom∘action∘invで、全observationをobserve∘invで共役。recognized objectを共役structureへ、unrecognized objectをCantor-separated markerへ送り、configuration/selected dataを保持。reader Option map、全relation/observation Holds同値、全context/object/index/Atom residual等式を証明 | protocol `SignedExactCoreReadingHom`のobjectMap/configuration/equation-residual fields | 完全なprotocol `EquationSystemExactTransport`包装、extraction/compositionと残るcore fields、lens/protocol total base、non-raw geometry、一般非可逆CS射、readback、D、A--F統合は未完了 |
 | A/E Cycle 159 delta | genuine lens core bridgeのprimitive fieldsを完成recordへ移さず構成し、任意`ArchitectureObject`のrecognized/unrecognized両branchでLaw意味とresidual値を厳密に保持する | `lensCore_extraction_eq`, `lensCore_composition_eq`; `lensIsoTransportLawStructure`, `_actual`; `lensIsoObjectMap`, `_configuration_eq`, `_selectedQuantities_eq`, `_object_formation_eq`; `_reader_eq`, `_reader_some_iff`, `_reader_none_iff`; `lensIsoTransportLawHom`, `...Inv`, `_holds_iff`; `lensIsoObjectMap_readHolds_iff`, `_equationResidual_eq` | fixed inputのlawful lens realizationsとgenuine semantic iso。endpoint lawfulness/finitenessはambient input fieldだが本cycleのproofでは未使用。任意raw structureのlawfulness、reader result、object-map certificate、residual certificate、完成`SignedExactCoreReadingHom`は受けない | 抽出/composition等式と任意raw get/putの共役を構成。recognized objectは共役structureへ、unrecognized objectはCantorでtarget structure型と異なるmarkerへ送り、configuration/selected dataを保持。readerのOption map等式とsome/none反映、任意Law instanceの保存反映、全context/object/index/Atomの多項式residual等式を証明 | lens `SignedExactCoreReadingHom`のextraction/composition/objectMap/configuration/equation-residual fields | 完全な`EquationSystemExactTransport`包装、detector/operation/invariant/signature fields、protocol analogue、non-raw geometry、一般非可逆CS射、readback、D、A--F統合は未完了 |
@@ -16798,4 +16799,113 @@ audits:
     - "Research aggregate/full build: not run"
   blocking_findings: []
   next_obligation: "Construct the remaining lens/protocol SignedExactCoreReadingHom fields around these equation transports, preserving operation/invariant/signature/extraction/composition data before assembling their PackageTotalHom bases."
+```
+
+## Cycle 162 — Complete signed exact cores for both CS models
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 162
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: d0db1e675d4f024d4a349e379c8a9dbac1195c81
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 161 constructed both generated equation transports, while every other SignedExactCoreReadingHom field remained unassembled"
+  proof_obligation: "Construct complete lens and protocol signed exact core morphisms, including extraction, composition, object/configuration, detector, operation, invariant, and signature data"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATSignedExactCoreIso.lean
+  risks:
+    - "accepting a completed core hom, base hom, detector certificate, or signature certificate"
+    - "preserving object formation while omitting arbitrary operations or operation naturality"
+    - "asserting reject detectors or signatures through opaque casts without generated-data provenance"
+    - "dropping protocol extraction/composition or either model's axis/coordinate action"
+  unchecked:
+    - "PackageTotalHom base compatibility and exact total geometry fields"
+    - "arbitrary noninvertible CS maps and independent readback"
+    - "D classification and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Constructed explicit configuration and all-operation maps for lens and protocol objects. Recovered reject detectors and canonical signatures from dependent Sigma equality between generated and endpoint geometry data. Combined those proofs with extraction/composition, Cycle 161 equation transports, empty-invariant elimination, and full signature transports to construct both complete SignedExactCoreReadingHom values."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATSignedExactCoreIso.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.lensIsoConfigurationMap
+    - AAT.AG.RealizationReconstruction.lensIsoOperationMap
+    - AAT.AG.RealizationReconstruction.lensCoreGeometrySigma_eq
+    - AAT.AG.RealizationReconstruction.lensCoreCircuitCode_reject
+    - AAT.AG.RealizationReconstruction.lensCoreSignature_eq
+    - AAT.AG.RealizationReconstruction.SignatureExactTransport
+    - AAT.AG.RealizationReconstruction.signatureExactTransportCast
+    - AAT.AG.RealizationReconstruction.lensIsoSignatureTransport
+    - AAT.AG.RealizationReconstruction.lensIsoSignedExactCoreReadingHom
+    - AAT.AG.RealizationReconstruction.protocolCore_extraction_eq
+    - AAT.AG.RealizationReconstruction.protocolCore_composition_eq
+    - AAT.AG.RealizationReconstruction.protocolIsoConfigurationMap
+    - AAT.AG.RealizationReconstruction.protocolIsoOperationMap
+    - AAT.AG.RealizationReconstruction.protocolCoreGeometrySigma_eq
+    - AAT.AG.RealizationReconstruction.protocolCoreCircuitCode_reject
+    - AAT.AG.RealizationReconstruction.protocolCoreSignature_eq
+    - AAT.AG.RealizationReconstruction.protocolIsoSignatureTransport
+    - AAT.AG.RealizationReconstruction.protocolIsoSignedExactCoreReadingHom
+  claim_mapping:
+    source_labels:
+      - "GOAL A: construct every core-reading morphism component from primitive AAT data"
+      - "GOAL E and n1015: preserve lens get/put and protocol named execution/observation through the same AAT core interface"
+    conjuncts:
+      - "all extracted atoms and all list-finite compositions -> identity Atom transport"
+      - "every ArchitectureObject and every ConfigurationHom operation -> explicit mapped object/configuration/operation"
+      - "every equation and detector index -> Cycle 161 transport and reject-code equality"
+      - "every invariant -> empty-index elimination"
+      - "every signature axis and coordinate -> exact identity equivalence through generated provenance"
+    undischarged_assumptions:
+      - "genuine CS isomorphism is the allowed input for this exact-equivalence subcase"
+      - "the surrounding PackageTotalHom and exact total geometry morphism are not constructed here"
+      - "general noninvertible CS morphisms need directed core maps outside this equivalence-valued construction"
+    acceptance_point: "Both complete signed exact core morphisms are constructed without a completed core/base input."
+audits:
+  premise_delta:
+    discharged:
+      - "protocol extraction and composition compatibility"
+      - "all-object configuration maps and all-operation maps with naturality"
+      - "detector reject-code transport from generated geometry provenance"
+      - "empty invariant transport"
+      - "complete axis/coordinate signature transport from generated geometry provenance"
+      - "all SignedExactCoreReadingHom fields for lens and protocol genuine isomorphisms"
+    remaining:
+      - "PackageTotalHom base compatibility, coverage/overlap/realization, noninvertible maps, readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "generic signatureExactTransportCast accepts a canonical SignatureExactTransport; both exported CS-specific core constructors use signature transports generated from their fixed canonical signature"
+    discharged:
+      - "reject detector property is projected from the generated/endpoint dependent Sigma equality"
+      - "signature equality is projected from the same dependent Sigma equality"
+      - "configuration and operation maps are explicit records using the proved arbitrary-object configuration equality"
+    unresolved:
+      - "construct PackageTotalHom base compatibility and non-raw exact geometry fields"
+  proof_use:
+    used:
+      - "Cycles 148 generated geometry Sigma provenance"
+      - "Cycles 159/160 arbitrary-object maps and configuration equalities"
+      - "Cycle 161 complete generated equation transports"
+      - "all source ConfigurationHom operations"
+      - "all signature axes and coordinates"
+    unused:
+      - "no completed SignedExactCoreReadingHom, PackageTotalHom, geometry hom, detector/signature certificate, decoder membership, readback, or D classifier is accepted by the final CS-specific constructors"
+  structure_field_escape: none-found-every-SignedExactCoreReadingHom-field-is-populated-by-an-explicit-construction-or-provenance-theorem
+  route_integrity: pass-both-CS-models-reach-the-same-complete-core-interface-with-their-full-operation-semantics
+  target_fitting: partial-the-complete-core-layer-is-constructed-for-genuine-isomorphisms-but-total-base-geometry-noninvertible-and-readback-layers-remain-open
+  vacuity: none-found-operationMap-quantifies-over-all-ConfigurationHom-values-and-signature-data-cover-all-axes
+  one_way_as_equivalence: none-found-this-checkpoint-is-explicitly-the-genuine-isomorphism-subcase
+  goal_or_report_reinterpretation: none-found-complete-core-homs-are-not-counted-as-PackageTotalHom-or-final-R_Theta
+  validation_refs:
+    - "focused CSAATSignedExactCoreIso file check: PASS; 37 namespace declarations, standard axioms only"
+    - "focused exact CSAATSignedExactCoreIso target build: PASS (4290 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings: []
+  next_obligation: "Construct genuine-CS PackageTotalHom bases from the complete signed exact cores and the required ExtInstHom compatibility, then discharge coverage, overlap, and realization supplies without accepting a completed total morphism."
 ```
