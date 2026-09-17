@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 169 constructs all nine concrete coverage clauses at both genuine-CS endpoints using an actual total target restriction induced by inverse coordinate transport
+- current proof obligation: Cycle 170 aligns generated signature-axis provenance, transports all endpoint coverage to both generated cores, and projects authoritative package-level `CoverageTransport`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: transport endpoint coverage through generated-object/signature provenance to authoritative package-level `CoverageTransport`, then assemble the parallel exact geometry hom
+- next proof obligation: assemble the parallel exact geometry hom from the common base, authoritative coverage and overlap, coefficient map, full typed raw action, and explicit realization supply
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/E Cycle 170 delta | endpoint coverageをgenerated objectへ運び、signature axis作用を既存signed-core transportと同定してauthoritative package coverageへ接続する | `coreGeometrySignatureEq`, `architectureSignatureAxisMapCast`, `coreGeometryAxisMapCast`, `signatureExactTransportCast_axisMap_eq_axisCast`, `coreGeometryCoverageTransportCast`, lens/protocol generated・authoritative constructors, `lensIsoCoverageTransport`, `protocolIsoCoverageTransport` | fixed CS inputとgenuine semantic iso、Cycle 169の全endpoint coverage、generated-object provenance、既存signature/equation/package transports。completed coverage/coherence certificateは取らない | geometry dataのobject castをAxis型castへ分解し、同一signature endpointsを持つ等式証明だけをproof irrelevanceで同定。全9 fieldをgenerated coreへ運び、実際の`PackageTotalHom`に対する`CoverageTransport`へ射影 | 次のparallel exact geometry homのcoverage field | parallel hom/category、一般非可逆CS射、readback、D、A--F統合は未完了 |
 | A/E Cycle 169 delta | concrete lens/protocol endpointでcoverage 9条項を、target observable全体に定義されたactual restrictionから放電する | `CoreGeometryCoverageTransport`, lens/protocol `*IsoCoverageContextMorphism`, lens/protocol `*IsoCoverageContextMorphism_isRestriction`, lens/protocol `*IsoEndpointCoreGeometryCoverageTransport` | fixed CS inputとgenuine semantic iso、exact endpoint equation transport、全carrier equivalence。completed coverage、selected coordinate map、target answerは入力に取らない | target polynomialをgenuine Law-coordinate同値の逆でsourceへ戻してsource restrictionへ合成し、全target readable変数を保つrestrictionを構成。同じmapでequation/violation/axis visibilityを証明し、support/boundaryをfull-family rebaseで運ぶ | 次のgenerated provenance castとauthoritative package `CoverageTransport` | generated geometry/signatureの二つのdependent equality transport経路の同定は未完了。package-level coverage、parallel hom/category、一般非可逆CS射、readback、D、A--F統合も未完了 |
 | A/E Cycle 168 delta | complete-Law product overlapを同一generated equation transportに沿って比較し、完成overlap certificateを入力に取らずauthoritative `OverlapTransport`を構成する | `CoreGeometryOverlapTransport`, lens/protocol `*EndpointCoreGeometryOverlapTransport`, `coreGeometryOverlapTransportCast`, lens/protocol `*GeneratedCoreGeometryOverlapTransport`, lens/protocol `*OverlapTransport` | fixed CS inputとgenuine semantic iso、Cycle 161 equation transport、Cycle 163 package base、generated-object provenance。completed overlap transportやgeometry homは最終constructor入力に取らない | inverseで引き戻した三contextのproduct overlapをforwardしたcontextとtarget product overlapの間に、Support/Axis/Observableを恒等に保つactual restrictionを両方向に構成しthin category isoを得る。生成対象へcastし既存`OverlapTransport`へ射影 | 次のparallel exact geometry homのoverlap field | mapped-context coverageは未構成。parallel hom/category、一般非可逆CS射、readback、D、A--F統合も未完了 |
 | A/E Cycle 167 delta | actual restriction actionに対するrealization supplyをgenerated equation transportとpackage baseへ接続し、base・coefficient・rawと同じcheckpointへ統合する | `EquationExplicitRealizationSupply`, lens/protocol `*EndpointExplicitRealizationSupply`, `coreGeometryExplicitRealizationSupplyCast`, lens/protocol `*GeneratedExplicitRealizationSupply`, `ExplicitRealizationTransportSupply`, lens/protocol package constructors, `ExplicitExactGeometryCheckpoint`, lens/protocol checkpoint constructors | fixed CS inputとgenuine semantic iso、Cycles 161/163/164のequation transport・package base・typed raw action、generated-object provenance。completed supply、coverage、overlapは最終constructor入力に取らない | 全actual context morphismのaction・restriction保存、全carrier同値とreading iff、三naturalityをgenerated transportへ接続し、同じ`e`由来のbase/coefficient/rawと統合 | 次のparallel exact geometry homのrealization fieldおよびcoverage/overlap構成 | coverageとcomplete overlapはcheckpoint fieldに含めず未完了。現行`ExactGeomReadHom`への変換、一般非可逆CS射、readback、D、A--F統合も未完了 |
@@ -17599,4 +17600,107 @@ audits:
     - "those paths are not definitionally equal, so package-level CoverageTransport is not yet constructed"
     - "this is a remaining provenance-typing obligation, not a failure of any of the nine concrete coverage clauses and not evidence against the fixed target"
   next_obligation: "Prove that the generated geometry-data axis cast agrees with lensIsoSignatureTransport.axisMap and protocolIsoSignatureTransport.axisMap, transport both endpoint coverage records to the generated cores, and project authoritative package-level CoverageTransport."
+```
+
+## Cycle 170 — Generated and package-level coverage transport
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 170
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: d28638ebd0a86758ff697949f1942a1e0680c8fd
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 169 constructed all nine coverage clauses on both concrete endpoints but left their dependent generated signature-axis provenance unaligned"
+  proof_obligation: "Transport endpoint coverage through generated-object provenance, identify the induced axis map with the existing signed-core signature transport, and construct authoritative package-level CoverageTransport without accepting coherence as a premise"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeneratedCoverageTransport.lean
+  risks:
+    - "assuming two dependent Eq.rec paths are definitionally equal"
+    - "using proof irrelevance on computational axis functions rather than only equality proofs"
+    - "accepting generated axis coherence or completed coverage as a constructor input"
+    - "projecting coverage against a package base unrelated to the generated equation transport"
+  unchecked:
+    - "parallel exact geometry hom and its category laws"
+    - "general noninvertible maps, readback, D, and A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Factored both generated axis actions through equality transport on the ArchitectureSignature.Axis types. Proved that the geometry-data cast and the existing SignatureExactTransport cast agree by proof irrelevance only on equality proofs with identical signature endpoints. Transported all nine endpoint coverage clauses to both generated cores and projected authoritative CoverageTransport values over the actual lens/protocol PackageTotalHom values."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATGeneratedCoverageTransport.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.coreGeometrySignatureEq
+    - AAT.AG.RealizationReconstruction.architectureSignatureAxisMapCast
+    - AAT.AG.RealizationReconstruction.coreGeometryAxisMapCast
+    - AAT.AG.RealizationReconstruction.signatureExactTransportCast_axisMap_eq_axisCast
+    - AAT.AG.RealizationReconstruction.coreGeometryCoverageTransportCast
+    - AAT.AG.RealizationReconstruction.lensIsoGeneratedAxisMap_eq
+    - AAT.AG.RealizationReconstruction.protocolIsoGeneratedAxisMap_eq
+    - AAT.AG.RealizationReconstruction.lensIsoGeneratedCoreGeometryCoverageTransportAuthoritative
+    - AAT.AG.RealizationReconstruction.protocolIsoGeneratedCoreGeometryCoverageTransportAuthoritative
+    - AAT.AG.RealizationReconstruction.lensIsoCoverageTransport
+    - AAT.AG.RealizationReconstruction.protocolIsoCoverageTransport
+  claim_mapping:
+    source_labels:
+      - "GOAL A: preserve complete coverage in the same generated realization geometry"
+      - "GOAL E and n1015: connect both CS translations to authoritative package-level geometry components"
+    conjuncts:
+      - "endpoint geometry data -> generated geometry data through established object equalities"
+      - "endpoint identity axis action -> generated Axis-type equality transport"
+      - "signed-core signature axis action -> the same Axis-type equality transport"
+      - "equality-path coherence -> proof irrelevance only for proofs with identical endpoints"
+      - "all nine endpoint coverage clauses -> generated core coverage"
+      - "generated coverage -> authoritative CoverageTransport over the same PackageTotalHom"
+      - "lens and protocol -> identical provenance route"
+    undischarged_assumptions:
+      - "genuine CS isomorphism remains the allowed input for this exact-equivalence subcase"
+      - "the parallel exact geometry hom must retain the explicit actual-restriction realization supply"
+      - "general noninvertible CS morphisms require the separate directed construction"
+    acceptance_point: "Coverage is now complete at the authoritative package level for the genuine-CS exact subcase; all six geometry components exist independently and can be assembled next."
+audits:
+  premise_delta:
+    discharged:
+      - "generated-object transport of all nine coverage clauses"
+      - "dependent signature-axis provenance equality for lens and protocol"
+      - "authoritative package-level CoverageTransport for lens and protocol"
+    remaining:
+      - "parallel exact geometry hom/category, noninvertible maps, readback, D, and final A--F theorem"
+  certificate_provenance:
+    conditional:
+      - "coreGeometryCoverageTransportCast transports an already constructed endpoint record along supplied generated-object equalities"
+    discharged:
+      - "both generated constructors internally supply the existing source/target object equalities and Cycle 169 endpoint coverage"
+      - "axis-map coherence is proved from the two existing signature equality paths rather than accepted"
+      - "both final package constructors take only the primitive genuine CS isomorphism"
+    unresolved:
+      - "assembly and category laws for the parallel explicit-restriction geometry hom"
+  proof_use:
+    used:
+      - "both generated-object provenance equalities"
+      - "both complete endpoint coverage records"
+      - "the existing exact equation and signature transports"
+      - "proof irrelevance only for equality proofs between the same signatures"
+      - "the actual complete lens/protocol PackageTotalHom values"
+    unused:
+      - "no completed CoverageTransport, axis coherence certificate, completed geometry hom, decoder image, readback, or D classifier is accepted"
+  structure_field_escape: none-found-all-final-package-coverage-fields-are-projections-of-internally-constructed-generated-coverage-and-no-new-certificate-field-is-added
+  route_integrity: pass-coverage-equation-signature-and-package-base-all-use-the-same-generated-provenance-from-the-same-genuine-isomorphism
+  target_fitting: partial-authoritative-coverage-and-overlap-now-exist-but-the-parallel-total-geometry-hom-is-not-yet-assembled
+  vacuity: none-found-all-nine-nontrivial-concrete-endpoint-clauses-from-cycle-169-are-transported-without-dropping-contexts-or-coordinates
+  one_way_as_equivalence: none-found-equivalence-data-remain-limited-to-the-genuine-isomorphism-subcase
+  goal_or_report_reinterpretation: none-found-the-report-keeps-parallel-hom-noninvertible-maps-readback-D-and-A--F-open
+  validation_refs:
+    - "focused CSAATGeneratedCoverageTransport file check: PASS; 13 namespace declarations, standard axioms only"
+    - "focused exact CSAATGeneratedCoverageTransport target build: PASS (4297 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "the parallel exact geometry hom has not yet been assembled from base, coverage, overlap, coefficient, typed raw action, and explicit realization supply"
+    - "the old ExactGeomReadHom realization field still observes independently selected thin representatives and must not be used to erase the explicit action"
+    - "these are remaining construction obligations, not evidence against the fixed target"
+  next_obligation: "Define the parallel explicit-restriction exact geometry hom, fill its six components for lens and protocol from Cycles 163--170, and prove its identity/composition laws without converting through the old re-selected representative API."
 ```
