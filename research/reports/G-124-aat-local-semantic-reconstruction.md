@@ -301,7 +301,7 @@ selection:
     - "RealizationReconstruction.taggedUniformFlipTotal_commutes_normalization"
     - "RealizationReconstruction.taggedNormalizationThenUniformFlip_ne_normalization"
   proof_obligation: "constant-true source-choice Aut の base を既存 uniform flip と同定し、actual Aut の t²=1 と既存 normalization 上の et=te・et≠e を同じ t で回収する"
-  selection_reason: "Cycle 4 の C₂^Ω 群同型における constant-one 元が、固定 GOAL E1 の既存 uniform-flip witness と同じ実射であることを明示する"
+  selection_reason: "Cycle 4 の C₂^Ω 群同型における constant-true の一様非自明元が、固定 GOAL E1 の既存 uniform-flip witness と同じ実射であることを明示する"
   expected_result_type: proof-obligation-discharged
   lean_targets:
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeGroupLaw.lean"
