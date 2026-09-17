@@ -2,14 +2,17 @@ import ResearchLean.AG.RealizationReconstruction.CSAATReadingCoreRawAgainst
 import Formal.Util.AssertStandardAxioms
 
 /-!
-# Primitive lens core exactness before the all-object transport
+# Genuine lens all-object core exactness
 
-This module constructs the first computational fields required by a genuine
-lens `SignedExactCoreReadingHom`: extraction and composition compatibility,
-and conjugation of an arbitrary raw lens structure.  It deliberately stops
-before `objectMap`.  Exact reflection of `lensLawStructure?` on every
-`ArchitectureObject`, rather than endpoint lawfulness alone, is still required
-for the all-object residual equality.
+This module constructs extraction and composition compatibility, conjugation
+of an arbitrary raw lens structure, and the all-`ArchitectureObject` map needed
+by a genuine lens `SignedExactCoreReadingHom`.  A Cantor-separated marker keeps
+the unrecognized reader branch unrecognized.  The resulting reader reflection
+proves exact residual equality for every context, object, Law index, and Atom.
+
+The lawful endpoint conditions are ambient fields of `LensRealization`; these
+proofs do not use them.  No lawfulness premise is imposed on the arbitrary raw
+`LensLawStructure` transported by the object map.
 -/
 
 namespace AAT.AG.RealizationReconstruction
