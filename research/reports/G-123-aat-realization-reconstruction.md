@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 178 makes independent generated package Homs into genuine lens/protocol categories, proves semantic readback full and faithful, and transports whole endpoint Aut and comparison subgroups with projection and section compatibility
+- current proof obligation: Cycle 179 transports the restricted source-projection kernel and every literal lift fiber, including its free/transitive right-kernel action, along the Cycle 178 comparison-group square and applies it to both independent CS package categories
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: instantiate the fully faithful comparison transport on the common A--C realization of the original G-122 inputs, prove the restriction square, and derive the restricted-kernel MulEquiv, every lift-fiber Equiv/action compatibility, separate ambient-kernel transport, and bottom/coefficient commuting equations
+- next proof obligation: instantiate the fully faithful comparison transport on the common A--C realization of the original G-122 inputs, then construct and transport the separate ambient normalization kernel and bottom/coefficient commuting equations without identifying them with the restricted source-projection kernel
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| D/E Cycle 179 delta | comparison-groupとendpoint restrictionの可換正方形から、restricted kernel全体と各base元上の全lift fiberを回復し、fiberのkernel torsor構造も同じ対応で運ぶ | `RestrictionKernelFiberTransport.Fiber`, `rightKernelAction`, action law/free/transitive/unique displacement; `kernelMulEquiv`, `fiberEquiv`, `fiberEquiv_smul`; `generatedArrowComparisonSourceKernelMulEquiv`, `generatedArrowComparisonSourceFiberEquiv`, action compatibility; lens/protocol package specialization | 任意の4群・2準同型・2群同値と点ごとの可換正方形。comparison適用ではCycle 178が固定入力から構成したfully faithful functor、whole comparison MulEquiv、endpoint Aut MulEquiv、source compatibilityだけを使う。kernel membership、chosen lift、torsor certificate、ambient kernelは入力しない | 可換式からkernel membershipを両方向に再構成しMulEquivを証明。任意base元上の全fiberを同値化。literal right multiplicationを名前付き作用として構成し、単位・合成・自由・推移・一意displacementとtransport互換性を証明。lens/protocolの任意package arrowへ同じ定理を適用 | G-122 original comparison/restrictionへの具体的instantiation、および後続のsection・kernel・fiberの表示側回復 | ここでの核は`ker (generatedArrowComparisonSourceHom c)`というrestricted source-projection kernelだけである。G-122 original inputのcommon A--C realization、ambient normalization kernel、bottom/係数成分は別義務として未完了。A--F最終統合も未完了 |
 | B/D/E Cycle 178 delta | independent generated package Hom同値を恒等・合成と両立する圏・full/faithful functorへ上げ、全endpoint Autと任意比較射のcomparison subgroup全体を群同値で輸送する | `LensAATIndependentPackageObject`, `ProtocolAATIndependentPackageObject`; 両Hom namespaceの`id`,`comp`; 両package `Category`; 両`*PackageSemanticFunctor`, `*SemanticFullyFaithful`, Full/Faithful instance, `*PackageAutMulEquiv`; `fullyFaithfulEndpointAutMulEquiv`; `generatedArrowComparisonHomOfFullyFaithful`, injective/surjective, `generatedArrowComparisonMulEquivOfFullyFaithful`; source/section compatibility; lens/protocol package comparison specializations | 任意のCycle176 package objects/Homs。比較輸送は任意の圏・functorと、package round tripから構成したfully faithful data。endpoint Aut、comparison pair、section、surjectivity certificateをstructure fieldに取らない | state map compositionからpackage圏の三法則を証明し、semantic Hom両往復からfull/faithfulを構成。Mathlib Aut同値でendpoint automorphismを全て持上げる。任意の比較式をfunctorで保存し、faithfulnessで反映、fullnessで任意target endpoint pairを持上げてcomparison subgroupの全射・単射を証明。source projectionとiso conjugation sectionの可換性を証明 | full G-122 comparison groupとsection、restriction hom/kernel/fiber transport | generic輸送定理とCS packageへの適用は完成したが、G-122 original inputの共通A--C realization functorへの具体的instantiation、restriction square、restricted/ambient二核、全lift fiber、bottom/係数成分は未完了。A--F最終統合も未完了 |
 | D/E/F Cycle 177 delta | 独立generated packageのbijective carrier actionを、同じcomplete-update fixed-F分類へlens/protocol両側から適用し、全hidden permutationを有限table経由でactual D intrinsic subgroupへ回復する | `LensIndependentPackageAut`, `ProtocolIndependentPackageAut`; `lensPackageAutEquivInvertibleChange`, `protocolPackageAutEquivInvertibleChange`; `lensProtocolIndependentPackageEquiv`; 両`*IndependentFixedFClassification`; state-map/classifier compatibility; `fixedFClassifierToDCode`, `fixedFClassifierToDIntrinsic`; 両`*PackageDIntrinsicClassification`とvalue/compatibility定理; 両`*PackageDirectedPackage` | product lens、complete-update protocol、identity visible automorphism、bijective package carrier maps。D接続は任意の有限`K`に対する既証明finite-axis-fold Extension-permutation intrinsic image。semantic change、hidden permutation、table code、D element、completed directed packageはfieldに取らない | Cycle176 `semanticHomEquiv`/forward readbackから独立invertible changeを構成し、lens/protocolを同じactual preserving fixed-F changeで同値化。一つのhidden permutation classifierを両側で共有しstate actionを復元。全permutationを明示的finite tableへ戻し、既存decoder equivalenceでcomplete stored-backward actionにより特徴付けられたactual D subgroupの全元へ同値化 | independent packageのAut群化と、A--C fully faithful realizationを介したfull D comparison transport | identity-visible complete-update applicationであり任意`H`全体のpackage群ではない。Dはintrinsic local-fiber subgroup全体を回復するが、元のfull comparison group、section、restricted/ambient二核、全lift fiber、bottom/係数成分との同値は未完了。A--F最終統合も未完了 |
 | E Cycle 176 delta | generated表示側にcarrier mapとnamed operation lawsだけを保持し、primitive `f`やcompleted semantic Homをfieldにせず、lens/protocol独立意味論へ読み戻して両往復を証明する | `LensAATIndependentGeneratedPackageHom`, `.toForwardMorphism`, `.ofForwardMorphism`, 両simp round trip, `.forwardMorphismEquiv`, `.toSemanticHom`, `.ofSemanticHom`, 両semantic round trip, `.semanticHomEquiv`, `.toDirectedPackage`; protocol同名対応 | fixed lens/protocol inputとsource/target realization。lensは一つのstate mapとgenerated Extension payload上のget/put laws、protocolはvertexwise state mapとgenerated payload上の全named edge/observation lawsだけを取る。primitive forward morphism、semantic Hom、equation/raw/coverage/overlap/完成packageはfieldに取らない | generated payload lawsからprimitive interfaceを再構成し、primitive interfaceとの両往復をextensionalityで証明。さらに独立CS semantic Homへ読み戻し、全semantic Homからのforward translationとの両往復・Equivを証明。最後にその再構成primitiveからCycle175の全generated geometry packageを構成 | common lens/protocol translation statementとD分類の表示側回復 | 共通定理として両CSを同じclassificationへ接続する統合、Dの元の全比較群・section・二核・全lift fiber回復、A--F最終統合は未完了 |
@@ -18642,4 +18643,117 @@ audits:
     - "comparison-group transport alone does not supply a commuting restriction square or distinguish restricted from ambient kernels"
     - "these are next construction obligations, not evidence against the fixed target"
   next_obligation: "Construct the common A--C realization on the original G-122 endpoints and comparison arrow, instantiate the whole comparison MulEquiv, then prove the restriction square and derive restricted-kernel and every lift-fiber transport while separately transporting the ambient kernel and bottom/coefficient evaluations."
+```
+
+## Cycle 179 — Restricted-kernel and all-fiber transport
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 179
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: fa2b459bf03e2f1999f9471eba1301e040c011b1
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 178 transported the whole comparison group and source endpoint automorphisms, but had not transported the source-restriction kernel or literal lift fibers"
+  proof_obligation: "From the proved commuting restriction square, construct the entire restricted kernel, every lift fiber, and the compatible free/transitive right-kernel action, then apply the same theorem to both CS package categories"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATRestrictionKernelFiberTransport.lean
+  risks:
+    - "accepting kernel membership, chosen lifts, or a torsor certificate instead of constructing them from the commuting square"
+    - "transporting a selected section while omitting other points in the same fiber"
+    - "using a global reducible-subtype action instance that collides with model-specific fiber actions"
+    - "identifying the restricted source-projection kernel with the distinct G-122 ambient normalization kernel"
+    - "calling the generic/package specialization the still-missing original G-122 realization instantiation"
+  unchecked:
+    - "concrete common A--C realization of every original G-122 input"
+    - "separate ambient normalization kernel and bottom/coefficient commuting squares"
+    - "final A--F integration"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Defined literal fibers of arbitrary group homomorphisms and a named opposite-kernel right action, proving its laws, freedom, transitivity, and unique displacement. For any commuting square with horizontal MulEquivs, constructed the restricted-kernel MulEquiv and every base-indexed fiber Equiv directly from the square, and proved action compatibility. Instantiated these constructions to the source projection of the full comparison subgroup transported by a fully faithful functor and to arbitrary lens/protocol generated package arrows."
+  completion_candidate: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/CSAATRestrictionKernelFiberTransport.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.RestrictionKernelFiberTransport.Fiber
+    - AAT.AG.RealizationReconstruction.RestrictionKernelFiberTransport.rightKernelAction
+    - AAT.AG.RealizationReconstruction.RestrictionKernelFiberTransport.rightKernelAction_one
+    - AAT.AG.RealizationReconstruction.RestrictionKernelFiberTransport.rightKernelAction_mul
+    - AAT.AG.RealizationReconstruction.RestrictionKernelFiberTransport.fiber_action_free
+    - AAT.AG.RealizationReconstruction.RestrictionKernelFiberTransport.fiber_action_transitive
+    - AAT.AG.RealizationReconstruction.RestrictionKernelFiberTransport.fiber_existsUnique_smul_eq
+    - AAT.AG.RealizationReconstruction.RestrictionKernelFiberTransport.kernelMulEquiv
+    - AAT.AG.RealizationReconstruction.RestrictionKernelFiberTransport.fiberEquiv
+    - AAT.AG.RealizationReconstruction.RestrictionKernelFiberTransport.fiberEquiv_smul
+    - AAT.AG.RealizationReconstruction.generatedArrowComparisonSourceKernelMulEquiv
+    - AAT.AG.RealizationReconstruction.generatedArrowComparisonSourceFiberEquiv
+    - AAT.AG.RealizationReconstruction.generatedArrowComparisonSourceFiberEquiv_smul
+    - AAT.AG.RealizationReconstruction.lensAATIndependentPackageComparisonSourceKernelMulEquiv
+    - AAT.AG.RealizationReconstruction.lensAATIndependentPackageComparisonSourceFiberEquiv
+    - AAT.AG.RealizationReconstruction.protocolAATIndependentPackageComparisonSourceKernelMulEquiv
+    - AAT.AG.RealizationReconstruction.protocolAATIndependentPackageComparisonSourceFiberEquiv
+  claim_mapping:
+    source_labels:
+      - "GOAL D: recover the restriction kernel and every lift fiber under the same comparison correspondence"
+      - "GOAL E: apply the same display recovery theorem to both independent CS morphism categories"
+      - "GOAL F: organize fibers as torsors under the corresponding kernel"
+    conjuncts:
+      - "restricted kernel -> every element of each MonoidHom.ker is transported in both directions"
+      - "all fibers -> the Equiv is parameterized by every source base element; endpoint MulEquiv covers every target base element"
+      - "torsor action -> literal right multiplication is free and transitive with unique displacement"
+      - "same correspondence -> the fiber Equiv intertwines the kernel MulEquiv and right actions"
+      - "two CS models -> lens and protocol package categories instantiate the same generic theorem"
+    undischarged_assumptions:
+      - "the generic theorem assumes two horizontal MulEquivs and a commuting square; the CS applications construct all three from Cycle 178"
+      - "the original G-122 data is not yet instantiated as the source/target of this common realization"
+      - "the ambient normalization hom is different from the source projection and has not been transported"
+    acceptance_point: "The restricted source-projection kernel and all its lift fibers are recovered for the generic fully faithful comparison and both CS package categories; no ambient-kernel or original-G122 completion claim is made."
+audits:
+  premise_delta:
+    discharged:
+      - "restricted-kernel transport from the proved comparison/source square"
+      - "every literal source-projection lift-fiber transport"
+      - "free, transitive, unique-displacement right-kernel action"
+      - "compatibility of kernel and fiber transport"
+      - "lens/protocol package specializations"
+    remaining:
+      - "original G-122 common realization instantiation"
+      - "separate ambient normalization kernel"
+      - "bottom/coefficient component transport"
+      - "final A--F theorem"
+  certificate_provenance:
+    discharged:
+      - "kernel membership is reconstructed using the commuting equation and horizontal equivalences"
+      - "fiber membership in both directions is reconstructed from the same equation"
+      - "the action and unique displacement are computed by group multiplication"
+      - "CS specializations use the fully faithful data constructed in Cycle 178"
+    unresolved: []
+  proof_use:
+    used:
+      - "the commuting square in forward and inverse kernel membership"
+      - "both directions of both horizontal MulEquivs"
+      - "the literal fiber equality for every point"
+      - "group inverses for transitive displacement"
+      - "comparison source compatibility from Cycle 178"
+    unused:
+      - "no ambient normalization hom, bottom/coefficient evaluation, chosen section, selected lift, or completed D certificate is accepted"
+  structure_field_escape: none-found-the-fiber-is-a-literal-subtype-and-kernel-fiber-membership-and-actions-are-constructed-theorems
+  route_integrity: pass-the-same-horizontal-comparison-and-endpoint-equivalences-and-the-same-commuting-square-produce-both-kernel-and-all-fiber-transport
+  target_fitting: partial-restricted-kernel-and-all-fiber-transport-are-discharged-for-the-generic-and-CS-package-squares-but-original-G122-and-ambient-data-remain-open
+  vacuity: none-found-fiber-transport-is-uniform-in-every-base-element-and-action-transitivity-starts-from-arbitrary-two-fiber-points
+  one_way_as_equivalence: none-found-both-kernel-and-fiber-results-have-explicit-inverses-from-the-horizontal-MulEquivs
+  goal_or_report_reinterpretation: none-found-the-restricted-source-projection-kernel-is-explicitly-separated-from-the-ambient-normalization-kernel
+  validation_refs:
+    - "focused CSAATRestrictionKernelFiberTransport file check: PASS; 17 namespace declarations, standard axioms only"
+    - "registered exact CSAATRestrictionKernelFiberTransport target build: PASS (4321 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "the original G-122 semantic/display data is not yet an instance of the common fully faithful realization"
+    - "the ambient normalization kernel and bottom/coefficient maps require their own homomorphisms and commuting squares"
+    - "these are subsequent construction obligations, not evidence against the fixed target"
+  next_obligation: "Instantiate the common comparison transport on the original G-122 data, then construct the separate ambient normalization restriction square and transport its kernel and bottom/coefficient evaluations without identifying it with the restricted source-projection kernel."
 ```
