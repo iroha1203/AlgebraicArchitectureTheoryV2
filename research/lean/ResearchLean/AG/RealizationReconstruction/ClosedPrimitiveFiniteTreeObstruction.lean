@@ -1,0 +1,149 @@
+import ResearchLean.AG.RealizationReconstruction.ClosedPrimitiveRoleExhaustion
+import ResearchLean.AG.RealizationReconstruction.MandatoryCFiniteTreeSyntaxObstruction
+import Formal.Util.AssertStandardAxioms
+
+/-!
+# Finite-tree obstruction for every currently declared closed primitive role
+
+`ClosedPrimitiveRoleExhaustion` proves that the mandatory tagged-operation
+branch has exactly four inhabited roles among all primitive families currently
+declared by `AATClosedFamilySignature`.  Cycle 185 proves the recursive
+finite-tree obstruction over the corresponding four-role alphabet.  This
+module transports that result across an explicit tree equivalence, so a
+candidate may not evade the obstruction merely by using the full dependent
+closed-role sum as its node payload.
+
+The result is exhaustive for the currently declared closed primitive roles on
+the mandatory branch.  It is not final role exhaustion for G-123: a later
+extension of the fixed declaration must still prove that each added role is
+original primitive data and transport it into the same provenance bound, or
+else expose an honest additional parameter family for separate analysis.
+-/
+
+namespace AAT.AG.RealizationReconstruction
+
+open CategoryTheory
+open RealizationComparisonIdempotents
+
+noncomputable section
+
+universe uP vP
+
+/-- Map a recursive tree of the full currently declared tagged-branch role sum
+to the exact four-role alphabet, preserving the entire finite tree shape. -/
+def closedTaggedPrimitiveTreeToTagged :
+    Tree (ClosedPrimitiveReference .taggedOperation .taggedOperation) →
+      Tree TaggedPrimitiveReference :=
+  Tree.map closedTaggedPrimitiveReferenceEquiv
+
+/-- Include a recursive tree over the four inhabited tagged roles into the
+full currently declared closed-role sum, again preserving tree shape. -/
+def taggedPrimitiveTreeToClosedTagged :
+    Tree TaggedPrimitiveReference →
+      Tree (ClosedPrimitiveReference .taggedOperation .taggedOperation) :=
+  Tree.map closedTaggedPrimitiveReferenceEquiv.symm
+
+/-- Mapping a four-role primitive tree into the closed sum and reading it back
+returns the identical syntax tree. -/
+@[simp] theorem closedTaggedPrimitiveTreeToTagged_toClosed
+    (tree : Tree TaggedPrimitiveReference) :
+    closedTaggedPrimitiveTreeToTagged
+      (taggedPrimitiveTreeToClosedTagged tree) = tree := by
+  induction tree with
+  | nil => rfl
+  | node primitive left right leftIH rightIH =>
+      change Tree.node
+          (closedTaggedPrimitiveReferenceEquiv
+            (closedTaggedPrimitiveReferenceEquiv.symm primitive))
+          (closedTaggedPrimitiveTreeToTagged
+            (taggedPrimitiveTreeToClosedTagged left))
+          (closedTaggedPrimitiveTreeToTagged
+            (taggedPrimitiveTreeToClosedTagged right)) =
+        Tree.node primitive left right
+      rw [leftIH, rightIH]
+      simp
+
+/-- Reading a closed-role tree and reincluding it returns the identical
+dependent closed-role syntax tree. -/
+@[simp] theorem taggedPrimitiveTreeToClosedTagged_toTagged
+    (tree :
+      Tree (ClosedPrimitiveReference .taggedOperation .taggedOperation)) :
+    taggedPrimitiveTreeToClosedTagged
+      (closedTaggedPrimitiveTreeToTagged tree) = tree := by
+  induction tree with
+  | nil => rfl
+  | node primitive left right leftIH rightIH =>
+      change Tree.node
+          (closedTaggedPrimitiveReferenceEquiv.symm
+            (closedTaggedPrimitiveReferenceEquiv primitive))
+          (taggedPrimitiveTreeToClosedTagged
+            (closedTaggedPrimitiveTreeToTagged left))
+          (taggedPrimitiveTreeToClosedTagged
+            (closedTaggedPrimitiveTreeToTagged right)) =
+        Tree.node primitive left right
+      rw [leftIH, rightIH]
+      simp
+
+/-- Recursive finite syntax over every currently declared primitive role on
+the tagged branch is exactly recursive finite syntax over the four inhabited
+roles, not merely a one-way erasure. -/
+def closedTaggedPrimitiveTreeEquiv :
+    Tree (ClosedPrimitiveReference .taggedOperation .taggedOperation) ≃
+      Tree TaggedPrimitiveReference where
+  toFun := closedTaggedPrimitiveTreeToTagged
+  invFun := taggedPrimitiveTreeToClosedTagged
+  left_inv := taggedPrimitiveTreeToClosedTagged_toTagged
+  right_inv := closedTaggedPrimitiveTreeToTagged_toClosed
+
+/-- No decoder from finite trees over the entire currently declared closed
+primitive-role sum reaches every mandatory-C admissible endomorphism. -/
+theorem taggedSourceChoiceAdmissibleEndomorphisms_not_closedPrimitiveTreeEnumerable
+    (decode :
+      Tree (ClosedPrimitiveReference .taggedOperation .taggedOperation) →
+        (taggedUniformFlipPackage ⟶ taggedUniformFlipPackage)) :
+    ¬ Function.Surjective decode := by
+  intro decodeSurjective
+  exact taggedSourceChoiceAdmissibleEndomorphisms_not_finiteTreeEnumerable
+    (decode ∘ taggedPrimitiveTreeToClosedTagged)
+    (decodeSurjective.comp closedTaggedPrimitiveTreeEquiv.symm.surjective)
+
+/-- Any code type generated by closed-role finite trees also fails to
+enumerate all mandatory-C admissible endomorphisms. -/
+theorem taggedSourceChoiceAdmissibleEndomorphisms_not_closedPrimitiveTreeGenerated
+    {Code : Type*}
+    (ofTree :
+      Tree (ClosedPrimitiveReference .taggedOperation .taggedOperation) → Code)
+    (ofTreeSurjective : Function.Surjective ofTree)
+    (decode : Code →
+      (taggedUniformFlipPackage ⟶ taggedUniformFlipPackage)) :
+    ¬ Function.Surjective decode := by
+  intro decodeSurjective
+  exact
+    taggedSourceChoiceAdmissibleEndomorphisms_not_closedPrimitiveTreeEnumerable
+      (decode ∘ ofTree) (decodeSurjective.comp ofTreeSurjective)
+
+/-- A presentation whose endomorphisms are generated by finite trees over all
+currently declared closed primitive roles cannot decode both fully and
+retract-generatingly into the independent mandatory-C category. -/
+theorem
+    not_full_and_retractGenerated_of_closedPrimitiveTreeGeneratedEndomorphisms
+    {P : Type uP} [Category.{vP} P]
+    (F : P ⥤ CanonicalNormalizationAdmissiblePackage FiniteModel.carrier)
+    (treeGenerated : ∀ p : P,
+      ∃ decode :
+        Tree (ClosedPrimitiveReference .taggedOperation .taggedOperation) →
+          (p ⟶ p),
+        Function.Surjective decode) :
+    ¬ (F.Full ∧ RetractGeneratedBy F) :=
+  not_full_and_retractGenerated_of_finiteTreeGeneratedEndomorphisms F
+    (fun p => by
+      obtain ⟨decode, decodeSurjective⟩ := treeGenerated p
+      exact ⟨decode ∘ taggedPrimitiveTreeToClosedTagged,
+        decodeSurjective.comp closedTaggedPrimitiveTreeEquiv.symm.surjective⟩)
+
+#assert_standard_axioms_only AAT.AG.RealizationReconstruction
+
+end
+
+
+end AAT.AG.RealizationReconstruction
