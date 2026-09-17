@@ -43,12 +43,14 @@
   merge commit `20d01d17bb1b1117be2cae412983472f2945761f`
 - Cycle 17 accepted PR: [#4730](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4730),
   merge commit `d71fd9bda57fba4cfc182e4d3d245ba376907a6c`
+- Cycle 18 accepted PR: [#4731](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4731),
+  merge commit `04eaf8d985bbeb4f6cb1ed66597fb3030e0f1f14`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: E1b の actual source-choice Aut subgroup と全 finite restriction の
-  coherent family の同値を pointwise xor と整合する群同型へ強化する
-- next proof obligation: actual source-choice Aut packaging までの計算可能性を放電するか
-  明示 blocker として固定したまま、A--B の local-model category / reading functor / main equivalenceへ進む
+- current proof obligation: B の独立な local-model category と、分離・組立てから
+  Hom read/assemble および圏同値を得る一般再構成 spine を構成する
+- next proof obligation: A の原始データから actual `Λ_Θ`、有限 local value、
+  reading functor `N_Θ` を構成し、分離・組立てを個別に放電する
 
 ## Cycle 1 — rejected
 
@@ -1541,10 +1543,122 @@ audits:
   next_obligation: "construct the A--B local-model category, reading functor, and main equivalence, while retaining the separate actual-output computability blocker"
 ```
 
+Cycle 18 の initial formal review は中心 finding なし、非中心 finding として pointwise
+operation instance の docstring、report artifact 収載、群同値の no-unfold API 不足を指摘した。
+名指しされた docstring と8つの正規化 API だけを追加し、新規の history-free subagent による
+直接対応で全 finding の実体解消、修正範囲、資格を確認した。final head
+`28aecd3ebd66c6da34ce19c7cd52a05ac080765a`、CI 7/7 success。最終監査は PR comment
+`5721324507`、Cycle 19 選定は Issue comment `5721402292` に固定した。
+
+## Cycle 19 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 19
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 04eaf8d985bbeb4f6cb1ed66597fb3030e0f1f14
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 18 accepted evidence: PR comment 5721324507; Issue comment 5721402292"
+  proof_dag_predecessors:
+    - "RealizationReconstruction.ClosedFamilyParameter and FamilyRealization"
+    - "RealizationReconstruction.closedFamilyRealizationCategory"
+    - "Mathlib functor categories, full/faithful/essentially-surjective equivalence criterion"
+  proof_obligation: "restriction category Λとlocal-value category Vから独立なlocal-model category Λᵒᵖ ⥤ Vを定義し、reading functorについてmorphism separation、morphism assembly、object separation、object assemblyを別々に定義する。morphism separation/assemblyからHom read/assemble equivalenceと両逆則、object-isomorphism recoveryを証明し、さらにobject assemblyからreading functorをfunctor部に持つ圏同値を構成する"
+  selection_reason: "二つの独立候補探索が、E1 sliceの追加包装ではなく、actual AAT適用前に固定GOAL Bが許す非循環な一般原理を構成することを最小のliteral B前進として選んだ"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/LocalModelCategory.lean"
+  risks:
+    - "local modelをsource category、essential image、image subtypeとして定義しないこと"
+    - "local coherenceにglobal realization/morphismの存在またはextension witnessを含めないこと"
+    - "分離・組立てを一つのIsEquivalence certificateだけで受け取らないこと"
+    - "一般spineをactual N_ThetaまたはAAT-specific B completionと表示しないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "local models are now an independently defined restriction-diagram category, and separately stated morphism uniqueness, morphism existence, and object existence produce explicit Hom read/assemble inverse laws, object-isomorphism recovery, and a categorical equivalence whose forward functor is the original reading"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.LocalModelCategory"
+    - "AAT.AG.LocalSemanticReconstruction.ClosedFamilyLocalReading"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.MorphismSeparates"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.MorphismAssembles"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.ObjectSeparates"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.ObjectAssembles"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.faithfulOfMorphismSeparates"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.fullOfMorphismAssembles"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.essSurjOfObjectAssembles"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.homEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.homEquiv_apply"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.read_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.assemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.objectIsoOfLocalIso"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.objectSeparates_of_morphism_reconstruction"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.reconstructionEquivalence"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReading.reconstructionEquivalence_functor"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL B: 局所モデルの対象は整合局所値族、射は整合局所射族、identity/compositionは成分ごと"
+      - "固定 GOAL B: 分離と組立てからHom read/asm両逆および圏同値"
+    conjuncts:
+      - "contravariant functor objects encode restriction-compatible local families"
+      - "natural transformations encode componentwise local morphisms with naturality coherence"
+      - "morphism separation and assembly remain distinct predicates"
+      - "object separation and assembly remain distinct predicates"
+      - "Hom equivalence forward map is exactly N.map and exposes read_assemble/assemble_read"
+      - "the reconstructed equivalence has functor definitionally equal to N"
+    undischarged_assumptions:
+      - "construct the actual AAT restriction category Λ_Theta and finite typed local values from A"
+      - "construct the actual primitive reading functor N_Theta on all accepted objects and noninvertible morphisms"
+      - "discharge morphism separation, morphism assembly, and object assembly from A data"
+      - "construct the final common D_Theta preservation interface"
+    acceptance_point: "the general theorem assumes exactly the separation/assembly properties that fixed GOAL B permits at the general-principle level; no such assumption is counted as discharged for the AAT application"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "independently supplied restriction category Λ and local-value category V"
+      - "source category R and a reading functor N"
+    direction_hypothesis:
+      - "MorphismSeparates N for uniqueness"
+      - "MorphismAssembles N for Hom existence"
+      - "ObjectAssembles N for object existence up to isomorphism"
+    discharge_required:
+      - "all three properties for the actual AAT N_Theta / unfinished and explicitly excluded from this general-cycle claim"
+    conclusion_equivalent_risk:
+      - "the general equivalence conclusion follows from these allowed B hypotheses, but they are not stored in the local-model definition and are not claimed for AAT"
+  certificate_provenance:
+    discharged:
+      - "general Hom assembler / chosen only from the separately supplied surjectivity property"
+      - "general object preimage / chosen only in Mathlib's equivalence construction from object assembly"
+    unresolved:
+      - "actual AAT provenance for every separation/assembly property"
+  proof_use:
+    used:
+      - "MorphismSeparates and MorphismAssembles / Equiv.ofBijective and full/faithful interfaces"
+      - "ObjectAssembles / essential-surjectivity interface"
+      - "all three / reconstructionEquivalence"
+    unused:
+      - "ObjectSeparates is an independently named property and a proved consequence of Hom reconstruction; it is not an unused premise of the main equivalence"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "general B spine only; actual Λ_Theta, local finite values, N_Theta, and A-derived discharge remain unfinished"
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/LocalModelCategory.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.LocalModelCategory: pass (targeted dependency closure only)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.LocalReading: 15 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 17 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct one actual branch-independent AAT local index/value declaration and primitive reading functor from A data, without storing completed global morphisms"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
-- B の対象・射を含む圏同値。Cycle 2 は E1 の指定族における function-level Hom reconstruction。
+- B の actual `Λ_Theta`・有限 local value・原始 reading `N_Theta` と、A由来の
+  separation/assembly 放電。Cycle 19 は独立な restriction-diagram category と一般同値 spine。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
