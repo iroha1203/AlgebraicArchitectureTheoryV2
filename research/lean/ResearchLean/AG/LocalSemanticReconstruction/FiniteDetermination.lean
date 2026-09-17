@@ -4,10 +4,11 @@ import Formal.Util.AssertStandardAxioms
 /-!
 # Finite determination for local readings
 
-This file separates the three notions required by G-124(D).  It then applies
-the first two to the actual tagged source-choice automorphism family.  No
-algorithmic claim is made here: effectiveness requires separately supplied
-finite enumerations and decidable equality.
+This file defines separation and extension separately, and defines a
+determining set as their conjunction.  It then applies both properties to the
+actual tagged source-choice automorphism family.  The third property required
+by G-124(D), effectiveness, is not claimed here: it requires separately
+supplied finite enumerations and decidable equality.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction
@@ -29,8 +30,9 @@ def Separates {A Index Value : Type*} (read : A → Index → Value)
     (S : Finset Index) : Prop :=
   Function.Injective (restrict read S)
 
-/-- A finite reading extends every locally coherent table.  Coherence is an
-independent predicate and is not defined by existence of a global extension. -/
+/-- A finite reading extends every table satisfying a separately supplied
+coherence predicate.  Each application must establish that predicate's
+independent provenance rather than defining it by global extendability. -/
 def Extends {A Index Value : Type*} (read : A → Index → Value)
     (S : Finset Index)
     (Coherent : ({index // index ∈ S} → Value) → Prop) : Prop :=

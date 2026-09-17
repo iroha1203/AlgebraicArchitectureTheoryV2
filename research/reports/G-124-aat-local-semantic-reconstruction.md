@@ -21,7 +21,7 @@
   merge commit `74b6cfbeb83d494cb7ab43d9995e5df97158b006`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: D の区別・延長・決定集合を別々に定義し、E1 の actual
+- current proof obligation: D の区別・延長を別々に定義し、決定集合をその連言として置いて、E1 の actual
   source-choice Aut 族について有限延長と有限非区別を同じ定義から証明する
 - next proof obligation: D の一般グラフ判定、実効性、または B の局所モデル主同値へ進む
 
@@ -374,7 +374,7 @@ selection:
     - "LocalSemanticReconstruction.taggedSourceChoiceAut_injective"
     - "RealizationReconstruction.readTaggedSourceChoiceExplicitExactGeometry_taggedSourceChoice"
     - "RealizationReconstruction.architectureObjectInfinite"
-  proof_obligation: "finite reading の Separates・Extends・Determining を独立に定義し、actual source-choice Aut 族では全有限 table が延長する一方、どの有限 S も区別せず、有限 determining set が存在しないことを証明する"
+  proof_obligation: "finite reading の Separates・Extends を独立に定義し、Determining をその連言として置く。actual source-choice Aut 族では全有限 table が延長する一方、どの有限 S も区別せず、有限 determining set が存在しないことを証明する"
   selection_reason: "E1 の有限決定不能を function-level witness で止めず、Cycle 4 の actual Aut family と D の共通定義に同時に接続する"
   expected_result_type: proof-obligation-discharged
   lean_targets:
@@ -398,11 +398,11 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceAut_no_finite_determining"
   claim_mapping:
     source_labels:
-      - "固定 GOAL D: 区別・延長・決定集合の独立な定義"
+      - "固定 GOAL D: 区別・延長の独立な定義と、その連言としての決定集合"
       - "固定 GOAL E1: 有限決定不能"
     conjuncts:
       - "separation = injectivity of the finite restriction map"
-      - "extension = every independently coherent local table has a global preimage"
+      - "extension = every table satisfying the separately supplied coherence predicate has a global preimage; independence is checked at each application"
       - "determining = separation and extension"
       - "edge-free source-choice coherence is True and every finite Bool table extends"
       - "architectureObjectInfinite supplies an outside point, giving two distinct actual Aut with equal finite readings"
