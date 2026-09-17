@@ -41,12 +41,14 @@
   merge commit `41d64b724274968199ba3b61aaeb8e22126dd4ee`
 - Cycle 16 accepted PR: [#4729](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4729),
   merge commit `20d01d17bb1b1117be2cae412983472f2945761f`
+- Cycle 17 accepted PR: [#4730](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4730),
+  merge commit `d71fd9bda57fba4cfc182e4d3d245ba376907a6c`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: E1b の actual source-choice Aut image と全 finite restriction の
-  coherent family を共通 `FiniteReading` surface 上で同値にし、E1の実効性を構成する
+- current proof obligation: E1b の actual source-choice Aut subgroup と全 finite restriction の
+  coherent family の同値を pointwise xor と整合する群同型へ強化する
 - next proof obligation: actual source-choice Aut packaging までの計算可能性を放電するか
-  明示 blocker として固定し、E1b の group-level isomorphism または A--B 構成へ進む
+  明示 blocker として固定したまま、A--B の local-model category / reading functor / main equivalenceへ進む
 
 ## Cycle 1 — rejected
 
@@ -1423,6 +1425,108 @@ audits:
   next_obligation: "discharge or fix the actual-output computability blocker, then construct the group-level E1b inverse-limit isomorphism or begin the A--B local-model/read-functor infrastructure needed for literal B identification"
 ```
 
+Cycle 17 は initial formal review で、actual Aut image の `EffectivenessProgram` が
+`noncomputable` な categorical inclusion を返していたため、固定 GOAL D の計算可能性を
+放電していないという中心 finding を受けた。actual-image `Effective` 宣言を削除し、
+computable な raw/global Bool extension と noncomputable な actual categorical realization の
+exact readback を明確に分離した。formal rerun 1/2 後の report finding と配置不整合を修正し、
+formal rerun 2/2 の fresh Math A/B + Lean A/B は全4 lane `No major findings`、final head
+`7928da17fb6473dcc60dead71688e77bacde6e96`、CI 7/7 success。最終監査は PR comment
+`5721061186`、Cycle 18 選定は Issue comment `5721100741` に固定した。
+
+## Cycle 18 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 18
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: d71fd9bda57fba4cfc182e4d3d245ba376907a6c
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 17 accepted evidence: PR comment 5721061186; Issue comment 5721100741"
+  proof_dag_predecessors:
+    - "TagChange.globalTagChangeEquivCoherentFamily and read/assemble laws"
+    - "taggedSourceChoiceGroupEquiv onto the actual source-choice Aut subgroup"
+    - "Cycle 17 actual subgroup readback and all-finite coherent-family recovery"
+  proof_obligation: "coherent all-finite Bool familiesに明示的pointwise xor加法群を構成し、global read/assemble equivalenceをAddEquivおよびMultiplicative MulEquivへ強化する。さらにaccepted E1a group equivalenceと合成してactual source-choice Aut subgroupからcoherent familyへの群同型、actual readback component law、inverse provenanceを証明する"
+  selection_reason: "actual subgroupをfunction proxyへ置換せず、Cycle 17に残ったE1b group-level obligationをaccepted E1a group equivalenceとの可換三角として直接放電する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeFiniteGroupReconstruction.lean"
+  risks:
+    - "coherent familyの群構造をopaque transportだけで与えずpointwise xorを明示すること"
+    - "actual subgroupの乗法とpointwise xorの向きをaccepted taggedSourceChoiceGroupEquiv経由で保つこと"
+    - "inverse-limit presentationをMathlib categorical limitまたはB main equivalenceと呼ばないこと"
+    - "actual-output computability blockerを群同型で解消したと誤表示しないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "coherent all-finite Bool readings now carry the explicit pointwise xor additive group; global choices are additively and multiplicatively equivalent to them; composing with the accepted E1a equivalence identifies the actual source-choice Aut subgroup with this coherent-family group, with exact actual readback and accepted-constructor inverse laws"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.CoherentFamily.instAddCommGroup"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.CoherentFamily.value_zero"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.CoherentFamily.value_add"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.globalTagChangeAddEquivCoherentFamily"
+    - "AAT.AG.LocalSemanticReconstruction.TagChange.globalTagChangeMulEquivCoherentFamily"
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceSubgroupMulEquivCoherentFamily"
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceSubgroupMulEquivCoherentFamily_apply"
+    - "AAT.AG.LocalSemanticReconstruction.readTaggedSourceChoiceSubgroupAt"
+    - "AAT.AG.LocalSemanticReconstruction.readTaggedSourceChoiceSubgroupAt_eq"
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceSubgroupMulEquivCoherentFamily_value"
+    - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceSubgroupMulEquivCoherentFamily_symm"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL E1a: actual source-choice subgroup ≃ C₂^Ω"
+      - "固定 GOAL E1b: C₂^Ω ≅ inverse-limit presentation of all finite restrictions"
+    conjuncts:
+      - "coherent-family operation is pointwise Bool xor"
+      - "read and singleton assembly are mutually inverse group homomorphisms"
+      - "the domain is the accepted actual source-choice automorphism subgroup"
+      - "each finite component is exactly FiniteReading.restrict of actual subgroup readback"
+      - "the inverse is exactly accepted E1a construction after singleton assembly"
+    undischarged_assumptions:
+      - "construct the B local-model category, reading functor, and main equivalence before identifying this recovery through B"
+      - "supply computable actual categorical packaging before claiming actual-image Effective"
+    acceptance_point: "the group-level triangle uses the accepted actual subgroup and explicit pointwise xor; it does not claim a categorical limit universal property or B identification"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "actual tagged source-choice automorphism subgroup"
+      - "all finite subsets of the actual TaggedArchitectureIndex"
+    direction_hypothesis: []
+    discharge_required:
+      - "pointwise xor group laws / inherited through injective value projection with explicit operations"
+      - "E1a actual subgroup classification / accepted taggedSourceChoiceGroupEquiv"
+      - "E1b all-finite reconstruction / accepted global read/assemble equivalence"
+      - "actual readback law / accepted source-choice exact-geometry readback"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "forward actual subgroup element / classified uniquely by accepted E1a inverse"
+      - "inverse actual subgroup element / accepted E1a constructor applied to singleton assembly"
+    unresolved: []
+  proof_use:
+    used:
+      - "taggedSourceChoiceGroupEquiv and both inverse laws"
+      - "TagChange.globalTagChangeEquivCoherentFamily and its read/assemble maps"
+      - "readTaggedSourceChoiceExplicitExactGeometry_taggedSourceChoice"
+      - "FiniteReading.restrict"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "group-level E1a/E1b triangle only; B identification and actual-image computability remain unfinished"
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/TagChangeFiniteGroupReconstruction.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeFiniteGroupReconstruction: pass (targeted dependency closure only)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChange: 11 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 17 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct the A--B local-model category, reading functor, and main equivalence, while retaining the separate actual-output computability blocker"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -1431,5 +1535,4 @@ audits:
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の同定。
-- E1b の type equivalence を pointwise xor と整合する group-level inverse-limit isomorphismへ強化。
 - E2 の lens・protocol 二層の決定性と既存 Karoubi 再構成との整合。
