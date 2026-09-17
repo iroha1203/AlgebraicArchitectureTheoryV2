@@ -17691,7 +17691,7 @@ audits:
   structure_field_escape: none-found-all-final-package-coverage-fields-are-projections-of-internally-constructed-generated-coverage-and-no-new-certificate-field-is-added
   route_integrity: pass-coverage-equation-signature-and-package-base-all-use-the-same-generated-provenance-from-the-same-genuine-isomorphism
   target_fitting: partial-authoritative-coverage-and-overlap-now-exist-but-the-parallel-total-geometry-hom-is-not-yet-assembled
-  vacuity: none-found-all-nine-nontrivial-concrete-endpoint-clauses-from-cycle-169-are-transported-without-dropping-contexts-or-coordinates
+  vacuity: none-found-all-nine-concrete-endpoint-fields-are-transported-the-four-universally-selected-role-fields-remain-universal-and-the-five-visibility-or-boundary-fields-retain-their-actual-witnesses
   one_way_as_equivalence: none-found-equivalence-data-remain-limited-to-the-genuine-isomorphism-subcase
   goal_or_report_reinterpretation: none-found-the-report-keeps-parallel-hom-noninvertible-maps-readback-D-and-A--F-open
   validation_refs:
