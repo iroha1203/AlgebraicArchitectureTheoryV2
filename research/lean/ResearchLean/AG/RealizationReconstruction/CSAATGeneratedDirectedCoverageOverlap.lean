@@ -6,8 +6,9 @@ import Formal.Util.AssertStandardAxioms
 
 The existing source-image coverage strength is stated for arbitrary carried
 core-geometry data.  Primitive maps and selected readings are separated from
-the nine proof fields: lens and protocol constructors build all proofs from
-the same primitive CS morphism.  Equality transport then places coverage and
+the proof-bearing layer: lens and protocol constructors build target full-family
+membership and all nine coverage clauses from the same primitive CS morphism.
+Equality transport then places coverage and
 readable overlap on the actual generated core data.  No target-wide coverage,
 inverse, or equivalence of the ambient directed map is introduced.
 -/
