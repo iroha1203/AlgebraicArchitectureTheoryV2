@@ -13,15 +13,16 @@
 - acceptance contract blob: `eb8e1b230e1106cc3d2c826a037578d8dfea7a1f`
 - target-theorem-loop blob: `941ee0b9bf6692f3812204ab74383361eff5b048`
 - tracking Issue: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
-- current proof obligation: Cycle 183 proves that the present finite-axis-table congruence is not faithful: its identity-table leaf is distinct from the source identity but both have the same actual evaluation
+- current proof obligation: Cycle 184 proves a reusable Type-0 semantic lower bound at the fixed actual direct endpoint: for every small reference alphabet `A : Type`, Boolean predicates on `List A` embed faithfully into endpoint automorphisms, so no small `List A`-generated code can enumerate all of them
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: repair the finite-table fragment with source-derived identity and multiplication laws, then continue toward an enriched primitive encoder for every actual direct-endpoint automorphism; do not promote existing candidate obstructions to target refutation without an exhaustive provenance bound for every allowed parameter-relative syntax
+- next proof obligation: determine whether the fixed target permits essential higher-universe presentation/reference data, then either extend the semantic diagonal family to the required universes or prove an exhaustive reduction of every legal code to the Type-0 list-generated scope; only after that connection may Cycle 184 support a fixed-target stop
 
 ## Requirement ledger
 
 | 条項 | 要求 | 対応する定義・Lean宣言 | 入力前提 | 構成する証拠 | 使用先 | 未完了部分 |
 | --- | --- | --- | --- | --- | --- | --- |
+| A/B/D Cycle 184 delta | completed semantic mapをleafへ入れず、fixed finite-axis-fold actual admissible direct endpointの全自己同型に対する任意のsmall Type-0 finite-reference list decoderの全射性を判定する | `finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_injective_arbitrary`; raw/admissibleの`finiteAxisFoldActualDirect*PermutationSectionHom`とinjective; `finiteAxisFoldListPredicateToggle`とinjective; `finiteAxisFoldListChoiceActualDirectAut`とinjective; `not_surjective_of_choice_embedding`; `finiteAxisFoldActualDirectAut_not_listEnumerable`; `finiteAxisFoldActualDirectAut_not_listGeneratedCodeEnumerable` | fixed DのType-0原始Extension carrier action、actual direct pull-push section、admissible packaging、既構成backward projection/readback、Cantor diagonal theorem。Fintype、countability、completed actual Aut、decoder非全射certificateは入力しない | 任意small carrier `E : Type` のsource permutationをCycle 182 evaluatorと同じactual admissible direct endpointへ単射に埋め込む。`E=List A×Bool`で各predicateのfiber toggleを構成し単射を証明。仮想decoder全射をinvFun readbackで`List A → (List A→Bool)`全射へ移してCantor矛盾。任意small surjective `List A→Code`にも合成で拡張 | 最終syntaxのprimitive provenance/list-generationとuniverse coverage theoremに接続したfullness判定 | Type-0の固定alphabet `A` とsmall list-generated `Code`を排除するが、現presentation HomはType 2であり、高universeを含む全target-permitted syntaxをこの範囲へ還元する定理も高universeのsemantic familyも未構成。したがってtarget_refutedではない。修正版syntax、B四義務、whole comparison/fibers、A--F統合も未完了 |
 | A/B/D Cycle 183 delta | 現行finite-axis-table構文の合同がdecoder忠実性を満たすかを、semantic equalityを合同へ追加せず判定する | `FiniteAxisFoldAxisSwapSyntax.axisLeafParity`, `axisLeafParity_eq_of_congruent`, `identityAxisDirect_not_congruent_identity`; `directIdentityAxisTableAut_ne_one`, `directIdentityAxisTableAut_evaluation`, `directAutomorphismEvaluationHom_not_injective`, `comparisonEvaluationHom_not_injective` | Cycle 182までの固定構文・source congruence・actual evaluator・comparison/direct injectivity iff。非忠実性証明やsemantic equalityは入力しない | 全既存congruence constructorがaxis primitive leaf parityを保つことを帰納し、identity table leafをsource identityから分離。同じleafのactual evaluationはfixed pull-push functorialityからidentityと証明し、direct evaluator非単射、さらにCycle 182 iffからwhole comparison evaluator非単射を導出 | current grammarを完成候補から除外し、source-derived table identity/composition lawsを備えた修正版の設計へ | 現候補だけの反証でありfixed targetの反証ではない。修正版の忠実性・全射性、全actual direct Autのprimitive encoder、許容される全parameter-relative syntaxの網羅的provenance/cardinality bound、A--F統合は未完了 |
 | B/D Cycle 182 delta | whole comparison表示のfull/faithful義務を、barAlphaがisoであることを使ってdirect endpoint Aut evaluatorの正確な必要十分条件へ縮約する | `comparisonEvaluation_source`; `comparisonEvaluation_injective_iff_direct`; `comparisonEvaluation_surjective_iff_direct`; `comparisonEvaluation_bijective_iff_direct`; 条件付き`comparisonEvaluationMulEquivOfDirectBijective` | fixed generated/actual barAlpha iso、既構成direct evaluatorとwhole comparison evaluator、両側のsource-conjugation section。direct bijectivityはiff定理の結論であり入力しない。最後の包装だけ明示的な条件付き中間定理 | source projection可換性を証明。各comparison pairがsourceから一意に回復されることによりinjectivityを双方向、任意actual/source Autのsection liftによりsurjectivityを双方向に証明し、bijectivity iffを構成 | primitive syntax encoderの完了判定、および得られたdirect MulEquivからwhole comparison・kernel・fiber輸送へ | direct evaluatorのinjective/surjective自体は未放電。条件付きMulEquivをcompletionとは数えない。primitive encoder、全比較・全fiber表示、A--F統合は未完了 |
 | D Cycle 181 delta | 固定finite-axis-foldの全6 axis permutationについてgenerated表示をactual canonical sectionへ接続し、同じnormalized元上の任意actual liftをfull restricted kernelで分類する | `FiniteAxisFoldGeneratedLiftFibers.canonicalLift`, `canonicalLift_val`, `everyLift_unique_kernel_displacement` | 原始`Fin 3` permutation全体、既構成generated section elementとevaluation定理、actual section right inverse、actual全fiber torsor定理。liftやkernel displacementは入力しない | generated evaluationをactual lift fiberに包装し、underlying raw pairがactual canonical sectionそのものと証明。任意actual liftに対しfull actual restricted kernelの一意displacementを構成 | 固定D生成例のsection・fiber接続、および全比較群表示へ拡張するencoder設計 | 6個の固定normalized元に限定。current syntaxが全actual direct endpoint Autをencodeすること、whole comparison MulEquiv、全base fiberの表示同値、A--F統合は未完了 |
@@ -19120,4 +19121,112 @@ audits:
     - "the current grammar cannot satisfy B faithfulness because it omits the source-derived identity-table congruence law; table-composition laws are an additional repair obligation, not part of this counterexample"
     - "existing cardinal obstructions still lack an exhaustive provenance/cardinality theorem for every syntax allowed by the parameter-relative fixed target, so they do not yet refute G-123"
   next_obligation: "Add source-derived finite-table identity and multiplication laws and prove evaluator soundness for the repaired congruence, then retest injectivity; independently formalize an exhaustive allowed-syntax provenance bound before any target-level impossibility claim."
+```
+
+## Cycle 184 — Fixed-endpoint list-code diagonal obstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-123-aat-realization-reconstruction
+cycle: 184
+goal_blob_sha: 4e5af099ab9b5612db12867ba1546f74bfed9f97
+base_oid: cd6f7ae60137acbd6efca03b3398233d49a22c77
+tracking_issue: 4520
+report_path: research/reports/G-123-aat-realization-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 183 current-grammar nonfaithfulness plus the earlier arbitrary-carrier backward-action readback"
+  proof_dag_predecessors:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_backwardProjection
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldArbitraryCarrierBackwardAction_injective_forCarrier
+    - AAT.AG.RealizationReconstruction.objects_not_surjective_choices
+  proof_obligation: "Build a semantic lower bound for every proposed small Type-0 finite-list reference alphabet at the fixed actual direct endpoint"
+  selection_reason: "The current grammar is already rejected; the nearest reusable blocker is an actual endpoint family large enough to diagonalize against any fixed small list alphabet without assuming countability."
+  expected_result_type: blocker-fixed
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldDirectEndpointListObstruction.lean
+  risks:
+    - "assuming Fintype or countability for an arbitrary parameter reference alphabet"
+    - "placing the completed endpoint automorphism or whole predicate family in a syntax leaf"
+    - "claiming fixed-target refutation before proving exhaustive provenance and universe coverage for every permitted syntax"
+  unchecked:
+    - "whether every target-permitted parameter-relative finite syntax, including Type-2 presentation Homs, reduces to one small list-generated code presentation"
+result:
+  proposed_result_type: blocker-fixed
+  proof_obligation_delta: "Proved injectivity of the source-generated actual direct permutation section for every small carrier E : Type. For every small alphabet A : Type, constructed a predicate-indexed toggle on List A times Bool, embedded all predicates faithfully into actual direct endpoint automorphisms, and used Cantor diagonalization to refute surjectivity of every small List A decoder and every small code decoder generated surjectively from List A."
+  completion_candidate: no
+  target_refuted: no
+  lean_artifacts:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldDirectEndpointListObstruction.lean
+    - research/lean/research-modules.txt
+  evidence:
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom_injective_arbitrary
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldActualDirectPermutationGeometrySectionHom_injective_arbitrary
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldActualDirectAdmissiblePermutationSectionHom
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldActualDirectAdmissiblePermutationSectionHom_injective
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldListPredicateToggle_injective
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldListChoiceActualDirectAut_injective
+    - AAT.AG.RealizationReconstruction.not_surjective_of_choice_embedding
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldActualDirectAut_not_listEnumerable
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldActualDirectAut_not_listGeneratedCodeEnumerable
+  claim_mapping:
+    theorem_names:
+      - AAT.AG.RealizationReconstruction.finiteAxisFoldActualDirectPermutationGeometrySectionHom_injective_arbitrary
+      - AAT.AG.RealizationReconstruction.finiteAxisFoldActualDirectAdmissiblePermutationSectionHom_injective
+      - AAT.AG.RealizationReconstruction.finiteAxisFoldListChoiceActualDirectAut_injective
+      - AAT.AG.RealizationReconstruction.finiteAxisFoldActualDirectAut_not_listEnumerable
+      - AAT.AG.RealizationReconstruction.finiteAxisFoldActualDirectAut_not_listGeneratedCodeEnumerable
+    source_labels:
+      - "GOAL A: parameter-relative finite syntax, with infinite parameter data and its origin made explicit"
+      - "GOAL A: do not accept a completed whole map as one primitive constant"
+      - "GOAL B: decoder fullness must cover every actual morphism between displayed endpoints"
+      - "GOAL D: preserve the original fixed finite-axis-fold input and its whole comparison range"
+    conjuncts:
+      - "arbitrary small carrier E : Type -> no Fintype or countability assumption"
+      - "primitive construction -> each toggle is built from a predicate-indexed source carrier permutation, then transported by the fixed route"
+      - "semantic lower bound -> the predicate family injects into the actual direct endpoint Aut"
+      - "list obstruction -> every decoder from List A, for arbitrary small A : Type, is non-surjective"
+      - "generated-code obstruction -> the conclusion transfers across every surjective List A to small Code map"
+    undischarged_assumptions:
+      - "the final legal syntax and all parameter-reference roles have not been proved to be generated by one small List A"
+      - "the present presentation syntax is Type 2, while the AAT Extension carrier and Cycle 184 alphabet are Type 0"
+    acceptance_point: "This cycle fixes the semantic and diagonal halves for any proposed small Type-0 list-generated grammar while explicitly leaving higher-universe coverage and universal syntax provenance open."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "arbitrary-carrier actual direct permutation-section injectivity"
+      - "Cantor non-surjectivity for every fixed small Type-0 list alphabet and its small surjective code quotients"
+    remaining:
+      - "exhaustive provenance/list-generation and universe-coverage theorem for every target-permitted syntax"
+      - "either a target-compliant escape syntax or a justified fixed-target stop request"
+      - "B four obligations, whole D recovery, CS integration, and final A--F theorem"
+  certificate_provenance:
+    discharged:
+      - "section injectivity is read back from the independently constructed full backward projection"
+      - "predicate-toggle injectivity is evaluated at the explicit false fiber point"
+      - "non-surjectivity is derived by invFun left inverse and the pre-existing Cantor diagonal theorem"
+    unresolved:
+      - "no theorem yet identifies all legal higher-universe final presentation codes with a small quotient of List A for one complete Type-0 primitive-reference alphabet"
+  proof_use:
+    used:
+      - "actual direct pull-push permutation section"
+      - "normalized local-fiber backward projection"
+      - "arbitrary-carrier source-action faithfulness"
+      - "Cantor diagonal no-surjection"
+    unused:
+      - "no completed semantic automorphism leaf, Fintype, countability premise, decoder range condition, fullness certificate, or target-refutation certificate is accepted"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused FiniteAxisFoldDirectEndpointListObstruction check: PASS; 12 namespace declarations, standard axioms only"
+    - "registered exact FiniteAxisFoldDirectEndpointListObstruction target build: PASS (4332 jobs; not a Research aggregate build)"
+    - "Research aggregate/full build: not run"
+  blocking_findings:
+    - "every fixed small Type-0 List A grammar is too small for all actual direct endpoint automorphisms, even when A is uncountable"
+    - "promotion to target-refuted still requires coverage of higher-universe legal codes, not only exhaustive Type-0 primitive provenance"
+  next_obligation: "Define the complete legal primitive-reference universe and finitary syntax provenance contract from fixed Sigma and D; then either reduce every legal higher-universe presentation code to a small List A quotient, extend the semantic diagonal family to the required universes, or construct an honest target-compliant escape syntax."
 ```
