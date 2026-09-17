@@ -19030,12 +19030,22 @@ base_oid: 0813ff400c5cdb1e854ae3229dfb280e677cffc6
 tracking_issue: 4520
 report_path: research/reports/G-123-aat-realization-reconstruction.md
 selection:
+  proof_state_ref: "Cycle 182 exact comparison/direct completeness reduction and the current FiniteAxisFoldAxisSwapSyntax.Congruent"
+  proof_dag_predecessors:
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonCompletenessReduction.comparisonEvaluation_injective_iff_direct
+    - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapSyntax.Congruent
+    - AAT.AG.RealizationReconstruction.finiteAxisFoldPermutationGeometry_refl
   proof_obligation: "Test faithfulness of the current finite-axis-table source congruence before treating it as a candidate for the Cycle 182 direct-endpoint equivalence"
+  selection_reason: "A direct counterexample settles the nearest open faithfulness premise for the current candidate before any larger encoder construction is credited."
   expected_result_type: blocker-fixed
+  lean_targets:
+    - research/lean/ResearchLean/AG/RealizationReconstruction/FiniteAxisFoldAxisSwapEvaluatorNonfaithful.lean
   risks:
     - "adding semantic evaluator equality as a congruence law"
     - "mistaking failure of the current grammar for refutation of G-123"
     - "repairing faithfulness by shrinking the actual automorphism range"
+  unchecked:
+    - "faithfulness and fullness of every future repaired parameter-relative syntax"
 result:
   proposed_result_type: blocker-fixed
   completion_candidate: no
@@ -19053,6 +19063,12 @@ result:
     - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.directAutomorphismEvaluationHom_not_injective
     - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.comparisonEvaluationHom_not_injective
   claim_mapping:
+    theorem_names:
+      - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapSyntax.axisLeafParity_eq_of_congruent
+      - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.directIdentityAxisTableAut_ne_one
+      - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.directIdentityAxisTableAut_evaluation
+      - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.directAutomorphismEvaluationHom_not_injective
+      - AAT.AG.RealizationReconstruction.FiniteAxisFoldAxisSwapPresentation.comparisonEvaluationHom_not_injective
     source_labels:
       - "GOAL A: presentation equality is generated syntax congruence, not decoder-image equality"
       - "GOAL B: faithfulness must be proved for the same decoder"
@@ -19065,6 +19081,8 @@ result:
     undischarged_assumptions:
       - "a repaired source congruence with table identity and multiplication laws has not been constructed"
       - "surjectivity onto every actual direct endpoint automorphism remains unconstructed"
+    acceptance_point: "The reusable explicit collision proves and localizes a blocker in the current grammar without changing the fixed target or claiming a replacement grammar."
+    port_status: not-applicable
 audits:
   premise_delta:
     discharged:
@@ -19088,18 +19106,18 @@ audits:
       - "Cycle 182 comparison/direct injectivity iff"
     unused:
       - "no semantic equality congruence, completed automorphism leaf, evaluator injectivity premise, or restricted actual hom-set is accepted"
-  structure_field_escape: none-found-no-structure-or-certificate-field-is-added
-  route_integrity: pass-the-distinct-source-terms-and-their-common-actual-evaluation-are-both-proved
-  target_fitting: candidate-refutation-only-the-fixed-target-still-allows-a-different-source-derived-congruence-and-richer-parameter-relative-syntax
-  vacuity: none-found-the-counterexample-is-the-explicit-identity-table-source-automorphism
-  one_way_as_equivalence: none-found-the-result-is-a-negative-injectivity-theorem-and-uses-the-prior-exact-iff-only-in-the-valid-direction
-  goal_or_report_reinterpretation: none-found-current-grammar-failure-is-not-labelled-target-refuted
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
   validation_refs:
     - "focused FiniteAxisFoldAxisSwapEvaluatorNonfaithful check: PASS; 9 namespace declarations, standard axioms only"
     - "registered exact FiniteAxisFoldAxisSwapEvaluatorNonfaithful target build: PASS (4300 jobs; not a Research aggregate build)"
     - "Research aggregate/full build: not run"
   blocking_findings:
-    - "the current grammar cannot satisfy B faithfulness because it omits source-derived identity-table and table-composition congruence laws"
+    - "the current grammar cannot satisfy B faithfulness because it omits the source-derived identity-table congruence law; table-composition laws are an additional repair obligation, not part of this counterexample"
     - "existing cardinal obstructions still lack an exhaustive provenance/cardinality theorem for every syntax allowed by the parameter-relative fixed target, so they do not yet refute G-123"
   next_obligation: "Add source-derived finite-table identity and multiplication laws and prove evaluator soundness for the repaired congruence, then retest injectivity; independently formalize an exhaustive allowed-syntax provenance bound before any target-level impossibility claim."
 ```
