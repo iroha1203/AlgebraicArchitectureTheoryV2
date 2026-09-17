@@ -174,8 +174,8 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.taggedSourceChoiceExplicitExactGeometryMorphism_comp"
   claim_mapping:
     source_labels:
-      - "固定 GOAL E1b: C₂^Ω の点ごとの C₂ 演算"
-      - "固定 GOAL E1: source-choice family の実 automorphism 群への接続"
+      - "固定 GOAL E1a のための C₂^Ω の点ごとの C₂ 演算"
+      - "固定 GOAL E1: source-choice endomorphism 族の categorical identity/composition law"
     conjuncts:
       - "neutral choice -> categorical identity theorem"
       - "pointwise xor -> actual morphism composition theorem"
