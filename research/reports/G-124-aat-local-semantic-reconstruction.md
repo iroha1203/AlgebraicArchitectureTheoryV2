@@ -25,11 +25,13 @@
   merge commit `be531fa3c355859cb6b3e28ad78960a3b14cf7c4`
 - Cycle 8 accepted PR: [#4721](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4721),
   merge commit `41001713273f078bcef9f5b2c0711772d5b35ad0`
+- Cycle 9 accepted PR: [#4722](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4722),
+  merge commit `eb955775e918a5f5e37584e54ba87be14cd23580`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: D の有限 determining vertex set の存在を full component 型の有限性と同値化し、
-  各componentから一頂点を選ぶ有限 determining set を構成する
-- next proof obligation: `Equiv.Perm K` への specialization と、有限列挙入力下の実効性へ進む
+- current proof obligation: D の component-family criteria を `Equiv.Perm K` と actual operation-preserving
+  following changes へ接続する
+- next proof obligation: D の有限列挙入力下の実効性へ進む
 
 ## Cycle 1 — rejected
 
@@ -667,6 +669,87 @@ audits:
     - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.InducedComponent: 10 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "specialize component values to Equiv.Perm K under |K|≥2 and then formalize the finite-enumeration effectiveness clause separately"
+```
+
+Cycle 9 は final head `f6752e313feecbbcaec8f0e76390a9a3d47c876a` の formal rerun 2/2 で
+全4 lane が `Mergeable`、finding なしとなり、CI 7/7 success を確認して mergeした。
+最終監査は PR comment `5719155816`、Cycle 10 選定は Issue comment `5719168582` に固定した。
+
+## Cycle 10 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 10
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: eb955775e918a5f5e37584e54ba87be14cd23580
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 9 accepted evidence: PR comment 5719155816; Issue comment 5719168582"
+  proof_dag_predecessors:
+    - "RealizationReconstruction.FixedFFollowingStateChange.preservingEquivComponentPermutationFamilies"
+    - "LocalSemanticReconstruction.InducedComponent graph and finite determining criteria"
+  proof_obligation: "[Nontrivial K] のもとで component value を Equiv.Perm K に特殊化し、full family を accepted FixedFComponentPermutationFamily と同定する。さらに accepted classification equivalence を通じて actual operation-preserving following changes の induced-component reading に区別・延長・有限determining存在判定を移す"
+  selection_reason: "D の generic value-family theorem を、固定 GOAL が指定する hidden permutation family と actual preserving-change collection に接続する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/PermutationRestrictionCriteria.lean"
+  risks:
+    - "permutation family を新しいproxy構造へ包まず、accepted FixedFComponentPermutationFamily を直接使うこと"
+    - "|K|≥2 を [Nontrivial K] として明示し、Equiv.Perm K の非自明性を型クラス推論だけで隠さないこと"
+    - "family-level結果だけで止めず、accepted equivalence を通じて actual preserving changes へ移すこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the graph restriction is specialized to FixedFComponentPermutationFamily F K and transported through preservingEquivComponentPermutationFamilies; for actual operation-preserving following changes, separation, extension, and finite determining existence have exactly the accepted graph/component criteria"
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.PermutationRestriction.FullFamily"
+    - "AAT.AG.LocalSemanticReconstruction.PermutationRestriction.InducedFamily"
+    - "AAT.AG.LocalSemanticReconstruction.PermutationRestriction.restrict"
+    - "AAT.AG.LocalSemanticReconstruction.PermutationRestriction.restrict_injective_iff_meetsEveryFullComponent"
+    - "AAT.AG.LocalSemanticReconstruction.PermutationRestriction.restrict_surjective_iff_retainsFullConnectivity"
+    - "AAT.AG.LocalSemanticReconstruction.PermutationRestriction.PreservingChange"
+    - "AAT.AG.LocalSemanticReconstruction.PermutationRestriction.restrictPreservingChange"
+    - "AAT.AG.LocalSemanticReconstruction.PermutationRestriction.restrictPreservingChange_injective_iff_meetsEveryFullComponent"
+    - "AAT.AG.LocalSemanticReconstruction.PermutationRestriction.restrictPreservingChange_surjective_iff_retainsFullConnectivity"
+    - "AAT.AG.LocalSemanticReconstruction.PermutationRestriction.HasFiniteDeterminingPreservingRestriction"
+    - "AAT.AG.LocalSemanticReconstruction.PermutationRestriction.hasFiniteDeterminingPreservingRestriction_iff"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL D: |K|≥2 での component-permutation family の区別・延長判定"
+      - "固定 GOAL D: 各可視変更上の actual preserving following changes への適用"
+      - "固定 GOAL D: finite determining set existence iff π₀(Q) finite"
+    conjuncts:
+      - "[Nontrivial K] supplies a nontrivial Equiv.Perm K value type"
+      - "full families are definitionally the accepted FixedFComponentPermutationFamily F K"
+      - "restriction injectivity and surjectivity have the Cycle 8 graph criteria"
+      - "the accepted preserving-change equivalence preserves and reflects both properties"
+      - "finite determining existence for actual preserving changes is equivalent to finiteness of FixedFComponent F"
+    undischarged_assumptions:
+      - "supply the separately specified finite-enumeration coherence decision and computable extension"
+    acceptance_point: "the source is the actual subtype of operation-preserving FixedFFollowingStateChange and the bridge is the accepted classification equivalence, not a newly certified family"
+    port_status: unported
+audits:
+  material_premises:
+    discharge_required:
+      - "at least two hidden values / represented by [Nontrivial K] and the resulting Nontrivial (Equiv.Perm K) instance"
+      - "classification of actual preserving changes / discharged by preservingEquivComponentPermutationFamilies"
+      - "graph criteria and finite existence / discharged by Cycles 8 and 9"
+    conclusion_equivalent_risk: []
+  proof_use:
+    used:
+      - "FixedFComponentPermutationFamily"
+      - "FixedFFollowingStateChange.preservingEquivComponentPermutationFamilies"
+      - "both induced-component restriction equivalences and finite determining criterion"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/PermutationRestrictionCriteria.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.PermutationRestriction: 11 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "formalize the finite-enumeration coherence decision and computable extension required by D effectiveness"
 ```
 
 ## 未完了 ledger
