@@ -93,10 +93,10 @@
   merge commit `07f9237f4706806de99988af1f4d6cca5e551086`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: accepted `NormalForm`をcommon tagged actual Homへfaithfulに評価し、
-  exact image submonoidとpackage generated submonoidの同値を構成する
-- next proof obligation: accepted common-global generated bridgeからprimitive finite readingを因子化し、
-  common local-model categoryへの接続を構成する
+- current proof obligation: represented exact one-object categoryをcommon realization familyの
+  tagged fiberへ忠実に埋め、対象・射・恒等・合成とnormal-form評価を保つ
+- next proof obligation: 任意対象assemblyを明示義務に保ったまま、別の必須分枝または
+  common local familyについてfamily-indexed local-model接続を構成する
 
 ## Cycle 1 — rejected
 
@@ -4174,7 +4174,7 @@ result:
     port_status: unported
 audits:
   material_premises:
-    ambient_scope:
+    ambient_boundary:
       - "TagChangeExactGeometryLocalModel.GlobalCategory"
       - "FamilyRealization ClosedFamilyParameter.taggedOperation"
     proved_dependencies:
