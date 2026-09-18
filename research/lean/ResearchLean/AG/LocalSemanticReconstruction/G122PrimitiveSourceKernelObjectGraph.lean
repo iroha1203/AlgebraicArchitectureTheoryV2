@@ -45,12 +45,6 @@ open AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel
 open G122FullComparisonKernelDecomposition
 open G122FullSourceKernelExactDecomposition
 
-/-- Decidable equality on the fixed finite Atom carrier. -/
-local instance finiteAxisFoldPrimitiveObjectGraphAtomDecidableEq :
-    DecidableEq FiniteModel.carrier.Atom := by
-  change DecidableEq FiniteModel.FiniteAtom
-  infer_instance
-
 /-- The actual direct core whose architecture-object normalization is read. -/
 noncomputable abbrev ActualDirectCore :=
   finiteAxisFoldActualDirectAdmissibleGeometry.obj.core

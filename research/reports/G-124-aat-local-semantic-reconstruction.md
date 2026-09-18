@@ -6038,7 +6038,7 @@ audits:
     - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/PrimitiveFiberPermutationGraph.lean: pass"
     - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122PrimitiveSourceKernelObjectGraph.lean: pass"
     - "#assert_standard_axioms_only PrimitiveFiberPermutationGraph: 64 declarations, standard axioms only"
-    - "#assert_standard_axioms_only G122PrimitiveSourceKernelObjectGraph: 23 declarations, standard axioms only"
+    - "#assert_standard_axioms_only G122PrimitiveSourceKernelObjectGraph: 22 declarations, standard axioms only"
     - "cd research/lean && ./check_research_modules.sh --focused on both Cycle 62 modules: pass"
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph: pass (4302 jobs)"
   blocking_findings: []
