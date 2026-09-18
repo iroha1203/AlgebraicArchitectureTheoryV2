@@ -1,5 +1,5 @@
-import ResearchLean.AG.LocalSemanticReconstruction.G122FiniteMultiCarrierExpandedReconstruction
 import ResearchLean.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel
+import ResearchLean.AG.RealizationReconstruction.FiniteAxisFoldNormalizedAxisProjection
 import Formal.Util.AssertStandardAxioms
 
 /-!
@@ -14,6 +14,15 @@ formula for multiplication.
 This classifies the full raw comparison group relative to its full restriction
 kernel.  It does not independently present every kernel element by primitive
 local syntax.
+
+## Implementation notes
+
+The kernel coordinate is taken in the opposite group because assembly uses
+right multiplication on the canonical section lift.  Keeping the ordinary
+product group would reverse the kernel multiplication and obscure the action
+law.  The reconstruction is therefore exposed as a type equivalence, while a
+separate theorem records its conjugation-twisted multiplication; declaring the
+ordinary product to be multiplicative would state the wrong group law.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction
@@ -28,6 +37,7 @@ namespace G122FullComparisonKernelDecomposition
 
 open AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel
 
+/-- Decidable atom equality for the fixed finite-axis-fold input. -/
 local instance finiteAxisFoldRestrictionKernelAtomDecidableEq :
     DecidableEq FiniteModel.carrier.Atom := by
   change DecidableEq FiniteModel.FiniteAtom

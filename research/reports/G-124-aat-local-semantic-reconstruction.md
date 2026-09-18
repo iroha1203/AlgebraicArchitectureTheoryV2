@@ -125,13 +125,15 @@
   merge commit `ff16abdfe07115726f3efd2e9e2782b964f7e2d9`
 - Cycle 58 accepted PR: [#4771](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4771),
   merge commit `9b7e650ea5bde19219cf8203707f7ed23103b955`
+- Cycle 59 accepted PR: [#4772](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4772),
+  merge commit `7acbd8277b9ae8a6999f0ef807fddfc9bac6c8cb`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: pairwiseに相異なる任意の有限Extension carrier族について、
-  actual kernel積の忠実性、stored-backward観測からの回復、expanded directとnormalized comparisonを
-  含む四つの乗法同値、全two-carrier像からのproper enlargementを同じsurfaceで証明する
-- next proof obligation: infinite locally finite carrier-support limitをfinite restrictionから組み立てるか、
-  arbitrary expanded Homの実質的な分離・assemblyを共通surfaceまで同梱する
+- current proof obligation: full raw comparisonをcanonical normalized comparisonと一意なfull
+  restriction-kernel変位から両方向に再構成し、共役で捻れた積、全lift fiberの一意性、
+  normalized source automorphism接続を同じsurfaceで証明する
+- next proof obligation: arbitrary full-kernel要素のprimitive local presentationを構成して
+  このfull comparison分解へ接続するか、arbitrary expanded Homの実質的な分離・assemblyを同梱する
 
 ## Cycle 1 — rejected
 
@@ -5736,8 +5738,8 @@ selection:
   proof_state_ref: "Cycle 59 audit: PR comment 5734831359; Cycle 59 acceptance: Issue comment 5734839946; Cycle 60 selection: Issue comment 5734866822"
   proof_dag_predecessors:
     - "accepted surjective comparison restriction and canonical section"
+    - "accepted normalized comparison source equivalence"
     - "accepted free transitive full-kernel action on every actual lift fiber"
-    - "Cycle 59 finite-family comparison image reconstruction"
   proof_obligation: "classify every full raw comparison by one normalized comparison and one unique full restriction-kernel displacement; expose the induced noncommutative multiplication; connect the normalized factor to the actual normalized source automorphism group and every full lift fiber"
   selection_reason: "this moves beyond represented finite-family images to the full raw comparison group, proves explicit two-sided reconstruction and uniqueness, includes the conjugation-twisted multiplication law, and carries the result through the normalized source automorphism and lift-fiber surfaces in the same cycle"
   expected_result_type: proof-obligation-discharged
@@ -5764,7 +5766,7 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition.fullLiftFiber_existsUnique_kernel"
   claim_mapping:
     conjuncts:
-      - "restriction followed by the canonical section supplies the normalized component of every raw comparison"
+      - "the canonical section followed by restriction supplies the normalized component of every raw comparison"
       - "the residual canonical-lift inverse times the raw comparison lies in the full restriction kernel"
       - "explicit read and assembly maps are mutually inverse on the full groups"
       - "the transported product has the stated conjugation-twisted kernel formula"
@@ -5804,8 +5806,7 @@ audits:
       - "accepted full comparison restriction homomorphism"
       - "accepted generated comparison source equivalence"
       - "accepted full lift-fiber free transitive action"
-    unused:
-      - "Cycle 59 finite-family strictness witnesses are predecessor context, not premises of the full decomposition"
+    unused: []
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: "replaces finite-family comparison images by the complete fixed raw comparison group and gives an explicit reconstruction law without claiming a primitive presentation of the full kernel"
@@ -5815,7 +5816,7 @@ audits:
     - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122FullComparisonKernelDecomposition.lean: pass"
     - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition: 25 declarations, standard axioms only"
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122FullComparisonKernelDecomposition.lean: pass"
-    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition: pass (4431 jobs)"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition: pass (4299 jobs)"
   blocking_findings: []
   next_obligation: "construct a primitive local presentation for arbitrary full-kernel elements and connect its own separation and assembly to this full comparison decomposition, or discharge a nontrivial arbitrary expanded-Hom reconstruction surface"
 ```
