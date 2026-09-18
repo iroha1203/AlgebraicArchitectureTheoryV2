@@ -65,12 +65,14 @@
   merge commit `947038b5b33cb37971bab5c0a16f7b8954a5200d`
 - Cycle 28 accepted PR: [#4741](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4741),
   merge commit `7275231b3815050a2d663b44178705639c958062`
+- Cycle 29 accepted PR: [#4742](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4742),
+  merge commit `7433561e506d5aef1d8312a18642e83bbaf70d16`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: general observation-aware protocol Homのfull tagged tableによる
-  finite determination・effectivenessを構成し、Cycle 22のfull-faithful/assembly経路へ接続する
-- next proof obligation: general observation-preserving lens Homを共通FiniteReading surfaceへ
-  接続し、その後にtagged/G-122 branchと四分枝統合を進める
+- current proof obligation: general observation-preserving lens Homをfull finite fiber上の
+  determination・effectivenessへ接続し、Cycle 25のfull-faithful/assembly経路へ接続する
+- next proof obligation: taggedまたはG-122 branchの独立local modelとprimitive readingを
+  構成し、四分枝統合へ接続する
 
 ## Cycle 1 — rejected
 
@@ -2794,6 +2796,116 @@ audits:
   next_obligation: "construct the corresponding general observation-preserving lens Hom finite determination/effectiveness connection, then integrate the remaining tagged/G-122 branches without weakening the fixed target"
 ```
 
+Cycle 29 / PR #4742 は final head
+`5821c9aca927d2d42b1ef342b3274158d485bac5` で受理した。初回4 laneで
+Cycle 22 assembly経路への接続不足と具体的coherence正負fixture不足を検出し、修正後の
+fresh Math A/B + Lean A/Bでは中心findingなし。残ったProof state同期はfresh direct checkで
+解消を確認した。CIは7/7 success、最終監査はPR comment `5725135405`、merge commitは
+`7433561e506d5aef1d8312a18642e83bbaf70d16` である。
+
+## Cycle 30 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 30
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 7433561e506d5aef1d8312a18642e83bbaf70d16
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 29 accepted evidence: PR comment 5725135405; Cycle 30 selection: Issue comment 5725155616"
+  proof_dag_predecessors:
+    - "Cycle 25 general LensRealization Hom restriction/extension and full-faithful fiber reading"
+    - "LensRealization.homEquivFiberMap, res_ext, and ext_res"
+    - "common FiniteReading separation, extension, determining, and effectiveness surfaces"
+  proof_obligation: "actual LensRealization Homをsource reference fiberの全stateで読み、任意raw fiber tableがLensRealization.extで延長するtotal admissibilityをcertificateなしで固定する。separation、extension、determining、常時成功してexact readbackするEffectivenessProgramを独立に構成し、Cycle 25のsemantic/closed-family fiber readingへ接続する。二点fiberの非単射tableからactual noninvertible Homを与える"
+  selection_reason: "Cycle 29でprotocol一般Homを共通FiniteReadingへ接続したため、固定GOAL D/E2に残るlens一般意味保存射層が対になる直接の残余nodeである"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/LensSemanticFiniteDetermination.lean"
+  risks:
+    - "total admissibilityを未検証の空虚predicateにせず、LensRealization.extの全域性とreadbackから固定すること"
+    - "product-lens proxyだけで止めず、任意のactual source/target LensRealization Homを結論型にすること"
+    - "可逆性や全単射性をadmissibilityへ混入せず、非単射tableのactual例を保持すること"
+    - "semantic FiniteからFintype.ofFiniteを導入せず、実効programでは明示Fintype入力を使うこと"
+    - "protocol、tagged/G-122、comparison group、四分枝統合まで過大主張しないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the full finite source fiber now determines every actual get/put-preserving lens Hom; every raw fiber table is intrinsically admissible and extends through LensRealization.ext, while an explicit program always returns the actual Hom with exact readback"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination.readLensHomAt"
+    - "AAT.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination.fullFiber"
+    - "AAT.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination.TableAdmissible"
+    - "AAT.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination.tableAdmissible"
+    - "AAT.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination.no_inadmissible_table"
+    - "AAT.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination.fullFiber_separates"
+    - "AAT.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination.assembleTable"
+    - "AAT.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination.restrict_assembleTable"
+    - "AAT.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination.fullFiber_extends"
+    - "AAT.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination.fullFiber_determining"
+    - "AAT.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination.effectivenessProgram"
+    - "AAT.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination.fullFiber_effective"
+    - "AAT.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination.readLensHomAt_eq_semanticFiberReading"
+    - "AAT.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination.readLensHomAt_eq_closedFamilyFiberReading"
+    - "AAT.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination.constantFalseHom_res_not_injective"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL B: lens branchのprimitive fiber Hom reading、separation、assembly"
+      - "固定 GOAL D: finite readingのseparation・extension・effectivenessを独立に与える"
+      - "固定 GOAL E2: lensの有限局所tableがactual general Homを区別・延長する"
+    conjuncts:
+      - "the input is the entire actual source reference fiber and the value is the actual target fiber"
+      - "every raw table is admissible because LensRealization.ext is total on fiber maps"
+      - "no completed Hom or extension witness occurs in TableAdmissible"
+      - "the full table separately separates and extends actual get/put-preserving morphisms"
+      - "the explicit program never rejects and every successful extension reads back exactly"
+      - "the point reading is definitionally the accepted Cycle 25 semantic and closed-family fiber reading"
+      - "a constant table on a two-point fiber extends to an actual Hom whose fiber restriction is not injective"
+    undischarged_assumptions:
+      - "tagged and G-122 independent local-model equivalences"
+      - "comparison-group recovery on the final common reading"
+      - "the final common Lambda_Theta, M_Theta, N_Theta, and D_Theta"
+    acceptance_point: "general get/put-preserving lens Hom finite determination only; no tagged/G-122, comparison-group, or all-four reconstruction claim"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "fixed view type, reference value, and arbitrary actual source/target LensRealization"
+      - "explicit Fintype enumeration of the source reference fiber"
+    direction_hypothesis: []
+    discharge_required:
+      - "actual LensRealization.res point reading"
+      - "homEquivFiberMap separation"
+      - "actual LensRealization.ext assembly and res_ext readback"
+      - "always-successful EffectivenessProgram with exact readback"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "global Hom / assembled directly by LensRealization.ext from the raw table"
+      - "admissibility / theorem that all raw tables are accepted and no inadmissible table exists"
+      - "effectiveness decision / constant true because total extension is already proved"
+    unresolved:
+      - "tagged/G-122 local-model equivalences and all-four integration"
+  proof_use:
+    used:
+      - "LensRealization.homEquivFiberMap, res_ext, ext_res, and ext"
+      - "Cycle 25 lensSemanticFiberReading and lensFiberValueReading"
+      - "FiniteReading.Separates, Extends, Determining, and EffectivenessProgram"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "actual general get/put-preserving lens Hom and the full actual source reference fiber"
+  vacuity: "arbitrary actual lens realizations and all raw fiber maps are retained; a concrete two-point constant table yields an admitted noninjective actual Hom, while total admissibility is separately justified by LensRealization.ext"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/LensSemanticFiniteDetermination.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination: pass (4365 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination: 23 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct a tagged or G-122 independent local-model equivalence and connect its primitive reading to the common four-family reconstruction surface"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -2807,13 +2919,14 @@ audits:
   Karoubi restriction・retract・Arrow coherence、Cycle 27はactual lens invertible changeの
   finite determinationと有限探索effectiveness、Cycle 28はactual protocol invertible
   changeのexact graph criteriaとeffectiveness、Cycle 29はgeneral observation-aware protocol
-  Homのfull tagged tableによるfinite determinationと明示的有限data下のeffectivenessに限る。
-  arbitrary observation carrier全体の有限encoding、lens一般Hom、四分枝統合は未完了である。
+  Homのfull tagged tableによるfinite determinationと明示的有限data下のeffectiveness、
+  Cycle 30はlens一般Homのfull fiber determinationとtotal effectivenessに限る。
+  arbitrary observation carrier全体の有限encodingと四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の同定。
 - E2 の product-lens / protocol 可逆変更層はCycle 27--28で共通
   `FiniteReading`/Dへ接続済み。Cycle 29でgeneral observation-aware protocol Homも
-  full tagged table上の決定性・effectivenessへ接続した。lens一般意味保存射層と
-  四分枝統合は未完了である。
+  full tagged table上の決定性・effectivenessへ接続し、Cycle 30でlens一般意味保存射層も
+  full fiber上の決定性・total effectivenessへ接続した。四分枝統合は未完了である。
