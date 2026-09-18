@@ -73,12 +73,14 @@
   merge commit `5705fefcb1d53c7aea760d262d441b974d42f238`
 - Cycle 32 accepted PR: [#4745](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4745),
   merge commit `af6037910ecf5466c7d02fbe52025402cf646503`
+- Cycle 33 accepted PR: [#4746](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4746),
+  merge commit `2a1c70fdbb680511a731e9d83e6b8b4131c942b1`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: full source-choice族をactual admissible-package categoryの自己同型として
-  faithfulに収録し、同じ対象にcanonical normalization endomorphismを保持する
-- next proof obligation: ambient package-level source-choice subgroupをCycle 31のfinite-local
-  subgroup equivalenceへ同定し、normalizationを含むlarger Hom readingの適用範囲を固定する
+- current proof obligation: ambient package-level source-choice subgroupをCycle 31のfinite-local
+  compatible-section群へ直接同定し、actual package readbackとsingleton assemblyへ接続する
+- next proof obligation: tagged branchのsource-choice Hom sliceとnormalizationを含むlarger Homの
+  間で、共通R/M/Nへ必要な追加局所値と分離・組立て義務を固定する
 
 ## Cycle 1 — rejected
 
@@ -3204,6 +3206,92 @@ audits:
   next_obligation: "identify the ambient package-level source-choice subgroup with the Cycle 31 finite-local subgroup equivalence and state the boundary before extending readings to larger ambient Hom sets"
 ```
 
+## Cycle 34 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 34
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 2a1c70fdbb680511a731e9d83e6b8b4131c942b1
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 33 accepted evidence: PR comment 5725960520; Cycle 34 selection: Issue comment 5725969652"
+  proof_dag_predecessors:
+    - "Cycle 31 finite-subset restriction diagram and compatible-section category"
+    - "Cycle 33 faithful ambient package-level source-choice subgroup"
+  proof_obligation: "identify the actual ambient package-level source-choice subgroup with compatible sections of the finite Bool-table diagram; verify every finite component against actual PackageTotalHom readback and identify inverse assembly with the ambient package automorphism constructor"
+  selection_reason: "directly connects fixed GOAL E1b finite-restriction reconstruction to the actual family that coexists with canonical normalization"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeAmbientLocalEquivalence.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the faithful ambient package-level subgroup is now group-equivalent and categorically equivalent to Cycle 31 compatible finite-local sections; forward values are actual finite restrictions of package readback and inverse values are singleton-assembled actual ambient automorphisms"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientLocalEquivalence.subgroupMulEquivCoherentFamily"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientLocalEquivalence.readAmbientSourceChoiceAt"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientLocalEquivalence.readAmbientSourceChoiceAt_eq"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientLocalEquivalence.subgroupMulEquivCoherentFamily_value"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientLocalEquivalence.subgroupMulEquivCoherentFamily_symm"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientLocalEquivalence.reading"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientLocalEquivalence.reading_map_value"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientLocalEquivalence.morphismSeparates"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientLocalEquivalence.morphismAssembles"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientLocalEquivalence.objectAssembles"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientLocalEquivalence.equivalence"
+  claim_mapping:
+    source_labels:
+      - "fixed GOAL B Hom separation/assembly on the selected tagged source-choice slice"
+      - "fixed GOAL E1b all-finite restriction reconstruction"
+    conjuncts:
+      - "ambient subgroup is group-equivalent to compatible finite Bool-table sections"
+      - "each finite value is primitive restriction of actual package readback"
+      - "inverse is singleton assembly followed by the actual ambient automorphism constructor"
+      - "delooping gives Hom separation, Hom assembly, object assembly, and a category equivalence"
+    undischarged_assumptions:
+      - "local readings sufficient for canonical normalization and arbitrary ambient package Hom"
+      - "common four-family R_Theta/M_Theta/N_Theta"
+      - "G-122, lens, and protocol integration"
+    acceptance_point: "actual ambient source-choice Hom slice only; canonical normalization coexists in the ambient category but is not encoded by Bool source-choice tables"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "Cycle 33 sourceChoiceSubgroup"
+      - "Cycle 31 actual finite-table diagram and coherent families"
+    discharge_required:
+      - "actual package readback recovers the classified source choice"
+      - "finite component values agree with primitive restriction"
+      - "group and categorical inverse use singleton assembly"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "readback / existing taggedIdentityOperation evaluation on taggedSourceChoiceTotal"
+      - "assembly / existing TagChange.assemble applied before sourceChoiceGroupEquiv"
+      - "categorical equivalence / delooping of the constructed actual-group equivalence"
+    unresolved: []
+  proof_use:
+    used:
+      - "TagChangeAmbientCategory.sourceChoiceGroupEquiv"
+      - "TagChange.globalTagChangeMulEquivCoherentFamily"
+      - "readTaggedSourceChoice_taggedSourceChoiceTotal"
+      - "TagChangeLocalModelEquivalence.LocalCategory and RestrictionIndex"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "connects the actual package-level family retained beside normalization to the accepted finite-local E1b presentation without claiming that the same Bool tables reconstruct normalization"
+  vacuity: "the global side is the injective actual package automorphism subgroup and every local side component is a finite Bool table"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/TagChangeAmbientLocalEquivalence.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeAmbientLocalEquivalence: pass (4356 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeAmbientLocalEquivalence: 15 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "specify the additional local values and separation/assembly obligations needed to extend the tagged branch beyond source-choice automorphisms to normalization and the larger ambient Hom class"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -3224,12 +3312,14 @@ audits:
   区別できないことをactual反例で固定した。Karoubi像の存在や他のsingle-object表現は棄却していない。
   Cycle 33では、正規化前のactual admissible-package categoryでfull source-choice族をfaithfulな
   自己同型族として収録し、同じ対象のcanonical normalizationと一様flipの三法則を接続した。
+  Cycle 34では、そのambient package-level subgroupを全有限Bool-table整合族と直接同定し、
+  actual package readbackの有限制限とsingleton assemblyによる逆をone-object圏同値まで接続した。
   arbitrary observation carrier全体の有限encodingと四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
-  Hom-slice同定はCycle 31で接続した。canonical-normalizationを含むfull tagged categoryと
+  package-level Hom-slice同定はCycle 34で接続した。canonical-normalizationを含むfull tagged categoryと
   四分枝共通の主同値への接続は未完了である。
 - E2 の product-lens / protocol 可逆変更層はCycle 27--28で共通
   `FiniteReading`/Dへ接続済み。Cycle 29でgeneral observation-aware protocol Homも
