@@ -4007,7 +4007,7 @@ audits:
     discharged:
       - "generator composition / exact source-choice xor, normalization idempotence, and canonical rewrite"
       - "faithfulness / computed package-base readback followed by accepted package evaluation injectivity"
-      - "image equivalence / two independently faithful evaluations of the same NormalForm"
+      - "image equivalence / two faithful evaluations of the same NormalForm; exact faithfulness is derived through package-base readback"
     unresolved:
       - "common primitive finite reading and common local-model category"
   proof_use:
