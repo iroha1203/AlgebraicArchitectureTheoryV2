@@ -5520,6 +5520,106 @@ audits:
   next_obligation: "recover a multi-carrier or full actual kernel surface beyond single-carrier permutation images, or extend the same substantive separation and assembly to arbitrary expanded G-122 Homs in one cycle"
 ```
 
+## Cycle 58: two-carrier expanded reconstruction
+
+```yaml
+cycle: 58
+status: implementation-complete-review-pending
+branch: codex/4711-g124-two-carrier-expanded-reconstruction
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: ff16abdfe07115726f3efd2e9e2782b964f7e2d9
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 57 audit: PR comment 5733834854; acceptance: Issue comment 5733842648; Cycle 58 selection: Issue comment 5733925828"
+  proof_dag_predecessors:
+    - "Cycle 57 arbitrary-carrier faithful kernel reconstruction"
+    - "accepted primitive source actions and fixed-route context transport"
+    - "accepted canonical normalization section and normalized barAlpha comparison section"
+  proof_obligation: "combine two unequal primitive Extension-carrier permutation groups as a faithful commuting actual-kernel representation; reconstruct the source pair from kernel, stored-backward observation, expanded direct-endpoint, and normalized comparison images; prove strict progress beyond the complete single-carrier family"
+  selection_reason: "this enlarges the represented actual family rather than re-exporting Cycle 57, supplies four multiplicative inverse surfaces, carries the new family through the expanded direct and comparison surfaces in the same cycle, and fixes one adversarial audit question"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122TwoCarrierExpandedReconstruction.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "unequal primitive carrier actions commute at source, transported-context, and actual-kernel levels; their product hom is faithful; source pairs are multiplicatively equivalent to their actual kernel range, observed-action range, canonical expanded direct range, and normalized barAlpha comparison range; the existential two-carrier family properly contains every single-carrier image, with the simultaneous Nat zero-one swap and Set Nat complement as a fixed separating witness"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.G122TwoCarrierExpandedReconstruction.extensionValuePermutation_commute"
+    - "AAT.AG.LocalSemanticReconstruction.G122TwoCarrierExpandedReconstruction.sourceContextObjectPerm_commute"
+    - "AAT.AG.LocalSemanticReconstruction.G122TwoCarrierExpandedReconstruction.transportedSourceContextPermutation_commute"
+    - "AAT.AG.LocalSemanticReconstruction.G122TwoCarrierExpandedReconstruction.localFiberKernelSection_commute"
+    - "AAT.AG.LocalSemanticReconstruction.G122TwoCarrierExpandedReconstruction.pairKernelHom"
+    - "AAT.AG.LocalSemanticReconstruction.G122TwoCarrierExpandedReconstruction.pairKernelHom_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122TwoCarrierExpandedReconstruction.sourcePairKernelMulEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122TwoCarrierExpandedReconstruction.pairKernelObservedMulEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122TwoCarrierExpandedReconstruction.sourcePairObservedMulEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122TwoCarrierExpandedReconstruction.sourcePairExpandedDirectMulEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122TwoCarrierExpandedReconstruction.sourcePairComparisonMulEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122TwoCarrierExpandedReconstruction.sourcePairHom_ne_singleCarrier"
+    - "AAT.AG.LocalSemanticReconstruction.G122TwoCarrierExpandedReconstruction.natPowerSetPairKernel_not_arbitraryCarrierImage"
+    - "AAT.AG.LocalSemanticReconstruction.G122TwoCarrierExpandedReconstruction.arbitraryCarrierImage_ssubset_twoCarrierImage"
+  claim_mapping:
+    conjuncts:
+      - "actions on unequal primitive Extension carriers commute before and after the accepted fixed transport"
+      - "stored-backward faithfulness reflects that commutativity into the actual local-fiber kernel"
+      - "the pair product hom is injective by independent carrier probes"
+      - "source pairs and the actual kernel range form a multiplicative equivalence"
+      - "the actual range and its stored-backward observed range form a multiplicative equivalence"
+      - "source pairs reconstruct the canonical expanded direct-endpoint range"
+      - "source pairs reconstruct the normalized barAlpha comparison range"
+      - "the existential two-carrier family properly contains all single-carrier images"
+    undischarged_assumptions:
+      - "recover the full local-fiber kernel outside all finite multi-carrier products"
+      - "recover every expanded G-122 Hom rather than the represented direct and comparison images"
+      - "recover the full comparison group and both ambient and restriction kernels"
+      - "discharge final four-family separation and assembly"
+    acceptance_point: "faithful two-carrier product, four multiplicative reconstruction ranges, expanded direct/comparison connection, and proper enlargement of the full single-carrier family in one cycle"
+    port_status: unported
+audits:
+  material_premises:
+    proved_dependencies:
+      - "primitive Extension carrier dispatch by classical type equality"
+      - "fixed-route context conjugation and its injectivity"
+      - "full local-fiber stored-backward projection injectivity"
+      - "canonical normalization automorphism section right inverse"
+      - "normalized barAlpha comparison source projection"
+    discharge_required:
+      - "cross-carrier commutativity through all three action levels"
+      - "pair injectivity from independent primitive probes"
+      - "kernel, observation, expanded direct, and comparison range equivalences"
+      - "single-carrier inclusion using a provably unequal powerset carrier"
+      - "strictness via the simultaneous Nat and Set Nat action"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "source pair / two independently supplied permutations only"
+      - "separation / canonical primitive probes on each carrier"
+      - "strictness / fixed Nat swap and powerset complement source recipes"
+    unresolved:
+      - "independent presentation of arbitrary full-kernel elements"
+      - "surjectivity for arbitrary expanded G-122 Homs"
+  proof_use:
+    used:
+      - "Cycle 57 arbitrary-carrier section and single-carrier image family"
+      - "Cycle 56 fixed-route conjugation API"
+      - "accepted canonical normalization and comparison sections"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "replaces the single-carrier family by a strictly larger actual two-carrier family and connects the same source data through kernel, observation, expanded direct, and comparison ranges"
+  vacuity: "source syntax is a pair of primitive permutations; the actual range memberships are codomain subtypes created after evaluation, and strictness is proved by carrier probes rather than supplied as a certificate"
+  four_lane_question: "Does the product of independent permutations on two distinct Extension carriers form a faithful commuting actual-kernel representation, reconstruct multiplicatively from stored-backward observations and from expanded direct/comparison images, and strictly enlarge the full single-carrier family via the Nat/Set Nat simultaneous action?"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122TwoCarrierExpandedReconstruction.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122TwoCarrierExpandedReconstruction: 36 declarations, standard axioms only"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122TwoCarrierExpandedReconstruction.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122TwoCarrierExpandedReconstruction: pass (4429 jobs)"
+  blocking_findings: []
+  next_obligation: "extend finite multi-carrier products beyond two carriers with one coherent finite-family reconstruction and an additional strict witness, or discharge a nontrivial arbitrary expanded-Hom separation and assembly surface"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -5612,7 +5712,12 @@ audits:
   source置換とactual像、actual像とobserved-action像の二つの乗法同値と両逆を構成し、
   `Nat` zero-one swapによる全finite-carrier像unionのproper inclusion、`Set Nat` complementが
   全exact-support像unionの外に残ることまで同じsurfaceへ接続した。
-  arbitrary single-carrier permutation像の外を含むfull kernel、arbitrary Hom、四族統合は未完了である。
+  Cycle 58では相異なる二つのprimitive carrier作用の可換性をsource・transport・actual kernelで
+  証明し、その積群をactual kernel像、stored-backward観測像、canonical section後のexpanded direct像、
+  normalized `barAlpha` comparison像のそれぞれと乗法同値にした。さらに任意single-carrier像を
+  powerset carrier上の恒等作用を加えたtwo-carrier像へ収録し、`Nat` zero-one swapと`Set Nat`
+  complementの同時作用が全single-carrier像unionの外にあることからproper inclusionを証明した。
+  arbitrary finite multi-carrier積の統一表示、full kernel、arbitrary expanded Hom、四族統合は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
