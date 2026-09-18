@@ -71,13 +71,14 @@
   merge commit `f7c3706b365d1b0f2cbeb25d890866f10d716c41`
 - Cycle 31 accepted PR: [#4744](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4744),
   merge commit `5705fefcb1d53c7aea760d262d441b974d42f238`
+- Cycle 32 accepted PR: [#4745](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4745),
+  merge commit `af6037910ecf5466c7d02fbe52025402cf646503`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: canonical normalization functorでsingle normalized Karoubi objectへ送った
-  source-choice族から、元の全choiceをfaithfulに回復できるかを決定する
-- next proof obligation: Cycle 32の情報損失を避ける候補として、ambient source objectsと
-  canonical-normalization arrowを保持するfull tagged realization categoryを構成し、Cycle 31の
-  finite-local readingを接続する
+- current proof obligation: full source-choice族をactual admissible-package categoryの自己同型として
+  faithfulに収録し、同じ対象にcanonical normalization endomorphismを保持する
+- next proof obligation: ambient package-level source-choice subgroupをCycle 31のfinite-local
+  subgroup equivalenceへ同定し、normalizationを含むlarger Hom readingの適用範囲を固定する
 
 ## Cycle 1 — rejected
 
@@ -3114,6 +3115,95 @@ audits:
   next_obligation: "construct a faithful replacement route; the leading candidate retains ambient tagged source objects and canonical-normalization arrows and connects them to Cycle 31 finite-local readings"
 ```
 
+## Cycle 33 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 33
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: af6037910ecf5466c7d02fbe52025402cf646503
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 32 accepted evidence: PR comment 5725808724; Cycle 33 selection: Issue comment 5725821086"
+  proof_dag_predecessors:
+    - "Cycle 31 actual source-choice subgroup and finite-local equivalence"
+    - "Cycle 32 canonical normalized-image nonfaithfulness blocker"
+    - "AATUniformFlipKaroubi admissible tagged package and canonical normalization"
+  proof_obligation: "place the full source-choice family faithfully as automorphisms of the actual tagged admissible package while retaining canonical normalization as an endomorphism of that same object, and recover the constant-true t^2=1, et=te, et!=e laws"
+  selection_reason: "avoids Cycle 32 information loss before Karoubi normalization and directly discharges the tagged-family coexistence checkpoint of fixed GOAL A/E1"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeAmbientCategory.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the accepted tagged admissible package now carries every actual source choice as a faithful automorphism family and carries canonical normalization as an endomorphism before applying the nonfaithful canonical normalized-image map; the constant-true member is identified with the accepted uniform flip and satisfies the required three laws in the same ambient category"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientCategory.TaggedPackage"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientCategory.sourceChoiceMorphism"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientCategory.sourceChoiceAut"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientCategory.sourceChoiceAut_injective"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientCategory.sourceChoiceAutHom"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientCategory.sourceChoiceAutHom_injective"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientCategory.sourceChoiceSubgroup"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientCategory.sourceChoiceGroupEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientCategory.normalization"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientCategory.sourceChoiceMorphism_true_square"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientCategory.sourceChoiceMorphism_true_commutes_normalization"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientCategory.normalization_comp_sourceChoiceMorphism_true_ne_normalization"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeAmbientCategory.sourceChoiceMorphism_true_comp_normalization_ne_normalization"
+  claim_mapping:
+    source_labels:
+      - "fixed GOAL A tagged family: taggedOperationPackage, canonical normalization, uniform flip, and every source choice"
+      - "fixed GOAL E1a and uniform-flip separation"
+    conjuncts:
+      - "all source choices are actual automorphisms of one accepted admissible package object"
+      - "the source-choice map and its induced group homomorphism are injective before normalization"
+      - "canonical normalization is an actual endomorphism of the same object"
+      - "the constant-true source choice is the accepted uniform flip and satisfies square, commutation, and separation"
+    undischarged_assumptions:
+      - "the common four-family R_Theta and local model M_Theta"
+      - "finite-local reconstruction of all ambient package morphisms"
+      - "G-122, lens, and protocol integration"
+    acceptance_point: "actual faithful tagged package-level family and normalization coexistence only; not the final full realization category or a reconstruction of every ambient Hom"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "the accepted taggedUniformFlipPackage object in CanonicalNormalizationAdmissiblePackage"
+      - "the accepted actual taggedSourceChoiceTotal family"
+    discharge_required:
+      - "ambient identity and xor composition"
+      - "source-choice involutivity and injectivity"
+      - "constant-true identification and the three accepted normalization laws"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "automorphism inverse / pointwise xor self-cancellation"
+      - "faithfulness / taggedSourceChoiceTotal readback injectivity"
+      - "uniform-flip laws / accepted actual package equalities lifted through ObjectProperty.homMk"
+    unresolved: []
+  proof_use:
+    used:
+      - "taggedSourceChoiceExplicitExactGeometryMorphism_false and _comp"
+      - "taggedSourceChoiceTotal_injective"
+      - "taggedUniformFlipMorphism_square and _commutes_normalization"
+      - "taggedNormalizationThenUniformFlip_ne_normalization"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "the actual full source-choice family and actual canonical normalization coexist before applying the nonfaithful normalized-image map"
+  vacuity: "injectivity is inherited from actual tagged identity-operation readback, and the constant-true member is separated from normalization by the accepted package-level inequality"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/TagChangeAmbientCategory.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeAmbientCategory: pass (4355 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeAmbientCategory: 16 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "identify the ambient package-level source-choice subgroup with the Cycle 31 finite-local subgroup equivalence and state the boundary before extending readings to larger ambient Hom sets"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -3132,6 +3222,8 @@ audits:
   source-choice Aut subgroupのone-object Hom sliceと独立local modelの同値に限る。Cycle 32では
   canonical normalization functorによるsingle normalized Karoubi object上の像がfull source-choice族を
   区別できないことをactual反例で固定した。Karoubi像の存在や他のsingle-object表現は棄却していない。
+  Cycle 33では、正規化前のactual admissible-package categoryでfull source-choice族をfaithfulな
+  自己同型族として収録し、同じ対象のcanonical normalizationと一様flipの三法則を接続した。
   arbitrary observation carrier全体の有限encodingと四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
