@@ -133,7 +133,7 @@
   merge commit `b635ffc87cb71e163619b6004ffb25878a3d9ef8`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: 任意のnormalization fiberを保つ置換を有限Bool局所グラフから両逆に
+- current proof obligation: 任意のnormalization fiberを保つ置換を点対ごとのBool局所値から両逆に
   再構成し、その群法則を関係合成として固定する。同じsurfaceへdirect normalization kernelの
   object作用、非自明ambient kernel元、full comparison再構成を接続する
 - next proof obligation: object作用以外のatom・context・equation・operation・coefficient・raw・
@@ -5949,6 +5949,10 @@ result:
   completion_candidate: no
   section_completion_candidate: no
   lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.GraphData"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.IsExact"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.GraphData.diagonal_isExact"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.GraphData.falseBool_not_isExact"
     - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.GraphCode"
     - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.GraphCode.targetEquiv"
     - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.GraphCode.assemble"
@@ -5958,11 +5962,15 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.GraphCode.graphMulEquivFiberPermutation"
     - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.GraphCode.mul_edge_eq_true_iff"
     - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.sourceKernelObjectPermutationHom"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.sourceKernelObjectPermutationHom_coe"
     - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.sourceKernelObjectGraphHom"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.assemble_sourceKernelObjectGraphHom"
     - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.sourceKernelObjectGraph_mul_edge_iff"
     - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.directAmbientSourceKernel_objectGraph_ne_one"
     - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.directAmbientFullComparisonKernel_restriction"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.directAmbientFullComparisonKernel_eq_sourceKernelToFullKernel"
     - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.directAmbientFullComparisonKernel_ne_one"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.assembleSourceKernel_eq_canonicalSection_mul"
     - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.assembleSourceKernel_directAmbient"
     - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.readSourceKernel_directAmbient"
   claim_mapping:
@@ -5979,7 +5987,7 @@ result:
       - "remaining atom, context, equation, operation, coefficient, raw, and local-realization readings require their own primitive graph surfaces"
       - "surjectivity of a joint primitive code onto the full direct normalization kernel remains unproved"
       - "arbitrary expanded G-122 Homs and final four-family assembly remain unproved"
-    acceptance_point: "full two-sided and multiplicative classification of arbitrary fiber-preserving permutations by independent finite Bool local readings, plus a multiplicative G-122 object-action reading and a nontrivial full-comparison witness in one cycle"
+    acceptance_point: "full two-sided and multiplicative classification of arbitrary fiber-preserving permutations by independent point-pair Bool local readings, plus a multiplicative G-122 object-action reading and a nontrivial full-comparison witness in one cycle"
     port_status: unported
 audits:
   material_premises:
@@ -6030,7 +6038,7 @@ audits:
     - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/PrimitiveFiberPermutationGraph.lean: pass"
     - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122PrimitiveSourceKernelObjectGraph.lean: pass"
     - "#assert_standard_axioms_only PrimitiveFiberPermutationGraph: 64 declarations, standard axioms only"
-    - "#assert_standard_axioms_only G122PrimitiveSourceKernelObjectGraph: 20 declarations, standard axioms only"
+    - "#assert_standard_axioms_only G122PrimitiveSourceKernelObjectGraph: 23 declarations, standard axioms only"
     - "cd research/lean && ./check_research_modules.sh --focused on both Cycle 62 modules: pass"
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph: pass (4302 jobs)"
   blocking_findings: []

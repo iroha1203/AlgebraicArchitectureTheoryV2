@@ -301,15 +301,19 @@ instance : Mul (GraphCode normalize) :=
 instance : Inv (GraphCode normalize) :=
   ⟨fun code => read ((assemble code)⁻¹)⟩
 
+/-- Assembly sends the transported identity graph to the identity
+fiber-preserving permutation. -/
 @[simp]
 theorem assemble_one : assemble (1 : GraphCode normalize) = 1 :=
   assemble_read 1
 
+/-- Assembly preserves the transported graph product. -/
 @[simp]
 theorem assemble_mul (first second : GraphCode normalize) :
     assemble (first * second) = assemble first * assemble second :=
   assemble_read _
 
+/-- Assembly preserves the transported graph inverse. -/
 @[simp]
 theorem assemble_inv (code : GraphCode normalize) :
     assemble code⁻¹ = (assemble code)⁻¹ :=

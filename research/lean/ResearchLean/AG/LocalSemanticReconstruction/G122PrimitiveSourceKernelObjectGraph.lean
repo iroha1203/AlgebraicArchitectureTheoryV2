@@ -51,12 +51,6 @@ local instance finiteAxisFoldPrimitiveObjectGraphAtomDecidableEq :
   change DecidableEq FiniteModel.FiniteAtom
   infer_instance
 
-/-- Classical equality used only to read an existing permutation as Bool
-graph data; assembly itself uses the graph's exact-one laws. -/
-local instance finiteAxisFoldPrimitiveObjectGraphObjectDecidableEq :
-    DecidableEq (ArchitectureObject FiniteModel.carrier) :=
-  Classical.decEq _
-
 /-- The actual direct core whose architecture-object normalization is read. -/
 noncomputable abbrev ActualDirectCore :=
   finiteAxisFoldActualDirectAdmissibleGeometry.obj.core
@@ -136,6 +130,15 @@ noncomputable def sourceKernelObjectPermutationHom :
     intro object
     rfl
 
+/-- The underlying permutation of the multiplicative object action is the
+directly constructed object permutation. -/
+@[simp]
+theorem sourceKernelObjectPermutationHom_coe
+    (kernelValue : DirectNormalizationKernel) :
+    (sourceKernelObjectPermutationHom kernelValue).1 =
+      sourceKernelObjectPermutation kernelValue :=
+  rfl
+
 /-- Primitive Bool graph codes for the object action of the direct kernel. -/
 abbrev DirectObjectGraphCode :=
   GraphCode directObjectNormalization
@@ -146,6 +149,15 @@ noncomputable def sourceKernelObjectGraphHom :
     DirectNormalizationKernel →* DirectObjectGraphCode :=
   graphMulEquivFiberPermutation.symm.toMonoidHom.comp
     sourceKernelObjectPermutationHom
+
+/-- Assembly of the primitive object graph recovers the complete object
+permutation supplied by the direct-kernel action. -/
+@[simp]
+theorem assemble_sourceKernelObjectGraphHom
+    (kernelValue : DirectNormalizationKernel) :
+    assemble (sourceKernelObjectGraphHom kernelValue) =
+      sourceKernelObjectPermutationHom kernelValue := by
+  exact graphMulEquivFiberPermutation.apply_symm_apply _
 
 /-- Object-graph reading is pointwise evaluation of the kernel automorphism,
 not a stored completed map. -/
@@ -195,21 +207,25 @@ theorem directAmbientSourceKernel_objectGraph_ne_one :
     sourceKernelObjectGraphHom directAmbientSourceKernel ≠ 1 := by
   intro equality
   apply directAmbientSourceKernel_objectPermutation_ne_one
-  have mappedEquality := congrArg
-    (graphMulEquivFiberPermutation
-      (normalize := directObjectNormalization))
-    equality
+  have mappedEquality := congrArg GraphCode.assemble equality
   have valueEquality := congrArg
     (fun permutation : FiberPermutationSubgroup directObjectNormalization =>
       permutation.1)
     mappedEquality
-  simpa [sourceKernelObjectGraphHom, sourceKernelObjectPermutationHom] using
-    valueEquality
+  simpa using valueEquality
 
 /-- The same primitive source-kernel element transported to the full raw
 comparison kernel. -/
 noncomputable def directAmbientFullComparisonKernel : FullKernel :=
   sourceKernelToFullKernelHom directAmbientSourceKernel
+
+/-- The named ambient full-kernel value is exactly the image of its source
+kernel coordinate. -/
+@[simp]
+theorem directAmbientFullComparisonKernel_eq_sourceKernelToFullKernel :
+    directAmbientFullComparisonKernel =
+      sourceKernelToFullKernelHom directAmbientSourceKernel :=
+  rfl
 
 /-- The transported raw comparison has trivial normalized restriction. -/
 theorem directAmbientFullComparisonKernel_restriction :
@@ -222,17 +238,26 @@ theorem directAmbientFullComparisonKernel_ne_one :
   intro equality
   apply directAmbientSourceKernel_objectGraph_ne_one
   have sourceEquality := congrArg fullKernelToSourceKernelHom equality
-  simpa [directAmbientFullComparisonKernel] using
+  simpa using
     congrArg sourceKernelObjectGraphHom sourceEquality
+
+/-- Source-kernel assembly is the canonical normalized lift followed by the
+corresponding full-kernel displacement. -/
+theorem assembleSourceKernel_eq_canonicalSection_mul
+    (sourceKernel : DirectNormalizationKernel)
+    (normalizedSource : Aut FiniteAxisFoldNormalizedDirectGeometry) :
+    assembleSourceKernel (MulOpposite.op sourceKernel, normalizedSource) =
+      canonicalSectionHom
+          (normalizedComparisonSourceMulEquiv.symm normalizedSource) *
+        (sourceKernelToFullKernelHom sourceKernel).1 := by
+  rfl
 
 /-- Cycle 61's full reconstruction assembles the ambient primitive graph at
 the identity normalized source to precisely the transported raw comparison. -/
 theorem assembleSourceKernel_directAmbient :
     assembleSourceKernel (MulOpposite.op directAmbientSourceKernel, 1) =
       directAmbientFullComparisonKernel.1 := by
-  change canonicalSectionHom (normalizedComparisonSourceMulEquiv.symm 1) *
-      directAmbientFullComparisonKernel.1 =
-    directAmbientFullComparisonKernel.1
+  rw [assembleSourceKernel_eq_canonicalSection_mul]
   rw [map_one]
   simp [canonicalSectionHom]
 
