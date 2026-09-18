@@ -109,12 +109,14 @@
   merge commit `90adf1b8f30a65a0b41555d6e64280f7013e27fd`
 - Cycle 50 accepted PR: [#4763](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4763),
   merge commit `7036cf07bbbf31add86972f36d46cf3ec093620f`
+- Cycle 51 accepted PR: [#4764](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4764),
+  merge commit `bcc839d940da9331ccaf1efc72858ed8bcbe10d0`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: 独立な三軸table、`Fin 3` Extension table、`Nat` exact-support/parity
-  normal formからcarrier-separated actual normalized-comparison imageを両逆で回復し、Cycle 50像の
-  strictな拡張、canonical section codeの一意性、full-kernel torsor接続を同時に証明する
-- next proof obligation: carrier-separated image外を含むfull comparison groupとfull kernelを
+- current proof obligation: 独立な三軸table、`Fin 3` table、`Nat` exact-support/parity normal form、
+  `Fin 4` tableからactual normalized-comparison imageを両逆で回復し、Cycle 51像のstrictな拡張、
+  canonical section codeの一意性、full-kernel torsor接続を同時に証明する
+- next proof obligation: four-component image外を含むfull comparison groupとfull kernelを
   local dataから回復し、arbitrary expanded Homと四族の共通再構成へ接続する
 
 ## Cycle 1 — rejected
@@ -4932,6 +4934,104 @@ audits:
   next_obligation: "recover a further independent carrier-relative component or the full comparison group and full kernel from local data, then extend reconstruction to arbitrary expanded Homs and the four-family surface"
 ```
 
+## Cycle 52 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 52
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: bcc839d940da9331ccaf1efc72858ed8bcbe10d0
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 51 audit: PR comment 5731934405; acceptance: Issue comment 5731939293; Cycle 52 selection: Issue comment 5731956646"
+  proof_dag_predecessors:
+    - "Cycle 51 carrier-separated four-component comparison reconstruction"
+    - "accepted independent finite-carrier Extension table decoder"
+    - "accepted arbitrary-carrier source probe faithfulness"
+    - "accepted canonical lift and full actual restriction-kernel torsor theorem"
+  proof_obligation: "add an independent Fin 4 table to the axis, Fin 3, and Nat data; prove three-carrier noninterference, two-sided actual reconstruction, strict enlargement of Cycle 51, unique canonical-section code, and the represented-fiber full-kernel torsor"
+  selection_reason: "this cycle adds a fourth independent source component and bundles its actual separation, inverse laws, strictness witness, section uniqueness, and fiber action rather than deferring common-surface connection"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122FourComponentComparisonLocalModel.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "carrier-specific probes separate Fin 3, Nat, and Fin 4 actions; axis projection and stripped backward observation recover all four source components; assemble/read are inverse; the Cycle 51 image embeds through the identity Fin 4 table and a source-owned Fin 4 transposition lies outside it; every represented canonical section has one code and every lift in its fiber has one full-kernel displacement"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.G122FourComponentComparisonLocalModel.sourceTripleAction_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122FourComponentComparisonLocalModel.carrierBackwardAction_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122FourComponentComparisonLocalModel.localAut_axisProjection"
+    - "AAT.AG.LocalSemanticReconstruction.G122FourComponentComparisonLocalModel.localAut_backwardObservation"
+    - "AAT.AG.LocalSemanticReconstruction.G122FourComponentComparisonLocalModel.localAut_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122FourComponentComparisonLocalModel.read_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.G122FourComponentComparisonLocalModel.assemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.G122FourComponentComparisonLocalModel.localComparisonEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122FourComponentComparisonLocalModel.carrierSeparatedImageEmbedding"
+    - "AAT.AG.LocalSemanticReconstruction.G122FourComponentComparisonLocalModel.carrierSeparatedImageEmbedding_not_surjective"
+    - "AAT.AG.LocalSemanticReconstruction.G122FourComponentComparisonLocalModel.canonicalSection_unique_localCode"
+    - "AAT.AG.LocalSemanticReconstruction.G122FourComponentComparisonLocalModel.fourComponent_fullKernel_reconstruction"
+  claim_mapping:
+    conjuncts:
+      - "the local code contains independent axis, Fin 3, Nat exact-support/parity, and Fin 4 source data, with no actual automorphism, comparison, lift, range witness, or kernel element"
+      - "canonical probes prove pairwise noninterference and jointly separate all three carrier actions"
+      - "axis projection plus stripped stored-backward observation recover all four components, and read/assemble are inverse in both directions"
+      - "the Cycle 51 image embeds through the identity Fin 4 table"
+      - "the explicit source-owned Fin 4 transposition proves that this embedding is not surjective"
+      - "each represented canonical section has exactly one four-component code"
+      - "each represented lift has exactly one displacement from its canonical lift by the full actual kernel"
+    undischarged_assumptions:
+      - "recover comparisons outside the four-component image"
+      - "recover arbitrary full-kernel elements from independent local data"
+      - "extend reconstruction to arbitrary expanded G-122 Homs and objects"
+      - "discharge final four-family separation and assembly"
+    acceptance_point: "strict Fin 4 enlargement of the Cycle 51 image, with actual three-carrier separation, two-sided reconstruction, canonical-section uniqueness, and the accepted full-kernel torsor on each represented fiber"
+    port_status: unported
+audits:
+  material_premises:
+    proved_dependencies:
+      - "Cycle 51 axis, Fin 3, and Nat reconstruction"
+      - "independent finite-carrier Extension table decoder and backward action"
+      - "fixed source-to-actual context equivalence and backward-action faithfulness"
+      - "canonical section right inverse and full-kernel simply transitive action"
+    discharge_required:
+      - "Fin 4 actions fix Fin 3 and Nat probes, while accepted actions fix Fin 4 probes"
+      - "joint three-carrier action injectivity and actual observation separation"
+      - "both inverse laws and strict non-surjectivity of the Cycle 51 embedding"
+      - "unique local canonical-section code and full-fiber connection"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "local code / independent axis, Fin 3, Nat, and Fin 4 source data"
+      - "carrier separation / primitive source probes transported through the fixed context equivalence"
+      - "semantic readback / actual axis projection and stripped stored-backward observation"
+      - "strict enlargement / explicit source-owned Fin 4 transposition"
+      - "fiber displacement / accepted actual restriction-kernel torsor"
+    unresolved:
+      - "comparison image complement and independent full-kernel local recovery"
+  proof_use:
+    used:
+      - "Cycle 51 axis and carrier readback"
+      - "finite-carrier decoder multiplication and stored backward action"
+      - "canonical section right inverse"
+      - "full actual kernel action existence and uniqueness"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "adds an independent fourth component and includes three-carrier separation, both inverse laws, strict inclusion, section uniqueness, and fiber connection in the same cycle"
+  vacuity: "a concrete Fin 4 transposition is proved outside the embedded Cycle 51 image, and every component is recovered from actual observations rather than stored semantic values"
+  four_lane_question: "Does independent axis, Fin 3, Nat exact-support/parity, and Fin 4 data reconstruct a strictly larger actual normalized-comparison image with carrier-probe separation, both inverse laws, unique canonical-section codes, and full-kernel torsor connection without storing completed semantics?"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122FourComponentComparisonLocalModel.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122FourComponentComparisonLocalModel.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122FourComponentComparisonLocalModel: pass (4418 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122FourComponentComparisonLocalModel: 55 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "recover the full comparison group and full kernel from independent local data, then extend the reconstruction to arbitrary expanded Homs and the four-family surface"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -4999,7 +5099,10 @@ audits:
   `Fin 3`成分との非干渉、actual observationからの三成分分離、read/assemble両逆を証明した。
   Cycle 50像をidentity `Nat` codeで埋め込み、source-owned `Nat` zero-one swapがその像外にあること、
   canonical section code一意性、各represented fiberのfull-kernel torsor接続まで同梱した。
-  carrier-separated像の外側、full kernelの独立local recovery、arbitrary Hom、四族統合は未完了である。
+  Cycle 52では独立な`Fin 4` tableをさらに加え、三carrierのprobe非干渉、actual観測からの
+  四成分read/assemble両逆、Cycle 51像を保存する埋込みと明示的`Fin 4` swapによる非全射性、
+  canonical section code一意性、各represented fiberのfull-kernel torsor接続を同梱した。
+  four-component像の外側、full kernelの独立local recovery、arbitrary Hom、四族統合は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
