@@ -2558,6 +2558,117 @@ audits:
   next_obligation: "construct the protocol-branch actual finite determination/effectiveness application, keeping its observation-aware local Hom and execution-state coherence distinct from the lens proof"
 ```
 
+Cycle 27 / PR #4740 は final head
+`24606707465e6d6b5b3c1f84d89bbd89f9092a88` で受理した。fresh Math A/B +
+Lean A/B はすべて `No major findings`。非中心 finding だったcoherenceの正負例と
+ledgerの適用範囲を同headで修正し、fresh direct checkで解消を確認した。CIは7/7
+success、最終監査はPR comment `5724524278`、merge commitは
+`947038b5b33cb37971bab5c0a16f7b8954a5200d` である。
+
+## Cycle 28 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 28
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 947038b5b33cb37971bab5c0a16f7b8954a5200d
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 27 accepted evidence: PR comment 5724524278; Cycle 28 selection: Issue comment 5724541530"
+  proof_dag_predecessors:
+    - "accepted ProtocolInvertibleChange equivalence with operation-preserving fixed-F following changes"
+    - "component-permutation restriction criteria and coherent finite extension"
+    - "common FiniteReading separation, extension, determining, and effectiveness surfaces"
+  proof_obligation: "actual ProtocolInvertibleChangeを各vertexのstateEquivで読み、retained named-edge上の等式を独立coherenceとする。separationとextensionの必要十分条件をそれぞれfull component meetingとinduced connectivity retentionに同定し、各full componentの選択代表集合をactual protocol決定集合へ適用する。既存の有限algorithmをactual protocol型へ戻してexact rejection/readbackを証明する"
+  selection_reason: "Cycle 27でlens側を共通FiniteReading surfaceへ接続したため、固定GOAL D/E2で対になるprotocol可逆変更層が直接の残余nodeである"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/ProtocolFiniteDetermination.lean"
+  risks:
+    - "結論をfixed-graph preserving changeで止めずactual protocol changeへ戻すこと"
+    - "coherenceをglobal extensionの存在で定義せずactual retained edgeだけで定義すること"
+    - "vertex tableとcomponent familyをquotientを介さず同一視しないこと"
+    - "separation、extension、effectivenessを独立に保つこと"
+    - "一般protocol Hom、comparison group、四分枝統合まで過大主張しないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "actual protocol stateEquiv reading is identified with the accepted preserving-change reading; separation and extension have exact graph criteria, and the executable finite program returns an actual ProtocolInvertibleChange, rejects exactly edge-incoherent tables, and reads successful extensions back pointwise"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.readProtocolChangeAt"
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.readProtocolChangeAt_eq_preservingReading"
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.TableCoherent"
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.coherentIdentityTable_coherent"
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.incoherentSplitTable_not_coherent"
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.separates_iff_meetsEveryFullComponent"
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.extends_iff_retainsFullConnectivity"
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.determining_of_componentCriteria"
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.representativeVertices_determining"
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.effectivenessProgram"
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.effective_of_retainsFullConnectivity"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL D: finite readingのseparation・extension・effectivenessを独立に与える"
+      - "固定 GOAL E2: protocolの有限局所tableがactual invertible changeを区別・延長する"
+    conjuncts:
+      - "actual stateEquiv point reading agrees with the accepted fixed-F preserving reading"
+      - "separation holds exactly when retained vertices meet every full component"
+      - "extension of every retained-edge coherent table holds exactly when induced connectivity is retained"
+      - "the two criteria jointly give a finite determining set"
+      - "the chosen representative vertex of every full component specializes those criteria to an actual protocol determining set"
+      - "coherence has explicit positive and negative instances on one nontrivial witness graph"
+      - "the finite program decides coherence, rejects exactly incoherent tables, and returns actual protocol changes with exact readback"
+    undischarged_assumptions:
+      - "general observation-aware protocol Hom finite determination"
+      - "tagged and G-122 independent local-model equivalences"
+      - "the final common Lambda_Theta, M_Theta, N_Theta, and D_Theta"
+    acceptance_point: "actual protocol invertible-change finite determination only; no general protocol Hom, comparison-group, or all-four reconstruction claim"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "finite fixed directed graph and finite hidden carrier"
+      - "decidable equality on vertices and hidden values for the finite table algorithms"
+      - "a decidable retained-vertex predicate for its explicit Finset presentation, including the chosen representative predicate in its specialization"
+      - "Nontrivial K (the fixed |K| >= 2 boundary) for the converses in the two exact iff criteria"
+      - "fixed graph automorphism and actual ProtocolInvertibleChange"
+      - "accepted preserving-change/component-permutation classification"
+    direction_hypothesis:
+      - "MeetsEveryFullComponent for the forward separation construction"
+      - "RetainsFullConnectivity for extension, determining, and effectiveness"
+    discharge_required:
+      - "actual stateEquiv/readPreservingChangeAt identification"
+      - "separation iff full-component meeting"
+      - "extension iff induced connectivity retention"
+      - "exact rejection and protocol readback in EffectivenessProgram"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "component family / obtained through the accepted quotient classification"
+      - "global change / computed by finite coherent extension then transported back through the protocol equivalence"
+      - "coherence decision / equality on every actual retained named edge"
+    unresolved:
+      - "general protocol Hom finite determination and all-four integration"
+  proof_use:
+    used:
+      - "ProtocolInvertibleChange.equivPreservingFollowingChanges"
+      - "component restriction injectivity/surjectivity criteria"
+      - "FinitePermutationExtension and FiniteEffectiveness executable APIs"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "actual protocol invertible changes and actual retained named edges, with exact graph criteria and raw-table rejection"
+  vacuity: "the constructive separation/extension/effectiveness directions retain arbitrary finite hidden carriers; the converse exact criteria use the fixed |K| >= 2 boundary. A one-edge Boolean graph explicitly exhibits coherent and incoherent tables, and no stored extension certificate is accepted"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/ProtocolFiniteDetermination.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination: pass (4357 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination: 19 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "connect the general observation-aware protocol local Hom to finite reading/effectiveness, without conflating it with the invertible state-change layer"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -2569,11 +2680,13 @@ audits:
   decoderの計算式とKaroubi restriction・retract・Arrow coherence、Cycle 25はlens branchの
   finite-fiber Hom/object assemblyと圏同値、Cycle 26はlens branchのfinite decoder計算と
   Karoubi restriction・retract・Arrow coherence、Cycle 27はactual lens invertible changeの
-  finite determinationと有限探索effectivenessに限る。protocol側のactual finite
-  determination、arbitrary observationのeffective finite encoding、四分枝統合は未完了である。
+  finite determinationと有限探索effectiveness、Cycle 28はactual protocol invertible
+  changeのexact graph criteriaとeffectivenessに限る。general observation-aware protocol Homの
+  finite determination、arbitrary observationのeffective finite encoding、四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の同定。
-- E2 の product-lens 可逆変更層はCycle 27で共通`FiniteReading`/Dへ接続済み。
-  lens一般意味保存射層とprotocol側の決定性・effectivenessの接続は未完了である。
+- E2 の product-lens / protocol 可逆変更層はCycle 27--28で共通
+  `FiniteReading`/Dへ接続済み。lens一般意味保存射層とgeneral observation-aware
+  protocol Homの決定性・effectiveness接続は未完了である。
