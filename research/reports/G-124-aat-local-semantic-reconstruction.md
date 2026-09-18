@@ -99,12 +99,17 @@
   merge commit `7e529b40a65ebf78cd866ba6426ce38670d623ef`
 - Cycle 45 accepted PR: [#4758](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4758),
   merge commit `48d3c50a85722731eca7971cd54062c333dfc09d`
+- Cycle 46 accepted PR: [#4759](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4759),
+  merge commit `1e359cbae5eed78138782593b17da96b6a9e193a`
+- Cycle 47 accepted PR: [#4760](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4760),
+  merge commit `2bea07ef9d75a10812f2e5bde04e1500f58bef3f`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: expanded G-122圏の固定3比較のactual imageを、意味的な
-  2クラスの有限local valueとしてread/assembleの両逆で回復する
-- next proof obligation: 固定Hom sliceから任意のexpanded G-122 Homへlocal readingを拡張し、
-  source-generated probeによる分離とassemblyを個別に放電する
+- current proof obligation: accepted source C2から任意のnormalized bottom comparison上の
+  displayed lift orbitを有限コードで一意に回復し、primitive fixed-comparison readingと同時に
+  read/assembleの両逆と作用整合を与える
+- next proof obligation: displayed C2 orbitを超えるより大きな有限source-generated comparison範囲へ、
+  primitive分離、一意な再構成、作用整合を同一cycleで拡張する
 
 ## Cycle 1 — rejected
 
@@ -4515,6 +4520,114 @@ audits:
   next_obligation: "enlarge primitive separation and assembly from the fixed comparison image to a substantial finite generated Hom range, including the comparison-group action in the same cycle"
 ```
 
+## Cycle 48 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 48
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 2bea07ef9d75a10812f2e5bde04e1500f58bef3f
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 47 audit: PR comment 5730516406; Cycle 48 selection: Issue comment 5730710917"
+  proof_dag_predecessors:
+    - "Cycle 47 primitive fixed-comparison reconstruction"
+    - "accepted source/actual displayed C2 equivalence"
+    - "accepted two-point orbit and normalized-identity source lift"
+  proof_obligation: "for every normalized bottom comparison, reconstruct the actual displayed lift orbit uniquely from source C2, prove action compatibility, and combine it with primitive fixed-comparison reconstruction in the same cycle"
+  selection_reason: "the next step must include an actual two-sided or universal result and its common-surface connection rather than ending at an alias or a new definition"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122DisplayedLiftOrbitLocalModel.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "source C2 assembles bijectively into every displayed canonical-lift orbit; an independent two-constructor code reconstructs the source C2 without storing completed morphisms; every orbit point has a unique source term; multiplication agrees with the opposite-kernel action; identity-fiber assembly agrees with sourceLiftAtOne; the result combines with Cycle 47 into a product equivalence with both inverse laws"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.DisplayedOrbit"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.assembleOrbit"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.assembleOrbit_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.assembleOrbit_surjective"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.sourceOrbitEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.SourceLocalValue"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.sourceEquivLocal"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.sourceActingElement_mul"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.assembleOrbit_mul"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.existsUnique_source_of_orbit"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.assembleOrbit_atOne_eq_sourceLiftAtOne"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.combinedRead_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.combinedAssemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.combinedSemanticEquivLocal"
+  claim_mapping:
+    source_labels:
+      - "fixed target B/C: source-generated displayed lift reconstruction and uniqueness"
+      - "fixed target A/B/C: primitive comparison reading paired with displayed source-lift reading"
+    conjuncts:
+      - "the construction is uniform over every normalized bottom comparison"
+      - "source assembly is injective and surjective onto the actual displayed orbit"
+      - "each displayed-orbit lift has a unique source C2 preimage"
+      - "an independent two-constructor local code and the source C2 have read/assemble inverse laws"
+      - "source multiplication is intertwined with the opposite-kernel action"
+      - "identity-fiber assembly is the accepted sourceLiftAtOne construction"
+      - "primitive comparison and displayed lift admit joint read/assemble inverse laws"
+    undischarged_assumptions:
+      - "classify the full comparison group and full restriction kernel"
+      - "classify the full lift fiber beyond the displayed C2 orbit"
+      - "extend reconstruction to arbitrary expanded G-122 Homs and objects"
+      - "discharge final four-family separation and assembly"
+    acceptance_point: "uniform simply transitive reconstruction of the accepted displayed C2 orbit and its joint local product with the fixed primitive comparison only"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_scope:
+      - "fixed finite-axis-fold source C2 and actual bottom restriction-kernel C2"
+      - "canonical and shifted lifts over arbitrary normalized bottom comparison"
+      - "Cycle 47 fixed semantic image and primitive reading"
+    proved_dependencies:
+      - "sourceActualEquiv and multiplication preservation"
+      - "orbit_canonicalLift_eq_pair and shiftedLift_ne_canonicalLift"
+      - "sourceLiftAtOne identity and generator equations"
+      - "primitiveSemanticEquivLocal"
+    discharge_required:
+      - "orbit assembly injectivity and surjectivity"
+      - "unique source preimage"
+      - "action compatibility"
+      - "identity-fiber connection and combined inverse laws"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "orbit membership / actual displayed subgroup action"
+      - "surjectivity / accepted equality of orbit with the canonical-shifted pair"
+      - "uniqueness / proved nonidentity action and source two-case carrier"
+      - "joint reconstruction / product of two independently proved inverse pairs"
+      - "no completed source morphism in the local product / source C2 is first reconstructed from SourceLocalValue"
+    unresolved:
+      - "full group, full fiber, arbitrary-Hom, and four-family reconstruction"
+  proof_use:
+    used:
+      - "source-to-actual C2 evaluation and multiplication law"
+      - "independent source-code read/assemble inverse laws"
+      - "displayed subgroup orbit classification"
+      - "canonical/shifted lift distinction"
+      - "normalized-identity source lift"
+      - "Cycle 47 primitive comparison inverse laws"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "adds a uniform source-generated lift reconstruction with uniqueness and action law, then connects it to the primitive fixed-comparison local model in the same cycle"
+  vacuity: "every displayed orbit has two distinct actual lifts, both source constructors occur, and the universal uniqueness theorem quantifies over every orbit point"
+  four_lane_question: "Does the source C2 act simply transitively on every actual displayed bottom-lift orbit, and does that inverse combine with the primitive fixed-comparison reading without storing completed semantics?"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122DisplayedLiftOrbitLocalModel.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122DisplayedLiftOrbitLocalModel.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel: pass (4371 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel: 54 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "move beyond the displayed C2 orbit to a larger finite source-generated comparison range while retaining primitive separation, unique reconstruction, and action compatibility in one cycle"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -4566,7 +4679,11 @@ audits:
 - C の投影・正規化・比較群回復。Cycle 45で固定G-122の3比較はexpanded category内の
   actual Homになり、Cycle 46でその固定semantic imageの有限local recoveryを構成したが、
   Cycle 47でそのrecoveryをprimitive object restrictionから導出した。full comparison groupと
-  base-fixing subgroupのlocal recoveryは未完了である。
+  base-fixing subgroupのlocal recoveryは未完了である。Cycle 48では、accepted source C2から
+  任意のnormalized bottom comparison上のactual displayed lift orbitへの一意な組み立て、
+  source乗法とlift作用の整合、identity fiberの既存source liftとの一致を証明し、
+  Cycle 47のprimitive comparison復元と積の両逆へ接続した。full comparison group、full
+  restriction kernel、full lift fiber全体の分類は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
