@@ -1,4 +1,5 @@
 import ResearchLean.AG.LocalSemanticReconstruction.FiniteEffectiveness
+import ResearchLean.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination
 import ResearchLean.AG.LocalSemanticReconstruction.ProtocolObservedRestrictionModel
 import ResearchLean.AG.RealizationReconstruction.ProtocolReconstruction
 import Formal.Util.AssertStandardAxioms
@@ -17,7 +18,7 @@ a certificate.
 The existing generator reconstruction extends those local equations to every
 quotient execution.  Thus the full finite table separately satisfies
 separation, extension, and effectiveness for the actual noninvertible
-observation-preserving Hom.  The effectiveness boundary takes explicit
+observation-preserving Hom.  The effectiveness construction takes explicit
 finite enumerations and equality decisions; it does not infer executability
 from the semantic `Finite` premises or require observation carriers to be
 finite.
@@ -154,6 +155,61 @@ theorem not_tableCoherent_of_tag_mismatch [Fintype (InputPoint X)]
   intro coherent
   have decoded := coherent.1 vertex state
   simp [decodedAt, mismatch] at decoded
+
+/-! ### Nonvacuity of tagged protocol-table coherence -/
+
+open AAT.AG.RealizationReconstruction.FixedFProtocolConnection
+
+/-- The witness graph also has the finite one-edge enumeration required by
+its protocol schema. -/
+local instance coherenceWitnessEdgeFintype :
+    Fintype ProtocolFiniteDetermination.coherenceWitnessGraph.Edge := by
+  change Fintype Unit
+  infer_instance
+
+/-- Reuse the two-vertex one-edge finite graph from Cycle 28 as a concrete
+protocol realization for both outcomes of the new tagged-table predicate. -/
+abbrev coherenceWitnessRealization :=
+  realization ProtocolFiniteDetermination.coherenceWitnessGraph Bool
+
+/-- Every state carrier of the witness realization is the finite Boolean
+carrier. -/
+local instance coherenceWitnessStateFintype
+    (vertex : ProtocolFiniteDetermination.coherenceWitnessGraph.Vertex) :
+    Fintype (coherenceWitnessRealization.State vertex) := by
+  change Fintype Bool
+  infer_instance
+
+/-- The identity protocol Hom supplies a concrete coherent raw table on the
+two-vertex Boolean realization. -/
+def coherentWitnessTable :
+    RawTable coherenceWitnessRealization coherenceWitnessRealization :=
+  FiniteReading.restrict
+    (readProtocolHomAt coherenceWitnessRealization coherenceWitnessRealization)
+    (fullInput coherenceWitnessRealization) (𝟙 coherenceWitnessRealization)
+
+/-- The concrete identity table satisfies tagged, edge, and observation
+coherence. -/
+theorem coherentWitnessTable_coherent :
+    TableCoherent coherenceWitnessRealization coherenceWitnessRealization
+      coherentWitnessTable :=
+  read_table_coherent coherenceWitnessRealization coherenceWitnessRealization
+    (𝟙 coherenceWitnessRealization)
+
+/-- A concrete raw table that always returns the `true` vertex tag. -/
+def incoherentTagWitnessTable :
+    RawTable coherenceWitnessRealization coherenceWitnessRealization :=
+  fun _ => ⟨true, false⟩
+
+/-- The constant-`true` tag table fails coherence at the actual `false`
+vertex/state input. -/
+theorem incoherentTagWitnessTable_not_coherent :
+    ¬ TableCoherent coherenceWitnessRealization coherenceWitnessRealization
+      incoherentTagWitnessTable := by
+  apply not_tableCoherent_of_tag_mismatch
+    coherenceWitnessRealization coherenceWitnessRealization
+    incoherentTagWitnessTable false false
+  simp [incoherentTagWitnessTable]
 
 /-- The full finite point table separates all actual observation-preserving
 protocol morphisms. -/
@@ -326,6 +382,26 @@ observation-aware local Hom reading. -/
           (Opposite.op (Opposite.op
             (input.schema.vertexObject point.1))) point.2⟩ := by
   rfl
+
+/-- The Hom assembled from a coherent finite table is fixed by the accepted
+Cycle 22 read/assemble inverse.  Thus the finite extension lands in the same
+full-faithful local-Hom route, rather than merely agreeing at one component. -/
+@[simp] theorem cycle22_assemble_read_assembleTable
+    (input : ProtocolFamilyInput.{u})
+    {source target : ProtocolRealization input.schema input.observation}
+    [Fintype (InputPoint source)] [DecidableEq input.schema.Vertex]
+    (table : RawTable source target)
+    (coherent : TableCoherent source target table) :
+    protocolObservedRestrictionAssemble input
+        (protocolObservedRestrictionMap input
+          (closedFamilyProtocolHom
+            (assembleTable source target table coherent))) =
+      closedFamilyProtocolHom (assembleTable source target table coherent) :=
+by
+  convert
+    protocolObservedRestriction_assemble_read (X := source) (Y := target)
+      input (closedFamilyProtocolHom
+        (assembleTable source target table coherent)) using 1
 
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.ProtocolObservedFiniteDetermination
 

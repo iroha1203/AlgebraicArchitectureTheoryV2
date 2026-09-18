@@ -2692,7 +2692,7 @@ selection:
     - "Cycle 22 observation-aware protocol local Hom reading and full/faithful assembly"
     - "ProtocolRealization.GeneratorMap.ext and accepted quotient-execution extension"
     - "common FiniteReading separation, extension, determining, and effectiveness surfaces"
-  proof_obligation: "general observation-preserving ProtocolRealization Homを全(vertex, source state)対で読み、vertex-tagged target stateを共通FiniteReading値とする。raw tableのcoherenceをtag decoding、named-edge square、observation equationだけで定義し、separation、extension、determiningを独立に証明する。明示的有限列挙と等値判定からexact rejection/readbackを持つEffectivenessProgramを構成し、Cycle 22のprotocolObservedRestrictionMapへ接続する"
+  proof_obligation: "general observation-preserving ProtocolRealization Homを全(vertex, source state)対で読み、vertex-tagged target stateを共通FiniteReading値とする。raw tableのcoherenceをtag decoding、named-edge square、observation equationだけで定義し、separation、extension、determiningを独立に証明する。明示的有限列挙と等値判定からexact rejection/readbackを持つEffectivenessProgramを構成し、Cycle 22のfull-faithful/assembly経路へ接続する"
   selection_reason: "Cycle 28でprotocol可逆変更層を閉じたため、固定GOAL D/E2に残るgeneral observation-aware protocol Homの有限決定性とeffectivenessが直接の残余nodeである"
   expected_result_type: proof-obligation-discharged
   lean_targets:
@@ -2701,7 +2701,7 @@ selection:
     - "dependent target statesを型消去せずvertex tagを保持すること"
     - "coherenceへcompleted Hom、component-family certificate、extension witnessを混入しないこと"
     - "observation carrierの有限性を要求せず、発生するtagged observation equalityだけを判定すること"
-    - "semantic Finiteから非計算的Fintype.ofFiniteを導入せず、実効性境界を明示すること"
+    - "semantic Finiteから非計算的Fintype.ofFiniteを導入せず、実効性の明示入力を列挙すること"
     - "lens一般Hom、comparison group、四分枝統合まで過大主張しないこと"
 result:
   proposed_result_type: proof-obligation-discharged
@@ -2723,6 +2723,9 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.ProtocolObservedFiniteDetermination.effectivenessProgram"
     - "AAT.AG.LocalSemanticReconstruction.ProtocolObservedFiniteDetermination.fullInput_effective"
     - "AAT.AG.LocalSemanticReconstruction.ProtocolObservedFiniteDetermination.readProtocolHomAt_eq_observedRestrictionMap"
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolObservedFiniteDetermination.coherentWitnessTable_coherent"
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolObservedFiniteDetermination.incoherentTagWitnessTable_not_coherent"
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolObservedFiniteDetermination.cycle22_assemble_read_assembleTable"
   claim_mapping:
     source_labels:
       - "固定 GOAL B: protocol branchのprimitive observation-aware Hom reading、separation、assembly"
@@ -2732,11 +2735,12 @@ result:
       - "the finite input contains every actual vertex/source-state pair and the value retains its dependent target-state tag"
       - "raw coherence consists only of successful tag decoding, all named-edge squares, and observation equations"
       - "every actual protocol Hom has a coherent table"
-      - "a mismatched output tag gives an explicit incoherent-table rule"
+      - "a two-vertex Boolean protocol supplies concrete coherent and tag-mismatched incoherent raw tables"
       - "the full table separately separates and extends actual observation-preserving protocol morphisms"
       - "explicit finite enumerations and equality decisions make raw coherence decidable without finite observation carriers"
       - "the program rejects exactly incoherent input and successful extensions read back exactly"
       - "the point reading is definitionally the state component of the accepted Cycle 22 observed-restriction reading"
+      - "the Hom extended from a coherent finite table is fixed by the accepted Cycle 22 read/assemble inverse"
     undischarged_assumptions:
       - "general observation-preserving lens Hom finite determination/effectiveness"
       - "tagged and G-122 independent local-model equivalences"
@@ -2748,7 +2752,7 @@ audits:
     ambient_boundary:
       - "fixed finite protocol schema vertices and named edges"
       - "finite source state carrier at every vertex"
-      - "decidable equality on vertices, target states, and occurring tagged observations"
+      - "decidable equality on vertices, target states, and the full tagged observation-value type"
       - "arbitrary observation carriers; no carrier Fintype is assumed"
     direction_hypothesis: []
     discharge_required:
@@ -2770,15 +2774,16 @@ audits:
       - "ProtocolRealization.edge_naturality and observation_app"
       - "FiniteReading.Separates, Extends, Determining, and EffectivenessProgram"
       - "Cycle 22 protocolObservedRestrictionMap and closedFamilyProtocolHom"
+      - "Cycle 22 protocolObservedRestrictionAssemble and its assemble/read inverse"
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: "actual general observation-preserving protocol Hom and the full tagged vertex/state reading, with local raw-table exact rejection"
-  vacuity: "arbitrary actual protocol realizations and observation carriers are retained; every actual Hom supplies a positive coherent table, any changed vertex tag supplies a negative case, and no completed Hom or extension certificate occurs in TableCoherent"
+  vacuity: "arbitrary actual protocol realizations and observation carriers are retained; the two-vertex Boolean protocol supplies a concrete identity-Hom coherent table and a concrete constant-true-tag incoherent table, and no completed Hom or extension certificate occurs in TableCoherent"
   validation_refs:
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/ProtocolObservedFiniteDetermination.lean: pass"
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.ProtocolObservedFiniteDetermination: pass (4366 jobs)"
-    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.ProtocolObservedFiniteDetermination: 22 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.ProtocolObservedFiniteDetermination: 30 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "construct the corresponding general observation-preserving lens Hom finite determination/effectiveness connection, then integrate the remaining tagged/G-122 branches without weakening the fixed target"
 ```
