@@ -5986,7 +5986,11 @@ audits:
     ambient_boundary:
       - "an arbitrary normalization map alpha to beta for the generic theorem"
       - "the fixed finite-axis-fold actual direct endpoint for the G-122 application"
+    direction_hypotheses:
+      - "exact-one outgoing and incoming laws on the raw Bool graph"
+      - "fiber preservation for every true raw-graph edge"
     proved_dependencies:
+      - "classical equality selection used internally by graph reading; Classical.decEq discharges it without a public DecidableEq premise"
       - "canonical object normalization naturality"
       - "Cycle 61 full source-kernel equivalence and reconstruction"
       - "source-authored ambient-kernel automorphism and normalization-kernel membership"
@@ -6001,6 +6005,8 @@ audits:
     conclusion_equivalent_risk: []
   certificate_provenance:
     discharged:
+      - "positive exactness fixture / the diagonal raw Bool graph"
+      - "negative exactness fixture / the constant-false Bool graph on Bool"
       - "assembled target and inverse / unique row and column witnesses"
       - "fiber preservation / local true-edge equation"
       - "G-122 graph / evaluation of the actual object map at each ordered pair"
@@ -6023,7 +6029,7 @@ audits:
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/PrimitiveFiberPermutationGraph.lean: pass"
     - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122PrimitiveSourceKernelObjectGraph.lean: pass"
-    - "#assert_standard_axioms_only PrimitiveFiberPermutationGraph: 49 declarations, standard axioms only"
+    - "#assert_standard_axioms_only PrimitiveFiberPermutationGraph: 64 declarations, standard axioms only"
     - "#assert_standard_axioms_only G122PrimitiveSourceKernelObjectGraph: 20 declarations, standard axioms only"
     - "cd research/lean && ./check_research_modules.sh --focused on both Cycle 62 modules: pass"
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph: pass (4302 jobs)"

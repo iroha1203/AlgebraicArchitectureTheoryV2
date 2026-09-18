@@ -6,10 +6,10 @@ import Formal.Util.AssertStandardAxioms
 # Primitive graph presentation of fiber-preserving permutations
 
 For an arbitrary map `normalize : α → β`, a fiber-preserving permutation of
-`α` is presented by its Bool-valued graph.  The presentation stores one finite
-local value for each ordered pair of points, together with independent
+`α` is presented by its Bool-valued graph.  Raw data store one finite local
+value for each ordered pair of points; a separate predicate records independent
 row-existence, row-uniqueness, column-existence, column-uniqueness, and fiber
-compatibility laws.  It does not store a function, equivalence, permutation,
+compatibility laws.  Neither layer stores a function, equivalence, permutation,
 or completed inverse.
 
 The graph assembles to a permutation by the unique row witness.  The unique
@@ -24,7 +24,10 @@ composition.
 The group operations on graph codes are transported through the proved
 read/assembly equivalence.  They are not additional fields of the code.  The
 relational multiplication theorem exposes the resulting local rule and fixes
-the order forced by Mathlib's permutation multiplication.
+the order forced by Mathlib's permutation multiplication.  A diagonal raw
+graph and a constant-false raw graph provide the required positive and negative
+law fixtures.  Equality decisions used by graph reading are chosen classically
+inside the construction instead of becoming a public premise.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction
@@ -51,31 +54,103 @@ def FiberPermutationSubgroup (normalize : α → β) :
     have preserved := permutation_mem (permutation⁻¹ value)
     simpa using preserved.symm
 
-/-- Independent Bool-valued local graph data for one fiber-preserving
-permutation.  No completed map or inverse is retained. -/
-structure GraphCode (normalize : α → β) where
+/-- Independent Bool-valued local graph data.  No completed map, inverse, or
+graph law is retained. -/
+structure GraphData (α : Type u) where
   /-- One finite local value for each ordered pair. -/
   edge : α → α → Bool
+
+/-- Exact-one and fiber-preservation laws imposed on independent graph data. -/
+structure IsExact (normalize : α → β) (graph : GraphData α) : Prop where
   /-- Every source has exactly one outgoing true edge. -/
-  row_existsUnique : ∀ source, ∃! target, edge source target = true
+  row_existsUnique : ∀ source, ∃! target, graph.edge source target = true
   /-- Every target has exactly one incoming true edge. -/
-  column_existsUnique : ∀ target, ∃! source, edge source target = true
+  column_existsUnique : ∀ target, ∃! source, graph.edge source target = true
   /-- True edges remain inside one normalization fiber. -/
-  fiber_eq : ∀ {source target}, edge source target = true →
+  fiber_eq : ∀ {source target}, graph.edge source target = true →
     normalize target = normalize source
 
-namespace GraphCode
+/-- Exact graph codes keep raw graph data separate from its laws. -/
+abbrev GraphCode (normalize : α → β) :=
+  { graph : GraphData α // IsExact normalize graph }
 
-variable {normalize : α → β}
+namespace GraphData
 
-/-- Graph codes are determined by their Bool-valued local readings. -/
+/-- Raw graph data are determined by their Bool-valued local readings. -/
 @[ext]
-theorem ext {first second : GraphCode normalize}
+theorem ext {first second : GraphData α}
     (edge_eq : first.edge = second.edge) : first = second := by
   cases first
   cases second
   cases edge_eq
   rfl
+
+/-- The diagonal Bool table is the positive exactness fixture for every
+normalization map.  Classical equality is selected internally, so no
+decidable-equality premise remains in the public signature. -/
+noncomputable def diagonal : GraphData α := by
+  classical
+  exact ⟨fun source target => decide (source = target)⟩
+
+/-- The diagonal Bool table satisfies all exact graph laws. -/
+theorem diagonal_isExact (normalize : α → β) :
+    IsExact normalize (diagonal : GraphData α) := by
+  classical
+  constructor
+  · intro source
+    simp only [diagonal, decide_eq_true_eq]
+    exact ⟨source, rfl, fun target equality => equality.symm⟩
+  · intro target
+    simp only [diagonal, decide_eq_true_eq]
+    exact ⟨target, rfl, fun source equality => equality⟩
+  · intro source target edge
+    simp only [diagonal, decide_eq_true_eq] at edge
+    rw [edge]
+
+/-- The constant-false Bool table is the negative exactness fixture. -/
+def falseBool : GraphData Bool :=
+  ⟨fun _ _ => false⟩
+
+/-- The constant-false Bool table is not exact: it has no outgoing edge. -/
+theorem falseBool_not_isExact :
+    ¬ IsExact (fun _ : Bool => ()) falseBool := by
+  intro exactGraph
+  rcases exactGraph.row_existsUnique false with ⟨target, edge, _⟩
+  simp [falseBool] at edge
+
+end GraphData
+
+namespace GraphCode
+
+variable {normalize : α → β}
+
+/-- The independent Bool reading underlying an exact graph code. -/
+def edge (code : GraphCode normalize) : α → α → Bool :=
+  code.1.edge
+
+/-- Every source of an exact graph code has one unique target. -/
+theorem row_existsUnique (code : GraphCode normalize) (source : α) :
+    ∃! target, code.edge source target = true :=
+  code.2.row_existsUnique source
+
+/-- Every target of an exact graph code has one unique source. -/
+theorem column_existsUnique (code : GraphCode normalize) (target : α) :
+    ∃! source, code.edge source target = true :=
+  code.2.column_existsUnique target
+
+/-- Every true edge of an exact graph code remains in one normalization
+fiber. -/
+theorem fiber_eq (code : GraphCode normalize) {source target : α}
+    (edge : code.edge source target = true) :
+    normalize target = normalize source :=
+  code.2.fiber_eq edge
+
+/-- Graph codes are determined by their Bool-valued local readings. -/
+@[ext]
+theorem ext {first second : GraphCode normalize}
+    (edge_eq : first.edge = second.edge) : first = second := by
+  apply Subtype.ext
+  exact GraphData.ext edge_eq
 
 /-- Target selected by the unique outgoing edge. -/
 def target (code : GraphCode normalize) (source : α) : α :=
@@ -147,23 +222,22 @@ def assemble (code : GraphCode normalize) :
     show ∀ source, normalize (code.targetEquiv source) = normalize source
     exact code.target_normalize⟩
 
-variable [DecidableEq α]
-
 /-- Read a fiber-preserving permutation pointwise as finite Bool graph data. -/
-def read (permutation : FiberPermutationSubgroup normalize) :
-    GraphCode normalize where
-  edge source target := decide (permutation.1 source = target)
-  row_existsUnique source := by
+noncomputable def read (permutation : FiberPermutationSubgroup normalize) :
+    GraphCode normalize := by
+  classical
+  refine ⟨⟨fun source target => decide (permutation.1 source = target)⟩, ?_⟩
+  constructor
+  · intro source
     simp only [decide_eq_true_eq]
     exact ⟨permutation.1 source, rfl, fun target equality => equality.symm⟩
-  column_existsUnique target := by
+  · intro target
     simp only [decide_eq_true_eq]
     refine ⟨permutation.1.symm target, permutation.1.apply_symm_apply target, ?_⟩
     intro source equality
     apply permutation.1.injective
     exact equality.trans (permutation.1.apply_symm_apply target).symm
-  fiber_eq := by
-    intro source target equality
+  · intro source target equality
     have target_eq : permutation.1 source = target :=
       of_decide_eq_true equality
     rw [← target_eq]
@@ -178,7 +252,7 @@ theorem read_edge_eq_true_iff
     (permutation : FiberPermutationSubgroup normalize) (source target : α) :
     (read permutation).edge source target = true ↔
       permutation.1 source = target := by
-  simp [read]
+  simp [read, edge]
 
 /-- Assembly after reading recovers the complete fiber-preserving
 permutation. -/
@@ -188,7 +262,7 @@ theorem assemble_read (permutation : FiberPermutationSubgroup normalize) :
   apply Subtype.ext
   apply Equiv.Perm.ext
   intro source
-  exact (read permutation).target_eq_of_edge (by simp [read])
+  exact (read permutation).target_eq_of_edge (by simp [read, edge])
 
 /-- Reading after assembly recovers every primitive local edge. -/
 @[simp]
@@ -197,7 +271,7 @@ theorem read_assemble (code : GraphCode normalize) :
   apply GraphCode.ext
   funext source target
   apply Bool.eq_iff_iff.mpr
-  simpa [read] using (code.edge_eq_true_iff_target_eq source target).symm
+  simpa [read, edge] using (code.edge_eq_true_iff_target_eq source target).symm
 
 /-- Primitive graph codes and all fiber-preserving permutations are
 equivalent, with both inverse laws exposed above. -/
