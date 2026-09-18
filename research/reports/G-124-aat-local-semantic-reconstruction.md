@@ -75,12 +75,14 @@
   merge commit `af6037910ecf5466c7d02fbe52025402cf646503`
 - Cycle 33 accepted PR: [#4746](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4746),
   merge commit `2a1c70fdbb680511a731e9d83e6b8b4131c942b1`
+- Cycle 34 accepted PR: [#4747](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4747),
+  merge commit `2523f2c8990273a1a5955c3e9ade83d925bfc8a9`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: ambient package-level source-choice subgroupをCycle 31のfinite-local
-  compatible-section群へ直接同定し、actual package readbackとsingleton assemblyへ接続する
-- next proof obligation: tagged branchのsource-choice Hom sliceとnormalizationを含むlarger Homの
-  間で、共通R/M/Nへ必要な追加局所値と分離・組立て義務を固定する
+- current proof obligation: canonical normalization像へのchoice restrictionを冪等retractionとして
+  構成し、left-normalized actual mapの衝突をその核として完全分類する
+- next proof obligation: raw source-choiceとnormalized invariant choiceを持つgenerated tagged
+  endomorphism normal formを構成し、normalizationを含むcompositionを局所表示へ接続する
 
 ## Cycle 1 — rejected
 
@@ -3292,6 +3294,91 @@ audits:
   next_obligation: "specify the additional local values and separation/assembly obligations needed to extend the tagged branch beyond source-choice automorphisms to normalization and the larger ambient Hom class"
 ```
 
+## Cycle 35 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 35
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 2523f2c8990273a1a5955c3e9ade83d925bfc8a9
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 34 accepted evidence: PR comment 5726072482; Cycle 35 selection: Issue comment 5726082129"
+  proof_dag_predecessors:
+    - "Cycle 32 canonical normalized-image nonfaithfulness witness"
+    - "Cycle 34 actual ambient package readback and finite-local reconstruction"
+  proof_obligation: "construct canonical restriction of choices along object normalization, prove it is an idempotent retraction onto normalization-invariant choices, classify equality of left-normalized actual package maps exactly by equality of restricted choices, and recover faithfulness on invariant choices"
+  selection_reason: "upgrades Cycle 32 from one collision to the exact kernel needed for a generated tagged endomorphism normal form"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeNormalizedChoiceKernel.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "canonical source restriction is an idempotent retraction onto invariant choices; actual left-normalized package-map equality is equivalent to equality after that retraction; the normalized-image map is injective on invariant choices"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeNormalizedChoiceKernel.normalizeChoice"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeNormalizedChoiceKernel.normalizeChoice_invariant"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeNormalizedChoiceKernel.normalizeChoice_idempotent"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeNormalizedChoiceKernel.normalizeChoice_eq_iff"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeNormalizedChoiceKernel.InvariantChoice"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeNormalizedChoiceKernel.toInvariantChoice"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeNormalizedChoiceKernel.toInvariantChoice_retract"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeNormalizedChoiceKernel.normalization_comp_sourceChoice_eq_normalized"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeNormalizedChoiceKernel.readTaggedSourceChoice_normalization_comp"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeNormalizedChoiceKernel.normalization_comp_sourceChoice_eq_iff"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeNormalizedChoiceKernel.invariant_normalizedImage_injective"
+  claim_mapping:
+    source_labels:
+      - "fixed GOAL A/E1 tagged source-choice family and canonical normalization"
+      - "Cycle 32 normalized-image information-loss blocker"
+    conjuncts:
+      - "choice restriction along normalization lands in invariant choices and retracts them"
+      - "actual normalized package readback is exactly the restricted choice"
+      - "actual map collision iff restricted choices coincide"
+      - "restriction to invariant choices restores injectivity"
+    undischarged_assumptions:
+      - "generated endomorphism normal form including raw choices and normalization"
+      - "finite-local values and composition for that generated monoid"
+      - "common four-family R_Theta/M_Theta/N_Theta"
+    acceptance_point: "exact kernel of the canonical normalized-image map on the actual source-choice family only"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "actual taggedOperationPackage normalization and taggedSourceChoiceTotal"
+      - "existing tagged-identity-operation readback"
+    discharge_required:
+      - "restriction idempotence and fixed-point characterization"
+      - "actual normalized-map readback"
+      - "both directions of the exact collision classification"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "idempotence / canonicalObjectNormalization_idempotent"
+      - "readback / evaluation of the actual composed PackageTotalHom"
+      - "collision converse / componentwise actual package equality theorem from Cycle 32"
+    unresolved: []
+  proof_use:
+    used:
+      - "canonicalObjectNormalization_idempotent"
+      - "cast_operation_snd and taggedIdentityOperation"
+      - "canonicalNormalization_comp_taggedSourceChoiceTotal_eq_of_normalized"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "classifies precisely the information retained by canonical normalization without pretending the full source-choice family remains faithful"
+  vacuity: "Cycle 32 supplies actual distinct choices in one retraction fiber, while this Cycle also proves injectivity on the nonempty invariant subtype"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/TagChangeNormalizedChoiceKernel.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeNormalizedChoiceKernel: pass (4357 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeNormalizedChoiceKernel: 11 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct and prove composition laws for a faithful normal form of the tagged submonoid generated by raw source choices and canonical normalization"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -3314,6 +3401,8 @@ audits:
   自己同型族として収録し、同じ対象のcanonical normalizationと一様flipの三法則を接続した。
   Cycle 34では、そのambient package-level subgroupを全有限Bool-table整合族と直接同定し、
   actual package readbackの有限制限とsingleton assemblyによる逆をone-object圏同値まで接続した。
+  Cycle 35では、canonical normalized-image mapの衝突をchoice restriction retractionの核として
+  完全分類し、normalization-invariant choice上でのfaithfulnessを回復した。
   arbitrary observation carrier全体の有限encodingと四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
