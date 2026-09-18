@@ -87,8 +87,8 @@
   merge commit `9adad0f30d4b9de40bc264dc0194b32e1949e54b`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: exact-geometry levelのcanonical normalizationにより、generated tagged branchを
-  四分枝共通のglobal realization surfaceへ忠実に接続する
+- current proof obligation: canonical normalizationを `ExplicitExactGeometryHom` として構成し、
+  四分枝共通のtagged global fiberのHomに置く
 - next proof obligation: exact-geometry normalizationの冪等性とsource-choice合成則を証明し、
   generated image submonoidとCycle 38のcommon-global bridgeを構成する
 
@@ -3735,6 +3735,7 @@ audits:
     discharged:
       - "coverage / primitive requirement predicates and identity index maps"
       - "overlap / identity overlap isomorphisms"
+      - "coefficient / identity ring homomorphism on the fixed coefficient ring"
       - "raw / reflexive exact typed raw map"
       - "realization / explicit identity action on every retained context morphism"
     unresolved:
@@ -3742,8 +3743,10 @@ audits:
   proof_use:
     used:
       - "canonicalObjectNormalizationTotal"
+      - "RingHom.id"
       - "RawAmbientRestrictionSystemExactMapAgainst.refl"
       - "FamilyRealization tagged Hom definition"
+      - "taggedCanonicalNormalization_not_injective"
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
