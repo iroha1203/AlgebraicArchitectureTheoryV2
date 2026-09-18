@@ -115,11 +115,13 @@
   merge commit `ca07c309f75a92b8a2d914f237495722cd3e285d`
 - Cycle 53 accepted PR: [#4766](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4766),
   merge commit `664543be2520e146de13be12b7080ef7ba677018`
+- Cycle 54 accepted PR: [#4767](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4767),
+  merge commit `844cb74f6654c22f3110e369fcd9819a9f694c6d`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: source-ownedな二要素group codeをactual full restriction-kernel内の
-  生成部分群との群同型へ高め、各four-component comparison fiberのdisplayed orbit上で
-  自由かつ推移的な作用と変位の一意性を、comparison code一意性との共通surfaceで証明する
+- current proof obligation: four-component comparison codeとsource kernel group codeの積から、
+  comparison依存のactual displayed-lift総空間を両逆復元し、各fiber上のactual生成部分群作用、
+  自由推移性、source左正則作用とのequivarianceを同じsurfaceで証明する
 - next proof obligation: displayed C₂外を含むfull comparison groupとfull kernelを
   local dataから回復し、arbitrary expanded Homと四族の共通再構成へ接続する
 
@@ -5225,6 +5227,97 @@ audits:
   next_obligation: "recover a strictly larger independently presented part of the actual full kernel or the full comparison group, including its substantive reconstruction law and common-surface connection in the same cycle"
 ```
 
+## Cycle 55 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 55
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 844cb74f6654c22f3110e369fcd9819a9f694c6d
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 54 audit: PR comment 5732654875; acceptance: Issue comment 5732663590; Cycle 55 selection: Issue comment 5732719669"
+  proof_dag_predecessors:
+    - "Cycle 52 four-component comparison read/assemble equivalence"
+    - "Cycle 53 displayed actual lift orbit reconstruction"
+    - "Cycle 54 source-group/actual-subgroup multiplicative equivalence and unique displacement"
+  proof_obligation: "reconstruct the dependent total space of represented comparisons and displayed lifts from the product of comparison and source-kernel codes; close each displayed fiber under the actual generated subgroup; prove agreement with ambient actual action, freeness, transitivity, and equivariance with source left multiplication"
+  selection_reason: "this is a dependent bundle theorem rather than an alias or a pointwise conjunction: it adds an actual MulAction, a principal-action theorem, an equivariant fiber equivalence, and two-sided total-space reconstruction together with the common comparison connection"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122DisplayedFiberBundleReconstruction.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "every displayed fiber is equivalent to the source group code; the actual generated subgroup acts within that fiber and its transported action equals ambient restriction-kernel action on underlying lifts; every pair of displayed points has one acting subgroup value; source left multiplication is equivariant with orbit assembly; comparison and kernel codes reconstruct the whole dependent displayed total space with both inverse laws"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedFiberBundleReconstruction.orbitPointEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedFiberBundleReconstruction.displayedFiberMulAction"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedFiberBundleReconstruction.fiberAction_val"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedFiberBundleReconstruction.displayedFiber_existsUnique_smul_eq"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedFiberBundleReconstruction.orbitPointEquiv_equivariant"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedFiberBundleReconstruction.totalRead_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedFiberBundleReconstruction.totalAssemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedFiberBundleReconstruction.totalReconstructionEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedFiberBundleReconstruction.totalCode_existsUnique"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedFiberBundleReconstruction.totalReconstruction_and_principalFiber"
+  claim_mapping:
+    conjuncts:
+      - "comparison and kernel syntax remain independent source data and contain no actual lift or range witness"
+      - "the displayed image is closed under a genuine actual generated-subgroup MulAction"
+      - "the transported action agrees with ambient actual restriction-kernel action on underlying lifts"
+      - "the action is free and transitive through one unique subgroup displacement for arbitrary displayed points"
+      - "orbit assembly intertwines actual subgroup action and source left multiplication"
+      - "the product of four-component comparison code and source group code is equivalent to the dependent total displayed space with both inverse laws"
+    undischarged_assumptions:
+      - "recover the full restriction kernel outside the displayed generated subgroup"
+      - "recover comparisons outside the four-component image"
+      - "extend reconstruction to arbitrary expanded G-122 Homs and objects"
+      - "discharge final four-family separation and assembly"
+    acceptance_point: "principal generated-subgroup action on every represented displayed fiber and dependent two-sided reconstruction of the entire displayed comparison/lift bundle"
+    port_status: unported
+audits:
+  material_premises:
+    proved_dependencies:
+      - "four-component comparison read/assemble both inverse laws"
+      - "source-group/actual-subgroup multiplicative equivalence"
+      - "actual orbit equality, separation, and unique displacement"
+    discharge_required:
+      - "closure and group action laws on the displayed subtype"
+      - "agreement with ambient actual action"
+      - "equivariance and principal-action uniqueness"
+      - "dependent total-space read/assemble both inverse laws"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "fiber membership / previously proved orbit-range equality"
+      - "group action / multiplicative subgroup readback"
+      - "actual action equality / evaluation multiplication and orbit evaluation"
+      - "dependent total reconstruction / independent comparison and orbit inverse laws"
+    unresolved:
+      - "independent local presentation of the full actual kernel and full comparison group"
+  proof_use:
+    used:
+      - "Cycle 52 comparison equivalence"
+      - "Cycle 54 subgroup multiplicative equivalence and unique displacement"
+      - "Cycle 53 actual displayed-lift image"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "adds a substantive dependent reconstruction and principal action, then includes the common comparison connection in the same cycle"
+  vacuity: "the total space quantifies over every represented comparison and every displayed lift in its dependent fiber; the subgroup action is proved equal to actual lift action and the shifted point remains distinct"
+  four_lane_question: "Does the product of four-component comparison code and source kernel group code reconstruct the dependent actual displayed-lift total space with both inverse laws while the actual generated subgroup acts principally and equivariantly on every fiber?"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122DisplayedFiberBundleReconstruction.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122DisplayedFiberBundleReconstruction.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122DisplayedFiberBundleReconstruction: pass (4421 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122DisplayedFiberBundleReconstruction: 26 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "move beyond the displayed two-point bundle by independently recovering a strictly larger actual kernel or comparison family, or connect a new arbitrary-Hom reconstruction with its substantive separation and assembly laws in the same cycle"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -5301,6 +5394,10 @@ audits:
   Cycle 54ではこの二要素codeにsource-ownedな群構造を与え、actual生成部分群との乗法同値、
   全部分群要素のread/assemble両逆、displayed orbit上の任意2点間の一意なactual変位、
   comparison code一意性との共通surfaceを同梱した。
+  Cycle 55ではactual displayed imageを生成部分群作用の下で閉じ、ambient actual作用との一致、
+  自由推移性、source左正則作用とのequivarianceを証明した。さらにfour-component comparison
+  codeとsource kernel group codeの積から、comparison依存のdisplayed lift総空間全体への
+  read/assemble両逆を構成した。
   displayed C₂外のfull kernel、four-component像外、arbitrary Hom、四族統合は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
