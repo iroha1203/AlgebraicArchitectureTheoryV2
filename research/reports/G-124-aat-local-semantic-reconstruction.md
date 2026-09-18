@@ -133,14 +133,16 @@
   merge commit `b635ffc87cb71e163619b6004ffb25878a3d9ef8`
 - Cycle 62 accepted PR: [#4775](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4775),
   merge commit `bf71fc79d8093c6bd315e18a81c2f5429727eafd`
+- Cycle 63 accepted PR: [#4776](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4776),
+  merge commit `c31914db8437c1798cf5799b722b80b270d16927`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: 任意関数をdata/Prop分離したBool graphから両逆に再構成し、恒等・合成・
-  関係合成とfully faithfulな圏表示を固定する。同じsurfaceへ任意G-122 geometry Homのsource・Atom・
-  object・context・coefficient写像を接続し、固定有限比較probeの因子化とlocal image両逆を同梱する
-- next proof obligation: 残るdependent operation・equation・invariant・axis・coordinate・support・
-  observable・raw-relation写像にも独立graph readingを与え、joint separationとassemblyをfull direct
-  normalization kernel上で放電するか、arbitrary expanded Hom全体の実質的な再構成を同梱する
+- current proof obligation: `GeometryTotalHom.ext`が使う全計算成分をtotal-functional Bool graphへ読み、
+  dependent familyをtagged sigma mapとして独立表示する。graph族の一致から任意complete geometry Homの
+  joint separationを証明し、固定G-122 raw comparisonのfull direct normalization-kernel座標へ接続する
+- next proof obligation: arbitraryな整合graph族からcomplete geometry Homを組み立てる独立条件とassemblyを
+  構成するか、full direct normalization kernel自体をcompleted automorphismなしのprimitive local syntaxから
+  両逆に再構成する
 
 ## Cycle 1 — rejected
 
@@ -160,6 +162,7 @@ cycle: 2
 goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
 base_oid: 18540a67e277997376dc5833de4a608c6f526987
 tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
 selection:
   proof_state_ref: "Cycle 1 rejected evidence: PR comment 5717413267; Issue comment 5717413246"
   proof_dag_predecessors:
@@ -6166,6 +6169,139 @@ audits:
   next_obligation: "add independent graph readings for the remaining dependent geometry fields and prove a substantive joint separation-and-assembly theorem for complete G-122 geometry morphisms or the full direct normalization kernel"
 ```
 
+## Cycle 64: complete computational graph separation and full-kernel coordinates
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 64
+status: result-proposed
+branch: codex/4711-g124-complete-geometry-graph-separation
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: c31914db8437c1798cf5799b722b80b270d16927
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 63 acceptance: Issue comment 5737027956; Cycle 64 selection: Issue comment 5737051626"
+  proof_dag_predecessors:
+    - "Cycle 63 arbitrary-function total-functional Bool graph equivalence"
+    - "literal GeometryTotalHom computational extensionality spine"
+    - "Cycle 61 full direct normalization-kernel coordinate equivalence"
+  proof_obligation: "read every computational component used by GeometryTotalHom extensionality as an independent total-functional Bool graph, encode dependent families through tagged sigma maps, prove joint separation for arbitrary complete geometry morphisms, and connect that separation to the accepted full direct normalization-kernel coordinates and their two-sided assembly on the fixed G-122 raw comparison group"
+  selection_reason: "this cycle closes the dependent-map separation gap itself and includes the full-kernel coordinate connection; it is neither a definition-only step nor a later common-surface wrapper"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryFunctionGraphSeparation.lean"
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122CompleteGraphKernelReconstruction.lean"
+  risks:
+    - "tagged sigma equality might fail to recover dependent fiber maps"
+    - "object actions might fail to determine the selected-context equivalence"
+    - "a completed morphism or equivalent certificate might escape into graph data"
+    - "the fixed raw-comparison specialization might be overstated as arbitrary graph assembly"
+  unchecked:
+    - "coherence conditions and assembly for arbitrary CompleteMapGraphs values are outside this cycle"
+    - "an independent primitive syntax for the full direct normalization kernel is outside this cycle"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the five Cycle 63 maps are enlarged by a separate lower Atom graph, bidirectional selected-context graphs, equation-index and equation-observable graphs, tagged operation and coordinate graphs, invariant and signature-axis graphs, and tagged geometry support/axis/observable graphs. Equality of this complete bundle reconstructs every literal computational condition and separates arbitrary GeometryTotalHom values. On the fixed G-122 raw comparison group, the source complete-graph reading is injective, graph equality determines the accepted full source-kernel coordinates, and assembled code graphs are equal exactly when the codes are equal; the accepted read/assemble inverse laws remain connected in the same module."
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.taggedMap"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.fiberMap_heq_of_taggedMap_eq"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.fiberMap₂_heq_of_taggedMap_eq"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.equivFamily_heq_of_taggedMap_eq"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.ringEquivFamily_heq_of_taggedMap_eq"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.contextEquivalence_eq_of_object_maps_eq"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.CompleteMapGraphs"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.readCompleteMapGraphs"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.inputConditions_of_graph_eq"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.readCompleteMapGraphs_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122CompleteGraphKernelReconstruction.readRawComparisonGraphs"
+    - "AAT.AG.LocalSemanticReconstruction.G122CompleteGraphKernelReconstruction.readRawComparisonGraphs_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122CompleteGraphKernelReconstruction.readSourceKernel_eq_of_graph_eq"
+    - "AAT.AG.LocalSemanticReconstruction.G122CompleteGraphKernelReconstruction.assembledGraphs_eq_iff"
+    - "AAT.AG.LocalSemanticReconstruction.G122CompleteGraphKernelReconstruction.graphs_assembleSourceKernel_readSourceKernel"
+    - "AAT.AG.LocalSemanticReconstruction.G122CompleteGraphKernelReconstruction.readSourceKernel_assembleSourceKernel_with_graph_separation"
+  evidence:
+    - "readCompleteMapGraphs_injective"
+    - "readRawComparisonGraphs_injective"
+    - "readSourceKernel_eq_of_graph_eq"
+    - "assembledGraphs_eq_iff"
+    - "graphs_assembleSourceKernel_readSourceKernel"
+    - "readSourceKernel_assembleSourceKernel_with_graph_separation"
+  claim_mapping:
+    theorem_names:
+      - "readCompleteMapGraphs_injective"
+      - "readRawComparisonGraphs_injective"
+      - "readSourceKernel_eq_of_graph_eq"
+      - "assembledGraphs_eq_iff"
+      - "graphs_assembleSourceKernel_readSourceKernel"
+      - "readSourceKernel_assembleSourceKernel_with_graph_separation"
+    source_labels:
+      - "Cycle 64 fixed four-lane question"
+      - "G-124 Section B actual local reading and separation/assembly"
+    conjuncts:
+      - "raw graph fields contain Bool relations and total-functional Props, never a completed geometry morphism"
+      - "dependent operation, equation-observable, coordinate, support, geometry-axis, and geometry-observable families are ordinary tagged-sigma functions before graph reading"
+      - "forward and backward context-object graphs determine the complete context equivalence by thinness"
+      - "complete graph equality reconstructs the accepted literal computational conditions"
+      - "the complete graph reading jointly separates arbitrary GeometryTotalHom values"
+      - "fixed raw comparison graphs separate all raw comparisons and determine full source-kernel coordinates"
+      - "complete graphs of assembled full source-kernel codes agree exactly when the codes agree"
+      - "accepted source-kernel read and assembly retain both inverse laws"
+    undischarged_assumptions: []
+    acceptance_point: "the cycle discharges arbitrary complete-Hom joint separation and carries it through the accepted fixed raw-comparison coordinate equivalence with both inverse laws in the same change"
+    port_status: not-applicable
+  nonclaims:
+    - "an arbitrary CompleteMapGraphs value satisfies the preservation and naturality laws"
+    - "an arbitrary complete graph bundle assembles to a GeometryTotalHom"
+    - "the full direct normalization kernel has an independent primitive local syntax"
+audits:
+  premise_delta:
+    discharged:
+      - "dependent tagged-map recovery / fiberMap_heq_of_taggedMap_eq and fiberMap₂_heq_of_taggedMap_eq"
+      - "dependent equivalence recovery / equivFamily_heq_of_taggedMap_eq and ringEquivFamily_heq_of_taggedMap_eq"
+      - "selected-context equivalence recovery / contextEquivalence_eq_of_object_maps_eq"
+      - "arbitrary complete-Hom joint separation / readCompleteMapGraphs_injective"
+      - "fixed raw-comparison and source-kernel-code graph separation / readRawComparisonGraphs_injective and assembledGraphs_eq_iff"
+    remaining:
+      - "arbitrary complete graph bundle coherence and assembly / not claimed"
+      - "independent primitive full-kernel syntax / not claimed"
+  certificate_provenance:
+    discharged:
+      - "all graph fields / direct evaluation of actual computational functions"
+      - "all dependent family equalities / tagged sigma function equality"
+      - "complete Hom equality / accepted computational extensionality spine"
+      - "source-kernel coordinate recovery / accepted raw-comparison source equivalence and source-kernel equivalence"
+    unresolved:
+      - "independent coherence conditions and assembly for arbitrary complete graph bundles"
+      - "primitive local presentation and assembly for arbitrary direct normalization-kernel elements"
+  proof_use:
+    used:
+      - "GraphCode assemble/read recovery converts graph equality to equality of tagged functions"
+      - "tagged sigma injectivity recovers dependent map families"
+      - "thin selected-context categories recover functors and the complete context equivalence from object actions"
+      - "the literal computational extensionality spine reconstructs complete GeometryTotalHom equality"
+      - "the accepted raw-comparison source equivalence and source-kernel equivalence transport joint separation to full coordinates"
+    unused:
+      - "CompleteMapGraphs.primitive.context is retained for compatibility with the Cycle 63 five-map bundle; complete separation uses the independently stored bidirectional selected-context actions instead"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  target_fitting_reason: "the cycle supplies dependent computational graphs, proves arbitrary-Hom joint separation, and immediately connects it to accepted full-kernel reconstruction without claiming arbitrary-graph assembly"
+  vacuity: none-found
+  vacuity_reason: "the theorem quantifies over every complete geometry Hom and every fixed raw comparison, and proves injectivity through computational fields rather than a stored completed morphism"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  four_lane_question: "Do total-functional Bool graphs of every computational component jointly separate arbitrary complete geometry morphisms, including the dependent maps via tagged sums, and does that separation determine the accepted full direct normalization-kernel coordinates of every fixed G-122 raw comparison while retaining the existing two-sided assembly?"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryFunctionGraphSeparation.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122CompleteGraphKernelReconstruction.lean: pass"
+  blocking_findings: []
+  next_obligation: "define independent coherence conditions and assembly for arbitrary complete graph bundles, or reconstruct the full direct normalization kernel itself from primitive local syntax without storing completed automorphisms"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -6288,7 +6424,12 @@ audits:
   pointwise recoveryと恒等・合成を証明した。固定有限比較ではaccepted object probeがgraph assemblyを
   経由することを示し、既存local imageのread/assemble両逆まで接続した。dependent operation・equation・
   invariant・axis・coordinate・support・observable・raw-relation成分を含むjoint separation/assemblyは
-  未完了である。
+  未完了である。Cycle 64では、`GeometryTotalHom.ext`が使用する残りの計算成分をtagged sigma mapとして
+  total-functional Bool graphへ載せ、bidirectional context actionからcontext equivalenceを回収し、
+  graph族の一致が任意complete geometry Homを分離することを証明した。固定G-122 raw comparisonでは
+  source complete-graph readingが全raw comparisonを分離し、full direct normalization-kernel座標を決定し、
+  assembled codeのgraph一致とcode一致の同値を既存read/assemble両逆へ接続した。arbitraryな整合graph族の
+  独立coherence条件とassembly、direct normalization kernel自体のprimitive local syntaxは未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
