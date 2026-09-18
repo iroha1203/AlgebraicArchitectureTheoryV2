@@ -79,12 +79,13 @@
   merge commit `2523f2c8990273a1a5955c3e9ade83d925bfc8a9`
 - Cycle 35 accepted PR: [#4748](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4748),
   merge commit `796e99d40e4b0ce44b2e7f3a3bd09f71483e0525`
+- Cycle 36 accepted PR: [#4749](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4749),
+  merge commit `8a7fb13571039012551efeef505d9980708a8196`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: normalization flagとcompatible finite Bool tableからなるfinite-local modelを
-  構成し、成分ごとの合成則とactual generated normal-form monoidとの同定を証明する
-- next proof obligation: generated tagged endomorphismのfinite-local同定をone-object圏同値へ持ち上げ、
-  四分枝共通の局所読み取りsurfaceへの接続条件を特定する
+- current proof obligation: generated tagged endomorphismのfinite-local同定をone-object圏同値へ持ち上げ、
+  Hom reading・assemblyとobject assemblyをactual category上で明示する
+- next proof obligation: tagged branchのactual/local圏同値を四分枝共通の局所読み取りsurfaceへ接続する
 
 ## Cycle 1 — rejected
 
@@ -3472,6 +3473,101 @@ audits:
   next_obligation: "construct a finite-local model of a normalization flag plus compatible finite Bool tables, prove its componentwise composition law, and identify it with the actual generated normal-form monoid"
 ```
 
+## Cycle 37 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 37
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 8a7fb13571039012551efeef505d9980708a8196
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 36 accepted evidence: PR comment 5726407415; Cycle 37 selection: Issue comment 5726414042"
+  proof_dag_predecessors:
+    - "Cycle 31 compatible all-finite Bool-table families and singleton assembly"
+    - "Cycle 36 faithful actual generated-endomorphism normal form"
+  proof_obligation: "construct a finite-local model consisting of a normalization flag and compatible finite Bool tables, define normalization and composition directly on finite tables, prove separation and assembly, and identify the model with the actual generated tagged endomorphism submonoid"
+  selection_reason: "discharges the finite-local obligation left by Cycle 36 without storing a global choice or completed morphism in one local value"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeGeneratedLocalModel.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "local values are finite flag/table pairs; compatible sections contain only restriction-coherent finite tables; normalization reads the finite image table; componentwise multiplication is monoid-equivalent to the actual generated submonoid and its finite values are primitive actual package readbacks"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.LocalValue"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.localValue_finite"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.restrict"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.LocalSection"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.value_restrict"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.normalizeFamily"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.normalizeFamily_read"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.normalFormEquivLocalSection"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.multiply"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.read_multiply"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.normalFormMulEquivLocalSection"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.actualGeneratedMulEquivLocalSection"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.actualGeneratedMulEquivLocalSection_value"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.separates"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.assembles"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.multiply_value"
+  claim_mapping:
+    source_labels:
+      - "fixed GOAL A finite local values and primitive restrictions"
+      - "fixed GOAL B separation and assembly"
+      - "Cycle 36 actual generated tagged endomorphism submonoid"
+    conjuncts:
+      - "each indexed value is a finite Bool flag/table pair"
+      - "section compatibility is primitive finite-table restriction"
+      - "normalization and multiplication are computed from finite tables and finite images"
+      - "finite local reading is bijective and multiplicative"
+      - "each table is the finite restriction of actual package readback"
+    undischarged_assumptions:
+      - "one-object categorical equivalence and object assembly for the generated branch"
+      - "common four-family R_Theta/M_Theta/N_Theta"
+    acceptance_point: "finite-local monoid reconstruction of the actual generated tagged endomorphisms only"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "Cycle 36 actualGeneratedSubmonoid and faithful normal-form equivalence"
+      - "independently defined all-finite CoherentFamily"
+    discharge_required:
+      - "finite value type and restriction compatibility"
+      - "finite-image normalization agrees with global normalization reading"
+      - "componentwise composition agrees with actual composition"
+      - "reading separation, assembly, and primitive actual readback"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "local finiteness / Bool and finite-domain Bool table"
+      - "assembly / singleton assembly of compatible finite tables"
+      - "composition / finite-image table lookup and pointwise xor"
+      - "actual identification / composition of Cycle 36 and finite-section monoid equivalences"
+      - "primitive readback / raw and normalization-final actual PackageTotalHom evaluation"
+    unresolved: []
+  proof_use:
+    used:
+      - "TagChange.read_assemble and assemble_read"
+      - "TagChangeGeneratedNormalForm.evaluate_injective and evaluate_multiply through the Cycle 36 equivalence"
+      - "readTaggedSourceChoice_taggedSourceChoiceTotal"
+      - "read_sourceChoice_comp_normalization"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "uses actual finite indices and primitive restrictions; one local value contains no global choice, extension witness, or completed ambient morphism"
+  vacuity: "raw and normalized flags are both represented, and every compatible finite family assembles to an actual generated endomorphism"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/TagChangeGeneratedLocalModel.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel: pass (4359 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel: 42 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "deloop the actual generated submonoid/local-section monoid equivalence and state Hom reading, Hom assembly, and object assembly as an explicit one-object categorical equivalence"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -3497,15 +3593,17 @@ audits:
   Cycle 35では、canonical normalized-image mapの衝突をchoice restriction retractionの核として
   完全分類し、normalization-invariant choice上でのfaithfulnessを回復した。Cycle 36では、
   raw source-choiceとcanonical normalizationが生成するactual endomorphism submonoidを二構成子の
-  一意なnormal formで完全表示し、四ケースの合成則と生成部分モノイドとの一致を証明した。
+  一意なnormal formで完全表示し、四ケースの合成則と生成部分モノイドとの一致を証明した。Cycle 37では、
+  normalization flagと全有限Bool-table整合族からなるfinite-local sectionを構成し、有限像上の
+  normalization、成分ごとの合成、actual readback、separation/assembly、generated monoidとの同型を証明した。
   arbitrary observation carrier全体の有限encodingと四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
   package-level Hom-slice同定はCycle 34で接続した。canonical-normalizationを含むfull tagged categoryと
-  四分枝共通の主同値への接続は未完了である。Cycle 36のgenerated normal formについても、
-  finite-local reading・composition・separation・assemblyへの接続は未完了である。
+  四分枝共通の主同値への接続は未完了である。Cycle 37のgenerated finite-local monoid同型を
+  one-object圏同値として明示し、共通surfaceへ接続する義務は未完了である。
 - E2 の product-lens / protocol 可逆変更層はCycle 27--28で共通
   `FiniteReading`/Dへ接続済み。Cycle 29でgeneral observation-aware protocol Homも
   full tagged table上の決定性・effectivenessへ接続し、Cycle 30でlens一般意味保存射層も
