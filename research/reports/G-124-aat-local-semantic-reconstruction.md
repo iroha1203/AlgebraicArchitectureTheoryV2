@@ -2445,6 +2445,116 @@ audits:
   next_obligation: "construct the tagged or G-122 independent local-model equivalence and connect it to the common four-family reading without weakening the fixed target"
 ```
 
+Cycle 26 / PR #4739 は final head
+`c359460f357673e970a3a9ede4b412630c2db4d1` で受理した。fresh Math A/B +
+Lean A/B はすべて `No major findings`、CI は 7/7 success。最終監査は PR comment
+`5724206582`、merge commit は
+`d32e437efa4d0ff2f865ff577fc6d4c3c54dc671` である。
+
+## Cycle 27 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 27
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: d32e437efa4d0ff2f865ff577fc6d4c3c54dc671
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 26 accepted evidence: PR comment 5724206582; Cycle 27 selection: Issue comment 5724228773"
+  proof_dag_predecessors:
+    - "Cycle 25 lensSemanticFiberEquivalence and explicit product-lens assembler/readback"
+    - "Cycle 26 finite-decoder/Karoubi coherence on the actual FintypeCat local category"
+    - "accepted LensInvertibleChange hidden-permutation classification and complete-update-graph fiber permutation"
+    - "common FiniteReading separation, extension, determining, and effectiveness surfaces"
+  proof_obligation: "任意のvisible permutation上のactual product-lens invertible changeを基準fiberのhidden座標で読み、全有限fiberを明示的reading setとする。raw tableのbijectivityだけを独立coherenceとしてseparation・extension・effectivenessを別々に証明し、effectivenessは有限探索で逆写像を計算してnonbijective tableだけを拒否する"
+  selection_reason: "Cycle 26までにlens local categoryとfinite presentation/Karoubi coherenceが揃ったため、固定GOAL D/E2の共通FiniteReading surfaceをactual lens invertible changeへ接続する直接の残余nodeである"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/LensFiniteDetermination.lean"
+  risks:
+    - "coherenceへglobal extendabilityを混入せず、raw tableのbijectivityだけを判定すること"
+    - "reference fiberをproxy carrierへ置換せず、actual product-lens state changeのhidden座標を読むこと"
+    - "separation、extension、effectivenessを一つの結論証明から循環的に導かないこと"
+    - "effectivenessでEquiv.ofBijectiveの非計算的preimage choiceに逃げず、有限探索から逆写像を構成すること"
+    - "all lenses、protocol branch、四分枝統合まで一般化しないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the full finite reference fiber now determines actual product-lens invertible changes; intrinsic table coherence is decidable bijectivity, and a finite-search effectiveness program rejects exactly nonbijective tables and reconstructs the accepted hidden-permutation change with exact readback"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.readProductLensChangeAt"
+    - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.readProductLensChangeAt_eq_reference_evaluation"
+    - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.readProductLensChangeAt_eq_fiberPerm"
+    - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.fullReferenceFiber"
+    - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.TableCoherent"
+    - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.finiteInverseOfBijective"
+    - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.finitePermutationOfBijective"
+    - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.fullReferenceFiber_separates"
+    - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.fullReferenceFiber_extends"
+    - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.fullReferenceFiber_determining"
+    - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.effectivenessProgram"
+    - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.fullReferenceFiber_effective"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL D: 有限readingのseparation・extension・effectivenessを独立に与える"
+      - "固定 GOAL E2: lensの基準fiber tableがactual invertible changeを区別・延長する"
+    conjuncts:
+      - "the point reading is the hidden coordinate of the actual complete state change at the reference fiber"
+      - "the same point reading is the accepted complete-update-graph fiber permutation"
+      - "the full finite fiber separates actual invertible lens changes"
+      - "every bijective raw table extends through the accepted hidden-permutation constructor"
+      - "bijectivity is decided on the raw finite table"
+      - "finite search constructs the inverse permutation and successful extension reads back exactly"
+      - "the program returns none exactly for nonbijective tables"
+    undischarged_assumptions:
+      - "the corresponding protocol finite-determination/effectiveness application"
+      - "tagged and G-122 independent local-model equivalences"
+      - "the final common Lambda_Theta, M_Theta, N_Theta, and D_Theta"
+    acceptance_point: "actual product-lens invertible-change finite determination only; no protocol, all-lens, or all-four reconstruction claim"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "arbitrary view and hidden types with a finite hidden carrier"
+      - "fixed reference view and arbitrary visible permutation"
+      - "accepted LensInvertibleChange hidden-permutation classification"
+    direction_hypothesis: []
+    discharge_required:
+      - "actual reading identity / normalForm and complete-update-graph fiberPerm"
+      - "separation / injectivity of equivHiddenPermutations"
+      - "extension / ofHiddenPermutation applied to the raw table"
+      - "effectiveness / decidable bijectivity and finite-search inverse"
+      - "exact rejection and readback / EffectivenessProgram laws"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "global change / constructed by LensInvertibleChange.ofHiddenPermutation"
+      - "permutation inverse / computed by Finset.choose over Finset.univ using unique bijective preimages"
+      - "coherence decision / decide on Function.Bijective of the raw table function"
+    unresolved:
+      - "protocol E2 finite determination/effectiveness"
+      - "tagged/G-122 local-model equivalences and all-four integration"
+  proof_use:
+    used:
+      - "LensInvertibleChange.normalForm, equivHiddenPermutations, and ofHiddenPermutation"
+      - "complete-update-graph fiberPerm identification"
+      - "FiniteReading.Separates, Extends, Determining, and EffectivenessProgram"
+      - "finite enumeration and decidable equality on the actual hidden carrier"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "actual product-lens invertible changes and the actual full reference fiber, with raw-table exact rejection"
+  vacuity: "arbitrary finite hidden carriers, visible permutations, and bijective/nonbijective raw tables are retained; no stored extension certificate or singleton filler is introduced"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/LensFiniteDetermination.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.LensFiniteDetermination: pass (targeted dependency closure only)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination: 15 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct the protocol-branch actual finite determination/effectiveness application, keeping its observation-aware local Hom and execution-state coherence distinct from the lens proof"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -2455,10 +2565,12 @@ audits:
   full faithfulness、Cycle 23 は同branchのobject assemblyと圏同値、Cycle 24 はactual finite
   decoderの計算式とKaroubi restriction・retract・Arrow coherence、Cycle 25はlens branchの
   finite-fiber Hom/object assemblyと圏同値、Cycle 26はlens branchのfinite decoder計算と
-  Karoubi restriction・retract・Arrow coherenceに限る。arbitrary observationのeffective
-  finite encoding、四分枝統合は未完了である。
+  Karoubi restriction・retract・Arrow coherence、Cycle 27はactual lens invertible changeの
+  finite determinationと有限探索effectivenessに限る。protocol側のactual finite
+  determination、arbitrary observationのeffective finite encoding、四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の同定。
-- E2 の lens・protocol 二層の決定性の共通`FiniteReading`/Dへの接続。
+- E2 の lens側はCycle 27で共通`FiniteReading`/Dへ接続済み。protocol側の決定性と
+  effectivenessの接続は未完了である。
