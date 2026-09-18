@@ -127,13 +127,15 @@
   merge commit `9b7e650ea5bde19219cf8203707f7ed23103b955`
 - Cycle 59 accepted PR: [#4772](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4772),
   merge commit `7acbd8277b9ae8a6999f0ef807fddfc9bac6c8cb`
+- Cycle 60 accepted PR: [#4773](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4773),
+  merge commit `a3d22a582c20aa0b3ec726465856b1ec8f7651f8`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: full raw comparisonをcanonical normalized comparisonと一意なfull
-  restriction-kernel変位から両方向に再構成し、共役で捻れた積、全lift fiberの一意性、
-  normalized source automorphism接続を同じsurfaceで証明する
-- next proof obligation: arbitrary full-kernel要素のprimitive local presentationを構成して
-  このfull comparison分解へ接続するか、arbitrary expanded Homの実質的な分離・assemblyを同梱する
+- current proof obligation: source projectionでfull raw/normalized comparison群をdirect-endpoint
+  automorphism群へ同定し、restrictionとnormalizationの可換式、full kernelの乗法同値・両逆、
+  Cycle 60の捻れた再構成をsource-kernel座標へ同梱する
+- next proof obligation: direct normalization kernelのarbitrary要素をprimitive local syntaxから
+  独立に再構成するか、arbitrary expanded Homの実質的な分離・assemblyを同梱する
 
 ## Cycle 1 — rejected
 
@@ -5821,6 +5823,102 @@ audits:
   next_obligation: "construct a primitive local presentation for arbitrary full-kernel elements and connect its own separation and assembly to this full comparison decomposition, or discharge a nontrivial arbitrary expanded-Hom reconstruction surface"
 ```
 
+## Cycle 61: full source-kernel exact decomposition
+
+```yaml
+cycle: 61
+status: implementation-complete-review-pending
+branch: codex/4711-g124-full-source-kernel-exact-decomposition
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: a3d22a582c20aa0b3ec726465856b1ec8f7651f8
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 60 audit: PR comment 5735201319; Cycle 60 acceptance: Issue comment 5735210832; Cycle 61 selection: Issue comment 5735223007"
+  proof_dag_predecessors:
+    - "Cycle 60 full comparison and kernel decomposition"
+    - "accepted source classification of comparison groups for an isomorphism"
+    - "accepted endpoint normalization homomorphism"
+  proof_obligation: "identify the full raw and normalized comparison groups with their complete direct-endpoint automorphism groups; prove that comparison restriction is endpoint normalization in source coordinates; identify the full comparison kernel multiplicatively with the direct normalization kernel; transport the full two-sided reconstruction, uniqueness, and twisted product to those source-kernel coordinates"
+  selection_reason: "this replaces the opaque pair-valued comparison kernel by its exact source normalization kernel, proves a multiplicative kernel equivalence with explicit inverses, and carries the Cycle 60 reconstruction and product law to that common source surface in the same cycle"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122FullSourceKernelExactDecomposition.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "source projection gives a multiplicative equivalence from every raw comparison to the actual direct-endpoint automorphism group; the normalized analogue is reused on the complete normalized group; the restriction/source square commutes with direct normalization; explicit forward and inverse homomorphisms identify the full comparison kernel with the full direct normalization kernel; source-kernel read and assembly maps satisfy both inverse laws; every raw comparison has a unique source-kernel displacement over its restricted normalized source; multiplication obeys the transported conjugation-twisted formula"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.G122FullSourceKernelExactDecomposition.rawComparisonSourceMulEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullSourceKernelExactDecomposition.directNormalizationHom"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullSourceKernelExactDecomposition.source_restriction_commutes"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullSourceKernelExactDecomposition.fullKernelToSourceKernelHom"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullSourceKernelExactDecomposition.sourceKernelToFullKernelHom"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullSourceKernelExactDecomposition.fullKernelToSourceKernel_sourceKernelToFullKernel"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullSourceKernelExactDecomposition.sourceKernelToFullKernel_fullKernelToSourceKernel"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullSourceKernelExactDecomposition.fullKernelSourceMulEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullSourceKernelExactDecomposition.readSourceKernel_assembleSourceKernel"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullSourceKernelExactDecomposition.assembleSourceKernel_readSourceKernel"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullSourceKernelExactDecomposition.fullSourceKernelEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullSourceKernelExactDecomposition.sourceKernelCoordinate_existsUnique"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullSourceKernelExactDecomposition.assembleSourceKernel_mul_formula"
+  claim_mapping:
+    conjuncts:
+      - "the full raw comparison group is multiplicatively classified by its direct source automorphism"
+      - "comparison restriction and direct-endpoint normalization commute under source projection"
+      - "the full comparison restriction kernel and full direct normalization kernel are multiplicatively equivalent"
+      - "both kernel-equivalence inverse laws are explicit"
+      - "source-kernel read and assembly are mutually inverse on every raw comparison"
+      - "the source-kernel displacement over a fixed normalized source is unique"
+      - "the noncommutative multiplication retains the Cycle 60 conjugation twist"
+    undischarged_assumptions:
+      - "present arbitrary direct normalization-kernel automorphisms by primitive local syntax"
+      - "recover arbitrary expanded G-122 Homs outside the comparison group"
+      - "discharge final four-family separation and assembly"
+    acceptance_point: "full source classification, commuting normalization square, multiplicative kernel equivalence with explicit inverses, unique source-kernel coordinates, and transported twisted reconstruction in one cycle"
+    port_status: unported
+audits:
+  material_premises:
+    proved_dependencies:
+      - "comparison source projection is an equivalence when the comparison arrow is an isomorphism"
+      - "actual and normalized fixed barAlpha are isomorphisms"
+      - "Cycle 60 full comparison read and assembly"
+    discharge_required:
+      - "source/restriction commuting square"
+      - "kernel forward and inverse membership"
+      - "both kernel inverse laws and multiplicativity"
+      - "source-kernel read/assembly inverse laws"
+      - "fixed-normalized-source uniqueness"
+      - "transported twisted multiplication"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "comparison kernel membership / derived by applying restriction and the source commuting square"
+      - "source kernel membership / derived by applying endpoint normalization and the inverse source equivalence"
+      - "source-kernel coordinates / computed from Cycle 60 readback and the kernel equivalence"
+    unresolved:
+      - "primitive local syntax and assembly for arbitrary direct normalization-kernel elements"
+      - "surjectivity for arbitrary expanded G-122 Homs"
+  proof_use:
+    used:
+      - "Cycle 60 full comparison kernel decomposition"
+      - "generated comparison source equivalence"
+      - "functor-induced direct automorphism normalization"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "reduces the complete comparison-kernel problem to the exact direct source normalization kernel and transports all Cycle 60 reconstruction laws without treating completed automorphisms as primitive syntax"
+  vacuity: "kernel memberships are derived from the commuting square and inverse source equivalences; both directions are proved, and the result quantifies over the complete raw comparison and direct normalization kernels rather than a selected image"
+  four_lane_question: "Does source projection identify the full raw and normalized comparison groups with the complete direct-endpoint automorphism groups, intertwine comparison restriction with endpoint normalization, identify the full comparison kernel multiplicatively with the direct normalization kernel, and transport Cycle 60's two-sided twisted reconstruction into those source-kernel coordinates?"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122FullSourceKernelExactDecomposition.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122FullSourceKernelExactDecomposition: 19 declarations, standard axioms only"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122FullSourceKernelExactDecomposition.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122FullSourceKernelExactDecomposition: pass (4300 jobs)"
+  blocking_findings: []
+  next_obligation: "construct an independent primitive local presentation with separation and assembly for arbitrary direct normalization-kernel automorphisms and connect it to the full source-kernel equivalence, or discharge a nontrivial arbitrary expanded-Hom reconstruction surface"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -5927,7 +6025,11 @@ audits:
   変位から明示的に組み立て、read/assemble両逆、共役で捻れた積公式、raw comparisonと全lift fiberでの
   kernel変位一意性を証明した。normalized factorをactual normalized source automorphism群へ接続し、その
   座標でも両逆を同梱した。full kernel要素の独立なprimitive local presentation、arbitrary expanded Hom、
-  四族統合は未完了である。
+  四族統合は未完了である。Cycle 61ではfull raw/normalized comparison群をdirect endpointの全自己同型群へ
+  乗法同値で同定し、comparison restrictionとdirect normalizationの可換式を証明した。これによりfull
+  comparison kernelとdirect normalization kernelの明示的な乗法同値・両逆を構成し、Cycle 60の
+  read/assemble両逆、一意なkernel変位、共役で捻れた積をsource-kernel座標へ移した。direct normalization
+  kernelのarbitrary要素をprimitive local syntaxから独立に再構成する義務は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
