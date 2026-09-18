@@ -3494,7 +3494,7 @@ selection:
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeGeneratedLocalModel.lean"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "local values are finite flag/table pairs; compatible sections contain only restriction-coherent finite tables; normalization reads the finite image table; componentwise multiplication is monoid-equivalent to the actual generated submonoid and its finite values are primitive actual package readbacks"
+  proof_obligation_delta: "local values are finite flag/table pairs on finite normalization closures; compatible sections contain only restriction-coherent finite tables; normalization and multiplication are same-index finite operations; componentwise multiplication is monoid-equivalent to the actual generated submonoid and the complete flag/table value is primitive actual package readback"
   completion_candidate: no
   section_completion_candidate: no
   lean_artifacts:
@@ -3503,14 +3503,20 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.restrict"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.LocalSection"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.value_restrict"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.normalizationClosure"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.normalizeFamily"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.normalizeFamily_read"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.normalizeLocalTable"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.normalizeFamily_value"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.normalFormEquivLocalSection"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.multiply"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.read_multiply"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.normalFormMulEquivLocalSection"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.actualGeneratedMulEquivLocalSection"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.primitiveNormalizationFlag"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.actualGeneratedMulEquivLocalSection_normalized"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.actualGeneratedMulEquivLocalSection_value"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.actualGeneratedMulEquivLocalSection_localValue"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.separates"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.assembles"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel.multiply_value"
@@ -3522,9 +3528,9 @@ result:
     conjuncts:
       - "each indexed value is a finite Bool flag/table pair"
       - "section compatibility is primitive finite-table restriction"
-      - "normalization and multiplication are computed from finite tables and finite images"
+      - "normalization and multiplication are computed from the same finite normalization-closed component"
       - "finite local reading is bijective and multiplicative"
-      - "each table is the finite restriction of actual package readback"
+      - "the flag is read from the actual upper object map and each table from actual package operation readback"
     undischarged_assumptions:
       - "one-object categorical equivalence and object assembly for the generated branch"
       - "common four-family R_Theta/M_Theta/N_Theta"
@@ -3537,7 +3543,7 @@ audits:
       - "independently defined all-finite CoherentFamily"
     discharge_required:
       - "finite value type and restriction compatibility"
-      - "finite-image normalization agrees with global normalization reading"
+      - "same-index normalization on a finite closure agrees with global normalization reading"
       - "componentwise composition agrees with actual composition"
       - "reading separation, assembly, and primitive actual readback"
     conclusion_equivalent_risk: []
@@ -3545,9 +3551,10 @@ audits:
     discharged:
       - "local finiteness / Bool and finite-domain Bool table"
       - "assembly / singleton assembly of compatible finite tables"
-      - "composition / finite-image table lookup and pointwise xor"
+      - "composition / same-index normalization-closure lookup and pointwise xor"
       - "actual identification / composition of Cycle 36 and finite-section monoid equivalences"
-      - "primitive readback / raw and normalization-final actual PackageTotalHom evaluation"
+      - "primitive flag readback / actual upper objectMap evaluated at a fixed moved source"
+      - "primitive table readback / raw and normalization-final actual PackageTotalHom operationMap evaluation"
     unresolved: []
   proof_use:
     used:
@@ -3555,6 +3562,7 @@ audits:
       - "TagChangeGeneratedNormalForm.evaluate_injective and evaluate_multiply through the Cycle 36 equivalence"
       - "readTaggedSourceChoice_taggedSourceChoiceTotal"
       - "read_sourceChoice_comp_normalization"
+      - "exists_source_moved_by_normalization"
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
@@ -3563,10 +3571,20 @@ audits:
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/TagChangeGeneratedLocalModel.lean: pass"
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel: pass (4359 jobs)"
-    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel: 42 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel: 57 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "deloop the actual generated submonoid/local-section monoid equivalence and state Hom reading, Hom assembly, and object assembly as an explicit one-object categorical equivalence"
 ```
+
+### Cycle 37 initial review remediation
+
+初回4レーンでは、二つの中心 finding が出た。第一に、旧 `LocalValue S` は `S` 上の表だけを
+持つため、正規化後の参照先 `n(S)` を同じ成分から計算できず、合成則を成分ごとと呼べなかった。
+第二に、正規化 flag は normal-form 同値の逆から得ており、actual morphism の原始 readback では
+なかった。修正では `LocalValue S` の表を有限閉包 `S ∪ n(S)` 上に取り、冪等性から閉包内で
+完結する `normalizeLocalTable` と `multiplyLocalValue` を定義した。さらに canonical normalization
+で動く固定 source を選び、actual `upper.objectMap` のその点での値から flag を直接読み、
+actual `operationMap` 由来の有限表と合わせた完全な local value readback を証明した。
 
 ## 未完了 ledger
 

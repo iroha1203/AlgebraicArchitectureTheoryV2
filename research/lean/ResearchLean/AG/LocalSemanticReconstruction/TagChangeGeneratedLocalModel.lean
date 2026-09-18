@@ -10,11 +10,14 @@ choice in that normal form by its coherent family of finite Bool tables.  A
 local section contains only a finite normalization flag and one finite table
 at every finite index, with primitive restriction equations between tables.
 
-Canonical restriction of a choice is implemented directly on finite tables:
-the table on `S` is read from the old table on the finite image of `S` under
-object normalization.  The resulting componentwise multiplication is proved
-equivalent to the actual generated endomorphism monoid.  No global choice or
-completed ambient morphism is stored in an individual local value.
+Each value at `S` stores the table on the finite normalization closure
+`S ∪ n(S)`.  Therefore canonical normalization and multiplication are
+computed at that same finite index, without consulting another component.
+The normalization flag is read directly from the actual upper object map at
+a fixed moved source, while the table is read from the actual operation map.
+The resulting componentwise multiplication is proved equivalent to the actual
+generated endomorphism monoid.  No global choice or completed ambient morphism
+is stored in an individual local value.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction
@@ -32,19 +35,59 @@ open TagChangeGeneratedNormalForm
 
 abbrev Index := TagChange.TaggedArchitectureIndex
 
+/-- The finite normalization closure of an index.  Idempotence makes one image
+step sufficient. -/
+noncomputable def normalizationClosure (S : Finset Index) : Finset Index := by
+  classical
+  exact S ∪ S.image (canonicalObjectNormalization taggedOperationPackage)
+
+/-- Every index embeds into its finite normalization closure. -/
+theorem subset_normalizationClosure (S : Finset Index) :
+    S ⊆ normalizationClosure S := by
+  classical
+  intro source membership
+  exact Finset.mem_union_left _ membership
+
+/-- Normalization closure is monotone under finite-index inclusion. -/
+theorem normalizationClosure_mono {S T : Finset Index} (h : S ⊆ T) :
+    normalizationClosure S ⊆ normalizationClosure T := by
+  classical
+  intro source membership
+  rcases Finset.mem_union.mp membership with membership | membership
+  · exact Finset.mem_union_left _ (h membership)
+  · exact Finset.mem_union_right _
+      (Finset.image_mono (canonicalObjectNormalization taggedOperationPackage) h
+        membership)
+
+/-- The finite closure is stable under canonical normalization. -/
+theorem normalizationClosure_stable (S : Finset Index)
+    {source : Index} (membership : source ∈ normalizationClosure S) :
+    canonicalObjectNormalization taggedOperationPackage source ∈
+      normalizationClosure S := by
+  classical
+  rcases Finset.mem_union.mp membership with membership | membership
+  · exact Finset.mem_union_right _
+      (Finset.mem_image.mpr ⟨source, membership, rfl⟩)
+  · rcases Finset.mem_image.mp membership with ⟨original, originalMembership, rfl⟩
+    rw [canonicalObjectNormalization_idempotent]
+    exact Finset.mem_union_right _
+      (Finset.mem_image.mpr ⟨original, originalMembership, rfl⟩)
+
 /-- At one finite index, the local value is a normalization bit and a finite
-Bool table. -/
-abbrev LocalValue (S : Finset Index) := Bool × TagChange.LocalTagTable S
+Bool table on the finite normalization closure. -/
+abbrev LocalValue (S : Finset Index) :=
+  Bool × TagChange.LocalTagTable (normalizationClosure S)
 
 /-- Every local value is finite. -/
 theorem localValue_finite (S : Finset Index) : Finite (LocalValue S) := by
-  letI := TagChange.LocalTagTable.finite_value_type S
+  letI := TagChange.LocalTagTable.finite_value_type (normalizationClosure S)
   infer_instance
 
 /-- Restrict a local value along inclusion of finite indices. -/
 def restrict {S T : Finset Index} (h : S ⊆ T) : LocalValue T → LocalValue S
   | (normalized, table) =>
-      (normalized, TagChange.LocalTagTable.restrict h table)
+      (normalized,
+        TagChange.LocalTagTable.restrict (normalizationClosure_mono h) table)
 
 /-- A local section contains a finite flag and an independently defined
 coherent family of finite Bool tables. -/
@@ -56,7 +99,8 @@ structure LocalSection where
 
 /-- Read one finite component of a local section. -/
 def value (localSection : LocalSection) (S : Finset Index) : LocalValue S :=
-  (localSection.normalized, localSection.family.value S)
+  (localSection.normalized,
+    localSection.family.value (normalizationClosure S))
 
 /-- Section values obey primitive restriction. -/
 theorem value_restrict (localSection : LocalSection) {S T : Finset Index}
@@ -64,7 +108,9 @@ theorem value_restrict (localSection : LocalSection) {S T : Finset Index}
     restrict h (value localSection T) = value localSection S := by
   apply Prod.ext
   · rfl
-  · exact localSection.family.coherent S T h
+  · exact localSection.family.coherent
+      (normalizationClosure S) (normalizationClosure T)
+      (normalizationClosure_mono h)
 
 /-- Local sections are determined by all finite local values. -/
 @[ext]
@@ -81,7 +127,20 @@ theorem LocalSection.ext {first second : LocalSection}
           have familyEquality : firstFamily = secondFamily := by
             apply TagChange.CoherentFamily.ext
             intro S
-            exact congrArg Prod.snd (equality S)
+            let inclusion : S ⊆ normalizationClosure S :=
+              subset_normalizationClosure S
+            have closureEquality := congrArg Prod.snd (equality S)
+            calc
+              firstFamily.value S =
+                  TagChange.LocalTagTable.restrict inclusion
+                    (firstFamily.value (normalizationClosure S)) :=
+                (firstFamily.coherent S (normalizationClosure S) inclusion).symm
+              _ = TagChange.LocalTagTable.restrict inclusion
+                    (secondFamily.value (normalizationClosure S)) :=
+                congrArg (TagChange.LocalTagTable.restrict inclusion)
+                  closureEquality
+              _ = secondFamily.value S :=
+                secondFamily.coherent S (normalizationClosure S) inclusion
           subst secondFamily
           rfl
 
@@ -119,6 +178,39 @@ theorem normalizeFamily_read (choice : Choice) :
   funext source
   simp only [normalizeFamily, TagChange.read, TagChange.LocalTagTable.read,
     normalizeChoice]
+
+/-- Normalize a finite table without leaving the same finite local value.
+Closure stability supplies every normalized lookup in the table's domain. -/
+noncomputable def normalizeLocalTable (S : Finset Index)
+    (table : TagChange.LocalTagTable (normalizationClosure S)) :
+    TagChange.LocalTagTable (normalizationClosure S) := by
+  classical
+  exact fun source =>
+    table
+      ⟨canonicalObjectNormalization taggedOperationPackage source.1,
+        normalizationClosure_stable S source.2⟩
+
+/-- Global-family normalization at a closed finite component is exactly the
+same-index finite-table operation. -/
+theorem normalizeFamily_value (family : TagChange.CoherentFamily Index)
+    (S : Finset Index) :
+    (normalizeFamily family).value (normalizationClosure S) =
+      normalizeLocalTable S (family.value (normalizationClosure S)) := by
+  classical
+  funext source
+  let normalization := canonicalObjectNormalization taggedOperationPackage
+  have imageInclusion :
+      (normalizationClosure S).image normalization ⊆ normalizationClosure S := by
+    intro target membership
+    rcases Finset.mem_image.mp membership with ⟨original, originalMembership, rfl⟩
+    exact normalizationClosure_stable S originalMembership
+  have tableEquality := congrFun
+    (family.coherent
+      ((normalizationClosure S).image normalization)
+      (normalizationClosure S) imageInclusion)
+    ⟨normalization source.1,
+      Finset.mem_image.mpr ⟨source.1, source.2, rfl⟩⟩
+  exact tableEquality.symm
 
 /-- Read a Cycle 36 normal form into finite-local data. -/
 def read : NormalForm → LocalSection
@@ -161,6 +253,12 @@ def multiply (first second : LocalSection) : LocalSection where
   family := first.family +
     if first.normalized then normalizeFamily second.family else second.family
 
+/-- Same-index multiplication on one finite local value. -/
+noncomputable def multiplyLocalValue (S : Finset Index)
+    (first second : LocalValue S) : LocalValue S :=
+  (first.1 || second.1,
+    first.2 + if first.1 then normalizeLocalTable S second.2 else second.2)
+
 /-- Reading preserves the four-case categorical composition table. -/
 theorem read_multiply (first second : NormalForm) :
     read (TagChangeGeneratedNormalForm.multiply first second) =
@@ -179,11 +277,14 @@ theorem read_multiply (first second : NormalForm) :
           · rfl
           · change
               (TagChange.read first +
-                TagChange.read (normalizeChoice second)).value S =
+                TagChange.read (normalizeChoice second)).value
+                  (normalizationClosure S) =
               (TagChange.read first +
-                normalizeFamily (TagChange.read second)).value S
+                normalizeFamily (TagChange.read second)).value
+                  (normalizationClosure S)
             exact congrArg
-              (fun family => (TagChange.read first + family).value S)
+              (fun family =>
+                (TagChange.read first + family).value (normalizationClosure S))
               (normalizeFamily_read second).symm
       | normalized second =>
           apply LocalSection.ext
@@ -192,11 +293,14 @@ theorem read_multiply (first second : NormalForm) :
           · rfl
           · change
               (TagChange.read first +
-                TagChange.read (normalizeChoice second)).value S =
+                TagChange.read (normalizeChoice second)).value
+                  (normalizationClosure S) =
               (TagChange.read first +
-                normalizeFamily (TagChange.read second)).value S
+                normalizeFamily (TagChange.read second)).value
+                  (normalizationClosure S)
             exact congrArg
-              (fun family => (TagChange.read first + family).value S)
+              (fun family =>
+                (TagChange.read first + family).value (normalizationClosure S))
               (normalizeFamily_read second).symm
 
 /-- Assembly preserves componentwise categorical-order multiplication. -/
@@ -268,6 +372,70 @@ noncomputable def readActualChoice
     (morphism : actualGeneratedSubmonoid) : Choice :=
   readTaggedSourceChoice morphism.1.hom
 
+/-- A fixed actual source moved by canonical normalization. -/
+noncomputable def flagWitness : Index :=
+  Classical.choose exists_source_moved_by_normalization
+
+/-- The fixed flag witness is genuinely moved. -/
+theorem flagWitness_moved :
+    canonicalObjectNormalization taggedOperationPackage flagWitness ≠
+      flagWitness :=
+  Classical.choose_spec exists_source_moved_by_normalization
+
+/-- Read the normalization bit directly from the actual upper object map at
+the fixed moved source. -/
+noncomputable def primitiveNormalizationFlag
+    (morphism : End TagChangeAmbientCategory.TaggedPackage) : Bool :=
+  by
+    classical
+    exact if morphism.hom.upper.objectMap flagWitness = flagWitness then
+      false
+    else
+      true
+
+/-- A raw source-choice endomorphism fixes the flag witness. -/
+@[simp]
+theorem primitiveNormalizationFlag_raw (choice : Choice) :
+    primitiveNormalizationFlag (evaluate (.raw choice)) = false := by
+  classical
+  change (if flagWitness = flagWitness then false else true) = false
+  simp
+
+/-- A normalized source-choice endomorphism moves the flag witness. -/
+@[simp]
+theorem primitiveNormalizationFlag_normalized (choice : Choice) :
+    primitiveNormalizationFlag (evaluate (.normalized choice)) = true := by
+  classical
+  change
+    (if canonicalObjectNormalization taggedOperationPackage flagWitness =
+        flagWitness then false else true) = true
+  simp [flagWitness_moved]
+
+/-- Primitive normalization-flag readback of an actual generated
+endomorphism. -/
+noncomputable def readActualNormalizedFlag
+    (morphism : actualGeneratedSubmonoid) : Bool :=
+  primitiveNormalizationFlag morphism.1
+
+/-- The local flag is the primitive object-map readback from the actual
+generated endomorphism. -/
+theorem actualGeneratedMulEquivLocalSection_normalized
+    (morphism : actualGeneratedSubmonoid) :
+    (actualGeneratedMulEquivLocalSection morphism).normalized =
+      readActualNormalizedFlag morphism := by
+  let form := normalFormMulEquivGenerated.symm morphism
+  have formEquality : normalFormMulEquivGenerated form = morphism :=
+    normalFormMulEquivGenerated.apply_symm_apply morphism
+  rw [← formEquality]
+  change
+    (normalFormMulEquivLocalSection
+      (normalFormMulEquivGenerated.symm
+        (normalFormMulEquivGenerated form))).normalized = _
+  rw [normalFormMulEquivGenerated.symm_apply_apply]
+  cases form <;>
+    simp [normalFormMulEquivLocalSection, normalFormEquivLocalSection,
+      read, readActualNormalizedFlag, normalFormMulEquivGenerated_coe]
+
 /-- Every finite table in the local equivalence is the primitive finite
 restriction of actual package readback. -/
 theorem actualGeneratedMulEquivLocalSection_value
@@ -302,6 +470,23 @@ theorem actualGeneratedMulEquivLocalSection_value
       funext source
       exact (congrFun (read_sourceChoice_comp_normalization choice) source.1).symm
 
+/-- The complete finite local value is read primitively from the actual
+endomorphism: its object map supplies the bit and its operation map supplies
+the finite table. -/
+theorem actualGeneratedMulEquivLocalSection_localValue
+    (morphism : actualGeneratedSubmonoid) (S : Finset Index) :
+    value (actualGeneratedMulEquivLocalSection morphism) S =
+      (readActualNormalizedFlag morphism,
+        TagChange.LocalTagTable.read (readActualChoice morphism)
+          (normalizationClosure S)) := by
+  apply Prod.ext
+  · exact actualGeneratedMulEquivLocalSection_normalized morphism
+  · change
+      (actualGeneratedMulEquivLocalSection morphism).family.value
+          (normalizationClosure S) = _
+    exact actualGeneratedMulEquivLocalSection_value morphism
+      (normalizationClosure S)
+
 /-- All-finite local reading separates actual generated endomorphisms. -/
 theorem separates : Function.Injective actualGeneratedMulEquivLocalSection :=
   actualGeneratedMulEquivLocalSection.injective
@@ -312,17 +497,13 @@ theorem assembles : Function.Surjective actualGeneratedMulEquivLocalSection :=
   actualGeneratedMulEquivLocalSection.surjective
 
 /-- Local multiplication is componentwise: its flag is disjunction and its
-finite table is xor after finite-image normalization when required. -/
+closed finite table is xor after same-index normalization when required. -/
 theorem multiply_value (first second : LocalSection) (S : Finset Index) :
     value (multiply first second) S =
-      (first.normalized || second.normalized,
-        first.family.value S +
-          (if first.normalized then
-            (normalizeFamily second.family).value S
-          else second.family.value S)) :=
-  by
-    cases normalized : first.normalized <;>
-      simp [value, multiply, normalized]
+      multiplyLocalValue S (value first S) (value second S) := by
+  cases normalized : first.normalized <;>
+    simp [value, multiply, multiplyLocalValue, normalized,
+      normalizeFamily_value]
 
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedLocalModel
 
