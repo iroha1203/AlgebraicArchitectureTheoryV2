@@ -252,9 +252,17 @@ strict noncoverage witnesses hold on one theorem surface. -/
 theorem reconstruction_and_strict_noncoverage (E : Type) :
     Function.Injective
         (finiteAxisFoldNormalizedPermutationLocalFiberKernelSectionHom E) ∧
+      (∀ permutation : Equiv.Perm E,
+        read E (assemble E permutation) = permutation) ∧
       (∀ value : ActualImage E,
         assemble E (read E value) = value) ∧
       Function.Injective (backwardObservationHom E) ∧
+      (∀ value : ActualImage E,
+        (actualObservedMulEquiv E).symm
+          (actualObservedMulEquiv E value) = value) ∧
+      (∀ value : ObservedImage E,
+        actualObservedMulEquiv E
+          ((actualObservedMulEquiv E).symm value) = value) ∧
       ArbitraryCarrierImage finiteAxisFoldNatZeroOneSwapLocalFiberKernel ∧
       ¬ FiniteAxisFoldFiniteCarrierExtensionImage
         finiteAxisFoldNatZeroOneSwapLocalFiberKernel ∧
@@ -263,8 +271,11 @@ theorem reconstruction_and_strict_noncoverage (E : Type) :
       finiteAxisFoldNatPowerSetComplementLocalFiberKernel ∉
         FiniteAxisFoldExactSupportCarrierUnion :=
   ⟨localFiberKernelSection_injective E,
+    read_assemble E,
     assemble_read E,
     backwardObservationHom_injective E,
+    observedRead_observe E,
+    observe_observedRead E,
     natZeroOneSwap_mem_arbitraryCarrierImage,
     finiteAxisFoldNatZeroOneSwap_not_finiteCarrierExtensionImage,
     powerSetComplement_mem_arbitraryCarrierImage,
