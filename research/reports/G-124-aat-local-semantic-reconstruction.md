@@ -6035,12 +6035,11 @@ audits:
   vacuity: "row and column witnesses yield an actual permutation and inverse; the ambient recipe supplies an explicit nonidentity graph and nonidentity raw comparison"
   four_lane_question: "Does an independently defined Bool-valued exact graph family classify every normalization-fiber-preserving permutation with explicit inverse laws and relational multiplication, and does the direct normalization kernel map multiplicatively to this primitive object-action model while carrying a nontrivial ambient-kernel element through the full source-kernel comparison reconstruction?"
   validation_refs:
-    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/PrimitiveFiberPermutationGraph.lean: pass"
-    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122PrimitiveSourceKernelObjectGraph.lean: pass"
-    - "#assert_standard_axioms_only PrimitiveFiberPermutationGraph: 64 declarations, standard axioms only"
-    - "#assert_standard_axioms_only G122PrimitiveSourceKernelObjectGraph: 22 declarations, standard axioms only"
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/PrimitiveFiberPermutationGraph.lean: pass"
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122PrimitiveSourceKernelObjectGraph.lean: pass"
+  validation_evidence:
+    - "#assert_standard_axioms_only PrimitiveFiberPermutationGraph: 64 declarations, standard axioms only"
+    - "#assert_standard_axioms_only G122PrimitiveSourceKernelObjectGraph: 22 declarations, standard axioms only"
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph: pass (4302 jobs)"
   blocking_findings: []
   next_obligation: "extend the independent graph presentation to the remaining primitive components of complete geometry automorphisms and prove joint separation plus assembly for the full direct normalization kernel, or discharge a nontrivial arbitrary expanded-Hom reconstruction surface"
