@@ -113,11 +113,13 @@
   merge commit `bcc839d940da9331ccaf1efc72858ed8bcbe10d0`
 - Cycle 52 accepted PR: [#4765](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4765),
   merge commit `ca07c309f75a92b8a2d914f237495722cd3e285d`
+- Cycle 53 accepted PR: [#4766](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4766),
+  merge commit `664543be2520e146de13be12b7080ef7ba677018`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: four-component comparison codeと独立なBool kernel codeから、各represented
-  fiberのcanonical/shifted actual lift orbitを分離・両逆復元し、xor合成、comparison code一意性、
-  full-kernel torsor接続を同時に証明する
+- current proof obligation: source-ownedな二要素group codeをactual full restriction-kernel内の
+  生成部分群との群同型へ高め、各four-component comparison fiberのdisplayed orbit上で
+  自由かつ推移的な作用と変位の一意性を、comparison code一意性との共通surfaceで証明する
 - next proof obligation: displayed C₂外を含むfull comparison groupとfull kernelを
   local dataから回復し、arbitrary expanded Homと四族の共通再構成へ接続する
 
@@ -5130,6 +5132,99 @@ audits:
   next_obligation: "enlarge independent kernel recovery beyond the displayed C2 or recover the full comparison group, then extend the reconstruction to arbitrary expanded Homs and the four-family surface"
 ```
 
+## Cycle 54 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 54
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 664543be2520e146de13be12b7080ef7ba677018
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 53 audit: PR comment 5732431720; acceptance: Issue comment 5732439519; Cycle 54 selection: Issue comment 5732451077"
+  proof_dag_predecessors:
+    - "Cycle 53 independent Bool kernel evaluation and displayed orbit reconstruction"
+    - "source-constructed nonidentity involution in the full actual restriction kernel"
+    - "Cycle 52 four-component comparison read/assemble equivalence"
+  proof_obligation: "promote a source-owned two-element group code to a multiplicative equivalence with its actual generated restriction-kernel subgroup; prove orbit separation and unique subgroup displacement between arbitrary displayed points; couple this torsor law to unique four-component comparison reconstruction"
+  selection_reason: "this cycle does not stop at a group definition or republish Cycle 53; it includes all-elements subgroup readback and both inverse laws, the actual multiplicative equivalence, free and transitive displayed action, and the common comparison surface"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122DisplayedKernelGroupTorsor.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the independent two-element syntax carries a proved group law; evaluation is injective and multiplicative; every element of the actual generated subgroup has one source code with both read/assemble inverse laws; the resulting multiplicative equivalence acts on each represented displayed orbit with a unique actual subgroup displacement between any two points; comparison-code uniqueness and this torsor law hold on one theorem surface"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelGroupTorsor.GroupCode.instGroup"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelGroupTorsor.evaluate_mul"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelGroupTorsor.evaluate_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelGroupTorsor.code_existsUnique"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelGroupTorsor.read_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelGroupTorsor.assemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelGroupTorsor.sourceActualMulEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelGroupTorsor.orbitLift_range_eq_displayedLiftImage"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelGroupTorsor.orbitLift_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelGroupTorsor.displayedOrbit_existsUnique_subgroup_displacement"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelGroupTorsor.comparisonCode_and_displayedSubgroup_torsor"
+  claim_mapping:
+    conjuncts:
+      - "the source syntax stores neither actual kernel values nor subgroup membership witnesses"
+      - "evaluation identifies the source group multiplicatively and injectively with its actual generated subgroup"
+      - "all subgroup elements, not only named generators, have unique source readback with both inverse laws"
+      - "the group-code orbit equals the Cycle 53 displayed image and separates its two points"
+      - "any two displayed points have exactly one actual generated-subgroup displacement"
+      - "four-component comparison reconstruction and displayed subgroup torsor reconstruction are coupled on the same represented fiber"
+    undischarged_assumptions:
+      - "recover every full-kernel element outside the displayed generated subgroup from independent local data"
+      - "recover comparisons outside the four-component image"
+      - "extend reconstruction to arbitrary expanded G-122 Homs and objects"
+      - "discharge final four-family separation and assembly"
+    acceptance_point: "multiplicative equivalence with the actual generated kernel subgroup and its free transitive action on every represented displayed fiber, coupled to unique comparison reconstruction"
+    port_status: unported
+audits:
+  material_premises:
+    proved_dependencies:
+      - "Cycle 53 actual nonidentity involution and displayed orbit separation"
+      - "Cycle 52 four-component comparison equivalence"
+      - "source-proved square law for the actual kernel element"
+    discharge_required:
+      - "source group laws and multiplicative evaluation"
+      - "all-elements subgroup readback and both inverse laws"
+      - "orbit equality, separation, and unique actual subgroup displacement"
+      - "simultaneous comparison reconstruction and subgroup torsor law"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "group presentation / explicit source multiplication table"
+      - "actual subgroup / range of multiplicative evaluation"
+      - "subgroup readback / existence witness plus evaluation injectivity"
+      - "torsor uniqueness / orbit separation and group cancellation"
+      - "comparison coupling / accepted four-component readback"
+    unresolved:
+      - "independent local presentation of full-kernel elements outside this generated subgroup"
+  proof_use:
+    used:
+      - "Cycle 53 actual kernel element, square law, and displayed lift separation"
+      - "Cycle 52 comparison-code uniqueness"
+      - "actual kernel multiplication and action laws"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "strengthens the displayed kernel fragment to a genuine group/subgroup equivalence and proves a substantive free-transitive uniqueness result while including its common comparison connection in the same cycle"
+  vacuity: "the shifted source code evaluates to a proved nonidentity actual kernel element; all generated-subgroup elements are read back; arbitrary pairs of displayed points, rather than only the canonical generator pair, receive a unique displacement"
+  four_lane_question: "Does the source-owned two-element group identify multiplicatively with its actual generated restriction-kernel subgroup and act with one unique displacement between arbitrary displayed fiber points while remaining coupled to unique four-component comparison reconstruction?"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122DisplayedKernelGroupTorsor.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122DisplayedKernelGroupTorsor.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122DisplayedKernelGroupTorsor: pass (4420 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelGroupTorsor: 38 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "recover a strictly larger independently presented part of the actual full kernel or the full comparison group, including its substantive reconstruction law and common-surface connection in the same cycle"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -5203,6 +5298,9 @@ audits:
   Cycle 53では各four-component comparison fiberに独立なBool kernel codeを加え、source由来の
   actual restriction-kernel involutionによるcanonical/shifted orbitの分離、read/assemble両逆、
   xorとactual kernel乗法・lift作用の整合、comparison codeとの同時一意性、full torsor接続を同梱した。
+  Cycle 54ではこの二要素codeにsource-ownedな群構造を与え、actual生成部分群との乗法同値、
+  全部分群要素のread/assemble両逆、displayed orbit上の任意2点間の一意なactual変位、
+  comparison code一意性との共通surfaceを同梱した。
   displayed C₂外のfull kernel、four-component像外、arbitrary Hom、四族統合は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
