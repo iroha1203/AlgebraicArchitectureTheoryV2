@@ -119,13 +119,19 @@
   merge commit `844cb74f6654c22f3110e369fcd9819a9f694c6d`
 - Cycle 55 accepted PR: [#4768](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4768),
   merge commit `6fb9d587646a273d435e961aa0bc54e74f273c94`
+- Cycle 56 accepted PR: [#4769](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4769),
+  merge commit `6e0058d6e9ab25e7b4a8d6a1d7ef199754a012d5`
+- Cycle 57 accepted PR: [#4770](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4770),
+  merge commit `ff16abdfe07115726f3efd2e9e2782b964f7e2d9`
+- Cycle 58 accepted PR: [#4771](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4771),
+  merge commit `9b7e650ea5bde19219cf8203707f7ed23103b955`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: 既存3 carrierと異なる任意の有限Extension carrierを
-  four-component comparison codeへ追加し、actual観測による全成分分離、比較とdependent
-  displayed bundleの両逆、具体的なproper enlargement、principal equivariant作用を同じsurfaceで証明する
-- next proof obligation: parametric represented familyの外側を含むfull comparison groupとfull kernelを
-  local dataから回復するか、arbitrary expanded Homの実質的な分離・assemblyを共通surfaceまで同梱する
+- current proof obligation: pairwiseに相異なる任意の有限Extension carrier族について、
+  actual kernel積の忠実性、stored-backward観測からの回復、expanded directとnormalized comparisonを
+  含む四つの乗法同値、全two-carrier像からのproper enlargementを同じsurfaceで証明する
+- next proof obligation: infinite locally finite carrier-support limitをfinite restrictionから組み立てるか、
+  arbitrary expanded Homの実質的な分離・assemblyを共通surfaceまで同梱する
 
 ## Cycle 1 — rejected
 
@@ -5630,7 +5636,7 @@ goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
 base_oid: 9b7e650ea5bde19219cf8203707f7ed23103b955
 tracking_issue: 4711
 selection:
-  proof_state_ref: "Cycle 58 audit: PR comment 5734343459; Cycle 58 merge: 9b7e650ea5bde19219cf8203707f7ed23103b955; Cycle 59 selection: Issue comment after Cycle 58 acceptance"
+  proof_state_ref: "Cycle 58 audit: PR comment 5734343459; Cycle 58 acceptance: Issue comment 5734789276; Cycle 59 selection: Issue comment 5734789954"
   proof_dag_predecessors:
     - "Cycle 58 faithful two-carrier reconstruction across four actual surfaces"
     - "Cycle 57 arbitrary single-carrier faithfulness"
