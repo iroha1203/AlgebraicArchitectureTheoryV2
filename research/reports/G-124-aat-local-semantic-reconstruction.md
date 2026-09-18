@@ -91,12 +91,18 @@
   merge commit `bcace0d2862020b3210d192321a7ab39bc25e13f`
 - Cycle 41 accepted PR: [#4754](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4754),
   merge commit `07f9237f4706806de99988af1f4d6cca5e551086`
+- Cycle 42 accepted PR: [#4755](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4755),
+  merge commit `b307734dd05b5cb232cfb6f8e2a14c17e37bb053`
+- Cycle 43 accepted PR: [#4756](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4756),
+  merge commit `6d423825fc5931d377ca0160c9dc61bcee26c73a`
+- Cycle 44 accepted PR: [#4757](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4757),
+  merge commit `7e529b40a65ebf78cd866ba6426ce38670d623ef`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: represented exact one-object categoryをcommon realization familyの
-  tagged fiberへ忠実に埋め、対象・射・恒等・合成とnormal-form評価を保つ
-- next proof obligation: 任意対象assemblyを明示義務に保ったまま、別の必須分枝または
-  common local familyについてfamily-indexed local-model接続を構成する
+- current proof obligation: common G-122 original-cell fiberをgenerated endpointsを持つ圏へ
+  充満忠実に埋め、固定生成比較の両端と3比較をactual Homとして固定する
+- next proof obligation: expanded G-122圏に有限probe readingを構成し、固定3比較の分離と
+  local-model assemblyへ接続する
 
 ## Cycle 1 — rejected
 
@@ -4212,6 +4218,103 @@ audits:
   next_obligation: "construct the family-indexed local-model connection for another mandatory branch or the common local family itself, while keeping arbitrary-object assembly as an explicit proof obligation"
 ```
 
+## Cycle 45 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 45
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 7e529b40a65ebf78cd866ba6426ce38670d623ef
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 44 audit: PR comment 5729817995; Cycle 45 selection: Issue comment 5729864050"
+  proof_dag_predecessors:
+    - "accepted AATClosedFamilySignature FamilyRealization G-122 original-cell fiber"
+    - "accepted G122GeneratedGeometryObject with original, direct, and viaBase objects"
+    - "accepted FiniteAxisFoldComparisonCode evaluation of the three fixed comparisons"
+  proof_obligation: "include the common G-122 original-cell fiber fully faithfully in the generated-endpoint category and name the fixed direct/via-base endpoints and barAlpha, generated barBeta, and constant-one barBeta as actual Homs"
+  selection_reason: "the common family currently contains only original G-122 cell inputs, while fixed target A and C require the generated direct/via-base endpoints and their three comparisons; a fully faithful expansion preserves every existing object and Hom without pretending that the final four-family category is already replaced"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122ClosedFamilyExpansion.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the common G-122 original-cell fiber now enters the existing generated-endpoint category fully faithfully, and the fixed two endpoints and three comparison cases are actual Homs there with their accepted equality and inequality retained"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.G122ClosedFamilyExpansion.originalInclusion"
+    - "AAT.AG.LocalSemanticReconstruction.G122ClosedFamilyExpansion.originalInclusion_obj"
+    - "AAT.AG.LocalSemanticReconstruction.G122ClosedFamilyExpansion.originalInclusion_map"
+    - "AAT.AG.LocalSemanticReconstruction.G122ClosedFamilyExpansion.originalInclusionFullyFaithful"
+    - "AAT.AG.LocalSemanticReconstruction.G122ClosedFamilyExpansion.finiteAxisFoldDirectObject"
+    - "AAT.AG.LocalSemanticReconstruction.G122ClosedFamilyExpansion.finiteAxisFoldViaBaseObject"
+    - "AAT.AG.LocalSemanticReconstruction.G122ClosedFamilyExpansion.finiteAxisFoldBarAlpha"
+    - "AAT.AG.LocalSemanticReconstruction.G122ClosedFamilyExpansion.finiteAxisFoldGeneratedBarBeta"
+    - "AAT.AG.LocalSemanticReconstruction.G122ClosedFamilyExpansion.finiteAxisFoldIdentityBarBeta"
+    - "AAT.AG.LocalSemanticReconstruction.G122ClosedFamilyExpansion.finiteAxisFoldGeneratedBarBeta_ne_barAlpha"
+    - "AAT.AG.LocalSemanticReconstruction.G122ClosedFamilyExpansion.finiteAxisFoldIdentityBarBeta_eq_barAlpha"
+  claim_mapping:
+    source_labels:
+      - "fixed target A: include the fixed G-122 generated comparison family"
+      - "fixed target C: retain the three fixed comparison cases as actual morphisms"
+    conjuncts:
+      - "every original-cell object maps to the corresponding original object"
+      - "every admitted original-cell complete-geometry Hom is retained"
+      - "the inclusion is fully faithful"
+      - "the fixed direct and via-base endpoints are objects of the expanded category"
+      - "barAlpha, generated barBeta, and constant-one barBeta are actual Homs between those endpoints"
+      - "generated barBeta differs from barAlpha, while constant-one barBeta equals barAlpha"
+    undischarged_assumptions:
+      - "replace the final four-family realization category by an expanded common category"
+      - "construct finite G-122 probes and the G-122 local-model equivalence"
+      - "recover the full and base-fixing comparison groups from local data"
+      - "discharge four-family separation and assembly"
+    acceptance_point: "fully faithful G-122 expansion and fixed actual comparisons only; no final common category, local equivalence, or GOAL completion claim"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_scope:
+      - "fixed G122FamilyInput"
+      - "accepted original-cell FamilyRealization fiber"
+      - "accepted generated-endpoint complete-geometry category"
+    proved_dependencies:
+      - "G122GeneratedGeometryObject category instance"
+      - "FiniteAxisFoldComparisonCode.evaluate"
+      - "generatedBarBeta_ne_barAlpha"
+      - "evaluate_identityBarBeta_eq_barAlpha"
+    discharge_required:
+      - "object and Hom inclusion"
+      - "identity and composition preservation"
+      - "full faithfulness"
+      - "fixed endpoint and comparison typing"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "original Hom preimage / ULift of the same complete-geometry Hom"
+      - "fixed comparisons / accepted evaluation in the generated-endpoint category"
+    unresolved:
+      - "finite local probes, local assembly, and comparison-group recovery"
+  proof_use:
+    used:
+      - "FamilyRealization G-122 Hom definition"
+      - "G122GeneratedGeometryObject original/direct/viaBase constructors"
+      - "FiniteAxisFoldComparisonCode evaluation and comparison laws"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "adds the missing fixed generated endpoints while preserving the entire accepted original-cell fiber fully faithfully"
+  vacuity: "the source is the complete original-cell realization category, the preimage is explicit for every target Hom between included objects, and all three fixed comparison codes are evaluated"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122ClosedFamilyExpansion.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122ClosedFamilyExpansion.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122ClosedFamilyExpansion: pass (4327 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122ClosedFamilyExpansion: 11 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct finite probe readings on the expanded G-122 category that separate the fixed comparison cases and feed an explicit local-model assembly theorem"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -4251,8 +4354,12 @@ audits:
   one-object圏同値まで接続した。fixed common local-model categoryの任意対象assemblyは未完了である。
   Cycle 44では、そのrepresented exact圏をcommon realization familyのtagged fiberへ忠実に埋め込み、
   対象・射・恒等・合成とnormal-form評価の一致を固定した。represented image外のtagged Hom、
-  arbitrary observation carrier全体の有限encoding、残る三族との統合は未完了である。
-- C の投影・正規化・比較群回復。
+  arbitrary observation carrier全体の有限encoding、残る三族との統合は未完了である。Cycle 45では、
+  common G-122 original-cell fiberをgenerated endpointsを持つ圏へ充満忠実に埋め、固定比較の
+  direct/via-base対象と3比較をactual Homとして固定した。これはfinal four-family categoryの
+  置換ではなく、G-122 finite probe、local-model同値、四族assemblyは未完了である。
+- C の投影・正規化・比較群回復。Cycle 45で固定G-122の3比較はexpanded category内の
+  actual Homになったが、full comparison groupとbase-fixing subgroupのlocal recoveryは未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
