@@ -111,12 +111,14 @@
   merge commit `7036cf07bbbf31add86972f36d46cf3ec093620f`
 - Cycle 51 accepted PR: [#4764](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4764),
   merge commit `bcc839d940da9331ccaf1efc72858ed8bcbe10d0`
+- Cycle 52 accepted PR: [#4765](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4765),
+  merge commit `ca07c309f75a92b8a2d914f237495722cd3e285d`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: 独立な三軸table、`Fin 3` table、`Nat` exact-support/parity normal form、
-  `Fin 4` tableからactual normalized-comparison imageを両逆で回復し、Cycle 51像のstrictな拡張、
-  canonical section codeの一意性、full-kernel torsor接続を同時に証明する
-- next proof obligation: four-component image外を含むfull comparison groupとfull kernelを
+- current proof obligation: four-component comparison codeと独立なBool kernel codeから、各represented
+  fiberのcanonical/shifted actual lift orbitを分離・両逆復元し、xor合成、comparison code一意性、
+  full-kernel torsor接続を同時に証明する
+- next proof obligation: displayed C₂外を含むfull comparison groupとfull kernelを
   local dataから回復し、arbitrary expanded Homと四族の共通再構成へ接続する
 
 ## Cycle 1 — rejected
@@ -5032,6 +5034,102 @@ audits:
   next_obligation: "recover the full comparison group and full kernel from independent local data, then extend the reconstruction to arbitrary expanded Homs and the four-family surface"
 ```
 
+## Cycle 53 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 53
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: ca07c309f75a92b8a2d914f237495722cd3e285d
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 52 audit: PR comment 5732256287; acceptance: Issue comment 5732261119; Cycle 53 selection: Issue comment 5732276406"
+  proof_dag_predecessors:
+    - "Cycle 52 four-component comparison reconstruction"
+    - "source-constructed nonidentity comparison restriction-kernel element"
+    - "source-proved involution law for the displayed kernel element"
+    - "accepted full actual restriction-kernel torsor on every comparison lift fiber"
+  proof_obligation: "reconstruct the canonical/shifted actual lift orbit from an independent Bool kernel code on every four-component comparison; prove separation, both inverse laws, xor compatibility, simultaneous comparison/kernel-code uniqueness, and connection to the full-kernel torsor"
+  selection_reason: "this moves from comparison-only reconstruction to a nontrivial independently coded kernel fragment and bundles its actual orbit reconstruction, composition law, dependent comparison connection, and ambient torsor connection in one auditable cycle"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122DisplayedKernelLiftLocalModel.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the independent Bool code evaluates to identity or the source-constructed full-kernel involution; actual action on each canonical lift separates the codes; every displayed orbit point has a unique code with read/assemble inverse laws; xor matches actual kernel multiplication and iterated lift action; comparison code, displayed kernel code, and the ambient full-kernel displacement are uniquely related on the same fiber"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelLiftLocalModel.restrictionKernelElement_mul_self"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelLiftLocalModel.kernelValue_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelLiftLocalModel.kernelValue_xor"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelLiftLocalModel.displayedLift_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelLiftLocalModel.displayedLift_true_ne_false"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelLiftLocalModel.displayedLift_xor"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelLiftLocalModel.readDisplayed_assembleDisplayed"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelLiftLocalModel.assembleDisplayed_readDisplayed"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelLiftLocalModel.displayedLiftEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelLiftLocalModel.comparisonAndDisplayedLift_unique_codes"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelLiftLocalModel.displayedOrbit_and_fullKernel_reconstruction"
+  claim_mapping:
+    conjuncts:
+      - "the kernel syntax is one independent bit and stores no actual kernel value, lift, range witness, or orbit certificate"
+      - "false and true evaluate to identity and the source-constructed nonidentity involution in the full comparison restriction kernel"
+      - "free actual kernel action separates the two codes on every represented canonical lift"
+      - "read and assemble are inverse on the actual displayed two-point orbit"
+      - "Boolean xor agrees with actual kernel multiplication and iterated action"
+      - "four-component comparison code and displayed kernel code are simultaneously unique on the same fiber"
+      - "the displayed orbit sits inside the accepted full-kernel torsor, whose arbitrary displacement remains unique"
+    undischarged_assumptions:
+      - "recover every full-kernel element from independent local data"
+      - "recover comparisons outside the four-component image"
+      - "extend reconstruction to arbitrary expanded G-122 Homs and objects"
+      - "discharge final four-family separation and assembly"
+    acceptance_point: "independent local recovery of a nontrivial actual C2 kernel orbit, with composition, comparison-code coupling, and full-torsor connection"
+    port_status: unported
+audits:
+  material_premises:
+    proved_dependencies:
+      - "four-component comparison read/assemble equivalence"
+      - "source-constructed actual restriction-kernel element and nonidentity proof"
+      - "source congruence giving its involution law"
+      - "free and transitive full-kernel action on every actual lift fiber"
+    discharge_required:
+      - "kernel-code evaluation injectivity"
+      - "actual displayed-lift separation and both inverse laws"
+      - "xor/multiplication/action compatibility"
+      - "simultaneous comparison and displayed-kernel code uniqueness"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "kernel syntax / independent Bool"
+      - "nontrivial evaluation / source-generated restriction-kernel involution"
+      - "orbit readback / actual free action"
+      - "composition / source-proved square law transported to actual kernel multiplication"
+      - "fiber connection / accepted full actual kernel torsor"
+    unresolved:
+      - "independent local presentation of kernel elements outside the displayed C2"
+  proof_use:
+    used:
+      - "four-component comparison equivalence"
+      - "displayed element nonidentity and involution law"
+      - "full-kernel action freeness and transitivity"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "adds an independently coded nontrivial kernel direction and includes separation, two inverse laws, composition, dependent comparison uniqueness, and full-torsor connection in the same cycle"
+  vacuity: "true and false act as provably distinct actual lifts in every represented fiber, and arbitrary displayed orbit points are reconstructed rather than stored"
+  four_lane_question: "Does an independent Bool kernel code reconstruct the actual canonical/shifted lift orbit over every four-component comparison with separation, both inverse laws, xor-compatible action, simultaneous comparison-code uniqueness, and an honest connection to the full-kernel torsor without storing completed semantics?"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122DisplayedKernelLiftLocalModel.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122DisplayedKernelLiftLocalModel.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122DisplayedKernelLiftLocalModel: pass (4419 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122DisplayedKernelLiftLocalModel: 26 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "enlarge independent kernel recovery beyond the displayed C2 or recover the full comparison group, then extend the reconstruction to arbitrary expanded Homs and the four-family surface"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -5102,7 +5200,10 @@ audits:
   Cycle 52では独立な`Fin 4` tableをさらに加え、三carrierのprobe非干渉、actual観測からの
   四成分read/assemble両逆、Cycle 51像を保存する埋込みと明示的`Fin 4` swapによる非全射性、
   canonical section code一意性、各represented fiberのfull-kernel torsor接続を同梱した。
-  four-component像の外側、full kernelの独立local recovery、arbitrary Hom、四族統合は未完了である。
+  Cycle 53では各four-component comparison fiberに独立なBool kernel codeを加え、source由来の
+  actual restriction-kernel involutionによるcanonical/shifted orbitの分離、read/assemble両逆、
+  xorとactual kernel乗法・lift作用の整合、comparison codeとの同時一意性、full torsor接続を同梱した。
+  displayed C₂外のfull kernel、four-component像外、arbitrary Hom、四族統合は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
