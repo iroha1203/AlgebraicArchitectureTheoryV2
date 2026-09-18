@@ -55,12 +55,14 @@
   merge commit `a4622964b281f04fb2e66c2940a91a125dda1d21`
 - Cycle 23 accepted PR: [#4736](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4736),
   merge commit `2b2ec81ed51cee17a1c89296712680bae294ca1b`
+- Cycle 24 accepted PR: [#4737](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4737),
+  merge commit `aa6811409a7f69203f33a741a69654606ba3cf37`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: protocol local-model equivalenceをfinite generator-table decoderと受理済み
-  Karoubi reconstructionへ接続し、restriction・retract・Arrow-level coherenceを示す
-- next proof obligation: lens branch について operation-aware local model と圏同値を構成し、
-  finite decoder・Karoubi reconstruction coherence へ接続する
+- current proof obligation: lens branchの有限reference fiber local modelと、`res`/`ext`
+  およびproduct lensから得られる圏同値を構成する
+- next proof obligation: lens finite decoderの計算式を局所圏側で固定し、受理済み
+  Karoubi restriction・retract・Arrow equivalenceと接続する
 
 ## Cycle 1 — rejected
 
@@ -2224,6 +2226,116 @@ audits:
   next_obligation: "construct the lens branch operation-aware local model and category equivalence, then connect its finite decoder to accepted Karoubi reconstruction without weakening the fixed all-four target"
 ```
 
+Cycle 24 の fresh Math A/B・Lean A/B は final head
+`4cc3c40011c3e366ef7b5144a7138eefc3b4ba40` で全4 lane `No major findings`、
+CI 7/7 success。最終監査は PR comment `5722678059`、merge commit は
+`aa6811409a7f69203f33a741a69654606ba3cf37`である。
+
+## Cycle 25 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 25
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: aa6811409a7f69203f33a741a69654606ba3cf37
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 24 accepted evidence: PR comment 5722678059; Cycle 25 selection: Issue comment 5723845246"
+  proof_dag_predecessors:
+    - "Cycle 20 lensFiberValueReading on the actual finite reference fiber"
+    - "accepted LensRealization.res/ext inverse laws and homEquivFiberMap"
+    - "accepted product lens construction and productFiberEquiv"
+    - "accepted closed-family lens package/semantic round trips"
+  proof_obligation: "fixed LensFamilyInputに対し、有限reference fiberそのものを独立local modelとし、accepted resが全semantic Homを区別し、任意のlocal mapがputからextされることを示す。任意の有限local objectからproduct lensと実get/putを構成してobject assemblyを放電し、raw semantic categoryとclosed-family lens fiberの両方でprimitive fiber readingをforward functorとする圏同値を構成する"
+  selection_reason: "protocol branchで放電したBのseparation/assemblyと対応するlens branchの最短の未放電nodeであり、後続のfinite decoder/Karoubi coherenceをactual local category上で述べる前提になる"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/LensFiberModelEquivalence.lean"
+  risks:
+    - "local objectにcompleted LensRealization、extension certificate、decoder membershipを保存しないこと"
+    - "Full/Faithful/EssSurjを入力fieldではなくaccepted res/extとproduct constructionから構成すること"
+    - "finite fiberだけで効果性または有限表示Karoubi coherenceまで主張しないこと"
+    - "lens branchの圏同値をfinal all-four Lambda_Theta/M_Theta/N_Thetaと同定しないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the actual semantic and closed-family lens readings are equivalences with the independently supplied finite reference-fiber category; Hom assembly is computed by ext from put, and every local object is assembled as a product lens with explicit get/put and canonical fiber readback"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.lensSemanticFiberReading"
+    - "AAT.AG.LocalSemanticReconstruction.lensSemanticFiberReadingFull"
+    - "AAT.AG.LocalSemanticReconstruction.lensSemanticFiberReadingFaithful"
+    - "AAT.AG.LocalSemanticReconstruction.lensFiberModelRealization"
+    - "AAT.AG.LocalSemanticReconstruction.lensFiberModelRealization_get"
+    - "AAT.AG.LocalSemanticReconstruction.lensFiberModelRealization_put"
+    - "AAT.AG.LocalSemanticReconstruction.lensFiberModelRealizationIso"
+    - "AAT.AG.LocalSemanticReconstruction.lensSemanticFiberReadingEssSurj"
+    - "AAT.AG.LocalSemanticReconstruction.lensSemanticFiberEquivalence"
+    - "AAT.AG.LocalSemanticReconstruction.lensFiberValueReadingFaithful"
+    - "AAT.AG.LocalSemanticReconstruction.lensFiberValueReadingFull"
+    - "AAT.AG.LocalSemanticReconstruction.lensFiberValueReadingEssSurj"
+    - "AAT.AG.LocalSemanticReconstruction.lensClosedFamilyFiberEquivalence"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL A/B: lensの有限基準fiberとget/putからprimitive local readingのseparation・assemblyを放電する"
+      - "固定 GOAL E2: lensの基準fiber tableが一般の意味保存射を区別・延長する"
+    conjuncts:
+      - "every semantic get/put-preserving Hom restricts to an actual finite-fiber map"
+      - "every finite-fiber map assembles to the complete semantic Hom by the accepted ext construction"
+      - "res/ext are inverse, so the primitive reading is full and faithful"
+      - "every finite local object assembles to a product lens with exact get and put operations"
+      - "productFiberEquiv supplies object readback and essential surjectivity"
+      - "the closed-family primitive reading retains the same full Hom range through accepted package round trips"
+    undischarged_assumptions:
+      - "lens finite decoder computations and accepted Karoubi restriction/retract/Arrow coherence on the local category"
+      - "common FiniteReading effectiveness and the D determining-set application to lens invertible changes"
+      - "tagged and G-122 local-model equivalences"
+      - "the final common Lambda_Theta, M_Theta, N_Theta, and D_Theta"
+    acceptance_point: "lens-branch primitive fiber category equivalence only; no decoder/Karoubi, effectiveness, other-family, or all-four reconstruction claim"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "fixed LensFamilyInput view type and reference value"
+      - "accepted total-lens laws and finite reference-fiber condition"
+      - "accepted closed-family lens package/semantic round trips"
+    direction_hypothesis: []
+    discharge_required:
+      - "morphism separation / homEquivFiberMap injectivity from ext_res"
+      - "morphism assembly / LensRealization.ext and res_ext"
+      - "object assembly / product lens construction"
+      - "object readback / productFiberEquiv"
+      - "closed-family Hom range / ofSemanticHom/toSemanticHom round trips"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "semantic local map assembly / constructed by LensRealization.ext from the supplied fiber function"
+      - "local object realization / constructed by LensRealization.product from the supplied FintypeCat object"
+      - "closed-family inclusion / constructed by closedFamilyLensHom from the assembled semantic Hom"
+    unresolved:
+      - "finite syntax decoder and Karoubi transport to the local category"
+      - "common FiniteReading effectiveness and E2 invertible-change decision"
+      - "other-family and all-four integration"
+  proof_use:
+    used:
+      - "LensRealization.res_ext, ext_res, and homEquivFiberMap"
+      - "LensRealization.product and productFiberEquiv"
+      - "LensAATIndependentGeneratedPackageHom package/semantic round trips"
+      - "Cycle 20 lensFiberValueReading"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "the local object is only the actual finite fiber; get/put and complete Homs are independently reconstructed"
+  vacuity: "arbitrary finite fibers and arbitrary fiber maps are retained; the resulting semantic maps include noninvertible changes"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/LensFiberModelEquivalence.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.LensFiberModelEquivalence: pass (targeted dependency closure only)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 17 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "connect the accepted lens finite decoder to the fiber local category with exact computation APIs, then transport Karoubi restriction, retract generation, and Arrow equivalence"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -2232,8 +2344,9 @@ audits:
   protocol named-state の actual finite slice、Cycle 21 は protocol 全executionのnon-discrete
   finite-state diagram、Cycle 22 は protocol branch の observation-aware local Hom と
   full faithfulness、Cycle 23 は同branchのobject assemblyと圏同値、Cycle 24 はactual finite
-  decoderの計算式とKaroubi restriction・retract・Arrow coherenceに限る。arbitrary observationの
-  effective finite encodingと四分枝統合は未完了である。
+  decoderの計算式とKaroubi restriction・retract・Arrow coherence、Cycle 25はlens branchの
+  finite-fiber Hom/object assemblyと圏同値に限る。arbitrary observationのeffective finite
+  encoding、lensのdecoder/Karoubi接続、四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
