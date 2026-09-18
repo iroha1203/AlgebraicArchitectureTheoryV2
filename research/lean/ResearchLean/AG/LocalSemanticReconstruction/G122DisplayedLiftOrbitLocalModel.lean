@@ -45,6 +45,11 @@ local instance displayedLiftOrbitAtomDecidableEq :
   change DecidableEq FiniteModel.FiniteAtom
   infer_instance
 
+/-- Classical equality used only to read the accepted two-element source
+fragment into its independent finite code. -/
+local instance sourceSubgroupDecidableEq : DecidableEq sourceSubgroup :=
+  Classical.decEq _
+
 /-- The actual bottom-qualified lift fiber over a normalized comparison. -/
 abbrev LiftFiber (t : NormalizedBottomComparison) :=
   AuthoredExactCanonicalBottomComparisonLiftFiber
@@ -162,6 +167,57 @@ noncomputable def sourceOrbitEquiv (t : NormalizedBottomComparison) :
   Equiv.ofBijective (assembleOrbit t)
     ⟨assembleOrbit_injective t, assembleOrbit_surjective t⟩
 
+/-- A finite local code for the two source cases.  It stores no endpoint
+automorphism or completed comparison morphism. -/
+inductive SourceLocalValue
+  | identity
+  | generator
+  deriving DecidableEq, Fintype
+
+/-- Assemble the independent finite source code into the accepted source C2
+fragment. -/
+noncomputable def assembleSource : SourceLocalValue → sourceSubgroup
+  | .identity => 1
+  | .generator => sourceGenerator
+
+/-- Read an accepted source C2 value into the independent finite code. -/
+noncomputable def readSource (g : sourceSubgroup) : SourceLocalValue :=
+  if g = 1 then .identity else .generator
+
+/-- The source identity is read as the identity code. -/
+@[simp] theorem readSource_one : readSource 1 = .identity := by
+  simp [readSource]
+
+/-- The source generator is read as the generator code. -/
+@[simp] theorem readSource_generator :
+    readSource sourceGenerator = .generator := by
+  simp [readSource, sourceGenerator_ne_one]
+
+/-- Reading after finite source assembly is the identity. -/
+@[simp] theorem readSource_assembleSource (value : SourceLocalValue) :
+    readSource (assembleSource value) = value := by
+  cases value <;> simp [assembleSource]
+
+/-- Finite source assembly after reading recovers every accepted source C2
+value. -/
+@[simp] theorem assembleSource_readSource (g : sourceSubgroup) :
+    assembleSource (readSource g) = g := by
+  rcases g.property with identity | generator
+  · have g_eq : g = 1 := Subtype.ext identity
+    subst g
+    simp [assembleSource]
+  · have g_eq : g = sourceGenerator := Subtype.ext generator
+    subst g
+    simp [assembleSource]
+
+/-- The accepted source C2 fragment is reconstructed from a finite local code
+that stores no completed source morphism. -/
+noncomputable def sourceEquivLocal : sourceSubgroup ≃ SourceLocalValue where
+  toFun := readSource
+  invFun := assembleSource
+  left_inv := assembleSource_readSource
+  right_inv := readSource_assembleSource
+
 /-- Source multiplication becomes the opposite-order multiplication required
 by the right action on lifts. -/
 theorem sourceActingElement_mul (a b : sourceSubgroup) :
@@ -222,20 +278,23 @@ open G122FixedComparisonLocalSlice G122PrimitiveComparisonProbe
 abbrev CombinedSemanticSurface :=
   SemanticImage × DisplayedOrbit (1 : NormalizedBottomComparison)
 
-/-- The corresponding primitive comparison value and source C2 syntax. -/
-abbrev CombinedLocalSurface := LocalValue × sourceSubgroup
+/-- The corresponding primitive comparison value and independent source C2
+code. -/
+abbrev CombinedLocalSurface := LocalValue × SourceLocalValue
 
 /-- Read both the primitive fixed comparison and its displayed lift orbit. -/
 noncomputable def combinedRead (input : CombinedSemanticSurface) :
     CombinedLocalSurface :=
   (primitiveRead input.1,
-    (sourceOrbitEquiv (1 : NormalizedBottomComparison)).symm input.2)
+    readSource
+      ((sourceOrbitEquiv (1 : NormalizedBottomComparison)).symm input.2))
 
 /-- Assemble the fixed comparison and displayed source lift together. -/
 noncomputable def combinedAssemble (input : CombinedLocalSurface) :
     CombinedSemanticSurface :=
   (assemble input.1,
-    sourceOrbitEquiv (1 : NormalizedBottomComparison) input.2)
+    sourceOrbitEquiv (1 : NormalizedBottomComparison)
+      (assembleSource input.2))
 
 /-- Reading after combined assembly is the identity on the local product. -/
 @[simp] theorem combinedRead_assemble (input : CombinedLocalSurface) :

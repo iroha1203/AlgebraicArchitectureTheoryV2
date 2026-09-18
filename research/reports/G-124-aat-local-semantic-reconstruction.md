@@ -99,12 +99,17 @@
   merge commit `7e529b40a65ebf78cd866ba6426ce38670d623ef`
 - Cycle 45 accepted PR: [#4758](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4758),
   merge commit `48d3c50a85722731eca7971cd54062c333dfc09d`
+- Cycle 46 accepted PR: [#4759](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4759),
+  merge commit `1e359cbae5eed78138782593b17da96b6a9e193a`
+- Cycle 47 accepted PR: [#4760](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4760),
+  merge commit `2bea07ef9d75a10812f2e5bde04e1500f58bef3f`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: expanded G-122圏の固定3比較のactual imageを、意味的な
-  2クラスの有限local valueとしてread/assembleの両逆で回復する
-- next proof obligation: 固定Hom sliceから任意のexpanded G-122 Homへlocal readingを拡張し、
-  source-generated probeによる分離とassemblyを個別に放電する
+- current proof obligation: accepted source C2から任意のnormalized bottom comparison上の
+  displayed lift orbitを有限コードで一意に回復し、primitive fixed-comparison readingと同時に
+  read/assembleの両逆と作用整合を与える
+- next proof obligation: displayed C2 orbitを超えるより大きな有限source-generated comparison範囲へ、
+  primitive分離、一意な再構成、作用整合を同一cycleで拡張する
 
 ## Cycle 1 — rejected
 
@@ -4537,7 +4542,7 @@ selection:
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122DisplayedLiftOrbitLocalModel.lean"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "source C2 assembles bijectively into every displayed canonical-lift orbit; every orbit point has a unique source term; multiplication agrees with the opposite-kernel action; identity-fiber assembly agrees with sourceLiftAtOne; the result combines with Cycle 47 into a product equivalence with both inverse laws"
+  proof_obligation_delta: "source C2 assembles bijectively into every displayed canonical-lift orbit; an independent two-constructor code reconstructs the source C2 without storing completed morphisms; every orbit point has a unique source term; multiplication agrees with the opposite-kernel action; identity-fiber assembly agrees with sourceLiftAtOne; the result combines with Cycle 47 into a product equivalence with both inverse laws"
   completion_candidate: no
   section_completion_candidate: no
   lean_artifacts:
@@ -4546,6 +4551,8 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.assembleOrbit_injective"
     - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.assembleOrbit_surjective"
     - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.sourceOrbitEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.SourceLocalValue"
+    - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.sourceEquivLocal"
     - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.sourceActingElement_mul"
     - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.assembleOrbit_mul"
     - "AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel.existsUnique_source_of_orbit"
@@ -4561,6 +4568,7 @@ result:
       - "the construction is uniform over every normalized bottom comparison"
       - "source assembly is injective and surjective onto the actual displayed orbit"
       - "each displayed-orbit lift has a unique source C2 preimage"
+      - "an independent two-constructor local code and the source C2 have read/assemble inverse laws"
       - "source multiplication is intertwined with the opposite-kernel action"
       - "identity-fiber assembly is the accepted sourceLiftAtOne construction"
       - "primitive comparison and displayed lift admit joint read/assemble inverse laws"
@@ -4594,11 +4602,13 @@ audits:
       - "surjectivity / accepted equality of orbit with the canonical-shifted pair"
       - "uniqueness / proved nonidentity action and source two-case carrier"
       - "joint reconstruction / product of two independently proved inverse pairs"
+      - "no completed source morphism in the local product / source C2 is first reconstructed from SourceLocalValue"
     unresolved:
       - "full group, full fiber, arbitrary-Hom, and four-family reconstruction"
   proof_use:
     used:
       - "source-to-actual C2 evaluation and multiplication law"
+      - "independent source-code read/assemble inverse laws"
       - "displayed subgroup orbit classification"
       - "canonical/shifted lift distinction"
       - "normalized-identity source lift"
@@ -4613,7 +4623,7 @@ audits:
     - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122DisplayedLiftOrbitLocalModel.lean: pass"
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122DisplayedLiftOrbitLocalModel.lean: pass"
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel: pass (4371 jobs)"
-    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel: 23 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122DisplayedLiftOrbitLocalModel: 54 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "move beyond the displayed C2 orbit to a larger finite source-generated comparison range while retaining primitive separation, unique reconstruction, and action compatibility in one cycle"
 ```
