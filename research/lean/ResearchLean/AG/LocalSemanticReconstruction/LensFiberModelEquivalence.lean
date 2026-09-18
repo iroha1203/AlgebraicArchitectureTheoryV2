@@ -59,7 +59,7 @@ reference fiber. -/
 
 /-- Every finite local map assembles to a complete semantic lens morphism via
 the source and target `put` operations. -/
-noncomputable def lensSemanticFiberReadingFull
+theorem lensSemanticFiberReadingFull
     (input : LensFamilyInput.{u}) :
     (lensSemanticFiberReading input).Full where
   map_surjective := by
@@ -72,7 +72,7 @@ noncomputable def lensSemanticFiberReadingFull
 
 /-- Finite reference-fiber readings distinguish every complete semantic lens
 morphism by the accepted `ext_res` inverse law. -/
-noncomputable def lensSemanticFiberReadingFaithful
+theorem lensSemanticFiberReadingFaithful
     (input : LensFamilyInput.{u}) :
     (lensSemanticFiberReading input).Faithful where
   map_injective := by
@@ -118,7 +118,7 @@ noncomputable def lensFiberModelRealizationIso
 
 /-- Every finite local object is the reference-fiber reading of an explicitly
 constructed product lens. -/
-noncomputable def lensSemanticFiberReadingEssSurj
+theorem lensSemanticFiberReadingEssSurj
     (input : LensFamilyInput.{u}) :
     (lensSemanticFiberReading input).EssSurj :=
   Functor.EssSurj.mk fun fiber =>
@@ -149,7 +149,7 @@ primitive finite-fiber reading. -/
 
 /-- The accepted closed-family finite-fiber reading is faithful because
 operation-package readback and semantic fiber restriction are both faithful. -/
-noncomputable def lensFiberValueReadingFaithful
+theorem lensFiberValueReadingFaithful
     (input : LensFamilyInput.{u}) :
     (lensFiberValueReading input).Faithful where
   map_injective := by
@@ -176,7 +176,7 @@ noncomputable def lensFiberValueReadingFaithful
 
 /-- Every finite local map assembles through `LensRealization.ext` and enters
 the closed-family category through the accepted operation-package round trip. -/
-noncomputable def lensFiberValueReadingFull
+theorem lensFiberValueReadingFull
     (input : LensFamilyInput.{u}) :
     (lensFiberValueReading input).Full where
   map_surjective := by
@@ -194,7 +194,7 @@ noncomputable def lensFiberValueReadingFull
 
 /-- Every finite local object is read from the explicitly assembled product
 lens in the closed-family category. -/
-noncomputable def lensFiberValueReadingEssSurj
+theorem lensFiberValueReadingEssSurj
     (input : LensFamilyInput.{u}) :
     (lensFiberValueReading input).EssSurj :=
   Functor.EssSurj.mk fun fiber =>
