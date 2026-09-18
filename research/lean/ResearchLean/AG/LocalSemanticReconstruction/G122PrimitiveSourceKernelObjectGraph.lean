@@ -4,7 +4,7 @@ import ResearchLean.AG.RealizationReconstruction.FiniteAxisFoldAmbientKernelPres
 import Formal.Util.AssertStandardAxioms
 
 /-!
-# Primitive object-graph quotient of the full G-122 source kernel
+# Primitive object-action graph reading of the full G-122 source kernel
 
 The complete direct normalization kernel acts on architecture objects.  This
 module reads that action into the independent Bool-valued graph presentation
@@ -20,7 +20,7 @@ to the complete comparison reconstruction in this module.
 
 ## Implementation notes
 
-This is the exact object-action quotient of the direct normalization kernel.
+This is the exact object-action graph reading of the direct normalization kernel.
 It does not claim that object action alone separates complete geometry
 automorphisms: atom, context, equation, operation, coefficient, raw, and local
 realization components remain additional local-reading obligations.  Neither
