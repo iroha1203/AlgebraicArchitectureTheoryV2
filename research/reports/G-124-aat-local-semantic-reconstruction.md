@@ -6302,6 +6302,133 @@ audits:
   next_obligation: "define independent coherence conditions and assembly for arbitrary complete graph bundles, or reconstruct the full direct normalization kernel itself from primitive local syntax without storing completed automorphisms"
 ```
 
+## Cycle 65: separation-and-assembly reconstruction principle
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 65
+status: result-proposed
+branch: codex/4711-g124-local-reconstruction-principle
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: f7f9a4eca58417c82b017fa5fe465d175db13621
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 64 acceptance: Issue comment 5737339682; Cycle 65 selection: Issue comment 5737354553"
+  proof_dag_predecessors:
+    - "Cycle 63 primitive total-functional Bool graph category and Hom inverse"
+    - "Cycle 64 arbitrary complete-geometry graph separation"
+    - "fixed GOAL B separation-and-assembly characterization of reconstruction"
+  proof_obligation: "prove that independent Hom separation, Hom assembly, and object assembly characterize categorical equivalence; realize the theorem for primitive Bool graphs; connect complete geometry graphs exactly as the separation half"
+  selection_reason: "this discharges the general categorical reconstruction spine with explicit two-sided Hom recovery and object recovery, includes a concrete nontrivial equivalence, and records the exact remaining AAT assembly input in the same cycle"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/LocalReconstructionEquivalence.lean"
+  risks:
+    - "Hom assembly might be smuggled into separation or an image subtype"
+    - "essential surjectivity might be asserted without an explicit assembled object and isomorphism"
+    - "the primitive graph application might only re-export full faithfulness"
+    - "the complete-geometry connection might overstate separation as arbitrary graph assembly"
+  unchecked:
+    - "independent coherence equations and assembly for arbitrary complete-geometry graph bundles remain outside this cycle"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "HomSeparation, HomAssembly, and ObjectAssembly are independent contracts. Their combination derives the second Hom inverse, explicit Hom equivalences, unique Hom preimages, fully faithful and essentially surjective witnesses, and a categorical equivalence; conversely every categorical equivalence supplies the same reconstruction data. Primitive total-functional Bool graphs instantiate all fields and yield an equivalence with Type. Complete geometry graph reading instantiates only the separation contract, leaving independent coherence and assembly explicit."
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.ReadingSeparation"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.HomSeparation"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.HomAssembly"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.ObjectAssembly"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.ReconstructionData"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.ReconstructionData.assemble_map"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.ReconstructionData.homEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.ReconstructionData.existsUnique_preimage"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.ReconstructionData.equivalence"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.ofEquivalence"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.nonempty_reconstructionData_iff_isEquivalence"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.primitiveGraphEquivalenceType"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.primitiveGraph_homEquiv_symm_apply"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.completeGeometryGraphSeparation"
+  evidence:
+    - "ReconstructionData.assemble_map"
+    - "ReconstructionData.existsUnique_preimage"
+    - "ReconstructionData.equivalence"
+    - "nonempty_reconstructionData_iff_isEquivalence"
+    - "primitiveGraphEquivalenceType"
+    - "completeGeometryGraphSeparation"
+  claim_mapping:
+    theorem_names:
+      - "ReconstructionData.assemble_map"
+      - "ReconstructionData.homEquiv"
+      - "ReconstructionData.existsUnique_preimage"
+      - "ReconstructionData.equivalence"
+      - "ofEquivalence"
+      - "nonempty_reconstructionData_iff_isEquivalence"
+      - "primitiveGraphEquivalenceType"
+      - "completeGeometryGraphSeparation"
+    source_labels:
+      - "G-124 fixed target B separation and assembly"
+      - "Cycle 65 fixed four-lane question"
+    conjuncts:
+      - "Hom separation is stated independently from Hom assembly"
+      - "read-after-assembly plus separation derives assembly-after-read"
+      - "every local Hom has an explicit unique global preimage"
+      - "explicit object assembly produces essential surjectivity"
+      - "the three contracts produce a categorical equivalence"
+      - "every categorical equivalence returns the three contracts"
+      - "primitive Bool graphs realize the full contract and are categorically equivalent to Type"
+      - "complete geometry graph reading realizes exactly the Hom separation half"
+    undischarged_assumptions: []
+    acceptance_point: "the general B reconstruction implication and converse are proved, the primitive graph category supplies an actual full application, and the complete-geometry application is accurately limited to its accepted separation result"
+    port_status: not-applicable
+  nonclaims:
+    - "arbitrary complete-geometry graph bundles satisfy independent coherence equations"
+    - "arbitrary complete-geometry graph bundles assemble to GeometryTotalHom values"
+    - "G-124 target B is fully discharged for all four required families"
+audits:
+  premise_delta:
+    discharged:
+      - "second Hom inverse / derived from Hom separation and read-after-assembly"
+      - "full faithfulness / derived from the explicit Hom equivalence"
+      - "essential surjectivity / derived from explicit object assembly and its reading isomorphism"
+      - "categorical equivalence / derived from full faithfulness and essential surjectivity"
+      - "primitive graph application / GraphCode read and assembly plus carrier wrapping"
+    remaining:
+      - "AAT complete-geometry local coherence and Hom/object assembly / independent construction still required"
+      - "four-family common realization and local model / still required"
+  certificate_provenance:
+    discharged:
+      - "primitive Hom assembly / GraphCode.read with existing two inverse laws"
+      - "primitive object assembly / direct carrier wrapper with reflexive isomorphism"
+      - "complete geometry separation / Cycle 64 readCompleteMapGraphs_injective"
+    unresolved:
+      - "complete geometry Hom assembly / no witness or image subtype introduced"
+  proof_use:
+    used:
+      - "HomSeparation.injective derives assembly-after-read and uniqueness"
+      - "HomAssembly.map_assemble supplies read-after-assembly and fullness"
+      - "ObjectAssembly.readAssembledIso supplies essential surjectivity"
+      - "GraphCode.assemble_injective, assemble_read, and read_assemble instantiate the primitive application"
+      - "readCompleteMapGraphs_injective instantiates the complete-geometry separation application"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  target_fitting_reason: "the theorem is the general B reconstruction spine itself and preserves the separate AAT discharge obligation"
+  vacuity: none-found
+  vacuity_reason: "the primitive graph instance constructs a genuine category equivalence for arbitrary types and functions"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  four_lane_question: "Does explicit hom-level separation and assembly together with object assembly characterize a categorical equivalence with two-sided Hom inverses and object isomorphisms, and does the primitive Bool graph category realize the theorem while Cycle 64 complete geometry graphs discharge exactly its separation half?"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/LocalReconstructionEquivalence.lean: pass"
+    - "#assert_standard_axioms_only LocalReconstructionEquivalence: 70 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "define independent complete-geometry graph coherence equations and construct Hom assembly from them, then apply the general reconstruction principle without using an image subtype or completed morphism certificate"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -6430,6 +6557,11 @@ audits:
   source complete-graph readingが全raw comparisonを分離し、full direct normalization-kernel座標を決定し、
   assembled codeのgraph一致とcode一致の同値を既存read/assemble両逆へ接続した。arbitraryな整合graph族の
   独立coherence条件とassembly、direct normalization kernel自体のprimitive local syntaxは未完了である。
+  Cycle 65ではHom分離、Hom組立て、対象組立てを独立fieldにした一般再構成contractを構成し、
+  Homの両逆・一意preimage・fully faithful・essentially surjective・圏同値と、その逆向きの特徴付けを
+  証明した。primitive total-functional Bool graph圏をTypeと圏同値にする完全な適用を同梱し、Cycle 64の
+  complete geometry graphはこのcontractのHom分離だけを放電することを明示した。任意complete graph族の
+  独立coherence条件とHom/対象assembly、および四族共通の実現圏・局所モデル圏への適用は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
