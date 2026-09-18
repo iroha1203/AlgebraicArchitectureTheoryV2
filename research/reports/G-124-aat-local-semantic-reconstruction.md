@@ -103,13 +103,15 @@
   merge commit `1e359cbae5eed78138782593b17da96b6a9e193a`
 - Cycle 47 accepted PR: [#4760](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4760),
   merge commit `2bea07ef9d75a10812f2e5bde04e1500f58bef3f`
+- Cycle 48 accepted PR: [#4761](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4761),
+  merge commit `b07683e791c918ec43b282eb949e7b1555021366`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: accepted source C2から任意のnormalized bottom comparison上の
-  displayed lift orbitを有限コードで一意に回復し、primitive fixed-comparison readingと同時に
-  read/assembleの両逆と作用整合を与える
-- next proof obligation: displayed C2 orbitを超えるより大きな有限source-generated comparison範囲へ、
-  primitive分離、一意な再構成、作用整合を同一cycleで拡張する
+- current proof obligation: 三軸の六つのprimitive permutation codeからactual normalized-comparison
+  imageを群同型として回復し、各像のcanonical section codeの一意性と全actual restriction-kernel
+  torsorを同一surfaceへ接続する
+- next proof obligation: 六要素のsource-generated image外を含むfull comparison groupとfull kernelを
+  local dataから回復し、arbitrary expanded Homと四族の共通再構成へ接続する
 
 ## Cycle 1 — rejected
 
@@ -4628,6 +4630,107 @@ audits:
   next_obligation: "move beyond the displayed C2 orbit to a larger finite source-generated comparison range while retaining primitive separation, unique reconstruction, and action compatibility in one cycle"
 ```
 
+## Cycle 49 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 49
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: b07683e791c918ec43b282eb949e7b1555021366
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 48 accepted PR 4761; Cycle 49 selection: Issue comment 5731034409"
+  proof_dag_predecessors:
+    - "accepted primitive three-axis normalized section"
+    - "accepted source-generated comparison section Hom"
+    - "accepted canonical lift and full actual restriction-kernel torsor theorem"
+  proof_obligation: "recover the six-element actual normalized-comparison image from primitive three-axis codes, uniquely recover the source-generated canonical section code, and connect it to the full-kernel torsor theorem on every represented lift fiber"
+  selection_reason: "this combines a new finite group equivalence, a substantive uniqueness theorem, and the existing actual-fiber universal action on one common surface rather than ending at a definition or adapter"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122AxisComparisonLocalModel.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "primitive three-axis permutations assemble through the actual normalized comparison section into a six-element subgroup and read back with both inverse laws; every semantic image comparison has a unique primitive code whose source-generated section evaluates to its canonical lift; from that canonical lift, the full actual restriction kernel has a unique displacement to every lift in the represented fiber"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.G122AxisComparisonLocalModel.axisComparisonSectionHom"
+    - "AAT.AG.LocalSemanticReconstruction.G122AxisComparisonLocalModel.AxisComparisonImage"
+    - "AAT.AG.LocalSemanticReconstruction.G122AxisComparisonLocalModel.assembleAxis"
+    - "AAT.AG.LocalSemanticReconstruction.G122AxisComparisonLocalModel.readAxis"
+    - "AAT.AG.LocalSemanticReconstruction.G122AxisComparisonLocalModel.readAxis_assembleAxis"
+    - "AAT.AG.LocalSemanticReconstruction.G122AxisComparisonLocalModel.assembleAxis_readAxis"
+    - "AAT.AG.LocalSemanticReconstruction.G122AxisComparisonLocalModel.axisComparisonMulEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122AxisComparisonLocalModel.axisComparisonImage_card"
+    - "AAT.AG.LocalSemanticReconstruction.G122AxisComparisonLocalModel.canonicalSection_unique_axisCode"
+    - "AAT.AG.LocalSemanticReconstruction.G122AxisComparisonLocalModel.everyLift_unique_kernel_displacement"
+    - "AAT.AG.LocalSemanticReconstruction.G122AxisComparisonLocalModel.sourceGenerated_fullKernel_reconstruction"
+  claim_mapping:
+    source_labels:
+      - "fixed target B/C: primitive source-axis recovery of an actual normalized comparison image"
+      - "fixed target C: unique source-generated canonical section and full-kernel torsor on represented fibers"
+    conjuncts:
+      - "the local code is Equiv.Perm (Fin 3), not a stored completed semantic comparison"
+      - "assemble/read are inverse and multiplicative on the six-element actual image subgroup"
+      - "the actual image subgroup has cardinality six"
+      - "each image comparison has exactly one primitive code producing its canonical source-generated lift"
+      - "each lift over an image comparison has exactly one full actual kernel displacement from that canonical lift"
+      - "the finite comparison inverse and full-fiber torsor are exposed by one connection theorem"
+    undischarged_assumptions:
+      - "recover normalized comparisons outside the six-element source-generated image"
+      - "recover arbitrary full-kernel elements from independent local data"
+      - "extend reconstruction to arbitrary expanded G-122 Homs and objects"
+      - "discharge final four-family separation and assembly"
+    acceptance_point: "six-element source-generated comparison image plus the accepted full-kernel torsor on each represented fiber; not the full comparison group or an independent kernel local model"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_scope:
+      - "primitive permutations of Fin 3"
+      - "actual source-generated normalized comparison section and its image subgroup"
+      - "canonical lifts and actual restriction-kernel action above image comparisons"
+    proved_dependencies:
+      - "normalized axis section and source-generated comparison section Hom laws"
+      - "actual source endpoint axis projection readback"
+      - "canonical section evaluation theorem"
+      - "full-kernel simply transitive action on each actual lift fiber"
+    discharge_required:
+      - "both inverse laws for primitive axis assembly/readback"
+      - "multiplicative equivalence and cardinality six"
+      - "unique primitive canonical-section code"
+      - "unique full-kernel displacement for every represented lift"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "comparison code / independent finite permutation table"
+      - "semantic comparison / actual normalized section evaluation"
+      - "code uniqueness / actual source-axis projection readback"
+      - "fiber displacement / accepted actual restriction-kernel torsor"
+    unresolved:
+      - "comparison image complement and independent full-kernel local recovery"
+  proof_use:
+    used:
+      - "axis section multiplication and readback"
+      - "source-generated comparison section evaluation"
+      - "canonical lift section equation"
+      - "full actual kernel action existence and uniqueness"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "enlarges the two-element displayed orbit to all six primitive axis comparisons, proves a group-level two-sided reconstruction, and connects unique source section codes to every represented full-kernel fiber in the same cycle"
+  vacuity: "the image has exactly six elements, every primitive code is recovered by readback, and the fiber theorem quantifies over every lift above every image comparison"
+  four_lane_question: "Does primitive three-axis projection reconstruct exactly the six-element actual normalized-comparison image, uniquely recover the source-generated canonical section code, and support the full-kernel torsor theorem on every represented lift fiber without storing completed comparisons?"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122AxisComparisonLocalModel.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122AxisComparisonLocalModel.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122AxisComparisonLocalModel: pass (4377 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122AxisComparisonLocalModel: 15 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "recover the full comparison group and full kernel from local data beyond the six-element axis image, then extend the same separation and reconstruction to arbitrary expanded Homs and the four-family surface"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -4683,7 +4786,11 @@ audits:
   任意のnormalized bottom comparison上のactual displayed lift orbitへの一意な組み立て、
   source乗法とlift作用の整合、identity fiberの既存source liftとの一致を証明し、
   Cycle 47のprimitive comparison復元と積の両逆へ接続した。full comparison group、full
-  restriction kernel、full lift fiber全体の分類は未完了である。
+  restriction kernel、full lift fiber全体の分類は未完了である。Cycle 49では、三軸のprimitive
+  permutation codeとactual source-generated normalized-comparison imageの群同型、像の位数6、
+  各像のcanonical section codeの一意性を証明し、各represented fiber上のfull actual kernel
+  torsorへ同じ定理面で接続した。六要素像の外側を含むfull comparison group、full kernel要素の
+  独立local recovery、arbitrary Hom、四族統合は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
