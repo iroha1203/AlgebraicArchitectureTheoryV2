@@ -2630,6 +2630,8 @@ audits:
   material_premises:
     ambient_boundary:
       - "finite fixed directed graph and finite hidden carrier"
+      - "decidable equality on vertices and hidden values for the finite table algorithms"
+      - "a decidable retained-vertex predicate for its explicit Finset presentation, including the chosen representative predicate in its specialization"
       - "Nontrivial K (the fixed |K| >= 2 boundary) for the converses in the two exact iff criteria"
       - "fixed graph automorphism and actual ProtocolInvertibleChange"
       - "accepted preserving-change/component-permutation classification"

@@ -90,10 +90,12 @@ def coherenceWitnessGraph : FixedFDirectedMultigraph where
   source := fun _ => false
   target := fun _ => true
 
+/-- The witness graph has the finite Boolean vertex enumeration. -/
 instance : Fintype coherenceWitnessGraph.Vertex := by
   change Fintype Bool
   infer_instance
 
+/-- Vertex equality on the witness graph is the Boolean equality decision. -/
 instance : DecidableEq coherenceWitnessGraph.Vertex := by
   change DecidableEq Bool
   infer_instance
@@ -104,6 +106,7 @@ def coherentIdentityTable :
       Equiv.Perm Bool :=
   fun _ => 1
 
+/-- The constant identity table supplies a positive coherence instance. -/
 theorem coherentIdentityTable_coherent :
     TableCoherent coherenceWitnessGraph (fun _ => True) Bool
       coherentIdentityTable := by
@@ -117,6 +120,7 @@ def incoherentSplitTable :
       Equiv.Perm Bool :=
   fun vertex => if vertex.1 = true then Equiv.swap false true else 1
 
+/-- The split source/target table supplies a negative coherence instance. -/
 theorem incoherentSplitTable_not_coherent :
     ¬ TableCoherent coherenceWitnessGraph (fun _ => True) Bool
       incoherentSplitTable := by
