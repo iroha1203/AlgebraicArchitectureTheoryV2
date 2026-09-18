@@ -86,6 +86,28 @@ instance tableCoherentDecidable [DecidableEq K]
   unfold TableCoherent Function.Bijective Function.Injective Function.Surjective
   infer_instance
 
+/-- A nontrivial coherent instance: Boolean negation is a bijective raw table
+on the full two-point reference fiber. -/
+def boolNegationTable :
+    {hidden // hidden ∈ fullReferenceFiber (K := Bool)} → Bool :=
+  fun hidden => !hidden.1
+
+/-- Boolean negation supplies the positive instance required to show that
+`TableCoherent` is not vacuously false. -/
+theorem boolNegationTable_coherent : TableCoherent boolNegationTable := by
+  decide
+
+/-- A noncoherent raw table on the same nontrivial finite carrier. -/
+def boolConstantFalseTable :
+    {hidden // hidden ∈ fullReferenceFiber (K := Bool)} → Bool :=
+  fun _ => false
+
+/-- The constant Boolean table supplies the negative instance required to
+show that `TableCoherent` is not vacuously true. -/
+theorem boolConstantFalseTable_not_coherent :
+    ¬ TableCoherent boolConstantFalseTable := by
+  decide
+
 /-- Compute the unique preimage of one value by searching the supplied finite
 enumeration.  The uniqueness proof is data used by `Finset.choose`; no global
 choice operator is used by this finite search. -/

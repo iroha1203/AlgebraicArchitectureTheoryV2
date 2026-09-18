@@ -2489,6 +2489,8 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.readProductLensChangeAt_eq_fiberPerm"
     - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.fullReferenceFiber"
     - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.TableCoherent"
+    - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.boolNegationTable_coherent"
+    - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.boolConstantFalseTable_not_coherent"
     - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.finiteInverseOfBijective"
     - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.finitePermutationOfBijective"
     - "AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination.fullReferenceFiber_separates"
@@ -2506,6 +2508,7 @@ result:
       - "the full finite fiber separates actual invertible lens changes"
       - "every bijective raw table extends through the accepted hidden-permutation constructor"
       - "bijectivity is decided on the raw finite table"
+      - "Boolean negation and a constant Boolean table provide explicit coherent and noncoherent instances on the same nontrivial finite carrier"
       - "finite search constructs the inverse permutation and successful extension reads back exactly"
       - "the program returns none exactly for nonbijective tables"
     undischarged_assumptions:
@@ -2546,11 +2549,11 @@ audits:
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: "actual product-lens invertible changes and the actual full reference fiber, with raw-table exact rejection"
-  vacuity: "arbitrary finite hidden carriers, visible permutations, and bijective/nonbijective raw tables are retained; no stored extension certificate or singleton filler is introduced"
+  vacuity: "arbitrary finite hidden carriers, visible permutations, and bijective/nonbijective raw tables are retained; Boolean negation and the constant false table explicitly fire both coherence outcomes on the same two-point carrier, and no stored extension certificate or singleton filler is introduced"
   validation_refs:
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/LensFiniteDetermination.lean: pass"
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.LensFiniteDetermination: pass (targeted dependency closure only)"
-    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination: 15 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.LensFiniteDetermination: 19 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "construct the protocol-branch actual finite determination/effectiveness application, keeping its observation-aware local Hom and execution-state coherence distinct from the lens proof"
 ```
@@ -2572,5 +2575,5 @@ audits:
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の同定。
-- E2 の lens側はCycle 27で共通`FiniteReading`/Dへ接続済み。protocol側の決定性と
-  effectivenessの接続は未完了である。
+- E2 の product-lens 可逆変更層はCycle 27で共通`FiniteReading`/Dへ接続済み。
+  lens一般意味保存射層とprotocol側の決定性・effectivenessの接続は未完了である。
