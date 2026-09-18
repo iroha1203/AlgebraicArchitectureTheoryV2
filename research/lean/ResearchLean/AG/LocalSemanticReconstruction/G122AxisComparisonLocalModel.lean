@@ -20,6 +20,17 @@ actual restriction-kernel torsor theorem on its lift fiber.
 The result concerns only the six-element axis image.  It does not classify
 normalized comparisons outside that image, the full comparison group, or the
 restriction kernel itself.
+
+## Implementation notes
+
+The semantic codomain is the range of the accepted section hom, while the
+local code remains the independent finite table `Equiv.Perm (Fin 3)`.
+Reading deliberately projects the actual source endpoint's axis map instead
+of unpacking the range-membership witness.  We reject using an actual
+normalized comparison as the local value because that would store the
+completed semantic morphism that the local model is meant to reconstruct.
+The multiplicative equivalence packages the two inverse laws only after this
+independent readback has been proved.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction
@@ -117,6 +128,8 @@ noncomputable def axisComparisonMulEquiv :
     apply Subtype.ext
     exact map_mul axisComparisonSectionHom first second
 
+/-- The six-element semantic image inherits finiteness from its primitive
+axis-table model. -/
 noncomputable instance axisComparisonImageFintype :
     Fintype AxisComparisonImage :=
   Fintype.ofEquiv (Equiv.Perm (Fin 3)) axisComparisonMulEquiv.toEquiv
