@@ -2580,7 +2580,7 @@ selection:
     - "accepted ProtocolInvertibleChange equivalence with operation-preserving fixed-F following changes"
     - "component-permutation restriction criteria and coherent finite extension"
     - "common FiniteReading separation, extension, determining, and effectiveness surfaces"
-  proof_obligation: "actual ProtocolInvertibleChangeを各vertexのstateEquivで読み、retained named-edge上の等式を独立coherenceとする。separationとextensionの必要十分条件をそれぞれfull component meetingとinduced connectivity retentionに同定し、既存の有限algorithmをactual protocol型へ戻してexact rejection/readbackを証明する"
+  proof_obligation: "actual ProtocolInvertibleChangeを各vertexのstateEquivで読み、retained named-edge上の等式を独立coherenceとする。separationとextensionの必要十分条件をそれぞれfull component meetingとinduced connectivity retentionに同定し、各full componentの選択代表集合をactual protocol決定集合へ適用する。既存の有限algorithmをactual protocol型へ戻してexact rejection/readbackを証明する"
   selection_reason: "Cycle 27でlens側を共通FiniteReading surfaceへ接続したため、固定GOAL D/E2で対になるprotocol可逆変更層が直接の残余nodeである"
   expected_result_type: proof-obligation-discharged
   lean_targets:
@@ -2605,6 +2605,7 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.separates_iff_meetsEveryFullComponent"
     - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.extends_iff_retainsFullConnectivity"
     - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.determining_of_componentCriteria"
+    - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.representativeVertices_determining"
     - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.effectivenessProgram"
     - "AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination.effective_of_retainsFullConnectivity"
   claim_mapping:
@@ -2616,6 +2617,7 @@ result:
       - "separation holds exactly when retained vertices meet every full component"
       - "extension of every retained-edge coherent table holds exactly when induced connectivity is retained"
       - "the two criteria jointly give a finite determining set"
+      - "the chosen representative vertex of every full component specializes those criteria to an actual protocol determining set"
       - "coherence has explicit positive and negative instances on one nontrivial witness graph"
       - "the finite program decides coherence, rejects exactly incoherent tables, and returns actual protocol changes with exact readback"
     undischarged_assumptions:
@@ -2628,9 +2630,12 @@ audits:
   material_premises:
     ambient_boundary:
       - "finite fixed directed graph and finite hidden carrier"
+      - "Nontrivial K (the fixed |K| >= 2 boundary) for the converses in the two exact iff criteria"
       - "fixed graph automorphism and actual ProtocolInvertibleChange"
       - "accepted preserving-change/component-permutation classification"
-    direction_hypothesis: []
+    direction_hypothesis:
+      - "MeetsEveryFullComponent for the forward separation construction"
+      - "RetainsFullConnectivity for extension, determining, and effectiveness"
     discharge_required:
       - "actual stateEquiv/readPreservingChangeAt identification"
       - "separation iff full-component meeting"
@@ -2653,11 +2658,11 @@ audits:
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: "actual protocol invertible changes and actual retained named edges, with exact graph criteria and raw-table rejection"
-  vacuity: "arbitrary finite graphs and hidden carriers remain; a one-edge Boolean graph explicitly exhibits coherent and incoherent tables, and no stored extension certificate is accepted"
+  vacuity: "the constructive separation/extension/effectiveness directions retain arbitrary finite hidden carriers; the converse exact criteria use the fixed |K| >= 2 boundary. A one-edge Boolean graph explicitly exhibits coherent and incoherent tables, and no stored extension certificate is accepted"
   validation_refs:
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/ProtocolFiniteDetermination.lean: pass"
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination: pass (4357 jobs)"
-    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination: 18 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.ProtocolFiniteDetermination: 19 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "connect the general observation-aware protocol local Hom to finite reading/effectiveness, without conflating it with the invertible state-change layer"
 ```

@@ -130,8 +130,10 @@ theorem incoherentSplitTable_not_coherent :
     at valueEquality
 
 omit [DecidableEq F.Vertex] [DecidableEq K] in
-/-- The retained protocol point readings separate actual protocol changes
-when the retained vertices meet every full component. -/
+/-- G-124(D/E2), constructive separation direction: the retained protocol
+point readings separate actual protocol changes when the supplied graph
+predicate meets every full component.  Unlike the converse below, this API
+does not require a nontrivial hidden carrier. -/
 theorem separates_of_meetsEveryFullComponent
     (S : F.Vertex → Prop) [DecidablePred S]
     (meets : InducedComponent.MeetsEveryFullComponent F S) :
@@ -164,8 +166,9 @@ theorem separates_of_meetsEveryFullComponent
     readProtocolChangeAt_eq_preservingReading] using pointEquality
 
 omit [DecidableEq F.Vertex] [DecidableEq K] in
-/-- Conversely, separation of the retained protocol readings forces the
-retained set to meet every full component. -/
+/-- G-124(D/E2), exact separation criterion.  For the target's `|K| ≥ 2`
+boundary, represented here by `[Nontrivial K]`, separation of the actual
+protocol readings is equivalent to meeting every full component. -/
 theorem separates_iff_meetsEveryFullComponent
     [Nontrivial K]
     (S : F.Vertex → Prop) [DecidablePred S] :
@@ -205,8 +208,9 @@ theorem separates_iff_meetsEveryFullComponent
       protocolEquality
   · exact separates_of_meetsEveryFullComponent S
 
-/-- Every edge-coherent retained protocol table extends to an actual protocol
-change when the induced graph retains full connectivity. -/
+/-- G-124(D/E2), constructive extension direction: every table coherent on
+the actual retained named edges extends to an actual protocol change when the
+supplied graph predicate retains full connectivity. -/
 theorem extends_of_retainsFullConnectivity
     (S : F.Vertex → Prop) [DecidablePred S]
     (retains : InducedComponent.RetainsFullConnectivity F S) :
@@ -232,8 +236,9 @@ theorem extends_of_retainsFullConnectivity
           (FiniteEffectiveness.mem_retainedVertices F S vertex.1).1 vertex.2⟩
   simpa [FiniteReading.restrict, protocol, preserving, vertexTable] using readback
 
-/-- Extension of every independently edge-coherent raw table is equivalent
-to retention of full connectivity by the induced graph. -/
+/-- G-124(D/E2), exact extension criterion.  For `[Nontrivial K]`, extension
+of every independently edge-coherent raw table is equivalent to retention of
+full connectivity by the induced graph. -/
 theorem extends_iff_retainsFullConnectivity
     [Nontrivial K]
     (S : F.Vertex → Prop) [DecidablePred S] :
@@ -271,8 +276,9 @@ theorem extends_iff_retainsFullConnectivity
       FiniteReading.restrict, table] using atVertex
   · exact extends_of_retainsFullConnectivity S
 
-/-- Under the two exact graph criteria, the retained vertices are a common
-finite determining set for actual protocol invertible changes. -/
+/-- G-124(D/E2), determining-set API: the separately supplied component
+meeting and induced-connectivity premises combine the already independent
+separation and extension results for actual protocol invertible changes. -/
 theorem determining_of_componentCriteria
     (S : F.Vertex → Prop) [DecidablePred S]
     (meets : InducedComponent.MeetsEveryFullComponent F S)
@@ -285,9 +291,26 @@ theorem determining_of_componentCriteria
   ⟨separates_of_meetsEveryFullComponent S meets,
     extends_of_retainsFullConnectivity S retains⟩
 
-/-- Executable protocol extension: decide actual retained-edge coherence,
-reject exactly incoherent tables, and return the corresponding actual
-protocol change with exact pointwise readback. -/
+/-- Choosing one representative vertex from every full component gives an
+actual protocol determining set.  The decidability input only presents that
+chosen predicate as the explicit finite `Finset` required by `FiniteReading`;
+the two graph criteria are supplied by the representative construction. -/
+theorem representativeVertices_determining
+    [DecidablePred (InducedComponent.RepresentativeVertex F)] :
+    FiniteReading.Determining
+      (readProtocolChangeAt (F := F) (K := K)
+        (automorphism := automorphism))
+      (readingVertices F (InducedComponent.RepresentativeVertex F))
+      (TableCoherent F (InducedComponent.RepresentativeVertex F) K) :=
+  determining_of_componentCriteria
+    (InducedComponent.RepresentativeVertex F)
+    (InducedComponent.representativeVertex_meetsEveryFullComponent F)
+    (InducedComponent.representativeVertex_retainsFullConnectivity F)
+
+/-- G-124(D/E2), effectiveness API under the supplied retained-connectivity
+premise: decide actual retained-edge coherence, reject exactly incoherent
+tables, and return the corresponding actual protocol change with exact
+pointwise readback. -/
 def effectivenessProgram
     (S : F.Vertex → Prop) [DecidablePred S]
     (retains : InducedComponent.RetainsFullConnectivity F S) :
