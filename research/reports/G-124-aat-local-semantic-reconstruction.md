@@ -125,13 +125,15 @@
   merge commit `ff16abdfe07115726f3efd2e9e2782b964f7e2d9`
 - Cycle 58 accepted PR: [#4771](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4771),
   merge commit `9b7e650ea5bde19219cf8203707f7ed23103b955`
+- Cycle 59 accepted PR: [#4772](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4772),
+  merge commit `7acbd8277b9ae8a6999f0ef807fddfc9bac6c8cb`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: pairwiseに相異なる任意の有限Extension carrier族について、
-  actual kernel積の忠実性、stored-backward観測からの回復、expanded directとnormalized comparisonを
-  含む四つの乗法同値、全two-carrier像からのproper enlargementを同じsurfaceで証明する
-- next proof obligation: infinite locally finite carrier-support limitをfinite restrictionから組み立てるか、
-  arbitrary expanded Homの実質的な分離・assemblyを共通surfaceまで同梱する
+- current proof obligation: full raw comparisonをcanonical normalized comparisonと一意なfull
+  restriction-kernel変位から両方向に再構成し、共役で捻れた積、全lift fiberの一意性、
+  normalized source automorphism接続を同じsurfaceで証明する
+- next proof obligation: arbitrary full-kernel要素のprimitive local presentationを構成して
+  このfull comparison分解へ接続するか、arbitrary expanded Homの実質的な分離・assemblyを同梱する
 
 ## Cycle 1 — rejected
 
@@ -5723,6 +5725,102 @@ audits:
   next_obligation: "recover an infinite locally finite carrier-support limit with substantive finite-restriction assembly, or discharge a nontrivial arbitrary expanded-Hom separation and assembly surface"
 ```
 
+## Cycle 60: full comparison and kernel decomposition
+
+```yaml
+cycle: 60
+status: implementation-complete-review-pending
+branch: codex/4711-g124-full-comparison-kernel-decomposition
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 7acbd8277b9ae8a6999f0ef807fddfc9bac6c8cb
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 59 audit: PR comment 5734831359; Cycle 59 acceptance: Issue comment 5734839946; Cycle 60 selection: Issue comment 5734866822"
+  proof_dag_predecessors:
+    - "accepted surjective comparison restriction and canonical section"
+    - "accepted normalized comparison source equivalence"
+    - "accepted free transitive full-kernel action on every actual lift fiber"
+  proof_obligation: "classify every full raw comparison by one normalized comparison and one unique full restriction-kernel displacement; expose the induced noncommutative multiplication; connect the normalized factor to the actual normalized source automorphism group and every full lift fiber"
+  selection_reason: "this moves beyond represented finite-family images to the full raw comparison group, proves explicit two-sided reconstruction and uniqueness, includes the conjugation-twisted multiplication law, and carries the result through the normalized source automorphism and lift-fiber surfaces in the same cycle"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122FullComparisonKernelDecomposition.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "every full raw comparison is assembled from its restricted normalized comparison and the unique residual element of the full actual restriction kernel; explicit read and assemble maps satisfy both inverse laws; multiplication is governed by conjugation of the first kernel displacement by the second canonical lift; the normalized comparison factor is multiplicatively equivalent to the normalized direct source automorphism group; every full lift fiber has the same unique full-kernel displacement property"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition.canonicalSectionHom"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition.readKernel_mem"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition.read_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition.assemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition.fullComparisonEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition.normalizedComparisonSourceMulEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition.readSource_assembleSource"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition.assembleSource_readSource"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition.fullComparisonSourceEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition.assemble_mul_formula"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition.read_mul_kernel"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition.readKernel_existsUnique"
+    - "AAT.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition.fullLiftFiber_existsUnique_kernel"
+  claim_mapping:
+    conjuncts:
+      - "the canonical section followed by restriction supplies the normalized component of every raw comparison"
+      - "the residual canonical-lift inverse times the raw comparison lies in the full restriction kernel"
+      - "explicit read and assembly maps are mutually inverse on the full groups"
+      - "the transported product has the stated conjugation-twisted kernel formula"
+      - "the kernel displacement is unique both for raw comparisons and for every full lift fiber"
+      - "the normalized factor is exactly the normalized direct source automorphism group"
+    undischarged_assumptions:
+      - "independently present every full-kernel element by primitive local syntax"
+      - "recover arbitrary expanded G-122 Homs outside the comparison group"
+      - "discharge final four-family separation and assembly"
+    acceptance_point: "full raw-comparison two-sided reconstruction, unique full-kernel displacement, twisted multiplication, source-automorphism connection, and full-lift-fiber uniqueness in one cycle"
+    port_status: unported
+audits:
+  material_premises:
+    proved_dependencies:
+      - "surjectivity of the full restriction homomorphism"
+      - "canonical section right-inverse law"
+      - "comparison equation forcing the normalized target automorphism from its source"
+      - "full lift-fiber kernel torsor theorem"
+    discharge_required:
+      - "kernel membership of the residual displacement"
+      - "both inverse laws on the full raw comparison group"
+      - "conjugation-twisted multiplication formula"
+      - "raw-comparison kernel uniqueness"
+      - "source-automorphism reparameterization with both inverse laws"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "normalized component / actual restriction homomorphism"
+      - "kernel component / residual computed from the canonical section"
+      - "source component / projection from the normalized comparison equation"
+    unresolved:
+      - "primitive local syntax for arbitrary elements of the full actual kernel"
+      - "surjectivity for arbitrary expanded G-122 Homs"
+  proof_use:
+    used:
+      - "accepted canonical comparison section and right-inverse theorem"
+      - "accepted full comparison restriction homomorphism"
+      - "accepted generated comparison source equivalence"
+      - "accepted full lift-fiber free transitive action"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "replaces finite-family comparison images by the complete fixed raw comparison group and gives an explicit reconstruction law without claiming a primitive presentation of the full kernel"
+  vacuity: "the code contains only a genuine full-kernel element and a normalized comparison or source automorphism; kernel membership is derived from restriction and section laws, and both inverse equations are proved"
+  four_lane_question: "Does the full fixed raw `barAlpha` comparison group admit an explicit two-sided reconstruction by its canonical normalized comparison and a unique full restriction-kernel displacement, with the correct conjugation-twisted multiplication law, full-lift-fiber uniqueness, and normalized-source automorphism connection?"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122FullComparisonKernelDecomposition.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition: 25 declarations, standard axioms only"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122FullComparisonKernelDecomposition.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition: pass (4299 jobs)"
+  blocking_findings: []
+  next_obligation: "construct a primitive local presentation for arbitrary full-kernel elements and connect its own separation and assembly to this full comparison decomposition, or discharge a nontrivial arbitrary expanded-Hom reconstruction surface"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -5825,7 +5923,11 @@ audits:
   unop・逆で戻すrecovery homからactual積の忠実性を証明し、kernel・stored-backward・expanded direct・
   normalized comparisonの四像へ乗法同値を構成した。さらに全two-carrier像をBool-index familyとして
   収録し、`Nat`、`Set Nat`、`Set (Set Nat)`を同時に動かす固定witnessでproper inclusionを証明した。
-  full kernel、arbitrary expanded Hom、四族統合は未完了である。
+  Cycle 60ではfull raw comparisonをcanonical normalized comparisonと一意なfull restriction-kernel
+  変位から明示的に組み立て、read/assemble両逆、共役で捻れた積公式、raw comparisonと全lift fiberでの
+  kernel変位一意性を証明した。normalized factorをactual normalized source automorphism群へ接続し、その
+  座標でも両逆を同梱した。full kernel要素の独立なprimitive local presentation、arbitrary expanded Hom、
+  四族統合は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
