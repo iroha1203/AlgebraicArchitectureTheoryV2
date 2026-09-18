@@ -81,11 +81,13 @@
   merge commit `796e99d40e4b0ce44b2e7f3a3bd09f71483e0525`
 - Cycle 36 accepted PR: [#4749](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4749),
   merge commit `8a7fb13571039012551efeef505d9980708a8196`
+- Cycle 37 accepted PR: [#4750](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4750),
+  merge commit `a4d2c26a731c1bdb17a89b664980faf18e698753`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: generated tagged endomorphismのfinite-local同定をone-object圏同値へ持ち上げ、
-  Hom reading・assemblyとobject assemblyをactual category上で明示する
-- next proof obligation: tagged branchのactual/local圏同値を四分枝共通の局所読み取りsurfaceへ接続する
+- current proof obligation: tagged branchのactual/local圏同値を四分枝共通の局所読み取りsurfaceへ接続する
+- next proof obligation: generated tagged branchを四分枝共通の `R_Theta/M_Theta/N_Theta` 候補に収録するための
+  actual common-category objectとprimitive reading componentを特定する
 
 ## Cycle 1 — rejected
 
@@ -3585,6 +3587,88 @@ audits:
 完結する `normalizeLocalTable` と `multiplyLocalValue` を定義した。さらに canonical normalization
 で動く固定 source を選び、actual `upper.objectMap` のその点での値から flag を直接読み、
 actual `operationMap` 由来の有限表と合わせた完全な local value readback を証明した。
+
+## Cycle 38 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 38
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: a4d2c26a731c1bdb17a89b664980faf18e698753
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 37 accepted evidence: PR comment 5726786037; Cycle 38 selection: Issue comment 5726791876"
+  proof_dag_predecessors:
+    - "Cycle 36 actual generated tagged endomorphism normal form"
+    - "Cycle 37 finite-local monoid equivalence and primitive full-value readback"
+  proof_obligation: "deloop the actual generated submonoid/local-section monoid equivalence and state primitive Hom reading, Hom assembly, and object assembly as an explicit one-object categorical equivalence"
+  selection_reason: "completes the categorical packaging left explicitly open by Cycle 37 without extending the claim to the common four-family category"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeGeneratedCategoryEquivalence.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the actual generated tagged endomorphism submonoid and finite-local section monoid are delooped to equivalent one-object categories; the forward Hom map is primitive full-value reading, the inverse is normal-form assembly, and the sole local object is assembled"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.GlobalCategory"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.LocalCategory"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.reading"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.reading_map_value"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.morphismSeparates"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.morphismAssembles"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.objectAssembles"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.equivalence"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.homEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.homEquiv_symm_eq_assemble"
+  claim_mapping:
+    source_labels:
+      - "fixed GOAL B Hom separation, Hom assembly, and object assembly"
+      - "Cycle 37 actual generated finite-local monoid reconstruction"
+    conjuncts:
+      - "the forward categorical Hom map is primitive actual flag/table reading"
+      - "the Hom map is bijective and its inverse is explicit normal-form assembly"
+      - "the one local object is in the essential image"
+      - "the resulting functor is a categorical equivalence"
+    undischarged_assumptions:
+      - "common four-family R_Theta/M_Theta/N_Theta"
+    acceptance_point: "one-object categorical equivalence for the actual generated tagged endomorphism branch only"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "Cycle 37 actualGeneratedMulEquivLocalSection"
+    discharge_required:
+      - "primitive Hom reading"
+      - "Hom separation and assembly"
+      - "object assembly"
+      - "categorical equivalence"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "Hom reading / actual objectMap and operationMap through Cycle 37"
+      - "Hom assembly / LocalSection.assemble followed by Cycle 36 normal-form evaluation"
+      - "object assembly / the unique object of SingleObj"
+    unresolved: []
+  proof_use:
+    used:
+      - "actualGeneratedMulEquivLocalSection_localValue"
+      - "actualGeneratedMulEquivLocalSection.toSingleObjEquiv"
+      - "normalFormMulEquivGenerated and LocalSection.assemble"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "packages the actual generated branch categorically while retaining primitive finite-local Hom values"
+  vacuity: "both raw and normalized actual endomorphisms occur as Homs; the category is one-object but its Hom monoid is nontrivial"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/TagChangeGeneratedCategoryEquivalence.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence: pass (4360 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence: 13 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "connect the accepted tagged generated categorical equivalence to a common four-family local-reading surface without weakening the fixed target"
+```
 
 ## 未完了 ledger
 
