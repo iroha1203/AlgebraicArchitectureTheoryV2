@@ -3617,15 +3617,15 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.LocalCategory"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.reading"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.reading_map_value"
-    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.morphismSeparates"
-    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.morphismAssembles"
-    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.objectAssembles"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.morphism_separates"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.morphism_assembles"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.object_assembles"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.equivalence"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.homEquiv"
     - "AAT.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence.homEquiv_symm_eq_assemble"
   claim_mapping:
     source_labels:
-      - "fixed GOAL B Hom separation, Hom assembly, and object assembly"
+      - "Cycle 38 branch-local categorical packaging obligation"
       - "Cycle 37 actual generated finite-local monoid reconstruction"
     conjuncts:
       - "the forward categorical Hom map is primitive actual flag/table reading"
@@ -3634,6 +3634,7 @@ result:
       - "the resulting functor is a categorical equivalence"
     undischarged_assumptions:
       - "common four-family R_Theta/M_Theta/N_Theta"
+      - "fixed GOAL B object assembly for arbitrary objects of the common local-model category"
     acceptance_point: "one-object categorical equivalence for the actual generated tagged endomorphism branch only"
     port_status: unported
 audits:
@@ -3643,15 +3644,16 @@ audits:
     discharge_required:
       - "primitive Hom reading"
       - "Hom separation and assembly"
-      - "object assembly"
+      - "essential-image witness for the sole SingleObj local object"
       - "categorical equivalence"
     conclusion_equivalent_risk: []
   certificate_provenance:
     discharged:
       - "Hom reading / actual objectMap and operationMap through Cycle 37"
       - "Hom assembly / LocalSection.assemble followed by Cycle 36 normal-form evaluation"
-      - "object assembly / the unique object of SingleObj"
-    unresolved: []
+      - "branch-local object witness / the unique object of SingleObj"
+    unresolved:
+      - "fixed GOAL B object assembly outside this one-object branch"
   proof_use:
     used:
       - "actualGeneratedMulEquivLocalSection_localValue"
@@ -3661,7 +3663,7 @@ audits:
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: "packages the actual generated branch categorically while retaining primitive finite-local Hom values"
-  vacuity: "both raw and normalized actual endomorphisms occur as Homs; the category is one-object but its Hom monoid is nontrivial"
+  vacuity: "both raw and normalized actual endomorphisms occur as Homs; the sole-object witness is only branch-local and is not counted as fixed GOAL B object assembly"
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/TagChangeGeneratedCategoryEquivalence.lean: pass"
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeGeneratedCategoryEquivalence: pass (4360 jobs)"
@@ -3705,7 +3707,8 @@ audits:
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
   package-level Hom-slice同定はCycle 34で接続した。canonical-normalizationを含むfull tagged categoryと
   四分枝共通の主同値への接続は未完了である。Cycle 37のgenerated finite-local monoid同型を
-  one-object圏同値として明示し、共通surfaceへ接続する義務は未完了である。
+  one-object圏同値として明示する義務はCycle 38で放電した。四分枝共通surfaceへの接続と、
+  そのlocal-model categoryの任意対象に対する固定GOAL B object assemblyは未完了である。
 - E2 の product-lens / protocol 可逆変更層はCycle 27--28で共通
   `FiniteReading`/Dへ接続済み。Cycle 29でgeneral observation-aware protocol Homも
   full tagged table上の決定性・effectivenessへ接続し、Cycle 30でlens一般意味保存射層も

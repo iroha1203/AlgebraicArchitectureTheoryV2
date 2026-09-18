@@ -13,10 +13,12 @@ table is read from the actual operation map.  The inverse Hom map assembles a
 local section through the Cycle 36 normal form and evaluates it as an actual
 generated endomorphism.
 
-Both categories have one object.  Thus object assembly is explicit, while
-all mathematical content lies in Hom reading, separation, and assembly.  The
-construction is limited to the generated tagged endomorphism submonoid; it
-does not claim the common four-family equivalence required by the full G-124.
+Both categories have one object.  Thus the branch-local sole-object witness
+is explicit, while all mathematical content lies in Hom reading, separation,
+and assembly.  This witness is not fixed GOAL B's assembly of arbitrary
+objects in the common local-model category.  The construction is limited to
+the generated tagged endomorphism submonoid and does not claim the common
+four-family equivalence required by the full G-124.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction
@@ -53,19 +55,20 @@ theorem reading_map_value {X Y : GlobalCategory} (morphism : X ⟶ Y)
   actualGeneratedMulEquivLocalSection_localValue morphism S
 
 /-- Primitive Hom reading separates actual generated endomorphisms. -/
-theorem morphismSeparates {X Y : GlobalCategory} :
+theorem morphism_separates {X Y : GlobalCategory} :
     Function.Injective
       (reading.map : (X ⟶ Y) → (reading.obj X ⟶ reading.obj Y)) :=
   actualGeneratedMulEquivLocalSection.injective
 
 /-- Every finite-local Hom assembles to an actual generated endomorphism. -/
-theorem morphismAssembles {X Y : GlobalCategory} :
+theorem morphism_assembles {X Y : GlobalCategory} :
     Function.Surjective
       (reading.map : (X ⟶ Y) → (reading.obj X ⟶ reading.obj Y)) :=
   actualGeneratedMulEquivLocalSection.surjective
 
-/-- Object assembly for the generated one-object category. -/
-theorem objectAssembles (Z : LocalCategory) :
+/-- Essential-image witness for the sole object of this generated branch.
+This is not arbitrary-object assembly for the common G-124 local category. -/
+theorem object_assembles (Z : LocalCategory) :
     ∃ X : GlobalCategory, Nonempty (reading.obj X ≅ Z) := by
   exact ⟨SingleObj.star actualGeneratedSubmonoid,
     ⟨eqToIso (Subsingleton.elim _ _)⟩⟩
