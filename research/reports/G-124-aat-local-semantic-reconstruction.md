@@ -5620,6 +5620,103 @@ audits:
   next_obligation: "extend finite multi-carrier products beyond two carriers with one coherent finite-family reconstruction and an additional strict witness, or discharge a nontrivial arbitrary expanded-Hom separation and assembly surface"
 ```
 
+## Cycle 59: finite multi-carrier expanded reconstruction
+
+```yaml
+cycle: 59
+status: implementation-complete-review-pending
+branch: codex/4711-g124-finite-multicarrier-expanded-reconstruction
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 9b7e650ea5bde19219cf8203707f7ed23103b955
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 58 audit: PR comment 5734343459; Cycle 58 merge: 9b7e650ea5bde19219cf8203707f7ed23103b955; Cycle 59 selection: Issue comment after Cycle 58 acceptance"
+  proof_dag_predecessors:
+    - "Cycle 58 faithful two-carrier reconstruction across four actual surfaces"
+    - "Cycle 57 arbitrary single-carrier faithfulness"
+    - "accepted fixed source-to-actual transport and stored-backward faithfulness"
+  proof_obligation: "construct one coherent faithful actual-kernel representation for every finite family of pairwise unequal primitive carriers; reconstruct it multiplicatively on kernel, stored-backward, expanded direct, and normalized comparison ranges; prove strict enlargement of the entire two-carrier family"
+  selection_reason: "this replaces a fixed pair by arbitrary finite support, includes separation and four inverse surfaces in the same cycle, carries the construction to both expanded surfaces, and adds a three-carrier strict witness rather than stopping at a common-surface re-export"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122FiniteMultiCarrierExpandedReconstruction.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "pairwise unequal finite carrier actions admit an order-independent commuting product; canonical carrier probes separate its source code; an explicit opposite-inverse recovery hom identifies the actual kernel product with fixed transport of the source product and proves faithfulness; source codes are multiplicatively equivalent to the actual kernel, stored-backward, expanded direct, and normalized comparison ranges; every two-carrier product embeds as a Bool-indexed family, while the simultaneous Nat, Set Nat, and Set (Set Nat) action lies outside all two-carrier images"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.G122FiniteMultiCarrierExpandedReconstruction.CarrierFamily"
+    - "AAT.AG.LocalSemanticReconstruction.G122FiniteMultiCarrierExpandedReconstruction.sourceFamilyHom_probe"
+    - "AAT.AG.LocalSemanticReconstruction.G122FiniteMultiCarrierExpandedReconstruction.sourceFamilyHom_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122FiniteMultiCarrierExpandedReconstruction.familyKernelHom_recovery"
+    - "AAT.AG.LocalSemanticReconstruction.G122FiniteMultiCarrierExpandedReconstruction.familyKernelHom_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122FiniteMultiCarrierExpandedReconstruction.sourceFamilyKernelMulEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122FiniteMultiCarrierExpandedReconstruction.sourceFamilyObservedMulEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122FiniteMultiCarrierExpandedReconstruction.sourceFamilyExpandedDirectMulEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122FiniteMultiCarrierExpandedReconstruction.sourceFamilyComparisonMulEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122FiniteMultiCarrierExpandedReconstruction.binary_familyKernelHom"
+    - "AAT.AG.LocalSemanticReconstruction.G122FiniteMultiCarrierExpandedReconstruction.tripleKernel_not_twoCarrierImage"
+    - "AAT.AG.LocalSemanticReconstruction.G122FiniteMultiCarrierExpandedReconstruction.twoCarrierImage_ssubset_finiteCarrierImage"
+    - "AAT.AG.LocalSemanticReconstruction.G122FiniteMultiCarrierExpandedReconstruction.finite_family_reconstruction_and_strict_progress"
+  claim_mapping:
+    conjuncts:
+      - "finite pairwise unequal carrier actions commute and form a multiplicative source and actual product"
+      - "canonical probes recover every component, so source and actual products are faithful"
+      - "actual recovery is derived from stored-backward projection through unop and inversion"
+      - "source families reconstruct four actual ranges multiplicatively"
+      - "the accepted two-carrier family embeds definitionally through a Bool-indexed family"
+      - "a fixed three-carrier action moves all three carriers and excludes every two-carrier representation"
+    undischarged_assumptions:
+      - "recover the full local-fiber kernel outside all finite multi-carrier products"
+      - "recover every expanded G-122 Hom rather than the represented direct and comparison ranges"
+      - "recover the full comparison group and both ambient and restriction kernels"
+      - "discharge final four-family separation and assembly"
+    acceptance_point: "arbitrary finite-support faithful kernel reconstruction, four multiplicative actual surfaces, pair inclusion, and a strict three-carrier witness in one cycle"
+    port_status: unported
+audits:
+  material_premises:
+    proved_dependencies:
+      - "pairwise carrier inequality supplied as source-family data"
+      - "primitive carrier action and canonical Extension probes"
+      - "fixed source-to-actual transport injectivity"
+      - "full stored-backward projection injectivity"
+      - "canonical normalization and normalized comparison sections"
+    discharge_required:
+      - "noncommutative finite-product well-definedness and multiplicativity"
+      - "componentwise probe separation"
+      - "actual-to-source recovery for the whole finite product"
+      - "four range equivalences"
+      - "two-carrier inclusion and fixed three-carrier strictness"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "source syntax / a finite index, carrier family, pairwise inequality, and one independently supplied permutation per member"
+      - "separation / canonical primitive probes"
+      - "strictness / source-owned Nat swap and two powerset complements"
+    unresolved:
+      - "independent local presentation of arbitrary full-kernel elements"
+      - "surjectivity for arbitrary expanded G-122 Homs"
+  proof_use:
+    used:
+      - "Cycle 58 cross-carrier commutation and pair reconstruction"
+      - "Cycle 57 arbitrary-carrier section"
+      - "accepted canonical normalization and comparison sections"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "upgrades fixed pairs to arbitrary finite support, proves a strict support hierarchy, and keeps all four actual surfaces in one theorem package"
+  vacuity: "family source syntax contains no actual value or range certificate; pairwise inequality is a carrier-side premise, and strictness is detected by a third independently moved primitive probe"
+  four_lane_question: "Does every finite family of pairwise unequal Extension carriers admit a faithful commuting actual-kernel product representation with multiplicative reconstruction on kernel, stored-backward, expanded direct, and normalized comparison ranges, while a Nat / Set Nat / Set (Set Nat) simultaneous action proves that this finite-family image strictly contains the complete two-carrier image?"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122FiniteMultiCarrierExpandedReconstruction.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122FiniteMultiCarrierExpandedReconstruction: 65 declarations, standard axioms only"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122FiniteMultiCarrierExpandedReconstruction.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122FiniteMultiCarrierExpandedReconstruction: pass (4430 jobs)"
+  blocking_findings: []
+  next_obligation: "recover an infinite locally finite carrier-support limit with substantive finite-restriction assembly, or discharge a nontrivial arbitrary expanded-Hom separation and assembly surface"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -5717,7 +5814,12 @@ audits:
   normalized `barAlpha` comparison像のそれぞれと乗法同値にした。さらに任意single-carrier像を
   powerset carrier上の恒等作用を加えたtwo-carrier像へ収録し、`Nat` zero-one swapと`Set Nat`
   complementの同時作用が全single-carrier像unionの外にあることからproper inclusionを証明した。
-  arbitrary finite multi-carrier積の統一表示、full kernel、arbitrary expanded Hom、四族統合は未完了である。
+  Cycle 59ではpairwiseに相異なる任意の有限carrier族について、非可換有限積としてsource作用と
+  actual kernel作用を構成した。canonical probeによる全成分分離と、stored-backwardのopposite規約を
+  unop・逆で戻すrecovery homからactual積の忠実性を証明し、kernel・stored-backward・expanded direct・
+  normalized comparisonの四像へ乗法同値を構成した。さらに全two-carrier像をBool-index familyとして
+  収録し、`Nat`、`Set Nat`、`Set (Set Nat)`を同時に動かす固定witnessでproper inclusionを証明した。
+  full kernel、arbitrary expanded Hom、四族統合は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
