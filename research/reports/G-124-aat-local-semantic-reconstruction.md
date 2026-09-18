@@ -131,14 +131,16 @@
   merge commit `a3d22a582c20aa0b3ec726465856b1ec8f7651f8`
 - Cycle 61 accepted PR: [#4774](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4774),
   merge commit `b635ffc87cb71e163619b6004ffb25878a3d9ef8`
+- Cycle 62 accepted PR: [#4775](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4775),
+  merge commit `bf71fc79d8093c6bd315e18a81c2f5429727eafd`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: 任意のnormalization fiberを保つ置換を点対ごとのBool局所値から両逆に
-  再構成し、その群法則を関係合成として固定する。同じsurfaceへdirect normalization kernelの
-  object作用、非自明ambient kernel元、full comparison再構成を接続する
-- next proof obligation: object作用以外のatom・context・equation・operation・coefficient・raw・
-  local realization成分にも独立な局所graphを構成し、joint separationとassemblyをfull direct
-  normalization kernel上で放電するか、arbitrary expanded Homの実質的な分離・assemblyを同梱する
+- current proof obligation: 任意関数をdata/Prop分離したBool graphから両逆に再構成し、恒等・合成・
+  関係合成とfully faithfulな圏表示を固定する。同じsurfaceへ任意G-122 geometry Homのsource・Atom・
+  object・context・coefficient写像を接続し、固定有限比較probeの因子化とlocal image両逆を同梱する
+- next proof obligation: 残るdependent operation・equation・invariant・axis・coordinate・support・
+  observable・raw-relation写像にも独立graph readingを与え、joint separationとassemblyをfull direct
+  normalization kernel上で放電するか、arbitrary expanded Hom全体の実質的な再構成を同梱する
 
 ## Cycle 1 — rejected
 
@@ -5926,8 +5928,11 @@ audits:
 
 ```yaml
 cycle: 62
-status: implementation-complete-review-pending
+status: accepted
 branch: codex/4711-g124-primitive-fiber-permutation-graph
+pull_request: 4775
+fixed_head: f94820916d7288d61caebd139720f370af6b48fa
+merge_commit: bf71fc79d8093c6bd315e18a81c2f5429727eafd
 goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
 base_oid: b635ffc87cb71e163619b6004ffb25878a3d9ef8
 tracking_issue: 4711
@@ -6043,6 +6048,122 @@ audits:
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph: pass (4302 jobs)"
   blocking_findings: []
   next_obligation: "extend the independent graph presentation to the remaining primitive components of complete geometry automorphisms and prove joint separation plus assembly for the full direct normalization kernel, or discharge a nontrivial arbitrary expanded-Hom reconstruction surface"
+```
+
+## Cycle 63: arbitrary function graphs and G-122 primitive map reading
+
+```yaml
+cycle: 63
+status: implementation-complete-review-pending
+branch: codex/4711-g124-primitive-function-graph-category
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: bf71fc79d8093c6bd315e18a81c2f5429727eafd
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 62 final audit: PR comment 5736414350; Cycle 62 acceptance: Issue comment 5736419147; Cycle 63 selection: Issue comment 5736442436"
+  proof_dag_predecessors:
+    - "Cycle 62 primitive Bool graph discipline"
+    - "arbitrary G-122 geometry morphisms and their computational component maps"
+    - "Cycle 47 accepted fixed two-point comparison probe and local-image reconstruction"
+  proof_obligation: "classify arbitrary functions by an independent Bool graph with total-functional laws, explicit inverse laws, identity, categorical composition, and relational composition; package the graph category as fully faithful over Type; in the same cycle read five ordinary maps of every G-122 geometry Hom compositionally and factor the accepted fixed comparison probe through the object graph with two-sided local-image reconstruction"
+  selection_reason: "the cycle contains a genuine arbitrary-function classification and categorical universal property rather than a new definition or alias, and bundles the G-122 common-surface connection and accepted finite reconstruction instead of postponing them"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/PrimitiveFunctionGraphCategory.lean"
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122PrimitiveFunctionGraphReading.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "raw graph data stores only a Bool edge relation while totality and functionality remain a Prop; unique targets assemble arbitrary functions; reading and assembly are mutually inverse; identity and graph composition assemble to ordinary identity and composition; graph composition is relational composition; the resulting graph category maps fully faithfully to Type with explicit preimages. Every G-122 geometry Hom yields source, Atom, object, raw-context, and coefficient graphs whose assembly recovers the five functions and whose readings preserve identity and composition. The accepted fixed two-point object probe factors through object-graph assembly, and the established local semantic image is reconstructed through this factorization with both inverse laws."
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFunctionGraph.GraphData"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFunctionGraph.IsTotalFunctional"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFunctionGraph.GraphData.diagonal_isTotalFunctional"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFunctionGraph.GraphData.falseBool_not_isTotalFunctional"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFunctionGraph.GraphCode"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFunctionGraph.GraphCode.assemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFunctionGraph.GraphCode.read_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFunctionGraph.GraphCode.graphEquivFunction"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFunctionGraph.GraphCode.assemble_comp"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFunctionGraph.GraphCode.comp_edge_eq_true_iff"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFunctionGraph.Object.toType"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFunctionGraph.Object.toTypeFullyFaithful"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveFunctionGraphReading.PrimitiveMapGraphs"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveFunctionGraphReading.readPrimitiveMaps"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveFunctionGraphReading.assemble_readPrimitiveMaps"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveFunctionGraphReading.readPrimitiveMaps_id"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveFunctionGraphReading.readPrimitiveMaps_comp"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveFunctionGraphReading.graphProbeRestriction_eq_coreProbe_objectRestriction"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveFunctionGraphReading.graphPrimitiveRead_eq_primitiveRead"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveFunctionGraphReading.graphPrimitiveRead_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveFunctionGraphReading.assemble_graphPrimitiveRead"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveFunctionGraphReading.graphPrimitiveSemanticEquivLocal"
+  claim_mapping:
+    conjuncts:
+      - "each primitive local value is Bool and the raw data carries no function or witness"
+      - "total-functional laws assemble one target for every source"
+      - "read and assembly are mutually inverse for arbitrary source and target types"
+      - "identity, categorical composition, and relational graph composition agree"
+      - "the graph category has a fully faithful functor to Type with explicit Hom preimages"
+      - "five computational maps of every G-122 geometry Hom recover pointwise and preserve identity and composition"
+      - "the accepted finite comparison probe factors through object-graph assembly and still reconstructs its fixed local image in both directions"
+    undischarged_assumptions:
+      - "the five graph maps do not separate complete geometry Homs with identical primitive maps"
+      - "dependent operation, equation, invariant, axis, coordinate, support, observable, and raw-relation maps remain additional readings"
+      - "joint primitive assembly onto the full direct normalization kernel remains unproved"
+      - "arbitrary expanded G-122 Hom reconstruction and final four-family assembly remain unproved"
+    acceptance_point: "arbitrary-function Bool graph classification with explicit inverse laws and a fully faithful categorical presentation, plus compositional five-map G-122 reading and fixed accepted probe reconstruction in one cycle"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "arbitrary source and target types for the generic classification"
+      - "arbitrary geometry packages over one Atom carrier for the five-map reading"
+      - "the fixed finite-axis-fold comparison endpoints only for the final probe factorization"
+    direction_hypotheses:
+      - "total existence and target uniqueness for every raw graph row"
+    proved_dependencies:
+      - "Cycle 47 fixed comparison probe and local-image assembly"
+      - "definitional identity and composition laws of geometry morphism components"
+    discharge_required:
+      - "unique-target function assembly and both inverse laws"
+      - "relational formula for graph composition"
+      - "category laws and fully faithful Hom equivalence"
+      - "five component recovery plus identity and composition"
+      - "fixed probe factorization and both local-image inverse laws"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "positive raw fixture / diagonal Bool graph"
+      - "negative raw fixture / constant-false Bool graph on Bool"
+      - "assembled target / unique witness from the total-functional Prop"
+      - "five G-122 graphs / evaluation of actual component functions"
+      - "fixed local equivalence / the accepted two-point core probe after proved graph factorization"
+    unresolved:
+      - "primitive graph readings for all dependent geometry fields"
+      - "joint separation and assembly for complete geometry morphisms or the full direct normalization kernel"
+  proof_use:
+    used:
+      - "totality supplies assembled targets and functionality proves uniqueness"
+      - "both inverse laws prove the function equivalence and fully faithful Hom map"
+      - "composition recovery proves the geometry reading is compositional in all five fields"
+      - "probe factorization transports the accepted local-image inverse laws"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "extends independent finite-valued local graph syntax from permutations to arbitrary functions, gives it a categorical universal property, and immediately applies it to genuine maps of every G-122 geometry Hom and to the accepted finite reconstruction surface without claiming full-Hom separation"
+  vacuity: "the positive and negative fixtures distinguish the Prop from raw data, arbitrary functions are recovered in both directions, and the fixed local image has both graph-factorized inverse laws"
+  four_lane_question: "Does a data/Prop-separated Bool graph presentation classify arbitrary functions with explicit inverse laws and categorical composition, and do the source, Atom, object, context, and coefficient maps of every G-122 geometry Hom read compositionally through that presentation while the accepted finite comparison probe factors through and reconstructs its fixed local image?"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/PrimitiveFunctionGraphCategory.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122PrimitiveFunctionGraphReading.lean: pass"
+  validation_evidence:
+    - "#assert_standard_axioms_only PrimitiveFunctionGraph: 66 declarations, standard axioms only"
+    - "#assert_standard_axioms_only G122PrimitiveFunctionGraphReading: 35 declarations, standard axioms only"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122PrimitiveFunctionGraphReading: pass (4335 jobs)"
+  blocking_findings: []
+  next_obligation: "add independent graph readings for the remaining dependent geometry fields and prove a substantive joint separation-and-assembly theorem for complete G-122 geometry morphisms or the full direct normalization kernel"
 ```
 
 ## 未完了 ledger
@@ -6161,7 +6282,13 @@ audits:
   object作用をこの表示へ乗法的に接続した。source-authored ambient kernel元が非恒等graphを持つこと、
   trivial restrictionを持つ非恒等full comparison kernel元へ移ること、Cycle 61座標から両逆に回収される
   ことも同梱した。object作用が同じcomplete automorphismを分離する追加readingと、full kernelへのjoint
-  assemblyは未完了である。
+  assemblyは未完了である。Cycle 63では任意の型間の関数をdata/Prop分離したBool graphから両逆に
+  再構成し、恒等・関係合成・graph圏・Typeへのfully faithful functorまで構成した。同じmodule群で
+  任意G-122 geometry Homのsource・Atom・object・raw context・coefficientの5写像をgraphとして読み、
+  pointwise recoveryと恒等・合成を証明した。固定有限比較ではaccepted object probeがgraph assemblyを
+  経由することを示し、既存local imageのread/assemble両逆まで接続した。dependent operation・equation・
+  invariant・axis・coordinate・support・observable・raw-relation成分を含むjoint separation/assemblyは
+  未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
