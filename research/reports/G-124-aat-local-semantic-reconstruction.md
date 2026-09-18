@@ -4031,6 +4031,100 @@ audits:
   next_obligation: "factor the accepted finite local reading through the common exact-geometry image and construct its common local-model categorical connection"
 ```
 
+## Cycle 43 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 43
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: b307734dd05b5cb232cfb6f8e2a14c17e37bb053
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 42 audit: PR comment 5727949234; Cycle 43 selection: Issue comment 5727962389"
+  proof_dag_predecessors:
+    - "Cycle 42 common exact representedSubmonoid and package generated bridge"
+    - "Cycles 37--38 accepted finite LocalSection monoid and branch-local category equivalence"
+  proof_obligation: "factor primitive finite reading through the common exact image and deloop the resulting monoid equivalence"
+  selection_reason: "the common-global exact image must expose its own primitive package-base flag/table readback rather than rely on an abstract type equivalence"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeExactGeometryLocalModel.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the common exact represented image now has direct primitive finite reading, separation and assembly on Homs, and a one-object category equivalence with LocalSection"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryLocalModel.representedMulEquivLocalSection"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryLocalModel.represented_base"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryLocalModel.readExactChoice"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryLocalModel.readExactNormalizedFlag"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryLocalModel.representedMulEquivLocalSection_localValue"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryLocalModel.reading"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryLocalModel.morphism_separates"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryLocalModel.morphism_assembles"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryLocalModel.object_assembles"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryLocalModel.equivalence"
+  claim_mapping:
+    source_labels:
+      - "Cycle 42 represented exact image and primitive package-base agreement"
+      - "Cycle 37 LocalSection primitive reading and monoid equivalence"
+      - "Cycle 38 one-object category pattern"
+    conjuncts:
+      - "each exact evaluated NormalForm maps to its accepted finite-local read form"
+      - "the normalization flag is read directly from the exact morphism's primitive upper object map"
+      - "every finite table is read directly from the exact morphism's primitive operation map"
+      - "primitive reading separates represented exact Homs and every local Hom assembles"
+      - "the represented exact one-object category is equivalent to SingleObj LocalSection"
+    undischarged_assumptions:
+      - "arbitrary-object assembly in the fixed common local-model category"
+      - "source, target, composition, and identity family integration"
+    acceptance_point: "common exact generated Hom image and its finite-local category only"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "TagChangeExactGeometryNormalForm.representedSubmonoid"
+      - "TagChangeGeneratedLocalModel.LocalSection"
+    proved_dependencies:
+      - "TagChangeExactGeometryNormalForm.representedMulEquivPackageGenerated"
+      - "TagChangeExactGeometryNormalForm.represented_normalForm_base"
+      - "TagChangeGeneratedLocalModel.actualGeneratedMulEquivLocalSection"
+      - "TagChangeGeneratedLocalModel.actualGeneratedMulEquivLocalSection_localValue"
+    discharge_required:
+      - "form-preserving exact-to-local monoid equivalence"
+      - "direct exact package-base flag/table readback"
+      - "Hom separation and assembly"
+      - "one-object category equivalence"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "exact-to-local equivalence / exact-to-package bridge followed by accepted package-to-local equivalence"
+      - "primitive reading / computed exact package base, upper object map, and operation map"
+      - "categorical equivalence / delooping of the proved monoid equivalence"
+    unresolved:
+      - "fixed common local-model arbitrary objects and four-family integration"
+  proof_use:
+    used:
+      - "representedMulEquivPackageGenerated_on_normalForm"
+      - "represented_normalForm_base"
+      - "actualGeneratedMulEquivLocalSection_normalized"
+      - "actualGeneratedMulEquivLocalSection_value"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "reads finite data from the primitive base of actual common exact Homs and proves the categorical equivalence on their faithful image"
+  vacuity: "the exact image is faithful to the full accepted NormalForm and direct flag/table readback separates every represented morphism"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/TagChangeExactGeometryLocalModel.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/TagChangeExactGeometryLocalModel.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeExactGeometryLocalModel: pass (4376 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryLocalModel: 20 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "integrate the common exact source-choice branch with the fixed source/target/composition/identity family surface without weakening arbitrary-object assembly"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -4065,8 +4159,9 @@ audits:
   canonical restriction合成則をexact-geometry全成分で証明した。Cycle 41でnormalizationを
   restricted source-choiceの後ろへ移すcanonical rewriteもcommon actual Hom等式として証明した。
   Cycle 42でtwo-constructor normal formをcommon tagged actual Homへfaithfulに評価し、そのactual
-  image submonoidをpackage generated submonoidと同値にした。common primitive finite readingと
-  common local readingは未完了である。
+  image submonoidをpackage generated submonoidと同値にした。Cycle 43ではそのcommon exact imageから
+  normalization flagと全有限tableをprimitive package base経由で直接読み、Hom separation/assemblyと
+  one-object圏同値まで接続した。fixed common local-model categoryの任意対象assemblyは未完了である。
   arbitrary observation carrier全体の有限encodingと四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
@@ -4075,7 +4170,9 @@ audits:
   package-level Hom-slice同定はCycle 34で接続した。canonical-normalizationを含むfull tagged categoryと
   四分枝共通の主同値への接続は未完了である。Cycle 37のgenerated finite-local monoid同型を
   one-object圏同値として明示する義務はCycle 38で放電した。四分枝共通surfaceへの接続と、
-  そのlocal-model categoryの任意対象に対する固定GOAL B object assemblyは未完了である。
+  そのlocal-model categoryの任意対象に対する固定GOAL B object assemblyは未完了である。Cycle 43で
+  generated branchのcommon exact imageにも同じfinite-local one-object圏同値を移したが、四族統合や
+  任意対象assemblyを代替するものではない。
 - E2 の product-lens / protocol 可逆変更層はCycle 27--28で共通
   `FiniteReading`/Dへ接続済み。Cycle 29でgeneral observation-aware protocol Homも
   full tagged table上の決定性・effectivenessへ接続し、Cycle 30でlens一般意味保存射層も
