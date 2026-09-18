@@ -89,12 +89,14 @@
   merge commit `f052ef8f4dc79fd86530f041c4b8faef0866add4`
 - Cycle 40 accepted PR: [#4753](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4753),
   merge commit `bcace0d2862020b3210d192321a7ab39bc25e13f`
+- Cycle 41 accepted PR: [#4754](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4754),
+  merge commit `07f9237f4706806de99988af1f4d6cca5e551086`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: common tagged fiber内でcanonical normalizationを任意source choiceの
-  後ろへ移すcanonical rewriteをactual Hom等式として証明する
-- next proof obligation: accepted rewriteからexact-geometry normal formを構成し、generated image
-  submonoidとCycle 38のcommon-global bridgeを構成する
+- current proof obligation: accepted `NormalForm`をcommon tagged actual Homへfaithfulに評価し、
+  exact image submonoidとpackage generated submonoidの同値を構成する
+- next proof obligation: accepted common-global generated bridgeからprimitive finite readingを因子化し、
+  common local-model categoryへの接続を構成する
 
 ## Cycle 1 — rejected
 
@@ -3933,6 +3935,102 @@ audits:
   next_obligation: "construct the exact-geometry normal-form evaluator/image and prove its faithful equivalence with the accepted generated package submonoid"
 ```
 
+## Cycle 42 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 42
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 07f9237f4706806de99988af1f4d6cca5e551086
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 41 audit: PR comment 5727726088; Cycle 42 selection: Issue comment 5727735603"
+  proof_dag_predecessors:
+    - "Cycle 36 faithful package NormalForm and actualGeneratedSubmonoid"
+    - "Cycles 39--41 common tagged exact-geometry generators and generation laws"
+  proof_obligation: "evaluate NormalForm faithfully in the common tagged fiber, prove its four-case multiplication, and identify its actual image submonoid with the accepted package generated submonoid"
+  selection_reason: "the generated tagged branch needs an actual common-global image before its accepted finite local reading can be factored through the shared FamilyRealization surface"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeExactGeometryNormalForm.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the accepted two-constructor normal form now evaluates faithfully to common tagged actual Homs, forms an actual image submonoid, and is monoid-equivalent to the accepted package generated submonoid with primitive base readback"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryNormalForm.evaluate"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryNormalForm.evaluate_base"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryNormalForm.evaluate_multiply"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryNormalForm.evaluate_injective"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryNormalForm.evaluationHom"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryNormalForm.representedSubmonoid"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryNormalForm.normalFormMulEquivRepresented"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryNormalForm.representedMulEquivPackageGenerated"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryNormalForm.represented_normalForm_base"
+  claim_mapping:
+    source_labels:
+      - "Cycle 36 accepted NormalForm multiplication and package generated submonoid"
+      - "Cycles 39--41 common tagged exact-geometry generator laws"
+    conjuncts:
+      - "raw and normalized constructors evaluate to actual common tagged Homs"
+      - "all four multiplication cases agree with actual Hom composition"
+      - "evaluation is injective by primitive package-base readback"
+      - "the actual exact image and package generated submonoid are monoid-equivalent through the same NormalForm"
+      - "the bridge retains package-base readback on every normal form"
+    undischarged_assumptions:
+      - "primitive finite reading factored directly from common-fiber Homs"
+      - "common local-model category and arbitrary-object assembly"
+      - "four-family integration"
+    acceptance_point: "generated tagged common-global image and package bridge only"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "FamilyRealization.taggedOperation"
+      - "closedFamilyTaggedSourceChoice"
+      - "closedFamilyTaggedNormalization"
+    proved_dependencies:
+      - "taggedSourceChoiceExplicitExactGeometryMorphism_comp"
+      - "closedFamilyTaggedNormalization_idempotent"
+      - "closedFamilyTaggedNormalization_comp_sourceChoice_rewrite"
+      - "TagChangeGeneratedNormalForm.evaluate_injective"
+      - "TagChangeGeneratedNormalForm.normalFormMulEquivGenerated"
+    discharge_required:
+      - "four-case exact-geometry multiplication"
+      - "faithful exact evaluation and actual image"
+      - "monoid equivalence to the accepted package generated image"
+      - "primitive package-base agreement"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "generator composition / exact source-choice xor, normalization idempotence, and canonical rewrite"
+      - "faithfulness / computed package-base readback followed by accepted package evaluation injectivity"
+      - "image equivalence / two faithful evaluations of the same NormalForm; exact faithfulness is derived through package-base readback"
+    unresolved:
+      - "common primitive finite reading and common local-model category"
+  proof_use:
+    used:
+      - "closedFamilyTaggedSourceChoice_comp"
+      - "closedFamilyTaggedNormalization_comp_sourceChoice_rewrite"
+      - "closedFamilyTaggedNormalization_idempotent"
+      - "TagChangeGeneratedNormalForm.evaluate_injective"
+      - "TagChangeGeneratedNormalForm.normalFormMulEquivGenerated"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "constructs an actual common-global generated image and fixes its primitive projection instead of renaming the package generated submonoid"
+  vacuity: "raw and normalized constructors remain distinct by faithful package-base readback, and evaluation quantifies over the full accepted NormalForm"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/TagChangeExactGeometryNormalForm.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/TagChangeExactGeometryNormalForm.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeExactGeometryNormalForm: pass (4374 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryNormalForm: 12 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "factor the accepted finite local reading through the common exact-geometry image and construct its common local-model categorical connection"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -3966,7 +4064,9 @@ audits:
   actual Homとして構成した。Cycle 40でそのactual Homの冪等性と、任意source-choiceに対する
   canonical restriction合成則をexact-geometry全成分で証明した。Cycle 41でnormalizationを
   restricted source-choiceの後ろへ移すcanonical rewriteもcommon actual Hom等式として証明した。
-  generated image全体の忠実な接続とcommon local readingは未完了である。
+  Cycle 42でtwo-constructor normal formをcommon tagged actual Homへfaithfulに評価し、そのactual
+  image submonoidをpackage generated submonoidと同値にした。common primitive finite readingと
+  common local readingは未完了である。
   arbitrary observation carrier全体の有限encodingと四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
