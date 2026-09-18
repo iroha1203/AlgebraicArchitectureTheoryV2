@@ -4946,7 +4946,7 @@ tracking_issue: 4711
 selection:
   proof_state_ref: "Cycle 51 audit: PR comment 5731934405; acceptance: Issue comment 5731939293; Cycle 52 selection: Issue comment 5731956646"
   proof_dag_predecessors:
-    - "Cycle 51 carrier-separated four-component comparison reconstruction"
+    - "Cycle 51 carrier-separated three-component comparison reconstruction"
     - "accepted independent finite-carrier Extension table decoder"
     - "accepted arbitrary-carrier source probe faithfulness"
     - "accepted canonical lift and full actual restriction-kernel torsor theorem"
