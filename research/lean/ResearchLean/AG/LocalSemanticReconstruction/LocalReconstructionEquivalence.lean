@@ -16,9 +16,9 @@ the same reconstruction data.
 
 The theorem is realized by primitive total-functional Bool graphs: graph
 reading and graph assembly give the Hom inverse, while wrapping a type supplies
-the object inverse.  The complete-geometry graph reading from Cycle 64 is also
-connected here as the separation half of the same contract.  No assembly of an
-arbitrary complete-geometry graph bundle is asserted.
+the object inverse.  The complete-geometry graph reading from Cycle 64 realizes
+the underlying indexed Hom-family separation contract for every package pair.
+Its local category and assembly remain unconstructed here.
 
 ## Implementation notes
 
@@ -48,11 +48,21 @@ structure ReadingSeparation {Global Local : Sort*} (read : Global → Local) : P
   /-- The reading map is injective. -/
   injective : Function.Injective read
 
-/-- Hom separation for a functor, stated independently of Hom assembly. -/
-structure HomSeparation (F : C ⥤ D) : Prop where
-  /-- Every map on a Hom set is separating. -/
-  hom : ∀ X Y, ReadingSeparation
-    (F.map : (X ⟶ Y) → (F.obj X ⟶ F.obj Y))
+/-- Pointwise separation for an object-indexed family of global and local Hom
+types.  No category or composition is required at this layer. -/
+structure HomFamilySeparation (Object : Sort*)
+    (GlobalHom LocalHom : Object → Object → Sort*)
+    (read : ∀ {X Y}, GlobalHom X Y → LocalHom X Y) : Prop where
+  /-- Every indexed Hom reading is separating. -/
+  hom : ∀ X Y, ReadingSeparation (@read X Y)
+
+/-- Hom separation for a functor is the indexed-family contract specialized to
+the source and target Hom types of that functor. -/
+abbrev HomSeparation (F : C ⥤ D) :=
+  HomFamilySeparation C
+    (fun X Y => X ⟶ Y)
+    (fun X Y => F.obj X ⟶ F.obj Y)
+    (fun morphism => F.map morphism)
 
 /-- Assembly of every local Hom, with only the read-after-assembly law. -/
 structure HomAssembly (F : C ⥤ D) where
@@ -216,15 +226,15 @@ theorem primitiveGraph_homEquiv_symm_apply
 
 open CompleteGeometryFunctionGraphSeparation
 
-/-- Complete graph reading separates arbitrary complete geometry morphisms,
-without asserting assembly for an arbitrary graph bundle. -/
-def completeGeometryGraphSeparation
-    {U : AtomCarrier.{u}}
-    {G H : GeometryPackage.{u, v} U} :
-    ReadingSeparation
-      (readCompleteMapGraphs :
-        GeometryTotalHom G H → CompleteMapGraphs G H) :=
-  ⟨readCompleteMapGraphs_injective⟩
+/-- Complete graph reading realizes the indexed Hom-family separation contract
+for every pair of geometry packages, without asserting a local category or
+assembly for an arbitrary graph bundle. -/
+def completeGeometryGraphSeparation {U : AtomCarrier.{u}} :
+    HomFamilySeparation (GeometryPackage.{u, v} U)
+      (fun G H => GeometryTotalHom G H)
+      (fun G H => CompleteMapGraphs G H)
+      (fun morphism => readCompleteMapGraphs morphism) where
+  hom _ _ := ⟨readCompleteMapGraphs_injective⟩
 
 end LocalReconstructionEquivalence
 

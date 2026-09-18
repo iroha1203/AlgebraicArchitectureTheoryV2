@@ -6334,10 +6334,11 @@ selection:
     - "independent coherence equations and assembly for arbitrary complete-geometry graph bundles remain outside this cycle"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "HomSeparation, HomAssembly, and ObjectAssembly are independent contracts. Their combination derives the second Hom inverse, explicit Hom equivalences, unique Hom preimages, fully faithful and essentially surjective witnesses, and a categorical equivalence; conversely every categorical equivalence supplies the same reconstruction data. Primitive total-functional Bool graphs instantiate all fields and yield an equivalence with Type. Complete geometry graph reading instantiates only the separation contract, leaving independent coherence and assembly explicit."
+  proof_obligation_delta: "HomFamilySeparation isolates pointwise separation for indexed global/local Hom families, and HomSeparation specializes it to functor maps. HomSeparation, HomAssembly, and ObjectAssembly then derive the second Hom inverse, explicit Hom equivalences, unique Hom preimages, fully faithful and essentially surjective witnesses, and a categorical equivalence; conversely every categorical equivalence supplies the same reconstruction data. Primitive total-functional Bool graphs instantiate all fields and yield an equivalence with Type. Complete geometry graph reading instantiates HomFamilySeparation for every package pair, leaving local-category composition, independent coherence, and assembly explicit."
   completion_candidate: no
   lean_artifacts:
     - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.ReadingSeparation"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.HomFamilySeparation"
     - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.HomSeparation"
     - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.HomAssembly"
     - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.ObjectAssembly"
@@ -6379,13 +6380,14 @@ result:
       - "the three contracts produce a categorical equivalence"
       - "every categorical equivalence returns the three contracts"
       - "primitive Bool graphs realize the full contract and are categorically equivalent to Type"
-      - "complete geometry graph reading realizes exactly the Hom separation half"
+      - "complete geometry graph reading realizes the indexed Hom-family separation half for every package pair"
     undischarged_assumptions: []
     acceptance_point: "the general B reconstruction implication and converse are proved, the primitive graph category supplies an actual full application, and the complete-geometry application is accurately limited to its accepted separation result"
     port_status: not-applicable
   nonclaims:
     - "arbitrary complete-geometry graph bundles satisfy independent coherence equations"
     - "arbitrary complete-geometry graph bundles assemble to GeometryTotalHom values"
+    - "complete-geometry graph bundles already form the target category of a reading functor"
     - "G-124 target B is fully discharged for all four required families"
 audits:
   premise_delta:
@@ -6396,7 +6398,7 @@ audits:
       - "categorical equivalence / derived from full faithfulness and essential surjectivity"
       - "primitive graph application / GraphCode read and assembly plus carrier wrapping"
     remaining:
-      - "AAT complete-geometry local coherence and Hom/object assembly / independent construction still required"
+      - "AAT complete-geometry local category, coherence, and Hom/object assembly / independent construction still required"
       - "four-family common realization and local model / still required"
   certificate_provenance:
     discharged:
@@ -6421,12 +6423,12 @@ audits:
   vacuity_reason: "the primitive graph instance constructs a genuine category equivalence for arbitrary types and functions"
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  four_lane_question: "Does explicit hom-level separation and assembly together with object assembly characterize a categorical equivalence with two-sided Hom inverses and object isomorphisms, and does the primitive Bool graph category realize the theorem while Cycle 64 complete geometry graphs discharge exactly its separation half?"
+  four_lane_question: "Does explicit hom-level separation and assembly together with object assembly characterize a categorical equivalence with two-sided Hom inverses and object isomorphisms, and does the primitive Bool graph category realize the theorem while Cycle 64 complete geometry graphs realize the underlying indexed Hom-family separation contract for every package pair without a local graph category or assembly claim?"
   validation_refs:
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/LocalReconstructionEquivalence.lean: pass"
-    - "#assert_standard_axioms_only LocalReconstructionEquivalence: 70 declarations, standard axioms only"
+    - "#assert_standard_axioms_only LocalReconstructionEquivalence: 71 declarations, standard axioms only"
   blocking_findings: []
-  next_obligation: "define independent complete-geometry graph coherence equations and construct Hom assembly from them, then apply the general reconstruction principle without using an image subtype or completed morphism certificate"
+  next_obligation: "define a complete-geometry local Hom category with independent graph coherence equations and construct Hom assembly from them, then apply the functor-level reconstruction principle without using an image subtype or completed morphism certificate"
 ```
 
 ## 未完了 ledger
@@ -6560,8 +6562,9 @@ audits:
   Cycle 65ではHom分離、Hom組立て、対象組立てを独立fieldにした一般再構成contractを構成し、
   Homの両逆・一意preimage・fully faithful・essentially surjective・圏同値と、その逆向きの特徴付けを
   証明した。primitive total-functional Bool graph圏をTypeと圏同値にする完全な適用を同梱し、Cycle 64の
-  complete geometry graphはこのcontractのHom分離だけを放電することを明示した。任意complete graph族の
-  独立coherence条件とHom/対象assembly、および四族共通の実現圏・局所モデル圏への適用は未完了である。
+  complete geometry graphは全package対に対するindexed Hom-family分離を放電することを明示した。
+  任意complete graph族のlocal Hom圏、独立coherence条件とHom/対象assembly、および四族共通の
+  実現圏・局所モデル圏への適用は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
