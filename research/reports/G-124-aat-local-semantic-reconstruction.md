@@ -5342,7 +5342,7 @@ selection:
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122ParametricCarrierDisplayedBundle.lean"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "for every finite E distinct from the three accepted carriers, independent old-plus-E tables are separated by primitive source probes and their actual stored-backward observations and reconstruct the represented actual comparison image with both inverse laws; every nontrivial E supplies an explicit swap outside the old image, with Fin 5 as a concrete instance; canonical sections and the full dependent displayed bundle have unique source codes; the actual generated subgroup action equals ambient action, has one displacement between every displayed pair, and is equivariant with source left multiplication"
+  proof_obligation_delta: "for every finite E distinct from the three accepted carriers, independent old-plus-E tables are separated by primitive source probes and their actual stored-backward observations and reconstruct the represented actual comparison image with both inverse laws; every nontrivial E supplies an explicit swap proving that the old actual comparison range is a proper subset of the new range, with Fin 5 as a concrete instance; canonical sections and the full dependent displayed bundle have unique source codes; the actual generated subgroup action equals ambient action, has one displacement between every displayed pair, and is equivariant with source left multiplication"
   completion_candidate: no
   section_completion_candidate: no
   lean_artifacts:
@@ -5351,7 +5351,10 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.carrierBackwardAction_injective"
     - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.localAut_injective"
     - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.localComparisonEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.localComparison_embedFourCodeFor"
+    - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.embedFourImageFor_val"
     - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.embedFourImageFor_not_surjective"
+    - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.fourComponentRange_ssubset_parametricRange"
     - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.embedFourImage_not_surjective"
     - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.canonicalSection_unique_localCode"
     - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.orbitEquiv"
@@ -5376,7 +5379,7 @@ result:
       - "recover the full restriction kernel outside the displayed generated subgroup"
       - "extend reconstruction to arbitrary expanded G-122 Homs and objects"
       - "discharge final four-family separation and assembly"
-    acceptance_point: "carrier-parametric comparison separation and two-sided reconstruction, concrete strict enlargement, and principal equivariant dependent displayed-bundle reconstruction in one cycle"
+    acceptance_point: "carrier-parametric comparison separation and two-sided reconstruction, generic proper inclusion of actual comparison ranges, and principal equivariant dependent displayed-bundle reconstruction in one cycle"
     port_status: unported
 audits:
   material_premises:
@@ -5389,7 +5392,7 @@ audits:
       - "fresh-carrier probe noninterference and joint source-action injectivity"
       - "injectivity after actual fixed-route conjugation"
       - "comparison and dependent total-space inverse laws"
-      - "proper Fin 5 enlargement"
+      - "proper inclusion of the old actual comparison range into every nontrivial fresh-carrier range"
       - "ambient-action equality, unique displacement, and equivariance"
     conclusion_equivalent_risk: []
   certificate_provenance:
@@ -5409,13 +5412,13 @@ audits:
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: "adds a parametric comparison theorem, strict actual enlargement, substantive separation, both inverse laws, principal action, and common dependent connection together"
-  vacuity: "Fin 5 supplies an explicit swap outside the old image; arbitrary displayed pairs have a unique acting actual subgroup value; the source syntax stores no actual comparison, lift, image witness, or finished inverse certificate"
+  vacuity: "every nontrivial fresh carrier supplies an explicit swap outside the old actual comparison range; arbitrary displayed pairs have a unique acting actual subgroup value; the source syntax stores no actual comparison, lift, image witness, or conclusion-equivalent semantic certificate"
   four_lane_question: "Does adjoining an arbitrary nontrivial fresh finite Extension carrier to the accepted four-component code produce a strictly larger actual comparison family with observation-based separation, two-sided comparison and dependent displayed-bundle reconstruction, and a principal equivariant generated-kernel action on every represented fiber?"
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122ParametricCarrierDisplayedBundle.lean: pass"
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122ParametricCarrierDisplayedBundle.lean: pass"
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle: pass (4422 jobs)"
-    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle: 89 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle: 93 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "recover comparison values beyond the carrier-parametric represented family or deliver a new arbitrary-Hom reconstruction with substantive separation, assembly, and common-surface connection in the same cycle"
 ```

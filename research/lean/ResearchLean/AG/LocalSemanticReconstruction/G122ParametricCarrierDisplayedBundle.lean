@@ -608,12 +608,35 @@ theorem localAut_embedFourCodeFor
       G122FourComponentComparisonLocalModel.localAut code := by
   simp [localAut, embedFourCodeFor]
 
+/-- Comparison assembly of an embedded accepted code preserves its underlying
+actual normalized comparison. -/
+theorem localComparison_embedFourCodeFor
+    (code : G122FourComponentComparisonLocalModel.LocalCode) :
+    localComparison E (embedFourCodeFor E code) =
+      G122FourComponentComparisonLocalModel.localComparison code := by
+  rw [localComparison,
+    G122FourComponentComparisonLocalModel.localComparison,
+    localAut_embedFourCodeFor]
+
 /-- Embed the accepted actual image into the arbitrary-carrier instance. -/
 noncomputable def embedFourImageFor
     (comparison : G122FourComponentComparisonLocalModel.LocalComparisonImage) :
     LocalComparisonImage E :=
   assemble E (embedFourCodeFor E
     (G122FourComponentComparisonLocalModel.read comparison))
+
+/-- The subtype embedding preserves the underlying actual comparison value. -/
+theorem embedFourImageFor_val
+    (comparison : G122FourComponentComparisonLocalModel.LocalComparisonImage) :
+    (embedFourImageFor E comparison).1 = comparison.1 := by
+  rcases comparison with ⟨comparison, code, rfl⟩
+  change localComparison E
+      (embedFourCodeFor E
+        (G122FourComponentComparisonLocalModel.read
+          (G122FourComponentComparisonLocalModel.assemble code))) =
+    G122FourComponentComparisonLocalModel.localComparison code
+  rw [G122FourComponentComparisonLocalModel.read_assemble,
+    localComparison_embedFourCodeFor]
 
 /-- The accepted actual image remains separated after adjoining any fresh
 nontrivial carrier. -/
@@ -689,6 +712,40 @@ theorem embedFourImageFor_not_surjective
   obtain ⟨comparison, equality⟩ :=
     surjective (assemble E (freshSwapLocalCode E))
   exact freshSwap_not_embedded E fresh3 fresh4 freshNat comparison equality.symm
+
+/-- The old actual comparison range is contained in every fresh-carrier
+comparison range. -/
+theorem fourComponentRange_subset_parametricRange :
+    Set.range G122FourComponentComparisonLocalModel.localComparison ⊆
+      Set.range (localComparison E) := by
+  rintro comparison ⟨code, rfl⟩
+  exact ⟨embedFourCodeFor E code,
+    localComparison_embedFourCodeFor E code⟩
+
+/-- For every nontrivial fresh carrier, the old actual comparison range is a
+proper subset of the new actual comparison range. -/
+theorem fourComponentRange_ssubset_parametricRange
+    (fresh3 : E ≠ Fin 3) (fresh4 : E ≠ Fin 4) (freshNat : E ≠ Nat) :
+    Set.range G122FourComponentComparisonLocalModel.localComparison ⊂
+      Set.range (localComparison E) := by
+  refine ⟨fourComponentRange_subset_parametricRange E, ?_⟩
+  intro reverseInclusion
+  have oldMembership := reverseInclusion
+    (show localComparison E (freshSwapLocalCode E) ∈
+        Set.range (localComparison E) from
+      ⟨freshSwapLocalCode E, rfl⟩)
+  rcases oldMembership with ⟨oldCode, equality⟩
+  apply freshSwap_not_embedded E fresh3 fresh4 freshNat
+    (G122FourComponentComparisonLocalModel.assemble oldCode)
+  apply Subtype.ext
+  change localComparison E (freshSwapLocalCode E) =
+    localComparison E
+      (embedFourCodeFor E
+        (G122FourComponentComparisonLocalModel.read
+          (G122FourComponentComparisonLocalModel.assemble oldCode)))
+  rw [G122FourComponentComparisonLocalModel.read_assemble,
+    localComparison_embedFourCodeFor]
+  exact equality.symm
 
 end NontrivialFreshCarrier
 
