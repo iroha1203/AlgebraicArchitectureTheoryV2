@@ -69,12 +69,15 @@
   merge commit `7433561e506d5aef1d8312a18642e83bbaf70d16`
 - Cycle 30 accepted PR: [#4743](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4743),
   merge commit `f7c3706b365d1b0f2cbeb25d890866f10d716c41`
+- Cycle 31 accepted PR: [#4744](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4744),
+  merge commit `5705fefcb1d53c7aea760d262d441b974d42f238`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: actual tagged source-choice Aut subgroupを、actual finite-subset poset上の
-  有限table反変図式のcompatible section群と同値にし、Cycle 17--18の構成と同定する
-- next proof obligation: canonical-normalizationを含むfull tagged category、G-122 branch、
-  および四分枝の共通 `Lambda_Theta` / `M_Theta` / `N_Theta` / `D_Theta`へ接続する
+- current proof obligation: canonical normalization functorでsingle normalized Karoubi objectへ送った
+  source-choice族から、元の全choiceをfaithfulに回復できるかを決定する
+- next proof obligation: Cycle 32の情報損失を避ける候補として、ambient source objectsと
+  canonical-normalization arrowを保持するfull tagged realization categoryを構成し、Cycle 31の
+  finite-local readingを接続する
 
 ## Cycle 1 — rejected
 
@@ -3012,6 +3015,105 @@ audits:
   next_obligation: "extend the tagged reconstruction from the source-choice automorphism Hom slice to canonical-normalization arrows or construct the G-122 independent local-model branch, then integrate the common four-family reconstruction surface without weakening the fixed target"
 ```
 
+Cycle 31 / PR #4744 は final head
+`436e60bd8b6d288eed147e34c1a4f60569433189` で受理した。初回4 laneでPUnit唯一成分に
+全整合族を格納する中心findingを検出し、actual finite-subset poset・有限table成分・
+primitive restrictionの反変図式へ作り直した。修正後のfresh Math A/B + Lean A/Bは
+すべてfindingなし、CIは7/7 success、最終監査はPR comment `5725554013`、
+merge commitは `5705fefcb1d53c7aea760d262d441b974d42f238` である。
+
+## Cycle 32 selection and blocker proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 32
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 5705fefcb1d53c7aea760d262d441b974d42f238
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 31 accepted evidence: PR comment 5725554013; Cycle 32 selection: Issue comment 5725567900"
+  proof_dag_predecessors:
+    - "Cycle 31 actual finite-subset local diagram and source-choice subgroup equivalence"
+    - "AATUniformFlipKaroubi canonical normalized tagged object and uniform-flip automorphism"
+    - "AATClosedFamilySignature arbitrary actual source-choice package maps"
+  proof_obligation: "canonical normalization functorがfull actual source-choice族をsingle normalized Karoubi objectへ送るとき、元のchoiceをfaithfulに回復できるかを判定する"
+  selection_reason: "Cycle 31のHom-sliceをcanonical normalizationを含むfull tagged branchへ接続する最短候補経路だったため"
+  expected_result_type: blocker-fixed
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeKaroubiReconstruction.lean"
+result:
+  proposed_result_type: blocker-fixed
+  proof_obligation_delta: "normalization-invariant choices commute with canonical normalization and actual commutation forces invariance; independently, a choice supported at a moved source is distinct from false but their left-normalized actual package maps coincide, so the canonical normalized-image map is noninjective on the full source-choice family"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeKaroubiReconstruction.NormalizationInvariant"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeKaroubiReconstruction.normalizationInvariant_const"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeKaroubiReconstruction.taggedSourceChoiceTotal_commutes_normalization"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeKaroubiReconstruction.normalizationInvariant_of_commutes"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeKaroubiReconstruction.taggedCanonicalNormalization_not_injective"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeKaroubiReconstruction.exists_source_moved_by_normalization"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeKaroubiReconstruction.separatingChoice_not_invariant"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeKaroubiReconstruction.moved_source_not_in_normalization_image"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeKaroubiReconstruction.canonicalNormalization_comp_taggedSourceChoiceTotal_eq_of_normalized"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeKaroubiReconstruction.canonicalNormalization_sourceChoice_map_not_injective"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeKaroubiReconstruction.exists_sourceChoice_not_commuting_normalization"
+  claim_mapping:
+    source_labels:
+      - "fixed GOAL A/B tagged family must retain all source-choice members and canonical normalization"
+      - "Cycle 32 attempted route: recover the whole family through the canonical normalized-image map on one normalized Karoubi object"
+    conjuncts:
+      - "normalization-invariant choices commute as actual PackageTotalHom values"
+      - "actual commutation implies normalization invariance by tagged identity-operation evaluation"
+      - "the actual tagged object normalization is noninjective"
+      - "a moved source yields a concrete noninvariant choice and actual noncommuting source-choice map"
+      - "a choice supported at a moved source and the false choice are distinct before normalization but have equal left-normalized actual package maps"
+    undischarged_assumptions:
+      - "choice of a faithful replacement route; retaining ambient tagged source objects and normalization arrows is one candidate"
+      - "full tagged object and Hom reconstruction"
+      - "G-122 and final all-four integration"
+    acceptance_point: "nonfaithfulness of the canonical normalized-image route only; every source-choice automorphism can still have a Karoubi image, other single-object presentations are not excluded, and fixed G-124 remains active and unchanged"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "actual taggedOperationPackage and its accepted canonical normalization"
+      - "arbitrary actual taggedSourceChoiceTotal choice"
+    direction_hypothesis:
+      - "NormalizationInvariant is used only for the sufficient direction and is derived from commutation in the converse"
+    discharge_required:
+      - "componentwise package commutation under invariance"
+      - "readback of commutation at taggedIdentityOperation"
+      - "actual noninjectivity and a moved-source witness"
+      - "noninjectivity of left normalization on the actual source-choice family"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "invariance necessity / evaluation of the actual equality on the existing tagged identity operation"
+      - "moved source / contradiction with actual canonical-normalization noninjectivity"
+      - "counterexample choice / equality test against the moved source's normalized image"
+      - "normalized-image collision / idempotence excludes the moved source from the normalization image"
+    unresolved: []
+  proof_use:
+    used:
+      - "canonicalObjectNormalization_eq_of_configuration_eq"
+      - "finiteAxisFoldUnitObject_ne_boolObject and equal configurations"
+      - "taggedSourceChoiceTotal and taggedIdentityOperation"
+      - "taggedOperationCast_uniformFlip"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "actual full source-choice family and actual canonical normalization; proves only that the canonical normalized-image map loses source-choice information needed for reconstruction"
+  vacuity: "the noncommuting witness is an actual unrestricted source choice constructed from an actual moved architecture object"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/TagChangeKaroubiReconstruction.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeKaroubiReconstruction: pass (4354 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeKaroubiReconstruction: 14 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct a faithful replacement route; the leading candidate retains ambient tagged source objects and canonical-normalization arrows and connects them to Cycle 31 finite-local readings"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -3027,7 +3129,9 @@ audits:
   changeのexact graph criteriaとeffectiveness、Cycle 29はgeneral observation-aware protocol
   Homのfull tagged tableによるfinite determinationと明示的有限data下のeffectiveness、
   Cycle 30はlens一般Homのfull fiber determinationとtotal effectiveness、Cycle 31はactual tagged
-  source-choice Aut subgroupのone-object Hom sliceと独立local modelの同値に限る。
+  source-choice Aut subgroupのone-object Hom sliceと独立local modelの同値に限る。Cycle 32では
+  canonical normalization functorによるsingle normalized Karoubi object上の像がfull source-choice族を
+  区別できないことをactual反例で固定した。Karoubi像の存在や他のsingle-object表現は棄却していない。
   arbitrary observation carrier全体の有限encodingと四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
