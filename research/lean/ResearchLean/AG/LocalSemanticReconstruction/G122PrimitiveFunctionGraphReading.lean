@@ -41,6 +41,7 @@ universe u v
 
 namespace PFG
 
+/-- Short name for the total-functional primitive graph codes used below. -/
 abbrev GraphCode := PrimitiveFunctionGraph.GraphCode
 
 end PFG

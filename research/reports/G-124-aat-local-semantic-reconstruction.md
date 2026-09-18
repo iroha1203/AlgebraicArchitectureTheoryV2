@@ -6066,7 +6066,7 @@ selection:
     - "arbitrary G-122 geometry morphisms and their computational component maps"
     - "Cycle 47 accepted fixed two-point comparison probe and local-image reconstruction"
   proof_obligation: "classify arbitrary functions by an independent Bool graph with total-functional laws, explicit inverse laws, identity, categorical composition, and relational composition; package the graph category as fully faithful over Type; in the same cycle read five ordinary maps of every G-122 geometry Hom compositionally and factor the accepted fixed comparison probe through the object graph with two-sided local-image reconstruction"
-  selection_reason: "the cycle contains a genuine arbitrary-function classification and categorical universal property rather than a new definition or alias, and bundles the G-122 common-surface connection and accepted finite reconstruction instead of postponing them"
+  selection_reason: "the cycle contains a genuine arbitrary-function classification and fully faithful categorical presentation rather than a new definition or alias, and bundles the G-122 common-surface connection and accepted finite reconstruction instead of postponing them"
   expected_result_type: proof-obligation-discharged
   lean_targets:
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/PrimitiveFunctionGraphCategory.lean"
@@ -6101,7 +6101,7 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveFunctionGraphReading.graphPrimitiveSemanticEquivLocal"
   claim_mapping:
     conjuncts:
-      - "each primitive local value is Bool and the raw data carries no function or witness"
+      - "each primitive local value is Bool and the raw data carries no completed target function or total-functional witness"
       - "total-functional laws assemble one target for every source"
       - "read and assembly are mutually inverse for arbitrary source and target types"
       - "identity, categorical composition, and relational graph composition agree"
@@ -6152,7 +6152,7 @@ audits:
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
-  target_fitting: "extends independent finite-valued local graph syntax from permutations to arbitrary functions, gives it a categorical universal property, and immediately applies it to genuine maps of every G-122 geometry Hom and to the accepted finite reconstruction surface without claiming full-Hom separation"
+  target_fitting: "extends independent finite-valued local graph syntax from permutations to arbitrary functions, gives it a fully faithful categorical presentation, and immediately applies it to genuine maps of every G-122 geometry Hom and to the accepted finite reconstruction surface without claiming full-Hom separation"
   vacuity: "the positive and negative fixtures distinguish the Prop from raw data, arbitrary functions are recovered in both directions, and the fixed local image has both graph-factorized inverse laws"
   four_lane_question: "Does a data/Prop-separated Bool graph presentation classify arbitrary functions with explicit inverse laws and categorical composition, and do the source, Atom, object, context, and coefficient maps of every G-122 geometry Hom read compositionally through that presentation while the accepted finite comparison probe factors through and reconstructs its fixed local image?"
   validation_refs:

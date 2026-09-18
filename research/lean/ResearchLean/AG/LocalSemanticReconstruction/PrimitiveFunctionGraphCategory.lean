@@ -19,8 +19,9 @@ comparison functor to `Type` is explicitly fully faithful.
 ## Implementation notes
 
 This module uses a Bool relation rather than storing a function so that every
-primitive value remains one finite local reading.  Surjectivity of rows is a
-separate predicate; it is not placed in raw data.  Equality decisions are
+primitive value remains one finite local reading.  Existence and uniqueness of
+a true target in every row are a separate predicate; they are not placed in raw
+data.  Equality decisions are
 chosen classically inside `read`, avoiding a public `DecidableEq` premise.
 The diagonal graph and a constant-false graph give positive and negative
 fixtures for the new predicate.
