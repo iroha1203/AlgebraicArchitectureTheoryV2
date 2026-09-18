@@ -135,14 +135,15 @@
   merge commit `bf71fc79d8093c6bd315e18a81c2f5429727eafd`
 - Cycle 63 accepted PR: [#4776](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4776),
   merge commit `c31914db8437c1798cf5799b722b80b270d16927`
+- Cycle 64 accepted PR: [#4778](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4778),
+  merge commit `f7f9a4eca58417c82b017fa5fe465d175db13621`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: `GeometryTotalHom.ext`が使う全計算成分をtotal-functional Bool graphへ読み、
-  dependent familyをtagged sigma mapとして独立表示する。graph族の一致から任意complete geometry Homの
-  joint separationを証明し、固定G-122 raw comparisonのfull direct normalization-kernel座標へ接続する
-- next proof obligation: arbitraryな整合graph族からcomplete geometry Homを組み立てる独立条件とassemblyを
-  構成するか、full direct normalization kernel自体をcompleted automorphismなしのprimitive local syntaxから
-  両逆に再構成する
+- current proof obligation: Hom分離、Hom組立て、対象組立てから圏同値とHom両逆を導く一般再構成原理を
+  証明し、primitive Bool graph圏で完全適用する。complete geometry graphは全package対のindexed
+  Hom-family分離として同じcontractへ接続し、local graph圏とassemblyの未完了を保つ
+- next proof obligation: complete geometry graphの独立coherence条件とlocal Hom圏を構成し、任意の整合graph
+  からHom assemblyを与えて一般再構成原理へ適用する。image subtypeや完成morphism certificateは用いない
 
 ## Cycle 1 — rejected
 
