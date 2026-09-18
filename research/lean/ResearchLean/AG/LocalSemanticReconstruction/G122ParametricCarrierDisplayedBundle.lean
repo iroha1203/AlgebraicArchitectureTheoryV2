@@ -8,8 +8,8 @@ An arbitrary finite Extension carrier, distinct from the three carriers already
 used by the accepted four-component comparison model, supplies one further
 independent permutation table.  Carrier-specific source probes separate the
 new action from every accepted component.  The corresponding actual
-comparison image is reconstructed in both directions, and `Fin 5` gives a
-concrete proper enlargement of the accepted image.
+comparison image is reconstructed in both directions.  Every nontrivial such
+carrier gives a proper enlargement, with `Fin 5` as a concrete instance.
 
 The same construction assembles the independent comparison table and source
 kernel group code into a dependent displayed-lift bundle.  It proves actual
@@ -572,6 +572,125 @@ noncomputable def localComparisonEquiv
   right_inv := assemble_read E fresh3 fresh4 freshNat
 
 end FreshCarrier
+
+section NontrivialFreshCarrier
+
+variable (E : Type) [Fintype E] [DecidableEq E] [Nontrivial E]
+variable (fresh3 : E ≠ Fin 3) (fresh4 : E ≠ Fin 4) (freshNat : E ≠ Nat)
+
+/-- Identity lookup table on an arbitrary fresh carrier. -/
+def freshIdentityCode : FreshCode E :=
+  FiniteAxisFoldExtensionPermutationCode.ofPerm 1
+
+/-- The identity fresh table evaluates to the identity actual automorphism. -/
+@[simp] theorem freshAut_identityCode :
+    freshAut E (freshIdentityCode E) = 1 := by
+  have code_eq_one : freshIdentityCode E = 1 := by
+    apply FiniteAxisFoldExtensionPermutationCode.toPerm_injective
+    rfl
+  rw [freshAut, code_eq_one, map_one]
+  rfl
+
+/-- Embed an accepted four-component code using the identity fresh table. -/
+def embedFourCodeFor
+    (code : G122FourComponentComparisonLocalModel.LocalCode) : LocalCode E :=
+  (code, freshIdentityCode E)
+
+/-- The arbitrary-carrier code embedding is injective. -/
+theorem embedFourCodeFor_injective : Function.Injective (embedFourCodeFor E) := by
+  intro first second equality
+  exact congrArg Prod.fst equality
+
+/-- Endpoint evaluation of an embedded accepted code is unchanged. -/
+theorem localAut_embedFourCodeFor
+    (code : G122FourComponentComparisonLocalModel.LocalCode) :
+    localAut E (embedFourCodeFor E code) =
+      G122FourComponentComparisonLocalModel.localAut code := by
+  simp [localAut, embedFourCodeFor]
+
+/-- Embed the accepted actual image into the arbitrary-carrier instance. -/
+noncomputable def embedFourImageFor
+    (comparison : G122FourComponentComparisonLocalModel.LocalComparisonImage) :
+    LocalComparisonImage E :=
+  assemble E (embedFourCodeFor E
+    (G122FourComponentComparisonLocalModel.read comparison))
+
+/-- The accepted actual image remains separated after adjoining any fresh
+nontrivial carrier. -/
+theorem embedFourImageFor_injective
+    (fresh3 : E ≠ Fin 3) (fresh4 : E ≠ Fin 4) (freshNat : E ≠ Nat) :
+    Function.Injective (embedFourImageFor E) := by
+  intro first second equality
+  have codeEquality :
+      embedFourCodeFor E (G122FourComponentComparisonLocalModel.read first) =
+        embedFourCodeFor E
+          (G122FourComponentComparisonLocalModel.read second) :=
+    (localComparisonEquiv E fresh3 fresh4 freshNat).injective equality
+  exact G122FourComponentComparisonLocalModel.localComparisonEquiv.symm.injective
+    (embedFourCodeFor_injective E codeEquality)
+
+/-- First chosen point of a nontrivial fresh carrier. -/
+noncomputable def firstFreshPoint : E :=
+  Classical.choose (exists_pair_ne E)
+
+/-- Second chosen point of a nontrivial fresh carrier. -/
+noncomputable def secondFreshPoint : E :=
+  Classical.choose (Classical.choose_spec (exists_pair_ne E))
+
+/-- The two chosen fresh-carrier points are distinct. -/
+theorem firstFreshPoint_ne_secondFreshPoint :
+    firstFreshPoint E ≠ secondFreshPoint E :=
+  Classical.choose_spec (Classical.choose_spec (exists_pair_ne E))
+
+/-- A nonidentity table on every nontrivial fresh carrier. -/
+noncomputable def freshSwapCode : FreshCode E :=
+  FiniteAxisFoldExtensionPermutationCode.ofPerm
+    (Equiv.swap (firstFreshPoint E) (secondFreshPoint E))
+
+/-- Local code trivial on accepted components and nontrivial on the fresh
+carrier. -/
+noncomputable def freshSwapLocalCode : LocalCode E :=
+  ((1, ((G122CarrierSeparatedComparisonLocalModel.identityExtensionCode,
+      G122CarrierSeparatedComparisonLocalModel.natIdentityCode),
+      G122FourComponentComparisonLocalModel.fin4IdentityCode)),
+    freshSwapCode E)
+
+/-- The fresh swap comparison is outside the embedded accepted image for
+every nontrivial fresh carrier. -/
+theorem freshSwap_not_embedded
+    (fresh3 : E ≠ Fin 3) (fresh4 : E ≠ Fin 4) (freshNat : E ≠ Nat)
+    (comparison : G122FourComponentComparisonLocalModel.LocalComparisonImage) :
+    assemble E (freshSwapLocalCode E) ≠
+      embedFourImageFor E comparison := by
+  intro equality
+  have codeEquality :=
+    (localComparisonEquiv E fresh3 fresh4 freshNat).injective equality
+  have freshEquality := congrArg (fun code : LocalCode E => code.2) codeEquality
+  have evaluationEquality := congrArg
+    FiniteAxisFoldExtensionPermutationCode.toPerm freshEquality
+  change Equiv.swap (firstFreshPoint E) (secondFreshPoint E) = 1
+    at evaluationEquality
+  have moved := congrArg
+    (fun permutation : Equiv.Perm E => permutation (firstFreshPoint E))
+    evaluationEquality
+  change (Equiv.swap (firstFreshPoint E) (secondFreshPoint E))
+      (firstFreshPoint E) =
+    (1 : Equiv.Perm E) (firstFreshPoint E) at moved
+  rw [Equiv.swap_apply_left] at moved
+  change secondFreshPoint E = firstFreshPoint E at moved
+  exact firstFreshPoint_ne_secondFreshPoint E moved.symm
+
+/-- Every nontrivial fresh carrier produces a proper enlargement of the
+accepted actual comparison image. -/
+theorem embedFourImageFor_not_surjective
+    (fresh3 : E ≠ Fin 3) (fresh4 : E ≠ Fin 4) (freshNat : E ≠ Nat) :
+    ¬ Function.Surjective (embedFourImageFor E) := by
+  intro surjective
+  obtain ⟨comparison, equality⟩ :=
+    surjective (assemble E (freshSwapLocalCode E))
+  exact freshSwap_not_embedded E fresh3 fresh4 freshNat comparison equality.symm
+
+end NontrivialFreshCarrier
 
 section Fin5StrictEnlargement
 

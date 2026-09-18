@@ -5335,14 +5335,14 @@ selection:
     - "Cycle 52 four-component comparison reconstruction"
     - "Cycle 54 source-group/actual-subgroup multiplicative equivalence"
     - "Cycle 55 dependent displayed-bundle reconstruction and principal action"
-  proof_obligation: "adjoin an arbitrary finite Extension carrier distinct from Fin 3, Fin 4, and Nat; recover all accepted and fresh table components from actual observations; prove comparison read/assemble both ways, a concrete proper Fin 5 enlargement, canonical-section uniqueness, displayed-orbit separation, principal equivariant subgroup action, and dependent total reconstruction in the same cycle"
+  proof_obligation: "adjoin an arbitrary finite Extension carrier distinct from Fin 3, Fin 4, and Nat; recover all accepted and fresh table components from actual observations; prove comparison read/assemble both ways, proper enlargement for every nontrivial such carrier, canonical-section uniqueness, displayed-orbit separation, principal equivariant subgroup action, and dependent total reconstruction in the same cycle"
   selection_reason: "this replaces isolated next-carrier repetition with a carrier-parametric theorem and includes the common displayed-bundle connection; the principal observation argument is fixed-route conjugation injectivity plus disjoint-carrier probes"
   expected_result_type: proof-obligation-discharged
   lean_targets:
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122ParametricCarrierDisplayedBundle.lean"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "for every finite E distinct from the three accepted carriers, independent old-plus-E tables are separated by primitive source probes and their actual stored-backward observations; they reconstruct the represented actual comparison image with both inverse laws; Fin 5 gives an explicit actual value outside the old image; canonical sections and the full dependent displayed bundle have unique source codes; the actual generated subgroup action equals ambient action, has one displacement between every displayed pair, and is equivariant with source left multiplication"
+  proof_obligation_delta: "for every finite E distinct from the three accepted carriers, independent old-plus-E tables are separated by primitive source probes and their actual stored-backward observations and reconstruct the represented actual comparison image with both inverse laws; every nontrivial E supplies an explicit swap outside the old image, with Fin 5 as a concrete instance; canonical sections and the full dependent displayed bundle have unique source codes; the actual generated subgroup action equals ambient action, has one displacement between every displayed pair, and is equivariant with source left multiplication"
   completion_candidate: no
   section_completion_candidate: no
   lean_artifacts:
@@ -5351,6 +5351,7 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.carrierBackwardAction_injective"
     - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.localAut_injective"
     - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.localComparisonEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.embedFourImageFor_not_surjective"
     - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.embedFourImage_not_surjective"
     - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.canonicalSection_unique_localCode"
     - "AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle.orbitEquiv"
@@ -5365,7 +5366,7 @@ result:
       - "carrier-specific primitive probes separate all four carrier permutations"
       - "whole-source action conjugation through the fixed context equivalence is injective, so actual stored-backward observations separate all independent tables"
       - "comparison read and assemble satisfy both inverse laws for every admissible fresh carrier"
-      - "the Fin 5 instance strictly contains the accepted four-component actual image"
+      - "every nontrivial fresh-carrier instance strictly contains the accepted four-component actual image; Fin 5 is a concrete instance"
       - "every represented canonical section has one local code"
       - "source kernel codes are separated by actual lift action and reconstruct every displayed fiber in both directions"
       - "the transported subgroup action agrees with ambient actual action, is principal, and is equivariant"
@@ -5409,12 +5410,12 @@ audits:
   route_integrity: pass
   target_fitting: "adds a parametric comparison theorem, strict actual enlargement, substantive separation, both inverse laws, principal action, and common dependent connection together"
   vacuity: "Fin 5 supplies an explicit swap outside the old image; arbitrary displayed pairs have a unique acting actual subgroup value; the source syntax stores no actual comparison, lift, image witness, or finished inverse certificate"
-  four_lane_question: "Does adjoining an arbitrary fresh finite Extension carrier to the accepted four-component code produce a strictly larger actual comparison family with observation-based separation, two-sided comparison and dependent displayed-bundle reconstruction, and a principal equivariant generated-kernel action on every represented fiber?"
+  four_lane_question: "Does adjoining an arbitrary nontrivial fresh finite Extension carrier to the accepted four-component code produce a strictly larger actual comparison family with observation-based separation, two-sided comparison and dependent displayed-bundle reconstruction, and a principal equivariant generated-kernel action on every represented fiber?"
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122ParametricCarrierDisplayedBundle.lean: pass"
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122ParametricCarrierDisplayedBundle.lean: pass"
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle: pass (4422 jobs)"
-    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle: 75 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle: 89 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "recover comparison values beyond the carrier-parametric represented family or deliver a new arbitrary-Hom reconstruction with substantive separation, assembly, and common-surface connection in the same cycle"
 ```
@@ -5502,7 +5503,8 @@ audits:
   Cycle 56では追加Extension carrierを特定の一型に固定せず、`Fin 3`、`Fin 4`、`Nat`と異なる
   任意の有限型へparameter化した。carrier固有probeと固定context同値による共役の単射性から
   actual stored-backward観測が全tableを分離することを証明し、comparison read/assemble両逆、
-  `Fin 5` swapによる旧像のproper inclusion、canonical section code一意性を得た。同じmoduleで
+  任意の非自明な追加carrier上のswapによる旧像のproper inclusion、`Fin 5`具体例、
+  canonical section code一意性を得た。同じmoduleで
   displayed orbit分離・両逆、ambient actual作用との一致、任意二点間の一意変位、equivariance、
   dependent total-space両逆まで接続した。
   carrier-parametric represented family外、displayed C₂外のfull kernel、arbitrary Hom、四族統合は
