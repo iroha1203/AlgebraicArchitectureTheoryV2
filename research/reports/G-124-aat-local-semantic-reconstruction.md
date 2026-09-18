@@ -4125,6 +4125,93 @@ audits:
   next_obligation: "integrate the common exact source-choice branch with the fixed source/target/composition/identity family surface without weakening arbitrary-object assembly"
 ```
 
+## Cycle 44 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 44
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 6d423825fc5931d377ca0160c9dc61bcee26c73a
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 43 audit: PR comment 5728136810; Cycle 44 selection: Issue comment 5729553312"
+  proof_dag_predecessors:
+    - "Cycle 43 common exact represented category and primitive finite-local equivalence"
+    - "accepted ClosedFamilyRealizationHom tagged fiber with its identity and composition"
+  proof_obligation: "include the represented exact one-object category in the tagged fiber of the common realization family and prove that endpoints, identity, composition, and accepted normal-form evaluation are retained"
+  selection_reason: "the accepted exact-local equivalence must enter the already fixed common realization family before any four-branch local-model theorem can use it"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeExactGeometryCommonInclusion.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the common exact represented category now has a faithful functor into the actual tagged fiber, with definitional object/Hom mapping and exact preservation of every accepted normal-form evaluation"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryCommonInclusion.inclusion"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryCommonInclusion.inclusion_obj"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryCommonInclusion.inclusion_map"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryCommonInclusion.inclusion_map_normalForm"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryCommonInclusion.inclusion_faithful"
+  claim_mapping:
+    source_labels:
+      - "Cycle 43 GlobalCategory"
+      - "Cycle 42 exact normal-form evaluation"
+      - "AATClosedRealizationCategory tagged fiber"
+    conjuncts:
+      - "the sole represented object maps to FamilyRealization.taggedOperation"
+      - "each represented Hom maps to its underlying actual ClosedFamilyRealizationHom"
+      - "identity and composition are preserved by the functor laws"
+      - "each accepted normal form maps to the existing exact evaluation"
+      - "the inclusion is faithful"
+    undischarged_assumptions:
+      - "arbitrary-object assembly in the fixed common local-model category"
+      - "local-model integration for G-122, lens, and protocol"
+      - "finite reconstruction of tagged Homs outside the represented image"
+    acceptance_point: "faithful inclusion of the represented exact tagged branch into the common realization family only"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_scope:
+      - "TagChangeExactGeometryLocalModel.GlobalCategory"
+      - "FamilyRealization ClosedFamilyParameter.taggedOperation"
+    proved_dependencies:
+      - "TagChangeExactGeometryNormalForm.normalFormMulEquivRepresented"
+      - "TagChangeExactGeometryNormalForm.evaluate"
+      - "closedFamilyRealizationCategory"
+    discharge_required:
+      - "common-family object and Hom mapping"
+      - "identity and composition preservation"
+      - "normal-form evaluation agreement"
+      - "faithfulness"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "Hom inclusion / Submonoid membership is forgotten while the actual exact Hom is retained"
+      - "functor laws / definitional agreement of common composition with represented-submonoid multiplication"
+      - "faithfulness / injectivity of the subtype value map"
+    unresolved:
+      - "fixed common local-model arbitrary objects and remaining branch integration"
+  proof_use:
+    used:
+      - "normalFormMulEquivRepresented"
+      - "ClosedFamilyRealizationHom tagged category instance"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "places the accepted exact finite-local branch inside the actual common realization family without changing its Hom type or adding an image premise to the family definition"
+  vacuity: "the source contains the full accepted representedSubmonoid, the map is faithful, and every accepted NormalForm evaluation is preserved"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/TagChangeExactGeometryCommonInclusion.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/TagChangeExactGeometryCommonInclusion.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeExactGeometryCommonInclusion: pass (4377 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeExactGeometryCommonInclusion: 5 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct the family-indexed local-model connection for another mandatory branch or the common local family itself, while keeping arbitrary-object assembly as an explicit proof obligation"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -4162,7 +4249,9 @@ audits:
   image submonoidをpackage generated submonoidと同値にした。Cycle 43ではそのcommon exact imageから
   normalization flagと全有限tableをprimitive package base経由で直接読み、Hom separation/assemblyと
   one-object圏同値まで接続した。fixed common local-model categoryの任意対象assemblyは未完了である。
-  arbitrary observation carrier全体の有限encodingと四分枝統合は未完了である。
+  Cycle 44では、そのrepresented exact圏をcommon realization familyのtagged fiberへ忠実に埋め込み、
+  対象・射・恒等・合成とnormal-form評価の一致を固定した。represented image外のtagged Hom、
+  arbitrary observation carrier全体の有限encoding、残る三族との統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
@@ -4172,7 +4261,8 @@ audits:
   one-object圏同値として明示する義務はCycle 38で放電した。四分枝共通surfaceへの接続と、
   そのlocal-model categoryの任意対象に対する固定GOAL B object assemblyは未完了である。Cycle 43で
   generated branchのcommon exact imageにも同じfinite-local one-object圏同値を移したが、四族統合や
-  任意対象assemblyを代替するものではない。
+  任意対象assemblyを代替するものではない。Cycle 44でそのexact imageからcommon tagged fiberへの
+  忠実なinclusionを構成したが、common local-model category全体の同値はまだ主張しない。
 - E2 の product-lens / protocol 可逆変更層はCycle 27--28で共通
   `FiniteReading`/Dへ接続済み。Cycle 29でgeneral observation-aware protocol Homも
   full tagged table上の決定性・effectivenessへ接続し、Cycle 30でlens一般意味保存射層も
