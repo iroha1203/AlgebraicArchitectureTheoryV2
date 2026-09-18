@@ -77,12 +77,14 @@
   merge commit `2a1c70fdbb680511a731e9d83e6b8b4131c942b1`
 - Cycle 34 accepted PR: [#4747](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4747),
   merge commit `2523f2c8990273a1a5955c3e9ade83d925bfc8a9`
+- Cycle 35 accepted PR: [#4748](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4748),
+  merge commit `796e99d40e4b0ce44b2e7f3a3bd09f71483e0525`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: canonical normalization像へのchoice restrictionを冪等retractionとして
-  構成し、left-normalized actual mapの衝突をその核として完全分類する
-- next proof obligation: raw source-choiceとnormalized invariant choiceを持つgenerated tagged
-  endomorphism normal formを構成し、normalizationを含むcompositionを局所表示へ接続する
+- current proof obligation: normalization flagとcompatible finite Bool tableからなるfinite-local modelを
+  構成し、成分ごとの合成則とactual generated normal-form monoidとの同定を証明する
+- next proof obligation: generated tagged endomorphismのfinite-local同定をone-object圏同値へ持ち上げ、
+  四分枝共通の局所読み取りsurfaceへの接続条件を特定する
 
 ## Cycle 1 — rejected
 
