@@ -4416,6 +4416,105 @@ audits:
   next_obligation: "extend from the fixed semantic image to a nontrivial arbitrary-Hom local reading and discharge separation and assembly without storing completed morphisms in local values"
 ```
 
+## Cycle 47 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 47
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 1e359cbae5eed78138782593b17da96b6a9e193a
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 46 audit: PR comment 5730207022; Cycle 47 selection: Issue comment 5730309080"
+  proof_dag_predecessors:
+    - "Cycle 45 expanded G-122 category with actual fixed comparisons"
+    - "Cycle 46 two-valued semantic image equivalence"
+    - "accepted finite total probe and canonical-normalization APIs"
+  proof_obligation: "construct a nonempty primitive finite probe that separates the two fixed semantic comparison classes, derive local read/assemble inverses from its restriction, and connect it to the expanded Hom and existing local surfaces"
+  selection_reason: "Cycle 46 classified by equality of complete morphisms; the next sound step is to expose the actual primitive observation that detects the generated normalization"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122PrimitiveComparisonProbe.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "two inverse-barAlpha object points form a nonempty primitive probe; canonical normalization collapses their generated-barBeta images, the probe separates the fixed semantic image, and primitive read/assemble are mutually inverse"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveComparisonProbe.targetProjector_eq_endpointNormalization"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveComparisonProbe.targetProjector_collapses_probeObjects"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveComparisonProbe.coreProbe"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveComparisonProbe.coreProbe_generatedBarBeta_ne_barAlpha"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveComparisonProbe.totalProbe"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveComparisonProbe.totalProbe_not_agreement_generatedBarBeta_barAlpha"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveComparisonProbe.primitiveRead"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveComparisonProbe.primitiveRead_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveComparisonProbe.assemble_primitiveRead"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveComparisonProbe.primitiveSemanticEquivLocal"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveComparisonProbe.primitiveRead_eq_read"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveComparisonProbe.totalProbe_separates_semanticImage"
+  claim_mapping:
+    source_labels:
+      - "fixed target A: primitive finite reading for the fixed G-122 generated comparison"
+      - "fixed target B/C: separation and two-sided reconstruction on the actual fixed semantic image"
+    conjuncts:
+      - "the probe has exactly two selected architecture objects and no completed morphism field"
+      - "the actual generated target projector is endpoint canonical normalization"
+      - "generated barBeta identifies the two probe points while barAlpha retains distinct images"
+      - "complete probe agreement separates all morphisms in the fixed semantic image"
+      - "primitive reading and assembly are inverse in both directions"
+      - "primitive reading agrees with the accepted Cycle 46 classifier"
+    undischarged_assumptions:
+      - "extend finite separation and assembly to arbitrary expanded G-122 Homs and objects"
+      - "recover the full and base-fixing comparison groups from local data"
+      - "discharge final four-family separation and assembly"
+    acceptance_point: "nonempty primitive finite reconstruction for the fixed semantic image only; no arbitrary-Hom or category-wide equivalence claim"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_scope:
+      - "fixed finite-axis-fold direct/via-base endpoints"
+      - "actual barAlpha, generated barBeta, and constant-one barBeta"
+      - "accepted finite total probe surface"
+    proved_dependencies:
+      - "barBeta factorization through barAlpha and barD"
+      - "selected barD equals endpoint canonical normalization"
+      - "two distinct finite-axis-fold objects share one configuration"
+    discharge_required:
+      - "nonempty primitive probe construction"
+      - "actual negative agreement witness"
+      - "fixed-image separation"
+      - "both inverse laws and Cycle 46 compatibility"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "probe points / inverse images under the accepted barAlpha isomorphism"
+      - "probe distinction / canonical normalization of same-configuration objects"
+      - "local recovery / finite case split after primitive evaluation"
+    unresolved:
+      - "arbitrary expanded Hom and object assembly"
+  proof_use:
+    used:
+      - "endpoint normalization classification"
+      - "barAlpha inverse laws"
+      - "barBeta factorization"
+      - "primitive objectRestriction and complete Agreement"
+      - "Cycle 45 expanded Homs and Cycle 46 LocalValue/assemble"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "replaces complete-Hom equality classification by an actual finite primitive reading on the fixed G-122 image"
+  vacuity: "the probe has two points, explicitly rejects agreement of generated barBeta with barAlpha, and reconstructs both distinct semantic classes"
+  four_lane_question: "Does the two-point primitive object restriction, rather than completed-Hom equality, separate the fixed comparison image and support both inverse laws?"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122PrimitiveComparisonProbe.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122PrimitiveComparisonProbe: pass (4333 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122PrimitiveComparisonProbe: 27 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "enlarge primitive separation and assembly from the fixed comparison image to a substantial finite generated Hom range, including the comparison-group action in the same cycle"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -4460,10 +4559,14 @@ audits:
   direct/via-base対象と3比較をactual Homとして固定した。これはfinal four-family categoryの
   置換ではなく、G-122 finite probe、local-model同値、四族assemblyは未完了である。Cycle 46では、
   固定3コードのactual imageを意味上の2クラスからなる有限local valueと同値にし、Hom slice上の
-  read/assemble両逆を放電した。任意のexpanded Homと対象に対する同値は未完了である。
+  read/assemble両逆を放電した。Cycle 47では、`barAlpha`の逆像に取った2対象だけを読む
+  primitive object probeを構成し、generated `barBeta`との実分離、complete probe agreementからの
+  fixed image分離、primitive read/assemble両逆、Cycle 46 classifierとの一致を同じsurfaceへ接続した。
+  任意のexpanded Homと対象に対する同値は未完了である。
 - C の投影・正規化・比較群回復。Cycle 45で固定G-122の3比較はexpanded category内の
   actual Homになり、Cycle 46でその固定semantic imageの有限local recoveryを構成したが、
-  full comparison groupとbase-fixing subgroupのlocal recoveryは未完了である。
+  Cycle 47でそのrecoveryをprimitive object restrictionから導出した。full comparison groupと
+  base-fixing subgroupのlocal recoveryは未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
