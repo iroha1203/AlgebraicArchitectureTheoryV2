@@ -3860,9 +3860,9 @@ tracking_issue: 4711
 selection:
   proof_state_ref: "Cycle 40 audit: PR comment 5727554438; Cycle 41 selection: Issue comment 5727561594"
   proof_dag_predecessors:
-    - "Cycle 35 package-level normalization_comp_sourceChoice_rewrite"
-    - "Cycle 39 exact-geometry canonical normalization Hom"
-    - "Cycle 40 exact-geometry idempotence and canonical restriction composition"
+    - "Cycle 35 normalization_comp_sourceChoice_eq_normalized and normalizeChoice_invariant"
+    - "accepted taggedSourceChoiceTotal_commutes_normalization for invariant choices"
+    - "Cycle 39 exact-geometry canonical normalization Hom and Cycle 40 tagged explicit realization heterogeneous extensionality"
   proof_obligation: "lift the canonical rewrite normalization-then-choice = restricted-choice-then-normalization to an equality of actual Homs in the common tagged FamilyRealization fiber"
   selection_reason: "the exact normal-form multiplication cannot be defined and verified until normalization can be moved to the normalized-form position without forgetting dependent exact-geometry data"
   expected_result_type: proof-obligation-discharged
@@ -3892,9 +3892,15 @@ result:
 audits:
   material_premises:
     ambient_boundary:
+      - "taggedOperationGeometryPackage"
+      - "closedFamilyTaggedNormalization"
+      - "closedFamilyTaggedSourceChoice"
+    proved_dependencies:
       - "normalization_comp_sourceChoice_eq_normalized"
       - "taggedSourceChoiceTotal_commutes_normalization"
       - "normalizeChoice_invariant"
+      - "taggedExplicitRealizationSupply_hext"
+      - "equationSystemExactTransport_hext"
     discharge_required:
       - "actual common-Hom rewrite"
       - "dependent equation and realization transport equality"
