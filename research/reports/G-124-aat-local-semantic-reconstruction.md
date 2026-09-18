@@ -97,12 +97,14 @@
   merge commit `6d423825fc5931d377ca0160c9dc61bcee26c73a`
 - Cycle 44 accepted PR: [#4757](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4757),
   merge commit `7e529b40a65ebf78cd866ba6426ce38670d623ef`
+- Cycle 45 accepted PR: [#4758](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4758),
+  merge commit `48d3c50a85722731eca7971cd54062c333dfc09d`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: common G-122 original-cell fiberをgenerated endpointsを持つ圏へ
-  充満忠実に埋め、固定生成比較の両端と3比較をactual Homとして固定する
-- next proof obligation: expanded G-122圏に有限probe readingを構成し、固定3比較の分離と
-  local-model assemblyへ接続する
+- current proof obligation: expanded G-122圏の固定3比較のactual imageを、意味的な
+  2クラスの有限local valueとしてread/assembleの両逆で回復する
+- next proof obligation: 固定Hom sliceから任意のexpanded G-122 Homへlocal readingを拡張し、
+  source-generated probeによる分離とassemblyを個別に放電する
 
 ## Cycle 1 — rejected
 
@@ -4315,6 +4317,105 @@ audits:
   next_obligation: "construct finite probe readings on the expanded G-122 category that separate the fixed comparison cases and feed an explicit local-model assembly theorem"
 ```
 
+Cycle 45 の fresh Math A/B・Lean A/B は final head
+`afc2393e76dc8fd33baf21f8f2324db303568ddd` で全4 lane `No major findings`、
+CI 7/7 success。最終監査は PR comment `5730017275`、merge commit は
+`48d3c50a85722731eca7971cd54062c333dfc09d`、Cycle 46選定は Issue comment
+`5730046376` に固定した。
+
+## Cycle 46 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 46
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 48d3c50a85722731eca7971cd54062c333dfc09d
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 45 audit: PR comment 5730017275; Cycle 46 selection: Issue comment 5730046376"
+  proof_dag_predecessors:
+    - "Cycle 45 expanded G-122 category with fixed direct/via-base endpoints and actual comparisons"
+    - "accepted FiniteAxisFoldComparisonCode exact semantic fibers"
+  proof_obligation: "construct a finite local value for the actual image of the three fixed comparison codes and mutually inverse read/assemble maps that retain exactly the two semantic morphisms"
+  selection_reason: "barAlpha and constant-one barBeta are the same actual Hom, while generated barBeta is distinct; a sound local reading must recover the two semantic classes without pretending that the three provenance codes are three morphisms"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122FixedComparisonLocalSlice.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the actual fixed comparison image in the expanded Hom is equivalent to a finite two-valued local type, with explicit reading and assembly inverse laws and exact readback for all three provenance codes"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.G122FixedComparisonLocalSlice.SemanticImage"
+    - "AAT.AG.LocalSemanticReconstruction.G122FixedComparisonLocalSlice.LocalValue"
+    - "AAT.AG.LocalSemanticReconstruction.G122FixedComparisonLocalSlice.assemble"
+    - "AAT.AG.LocalSemanticReconstruction.G122FixedComparisonLocalSlice.read"
+    - "AAT.AG.LocalSemanticReconstruction.G122FixedComparisonLocalSlice.generated_ne_alpha"
+    - "AAT.AG.LocalSemanticReconstruction.G122FixedComparisonLocalSlice.read_barAlpha"
+    - "AAT.AG.LocalSemanticReconstruction.G122FixedComparisonLocalSlice.read_generatedBarBeta"
+    - "AAT.AG.LocalSemanticReconstruction.G122FixedComparisonLocalSlice.read_identityBarBeta"
+    - "AAT.AG.LocalSemanticReconstruction.G122FixedComparisonLocalSlice.read_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.G122FixedComparisonLocalSlice.assemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.G122FixedComparisonLocalSlice.semanticEquivLocal"
+  claim_mapping:
+    source_labels:
+      - "fixed target A: finite local values for the fixed G-122 comparison case"
+      - "fixed target B/C: Hom-level read/assemble and exact recovery of the three fixed cases"
+    conjuncts:
+      - "the global side is the actual image of all three fixed comparison codes"
+      - "the local side is an explicit finite two-constructor type"
+      - "read sends barAlpha and constant-one barBeta to the same class"
+      - "read sends generated barBeta to the distinct class"
+      - "read after assemble and assemble after read are identities"
+    undischarged_assumptions:
+      - "extend the local reading to arbitrary expanded G-122 Homs"
+      - "construct source-generated finite probes that separate the required Hom range"
+      - "construct object-level G-122 local assembly and a category equivalence"
+      - "recover the full and base-fixing comparison groups from local data"
+      - "discharge final four-family separation and assembly"
+    acceptance_point: "finite equivalence for the fixed semantic Hom image only; no arbitrary-Hom or category-wide local equivalence claim"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "fixed finite-axis-fold direct/via-base Hom in the expanded category"
+      - "accepted three-code semantic evaluator"
+    proved_dependencies:
+      - "finiteAxisFoldGeneratedBarBeta_ne_barAlpha"
+      - "finiteAxisFoldIdentityBarBeta_eq_barAlpha"
+    discharge_required:
+      - "finite local value"
+      - "exact readback of each fixed code"
+      - "both inverse laws"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "semantic image membership / witness is one of the accepted three codes"
+      - "local assembly / chooses the two actual representative Homs"
+      - "global recovery / exact case analysis on semantic image provenance"
+    unresolved:
+      - "arbitrary expanded Hom separation and object assembly"
+  proof_use:
+    used:
+      - "generated barBeta and barAlpha inequality"
+      - "constant-one barBeta and barAlpha equality"
+      - "Cycle 45 actual Hom aliases"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "provides an actual finite local Hom slice with two-sided reconstruction while preserving the evaluator's noninjectivity"
+  vacuity: "both local constructors assemble to distinct actual Homs, and every semantic-image member is recovered by case analysis on its accepted code witness"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122FixedComparisonLocalSlice.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122FixedComparisonLocalSlice.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122FixedComparisonLocalSlice: pass (4328 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122FixedComparisonLocalSlice: 33 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "extend from the fixed semantic image to a nontrivial arbitrary-Hom local reading and discharge separation and assembly without storing completed morphisms in local values"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -4357,9 +4458,12 @@ audits:
   arbitrary observation carrier全体の有限encoding、残る三族との統合は未完了である。Cycle 45では、
   common G-122 original-cell fiberをgenerated endpointsを持つ圏へ充満忠実に埋め、固定比較の
   direct/via-base対象と3比較をactual Homとして固定した。これはfinal four-family categoryの
-  置換ではなく、G-122 finite probe、local-model同値、四族assemblyは未完了である。
+  置換ではなく、G-122 finite probe、local-model同値、四族assemblyは未完了である。Cycle 46では、
+  固定3コードのactual imageを意味上の2クラスからなる有限local valueと同値にし、Hom slice上の
+  read/assemble両逆を放電した。任意のexpanded Homと対象に対する同値は未完了である。
 - C の投影・正規化・比較群回復。Cycle 45で固定G-122の3比較はexpanded category内の
-  actual Homになったが、full comparison groupとbase-fixing subgroupのlocal recoveryは未完了である。
+  actual Homになり、Cycle 46でその固定semantic imageの有限local recoveryを構成したが、
+  full comparison groupとbase-fixing subgroupのlocal recoveryは未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
