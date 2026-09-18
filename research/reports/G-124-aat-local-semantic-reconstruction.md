@@ -5423,6 +5423,103 @@ audits:
   next_obligation: "recover comparison values beyond the carrier-parametric represented family or deliver a new arbitrary-Hom reconstruction with substantive separation, assembly, and common-surface connection in the same cycle"
 ```
 
+## Cycle 57: arbitrary-carrier kernel reconstruction
+
+```yaml
+cycle: 57
+status: implementation-complete-review-pending
+branch: codex/4711-g124-arbitrary-carrier-kernel-reconstruction
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 6e0058d6e9ab25e7b4a8d6a1d7ef199754a012d5
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 56 audit: PR comment 5733511615; acceptance: Issue comment 5733526143; Cycle 57 selection: Issue comment 5733557769"
+  proof_dag_predecessors:
+    - "Cycle 56 carrier-parametric comparison and dependent displayed-bundle reconstruction"
+    - "accepted arbitrary Extension-permutation actual section and backward projection"
+    - "accepted finite-carrier and exact-support noncoverage witnesses"
+  proof_obligation: "remove the finite-carrier assumption from the primitive permutation section's faithfulness; reconstruct every carrier-relative actual local-fiber-kernel image multiplicatively from source permutations and from stored-backward observations; connect explicit Nat and Set Nat witnesses outside the prior represented unions"
+  selection_reason: "this moves from finite comparison tables to an arbitrary-carrier actual kernel fragment, proves separation and two distinct inverse surfaces, and records strict noncoverage rather than adding one more isolated finite carrier"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122ArbitraryCarrierKernelReconstruction.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "canonical primitive probes separate Equiv.Perm E for every Type E; actual stored-backward projection then proves the arbitrary-carrier local-fiber-kernel section injective; source permutations reconstruct its actual range as a multiplicative equivalence, and the actual range reconstructs its observed-action range as a second multiplicative equivalence; the carrier-indexed union properly contains all finite-carrier lookup-table images via the Nat zero-one swap, while the represented Set Nat complement remains outside all exact-support carrier images"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.G122ArbitraryCarrierKernelReconstruction.sourceContextObjectPermHom_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122ArbitraryCarrierKernelReconstruction.localFiberKernelSection_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122ArbitraryCarrierKernelReconstruction.source_existsUnique"
+    - "AAT.AG.LocalSemanticReconstruction.G122ArbitraryCarrierKernelReconstruction.read_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.G122ArbitraryCarrierKernelReconstruction.assemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.G122ArbitraryCarrierKernelReconstruction.sourceActualMulEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122ArbitraryCarrierKernelReconstruction.backwardObservation_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.G122ArbitraryCarrierKernelReconstruction.backwardObservationHom_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122ArbitraryCarrierKernelReconstruction.actualObservedMulEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122ArbitraryCarrierKernelReconstruction.observedRead_observe"
+    - "AAT.AG.LocalSemanticReconstruction.G122ArbitraryCarrierKernelReconstruction.observe_observedRead"
+    - "AAT.AG.LocalSemanticReconstruction.G122ArbitraryCarrierKernelReconstruction.finiteCarrierImage_ssubset_arbitraryCarrierImage"
+    - "AAT.AG.LocalSemanticReconstruction.G122ArbitraryCarrierKernelReconstruction.powerSetComplement_not_mem_exactSupportCarrierUnion"
+    - "AAT.AG.LocalSemanticReconstruction.G122ArbitraryCarrierKernelReconstruction.reconstruction_and_strict_noncoverage"
+  claim_mapping:
+    conjuncts:
+      - "the primitive carrier is an arbitrary Type; no Fintype or DecidableEq premise is required for section faithfulness"
+      - "canonical source probes separate all source permutations"
+      - "stored-backward actual observations separate all values in the represented kernel image"
+      - "source permutations and the actual image satisfy read/assemble both ways and form a multiplicative equivalence"
+      - "actual image values and their observed-action image form a second multiplicative equivalence"
+      - "the arbitrary-carrier family properly contains the union of all finite-carrier lookup-table images"
+      - "the represented powerset-complement witness lies outside all exact-support carrier images"
+    undischarged_assumptions:
+      - "recover the full local-fiber kernel outside all arbitrary single-carrier permutation images"
+      - "recover the full comparison group and comparison restriction kernel"
+      - "extend reconstruction to arbitrary expanded G-122 Homs and objects"
+      - "discharge final four-family separation and assembly"
+    acceptance_point: "unrestricted carrier-relative kernel separation, multiplicative source/actual and actual/observation reconstruction, and two strict noncoverage connections in one cycle"
+    port_status: unported
+audits:
+  material_premises:
+    proved_dependencies:
+      - "primitive Extension probe evaluation"
+      - "fixed source-to-actual context equivalence"
+      - "faithful full local-fiber backward projection"
+      - "accepted Nat and Set Nat source-owned obstruction witnesses"
+    discharge_required:
+      - "source permutation injectivity without finiteness"
+      - "actual section injectivity through stored-backward observation"
+      - "both source/actual inverse laws and multiplicativity"
+      - "actual/observed range inverse laws and multiplicativity"
+      - "proper finite-carrier-union inclusion and exact-support nonmembership"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "source separation / evaluation on independently constructed canonical probes"
+      - "actual separation / stored-backward projection and fixed-route conjugation"
+      - "strictness / explicit Nat and Set Nat source recipes"
+    unresolved:
+      - "independent local presentation of the whole actual kernel"
+  proof_use:
+    used:
+      - "Cycle 56 fixed-route conjugation injectivity"
+      - "accepted arbitrary-carrier local-fiber-kernel section"
+      - "accepted finite-carrier and exact-support obstruction theorems"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "removes an artificial finiteness premise, gives substantive multiplicative reconstruction on two actual surfaces, and proves explicit strict progress beyond both earlier represented unions"
+  vacuity: "source syntax is only Equiv.Perm E; actual range witnesses occur only in codomain subtypes, and the separating Nat and Set Nat values are fixed source recipes already proved outside the older unions"
+  four_lane_question: "Does removing finiteness from the primitive Extension carrier yield faithful multiplicative reconstruction of each actual permutation-kernel image from source permutations, with two-sided stored-backward observation recovery and explicit Nat and Set Nat witnesses outside the prior finite-carrier and exact-support unions?"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122ArbitraryCarrierKernelReconstruction.lean: pass"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122ArbitraryCarrierKernelReconstruction: 23 declarations, standard axioms only"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122ArbitraryCarrierKernelReconstruction.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122ArbitraryCarrierKernelReconstruction: pass (4428 jobs)"
+  blocking_findings: []
+  next_obligation: "recover a multi-carrier or full actual kernel surface beyond single-carrier permutation images, or extend the same substantive separation and assembly to arbitrary expanded G-122 Homs in one cycle"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -5510,8 +5607,12 @@ audits:
   canonical section code一意性を得た。同じmoduleで
   displayed orbit分離・両逆、ambient actual作用との一致、任意二点間の一意変位、equivariance、
   dependent total-space両逆まで接続した。
-  carrier-parametric represented family外、displayed C₂外のfull kernel、arbitrary Hom、四族統合は
-  未完了である。
+  Cycle 57ではprimitive Extension carrierの有限性を外し、任意の型`E`上の全置換がactual
+  local-fiber kernelへ忠実に入ることをcanonical probeとstored-backward観測から証明した。
+  source置換とactual像、actual像とobserved-action像の二つの乗法同値と両逆を構成し、
+  `Nat` zero-one swapによる全finite-carrier像unionのproper inclusion、`Set Nat` complementが
+  全exact-support像unionの外に残ることまで同じsurfaceへ接続した。
+  arbitrary single-carrier permutation像の外を含むfull kernel、arbitrary Hom、四族統合は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
