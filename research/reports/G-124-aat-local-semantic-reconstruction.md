@@ -107,12 +107,14 @@
   merge commit `b07683e791c918ec43b282eb949e7b1555021366`
 - Cycle 49 accepted PR: [#4762](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4762),
   merge commit `90adf1b8f30a65a0b41555d6e64280f7013e27fd`
+- Cycle 50 accepted PR: [#4763](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4763),
+  merge commit `7036cf07bbbf31add86972f36d46cf3ec093620f`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: 独立な三軸tableと`Fin 3` Extension tableの組から36要素のactual
-  normalized-comparison imageを両逆で回復し、各像のcanonical section codeの一意性と
-  full actual restriction-kernel torsorを同一surfaceへ接続する
-- next proof obligation: 36要素のmixed image外を含むfull comparison groupとfull kernelを
+- current proof obligation: 独立な三軸table、`Fin 3` Extension table、`Nat` exact-support/parity
+  normal formからcarrier-separated actual normalized-comparison imageを両逆で回復し、Cycle 50像の
+  strictな拡張、canonical section codeの一意性、full-kernel torsor接続を同時に証明する
+- next proof obligation: carrier-separated image外を含むfull comparison groupとfull kernelを
   local dataから回復し、arbitrary expanded Homと四族の共通再構成へ接続する
 
 ## Cycle 1 — rejected
@@ -4830,6 +4832,106 @@ audits:
   next_obligation: "recover a further independent residual component or the full comparison group and full kernel from local data, then extend the same reconstruction to arbitrary expanded Homs and the four-family surface"
 ```
 
+## Cycle 51 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 51
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 7036cf07bbbf31add86972f36d46cf3ec093620f
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 50 audit: PR comment 5731518187; acceptance: Issue comment 5731528601; Cycle 51 selection: Issue comment 5731565896"
+  proof_dag_predecessors:
+    - "Cycle 50 axis-and-Fin-3-Extension comparison reconstruction"
+    - "accepted Nat exact-support/parity normal form and actual intrinsic-image equivalence"
+    - "accepted arbitrary-carrier source probe faithfulness"
+    - "accepted canonical lift and full actual restriction-kernel torsor theorem"
+  proof_obligation: "reconstruct a carrier-separated actual normalized-comparison image from independent axis, Fin 3 Extension, and Nat exact-support/parity data; prove both inverse laws, strict enlargement of Cycle 50, unique canonical-section code, and the represented-fiber full-kernel torsor"
+  selection_reason: "this adds a genuinely independent carrier direction, proves cross-carrier noninterference and a strict image inclusion, and bundles reconstruction, separation, section uniqueness, and fiber action in one auditable cycle"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122CarrierSeparatedComparisonLocalModel.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "carrier-specific source probes prove that the Fin 3 and Nat actions do not interfere; axis projection and stripped backward observation recover all three independent components; assemble/read are inverse; the Cycle 50 image embeds through the identity Nat code and a source-owned Nat swap lies outside it; every represented canonical section has a unique carrier-separated code and every lift in its fiber has a unique full-kernel displacement"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.G122CarrierSeparatedComparisonLocalModel.sourcePairAction_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122CarrierSeparatedComparisonLocalModel.carrierBackwardAction_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122CarrierSeparatedComparisonLocalModel.localAut_axisProjection"
+    - "AAT.AG.LocalSemanticReconstruction.G122CarrierSeparatedComparisonLocalModel.localAut_backwardObservation"
+    - "AAT.AG.LocalSemanticReconstruction.G122CarrierSeparatedComparisonLocalModel.localAut_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122CarrierSeparatedComparisonLocalModel.read_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.G122CarrierSeparatedComparisonLocalModel.assemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.G122CarrierSeparatedComparisonLocalModel.localComparisonEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122CarrierSeparatedComparisonLocalModel.mixedImageEmbedding"
+    - "AAT.AG.LocalSemanticReconstruction.G122CarrierSeparatedComparisonLocalModel.mixedImageEmbedding_not_surjective"
+    - "AAT.AG.LocalSemanticReconstruction.G122CarrierSeparatedComparisonLocalModel.canonicalSection_unique_localCode"
+    - "AAT.AG.LocalSemanticReconstruction.G122CarrierSeparatedComparisonLocalModel.carrierSeparated_fullKernel_reconstruction"
+  claim_mapping:
+    conjuncts:
+      - "the local code contains independent axis, finite-carrier, and Nat exact-support/parity data, with no actual automorphism, comparison, lift, range witness, or kernel element"
+      - "canonical Fin 3 and Nat probes prove cross-carrier noninterference and jointly separate the two Extension components"
+      - "axis projection plus stripped stored-backward observation recover all three components, and read/assemble are inverse in both directions"
+      - "the Cycle 50 image embeds through the identity Nat code"
+      - "the explicit source-owned Nat zero-one swap proves that this embedding is not surjective"
+      - "each represented canonical section has exactly one carrier-separated code"
+      - "each represented lift has exactly one displacement from that canonical lift by the full actual kernel"
+    undischarged_assumptions:
+      - "recover comparisons outside the carrier-separated image"
+      - "recover arbitrary full-kernel elements from independent local data"
+      - "extend reconstruction to arbitrary expanded G-122 Homs and objects"
+      - "discharge final four-family separation and assembly"
+    acceptance_point: "strict carrier-separated enlargement of the Cycle 50 image, with two-sided reconstruction, canonical-section uniqueness, and the accepted full-kernel torsor on each represented fiber"
+    port_status: unported
+audits:
+  material_premises:
+    proved_dependencies:
+      - "normalized axis section/projection and axis-removal equation"
+      - "independent Fin 3 Extension table decoder and backward action"
+      - "independent Nat exact-support/parity normal form and actual evaluation"
+      - "fixed source-to-actual context equivalence and backward-action faithfulness"
+      - "canonical section right inverse and full-kernel simply transitive action"
+    discharge_required:
+      - "Fin 3 actions fix Nat probes and Nat actions fix Fin 3 probes"
+      - "joint carrier action injectivity and actual observation separation"
+      - "both inverse laws and strict non-surjectivity of the Cycle 50 embedding"
+      - "unique local canonical-section code and full-fiber connection"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "local code / independent axis, Fin 3 finite table, and Nat exact-support/parity data"
+      - "carrier separation / primitive source probes transported through the fixed context equivalence"
+      - "semantic readback / actual axis projection and stripped stored-backward observation"
+      - "strict enlargement / explicit source-owned Nat zero-one swap"
+      - "fiber displacement / accepted actual restriction-kernel torsor"
+    unresolved:
+      - "comparison image complement and independent full-kernel local recovery"
+  proof_use:
+    used:
+      - "axis section readback and removal"
+      - "Fin 3 and Nat source-action faithfulness"
+      - "Nat normal-form evaluation injectivity and surjectivity"
+      - "canonical section right inverse"
+      - "full actual kernel action existence and uniqueness"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "strictly enlarges the finite mixed image by an independent carrier-relative family and includes cross-carrier separation, both inverse laws, strict inclusion, section uniqueness, and fiber connection in the same cycle"
+  vacuity: "the Cycle 50 image embeds, while a concrete Nat zero-one swap is proved outside it; both carrier components are recovered from actual observations rather than stored semantic values"
+  four_lane_question: "Does an independent three-axis table, Fin 3 Extension table, and faithful Nat exact-support/parity normal form reconstruct a carrier-separated actual normalized-comparison image with both inverse laws, strictly extend Cycle 50 by a source-owned Nat direction, uniquely determine canonical-section codes, and connect every represented lift to the full-kernel torsor without storing completed semantics?"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122CarrierSeparatedComparisonLocalModel.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122CarrierSeparatedComparisonLocalModel.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122CarrierSeparatedComparisonLocalModel: pass (4417 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122CarrierSeparatedComparisonLocalModel: 59 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "recover a further independent carrier-relative component or the full comparison group and full kernel from local data, then extend reconstruction to arbitrary expanded Homs and the four-family surface"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -4893,7 +4995,11 @@ audits:
   `Fin 3` Extension forward/backward tableを組み合わせ、actual axis projectionとaxis除去後の
   stored backward-context actionから両成分を一意に読み戻した。read/assemble両逆、36要素性、
   canonical sectionのmixed code一意性、各represented fiberのfull-kernel torsor接続を同梱した。
-  36要素像の外側、full kernelの独立local recovery、arbitrary Hom、四族統合は未完了である。
+  Cycle 51では、さらに独立な`Nat` exact-support/parity normal formを加え、carrier固有probeによる
+  `Fin 3`成分との非干渉、actual observationからの三成分分離、read/assemble両逆を証明した。
+  Cycle 50像をidentity `Nat` codeで埋め込み、source-owned `Nat` zero-one swapがその像外にあること、
+  canonical section code一意性、各represented fiberのfull-kernel torsor接続まで同梱した。
+  carrier-separated像の外側、full kernelの独立local recovery、arbitrary Hom、四族統合は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
