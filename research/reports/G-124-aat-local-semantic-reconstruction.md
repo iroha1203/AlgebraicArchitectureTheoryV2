@@ -67,12 +67,14 @@
   merge commit `7275231b3815050a2d663b44178705639c958062`
 - Cycle 29 accepted PR: [#4742](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4742),
   merge commit `7433561e506d5aef1d8312a18642e83bbaf70d16`
+- Cycle 30 accepted PR: [#4743](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4743),
+  merge commit `f7c3706b365d1b0f2cbeb25d890866f10d716c41`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: general observation-preserving lens Homをfull finite fiber上の
-  determination・effectivenessへ接続し、Cycle 25のfull-faithful/assembly経路へ接続する
-- next proof obligation: taggedまたはG-122 branchの独立local modelとprimitive readingを
-  構成し、四分枝統合へ接続する
+- current proof obligation: actual tagged source-choice Aut subgroupを、actual finite-subset poset上の
+  有限table反変図式のcompatible section群と同値にし、Cycle 17--18の構成と同定する
+- next proof obligation: canonical-normalizationを含むfull tagged category、G-122 branch、
+  および四分枝の共通 `Lambda_Theta` / `M_Theta` / `N_Theta` / `D_Theta`へ接続する
 
 ## Cycle 1 — rejected
 
@@ -2906,6 +2908,110 @@ audits:
   next_obligation: "construct a tagged or G-122 independent local-model equivalence and connect its primitive reading to the common four-family reconstruction surface"
 ```
 
+Cycle 30 / PR #4743 は final head
+`bb01d1ae750721580783da4e02bfe402140c38c6` で受理した。fresh Math A/B + Lean A/Bで
+中心findingはなく、Lean Aのみが指摘したdocstringのtraceability不足は限定修正後の
+fresh direct checkで解消を確認した。CIは7/7 success、最終監査はPR comment `5725264524`、
+merge commitは `f7c3706b365d1b0f2cbeb25d890866f10d716c41` である。
+
+## Cycle 31 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 31
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: f7c3706b365d1b0f2cbeb25d890866f10d716c41
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 30 accepted evidence: PR comment 5725264524; Cycle 31 selection: Issue comment 5725305206"
+  proof_dag_predecessors:
+    - "Cycle 17 actual tagged source-choice automorphism subgroup and its noncomputable effectiveness obstruction"
+    - "Cycle 18 accepted group equivalence between the actual subgroup and coherent all-finite tables"
+    - "Cycle 2 actual finite-subset tables, restriction equations, and singleton assembly"
+  proof_obligation: "actual taggedSourceChoiceAutSubgroupをone-objectのglobal categoryとし、actual finite-subset posetをrestriction index、各成分を有限LocalTagTable、包含射をprimitive restrictionとする反変図式を構成する。global witnessを持たないcompatible section群とactual subgroupのaccepted MulEquivをdeloopし、Hom separation・assemblyとHom read/assembleのCycle 18 constructorへの一致を固定する"
+  selection_reason: "Cycle 29--30でprotocol/lens一般Homの有限決定性を放電したため、固定GOAL B/E1に残るactual tagged branchの主同値への直接接続を次のnodeとする"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeLocalModelEquivalence.lean"
+  risks:
+    - "local objectやmorphismにactual global automorphismまたはextension witnessを格納しないこと"
+    - "accepted subgroupを拡張してfull tagged normalization categoryまで放電したと言わないこと"
+    - "noncomputableな同値とCycle 17のactual-output effectiveness blockerを混同しないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the actual finite-subset poset now indexes a contravariant diagram whose component at S is the finite Bool table on S and whose arrows are primitive restrictions; its compatible-section group contains only those local tables and equations, and the accepted actual tagged source-choice subgroup is categorically equivalent to the delooping of that section group with Hom inverse fixed by the Cycle 18 constructor"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeLocalModelEquivalence.restrictionHom"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeLocalModelEquivalence.localTableDiagram"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeLocalModelEquivalence.localTableDiagram_finite"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeLocalModelEquivalence.localSection_naturality"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeLocalModelEquivalence.reading"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeLocalModelEquivalence.reading_map_value"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeLocalModelEquivalence.morphismSeparates"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeLocalModelEquivalence.morphismAssembles"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeLocalModelEquivalence.objectAssembles"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeLocalModelEquivalence.equivalence"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeLocalModelEquivalence.homEquiv_apply"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeLocalModelEquivalence.homEquiv_symm"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeLocalModelEquivalence.homEquiv_symm_eq_accepted_constructor"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL B: actual tagged source-choice Hom sliceの独立local modelとprimitive reading同値"
+      - "固定 GOAL E1b: C2^Omega finite-restriction reconstructionとBの主同値によるsource-choice recoveryの同定"
+    conjuncts:
+      - "the outer restriction index is the actual poset of finite subsets"
+      - "the local component at S is the finite type LocalTagTable S and inclusion maps are primitive restrictions"
+      - "compatible sections contain only finite tables and restriction equations, with no global automorphism or extension witness"
+      - "the accepted actual-subgroup/coherent-family MulEquiv supplies the categorical delooping equivalence"
+      - "morphism separation, morphism assembly, and the explicitly limited one-object assembly are proved separately"
+      - "Hom assembly is characterized both by the inverse accepted MulEquiv and by the Cycle 18 accepted constructor"
+    undischarged_assumptions:
+      - "canonical-normalization arrows and the full tagged category"
+      - "the G-122 branch and its local-model equivalence"
+      - "the final common Lambda_Theta, M_Theta, N_Theta, and D_Theta"
+      - "computable actual-output effectiveness for source-choice assembly"
+    acceptance_point: "actual tagged source-choice automorphism Hom slice only; no full tagged normalization, G-122, all-four equivalence, or computability claim"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "the accepted actual taggedSourceChoiceAutSubgroup"
+      - "the actual finite-subset restriction poset and its finite LocalTagTable components"
+      - "the compatible-section group defined by all restriction equations"
+    direction_hypothesis: []
+    discharge_required:
+      - "injectivity and surjectivity of the primitive Hom reading"
+      - "finite-valued contravariant restriction diagram and section naturality"
+      - "identification of the Hom inverse with the accepted constructor"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "Hom reconstruction / the accepted taggedSourceChoiceSubgroupMulEquivCoherentFamily"
+      - "finite-local diagram / actual finite subsets, finite Bool tables, and primitive restrictions"
+    unresolved:
+      - "full tagged normalization and all-four integration"
+      - "actual-output computation"
+  proof_use:
+    used:
+      - "taggedSourceChoiceSubgroupMulEquivCoherentFamily and its finite-value theorem"
+      - "taggedSourceChoiceSubgroupMulEquivCoherentFamily_symm"
+      - "TagChange.LocalTagTable.restrict, finite_value_type, and CoherentFamily.coherent"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "actual tagged source-choice automorphism subgroup Hom slice, actual finite-subset restriction index, finite local tables, and compatible sections"
+  vacuity: "the global Hom type is the accepted actual automorphism subgroup; every local component is finite and only its compatible section family is delooped; fullness uses the inverse accepted equivalence rather than a stored witness"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/TagChangeLocalModelEquivalence.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeLocalModelEquivalence: pass (4353 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeLocalModelEquivalence: 21 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "extend the tagged reconstruction from the source-choice automorphism Hom slice to canonical-normalization arrows or construct the G-122 independent local-model branch, then integrate the common four-family reconstruction surface without weakening the fixed target"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -2920,12 +3026,15 @@ audits:
   finite determinationと有限探索effectiveness、Cycle 28はactual protocol invertible
   changeのexact graph criteriaとeffectiveness、Cycle 29はgeneral observation-aware protocol
   Homのfull tagged tableによるfinite determinationと明示的有限data下のeffectiveness、
-  Cycle 30はlens一般Homのfull fiber determinationとtotal effectivenessに限る。
+  Cycle 30はlens一般Homのfull fiber determinationとtotal effectiveness、Cycle 31はactual tagged
+  source-choice Aut subgroupのone-object Hom sliceと独立local modelの同値に限る。
   arbitrary observation carrier全体の有限encodingと四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
-- E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の同定。
+- E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
+  Hom-slice同定はCycle 31で接続した。canonical-normalizationを含むfull tagged categoryと
+  四分枝共通の主同値への接続は未完了である。
 - E2 の product-lens / protocol 可逆変更層はCycle 27--28で共通
   `FiniteReading`/Dへ接続済み。Cycle 29でgeneral observation-aware protocol Homも
   full tagged table上の決定性・effectivenessへ接続し、Cycle 30でlens一般意味保存射層も
