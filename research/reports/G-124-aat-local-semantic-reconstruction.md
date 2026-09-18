@@ -6221,6 +6221,7 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.G122CompleteGraphKernelReconstruction.readRawComparisonGraphs_injective"
     - "AAT.AG.LocalSemanticReconstruction.G122CompleteGraphKernelReconstruction.readSourceKernel_eq_of_graph_eq"
     - "AAT.AG.LocalSemanticReconstruction.G122CompleteGraphKernelReconstruction.assembledGraphs_eq_iff"
+    - "AAT.AG.LocalSemanticReconstruction.G122CompleteGraphKernelReconstruction.graphs_assembleSourceKernel_readSourceKernel"
     - "AAT.AG.LocalSemanticReconstruction.G122CompleteGraphKernelReconstruction.readSourceKernel_assembleSourceKernel_with_graph_separation"
   evidence:
     - "readCompleteMapGraphs_injective"
@@ -6249,8 +6250,7 @@ result:
       - "fixed raw comparison graphs separate all raw comparisons and determine full source-kernel coordinates"
       - "complete graphs of assembled full source-kernel codes agree exactly when the codes agree"
       - "accepted source-kernel read and assembly retain both inverse laws"
-    undischarged_assumptions:
-      - "the coordinate specialization retains the accepted fixed finite-axis-fold barAlpha and prior source-kernel equivalence"
+    undischarged_assumptions: []
     acceptance_point: "the cycle discharges arbitrary complete-Hom joint separation and carries it through the accepted fixed raw-comparison coordinate equivalence with both inverse laws in the same change"
     port_status: not-applicable
   nonclaims:
@@ -6288,12 +6288,10 @@ audits:
       - "CompleteMapGraphs.primitive.context is retained for compatibility with the Cycle 63 five-map bundle; complete separation uses the independently stored bidirectional selected-context actions instead"
   structure_field_escape: none-found
   route_integrity: pass
-  target_fitting:
-    result: none-found
-    reason: "the cycle supplies dependent computational graphs, proves arbitrary-Hom joint separation, and immediately connects it to accepted full-kernel reconstruction without claiming arbitrary-graph assembly"
-  vacuity:
-    result: none-found
-    reason: "the theorem quantifies over every complete geometry Hom and every fixed raw comparison, and proves injectivity through computational fields rather than a stored completed morphism"
+  target_fitting: none-found
+  target_fitting_reason: "the cycle supplies dependent computational graphs, proves arbitrary-Hom joint separation, and immediately connects it to accepted full-kernel reconstruction without claiming arbitrary-graph assembly"
+  vacuity: none-found
+  vacuity_reason: "the theorem quantifies over every complete geometry Hom and every fixed raw comparison, and proves injectivity through computational fields rather than a stored completed morphism"
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   four_lane_question: "Do total-functional Bool graphs of every computational component jointly separate arbitrary complete geometry morphisms, including the dependent maps via tagged sums, and does that separation determine the accepted full direct normalization-kernel coordinates of every fixed G-122 raw comparison while retaining the existing two-sided assembly?"
