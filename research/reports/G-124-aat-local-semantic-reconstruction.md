@@ -57,12 +57,14 @@
   merge commit `2b2ec81ed51cee17a1c89296712680bae294ca1b`
 - Cycle 24 accepted PR: [#4737](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4737),
   merge commit `aa6811409a7f69203f33a741a69654606ba3cf37`
+- Cycle 25 accepted PR: [#4738](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4738),
+  merge commit `1a8f4694c1b80f0060feef449ea5b095e170e932`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: lens branchの有限reference fiber local modelと、`res`/`ext`
-  およびproduct lensから得られる圏同値を構成する
-- next proof obligation: lens finite decoderの計算式を局所圏側で固定し、受理済み
+- current proof obligation: lens finite decoderの計算式を局所圏側で固定し、受理済み
   Karoubi restriction・retract・Arrow equivalenceと接続する
+- next proof obligation: taggedまたはG-122 branchについて、独立local modelとprimitive
+  readingの圏同値を構成し、四分枝統合へ接続する
 
 ## Cycle 1 — rejected
 
@@ -2336,6 +2338,113 @@ audits:
   next_obligation: "connect the accepted lens finite decoder to the fiber local category with exact computation APIs, then transport Karoubi restriction, retract generation, and Arrow equivalence"
 ```
 
+Cycle 25 / PR #4738 は、修正後 final head
+`92f61f44e94f4146f1e40c08c81484ba69d45e73` で受理した。Math Aの非中心finding
+1件によりProp-valued 6宣言を`def`から`theorem`へ修正し、freshな直接対応確認が
+「有資格で解消」と判定した。他3 laneは`No major findings`、CI 7/7 success。
+最終監査は PR comment `5724024182`、merge commit は
+`1a8f4694c1b80f0060feef449ea5b095e170e932`である。
+
+## Cycle 26 selection and result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 26
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 1a8f4694c1b80f0060feef449ea5b095e170e932
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 25 accepted evidence: PR comment 5724024182; Cycle 26 selection: Issue comment 5724049723"
+  proof_dag_predecessors:
+    - "Cycle 25 lensSemanticFiberEquivalence and explicit product-lens assembler/readback"
+    - "accepted LensRealization.lensDecoder and finite-table computation laws"
+    - "accepted lensKaroubiReconstructionEquivalence and restriction natural isomorphism"
+    - "accepted lensRetractGeneratedBy and lensKaroubiArrowReconstructionEquivalence"
+  proof_obligation: "accepted finite lens decoderをactual finite-fiber local readingと合成し、productFiberEquivを通じたobjectとmorphism tableの計算式を示す。accepted Karoubi equivalenceとrestriction natural isomorphismをFintypeCatへ移し、Cycle 25の明示的assembler/readbackからlocal retract generationを証明し、任意のlocal mapを保つArrow equivalenceを構成する"
+  selection_reason: "Cycle 25が残した直接のE2 coherence nodeであり、他分枝との統合前にlens finite presentationを独立local category上で計算可能な形へ接続する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/LensFiberKaroubiCoherence.lean"
+  risks:
+    - "object computationにactual productFiberEquivを使い、subtype fiberとcomplementを断言で同一視しないこと"
+    - "morphism computationが元のfinite generator tableを露出すること"
+    - "retractを仮定せず、Cycle 25のlocal assembler/readbackとaccepted semantic retractから構成すること"
+    - "非可逆local mapを保持し、Arrow coherenceをisomorphism-only statementへ弱めないこと"
+    - "effectiveness、D、他分枝、final all-four completionを先取りしないこと"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "the accepted finite lens presentation decoder now computes in the independent FintypeCat local category, and the accepted Karoubi restriction, explicit retract generation, and Arrow reconstruction are transported along the actual Cycle 25 equivalence"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.lensFiberFiniteDecoder"
+    - "AAT.AG.LocalSemanticReconstruction.lensFiberFiniteDecoderObjectIso"
+    - "AAT.AG.LocalSemanticReconstruction.lensFiberFiniteDecoderObjectIso_hom_apply"
+    - "AAT.AG.LocalSemanticReconstruction.lensFiberFiniteDecoder_map_under_object_iso"
+    - "AAT.AG.LocalSemanticReconstruction.lensKaroubiFiberEquivalence"
+    - "AAT.AG.LocalSemanticReconstruction.lensKaroubiFiberRestrictionIso"
+    - "AAT.AG.LocalSemanticReconstruction.lensFiberFiniteDecoder_retractGeneratedBy"
+    - "AAT.AG.LocalSemanticReconstruction.lensKaroubiFiberArrowEquivalence"
+  claim_mapping:
+    source_labels:
+      - "固定 GOAL E2: lens finite determining tableと既存Karoubi reconstructionの整合"
+      - "固定 GOAL B: primitive local readingのactual local-model categoryへの接続"
+    conjuncts:
+      - "the finite presentation decoder lands in the actual independent fiber local category"
+      - "decoded objects are identified with their finite complements by productFiberEquiv"
+      - "decoded morphisms compute as the original finite generator table under the object comparisons"
+      - "the accepted Karoubi equivalence restricts to the local finite decoder"
+      - "every local model is an explicitly constructed retract of a decoded presentation reading"
+      - "Arrow reconstruction retains arbitrary local maps, including noninvertible maps"
+    undischarged_assumptions:
+      - "common FiniteReading effectiveness and the D determining-set application to lens invertible changes"
+      - "tagged and G-122 independent local-model equivalences"
+      - "the final common Lambda_Theta, M_Theta, N_Theta, and D_Theta"
+    acceptance_point: "lens-branch finite-decoder/Karoubi coherence on FintypeCat only; no effectiveness, other-family, or all-four completion claim"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "fixed LensFamilyInput view type and reference value"
+      - "accepted finite LensPresentation decoder and its semantic reconstruction"
+      - "Cycle 25 semantic-to-fiber local equivalence"
+      - "accepted semantic Karoubi restriction, retract generation, and Arrow equivalence"
+    direction_hypothesis: []
+    discharge_required:
+      - "local decoder computation / productFiberEquiv and the actual LensPresentation morphism table"
+      - "restriction coherence / associator plus whiskering of the accepted restriction Iso"
+      - "local retract generation / explicit Cycle 25 product assembler/readback Iso plus mapped semantic retract"
+      - "Arrow coherence / mapArrowEquivalence applied to the actual semantic-fiber equivalence"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "local finite decoder / actual LensRealization.lensDecoder followed by lensSemanticFiberReading"
+      - "object and map computation / actual productFiberEquiv and finite generator table"
+      - "local retract / constructed per local object from lensFiberModelRealizationIso and accepted semantic retract maps"
+      - "Karoubi and Arrow equivalences / transported accepted equivalences"
+    unresolved:
+      - "common FiniteReading effectiveness and D decision procedure"
+      - "tagged/G-122 local-model equivalences and all-four integration"
+  proof_use:
+    used:
+      - "LensRealization.lensDecoder and productFiberEquiv"
+      - "Cycle 25 lensSemanticFiberEquivalence and lensFiberModelRealizationIso"
+      - "accepted lens Karoubi restriction Iso, retract generation, and Arrow equivalence"
+      - "functor map laws, associator, whiskering, and mapArrowEquivalence"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "direct lens-branch finite-presentation/Karoubi coherence with actual local object and table computation APIs"
+  vacuity: "arbitrary finite complements, generator maps, retract maps, and noninvertible Arrow morphisms are retained; no terminal filler or stored certificate is introduced"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/LensFiberKaroubiCoherence.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.LensFiberKaroubiCoherence: pass (targeted dependency closure only)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction: 8 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct the tagged or G-122 independent local-model equivalence and connect it to the common four-family reading without weakening the fixed target"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -2345,10 +2454,11 @@ audits:
   finite-state diagram、Cycle 22 は protocol branch の observation-aware local Hom と
   full faithfulness、Cycle 23 は同branchのobject assemblyと圏同値、Cycle 24 はactual finite
   decoderの計算式とKaroubi restriction・retract・Arrow coherence、Cycle 25はlens branchの
-  finite-fiber Hom/object assemblyと圏同値に限る。arbitrary observationのeffective finite
-  encoding、lensのdecoder/Karoubi接続、四分枝統合は未完了である。
+  finite-fiber Hom/object assemblyと圏同値、Cycle 26はlens branchのfinite decoder計算と
+  Karoubi restriction・retract・Arrow coherenceに限る。arbitrary observationのeffective
+  finite encoding、四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の同定。
-- E2 の lens・protocol 二層の決定性と既存 Karoubi 再構成との整合。
+- E2 の lens・protocol 二層の決定性の共通`FiniteReading`/Dへの接続。
