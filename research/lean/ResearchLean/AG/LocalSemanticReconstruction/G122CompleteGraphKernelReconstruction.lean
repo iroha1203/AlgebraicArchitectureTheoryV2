@@ -11,9 +11,19 @@ automorphism.  This module reads the actual source automorphism through the
 complete total-functional graph bundle and proves that those graphs separate
 all raw comparisons and all accepted source-kernel codes.
 
-Thus equality of the primitive graph data determines the accepted coordinates,
-while the existing coordinate assembly retains both inverse laws.  The result
-does not claim that an arbitrary graph bundle is coherent or assemblable.
+Thus equality of the complete total-functional graph data determines the
+accepted coordinates, while the existing coordinate assembly retains both
+inverse laws.  The result does not claim that an arbitrary graph bundle is
+coherent or assemblable.
+
+## Implementation notes
+
+The graph reading is applied to the source automorphism supplied by the
+accepted raw-comparison equivalence.  Reading the entire raw comparison as an
+opaque value was rejected because it would hide the computational separation
+inside the input.  The source map is instead separated component by component,
+and injectivity of the accepted equivalence transports that result back to raw
+comparisons and their full source-kernel coordinates.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction

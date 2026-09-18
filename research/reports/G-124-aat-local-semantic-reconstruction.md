@@ -162,6 +162,7 @@ cycle: 2
 goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
 base_oid: 18540a67e277997376dc5833de4a608c6f526987
 tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
 selection:
   proof_state_ref: "Cycle 1 rejected evidence: PR comment 5717413267; Issue comment 5717413246"
   proof_dag_predecessors:
@@ -6179,6 +6180,7 @@ branch: codex/4711-g124-complete-geometry-graph-separation
 goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
 base_oid: c31914db8437c1798cf5799b722b80b270d16927
 tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
 selection:
   proof_state_ref: "Cycle 63 acceptance: Issue comment 5737027956; Cycle 64 selection: Issue comment 5737051626"
   proof_dag_predecessors:
@@ -6191,6 +6193,14 @@ selection:
   lean_targets:
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryFunctionGraphSeparation.lean"
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122CompleteGraphKernelReconstruction.lean"
+  risks:
+    - "tagged sigma equality might fail to recover dependent fiber maps"
+    - "object actions might fail to determine the selected-context equivalence"
+    - "a completed morphism or equivalent certificate might escape into graph data"
+    - "the fixed raw-comparison specialization might be overstated as arbitrary graph assembly"
+  unchecked:
+    - "coherence conditions and assembly for arbitrary CompleteMapGraphs values are outside this cycle"
+    - "an independent primitive syntax for the full direct normalization kernel is outside this cycle"
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: "the five Cycle 63 maps are enlarged by a separate lower Atom graph, bidirectional selected-context graphs, equation-index and equation-observable graphs, tagged operation and coordinate graphs, invariant and signature-axis graphs, and tagged geometry support/axis/observable graphs. Equality of this complete bundle reconstructs every literal computational condition and separates arbitrary GeometryTotalHom values. On the fixed G-122 raw comparison group, the source complete-graph reading is injective, graph equality determines the accepted full source-kernel coordinates, and assembled code graphs are equal exactly when the codes are equal; the accepted read/assemble inverse laws remain connected in the same module."
@@ -6200,6 +6210,9 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.taggedMap"
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.fiberMap_heq_of_taggedMap_eq"
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.fiberMap₂_heq_of_taggedMap_eq"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.equivFamily_heq_of_taggedMap_eq"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.ringEquivFamily_heq_of_taggedMap_eq"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.contextEquivalence_eq_of_object_maps_eq"
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.CompleteMapGraphs"
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.readCompleteMapGraphs"
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryFunctionGraphSeparation.inputConditions_of_graph_eq"
@@ -6209,20 +6222,61 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.G122CompleteGraphKernelReconstruction.readSourceKernel_eq_of_graph_eq"
     - "AAT.AG.LocalSemanticReconstruction.G122CompleteGraphKernelReconstruction.assembledGraphs_eq_iff"
     - "AAT.AG.LocalSemanticReconstruction.G122CompleteGraphKernelReconstruction.readSourceKernel_assembleSourceKernel_with_graph_separation"
+  evidence:
+    - "readCompleteMapGraphs_injective"
+    - "readRawComparisonGraphs_injective"
+    - "readSourceKernel_eq_of_graph_eq"
+    - "assembledGraphs_eq_iff"
+    - "graphs_assembleSourceKernel_readSourceKernel"
+    - "readSourceKernel_assembleSourceKernel_with_graph_separation"
   claim_mapping:
+    theorem_names:
+      - "readCompleteMapGraphs_injective"
+      - "readRawComparisonGraphs_injective"
+      - "readSourceKernel_eq_of_graph_eq"
+      - "assembledGraphs_eq_iff"
+      - "graphs_assembleSourceKernel_readSourceKernel"
+      - "readSourceKernel_assembleSourceKernel_with_graph_separation"
+    source_labels:
+      - "Cycle 64 fixed four-lane question"
+      - "G-124 Section B actual local reading and separation/assembly"
     conjuncts:
       - "raw graph fields contain Bool relations and total-functional Props, never a completed geometry morphism"
-      - "dependent operation, observable, coordinate, support, axis, and observable families are ordinary tagged-sigma functions before graph reading"
+      - "dependent operation, equation-observable, coordinate, support, geometry-axis, and geometry-observable families are ordinary tagged-sigma functions before graph reading"
       - "forward and backward context-object graphs determine the complete context equivalence by thinness"
       - "complete graph equality reconstructs the accepted literal computational conditions"
       - "the complete graph reading jointly separates arbitrary GeometryTotalHom values"
       - "fixed raw comparison graphs separate all raw comparisons and determine full source-kernel coordinates"
       - "complete graphs of assembled full source-kernel codes agree exactly when the codes agree"
       - "accepted source-kernel read and assembly retain both inverse laws"
+    undischarged_assumptions:
+      - "the coordinate specialization retains the accepted fixed finite-axis-fold barAlpha and prior source-kernel equivalence"
+    acceptance_point: "the cycle discharges arbitrary complete-Hom joint separation and carries it through the accepted fixed raw-comparison coordinate equivalence with both inverse laws in the same change"
+    port_status: not-applicable
   nonclaims:
     - "an arbitrary CompleteMapGraphs value satisfies the preservation and naturality laws"
     - "an arbitrary complete graph bundle assembles to a GeometryTotalHom"
     - "the full direct normalization kernel has an independent primitive local syntax"
+audits:
+  premise_delta:
+    discharged:
+      - "dependent tagged-map recovery / fiberMap_heq_of_taggedMap_eq and fiberMap₂_heq_of_taggedMap_eq"
+      - "dependent equivalence recovery / equivFamily_heq_of_taggedMap_eq and ringEquivFamily_heq_of_taggedMap_eq"
+      - "selected-context equivalence recovery / contextEquivalence_eq_of_object_maps_eq"
+      - "arbitrary complete-Hom joint separation / readCompleteMapGraphs_injective"
+      - "fixed raw-comparison and source-kernel-code graph separation / readRawComparisonGraphs_injective and assembledGraphs_eq_iff"
+    remaining:
+      - "arbitrary complete graph bundle coherence and assembly / not claimed"
+      - "independent primitive full-kernel syntax / not claimed"
+  certificate_provenance:
+    discharged:
+      - "all graph fields / direct evaluation of actual computational functions"
+      - "all dependent family equalities / tagged sigma function equality"
+      - "complete Hom equality / accepted computational extensionality spine"
+      - "source-kernel coordinate recovery / accepted raw-comparison source equivalence and source-kernel equivalence"
+    unresolved:
+      - "independent coherence conditions and assembly for arbitrary complete graph bundles"
+      - "primitive local presentation and assembly for arbitrary direct normalization-kernel elements"
   proof_use:
     used:
       - "GraphCode assemble/read recovery converts graph equality to equality of tagged functions"
@@ -6230,43 +6284,22 @@ result:
       - "thin selected-context categories recover functors and the complete context equivalence from object actions"
       - "the literal computational extensionality spine reconstructs complete GeometryTotalHom equality"
       - "the accepted raw-comparison source equivalence and source-kernel equivalence transport joint separation to full coordinates"
-    unused: []
+    unused:
+      - "CompleteMapGraphs.primitive.context is retained for compatibility with the Cycle 63 five-map bundle; complete separation uses the independently stored bidirectional selected-context actions instead"
   structure_field_escape: none-found
-audits:
-  material_premises:
-    ambient_boundary:
-      - "arbitrary Atom carrier and arbitrary source/target GeometryPackage values for complete-Hom separation"
-      - "fixed finite-axis-fold barAlpha raw comparison group only for the coordinate specialization"
-    direction_hypotheses:
-      - "each individual GraphCode carries only its total-functional row law"
-    proved_dependencies:
-      - "Cycle 63 arbitrary-function graph inverse laws"
-      - "GeometryTotalHomInputConditions.eq computational extensionality"
-      - "Cycle 61 fullSourceKernelEquiv inverse laws"
-    discharge_required:
-      - "dependent tagged-map recovery"
-      - "context-equivalence recovery from both object actions"
-      - "arbitrary complete-Hom joint separation"
-      - "fixed raw-comparison and source-kernel-code graph separation"
-    conclusion_equivalent_risk: []
-  certificate_provenance:
-    discharged:
-      - "all graph fields / direct evaluation of actual computational functions"
-      - "all dependent family equalities / tagged sigma function equality"
-      - "complete Hom equality / accepted extensionality spine"
-      - "source-kernel coordinate recovery / accepted full comparison source equivalence and its inverse laws"
-    unresolved:
-      - "independent coherence conditions and assembly for arbitrary complete graph bundles"
-      - "primitive local presentation and assembly for arbitrary direct normalization-kernel elements"
-  target_fitting: "supplies the previously missing dependent computational graphs, proves a substantive arbitrary-Hom joint separation theorem, and connects it immediately to the accepted full direct normalization-kernel reconstruction without claiming independent arbitrary-graph assembly"
-  vacuity: "the theorem quantifies over every complete geometry Hom and every fixed raw comparison; injectivity is proved through every computational extensionality field rather than through a stored completed morphism"
+  route_integrity: pass
+  target_fitting:
+    result: none-found
+    reason: "the cycle supplies dependent computational graphs, proves arbitrary-Hom joint separation, and immediately connects it to accepted full-kernel reconstruction without claiming arbitrary-graph assembly"
+  vacuity:
+    result: none-found
+    reason: "the theorem quantifies over every complete geometry Hom and every fixed raw comparison, and proves injectivity through computational fields rather than a stored completed morphism"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
   four_lane_question: "Do total-functional Bool graphs of every computational component jointly separate arbitrary complete geometry morphisms, including the dependent maps via tagged sums, and does that separation determine the accepted full direct normalization-kernel coordinates of every fixed G-122 raw comparison while retaining the existing two-sided assembly?"
   validation_refs:
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryFunctionGraphSeparation.lean: pass"
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122CompleteGraphKernelReconstruction.lean: pass"
-  validation_evidence:
-    - "#assert_standard_axioms_only CompleteGeometryFunctionGraphSeparation: 45 declarations, standard axioms only"
-    - "#assert_standard_axioms_only G122CompleteGraphKernelReconstruction: 6 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "define independent coherence conditions and assembly for arbitrary complete graph bundles, or reconstruct the full direct normalization kernel itself from primitive local syntax without storing completed automorphisms"
 ```

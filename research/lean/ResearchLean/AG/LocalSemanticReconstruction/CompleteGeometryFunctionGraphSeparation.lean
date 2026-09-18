@@ -15,6 +15,16 @@ complete geometry morphisms.
 This module proves separation, not assembly of an arbitrary graph bundle.  In
 particular, graph compatibility is not defined by existence of a completed
 geometry morphism, and no extension witness is hidden in the graph data.
+
+## Implementation notes
+
+Dependent families are represented by ordinary maps between tagged sigma
+types.  This keeps the index action visible and lets equality of a single
+ordinary function recover the fiber maps by heterogeneous equality.  Storing
+the family behind a completed morphism or an existential compatibility
+certificate was rejected because either choice would make separation
+tautological.  Both object actions of the selected-context equivalence are
+stored; thinness then reconstructs its functors and inverse data.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction
