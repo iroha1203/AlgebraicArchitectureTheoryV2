@@ -129,13 +129,16 @@
   merge commit `7acbd8277b9ae8a6999f0ef807fddfc9bac6c8cb`
 - Cycle 60 accepted PR: [#4773](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4773),
   merge commit `a3d22a582c20aa0b3ec726465856b1ec8f7651f8`
+- Cycle 61 accepted PR: [#4774](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4774),
+  merge commit `b635ffc87cb71e163619b6004ffb25878a3d9ef8`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: source projectionでfull raw/normalized comparison群をdirect-endpoint
-  automorphism群へ同定し、restrictionとnormalizationの可換式、full kernelの乗法同値・両逆、
-  Cycle 60の捻れた再構成をsource-kernel座標へ同梱する
-- next proof obligation: direct normalization kernelのarbitrary要素をprimitive local syntaxから
-  独立に再構成するか、arbitrary expanded Homの実質的な分離・assemblyを同梱する
+- current proof obligation: 任意のnormalization fiberを保つ置換を有限Bool局所グラフから両逆に
+  再構成し、その群法則を関係合成として固定する。同じsurfaceへdirect normalization kernelの
+  object作用、非自明ambient kernel元、full comparison再構成を接続する
+- next proof obligation: object作用以外のatom・context・equation・operation・coefficient・raw・
+  local realization成分にも独立な局所graphを構成し、joint separationとassemblyをfull direct
+  normalization kernel上で放電するか、arbitrary expanded Homの実質的な分離・assemblyを同梱する
 
 ## Cycle 1 — rejected
 
@@ -5827,7 +5830,7 @@ audits:
 
 ```yaml
 cycle: 61
-status: implementation-complete-review-pending
+status: accepted
 branch: codex/4711-g124-full-source-kernel-exact-decomposition
 goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
 base_oid: a3d22a582c20aa0b3ec726465856b1ec8f7651f8
@@ -5917,6 +5920,115 @@ audits:
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122FullSourceKernelExactDecomposition: pass (4300 jobs)"
   blocking_findings: []
   next_obligation: "construct an independent primitive local presentation with separation and assembly for arbitrary direct normalization-kernel automorphisms and connect it to the full source-kernel equivalence, or discharge a nontrivial arbitrary expanded-Hom reconstruction surface"
+```
+
+## Cycle 62: primitive fiber-permutation graph and source-kernel object action
+
+```yaml
+cycle: 62
+status: implementation-complete-review-pending
+branch: codex/4711-g124-primitive-fiber-permutation-graph
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: b635ffc87cb71e163619b6004ffb25878a3d9ef8
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 61 audit: PR comment 5735614256; Cycle 61 acceptance: Issue comment 5735619932; Cycle 62 selection: Issue comment 5735760543"
+  proof_dag_predecessors:
+    - "Cycle 61 full source-kernel exact decomposition"
+    - "canonical object normalization naturality"
+    - "source-authored finite-axis-fold ambient-kernel recipe"
+  proof_obligation: "construct an independent Bool-valued graph family for arbitrary normalization-fiber-preserving permutations; prove explicit assembly, both inverse laws, the full group equivalence, and relational multiplication; map every direct normalization-kernel automorphism multiplicatively to that primitive object-action model; exhibit a nonidentity source-authored graph and carry it through the full source-kernel comparison reconstruction"
+  selection_reason: "this replaces a completed permutation by point-pair Bool readings with independent exact-one row and column laws, proves a genuine two-sided universal classification, and includes the G-122 kernel and raw-comparison connection in the same cycle rather than postponing the connection"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/PrimitiveFiberPermutationGraph.lean"
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122PrimitiveSourceKernelObjectGraph.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "an independent graph code stores only one Bool per ordered point pair and exact-one row/column plus fiber equations; unique witnesses assemble a permutation and inverse; read and assembly satisfy both inverse laws; transported multiplication is proved equal to relational graph composition; direct normalization-kernel automorphisms induce fiber-preserving object permutations and a multiplicative primitive graph reading; the source-authored direct ambient-kernel recipe has a nonidentity graph, transports to a nonidentity full comparison-kernel element with trivial restriction, and is recovered by Cycle 61 read/assembly at normalized identity"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.GraphCode"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.GraphCode.targetEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.GraphCode.assemble"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.GraphCode.read"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.GraphCode.read_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.GraphCode.assemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.GraphCode.graphMulEquivFiberPermutation"
+    - "AAT.AG.LocalSemanticReconstruction.PrimitiveFiberPermutationGraph.GraphCode.mul_edge_eq_true_iff"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.sourceKernelObjectPermutationHom"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.sourceKernelObjectGraphHom"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.sourceKernelObjectGraph_mul_edge_iff"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.directAmbientSourceKernel_objectGraph_ne_one"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.directAmbientFullComparisonKernel_restriction"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.directAmbientFullComparisonKernel_ne_one"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.assembleSourceKernel_directAmbient"
+    - "AAT.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph.readSourceKernel_directAmbient"
+  claim_mapping:
+    conjuncts:
+      - "each primitive local value is Bool, indexed by one ordered pair rather than a completed global map"
+      - "exact-one outgoing and incoming laws assemble both a permutation and its inverse"
+      - "read and assembly are mutually inverse for every fiber-preserving permutation"
+      - "the transported group law is the local relational composition formula"
+      - "every direct normalization-kernel automorphism yields a multiplicative primitive object graph"
+      - "the source-authored ambient kernel is separated from identity by this graph"
+      - "the same nonidentity value has trivial comparison restriction and explicit Cycle 61 source-kernel coordinates"
+    undischarged_assumptions:
+      - "object action does not yet separate complete geometry automorphisms with identical object maps"
+      - "remaining atom, context, equation, operation, coefficient, raw, and local-realization readings require their own primitive graph surfaces"
+      - "surjectivity of a joint primitive code onto the full direct normalization kernel remains unproved"
+      - "arbitrary expanded G-122 Homs and final four-family assembly remain unproved"
+    acceptance_point: "full two-sided and multiplicative classification of arbitrary fiber-preserving permutations by independent finite Bool local readings, plus a multiplicative G-122 object-action reading and a nontrivial full-comparison witness in one cycle"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "an arbitrary normalization map alpha to beta for the generic theorem"
+      - "the fixed finite-axis-fold actual direct endpoint for the G-122 application"
+    proved_dependencies:
+      - "canonical object normalization naturality"
+      - "Cycle 61 full source-kernel equivalence and reconstruction"
+      - "source-authored ambient-kernel automorphism and normalization-kernel membership"
+    discharge_required:
+      - "permutation and inverse from exact-one graph laws"
+      - "both graph inverse laws"
+      - "group equivalence and relational multiplication"
+      - "fiber preservation of the complete kernel object action"
+      - "multiplicativity of the object graph reading"
+      - "nonidentity of the ambient graph and raw comparison"
+      - "trivial restriction and Cycle 61 read/assembly connection"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "assembled target and inverse / unique row and column witnesses"
+      - "fiber preservation / local true-edge equation"
+      - "G-122 graph / evaluation of the actual object map at each ordered pair"
+      - "ambient witness / independent source recipe from the fixed original input"
+    unresolved:
+      - "joint primitive code for every computational component of a complete geometry automorphism"
+      - "joint separation and assembly for the full direct normalization kernel"
+  proof_use:
+    used:
+      - "row and column uniqueness in both inverse proofs"
+      - "fiber equation in subgroup assembly"
+      - "kernel equation and canonical normalization naturality in the G-122 object action"
+      - "Cycle 61 kernel equivalence in the full comparison witness"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "introduces a reusable primitive local reading whose individual values are finite, proves its complete separation and assembly theorem, and applies it to a genuine component of every full G-122 source-kernel element without claiming that one component classifies the entire automorphism"
+  vacuity: "row and column witnesses yield an actual permutation and inverse; the ambient recipe supplies an explicit nonidentity graph and nonidentity raw comparison"
+  four_lane_question: "Does an independently defined Bool-valued exact graph family classify every normalization-fiber-preserving permutation with explicit inverse laws and relational multiplication, and does the direct normalization kernel map multiplicatively to this primitive object-action model while carrying a nontrivial ambient-kernel element through the full source-kernel comparison reconstruction?"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/PrimitiveFiberPermutationGraph.lean: pass"
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122PrimitiveSourceKernelObjectGraph.lean: pass"
+    - "#assert_standard_axioms_only PrimitiveFiberPermutationGraph: 49 declarations, standard axioms only"
+    - "#assert_standard_axioms_only G122PrimitiveSourceKernelObjectGraph: 20 declarations, standard axioms only"
+    - "cd research/lean && ./check_research_modules.sh --focused on both Cycle 62 modules: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122PrimitiveSourceKernelObjectGraph: pass (4302 jobs)"
+  blocking_findings: []
+  next_obligation: "extend the independent graph presentation to the remaining primitive components of complete geometry automorphisms and prove joint separation plus assembly for the full direct normalization kernel, or discharge a nontrivial arbitrary expanded-Hom reconstruction surface"
 ```
 
 ## 未完了 ledger
@@ -6029,7 +6141,13 @@ audits:
   乗法同値で同定し、comparison restrictionとdirect normalizationの可換式を証明した。これによりfull
   comparison kernelとdirect normalization kernelの明示的な乗法同値・両逆を構成し、Cycle 60の
   read/assemble両逆、一意なkernel変位、共役で捻れた積をsource-kernel座標へ移した。direct normalization
-  kernelのarbitrary要素をprimitive local syntaxから独立に再構成する義務は未完了である。
+  kernelのarbitrary要素をprimitive local syntaxから独立に再構成する義務は未完了である。Cycle 62では
+  任意のnormalization fiberを保つ置換を、点対ごとのBool値と行・列の一意存在から独立に表示した。
+  read/assemble両逆、全群との乗法同値、関係合成による積公式を証明し、direct normalization kernelの
+  object作用をこの表示へ乗法的に接続した。source-authored ambient kernel元が非恒等graphを持つこと、
+  trivial restrictionを持つ非恒等full comparison kernel元へ移ること、Cycle 61座標から両逆に回収される
+  ことも同梱した。object作用が同じcomplete automorphismを分離する追加readingと、full kernelへのjoint
+  assemblyは未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
