@@ -105,12 +105,14 @@
   merge commit `2bea07ef9d75a10812f2e5bde04e1500f58bef3f`
 - Cycle 48 accepted PR: [#4761](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4761),
   merge commit `b07683e791c918ec43b282eb949e7b1555021366`
+- Cycle 49 accepted PR: [#4762](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4762),
+  merge commit `90adf1b8f30a65a0b41555d6e64280f7013e27fd`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: 三軸の六つのprimitive permutation codeからactual normalized-comparison
-  imageを群同型として回復し、各像のcanonical section codeの一意性と全actual restriction-kernel
-  torsorを同一surfaceへ接続する
-- next proof obligation: 六要素のsource-generated image外を含むfull comparison groupとfull kernelを
+- current proof obligation: 独立な三軸tableと`Fin 3` Extension tableの組から36要素のactual
+  normalized-comparison imageを両逆で回復し、各像のcanonical section codeの一意性と
+  full actual restriction-kernel torsorを同一surfaceへ接続する
+- next proof obligation: 36要素のmixed image外を含むfull comparison groupとfull kernelを
   local dataから回復し、arbitrary expanded Homと四族の共通再構成へ接続する
 
 ## Cycle 1 — rejected
@@ -4731,6 +4733,103 @@ audits:
   next_obligation: "recover the full comparison group and full kernel from local data beyond the six-element axis image, then extend the same separation and reconstruction to arbitrary expanded Homs and the four-family surface"
 ```
 
+## Cycle 50 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 50
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 90adf1b8f30a65a0b41555d6e64280f7013e27fd
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 49 audit: PR comment 5731209616; acceptance: Issue comment 5731216913; Cycle 50 selection: Issue comment 5731249887"
+  proof_dag_predecessors:
+    - "Cycle 49 six-element axis comparison reconstruction"
+    - "accepted independent finite Extension table and intrinsic decoder equivalence"
+    - "accepted stored backward-context faithfulness on the local-fiber kernel"
+    - "accepted canonical lift and full actual restriction-kernel torsor theorem"
+  proof_obligation: "reconstruct a 36-element actual normalized-comparison image from an independent axis table and an independent Fin 3 Extension table, prove both inverse laws and unique canonical-section code, and connect every represented lift fiber to the full-kernel torsor"
+  selection_reason: "this enlarges the represented comparison family by an independent source component and bundles its two-projection separation, two-sided reconstruction, finite cardinality, section uniqueness, and fiber action in one cycle"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122MixedAxisExtensionLocalModel.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "an independent axis permutation and explicit Extension forward/backward table evaluate to actual normalized comparisons; the actual axis projection recovers the first table and the stored backward-context action after axis removal recovers the second uniquely; these readings and assembly are inverse, separate the image, and prove cardinality 36; every represented canonical section has one unique mixed code and every lift in its fiber has one unique full-kernel displacement"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.G122MixedAxisExtensionLocalModel.MixedCode"
+    - "AAT.AG.LocalSemanticReconstruction.G122MixedAxisExtensionLocalModel.mixedAut_axisProjection"
+    - "AAT.AG.LocalSemanticReconstruction.G122MixedAxisExtensionLocalModel.mixedAut_stripped"
+    - "AAT.AG.LocalSemanticReconstruction.G122MixedAxisExtensionLocalModel.mixedAut_backwardObservation"
+    - "AAT.AG.LocalSemanticReconstruction.G122MixedAxisExtensionLocalModel.extensionBackwardAction_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122MixedAxisExtensionLocalModel.extensionTarget_existsUnique"
+    - "AAT.AG.LocalSemanticReconstruction.G122MixedAxisExtensionLocalModel.readMixed_assembleMixed"
+    - "AAT.AG.LocalSemanticReconstruction.G122MixedAxisExtensionLocalModel.assembleMixed_readMixed"
+    - "AAT.AG.LocalSemanticReconstruction.G122MixedAxisExtensionLocalModel.mixedComparisonEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.G122MixedAxisExtensionLocalModel.mixedComparisonImage_card"
+    - "AAT.AG.LocalSemanticReconstruction.G122MixedAxisExtensionLocalModel.readMixed_injective"
+    - "AAT.AG.LocalSemanticReconstruction.G122MixedAxisExtensionLocalModel.canonicalSection_unique_mixedCode"
+    - "AAT.AG.LocalSemanticReconstruction.G122MixedAxisExtensionLocalModel.mixedCode_fullKernel_reconstruction"
+  claim_mapping:
+    conjuncts:
+      - "the local code contains two independent finite tables and no actual automorphism, comparison, lift, range witness, or kernel element"
+      - "axis projection and stripped stored-backward action independently recover the two code components"
+      - "read/assemble are inverse in both directions and the reading separates every represented comparison"
+      - "the actual represented image has exactly 36 elements"
+      - "each represented canonical section has exactly one mixed finite code"
+      - "each represented lift has exactly one displacement from that canonical lift by the full actual kernel"
+    undischarged_assumptions:
+      - "recover comparisons outside the 36-element mixed image"
+      - "recover arbitrary full-kernel elements from independent local data"
+      - "extend reconstruction to arbitrary expanded G-122 Homs and objects"
+      - "discharge final four-family separation and assembly"
+    acceptance_point: "36-element mixed axis-and-Extension image plus the accepted full-kernel torsor on each represented fiber"
+    port_status: unported
+audits:
+  material_premises:
+    proved_dependencies:
+      - "normalized axis section/projection and axis-kernel remainder"
+      - "independent Extension table decoder and stored backward-context characterization"
+      - "backward-context faithfulness on the actual local-fiber kernel"
+      - "canonical section right inverse and full-kernel simply transitive action"
+    discharge_required:
+      - "cross-component axis invisibility and exact axis removal"
+      - "Extension observation existence and uniqueness"
+      - "both inverse laws, separation, and cardinality 36"
+      - "unique mixed canonical-section code and full-fiber connection"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "local code / independent finite axis and Extension tables"
+      - "Extension readback / actual stored backward-context observation after semantic axis removal"
+      - "image separation / two actual projections"
+      - "fiber displacement / accepted actual restriction-kernel torsor"
+    unresolved:
+      - "comparison image complement and independent full-kernel local recovery"
+  proof_use:
+    used:
+      - "axis section readback and kernel remainder"
+      - "Extension intrinsic decoder injectivity and backward projection"
+      - "canonical section right inverse"
+      - "full actual kernel action existence and uniqueness"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "moves from one six-element factor to a 36-element mixed family and includes the two-projection inverse, separation, cardinality, section uniqueness, and fiber connection in the same cycle"
+  vacuity: "both code factors have cardinality six, their product image has cardinality 36, and the inverse and fiber theorems quantify over every represented comparison and lift"
+  four_lane_question: "Does the independent axis-and-Extension table pair reconstruct exactly a 36-element actual normalized-comparison image with both inverse laws, uniquely determine each source-generated canonical section, and connect every represented lift to the full-kernel torsor without storing completed semantics?"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122MixedAxisExtensionLocalModel.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122MixedAxisExtensionLocalModel.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122MixedAxisExtensionLocalModel: pass (4405 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122MixedAxisExtensionLocalModel: 37 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "recover a further independent residual component or the full comparison group and full kernel from local data, then extend the same reconstruction to arbitrary expanded Homs and the four-family surface"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -4790,7 +4889,11 @@ audits:
   permutation codeとactual source-generated normalized-comparison imageの群同型、像の位数6、
   各像のcanonical section codeの一意性を証明し、各represented fiber上のfull actual kernel
   torsorへ同じ定理面で接続した。六要素像の外側を含むfull comparison group、full kernel要素の
-  独立local recovery、arbitrary Hom、四族統合は未完了である。
+  独立local recovery、arbitrary Hom、四族統合は未完了である。Cycle 50では、独立な三軸tableと
+  `Fin 3` Extension forward/backward tableを組み合わせ、actual axis projectionとaxis除去後の
+  stored backward-context actionから両成分を一意に読み戻した。read/assemble両逆、36要素性、
+  canonical sectionのmixed code一意性、各represented fiberのfull-kernel torsor接続を同梱した。
+  36要素像の外側、full kernelの独立local recovery、arbitrary Hom、四族統合は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
