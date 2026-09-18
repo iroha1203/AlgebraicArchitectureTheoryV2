@@ -83,11 +83,14 @@
   merge commit `8a7fb13571039012551efeef505d9980708a8196`
 - Cycle 37 accepted PR: [#4750](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4750),
   merge commit `a4d2c26a731c1bdb17a89b664980faf18e698753`
+- Cycle 38 accepted PR: [#4751](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4751),
+  merge commit `9adad0f30d4b9de40bc264dc0194b32e1949e54b`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: tagged branchのactual/local圏同値を四分枝共通の局所読み取りsurfaceへ接続する
-- next proof obligation: generated tagged branchを四分枝共通の `R_Theta/M_Theta/N_Theta` 候補に収録するための
-  actual common-category objectとprimitive reading componentを特定する
+- current proof obligation: exact-geometry levelのcanonical normalizationにより、generated tagged branchを
+  四分枝共通のglobal realization surfaceへ忠実に接続する
+- next proof obligation: exact-geometry normalizationの冪等性とsource-choice合成則を証明し、
+  generated image submonoidとCycle 38のcommon-global bridgeを構成する
 
 ## Cycle 1 — rejected
 
@@ -3672,6 +3675,89 @@ audits:
   next_obligation: "connect the accepted tagged generated categorical equivalence to a common four-family local-reading surface without weakening the fixed target"
 ```
 
+## Cycle 39 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 39
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 9adad0f30d4b9de40bc264dc0194b32e1949e54b
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 38 accepted evidence: PR comment 5726992284; Cycle 39 selection: Issue comment 5726997447"
+  proof_dag_predecessors:
+    - "Cycle 38 generated tagged one-object categorical equivalence"
+    - "common tagged fiber FamilyRealization .taggedOperation with ExplicitExactGeometryHom"
+    - "existing package-level canonical normalization"
+  proof_obligation: "construct the missing ExplicitExactGeometryHom lift of canonical tagged normalization from actual coverage, overlap, coefficient, raw, and realization data, and place it as an actual Hom in the common tagged FamilyRealization fiber"
+  selection_reason: "the Cycle 38 global Hom is package-level, whereas the common tagged Hom is explicit exact geometry; without this constructed lift the generated branch cannot be mapped to the common realization surface"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeCanonicalNormalizationGeometry.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "canonical tagged package normalization now carries all six explicit exact-geometry components and is an actual Hom in FamilyRealization .taggedOperation, with its package base fixed to the accepted normalization"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeCanonicalNormalizationGeometry.normalizationExplicitExactGeometryHom"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeCanonicalNormalizationGeometry.normalizationExplicitExactGeometryHom_base"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeCanonicalNormalizationGeometry.closedFamilyTaggedNormalization"
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeCanonicalNormalizationGeometry.closedFamilyTaggedNormalization_base"
+  claim_mapping:
+    source_labels:
+      - "fixed GOAL A canonical normalization in the tagged family"
+      - "common tagged FamilyRealization Hom surface"
+    conjuncts:
+      - "coverage and overlap are constructed on the unchanged tagged geometry"
+      - "coefficient and raw transport are constructed as identity exact data"
+      - "explicit realization transport retains every actual context morphism"
+      - "the resulting common Hom has the accepted canonical package normalization as base"
+    undischarged_assumptions:
+      - "exact-geometry idempotence and source-choice composition laws"
+      - "generated-image submonoid equivalence and faithful inclusion"
+      - "common local-model category and primitive reading functor"
+    acceptance_point: "canonical normalization lift into the common tagged global fiber only"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "taggedOperationGeometryPackage"
+      - "taggedOperationPackage_admissible"
+      - "canonicalObjectNormalizationTotal"
+    discharge_required:
+      - "all ExplicitExactGeometryHom computational components"
+      - "common FamilyRealization Hom packaging"
+      - "base equality to accepted package normalization"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "coverage / primitive requirement predicates and identity index maps"
+      - "overlap / identity overlap isomorphisms"
+      - "raw / reflexive exact typed raw map"
+      - "realization / explicit identity action on every retained context morphism"
+    unresolved:
+      - "exact-geometry algebraic laws and generated submonoid bridge"
+  proof_use:
+    used:
+      - "canonicalObjectNormalizationTotal"
+      - "RawAmbientRestrictionSystemExactMapAgainst.refl"
+      - "FamilyRealization tagged Hom definition"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "constructs the missing common-global morphism from primitive data rather than accepting an exact-geometry lift certificate"
+  vacuity: "the base object map is the nonidentity, noninjective canonical normalization; the Hom is not the categorical identity"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/TagChangeCanonicalNormalizationGeometry.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/TagChangeCanonicalNormalizationGeometry.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeCanonicalNormalizationGeometry: pass (4368 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeCanonicalNormalizationGeometry: 4 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "prove exact-geometry idempotence and source-choice composition laws, then construct the generated-image common-global bridge"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -3700,6 +3786,9 @@ audits:
   一意なnormal formで完全表示し、四ケースの合成則と生成部分モノイドとの一致を証明した。Cycle 37では、
   normalization flagと全有限Bool-table整合族からなるfinite-local sectionを構成し、有限像上の
   normalization、成分ごとの合成、actual readback、separation/assembly、generated monoidとの同型を証明した。
+  Cycle 38でこれをbranch-localなone-object圏同値へ持ち上げ、Cycle 39でcanonical normalizationに
+  coverage・overlap・coefficient・raw・explicit realizationを与えてcommon tagged global fiberの
+  actual Homとして構成した。generated image全体の忠実な接続とcommon local readingは未完了である。
   arbitrary observation carrier全体の有限encodingと四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
