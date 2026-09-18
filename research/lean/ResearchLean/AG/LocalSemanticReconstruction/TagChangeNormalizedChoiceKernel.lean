@@ -16,8 +16,8 @@ agree.  Restricting to invariant choices therefore restores faithfulness.
 The classification is stated through actual `PackageTotalHom` equality and
 the existing tagged-identity-operation readback.  It is not defined as a
 quotient or as a certificate carried by a local value.  The retracted choice
-will serve as the finite-local datum for normalized source-choice maps in a
-later generated-subcategory normal-form construction.
+will serve as the global normalized-choice datum, later read and reconstructed
+through finite restrictions in a generated-subcategory normal-form construction.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction
