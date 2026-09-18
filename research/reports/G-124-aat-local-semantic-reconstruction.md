@@ -59,12 +59,18 @@
   merge commit `aa6811409a7f69203f33a741a69654606ba3cf37`
 - Cycle 25 accepted PR: [#4738](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4738),
   merge commit `1a8f4694c1b80f0060feef449ea5b095e170e932`
+- Cycle 26 accepted PR: [#4739](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4739),
+  merge commit `d32e437efa4d0ff2f865ff577fc6d4c3c54dc671`
+- Cycle 27 accepted PR: [#4740](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4740),
+  merge commit `947038b5b33cb37971bab5c0a16f7b8954a5200d`
+- Cycle 28 accepted PR: [#4741](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4741),
+  merge commit `7275231b3815050a2d663b44178705639c958062`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: lens finite decoderの計算式を局所圏側で固定し、受理済み
-  Karoubi restriction・retract・Arrow equivalenceと接続する
-- next proof obligation: taggedまたはG-122 branchについて、独立local modelとprimitive
-  readingの圏同値を構成し、四分枝統合へ接続する
+- current proof obligation: general observation-aware protocol Homのfull tagged tableによる
+  finite determination・effectivenessを構成し、Cycle 22のfull-faithful/assembly経路へ接続する
+- next proof obligation: general observation-preserving lens Homを共通FiniteReading surfaceへ
+  接続し、その後にtagged/G-122 branchと四分枝統合を進める
 
 ## Cycle 1 — rejected
 
