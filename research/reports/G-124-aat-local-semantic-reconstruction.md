@@ -87,12 +87,14 @@
   merge commit `9adad0f30d4b9de40bc264dc0194b32e1949e54b`
 - Cycle 39 accepted PR: [#4752](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4752),
   merge commit `f052ef8f4dc79fd86530f041c4b8faef0866add4`
+- Cycle 40 accepted PR: [#4753](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4753),
+  merge commit `bcace0d2862020b3210d192321a7ab39bc25e13f`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: common tagged fiber内でcanonical normalizationの冪等性と
-  source-choice canonical restriction合成則をactual Hom等式として証明する
-- next proof obligation: exact-geometry normal formを構成し、generated image submonoidと
-  Cycle 38のcommon-global bridgeを構成する
+- current proof obligation: common tagged fiber内でcanonical normalizationを任意source choiceの
+  後ろへ移すcanonical rewriteをactual Hom等式として証明する
+- next proof obligation: accepted rewriteからexact-geometry normal formを構成し、generated image
+  submonoidとCycle 38のcommon-global bridgeを構成する
 
 ## Cycle 1 — rejected
 
@@ -3846,6 +3848,85 @@ audits:
   next_obligation: "construct an exact-geometry normal-form image and prove its faithful equivalence with the accepted generated package submonoid"
 ```
 
+## Cycle 41 selection and proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 41
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: bcace0d2862020b3210d192321a7ab39bc25e13f
+tracking_issue: 4711
+selection:
+  proof_state_ref: "Cycle 40 audit: PR comment 5727554438; Cycle 41 selection: Issue comment 5727561594"
+  proof_dag_predecessors:
+    - "Cycle 35 package-level normalization_comp_sourceChoice_rewrite"
+    - "Cycle 39 exact-geometry canonical normalization Hom"
+    - "Cycle 40 exact-geometry idempotence and canonical restriction composition"
+  proof_obligation: "lift the canonical rewrite normalization-then-choice = restricted-choice-then-normalization to an equality of actual Homs in the common tagged FamilyRealization fiber"
+  selection_reason: "the exact normal-form multiplication cannot be defined and verified until normalization can be moved to the normalized-form position without forgetting dependent exact-geometry data"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeCanonicalNormalizationGeometryRewrite.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "for every source choice, common tagged normalization followed by that choice equals the canonically restricted choice followed by normalization as an actual exact-geometry Hom"
+  completion_candidate: no
+  section_completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.TagChangeCanonicalNormalizationGeometryRewrite.closedFamilyTaggedNormalization_comp_sourceChoice_rewrite"
+  claim_mapping:
+    source_labels:
+      - "Cycle 35 package-level generated-normal-form rewrite"
+      - "Cycle 40 common tagged exact-geometry generation laws"
+    conjuncts:
+      - "the rewrite quantifies over every source-indexed Boolean choice"
+      - "both sides are actual Homs in the same common tagged fiber"
+      - "base, coefficient, raw, equation transport, context action, support, axis, and observable data agree"
+    undischarged_assumptions:
+      - "exact-geometry normal-form evaluator and image"
+      - "faithful equivalence with the generated package submonoid"
+      - "common local-model category and primitive reading functor"
+    acceptance_point: "one exact-geometry canonical rewrite theorem only"
+    port_status: unported
+audits:
+  material_premises:
+    ambient_boundary:
+      - "normalization_comp_sourceChoice_eq_normalized"
+      - "taggedSourceChoiceTotal_commutes_normalization"
+      - "normalizeChoice_invariant"
+    discharge_required:
+      - "actual common-Hom rewrite"
+      - "dependent equation and realization transport equality"
+    conclusion_equivalent_risk: []
+  certificate_provenance:
+    discharged:
+      - "base / accepted package canonical restriction plus invariant-choice commutation"
+      - "raw and coefficient / componentwise extensional equality"
+      - "realization / atom, object, equation transport, context action, support, axis, and observable comparison"
+    unresolved:
+      - "exact normal-form image and common-global generated bridge"
+  proof_use:
+    used:
+      - "normalization_comp_sourceChoice_eq_normalized"
+      - "taggedSourceChoiceTotal_commutes_normalization"
+      - "normalizeChoice_invariant"
+      - "taggedExplicitRealizationSupply_hext"
+      - "equationSystemExactTransport_hext"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: "proves the rewrite on the common actual Hom surface without projecting to package equality as the conclusion"
+  vacuity: "the theorem covers arbitrary choices, including noninvariant choices, and relates two nontrivial composition orders"
+  validation_refs:
+    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/TagChangeCanonicalNormalizationGeometryRewrite.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/TagChangeCanonicalNormalizationGeometryRewrite.lean: pass"
+    - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.TagChangeCanonicalNormalizationGeometryRewrite: pass (4373 jobs)"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeCanonicalNormalizationGeometryRewrite: 1 declaration, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct the exact-geometry normal-form evaluator/image and prove its faithful equivalence with the accepted generated package submonoid"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -3877,8 +3958,9 @@ audits:
   Cycle 38でこれをbranch-localなone-object圏同値へ持ち上げ、Cycle 39でcanonical normalizationに
   coverage・overlap・coefficient・raw・explicit realizationを与えてcommon tagged global fiberの
   actual Homとして構成した。Cycle 40でそのactual Homの冪等性と、任意source-choiceに対する
-  canonical restriction合成則をexact-geometry全成分で証明した。generated image全体の忠実な
-  接続とcommon local readingは未完了である。
+  canonical restriction合成則をexact-geometry全成分で証明した。Cycle 41でnormalizationを
+  restricted source-choiceの後ろへ移すcanonical rewriteもcommon actual Hom等式として証明した。
+  generated image全体の忠実な接続とcommon local readingは未完了である。
   arbitrary observation carrier全体の有限encodingと四分枝統合は未完了である。
 - C の投影・正規化・比較群回復。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
