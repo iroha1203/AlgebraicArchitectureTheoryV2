@@ -39,37 +39,42 @@ namespace LensSemanticFiniteDetermination
 variable {V : Type u} {reference : V}
   (X Y : LensRealization V reference)
 
-/-- Read an actual get/put-preserving lens morphism on one source reference-
-fiber state. -/
+/-- G-124(B/D) primitive reading API: read an actual get/put-preserving lens
+morphism by the accepted `LensRealization.res` at one source-fiber state. -/
 def readLensHomAt (f : X ⟶ Y) (state : X.Fiber) : Y.Fiber :=
   LensRealization.res f state
 
-/-- The explicit finite reading set is the whole source reference fiber. -/
+/-- G-124(D) input API: the supplied `Fintype` explicitly enumerates the whole
+source fiber; it is not inferred from the semantic `Finite` object premise. -/
 def fullFiber [Fintype X.Fiber] : Finset X.Fiber :=
   Finset.univ
 
-/-- A raw table assigns one target-fiber state to every source-fiber state. -/
+/-- G-124(D) raw-input API: one target-fiber value for every explicitly
+enumerated source-fiber state, with no completed Hom field. -/
 abbrev RawTable [Fintype X.Fiber] :=
   {state // state ∈ fullFiber X} → Y.Fiber
 
-/-- General lens fiber tables have no cross-index equation: every such table
-is admissible. -/
+/-- G-124(D/E2) local predicate: every fiber table is admissible because the
+accepted `LensRealization.ext` constructor is total; no extension certificate
+is stored. -/
 def TableAdmissible [Fintype X.Fiber] (_table : RawTable X Y) : Prop :=
   True
 
-/-- Every raw lens fiber table is admissible. -/
+/-- Supporting API for the total G-124(D/E2) predicate: every raw table is
+admissible independently of a completed Hom. -/
 theorem tableAdmissible [Fintype X.Fiber] (table : RawTable X Y) :
     TableAdmissible X Y table :=
   True.intro
 
-/-- There is no inadmissible raw table; this is a theorem about total lens
-extension, not an omitted negative test case. -/
+/-- Nonvacuity audit for G-124(D/E2): there is no inadmissible raw table.  This
+records total lens extension, rather than omitting a negative test case. -/
 theorem no_inadmissible_table [Fintype X.Fiber] :
     ¬ ∃ table : RawTable X Y, ¬ TableAdmissible X Y table := by
   rintro ⟨table, notAdmissible⟩
   exact notAdmissible (tableAdmissible X Y table)
 
-/-- The full source-fiber table separates all actual lens morphisms. -/
+/-- G-124(D/E2) main separation theorem.  It uses the accepted
+`homEquivFiberMap` injectivity and the explicit full-fiber enumeration. -/
 theorem fullFiber_separates [Fintype X.Fiber] :
     FiniteReading.Separates (readLensHomAt X Y) (fullFiber X) := by
   intro first second tableEquality
@@ -77,12 +82,14 @@ theorem fullFiber_separates [Fintype X.Fiber] :
   funext state
   exact congrFun tableEquality ⟨state, Finset.mem_univ _⟩
 
-/-- Assemble a raw full table into the actual get/put-preserving lens Hom. -/
+/-- G-124(B/E2) assembly API: construct the actual get/put-preserving Hom from
+a raw table by the accepted `LensRealization.ext`. -/
 def assembleTable [Fintype X.Fiber] (table : RawTable X Y) : X ⟶ Y :=
   LensRealization.ext
     (fun state => table ⟨state, Finset.mem_univ _⟩)
 
-/-- Reading an assembled lens Hom recovers every raw table entry exactly. -/
+/-- G-124(B/E2) readback API: `LensRealization.res_ext` recovers every raw table
+entry from the assembled actual Hom. -/
 @[simp] theorem restrict_assembleTable [Fintype X.Fiber]
     (table : RawTable X Y) :
     FiniteReading.restrict (readLensHomAt X Y) (fullFiber X)
@@ -92,22 +99,24 @@ def assembleTable [Fintype X.Fiber] (table : RawTable X Y) : X ⟶ Y :=
       (fun source => table ⟨source, Finset.mem_univ _⟩)) state.1 = table state
   rw [LensRealization.res_ext]
 
-/-- Every admissible raw full table extends to an actual general lens Hom. -/
+/-- G-124(D/E2) main extension theorem.  Total admissibility is discharged by
+`assembleTable` and its `res_ext` readback, not by a certificate premise. -/
 theorem fullFiber_extends [Fintype X.Fiber] :
     FiniteReading.Extends (readLensHomAt X Y) (fullFiber X)
       (TableAdmissible X Y) := by
   intro table _admissible
   exact ⟨assembleTable X Y table, restrict_assembleTable X Y table⟩
 
-/-- The full source reference fiber is determining for actual general lens
-morphisms. -/
+/-- G-124(D/E2) main determining theorem, combining the separately proved
+full-fiber separation and extension properties. -/
 theorem fullFiber_determining [Fintype X.Fiber] :
     FiniteReading.Determining (readLensHomAt X Y) (fullFiber X)
       (TableAdmissible X Y) :=
   ⟨fullFiber_separates X Y, fullFiber_extends X Y⟩
 
-/-- Executable extension for general lens Hom tables.  Since every fiber map
-is admissible, the program always returns the directly assembled actual Hom. -/
+/-- G-124(D) main effectiveness program.  The explicit `Fintype X.Fiber`
+enumeration drives a total decision/extension path, which always returns the
+`LensRealization.ext` Hom and proves `res_ext` readback. -/
 def effectivenessProgram [Fintype X.Fiber] :
     FiniteReading.EffectivenessProgram
       (readLensHomAt X Y) (fullFiber X) (TableAdmissible X Y) where
@@ -121,15 +130,15 @@ def effectivenessProgram [Fintype X.Fiber] :
     cases success
     exact restrict_assembleTable X Y table
 
-/-- The full source fiber has an explicit effectiveness program independently
-of its separation and extension theorems. -/
+/-- G-124(D) effectiveness API, kept independent of the separation and
+extension theorems and backed by the explicit enumeration program above. -/
 theorem fullFiber_effective [Fintype X.Fiber] :
     FiniteReading.Effective
       (readLensHomAt X Y) (fullFiber X) (TableAdmissible X Y) :=
   ⟨effectivenessProgram X Y⟩
 
-/-- The general-lens point reading is exactly the Cycle 25 semantic fiber
-reading on morphisms. -/
+/-- G-124(B/D) Cycle 25 bridge API: the finite point reading is definitionally
+the semantic fiber functor's accepted `LensRealization.res` component. -/
 @[simp] theorem readLensHomAt_eq_semanticFiberReading
     (input : LensFamilyInput.{u})
     {source target : LensRealization input.View input.reference}
@@ -138,8 +147,8 @@ reading on morphisms. -/
       (lensSemanticFiberReading input).map f state := by
   rfl
 
-/-- The same point reading is the accepted closed-family fiber reading after
-the semantic Hom enters through `closedFamilyLensHom`. -/
+/-- G-124(B/D) closed-family bridge API: after `closedFamilyLensHom`, the same
+point reading is the Cycle 25 `lensFiberValueReading` component. -/
 @[simp] theorem readLensHomAt_eq_closedFamilyFiberReading
     (input : LensFamilyInput.{u})
     {source target : LensRealization input.View input.reference}
@@ -150,35 +159,41 @@ the semantic Hom enters through `closedFamilyLensHom`. -/
 
 /-! ### A concrete noninvertible admissible table -/
 
-/-- Product lens with a two-point reference fiber. -/
+/-- Concrete G-124(E2) fixture: a product lens with a two-point reference
+fiber, used only to exhibit a noninvertible admitted Hom. -/
 abbrev booleanFiberLens : LensRealization Unit () :=
   LensRealization.product Unit Bool ()
 
-/-- The canonical product-fiber equivalence supplies the explicit Boolean
-enumeration used by the example. -/
+/-- Concrete-example enumeration: the canonical product-fiber equivalence
+transports the explicit Boolean `Fintype`; no `Fintype.ofFinite` is used. -/
 noncomputable local instance booleanFiberFintype :
     Fintype booleanFiberLens.Fiber :=
   Fintype.ofEquiv Bool
     (LensRealization.productFiberEquiv Unit Bool ()).symm
 
-/-- The distinguished false point of the Boolean product fiber. -/
+/-- Supporting fixture API: the distinguished false point of the Boolean
+product fiber. -/
 def falseFiberPoint : booleanFiberLens.Fiber :=
   (LensRealization.productFiberEquiv Unit Bool ()).symm false
 
-/-- A raw table that collapses both Boolean fiber points to `false`. -/
+/-- G-124(E2) negative-invertibility fixture: a raw table that collapses both
+Boolean fiber points to `false`. -/
 def constantFalseTable : RawTable booleanFiberLens booleanFiberLens :=
   fun _ => falseFiberPoint
 
-/-- The constant table is admissible even though it is not bijective. -/
+/-- G-124(E2) fixture property: the nonbijective constant table is still
+admissible in the general Hom layer. -/
 theorem constantFalseTable_admissible :
     TableAdmissible booleanFiberLens booleanFiberLens constantFalseTable :=
   tableAdmissible booleanFiberLens booleanFiberLens constantFalseTable
 
-/-- The actual Hom obtained from the constant table. -/
+/-- G-124(E2) fixture output: the actual Hom assembled from the constant raw
+table through the same `LensRealization.ext` path as the main theorem. -/
 def constantFalseHom : booleanFiberLens ⟶ booleanFiberLens :=
   assembleTable booleanFiberLens booleanFiberLens constantFalseTable
 
-/-- The constant table reads back exactly from its actual general lens Hom. -/
+/-- G-124(E2) fixture readback: `res_ext` recovers the constant table from its
+actual general lens Hom. -/
 @[simp] theorem constantFalseHom_readback :
     FiniteReading.restrict
         (readLensHomAt booleanFiberLens booleanFiberLens)
@@ -186,8 +201,8 @@ def constantFalseHom : booleanFiberLens ⟶ booleanFiberLens :=
       constantFalseTable :=
   restrict_assembleTable booleanFiberLens booleanFiberLens constantFalseTable
 
-/-- The admitted actual Hom is genuinely noninvertible on its reference
-fiber: its restricted map is not injective. -/
+/-- G-124(E2) anti-weakening witness: the admitted actual Hom is genuinely
+noninvertible because its accepted `res` map is not injective. -/
 theorem constantFalseHom_res_not_injective :
     ¬ Function.Injective (LensRealization.res constantFalseHom) := by
   intro injective
