@@ -80,6 +80,7 @@ section FreshCarrier
 
 variable (E : Type) [Fintype E] [DecidableEq E]
 
+omit [Fintype E] [DecidableEq E] in
 /-- A fresh-carrier action fixes every accepted `Fin 3` probe. -/
 theorem freshAction_fixes_fin3Probe
     (fresh3 : E ≠ Fin 3) (permutation : Equiv.Perm E) (value : Fin 3) :
@@ -96,6 +97,7 @@ theorem freshAction_fixes_fin3Probe
     finiteAxisFoldSourceExtensionProbe,
     finiteAxisFoldExtensionValuePermutation, fresh3.symm]
 
+omit [Fintype E] [DecidableEq E] in
 /-- A fresh-carrier action fixes every accepted `Nat` probe. -/
 theorem freshAction_fixes_natProbe
     (freshNat : E ≠ Nat) (permutation : Equiv.Perm E) (value : Nat) :
@@ -112,6 +114,7 @@ theorem freshAction_fixes_natProbe
     finiteAxisFoldSourceExtensionProbe,
     finiteAxisFoldExtensionValuePermutation, freshNat.symm]
 
+omit [Fintype E] [DecidableEq E] in
 /-- A fresh-carrier action fixes every accepted `Fin 4` probe. -/
 theorem freshAction_fixes_fin4Probe
     (fresh4 : E ≠ Fin 4) (permutation : Equiv.Perm E) (value : Fin 4) :
@@ -128,6 +131,7 @@ theorem freshAction_fixes_fin4Probe
     finiteAxisFoldSourceExtensionProbe,
     finiteAxisFoldExtensionValuePermutation, fresh4.symm]
 
+omit [Fintype E] [DecidableEq E] in
 /-- On its own carrier, the fresh action applies the supplied permutation to
 the primitive probe value. -/
 theorem freshAction_on_freshProbe
@@ -145,6 +149,7 @@ theorem freshAction_on_freshProbe
     finiteAxisFoldSourceExtensionProbe,
     finiteAxisFoldExtensionValuePermutation]
 
+omit [Fintype E] [DecidableEq E] in
 /-- Every accepted carrier action fixes a probe on the fresh carrier. -/
 theorem acceptedAction_fixes_freshProbe
     (fresh3 : E ≠ Fin 3) (fresh4 : E ≠ Fin 4) (freshNat : E ≠ Nat)
@@ -174,6 +179,7 @@ def sourceFreshAction
   G122FourComponentComparisonLocalModel.sourceTripleAction code.1 *
     finiteAxisFoldSourceContextObjectPermHom E code.2
 
+omit [Fintype E] [DecidableEq E] in
 /-- Carrier-specific primitive probes separate the accepted triple and the
 fresh permutation simultaneously. -/
 theorem sourceFreshAction_injective
@@ -331,6 +337,7 @@ theorem transportSourceActionHom_injective :
         (permutation (finiteAxisFoldSourceToActualContextEquiv context))) equality
   simpa [transportSourceActionHom] using evaluated
 
+omit [Fintype E] [DecidableEq E] in
 /-- The existing transported fixed-carrier action is the restriction of
 whole-source conjugation. -/
 theorem transportSourceActionHom_sourceCarrier
@@ -353,6 +360,7 @@ noncomputable def carrierBackwardAction (code : CarrierCode E) :
   finiteAxisFoldExtensionPermutationBackwardAction E code.2 *
     G122FourComponentComparisonLocalModel.carrierBackwardAction code.1
 
+omit [DecidableEq E] in
 /-- Actual stored-backward observation separates every accepted carrier table
 and the arbitrary fresh table. -/
 theorem carrierBackwardAction_injective
@@ -424,21 +432,26 @@ noncomputable def localAut (code : LocalCode E) :
   freshAut E code.2 *
     G122FourComponentComparisonLocalModel.localAut code.1
 
+omit [DecidableEq E] in
 /-- The fresh action is invisible to the global axis projection. -/
-theorem freshAut_axisProjection_eq_one (code : FreshCode E) :
+theorem freshAut_axisProjection_eq_one
+    (code : FreshCode E) :
     finiteAxisFoldNormalizedAxisProjection (freshAut E code) = 1 := by
   exact MonoidHom.mem_ker.mp
     (finiteAxisFoldExtensionPermutationDecoder E code).1.1.1.2
 
+omit [DecidableEq E] in
 /-- Global axis projection reads the accepted axis component unchanged. -/
 theorem localAut_axisProjection (code : LocalCode E) :
     finiteAxisFoldNormalizedAxisProjection (localAut E code) = code.1.1 := by
   rw [localAut, map_mul, freshAut_axisProjection_eq_one,
     G122FourComponentComparisonLocalModel.localAut_axisProjection, one_mul]
 
+omit [DecidableEq E] in
 /-- Actual backward observation of the fresh table is its primitive source
 action transported along the fixed route. -/
-theorem freshAut_backwardObservation (code : FreshCode E) :
+theorem freshAut_backwardObservation
+    (code : FreshCode E) :
     G122MixedAxisExtensionLocalModel.backwardObservation
         (freshAut E code) =
       finiteAxisFoldExtensionPermutationBackwardAction E code := by
@@ -446,6 +459,7 @@ theorem freshAut_backwardObservation (code : FreshCode E) :
       (finiteAxisFoldExtensionPermutationDecoder E code) = _
   exact finiteAxisFoldExtensionPermutationDecoder_backwardProjection code
 
+omit [DecidableEq E] in
 /-- Removing the global axis section leaves the fresh action followed by all
 accepted carrier actions. -/
 theorem localAut_stripped (code : LocalCode E) :
@@ -457,6 +471,7 @@ theorem localAut_stripped (code : LocalCode E) :
     G122FourComponentComparisonLocalModel.localAut]
   simp [mul_assoc]
 
+omit [DecidableEq E] in
 /-- Backward observation after removing the axis section recovers the joint
 four-carrier action. -/
 theorem localAut_backwardObservation (code : LocalCode E) :
@@ -477,6 +492,7 @@ theorem localAut_backwardObservation (code : LocalCode E) :
     G122FourComponentComparisonLocalModel.carrierAut_backwardObservation]
   rfl
 
+omit [DecidableEq E] in
 /-- Axis and stored-backward observations separate every component of the
 parametric local code. -/
 theorem localAut_injective
@@ -508,6 +524,7 @@ noncomputable def localComparison (code : LocalCode E) : NormalizedComparison :=
   generatedArrowComparisonSectionHom finiteAxisFoldNormalizedBarAlphaIso
     (localAut E code)
 
+omit [DecidableEq E] in
 /-- Source projection of an assembled comparison is its endpoint
 automorphism. -/
 @[simp] theorem localComparison_source (code : LocalCode E) :
@@ -523,6 +540,7 @@ abbrev LocalComparisonImage := Set.range (localComparison E)
 noncomputable def assemble (code : LocalCode E) : LocalComparisonImage E :=
   ⟨localComparison E code, ⟨code, rfl⟩⟩
 
+omit [DecidableEq E] in
 /-- Every represented comparison has exactly one parametric local code. -/
 theorem code_existsUnique
     (fresh3 : E ≠ Fin 3) (fresh4 : E ≠ Fin 4) (freshNat : E ≠ Nat)
@@ -543,6 +561,7 @@ noncomputable def read
     (comparison : LocalComparisonImage E) : LocalCode E :=
   Classical.choose (code_existsUnique E fresh3 fresh4 freshNat comparison)
 
+omit [DecidableEq E] in
 /-- Reading after assembly recovers every independent code. -/
 @[simp] theorem read_assemble
     (fresh3 : E ≠ Fin 3) (fresh4 : E ≠ Fin 4) (freshNat : E ≠ Nat)
@@ -552,6 +571,7 @@ noncomputable def read
     (code_existsUnique E fresh3 fresh4 freshNat (assemble E code))).2
       code rfl).symm
 
+omit [DecidableEq E] in
 /-- Assembly after reading recovers every represented actual comparison. -/
 @[simp] theorem assemble_read
     (fresh3 : E ≠ Fin 3) (fresh4 : E ≠ Fin 4) (freshNat : E ≠ Nat)
@@ -582,6 +602,7 @@ variable (fresh3 : E ≠ Fin 3) (fresh4 : E ≠ Fin 4) (freshNat : E ≠ Nat)
 def freshIdentityCode : FreshCode E :=
   FiniteAxisFoldExtensionPermutationCode.ofPerm 1
 
+omit [DecidableEq E] [Nontrivial E] in
 /-- The identity fresh table evaluates to the identity actual automorphism. -/
 @[simp] theorem freshAut_identityCode :
     freshAut E (freshIdentityCode E) = 1 := by
@@ -596,11 +617,13 @@ def embedFourCodeFor
     (code : G122FourComponentComparisonLocalModel.LocalCode) : LocalCode E :=
   (code, freshIdentityCode E)
 
+omit [DecidableEq E] [Nontrivial E] in
 /-- The arbitrary-carrier code embedding is injective. -/
 theorem embedFourCodeFor_injective : Function.Injective (embedFourCodeFor E) := by
   intro first second equality
   exact congrArg Prod.fst equality
 
+omit [DecidableEq E] [Nontrivial E] in
 /-- Endpoint evaluation of an embedded accepted code is unchanged. -/
 theorem localAut_embedFourCodeFor
     (code : G122FourComponentComparisonLocalModel.LocalCode) :
@@ -608,6 +631,7 @@ theorem localAut_embedFourCodeFor
       G122FourComponentComparisonLocalModel.localAut code := by
   simp [localAut, embedFourCodeFor]
 
+omit [DecidableEq E] [Nontrivial E] in
 /-- Comparison assembly of an embedded accepted code preserves its underlying
 actual normalized comparison. -/
 theorem localComparison_embedFourCodeFor
@@ -625,6 +649,7 @@ noncomputable def embedFourImageFor
   assemble E (embedFourCodeFor E
     (G122FourComponentComparisonLocalModel.read comparison))
 
+omit [DecidableEq E] [Nontrivial E] in
 /-- The subtype embedding preserves the underlying actual comparison value. -/
 theorem embedFourImageFor_val
     (comparison : G122FourComponentComparisonLocalModel.LocalComparisonImage) :
@@ -638,6 +663,7 @@ theorem embedFourImageFor_val
   rw [G122FourComponentComparisonLocalModel.read_assemble,
     localComparison_embedFourCodeFor]
 
+omit [DecidableEq E] [Nontrivial E] in
 /-- The accepted actual image remains separated after adjoining any fresh
 nontrivial carrier. -/
 theorem embedFourImageFor_injective
@@ -660,6 +686,7 @@ noncomputable def firstFreshPoint : E :=
 noncomputable def secondFreshPoint : E :=
   Classical.choose (Classical.choose_spec (exists_pair_ne E))
 
+omit [Fintype E] [DecidableEq E] in
 /-- The two chosen fresh-carrier points are distinct. -/
 theorem firstFreshPoint_ne_secondFreshPoint :
     firstFreshPoint E ≠ secondFreshPoint E :=
@@ -713,6 +740,7 @@ theorem embedFourImageFor_not_surjective
     surjective (assemble E (freshSwapLocalCode E))
   exact freshSwap_not_embedded E fresh3 fresh4 freshNat comparison equality.symm
 
+omit [DecidableEq E] [Nontrivial E] in
 /-- The old actual comparison range is contained in every fresh-carrier
 comparison range. -/
 theorem fourComponentRange_subset_parametricRange :
@@ -901,6 +929,7 @@ noncomputable def canonicalLift (comparison : LocalComparisonImage E) :
         (Discrete.mk DoubleDiamondTwoCell.second))
       finiteCanonicalObjectNormalization_admissible comparison.1⟩
 
+omit [DecidableEq E] in
 /-- Every represented canonical section is induced by one unique independent
 parametric comparison code. -/
 theorem canonicalSection_unique_localCode
@@ -962,8 +991,10 @@ noncomputable def orbitLift (comparison : LocalComparisonImage E)
     (code : GroupCode) : LiftFiber E comparison :=
   evaluate code • canonicalLift E comparison
 
+omit [DecidableEq E] in
 /-- Actual action separates all source kernel-group codes. -/
-theorem orbitLift_injective (comparison : LocalComparisonImage E) :
+theorem orbitLift_injective
+    (comparison : LocalComparisonImage E) :
     Function.Injective (orbitLift E comparison) := by
   intro first second equality
   apply evaluate_injective
@@ -985,6 +1016,7 @@ noncomputable def orbitPoint (comparison : LocalComparisonImage E)
     (code : GroupCode) : DisplayedFiber E comparison :=
   ⟨orbitLift E comparison code, ⟨code, rfl⟩⟩
 
+omit [DecidableEq E] in
 /-- Every displayed point has exactly one source kernel code. -/
 theorem orbitCode_existsUnique (comparison : LocalComparisonImage E)
     (point : DisplayedFiber E comparison) :
@@ -998,6 +1030,7 @@ noncomputable def readOrbit (comparison : LocalComparisonImage E)
     (point : DisplayedFiber E comparison) : GroupCode :=
   Classical.choose (orbitCode_existsUnique E comparison point)
 
+omit [DecidableEq E] in
 /-- Orbit readback and assembly are inverse in the source-to-actual
 direction. -/
 @[simp] theorem readOrbit_orbitPoint (comparison : LocalComparisonImage E)
@@ -1007,6 +1040,7 @@ direction. -/
     (orbitCode_existsUnique E comparison (orbitPoint E comparison code))).2
       code rfl).symm
 
+omit [DecidableEq E] in
 /-- Orbit assembly and readback are inverse in the actual-to-source
 direction. -/
 @[simp] theorem orbitPoint_readOrbit (comparison : LocalComparisonImage E)
@@ -1054,6 +1088,7 @@ noncomputable instance displayedFiberMulAction
     rw [readOrbit_orbitPoint,
       G122DisplayedFiberBundleReconstruction.subgroupRead_mul, mul_assoc]
 
+omit [DecidableEq E] in
 /-- The transported action is the ambient actual restriction-kernel action on
 underlying lifts. -/
 theorem fiberAction_val (comparison : LocalComparisonImage E)
@@ -1077,6 +1112,7 @@ theorem fiberAction_val (comparison : LocalComparisonImage E)
     _ = value.1 • orbitLift E comparison code := by rw [valueEquality]
     _ = value.1 • point.1 := congrArg (fun lift => value.1 • lift) pointEquality
 
+omit [DecidableEq E] in
 /-- Between any two displayed points there is one unique actual generated
 subgroup displacement. -/
 theorem displayedFiber_existsUnique_smul_eq
@@ -1115,6 +1151,7 @@ theorem displayedFiber_existsUnique_smul_eq
     at orbitEquality
   exact mul_right_cancel (orbitLift_injective E comparison orbitEquality)
 
+omit [DecidableEq E] in
 /-- Orbit assembly intertwines source left multiplication with the actual
 generated-subgroup action. -/
 theorem orbitPoint_equivariant (comparison : LocalComparisonImage E)
@@ -1146,6 +1183,7 @@ noncomputable def totalRead (point : TotalDisplayedSpace E) : TotalCode E :=
   (read E fresh3 fresh4 freshNat point.1,
     readOrbit E point.1 point.2)
 
+omit [DecidableEq E] in
 /-- Reading after dependent assembly recovers both source codes. -/
 @[simp] theorem totalRead_assemble (code : TotalCode E) :
     totalRead E fresh3 fresh4 freshNat (totalAssemble E code) = code := by
@@ -1154,6 +1192,7 @@ noncomputable def totalRead (point : TotalDisplayedSpace E) : TotalCode E :=
   · exact read_assemble E fresh3 fresh4 freshNat comparisonCode
   · exact readOrbit_orbitPoint E (assemble E comparisonCode) kernelCode
 
+omit [DecidableEq E] in
 /-- Dependent assembly after reading recovers the actual comparison and
 displayed lift. -/
 @[simp] theorem totalAssemble_read (point : TotalDisplayedSpace E) :
@@ -1177,6 +1216,7 @@ noncomputable def totalReconstructionEquiv :
   left_inv := totalRead_assemble E fresh3 fresh4 freshNat
   right_inv := totalAssemble_read E fresh3 fresh4 freshNat
 
+omit [DecidableEq E] in
 /-- Parametric comparison reconstruction, dependent total reconstruction,
 principal actual action, and equivariance hold on one theorem surface. -/
 theorem reconstruction_principal_and_equivariant

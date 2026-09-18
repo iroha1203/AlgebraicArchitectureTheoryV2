@@ -5418,7 +5418,7 @@ audits:
     - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/G122ParametricCarrierDisplayedBundle.lean: pass"
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122ParametricCarrierDisplayedBundle.lean: pass"
     - "cd research/lean && lake build ResearchLean.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle: pass (4422 jobs)"
-    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle: 93 declarations, standard axioms only"
+    - "#assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G122ParametricCarrierDisplayedBundle: 92 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "recover comparison values beyond the carrier-parametric represented family or deliver a new arbitrary-Hom reconstruction with substantive separation, assembly, and common-surface connection in the same cycle"
 ```
