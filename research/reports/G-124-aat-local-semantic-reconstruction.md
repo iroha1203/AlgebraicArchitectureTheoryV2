@@ -6340,6 +6340,8 @@ result:
   lean_artifacts:
     - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.ReadingSeparation"
     - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.HomFamilySeparation"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.constantUnitReading_not_separating"
+    - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.constantUnitHomFamilyReading_not_separating"
     - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.HomSeparation"
     - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.HomAssembly"
     - "AAT.AG.LocalSemanticReconstruction.LocalReconstructionEquivalence.ObjectAssembly"
@@ -6360,6 +6362,8 @@ result:
     - "nonempty_reconstructionData_iff_isEquivalence"
     - "primitiveGraphEquivalenceType"
     - "completeGeometryGraphSeparation"
+    - "constantUnitReading_not_separating"
+    - "constantUnitHomFamilyReading_not_separating"
   claim_mapping:
     theorem_names:
       - "ReconstructionData.assemble_map"
@@ -6380,6 +6384,7 @@ result:
       - "explicit object assembly produces essential surjectivity"
       - "the three contracts produce a categorical equivalence"
       - "every categorical equivalence returns the three contracts"
+      - "constant Bool-to-PUnit readings give explicit negative fixtures for both separation predicates"
       - "primitive Bool graphs realize the full contract and are categorically equivalent to Type"
       - "complete geometry graph reading realizes the indexed Hom-family separation half for every package pair"
     undischarged_assumptions: []
@@ -6421,13 +6426,13 @@ audits:
   target_fitting: none-found
   target_fitting_reason: "the theorem is the general B reconstruction spine itself and preserves the separate AAT discharge obligation"
   vacuity: none-found
-  vacuity_reason: "the primitive graph instance constructs a genuine category equivalence for arbitrary types and functions"
+  vacuity_reason: "primitive graphs provide positive separation and a genuine category equivalence, while constant Bool-to-PUnit readings refute both ReadingSeparation and HomFamilySeparation"
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   four_lane_question: "Does explicit hom-level separation and assembly together with object assembly characterize a categorical equivalence with two-sided Hom inverses and object isomorphisms, and does the primitive Bool graph category realize the theorem while Cycle 64 complete geometry graphs realize the underlying indexed Hom-family separation contract for every package pair without a local graph category or assembly claim?"
   validation_refs:
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/LocalReconstructionEquivalence.lean: pass"
-    - "#assert_standard_axioms_only LocalReconstructionEquivalence: 71 declarations, standard axioms only"
+    - "#assert_standard_axioms_only LocalReconstructionEquivalence: 75 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "define a complete-geometry local Hom category with independent graph coherence equations and construct Hom assembly from them, then apply the functor-level reconstruction principle without using an image subtype or completed morphism certificate"
 ```

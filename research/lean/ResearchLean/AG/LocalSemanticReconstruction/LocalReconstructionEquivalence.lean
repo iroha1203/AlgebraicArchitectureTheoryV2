@@ -56,6 +56,35 @@ structure HomFamilySeparation (Object : Sort*)
   /-- Every indexed Hom reading is separating. -/
   hom : ∀ X Y, ReadingSeparation (@read X Y)
 
+/-! ### Positive and negative fixtures for separation -/
+
+/-- The constant map is a concrete nonseparating reading. -/
+def constantUnitReading : Bool → PUnit :=
+  fun _ => PUnit.unit
+
+/-- A constant reading on a two-element global type is not separating. -/
+theorem constantUnitReading_not_separating :
+    ¬ ReadingSeparation constantUnitReading := by
+  intro separation
+  have impossible : true = false := separation.injective rfl
+  cases impossible
+
+/-- The one-object constant Hom family used as a negative indexed fixture. -/
+def constantUnitHomFamilyReading :
+    ∀ {_ _ : PUnit}, Bool → PUnit :=
+  fun _ => PUnit.unit
+
+/-- Pointwise failure at the unique object pair prevents Hom-family
+separation. -/
+theorem constantUnitHomFamilyReading_not_separating :
+    ¬ HomFamilySeparation PUnit
+      (fun _ _ => Bool) (fun _ _ => PUnit)
+      (@constantUnitHomFamilyReading) := by
+  intro separation
+  have impossible : true = false :=
+    (separation.hom PUnit.unit PUnit.unit).injective rfl
+  cases impossible
+
 /-- Hom separation for a functor is the indexed-family contract specialized to
 the source and target Hom types of that functor. -/
 abbrev HomSeparation (F : C ⥤ D) :=
