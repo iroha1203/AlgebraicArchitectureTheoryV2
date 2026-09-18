@@ -137,13 +137,15 @@
   merge commit `c31914db8437c1798cf5799b722b80b270d16927`
 - Cycle 64 accepted PR: [#4778](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4778),
   merge commit `f7f9a4eca58417c82b017fa5fe465d175db13621`
+- Cycle 65 accepted PR: [#4779](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4779),
+  merge commit `900d73e14e70cacb37915602f3838bae46e75ac2`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: Hom分離、Hom組立て、対象組立てから圏同値とHom両逆を導く一般再構成原理を
-  証明し、primitive Bool graph圏で完全適用する。complete geometry graphは全package対のindexed
-  Hom-family分離として同じcontractへ接続し、local graph圏とassemblyの未完了を保つ
-- next proof obligation: complete geometry graphの独立coherence条件とlocal Hom圏を構成し、任意の整合graph
-  からHom assemblyを与えて一般再構成原理へ適用する。image subtypeや完成morphism certificateは用いない
+- current proof obligation: raw complete graph bundleにidentity/compositionを独立に定めてlocal Hom圏を構成し、
+  complete geometry readingを全dependent成分で合成を保つfaithful functorへ持ち上げる。対象assemblyを放電し、
+  残るHom assemblyがfullnessと同値であることを固定する
+- next proof obligation: raw complete graph圏の独立coherence部分圏を定め、任意coherent graphのHom assemblyを
+  構成してfullnessを放電する。image subtypeや完成morphism certificateは用いない
 
 ## Cycle 1 — rejected
 
@@ -6437,6 +6439,135 @@ audits:
   next_obligation: "define a complete-geometry local Hom category with independent graph coherence equations and construct Hom assembly from them, then apply the functor-level reconstruction principle without using an image subtype or completed morphism certificate"
 ```
 
+## Cycle 66: raw complete-graph category and faithful reading
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 66
+status: result-proposed
+branch: codex/4711-g124-complete-graph-category
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 900d73e14e70cacb37915602f3838bae46e75ac2
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 65 acceptance: Issue comment 5737528107; Cycle 66 selection: Issue comment 5737538633"
+  proof_dag_predecessors:
+    - "Cycle 63 primitive function-graph category"
+    - "Cycle 64 complete geometry graph separation"
+    - "Cycle 65 separation-and-assembly reconstruction equivalence"
+  proof_obligation: "construct an independent category of raw complete graph bundles, lift complete geometry reading to a faithful identity-on-packages functor preserving every dependent component, discharge object assembly, and identify missing Hom assembly exactly with fullness"
+  selection_reason: "this adds the missing functorial local Hom surface and an exact universal characterization of its remaining assembly gap in one cycle"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryGraphCategory.lean"
+  risks:
+    - "backward context graphs might compose in the wrong order"
+    - "dependent tagged maps might fail functorial composition"
+    - "the local category might be defined as a global image"
+    - "faithfulness might be overstated as fullness"
+  unchecked:
+    - "independent coherence equations selecting assemblable raw graph bundles remain for the next cycle"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "All thirteen graph components receive independent identity and composition operations, with reversed order for contextBackward, and satisfy category laws. Complete geometry reading preserves identity and composition in every primitive and dependent tagged field, giving an identity-on-packages faithful functor. Object assembly is reflexive. Nonempty HomAssembly is proved equivalent to fullness, and any independently supplied HomAssembly produces the Cycle 65 reconstruction data and a categorical equivalence. Fullness itself is not asserted."
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.CompleteMapGraphs.ext"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.CompleteMapGraphs.id"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.CompleteMapGraphs.comp"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.CompleteMapGraphs.id_comp"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.CompleteMapGraphs.comp_id"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.CompleteMapGraphs.assoc"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.readCompleteMapGraphs_id"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.readCompleteMapGraphs_comp"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.readingFunctor"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.readingFunctorHomSeparation"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.readingFunctorFaithful"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.readingFunctorObjectAssembly"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.reconstructionDataOfHomAssembly"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.nonempty_homAssembly_iff_full"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.equivalenceOfHomAssembly"
+  evidence:
+    - "CompleteMapGraphs.id_comp"
+    - "CompleteMapGraphs.comp_id"
+    - "CompleteMapGraphs.assoc"
+    - "readCompleteMapGraphs_id"
+    - "readCompleteMapGraphs_comp"
+    - "readingFunctorHomSeparation"
+    - "nonempty_homAssembly_iff_full"
+  claim_mapping:
+    theorem_names:
+      - "CompleteMapGraphs.id_comp"
+      - "CompleteMapGraphs.comp_id"
+      - "CompleteMapGraphs.assoc"
+      - "readCompleteMapGraphs_id"
+      - "readCompleteMapGraphs_comp"
+      - "readingFunctorHomSeparation"
+      - "readingFunctorObjectAssembly"
+      - "nonempty_homAssembly_iff_full"
+      - "equivalenceOfHomAssembly"
+    source_labels:
+      - "G-124 fixed target B local model category and reading functor"
+      - "Cycle 66 fixed four-lane question"
+    conjuncts:
+      - "raw complete graph bundles form an independent category"
+      - "contextBackward composition uses the reverse component order"
+      - "complete geometry reading preserves all primitive and dependent components"
+      - "the reading functor is faithful by Cycle 64 joint separation"
+      - "object assembly is exact because objects retain the same package"
+      - "the missing Hom assembly is equivalent to fullness"
+      - "an independently proved Hom assembly upgrades reading to an equivalence"
+    undischarged_assumptions: []
+    acceptance_point: "the raw local Hom category and faithful reading functor are constructed without global-image data, while the exact remaining fullness obligation is exposed rather than assumed"
+    port_status: not-applicable
+  nonclaims:
+    - "the raw complete-graph reading functor is full"
+    - "every raw complete graph bundle satisfies geometry coherence"
+    - "every raw complete graph bundle assembles to a GeometryTotalHom"
+    - "G-124 target B is fully discharged for all required families"
+audits:
+  premise_delta:
+    discharged:
+      - "raw local graph identity, composition, and category laws / componentwise GraphCode operations"
+      - "reading functoriality / explicit identity and composition theorems for all thirteen fields"
+      - "functor-level separation / readCompleteMapGraphs_injective"
+      - "object assembly / package identity and reflexive isomorphism"
+      - "assembly gap classification / Nonempty HomAssembly iff Full"
+    remaining:
+      - "independent coherence conditions and assembly for the coherent raw graph subcategory"
+      - "object assembly beyond the identity-on-packages complete-geometry branch"
+  certificate_provenance:
+    discharged:
+      - "local category / raw GraphCode data and total-functional laws only"
+      - "faithfulness / accepted Cycle 64 injectivity theorem"
+      - "conditional equivalence / explicit HomAssembly argument"
+    unresolved:
+      - "fullness / deliberately not inhabited"
+  proof_use:
+    used:
+      - "GraphCode assemble injectivity proves all componentwise category laws"
+      - "dependent tagged map definitions are unfolded in readCompleteMapGraphs_comp"
+      - "Cycle 64 injectivity supplies functor faithfulness"
+      - "Cycle 65 ReconstructionData supplies the conditional equivalence"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  target_fitting_reason: "the cycle constructs the B local Hom category and functorial reading surface while preserving the independent assembly obligation"
+  vacuity: none-found
+  vacuity_reason: "the raw category contains every total-functional component bundle, not only the image of global morphisms"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  four_lane_question: "Do raw complete graph bundles form an independent componentwise category, does complete geometry reading define a faithful identity-on-objects functor into it preserving all dependent tagged components, and is its missing fullness exactly the Hom-assembly obligation required by Cycle 65 without asserting it?"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryGraphCategory.lean: pass"
+    - "#assert_standard_axioms_only CompleteGeometryGraphCategory: 38 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "define independent geometry coherence equations closed under identity and composition, form the coherent graph subcategory, and assemble every coherent graph into a GeometryTotalHom"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -6569,8 +6700,13 @@ audits:
   Homの両逆・一意preimage・fully faithful・essentially surjective・圏同値と、その逆向きの特徴付けを
   証明した。primitive total-functional Bool graph圏をTypeと圏同値にする完全な適用を同梱し、Cycle 64の
   complete geometry graphは全package対に対するindexed Hom-family分離を放電することを明示した。
-  任意complete graph族のlocal Hom圏、独立coherence条件とHom/対象assembly、および四族共通の
-  実現圏・局所モデル圏への適用は未完了である。
+  Cycle 66では十三成分すべてを独立に持つraw complete graph bundleへ恒等射と合成を定め、
+  backward contextだけ順序を反転した成分別の圏を構成した。complete geometry readingが全dependent
+  tagged成分で恒等射と合成を保存するidentity-on-packages functorであること、Cycle 64の分離から
+  faithfulであること、対象組立て、および残るHom組立てがfullnessと同値であることを証明した。
+  任意raw bundleのfullnessは主張せず、独立coherence条件で閉じた部分圏とそのHom組立て、
+  direct normalization kernel自体のprimitive local syntax、および四族共通の実現圏・局所モデル圏への
+  適用は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
