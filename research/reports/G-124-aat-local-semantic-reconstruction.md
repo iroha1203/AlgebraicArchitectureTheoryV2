@@ -8459,3 +8459,63 @@ Contextの既存入力は`A`、固定carrier版の環の既存入力は型`K`で
 単一file検証と次段のimport用の単一module出力は両fileでpass。
 明示宣言の公理監査はcontext 29件、ring 38件、namespace全体の監査はそれぞれ81件・108件である。
 新規sourceのplaceholder・hidden/BiDi・privacy・語彙・整形scanを行った。Research全体buildは実行していない。
+
+#### 方程式・回路・invariant・signature・選択幾何の原始評価
+
+以下は同じ独立検証の継続であり、Cycleを加算しない。対象は任意のnativeな各構造であり、
+特定fixtureの生成像へ限定していない。各componentの検証は通過したが、正式PR査読は未実施である。
+
+| Source / namespace末尾 | 構成と証明 |
+| --- | --- |
+| `IndependentEquationPrimitiveReadings.lean` / `IndependentEquationPrimitive` | equation index/role、各contextのobservable carrierと環演算、restriction、violation、residualを点評価から構成。環保存・恒等・合成・二つの自然性からnative equation systemを作り、`assemble_read`・`read_assemble`・`readingEquiv`で全fieldの両逆を証明 |
+| 同fileの`Circuit` | 有限detector codeだけを読む。`IsLawful`はaccepted matching datumごとのcontext/Atomにおける非零residualの存在条件。`assemble_sound`・`read_isLawful`・`lawful_iff_sound`がnative `Sound`との対応を証明。witness自体は対象dataに残さない |
+| `IndependentInvariantSignaturePrimitiveReadings.lean` / `IndependentInvariantSignaturePrimitive` | `Invariants`はindex、function/predicateの種別、value carrier、各objectでの点評価を、`Signature`はaxis、依存coordinate carrier、selected、coordinateの点評価を読む。両namespaceの`readingEquiv`・両逆・`read_injective`が全native構造を回復 |
+| `IndependentContextObjectPrimitiveReadings.lean` / `IndependentContextObjectPrimitive` | Support/Axis/Observableの型参照、原始Extensionの型と選択値、3種類のpredicate点評価からnative contextを作る。queryの宣言自体はarchitecture objectの選択に先行し、family所属条件を`IsLawful`に置く。`readingEquiv`が全context fieldを回復 |
+| 同fileの`Overlap` | overlapの返すcontextを上記queryへ展開。support所属と4つの順序条件から`ContextOverlapPullback`を作り、`assemble_read`・`read_assemble`・`readingEquiv`で全選択を回復 |
+| `IndependentCoveragePrimitiveReadings.lean` / `IndependentCoveragePrimitive` | 元の9述語を保持。candidate equation index/axisとrequired roleによるactive条件を明示し、`readingEquiv`が全`CoverageRequirements`を回復 |
+
+namespaceの共通prefixは`AAT.AG.LocalSemanticReconstruction`である。
+Equation/Coverageのqueryはarchitecture objectを既存parameterとし、選んだequation systemやsignatureを
+query型へ埋め込まない。Overlapの順序条件は前段で構成したcontextの値を引数にする。
+これらの依存するinstanceを共通有限queryへ接続する義務は後段に残る。
+
+誤入力の検査として、Equationの`eraseRestrictions_not_typed`は反射context上で必要なrestriction応答の欠損を、
+Signatureの`eraseCoordinates_not_typed`は宣言済みcoordinateの欠損を、Invariantsの
+`eraseFunctionValues_not_typed`はfunction種別のvalue欠損を排除する。
+Coverageの`nonrequired_rejected`はrequired以外のequationをrequired coordinateとして選ぶtableを排除する。
+設計で指定された全反証scenarioの統合検査は未完了である。
+
+#### 完全なcoreとrawを含むgeometry objectへの依存する接続
+
+`IndependentCoreTableAssembly.lean`のnamespace `IndependentCoreTableAssembly`に、次の接続を置いた。
+
+- `equationReadingEquiv`: primitive context、equation、circuit tableを依存順に組み合わせ、完全な
+  `EquationReading`と対応させる。circuit側の条件は上記の非零witness条件を用いる。
+- `finiteExtractionEquiv`・`foundationEquiv`: 選択sourceの元の有限family条件をPropとして保持し、
+  extraction・composition・object formation・invariant・signature・operationの原始tableを組み合わせる。
+- `generatedObject_eq`: この組合せが`IndependentCorePrimitive.Generation.object`そのものであることを示す。
+- `coreEquiv`・`assemble_read`・`read_assemble`: 全`CoreReading`と依存primitive tableの両逆。
+- `packageEquiv`・`assemblePackage_readPackage`・`readPackage_assemblePackage`: 元の2つのAtom法則を含む
+  全`AATCorePackage`との両逆。`package_object`は生成objectとequation tableの添字objectの一致を示す。
+
+`IndependentGeometryTableAssembly.lean`のnamespace `IndependentGeometryTableAssembly`では、このcore構成に
+原始coverage/overlap、可変carrierの係数環、受理済み`IndependentRawLocal.rawTableEquiv`を依存順で接続した。
+`objectEquiv : ReadingCore.{u,v} U ≃ ObjectData.{u,v} U`は任意のAtom carrier `U`、任意の係数universe `v`について
+成り立つ。`assemble_read`・`read_assemble`がrawを含む全fieldの厳密な両逆を、`read_injective`が全fieldの分離を示す。
+`core_assemble`・`geometry_assemble`・`coefficient_assemble`は実際のcomponent構成への評価式である。
+
+この`ObjectData`は、完成したcore/geometry/ring/rawを値として保持する五fieldの再包装ではない。
+保持するdataは各原始queryへの点応答であり、上記component assemblerからnative構造を作る。
+`nativeEquiv`等のnative構造の分解は比較証明だけに使い、局所response型には入れない。
+依存するSigmaの添字変更にはmathlibの`Equiv.sigmaCongrLeft'`・`sigmaCongrRight`を用いた。
+
+ただし、現在の`ObjectData`は前段の組立結果に依存するtableの型である。
+実現の選択に先行する共通宣言・有限図式・局所値型は未完成であり、これをその代用として受理しない。
+最初の検証点Iを閉じるには、この依存する構成への共通有限tableからの接続、各原始式の有限support、
+局所Homからの元と同じ厳密なraw等式、G-122/taggedの両Hom方式と全Hom両逆・恒等・合成、
+指定反証scenarioと正式査読が引き続き必要である。外側のtotal categoryやrouting wrapperは追加していない。
+
+6つの新規sourceを個別に検証した。明示宣言の`#print axioms`は順に47・44・33・13・36・24件、
+namespace監査は123・137・114・75・36・24件で、標準公理のみである。
+既存のResearch module manifestとaggregate importへ登録したが、aggregate自体のelaborationと
+Research全体buildは実行していない。新規sourceのplaceholder・hidden/BiDi・privacy・語彙・整形scanも行った。
