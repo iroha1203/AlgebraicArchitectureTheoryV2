@@ -83,8 +83,8 @@ G-125の完了条件に含めない。GOALが求める論文との対応は、�
   式(2)のcoboundaryを加えclassを変えないこと、actual比較像とLaw-value生成式が一致すること、誘導H¹写像が
   specified obstruction classをdiagnostic classへ送ること、actual classの零からdiagnostic classの零が
   従うことを示し、coarse/fineのcombined-site入力でB1を放電する。
-- 完了: diagnostic classの零から得る有理degree-zero boundary証人を、full chart support上の
-  Law-value座標で読み、`R_q`から各block係数を回収して座標ごとにfloorする。得られた整数block係数を
+- 完了: diagnostic classの零から得る有理degree-zero boundary証人を、各生成Law-value labelについて
+  全chartに共通する実target代表の座標で読み、`R_q`から各block係数を回収して座標ごとにfloorする。得られた整数block係数を
   presentation groupとactual Čech C⁰へ戻し、そのactual coboundaryが指定mismatchに一致することを証明する。
   これによりcoarse/fineの任意の許容局所データについてactual/diagnostic classの零性同値を導き、B2を放電する。
 - 完了: 紙上設計の粗い3-patch coverから細かい4-patch coverへの実refinementを、fine chartの
@@ -92,12 +92,14 @@ G-125の完了条件に含めない。GOALが求める論文との対応は、�
   引き戻し、contracted edgeを零sectionへ送るactual Čech cochain mapを構成して`d⁰`可換性から
   `T_ob`をH¹へ降ろした。同じnerve morphism上の既存`generatedComparisonH1Map`を`T_diag`として、
   coefficient比較の自然性からC1の可換平方を証明し、指定局所データ・actual class・diagnostic classの輸送まで導出した。
+- 完了: 選定refinementについてC0--C6を同じ有限nerveとsupportから証明し、既存
+  `generatedComparisonH1Map_bijective`を適用する。診断類輸送と両readingのB2を組み合わせ、
+  任意の粗い局所データとその輸送について指定actual障害類の零性同値C2を証明する。
 - 完了（仮定相対）: supplied face-index-empty nerveのpresentation係数cochainと、条件付きactual Ob層の実
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
-- 未完了: C2、同一入力上の有限例、report上の対応整理、最終検証・査読。
-- 次のproof obligation: 同じ`nerveMorphism`上で紙上設計の`Condition C`を放電し、既存の
-  `generatedComparisonH1Map`の全単射性とB2・C1を組み合わせ、指定障害類の粗細reading間の
-  零性同値を示すC2へ進む。
+- 未完了: 同一入力上の零・非零有限例、report上の最終対応整理、最終検証・査読。
+- 次のproof obligation: 粗い側で零障害と非零障害を生む局所データを固定し、細かい側へ輸送して
+  B1・B2・C1・C2を両ケースへ適用する有限例を完成する。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -2468,4 +2470,119 @@ audits:
     - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.CombinedAtomReadingNaturality: pass; 3727 jobs"
   blocking_findings: []
   next_obligation: "prove the selected Condition C instance and combine diagnostic H1 bijectivity, B2 and C1 to derive C2"
+```
+
+## Cycle 21 — selected Condition C and C2
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 21
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: a893fb9b792c92458ed26ac0de3e006e0f714082
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "GOAL C2 after Cycle 20 merge a893fb9b792c92458ed26ac0de3e006e0f714082"
+  proof_dag_predecessors:
+    - "specified B2 zero reflection: Cycle 19"
+    - "actual/diagnostic reading naturality and specified-class transport: Cycle 20"
+    - "generatedComparisonH1Map_bijective under Condition C: reviewed predecessor"
+  proof_obligation: "prove C0--C6 for the selected refinement and derive specified obstruction zero-class equivalence across readings"
+  selection_reason: "this is the remaining abstract A--C obligation before fixing the zero and nonzero local-data examples"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/SelectedReadingConditionC.lean"
+    - "SelectedReadingConditionC.conditionC"
+    - "SelectedReadingConditionC.actual_class_eq_zero_iff_mapped_actual_class_eq_zero"
+  risks:
+    - "mistaking multiple target witnesses for multiple coordinates, although target witnesses are proof-only"
+    - "assuming diagnostic bijectivity instead of deriving it from the existing Condition C theorem"
+    - "claiming an actual H1 isomorphism when C2 only establishes zero equivalence for transported specified classes"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The paper-selected full-target support is preserved. Target witnesses are proof-only in CellCoordinate, so named coordinates still enumerate each Law-value block by the underlying nerve cells even when both hidden-coordinate representatives are supported. Exhaustive incidence proofs discharge C0--C6; the face-free fiber graph over c0 is the single edge k and all other fibers are singletons, so C3 follows from conservation. Existing diagnostic H1 bijectivity, specified-class transport, and B2 yield C2 for every transported coarse datum."
+  completion_candidate: no
+  lean_artifacts:
+    - "GeneratorPresentation.CommonLabelChartSupport"
+    - "CombinedAtomSpecifiedReflection.fine_commonLabelChartSupport"
+    - "SelectedReadingConditionC.conditionC0"
+    - "SelectedReadingConditionC.conditionC1"
+    - "SelectedReadingConditionC.conditionC2"
+    - "SelectedReadingConditionC.conditionC3"
+    - "SelectedReadingConditionC.conditionC4"
+    - "SelectedReadingConditionC.conditionC5"
+    - "SelectedReadingConditionC.conditionC6"
+    - "SelectedReadingConditionC.conditionC"
+    - "SelectedReadingConditionC.diagnosticH1Map_bijective"
+    - "SelectedReadingConditionC.actual_class_eq_zero_iff_mapped_actual_class_eq_zero"
+  evidence:
+    - "fine support remains the whole Bool x Bool target exactly as fixed by the paper design and Cycle 13"
+    - "CellCoordinate equality records cell, Law and value but not the target witness, so full support creates no duplicate block coordinates"
+    - "Cycle 21 generalizes the B2 coordinate constructor from FullChartSupport to CommonLabelChartSupport without changing the selected support; a Boolean omitted-label fixture proves the new premise can fail"
+    - "comparisonFactor remains first projection and is noninjective on the supported reading target"
+    - "each coarse edge ab, bc and ac has its unique same-named fine lift; k is the contracted internal edge"
+    - "complete face indices are empty on both sides, making C4 vacuous and reducing C3 to acyclicity of the coordinate fibers"
+    - "flow conservation at a0 forces the sole internal coefficient on k to vanish; every other edge is outside the chosen fiber"
+    - "C2 is an equivalence only for the specified class of x and mapLocalData x, not a claimed isomorphism of actual H1 groups"
+  claim_mapping:
+    theorem_names:
+      - "SelectedReadingConditionC.conditionC"
+      - "SelectedReadingConditionC.actual_class_eq_zero_iff_mapped_actual_class_eq_zero"
+    source_labels:
+      - "GOAL C ConditionC"
+      - "GOAL C2 specified obstruction zero equivalence"
+      - "Issue #4791 paper design section 7"
+    conjuncts:
+      - "selected C0--C6 -> conditionC"
+      - "Condition C -> existing generated diagnostic H1 bijectivity"
+      - "diagnostic class transport plus injectivity -> diagnostic zero equivalence"
+      - "coarse/fine B2 -> specified actual obstruction zero equivalence"
+    undischarged_assumptions: []
+    g125_remaining_obligations:
+      - "fixed zero/nonzero local data and end-to-end finite-example correspondence"
+      - "final report alignment, validation, and independent review"
+    acceptance_point: "Condition C is proved from finite support/incidence data; neither it nor the refinement stores bijectivity or the desired zero equivalence"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "the selected finite nerve, nonconstant Law, adequacy proofs, primitive R_q, and actual refinement are predecessor constructions"
+      - "the selected fine support is the fixed full-target input from the paper design and Cycle 13"
+    direction_hypothesis:
+      - "Condition C is the GOAL-authorized sufficient condition for existing diagnostic comparison bijectivity"
+    discharge_required: []
+    conclusion_equivalent_risk:
+      - "CommonLabelChartSupport mentions only concrete support membership and Law evaluation"
+      - "C0--C6 mention finite incidence/support and local rational filling, not H1 bijectivity"
+  premise_delta:
+    discharged:
+      - "selected C0--C6"
+      - "selected diagnostic comparison bijectivity"
+      - "specified obstruction zero-class equivalence across the selected reading change"
+    remaining:
+      - "fixed zero/nonzero local data and their explicit class outcomes"
+  certificate_provenance:
+    discharged:
+      - "block coordinates are reconstructed from real supported targets and existing Law-value subnerves"
+      - "diagnostic bijectivity is the existing theorem applied to the newly proved Condition C package"
+      - "actual zero equivalence uses the Cycle 20 transported data and Cycle 19 B2 equivalences"
+    unresolved: []
+  proof_use:
+    used:
+      - "full-target support and proof-only target witnesses are used by coordinate construction and C0"
+      - "the contracted edge k is used by C1 connectivity and C3 conservation"
+      - "all Condition C fields are consumed by generatedComparisonH1Map_bijective"
+      - "diagnostic class transport and both B2 directions are consumed by C2"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-for-c2-obligation
+  target_fitting: none-found
+  vacuity: "the Law remains nonconstant, both Law values occur, both hidden coordinates remain supported, the comparison factor is noninjective on that support, and the c0 chart fiber contains two fine charts joined by a real contracted edge"
+  one_way_as_equivalence: "diagnostic map injectivity supplies reflection and map_zero supplies preservation; both actual directions are then obtained through the already proved B2 equivalences"
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/ObstructionDiagnosticBridge/SelectedReadingConditionC.lean: pass; 43 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct explicit zero and nonzero coarse local data, transport them, and prove every required class outcome on the same selected input"
 ```
