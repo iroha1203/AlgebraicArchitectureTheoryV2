@@ -74,15 +74,18 @@ noncomputable def comp {U : AtomCarrier.{u}}
   CompleteGeometryGraphCode.read
     (GeometryTotalHom.comp first.assemble second.assemble)
 
-/-- Assembly sends lawful-code identity to actual geometry identity. -/
+/-- Cycle 72 checkpoint comparison for transported identity.
+Premise summary: no explicit premise; Cycle 71 `assemble_read` supplies the
+equality with actual geometry identity. -/
 @[simp]
 theorem assemble_id {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) :
     (id G).assemble = GeometryTotalHom.id G :=
   CompleteGeometryGraphCode.assemble_read _
 
-/-- The identity assembly formula characterizes the lawful identity code
-uniquely. -/
+/-- Cycle 72 checkpoint uniqueness theorem for transported identity.
+Premise summary: the displayed assembly equality is the only premise in the
+reverse direction; Cycle 71 assembly injectivity recovers the code. -/
 theorem eq_id_iff_assemble_eq {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U)
     (candidate : CompleteGeometryGraphCode G G) :
@@ -95,7 +98,9 @@ theorem eq_id_iff_assemble_eq {U : AtomCarrier.{u}}
     rw [assemble_id]
     exact equality
 
-/-- Assembly sends lawful-code composition to actual geometry composition. -/
+/-- Cycle 72 checkpoint comparison for transported composition.
+Premise summary: no explicit premise; Cycle 71 `assemble_read` supplies the
+equality with actual geometry composition. -/
 @[simp]
 theorem assemble_comp {U : AtomCarrier.{u}}
     {G H K : GeometryPackage.{u, v} U}
@@ -105,8 +110,9 @@ theorem assemble_comp {U : AtomCarrier.{u}}
       GeometryTotalHom.comp first.assemble second.assemble :=
   CompleteGeometryGraphCode.assemble_read _
 
-/-- The assembly formula is a universal property for lawful composition: it
-characterizes the composite code uniquely. -/
+/-- Cycle 72 checkpoint universal property for transported composition.
+Premise summary: the displayed assembly equality is the only premise in the
+reverse direction; Cycle 71 assembly injectivity recovers the composite code. -/
 theorem eq_comp_iff_assemble_eq {U : AtomCarrier.{u}}
     {G H K : GeometryPackage.{u, v} U}
     (first : CompleteGeometryGraphCode G H)
@@ -123,7 +129,9 @@ theorem eq_comp_iff_assemble_eq {U : AtomCarrier.{u}}
     rw [assemble_comp]
     exact equality
 
-/-- Left identity for lawful complete graph codes. -/
+/-- Cycle 72 checkpoint left-unit law for transported complete-code operations.
+Premise summary: no explicit premise; it uses Cycle 71 assembly injectivity and
+the actual geometry category left-unit law. -/
 @[simp]
 theorem id_comp {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
@@ -135,7 +143,9 @@ theorem id_comp {U : AtomCarrier.{u}}
   exact @Category.id_comp (GeomReadCategory.{u, v} U)
     (geometryTotalCategory U) G H code.assemble
 
-/-- Right identity for lawful complete graph codes. -/
+/-- Cycle 72 checkpoint right-unit law for transported complete-code operations.
+Premise summary: no explicit premise; it uses Cycle 71 assembly injectivity and
+the actual geometry category right-unit law. -/
 @[simp]
 theorem comp_id {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
@@ -147,7 +157,9 @@ theorem comp_id {U : AtomCarrier.{u}}
   exact @Category.comp_id (GeomReadCategory.{u, v} U)
     (geometryTotalCategory U) G H code.assemble
 
-/-- Associativity for lawful complete graph codes. -/
+/-- Cycle 72 checkpoint associativity law for transported complete-code operations.
+Premise summary: no explicit premise; it uses Cycle 71 assembly injectivity and
+the actual geometry category associativity law. -/
 @[simp]
 theorem assoc {U : AtomCarrier.{u}}
     {G H K L : GeometryPackage.{u, v} U}
@@ -176,7 +188,9 @@ abbrev Object := PackageIndexedObject
 
 namespace PackageIndexedObject
 
-/-- Lawful complete geometry graph codes form a category. -/
+/-- Cycle 72 checkpoint category on package-indexed objects and lawful-code Homs.
+Premise summary: no additional premise; its operations and laws are the
+transported `LawfulCode` declarations above, not componentwise closure. -/
 noncomputable instance {U : AtomCarrier.{u}} :
     Category (PackageIndexedObject.{u, v} U) where
   Hom source target :=
@@ -194,7 +208,9 @@ end PackageIndexedObject
 
 open CompleteGeometryGraphAssembly
 
-/-- Read actual complete geometry morphisms into the lawful local category. -/
+/-- Cycle 72 checkpoint reader into the package-indexed lawful-code category.
+Premise summary: no additional premise; Cycle 71 read/assemble inverse laws
+prove preservation of the transported identity and composition. -/
 noncomputable def readingFunctor (U : AtomCarrier.{u}) :
     GeomReadCategory.{u, v} U ⥤ Object.{u, v} U where
   obj package := ⟨package⟩
@@ -211,7 +227,9 @@ noncomputable def readingFunctor (U : AtomCarrier.{u}) :
       CompleteGeometryGraphCode.assemble_read]
     rfl
 
-/-- Assemble lawful local morphisms back into actual geometry morphisms. -/
+/-- Cycle 72 checkpoint assembler from package-indexed lawful-code Homs.
+Premise summary: no additional premise; `LawfulCode.assemble_id` and
+`LawfulCode.assemble_comp` prove functoriality. -/
 noncomputable def assemblyFunctor (U : AtomCarrier.{u}) :
     Object.{u, v} U ⥤ GeomReadCategory.{u, v} U where
   obj object := object.package
@@ -219,7 +237,9 @@ noncomputable def assemblyFunctor (U : AtomCarrier.{u}) :
   map_id object := LawfulCode.assemble_id object.package
   map_comp first second := LawfulCode.assemble_comp first second
 
-/-- Reading separates actual geometry morphisms on every Hom type. -/
+/-- Cycle 72 checkpoint separation for every package-indexed Hom type.
+Premise summary: no explicit premise; Cycle 71 `assemble_read` supplies both
+recovery equations used to reflect equality. -/
 def homSeparation (U : AtomCarrier.{u}) :
     HomSeparation (readingFunctor.{u, v} U) where
   hom _ _ := ⟨fun first second equality => by
@@ -232,7 +252,9 @@ def homSeparation (U : AtomCarrier.{u}) :
         congrArg CompleteGeometryGraphCode.assemble equality
       _ = second := CompleteGeometryGraphCode.assemble_read second⟩
 
-/-- Every lawful local Hom assembles, and reading recovers it exactly. -/
+/-- Cycle 72 checkpoint assembly for every package-indexed lawful-code Hom.
+Premise summary: no explicit premise; Cycle 71 `read_assemble` proves exact
+recovery.  This declaration says nothing about independent local objects. -/
 def homAssembly (U : AtomCarrier.{u}) :
     HomAssembly (readingFunctor.{u, v} U) where
   assemble {X Y} code := by
@@ -262,8 +284,11 @@ def reconstructionData (U : AtomCarrier.{u}) :
   homAssembly := homAssembly U
   objectAssembly := objectAssembly U
 
-/-- Actual complete geometry and its package-indexed lawful Hom presentation
-are equivalent as categories. -/
+/-- Cycle 72 checkpoint equivalence between actual complete geometry and its
+package-indexed lawful-Hom presentation.
+Premise summary: no additional premise; `reconstructionData` combines Cycle 71
+Hom inverses with the reflexive package wrapper bridge, not independent object
+assembly. -/
 noncomputable def equivalence (U : AtomCarrier.{u}) :
     GeomReadCategory.{u, v} U ≌ Object.{u, v} U :=
   (reconstructionData U).equivalence
