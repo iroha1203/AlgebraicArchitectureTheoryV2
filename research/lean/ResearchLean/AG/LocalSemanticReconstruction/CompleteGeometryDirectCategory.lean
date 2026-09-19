@@ -6,10 +6,12 @@ import Formal.Util.AssertStandardAxioms
 
 Cycle 74 replaces the remaining reader-mediated package field and certificate
 route by direct context/observable identity and composition together with all
-fourteen `IsPackageGraphCode` laws.  Exact assembly, package universality,
-category laws, canonical comparisons, and the Cycle 72/common-graph
-connections are retained in the same module.  The complete-geometry outer
-fields and independent local-object assembly remain separate obligations.
+fourteen `IsPackageGraphCode` laws.  Cycle 75 adds dependent package-base
+reindexing and closes complete-geometry coefficient, realization, coverage,
+overlap, and raw-coherence identity/composition directly from local operations
+and input certificates.  Exact assembly, complete-code universality, category
+laws, Cycle 72 comparisons, and common-graph connections are retained in the
+same module.  Independent local-object assembly remains a separate obligation.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction
@@ -1330,6 +1332,484 @@ theorem comp_cycle72_and_commonSurface
       CompleteGeometryGraphCategory.readCompleteMapGraphs_comp]
 
 end PackageGraphCode
+
+namespace CompleteGeometryGraphCode
+
+open CompleteGeometryGraphAssembly
+open RemainingComponentGraphCoherence
+open AlgebraicGraphCoherence
+
+/-- Reindex a realization graph code along equality of its package base.
+Premise summary: one base equality and a code over its target. -/
+def reindexRealization
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {first second : PackageTotalHom G.core H.core}
+    (base_eq : first = second)
+    (code : RealizationGraphCode G.core H.core second) :
+    RealizationGraphCode G.core H.core first := by
+  cases base_eq
+  exact code
+
+/-- Reindexing realization leaves its support map heterogeneously unchanged.
+Premise summary: one base equality and one realization code. -/
+theorem reindexRealization_support_heq
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {first second : PackageTotalHom G.core H.core}
+    (base_eq : first = second)
+    (code : RealizationGraphCode G.core H.core second) :
+    HEq (reindexRealization base_eq code).assemble.supportComp
+      code.assemble.supportComp := by
+  cases base_eq
+  rfl
+
+/-- Reindexing realization leaves its axis map heterogeneously unchanged.
+Premise summary: one base equality and one realization code. -/
+theorem reindexRealization_axis_heq
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {first second : PackageTotalHom G.core H.core}
+    (base_eq : first = second)
+    (code : RealizationGraphCode G.core H.core second) :
+    HEq (reindexRealization base_eq code).assemble.axisComp
+      code.assemble.axisComp := by
+  cases base_eq
+  rfl
+
+/-- Reindexing realization leaves its observable map heterogeneously unchanged.
+Premise summary: one base equality and one realization code. -/
+theorem reindexRealization_observable_heq
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {first second : PackageTotalHom G.core H.core}
+    (base_eq : first = second)
+    (code : RealizationGraphCode G.core H.core second) :
+    HEq (reindexRealization base_eq code).assemble.observableComp
+      code.assemble.observableComp := by
+  cases base_eq
+  rfl
+
+/-- Reindex a coverage certificate along equality of its package base.
+Premise summary: one base equality and a coverage law over its target. -/
+def reindexCoverage
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {first second : PackageTotalHom G.core H.core}
+    (base_eq : first = second)
+    (law : CoverageTransport G H second) : CoverageTransport G H first := by
+  cases base_eq
+  exact law
+
+/-- Reindex an overlap comparison along equality of its package base.
+Premise summary: one base equality and an overlap comparison over its target. -/
+def reindexOverlap
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {first second : PackageTotalHom G.core H.core}
+    (base_eq : first = second)
+    (law : OverlapTransport G H second) : OverlapTransport G H first := by
+  cases base_eq
+  exact law
+
+/-- Reindex raw coherence along package-base and coefficient-map equalities.
+Premise summary: both equalities and raw coherence over their targets. -/
+def reindexRaw
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {firstBase secondBase : PackageTotalHom G.core H.core}
+    {firstCoefficient secondCoefficient : G.Coefficient →+* H.Coefficient}
+    (base_eq : firstBase = secondBase)
+    (coefficient_eq : firstCoefficient = secondCoefficient)
+    (law : CompleteGeometryRemainingComponentCode.IsRawTransportCoherent
+      G H secondBase secondCoefficient) :
+    CompleteGeometryRemainingComponentCode.IsRawTransportCoherent
+      G H firstBase firstCoefficient := by
+  cases base_eq
+  cases coefficient_eq
+  exact law
+
+/-- Cycle 75 direct complete-geometry identity data.
+Premise summary: one endpoint geometry package. -/
+noncomputable def idData
+    {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
+    CompleteGeometryGraphData G G := by
+  let package := PackageGraphCode.id G
+  have base_eq : package.assemble = PackageTotalHom.id G.core :=
+    PackageGraphCode.assemble_id G
+  exact {
+    package := package
+    coefficientGraph := RingHomGraphCode.id G.Coefficient
+    realization := reindexRealization base_eq (RealizationGraphCode.id G.core) }
+
+/-- Direct complete-geometry identity certificate.
+Premise summary: one endpoint package; outer laws use their local identity
+constructors. -/
+theorem idData_lawful
+    {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
+    IsCompleteGeometryGraphCode (idData G) := by
+  let base_eq : (idData G).package.assemble = PackageTotalHom.id G.core :=
+    PackageGraphCode.assemble_id G
+  let coefficient_eq : (idData G).coefficientGraph.assemble =
+      RingHom.id G.Coefficient := RingHomGraphCode.assemble_id _
+  let overlap := reindexOverlap base_eq (OverlapTransport.id G)
+  exact {
+    coverage := reindexCoverage base_eq (CoverageTransport.id G)
+    overlapForward := fun base left right =>
+      leOfHom (overlap.overlapIso base left right).hom
+    overlapBackward := fun base left right =>
+      leOfHom (overlap.overlapIso base left right).inv
+    rawCoherent := reindexRaw base_eq coefficient_eq
+      (CompleteGeometryRemainingComponentCode.rawTransport_coherent_id G) }
+
+/-- Cycle 75 direct complete-geometry composition data.
+Premise summary: two composable lawful complete graph codes. -/
+noncomputable def compData
+    {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
+    (first : CompleteGeometryGraphCode G H)
+    (second : CompleteGeometryGraphCode H K) :
+    CompleteGeometryGraphData G K := by
+  let package := PackageGraphCode.comp first.package second.package
+  have base_eq : package.assemble =
+      PackageTotalHom.comp first.package.assemble second.package.assemble :=
+    PackageGraphCode.assemble_comp first.package second.package
+  exact {
+    package := package
+    coefficientGraph := RingHomGraphCode.comp
+      first.coefficientGraph second.coefficientGraph
+    realization := reindexRealization base_eq
+      (RealizationGraphCode.comp first.realization second.realization) }
+
+/-- Direct complete-geometry composition certificate.
+Premise summary: the two input complete certificates; every outer law closes
+under its local composition operation. -/
+theorem compData_lawful
+    {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
+    (first : CompleteGeometryGraphCode G H)
+    (second : CompleteGeometryGraphCode H K) :
+    IsCompleteGeometryGraphCode (compData first second) := by
+  let base_eq : (compData first second).package.assemble =
+      PackageTotalHom.comp first.package.assemble second.package.assemble :=
+    PackageGraphCode.assemble_comp first.package second.package
+  let coefficient_eq : (compData first second).coefficientGraph.assemble =
+      second.coefficientGraph.assemble.comp first.coefficientGraph.assemble :=
+    RingHomGraphCode.assemble_comp _ _
+  let firstOverlap := CompleteGeometryGraphAssembly.assembleOverlap
+    first.overlapForward first.overlapBackward
+  let secondOverlap := CompleteGeometryGraphAssembly.assembleOverlap
+    second.overlapForward second.overlapBackward
+  let overlap := reindexOverlap base_eq
+    (OverlapTransport.comp firstOverlap secondOverlap)
+  exact {
+    coverage := reindexCoverage base_eq
+      (CoverageTransport.comp first.coverage second.coverage)
+    overlapForward := fun base left right =>
+      leOfHom (overlap.overlapIso base left right).hom
+    overlapBackward := fun base left right =>
+      leOfHom (overlap.overlapIso base left right).inv
+    rawCoherent := reindexRaw base_eq coefficient_eq
+      (CompleteGeometryRemainingComponentCode.rawTransport_coherent_comp
+        first.rawCoherent second.rawCoherent) }
+
+/-- Direct lawful complete-geometry identity.
+Premise summary: one endpoint package and no completed geometry morphism. -/
+noncomputable def id
+    {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
+    CompleteGeometryGraphCode G G := ⟨idData G, idData_lawful G⟩
+
+/-- Direct lawful complete-geometry composition.
+Premise summary: two composable lawful complete graph codes. -/
+noncomputable def comp
+    {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
+    (first : CompleteGeometryGraphCode G H)
+    (second : CompleteGeometryGraphCode H K) :
+    CompleteGeometryGraphCode G K :=
+  ⟨compData first second, compData_lawful first second⟩
+
+/-- Direct complete identity has the expected actual assembly by local
+component calculations.
+Premise summary: one endpoint geometry package. -/
+theorem assemble_id_local
+    {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
+    (id G).assemble = GeometryTotalHom.id G := by
+  let base_eq : (id G).package.assemble = PackageTotalHom.id G.core :=
+    PackageGraphCode.assemble_id G
+  apply GeometryTotalHom.ext base_eq
+  let target := (GeometryTotalHom.id G).geometry
+  let castTarget : GeomReadHom G G (id G).package.assemble :=
+    base_eq.symm ▸ target
+  have hlocal : (id G).assemble.geometry = castTarget := by
+    apply GeomReadHom.ext
+    · calc
+        (id G).assemble.geometry.coefficientHom = RingHom.id G.Coefficient := by
+          change (RingHomGraphCode.id G.Coefficient).assemble = _
+          exact RingHomGraphCode.assemble_id _
+        _ = target.coefficientHom := rfl
+        _ = castTarget.coefficientHom :=
+          (CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.cast_coefficientHom
+            base_eq target).symm
+    · change HEq
+        (reindexRealization (PackageGraphCode.assemble_id G)
+          (RealizationGraphCode.id G.core)).assemble.supportComp
+        castTarget.supportComp
+      apply HEq.trans
+        (reindexRealization_support_heq
+          (PackageGraphCode.assemble_id G) (RealizationGraphCode.id G.core))
+      apply HEq.trans
+        (heq_of_eq (congrArg RealizationTransportSupply.supportComp
+          (RealizationGraphCode.assemble_id G.core)))
+      exact (CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.cast_supportComp_heq
+        base_eq target).symm
+    · change HEq
+        (reindexRealization (PackageGraphCode.assemble_id G)
+          (RealizationGraphCode.id G.core)).assemble.axisComp
+        castTarget.axisComp
+      apply HEq.trans
+        (reindexRealization_axis_heq
+          (PackageGraphCode.assemble_id G) (RealizationGraphCode.id G.core))
+      apply HEq.trans
+        (heq_of_eq (congrArg RealizationTransportSupply.axisComp
+          (RealizationGraphCode.assemble_id G.core)))
+      exact (CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.cast_axisComp_heq
+        base_eq target).symm
+    · change HEq
+        (reindexRealization (PackageGraphCode.assemble_id G)
+          (RealizationGraphCode.id G.core)).assemble.observableComp
+        castTarget.observableComp
+      apply HEq.trans
+        (reindexRealization_observable_heq
+          (PackageGraphCode.assemble_id G) (RealizationGraphCode.id G.core))
+      apply HEq.trans
+        (heq_of_eq (congrArg RealizationTransportSupply.observableComp
+          (RealizationGraphCode.assemble_id G.core)))
+      exact (CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.cast_observableComp_heq
+        base_eq target).symm
+  exact (heq_of_eq hlocal).trans (eqRec_heq base_eq.symm target)
+
+/-- Direct complete identity agrees with the Cycle 72 transported identity.
+Premise summary: one endpoint geometry package. -/
+theorem id_eq_lawfulCode_id
+    {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
+    id G = CompleteGeometryGraphCategoryEquivalence.LawfulCode.id G := by
+  apply CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.assemble_injective
+  rw [assemble_id_local,
+    CompleteGeometryGraphCategoryEquivalence.LawfulCode.assemble_id]
+
+/-- Direct complete composition has the expected actual assembly by local
+component calculations.
+Premise summary: two composable lawful complete graph codes. -/
+theorem assemble_comp_local
+    {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
+    (first : CompleteGeometryGraphCode G H)
+    (second : CompleteGeometryGraphCode H K) :
+    (comp first second).assemble =
+      GeometryTotalHom.comp first.assemble second.assemble := by
+  let base_eq : (comp first second).package.assemble =
+      PackageTotalHom.comp first.package.assemble second.package.assemble :=
+    PackageGraphCode.assemble_comp first.package second.package
+  apply GeometryTotalHom.ext base_eq
+  let target :=
+    (GeometryTotalHom.comp first.assemble second.assemble).geometry
+  let castTarget : GeomReadHom G K (comp first second).package.assemble :=
+    base_eq.symm ▸ target
+  have hlocal : (comp first second).assemble.geometry = castTarget := by
+    apply GeomReadHom.ext
+    · calc
+        (comp first second).assemble.geometry.coefficientHom =
+            second.coefficientGraph.assemble.comp
+              first.coefficientGraph.assemble := by
+          change (RingHomGraphCode.comp first.coefficientGraph
+            second.coefficientGraph).assemble = _
+          exact RingHomGraphCode.assemble_comp _ _
+        _ = target.coefficientHom := rfl
+        _ = castTarget.coefficientHom :=
+          (CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.cast_coefficientHom
+            base_eq target).symm
+    · change HEq
+        (reindexRealization
+          (PackageGraphCode.assemble_comp first.package second.package)
+          (RealizationGraphCode.comp first.realization
+            second.realization)).assemble.supportComp
+        castTarget.supportComp
+      apply HEq.trans
+        (reindexRealization_support_heq
+          (PackageGraphCode.assemble_comp first.package second.package)
+          (RealizationGraphCode.comp first.realization second.realization))
+      apply HEq.trans
+        (heq_of_eq (congrArg RealizationTransportSupply.supportComp
+          (RealizationGraphCode.assemble_comp
+            first.realization second.realization)))
+      exact (CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.cast_supportComp_heq
+        base_eq target).symm
+    · change HEq
+        (reindexRealization
+          (PackageGraphCode.assemble_comp first.package second.package)
+          (RealizationGraphCode.comp first.realization
+            second.realization)).assemble.axisComp
+        castTarget.axisComp
+      apply HEq.trans
+        (reindexRealization_axis_heq
+          (PackageGraphCode.assemble_comp first.package second.package)
+          (RealizationGraphCode.comp first.realization second.realization))
+      apply HEq.trans
+        (heq_of_eq (congrArg RealizationTransportSupply.axisComp
+          (RealizationGraphCode.assemble_comp
+            first.realization second.realization)))
+      exact (CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.cast_axisComp_heq
+        base_eq target).symm
+    · change HEq
+        (reindexRealization
+          (PackageGraphCode.assemble_comp first.package second.package)
+          (RealizationGraphCode.comp first.realization
+            second.realization)).assemble.observableComp
+        castTarget.observableComp
+      apply HEq.trans
+        (reindexRealization_observable_heq
+          (PackageGraphCode.assemble_comp first.package second.package)
+          (RealizationGraphCode.comp first.realization second.realization))
+      apply HEq.trans
+        (heq_of_eq (congrArg RealizationTransportSupply.observableComp
+          (RealizationGraphCode.assemble_comp
+            first.realization second.realization)))
+      exact (CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.cast_observableComp_heq
+        base_eq target).symm
+  exact (heq_of_eq hlocal).trans (eqRec_heq base_eq.symm target)
+
+/-- Direct complete composition agrees with Cycle 72 transported composition.
+Premise summary: two composable lawful complete graph codes. -/
+theorem comp_eq_lawfulCode_comp
+    {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
+    (first : CompleteGeometryGraphCode G H)
+    (second : CompleteGeometryGraphCode H K) :
+    comp first second =
+      CompleteGeometryGraphCategoryEquivalence.LawfulCode.comp first second := by
+  apply CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.assemble_injective
+  rw [assemble_comp_local,
+    CompleteGeometryGraphCategoryEquivalence.LawfulCode.assemble_comp]
+
+/-- Direct complete identity assembles to actual geometry identity.
+Premise summary: one endpoint geometry package. -/
+@[simp]
+theorem assemble_id
+    {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
+    (id G).assemble = GeometryTotalHom.id G :=
+  assemble_id_local G
+
+/-- Direct complete composition assembles to actual geometry composition.
+Premise summary: two composable lawful complete graph codes. -/
+@[simp]
+theorem assemble_comp
+    {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
+    (first : CompleteGeometryGraphCode G H)
+    (second : CompleteGeometryGraphCode H K) :
+    (comp first second).assemble =
+      GeometryTotalHom.comp first.assemble second.assemble :=
+  assemble_comp_local first second
+
+/-- Direct complete identity is uniquely characterized by its assembly.
+Premise summary: one endpoint package and an arbitrary lawful candidate. -/
+theorem eq_id_iff_assemble_eq
+    {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U)
+    (candidate : CompleteGeometryGraphCode G G) :
+    candidate = id G ↔ candidate.assemble = GeometryTotalHom.id G := by
+  constructor
+  · rintro rfl
+    exact assemble_id G
+  · intro equality
+    apply CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.assemble_injective
+    rw [assemble_id]
+    exact equality
+
+/-- Direct complete composition is uniquely characterized by its assembly.
+This is the Cycle 75 complete-code universal property.
+Premise summary: two lawful inputs and an arbitrary lawful candidate. -/
+theorem eq_comp_iff_assemble_eq
+    {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
+    (first : CompleteGeometryGraphCode G H)
+    (second : CompleteGeometryGraphCode H K)
+    (candidate : CompleteGeometryGraphCode G K) :
+    candidate = comp first second ↔
+      candidate.assemble =
+        GeometryTotalHom.comp first.assemble second.assemble := by
+  constructor
+  · rintro rfl
+    exact assemble_comp first second
+  · intro equality
+    apply CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.assemble_injective
+    rw [assemble_comp]
+    exact equality
+
+/-- Left unit for direct complete-code composition.
+Premise summary: an arbitrary lawful complete graph code. -/
+@[simp]
+theorem id_comp
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    (code : CompleteGeometryGraphCode G H) : comp (id G) code = code := by
+  apply CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.assemble_injective
+  rw [assemble_comp, assemble_id]
+  change (𝟙 G : G ⟶ G) ≫ (code.assemble : G ⟶ H) = code.assemble
+  simp
+
+/-- Right unit for direct complete-code composition.
+Premise summary: an arbitrary lawful complete graph code. -/
+@[simp]
+theorem comp_id
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    (code : CompleteGeometryGraphCode G H) : comp code (id H) = code := by
+  apply CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.assemble_injective
+  rw [assemble_comp, assemble_id]
+  change (code.assemble : G ⟶ H) ≫ (𝟙 H : H ⟶ H) = code.assemble
+  simp
+
+/-- Associativity for direct complete-code composition.
+Premise summary: three composable lawful complete graph codes. -/
+@[simp]
+theorem comp_assoc
+    {U : AtomCarrier.{u}} {G H K L : GeometryPackage.{u, v} U}
+    (first : CompleteGeometryGraphCode G H)
+    (second : CompleteGeometryGraphCode H K)
+    (third : CompleteGeometryGraphCode K L) :
+    comp (comp first second) third = comp first (comp second third) := by
+  apply CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.assemble_injective
+  simp only [assemble_comp]
+  exact @Category.assoc (GeomReadCategory.{u, v} U) _
+    G H K L first.assemble second.assemble third.assemble
+
+/-- Cycle 75 bundles direct complete identity with both the Cycle 72 identity
+and the accepted common graph identity.
+Premise summary: one endpoint geometry package. -/
+theorem id_cycle72_and_commonSurface
+    {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
+    id G = CompleteGeometryGraphCategoryEquivalence.LawfulCode.id G ∧
+      (CompleteGeometryGraphCategoryEquivalence.LawfulCode.id G).completeMapGraphs =
+        CompleteGeometryGraphCategory.CompleteMapGraphs.id G := by
+  constructor
+  · exact id_eq_lawfulCode_id G
+  · change CompleteGeometryFunctionGraphSeparation.readCompleteMapGraphs
+        (CompleteGeometryGraphCategoryEquivalence.LawfulCode.id G).assemble = _
+    rw [CompleteGeometryGraphCategoryEquivalence.LawfulCode.assemble_id,
+      CompleteGeometryGraphCategory.readCompleteMapGraphs_id]
+
+/-- Cycle 75 bundles direct complete composition with both Cycle 72
+composition and composition on the accepted common graph surface.
+Premise summary: two composable lawful complete graph codes. -/
+theorem comp_cycle72_and_commonSurface
+    {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
+    (first : CompleteGeometryGraphCode G H)
+    (second : CompleteGeometryGraphCode H K) :
+    comp first second =
+        CompleteGeometryGraphCategoryEquivalence.LawfulCode.comp first second ∧
+      (CompleteGeometryGraphCategoryEquivalence.LawfulCode.comp
+          first second).completeMapGraphs =
+        CompleteGeometryGraphCategory.CompleteMapGraphs.comp
+          first.completeMapGraphs second.completeMapGraphs := by
+  constructor
+  · exact comp_eq_lawfulCode_comp first second
+  · change CompleteGeometryFunctionGraphSeparation.readCompleteMapGraphs
+        (CompleteGeometryGraphCategoryEquivalence.LawfulCode.comp
+          first second).assemble =
+      CompleteGeometryGraphCategory.CompleteMapGraphs.comp
+        (CompleteGeometryFunctionGraphSeparation.readCompleteMapGraphs
+          first.assemble)
+        (CompleteGeometryFunctionGraphSeparation.readCompleteMapGraphs
+          second.assemble)
+    rw [CompleteGeometryGraphCategoryEquivalence.LawfulCode.assemble_comp,
+      CompleteGeometryGraphCategory.readCompleteMapGraphs_comp]
+
+end CompleteGeometryGraphCode
 
 #assert_standard_axioms_only
   AAT.AG.LocalSemanticReconstruction.CompleteGeometryDirectCategory
