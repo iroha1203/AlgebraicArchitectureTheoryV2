@@ -7051,12 +7051,14 @@ selection:
     - "assembly of the full coherent Hom including coverage and overlap"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "One-index and two-index total-functional graph families now have exact read/assemble equivalences, tagged separation, and identity/composition laws. Lawful operation and invariant codes compose from their own local laws. RealizationGraphCode is equivalent to RealizationTransportSupply and has law-bearing identity/composition. SignatureGraphCode is exactly equivalent to SignatureTransportSupply and has identity/composition. Raw coherence composes from two independent endpoint equalities, without reading a GeometryTotalHom. RemainingComponentCode is exactly equivalent to its completed local supply and has componentwise identity/composition relative to the explicit ambient PackageTotalHom and coefficient map. It stores no GeometryTotalHom. CompleteGraphRecovery recovers operation, invariant, signature axis/coordinate, support, geometry axis, and geometry observable fields on the existing complete-map graph surface."
+  proof_obligation_delta: "One-index and two-index total-functional graph families now have exact read/assemble equivalences, tagged separation, no-unfold evaluation APIs, and identity/composition laws. Lawful operation and invariant codes compose from their own local laws. RealizationGraphCode is equivalent to RealizationTransportSupply and has law-bearing identity/composition. SignatureGraphCode is exactly equivalent to SignatureTransportSupply and has identity/composition. Raw coherence composes from two independent endpoint equalities, without reading a GeometryTotalHom. RemainingComponentCode is exactly equivalent to its completed local supply and has componentwise identity/composition relative to the explicit ambient PackageTotalHom and coefficient map. It stores no GeometryTotalHom. CompleteGraphRecovery recovers operation, invariant, signature axis/coordinate, support, geometry axis, and geometry observable fields on the existing complete-map graph surface. Reviewed finite packages provide closed positive and negative instances for every new law certificate and for CompleteGraphRecovery."
   completion_candidate: no
   lean_artifacts:
     - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.IndexedFunctionGraphCode.equivFamily"
+    - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.IndexedFunctionGraphCode.taggedFunction_apply"
     - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.IndexedFunctionGraphCode.taggedForward_injective"
     - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.BiIndexedFunctionGraphCode.equivFamily"
+    - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.BiIndexedFunctionGraphCode.taggedFunction_apply"
     - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.BiIndexedFunctionGraphCode.taggedForward_injective"
     - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.RealizationGraphCode.equivSupply"
     - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.RealizationGraphCode.assemble_comp"
@@ -7067,6 +7069,12 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.RemainingComponentCode.equivSupply"
     - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.RemainingComponentCode.comp"
     - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.readRemaining_completeGraphRecovery"
+    - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.ConcreteNegativeFixtures.operation_not_natural"
+    - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.ConcreteNegativeFixtures.invariant_not_transported"
+    - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.ConcreteNegativeFixtures.realization_not_coherent"
+    - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.ConcreteNegativeFixtures.signature_not_coherent"
+    - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.ConcreteNegativeFixtures.rawTransport_not_coherent"
+    - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.ConcreteNegativeFixtures.completeGraphRecovery_not_for_alternate"
   acceptance:
     fixed_question: "Do raw graph codes for the remaining operation, invariant, signature, support, geometry-axis, geometry-observable, and raw-transport components, equipped only with endpoint equations and preservation/naturality laws, assemble componentwise with identity/composition and recover every corresponding field of actual complete geometry morphisms without storing a GeometryTotalHom?"
     statement_status: implemented
@@ -7081,6 +7089,7 @@ result:
         - "raw transport / actual, identity, and composition coherence"
         - "unified relative code / exact supply equivalence and componentwise identity/composition"
         - "common surface / all remaining graph-valued fields recovered together"
+        - "instance-pair audit / closed finite failures for every new law certificate and CompleteGraphRecovery"
       undischarged: []
     undischarged_assumptions: []
     acceptance_point: "all remaining computational fields below complete Hom assembly are graph-presented, law-bearing, composition-compatible where applicable, and recovered on the accepted common graph surface"
@@ -7123,13 +7132,13 @@ audits:
   target_fitting: none-found
   target_fitting_reason: "the unified relative code contains no completed GeometryTotalHom; its PackageTotalHom index is explicitly classified as an inherited ambient API rather than claimed as independently reconstructed, and common graph recovery is proved in the same cycle"
   vacuity: none-found
-  vacuity_reason: "the generic family codes are equivalent to arbitrary dependent functions, tagged graphs are injective, realization/signature/unified codes have exact supply equivalences, and every new law predicate has a named counterexample eliminator reducing failure to one explicit local witness"
+  vacuity_reason: "the generic family codes are equivalent to arbitrary dependent functions, tagged graphs are injective, realization/signature/unified codes have exact supply equivalences, and reviewed finite packages give closed negative instances for operation naturality, invariant transport, realization, signature, raw transport, and the seven-field CompleteGraphRecovery certificate"
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   four_lane_question: "Do raw graph codes for the remaining operation, invariant, signature, support, geometry-axis, geometry-observable, and raw-transport components, equipped only with endpoint equations and preservation/naturality laws, assemble componentwise with identity/composition and recover every corresponding field of actual complete geometry morphisms without storing a GeometryTotalHom?"
   validation_refs:
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/RemainingComponentGraphCoherence.lean: pass"
-    - "#assert_standard_axioms_only RemainingComponentGraphCoherence: 249 declarations, standard axioms only"
+    - "#assert_standard_axioms_only RemainingComponentGraphCoherence: 277 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "replace the relative ambient PackageTotalHom with assembly from Cycle 67 and Cycle 69 independent codes, combine coverage and overlap, and prove GeometryTotalHom read/assemble inverses"
 ```
