@@ -138,7 +138,7 @@ theorem blocksToPresentation_comp_presentationToBlocks
   change P.generatorClass generator = P.generatorClass generator
   rfl
 
-/-- The presentation map followed by component expansion is the identity on `ℤ^B`. -/
+/-- The presentation map followed by component expansion is the identity on `ℤ^(B)`. -/
 theorem presentationToBlocks_comp_blocksToPresentation
     (P : GeneratorPresentation laws) :
     P.presentationToBlocks.comp P.blocksToPresentation = AddMonoidHom.id _ := by
