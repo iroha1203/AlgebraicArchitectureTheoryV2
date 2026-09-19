@@ -23,11 +23,14 @@
   `ε_R : M_R →+ (Λ → ℚ)` を構成し、`R_q` の下で単射性を導出する。
 - 完了: `TargetSupportedNerve`上のpresentation係数cochainと実
   `lawGeneratedD0/1`の間に次数0–2のcellwise比較を構成し、両cochain squareを証明する。
+- 完了: 位相空間上の局所定数`M_R`値関数を加法的presheafとして構成し、
+  Mathlibの離散値連続関数sheafとの同型からsheaf条件を証明する。非空preconnected開集合上では
+  sectionと`M_R`の評価同型、および制限写像の恒等座標表示も導出する。
 - 未完了: presentation係数cochainと、構成するOb層の実
   `CoverRelativeCechComplex`との同定。
 - 未完了: B1・B2、C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
-- 次のproof obligation: 局所定数presentation係数層と実
-  `CoverRelativeCechComplex`を構成し、Cycle 5のnormalized source cochainへ同定する。
+- 次のproof obligation: 選定AAT contextから有限空間のopen supportへの写像を構成し、
+  Cycle 6のsheafを引き戻して実`ObstructionSheaf`へpackageする。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -567,4 +570,114 @@ audits:
     - "git diff --check and placeholder, hidden/BiDi Unicode, private-path, and Formal-to-Research import scans: pass"
   blocking_findings: []
   next_obligation: "construct the locally constant presentation-coefficient obstruction sheaf and identify its selected CoverRelativeCechComplex with the normalized source complex"
+```
+
+## Cycle 6 — 局所定数presentation係数sheaf
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 6
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: 27a844fdd8812035c73575078a7ac6ed02b6a305
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "Issue #4791 paper design section 3.1 and section 10 after Cycle 5 merge 26f3c7c155b9ed0102d040c3d5bb910c3be4599f"
+  proof_dag_predecessors:
+    - "GeneratorPresentation.PresentationGroup: PR #4802"
+    - "GeneratorPresentation.coefficientComparison: PR #4803"
+  proof_obligation: "construct the locally constant M_R-valued coefficient sheaf before pulling it back to the selected AAT context site"
+  selection_reason: "the paper design requires locally constant functions rather than the sheaf of all functions; this isolates and proves that coefficient construction before the AAT support functor and ordered-tuple Cech normalization"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/LocallyConstantCoefficient.lean"
+    - "GeneratorPresentation.locallyConstantAddCommGrpPresheaf_isSheaf"
+    - "GeneratorPresentation.locallyConstantSectionEquiv"
+  risks:
+    - "replacing locally constant functions by all functions"
+    - "supplying the sheaf condition as input data"
+    - "claiming an AAT ObstructionSheaf before constructing the context-to-open support map"
+  unchecked:
+    - "main declarations #print axioms"
+    - "fixed-head independent review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The additive presheaf W to locally constant functions W to M_R is constructed on any topological space. It is naturally isomorphic to Mathlib continuous maps into discrete M_R, so the sheaf condition is derived. On nonempty preconnected opens, evaluation gives an additive equivalence with M_R and restriction becomes identity in these coordinates. Pullback to the selected AAT context site is not yet constructed."
+  completion_candidate: no
+  lean_artifacts:
+    - "GeneratorPresentation.LocallyConstantSection"
+    - "GeneratorPresentation.locallyConstantAddCommGrpPresheaf"
+    - "GeneratorPresentation.locallyConstantContinuousEquiv"
+    - "GeneratorPresentation.locallyConstantPresheafIso"
+    - "GeneratorPresentation.locallyConstantAddCommGrpPresheaf_isSheaf"
+    - "GeneratorPresentation.locallyConstantSectionEquiv"
+    - "GeneratorPresentation.locallyConstantSectionEquiv_restriction"
+  evidence:
+    - "sections are LocallyConstant W P.PresentationGroup, not arbitrary functions"
+    - "the sheaf proof is transported from TopCat.sheafToTop for the discrete presentation group"
+    - "connected-open evaluation and restriction formulas are proved from PreconnectedSpace"
+  claim_mapping:
+    theorem_names:
+      - "GeneratorPresentation.locallyConstantAddCommGrpPresheaf_isSheaf"
+      - "GeneratorPresentation.locallyConstantSectionEquiv"
+      - "GeneratorPresentation.locallyConstantSectionEquiv_restriction"
+    source_labels:
+      - "Issue #4791 paper design section 3.1 coefficient sheaf"
+      - "Issue #4791 paper design section 4 connected patch and overlap evaluation"
+    conjuncts:
+      - "locally constant M_R-valued functions with restriction -> locallyConstantAddCommGrpPresheaf"
+      - "actual sheaf condition -> locallyConstantAddCommGrpPresheaf_isSheaf"
+      - "connected chart and overlap sections identify with M_R -> locallyConstantSectionEquiv"
+      - "restriction is identity in those coordinates -> locallyConstantSectionEquiv_restriction"
+    undischarged_assumptions:
+      - "construct the selected finite topological space and its AAT context support map"
+      - "prove the pullback topology sends selected AAT covers to open covers"
+      - "package the pulled-back additive sheaf with ObstructionSheaf.ofAddCommGrpValued"
+      - "construct and normalize the actual CoverRelativeCechComplex"
+    acceptance_point: "the coefficient sheaf and connected-open coordinate theorem are proved without treating the AAT pullback or Cech comparison as complete"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "a topological space X and the derived GeneratorPresentation P are inputs"
+      - "nonempty and PreconnectedSpace are required only for the evaluation equivalence"
+    direction_hypothesis: []
+    discharge_required:
+      - "selected AAT context support and topology compatibility"
+      - "actual ObstructionSheaf and Cech complex construction"
+    conclusion_equivalent_risk:
+      - "the sheaf condition is a theorem from the continuous-map sheaf and is not stored in a certificate"
+  premise_delta:
+    discharged:
+      - "construct the locally constant additive coefficient presheaf"
+      - "prove its sheaf condition"
+      - "derive connected-open evaluation and restriction formulas"
+    remaining:
+      - "pull the sheaf back to the selected AAT context site and package Ob"
+      - "identify the actual ordered-tuple Cech complex with the normalized Cycle 5 source"
+      - "finish A1, B1, full B2, C1, C2 and the fixed finite example"
+  certificate_provenance:
+    discharged:
+      - "sheaf descent comes from Mathlib continuous functions into a discrete target"
+      - "constant-on-connected-open behavior comes from IsLocallyConstant on PreconnectedSpace"
+    unresolved:
+      - "AAT context support and selected cover geometry"
+  proof_use:
+    used:
+      - "the natural presheaf isomorphism transports the actual sheaf condition"
+      - "preconnectedness proves every locally constant section equals its evaluation constant"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-for-topological-coefficient-sheaf
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/ObstructionDiagnosticBridge/LocallyConstantCoefficient.lean: pass; 9 namespace declarations, standard axioms only"
+    - "locallyConstantAddCommGrpPresheaf_isSheaf, locallyConstantSectionEquiv, and locallyConstantSectionEquiv_restriction #print axioms: propext, Classical.choice, Quot.sound only"
+    - "git diff --check and placeholder, hidden/BiDi Unicode, private-path, and Formal-to-Research import scans: pass"
+  blocking_findings: []
+  next_obligation: "construct the selected AAT context-to-open support map, transport the proved sheaf condition, and package the resulting ObstructionSheaf"
 ```
