@@ -8935,3 +8935,39 @@ merge・Issue同期を済ませるまで、パートI完了として扱わない
 placeholder・hidden/BiDi・privacy・追加文の語彙・差分整形・module登録を確認した。
 Research全体buildは行っていない。固定GOALのblobは引き続き
 `4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`である。
+
+#### 共通Hom点からの両realization方式の組立てと回復
+
+代表方式のSupport・Axis・Observableのdirected mapと、明示方式の三つのfiber同値・
+実際のcontext射への作用を、共通Homの原始点から構成した。各成分の全query読み戻しと、
+任意のnative realizationを読み取って組み立て直す逆方向を証明した。
+独立object stageから構成したcore Homへも接続し、比較APIのcontext・Atom前提を放電した。
+固定GOAL、元のHomの範囲、Cycle 79は変更しない。
+
+明示方式では、元の自然性とfiber同値から、実際のcontext射への作用が一意に定まる。
+Support・Axisは「逆fiber写像 → 元の射 → 順fiber写像」、Observableはrestrictionの
+逆方向に対応する同じ式で構成する。別の全域写像を局所lawに要求せず、元のactual-action
+queryはすべて保持する。そのセルが対応するfiber graphのセルと一致する法則と、
+不一致context対のセルをfalseにする法則を、読み戻し証明で使用する。
+この補足は人間が許可した固定target内の設計変更であり、nativeな射を制限しない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentFixedIndexedPointGraphs.lean` / `IndependentFixedIndexedPointGraph` | 原始context参照から値carrierが定まる行の`IsLawful`・`InverseLaws`を宣言する。`assemble`・`assembleEquiv`は既存の全域・一意graph構成を使用し、`read_assemble`・`assemble_read`・`read_assembleEquiv`・`read_assembleEquiv_backward`・`assembleEquiv_read`でactive/inactive双方の全点を回復する |
+| `IndependentGeometryHomRepresentativeRealization.lean` / `IndependentGeometryHomPrimitive.RepresentativeRealization` | `PointLaws`は三つのdirected graph、一方向のreading保存、原始restriction応答の自然性を持つ。`assemble`は元の`RealizationTransportSupply`を構成し、`read_support`・`read_axis`・`read_observable`で全候補context対を回復する |
+| `IndependentGeometryHomRepresentativeRealizationNative.lean` / 同namespace | `points_of_native`は任意の元の代表方式supplyから全原始法則を導き、`assemble_points_of_native`は三つの計算成分を含むsupply全体の等号を示す。全行の読み取り一致はnative readerの比較前提であり、局所lawのfieldには入らない |
+| `IndependentGeometryHomExplicitRealization.lean` / `IndependentGeometryHomPrimitive.ExplicitRealization` | `PointLaws`は両向きのfiber graph、readingの同値、全actual-actionセルの法則を持つ。`supportEquiv`・`axisEquiv`・`observableEquiv`から`valueTable`を作り、`valueTable_isLawful`・`assemble`で元の全supplyを構成する。actual restrictionの保存も既存の原始value-table定理から導く |
+| `IndependentGeometryHomExplicitRealizationPoints.lean` / 同namespace | `readActualSupport`・`readActualAxis`・`readActualObservable`は両候補contextの等号で値を移し、不一致ならfalseを返す。三つの`read_*`は両向きのfiber点、三つの`read_actual*`は全actual-action点を回復する。後者はaction法則とinactive法則を実際に使用する |
+| `IndependentGeometryHomExplicitRealizationNative.lean` / 同namespace | `points_of_native`は任意の元の明示方式supplyが全局所lawを満たすことを示す。`assemble_eq_native`・`assemble_points_of_native`はfiberの両方向と実際のcontext作用を含むsupply全体を回復する。native自然性が作用の式を強制することを逆方向の証明で使用する |
+| `IndependentGeometryHomRealizationComponents.lean` / `IndependentGeometryHomPrimitive.GeometryComponents` | `representative_maps`・`explicit_maps`は実際の`PackageAssembly`の点定理を使用する。`RepresentativePoints`は元のobject stageのcontext応答を参照し、`representative_points_iff`でnative読み取りとの一致を証明する。`representativeRealization`・`explicitRealization`は独立objectと局所商から組み立てたcore Hom上に元のsupplyを構成する |
+
+今回閉じたのはrealization成分の構成・回復と、実際のcore Homへの接続である。
+任意のnative完全幾何Homから全局所法則を満たす共通tableを生成するreader、その全Homの両逆・
+分離、rawの両方式の原始点接続、共通の恒等・合成、残る有限式・指定反証は未完了である。
+パートIのPR・独立査読・CI・merge・Issue同期も継続義務として残す。
+
+新規7 sourceの単一file検証が通り、namespace監査は順に31・34・2・42・12・3・7件
+(計131件)で標準公理のみだった。明示73宣言の個別`#print axioms`も標準公理のみで、
+最終検証にwarning・errorはない。placeholder・hidden/BiDi・privacy・語彙・差分整形・
+module登録を確認した。Research全体buildは行わず、固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
