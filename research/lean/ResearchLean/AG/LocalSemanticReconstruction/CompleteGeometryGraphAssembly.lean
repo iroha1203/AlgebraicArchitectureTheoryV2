@@ -1427,7 +1427,7 @@ theorem assemble_read {U : AtomCarrier.{u}}
 Unless identified below as a principal result or fixture, this is supporting API/data.
 Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
 Complete codes are determined by their computational local inputs; all
-coverage and canonicality witnesses are propositions, and overlap data are
+coverage and raw-coherence witnesses are propositions, and overlap data are
 unique in the thin target category. -/
 theorem ext {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}

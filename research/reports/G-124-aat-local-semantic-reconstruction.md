@@ -7220,7 +7220,7 @@ result:
       - "RingHomGraphCode graph.row_existsUnique, map_zero, map_one, map_add, map_mul / every equation-observable direction and the coefficient graph / supplies ring maps used by equation and geometry assembly"
       - "IsThinEquivalenceGraphCode.forward_total, backward_total, forward_mono, backward_mono, unit_hom, unit_inv, counit_hom, counit_inv / context code / supplies both functors and unit/counit isomorphisms"
       - "IsRingEquivGraphCode.forward_isRingHom and backward_isRingHom, each containing graph.row_existsUnique, map_zero, map_one, map_add, map_mul; plus left_inv and right_inv / each observable fiber / supplies the observable ring equivalence"
-      - "ObservablePresheafGraphCode.observable_naturality / observable family / supplies the presheaf natural isomorphism in equationTransport"
+      - "IsObservablePresheafGraphCode.observable_naturality / observable family / supplies the presheaf natural isomorphism in equationTransport"
       - "IsSignatureGraphCode.axis_selected_iff and coordinate_eq / signature code / used directly by upper; no duplicate outer premise remains"
       - "IsPackageGraphCode.equation_role_eq, violationCoordinate_eq, equationResidual_eq / package cross-component predicate / used by equationTransport"
       - "IsPackageGraphCode.normalize_eq, extraction_iff, source_eq / package cross-component predicate / used by lower"
