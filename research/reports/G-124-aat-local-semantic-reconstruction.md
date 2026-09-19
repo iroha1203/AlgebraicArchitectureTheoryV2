@@ -7880,8 +7880,8 @@ selection:
     - "Cycle 38 tagged one-object category equivalence"
     - "Cycle 60 full G-122 comparison/kernel coordinate equivalence"
     - "Cycle 77 simultaneous lens/protocol branch reconstruction"
-  proof_obligation: "add tagged and full fixed G-122 branches to the accepted common parameter; give G-122 independent coordinates their correct twisted group law; prove direct Hom/object assembly, both inverse laws, uniqueness, category equivalence, and all accepted family connections in the same cycle"
-  selection_reason: "this closes the four-family parameter gap and strengthens G-122 from a type-level coordinate equivalence to a multiplicative and categorical reconstruction, so the cycle is not a wiring-only extension of Cycle 77"
+  proof_obligation: "construct a case-indexed checkpoint containing tagged, full fixed G-122, lens, and protocol branches; give the already established full G-122 coordinates their correct twisted group law; prove branchwise Hom/object assembly, both inverse laws, uniqueness, category equivalence, and explicit connections to accepted family surfaces in the same cycle"
+  selection_reason: "this tests the four mandatory branches behind one dependent API and strengthens the accepted full G-122 coordinate equivalence to a multiplicative and categorical result; it does not claim to close the fixed target A-B common-category obligation"
   expected_result_type: proof-obligation-discharged
   lean_targets:
     - "G122FullComparisonTwistedGroup.lean"
@@ -7893,8 +7893,8 @@ selection:
   unchecked:
     - "formal four-lane review of the fixed PR head"
 result:
-  proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "TwistedCode carries explicit normalized and full-kernel coordinates, with conjugation-twisted multiplication and inverse formulas. Assembly preserves multiplication, identity, and inverse; its two inverse laws prove separation, the group laws, a multiplicative equivalence with every raw comparison, a one-object category equivalence, and unique Hom preimages. AATBranchParameter then selects tagged, full G-122, lens, or protocol data under one dependent declaration. Each branch has a primitive reading, direct Hom assembler, explicit object realization, both Hom inverse laws, ReconstructionData, unique preimages, and a category equivalence. The same file connects tagged finite tables and normal forms, G-122 normalized/kernel coordinates and full lift-fiber torsor universality, and lifted lens/protocol finite decoders plus Karoubi and Arrow routes."
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "TwistedCode gives the already established normalized/full-kernel coordinates their conjugation-twisted multiplication and inverse formulas. Assembly preserves multiplication, identity, and inverse; the two inverse laws prove separation, the group laws, a multiplicative equivalence with every raw comparison, a one-object category equivalence, and unique Hom preimages. AATBranchParameter case-selects tagged, full G-122, lens, or protocol data under one dependent declaration. Each selected branch has a reading, direct Hom assembler, explicit object realization, both Hom inverse laws, ReconstructionData, unique preimages, and a category equivalence. The same file connects tagged finite tables and normal forms, identifies the G-122 branch kernel coordinate with the unique full lift-fiber torsor displacement, and factors lifted lens/protocol finite decoders plus Karoubi and Arrow routes through the branch reconstruction. This is a case-indexed proof checkpoint, not discharge of the fixed target A-B common-category obligation."
   completion_candidate: no
   lean_artifacts:
     - "G122FullComparisonTwistedGroup.TwistedCode"
@@ -7917,7 +7917,9 @@ result:
     - "aatBranchReconstructionData"
     - "aatBranchReconstructionEquivalence"
     - "aatBranch_existsUnique_preimage"
-    - "aatBranchG122FullLiftFiber_existsUnique_kernel"
+    - "aatBranchG122LiftHom"
+    - "aatBranchG122ReadingKernel_smul_canonicalLift"
+    - "aatBranchG122FullLiftFiber_unique_kernel_eq_reading"
     - "aatBranchLensFiniteDecoderReadingIso"
     - "aatBranchProtocolFiniteDecoderReadingIso"
     - "aatBranchLensKaroubiArrowEquivalence"
@@ -7927,25 +7929,27 @@ result:
     - "assembly is injective by the established read/assemble laws and is used to prove all group axioms"
     - "the G-122 branch covers the full RawComparison group rather than a chosen finite subgroup"
     - "all four branches use direct assemblers and explicit object realizations before ReconstructionData derives equivalence"
-    - "tagged finite values, G-122 full-kernel torsor universality, and CS finite/Karoubi/Arrow routes are attached in the same module"
+    - "the G-122 reading kernel acts from the canonical lift to every supplied lift, and torsor uniqueness identifies any such displacement with that branch coordinate"
+    - "tagged finite values and CS finite/Karoubi/Arrow routes are attached in the same module"
   claim_mapping:
     theorem_names:
       - "twistedCodeMulEquiv"
       - "aatBranchReconstructionEquivalence"
       - "aatBranch_existsUnique_preimage"
-      - "aatBranchG122FullLiftFiber_existsUnique_kernel"
+      - "aatBranchG122ReadingKernel_smul_canonicalLift"
+      - "aatBranchG122FullLiftFiber_unique_kernel_eq_reading"
     source_labels:
-      - "fixed target A mandatory four families"
-      - "fixed target B two-sided reconstruction"
-      - "fixed target C full G-122 comparison group and lift fibers"
+      - "Cycle 78 case-indexed four-family checkpoint"
+      - "fixed target C full G-122 comparison group and lift fibers, limited to the fixed input"
     conjuncts:
       - "G-122 full comparison multiplication and inverse -> TwistedCode group and twistedCodeMulEquiv"
-      - "four-family separation and assembly -> aatBranchReconstructionData and equivalence"
-      - "same-cycle accepted connections -> tagged value/normal-form, G-122 coordinate/torsor, CS decoder/Karoubi/Arrow declarations"
+      - "branchwise separation and assembly -> aatBranchReconstructionData and equivalence"
+      - "same-cycle accepted connections -> tagged value/normal-form, G-122 branch-coordinate/torsor identification, CS decoder/Karoubi/Arrow declarations"
     undischarged_assumptions:
-      - "the four branches remain selected by cases rather than being fibers of one independently defined common realization category"
+      - "the four branches remain selected by cases rather than being fibers of one independently defined common realization category; fixed target A-B is therefore not discharged"
+      - "TwistedCode retains actual full-kernel and normalized-comparison values; primitive G-122 local syntax remains open"
       - "fixed target C comparison-group transport for every comparison in the final common category remains open"
-    acceptance_point: "the selected four-family branch and full G-122 categorical reconstruction obligation is implemented; the final non-case-defined common category is not claimed"
+    acceptance_point: "the case-indexed four-family API, the full G-122 twisted group, and explicit family connections form a proof checkpoint; fixed target A-B and the final common category are not claimed"
     port_status: not-applicable
 audits:
   premise_delta:
@@ -7953,7 +7957,7 @@ audits:
       - "full G-122 comparison coordinates carry the correct group and one-object category structure"
       - "tagged, G-122, lens, and protocol are selected by one parameter declaration"
       - "every selected branch has direct two-sided Hom reconstruction, object realization, uniqueness, and category equivalence"
-      - "family-specific accepted surfaces are connected in the same cycle"
+      - "family-specific accepted surfaces are connected in the same cycle, including equality of the G-122 branch kernel coordinate with the unique torsor displacement"
     remaining:
       - "one non-case-defined R_Theta and M_Theta whose fibers realize the four branches"
       - "projection, normalization, and comparison-group naturality across that final common category"
@@ -7970,17 +7974,21 @@ audits:
       - "Cycle 37 tagged actual/local multiplicative equivalence"
       - "Cycle 77 CS direct assemblers and finite/Karoubi/Arrow connections"
       - "Cycle 65 ReconstructionData theorem"
-  structure_field_escape: none-found
+  structure_field_escape: "found-and-bounded: TwistedCode is a full coordinate presentation, not primitive G-122 local syntax"
   route_integrity: pass
-  target_fitting: found
+  target_fitting: bounded-proof-checkpoint
   vacuity: none-found
   one_way_as_equivalence: none-found
-  goal_or_report_reinterpretation: none-found
+  goal_or_report_reinterpretation: "corrected after review: case-indexed branch reconstruction is not counted as fixed target A-B discharge"
   validation_refs:
-    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122FullComparisonTwistedGroup.lean: pass; 38 declarations, standard axioms only"
-    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/AATFourFamilyBranchReconstruction.lean: pass; 55 declarations, standard axioms only"
-  four_lane_question: "Does Cycle 78 reconstruct all four selected families under one parameter with direct two-sided Hom/object assembly, while giving the full G-122 comparison coordinates the correct twisted group and same-cycle tagged, torsor, finite-decoder, Karoubi, and Arrow connections without claiming a final non-case-defined common category?"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122FullComparisonTwistedGroup.lean: pass; 40 declarations, standard axioms only"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/AATFourFamilyBranchReconstruction.lean: pass; 58 declarations, standard axioms only"
+  four_lane_question: "Does Cycle 78 provide a correctly bounded case-indexed checkpoint for all four selected families, equip the accepted full G-122 coordinates with the correct twisted group, identify the branch kernel with the unique lift-fiber torsor displacement, and factor the tagged, finite-decoder, Karoubi, and Arrow connections through the branch API without counting fixed target A-B as discharged?"
   blocking_findings: []
+  review_finding_resolutions:
+    - "the torsor wrapper was replaced by a branch Hom, a theorem that its read kernel acts to the supplied lift, and a uniqueness theorem identifying every torsor displacement with that branch coordinate"
+    - "the result was downgraded from proof-obligation-discharged to proof-checkpoint, and fixed target A-B mapping was removed"
+    - "the full-coordinate nature of TwistedCode is now recorded as bounded rather than classified as no structure-field escape"
   next_obligation: "construct one independently defined realization/local-model category whose fibers recover all four Cycle 78 branches, prove its direct object/Hom assembly and both inverse laws, and simultaneously transport projections, normalization, and full comparison groups through that equivalence"
 ```
 

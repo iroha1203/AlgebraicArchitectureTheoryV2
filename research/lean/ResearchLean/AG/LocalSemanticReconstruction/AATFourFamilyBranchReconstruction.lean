@@ -62,11 +62,13 @@ def AATBranchLocal : AATBranchParameter → Type 1
   | .lens input => ULiftHom.{1} (CSBranchLocal (.lens input))
   | .protocol input => ULiftHom.{1} (CSBranchLocal (.protocol input))
 
+/-- The category structure on the selected global branch. -/
 noncomputable instance aatBranchGlobalCategory
     (parameter : AATBranchParameter) :
     Category.{1} (AATBranchGlobal parameter) := by
   cases parameter <;> simp only [AATBranchGlobal] <;> infer_instance
 
+/-- The category structure on the selected local branch. -/
 noncomputable instance aatBranchLocalCategory
     (parameter : AATBranchParameter) :
     Category.{1} (AATBranchLocal parameter) := by
@@ -307,9 +309,9 @@ theorem aatBranchG122Reading_kernel
         (restrictionHom raw.down))⁻¹ * raw.down := by
   rfl
 
-/-- The full-kernel torsor universality remains attached to the same common
+/-- Regard the underlying raw comparison of a full lift as a Hom in the common
 G-122 branch. -/
-theorem aatBranchG122FullLiftFiber_existsUnique_kernel
+noncomputable def aatBranchG122LiftHom
     (normalized : NormalizedComparison)
     (lift : AuthoredExactCanonicalComparisonLiftFiber
       finiteAxisFoldBCDatumSquare
@@ -318,11 +320,66 @@ theorem aatBranchG122FullLiftFiber_existsUnique_kernel
       (finiteAxisFoldFixedCoefficientGeometryFamily
         (Discrete.mk DoubleDiamondTwoCell.second))
       finiteCanonicalObjectNormalization_admissible normalized) :
-    ∃! kernelValue : G122FullComparisonKernelDecomposition.FullKernelᵐᵒᵖ,
-      kernelValue •
-          canonicalLift normalized = lift :=
-  G122FullComparisonKernelDecomposition.fullLiftFiber_existsUnique_kernel
-    normalized lift
+    let star : AATBranchGlobal AATBranchParameter.g122 :=
+      ULiftHom.objUp (ULift.up (SingleObj.star RawComparison))
+    star ⟶ star :=
+  ⟨lift.1⟩
+
+/-- Reading the common G-122 Hom associated to a lift is the established full
+twisted-coordinate reading of its underlying raw comparison. -/
+theorem aatBranchG122Reading_liftHom
+    (normalized : NormalizedComparison)
+    (lift : AuthoredExactCanonicalComparisonLiftFiber
+      finiteAxisFoldBCDatumSquare
+      (Discrete.mk DoubleDiamondTwoCell.second)
+      Int
+      (finiteAxisFoldFixedCoefficientGeometryFamily
+        (Discrete.mk DoubleDiamondTwoCell.second))
+      finiteCanonicalObjectNormalization_admissible normalized) :
+    ((aatBranchReading AATBranchParameter.g122).map
+      (aatBranchG122LiftHom normalized lift)).down =
+        G122FullComparisonTwistedGroup.read lift.1 := by
+  rfl
+
+/-- The kernel coordinate read by the common G-122 branch is exactly the
+displacement carrying the canonical lift to the supplied lift. -/
+theorem aatBranchG122ReadingKernel_smul_canonicalLift
+    (normalized : NormalizedComparison)
+    (lift : AuthoredExactCanonicalComparisonLiftFiber
+      finiteAxisFoldBCDatumSquare
+      (Discrete.mk DoubleDiamondTwoCell.second)
+      Int
+      (finiteAxisFoldFixedCoefficientGeometryFamily
+        (Discrete.mk DoubleDiamondTwoCell.second))
+      finiteCanonicalObjectNormalization_admissible normalized) :
+    (((aatBranchReading AATBranchParameter.g122).map
+      (aatBranchG122LiftHom normalized lift)).down).kernel •
+        canonicalLift normalized = lift := by
+  rw [aatBranchG122Reading_liftHom]
+  exact G122FullComparisonTwistedGroup.readKernel_smul_canonicalLift
+    normalized lift.1 lift.property
+
+/-- Torsor uniqueness identifies every kernel displacement with the coordinate
+read by the common G-122 branch. -/
+theorem aatBranchG122FullLiftFiber_unique_kernel_eq_reading
+    (normalized : NormalizedComparison)
+    (lift : AuthoredExactCanonicalComparisonLiftFiber
+      finiteAxisFoldBCDatumSquare
+      (Discrete.mk DoubleDiamondTwoCell.second)
+      Int
+      (finiteAxisFoldFixedCoefficientGeometryFamily
+        (Discrete.mk DoubleDiamondTwoCell.second))
+      finiteCanonicalObjectNormalization_admissible normalized)
+    (kernelValue : G122FullComparisonKernelDecomposition.FullKernelᵐᵒᵖ)
+    (action : kernelValue • canonicalLift normalized = lift) :
+    kernelValue =
+      (((aatBranchReading AATBranchParameter.g122).map
+        (aatBranchG122LiftHom normalized lift)).down).kernel := by
+  obtain ⟨_, _, unique⟩ :=
+    G122FullComparisonKernelDecomposition.fullLiftFiber_existsUnique_kernel
+      normalized lift
+  exact unique kernelValue action |>.trans
+    (unique _ (aatBranchG122ReadingKernel_smul_canonicalLift normalized lift)).symm
 
 /-- Lift the global lens decoder into the common four-family category. -/
 noncomputable def aatBranchLensFiniteDecoder

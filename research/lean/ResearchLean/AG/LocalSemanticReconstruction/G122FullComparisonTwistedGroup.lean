@@ -23,12 +23,20 @@ namespace AAT.AG.LocalSemanticReconstruction
 open CategoryTheory
 open AAT.AG.RealizationReconstruction
 open AAT.AG.RealizationReconstruction.FiniteAxisFoldComparisonRestrictionKernel
+open AtomFoundation DoctrineFiberProduct GeometryTransport TransportCoherence
+open FullGeometryNormalization
 
 noncomputable section
 
 namespace G122FullComparisonTwistedGroup
 
 open G122FullComparisonKernelDecomposition
+
+/-- Decidable atom equality for the fixed finite-axis-fold input. -/
+local instance finiteAxisFoldAtomDecidableEq :
+    DecidableEq FiniteModel.carrier.Atom := by
+  change DecidableEq FiniteModel.FiniteAtom
+  infer_instance
 
 /-- Independent coordinates for a full raw comparison. -/
 structure TwistedCode where
@@ -174,6 +182,23 @@ noncomputable def twistedCodeMulEquiv : TwistedCode ≃* RawComparison where
   left_inv := read_assemble
   right_inv := assemble_read
   map_mul' := assemble_multiply
+
+/-- The kernel coordinate read from a raw comparison is its torsor displacement
+from the canonical lift over the same normalized comparison. -/
+theorem readKernel_smul_canonicalLift
+    (normalized : NormalizedComparison) (raw : RawComparison)
+    (normalization : restrictionHom raw = normalized) :
+    (read raw).kernel • canonicalLift normalized =
+      (⟨raw, normalization⟩ : AuthoredExactCanonicalComparisonLiftFiber
+        finiteAxisFoldBCDatumSquare
+        (Discrete.mk DoubleDiamondTwoCell.second)
+        Int
+        (finiteAxisFoldFixedCoefficientGeometryFamily
+          (Discrete.mk DoubleDiamondTwoCell.second))
+        finiteCanonicalObjectNormalization_admissible normalized) := by
+  subst normalized
+  apply Subtype.ext
+  exact G122FullComparisonKernelDecomposition.assemble_read raw
 
 /-- The actual full comparison group as a one-object category. -/
 abbrev GlobalCategory := SingleObj RawComparison
