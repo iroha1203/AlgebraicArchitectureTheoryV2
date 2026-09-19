@@ -40,8 +40,8 @@
   `d¹`を零化し、actual Čech sourceから既存law-generated complexへの次数0–2 cochain mapを得る。
   Cycle 9のcomplete face indexにより相異なる3 chartの実triple overlap全体の空性とface収載完全性を示し、Cycle 13で
   紙上設計の`Bool × Bool → Bool` / identity readingにfull-target supportを持つactual coarse/fine nerveを構成し、
-  同じnerve indexへpoint-Atom site上の`FaceEmptyAATCechCover`を接続した。A1全体は、Law family・adequacy、
-  primitive generator provenanceと実H¹ mapを同一入力へ接続するまで完了扱いにしない。
+  同じnerve indexへpoint-Atom site上の`FaceEmptyAATCechCover`を接続した。Cycle 16でpoint/generator combined siteへ
+  context・coverage・continuity・actual coverを移した。A1全体は、実H¹ mapをこの同一入力へ接続するまで完了扱いにしない。
 - 完了: 論文採用有限例の8点Alexandrov空間、粗い3-patch coverと細かい4-patch
   cover、実refinement、patchと非空二重交叉の非空preconnected性を構成する。相異なる
   3 chartと実交叉点を持つ型をcomplete face indexとして定め、両coverで幾何的三重交叉の
@@ -66,12 +66,13 @@
 - 完了: 8点のpoint Atomと4つのprimitive generator Atomを同じ実`AtomCarrier`へ載せる。
   generator Atomのsubject・Law index・評価値をAtom座標へ保持し、architecture relationを
   Cycle 14の2辺presentationと一致させる。
-- 未完了: combined carrier上へpoint support context・coverage・continuityを持ち上げる。
+- 完了: combined carrier上へpoint support context・全12 Atomのcoverage・generated-topology continuityを持ち上げ、
+  粗細のactual Čech coverをcombined site上に再構成する。
 - 完了（仮定相対）: supplied face-index-empty nerveのpresentation係数cochainと、条件付きactual Ob層の実
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
 - 未完了: B1・B2、C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
-- 次のproof obligation: combined point/generator carrier上へpoint support context・coverage・continuityを
-  持ち上げ、Cycle 13のactual Čech coverをこのfull input siteへ移す。続いて同一入力上の実H¹ mapへ上げる。
+- 次のproof obligation: combined site上のactual Čech sourceとCycle 14のselected Law/presentationを使い、
+  同一入力上の実H¹ mapへ上げる。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -1820,4 +1821,120 @@ audits:
     - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.PointGeneratorAtomInput: pass; 3717 jobs"
   blocking_findings: []
   next_obligation: "lift point-support contexts, coverage, generated-topology continuity, and actual Cech covers to the combined point/generator object"
+```
+
+## Cycle 16 — combined carrier上のsite・continuity・actual Čech cover
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 16
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: 014a7bf1de0b5409c3ec9ec971a7302217e8e4f5
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "Issue #4791 paper design section 10 after Cycle 15 merge 014a7bf1de0b5409c3ec9ec971a7302217e8e4f5"
+  proof_dag_predecessors:
+    - "point-support site and generated-topology continuity: Cycle 12"
+    - "actual coarse/fine nerves and Cech covers: Cycle 13"
+    - "combined point/generator AtomCarrier: Cycle 15"
+  proof_obligation: "lift point support, full Atom coverage, topology continuity, and actual Cech covers to the combined carrier"
+  selection_reason: "the same-input H1 map requires the actual Cech source and primitive Law generators to live on one AAT site"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomContextSupport.lean"
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomContextContinuity.lean"
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomActualNerve.lean"
+  risks:
+    - "reusing the point-only site while merely naming it combined"
+    - "giving generator Atoms artificial points that manufacture geometric support"
+    - "transporting Cech covers across an unproved site equivalence"
+  unchecked:
+    - "fixed-head independent review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Open contexts now live on the Cycle 15 object, read point Atoms exactly on their open, and retain every generator Atom. Geometric support is derived only from point readings. Coarse and fine families cover all 12 Atoms, the support functor is continuous for the combined generated topology, and both actual face-empty Cech covers are rebuilt in the combined context category."
+  completion_candidate: no
+  lean_artifacts:
+    - "CombinedAtomContextSupport.openContext"
+    - "CombinedAtomContextSupport.contextSupport"
+    - "CombinedAtomContextSupport.coverageRequirements"
+    - "CombinedAtomContextSupport.coarseCoverageFamily_admissible"
+    - "CombinedAtomContextSupport.fineCoverageFamily_admissible"
+    - "CombinedAtomContextSupport.supportFunctor_isContinuous"
+    - "CombinedAtomContextSupport.contextOpenSupport"
+    - "CombinedAtomActualNerve.fineCechCover"
+    - "CombinedAtomActualNerve.coarseCechCover"
+  evidence:
+    - "openContext pattern-matches the actual sum Atom: point visibility is open membership and generator visibility is true"
+    - "contextSupport is the interior of readable pointAtom occurrences and never projects generators to geometric points"
+    - "both admissibility proofs split the actual Atom sum and cover point and generator branches"
+    - "continuity uses atomSupportCoverage at the actual point injection on the combined site"
+    - "combined Cech covers rebuild every context and restriction arrow in the combined contextPreorder"
+  claim_mapping:
+    theorem_names:
+      - "CombinedAtomContextSupport.coarseCoverageFamily_admissible"
+      - "CombinedAtomContextSupport.fineCoverageFamily_admissible"
+      - "CombinedAtomContextSupport.supportFunctor_isContinuous"
+      - "CombinedAtomActualNerve.fineCechCover"
+      - "CombinedAtomActualNerve.coarseCechCover"
+    source_labels:
+      - "GOAL A common Atom/Law/sheaf input"
+      - "Issue #4791 paper design section 10 AAT connection"
+      - "Cycle 13 actual Cech source"
+    conjuncts:
+      - "combined contexts and full Atom coverage -> CombinedAtomContextSupport"
+      - "generated-topology compatibility -> supportFunctor_isContinuous"
+      - "actual coarse/fine Cech source on the combined site -> CombinedAtomActualNerve"
+    undischarged_assumptions:
+      - "the actual Cech-to-law-generated map must be instantiated with the selected Law and presentation on this same site"
+      - "B1, full B2, C1, C2, and fixed zero/nonzero diagnostic data remain"
+    acceptance_point: "the actual Cech source, geometric support, and primitive generator Atoms now inhabit one site without generator-to-point target fitting"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "Cycle 15 supplies the combined architecture object"
+      - "Cycle 9 supplies the finite topology and Cycle 13 supplies complete nerve indices"
+    direction_hypothesis: []
+    discharge_required:
+      - "construct the same-input actual H1 map"
+      - "construct B1, full B2, C1, C2 and specified obstruction classes"
+    conclusion_equivalent_risk:
+      - "generator visibility is context input availability, not an H1 or zero-class certificate"
+      - "continuity is proved against the actual generated topology rather than stored as site data"
+  premise_delta:
+    discharged:
+      - "combined-carrier point support and open-context normalization"
+      - "coarse and fine coverage of every selected point and generator Atom"
+      - "combined-site generated-topology continuity"
+      - "actual coarse and fine Cech covers on the combined site"
+    remaining:
+      - "same-input actual H1 map"
+      - "B1, full B2, C1, C2 and zero/nonzero fixed data"
+  certificate_provenance:
+    discharged:
+      - "point support is computed from pointAtom readings"
+      - "generator coverage is checked on the actual generator sum branch"
+      - "Cech context and restriction data are constructed directly in the combined category"
+    unresolved:
+      - "same-input cochain and cohomology comparison"
+  proof_use:
+    used:
+      - "full Atom admissibility is used to generate the combined AAT topology"
+      - "point branch coverage is used in the continuity proof"
+      - "continuous support is used by both combined actual Cech covers"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-for-combined-site-and-cech-obligation
+  target_fitting: none-found
+  vacuity: "point visibility varies with the open while all four generator Atoms are retained; both coverage proofs inspect the Atom sum"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused checks: CombinedAtomContextSupport 29 declarations, CombinedAtomContextContinuity 8 declarations, CombinedAtomActualNerve 2 declarations; standard axioms only"
+    - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.CombinedAtomActualNerve: pass; 3720 jobs"
+  blocking_findings: []
+  next_obligation: "instantiate the actual Cech-to-law-generated cochain map and induced H1 map from the combined site using the selected Law family and presentation"
 ```
