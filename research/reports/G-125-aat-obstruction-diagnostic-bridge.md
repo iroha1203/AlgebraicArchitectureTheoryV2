@@ -39,13 +39,19 @@
   `d¹`を零化し、actual Čech sourceから既存law-generated complexへの次数0–2 cochain mapを得る。
   これは実triple overlap全体の空性やface収載完全性をまだ示さない。選定有限入力による
   face provenance、support functor、continuityの構成前なのでA1全体の完了扱いはしない。
-- 未完了: 論文採用入力と有限例について、具体的な有限空間、context open support functor、
-  site functorの連続性を構成する。
+- 完了: 論文採用有限例の8点Alexandrov空間、粗い3-patch coverと細かい4-patch
+  cover、実refinement、patchと非空二重交叉の非空preconnected性を構成する。相異なる
+  3 chartと実交叉点を持つ型をcomplete face indexとして定め、両coverで幾何的三重交叉の
+  空性からその型の`IsEmpty`を導出する。
+- 未完了: この有限空間をAAT context open support functorへ接続し、site functorの連続性を
+  構成する。
 - 完了（仮定相対）: supplied face-index-empty nerveのpresentation係数cochainと、条件付きactual Ob層の実
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
 - 未完了: B1・B2、C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
-- 次のproof obligation: 論文採用の有限入力でcontext/open support、cover、continuityを構成して
-  Cycle 7–8の強い幾何前提を放電し、actual cochain mapからH¹誘導写像を構成する。
+- 次のproof obligation: 選定AAT siteのcontextへ粗細patch・overlap supportを接続し、
+  support functorとcontinuityを構成してCycle 7の強い前提を放電する。complete face indexを
+  実`TargetSupportedNerve.FaceComponent`へ用いてCycle 8を具体化し、actual cochain mapから
+  H¹誘導写像を構成する。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -937,4 +943,122 @@ audits:
     - "git diff --check and placeholder, hidden/BiDi Unicode, private-path, and Formal-to-Research import scans: pass"
   blocking_findings: []
   next_obligation: "instantiate the selected finite AAT context/open geometry, construct a complete face index and geometric emptiness proof, discharge site continuity, then construct the induced H1 homomorphism and specified obstruction-class correspondence"
+```
+
+## Cycle 9 — 8点有限空間とcomplete face provenance
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 9
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: 0f6707a49c967b5c178da5beae9bc7d18c68dcd5
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "Issue #4791 paper design section 8.2 after Cycle 8 merge 0f6707a49c967b5c178da5beae9bc7d18c68dcd5"
+  proof_dag_predecessors:
+    - "FaceEmptyAATCechCover and supplied face-index-empty normalization: PR #4808"
+    - "Issue #4791 paper design section 8.2 eight-point coarse/fine cover"
+  proof_obligation: "construct the selected finite topological cover, make the face index complete by construction, and derive its emptiness from geometric triple-intersection emptiness"
+  selection_reason: "this directly closes the provenance gap found by the Cycle 8 mathematical review before the finite cover is attached to AAT contexts"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/FiniteCoverGeometry.lean"
+    - "SelectedFiniteGeometry.CompleteFaceIndex"
+    - "SelectedFiniteGeometry.fineCompleteFaceIndexIsEmpty"
+    - "SelectedFiniteGeometry.coarseCompleteFaceIndexIsEmpty"
+  risks:
+    - "choosing an empty FaceComponent independently of the geometric triple intersections"
+    - "proving only a graph-level nerve without constructing the advertised eight-point topological space"
+    - "claiming AAT site continuity or Cycle 8 instantiation before constructing the context support functor"
+  unchecked:
+    - "fixed-head independent review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The selected eight-point incidence poset and its upper-set topology now construct the paper design's fine four-patch and coarse three-patch covers on the same space. Every patch and selected nonempty pair overlap is proved nonempty and preconnected, each pair overlap is identified with its named edge point, and both covers cover the space. CompleteFaceIndex contains an injective ordered chart triple and an actual point in all three supports, so it is complete for geometric nonempty triple intersections by construction; exhaustive finite proofs derive IsEmpty for both covers. AAT context support and site continuity remain open."
+  completion_candidate: no
+  lean_artifacts:
+    - "SelectedFiniteGeometry.Point"
+    - "SelectedFiniteGeometry.Space"
+    - "SelectedFiniteGeometry.finePatch"
+    - "SelectedFiniteGeometry.coarsePatch"
+    - "SelectedFiniteGeometry.fine_cover"
+    - "SelectedFiniteGeometry.coarse_cover"
+    - "SelectedFiniteGeometry.fineOverlap_eq_singleton"
+    - "SelectedFiniteGeometry.coarseOverlap_eq_singleton"
+    - "SelectedFiniteGeometry.CompleteFaceIndex"
+    - "SelectedFiniteGeometry.fine_distinct_triple_empty"
+    - "SelectedFiniteGeometry.coarse_distinct_triple_empty"
+    - "SelectedFiniteGeometry.fineCompleteFaceIndexIsEmpty"
+    - "SelectedFiniteGeometry.coarseCompleteFaceIndexIsEmpty"
+  evidence:
+    - "Space is the upper-set topology on the explicit four-vertex/four-edge incidence poset"
+    - "coarse patch c0 is the union of the a0 and a1 minimal opens; c1 and c2 are the b and c opens"
+    - "fine overlaps k, ab, bc, ac and coarse overlaps ab, bc, ac are proved equal to singleton edge points"
+    - "CompleteFaceIndex stores the actual intersection point rather than an arbitrary face certificate"
+    - "fine and coarse IsEmpty instances are derived from the geometric distinct-triple-empty theorems"
+  claim_mapping:
+    theorem_names:
+      - "SelectedFiniteGeometry.fineOverlap_eq_singleton"
+      - "SelectedFiniteGeometry.coarseOverlap_eq_singleton"
+      - "SelectedFiniteGeometry.fineCompleteFaceIndexIsEmpty"
+      - "SelectedFiniteGeometry.coarseCompleteFaceIndexIsEmpty"
+    source_labels:
+      - "GOAL A selected finite cover and nerve"
+      - "GOAL completion condition 2 fixed finite example"
+      - "Issue #4791 paper design section 8.2"
+    conjuncts:
+      - "same eight-point space and fine/coarse covers -> Space, finePatch, coarsePatch, fine_cover, coarse_cover"
+      - "connected patch and overlap supports -> patchPreconnectedSpace and fine/coarse overlap PreconnectedSpace constructors"
+      - "complete face provenance -> CompleteFaceIndex.ofWitness"
+      - "geometric distinct-triple emptiness -> fine/coarse CompleteFaceIndex IsEmpty instances"
+    undischarged_assumptions:
+      - "the selected AAT site contexts and morphisms must be mapped to these open supports"
+      - "ContextOpenSupport.continuous must be constructed for that support functor"
+      - "the actual TargetSupportedNerve must use the complete face index and the selected fine/coarse chart and edge types"
+    acceptance_point: "face emptiness is a theorem about an index whose inhabitants carry actual triple-overlap points; it is not a freely supplied empty type"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "the four-cycle incidence relation and the coarse grouping a0/a1 are the fixed paper-design input"
+    direction_hypothesis: []
+    discharge_required:
+      - "connect these topological supports to selected AAT contexts and prove site continuity"
+      - "instantiate Cycle 8's actual cover package and diagnostic nerve"
+    conclusion_equivalent_risk:
+      - "CompleteFaceIndex stores only chart distinctness and an actual intersection point; no emptiness or cohomology conclusion is a field"
+  premise_delta:
+    discharged:
+      - "construct the advertised eight-point topological space and both covers"
+      - "prove patch and selected pair-overlap nonempty preconnected support conditions"
+      - "construct a complete geometric face witness index and derive its emptiness"
+    remaining:
+      - "AAT context/open support functor and site continuity"
+      - "concrete TargetSupportedNerve and FaceEmptyAATCechCover instantiation"
+      - "H1 map, B1, full B2, C1, C2 and zero/nonzero fixed data"
+  certificate_provenance:
+    discharged:
+      - "face provenance is an actual point belonging to every selected patch of an injective ordered triple"
+      - "pair overlaps are computed from the open supports and identified with concrete edge points"
+    unresolved:
+      - "AAT context provenance and continuity"
+  proof_use:
+    used:
+      - "the explicit incidence order determines patch membership and every pair/triple intersection proof"
+      - "chart injectivity is used to exclude repeated-index tuples from the face index"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-for-finite-topological-geometry
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: not-applicable
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/ObstructionDiagnosticBridge/FiniteCoverGeometry.lean: pass; 200 namespace declarations, standard axioms only"
+    - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.FiniteCoverGeometry: pass"
+    - "main declarations #print axioms: propext, Classical.choice, Quot.sound only"
+  blocking_findings: []
+  next_obligation: "construct the selected AAT context/open support functor on this geometry, prove continuity, and instantiate the actual diagnostic nerve and FaceEmptyAATCechCover"
 ```
