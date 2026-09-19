@@ -7992,6 +7992,126 @@ audits:
   next_obligation: "construct one independently defined realization/local-model category whose fibers recover all four Cycle 78 branches, prove its direct object/Hom assembly and both inverse laws, and simultaneously transport projections, normalization, and full comparison groups through that equivalence"
 ```
 
+## Cycle 79: total four-family reconstruction and same-cycle routes
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 79
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 8dd01cbce46be3e6e143e488e8ef7a2d25af9b28
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 78 acceptance: Issue comment 5742157667; Cycle 79 selection: Issue comment 5742162241"
+  proof_dag_predecessors:
+    - "Cycle 78 case-indexed branch reconstruction for all four mandatory families"
+    - "Cycle 78 full G-122 twisted coordinates and lift-fiber torsor identification"
+    - "Cycle 78 tagged and CS finite-decoder/Karoubi/Arrow routes"
+    - "Cycle 65 ReconstructionData equivalence theorem"
+  proof_obligation: "construct one indexed total global category and one indexed total local category over all four admitted parameters, with Homs only inside a common fiber; define a total reading, direct Hom assembly, both inverse laws, object realization, category equivalence, exact fiber recovery, and the parameter projection; in the same module route tagged formulas, full G-122 coordinates and torsor uniqueness, and lens/protocol finite-decoder, Karoubi, and Arrow maps through the total categories"
+  selection_reason: "Cycle 78 supplied all branch data but left totalization and its accepted family connections to a later step; combining the total equivalence, exact fiber recovery, and every route prevents a connection-only follow-up cycle"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - "AATFourFamilyTotalReconstruction.lean"
+  risks:
+    - "a coproduct category can totalize the branches without yet constructing the fixed target global realization data from primitive input"
+    - "the G-122 local fiber still contains full accepted coordinates rather than independent primitive syntax"
+    - "cross-family Homs must not be manufactured by the totalization"
+  unchecked:
+    - "formal four-lane review of the fixed PR head"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "IndexedTotalObject and IndexedTotalHom form single total global and local categories with no cross-family Homs. The total reading has a direct assembler whose read-after-assemble and assemble-after-read laws hold for every total Hom; explicit object realization yields ReconstructionData, unique Hom preimages, and a category equivalence. Each branch inclusion has an exact Hom equivalence, restriction of the total reading is naturally isomorphic to the accepted branch reading, and both total projections agree. The same file recovers the tagged value and assembly formulas, the normalized/full-kernel G-122 reading and its torsor action/uniqueness, and routes both CS finite decoders, Karoubi equivalences, and Arrow equivalences into the total category. This is a larger totalization checkpoint, not fixed target A-B discharge."
+  completion_candidate: no
+  lean_artifacts:
+    - "IndexedTotalObject"
+    - "IndexedTotalHom"
+    - "aatTotalReading"
+    - "aatTotalAssemble"
+    - "aatTotal_read_assemble"
+    - "aatTotal_assemble_read"
+    - "aatTotalRealizeIso"
+    - "aatTotalReconstructionData"
+    - "aatTotalReconstructionEquivalence"
+    - "aatTotal_existsUnique_preimage"
+    - "aatGlobalFiberHomEquiv"
+    - "aatLocalFiberHomEquiv"
+    - "aatTotal_noCrossFamilyHom"
+    - "aatFiberReadingIso"
+    - "aatTotalReading_comp_projection"
+    - "aatTotalTaggedReadingValue"
+    - "aatTotalG122ReadingKernel_smul_canonicalLift"
+    - "aatTotalG122FullLiftFiber_unique_kernel_eq_reading"
+    - "aatTotalLensFiniteDecoderReadingIso"
+    - "aatTotalProtocolFiniteDecoderReadingIso"
+    - "aatTotalLensKaroubiArrowRoute"
+    - "aatTotalProtocolKaroubiArrowRoute"
+  evidence:
+    - "total Homs have one constructor whose endpoints carry the same parameter"
+    - "both total Hom inverse laws are proved directly before deriving separation and equivalence"
+    - "total object realization is explicit and its readback is an indexed lift of the accepted branch isomorphism"
+    - "the fiber Hom equivalences and the no-cross-family theorem characterize the total Hom space"
+    - "the total reading commutes with the discrete parameter projection"
+    - "tagged, G-122, finite-decoder, Karoubi, and Arrow statements all occur in the totalization module"
+  claim_mapping:
+    theorem_names:
+      - "aatTotalReconstructionEquivalence"
+      - "aatTotal_existsUnique_preimage"
+      - "aatTotal_noCrossFamilyHom"
+      - "aatFiberReadingIso"
+      - "aatTotalReading_comp_projection"
+      - "aatTotalG122FullLiftFiber_unique_kernel_eq_reading"
+    source_labels:
+      - "Cycle 79 total four-family reconstruction checkpoint"
+      - "Cycle 79 family-parameter projection compatibility and full G-122 recovery on the accepted fixed input"
+    conjuncts:
+      - "one total global/local category plus direct two-sided Hom and object reconstruction -> aatTotalReconstructionData and aatTotalReconstructionEquivalence"
+      - "exact branch recovery -> fiber Hom equivalences, no-cross-family theorem, and fiber reading natural isomorphism"
+      - "same-cycle connections -> projection equality, tagged formulas, G-122 torsor theorems, and CS decoder/Karoubi/Arrow routes"
+    undischarged_assumptions:
+      - "the total fibers reuse the Cycle 78 branch categories rather than deriving the fixed target global realization category from Sigma, D, and Lambda"
+      - "the G-122 local fiber retains normalized comparison and full-kernel coordinate values rather than independent primitive syntax"
+      - "the fixed target data condition D_Theta and its uniform primitive reading remain open"
+    acceptance_point: "the indexed total categories, their reconstruction equivalence, exact fibers, projection, and all accepted family routes form one checkpoint; fixed target A-B is not claimed"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "all four accepted branch categories occur as exact fibers of one total global and one total local category"
+      - "the total reading has direct Hom/object assembly, both Hom inverse laws, unique preimages, and category equivalence"
+      - "cross-family Homs are absent and the family parameter projection commutes with reading"
+      - "accepted tagged, G-122, finite-decoder, Karoubi, and Arrow routes are connected in the totalization module"
+    remaining:
+      - "derive the fixed target R_Theta and M_Theta from primitive Sigma, D, and Lambda data rather than accepted branch types"
+      - "construct primitive G-122 local syntax and discharge the final common D_Theta"
+      - "construct fixed target C base, observation, and coefficient projections, normalization compatibility, and comparison-group transport"
+  certificate_provenance:
+    discharged:
+      - "total category laws reduce to accepted category laws in the unique common fiber"
+      - "total reconstruction laws reduce to the direct Cycle 78 branch inverse laws"
+      - "G-122 torsor statements reuse the accepted full-coordinate read and unique displacement theorem"
+    unresolved:
+      - "primitive provenance for the full G-122 local coordinate syntax"
+  proof_use:
+    used:
+      - "Cycle 78 branch reading, direct assemblers, object realizations, and both inverse laws"
+      - "Cycle 78 tagged formulas and G-122 full-coordinate torsor theorems"
+      - "Cycle 78 lens/protocol finite-decoder, Karoubi, and Arrow routes"
+      - "Cycle 65 ReconstructionData theorem"
+  structure_field_escape: "found-and-bounded: totalization is exact over accepted branches, but the G-122 fiber still uses full accepted coordinates"
+  route_integrity: pass
+  target_fitting: bounded-proof-checkpoint
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/AATFourFamilyTotalReconstruction.lean: pass; 69 declarations, standard axioms only"
+  four_lane_question: "Does Cycle 79 construct one indexed total global/local category with no cross-family Homs, direct two-sided Hom and object reconstruction, exact fiber recovery and projection compatibility, while transporting tagged, full G-122 torsor, finite-decoder, Karoubi, and Arrow routes without counting primitive G-122 syntax or fixed target A-B as discharged?"
+  blocking_findings: []
+  next_obligation: "replace the accepted-coordinate G-122 local fiber by independent primitive syntax, derive the fixed common data condition and reading from the target Sigma, D, and Lambda inputs, and construct target C base, observation, coefficient, normalization, and comparison-group compatibility"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -8166,8 +8286,11 @@ audits:
   local component計算によるexact assembly、任意candidateに対する普遍性、圏法則、Cycle 72/common graph
   接続を同梱した。Cycle 77でlens・protocolの独立local object/Hom assemblyを、Cycle 78で
   tagged・full G-122を含む四枝の直接assembly・両逆・圏同値を同じparameter面へ収録した。
-  direct normalization kernel自体のprimitive local syntaxと、case分岐ではない一つの実現圏・
-  局所モデル圏としての統合は未完了である。
+  Cycle 79で四枝をexact fiberとするindexed total global/local category、直接Hom/object
+  assembly、両逆、圏同値、投影、family接続を一つのmoduleへ収録した。
+  ただしこれはaccepted branch typeの総和であり、固定targetの`Sigma,D,Lambda`から
+  `R_Theta,M_Theta,N_Theta,D_Theta`を直接導く義務と、direct normalization kernel自体の
+  primitive local syntaxは未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
@@ -8182,4 +8305,6 @@ audits:
   `FiniteReading`/Dへ接続済み。Cycle 29でgeneral observation-aware protocol Homも
   full tagged table上の決定性・effectivenessへ接続し、Cycle 30でlens一般意味保存射層も
   full fiber上の決定性・total effectivenessへ接続した。Cycle 77で両CS枝、Cycle 78で四枝parameterへ
-  統合したが、最終common categoryのprojection・normalization・comparison-group輸送は未完了である。
+  統合し、Cycle 79でindexed total categoryのprojectionと各fiberの正確な回収、tagged・
+  G-122・decoder・Karoubi・Arrow経路の輸送を同梱した。固定targetからのprimitive
+  common readingとdata condition、Cが求める底・観測・係数投影、正規化、全比較群輸送は未完了である。
