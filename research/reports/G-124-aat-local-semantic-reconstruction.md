@@ -157,12 +157,14 @@
   merge commit `cb7a659cd28d988fd4d5fd1ba9ad4eb35930459d`
 - Cycle 74 accepted PR: [#4794](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4794),
   merge commit `f00e255b71d602498ad95ec683db1617bb5bebcf`
+- Cycle 75 accepted PR: [#4795](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4795),
+  merge commit `35f931ee50ef5ae91d226bbf3e37017e059ad308`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: 独立に与えたcoherent local objectとHom familyを同じcycleで組み立て、
-  essential surjectivity・圏同値・common graph接続まで閉じる
-- next proof obligation: その独立object/Hom assemblyを四族共通のlocal-model surfaceへ適用し、
-  fixed target Bの主同値として統合する
+- current proof obligation: 独立object/Hom assemblyを`ClosedFamilyParameter`の四族共通
+  local-model surfaceへ適用し、fixed target Bの主同値として統合する
+- next proof obligation: 主同値に沿うCの投影・正規化・比較群輸送とD/Eの共通reading接続を、
+  単なるadapterで終わらない実質的な回復定理と同梱する
 
 ## Cycle 1 — rejected
 
@@ -7713,6 +7715,115 @@ audits:
   next_obligation: "construct independently supplied coherent local objects and Hom families together with their assembly, separation, essential-surjectivity/equivalence result, and common-surface connection in one cycle; then apply that result to the four mandatory families"
 ```
 
+## Cycle 76: independent complete objects, exact Hom reconstruction, and common surface
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 76
+status: result-proposed
+branch: codex/4711-g124-independent-object-category
+base_oid: 35f931ee50ef5ae91d226bbf3e37017e059ad308
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 75 acceptance: Issue comment 5741395911; Cycle 76 selection: Issue comment 5741417422"
+  proof_dag_predecessors:
+    - "Cycle 65 separation, Hom assembly, object assembly, and categorical reconstruction contract"
+    - "Cycle 71 lawful complete graph-code read/assemble equivalence"
+    - "Cycle 75 direct complete-code identity/composition, category laws, and common graph formulas"
+  proof_obligation: "construct an independently supplied complete-geometry object code with two-sided object assembly, equip direct lawful graph-code Homs with a category, prove exact Hom reconstruction and essential surjectivity/categorical equivalence, and connect the result faithfully to the accepted raw common graph surface in the same cycle"
+  selection_reason: "object assembly, Hom assembly, object/Hom inverse laws, essential surjectivity, category equivalence, direct operations, and the common-surface connection form one bounded review question and prevent an object-definition-only or adapter-only cycle"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryObjectCategory.lean"
+  unchecked:
+    - "heterogeneous four-family target B integration"
+    - "G-124 C--E final integration"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "ObjectCode independently stores the generated core, selected geometry, coefficient carrier/ring, and raw restriction system without a GeometryPackage field, global morphism, decoder, or extension witness. ObjectCode.read and assemble are two-sided inverses. Lawful complete graph codes between assembled endpoints form a category using Cycle 75 direct operations. The primitive reading and assembly functors support explicit Hom separation, Hom assembly, unique preimages, object assembly, essential surjectivity, and a categorical equivalence. The same local category maps faithfully to the accepted raw complete-map graph category, and reading commutes with that map. Four-family integration remains open."
+  completion_candidate: no
+  lean_artifacts:
+    - "CompleteGeometryObjectCategory.ObjectCode"
+    - "CompleteGeometryObjectCategory.ObjectCode.assemble"
+    - "CompleteGeometryObjectCategory.ObjectCode.read"
+    - "CompleteGeometryObjectCategory.ObjectCode.assemble_read"
+    - "CompleteGeometryObjectCategory.ObjectCode.read_assemble"
+    - "CompleteGeometryObjectCategory.ObjectCode.equivalence"
+    - "CompleteGeometryObjectCategory.readingFunctor"
+    - "CompleteGeometryObjectCategory.assembleHom"
+    - "CompleteGeometryObjectCategory.read_assembleHom"
+    - "CompleteGeometryObjectCategory.assembleHom_read"
+    - "CompleteGeometryObjectCategory.assemblyFunctor"
+    - "CompleteGeometryObjectCategory.homSeparation"
+    - "CompleteGeometryObjectCategory.homAssembly"
+    - "CompleteGeometryObjectCategory.objectAssembly"
+    - "CompleteGeometryObjectCategory.reconstructionData"
+    - "CompleteGeometryObjectCategory.readingEssSurj"
+    - "CompleteGeometryObjectCategory.equivalence"
+    - "CompleteGeometryObjectCategory.homEquiv_apply"
+    - "CompleteGeometryObjectCategory.homEquiv_symm_apply"
+    - "CompleteGeometryObjectCategory.existsUnique_preimage"
+    - "CompleteGeometryObjectCategory.commonSurfaceFunctor"
+    - "CompleteGeometryObjectCategory.commonSurface_map_read"
+    - "CompleteGeometryObjectCategory.commonSurfaceFunctorFaithful"
+  evidence:
+    - "ObjectCode contains five dependent constituents and no completed GeometryPackage field"
+    - "object read/assemble recovers both the package and every independently supplied constituent"
+    - "the Hom category uses Cycle 75 direct identity and composition rather than transported Cycle 72 operations"
+    - "Hom read/assemble and unique preimage quantify over every lawful code between arbitrary read endpoints"
+    - "assembleHom exposes both Hom inverse laws before categorical packaging"
+    - "object assembly supplies an explicit assembled package and equality-induced local isomorphism"
+    - "the reconstruction contract derives essential surjectivity and the categorical equivalence"
+    - "the common-surface functor preserves direct identity/composition and is faithful by complete-map graph separation"
+  nonclaims:
+    - "ObjectCode is already the final restriction-diagram M_Theta for every ClosedFamilyParameter branch"
+    - "the tagged, G-122, lens, and protocol branches are already integrated by one main equivalence"
+    - "G-124 as a whole is complete"
+audits:
+  premise_delta:
+    discharged:
+      - "independent complete-object constituent assembly and both object inverse laws"
+      - "direct lawful Hom category on assembled independent endpoints"
+      - "Hom separation, Hom assembly, both Hom inverse laws, and unique preimages"
+      - "explicit object assembly, essential surjectivity, and categorical equivalence"
+      - "same-cycle faithful accepted raw common-graph connection"
+    remaining:
+      - "four-family M_Theta construction and fixed target B integration"
+      - "C--E recovery through the final main equivalence"
+  certificate_provenance:
+    discharged:
+      - "object coherence / dependent field typing of core, geometry, coefficient ring, and raw system"
+      - "Hom lawfulness / Cycle 71 independent graph-code certificates"
+      - "identity/composition / Cycle 75 direct local constructors"
+      - "object and Hom inverse laws / direct record reconstruction and accepted graph-code assembly"
+    unresolved:
+      - "branch-specific four-family local-value coherence and assembly"
+  proof_use:
+    used:
+      - "Cycle 65 ReconstructionData derives essential surjectivity, Hom equivalence, uniqueness, and category equivalence"
+      - "Cycle 71 read_assemble and assemble_read supply exact Hom recovery"
+      - "Cycle 75 direct identity/composition and assembly formulas define the local category and assembly functor"
+      - "Cycle 75 common-surface formulas prove raw graph functoriality"
+      - "completeMapGraphs_injective proves common-surface faithfulness"
+  structure_field_escape: none-found
+  route_integrity: independent-object-direct-hom-category
+  target_fitting: found-and-bounded
+  target_fitting_reason: "the cycle closes object and Hom assembly through essential surjectivity and categorical equivalence and includes its accepted common-surface connection, while explicitly retaining the heterogeneous four-family application"
+  vacuity: none-found
+  vacuity_reason: "ObjectCode quantifies over arbitrary well-typed constituent packages and Homs quantify over every lawful complete graph code between their assembled endpoints"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none
+  four_lane_question: "Does the independent five-constituent complete-object code have exact two-sided object assembly, and do Cycle 75 direct lawful graph-code Homs yield exact Hom inverses, unique assembly, essential surjectivity, a categorical equivalence, and a faithful accepted raw common-graph connection in the same cycle, while leaving heterogeneous four-family integration open?"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryObjectCategory.lean: pass"
+    - "#assert_standard_axioms_only CompleteGeometryObjectCategory: 42 declarations, standard axioms only"
+    - "lake build ResearchLean.AG: the new module built successfully; the aggregate command then reproduced unrelated pre-existing unsolved goals in ConditionC5NonnecessityWitness and ConditionC6NonnecessityWitness and was stopped"
+  blocking_findings: []
+  next_obligation: "apply the independent object/Hom reconstruction to the common ClosedFamilyParameter branches by constructing the actual restriction-diagram local objects and Homs, discharging branchwise separation/assembly, and producing the fixed target B main equivalence with its common connections in one substantive cycle"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -7885,9 +7996,11 @@ audits:
   complete geometry外側のcoefficient・realization・coverage・overlap・raw coherenceはCycle 75で
   放電した。dependent package-base再添字付け、直接恒等・合成data、入力certificateからの外側法則閉性、
   local component計算によるexact assembly、任意candidateに対する普遍性、圏法則、Cycle 72/common graph
-  接続を同梱した。独立local objectとHom familyの組立ては未完了である。
-  direct normalization kernel自体のprimitive local syntax、および四族共通の実現圏・
-  局所モデル圏への適用は未完了である。
+  接続を同梱した。Cycle 76では完成packageをfieldとして保持しない五つのdependent object constituentを
+  `ObjectCode`として構成し、object read/assemble両逆、Cycle 75 direct Hom圏、Hom両逆と一意preimage、
+  明示的object assembly、essential surjectivity、圏同値、accepted raw common graphへの忠実な接続まで
+  同梱した。direct normalization kernel自体のprimitive local syntax、およびこのobject/Hom再構成を
+  `ClosedFamilyParameter`四族共通のrestriction-diagram局所モデルへ適用する義務は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
