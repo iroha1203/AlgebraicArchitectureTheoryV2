@@ -141,13 +141,14 @@
   merge commit `900d73e14e70cacb37915602f3838bae46e75ac2`
 - Cycle 66 accepted PR: [#4780](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4780),
   merge commit `197978ad348f382755e889e0400124f80a507103`
+- Cycle 67 accepted PR: [#4781](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4781),
+  merge commit `a507237a507df44914136a6f768b94173bf933ca`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: forward/backward graphと相互逆則からEquivを、graphと演算保存則からRingHomを
-  独立に組み立て、read/assemble両逆・恒等・合成閉性を証明する。complete geometry readingのAtom、
-  equation-index、coefficient、context-object成分へ同じcycleで接続する
-- next proof obligation: dependent fiber equivalence、context functor、operation・invariant・signature・geometry
-  naturalityの独立coherenceを構成し、恒等・合成閉性とcomplete GeometryTotalHom assemblyへ接続する
+- current proof obligation: context functorの射作用・unit/counitと、operation・invariant・
+  support・axis・observable・raw naturalityの独立coherenceを構成し、恒等・合成に閉じる
+- next proof obligation: 独立coherence全体をcomplete coherent subcategoryにまとめ、任意の整合する
+  bundleと`GeometryTotalHom`のread/assemble両逆へ接続する
 
 ## Cycle 1 — rejected
 
@@ -6747,6 +6748,154 @@ audits:
   next_obligation: "define independent dependent-fiber, context-functor, operation, invariant, signature, and geometry-naturality coherence closed under identity and composition, then assemble the complete coherent Hom"
 ```
 
+## Cycle 68: dependent algebraic graph coherence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 68
+status: result-proposed
+branch: codex/4711-g124-dependent-algebraic-coherence
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: a507237a507df44914136a6f768b94173bf933ca
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 67 acceptance: Issue comment 5738212052; Cycle 68 selection: Issue comment 5738223719"
+  proof_dag_predecessors:
+    - "Cycle 63 primitive function-graph read/assemble equivalence"
+    - "Cycle 64 complete geometry graph separation"
+    - "Cycle 67 ordinary equivalence and ring-hom graph coherence"
+  proof_obligation: "construct an independent graph presentation of ring equivalences, lift ordinary and ring equivalence codes pointwise over arbitrary index maps, prove two-sided assembly, composition, and tagged-forward separation, and connect both families immediately to complete geometry coordinate and equation-observable reading"
+  selection_reason: "this combines a new algebraic two-sided assembly, dependent-family universal equivalences, separation, composition, and actual complete-geometry connections in one auditable cycle"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/DependentAlgebraicGraphCoherence.lean"
+  risks:
+    - "ring-equivalence data might retain a completed RingEquiv"
+    - "fiber-family recovery might prove only one direction"
+    - "tagged separation might lose dependent fiber values"
+    - "the complete-geometry connection might be deferred to a later wrapper"
+  unchecked:
+    - "context-functor morphism action and remaining naturality are later obligations"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "RingEquivGraphData separates two raw ring-hom graphs from IsRingEquivGraphCode, which contains both operation-preservation certificates and mutual-inverse equations; its bundled code is explicitly equivalent to RingEquiv and has identity/composition. IndexedEquivGraphCode and IndexedRingEquivGraphCode are explicitly equivalent to pointwise completed families over arbitrary index functions, are closed under dependent composition, expose compositional tagged forward functions, and are separated by their tagged Bool graphs. Complete geometry coordinate and equation-observable families are read into these independent codes; pointwise assembly recovers the actual families and their tagged graphs are literally the corresponding CompleteMapGraphs fields."
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.DependentAlgebraicGraphCoherence.RingEquivGraphData"
+    - "AAT.AG.LocalSemanticReconstruction.DependentAlgebraicGraphCoherence.IsRingEquivGraphCode"
+    - "AAT.AG.LocalSemanticReconstruction.DependentAlgebraicGraphCoherence.RingEquivGraphCode.equivRingEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.DependentAlgebraicGraphCoherence.RingEquivGraphCode.read_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.DependentAlgebraicGraphCoherence.RingEquivGraphCode.assemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.DependentAlgebraicGraphCoherence.RingEquivGraphCode.natPairDiagonalData_not_isRingEquivGraphCode"
+    - "AAT.AG.LocalSemanticReconstruction.DependentAlgebraicGraphCoherence.IndexedEquivGraphCode.equivFamily"
+    - "AAT.AG.LocalSemanticReconstruction.DependentAlgebraicGraphCoherence.IndexedEquivGraphCode.taggedForward_injective"
+    - "AAT.AG.LocalSemanticReconstruction.DependentAlgebraicGraphCoherence.IndexedEquivGraphCode.taggedFunction_comp"
+    - "AAT.AG.LocalSemanticReconstruction.DependentAlgebraicGraphCoherence.IndexedRingEquivGraphCode.equivFamily"
+    - "AAT.AG.LocalSemanticReconstruction.DependentAlgebraicGraphCoherence.IndexedRingEquivGraphCode.taggedForward_injective"
+    - "AAT.AG.LocalSemanticReconstruction.DependentAlgebraicGraphCoherence.IndexedRingEquivGraphCode.taggedFunction_comp"
+    - "AAT.AG.LocalSemanticReconstruction.DependentAlgebraicGraphCoherence.CompleteGeometryDependentAlgebraicCode.coordinate_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.DependentAlgebraicGraphCoherence.CompleteGeometryDependentAlgebraicCode.coordinate_taggedForward"
+    - "AAT.AG.LocalSemanticReconstruction.DependentAlgebraicGraphCoherence.CompleteGeometryDependentAlgebraicCode.equationObservable_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.DependentAlgebraicGraphCoherence.CompleteGeometryDependentAlgebraicCode.equationObservable_taggedForward"
+  evidence:
+    - "RingEquivGraphCode.equivRingEquiv"
+    - "RingEquivGraphCode.natPairIdentityData_isRingEquivGraphCode"
+    - "RingEquivGraphCode.natPairDiagonalData_not_isRingEquivGraphCode"
+    - "IndexedEquivGraphCode.equivFamily"
+    - "IndexedEquivGraphCode.taggedForward_injective"
+    - "IndexedRingEquivGraphCode.equivFamily"
+    - "IndexedRingEquivGraphCode.taggedForward_injective"
+    - "CompleteGeometryDependentAlgebraicCode.coordinate_taggedForward"
+    - "CompleteGeometryDependentAlgebraicCode.equationObservable_taggedForward"
+  claim_mapping:
+    theorem_names:
+      - "RingEquivGraphCode.equivRingEquiv"
+      - "RingEquivGraphCode.assemble_comp"
+      - "IndexedEquivGraphCode.equivFamily"
+      - "IndexedEquivGraphCode.taggedForward_injective"
+      - "IndexedEquivGraphCode.taggedFunction_comp"
+      - "IndexedRingEquivGraphCode.equivFamily"
+      - "IndexedRingEquivGraphCode.taggedForward_injective"
+      - "IndexedRingEquivGraphCode.taggedFunction_comp"
+      - "CompleteGeometryDependentAlgebraicCode.coordinate_assemble"
+      - "CompleteGeometryDependentAlgebraicCode.coordinate_taggedForward"
+      - "CompleteGeometryDependentAlgebraicCode.equationObservable_assemble"
+      - "CompleteGeometryDependentAlgebraicCode.equationObservable_taggedForward"
+    source_labels:
+      - "Cycle 68 dependent algebraic graph coherence toward G-124 target B"
+      - "Cycle 68 fixed four-lane question"
+    conjuncts:
+      - "bidirectional operation-preserving graphs assemble exactly to ring equivalences"
+      - "ordinary and ring equivalence graph families have pointwise two-sided readback"
+      - "tagged forward graphs separate both dependent code families"
+      - "dependent composition agrees with composition of tagged functions"
+      - "coordinate and equation-observable families recover actual complete geometry components"
+    material_premises:
+      source_derived:
+        - "G-124(B) ring-equivalence assembly requires operation laws in both directions and mutual-inverse equations"
+        - "G-124(B) dependent assembly fixes the index function and supplies one coherent equivalence code per source index"
+      discharged:
+        - "actual RingEquiv reading supplies both ring-hom laws and inverse equations, with both read/assemble composites proved"
+        - "actual coordinate and observable families supply pointwise codes whose assembly and tagged graphs are recovered"
+      undischarged: []
+    undischarged_assumptions: []
+    acceptance_point: "dependent algebraic families are independently graph-presented, jointly separated by tagged readings, composition-compatible, and connected to actual complete geometry fields"
+    port_status: not-applicable
+  nonclaims:
+    - "the context category equivalence is assembled from object graphs alone"
+    - "observable restriction naturality or coordinate compatibility is assembled"
+    - "operation, invariant, support, geometry-axis, or geometry-observable coherence is discharged"
+    - "an arbitrary complete coherent bundle assembles to GeometryTotalHom"
+    - "G-124 target B or the whole GOAL is complete"
+audits:
+  premise_delta:
+    source_derived:
+      - "generic ring-equivalence graph assembly assumes the fixed-question bidirectional operation and inverse equations"
+      - "generic indexed assembly assumes a fixed index map and a graph code at every source index"
+    discharged:
+      - "ring-equivalence read/assemble / explicit left and right inverse laws"
+      - "dependent-family read/assemble / explicit pointwise left and right inverse laws"
+      - "dependent-family separation / tagged graph equality recovers every fiber code"
+      - "dependent composition / tagged functions compose over composed index maps"
+      - "complete geometry coordinates and equation observables / pointwise and tagged recovery"
+      - "predicate non-vacuity / identity and noninvertible diagonal fixtures"
+    remaining:
+      - "context functor morphism action and unit/counit"
+      - "equation-observable restriction naturality and coordinate compatibility"
+      - "operation, invariant, support, axis, observable, and raw naturality"
+      - "complete coherent subcategory and GeometryTotalHom assembly"
+  certificate_provenance:
+    discharged:
+      - "RingEquivGraphCode / two raw ring-hom graphs plus separate equations only"
+      - "indexed codes / pointwise independent graph codes only"
+      - "tagged graphs / derived from assembled pointwise codes"
+    unresolved:
+      - "full complete-geometry certificate / not constructed in this cycle"
+  proof_use:
+    used:
+      - "Cycle 67 ring-hom and equivalence graph inverses build ring and indexed equivalence assembly"
+      - "sigma equality of tagged outputs recovers each dependent fiber output"
+      - "actual complete geometry coordinateEquiv and observableEquiv populate the independent codes"
+      - "Cycle 64 complete graph fields identify the same tagged forward graphs"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  target_fitting_reason: "the cycle adds independent dependent algebraic coherence and exact assembly without retaining completed families, while leaving naturality and complete Hom assembly explicit"
+  vacuity: none-found
+  vacuity_reason: "ring-equivalence coherence has positive and negative raw fixtures, and both indexed code types are equivalent to arbitrary pointwise completed families rather than geometry-image subtypes"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  four_lane_question: "Do operation-preserving forward/backward graph codes with mutual-inverse laws assemble equivalently to actual ring equivalences, and do indexed equivalence and ring-equivalence graph families assemble pointwise, remain separated by their tagged forward graphs, and recover complete geometry coordinate and equation-observable families without storing completed family maps?"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/DependentAlgebraicGraphCoherence.lean: pass"
+    - "#assert_standard_axioms_only DependentAlgebraicGraphCoherence: 83 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "add independent context-functor morphism action and the remaining operation, invariant, support, axis, observable, and raw naturality laws; then assemble the complete coherent Hom"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -6890,8 +7039,14 @@ audits:
   read/assemble両逆、型同値、恒等・合成閉性を証明した。backward graphの逆順合成も明示し、raw
   complete graphへinverse graphだけを加えたdataと係数保存式を含むPropを分離したcoherenceからpointed Atom、upper Atom、
   equation-index、coefficientを組み立て、完成geometry射のreadingが各成分とforward/backward context
-  object作用を回収することまで同梱した。任意raw bundleのfullnessは主張せず、dependent fiber equivalence、
-  context functor、operation・invariant・signature・geometry naturalityを含む独立coherence部分圏とHom組立て、
+  object作用を回収することまで同梱した。Cycle 68では二方向のraw ring-hom graphと演算保存・相互逆式を
+  分離して`RingEquiv`とのread/assemble両逆、正負fixture、恒等・合成を構成した。任意のindex関数上で
+  ordinary equivalenceとring equivalenceのgraph code族をpointwise familyと型同値にし、dependent合成、
+  sigma型上のtagged forward graphによる全fiber分離を証明した。同じmoduleでcomplete geometryの
+  coordinate familyとequation-observable ring familyをこのcodeへ読み、pointwise assemblyとCycle 64の
+  tagged graph fieldを同時に回収した。任意raw bundleのfullnessは主張せず、
+  context functorのmorphism作用、restriction naturality、残るoperation・invariant・support・axis・observable
+  coherenceを含む独立coherence部分圏とHom組立て、
   direct normalization kernel自体のprimitive local syntax、および四族共通の実現圏・局所モデル圏への
   適用は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
