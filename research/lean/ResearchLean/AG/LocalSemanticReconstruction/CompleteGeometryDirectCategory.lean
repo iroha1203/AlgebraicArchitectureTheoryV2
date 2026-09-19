@@ -2,13 +2,16 @@ import ResearchLean.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory
 import Formal.Util.AssertStandardAxioms
 
 /-!
-# Direct category operations for complete geometry graph codes
+# Explicit package data and reader-mediated category operations
 
-Cycle 73 constructs the computational data of identity and composition from
-predecessor graph-code operations.  The joint context/observable constructor
-is direct; package composition uses the already local equation-transport
-assembler for its dependent index.  Whole-package assembly is used only to
-prove certificate closure and comparison with the Cycle 72 operations.
+Cycle 73 constructs eight package fields from predecessor graph-code
+operations.  Its package context/observable field is instead read from the
+equation transport of assembled package codes, and the package certificate is
+transported from the canonical reader after a nine-field comparison.  The
+standalone direct context/observable constructor is not yet connected to that
+package field.  Thus this checkpoint proves separation, assembly formulas,
+universality, category laws, and Cycle 72 comparisons, but it does not close
+the pending direct package-certificate obligation.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction
@@ -263,8 +266,8 @@ theorem reindexSignature_heq
   cases object_eq
   rfl
 
-/-- Cycle 73 componentwise package identity data.  Each computational field is
-the identity of its predecessor graph-code surface. -/
+/-- Cycle 73 package identity data.  Eight fields use predecessor identities;
+the context/observable field reads the reflexive equation transport. -/
 noncomputable def idData
     {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
     PackageGraphData G G := by
@@ -288,8 +291,8 @@ noncomputable def idData
     signature := reindexSignature object_eq
       (SignatureGraphCode.id G.core) }
 
-/-- Canonical package identity used only as the comparison target for the
-componentwise datum. -/
+/-- Canonical package identity used as the fieldwise comparison target and as
+the source of the lawful package certificate. -/
 noncomputable def canonicalIdentity
     {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
     PackageGraphCode G G :=
@@ -310,9 +313,8 @@ theorem signature_id_heq_canonical
   · rfl
   · rfl
 
-/-- The componentwise package identity data is separated by the canonical
-reader in every computational field, including dependent operation and
-signature families. -/
+/-- The package identity data is separated by the canonical reader in every
+computational field, including dependent operation and signature families. -/
 theorem idData_eq_canonical
     {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
     idData G = (canonicalIdentity G).1 := by
@@ -384,11 +386,11 @@ theorem idData_eq_canonical
     apply HEq.trans (reindexSignature_heq _ _)
     exact signature_id_heq_canonical G
 
-/-- Cycle 73 componentwise package graph data composition.
-Premise summary: only the two supplied lawful package codes are used.  The
-ordinary graph fields compose directly; the dependent context/observable
-field reads the composition of the locally assembled equation transports.
-No completed package morphism is retained in the result. -/
+/-- Cycle 73 package graph data composition.
+Premise summary: only the two supplied lawful package codes are used.  Eight
+graph fields compose through predecessor operations; the context/observable
+field reads the composition of equation transports obtained by assembling
+the package inputs.  No completed package morphism is retained in the result. -/
 noncomputable def compData
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
     (first : PackageGraphCode G H)
@@ -421,7 +423,7 @@ noncomputable def compData
       first.1.invariant second.1.invariant
     signature := signature }
 
-/-- Cycle 73 comparison target for direct package composition. -/
+/-- Cycle 73 canonical comparison target and lawful-certificate source. -/
 noncomputable def canonicalComposite
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
     (first : PackageGraphCode G H)
@@ -525,16 +527,16 @@ theorem compData_eq_canonical
     apply HEq.trans (reindexSignature_heq _ _)
     exact signature_comp_heq_canonical first second
 
-/-- Lawful identity whose computational content is `idData`; the canonical
-reader contributes only the proof that the independently displayed fields
-satisfy the package certificate. -/
+/-- Reader-mediated lawful identity whose data is `idData`; its package
+certificate is transported from the canonical reader. -/
 noncomputable def id
     {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
     PackageGraphCode G G :=
   ⟨idData G, idData_eq_canonical G ▸ (canonicalIdentity G).2⟩
 
-/-- Lawful composition whose computational content is `compData`; certificate
-transport cannot change any of its nine graph-code fields. -/
+/-- Reader-mediated lawful composition whose data is `compData`; its package
+certificate is transported from the canonical reader after fieldwise
+comparison. -/
 noncomputable def comp
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
     (first : PackageGraphCode G H)
@@ -553,7 +555,7 @@ theorem assemble_injective
     ← CompleteGeometryGraphAssembly.PackageGraphCode.read_assemble second]
   exact congrArg CompleteGeometryGraphAssembly.PackageGraphCode.read equality
 
-/-- Direct identity assembles to package identity. -/
+/-- Cycle 73 package identity assembles to package identity. -/
 @[simp]
 theorem assemble_id
     {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
@@ -563,7 +565,7 @@ theorem assemble_id
     exact idData_eq_canonical G]
   exact CompleteGeometryGraphAssembly.PackageGraphCode.assemble_read _
 
-/-- Direct composition assembles to package composition. -/
+/-- Cycle 73 package composition assembles to package composition. -/
 @[simp]
 theorem assemble_comp
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
@@ -576,7 +578,7 @@ theorem assemble_comp
     exact compData_eq_canonical first second]
   exact CompleteGeometryGraphAssembly.PackageGraphCode.assemble_read _
 
-/-- Direct composition is the unique lawful package code with the displayed
+/-- Cycle 73 composition is the unique lawful package code with the displayed
 assembled composite.  This is the cycle's package-level universal property. -/
 theorem eq_comp_iff_assemble_eq
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
@@ -594,7 +596,7 @@ theorem eq_comp_iff_assemble_eq
     rw [assemble_comp]
     exact equality
 
-/-- Left unit for direct package-code composition. -/
+/-- Left unit for Cycle 73 package-code composition. -/
 @[simp]
 theorem id_comp
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -605,7 +607,7 @@ theorem id_comp
     (code.assemble : G.core ⟶ H.core) = code.assemble
   simp
 
-/-- Right unit for direct package-code composition. -/
+/-- Right unit for Cycle 73 package-code composition. -/
 @[simp]
 theorem comp_id
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -616,7 +618,7 @@ theorem comp_id
     (𝟙 H.core : H.core ⟶ H.core) = code.assemble
   simp
 
-/-- Associativity for direct package-code composition. -/
+/-- Associativity for Cycle 73 package-code composition. -/
 @[simp]
 theorem comp_assoc
     {U : AtomCarrier.{u}} {G H K L : GeometryPackage.{u, v} U}
@@ -631,9 +633,22 @@ theorem comp_assoc
     G.core H.core K.core L.core
     first.assemble second.assemble third.assemble
 
-/-- Same-cycle connection to the Cycle 72 lawful complete-code operation:
-the package projection of transported complete composition is exactly the new
-componentwise package composition. -/
+/-- Same-cycle identity connection to the Cycle 72 lawful complete-code
+operation. -/
+theorem id_eq_complete_package
+    {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
+    id G =
+      (CompleteGeometryGraphCategoryEquivalence.LawfulCode.id G).package := by
+  apply assemble_injective
+  rw [assemble_id]
+  change PackageTotalHom.id G.core =
+    (CompleteGeometryGraphCategoryEquivalence.LawfulCode.id G).assemble.base
+  rw [CompleteGeometryGraphCategoryEquivalence.LawfulCode.assemble_id]
+  rfl
+
+/-- Same-cycle composition connection to the Cycle 72 lawful complete-code
+operation: the package projection of transported complete composition is the
+Cycle 73 package composition. -/
 theorem comp_eq_complete_package
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
     (first : CompleteGeometryGraphCode G H)

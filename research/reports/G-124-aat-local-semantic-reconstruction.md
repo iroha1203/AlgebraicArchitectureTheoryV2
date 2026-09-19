@@ -155,9 +155,9 @@
   merge commit `4a01607b5bfa2fbb3f3a7956b4ab39d7e1232758`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: `CompleteGeometryGraphCode`のcoefficient・realization・coverage・overlapまで
-  成分別合成を拡張し、独立に与えた整合local objectをactual geometry objectへ組み立てる
-- next proof obligation: その独立objectとcomplete Hom構成を四族共通のlocal-model surfaceへ接続し、
+- current proof obligation: `PackageGraphCode`のcontext/observableと`IsPackageGraphCode` certificateを
+  local component lawから直接閉じ、complete外側成分へ拡張して独立local objectを組み立てる
+- next proof obligation: その直接構成と独立objectを四族共通のlocal-model surfaceへ接続し、
   fixed target Bの主同値として統合する
 
 ## Cycle 1 — rejected
@@ -7407,7 +7407,7 @@ audits:
   next_obligation: "replace transported complete-code operations by componentwise constructors with local-certificate closure, then construct and assemble an independently supplied coherent local object before four-family integration"
 ```
 
-## Cycle 73: direct package-code operations and same-cycle comparison
+## Cycle 73: explicit package data and reader-mediated lawful operations
 
 ```yaml
 ledger_type: target_cycle_result
@@ -7437,7 +7437,7 @@ selection:
     - "four-family target B integration"
 result:
   proposed_result_type: proof-checkpoint
-  proof_obligation_delta: "idData and compData construct all nine package computational fields from predecessor graph operations; the dependent context/observable field uses composition of locally assembled equation transports. Fieldwise separation proves equality with the canonical reader, including operation and signature reindexing. This transfers IsPackageGraphCode without retaining a completed PackageTotalHom. The resulting lawful id and comp have exact assembly formulas, a unique-composite iff theorem, both unit laws, associativity, and an equality with the package projection of Cycle 72 complete composition. The separate direct context/observable comp also constructs naturality from the two input naturality laws. Complete-geometry outer fields and independent object assembly remain open."
+  proof_obligation_delta: "idData and compData display all nine package fields. Eight fields use predecessor operations, while context/observable is read from an equation transport obtained through package assembly. Fieldwise separation proves equality with the canonical reader, including dependent operation and signature reindexing; the lawful certificate is then transported from that reader. The resulting id and comp have exact assembly formulas, a unique-composite iff theorem, both unit laws, associativity, and identity/composition equalities with the Cycle 72 package projections. The standalone direct context/observable comp constructs naturality from its input laws but is not yet used by compData. Direct package context/certificate closure, complete outer fields, and independent object assembly remain open."
   completion_candidate: no
   lean_artifacts:
     - "CompleteGeometryDirectCategory.ContextObservableGraphCode.comp"
@@ -7449,36 +7449,42 @@ result:
     - "CompleteGeometryDirectCategory.PackageGraphCode.id_comp"
     - "CompleteGeometryDirectCategory.PackageGraphCode.comp_id"
     - "CompleteGeometryDirectCategory.PackageGraphCode.comp_assoc"
+    - "CompleteGeometryDirectCategory.PackageGraphCode.id_eq_complete_package"
     - "CompleteGeometryDirectCategory.PackageGraphCode.comp_eq_complete_package"
   evidence:
-    - "identity and composition are explicit PackageGraphData values, not aliases of PackageGraphCode.read"
+    - "identity and composition expose PackageGraphData values rather than aliasing PackageGraphCode.read"
+    - "eight fields use predecessor operations; context/observable is reader-mediated through assembled equation transport"
     - "operation and signature comparisons discharge both dependent reindexings"
     - "compData_eq_canonical separates all nine computational fields"
     - "eq_comp_iff_assemble_eq gives a substantive universal characterization"
     - "unit and associativity laws are proved through package assembly separation"
-    - "comp_eq_complete_package supplies the same-cycle Cycle 72 connection"
+    - "id_eq_complete_package and comp_eq_complete_package supply both Cycle 72 connections"
   nonclaims:
-    - "the direct standalone context/observable constructor is already the context field used by compData"
+    - "all nine package fields are composed directly from local component codes"
+    - "the output IsPackageGraphCode certificate is proved directly from local laws"
+    - "the standalone direct context/observable constructor is the context field used by compData"
     - "complete-geometry coefficient, realization, coverage, overlap, and raw-coherence composition are discharged"
     - "an independently supplied local object has been assembled"
     - "G-124 as a whole is complete"
 audits:
   premise_delta:
     discharged:
-      - "componentwise package identity and composition data"
-      - "package certificate closure from two lawful input codes"
+      - "explicit reader-mediated nine-field package identity and composition data"
+      - "dependent operation and signature reindexing comparison"
       - "package assembly formulas, uniqueness, units, and associativity"
-      - "same-cycle comparison with the Cycle 72 complete-code package projection"
+      - "same-cycle identity and composition comparisons with the Cycle 72 package projections"
     remaining:
+      - "direct package context/observable construction and direct IsPackageGraphCode certificate closure"
       - "complete-geometry outer component composition"
       - "independent local-object assembly"
       - "four-family target B integration"
   certificate_provenance:
     discharged:
       - "the only inputs to id and comp are packages or lawful package codes; no completed PackageTotalHom is stored or accepted as an argument"
-      - "certificate transport is justified by fieldwise equality with the Cycle 71 canonical reader"
+      - "fieldwise equality precisely identifies the result with the Cycle 71 canonical reader"
     unresolved:
-      - "the package context field still passes through the local equation-transport assembler"
+      - "the package context field passes through package assembly and the equation-transport reader"
+      - "the output package certificate is transported from the canonical reader rather than closed directly from local laws"
       - "complete-geometry outer certificate provenance"
       - "independent local-object provenance"
   proof_use:
@@ -7489,19 +7495,19 @@ audits:
       - "Cycle 71 read/assemble inverse and dependent HEq APIs"
       - "Cycle 72 complete-code assembly formula for the same-cycle projection comparison"
   structure_field_escape: none-found
-  route_integrity: pass
+  route_integrity: checkpoint-reader-mediated
   target_fitting: found-and-bounded
-  target_fitting_reason: "the cycle replaces package-level transported operations by explicit nine-field data and proves a universal property and category laws, while recording that complete outer components and independent objects are not yet constructed"
+  target_fitting_reason: "the cycle exposes nine-field data, proves a universal property and category laws, and connects both Cycle 72 projections; it records rather than discharges the remaining reader-mediated context and certificate route"
   vacuity: none-found
   vacuity_reason: "the results quantify over arbitrary geometry-package endpoints and arbitrary lawful package codes, and the universal property separates every lawful candidate"
   one_way_as_equivalence: none-found
-  goal_or_report_reinterpretation: none-found
-  four_lane_question: "Do the explicit nine-field package identity and composition close lawfully, satisfy their universal and category laws, and agree with the Cycle 72 package projection without storing a completed package morphism?"
+  goal_or_report_reinterpretation: "the selected direct-certificate obligation is not discharged; Cycle 73 is downgraded to a reader-mediated proof checkpoint without claiming a formal impossibility result"
+  four_lane_question: "Does Cycle 73 honestly prove only explicit reader-mediated package data, exact assembly/universality/category laws, and both Cycle 72 package-projection comparisons, while leaving direct context/certificate closure and independent object assembly open?"
   validation_refs:
     - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryDirectCategory.lean: pass"
-    - "#assert_standard_axioms_only CompleteGeometryDirectCategory: 29 declarations, standard axioms only"
+    - "#assert_standard_axioms_only CompleteGeometryDirectCategory: 30 declarations, standard axioms only"
   blocking_findings: []
-  next_obligation: "extend the same direct construction through coefficient, realization, coverage, overlap, and raw coherence, then assemble an independently supplied coherent local object before four-family integration"
+  next_obligation: "first replace the reader-mediated package context and certificate by direct local-law closure; then extend through complete outer fields and assemble an independent local object before four-family integration"
 ```
 
 ## 未完了 ledger
@@ -7666,9 +7672,11 @@ audits:
   分離まで同梱した。Cycle 72ではlawful complete code自体をHomとするpackage-indexed圏を構成し、
   輸送された恒等・合成のassemblyによる一意特徴づけ、圏法則、read/assemble関手、Hom分離・Hom組立てから
   actual geometry圏とのpackage-indexed圏同値を導いた。同じ圏からaccepted common graph圏への忠実関手も
-  同梱した。Cycle 73ではpackageの9計算成分に対する恒等・合成dataを明示し、dependent operation・
-  signatureの再添字付けを含むfieldwise分離、lawful certificate、assembly公式、一意性、単位律・結合律、
-  Cycle 72 complete合成のpackage射影との一致を同梱した。complete geometry外側の
+  同梱した。Cycle 73ではpackageの9計算成分に対する恒等・合成dataを明示した。8成分はpredecessor演算、
+  context/observableはassembled equation transportのreaderを使い、dependent operation・signatureの
+  再添字付けを含むfieldwise分離後にcanonical certificateを輸送した。assembly公式、一意性、単位律・
+  結合律、Cycle 72 complete恒等・合成のpackage射影との一致を同梱した。package context/certificateの
+  direct closure、complete geometry外側の
   coefficient・realization・coverage・overlap・raw coherenceと独立local objectの組立ては未完了である。
   direct normalization kernel自体のprimitive local syntax、および四族共通の実現圏・
   局所モデル圏への適用は未完了である。
