@@ -149,13 +149,14 @@
   merge commit `871eb6dc7e7ad8abda857aef261b1f2e4131eb26`
 - Cycle 70 accepted PR: [#4785](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4785),
   merge commit `c2e27b52fe60586579190af1267014d49cb65376`
+- Cycle 71 accepted PR: [#4786](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4786),
+  merge commit `f4d1dc2708a349186512b3bc0aadd3e50a3ac600`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: Cycle 67・69の独立codeからambient `PackageTotalHom`を組み立て、Cycle 70の
-  relative bundleとcoverage・overlapをcomplete coherent Homへまとめ、`GeometryTotalHom`との両逆・分離・
-  common graph surface接続を同時に示す
-- next proof obligation: complete graph codeの恒等・合成と圏法則を構成し、actual geometry Hom圏との
-  Hom同値をfunctorialな圏同値へ持ち上げ、fixed target Bのlocal-model側へ接続する
+- current proof obligation: `CompleteGeometryGraphCode`の恒等・合成をlocal certificateから
+  成分別に閉じ、独立に与えた整合local objectをactual geometry objectへ組み立てる
+- next proof obligation: その独立object/Hom構成を四族共通のlocal-model surfaceへ接続し、
+  fixed target Bの主同値として統合する
 
 ## Cycle 1 — rejected
 
