@@ -157,12 +157,15 @@
   merge commit `cb7a659cd28d988fd4d5fd1ba9ad4eb35930459d`
 - Cycle 74 accepted PR: [#4794](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4794),
   merge commit `f00e255b71d602498ad95ec683db1617bb5bebcf`
+- Cycle 75 accepted PR: [#4795](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4795),
+  merge commit `35f931ee50ef5ae91d226bbf3e37017e059ad308`
+- Cycle 76 rejected PR: [#4796](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4796)
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: 独立に与えたcoherent local objectとHom familyを同じcycleで組み立て、
-  essential surjectivity・圏同値・common graph接続まで閉じる
-- next proof obligation: その独立object/Hom assemblyを四族共通のlocal-model surfaceへ適用し、
-  fixed target Bの主同値として統合する
+- current proof obligation: lens・protocolの独立local object/Hom assemblyを一つのbranch-indexed
+  parameter宣言で閉じ、global decoder・finite decoder・Karoubi・Arrow再構成の可換接続まで示す
+- next proof obligation: acceptedな二族同時再構成へtagged・G-122を結合し、四族共通の
+  local-model surfaceとfixed target Bの主同値へ進める
 
 ## Cycle 1 — rejected
 
@@ -7711,6 +7714,151 @@ audits:
     - "#assert_standard_axioms_only CompleteGeometryDirectCategory: 75 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "construct independently supplied coherent local objects and Hom families together with their assembly, separation, essential-surjectivity/equivalence result, and common-surface connection in one cycle; then apply that result to the four mandatory families"
+```
+
+## Cycle 76: rejected copied-object reconstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 76
+status: rejected
+branch: codex/4711-g124-independent-object-category
+base_oid: 35f931ee50ef5ae91d226bbf3e37017e059ad308
+tracking_issue: 4711
+pull_request: 4796
+rejected_head: 163740bd17f48b663ea8d5afd6831a413686db62
+reason: "ObjectCode copied the five ReadingCore fields exactly; because GeometryPackage is an abbreviation of ReadingCore, read/assemble reduced to eta rewrapping and did not assemble an independently specified local object"
+retained_evidence:
+  - "PR audit comment 5741551609"
+  - "Issue rejection comment 5741555139"
+nonclaims:
+  - "Cycle 76 contributes to fixed target B"
+  - "the rejected branch is part of main"
+```
+
+## Cycle 77: simultaneous CS branch reconstruction and finite-route connection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 77
+status: result-proposed
+branch: codex/4711-g124-cs-paired-reconstruction
+base_oid: 35f931ee50ef5ae91d226bbf3e37017e059ad308
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 75 acceptance: Issue comment 5741395911; Cycle 76 rejection: Issue comment 5741555139; Cycle 77 selection: Issue comment 5741575501"
+  proof_dag_predecessors:
+    - "Cycle 23 protocol observed-restriction object/Hom reconstruction"
+    - "Cycle 24 protocol finite decoder, Karoubi restriction, retract, and Arrow coherence"
+    - "Cycle 25 lens finite-fiber object/Hom reconstruction"
+    - "Cycle 26 lens finite decoder, Karoubi restriction, retract, and Arrow coherence"
+    - "Cycle 65 separation/Hom assembly/object assembly reconstruction theorem"
+  proof_obligation: "place lens and protocol independent local categories under one branch-indexed parameter declaration; directly assemble every selected Hom and object, prove both inverse laws and the category equivalence, and connect the global decoder through the branch reading to each accepted finite decoder and Karoubi/Arrow route in the same cycle"
+  selection_reason: "this advances from separate branch equivalences through both simultaneous product closure and a common dependent branch declaration, bundles explicit commuting finite-presentation comparisons, and avoids the copied-global-object construction rejected in Cycle 76"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/CSPairedReconstruction.lean"
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/CSBranchReconstruction.lean"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The product construction simultaneously reconstructs both accepted CS families and proves paired retract generation. In addition, CSBranchParameter is one common declaration whose arbitrary parameter determines the global category, independent local category, primitive reading, Hom assembler, and object assembler. csBranch_read_assemble and csBranch_assemble_read prove the two Hom inverse laws by cases from the primitive assemblers; csBranchRealize builds the selected product lens or double-opposite protocol realization, yielding ReconstructionData, unique Hom preimages, and a category equivalence for every branch parameter. Separate global lens/protocol decoders now precede the common reading, and explicit natural isomorphisms identify their readings with the accepted finite decoders. The Karoubi and Arrow routes are composed through the inverse common branch reconstruction, rather than merely sharing a local codomain."
+  completion_candidate: no
+  lean_artifacts:
+    - "csPairedReading"
+    - "csPairedAssemble"
+    - "csPaired_read_assemble"
+    - "csPaired_assemble_read"
+    - "csPairedHomEquiv"
+    - "csPairedRealize"
+    - "csPairedRealizeIso"
+    - "csPairedReconstructionData"
+    - "csPairedReconstructionEquivalence"
+    - "csPaired_existsUnique_preimage"
+    - "csPairedFiniteDecoder"
+    - "csPairedFiniteDecoder_retractGeneratedBy"
+    - "csPairedKaroubiEquivalence"
+    - "csPairedKaroubiRestrictionIso"
+    - "csPairedKaroubiArrowEquivalence"
+    - "CSBranchParameter"
+    - "CSBranchGlobal"
+    - "CSBranchLocal"
+    - "csBranchReading"
+    - "csBranchAssemble"
+    - "csBranch_read_assemble"
+    - "csBranch_assemble_read"
+    - "csBranchRealize"
+    - "csBranchRealizeIso"
+    - "csBranchReconstructionData"
+    - "csBranchReconstructionEquivalence"
+    - "csBranch_existsUnique_preimage"
+    - "lensClosedFamilyFiniteDecoderReadingIso"
+    - "protocolClosedFamilyFiniteDecoderReadingIso"
+    - "lensKaroubiClosedFamilyViaBranchEquivalence"
+    - "protocolKaroubiClosedFamilyViaBranchEquivalence"
+    - "lensKaroubiClosedFamilyArrowViaBranchEquivalence"
+    - "protocolKaroubiClosedFamilyArrowViaBranchEquivalence"
+  evidence:
+    - "the local object is FintypeCat times ProtocolObservedRestrictionModel and contains no completed global realization or extension certificate"
+    - "both Hom inverse laws are proved from the primitive branch assemblers rather than from a supplied category equivalence"
+    - "the object assembler constructs a product lens and a protocol realization from local data"
+    - "unique Hom preimages and the category equivalence are consequences of the explicit ReconstructionData"
+    - "paired decoder retract generation combines two independently proved retract witnesses componentwise"
+    - "Karoubi restriction and Arrow connections are included in the same cycle"
+    - "one dependent branch parameter selects both families without replacing them by a product-only wrapper"
+    - "global-decoder reading is naturally isomorphic to each accepted local decoder"
+    - "Karoubi and Arrow equivalences explicitly pass through the inverse branch reconstruction"
+  nonclaims:
+    - "tagged operation and G-122 branches are integrated into this paired category"
+    - "the final four-family parameter declaration and fixed target B equivalence are complete"
+    - "G-124 as a whole is complete"
+audits:
+  premise_delta:
+    discharged:
+      - "simultaneous lens/protocol Hom separation and assembly"
+      - "simultaneous lens/protocol independent local-object assembly"
+      - "two-sided Hom recovery, unique preimages, and category equivalence"
+      - "same-cycle paired finite decoder, Karoubi restriction, retract, and Arrow connections"
+      - "common branch parameter, branch-indexed reading, direct Hom/object assembly, and category equivalence"
+      - "global-decoder/branch-reading/local-decoder natural isomorphisms"
+      - "Karoubi and Arrow routes through the common branch reconstruction"
+    remaining:
+      - "tagged and G-122 branch integration on the same common local-model surface"
+      - "fixed target A common parameter declaration and target B four-family equivalence"
+  certificate_provenance:
+    discharged:
+      - "lens Hom assembly is constructed by LensRealization.ext from the supplied fiber map"
+      - "protocol Hom assembly is constructed from state-map naturality and observation preservation"
+      - "lens object assembly is the product lens; protocol object assembly is constructed from the local diagram and observation"
+    unresolved:
+      - "cross-family common object/Hom construction for tagged and G-122"
+  proof_use:
+    used:
+      - "LensRealization.res_ext and ext_res"
+      - "protocolObservedRestriction read/assemble inverse laws"
+      - "lensFiberModelRealizationIso and protocolObservedRestrictionRealizationIso"
+      - "Cycle 65 ReconstructionData equivalence and unique-preimage theorem"
+      - "accepted lens/protocol finite decoder retract and Karoubi/Arrow coherence"
+  structure_field_escape: none-found
+  route_integrity: direct-paired-branch-assembly
+  target_fitting: found-and-bounded
+  target_fitting_reason: "the cycle proves a genuine two-family object/Hom reconstruction with both inverse laws and all finite-route connections; it does not claim the missing tagged/G-122 integration"
+  vacuity: none-found
+  vacuity_reason: "the statements quantify over arbitrary lens and protocol inputs, every paired realization endpoint, every coherent paired local Hom, and every paired local object"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none
+  four_lane_question: "Does Cycle 77 reconstruct every lens/protocol branch selected by one common parameter from independent local objects and Homs, with explicit two-sided assembly and commuting global-decoder/finite-decoder/Karoubi/Arrow connections, while leaving tagged and G-122 integration open?"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/CSPairedReconstruction.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/CSBranchReconstruction.lean: pass"
+    - "#assert_standard_axioms_only CSBranchReconstruction: 44 declarations, standard axioms only"
+  finding_resolution:
+    - "initial formal math lane found the product-only surface too weak; CSBranchParameter and its dependent global/local reading surface were added"
+    - "initial formal math lane found no commuting comparison from the new reading to finite routes; both global-decoder reading isomorphisms and Karoubi/Arrow factorizations through branch reconstruction were added"
+  blocking_findings: []
+  next_obligation: "extend the accepted simultaneous reconstruction by adjoining the tagged and G-122 branches through independent local categories and direct assemblers, retaining one reviewable four-family equivalence and common connections"
 ```
 
 ## 未完了 ledger
