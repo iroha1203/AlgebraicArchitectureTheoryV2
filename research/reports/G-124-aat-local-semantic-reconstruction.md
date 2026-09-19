@@ -8576,3 +8576,32 @@ explicit realizationの合成では、次の射のqueryへ前のcontext作用全
 (計121件)、namespace監査は35・52・107・28・11件(計233件)で、標準公理のみである。
 Research module manifestとaggregate importへの登録、placeholder・hidden/BiDi・privacy・語彙・
 整形scanも確認した。aggregateのelaborationとResearch全体buildは実行していない。
+
+#### 多項式の閉じた原始式と有限support
+
+`IndependentPolynomialExpressions.lean`は、共通有限queryへ接続するための算術部分を構成する。
+namespaceは`AAT.AG.LocalSemanticReconstruction.IndependentPolynomialExpressions`。
+`Query C k R`は原始carrierだけをparameterとし、係数像・変数像・zero・one・add・mulの6種類を持つ。
+tableの各値は`R`の一点であり、`Expr C k`はその6種類だけからなる有限構文である。
+完成した環、写像、任意の関数・命題を式のconstructorへ渡すfieldは持たない。
+
+`evaluate`と`support`を構文再帰で定義し、`evaluate_eq_of_support`をconstructorへの帰納法で証明した。
+supportは途中の加算・乗算の引数も含む。比較するtableには環法則を仮定しない。
+したがって係数像と変数像だけを固定し、実際に使う環演算を無条件に固定扱いする証明にはなっていない。
+
+`compile`はnative polynomialの有限supportから式を生成する。
+`evaluate_compile`は任意の係数準同型と変数像についてnative `MvPolynomial.eval₂Hom`との一致を示す。
+`polynomial_finite_support`は、そのnative評価を回復する有限な原始query集合を構成する。
+`evaluate_rename_map`は係数base change後のcoordinate renameも同じ評価式に接続する。
+有限リストは元のpolynomialから生成し、局所対象の追加選択として保持しない。
+
+さらに`Sparse C k z`は、原始carrier `C,k`とcandidate zero `z : k`だけで有限多項式の値型を定義する。
+宣言時に完成した`CommRing k`や`CommSemiring k`を要求しない。
+`sparseEquiv`と`Sparse.toNative`・両逆は、candidate zeroと実際のzeroの一致後に
+元のnative polynomialを全係数・指数込みで回復する。これにより、後続の共通raw queryで
+係数環を選ぶ前に値型を宣言するための部品を得た。
+
+この算術部分は単一file検証済みである。共通queryの全体宣言、core/contextの型参照、
+有限図式からの全object/Hom構成への接続は引き続き未完了であり、最初の検証点Iは未達である。
+明示25宣言の`#print axioms`とnamespace108宣言の監査は標準公理のみ。
+module登録と差分scanを確認し、Research全体buildは実行していない。
