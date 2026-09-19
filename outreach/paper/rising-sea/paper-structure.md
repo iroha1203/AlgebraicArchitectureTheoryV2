@@ -2,7 +2,7 @@
 
 **Foundations of Algebraic Architecture Theory**
 
-*Rising Sea*
+*A Rising Sea of Readings, Transport, and Comparison*
 
 ## 1. この文書で定めること
 
