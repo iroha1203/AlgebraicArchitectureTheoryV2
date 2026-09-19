@@ -986,7 +986,9 @@ theorem equationTransport_read
 /-- Cycle 71 declaration.
 Unless identified below as a principal result or fixture, this is supporting API/data.
 Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
-Package reading followed by assembly recovers the actual package morphism. -/
+Principal package right-inverse law for the Cycle 71 fixed obligation.
+The actual package morphism supplies all predecessor and cross-component laws
+read into the code; no additional premise is required. -/
 @[simp]
 theorem assemble_read {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : PackageTotalHom G.core H.core) :
@@ -1019,7 +1021,9 @@ theorem assemble_read {U : AtomCarrier.{u}}
 /-- Cycle 71 declaration.
 Unless identified below as a principal result or fixture, this is supporting API/data.
 Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
-Independent package codes are recovered exactly after package assembly. -/
+Principal package left-inverse law for the Cycle 71 fixed obligation.
+All predecessor certificates and `IsPackageGraphCode` fields are supplied by
+the input subtype and are recovered together with its computational graphs. -/
 @[simp]
 theorem read_assemble {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (code : PackageGraphCode G H) :
@@ -1391,7 +1395,9 @@ def read {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
 /-- Cycle 71 declaration.
 Unless identified below as a principal result or fixture, this is supporting API/data.
 Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
-Reading and reassembling an actual complete morphism recovers it exactly. -/
+Principal complete-geometry right-inverse law for the Cycle 71 fixed
+obligation.  The actual morphism supplies predecessor laws, coverage, overlap,
+and raw coherence to its reader; no additional premise is required. -/
 @[simp]
 theorem assemble_read {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
@@ -1448,8 +1454,10 @@ theorem ext {U : AtomCarrier.{u}}
 /-- Cycle 71 declaration.
 Unless identified below as a principal result or fixture, this is supporting API/data.
 Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
-Assembling and rereading an independent complete code recovers every
-graph and local condition. -/
+Principal complete-geometry left-inverse law for the Cycle 71 fixed
+obligation.  The input subtype supplies every predecessor certificate and the
+outer coverage, overlap, and raw-coherence laws, all of which are recovered
+together with its computational graphs. -/
 @[simp]
 theorem read_assemble {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (code : CompleteGeometryGraphCode G H) :
