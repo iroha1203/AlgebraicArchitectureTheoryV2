@@ -6,9 +6,10 @@ import Formal.Util.AssertStandardAxioms
 /-!
 # Condition C and obstruction transport for the selected reading refinement
 
-The selected fine diagnostic support contains one representative
-`(value, false)` for each Law value.  Hence every generated Law-value block is
-canonically enumerated by the cells of the underlying finite nerve.  This file
+The selected fine diagnostic support contains the whole fine reading target.
+Every generated Law-value block is nevertheless canonically enumerated by the
+cells of the underlying finite nerve because target witnesses are proof-only
+and are not part of a coordinate's identity.  This file
 uses that enumeration to verify C0--C6 for the actual three-chart/four-chart
 refinement and then proves the G-125(C2) vanishing equivalence.
 -/
@@ -28,58 +29,71 @@ set_option maxHeartbeats 1000000
 
 /-! ## Named coordinates for an arbitrary generated label -/
 
+/-- The canonical fine chart coordinate in a fixed generated Law-value block. -/
 def fineChartCoordinate (label : LawValueLabel laws) (chart : FineChart) :
     fineSupportedNerve.ChartBlockCoordinate laws fine_adequate label :=
   ⟨CommonLabelChartSupport.chartCoordinate fine_adequate
       fine_commonLabelChartSupport chart label, by simp⟩
 
+/-- The canonical coarse chart coordinate in a fixed generated Law-value block. -/
 def coarseChartCoordinate (label : LawValueLabel laws) (chart : CoarseChart) :
     coarseSupportedNerve.ChartBlockCoordinate laws coarse_adequate label :=
   ⟨CommonLabelChartSupport.chartCoordinate coarse_adequate
       coarse_commonLabelChartSupport chart label, by simp⟩
 
+/-- The canonical fine edge coordinate in a fixed generated Law-value block. -/
 def fineEdgeCoordinate (label : LawValueLabel laws) (edge : Edge) :
     fineSupportedNerve.EdgeBlockCoordinate laws fine_adequate label :=
   ⟨CommonLabelChartSupport.edgeCoordinate fine_adequate
       fine_commonLabelChartSupport edge label, by simp⟩
 
+/-- The canonical coarse edge coordinate in a fixed generated Law-value block. -/
 def coarseEdgeCoordinate (label : LawValueLabel laws) (edge : CoarseEdge) :
     coarseSupportedNerve.EdgeBlockCoordinate laws coarse_adequate label :=
   ⟨CommonLabelChartSupport.edgeCoordinate coarse_adequate
       coarse_commonLabelChartSupport edge label, by simp⟩
 
+/-- Forgetting the canonical fine chart coordinate recovers its chart. -/
 @[simp] theorem fineChartCoordinate_cell (label) (chart) :
     (fineChartCoordinate label chart).1.cell = chart := rfl
 
+/-- Forgetting the canonical coarse chart coordinate recovers its chart. -/
 @[simp] theorem coarseChartCoordinate_cell (label) (chart) :
     (coarseChartCoordinate label chart).1.cell = chart := rfl
 
+/-- Forgetting the canonical fine edge coordinate recovers its edge. -/
 @[simp] theorem fineEdgeCoordinate_cell (label) (edge) :
     (fineEdgeCoordinate label edge).1.cell = edge := rfl
 
+/-- Forgetting the canonical coarse edge coordinate recovers its edge. -/
 @[simp] theorem coarseEdgeCoordinate_cell (label) (edge) :
     (coarseEdgeCoordinate label edge).1.cell = edge := rfl
 
+/-- Every fine chart coordinate in the block is the named coordinate of its cell. -/
 theorem fineChartCoordinate_eq (label) (coordinate) :
     fineChartCoordinate label coordinate.1.cell = coordinate := by
   apply fineSupportedNerve.lawValueCoordinateSubnerveChartCell_injective
   rfl
 
+/-- Every coarse chart coordinate in the block is the named coordinate of its cell. -/
 theorem coarseChartCoordinate_eq (label) (coordinate) :
     coarseChartCoordinate label coordinate.1.cell = coordinate := by
   apply coarseSupportedNerve.lawValueCoordinateSubnerveChartCell_injective
   rfl
 
+/-- Every fine edge coordinate in the block is the named coordinate of its cell. -/
 theorem fineEdgeCoordinate_eq (label) (coordinate) :
     fineEdgeCoordinate label coordinate.1.cell = coordinate := by
   apply fineSupportedNerve.lawValueCoordinateSubnerveEdgeCell_injective
   rfl
 
+/-- Every coarse edge coordinate in the block is the named coordinate of its cell. -/
 theorem coarseEdgeCoordinate_eq (label) (coordinate) :
     coarseEdgeCoordinate label coordinate.1.cell = coordinate := by
   apply coarseSupportedNerve.lawValueCoordinateSubnerveEdgeCell_injective
   rfl
 
+/-- Eliminate a fine chart block coordinate by the underlying finite chart. -/
 theorem fineChartCoordinate_cases (label)
     {P : fineSupportedNerve.ChartBlockCoordinate laws fine_adequate label → Prop}
     (h : ∀ chart, P (fineChartCoordinate label chart)) (coordinate) :
@@ -87,6 +101,7 @@ theorem fineChartCoordinate_cases (label)
   rw [← fineChartCoordinate_eq label coordinate]
   exact h coordinate.1.cell
 
+/-- Eliminate a coarse chart block coordinate by the underlying finite chart. -/
 theorem coarseChartCoordinate_cases (label)
     {P : coarseSupportedNerve.ChartBlockCoordinate laws coarse_adequate label → Prop}
     (h : ∀ chart, P (coarseChartCoordinate label chart)) (coordinate) :
@@ -94,6 +109,7 @@ theorem coarseChartCoordinate_cases (label)
   rw [← coarseChartCoordinate_eq label coordinate]
   exact h coordinate.1.cell
 
+/-- Eliminate a fine edge block coordinate by the underlying finite edge. -/
 theorem fineEdgeCoordinate_cases (label)
     {P : fineSupportedNerve.EdgeBlockCoordinate laws fine_adequate label → Prop}
     (h : ∀ edge, P (fineEdgeCoordinate label edge)) (coordinate) :
@@ -101,6 +117,7 @@ theorem fineEdgeCoordinate_cases (label)
   rw [← fineEdgeCoordinate_eq label coordinate]
   exact h coordinate.1.cell
 
+/-- Eliminate a coarse edge block coordinate by the underlying finite edge. -/
 theorem coarseEdgeCoordinate_cases (label)
     {P : coarseSupportedNerve.EdgeBlockCoordinate laws coarse_adequate label → Prop}
     (h : ∀ edge, P (coarseEdgeCoordinate label edge)) (coordinate) :
@@ -108,24 +125,28 @@ theorem coarseEdgeCoordinate_cases (label)
   rw [← coarseEdgeCoordinate_eq label coordinate]
   exact h coordinate.1.cell
 
+/-- Named fine chart coordinates are equal exactly when their charts are equal. -/
 @[simp] theorem fineChartCoordinate_inj (label) {left right : FineChart} :
     fineChartCoordinate label left = fineChartCoordinate label right ↔ left = right := by
   constructor
   · exact fun h => congrArg (fun coordinate => coordinate.1.cell) h
   · exact fun h => congrArg (fineChartCoordinate label) h
 
+/-- Named coarse chart coordinates are equal exactly when their charts are equal. -/
 @[simp] theorem coarseChartCoordinate_inj (label) {left right : CoarseChart} :
     coarseChartCoordinate label left = coarseChartCoordinate label right ↔ left = right := by
   constructor
   · exact fun h => congrArg (fun coordinate => coordinate.1.cell) h
   · exact fun h => congrArg (coarseChartCoordinate label) h
 
+/-- Named fine edge coordinates are equal exactly when their edges are equal. -/
 @[simp] theorem fineEdgeCoordinate_inj (label) {left right : Edge} :
     fineEdgeCoordinate label left = fineEdgeCoordinate label right ↔ left = right := by
   constructor
   · exact fun h => congrArg (fun coordinate => coordinate.1.cell) h
   · exact fun h => congrArg (fineEdgeCoordinate label) h
 
+/-- Fine edges enumerate all edge coordinates in one Law-value block. -/
 def fineEdgeCoordinateEquiv (label : LawValueLabel laws) :
     Edge ≃ fineSupportedNerve.EdgeBlockCoordinate laws fine_adequate label where
   toFun := fineEdgeCoordinate label
@@ -149,6 +170,7 @@ noncomputable local instance fineFaceBlockFintype (label : LawValueLabel laws) :
 
 /-! ## Coordinate incidence and partial maps -/
 
+/-- The coordinate map follows the selected chart refinement. -/
 @[simp] theorem chartBlockCoordinateMap (label) (chart : FineChart) :
     nerveMorphism.chartBlockCoordinateMap laws coarse_adequate fine_adequate
         label (fineChartCoordinate label chart) =
@@ -156,6 +178,7 @@ noncomputable local instance fineFaceBlockFintype (label : LawValueLabel laws) :
   apply coarseSupportedNerve.lawValueCoordinateSubnerveChartCell_injective
   rfl
 
+/-- The left endpoint of a named fine edge coordinate is its named chart coordinate. -/
 @[simp] theorem fine_edgeLeftBlockCoordinate (label) (edge : Edge) :
     fineSupportedNerve.edgeLeftBlockCoordinate laws fine_adequate label
         (fineEdgeCoordinate label edge) =
@@ -163,6 +186,7 @@ noncomputable local instance fineFaceBlockFintype (label : LawValueLabel laws) :
   apply fineSupportedNerve.lawValueCoordinateSubnerveChartCell_injective
   rfl
 
+/-- The right endpoint of a named fine edge coordinate is its named chart coordinate. -/
 @[simp] theorem fine_edgeRightBlockCoordinate (label) (edge : Edge) :
     fineSupportedNerve.edgeRightBlockCoordinate laws fine_adequate label
         (fineEdgeCoordinate label edge) =
@@ -170,6 +194,7 @@ noncomputable local instance fineFaceBlockFintype (label : LawValueLabel laws) :
   apply fineSupportedNerve.lawValueCoordinateSubnerveChartCell_injective
   rfl
 
+/-- Each coarse edge has its selected same-named fine lift. -/
 theorem edgeBlockCoordinateMapOption (label) (edge : CoarseEdge) :
     nerveMorphism.edgeBlockCoordinateMapOption laws coarse_adequate fine_adequate
         label (fineEdgeCoordinate label (match edge with
@@ -182,6 +207,7 @@ theorem edgeBlockCoordinateMapOption (label) (edge : CoarseEdge) :
 
 /-! ## C0--C6 -/
 
+/-- C0: full coarse support is exactly the image of full fine support. -/
 theorem conditionC0 : nerveMorphism.ConditionC0 := by
   intro coarseChart coarseTarget
   constructor
@@ -197,12 +223,14 @@ theorem conditionC0 : nerveMorphism.ConditionC0 := by
     rw [← hchart, ← hfactor]
     exact nerveMorphism.chartSupport_compatible fineChart fineTarget htarget
 
+/-- The contracted edge `k` lies inside the coordinate fiber over `c0`. -/
 theorem fiberEdge_k (label) :
     nerveMorphism.CoordinateFiberEdge laws coarse_adequate fine_adequate label
       (coarseChartCoordinate label .c0) (fineEdgeCoordinate label .k) := by
   simp [TargetSupportedNerveMorphism.CoordinateFiberEdge, chartMap,
     fineEdgeLeft, fineEdgeRight]
 
+/-- The two fine charts over `c0` are adjacent through `k`. -/
 theorem fiberAdjacent_a0_a1 (label) :
     nerveMorphism.CoordinateFiberAdjacent laws coarse_adequate fine_adequate label
       (coarseChartCoordinate label .c0) (fineChartCoordinate label .a0)
@@ -210,12 +238,14 @@ theorem fiberAdjacent_a0_a1 (label) :
   refine ⟨fineEdgeCoordinate label .k, fiberEdge_k label, ?_⟩
   exact Or.inl ⟨by simp [fineEdgeLeft], by simp [fineEdgeRight]⟩
 
+/-- Coordinate-fiber adjacency through `k` is symmetric. -/
 theorem fiberAdjacent_a1_a0 (label) :
     nerveMorphism.CoordinateFiberAdjacent laws coarse_adequate fine_adequate label
       (coarseChartCoordinate label .c0) (fineChartCoordinate label .a1)
         (fineChartCoordinate label .a0) :=
   (fiberAdjacent_a0_a1 label).symm nerveMorphism laws coarse_adequate fine_adequate
 
+/-- C1: every chart-coordinate fiber is nonempty and connected. -/
 theorem conditionC1 :
     nerveMorphism.ConditionC1 laws coarse_adequate fine_adequate := by
   intro label coarseCoordinate
@@ -272,6 +302,7 @@ theorem conditionC1 :
       | exact Relation.ReflTransGen.single (fiberAdjacent_a0_a1 label)
       | exact Relation.ReflTransGen.single (fiberAdjacent_a1_a0 label)
 
+/-- C2: every coarse edge coordinate has a selected fine lift. -/
 theorem conditionC2 :
     nerveMorphism.ConditionC2 laws coarse_adequate fine_adequate := by
   intro label coarseCoordinate
@@ -285,11 +316,13 @@ theorem conditionC2 :
     | .ab => .ab | .bc => .bc | .ac => .ac),
       edgeBlockCoordinateMapOption label edge⟩
 
+/-- C4: the selected coarse face-coordinate type is empty. -/
 theorem conditionC4 :
     nerveMorphism.ConditionC4 laws coarse_adequate fine_adequate := by
   intro _label coarseFace
   exact isEmptyElim coarseFace.1.cell
 
+/-- C5: each coarse edge has at most one mapped fine lift. -/
 theorem conditionC5 : nerveMorphism.ConditionC5 := by
   intro coarseEdge fineLeft fineRight hleft hright
   change edgeMap fineLeft = some coarseEdge at hleft
@@ -297,6 +330,7 @@ theorem conditionC5 : nerveMorphism.ConditionC5 := by
   cases coarseEdge <;> cases fineLeft <;> cases fineRight <;>
     simp [edgeMap] at hleft hright ⊢
 
+/-- C6: no mapped fine edge lies over a coarse self-loop. -/
 theorem conditionC6 : nerveMorphism.ConditionC6 := by
   intro fineEdge coarseEdge hmap hloop
   change edgeMap fineEdge = some coarseEdge at hmap
@@ -306,6 +340,7 @@ theorem conditionC6 : nerveMorphism.ConditionC6 := by
 
 /-! ## The face-free local fiber condition C3 -/
 
+/-- Incoming coordinate-fiber sums expand over the four named fine edges. -/
 theorem coordinateFiberIncoming_formula (label)
     (chain : fineSupportedNerve.EdgeBlockCoordinate laws fine_adequate label → ℚ)
     (chart : FineChart) :
@@ -317,6 +352,7 @@ theorem coordinateFiberIncoming_formula (label)
   rw [← (fineEdgeCoordinateEquiv label).sum_comp]
   simp [fineEdgeCoordinateEquiv]
 
+/-- Outgoing coordinate-fiber sums expand over the four named fine edges. -/
 theorem coordinateFiberOutgoing_formula (label)
     (chain : fineSupportedNerve.EdgeBlockCoordinate laws fine_adequate label → ℚ)
     (chart : FineChart) :
@@ -335,6 +371,7 @@ theorem sum_edge (f : Edge → ℚ) :
   rw [show (Finset.univ : Finset Edge) = {.k, .ab, .bc, .ac} by decide]
   simp [add_assoc]
 
+/-- C3: every supported fiber cycle is the boundary of the zero face chain. -/
 theorem conditionC3 :
     nerveMorphism.ConditionC3 laws coarse_adequate fine_adequate := by
   intro label coarseCoordinate
@@ -396,6 +433,7 @@ theorem conditionC3 :
     cases edge <;>
       simp [TargetSupportedNerveMorphism.coordinateFaceBoundary, hk, hab, hbc, hac]
 
+/-- The selected full-support refinement satisfies all fields C0--C6. -/
 theorem conditionC :
     nerveMorphism.ConditionC laws coarse_adequate fine_adequate where
   c0 := conditionC0
@@ -408,10 +446,12 @@ theorem conditionC :
 
 /-! ## G-125(C2) -/
 
+/-- Condition C makes the selected diagnostic comparison map bijective. -/
 theorem diagnosticH1Map_bijective : Function.Bijective diagnosticH1Map :=
   nerveMorphism.generatedComparisonH1Map_bijective laws coarse_adequate
     fine_adequate conditionC
 
+/-- The specified diagnostic class vanishes exactly when its transported class does. -/
 theorem diagnostic_class_eq_zero_iff_mapped_diagnostic_class_eq_zero
     (x : CoarseLocalData) :
     coarseDiagnosticClass x = 0 ↔ fineDiagnosticClass (mapLocalData x) = 0 := by

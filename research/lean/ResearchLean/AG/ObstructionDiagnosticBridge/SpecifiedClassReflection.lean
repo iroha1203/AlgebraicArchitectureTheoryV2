@@ -42,6 +42,75 @@ def CommonLabelChartSupport (D : TargetSupportedNerve q)
       (∀ chart, target ∈ D.chartSupport chart) ∧
         lawDescend laws q hadequate label.law target = label.value
 
+namespace CommonLabelChartSupportFixtures
+
+/-- Identity reading used to show that common-label support is a genuine premise. -/
+abbrev partialReading : Reading Bool where
+  Target := Bool
+  read := id
+  surjective := Function.surjective_id
+
+/-- One-chart nerve used by the negative common-support fixture. -/
+abbrev partialNerve : CoverNerve where
+  Chart := PUnit
+  EdgeComponent := Empty
+  FaceComponent := Empty
+  edgeLeft := isEmptyElim
+  edgeRight := isEmptyElim
+  faceEdge0 := isEmptyElim
+  faceEdge1 := isEmptyElim
+  faceEdge2 := isEmptyElim
+  edgeOverlapComponent := isEmptyElim
+  faceTripleOverlapComponent := isEmptyElim
+  edgeOverlapComponent_holds := isEmptyElim
+  faceTripleOverlapComponent_holds := isEmptyElim
+
+/-- Supported nerve that sees `false` but omits the generated label `true`. -/
+def partialSupportedNerve : TargetSupportedNerve partialReading where
+  nerve := partialNerve
+  chartFintype := inferInstance
+  edgeFintype := inferInstance
+  faceFintype := inferInstance
+  chartSupport _ := {false}
+  chartSupport_nonempty _ := ⟨false, by simp⟩
+  faceEdge0_left := isEmptyElim
+  faceEdge0_right := isEmptyElim
+  faceEdge1_right := isEmptyElim
+
+/-- Nonconstant Boolean law family for the negative common-support fixture. -/
+def partialLaws : FiniteLawFamily Bool where
+  Law := PUnit
+  lawFintype := inferInstance
+  Value := fun _ => Bool
+  valueDecidableEq := fun _ => inferInstance
+  eval := fun _ value => value
+
+/-- The fixture law descends through the identity reading. -/
+theorem partialAdequate : partialLaws.Adequate partialReading := by
+  intro law
+  cases law
+  exact ⟨id, fun _ => rfl⟩
+
+/-- Common-label support fails when one generated Law value is omitted. -/
+theorem partial_not_common :
+    ¬ CommonLabelChartSupport partialSupportedNerve partialLaws partialAdequate := by
+  intro hsupport
+  obtain ⟨target, hmem, hvalue⟩ :=
+    hsupport (LawValueLabel.ofSource partialLaws PUnit.unit true)
+  have hfalse : target = false := by
+    simpa [partialSupportedNerve] using hmem PUnit.unit
+  have htrue : target = true := by
+    calc
+      target = lawDescend partialLaws partialReading partialAdequate PUnit.unit target := by
+        symm
+        simpa [partialLaws, partialReading] using
+          (lawDescend_commutes partialLaws partialReading partialAdequate
+            PUnit.unit target)
+      _ = true := hvalue
+  exact Bool.noConfusion (hfalse.symm.trans htrue)
+
+end CommonLabelChartSupportFixtures
+
 namespace CommonLabelChartSupport
 
 variable (hadequate : laws.Adequate q)
@@ -309,6 +378,8 @@ theorem diagnostic_class_eq_zero_iff_actual_class_eq_zero
 
 end ActualCechAffineLocalData
 
+#assert_standard_axioms_only
+  AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.CommonLabelChartSupportFixtures
 #assert_standard_axioms_only
   AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.CommonLabelChartSupport
 #assert_standard_axioms_only

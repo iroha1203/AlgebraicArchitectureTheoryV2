@@ -44,8 +44,7 @@ G-125の完了条件に含めない。GOALが求める論文との対応は、�
   actual `d⁰`を右辺−左辺差へ正規化する。選択face index型の空性からactual/normalized両方の`C²`と
   `d¹`を零化し、actual Čech sourceから既存law-generated complexへの次数0–2 cochain mapを得る。
   Cycle 9のcomplete face indexにより相異なる3 chartの実triple overlap全体の空性とface収載完全性を示し、Cycle 13で
-  紙上設計の`Bool × Bool → Bool` / identity readingに、粗い側は全target、細かい側は各Law値の
-  hidden-false代表をsupportとするactual coarse/fine nerveを構成し、
+  紙上設計の`Bool × Bool → Bool` / identity readingにfull-target supportを持つactual coarse/fine nerveを構成し、
   同じnerve indexへpoint-Atom site上の`FaceEmptyAATCechCover`を接続した。Cycle 16でpoint/generator combined siteへ
   context・coverage・continuity・actual coverを移した。Cycle 17で実Čech cocycle mapを商へ降ろし、
   coarse/fine双方の同一入力上の誘導H¹準同型まで接続した。
@@ -63,8 +62,8 @@ G-125の完了条件に含めない。GOALが求める論文との対応は、�
 - 完了: 現point-only siteの全点必須coverageをbase-change stableとは仮定せず、生成
   Grothendieck topologyのsheaf判定を直接用いてsupport functorのcontinuityを証明し、実
   `ContextOpenSupport`を構成する。
-- 完了: 紙上設計の粗い`Bool × Bool → Bool` readingと細かいidentity readingについて、粗い側は全target、
-  細かい側は各Law値のhidden-false代表をchart supportとする`TargetSupportedNerve`をcomplete geometric face indexから構成する。
+- 完了: 紙上設計の粗い`Bool × Bool → Bool` readingと細かいidentity readingについて、全targetを
+  chart supportとするcoarse/fineの`TargetSupportedNerve`をcomplete geometric face indexから構成する。
   同じnerve indexへ、実patch/overlapと実point-Atom continuous support上の
   `FaceEmptyAATCechCover`、chart・edge context、actual restrictionを与える。
 - 完了: 同じ`Bool × Bool` source上に`eval(b,h)=b`という非定数Lawを構成し、粗細reading双方の
@@ -2250,12 +2249,13 @@ selection:
     - "fixed-head independent review"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "A common real target for each generated Law-value label constructs its diagnostic coordinate on every chart. A diagnostic zero class supplies a rational degree-zero boundary witness. R_q identifies each obstruction block through blockLabel, so flooring that witness coordinatewise produces integer block coefficients with the exact normalized actual edge differences. The block coefficients are rebuilt into the presentation group and transported through the actual Cech degree-zero equivalence, yielding an explicit actual coboundary witness. Together with B1 this proves zero-class equivalence for every allowed selected coarse/fine datum."
+  proof_obligation_delta: "Full chart support constructs one real generated diagnostic coordinate for every chart and source-generated Law-value label. A diagnostic zero class supplies a rational degree-zero boundary witness. R_q identifies each obstruction block through blockLabel, so flooring that witness coordinatewise produces integer block coefficients with the exact normalized actual edge differences. The block coefficients are rebuilt into the presentation group and transported through the actual Cech degree-zero equivalence, yielding an explicit actual coboundary witness. Together with B1 this proves zero-class equivalence for every allowed selected coarse/fine datum."
   completion_candidate: no
   lean_artifacts:
-    - "GeneratorPresentation.CommonLabelChartSupport"
-    - "CommonLabelChartSupport.chartCoordinate"
-    - "CommonLabelChartSupport.edgeCoordinate"
+    - "GeneratorPresentation.FullChartSupport"
+    - "FullChartSupportFixtures.partial_not_full"
+    - "FullChartSupport.chartCoordinate"
+    - "FullChartSupport.edgeCoordinate"
     - "ActualCechAffineLocalData.rationalChartWitness"
     - "ActualCechAffineLocalData.normalizedActualBlockCoefficient"
     - "ActualCechAffineLocalData.integralCorrection"
@@ -2266,13 +2266,13 @@ result:
     - "CombinedAtomSpecifiedReflection.fine_actual_class_eq_zero_of_diagnostic_class_eq_zero"
     - "CombinedAtomSpecifiedReflection.coarse_actual_class_eq_zero_of_diagnostic_class_eq_zero"
   evidence:
-    - "chartCoordinate and edgeCoordinate use one actual common-support target with the requested generated Law value"
+    - "chartCoordinate and edgeCoordinate use generated-source witnesses and actual full-support membership"
     - "diagnostic quotient zero is eliminated to a concrete rational chart cochain in the range of boundaryToCycles"
     - "blockToLawCoefficients_apply_blockLabel consumes R_q to identify each integer block coefficient in the diagnostic boundary equation"
     - "blockFloorCorrection_edgeDifference applies floor only to the particular rational witness and preserves every integral edge difference"
     - "integralCorrection converts the finite block function to FreeAbelianGroup, then to PresentationGroup, then through the actual Cech C0 equivalence"
     - "actual_mismatch_eq_d_integralCorrection proves equality in the actual Cech complex, not only in a copied normalized complex"
-    - "selected coarse/fine common-label support and R_q premises are proved from the existing concrete inputs"
+    - "selected coarse/fine full-support and R_q premises are proved from the existing concrete inputs"
   claim_mapping:
     theorem_names:
       - "ActualCechAffineLocalData.actual_class_eq_zero_of_diagnostic_class_eq_zero"
@@ -2282,7 +2282,7 @@ result:
     source_labels:
       - "GOAL B2 zero reflection"
       - "Issue #4791 paper design equations (7)-(8)"
-      - "selected common-label chart supports and primitive R_q"
+      - "selected full-target chart supports and primitive R_q"
     conjuncts:
       - "diagnostic zero -> rational C0 boundary witness"
       - "R_q -> block coefficient recovery at Law-value labels"
@@ -2298,14 +2298,14 @@ audits:
   material_premises:
     ambient_boundary:
       - "finite Source and Law family make the block coefficient function finitely supported"
-      - "common-label chart support is selected-input geometry, not a cohomology conclusion"
+      - "full chart support is existing selected-input geometry, not a cohomology conclusion"
       - "diagnostic class zero supplies the rational boundary witness through the existing quotient definition"
     direction_hypothesis:
       - "GeneratorPresentation.ReflectionCondition is exactly the previously selected R_q"
     discharge_required:
       - "C1, C2 and the fixed finite zero/nonzero data"
     conclusion_equivalent_risk:
-      - "neither CommonLabelChartSupport nor ReflectionCondition refers to H1, class equality, or vanishing"
+      - "neither FullChartSupport nor ReflectionCondition refers to H1, class equality, or vanishing"
   premise_delta:
     discharged:
       - "rational diagnostic boundary witness extraction"
@@ -2322,7 +2322,7 @@ audits:
     unresolved: []
   proof_use:
     used:
-      - "common-label support constructs canonical chart and edge coordinates for every generated label"
+      - "full chart support constructs canonical chart and edge coordinates for every generated label"
       - "R_q is consumed by blockToLawCoefficients_apply_blockLabel"
       - "the Cycle 2 floor lemma is consumed for every edge/block pair"
       - "actual Cech normalization transports the constructed presentation correction back to the real obstruction complex"
@@ -2330,11 +2330,11 @@ audits:
   structure_field_escape: none-found
   route_integrity: pass-for-specified-b2-obligation
   target_fitting: none-found
-  vacuity: "the selected coarse and fine nerves construct common targets for both nonconstant Law values; the theorem quantifies over every allowed transition and localState and does not require either class to be zero except in the reflected implication premise"
+  vacuity: "FullChartSupportFixtures.partial_not_full gives a concrete non-full supported nerve; the theorem quantifies over every allowed transition and localState and does not require either class to be zero except in the reflected implication premise"
   one_way_as_equivalence: "both directions are proved: B1 supplies actual-zero to diagnostic-zero and Cycle 19 constructs diagnostic-zero to actual-zero"
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "focused checks: SpecifiedClassReflection common-label API plus 10 core declarations, and CombinedAtomSpecifiedReflection 6 declarations; standard axioms only"
+    - "focused checks: SpecifiedClassReflection 7 full-support API plus 10 core plus 4 nonvacuity-fixture declarations, and CombinedAtomSpecifiedReflection 6 declarations; standard axioms only"
     - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.CombinedAtomSpecifiedReflection: pass; 3727 jobs"
   blocking_findings: []
   next_obligation: "construct the actual coarse-to-fine Cech map T_ob, identify the existing generatedComparisonH1Map as T_diag, and prove C1 plus specified-class transport"
@@ -2496,12 +2496,12 @@ selection:
     - "SelectedReadingConditionC.conditionC"
     - "SelectedReadingConditionC.actual_class_eq_zero_iff_mapped_actual_class_eq_zero"
   risks:
-    - "total fine target support makes the hidden-coordinate fibers of each Law-value block disconnected"
+    - "mistaking multiple target witnesses for multiple coordinates, although target witnesses are proof-only"
     - "assuming diagnostic bijectivity instead of deriving it from the existing Condition C theorem"
     - "claiming an actual H1 isomorphism when C2 only establishes zero equivalence for transported specified classes"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "The selected fine support now contains the hidden-false representative of each Law value on every chart, while the canonical factor remains globally noninjective. The B2 premise was generalized from total support to one common real target per generated label. Named coordinates enumerate every selected Law-value block by the underlying nerve cells. Exhaustive incidence proofs discharge C0--C6; the face-free fiber graph over c0 is the single edge k and all other fibers are singletons, so C3 follows from conservation. Existing diagnostic H1 bijectivity, specified-class transport, and B2 yield C2 for every transported coarse datum."
+  proof_obligation_delta: "The paper-selected full-target support is preserved. Target witnesses are proof-only in CellCoordinate, so named coordinates still enumerate each Law-value block by the underlying nerve cells even when both hidden-coordinate representatives are supported. Exhaustive incidence proofs discharge C0--C6; the face-free fiber graph over c0 is the single edge k and all other fibers are singletons, so C3 follows from conservation. Existing diagnostic H1 bijectivity, specified-class transport, and B2 yield C2 for every transported coarse datum."
   completion_candidate: no
   lean_artifacts:
     - "GeneratorPresentation.CommonLabelChartSupport"
@@ -2517,8 +2517,10 @@ result:
     - "SelectedReadingConditionC.diagnosticH1Map_bijective"
     - "SelectedReadingConditionC.actual_class_eq_zero_iff_mapped_actual_class_eq_zero"
   evidence:
-    - "fine support membership is exactly target.second = false, so each Law value has the common representative (value, false)"
-    - "comparisonFactor remains first projection and is still proved noninjective on the whole reading target"
+    - "fine support remains the whole Bool x Bool target exactly as fixed by the paper design and Cycle 13"
+    - "CellCoordinate equality records cell, Law and value but not the target witness, so full support creates no duplicate block coordinates"
+    - "Cycle 21 generalizes the B2 coordinate constructor from FullChartSupport to CommonLabelChartSupport without changing the selected support; a Boolean omitted-label fixture proves the new premise can fail"
+    - "comparisonFactor remains first projection and is noninjective on the supported reading target"
     - "each coarse edge ab, bc and ac has its unique same-named fine lift; k is the contracted internal edge"
     - "complete face indices are empty on both sides, making C4 vacuous and reducing C3 to acyclicity of the coordinate fibers"
     - "flow conservation at a0 forces the sole internal coefficient on k to vanish; every other edge is outside the chosen fiber"
@@ -2546,7 +2548,7 @@ audits:
   material_premises:
     ambient_boundary:
       - "the selected finite nerve, nonconstant Law, adequacy proofs, primitive R_q, and actual refinement are predecessor constructions"
-      - "the selected fine support is part of the fixed input and includes one representative for both Law values"
+      - "the selected fine support is the fixed full-target input from the paper design and Cycle 13"
     direction_hypothesis:
       - "Condition C is the GOAL-authorized sufficient condition for existing diagnostic comparison bijectivity"
     discharge_required: []
@@ -2568,7 +2570,7 @@ audits:
     unresolved: []
   proof_use:
     used:
-      - "support restriction is used by coordinate enumeration and C0"
+      - "full-target support and proof-only target witnesses are used by coordinate construction and C0"
       - "the contracted edge k is used by C1 connectivity and C3 conservation"
       - "all Condition C fields are consumed by generatedComparisonH1Map_bijective"
       - "diagnostic class transport and both B2 directions are consumed by C2"
@@ -2576,7 +2578,7 @@ audits:
   structure_field_escape: none-found
   route_integrity: pass-for-c2-obligation
   target_fitting: none-found
-  vacuity: "the Law remains nonconstant, both Law values occur, the comparison factor is globally noninjective, and the c0 chart fiber contains two fine charts joined by a real contracted edge"
+  vacuity: "the Law remains nonconstant, both Law values occur, both hidden coordinates remain supported, the comparison factor is noninjective on that support, and the c0 chart fiber contains two fine charts joined by a real contracted edge"
   one_way_as_equivalence: "diagnostic map injectivity supplies reflection and map_zero supplies preservation; both actual directions are then obtained through the already proved B2 equivalences"
   goal_or_report_reinterpretation: none-found
   validation_refs:

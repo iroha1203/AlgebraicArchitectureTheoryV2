@@ -8,10 +8,8 @@ import Formal.Util.AssertStandardAxioms
 This module connects the selected eight-point geometry to the actual
 `TargetSupportedNerve` and `FaceEmptyAATCechCover` APIs.  The diagnostic side
 uses the selected finite-example readings `Bool × Bool → Bool` and
-`Bool × Bool → Bool × Bool`.  The coarse support is total, while the fine
-support selects the hidden-false representative of each Law value; this keeps
-the canonical factor globally noninjective and makes the selected refinement
-satisfy Condition C.  The Cech side uses the concrete
+`Bool × Bool → Bool × Bool`, with every chart supported on the whole reading
+target as required by the paper design.  The Cech side uses the concrete
 coarse/fine patches and their nonempty pair intersections on the eight-point
 point-Atom space.
 
@@ -84,14 +82,14 @@ instance fineNerveFaceIsEmpty : IsEmpty fineNerve.FaceComponent :=
 instance coarseNerveFaceIsEmpty : IsEmpty coarseNerve.FaceComponent :=
   coarseCompleteFaceIndexIsEmpty
 
-/-- Fine diagnostic nerve selecting the hidden-false representative of each Law value. -/
+/-- Fine diagnostic nerve with every chart supported on the full fine target. -/
 def fineSupportedNerve : TargetSupportedNerve fineReading where
   nerve := fineNerve
   chartFintype := inferInstance
   edgeFintype := inferInstance
   faceFintype := Fintype.ofFinite _
-  chartSupport _ := {target | target.2 = false}
-  chartSupport_nonempty _ := ⟨(false, false), by simp⟩
+  chartSupport _ := Set.univ
+  chartSupport_nonempty _ := ⟨(false, false), Set.mem_univ _⟩
   faceEdge0_left := isEmptyElim
   faceEdge0_right := isEmptyElim
   faceEdge1_right := isEmptyElim
