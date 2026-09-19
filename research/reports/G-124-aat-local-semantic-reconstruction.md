@@ -8799,3 +8799,30 @@ coverage/overlap、両raw/realization方式、全体の両逆・恒等・合成�
 11・14・10・8件、計43件。namespace監査は28・14・10・70件、計122件で、標準公理のみである。
 warningを残さず、placeholder・hidden/BiDi・privacy・語彙・差分整形・module登録を確認した。
 Cycleは追加せず、外側のtotal categoryとResearch全体buildにも進んでいない。
+
+#### Operation自然性の原始作用式への接続
+
+`IndependentGeometryHomOperationPoints.lean`は、二つのobject graphのtrue対で選ばれた
+operation行と、既に復元したnative有向operation familyの評価を接続する。
+`assemble_eq_atPair`・`assemble_point`は、依存する両端の型輸送後も同じ原始点を読むことを示す。
+
+`IndependentGeometryHomOperationNaturality.lean`の`PointLaws`は、二つのobject点、
+operation点、入力Atom点、source/targetのaction応答から出力Atom点を比較する。
+`points_iff_nativeSquare`がnativeの作用自然性との両方向を示す。
+`native_configuration_square_iff`は、構成したconfiguration mapのAtom作用との一致を使い、
+作用の一点ずつの等式から元の`ConfigurationHom.comp`全体の等式を導く。
+この補題のconfiguration mapとその作用一致は接続APIの引数であり、局所lawのfieldではない。
+全package組立てでは、既存の`PackageGraphData.configurationMap_atomMap`がこの一致を与える。
+
+`IndependentGeometryHomOperationExpressions.lean`は、同じ保存則の全instanceを閉じた式へ接続する。
+各式の`support`は共通object/object/Hom queryの有限集合であり、action squareは
+source/target応答の2点とHomの5点を使う。
+`evaluate_iff_of_support`は任意tableで評価一致を示す。
+
+残る主要項目はinvariant、detector code、coefficient、coverage/overlap、両方式のraw/realizationと、
+全Hom両逆・共通の恒等/合成・残る有限式・指定反証・PR査読/CIの統合である。
+Cycle 79を維持し、最初の検証点I全体を完了とは扱わない。
+
+今回の3 sourceは単一fileで検証した。明示宣言は各6件、計18件の`#print axioms`を確認した。
+namespace監査は順に6・6・50件、計62件で、標準公理のみである。
+warning・placeholder・hidden/BiDi・privacy・追加文の語彙・差分整形・module登録を確認した。
