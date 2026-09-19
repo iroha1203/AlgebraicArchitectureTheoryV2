@@ -2322,7 +2322,7 @@ audits:
   one_way_as_equivalence: "both directions are proved: B1 supplies actual-zero to diagnostic-zero and Cycle 19 constructs diagnostic-zero to actual-zero"
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "focused checks: SpecifiedClassReflection 10 core plus 4 nonvacuity-fixture declarations, and CombinedAtomSpecifiedReflection 6 declarations; standard axioms only"
+    - "focused checks: SpecifiedClassReflection 7 full-support API plus 10 core plus 4 nonvacuity-fixture declarations, and CombinedAtomSpecifiedReflection 6 declarations; standard axioms only"
     - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.CombinedAtomSpecifiedReflection: pass; 3727 jobs"
   blocking_findings: []
   next_obligation: "construct the actual coarse-to-fine Cech map T_ob, identify the existing generatedComparisonH1Map as T_diag, and prove C1 plus specified-class transport"

@@ -329,6 +329,8 @@ theorem diagnostic_class_eq_zero_iff_actual_class_eq_zero
 end ActualCechAffineLocalData
 
 #assert_standard_axioms_only
+  AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.FullChartSupport
+#assert_standard_axioms_only
   AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.ActualCechAffineLocalData
 #assert_standard_axioms_only
   AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.FullChartSupportFixtures
