@@ -6457,7 +6457,7 @@ selection:
     - "Cycle 63 primitive function-graph category"
     - "Cycle 64 complete geometry graph separation"
     - "Cycle 65 separation-and-assembly reconstruction equivalence"
-  proof_obligation: "construct an independent category of raw complete graph bundles, lift complete geometry reading to a faithful identity-on-packages functor preserving every dependent component, discharge object assembly, and identify missing Hom assembly exactly with fullness"
+  proof_obligation: "construct an independent category of raw complete graph bundles, lift complete geometry reading to a faithful underlying-package-preserving functor across every dependent component, discharge object assembly, and identify missing Hom assembly exactly with fullness"
   selection_reason: "this adds the missing functorial local Hom surface and an exact universal characterization of its remaining assembly gap in one cycle"
   expected_result_type: proof-obligation-discharged
   lean_targets:
@@ -6538,14 +6538,14 @@ audits:
       - "assembly gap classification / Nonempty HomAssembly iff Full"
     remaining:
       - "independent coherence conditions and assembly for the coherent raw graph subcategory"
-      - "object assembly beyond the identity-on-packages complete-geometry branch"
+      - "object assembly beyond the underlying-package-preserving complete-geometry branch"
   certificate_provenance:
     discharged:
       - "local category / raw GraphCode data and total-functional laws only"
       - "faithfulness / accepted Cycle 64 injectivity theorem"
     unresolved:
-      - "conditional equivalence / explicit HomAssembly argument remains uninhabited"
-      - "fullness / deliberately not inhabited"
+      - "conditional equivalence / explicit HomAssembly argument is not constructed in this cycle"
+      - "fullness / deliberately not supplied in this cycle"
   proof_use:
     used:
       - "GraphCode assemble injectivity proves all componentwise category laws"
@@ -6703,7 +6703,7 @@ audits:
   complete geometry graphは全package対に対するindexed Hom-family分離を放電することを明示した。
   Cycle 66では十三成分すべてを独立に持つraw complete graph bundleへ恒等射と合成を定め、
   backward contextだけ順序を反転した成分別の圏を構成した。complete geometry readingが全dependent
-  tagged成分で恒等射と合成を保存するidentity-on-packages functorであること、Cycle 64の分離から
+  tagged成分で恒等射と合成を保存するunderlying-package-preserving functorであること、Cycle 64の分離から
   faithfulであること、対象組立て、および残るHom組立てがfullnessと同値であることを証明した。
   任意raw bundleのfullnessは主張せず、独立coherence条件で閉じた部分圏とそのHom組立て、
   direct normalization kernel自体のprimitive local syntax、および四族共通の実現圏・局所モデル圏への
