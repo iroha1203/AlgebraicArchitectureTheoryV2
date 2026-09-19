@@ -10,6 +10,10 @@
 このreportは固定GOALの証拠索引とproof obligation deltaを記録する。固定targetと
 完了条件はGOALカードにあり、このreportでは再定義しない。
 
+完了範囲の補足: 現時点では論文原稿が存在しないため、論文本文の執筆・更新は
+G-125の完了条件に含めない。GOALが求める論文との対応は、このreportに採用入力、
+前提の出所・使用先、有限例との対応を記録することで満たす。
+
 ## Proof obligation state
 
 - 完了: 紙上設計 §1–2 の生成子関係から `B = π₀(R)` と既存の
@@ -83,11 +87,16 @@
   Law-value座標で読み、`R_q`から各block係数を回収して座標ごとにfloorする。得られた整数block係数を
   presentation groupとactual Čech C⁰へ戻し、そのactual coboundaryが指定mismatchに一致することを証明する。
   これによりcoarse/fineの任意の許容局所データについてactual/diagnostic classの零性同値を導き、B2を放電する。
+- 完了: 紙上設計の粗い3-patch coverから細かい4-patch coverへの実refinementを、fine chartの
+  patch包含とmapped edgeのoverlap包含から構成する。chart値をprecomposeし、mapped edge値を実restrictionで
+  引き戻し、contracted edgeを零sectionへ送るactual Čech cochain mapを構成して`d⁰`可換性から
+  `T_ob`をH¹へ降ろした。同じnerve morphism上の既存`generatedComparisonH1Map`を`T_diag`として、
+  coefficient比較の自然性からC1の可換平方を証明し、指定局所データ・actual class・diagnostic classの輸送まで導出した。
 - 完了（仮定相対）: supplied face-index-empty nerveのpresentation係数cochainと、条件付きactual Ob層の実
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
-- 未完了: C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
-- 次のproof obligation: coarse coverからfine coverへのactual Čech cochain map `T_ob`を実refinementから構成し、
-  既存`generatedComparisonH1Map`を`T_diag`として比較平方と指定class輸送を証明するC1へ進む。
+- 未完了: C2、同一入力上の有限例、report上の対応整理、最終検証・査読。
+- 次のproof obligation: 同じ`nerveMorphism`上で紙上設計の`Condition C`を放電し、既存の
+  `generatedComparisonH1Map`の全単射性とB2・C1を組み合わせてactual H¹写像の零性反映・同型性を示すC2へ進む。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -2326,4 +2335,134 @@ audits:
     - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.CombinedAtomSpecifiedReflection: pass; 3727 jobs"
   blocking_findings: []
   next_obligation: "construct the actual coarse-to-fine Cech map T_ob, identify the existing generatedComparisonH1Map as T_diag, and prove C1 plus specified-class transport"
+```
+
+## Cycle 20 — actual reading refinement and C1
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 20
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: d48c509cb0439c58351ff02c6515dd4b91ea1a12
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "Issue #4791 paper design section 7 and GOAL C1 after Cycle 19 merge d48c509cb0439c58351ff02c6515dd4b91ea1a12"
+  proof_dag_predecessors:
+    - "selected coarse/fine actual Cech covers and normalization: Cycles 13, 16 and 17"
+    - "existing generated supported-nerve comparison: fixed predecessor and Cycle 17"
+    - "specified actual/diagnostic local data and class provenance: Cycle 18"
+  proof_obligation: "construct the actual coarse-to-fine H1 map from the real cover refinement, identify the existing generated H1 comparison as the diagnostic map, prove the C1 square, and transport the specified classes"
+  selection_reason: "C1 is the next GOAL obligation after B2 and supplies the naturality needed to derive C2"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/SelectedReadingRefinement.lean"
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/ActualCechReadingComparison.lean"
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomReadingNaturality.lean"
+    - "CombinedAtomReadingNaturality.h1_comparison_square"
+    - "CombinedAtomReadingNaturality.diagnosticH1Map_diagnosticClass"
+  risks:
+    - "defining T_ob through the diagnostic H1 map or a comparison inverse instead of the actual cover refinement"
+    - "representing the contracted internal edge by a fictitious coarse self-loop"
+    - "copying normalized coordinates without proving that mapped coordinates are the actual sheaf restrictions"
+    - "storing the C1 conclusion or Condition C inside the refinement input"
+  unchecked:
+    - "fixed-head independent review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The actual patch and overlap inclusions define a coarse-to-fine cover refinement. Presentation cochains pull back by chart precomposition, mapped-edge copying, and zero on the contracted edge; these operations are proved equal to the corresponding actual obstruction-sheaf restrictions. Endpoint preservation proves the degree-zero square, so the map descends to actual additive H1. Coefficient evaluation is natural degreewise, and quotient induction proves that this actual H1 map commutes with the existing generatedComparisonH1Map. Transporting transition and chart state then transports both independently generated specified classes."
+  completion_candidate: no
+  lean_artifacts:
+    - "SelectedReadingRefinement.chartMap"
+    - "SelectedReadingRefinement.edgeMap"
+    - "SelectedReadingRefinement.nerveMorphism"
+    - "SelectedReadingRefinement.finePatch_le_coarsePatch_chartMap"
+    - "SelectedReadingRefinement.fineOverlap_le_coarseOverlap_of_edgeMap_some"
+    - "GeneratorPresentation.presentationPullback0"
+    - "GeneratorPresentation.presentationPullback1"
+    - "GeneratorPresentation.presentationPullback_comm0"
+    - "GeneratorPresentation.actualCechPullback0"
+    - "GeneratorPresentation.actualCechPullback1"
+    - "GeneratorPresentation.actualCechRefinementH1Map"
+    - "GeneratorPresentation.actualCechDiagnosticH1_naturality"
+    - "CombinedAtomReadingNaturality.actualCechPullback0_apply"
+    - "CombinedAtomReadingNaturality.actualCechPullback1_apply_of_some"
+    - "CombinedAtomReadingNaturality.actualCechPullback1_contracted"
+    - "CombinedAtomReadingNaturality.h1_comparison_square"
+    - "CombinedAtomReadingNaturality.mapLocalData"
+    - "CombinedAtomReadingNaturality.actualH1Map_actualClass"
+    - "CombinedAtomReadingNaturality.diagnosticH1Map_diagnosticClass"
+  evidence:
+    - "a0 and a1 map to c0 while b and c map to c1 and c2, with actual fine-patch inclusions into those coarse patches"
+    - "the internal fine edge k maps to none; ab, bc and ac map to their actual coarse overlaps with proved overlap inclusions"
+    - "selected coordinate pullbacks are proved equal to actual locally constant obstruction-sheaf restrictions on every mapped chart and edge"
+    - "the contracted internal edge receives the zero actual section rather than a synthetic coarse edge"
+    - "presentationPullback_comm0 uses only endpoint preservation, and actualCechPullback_comm0 transports it through the actual Cech coordinate equivalences"
+    - "coefficientCochain1_presentationPullback proves naturality for both mapped and contracted edges"
+    - "actualCechDiagnosticH1_naturality descends the representative equality through both H1 quotients"
+    - "mapLocalData transports primitive transition and chart state before class formation"
+  claim_mapping:
+    theorem_names:
+      - "GeneratorPresentation.actualCechDiagnosticH1_naturality"
+      - "CombinedAtomReadingNaturality.h1_comparison_square"
+      - "CombinedAtomReadingNaturality.actualH1Map_actualClass"
+      - "CombinedAtomReadingNaturality.diagnosticH1Map_diagnosticClass"
+    source_labels:
+      - "GOAL C1 reading-change comparison"
+      - "Issue #4791 paper design section 7"
+      - "selected three-patch to four-patch cover refinement"
+    conjuncts:
+      - "T_ob is induced by the actual refinement cochain map"
+      - "T_diag is the existing generatedComparisonH1Map"
+      - "Phi_f after T_ob equals T_diag after Phi_c"
+      - "specified actual and diagnostic classes are transported from coarse to fine"
+    undischarged_assumptions:
+      - "C2 and the selected Condition C instance remain"
+      - "fixed zero/nonzero local data and end-to-end finite-example correspondence remain"
+    acceptance_point: "the actual map is constructed before and independently of the diagnostic map; actual sheaf-restriction provenance is proved for its selected coordinate formulas"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "coarse and fine actual Cech covers, connected-section coordinates, and generated diagnostic complexes are predecessor constructions"
+      - "fine patches and mapped overlaps are genuinely included in their selected coarse supports"
+    direction_hypothesis: []
+    discharge_required:
+      - "selected Condition C, C2, and fixed finite zero/nonzero data"
+    conclusion_equivalent_risk:
+      - "neither the nerve morphism nor mapLocalData stores a cohomology equality, vanishing statement, or inverse"
+  premise_delta:
+    discharged:
+      - "actual coarse-to-fine cochain and H1 maps"
+      - "actual restriction provenance for selected chart and edge formulas"
+      - "naturality of coefficient comparison under refinement"
+      - "C1 comparison square"
+      - "transport of specified actual and diagnostic classes"
+    remaining:
+      - "C2, selected Condition C, and fixed zero/nonzero data"
+  certificate_provenance:
+    discharged:
+      - "T_ob comes from the real patch/overlap refinement and actual obstruction sheaf restrictions"
+      - "T_diag is definitionally the existing generatedComparisonH1Map on the same nerve morphism"
+      - "specified class transport starts from transported transition and chart state"
+    unresolved: []
+  proof_use:
+    used:
+      - "patch and overlap inclusions justify the selected actual restriction maps"
+      - "edge endpoint compatibility proves the degree-zero cochain square"
+      - "coefficient naturality and quotient induction prove C1"
+      - "C1 plus the predecessor specified-class comparison proves diagnostic class transport"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-for-c1-obligation
+  target_fitting: none-found
+  vacuity: "the actual and diagnostic maps are defined on the full coarse H1 groups, while mapLocalData transports every allowed coarse transition and chart state"
+  one_way_as_equivalence: "C1 proves a commuting square only; no invertibility or C2 conclusion is claimed"
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused checks: SelectedReadingRefinement 6 declarations, ActualCechReadingComparison 13 declarations, and CombinedAtomReadingNaturality 12 declarations; standard axioms only"
+    - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.CombinedAtomReadingNaturality: pass; 3727 jobs"
+  blocking_findings: []
+  next_obligation: "prove the selected Condition C instance and combine diagnostic H1 bijectivity, B2 and C1 to derive C2"
 ```
