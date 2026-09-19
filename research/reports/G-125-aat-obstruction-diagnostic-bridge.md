@@ -77,7 +77,7 @@ result:
       - "relations preserve law values -> related_preserves_label and blockLabel"
       - "R_q -> B equivalent to Lambda -> blockLabelEquiv"
     undischarged_assumptions:
-      - "relation_preserves_label is an input condition of the general presentation; the selected G-125 input must construct it"
+      - "relation_preserves_label is an input condition of the general presentation; the selected G-125 input and fixed finite example must construct it from their primitive relations"
       - "ReflectionCondition is a direction hypothesis of the general theorem; the selected input and fixed finite example must prove it from their primitive relations"
     acceptance_point: "R_q is a generator-connectivity condition and the equivalence is derived from it; no cohomology conclusion is stored in data"
     port_status: not-applicable
@@ -90,7 +90,7 @@ audits:
       - "relation_preserves_label supplies quotient-map well-definedness in the general presentation"
       - "ReflectionCondition supplies injectivity in the general equivalence theorem"
     discharge_required:
-      - "the selected G-125 input must construct relation_preserves_label from its declared graph"
+      - "the selected G-125 input and fixed finite example must construct relation_preserves_label from their declared graphs"
       - "the selected input and fixed finite example must prove ReflectionCondition from their declared graph"
     conclusion_equivalent_risk:
       - "ReflectionCondition is equivalent to injectivity of the already-surjective blockLabel, but is admitted here because fixed paper design section 2 requires generator connectivity; it contains neither B2 nor Phi_q injectivity"
@@ -99,7 +99,7 @@ audits:
       - "for any presentation satisfying relation_preserves_label, relation closure preserves actual source-generated law-value labels"
       - "for any presentation satisfying ReflectionCondition, R_q derives B equivalent to Lambda"
     remaining:
-      - "construct relation_preserves_label and ReflectionCondition for the selected G-125 input"
+      - "construct relation_preserves_label and ReflectionCondition for the selected G-125 input and fixed finite example"
       - "integer presentation group and coefficient comparison"
       - "A1, B1, B2, C1, C2 and the fixed finite example"
   certificate_provenance:
