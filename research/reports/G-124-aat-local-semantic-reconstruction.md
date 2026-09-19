@@ -7627,7 +7627,9 @@ report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
 selection:
   proof_state_ref: "Cycle 74 acceptance: Issue comment 5741210094; Cycle 75 selection: Issue comment 5741215781"
   proof_dag_predecessors:
+    - "Cycle 67 coefficient graph-code identity/composition"
     - "Cycle 70 realization and raw-coherence identity/composition"
+    - "GeometryTransport.Categories coverage and overlap identity/composition constructors"
     - "Cycle 71 complete graph-code assembly separation"
     - "Cycle 72 transported complete-code category and common graph surface"
     - "Cycle 74 direct package identity/composition and all fourteen package laws"
@@ -7689,7 +7691,9 @@ audits:
       - "independent local-object provenance"
   proof_use:
     used:
-      - "Cycle 70 coefficient, realization, overlap, coverage, and raw identity/composition laws"
+      - "Cycle 67 coefficient graph-code identity/composition"
+      - "Cycle 70 realization and raw-coherence identity/composition"
+      - "GeometryTransport.Categories coverage and overlap identity/composition constructors"
       - "Cycle 71 complete assembly separation and dependent cast APIs"
       - "Cycle 72 transported complete-code and common-graph formulas for comparison only"
       - "Cycle 74 direct package identity/composition and exact assembly"
