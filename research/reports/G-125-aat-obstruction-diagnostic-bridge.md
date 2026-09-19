@@ -60,13 +60,16 @@
   chart supportとするcoarse/fineの`TargetSupportedNerve`をcomplete geometric face indexから構成する。
   同じnerve indexへ、実patch/overlapと実point-Atom continuous support上の
   `FaceEmptyAATCechCover`、chart・edge context、actual restrictionを与える。
+- 完了: 同じ`Bool × Bool` source上に`eval(b,h)=b`という非定数Lawを構成し、粗細reading双方の
+  adequacy、canonical factorが第一射影で非単射であることを証明する。紙上設計の
+  `g00--g01`と`g10--g11`だけを列挙した明示relationから、選定入力の`R_q`を導出する。
 - 未完了: primitive generator Atomを同じ入力へ接続する。
 - 完了（仮定相対）: supplied face-index-empty nerveのpresentation係数cochainと、条件付きactual Ob層の実
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
 - 未完了: B1・B2、C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
-- 次のproof obligation: 選定した粗細reading上のLaw familyとadequacyを構成し、primitive generator Atomを
-  そのLaw評価と係数presentationへ接続する。続いてactual Čech sourceから既存law-generated complexへの
-  比較を同一入力上の実H¹ mapへ上げる。
+- 次のproof obligation: primitive generatorをpoint Atomと同じAAT carrierへ載せ、選定Law評価と
+  `GeneratorPresentation`へ接続する。続いてactual Čech sourceから既存law-generated complexへの比較を
+  同一入力上の実H¹ mapへ上げる。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -1568,4 +1571,127 @@ audits:
     - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.PointAtomActualNerve: pass; 3715 jobs"
   blocking_findings: []
   next_obligation: "construct the selected Law family and adequacy on coarseReading/fineReading, connect primitive generator Atoms to its coefficient presentation, then expose the actual Čech comparison as the same-input H1 map"
+```
+
+## Cycle 14 — 選定Law入力・粗細adequacy・primitive relation
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 14
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: c0cde65edc52bd720d9ae8fca012d311d6c14409
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "Issue #4791 paper design sections 1, 2, and 8.1 after Cycle 13 merge c0cde65edc52bd720d9ae8fca012d311d6c14409"
+  proof_dag_predecessors:
+    - "generic generator presentation and reflection condition: Cycle 1"
+    - "selected coarse/fine readings and full-target nerves: Cycle 13"
+  proof_obligation: "construct the selected nonconstant Law family, prove adequacy at both readings and noninjectivity of their canonical factor, and discharge R_q from the explicit primitive relation"
+  selection_reason: "Cycle 13 fixed the selected reading pair, so the next dependency for actual law-generated coordinates and the finite-example hypotheses is their common Law evaluation and relation presentation"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/PointAtomLawInput.lean"
+    - "PointAtomLawInput.laws"
+    - "PointAtomLawInput.coarse_adequate"
+    - "PointAtomLawInput.fine_adequate"
+    - "PointAtomLawInput.comparisonFactor_not_injective"
+    - "PointAtomLawInput.presentation"
+    - "PointAtomLawInput.presentation_reflectionCondition"
+  risks:
+    - "using a constant Law would make the selected finite example degenerate"
+    - "defining the primitive relation by the desired H1 reflection or coefficient-map injectivity"
+    - "assuming rather than deriving canonical-factor noninjectivity"
+  unchecked:
+    - "fixed-head independent review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The selected source is Bool × Bool and the unique Law evaluates its first coordinate. It descends through the coarse first-projection reading and the fine identity reading. The generated canonical factor is proved equal to first projection and therefore noninjective. The two undirected primitive edges g00--g01 and g10--g11 are listed independently of Law labels. Label preservation is checked on those edges, while R_q follows by exhausting the four source points and constructing either reflexivity or one declared edge."
+  completion_candidate: no
+  lean_artifacts:
+    - "PointAtomLawInput.laws"
+    - "PointAtomLawInput.coarse_adequate"
+    - "PointAtomLawInput.fine_adequate"
+    - "PointAtomLawInput.coarse_coarser_fine"
+    - "PointAtomLawInput.comparisonFactor_eq_fst"
+    - "PointAtomLawInput.comparisonFactor_not_injective"
+    - "PointAtomLawInput.law_nonconstant"
+    - "PointAtomLawInput.sourceRelation"
+    - "PointAtomLawInput.presentation"
+    - "PointAtomLawInput.presentation_reflectionCondition"
+    - "PointAtomLawInput.generated_labels_distinct"
+    - "PointAtomLawInput.presentation_relates_hidden_pair"
+    - "PointAtomLawInput.presentation_does_not_relate_visible_pair"
+  evidence:
+    - "coarse_adequate uses identity descent on Bool, while fine_adequate uses first projection"
+    - "comparisonFactor_eq_fst is derived from comparisonFactor_unique and its source commutation equation"
+    - "comparisonFactor_not_injective exhibits (false,false) and (false,true)"
+    - "sourceRelation lists only g00--g01, g01--g00, g10--g11, and g11--g10"
+    - "presentation_reflectionCondition extracts equality of actual LawValueLabel values, exhausts the four sources, and uses reflexivity or a listed edge"
+  claim_mapping:
+    theorem_names:
+      - "PointAtomLawInput.coarse_adequate"
+      - "PointAtomLawInput.fine_adequate"
+      - "PointAtomLawInput.comparisonFactor_not_injective"
+      - "PointAtomLawInput.presentation_reflectionCondition"
+    source_labels:
+      - "GOAL A finite Source, finite Law family, and adequate reading"
+      - "GOAL B structural reflection condition R_q"
+      - "GOAL completion condition 2 canonical-factor noninjectivity and both endpoint R_q"
+      - "Issue #4791 paper design sections 1, 2, and 8.1"
+    conjuncts:
+      - "selected nonconstant Law and two adequate readings -> laws, coarse_adequate, fine_adequate, law_nonconstant"
+      - "genuine coarse-to-fine information gain -> comparisonFactor_not_injective"
+      - "explicit source relation and both endpoint R_q -> presentation and presentation_reflectionCondition"
+    undischarged_assumptions:
+      - "primitive generators must be represented by actual Atoms in the selected AAT carrier"
+      - "the selected Law family and presentation must be bundled with the actual Čech and diagnostic complexes"
+      - "H1 map, B1, full B2, C1, C2, and fixed zero/nonzero diagnostic data remain"
+    acceptance_point: "the selected Law/readings/relation data and finite-example noninjectivity/R_q hypotheses are proved independently of cohomology conclusions"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "Cycle 13 fixes Source, coarseReading, and fineReading"
+      - "Cycle 1 fixes GeneratorPresentation and ReflectionCondition semantics"
+    direction_hypothesis: []
+    discharge_required:
+      - "represent primitive generators as actual AAT Atoms and connect them to context Law data"
+      - "construct the same-input actual H1 comparison and specified obstruction classes"
+    conclusion_equivalent_risk:
+      - "the two primitive edges are enumerated without consulting LawValueLabel equality and contain no H1 or injectivity field"
+      - "canonical-factor noninjectivity is proved from two concrete fine targets"
+  premise_delta:
+    discharged:
+      - "selected finite nonconstant Law family"
+      - "coarse and fine adequacy"
+      - "coarse-to-fine relation and canonical-factor noninjectivity"
+      - "selected primitive relation, label preservation, and R_q"
+    remaining:
+      - "primitive generator Atom integration and same-input complex/H1 connection"
+      - "B1, full B2, C1, C2 and zero/nonzero fixed data"
+  certificate_provenance:
+    discharged:
+      - "Law values are computed from the source first coordinate"
+      - "R_q is constructed by a four-source case split using EqvGen reflexivity or one explicitly listed relation edge"
+    unresolved:
+      - "AAT Atom provenance for primitive generators and specified local affine data"
+  proof_use:
+    used:
+      - "reading factorization witnesses are consumed by both adequacy proofs"
+      - "comparisonFactor_unique identifies the generated factor before its collision witness is used"
+      - "actual label equality is consumed by presentation_reflectionCondition"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-for-selected-law-and-relation-obligation
+  target_fitting: none-found
+  vacuity: "the Law distinguishes false from true; the relation connects a hidden-coordinate pair but does not connect a visible-value pair"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/ObstructionDiagnosticBridge/PointAtomLawInput.lean: pass; 13 namespace declarations, standard axioms only"
+    - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.PointAtomLawInput: pass; 3716 jobs"
+  blocking_findings: []
+  next_obligation: "represent the selected primitive generators as actual Atoms in the point-Atom AAT carrier, connect their Law evaluation and relation presentation, then construct the same-input actual H1 map"
 ```
