@@ -78,6 +78,9 @@ import ResearchLean.AG.CanonicalResolution.JointKernel
 import ResearchLean.AG.CanonicalResolution.NegativeWitness
 import ResearchLean.AG.CanonicalResolution.PositiveWitness
 import ResearchLean.AG.CanonicalResolution.Reading
+import ResearchLean.AG.ObstructionDiagnosticBridge.GeneratorPresentation
+import ResearchLean.AG.ObstructionDiagnosticBridge.IntegralReflection
+import ResearchLean.AG.ObstructionDiagnosticBridge.PresentationGroup
 import ResearchLean.AG.QualitySurface.AntichainOverlapBasisTransversal
 import ResearchLean.AG.QualitySurface.ArbitraryBranchFamilyAdequacy
 import ResearchLean.AG.QualitySurface.BranchReflectionAdequacyKernel
