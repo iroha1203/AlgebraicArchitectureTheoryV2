@@ -39,6 +39,8 @@ namespace CompleteGeometryGraphAssembly
 
 universe u v w x
 
+/-- Short name for the Cycle 63 primitive total-functional graph API reused
+throughout the Cycle 71 package assembler. -/
 abbrev GraphCode := PrimitiveFunctionGraph.GraphCode
 
 /-- Dependent coordinate component of the Cycle 70 signature read/assemble
@@ -483,6 +485,8 @@ theorem indexedRingGraph_heq
   funext i
   exact eq_of_heq (fiber i)
 
+/-- API lemma connecting package reconstruction to the Cycle 69
+context/observable reader. -/
 theorem contextObservable_read_equationTransport
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (code : PackageGraphCode G H) :
@@ -952,6 +956,7 @@ end PackageGraphCode
 
 namespace PackageGraphNegativeFixture
 
+/-- Reviewed finite package used by the Cycle 71 package-certificate pair. -/
 abbrev package := GeometryTransport.FiniteGeometryWitness.package
 
 /-- Lawful identity reading used only as the baseline for the negative
@@ -1047,26 +1052,72 @@ noncomputable def assembleOverlap {U : AtomCarrier.{u}}
     hom := homOfLE (forward base left right)
     inv := homOfLE (backward base left right) }
 
-/-- Coverage remains an explicit premise certificate, while overlap is retained
-only as two local order comparisons over the independently assembled package
-code. The remaining computational fields use the Cycle 70 graph presentation. -/
-structure CompleteGeometryGraphCode {U : AtomCarrier.{u}}
+/-- Computational complete-geometry data.  All preservation and coherence
+statements are kept separately in `IsCompleteGeometryGraphCode`. -/
+structure CompleteGeometryGraphData {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U) where
   package : PackageGraphCode G H
   coefficientGraph : AlgebraicGraphCoherence.RingHomGraphCode
     G.Coefficient H.Coefficient
-  coverage : CoverageTransport G H package.assemble
-  overlapForward : ∀ base left right,
-    overlapSource package.assemble base left right ≤ overlapTarget base left right
-  overlapBackward : ∀ base left right,
-    overlapTarget base left right ≤ overlapSource package.assemble base left right
   realization : RemainingComponentGraphCoherence.RealizationGraphCode
     G.core H.core package.assemble
+
+/-- Local complete-geometry laws over independent computational graph data.
+Coverage remains an explicit premise certificate; overlap is supplied only by
+two order comparisons, and raw coherence is stated against the assembled
+coefficient graph. -/
+structure IsCompleteGeometryGraphCode {U : AtomCarrier.{u}}
+    {G H : GeometryPackage.{u, v} U}
+    (data : CompleteGeometryGraphData G H) : Prop where
+  coverage : CoverageTransport G H data.package.assemble
+  overlapForward : ∀ base left right,
+    overlapSource data.package.assemble base left right ≤
+      overlapTarget base left right
+  overlapBackward : ∀ base left right,
+    overlapTarget base left right ≤
+      overlapSource data.package.assemble base left right
   rawCoherent :
     RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.IsRawTransportCoherent
-    G H package.assemble coefficientGraph.assemble
+    G H data.package.assemble data.coefficientGraph.assemble
+
+/-- Independent complete geometry graph code with data and laws separated. -/
+abbrev CompleteGeometryGraphCode {U : AtomCarrier.{u}}
+    (G H : GeometryPackage.{u, v} U) :=
+  { data : CompleteGeometryGraphData G H // IsCompleteGeometryGraphCode data }
 
 namespace CompleteGeometryGraphCode
+
+/-- Computational package projection. -/
+abbrev package {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    (code : CompleteGeometryGraphCode G H) := code.1.package
+
+/-- Computational coefficient-graph projection. -/
+abbrev coefficientGraph {U : AtomCarrier.{u}}
+    {G H : GeometryPackage.{u, v} U}
+    (code : CompleteGeometryGraphCode G H) := code.1.coefficientGraph
+
+/-- Computational realization-graph projection. -/
+abbrev realization {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    (code : CompleteGeometryGraphCode G H) := code.1.realization
+
+/-- Explicit coverage-certificate projection. -/
+abbrev coverage {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    (code : CompleteGeometryGraphCode G H) := code.2.coverage
+
+/-- Forward primitive overlap comparison. -/
+abbrev overlapForward {U : AtomCarrier.{u}}
+    {G H : GeometryPackage.{u, v} U}
+    (code : CompleteGeometryGraphCode G H) := code.2.overlapForward
+
+/-- Backward primitive overlap comparison. -/
+abbrev overlapBackward {U : AtomCarrier.{u}}
+    {G H : GeometryPackage.{u, v} U}
+    (code : CompleteGeometryGraphCode G H) := code.2.overlapBackward
+
+/-- Raw-transport coherence projection. -/
+abbrev rawCoherent {U : AtomCarrier.{u}}
+    {G H : GeometryPackage.{u, v} U}
+    (code : CompleteGeometryGraphCode G H) := code.2.rawCoherent
 
 /-- Transporting a geometry hom along equality of its base leaves the
 coefficient map unchanged. -/
@@ -1146,15 +1197,16 @@ def read {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     raw_eq := by rw [coefficient_eq]; exact geometry.raw_eq }
   let realization := RemainingComponentGraphCoherence.RealizationGraphCode.read
     (realizationSupplyOfGeometry geometry')
-  refine {
+  refine ⟨{
     package := package
     coefficientGraph := coefficientGraph
+    realization := realization }, ?_⟩
+  exact {
     coverage := geometry.coverage
     overlapForward := fun base left right =>
       leOfHom (geometry.overlap.overlapIso base left right).hom
     overlapBackward := fun base left right =>
       leOfHom (geometry.overlap.overlapIso base left right).inv
-    realization := realization
     rawCoherent := geometry'.raw_eq }
 
 /-- Reading and reassembling an actual complete morphism recovers it exactly. -/
@@ -1171,13 +1223,16 @@ theorem assemble_read {U : AtomCarrier.{u}}
       base_eq.symm ▸ morphism.geometry
     have hlocal : (assemble (read morphism)).geometry = geometry := by
       apply GeometryTransport.GeomReadHom.ext
-      · simp [assemble, read, geometry, package]
+      · simp [assemble, read, geometry, package, coefficientGraph]
       · apply heq_of_eq
-        simp [assemble, read, geometry, package, realizationSupplyOfGeometry]
+        simp [assemble, read, geometry, package, realization,
+          realizationSupplyOfGeometry]
       · apply heq_of_eq
-        simp [assemble, read, geometry, package, realizationSupplyOfGeometry]
+        simp [assemble, read, geometry, package, realization,
+          realizationSupplyOfGeometry]
       · apply heq_of_eq
-        simp [assemble, read, geometry, package, realizationSupplyOfGeometry]
+        simp [assemble, read, geometry, package, realization,
+          realizationSupplyOfGeometry]
     exact (heq_of_eq hlocal).trans (eqRec_heq base_eq.symm morphism.geometry)
 
 /-- Complete codes are determined by their computational local inputs; all
@@ -1189,12 +1244,21 @@ theorem ext {U : AtomCarrier.{u}}
     (package : first.package = second.package)
     (coefficientGraph : first.coefficientGraph = second.coefficientGraph)
     (realization : HEq first.realization second.realization) : first = second := by
-  cases first
-  cases second
-  cases package
-  cases coefficientGraph
-  cases realization
-  rfl
+  apply Subtype.ext
+  cases first with
+  | mk firstData firstLaws =>
+    cases second with
+    | mk secondData secondLaws =>
+      change firstData = secondData
+      cases firstData
+      cases secondData
+      dsimp [CompleteGeometryGraphCode.package,
+        CompleteGeometryGraphCode.coefficientGraph,
+        CompleteGeometryGraphCode.realization] at package coefficientGraph realization
+      cases package
+      cases coefficientGraph
+      cases realization
+      rfl
 
 /-- Assembling and rereading an independent complete code recovers every
 graph and local condition. -/
@@ -1226,6 +1290,43 @@ theorem read_assemble {U : AtomCarrier.{u}}
         (heq_of_eq
           (RemainingComponentGraphCoherence.RealizationGraphCode.read_assemble
             code.realization))
+
+/-! ## Complete-certificate instance pair -/
+
+namespace CompleteGraphCertificateFixtures
+
+/-- Reviewed pair-coefficient package reused for the complete-level
+certificate pair. -/
+abbrev package := GeometryTransport.NegativeGeometryWitness.pairPackage
+
+/-- Positive complete-level instance obtained by reading the actual identity
+geometry morphism. -/
+noncomputable def identityCode : CompleteGeometryGraphCode package package :=
+  read (GeometryTotalHom.id package)
+
+/-- The identity reader supplies a concrete lawful complete-data instance. -/
+theorem identityData_lawful :
+    IsCompleteGeometryGraphCode identityCode.1 :=
+  identityCode.2
+
+/-- Computational data pairing the identity package/realization graphs with
+the reviewed nonidentity coefficient swap. -/
+noncomputable def incoherentData :
+    CompleteGeometryGraphData package package where
+  package := identityCode.1.package
+  coefficientGraph := AlgebraicGraphCoherence.RingHomGraphCode.read
+    GeometryTransport.NegativeGeometryWitness.pairSwap
+  realization := identityCode.1.realization
+
+/-- The complete certificate rejects the coefficient graph whose raw
+base-change is the reviewed Cycle 70 incoherent swap. -/
+theorem not_isCompleteGeometryGraphCode_incoherentData :
+    ¬ IsCompleteGeometryGraphCode incoherentData := by
+  intro certificate
+  apply _root_.AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.ConcreteNegativeFixtures.rawTransport_not_coherent
+  simpa [incoherentData] using certificate.rawCoherent
+
+end CompleteGraphCertificateFixtures
 
 /-- Exact two-sided equivalence promised by Cycle 71. -/
 noncomputable def equivGeometryTotalHom {U : AtomCarrier.{u}}
