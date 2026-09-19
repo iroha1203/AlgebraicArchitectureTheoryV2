@@ -8826,3 +8826,36 @@ Cycle 79を維持し、最初の検証点I全体を完了とは扱わない。
 今回の3 sourceは単一fileで検証した。明示宣言は各6件、計18件の`#print axioms`を確認した。
 namespace監査は順に6・6・50件、計62件で、標準公理のみである。
 warning・placeholder・hidden/BiDi・privacy・追加文の語彙・差分整形・module登録を確認した。
+
+#### Invariantの存在witness：二つの代替案の反証と未完了事項
+
+人間の指示により、パートIはAstraで完了・PR・査読・mergeまで進め、II以降はSolへ引き継ぐ。
+この担当分担は、以下の未証明事項の受理や検証点Iの縮小を意味しない。Cycle 79を維持する。
+
+`IndependentInvariantTransportCandidates.lean`は、nativeなfunction invariantの
+`∃ e : I.Value ≃ J.Value, ∀ A, e (I.evaluate A) = J.evaluate (f A)`を扱う設計検証である。
+この`e`は元のHomではProp内のwitnessであり、計算用fieldではない。
+以下の証拠は完成した局所Homの実装ではなく、その未解決点を明示する。
+
+- `FiniteApproximation.native_finite_constraints_do_not_imply_transport`は、有限部分ごとの
+  同値の存在から全体の同値の存在を導く案を反証する。受理済みの自然数からarchitecture objectへの
+  単射を使って全射の自然数readingを作り、各有限部分では有限巡回置換がsuccessorと一致する。
+  全体では0の原像がなく、元の`Invariant.TransportedAlong`は成立しない。readingの全射性は
+  `naturalReading_surjective`で放電しており、新たな入力仮定ではない。
+- `FiniteApproximation.chosen_constant_witness_forget_not_injective`は、0を返す`Fin 3`の
+  readingに対し、恒等と1・2の交換という二つのwitnessを示す。選択した同値を別々のHomデータに
+  残してから忘れる写像は単射でない。選択の違いを元の射の違いにしてはならない。
+- `InfiniteWitness.hasWitness_iff_transported`は、双方向graphの有限片の整合族全体について
+  Prop内で存在量化する候補と、nativeな存在条件との同値を証明する。
+  `transportEquiv`はそのwitnessを消去したときに対象作用の選択肢が増えないことを示す。
+  ただし`HasWitness`は有限witnessではなく、整合族全体の存在を条件としている。
+  承認済み設計3.2の「原始値や有限witness」との適合を証明しておらず、局所lawに採用しない。
+
+この二つの反証は指定した代替案への反証に限る。別の局所構成の不可能性、固定target A–Eの
+不成立、設計変更の論理的必然性は証明していない。native Hom・固定GOAL・承認済み設計は変更しない。
+対象/Hom assemblerはこの候補moduleを使用しない。
+
+次の中心義務は、nativeな存在条件を保ったまま、選択をHomデータに残さず、承認済みの局所存在条件へ
+落とすことである。ここは未放電であり、検証点Iの完了・PR査読・mergeはまだ行っていない。
+detector code、coefficient、coverage/overlap、両raw/realization方式と全Homの統合も引き続き未完了である。
+新規16明示宣言の個別公理監査とnamespace17宣言の監査、単一file検証を実施し、標準公理のみを確認した。
