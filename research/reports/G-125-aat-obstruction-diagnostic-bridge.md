@@ -26,10 +26,12 @@
 - 完了: 位相空間上の局所定数`M_R`値関数を加法的presheafとして構成し、
   Mathlibの離散値連続関数sheafとの同型からsheaf条件を証明する。非空preconnected開集合上では
   sectionと`M_R`の評価同型、および制限写像の恒等座標表示も導出する。
-- 完了: AAT contextからopen supportへのfunctorと、そのAAT topologyからopen-set topologyへの
-  Mathlib標準の連続性を選定幾何入力として型付けする。このfunctorで局所定数係数sheafを
-  引き戻し、既存の`ObstructionSheaf.ofAddCommGrpValued`によって実`ObstructionSheaf`を構成する。
-  非空preconnected support上のsection同型と制限写像の恒等座標表示も実Ob層へ移す。
+- checkpoint: AAT contextからopen supportへのfunctorと、そのAAT topologyからopen-set
+  topologyへのMathlib標準の連続性を仮定するgeneric packaging境界を型付けする。この仮定の下で
+  局所定数係数sheafを引き戻し、既存の`ObstructionSheaf.ofAddCommGrpValued`によって実
+  `ObstructionSheaf`を構成する。非空preconnected support上のsection同型と制限写像の
+  恒等座標表示も実Ob層へ移す。連続性自体は任意sheafの引戻しsheaf条件を含む強い前提であり、
+  選定有限入力からの放電までは完了扱いしない。
 - 未完了: 論文採用入力と有限例について、具体的な有限空間、context open support functor、
   site functorの連続性を構成する。
 - 未完了: presentation係数cochainと、構成するOb層の実
@@ -704,9 +706,9 @@ selection:
     - "GeneratorPresentation.locallyConstantAddCommGrpPresheaf_isSheaf: PR #4806"
     - "Formal.AG.Cohomology.ObstructionSheaf.ofAddCommGrpValued"
     - "Mathlib CategoryTheory.Functor.IsContinuous for functors between sites"
-  proof_obligation: "pull the proved locally constant presentation sheaf back along an AAT context-to-open support functor and package the result as the existing obstruction sheaf"
-  selection_reason: "this is the missing source-coefficient bridge before the actual cover-relative Cech complex can be normalized"
-  expected_result_type: proof-obligation-discharged
+  proof_obligation: "make the exact support-functor continuity premise and the resulting conditional pullback package explicit before constructing continuity for the selected finite input"
+  selection_reason: "this isolates the site-theoretic packaging boundary and exposes the remaining concrete continuity obligation before the actual cover-relative Cech complex can be normalized"
+  expected_result_type: target-proof-checkpoint
   lean_targets:
     - "ResearchLean/AG/ObstructionDiagnosticBridge/AATLocallyConstantObstruction.lean"
     - "GeneratorPresentation.aatLocallyConstantObstructionSheaf"
@@ -719,8 +721,8 @@ selection:
     - "main declarations #print axioms"
     - "fixed-head independent review"
 result:
-  proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "A selected context-open geometry now consists of an actual functor from the AAT context category to opens of a topological space and Mathlib's generic site-continuity witness. Pulling back the Cycle 6 locally constant additive sheaf along that functor derives the AAT sheaf condition, packages the existing ObstructionSheaf, and transports connected-support section and restriction coordinates. The concrete finite selected geometry and ordered-tuple Cech normalization remain open."
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: "The exact assumption-relative packaging boundary is now formalized: a context-open geometry supplies a functor and Mathlib's generic site-continuity witness; under that strong premise, the Cycle 6 locally constant additive sheaf pulls back to an AAT sheaf, packages the existing ObstructionSheaf, and transports connected-support section and restriction coordinates. This does not discharge continuity or the AAT sheaf condition for the selected finite input; the concrete geometry and ordered-tuple Cech normalization remain open."
   completion_candidate: no
   lean_artifacts:
     - "ContextOpenSupport"
@@ -743,7 +745,7 @@ result:
       - "GeneratorPresentation.aatLocallyConstantObstructionSectionEquiv_restriction"
     source_labels:
       - "GOAL A selected obstruction coefficient sheaf"
-      - "Issue #4791 paper design section 3.1 context open supports"
+      - "Issue #4791 paper design section 3.1 coefficient sheaf and section 10 context open supports"
       - "Issue #4791 paper design section 4 identity restriction coordinates"
     conjuncts:
       - "context to open support functor and topology compatibility -> ContextOpenSupport"
@@ -754,7 +756,7 @@ result:
       - "the selected input and finite example must construct ContextOpenSupport, including site continuity, from their declared finite geometry"
       - "the selected cover cells must have nonempty preconnected support where evaluation coordinates are used"
       - "the actual ordered-tuple CoverRelativeCechComplex must still be identified with the normalized source"
-    acceptance_point: "site continuity is generic over all Type-valued sheaves and imported from Mathlib's standard definition; no coefficient-specific AAT sheaf certificate is stored"
+    acceptance_point: "site continuity is generic over all Type-valued sheaves and imported from Mathlib's standard definition, but it is stronger than the desired coefficient-specific AAT sheaf conclusion; this Cycle is only an assumption-relative packaging checkpoint until the selected finite geometry constructs continuity"
     port_status: not-applicable
 audits:
   material_premises:
@@ -766,14 +768,14 @@ audits:
       - "construct the continuous support functor for the selected finite input and fixed finite example"
       - "construct the actual cover-relative Cech comparison"
     conclusion_equivalent_risk:
-      - "continuity quantifies over all sheaves on the target site and contains neither the desired ObstructionSheaf nor any cohomology conclusion"
+      - "continuity quantifies over all target sheaves and therefore directly contains the desired pulled-back coefficient sheaf condition as a specialization; it is not conclusion-equivalent but is strictly stronger, so the selected finite geometry must construct it before this obligation is discharged"
   premise_delta:
     discharged:
-      - "derive the AAT sheaf condition of pulled-back locally constant presentation coefficients from site continuity"
-      - "construct the actual ObstructionSheaf using the existing constructor"
-      - "transport connected-open coefficient and restriction coordinates to the actual Ob layer"
+      - "formalize the exact generic site-continuity premise needed by pullback"
+      - "prove the conditional packaging into the existing ObstructionSheaf constructor"
+      - "transport connected-open coefficient and restriction coordinates to the conditional actual Ob layer"
     remaining:
-      - "concrete selected finite geometry and continuity proof"
+      - "construct the concrete selected finite geometry and its continuity proof; only then is the selected-input AAT sheaf condition discharged"
       - "actual ordered-tuple Cech normalization and A1 completion"
       - "B1, full B2, C1, C2 and the fixed finite example"
   certificate_provenance:
@@ -788,8 +790,8 @@ audits:
       - "ContextOpenSupport.continuous is installed to invoke op_comp_isSheaf_of_types"
       - "nonempty preconnected support assumptions are consumed by the Cycle 6 evaluation and restriction theorems"
     unused: []
-  structure_field_escape: none-found-for-coefficient-sheaf
-  route_integrity: pass-for-generic-aat-pullback
+  structure_field_escape: "present as an explicit strong premise: ContextOpenSupport.continuous specializes directly to the desired sheaf condition; accepted only for this assumption-relative checkpoint and must be discharged in the selected finite input"
+  route_integrity: pass-for-assumption-relative-generic-packaging
   target_fitting: none-found
   vacuity: none-found
   one_way_as_equivalence: none-found
