@@ -8900,3 +8900,38 @@ coverage/overlap、両raw/realization方式、全体の両逆・残る有限式�
 namespace監査67・17・8・7・9件(計108件)は標準公理のみだった。warning・placeholder・
 hidden/BiDi・privacy・追加文の語彙・差分整形・module登録を確認した。Research全体buildは行わない。
 GOAL fileのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+#### 原始保存則からのcore Hom組立てと幾何成分への接続
+
+不変量の商を実際のpackage Hom組立てに接続した。入力は独立なobject tableの依存stageと、
+共通Hom全queryを保持する不変量の局所商である。source・Atom・operation・Law・signatureの
+保存則を原始点で課し、これらから`PackageTotalHom`の全fieldを構成する。
+固定target、native Homの定義、Cycle 79は変更しない。
+
+| Source / namespace末尾 | 今回の証拠と実際の使用先 |
+| --- | --- |
+| `IndependentGeometryHomDetectorLaws.lean` / `IndependentGeometryHomPrimitive.Detector` | `QueryMatch`・`ListMatch`・`CodeMatch`は有限detector構文の葉でAtom点を比較する。`codeMatch_iff`・`native_of_points`・`points_of_native`により、元のdetector保存等式との両方向を示す。`PackageAssembly.upper.detectorCode_eq`へ使用する |
+| `IndependentGeometryHomDetectorFinite.lean` / 同namespace | `querySupport`・`listSupport`・`codeSupport`は構文だけから有限supportを作る。各`*_iff_of_support`と`point_instance_iff_of_support`は任意tableで同じセル応答なら同じ保存判定となることを示す |
+| `IndependentGeometryHomCoefficientLaws.lean` / `IndependentGeometryHomPrimitive.Coefficient` | 原始環演算とdirected graphの`PointLaws`から`assemble`で環準同型を作る。`read_assemble`・`point_iff`は全候補carrierの点を回復し、`assemble_eq_native`は任意の元の環準同型を回復する。逆写像の条件は課さない |
+| `IndependentGeometryHomCoverageLaws.lean` / `IndependentGeometryHomPrimitive.Coverage` | 九つの原始含意を`PointLaws`で定め、`assemble`・`points_of_native`・`points_iff_native`で元の九つのcoverage条件との同値を示す。`Maps`は比較APIの前提であり、後述の`GeometryComponents.coverage_maps`で実際の組立てから放電する |
+| `IndependentGeometryHomOverlapLaws.lean` / `IndependentGeometryHomPrimitive.Overlap` | 三つの逆context点、二つのoverlap matching応答、順方向context点と両順序比較から`assemble`で元のoverlap同型を作る。`points_iff_native`は元の同型の存在との同値、`assemble_points_of_native`は同型全体の回復を示す。contextの同型を対象の等号へ強めない |
+| `IndependentGeometryHomPackageAssembly.lean` / `IndependentGeometryHomPrimitive.PackageAssembly` | `PointLaws`は原始点条件を統合する。`configurationMap`・`lower`・`upper`・`assemble`は全core fieldを構成する。`upper.invariant_transport`は不変量の商の`package_transport`を使用し、operation・equation・signatureの既存原始保存則と今回のdetector保存則も実際のfield生成へ使用する |
+| `IndependentGeometryHomPackagePoints.lean` / 同namespace | `read_source`・`read_pointedAtom`・`read_atom`・`object_point_iff`・`read_equation`・`read_context`・`read_operation`・`read_invariant`・`read_axis`・`read_signatureCoordinates`・`read_observables`は、組み立てたnative core Homから各計算成分の元の点tableを回復する。Atom・equation・axis・context両方向のpoint iffを幾何成分へ渡す |
+| `IndependentGeometryHomGeometryComponents.lean` / `IndependentGeometryHomPrimitive.GeometryComponents` | 独立object stageのcoverage・overlap・contextの読み戻しを使い、`coverage_points_iff`・`overlap_points_iff`を証明する。`coverage_maps`・`overlap_maps`はpackageのpoint定理で比較前提を放電する。`coverage`・`overlap`・`coefficientMap`は同じ組立てたcore Hom上で元の幾何保存条件と係数写像を構成する |
+
+今回の主要な依存は、原始Hom行 → 成分ごとの保存定理 → `PackageAssembly.upper/lower` →
+`PackageAssembly.assemble` → `PackagePoints`の点回復 → `GeometryComponents`の三成分である。
+元の保存等式を`PointLaws`のfieldに移す経路は取っていない。
+
+残る中心義務は、raw・realizationの両方式を同じ共通Hom tableへ接続し、完全幾何のHomについて
+読み取りと組立ての両逆を閉じることである。coreの各成分の読み戻しは証明済みだが、任意の
+native完全幾何Homから局所法則を満たす共通tableを生成する逆方向、全Homの分離、共通の
+恒等・合成、残る有限式・指定反証は引き続き未完了である。パートIのPR作成・独立査読・CI・
+merge・Issue同期を済ませるまで、パートI完了として扱わない。
+
+新規8 sourceをそれぞれ単一fileで検証した。各sourceのnamespace監査は順に
+13・7・7・27・14・26・16・15件(計125件)で標準公理のみだった。
+明示77宣言の個別`#print axioms`も標準公理のみで、warning・errorはなかった。
+placeholder・hidden/BiDi・privacy・追加文の語彙・差分整形・module登録を確認した。
+Research全体buildは行っていない。固定GOALのblobは引き続き
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`である。
