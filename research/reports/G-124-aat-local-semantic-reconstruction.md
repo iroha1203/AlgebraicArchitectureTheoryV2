@@ -7180,7 +7180,7 @@ selection:
     - "object assembly and the final four-family local-model equivalence"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "PackageGraphCode assembles the primitive, algebraic, context/observable, operation, invariant, and signature codes into PackageTotalHom and has exact read/assemble inverses. CompleteGeometryGraphCode adds only coefficient graph data, the Cycle 70 relative code, coverage, and overlap; it stores neither PackageTotalHom nor GeometryTotalHom. Its assemble/read maps are exact two-sided inverses despite the dependent base index. Assembly is injective, and the resulting code is connected immediately to readCompleteMapGraphs; equality on that established surface separates complete independent codes."
+  proof_obligation_delta: "PackageGraphCode retains only primitive graph families plus local laws and constructs EquationSystemExactTransport and PackageTotalHom during assembly; it has exact read/assemble inverses. CompleteGeometryGraphCode adds only a coefficient graph, coverage, overlap, realization graphs, and raw coherence, and constructs GeometryTotalHom during assembly. Neither code retains a completed transport or Hom, nor assumes that the whole input is a canonical reader image. Both inverse laws, assembly injectivity, a concrete rejected Atom-graph mismatch, and the readCompleteMapGraphs connection are proved in this cycle."
   completion_candidate: no
   lean_artifacts:
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.PackageGraphCode"
@@ -7193,14 +7193,16 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.assemble_injective"
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.completeMapGraphs_read"
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.completeMapGraphs_injective"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.PackageGraphNegativeFixture.not_isPackageGraphCode_mismatchedPointed"
   acceptance:
-    fixed_question: "Do independent algebraic, context-observable, and remaining-component graph codes, together with local coverage and overlap conditions, assemble a complete GeometryTotalHom and form two-sided read/assemble inverses without retaining a PackageTotalHom or GeometryTotalHom in the code?"
+    fixed_question: "Do primitive package and realization graph families with only local laws assemble EquationSystemExactTransport, PackageTotalHom, and GeometryTotalHom with exact two-sided recovery, reject a concrete mismatched Atom graph, and connect to readCompleteMapGraphs without retaining completed substructures or assuming canonical-reader membership?"
     statement_status: implemented
     proof_status: focused-pass
     premise_status:
       discharged:
         - "ambient package Hom / assembled from independent package graph data and local laws"
-        - "complete geometry Hom / assembled from package code, coefficient graph, remaining code, coverage, and overlap"
+        - "equation transport / assembled from independent equation, context, and observable graph data plus local laws"
+        - "complete geometry Hom / assembled from package code, coefficient and realization graphs, raw coherence, coverage, and overlap"
         - "dependent base transport / exact read-assemble and assemble-read laws"
         - "code separation / injectivity of complete assembly"
         - "common surface / immediate readCompleteMapGraphs recovery and injectivity"
@@ -7217,7 +7219,7 @@ audits:
   premise_delta:
     source_derived:
       - "coverage and overlap remain explicit local endpoint conditions"
-      - "the dependent remaining code is indexed only by the package and coefficient maps assembled from independent code"
+      - "the dependent realization graph is indexed only by the package map assembled from independent code"
     discharged:
       - "independent PackageTotalHom assembly and exact recovery"
       - "independent GeometryTotalHom assembly and exact recovery"
@@ -7229,28 +7231,29 @@ audits:
   certificate_provenance:
     discharged:
       - "package and complete Hom certificates arise from named local laws, coverage, and overlap fields"
+      - "a finite pointed-Atom swap paired with the unchanged upper Atom graph is rejected by atom_eq"
     unresolved:
       - "successor categorical and object-level obligations"
   proof_use:
     used:
       - "Cycle 67 algebraic graph inverses reconstruct equivalences and coefficient maps"
       - "Cycle 69 context/observable inverses reconstruct the equation transport"
-      - "Cycle 70 remaining-code inverses reconstruct operation, invariant, signature, realization, and raw coherence"
-      - "dependent equality transports the remaining code across reconstructed package equality"
+      - "Cycle 70 operation, invariant, signature, and realization graph inverses reconstruct their computational fields"
+      - "dependent equality transports realization graphs across reconstructed package equality"
       - "Cycle 64 common graph injectivity separates assembled complete morphisms"
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: none-found
-  target_fitting_reason: "neither independent code stores a completed package or geometry Hom, both inverse directions are proved, and the common-surface connection is included rather than deferred"
+  target_fitting_reason: "neither independent code stores a completed equation transport, package Hom, or geometry Hom; no whole-code canonical-image premise is accepted; both inverse directions and the common-surface connection are proved together"
   vacuity: none-found
-  vacuity_reason: "the equivalence is quantified over arbitrary GeometryPackage endpoints and arbitrary actual GeometryTotalHom values, while the reverse law recovers every independent graph and local-condition code"
+  vacuity_reason: "the equivalence is quantified over arbitrary GeometryPackage endpoints and actual GeometryTotalHom values, the reverse law recovers every independent graph and local-condition code, and the finite mismatched-Atom fixture proves that the package certificate rejects an independently altered component"
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  four_lane_question: "Do independent algebraic, context-observable, and remaining-component graph codes, together with local coverage and overlap conditions, assemble a complete GeometryTotalHom and form two-sided read/assemble inverses without retaining a PackageTotalHom or GeometryTotalHom in the code?"
+  four_lane_question: "Do primitive package and realization graph families with only local laws assemble EquationSystemExactTransport, PackageTotalHom, and GeometryTotalHom with exact two-sided recovery, reject a concrete mismatched Atom graph, and connect to readCompleteMapGraphs without retaining completed substructures or assuming canonical-reader membership?"
   validation_refs:
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryGraphAssembly.lean: pass"
-    - "#assert_standard_axioms_only CompleteGeometryGraphAssembly: 102 declarations, standard axioms only"
+    - "#assert_standard_axioms_only CompleteGeometryGraphAssembly: 117 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "define identity and composition directly on complete graph codes, prove the category laws and read/assemble compatibility, and lift the Hom equivalence to the actual geometry category before connecting fixed target B object assembly"
 ```

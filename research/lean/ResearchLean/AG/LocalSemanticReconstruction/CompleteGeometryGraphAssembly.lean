@@ -14,6 +14,16 @@ realization/raw data and local coverage/overlap data.  Neither code stores a
 The main result is an exact equivalence between these independent codes and
 actual complete geometry morphisms.  Thus the construction supplies both
 assembly and separation, not merely a new record or a one-way decoder.
+
+## Implementation notes
+
+The package code retains primitive graph families and local compatibility
+laws only.  In particular, it does not retain an equation transport, a
+package morphism, a geometry morphism, or a premise saying that the whole
+input already lies in the image of a canonical reader.  Assembly constructs
+those global maps, both inverse laws recover every input component, and the
+finite negative fixture below shows that the Atom-agreement law rejects an
+independently altered graph.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction
@@ -25,7 +35,7 @@ noncomputable section
 
 namespace CompleteGeometryGraphAssembly
 
-universe u v
+universe u v w x
 
 abbrev GraphCode := PrimitiveFunctionGraph.GraphCode
 
@@ -48,6 +58,21 @@ theorem signature_read_assemble_coordinate_heq
   exact heq_of_eq
     (DependentAlgebraicGraphCoherence.IndexedEquivGraphCode.assemble_read _)
 
+/-- Rebuilding a signature supply from all of its projections is exact. -/
+theorem signatureSupply_eta
+    {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
+    {objectMap : ArchitectureObject U → ArchitectureObject U}
+    (supply : RemainingComponentGraphCoherence.SignatureTransportSupply
+      P Q objectMap) :
+    ({ axisMap := supply.axisMap
+       coordinateEquiv := supply.coordinateEquiv
+       axis_selected_iff := supply.axis_selected_iff
+       coordinate_eq := supply.coordinate_eq } :
+      RemainingComponentGraphCoherence.SignatureTransportSupply
+        P Q objectMap) = supply := by
+  cases supply
+  rfl
+
 /-! ## Independent package code -/
 
 /-- Computational package data assembled from the graph-code APIs of Cycles
@@ -57,29 +82,23 @@ structure PackageGraphData {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U) where
   source : GraphCode G.core.reading.doctrine.Source
     H.core.reading.doctrine.Source
-  pointedAtom : U.Atom ≃ U.Atom
-  pointedAtomGraph : AlgebraicGraphCoherence.EquivGraphCode U.Atom U.Atom
-  atomEquiv : U.Atom ≃ U.Atom
-  atomGraph : AlgebraicGraphCoherence.EquivGraphCode U.Atom U.Atom
-  objectMap : ArchitectureObject U → ArchitectureObject U
-  objectGraph : GraphCode (ArchitectureObject U) (ArchitectureObject U)
+  pointedAtom : AlgebraicGraphCoherence.EquivGraphCode U.Atom U.Atom
+  atom : AlgebraicGraphCoherence.EquivGraphCode U.Atom U.Atom
+  object : GraphCode (ArchitectureObject U) (ArchitectureObject U)
   configuration : ∀ A,
-    ConfigurationHom A.configuration (objectMap A).configuration
+    ConfigurationHom A.configuration (object.assemble A).configuration
   equation : AlgebraicGraphCoherence.EquivGraphCode
     G.core.algebra.equationSystem.Index H.core.algebra.equationSystem.Index
-  equationTransport : EquationSystemExactTransport
-    G.core.algebra.equationSystem H.core.algebra.equationSystem
-    atomEquiv objectMap
   contextObservable : ContextObservableGraphCoherence.ContextObservableGraphCode
     G.core.algebra.equationSystem H.core.algebra.equationSystem
   operation : RemainingComponentGraphCoherence.BiIndexedFunctionGraphCode
-    objectMap objectMap
+    object.assemble object.assemble
     (fun A B => G.core.reading.operationReading.Op A B)
     (fun A B => H.core.reading.operationReading.Op A B)
   invariant : GraphCode G.core.reading.invariantReading.Index
     H.core.reading.invariantReading.Index
   signature : RemainingComponentGraphCoherence.SignatureGraphCode
-    G.core H.core objectMap
+    G.core H.core object.assemble
 
 namespace PackageGraphData
 
@@ -97,50 +116,53 @@ functions and fixed source/target packages; no completed package morphism is
 used as a certificate. -/
 structure IsPackageGraphCode {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (data : PackageGraphData G H) : Prop where
-  object_graph_eq : data.objectGraph.assemble = data.objectMap
-  pointed_atom_graph_eq : data.pointedAtomGraph.assemble = data.pointedAtom
-  atom_graph_eq : data.atomGraph.assemble = data.atomEquiv
-  equation_eq : data.equation.assemble =
-    data.equationTransport.equationEquiv
-  context_eq : data.contextObservable.context.assemble =
-    data.equationTransport.contextEquivalence
-  observable_iso_eq : HEq
-    data.contextObservable.observable.assembleIso
-    data.equationTransport.observablePresheafIso
-  context_observable_canonical : data.contextObservable =
-    ContextObservableGraphCoherence.ContextObservableGraphCode.read
-      data.equationTransport
+  equation_role_eq : ∀ i,
+    H.core.algebra.equationSystem.role (data.equation.assemble i) =
+      G.core.algebra.equationSystem.role i
+  violationCoordinate_eq : ∀ W i atom,
+    data.contextObservable.observable.1.observable.assemble W
+        (G.core.algebra.equationSystem.violationCoordinate W i atom) =
+      H.core.algebra.equationSystem.violationCoordinate
+        (data.contextObservable.context.assemble.functor.obj W)
+        (data.equation.assemble i) (data.atom.assemble atom)
+  equationResidual_eq : ∀ W A i atom,
+    data.contextObservable.observable.1.observable.assemble W
+        (G.core.algebra.equationSystem.equationResidual W A i atom) =
+      H.core.algebra.equationSystem.equationResidual
+        (data.contextObservable.context.assemble.functor.obj W)
+        (data.object.assemble A) (data.equation.assemble i)
+        (data.atom.assemble atom)
   normalize_eq : ∀ source,
     H.core.reading.doctrine.normalize (data.source.assemble source) =
       data.source.assemble (G.core.reading.doctrine.normalize source)
   extraction_iff : ∀ source atom,
     G.core.reading.doctrine.extracts source atom ↔
       H.core.reading.doctrine.extracts (data.source.assemble source)
-        (data.pointedAtom atom)
+        (data.pointedAtom.assemble atom)
   source_eq : data.source.assemble G.core.reading.source = H.core.reading.source
-  atom_eq : data.atomEquiv = data.pointedAtom
-  extraction_eq : H.core.family = G.core.family.transport data.atomEquiv
+  atom_eq : data.atom.assemble = data.pointedAtom.assemble
+  extraction_eq : H.core.family = G.core.family.transport data.atom.assemble
   composition_eq : ∀ (F : AtomFamily U) (hF : F.ListFinite),
     H.core.reading.composition.compose
-        (F.transport data.atomEquiv) (hF.transport data.atomEquiv) =
-      (G.core.reading.composition.compose F hF).transport data.atomEquiv
+        (F.transport data.atom.assemble) (hF.transport data.atom.assemble) =
+      (G.core.reading.composition.compose F hF).transport data.atom.assemble
   object_formation_eq : ∀ C,
-    data.objectMap (G.core.reading.objectReading.object C) =
-      H.core.reading.objectReading.object (C.transport data.atomEquiv)
+    data.object.assemble (G.core.reading.objectReading.object C) =
+      H.core.reading.objectReading.object (C.transport data.atom.assemble)
   configuration_eq : ∀ A,
-    (data.objectMap A).configuration =
-      A.configuration.transport data.atomEquiv
+    (data.object.assemble A).configuration =
+      A.configuration.transport data.atom.assemble
   configuration_atom : ∀ A,
-    (data.configuration A).atomMap = data.atomEquiv
+    (data.configuration A).atomMap = data.atom.assemble
   detectorCode_eq : ∀ i,
     H.core.algebra.circuits.code (data.equation.assemble i) =
-      (G.core.algebra.circuits.code i).transport data.atomEquiv
+      (G.core.algebra.circuits.code i).transport data.atom.assemble
   operation_naturality : RemainingComponentGraphCoherence.IsOperationNatural
-    G.core H.core data.objectMap
+    G.core H.core data.object.assemble
       data.configuration
       data.operation.assemble
   invariant_transport : RemainingComponentGraphCoherence.IsInvariantTransport
-    G.core H.core data.objectMap data.invariant.assemble
+    G.core H.core data.object.assemble data.invariant.assemble
   axis_selected_iff : ∀ i,
     G.core.reading.signatureReading.selected i ↔
       H.core.reading.signatureReading.selected
@@ -151,7 +173,7 @@ structure IsPackageGraphCode {U : AtomCarrier.{u}}
       data.signature).coordinateEquiv i
         (G.core.reading.signatureReading.coordinate A i) =
       H.core.reading.signatureReading.coordinate
-        (data.objectMap A)
+        (data.object.assemble A)
         ((RemainingComponentGraphCoherence.SignatureGraphCode.assemble
           data.signature).axisMap i)
 
@@ -162,11 +184,172 @@ abbrev PackageGraphCode {U : AtomCarrier.{u}}
 
 namespace PackageGraphCode
 
+/-- Dependent congruence exposed as heterogeneous equality. -/
+theorem dependent_apply_heq {A : Type*} {B : A → Type*}
+    {first second : A} (index_eq : first = second) (value : ∀ index, B index) :
+    HEq (value first) (value second) := by
+  cases index_eq
+  rfl
+
+/-- Reindex one target operation family along equality of its object map. -/
+def reindexOperationFamily {U : AtomCarrier.{u}}
+    (Q : AATCorePackage U)
+    {X : ArchitectureObject U → ArchitectureObject U → Type*}
+    {first second : ArchitectureObject U → ArchitectureObject U}
+    (object_eq : first = second)
+    (family : ∀ A B, X A B →
+      Q.reading.operationReading.Op (second A) (second B)) :
+    ∀ A B, X A B → Q.reading.operationReading.Op (first A) (first B) := by
+  cases object_eq
+  exact family
+
+/-- Reindexing a dependent operation family is heterogeneously equal to the
+original family. -/
+theorem reindexOperationFamily_heq {U : AtomCarrier.{u}}
+    (Q : AATCorePackage U)
+    {X : ArchitectureObject U → ArchitectureObject U → Type*}
+    {first second : ArchitectureObject U → ArchitectureObject U}
+    (object_eq : first = second)
+    (family : ∀ A B, X A B →
+      Q.reading.operationReading.Op (second A) (second B)) :
+    HEq (reindexOperationFamily Q object_eq family) family := by
+  cases object_eq
+  rfl
+
+/-- Reading a reindexed dependent operation family agrees heterogeneously
+with reading the original family. -/
+theorem read_reindexOperationFamily_heq {U : AtomCarrier.{u}}
+    (P Q : AATCorePackage U)
+    {first second : ArchitectureObject U → ArchitectureObject U}
+    (object_eq : first = second)
+    (family : ∀ A B, P.reading.operationReading.Op A B →
+      Q.reading.operationReading.Op (second A) (second B)) :
+    HEq
+      (RemainingComponentGraphCoherence.BiIndexedFunctionGraphCode.read
+        (reindexOperationFamily Q object_eq family))
+      (RemainingComponentGraphCoherence.BiIndexedFunctionGraphCode.read
+        family) := by
+  cases object_eq
+  rfl
+
+/-- Reindexing an operation does not change the Atom map of its attached
+configuration morphism. -/
+theorem reindexOperationFamily_configuration_atomMap
+    {U : AtomCarrier.{u}} (Q : AATCorePackage U)
+    {X : ArchitectureObject U → ArchitectureObject U → Type*}
+    {first second : ArchitectureObject U → ArchitectureObject U}
+    (object_eq : first = second)
+    (family : ∀ A B, X A B →
+      Q.reading.operationReading.Op (second A) (second B))
+    (A B) (value : X A B) :
+    (Q.reading.operationReading.configurationMap
+      (reindexOperationFamily Q object_eq family A B value)).atomMap =
+    (Q.reading.operationReading.configurationMap
+      (family A B value)).atomMap := by
+  cases object_eq
+  rfl
+
+/-- Reindexing an observable graph code changes only its functor index, not
+the value computed at a source context. -/
+theorem reindexObservable_apply_heq
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {first second : G.site.category ⥤ H.site.category}
+    (functor_eq : first = second)
+    (code : ContextObservableGraphCoherence.ObservablePresheafGraphCode
+      G.core.algebra.equationSystem H.core.algebra.equationSystem second)
+    (W) (value : G.core.algebra.equationSystem.Observable W) :
+    HEq
+      ((ContextObservableGraphCoherence.ObservablePresheafGraphCode.reindex
+        functor_eq code).1.observable.assemble W value)
+      (code.1.observable.assemble W value) := by
+  cases functor_eq
+  rfl
+
+/-- The observable component read from an actual equation transport agrees
+with the original component up to the context-functor transport. -/
+theorem readObservable_apply_heq
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {atomEquiv : U.Atom ≃ U.Atom}
+    {objectMap : ArchitectureObject U → ArchitectureObject U}
+    (transport : EquationSystemExactTransport
+      G.core.algebra.equationSystem H.core.algebra.equationSystem
+      atomEquiv objectMap)
+    (W) (value : G.core.algebra.equationSystem.Observable W) :
+    HEq
+      ((ContextObservableGraphCoherence.ContextObservableGraphCode.read
+        transport).observable.1.observable.assemble W value)
+      (transport.observableEquiv W value) := by
+  let context := ContextObservableGraphCoherence.ThinEquivalenceGraphCode.read
+    transport.contextEquivalence
+  have functor_eq : context.forwardFunctor = transport.contextFunctor :=
+    congrArg CategoryTheory.Equivalence.functor
+      (ContextObservableGraphCoherence.ThinEquivalenceGraphCode.assemble_read _)
+  let observable :=
+    ContextObservableGraphCoherence.ObservablePresheafGraphCode.readTransport
+      transport
+  have hreindex := reindexObservable_apply_heq functor_eq observable W value
+  have hassemble :=
+    ContextObservableGraphCoherence.ObservablePresheafGraphCode.readTransport_observable_assemble
+      transport W
+  exact hreindex.trans (heq_of_eq (congrArg (fun equivalence => equivalence value)
+    hassemble))
+
+/-- The target observable selected by the context code read from a transport
+agrees heterogeneously with the original target observable. -/
+theorem readContext_violation_heq
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {atomEquiv : U.Atom ≃ U.Atom}
+    {objectMap : ArchitectureObject U → ArchitectureObject U}
+    (transport : EquationSystemExactTransport
+      G.core.algebra.equationSystem H.core.algebra.equationSystem
+      atomEquiv objectMap)
+    (W) (i) (atom : U.Atom) :
+    HEq
+      (H.core.algebra.equationSystem.violationCoordinate
+        ((ContextObservableGraphCoherence.ContextObservableGraphCode.read
+          transport).context.assemble.functor.obj W)
+        (transport.equationEquiv i) (atomEquiv atom))
+      (H.core.algebra.equationSystem.violationCoordinate
+        (transport.contextEquivalence.functor.obj W)
+        (transport.equationEquiv i) (atomEquiv atom)) := by
+  have hcontext :=
+    ContextObservableGraphCoherence.ContextObservableGraphCode.read_context_assemble
+      transport
+  exact dependent_apply_heq
+    (congrArg (fun equivalence => equivalence.functor.obj W) hcontext)
+    (fun context => H.core.algebra.equationSystem.violationCoordinate
+      context (transport.equationEquiv i) (atomEquiv atom))
+
+/-- Residual generators obey the same heterogeneous context-read recovery. -/
+theorem readContext_residual_heq
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {atomEquiv : U.Atom ≃ U.Atom}
+    {objectMap : ArchitectureObject U → ArchitectureObject U}
+    (transport : EquationSystemExactTransport
+      G.core.algebra.equationSystem H.core.algebra.equationSystem
+      atomEquiv objectMap)
+    (W) (A) (i) (atom : U.Atom) :
+    HEq
+      (H.core.algebra.equationSystem.equationResidual
+        ((ContextObservableGraphCoherence.ContextObservableGraphCode.read
+          transport).context.assemble.functor.obj W)
+        (objectMap A) (transport.equationEquiv i) (atomEquiv atom))
+      (H.core.algebra.equationSystem.equationResidual
+        (transport.contextEquivalence.functor.obj W)
+        (objectMap A) (transport.equationEquiv i) (atomEquiv atom)) := by
+  have hcontext :=
+    ContextObservableGraphCoherence.ContextObservableGraphCode.read_context_assemble
+      transport
+  exact dependent_apply_heq
+    (congrArg (fun equivalence => equivalence.functor.obj W) hcontext)
+    (fun context => H.core.algebra.equationSystem.equationResidual
+      context (objectMap A) (transport.equationEquiv i) (atomEquiv atom))
+
 /-- Canonical configuration map forced by the Atom graph and the decoded
 object-configuration equation. -/
 def configurationMap {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (code : PackageGraphCode G H) (A) :
-    ConfigurationHom A.configuration (code.1.objectMap A).configuration :=
+    ConfigurationHom A.configuration (code.1.object.assemble A).configuration :=
   code.1.configuration A
 
 /-- Assemble the Cycle 69 equation transport from its independent context and
@@ -174,17 +357,202 @@ observable graphs and the equation-specific local laws. -/
 def equationTransport {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (code : PackageGraphCode G H) :
     EquationSystemExactTransport G.core.algebra.equationSystem
-      H.core.algebra.equationSystem code.1.atomEquiv
-      code.1.objectMap :=
-  code.1.equationTransport
+      H.core.algebra.equationSystem code.1.atom.assemble
+      code.1.object.assemble where
+  contextEquivalence := code.1.contextObservable.context.assemble
+  equationEquiv := code.1.equation.assemble
+  role_eq := code.2.equation_role_eq
+  observableEquiv := code.1.contextObservable.observable.1.observable.assemble
+  observable_naturality := code.1.contextObservable.observable.2.observable_naturality
+  violationCoordinate_eq := code.2.violationCoordinate_eq
+  equationResidual_eq := code.2.equationResidual_eq
+
+/-- Reading the equation transport assembled from a package code recovers its
+independent context and observable graph codes. -/
+theorem contextObservable_ext
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {first second : ContextObservableGraphCoherence.ContextObservableGraphCode
+      G.core.algebra.equationSystem H.core.algebra.equationSystem}
+    (context : first.context = second.context)
+    (observable : HEq first.observable second.observable) : first = second := by
+  cases first
+  cases second
+  cases context
+  cases observable
+  rfl
+
+/-- Observable graph codes over propositionally equal context functors are
+heterogeneously equal when their computational ring graphs agree. -/
+theorem observableCode_heq
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {firstFunctor secondFunctor :
+      CategoryTheory.Functor
+        (Site.ContextCategoryObject G.core.algebra.contextPreorder)
+        (Site.ContextCategoryObject H.core.algebra.contextPreorder)}
+    (functor_eq : firstFunctor = secondFunctor)
+    (first : ContextObservableGraphCoherence.ObservablePresheafGraphCode
+      G.core.algebra.equationSystem H.core.algebra.equationSystem firstFunctor)
+    (second : ContextObservableGraphCoherence.ObservablePresheafGraphCode
+      G.core.algebra.equationSystem H.core.algebra.equationSystem secondFunctor)
+    (observable : HEq first.1.observable second.1.observable) :
+    HEq first second := by
+  cases functor_eq
+  rcases first with ⟨⟨firstObservable⟩, firstLaw⟩
+  rcases second with ⟨⟨secondObservable⟩, secondLaw⟩
+  change HEq firstObservable secondObservable at observable
+  cases observable
+  rfl
+
+/-- Reindexing an observable code changes only its dependent functor index. -/
+theorem observableCode_reindex_heq
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {firstFunctor secondFunctor :
+      CategoryTheory.Functor
+        (Site.ContextCategoryObject G.core.algebra.contextPreorder)
+        (Site.ContextCategoryObject H.core.algebra.contextPreorder)}
+    (functor_eq : firstFunctor = secondFunctor)
+    (code : ContextObservableGraphCoherence.ObservablePresheafGraphCode
+      G.core.algebra.equationSystem H.core.algebra.equationSystem secondFunctor) :
+    HEq
+      (ContextObservableGraphCoherence.ObservablePresheafGraphCode.reindex
+        functor_eq code) code := by
+  cases functor_eq
+  rfl
+
+/-- Pointwise ring graph families over equal index maps are heterogeneously
+equal when every fiber graph is. -/
+theorem indexedRingGraph_heq
+    {I J : Type*} {A : I → Type*} {B : J → Type*}
+    [∀ i, NonAssocSemiring (A i)] [∀ j, NonAssocSemiring (B j)]
+    {firstIndex secondIndex : I → J}
+    (index_eq : firstIndex = secondIndex)
+    (first : DependentAlgebraicGraphCoherence.IndexedRingEquivGraphCode
+      firstIndex A B)
+    (second : DependentAlgebraicGraphCoherence.IndexedRingEquivGraphCode
+      secondIndex A B)
+    (fiber : ∀ i, HEq (first i) (second i)) : HEq first second := by
+  cases index_eq
+  apply heq_of_eq
+  funext i
+  exact eq_of_heq (fiber i)
+
+theorem contextObservable_read_equationTransport
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    (code : PackageGraphCode G H) :
+    ContextObservableGraphCoherence.ContextObservableGraphCode.read
+      code.equationTransport = code.1.contextObservable := by
+  apply contextObservable_ext
+  · exact ContextObservableGraphCoherence.ThinEquivalenceGraphCode.read_assemble _
+  · let context :=
+      ContextObservableGraphCoherence.ThinEquivalenceGraphCode.read
+        code.equationTransport.contextEquivalence
+    have functor_eq : context.forwardFunctor =
+        code.equationTransport.contextFunctor :=
+      congrArg CategoryTheory.Equivalence.functor
+        (ContextObservableGraphCoherence.ThinEquivalenceGraphCode.assemble_read _)
+    let readObservable :=
+      ContextObservableGraphCoherence.ObservablePresheafGraphCode.readTransport
+        code.equationTransport
+    have hreindex : HEq
+        (ContextObservableGraphCoherence.ObservablePresheafGraphCode.reindex
+          functor_eq readObservable) readObservable := by
+      exact observableCode_reindex_heq functor_eq readObservable
+    have hfunctor : code.equationTransport.contextFunctor =
+        code.1.contextObservable.context.forwardFunctor := rfl
+    have hgraph : HEq readObservable.1.observable
+        code.1.contextObservable.observable.1.observable := by
+      apply indexedRingGraph_heq
+        (congrArg CategoryTheory.Functor.obj hfunctor)
+      intro W
+      exact heq_of_eq
+        (DependentAlgebraicGraphCoherence.RingEquivGraphCode.read_assemble _)
+    exact hreindex.trans
+      (observableCode_heq hfunctor readObservable
+        code.1.contextObservable.observable hgraph)
+
+/-- Equation transports are determined by their three computational
+components; all remaining fields are propositions. -/
+theorem equationTransport_ext
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {atomEquiv : U.Atom ≃ U.Atom}
+    {objectMap : ArchitectureObject U → ArchitectureObject U}
+    {first second : EquationSystemExactTransport
+      G.core.algebra.equationSystem H.core.algebra.equationSystem
+      atomEquiv objectMap}
+    (context : first.contextEquivalence = second.contextEquivalence)
+    (equation : first.equationEquiv = second.equationEquiv)
+    (observable : HEq first.observableEquiv second.observableEquiv) :
+    first = second := by
+  cases first
+  cases second
+  cases context
+  cases equation
+  cases observable
+  rfl
+
+/-- Equation transports over propositionally equal Atom and object maps are
+heterogeneously equal when their three computational components agree. -/
+theorem equationTransport_heq
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {firstAtom secondAtom : U.Atom ≃ U.Atom}
+    {firstObject secondObject : ArchitectureObject U → ArchitectureObject U}
+    (atom_eq : firstAtom = secondAtom)
+    (object_eq : firstObject = secondObject)
+    (first : EquationSystemExactTransport
+      G.core.algebra.equationSystem H.core.algebra.equationSystem
+      firstAtom firstObject)
+    (second : EquationSystemExactTransport
+      G.core.algebra.equationSystem H.core.algebra.equationSystem
+      secondAtom secondObject)
+    (context : first.contextEquivalence = second.contextEquivalence)
+    (equation : first.equationEquiv = second.equationEquiv)
+    (observable : ∀ W value,
+      HEq (first.observableEquiv W value)
+        (second.observableEquiv W value)) :
+    HEq first second := by
+  cases atom_eq
+  cases object_eq
+  rcases first with ⟨firstContext, firstEquation, firstRole,
+    firstObservable, firstNaturality, firstViolation, firstResidual⟩
+  rcases second with ⟨secondContext, secondEquation, secondRole,
+    secondObservable, secondNaturality, secondViolation, secondResidual⟩
+  cases context
+  cases equation
+  congr 1
+  funext W
+  apply RingEquiv.ext
+  intro value
+  exact eq_of_heq (observable W value)
+
+/-- Signature readings over propositionally equal object maps agree
+heterogeneously once their two computational families agree. -/
+theorem signatureRead_heq
+    {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
+    {firstObject secondObject : ArchitectureObject U → ArchitectureObject U}
+    (object_eq : firstObject = secondObject)
+    (first : RemainingComponentGraphCoherence.SignatureTransportSupply
+      P Q firstObject)
+    (second : RemainingComponentGraphCoherence.SignatureTransportSupply
+      P Q secondObject)
+    (axis : first.axisMap = second.axisMap)
+    (coordinate : HEq first.coordinateEquiv second.coordinateEquiv) :
+    HEq
+      (RemainingComponentGraphCoherence.SignatureGraphCode.read first)
+      (RemainingComponentGraphCoherence.SignatureGraphCode.read second) := by
+  cases object_eq
+  have supply_eq : first = second :=
+    RemainingComponentGraphCoherence.SignatureGraphCode.supply_ext
+      axis coordinate
+  cases supply_eq
+  rfl
 
 /-- Assemble the complete upper core morphism from independent graph data. -/
 def upper {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (code : PackageGraphCode G H) : SignedExactCoreReadingHom G.core H.core where
-  atomEquiv := code.1.atomEquiv
+  atomEquiv := code.1.atom.assemble
   extraction_eq := code.2.extraction_eq
   composition_eq := code.2.composition_eq
-  objectMap := code.1.objectMap
+  objectMap := code.1.object.assemble
   object_formation_eq := code.2.object_formation_eq
   configurationMap := code.configurationMap
   configurationMap_atomMap := code.2.configuration_atom
@@ -192,10 +560,8 @@ def upper {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
   equationTransport := code.equationTransport
   detectorCode_eq i := by
     change H.core.algebra.circuits.code
-      (code.1.equationTransport.equationEquiv i) = _
-    exact (congrArg (fun equivalence =>
-      H.core.algebra.circuits.code (equivalence i))
-        code.2.equation_eq).symm.trans (code.2.detectorCode_eq i)
+      (code.1.equation.assemble i) = _
+    exact code.2.detectorCode_eq i
   operationMap := fun {A B} op => code.1.operation.assemble A B op
   operation_naturality := fun op => code.2.operation_naturality _ _ op
   invariantMap := code.1.invariant.assemble
@@ -213,7 +579,7 @@ def lower {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     ExtInstHom (packagePoint G.core) (packagePoint H.core) where
   doctrineHom := {
     sourceMap := code.1.source.assemble
-    atomEquiv := code.1.pointedAtom
+    atomEquiv := code.1.pointedAtom.assemble
     normalize_eq := code.2.normalize_eq
     extraction_iff := code.2.extraction_iff }
   source_eq := code.2.source_eq
@@ -226,6 +592,50 @@ def assemble {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
   upper := code.upper
   atomEquiv_eq := by simpa [upper, lower] using code.2.atom_eq
 
+/-- Lawful package codes are determined by their graph components.  The
+configuration maps are then forced by their common Atom graph. -/
+theorem ext {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    {first second : PackageGraphCode G H}
+    (source : first.1.source = second.1.source)
+    (pointedAtom : first.1.pointedAtom = second.1.pointedAtom)
+    (atom : first.1.atom = second.1.atom)
+    (object : first.1.object = second.1.object)
+    (equation : first.1.equation = second.1.equation)
+    (contextObservable : HEq first.1.contextObservable second.1.contextObservable)
+    (operation : HEq first.1.operation second.1.operation)
+    (invariant : first.1.invariant = second.1.invariant)
+    (signature : HEq first.1.signature second.1.signature) : first = second := by
+  rcases first with ⟨⟨firstSource, firstPointed, firstAtom, firstObject,
+    firstConfiguration, firstEquation, firstContext, firstOperation,
+    firstInvariant, firstSignature⟩, firstLaw⟩
+  rcases second with ⟨⟨secondSource, secondPointed, secondAtom, secondObject,
+    secondConfiguration, secondEquation, secondContext, secondOperation,
+    secondInvariant, secondSignature⟩, secondLaw⟩
+  change firstSource = secondSource at source
+  change firstPointed = secondPointed at pointedAtom
+  change firstAtom = secondAtom at atom
+  change firstObject = secondObject at object
+  change firstEquation = secondEquation at equation
+  change HEq firstContext secondContext at contextObservable
+  change HEq firstOperation secondOperation at operation
+  change firstInvariant = secondInvariant at invariant
+  change HEq firstSignature secondSignature at signature
+  cases source
+  cases pointedAtom
+  cases atom
+  cases object
+  have configuration_eq : firstConfiguration = secondConfiguration := by
+    funext A
+    apply ConfigurationHom.ext
+    rw [firstLaw.configuration_atom A, secondLaw.configuration_atom A]
+  cases configuration_eq
+  cases equation
+  cases contextObservable
+  cases operation
+  cases invariant
+  cases signature
+  rfl
+
 /-- Read an actual package morphism into independent graph codes.  Geometry
 packages are parameters only; no geometry morphism is retained. -/
 def read {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -236,77 +646,171 @@ def read {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     morphism.base.doctrineHom.atomEquiv
   let atomGraph := AlgebraicGraphCoherence.EquivGraphCode.read morphism.upper.atomEquiv
   let objectGraph := PrimitiveFunctionGraph.GraphCode.read morphism.upper.objectMap
+  have pointed_eq : pointedAtomGraph.assemble =
+      morphism.base.doctrineHom.atomEquiv :=
+    AlgebraicGraphCoherence.EquivGraphCode.assemble_read _
+  have atom_eq : atomGraph.assemble = morphism.upper.atomEquiv :=
+    AlgebraicGraphCoherence.EquivGraphCode.assemble_read _
   have object_eq : objectGraph.assemble = morphism.upper.objectMap :=
     PrimitiveFunctionGraph.GraphCode.assemble_read _
   let configuration : ∀ A,
-      ConfigurationHom A.configuration (morphism.upper.objectMap A).configuration :=
-    morphism.upper.configurationMap
+      ConfigurationHom A.configuration (objectGraph.assemble A).configuration :=
+    fun A => {
+      atomMap := atomGraph.assemble
+      maps_family := by
+        intro atom member
+        rw [atom_eq, object_eq,
+          ← morphism.upper.configurationMap_atomMap A]
+        exact (morphism.upper.configurationMap A).maps_family member
+      maps_relation := by
+        intro first second relation
+        rw [atom_eq, object_eq,
+          ← morphism.upper.configurationMap_atomMap A]
+        exact (morphism.upper.configurationMap A).maps_relation relation
+      maps_identification := by
+        intro first second identification
+        rw [atom_eq, object_eq,
+          ← morphism.upper.configurationMap_atomMap A]
+        exact (morphism.upper.configurationMap A).maps_identification identification }
   let equation := AlgebraicGraphCoherence.EquivGraphCode.read
     morphism.upper.equationTransport.equationEquiv
   let contextObservable := ContextObservableGraphCoherence.ContextObservableGraphCode.read
     morphism.upper.equationTransport
+  let operationFamily : ∀ A B, G.core.reading.operationReading.Op A B →
+      H.core.reading.operationReading.Op
+        (objectGraph.assemble A) (objectGraph.assemble B) :=
+    reindexOperationFamily H.core object_eq
+      (fun A B op => @morphism.upper.operationMap A B op)
   let operation : RemainingComponentGraphCoherence.BiIndexedFunctionGraphCode
-      morphism.upper.objectMap morphism.upper.objectMap
+      objectGraph.assemble objectGraph.assemble
       (fun A B => G.core.reading.operationReading.Op A B)
       (fun A B => H.core.reading.operationReading.Op A B) := by
     exact RemainingComponentGraphCoherence.BiIndexedFunctionGraphCode.read
-      (fun A B => @morphism.upper.operationMap A B)
+      operationFamily
   let invariant := PrimitiveFunctionGraph.GraphCode.read morphism.upper.invariantMap
   let signatureSupply : RemainingComponentGraphCoherence.SignatureTransportSupply
-      G.core H.core morphism.upper.objectMap := {
-      axisMap := morphism.upper.axisMap
-      coordinateEquiv := morphism.upper.coordinateEquiv
-      axis_selected_iff := morphism.upper.axis_selected_iff
-      coordinate_eq := morphism.upper.coordinate_eq }
+      G.core H.core objectGraph.assemble := {
+    axisMap := morphism.upper.axisMap
+    coordinateEquiv := morphism.upper.coordinateEquiv
+    axis_selected_iff := morphism.upper.axis_selected_iff
+    coordinate_eq := by
+      intro A i
+      rw [object_eq]
+      exact morphism.upper.coordinate_eq A i }
   let signature : RemainingComponentGraphCoherence.SignatureGraphCode
-      G.core H.core morphism.upper.objectMap :=
+      G.core H.core objectGraph.assemble :=
     RemainingComponentGraphCoherence.SignatureGraphCode.read signatureSupply
+  have equation_eq : equation.assemble =
+      morphism.upper.equationTransport.equationEquiv :=
+    AlgebraicGraphCoherence.EquivGraphCode.assemble_read _
+  have context_eq : contextObservable.context.assemble =
+      morphism.upper.equationTransport.contextEquivalence :=
+    ContextObservableGraphCoherence.ContextObservableGraphCode.read_context_assemble _
   refine ⟨{
     source := source
-    pointedAtom := morphism.base.doctrineHom.atomEquiv
-    pointedAtomGraph := pointedAtomGraph
-    atomEquiv := morphism.upper.atomEquiv
-    atomGraph := atomGraph
-    objectMap := morphism.upper.objectMap
-    objectGraph := objectGraph
+    pointedAtom := pointedAtomGraph
+    atom := atomGraph
+    object := objectGraph
     configuration := configuration
     equation := equation
-    equationTransport := morphism.upper.equationTransport
     contextObservable := contextObservable
     operation := operation
     invariant := invariant
     signature := signature }, ?_⟩
   constructor
-  · exact object_eq
-  · exact AlgebraicGraphCoherence.EquivGraphCode.assemble_read _
-  · exact AlgebraicGraphCoherence.EquivGraphCode.assemble_read _
-  · exact AlgebraicGraphCoherence.EquivGraphCode.assemble_read _
-  · exact ContextObservableGraphCoherence.ContextObservableGraphCode.read_context_assemble _
-  · exact ContextObservableGraphCoherence.ContextObservableGraphCode.read_observable_assembleIso _
-  · rfl
+  · rw [equation_eq]
+    exact morphism.upper.equationTransport.role_eq
+  · intro W i atom
+    change contextObservable.observable.1.observable.assemble W
+        (G.core.algebra.equationSystem.violationCoordinate W i atom) = _
+    rw [equation_eq, atom_eq]
+    apply eq_of_heq
+    exact (readObservable_apply_heq
+      morphism.upper.equationTransport W
+        (G.core.algebra.equationSystem.violationCoordinate W i atom)).trans
+      ((heq_of_eq
+        (morphism.upper.equationTransport.violationCoordinate_eq W i atom)).trans
+        (readContext_violation_heq
+          morphism.upper.equationTransport W i atom).symm)
+  · intro W A i atom
+    change contextObservable.observable.1.observable.assemble W
+        (G.core.algebra.equationSystem.equationResidual W A i atom) = _
+    rw [equation_eq, atom_eq, object_eq]
+    apply eq_of_heq
+    exact (readObservable_apply_heq
+      morphism.upper.equationTransport W
+        (G.core.algebra.equationSystem.equationResidual W A i atom)).trans
+      ((heq_of_eq
+        (morphism.upper.equationTransport.equationResidual_eq W A i atom)).trans
+        (readContext_residual_heq
+          morphism.upper.equationTransport W A i atom).symm)
   · simpa [source] using morphism.base.doctrineHom.normalize_eq
-  · simpa [source] using morphism.base.doctrineHom.extraction_iff
+  · rw [pointed_eq]
+    simpa [source] using morphism.base.doctrineHom.extraction_iff
   · simpa [source] using morphism.base.source_eq
-  · exact morphism.atomEquiv_eq
-  · exact morphism.upper.extraction_eq
-  · exact morphism.upper.composition_eq
-  · exact morphism.upper.object_formation_eq
-  · exact morphism.upper.configuration_eq
+  · rw [atom_eq, pointed_eq]
+    exact morphism.atomEquiv_eq
+  · rw [atom_eq]
+    exact morphism.upper.extraction_eq
+  · rw [atom_eq]
+    exact morphism.upper.composition_eq
+  · rw [atom_eq, object_eq]
+    exact morphism.upper.object_formation_eq
+  · rw [atom_eq, object_eq]
+    exact morphism.upper.configuration_eq
   · intro A
-    exact morphism.upper.configurationMap_atomMap A
-  · simpa [equation] using morphism.upper.detectorCode_eq
-  · intro A B op
+    rfl
+  · rw [equation_eq, atom_eq]
+    exact morphism.upper.detectorCode_eq
+  · change RemainingComponentGraphCoherence.IsOperationNatural
+      G.core H.core objectGraph.assemble configuration operation.assemble
+    rw [show operation.assemble = operationFamily by
+      exact RemainingComponentGraphCoherence.BiIndexedFunctionGraphCode.assemble_read _]
+    intro A B op
     have law := morphism.upper.operation_naturality op
     apply ConfigurationHom.ext
     have supplied := congrArg ConfigurationHom.atomMap law
-    simpa [operation, configuration] using supplied
-  · simpa [invariant] using morphism.upper.invariant_transport
+    funext input
+    have operation_atom := congrFun
+      (reindexOperationFamily_configuration_atomMap H.core object_eq
+        (fun A B op => @morphism.upper.operationMap A B op) A B op)
+      (atomGraph.assemble input)
+    change
+      (H.core.reading.operationReading.configurationMap
+        (reindexOperationFamily H.core object_eq
+          (fun A B op => @morphism.upper.operationMap A B op) A B op)).atomMap
+          (atomGraph.assemble input) =
+        atomGraph.assemble
+          ((G.core.reading.operationReading.configurationMap op).atomMap input)
+    rw [operation_atom, atom_eq]
+    have supplied_at := congrFun supplied input
+    simpa [ConfigurationHom.comp, Function.comp_apply, configuration,
+      morphism.upper.configurationMap_atomMap]
+      using supplied_at
+  · rw [object_eq]
+    simpa [invariant] using morphism.upper.invariant_transport
   · rw [show signature.assemble = signatureSupply by
       exact RemainingComponentGraphCoherence.SignatureGraphCode.assemble_read _]
     exact signatureSupply.axis_selected_iff
   · rw [show signature.assemble = signatureSupply by
       exact RemainingComponentGraphCoherence.SignatureGraphCode.assemble_read _]
     exact signatureSupply.coordinate_eq
+
+/-- The equation transport assembled after reading an actual package map
+recovers the original completed transport. -/
+theorem equationTransport_read
+    {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
+    (morphism : PackageTotalHom G.core H.core) :
+    HEq (read morphism).equationTransport
+      morphism.upper.equationTransport := by
+  apply equationTransport_heq
+    (AlgebraicGraphCoherence.EquivGraphCode.assemble_read _)
+    (PrimitiveFunctionGraph.GraphCode.assemble_read _)
+  · exact ContextObservableGraphCoherence.ContextObservableGraphCode.read_context_assemble _
+  · exact AlgebraicGraphCoherence.EquivGraphCode.assemble_read _
+  · intro W value
+    exact readObservable_apply_heq
+      morphism.upper.equationTransport W value
 
 /-- Package reading followed by assembly recovers the actual package morphism. -/
 @[simp]
@@ -320,13 +824,15 @@ theorem assemble_read {U : AtomCarrier.{u}}
     · simp [assemble, lower, read]
   · apply SignedExactCoreReadingHom.ext
     · simp [assemble, upper, read]
-    · rfl
-    · rfl
-    · apply heq_of_eq
-      simp [assemble, upper, read]
     · simp [assemble, upper, read]
-    · apply heq_of_eq
-      simp [assemble, upper, read]
+    · exact equationTransport_read morphism
+    · simpa [assemble, upper, read] using
+        (reindexOperationFamily_heq H.core
+          (PrimitiveFunctionGraph.GraphCode.assemble_read
+            morphism.upper.objectMap)
+          (fun A B op => @morphism.upper.operationMap A B op))
+    · simp [assemble, upper, read]
+    · simp [assemble, upper, read]
     · let supply : RemainingComponentGraphCoherence.SignatureTransportSupply
           G.core H.core morphism.upper.objectMap := {
         axisMap := morphism.upper.axisMap
@@ -341,85 +847,96 @@ theorem assemble_read {U : AtomCarrier.{u}}
 theorem read_assemble {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (code : PackageGraphCode G H) :
     read code.assemble = code := by
-  apply Subtype.ext
-  cases code with
-  | mk data law =>
-      rcases data with ⟨source, pointedAtom, pointedAtomGraph, atomEquiv,
-        atomGraph, objectMap, objectGraph, configuration, equation,
-        equationTransportData, contextObservable, operation, invariant,
-        signature⟩
-      simp [read, assemble, upper, lower]
-      refine ⟨?_, ?_, ?_, rfl, ?_, rfl, ?_, ?_⟩
-      · calc
-          AlgebraicGraphCoherence.EquivGraphCode.read pointedAtom =
-              AlgebraicGraphCoherence.EquivGraphCode.read
-                pointedAtomGraph.assemble := by rw [law.pointed_atom_graph_eq]
-          _ = pointedAtomGraph :=
-            AlgebraicGraphCoherence.EquivGraphCode.read_assemble _
-      · calc
-          AlgebraicGraphCoherence.EquivGraphCode.read atomEquiv =
-              AlgebraicGraphCoherence.EquivGraphCode.read atomGraph.assemble := by
-                rw [law.atom_graph_eq]
-          _ = atomGraph :=
-            AlgebraicGraphCoherence.EquivGraphCode.read_assemble _
-      · calc
-          PrimitiveFunctionGraph.GraphCode.read objectMap =
-              PrimitiveFunctionGraph.GraphCode.read objectGraph.assemble := by
-                rw [law.object_graph_eq]
-          _ = objectGraph := PrimitiveFunctionGraph.GraphCode.read_assemble _
-      · calc
-          AlgebraicGraphCoherence.EquivGraphCode.read
-              equationTransportData.equationEquiv =
-              AlgebraicGraphCoherence.EquivGraphCode.read equation.assemble := by
-                rw [law.equation_eq]
-          _ = equation :=
-            AlgebraicGraphCoherence.EquivGraphCode.read_assemble _
-      · exact law.context_observable_canonical.symm
-      · exact RemainingComponentGraphCoherence.SignatureGraphCode.read_assemble _
+  apply ext
+  · exact PrimitiveFunctionGraph.GraphCode.read_assemble _
+  · exact AlgebraicGraphCoherence.EquivGraphCode.read_assemble _
+  · exact AlgebraicGraphCoherence.EquivGraphCode.read_assemble _
+  · exact PrimitiveFunctionGraph.GraphCode.read_assemble _
+  · exact AlgebraicGraphCoherence.EquivGraphCode.read_assemble _
+  · exact heq_of_eq (contextObservable_read_equationTransport code)
+  · let object_eq := PrimitiveFunctionGraph.GraphCode.assemble_read
+      code.1.object.assemble
+    exact (read_reindexOperationFamily_heq G.core H.core object_eq
+      (fun A B op => code.1.operation.assemble A B op)).trans
+      (heq_of_eq
+        (RemainingComponentGraphCoherence.BiIndexedFunctionGraphCode.read_assemble
+          code.1.operation))
+  · exact PrimitiveFunctionGraph.GraphCode.read_assemble _
+  · simp only [read, assemble, upper]
+    apply HEq.trans ?_
+      (heq_of_eq
+        (RemainingComponentGraphCoherence.SignatureGraphCode.read_assemble
+          code.1.signature))
+    apply signatureRead_heq
+      (PrimitiveFunctionGraph.GraphCode.assemble_read
+        code.1.object.assemble)
+    · rfl
+    · exact HEq.rfl
 
 end PackageGraphCode
 
+/-! ## Refutation-control fixture -/
+
+namespace PackageGraphNegativeFixture
+
+abbrev package := GeometryTransport.FiniteGeometryWitness.package
+
+/-- Lawful identity reading used only as the baseline for the negative
+certificate fixture. -/
+noncomputable def identityCode : PackageGraphCode package package :=
+  PackageGraphCode.read (PackageTotalHom.id package.core)
+
+/-- Independently replace only the pointed Atom graph by the concrete finite
+swap, leaving the upper Atom graph unchanged. -/
+noncomputable def mismatchedPointedData : PackageGraphData package package :=
+  { identityCode.1 with
+    pointedAtom := AlgebraicGraphCoherence.EquivGraphCode.read
+      GeometryTransport.FiniteGeometryWitness.swapEquiv }
+
+/-- The local package certificate rejects the mismatched Atom graphs. -/
+theorem not_isPackageGraphCode_mismatchedPointed :
+    ¬ IsPackageGraphCode mismatchedPointedData := by
+  intro certificate
+  have atomFunction := congrArg Equiv.toFun certificate.atom_eq
+  have atA := congrFun atomFunction
+    FiniteModel.FiniteAtom.componentA
+  simp [mismatchedPointedData, identityCode, PackageGraphCode.read,
+    PackageTotalHom.id, SignedExactCoreReadingHom.refl,
+    GeometryTransport.FiniteGeometryWitness.swapEquiv,
+    GeometryTransport.FiniteGeometryWitness.swapAtom] at atA
+
+end PackageGraphNegativeFixture
+
 /-! ## Complete geometry code and two-sided assembly -/
 
-/-- Local Cycle 70 supply extracted from a geometry-stage hom over an explicit
-base. -/
-def remainingSupplyOfGeometry {U : AtomCarrier.{u}}
+/-- The fiberwise realization part of a geometry-stage hom, without the core
+operation, invariant, and signature fields already owned by the package code. -/
+def realizationSupplyOfGeometry {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
     {base : PackageTotalHom G.core H.core}
     (geometry : GeomReadHom G H base) :
-    RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.RemainingComponentSupply
-      G H base geometry.coefficientHom where
-  operation := ⟨(fun A B op => @base.upper.operationMap A B op),
-    by intro A B op; exact base.upper.operation_naturality op⟩
-  invariant := ⟨base.upper.invariantMap, base.upper.invariant_transport⟩
-  signature := {
-    axisMap := base.upper.axisMap
-    coordinateEquiv := base.upper.coordinateEquiv
-    axis_selected_iff := base.upper.axis_selected_iff
-    coordinate_eq := base.upper.coordinate_eq }
-  realization := {
-    supportComp := geometry.supportComp
-    axisComp := geometry.axisComp
-    observableComp := geometry.observableComp
-    supportReads := geometry.supportReads
-    axisReads := geometry.axisReads
-    observableReads := geometry.observableReads
-    support_naturality := geometry.support_naturality
-    axis_naturality := geometry.axis_naturality
-    observable_naturality := geometry.observable_naturality }
-  rawCoherent := geometry.raw_eq
+    RealizationTransportSupply G.core H.core base where
+  supportComp := geometry.supportComp
+  axisComp := geometry.axisComp
+  observableComp := geometry.observableComp
+  supportReads := geometry.supportReads
+  axisReads := geometry.axisReads
+  observableReads := geometry.observableReads
+  support_naturality := geometry.support_naturality
+  axis_naturality := geometry.axis_naturality
+  observable_naturality := geometry.observable_naturality
 
-/-- Reading the local supply commutes, up to dependent equality, with a change
-of the explicit base index. -/
-theorem remainingRead_cast_heq {U : AtomCarrier.{u}}
+/-- Realization reading commutes heterogeneously with transport of the package
+base index. -/
+theorem realizationRead_cast_heq {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
     {first second : PackageTotalHom G.core H.core}
     (base_eq : first = second) (geometry : GeomReadHom G H second) :
     HEq
-      (RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.RemainingComponentCode.read
-        (remainingSupplyOfGeometry (base_eq.symm ▸ geometry)))
-      (RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.RemainingComponentCode.read
-        (remainingSupplyOfGeometry geometry)) := by
+      (RemainingComponentGraphCoherence.RealizationGraphCode.read
+        (realizationSupplyOfGeometry (base_eq.symm ▸ geometry)))
+      (RemainingComponentGraphCoherence.RealizationGraphCode.read
+        (realizationSupplyOfGeometry geometry)) := by
   cases base_eq
   rfl
 
@@ -429,31 +946,15 @@ graph presentation. -/
 structure CompleteGeometryGraphCode {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U) where
   package : PackageGraphCode G H
-  coefficientHom : G.Coefficient →+* H.Coefficient
   coefficientGraph : AlgebraicGraphCoherence.RingHomGraphCode
     G.Coefficient H.Coefficient
-  coefficient_graph_eq : coefficientGraph.assemble = coefficientHom
-  remaining : RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.RemainingComponentCode
-    G H package.assemble coefficientHom
-  remaining_canonical : remaining =
-    RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.RemainingComponentCode.read
-      (remainingSupplyOfGeometry ({
-        coverage := coverage
-        overlap := overlap
-        coefficientHom := coefficientHom
-        raw_eq := remaining.assemble.rawCoherent
-        supportComp := remaining.assemble.realization.supportComp
-        axisComp := remaining.assemble.realization.axisComp
-        observableComp := remaining.assemble.realization.observableComp
-        supportReads := remaining.assemble.realization.supportReads
-        axisReads := remaining.assemble.realization.axisReads
-        observableReads := remaining.assemble.realization.observableReads
-        support_naturality := remaining.assemble.realization.support_naturality
-        axis_naturality := remaining.assemble.realization.axis_naturality
-        observable_naturality := remaining.assemble.realization.observable_naturality } :
-        GeomReadHom G H package.assemble))
   coverage : CoverageTransport G H package.assemble
   overlap : OverlapTransport G H package.assemble
+  realization : RemainingComponentGraphCoherence.RealizationGraphCode
+    G.core H.core package.assemble
+  rawCoherent :
+    RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.IsRawTransportCoherent
+    G H package.assemble coefficientGraph.assemble
 
 namespace CompleteGeometryGraphCode
 
@@ -503,18 +1004,18 @@ def assemble {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
   geometry := {
     coverage := code.coverage
     overlap := code.overlap
-    coefficientHom := code.coefficientHom
-    raw_eq := code.remaining.assemble.rawCoherent
-    supportComp := code.remaining.assemble.realization.supportComp
-    axisComp := code.remaining.assemble.realization.axisComp
-    observableComp := code.remaining.assemble.realization.observableComp
-    supportReads := code.remaining.assemble.realization.supportReads
-    axisReads := code.remaining.assemble.realization.axisReads
-    observableReads := code.remaining.assemble.realization.observableReads
-    support_naturality := code.remaining.assemble.realization.support_naturality
-    axis_naturality := code.remaining.assemble.realization.axis_naturality
+    coefficientHom := code.coefficientGraph.assemble
+    raw_eq := code.rawCoherent
+    supportComp := code.realization.assemble.supportComp
+    axisComp := code.realization.assemble.axisComp
+    observableComp := code.realization.assemble.observableComp
+    supportReads := code.realization.assemble.supportReads
+    axisReads := code.realization.assemble.axisReads
+    observableReads := code.realization.assemble.observableReads
+    support_naturality := code.realization.assemble.support_naturality
+    axis_naturality := code.realization.assemble.axis_naturality
     observable_naturality :=
-      code.remaining.assemble.realization.observable_naturality }
+      code.realization.assemble.observable_naturality }
 
 /-- Actual geometry data read relative to the package code reconstructed from
 its base. -/
@@ -527,21 +1028,21 @@ def read {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     base_eq.symm ▸ morphism.geometry
   let coefficientGraph := AlgebraicGraphCoherence.RingHomGraphCode.read
     geometry.coefficientHom
-  let remainingSupply := remainingSupplyOfGeometry geometry
-  let remaining := RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.RemainingComponentCode.read
-    remainingSupply
+  have coefficient_eq : coefficientGraph.assemble = geometry.coefficientHom :=
+    AlgebraicGraphCoherence.RingHomGraphCode.assemble_read _
+  let geometry' : GeomReadHom G H package.assemble := {
+    geometry with
+    coefficientHom := coefficientGraph.assemble
+    raw_eq := by rw [coefficient_eq]; exact geometry.raw_eq }
+  let realization := RemainingComponentGraphCoherence.RealizationGraphCode.read
+    (realizationSupplyOfGeometry geometry')
   refine {
     package := package
-    coefficientHom := geometry.coefficientHom
     coefficientGraph := coefficientGraph
-    coefficient_graph_eq :=
-      AlgebraicGraphCoherence.RingHomGraphCode.assemble_read _
-    remaining := remaining
-    remaining_canonical := ?_
     coverage := geometry.coverage
-    overlap := geometry.overlap }
-  · intro coverage overlap
-    simp [remaining, remainingSupply, remainingSupplyOfGeometry]
+    overlap := geometry.overlap
+    realization := realization
+    rawCoherent := geometry'.raw_eq }
 
 /-- Reading and reassembling an actual complete morphism recovers it exactly. -/
 @[simp]
@@ -557,13 +1058,13 @@ theorem assemble_read {U : AtomCarrier.{u}}
       base_eq.symm ▸ morphism.geometry
     have hlocal : (assemble (read morphism)).geometry = geometry := by
       apply GeometryTransport.GeomReadHom.ext
-      · rfl
+      · simp [assemble, read, geometry, package]
       · apply heq_of_eq
-        simp [assemble, read, geometry, package, remainingSupplyOfGeometry]
+        simp [assemble, read, geometry, package, realizationSupplyOfGeometry]
       · apply heq_of_eq
-        simp [assemble, read, geometry, package, remainingSupplyOfGeometry]
+        simp [assemble, read, geometry, package, realizationSupplyOfGeometry]
       · apply heq_of_eq
-        simp [assemble, read, geometry, package, remainingSupplyOfGeometry]
+        simp [assemble, read, geometry, package, realizationSupplyOfGeometry]
     exact (heq_of_eq hlocal).trans (eqRec_heq base_eq.symm morphism.geometry)
 
 /-- Overlap transports over a fixed base are unique because all selected
@@ -587,15 +1088,13 @@ theorem ext {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
     {first second : CompleteGeometryGraphCode G H}
     (package : first.package = second.package)
-    (coefficient : first.coefficientHom = second.coefficientHom)
     (coefficientGraph : first.coefficientGraph = second.coefficientGraph)
-    (remaining : HEq first.remaining second.remaining) : first = second := by
+    (realization : HEq first.realization second.realization) : first = second := by
   cases first
   cases second
   cases package
-  cases coefficient
   cases coefficientGraph
-  cases remaining
+  cases realization
   congr
   exact overlap_ext _ _
 
@@ -611,25 +1110,24 @@ theorem read_assemble {U : AtomCarrier.{u}}
   let targetGeometry : GeomReadHom G H code.package.assemble :=
     code.assemble.geometry
   have coefficient_eq : (base_eq.symm ▸ targetGeometry).coefficientHom =
-      code.coefficientHom :=
+      code.coefficientGraph.assemble :=
     cast_coefficientHom base_eq targetGeometry
   apply ext
   · exact PackageGraphCode.read_assemble code.package
-  · simpa [read, assemble, package', targetGeometry] using coefficient_eq
   · calc
       (read code.assemble).coefficientGraph =
-          AlgebraicGraphCoherence.RingHomGraphCode.read code.coefficientHom := by
+          AlgebraicGraphCoherence.RingHomGraphCode.read
+            code.coefficientGraph.assemble := by
             simp only [read, assemble]
             exact congrArg AlgebraicGraphCoherence.RingHomGraphCode.read
               coefficient_eq
-      _ =
-          AlgebraicGraphCoherence.RingHomGraphCode.read
-            code.coefficientGraph.assemble := by rw [code.coefficient_graph_eq]
       _ = code.coefficientGraph :=
         AlgebraicGraphCoherence.RingHomGraphCode.read_assemble _
   · simpa only [read, assemble] using
-      (remainingRead_cast_heq base_eq targetGeometry).trans
-        (heq_of_eq code.remaining_canonical.symm)
+      (realizationRead_cast_heq base_eq targetGeometry).trans
+        (heq_of_eq
+          (RemainingComponentGraphCoherence.RealizationGraphCode.read_assemble
+            code.realization))
 
 /-- Exact two-sided equivalence promised by Cycle 71. -/
 noncomputable def equivGeometryTotalHom {U : AtomCarrier.{u}}
