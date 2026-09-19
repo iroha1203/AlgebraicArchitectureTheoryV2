@@ -7180,7 +7180,7 @@ selection:
     - "object assembly and the final four-family local-model equivalence"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "PackageGraphCode retains only primitive graph families plus local laws and constructs EquationSystemExactTransport and PackageTotalHom during assembly; it has exact read/assemble inverses. CompleteGeometryGraphCode adds only a coefficient graph, coverage, overlap, realization graphs, and raw coherence, and constructs GeometryTotalHom during assembly. Neither code retains a completed transport or Hom, nor assumes that the whole input is a canonical reader image. Both inverse laws, assembly injectivity, a concrete rejected Atom-graph mismatch, and the readCompleteMapGraphs connection are proved in this cycle."
+  proof_obligation_delta: "PackageGraphCode retains only primitive graph families plus local laws and constructs configuration morphisms, EquationSystemExactTransport, and PackageTotalHom during assembly; it has exact read/assemble inverses. CompleteGeometryGraphCode adds only a coefficient graph, coverage, overlap, realization graphs, and raw coherence, and constructs GeometryTotalHom during assembly. Neither code retains a completed submorphism, transport, or Hom, nor assumes that the whole input is a canonical reader image. Both inverse laws, assembly injectivity, a concrete rejected Atom-graph mismatch, and the readCompleteMapGraphs connection are proved in this cycle."
   completion_candidate: no
   lean_artifacts:
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.PackageGraphCode"
@@ -7202,6 +7202,7 @@ result:
       discharged:
         - "ambient package Hom / assembled from independent package graph data and local laws"
         - "equation transport / assembled from independent equation, context, and observable graph data plus local laws"
+        - "configuration morphisms / constructed from the Atom graph and object-configuration equation"
         - "complete geometry Hom / assembled from package code, coefficient and realization graphs, raw coherence, coverage, and overlap"
         - "dependent base transport / exact read-assemble and assemble-read laws"
         - "code separation / injectivity of complete assembly"
@@ -7245,7 +7246,7 @@ audits:
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: none-found
-  target_fitting_reason: "neither independent code stores a completed equation transport, package Hom, or geometry Hom; no whole-code canonical-image premise is accepted; both inverse directions and the common-surface connection are proved together"
+  target_fitting_reason: "neither independent code stores a completed configuration submorphism, equation transport, package Hom, or geometry Hom; no whole-code canonical-image premise is accepted; both inverse directions and the common-surface connection are proved together"
   vacuity: none-found
   vacuity_reason: "the equivalence is quantified over arbitrary GeometryPackage endpoints and actual GeometryTotalHom values, the reverse law recovers every independent graph and local-condition code, and the finite mismatched-Atom fixture proves that the package certificate rejects an independently altered component"
   one_way_as_equivalence: none-found
@@ -7253,7 +7254,7 @@ audits:
   four_lane_question: "Do primitive package and realization graph families with only local laws assemble EquationSystemExactTransport, PackageTotalHom, and GeometryTotalHom with exact two-sided recovery, reject a concrete mismatched Atom graph, and connect to readCompleteMapGraphs without retaining completed substructures or assuming canonical-reader membership?"
   validation_refs:
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryGraphAssembly.lean: pass"
-    - "#assert_standard_axioms_only CompleteGeometryGraphAssembly: 117 declarations, standard axioms only"
+    - "#assert_standard_axioms_only CompleteGeometryGraphAssembly: 120 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "define identity and composition directly on complete graph codes, prove the category laws and read/assemble compatibility, and lift the Hom equivalence to the actual geometry category before connecting fixed target B object assembly"
 ```
