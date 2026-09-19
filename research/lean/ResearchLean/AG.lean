@@ -78,6 +78,7 @@ import ResearchLean.AG.CanonicalResolution.JointKernel
 import ResearchLean.AG.CanonicalResolution.NegativeWitness
 import ResearchLean.AG.CanonicalResolution.PositiveWitness
 import ResearchLean.AG.CanonicalResolution.Reading
+import ResearchLean.AG.ObstructionDiagnosticBridge.AATLocallyConstantObstruction
 import ResearchLean.AG.ObstructionDiagnosticBridge.CochainComparison
 import ResearchLean.AG.ObstructionDiagnosticBridge.CoefficientComparison
 import ResearchLean.AG.ObstructionDiagnosticBridge.GeneratorPresentation
