@@ -7215,7 +7215,7 @@ result:
       undischarged:
         - "local-law generation / package, coefficient, realization, coverage, overlap, and raw-coherence laws remain supplied premises"
     undischarged_assumptions:
-      - "GraphCode.row_existsUnique / source, object, invariant, and each indexed operation/support/axis/observable graph / supplies the decoded functions used by lower, upper, and realization assembly"
+      - "GraphCode.row_existsUnique / source, object, invariant, signature-axis, and each indexed operation/support/axis/observable graph / supplies the decoded functions used by lower, upper, and realization assembly"
       - "EquivGraphCode forward.row_existsUnique, backward.row_existsUnique, left_inv, right_inv / pointed Atom, upper Atom, equation index, and each signature-coordinate family / supplies the assembled equivalences and their inverses"
       - "RingHomGraphCode graph.row_existsUnique, map_zero, map_one, map_add, map_mul / every equation-observable direction and the coefficient graph / supplies ring maps used by equation and geometry assembly"
       - "IsThinEquivalenceGraphCode.forward_total, backward_total, forward_mono, backward_mono, unit_hom, unit_inv, counit_hom, counit_inv / context code / supplies both functors and unit/counit isomorphisms"
