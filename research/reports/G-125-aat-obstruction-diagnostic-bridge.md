@@ -26,21 +26,22 @@
 - 完了: 位相空間上の局所定数`M_R`値関数を加法的presheafとして構成し、
   Mathlibの離散値連続関数sheafとの同型からsheaf条件を証明する。非空preconnected開集合上では
   sectionと`M_R`の評価同型、および制限写像の恒等座標表示も導出する。
-- 完了（Cycle 7のgeneric境界、Cycle 12で選定入力から放電）: AAT contextからopen supportへのfunctorと、
-  そのAAT topologyからopen-set topologyへのMathlib標準の連続性を要求するgeneric packaging境界を
+- 完了（Cycle 7の仮定相対構成、Cycle 12で選定入力から放電）: AAT contextからopen supportへのfunctorと、
+  そのAAT topologyからopen-set topologyへのMathlib標準の連続性を要求する仮定相対packageを
   型付けする。この仮定の下で
   局所定数係数sheafを引き戻し、既存の`ObstructionSheaf.ofAddCommGrpValued`によって実
   `ObstructionSheaf`を構成する。非空preconnected support上のsection同型と制限写像の
   恒等座標表示も実Ob層へ移す。Cycle 12で、選定point-Atom siteについて任意sheafの引戻しsheaf条件を
-  生成topologyから直接証明し、このgeneric境界のcontinuity premiseを放電した。
-- checkpoint: 供給された`FaceComponent` indexが空の選定nerveについて、chart contextと
+  生成topologyから直接証明し、この仮定相対packageのcontinuity premiseを放電した。
+- 完了（Cycle 8の仮定相対構成をCycle 13で選定入力へ接続）: 供給された`FaceComponent` indexが空の選定nerveについて、chart contextと
   edge-overlap context、actual restrictionから既存`CoverRelativeCechCover/Complex`を構成する。非空
   preconnected supportの評価座標によりactual Obの次数0・1をpresentation cochainへ同定し、
   actual `d⁰`を右辺−左辺差へ正規化する。選択face index型の空性からactual/normalized両方の`C²`と
   `d¹`を零化し、actual Čech sourceから既存law-generated complexへの次数0–2 cochain mapを得る。
-  これは実triple overlap全体の空性やface収載完全性をまだ示さない。選定有限入力のface provenance、
-  support functor、continuityは後続Cycleで構成済みだが、それらを用いたactual coarse/fine nerveと
-  `FaceEmptyAATCechCover`が未構成なのでA1全体の完了扱いはしない。
+  Cycle 9のcomplete face indexにより相異なる3 chartの実triple overlap全体の空性とface収載完全性を示し、Cycle 13で
+  紙上設計の`Bool × Bool → Bool` / identity readingにfull-target supportを持つactual coarse/fine nerveを構成し、
+  同じnerve indexへpoint-Atom site上の`FaceEmptyAATCechCover`を接続した。A1全体は、Law family・adequacy、
+  primitive generator provenanceと実H¹ mapを同一入力へ接続するまで完了扱いにしない。
 - 完了: 論文採用有限例の8点Alexandrov空間、粗い3-patch coverと細かい4-patch
   cover、実refinement、patchと非空二重交叉の非空preconnected性を構成する。相異なる
   3 chartと実交叉点を持つ型をcomplete face indexとして定め、両coverで幾何的三重交叉の
@@ -55,13 +56,17 @@
 - 完了: 現point-only siteの全点必須coverageをbase-change stableとは仮定せず、生成
   Grothendieck topologyのsheaf判定を直接用いてsupport functorのcontinuityを証明し、実
   `ContextOpenSupport`を構成する。
+- 完了: 紙上設計の粗い`Bool × Bool → Bool` readingと細かいidentity readingについて、全targetを
+  chart supportとするcoarse/fineの`TargetSupportedNerve`をcomplete geometric face indexから構成する。
+  同じnerve indexへ、実patch/overlapと実point-Atom continuous support上の
+  `FaceEmptyAATCechCover`、chart・edge context、actual restrictionを与える。
 - 未完了: primitive generator Atomを同じ入力へ接続する。
 - 完了（仮定相対）: supplied face-index-empty nerveのpresentation係数cochainと、条件付きactual Ob層の実
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
 - 未完了: B1・B2、C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
-- 次のproof obligation: complete face indexを実`TargetSupportedNerve.FaceComponent`へ用い、
-  coarse/fineの実nerveと`FaceEmptyAATCechCover`を同じpoint-Atom site上で構成する。その後primitive
-  generator Atomを係数presentationへ接続する。
+- 次のproof obligation: 選定した粗細reading上のLaw familyとadequacyを構成し、primitive generator Atomを
+  そのLaw評価と係数presentationへ接続する。続いてactual Čech sourceから既存law-generated complexへの
+  比較を同一入力上の実H¹ mapへ上げる。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -1442,4 +1447,125 @@ audits:
     - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.PointAtomContextContinuity: pass; 3714 jobs"
   blocking_findings: []
   next_obligation: "instantiate the concrete coarse/fine TargetSupportedNerve and FaceEmptyAATCechCover on contextOpenSupport, using the complete face indices from Cycle 9"
+```
+
+## Cycle 13 — point Atom site上のactual coarse/fine nerveとČech cover
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 13
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: 9050de08d22b0219facd56146d2de08db07f7a16
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "Issue #4791 paper design sections 2 and 10 after Cycle 12 merge 9050de08d22b0219facd56146d2de08db07f7a16"
+  proof_dag_predecessors:
+    - "complete coarse/fine cover geometry and exhaustive distinct-triple-overlap emptiness: Cycle 9"
+    - "point Atom support and actual coarse/fine admissible covers: Cycle 11"
+    - "continuous ContextOpenSupport on the generated AAT topology: Cycle 12"
+    - "generic face-empty actual Čech normalization: Cycle 8"
+  proof_obligation: "instantiate the selected coarse/fine diagnostic readings and full-target TargetSupportedNerve, then attach FaceEmptyAATCechCover on the continuous point-Atom site through the same nerve geometry"
+  selection_reason: "this discharges the remaining gap between the selected finite geometry and the Cycle 8 assumption-relative actual-Čech comparison"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/PointAtomActualNerve.lean"
+    - "PointAtomActualNerve.fineSupportedNerve"
+    - "PointAtomActualNerve.coarseSupportedNerve"
+    - "PointAtomActualNerve.fineCechCover"
+    - "PointAtomActualNerve.coarseCechCover"
+  risks:
+    - "using an arbitrary empty face type instead of the complete geometric face index"
+    - "storing patch and overlap properties without connecting them to actual AAT contexts"
+    - "constructing a parallel support functor instead of using the continuity certificate from Cycle 12"
+  unchecked:
+    - "fixed-head independent review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The coarse reading is Bool × Bool → Bool and the fine reading is the identity on Bool × Bool, exactly as in the selected paper example. Every diagnostic chart is supported on the whole corresponding reading target. Their nerves use the concrete cover charts, every selected nonempty pair overlap, and the complete geometric face index. Actual open contexts and restriction morphisms attach both FaceEmptyAATCechCover packages to the same nerve indices on Cycle 12's point-Atom contextOpenSupport. Face emptiness is inherited from the exhaustive distinct-triple geometry rather than supplied independently."
+  completion_candidate: no
+  lean_artifacts:
+    - "PointAtomActualNerve.Source"
+    - "PointAtomActualNerve.coarseReading"
+    - "PointAtomActualNerve.fineReading"
+    - "PointAtomActualNerve.fineNerve"
+    - "PointAtomActualNerve.coarseNerve"
+    - "PointAtomActualNerve.fineNerveFaceIsEmpty"
+    - "PointAtomActualNerve.coarseNerveFaceIsEmpty"
+    - "PointAtomActualNerve.fineSupportedNerve"
+    - "PointAtomActualNerve.coarseSupportedNerve"
+    - "PointAtomActualNerve.fineCechCover"
+    - "PointAtomActualNerve.coarseCechCover"
+  evidence:
+    - "fine/coarse FaceComponent is CompleteFaceIndex over the corresponding concrete patch family"
+    - "edge overlap components are inhabited by the actual fine/coarse overlap witnesses"
+    - "coarse/fine TargetSupportedNerve uses the selected Bool readings and full reading-target chart support"
+    - "chart and edge contexts are openContext of the same patch and overlap used by the nerve"
+    - "restriction morphisms follow open inclusion into the base and into both endpoint patches"
+    - "nonempty and preconnected support obligations reduce through contextSupport_openContext to Cycle 9 geometry"
+  claim_mapping:
+    theorem_names:
+      - "PointAtomActualNerve.fineSupportedNerve"
+      - "PointAtomActualNerve.coarseSupportedNerve"
+      - "PointAtomActualNerve.fineCechCover"
+      - "PointAtomActualNerve.coarseCechCover"
+    source_labels:
+      - "GOAL A common cover and nerve input"
+      - "Issue #4791 paper design sections 2 and 10"
+      - "Cycle 8 assumption-relative FaceEmptyAATCechCover construction"
+    conjuncts:
+      - "complete distinct-face actual coarse/fine nerve -> fineNerve and coarseNerve"
+      - "target support by the selected reading -> fineSupportedNerve and coarseSupportedNerve"
+      - "actual AAT chart/edge contexts and restrictions -> fineCechCover and coarseCechCover"
+    undischarged_assumptions:
+      - "primitive generator Atoms must be connected to GeneratorPresentation.PrimitiveGenerator on the selected input"
+      - "the actual Čech comparison must be raised to the same-input H1 map"
+      - "B1, full B2, C1, C2, and fixed zero/nonzero diagnostic data remain"
+    acceptance_point: "both selected full-target diagnostic nerves and both point-Atom face-empty Čech covers are attached through the same complete finite nerve geometry"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "the selected coarse/fine readings have targets Bool and Bool × Bool, and every diagnostic chart support is the full target"
+      - "the eight-point space supplies the independent AAT Čech chart and overlap contexts on the same nerve indices"
+      - "the complete face indices and their emptiness instances are the Cycle 9 exhaustive geometric results"
+      - "contextOpenSupport is Cycle 12's proved continuous support package"
+    direction_hypothesis: []
+    discharge_required:
+      - "connect the Law family and adequacy, primitive generator Atom provenance, and actual H1 comparison to this same input"
+    conclusion_equivalent_risk:
+      - "face emptiness is not a field of the nerve; it is derived from the complete geometric face-index theorem"
+      - "the Čech cover fields contain only actual contexts, arrows, and local support facts, not the desired cohomology conclusion"
+  premise_delta:
+    discharged:
+      - "actual coarse/fine TargetSupportedNerve instantiation"
+      - "complete face provenance for both actual nerves"
+      - "actual coarse/fine FaceEmptyAATCechCover instantiation on the continuous point-Atom site"
+    remaining:
+      - "Law family/adequacy, primitive generator Atom integration, and same-input actual H1 map"
+      - "B1, full B2, C1, C2 and zero/nonzero fixed data"
+  certificate_provenance:
+    discharged:
+      - "all chart, edge, and face indices come from the selected finite geometry"
+      - "all Čech contexts and restrictions are produced by the actual open-context embedding"
+    unresolved:
+      - "primitive coefficient-generator provenance and specified obstruction-cocycle provenance"
+  proof_use:
+    used:
+      - "fine/coarse distinct-triple-overlap emptiness supplies IsEmpty for the actual FaceComponent"
+      - "patch/overlap nonemptiness and preconnectedness discharge every FaceEmptyAATCechCover local premise"
+      - "contextSupport_openContext identifies each AAT context support with the concrete open"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-for-actual-nerve-and-cech-cover-obligation
+  target_fitting: none-found
+  vacuity: "face emptiness is nonvacuously proved by exhaustive geometry; chart and edge sets have explicit inhabitants, and the cover structures do not themselves claim H1 comparison"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/ObstructionDiagnosticBridge/PointAtomActualNerve.lean: pass; 13 namespace declarations, standard axioms only"
+    - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.PointAtomActualNerve: pass; 3715 jobs"
+  blocking_findings: []
+  next_obligation: "construct the selected Law family and adequacy on coarseReading/fineReading, connect primitive generator Atoms to its coefficient presentation, then expose the actual Čech comparison as the same-input H1 map"
 ```
