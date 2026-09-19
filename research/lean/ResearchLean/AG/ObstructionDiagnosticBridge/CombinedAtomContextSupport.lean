@@ -71,6 +71,28 @@ theorem openContext_reads_generator (W : Opens Space)
       (PointGeneratorAtomInput.generatorAtom generator) :=
   trivial
 
+/-- Negative fixture: a valid context that reads points but no generators.
+
+This context is not used by the selected covers.  It witnesses that generator
+coverage below is not automatic merely because an Atom is in the object family.
+-/
+def generatorSilentContext (W : Opens Space) :
+    Site.ArchCtx PointGeneratorAtomInput.object where
+  minimal := {
+    Support := Unit
+    Axis := Unit
+    Observable := Unit
+    supportReads := fun _ atom =>
+      match atom with
+      | .inl point => point ∈ W
+      | .inr _ => False
+    supportReads_objectFamily := by simp [PointGeneratorAtomInput.object]
+    axisReads := fun _ => True
+    observableReads := fun _ => True
+  }
+  Extension := Unit
+  extension := ()
+
 /-- Point set read by an arbitrary combined-carrier context. -/
 def readablePointSet (W : Site.ArchCtx PointGeneratorAtomInput.object) : Set Space :=
   {x | ∃ support : W.Support,
@@ -227,7 +249,9 @@ def coverageRequirements :
   supportVisibleOn := fun W atom =>
     match atom with
     | .inl point => point ∈ contextSupport W
-    | .inr _ => True
+    | .inr generator => ∃ support : W.Support,
+        W.minimal.supportReads support
+          (PointGeneratorAtomInput.generatorAtom generator)
   equationCoordinateVisibleOn := fun _ coordinate => nomatch coordinate.1.1
   violationWitnessVisibleOn := fun _ coordinate => nomatch coordinate.1
   axisReadableOn := fun _ axis => nomatch axis
@@ -280,7 +304,7 @@ theorem coarseCoverageFamily_admissible :
         exact ⟨chart, by
           simpa [coverageRequirements, coarseCoverageFamily] using hx⟩
     | inr generator =>
-        exact ⟨.c0, by simp [coverageRequirements, coarseCoverageFamily]⟩
+        exact ⟨.c0, ⟨(), openContext_reads_generator _ generator⟩⟩
   · intro coordinate
     exact Empty.elim coordinate.1.1
   · intro coordinate
@@ -310,7 +334,7 @@ theorem fineCoverageFamily_admissible :
         exact ⟨chart, by
           simpa [coverageRequirements, fineCoverageFamily] using hx⟩
     | inr generator =>
-        exact ⟨.a0, by simp [coverageRequirements, fineCoverageFamily]⟩
+        exact ⟨.a0, ⟨(), openContext_reads_generator _ generator⟩⟩
   · intro coordinate
     exact Empty.elim coordinate.1.1
   · intro coordinate
@@ -354,6 +378,25 @@ theorem admissible_support_covers
         (Site.ContextCategoryObject.of contextPreorder (F.patch i)) := by
   obtain ⟨i, hi⟩ := hF.atomSupportCoverage (.inl x) trivial
   exact ⟨i, hi⟩
+
+/-- Admissibility exposes an actual patch reading for every generator Atom. -/
+theorem admissible_generator_reading
+    {F : Site.CoverageFamily contextPreorder}
+    (hF : Site.AdmissibleCover coverageRequirements overlap F)
+    (generator : PrimitiveGenerator PointAtomLawInput.laws) :
+    ∃ i : F.Index, ∃ support : (F.patch i).Support,
+      (F.patch i).minimal.supportReads support
+        (PointGeneratorAtomInput.generatorAtom generator) := by
+  simpa [coverageRequirements] using
+    hF.atomSupportCoverage (.inr generator) trivial
+
+/-- A context with no generator readings fails generator visibility. -/
+theorem generatorSilentContext_not_generator_visible (W : Opens Space)
+    (generator : PrimitiveGenerator PointAtomLawInput.laws) :
+    ¬ coverageRequirements.supportVisibleOn (generatorSilentContext W)
+      (PointGeneratorAtomInput.generatorAtom generator) := by
+  simp [coverageRequirements, generatorSilentContext,
+    PointGeneratorAtomInput.generatorAtom]
 
 #assert_standard_axioms_only
   AAT.AG.ObstructionDiagnosticBridge.CombinedAtomContextSupport

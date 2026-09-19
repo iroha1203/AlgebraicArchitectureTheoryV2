@@ -1870,6 +1870,7 @@ result:
     - "openContext pattern-matches the actual sum Atom: point visibility is open membership and generator visibility is true"
     - "contextSupport is the interior of readable pointAtom occurrences and never projects generators to geometric points"
     - "both admissibility proofs split the actual Atom sum and cover point and generator branches"
+    - "generator coverage carries an existential supportReads witness; a generator-silent context proves that visibility is not automatic"
     - "continuity uses atomSupportCoverage at the actual point injection on the combined site"
     - "combined Cech covers rebuild every context and restriction arrow in the combined contextPreorder"
   claim_mapping:
@@ -1917,23 +1918,25 @@ audits:
     discharged:
       - "point support is computed from pointAtom readings"
       - "generator coverage is checked on the actual generator sum branch"
+      - "admissible_generator_reading extracts the concrete patch support and reading witness"
       - "Cech context and restriction data are constructed directly in the combined category"
     unresolved:
       - "same-input cochain and cohomology comparison"
   proof_use:
     used:
       - "full Atom admissibility is used to generate the combined AAT topology"
+      - "generator branch admissibility consumes openContext_reads_generator rather than a constant visibility predicate"
       - "point branch coverage is used in the continuity proof"
       - "continuous support is used by both combined actual Cech covers"
     unused: []
   structure_field_escape: none-found
   route_integrity: pass-for-combined-site-and-cech-obligation
   target_fitting: none-found
-  vacuity: "point visibility varies with the open while all four generator Atoms are retained; both coverage proofs inspect the Atom sum"
+  vacuity: "point visibility varies with the open; generator visibility requires an actual reading witness, and generatorSilentContext proves that a context without such readings is rejected"
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "focused checks: CombinedAtomContextSupport 29 declarations, CombinedAtomContextContinuity 8 declarations, CombinedAtomActualNerve 2 declarations; standard axioms only"
+    - "focused checks: CombinedAtomContextSupport 32 declarations, CombinedAtomContextContinuity 8 declarations, CombinedAtomActualNerve 2 declarations; standard axioms only"
     - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.CombinedAtomActualNerve: pass; 3720 jobs"
   blocking_findings: []
   next_obligation: "instantiate the actual Cech-to-law-generated cochain map and induced H1 map from the combined site using the selected Law family and presentation"
