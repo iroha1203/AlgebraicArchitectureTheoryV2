@@ -32,13 +32,20 @@
   `ObstructionSheaf`を構成する。非空preconnected support上のsection同型と制限写像の
   恒等座標表示も実Ob層へ移す。連続性自体は任意sheafの引戻しsheaf条件を含む強い前提であり、
   選定有限入力からの放電までは完了扱いしない。
+- checkpoint: 供給された`FaceComponent` indexが空の選定nerveについて、chart contextと
+  edge-overlap context、actual restrictionから既存`CoverRelativeCechCover/Complex`を構成する。非空
+  preconnected supportの評価座標によりactual Obの次数0・1をpresentation cochainへ同定し、
+  actual `d⁰`を右辺−左辺差へ正規化する。選択face index型の空性からactual/normalized両方の`C²`と
+  `d¹`を零化し、actual Čech sourceから既存law-generated complexへの次数0–2 cochain mapを得る。
+  これは実triple overlap全体の空性やface収載完全性をまだ示さない。選定有限入力による
+  face provenance、support functor、continuityの構成前なのでA1全体の完了扱いはしない。
 - 未完了: 論文採用入力と有限例について、具体的な有限空間、context open support functor、
   site functorの連続性を構成する。
-- 未完了: presentation係数cochainと、構成するOb層の実
-  `CoverRelativeCechComplex`との同定。
+- 完了（仮定相対）: supplied face-index-empty nerveのpresentation係数cochainと、条件付きactual Ob層の実
+  `CoverRelativeCechComplex`との次数0–2同定とcochain square。
 - 未完了: B1・B2、C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
-- 次のproof obligation: 選択coverのpatch・overlap・triple overlapをopen supportへ接続し、
-  実`CoverRelativeCechComplex`をCycle 5のnormalized presentation complexへ同定する。
+- 次のproof obligation: 論文採用の有限入力でcontext/open support、cover、continuityを構成して
+  Cycle 7–8の強い幾何前提を放電し、actual cochain mapからH¹誘導写像を構成する。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -802,4 +809,132 @@ audits:
     - "git diff --check and placeholder, hidden/BiDi Unicode, private-path, and Formal-to-Research import scans: pass"
   blocking_findings: []
   next_obligation: "connect selected cover patches and intersections to open supports and identify the actual CoverRelativeCechComplex with the normalized presentation complex"
+```
+
+## Cycle 8 — supplied face-index-empty Čech sourceの正規化
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 8
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: bc3fa57893595d9e2bd405fffb81f86a4129e280
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "Issue #4791 paper design sections 3-4 and 10 after Cycle 7 merge bc3fa57893595d9e2bd405fffb81f86a4129e280"
+  proof_dag_predecessors:
+    - "GeneratorPresentation.aatLocallyConstantObstructionSheaf: PR #4807 assumption-relative checkpoint"
+    - "GeneratorPresentation.coefficientCochainMap: PR #4805"
+    - "Formal.AG.Cohomology.CoverRelativeCechCover and CoverRelativeCechComplex"
+  proof_obligation: "construct the actual CoverRelativeCech source relative to a supplied empty face index and identify its degree-zero-through-two cochains and differentials with the normalized presentation source"
+  selection_reason: "this replaces the normalized-source placeholder by the existing ObstructionSheaf Cech surface while exposing the later obligation to prove face-index completeness and geometric triple-intersection emptiness"
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/FaceEmptyCechNormalization.lean"
+    - "GeneratorPresentation.faceEmptyCechComplex"
+    - "GeneratorPresentation.actualCechCoefficientCochainMap"
+  risks:
+    - "declaring every degree-two tuple empty without an explicit empty face-component type"
+    - "supplying the actual Cech differential or cochain-square conclusion as input data"
+    - "claiming A1 complete before constructing the selected finite context/open geometry and continuity"
+  unchecked:
+    - "main declarations #print axioms"
+    - "fixed-head independent review"
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: "For a selected TargetSupportedNerve whose supplied FaceComponent index is empty, actual chart and edge-overlap contexts and restrictions now construct the existing CoverRelativeCechCover and CoverRelativeCechComplex. Connected-support evaluation gives additive equivalences in degrees zero and one; degree two is the empty selected-index product. The actual d0 normalizes to presentationD0, actual and presentation d1 are zero from that supplied empty index, and composing these equivalences with Cycle 5 epsilon_R yields both cochain squares against lawGeneratedD0/1. This does not prove that FaceComponent is complete for geometric triple intersections; finite geometry provenance, completeness, and Cycle 7 continuity remain open."
+  completion_candidate: no
+  lean_artifacts:
+    - "GeneratorPresentation.FaceEmptySimplex"
+    - "GeneratorPresentation.FaceEmptyAATCechCover"
+    - "FaceEmptyAATCechCover.toCoverRelativeCechCover"
+    - "GeneratorPresentation.faceEmptyCechComplex"
+    - "GeneratorPresentation.faceEmptyCechCochain0Equiv"
+    - "GeneratorPresentation.faceEmptyCechCochain1Equiv"
+    - "GeneratorPresentation.faceEmptyCechCochain2Equiv"
+    - "GeneratorPresentation.faceEmptyCech_d0_normalizes"
+    - "GeneratorPresentation.faceEmptyCech_d1_eq_zero"
+    - "GeneratorPresentation.presentationD1_eq_zero_of_faceEmpty"
+    - "GeneratorPresentation.actualCechCoefficient_comm0"
+    - "GeneratorPresentation.actualCechCoefficient_comm1"
+    - "GeneratorPresentation.actualCechCoefficientCochainMap"
+  evidence:
+    - "FaceEmptySimplex uses the supplied nerve Chart, EdgeComponent, and FaceComponent in degrees 0, 1, and 2, with an explicit IsEmpty FaceComponent premise"
+    - "faceEmptyCechComplex constructs d0 from the actual ObstructionSheaf restriction maps, not a copied presentation differential"
+    - "faceEmptyCech_d0_normalizes uses Cycle 7's restriction-coordinate theorem for both edge endpoints"
+    - "C2 and d1 vanish by elimination from the selected empty FaceComponent type"
+    - "actualCechCoefficient_comm0/1 target the existing lawGeneratedD0/1"
+  claim_mapping:
+    theorem_names:
+      - "GeneratorPresentation.faceEmptyCech_d0_normalizes"
+      - "GeneratorPresentation.faceEmptyCech_d1_eq_zero"
+      - "GeneratorPresentation.actualCechCoefficient_comm0"
+      - "GeneratorPresentation.actualCechCoefficient_comm1"
+      - "GeneratorPresentation.actualCechCoefficientCochainMap"
+    source_labels:
+      - "GOAL A actual obstruction complex and degree-zero-through-two cochain comparison"
+      - "Issue #4791 paper design section 4 equations (3)-(5)"
+      - "Issue #4791 paper design sections 8.2 and 10 selected finite realization and geometry discharge"
+    conjuncts:
+      - "actual chart and overlap contexts -> FaceEmptyAATCechCover and toCoverRelativeCechCover"
+      - "actual obstruction restrictions define d0 -> faceEmptyCechComplex"
+      - "connected-support coordinates identify actual C0 and C1 with presentation cochains -> faceEmptyCechCochain0Equiv/1Equiv"
+      - "explicit empty FaceComponent gives C2=0 and d1=0 -> faceEmptyCechCochain2Equiv and d1 zero theorems"
+      - "actual source cochain squares with existing diagnostic target -> actualCechCoefficient_comm0/1"
+    undischarged_assumptions:
+      - "the selected finite input must instantiate FaceEmptyAATCechCover from its declared AAT contexts and cover"
+      - "the selected finite input must construct FaceComponent from all relevant distinct triple-overlap components, prove its completeness, and then prove IsEmpty FaceComponent from geometric triple-intersection emptiness"
+      - "the selected finite input must prove all chart/edge support nonempty-preconnected conditions"
+      - "the selected finite input must construct ContextOpenSupport.continuous rather than assume it"
+      - "the induced H1 homomorphism and specified obstruction-class correspondence remain to be constructed"
+    acceptance_point: "empty degree two is tied only to the supplied nerve FaceComponent index by IsEmpty; no geometric triple-intersection emptiness, face-index completeness, arbitrary-nerve result, or full ordered-tuple normalization is claimed"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "TargetSupportedNerve D, GeneratorPresentation P, conditional ContextOpenSupport G, and actual chart/edge contexts are selected input data"
+    direction_hypothesis:
+      - "IsEmpty D.nerve.FaceComponent fixes only the supplied selected face index; geometric triple-overlap emptiness still requires provenance and completeness"
+      - "nonempty and PreconnectedSpace conditions identify locally constant sections with M_R"
+    discharge_required:
+      - "construct all FaceEmptyAATCechCover fields, a complete face index from the selected finite geometry, geometric emptiness, and ContextOpenSupport.continuity"
+      - "construct the H1 map and B1 class correspondence"
+    conclusion_equivalent_risk:
+      - "FaceEmptyAATCechCover stores contexts, endpoint restrictions, and connected-support premises but no face-index completeness, geometric triple-overlap emptiness, differential, cochain comparison, H1 map, or vanishing conclusion"
+      - "Cycle 7 continuity remains a stronger premise containing the coefficient sheaf conclusion and is not discharged here"
+  premise_delta:
+    discharged:
+      - "construct the CoverRelativeCechCover/Complex relative to supplied face-index-empty chart and edge context data"
+      - "derive actual d0 normalization from restriction-coordinate identity"
+      - "derive C2 and d1 zero from the explicit empty face type"
+      - "lift Cycle 5's cochain map to the actual obstruction Cech source"
+    remaining:
+      - "selected finite geometry, complete face-index provenance, geometric triple-overlap emptiness, and continuity discharge"
+      - "induced H1 homomorphism, B1, full B2, C1, C2 and fixed finite example"
+  certificate_provenance:
+    discharged:
+      - "degree-zero and degree-one source terms are sections of the actual Cycle 7 ObstructionSheaf"
+      - "diagnostic terms and differentials are the existing TargetSupportedNerve law-generated surfaces"
+      - "degree-two vanishing comes from IsEmpty on the supplied nerve face-index type"
+    unresolved:
+      - "selected finite geometry realization and H1/class bridge"
+  proof_use:
+    used:
+      - "both endpoint restriction morphisms occur in actual d0"
+      - "chart and edge nonempty-preconnected premises are consumed by the cochain equivalences and restriction theorem"
+      - "IsEmpty FaceComponent is consumed by every degree-two construction and d1 proof"
+    unused: []
+  structure_field_escape: "Cycle 8 adds no conclusion field; Cycle 7 continuity remains an explicit strong premise awaiting selected-input discharge"
+  route_integrity: pass-for-assumption-relative-actual-cech-normalization
+  target_fitting: none-found
+  vacuity: "the selected face index can be chosen empty without geometric completeness; final acceptance requires constructing it from all relevant triple-overlap components and deriving its emptiness from the finite geometry"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/ObstructionDiagnosticBridge/FaceEmptyCechNormalization.lean: pass; 61 namespace declarations, standard axioms only"
+    - "faceEmptyCechComplex, faceEmptyCech_d0_normalizes, actualCechCoefficient_comm0/1, and actualCechCoefficientCochainMap #print axioms: propext, Classical.choice, Quot.sound only"
+    - "git diff --check and placeholder, hidden/BiDi Unicode, private-path, and Formal-to-Research import scans: pass"
+  blocking_findings: []
+  next_obligation: "instantiate the selected finite AAT context/open geometry, construct a complete face index and geometric emptiness proof, discharge site continuity, then construct the induced H1 homomorphism and specified obstruction-class correspondence"
 ```
