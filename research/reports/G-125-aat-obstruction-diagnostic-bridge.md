@@ -350,7 +350,7 @@ base_oid: 78534435b39c58cc94aaad65d38b3f30cc0913f7
 tracking_issue: 4791
 report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
 selection:
-  proof_state_ref: "Issue #4791 paper design sections 1-2 and equation (4), after Cycle 3 merge 78534435b39c58cc94aaad65d38b3f30cc0913f7"
+  proof_state_ref: "Issue #4791 paper design sections 1-2 and equations (4)-(5), after Cycle 3 merge 78534435b39c58cc94aaad65d38b3f30cc0913f7"
   proof_dag_predecessors:
     - "GeneratorPresentation.blockLabel and blockLabel_injective: PR #4799, merge dfcc02b073ac1b8cc7d7c76533dcac24827cf24b"
     - "GeneratorPresentation.presentationGroupEquivBlocks: PR #4802, merge 78534435b39c58cc94aaad65d38b3f30cc0913f7"
@@ -396,7 +396,7 @@ result:
     source_labels:
       - "GOAL A coefficient comparison"
       - "GOAL B structural reflection condition R_q"
-      - "Issue #4791 paper design equation (4) and section 2"
+      - "Issue #4791 paper design equations (4)-(5) and section 2"
     conjuncts:
       - "primitive class maps to delta at e(g) -> coefficientComparison_generatorClass_apply"
       - "general component coefficients map by the finite blockLabel-fiber sum -> blockToLawCoefficients_apply_eq_fiberSum"
