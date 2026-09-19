@@ -8423,10 +8423,39 @@ namespaceは`AAT.AG.LocalSemanticReconstruction.IndependentCorePrimitive`。
 有限familyの証明の選び方も両逆で消える。`Composition.trueTable_not_lawful`は空familyの外にrelationを
 作るtableを排除し、`Extraction.eraseNormalization_not_typed`は選択sourceのnormalizeが欠けるtableを排除する。
 
-この段階でcontext・Law/observable環・circuit・invariant・signature、coverage/overlap、係数環の
-原始組立ては未完了である。全core/siteの組立て、rawとの依存する接続、局所Homからの厳密なraw等式、
+この段階でLaw/observable系・circuit・invariant・signature、coverage/overlapの原始組立ては未完了である。
+全core/siteの組立て、rawとの依存する接続、局所Homからの厳密なraw等式、
 完全幾何の対象/Hom両逆・恒等・合成、G-122/tagged両方式、共通宣言・有限片への接続を引き続き構成する。
 
 検証開始baseはraw独立検証のmerge commit `27a844fdd8812035c73575078a7ac6ed02b6a305`。
 単一fileのfocused check、明示63宣言の`#print axioms`、namespace211宣言の標準公理監査を実行した。
 Research全体buildは実行していない。
+
+#### Context preorderと可変carrierの環
+
+`IndependentContextPrimitiveReadings.lean`では、architecture object `A`上の全native contextを
+queryの引数とし、preorderを選ぶ前にrefinementのpredicateとsupport・axis・observableの点評価を定義した。
+3つのmapはrefinementが成り立つpairでのみactiveになる。反射・推移と各点の読み取り保存から、
+nativeな`ContextPreorderCategory A`を構成する。非生成条件はcontext自身のfamily所属条件から導く。
+`assemble_read`・`read_assemble`・`readingEquiv`は、refinementだけでなく選択された3つのmapをすべて回復する。
+`noRefinement_not_lawful`は全falseのrefinementを、`eraseSupport_not_typed`は必要なsupport像の欠損を排除する。
+
+`IndependentRingPrimitiveReadings.lean`は0・1・加法・乗法・負号の原始評価を用いる。
+`IsLawful`の7つの等式からmathlibの`CommRing.ofMinimalAxioms`で全可換環構造を作り、
+`CommRing.ext`により自然数/整数作用・べき・差などの補助演算も含めてnative構造を回復する。
+`Carrier.readingEquiv`は型参照を局所値に含め、任意のcarrierを持つ全native可換環との両逆を与える。
+完成した`CommRing`を局所値には置かず、候補型の各原始演算をOptionで読み、選択外の型はinactiveにする。
+
+同fileの`Hom.readingEquiv`は任意の環準同型を、その点評価と0・1・加法・乗法の保存式から回復する。
+`Hom.assemble_id`・`Hom.assemble_comp`により、点ごとの恒等・合成がnativeな恒等・合成へ写る。
+係数写像の可逆性は要求しない。`eraseMultiplication_not_lawful`は、非自明環の乗法を全て0へ変えた入力を
+単位元の式で排除する。
+
+Contextの既存入力は`A`、固定carrier版の環の既存入力は型`K`であり、どちらも任意に量化する。
+可変carrier版は`K`自体もtype-reference queryから構成する。今後、前段で生成した`A`へcontext構成を適用し、
+各contextの可変observable環、restriction、violation、residualを組み合わせてequation systemを構成する。
+この接続と最初の検証点全体の完了は未達であり、上記部品の正式PR査読も未実施である。
+
+単一file検証と次段のimport用の単一module出力は両fileでpass。
+明示宣言の公理監査はcontext 29件、ring 38件、namespace全体の監査はそれぞれ81件・108件である。
+新規sourceのplaceholder・hidden/BiDi・privacy・語彙・整形scanを行った。Research全体buildは実行していない。
