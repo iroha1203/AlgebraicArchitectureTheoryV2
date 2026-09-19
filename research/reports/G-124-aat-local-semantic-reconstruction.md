@@ -8659,3 +8659,26 @@ generated matching 17、共通宣言24、更新したgeometry stage 24、共通a
 overlap candidate 21、overlap有限式21件の計197件。namespace監査は同順79・54・130・24・74・20・57・77件の
 計515件で、標準公理のみである。module manifestとaggregate importに登録し、aggregateのelaborationは
 行っていない。Research全体build、外側のtotal category、routing wrapperは追加していない。
+
+#### Homのcarrier選択に先行する点対graph
+
+`IndependentCarrierGraphReadings.lean`は、Homの共通宣言へ接続する点対graphの部品を構成する。
+namespaceは`AAT.AG.LocalSemanticReconstruction.IndependentCarrierGraph`。
+`Query`はsource/targetのcandidate raw carrierと一点対だけを持ち、全応答はBoolである。
+選択された二つのcarrierはquery型のparameterにせず、`IsTyped`の非active条件と
+`IsTotal`の行ごとの唯一出力条件に現れる。
+
+`graphEquiv`が受理済みの`PrimitiveFunctionGraph.GraphCode`と接続し、`functionEquiv`・
+`assemble_read`・`read_assemble`が任意の有向写像との両逆を与える。
+単射・全射・可逆性を要求しない。`mismatched_carrier_rejected`・`duplicate_outputs_rejected`・
+`false_table_rejected`が、それぞれcarrier不一致・二重出力・入力点がある場合の全falseを排除する。
+
+`compose`は第一のgraphの唯一出力を中間点として、第二のgraphの一点を読む。
+`compose_finite_support`は全queryについて、二つのtableの合計2点以下を構成する。
+比較する第一のgraphには同じcarrier上のtotality/uniquenessを要求するが、第二のtableにはlawfulnessを
+仮定しない。第一のgraphで中間点への辺が真であることが、その点の選択に依存しない根拠である。
+`compose_isLawful`・`assemble_compose`・`read_compose`、恒等の両単位則、`compose_assoc`まで接続した。
+
+この部品は単一file検証済みで、明示39宣言の`#print axioms`とnamespace52宣言の監査は標準公理のみ。
+module登録とsource scanを行った。各native Hom roleの型参照、保存則、全Homの共通宣言への接続は
+後続の義務であり、この任意写像の部品を全Hom再構成の完了とは扱わない。Cycle 79を維持する。
