@@ -8772,3 +8772,30 @@ equation assembly・equation有限式の順に11・12・7・16・11・8・17・1
 namespace監査は同順28・12・13・16・11・58・17・19・60件、計234件で、全て標準公理のみ。
 warning、placeholder、hidden/BiDi、privacy、追加文の語彙、差分整形、module登録を確認した。
 aggregateのelaborationとResearch全体buildは行っていない。
+
+#### Signatureの候補軸・座標行と保存則
+
+`IndependentCandidateIndexedInverseGraphs.lean`は、外側indexのcandidate carrierもqueryへ含め、
+内側fiberのcandidate carrierと合わせて二段階の型参照を扱う。
+`readingEquiv`・両逆が、選択された外側carrier上の全fiber同値と、その他のfalse応答を回復する。
+
+`IndependentGeometryHomSignatureReadings.lean`はこの構成を共通Homのsignature座標行に適用する。
+`axisMap`は有向graphから構成し、軸の単射性・全射性を課さない。
+`atPair_forward_iff`・`atPair_backward_iff`・`assemble_eq_atPair`により各true軸対の座標同値を
+native familyへ接続し、`readingEquiv`・`read_assemble`・`assemble_read`・`read_injective`が
+外側の軸carrierと内側の座標carrierを含む全候補行との両逆・分離を与える。
+
+`IndependentGeometryHomSignatureLaws.lean`の`SelectedPoints`・`CoordinatePoints`は、
+selected述語、座標の原始応答、object/axis/coordinateのHom点だけを比較する。
+`selected_points_iff`・`coordinate_points_iff`は復元したnative写像の二つの保存fieldと同値である。
+`IndependentGeometryHomSignatureExpressions.lean`はそれらを閉じた式へ接続し、
+`evaluate_iff_of_support`で任意tableに対する共通query上の有限supportを証明する。
+
+この段階でsignatureの計算成分と保存則は共通Homの点行へ接続した。
+全package/Homの統合、invariant、operation自然性、detector code、coefficient、
+coverage/overlap、両raw/realization方式、全体の両逆・恒等・合成・指定反証と査読は引き続き未完了である。
+
+今回の4 sourceは単一fileで検証済みである。明示宣言の`#print axioms`は上記順に
+11・14・10・8件、計43件。namespace監査は28・14・10・70件、計122件で、標準公理のみである。
+warningを残さず、placeholder・hidden/BiDi・privacy・語彙・差分整形・module登録を確認した。
+Cycleは追加せず、外側のtotal categoryとResearch全体buildにも進んでいない。
