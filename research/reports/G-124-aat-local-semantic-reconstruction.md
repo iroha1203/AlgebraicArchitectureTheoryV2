@@ -160,12 +160,14 @@
 - Cycle 75 accepted PR: [#4795](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4795),
   merge commit `35f931ee50ef5ae91d226bbf3e37017e059ad308`
 - Cycle 76 rejected PR: [#4796](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4796)
+- Cycle 77 accepted PR: [#4797](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4797),
+  merge commit `05c2bd89acda78aee16348cbd9a6ed0f42e26711`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: lens・protocolの独立local object/Hom assemblyを一つのbranch-indexed
-  parameter宣言で閉じ、global decoder・finite decoder・Karoubi・Arrow再構成の可換接続まで示す
-- next proof obligation: acceptedな二族同時再構成へtagged・G-122を結合し、四族共通の
-  local-model surfaceとfixed target Bの主同値へ進める
+- current proof obligation: tagged・full G-122・lens・protocolを一つのbranch-indexed parameterへ
+  収録し、各枝の直接assembly・両逆・圏同値と既存route接続を同時に示す
+- next proof obligation: case分岐で束ねた四枝を、一つの独立な実現圏・局所モデル圏のfiberとして
+  再構成し、object/Hom両逆と投影・正規化・比較群輸送まで同時に示す
 
 ## Cycle 1 — rejected
 
@@ -7861,6 +7863,127 @@ audits:
   next_obligation: "extend the accepted simultaneous reconstruction by adjoining the tagged and G-122 branches through independent local categories and direct assemblers, retaining one reviewable four-family equivalence and common connections"
 ```
 
+## Cycle 78: full G-122 twisted group and four-family branch reconstruction
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 78
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 05c2bd89acda78aee16348cbd9a6ed0f42e26711
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 77 acceptance: Issue comment 5741748590; Cycle 77 report next_obligation"
+  proof_dag_predecessors:
+    - "Cycle 37 tagged finite-local monoid equivalence"
+    - "Cycle 38 tagged one-object category equivalence"
+    - "Cycle 60 full G-122 comparison/kernel coordinate equivalence"
+    - "Cycle 77 simultaneous lens/protocol branch reconstruction"
+  proof_obligation: "add tagged and full fixed G-122 branches to the accepted common parameter; give G-122 independent coordinates their correct twisted group law; prove direct Hom/object assembly, both inverse laws, uniqueness, category equivalence, and all accepted family connections in the same cycle"
+  selection_reason: "this closes the four-family parameter gap and strengthens G-122 from a type-level coordinate equivalence to a multiplicative and categorical reconstruction, so the cycle is not a wiring-only extension of Cycle 77"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "G122FullComparisonTwistedGroup.lean"
+    - "AATFourFamilyBranchReconstruction.lean"
+  risks:
+    - "the ordinary product group would state the wrong G-122 kernel law"
+    - "tagged and G-122 object universes must coexist with CS Hom universes without hiding actual Homs"
+    - "a case-indexed union is not yet one non-case-defined realization-category construction"
+  unchecked:
+    - "formal four-lane review of the fixed PR head"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "TwistedCode carries explicit normalized and full-kernel coordinates, with conjugation-twisted multiplication and inverse formulas. Assembly preserves multiplication, identity, and inverse; its two inverse laws prove separation, the group laws, a multiplicative equivalence with every raw comparison, a one-object category equivalence, and unique Hom preimages. AATBranchParameter then selects tagged, full G-122, lens, or protocol data under one dependent declaration. Each branch has a primitive reading, direct Hom assembler, explicit object realization, both Hom inverse laws, ReconstructionData, unique preimages, and a category equivalence. The same file connects tagged finite tables and normal forms, G-122 normalized/kernel coordinates and full lift-fiber torsor universality, and lifted lens/protocol finite decoders plus Karoubi and Arrow routes."
+  completion_candidate: no
+  lean_artifacts:
+    - "G122FullComparisonTwistedGroup.TwistedCode"
+    - "G122FullComparisonTwistedGroup.multiply"
+    - "G122FullComparisonTwistedGroup.inverse"
+    - "G122FullComparisonTwistedGroup.assemble_multiply"
+    - "G122FullComparisonTwistedGroup.assemble_inverse"
+    - "G122FullComparisonTwistedGroup.twistedCodeMulEquiv"
+    - "G122FullComparisonTwistedGroup.equivalence"
+    - "G122FullComparisonTwistedGroup.existsUnique_preimage"
+    - "AATBranchParameter"
+    - "AATBranchGlobal"
+    - "AATBranchLocal"
+    - "aatBranchReading"
+    - "aatBranchAssemble"
+    - "aatBranch_read_assemble"
+    - "aatBranch_assemble_read"
+    - "aatBranchRealize"
+    - "aatBranchRealizeIso"
+    - "aatBranchReconstructionData"
+    - "aatBranchReconstructionEquivalence"
+    - "aatBranch_existsUnique_preimage"
+    - "aatBranchG122FullLiftFiber_existsUnique_kernel"
+    - "aatBranchLensFiniteDecoderReadingIso"
+    - "aatBranchProtocolFiniteDecoderReadingIso"
+    - "aatBranchLensKaroubiArrowEquivalence"
+    - "aatBranchProtocolKaroubiArrowEquivalence"
+  evidence:
+    - "the G-122 local multiplication is the explicit conjugation formula, not the pre-existing ordinary product instance"
+    - "assembly is injective by the established read/assemble laws and is used to prove all group axioms"
+    - "the G-122 branch covers the full RawComparison group rather than a chosen finite subgroup"
+    - "all four branches use direct assemblers and explicit object realizations before ReconstructionData derives equivalence"
+    - "tagged finite values, G-122 full-kernel torsor universality, and CS finite/Karoubi/Arrow routes are attached in the same module"
+  claim_mapping:
+    theorem_names:
+      - "twistedCodeMulEquiv"
+      - "aatBranchReconstructionEquivalence"
+      - "aatBranch_existsUnique_preimage"
+      - "aatBranchG122FullLiftFiber_existsUnique_kernel"
+    source_labels:
+      - "fixed target A mandatory four families"
+      - "fixed target B two-sided reconstruction"
+      - "fixed target C full G-122 comparison group and lift fibers"
+    conjuncts:
+      - "G-122 full comparison multiplication and inverse -> TwistedCode group and twistedCodeMulEquiv"
+      - "four-family separation and assembly -> aatBranchReconstructionData and equivalence"
+      - "same-cycle accepted connections -> tagged value/normal-form, G-122 coordinate/torsor, CS decoder/Karoubi/Arrow declarations"
+    undischarged_assumptions:
+      - "the four branches remain selected by cases rather than being fibers of one independently defined common realization category"
+      - "fixed target C comparison-group transport for every comparison in the final common category remains open"
+    acceptance_point: "the selected four-family branch and full G-122 categorical reconstruction obligation is implemented; the final non-case-defined common category is not claimed"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "full G-122 comparison coordinates carry the correct group and one-object category structure"
+      - "tagged, G-122, lens, and protocol are selected by one parameter declaration"
+      - "every selected branch has direct two-sided Hom reconstruction, object realization, uniqueness, and category equivalence"
+      - "family-specific accepted surfaces are connected in the same cycle"
+    remaining:
+      - "one non-case-defined R_Theta and M_Theta whose fibers realize the four branches"
+      - "projection, normalization, and comparison-group naturality across that final common category"
+  certificate_provenance:
+    discharged:
+      - "G-122 kernel membership is proved through restrictionHom and canonical-section right inversion"
+      - "group laws follow from explicit formulas plus injective semantic assembly"
+      - "CS and tagged assemblers reuse reviewed primitive constructors and their inverse laws"
+    unresolved:
+      - "common cross-branch data condition D_Theta outside the branch-indexed declaration"
+  proof_use:
+    used:
+      - "Cycle 60 full comparison read/assemble and multiplication formula"
+      - "Cycle 37 tagged actual/local multiplicative equivalence"
+      - "Cycle 77 CS direct assemblers and finite/Karoubi/Arrow connections"
+      - "Cycle 65 ReconstructionData theorem"
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/G122FullComparisonTwistedGroup.lean: pass; 38 declarations, standard axioms only"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/AATFourFamilyBranchReconstruction.lean: pass; 55 declarations, standard axioms only"
+  four_lane_question: "Does Cycle 78 reconstruct all four selected families under one parameter with direct two-sided Hom/object assembly, while giving the full G-122 comparison coordinates the correct twisted group and same-cycle tagged, torsor, finite-decoder, Karoubi, and Arrow connections without claiming a final non-case-defined common category?"
+  blocking_findings: []
+  next_obligation: "construct one independently defined realization/local-model category whose fibers recover all four Cycle 78 branches, prove its direct object/Hom assembly and both inverse laws, and simultaneously transport projections, normalization, and full comparison groups through that equivalence"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -8033,20 +8156,22 @@ audits:
   complete geometry外側のcoefficient・realization・coverage・overlap・raw coherenceはCycle 75で
   放電した。dependent package-base再添字付け、直接恒等・合成data、入力certificateからの外側法則閉性、
   local component計算によるexact assembly、任意candidateに対する普遍性、圏法則、Cycle 72/common graph
-  接続を同梱した。独立local objectとHom familyの組立ては未完了である。
-  direct normalization kernel自体のprimitive local syntax、および四族共通の実現圏・
-  局所モデル圏への適用は未完了である。
+  接続を同梱した。Cycle 77でlens・protocolの独立local object/Hom assemblyを、Cycle 78で
+  tagged・full G-122を含む四枝の直接assembly・両逆・圏同値を同じparameter面へ収録した。
+  direct normalization kernel自体のprimitive local syntaxと、case分岐ではない一つの実現圏・
+  局所モデル圏としての統合は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。
 - E1b の finite-restriction reconstruction と B の主同値による source-choice recovery の
-  package-level Hom-slice同定はCycle 34で接続した。canonical-normalizationを含むfull tagged categoryと
-  四分枝共通の主同値への接続は未完了である。Cycle 37のgenerated finite-local monoid同型を
-  one-object圏同値として明示する義務はCycle 38で放電した。四分枝共通surfaceへの接続と、
-  そのlocal-model categoryの任意対象に対する固定GOAL B object assemblyは未完了である。Cycle 43で
+  package-level Hom-slice同定はCycle 34で接続した。Cycle 37のgenerated finite-local monoid同型を
+  one-object圏同値として明示する義務はCycle 38で放電した。Cycle 78でcanonical-normalizationを含む
+  full tagged generated categoryを四枝共通parameterへ接続し、同枝の直接Hom/object assemblyと両逆を
+  放電した。case分岐ではない最終common local-model categoryへの統合は未完了である。Cycle 43で
   generated branchのcommon exact imageにも同じfinite-local one-object圏同値を移したが、四族統合や
   任意対象assemblyを代替するものではない。Cycle 44でそのexact imageからcommon tagged fiberへの
   忠実なinclusionを構成したが、common local-model category全体の同値はまだ主張しない。
 - E2 の product-lens / protocol 可逆変更層はCycle 27--28で共通
   `FiniteReading`/Dへ接続済み。Cycle 29でgeneral observation-aware protocol Homも
   full tagged table上の決定性・effectivenessへ接続し、Cycle 30でlens一般意味保存射層も
-  full fiber上の決定性・total effectivenessへ接続した。四分枝統合は未完了である。
+  full fiber上の決定性・total effectivenessへ接続した。Cycle 77で両CS枝、Cycle 78で四枝parameterへ
+  統合したが、最終common categoryのprojection・normalization・comparison-group輸送は未完了である。
