@@ -15,6 +15,9 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## active
 
+- [G-125-aat-obstruction-diagnostic-bridge](G-125-aat-obstruction-diagnostic-bridge.md)
+  (Rising Sea第2・3章の接続。採用する入力族の障害類とlaw-value診断を比較し、
+  零性の判定とreading変更による不変性を結ぶ)
 - [G-124-aat-local-semantic-reconstruction](G-124-aat-local-semantic-reconstruction.md)
   (G-123後続。整合する局所データの族から実現・許容射・比較を再構成し、
   有限データで決まる条件を操作の連結性から判定する)
@@ -29,9 +32,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
 
 ## draft（人間の確認待ち）
-- [G-125-aat-obstruction-diagnostic-bridge](G-125-aat-obstruction-diagnostic-bridge.md)
-  (Rising Sea第2・3章の接続。採用する入力族の障害類とlaw-value診断を比較し、
-  零性の判定とreading変更による不変性を結ぶ)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
