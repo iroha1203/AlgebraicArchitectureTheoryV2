@@ -7315,13 +7315,13 @@ selection:
   unchecked:
     - "four-family target B integration"
 result:
-  proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "LawfulCode.id and LawfulCode.comp are operations on CompleteGeometryGraphCode values and are uniquely characterized by their assembly formulas. Assembly injectivity proves both unit laws and associativity. The resulting Object category uses lawful independent codes as Homs. readingFunctor and assemblyFunctor preserve identities and composition; explicit HomSeparation, HomAssembly, and ObjectAssembly form ReconstructionData and produce an equivalence with GeomReadCategory. The same lawful category maps faithfully to the Cycle 66 raw common graph category, and reading an actual morphism commutes with that map."
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "LawfulCode.id and LawfulCode.comp transport the actual category operations along the Cycle 71 Hom equivalence and are uniquely characterized by their assembly formulas. Assembly injectivity proves both unit laws and associativity. The resulting package-indexed category uses lawful independent codes as Homs; readingFunctor and assemblyFunctor preserve identities and composition, and explicit HomSeparation and HomAssembly give exact Hom recovery. The reflexive object bridge only records that both sides are indexed by the same GeometryPackage and does not discharge independent local-object assembly. The same category maps faithfully to the Cycle 66 raw common graph category, and reading an actual morphism commutes with that map."
   completion_candidate: no
   lean_artifacts:
     - "CompleteGeometryGraphCategoryEquivalence.LawfulCode.eq_id_iff_assemble_eq"
     - "CompleteGeometryGraphCategoryEquivalence.LawfulCode.eq_comp_iff_assemble_eq"
-    - "CompleteGeometryGraphCategoryEquivalence.Object.instCategory"
+    - "CompleteGeometryGraphCategoryEquivalence.PackageIndexedObject.instCategory"
     - "CompleteGeometryGraphCategoryEquivalence.readingFunctor"
     - "CompleteGeometryGraphCategoryEquivalence.assemblyFunctor"
     - "CompleteGeometryGraphCategoryEquivalence.reconstructionData"
@@ -7329,10 +7329,10 @@ result:
     - "CompleteGeometryGraphCategoryEquivalence.commonSurfaceFunctor"
     - "CompleteGeometryGraphCategoryEquivalence.commonSurfaceFunctorFaithful"
   evidence:
-    - "both code operations have exact assembly formulas and uniqueness iff theorems"
+    - "both transported code operations have exact assembly formulas and uniqueness iff theorems"
     - "category laws are proved through Cycle 71 assembly separation"
     - "the reconstruction Hom equivalence computes as read/assemble in both directions"
-    - "object assembly selects the underlying package and returns a reflexive local isomorphism"
+    - "the package-indexed bridge selects the already stored package and returns a reflexive isomorphism"
     - "commonSurfaceFunctor preserves identity/composition and is faithful"
   claim_mapping:
     theorem_names:
@@ -7342,38 +7342,44 @@ result:
       - "equivalence"
       - "commonSurface_map_read"
     source_labels:
-      - "G-124 fixed target B / local model category and B1"
+      - "G-124 fixed target B / Hom reconstruction checkpoint"
     conjuncts:
-      - "local category / Object has lawful complete codes as Homs with code identity and composition"
+      - "package-indexed category / lawful complete codes are Homs with transported identity and composition"
       - "identity, composition, and associativity / LawfulCode category laws"
       - "separation and assembly / explicit reconstructionData fields"
       - "two-sided Hom recovery / homEquiv_apply and homEquiv_symm_apply"
-      - "object recovery / objectAssembly"
-      - "main equivalence / equivalence"
+      - "package-indexed object bridge / objectAssembly"
+      - "package-indexed categorical equivalence / equivalence"
       - "accepted graph connection / commonSurfaceFunctor and commonSurface_map_read"
     undischarged_assumptions:
       - "Cycle 71 predecessor and cross-component law certificates remain the supplied direction hypotheses of each lawful CompleteGeometryGraphCode"
+      - "componentwise closure of identity and composition has not been constructed"
+      - "independently supplied coherent local objects have not been assembled"
       - "no new premise is added by Cycle 72"
-    acceptance_point: "the lawful complete-code Hom family now forms the local category and realizes both Hom and object reconstruction, giving the actual geometry categorical equivalence while retaining the accepted raw graph reading as a faithful functorial surface"
+    acceptance_point: "the lawful complete-code Hom family now has a package-indexed categorical presentation with exact Hom recovery and a same-cycle faithful common-surface connection; direct certificate-level operations and independent local-object assembly remain open"
     port_status: not-applicable
   nonclaims:
+    - "transported identity and composition discharge fixed-target B componentwise closure"
+    - "the reflexive package wrapper discharges fixed-target B independent local-object assembly"
     - "the four required G-124 families already share this one local-model category"
     - "G-124 as a whole is complete"
 audits:
   premise_delta:
     discharged:
-      - "complete-code identity and composition"
-      - "complete-code category laws"
+      - "transported complete-code identity and composition"
+      - "category laws for the transported operations"
       - "read/assemble functoriality and categorical Hom equivalence"
-      - "fixed-target B object assembly for the complete-geometry branch"
       - "same-cycle faithful connection to the accepted common graph category"
     remaining:
+      - "componentwise identity and composition closed directly from local certificates"
+      - "fixed-target B object assembly from an independently supplied coherent local object"
       - "four-family target B integration"
   certificate_provenance:
     discharged:
       - "category operations are transported along the reviewed Cycle 71 Hom equivalence and uniquely determined by their assembly equations"
-      - "object assembly is the explicit underlying package, not an essential-image membership witness"
     unresolved:
+      - "direct local-certificate provenance for identity and composition"
+      - "independent local-object provenance rather than a GeometryPackage wrapper"
       - "cross-family common object and Hom construction"
   proof_use:
     used:
@@ -7384,18 +7390,18 @@ audits:
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
-  target_fitting: none-found
-  target_fitting_reason: "the local Hom type is the independently defined lawful code from Cycle 71; no completed morphism field or reader-image membership is added; transported operations are exposed by unique assembly theorems and the raw graph category remains a separate faithful target"
+  target_fitting: found-and-bounded
+  target_fitting_reason: "the local Hom type remains the independent lawful code and no completed morphism field or reader-image membership is added, but the operations are transported through assembled global morphisms and the object is a GeometryPackage wrapper; both are explicitly bounded as checkpoint results rather than fixed-target B discharge"
   vacuity: none-found
-  vacuity_reason: "the Hom equivalence is quantified over every geometry package pair and every lawful code, object assembly covers every local object, and Cycle 71 supplies concrete positive and rejected certificates for the Hom predicate"
+  vacuity_reason: "the Hom equivalence is quantified over every geometry package pair and every lawful code, and Cycle 71 supplies concrete positive and rejected certificates for the Hom predicate; no claim is made for independent local objects"
   one_way_as_equivalence: none-found
-  goal_or_report_reinterpretation: none-found
-  four_lane_question: "Can lawful complete graph codes themselves form the local Hom category, with exact read/assemble compatibility yielding a categorical equivalence to actual geometry and explicit object assembly, while the common raw graph surface is reached functorially in the same cycle and no completed morphism is retained in a code?"
+  goal_or_report_reinterpretation: "initial fixed-target B discharge claim withdrawn after formal review; retained result is an explicitly package-indexed proof checkpoint"
+  four_lane_question: "Does the revised Cycle 72 honestly prove only a package-indexed category equivalence with exact Hom recovery and a faithful common-surface connection, while leaving componentwise certificate closure and independent local-object assembly open?"
   validation_refs:
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryGraphCategoryEquivalence.lean: pass"
-    - "#assert_standard_axioms_only CompleteGeometryGraphCategoryEquivalence: 35 declarations, standard axioms only"
+    - "#assert_standard_axioms_only CompleteGeometryGraphCategoryEquivalence: 36 declarations, standard axioms only"
   blocking_findings: []
-  next_obligation: "construct the common four-family local-model object and Hom surfaces and instantiate this complete-geometry equivalence together with the accepted tagged-operation, G-122, lens, and protocol branches"
+  next_obligation: "replace transported complete-code operations by componentwise constructors with local-certificate closure, then construct and assemble an independently supplied coherent local object before four-family integration"
 ```
 
 ## 未完了 ledger
@@ -7557,10 +7563,11 @@ audits:
   Cycle 71ではCycle 67・69・70ですでに内部data/Prop分離されたlaw-bearing codeを再利用し、Cycle 71固有の外側法則を別predicateに置いた。明示的なcoverage保存certificate、overlapの双方向比較をまとめ、
   overlap isomorphismを保持せずに組み立て、`PackageTotalHom`と
   `GeometryTotalHom`のread/assemble両逆、assemblyの単射性、accepted common complete-map graph面での
-  分離まで同梱した。Cycle 72ではlawful complete code自体をHomとする圏を構成し、恒等・合成の
-  assemblyによる一意特徴づけ、圏法則、read/assemble関手、Hom分離・Hom組立て・対象組立てから
-  actual geometry圏との圏同値を導いた。同じlawful圏からaccepted common graph圏への忠実関手も
-  同梱した。direct normalization kernel自体のprimitive local syntax、および四族共通の実現圏・
+  分離まで同梱した。Cycle 72ではlawful complete code自体をHomとするpackage-indexed圏を構成し、
+  輸送された恒等・合成のassemblyによる一意特徴づけ、圏法則、read/assemble関手、Hom分離・Hom組立てから
+  actual geometry圏とのpackage-indexed圏同値を導いた。同じ圏からaccepted common graph圏への忠実関手も
+  同梱した。ただし成分別certificate閉性と独立local objectの組立ては未完了である。
+  direct normalization kernel自体のprimitive local syntax、および四族共通の実現圏・
   局所モデル圏への適用は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
 - E1 の actual source-choice Aut outputについて、index equality/membershipとcategorical packagingを含む計算可能な延長。

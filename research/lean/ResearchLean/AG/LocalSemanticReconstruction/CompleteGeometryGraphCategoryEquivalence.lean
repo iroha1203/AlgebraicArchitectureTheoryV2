@@ -3,20 +3,22 @@ import ResearchLean.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory
 import Formal.Util.AssertStandardAxioms
 
 /-!
-# The category of lawful complete geometry graph codes
+# A package-indexed category of lawful complete geometry graph codes
 
 Cycle 72 promotes the Cycle 71 read/assemble equivalence from each Hom type to
-an equivalence of categories.  The local Hom type is the lawful independent
-`CompleteGeometryGraphCode`, not the raw common graph bundle and not an image
-subtype.  Identity and composition are operations on these codes, their
-assembly formulas determine them uniquely, and the category laws follow from
-the separation theorem proved in Cycle 71.
+an equivalence of package-indexed categories.  The target Hom type is the
+lawful independent `CompleteGeometryGraphCode`, not the raw common graph
+bundle and not an image subtype.  Identity and composition are transported
+along the Hom equivalence, their assembly formulas determine them uniquely,
+and the category laws follow from the separation theorem proved in Cycle 71.
 
-The resulting reading functor has explicit Hom separation, Hom assembly, and
-object assembly.  The general reconstruction theorem therefore gives an
-equivalence with the actual complete-geometry category.  In the same cycle a
-functor to the accepted raw `CompleteMapGraphs` category records that the new
-lawful category still exposes the existing common graph surface.
+The resulting reading functor has explicit Hom separation and Hom assembly.
+Because both categories use the same geometry packages as objects, a reflexive
+package-indexed object bridge supplies the remaining categorical datum.  This
+is not the fixed-target B assembly of an independently supplied coherent local
+object.  In the same cycle a functor to the accepted raw `CompleteMapGraphs`
+category records that the lawful Hom code still exposes the existing common
+graph surface.
 
 ## Premise boundary
 
@@ -28,14 +30,13 @@ not add a completed geometry morphism or reader-image membership to a code.
 
 ## Implementation notes
 
-The category operations are transported along the already reviewed Cycle 71
-Hom equivalence and then characterized by unique assembly formulas.  Expanding
-them into a second component-by-component implementation would duplicate the
-dependent reindexing already proved by the package and realization assemblers.
-Using raw `CompleteMapGraphs` as the Hom type was also rejected: that category
-forgets the local laws and its reading functor is not full.  The separate
-`commonSurfaceFunctor` below retains that accepted diagnostic surface without
-weakening the lawful local Hom type.
+The category operations in this file are deliberately recorded as transported
+operations.  Their unique assembly properties do not prove the still-open
+fixed-target B requirement that identity and composition be constructed
+componentwise from the local certificates.  Using raw `CompleteMapGraphs` as
+the Hom type would instead forget the local laws and its reading functor is not
+full.  The separate `commonSurfaceFunctor` below retains that accepted
+diagnostic surface without weakening the lawful Hom type.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction
@@ -54,16 +55,17 @@ namespace LawfulCode
 
 open CompleteGeometryGraphAssembly
 
-/-- Identity in the lawful complete-code Hom family.  Its computational graph
-data and every local law are recovered by the Cycle 71 reader. -/
+/-- Identity transported to the lawful complete-code Hom family through the
+Cycle 71 reader.  This is not the pending componentwise identity constructor. -/
 noncomputable def id {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) :
     CompleteGeometryGraphCode G G :=
   CompleteGeometryGraphCode.read (GeometryTotalHom.id G)
 
-/-- Composition in the lawful complete-code Hom family.  Assembly first
-composes the independently reconstructed morphisms; reading then returns the
-unique lawful code for that composite. -/
+/-- Composition transported to the lawful complete-code Hom family.  Assembly
+first composes the reconstructed morphisms; reading then returns the unique
+lawful code for that composite.  Direct certificate-level composition remains
+a separate fixed-target B obligation. -/
 noncomputable def comp {U : AtomCarrier.{u}}
     {G H K : GeometryPackage.{u, v} U}
     (first : CompleteGeometryGraphCode G H)
@@ -161,16 +163,22 @@ theorem assoc {U : AtomCarrier.{u}}
 
 end LawfulCode
 
-/-- A geometry package regarded as an object whose morphisms are lawful
-complete geometry graph codes. -/
-structure Object (U : AtomCarrier.{u}) where
+/-- A geometry package regarded as a package-indexed object whose morphisms
+are lawful complete geometry graph codes.  This wrapper is not an independently
+supplied coherent local-value object. -/
+structure PackageIndexedObject (U : AtomCarrier.{u}) where
   /-- Package indexing the source and target types of every local graph. -/
   package : GeometryPackage.{u, v} U
 
-namespace Object
+/-- Short name retained for the category API.  Its definition makes explicit
+that this is only the package-indexed checkpoint object. -/
+abbrev Object := PackageIndexedObject
+
+namespace PackageIndexedObject
 
 /-- Lawful complete geometry graph codes form a category. -/
-noncomputable instance {U : AtomCarrier.{u}} : Category (Object.{u, v} U) where
+noncomputable instance {U : AtomCarrier.{u}} :
+    Category (PackageIndexedObject.{u, v} U) where
   Hom source target :=
     CompleteGeometryGraphAssembly.CompleteGeometryGraphCode
       source.package target.package
@@ -180,7 +188,7 @@ noncomputable instance {U : AtomCarrier.{u}} : Category (Object.{u, v} U) where
   comp_id := LawfulCode.comp_id
   assoc := LawfulCode.assoc
 
-end Object
+end PackageIndexedObject
 
 /-! ## Exact reading and reconstruction -/
 
@@ -235,8 +243,9 @@ def homAssembly (U : AtomCarrier.{u}) :
       (CompleteGeometryGraphCode.assemble code) = code
     exact CompleteGeometryGraphCode.read_assemble code
 
-/-- Every lawful local object is read from its underlying geometry package,
-with no choice and no essential-image predicate. -/
+/-- Package-indexed object bridge.  It projects the geometry package already
+stored by the wrapper and therefore does not discharge assembly of an
+independently supplied fixed-target B local object. -/
 def objectAssembly (U : AtomCarrier.{u}) :
     ObjectAssembly (readingFunctor.{u, v} U) where
   assembleObject object := object.package
@@ -244,16 +253,17 @@ def objectAssembly (U : AtomCarrier.{u}) :
     rcases object with ⟨package⟩
     exact Iso.refl (⟨package⟩ : Object U)
 
-/-- The fixed-target B reconstruction contract for lawful complete graph
-codes: Hom separation, Hom assembly, and object assembly are all explicit. -/
+/-- Reconstruction data for the package-indexed checkpoint: Hom separation,
+Hom assembly, and the reflexive package wrapper bridge are explicit.  This is
+not the fixed-target B independent-object reconstruction datum. -/
 def reconstructionData (U : AtomCarrier.{u}) :
     ReconstructionData (readingFunctor.{u, v} U) where
   separation := homSeparation U
   homAssembly := homAssembly U
   objectAssembly := objectAssembly U
 
-/-- Actual complete geometry and lawful complete graph codes are equivalent as
-categories. -/
+/-- Actual complete geometry and its package-indexed lawful Hom presentation
+are equivalent as categories. -/
 noncomputable def equivalence (U : AtomCarrier.{u}) :
     GeomReadCategory.{u, v} U ≌ Object.{u, v} U :=
   (reconstructionData U).equivalence
@@ -276,8 +286,8 @@ theorem homEquiv_symm_apply {U : AtomCarrier.{u}}
 
 /-! ## Same-cycle connection to the accepted common graph surface -/
 
-/-- Forget only the local laws, exposing each lawful morphism through the
-accepted raw complete-map graph category. -/
+/-- Expose each lawful morphism through the accepted raw complete-map graph
+category by assembling it and applying the established common reader. -/
 noncomputable def commonSurfaceFunctor (U : AtomCarrier.{u}) :
     Object.{u, v} U ⥤ CompleteGeometryGraphCategory.Object.{u, v} U where
   obj object := ⟨object.package⟩
@@ -305,7 +315,7 @@ theorem commonSurface_map_read {U : AtomCarrier.{u}}
       readCompleteMapGraphs morphism :=
   CompleteGeometryGraphCode.completeMapGraphs_read morphism
 
-/-- Forgetting local laws is faithful because the common graph surface
+/-- The assembled common-surface map is faithful because that surface
 separates lawful codes. -/
 instance commonSurfaceFunctorFaithful (U : AtomCarrier.{u}) :
     (commonSurfaceFunctor.{u, v} U).Faithful where
