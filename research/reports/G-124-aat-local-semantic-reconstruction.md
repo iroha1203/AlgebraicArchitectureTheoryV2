@@ -147,12 +147,15 @@
   merge commit `b0a2d4b2690a1aabdf64f033c9fc6ca975f7445e`
 - Cycle 69 accepted PR: [#4783](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4783),
   merge commit `871eb6dc7e7ad8abda857aef261b1f2e4131eb26`
+- Cycle 70 accepted PR: [#4785](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4785),
+  merge commit `c2e27b52fe60586579190af1267014d49cb65376`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: operation・invariant・signature・support・axis・geometry observable・raw transportの
-  graph codeとlaw-bearing bundleを構成し、実質的両逆・分離・恒等/合成・actual field回収を同時に示す
-- next proof obligation: Cycle 67・69の独立codeからambient `PackageTotalHom`を組み立て、Cycle 70の
-  relative bundleとcoverage・overlapをcomplete coherent Homへまとめて`GeometryTotalHom`の両逆へ接続する
+- current proof obligation: Cycle 67・69の独立codeからambient `PackageTotalHom`を組み立て、Cycle 70の
+  relative bundleとcoverage・overlapをcomplete coherent Homへまとめ、`GeometryTotalHom`との両逆・分離・
+  common graph surface接続を同時に示す
+- next proof obligation: complete graph codeの恒等・合成と圏法則を構成し、actual geometry Hom圏との
+  Hom同値をfunctorialな圏同値へ持ち上げ、fixed target Bのlocal-model側へ接続する
 
 ## Cycle 1 — rejected
 
@@ -7143,6 +7146,115 @@ audits:
   next_obligation: "replace the relative ambient PackageTotalHom with assembly from Cycle 67 and Cycle 69 independent codes, combine coverage and overlap, and prove GeometryTotalHom read/assemble inverses"
 ```
 
+## Cycle 71: complete geometry graph assembly
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 71
+status: result-proposed
+branch: codex/4711-g124-full-geometry-graph-assembly
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: c2e27b52fe60586579190af1267014d49cb65376
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 70 acceptance: Issue comment 5739475931; Cycle 71 selection: Issue comment 5739492817"
+  proof_dag_predecessors:
+    - "Cycle 67 independent equivalence and ring-hom graph coherence"
+    - "Cycle 69 context equivalence and observable naturality coherence"
+    - "Cycle 70 remaining-component graph coherence"
+    - "Cycle 64 common complete-map graph separation"
+  proof_obligation: "assemble the complete package and geometry Hom from independent graph codes plus local coverage and overlap, prove exact two-sided recovery and separation, and connect the result to the accepted common graph surface in the same cycle"
+  selection_reason: "this closes the inherited PackageTotalHom index and the complete Hom assembly together, rather than splitting assembly, inverse laws, and common-surface integration across small cycles"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryGraphAssembly.lean"
+  risks:
+    - "a PackageTotalHom or GeometryTotalHom might be retained inside the independent code"
+    - "dependent coordinate and realization fields might recover only after an untracked cast"
+    - "coverage or overlap might be silently inferred rather than explicit local input"
+    - "the new code might not be separated by the accepted common graph reading"
+  unchecked:
+    - "identity and composition laws for the complete independent code category"
+    - "object assembly and the final four-family local-model equivalence"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "PackageGraphCode assembles the primitive, algebraic, context/observable, operation, invariant, and signature codes into PackageTotalHom and has exact read/assemble inverses. CompleteGeometryGraphCode adds only coefficient graph data, the Cycle 70 relative code, coverage, and overlap; it stores neither PackageTotalHom nor GeometryTotalHom. Its assemble/read maps are exact two-sided inverses despite the dependent base index. Assembly is injective, and the resulting code is connected immediately to readCompleteMapGraphs; equality on that established surface separates complete independent codes."
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.PackageGraphCode"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.PackageGraphCode.assemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.PackageGraphCode.read_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.CompleteGeometryGraphCode"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.assemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.read_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.equivGeometryTotalHom"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.assemble_injective"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.completeMapGraphs_read"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.completeMapGraphs_injective"
+  acceptance:
+    fixed_question: "Do independent algebraic, context-observable, and remaining-component graph codes, together with local coverage and overlap conditions, assemble a complete GeometryTotalHom and form two-sided read/assemble inverses without retaining a PackageTotalHom or GeometryTotalHom in the code?"
+    statement_status: implemented
+    proof_status: focused-pass
+    premise_status:
+      discharged:
+        - "ambient package Hom / assembled from independent package graph data and local laws"
+        - "complete geometry Hom / assembled from package code, coefficient graph, remaining code, coverage, and overlap"
+        - "dependent base transport / exact read-assemble and assemble-read laws"
+        - "code separation / injectivity of complete assembly"
+        - "common surface / immediate readCompleteMapGraphs recovery and injectivity"
+      undischarged: []
+    undischarged_assumptions: []
+    acceptance_point: "independent complete graph codes and actual GeometryTotalHom values are equivalent, and the accepted common graph surface separates those codes"
+    port_status: not-applicable
+  nonclaims:
+    - "complete graph codes already carry direct identity and composition operations"
+    - "the Hom equivalence is already packaged as a category equivalence"
+    - "fixed target B object assembly or the four-family local-model equivalence is complete"
+    - "G-124 as a whole is complete"
+audits:
+  premise_delta:
+    source_derived:
+      - "coverage and overlap remain explicit local endpoint conditions"
+      - "the dependent remaining code is indexed only by the package and coefficient maps assembled from independent code"
+    discharged:
+      - "independent PackageTotalHom assembly and exact recovery"
+      - "independent GeometryTotalHom assembly and exact recovery"
+      - "complete-code separation"
+      - "same-cycle connection to the common complete-map graph surface"
+    remaining:
+      - "complete-code category structure and functorial category equivalence"
+      - "fixed target B object assembly and four-family integration"
+  certificate_provenance:
+    discharged:
+      - "package and complete Hom certificates arise from named local laws, coverage, and overlap fields"
+    unresolved:
+      - "successor categorical and object-level obligations"
+  proof_use:
+    used:
+      - "Cycle 67 algebraic graph inverses reconstruct equivalences and coefficient maps"
+      - "Cycle 69 context/observable inverses reconstruct the equation transport"
+      - "Cycle 70 remaining-code inverses reconstruct operation, invariant, signature, realization, and raw coherence"
+      - "dependent equality transports the remaining code across reconstructed package equality"
+      - "Cycle 64 common graph injectivity separates assembled complete morphisms"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  target_fitting_reason: "neither independent code stores a completed package or geometry Hom, both inverse directions are proved, and the common-surface connection is included rather than deferred"
+  vacuity: none-found
+  vacuity_reason: "the equivalence is quantified over arbitrary GeometryPackage endpoints and arbitrary actual GeometryTotalHom values, while the reverse law recovers every independent graph and local-condition code"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  four_lane_question: "Do independent algebraic, context-observable, and remaining-component graph codes, together with local coverage and overlap conditions, assemble a complete GeometryTotalHom and form two-sided read/assemble inverses without retaining a PackageTotalHom or GeometryTotalHom in the code?"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryGraphAssembly.lean: pass"
+    - "#assert_standard_axioms_only CompleteGeometryGraphAssembly: 102 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "define identity and composition directly on complete graph codes, prove the category laws and read/assemble compatibility, and lift the Hom equivalence to the actual geometry category before connecting fixed target B object assembly"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -7299,7 +7411,9 @@ audits:
   operation・invariant・signature・support・axis・geometry-observable・raw transportを
   dependent graph codeと独立lawへ分け、一添字/二添字familyのread/assemble両逆とtagged分離、
   realization supplyの両逆・恒等・合成、actual complete-map graph七成分の一括回収まで同梱した。
-  残るcoverage・overlapを含む独立coherence部分圏とfull Hom組立て、
+  Cycle 71ではCycle 67・69・70の独立codeとcoverage・overlapをまとめ、`PackageTotalHom`と
+  `GeometryTotalHom`のread/assemble両逆、assemblyの単射性、accepted common complete-map graph面での
+  分離まで同梱した。残るcomplete-code圏の恒等・合成とactual geometry圏との圏同値、
   direct normalization kernel自体のprimitive local syntax、および四族共通の実現圏・局所モデル圏への
   適用は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
