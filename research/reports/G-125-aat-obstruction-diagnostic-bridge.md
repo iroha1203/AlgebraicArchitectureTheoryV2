@@ -63,13 +63,15 @@
 - 完了: 同じ`Bool × Bool` source上に`eval(b,h)=b`という非定数Lawを構成し、粗細reading双方の
   adequacy、canonical factorが第一射影で非単射であることを証明する。紙上設計の
   `g00--g01`と`g10--g11`だけを列挙した明示relationから、選定入力の`R_q`を導出する。
-- 未完了: primitive generator Atomを同じ入力へ接続する。
+- 完了: 8点のpoint Atomと4つのprimitive generator Atomを同じ実`AtomCarrier`へ載せる。
+  generator Atomのsubject・Law index・評価値をAtom座標へ保持し、architecture relationを
+  Cycle 14の2辺presentationと一致させる。
+- 未完了: combined carrier上へpoint support context・coverage・continuityを持ち上げる。
 - 完了（仮定相対）: supplied face-index-empty nerveのpresentation係数cochainと、条件付きactual Ob層の実
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
 - 未完了: B1・B2、C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
-- 次のproof obligation: primitive generatorをpoint Atomと同じAAT carrierへ載せ、選定Law評価と
-  `GeneratorPresentation`へ接続する。続いてactual Čech sourceから既存law-generated complexへの比較を
-  同一入力上の実H¹ mapへ上げる。
+- 次のproof obligation: combined point/generator carrier上へpoint support context・coverage・continuityを
+  持ち上げ、Cycle 13のactual Čech coverをこのfull input siteへ移す。続いて同一入力上の実H¹ mapへ上げる。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -1694,4 +1696,128 @@ audits:
     - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.PointAtomLawInput: pass; 3716 jobs"
   blocking_findings: []
   next_obligation: "represent the selected primitive generators as actual Atoms in the point-Atom AAT carrier, connect their Law evaluation and relation presentation, then construct the same-input actual H1 map"
+```
+
+## Cycle 15 — point Atomとprimitive generator Atomの同一carrier化
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 15
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: dda03fc3d3b326c889f4c9231ee556adec2cc237
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "Issue #4791 paper design sections 1 and 10 after Cycle 14 merge dda03fc3d3b326c889f4c9231ee556adec2cc237"
+  proof_dag_predecessors:
+    - "eight-point geometric point type: Cycle 9"
+    - "selected Law family and explicit primitive presentation: Cycle 14"
+  proof_obligation: "represent the selected geometric points and primitive Law occurrences as actual Atoms in one architecture carrier"
+  selection_reason: "the same-input requirement cannot be met while point support and primitive generators live only in unrelated external types"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/PointGeneratorAtomInput.lean"
+    - "PointGeneratorAtomInput.carrier"
+    - "PointGeneratorAtomInput.object"
+    - "PointGeneratorAtomInput.generatorAtom_payload"
+    - "PointGeneratorAtomInput.generatorAtom_relation_iff"
+  risks:
+    - "calling primitive generators Atoms without placing them in AtomCarrier.Atom"
+    - "copying the presentation relation into an unrelated certificate"
+    - "claiming the point-only site has already been lifted to the combined carrier"
+  unchecked:
+    - "fixed-head independent review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "One AtomCarrier now has Atom = Point ⊕ PrimitiveGenerator laws. Point atoms retain their geometric subject; generator atoms retain source, Law index, and evaluated Law value in subject, predicate, and payload. The architecture object contains every selected Atom, and its relation between generator atoms is definitionally the Cycle 14 presentation relation. Mixed and point-point primitive edges are excluded."
+  completion_candidate: no
+  lean_artifacts:
+    - "PointGeneratorAtomInput.AtomKind"
+    - "PointGeneratorAtomInput.Subject"
+    - "PointGeneratorAtomInput.Predicate"
+    - "PointGeneratorAtomInput.Payload"
+    - "PointGeneratorAtomInput.Atom"
+    - "PointGeneratorAtomInput.carrier"
+    - "PointGeneratorAtomInput.pointAtom"
+    - "PointGeneratorAtomInput.generatorAtom"
+    - "PointGeneratorAtomInput.object"
+    - "PointGeneratorAtomInput.pointAtom_mem_family"
+    - "PointGeneratorAtomInput.generatorAtom_mem_family"
+    - "PointGeneratorAtomInput.generatorAtom_subject"
+    - "PointGeneratorAtomInput.generatorAtom_predicate"
+    - "PointGeneratorAtomInput.generatorAtom_payload"
+    - "PointGeneratorAtomInput.generatorAtom_relation_iff"
+    - "PointGeneratorAtomInput.pointAtom_not_related_left"
+    - "PointGeneratorAtomInput.pointAtom_not_related_right"
+  evidence:
+    - "carrier.Atom is the explicit sum of the selected point and primitive-generator types"
+    - "generatorAtom is the right injection, not a proposition asserting provenance"
+    - "generator payload is laws.eval at the retained Law and source"
+    - "object.configuration.relation pattern-matches two generator Atoms and delegates exactly to presentation.relation"
+  claim_mapping:
+    theorem_names:
+      - "PointGeneratorAtomInput.generatorAtom_mem_family"
+      - "PointGeneratorAtomInput.generatorAtom_subject"
+      - "PointGeneratorAtomInput.generatorAtom_predicate"
+      - "PointGeneratorAtomInput.generatorAtom_payload"
+      - "PointGeneratorAtomInput.generatorAtom_relation_iff"
+    source_labels:
+      - "GOAL A common Atom and Law input"
+      - "Issue #4791 paper design section 10 AAT connection"
+      - "Cycle 14 selected primitive presentation"
+    conjuncts:
+      - "point and generator occurrences share one carrier -> carrier and object"
+      - "generator Atom provenance retains selected Law evaluation -> subject, predicate, payload theorems"
+      - "AAT relation equals the selected primitive presentation -> generatorAtom_relation_iff"
+    undischarged_assumptions:
+      - "point-support contexts, admissible coverage, and continuity must be rebuilt on the combined object"
+      - "the combined input must replace the point-only object in actual Čech cover construction"
+      - "H1 map, B1, full B2, C1, C2, and fixed zero/nonzero diagnostic data remain"
+    acceptance_point: "primitive generators are actual Atoms in the same carrier as geometric points, with field-level Law provenance and the actual presentation relation"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "Cycle 9 supplies Point"
+      - "Cycle 14 supplies laws, PrimitiveGenerator laws, and presentation"
+    direction_hypothesis: []
+    discharge_required:
+      - "lift the point-support context/site/continuity construction to this combined carrier"
+      - "construct the same-input actual H1 comparison and specified obstruction classes"
+    conclusion_equivalent_risk:
+      - "the relation field delegates to presentation.relation and stores no connectivity, R_q, H1, or zero-class result"
+      - "the module explicitly does not identify this object with the already continuous point-only site"
+  premise_delta:
+    discharged:
+      - "actual Atom provenance for primitive generators"
+      - "one carrier containing both selected point and generator Atoms"
+      - "Atom-coordinate provenance for generator source, Law index, and value"
+      - "architecture relation agreement with the primitive presentation"
+    remaining:
+      - "combined context/site/coverage/continuity and actual Čech migration"
+      - "same-input H1, B1, full B2, C1, C2 and zero/nonzero fixed data"
+  certificate_provenance:
+    discharged:
+      - "sum injections construct the actual Atoms"
+      - "generator payload computes the existing selected Law evaluation"
+      - "architecture relation computes the existing explicit sourceRelation through presentation"
+    unresolved:
+      - "combined-site context visibility and coverage witnesses"
+  proof_use:
+    used:
+      - "selected laws determine generator Atom predicate and payload"
+      - "selected presentation determines the architecture relation"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-for-combined-atom-carrier-obligation
+  target_fitting: none-found
+  vacuity: "both sum branches are inhabited; the object contains eight point Atoms and four generator Atoms, while the presentation has the two nontrivial Cycle 14 edges"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/ObstructionDiagnosticBridge/PointGeneratorAtomInput.lean: pass; 35 namespace declarations, standard axioms only"
+    - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.PointGeneratorAtomInput: pass; 3717 jobs"
+  blocking_findings: []
+  next_obligation: "lift point-support contexts, coverage, generated-topology continuity, and actual Cech covers to the combined point/generator object"
 ```
