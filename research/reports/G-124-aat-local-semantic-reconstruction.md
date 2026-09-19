@@ -8605,3 +8605,57 @@ supportは途中の加算・乗算の引数も含む。比較するtableには�
 有限図式からの全object/Hom構成への接続は引き続き未完了であり、最初の検証点Iは未達である。
 明示25宣言の`#print axioms`とnamespace108宣言の監査は標準公理のみ。
 module登録と差分scanを確認し、Research全体buildは実行していない。
+
+#### 実現の選択に先行する共通queryと完全対象の有限片
+
+同じ独立検証の継続として、共通queryの添字・値型を、選択されたcore/site/係数環から切り離した。
+Cycle 79と固定GOALカードを維持し、正式PR査読による受理はまだ行っていない。
+先の「共通queryとobject接続は未完成」という進捗記録に対し、この節が追加の証拠を記録する。
+各namespaceのprefixは`AAT.AG.LocalSemanticReconstruction`。
+
+| Source / namespace末尾 | 構成と証明 |
+| --- | --- |
+| `IndependentRawCandidateReadings.lean` / `IndependentRawCandidate` | `Query A`はcandidate architecture参照だけを受け、site・preorder arrow・係数環を受けない。raw polynomial値はraw carrierとcandidate zeroによる`Sparse`。imageの添字はcontextの対とし、readabilityは後から点のactive条件で判定。`lower`・`raise`・両逆、`rawTableEquiv`・`assemble_read`・`read_assemble`が元の全raw系を回復 |
+| `IndependentGeneratedObjectMatching.lean` / `IndependentGeneratedObjectMatching` | family・configuration・architecture-object候補との一致を、原始admission・relation・選択値の点条件で判定。不一致には具体的な点の反証を要求。`family_iff`・`configuration_iff`・`object_iff`で生成参照との一致を導き、`eq_read`・`unique`で照合表の自由度を排除。`generated_object_active`で全域の存在条件をfieldに置かずactive参照を導く |
+| `IndependentOverlapCandidateReadings.lean` / `IndependentOverlapCandidate` | overlap結果を原始context fieldに分解し、candidate contextとの一致を各点で検査。`ContextMatch.matches_iff`・`eq_read`で照合flagを一意に決定。4つの順序条件はcandidate contextを直接引数に取り、`originalLaws`で元のoverlap条件へ戻す。`readingEquiv`・両逆で全native overlapを回復 |
+| `IndependentGeometryPrimitiveDeclaration.lean` / `IndependentGeometryPrimitive` | `Query U`はextraction・composition・formation・invariant・signature・operation・circuit・coefficient・matching・candidate objectの原始点という固定constructor群を持つ。全native実現で同じ添字・値型を使う。candidate objectの応答は単一flagでactiveになり、`inactive_eq_none`で非active応答を一意に固定 |
+| `IndependentGeometryPrimitiveAssembly.lean` / `IndependentGeometryPrimitive` | `FoundationLaws`・`DependentLaws`・`IsLawful`は各原始投影の型条件と元の法則を検査。`stages`が全fieldを構成し、`flatten_stages`・`stages_flatten`で既存の依存する段階別表示と両逆を証明。`objectEquiv`・`assemble_read`・`read_assemble`・`read_injective`がraw込みの全native対象へ成り立つ |
+| `IndependentGeometryFiniteFragments.lean` / `IndependentGeometryPrimitive` | 同じ`Query U`上の有限な依存tableを`Fragment`とし、包含の共有点一致を`Compatible`で定義。singletonの`glue`と`fragments`が両逆。`finiteObjectEquiv`と両逆が、全てのlawfulな有限片の族と元の完全対象を対応させる |
+| `IndependentOverlapFiniteExpressions.lean` / `IndependentOverlapFinite` | refinement・matching・context一点比較・guard付きsupport admission・論理結合という閉じた`Expr`を定義。`evaluate_iff_of_support`をconstructorへの帰納法で証明。`lawful_iff_expressions`は新しいoverlapの全法則をこの有限式の各instanceと正確に同定し、`evaluate_iff_of_commonSupport`が共通query上の有限supportへ接続 |
+
+`IndependentGeometryTableAssembly.GeometryData`と`RawData`も、上のcandidate overlap/raw表へ接続した。
+この段階別表示は比較証明に用い、共通の局所値型には完成core・site・係数環・raw系を格納しない。
+`ArchitectureObject`・contextなどのcandidate参照は、設計が指定したnativeな原始引数の参照であり、
+選択済みの`ReadingCore`や`GeometryPackage`を共通queryのparameterにしていない。
+
+照合の局所条件には、完成した対象やcontextの組立て結果への全体等式を置かない。
+一致は各原始点の比較、不一致は一つの異なる原始点で検査し、その後で参照の一致を定理として導く。
+対象の両逆は照合flagと非active応答も回復するので、照合のためのmetadataや存在証明の選択が
+元の意味にない対象の区別を生まない。
+
+有限片の存在・整合性から法則を自動的に結論していない。
+`eraseMatching_fragments_compatible`と`eraseMatching_not_lawful`は、照合flagを全falseにした場合、
+全ての有限restrictionは整合していても局所法則を満たさないことを同じ共通宣言上で示す。
+`LocalObject`は`Compatible`と、singletonから読んだ原始値に対する`IsLawful`を別々に要求する。
+
+overlapの各順序instanceは、結果contextを無限個のpredicate値から式中で組み立てる必要がなくなった。
+そのcandidate参照のmatching flagと、有限個のrefinement queryから評価する。
+`supportAdmission`はcandidate support carrierの宣言と、そのsupport/Atomの一点だけを読む。
+`lawful_iff_expressions`はsupport・正の照合・負の照合の反証witness・4つの順序条件を全て含む。
+個々の式の有限性を示しており、全引数に量化した法則全体の有限性やcarrier全体の有限性は主張しない。
+
+最初の検証点Iは引き続き未完了である。残る主要項目は次である。
+
+1. 共通宣言上で、overlapと算術以外を含む全原始式の有限supportを固定し、各object/Hom局所法則の
+   全instanceへ接続する。有限族のgluingだけでは、この義務を代行しない。
+2. 両Hom方式の原始query・型参照をnativeな完成両端や選択済みbase Homより前に宣言し、
+   既に証明した全Hom両逆へ接続する。共通object宣言の完成だけではHomの共通宣言を代行しない。
+3. 共通局所射の恒等・合成、特にexplicit raw・baseを含む全成分の点合成と有限片の合成を接続する。
+4. 指定反証scenarioを共通宣言へ統合し、全Hom分離・型不一致・片側overlap・witness選択などを検査する。
+5. 固定headのPR、標準の独立4本査読、root acceptance、CI、merge、Issue記録を完了する。
+
+今回の8つの対象sourceは単一fileで検証した。明示宣言の`#print axioms`はraw candidate 27、
+generated matching 17、共通宣言24、更新したgeometry stage 24、共通assembly 43、finite fragments 20、
+overlap candidate 21、overlap有限式21件の計197件。namespace監査は同順79・54・130・24・74・20・57・77件の
+計515件で、標準公理のみである。module manifestとaggregate importに登録し、aggregateのelaborationは
+行っていない。Research全体build、外側のtotal category、routing wrapperは追加していない。

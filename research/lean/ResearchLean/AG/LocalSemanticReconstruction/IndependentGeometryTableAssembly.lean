@@ -1,7 +1,7 @@
 import ResearchLean.AG.LocalSemanticReconstruction.IndependentCoreTableAssembly
-import ResearchLean.AG.LocalSemanticReconstruction.IndependentContextObjectPrimitiveReadings
+import ResearchLean.AG.LocalSemanticReconstruction.IndependentOverlapCandidateReadings
 import ResearchLean.AG.LocalSemanticReconstruction.IndependentCoveragePrimitiveReadings
-import ResearchLean.AG.LocalSemanticReconstruction.IndependentRawLocalValidation
+import ResearchLean.AG.LocalSemanticReconstruction.IndependentRawCandidateReadings
 import Formal.Util.AssertStandardAxioms
 
 /-!
@@ -13,10 +13,10 @@ coverage predicates, primitive overlap contexts, primitive coefficient rings,
 and the previously verified raw point tables. Reindexing the stages along their
 component equivalences retains all native dependencies and both round trips.
 
-This is the object-assembly bridge for the independent verification. The common
-realization-independent finite-query declaration and both native Hom modes are
-still separate proof obligations; this dependent stage type does not replace
-that common declaration.
+This is the dependent object-assembly bridge for the independent verification.
+IndependentGeometryPrimitiveAssembly connects the common realization-independent
+query declaration to these stages with both inverse laws. The candidate raw
+and overlap indices are fixed before their site and preorder are assembled.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction.IndependentGeometryTableAssembly
@@ -31,9 +31,9 @@ variable {U : AtomCarrier.{u}}
 abbrev GeometryData (P : AATCorePackage U) :=
   {t : IndependentCoveragePrimitive.Table P.object //
     IndependentCoveragePrimitive.IsTyped P.equationSystem P.algebra.signatureReading t} ×
-  {t : IndependentContextObjectPrimitive.Overlap.Table P.object //
-    IndependentContextObjectPrimitive.Overlap.IsTyped t ∧
-      IndependentContextObjectPrimitive.Overlap.IsLawful P.contextPreorder t}
+  {t : IndependentOverlapCandidate.Table P.object //
+    IndependentOverlapCandidate.IsTyped t ∧
+      IndependentOverlapCandidate.IsLawful P.contextPreorder t}
 
 /-- Source-only view of the two dependent native geometry fields. -/
 def geometryNativeEquiv (P : AATCorePackage U) :
@@ -50,7 +50,7 @@ noncomputable def geometryEquiv (P : AATCorePackage U) : SelectedGeometryReading
   (geometryNativeEquiv P).trans
     (Equiv.prodCongr
       (IndependentCoveragePrimitive.readingEquiv P.equationSystem P.algebra.signatureReading)
-      (IndependentContextObjectPrimitive.Overlap.readingEquiv P.contextPreorder))
+      (IndependentOverlapCandidate.readingEquiv P.contextPreorder))
 
 /-- Construct the native selected geometry from its two primitive table families. -/
 noncomputable def geometry {P : AATCorePackage U} (g : GeometryData P) : SelectedGeometryReading P :=
@@ -70,10 +70,10 @@ abbrev CoefficientData :=
 noncomputable def coefficient (r : CoefficientData.{v}) : IndependentRingPrimitive.Carrier.Native.{v} :=
   IndependentRingPrimitive.Carrier.assemble r.val r.property.choose r.property.choose_spec
 
-/-- Raw point tables use the coefficient ring generated at the preceding stage. -/
+/-- Raw candidate indices precede site/ring selection; their local laws use the generated stages. -/
 abbrev RawData {A : ArchitectureObject U} (S : AATSite A) (r : CoefficientData.{v}) :=
   letI := (coefficient r).2
-  IndependentRawLocal.LawfulTable S (coefficient r).1
+  IndependentRawCandidate.LawfulTable S (coefficient r).1
 
 /-- Primitive coefficient and raw stages at one generated site. -/
 abbrev RingRawData {A : ArchitectureObject U} (S : AATSite A) :=
@@ -89,7 +89,7 @@ noncomputable def ringRawEquiv {A : ArchitectureObject U} (S : AATSite A) :
     NativeRingRawData.{u, v} S ≃ RingRawData.{u, v} S :=
   (Equiv.sigmaCongrRight fun (r : IndependentRingPrimitive.Carrier.Native.{v}) =>
     letI : CommRing r.1 := r.2
-    IndependentRawLocal.rawTableEquiv (S := S) (k := r.1)).trans
+    IndependentRawCandidate.rawTableEquiv S r.1).trans
       (Equiv.sigmaCongrLeft' IndependentRingPrimitive.Carrier.readingEquiv)
 
 /-- Primitive selected geometry, coefficient, and raw stages on one native generated core. -/

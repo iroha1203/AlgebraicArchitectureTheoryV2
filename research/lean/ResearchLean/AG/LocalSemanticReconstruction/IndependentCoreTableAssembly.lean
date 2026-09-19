@@ -13,9 +13,9 @@ stored computational component is a primitive point table. Finite-family and
 circuit witnesses remain propositions. Dependent sigma transport connects the
 component equivalences and recovers the exact native generated object.
 
-The table family here is indexed by its preceding assembled stages. Connecting
-it to the common realization-independent finite-query declaration is a further
-obligation of the independent verification, together with geometry Hom assembly.
+The table family here is indexed by its preceding assembled stages.
+IndependentGeometryPrimitiveAssembly connects these stages to the common
+realization-independent query declaration and proves both inverse laws.
 The native source views below are used only to prove the bridge; they are not
 local response types.
 -/
