@@ -78,11 +78,15 @@
   式(2)のcoboundaryを加えclassを変えないこと、actual比較像とLaw-value生成式が一致すること、誘導H¹写像が
   specified obstruction classをdiagnostic classへ送ること、actual classの零からdiagnostic classの零が
   従うことを示し、coarse/fineのcombined-site入力でB1を放電する。
+- 完了: diagnostic classの零から得る有理degree-zero boundary証人を、full chart support上の
+  Law-value座標で読み、`R_q`から各block係数を回収して座標ごとにfloorする。得られた整数block係数を
+  presentation groupとactual Čech C⁰へ戻し、そのactual coboundaryが指定mismatchに一致することを証明する。
+  これによりcoarse/fineの任意の許容局所データについてactual/diagnostic classの零性同値を導き、B2を放電する。
 - 完了（仮定相対）: supplied face-index-empty nerveのpresentation係数cochainと、条件付きactual Ob層の実
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
-- 未完了: B2、C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
-- 次のproof obligation: `R_q`と係数比較の整数反映をactual Čech H¹へ持ち上げ、指定classについて
-  diagnostic classの零からactual obstruction classの零を導くB2を証明する。
+- 未完了: C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
+- 次のproof obligation: coarse coverからfine coverへのactual Čech cochain map `T_ob`を実refinementから構成し、
+  既存`generatedComparisonH1Map`を`T_diag`として比較平方と指定class輸送を証明するC1へ進む。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -2196,4 +2200,128 @@ audits:
     - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.CombinedAtomSpecifiedObstruction: pass; 3724 jobs"
   blocking_findings: []
   next_obligation: "use R_q and integral coefficient reflection to prove B2 for the specified classes"
+```
+
+## Cycle 19 — integral zero reflection and B2
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 19
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: d6e0f8369c25b1daa18857bb712b1066025356ed
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "Issue #4791 paper design section 6 and GOAL B2 after Cycle 18 merge d6e0f8369c25b1daa18857bb712b1066025356ed"
+  proof_dag_predecessors:
+    - "coefficient comparison and R_q coefficient recovery: Cycle 4"
+    - "rational-to-integral floor correction kernel: Cycle 2"
+    - "actual Cech normalization and degree-zero square: Cycles 8 and 17"
+    - "specified actual/diagnostic classes and B1: Cycle 18"
+  proof_obligation: "derive diagnostic-zero to actual-zero for every specified class under the selected structural reflection condition"
+  selection_reason: "B2 is the remaining zero-reflection direction and must construct an integral actual boundary witness from the rational diagnostic witness"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/SpecifiedClassReflection.lean"
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomSpecifiedReflection.lean"
+    - "ActualCechAffineLocalData.actual_class_eq_zero_of_diagnostic_class_eq_zero"
+    - "ActualCechAffineLocalData.diagnostic_class_eq_zero_iff_actual_class_eq_zero"
+  risks:
+    - "assuming an additive retraction from rational diagnostic coefficients to integral obstruction coefficients"
+    - "storing H1 injectivity or the desired zero-reflection conclusion inside R_q"
+    - "using coefficient injectivity alone without constructing an integral degree-zero correction"
+    - "selecting Law-value coordinates not actually present on the chart support"
+  unchecked:
+    - "fixed-head independent review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Full chart support constructs one real generated diagnostic coordinate for every chart and source-generated Law-value label. A diagnostic zero class supplies a rational degree-zero boundary witness. R_q identifies each obstruction block through blockLabel, so flooring that witness coordinatewise produces integer block coefficients with the exact normalized actual edge differences. The block coefficients are rebuilt into the presentation group and transported through the actual Cech degree-zero equivalence, yielding an explicit actual coboundary witness. Together with B1 this proves zero-class equivalence for every allowed selected coarse/fine datum."
+  completion_candidate: no
+  lean_artifacts:
+    - "GeneratorPresentation.FullChartSupport"
+    - "FullChartSupport.chartCoordinate"
+    - "FullChartSupport.edgeCoordinate"
+    - "ActualCechAffineLocalData.rationalChartWitness"
+    - "ActualCechAffineLocalData.normalizedActualBlockCoefficient"
+    - "ActualCechAffineLocalData.integralCorrection"
+    - "ActualCechAffineLocalData.rational_chart_witness_edge_difference"
+    - "ActualCechAffineLocalData.actual_mismatch_eq_d_integralCorrection"
+    - "ActualCechAffineLocalData.actual_class_eq_zero_of_diagnostic_class_eq_zero"
+    - "ActualCechAffineLocalData.diagnostic_class_eq_zero_iff_actual_class_eq_zero"
+    - "CombinedAtomSpecifiedReflection.fine_actual_class_eq_zero_of_diagnostic_class_eq_zero"
+    - "CombinedAtomSpecifiedReflection.coarse_actual_class_eq_zero_of_diagnostic_class_eq_zero"
+  evidence:
+    - "chartCoordinate and edgeCoordinate use generated-source witnesses and actual full-support membership"
+    - "diagnostic quotient zero is eliminated to a concrete rational chart cochain in the range of boundaryToCycles"
+    - "blockToLawCoefficients_apply_blockLabel consumes R_q to identify each integer block coefficient in the diagnostic boundary equation"
+    - "blockFloorCorrection_edgeDifference applies floor only to the particular rational witness and preserves every integral edge difference"
+    - "integralCorrection converts the finite block function to FreeAbelianGroup, then to PresentationGroup, then through the actual Cech C0 equivalence"
+    - "actual_mismatch_eq_d_integralCorrection proves equality in the actual Cech complex, not only in a copied normalized complex"
+    - "selected coarse/fine full-support and R_q premises are proved from the existing concrete inputs"
+  claim_mapping:
+    theorem_names:
+      - "ActualCechAffineLocalData.actual_class_eq_zero_of_diagnostic_class_eq_zero"
+      - "ActualCechAffineLocalData.diagnostic_class_eq_zero_iff_actual_class_eq_zero"
+      - "CombinedAtomSpecifiedReflection.fine_diagnostic_class_eq_zero_iff_actual_class_eq_zero"
+      - "CombinedAtomSpecifiedReflection.coarse_diagnostic_class_eq_zero_iff_actual_class_eq_zero"
+    source_labels:
+      - "GOAL B2 zero reflection"
+      - "Issue #4791 paper design equations (7)-(8)"
+      - "selected full-target chart supports and primitive R_q"
+    conjuncts:
+      - "diagnostic zero -> rational C0 boundary witness"
+      - "R_q -> block coefficient recovery at Law-value labels"
+      - "integral edge differences -> floored integer C0 witness"
+      - "normalized correction -> actual Cech coboundary witness"
+      - "B1 plus reflected direction -> specified zero-class equivalence"
+    undischarged_assumptions:
+      - "C1 and C2 reading-change comparison remain"
+      - "fixed zero/nonzero local data and end-to-end finite-example correspondence remain"
+    acceptance_point: "R_q remains generator connectivity; zero reflection is derived by constructing the integer correction and is not an input premise"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "finite Source and Law family make the block coefficient function finitely supported"
+      - "full chart support is existing selected-input geometry, not a cohomology conclusion"
+      - "diagnostic class zero supplies the rational boundary witness through the existing quotient definition"
+    direction_hypothesis:
+      - "GeneratorPresentation.ReflectionCondition is exactly the previously selected R_q"
+    discharge_required:
+      - "C1, C2 and the fixed finite zero/nonzero data"
+    conclusion_equivalent_risk:
+      - "neither FullChartSupport nor ReflectionCondition refers to H1, class equality, or vanishing"
+  premise_delta:
+    discharged:
+      - "rational diagnostic boundary witness extraction"
+      - "R_q-based integral coefficient recovery"
+      - "explicit actual C0 correction construction"
+      - "B2 for every allowed coarse/fine local datum"
+    remaining:
+      - "C1, C2 and fixed zero/nonzero data"
+  certificate_provenance:
+    discharged:
+      - "the rational witness comes from diagnosticClass quotient membership"
+      - "the integral witness is computed by floor, finite-function conversion, and existing presentation/actual Cech equivalences"
+      - "the edge equality is proved at every actual nerve edge and every relation block"
+    unresolved: []
+  proof_use:
+    used:
+      - "full chart support constructs canonical chart and edge coordinates for every generated label"
+      - "R_q is consumed by blockToLawCoefficients_apply_blockLabel"
+      - "the Cycle 2 floor lemma is consumed for every edge/block pair"
+      - "actual Cech normalization transports the constructed presentation correction back to the real obstruction complex"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-for-specified-b2-obligation
+  target_fitting: none-found
+  vacuity: "the theorem quantifies over every allowed transition and localState; it does not require either class to be zero as input except in the reflected implication premise"
+  one_way_as_equivalence: "both directions are proved: B1 supplies actual-zero to diagnostic-zero and Cycle 19 constructs diagnostic-zero to actual-zero"
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused checks: SpecifiedClassReflection 10 declarations and CombinedAtomSpecifiedReflection 6 declarations; standard axioms only"
+    - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.CombinedAtomSpecifiedReflection: pass; 3727 jobs"
+  blocking_findings: []
+  next_obligation: "construct the actual coarse-to-fine Cech map T_ob, identify the existing generatedComparisonH1Map as T_diag, and prove C1 plus specified-class transport"
 ```
