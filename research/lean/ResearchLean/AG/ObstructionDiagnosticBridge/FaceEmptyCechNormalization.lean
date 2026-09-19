@@ -4,12 +4,13 @@ import Formal.AG.Cohomology.CechComplex
 import Formal.Util.AssertStandardAxioms
 
 /-!
-# Face-empty actual Cech normalization
+# Selected face-index-empty Cech normalization
 
 This module constructs the actual `CoverRelativeCechCover` and
-`CoverRelativeCechComplex` used by the selected G-125 input when the diagnostic
-nerve has no 2-faces.  Degree zero consists of chart contexts, degree one of
-edge-overlap contexts, and degree two is the empty face type.  The actual
+`CoverRelativeCechComplex` attached to a supplied diagnostic nerve whose
+selected `FaceComponent` index is empty.  Degree zero consists of chart
+contexts, degree one of edge-overlap contexts, and degree two is the empty
+selected face-index type.  The actual
 obstruction-sheaf restriction maps define `d⁰`; all later differentials land
 in an empty product and are zero.
 
@@ -18,6 +19,11 @@ coordinates identify the actual Cech groups with the normalized presentation
 cochains.  Under these coordinates, actual `d⁰` is the right-minus-left
 presentation differential, while `C²` and `d¹` are zero because the selected
 face type is empty.
+
+This module does not prove that all geometric triple intersections are empty,
+or that `FaceComponent` lists every nonempty triple-overlap component.  Those
+provenance and completeness obligations belong to the later selected finite
+geometry realization.
 -/
 
 noncomputable section
@@ -37,7 +43,7 @@ variable {laws : FiniteLawFamily Source}
 variable {U : AtomCarrier.{u}} {A : ArchitectureObject U}
 variable {S : Site.AATSite A}
 
-/-- Simplices of the selected face-empty Cech cover. -/
+/-- Simplices of the selected face-index-empty Cech cover. -/
 def FaceEmptySimplex (D : TargetSupportedNerve q) : Nat → Type u
   | 0 => D.nerve.Chart
   | 1 => D.nerve.EdgeComponent
@@ -59,9 +65,11 @@ instance faceEmptyHigherSimplexIsEmpty (D : TargetSupportedNerve q)
     (motive := fun _ _ => False) D n simplex
 
 /--
-Actual AAT contexts and restriction maps realizing a face-empty diagnostic
-nerve.  Connectedness assumptions are restricted to the chart and edge
-supports used in degrees zero and one.
+Actual AAT contexts and restriction maps attached to a diagnostic nerve whose
+supplied face-index type is empty.  This package does not assert completeness
+of that face index for geometric triple intersections.  Connectedness
+assumptions are restricted to the chart and edge supports used in degrees zero
+and one.
 -/
 structure FaceEmptyAATCechCover (D : TargetSupportedNerve q)
     (G : ContextOpenSupport S) [IsEmpty D.nerve.FaceComponent] where
@@ -85,7 +93,7 @@ namespace FaceEmptyAATCechCover
 variable {D : TargetSupportedNerve q} {G : ContextOpenSupport S}
 variable [IsEmpty D.nerve.FaceComponent]
 
-/-- Context attached to each simplex of the face-empty nerve. -/
+/-- Context attached to each simplex of the selected face-index-empty nerve. -/
 def overlap (C : FaceEmptyAATCechCover D G) :
     ∀ n, FaceEmptySimplex D n → S.category
   | 0, chart => C.chartContext chart
@@ -151,8 +159,8 @@ instance faceEmptyCechCochainAddCommGroup (P : GeneratorPresentation laws)
   infer_instance
 
 /--
-The actual face-empty Cech complex of the pulled-back locally constant
-obstruction sheaf.
+The actual Cech package of the pulled-back locally constant obstruction sheaf
+relative to the supplied face-index-empty nerve.
 -/
 def faceEmptyCechComplex (P : GeneratorPresentation laws)
     (C : FaceEmptyAATCechCover D G) :
@@ -323,7 +331,7 @@ theorem faceEmptyCech_d0_normalizes (P : GeneratorPresentation laws)
     (C.edgeLeftRestriction edge) (c (D.nerve.edgeLeft edge))]
   rfl
 
-/-- The actual face-empty degree-one differential is zero. -/
+/-- The actual degree-one differential is zero for the supplied empty face index. -/
 theorem faceEmptyCech_d1_eq_zero (P : GeneratorPresentation laws)
     (C : FaceEmptyAATCechCover D G) :
     (P.faceEmptyCechComplex C).d 1 = 0 := by
@@ -382,7 +390,7 @@ theorem actualCechCoefficient_comm0 (P : GeneratorPresentation laws)
   exact P.coefficientCochain_comm0 D hadequate
     (P.faceEmptyCechCochain0Equiv C c)
 
-/-- The degree-one square holds on the selected face-empty input. -/
+/-- The degree-one square holds on the selected face-index-empty input. -/
 theorem actualCechCoefficient_comm1 (P : GeneratorPresentation laws)
     (C : FaceEmptyAATCechCover D G) (hadequate : laws.Adequate q)
     (c : (P.faceEmptyCechComplex C).Cn 1) :
