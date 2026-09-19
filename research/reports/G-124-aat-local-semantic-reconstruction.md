@@ -139,13 +139,15 @@
   merge commit `f7f9a4eca58417c82b017fa5fe465d175db13621`
 - Cycle 65 accepted PR: [#4779](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4779),
   merge commit `900d73e14e70cacb37915602f3838bae46e75ac2`
+- Cycle 66 accepted PR: [#4780](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4780),
+  merge commit `197978ad348f382755e889e0400124f80a507103`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: raw complete graph bundleにidentity/compositionを独立に定めてlocal Hom圏を構成し、
-  complete geometry readingを全dependent成分で合成を保つfaithful functorへ持ち上げる。対象assemblyを放電し、
-  残るHom assemblyがfullnessと同値であることを固定する
-- next proof obligation: raw complete graph圏の独立coherence部分圏を定め、任意coherent graphのHom assemblyを
-  構成してfullnessを放電する。image subtypeや完成morphism certificateは用いない
+- current proof obligation: forward/backward graphと相互逆則からEquivを、graphと演算保存則からRingHomを
+  独立に組み立て、read/assemble両逆・恒等・合成閉性を証明する。complete geometry readingのAtom、
+  equation-index、coefficient、context-object成分へ同じcycleで接続する
+- next proof obligation: dependent fiber equivalence、context functor、operation・invariant・signature・geometry
+  naturalityの独立coherenceを構成し、恒等・合成閉性とcomplete GeometryTotalHom assemblyへ接続する
 
 ## Cycle 1 — rejected
 
@@ -6569,6 +6571,182 @@ audits:
   next_obligation: "define independent geometry coherence equations closed under identity and composition, form the coherent graph subcategory, and assemble every coherent graph into a GeometryTotalHom"
 ```
 
+## Cycle 67: independent algebraic graph coherence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 67
+status: result-proposed
+branch: codex/4711-g124-algebraic-graph-coherence
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 197978ad348f382755e889e0400124f80a507103
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 66 acceptance: Issue comment 5737842870; Cycle 67 selection: Issue comment 5737857578"
+  proof_dag_predecessors:
+    - "Cycle 63 primitive function-graph read/assemble equivalence"
+    - "Cycle 64 complete geometry graph separation"
+    - "Cycle 66 raw complete-graph category and faithful reading"
+  proof_obligation: "construct independent graph-code presentations of equivalences and ring homomorphisms, prove two-sided read/assemble equivalences and composition closure, and connect them immediately to the algebraic components of complete geometry reading"
+  selection_reason: "this discharges a reusable nontrivial coherence-and-assembly layer rather than ending at definitions or postponing the complete-geometry connection"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/AlgebraicGraphCoherence.lean"
+  risks:
+    - "a local code might store the completed Equiv or RingHom"
+    - "the backward graph might compose in the forward order"
+    - "preservation proofs might be asserted without read/assemble inverses"
+    - "the complete-geometry connection might omit one selected algebraic component"
+  unchecked:
+    - "dependent fiber equivalences and geometry naturality remain for later cycles"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "EquivGraphData and RingHomGraphData keep raw graphs separate from the Prop-valued IsEquivGraphCode and IsRingHomGraphCode laws; their bundled codes are explicitly equivalent to Equiv and RingHom by two-sided read/assemble laws. Positive and negative fixtures show both predicates are substantive. Both presentations have identity, composition, the three category equations, and assembly formulas; equivalence backward graphs compose in reverse order. SelectedAlgebraicData is likewise separate from IsSelectedAlgebraicallyCoherent, and complete geometry reading supplies a positive identity fixture while assembly recovers the pointed Atom, upper Atom, equation-index, coefficient, and both context-object functions."
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.EquivGraphData"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.IsEquivGraphCode"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.EquivGraphCode"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.EquivGraphCode.equivEquiv"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.EquivGraphCode.read_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.EquivGraphCode.assemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.EquivGraphCode.assemble_apply"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.EquivGraphCode.assemble_symm_apply"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.EquivGraphCode.comp_forward"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.EquivGraphCode.comp_backward"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.EquivGraphCode.boolConstantData_not_isEquivGraphCode"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.RingHomGraphData"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.IsRingHomGraphCode"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.RingHomGraphCode"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.RingHomGraphCode.equivRingHom"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.RingHomGraphCode.read_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.RingHomGraphCode.assemble_read"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.RingHomGraphCode.assemble_apply"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.RingHomGraphCode.natSuccData_not_isRingHomGraphCode"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.SelectedAlgebraicData"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.IsSelectedAlgebraicallyCoherent"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.SelectedAlgebraicCoherence"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.SelectedAlgebraicallyCoherentCompleteMapGraphs.read"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.SelectedAlgebraicallyCoherentCompleteMapGraphs.pointedAtomEquiv_read"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.SelectedAlgebraicallyCoherentCompleteMapGraphs.atomEquiv_read"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.SelectedAlgebraicallyCoherentCompleteMapGraphs.equationEquiv_read"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.SelectedAlgebraicallyCoherentCompleteMapGraphs.coefficientHom_read"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.SelectedAlgebraicallyCoherentCompleteMapGraphs.contextForward_read"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.SelectedAlgebraicallyCoherentCompleteMapGraphs.contextBackward_read"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.SelectedAlgebraicallyCoherentCompleteMapGraphs.pointedAtomEquiv_apply"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.SelectedAlgebraicallyCoherentCompleteMapGraphs.atomEquiv_apply"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.SelectedAlgebraicallyCoherentCompleteMapGraphs.equationEquiv_apply"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.SelectedAlgebraicallyCoherentCompleteMapGraphs.coefficientHom_apply"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.SelectedAlgebraicallyCoherentCompleteMapGraphs.identitySelectedAlgebraicData_isCoherent"
+    - "AAT.AG.LocalSemanticReconstruction.AlgebraicGraphCoherence.SelectedAlgebraicallyCoherentCompleteMapGraphs.coefficientZeroSelectedAlgebraicData_not_isCoherent"
+  evidence:
+    - "EquivGraphCode.read_assemble"
+    - "EquivGraphCode.assemble_read"
+    - "EquivGraphCode.comp_forward"
+    - "EquivGraphCode.comp_backward"
+    - "RingHomGraphCode.read_assemble"
+    - "RingHomGraphCode.assemble_read"
+    - "RingHomGraphCode.comp_graph"
+    - "SelectedAlgebraicallyCoherentCompleteMapGraphs.pointedAtomEquiv_read"
+    - "SelectedAlgebraicallyCoherentCompleteMapGraphs.atomEquiv_read"
+    - "SelectedAlgebraicallyCoherentCompleteMapGraphs.equationEquiv_read"
+    - "SelectedAlgebraicallyCoherentCompleteMapGraphs.coefficientHom_read"
+    - "SelectedAlgebraicallyCoherentCompleteMapGraphs.contextForward_read"
+    - "SelectedAlgebraicallyCoherentCompleteMapGraphs.contextBackward_read"
+  claim_mapping:
+    theorem_names:
+      - "EquivGraphCode.equivEquiv"
+      - "EquivGraphCode.comp_forward"
+      - "EquivGraphCode.comp_backward"
+      - "EquivGraphCode.id_comp"
+      - "EquivGraphCode.comp_id"
+      - "EquivGraphCode.assoc"
+      - "RingHomGraphCode.equivRingHom"
+      - "RingHomGraphCode.comp_graph"
+      - "RingHomGraphCode.id_comp"
+      - "RingHomGraphCode.comp_id"
+      - "RingHomGraphCode.assoc"
+      - "SelectedAlgebraicallyCoherentCompleteMapGraphs.pointedAtomEquiv_read"
+      - "SelectedAlgebraicallyCoherentCompleteMapGraphs.atomEquiv_read"
+      - "SelectedAlgebraicallyCoherentCompleteMapGraphs.equationEquiv_read"
+      - "SelectedAlgebraicallyCoherentCompleteMapGraphs.coefficientHom_read"
+      - "SelectedAlgebraicallyCoherentCompleteMapGraphs.contextForward_read"
+      - "SelectedAlgebraicallyCoherentCompleteMapGraphs.contextBackward_read"
+    source_labels:
+      - "Cycle 67 independent algebraic graph coherence toward G-124 target B"
+      - "Cycle 67 fixed four-lane question"
+    conjuncts:
+      - "mutually inverse graph codes assemble exactly to equivalences"
+      - "operation-preserving graph codes assemble exactly to ring homomorphisms"
+      - "both assemblies have explicit two-sided readback"
+      - "identity and composition remain inside both local presentations"
+      - "backward equivalence graphs compose in reverse order"
+      - "complete geometry reading supplies the selected independent coherence"
+      - "assembled algebraic components recover the original completed component maps"
+    material_premises:
+      source_derived:
+        - "G-124(B) equivalence assembly requires mutual-inverse equations on the independently supplied forward/backward graphs"
+        - "G-124(B) ring-hom assembly requires zero, one, addition, and multiplication preservation equations on the independently supplied graph"
+      discharged:
+        - "actual equivalence and ring-hom readings supply these laws, and both read/assemble composites are proved equal to identity"
+        - "complete geometry reading supplies the selected laws from its actual component equivalences and coefficient homomorphism"
+      undischarged: []
+    undischarged_assumptions: []
+    acceptance_point: "the algebraic coherence layer is defined without completed maps and has exact two-sided assembly before being connected to complete geometry reading"
+    port_status: not-applicable
+  nonclaims:
+    - "a complete context category equivalence is assembled from object graphs alone"
+    - "dependent equation-observable or coordinate fiber equivalences are assembled"
+    - "operation, invariant, signature, support, axis, or observable naturality is discharged"
+    - "an arbitrary algebraically coherent bundle assembles to GeometryTotalHom"
+    - "the Cycle 66 reading functor is full"
+audits:
+  premise_delta:
+    source_derived:
+      - "generic equivalence graph assembly assumes the fixed-question mutual-inverse equations"
+      - "generic ring-hom graph assembly assumes the fixed-question four operation-preservation equations"
+    discharged:
+      - "algebraic read/assemble / explicit left and right inverse laws"
+      - "algebraic composition / ordinary forward order and reverse backward order"
+      - "complete geometry selected algebraic components / explicit recovery theorems"
+      - "predicate non-vacuity / positive and negative component fixtures plus combined identity and constant-zero-coefficient fixtures"
+    remaining:
+      - "dependent fiber equivalences and their tagged-map coherence"
+      - "context functor action on morphisms and categorical unit/counit"
+      - "operation, invariant, signature, support, axis, observable, and raw naturality"
+      - "complete coherent subcategory and GeometryTotalHom assembly"
+  certificate_provenance:
+    discharged:
+      - "EquivGraphCode / graph codes and mutual-inverse function equations only"
+      - "RingHomGraphCode / graph code and four operation equations only"
+      - "complete algebraic coherence / inverse graph codes and equations only"
+    unresolved:
+      - "full complete-geometry certificate / not constructed in this cycle"
+  proof_use:
+    used:
+      - "Cycle 63 graph read/assemble inverses prove both algebraic code equivalences"
+      - "assembled algebraic equality proves identity and composition laws"
+      - "actual complete geometry component maps populate the independent equations"
+      - "component recovery theorems unfold the graph read/assemble laws"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  target_fitting_reason: "the cycle replaces selected completed algebraic fields by independently stated local graph equations and proves exact assembly, while leaving the rest of B explicit"
+  vacuity: none-found
+  vacuity_reason: "both local code types are explicitly equivalent to the full corresponding algebraic map types and are not restricted to maps arising from geometry morphisms"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  four_lane_question: "Do independent paired graph codes with mutual-inverse laws assemble equivalently to actual equivalences, do operation-preserving graph codes assemble equivalently to ring homomorphisms, and does complete geometry reading populate and recover its pointed-Atom, upper-Atom, context-object, equation-index, and coefficient components without storing any completed geometry morphism?"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/AlgebraicGraphCoherence.lean: pass"
+    - "#assert_standard_axioms_only AlgebraicGraphCoherence: 175 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "define independent dependent-fiber, context-functor, operation, invariant, signature, and geometry-naturality coherence closed under identity and composition, then assemble the complete coherent Hom"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -6706,7 +6884,14 @@ audits:
   backward contextだけ順序を反転した成分別の圏を構成した。complete geometry readingが全dependent
   tagged成分で恒等射と合成を保存するunderlying-package-preserving functorであること、Cycle 64の分離から
   faithfulであること、対象組立て、および残るHom組立てがfullnessと同値であることを証明した。
-  任意raw bundleのfullnessは主張せず、独立coherence条件で閉じた部分圏とそのHom組立て、
+  Cycle 67ではforward/backward Bool graphからなる`EquivGraphData`と相互逆式のPropを分離し、一つの
+  graphからなる`RingHomGraphData`とzero/one/add/mul保存式のPropも分離して、それぞれ正負fixtureを
+  与えた。bundled codeと`Equiv`、`RingHom`との
+  read/assemble両逆、型同値、恒等・合成閉性を証明した。backward graphの逆順合成も明示し、raw
+  complete graphへinverse graphだけを加えたdataと係数保存式を含むPropを分離したcoherenceからpointed Atom、upper Atom、
+  equation-index、coefficientを組み立て、完成geometry射のreadingが各成分とforward/backward context
+  object作用を回収することまで同梱した。任意raw bundleのfullnessは主張せず、dependent fiber equivalence、
+  context functor、operation・invariant・signature・geometry naturalityを含む独立coherence部分圏とHom組立て、
   direct normalization kernel自体のprimitive local syntax、および四族共通の実現圏・局所モデル圏への
   適用は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
