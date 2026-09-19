@@ -47,14 +47,19 @@
   逆包含を粗い3-patchのopen交叉へ送るsupport functorを構成する。chart/edge contextの
   supportは実`coarsePatch`/`coarseOverlap`へ一致し、実admissible 3-chart coverの像が
   Cycle 9のopen coverになることを証明する。
-- 未完了: point Atom由来のsupport provenanceを持つ粗細siteを構成し、実coverとbase changeを
-  用いてsite functorのcontinuityを証明する。
+- 完了: 8点を実point Atomとするarchitecture objectを構成し、任意contextのreadable point Atom集合の
+  interiorからopen support functorを導出する。open contextのsupport復元、product contextとopen交叉の
+  一致、粗い3-patchと細かい4-patchの実admissible cover、任意admissible familyの像のcover性を証明する。
+- 未完了: primitive generator Atomを同じ入力へ接続する。現point-only siteの全点必須coverageは
+  base相対でないため、base-relativeなcoverageへ構成し直すか、生成Grothendieck topologyに対して
+  直接site functorのcontinuityを証明する。
 - 完了（仮定相対）: supplied face-index-empty nerveのpresentation係数cochainと、条件付きactual Ob層の実
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
 - 未完了: B1・B2、C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
-- 次のproof obligation: 有限8点のpoint Atom支持から粗細context/open supportを作り、実
-  admissible coverの像とoverlap/base changeを用いてcontinuityを証明する。その後complete
-  face indexを実`TargetSupportedNerve.FaceComponent`へ用いてCycle 8を具体化する。
+- 次のproof obligation: 現point-only siteの全点必須coverageをbase-relativeにする構成、または生成
+  Grothendieck topologyに対する直接証明のどちらでcontinuityを得るかをLeanで確定する。グローバルな
+  base-change安定性は現requirementsから仮定しない。その後complete face indexを実
+  `TargetSupportedNerve.FaceComponent`へ用いてCycle 8を具体化する。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -1180,4 +1185,141 @@ audits:
     - "main declarations #print axioms: propext, Classical.choice, Quot.sound only"
   blocking_findings: []
   next_obligation: "construct point-Atom-derived coarse/fine AAT contexts and prove continuity from actual admissible cover images and overlap/base-change compatibility"
+```
+
+## Cycle 11 — point Atom由来の粗細context support
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 11
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: 8013dd041c3dfd13e3516b1dbbdd14cdac36eda0
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "Issue #4791 paper design section 10 after Cycle 10 merge 8013dd041c3dfd13e3516b1dbbdd14cdac36eda0"
+  proof_dag_predecessors:
+    - "selected eight-point coarse/fine open covers and complete face provenance: PR #4809"
+    - "coarse Boolean-context support checkpoint and rejected top-only continuity route: PR #4810"
+    - "canonical restriction-morphism preorder and productContextFiniteMeet: Formal.AG.Site.ContextCategory"
+  proof_obligation: "derive coarse and fine context supports from actual point Atom readings, prove product support is open intersection, and construct both selected admissible AAT covers"
+  selection_reason: "this removes the point-Atom provenance gap before continuity is derived from actual admissible coverage and base change"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/PointAtomContextSupport.lean"
+    - "PointAtomContextSupport.supportFunctor"
+    - "PointAtomContextSupport.contextSupport_product"
+    - "PointAtomContextSupport.contextSupport_product_openContext"
+    - "PointAtomContextSupport.coarseCoverageFamily_admissible"
+    - "PointAtomContextSupport.fineCoverageFamily_admissible"
+    - "PointAtomContextSupport.admissible_support_covers"
+  risks:
+    - "storing an open support independently of the readable point Atoms"
+    - "using a selected-context label rather than the canonical restriction-morphism preorder"
+    - "claiming continuity before proving pullbacks, base-change stability, and precoverage preservation"
+    - "calling unrelated marker Atoms the primitive generators used by the coefficient presentation"
+  unchecked:
+    - "fixed-head independent review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The eight selected points are now the actual Atom type of a finite architecture object. For every context, support is the interior of the set of readable point Atoms, and restriction morphisms induce open inclusions. The existing productContext reads a point exactly when both factors read it, so arbitrary context products map to open intersections. The coarse three-patch and fine four-patch families are actual admissible covers for one point-Atom AAT site. For an arbitrary family, the AdmissibleCover atomSupportCoverage field gives the corresponding conditional pointwise open-cover API. Continuity remains a separate obligation requiring the categorical pullback and base-change instances."
+  completion_candidate: no
+  lean_artifacts:
+    - "PointAtomContextSupport.carrier"
+    - "PointAtomContextSupport.object"
+    - "PointAtomContextSupport.readablePointSet"
+    - "PointAtomContextSupport.contextSupport"
+    - "PointAtomContextSupport.supportFunctor"
+    - "PointAtomContextSupport.contextSupport_openContext"
+    - "PointAtomContextSupport.readablePointSet_product"
+    - "PointAtomContextSupport.contextSupport_product"
+    - "PointAtomContextSupport.contextSupport_product_openContext"
+    - "PointAtomContextSupport.coverageRequirements"
+    - "PointAtomContextSupport.site"
+    - "PointAtomContextSupport.coarseCoverageFamily_admissible"
+    - "PointAtomContextSupport.fineCoverageFamily_admissible"
+    - "PointAtomContextSupport.admissible_support_covers"
+  evidence:
+    - "carrier.Atom is definitionally the selected eight-point Space"
+    - "readablePointSet is existentially generated by actual supportReads witnesses"
+    - "contextSupport uses Opens.interior rather than extension labels"
+    - "readablePointSet_product unfolds the existing productContext conjunction and contextSupport_product applies interior_inter"
+    - "coverageRequirements requires every point Atom and reads visibility through contextSupport"
+    - "coarse/fine admissibility consumes the concrete Cycle 9 coarse_cover/fine_cover theorems"
+  claim_mapping:
+    theorem_names:
+      - "PointAtomContextSupport.contextSupport_openContext"
+      - "PointAtomContextSupport.contextSupport_product"
+      - "PointAtomContextSupport.contextSupport_product_openContext"
+      - "PointAtomContextSupport.coarseCoverageFamily_admissible"
+      - "PointAtomContextSupport.fineCoverageFamily_admissible"
+      - "PointAtomContextSupport.admissible_support_covers"
+    source_labels:
+      - "GOAL A selected finite cover and restrictions"
+      - "Issue #4791 paper design sections 8.2 and 10"
+      - "Cycle 7 ContextOpenSupport object and morphism premise"
+    conjuncts:
+      - "point Atom visibility determines support -> readablePointSet and contextSupport"
+      - "restriction preserves support -> readablePointSet_mono and contextSupport_mono"
+      - "arbitrary product context maps to open intersection -> readablePointSet_product and contextSupport_product"
+      - "coarse/fine selected covers are AAT admissible -> coarseCoverageFamily_admissible and fineCoverageFamily_admissible"
+      - "all admissible covers map to open covers -> admissible_support_covers"
+    undischarged_assumptions:
+      - "primitive generator Atoms must be connected to GeneratorPresentation.PrimitiveGenerator on the selected input"
+      - "the current all-points coverage is not base-relative, so continuity needs either a base-relative coverage construction or a direct proof for the generated Grothendieck topology"
+      - "supportFunctor continuity must be constructed without assuming global base-change stability of the current precoverage"
+      - "the actual coarse/fine TargetSupportedNerve and FaceEmptyAATCechCover must still be instantiated"
+    acceptance_point: "point Atom provenance, product/intersection compatibility, and actual coarse/fine AAT coverage are constructed from existing APIs; continuity is neither a field nor a claim of this cycle"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "the eight-point finite space and its coarse/fine opens are the fixed paper-design input"
+      - "the canonical restriction-morphism preorder and productContext are existing AAT definitions"
+    direction_hypothesis:
+      - "contextSupport_mono is conditional on an actual restriction morphism and its IsRestriction proof"
+      - "admissible_support_covers is conditional on an AdmissibleCover whose atomSupportCoverage field supplies the pointwise cover witness"
+    discharge_required:
+      - "construct base-relative point coverage or prove continuity directly for the generated Grothendieck topology"
+      - "do not assume a global base-change-stability instance for the current all-points precoverage"
+      - "connect primitive generator Atoms to the selected coefficient presentation"
+    conclusion_equivalent_risk:
+      - "support is computed from readable point Atoms; no open or continuity conclusion is stored in context extension data"
+      - "admissible_support_covers directly projects atomSupportCoverage from its AdmissibleCover argument; it is recorded only as a conditional API, not independent cover generation"
+  premise_delta:
+    discharged:
+      - "actual point Atom provenance for context supports"
+      - "canonical restriction morphisms map to open inclusions"
+      - "product context support equals open intersection"
+      - "actual coarse and fine AAT admissible covers"
+      - "the selected coarse and fine families map to open covers through their concrete AdmissibleCover constructions"
+    remaining:
+      - "primitive generator Atom integration and continuity through a base-relative or direct generated-topology route"
+      - "actual coarse/fine TargetSupportedNerve and FaceEmptyAATCechCover instantiation"
+      - "H1 map, B1, full B2, C1, C2 and zero/nonzero fixed data"
+  certificate_provenance:
+    discharged:
+      - "every visible point is an actual carrier Atom read by a context support witness"
+      - "coarse and fine cover witnesses come from the concrete eight-point cover theorems"
+    unresolved:
+      - "admissible_support_covers is a conditional accessor of the supplied AdmissibleCover; it is not an independent certificate generator"
+      - "primitive generator provenance, categorical base-change, and continuity"
+  proof_use:
+    used:
+      - "ContextMorphism.IsRestriction support preservation is consumed by contextSupport_mono"
+      - "productContext support conjunction is consumed by readablePointSet_product and contextSupport_product"
+      - "AdmissibleCover.atomSupportCoverage is consumed by admissible_support_covers"
+    unused: []
+  structure_field_escape: "concern-found only for the intentionally conditional admissible_support_covers accessor; the selected coarse/fine AdmissibleCover certificates are constructed independently from coarse_cover/fine_cover"
+  route_integrity: pass-for-point-atom-support-obligation
+  target_fitting: none-found
+  vacuity: "the eight-point atomSupportCoverage is nonvacuous; equation, violation, axis, and boundary clauses are vacuous by the declared point-support-only construction and cannot discharge the later Law/generator obligations"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/ObstructionDiagnosticBridge/PointAtomContextSupport.lean: pass; 29 namespace declarations, standard axioms only"
+    - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.PointAtomContextSupport: pass"
+  blocking_findings: []
+  next_obligation: "construct a base-relative point coverage or a direct generated-topology proof of supportFunctor continuity; do not assume global base-change stability for the current all-points precoverage"
 ```
