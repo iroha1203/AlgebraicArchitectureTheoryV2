@@ -19,11 +19,12 @@
   block-indexed APIも構成したが、`R_q` の実質使用と実診断零類からの証人生成は未完了。
 - 完了: primitive relationが生成する自由アーベル群上の最小加法合同から
   presentation group `M_R` を構成し、`M_R ≃+ ℤ^(B)` を導出する。
-- 未完了: 整数係数から有理law-value係数への比較、Aの実障害複体・診断複体と
-  次数0–2の比較写像。
+- 完了: `M_R ≃+ ℤ^(B)` と `blockLabel : B → Λ` から係数比較
+  `ε_R : M_R →+ (Λ → ℚ)` を構成し、`R_q` の下で単射性を導出する。
+- 未完了: Aの実障害複体・診断複体と次数0–2の比較写像。
 - 未完了: B1・B2、C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
-- 次のproof obligation: 導出済み `M_R ≃+ ℤ^(B)` と `B ≃ Λ` を通る
-  整数係数から有理law-value係数への比較を構成する。
+- 次のproof obligation: 係数比較を実障害cochainとlaw-generated診断cochainへ
+  cellwiseに持ち上げ、次数0–2のcochain mapを構成する。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -336,4 +337,112 @@ audits:
     - "git diff --check and placeholder, hidden/BiDi Unicode, private-path, and Formal-to-Research import scans: pass"
   blocking_findings: []
   next_obligation: "construct the integral-to-rational law-value coefficient comparison from presentationGroupEquivBlocks and blockLabelEquiv"
+```
+
+## Cycle 4 — 整数係数から有理Law-value係数への比較
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 4
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: 78534435b39c58cc94aaad65d38b3f30cc0913f7
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "Issue #4791 paper design sections 1-2 and equation (4), after Cycle 3 merge 78534435b39c58cc94aaad65d38b3f30cc0913f7"
+  proof_dag_predecessors:
+    - "GeneratorPresentation.blockLabel and blockLabel_injective: PR #4799, merge dfcc02b073ac1b8cc7d7c76533dcac24827cf24b"
+    - "GeneratorPresentation.presentationGroupEquivBlocks: PR #4802, merge 78534435b39c58cc94aaad65d38b3f30cc0913f7"
+  proof_obligation: "construct epsilon_R from presentation classes to rational law-value coefficients and derive its injectivity from R_q"
+  selection_reason: "this is the coefficient-level map required before lifting the comparison cellwise to the actual obstruction and diagnostic cochain complexes"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/CoefficientComparison.lean"
+    - "GeneratorPresentation.coefficientComparison"
+    - "GeneratorPresentation.coefficientComparison_injective"
+  risks:
+    - "assuming a coefficient isomorphism between integer obstruction coefficients and rational diagnostic coefficients"
+    - "storing injectivity as a field instead of deriving it from R_q"
+    - "using R_q only syntactically while moving the real reflection obligation into an input equality"
+  unchecked:
+    - "fixed-head independent review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The coefficient map sends each primitive presentation generator to the rational delta function at its generated law-value label. Under R_q, evaluating at a block's label recovers its embedded integer coefficient, so the map is injective. A disconnected fixture proves that injectivity can fail without R_q."
+  completion_candidate: no
+  lean_artifacts:
+    - "GeneratorPresentation.blockToLawCoefficients"
+    - "GeneratorPresentation.blockToLawCoefficients_apply_blockLabel"
+    - "GeneratorPresentation.blockToLawCoefficients_injective"
+    - "GeneratorPresentation.coefficientComparison"
+    - "GeneratorPresentation.coefficientComparison_generatorClass_apply"
+    - "GeneratorPresentation.coefficientComparison_injective"
+    - "CoefficientComparisonFixtures.connected_coefficientComparison_injective"
+    - "CoefficientComparisonFixtures.disconnected_blockToLawCoefficients_not_injective"
+    - "CoefficientComparisonFixtures.disconnected_coefficientComparison_not_injective"
+  evidence:
+    - "coefficientComparison_generatorClass_apply proves equation (4) on every primitive generator and law-value coordinate"
+    - "blockToLawCoefficients_apply_blockLabel uses blockLabel_injective hReflection to isolate one block coefficient"
+    - "coefficientComparison_injective composes coefficient recovery with the Cycle 3 presentation normal-form equivalence"
+    - "the negative fixture has two distinct relation components with one common law-value label and proves noninjectivity of the full presentation coefficient comparison"
+  claim_mapping:
+    theorem_names:
+      - "GeneratorPresentation.coefficientComparison_generatorClass_apply"
+      - "GeneratorPresentation.coefficientComparison_injective"
+    source_labels:
+      - "GOAL A coefficient comparison"
+      - "GOAL B structural reflection condition R_q"
+      - "Issue #4791 paper design equation (4) and section 2"
+    conjuncts:
+      - "primitive class maps to delta at e(g) -> coefficientComparison_generatorClass_apply"
+      - "R_q separates relation components by law-value labels -> blockToLawCoefficients_apply_blockLabel"
+      - "coefficient equality reflects presentation equality -> coefficientComparison_injective"
+    undischarged_assumptions:
+      - "selected G-125 input and fixed finite example must prove ReflectionCondition from their declared primitive relations"
+    acceptance_point: "the map exists without R_q; only the injectivity theorem assumes R_q and consumes it through blockLabel_injective"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "FiniteLawFamily and GeneratorPresentation are Cycle 1 input data"
+      - "the presentation normal form and blockLabel are reviewed predecessor constructions"
+    direction_hypothesis:
+      - "ReflectionCondition supplies injectivity of blockLabel and is used to recover each block coefficient"
+    discharge_required:
+      - "construct ReflectionCondition for the selected input and fixed finite example"
+    conclusion_equivalent_risk:
+      - "ReflectionCondition concerns primitive generator connectivity, not coefficient or H1 injectivity"
+  premise_delta:
+    discharged:
+      - "construct the presentation-to-rational-law-value coefficient map"
+      - "derive coefficient-level injectivity from R_q"
+      - "show by a negative fixture that R_q cannot be dropped in general"
+    remaining:
+      - "lift epsilon_R to the actual degree 0-2 obstruction and diagnostic cochain complexes"
+      - "A1, B1, full B2, C1, C2 and the fixed finite example"
+  certificate_provenance:
+    discharged:
+      - "each target delta coordinate is computed from the source-generated blockLabel"
+      - "integer coefficients are recovered via FreeAbelianGroup.coeff after applying R_q"
+    unresolved:
+      - "selected-input and fixed-example construction of R_q"
+  proof_use:
+    used:
+      - "presentationToBlocks consumes the Cycle 3 quotient normal form"
+      - "blockLabel_injective hReflection is used in the generator case of coefficient recovery"
+      - "integer cast injectivity converts rational coordinate equality back to integer coefficient equality"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: not-applicable
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/ObstructionDiagnosticBridge/CoefficientComparison.lean: pass; 11 namespace declarations, standard axioms only"
+    - "main declarations #print axioms: propext, Classical.choice, Quot.sound only"
+    - "git diff --check and placeholder, hidden/BiDi Unicode, private-path, and Formal-to-Research import scans: pass"
+  blocking_findings: []
+  next_obligation: "lift epsilon_R cellwise to actual obstruction and law-generated diagnostic cochains and prove the degree 0-2 cochain-map equations"
 ```
