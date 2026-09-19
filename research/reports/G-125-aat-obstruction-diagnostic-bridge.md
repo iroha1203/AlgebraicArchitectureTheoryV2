@@ -21,10 +21,13 @@
   presentation group `M_R` を構成し、`M_R ≃+ ℤ^(B)` を導出する。
 - 完了: `M_R ≃+ ℤ^(B)` と `blockLabel : B → Λ` から係数比較
   `ε_R : M_R →+ (Λ → ℚ)` を構成し、`R_q` の下で単射性を導出する。
-- 未完了: Aの実障害複体・診断複体と次数0–2の比較写像。
+- 完了: `TargetSupportedNerve`上のpresentation係数cochainと実
+  `lawGeneratedD0/1`の間に次数0–2のcellwise比較を構成し、両cochain squareを証明する。
+- 未完了: presentation係数cochainと、構成するOb層の実
+  `CoverRelativeCechComplex`との同定。
 - 未完了: B1・B2、C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
-- 次のproof obligation: 係数比較を実障害cochainとlaw-generated診断cochainへ
-  cellwiseに持ち上げ、次数0–2のcochain mapを構成する。
+- 次のproof obligation: 局所定数presentation係数層と実
+  `CoverRelativeCechComplex`を構成し、Cycle 5のnormalized source cochainへ同定する。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -449,4 +452,119 @@ audits:
     - "git diff --check and placeholder, hidden/BiDi Unicode, private-path, and Formal-to-Research import scans: pass"
   blocking_findings: []
   next_obligation: "lift epsilon_R cellwise to actual obstruction and law-generated diagnostic cochains and prove the degree 0-2 cochain-map equations"
+```
+
+## Cycle 5 — normalized presentation cochainから実診断複体への比較
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 5
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: 3163e58be2e3d32d61a6f4ddd41e35149ea85db9
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "Issue #4791 paper design section 4: the general incidence formulas underlying the selected equation (3), together with equations (4)-(5), after Cycle 4 merge 3163e58be2e3d32d61a6f4ddd41e35149ea85db9"
+  proof_dag_predecessors:
+    - "GeneratorPresentation.coefficientComparison and equations (4)-(5): PR #4803, merge 3163e58be2e3d32d61a6f4ddd41e35149ea85db9"
+    - "TargetSupportedNerve.lawGeneratedComplex and law-value-label preservation from the accepted G-104 chain"
+  proof_obligation: "lift epsilon_R cellwise over the existing TargetSupportedNerve and prove compatibility with the actual lawGeneratedD0 and lawGeneratedD1"
+  selection_reason: "this is the comparison-map kernel of A1 and reuses the real K0/K1 diagnostic differentials instead of introducing a copied diagnostic complex"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/CochainComparison.lean"
+    - "GeneratorPresentation.coefficientCochainMap"
+  risks:
+    - "proving commutativity only for an unrelated copied diagnostic complex"
+    - "assuming endpoint label preservation instead of using the existing generated-coordinate theorems"
+    - "calling A1 complete before identifying the normalized presentation source with the actual obstruction sheaf Cech complex"
+  unchecked:
+    - "fixed-head independent review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Presentation-valued chart, edge, and face cochains now form a normalized additive complex with the general incidence formulas underlying equation (3). Applying epsilon_R at each existing generated diagnostic coordinate defines degree 0-2 maps, and the existing endpoint/face label-preservation theorems prove both cochain squares against lawGeneratedD0 and lawGeneratedD1. The source-to-actual-Ob-Cech identification and the selected C2=0, d1=0 specialization remain open."
+  completion_candidate: no
+  lean_artifacts:
+    - "GeneratorPresentation.PresentationCochain0"
+    - "GeneratorPresentation.PresentationCochain1"
+    - "GeneratorPresentation.PresentationCochain2"
+    - "GeneratorPresentation.presentationD0"
+    - "GeneratorPresentation.presentationD1"
+    - "GeneratorPresentation.presentation_d1_comp_d0"
+    - "GeneratorPresentation.coefficientCochain0"
+    - "GeneratorPresentation.coefficientCochain1"
+    - "GeneratorPresentation.coefficientCochain2"
+    - "GeneratorPresentation.coefficientCochain_comm0"
+    - "GeneratorPresentation.coefficientCochain_comm1"
+    - "GeneratorPresentation.PresentationDiagnosticCochainMap"
+    - "GeneratorPresentation.coefficientCochainMap"
+  evidence:
+    - "presentation_d1_comp_d0 uses the underlying CoverNerve endpoint equalities"
+    - "coefficientCochain0/1/2 evaluate epsilon_R at each actual CellCoordinate.lawValueLabel"
+    - "coefficientCochain_comm0 targets TargetSupportedNerve.lawGeneratedD0 directly"
+    - "coefficientCochain_comm1 targets TargetSupportedNerve.lawGeneratedD1 directly"
+  claim_mapping:
+    theorem_names:
+      - "GeneratorPresentation.presentation_d1_comp_d0"
+      - "GeneratorPresentation.coefficientCochain_comm0"
+      - "GeneratorPresentation.coefficientCochain_comm1"
+      - "GeneratorPresentation.coefficientCochainMap"
+    source_labels:
+      - "GOAL A degree 0-2 comparison-map construction"
+      - "Issue #4791 paper design section 4: general incidence formulas underlying selected equation (3), and equations (4)-(5)"
+    conjuncts:
+      - "the general incidence differential underlying selected equation (3) has right-minus-left and alternating-face formulas -> presentationD0 and presentationD1"
+      - "cellwise epsilon_R map in degrees 0-2 -> coefficientCochain0/1/2"
+      - "degree-zero square -> coefficientCochain_comm0"
+      - "degree-one square -> coefficientCochain_comm1"
+    undischarged_assumptions:
+      - "construct the selected obstruction sheaf and its CoverRelativeCechComplex"
+      - "identify its degree 0-2 cochains and differentials with PresentationCochain0/1/2 and presentationD0/1"
+      - "specialize to the selected face-empty input and derive equation (3) with C2=0 and d1=0"
+    acceptance_point: "the target is the existing lawGenerated differential surface; A1 is not marked complete until the actual obstruction source identification is constructed"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "TargetSupportedNerve, FiniteLawFamily, adequate reading, and GeneratorPresentation are inputs"
+      - "lawGeneratedD0/1 and coordinate label-preservation are reviewed predecessor constructions"
+    direction_hypothesis: []
+    discharge_required:
+      - "the actual obstruction sheaf and Cech source identification"
+    conclusion_equivalent_risk:
+      - "the cochain squares are proved from additivity and coordinate-label preservation, not supplied as fields of input data"
+  premise_delta:
+    discharged:
+      - "construct the normalized presentation cochain differential in degrees 0-2"
+      - "construct the cellwise coefficient maps to the actual law-generated diagnostic coordinate groups"
+      - "prove both cochain-map equations"
+    remaining:
+      - "connect the normalized source to the actual ObstructionSheaf CoverRelativeCechComplex"
+      - "prove the selected face-empty specialization C2=0 and d1=0"
+      - "finish A1, B1, full B2, C1, C2 and the fixed finite example"
+  certificate_provenance:
+    discharged:
+      - "diagnostic coordinates and differentials are imported from the existing law-generated complex"
+      - "each comparison value is computed by Cycle 4 epsilon_R at the coordinate's generated label"
+    unresolved:
+      - "actual obstruction sheaf and cover-relative source complex"
+  proof_use:
+    used:
+      - "CoverNerve face endpoint equalities prove d1 d0 equals zero"
+      - "edge endpoint label preservation proves comm0"
+      - "three face-coordinate label-preservation theorems prove comm1"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-for-normalized-source-to-actual-diagnostic
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: not-applicable
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/ObstructionDiagnosticBridge/CochainComparison.lean: pass; 29 namespace declarations, standard axioms only"
+    - "presentation_d1_comp_d0, coefficientCochain_comm0/1, and coefficientCochainMap #print axioms: propext, Classical.choice, Quot.sound only"
+    - "git diff --check and placeholder, hidden/BiDi Unicode, private-path, and Formal-to-Research import scans: pass"
+  blocking_findings: []
+  next_obligation: "construct the locally constant presentation-coefficient obstruction sheaf and identify its selected CoverRelativeCechComplex with the normalized source complex"
 ```
