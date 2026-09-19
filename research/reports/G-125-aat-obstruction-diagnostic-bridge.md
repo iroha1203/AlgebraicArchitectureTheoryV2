@@ -14,6 +14,26 @@
 G-125の完了条件に含めない。GOALが求める論文との対応は、このreportに採用入力、
 前提の出所・使用先、有限例との対応を記録することで満たす。
 
+## 論文第3章・付録Aとの対応
+
+論文原稿は未作成であり、以下は
+[`paper-structure.md`](../../outreach/paper/rising-sea/paper-structure.md) が予定する
+第3章「障害の読み取りと診断比較」と付録A向けの対応索引である。本文の執筆や命題番号の
+確定はこのGOALの範囲外とし、実装側の主張を先に固定する。
+
+| 予定する論文上の役割 | G-125の内容 | 主なLean宣言 |
+| --- | --- | --- |
+| 第3章: 障害係数と診断係数を結ぶ写像 | (A1), (B1) actual Čech H¹からlaw-generated H¹への比較と指定類の対応 | `CombinedAtomH1Input.coarseH1Map`, `CombinedAtomH1Input.fineH1Map`, `CombinedAtomSpecifiedObstruction.coarse_h1_map_actual_class_eq_diagnostic_class`, `CombinedAtomSpecifiedObstruction.fine_h1_map_actual_class_eq_diagnostic_class` |
+| 第3章: 診断による零性の保存・反映 | (B2) `R_q`の下でactual/diagnostic classの零性同値 | `CombinedAtomSpecifiedReflection.coarse_diagnostic_class_eq_zero_iff_actual_class_eq_zero`, `CombinedAtomSpecifiedReflection.fine_diagnostic_class_eq_zero_iff_actual_class_eq_zero` |
+| 第3章: reading変更に沿う比較 | (C1), (C2) 比較平方、指定類輸送、零性同値 | `CombinedAtomReadingNaturality.h1_comparison_square`, `CombinedAtomReadingNaturality.actualH1Map_actualClass`, `CombinedAtomReadingNaturality.diagnosticH1Map_diagnosticClass`, `SelectedReadingConditionC.actual_class_eq_zero_iff_mapped_actual_class_eq_zero` |
+| 第3章: 正例 | 同じ有限入力上の非単射reading変更と、非零coboundaryの零障害例・非零障害例 | `SelectedFiniteObstructionExamples.zero_example_outcomes`, `SelectedFiniteObstructionExamples.nonzero_example_outcomes` |
+
+付録Aでは、上表の各主張を同名のLean宣言へ対応させる。仕様の固定版は冒頭の
+GOAL commit / blob、実装の固定版はPR
+[#4822](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4822) の最終headとする。
+report自身へそのcommitを埋め込むと自己参照になるため、最終exact SHAはPR監査コメントと
+tracking Issue #4791の同期コメントに記録する。
+
 ## Proof obligation state
 
 - 完了: 紙上設計 §1–2 の生成子関係から `B = π₀(R)` と既存の
