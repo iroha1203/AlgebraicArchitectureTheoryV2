@@ -43,15 +43,18 @@
   cover、実refinement、patchと非空二重交叉の非空preconnected性を構成する。相異なる
   3 chartと実交叉点を持つ型をcomplete face indexとして定め、両coverで幾何的三重交叉の
   空性からその型の`IsEmpty`を導出する。
-- 未完了: この有限空間をAAT context open support functorへ接続し、site functorの連続性を
-  構成する。
+- checkpoint（粗いreading）: 既存の非退化Boolean-lattice AAT siteについて、contextの
+  逆包含を粗い3-patchのopen交叉へ送るsupport functorを構成する。chart/edge contextの
+  supportは実`coarsePatch`/`coarseOverlap`へ一致し、実admissible 3-chart coverの像が
+  Cycle 9のopen coverになることを証明する。
+- 未完了: point Atom由来のsupport provenanceを持つ粗細siteを構成し、実coverとbase changeを
+  用いてsite functorのcontinuityを証明する。
 - 完了（仮定相対）: supplied face-index-empty nerveのpresentation係数cochainと、条件付きactual Ob層の実
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
 - 未完了: B1・B2、C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
-- 次のproof obligation: 選定AAT siteのcontextへ粗細patch・overlap supportを接続し、
-  support functorとcontinuityを構成してCycle 7の強い前提を放電する。complete face indexを
-  実`TargetSupportedNerve.FaceComponent`へ用いてCycle 8を具体化し、actual cochain mapから
-  H¹誘導写像を構成する。
+- 次のproof obligation: 有限8点のpoint Atom支持から粗細context/open supportを作り、実
+  admissible coverの像とoverlap/base changeを用いてcontinuityを証明する。その後complete
+  face indexを実`TargetSupportedNerve.FaceComponent`へ用いてCycle 8を具体化する。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -1061,4 +1064,120 @@ audits:
     - "main declarations #print axioms: propext, Classical.choice, Quot.sound only"
   blocking_findings: []
   next_obligation: "construct the selected AAT context/open support functor on this geometry, prove continuity, and instantiate the actual diagnostic nerve and FaceEmptyAATCechCover"
+```
+
+## Cycle 10 — 粗いAAT context open support checkpoint
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 10
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: 2aac92bdf33761000375e9b52e2f67994724a066
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "Issue #4791 paper design section 8.2 after Cycle 9 merge 2aac92bdf33761000375e9b52e2f67994724a066"
+  proof_dag_predecessors:
+    - "generic ContextOpenSupport and locally constant AAT obstruction sheaf: PR #4807"
+    - "selected coarse three-patch topology and complete face provenance: PR #4809"
+    - "existing Boolean-lattice AAT context preorder: LawGeneratedBooleanCircleSite"
+  proof_obligation: "construct the coarse selected AAT context-to-open support functor and prove that the actual admissible AAT cover maps to the Cycle 9 open cover"
+  selection_reason: "this fixes the object and morphism part of Cycle 7's support premise before continuity is proved from real cover compatibility"
+  expected_result_type: target-proof-checkpoint
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/FiniteContextSupport.lean"
+    - "SelectedFiniteContextSupport.coarseSupportFunctor"
+    - "SelectedFiniteContextSupport.coarseActualCover_support_covers"
+  risks:
+    - "assigning arbitrary supports unrelated to the Cycle 9 coarse patches"
+    - "using a degenerate topology instead of the actual admissible cover to claim continuity"
+    - "claiming continuity, point-Atom provenance, the fine reading, or the actual diagnostic nerve"
+  unchecked:
+    - "fixed-head independent review"
+result:
+  proposed_result_type: target-proof-checkpoint
+  proof_obligation_delta: "The existing nondegenerate finite Boolean-lattice AAT site is reused with its reverse-inclusion order and actual admissible three-chart cover. A selected index is mapped to the intersection of its coarse patches, and index reverse inclusion is proved to induce open-support inclusion. Singleton chart and two-chart edge contexts have exactly the Cycle 9 coarsePatch and coarseOverlap supports, and the actual admissible AAT cover maps to an open cover of the eight-point space. Site continuity is not claimed: it still requires point-Atom provenance and a proof using this real cover and its base changes."
+  completion_candidate: no
+  lean_artifacts:
+    - "SelectedFiniteContextSupport.coarseSupportOfIndex"
+    - "SelectedFiniteContextSupport.coarseSupportOfIndex_mono"
+    - "SelectedFiniteContextSupport.coarseSupportFunctor"
+    - "SelectedFiniteContextSupport.coarseChartContext"
+    - "SelectedFiniteContextSupport.coarseEdgeContext"
+    - "SelectedFiniteContextSupport.coarseSupportFunctor_chart"
+    - "SelectedFiniteContextSupport.coarseSupportFunctor_edge"
+    - "SelectedFiniteContextSupport.coarseSupportFunctor_cover_patch"
+    - "SelectedFiniteContextSupport.coarseActualCover_support_covers"
+  evidence:
+    - "recognized Boolean contexts are indexed by Finset (Fin 3) and ordered by reverse inclusion"
+    - "coarseSupportOfIndex sends the empty index to top, singleton indices to patches, and two-element indices to intersections"
+    - "contexts outside the selected family retain identity arrows only and receive bottom support"
+    - "the imported Boolean-lattice site has an actual admissible cover by the three singleton contexts"
+    - "the image of every actual cover patch is its corresponding Cycle 9 coarse patch, and those opens cover Space"
+  claim_mapping:
+    theorem_names:
+      - "SelectedFiniteContextSupport.coarseSupportOfIndex_mono"
+      - "SelectedFiniteContextSupport.coarseSupportFunctor_chart"
+      - "SelectedFiniteContextSupport.coarseSupportFunctor_edge"
+      - "SelectedFiniteContextSupport.coarseActualCover_support_covers"
+    source_labels:
+      - "GOAL A selected finite cover and restrictions"
+      - "Issue #4791 paper design section 8.2 coarse reading"
+      - "Cycle 7 ContextOpenSupport object and morphism premise"
+    conjuncts:
+      - "context refinement -> open inclusion: coarseSupportOfIndex_mono and coarseContextSupportObj_mono"
+      - "actual chart/edge supports -> coarseSupportFunctor_chart and coarseSupportFunctor_edge"
+      - "actual admissible AAT cover maps to an open cover -> coarseActualCover_support_covers"
+    undischarged_assumptions:
+      - "coarse support-functor continuity must be proved from the real admissible cover and its base changes"
+      - "point Atom visibility must provide the support provenance required by fixed paper design section 10"
+      - "the fine four-patch reading requires its own four-index context site and support functor"
+      - "the coarse actual TargetSupportedNerve and FaceEmptyAATCechCover must still be instantiated"
+    acceptance_point: "the support values and actual-cover image are proved, but continuity is intentionally left unclaimed until it is derived from nondegenerate coverage"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "the Boolean-lattice context preorder and its overlap are reused from the existing finite AAT site example"
+      - "the coarse three-patch support is the fixed Cycle 9 input"
+    direction_hypothesis: []
+    discharge_required:
+      - "construct point-Atom-derived coarse and fine context supports"
+      - "prove continuity from actual coverage and overlap/base-change compatibility"
+      - "instantiate the actual coarse and fine diagnostic nerves and Cech covers"
+    conclusion_equivalent_risk:
+      - "no ContextOpenSupport package is constructed in this cycle because continuity is not yet discharged"
+  premise_delta:
+    discharged:
+      - "coarse context/open support functor"
+      - "coarse chart and edge support identification"
+      - "actual coarse admissible-cover image covers the selected space"
+    remaining:
+      - "point-Atom support provenance and coarse/fine site continuity"
+      - "actual coarse/fine TargetSupportedNerve and FaceEmptyAATCechCover instantiation"
+      - "H1 map, B1, full B2, C1, C2 and zero/nonzero fixed data"
+  certificate_provenance:
+    discharged:
+      - "coarse support values are intersections of the concrete Cycle 9 open patches"
+      - "the actual AAT cover patches map to the concrete Cycle 9 open cover"
+    unresolved:
+      - "point-Atom provenance, coarse/fine continuity, and the diagnostic nerve connection"
+  proof_use:
+    used:
+      - "reverse index inclusion is consumed by coarseSupportOfIndex_mono"
+      - "the actual admissible cover is consumed by coarseSupportFunctor_cover_patch and coarseActualCover_support_covers"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-for-coarse-support-checkpoint-only
+  target_fitting: "an initial top-only continuity attempt was rejected by fixed-head review and removed; continuity is not counted as discharged"
+  vacuity: none-found-in-retained-checkpoint
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/ObstructionDiagnosticBridge/FiniteContextSupport.lean: pass; 22 namespace declarations, standard axioms only"
+    - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.FiniteContextSupport: pass"
+    - "main declarations #print axioms: propext, Classical.choice, Quot.sound only"
+  blocking_findings: []
+  next_obligation: "construct point-Atom-derived coarse/fine AAT contexts and prove continuity from actual admissible cover images and overlap/base-change compatibility"
 ```
