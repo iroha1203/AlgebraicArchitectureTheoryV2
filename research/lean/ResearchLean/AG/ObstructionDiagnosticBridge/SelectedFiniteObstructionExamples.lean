@@ -5,9 +5,10 @@ import Formal.Util.AssertStandardAxioms
 # Fixed zero and nonzero obstruction examples for G-125
 
 This module fixes two coarse local data on the paper-selected three-edge nerve.
-The zero datum has zero transition and state.  The nonzero datum has one
-presentation generator on `ab` and zero on `bc` and `ac`; its oriented triangle
-sum is nonzero, while every degree-zero coboundary has triangle sum zero.
+The zero-obstruction datum has transition `(u, -u, 0)` and zero state, so its
+mismatch is nonzero but is the coboundary of `(0, u, 0)`.  The nonzero datum has
+the same presentation generator on `ab` and zero on `bc` and `ac`; its oriented
+triangle sum is nonzero, while every degree-zero coboundary has triangle sum zero.
 
 The data are transported by the selected reading refinement.  Existing B1,
 B2, C1, and C2 theorems then determine the actual and diagnostic class outcomes
@@ -55,6 +56,51 @@ theorem selectedCoefficient_ne_zero : selectedCoefficient ≠ 0 := by
       (selectedGenerator.label laws)) hzero
   simp [selectedCoefficient] at hcomparison
 
+/-- Normalized coarse transition of the zero-obstruction datum. -/
+def zeroNormalizedTransition :
+    presentation.PresentationCochain1 coarseSupportedNerve
+  | .ab => selectedCoefficient
+  | .bc => -selectedCoefficient
+  | .ac => 0
+
+/-- The normalized correction whose coboundary is `zeroNormalizedTransition`. -/
+def zeroCorrection :
+    presentation.PresentationCochain0 coarseSupportedNerve
+  | .c0 => 0
+  | .c1 => selectedCoefficient
+  | .c2 => 0
+
+/-- The zero-obstruction transition is a normalized degree-zero coboundary. -/
+theorem presentationD0_zeroCorrection :
+    presentation.presentationD0 coarseSupportedNerve zeroCorrection =
+      zeroNormalizedTransition := by
+  funext edge
+  cases edge <;>
+    simp [GeneratorPresentation.presentationD0, zeroCorrection,
+      zeroNormalizedTransition, coarseSupportedNerve, coarseNerve,
+      coarseEdgeLeft, coarseEdgeRight]
+
+/-- The zero-obstruction transition is nevertheless a nonzero cochain. -/
+theorem zeroNormalizedTransition_ne_zero : zeroNormalizedTransition ≠ 0 := by
+  intro hzero
+  have hab := congrFun hzero CoarseEdge.ab
+  exact selectedCoefficient_ne_zero (by
+    simpa [zeroNormalizedTransition] using hab)
+
+/-- Actual coarse transition corresponding to `zeroNormalizedTransition`. -/
+def zeroTransition :
+    (presentation.faceEmptyCechComplex
+      CombinedAtomActualNerve.coarseCechCover).Cn 1 :=
+  (presentation.faceEmptyCechCochain1Equiv
+    CombinedAtomActualNerve.coarseCechCover).symm zeroNormalizedTransition
+
+/-- Actual correction corresponding to `zeroCorrection`. -/
+def zeroActualCorrection :
+    (presentation.faceEmptyCechComplex
+      CombinedAtomActualNerve.coarseCechCover).Cn 0 :=
+  (presentation.faceEmptyCechCochain0Equiv
+    CombinedAtomActualNerve.coarseCechCover).symm zeroCorrection
+
 /-- Normalized coarse transition supported only on the edge `ab`. -/
 def nonzeroNormalizedTransition :
     presentation.PresentationCochain1 coarseSupportedNerve
@@ -69,9 +115,9 @@ def nonzeroTransition :
   (presentation.faceEmptyCechCochain1Equiv
     CombinedAtomActualNerve.coarseCechCover).symm nonzeroNormalizedTransition
 
-/-- The zero coarse local datum. -/
+/-- The zero-obstruction coarse datum has a nonzero coboundary mismatch. -/
 def zeroData : CoarseLocalData where
-  transition := 0
+  transition := zeroTransition
   localState := 0
 
 /-- The fixed nonzero coarse local datum with zero chart state. -/
@@ -99,20 +145,33 @@ theorem triangleDefect_nonzeroNormalizedTransition :
     triangleDefect nonzeroNormalizedTransition = selectedCoefficient := by
   simp [triangleDefect, nonzeroNormalizedTransition]
 
+/-- The zero datum's mismatch is the coboundary of `zeroActualCorrection`. -/
+theorem coarse_zero_mismatch_eq_d0 :
+    zeroData.actualMismatch =
+      (presentation.faceEmptyCechComplex
+        CombinedAtomActualNerve.coarseCechCover).d 0 zeroActualCorrection := by
+  apply (presentation.faceEmptyCechCochain1Equiv
+    CombinedAtomActualNerve.coarseCechCover).injective
+  rw [presentation.faceEmptyCech_d0_normalizes]
+  simp [zeroData, zeroTransition, zeroActualCorrection,
+    ActualCechAffineLocalData.actualMismatch, presentationD0_zeroCorrection]
+
+/-- The zero datum's actual mismatch is nonzero before passing to cohomology. -/
+theorem coarse_zero_mismatch_ne_zero : zeroData.actualMismatch ≠ 0 := by
+  intro hzero
+  have hnormalized := congrArg
+    (presentation.faceEmptyCechCochain1Equiv
+      CombinedAtomActualNerve.coarseCechCover) hzero
+  exact zeroNormalizedTransition_ne_zero (by
+    simpa [zeroData, zeroTransition, ActualCechAffineLocalData.actualMismatch]
+      using hnormalized)
+
 /-- The zero datum has zero specified actual obstruction class at the coarse reading. -/
 theorem coarse_zero_actual : coarseActualClass zeroData = 0 := by
   rw [coarseActualClass, ActualCechAffineLocalData.actualClass,
     (presentation.faceEmptyCechComplex
       CombinedAtomActualNerve.coarseCechCover).additiveH1Class_eq_zero_iff]
-  refine ⟨0, ?_⟩
-  change
-    (0 : (presentation.faceEmptyCechComplex
-      CombinedAtomActualNerve.coarseCechCover).Cn 1) +
-        (presentation.faceEmptyCechComplex
-          CombinedAtomActualNerve.coarseCechCover).d 0 0 =
-      (presentation.faceEmptyCechComplex
-        CombinedAtomActualNerve.coarseCechCover).d 0 0
-  simp
+  exact ⟨zeroActualCorrection, coarse_zero_mismatch_eq_d0⟩
 
 /-- The fixed single-edge datum has nonzero specified actual obstruction class. -/
 theorem coarse_nonzero_actual : coarseActualClass nonzeroData ≠ 0 := by
@@ -164,6 +223,68 @@ def fineZeroData : FineLocalData := mapLocalData zeroData
 
 /-- Fine local data generated from the fixed coarse nonzero datum. -/
 def fineNonzeroData : FineLocalData := mapLocalData nonzeroData
+
+/-- The transported zero transition is `(0, u, -u, 0)` on `(k, ab, bc, ac)`. -/
+theorem fine_zero_transition_normalized :
+    presentation.faceEmptyCechCochain1Equiv
+        CombinedAtomActualNerve.fineCechCover fineZeroData.transition =
+      presentation.presentationPullback1
+        SelectedReadingRefinement.nerveMorphism zeroNormalizedTransition := by
+  change
+    presentation.faceEmptyCechCochain1Equiv
+        CombinedAtomActualNerve.fineCechCover
+        (presentation.actualCechPullback1
+          SelectedReadingRefinement.nerveMorphism zeroTransition) =
+      presentation.presentationPullback1
+        SelectedReadingRefinement.nerveMorphism zeroNormalizedTransition
+  simp [GeneratorPresentation.actualCechPullback1, zeroTransition]
+
+/-- The fine zero datum has value zero on the contracted edge `k`. -/
+theorem fine_zero_transition_k :
+    presentation.faceEmptyCechCochain1Equiv
+        CombinedAtomActualNerve.fineCechCover fineZeroData.transition Edge.k = 0 := by
+  rw [fine_zero_transition_normalized]
+  simp [GeneratorPresentation.presentationPullback1,
+    SelectedReadingRefinement.nerveMorphism, SelectedReadingRefinement.edgeMap]
+
+/-- The fine zero datum retains `u` on `ab`. -/
+theorem fine_zero_transition_ab :
+    presentation.faceEmptyCechCochain1Equiv
+        CombinedAtomActualNerve.fineCechCover fineZeroData.transition Edge.ab =
+      selectedCoefficient := by
+  rw [fine_zero_transition_normalized]
+  simp [GeneratorPresentation.presentationPullback1,
+    SelectedReadingRefinement.nerveMorphism, SelectedReadingRefinement.edgeMap,
+    zeroNormalizedTransition]
+
+/-- The fine zero datum retains `-u` on `bc`. -/
+theorem fine_zero_transition_bc :
+    presentation.faceEmptyCechCochain1Equiv
+        CombinedAtomActualNerve.fineCechCover fineZeroData.transition Edge.bc =
+      -selectedCoefficient := by
+  rw [fine_zero_transition_normalized]
+  simp [GeneratorPresentation.presentationPullback1,
+    SelectedReadingRefinement.nerveMorphism, SelectedReadingRefinement.edgeMap,
+    zeroNormalizedTransition]
+
+/-- The fine zero datum remains zero on `ac`. -/
+theorem fine_zero_transition_ac :
+    presentation.faceEmptyCechCochain1Equiv
+        CombinedAtomActualNerve.fineCechCover fineZeroData.transition Edge.ac = 0 := by
+  rw [fine_zero_transition_normalized]
+  simp [GeneratorPresentation.presentationPullback1,
+    SelectedReadingRefinement.nerveMorphism, SelectedReadingRefinement.edgeMap,
+    zeroNormalizedTransition]
+
+/-- The transported zero datum also has nonzero mismatch before cohomology. -/
+theorem fine_zero_mismatch_ne_zero : fineZeroData.actualMismatch ≠ 0 := by
+  intro hzero
+  have hab := congrArg
+    (fun cochain => presentation.faceEmptyCechCochain1Equiv
+      CombinedAtomActualNerve.fineCechCover cochain Edge.ab) hzero
+  exact selectedCoefficient_ne_zero (by
+    simpa [fineZeroData, mapLocalData,
+      ActualCechAffineLocalData.actualMismatch] using hab)
 
 /-- B1 for the coarse zero datum. -/
 theorem coarse_zero_b1 :

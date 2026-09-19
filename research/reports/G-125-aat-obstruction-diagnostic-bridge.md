@@ -95,8 +95,11 @@ G-125の完了条件に含めない。GOALが求める論文との対応は、�
 - 完了: 選定refinementについてC0--C6を同じ有限nerveとsupportから証明し、既存
   `generatedComparisonH1Map_bijective`を適用する。診断類輸送と両readingのB2を組み合わせ、
   任意の粗い局所データとその輸送について指定actual障害類の零性同値C2を証明する。
-- 完了: 粗い側の零datumをtransition/stateとも零に固定する。非零datumはchart stateを零、
-  `ab` transitionだけをprimitive generator `g00`のpresentation class、`bc`と`ac`を零に固定する。
+- 完了: 粗い側の零障害datumはchart stateを零、transitionをprimitive generator `g00`の
+  presentation class `u`による`(u, -u, 0)`に固定する。このmismatch自体は非零だが、
+  chart cochain `(0, u, 0)`のcoboundaryなのでactual classは零になる。refinement後のtransitionが
+  `(0, u, -u, 0)`になることも各辺で証明する。非零datumはchart stateを零、
+  `ab` transitionだけを`u`、`bc`と`ac`を零に固定する。
   三辺の向き付き和は任意のcoboundaryで望遠和により零だが、このtransitionでは非零generator classに
   等しいため、actual障害類は非零である。両datumを選定refinementで細かい側へ輸送し、B1・B2・C1・C2を
   各ケースへ明示適用して、actual/diagnostic両類が粗細双方でそれぞれ零・非零になることを証明する。
@@ -2625,10 +2628,12 @@ selection:
     - "fixed-head independent math and Lean review"
 result:
   proposed_result_type: target-theorem-proved
-  proof_obligation_delta: "The zero datum has zero transition and chart state. The nonzero datum has zero chart state and the g00 presentation generator on ab only. The oriented triangle defect ab + bc - ac vanishes on every presentation D0 coboundary but equals the selected nonzero generator on the fixed transition, proving the coarse actual class is nonzero from primitive data. Existing B1, B2, C1 transport and C2 are specialized separately to the zero and nonzero data. Their conjunctions prove that actual and diagnostic classes are respectively zero or nonzero at both readings."
+  proof_obligation_delta: "The zero-obstruction datum has zero chart state and coarse transition (u, -u, 0), which is nonzero but equals D0(0, u, 0); its transported fine transition is (0, u, -u, 0). The nonzero datum has zero chart state and the g00 presentation generator on ab only. The oriented triangle defect ab + bc - ac vanishes on every presentation D0 coboundary but equals the selected nonzero generator on the fixed nonzero transition, proving its coarse actual class is nonzero from primitive data. Existing B1, B2, C1 transport and C2 are specialized separately to the zero and nonzero data. Their conjunctions prove that actual and diagnostic classes are respectively zero or nonzero at both readings."
   completion_candidate: yes
   lean_artifacts:
     - "SelectedFiniteObstructionExamples.selectedCoefficient_ne_zero"
+    - "SelectedFiniteObstructionExamples.presentationD0_zeroCorrection"
+    - "SelectedFiniteObstructionExamples.coarse_zero_mismatch_ne_zero"
     - "SelectedFiniteObstructionExamples.triangleDefect_presentationD0"
     - "SelectedFiniteObstructionExamples.coarse_zero_actual"
     - "SelectedFiniteObstructionExamples.coarse_nonzero_actual"
@@ -2646,10 +2651,15 @@ result:
     - "SelectedFiniteObstructionExamples.nonzero_diagnostic_class_transport"
     - "SelectedFiniteObstructionExamples.zero_c2"
     - "SelectedFiniteObstructionExamples.nonzero_c2"
+    - "SelectedFiniteObstructionExamples.fine_zero_transition_normalized"
+    - "SelectedFiniteObstructionExamples.fine_zero_mismatch_ne_zero"
     - "SelectedFiniteObstructionExamples.zero_example_outcomes"
     - "SelectedFiniteObstructionExamples.nonzero_example_outcomes"
   evidence:
     - "selectedCoefficient is the presentation class of primitive generator (unit, (false, false)); coefficientComparison evaluates it to one"
+    - "zeroNormalizedTransition is (selectedCoefficient, -selectedCoefficient, 0), is nonzero, and equals presentationD0 zeroCorrection for zeroCorrection (0, selectedCoefficient, 0)"
+    - "the corresponding actual mismatch is nonzero before quotienting, while coarse_zero_actual supplies the explicit actual C0 correction"
+    - "fineZeroData normalizes to (0, selectedCoefficient, -selectedCoefficient, 0) on (k, ab, bc, ac) and its mismatch remains nonzero"
     - "nonzeroNormalizedTransition is selectedCoefficient on ab and zero on bc and ac"
     - "triangleDefect telescopes to zero on every presentationD0 cochain"
     - "the nonzero transition has triangleDefect selectedCoefficient, so it cannot be an actual Cech coboundary"
@@ -2665,7 +2675,7 @@ result:
       - "Issue #4791 paper design sections 8-10"
     conjuncts:
       - "same fixed input retains the noninjective canonical factor, both R_q proofs, and Condition C"
-      - "zero primitive local datum -> zero actual and diagnostic classes at both readings"
+      - "nonzero-coboundary zero-obstruction datum -> zero actual and diagnostic classes at both readings"
       - "single-edge primitive local datum -> nonzero actual and diagnostic classes at both readings"
       - "fine data are generated from coarse data by the selected refinement"
       - "B1, B2, C1, specified-class transport, and C2 are applied in both cases"
@@ -2683,10 +2693,11 @@ audits:
     discharge_required: []
     conclusion_equivalent_risk:
       - "zeroData and nonzeroData contain only transition and chart-state cochains"
+      - "zeroData does not encode the answer as the zero cochain: its nonzero mismatch is proved to be an explicit coboundary"
       - "triangleDefect is a presentation-cochain functional, not an H1 class or vanishing certificate"
   premise_delta:
     discharged:
-      - "fixed zero local datum and all four zero class outcomes"
+      - "fixed nonzero-mismatch zero-obstruction datum, its coarse/fine coordinate formulas, and all four zero class outcomes"
       - "fixed nonzero local datum and all four nonzero class outcomes"
       - "explicit B1, B2, C1, specified-class transport and C2 specializations for both cases"
     remaining:
@@ -2694,6 +2705,7 @@ audits:
   certificate_provenance:
     discharged:
       - "selectedCoefficient nonzero is detected by the existing coefficientComparison at its generated label"
+      - "coarse zero class follows from the explicit actual correction corresponding to normalized chart cochain (0, u, 0), not from a zero transition"
       - "coarse actual nonvanishing follows from the actual additiveH1 quotient criterion and the triangle functional"
       - "fine data are produced by mapLocalData and their outcomes follow through existing transport and zero-reflection theorems"
     unresolved: []
@@ -2707,11 +2719,11 @@ audits:
   structure_field_escape: none-found
   route_integrity: pass-for-completion-candidate
   target_fitting: none-found
-  vacuity: "the nonzero transition is a concrete primitive generator on one real coarse overlap and is proved not to be any degree-zero coboundary"
+  vacuity: "the zero-obstruction mismatch is explicitly nonzero before quotienting but has a concrete degree-zero correction; the nonzero transition is a concrete primitive generator on one real coarse overlap and is proved not to be any degree-zero coboundary"
   one_way_as_equivalence: "zero and nonzero directions are both witnessed; each iff used is an existing proved B2 or C2 equivalence"
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "lake env lean ResearchLean/AG/ObstructionDiagnosticBridge/SelectedFiniteObstructionExamples.lean: pass; 41 declarations, standard axioms only"
+    - "cd research/lean && lake build ResearchLean.AG.ObstructionDiagnosticBridge.SelectedFiniteObstructionExamples: pass; 55 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "run final exact-head validation, math-lean-review, PR audit, and independent completion review"
 ```
