@@ -1,6 +1,8 @@
 # Rising Sea — 論文構成マスター
 
-仮題: **Foundations of Algebraic Architecture Theory**
+**Foundations of Algebraic Architecture Theory**
+
+*Rising Sea*
 
 ## 1. この文書で定めること
 
