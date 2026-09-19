@@ -8395,3 +8395,38 @@ Cycle 79からの研究状態の昇格は行わない。PR・独立査読・検�
 - namespace全体の`#assert_standard_axioms_only`: 114宣言、標準公理のみ。
 - 差分・未追跡fileを含むplaceholder、hidden/BiDi、privacy、語彙、Research import方向、
   `git diff --check`: pass。Research全体buildは実行していない。
+
+### 継続実装：core生成の原始reading
+
+人間から最初の検証点全体の完了とPR/Issue操作の許可を受け、同じ独立検証として継続する。
+完了条件は承認済み設計の検証点I全体に置き、raw部分や以下のcore部品だけへ縮小しない。
+Cycleは加算しない。
+
+`IndependentCorePrimitiveReadings.lean`に、native coreの生成順序に沿う原始queryと構成を追加した。
+以下はfocused Lean検証済みの実装証拠であり、正式PR査読による受理はまだ行っていない。
+namespaceは`AAT.AG.LocalSemanticReconstruction.IndependentCorePrimitive`。
+
+| 構成 | 原始値と局所条件 | Nativeへの接続 |
+| --- | --- | --- |
+| `Extraction` | Source・vocabulary・semantic reading・resolutionの選択値と型参照、4つのadmissionの点評価、normalizeの点評価。選択外の候補型ではpredicateはfalse、normalizeはnone | `readingEquiv`が選択sourceを含む全`ExtractionDoctrine`と両逆。`atomize_mem_iff`が4条件の連言からAtom族を生成 |
+| `Composition` | 任意の有限Atom族とAtom対に対するrelation・identificationの評価。局所含意で両端のfamily所属を要求 | `readingEquiv`が全`CompositionReading`と両逆。供給されたfamilyそのものからconfigurationを作る |
+| `ObjectFormation` | 各configurationに対するStructureMapsとSelectedQuantitiesの選択値・型参照 | `readingEquiv`が全`ObjectReading`と両逆。入力configurationを保持してarchitecture objectを構成 |
+| `Operations` | 両端objectごとのoperation型参照と各Atomへの作用。family・relation・identification保存を点ごとに要求 | `readingEquiv`が全`OperationReading`と両逆。完成した`ConfigurationHom`を局所値に保存しない |
+| `Generation` | 上記の抽出・composition・object formationを依存順に合成 | `object_read`が任意のnative `CoreReading`の生成objectそのものを回復。family・relation・identificationの評価式も明示 |
+
+`SelectedValue`は一つのnativeな選択値とそのcarrier参照の依存対であり、完成coreや完成射ではない。
+各queryのconstructorが元のfieldと評価引数を固定する。source型を任意関数として実行する汎用APIや、
+任意のLean命題を法則として受け入れるconstructorは持たない。
+
+生成familyの`ListFinite`はnative core readingにも要求される条件であり、`Generation.family_read_listFinite`
+が元の条件を再構成先へ運ぶ。新たな有限carrierや選択済み有限列を対象データに追加しない。
+有限familyの証明の選び方も両逆で消える。`Composition.trueTable_not_lawful`は空familyの外にrelationを
+作るtableを排除し、`Extraction.eraseNormalization_not_typed`は選択sourceのnormalizeが欠けるtableを排除する。
+
+この段階でcontext・Law/observable環・circuit・invariant・signature、coverage/overlap、係数環の
+原始組立ては未完了である。全core/siteの組立て、rawとの依存する接続、局所Homからの厳密なraw等式、
+完全幾何の対象/Hom両逆・恒等・合成、G-122/tagged両方式、共通宣言・有限片への接続を引き続き構成する。
+
+検証開始baseはraw独立検証のmerge commit `27a844fdd8812035c73575078a7ac6ed02b6a305`。
+単一fileのfocused check、明示63宣言の`#print axioms`、namespace211宣言の標準公理監査を実行した。
+Research全体buildは実行していない。
