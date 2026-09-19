@@ -145,11 +145,13 @@
   merge commit `a507237a507df44914136a6f768b94173bf933ca`
 - Cycle 68 accepted PR: [#4782](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4782),
   merge commit `b0a2d4b2690a1aabdf64f033c9fc6ca975f7445e`
+- Cycle 69 accepted PR: [#4783](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4783),
+  merge commit `871eb6dc7e7ad8abda857aef261b1f2e4131eb26`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: operation・invariant・support・axis・geometry observable・raw naturalityの
-  独立coherenceを構成し、恒等・合成に閉じてactual complete geometry成分へ接続する
-- next proof obligation: 独立coherence全体をcomplete coherent subcategoryにまとめ、任意の整合する
+- current proof obligation: operation・invariant・signature・support・axis・geometry observable・raw transportの
+  graph codeとlaw-bearing bundleを構成し、実質的両逆・分離・恒等/合成・actual field回収を同時に示す
+- next proof obligation: Cycle 69--70の独立coherence全体をcomplete coherent Homにまとめ、任意の整合する
   bundleと`GeometryTotalHom`のread/assemble両逆へ接続する
 
 ## Cycle 1 — rejected
@@ -7016,6 +7018,111 @@ audits:
   next_obligation: "assemble operation, invariant, support, axis, geometry-observable, and raw naturality coherence with identity/composition, connect all actual fields, then construct the complete coherent Hom"
 ```
 
+## Cycle 70: remaining dependent component graph coherence
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 70
+status: result-proposed
+branch: codex/4711-g124-complete-component-coherence
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 871eb6dc7e7ad8abda857aef261b1f2e4131eb26
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 69 acceptance: Issue comment 5738871900; Cycle 70 selection: Issue comment 5738881990"
+  proof_dag_predecessors:
+    - "Cycle 63 primitive total-functional graph equivalence"
+    - "Cycle 64 complete geometry graph reading and separation"
+    - "Cycle 68 dependent equivalence graph families"
+    - "Cycle 69 context equivalence and observable naturality coherence"
+  proof_obligation: "assemble operation, invariant, signature, realization, and raw-transport graph codes with local laws, substantive inverses and separation, identity/composition closure, and same-cycle complete-map graph recovery"
+  selection_reason: "the cycle closes all remaining computational fields below complete Hom assembly while keeping the four-lane question to one componentwise coherence claim"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/RemainingComponentGraphCoherence.lean"
+  risks:
+    - "dependent signature coordinates might hide a completed axis map through casts"
+    - "realization naturality might be stated pointwise without identity/composition closure"
+    - "a GeometryTotalHom might be stored inside the unified code"
+    - "common complete-map graph recovery might be deferred"
+  unchecked:
+    - "assembly of the full coherent Hom including coverage and overlap"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "One-index and two-index total-functional graph families now have exact read/assemble equivalences, tagged separation, and identity/composition laws. Operation naturality and invariant transport are attached as independent predicates. RealizationGraphCode binds support, axis, and observable graph families to reading-preservation and restriction-naturality laws, is equivalent to RealizationTransportSupply, and has law-bearing identity/composition whose assembly is preserved. SignatureGraphCode derives coordinate targets from its own assembled axis graph and recovers both actual axis and coordinate fields. Raw transport has actual, identity, and composition coherence. RemainingComponentCode packages all remaining graph codes and laws without storing GeometryTotalHom, while CompleteGraphRecovery recovers operation, invariant, signature axis/coordinate, support, geometry axis, and geometry observable fields on the existing complete-map graph surface."
+  completion_candidate: no
+  lean_artifacts:
+    - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.IndexedFunctionGraphCode.equivFamily"
+    - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.IndexedFunctionGraphCode.taggedForward_injective"
+    - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.BiIndexedFunctionGraphCode.equivFamily"
+    - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.BiIndexedFunctionGraphCode.taggedForward_injective"
+    - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.RealizationGraphCode.equivSupply"
+    - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.RealizationGraphCode.assemble_comp"
+    - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.RemainingComponentCode"
+    - "AAT.AG.LocalSemanticReconstruction.RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.readRemaining_completeGraphRecovery"
+  acceptance:
+    fixed_question: "Do raw graph codes for the remaining operation, invariant, signature, support, geometry-axis, geometry-observable, and raw-transport components, equipped only with endpoint equations and preservation/naturality laws, assemble componentwise with identity/composition and recover every corresponding field of actual complete geometry morphisms without storing a GeometryTotalHom?"
+    statement_status: implemented
+    proof_status: focused-pass
+    premise_status:
+      discharged:
+        - "one-index and two-index dependent function families / exact read-assemble equivalences"
+        - "dependent family separation / tagged forward graphs"
+        - "operation naturality and invariant transport / independent law predicates"
+        - "support, axis, and observable realization / supply equivalence plus identity and composition"
+        - "signature axis and coordinates / dependent recovery over the assembled axis"
+        - "raw transport / actual, identity, and composition coherence"
+        - "common surface / all remaining graph-valued fields recovered together"
+      undischarged: []
+    undischarged_assumptions: []
+    acceptance_point: "all remaining computational fields below complete Hom assembly are graph-presented, law-bearing, composition-compatible where applicable, and recovered on the accepted common graph surface"
+    port_status: not-applicable
+  nonclaims:
+    - "an arbitrary unified remaining-component code already assembles coverage and overlap"
+    - "an arbitrary complete coherent bundle already assembles to GeometryTotalHom"
+    - "G-124 target B or the whole GOAL is complete"
+audits:
+  premise_delta:
+    source_derived:
+      - "generic graph assembly assumes primitive total-functionality and explicit local preservation or naturality laws"
+    discharged:
+      - "dependent read/assemble inverses and tagged separation"
+      - "law-bearing realization supply equivalence and composition"
+      - "actual complete-map graph recovery for every remaining computational field"
+    remaining:
+      - "full complete coherent Hom assembly with coverage and overlap"
+  certificate_provenance:
+    discharged:
+      - "RemainingComponentCode / raw graph codes plus separate local laws only"
+    unresolved:
+      - "full GeometryTotalHom assembly / successor obligation"
+  proof_use:
+    used:
+      - "primitive graph read/assemble laws build dependent family equivalences"
+      - "tagged sigma evaluation proves family separation"
+      - "reading and naturality premises build RealizationTransportSupply"
+      - "axis equality reindexes coordinate graph assembly"
+      - "actual complete geometry laws populate operation, invariant, signature, realization, and raw components"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  target_fitting_reason: "the unified code contains no completed GeometryTotalHom, and connection to the accepted complete-map graph surface is proved in the same cycle"
+  vacuity: none-found
+  vacuity_reason: "the generic family codes are equivalent to arbitrary dependent functions, their tagged graphs are injective, and realization codes are equivalent to independently supplied realization transports"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  four_lane_question: "Do raw graph codes for the remaining operation, invariant, signature, support, geometry-axis, geometry-observable, and raw-transport components, equipped only with endpoint equations and preservation/naturality laws, assemble componentwise with identity/composition and recover every corresponding field of actual complete geometry morphisms without storing a GeometryTotalHom?"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/RemainingComponentGraphCoherence.lean: pass"
+    - "#assert_standard_axioms_only RemainingComponentGraphCoherence: 174 declarations, standard axioms only"
+    - "lake build ResearchLean.AG: Cycle 70 module built; aggregate remains blocked by pre-existing unsolved goals in ConditionC5NonnecessityWitness and ConditionC6NonnecessityWitness"
+  blocking_findings: []
+  next_obligation: "combine Cycle 69 context/observable coherence and Cycle 70 remaining-component coherence with coverage and overlap into an independent complete coherent Hom, then prove GeometryTotalHom read/assemble inverses"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -7168,8 +7275,11 @@ audits:
   Cycle 69では双方向context graphのtotality・monotonicity・unit/counit四不等式からfunctorの射作用と
   圏同値を組み立て、read/assemble両逆、raw graph合成則、左右単位律、結合律まで閉じた。
   observable ring familyも同じcontext codeのassembled functorへ結び、restriction naturalityから
-  presheaf natural isoを組み立ててactual complete geometry成分まで回収した。残るoperation・invariant・
-  support・axis・geometry-observable・raw coherenceを含む独立coherence部分圏とHom組立て、
+  presheaf natural isoを組み立ててactual complete geometry成分まで回収した。Cycle 70では
+  operation・invariant・signature・support・axis・geometry-observable・raw transportを
+  dependent graph codeと独立lawへ分け、一添字/二添字familyのread/assemble両逆とtagged分離、
+  realization supplyの両逆・恒等・合成、actual complete-map graph七成分の一括回収まで同梱した。
+  残るcoverage・overlapを含む独立coherence部分圏とfull Hom組立て、
   direct normalization kernel自体のprimitive local syntax、および四族共通の実現圏・局所モデル圏への
   適用は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
