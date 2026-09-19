@@ -34,7 +34,21 @@ variable {S : Site.AATSite A}
 variable {D : TargetSupportedNerve q} {G : ContextOpenSupport S}
 variable [IsEmpty D.nerve.FaceComponent]
 
-/-- Every generated Law-value label has one target visible on every chart. -/
+/--
+The support premise used by the G-125(B2) integral-reflection argument.
+
+For each source-generated Law-value label it selects one real target that is
+visible on every chart and evaluates to that label.  This is enough for B2:
+the proof reads its rational zero-cochain witness only at the resulting chart
+coordinates, and uses the same target at both endpoints of every edge before
+recovering integral block coefficients through `ReflectionCondition`.
+
+Implementation notes: this premise is stated per generated label because B2
+never reads targets that do not generate a requested label.  Requiring
+`FullChartSupport` was rejected as strictly stronger and unrelated to the
+flooring argument.  The predicate contains only support membership and Law
+evaluation; it stores no cohomology, injectivity, or vanishing conclusion.
+-/
 def CommonLabelChartSupport (D : TargetSupportedNerve q)
     (laws : FiniteLawFamily Source) (hadequate : laws.Adequate q) : Prop :=
   ∀ label : LawValueLabel laws,
