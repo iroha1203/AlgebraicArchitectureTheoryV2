@@ -26,19 +26,21 @@
 - 完了: 位相空間上の局所定数`M_R`値関数を加法的presheafとして構成し、
   Mathlibの離散値連続関数sheafとの同型からsheaf条件を証明する。非空preconnected開集合上では
   sectionと`M_R`の評価同型、および制限写像の恒等座標表示も導出する。
-- checkpoint: AAT contextからopen supportへのfunctorと、そのAAT topologyからopen-set
-  topologyへのMathlib標準の連続性を仮定するgeneric packaging境界を型付けする。この仮定の下で
+- 完了（Cycle 7のgeneric境界、Cycle 12で選定入力から放電）: AAT contextからopen supportへのfunctorと、
+  そのAAT topologyからopen-set topologyへのMathlib標準の連続性を要求するgeneric packaging境界を
+  型付けする。この仮定の下で
   局所定数係数sheafを引き戻し、既存の`ObstructionSheaf.ofAddCommGrpValued`によって実
   `ObstructionSheaf`を構成する。非空preconnected support上のsection同型と制限写像の
-  恒等座標表示も実Ob層へ移す。連続性自体は任意sheafの引戻しsheaf条件を含む強い前提であり、
-  選定有限入力からの放電までは完了扱いしない。
+  恒等座標表示も実Ob層へ移す。Cycle 12で、選定point-Atom siteについて任意sheafの引戻しsheaf条件を
+  生成topologyから直接証明し、このgeneric境界のcontinuity premiseを放電した。
 - checkpoint: 供給された`FaceComponent` indexが空の選定nerveについて、chart contextと
   edge-overlap context、actual restrictionから既存`CoverRelativeCechCover/Complex`を構成する。非空
   preconnected supportの評価座標によりactual Obの次数0・1をpresentation cochainへ同定し、
   actual `d⁰`を右辺−左辺差へ正規化する。選択face index型の空性からactual/normalized両方の`C²`と
   `d¹`を零化し、actual Čech sourceから既存law-generated complexへの次数0–2 cochain mapを得る。
-  これは実triple overlap全体の空性やface収載完全性をまだ示さない。選定有限入力による
-  face provenance、support functor、continuityの構成前なのでA1全体の完了扱いはしない。
+  これは実triple overlap全体の空性やface収載完全性をまだ示さない。選定有限入力のface provenance、
+  support functor、continuityは後続Cycleで構成済みだが、それらを用いたactual coarse/fine nerveと
+  `FaceEmptyAATCechCover`が未構成なのでA1全体の完了扱いはしない。
 - 完了: 論文採用有限例の8点Alexandrov空間、粗い3-patch coverと細かい4-patch
   cover、実refinement、patchと非空二重交叉の非空preconnected性を構成する。相異なる
   3 chartと実交叉点を持つ型をcomplete face indexとして定め、両coverで幾何的三重交叉の
@@ -50,16 +52,16 @@
 - 完了: 8点を実point Atomとするarchitecture objectを構成し、任意contextのreadable point Atom集合の
   interiorからopen support functorを導出する。open contextのsupport復元、product contextとopen交叉の
   一致、粗い3-patchと細かい4-patchの実admissible cover、任意admissible familyの像のcover性を証明する。
-- 未完了: primitive generator Atomを同じ入力へ接続する。現point-only siteの全点必須coverageは
-  base相対でないため、base-relativeなcoverageへ構成し直すか、生成Grothendieck topologyに対して
-  直接site functorのcontinuityを証明する。
+- 完了: 現point-only siteの全点必須coverageをbase-change stableとは仮定せず、生成
+  Grothendieck topologyのsheaf判定を直接用いてsupport functorのcontinuityを証明し、実
+  `ContextOpenSupport`を構成する。
+- 未完了: primitive generator Atomを同じ入力へ接続する。
 - 完了（仮定相対）: supplied face-index-empty nerveのpresentation係数cochainと、条件付きactual Ob層の実
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
 - 未完了: B1・B2、C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
-- 次のproof obligation: 現point-only siteの全点必須coverageをbase-relativeにする構成、または生成
-  Grothendieck topologyに対する直接証明のどちらでcontinuityを得るかをLeanで確定する。グローバルな
-  base-change安定性は現requirementsから仮定しない。その後complete face indexを実
-  `TargetSupportedNerve.FaceComponent`へ用いてCycle 8を具体化する。
+- 次のproof obligation: complete face indexを実`TargetSupportedNerve.FaceComponent`へ用い、
+  coarse/fineの実nerveと`FaceEmptyAATCechCover`を同じpoint-Atom site上で構成する。その後primitive
+  generator Atomを係数presentationへ接続する。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -1322,4 +1324,122 @@ audits:
     - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.PointAtomContextSupport: pass"
   blocking_findings: []
   next_obligation: "construct a base-relative point coverage or a direct generated-topology proof of supportFunctor continuity; do not assume global base-change stability for the current all-points precoverage"
+```
+
+## Cycle 12 — 生成topologyに対するpoint Atom supportのcontinuity
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 12
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: 3fef6d8d2ccd66db4cff52bab435885e1e4414cf
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "Issue #4791 paper design section 10 after Cycle 11 merge 3fef6d8d2ccd66db4cff52bab435885e1e4414cf"
+  proof_dag_predecessors:
+    - "point Atom support, arbitrary product/intersection compatibility, and actual coarse/fine AAT covers: PR #4811"
+    - "generic ContextOpenSupport and locally constant obstruction-sheaf pullback contract: AATLocallyConstantObstruction"
+    - "generated-topology sheaf criterion: Mathlib Precoverage.isSheaf_toGrothendieck_iff"
+  proof_obligation: "prove supportFunctor continuity directly for the generated AAT Grothendieck topology without a false global base-change-stability instance"
+  selection_reason: "Cycle 11 showed that the all-points requirement is not base-relative, while its generated topology still admits a direct sheaf-preservation proof through actual pullback supports"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/PointAtomContextContinuity.lean"
+    - "PointAtomContextSupport.contextPullbackConeIsLimit"
+    - "PointAtomContextSupport.supportFunctor_preservesPullback"
+    - "PointAtomContextSupport.mapped_pullback_mem_open_topology"
+    - "PointAtomContextSupport.supportFunctor_isContinuous"
+    - "PointAtomContextSupport.contextOpenSupport"
+  risks:
+    - "introducing a global IsStableUnderBaseChange instance for the non-base-relative all-points precoverage"
+    - "checking only the original admissible family rather than every generated-cover pullback"
+    - "asserting continuity from a stored field instead of proving sheaf preservation"
+  unchecked:
+    - "fixed-head independent review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Product contexts are proved to be categorical pullbacks in the canonical thin context category, and supportFunctor preserves each such pullback as open intersection. For every admissible family and every morphism into its base, the pulled-back generated sieve maps to an open covering sieve: a point in the new base support is combined with the admissible atomSupportCoverage witness in the product context. The generated-topology sheaf criterion and mapped-presieve sheaf equivalence then produce Functor.IsContinuous and an actual ContextOpenSupport package. No precoverage base-change-stability instance is introduced."
+  completion_candidate: no
+  lean_artifacts:
+    - "PointAtomContextSupport.contextPullbackCone"
+    - "PointAtomContextSupport.contextPullbackConeIsLimit"
+    - "PointAtomContextSupport.supportMapPullbackConeIsLimit"
+    - "PointAtomContextSupport.supportFunctor_preservesPullback"
+    - "PointAtomContextSupport.mapped_pullback_mem_open_topology"
+    - "PointAtomContextSupport.supportFunctor_isContinuous"
+    - "PointAtomContextSupport.contextOpenSupport"
+  evidence:
+    - "the context pullback cone uses the existing productContextFiniteMeet projections and universal property"
+    - "the mapped cone is limiting because contextSupport_product identifies its vertex with open intersection"
+    - "mapped_pullback_mem_open_topology consumes F.admissible.atomSupportCoverage and an actual product-context arrow in the pulled-back generated sieve"
+    - "supportFunctor_isContinuous unfolds AATGrothendieckTopology and applies Precoverage.isSheaf_toGrothendieck_iff for every base morphism"
+  claim_mapping:
+    theorem_names:
+      - "PointAtomContextSupport.contextPullbackConeIsLimit"
+      - "PointAtomContextSupport.supportFunctor_preservesPullback"
+      - "PointAtomContextSupport.mapped_pullback_mem_open_topology"
+      - "PointAtomContextSupport.supportFunctor_isContinuous"
+      - "PointAtomContextSupport.contextOpenSupport"
+    source_labels:
+      - "GOAL A actual AAT site and restriction-compatible support"
+      - "Issue #4791 paper design section 10"
+      - "Cycle 7 ContextOpenSupport continuity premise"
+    conjuncts:
+      - "context product realizes categorical pullback -> contextPullbackConeIsLimit"
+      - "support maps context pullback to open intersection pullback -> supportFunctor_preservesPullback"
+      - "every generated-cover pullback maps to an open covering sieve -> mapped_pullback_mem_open_topology"
+      - "topological sheaves pull back to AAT sheaves -> supportFunctor_isContinuous"
+    undischarged_assumptions:
+      - "primitive generator Atoms must be connected to GeneratorPresentation.PrimitiveGenerator on the selected input"
+      - "the actual coarse/fine TargetSupportedNerve and FaceEmptyAATCechCover must still be instantiated"
+      - "H1 map, B1, full B2, C1, C2, and fixed zero/nonzero diagnostic data remain"
+    acceptance_point: "continuity is proved for the actual generated AAT topology without claiming precoverage base-change stability"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "the canonical restriction-morphism preorder, productContextFiniteMeet, and Cycle 11 point-support functor are fixed inputs"
+      - "continuity is Mathlib Functor.IsContinuous, hence quantified over every Type-valued sheaf on Opens Space"
+    direction_hypothesis: []
+    discharge_required:
+      - "instantiate actual coarse/fine nerves and Cech covers on this ContextOpenSupport"
+      - "connect primitive generator Atom provenance to the coefficient presentation"
+    conclusion_equivalent_risk:
+      - "the proof constructs sheaf preservation through the generated-topology criterion; continuity is not stored in context data"
+      - "no IsStableUnderBaseChange instance is present for admissiblePrecoverage coverageRequirements overlap"
+  premise_delta:
+    discharged:
+      - "categorical pullbacks for arbitrary context morphism pairs"
+      - "supportFunctor preservation of those pullbacks"
+      - "open-cover preservation for every admissible generated-cover pullback"
+      - "supportFunctor continuity and actual ContextOpenSupport packaging"
+    remaining:
+      - "primitive generator Atom integration"
+      - "actual coarse/fine TargetSupportedNerve and FaceEmptyAATCechCover instantiation"
+      - "H1 map, B1, full B2, C1, C2 and zero/nonzero fixed data"
+  certificate_provenance:
+    discharged:
+      - "the open-cover witness comes from the supplied admissible family atomSupportCoverage and the product-context pullback arrow"
+      - "the continuity certificate is constructed from Mathlib generated-topology sheaf preservation"
+    unresolved:
+      - "primitive generator provenance and diagnostic nerve/Cech-cover connection"
+  proof_use:
+    used:
+      - "contextSupport_product is consumed by supportMapPullbackConeIsLimit and mapped_pullback_mem_open_topology"
+      - "AdmissibleCover.atomSupportCoverage is consumed under every base morphism by mapped_pullback_mem_open_topology"
+      - "mapped_pullback_mem_open_topology is consumed by supportFunctor_isContinuous"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-for-point-atom-continuity-obligation
+  target_fitting: none-found
+  vacuity: "continuity quantifies over every admissible family, every base morphism, and every Type-valued topological sheaf; the coverage witness remains the nonvacuous point clause"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/ObstructionDiagnosticBridge/PointAtomContextContinuity.lean: pass; 8 namespace declarations, standard axioms only"
+    - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.PointAtomContextContinuity: pass; 3714 jobs"
+  blocking_findings: []
+  next_obligation: "instantiate the concrete coarse/fine TargetSupportedNerve and FaceEmptyAATCechCover on contextOpenSupport, using the complete face indices from Cycle 9"
 ```
