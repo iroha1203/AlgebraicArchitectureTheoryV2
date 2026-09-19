@@ -16,8 +16,9 @@ at the same input surface used by Cycle 17.
 No local transition values are fixed in this module: B1 quantifies over every
 allowed primitive transition and chart state.  Concrete zero and nonzero data
 belong to the finite-example obligation.  The diagnostic cocycle is always
-computed from the actual mismatch by the selected cochain map; accepting it as
-an independent field was rejected because it would make B1 an input equality.
+computed from the Law-value evaluations of the same transition and chart state;
+it is not an independent field.  Its equality with the selected cochain-map
+image is proved by the general package rather than made definitional.
 -/
 
 noncomputable section

@@ -73,8 +73,9 @@
   coboundaryを零へ送って加法的H¹準同型を構成する。選定Law・adequacy・presentation・combined coverで
   coarse/fine双方を具体化し、A1を同一入力上で放電する。
 - 完了: primitive edge transitionとchart stateから紙上設計式(1)のactual mismatch
-  `ξ + d⁰p`、actual obstruction cocycle/class、同じmismatchを既存比較写像で送った
-  diagnostic cocycle/classを生成する。局所座標変更が式(2)のcoboundaryを加えること、誘導H¹写像が
+  `ξ + d⁰p`とactual obstruction cocycle/classを生成し、同じ局所データのLaw-value評価
+  `φ¹(ξ) + d⁰_diag(φ⁰(p))`からdiagnostic cocycle/classを独立に生成する。局所座標変更が
+  式(2)のcoboundaryを加えclassを変えないこと、actual比較像とLaw-value生成式が一致すること、誘導H¹写像が
   specified obstruction classをdiagnostic classへ送ること、actual classの零からdiagnostic classの零が
   従うことを示し、coarse/fineのcombined-site入力でB1を放電する。
 - 完了（仮定相対）: supplied face-index-empty nerveのpresentation係数cochainと、条件付きactual Ob層の実
@@ -2083,7 +2084,7 @@ selection:
     - "selected Law, adequacy, presentation, and combined-site covers: Cycles 14-16"
     - "face-empty actual Cech normalization: Cycle 8"
   proof_obligation: "generate specified actual and diagnostic cocycles/classes from affine local data and prove B1"
-  selection_reason: "B1 must compare classes generated from the same primitive mismatch rather than accept an independent diagnostic cocycle"
+  selection_reason: "B1 must compare the actual class with a diagnostic generated independently from the Law-value evaluation of the same local data"
   expected_result_type: proof-obligation-discharged
   lean_targets:
     - "ResearchLean/AG/ObstructionDiagnosticBridge/SpecifiedAffineObstruction.lean"
@@ -2094,13 +2095,13 @@ selection:
   risks:
     - "storing the transition as an H1 class or zero certificate instead of primitive degree-one data"
     - "defining the mismatch only as d0 p and thereby forcing every specified class to vanish"
-    - "accepting the diagnostic cocycle independently instead of computing it with the Cycle 17 map"
+    - "defining the diagnostic cocycle as the Cycle 17 comparison image instead of independently evaluating the local data"
     - "using face emptiness to claim the H1 class is zero rather than only the cocycle condition"
   unchecked:
     - "fixed-head independent review"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "Affine local data now contain a primitive degree-one transition and chart-state degree-zero cochain. Their actual mismatch is xi + d0 p; changing p adds exactly one coboundary. Face emptiness proves the mismatch is a cocycle without choosing its H1 class. The diagnostic cocycle and class are computed by the existing comparison, and the Cycle 17 induced H1 map proves B1 and zero preservation at both selected combined-site readings."
+  proof_obligation_delta: "Affine local data now contain a primitive degree-one transition and chart-state degree-zero cochain. Their actual mismatch is xi + d0 p; changing p adds exactly one coboundary and leaves its H1 class unchanged. Face emptiness proves the mismatch is a cocycle without choosing its H1 class. The diagnostic mismatch is independently generated as the Law-value evaluation of xi plus diagnostic d0 of the evaluated p; a separate theorem identifies it with the comparison image. That theorem and the Cycle 17 induced H1 map prove B1 and zero preservation at both selected combined-site readings."
   completion_candidate: no
   lean_artifacts:
     - "GeneratorPresentation.ActualCechAffineLocalData"
@@ -2108,6 +2109,9 @@ result:
     - "ActualCechAffineLocalData.actual_mismatch_adjust_local_state"
     - "ActualCechAffineLocalData.actualCocycle"
     - "ActualCechAffineLocalData.actualClass"
+    - "ActualCechAffineLocalData.actual_class_adjust_local_state"
+    - "ActualCechAffineLocalData.diagnosticMismatch"
+    - "ActualCechAffineLocalData.actual_cech_coefficient_actual_mismatch_eq_diagnostic_mismatch"
     - "ActualCechAffineLocalData.diagnosticCocycle"
     - "ActualCechAffineLocalData.diagnosticClass"
     - "ActualCechAffineLocalData.h1_map_actual_class_eq_diagnostic_class"
@@ -2117,13 +2121,17 @@ result:
   evidence:
     - "actualMismatch is definitionally transition plus the actual Cech d0 applied to localState"
     - "actual_mismatch_adjust_local_state proves paper equation (2) by additivity of d0"
+    - "actual_class_adjust_local_state sends the equation (2) difference into the actual coboundary subgroup"
     - "actualCocycle uses only the previously proved face-empty d1 equality"
-    - "diagnosticCocycle applies actualCechDiagnosticCyclesMap to actualCocycle"
-    - "the class theorem consumes actualCechDiagnosticH1Map from Cycle 17"
+    - "diagnosticMismatch independently combines the degree-one Law-value evaluation of transition with diagnostic d0 of the degree-zero evaluation of localState"
+    - "actual_cech_coefficient_actual_mismatch_eq_diagnostic_mismatch proves the two generation formulas agree using additivity and the degree-zero cochain square"
+    - "the class theorem consumes that representative equality and actualCechDiagnosticH1Map from Cycle 17"
     - "coarse and fine wrappers use CombinedAtomActualNerve covers and their corresponding adequacy witnesses"
   claim_mapping:
     theorem_names:
       - "ActualCechAffineLocalData.actual_mismatch_adjust_local_state"
+      - "ActualCechAffineLocalData.actual_class_adjust_local_state"
+      - "ActualCechAffineLocalData.actual_cech_coefficient_actual_mismatch_eq_diagnostic_mismatch"
       - "ActualCechAffineLocalData.h1_map_actual_class_eq_diagnostic_class"
       - "ActualCechAffineLocalData.diagnostic_class_eq_zero_of_actual_class_eq_zero"
       - "CombinedAtomSpecifiedObstruction.fine_h1_map_actual_class_eq_diagnostic_class"
@@ -2135,12 +2143,12 @@ result:
     conjuncts:
       - "primitive transition and local chart states -> actualMismatch"
       - "actual mismatch -> actual obstruction cocycle and class"
-      - "existing comparison -> diagnostic cocycle and class"
-      - "induced H1 map -> B1 class equality and forward zero preservation"
+      - "Law-value evaluation of transition and chart state -> diagnostic cocycle and class"
+      - "representative equality plus induced H1 map -> B1 class equality and forward zero preservation"
     undischarged_assumptions:
       - "B2 zero reflection under R_q remains"
       - "C1, C2, and fixed zero/nonzero local data remain"
-    acceptance_point: "the diagnostic class is derived from the exact same specified mismatch as the actual class; no diagnostic equality or vanishing is stored in input data"
+    acceptance_point: "the diagnostic class is independently evaluated from the same local data and then proved equal to the comparison image; no diagnostic equality or vanishing is stored in input data"
     port_status: not-applicable
 audits:
   material_premises:
@@ -2157,22 +2165,25 @@ audits:
     discharged:
       - "paper equation (1) mismatch construction"
       - "paper equation (2) coordinate-change law"
+      - "coordinate-change invariance of the actual obstruction class"
       - "specified actual and diagnostic cocycle/class provenance"
+      - "representative equality between the actual comparison image and Law-value generation formula"
       - "B1 at coarse and fine selected inputs"
     remaining:
       - "B2, C1, C2 and fixed zero/nonzero data"
   certificate_provenance:
     discharged:
       - "actual cocycle is generated from transition plus actual d0 localState"
-      - "diagnostic cocycle is the image of that actual cocycle under the Cycle 17 cycles map"
+      - "diagnostic cocycle is generated from the Law-value evaluations of transition and chart state"
+      - "its equality with the Cycle 17 cycles-map image is a proved theorem rather than a definition"
       - "both selected instances use combined-site covers"
     unresolved:
       - "diagnostic-zero to actual-boundary witness for B2"
   proof_use:
     used:
       - "face-empty d1 proves only the cocycle condition"
-      - "degree-zero commutation is already consumed by the induced H1 map"
-      - "the induced H1 map proves the specified class equality and forward zero preservation"
+      - "degree-zero commutation proves equality of the independent diagnostic formula with the actual comparison image"
+      - "that representative equality and the induced H1 map prove the specified class equality and forward zero preservation"
     unused: []
   structure_field_escape: none-found
   route_integrity: pass-for-specified-b1-obligation
@@ -2181,7 +2192,7 @@ audits:
   one_way_as_equivalence: "only actual-zero implies diagnostic-zero is proved; B2 reverse implication remains explicit"
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "focused checks: SpecifiedAffineObstruction 23 declarations and CombinedAtomSpecifiedObstruction 14 declarations; standard axioms only"
+    - "focused checks: SpecifiedAffineObstruction 26 declarations and CombinedAtomSpecifiedObstruction 14 declarations; standard axioms only"
     - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.CombinedAtomSpecifiedObstruction: pass; 3724 jobs"
   blocking_findings: []
   next_obligation: "use R_q and integral coefficient reflection to prove B2 for the specified classes"
