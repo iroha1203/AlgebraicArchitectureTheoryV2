@@ -8859,3 +8859,44 @@ warning・placeholder・hidden/BiDi・privacy・追加文の語彙・差分整�
 落とすことである。ここは未放電であり、検証点Iの完了・PR査読・mergeはまだ行っていない。
 detector code、coefficient、coverage/overlap、両raw/realization方式と全Homの統合も引き続き未完了である。
 新規16明示宣言の個別公理監査とnamespace17宣言の監査、単一file検証を実施し、標準公理のみを確認した。
+
+#### Invariantの商による設計補足と原始行の再構成
+
+人間は「商を使う設計補足を認めて検証を進める」、続いて「GOALの固定ターゲットを変えずに、
+設計を変更することを許可します」と承認した。これを受け、当初設計3.2・4.1の局所Homの
+表示方法を次のように補足する。固定GOAL A–E、native Homの定義、Cycle 79は変更しない。
+
+1. 元の共通Hom全queryの有限Bool tableの整合族を保持する。
+2. function invariantの存在witnessは、候補index対と候補value型の双方向graph点を
+   補助queryとして宣言し、その有限Bool tableの整合族を**データとして**構成する。
+   行の存在・一意性、逆向き点との一致、元の評価の保存を点ごとの法則とする。
+3. この整合条件を満たすpresentationを作った後に、元の共通Hom全queryが一致するものを
+   同一視する。補助対応の選択だけが消え、context、coefficient、raw等の差は残る。
+
+商を各有限片で先に取る構成ではない。また、前節の`InfiniteWitness.HasWitness`を
+局所lawへ移す構成でもない。局所lawに全域の同値・射・整合族の存在条件を置かず、
+補助graphから全域の存在証明を組み立てる。補助点は元のHomの観測成分に追加せず、
+商の上の`point`と`fragment`は元の全queryだけを読む。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentGeometryHomInvariantWitnesses.lean` / `IndependentGeometryHomPrimitive.InvariantWitness` | `Query`はfamily選択前の候補index対とvalue graph点を宣言する。`Presentation`は元の全queryの`Retained`、補助整合族、原始行法則を持つ。`transported_of_row`・`assemblePresentation`はfunction/predicateの両種から元の`Invariant.TransportedAlong`を構成する。`readPresentation`・`assemble_readPresentation`は任意のnative不変量族を回復し、index/objectの可逆性やvalueの有限性を追加しない |
+| `IndependentGeometryHomInvariantQuotient.lean` / 同namespace | `presentationSetoid`・`Local`は整合後の商。`readingEquiv`・`assemble_read`・`read_assemble`が不変量保存条件との両逆を証明する。`retained_injective`・`point_ext`は分離、`auxiliary_choice_independent`は補助選択の消去、`retained_point_separates`は元の全成分の差を保持する。`fragment_coherent`で有限片の制限整合も保つ |
+| `IndependentGeometryHomInvariantPoints.lean` / 同namespaceの`Primitive` | `Row`は原始tableのkind応答で分岐し、完成したInvariantをlawの入力にしない。`row_iff`は組立てたnative行法則との両方向、`transports_of_rows`は全indexのnative保存証明への接続を与える。`FunctionPoint`は4セル、`PredicatePoint`は3セルを使い、両`*_of_same_cells`はその応答が同じなら評価も同じと示す。kind判定の2セル、index対の1セル、inverse/totalityの点則はこれらと別の原始instanceである |
+| `IndependentInverseGraphComposition.lean` / `IndependentInverseGraph` | `compose`はforwardを順方向、backwardを逆順の点合成で定める。`compose_isLawful`・`assemble_compose`は逆行法則とnative合成を保つ。forward/backwardの両support定理は各2セルで合成値を決め、`compose_inactive`は候補型不一致をfalseに固定する |
+| `IndependentGeometryHomInvariantComposition.lean` / `IndependentGeometryHomPrimitive.InvariantWitness` | `identityRow_law`・`composeRow_law`が不変量行の恒等・合成での閉性を証明する。合成の引数は元のobject点合成の中間値であり、完成したHomではない。種別不一致を両方向で拒否し、`successor_row_rejected`は有限片の各々が延長できても全体のwitnessが存在しない既存反例を拒否する。`package_transport`は商から既存package assemblerの`IsInvariantTransport` fieldを導く |
+
+`Native`は、この段階では「共通Homのobject/index行条件を満たす全tableに、元の不変量保存条件を
+課した型」である。これを完全なGeometry Homそのものと同定したとは扱わない。
+今回解いたのは、不変量の存在witnessを局所点から組み立て、選択だけを消して元の保存条件を
+厳密に保つ設計とその成分証明である。`Retained`には全queryを残しているため、後続の
+他成分の保存則を、補助対応の選択に依存させず同じtableへ課せる。
+
+パートIでは、全Hom組立てでこの商を使用する接続、共通の恒等・合成、detector code、coefficient、
+coverage/overlap、両raw/realization方式、全体の両逆・残る有限式・指定反証・PR査読/CIが残る。
+特にGOAL Bの全局所モデル圏への適合は、これらの統合後の標準査読でも確認する。
+
+新規5 sourceを一つずつfocused checkした。明示66宣言の個別`#print axioms`と、各sourceの
+namespace監査67・17・8・7・9件(計108件)は標準公理のみだった。warning・placeholder・
+hidden/BiDi・privacy・追加文の語彙・差分整形・module登録を確認した。Research全体buildは行わない。
+GOAL fileのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
