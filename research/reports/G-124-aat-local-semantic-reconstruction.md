@@ -8720,3 +8720,55 @@ Cycle 79と固定GOALカードを維持し、外側のtotal categoryは追加し
 namespace内534宣言の監査は標準公理のみであり、warningは残していない。
 module登録、placeholder・hidden/BiDi・privacy・語彙・差分整形scanを確認した。
 aggregateのelaborationとResearch全体buildは実行していない。
+
+#### 依存するinverse行とobservable family
+
+`IndependentIndexedInverseGraphs.lean`は、有向index graphで選んだfiberごとの同値を、
+candidate carrierの両方向graphと一点対のinverse条件から構成する。
+index map自身の単射性・全射性は要求しない。`readingEquiv`・両逆は、activeな両方向graphと、
+非activeなindex/carrierのfalse応答を全て回復する。
+
+`IndependentGeometryHomInverseRows.lean`は、共通Homのbackward queryがsource/target順を保つことと、
+独立inverse graphのbackward queryがtarget/source順を取ることを、一点対の`reverse`で接続する。
+`asInverse_fromInverse`・`fromInverse_asInverse`がこの変換の両逆を証明する。
+equation、observable、signature coordinate、explicit rawのcoordinate/local data/relationの各roleを
+この変換へ明示的に接続した。queryの向きを完成した写像の引数へ隠していない。
+
+`IndependentIndexedRingGraphs.lean`は、この依存するinverse行にprimitiveなring点保存則を加え、
+全native環同型familyとの両逆を証明する。
+`IndependentGeometryHomObservableReadings.lean`は共通Homのobservable行へこれを適用する。
+`context_index_eq`は、contextの唯一出力で選んだraw contextと、復元したnative functorの像との
+一致を示す。`nativeFamilyEquiv`で依存する型を輸送し、`readingEquiv`・`assemble_read`・
+`read_assemble`・`read_injective`が全native observable環同型familyと共通候補行を対応させる。
+
+`atPair_forward_iff`・`atPair_backward_iff`は、各true context対で復元した環同型と
+共通Homの両方向点を同定する。`assemble_eq_atPair`によりnative familyの成分も同じ点対へ接続する。
+
+#### Observableの自然性とequation transportの全field
+
+| Source / namespace末尾 | 局所条件からの構成と逆方向 |
+| --- | --- |
+| `IndependentGeometryHomObservableNaturality.lean` / `IndependentGeometryHomPrimitive.ObservableNatural` | `PointLaws`はsource/target restrictionの各1点、contextの2点、observableの入力・出力各1点だけを比較する。candidate carrierの正しさは元のequation typingから導く。`points_iff_nativeNaturality`が、復元したcontext functorと二つのequation systemのnative restriction自然性との同値を示す |
+| `IndependentGeometryHomObservableExpressions.lean` / `IndependentGeometryHomPrimitive.ObservableFinite` | 閉じた`Expr`と共通object/object/Hom query上の`support`を構成する。`evaluate_iff_of_support`は任意tableでの有限support上の一致から評価一致を示し、`pointLaws_iff_expressions`が全restriction instanceをその式へ接続する |
+| `IndependentGeometryHomEquationLaws.lean` / `IndependentGeometryHomPrimitive.EquationLaws` | `RolePoints`・`ViolationPoints`・`ResidualPoints`はcandidate carrier、原始応答、Homのtrue点対だけを使う。`role_points_iff`・`violation_points_iff`・`residual_points_iff`が、復元したequation/Atom/object/context/observable作用のnative保存式との両方向を示す。object作用には単射・全射を追加しない |
+| `IndependentGeometryHomEquationAssembly.lean` / `IndependentGeometryHomPrimitive.EquationAssembly` | 4つの点保存則と各成分の原始行から、`assemble`がnativeな`EquationSystemExactTransport`の全fieldを構成する。`contextObservableCode`で既存package assemblerのcontext/observable graphへ接続し、context選択とobservable familyの評価一致を証明する。3つの`read_assemble_*`がcontext・equation・observableの全候補行を回復する |
+| `IndependentGeometryHomEquationExpressions.lean` / `IndependentGeometryHomPrimitive.EquationFinite` | 原始equation応答と共通Hom点だけをleafとする閉じた式を構成する。role・violation・residualの全instanceを有限supportに接続し、activeな共通object行で元の点保存則と一致することを示す |
+
+この構成で使うequation objectのtyping/ring/restriction法則は、共通object再構成で既に対応した
+native objectの法則である。Hom側のcontext・equation・Atom・object・observable行の条件は、
+各成分の全native写像との両逆で対応を確認した方向仮定である。
+新たな4つの点保存則はnativeのrole・自然性・violation・residualの各fieldと同値であり、
+native保存式を追加の未放電fieldとして持たせてはいない。
+全Homへの適用では、これらの行を同じ共通tableから取得する接続を引き続き完了させる必要がある。
+
+最初の検証点Iは未完了である。残る主要項目は、invariant/signature・operation自然性・
+detector code・coefficient・coverage/overlap・両方式のraw/realizationを共通Homへ統合すること、
+全Hom両逆、残る全原始式の有限support、共通の恒等・合成、指定反証scenario、PR査読・CIである。
+Cycle 79と固定GOALを維持し、今回の作業は独立検証として扱う。
+
+今回の9 sourceは単一fileで検証した。明示宣言の`#print axioms`は、上の依存inverse・
+inverse row変換・依存ring・observable family・自然性・自然性の有限式・equation保存則・
+equation assembly・equation有限式の順に11・12・7・16・11・8・17・11・16件、計109件である。
+namespace監査は同順28・12・13・16・11・58・17・19・60件、計234件で、全て標準公理のみ。
+warning、placeholder、hidden/BiDi、privacy、追加文の語彙、差分整形、module登録を確認した。
+aggregateのelaborationとResearch全体buildは行っていない。
