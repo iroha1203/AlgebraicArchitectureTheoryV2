@@ -8064,7 +8064,7 @@ result:
       - "aatTotalG122FullLiftFiber_unique_kernel_eq_reading"
     source_labels:
       - "Cycle 79 total four-family reconstruction checkpoint"
-      - "fixed target C projection and full G-122 recovery, limited to the accepted fixed input"
+      - "Cycle 79 family-parameter projection compatibility and full G-122 recovery on the accepted fixed input"
     conjuncts:
       - "one total global/local category plus direct two-sided Hom and object reconstruction -> aatTotalReconstructionData and aatTotalReconstructionEquivalence"
       - "exact branch recovery -> fiber Hom equivalences, no-cross-family theorem, and fiber reading natural isomorphism"
@@ -8085,6 +8085,7 @@ audits:
     remaining:
       - "derive the fixed target R_Theta and M_Theta from primitive Sigma, D, and Lambda data rather than accepted branch types"
       - "construct primitive G-122 local syntax and discharge the final common D_Theta"
+      - "construct fixed target C base, observation, and coefficient projections, normalization compatibility, and comparison-group transport"
   certificate_provenance:
     discharged:
       - "total category laws reduce to accepted category laws in the unique common fiber"
@@ -8108,7 +8109,7 @@ audits:
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/AATFourFamilyTotalReconstruction.lean: pass; 69 declarations, standard axioms only"
   four_lane_question: "Does Cycle 79 construct one indexed total global/local category with no cross-family Homs, direct two-sided Hom and object reconstruction, exact fiber recovery and projection compatibility, while transporting tagged, full G-122 torsor, finite-decoder, Karoubi, and Arrow routes without counting primitive G-122 syntax or fixed target A-B as discharged?"
   blocking_findings: []
-  next_obligation: "replace the accepted-coordinate G-122 local fiber by independent primitive syntax and derive the fixed common data condition and reading from the target Sigma, D, and Lambda inputs inside the total category"
+  next_obligation: "replace the accepted-coordinate G-122 local fiber by independent primitive syntax, derive the fixed common data condition and reading from the target Sigma, D, and Lambda inputs, and construct target C base, observation, coefficient, normalization, and comparison-group compatibility"
 ```
 
 ## 未完了 ledger
@@ -8306,4 +8307,4 @@ audits:
   full fiber上の決定性・total effectivenessへ接続した。Cycle 77で両CS枝、Cycle 78で四枝parameterへ
   統合し、Cycle 79でindexed total categoryのprojectionと各fiberの正確な回収、tagged・
   G-122・decoder・Karoubi・Arrow経路の輸送を同梱した。固定targetからのprimitive
-  common readingとdata conditionは未完了である。
+  common readingとdata condition、Cが求める底・観測・係数投影、正規化、全比較群輸送は未完了である。

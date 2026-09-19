@@ -400,14 +400,13 @@ theorem aatTotalTaggedAssemble_eq_normalForm
     (localMorphism :
       (aatBranchReading AATBranchParameter.tagged).obj X ⟶
         (aatBranchReading AATBranchParameter.tagged).obj Y) :
-    (aatTotalAssemble
-      ((aatLocalFiberInclusion AATBranchParameter.tagged).map
-        localMorphism) :
-      (aatGlobalFiberInclusion AATBranchParameter.tagged).obj X ⟶
-        (aatGlobalFiberInclusion AATBranchParameter.tagged).obj Y) =
-      (aatGlobalFiberInclusion AATBranchParameter.tagged).map
-        (aatBranchAssemble AATBranchParameter.tagged localMorphism) := by
-  rfl
+    ((aatGlobalFiberHomEquiv AATBranchParameter.tagged X Y).symm
+      (aatTotalAssemble
+        ((aatLocalFiberInclusion AATBranchParameter.tagged).map
+          localMorphism))).down =
+      TagChangeGeneratedNormalForm.normalFormMulEquivGenerated
+        (TagChangeGeneratedLocalModel.assemble localMorphism.down) := by
+  exact aatBranchTaggedAssemble_eq_normalForm localMorphism
 
 /-- The total G-122 reading exposes the accepted normalized comparison. -/
 theorem aatTotalG122Reading_normalized
