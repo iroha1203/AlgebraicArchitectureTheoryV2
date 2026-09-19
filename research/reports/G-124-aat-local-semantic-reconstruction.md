@@ -8308,3 +8308,90 @@ audits:
   統合し、Cycle 79でindexed total categoryのprojectionと各fiberの正確な回収、tagged・
   G-122・decoder・Karoubi・Arrow経路の輸送を同梱した。固定targetからのprimitive
   common readingとdata condition、Cが求める底・観測・係数投影、正規化、全比較群輸送は未完了である。
+
+## 独立検証：依存するraw局所表示（2026-09-20）
+
+人間の指示により、Cycleには数えない設計検証として実施した。
+Cycle 79の受理・停止状態を維持する。検証対象は
+[承認済み設計コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4711#issuecomment-5742767034)
+の3節・4.2節にある、型参照を含むraw対象の組立てとraw等式の導出である。
+GOALの固定target A–Eと最初の検証点全体の達成条件は維持する。
+
+### 検証した構成と証拠
+
+Lean file:
+`research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentRawLocalValidation.lean`。
+namespace: `AAT.AG.LocalSemanticReconstruction.IndependentRawLocal`。
+
+| 検証項目 | 宣言と実体 |
+| --- | --- |
+| 対象の選択に先行する添字と値型 | `Query`、`Query.Value`。固定したsite上のcontext、候補の座標型・関係型、原始引数から添字を作る。値は型参照、label、有限supportの多項式とそのOption/ULift |
+| 依存する型の有効・無効判定 | `IsTyped`。選択された型と一致するqueryだけが値を持つ。`read_isTyped`が任意のnative rawから条件を導く |
+| 原始値からのraw対象の構成 | `coordinates`、`relations`、`variableImage`、`restriction`、`assemble`。完成したraw、relation family、restriction homを局所値には置かず、点値から組み立てる |
+| 局所法則からnative法則への導出 | `IsLawful`、`maps_ideal`。生成関係式ごとの有限多項式和から全ideal保存を導き、変数上の恒等・合成式から全多項式上の式を導く |
+| native法則から局所法則への逆方向 | `mem_JStruct_iff_finite_sum`、`read_isLawful`。ideal所属を有限和へ戻す。有限和の選択はProp内にあり、余分な対象データにならない |
+| 依存するデータの復元 | `relation_heq_of_points`、`stable_heq_of_points`、`assemble_read`。座標familyの等式を使ってrelation/restrictionの依存を揃え、データ全体を復元する |
+| 局所値の復元 | `read_assemble`。active値だけでなくinactive値も復元する。`rawTableEquiv`が両逆を束ねる |
+| 有限片の貼り合わせ | `Fragment`、`Compatible`、`glue`、`fragments_glue`。singletonから組み立て、任意の有限片を回復する。`rawLocalEquiv`がnative rawと独立な局所族の同値を与える |
+| 原始評価の有限support | `fragment_addresses_finite`、`polynomialMap_eq_of_vars`。各片の添字は有限であり、一つの多項式のrestriction評価はその有限な変数集合で決まる |
+| G-122の厳密なraw等式への接続 | `raw_transport_eq_iff_points`。全queryの値の一致と`H.raw = rawTransport f h`が同値。`rawCoherent`に残っていた等式を原始評価から導くための補題 |
+
+`rawLocalEquiv`の入力は任意のsite `S`と係数環 `k`であり、対象の量化は
+`RawAmbientRestrictionSystem S k`の全体である。座標型や関係型を固定したり、
+有限型だけへ縮小したりしていない。`S`自体はこの検証では入力として保持しており、
+core・選択幾何からの再構成は未完了である。
+
+### 成立・不成立の証拠
+
+- `unitRaw`は任意のsite上で、整数係数、一つの座標、関係式`X = 0`を持つraw系を与える。
+  `unitRaw_typing_witness`と`unitRaw_law_witness`が成立する条件を実際に発火させる。
+- `eraseLabels_not_typed`は、選択された座標に必要なlabelが欠けるtableを排除する。
+  このtableの有限制限同士は整合し得るため、restriction整合だけでは十分でないことも分かる。
+- `replaceImages_isTyped`は、全変数像を`1`に変えても型条件は満たすことを示す。
+  `replaceImages_not_lawful`は、整数係数で関係式`X = 0`の像が`1`になるため、
+  **生成関係式の条件そのものから**このtableを排除する。証明は有限和の定数項を取って
+  `0 = 1`を導き、恒等則の破壊だけには依存しない。
+- `inconsistentFragments_not_compatible`は、singletonと大きい片でlabelを変える族を排除する。
+- `read_assemble`は、inactive候補の任意応答や型の証明の選び方による余分な自由度を排除する。
+
+### 前提の出所・使用先
+
+| 前提・構成 | この検証での扱い | G-124に対する状態 |
+| --- | --- | --- |
+| `U`、`A`、site `S`、係数型`k`と`CommRing k` | raw構造の既存型が要求する入力。型・演算・restrictionの定義に使う | `U`等の入力の由来はAの宣言へ接続が必要。`A`・site・係数構造の局所再構成は未完了 |
+| `IsTyped` | 原始型参照の一致を述べる局所条件。`read_isTyped`でnative側から放電 | raw部分の両方向を検証済み |
+| `IsLawful` | 生成関係式・変数上の恒等・合成という局所条件。`read_isLawful`でnative側から放電し、`assemble`でnative全体の法則を構成 | raw部分の両方向を検証済み |
+| 有限ideal witness | mathlibの`Finsupp.mem_span_range_iff_exists_finsupp`から導出。選択を対象のfieldに保存しない | 新しい有限性仮定を追加していない |
+| `Compatible` | 有限片同士の原始値の等式。`fragments_compatible`と`fragments_glue`で両方向を示す | 完成対象や延長可能性を条件に使っていない |
+| `PackageTotalHom f`、係数`RingHom h` | `raw_transport_eq_iff_points`で比較先を定めるための既存入力 | これらの全成分を局所Homから構成する接続は未完了 |
+| 古典論理・選択 | 型の等号判定と依存するOptionの読取りに使用 | Dの実効性はこの構成から結論せず、別の証明義務として保持 |
+
+基礎APIはnativeな`RawAmbientRestrictionSystem.ext`、
+`TypedCoordinateRestriction.polynomialMap`、`GeometryTransport.rawTransport`、
+mathlibのideal生成・多項式外延性・有限supportを使う。
+受理済みの四族の枝同値や`ReconstructionData`は、このraw同値の入力に使っていない。
+
+### 未完了の検証項目
+
+最初の検証点全体は未完了である。残る作業は次のとおり。
+
+1. 同じ型参照方式をcore、抽出、object formation、context、Law、coverage/overlapへ適用し、
+   今回入力にしたsiteとその依存先を局所データから構成する。
+2. 完全幾何の全許容Homを局所族から構成し、対象の同型、Hom両逆、恒等・合成まで接続する。
+   taggedのexplicit方式のraw/realization輸送も接続する。
+3. `raw_transport_eq_iff_points`の右辺を、局所Homのquery間の式として構成する。
+   現在の補題は既存の`f,h`を受け取るため、この構成を代行したことにはならない。
+4. 共通の`Σ,D,Λ`へ組み込み、四族の必須入力の由来・全対象・全射の対応を証明する。
+
+今回の同値はraw対象の型の同値である。完全幾何の圏同値やG-124 A–Bの放電は未完了であり、
+Cycle 79からの研究状態の昇格は行わない。PR・独立査読・検証ログの記録はtracking Issueへ接続する。
+
+### 検証記録
+
+- 検証開始base: `78534435b39c58cc94aaad65d38b3f30cc0913f7`。
+- Lean: `4.28.0`、mathlib: `8f9d9cff6bd728b17a24e163c9402775d9e6a365`。
+- `research/lean/check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentRawLocalValidation.lean`: pass。
+- 明示した54宣言の`#print axioms`: 標準公理のみ。
+- namespace全体の`#assert_standard_axioms_only`: 114宣言、標準公理のみ。
+- 差分・未追跡fileを含むplaceholder、hidden/BiDi、privacy、語彙、Research import方向、
+  `git diff --check`: pass。Research全体buildは実行していない。
