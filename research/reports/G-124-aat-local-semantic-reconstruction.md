@@ -155,12 +155,14 @@
   merge commit `4a01607b5bfa2fbb3f3a7956b4ab39d7e1232758`
 - Cycle 73 accepted PR: [#4793](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4793),
   merge commit `cb7a659cd28d988fd4d5fd1ba9ad4eb35930459d`
+- Cycle 74 accepted PR: [#4794](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4794),
+  merge commit `f00e255b71d602498ad95ec683db1617bb5bebcf`
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- current proof obligation: complete geometry外側のbase-reindex APIと恒等・合成をlocal component lawから
-  直接閉じ、exact assembly・普遍性・圏法則・common graph接続まで同梱する
-- next proof obligation: 独立local objectの組立てとHom assemblyを同じcycleで接続し、
-  四族共通のlocal-model surface上のfixed target B主同値へ進む
+- current proof obligation: 独立に与えたcoherent local objectとHom familyを同じcycleで組み立て、
+  essential surjectivity・圏同値・common graph接続まで閉じる
+- next proof obligation: その独立object/Hom assemblyを四族共通のlocal-model surfaceへ適用し、
+  fixed target Bの主同値として統合する
 
 ## Cycle 1 — rejected
 
@@ -7611,6 +7613,102 @@ audits:
   next_obligation: "construct dependent base-reindex APIs and direct complete-level coefficient, realization, coverage, overlap, and raw identity/composition together with exact assembly, universality, category laws, and same-cycle Cycle 72/common-surface comparisons; then combine independent object assembly with its Hom connection rather than deferring a connection-only cycle"
 ```
 
+## Cycle 75: direct complete-geometry category and outer-law closure
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 75
+status: result-proposed
+branch: codex/4711-g124-direct-complete-category
+base_oid: f00e255b71d602498ad95ec683db1617bb5bebcf
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 74 acceptance: Issue comment 5741210094; Cycle 75 selection: Issue comment 5741215781"
+  proof_dag_predecessors:
+    - "Cycle 70 realization and raw-coherence identity/composition"
+    - "Cycle 71 complete graph-code assembly separation"
+    - "Cycle 72 transported complete-code category and common graph surface"
+    - "Cycle 74 direct package identity/composition and all fourteen package laws"
+  proof_obligation: "construct dependent package-base reindexing and direct complete-geometry identity/composition for coefficient, realization, coverage, overlap, and raw coherence, then retain exact assembly, universality, category laws, and Cycle 72/common-surface comparisons in the same cycle"
+  selection_reason: "the dependent reindex layer, all outer certificate closures, substantive complete-code uniqueness, category laws, and accepted-surface connections form one reviewable complete-level step"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryDirectCategory.lean"
+  unchecked:
+    - "independently supplied coherent local-object assembly"
+    - "four-family target B integration"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "CompleteGeometryGraphCode.idData and compData combine the Cycle 74 direct package operations with coefficient and realization graph identity/composition under explicit package-base reindexing. idData_lawful and compData_lawful close coverage, both overlap directions, and raw coherence from local identity/composition constructors and the two input certificates. Direct local component calculations prove actual assembly before comparison with Cycle 72. Arbitrary-candidate identity/composition characterizations, unit and associativity laws, and bundled Cycle 72/common-graph comparisons are included. Independent local-object assembly and four-family integration remain open."
+  completion_candidate: no
+  lean_artifacts:
+    - "CompleteGeometryDirectCategory.CompleteGeometryGraphCode.reindexRealization"
+    - "CompleteGeometryDirectCategory.CompleteGeometryGraphCode.reindexCoverage"
+    - "CompleteGeometryDirectCategory.CompleteGeometryGraphCode.reindexOverlap"
+    - "CompleteGeometryDirectCategory.CompleteGeometryGraphCode.reindexRaw"
+    - "CompleteGeometryDirectCategory.CompleteGeometryGraphCode.idData_lawful"
+    - "CompleteGeometryDirectCategory.CompleteGeometryGraphCode.compData_lawful"
+    - "CompleteGeometryDirectCategory.CompleteGeometryGraphCode.assemble_id_local"
+    - "CompleteGeometryDirectCategory.CompleteGeometryGraphCode.assemble_comp_local"
+    - "CompleteGeometryDirectCategory.CompleteGeometryGraphCode.eq_id_iff_assemble_eq"
+    - "CompleteGeometryDirectCategory.CompleteGeometryGraphCode.eq_comp_iff_assemble_eq"
+    - "CompleteGeometryDirectCategory.CompleteGeometryGraphCode.id_comp"
+    - "CompleteGeometryDirectCategory.CompleteGeometryGraphCode.comp_id"
+    - "CompleteGeometryDirectCategory.CompleteGeometryGraphCode.comp_assoc"
+    - "CompleteGeometryDirectCategory.CompleteGeometryGraphCode.id_cycle72_and_commonSurface"
+    - "CompleteGeometryDirectCategory.CompleteGeometryGraphCode.comp_cycle72_and_commonSurface"
+  evidence:
+    - "the lawful complete id and comp definitions contain direct data and direct outer certificates rather than Cycle 72 aliases"
+    - "coverage, overlap, and raw coherence are generated by local identity/composition laws and reindexed only along proved package/coefficient equalities"
+    - "assemble_id_local and assemble_comp_local compare coefficient and all three realization maps componentwise before any Cycle 72 comparison"
+    - "eq_id_iff_assemble_eq and eq_comp_iff_assemble_eq quantify over arbitrary lawful candidates"
+    - "unit and associativity laws follow through complete-code assembly separation"
+    - "id_cycle72_and_commonSurface and comp_cycle72_and_commonSurface bundle both predecessor and common-graph connections"
+  nonclaims:
+    - "an independently supplied coherent local object has been assembled"
+    - "the four mandatory families are integrated into the fixed target B equivalence"
+    - "G-124 as a whole is complete"
+audits:
+  premise_delta:
+    discharged:
+      - "dependent package-base reindexing for realization, coverage, overlap, and raw coherence"
+      - "direct complete identity/composition computational data and outer certificates"
+      - "exact local-component assembly, arbitrary-candidate uniqueness, units, and associativity"
+      - "same-cycle Cycle 72 and accepted common-graph connections"
+    remaining:
+      - "independent local-object and Hom assembly"
+      - "four-family target B integration"
+  certificate_provenance:
+    discharged:
+      - "identity uses Cycle 74 package identity and local outer identity constructors"
+      - "composition uses Cycle 74 package composition, the two input complete certificates, and local outer composition constructors"
+      - "Cycle 72 transported operations are comparison targets only and do not provide the output complete certificate"
+    unresolved:
+      - "independent local-object provenance"
+  proof_use:
+    used:
+      - "Cycle 70 coefficient, realization, overlap, coverage, and raw identity/composition laws"
+      - "Cycle 71 complete assembly separation and dependent cast APIs"
+      - "Cycle 72 transported complete-code and common-graph formulas for comparison only"
+      - "Cycle 74 direct package identity/composition and exact assembly"
+  structure_field_escape: none-found
+  route_integrity: direct-complete-local-laws
+  target_fitting: found-and-bounded
+  target_fitting_reason: "the cycle closes every selected complete outer field, proves local-component assembly and universality, and includes both accepted connections without claiming object assembly"
+  vacuity: none-found
+  vacuity_reason: "the operations quantify over arbitrary geometry-package endpoints and arbitrary composable lawful complete graph codes, while uniqueness quantifies over every lawful candidate"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none
+  four_lane_question: "Do direct complete-geometry identity and composition close all coefficient, realization, coverage, overlap, and raw-coherence fields from Cycle 74 package operations and input certificates, with exact assembly, complete-code universality/category laws, and Cycle 72/common-surface comparisons in the same cycle, while leaving independent local-object assembly and four-family integration open?"
+  validation_refs:
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryDirectCategory.lean: pass"
+    - "#assert_standard_axioms_only CompleteGeometryDirectCategory: 75 declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "construct independently supplied coherent local objects and Hom families together with their assembly, separation, essential-surjectivity/equivalence result, and common-surface connection in one cycle; then apply that result to the four mandatory families"
+```
+
 ## 未完了 ledger
 
 - A の `Σ,D,Λ`、四族を同じ実現圏へ収録する構成。
@@ -7780,8 +7878,10 @@ audits:
   direct closureはCycle 74で放電した。Cycle 74ではjoint context/observableの恒等・合成をlocal graph
   operationから構成し、packageの14法則を入力certificateから直接証明した。canonical readerはfieldwise
   comparisonだけに限定し、exact assembly・普遍性・圏法則とCycle 72/common graph接続まで同梱した。
-  complete geometry外側のcoefficient・realization・coverage・overlap・raw coherenceと独立local objectの
-  組立ては未完了である。
+  complete geometry外側のcoefficient・realization・coverage・overlap・raw coherenceはCycle 75で
+  放電した。dependent package-base再添字付け、直接恒等・合成data、入力certificateからの外側法則閉性、
+  local component計算によるexact assembly、任意candidateに対する普遍性、圏法則、Cycle 72/common graph
+  接続を同梱した。独立local objectとHom familyの組立ては未完了である。
   direct normalization kernel自体のprimitive local syntax、および四族共通の実現圏・
   局所モデル圏への適用は未完了である。
 - D の共通 `FiniteReading` surface を A--B と E2 の各具体的 reconstruction obligation で使用する接続。
