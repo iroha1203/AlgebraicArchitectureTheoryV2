@@ -26,11 +26,17 @@
 - 完了: 位相空間上の局所定数`M_R`値関数を加法的presheafとして構成し、
   Mathlibの離散値連続関数sheafとの同型からsheaf条件を証明する。非空preconnected開集合上では
   sectionと`M_R`の評価同型、および制限写像の恒等座標表示も導出する。
+- 完了: AAT contextからopen supportへのfunctorと、そのAAT topologyからopen-set topologyへの
+  Mathlib標準の連続性を選定幾何入力として型付けする。このfunctorで局所定数係数sheafを
+  引き戻し、既存の`ObstructionSheaf.ofAddCommGrpValued`によって実`ObstructionSheaf`を構成する。
+  非空preconnected support上のsection同型と制限写像の恒等座標表示も実Ob層へ移す。
+- 未完了: 論文採用入力と有限例について、具体的な有限空間、context open support functor、
+  site functorの連続性を構成する。
 - 未完了: presentation係数cochainと、構成するOb層の実
   `CoverRelativeCechComplex`との同定。
 - 未完了: B1・B2、C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
-- 次のproof obligation: 選定AAT contextから有限空間のopen supportへの写像を構成し、
-  Cycle 6のsheafを引き戻して実`ObstructionSheaf`へpackageする。
+- 次のproof obligation: 選択coverのpatch・overlap・triple overlapをopen supportへ接続し、
+  実`CoverRelativeCechComplex`をCycle 5のnormalized presentation complexへ同定する。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -680,4 +686,118 @@ audits:
     - "git diff --check and placeholder, hidden/BiDi Unicode, private-path, and Formal-to-Research import scans: pass"
   blocking_findings: []
   next_obligation: "construct the selected AAT context-to-open support map, transport the proved sheaf condition, and package the resulting ObstructionSheaf"
+```
+
+## Cycle 7 — AAT siteへの引戻しと実ObstructionSheaf
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 7
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: ba54fe88670e45ee840d53de2805244909e9f2f1
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "Issue #4791 paper design sections 3.1 and 10 after Cycle 6 merge ba54fe88670e45ee840d53de2805244909e9f2f1"
+  proof_dag_predecessors:
+    - "GeneratorPresentation.locallyConstantAddCommGrpPresheaf_isSheaf: PR #4806"
+    - "Formal.AG.Cohomology.ObstructionSheaf.ofAddCommGrpValued"
+    - "Mathlib CategoryTheory.Functor.IsContinuous for functors between sites"
+  proof_obligation: "pull the proved locally constant presentation sheaf back along an AAT context-to-open support functor and package the result as the existing obstruction sheaf"
+  selection_reason: "this is the missing source-coefficient bridge before the actual cover-relative Cech complex can be normalized"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/AATLocallyConstantObstruction.lean"
+    - "GeneratorPresentation.aatLocallyConstantObstructionSheaf"
+    - "GeneratorPresentation.aatLocallyConstantObstructionSectionEquiv_restriction"
+  risks:
+    - "storing the desired coefficient sheaf condition as an input certificate"
+    - "using an arbitrary context-indexed constant presheaf instead of open supports"
+    - "claiming the concrete selected finite geometry or Cech normalization before constructing it"
+  unchecked:
+    - "main declarations #print axioms"
+    - "fixed-head independent review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "A selected context-open geometry now consists of an actual functor from the AAT context category to opens of a topological space and Mathlib's generic site-continuity witness. Pulling back the Cycle 6 locally constant additive sheaf along that functor derives the AAT sheaf condition, packages the existing ObstructionSheaf, and transports connected-support section and restriction coordinates. The concrete finite selected geometry and ordered-tuple Cech normalization remain open."
+  completion_candidate: no
+  lean_artifacts:
+    - "ContextOpenSupport"
+    - "GeneratorPresentation.aatLocallyConstantAddCommGrpPresheaf"
+    - "GeneratorPresentation.aatLocallyConstantAddCommGrpPresheaf_isSheaf"
+    - "GeneratorPresentation.aatLocallyConstantObstructionSheaf"
+    - "GeneratorPresentation.aatLocallyConstantObstructionSheaf_obj"
+    - "GeneratorPresentation.aatLocallyConstantObstructionSectionEquiv"
+    - "GeneratorPresentation.aatLocallyConstantObstructionSectionEquiv_restriction"
+  evidence:
+    - "ContextOpenSupport.support has type S.category to Opens space"
+    - "ContextOpenSupport.continuous uses Mathlib Functor.IsContinuous for S.topology and Opens.grothendieckTopology"
+    - "aatLocallyConstantAddCommGrpPresheaf_isSheaf applies op_comp_isSheaf_of_types to the independently proved Cycle 6 topological sheaf"
+    - "aatLocallyConstantObstructionSheaf is built by the existing ObstructionSheaf.ofAddCommGrpValued"
+    - "the restriction-coordinate theorem evaluates the actual obstruction-sheaf restriction map through the mapped open inclusion"
+  claim_mapping:
+    theorem_names:
+      - "GeneratorPresentation.aatLocallyConstantAddCommGrpPresheaf_isSheaf"
+      - "GeneratorPresentation.aatLocallyConstantObstructionSheaf"
+      - "GeneratorPresentation.aatLocallyConstantObstructionSectionEquiv_restriction"
+    source_labels:
+      - "GOAL A selected obstruction coefficient sheaf"
+      - "Issue #4791 paper design section 3.1 context open supports"
+      - "Issue #4791 paper design section 4 identity restriction coordinates"
+    conjuncts:
+      - "context to open support functor and topology compatibility -> ContextOpenSupport"
+      - "pullback of locally constant M_R coefficients -> aatLocallyConstantAddCommGrpPresheaf"
+      - "actual existing Ob package -> aatLocallyConstantObstructionSheaf"
+      - "connected-support restriction becomes identity -> aatLocallyConstantObstructionSectionEquiv_restriction"
+    undischarged_assumptions:
+      - "the selected input and finite example must construct ContextOpenSupport, including site continuity, from their declared finite geometry"
+      - "the selected cover cells must have nonempty preconnected support where evaluation coordinates are used"
+      - "the actual ordered-tuple CoverRelativeCechComplex must still be identified with the normalized source"
+    acceptance_point: "site continuity is generic over all Type-valued sheaves and imported from Mathlib's standard definition; no coefficient-specific AAT sheaf certificate is stored"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "AATSite S, GeneratorPresentation P, a topological space, and a context-to-open support functor are selected input data"
+    direction_hypothesis:
+      - "Functor.IsContinuous is the topology-compatibility condition required for sheaf pullback"
+    discharge_required:
+      - "construct the continuous support functor for the selected finite input and fixed finite example"
+      - "construct the actual cover-relative Cech comparison"
+    conclusion_equivalent_risk:
+      - "continuity quantifies over all sheaves on the target site and contains neither the desired ObstructionSheaf nor any cohomology conclusion"
+  premise_delta:
+    discharged:
+      - "derive the AAT sheaf condition of pulled-back locally constant presentation coefficients from site continuity"
+      - "construct the actual ObstructionSheaf using the existing constructor"
+      - "transport connected-open coefficient and restriction coordinates to the actual Ob layer"
+    remaining:
+      - "concrete selected finite geometry and continuity proof"
+      - "actual ordered-tuple Cech normalization and A1 completion"
+      - "B1, full B2, C1, C2 and the fixed finite example"
+  certificate_provenance:
+    discharged:
+      - "the topological coefficient sheaf condition is the Cycle 6 theorem"
+      - "AAT descent is transported by Mathlib's standard continuous-site-functor theorem"
+    unresolved:
+      - "selected finite support functor and continuity instance"
+  proof_use:
+    used:
+      - "ContextOpenSupport.support defines the pulled-back additive presheaf object and maps"
+      - "ContextOpenSupport.continuous is installed to invoke op_comp_isSheaf_of_types"
+      - "nonempty preconnected support assumptions are consumed by the Cycle 6 evaluation and restriction theorems"
+    unused: []
+  structure_field_escape: none-found-for-coefficient-sheaf
+  route_integrity: pass-for-generic-aat-pullback
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/ObstructionDiagnosticBridge/AATLocallyConstantObstruction.lean: pass; 22 namespace declarations, standard axioms only"
+    - "aatLocallyConstantAddCommGrpPresheaf_isSheaf, aatLocallyConstantObstructionSheaf, and aatLocallyConstantObstructionSectionEquiv_restriction #print axioms: propext, Classical.choice, Quot.sound only"
+    - "git diff --check and placeholder, hidden/BiDi Unicode, private-path, and Formal-to-Research import scans: pass"
+  blocking_findings: []
+  next_obligation: "connect selected cover patches and intersections to open supports and identify the actual CoverRelativeCechComplex with the normalized presentation complex"
 ```
