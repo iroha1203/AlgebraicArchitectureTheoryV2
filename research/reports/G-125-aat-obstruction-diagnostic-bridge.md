@@ -41,7 +41,8 @@
   Cycle 9のcomplete face indexにより相異なる3 chartの実triple overlap全体の空性とface収載完全性を示し、Cycle 13で
   紙上設計の`Bool × Bool → Bool` / identity readingにfull-target supportを持つactual coarse/fine nerveを構成し、
   同じnerve indexへpoint-Atom site上の`FaceEmptyAATCechCover`を接続した。Cycle 16でpoint/generator combined siteへ
-  context・coverage・continuity・actual coverを移した。A1全体は、実H¹ mapをこの同一入力へ接続するまで完了扱いにしない。
+  context・coverage・continuity・actual coverを移した。Cycle 17で実Čech cocycle mapを商へ降ろし、
+  coarse/fine双方の同一入力上の誘導H¹準同型まで接続した。
 - 完了: 論文採用有限例の8点Alexandrov空間、粗い3-patch coverと細かい4-patch
   cover、実refinement、patchと非空二重交叉の非空preconnected性を構成する。相異なる
   3 chartと実交叉点を持つ型をcomplete face indexとして定め、両coverで幾何的三重交叉の
@@ -68,11 +69,14 @@
   Cycle 14の2辺presentationと一致させる。
 - 完了: combined carrier上へpoint support context・全12 Atomのcoverage・generated-topology continuityを持ち上げ、
   粗細のactual Čech coverをcombined site上に再構成する。
+- 完了: actual Čech次数1 cocycleを既存law-generated複体のcocycleへ送り、次数0可換性から
+  coboundaryを零へ送って加法的H¹準同型を構成する。選定Law・adequacy・presentation・combined coverで
+  coarse/fine双方を具体化し、A1を同一入力上で放電する。
 - 完了（仮定相対）: supplied face-index-empty nerveのpresentation係数cochainと、条件付きactual Ob層の実
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
 - 未完了: B1・B2、C1・C2、同一入力上の有限例、論文対応、最終検証・査読。
-- 次のproof obligation: combined site上のactual Čech sourceとCycle 14のselected Law/presentationを使い、
-  同一入力上の実H¹ mapへ上げる。
+- 次のproof obligation: 紙上設計式(1)の局所アフィン比較データからactual Obの指定cocycle
+  `o_q(x)`とlaw-value診断cocycle`a_q(x)`を同一入力上で生成し、B1の類対応を証明する。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -1940,4 +1944,119 @@ audits:
     - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.CombinedAtomActualNerve: pass; 3720 jobs"
   blocking_findings: []
   next_obligation: "instantiate the actual Cech-to-law-generated cochain map and induced H1 map from the combined site using the selected Law family and presentation"
+```
+
+## Cycle 17 — same-input actual Čech-to-diagnostic H¹ map
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 17
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: 6b4281e52a9a2818b37a535946ff69796f5d146d
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "Issue #4791 paper design section 4 after Cycle 16 merge 6b4281e52a9a2818b37a535946ff69796f5d146d"
+  proof_dag_predecessors:
+    - "actual Cech-to-diagnostic degree 0-2 cochain map: Cycle 8"
+    - "selected Law, adequacy, and primitive presentation: Cycle 14"
+    - "combined-site actual coarse/fine Cech covers: Cycle 16"
+  proof_obligation: "descend the actual Cech cochain comparison to H1 and instantiate it on the selected combined input"
+  selection_reason: "A1 requires an induced H1 homomorphism, not only commuting cochain squares"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/ActualCechH1Comparison.lean"
+    - "ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomH1Input.lean"
+    - "GeneratorPresentation.actualCechDiagnosticH1Map"
+    - "CombinedAtomH1Input.coarseH1Map"
+    - "CombinedAtomH1Input.fineH1Map"
+  risks:
+    - "asserting a rational-linear source map although the presentation coefficients are integral"
+    - "mapping cocycles without proving that degree-zero boundaries descend"
+    - "instantiating with the old point-only Cech source"
+  unchecked:
+    - "fixed-head independent review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The actual degree-one additive comparison restricts to diagnostic cocycles by the degree-one square. The degree-zero square sends every actual coboundary to a diagnostic boundary, so QuotientAddGroup.lift gives an additive map from actual AdditiveCechH1 to the existing law-generated ThreeCochainComplex.H1. Coarse and fine maps are instantiated with the selected Law, adequacy witnesses, presentation, and combined-site actual covers."
+  completion_candidate: no
+  lean_artifacts:
+    - "GeneratorPresentation.actualCechDiagnosticCyclesMap"
+    - "GeneratorPresentation.actual_cech_diagnostic_boundary_to_zero"
+    - "GeneratorPresentation.actualCechDiagnosticH1Map"
+    - "GeneratorPresentation.actual_cech_diagnostic_h1_map_additive_h1_class"
+    - "CombinedAtomH1Input.fineCochainMap"
+    - "CombinedAtomH1Input.coarseCochainMap"
+    - "CombinedAtomH1Input.fineH1Map"
+    - "CombinedAtomH1Input.coarseH1Map"
+  evidence:
+    - "actualCechCoefficient_comm1 maps source cocycles into ker lawGeneratedD1"
+    - "actualCechCoefficient_comm0 exhibits the image of every source coboundary in the range of target boundaryToCycles"
+    - "the quotient lift has source AdditiveCechH1 and target the existing lawGeneratedComplex.H1"
+    - "selected coarse/fine definitions use CombinedAtomActualNerve covers rather than PointAtomActualNerve covers"
+  claim_mapping:
+    theorem_names:
+      - "GeneratorPresentation.actualCechDiagnosticH1Map"
+      - "GeneratorPresentation.actual_cech_diagnostic_h1_map_additive_h1_class"
+      - "CombinedAtomH1Input.coarseH1Map"
+      - "CombinedAtomH1Input.fineH1Map"
+    source_labels:
+      - "GOAL A1 induced Phi_q"
+      - "Issue #4791 paper design section 4"
+      - "existing TargetSupportedNerve.lawGeneratedComplex"
+    conjuncts:
+      - "degree-one comparison preserves cocycles -> actualCechDiagnosticCyclesMap"
+      - "degree-zero comparison preserves boundaries -> actual_cech_diagnostic_boundary_to_zero"
+      - "quotient descent -> actualCechDiagnosticH1Map"
+      - "same selected input at both readings -> CombinedAtomH1Input"
+    undischarged_assumptions:
+      - "specified local affine data and its actual/diagnostic cocycles remain to be constructed"
+      - "B1, full B2, C1, C2, and fixed zero/nonzero data remain"
+    acceptance_point: "A1's cochain and induced H1 maps now use the actual obstruction Cech source and existing diagnostic complex on the selected combined input"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "the actual ObstructionSheaf and Cech source are the Cycle 6-8 constructions instantiated by Cycle 16"
+      - "the target H1 is the existing ThreeCochainComplex.H1 of lawGeneratedComplex"
+    direction_hypothesis: []
+    discharge_required:
+      - "construct o_q(x), a_q(x), and their representative equality for B1"
+      - "construct B2, C1, C2 and the fixed zero/nonzero example"
+    conclusion_equivalent_risk:
+      - "the quotient map is derived from cochain commutation and contains no H1 injectivity or zero-class premise"
+  premise_delta:
+    discharged:
+      - "actual source cocycle preservation"
+      - "actual source boundary preservation"
+      - "induced additive H1 map"
+      - "coarse/fine same-input instantiation"
+    remaining:
+      - "specified cocycle generation and B1"
+      - "B2, C1, C2 and finite zero/nonzero cases"
+  certificate_provenance:
+    discharged:
+      - "source cycles come from the actual Cech differential"
+      - "target cycles and boundaries use lawGeneratedComplex.d1 and boundaryToCycles"
+      - "selected maps reference the combined-site actual covers directly"
+    unresolved:
+      - "local affine transition and mismatch provenance"
+  proof_use:
+    used:
+      - "degree-one cochain commutation proves the mapped value lies in the target kernel"
+      - "degree-zero cochain commutation supplies the target boundary witness"
+      - "both facts are consumed by the quotient lift"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-for-same-input-a1-obligation
+  target_fitting: none-found
+  vacuity: "the map is defined on arbitrary actual H1 classes and the representative theorem exposes its degree-one action"
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "focused checks: ActualCechH1Comparison 4 declarations and CombinedAtomH1Input 6 declarations; standard axioms only"
+    - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.CombinedAtomH1Input: pass; 3722 jobs"
+  blocking_findings: []
+  next_obligation: "construct the paper equation (1) local affine comparison data, actual obstruction cocycle o_q(x), diagnostic cocycle a_q(x), and prove B1 class correspondence"
 ```
