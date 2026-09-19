@@ -83,7 +83,8 @@ view の集合 `V` と基準値 `v₀` を固定し、状態集合 `C`、読取�
 get のみを保つ変更 4 個のうち get・put を共に保つものは 2 個になる。
 この差を、第7章の変更分類と第8章の有限決定性へつなぐ。
 
-一次資料: [LensSemantics][lens-semantics]、[一般射の有限 fiber 表示][lens-finite]。
+一次資料: [LensSemantics][lens-semantics]、[一般射の有限 fiber 表示][lens-finite]、
+[可逆変更と共通分類の対応][lens-connection]。保存図式の一次資料は §4.2、有限例は §7.2 を参照。
 ここでの積表示は第7章の可逆変更分類と、第8章の一般射の再構成の共通の出発点となる。
 
 ### 1.3 プロトコルの独立な意味論
@@ -103,7 +104,10 @@ adapter `q:X→Y` と `q':X'→Y'` に対する変更 `a:X→X'`、`b:Y→Y'` �
 可逆変更の分類では `a,b` を同型に制限し、adapter 自体は一般射のまま扱う。
 操作名を変える版では、グラフ自己同型と経路等式・観測の輸送を別の入力として定める。
 
-一次資料: [ProtocolSemantics][protocol-semantics]、[観測付き一般射の有限表示][protocol-finite]。
+一次資料: [ProtocolSchema][protocol-schema]、[ProtocolSemantics][protocol-semantics]、
+[ProtocolFinitePresentation][protocol-presentation]、[観測付き一般射の有限表示][protocol-finite]。
+操作を隠れ状態上で恒等とする場合の可逆変更は [共通分類との対応][protocol-connection]、
+adapter の保存図式は §4.2、有限例は §7.2 の一次資料へ対応させる。
 経路圏の射は無限にあり得る。有限なのは制御点・生成辺・宣言関係・各状態 carrier であり、
 全実行の列挙を有限表示の入力にしない。
 
@@ -119,7 +123,7 @@ adapter `q:X→Y` と `q':X'→Y'` に対する変更 `a:X→X'`、`b:Y→Y'` �
 | 2-D equation / ideal 対応 | 条件付き定理。required residual 消滅、section に沿う extension ideal の零性、lawful locus への因子化の同値 | equation-generated scheme realization、generator / localization の生成定理、ideal の和との可換性、zero locus の普遍性を使う | [本文 III 定理5.2C・11.1][math-iii]、[Correspondence][law-correspondence] |
 | 2-E 障害係数の二つの生成 | 構成。商係数 `Q_E=O_E/I_Ob` と residual class、および circuit → witness ideal → 選択係数の写像 | 商で零になる symbolic generator 自身を failure detector にしない。後者の自然な `ρ:I_i→Ob`、no-cancellation、検出性は採用する係数ごとに示す | [本文 III 定理11.4–11.5][math-iii]、[本文 IV §2][math-iv]、[ObstructionSheaf][obstruction-sheaf] |
 | 2-F Čech 障害 | 構成・条件付き定理。local mismatch の cocycle と類 `[g]`、local flatness gap、補正後の global section | abelian coefficient、実際の mismatch、cocycle 則、effective local adjustment / torsor と descent を固定する | [本文 IV §§3–7・11][math-iv]、[GluingMismatch][gluing-mismatch]、[FlatnessCriterion][flatness] |
-| 2-G 障害の検出と消滅 | 定理・条件付き系。forest 消滅、boundary residue、period–Stokes、二相係数の support 単射 | forest・triple face 不在・restriction 全射を使う。二相では宣言した意味変形族と条件 E、構造側 `H¹=0` を使う | [本文 IV §§8–13][math-iv]、[CoverNerve][cover-nerve]、[二相比較][two-phase-h1]、[forest 系][two-phase-forest] |
+| 2-G 障害空間の次元・検出・消滅 | 定理・条件付き系。Topological Debt Capacity、定数係数の Betti 数、Euler Accounting、forest 消滅、boundary residue、period–Stokes、二相係数の support 単射 | 次元には有限次元性、Betti 数には選択した nerve との比較を使う。forest 消滅には triple face 不在・restriction 全射、二相には条件 E・構造側 `H¹=0` を使う | [本文 IV §§8–13][math-iv]、[CoverNerve][cover-nerve]、[二相比較][two-phase-h1]、[forest 系][two-phase-forest] |
 | 2-H semantic repair と SAGA | 構成・条件付き同型。独立に生成した semantic 係数と equation 係数の比較、residual class 対応、actual global repair | 有限 monomorphic cover、relation / generator completeness、equivariant local-state map、local atlas、empty-overlap normalization、true sheaf を明示する | [本文 X][math-x]、[EquationProduction][saga-production]、[KappaComparison][saga-kappa]、[TrueSheafDescent][saga-descent]、[Saga][saga] |
 
 ### 2.2 主要命題の強さを揃える
@@ -135,6 +139,26 @@ adapter `q:X→Y` と `q':X'→Y'` に対する変更 `a:X→X'`、`b:Y→Y'` �
 とする。`Flat` はここでは lawful locus の記号であり、平坦射の意味の flatness と区別する。
 一つの環での生成イデアル、site 上の ideal sheaf、scheme 上の extension ideal は、
 それぞれの比較写像を通して結ぶ。
+
+2-F では一般の abelian torsor の貼り合わせと、AAT の lawfulness への帰結を分ける。
+後者には [本文 IV 定理11.1][math-iv]の E-adequate cover、obstruction の soundness・completeness、
+axis exactness、witness coverage を課し、表の effective な調整作用・torsor・descent と併せて用いる。
+
+2-G の次元に関する結果は短い命題・系として収録する。有限次元の cochain complex に対する
+Topological Debt Capacity は
+
+\[
+ \dim_k H^1\geq\dim_k C^1-\dim_k C^0-\dim_k C^2
+\]
+
+である。定数係数と標準的な restriction を持つ被覆では、選択した nerve との比較
+`H¹(𝒰,k)≅H¹(N(𝒰),k)` を与え、`dim_k H¹(𝒰,k)=b₁(N(𝒰))` を得る。
+Euler Accounting は有限複体の交代和 `χ=Σ_n(-1)^n dim_k Cⁿ` を扱う。
+各次数の cochain 次元を保つ変更は `χ` を保つ。個々の `H¹` や指定障害類の不変性とは分ける。
+[CoverNerve][cover-nerve]では、容量下界を `topologicalDebtCapacity_fromComplex`、
+Betti 数との対応を `ConstantCoefficientNerveReading.dimH1_eq_b1`、
+0・1・2 次の交代和とその保存を `EulerCochainAccounting` に照合する。
+定数係数の形式化は比較同型を入力に取るため、採用する被覆からその比較を与える構成も明示する。
 
 二相分解では、抽出の真偽が宣言された意味変形族に対して不変かどうかで structural / semantic を定める。
 restriction と differential が structural 部分を保つ条件 E の下で
@@ -175,12 +199,20 @@ local atlas を独立に選んだ場合は、cochain の一致ではなく明示
 | 3-F 十分域と観測限界 | 反例・不可能性。C 各条項の非必要性、同じ局所観測でも異なる一様不変性 | `ConditionCAllA` は一様不変域の真部分。`G_local-v1` の非因子化はその固定観測言語に相対化する | [AtlasPositioning][atlas-position]、[G-107 固定命題][g107]、[GLocalV1Nonfactorization][local-nonfactor] |
 | 3-G 構造台の不変性と係数選択 | 定理と反証。意味変形下で構造 nerve が等式として一致し、全 Atom nerve は変わり得る。一方、固定 source-label 生成係数の `H¹` は常に零 | G-105 の非零障害を要求する発火命題は反証済み。成立した nerve・restriction・局在化の結果と分ける | [NerveGeneration][struct-nerve]、[StructuralLocalization][struct-local]、[GeneratedH1Vanishing][struct-zero]、[G-105 report][r105] |
 
-### 3.2 不変性の仮定と反例
+### 3.2 不変性の仮定と正負例
 
 Atlas の条件 C は、C0: 被覆像の合致、C1: 各座標 subnerve の非空連結な chart fiber、
 C2: edge lift、C3: fiber 内の有理 1-cycle を内部 face boundary が張ること、C4: face lift、
 C5: coarse edge lift の一意性、C6: coarse self-loop に写る edge の self-loop 性からなる。
+C0・C5・C6 は nerve 全体、C1〜C4 はすべての Law-value 座標の部分 nerve について課す。
+C2・C4 の lift は同じ座標ラベルを保つものとする。
 C3 の局所非輪状性を含む十分条件であり、一般の必要十分条件ではない。
+
+条件 C の[非退化な正例][atlas-firing]を本論に置く。単射でない粗化、非自明な座標 fiber、
+両側の非零 `H¹` 類があり、実際に生成した比較写像は全単射となる。
+粗い側の指定した非零類が細かい側の非零類へ送られることを示し、
+情報を落とす変更でも条件 C の下で診断を保てることを説明する。
+一次資料の `fixed_claim_v` に入力・条件・類・実比較が同時に現れる。
 
 一様判定では、`J_A=(dim ker H¹(φ_A), dim coker H¹(φ_A))` として
 
@@ -192,6 +224,11 @@ C3 の局所非輪状性を含む十分条件であり、一般の必要十分�
 を使う。固定 Law 族の条件 C と、全非空 `A` に条件を課す `ConditionCAllA` の間には
 [条項ごとの bridge][atlas-all-a-bridge]が要る。
 
+`ConditionCAllA` の[非退化な正例][atlas-all-a-firing]では `firing_conditionCAllA` と
+有限表示 `pFire` の `pFire_conditionCAllACheck` を対応させる。
+[checker の正しさ][atlas-all-a-checker]は、有限表示から生成した幾何について
+`conditionCAllACheck = true ↔ ConditionCAllA` を述べる。正例の有限表と checker の詳細は付録Bに置く。
+
 最小限の反例枠は、admissible class 内での最粗 reading の非表示、非 adequate 粗化による
 偽の類・真の類の隠蔽、adequate でも被覆条件が破れる例、観測等値な T3 / T6 の対とする。
 非表示例は [G-103 の反例][resolution-negative]、粗化・被覆の例は [G-104 の正負例][g104]、
@@ -202,6 +239,15 @@ C3 の局所非輪状性を含む十分条件であり、一般の必要十分�
 係数・nerve・比較写像の同定を明示する。source-label 係数での消滅を、他の係数や
 すべての AAT 障害の消滅へ拡張しない。
 
+[本文 VIII §7 の Class Transport][math-viii]は、この係数比較の説明へ統合する。
+選択した site の射 `ρ:X→Y`、環・標準 obstruction ideal・selected measurement ideal の比較、
+係数比較 `ρ⁻¹Ob_Y→Ob_X` を固定し、被覆上の cochain 比較から障害類を運ぶ写像を与える。
+site の同値、環・両 ideal・係数の比較同型、witness・axis の reading の保存の下で、
+対応する類の零性の同値を述べる。
+第4〜5章との接続では、採用する輸送・基底変換がこの site・係数比較を与える箇所を示す。
+付録Bの有限計算では、本文 VIII §11 の Measurement Packet のうち、入力・係数・成立条件・
+出力が表す数学的対象を記載する。これらは各計算の仕様としてまとめる。
+
 ## 第4章 輸送と合成の整合性
 
 ### 4.1 輸送の存在・普遍性・障害
@@ -210,7 +256,7 @@ C3 の局所非輪状性を含む十分条件であり、一般の必要十分�
 | --- | --- | --- | --- |
 | 4-A exact core 輸送 | 構成・普遍性。`transportAlong σ P` と strongly opcartesian lift、一意な factor、同型を除く lift 一意性 | 固定 Atom carrier、exact doctrine 射、package のみから family・configuration・equation・detector 等を運ぶ。任意の tail とその合成上の射を量化する | [Transport][core-transport]、[Opcartesian][core-opcartesian]、[LiftUniqueness][core-unique] |
 | 4-B refinement の失敗 | 反例・条件付き供給。抽出の前進保存だけでは exact core lift が存在しない | Atom map が全単射でも extraction 反映が失われる例。有限な拡張 family・operation・equation の追加供給から得るのは positive core 射であり、exact lift とは区別する | [RefinementObstruction][core-refinement-no]、[RefinementSupply][core-refinement-supply]、[G-101][g101] |
-| 4-C 幾何の輸送 | 構成・普遍性。canonical core lift 上の geometry lift、全成分の輸送、一意性 | `E_geom→E_core` の選択された底射に沿う partial op-cleavage。一般 core 射については局所 realization の三比較族と read-preservation を表す `H_geom` が必要 | [幾何の Opcartesian][geom-opcartesian]、[Supply][geom-supply]、[G-108][g108] |
+| 4-C 幾何の輸送 | 構成・普遍性。canonical core lift 上の geometry lift、全成分の輸送、一意性 | `E_geom→E_core` の選択された底射に沿う partial op-cleavage。一般 core 射については局所 realization の三比較族と read-preservation を表す `H_geom` が必要 | [幾何の Opcartesian][geom-opcartesian]、[Factorization][geom-factorization]、[LiftUniqueness][geom-unique]、[Supply][geom-supply]、[G-108][g108] |
 | 4-D 合成と射影 | 定理。fiber 間 transport functor、compositor / unitor、単位・三重合成の整合、塔の pseudonatural compatibility | 底を pointed `ExtractionInstance` に揃え、対象と vertical 射の両方で証明する | [CorePseudofunctor][core-pseudo]、[Pseudofunctor][geom-pseudo]、[TowerCompatibility][tower-coherence] |
 | 4-E authored 比較の障害 | 構成・同値。raw 2-cell defect、辺 reselection の作用、障害消滅と coherent な再選択の存在 | 有限 presentation と許容比較を固定。raw defect は無条件に定義し、3-cell の cocycle 則には syzygy compatibility を使う | [PastingObstruction][transport-pasting]、[VanishingCoherence][transport-vanishing]、[UnifiedObstruction][transport-unified] |
 | 4-F 段横断の障害 | 構成・条件付き分解。core への射影、kernel、辺水準 section、全体障害と段内・段間障害の関係 | 因子順を保つ。各段の消滅と joint な coherentization を区別し、alignment の失敗を扱う | [SectionDecomposition][section-decomposition]、[GlobalVanishing][global-vanishing]、[FiniteWitnesses][cross-witness] |
@@ -228,7 +274,7 @@ raw defect の比較式を `δ=uφ⁻¹` とすると、辺から生成した中
 第1章の独立な意味論と保存則を AAT の射へ対応させる。非単射な状態写像や補完 table も
 一般の意味保存射として保持する。
 
-lens の同時保存は、get と put をまとめた射
+lens の同時保存は、get・put の二つの可換図式を余積を用いて一つにまとめ、射
 `c_L:C⊔(C×V)→V⊔C` と、連動する端点変更 `h⊔(h×u)`、`u⊔h` の可換図式で表す。
 同じ状態 carrier が現れる箇所に同じ `h` を作用させる条件を、許容変更の部分群として保持する。
 プロトコルでは名前付き操作の可換図式と adapter の `bq=q'a` を保持し、合成の保存を示す。
@@ -249,9 +295,9 @@ lens の同時保存は、get と put をまとめた射
 | 5-B cartesian reindexing | 構成・普遍性。任意の exact semantic 底射と target package への strong cartesian lift、cleavage と合成整合 | finite code の存在とは独立の semantic-global な構成。G-110 の表示付き入力への制限と G-112 の全域の結論を対応させる | [CartesianTarget][cartesian-target]、[ExactBottomGlobalLift][global-lift]、[同 coherence][global-lift-coherence] |
 | 5-C exact-bottom の有限 code coverage | 分類。端点同型を含む arrow 圏の coverage | 両 Source の有限性と、target の全抽出述語の有限／余有限性による成立域。固定 code 間の Hom の充満性とは別問題 | [ExactBottomCoverageClassification][coverage-classification]、[G-112][g112]；第8章へ |
 | 5-D canonical Beck–Chevalley mate | 構成・同型。pointed exact pullback square の push / pull 二経路と canonical mate | 普遍性から生成する mate、authored 比較との一致、後の projector を含む比較を区別する | [CoreBeckChevalleyMate][bc-mate]、[PackageProjectionBeckChevalleyExactness][bc-exact]、[G-110][g110] |
-| 5-E indexed assembly | 構成・条件分類。底の頂点・辺・関係から action、輸送データ、reselection、coherence / vanishing 保存を生成 | coherent base diagram 上の結論。任意の raw square family が自動的に組み上がるわけではない。全 right legs についての一様な関係反映は index の epi 性と同値 | [IndexedBaseDiagram][indexed-diagram]、[IndexedDiagnosticAssembly][indexed-assembly]、[G-111][g111] |
+| 5-E indexed assembly | 構成・条件分類。底の頂点・辺・関係から action、輸送データ、reselection、coherence / vanishing 保存を生成 | coherent base diagram 上の結論。任意の raw square family が自動的に組み上がるわけではない。全 right legs についての一様な関係反映は index の epi 性と同値 | [IndexedBaseDiagram][indexed-diagram]、[IndexedDiagnosticAssembly][indexed-assembly]、[IndexedRawFamilyClassification][indexed-raw-classification]、[G-111][g111] |
 | 5-F 診断輸送の同値 | 定理。push / reindex 同値、endpoint・cochain・reselection の両逆、coherence・消滅・orbit membership の反映 | 指定した indexed diagram と生成 interpretation 上で、係数を固定する。底射の同型性を仮定せず、輸送同値から底射の同型性も従わない | [TransportEquivalence][diagnostic-equivalence]、[OrbitExactness][diagnostic-orbit]、[BaseIsoIndependence][base-iso] |
-| 5-G refinement base change | 構成・必要十分条件。forward pullback と、package が実現する台での逆輸送 | `Nonempty(RefinementCartesianCleavage r) ⇔ RealizedLocusExtractionReflecting r`。各 compatible source で組み上げる条件と、実現台の移送を証明する | [RefinementBaseChange/Classification][refinement-classification]、[Qualification][refinement-qualification]、[G-114][g114] |
+| 5-G refinement base change | 構成・必要十分条件。forward pullback と、package が実現する台での逆輸送 | `Nonempty(RefinementCartesianCleavage r) ⇔ RealizedLocusExtractionReflecting r`。各 compatible source で組み上げる条件と、実現台の移送を証明する | [RefinementBaseChange/Classification][refinement-classification]、[RealizedSupport][refinement-realized]、[Qualification][refinement-qualification]、[G-114][g114] |
 | 5-H geometry-refinement 比較 | 構成・条件付き同値。lower が lax refinement の完全幾何の射、二つの reverse route、upper mate、solution と orbit の輸送 | 任意 authored 入力では一方向比較。明示的 transport から生成する compatible locus で双方向の比較と comparator descent を扱う | [G-115][g115]、[UpperGeometryCompatibleMateNaturality][upper-mate]、[G-118][g118] |
 
 ### 5.2 比較の種類と後続への接続
@@ -279,7 +325,7 @@ finite code coverage、診断同値にはそれぞれ固有の量化域がある
 | 6-A configuration descent | 構成・普遍性。`π(x)=x.configuration`、`s_P`、`n_P=s_Pπ`、固定点と configuration の同値 | `πs_P=1`。任意の値型への写像について `fn_P=f` と configuration を通る一意因子化が同値 | [ConfigurationDescent][configuration-descent]、[G-116][g116] |
 | 6-B total 射の冪等性 | 定理。admissibility の下で package 射 `N_P²=N_P`、cell projector `E²=E` | residual / coordinate と operation の保存を含む。object 写像の冪等性から total 射の等号を省略しない | [BCAuthoredCanonicalObjectNormalization][core-normalization]、[IdempotentExchangeNormalization][idempotent-normalization]、[IdempotentExchangeCellProjector][cell-projector] |
 | 6-C 生成比較の像 | 定理・反例。`β=Eα`、`IsIso β ⇔ E=1`、Karoubi 内の明示的同型、元の total 圏内での split 不可能性 | arbitrary configuration 上の相異なる object を使う。選択 residual / coordinate が保存されても raw 比較は非同型となり得る | [Karoubi image][karoubi-image]、[RawFailureLocus][raw-failure]、[InternalNormalizationSplitNoGo][split-no-go] |
-| 6-D 比較と冪等完備化 | 一般定理。`Kar(Arr(E))≃Arr(Kar(E))`、関手に対する自然性、三段の投影との整合 | arbitrary 圏の結果を、実際の AAT 比較とその冪等対へ適用する。最大亜群にも非可逆な比較を対象として残す | [KaroubiArrowEquivalence][kar-arrow]、[G116KaroubiPlacement][kar-placement]、[ThreeStageProjection][three-stage] |
+| 6-D 比較と冪等完備化 | 一般定理。`Kar(Arr(E))≃Arr(Kar(E))`、関手に対する自然性、三段の投影との整合 | arbitrary 圏の結果を、実際の AAT 比較とその冪等対へ適用する。最大亜群にも非可逆な比較を対象として残す | [KaroubiArrowEquivalence][kar-arrow]、[FunctorNaturality][kar-naturality]、[MaximalSubgroupoid][comparison-groupoid]、[G116KaroubiPlacement][kar-placement]、[ThreeStageProjection][three-stage] |
 | 6-E 正規化関手と片側自然性 | 構成・定理。admissible な core の充満部分圏から sandwich 射の圏への充満関手 `N(f)=fe_P` | `e_Qfe_P=fe_P` を全成分で証明。Karoubi 内の包含 `i:KN→J` は自然。逆向きの射影の自然性は追加の operation coherence と同値 | [NormalizationCategory][normalization-category]、[CanonicalNormalizationAbsorption][normalization-absorption]、[NormalizationNaturalityFailure][normalization-failure] |
 | 6-F 自然性の反例 | 反例。configuration に見えない Bool operation tag によって `fe_P≠e_Qf` | full admissible 圏の実射で成立。G-117 の全域 modification 要求の反証を、object-map naturality や 6-E の否定と混同しない | [ModificationCounterexample][normalization-counterexample]、[G-117 report][r117] |
 | 6-G 完全幾何の正規化 | 構成・定理。`n_G²=n_G`、底・係数への像は恒等、`N_geom` の充満性、core 正規化との可換性 | admissible core を持つ geometry の全射について片側吸収を示す。Support・Axis・Observable、coverage、overlap、raw の各成分を保持する | [CanonicalNormalization][geom-normalization]、[G-122 A][g122] |
@@ -313,6 +359,11 @@ sandwich 射の圏を別の対象として説明する。G-117 の未証明な l
 [report][r117]と実宣言に対応させる。後続へ渡すのは 6-E・6-G の実際の関手である。
 
 ## 第7章 比較を保つ変更と情報
+
+[Period Separation の有限例][period-separation]を導入に置く。
+同じ graph reading を持つ二つの対象でも semantic / effect reading が異なることを示し、
+何を忘れる観測なのかを説明して 7-C の観測の核へ進む。
+ここでの period は broad reading であり、第2章の homology–cohomology pairing と区別する。
 
 ### 7.1 一般分類と AAT の実生成比較
 
@@ -354,8 +405,11 @@ G-122 の実生成比較では次の分類を同じ入力の上で得る。
 | 選択子が成立 | 成立 | 不成立 | 群準同型の section を持つ |
 | admissible な入力の canonical 正規化 | 成立 | 不成立 | 群準同型の section を持つ |
 
-一般有限集合の反例は、定値冪等射での反映失敗と、サイズの違う fiber を交換できないための
-lift 非存在を候補とする。AAT の生成比較に section があることは、これらの一般反例と両立する。
+canonical 正規化の行の一次資料は [section の構成][alpha-canonical-section]と
+[短完全列・lift fiber の分類][alpha-canonical-exactness]である。
+
+証明済みの一般有限集合の反例から、定値冪等射での反映失敗と、サイズの違う fiber を交換できないための
+lift 非存在を収録候補とする。AAT の生成比較に section があることは、これらの一般反例と両立する。
 
 ### 7.2 モデル同期とプロトコルで共有する変更分類
 
@@ -390,7 +444,8 @@ put も保つものは 2 個になる。ここでも可視変更は恒等に固�
 二つの辺を交換する可視変更の上でも追随変更は 4 個となる。
 
 一次資料: [連結成分による分類][fixed-components]、[分裂と torsor][fixed-split]、
-[有限例][fixed-examples]。lens・protocol の一般射を定義した圏から、ここで用いる可逆変更族と
+[fiber の個数][fixed-cardinality]、[有限例][fixed-examples]。
+lens・protocol の一般射を定義した圏から、ここで用いる可逆変更族と
 許容可視群を取り出す箇所を明示する。例の個数計算は、この一般定理の短い評価として使う。
 
 **接続項目。** CS の操作保存部分群、AAT の底固定部分群、正規化の中心化群はそれぞれ
@@ -399,14 +454,19 @@ put も保つものは 2 個になる。ここでも可視変更は恒等に固�
 
 ## 第8章 表示・局所再構成・有限決定性
 
+[本文 VII §15 の Representation Completeness][math-vii]を、章を横断する説明として導入に置く。
+第3章の診断保存、第7章の比較適合性の反映・観測による検出、
+この章の射を区別する忠実性・局所データからの再構成を、何を保証する性質かによって比較する。
+対象・射・係数・観測族を各結果に合わせて指定し、これらを一列の強弱関係として扱わない。
+
 ### 8.1 有限表示から回復する対象と射
 
 | 項目 | 種類・数学内容 | 入力・成立条件と結論 | 主な一次資料 |
 | --- | --- | --- | --- |
-| 8-A 有限例外 code の意味 | 定理。離散 D の一点コンパクト化 `D⁺` について `Code(D)≃C(D⁺,Bool)` | code は既定値と有限例外集合。D が無限なら D 上の評価は単射。D が有限なら同じ評価に二つの既定値 code がある | [OnePointCode][one-point-code]、[EvaluationClassification][code-evaluation] |
-| 8-B 底射 coverage の位相的特徴 | 必要十分条件。両 Source の有限性と、target 抽出述語の連続延長が anchored coverage を特徴づける | 離散 Source の compactness と有限性を接続。端点の意味同型を選べる coverage と、固定端点間の表示を区別する | [CoverageTopology][coverage-topology]、[G-121 B][g121] |
-| 8-C 固定 code 間の Hom | 必要十分条件・正規化。Atom 置換の有限 support と既定値の保存、decoder の忠実性、有限 carrier での正規化後の充満忠実性 | `R_fin` は既定値 false に揃え、decode 後の自然同型を与える。raw code の等号とは区別する | [FixedArrowClassification][fixed-arrow]、[FiniteFullSubcategory][finite-full]、[FiniteCodeNormalization][code-normalization] |
-| 8-D 有限構文の限界 | 反例・不可能性。意味が同型でも元 code 間に射がない例、無限 support 置換、可算 decoder の非全射性 | 固定自己同型群に `P(ℕ)` を埋める。可算構文に対する主張であり、任意の無限パラメータ参照を許す構文全般の不可能性ではない | [FinOneCounterexample][fin-one]、[NatAdjacentSwap][nat-swap]、[CountableSyntaxObstruction][countable-syntax] |
+| 8-A 有限例外 code の意味 | 定理。離散 D の一点コンパクト化 `D⁺` について `Code(D)≃C(D⁺,Bool)` | code は既定値と有限例外集合。D が無限なら D 上の評価は単射。D が有限なら同じ評価に二つの既定値 code がある | [OnePointCode][one-point-code]、[EvaluationClassification][code-evaluation]、[CodeFibers][code-fibers] |
+| 8-B 底射 coverage の位相的特徴 | 必要十分条件。両 Source の有限性と、target 抽出述語の連続延長が anchored coverage を特徴づける | 離散 Source の compactness と有限性を接続。端点の意味同型を選べる coverage と、固定端点間の表示を区別する | [CoverageTopology][coverage-topology]、[DiscreteCompactness][discrete-compactness]、[G-121 B][g121] |
+| 8-C 固定 code 間の Hom | 必要十分条件・正規化。Atom 置換の有限 support と既定値の保存、decoder の忠実性、有限 carrier での正規化後の充満忠実性 | `R_fin` は既定値 false に揃え、decode 後の自然同型を与える。raw code の等号とは区別する | [FixedArrowClassification][fixed-arrow]、[FiniteFullSubcategory][finite-full]、[FiniteCodeNormalization][code-normalization]、[FiniteNormalizationRealizationIso][normalization-realization-iso] |
+| 8-D 有限構文の限界 | 反例・不可能性。意味が同型でも元 code 間に射がない例、無限 support 置換、可算 decoder の非全射性 | 固定自己同型群に `P(ℕ)` を埋める。可算構文に対する主張であり、任意の無限パラメータ参照を許す構文全般の不可能性ではない | [FinOneCounterexample][fin-one]、[NatAdjacentSwap][nat-swap]、[NatSubsetSwaps][nat-subset-swaps]、[CountableSyntaxObstruction][countable-syntax] |
 | 8-E CS の有限再構成 | 構成・圏同値。lens の有限基準 fiber、protocol の有限生成 table から対象・一般射を回復 | operation・Law・観測を保つ一般射を扱う。Karoubi、retract、Arr への拡張を同じ制限・延長と整合させる | [CSKaroubiReconstruction][cs-karoubi]、[LensFiberModelEquivalence][lens-model]、[ProtocolObservedRestrictionEquivalence][protocol-model] |
 | 8-F 一般局所再構成原理 | 条件付き一般定理。Hom 分離、Hom 組立て、対象組立てから reading functor の圏同値を構成 | 三条件を独立に述べる。対象は読み取りが局所モデルと同型になる実現を構成し、射は制限・組立ての両逆を示す | [LocalReconstructionEquivalence][local-equivalence] |
 | 8-G タグ族の局所回復 | 構成・分類。source-choice 群、全有限 Bool table の整合族、正規化による情報損失、正規化を含む生成部分圏 | 全 source-choice 族と一様 flip を保持する。正規化後の単一像から全 source-choice を分離できるとはしない | [TagChangeFiniteReadingRecovery][tag-recovery]、[TagChangeNormalizedChoiceKernel][tag-kernel]、[TagChangeExactGeometryLocalModel][tag-model] |
@@ -510,15 +570,15 @@ lens では基準 fiber 上の置換 table、上記セッションモデルで�
 | --- | --- | --- |
 | [本文 I][math-i] | 第1章の公理・生成・operation・Law、第6章の configuration descent | 有限 detector の検出条件と operation 自体の同一性を保持 |
 | [本文 II][math-ii] | 第1章の context / site、第2章の sheaf / descent、第4章の幾何輸送 | overlap と生成 topology の依存を統一 |
-| [本文 III][math-iii] | 第2章の代数・ideal・scheme・lawful locus。square-free witness と Stanley–Reisner 表示は局所的な補足候補 | closed / open / constructible Law の型を分ける。Architecture Nullstellensatz の候補を一般確定定理にしない |
-| [本文 IV][math-iv] | 第2章の mismatch / boundary residue / forest / Stokes、第3章の診断比較 | higher overlap、Mayer–Vietoris・Leray の候補は、採用する条件と形式化済み特殊形を別途対応づける |
-| [本文 V][math-v] | 第2章末または補足で derived tensor product と `Tor_i(O/I_U,O/I_V)` による Law conflict、共有因子の repair 反例 | 同一 ambient・derived / module regime を指定。非横断性だけから特定 repair の悪化を結論しない。Hilbert 計算・well-founded repair は補足候補 |
+| [本文 III][math-iii] | 第2章の代数・ideal・scheme・lawful locus。square-free witness と Stanley–Reisner 表示は本文 VIII §5 の Alexander dual と一体で付録Bに置く | closed / open / constructible Law の型を分ける。Architecture Nullstellensatz の候補を一般確定定理にしない |
+| [本文 IV][math-iv] | 第2章の mismatch / boundary residue / forest / Stokes、Topological Debt Capacity・Betti 数・Euler Accounting、第3章の診断比較 | Scale-Stable Debt（§14）は第3章に関連する展望に置く。higher overlap、Mayer–Vietoris・Leray の候補は、採用する条件と形式化済み特殊形を別途対応づける |
+| [本文 V][math-v] | 第2章の補足に derived tensor product、`Tor_i(O/I_U,O/I_V)` による Law conflict、共有因子の repair 反例を置く。Transferred Obstruction（§10）・Derived Repair Criterion（§11）・本文 VIII §10 の support と pairing の基本条件は一つの修復の補足にまとめる | 同一 ambient、selected conflict class、repair direction、transfer pairing と修復の比較条件を指定する。Tor の非零性と特定 repair の非零転送を分け、修復条件の定義を一般の修復存在定理と区別する。Hilbert 計算・well-founded repair は補足候補 |
 | [本文 VI][math-vi] | 第2章の補足に Architecture Stratum、smoothness、Architecture Singularity、Singularity Criterion、God Object の再解釈（§§2・4–5、定理6.1、§7）を配置。第1・4章の operation / groupoid 語彙も補う | 特異性の補足では Law、deformation test、必要な tangent / cotangent complex を固定し、指定障害類の非零性に相対化した結論を保つ。複体の一般構成、square-zero lifting、monodromy、stack / gerbe は発展候補とし、各構成の入力・成立条件を個別に示す |
-| [本文 VII][math-vii] | 第3・7章の表現の保存・反映と情報損失。period pairing は第2章の補足 | strict な homology–cohomology pairing と broad reading を区別。metric / cost は追加 enrichment、repair margin / filling cost は補足候補 |
-| [本文 VIII][math-viii] | 第3章の計算可能性、第8章の実効性、付録の有限計算 | 有限な site だけでなく係数アルゴリズムが必要。selected measurement ideal と標準 obstruction ideal を分ける。Hodge / Tor base change の条件を保持し、stability の候補は候補として記す |
+| [本文 VII][math-vii] | 第3・7章の表現の保存・反映と情報損失。Period Separation（§6）は第7章冒頭の小例、Representation Completeness as a Spectrum（§15）は第8章導入で第3・7章とつなぐ説明にする。period pairing は第2章の補足 | strict な homology–cohomology pairing と broad reading を区別。metric / cost は追加 enrichment、repair margin / filling cost は補足候補 |
+| [本文 VIII][math-viii] | Class Transport（§7）は第3章の係数比較へ統合し、第4〜5章とは実比較を与える箇所で接続。第8章の実効性、付録Bの有限計算・Alexander dual（§5）・Measurement Packet（§11）の入力・係数・仮定・出力の意味を収録 | 有限な site と係数アルゴリズムを指定し、selected measurement ideal と標準 obstruction ideal を分ける。Support-Localized Transfer Measurement（§10）の基本条件は本文 V の補足へ、norm・support weight・Wasserstein 型の拡張は展望へ置く。Hodge / Tor base change の条件を保持し、stability の候補は候補として記す |
 | [本文 IX][math-ix] | 第4章の操作合成への補足、結びの時間方向への展開 | measurement profile に従属する trace / product site / temporal coefficient。temporal descent、散逸、Lyapunov / force の条件付き reading を一般輸送定理へ同一視しない |
 | [本文 X][math-x] | 第2章の SAGA 比較を主要結果として収録 | semantic repair と equation geometry の独立生成、class 対応、true sheaf による actual repair |
-| [付録 A–B][math-app] | 第1章の相対パラメータ、第2章の通常の scheme との関係、補足の有限計算 | square-free ideal・monomial Tor・period、および circle nerve 上の独立表示から、必要な局所例を選ぶ |
+| [付録 A–B][math-app] | 第1章の相対パラメータ、第2章の通常の scheme との関係、補足の有限計算 | 付録Bで square-free ideal と Alexander dual の minimal hitting set を一つの有限例として扱い、実際の修復操作には別途意味論を与える。monomial Tor・period・circle nerve 上の独立表示は、必要な局所例を選ぶ |
 
 補足の Lean 照合先は [Derived][formal-derived]、[SingularityMonodromyStack][formal-singularity]、
 [RepresentationAnalysis][formal-representation]、[Measurement][formal-measurement]、[Evolution][formal-evolution]。
@@ -582,6 +642,7 @@ AAT 固有の寄与は、入力からの生成、仮定の導出、実比較と�
 [formal-derived]: ../../../Formal/AG/Derived.lean
 [formal-singularity]: ../../../Formal/AG/SingularityMonodromyStack.lean
 [formal-representation]: ../../../Formal/AG/RepresentationAnalysis.lean
+[period-separation]: ../../../Formal/AG/RepresentationAnalysis/PeriodSeparation.lean
 [formal-measurement]: ../../../Formal/AG/Measurement.lean
 [formal-evolution]: ../../../Formal/AG/Evolution.lean
 [geometry-basic]: ../../../research/lean/ResearchLean/AG/GeometryTransport/Basic.lean
@@ -589,8 +650,12 @@ AAT 固有の寄与は、入力からの生成、仮定の導出、実比較と�
 [geometry-categories]: ../../../research/lean/ResearchLean/AG/GeometryTransport/Categories.lean
 [three-stage]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/ThreeStageProjection.lean
 [lens-semantics]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/LensSemantics.lean
+[lens-connection]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFLensConnection.lean
 [lens-finite]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LensSemanticFiniteDetermination.lean
 [protocol-semantics]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolSemantics.lean
+[protocol-schema]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolSchema.lean
+[protocol-presentation]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolFinitePresentation.lean
+[protocol-connection]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFProtocolConnection.lean
 [protocol-finite]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/ProtocolObservedFiniteDetermination.lean
 [two-phase-h1]: ../../../research/lean/ResearchLean/AG/TwoPhase/CohomologyComparison.lean
 [two-phase-forest]: ../../../research/lean/ResearchLean/AG/TwoPhase/ForestSupport.lean
@@ -604,6 +669,7 @@ AAT 固有の寄与は、入力からの生成、仮定の導出、実比較と�
 [atlas-conditions]: ../../../research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceConditions.lean
 [atlas-bijective]: ../../../research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonBijectivity.lean
 [atlas-corollary]: ../../../research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceCorollary.lean
+[atlas-firing]: ../../../research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceFiringWitness.lean
 [uniform-reduction]: ../../../research/lean/ResearchLean/AG/UniformInvariance/UniformityReduction.lean
 [uniform-defect]: ../../../research/lean/ResearchLean/AG/UniformInvariance/DefectSemantics.lean
 [uniform-decider]: ../../../research/lean/ResearchLean/AG/UniformInvariance/UniformPresentationDecider.lean
@@ -613,12 +679,16 @@ AAT 固有の寄与は、入力からの生成、仮定の導出、実比較と�
 [struct-local]: ../../../research/lean/ResearchLean/AG/StructuralCover/StructuralLocalization.lean
 [struct-zero]: ../../../research/lean/ResearchLean/AG/StructuralCover/GeneratedH1Vanishing.lean
 [atlas-all-a-bridge]: ../../../research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllABridge.lean
+[atlas-all-a-firing]: ../../../research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllAFiring.lean
+[atlas-all-a-checker]: ../../../research/lean/ResearchLean/AG/UniformInvariance/ConditionCAllAChecker.lean
 [core-transport]: ../../../research/lean/ResearchLean/AG/AtomFoundation/Transport.lean
 [core-opcartesian]: ../../../research/lean/ResearchLean/AG/AtomFoundation/Opcartesian.lean
 [core-unique]: ../../../research/lean/ResearchLean/AG/AtomFoundation/LiftUniqueness.lean
 [core-refinement-no]: ../../../research/lean/ResearchLean/AG/AtomFoundation/RefinementObstruction.lean
 [core-refinement-supply]: ../../../research/lean/ResearchLean/AG/AtomFoundation/RefinementSupply.lean
 [geom-opcartesian]: ../../../research/lean/ResearchLean/AG/GeometryTransport/Opcartesian.lean
+[geom-factorization]: ../../../research/lean/ResearchLean/AG/GeometryTransport/Factorization.lean
+[geom-unique]: ../../../research/lean/ResearchLean/AG/GeometryTransport/LiftUniqueness.lean
 [geom-supply]: ../../../research/lean/ResearchLean/AG/GeometryTransport/Supply.lean
 [core-pseudo]: ../../../research/lean/ResearchLean/AG/CrossStageCoherence/CorePseudofunctor.lean
 [geom-pseudo]: ../../../research/lean/ResearchLean/AG/CrossStageCoherence/Pseudofunctor.lean
@@ -642,10 +712,12 @@ AAT 固有の寄与は、入力からの生成、仮定の導出、実比較と�
 [bc-exact]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/PackageProjectionBeckChevalleyExactness.lean
 [indexed-diagram]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/IndexedBaseDiagram.lean
 [indexed-assembly]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/IndexedDiagnosticAssembly.lean
+[indexed-raw-classification]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/IndexedRawFamilyClassification.lean
 [diagnostic-equivalence]: ../../../research/lean/ResearchLean/AG/DiagnosticConservativity/TransportEquivalence.lean
 [diagnostic-orbit]: ../../../research/lean/ResearchLean/AG/DiagnosticConservativity/OrbitExactness.lean
 [base-iso]: ../../../research/lean/ResearchLean/AG/DiagnosticConservativity/BaseIsoIndependence.lean
 [refinement-classification]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChange/Classification.lean
+[refinement-realized]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChange/RealizedSupport.lean
 [refinement-qualification]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/RefinementBaseChange/Qualification.lean
 [upper-mate]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleMateNaturality.lean
 [configuration-descent]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/ConfigurationDescent.lean
@@ -656,6 +728,8 @@ AAT 固有の寄与は、入力からの生成、仮定の導出、実比較と�
 [raw-failure]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeRawFailureLocus.lean
 [split-no-go]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/InternalNormalizationSplitNoGo.lean
 [kar-arrow]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/KaroubiArrowEquivalence.lean
+[kar-naturality]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/FunctorNaturality.lean
+[comparison-groupoid]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/MaximalSubgroupoid.lean
 [kar-placement]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/G116KaroubiPlacement.lean
 [comparison-object-group]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/QualifiedComparisonGroup.lean
 [generated-comparison-object-group]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/GeneratedQualifiedComparison.lean
@@ -681,18 +755,25 @@ AAT 固有の寄与は、入力からの生成、仮定の導出、実比較と�
 [beta-section]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaComparisonSection.lean
 [beta-exactness]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaComparisonExactness.lean
 [beta-bottom]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaBottomQualifiedClassification.lean
+[alpha-canonical-section]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarAlphaCanonicalComparisonSection.lean
+[alpha-canonical-exactness]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarAlphaCanonicalComparisonExactness.lean
 [ambient-witness]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/AmbientKernelComparisonWitness.lean
 [fixed-components]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFComponentClassification.lean
 [fixed-split]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFSplitExactSequenceAndTorsor.lean
+[fixed-cardinality]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFFiberCardinality.lean
 [fixed-examples]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFFiniteExamples.lean
 [one-point-code]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/OnePointCode.lean
 [code-evaluation]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/EvaluationClassification.lean
+[code-fibers]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/CodeFibers.lean
 [coverage-topology]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/CoverageTopology.lean
+[discrete-compactness]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/DiscreteCompactness.lean
 [fixed-arrow]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FixedArrowClassification.lean
 [finite-full]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FiniteFullSubcategory.lean
 [code-normalization]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FiniteCodeNormalization.lean
+[normalization-realization-iso]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FiniteNormalizationRealizationIso.lean
 [fin-one]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FinOneCounterexample.lean
 [nat-swap]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/NatAdjacentSwap.lean
+[nat-subset-swaps]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/NatSubsetSwaps.lean
 [countable-syntax]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/CountableSyntaxObstruction.lean
 [cs-karoubi]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSKaroubiReconstruction.lean
 [lens-model]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LensFiberModelEquivalence.lean
