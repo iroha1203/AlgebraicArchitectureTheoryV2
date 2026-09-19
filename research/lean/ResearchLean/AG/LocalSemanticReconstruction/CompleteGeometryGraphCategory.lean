@@ -42,8 +42,11 @@ open LocalReconstructionEquivalence
 
 namespace GraphCode
 
+/-- Primitive total-functional function-graph code, used as the component Hom
+type for complete graph bundles. -/
 abbrev Code := PrimitiveFunctionGraph.GraphCode
 
+/-- Left identity for graph-code composition, proved through graph assembly. -/
 @[simp]
 theorem id_comp {A B : Type*} (graph : Code A B) :
     PrimitiveFunctionGraph.GraphCode.comp
@@ -51,6 +54,7 @@ theorem id_comp {A B : Type*} (graph : Code A B) :
   apply PrimitiveFunctionGraph.GraphCode.assemble_injective
   simp
 
+/-- Right identity for graph-code composition, proved through graph assembly. -/
 @[simp]
 theorem comp_id {A B : Type*} (graph : Code A B) :
     PrimitiveFunctionGraph.GraphCode.comp graph
@@ -58,6 +62,7 @@ theorem comp_id {A B : Type*} (graph : Code A B) :
   apply PrimitiveFunctionGraph.GraphCode.assemble_injective
   simp
 
+/-- Associativity of graph-code composition, proved through graph assembly. -/
 @[simp]
 theorem assoc {A B C D : Type*}
     (first : Code A B) (second : Code B C) (third : Code C D) :
@@ -72,6 +77,7 @@ end GraphCode
 
 namespace PrimitiveMapGraphs
 
+/-- Left identity for the componentwise primitive-map graph composition. -/
 @[simp]
 theorem id_comp {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (graphs : PrimitiveMapGraphs G H) :
@@ -79,6 +85,7 @@ theorem id_comp {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
   apply PrimitiveMapGraphs.ext <;> simp [PrimitiveMapGraphs.comp,
     PrimitiveMapGraphs.id]
 
+/-- Right identity for the componentwise primitive-map graph composition. -/
 @[simp]
 theorem comp_id {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (graphs : PrimitiveMapGraphs G H) :
@@ -86,6 +93,7 @@ theorem comp_id {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
   apply PrimitiveMapGraphs.ext <;> simp [PrimitiveMapGraphs.comp,
     PrimitiveMapGraphs.id]
 
+/-- Associativity of the componentwise primitive-map graph composition. -/
 @[simp]
 theorem assoc {U : AtomCarrier.{u}} {G H K L : GeometryPackage.{u, v} U}
     (first : PrimitiveMapGraphs G H) (second : PrimitiveMapGraphs H K)
@@ -179,16 +187,19 @@ def comp {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
   geometryObservable := PrimitiveFunctionGraph.GraphCode.comp
     first.geometryObservable second.geometryObservable
 
+/-- Left identity for complete-map graph composition across all components. -/
 @[simp]
 theorem id_comp {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (graphs : CompleteMapGraphs G H) : comp (id G) graphs = graphs := by
   apply ext <;> simp [id, comp]
 
+/-- Right identity for complete-map graph composition across all components. -/
 @[simp]
 theorem comp_id {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (graphs : CompleteMapGraphs G H) : comp graphs (id H) = graphs := by
   apply ext <;> simp [id, comp]
 
+/-- Associativity of complete-map graph composition across all components. -/
 @[simp]
 theorem assoc {U : AtomCarrier.{u}}
     {G H K L : GeometryPackage.{u, v} U}

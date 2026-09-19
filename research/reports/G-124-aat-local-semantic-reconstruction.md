@@ -6471,7 +6471,7 @@ selection:
     - "independent coherence equations selecting assemblable raw graph bundles remain for the next cycle"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "All thirteen graph components receive independent identity and composition operations, with reversed order for contextBackward, and satisfy category laws. Complete geometry reading preserves identity and composition in every primitive and dependent tagged field, giving an identity-on-packages faithful functor. Object assembly is reflexive. Nonempty HomAssembly is proved equivalent to fullness, and any independently supplied HomAssembly produces the Cycle 65 reconstruction data and a categorical equivalence. Fullness itself is not asserted."
+  proof_obligation_delta: "All thirteen graph components receive independent identity and composition operations, with reversed order for contextBackward, and satisfy category laws. Complete geometry reading preserves identity and composition in every primitive and dependent tagged field, giving an underlying-package-preserving faithful functor. Object assembly is reflexive. Nonempty HomAssembly is proved equivalent to fullness, and any independently supplied HomAssembly produces the Cycle 65 reconstruction data and a categorical equivalence. Fullness itself is not asserted."
   completion_candidate: no
   lean_artifacts:
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.CompleteMapGraphs.ext"
@@ -6519,7 +6519,8 @@ result:
       - "object assembly is exact because objects retain the same package"
       - "the missing Hom assembly is equivalent to fullness"
       - "an independently proved Hom assembly upgrades reading to an equivalence"
-    undischarged_assumptions: []
+    undischarged_assumptions:
+      - "HomAssembly, equivalently fullness, remains an explicit premise of the conditional reconstruction data and equivalence"
     acceptance_point: "the raw local Hom category and faithful reading functor are constructed without global-image data, while the exact remaining fullness obligation is exposed rather than assumed"
     port_status: not-applicable
   nonclaims:
@@ -6542,8 +6543,8 @@ audits:
     discharged:
       - "local category / raw GraphCode data and total-functional laws only"
       - "faithfulness / accepted Cycle 64 injectivity theorem"
-      - "conditional equivalence / explicit HomAssembly argument"
     unresolved:
+      - "conditional equivalence / explicit HomAssembly argument remains uninhabited"
       - "fullness / deliberately not inhabited"
   proof_use:
     used:
@@ -6560,7 +6561,7 @@ audits:
   vacuity_reason: "the raw category contains every total-functional component bundle, not only the image of global morphisms"
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  four_lane_question: "Do raw complete graph bundles form an independent componentwise category, does complete geometry reading define a faithful identity-on-objects functor into it preserving all dependent tagged components, and is its missing fullness exactly the Hom-assembly obligation required by Cycle 65 without asserting it?"
+  four_lane_question: "Do raw complete graph bundles form an independent componentwise category, does complete geometry reading define a faithful underlying-package-preserving functor into it across all dependent tagged components, and is its missing fullness exactly the Hom-assembly obligation required by Cycle 65 without asserting it?"
   validation_refs:
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryGraphCategory.lean: pass"
     - "#assert_standard_axioms_only CompleteGeometryGraphCategory: 38 declarations, standard axioms only"
