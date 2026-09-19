@@ -12,9 +12,10 @@ cochain with exactly the same edge difference.
 
 The construction does not treat floor as an additive homomorphism.  It uses
 only `Int.floor_add_intCast` after the hypothesis identifies each rational
-edge difference with a specific integer.  The specialized API transports the
-rational witness along the `B ≃ Λ` equivalence derived from the primitive
-generator relation and `R_q` in `GeneratorPresentation`.
+edge difference with a specific integer.  The block-indexed API reads each
+obstruction component through the label map constructed by
+`GeneratorPresentation`; deriving its premise from diagnostic zero-class data
+and `R_q` remains a later B2 obligation.
 -/
 
 noncomputable section
@@ -83,57 +84,56 @@ variable {Source Vertex Edge : Type u}
 variable {laws : FiniteLawFamily Source}
 
 /--
-G-125(B2) bridge constructor: use the `R_q`-derived equivalence `B ≃ Λ` to
-read a rational diagnostic witness at every obstruction block, then floor it.
+G-125(B2) bridge constructor: read a rational diagnostic witness at the label
+of every obstruction block, then floor it.  This uses the presentation's
+derived quotient map but does not require or claim `R_q`.
 -/
 def blockFloorCorrection (P : GeneratorPresentation laws)
-    (hReflection : P.ReflectionCondition)
     (b : Vertex → LawValueLabel laws → ℚ) : Vertex → P.Block → ℤ :=
-  fun vertex block => ⌊b vertex (P.blockLabelEquiv hReflection block)⌋
+  fun vertex block => ⌊b vertex (P.blockLabel block)⌋
 
 /--
-G-125(B2) bridge kernel: after transport along the derived `B ≃ Λ`, an
-integral edge value recovered as a rational diagnostic edge difference is
-also the edge difference of `blockFloorCorrection`.
+G-125(B2) bridge kernel: after reading each block through `blockLabel`, an
+integral edge value supplied as a rational diagnostic edge difference is also
+the edge difference of `blockFloorCorrection`.
 -/
 theorem blockFloorCorrection_edgeDifference
     (P : GeneratorPresentation laws)
-    (hReflection : P.ReflectionCondition)
     (source target : Edge → Vertex)
     (z : Edge → P.Block → ℤ)
     (b : Vertex → LawValueLabel laws → ℚ)
     (h : ∀ edge block,
-      b (target edge) (P.blockLabelEquiv hReflection block) -
-          b (source edge) (P.blockLabelEquiv hReflection block) =
+      b (target edge) (P.blockLabel block) -
+          b (source edge) (P.blockLabel block) =
         (z edge block : ℚ))
     (edge : Edge) (block : P.Block) :
-    P.blockFloorCorrection hReflection b (target edge) block -
-        P.blockFloorCorrection hReflection b (source edge) block =
+    P.blockFloorCorrection b (target edge) block -
+        P.blockFloorCorrection b (source edge) block =
       z edge block := by
   exact IntegralReflection.floorCorrection_edgeDifference source target z
-    (fun vertex block => b vertex (P.blockLabelEquiv hReflection block)) h edge block
+    (fun vertex block => b vertex (P.blockLabel block)) h edge block
 
 /--
-G-125(B2) bridge witness: `R_q` and a rational diagnostic coboundary witness
-construct an integral obstruction-side correction.  Neither obstruction
-zero-class reflection nor injectivity on cohomology is assumed.
+G-125(B2) bridge witness: a block-indexed rational diagnostic coboundary
+witness constructs an integral obstruction-side correction.  Producing that
+premise from actual diagnostic zero-class data and `R_q` is not assumed solved
+by this theorem.
 -/
 theorem exists_block_integral_correction
     (P : GeneratorPresentation laws)
-    (hReflection : P.ReflectionCondition)
     (source target : Edge → Vertex)
     (z : Edge → P.Block → ℤ)
     (b : Vertex → LawValueLabel laws → ℚ)
     (h : ∀ edge block,
-      b (target edge) (P.blockLabelEquiv hReflection block) -
-          b (source edge) (P.blockLabelEquiv hReflection block) =
+      b (target edge) (P.blockLabel block) -
+          b (source edge) (P.blockLabel block) =
         (z edge block : ℚ)) :
     ∃ correction : Vertex → P.Block → ℤ,
       ∀ edge block,
         correction (target edge) block - correction (source edge) block =
           z edge block := by
-  refine ⟨P.blockFloorCorrection hReflection b, ?_⟩
-  exact P.blockFloorCorrection_edgeDifference hReflection source target z b h
+  refine ⟨P.blockFloorCorrection b, ?_⟩
+  exact P.blockFloorCorrection_edgeDifference source target z b h
 
 end GeneratorPresentation
 
