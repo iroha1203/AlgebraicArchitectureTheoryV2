@@ -1983,9 +1983,9 @@ result:
   completion_candidate: no
   lean_artifacts:
     - "GeneratorPresentation.actualCechDiagnosticCyclesMap"
-    - "GeneratorPresentation.actualCechDiagnostic_boundary_to_zero"
+    - "GeneratorPresentation.actual_cech_diagnostic_boundary_to_zero"
     - "GeneratorPresentation.actualCechDiagnosticH1Map"
-    - "GeneratorPresentation.actualCechDiagnosticH1Map_additiveH1Class"
+    - "GeneratorPresentation.actual_cech_diagnostic_h1_map_additive_h1_class"
     - "CombinedAtomH1Input.fineCochainMap"
     - "CombinedAtomH1Input.coarseCochainMap"
     - "CombinedAtomH1Input.fineH1Map"
@@ -1998,7 +1998,7 @@ result:
   claim_mapping:
     theorem_names:
       - "GeneratorPresentation.actualCechDiagnosticH1Map"
-      - "GeneratorPresentation.actualCechDiagnosticH1Map_additiveH1Class"
+      - "GeneratorPresentation.actual_cech_diagnostic_h1_map_additive_h1_class"
       - "CombinedAtomH1Input.coarseH1Map"
       - "CombinedAtomH1Input.fineH1Map"
     source_labels:
@@ -2007,7 +2007,7 @@ result:
       - "existing TargetSupportedNerve.lawGeneratedComplex"
     conjuncts:
       - "degree-one comparison preserves cocycles -> actualCechDiagnosticCyclesMap"
-      - "degree-zero comparison preserves boundaries -> actualCechDiagnostic_boundary_to_zero"
+      - "degree-zero comparison preserves boundaries -> actual_cech_diagnostic_boundary_to_zero"
       - "quotient descent -> actualCechDiagnosticH1Map"
       - "same selected input at both readings -> CombinedAtomH1Input"
     undischarged_assumptions:

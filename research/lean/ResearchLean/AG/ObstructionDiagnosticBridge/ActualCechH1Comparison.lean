@@ -56,7 +56,7 @@ def actualCechDiagnosticCyclesMap (P : GeneratorPresentation laws)
     exact map_add _ left.1 right.1
 
 /-- A source degree-zero coboundary maps to zero in diagnostic H1. -/
-theorem actualCechDiagnostic_boundary_to_zero
+theorem actual_cech_diagnostic_boundary_to_zero
     (P : GeneratorPresentation laws)
     (C : FaceEmptyAATCechCover D G) (hadequate : laws.Adequate q)
     (cochain : (P.faceEmptyCechComplex C).Cn 0) :
@@ -82,14 +82,14 @@ def actualCechDiagnosticH1Map (P : GeneratorPresentation laws)
     (by
       intro cocycle hcocycle
       rcases hcocycle with ⟨cochain, rfl⟩
-      exact P.actualCechDiagnostic_boundary_to_zero C hadequate cochain)
+      exact P.actual_cech_diagnostic_boundary_to_zero C hadequate cochain)
 
 /-- The induced H1 map is represented by the degree-one comparison on cocycles.
 
 The simp normal form exposes the target quotient representative.
 -/
 @[simp]
-theorem actualCechDiagnosticH1Map_additiveH1Class
+theorem actual_cech_diagnostic_h1_map_additive_h1_class
     (P : GeneratorPresentation laws)
     (C : FaceEmptyAATCechCover D G) (hadequate : laws.Adequate q)
     (cocycle : (P.faceEmptyCechComplex C).CechCocycle 1) :

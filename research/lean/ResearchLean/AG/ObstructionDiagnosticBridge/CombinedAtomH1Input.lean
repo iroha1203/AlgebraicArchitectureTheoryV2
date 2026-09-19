@@ -62,7 +62,7 @@ def coarseH1Map :
 The simp normal form exposes the existing diagnostic quotient representative.
 -/
 @[simp]
-theorem fineH1Map_additiveH1Class
+theorem fine_h1_map_additive_h1_class
     (cocycle : (presentation.faceEmptyCechComplex
       CombinedAtomActualNerve.fineCechCover).CechCocycle 1) :
     fineH1Map
@@ -81,7 +81,7 @@ theorem fineH1Map_additiveH1Class
 The simp normal form exposes the existing diagnostic quotient representative.
 -/
 @[simp]
-theorem coarseH1Map_additiveH1Class
+theorem coarse_h1_map_additive_h1_class
     (cocycle : (presentation.faceEmptyCechComplex
       CombinedAtomActualNerve.coarseCechCover).CechCocycle 1) :
     coarseH1Map
