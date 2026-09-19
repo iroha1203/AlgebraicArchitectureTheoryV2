@@ -8971,3 +8971,38 @@ queryはすべて保持する。そのセルが対応するfiber graphのセル�
 最終検証にwarning・errorはない。placeholder・hidden/BiDi・privacy・語彙・差分整形・
 module登録を確認した。Research全体buildは行わず、固定GOALのblobは
 `4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
+
+#### 原始raw保存則と完全な明示方式Homの構成
+
+明示方式について、元の独立object stageと不変量の局所商を入力に、core・coverage・overlap・
+係数・raw・realizationの全6成分を持つ`ExplicitExactGeometryHom`を構成した。
+各成分は同じ組立て済みcore Homと係数写像に接続される。今回は局所条件からnative Homを
+作る方向の証拠であり、全Homのreaderと両逆の完了は主張しない。
+固定target、元のHomの意味、Cycle 79は変更しない。
+
+rawの多項式保存では、座標が同値であることを使い、単項式の有限な指数supportの対応と、
+一つの係数graph点へ条件を分解した。係数写像はdirectedのままであり、非零係数が0へ写る
+場合も扱う。元の多項式の非零supportだけを確認すると余分なtarget単項式を見逃すため、
+各単項式対について有限な点条件を課す。完成した多項式写像やその保存等式は局所lawに入れない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentPolynomialPointTransport.lean` / `IndependentPolynomialPointTransport` | `sparseCoefficient`は原始zeroを持つSparse値から係数を読む。`MonomialMatch`は両指数support内の座標点と指数を比較し、`monomialMatch_iff`で同値によるrenameと一致する。`PointLaws`・`points_iff_rename_map`は原始係数点と元の係数変換・rename等式との両方向を証明する。`monomialMatch_iff_of_points`・`point_instance_iff_of_cells`は任意tableで各instanceの有限性を示す |
+| `IndependentPolynomialPointTransportControls.lean` / 同namespaceの`Controls` | `coordinate`・`coefficient`は一座標の恒等対応と整数積環の第一成分への射影を読む。`distinct_coefficients_share_image`・`annihilated_coefficient_admitted`で異なる係数が同じ値へ写り、非零係数が消える多項式を受理する。`extra_target_monomial_rejected`はsource supportが空でも余分なtarget単項式を拒否する |
+| `IndependentRawCandidatePoints.lean` / `IndependentRawCandidate` | 六つの`read_*`が座標carrier、relation carrier、label、local-data carrier、Sparse関係多項式、Sparse変数像のactive応答を公開する。raw Hom側はcandidate readerの実装を展開せず、このAPIを使用する |
+| `IndependentGeometryHomRawPointLaws.lean` / `IndependentGeometryHomPrimitive.ExplicitRaw` | `contextPoints`・`coordinatePoint`・`relationPoint`は共通Homの原始点を読む。`PointLaws`は逆context対での座標・relation・依存local-dataのinverse graph、labelの点保存、Sparse関係多項式・変数像の原始条件を持つ。site射、完成した環準同型、全多項式保存式をfieldにしない |
+| `IndependentGeometryHomExplicitRawAssembly.lean` / 同namespace | `Maps`は比較APIで逆contextと係数点だけを同定する。`coordinateEquiv`・`relationEquiv`・`coordinateTransport`がinverse graphから全carrier写像を作る。`polynomial_eq`・`image_eq`は原始Sparse条件を使用する。`assemble`は全多項式のrestriction保存を定数と変数から導き、元のraw map全体を構成する |
+| `IndependentGeometryHomRawComponents.lean` / `IndependentGeometryHomPrimitive.GeometryComponents` | `read_raw`は独立object stageの全原始raw応答を回復し、`explicitRaw_points_iff`で元のstage条件に戻す。`explicitRaw_maps`は実際のpackage・係数組立ての点定理を使用して比較前提を放電する。`explicitRaw`は同じcore Homと係数写像の上でnative raw mapを構成する |
+| `IndependentGeometryHomExplicitFullAssembly.lean` / `IndependentGeometryHomPrimitive.FullExplicit` | `PointLaws`は全6成分の原始条件を統合する。`assembleHom`は独立object stageと共通点を保持する不変量の商から、元の`ExplicitExactGeometryHom`の全fieldを構成する |
+
+この時点でも、代表方式のrawを同じ原始点へ接続する義務、明示rawの全候補query回復、任意の
+native完全幾何Homから局所法則を満たす共通tableを生成するreader、両方式の全Homの両逆・
+分離、共通の恒等・合成、残る有限式・指定反証が未完了である。今回の多項式controlはその
+成分を対象とし、完全な局所Homの非空性・全native Homの包含を代替しない。
+パートI全体のPR・独立査読・CI・merge・Issue同期まで継続する。
+
+新規7 sourceの単一file検証が通り、namespace監査は順に7・5・6・17・20・5・12件
+(計72件)で標準公理のみだった。明示40宣言の個別`#print axioms`も標準公理のみで、
+最終検証にwarning・errorはない。placeholder・hidden/BiDi・privacy・語彙・差分整形・
+module登録を確認し、Research全体buildは行っていない。固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
