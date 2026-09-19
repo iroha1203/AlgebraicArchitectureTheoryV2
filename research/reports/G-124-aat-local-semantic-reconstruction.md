@@ -7180,16 +7180,13 @@ selection:
     - "object assembly and the final four-family local-model equivalence"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "PackageGraphCode retains only primitive graph families plus local laws and constructs configuration morphisms, EquationSystemExactTransport, and PackageTotalHom during assembly; it has exact read/assemble inverses. CompleteGeometryGraphCode adds only a coefficient graph, local coverage laws, two local overlap order comparisons, realization graphs, and raw coherence; it constructs CoverageTransport, the thin-category overlap isomorphism, and GeometryTotalHom during assembly. Neither code retains a completed submorphism, transport, overlap isomorphism, or Hom, nor assumes that the whole input is a canonical reader image. All local-law and complete-code inverse laws, assembly injectivity, a concrete rejected Atom-graph mismatch, and the readCompleteMapGraphs connection are proved in this cycle."
+  proof_obligation_delta: "PackageGraphCode retains only primitive graph families plus local laws and constructs configuration morphisms, EquationSystemExactTransport, and PackageTotalHom during assembly; it has exact read/assemble inverses. CompleteGeometryGraphCode adds a coefficient graph, an explicit coverage-preservation certificate, two primitive overlap order comparisons, realization graphs, and raw coherence; it constructs the thin-category overlap isomorphism and GeometryTotalHom during assembly. Neither code retains a completed computational submorphism, overlap isomorphism, or Hom, nor assumes that the whole input is a canonical reader image. Both complete-code inverse laws, assembly injectivity, a concrete rejected Atom-graph mismatch, and the readCompleteMapGraphs connection are proved in this cycle. Coverage generation from lower-level data is not claimed."
   completion_candidate: no
   lean_artifacts:
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.PackageGraphCode"
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.PackageGraphCode.assemble_read"
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.PackageGraphCode.read_assemble"
-    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.CoverageLaws.assemble_read"
-    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.CoverageLaws.read_assemble"
-    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.OverlapLaws.assemble_read"
-    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.OverlapLaws.read_assemble"
+    - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.assembleOverlap"
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.CompleteGeometryGraphCode"
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.assemble_read"
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.read_assemble"
@@ -7199,7 +7196,7 @@ result:
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.CompleteGeometryGraphCode.completeMapGraphs_injective"
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphAssembly.PackageGraphNegativeFixture.not_isPackageGraphCode_mismatchedPointed"
   acceptance:
-    fixed_question: "Do primitive package and realization graphs, coverage laws, and bidirectional overlap comparisons assemble all package and geometry transports with exact two-sided recovery and common-surface separation, without retaining completed substructures or assuming canonical-reader membership?"
+    fixed_question: "Given the explicit coverage certificate, do primitive package and realization graphs plus bidirectional overlap comparisons assemble the computational package and geometry transports with exact two-sided recovery and common-surface separation, without retaining completed computational substructures or assuming canonical-reader membership?"
     statement_status: implemented
     proof_status: focused-pass
     premise_status:
@@ -7207,15 +7204,16 @@ result:
         - "ambient package Hom / assembled from independent package graph data and local laws"
         - "equation transport / assembled from independent equation, context, and observable graph data plus local laws"
         - "configuration morphisms / constructed from the Atom graph and object-configuration equation"
-        - "coverage transport / assembled from nine local preservation laws with exact two-sided recovery"
         - "overlap isomorphism / assembled from the two order comparisons in the thin context category with exact two-sided recovery"
         - "complete geometry Hom / assembled from package code, coefficient and realization graphs, raw coherence, coverage, and overlap"
         - "dependent base transport / exact read-assemble and assemble-read laws"
         - "code separation / injectivity of complete assembly"
         - "common surface / immediate readCompleteMapGraphs recovery and injectivity"
-      undischarged: []
-    undischarged_assumptions: []
-    acceptance_point: "independent complete graph codes and actual GeometryTotalHom values are equivalent, and the accepted common graph surface separates those codes"
+      undischarged:
+        - "coverage generation / the standard preservation certificate remains an explicit premise"
+    undischarged_assumptions:
+      - "CoverageTransport for the independently assembled package map"
+    acceptance_point: "relative to the explicit coverage certificate, independent complete graph codes and actual GeometryTotalHom values are equivalent, and the accepted common graph surface separates those codes"
     port_status: not-applicable
   nonclaims:
     - "complete graph codes already carry direct identity and composition operations"
@@ -7225,7 +7223,7 @@ result:
 audits:
   premise_delta:
     source_derived:
-      - "coverage remains nine explicit local endpoint laws, and overlap remains two explicit local order comparisons"
+      - "coverage remains the standard explicit preservation certificate, while overlap remains two primitive local order comparisons"
       - "the dependent realization graph is indexed only by the package map assembled from independent code"
     discharged:
       - "independent PackageTotalHom assembly and exact recovery"
@@ -7237,7 +7235,7 @@ audits:
       - "fixed target B object assembly and four-family integration"
   certificate_provenance:
     discharged:
-      - "package and complete Hom certificates arise from named local laws; completed coverage transport and overlap isomorphism are assembled rather than retained"
+      - "package and complete Hom certificates arise from named local laws; the coverage certificate is explicit and the overlap isomorphism is assembled rather than retained"
       - "a finite pointed-Atom swap paired with the unchanged upper Atom graph is rejected by atom_eq"
     unresolved:
       - "successor categorical and object-level obligations"
@@ -7252,15 +7250,15 @@ audits:
   structure_field_escape: none-found
   route_integrity: pass
   target_fitting: none-found
-  target_fitting_reason: "neither independent code stores a completed configuration submorphism, equation transport, coverage transport, overlap isomorphism, package Hom, or geometry Hom; no whole-code canonical-image premise is accepted; all inverse directions and the common-surface connection are proved together"
+  target_fitting_reason: "neither independent code stores a completed computational configuration submorphism, equation transport, overlap isomorphism, package Hom, or geometry Hom; coverage is honestly exposed as a Prop premise certificate; no whole-code canonical-image premise is accepted; both complete-code inverse directions and the common-surface connection are proved together"
   vacuity: none-found
-  vacuity_reason: "the equivalence is quantified over arbitrary GeometryPackage endpoints and actual GeometryTotalHom values, the reverse law recovers every independent graph and local-condition code, and the finite mismatched-Atom fixture proves that the package certificate rejects an independently altered component"
+  vacuity_reason: "the equivalence is quantified over arbitrary GeometryPackage endpoints and actual GeometryTotalHom values, the reverse law recovers every independent graph, explicit coverage certificate, and primitive overlap comparison, and the finite mismatched-Atom fixture proves that the package certificate rejects an independently altered component"
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  four_lane_question: "Do primitive package and realization graphs, coverage laws, and bidirectional overlap comparisons assemble all package and geometry transports with exact two-sided recovery and common-surface separation, without retaining completed substructures or assuming canonical-reader membership?"
+  four_lane_question: "Given the explicit coverage certificate, do primitive package and realization graphs plus bidirectional overlap comparisons assemble the computational package and geometry transports with exact two-sided recovery and common-surface separation, without retaining completed computational substructures or assuming canonical-reader membership?"
   validation_refs:
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryGraphAssembly.lean: pass"
-    - "#assert_standard_axioms_only CompleteGeometryGraphAssembly: 151 declarations, standard axioms only"
+    - "#assert_standard_axioms_only CompleteGeometryGraphAssembly: 124 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "define identity and composition directly on complete graph codes, prove the category laws and read/assemble compatibility, and lift the Hom equivalence to the actual geometry category before connecting fixed target B object assembly"
 ```
@@ -7421,8 +7419,8 @@ audits:
   operation・invariant・signature・support・axis・geometry-observable・raw transportを
   dependent graph codeと独立lawへ分け、一添字/二添字familyのread/assemble両逆とtagged分離、
   realization supplyの両逆・恒等・合成、actual complete-map graph七成分の一括回収まで同梱した。
-  Cycle 71ではCycle 67・69・70の独立code、coverageの九局所法則、overlapの双方向比較をまとめ、
-  完成済みcoverage transportやoverlap isomorphismを保持せずにそれらを組み立て、`PackageTotalHom`と
+  Cycle 71ではCycle 67・69・70の独立code、明示的なcoverage保存certificate、overlapの双方向比較をまとめ、
+  overlap isomorphismを保持せずに組み立て、`PackageTotalHom`と
   `GeometryTotalHom`のread/assemble両逆、assemblyの単射性、accepted common complete-map graph面での
   分離まで同梱した。残るcomplete-code圏の恒等・合成とactual geometry圏との圏同値、
   direct normalization kernel自体のprimitive local syntax、および四族共通の実現圏・局所モデル圏への

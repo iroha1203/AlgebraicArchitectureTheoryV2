@@ -1013,92 +1013,7 @@ theorem realizationRead_cast_heq {U : AtomCarrier.{u}}
   cases base_eq
   rfl
 
-/-! ## Local coverage and overlap laws -/
-
-/-- The nine local coverage-preservation laws, stated without retaining a
-completed `CoverageTransport`. -/
-structure CoverageLaws {U : AtomCarrier.{u}}
-    (G H : GeometryPackage.{u, v} U)
-    (base : PackageTotalHom G.core H.core) : Prop where
-  requiredSupport : ∀ atom,
-    G.geometry.requirements.requiredSupport atom →
-      H.geometry.requirements.requiredSupport (base.upper.atomEquiv atom)
-  requiredEquationCoordinate : ∀ coordinate,
-    G.geometry.requirements.requiredEquationCoordinate coordinate →
-      H.geometry.requirements.requiredEquationCoordinate
-        (requiredCoordinateMap base coordinate)
-  selectedViolationWitness : ∀ coordinate,
-    G.geometry.requirements.selectedViolationWitness coordinate →
-      H.geometry.requirements.selectedViolationWitness
-        (equationCoordinateMap base coordinate)
-  requiredAxis : ∀ axis,
-    G.geometry.requirements.requiredAxis axis →
-      H.geometry.requirements.requiredAxis (base.upper.axisMap axis)
-  supportVisibleOn : ∀ W atom,
-    G.geometry.requirements.supportVisibleOn W atom →
-      H.geometry.requirements.supportVisibleOn
-        (contextMap base W) (base.upper.atomEquiv atom)
-  equationCoordinateVisibleOn : ∀ W coordinate,
-    G.geometry.requirements.equationCoordinateVisibleOn W coordinate →
-      H.geometry.requirements.equationCoordinateVisibleOn
-        (contextMap base W) (requiredCoordinateMap base coordinate)
-  violationWitnessVisibleOn : ∀ W coordinate,
-    G.geometry.requirements.violationWitnessVisibleOn W coordinate →
-      H.geometry.requirements.violationWitnessVisibleOn
-        (contextMap base W) (equationCoordinateMap base coordinate)
-  axisReadableOn : ∀ W axis,
-    G.geometry.requirements.axisReadableOn W axis →
-      H.geometry.requirements.axisReadableOn
-        (contextMap base W) (base.upper.axisMap axis)
-  boundaryVisibleOn : ∀ W V,
-    G.geometry.requirements.boundaryVisibleOn W V →
-      H.geometry.requirements.boundaryVisibleOn
-        (contextMap base W) (contextMap base V)
-
-namespace CoverageLaws
-
-/-- Assemble local coverage laws into the standard geometry contract. -/
-def assemble {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
-    {base : PackageTotalHom G.core H.core} (laws : CoverageLaws G H base) :
-    CoverageTransport G H base where
-  requiredSupport := laws.requiredSupport
-  requiredEquationCoordinate := laws.requiredEquationCoordinate
-  selectedViolationWitness := laws.selectedViolationWitness
-  requiredAxis := laws.requiredAxis
-  supportVisibleOn := laws.supportVisibleOn
-  equationCoordinateVisibleOn := laws.equationCoordinateVisibleOn
-  violationWitnessVisibleOn := laws.violationWitnessVisibleOn
-  axisReadableOn := laws.axisReadableOn
-  boundaryVisibleOn := laws.boundaryVisibleOn
-
-/-- Read the standard coverage contract back into its local laws. -/
-def read {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
-    {base : PackageTotalHom G.core H.core}
-    (coverage : CoverageTransport G H base) : CoverageLaws G H base where
-  requiredSupport := coverage.requiredSupport
-  requiredEquationCoordinate := coverage.requiredEquationCoordinate
-  selectedViolationWitness := coverage.selectedViolationWitness
-  requiredAxis := coverage.requiredAxis
-  supportVisibleOn := coverage.supportVisibleOn
-  equationCoordinateVisibleOn := coverage.equationCoordinateVisibleOn
-  violationWitnessVisibleOn := coverage.violationWitnessVisibleOn
-  axisReadableOn := coverage.axisReadableOn
-  boundaryVisibleOn := coverage.boundaryVisibleOn
-
-@[simp] theorem assemble_read {U : AtomCarrier.{u}}
-    {G H : GeometryPackage.{u, v} U}
-    {base : PackageTotalHom G.core H.core}
-    (coverage : CoverageTransport G H base) :
-    (read coverage).assemble = coverage := Subsingleton.elim _ _
-
-@[simp] theorem read_assemble {U : AtomCarrier.{u}}
-    {G H : GeometryPackage.{u, v} U}
-    {base : PackageTotalHom G.core H.core}
-    (laws : CoverageLaws G H base) : read laws.assemble = laws := by
-  cases laws
-  rfl
-
-end CoverageLaws
+/-! ## Primitive overlap comparisons -/
 
 /-- Source overlap object selected by the independently assembled base map. -/
 abbrev overlapSource {U : AtomCarrier.{u}}
@@ -1118,59 +1033,33 @@ abbrev overlapTarget {U : AtomCarrier.{u}}
     Site.ContextCategoryObject H.core.contextPreorder :=
   ⟨H.geometry.overlap.overlap base left right⟩
 
-/-- Two local order comparisons from which thin-category overlap isomorphism
-is assembled. -/
-structure OverlapLaws {U : AtomCarrier.{u}}
-    (G H : GeometryPackage.{u, v} U)
-    (baseHom : PackageTotalHom G.core H.core) : Prop where
-  forward : ∀ base left right,
-    overlapSource baseHom base left right ≤ overlapTarget base left right
-  backward : ∀ base left right,
-    overlapTarget base left right ≤ overlapSource baseHom base left right
-
-namespace OverlapLaws
-
 /-- Assemble the two order comparisons into the standard selected overlap
 isomorphism. -/
-noncomputable def assemble {U : AtomCarrier.{u}}
+noncomputable def assembleOverlap {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
     {baseHom : PackageTotalHom G.core H.core}
-    (laws : OverlapLaws G H baseHom) : OverlapTransport G H baseHom where
+    (forward : ∀ base left right,
+      overlapSource baseHom base left right ≤ overlapTarget base left right)
+    (backward : ∀ base left right,
+      overlapTarget base left right ≤ overlapSource baseHom base left right) :
+    OverlapTransport G H baseHom where
   overlapIso base left right := {
-    hom := homOfLE (laws.forward base left right)
-    inv := homOfLE (laws.backward base left right) }
+    hom := homOfLE (forward base left right)
+    inv := homOfLE (backward base left right) }
 
-/-- Read only the two local order comparisons from an overlap transport. -/
-def read {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
-    {baseHom : PackageTotalHom G.core H.core}
-    (overlap : OverlapTransport G H baseHom) : OverlapLaws G H baseHom where
-  forward base left right := leOfHom (overlap.overlapIso base left right).hom
-  backward base left right := leOfHom (overlap.overlapIso base left right).inv
-
-@[simp] theorem assemble_read {U : AtomCarrier.{u}}
-    {G H : GeometryPackage.{u, v} U}
-    {baseHom : PackageTotalHom G.core H.core}
-    (overlap : OverlapTransport G H baseHom) :
-    (read overlap).assemble = overlap := Subsingleton.elim _ _
-
-@[simp] theorem read_assemble {U : AtomCarrier.{u}}
-    {G H : GeometryPackage.{u, v} U}
-    {baseHom : PackageTotalHom G.core H.core}
-    (laws : OverlapLaws G H baseHom) : read laws.assemble = laws :=
-  Subsingleton.elim _ _
-
-end OverlapLaws
-
-/-- Coverage is retained only as local preservation laws, and overlap only as
-two local order comparisons over the independently assembled package code.
-The remaining computational fields use the Cycle 70 graph presentation. -/
+/-- Coverage remains an explicit premise certificate, while overlap is retained
+only as two local order comparisons over the independently assembled package
+code. The remaining computational fields use the Cycle 70 graph presentation. -/
 structure CompleteGeometryGraphCode {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U) where
   package : PackageGraphCode G H
   coefficientGraph : AlgebraicGraphCoherence.RingHomGraphCode
     G.Coefficient H.Coefficient
-  coverage : CoverageLaws G H package.assemble
-  overlap : OverlapLaws G H package.assemble
+  coverage : CoverageTransport G H package.assemble
+  overlapForward : ∀ base left right,
+    overlapSource package.assemble base left right ≤ overlapTarget base left right
+  overlapBackward : ∀ base left right,
+    overlapTarget base left right ≤ overlapSource package.assemble base left right
   realization : RemainingComponentGraphCoherence.RealizationGraphCode
     G.core H.core package.assemble
   rawCoherent :
@@ -1223,8 +1112,8 @@ def assemble {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (code : CompleteGeometryGraphCode G H) : GeometryTotalHom G H where
   base := code.package.assemble
   geometry := {
-    coverage := code.coverage.assemble
-    overlap := code.overlap.assemble
+    coverage := code.coverage
+    overlap := assembleOverlap code.overlapForward code.overlapBackward
     coefficientHom := code.coefficientGraph.assemble
     raw_eq := code.rawCoherent
     supportComp := code.realization.assemble.supportComp
@@ -1260,8 +1149,11 @@ def read {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
   refine {
     package := package
     coefficientGraph := coefficientGraph
-    coverage := CoverageLaws.read geometry.coverage
-    overlap := OverlapLaws.read geometry.overlap
+    coverage := geometry.coverage
+    overlapForward := fun base left right =>
+      leOfHom (geometry.overlap.overlapIso base left right).hom
+    overlapBackward := fun base left right =>
+      leOfHom (geometry.overlap.overlapIso base left right).inv
     realization := realization
     rawCoherent := geometry'.raw_eq }
 
