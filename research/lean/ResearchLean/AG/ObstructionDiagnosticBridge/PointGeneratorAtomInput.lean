@@ -14,6 +14,19 @@ presentation from Cycle 14; point atoms do not acquire presentation edges.
 This is the Atom-provenance layer only.  Contexts and coverage for the combined
 carrier are constructed separately, so this module does not claim that the
 Cycle 12 point-only site has already become the final G-125 site.
+
+## Implementation notes
+
+This is the Cycle 15 realization of the combined Atom input from the Issue
+#4791 paper design, section 10.  A sum is used for both the Atom type and the
+tagged coordinates because it preserves the already selected point and
+primitive-generator data without copying either into a new certificate type.
+The architecture relation delegates directly to the Cycle 14 presentation on
+the generator summand; defining a second relation from Law-value equality would
+lose the primitive-edge provenance established there.  Point support contexts
+and coverage are deliberately not copied from the point-only carrier: their
+transport to this larger carrier is the next proof obligation and must establish
+the site and continuity laws rather than store them as fields here.
 -/
 
 noncomputable section
@@ -42,7 +55,12 @@ abbrev Payload := Unit ⊕ Bool
 /-- The combined Atom type for geometry and primitive Law occurrences. -/
 abbrev Atom := Point ⊕ PrimitiveGenerator laws
 
-/-- Actual carrier containing both selected point and generator Atoms. -/
+/-- Cycle 15's combined Atom input for the paper design, section 10.
+
+This is the principal carrier definition.  Its tagged coordinates retain the
+predecessor point and generator data rather than replacing them with a
+proof-oriented certificate.
+-/
 def carrier : AtomCarrier where
   AtomKind := AtomKind
   Axis := Unit
@@ -72,7 +90,12 @@ def pointAtom (point : Point) : carrier.Atom :=
 def generatorAtom (generator : PrimitiveGenerator laws) : carrier.Atom :=
   .inr generator
 
-/-- Architecture object containing every selected point and generator Atom. -/
+/-- Architecture object containing every selected point and generator Atom.
+
+This is the principal Cycle 15 realization API: the family is the full selected
+finite input, while the relation reuses the Cycle 14 primitive presentation.
+It intentionally supplies no combined-site or continuity certificate.
+-/
 def object : ArchitectureObject carrier where
   configuration := {
     family := ⟨fun _ => True⟩
@@ -88,38 +111,38 @@ def object : ArchitectureObject carrier where
   structureMaps := ()
   selectedQuantities := ()
 
-/-- Every selected point Atom belongs to the architecture family. -/
+/-- Membership API for the point summand of the Cycle 15 full selected family. -/
 @[simp]
 theorem pointAtom_mem_family (point : Point) :
     object.configuration.family.mem (pointAtom point) :=
   trivial
 
-/-- Every selected primitive-generator Atom belongs to the architecture family. -/
+/-- Membership API for the generator summand of the Cycle 15 full selected family. -/
 @[simp]
 theorem generatorAtom_mem_family (generator : PrimitiveGenerator laws) :
     object.configuration.family.mem (generatorAtom generator) :=
   trivial
 
-/-- Generator subjects retain the source occurrence used by the presentation. -/
+/-- Projection API showing that a generator Atom retains its Cycle 14 source. -/
 @[simp]
 theorem generatorAtom_subject (generator : PrimitiveGenerator laws) :
     carrier.subject (generatorAtom generator) = .inr generator.2 :=
   rfl
 
-/-- Generator predicates retain the declared Law index. -/
+/-- Projection API showing that a generator Atom retains its declared Law index. -/
 @[simp]
 theorem generatorAtom_predicate (generator : PrimitiveGenerator laws) :
     carrier.predicate (generatorAtom generator) = some generator.1 :=
   rfl
 
-/-- Generator payloads retain the actual evaluated Law value. -/
+/-- Projection API showing that a generator Atom retains its evaluated Law value. -/
 @[simp]
 theorem generatorAtom_payload (generator : PrimitiveGenerator laws) :
     carrier.payload (generatorAtom generator) =
       .inr (laws.eval generator.1 generator.2) :=
   rfl
 
-/-- The architecture relation on generator Atoms is exactly the selected presentation. -/
+/-- Comparison API identifying the generator relation with the Cycle 14 presentation. -/
 @[simp]
 theorem generatorAtom_relation_iff
     (left right : PrimitiveGenerator laws) :
@@ -127,14 +150,14 @@ theorem generatorAtom_relation_iff
       presentation.relation left right :=
   Iff.rfl
 
-/-- Point Atoms carry no primitive-generator relation edges. -/
+/-- Boundary API excluding point-originating edges from the primitive presentation. -/
 @[simp]
 theorem pointAtom_not_related_left
     (point : Point) (atom : carrier.Atom) :
     ¬ object.configuration.relation (pointAtom point) atom := by
   cases atom <;> simp [object, pointAtom]
 
-/-- Point Atoms carry no primitive-generator relation edges. -/
+/-- Boundary API excluding point-targeting edges from the primitive presentation. -/
 @[simp]
 theorem pointAtom_not_related_right
     (atom : carrier.Atom) (point : Point) :
