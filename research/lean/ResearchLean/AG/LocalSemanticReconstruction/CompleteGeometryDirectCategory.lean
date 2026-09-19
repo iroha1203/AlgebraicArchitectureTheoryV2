@@ -30,7 +30,8 @@ open ContextObservableGraphCoherence
 open DependentAlgebraicGraphCoherence
 
 /-- Extensionality for a joint context/observable code over arbitrary equation
-systems. -/
+systems.  Premise summary: equality of the context field and heterogeneous
+equality of the dependent observable field. -/
 theorem ext
     {U : AtomCarrier.{u}} {A₀ B₀ : ArchitectureObject U}
     {C : Site.ContextPreorderCategory A₀}
@@ -47,7 +48,8 @@ theorem ext
   rfl
 
 /-- Observable graph codes over one fixed context functor are separated by
-their assembled natural isomorphisms. -/
+their assembled natural isomorphisms.  Premise summary: equality of the two
+assembled isomorphisms on that fixed functor. -/
 theorem observable_ext_of_assembleIso_eq
     {U : AtomCarrier.{u}} {A₀ B₀ : ArchitectureObject U}
     {C : Site.ContextPreorderCategory A₀}
@@ -72,7 +74,8 @@ theorem observable_ext_of_assembleIso_eq
   cases raw_eq
   rfl
 
-/-- Reindexing an observable code changes only its dependent functor type. -/
+/-- Reindexing an observable code changes only its dependent functor type.
+Premise summary: an equality of context functors and one code over its target. -/
 theorem observable_reindex_heq
     {U : AtomCarrier.{u}} {A₀ B₀ : ArchitectureObject U}
     {C : Site.ContextPreorderCategory A₀}
@@ -89,7 +92,8 @@ theorem observable_reindex_heq
   rfl
 
 /-- Observable codes over propositionally equal context functors are
-heterogeneously equal when their computational ring-graph families agree. -/
+heterogeneously equal when their computational ring-graph families agree.
+Premise summary: functor equality plus heterogeneous equality of raw data. -/
 theorem observable_heq
     {U : AtomCarrier.{u}} {A₀ B₀ : ArchitectureObject U}
     {C : Site.ContextPreorderCategory A₀}
@@ -112,7 +116,8 @@ theorem observable_heq
   rfl
 
 /-- Pointwise ring-graph families over equal index maps are heterogeneously
-equal when every fiber graph is. -/
+equal when every fiber graph is.  Premise summary: index-map equality and a
+fiberwise heterogeneous equality. -/
 theorem indexedRingGraph_heq
     {I J : Type*} {A : I → Type*} {B : J → Type*}
     [∀ i, NonAssocSemiring (A i)] [∀ j, NonAssocSemiring (B j)]
@@ -193,7 +198,8 @@ open CompleteGeometryGraphAssembly
 open RemainingComponentGraphCoherence
 
 /-- Extensionality for raw package graph data, including its dependent
-operation and signature fields. -/
+operation and signature fields.  Premise summary: equality or heterogeneous
+equality for each of the nine displayed fields. -/
 theorem data_ext
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     {first second : PackageGraphData G H}
@@ -220,7 +226,8 @@ theorem data_ext
   rfl
 
 /-- Reindex both endpoints of a dependent operation graph along equality of
-the decoded object map. -/
+the decoded object map.  Premise summary: object-map equality and one code
+over its target endpoints. -/
 def reindexOperation
     {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
     {first second : ArchitectureObject U → ArchitectureObject U}
@@ -234,7 +241,8 @@ def reindexOperation
   cases object_eq
   exact code
 
-/-- Reindexing a dependent operation code changes only its endpoint-map type. -/
+/-- Reindexing a dependent operation code changes only its endpoint-map type.
+Premise summary: the same object-map equality and target-indexed code. -/
 theorem reindexOperation_heq
     {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
     {first second : ArchitectureObject U → ArchitectureObject U}
@@ -246,7 +254,8 @@ theorem reindexOperation_heq
   cases object_eq
   rfl
 
-/-- Reindex a signature graph code along equality of its decoded object map. -/
+/-- Reindex a signature graph code along equality of its decoded object map.
+Premise summary: object-map equality and one signature code over its target. -/
 def reindexSignature
     {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
     {first second : ArchitectureObject U → ArchitectureObject U}
@@ -256,7 +265,8 @@ def reindexSignature
   cases object_eq
   exact code
 
-/-- Reindexing a signature code changes only its decoded object-map type. -/
+/-- Reindexing a signature code changes only its decoded object-map type.
+Premise summary: the same object-map equality and target-indexed signature. -/
 theorem reindexSignature_heq
     {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
     {first second : ArchitectureObject U → ArchitectureObject U}
@@ -267,7 +277,8 @@ theorem reindexSignature_heq
   rfl
 
 /-- Cycle 73 package identity data.  Eight fields use predecessor identities;
-the context/observable field reads the reflexive equation transport. -/
+the context/observable field reads the reflexive equation transport.  Premise
+summary: only the endpoint package is supplied. -/
 noncomputable def idData
     {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
     PackageGraphData G G := by
@@ -292,7 +303,8 @@ noncomputable def idData
       (SignatureGraphCode.id G.core) }
 
 /-- Canonical package identity used as the fieldwise comparison target and as
-the source of the lawful package certificate. -/
+the source of the lawful package certificate.  Premise summary: the endpoint
+package determines the completed identity read here. -/
 noncomputable def canonicalIdentity
     {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
     PackageGraphCode G G :=
@@ -300,7 +312,8 @@ noncomputable def canonicalIdentity
     (PackageTotalHom.id G.core)
 
 /-- Componentwise signature identity agrees across object-map reindexing with
-the signature read from the assembled package identity. -/
+the signature read from the assembled package identity.  Premise summary:
+only the endpoint package is supplied. -/
 theorem signature_id_heq_canonical
     {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
     HEq (SignatureGraphCode.id G.core)
@@ -314,7 +327,8 @@ theorem signature_id_heq_canonical
   · rfl
 
 /-- The package identity data is separated by the canonical reader in every
-computational field, including dependent operation and signature families. -/
+computational field, including dependent operation and signature families.
+Premise summary: only the endpoint package is supplied. -/
 theorem idData_eq_canonical
     {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
     idData G = (canonicalIdentity G).1 := by
@@ -423,7 +437,8 @@ noncomputable def compData
       first.1.invariant second.1.invariant
     signature := signature }
 
-/-- Cycle 73 canonical comparison target and lawful-certificate source. -/
+/-- Cycle 73 canonical comparison target and lawful-certificate source.
+Premise summary: two lawful package codes are assembled and composed. -/
 noncomputable def canonicalComposite
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
     (first : PackageGraphCode G H)
@@ -432,7 +447,8 @@ noncomputable def canonicalComposite
     (PackageTotalHom.comp first.assemble second.assemble)
 
 /-- Componentwise signature composition agrees, across the decoded object-map
-reindexing, with the signature read from assembled package composition. -/
+reindexing, with the signature read from assembled package composition.
+Premise summary: the two supplied lawful package codes. -/
 theorem signature_comp_heq_canonical
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
     (first : PackageGraphCode G H)
@@ -449,8 +465,9 @@ theorem signature_comp_heq_canonical
   · rfl
   · rfl
 
-/-- Direct package composition has the same computational data as the
-canonical reading of assembled composition. -/
+/-- The displayed package composition data equals the canonical reading of
+assembled composition.  Premise summary: the two supplied lawful package
+codes; the context field and certificate route remain reader-mediated. -/
 theorem compData_eq_canonical
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
     (first : PackageGraphCode G H)
@@ -528,7 +545,8 @@ theorem compData_eq_canonical
     exact signature_comp_heq_canonical first second
 
 /-- Reader-mediated lawful identity whose data is `idData`; its package
-certificate is transported from the canonical reader. -/
+certificate is transported from the canonical reader.  Premise summary: only
+the endpoint package is supplied. -/
 noncomputable def id
     {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
     PackageGraphCode G G :=
@@ -536,7 +554,7 @@ noncomputable def id
 
 /-- Reader-mediated lawful composition whose data is `compData`; its package
 certificate is transported from the canonical reader after fieldwise
-comparison. -/
+comparison.  Premise summary: the two supplied lawful package codes. -/
 noncomputable def comp
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
     (first : PackageGraphCode G H)
@@ -544,7 +562,8 @@ noncomputable def comp
   ⟨compData first second,
     compData_eq_canonical first second ▸ (canonicalComposite first second).2⟩
 
-/-- Package-code assembly is separating. -/
+/-- Package-code assembly is separating.  Premise summary: equality of the
+assembled package morphisms; Cycle 71 read-after-assemble recovers the codes. -/
 theorem assemble_injective
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U} :
     Function.Injective
@@ -555,7 +574,8 @@ theorem assemble_injective
     ← CompleteGeometryGraphAssembly.PackageGraphCode.read_assemble second]
   exact congrArg CompleteGeometryGraphAssembly.PackageGraphCode.read equality
 
-/-- Cycle 73 package identity assembles to package identity. -/
+/-- Cycle 73 package identity assembles to package identity.  Premise summary:
+only the endpoint package; fieldwise comparison supplies the reduction. -/
 @[simp]
 theorem assemble_id
     {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
@@ -565,7 +585,8 @@ theorem assemble_id
     exact idData_eq_canonical G]
   exact CompleteGeometryGraphAssembly.PackageGraphCode.assemble_read _
 
-/-- Cycle 73 package composition assembles to package composition. -/
+/-- Cycle 73 package composition assembles to package composition.  Premise
+summary: the two supplied lawful package codes and their assembled morphisms. -/
 @[simp]
 theorem assemble_comp
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
@@ -579,7 +600,8 @@ theorem assemble_comp
   exact CompleteGeometryGraphAssembly.PackageGraphCode.assemble_read _
 
 /-- Cycle 73 composition is the unique lawful package code with the displayed
-assembled composite.  This is the cycle's package-level universal property. -/
+assembled composite.  This is the cycle's package-level universal property.
+Premise summary: two lawful inputs and an arbitrary lawful candidate. -/
 theorem eq_comp_iff_assemble_eq
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
     (first : PackageGraphCode G H)
@@ -596,7 +618,8 @@ theorem eq_comp_iff_assemble_eq
     rw [assemble_comp]
     exact equality
 
-/-- Left unit for Cycle 73 package-code composition. -/
+/-- Left unit for Cycle 73 package-code composition.  Premise summary: an
+arbitrary lawful package code; assembly separation reflects the unit law. -/
 @[simp]
 theorem id_comp
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -607,7 +630,8 @@ theorem id_comp
     (code.assemble : G.core ⟶ H.core) = code.assemble
   simp
 
-/-- Right unit for Cycle 73 package-code composition. -/
+/-- Right unit for Cycle 73 package-code composition.  Premise summary: an
+arbitrary lawful package code; assembly separation reflects the unit law. -/
 @[simp]
 theorem comp_id
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -618,7 +642,8 @@ theorem comp_id
     (𝟙 H.core : H.core ⟶ H.core) = code.assemble
   simp
 
-/-- Associativity for Cycle 73 package-code composition. -/
+/-- Associativity for Cycle 73 package-code composition.  Premise summary:
+three composable lawful package codes; assembly reflects associativity. -/
 @[simp]
 theorem comp_assoc
     {U : AtomCarrier.{u}} {G H K L : GeometryPackage.{u, v} U}
@@ -634,7 +659,8 @@ theorem comp_assoc
     first.assemble second.assemble third.assemble
 
 /-- Same-cycle identity connection to the Cycle 72 lawful complete-code
-operation. -/
+operation.  Premise summary: the common endpoint package; assembly separation
+compares the two package projections. -/
 theorem id_eq_complete_package
     {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
     id G =
@@ -648,7 +674,8 @@ theorem id_eq_complete_package
 
 /-- Same-cycle composition connection to the Cycle 72 lawful complete-code
 operation: the package projection of transported complete composition is the
-Cycle 73 package composition. -/
+Cycle 73 package composition.  Premise summary: two composable lawful complete
+codes; their package projections are compared by assembly separation. -/
 theorem comp_eq_complete_package
     {U : AtomCarrier.{u}} {G H K : GeometryPackage.{u, v} U}
     (first : CompleteGeometryGraphCode G H)

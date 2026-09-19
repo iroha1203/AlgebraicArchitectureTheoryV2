@@ -7504,7 +7504,7 @@ audits:
   goal_or_report_reinterpretation: "the selected direct-certificate obligation is not discharged; Cycle 73 is downgraded to a reader-mediated proof checkpoint without claiming a formal impossibility result"
   four_lane_question: "Does Cycle 73 honestly prove only explicit reader-mediated package data, exact assembly/universality/category laws, and both Cycle 72 package-projection comparisons, while leaving direct context/certificate closure and independent object assembly open?"
   validation_refs:
-    - "cd research/lean && lake env lean ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryDirectCategory.lean: pass"
+    - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryDirectCategory.lean: pass"
     - "#assert_standard_axioms_only CompleteGeometryDirectCategory: 30 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "first replace the reader-mediated package context and certificate by direct local-law closure; then extend through complete outer fields and assemble an independent local object before four-family integration"
