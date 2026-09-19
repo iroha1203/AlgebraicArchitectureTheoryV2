@@ -30,6 +30,7 @@ open AtomFoundation DoctrineFiberProduct GeometryTransport TransportCoherence
 open FullGeometryNormalization
 open LocalReconstructionEquivalence
 
+/-- Decidable atom equality for the fixed finite-axis-fold branch. -/
 local instance aatBranchFiniteAxisFoldAtomDecidableEq :
     DecidableEq FiniteModel.carrier.Atom := by
   change DecidableEq FiniteModel.FiniteAtom
