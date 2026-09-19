@@ -32,10 +32,7 @@ variable {Source : Type u} {laws : FiniteLawFamily Source}
 
 local instance : DecidableEq (LawValueLabel laws) := Classical.decEq _
 
-/--
-Equation (5) on the component normal form: a basis component maps to the
-rational delta function at its law-value label.
--/
+/-- A basis component maps to the rational delta function at its law-value label. -/
 def blockToLawCoefficients (P : GeneratorPresentation laws) :
     FreeAbelianGroup P.Block →+ (LawValueLabel laws → ℚ) := by
   classical
@@ -50,6 +47,45 @@ theorem blockToLawCoefficients_of_apply (P : GeneratorPresentation laws)
       if P.blockLabel block = label then 1 else 0 := by
   classical
   simp [blockToLawCoefficients]
+
+/-- The finite fiber sum in paper design equation (5), packaged as a homomorphism. -/
+def fiberCoefficientSum (P : GeneratorPresentation laws)
+    (label : LawValueLabel laws) : FreeAbelianGroup P.Block →+ ℚ :=
+  (Finsupp.liftAddHom fun block =>
+    if P.blockLabel block = label then Int.castAddHom ℚ else 0).comp
+      FreeAbelianGroup.toFinsupp
+
+/-- The delta-function extension agrees with the packaged fiber sum. -/
+theorem blockToLawCoefficients_apply_eq_fiberCoefficientSum
+    (P : GeneratorPresentation laws) (x : FreeAbelianGroup P.Block)
+    (label : LawValueLabel laws) :
+    P.blockToLawCoefficients x label = P.fiberCoefficientSum label x := by
+  classical
+  induction x using FreeAbelianGroup.induction_on with
+  | C0 => simp [fiberCoefficientSum]
+  | C1 block =>
+      by_cases h : P.blockLabel block = label <;>
+        simp [blockToLawCoefficients, fiberCoefficientSum, h]
+  | Cn block ih => simp [ih]
+  | Cp left right ihLeft ihRight => simp [ihLeft, ihRight]
+
+/--
+Paper design equation (5): the value at one law-value label is the finite sum
+of all integer block coefficients in its `blockLabel` fiber, cast to `ℚ`.
+-/
+theorem blockToLawCoefficients_apply_eq_fiberSum
+    (P : GeneratorPresentation laws) (x : FreeAbelianGroup P.Block)
+    (label : LawValueLabel laws) :
+    P.blockToLawCoefficients x label =
+      x.toFinsupp.sum fun block coefficient =>
+        if P.blockLabel block = label then (coefficient : ℚ) else 0 := by
+  rw [P.blockToLawCoefficients_apply_eq_fiberCoefficientSum]
+  classical
+  simp only [fiberCoefficientSum, AddMonoidHom.comp_apply,
+    Finsupp.liftAddHom_apply]
+  apply Finsupp.sum_congr
+  intro block hblock
+  by_cases h : P.blockLabel block = label <;> simp [h]
 
 /--
 Under `R_q`, evaluating at a block's label recovers exactly the integer

@@ -373,6 +373,7 @@ result:
   completion_candidate: no
   lean_artifacts:
     - "GeneratorPresentation.blockToLawCoefficients"
+    - "GeneratorPresentation.blockToLawCoefficients_apply_eq_fiberSum"
     - "GeneratorPresentation.blockToLawCoefficients_apply_blockLabel"
     - "GeneratorPresentation.blockToLawCoefficients_injective"
     - "GeneratorPresentation.coefficientComparison"
@@ -383,12 +384,14 @@ result:
     - "CoefficientComparisonFixtures.disconnected_coefficientComparison_not_injective"
   evidence:
     - "coefficientComparison_generatorClass_apply proves equation (4) on every primitive generator and law-value coordinate"
+    - "blockToLawCoefficients_apply_eq_fiberSum proves equation (5) for every component normal-form element and law-value coordinate"
     - "blockToLawCoefficients_apply_blockLabel uses blockLabel_injective hReflection to isolate one block coefficient"
     - "coefficientComparison_injective composes coefficient recovery with the Cycle 3 presentation normal-form equivalence"
     - "the negative fixture has two distinct relation components with one common law-value label and proves noninjectivity of the full presentation coefficient comparison"
   claim_mapping:
     theorem_names:
       - "GeneratorPresentation.coefficientComparison_generatorClass_apply"
+      - "GeneratorPresentation.blockToLawCoefficients_apply_eq_fiberSum"
       - "GeneratorPresentation.coefficientComparison_injective"
     source_labels:
       - "GOAL A coefficient comparison"
@@ -396,6 +399,7 @@ result:
       - "Issue #4791 paper design equation (4) and section 2"
     conjuncts:
       - "primitive class maps to delta at e(g) -> coefficientComparison_generatorClass_apply"
+      - "general component coefficients map by the finite blockLabel-fiber sum -> blockToLawCoefficients_apply_eq_fiberSum"
       - "R_q separates relation components by law-value labels -> blockToLawCoefficients_apply_blockLabel"
       - "coefficient equality reflects presentation equality -> coefficientComparison_injective"
     undischarged_assumptions:
@@ -440,7 +444,7 @@ audits:
   one_way_as_equivalence: not-applicable
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/ObstructionDiagnosticBridge/CoefficientComparison.lean: pass; 11 namespace declarations, standard axioms only"
+    - "research/lean/check_research_modules.sh --focused ResearchLean/AG/ObstructionDiagnosticBridge/CoefficientComparison.lean: pass; 14 namespace declarations, standard axioms only"
     - "main declarations #print axioms: propext, Classical.choice, Quot.sound only"
     - "git diff --check and placeholder, hidden/BiDi Unicode, private-path, and Formal-to-Research import scans: pass"
   blocking_findings: []
