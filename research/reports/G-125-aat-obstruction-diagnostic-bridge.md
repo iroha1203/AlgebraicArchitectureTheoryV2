@@ -8,7 +8,7 @@
 - proof state: `target-proof-checkpoint`
 
 このreportは固定GOALの証拠索引とproof obligation deltaを記録する。固定targetと
-完了条件の正本はGOALカードであり、このreportでは再定義しない。
+完了条件はGOALカードにあり、このreportでは再定義しない。
 
 ## Proof obligation state
 
@@ -27,13 +27,13 @@ ledger_type: target_cycle_result
 goal: G-125-aat-obstruction-diagnostic-bridge
 cycle: 1
 goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
-base_oid: 8dd01cbcf6b547aee9170e389284d85cff55f9f2
+base_oid: 8dd01cbce46be3e6e143e488e8ef7a2d25af9b28
 tracking_issue: 4791
 report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
 selection:
   proof_state_ref: "Issue #4791 initial proof state and paper design sections 1-2"
   proof_dag_predecessors:
-    - "ResolutionInvariance.LawValueLabel from reviewed G-104"
+    - "ResolutionInvariance.LawValueLabel: introduction commit c25a2b8471abc3d8e79db04098b7d63b631516a5; G-104 Cycle 10; accepted in PR #3943, merge 0fdc9867c5b383f276800ff9ebfe976141aac5c3; unchanged through fixed GOAL commit"
   proof_obligation: "derive the relation-component to law-value-label equivalence from primitive generator relations and R_q"
   selection_reason: "this is the first unproved coefficient provenance step used by the later comparison map and zero-class reflection"
   expected_result_type: proof-obligation-discharged
@@ -76,15 +76,30 @@ result:
       - "primitive relations generate B -> GeneratorPresentation.Block"
       - "relations preserve law values -> related_preserves_label and blockLabel"
       - "R_q -> B equivalent to Lambda -> blockLabelEquiv"
-    undischarged_assumptions: []
+    undischarged_assumptions:
+      - "relation_preserves_label is an input condition of the general presentation; the selected G-125 input must construct it"
+      - "ReflectionCondition is a direction hypothesis of the general theorem; the selected input and fixed finite example must prove it from their primitive relations"
     acceptance_point: "R_q is a generator-connectivity condition and the equivalence is derived from it; no cohomology conclusion is stored in data"
     port_status: not-applicable
 audits:
+  material_premises:
+    ambient_boundary:
+      - "FiniteLawFamily, Source, and the primitive relation are input data"
+      - "LawValueLabel.generated is reviewed predecessor data used to construct label representatives"
+    direction_hypothesis:
+      - "relation_preserves_label supplies quotient-map well-definedness in the general presentation"
+      - "ReflectionCondition supplies injectivity in the general equivalence theorem"
+    discharge_required:
+      - "the selected G-125 input must construct relation_preserves_label from its declared graph"
+      - "the selected input and fixed finite example must prove ReflectionCondition from their declared graph"
+    conclusion_equivalent_risk:
+      - "ReflectionCondition is equivalent to injectivity of the already-surjective blockLabel, but is admitted here because fixed paper design section 2 requires generator connectivity; it contains neither B2 nor Phi_q injectivity"
   premise_delta:
     discharged:
-      - "relation closure preserves actual source-generated law-value labels"
-      - "R_q derives B equivalent to Lambda"
+      - "for any presentation satisfying relation_preserves_label, relation closure preserves actual source-generated law-value labels"
+      - "for any presentation satisfying ReflectionCondition, R_q derives B equivalent to Lambda"
     remaining:
+      - "construct relation_preserves_label and ReflectionCondition for the selected G-125 input"
       - "integer presentation group and coefficient comparison"
       - "A1, B1, B2, C1, C2 and the fixed finite example"
   certificate_provenance:
