@@ -465,7 +465,7 @@ base_oid: 3163e58be2e3d32d61a6f4ddd41e35149ea85db9
 tracking_issue: 4791
 report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
 selection:
-  proof_state_ref: "Issue #4791 paper design section 4 equations (3)-(5), after Cycle 4 merge 3163e58be2e3d32d61a6f4ddd41e35149ea85db9"
+  proof_state_ref: "Issue #4791 paper design section 4: the general incidence formulas underlying the selected equation (3), together with equations (4)-(5), after Cycle 4 merge 3163e58be2e3d32d61a6f4ddd41e35149ea85db9"
   proof_dag_predecessors:
     - "GeneratorPresentation.coefficientComparison and equations (4)-(5): PR #4803, merge 3163e58be2e3d32d61a6f4ddd41e35149ea85db9"
     - "TargetSupportedNerve.lawGeneratedComplex and law-value-label preservation from the accepted G-104 chain"
@@ -483,7 +483,7 @@ selection:
     - "fixed-head independent review"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "Presentation-valued chart, edge, and face cochains now form a normalized additive complex. Applying epsilon_R at each existing generated diagnostic coordinate defines degree 0-2 maps, and the existing endpoint/face label-preservation theorems prove both cochain squares against lawGeneratedD0 and lawGeneratedD1. The source-to-actual-Ob-Cech identification remains open."
+  proof_obligation_delta: "Presentation-valued chart, edge, and face cochains now form a normalized additive complex with the general incidence formulas underlying equation (3). Applying epsilon_R at each existing generated diagnostic coordinate defines degree 0-2 maps, and the existing endpoint/face label-preservation theorems prove both cochain squares against lawGeneratedD0 and lawGeneratedD1. The source-to-actual-Ob-Cech identification and the selected C2=0, d1=0 specialization remain open."
   completion_candidate: no
   lean_artifacts:
     - "GeneratorPresentation.PresentationCochain0"
@@ -512,15 +512,16 @@ result:
       - "GeneratorPresentation.coefficientCochainMap"
     source_labels:
       - "GOAL A degree 0-2 comparison-map construction"
-      - "Issue #4791 paper design section 4 equations (3)-(5)"
+      - "Issue #4791 paper design section 4: general incidence formulas underlying selected equation (3), and equations (4)-(5)"
     conjuncts:
-      - "normalized obstruction differential has right-minus-left and alternating-face formulas -> presentationD0 and presentationD1"
+      - "the general incidence differential underlying selected equation (3) has right-minus-left and alternating-face formulas -> presentationD0 and presentationD1"
       - "cellwise epsilon_R map in degrees 0-2 -> coefficientCochain0/1/2"
       - "degree-zero square -> coefficientCochain_comm0"
       - "degree-one square -> coefficientCochain_comm1"
     undischarged_assumptions:
       - "construct the selected obstruction sheaf and its CoverRelativeCechComplex"
       - "identify its degree 0-2 cochains and differentials with PresentationCochain0/1/2 and presentationD0/1"
+      - "specialize to the selected face-empty input and derive equation (3) with C2=0 and d1=0"
     acceptance_point: "the target is the existing lawGenerated differential surface; A1 is not marked complete until the actual obstruction source identification is constructed"
     port_status: not-applicable
 audits:
@@ -540,6 +541,7 @@ audits:
       - "prove both cochain-map equations"
     remaining:
       - "connect the normalized source to the actual ObstructionSheaf CoverRelativeCechComplex"
+      - "prove the selected face-empty specialization C2=0 and d1=0"
       - "finish A1, B1, full B2, C1, C2 and the fixed finite example"
   certificate_provenance:
     discharged:
