@@ -112,8 +112,8 @@ end PrimitiveMapGraphs
 
 namespace CompleteMapGraphs
 
-/-- Complete graph bundles are determined by all thirteen independent graph
-components. -/
+/-- Complete graph bundles are determined by all thirteen top-level fields;
+the primitive field itself contains five graph codes. -/
 @[ext]
 theorem ext {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     {first second : CompleteMapGraphs G H}

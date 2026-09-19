@@ -6471,7 +6471,7 @@ selection:
     - "independent coherence equations selecting assemblable raw graph bundles remain for the next cycle"
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "All thirteen graph components receive independent identity and composition operations, with reversed order for contextBackward, and satisfy category laws. Complete geometry reading preserves identity and composition in every primitive and dependent tagged field, giving an underlying-package-preserving faithful functor. Object assembly is reflexive. Nonempty HomAssembly is proved equivalent to fullness, and any independently supplied HomAssembly produces the Cycle 65 reconstruction data and a categorical equivalence. Fullness itself is not asserted."
+  proof_obligation_delta: "All thirteen top-level fields receive identity and composition operations, with reversed order for contextBackward, and satisfy category laws; the primitive field delegates to its five graph codes. Complete geometry reading preserves identity and composition in every primitive and dependent tagged field, giving an underlying-package-preserving faithful functor. Object assembly is reflexive. Nonempty HomAssembly is proved equivalent to fullness, and any independently supplied HomAssembly produces the Cycle 65 reconstruction data and a categorical equivalence. Fullness itself is not asserted."
   completion_candidate: no
   lean_artifacts:
     - "AAT.AG.LocalSemanticReconstruction.CompleteGeometryGraphCategory.CompleteMapGraphs.ext"
@@ -6701,7 +6701,8 @@ audits:
   Homの両逆・一意preimage・fully faithful・essentially surjective・圏同値と、その逆向きの特徴付けを
   証明した。primitive total-functional Bool graph圏をTypeと圏同値にする完全な適用を同梱し、Cycle 64の
   complete geometry graphは全package対に対するindexed Hom-family分離を放電することを明示した。
-  Cycle 66では十三成分すべてを独立に持つraw complete graph bundleへ恒等射と合成を定め、
+  Cycle 66では最上位十三fieldを持つraw complete graph bundleへ恒等射と合成を定め、primitive fieldの
+  五graph codeへ成分別演算を委譲し、
   backward contextだけ順序を反転した成分別の圏を構成した。complete geometry readingが全dependent
   tagged成分で恒等射と合成を保存するunderlying-package-preserving functorであること、Cycle 64の分離から
   faithfulであること、対象組立て、および残るHom組立てがfullnessと同値であることを証明した。
