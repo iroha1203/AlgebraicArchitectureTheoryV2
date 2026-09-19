@@ -96,7 +96,8 @@ G-125の完了条件に含めない。GOALが求める論文との対応は、�
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
 - 未完了: C2、同一入力上の有限例、report上の対応整理、最終検証・査読。
 - 次のproof obligation: 同じ`nerveMorphism`上で紙上設計の`Condition C`を放電し、既存の
-  `generatedComparisonH1Map`の全単射性とB2・C1を組み合わせてactual H¹写像の零性反映・同型性を示すC2へ進む。
+  `generatedComparisonH1Map`の全単射性とB2・C1を組み合わせ、指定障害類の粗細reading間の
+  零性同値を示すC2へ進む。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -2417,9 +2418,10 @@ result:
       - "T_diag is the existing generatedComparisonH1Map"
       - "Phi_f after T_ob equals T_diag after Phi_c"
       - "specified actual and diagnostic classes are transported from coarse to fine"
-    undischarged_assumptions:
-      - "C2 and the selected Condition C instance remain"
-      - "fixed zero/nonzero local data and end-to-end finite-example correspondence remain"
+    undischarged_assumptions: []
+    g125_remaining_obligations:
+      - "C2 and the selected Condition C instance"
+      - "fixed zero/nonzero local data and end-to-end finite-example correspondence"
     acceptance_point: "the actual map is constructed before and independently of the diagnostic map; actual sheaf-restriction provenance is proved for its selected coordinate formulas"
     port_status: not-applicable
 audits:
@@ -2428,8 +2430,7 @@ audits:
       - "coarse and fine actual Cech covers, connected-section coordinates, and generated diagnostic complexes are predecessor constructions"
       - "fine patches and mapped overlaps are genuinely included in their selected coarse supports"
     direction_hypothesis: []
-    discharge_required:
-      - "selected Condition C, C2, and fixed finite zero/nonzero data"
+    discharge_required: []
     conclusion_equivalent_risk:
       - "neither the nerve morphism nor mapLocalData stores a cohomology equality, vanishing statement, or inverse"
   premise_delta:
@@ -2439,8 +2440,10 @@ audits:
       - "naturality of coefficient comparison under refinement"
       - "C1 comparison square"
       - "transport of specified actual and diagnostic classes"
-    remaining:
-      - "C2, selected Condition C, and fixed zero/nonzero data"
+    remaining: []
+  g125_remaining_obligations:
+    - "C2 and the selected Condition C instance"
+    - "fixed zero/nonzero local data and end-to-end finite-example correspondence"
   certificate_provenance:
     discharged:
       - "T_ob comes from the real patch/overlap refinement and actual obstruction sheaf restrictions"
