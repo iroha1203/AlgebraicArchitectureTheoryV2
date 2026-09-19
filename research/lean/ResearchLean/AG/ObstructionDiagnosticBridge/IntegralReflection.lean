@@ -14,8 +14,8 @@ The construction does not treat floor as an additive homomorphism.  It uses
 only `Int.floor_add_intCast` after the hypothesis identifies each rational
 edge difference with a specific integer.  The block-indexed API reads each
 obstruction component through the label map constructed by
-`GeneratorPresentation`; deriving its premise from diagnostic zero-class data
-and `R_q` remains a later B2 obligation.
+`GeneratorPresentation`; `SpecifiedClassReflection` later derives its premise
+from diagnostic zero-class data and `R_q`.
 -/
 
 noncomputable section
