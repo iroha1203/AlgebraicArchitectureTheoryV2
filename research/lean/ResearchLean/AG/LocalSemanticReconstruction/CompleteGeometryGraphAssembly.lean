@@ -17,8 +17,10 @@ assembly and separation, not merely a new record or a one-way decoder.
 
 ## Implementation notes
 
-The package code retains primitive graph families and local compatibility
-laws only.  In particular, it does not retain an equation transport, a
+The package code reuses the law-bearing graph-code APIs whose own raw data and
+certificates were separated in Cycles 67, 69, and 70, and keeps the new
+Cycle 71 cross-component laws in an outer predicate.  In particular, it does
+not retain an equation transport, a
 package morphism, a geometry morphism, or a premise saying that the whole
 input already lies in the image of a canonical reader.  Assembly constructs
 those global maps.  Configuration morphisms are also constructed from the
@@ -79,9 +81,10 @@ theorem signatureSupply_eta
 
 /-! ## Independent package code -/
 
-/-- Computational package data assembled from the graph-code APIs of Cycles
-67, 69, and 70.  All noncomputational compatibility statements are kept in
-`IsPackageGraphCode`. -/
+/-- Package inputs assembled from the law-bearing graph-code APIs of Cycles
+67, 69, and 70.  Those predecessor codes retain their own local certificates;
+the new cross-component compatibility statements introduced by Cycle 71 are
+kept in `IsPackageGraphCode`. -/
 structure PackageGraphData {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U) where
   source : GraphCode G.core.reading.doctrine.Source
@@ -206,21 +209,10 @@ structure IsPackageGraphCode {U : AtomCarrier.{u}}
       data.operation.assemble
   invariant_transport : RemainingComponentGraphCoherence.IsInvariantTransport
     G.core H.core data.object.assemble data.invariant.assemble
-  axis_selected_iff : ∀ i,
-    G.core.reading.signatureReading.selected i ↔
-      H.core.reading.signatureReading.selected
-        ((RemainingComponentGraphCoherence.SignatureGraphCode.assemble
-          data.signature).axisMap i)
-  coordinate_eq : ∀ A i,
-    (RemainingComponentGraphCoherence.SignatureGraphCode.assemble
-      data.signature).coordinateEquiv i
-        (G.core.reading.signatureReading.coordinate A i) =
-      H.core.reading.signatureReading.coordinate
-        (data.object.assemble A)
-        ((RemainingComponentGraphCoherence.SignatureGraphCode.assemble
-          data.signature).axisMap i)
 
-/-- Independent package graph code. -/
+/-- Cycle 71 package assembler domain.  Predecessor graph-code laws and the
+cross-component `IsPackageGraphCode` certificate are supplied direction
+hypotheses; assembly constructs and exactly recovers `PackageTotalHom`. -/
 abbrev PackageGraphCode {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U) :=
   { data : PackageGraphData G H // IsPackageGraphCode data }
@@ -621,8 +613,12 @@ def upper {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     code.1.signature).axisMap
   coordinateEquiv := (RemainingComponentGraphCoherence.SignatureGraphCode.assemble
     code.1.signature).coordinateEquiv
-  axis_selected_iff := code.2.axis_selected_iff
-  coordinate_eq := code.2.coordinate_eq
+  axis_selected_iff :=
+    (RemainingComponentGraphCoherence.SignatureGraphCode.assemble
+      code.1.signature).axis_selected_iff
+  coordinate_eq :=
+    (RemainingComponentGraphCoherence.SignatureGraphCode.assemble
+      code.1.signature).coordinate_eq
 
 /-- Assemble the lower pointed doctrine morphism. -/
 def lower {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -763,9 +759,7 @@ def read {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     configuration_eq := configuration_eq
     detectorCode_eq := ?_
     operation_naturality := ?_
-    invariant_transport := ?_
-    axis_selected_iff := ?_
-    coordinate_eq := ?_ }⟩
+    invariant_transport := ?_ }⟩
   · dsimp only [data]
     rw [equation_eq]
     exact morphism.upper.equationTransport.role_eq
@@ -864,14 +858,6 @@ def read {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
   · dsimp [data]
     rw [object_eq]
     simpa [invariant] using morphism.upper.invariant_transport
-  · dsimp [data]
-    rw [show signature.assemble = signatureSupply by
-      exact RemainingComponentGraphCoherence.SignatureGraphCode.assemble_read _]
-    exact signatureSupply.axis_selected_iff
-  · dsimp [data]
-    rw [show signature.assemble = signatureSupply by
-      exact RemainingComponentGraphCoherence.SignatureGraphCode.assemble_read _]
-    exact signatureSupply.coordinate_eq
 
 /-- The equation transport assembled after reading an actual package map
 recovers the original completed transport. -/
@@ -1052,8 +1038,10 @@ noncomputable def assembleOverlap {U : AtomCarrier.{u}}
     hom := homOfLE (forward base left right)
     inv := homOfLE (backward base left right) }
 
-/-- Computational complete-geometry data.  All preservation and coherence
-statements are kept separately in `IsCompleteGeometryGraphCode`. -/
+/-- Complete-geometry inputs built from predecessor law-bearing package,
+coefficient, and realization codes.  The outer coverage, overlap, and raw
+coherence laws introduced at this assembly layer are kept separately in
+`IsCompleteGeometryGraphCode`. -/
 structure CompleteGeometryGraphData {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U) where
   package : PackageGraphCode G H
@@ -1080,7 +1068,9 @@ structure IsCompleteGeometryGraphCode {U : AtomCarrier.{u}}
     RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.IsRawTransportCoherent
     G H data.package.assemble data.coefficientGraph.assemble
 
-/-- Independent complete geometry graph code with data and laws separated. -/
+/-- Cycle 71 complete assembler domain.  Predecessor code laws and the outer
+`IsCompleteGeometryGraphCode` certificate are supplied direction hypotheses;
+no completed geometry morphism or canonical-reader membership is retained. -/
 abbrev CompleteGeometryGraphCode {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U) :=
   { data : CompleteGeometryGraphData G H // IsCompleteGeometryGraphCode data }
@@ -1328,7 +1318,10 @@ theorem not_isCompleteGeometryGraphCode_incoherentData :
 
 end CompleteGraphCertificateFixtures
 
-/-- Exact two-sided equivalence promised by Cycle 71. -/
+/-- Cycle 71 principal equivalence.  Its domain supplies the predecessor
+package/coefficient/realization code laws together with coverage, both overlap
+comparisons, and raw coherence; assembly constructs the complete morphism and
+the reader recovers every such supplied component exactly. -/
 noncomputable def equivGeometryTotalHom {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} :
     CompleteGeometryGraphCode G H ≃ GeometryTotalHom G H where
