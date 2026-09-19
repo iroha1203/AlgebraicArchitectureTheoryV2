@@ -194,7 +194,8 @@ result:
 audits:
   material_premises:
     ambient_boundary:
-      - "Vertex, Edge, Block, source, target, and the integral edge cochain are input data"
+      - "Vertex, Edge, Block, source, target, the integral edge cochain z, and the supplied rational witness b are input data"
+      - "the block-indexed API additionally receives laws and GeneratorPresentation P; P.relation_preserves_label is the Cycle 1 predecessor premise making blockLabel well-defined"
     direction_hypothesis:
       - "h states that the supplied rational zero-cochain has the cast integral edge cochain as its edge difference"
     discharge_required:
