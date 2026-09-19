@@ -41,11 +41,17 @@ namespace CompleteGeometryGraphAssembly
 
 universe u v w x
 
-/-- Short name for the Cycle 63 primitive total-functional graph API reused
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Short name for the Cycle 63 primitive total-functional graph API reused
 throughout the Cycle 71 package assembler. -/
 abbrev GraphCode := PrimitiveFunctionGraph.GraphCode
 
-/-- Dependent coordinate component of the Cycle 70 signature read/assemble
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Dependent coordinate component of the Cycle 70 signature read/assemble
 law, exposed separately for complete-core extensionality. -/
 theorem signature_read_assemble_coordinate_heq
     {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
@@ -64,7 +70,10 @@ theorem signature_read_assemble_coordinate_heq
   exact heq_of_eq
     (DependentAlgebraicGraphCoherence.IndexedEquivGraphCode.assemble_read _)
 
-/-- Rebuilding a signature supply from all of its projections is exact. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Rebuilding a signature supply from all of its projections is exact. -/
 theorem signatureSupply_eta
     {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
     {objectMap : ArchitectureObject U → ArchitectureObject U}
@@ -81,7 +90,10 @@ theorem signatureSupply_eta
 
 /-! ## Independent package code -/
 
-/-- Package inputs assembled from the law-bearing graph-code APIs of Cycles
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Package inputs assembled from the law-bearing graph-code APIs of Cycles
 67, 69, and 70.  Those predecessor codes retain their own local certificates;
 the new cross-component compatibility statements introduced by Cycle 71 are
 kept in `IsPackageGraphCode`. -/
@@ -107,14 +119,20 @@ structure PackageGraphData {U : AtomCarrier.{u}}
 
 namespace PackageGraphData
 
-/-- The equation transport assembled from Cycle 67 and Cycle 69 data, before
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+The equation transport assembled from Cycle 67 and Cycle 69 data, before
 the equation-specific compatibility laws are attached. -/
 def contextEquivalence {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (data : PackageGraphData G H) :
     G.site.category ≌ H.site.category :=
   data.contextObservable.context.assemble
 
-/-- Construct the configuration morphism from the Atom graph and the local
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Construct the configuration morphism from the Atom graph and the local
 object-configuration equation; no completed configuration morphism is stored
 in `PackageGraphData`. -/
 def configurationMap {U : AtomCarrier.{u}}
@@ -127,7 +145,10 @@ def configurationMap {U : AtomCarrier.{u}}
   (configuration_eq A).symm ▸
     AtomConfiguration.transportHom data.atom.assemble A.configuration
 
-/-- Casting only the target configuration of a configuration morphism does
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Casting only the target configuration of a configuration morphism does
 not change its Atom function. -/
 theorem configurationHom_cast_atomMap {U : AtomCarrier.{u}}
     {C D E : AtomConfiguration U} (target_eq : D = E)
@@ -137,7 +158,10 @@ theorem configurationHom_cast_atomMap {U : AtomCarrier.{u}}
   cases target_eq
   rfl
 
-/-- The locally constructed configuration morphism computes the Atom graph. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+The locally constructed configuration morphism computes the Atom graph. -/
 theorem configurationMap_atomMap {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (data : PackageGraphData G H)
     (configuration_eq : ∀ A,
@@ -159,7 +183,10 @@ theorem configurationMap_atomMap {U : AtomCarrier.{u}}
 
 end PackageGraphData
 
-/-- Local laws for `PackageGraphData`.  The fields mention only decoded graph
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Local laws for `PackageGraphData`.  The fields mention only decoded graph
 functions and fixed source/target packages; no completed package morphism is
 used as a certificate. -/
 structure IsPackageGraphCode {U : AtomCarrier.{u}}
@@ -210,7 +237,10 @@ structure IsPackageGraphCode {U : AtomCarrier.{u}}
   invariant_transport : RemainingComponentGraphCoherence.IsInvariantTransport
     G.core H.core data.object.assemble data.invariant.assemble
 
-/-- Cycle 71 package assembler domain.  Predecessor graph-code laws and the
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Cycle 71 package assembler domain.  Predecessor graph-code laws and the
 cross-component `IsPackageGraphCode` certificate are supplied direction
 hypotheses; assembly constructs and exactly recovers `PackageTotalHom`. -/
 abbrev PackageGraphCode {U : AtomCarrier.{u}}
@@ -219,14 +249,20 @@ abbrev PackageGraphCode {U : AtomCarrier.{u}}
 
 namespace PackageGraphCode
 
-/-- Dependent congruence exposed as heterogeneous equality. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Dependent congruence exposed as heterogeneous equality. -/
 theorem dependent_apply_heq {A : Type*} {B : A → Type*}
     {first second : A} (index_eq : first = second) (value : ∀ index, B index) :
     HEq (value first) (value second) := by
   cases index_eq
   rfl
 
-/-- Reindex one target operation family along equality of its object map. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Reindex one target operation family along equality of its object map. -/
 def reindexOperationFamily {U : AtomCarrier.{u}}
     (Q : AATCorePackage U)
     {X : ArchitectureObject U → ArchitectureObject U → Type*}
@@ -238,7 +274,10 @@ def reindexOperationFamily {U : AtomCarrier.{u}}
   cases object_eq
   exact family
 
-/-- Reindexing a dependent operation family is heterogeneously equal to the
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Reindexing a dependent operation family is heterogeneously equal to the
 original family. -/
 theorem reindexOperationFamily_heq {U : AtomCarrier.{u}}
     (Q : AATCorePackage U)
@@ -251,7 +290,10 @@ theorem reindexOperationFamily_heq {U : AtomCarrier.{u}}
   cases object_eq
   rfl
 
-/-- Reading a reindexed dependent operation family agrees heterogeneously
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Reading a reindexed dependent operation family agrees heterogeneously
 with reading the original family. -/
 theorem read_reindexOperationFamily_heq {U : AtomCarrier.{u}}
     (P Q : AATCorePackage U)
@@ -267,7 +309,10 @@ theorem read_reindexOperationFamily_heq {U : AtomCarrier.{u}}
   cases object_eq
   rfl
 
-/-- Reindexing an operation does not change the Atom map of its attached
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Reindexing an operation does not change the Atom map of its attached
 configuration morphism. -/
 theorem reindexOperationFamily_configuration_atomMap
     {U : AtomCarrier.{u}} (Q : AATCorePackage U)
@@ -284,7 +329,10 @@ theorem reindexOperationFamily_configuration_atomMap
   cases object_eq
   rfl
 
-/-- Reindexing an observable graph code changes only its functor index, not
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Reindexing an observable graph code changes only its functor index, not
 the value computed at a source context. -/
 theorem reindexObservable_apply_heq
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -300,7 +348,10 @@ theorem reindexObservable_apply_heq
   cases functor_eq
   rfl
 
-/-- The observable component read from an actual equation transport agrees
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+The observable component read from an actual equation transport agrees
 with the original component up to the context-functor transport. -/
 theorem readObservable_apply_heq
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -329,7 +380,10 @@ theorem readObservable_apply_heq
   exact hreindex.trans (heq_of_eq (congrArg (fun equivalence => equivalence value)
     hassemble))
 
-/-- The target observable selected by the context code read from a transport
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+The target observable selected by the context code read from a transport
 agrees heterogeneously with the original target observable. -/
 theorem readContext_violation_heq
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -355,7 +409,10 @@ theorem readContext_violation_heq
     (fun context => H.core.algebra.equationSystem.violationCoordinate
       context (transport.equationEquiv i) (atomEquiv atom))
 
-/-- Residual generators obey the same heterogeneous context-read recovery. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Residual generators obey the same heterogeneous context-read recovery. -/
 theorem readContext_residual_heq
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     {atomEquiv : U.Atom ≃ U.Atom}
@@ -380,20 +437,29 @@ theorem readContext_residual_heq
     (fun context => H.core.algebra.equationSystem.equationResidual
       context (objectMap A) (transport.equationEquiv i) (atomEquiv atom))
 
-/-- Canonical configuration map forced by the Atom graph and the decoded
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Canonical configuration map forced by the Atom graph and the decoded
 object-configuration equation. -/
 def configurationMap {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (code : PackageGraphCode G H) (A) :
     ConfigurationHom A.configuration (code.1.object.assemble A).configuration :=
   code.1.configurationMap code.2.configuration_eq A
 
-/-- The constructed configuration morphism has exactly the decoded Atom map. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+The constructed configuration morphism has exactly the decoded Atom map. -/
 theorem configurationMap_atomMap {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (code : PackageGraphCode G H) (A) :
     (code.configurationMap A).atomMap = code.1.atom.assemble := by
   exact code.1.configurationMap_atomMap code.2.configuration_eq A
 
-/-- Assemble the Cycle 69 equation transport from its independent context and
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Assemble the Cycle 69 equation transport from its independent context and
 observable graphs and the equation-specific local laws. -/
 def equationTransport {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (code : PackageGraphCode G H) :
@@ -408,7 +474,10 @@ def equationTransport {U : AtomCarrier.{u}}
   violationCoordinate_eq := code.2.violationCoordinate_eq
   equationResidual_eq := code.2.equationResidual_eq
 
-/-- Reading the equation transport assembled from a package code recovers its
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Reading the equation transport assembled from a package code recovers its
 independent context and observable graph codes. -/
 theorem contextObservable_ext
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -422,7 +491,10 @@ theorem contextObservable_ext
   cases observable
   rfl
 
-/-- Observable graph codes over propositionally equal context functors are
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Observable graph codes over propositionally equal context functors are
 heterogeneously equal when their computational ring graphs agree. -/
 theorem observableCode_heq
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -444,7 +516,10 @@ theorem observableCode_heq
   cases observable
   rfl
 
-/-- Reindexing an observable code changes only its dependent functor index. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Reindexing an observable code changes only its dependent functor index. -/
 theorem observableCode_reindex_heq
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     {firstFunctor secondFunctor :
@@ -460,7 +535,10 @@ theorem observableCode_reindex_heq
   cases functor_eq
   rfl
 
-/-- Pointwise ring graph families over equal index maps are heterogeneously
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Pointwise ring graph families over equal index maps are heterogeneously
 equal when every fiber graph is. -/
 theorem indexedRingGraph_heq
     {I J : Type*} {A : I → Type*} {B : J → Type*}
@@ -477,7 +555,10 @@ theorem indexedRingGraph_heq
   funext i
   exact eq_of_heq (fiber i)
 
-/-- API lemma connecting package reconstruction to the Cycle 69
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+API lemma connecting package reconstruction to the Cycle 69
 context/observable reader. -/
 theorem contextObservable_read_equationTransport
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -513,7 +594,10 @@ theorem contextObservable_read_equationTransport
       (observableCode_heq hfunctor readObservable
         code.1.contextObservable.observable hgraph)
 
-/-- Equation transports are determined by their three computational
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Equation transports are determined by their three computational
 components; all remaining fields are propositions. -/
 theorem equationTransport_ext
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -533,7 +617,10 @@ theorem equationTransport_ext
   cases observable
   rfl
 
-/-- Equation transports over propositionally equal Atom and object maps are
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Equation transports over propositionally equal Atom and object maps are
 heterogeneously equal when their three computational components agree. -/
 theorem equationTransport_heq
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -567,7 +654,10 @@ theorem equationTransport_heq
   intro value
   exact eq_of_heq (observable W value)
 
-/-- Signature readings over propositionally equal object maps agree
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Signature readings over propositionally equal object maps agree
 heterogeneously once their two computational families agree. -/
 theorem signatureRead_heq
     {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
@@ -589,7 +679,10 @@ theorem signatureRead_heq
   cases supply_eq
   rfl
 
-/-- Assemble the complete upper core morphism from independent graph data. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Assemble the complete upper core morphism from independent graph data. -/
 def upper {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (code : PackageGraphCode G H) : SignedExactCoreReadingHom G.core H.core where
   atomEquiv := code.1.atom.assemble
@@ -620,7 +713,10 @@ def upper {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (RemainingComponentGraphCoherence.SignatureGraphCode.assemble
       code.1.signature).coordinate_eq
 
-/-- Assemble the lower pointed doctrine morphism. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Assemble the lower pointed doctrine morphism. -/
 def lower {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (code : PackageGraphCode G H) :
     ExtInstHom (packagePoint G.core) (packagePoint H.core) where
@@ -631,7 +727,10 @@ def lower {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     extraction_iff := code.2.extraction_iff }
   source_eq := code.2.source_eq
 
-/-- Cycle 71 package assembler.  Its input contains no completed package
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Cycle 71 package assembler.  Its input contains no completed package
 morphism. -/
 def assemble {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (code : PackageGraphCode G H) : PackageTotalHom G.core H.core where
@@ -639,7 +738,10 @@ def assemble {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
   upper := code.upper
   atomEquiv_eq := by simpa [upper, lower] using code.2.atom_eq
 
-/-- Lawful package codes are determined by their graph components.  The
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Lawful package codes are determined by their graph components.  The
 configuration maps are then forced by their common Atom graph. -/
 theorem ext {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     {first second : PackageGraphCode G H}
@@ -678,7 +780,10 @@ theorem ext {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
   cases signature
   rfl
 
-/-- Read an actual package morphism into independent graph codes.  Geometry
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Read an actual package morphism into independent graph codes.  Geometry
 packages are parameters only; no geometry morphism is retained. -/
 def read {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (morphism : PackageTotalHom G.core H.core) : PackageGraphCode G H := by
@@ -859,7 +964,10 @@ def read {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     rw [object_eq]
     simpa [invariant] using morphism.upper.invariant_transport
 
-/-- The equation transport assembled after reading an actual package map
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+The equation transport assembled after reading an actual package map
 recovers the original completed transport. -/
 theorem equationTransport_read
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -875,7 +983,10 @@ theorem equationTransport_read
     exact readObservable_apply_heq
       morphism.upper.equationTransport W value
 
-/-- Package reading followed by assembly recovers the actual package morphism. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Package reading followed by assembly recovers the actual package morphism. -/
 @[simp]
 theorem assemble_read {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : PackageTotalHom G.core H.core) :
@@ -905,7 +1016,10 @@ theorem assemble_read {U : AtomCarrier.{u}}
       simpa [assemble, upper, read, supply] using
         signature_read_assemble_coordinate_heq supply
 
-/-- Independent package codes are recovered exactly after package assembly. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Independent package codes are recovered exactly after package assembly. -/
 @[simp]
 theorem read_assemble {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (code : PackageGraphCode G H) :
@@ -942,22 +1056,34 @@ end PackageGraphCode
 
 namespace PackageGraphNegativeFixture
 
-/-- Reviewed finite package used by the Cycle 71 package-certificate pair. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Reviewed finite package used by the Cycle 71 package-certificate pair. -/
 abbrev package := GeometryTransport.FiniteGeometryWitness.package
 
-/-- Lawful identity reading used only as the baseline for the negative
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Lawful identity reading used only as the baseline for the negative
 certificate fixture. -/
 noncomputable def identityCode : PackageGraphCode package package :=
   PackageGraphCode.read (PackageTotalHom.id package.core)
 
-/-- Independently replace only the pointed Atom graph by the concrete finite
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Independently replace only the pointed Atom graph by the concrete finite
 swap, leaving the upper Atom graph unchanged. -/
 noncomputable def mismatchedPointedData : PackageGraphData package package :=
   { identityCode.1 with
     pointedAtom := AlgebraicGraphCoherence.EquivGraphCode.read
       GeometryTransport.FiniteGeometryWitness.swapEquiv }
 
-/-- The local package certificate rejects the mismatched Atom graphs. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+The local package certificate rejects the mismatched Atom graphs. -/
 theorem not_isPackageGraphCode_mismatchedPointed :
     ¬ IsPackageGraphCode mismatchedPointedData := by
   intro certificate
@@ -973,7 +1099,10 @@ end PackageGraphNegativeFixture
 
 /-! ## Complete geometry code and two-sided assembly -/
 
-/-- The fiberwise realization part of a geometry-stage hom, without the core
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+The fiberwise realization part of a geometry-stage hom, without the core
 operation, invariant, and signature fields already owned by the package code. -/
 def realizationSupplyOfGeometry {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
@@ -990,7 +1119,10 @@ def realizationSupplyOfGeometry {U : AtomCarrier.{u}}
   axis_naturality := geometry.axis_naturality
   observable_naturality := geometry.observable_naturality
 
-/-- Realization reading commutes heterogeneously with transport of the package
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Realization reading commutes heterogeneously with transport of the package
 base index. -/
 theorem realizationRead_cast_heq {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
@@ -1006,7 +1138,10 @@ theorem realizationRead_cast_heq {U : AtomCarrier.{u}}
 
 /-! ## Primitive overlap comparisons -/
 
-/-- Source overlap object selected by the independently assembled base map. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Source overlap object selected by the independently assembled base map. -/
 abbrev overlapSource {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
     (baseHom : PackageTotalHom G.core H.core)
@@ -1017,14 +1152,20 @@ abbrev overlapSource {U : AtomCarrier.{u}}
       (contextBackwardMap baseHom left)
       (contextBackwardMap baseHom right)⟩
 
-/-- Target overlap object selected at the endpoint package. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Target overlap object selected at the endpoint package. -/
 abbrev overlapTarget {U : AtomCarrier.{u}}
     {H : GeometryPackage.{u, v} U}
     (base left right : Site.ArchCtx H.core.object) :
     Site.ContextCategoryObject H.core.contextPreorder :=
   ⟨H.geometry.overlap.overlap base left right⟩
 
-/-- Assemble the two order comparisons into the standard selected overlap
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Assemble the two order comparisons into the standard selected overlap
 isomorphism. -/
 noncomputable def assembleOverlap {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
@@ -1038,7 +1179,10 @@ noncomputable def assembleOverlap {U : AtomCarrier.{u}}
     hom := homOfLE (forward base left right)
     inv := homOfLE (backward base left right) }
 
-/-- Complete-geometry inputs built from predecessor law-bearing package,
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Complete-geometry inputs built from predecessor law-bearing package,
 coefficient, and realization codes.  The outer coverage, overlap, and raw
 coherence laws introduced at this assembly layer are kept separately in
 `IsCompleteGeometryGraphCode`. -/
@@ -1050,7 +1194,10 @@ structure CompleteGeometryGraphData {U : AtomCarrier.{u}}
   realization : RemainingComponentGraphCoherence.RealizationGraphCode
     G.core H.core package.assemble
 
-/-- Local complete-geometry laws over independent computational graph data.
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Local complete-geometry laws over independent computational graph data.
 Coverage remains an explicit premise certificate; overlap is supplied only by
 two order comparisons, and raw coherence is stated against the assembled
 coefficient graph. -/
@@ -1068,7 +1215,10 @@ structure IsCompleteGeometryGraphCode {U : AtomCarrier.{u}}
     RemainingComponentGraphCoherence.CompleteGeometryRemainingComponentCode.IsRawTransportCoherent
     G H data.package.assemble data.coefficientGraph.assemble
 
-/-- Cycle 71 complete assembler domain.  Predecessor code laws and the outer
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Cycle 71 complete assembler domain.  Predecessor code laws and the outer
 `IsCompleteGeometryGraphCode` certificate are supplied direction hypotheses;
 no completed geometry morphism or canonical-reader membership is retained. -/
 abbrev CompleteGeometryGraphCode {U : AtomCarrier.{u}}
@@ -1077,39 +1227,63 @@ abbrev CompleteGeometryGraphCode {U : AtomCarrier.{u}}
 
 namespace CompleteGeometryGraphCode
 
-/-- Computational package projection. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Computational package projection. -/
 abbrev package {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (code : CompleteGeometryGraphCode G H) := code.1.package
 
-/-- Computational coefficient-graph projection. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Computational coefficient-graph projection. -/
 abbrev coefficientGraph {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
     (code : CompleteGeometryGraphCode G H) := code.1.coefficientGraph
 
-/-- Computational realization-graph projection. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Computational realization-graph projection. -/
 abbrev realization {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (code : CompleteGeometryGraphCode G H) := code.1.realization
 
-/-- Explicit coverage-certificate projection. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Explicit coverage-certificate projection. -/
 abbrev coverage {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (code : CompleteGeometryGraphCode G H) := code.2.coverage
 
-/-- Forward primitive overlap comparison. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Forward primitive overlap comparison. -/
 abbrev overlapForward {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
     (code : CompleteGeometryGraphCode G H) := code.2.overlapForward
 
-/-- Backward primitive overlap comparison. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Backward primitive overlap comparison. -/
 abbrev overlapBackward {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
     (code : CompleteGeometryGraphCode G H) := code.2.overlapBackward
 
-/-- Raw-transport coherence projection. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Raw-transport coherence projection. -/
 abbrev rawCoherent {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
     (code : CompleteGeometryGraphCode G H) := code.2.rawCoherent
 
-/-- Transporting a geometry hom along equality of its base leaves the
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Transporting a geometry hom along equality of its base leaves the
 coefficient map unchanged. -/
 theorem cast_coefficientHom
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -1119,7 +1293,10 @@ theorem cast_coefficientHom
   cases base_eq
   rfl
 
-/-- The support family is unchanged up to the dependent equality forced by
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+The support family is unchanged up to the dependent equality forced by
 base transport. -/
 theorem cast_supportComp_heq
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
@@ -1129,7 +1306,10 @@ theorem cast_supportComp_heq
   cases base_eq
   rfl
 
-/-- The axis family is unchanged up to base transport. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+The axis family is unchanged up to base transport. -/
 theorem cast_axisComp_heq
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     {first second : PackageTotalHom G.core H.core}
@@ -1138,7 +1318,10 @@ theorem cast_axisComp_heq
   cases base_eq
   rfl
 
-/-- The observable family is unchanged up to base transport. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+The observable family is unchanged up to base transport. -/
 theorem cast_observableComp_heq
     {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     {first second : PackageTotalHom G.core H.core}
@@ -1147,7 +1330,10 @@ theorem cast_observableComp_heq
   cases base_eq
   rfl
 
-/-- Assemble all independent components into an actual complete geometry
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Assemble all independent components into an actual complete geometry
 morphism. -/
 def assemble {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (code : CompleteGeometryGraphCode G H) : GeometryTotalHom G H where
@@ -1168,7 +1354,10 @@ def assemble {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     observable_naturality :=
       code.realization.assemble.observable_naturality }
 
-/-- Actual geometry data read relative to the package code reconstructed from
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Actual geometry data read relative to the package code reconstructed from
 its base. -/
 def read {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
     (morphism : GeometryTotalHom G H) : CompleteGeometryGraphCode G H := by
@@ -1199,7 +1388,10 @@ def read {U : AtomCarrier.{u}} {G H : GeometryPackage.{u, v} U}
       leOfHom (geometry.overlap.overlapIso base left right).inv
     rawCoherent := geometry'.raw_eq }
 
-/-- Reading and reassembling an actual complete morphism recovers it exactly. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Reading and reassembling an actual complete morphism recovers it exactly. -/
 @[simp]
 theorem assemble_read {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
@@ -1225,7 +1417,10 @@ theorem assemble_read {U : AtomCarrier.{u}}
           realizationSupplyOfGeometry]
     exact (heq_of_eq hlocal).trans (eqRec_heq base_eq.symm morphism.geometry)
 
-/-- Complete codes are determined by their computational local inputs; all
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Complete codes are determined by their computational local inputs; all
 coverage and canonicality witnesses are propositions, and overlap data are
 unique in the thin target category. -/
 theorem ext {U : AtomCarrier.{u}}
@@ -1250,7 +1445,10 @@ theorem ext {U : AtomCarrier.{u}}
       cases realization
       rfl
 
-/-- Assembling and rereading an independent complete code recovers every
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Assembling and rereading an independent complete code recovers every
 graph and local condition. -/
 @[simp]
 theorem read_assemble {U : AtomCarrier.{u}}
@@ -1285,21 +1483,33 @@ theorem read_assemble {U : AtomCarrier.{u}}
 
 namespace CompleteGraphCertificateFixtures
 
-/-- Reviewed pair-coefficient package reused for the complete-level
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Reviewed pair-coefficient package reused for the complete-level
 certificate pair. -/
 abbrev package := GeometryTransport.NegativeGeometryWitness.pairPackage
 
-/-- Positive complete-level instance obtained by reading the actual identity
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Positive complete-level instance obtained by reading the actual identity
 geometry morphism. -/
 noncomputable def identityCode : CompleteGeometryGraphCode package package :=
   read (GeometryTotalHom.id package)
 
-/-- The identity reader supplies a concrete lawful complete-data instance. -/
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+The identity reader supplies a concrete lawful complete-data instance. -/
 theorem identityData_lawful :
     IsCompleteGeometryGraphCode identityCode.1 :=
   identityCode.2
 
-/-- Computational data pairing the identity package/realization graphs with
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Computational data pairing the identity package/realization graphs with
 the reviewed nonidentity coefficient swap. -/
 noncomputable def incoherentData :
     CompleteGeometryGraphData package package where
@@ -1308,7 +1518,10 @@ noncomputable def incoherentData :
     GeometryTransport.NegativeGeometryWitness.pairSwap
   realization := identityCode.1.realization
 
-/-- The complete certificate rejects the coefficient graph whose raw
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+The complete certificate rejects the coefficient graph whose raw
 base-change is the reviewed Cycle 70 incoherent swap. -/
 theorem not_isCompleteGeometryGraphCode_incoherentData :
     ¬ IsCompleteGeometryGraphCode incoherentData := by
@@ -1318,7 +1531,10 @@ theorem not_isCompleteGeometryGraphCode_incoherentData :
 
 end CompleteGraphCertificateFixtures
 
-/-- Cycle 71 principal equivalence.  Its domain supplies the predecessor
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Cycle 71 principal equivalence.  Its domain supplies the predecessor
 package/coefficient/realization code laws together with coverage, both overlap
 comparisons, and raw coherence; assembly constructs the complete morphism and
 the reader recovers every such supplied component exactly. -/
@@ -1330,7 +1546,10 @@ noncomputable def equivGeometryTotalHom {U : AtomCarrier.{u}}
   left_inv := read_assemble
   right_inv := assemble_read
 
-/-- Cycle 71 separation theorem.
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Cycle 71 separation theorem.
 Premise summary: there are no additional hypotheses; equality of the assembled
 complete morphisms forces equality of every independent graph code and local
 condition. -/
@@ -1340,7 +1559,10 @@ theorem assemble_injective {U : AtomCarrier.{u}}
       (assemble : CompleteGeometryGraphCode G H → GeometryTotalHom G H) :=
   equivGeometryTotalHom.injective
 
-/-- Cycle 71 common-surface connection.
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Cycle 71 common-surface connection.
 Premise summary: a lawful independent code is the only input.  The result is
 the repository's established graph reading of its assembled complete
 morphism, rather than a second graph format. -/
@@ -1349,7 +1571,10 @@ noncomputable def completeMapGraphs {U : AtomCarrier.{u}}
     (code : CompleteGeometryGraphCode G H) : CompleteMapGraphs G H :=
   readCompleteMapGraphs code.assemble
 
-/-- Reading an actual complete morphism into the new independent code and
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+Reading an actual complete morphism into the new independent code and
 then exposing the common graph surface returns its original common reading.
 Premise summary: no compatibility premise is added; the right inverse law of
 complete assembly discharges the statement. -/
@@ -1359,7 +1584,10 @@ theorem completeMapGraphs_read {U : AtomCarrier.{u}}
     completeMapGraphs (read morphism) = readCompleteMapGraphs morphism := by
   simp [completeMapGraphs]
 
-/-- The established common graph surface separates the new complete codes.
+/-- Cycle 71 declaration.
+Unless identified below as a principal result or fixture, this is supporting API/data.
+Premise summary: only displayed parameters and hypotheses are supplied; no hidden material premise.
+The established common graph surface separates the new complete codes.
 Premise summary: equality of all common graph components is the sole premise;
 existing graph separation first recovers the assembled morphisms, and the new
 left inverse then recovers the independent codes. -/

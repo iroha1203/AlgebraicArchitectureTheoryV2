@@ -7215,15 +7215,22 @@ result:
       undischarged:
         - "local-law generation / package, coefficient, realization, coverage, overlap, and raw-coherence laws remain supplied premises"
     undischarged_assumptions:
-      - "primitive GraphCode total-function certificates for source, object, operation, invariant, support, axis, and observable maps"
-      - "equivalence and ring graph certificates for Atom, equation, coordinate, equation-observable, and coefficient maps"
-      - "thin-context totality, monotonicity, unit/counit, and observable restriction-naturality certificates"
-      - "signature selected-axis and coordinate certificates, used directly from SignatureGraphCode without duplicate outer premises"
-      - "IsPackageGraphCode: equation, normalization, extraction, object, operation, and invariant cross-component laws"
-      - "realization graph preservation and naturality certificates"
-      - "CoverageTransport for the independently assembled package map"
-      - "forward and backward overlap order comparisons"
-      - "raw transport coherence for the assembled package and coefficient maps"
+      - "GraphCode.row_existsUnique / source, object, invariant, and each indexed operation/support/axis/observable graph / supplies the decoded functions used by lower, upper, and realization assembly"
+      - "EquivGraphCode forward.row_existsUnique, backward.row_existsUnique, left_inv, right_inv / pointed Atom, upper Atom, equation index, and each signature-coordinate family / supplies the assembled equivalences and their inverses"
+      - "RingHomGraphCode graph.row_existsUnique, map_zero, map_one, map_add, map_mul / every equation-observable direction and the coefficient graph / supplies ring maps used by equation and geometry assembly"
+      - "ThinEquivalenceGraphCode forward_total, backward_total, forward_mono, backward_mono, forward_backward_le, backward_forward_le, forward_backward_ge, backward_forward_ge / context code / supplies both functors and unit/counit isomorphisms"
+      - "ContextObservableGraphCode observable forward/backward ring laws and restriction_naturality / observable family / supplies the presheaf natural isomorphism in equationTransport"
+      - "IsSignatureGraphCode.axis_selected_iff and coordinate_eq / signature code / used directly by upper; no duplicate outer premise remains"
+      - "IsPackageGraphCode.equation_role_eq, violationCoordinate_eq, equationResidual_eq / package cross-component predicate / used by equationTransport"
+      - "IsPackageGraphCode.normalize_eq, extraction_iff, source_eq / package cross-component predicate / used by lower"
+      - "IsPackageGraphCode.atom_eq, extraction_eq, composition_eq, object_formation_eq, configuration_eq, detectorCode_eq / package cross-component predicate / used by upper and assembled package agreement"
+      - "IsPackageGraphCode.operation_naturality and invariant_transport / package cross-component predicate / used by upper"
+      - "IsRealizationGraphCode.supportReads, axisReads, observableReads / realization code / used by geometry support, axis, and observable reading fields"
+      - "IsRealizationGraphCode.support_naturality, axis_naturality, observable_naturality / realization code / used by geometry naturality fields"
+      - "CoverageTransport.requiredSupport, requiredEquationCoordinate, selectedViolationWitness, requiredAxis / coverage certificate / copied to the assembled geometry coverage field"
+      - "CoverageTransport.supportVisibleOn, equationCoordinateVisibleOn, violationWitnessVisibleOn, axisReadableOn, boundaryVisibleOn / coverage certificate / copied to the assembled geometry coverage field"
+      - "IsCompleteGeometryGraphCode.overlapForward and overlapBackward / outer complete predicate / construct the overlap isomorphism through homOfLE"
+      - "IsCompleteGeometryGraphCode.rawCoherent / outer complete predicate / used as the assembled geometry raw_eq field"
     acceptance_point: "relative to all listed predecessor and cross-component laws, independent complete graph codes and actual GeometryTotalHom values are equivalent, and the accepted common graph surface separates those codes"
     port_status: not-applicable
   nonclaims:
@@ -7253,6 +7260,7 @@ audits:
       - "successor categorical and object-level obligations"
   proof_use:
     used:
+      - "every nested and outer material premise is named with its assembly destination in acceptance.premise_status.undischarged_assumptions"
       - "Cycle 67 algebraic graph inverses reconstruct equivalences and coefficient maps"
       - "Cycle 69 context/observable inverses reconstruct the equation transport"
       - "Cycle 70 operation, invariant, signature, and realization graph inverses reconstruct their computational fields"
