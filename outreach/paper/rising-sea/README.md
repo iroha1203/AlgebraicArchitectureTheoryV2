@@ -1,6 +1,6 @@
 # Foundations of Algebraic Architecture Theory
 
-*A Rising Sea of Readings, Transport, and Comparison*
+*A Rising Sea of Geometry, Transport, Comparison, and Reconstruction*
 
 Atom と Law から、相対的なアーキテクチャの幾何、局所整合性、診断、輸送、比較、
 再構成を展開する長編の基礎論文を準備する。
