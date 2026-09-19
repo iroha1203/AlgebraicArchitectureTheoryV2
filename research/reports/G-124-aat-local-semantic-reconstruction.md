@@ -7138,7 +7138,7 @@ audits:
   four_lane_question: "Do raw graph codes for the remaining operation, invariant, signature, support, geometry-axis, geometry-observable, and raw-transport components, equipped only with endpoint equations and preservation/naturality laws, assemble componentwise with identity/composition and recover every corresponding field of actual complete geometry morphisms without storing a GeometryTotalHom?"
   validation_refs:
     - "cd research/lean && ./check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/RemainingComponentGraphCoherence.lean: pass"
-    - "#assert_standard_axioms_only RemainingComponentGraphCoherence: 277 declarations, standard axioms only"
+    - "#assert_standard_axioms_only RemainingComponentGraphCoherence: 280 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "replace the relative ambient PackageTotalHom with assembly from Cycle 67 and Cycle 69 independent codes, combine coverage and overlap, and prove GeometryTotalHom read/assemble inverses"
 ```

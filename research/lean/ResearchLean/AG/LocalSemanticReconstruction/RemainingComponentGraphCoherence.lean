@@ -38,7 +38,10 @@ universe u v w x y z
 open CompleteGeometryFunctionGraphSeparation
 open DependentAlgebraicGraphCoherence
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Dependent evaluation along equality of indices yields heterogeneous
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Dependent evaluation along equality of indices yields heterogeneous
 equality of values. -/
 theorem dependent_apply_heq
     {A : Sort u} {B : A → Sort v} (family : ∀ a, B a)
@@ -49,7 +52,9 @@ theorem dependent_apply_heq
 
 namespace IndexedEquivGraphCode
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Reindex an indexed equivalence graph family along equality of its ambient
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Reindex an indexed equivalence graph family along equality of its ambient
 index map.  This exposes the dependent transport used by signature recovery. -/
 def reindex
     {I : Type u} {J : Type v} {A : I → Type w} {B : J → Type x}
@@ -59,7 +64,10 @@ def reindex
   cases index_eq
   exact code
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Reindexing a code family along equality changes only its dependent type. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Reindexing a code family along equality changes only its dependent type. -/
 theorem reindex_heq
     {I : Type u} {J : Type v} {A : I → Type w} {B : J → Type x}
     {first second : I → J} (index_eq : first = second)
@@ -68,7 +76,10 @@ theorem reindex_heq
   cases index_eq
   rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Reindexing changes only the dependent type of the assembled equivalence
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Reindexing changes only the dependent type of the assembled equivalence
 family. -/
 theorem reindex_assemble_heq
     {I : Type u} {J : Type v} {A : I → Type w} {B : J → Type x}
@@ -78,7 +89,10 @@ theorem reindex_assemble_heq
   cases index_eq
   rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Pointwise evaluation of a reindexed equivalence family is only dependent
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Pointwise evaluation of a reindexed equivalence family is only dependent
 transport of the original evaluation. -/
 theorem reindex_assemble_apply_heq
     {I : Type u} {J : Type v} {A : I → Type w} {B : J → Type x}
@@ -94,7 +108,9 @@ end IndexedEquivGraphCode
 
 /-! ## One-index dependent function graphs -/
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Cycle 70 raw data for a dependent function family over a fixed index map.
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Cycle 70 raw data for a dependent function family over a fixed index map.
 Each fiber contains only a primitive total-functional graph code. -/
 abbrev IndexedFunctionGraphCode
     {I : Type u} {J : Type v} (indexMap : I → J)
@@ -103,14 +119,18 @@ abbrev IndexedFunctionGraphCode
 
 namespace IndexedFunctionGraphCode
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Main Cycle 70 assembler for a one-index graph family. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Main Cycle 70 assembler for a one-index graph family. -/
 def assemble {I : Type u} {J : Type v} {indexMap : I → J}
     {A : I → Type w} {B : J → Type x}
     (code : IndexedFunctionGraphCode indexMap A B) :
     ∀ i, A i → B (indexMap i) :=
   fun i => (code i).assemble
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Inverse construction for the one-index main theorem, reading every
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Inverse construction for the one-index main theorem, reading every
 dependent function fiber as a primitive graph. -/
 noncomputable def read {I : Type u} {J : Type v} {indexMap : I → J}
     {A : I → Type w} {B : J → Type x}
@@ -118,7 +138,10 @@ noncomputable def read {I : Type u} {J : Type v} {indexMap : I → J}
     IndexedFunctionGraphCode indexMap A B :=
   fun i => PrimitiveFunctionGraph.GraphCode.read (family i)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). First main inverse law: reading after one-index assembly recovers every
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+First main inverse law: reading after one-index assembly recovers every
 fiber graph code. -/
 @[simp]
 theorem read_assemble {I : Type u} {J : Type v} {indexMap : I → J}
@@ -128,7 +151,10 @@ theorem read_assemble {I : Type u} {J : Type v} {indexMap : I → J}
   funext i
   exact PrimitiveFunctionGraph.GraphCode.read_assemble (code i)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Second main inverse law: assembly after reading recovers the complete
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Second main inverse law: assembly after reading recovers the complete
 dependent function family. -/
 @[simp]
 theorem assemble_read {I : Type u} {J : Type v} {indexMap : I → J}
@@ -138,7 +164,9 @@ theorem assemble_read {I : Type u} {J : Type v} {indexMap : I → J}
   funext i
   exact PrimitiveFunctionGraph.GraphCode.assemble_read (family i)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Cycle 70 principal one-index universal property: fiber graph families are
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Cycle 70 principal one-index universal property: fiber graph families are
 explicitly equivalent to arbitrary dependent function families. -/
 noncomputable def equivFamily
     {I : Type u} {J : Type v} {indexMap : I → J}
@@ -150,7 +178,9 @@ noncomputable def equivFamily
   left_inv := read_assemble
   right_inv := assemble_read
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Universal law-preserving refinement of the one-index equivalence.  Any
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Universal law-preserving refinement of the one-index equivalence.  Any
 independently stated predicate on the assembled family is transported without
 adding a completed family to the graph code. -/
 noncomputable def equivLawfulFamily
@@ -170,7 +200,9 @@ noncomputable def equivLawfulFamily
     apply Subtype.ext
     exact assemble_read family.1
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Tagged ordinary function derived from the assembled one-index family.
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Tagged ordinary function derived from the assembled one-index family.
 This is the comparison API to `CompleteMapGraphs` sigma fields. -/
 def taggedFunction {I : Type u} {J : Type v} {indexMap : I → J}
     {A : I → Type w} {B : J → Type x}
@@ -178,7 +210,10 @@ def taggedFunction {I : Type u} {J : Type v} {indexMap : I → J}
     (Σ i, A i) → (Σ j, B j) :=
   CompleteGeometryFunctionGraphSeparation.taggedMap indexMap code.assemble
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Cycle 70 supporting API for `IndexedFunctionGraphCode`: evaluate the
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Cycle 70 supporting API for `IndexedFunctionGraphCode`: evaluate the
 tagged comparison without unfolding its sigma implementation.  Its only
 inputs are the fixed index map and fiber code. -/
 @[simp]
@@ -189,7 +224,9 @@ theorem taggedFunction_apply {I : Type u} {J : Type v} {indexMap : I → J}
       ⟨indexMap i, code.assemble i value⟩ :=
   rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Primitive graph of the tagged one-index function. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Primitive graph of the tagged one-index function. -/
 noncomputable def taggedForward
     {I : Type u} {J : Type v} {indexMap : I → J}
     {A : I → Type w} {B : J → Type x}
@@ -197,7 +234,10 @@ noncomputable def taggedForward
     PrimitiveFunctionGraph.GraphCode (Σ i, A i) (Σ j, B j) :=
   PrimitiveFunctionGraph.GraphCode.read code.taggedFunction
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Tagged graph assembly evaluates to the dependent family with its index. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Tagged graph assembly evaluates to the dependent family with its index. -/
 @[simp]
 theorem assemble_taggedForward
     {I : Type u} {J : Type v} {indexMap : I → J}
@@ -206,7 +246,10 @@ theorem assemble_taggedForward
     code.taggedForward.assemble = code.taggedFunction :=
   PrimitiveFunctionGraph.GraphCode.assemble_read _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Tagged forward graphs jointly separate every one-index fiber graph. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Tagged forward graphs jointly separate every one-index fiber graph. -/
 theorem taggedForward_injective
     {I : Type u} {J : Type v} {indexMap : I → J}
     {A : I → Type w} {B : J → Type x} :
@@ -222,12 +265,16 @@ theorem taggedForward_injective
   have value_eq := congrFun tagged_eq ⟨i, value⟩
   exact eq_of_heq (Sigma.mk.inj_iff.mp value_eq).2
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Identity one-index family code. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Identity one-index family code. -/
 noncomputable def id {I : Type u} {A : I → Type w} :
     IndexedFunctionGraphCode (_root_.id : I → I) A A :=
   read (fun _ => _root_.id)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Componentwise composition of one-index family codes. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Componentwise composition of one-index family codes. -/
 noncomputable def comp
     {I : Type u} {J : Type v} {K : Type w}
     {firstIndex : I → J} {secondIndex : J → K}
@@ -238,7 +285,10 @@ noncomputable def comp
   fun i => PrimitiveFunctionGraph.GraphCode.comp
     (first i) (second (firstIndex i))
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Assembly sends one-index code composition to dependent function
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Assembly sends one-index code composition to dependent function
 composition. -/
 @[simp]
 theorem assemble_comp
@@ -252,7 +302,10 @@ theorem assemble_comp
   funext i value
   simp [comp, assemble]
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Tagged one-index functions compose in the same order as their index and
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Tagged one-index functions compose in the same order as their index and
 fiber maps. -/
 theorem taggedFunction_comp
     {I : Type u} {J : Type v} {K : Type w}
@@ -268,7 +321,10 @@ theorem taggedFunction_comp
       simp [taggedFunction,
         CompleteGeometryFunctionGraphSeparation.taggedMap]
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). A leading identity one-index code is eliminated. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+A leading identity one-index code is eliminated. -/
 @[simp]
 theorem id_comp
     {I : Type u} {J : Type v} {indexMap : I → J}
@@ -284,7 +340,10 @@ theorem id_comp
     PrimitiveFunctionGraph.GraphCode.assemble_read]
   rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). A trailing identity one-index code is eliminated. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+A trailing identity one-index code is eliminated. -/
 @[simp]
 theorem comp_id
     {I : Type u} {J : Type v} {indexMap : I → J}
@@ -301,7 +360,10 @@ theorem comp_id
     PrimitiveFunctionGraph.GraphCode.assemble_read]
   rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). One-index graph-family composition reassociates to the right. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+One-index graph-family composition reassociates to the right. -/
 @[simp]
 theorem assoc
     {I : Type u} {J : Type v} {K : Type w} {L : Type x}
@@ -319,7 +381,9 @@ end IndexedFunctionGraphCode
 
 /-! ## Two-index dependent function graphs -/
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Cycle 70 raw data for a function family depending on two endpoint maps.
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Cycle 70 raw data for a function family depending on two endpoint maps.
 This is the operation-map presentation required by the fixed obligation. -/
 abbrev BiIndexedFunctionGraphCode
     {I₁ : Type u} {I₂ : Type v} {J₁ : Type w} {J₂ : Type x}
@@ -330,7 +394,9 @@ abbrev BiIndexedFunctionGraphCode
 
 namespace BiIndexedFunctionGraphCode
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Main Cycle 70 assembler for two-endpoint graph families. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Main Cycle 70 assembler for two-endpoint graph families. -/
 def assemble
     {I₁ : Type u} {I₂ : Type v} {J₁ : Type w} {J₂ : Type x}
     {firstIndex : I₁ → J₁} {secondIndex : I₂ → J₂}
@@ -339,7 +405,9 @@ def assemble
     ∀ i j, A i j → B (firstIndex i) (secondIndex j) :=
   fun i j => (code i j).assemble
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Inverse construction for the two-index main theorem. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Inverse construction for the two-index main theorem. -/
 noncomputable def read
     {I₁ : Type u} {I₂ : Type v} {J₁ : Type w} {J₂ : Type x}
     {firstIndex : I₁ → J₁} {secondIndex : I₂ → J₂}
@@ -348,7 +416,10 @@ noncomputable def read
     BiIndexedFunctionGraphCode firstIndex secondIndex A B :=
   fun i j => PrimitiveFunctionGraph.GraphCode.read (family i j)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). First two-index inverse law. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+First two-index inverse law. -/
 @[simp]
 theorem read_assemble
     {I₁ : Type u} {I₂ : Type v} {J₁ : Type w} {J₂ : Type x}
@@ -359,7 +430,10 @@ theorem read_assemble
   funext i j
   exact PrimitiveFunctionGraph.GraphCode.read_assemble (code i j)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Second two-index inverse law. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Second two-index inverse law. -/
 @[simp]
 theorem assemble_read
     {I₁ : Type u} {I₂ : Type v} {J₁ : Type w} {J₂ : Type x}
@@ -370,7 +444,9 @@ theorem assemble_read
   funext i j
   exact PrimitiveFunctionGraph.GraphCode.assemble_read (family i j)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Cycle 70 principal operation-family universal property. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Cycle 70 principal operation-family universal property. -/
 noncomputable def equivFamily
     {I₁ : Type u} {I₂ : Type v} {J₁ : Type w} {J₂ : Type x}
     {firstIndex : I₁ → J₁} {secondIndex : I₂ → J₂}
@@ -382,7 +458,9 @@ noncomputable def equivFamily
   left_inv := read_assemble
   right_inv := assemble_read
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Universal law-preserving refinement of the two-endpoint equivalence. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Universal law-preserving refinement of the two-endpoint equivalence. -/
 noncomputable def equivLawfulFamily
     {I₁ : Type u} {I₂ : Type v} {J₁ : Type w} {J₂ : Type x}
     {firstIndex : I₁ → J₁} {secondIndex : I₂ → J₂}
@@ -403,7 +481,9 @@ noncomputable def equivLawfulFamily
     apply Subtype.ext
     exact assemble_read family.1
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Tagged ordinary operation-like function retaining both endpoints. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Tagged ordinary operation-like function retaining both endpoints. -/
 def taggedFunction
     {I₁ : Type u} {I₂ : Type v} {J₁ : Type w} {J₂ : Type x}
     {firstIndex : I₁ → J₁} {secondIndex : I₂ → J₂}
@@ -413,7 +493,10 @@ def taggedFunction
   fun value => ⟨firstIndex value.1, secondIndex value.2.1,
     code.assemble value.1 value.2.1 value.2.2⟩
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Cycle 70 supporting API for `BiIndexedFunctionGraphCode`: evaluate the
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Cycle 70 supporting API for `BiIndexedFunctionGraphCode`: evaluate the
 two-endpoint tagged comparison without unfolding its sigma implementation.
 Its only inputs are the two fixed endpoint maps and fiber code. -/
 @[simp]
@@ -427,7 +510,9 @@ theorem taggedFunction_apply
       ⟨firstIndex i, secondIndex j, code.assemble i j value⟩ :=
   rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Primitive graph of the tagged two-index function. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Primitive graph of the tagged two-index function. -/
 noncomputable def taggedForward
     {I₁ : Type u} {I₂ : Type v} {J₁ : Type w} {J₂ : Type x}
     {firstIndex : I₁ → J₁} {secondIndex : I₂ → J₂}
@@ -437,7 +522,10 @@ noncomputable def taggedForward
       (Σ i, Σ j, A i j) (Σ i, Σ j, B i j) :=
   PrimitiveFunctionGraph.GraphCode.read code.taggedFunction
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Tagged two-index graph assembly recovers its ordinary function. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Tagged two-index graph assembly recovers its ordinary function. -/
 @[simp]
 theorem assemble_taggedForward
     {I₁ : Type u} {I₂ : Type v} {J₁ : Type w} {J₂ : Type x}
@@ -447,7 +535,10 @@ theorem assemble_taggedForward
     code.taggedForward.assemble = code.taggedFunction :=
   PrimitiveFunctionGraph.GraphCode.assemble_read _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Tagged two-index graphs jointly separate every endpoint-indexed fiber. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Tagged two-index graphs jointly separate every endpoint-indexed fiber. -/
 theorem taggedForward_injective
     {I₁ : Type u} {I₂ : Type v} {J₁ : Type w} {J₂ : Type x}
     {firstIndex : I₁ → J₁} {secondIndex : I₂ → J₂}
@@ -466,14 +557,18 @@ theorem taggedForward_injective
   have tail_eq := (Sigma.mk.inj_iff.mp value_eq).2
   exact eq_of_heq (Sigma.mk.inj_iff.mp (eq_of_heq tail_eq)).2
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Identity two-index family code. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Identity two-index family code. -/
 noncomputable def id
     {I₁ : Type u} {I₂ : Type v} {A : I₁ → I₂ → Type y} :
     BiIndexedFunctionGraphCode (_root_.id : I₁ → I₁)
       (_root_.id : I₂ → I₂) A A :=
   read (fun _ _ => _root_.id)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Componentwise composition of two-index family codes. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Componentwise composition of two-index family codes. -/
 noncomputable def comp
     {I₁ : Type u} {I₂ : Type v} {J₁ : Type w} {J₂ : Type x}
     {K₁ : Type y} {K₂ : Type z}
@@ -488,7 +583,10 @@ noncomputable def comp
   fun i j => PrimitiveFunctionGraph.GraphCode.comp
     (first i j) (second (firstIndex₁ i) (firstIndex₂ j))
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Assembly sends two-index code composition to dependent function
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Assembly sends two-index code composition to dependent function
 composition. -/
 @[simp]
 theorem assemble_comp
@@ -506,7 +604,10 @@ theorem assemble_comp
   funext i j value
   simp [comp, assemble]
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Tagged two-index functions compose with both endpoint maps. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Tagged two-index functions compose with both endpoint maps. -/
 theorem taggedFunction_comp
     {I₁ : Type u} {I₂ : Type v} {J₁ : Type w} {J₂ : Type x}
     {K₁ : Type y} {K₂ : Type z}
@@ -524,7 +625,10 @@ theorem taggedFunction_comp
       cases tail with
       | mk j value => simp [taggedFunction, comp, assemble]
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). A leading identity two-index code is eliminated. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+A leading identity two-index code is eliminated. -/
 @[simp]
 theorem id_comp
     {I₁ : Type u} {I₂ : Type v} {J₁ : Type w} {J₂ : Type x}
@@ -541,7 +645,10 @@ theorem id_comp
     PrimitiveFunctionGraph.GraphCode.assemble_read]
   rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). A trailing identity two-index code is eliminated. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+A trailing identity two-index code is eliminated. -/
 @[simp]
 theorem comp_id
     {I₁ : Type u} {I₂ : Type v} {J₁ : Type w} {J₂ : Type x}
@@ -560,7 +667,10 @@ theorem comp_id
     PrimitiveFunctionGraph.GraphCode.assemble_read]
   rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Two-index graph-family composition reassociates to the right. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Two-index graph-family composition reassociates to the right. -/
 @[simp]
 theorem assoc
     {I₁ I₂ J₁ J₂ K₁ K₂ L₁ L₂ : Type*}
@@ -581,7 +691,9 @@ end BiIndexedFunctionGraphCode
 
 /-! ## Law-preserving ordinary graphs -/
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Universal law-preserving refinement of the primitive function-graph
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Universal law-preserving refinement of the primitive function-graph
 equivalence, used for the remaining invariant and raw index maps. -/
 noncomputable def graphEquivLawfulFunction
     {A : Type u} {B : Type v} (Law : (A → B) → Prop) :
@@ -600,7 +712,9 @@ noncomputable def graphEquivLawfulFunction
 
 /-! ## Remaining core laws -/
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Operation naturality required by the Cycle 70 fixed obligation, stated
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Operation naturality required by the Cycle 70 fixed obligation, stated
 for an arbitrary dependent operation family and independently supplied object
 and configuration maps. -/
 def IsOperationNatural {U : AtomCarrier.{u}} (P Q : AATCorePackage U)
@@ -618,7 +732,9 @@ def IsOperationNatural {U : AtomCarrier.{u}} (P Q : AATCorePackage U)
         (configurationMap B)
         (P.reading.operationReading.configurationMap op)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Invariant-transport law required by Cycle 70, separated from the graph of
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Invariant-transport law required by Cycle 70, separated from the graph of
 the invariant-index function. -/
 def IsInvariantTransport {U : AtomCarrier.{u}} (P Q : AATCorePackage U)
     (objectMap : ArchitectureObject U → ArchitectureObject U)
@@ -630,7 +746,10 @@ def IsInvariantTransport {U : AtomCarrier.{u}} (P Q : AATCorePackage U)
       (Q.reading.invariantReading.invariant (invariantMap i))
       _root_.id objectMap
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). A concrete failed operation square refutes operation naturality.  This is
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+A concrete failed operation square refutes operation naturality.  This is
 the negative-instance constructor for carrier-specific fixtures. -/
 theorem not_isOperationNatural_of_counterexample {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U}
@@ -649,7 +768,10 @@ theorem not_isOperationNatural_of_counterexample {U : AtomCarrier.{u}}
     ¬ IsOperationNatural P Q objectMap configurationMap operationMap :=
   fun natural => failure (natural A B op)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). A failed invariant at one index refutes invariant transport. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+A failed invariant at one index refutes invariant transport. -/
 theorem not_isInvariantTransport_of_counterexample {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U}
     {objectMap : ArchitectureObject U → ArchitectureObject U}
@@ -663,7 +785,9 @@ theorem not_isInvariantTransport_of_counterexample {U : AtomCarrier.{u}}
     ¬ IsInvariantTransport P Q objectMap invariantMap :=
   fun transport => failure (transport i)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Law-bearing operation graph code over explicit object and configuration
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Law-bearing operation graph code over explicit object and configuration
 maps.  The ambient maps are local data, not a completed core morphism. -/
 abbrev LawfulOperationGraphCode {U : AtomCarrier.{u}}
     (P Q : AATCorePackage U)
@@ -677,7 +801,9 @@ abbrev LawfulOperationGraphCode {U : AtomCarrier.{u}}
 
 namespace LawfulOperationGraphCode
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Identity operation code with its naturality law. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Identity operation code with its naturality law. -/
 noncomputable def id {U : AtomCarrier.{u}} (P : AATCorePackage U) :
     LawfulOperationGraphCode P P _root_.id
       (fun A => ConfigurationHom.id A.configuration) := by
@@ -706,7 +832,9 @@ noncomputable def id {U : AtomCarrier.{u}} (P : AATCorePackage U) :
   funext atom
   rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Componentwise composition preserves operation naturality. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Componentwise composition preserves operation naturality. -/
 noncomputable def comp {U : AtomCarrier.{u}}
     {P Q R : AATCorePackage U}
     {firstObject secondObject : ArchitectureObject U → ArchitectureObject U}
@@ -730,7 +858,10 @@ noncomputable def comp {U : AtomCarrier.{u}}
   rw [← Function.comp_assoc, secondLaw, Function.comp_assoc, firstLaw,
     ← Function.comp_assoc]
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Assembly of lawful operation composition is pointwise function
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Assembly of lawful operation composition is pointwise function
 composition. -/
 theorem assemble_comp {U : AtomCarrier.{u}}
     {P Q R : AATCorePackage U}
@@ -748,7 +879,9 @@ theorem assemble_comp {U : AtomCarrier.{u}}
 
 end LawfulOperationGraphCode
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Law-bearing invariant graph code over an explicit object map. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Law-bearing invariant graph code over an explicit object map. -/
 abbrev LawfulInvariantGraphCode {U : AtomCarrier.{u}}
     (P Q : AATCorePackage U)
     (objectMap : ArchitectureObject U → ArchitectureObject U) :=
@@ -756,7 +889,10 @@ abbrev LawfulInvariantGraphCode {U : AtomCarrier.{u}}
       P.reading.invariantReading.Index Q.reading.invariantReading.Index //
     IsInvariantTransport P Q objectMap code.assemble }
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Composition law for transported invariants, stated publicly for the
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Composition law for transported invariants, stated publicly for the
 law-bearing invariant graph API. -/
 theorem invariantTransportedAlong_comp {U : AtomCarrier.{u}}
     (I J K : Invariant U) {ι : Type w}
@@ -777,7 +913,10 @@ theorem invariantTransportedAlong_comp {U : AtomCarrier.{u}}
   · exact False.elim second
   · exact fun A => (first A).trans (second A)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Precomposition law for transported invariants. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Precomposition law for transported invariants. -/
 theorem invariantTransportedAlong_precomp {U : AtomCarrier.{u}}
     (I J : Invariant U) {ι κ : Type w}
     (source target : ι → ArchitectureObject U) (index : κ → ι)
@@ -792,7 +931,9 @@ theorem invariantTransportedAlong_precomp {U : AtomCarrier.{u}}
 
 namespace LawfulInvariantGraphCode
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Identity invariant code with reflexive transport. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Identity invariant code with reflexive transport. -/
 noncomputable def id {U : AtomCarrier.{u}} (P : AATCorePackage U) :
     LawfulInvariantGraphCode P P _root_.id := by
   refine ⟨PrimitiveFunctionGraph.GraphCode.id, ?_⟩
@@ -800,7 +941,9 @@ noncomputable def id {U : AtomCarrier.{u}} (P : AATCorePackage U) :
   simpa using Invariant.transportedAlong_refl
     (P.reading.invariantReading.invariant i) _root_.id
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Componentwise composition preserves invariant transport. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Componentwise composition preserves invariant transport. -/
 noncomputable def comp {U : AtomCarrier.{u}}
     {P Q R : AATCorePackage U}
     {firstObject secondObject : ArchitectureObject U → ArchitectureObject U}
@@ -814,7 +957,10 @@ noncomputable def comp {U : AtomCarrier.{u}}
       (invariantTransportedAlong_precomp _ _ _ _ firstObject
         (second.2 (first.1.assemble i)))
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Assembly of lawful invariant composition is ordinary function
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Assembly of lawful invariant composition is ordinary function
 composition. -/
 theorem assemble_comp {U : AtomCarrier.{u}}
     {P Q R : AATCorePackage U}
@@ -828,7 +974,9 @@ end LawfulInvariantGraphCode
 
 /-! ## Geometry realization supply from graph families -/
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Raw Cycle 70 graph data for the three context-indexed geometry
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Raw Cycle 70 graph data for the three context-indexed geometry
 realization families over a fixed core-package morphism. -/
 structure RealizationGraphData {U : AtomCarrier.{u}}
     (P Q : AATCorePackage U) (f : PackageTotalHom P Q) where
@@ -845,7 +993,9 @@ structure RealizationGraphData {U : AtomCarrier.{u}}
     (fun W : Site.ContextCategoryObject P.contextPreorder => W.ctx.Observable)
     (fun W : Site.ContextCategoryObject Q.contextPreorder => W.ctx.Observable)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The independent reading-preservation and restriction-naturality laws for
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+The independent reading-preservation and restriction-naturality laws for
 Cycle 70 realization graph data.  These are the premises of the fixed
 obligation, not a stored geometry lift. -/
 structure IsRealizationGraphCode {U : AtomCarrier.{u}}
@@ -888,7 +1038,10 @@ structure IsRealizationGraphCode {U : AtomCarrier.{u}}
       data.observable.assemble W
         ((P.contextPreorder.morphism (leOfHom w)).observableRestrict observable)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). One failed support-reading witness refutes realization graph coherence.
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+One failed support-reading witness refutes realization graph coherence.
 Carrier-specific fixtures need not negate all nine fields. -/
 theorem not_isRealizationGraphCode_of_support_counterexample
     {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
@@ -901,14 +1054,18 @@ theorem not_isRealizationGraphCode_of_support_counterexample
   fun coherent => targetFails
     (coherent.supportReads W support atom sourceReads)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Graph-presented Cycle 70 realization supply. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Graph-presented Cycle 70 realization supply. -/
 abbrev RealizationGraphCode {U : AtomCarrier.{u}}
     (P Q : AATCorePackage U) (f : PackageTotalHom P Q) :=
   { data : RealizationGraphData P Q f // IsRealizationGraphCode data }
 
 namespace RealizationGraphCode
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Assemble the three graph families and their independent laws into the
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Assemble the three graph families and their independent laws into the
 existing `RealizationTransportSupply` API. -/
 def assemble {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U} {f : PackageTotalHom P Q}
@@ -924,7 +1081,9 @@ def assemble {U : AtomCarrier.{u}}
   axis_naturality := code.2.axis_naturality
   observable_naturality := code.2.observable_naturality
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Read an existing realization supply into independent fiber graph codes and
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Read an existing realization supply into independent fiber graph codes and
 the same local laws. -/
 noncomputable def read {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U} {f : PackageTotalHom P Q}
@@ -953,7 +1112,10 @@ noncomputable def read {U : AtomCarrier.{u}}
       intro W V w observable
       simpa using supply.observable_naturality w observable }⟩
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Realization graph codes are determined by their three raw graph families. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Realization graph codes are determined by their three raw graph families. -/
 @[ext]
 theorem ext {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U} {f : PackageTotalHom P Q}
@@ -974,7 +1136,10 @@ theorem ext {U : AtomCarrier.{u}}
           cases observable
           rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Realization supplies are determined by their three computational
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Realization supplies are determined by their three computational
 comparison families; all remaining fields are propositions. -/
 theorem supply_ext {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U} {f : PackageTotalHom P Q}
@@ -990,7 +1155,10 @@ theorem supply_ext {U : AtomCarrier.{u}}
   cases observable
   rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). First Cycle 70 realization inverse law. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+First Cycle 70 realization inverse law. -/
 @[simp]
 theorem read_assemble {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U} {f : PackageTotalHom P Q}
@@ -999,7 +1167,10 @@ theorem read_assemble {U : AtomCarrier.{u}}
   apply ext <;> funext W
   all_goals exact PrimitiveFunctionGraph.GraphCode.read_assemble _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Second Cycle 70 realization inverse law. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Second Cycle 70 realization inverse law. -/
 @[simp]
 theorem assemble_read {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U} {f : PackageTotalHom P Q}
@@ -1008,7 +1179,9 @@ theorem assemble_read {U : AtomCarrier.{u}}
   apply supply_ext <;> funext W
   all_goals exact PrimitiveFunctionGraph.GraphCode.assemble_read _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Cycle 70 principal geometry-realization universal property. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Cycle 70 principal geometry-realization universal property. -/
 noncomputable def equivSupply {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U} {f : PackageTotalHom P Q} :
     RealizationGraphCode P Q f ≃ RealizationTransportSupply P Q f where
@@ -1017,7 +1190,9 @@ noncomputable def equivSupply {U : AtomCarrier.{u}}
   left_inv := read_assemble
   right_inv := assemble_read
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Identity realization supply, defined without a geometry morphism. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Identity realization supply, defined without a geometry morphism. -/
 noncomputable def supplyId {U : AtomCarrier.{u}} (P : AATCorePackage U) :
     RealizationTransportSupply P P (PackageTotalHom.id P) where
   supportComp _ := _root_.id
@@ -1030,7 +1205,9 @@ noncomputable def supplyId {U : AtomCarrier.{u}} (P : AATCorePackage U) :
   axis_naturality _ _ := rfl
   observable_naturality _ _ := rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Composition of realization supplies.  All three local carriers and all
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Composition of realization supplies.  All three local carriers and all
 reading and naturality laws compose componentwise. -/
 noncomputable def supplyComp {U : AtomCarrier.{u}}
     {P Q R : AATCorePackage U}
@@ -1065,12 +1242,16 @@ noncomputable def supplyComp {U : AtomCarrier.{u}}
     rw [second.observable_naturality ((coreContextFunctor f).map w),
       first.observable_naturality w]
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Identity realization graph code, obtained by the inverse of assembly. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Identity realization graph code, obtained by the inverse of assembly. -/
 noncomputable def id {U : AtomCarrier.{u}} (P : AATCorePackage U) :
     RealizationGraphCode P P (PackageTotalHom.id P) :=
   read (supplyId P)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Composition of law-bearing realization graph codes. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Composition of law-bearing realization graph codes. -/
 noncomputable def comp {U : AtomCarrier.{u}}
     {P Q R : AATCorePackage U}
     {f : PackageTotalHom P Q} {g : PackageTotalHom Q R}
@@ -1079,13 +1260,19 @@ noncomputable def comp {U : AtomCarrier.{u}}
     RealizationGraphCode P R (PackageTotalHom.comp f g) :=
   read (supplyComp first.assemble second.assemble)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Assembly preserves the identity realization code exactly. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Assembly preserves the identity realization code exactly. -/
 @[simp]
 theorem assemble_id {U : AtomCarrier.{u}} (P : AATCorePackage U) :
     (id P).assemble = supplyId P :=
   assemble_read _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Assembly preserves composition of law-bearing realization codes. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Assembly preserves composition of law-bearing realization codes. -/
 @[simp]
 theorem assemble_comp {U : AtomCarrier.{u}}
     {P Q R : AATCorePackage U}
@@ -1099,7 +1286,9 @@ end RealizationGraphCode
 
 /-! ## Signature graph coherence -/
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Independent signature-axis graph and coordinate-equivalence graph family.
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Independent signature-axis graph and coordinate-equivalence graph family.
 The coordinate target index is derived from the assembled axis graph. -/
 structure SignatureGraphData {U : AtomCarrier.{u}}
     (P Q : AATCorePackage U) where
@@ -1111,7 +1300,9 @@ structure SignatureGraphData {U : AtomCarrier.{u}}
     P.reading.signatureReading.Coordinate
     Q.reading.signatureReading.Coordinate
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Cycle 70 signature laws, separated from the raw axis and coordinate
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Cycle 70 signature laws, separated from the raw axis and coordinate
 graphs. -/
 structure IsSignatureGraphCode {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U}
@@ -1128,7 +1319,10 @@ structure IsSignatureGraphCode {U : AtomCarrier.{u}}
       Q.reading.signatureReading.coordinate
         (objectMap A) (data.axis.assemble i)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). One selected-axis mismatch refutes signature graph coherence. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+One selected-axis mismatch refutes signature graph coherence. -/
 theorem not_isSignatureGraphCode_of_selected_counterexample
     {U : AtomCarrier.{u}} {P Q : AATCorePackage U}
     {objectMap : ArchitectureObject U → ArchitectureObject U}
@@ -1139,14 +1333,18 @@ theorem not_isSignatureGraphCode_of_selected_counterexample
     ¬ IsSignatureGraphCode objectMap data :=
   fun coherent => failure (coherent.axis_selected_iff i)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Graph-presented signature coherence for the fixed object map. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Graph-presented signature coherence for the fixed object map. -/
 abbrev SignatureGraphCode {U : AtomCarrier.{u}}
     (P Q : AATCorePackage U)
     (objectMap : ArchitectureObject U → ArchitectureObject U) :=
   { data : SignatureGraphData P Q //
     IsSignatureGraphCode objectMap data }
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Completed signature transport used only as the output of graph assembly.
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Completed signature transport used only as the output of graph assembly.
 It records the two maps and the same local laws, but no core morphism. -/
 structure SignatureTransportSupply {U : AtomCarrier.{u}}
     (P Q : AATCorePackage U)
@@ -1169,7 +1367,9 @@ structure SignatureTransportSupply {U : AtomCarrier.{u}}
 
 namespace SignatureGraphCode
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Assemble signature axis and coordinate graphs into completed local
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Assemble signature axis and coordinate graphs into completed local
 transport data. -/
 def assemble {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U}
@@ -1181,7 +1381,9 @@ def assemble {U : AtomCarrier.{u}}
   axis_selected_iff := code.2.axis_selected_iff
   coordinate_eq := code.2.coordinate_eq
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Read completed local signature transport into independent axis and
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Read completed local signature transport into independent axis and
 coordinate graph codes. -/
 noncomputable def read {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U}
@@ -1224,7 +1426,10 @@ noncomputable def read {U : AtomCarrier.{u}}
     exact eq_of_heq (HEq.trans value_heq
       (HEq.trans (heq_of_eq (supply.coordinate_eq A i)) target_heq))
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Signature graph codes are determined by the assembled axis map and
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Signature graph codes are determined by the assembled axis map and
 coordinate family; their remaining fields are propositions. -/
 theorem ext {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U}
@@ -1243,7 +1448,10 @@ theorem ext {U : AtomCarrier.{u}}
           cases coordinate
           rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Completed signature supplies are determined by their two computational
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Completed signature supplies are determined by their two computational
 families. -/
 theorem supply_ext {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U}
@@ -1258,7 +1466,10 @@ theorem supply_ext {U : AtomCarrier.{u}}
   cases coordinate
   rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Reading after signature assembly recovers both dependent graph families. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Reading after signature assembly recovers both dependent graph families. -/
 @[simp]
 theorem read_assemble {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U}
@@ -1278,7 +1489,10 @@ theorem read_assemble {U : AtomCarrier.{u}}
                 (IndexedEquivGraphCode.read coordinate.assemble))
             exact heq_of_eq (IndexedEquivGraphCode.read_assemble coordinate)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Assembly after signature reading recovers both completed families. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Assembly after signature reading recovers both completed families. -/
 @[simp]
 theorem assemble_read {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U}
@@ -1294,7 +1508,9 @@ theorem assemble_read {U : AtomCarrier.{u}}
         (IndexedEquivGraphCode.read supply.coordinateEquiv))
     exact heq_of_eq (IndexedEquivGraphCode.assemble_read _)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Exact Cycle 70 equivalence between signature graph codes and completed
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Exact Cycle 70 equivalence between signature graph codes and completed
 local signature transport. -/
 noncomputable def equivSupply {U : AtomCarrier.{u}}
     {P Q : AATCorePackage U}
@@ -1306,7 +1522,9 @@ noncomputable def equivSupply {U : AtomCarrier.{u}}
   left_inv := read_assemble
   right_inv := assemble_read
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Identity completed signature transport. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Identity completed signature transport. -/
 def supplyId {U : AtomCarrier.{u}} (P : AATCorePackage U) :
     SignatureTransportSupply P P _root_.id where
   axisMap := _root_.id
@@ -1314,7 +1532,9 @@ def supplyId {U : AtomCarrier.{u}} (P : AATCorePackage U) :
   axis_selected_iff _ := Iff.rfl
   coordinate_eq _ _ := rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Componentwise composition of completed local signature transports. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Componentwise composition of completed local signature transports. -/
 def supplyComp {U : AtomCarrier.{u}}
     {P Q R : AATCorePackage U}
     {firstObject secondObject : ArchitectureObject U → ArchitectureObject U}
@@ -1333,12 +1553,16 @@ def supplyComp {U : AtomCarrier.{u}}
     rw [first.coordinate_eq A i]
     exact second.coordinate_eq (firstObject A) (first.axisMap i)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Identity law-bearing signature graph code. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Identity law-bearing signature graph code. -/
 noncomputable def id {U : AtomCarrier.{u}} (P : AATCorePackage U) :
     SignatureGraphCode P P _root_.id :=
   read (supplyId P)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Composition of law-bearing signature graph codes. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Composition of law-bearing signature graph codes. -/
 noncomputable def comp {U : AtomCarrier.{u}}
     {P Q R : AATCorePackage U}
     {firstObject secondObject : ArchitectureObject U → ArchitectureObject U}
@@ -1347,7 +1571,10 @@ noncomputable def comp {U : AtomCarrier.{u}}
     SignatureGraphCode P R (secondObject ∘ firstObject) :=
   read (supplyComp first.assemble second.assemble)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Signature assembly preserves componentwise composition. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Signature assembly preserves componentwise composition. -/
 @[simp]
 theorem assemble_comp {U : AtomCarrier.{u}}
     {P Q R : AATCorePackage U}
@@ -1364,7 +1591,9 @@ end SignatureGraphCode
 
 namespace CompleteGeometryRemainingComponentCode
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Extract the existing realization-supply part of an actual complete
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Extract the existing realization-supply part of an actual complete
 geometry morphism.  This is an output target for graph assembly, not a field
 of the graph code. -/
 def realizationSupply {U : AtomCarrier.{u}}
@@ -1380,14 +1609,19 @@ def realizationSupply {U : AtomCarrier.{u}}
   axis_naturality := morphism.geometry.axis_naturality
   observable_naturality := morphism.geometry.observable_naturality
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Read all three actual realization families and their laws into one Cycle
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Read all three actual realization families and their laws into one Cycle
 70 graph code. -/
 noncomputable def realization {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     RealizationGraphCode G.core H.core morphism.base :=
   RealizationGraphCode.read (realizationSupply morphism)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Joint realization assembly recovers every actual comparison family and
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Joint realization assembly recovers every actual comparison family and
 its reading/naturality laws. -/
 @[simp]
 theorem realization_assemble {U : AtomCarrier.{u}}
@@ -1395,7 +1629,9 @@ theorem realization_assemble {U : AtomCarrier.{u}}
     (realization morphism).assemble = realizationSupply morphism :=
   RealizationGraphCode.assemble_read _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Read the actual operation family into the Cycle 70 two-endpoint graph
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Read the actual operation family into the Cycle 70 two-endpoint graph
 presentation.  The ambient endpoint map is the actual object map, but no
 completed geometry morphism is retained in the resulting code. -/
 noncomputable def operation {U : AtomCarrier.{u}}
@@ -1407,7 +1643,10 @@ noncomputable def operation {U : AtomCarrier.{u}}
   BiIndexedFunctionGraphCode.read
     (fun A B op => morphism.base.upper.operationMap (A := A) (B := B) op)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Operation-family assembly recovers the actual dependent operation map. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Operation-family assembly recovers the actual dependent operation map. -/
 theorem operation_assemble {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     ∀ A B op, (operation morphism).assemble A B op =
@@ -1418,7 +1657,10 @@ theorem operation_assemble {U : AtomCarrier.{u}}
       (fun op : G.core.reading.operationReading.Op A B =>
         morphism.base.upper.operationMap (A := A) (B := B) op)) op
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The tagged operation graph is the existing complete-map operation field. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+The tagged operation graph is the existing complete-map operation field. -/
 theorem operation_taggedForward {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     (operation morphism).taggedForward =
@@ -1435,7 +1677,9 @@ theorem operation_taggedForward {U : AtomCarrier.{u}}
             PrimitiveFunctionGraph.GraphCode.assemble_read, operationMap]
           rw [operation_assemble]
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The actual operation reading satisfies the independently stated Cycle 70
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+The actual operation reading satisfies the independently stated Cycle 70
 naturality law. -/
 noncomputable def lawfulOperation {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
@@ -1450,7 +1694,10 @@ noncomputable def lawfulOperation {U : AtomCarrier.{u}}
   rw [operation_assemble]
   exact morphism.base.upper.operation_naturality op
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Lawful-family assembly of the actual operation reading recovers the
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Lawful-family assembly of the actual operation reading recovers the
 operation map and its naturality proof as one subtype value. -/
 theorem lawfulOperation_assemble {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
@@ -1463,7 +1710,9 @@ theorem lawfulOperation_assemble {U : AtomCarrier.{u}}
   funext A B op
   exact operation_assemble morphism A B op
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Read the invariant-index map as an independent primitive graph. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Read the invariant-index map as an independent primitive graph. -/
 noncomputable def invariant {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     PrimitiveFunctionGraph.GraphCode
@@ -1471,14 +1720,20 @@ noncomputable def invariant {U : AtomCarrier.{u}}
       H.core.reading.invariantReading.Index :=
   PrimitiveFunctionGraph.GraphCode.read morphism.base.upper.invariantMap
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Invariant graph assembly recovers the actual invariant-index map. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Invariant graph assembly recovers the actual invariant-index map. -/
 @[simp]
 theorem invariant_assemble {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     (invariant morphism).assemble = morphism.base.upper.invariantMap :=
   PrimitiveFunctionGraph.GraphCode.assemble_read _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The independent invariant graph is the existing complete-map field. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+The independent invariant graph is the existing complete-map field. -/
 theorem invariant_eq_completeGraph {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     invariant morphism = (readCompleteMapGraphs morphism).invariant := by
@@ -1486,7 +1741,9 @@ theorem invariant_eq_completeGraph {U : AtomCarrier.{u}}
   rw [invariant_assemble]
   simp [readCompleteMapGraphs]
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The actual invariant graph satisfies the independently stated transport
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+The actual invariant graph satisfies the independently stated transport
 law rather than storing the completed invariant map. -/
 noncomputable def lawfulInvariant {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
@@ -1500,7 +1757,10 @@ noncomputable def lawfulInvariant {U : AtomCarrier.{u}}
   rw [invariant_assemble]
   exact morphism.base.upper.invariant_transport i
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Lawful graph assembly recovers the actual invariant-index function. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Lawful graph assembly recovers the actual invariant-index function. -/
 theorem lawfulInvariant_assemble {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     (graphEquivLawfulFunction
@@ -1508,7 +1768,9 @@ theorem lawfulInvariant_assemble {U : AtomCarrier.{u}}
       (lawfulInvariant morphism)).1 = morphism.base.upper.invariantMap :=
   invariant_assemble morphism
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Read the signature-axis map as an independent primitive graph. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Read the signature-axis map as an independent primitive graph. -/
 noncomputable def signatureAxis {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     PrimitiveFunctionGraph.GraphCode
@@ -1516,14 +1778,20 @@ noncomputable def signatureAxis {U : AtomCarrier.{u}}
       H.core.reading.signatureReading.Axis :=
   PrimitiveFunctionGraph.GraphCode.read morphism.base.upper.axisMap
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Signature-axis graph assembly recovers the actual axis map. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Signature-axis graph assembly recovers the actual axis map. -/
 @[simp]
 theorem signatureAxis_assemble {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     (signatureAxis morphism).assemble = morphism.base.upper.axisMap :=
   PrimitiveFunctionGraph.GraphCode.assemble_read _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The independent signature-axis graph is the existing complete-map field. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+The independent signature-axis graph is the existing complete-map field. -/
 theorem signatureAxis_eq_completeGraph {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     signatureAxis morphism =
@@ -1532,7 +1800,9 @@ theorem signatureAxis_eq_completeGraph {U : AtomCarrier.{u}}
   rw [signatureAxis_assemble]
   simp [readCompleteMapGraphs]
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Read the actual coordinate-equivalence family over the independently read
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Read the actual coordinate-equivalence family over the independently read
 signature-axis graph. -/
 noncomputable def signatureCoordinate {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
@@ -1542,7 +1812,9 @@ noncomputable def signatureCoordinate {U : AtomCarrier.{u}}
   exact IndexedEquivGraphCode.reindex (signatureAxis_assemble morphism)
     (IndexedEquivGraphCode.read morphism.base.upper.coordinateEquiv)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Read the actual signature axis, coordinate equivalences, and their two
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Read the actual signature axis, coordinate equivalences, and their two
 compatibility laws into one independent Cycle 70 code. -/
 noncomputable def signature {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
@@ -1586,14 +1858,20 @@ noncomputable def signature {U : AtomCarrier.{u}}
     exact eq_of_heq
       (HEq.trans value_heq (HEq.trans (heq_of_eq actual_eq) target_heq))
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Signature-code axis assembly recovers the actual signature-axis map. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Signature-code axis assembly recovers the actual signature-axis map. -/
 @[simp]
 theorem signature_axis_assemble {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     (signature morphism).1.axis.assemble = morphism.base.upper.axisMap := by
   simpa only [signature] using signatureAxis_assemble morphism
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Signature-code coordinate assembly recovers the actual dependent
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Signature-code coordinate assembly recovers the actual dependent
 coordinate-equivalence family after transport along the axis equality. -/
 theorem signature_coordinate_assemble {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
@@ -1608,7 +1886,10 @@ theorem signature_coordinate_assemble {U : AtomCarrier.{u}}
     exact heq_of_eq (IndexedEquivGraphCode.assemble_read _)
   simpa only [signature] using recovered
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The tagged coordinate graph over the independently assembled axis is the
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+The tagged coordinate graph over the independently assembled axis is the
 coordinate field of the accepted complete-map graph surface. -/
 theorem signatureCoordinate_taggedForward {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
@@ -1628,7 +1909,9 @@ theorem signatureCoordinate_taggedForward {U : AtomCarrier.{u}}
         (IndexedEquivGraphCode.read morphism.base.upper.coordinateEquiv)
         i coordinateValue
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Read the context-indexed geometry-support family into one-index graph
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Read the context-indexed geometry-support family into one-index graph
 codes over the actual context-object action. -/
 noncomputable def support {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
@@ -1637,21 +1920,30 @@ noncomputable def support {U : AtomCarrier.{u}}
       (fun W : H.site.category => W.ctx.Support) :=
   IndexedFunctionGraphCode.read morphism.geometry.supportComp
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The support projection of the joint realization code is the standalone
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+The support projection of the joint realization code is the standalone
 support reading. -/
 theorem realization_support {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     (realization morphism).1.support = support morphism :=
   rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Support-family assembly recovers the actual support comparison. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Support-family assembly recovers the actual support comparison. -/
 @[simp]
 theorem support_assemble {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     (support morphism).assemble = morphism.geometry.supportComp :=
   IndexedFunctionGraphCode.assemble_read _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The tagged support graph is the existing complete-map support field. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+The tagged support graph is the existing complete-map support field. -/
 theorem support_taggedForward {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     (support morphism).taggedForward =
@@ -1664,7 +1956,9 @@ theorem support_taggedForward {U : AtomCarrier.{u}}
       simp [IndexedFunctionGraphCode.taggedFunction_apply,
         supportMap, readCompleteMapGraphs, support_assemble]
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Read the context-indexed geometry-axis family into one-index graph codes. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Read the context-indexed geometry-axis family into one-index graph codes. -/
 noncomputable def geometryAxis {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     IndexedFunctionGraphCode (equationContextForwardMap morphism)
@@ -1672,21 +1966,30 @@ noncomputable def geometryAxis {U : AtomCarrier.{u}}
       (fun W : H.site.category => W.ctx.Axis) :=
   IndexedFunctionGraphCode.read morphism.geometry.axisComp
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The axis projection of the joint realization code is the standalone axis
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+The axis projection of the joint realization code is the standalone axis
 reading. -/
 theorem realization_axis {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     (realization morphism).1.axis = geometryAxis morphism :=
   rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Geometry-axis family assembly recovers the actual comparison. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Geometry-axis family assembly recovers the actual comparison. -/
 @[simp]
 theorem geometryAxis_assemble {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     (geometryAxis morphism).assemble = morphism.geometry.axisComp :=
   IndexedFunctionGraphCode.assemble_read _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The tagged geometry-axis graph is the existing complete-map field. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+The tagged geometry-axis graph is the existing complete-map field. -/
 theorem geometryAxis_taggedForward {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     (geometryAxis morphism).taggedForward =
@@ -1699,7 +2002,9 @@ theorem geometryAxis_taggedForward {U : AtomCarrier.{u}}
       simp [IndexedFunctionGraphCode.taggedFunction_apply,
         geometryAxisMap, readCompleteMapGraphs, geometryAxis_assemble]
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Read the context-indexed geometry-observable family into one-index graph
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Read the context-indexed geometry-observable family into one-index graph
 codes over the actual context-object action. -/
 noncomputable def geometryObservable {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
@@ -1708,21 +2013,30 @@ noncomputable def geometryObservable {U : AtomCarrier.{u}}
       (fun W : H.site.category => W.ctx.Observable) :=
   IndexedFunctionGraphCode.read morphism.geometry.observableComp
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The observable projection of the joint realization code is the standalone
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+The observable projection of the joint realization code is the standalone
 observable reading. -/
 theorem realization_observable {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     (realization morphism).1.observable = geometryObservable morphism :=
   rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Geometry-observable family assembly recovers the actual comparison. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Geometry-observable family assembly recovers the actual comparison. -/
 @[simp]
 theorem geometryObservable_assemble {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     (geometryObservable morphism).assemble = morphism.geometry.observableComp :=
   IndexedFunctionGraphCode.assemble_read _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The tagged geometry-observable graph is the existing complete-map field. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+The tagged geometry-observable graph is the existing complete-map field. -/
 theorem geometryObservable_taggedForward {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     (geometryObservable morphism).taggedForward =
@@ -1736,7 +2050,9 @@ theorem geometryObservable_taggedForward {U : AtomCarrier.{u}}
         geometryObservableMap, readCompleteMapGraphs,
         geometryObservable_assemble]
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The raw-transport equality is the remaining raw coherence premise of
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+The raw-transport equality is the remaining raw coherence premise of
 Cycle 70.  It contains no morphism data beyond the independently assembled
 core and coefficient maps. -/
 def IsRawTransportCoherent {U : AtomCarrier.{u}}
@@ -1745,7 +2061,10 @@ def IsRawTransportCoherent {U : AtomCarrier.{u}}
     (coefficientHom : G.Coefficient →+* H.Coefficient) : Prop :=
   H.raw = rawTransport baseHom coefficientHom
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Literal inequality of the two raw endpoints is the negative instance for
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Literal inequality of the two raw endpoints is the negative instance for
 raw-transport coherence. -/
 theorem not_isRawTransportCoherent_of_ne {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
@@ -1755,13 +2074,19 @@ theorem not_isRawTransportCoherent_of_ne {U : AtomCarrier.{u}}
     ¬ IsRawTransportCoherent G H baseHom coefficientHom :=
   failure
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Actual complete geometry supplies the raw-transport coherence law. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Actual complete geometry supplies the raw-transport coherence law. -/
 theorem rawTransport_coherent {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
     IsRawTransportCoherent G H morphism.base morphism.geometry.coefficientHom :=
   morphism.geometry.raw_eq
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Raw coherence contains the identity maps, so it is closed under the
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Raw coherence contains the identity maps, so it is closed under the
 identity operation used by complete geometry. -/
 theorem rawTransport_coherent_id {U : AtomCarrier.{u}}
     (G : GeometryPackage.{u, v} U) :
@@ -1769,7 +2094,10 @@ theorem rawTransport_coherent_id {U : AtomCarrier.{u}}
       (RingHom.id G.Coefficient) :=
   (rawTransport_id G).symm
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Raw coherence is closed under complete-geometry composition with the
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Raw coherence is closed under complete-geometry composition with the
 composite core and coefficient maps. -/
 theorem rawTransport_coherent_comp {U : AtomCarrier.{u}}
     {G H K : GeometryPackage.{u, v} U}
@@ -1805,7 +2133,9 @@ namespace ConcreteNegativeFixtures
 open AAT.AG.ReadingFunctorialityFinite
 open GeometryTransport.NegativeGeometryWitness
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Cycle 70 negative-fixture data: the total finite configuration makes both
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Cycle 70 negative-fixture data: the total finite configuration makes both
 identity and constant atom endomorphisms available.  It is supporting data
 for the concrete `IsOperationNatural` counterexample and has no premises. -/
 def totalConfiguration : AtomConfiguration FiniteModel.carrier where
@@ -1813,12 +2143,16 @@ def totalConfiguration : AtomConfiguration FiniteModel.carrier where
   relation := fun _ _ => True
   identification := fun _ _ => True
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Cycle 70 negative-fixture endpoint for operation naturality.  It is the
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Cycle 70 negative-fixture endpoint for operation naturality.  It is the
 architecture object on `totalConfiguration`, with no additional premise. -/
 def totalObject : ArchitectureObject FiniteModel.carrier :=
   FiniteModel.objectOfConfiguration totalConfiguration
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Cycle 70 negative-fixture map: collapse every finite Atom to component B.
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Cycle 70 negative-fixture map: collapse every finite Atom to component B.
 Totality of `totalConfiguration` discharges all preservation fields. -/
 def constantTotalEndomorphism :
     ConfigurationHom totalObject.configuration totalObject.configuration where
@@ -1827,7 +2161,10 @@ def constantTotalEndomorphism :
   maps_relation _ := trivial
   maps_identification _ := trivial
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Supporting separation fact for the operation counterexample: the constant
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Supporting separation fact for the operation counterexample: the constant
 endomorphism differs from identity at component A.  It has no premises. -/
 theorem constantTotalEndomorphism_ne_id :
     constantTotalEndomorphism ≠
@@ -1837,35 +2174,46 @@ theorem constantTotalEndomorphism_ne_id :
   have atA := congrFun atomEquality FiniteModel.FiniteAtom.componentA
   exact FiniteModel.FiniteAtom.noConfusion atA
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Cycle 70 negative-fixture operation reading exposing two independently
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Cycle 70 negative-fixture operation reading exposing two independently
 chosen configuration maps; the first projection is the source semantics. -/
 def firstProjectionOperationReading : OperationReading FiniteModel.carrier where
   Op A B := ConfigurationHom A.configuration B.configuration ×
     ConfigurationHom A.configuration B.configuration
   configurationMap operation := operation.1
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Cycle 70 negative-fixture operation reading on the same operation carrier;
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Cycle 70 negative-fixture operation reading on the same operation carrier;
 the second projection is the target semantics. -/
 def secondProjectionOperationReading : OperationReading FiniteModel.carrier where
   Op A B := ConfigurationHom A.configuration B.configuration ×
     ConfigurationHom A.configuration B.configuration
   configurationMap operation := operation.2
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Source package for the concrete operation-naturality failure.  It reuses
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Source package for the concrete operation-naturality failure.  It reuses
 the reviewed finite core reading and changes only its explicit operation API. -/
 noncomputable def operationSource : AATCorePackage FiniteModel.carrier :=
   AATCorePackage.generate FiniteModel.axiomSystem
     { FiniteModel.coreReading with
       operationReading := firstProjectionOperationReading }
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Target package for the concrete operation-naturality failure.  It has the
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Target package for the concrete operation-naturality failure.  It has the
 same finite data as `operationSource` and selects the second operation map. -/
 noncomputable def operationTarget : AATCorePackage FiniteModel.carrier :=
   AATCorePackage.generate FiniteModel.axiomSystem
     { FiniteModel.coreReading with
       operationReading := secondProjectionOperationReading }
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Concrete Cycle 70 negative instance for `IsOperationNatural`: identity on
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Concrete Cycle 70 negative instance for `IsOperationNatural`: identity on
 objects and operation indices compares the identity map with the constant map
 at `totalObject`, so the naturality square cannot commute. -/
 theorem operation_not_natural :
@@ -1881,7 +2229,10 @@ theorem operation_not_natural :
   apply ConfigurationHom.ext
   exact congrArg ConfigurationHom.atomMap equality
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Concrete Cycle 70 negative instance for `IsInvariantTransport`: the
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Concrete Cycle 70 negative instance for `IsInvariantTransport`: the
 public finite source index `false` is function-valued while Boolean negation
 sends it to the predicate-valued index `true`. -/
 theorem invariant_not_transported :
@@ -1889,7 +2240,9 @@ theorem invariant_not_transported :
   apply not_isInvariantTransport_of_counterexample (i := false)
   exact Invariant.function_predicate_not_transportedAlong _ _ _ _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Raw realization graphs for the reviewed non-tautological finite core hom.
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Raw realization graphs for the reviewed non-tautological finite core hom.
 Its context action leaves the underlying context values unchanged, so identity
 fiber functions provide data independently of the failed reading law. -/
 noncomputable def realizationData :
@@ -1899,7 +2252,10 @@ noncomputable def realizationData :
   axis := IndexedFunctionGraphCode.read (fun _ => _root_.id)
   observable := IndexedFunctionGraphCode.read (fun _ => _root_.id)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Concrete Cycle 70 negative instance for `IsRealizationGraphCode`: the
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Concrete Cycle 70 negative instance for `IsRealizationGraphCode`: the
 source obstruction context reads component A, while its image under `coreHom`
 does not read the transported component B. -/
 theorem realization_not_coherent :
@@ -1911,7 +2267,9 @@ theorem realization_not_coherent :
   · rfl
   · simpa [realizationData] using coreHom_context_does_not_read_componentB
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Signature with the reviewed finite coordinate family but no selected
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Signature with the reviewed finite coordinate family but no selected
 axis.  This is supporting data for the concrete signature-law counterexample. -/
 def unselectedSignature : ArchitectureSignature FiniteModel.carrier where
   Axis := PUnit
@@ -1919,20 +2277,27 @@ def unselectedSignature : ArchitectureSignature FiniteModel.carrier where
   selected _ := False
   coordinate _ _ := 0
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Target core for the concrete signature-law counterexample.  It reuses all
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Target core for the concrete signature-law counterexample.  It reuses all
 reviewed finite reading fields except the explicitly unselected signature. -/
 noncomputable def unselectedSignatureCore : AATCorePackage FiniteModel.carrier :=
   AATCorePackage.generate FiniteModel.axiomSystem
     { FiniteModel.coreReading with signatureReading := unselectedSignature }
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Raw signature graphs for the concrete selected-axis mismatch.  Axis and
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Raw signature graphs for the concrete selected-axis mismatch.  Axis and
 coordinate maps are identities, independently of the selection law. -/
 noncomputable def unselectedSignatureData :
     SignatureGraphData FiniteModel.corePackage unselectedSignatureCore where
   axis := PrimitiveFunctionGraph.GraphCode.read _root_.id
   coordinate := IndexedEquivGraphCode.read (fun _ => Equiv.refl Nat)
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Concrete Cycle 70 negative instance for `IsSignatureGraphCode`: the sole
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Concrete Cycle 70 negative instance for `IsSignatureGraphCode`: the sole
 source axis is selected and its identity image in the target is not selected. -/
 theorem signature_not_coherent :
     ¬ IsSignatureGraphCode _root_.id unselectedSignatureData := by
@@ -1940,7 +2305,9 @@ theorem signature_not_coherent :
   change ¬ (True ↔ False)
   simp
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). A nondependent observable of pair-coefficient raw systems used by the
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+A nondependent observable of pair-coefficient raw systems used by the
 Cycle 70 raw negative fixture.  It asks whether some structural relation
 evaluates to the first coefficient idempotent when every variable is one. -/
 def HasFirstCoefficientRelation
@@ -1952,7 +2319,10 @@ def HasFirstCoefficientRelation
       ((system.relationFamily base).polynomial relation) =
         ((1 : Int), (0 : Int))
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The reviewed asymmetric pair raw system has the first-coefficient
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+The reviewed asymmetric pair raw system has the first-coefficient
 observable, witnessed by its unique relation. -/
 theorem pairRaw_hasFirstCoefficientRelation :
     HasFirstCoefficientRelation pairPackage.raw := by
@@ -1962,7 +2332,10 @@ theorem pairRaw_hasFirstCoefficientRelation :
     ((1 : Int), (0 : Int))
   simp
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Coefficient swap removes the first-coefficient observable from the
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Coefficient swap removes the first-coefficient observable from the
 reviewed asymmetric pair raw system. -/
 theorem pairRaw_baseChange_not_hasFirstCoefficientRelation :
     ¬ HasFirstCoefficientRelation (pairPackage.raw.baseChange pairSwap) := by
@@ -1974,7 +2347,10 @@ theorem pairRaw_baseChange_not_hasFirstCoefficientRelation :
     ((1 : Int), (0 : Int)) at equality
   norm_num [pairSwap] at equality
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Concrete Cycle 70 negative instance for `IsRawTransportCoherent`: the
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Concrete Cycle 70 negative instance for `IsRawTransportCoherent`: the
 nonidentity coefficient swap changes the asymmetric relation coefficient of
 the reviewed pair package. -/
 theorem rawTransport_not_coherent :
@@ -1992,7 +2368,9 @@ end ConcreteNegativeFixtures
 
 /-! ## Unified remaining-component code and common-surface recovery -/
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The Cycle 70 remaining-component certificate over independently supplied
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+The Cycle 70 remaining-component certificate over independently supplied
 core and coefficient maps.  It stores graph codes and local laws only; in
 particular it has no `GeometryTotalHom` field. -/
 structure RemainingComponentCode {U : AtomCarrier.{u}}
@@ -2018,7 +2396,9 @@ structure RemainingComponentCode {U : AtomCarrier.{u}}
   /-- Raw transport is coherent with the supplied maps. -/
   rawCoherent : IsRawTransportCoherent G H baseHom coefficientHom
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Completed output of remaining-component assembly.  It contains the local
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Completed output of remaining-component assembly.  It contains the local
 families and laws but still no coverage, overlap, or `GeometryTotalHom`. -/
 structure RemainingComponentSupply {U : AtomCarrier.{u}}
     (G H : GeometryPackage.{u, v} U)
@@ -2045,7 +2425,9 @@ structure RemainingComponentSupply {U : AtomCarrier.{u}}
 
 namespace RemainingComponentCode
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Assemble every graph-presented field of the unified relative code. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Assemble every graph-presented field of the unified relative code. -/
 def assemble {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
     {baseHom : PackageTotalHom G.core H.core}
@@ -2058,7 +2440,9 @@ def assemble {U : AtomCarrier.{u}}
   realization := code.realization.assemble
   rawCoherent := code.rawCoherent
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Read a completed relative supply back into graph codes without retaining
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Read a completed relative supply back into graph codes without retaining
 any completed global morphism. -/
 noncomputable def read {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
@@ -2076,7 +2460,10 @@ noncomputable def read {U : AtomCarrier.{u}}
   realization := RealizationGraphCode.read supply.realization
   rawCoherent := supply.rawCoherent
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Unified relative codes are determined by their five component codes or
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Unified relative codes are determined by their five component codes or
 proofs. -/
 theorem ext {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
@@ -2096,7 +2483,10 @@ theorem ext {U : AtomCarrier.{u}}
   cases realization
   rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Unified completed supplies are determined by their four computational
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Unified completed supplies are determined by their four computational
 families; raw coherence and all local laws are propositions. -/
 theorem supply_ext {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
@@ -2116,7 +2506,10 @@ theorem supply_ext {U : AtomCarrier.{u}}
   cases realization
   rfl
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). First unified inverse law. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+First unified inverse law. -/
 @[simp]
 theorem read_assemble {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
@@ -2132,7 +2525,10 @@ theorem read_assemble {U : AtomCarrier.{u}}
   · exact SignatureGraphCode.read_assemble _
   · exact RealizationGraphCode.read_assemble _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Second unified inverse law. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Second unified inverse law. -/
 @[simp]
 theorem assemble_read {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
@@ -2148,7 +2544,9 @@ theorem assemble_read {U : AtomCarrier.{u}}
   · exact SignatureGraphCode.assemble_read _
   · exact RealizationGraphCode.assemble_read _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Exact equivalence between unified graph codes and their completed local
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Exact equivalence between unified graph codes and their completed local
 supplies, relative to the explicit ambient core and coefficient maps. -/
 noncomputable def equivSupply {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U}
@@ -2161,7 +2559,9 @@ noncomputable def equivSupply {U : AtomCarrier.{u}}
   left_inv := read_assemble
   right_inv := assemble_read
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Identity unified remaining-component code. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Identity unified remaining-component code. -/
 noncomputable def id {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
     RemainingComponentCode G G (PackageTotalHom.id G.core)
       (RingHom.id G.Coefficient) where
@@ -2171,7 +2571,9 @@ noncomputable def id {U : AtomCarrier.{u}} (G : GeometryPackage.{u, v} U) :
   realization := RealizationGraphCode.id G.core
   rawCoherent := rawTransport_coherent_id G
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Componentwise composition of unified law-bearing relative codes. -/
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Componentwise composition of unified law-bearing relative codes. -/
 noncomputable def comp {U : AtomCarrier.{u}}
     {G H K : GeometryPackage.{u, v} U}
     {firstBase : PackageTotalHom G.core H.core}
@@ -2199,7 +2601,10 @@ noncomputable def comp {U : AtomCarrier.{u}}
   realization := RealizationGraphCode.comp first.realization second.realization
   rawCoherent := rawTransport_coherent_comp first.rawCoherent second.rawCoherent
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The operation projection of unified composition assembles pointwise. -/
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+The operation projection of unified composition assembles pointwise. -/
 theorem assemble_comp_operation {U : AtomCarrier.{u}}
     {G H K : GeometryPackage.{u, v} U}
     {firstBase : PackageTotalHom G.core H.core}
@@ -2216,7 +2621,10 @@ theorem assemble_comp_operation {U : AtomCarrier.{u}}
       second.operation).1.assemble = _
   exact LawfulOperationGraphCode.assemble_comp _ _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The invariant projection of unified composition assembles by function
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+The invariant projection of unified composition assembles by function
 composition. -/
 theorem assemble_comp_invariant {U : AtomCarrier.{u}}
     {G H K : GeometryPackage.{u, v} U}
@@ -2232,7 +2640,10 @@ theorem assemble_comp_invariant {U : AtomCarrier.{u}}
       second.invariant).1.assemble = _
   exact LawfulInvariantGraphCode.assemble_comp _ _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The signature projection of unified composition assembles to local supply
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+The signature projection of unified composition assembles to local supply
 composition. -/
 theorem assemble_comp_signature {U : AtomCarrier.{u}}
     {G H K : GeometryPackage.{u, v} U}
@@ -2249,7 +2660,10 @@ theorem assemble_comp_signature {U : AtomCarrier.{u}}
       second.signature).assemble = _
   exact SignatureGraphCode.assemble_comp _ _
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The realization projection of unified composition assembles to supply
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+The realization projection of unified composition assembles to supply
 composition. -/
 theorem assemble_comp_realization {U : AtomCarrier.{u}}
     {G H K : GeometryPackage.{u, v} U}
@@ -2268,7 +2682,9 @@ theorem assemble_comp_realization {U : AtomCarrier.{u}}
 
 end RemainingComponentCode
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Read every remaining component of an actual complete geometry morphism
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Read every remaining component of an actual complete geometry morphism
 into the unified graph-and-law code. -/
 noncomputable def readRemaining {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
@@ -2279,7 +2695,9 @@ noncomputable def readRemaining {U : AtomCarrier.{u}}
   realization := realization morphism
   rawCoherent := rawTransport_coherent morphism
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Common-surface recovery record for all graph-valued fields assembled by
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Common-surface recovery record for all graph-valued fields assembled by
 the unified remaining-component code. -/
 structure CompleteGraphRecovery {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H)
@@ -2299,7 +2717,10 @@ structure CompleteGraphRecovery {U : AtomCarrier.{u}}
   geometryObservable : code.realization.1.observable.taggedForward =
     (readCompleteMapGraphs morphism).geometryObservable
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Reading an actual complete morphism recovers every corresponding field of
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Reading an actual complete morphism recovers every corresponding field of
 the accepted complete-map graph surface in one theorem. -/
 theorem readRemaining_completeGraphRecovery {U : AtomCarrier.{u}}
     {G H : GeometryPackage.{u, v} U} (morphism : GeometryTotalHom G H) :
@@ -2319,17 +2740,24 @@ open GeometryTransport.NegativeGeometryWitness
 private noncomputable abbrev recoveryPackage :=
   GeometryTransport.FiniteGeometryWitness.package
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). A nonidentity coordinate equivalence that fixes the coordinate value zero
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+A nonidentity coordinate equivalence that fixes the coordinate value zero
 used by the reviewed finite signature.  It supports the negative instance for
 the common-surface recovery certificate and has no premises. -/
 def swapOneTwo : Nat ≃ Nat := Equiv.swap 1 2
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). The coordinate swap fixes the only value read by the reviewed finite
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+The coordinate swap fixes the only value read by the reviewed finite
 signature, so it remains a lawful local signature transport. -/
 theorem swapOneTwo_zero : swapOneTwo 0 = 0 := by
   decide
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). A lawful Cycle 70 signature supply over the identity core map whose
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+A lawful Cycle 70 signature supply over the identity core map whose
 coordinate action swaps one and two while preserving every read coordinate. -/
 noncomputable def swappedCoordinateSupply :
     SignatureTransportSupply recoveryPackage.core recoveryPackage.core
@@ -2343,14 +2771,18 @@ noncomputable def swappedCoordinateSupply :
     change swapOneTwo 0 = 0
     exact swapOneTwo_zero
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Graph presentation of `swappedCoordinateSupply`; the exact read/assemble
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+Graph presentation of `swappedCoordinateSupply`; the exact read/assemble
 equivalence supplies all local laws without a complete geometry morphism. -/
 noncomputable def swappedCoordinateCode :
     SignatureGraphCode recoveryPackage.core recoveryPackage.core
       (PackageTotalHom.id recoveryPackage.core).upper.objectMap :=
   SignatureGraphCode.read swappedCoordinateSupply
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). A complete relative component code differing from the actual identity
+/-- Cycle 70 data/API declaration.
+Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+A complete relative component code differing from the actual identity
 only in its lawful, observationally invisible finite coordinate swap. -/
 noncomputable def alternateRemainingCode :
     RemainingComponentCode recoveryPackage recoveryPackage
@@ -2359,7 +2791,55 @@ noncomputable def alternateRemainingCode :
   { readRemaining (GeometryTotalHom.id recoveryPackage) with
     signature := swappedCoordinateCode }
 
-/-- Cycle 70 API (fixed data; named laws and equalities are local premises). Concrete Cycle 70 negative instance for `CompleteGraphRecovery`: the
+/-- Cycle 70 data/API declaration.
+Premise summary: the coordinate family is fixed input and carries no theorem premise.
+Evaluate a self-equivalence family on the public finite signature at axis unit
+and coordinate one, hiding the finite-package implementation from later proofs. -/
+def evaluateRecoveryCoordinateOne
+    (family : ∀ i : recoveryPackage.core.reading.signatureReading.Axis,
+      recoveryPackage.core.reading.signatureReading.Coordinate i ≃
+        recoveryPackage.core.reading.signatureReading.Coordinate i) : Nat := by
+  dsimp [recoveryPackage,
+    GeometryTransport.FiniteGeometryWitness.package,
+    FiniteModel.twoPatchCorePackage, FiniteModel.corePackageFor,
+    FiniteModel.coreReadingFor, FiniteModel.signature,
+    AATCorePackage.generate] at family ⊢
+  exact family PUnit.unit 1
+
+/-- Cycle 70 theorem.
+Premise summary: `swappedCoordinateSupply` discharges the certificate fields;
+there is no additional proposition premise.
+The finite evaluation API exposes that the alternate supply sends one to two. -/
+theorem evaluateRecoveryCoordinateOne_swapped :
+    evaluateRecoveryCoordinateOne
+      swappedCoordinateSupply.coordinateEquiv = 2 := by
+  unfold evaluateRecoveryCoordinateOne
+  dsimp [swappedCoordinateSupply, recoveryPackage,
+    GeometryTransport.FiniteGeometryWitness.package,
+    FiniteModel.twoPatchCorePackage, FiniteModel.corePackageFor,
+    FiniteModel.coreReadingFor, FiniteModel.signature,
+    AATCorePackage.generate]
+  decide
+
+/-- Cycle 70 theorem.
+Premise summary: the identity geometry morphism discharges every certificate
+field; there is no additional proposition premise.
+The finite evaluation API exposes that the actual identity fixes one. -/
+theorem evaluateRecoveryCoordinateOne_identity :
+    evaluateRecoveryCoordinateOne
+      (GeometryTotalHom.id recoveryPackage).base.upper.coordinateEquiv = 1 := by
+  unfold evaluateRecoveryCoordinateOne
+  dsimp [recoveryPackage,
+    GeometryTransport.FiniteGeometryWitness.package,
+    FiniteModel.twoPatchCorePackage, FiniteModel.corePackageFor,
+    FiniteModel.coreReadingFor, FiniteModel.signature,
+    AATCorePackage.generate, GeometryTotalHom.id, PackageTotalHom.id]
+  rfl
+
+/-- Cycle 70 theorem.
+Premise summary: data parameters are fixed inputs. Explicit Prop hypotheses, if any,
+are undischarged local premises; certificate fields are discharged by named inputs.
+Concrete Cycle 70 negative instance for `CompleteGraphRecovery`: the
 alternate lawful code sends coordinate one to two, whereas the actual identity
 common-surface graph sends it to one. -/
 theorem completeGraphRecovery_not_for_alternate :
@@ -2419,15 +2899,10 @@ theorem completeGraphRecovery_not_for_alternate :
       (GeometryTotalHom.id recoveryPackage).base.upper.coordinateEquiv :=
     HEq.trans supplyCoordinateHEq actualCoordinateHEq
   have endpointEquality := eq_of_heq endpointHEq
-  dsimp [swappedCoordinateSupply, recoveryPackage,
-    GeometryTransport.FiniteGeometryWitness.package,
-    FiniteModel.twoPatchCorePackage, FiniteModel.corePackageFor,
-    FiniteModel.coreReadingFor, FiniteModel.signature,
-    GeometryTotalHom.id, PackageTotalHom.id] at endpointEquality
-  have atAxis := congrFun endpointEquality PUnit.unit
-  have atOne := congrArg (fun equivalence => equivalence 1) atAxis
-  change swapOneTwo 1 = 1 at atOne
-  norm_num [swapOneTwo] at atOne
+  have atOne := congrArg evaluateRecoveryCoordinateOne endpointEquality
+  rw [evaluateRecoveryCoordinateOne_swapped,
+    evaluateRecoveryCoordinateOne_identity] at atOne
+  omega
 
 end ConcreteNegativeFixtures
 
