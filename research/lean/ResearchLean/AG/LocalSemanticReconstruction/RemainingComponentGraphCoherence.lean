@@ -993,8 +993,10 @@ structure RealizationGraphData {U : AtomCarrier.{u}}
     (fun W : Site.ContextCategoryObject P.contextPreorder => W.ctx.Observable)
     (fun W : Site.ContextCategoryObject Q.contextPreorder => W.ctx.Observable)
 
-/-- Cycle 70 data/API declaration.
-Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+/-- Cycle 70 supporting certificate.
+Premise summary: its six preservation/naturality fields are local premises from
+the fixed question. `RealizationGraphCode.id`, `comp`, and actual `read`
+constructors discharge them for their named inputs.
 The independent reading-preservation and restriction-naturality laws for
 Cycle 70 realization graph data.  These are the premises of the fixed
 obligation, not a stored geometry lift. -/
@@ -1300,8 +1302,10 @@ structure SignatureGraphData {U : AtomCarrier.{u}}
     P.reading.signatureReading.Coordinate
     Q.reading.signatureReading.Coordinate
 
-/-- Cycle 70 data/API declaration.
-Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+/-- Cycle 70 supporting certificate.
+Premise summary: selected-axis preservation and coordinate compatibility are
+local premises from the fixed question. `SignatureGraphCode.id`, `comp`, and
+actual signature reading discharge them for their named inputs.
 Cycle 70 signature laws, separated from the raw axis and coordinate
 graphs. -/
 structure IsSignatureGraphCode {U : AtomCarrier.{u}}
@@ -1342,8 +1346,10 @@ abbrev SignatureGraphCode {U : AtomCarrier.{u}}
   { data : SignatureGraphData P Q //
     IsSignatureGraphCode objectMap data }
 
-/-- Cycle 70 data/API declaration.
-Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+/-- Cycle 70 supporting completed-local-data API.
+Premise summary: `axis_selected_iff` and `coordinate_eq` are the fixed
+question's local premises. Identity, composition, and actual-read constructors
+discharge them; this structure does not discharge an ambient core morphism.
 Completed signature transport used only as the output of graph assembly.
 It records the two maps and the same local laws, but no core morphism. -/
 structure SignatureTransportSupply {U : AtomCarrier.{u}}
@@ -2368,8 +2374,11 @@ end ConcreteNegativeFixtures
 
 /-! ## Unified remaining-component code and common-surface recovery -/
 
-/-- Cycle 70 data/API declaration.
-Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+/-- Cycle 70 principal relative certificate.
+Premise summary: operation, invariant, signature, realization, and raw law
+fields are local premises from the fixed question. `id`, `comp`, and
+`readRemaining` discharge them for their named inputs; the ambient
+`PackageTotalHom` remains an explicit fixed input.
 The Cycle 70 remaining-component certificate over independently supplied
 core and coefficient maps.  It stores graph codes and local laws only; in
 particular it has no `GeometryTotalHom` field. -/
@@ -2396,8 +2405,10 @@ structure RemainingComponentCode {U : AtomCarrier.{u}}
   /-- Raw transport is coherent with the supplied maps. -/
   rawCoherent : IsRawTransportCoherent G H baseHom coefficientHom
 
-/-- Cycle 70 data/API declaration.
-Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+/-- Cycle 70 supporting completed-local-data API.
+Premise summary: its law-bearing operation, invariant, signature, realization,
+and raw fields retain the fixed question's local premises. They are discharged
+only by the corresponding identity, composition, or actual-read constructors.
 Completed output of remaining-component assembly.  It contains the local
 families and laws but still no coverage, overlap, or `GeometryTotalHom`. -/
 structure RemainingComponentSupply {U : AtomCarrier.{u}}
@@ -2695,8 +2706,11 @@ noncomputable def readRemaining {U : AtomCarrier.{u}}
   realization := realization morphism
   rawCoherent := rawTransport_coherent morphism
 
-/-- Cycle 70 data/API declaration.
-Premise summary: parameters are fixed inputs; this declaration introduces no theorem premise.
+/-- Cycle 70 main recovery certificate.
+Premise summary: its seven equalities are the common-surface conclusions fixed
+for this cycle, not input laws. `readRemaining_completeGraphRecovery` discharges
+them for actual reads, while the finite alternate-code theorem gives a closed
+negative instance.
 Common-surface recovery record for all graph-valued fields assembled by
 the unified remaining-component code. -/
 structure CompleteGraphRecovery {U : AtomCarrier.{u}}
