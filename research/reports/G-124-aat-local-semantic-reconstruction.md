@@ -8682,3 +8682,41 @@ namespaceは`AAT.AG.LocalSemanticReconstruction.IndependentCarrierGraph`。
 この部品は単一file検証済みで、明示39宣言の`#print axioms`とnamespace52宣言の監査は標準公理のみ。
 module登録とsource scanを行った。各native Hom roleの型参照、保存則、全Homの共通宣言への接続は
 後続の義務であり、この任意写像の部品を全Hom再構成の完了とは扱わない。Cycle 79を維持する。
+
+#### 共通Hom宣言とAtom・生成則・context・operationの接続
+
+独立検証の継続として、nativeな完成両端やbase Homを選ぶ前に、両Hom方式の共通queryを宣言した。
+`IndependentGeometryHomPrimitiveDeclaration.lean`の`Query U mode`は、source、pointed/upper Atom、
+object、invariant、operation、signature、coefficient、輸送照合、候補objectに依存する各点を持つ。
+全応答はBoolである。representativeのrealizationは有向写像、explicit側はcarrier同値と
+実際の`ContextMorphism`への点作用を持ち、後者にだけraw同値のqueryを用意する。
+この宣言自体は`defined only`であり、全Homとの両逆は後続の接続義務である。
+
+| Source / namespace末尾 | 証明した対応 |
+| --- | --- |
+| `IndependentInverseGraphReadings.lean` / `IndependentInverseGraph` | 二つのcandidate carrier graphと一点対のinverse条件からnative同値を構成。`readingEquiv`・両逆は非active carrier応答も回復。`inverse_iff_of_support`は任意tableの二点一致からinverse instanceの一致を導く |
+| `IndependentGeometryHomAtomReadings.lean` / `IndependentGeometryHomPrimitive.Atom` | 共通Homのpointed/upper Atomをそれぞれ行の唯一出力と二点inverse条件から構成。`pointed_eq_upper`が点の一致からnative同値の全体一致を導く。`mismatch_rejected`が一つの異なる点を排除 |
+| `IndependentGeometryHomTransportMatching.lean` / `IndependentGeometryHomPrimitive.TransportMatch` | family/configuration輸送のflagを、membership・relation・identificationの点比較と不一致witnessで検査。`family_iff`・`configuration_iff`が元のdirect-image輸送との一致を導く。`completeMatching_isLawful`・`completeMatching_eq_self`で照合metadataの選択自由度を排除 |
+| `IndependentGeometryHomCoreLaws.lean` / `IndependentGeometryHomPrimitive.CoreLaws` | source行と正規化点、四つのadmission、compositionのrelation/identification、formationの二つの選択値から、元のnormalize/extraction・family・composition・object formation・configuration保存を導く。`extractionLaws_of_native`・`generationLaws_of_native`が逆方向も示す |
+| `IndependentGeometryHomContextReadings.lean` / `IndependentGeometryHomPrimitive.Context` | 共通context queryの両方向行、単調性、unit/counitの両向き順序比較を旧thin-equivalence graphへ接続。`readingEquiv`・両逆で全native context圏同値を回復。object上の逆写像等式を追加していない |
+| `IndependentGeometryHomContextExpressions.lean` / `IndependentGeometryHomPrimitive.ContextFinite` | source/target refinementとHom context点、論理結合だけからなる閉じた式を構成。`evaluate_iff_of_support`は共通object/object/Hom queryの三つの有限集合上の一致から任意tableで評価一致を示す。`lawful_iff_expressions`がcontext Homの全局所法則を各instanceへ接続 |
+| `IndependentIndexedCarrierGraphs.lean` / `IndependentIndexedCarrierGraph` | 候補index対のgraphがdependent carrierの行をactiveにする。`readingEquiv`・両逆が全有向fiber写像と、非active index/carrierのfalse応答を回復 |
+| `IndependentGeometryHomOperationReadings.lean` / `IndependentGeometryHomPrimitive.Operation` | 共通object graphの両端像からoperation行を選び、全native有向operation familyへ両逆を接続。単射・全射は要求しない。operation自然性はこのfamily再構成とは別の保存則として残る |
+| `IndependentRingCarrierGraphs.lean` / `IndependentRingCarrierGraph` | candidate carrier graphにzero/one/add/mulの点保存則を課して全native環準同型との両逆を証明。inverse点条件を追加した場合は全native環同型との両逆を証明。環演算を原始点tableから作る場合も`function_laws`で接続。共通Homのcoefficient/observable roleへの組込みは後続 |
+
+coreの抽出条件は、native定義の`normalize source`に対する四つのadmissionを比較する。
+未正規化sourceでのadmission保存を要求する強化はしていない。
+whole family/configuration輸送等式は局所条件のfieldに置かず、点の比較から証明する。
+各有限witnessの存在はPropに置き、選んだwitnessを追加データにしない。
+
+この段階では共通宣言への主要な接続が進んだが、最初の検証点Iは未完了である。
+残る主な義務は、equation/observable・invariant/signature・coefficient・coverage/overlap・
+両方式のraw/realizationを同じ共通Hom tableから組み立て、全Homとの両逆を統合すること、
+全原始法則の有限support、共通の恒等・合成、指定反証scenarioの統合、およびPR査読・CIである。
+既存のnative両端に相対的な全Hom両逆を、その共通table接続の代わりには扱わない。
+Cycle 79と固定GOALカードを維持し、外側のtotal categoryは追加していない。
+
+今回の10 sourceはそれぞれ単一fileで検証した。明示151宣言の`#print axioms`と
+namespace内534宣言の監査は標準公理のみであり、warningは残していない。
+module登録、placeholder・hidden/BiDi・privacy・語彙・差分整形scanを確認した。
+aggregateのelaborationとResearch全体buildは実行していない。
