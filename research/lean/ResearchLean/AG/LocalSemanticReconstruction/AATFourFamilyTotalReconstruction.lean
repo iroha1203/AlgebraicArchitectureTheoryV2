@@ -30,6 +30,7 @@ open AtomFoundation DoctrineFiberProduct GeometryTransport TransportCoherence
 open FullGeometryNormalization
 open LocalReconstructionEquivalence
 
+/-- Decidable atom equality for the fixed finite-axis-fold fiber. -/
 local instance aatTotalFiniteAxisFoldAtomDecidableEq :
     DecidableEq FiniteModel.carrier.Atom := by
   change DecidableEq FiniteModel.FiniteAtom
@@ -83,6 +84,7 @@ theorem mk_injective {parameter : AATBranchParameter}
 
 end IndexedTotalHom
 
+/-- Category structure obtained by composing only inside a common fiber. -/
 noncomputable instance indexedTotalCategory
     (Fiber : AATBranchParameter → Type 1)
     [∀ parameter, Category.{1} (Fiber parameter)] :
