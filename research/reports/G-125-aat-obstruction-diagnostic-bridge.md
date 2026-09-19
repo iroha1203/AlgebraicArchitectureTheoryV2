@@ -16,7 +16,8 @@
   `LawValueLabel` への写像を構成し、構造条件 `R_q` から `B ≃ Λ` を導出する。
 - 完了: 紙上設計 §6 の有理0-cochainの辺差が整数なら、座標ごとのfloorから
   同じ辺差を持つ整数0-cochainを構成する。`blockLabel : B → Λ` で診断座標を読む
-  block-indexed APIも構成したが、`R_q` の実質使用と実診断零類からの証人生成は未完了。
+  block-indexed APIを構成し、Cycle 19で`R_q`による係数回収と実診断零類の有理証人から
+  actual Cech C⁰の整数補正を構成してB2へ接続した。
 - 完了: primitive relationが生成する自由アーベル群上の最小加法合同から
   presentation group `M_R` を構成し、`M_R ≃+ ℤ^(B)` を導出する。
 - 完了: `M_R ≃+ ℤ^(B)` と `blockLabel : B → Λ` から係数比較
@@ -2240,6 +2241,7 @@ result:
   completion_candidate: no
   lean_artifacts:
     - "GeneratorPresentation.FullChartSupport"
+    - "FullChartSupportFixtures.partial_not_full"
     - "FullChartSupport.chartCoordinate"
     - "FullChartSupport.edgeCoordinate"
     - "ActualCechAffineLocalData.rationalChartWitness"
@@ -2316,11 +2318,11 @@ audits:
   structure_field_escape: none-found
   route_integrity: pass-for-specified-b2-obligation
   target_fitting: none-found
-  vacuity: "the theorem quantifies over every allowed transition and localState; it does not require either class to be zero as input except in the reflected implication premise"
+  vacuity: "FullChartSupportFixtures.partial_not_full gives a concrete non-full supported nerve; the theorem quantifies over every allowed transition and localState and does not require either class to be zero except in the reflected implication premise"
   one_way_as_equivalence: "both directions are proved: B1 supplies actual-zero to diagnostic-zero and Cycle 19 constructs diagnostic-zero to actual-zero"
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "focused checks: SpecifiedClassReflection 10 declarations and CombinedAtomSpecifiedReflection 6 declarations; standard axioms only"
+    - "focused checks: SpecifiedClassReflection 10 core plus 4 nonvacuity-fixture declarations, and CombinedAtomSpecifiedReflection 6 declarations; standard axioms only"
     - "lake build ResearchLean.AG.ObstructionDiagnosticBridge.CombinedAtomSpecifiedReflection: pass; 3727 jobs"
   blocking_findings: []
   next_obligation: "construct the actual coarse-to-fine Cech map T_ob, identify the existing generatedComparisonH1Map as T_diag, and prove C1 plus specified-class transport"

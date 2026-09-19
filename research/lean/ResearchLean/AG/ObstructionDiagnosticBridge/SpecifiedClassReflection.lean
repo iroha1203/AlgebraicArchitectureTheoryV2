@@ -38,6 +38,49 @@ variable [IsEmpty D.nerve.FaceComponent]
 def FullChartSupport (D : TargetSupportedNerve q) : Prop :=
   ∀ chart target, target ∈ D.chartSupport chart
 
+namespace FullChartSupportFixtures
+
+/-- A two-point reading used to show that full chart support is a genuine premise. -/
+abbrev partialReading : Reading Bool where
+  Target := Bool
+  read := id
+  surjective := Function.surjective_id
+
+/-- A one-chart nerve whose support can be chosen strictly smaller than the target. -/
+abbrev partialNerve : CoverNerve where
+  Chart := PUnit
+  EdgeComponent := Empty
+  FaceComponent := Empty
+  edgeLeft := isEmptyElim
+  edgeRight := isEmptyElim
+  faceEdge0 := isEmptyElim
+  faceEdge1 := isEmptyElim
+  faceEdge2 := isEmptyElim
+  edgeOverlapComponent := isEmptyElim
+  faceTripleOverlapComponent := isEmptyElim
+  edgeOverlapComponent_holds := isEmptyElim
+  faceTripleOverlapComponent_holds := isEmptyElim
+
+/-- A supported nerve that sees `false` but omits `true`. -/
+def partialSupportedNerve : TargetSupportedNerve partialReading where
+  nerve := partialNerve
+  chartFintype := inferInstance
+  edgeFintype := inferInstance
+  faceFintype := inferInstance
+  chartSupport _ := {false}
+  chartSupport_nonempty _ := ⟨false, by simp⟩
+  faceEdge0_left := isEmptyElim
+  faceEdge0_right := isEmptyElim
+  faceEdge1_right := isEmptyElim
+
+/-- Full chart support fails when an actual target value is omitted. -/
+theorem partial_not_full : ¬ FullChartSupport partialSupportedNerve := by
+  intro hfull
+  have htrue := hfull PUnit.unit true
+  simp [partialSupportedNerve] at htrue
+
+end FullChartSupportFixtures
+
 namespace FullChartSupport
 
 variable (hfull : FullChartSupport D)
@@ -287,6 +330,8 @@ end ActualCechAffineLocalData
 
 #assert_standard_axioms_only
   AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.ActualCechAffineLocalData
+#assert_standard_axioms_only
+  AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.FullChartSupportFixtures
 
 end GeneratorPresentation
 end AAT.AG.ObstructionDiagnosticBridge
