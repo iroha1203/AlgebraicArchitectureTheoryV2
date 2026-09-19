@@ -5,7 +5,7 @@
 - 固定 GOAL commit: `cc69ecee0e8e04d2f1cb364cbb697bb1112e1793`
 - 固定 GOAL blob: `1e8df2624cf35704299c2cf47a879f2dc6565b03`
 - 共通基準・既存宣言の解決 commit: `cc69ecee0e8e04d2f1cb364cbb697bb1112e1793`
-- proof state: `target-theorem-proved`
+- proof state: `target-proof-checkpoint`
 
 このreportは固定GOALの証拠索引とproof obligation deltaを記録する。固定targetと
 完了条件はGOALカードにあり、このreportでは再定義しない。
@@ -125,11 +125,12 @@ tracking Issue #4791の同期コメントに記録する。
   各ケースへ明示適用して、actual/diagnostic両類が粗細双方でそれぞれ零・非零になることを証明する。
 - 完了（仮定相対）: supplied face-index-empty nerveのpresentation係数cochainと、条件付きactual Ob層の実
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
-- 完了: PR #4822のexact head
-  `313019b37c7b15349b0b55d6e824a21e933a1320`について最終検証、独立4査読、
-  非中心findingの直接再査読、PR監査、final packetを完了し、merge commit
-  `1679b3058bada591be86a8d7b6922817de9ce1ef`へ統合した。
-- 未完了proof obligation: なし。
+- 完了: 数学・Lean実装はPR #4822でmainへ統合済み。exact-head CI 7/7、対象moduleの
+  targeted build、55宣言の標準公理監査、PR内容監査まで完了した。
+- 未完了: target theorem completion gateのschema-complete final packetを同一headへ固定し、
+  そのpacketだけを入力にしたfresh独立4査読をmerge前に完了する。
+- 次のproof obligation: PR #4823でcompletion packet、独立`math-lean-review`、
+  正式verdict、merge、lifecycle同期を順に完了する。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -2646,7 +2647,8 @@ selection:
     - "asserting nonzero without an explicit functional that kills all coboundaries"
     - "transporting only the class outcome rather than the same local datum"
     - "listing B1, B2, C1, or C2 without using their existing declarations"
-  unchecked: []
+  unchecked:
+    - "fixed-head independent math and Lean review"
 result:
   proposed_result_type: target-theorem-proved
   proof_obligation_delta: "The zero-obstruction datum has zero chart state and coarse transition (u, -u, 0), which is nonzero but equals D0(0, u, 0); its transported fine transition is (0, u, -u, 0). The nonzero datum has zero chart state and the g00 presentation generator on ab only. The oriented triangle defect ab + bc - ac vanishes on every presentation D0 coboundary but equals the selected nonzero generator on the fixed nonzero transition, proving its coarse actual class is nonzero from primitive data. Existing B1, B2, C1 transport and C2 are specialized separately to the zero and nonzero data. Their conjunctions prove that actual and diagnostic classes are respectively zero or nonzero at both readings."
@@ -2701,7 +2703,8 @@ result:
       - "fine data are generated from coarse data by the selected refinement"
       - "B1, B2, C1, specified-class transport, and C2 are applied in both cases"
     undischarged_assumptions: []
-    g125_remaining_obligations: []
+    g125_remaining_obligations:
+      - "final exact-head validation and independent completion review"
     acceptance_point: "nonvanishing is proved by a triangle functional on primitive transition data that annihilates every coboundary; no nonzero H1 certificate is stored as input"
     port_status: not-applicable
 audits:
@@ -2720,7 +2723,8 @@ audits:
       - "fixed nonzero-mismatch zero-obstruction datum, its coarse/fine coordinate formulas, and all four zero class outcomes"
       - "fixed nonzero local datum and all four nonzero class outcomes"
       - "explicit B1, B2, C1, specified-class transport and C2 specializations for both cases"
-    remaining: []
+    remaining:
+      - "final exact-head validation and independent completion review"
   certificate_provenance:
     discharged:
       - "selectedCoefficient nonzero is detected by the existing coefficientComparison at its generated label"
@@ -2736,27 +2740,54 @@ audits:
       - "C2 preserves and reflects the two actual zero-status outcomes"
     unused: []
   structure_field_escape: none-found
-  route_integrity: pass
+  route_integrity: pass-for-completion-candidate
   target_fitting: none-found
   vacuity: "the zero-obstruction mismatch is explicitly nonzero before quotienting but has a concrete degree-zero correction; the nonzero transition is a concrete primitive generator on one real coarse overlap and is proved not to be any degree-zero coboundary"
   one_way_as_equivalence: "zero and nonzero directions are both witnessed; each iff used is an existing proved B2 or C2 equivalence"
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "cd research/lean && lake build ResearchLean.AG.ObstructionDiagnosticBridge.SelectedFiniteObstructionExamples: pass; 55 declarations, standard axioms only"
-    - "PR #4822 exact head 313019b37c7b15349b0b55d6e824a21e933a1320: CI 7/7 success"
-    - "PR audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4822#issuecomment-5746164312"
-    - "final packet and target-theorem completion ledger: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4822#issuecomment-5746178104"
-    - "tracking Issue completion sync: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4791#issuecomment-5746179835"
   blocking_findings: []
-  completion_review:
-    reviewed_head: "313019b37c7b15349b0b55d6e824a21e933a1320"
-    review_lanes:
-      math_a: pass
-      math_b: pass
-      lean_a: pass
-      lean_b: pass
-    integrated_verdict: "No major findings"
-    direct_response_review: "Accept; noncentral PR-body and report-mapping findings resolved"
-    merged_as: "1679b3058bada591be86a8d7b6922817de9ce1ef"
-  next_obligation: none
+  next_obligation: "run final exact-head validation, math-lean-review, PR audit, and independent completion review"
+```
+
+## Completion gate repair — PR #4823
+
+PR #4822では実装・CI・内容監査を完了してmainへ統合したが、completion packetの投稿が
+merge後になり、packetの必須fieldと、それを入力にした別のfresh独立4査読も不足していた。
+したがって、#4822のmerge後packetと完了同期コメントは数学的な実装証拠としては参照するが、
+`target-theorem-proved`の正式根拠には採用しない。
+
+PR #4823をcompletion candidateの固定snapshotとし、次の順序を守る。
+
+1. Cycle 22の時点記録を保持したまま、schema-complete final packetを同一headのPRコメントへ置く。
+2. packet、固定GOAL、累積Lean実体だけを入力にfresh `math-lean-review` 4 laneを実行する。
+3. 4 laneすべてがpassし、統合verdictが正確に`No major findings`の場合だけ正式verdictを投稿する。
+4. CI、docs review、completion reviewがすべて合格した後にmergeする。
+5. merge後にreport、GOAL card/index、tracking Issueのlifecycleを別のdocs-only同期で確定する。
+
+```yaml
+ledger_type: target_completion_gate_repair
+goal: G-125-aat-obstruction-diagnostic-bridge
+implementation_pr: 4822
+implementation_head: 313019b37c7b15349b0b55d6e824a21e933a1320
+implementation_merge: 1679b3058bada591be86a8d7b6922817de9ce1ef
+completion_pr: 4823
+result: target-proof-checkpoint
+completion_candidate: yes
+completed:
+  - "A-C and the fixed finite zero/nonzero examples are merged"
+  - "implementation exact-head CI 7/7 and the 55-declaration axiom audit passed"
+  - "PR-content review findings were resolved"
+remaining:
+  - "schema-complete same-head final packet"
+  - "fresh independent completion math-lean-review: math A/B and Lean A/B"
+  - "formal completion verdict before merge"
+  - "post-merge lifecycle synchronization"
+invalidated_as_completion_evidence:
+  - "PR #4822 comment 5746178104: posted after merge and missing required packet fields"
+  - "Issue #4791 comment 5746179835: based on the invalid completion sequence"
+unchecked:
+  - "completion review of the repaired packet"
+next_obligation: "fix PR #4823 head, post the packet, and run all completion gates before merge"
 ```
