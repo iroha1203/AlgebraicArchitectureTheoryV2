@@ -8519,3 +8519,60 @@ Coverageの`nonrequired_rejected`はrequired以外のequationをrequired coordin
 namespace監査は123・137・114・75・36・24件で、標準公理のみである。
 既存のResearch module manifestとaggregate importへ登録したが、aggregate自体のelaborationと
 Research全体buildは実行していない。新規sourceのplaceholder・hidden/BiDi・privacy・語彙・整形scanも行った。
+
+#### 両方式の全Hom再構成と有限なcontext作用の合成
+
+同じ独立検証の継続として、次の5つのsourceを追加した。Cycle 79を維持する。
+以下のLean検証は通過したが、正式PR査読による受理は未実施である。
+各namespaceのprefixは`AAT.AG.LocalSemanticReconstruction`。
+
+| Source / namespace末尾 | 構成と証明 |
+| --- | --- |
+| `IndependentRepresentativeHomReadings.lean` / `IndependentRepresentativeHom` | `transportTable`がinverse context作用と係数mapから各raw応答を直接計算。`raw_eq_iff_points`で元の厳密なraw等式を導く。package・係数・representative realizationの既存graph構成と接続し、`homEquiv`・`assemble_read`・`read_assemble`で全`GeometryTotalHom`を回復。`assemble_id`・`assemble_comp`は既存の直接graph合成との接続 |
+| `IndependentExplicitRawReadings.lean` / `IndependentExplicitRaw` | coordinate・依存LocalData・relationの両方向graph、labelとrelation polynomialの点等式、variable imageのsquareからnative raw mapを構成。多項式の自由性で全多項式の自然性へ延長。`readingEquiv`・両逆・`read_injective`が全`RawAmbientRestrictionSystemExactMapAgainst`に成り立つ |
+| `IndependentExplicitRealizationReadings.lean` / `IndependentExplicitRealization` | 3つのcarrierの両方向の点値と、実際の`ContextMorphism`への3成分の作用を保持。局所逆式・reading保存・自然性からrestriction保存も導く。`readingEquiv`・両逆で全native supplyを回復。`identityTable`・`composeTable`と`assemble_id`・`assemble_comp`が点合成をnative合成へ接続 |
+| `IndependentExplicitHomAssembly.lean` / `IndependentExplicitHom` | package graph、係数graph、上記raw/realizationの局所データ、9つのcoverage含意、overlapの両順序比較を依存順に接続。`homEquiv`・両逆・`read_injective`で全`ExplicitExactGeometryHom`を回復。`base_assemble`・`coefficient_assemble`・`raw_assemble`・`realization_assemble`が各component assemblerへの評価式 |
+| `IndependentHomRefutations.lean` / `IndependentHomRefutations` | 任意のcore・選択幾何上に、関係式`X=0`を持つrawを構成。`ℤ × ℤ → ℤ`の第一射影が非単射であり、両Hom方式の読み取り・組立て後にもそのまま残ることを証明 |
+
+representative方式の`Code`はraw全体系の等式をfieldに保存せず、各原始queryの比較を保持する。
+`complete`はその比較から旧certificateの厳密なraw等式を導く。
+explicit方式の`Data`は完成したbase Hom、raw map、realization supplyをfieldに保存しない。
+nativeな依存Sigmaの分解は比較証明で使い、出力の各fieldは原始graph・点tableとその局所条件から作る。
+両方式のraw/realizationの意味を同一化していない。
+
+explicit realizationの合成では、次の射のqueryへ前のcontext作用全体を渡さない。
+例えばsupport作用は、後段の逆support像、前段の実際のcontext作用の一点、後段のsupport像という
+3点から計算する。`read_comp`が自然性と両逆からnativeの合成との一致を示す。
+`composeTable_finite_support`は、9種類のqueryの各constructorについて、2つの入力tableの
+合計3点以下が一致すれば合成結果が一致することを証明する。
+この定理は任意のtableを比較し、比較先tableのlawfulnessを追加仮定にしない。
+ただしbase Hom `f,g`は固定しており、共通queryへのbase成分の有限support接続は後段に残る。
+
+反証検査は以下を追加した。
+
+- `changedPolynomialData_not_lawful`: 同じcoordinate・LocalData・relation名のidentity graphでも、
+  元の関係式`X`を`1`へ変えたtargetではrelation保存を満たさない。両端raw対象自体はlawfulである。
+- `finite_support_action_rejected`: 任意のcore上の2-support contextで、実際のswap射への作用だけを
+  identityへ変えると自然性で落ちる。carrier同値はidentityのまま保つ。
+- `coefficient_swap_not_lawful`: 受理済みの非対称raw fixtureの係数swapを、新しいraw点比較で排除する。
+- `explicit_reconstruction_noninjective`・`representative_reconstruction_noninjective`: 係数の
+  `(0,0)`と`(0,1)`を区別しない射影が両方式の再構成で保持される。
+
+現在の全Hom両逆は任意のnativeな完全幾何の両端をparameterとする。
+前段の`ObjectData`から構成した両端にも適用できるが、それだけでは共通有限tableからの
+対象/Hom再構成の完了根拠にならない。最初の検証点Iを閉じるための未完了項目は次である。
+
+1. 実現の選択より前に共通query・有限図式・局所値型を宣言し、型参照のactive/inactive条件と
+   全原始式の有限supportから、既存の依存するobject/Hom構成へ接続する。
+2. 共通の局所射について恒等・合成と両逆を接続する。explicit側ではraw・baseの合成も含む
+   全Homの局所合成が未接続であり、realization単独の点合成では代行しない。
+3. 共通の宣言に対して指定反証scenarioを統合し、完成fieldの混入、全Homの分離、
+   witness選択による余分な対象/自己同型がないことを検査する。
+4. 固定headのPR、標準の独立4本査読、root acceptance、CI、merge、Issue記録を完了する。
+
+外側のtotal categoryやrouting wrapperは追加していない。GOALカードは変更していない。
+
+5つのsourceの単一file検証はpass。明示宣言の`#print axioms`は表の順に27・33・29・21・11件
+(計121件)、namespace監査は35・52・107・28・11件(計233件)で、標準公理のみである。
+Research module manifestとaggregate importへの登録、placeholder・hidden/BiDi・privacy・語彙・
+整形scanも確認した。aggregateのelaborationとResearch全体buildは実行していない。
