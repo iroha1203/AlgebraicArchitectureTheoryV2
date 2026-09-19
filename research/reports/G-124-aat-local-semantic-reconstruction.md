@@ -6509,7 +6509,7 @@ result:
       - "nonempty_homAssembly_iff_full"
       - "equivalenceOfHomAssembly"
     source_labels:
-      - "G-124 fixed target B local model category and reading functor"
+      - "Cycle 66 raw complete-graph category and reading functor toward G-124 target B"
       - "Cycle 66 fixed four-lane question"
     conjuncts:
       - "raw complete graph bundles form an independent category"
