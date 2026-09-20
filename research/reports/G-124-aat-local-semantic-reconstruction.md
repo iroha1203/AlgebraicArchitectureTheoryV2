@@ -9490,3 +9490,94 @@ CI・mergeである。パートIIは開始せず、Cycle 79を維持する。
 明示38宣言全ての個別`#print axioms`も出力名まで照合した。最終検証にwarning・errorはなく、
 placeholder・hidden/BiDi・privacy・語彙・docstring・module登録・差分整形・保護領域を確認した。
 Research全体buildは実行せず、固定GOALのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+
+#### 例外フローにおけるパートIの恒等・有限support・反証統合
+
+この節はCycleを加算しない難所突破の例外フローであり、Cycleは79のままとする。固定GOAL A–E、
+native Homの定義、代表方式と明示方式の違い、元の全query値による商の同一視条件は変更していない。
+パートII以後の四族統合、三投影・normalization、共通有限読み取りDとEは開始していない。
+
+原始恒等は、共通query table全体を完成Homの`NativeReader`から定義せず、各constructorを原始graphと
+component恒等mapから構成した。source・Atom・object・invariant index・operation・signature・context・
+observable・係数は対角の原始graphと各候補の
+active/inactive条件から作る。代表方式のrawと三つの有向realizationを保持し、明示方式ではrawの
+coordinate・relation・依存local-dataの両方向、realizationの両方向fiberと実際のcontext作用を保持する。
+明示方式の実際の作用は元の`ContextMorphism`のSupport・Axis・Observable各成分を評価し、単なる対角
+Boolには置き換えていない。
+
+`presentationIdentity`はfunction invariantの対角補助graph、predicateとinactive行のfalse正規化、
+typingとrow lawを備えた整合presentationを作る。その後に`localIdentity`で補助対応を消す。
+`localIdentity_point`と`localIdentity_fragment`は元の全queryと任意の有限fragmentを直接恒等tableへ戻し、
+`localIdentity_choice_independent`は同じretained宣言を持つ別の補助presentationが別の恒等射を作らない
+ことを示す。両方式のnative恒等との一致、全`PointLaws`、全Hom assembly、左右単位則を証明した。
+
+| Source / namespace末尾 | 主な証拠 |
+| --- | --- |
+| `IndependentGeometryHomIdentityTable.lean` / `IndependentGeometryHomPrimitive.Identity` | `identityWith`、両`*Table_eq_native`、raw/realizationを含む全queryの直接恒等table |
+| `IndependentGeometryHomLocalIdentity.lean` / `IdentityLocal` | `presentationIdentity`、`localIdentity`、point/fragment/choice比較、両方式の`*_points`と`*_assemble` |
+| `IndependentGeometryHomLocalCategoryLaws.lean` / `CategoryLaws` | 代表・明示の`*_id_comp`と`*_comp_id` |
+
+有限supportでは、明示realizationの全9 queryについて両方向fiberとactual-actionを分解した。
+actual-actionの一つの元の作用点は最大4個の原始cellで決まり、合成fiberの支持集合と有限和を取る。
+raw local-dataでは、後段のbackward context、前段のcoordinate像、三つの型応答、依存fiber値を別々に
+追跡し、missing response・inactive context・carrier/coordinate不一致も扱う。
+
+`composeWith_finite_support`は共通queryの全constructorを網羅する。source・Atom・object・invariant・
+equation・contextに加え、operation・signature・observable・両raw・両realizationの既存supportを統合した。
+family/configurationは無限のAtom写像を入力にせず、一つの真なtransport点から中間像を一意に回復し、
+後段の一セルと合わせて決定する。`composeRepresentative_finite_fragment`と
+`composeExplicit_finite_fragment`は一出力を実際の二つの`InvariantWitness.fragment`へ接続する。
+有限出力集合については各支持集合の`Finset.biUnion`を取り、両`*_finite_fragment_set`から最終的に
+`representativeLocal_finite_fragment_support`と`explicitLocal_finite_fragment_support`で、完成した
+局所Homの有限fragmentが二つの有限入力fragmentだけで決まることを示した。
+
+| Source / namespace末尾 | 主な証拠 |
+| --- | --- |
+| `IndependentFixedIndexedPointActionFinite.lean` / `IndependentFixedIndexedPointGraph` | `action_lifted_finite_support` |
+| `IndependentGeometryHomExplicitRealizationCompositionFinite.lean` / `ExplicitRealization`, `Composition` | fiber・actual-actionの全supportと`explicitRealization_finite_fragment` |
+| `IndependentGeometryHomRawLocalDataCompositionFinite.lean` / `ExplicitRaw`, `Composition` | local-data/raw全体のsupportと`explicitRaw_finite_fragment` |
+| `IndependentGeometryHomFullCompositionFinite.lean` / `Composition` | 全constructorの一出力・有限出力集合・完成局所Hom fragmentの有限決定 |
+
+既存の有限式を承認済み設計§3の原始法則ごとに再監査した。context、operation、equation、signature、
+observableは各`IndependentGeometryHom*Expressions.lean`の`evaluate_iff_of_support`と各`*_iff_expressions`、
+overlapは`IndependentOverlapFiniteExpressions.lawful_iff_expressions`、多項式は
+`IndependentPolynomialExpressions.polynomial_finite_support`、detectorは
+`IndependentGeometryHomDetectorFinite.point_instance_iff_of_support`へ対応する。coverageの9含意、係数の
+zero/one/add/mul、invariantのindex・種別・一点評価、raw/realizationの各法則は、各量化instanceが有限個の
+原始queryを読む定義であり、局所式からnative法則へ戻る既存の`assemble` / `points_iff_native`と、今回の
+raw/realization合成supportへ接続済みである。量化された法則全体に単一の有限supportを要求せず、
+一つのlaw instanceと一つの出力queryごとの有限性を区別した。この監査で追加が必要だったのは、上記の
+明示actual-action、raw local-data、共通宣言の集約だけだった。
+
+指定反証と非自明例は、部品だけの反証と共通宣言への適用を次のように区別して照合した。
+
+| 検査 | 証拠 |
+| --- | --- |
+| 全false、重複出力、carrier不一致 | `false_table_rejected`、`duplicate_outputs_rejected`、`mismatched_carrier_rejected`と、対象宣言の`eraseMatching_not_lawful` |
+| pointed/upper Atom不一致 | `IndependentGeometryHomPrimitive.Atom.mismatch_rejected` |
+| invariantの種別・native失敗・successor | `mixed_kind_rejected`、`reverse_mixed_kind_rejected`、`native_failure_rejected`、`successor_row_rejected` |
+| ring乗法の改変 | `IndependentRingPrimitive.eraseMultiplication_not_lawful` |
+| context restriction自然性の改変 | `IndependentExplicitRealization.finite_support_action_rejected` |
+| overlap片側の改変 | 新規`Overlap.one_sided_order_rejected`が、全guardと反対向きのorderを保ったまま一方向だけfalseにした入力を共通`PointLaws`で拒否 |
+| raw relation polynomial / variable imageの改変 | `IndependentExplicitRaw.not_lawful_of_polynomial_mismatch`と`not_lawful_of_image_mismatch`、具体例`changedPolynomialData_not_lawful` |
+| 同じobject作用を持つ異なる全Hom | `projection`と新規`secondProjection`から両方式の具体的な2本を作り、両`*_projection_homs_distinct_query`が実際の共通queryを与える |
+| 非可逆係数写像 | `projection_not_injective`と両`*_reconstruction_noninjective`。今回の共通局所Hom同値はその完全Homを入力として保持する |
+| 補助選択による余分な区別 | `auxiliary_choice_independent`、`composeLocal_choice_independent`、新規`localIdentity_choice_independent`。対象側は`objectEquiv`の両逆とProp内のlaw witnessを使い、列挙を対象データへ追加しない |
+
+具体的な射影2本は同じ`PackageTotalHom.id`、coverage、overlap、raw presentation、realizationを持ち、
+係数写像だけが`RingHom.fst ℤ ℤ`と`RingHom.snd ℤ ℤ`で異なる。したがって一般の条件付き分離定理だけで
+済ませず、同じobject作用の異なる完全Homが両方式の共通queryで実際に分離されることを確認した。
+局所構造には完成した`GeometryPackage`、完成したHom、raw系全体の等式を新しいdata fieldとして追加して
+いない。完成fieldは比較定理とnative法則の回復にだけ現れる。
+
+以上により、承認済み設計のパートIについて、原始対象、両方式の全Hom両逆、全fieldの保持と分離、
+恒等・合成・左右単位・結合則、有限局所式、指定反証、補助選択の消去が同じ共通宣言と局所商で接続した。
+これは固定GOAL全体の完了ではなく、パートIIへ渡す技術的検証点Iのcompletion candidateである。
+固定GOALカードのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+新規8 sourceを一つずつfocused checkし、全て通った。対象125宣言を名前で列挙した個別
+`#print axioms`も通り、公理集合は`propext`・`Classical.choice`・`Quot.sound`だけだった。
+全対象で`unusedArguments`・`docBlame`・`defLemma`を実行し、指摘は残っていない。
+placeholder・hidden/BiDi・privacy・語彙・import方向・module登録・差分整形・保護領域も確認した。
+Research全体buildはhard ruleに従って実行せず、Cycleは79のままである。
