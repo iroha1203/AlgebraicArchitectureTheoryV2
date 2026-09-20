@@ -2766,9 +2766,7 @@ base_oid: 1679b3058bada591be86a8d7b6922817de9ce1ef
 tracking_issue: 4791
 report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
 selection:
-  proof_state_ref:
-    - "PR #4823 reject audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4823#issuecomment-5746294189"
-    - "Issue checkpoint correction: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4791#issuecomment-5746296234"
+  proof_state_ref: "PR #4823 reject audit https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4823#issuecomment-5746294189 and Issue checkpoint correction https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4791#issuecomment-5746296234"
   proof_dag_predecessors:
     - "Cycles 1-22 and implementation merge 1679b3058bada591be86a8d7b6922817de9ce1ef"
   proof_obligation: "run the target-theorem completion gate on one fixed completion head without changing the mathematical implementation"
@@ -2788,7 +2786,7 @@ selection:
     - "fresh completion math-lean-review"
 result:
   proposed_result_type: proof-checkpoint
-  proof_obligation_delta: "No mathematical statement changes; this cycle records and executes the missing completion protocol on a new fixed head."
+  proof_obligation_delta: "No mathematical statement changes; this cycle records the missing completion protocol and prepares its fixed-head execution."
   completion_candidate: yes
   lean_artifacts:
     - "the cumulative ResearchLean dependency DAG recorded by Cycles 1-22"
@@ -2831,14 +2829,15 @@ audits:
       - "the cumulative proof-use paths recorded by Cycles 1-22"
     unused: []
   structure_field_escape: none-found
-  route_integrity: pass-for-completion-candidate
+  route_integrity: pass
   target_fitting: none-found
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "implementation PR #4822 exact-head CI 7/7"
-    - "SelectedFiniteObstructionExamples targeted build: 3746 jobs; 55 declarations, standard axioms only"
+    - "implementation head 313019b37c7b15349b0b55d6e824a21e933a1320; exact-head CI 7/7 success: Lean run https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/35476601850 and Tool run https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/35476601862 plus Workers build ffafec0b-2fe5-4693-a3f3-9000bf7e80f1"
+    - "command cd research/lean && lake build ResearchLean.AG.ObstructionDiagnosticBridge.SelectedFiniteObstructionExamples; result 3746 jobs success; output sha256 caffc4c43d24167b102e9fd3c5851dfbda8c56d94bcc6df3e4a529a881007d4f"
+    - "55-declaration namespace #print axioms audit: standard axioms only; immutable audit https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4822#issuecomment-5746164312"
   blocking_findings: []
   invalidated_as_completion_evidence:
     - "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4822#issuecomment-5746178104"
@@ -2853,5 +2852,5 @@ audits:
     - "sync report and tracking Issue after merge"
   failure_path: "do not merge; post checkpoint, refuted, or blocked ledger to both the PR and tracking Issue"
   lifecycle_boundary: "GOAL card/index status changes and Issue close require a separate human decision"
-  next_obligation: "open the Cycle 23 PR and complete its standard PR review"
+  next_obligation: "complete PR #4824 standard docs review and root acceptance recheck"
 ```
