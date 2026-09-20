@@ -9235,3 +9235,53 @@ operation写像も同値の対象に残り、代表方式と明示方式のraw/r
 最終検証にwarning・errorはなく、placeholder・hidden/BiDi・privacy・語彙・docstring・
 module登録・差分整形を確認した。Research全体buildは行わず、固定GOALのblobは
 `4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
+
+
+#### 原始点による共通index・operation合成と有限fragmentへの接続
+
+承認済み設計§4.1の局所合成を、原始graphの点から構成した。最初の行の一意な像を中間値として
+選び、次のtableをその点で読む。Atom・contextのbackwardは順序を逆転する。contextには元の
+preorder同値の比較を保持し、context objectの全単射を新たに要求しない。両成分の恒等は対角点から
+定義し、適法性と元のnative恒等への組立てを証明した。
+
+共通Homでは、source・pointed/upper Atom・object・invariant index・signature axis・係数・
+family/configuration照合値・equation/context indexを同じQuery上で合成した。
+`Composition.indices_eq_native`は、それらが元のcore Homと係数準同型の合成を読む値に
+一致することを示す。係数・source・objectの可逆性は要求しない。依存する値の行は別に埋めるため、
+このindex table単独の完全Hom適法性を主張してはいない。
+
+operationでは、最初のobject graphから中間の両端を選び、そのoperation graphから中間の値を選ぶ。
+`Composition.operationRows_eq_native`が全候補endpoint/carrier行について元のnative合成との一致を
+証明する。添字同定と値の異種等号をSigma対で比較し、型の移し替えでoperationの値が変わらないことを
+導いた。完成したnative Homの合成は比較定理の右辺に現れ、直接tableを定義する入力には使わない。
+
+有限性は、一般の依存graphで一つのindex点と最大二つの値点に分解した。共通宣言のoperationでは
+index点が二つのobject点になるため、両入力を合わせて最大四つのqueryで各出力が決まる。
+`Composition.operationRows_finite_fragment`は、この主張を補助対応の商を取った後の実際の
+`InvariantWitness.fragment`へ接続する。支持集合は評価する元の入力とqueryに応じて選ぶ。
+最初の比較入力には既存の原始行法則を要求し、任意の不適法tableに対する有限決定性へ拡張しない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentIndexedCarrierComposition.lean` / `IndependentCarrierGraph`, `IndependentIndexedCarrierGraph` | `composeIndex`・`composeRows`が中間の原始添字・値を使う。`composeIndex_iff`は関係合成との一致、`composeRows_isLawful`はinactive/active行法則、`assemble_composeRows_heq`は依存写像の合成との一致を与える |
+| `IndependentGeometryHomAtomComposition.lean` / `IndependentGeometryHomPrimitive.Atom` | `identity`・`compose`を両方向の原始点から定義する。適法性・native assemblyとの一致と各方向二点のsupportを証明し、共通index合成へ使用する |
+| `IndependentGeometryHomContextComposition.lean` / `IndependentGeometryHomPrimitive.Context` | 対角恒等と前後のcontext graph合成を定義する。`compose_eq_read`・`assemble_compose`が元のthin-category同値へ接続し、両方向の二点supportを与える |
+| `IndependentGeometryHomCompositionIndices.lean` / `IndependentCarrierGraph`, `IndependentGeometryHomPrimitive.Composition` | `compose_eq_read`がdirected graphの比較APIを与える。`dependentIndices`・`indices`が共通Queryの添字部分を直接合成し、両`*_eq_native`が元のcore/係数合成との一致を示す |
+| `IndependentGeometryHomOperationComposition.lean` / `IndependentGeometryHomPrimitive.Operation`, `NativeReader`, `Composition` | operation値の型同定を`assemble_value_heq`・`indexed_comp_heq`・`operationIndexedFamily_heq`で処理する。`operationRows`が原始合成を共通宣言へ接続し、`operationRows_eq_native`が全候補値を元の合成と比較する |
+| `IndependentGeometryHomOperationCompositionFinite.lean` / `IndependentIndexedCarrierGraph`, `IndependentGeometryHomPrimitive.Composition` | `composeRows_finite_support`が一つのindex点と最大二つの値点を構成する。`operationRows_finite_support`・`operationRows_finite_fragment`が共通queryと実際の有限fragmentで最大四点の決定を証明する |
+
+入力前提は既存の独立object stage、補助対応を消した局所商、その原始行法則である。
+`operation_endpoints`が共通index合成と依存する両端の合成を同定し、native readerの型比較を放電する。
+対象条件・Homの意味・商の同一視条件を変更せず、同じHom同値へ接続する合成を構成している。
+
+残りはsignature/observable・raw・realizationの直接合成、それらの共通tableへの統合と商上の
+全局所法則、全Homの恒等・単位・結合則、各有限片との整合、残る原始式の有限support、指定反証の
+統合である。今回のoperation単独の四点決定を、全Homの合成やDの有限決定性とは扱わない。
+パートI全体のPR・独立査読・CI・merge・Issue同期まで継続し、パートIIは開始しない。
+固定GOAL・元のHomの範囲・Cycle 79を維持する。
+
+新規6 sourceを一つずつfocused checkし、全て通った。各fileのnamespace監査の合計は順に
+11・10・10・5・7・4件(計47件)で標準公理のみだった。47宣言全ての個別`#print axioms`を
+出力名まで照合した。最終検証にwarning・errorはなく、placeholder・hidden/BiDi・privacy・
+語彙・docstring・module登録・差分整形・保護領域を確認した。Research全体buildは実行せず、
+固定GOALのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
