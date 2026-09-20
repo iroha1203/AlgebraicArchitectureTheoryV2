@@ -410,6 +410,38 @@ theorem nonzero_example_outcomes :
   ⟨coarse_nonzero_actual, coarse_nonzero_diagnostic,
     fine_nonzero_actual, fine_nonzero_diagnostic⟩
 
+/-! ## Existing `Ob` gluing-mismatch provenance of the finite examples -/
+
+/-- The coarse zero datum's existing gluing mismatch is its explicit affine mismatch. -/
+theorem coarse_zero_existing_gluing_mismatch :
+    zeroData.gluingMismatchData.gluingMismatchCochain = zeroData.actualMismatch :=
+  zeroData.gluingMismatchCochain_eq_actualMismatch
+
+/-- The coarse nonzero datum's existing gluing mismatch is its explicit affine mismatch. -/
+theorem coarse_nonzero_existing_gluing_mismatch :
+    nonzeroData.gluingMismatchData.gluingMismatchCochain = nonzeroData.actualMismatch :=
+  nonzeroData.gluingMismatchCochain_eq_actualMismatch
+
+/-- The zero datum has zero existing descent-obstruction classes at both readings. -/
+theorem existing_zero_example_outcomes :
+    coarseExistingObstructionClass zeroData = 0 ∧
+      coarseDiagnosticClass zeroData = 0 ∧
+      fineExistingObstructionClass fineZeroData = 0 ∧
+      fineDiagnosticClass fineZeroData = 0 := by
+  rw [coarse_existing_obstruction_class_eq_actual_class,
+    fine_existing_obstruction_class_eq_actual_class]
+  exact zero_example_outcomes
+
+/-- The nonzero datum has nonzero existing descent-obstruction classes at both readings. -/
+theorem existing_nonzero_example_outcomes :
+    coarseExistingObstructionClass nonzeroData ≠ 0 ∧
+      coarseDiagnosticClass nonzeroData ≠ 0 ∧
+      fineExistingObstructionClass fineNonzeroData ≠ 0 ∧
+      fineDiagnosticClass fineNonzeroData ≠ 0 := by
+  rw [coarse_existing_obstruction_class_eq_actual_class,
+    fine_existing_obstruction_class_eq_actual_class]
+  exact nonzero_example_outcomes
+
 #assert_standard_axioms_only
   AAT.AG.ObstructionDiagnosticBridge.SelectedFiniteObstructionExamples
 

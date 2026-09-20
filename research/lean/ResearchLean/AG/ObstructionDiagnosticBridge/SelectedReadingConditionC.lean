@@ -472,6 +472,15 @@ theorem actual_class_eq_zero_iff_mapped_actual_class_eq_zero
   rw [← fine_diagnostic_class_eq_zero_iff_actual_class_eq_zero]
   exact diagnostic_class_eq_zero_iff_mapped_diagnostic_class_eq_zero x
 
+/-- C2 stated for the existing descent obstruction classes at both readings. -/
+theorem existing_obstruction_class_eq_zero_iff_mapped_existing_obstruction_class_eq_zero
+    (x : CoarseLocalData) :
+    coarseExistingObstructionClass x = 0 ↔
+      fineExistingObstructionClass (mapLocalData x) = 0 := by
+  rw [coarse_existing_obstruction_class_eq_actual_class,
+    fine_existing_obstruction_class_eq_actual_class]
+  exact actual_class_eq_zero_iff_mapped_actual_class_eq_zero x
+
 #assert_standard_axioms_only
   AAT.AG.ObstructionDiagnosticBridge.SelectedReadingConditionC
 
