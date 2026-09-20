@@ -23,7 +23,7 @@ G-125の完了条件に含めない。GOALが求める論文との対応は、�
 
 | 予定する論文上の役割 | G-125の内容 | 主なLean宣言 |
 | --- | --- | --- |
-| 第3章: 障害係数と診断係数を結ぶ写像 | (A1), (B1) 既存`GluingMismatch`由来のČech H¹からlaw-generated H¹への比較と指定類の対応 | `ExistingObstructionBridge.existingDescentObstructionClass`, `CombinedAtomH1Input.coarseH1Map`, `CombinedAtomH1Input.fineH1Map`, `CombinedAtomSpecifiedObstruction.coarse_h1_map_existing_obstruction_class_eq_diagnostic_class`, `CombinedAtomSpecifiedObstruction.fine_h1_map_existing_obstruction_class_eq_diagnostic_class` |
+| 第3章: 障害係数と診断係数を結ぶ写像 | (A1), (B1) 既存`GluingMismatch`由来のČech H¹からlaw-generated H¹への比較と指定類の対応 | `ActualCechAffineLocalData.existingDescentObstructionClass`, `CombinedAtomH1Input.coarseH1Map`, `CombinedAtomH1Input.fineH1Map`, `CombinedAtomSpecifiedObstruction.coarse_h1_map_existing_obstruction_class_eq_diagnostic_class`, `CombinedAtomSpecifiedObstruction.fine_h1_map_existing_obstruction_class_eq_diagnostic_class` |
 | 第3章: 診断による零性の保存・反映 | (B2) `R_q`の下で既存障害類／診断類の零性同値 | `CombinedAtomSpecifiedReflection.coarse_diagnostic_class_eq_zero_iff_existing_obstruction_class_eq_zero`, `CombinedAtomSpecifiedReflection.fine_diagnostic_class_eq_zero_iff_existing_obstruction_class_eq_zero` |
 | 第3章: reading変更に沿う比較 | (C1), (C2) 比較平方、既存障害類の輸送、零性同値 | `CombinedAtomReadingNaturality.h1_comparison_square`, `CombinedAtomReadingNaturality.actualH1Map_existingObstructionClass`, `CombinedAtomReadingNaturality.diagnosticH1Map_diagnosticClass`, `SelectedReadingConditionC.existing_obstruction_class_eq_zero_iff_mapped_existing_obstruction_class_eq_zero` |
 | 第3章: 正例 | 同じ有限入力上の非単射reading変更と、非零coboundaryの零障害例・非零障害例 | `SelectedFiniteObstructionExamples.existing_zero_example_outcomes`, `SelectedFiniteObstructionExamples.existing_nonzero_example_outcomes` |
