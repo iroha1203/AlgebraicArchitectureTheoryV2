@@ -10,6 +10,9 @@ on the same independently assembled source and target objects. Local laws
 refer to primitive object stages and the retained common Hom points of the
 invariant quotient. No completed native map or certificate is a local field.
 The converse common reader and whole-Hom inverse proofs remain separate work.
+Inactive object rows are fixed to false because they do not describe native
+Hom data; arbitrary values there would prevent exact recovery of the table.
+This normalization is used by readback, while assembly uses active rows.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction.IndependentGeometryHomPrimitive.FullExplicit
@@ -26,6 +29,11 @@ variable (p : InvariantWitness.Local.{u, v}
 
 /-- Primitive point laws for every component of the original complete explicit geometry Hom. -/
 structure PointLaws : Prop where
+  /-- Candidate object rows outside the two primitive-generated endpoints are normalized for exact readback. -/
+  inactiveObjects : ∀ A B (q : DependentQuery .explicit A B),
+    (A ≠ IndependentCoreTableAssembly.generatedObject s.1.val.1 ∨
+      B ≠ IndependentCoreTableAssembly.generatedObject t.1.val.1) →
+    (PackageAssembly.retained s.1 t.1 p).table (.atObjects A B q) = false
   /-- All core maps are built from primitive preservation laws and the invariant quotient. -/
   package : PackageAssembly.PointLaws s.1 t.1 (PackageAssembly.retained s.1 t.1 p).table
   /-- The nine original coverage implications. -/

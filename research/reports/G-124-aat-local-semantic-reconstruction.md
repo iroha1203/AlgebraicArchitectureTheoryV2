@@ -9006,3 +9006,39 @@ native完全幾何Homから局所法則を満たす共通tableを生成するrea
 最終検証にwarning・errorはない。placeholder・hidden/BiDi・privacy・語彙・差分整形・
 module登録を確認し、Research全体buildは行っていない。固定GOALのblobは
 `4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+
+#### 代表方式rawの原始条件との同値と全Hom構成への接続
+
+代表方式のraw保存を、元のraw候補応答の比較と係数graphの点条件で記述した。
+座標名を同値で移す明示方式と異なり、代表方式は元の座標・relation・local-dataの型参照を
+そのまま保存する。多項式と変数像では候補応答の有無を比較し、各単項式の係数点を検査する。
+変数像の条件はtargetの原始refinement応答を前提とし、完成したsite射を局所lawに置かない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentPolynomialCoefficientPoints.lean` / `IndependentPolynomialCoefficientPoints` | `PointLaws`は各指数の一つの係数graph点、`OptionalPoints`は応答の有無とactive係数点を比較する。`points_iff_map`・`optional_points_iff_map`は元の係数変換等式との同値を証明する |
+| `IndependentRepresentativeRawResponses.lean` / `IndependentRepresentativeHom` | `polynomial_candidate_read`・`image_candidate_read`で元の候補応答へ接続し、`transport_polynomial_from_candidate`・`transport_image_from_candidate`で代表方式transportの評価をその応答と係数変換から回復する |
+| `IndependentGeometryHomRepresentativeRawLaws.lean` / `IndependentGeometryHomPrimitive.RepresentativeRaw` | `PointLaws`は型参照・label・local-data・多項式・変数像の原始保存条件を宣言する。係数参照は原始carrierとzeroから得る |
+| `IndependentGeometryHomRepresentativeRawAssembly.lean` / 同namespace | `assemble`は原始条件から元の厳密な`raw_eq`を構成する。`points_of_native`は任意の元のraw等式から全候補の原始条件を回復し、`points_iff_native`で両方向を統合する。context・係数の比較前提は次のstage接続で放電する |
+| `IndependentGeometryHomRepresentativeRawComponents.lean` / `IndependentGeometryHomPrimitive.GeometryComponents` | `primitiveCoefficientRef`・`coefficientRef_assemble`は元のcarrier/zeroを保持する。`representativeRaw_maps`は実際のcore・係数写像の点回復から比較前提を導き、`representativeRaw_points_iff`・`representativeRaw`で元の独立object stageへ接続する |
+| `IndependentGeometryHomRepresentativeFullAssembly.lean` / `IndependentGeometryHomPrimitive.FullRepresentative` | `PointLaws`は各成分の原始条件を統合する。`assembleHom`は同じ独立object stageと不変量の局所商から、元の`GeometryTotalHom`のcore・coverage・overlap・係数・厳密raw等式・三つのrealization成分と自然性を構成する |
+
+全query回復へ進む前の点検で、`atObjects A B`のうち実際の両端に一致しない候補への
+応答を、全Homの局所法則で固定していない箇所を見つけた。任意の値を残すとnative Homには
+現れない情報が局所tableに残るため、両方式の`PointLaws.inactiveObjects`でfalseへ固定した。
+これは設計§3.1の未使用候補の一意性を反映する補足であり、固定GOALやnative Homの定義は
+変更していない。この法則を含む全局所Homとnative Homとの両逆は、引き続き証明対象である。
+
+ここまでで、両方式の完全なnative Homを原始局所条件から構成する接続が揃う。
+任意のnative Homから全局所条件を満たす共通tableを生成するreader、明示rawの全候補query回復、
+両方式の全Homの両逆・分離、共通の恒等・合成、残る有限式・指定反証は未完了である。
+成分の比較同値は完全な局所Homの正負instanceや全射性の代用にしない。
+パートI全体のPR・独立査読・CI・merge・Issue同期まで継続し、Cycleは79のままとする。
+
+新規6 sourceとinactive条件を補った明示方式sourceの単一file検証が通った。
+namespace監査は順に4・4・12・11・6・13・13件(計63件)で標準公理のみだった。
+新規・変更した明示25宣言の個別`#print axioms`も標準公理のみで、最終検証にwarning・errorはない。
+placeholder・hidden/BiDi・privacy・語彙・差分整形・module登録を確認した。
+Research全体buildは行わず、固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
