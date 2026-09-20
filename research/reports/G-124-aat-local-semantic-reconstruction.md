@@ -9285,3 +9285,50 @@ index点が二つのobject点になるため、両入力を合わせて最大四
 出力名まで照合した。最終検証にwarning・errorはなく、placeholder・hidden/BiDi・privacy・
 語彙・docstring・module登録・差分整形・保護領域を確認した。Research全体buildは実行せず、
 固定GOALのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+
+#### signature・observableの原始合成と共通core tableへの統合
+
+前節のscalar/index・operation合成に、signature座標とobservableの両方向の原始合成を接続した。
+最初の添字graphから中間添字を選び、次の添字点がtrueなら二つのfiber graphを合成する。
+次の添字点がfalseなら行全体をfalseに固定する。signatureの候補axis型が一致しない場合もfalseとし、
+添字写像の可逆性を追加していない。forward/backwardの点は元の向きで合成する。
+
+`Composition.signatureRows_eq_native`は、全候補axis・coordinate行を元のnative座標同値の合成と
+比較する。`Composition.observableRows_eq_native`は、全候補context・値carrier行を元の環同値の
+合成と比較する。observableではcontextの添字とring-equivalence familyをSigma対で比較し、
+型の移し替えが両方向の値を変えないことを導いた。必要な環構造は既存の独立object stageから得ている。
+
+有限性は、二つの添字点と最大二つのfiber点に分解した。`signatureRows_finite_support`・
+`observableRows_finite_support`は、共通宣言の両入力を合わせて最大四つのqueryで各出力が決まる
+ことを示す。各`*_finite_fragment`が補助対応を消した商の実際の有限fragmentへ接続する。
+その支持集合は元の入力と評価queryに依存し、指定した既存の行法則を満たす比較入力について使う。
+
+続く`Composition.composeWith`は、scalar/index・operation・signature・observableを同じ共通Queryの
+tableへ統合する。`composeWith_eq_native`は、元のcore Homと係数準同型の合成を共通readerで読んだ
+値との全queryの一致を証明する。raw・realizationには両辺で同じ点callbackを渡す段階であり、
+それらの合成や幾何法則はまだ導いていない。完全Homの合成の代わりにcoreだけで完了とはしない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentIndexedInverseComposition.lean` / `IndependentIndexedInverseGraph`, `IndependentCandidateIndexedInverseGraph` | `composeRows`が添字点と両方向のfiber点を合成する。`composeRows_isLawful`・`assemble_composeRows_heq`が元の依存同値に接続する。`extend`・`project_extend`・`extend_read`は外側carrier候補を保持した完全readerへ接続する |
+| `IndependentGeometryHomSignatureComposition.lean` / `IndependentGeometryHomPrimitive.Composition` | `signatureRows`が元のaxis/coordinate行を直接合成する。`signature_indices`が共通index tableとactivationを同定し、`signatureRows_eq_native`が全候補行を元のnative合成と比較する |
+| `IndependentGeometryHomObservableComposition.lean` / `IndependentGeometryHomPrimitive.Observable`, `NativeReader`, `Composition` | contextの型同定を両方向のfiberデータまで証明する。`observableRows`・`observable_indices`・`observableRows_eq_native`が原始の合成、共通activation、native環同値合成を接続する |
+| `IndependentIndexedInverseCompositionFinite.lean` / `IndependentInverseGraph`, `IndependentIndexedInverseGraph`, `IndependentCandidateIndexedInverseGraph` | 非依存の二点supportと、依存する二つの添字点・二つの値点を構成する。`composeRows_lifted_finite_support`が点projectionとの一致を使い、元のqueryへの埋込みでも最大四点であることを示す |
+| `IndependentGeometryHomAlgebraicCompositionFinite.lean` / `IndependentGeometryHomPrimitive.InvariantWitness`, `Composition` | `fragment_eq_iff_points`が有限fragmentの等号を元のqueryの等号と同定する。signature/observableの`*_finite_support`・`*_finite_fragment`が同じ共通宣言と商で四点の決定を与える |
+| `IndependentGeometryHomCoreComposition.lean` / `IndependentGeometryHomPrimitive.Composition` | `dependentWith`・`composeWith`が直接合成したcoreの全計算成分を統合する。各`*_eq_native`が任意の同じraw/realization点callbackの下で、元のcore/係数合成の共通readerとの一致を示す |
+
+入力前提は既存の独立object stage、局所商、原始行法則、係数の原始保存則である。
+有限supportの埋込み補題が要求する点projection等式は、実際の共通queryのconstructorを場合分けして
+放電した。native Homの合成は比較証明で使用し、直接合成するtableの値に完成した射を保持しない。
+対象条件・Homの意味・商の同一視条件は変更していない。
+
+残りはraw・realizationの直接合成、共通tableの全幾何法則と商上の合成への接続、全Homの恒等・
+単位・結合則・有限片との整合、残る原始式の有限support、指定反証の統合、パートI全体の
+PR・独立査読・CI・mergeである。パートIIは開始せず、固定GOAL・元のHomの範囲・Cycle 79を維持する。
+
+新規6 sourceを一つずつfocused checkし、全て通った。各fileのnamespace監査の合計は順に
+9・3・7・6・5・4件(計34件)で標準公理のみだった。34宣言全ての個別`#print axioms`も出力名まで
+照合した。最終検証にwarning・errorはなく、placeholder・hidden/BiDi・privacy・語彙・docstring・
+module登録・差分整形・保護領域を確認した。Research全体buildは実行せず、固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
