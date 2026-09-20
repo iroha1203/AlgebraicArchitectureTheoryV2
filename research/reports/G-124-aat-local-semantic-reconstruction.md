@@ -9441,3 +9441,52 @@ local-data合成を含む残る有限support、指定反証の統合、パート
 明示45宣言全ての個別`#print axioms`も出力名まで照合した。最終検証にwarning・errorはなく、
 placeholder・hidden/BiDi・privacy・語彙・docstring・module登録・差分整形・保護領域を確認した。
 Research全体buildは実行せず、固定GOALのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+
+#### 原始の整合族からの商上の全Hom合成と結合則
+
+前節の全計算queryの合成tableから、商上の局所Homを構成した。`composeRetained`が元の有限tableを
+そのまま保持し、object行と不変量のindex行の合成法則を証明する。`composePresentation`は、
+前段の一意なindex像を中間添字として二つの補助graphを直接合成する。不一致のcarrier、inactiveな
+index対、predicateの補助点をfalseに保ち、object点の中間対象による分解から評価の整合性を示す。
+
+`exists_compositePresentation`は両入力の商の帰納法でこの構成を適用する。`composeLocal`は、
+構成済みの整合presentationを選んだ後で補助対応を消す。`composeLocal_table`・`composeLocal_point`が
+元の全queryを、`composeLocal_fragment`が任意の有限fragmentを保持する。`composeLocal_choice_independent`は
+同じ元のquery値を持つ任意の整合presentationが同じ合成結果になることを証明する。
+完成したnative Homやnative transportの存在条件を、補助行の定義に使用していない。
+
+`representativeLocal`・`explicitLocal`が、実際の独立object stageと完全局所法則を持つ二つのHomへ
+この構成を適用する。各`*_table`・`*_fragment`は原始合成tableとの正確な一致を与える。
+`*_eq_native`は元の完全Homの合成の読み取りとの一致を示し、`*_points`がinactive object、package、
+coverage、overlap、係数、raw、realizationの全局所法則を放電する。`*_assemble`はその合成を組み立てると
+元の完全Homの合成に戻ることを、全Homの両逆を使って証明する。
+
+`*_read_comp`は任意の元の完全Homの読み取りが局所合成と可換であることを示す。`*_assoc`は、
+局所側の直接構成と全成分の比較を証明した後で、元の完全Homの結合則を使い、商上の結合則を示す。
+代表方式の有向realization、明示方式のrawとactual context-action、非可逆な係数・object・operation
+写像を同じ範囲で保持する。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentGeometryHomRetainedComposition.lean` / `IndependentGeometryHomPrimitive.InvariantWitness` | `composeRetained`・`composeRetained_table`・`composite_index_point`・`composite_object_factor`が、元の全有限tableと原始object/index合成をつなぐ |
+| `IndependentGeometryHomInvariantPresentationComposition.lean` / 同namespace | `composeRow_inactive`、`compositeAuxRow`とactive/inactive比較、`composeAux`とcarrier/row/typing比較、`composePresentation`・`composePresentation_table`が、商を取る前の補助対応の整合性を構成する |
+| `IndependentGeometryHomInvariantLocalComposition.lean` / 同namespace | `exists_compositePresentation`・`composeLocal`とtable/point/fragment比較・`composeLocal_choice_independent`が、原始合成の整合証明後に補助対応を消す |
+| `IndependentGeometryHomFullCompositionNative.lean` / `IndependentGeometryHomPrimitive.Composition` | `composeRepresentative_eq_full_native`・`composeExplicit_eq_full_native`が、全計算queryを元の完全Homの合成に接続する |
+| `IndependentGeometryHomFullLocalComposition.lean` / 同namespace | 両方式の`*Local`・`*_table`・`*_fragment`・`*_eq_native`・`*_points`・`*_assemble`が、実際の局所商での合成・全法則・全成分の組立てを統合する |
+| `IndependentGeometryHomLocalCompositionLaws.lean` / 同namespace | 両方式の`*_read_comp`・`*_assoc`が、任意の元のHomの合成との可換性と局所商の結合則を示す |
+
+一般補題のobject/index合成条件は、この補題の明示した適用条件であり、完全Homへの適用では原始
+合成tableの定義から放電する。入力の完全局所法則から元のassemblerを得て、合成後の全法則を証明する。
+出力の法則・native比較・結合則を入力fieldへ移していない。補助対応の消去条件と固定GOALは変更していない。
+有限fragmentとの一致は、原始合成tableの制限との一致である。全出力の有限入力supportが完了した
+という主張ではなく、未証明の明示realization・local-data等のsupportは残す。
+
+残りは原始恒等と単位則、残る有限support・有限式・指定反証の統合、パートI全体のPR・独立査読・
+CI・mergeである。パートIIは開始せず、Cycle 79を維持する。
+
+新規6 sourceを一つずつfocused checkし、全て通った。各fileのnamespace監査は順に
+4・11・6・2・12・6件(計41件、生成された補助宣言3件を含む)で標準公理のみだった。
+明示38宣言全ての個別`#print axioms`も出力名まで照合した。最終検証にwarning・errorはなく、
+placeholder・hidden/BiDi・privacy・語彙・docstring・module登録・差分整形・保護領域を確認した。
+Research全体buildは実行せず、固定GOALのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
