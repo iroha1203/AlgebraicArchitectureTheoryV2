@@ -385,7 +385,7 @@ merge commitは `bb9c533efbd68adc0e8004a90e5a782c8497a1c2`。
 [bb9c533efbd68adc0e8004a90e5a782c8497a1c2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/bb9c533efbd68adc0e8004a90e5a782c8497a1c2)
 の一次資料と、第1〜3章の原稿を照合して[日本語初稿](ja/07-transport-coherence.md)を作成した。
 以下の一次資料の相対リンクは、この固定版で照合したファイルを示す。
-原稿のSHA-256は `e2c584e41d2f14801d89332bbd06d4b0a684cbbad4a65840db35342d4955d7af`。
+原稿のSHA-256は `daecfc94783b5e8e11728c54444a6e979c40aca92e97167974ad8ac2058457b3`。
 確認者はCodex（GPT-6）である。
 
 本文に必要な定義・条件・構成・証明を記述し、内部資料への案内はこの記録へ分けた。
@@ -400,13 +400,13 @@ Lean sourceは既存の形式化の条件と結論の照合に使い、変更・
 | C4-04 | 構成4.8–定理4.11 | Coreの文脈同値、被覆要件の存在量化像、選択overlap、同じ係数でのraw system再添字づけ、三つの実現比較 | [GeometryTransport/Transport][c4-geom-transport]、[Supply][c4-geom-supply]、[Factorization][c4-geom-factor]、[Opcartesian][c4-geom-opcart] | 一般のcore射にはH_geomを必要十分な存在条件として示す。標準core輸送では三つの可逆な実現比較を構成し、任意のcoreの後続射について幾何の因子を構成・一意化 |
 | C4-05 | 補題4.12–定理4.16 | 選択した強いlift、fiberの対象とvertical射、coreへの射影 | [CorePseudofunctor][c4-core-pseudo]、[Pseudofunctor][c4-geom-pseudo]、[TowerCompatibility][c4-tower] | 輸送関手、compositor、unitorを因子分解から作り、自然性、三重合成・単位と段間の二経路の一致を同じ普遍性から証明 |
 | C4-06 | 定義4.17–構成4.18 | 有限グラフ、底で等しい二道、強い辺lift、独立に指定した終点自己同型 | [FinitePresentation][c4-presentation] | 指定比較とcanonical comparatorを区別し、raw defectを合成順序込みで定義。指定比較の整合性を入力へ含めない |
-| C4-07 | 定義4.19–定理4.22 | 終点fiber群のedge gauge、現在の辺の選択を含む作用空間 | [FinitePresentation][c4-presentation]、[VanishingCoherence][c4-vanishing] | 道の終点変化とdefectの共変式から作用則を証明。軌道による消滅と独立な道の可換式を、強いliftの一意性で同値化 |
+| C4-07 | 定義4.19–定理4.22 | 終点fiber群のedge gauge、現在の辺の選択を含む作用空間 | [FinitePresentation][c4-presentation]、[VanishingCoherence][c4-vanishing] | vertical同型の因子分解を明示し、道の終点変化とdefectの共変式から作用則を証明。二辺の計算で現在の選択への依存を示す。軌道による消滅と独立な道の可換式を、強いliftの一意性で同値化 |
 | C4-08 | 補題4.23–命題4.26 | 後続道へのwhiskering、向き付き面の貼り合わせ、同じ始終道を持つsyzygy | [PastingObstruction][c4-pasting] | 逆向きでは指定比較と標準比較をそれぞれ反転。貼り合わせのdefectには共役を含め、cocycle条件には指定比較のsyzygy整合を要求。閉じた不一致の共役式は固定したedge gaugeで証明 |
-| C4-09 | 例4.27–例4.29 | 一対象群圏、恒等の初期lift、一面・二面・三面の有限比較 | [VanishingCoherence][c4-vanishing]、[FiniteWitnesses][c4-finite]、[UnifiedObstruction][c4-unified] | 一面の吸収、同じ二辺への異なる要求、S3の非可換な三比較を本文用の群圏で直接計算。既存のAAT package全成分をこの小例に含めたとは扱わない |
+| C4-09 | 例4.27–例4.29 | 一対象群圏、恒等の初期lift、独立な平行二辺と一面、辺を共有する複数面 | [VanishingCoherence][c4-vanishing]、[FiniteWitnesses][c4-finite]、[UnifiedObstruction][c4-unified] | 独立な二辺での比較の吸収、同じ二辺への異なる要求、S3の非可換な三比較を本文用の群圏で直接計算。既存のAAT package全成分をこの小例に含めたとは扱わない |
 | C4-10 | 定義4.30–定理4.33 | 抽出を固定する上下の自己同型群、core射影と核、辺ごとのlift、coreの道の整列 | [SectionDecomposition][c4-section] | 無条件のdefect射影を先に示す。整列と一意性からp(m)=p(u)を導き、核への所属とuφ⁻¹=(um⁻¹)(mφ⁻¹)をこの順序で証明 |
 | C4-11 | 定理4.34 | 同じcoreの辺の選択の上のlift、核のedge gauge、全ての面 | [GlobalVanishing][c4-global] | 固定sectionの上の全体整合性と、同じsectionに相対的な核の補正を両向きに構成。さらにsectionの存在を量化して同時消滅を特徴づける |
 | C4-12 | 例4.35 | S4、選択した二軸の安定化群とC2の直積、一頂点・二loop・二面 | [CrossStageCoherence/FiniteWitnesses][c4-stage-finite]の四軸と平方根の機構 | 本文用に群準同型K→S4を構成。Coreの二つの平方根がどちらも持ち上がらず、独立な核の条件は解けることを証明・全数検算。元の係数環ℤ×ℤの幾何packageの代わりに、核を明示的なC2とした有限群の塔を用いた |
-| C4-13 | 定義4.36–例4.39 | 三法則を持つlens、一般の状態・view写像、同じ状態写像の再利用 | [CSAATLensRelativeOperationSquares][c4-lens]、第1章の命題1.34・例1.35・定義1.42 | getとputを直和写像に束ね、共有されたhとh×uによる一つの平方との同値を証明。可逆な組の共通部分と、非単射の意味保存射を区別 |
+| C4-13 | 定義4.36–例4.39 | 三法則を持つlens、一般の状態・view写像、同じ状態写像の再利用 | [CSAATLensRelativeOperationSquares][c4-lens]、第1章の定義1.32・命題1.34・例1.35・定義1.42 | getとputを直和写像に束ね、共有されたhとh×uによる一つの平方との同値を証明。第一・第二法則から更新保存が読取り保存を含意することを原稿内で導出し、可逆な組の共通部分がput保存群に等しいことを示す。非単射の意味保存射も保持 |
 | C4-14 | 命題4.40 | 固定プロトコル、名前付き生成辺、頂点写像、観測とadapter | [CSAATProtocolAdapterSquares][c4-protocol]、第1章の命題1.38 | 生成辺から全実行への自然性を帰納法で導き、adapter平方を頂点成分で特徴づける |
 | C4-15 | 定理4.41・章末 | 充満忠実関手、任意の比較射、両端の自己同型。Sectionの対応には比較射の可逆性 | [CSAATFullyFaithfulComparisonTransport][c4-fully-faithful]、第1章の命題1.43 | 比較を保つ群の全単射をfullnessとfaithfulnessから証明。適用先は実際に構成した型付き圏とし、幾何の輸送には別途core射と局所実現の比較を指定 |
 
@@ -415,7 +415,7 @@ Lean sourceは既存の形式化の条件と結論の照合に使い、変更・
 本文の証明と別に、有限置換を全列挙するPythonスクリプトで次を検算した。
 
 - S3で長さ3の道を用い、defectの共変式を7,776通り、作用の合成則を46,656通りの辺の選択で確認。
-- 一面の比較は6個の各指定比較について6通りの解を持つ。同じ二辺への異なる二要求と、非可換な三比較には同時解がない。
+- 独立な平行二辺の比較は6個の各指定比較について6通りの解を持つ。同じ二辺への異なる二要求と、非可換な三比較には同時解がない。
 - 貼り合わせの共役を含む式を1,296通り、閉じた比較の式を216通りで確認。Defectの単純な積への置換は648通りで失敗した。
 - 順序を保つ二因子の分解を216通りで確認。因子順序の交換は108通りで失敗した。
 - S4で(12)(34)の平方根は二つで、どちらも選択対{1,2}を保たない。本文の群の塔ではcoreの全条件に2解、幾何だけの第二の面に8解、両面の同時条件に0解。
@@ -437,9 +437,10 @@ Lean sourceは既存の形式化の条件と結論の照合に使い、変更・
 Lensとプロトコルは第1章で定めた意味論から出発し、既存文献の引用範囲を広げていない。
 文献確認記録の原稿hashには、第4章までの日本語原稿を掲載順に含めた。
 
-2026-09-21、下記の具体例の改善を含む原稿について人間の確認を終え、PR作成の指示を受けた。
-GitHubのファイルプレビュー・描画済み差分の確認とCIの対象commit・結果はPRに記録し、
-Claudeの独立レビューをPR上で受ける。
+2026-09-21、下記の具体例の改善を含む原稿について人間の確認を終え、
+[PR #4834](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4834)を作成した。
+commit `edd77183adc4e1f6a8d7a622b753fc69ff8658ed` の全410式をGitHubのファイルプレビュー・
+描画済み差分で確認し、CI7件の成功とともにPRに記録した。その後のレビュー対応は下記に記す。
 
 ### 導入とまとめの具体例の改善
 
@@ -453,6 +454,38 @@ Claudeの独立レビューをPR上で受ける。
 経路間の住所の入替え、共有する変換を修正したときの他経路への影響、
 読取りと更新の両方を保つ必要性を、構成4.18・定理4.22・命題4.37・4.38・4.40に照合して記述した。
 全410式、定義・結果・式の番号、まとめより前の本文と引用を保持し、原稿hashを更新した。
+
+### PRレビューと採用した7件の修正
+
+2026-09-21、commit `edd77183adc4e1f6a8d7a622b753fc69ff8658ed` に対する
+[Claudeレビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4834#issuecomment-5751572737)は
+approveとし、任意提案4件を示した。
+[別の内容レビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4834#pullrequestreview-5261278310)は
+主要定理の結論を肯定し、例の適用範囲の正確化1件と説明の補強2件を提案した。
+人間は計7件の採用を指示した。
+
+| 対象 | 修正と確認 |
+| --- | --- |
+| 例4.27 | 吸収できる理由を、二本の平行な辺を独立に選び直せることとして明示。一般の一面への拡張を避け、例4.35の第一面だけでも解がないことと整合させた |
+| 命題4.21・構成4.24の説明 | 二辺の道の終点変化を直接計算し、現在の選択への依存を示した。道の記述順と射の合成順も一式で明示 |
+| 定義4.36・命題4.38とまとめ | 第1章の式(1.16)の第一・第二法則から、更新保存が読取り保存を含意することを一般の写像について導出。可逆な場合の群の包含と例1.35の反例を結びつけた。この補足は本文内の証明であり、新たなLean theoremの追加としては扱わない |
+| 定義4.19 | vertical同型の因子が逆射で一意に作れることを補い、補題4.2の合成の性質に接続。既存Leanの `reselectedEdgeLift_isStronglyCocartesian` と同じ構成であることを確認 |
+| §§4.5–4.9の記法 | 面の右道を `ρ_f` として関手 `r` と区別。旧記号の全12箇所を同じ意味で置換した |
+| 定理4.33 | 再選択前の比較を `φ_f^0` として、再選択を引数に取る比較族と区別。分解・射影の式の積順序を保持 |
+| 例4.35 | 四つの添字を軸と見なす群の例であることを冒頭で説明。群と指定比較の条件は保持 |
+
+二辺の終点変化をS3の全1,296通りで検算し、固定した再選択でも現在の選択によって
+三つの異なる終点変化が得られる例を確認した。独立な二辺での各指定比較の解6件と、
+S4の選択対の安定化群に平方根がないことも再確認した。
+四状態の積lensでは、一般の状態・view写像の組1,024通りのうち更新保存は16通りで、
+すべて読取りも保存した。読取り保存64通りのうち48通りは更新を保存しなかった。
+一般の含意の根拠は、有限検算ではなく本文に記した法則による証明である。
+
+修正後の全425式（本文内370・独立行55）をKaTeX 0.18.7で検査し、エラー・警告なし。
+定義等41件と式番号52件を保持し、追加の三つの計算は番号なしの式とした。
+参照・文献・不可視文字・公開情報と原稿hashを確認した。
+修正後のGitHub表示とCIの対象commit・結果はPRに記録する。
+Claudeのapproveは修正前のcommitに対するものであり、修正版の独立再レビューは未記録である。
 
 [c4-core-transport]: ../../../research/lean/ResearchLean/AG/AtomFoundation/Transport.lean
 [c4-core-opcart]: ../../../research/lean/ResearchLean/AG/AtomFoundation/Opcartesian.lean

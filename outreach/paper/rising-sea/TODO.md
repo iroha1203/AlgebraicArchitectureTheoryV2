@@ -35,7 +35,7 @@ Claude との PR 上でのレビューと修正を終えたら
 - [x] 04 第1章 相対的アーキテクチャの構成 — [日本語原稿](ja/04-relative-architecture.md)のレビュー・修正・数式表示確認を終え、[PR #4831](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4831)をマージ済み。
 - [x] 05 第2章 Law の幾何と局所整合性 — [日本語原稿](ja/05-law-geometry.md)と図2.1のレビュー・修正・GitHub数式表示確認を終え、Claudeのapprove後に[PR #4832](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4832)をマージ済み。
 - [x] 06 第3章 標準解像度と診断不変性 — [日本語原稿](ja/06-resolution-invariance.md)のPRレビューを受け、人間が採用したperiodの正確化と任意提案7件を反映。修正後のGitHub表示・CIを確認し、人間が[PR #4833](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4833)をマージ済み。
-- [ ] 07 第4章 輸送と合成の整合性 — [日本語初稿](ja/07-transport-coherence.md)を作成。一次資料との照合、有限例の検算、数式構文とローカル表示を確認し、導入とまとめの注文APIの例を加えて人間の原稿確認を終えた。GitHub上の表示確認とClaudeの独立レビューはPR段階で行う。
+- [ ] 07 第4章 輸送と合成の整合性 — [日本語原稿](ja/07-transport-coherence.md)の[PR #4834](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4834)でClaudeのapproveと別の内容レビューを受け、人間が採用した正確化1件・任意改善6件を反映。修正後のGitHub表示・CIの結果をPRに記録し、修正版の確認へ進む。
 - [ ] 08 第5章 基底変換と生成比較 — `ja/08-base-change.md`
 - [ ] 09 第6章 冪等正規化と実現 — `ja/09-idempotent-normalization.md`
 - [ ] 10 第7章 比較を保つ変更と情報 — `ja/10-comparison-and-information.md`
