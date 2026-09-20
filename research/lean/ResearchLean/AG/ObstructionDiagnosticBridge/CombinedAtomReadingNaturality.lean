@@ -168,6 +168,14 @@ theorem actualH1Map_actualClass (x : CoarseLocalData) :
   apply Subtype.ext
   exact (mapLocalData_actualMismatch x).symm
 
+/-- C1 transports the existing coarse descent obstruction class to the fine one. -/
+theorem actualH1Map_existingObstructionClass (x : CoarseLocalData) :
+    actualH1Map (coarseExistingObstructionClass x) =
+      fineExistingObstructionClass (mapLocalData x) := by
+  rw [coarse_existing_obstruction_class_eq_actual_class,
+    fine_existing_obstruction_class_eq_actual_class]
+  exact actualH1Map_actualClass x
+
 /-- C1 also transports the independently generated specified diagnostic class. -/
 theorem diagnosticH1Map_diagnosticClass (x : CoarseLocalData) :
     diagnosticH1Map (x.diagnosticClass coarse_adequate) =

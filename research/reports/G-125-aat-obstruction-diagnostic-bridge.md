@@ -23,10 +23,10 @@ G-125の完了条件に含めない。GOALが求める論文との対応は、�
 
 | 予定する論文上の役割 | G-125の内容 | 主なLean宣言 |
 | --- | --- | --- |
-| 第3章: 障害係数と診断係数を結ぶ写像 | (A1), (B1) actual Čech H¹からlaw-generated H¹への比較と指定類の対応 | `CombinedAtomH1Input.coarseH1Map`, `CombinedAtomH1Input.fineH1Map`, `CombinedAtomSpecifiedObstruction.coarse_h1_map_actual_class_eq_diagnostic_class`, `CombinedAtomSpecifiedObstruction.fine_h1_map_actual_class_eq_diagnostic_class` |
-| 第3章: 診断による零性の保存・反映 | (B2) `R_q`の下でactual/diagnostic classの零性同値 | `CombinedAtomSpecifiedReflection.coarse_diagnostic_class_eq_zero_iff_actual_class_eq_zero`, `CombinedAtomSpecifiedReflection.fine_diagnostic_class_eq_zero_iff_actual_class_eq_zero` |
-| 第3章: reading変更に沿う比較 | (C1), (C2) 比較平方、指定類輸送、零性同値 | `CombinedAtomReadingNaturality.h1_comparison_square`, `CombinedAtomReadingNaturality.actualH1Map_actualClass`, `CombinedAtomReadingNaturality.diagnosticH1Map_diagnosticClass`, `SelectedReadingConditionC.actual_class_eq_zero_iff_mapped_actual_class_eq_zero` |
-| 第3章: 正例 | 同じ有限入力上の非単射reading変更と、非零coboundaryの零障害例・非零障害例 | `SelectedFiniteObstructionExamples.zero_example_outcomes`, `SelectedFiniteObstructionExamples.nonzero_example_outcomes` |
+| 第3章: 障害係数と診断係数を結ぶ写像 | (A1), (B1) 既存`GluingMismatch`由来のČech H¹からlaw-generated H¹への比較と指定類の対応 | `ExistingObstructionBridge.existingDescentObstructionClass`, `CombinedAtomH1Input.coarseH1Map`, `CombinedAtomH1Input.fineH1Map`, `CombinedAtomSpecifiedObstruction.coarse_h1_map_existing_obstruction_class_eq_diagnostic_class`, `CombinedAtomSpecifiedObstruction.fine_h1_map_existing_obstruction_class_eq_diagnostic_class` |
+| 第3章: 診断による零性の保存・反映 | (B2) `R_q`の下で既存障害類／診断類の零性同値 | `CombinedAtomSpecifiedReflection.coarse_diagnostic_class_eq_zero_iff_existing_obstruction_class_eq_zero`, `CombinedAtomSpecifiedReflection.fine_diagnostic_class_eq_zero_iff_existing_obstruction_class_eq_zero` |
+| 第3章: reading変更に沿う比較 | (C1), (C2) 比較平方、既存障害類の輸送、零性同値 | `CombinedAtomReadingNaturality.h1_comparison_square`, `CombinedAtomReadingNaturality.actualH1Map_existingObstructionClass`, `CombinedAtomReadingNaturality.diagnosticH1Map_diagnosticClass`, `SelectedReadingConditionC.existing_obstruction_class_eq_zero_iff_mapped_existing_obstruction_class_eq_zero` |
+| 第3章: 正例 | 同じ有限入力上の非単射reading変更と、非零coboundaryの零障害例・非零障害例 | `SelectedFiniteObstructionExamples.existing_zero_example_outcomes`, `SelectedFiniteObstructionExamples.existing_nonzero_example_outcomes` |
 
 付録Aでは、上表の各主張を同名のLean宣言へ対応させる。仕様の固定版は冒頭の
 GOAL commit / blob、実装の固定版はPR
@@ -103,6 +103,11 @@ tracking Issue #4791の同期コメントに記録する。
   式(2)のcoboundaryを加えclassを変えないこと、actual比較像とLaw-value生成式が一致すること、誘導H¹写像が
   specified obstruction classをdiagnostic classへ送ること、actual classの零からdiagnostic classの零が
   従うことを示し、coarse/fineのcombined-site入力でB1を放電する。
+- 完了（Cycle 24）: chart stateをprimitive relation ideal上のlawful sectionとして既存
+  `LocalFlatnessData`へ載せ、既存`GluingMismatchData`のmismatch cochainが式(1)の
+  `actualMismatch`と一致することを示した。同じcocycleから既存`descentObstructionClass`と
+  additive H¹ readingを構成し、従来の`actualClass`との一致を証明した。これによりB1・B2・C1・C2と
+  有限零／非零例を、選定した既存`Ob`障害構成に対して直接述べ直した。
 - 完了: diagnostic classの零から得る有理degree-zero boundary証人を、各生成Law-value labelについて
   全chartに共通する実target代表の座標で読み、`R_q`から各block係数を回収して座標ごとにfloorする。得られた整数block係数を
   presentation groupとactual Čech C⁰へ戻し、そのactual coboundaryが指定mismatchに一致することを証明する。
@@ -127,9 +132,9 @@ tracking Issue #4791の同期コメントに記録する。
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
 - 完了: 数学・Lean実装はPR #4822でmainへ統合済み。implementation headのCI 7/7、
   対象moduleのtargeted build、55宣言の標準公理監査、PR内容監査まで完了した。
-- 未完了: 同一completion headの標準PR review、schema-complete final packet、
-  packet入力後のfresh独立4査読、正式completion ledger、merge、report・Issue同期。
-- 次のproof obligation: Cycle 23のcompletion gateを規定順序で完了する。
+- 未完了: Cycle 24の同一completion headで標準PR review、schema-complete final packet、
+  packet入力後のfresh独立4査読、正式completion ledger、CI、merge、report・Issue同期を行う。
+- 次のproof obligation: Cycle 24のcompletion gateを規定順序で完了する。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -2853,4 +2858,134 @@ audits:
   failure_path: "do not merge; post checkpoint, refuted, or blocked ledger to both the PR and tracking Issue"
   lifecycle_boundary: "GOAL card/index status changes and Issue close require a separate human decision"
   next_obligation: "complete PR #4824 standard docs review and root acceptance recheck"
+```
+
+## Cycle 24 — 既存障害構成へのprovenance接続
+
+Cycle 23のcompletion reviewは、指定`actualClass`が既存の
+`Cohomology.GluingMismatchData`、`descentCocycle`、`descentObstructionClass`へ
+接続されていないという中心findingで不合格になった。Cycle 24では局所状態からlawful sectionを
+構成し、式(1)のmismatchと既存障害cocycle/classが同じ入力に由来することをLeanで固定する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 24
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: 5e5fe1a864ba70e2faa8c4d359f14cad58acac8c
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "PR #4824 completion ledger https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4824#issuecomment-5746466476 and Issue checkpoint https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4791#issuecomment-5746466440"
+  proof_dag_predecessors:
+    - "Cycles 1-22 and implementation merge 1679b3058bada591be86a8d7b6922817de9ce1ef"
+    - "Cycle 23 completion-gate report head 5e5fe1a864ba70e2faa8c4d359f14cad58acac8c"
+  proof_obligation: "connect the selected local data and actual class to one existing Ob obstruction construction, then restate B1-B2-C1-C2 and the finite examples through that provenance"
+  selection_reason: "the fresh completion review rejected the affine-cochain surrogate because the fixed GOAL requires reuse of an existing Ob or Q_E construction"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "ResearchLean.AG.ObstructionDiagnosticBridge.ExistingObstructionBridge"
+    - "ResearchLean.AG.ObstructionDiagnosticBridge.SelectedFiniteObstructionExamples"
+  risks:
+    - "calling a class existing without constructing lawful local sections"
+    - "defining a second mismatch unrelated to equation (1)"
+    - "using only the additive surrogate without identifying the legacy descentObstructionClass"
+    - "proving B1-B2-C1-C2 only for the old alias"
+  unchecked:
+    - "fixed-head standard PR review and root acceptance recheck"
+    - "schema-complete final packet"
+    - "fresh completion math A/B and Lean A/B review"
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The chart state now defines a lawful section for the primitive relation ideal; the existing GluingMismatchData reads exactly actualMismatch; its descent cocycle and obstruction class are identified with the additive actual class used by A-C."
+  completion_candidate: yes
+  lean_artifacts:
+    - "ActualCechAffineLocalData.chartLawfulSection_lawful"
+    - "ActualCechAffineLocalData.gluingMismatchData"
+    - "ActualCechAffineLocalData.gluingMismatchCochain_eq_actualMismatch"
+    - "ActualCechAffineLocalData.existingDescentCocycle"
+    - "ActualCechAffineLocalData.existingDescentCocycle_eq_actualCocycle"
+    - "ActualCechAffineLocalData.existingDescentObstructionClass"
+    - "ActualCechAffineLocalData.existingDescentAdditiveClass_eq_actualClass"
+    - "ActualCechAffineLocalData.existingDescentObstructionClass_eq_iff_actualClass_eq"
+    - "CombinedAtomSpecifiedObstruction.coarse_h1_map_existing_obstruction_class_eq_diagnostic_class"
+    - "CombinedAtomSpecifiedObstruction.fine_h1_map_existing_obstruction_class_eq_diagnostic_class"
+    - "CombinedAtomSpecifiedReflection.coarse_diagnostic_class_eq_zero_iff_existing_obstruction_class_eq_zero"
+    - "CombinedAtomSpecifiedReflection.fine_diagnostic_class_eq_zero_iff_existing_obstruction_class_eq_zero"
+    - "CombinedAtomReadingNaturality.actualH1Map_existingObstructionClass"
+    - "SelectedReadingConditionC.existing_obstruction_class_eq_zero_iff_mapped_existing_obstruction_class_eq_zero"
+    - "SelectedFiniteObstructionExamples.existing_zero_example_outcomes"
+    - "SelectedFiniteObstructionExamples.existing_nonzero_example_outcomes"
+  evidence:
+    - "chartBlockState is read from each actual localState through the actual obstruction-section equivalence and presentation-to-block coordinates"
+    - "affineLawIdeal is generated by primitive relations; chartLawfulSection_lawful proves each relation evaluates equally"
+    - "the existing GluingMismatchData carries those lawful chart restrictions and uses actualMismatch as its affine overlap comparison"
+    - "existingDescentCocycle is the existing Formal descentCocycle and is propositionally equal to actualCocycle"
+    - "existingDescentObstructionClass is the existing Formal descentObstructionClass; its additive reading equals actualClass, and legacy-class equality is equivalent to actualClass equality"
+    - "B1, B2, C1, C2 and both finite outcomes are explicitly exposed for the existing obstruction class"
+  claim_mapping:
+    theorem_names:
+      - "ActualCechAffineLocalData.existingDescentObstructionClass"
+      - "CombinedAtomSpecifiedObstruction.coarse_h1_map_existing_obstruction_class_eq_diagnostic_class"
+      - "CombinedAtomSpecifiedReflection.coarse_diagnostic_class_eq_zero_iff_existing_obstruction_class_eq_zero"
+      - "CombinedAtomReadingNaturality.actualH1Map_existingObstructionClass"
+      - "SelectedReadingConditionC.existing_obstruction_class_eq_zero_iff_mapped_existing_obstruction_class_eq_zero"
+      - "SelectedFiniteObstructionExamples.existing_zero_example_outcomes"
+      - "SelectedFiniteObstructionExamples.existing_nonzero_example_outcomes"
+    source_labels:
+      - "GOAL A existing Ob or Q_E selection"
+      - "GOAL B1-B2"
+      - "GOAL C1-C2"
+      - "GOAL completion criteria 1-3"
+      - "Issue #4791 paper design sections 3.2, 3.3 and 10"
+    conjuncts:
+      - "selected chart states satisfy the primitive relation ideal"
+      - "the selected existing Ob mismatch is equation (1)"
+      - "legacy and additive readings come from the same existing descent cocycle"
+      - "A-C and the finite zero/nonzero examples are stated for that existing obstruction provenance"
+    undischarged_assumptions: []
+    acceptance_point: "the existing obstruction bridge is derived from the same localState and actualMismatch data; no obstruction class or zero-status certificate is supplied as input"
+    port_status: not-applicable
+audits:
+  material_premises:
+    ambient_boundary:
+      - "the fixed finite Source, Law, covers, presentation, actual Ob sheaf, comparison maps, reflection conditions and refinement are reviewed predecessor constructions"
+    direction_hypothesis:
+      - "B2 uses the discharged R_q reflection condition; C2 uses the discharged Condition C"
+    discharge_required: []
+    conclusion_equivalent_risk:
+      - "Lawfulness is proved from primitive relation connectivity, not stored in local data"
+      - "GluingMismatchData stores actualMismatch as the selected overlap comparison but no class or vanishing conclusion"
+  premise_delta:
+    discharged:
+      - "provenance from actual localState to lawful LocalFlatnessData"
+      - "provenance from lawful restrictions and affine mismatch to existing descentCocycle/descentObstructionClass"
+      - "identification of the existing additive class with actualClass"
+      - "B1-B2-C1-C2 and finite examples for the existing obstruction provenance"
+    remaining:
+      - "same-head standard PR review and root acceptance-contract recheck"
+      - "schema-complete final packet and fresh independent completion review"
+      - "formal completion ledger, same-head CI, merge, and post-merge synchronization"
+  certificate_provenance:
+    discharged:
+      - "lawfulness follows from relation-connected blocks of the actual chart state"
+      - "the mismatch cochain is definitionally actualMismatch"
+      - "the existing cocycle is proved equal to actualCocycle before passing to either cohomology reading"
+    unresolved: []
+  proof_use:
+    used:
+      - "the existing obstruction class flows through the prior B1, B2, C1, C2 theorems via proved class equalities"
+      - "the finite zero and nonzero data instantiate the same existing GluingMismatchData route"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pending-independent-review
+  target_fitting: none-found
+  vacuity: "the relation ideal has the selected primitive generators and relations; the finite zero example has a nonzero mismatch before quotienting and the nonzero example remains nonzero"
+  one_way_as_equivalence: "legacy obstruction-class equality is related to additive H1 equality by the existing proved cohomology quotient theorem"
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "command cd research/lean && lake build ResearchLean.AG.ObstructionDiagnosticBridge.SelectedFiniteObstructionExamples; result 3747 jobs success; output sha256 c6fdd19100a83bd41dbbfb4d7d94d16ea7837ae591e761653d2f37f38058a902; ExistingObstructionBridge 14 declarations and downstream namespaces standard axioms only"
+  blocking_findings: []
+  manuscript_boundary: "no manuscript exists; writing or updating manuscript prose is outside G-125 completion, while this report records the light paper-design mapping requested by the user"
+  next_obligation: "create a fixed-head PR and run standard review, final packet, fresh completion review, formal ledger, CI, merge, and synchronization in order"
 ```

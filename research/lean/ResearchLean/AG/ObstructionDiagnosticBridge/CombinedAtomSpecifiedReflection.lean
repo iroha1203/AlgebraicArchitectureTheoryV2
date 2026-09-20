@@ -81,6 +81,20 @@ theorem coarse_diagnostic_class_eq_zero_iff_actual_class_eq_zero
   x.diagnostic_class_eq_zero_iff_actual_class_eq_zero
     coarse_adequate coarse_commonLabelChartSupport presentation_reflectionCondition
 
+/-- Fine B2 stated for the existing descent obstruction class. -/
+theorem fine_diagnostic_class_eq_zero_iff_existing_obstruction_class_eq_zero
+    (x : FineLocalData) :
+    fineDiagnosticClass x = 0 ↔ fineExistingObstructionClass x = 0 := by
+  rw [fine_existing_obstruction_class_eq_actual_class]
+  exact fine_diagnostic_class_eq_zero_iff_actual_class_eq_zero x
+
+/-- Coarse B2 stated for the existing descent obstruction class. -/
+theorem coarse_diagnostic_class_eq_zero_iff_existing_obstruction_class_eq_zero
+    (x : CoarseLocalData) :
+    coarseDiagnosticClass x = 0 ↔ coarseExistingObstructionClass x = 0 := by
+  rw [coarse_existing_obstruction_class_eq_actual_class]
+  exact coarse_diagnostic_class_eq_zero_iff_actual_class_eq_zero x
+
 #assert_standard_axioms_only
   AAT.AG.ObstructionDiagnosticBridge.CombinedAtomSpecifiedReflection
 
