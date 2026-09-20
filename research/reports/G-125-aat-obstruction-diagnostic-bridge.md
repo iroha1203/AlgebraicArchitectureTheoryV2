@@ -144,7 +144,7 @@ GOAL commit / blobを固定版とする。Cycles 1–22の実装はPR
   55宣言の標準公理監査、標準4レーンレビュー、schema-complete final packet、fresh completion 4レーン、
   正式completion ledgerを完了した。
 - 完了: 固定GOAL A--C、同じ有限入力上の零・非零例、全material premise、report上の論文対応を
-  `target-theorem-proved`として確認した。論文本文は存在しないため、執筆・更新は完了条件に含めない。
+  `target-theorem-proved`として確認した。
 - 次のproof obligation: なし。GOAL card/indexのstatus変更とtracking Issueのcloseは人間の判断として残す。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
