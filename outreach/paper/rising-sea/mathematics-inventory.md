@@ -752,7 +752,7 @@ lens では基準 fiber 上の置換 table、上記セッションモデルで�
 | 条項 | 改訂版で収録する内容 | 初版から受け取るもの |
 | --- | --- | --- |
 | C | 底・観測・係数投影の自然な対応、任意の比較 `c` の `Γ_c≅Γ_{N_Θ(c)}`、底固定・許容部分群、正規化・Karoubi・Arr との整合。固定 G-122 例の可逆性・反映、section、分裂短完全列、核と全 lift fiber の回復 | 第6〜7章の比較・分類、8-K の主同値 |
-| D | A・B と具体例で共通に用いる区別・延長・実効性の定義。操作系の連結成分による必要十分条件と、明示的有限入力上の決定・延長計算 | 共通局所読み取りと §7.2 の操作系・変更分類 |
+| D | §8.3 の区別・延長・実効性の定義を、A・B の局所読み取りと具体例へ共通に適用する。操作系の連結成分による必要十分条件と、明示的有限入力上の決定・延長計算 | 共通局所読み取りと §7.2 の操作系・変更分類 |
 | E1 | 全 source-choice 族の群同型と全有限片からの回復を主同値による回復と同定し、同じ定義で有限決定不能性と一様 flip の性質を示す | タグ族の収録、§8.3 の個別結果 |
 | E2 | lens・プロトコルの一般射の有限再構成、Karoubi / retract / Arr の経路、可逆変更の連結成分判定を同じ主同値へ接続し、比較群・section・核・fiber も回復する | CS の独立な意味論と A・B の適用、各族の既存の有限表示 |
 
@@ -983,8 +983,6 @@ AAT 固有の寄与は、入力からの生成、仮定の導出、実比較と�
 [tag-kernel]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeNormalizedChoiceKernel.lean
 [tag-model]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeExactGeometryLocalModel.lean
 [graph-separation]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryFunctionGraphSeparation.lean
-[graph-category]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryGraphCategory.lean
-[dependent-graph]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/DependentAlgebraicGraphCoherence.lean
 [full-kernel]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122FullComparisonKernelDecomposition.lean
 [graph-kernel]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122CompleteGraphKernelReconstruction.lean
 [lens-karoubi]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LensFiberKaroubiCoherence.lean
@@ -1011,7 +1009,6 @@ AAT 固有の寄与は、入力からの生成、仮定の導出、実比較と�
 [g124]: ../../../research/goals/G-124-aat-local-semantic-reconstruction.md
 [r105]: ../../../research/reports/G-105-aat-structural-cover-invariance.md
 [r117]: ../../../research/reports/G-117-aat-lax-diagnostic-projector.md
-[r123]: ../../../research/reports/G-123-aat-realization-reconstruction.md
 [r124]: ../../../research/reports/G-124-aat-local-semantic-reconstruction.md
 [g125]: ../../../research/goals/G-125-aat-obstruction-diagnostic-bridge.md
 [r125]: ../../../research/reports/G-125-aat-obstruction-diagnostic-bridge.md
