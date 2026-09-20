@@ -28,29 +28,65 @@ variable {U : AtomCarrier.{u}}
 def inverseIdentity (X : Type u) : IndependentInverseGraph.Table.{u, u} :=
   IndependentInverseGraph.read X X (Equiv.refl X)
 
-/-- Native raw identity used only to expose its primitive point tables. -/
-def rawIdentity (G : GeometryPackage.{u, v} U) :
-    RawAmbientRestrictionSystemExactMapAgainst G.site G.site
-      (coreContextInverse (PackageTotalHom.id G.core)) (RingHom.id G.Coefficient)
-      G.raw G.raw :=
-  RawAmbientRestrictionSystemExactMapAgainst.refl G.site G.Coefficient G.raw
+/-- The inverse-context action of the primitive core identity is definitionally
+the identity on context references. -/
+@[simp] theorem explicitRaw_inverse_id (G : GeometryPackage.{u, v} U)
+    (W : ArchCtx G.core.object) :
+    ExplicitRaw.inverse (PackageTotalHom.id G.core) W = W := rfl
 
-/-- One directed coordinate point of the raw identity. -/
+/-- The full context object selected by the inverse identity functor is the
+input context object itself. -/
+@[simp] theorem coreContextInverse_id_obj (G : GeometryPackage.{u, v} U)
+    (W : ContextCategoryObject G.core.contextPreorder) :
+    (coreContextInverse (PackageTotalHom.id G.core)).obj W = W := rfl
+
+/-- One directed coordinate point of the raw identity, constructed directly
+from the diagonal graph on the declared coordinate carrier. -/
 def rawCoordinate (G : GeometryPackage.{u, v} U) (direction : Direction)
     (W V : ArchCtx G.core.object) (q : IndependentCarrierGraph.Query.{u, u}) : Bool := by
-  exact InverseRows.fromInverse (ExplicitRaw.readCoordinate (rawIdentity G) W V) direction q
+  classical
+  by_cases h : W = V
+  · subst V
+    exact InverseRows.fromInverse
+      (IndependentInverseGraph.read _ _
+        (Equiv.refl (G.raw.coordFamily ⟨W⟩).Coord)) direction q
+  · exact false
 
-/-- One directed relation point of the raw identity. -/
+/-- One directed relation point of the raw identity, constructed directly
+from the diagonal graph on the declared relation carrier. -/
 def rawRelation (G : GeometryPackage.{u, v} U) (direction : Direction)
     (W V : ArchCtx G.core.object) (q : IndependentCarrierGraph.Query.{u, u}) : Bool := by
-  exact InverseRows.fromInverse (ExplicitRaw.readRelation (rawIdentity G) W V) direction q
+  classical
+  by_cases h : W = V
+  · subst V
+    exact InverseRows.fromInverse
+      (IndependentInverseGraph.read _ _
+        (Equiv.refl (G.raw.relationFamily ⟨W⟩).Relation)) direction q
+  · exact false
 
-/-- One directed dependent local-data point of the raw identity. -/
+/-- One directed dependent local-data point of the raw identity.  The row is
+active only at the declared coordinate carriers and the diagonal coordinate
+point, after which it is the diagonal graph on the dependent local-data
+carrier. -/
 def rawLocalData (G : GeometryPackage.{u, v} U) (direction : Direction)
     (W V : ArchCtx G.core.object) (C D : Type u) (c : C) (d : D)
     (q : IndependentCarrierGraph.Query.{u, u}) : Bool := by
-  exact InverseRows.fromInverse
-    (ExplicitRaw.readLocalData (rawIdentity G) W V C D c d) direction q
+  classical
+  by_cases hW : W = V
+  · subst V
+    by_cases hC : C = (G.raw.coordFamily ⟨W⟩).Coord
+    · subst C
+      by_cases hD : D = (G.raw.coordFamily ⟨W⟩).Coord
+      · subst D
+        by_cases hd : c = d
+        · subst d
+          exact InverseRows.fromInverse
+            (IndependentInverseGraph.read _ _
+              (Equiv.refl ((G.raw.coordFamily ⟨W⟩).LocalData c))) direction q
+        · exact false
+      · exact false
+    · exact false
+  · exact false
 
 /-- Direct diagonal rows for the three representative realization families. -/
 def representativeRealization (G : GeometryPackage.{u, v} U) :
@@ -575,7 +611,80 @@ theorem explicitRaw_eq_native (G : GeometryPackage.{u, v} U) :
       (ExplicitExactGeometryHom.id G).coefficientHom
       (ExplicitExactGeometryHom.id G).raw := by
   funext q
-  cases q <;> rfl
+  cases q with
+  | coordinate direction W V q =>
+      by_cases hWV : W = V
+      · subst V
+        cases direction <;> cases q
+        all_goals
+          simp [explicitRaw, rawCoordinate, ExplicitRaw.readRaw, ExplicitRaw.readCoordinate,
+            ExplicitRaw.inverse, ExplicitExactGeometryHom.id, coreContextInverse_id_obj,
+            InverseRows.fromInverse, RawAmbientRestrictionSystemExactMapAgainst.refl,
+            CoordinateFamilyExactEquiv.refl]
+      · have hVW : V ≠ W := Ne.symm hWV
+        cases direction <;> cases q
+        all_goals
+          simp [explicitRaw, rawCoordinate, ExplicitRaw.readRaw, ExplicitRaw.readCoordinate,
+            ExplicitExactGeometryHom.id, explicitRaw_inverse_id, InverseRows.fromInverse,
+            hWV, hVW]
+  | relation direction W V q =>
+      by_cases hWV : W = V
+      · subst V
+        cases direction <;> cases q
+        all_goals
+          simp [explicitRaw, rawRelation, ExplicitRaw.readRaw, ExplicitRaw.readRelation,
+            ExplicitRaw.inverse, ExplicitExactGeometryHom.id, coreContextInverse_id_obj,
+            InverseRows.fromInverse, RawAmbientRestrictionSystemExactMapAgainst.refl,
+            CoordinateFamilyExactEquiv.refl, LawAlgebra.StructuralRelationFamily.baseChange]
+      · have hVW : V ≠ W := Ne.symm hWV
+        cases direction <;> cases q
+        all_goals
+          simp [explicitRaw, rawRelation, ExplicitRaw.readRaw, ExplicitRaw.readRelation,
+            ExplicitExactGeometryHom.id, explicitRaw_inverse_id, InverseRows.fromInverse,
+            hWV, hVW]
+  | localData direction W V C D c d q =>
+      by_cases hWV : W = V
+      · subst V
+        by_cases hC : C = (G.raw.coordFamily ⟨W⟩).Coord
+        · subst C
+          by_cases hD : D = (G.raw.coordFamily ⟨W⟩).Coord
+          · subst D
+            by_cases hcd : c = d
+            · subst d
+              cases direction <;> cases q
+              all_goals
+                simp [explicitRaw, rawLocalData, ExplicitRaw.readRaw,
+                  ExplicitRaw.readLocalData, ExplicitRaw.inverse, ExplicitExactGeometryHom.id,
+                  coreContextInverse_id_obj, InverseRows.fromInverse,
+                  RawAmbientRestrictionSystemExactMapAgainst.refl,
+                  CoordinateFamilyExactEquiv.refl]
+            · cases direction <;> cases q
+              all_goals
+                simp [explicitRaw, rawLocalData, ExplicitRaw.readRaw,
+                  ExplicitRaw.readLocalData, ExplicitRaw.inverse, ExplicitExactGeometryHom.id,
+                  coreContextInverse_id_obj, InverseRows.fromInverse,
+                  RawAmbientRestrictionSystemExactMapAgainst.refl,
+                  CoordinateFamilyExactEquiv.refl, hcd]
+          · cases direction <;> cases q
+            all_goals
+              simp [explicitRaw, rawLocalData, ExplicitRaw.readRaw,
+                ExplicitRaw.readLocalData, ExplicitRaw.inverse, ExplicitExactGeometryHom.id,
+                coreContextInverse_id_obj, InverseRows.fromInverse,
+                RawAmbientRestrictionSystemExactMapAgainst.refl,
+                CoordinateFamilyExactEquiv.refl, hD]
+        · cases direction <;> cases q
+          all_goals
+            simp [explicitRaw, rawLocalData, ExplicitRaw.readRaw,
+              ExplicitRaw.readLocalData, ExplicitRaw.inverse, ExplicitExactGeometryHom.id,
+              coreContextInverse_id_obj, InverseRows.fromInverse,
+              RawAmbientRestrictionSystemExactMapAgainst.refl,
+              CoordinateFamilyExactEquiv.refl, hC]
+      · have hVW : V ≠ W := Ne.symm hWV
+        cases direction <;> cases q
+        all_goals
+          simp [explicitRaw, rawLocalData, ExplicitRaw.readRaw, ExplicitRaw.readLocalData,
+            ExplicitExactGeometryHom.id, explicitRaw_inverse_id, InverseRows.fromInverse,
+            hWV, hVW]
 
 theorem explicitTable_eq_native (G : GeometryPackage.{u, v} U) :
     explicitTable G = NativeReader.readExplicit (ExplicitExactGeometryHom.id G) := by

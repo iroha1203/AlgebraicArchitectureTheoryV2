@@ -9503,6 +9503,8 @@ component恒等mapから構成した。source・Atom・object・invariant index�
 observable・係数は対角の原始graphと各候補の
 active/inactive条件から作る。代表方式のrawと三つの有向realizationを保持し、明示方式ではrawの
 coordinate・relation・依存local-dataの両方向、realizationの両方向fiberと実際のcontext作用を保持する。
+明示rawの三成分も、完成したraw恒等mapのreaderを経由せず、context/carrier/coordinateの一致判定と
+各carrier上の対角inverse graphから直接構成する。
 明示方式の実際の作用は元の`ContextMorphism`のSupport・Axis・Observable各成分を評価し、単なる対角
 Boolには置き換えていない。
 
@@ -9539,16 +9541,22 @@ family/configurationは無限のAtom写像を入力にせず、一つの真なtr
 | `IndependentGeometryHomRawLocalDataCompositionFinite.lean` / `ExplicitRaw`, `Composition` | local-data/raw全体のsupportと`explicitRaw_finite_fragment` |
 | `IndependentGeometryHomFullCompositionFinite.lean` / `Composition` | 全constructorの一出力・有限出力集合・完成局所Hom fragmentの有限決定 |
 
-既存の有限式を承認済み設計§3の原始法則ごとに再監査した。context、operation、equation、signature、
-observableは各`IndependentGeometryHom*Expressions.lean`の`evaluate_iff_of_support`と各`*_iff_expressions`、
-overlapは`IndependentOverlapFiniteExpressions.lawful_iff_expressions`、多項式は
-`IndependentPolynomialExpressions.polynomial_finite_support`、detectorは
-`IndependentGeometryHomDetectorFinite.point_instance_iff_of_support`へ対応する。coverageの9含意、係数の
-zero/one/add/mul、invariantのindex・種別・一点評価、raw/realizationの各法則は、各量化instanceが有限個の
-原始queryを読む定義であり、局所式からnative法則へ戻る既存の`assemble` / `points_iff_native`と、今回の
-raw/realization合成supportへ接続済みである。量化された法則全体に単一の有限supportを要求せず、
-一つのlaw instanceと一つの出力queryごとの有限性を区別した。この監査で追加が必要だったのは、上記の
-明示actual-action、raw local-data、共通宣言の集約だけだった。
+有限式は、定義を目視して有限と判断せず、`IndependentGeometryHomLawFinite.lean`で各法則instanceとの
+同値をLean theoremとして固定した。有限Bool式`Formula`は読んだqueryの`Finset`を構成し、
+`Formula.evaluate_iff_of_support`がそのsupport上の一致だけで評価が保存されることを示す。carrier graphの
+typing・totality・uniqueness、inverse row、依存rowは、witnessとchallengerを固定した有限式族と元の
+量化法則が同値である。
+
+同じ形式でcoverageの9条件、係数のzero/one/add/mul、overlapの6 guard、代表・明示rawのactive/inactive・
+label・relation polynomial・variable image、代表・明示realizationのrow・readback・naturality・actual actionを
+共通query上の有限式または明示的な有限supportへ接続した。多項式とvariable imageは有限個のmonomial
+supportを`Finset.biUnion`で集約し、そのsupport上の一致から該当instanceの同値を証明した。量化された法則
+全体に単一の有限supportを要求せず、引数・witness・challenger・monomialを固定した各instanceごとの有限性と、
+一つの合成出力queryごとの有限性を区別する。
+
+| Source / namespace末尾 | 主な証拠 |
+| --- | --- |
+| `IndependentGeometryHomLawFinite.lean` / `IndependentGeometryHomPrimitive.LawFinite` | `Formula.evaluate_iff_of_support`、各`lawful_iff_instances`、`Coverage.pointLaws_iff_formulas`、`Coefficient.pointLaws_iff_instances`、raw/realizationの各`*_iff`、多項式・imageの`*_instance_iff_of_support` |
 
 指定反証と非自明例は、部品だけの反証と共通宣言への適用を次のように区別して照合した。
 
@@ -9557,27 +9565,34 @@ raw/realization合成supportへ接続済みである。量化された法則全�
 | 全false、重複出力、carrier不一致 | `false_table_rejected`、`duplicate_outputs_rejected`、`mismatched_carrier_rejected`と、対象宣言の`eraseMatching_not_lawful` |
 | pointed/upper Atom不一致 | `IndependentGeometryHomPrimitive.Atom.mismatch_rejected` |
 | invariantの種別・native失敗・successor | `mixed_kind_rejected`、`reverse_mixed_kind_rejected`、`native_failure_rejected`、`successor_row_rejected` |
-| ring乗法の改変 | `IndependentRingPrimitive.eraseMultiplication_not_lawful` |
-| context restriction自然性の改変 | `IndependentExplicitRealization.finite_support_action_rejected` |
-| overlap片側の改変 | 新規`Overlap.one_sided_order_rejected`が、全guardと反対向きのorderを保ったまま一方向だけfalseにした入力を共通`PointLaws`で拒否 |
-| raw relation polynomial / variable imageの改変 | `IndependentExplicitRaw.not_lawful_of_polynomial_mismatch`と`not_lawful_of_image_mismatch`、具体例`changedPolynomialData_not_lawful` |
-| 同じobject作用を持つ異なる全Hom | `projection`と新規`secondProjection`から両方式の具体的な2本を作り、両`*_projection_homs_distinct_query`が実際の共通queryを与える |
+| ring乗法の改変 | 成分反証`IndependentRingPrimitive.eraseMultiplication_not_lawful`に加え、実際の局所Hom要素を一セルだけ変更した`coefficientMultiplicationMutation_not_full` |
+| context restriction自然性の改変 | 成分反証`IndependentExplicitRealization.finite_support_action_rejected`に加え、具体的actual axis cellを変更した`axisActionMutation_not_full` |
+| overlap片側の改変 | `Overlap.one_sided_order_rejected`と、実際の局所Hom要素へ持ち上げた`overlapForwardMutation_not_full` |
+| raw relation polynomial / variable imageの改変 | 成分反証`not_lawful_of_polynomial_mismatch`・`not_lawful_of_image_mismatch`に加え、異なるlawful endpoint間の局所Homとして構成した`polynomialMismatch_not_full`・`imageMismatch_not_full` |
+| 同じbase・係数・object作用を持つ異なる全Hom | `boolRawSwapHom`と明示恒等HomはrawのBoolean座標交換だけが異なり、`boolRawSwapHom_distinct_query`が同じ具体的raw coordinate queryで分離する |
 | 非可逆係数写像 | `projection_not_injective`と両`*_reconstruction_noninjective`。今回の共通局所Hom同値はその完全Homを入力として保持する |
 | 補助選択による余分な区別 | `auxiliary_choice_independent`、`composeLocal_choice_independent`、新規`localIdentity_choice_independent`。対象側は`objectEquiv`の両逆とProp内のlaw witnessを使い、列挙を対象データへ追加しない |
 
-具体的な射影2本は同じ`PackageTotalHom.id`、coverage、overlap、raw presentation、realizationを持ち、
-係数写像だけが`RingHom.fst ℤ ℤ`と`RingHom.snd ℤ ℤ`で異なる。したがって一般の条件付き分離定理だけで
-済ませず、同じobject作用の異なる完全Homが両方式の共通queryで実際に分離されることを確認した。
+係数射影2本による既存の分離例に加え、`boolRawSwapHom`はbase・係数・object作用を恒等Homと定義上同じに
+保ち、raw座標だけで異なる。有限fixtureの同一contextで`false ↦ true`を問う具体的queryは交換Homでtrue、
+恒等Homでfalseになる。したがって一般の条件付き分離定理や係数差だけに依存せず、observable/raw/realization
+を含む全queryのうちraw成分が実際に別の完全Homを識別する。
 局所構造には完成した`GeometryPackage`、完成したHom、raw系全体の等式を新しいdata fieldとして追加して
 いない。完成fieldは比較定理とnative法則の回復にだけ現れる。
+
+| Source / namespace末尾 | 主な証拠 |
+| --- | --- |
+| `IndependentGeometryHomIntegratedRefutations.lean` / `IndependentHomRefutations` | 五つの`*_not_full`、`boolRawSwapHom_*_eq`、`boolRawSwapHom_ne_identity`、`boolRawSwapHom_distinct_query` |
 
 以上により、承認済み設計のパートIについて、原始対象、両方式の全Hom両逆、全fieldの保持と分離、
 恒等・合成・左右単位・結合則、有限局所式、指定反証、補助選択の消去が同じ共通宣言と局所商で接続した。
 これは固定GOAL全体の完了ではなく、パートIIへ渡す技術的検証点Iのcompletion candidateである。
 固定GOALカードのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
 
-新規8 sourceを一つずつfocused checkし、全て通った。対象125宣言を名前で列挙した個別
-`#print axioms`も通り、公理集合は`propext`・`Classical.choice`・`Quot.sound`だけだった。
-全対象で`unusedArguments`・`docBlame`・`defLemma`を実行し、指摘は残っていない。
+例外フローで追加した10 sourceは単一fileのfocused checkを通した。査読後に変更した
+`IndependentGeometryHomIdentityTable.lean`、追加した`IndependentGeometryHomLawFinite.lean`、
+`IndependentGeometryHomIntegratedRefutations.lean`も再検証し、namespace監査は順に42・162・88宣言で
+標準公理のみだった。この3 moduleに属する295宣言を名前で列挙した個別`#print axioms`も通り、
+公理集合は`propext`・`Classical.choice`・`Quot.sound`だけだった。
 placeholder・hidden/BiDi・privacy・語彙・import方向・module登録・差分整形・保護領域も確認した。
 Research全体buildはhard ruleに従って実行せず、Cycleは79のままである。
