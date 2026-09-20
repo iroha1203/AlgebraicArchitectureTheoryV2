@@ -878,49 +878,53 @@ $`e^{-1}`$ によるquery列の逆写像と合わせて、circuitの全単射を
 $`G'=(r',ℛ',\mathrm{Ov}',k',ℬ')`$ への射は、coreの射 $`h:r\to r'`$ と、
 以下のデータ・条件からなる。$`\theta`$ の指定した準逆を $`\bar\theta`$ と書く。
 
-1. **被覆要件の保存。** 必要なAtomには $`e`$、
-   方程式座標とwitnessには $`(i,a)\mapsto(\lambda i,e(a))`$、
-   signature軸には $`\sigma`$ を用い、各要件を前向きに保存する。
-   四つの可視性述語も $`W\mapsto\theta W`$ とこれらの写像に沿って保存され、
-   $`B_{ℛ}(U,W)\Rightarrow B_{ℛ'}(\theta U,\theta W)`$ が成立する。
-2. **重なりの比較。** 変更後の文脈圏の各図式 $`U\to W\leftarrow V`$ に対して、
-   変更前に選んだoverlapを運んだものと、変更後に選んだoverlapの同型を指定する。すなわち
-   $`\theta(\bar\theta U\times_{\bar\theta W}\bar\theta V)\cong U\times_W V`$ である。
-   射影との比較には圏同値の余単位を用いる。
-3. **係数の変更。** 環準同型 $`\varphi:k\to k'`$ を指定する。
-4. **環の表示の一致。** 変更後のraw systemは、変更前のraw systemの係数を $`\varphi`$ で変更し、
-   $`\bar\theta`$ に沿って再添字づけしたものと等しい：
+**1. 被覆要件の保存。** 必要なAtomには $`e`$、
+方程式座標とwitnessには $`(i,a)\mapsto(\lambda i,e(a))`$、
+signature軸には $`\sigma`$ を用い、各要件を前向きに保存する。
+四つの可視性述語も $`W\mapsto\theta W`$ とこれらの写像に沿って保存され、
+$`B_{ℛ}(U,W)\Rightarrow B_{ℛ'}(\theta U,\theta W)`$ が成立する。
 
-   ```math
-   ℬ'=\bar\theta^{\,*}(\varphi_!ℬ).
-   \tag{1.13}
-   ```
+**2. 重なりの比較。** 変更後の文脈圏の各図式 $`U\to W\leftarrow V`$ に対して、
+変更前に選んだoverlapを運んだものと、変更後に選んだoverlapの同型を指定する。すなわち
+$`\theta(\bar\theta U\times_{\bar\theta W}\bar\theta V)\cong U\times_W V`$ である。
+射影との比較には圏同値の余単位を用いる。
 
-   右辺は、変更後の文脈 $`V`$ に $`\bar\theta V`$ の座標・種別・局所データ型・
-   関係添字を置き、多項式の係数を変更したものである。
-   制限は $`\bar\theta`$ が送る射での制限から作る。
-   等式はこれらの表示データをすべて含む。
-5. **文脈に含まれるデータの比較。** 各 $`W`$ に、support、軸、observableの比較写像
+**3. 係数の変更。** 環準同型 $`\varphi:k\to k'`$ を指定する。
 
-   ```math
-   s_W:\mathrm{Supp}(W)\to\mathrm{Supp}'(\theta W),\quad
-   a_W:\mathrm{Ax}(W)\to\mathrm{Ax}'(\theta W),\quad
-   o_W:\mathrm{Obs}(W)\to\mathrm{Obs}'(\theta W)
-   ```
+**4. 環の表示の一致。** 変更後のraw systemは、変更前のraw systemの係数を $`\varphi`$ で変更し、
+$`\bar\theta`$ に沿って再添字づけしたものと等しい：
 
-   を指定する。supportの読みはAtomを $`e`$ で移して保存し、
-   軸とobservableの読める元も保存する。
-   $`j:W'\to W`$ に対し、supportと軸の共変な構造写像を $`S_j,A_j`$、
-   observableの反変な制限を $`O_j`$ と書けば、
+```math
+ℬ'=\bar\theta^{\,*}(\varphi_!ℬ).
+\tag{1.13}
+```
 
-   ```math
-   S'_{\theta j}s_{W'}=s_WS_j,\qquad
-   A'_{\theta j}a_{W'}=a_WA_j,\qquad
-   O'_{\theta j}o_W=o_{W'}O_j
-   \tag{1.14}
-   ```
+右辺は、変更後の文脈 $`V`$ に $`\bar\theta V`$ の座標・種別・局所データ型・
+関係添字を置き、多項式の係数を変更したものである。
+制限は $`\bar\theta`$ が送る射での制限から作る。
+等式はこれらの表示データをすべて含む。
 
-   が成立する。
+**5. 文脈に含まれるデータの比較。** 各 $`W`$ に、support、軸、observableの比較写像
+
+```math
+s_W:\mathrm{Supp}(W)\to\mathrm{Supp}'(\theta W),\quad
+a_W:\mathrm{Ax}(W)\to\mathrm{Ax}'(\theta W),\quad
+o_W:\mathrm{Obs}(W)\to\mathrm{Obs}'(\theta W)
+```
+
+を指定する。supportの読みはAtomを $`e`$ で移して保存し、
+軸とobservableの読める元も保存する。
+$`j:W'\to W`$ に対し、supportと軸の共変な構造写像を $`S_j,A_j`$、
+observableの反変な制限を $`O_j`$ と書けば、
+
+```math
+S'_{\theta j}s_{W'}=s_WS_j,\qquad
+A'_{\theta j}a_{W'}=a_WA_j,\qquad
+O'_{\theta j}o_W=o_{W'}O_j
+\tag{1.14}
+```
+
+が成立する。
 
 文脈圏は前順序圏なので、存在する二つの平行射は等しい。
 したがって、項目2の射影の可換性と、overlapの比較の単位・合成の整合性は一意に決まる。
