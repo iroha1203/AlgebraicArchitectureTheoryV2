@@ -127,10 +127,10 @@ tracking Issue #4791の同期コメントに記録する。
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
 - 完了: 数学・Lean実装はPR #4822でmainへ統合済み。exact-head CI 7/7、対象moduleの
   targeted build、55宣言の標準公理監査、PR内容監査まで完了した。
-- 未完了: target theorem completion gateのschema-complete final packetを同一headへ固定し、
-  そのpacketだけを入力にしたfresh独立4査読をmerge前に完了する。
-- 次のproof obligation: PR #4823でcompletion packet、独立`math-lean-review`、
-  正式verdict、merge、lifecycle同期を順に完了する。
+- 未完了: 同一headの標準PR reviewとroot再判定後にschema-complete final packetを固定し、
+  そのpacket・固定GOAL・累積Lean実体だけを入力にしたfresh独立4査読をmerge前に完了する。
+- 次のproof obligation: PR #4823で標準PR review、root再判定、completion packet、
+  独立`math-lean-review`、正式verdict、merge、report・Issue同期を順に完了する。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -2755,16 +2755,19 @@ audits:
 
 PR #4822では実装・CI・内容監査を完了してmainへ統合したが、completion packetの投稿が
 merge後になり、packetの必須fieldと、それを入力にした別のfresh独立4査読も不足していた。
-したがって、#4822のmerge後packetと完了同期コメントは数学的な実装証拠としては参照するが、
-`target-theorem-proved`の正式根拠には採用しない。
+したがって、#4822のmerge後packetと完了同期コメントは不成立だった完了判定の履歴としてのみ
+参照し、数学claimの一次証拠にも`target-theorem-proved`の正式根拠にも採用しない。再利用する
+実装証拠は、同headのLean実体、検証出力、axiom audit、標準PR reviewである。
 
 PR #4823をcompletion candidateの固定snapshotとし、次の順序を守る。
 
-1. Cycle 22の時点記録を保持したまま、schema-complete final packetを同一headのPRコメントへ置く。
-2. packet、固定GOAL、累積Lean実体だけを入力にfresh `math-lean-review` 4 laneを実行する。
-3. 4 laneすべてがpassし、統合verdictが正確に`No major findings`の場合だけ正式verdictを投稿する。
-4. CI、docs review、completion reviewがすべて合格した後にmergeする。
-5. merge後にreport、GOAL card/index、tracking Issueのlifecycleを別のdocs-only同期で確定する。
+1. Cycle 22の時点記録を保持した同一headについて、標準PR/docs reviewとroot acceptance再判定を完了する。
+2. `pr_review_gate_ref`を含むschema-complete final packetを同じheadのPRコメントへ置く。
+3. packet、固定GOAL、累積Lean実体だけを入力にfresh `math-lean-review` 4 laneを実行する。
+4. rootが再点検し、合格時は`target-theorem-proved`、不合格時もfail-closedなstatusの正式ledgerを投稿する。
+5. 同一headのCIを含む全gateを確認してからmergeする。
+6. merge後にreportとtracking Issueを別のdocs-only同期で確定する。GOAL card/indexのstatus移動と
+   Issue closeはループ外の人間判断に委ねる。
 
 ```yaml
 ledger_type: target_completion_gate_repair
@@ -2780,14 +2783,18 @@ completed:
   - "implementation exact-head CI 7/7 and the 55-declaration axiom audit passed"
   - "PR-content review findings were resolved"
 remaining:
+  - "same-head standard PR/docs review"
+  - "root acceptance-contract recheck"
   - "schema-complete same-head final packet"
   - "fresh independent completion math-lean-review: math A/B and Lean A/B"
-  - "formal completion verdict before merge"
-  - "post-merge lifecycle synchronization"
+  - "root recheck and formal completion ledger before merge"
+  - "same-head CI and merge"
+  - "post-merge report and tracking-Issue synchronization"
 invalidated_as_completion_evidence:
-  - "PR #4822 comment 5746178104: posted after merge and missing required packet fields"
-  - "Issue #4791 comment 5746179835: based on the invalid completion sequence"
+  - "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4822#issuecomment-5746178104: posted after merge and missing required packet fields"
+  - "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4791#issuecomment-5746179835: based on the invalid completion sequence"
 unchecked:
+  - "same-head standard PR review and root acceptance recheck"
   - "completion review of the repaired packet"
-next_obligation: "fix PR #4823 head, post the packet, and run all completion gates before merge"
+next_obligation: "fix PR #4823 head, pass standard review, post the packet, and run all completion gates before merge"
 ```
