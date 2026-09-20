@@ -9519,6 +9519,7 @@ typingとrow lawを備えた整合presentationを作る。その後に`localIden
 | `IndependentGeometryHomIdentityTable.lean` / `IndependentGeometryHomPrimitive.Identity` | `identityWith`、両`*Table_eq_native`、raw/realizationを含む全queryの直接恒等table |
 | `IndependentGeometryHomLocalIdentity.lean` / `IdentityLocal` | `presentationIdentity`、`localIdentity`、point/fragment/choice比較、両方式の`*_points`と`*_assemble` |
 | `IndependentGeometryHomLocalCategoryLaws.lean` / `CategoryLaws` | 代表・明示の`*_id_comp`と`*_comp_id` |
+| `IndependentGeometryHomLocalCompositionLaws.lean` / `Composition` | `representativeLocal_assoc`、`explicitLocal_assoc` |
 
 有限supportでは、明示realizationの全9 queryについて両方向fiberとactual-actionを分解した。
 actual-actionの一つの元の作用点は最大4個の原始cellで決まり、合成fiberの支持集合と有限和を取る。
@@ -9541,22 +9542,37 @@ family/configurationは無限のAtom写像を入力にせず、一つの真なtr
 | `IndependentGeometryHomRawLocalDataCompositionFinite.lean` / `ExplicitRaw`, `Composition` | local-data/raw全体のsupportと`explicitRaw_finite_fragment` |
 | `IndependentGeometryHomFullCompositionFinite.lean` / `Composition` | 全constructorの一出力・有限出力集合・完成局所Hom fragmentの有限決定 |
 
-有限式は、定義を目視して有限と判断せず、`IndependentGeometryHomLawFinite.lean`で各法則instanceとの
-同値をLean theoremとして固定した。有限Bool式`Formula`は読んだqueryの`Finset`を構成し、
-`Formula.evaluate_iff_of_support`がそのsupport上の一致だけで評価が保存されることを示す。carrier graphの
-typing・totality・uniqueness、inverse row、依存rowは、witnessとchallengerを固定した有限式族と元の
-量化法則が同値である。
+有限式は、定義を目視して有限と判断せず、source object・target object・Homの三表を読む閉じた構文へ
+置き換えた。`IndependentFiniteLawFormula.Formula`の静的leafは、供給済みの添字または値の等号・不等号に
+限られ、任意の命題や完成したlaw certificateを格納するconstructorはない。`Formula.support`は三表それぞれの
+`Finset`を返し、`Formula.evaluate_iff_of_support`は任意の比較表について、その三support上の一致だけで評価が
+保存されることを示す。carrier graphのtyping・totality・uniqueness、inverse row、依存rowも、witnessと
+challengerを固定した閉じた有限式族と元の量化法則の同値として固定した。
 
-同じ形式でcoverageの9条件、係数のzero/one/add/mul、overlapの6 guard、代表・明示rawのactive/inactive・
-label・relation polynomial・variable image、代表・明示realizationのrow・readback・naturality・actual actionを
-共通query上の有限式または明示的な有限supportへ接続した。多項式とvariable imageは有限個のmonomial
-supportを`Finset.biUnion`で集約し、そのsupport上の一致から該当instanceの同値を証明した。量化された法則
-全体に単一の有限supportを要求せず、引数・witness・challenger・monomialを固定した各instanceごとの有限性と、
-一つの合成出力queryごとの有限性を区別する。
+object側では、foundationのextraction・有限family・composition・invariant・signature・operation・Atom・
+coefficient、generated-object matching、active row、さらに各active objectのcontext・equation・circuit・
+coverage・overlap・rawを全て有限式族へ写し、逆向きに元の`IndependentGeometryPrimitive.IsLawful`を再構成した。
+rawのgenerator・identity・compositionは完成した命題をleafへ入れず、選択されたrelation/image row、有限
+`Finsupp` witness、有限変数集合を明示し、`IndependentPolynomialExpressions.compile`の有限AST評価を通して
+元の多項式法則へ戻す。`DependentLaws`とobject全体の集約も、前段の有限式族から再構成したlaw proofだけを
+後段へ渡し、完成したdependent/object certificateをinstance dataとして保持しない。
+
+Hom側では、Atom coherence、extraction、transport matching、generation、object row、equation/context/
+observable、detector、operation、signatureを`PackageAssembly.PointLaws`の有限式族へ集約した。coverageの
+9条件、係数のzero/one/add/mul、overlap、代表・明示raw、代表・明示realizationを同じ三表構文へ接続し、
+`FullRepresentative.PointLaws`と`FullExplicit.PointLaws`の全fieldを両向きに復元した。inactive object rowも
+object参照の不等号と一つのHom cellからなる通常の有限含意であり、旧任意命題constructorは削除した。量化法則
+全体に単一supportを要求せず、引数・witness・challenger・monomialを固定した各instanceの有限性と、一つの
+合成出力queryの有限性を区別する。
 
 | Source / namespace末尾 | 主な証拠 |
 | --- | --- |
-| `IndependentGeometryHomLawFinite.lean` / `IndependentGeometryHomPrimitive.LawFinite` | `Formula.evaluate_iff_of_support`、各`lawful_iff_instances`、`Coverage.pointLaws_iff_formulas`、`Coefficient.pointLaws_iff_instances`、raw/realizationの各`*_iff`、多項式・imageの`*_instance_iff_of_support` |
+| `IndependentFiniteLawFormula.lean`、`IndependentFiniteGraphLawFormula.lean` | 三表`Formula`、`evaluate_iff_of_support`、total/inverse/dependent rowの`lawful_iff_instances` |
+| `IndependentGeometryObjectFoundation*LawFinite.lean`、`IndependentGeometryObjectMatchingLawFinite.lean` | `foundationLaws_iff_instances`、`Matching.lawful_iff_instances`、`Active.activeTyped_iff_instances` |
+| `IndependentGeometryObjectDependent*LawFinite.lean`、`IndependentGeometryObjectLawFinite.lean` | 6 dependent stage、`dependentLaws_iff_instances`、object全体の`lawful_iff_instances` |
+| `IndependentGeometryHomCoreLawFinite.lean`、`IndependentGeometryHomPackageLawFinite.lean` | core各成分と`PackageAssembly.PointLaws`の`pointLaws_iff_instances` |
+| `IndependentGeometryHomJointLawFinite.lean`、`IndependentGeometryHomRawLawFinite.lean`、`IndependentGeometryHomRealizationLawFinite.lean` | coverage・overlap・coefficient・raw・realizationの各`pointLaws_iff_instances` |
+| `IndependentGeometryHomLawFinite.lean` / `IndependentGeometryHomPrimitive.LawFinite` | `representativePointLaws_iff_instances`、`explicitPointLaws_iff_instances` |
 
 指定反証と非自明例は、部品だけの反証と共通宣言への適用を次のように区別して照合した。
 
@@ -9589,10 +9605,12 @@ supportを`Finset.biUnion`で集約し、そのsupport上の一致から該当in
 これは固定GOAL全体の完了ではなく、パートIIへ渡す技術的検証点Iのcompletion candidateである。
 固定GOALカードのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
 
-例外フローで追加した10 sourceは単一fileのfocused checkを通した。査読後に変更した
-`IndependentGeometryHomIdentityTable.lean`、追加した`IndependentGeometryHomLawFinite.lean`、
-`IndependentGeometryHomIntegratedRefutations.lean`も再検証し、namespace監査は順に42・162・88宣言で
-標準公理のみだった。この3 moduleに属する295宣言を名前で列挙した個別`#print axioms`も通り、
-公理集合は`propext`・`Classical.choice`・`Quot.sound`だけだった。
-placeholder・hidden/BiDi・privacy・語彙・import方向・module登録・差分整形・保護領域も確認した。
-Research全体buildはhard ruleに従って実行せず、Cycleは79のままである。
+例外フローの既存10 sourceに加え、閉じた有限式、object各段、Hom各段と集約の18 sourceを追加し、
+`IndependentGeometryHomLawFinite.lean`を安全な三表構文の全Hom集約へ書き換えた。各sourceは単一fileの
+focused checkを通し、埋込みのnamespace監査は全て標準公理のみだった。中心集約であるraw dependent、
+`DependentLaws`、object `IsLawful`、代表・明示`PointLaws`も依存順に再検証した。
+三表support保存、raw・dependent・object・package・両全Hom集約、左右単位・両結合則、raw分離例の
+中心12宣言を個別`#print axioms`でも照合し、公理集合は`propext`・`Classical.choice`・`Quot.sound`だけだった。
+placeholder・hidden/BiDi・privacy・語彙・import方向・module登録・差分整形・保護領域を確認し、
+任意命題を受け取る旧constructorまたは同等経路が残っていないことも検索した。
+Research全体buildとaggregate rootのelaborationはhard ruleに従って実行せず、Cycleは79のままである。
