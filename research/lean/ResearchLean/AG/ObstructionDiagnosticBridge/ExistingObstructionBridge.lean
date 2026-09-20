@@ -313,74 +313,65 @@ theorem affineComparisonMismatch_eq_actualMismatch_apply
   unfold affineComparisonMismatch translatedRightState
   abel
 
-/--
-Input-derived certificate for the selected affine comparison on one overlap.
-
-`GluingMismatchData` deliberately accepts restriction and comparison maps as
-selected data.  This certificate fixes their provenance before adapting to
-that API: both restrictions are the actual sheaf restrictions, the translated
-right state remains lawful, and the comparison is computed from those states.
--/
-structure ActualAffineOverlapCertificate (x : ActualCechAffineLocalData P C)
+/-- Obstruction-valued affine overlap data tied to the actual local datum. -/
+structure ActualAffineOverlapData (x : ActualCechAffineLocalData P C)
     (edge : D.nerve.EdgeComponent) where
-  leftRestriction :
-    RestrictedLocalLawfulSection x.localFlatnessData edge (D.nerve.edgeLeft edge)
-  rightRestriction :
-    RestrictedLocalLawfulSection x.localFlatnessData edge (D.nerve.edgeRight edge)
-  leftRestriction_eq : leftRestriction =
-    x.restrictedLawfulSection edge (D.nerve.edgeLeft edge) (C.edgeLeftRestriction edge)
-  rightRestriction_eq : rightRestriction =
-    x.restrictedLawfulSection edge (D.nerve.edgeRight edge) (C.edgeRightRestriction edge)
-  translatedRightLawful : (x.translatedRightLawfulSectionData edge).Lawful
-  comparisonValue :
+  leftState :
     (P.aatLocallyConstantObstructionSheaf G).carrier.toPresheaf.obj
       (Opposite.op (C.edgeContext edge))
-  comparisonValue_eq : comparisonValue =
-    x.translatedRightState edge - x.leftRestrictedState edge
+  rightState :
+    (P.aatLocallyConstantObstructionSheaf G).carrier.toPresheaf.obj
+      (Opposite.op (C.edgeContext edge))
+  transition :
+    (P.aatLocallyConstantObstructionSheaf G).carrier.toPresheaf.obj
+      (Opposite.op (C.edgeContext edge))
+  leftState_eq : leftState = x.leftRestrictedState edge
+  rightState_eq : rightState = x.rightRestrictedState edge
+  transition_eq : transition = x.overlapTransition edge
 
-/-- Construct the selected overlap certificate entirely from the actual local data. -/
-def actualAffineOverlapCertificate (x : ActualCechAffineLocalData P C)
-    (edge : D.nerve.EdgeComponent) : ActualAffineOverlapCertificate x edge where
-  leftRestriction :=
-    x.restrictedLawfulSection edge (D.nerve.edgeLeft edge) (C.edgeLeftRestriction edge)
-  rightRestriction :=
-    x.restrictedLawfulSection edge (D.nerve.edgeRight edge) (C.edgeRightRestriction edge)
-  leftRestriction_eq := rfl
-  rightRestriction_eq := rfl
-  translatedRightLawful := x.translatedRightLawfulSectionData_lawful edge
-  comparisonValue := x.affineComparisonMismatch edge
-  comparisonValue_eq := rfl
-
-/--
-Adapter comparison for the existing selected-data API.  It returns the
-certified comparison exactly for the certified restrictions and rejects any
-other pair with the neutral mismatch.
--/
-def ActualAffineOverlapCertificate.selectedMismatch
+/-- Translate the actual right overlap state recorded by the strong data. -/
+def ActualAffineOverlapData.translatedRightState
     {x : ActualCechAffineLocalData P C} {edge : D.nerve.EdgeComponent}
-    (certificate : ActualAffineOverlapCertificate x edge)
-    (left : RestrictedLocalLawfulSection x.localFlatnessData edge
-      (D.nerve.edgeLeft edge))
-    (right : RestrictedLocalLawfulSection x.localFlatnessData edge
-      (D.nerve.edgeRight edge)) :
+    (data : ActualAffineOverlapData x edge) :=
+  data.transition + data.rightState
+
+/-- Compute the affine comparison from the obstruction-valued states themselves. -/
+def ActualAffineOverlapData.comparison
+    {x : ActualCechAffineLocalData P C} {edge : D.nerve.EdgeComponent}
+    (data : ActualAffineOverlapData x edge) :
     (P.aatLocallyConstantObstructionSheaf G).carrier.toPresheaf.obj
       (Opposite.op (C.edgeContext edge)) := by
-  classical
-  exact
-    if left = certificate.leftRestriction ∧ right = certificate.rightRestriction then
-      certificate.comparisonValue
-    else
-      0
+  exact data.translatedRightState - data.leftState
 
 omit [Fintype Source] in
-/-- The adapter consumes the selected restriction pair and returns its certified comparison. -/
-@[simp]
-theorem ActualAffineOverlapCertificate.selectedMismatch_selected
+/-- The strong overlap data computes equation (1) from its tied actual states. -/
+theorem ActualAffineOverlapData.comparison_eq_actualMismatch
     {x : ActualCechAffineLocalData P C} {edge : D.nerve.EdgeComponent}
-    (certificate : ActualAffineOverlapCertificate x edge) :
-    certificate.selectedMismatch certificate.leftRestriction
-        certificate.rightRestriction = certificate.comparisonValue := by
-  simp [ActualAffineOverlapCertificate.selectedMismatch]
+    (data : ActualAffineOverlapData x edge) :
+    data.comparison = x.actualMismatch edge := by
+  rw [ActualAffineOverlapData.comparison, ActualAffineOverlapData.translatedRightState,
+    data.leftState_eq, data.rightState_eq, data.transition_eq]
+  exact x.affineComparisonMismatch_eq_actualMismatch_apply edge
+
+/--
+Strong input-derived certificate used before the existing selected-data API.
+The comparison is a definition of its obstruction-valued states, rather than a
+stored answer.  Lawfulness is derived from the same actual affine translation.
+-/
+structure ActualAffineOverlapCertificate (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) extends ActualAffineOverlapData x edge where
+  translatedRightLawful : (x.translatedRightLawfulSectionData edge).Lawful
+
+/-- Construct the strong overlap certificate entirely from the actual local data. -/
+def actualAffineOverlapCertificate (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) : ActualAffineOverlapCertificate x edge where
+  leftState := x.leftRestrictedState edge
+  rightState := x.rightRestrictedState edge
+  transition := x.overlapTransition edge
+  leftState_eq := rfl
+  rightState_eq := rfl
+  transition_eq := rfl
+  translatedRightLawful := x.translatedRightLawfulSectionData_lawful edge
 
 /--
 The existing gluing-mismatch input whose affine comparison value is equation (1).
@@ -393,11 +384,11 @@ def gluingMismatchData (x : ActualCechAffineLocalData P C) :
   leftIndex := D.nerve.edgeLeft
   rightIndex := D.nerve.edgeRight
   leftRestriction := fun edge =>
-    (x.actualAffineOverlapCertificate edge).leftRestriction
+    x.restrictedLawfulSection edge (D.nerve.edgeLeft edge) (C.edgeLeftRestriction edge)
   rightRestriction := fun edge =>
-    (x.actualAffineOverlapCertificate edge).rightRestriction
-  mismatch := fun edge left right =>
-    (x.actualAffineOverlapCertificate edge).selectedMismatch left right
+    x.restrictedLawfulSection edge (D.nerve.edgeRight edge) (C.edgeRightRestriction edge)
+  mismatch := fun edge _left _right =>
+    (x.actualAffineOverlapCertificate edge).toActualAffineOverlapData.comparison
 
 omit [Fintype Source] in
 /-- The existing gluing mismatch cochain is the affine actual mismatch. -/
@@ -406,12 +397,10 @@ theorem gluingMismatchCochain_eq_actualMismatch
     x.gluingMismatchData.gluingMismatchCochain = x.actualMismatch := by
   funext edge
   change
-    (x.actualAffineOverlapCertificate edge).selectedMismatch
-        (x.actualAffineOverlapCertificate edge).leftRestriction
-        (x.actualAffineOverlapCertificate edge).rightRestriction = x.actualMismatch edge
-  rw [ActualAffineOverlapCertificate.selectedMismatch_selected]
-  change x.affineComparisonMismatch edge = x.actualMismatch edge
-  exact x.affineComparisonMismatch_eq_actualMismatch_apply edge
+    (x.actualAffineOverlapCertificate edge).toActualAffineOverlapData.comparison =
+      x.actualMismatch edge
+  exact (x.actualAffineOverlapCertificate edge).toActualAffineOverlapData
+    |>.comparison_eq_actualMismatch
 
 /-- Existing descent cocycle attached to the affine lawful local data. -/
 def existingDescentCocycle (x : ActualCechAffineLocalData P C) :

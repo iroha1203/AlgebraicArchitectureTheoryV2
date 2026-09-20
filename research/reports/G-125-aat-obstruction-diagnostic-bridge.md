@@ -111,9 +111,11 @@ tracking Issue #4791の同期コメントに記録する。
   additive H¹ readingを構成し、従来の`actualClass`との一致を証明した。これによりB1・B2・C1・C2と
   有限零／非零例を述べ直したが、標準レビュー再実行で`GluingMismatchData.mismatch`が左右restriction
   引数を消費しない中心findingが残り、このheadはmerge不可となった。
-- 実装中（Cycle 25）: actual restriction、affine translationのlawfulness、式(1)のcomparisonを
+- 不合格（Cycle 25）: actual restriction、affine translationのlawfulness、式(1)のcomparisonを
   入力から作るcertificateを先に構成し、既存selected-comparison APIはcertificateに固定された
-  restriction pairだけを受理するadapterとして扱う。
+  restriction pairだけを受理するadapterとしたが、equality guardが実経路で恒真となり、target fittingと判定された。
+- 実装中（Cycle 26）: guardとstored comparisonを廃止する。actual Ob-valued left/right stateとtransitionだけを
+  強いResearch側dataに保持し、affine comparisonをそれらfieldから定義してから既存selected-data APIへ渡す。
 - 完了: diagnostic classの零から得る有理degree-zero boundary証人を、各生成Law-value labelについて
   全chartに共通する実target代表の座標で読み、`R_q`から各block係数を回収して座標ごとにfloorする。得られた整数block係数を
   presentation groupとactual Čech C⁰へ戻し、そのactual coboundaryが指定mismatchに一致することを証明する。
@@ -139,9 +141,9 @@ tracking Issue #4791の同期コメントに記録する。
 - 完了: Cycles 1–22の数学・Lean実装はPR #4822でmainへ統合済み。implementation headのCI 7/7、
   対象moduleのtargeted build、55宣言の標準公理監査、PR内容監査まで完了した。Cycle 24の
   既存障害provenance接続はPR #4825で継続中である。
-- 未完了: Cycle 25の同一completion headで標準PR review、schema-complete final packet、
+- 未完了: Cycle 26の同一completion headで標準PR review、schema-complete final packet、
   packet入力後のfresh独立4査読、正式completion ledger、CI、merge、report・Issue同期を行う。
-- 次のproof obligation: Cycle 25のcertificate adapterを検証し、completion gateを規定順序で完了する。
+- 次のproof obligation: Cycle 26のstrong-data adapterを検証し、completion gateを規定順序で完了する。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -2993,14 +2995,15 @@ audits:
       - "the finite zero and nonzero data instantiate the same existing GluingMismatchData route"
     unused: []
   structure_field_escape: none-found
-  route_integrity: pending-independent-review
+  route_integrity: fail
   target_fitting: none-found
   vacuity: "the relation ideal has the selected primitive generators and relations; the finite zero example has a nonzero mismatch before quotienting and the nonzero example remains nonzero"
   one_way_as_equivalence: "legacy obstruction-class equality is related to additive H1 equality by the existing proved cohomology quotient theorem"
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "command cd research/lean && lake build ResearchLean.AG.ObstructionDiagnosticBridge.SelectedFiniteObstructionExamples; result 3747 jobs success; output sha256 63c826241f46db61dee67a0625a2589945551069857439dbfd434f7677aa9d9c; ExistingObstructionBridge 33 declarations and downstream namespaces standard axioms only"
-  blocking_findings: []
+  blocking_findings:
+    - "Lean B found that the GluingMismatchData callback ignored both selected restriction arguments and that translated-right lawfulness was unused downstream"
   manuscript_boundary: "no manuscript exists; writing or updating manuscript prose is outside G-125 completion, while this report records the light paper-design mapping requested by the user"
   next_obligation: "fix PR #4825 to a new head, then rerun standard review, final packet, fresh completion review, formal ledger, CI, merge, and synchronization in order"
 ```
@@ -3067,10 +3070,82 @@ audits:
       - "the selected comparison theorem consumes the certificate comparison before the existing descent class is formed"
     unused: []
   structure_field_escape: none-found
-  route_integrity: pending-independent-review
+  route_integrity: fail
   validation_refs:
     - "command cd research/lean && lake build ResearchLean.AG.ObstructionDiagnosticBridge.SelectedFiniteObstructionExamples; result 3747 jobs success; output sha256 abfd7f598c575db6f6d605f43f83f460417455f4529d0e538d35ba4b47b13d4b; ExistingObstructionBridge 55 declarations and downstream namespaces standard axioms only"
+  blocking_findings:
+    - "all four standard-review lanes found that the equality guard is always true on the reachable GluingMismatchData.value path and that the certificate proof fields are unused downstream"
+  manuscript_boundary: "no manuscript exists; writing or updating manuscript prose is outside G-125 completion, and this report is the requested light mapping"
+  next_obligation: "replace the equality guard and stored comparison by a strong Ob-valued data type whose comparison is defined from its states, then restart review as Cycle 26"
+```
+
+Cycle 25はfixed head `6ca21889cc9361fabe133f9bebef6f21b30773ff` の標準レビューで、4 laneすべてが
+equality guardを恒真のtarget fitting、lawfulness・等式fieldを未使用と判定した。rootは同headを
+`rejected`、merge不可とした。監査記録は
+[PR #4825 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4825#issuecomment-5746810760)
+と[Issue #4791 checkpoint](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4791#issuecomment-5746811843)
+に固定した。
+
+## Cycle 26 — Ob-valued strong dataから定義するselected comparison
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 26
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: 6ca21889cc9361fabe133f9bebef6f21b30773ff
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "PR #4825 Cycle 25 rejected review https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4825#issuecomment-5746810760"
+  proof_obligation: "define the selected affine comparison from obstruction-valued actual left/right states and transition before crossing the existing selected-data API boundary"
+  selection_reason: "the Formal API intentionally erases Ob-valued state from LawfulSectionData and accepts comparison as selected data; the honest bridge must establish provenance in a stronger Research type instead of pretending to recover erased state from callback arguments"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "stored comparisonValue would reintroduce answer encoding"
+    - "claiming that the Formal callback itself derives comparison would overstate the API"
+result:
+  proposed_result_type: proof-obligation-discharged
+  completion_candidate: yes
+  proof_obligation_delta: "ActualAffineOverlapData stores only tied actual Ob-valued left/right states and transition; translatedRightState and comparison are definitions of those fields, and comparison_eq_actualMismatch uses all three provenance equalities before the value enters GluingMismatchData."
+  lean_artifacts:
+    - "ActualCechAffineLocalData.ActualAffineOverlapData"
+    - "ActualCechAffineLocalData.ActualAffineOverlapData.translatedRightState"
+    - "ActualCechAffineLocalData.ActualAffineOverlapData.comparison"
+    - "ActualCechAffineLocalData.ActualAffineOverlapData.comparison_eq_actualMismatch"
+    - "ActualCechAffineLocalData.ActualAffineOverlapCertificate"
+    - "ActualCechAffineLocalData.actualAffineOverlapCertificate"
+    - "ActualCechAffineLocalData.gluingMismatchCochain_eq_actualMismatch"
+  evidence:
+    - "ActualAffineOverlapData has no comparison or class field; comparison is definitionally transition + rightState - leftState"
+    - "leftState_eq, rightState_eq, and transition_eq are all rewritten in comparison_eq_actualMismatch"
+    - "the canonical certificate obtains its three states from actual sheaf restriction and the selected primitive transition"
+    - "translatedRightLawful is derived from the same canonical affine translation and records the separate lawfulness obligation"
+    - "GluingMismatchData is used according to its documented selected-data contract; the report does not claim that its erased callback arguments reconstruct Ob-valued states"
+audits:
+  material_premises:
+    ambient_boundary:
+      - "GluingMismatchData is a selected-data API and its RestrictedLocalLawfulSection does not retain an Ob-valued state"
+    direction_hypothesis:
+      - "B2 uses the discharged R_q reflection condition; C2 uses the discharged Condition C"
+    discharge_required: []
+    conclusion_equivalent_risk:
+      - "the strong data stores no comparison, cocycle, class, vanishing, injectivity, or B/C conclusion"
+  certificate_provenance:
+    discharged:
+      - "all Ob-valued state fields are tied by used equalities to actual restriction and transition data"
+    unresolved: []
+  proof_use:
+    used:
+      - "comparison_eq_actualMismatch rewrites leftState_eq, rightState_eq, and transition_eq"
+      - "gluingMismatchCochain_eq_actualMismatch applies the strong-data comparison theorem before forming the existing descent class"
+    unused:
+      - "translatedRightLawful is a separate lawfulness conjunct and is not claimed as an input needed by the additive comparison equality"
+  structure_field_escape: none-found
+  route_integrity: pending-independent-review
+  validation_refs:
+    - "command cd research/lean && lake build ResearchLean.AG.ObstructionDiagnosticBridge.SelectedFiniteObstructionExamples; result 3747 jobs success; output sha256 dafe0c987dafb0fe7e4b6f933ac340f51efd1f47b4f589d54c69011fed51430c; ExistingObstructionBridge 69 declarations and downstream namespaces standard axioms only"
   blocking_findings: []
   manuscript_boundary: "no manuscript exists; writing or updating manuscript prose is outside G-125 completion, and this report is the requested light mapping"
-  next_obligation: "run targeted validation, fix PR #4825 to a new head, and restart the standard four-lane review"
+  next_obligation: "run targeted validation, fix PR #4825 to a new head, and start Cycle 26 standard review"
 ```
