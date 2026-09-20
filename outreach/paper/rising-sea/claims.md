@@ -336,7 +336,11 @@ GitHubのファイルプレビュー・描画済み差分の表示確認とCIの
 periodは625通りの整数chart値でcoboundary上の零を、125通りのcoarse辺値で比較による保存を再検算した。
 内部辺を省くとcoboundaryでも値が零にならない例も確認した。
 書誌・引用範囲・コードレビューへの応用段落を保ち、原稿hashを更新した。
-修正後のGitHub表示・CIの対象commitと結果はPRに記録し、Claudeの確認と人間のmergeを待つ。
+修正後のGitHub表示・CIの対象commitと結果はPRに記録した。
+2026-09-20、人間が[PR #4833](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4833)をマージした。
+最終headは `a972997abbc7142c3a65d0454977af5b568e8709`、
+merge commitは `bb9c533efbd68adc0e8004a90e5a782c8497a1c2`。
+上記のClaudeレビューは修正前のcommitに対するものであり、修正後の独立再レビューは記録していない。
 
 [c3-reading]: ../../../research/lean/ResearchLean/AG/CanonicalResolution/Reading.lean
 [c3-joint]: ../../../research/lean/ResearchLean/AG/CanonicalResolution/JointKernel.lean
@@ -374,3 +378,102 @@ periodは625通りの整数chart値でcoboundary上の零を、125通りのcoars
 [c3-selected-c]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/SelectedReadingConditionC.lean
 [c3-examples]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/SelectedFiniteObstructionExamples.lean
 [c3-math-viii]: ../../../docs/aat/algebraic_geometric_theory/part_8_measurement_theory.md
+
+## 第4章「輸送と合成の整合性」
+
+2026-09-21、第3章をマージした固定版
+[bb9c533efbd68adc0e8004a90e5a782c8497a1c2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/bb9c533efbd68adc0e8004a90e5a782c8497a1c2)
+の一次資料と、第1〜3章の原稿を照合して[日本語初稿](ja/07-transport-coherence.md)を作成した。
+以下の一次資料の相対リンクは、この固定版で照合したファイルを示す。
+原稿のSHA-256は `e2c584e41d2f14801d89332bbd06d4b0a684cbbad4a65840db35342d4955d7af`。
+確認者はCodex（GPT-6）である。
+
+本文に必要な定義・条件・構成・証明を記述し、内部資料への案内はこの記録へ分けた。
+Lean sourceは既存の形式化の条件と結論の照合に使い、変更・ローカル再検証は行っていない。
+本文の群による有限例は、下記のとおり既存のAAT packageの有限witnessと区別する。
+
+| ID | 原稿の箇所 | 入力・成立条件 | 確認した一次資料 | 原稿での構成・証明 |
+| --- | --- | --- | --- | --- |
+| C4-01 | 定義4.1・補題4.2 | 関手、任意の底の後続射を量化する強いopcartesian射 | [Coreの普遍性][c4-core-opcart]、[liftの一意性][c4-core-unique]、[Stacks Tag 02XJ](https://stacks.math.columbia.edu/tag/02XJ) | 任意の後続射について存在一意性を定義し、vertical同型の一意性、恒等・合成の閉性を証明。Stacksの強いcartesian射の双対であることを明記 |
+| C4-02 | 構成4.3–定理4.5 | Exactな抽出射、Atom全単射、一般のsource写像、元のcore | [AtomFoundation/Transport][c4-core-transport]、[Opcartesian][c4-core-opcart] | configuration・対象形成・名前付きoperation・方程式・detector・invariant・signatureを再添字づけし、任意のexactな後続射に対する因子を逆再添字づけで構成。各成分の一意性を確認 |
+| C4-03 | 例4.6・構成4.7 | 前向き抽出保存、Atom全単射、追加抽出族の有限性、実際のbase operation、方程式とdetector健全性 | [RefinementObstruction][c4-refinement-obstruction]、[RefinementSupply][c4-refinement-supply] | 三Atomの交換と追加によるexact性の失敗を記述。追加operationの向きは拡大基点から旧基点の像とし、到達可能性と像の上でのquery・受理保存を導出 |
+| C4-04 | 構成4.8–定理4.11 | Coreの文脈同値、被覆要件の存在量化像、選択overlap、同じ係数でのraw system再添字づけ、三つの実現比較 | [GeometryTransport/Transport][c4-geom-transport]、[Supply][c4-geom-supply]、[Factorization][c4-geom-factor]、[Opcartesian][c4-geom-opcart] | 一般のcore射にはH_geomを必要十分な存在条件として示す。標準core輸送では三つの可逆な実現比較を構成し、任意のcoreの後続射について幾何の因子を構成・一意化 |
+| C4-05 | 補題4.12–定理4.16 | 選択した強いlift、fiberの対象とvertical射、coreへの射影 | [CorePseudofunctor][c4-core-pseudo]、[Pseudofunctor][c4-geom-pseudo]、[TowerCompatibility][c4-tower] | 輸送関手、compositor、unitorを因子分解から作り、自然性、三重合成・単位と段間の二経路の一致を同じ普遍性から証明 |
+| C4-06 | 定義4.17–構成4.18 | 有限グラフ、底で等しい二道、強い辺lift、独立に指定した終点自己同型 | [FinitePresentation][c4-presentation] | 指定比較とcanonical comparatorを区別し、raw defectを合成順序込みで定義。指定比較の整合性を入力へ含めない |
+| C4-07 | 定義4.19–定理4.22 | 終点fiber群のedge gauge、現在の辺の選択を含む作用空間 | [FinitePresentation][c4-presentation]、[VanishingCoherence][c4-vanishing] | 道の終点変化とdefectの共変式から作用則を証明。軌道による消滅と独立な道の可換式を、強いliftの一意性で同値化 |
+| C4-08 | 補題4.23–命題4.26 | 後続道へのwhiskering、向き付き面の貼り合わせ、同じ始終道を持つsyzygy | [PastingObstruction][c4-pasting] | 逆向きでは指定比較と標準比較をそれぞれ反転。貼り合わせのdefectには共役を含め、cocycle条件には指定比較のsyzygy整合を要求。閉じた不一致の共役式は固定したedge gaugeで証明 |
+| C4-09 | 例4.27–例4.29 | 一対象群圏、恒等の初期lift、一面・二面・三面の有限比較 | [VanishingCoherence][c4-vanishing]、[FiniteWitnesses][c4-finite]、[UnifiedObstruction][c4-unified] | 一面の吸収、同じ二辺への異なる要求、S3の非可換な三比較を本文用の群圏で直接計算。既存のAAT package全成分をこの小例に含めたとは扱わない |
+| C4-10 | 定義4.30–定理4.33 | 抽出を固定する上下の自己同型群、core射影と核、辺ごとのlift、coreの道の整列 | [SectionDecomposition][c4-section] | 無条件のdefect射影を先に示す。整列と一意性からp(m)=p(u)を導き、核への所属とuφ⁻¹=(um⁻¹)(mφ⁻¹)をこの順序で証明 |
+| C4-11 | 定理4.34 | 同じcoreの辺の選択の上のlift、核のedge gauge、全ての面 | [GlobalVanishing][c4-global] | 固定sectionの上の全体整合性と、同じsectionに相対的な核の補正を両向きに構成。さらにsectionの存在を量化して同時消滅を特徴づける |
+| C4-12 | 例4.35 | S4、選択した二軸の安定化群とC2の直積、一頂点・二loop・二面 | [CrossStageCoherence/FiniteWitnesses][c4-stage-finite]の四軸と平方根の機構 | 本文用に群準同型K→S4を構成。Coreの二つの平方根がどちらも持ち上がらず、独立な核の条件は解けることを証明・全数検算。元の係数環ℤ×ℤの幾何packageの代わりに、核を明示的なC2とした有限群の塔を用いた |
+| C4-13 | 定義4.36–例4.39 | 三法則を持つlens、一般の状態・view写像、同じ状態写像の再利用 | [CSAATLensRelativeOperationSquares][c4-lens]、第1章の命題1.34・例1.35・定義1.42 | getとputを直和写像に束ね、共有されたhとh×uによる一つの平方との同値を証明。可逆な組の共通部分と、非単射の意味保存射を区別 |
+| C4-14 | 命題4.40 | 固定プロトコル、名前付き生成辺、頂点写像、観測とadapter | [CSAATProtocolAdapterSquares][c4-protocol]、第1章の命題1.38 | 生成辺から全実行への自然性を帰納法で導き、adapter平方を頂点成分で特徴づける |
+| C4-15 | 定理4.41・章末 | 充満忠実関手、任意の比較射、両端の自己同型。Sectionの対応には比較射の可逆性 | [CSAATFullyFaithfulComparisonTransport][c4-fully-faithful]、第1章の命題1.43 | 比較を保つ群の全単射をfullnessとfaithfulnessから証明。適用先は実際に構成した型付き圏とし、幾何の輸送には別途core射と局所実現の比較を指定 |
+
+### 有限例と計算の確認
+
+本文の証明と別に、有限置換を全列挙するPythonスクリプトで次を検算した。
+
+- S3で長さ3の道を用い、defectの共変式を7,776通り、作用の合成則を46,656通りの辺の選択で確認。
+- 一面の比較は6個の各指定比較について6通りの解を持つ。同じ二辺への異なる二要求と、非可換な三比較には同時解がない。
+- 貼り合わせの共役を含む式を1,296通り、閉じた比較の式を216通りで確認。Defectの単純な積への置換は648通りで失敗した。
+- 順序を保つ二因子の分解を216通りで確認。因子順序の交換は108通りで失敗した。
+- S4で(12)(34)の平方根は二つで、どちらも選択対{1,2}を保たない。本文の群の塔ではcoreの全条件に2解、幾何だけの第二の面に8解、両面の同時条件に0解。
+- 四状態のlensの全置換でgetだけを保つものは4個、putも保つものは2個。非単射の補完写像も読取り・更新を保つことを確認。
+
+四軸の例は、sectionの存在条件を小さな群で説明するための本文内の構成である。
+この例の検算を、既存のLeanによる幾何package全体の再検証として扱わない。
+一般の定理は本文の証明と一次資料の読解で確認した。
+
+### 初稿の表示・引用と確認状態
+
+全410式（本文内358・独立行52）をKaTeX 0.18.7で構文検査し、エラー・警告がないことを確認した。
+本文内数式の改行を解消し、定義等41件・式番号52件と前章からの参照を確認した。
+ローカルのMathMLプレビューで、本文幅676pxでの描画漏れ・はみ出しと主要な式の表示を確認した。
+
+新しい引用はStacks §4.33の強いcartesian射と選択した輸送の構成であり、
+原典の定義4.33.1、補題4.33.2・4.33.7を確認した。
+本章ではその双対を使い、必要な普遍性と整合性の証明を本文に記述した。
+Lensとプロトコルは第1章で定めた意味論から出発し、既存文献の引用範囲を広げていない。
+文献確認記録の原稿hashには、第4章までの日本語原稿を掲載順に含めた。
+
+2026-09-21、下記の具体例の改善を含む原稿について人間の確認を終え、PR作成の指示を受けた。
+GitHubのファイルプレビュー・描画済み差分の確認とCIの対象commit・結果はPRに記録し、
+Claudeの独立レビューをPR上で受ける。
+
+### 導入とまとめの具体例の改善
+
+2026-09-21、人間の依頼に基づき、概要の動機を注文APIのリファクタリングで説明した。
+データ・操作・条件の引継ぎと、段階的な変換と直接の変換の一致を分け、
+配送先と請求先の入替えを、可逆でも経路が整合しない説明例として加えた。
+実開発での実証結果を追加したものではない。全410式、番号、§4.1以降の定義・証明・引用の保持を
+差分で確認し、原稿hashを更新した。
+
+同日、人間の依頼に基づき、章末のまとめでも同じ注文APIの例に戻った。
+経路間の住所の入替え、共有する変換を修正したときの他経路への影響、
+読取りと更新の両方を保つ必要性を、構成4.18・定理4.22・命題4.37・4.38・4.40に照合して記述した。
+全410式、定義・結果・式の番号、まとめより前の本文と引用を保持し、原稿hashを更新した。
+
+[c4-core-transport]: ../../../research/lean/ResearchLean/AG/AtomFoundation/Transport.lean
+[c4-core-opcart]: ../../../research/lean/ResearchLean/AG/AtomFoundation/Opcartesian.lean
+[c4-core-unique]: ../../../research/lean/ResearchLean/AG/AtomFoundation/LiftUniqueness.lean
+[c4-refinement-obstruction]: ../../../research/lean/ResearchLean/AG/AtomFoundation/RefinementObstruction.lean
+[c4-refinement-supply]: ../../../research/lean/ResearchLean/AG/AtomFoundation/RefinementSupply.lean
+[c4-geom-transport]: ../../../research/lean/ResearchLean/AG/GeometryTransport/Transport.lean
+[c4-geom-supply]: ../../../research/lean/ResearchLean/AG/GeometryTransport/Supply.lean
+[c4-geom-factor]: ../../../research/lean/ResearchLean/AG/GeometryTransport/Factorization.lean
+[c4-geom-opcart]: ../../../research/lean/ResearchLean/AG/GeometryTransport/Opcartesian.lean
+[c4-core-pseudo]: ../../../research/lean/ResearchLean/AG/CrossStageCoherence/CorePseudofunctor.lean
+[c4-geom-pseudo]: ../../../research/lean/ResearchLean/AG/CrossStageCoherence/Pseudofunctor.lean
+[c4-tower]: ../../../research/lean/ResearchLean/AG/CrossStageCoherence/TowerCompatibility.lean
+[c4-presentation]: ../../../research/lean/ResearchLean/AG/TransportCoherence/FinitePresentation.lean
+[c4-vanishing]: ../../../research/lean/ResearchLean/AG/TransportCoherence/VanishingCoherence.lean
+[c4-pasting]: ../../../research/lean/ResearchLean/AG/TransportCoherence/PastingObstruction.lean
+[c4-finite]: ../../../research/lean/ResearchLean/AG/TransportCoherence/FiniteWitnesses.lean
+[c4-unified]: ../../../research/lean/ResearchLean/AG/TransportCoherence/UnifiedObstruction.lean
+[c4-section]: ../../../research/lean/ResearchLean/AG/CrossStageCoherence/SectionDecomposition.lean
+[c4-global]: ../../../research/lean/ResearchLean/AG/CrossStageCoherence/GlobalVanishing.lean
+[c4-stage-finite]: ../../../research/lean/ResearchLean/AG/CrossStageCoherence/FiniteWitnesses.lean
+[c4-lens]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSAATLensRelativeOperationSquares.lean
+[c4-protocol]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSAATProtocolAdapterSquares.lean
+[c4-fully-faithful]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSAATFullyFaithfulComparisonTransport.lean
