@@ -3039,8 +3039,7 @@ result:
   completion_candidate: yes
   proof_obligation_delta: "ActualAffineOverlapCertificate is constructed from actual left/right sheaf restrictions, the derived translated-right lawfulness proof, and the derived affine comparison; selectedMismatch consumes the callback arguments and returns the comparison only for that certified pair."
   lean_artifacts:
-    - "ActualCechAffineLocalData.ActualAffineOverlapCertificate"
-    - "ActualCechAffineLocalData.actualAffineOverlapCertificate"
+    - "ActualCechAffineLocalData.actualAffineOverlapData"
     - "ActualCechAffineLocalData.ActualAffineOverlapCertificate.selectedMismatch"
     - "ActualCechAffineLocalData.ActualAffineOverlapCertificate.selectedMismatch_selected"
     - "ActualCechAffineLocalData.gluingMismatchData"
@@ -3113,14 +3112,13 @@ result:
     - "ActualCechAffineLocalData.ActualAffineOverlapData.translatedRightState"
     - "ActualCechAffineLocalData.ActualAffineOverlapData.comparison"
     - "ActualCechAffineLocalData.ActualAffineOverlapData.comparison_eq_actualMismatch"
-    - "ActualCechAffineLocalData.ActualAffineOverlapCertificate"
-    - "ActualCechAffineLocalData.actualAffineOverlapCertificate"
+    - "ActualCechAffineLocalData.actualAffineOverlapData"
     - "ActualCechAffineLocalData.gluingMismatchCochain_eq_actualMismatch"
   evidence:
     - "ActualAffineOverlapData has no comparison or class field; comparison is definitionally transition + rightState - leftState"
     - "leftState_eq, rightState_eq, and transition_eq are all rewritten in comparison_eq_actualMismatch"
-    - "the canonical certificate obtains its three states from actual sheaf restriction and the selected primitive transition"
-    - "translatedRightLawful is derived from the same canonical affine translation and records the separate lawfulness obligation"
+    - "the canonical strong data obtains its three states from actual sheaf restriction and the selected primitive transition"
+    - "translated-right lawfulness remains a separate theorem and is not stored as an ornamental certificate field"
     - "GluingMismatchData is used according to its documented selected-data contract; the report does not claim that its erased callback arguments reconstruct Ob-valued states"
 audits:
   material_premises:
@@ -3139,13 +3137,22 @@ audits:
     used:
       - "comparison_eq_actualMismatch rewrites leftState_eq, rightState_eq, and transition_eq"
       - "gluingMismatchCochain_eq_actualMismatch applies the strong-data comparison theorem before forming the existing descent class"
-    unused:
-      - "translatedRightLawful is a separate lawfulness conjunct and is not claimed as an input needed by the additive comparison equality"
+    unused: []
   structure_field_escape: none-found
   route_integrity: pending-independent-review
   validation_refs:
-    - "command cd research/lean && lake build ResearchLean.AG.ObstructionDiagnosticBridge.SelectedFiniteObstructionExamples; result 3747 jobs success; output sha256 dafe0c987dafb0fe7e4b6f933ac340f51efd1f47b4f589d54c69011fed51430c; ExistingObstructionBridge 69 declarations and downstream namespaces standard axioms only"
+    - "command cd research/lean && lake build ResearchLean.AG.ObstructionDiagnosticBridge.SelectedFiniteObstructionExamples; result 3747 jobs success; output sha256 4de648d5b349cbf6d088a6699d6917894f80f1e96546189724a5d2d35f2503cd; ExistingObstructionBridge 55 declarations and downstream namespaces standard axioms only"
   blocking_findings: []
+  standard_review:
+    initial_head: "8c0e8075db4ead12c5da17a9cc0dd83d328840c6"
+    lanes:
+      math_a: pass
+      math_b: pass
+      lean_a: pass
+      lean_b: "ornamental translatedRightLawful certificate field"
+    root_classification: "noncentral direct fix because removing the unused field does not change comparison provenance or any theorem route"
+    direct_fix: "remove ActualAffineOverlapCertificate and pass ActualAffineOverlapData directly to the selected-data adapter; keep translatedRightLawfulSectionData_lawful as a separate theorem"
+    direct_confirmation: pending
   manuscript_boundary: "no manuscript exists; writing or updating manuscript prose is outside G-125 completion, and this report is the requested light mapping"
-  next_obligation: "run targeted validation, fix PR #4825 to a new head, and start Cycle 26 standard review"
+  next_obligation: "fix a new head and obtain one fresh direct-confirmation review for the noncentral field removal"
 ```

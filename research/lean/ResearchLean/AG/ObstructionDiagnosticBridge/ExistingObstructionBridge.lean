@@ -353,25 +353,15 @@ theorem ActualAffineOverlapData.comparison_eq_actualMismatch
     data.leftState_eq, data.rightState_eq, data.transition_eq]
   exact x.affineComparisonMismatch_eq_actualMismatch_apply edge
 
-/--
-Strong input-derived certificate used before the existing selected-data API.
-The comparison is a definition of its obstruction-valued states, rather than a
-stored answer.  Lawfulness is derived from the same actual affine translation.
--/
-structure ActualAffineOverlapCertificate (x : ActualCechAffineLocalData P C)
-    (edge : D.nerve.EdgeComponent) extends ActualAffineOverlapData x edge where
-  translatedRightLawful : (x.translatedRightLawfulSectionData edge).Lawful
-
-/-- Construct the strong overlap certificate entirely from the actual local data. -/
-def actualAffineOverlapCertificate (x : ActualCechAffineLocalData P C)
-    (edge : D.nerve.EdgeComponent) : ActualAffineOverlapCertificate x edge where
+/-- Construct the strong overlap data entirely from the actual local data. -/
+def actualAffineOverlapData (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) : ActualAffineOverlapData x edge where
   leftState := x.leftRestrictedState edge
   rightState := x.rightRestrictedState edge
   transition := x.overlapTransition edge
   leftState_eq := rfl
   rightState_eq := rfl
   transition_eq := rfl
-  translatedRightLawful := x.translatedRightLawfulSectionData_lawful edge
 
 /--
 The existing gluing-mismatch input whose affine comparison value is equation (1).
@@ -388,7 +378,7 @@ def gluingMismatchData (x : ActualCechAffineLocalData P C) :
   rightRestriction := fun edge =>
     x.restrictedLawfulSection edge (D.nerve.edgeRight edge) (C.edgeRightRestriction edge)
   mismatch := fun edge _left _right =>
-    (x.actualAffineOverlapCertificate edge).toActualAffineOverlapData.comparison
+    (x.actualAffineOverlapData edge).comparison
 
 omit [Fintype Source] in
 /-- The existing gluing mismatch cochain is the affine actual mismatch. -/
@@ -397,10 +387,8 @@ theorem gluingMismatchCochain_eq_actualMismatch
     x.gluingMismatchData.gluingMismatchCochain = x.actualMismatch := by
   funext edge
   change
-    (x.actualAffineOverlapCertificate edge).toActualAffineOverlapData.comparison =
-      x.actualMismatch edge
-  exact (x.actualAffineOverlapCertificate edge).toActualAffineOverlapData
-    |>.comparison_eq_actualMismatch
+    (x.actualAffineOverlapData edge).comparison = x.actualMismatch edge
+  exact (x.actualAffineOverlapData edge).comparison_eq_actualMismatch
 
 /-- Existing descent cocycle attached to the affine lawful local data. -/
 def existingDescentCocycle (x : ActualCechAffineLocalData P C) :
