@@ -36,6 +36,7 @@ abbrev equationSystem
   IndependentCoreTableAssembly.equation
     (IndependentGeometryPrimitive.equationData (rows t ha A hA) hc he)
 
+/-- The assembled equation system retains the index selected by the equation rows. -/
 @[simp] theorem equationSystem_index
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
@@ -138,6 +139,8 @@ noncomputable def activationFormula
     | .supportVisible _ _
     | .boundaryVisible _ _ => .truth
 
+/-- The required-role cell formula recovers the required predicate of the
+assembled equation system. -/
 @[simp] theorem requiredRoleFormula_evaluate
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
@@ -162,6 +165,8 @@ noncomputable def activationFormula
     apply ULift.ext
     exact (Option.some_get hr).symm.trans (congrArg some h)
 
+/-- The closed activation formula is equivalent to the native coverage
+activation predicate for the selected query. -/
 @[simp] theorem activationFormula_evaluate
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)

@@ -131,6 +131,8 @@ def witnessFormula
               (ULift.up (some (Equation.observableActive t ha A hA hc ht W .zero))))
             .falsity))))
 
+/-- The circuit witness formula is true exactly when its selected residual differs
+from the selected zero observable. -/
 @[simp] theorem witnessFormula_evaluate
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)

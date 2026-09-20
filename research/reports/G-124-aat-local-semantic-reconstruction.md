@@ -9667,21 +9667,23 @@ checkpoint後の小さい差分では、第4査読で残った三点だけを修
    required axisのaxis cellを読む。`pointFormula`はcoverage cellからこの式への含意となり、
    `pointFormula_evaluate`は式の評価と元の`coverageRows q → Active q`の同値を証明する。
    `Instances`から式外の`Active`結論を削除した。
-3. rawの`substitutionObjectFormula`と`witnessObjectFormula`は、synthetic ASTの実supportを走査し、
-   coefficient zero/one/add/mulの有限な演算点、選択したrelation polynomial、variable image、carrierと
-   raw型参照を元のobject formulaへ写す。加算は二つの有限supportの和集合、乗算は有限supportの直積と
-   各出力monomialの有限和だけを読む。`substitutionSupport_anchored`と`witnessSupport_anchored`は、
-   実supportの各queryに対応する元のobject formulaが供給されることを示す。
+3. rawではnative tableと別のcomparison tableをinstance dataとして持つ。
+   `substitutionObjectFormula`と`witnessObjectFormula`は、ASTの実supportに現れる全queryについて、
+   元のraw image / relation polynomial cellと係数operation cellからcomparison tableの値を固定する。
+   relation polynomialは係数literalへ畳み込まずASTのvariableとして残すため、選択したrelation rowが
+   generatorの回復に実際に使われる。variable imageも期待多項式を持つ正確なraw cellとして固定する。
+   zero / one / coefficient / addは有限monomial support上の係数cellを読み、mulは各monomialの
+   `Finset.antidiagonal`にある全積cellと右結合の有限和cellを読む。
 
-`substitutionCellFormula_evaluate`の順方向は
-`IndependentPolynomialExpressions.evaluate_eq_expected_of_expressionFormula`を呼び、同定理から
-`evaluate_eq_of_support`を経て期待値を回復する。identity・composition・generatorの本番経路は全て
-この補題を使用する。したがって、完成した多項式等式だけを同じsynthetic table上で言い換える経路には
-戻っていない。
+`substitutionBridge_sound`と`witnessBridge_sound`は、object formulaからnative tableとcomparison tableの
+support上の一致を得る。その上でroot formulaを同じcomparison tableへ評価し、
+`IndependentPolynomialExpressions.evaluate_eq_expected_of_expressionFormula`をcomparison tableに適用する。
+最後に`evaluate_eq_of_support`でnative評価へ戻す。identity・composition・generatorの本番経路は全て
+この二つのbridgeを使用し、generatorのsubstitutionとwitnessは別table上で同じ`result`へ接続する。
 
 Leanという言語一般について、任意命題を参照できないとは主張しない。今回の受入根拠は、実際に公開する
 builderが上記の原始cellと有限ASTだけから式を作り、式の評価から元のnative lawを回復することに限定する。
 
-変更した三sourceのfocused checkは順に26・21・114宣言を監査し、標準公理だけを使用した。
+変更した三sourceのfocused checkは順に26・21・120宣言を監査し、標準公理だけを使用した。
 この節はパートIのcompletion candidateを記録する。新規4レーン査読、CI、merge、Issue同期が完了するまで
 パートI完了とは扱わない。
