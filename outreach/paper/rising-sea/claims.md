@@ -200,7 +200,10 @@ C2-01・C2-12・C2-14には、確認した直接の参照先を補った。
 本文と図を通読し、局所検出の定義から命題2.15、torsorから貼り合わせ、二回の商から定理2.9への接続を確認した。
 図のSHA-256は `0827c5487af26d4fde58149668d3900089ac27dbe6b680999bf171a6bc8f9e4e`。
 文献確認記録の原稿一式のhashも更新した。GitHubの表示確認とCIは、修正後commitを対象にPRへ記録する。
-修正後のClaudeによる確認と人間のmergeは未実施である。
+2026-09-20、修正後commit `877bc313b2160e59d359f8b94e43506a5c5076c3` に対する
+[Claudeの再レビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4832#issuecomment-5749951478)でapproveを得た。
+同commitのGitHub数式表示・CIの確認を経て、人間がPR #4832をマージした。
+merge commitは `8d949b2c116551f680f9792842e79e58d529e30a` である。
 
 [c2-math-iii]: ../../../docs/aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md
 [c2-math-iv]: ../../../docs/aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md
@@ -222,3 +225,125 @@ C2-01・C2-12・C2-14には、確認した直接の参照先を補った。
 [c2-saga-kappa]: ../../../Formal/AG/SemanticRepair/Saga/KappaComparison.lean
 [c2-selected-examples]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/SelectedFiniteObstructionExamples.lean
 [c2-saga-realization]: ../../../Formal/AG/SemanticRepair/Saga/EquationRealization.lean
+
+
+## 第3章「標準解像度と診断不変性」
+
+2026-09-20、第2章をマージした固定版
+[8d949b2c116551f680f9792842e79e58d529e30a](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/8d949b2c116551f680f9792842e79e58d529e30a)
+の一次資料を読み、[日本語原稿](ja/06-resolution-invariance.md)を作成した。
+以下の相対リンクはこの固定版のファイルを指す。
+原稿のSHA-256は `60d3276fbf83fc6bf70eac6a0adaf4d66a9afa6b2a3336026b3d8645cf19e16c`。
+
+主張は原稿内の定義と証明による数学として記述する。既存のLean sourceとは、
+入力・成立条件・写像・結論を照合した。Leanの変更とローカル再検証は行っていない。
+原稿の有限例として構成し直したものは、下表で既存の形式化と区別する。
+
+| ID | 原稿の箇所 | 入力・成立条件 | 確認した一次資料 | 原稿での構成・証明 |
+| --- | --- | --- | --- | --- |
+| C3-01 | 定義3.1–定理3.4・例3.5 | 同じsource上の全射、有限Law族、評価の降下 | [Reading][c3-reading]、[JointKernel][c3-joint] | kernel上の恒常性と降下、canonical factorの全射性、joint kernel商の普遍性・一意性を証明 |
+| C3-02 | 構成3.6–例3.8 | 有限source、評価値と抽出結果の等号判定、指定されたdoctrine族 | [Effective][c3-effective]、[Admissible][c3-admissible]、[正例][c3-positive]・[反例][c3-negative] | partitionを計算し、抽出結果のkernelとの一致を判定。六sourceの二つの真の細分から、adequacyだけでは表示可能性が従わないことを示す |
+| C3-03 | 定義3.9–命題3.12 | 有限nerve、chartの台、辺・面の交差台、adequacy、有理係数 | [LawGeneratedComplex][c3-complex] | 座標はLawと相異なる値の組とし、witnessを座標に加えない。二つの微分とLaw値ごとの直和分解を記述 |
+| C3-04 | 定義3.13・命題3.14 | chart写像、辺・面の部分写像、台の包含、縮約面の三辺の縮約 | [SupportedNerveMorphism][c3-morphism]、[GeneratedComparisonMap][c3-map] | 実際の座標式からcochain比較を生成し、二つの微分平方とH¹写像を証明 |
+| C3-05 | 定義3.15–定理3.17・例3.18 | C0・C5・C6は全体、C1–C4は各Law-value block。C3は有理chainで定義 | [条件C][c3-conditions]、[block比較の全単射][c3-bijective]、[SelectedReadingConditionC][c3-selected-c] | fiber内部の道積分による補正、単射性、辺・面の持ち上げによる全射性を証明。三chart・四chartの具体例を与える |
+| C3-06 | 例3.19 | 全体のchart台、三source、二つのLaw、異なるnerveの比較 | [AdequateConditionCFailure][c3-adequate-failure]、[CanonicalInadequateFalsePositive][c3-false-positive]、[CanonicalInadequateHiddenClass][c3-hidden] | loopと道、道と平行二辺を本文用の小例として計算。共通Lawのadequacyと被覆条件を分け、追加Lawが降下しない場合も説明 |
+| C3-07 | 定義3.20–命題3.23 | 同じ比較幾何、全adequate有限Law族、明示的有限表示 | [UniformityReduction][c3-uniform]、[DefectSemantics][c3-defect]、[UniformPresentationDecider][c3-decider] | Law値のfiberによる部分nerveの同定とindicator Lawの逆方向を証明。実比較の核・余核の次元による判定を有理行列計算として示す |
+| C3-08 | 系3.24・例3.25 | 全非空target部分集合、C0–C6、全体のchart台 | [AtlasPositioning][c3-atlas] | 各条項を部分集合とLaw-value blockの間で移す。条項の非必要性は本文用に七つの小例を構成し、各実比較の階数を別途検算。既存の七つのLean witnessと同じ有限表であるとは主張しない |
+| C3-09 | 定義3.26–命題3.28 | 接続役割別の隣接色とclip2個数を読む、本文で定義した局所観測 | [T3/T6の有限入力][c3-t3t6]、[一様性の相違][c3-t3t6-uniform] | 同じ有限入力について局所型の一致と周期3・6のcocycleを直接計算。観測の範囲は下記に明記 |
+| C3-10 | 定義3.29–命題3.32 | 語彙・解像度・source意味論・正規化を固定し、意味readingと許可述語を変える族。source別の有理係数 | [NerveGeneration][c3-struct-nerve]、[StructuralLocalization][c3-struct-local]、[GeneratedH1Vanishing][c3-struct-zero] | 構造台を族全体で残る抽出対として定め、nerveの一致を証明。各sourceの基準Atomを用いてすべてのcocycleのprimitiveを構成 |
+| C3-11 | 構成3.33–例3.35 | ラベルを保つ原始関係、整数presentation係数 | [CoefficientComparison][c3-coefficient] | 同じラベルに属する関係成分の係数和としてεを定義。同ラベルの連結性による単射性と、二生成子・空関係の非単射例を示す |
+| C3-12 | 構成3.36・定理3.37 | 連結なchart・非空二重交差、異なる三chartの交差が空、局所定数な整数係数、任意の局所データ | [FaceEmptyCechNormalization][c3-normalization]、[ActualCechH1Comparison][c3-h1]、[CombinedAtomSpecifiedObstruction][c3-specified] | 実際の切断・制限からφを定め、同じ入力で独立に書いた診断生成式とのcochain等式を示す。Φは整数係数から有理係数への加法的準同型として扱う |
+| C3-13 | 定義3.38–例3.41 | 同ラベル生成子の原始関係による連結性、各ラベルの全chart共通代表 | [IntegralReflection][c3-integral]、[SpecifiedClassReflection][c3-reflection]、[CombinedAtomSpecifiedReflection][c3-selected-reflection] | 有理primitiveの床関数から整数primitiveを作り、実切断へ戻して零性を反映。共通代表を欠く反例は本文の被覆上で別途構成 |
+| C3-14 | 構成3.42・定理3.43 | 同じ点・生成子Atom入力、第一成分Law、粗いreadingと恒等reading、実際の三chart・四chartの細分 | [SelectedReadingRefinement][c3-refinement]、[CombinedAtomReadingNaturality][c3-naturality] | 内部辺を零へ送る実restrictionを計算し、cochainの比較平方、局所データと指定類の輸送を証明 |
+| C3-15 | 定理3.44・例3.45 | 同じ入力で両端の反映条件とC0–C6が成立し、canonical factorは非単射 | [SelectedReadingConditionC][c3-selected-c]、[SelectedFiniteObstructionExamples][c3-examples] | 四つの零性の同値を合成。非零mismatchを持つ零障害例と非零障害例について、整数・有理periodを粗細両側で計算 |
+| C3-16 | §3.11末尾 | 対応する交差図式、制限と可換な係数同型、対応するLaw・witness・軸 | [数学本文VIII §7][c3-math-viii]、[Stacks Tag 09UY](https://stacks.math.columbia.edu/tag/09UY) | 固定被覆の各次数のcochain同型から、対応する障害類の零性同値を説明 |
+
+### 局所観測と有限例の範囲
+
+定義3.26の `Obs_loc` は、本章で定義した接続役割別の色・個数の観測である。
+既存の [GLocalV1Nonfactorization][c3-full-local] が扱う `G_local-v1` は、
+終端簡約、半径1の接続情報、targetの同時再ラベル等を含む別の観測仕様である。
+本章ではT3/T6の同じ生の入力を使い、定義3.26の観測について命題3.28を直接証明した。
+二つの観測関数を同一視せず、既存仕様全体の非因子化を証明済みとして転記しない。
+既存仕様の全定義・形式化との対応は、付録B・Cの作成時に扱う。
+
+例3.25では、非零の共通loop成分を加えた上で、それぞれの条項が必要ではないことを示す。
+共通loopによりC3も破れる行がある。本文の主張は七条項それぞれの非必要性であり、
+「他の六条項をすべて満たす」という独立性の主張ではない。
+
+### 有限計算と読者向け確認
+
+本文の有限表から、Pythonの有理数演算で微分・比較行列を生成して検算した。
+cocycleの基底とfine側のcoboundaryを使い、実H¹写像の階数を計算した。
+両側のH¹の次元の一致だけを同型性の判定に使っていない。
+
+- 六sourceのpartitionが指定のkernelを持ち、二つの抽出方法が標準解像度の真の細分となる。
+- 例3.19の核・余核の次元は一座標あたり `(1,0)` と `(0,1)` となる。
+- 例3.25の七例は指定条項を破り、いずれも実比較の核・余核が零となる。共通のH¹はC3の行で次元2、他の行で次元1。
+- 命題3.28の全三つの非空部分集合について、局所観測表の一致と式(3.23)のdefectを確認した。
+- 命題3.32の順序付きnerveをAtom数1〜4で生成し、H¹が零であることを確認した。一般の場合は本文のprimitive構成による。
+- 三chart・四chartの比較の二つの微分平方、条件C、実比較の階数を確認した。粗い側の125個の辺値と細かい側の625個の整数chart値でperiodの保存・coboundaryのperiod零を検算した。
+- 床関数による整数化は、四chart上の625個の整数値に四つの有理定数を加えた2,500例で辺差の保存を確認した。一般の証明は補題3.39に記載した。
+
+概要、診断を比較する目的、各節の導入、定義・証明・正負例、章末のまとめを配置した。
+第2章の三chart・四chart被覆を再利用し、条件Cの説明から指定障害類の零性同値までつないだ。
+本文にAAT内部の章番号、GOAL、Lean識別子、repoのパスへの案内を置いていない。
+Lean状態、tool schema、websiteの公開内容への変更はない。
+
+人間との議論に基づき、章末にコードレビューへの応用可能性を追加した。
+注文処理のレビューを説明例とし、標準解像度、条件C、指定障害類の零性反映に対応づけた。
+この段落は応用の見通しであり、実コード上のモデル構成・仮定の検証・有効性の実験を実施したという主張ではない。
+補正可能性とコードへの実現、同じ入力の読み方の比較と変更前後の入力の比較を区別した。
+既存の全数式、定義・結果・式番号、引用の保持を修正前後で確認した。
+
+### 数式・引用と残る確認
+
+全451式（本文内409・独立行42）をKaTeX 0.18.7で構文検査し、エラー・警告なし。
+ローカルのMathMLプレビューでは、全数式の描画、本文幅676pxでの独立行のはみ出し、
+主要な定義・零性反映・比較平方の表示を確認した。
+定義等45件・式番号42件と、第1・2章を含む結果の参照を検査した。
+
+第3章で追加した引用はStacks §20.15の被覆の細分によるČech cochain写像であり、
+原典の冒頭の構成を確認した。既存の引用内容は変更していない。
+[文献](ja/14-references.md)と[references.csv](references.csv)に参照箇所と更新したhashを記録した。
+
+2026-09-20、人間が原稿とコードレビューへの応用可能性の追記を確認し、PR作成を承認した。
+GitHubのファイルプレビュー・描画済み差分の表示確認とCIの対象commit・結果はPRに記録する。
+Claudeによる独立レビューはPR上で受ける。ローカル表示確認をGitHubの確認済みとは扱わない。
+
+[c3-reading]: ../../../research/lean/ResearchLean/AG/CanonicalResolution/Reading.lean
+[c3-joint]: ../../../research/lean/ResearchLean/AG/CanonicalResolution/JointKernel.lean
+[c3-effective]: ../../../research/lean/ResearchLean/AG/CanonicalResolution/Effective.lean
+[c3-admissible]: ../../../research/lean/ResearchLean/AG/CanonicalResolution/Admissible.lean
+[c3-positive]: ../../../research/lean/ResearchLean/AG/CanonicalResolution/PositiveWitness.lean
+[c3-negative]: ../../../research/lean/ResearchLean/AG/CanonicalResolution/NegativeWitness.lean
+[c3-complex]: ../../../research/lean/ResearchLean/AG/ResolutionInvariance/LawGeneratedComplex.lean
+[c3-morphism]: ../../../research/lean/ResearchLean/AG/ResolutionInvariance/SupportedNerveMorphism.lean
+[c3-map]: ../../../research/lean/ResearchLean/AG/ResolutionInvariance/GeneratedComparisonMap.lean
+[c3-conditions]: ../../../research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceConditions.lean
+[c3-bijective]: ../../../research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonBijectivity.lean
+[c3-adequate-failure]: ../../../research/lean/ResearchLean/AG/ResolutionInvariance/AdequateConditionCFailure.lean
+[c3-false-positive]: ../../../research/lean/ResearchLean/AG/ResolutionInvariance/CanonicalInadequateFalsePositive.lean
+[c3-hidden]: ../../../research/lean/ResearchLean/AG/ResolutionInvariance/CanonicalInadequateHiddenClass.lean
+[c3-uniform]: ../../../research/lean/ResearchLean/AG/UniformInvariance/UniformityReduction.lean
+[c3-defect]: ../../../research/lean/ResearchLean/AG/UniformInvariance/DefectSemantics.lean
+[c3-decider]: ../../../research/lean/ResearchLean/AG/UniformInvariance/UniformPresentationDecider.lean
+[c3-atlas]: ../../../research/lean/ResearchLean/AG/UniformInvariance/AtlasPositioning.lean
+[c3-t3t6]: ../../../research/lean/ResearchLean/AG/UniformInvariance/GLocalV1T3T6Witnesses.lean
+[c3-t3t6-uniform]: ../../../research/lean/ResearchLean/AG/UniformInvariance/GLocalV1T3T6Uniformity.lean
+[c3-full-local]: ../../../research/lean/ResearchLean/AG/UniformInvariance/GLocalV1Nonfactorization.lean
+[c3-struct-nerve]: ../../../research/lean/ResearchLean/AG/StructuralCover/NerveGeneration.lean
+[c3-struct-local]: ../../../research/lean/ResearchLean/AG/StructuralCover/StructuralLocalization.lean
+[c3-struct-zero]: ../../../research/lean/ResearchLean/AG/StructuralCover/GeneratedH1Vanishing.lean
+[c3-coefficient]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/CoefficientComparison.lean
+[c3-normalization]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/FaceEmptyCechNormalization.lean
+[c3-h1]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/ActualCechH1Comparison.lean
+[c3-specified]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomSpecifiedObstruction.lean
+[c3-integral]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/IntegralReflection.lean
+[c3-reflection]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/SpecifiedClassReflection.lean
+[c3-selected-reflection]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomSpecifiedReflection.lean
+[c3-refinement]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/SelectedReadingRefinement.lean
+[c3-naturality]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomReadingNaturality.lean
+[c3-selected-c]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/SelectedReadingConditionC.lean
+[c3-examples]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/SelectedFiniteObstructionExamples.lean
+[c3-math-viii]: ../../../docs/aat/algebraic_geometric_theory/part_8_measurement_theory.md

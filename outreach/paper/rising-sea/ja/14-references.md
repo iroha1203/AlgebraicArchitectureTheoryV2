@@ -14,6 +14,7 @@
 - Schemes, §26.14, “Glueing schemes”, [Tag 01JA](https://stacks.math.columbia.edu/tag/01JA), 補題26.14.1–26.14.2。
 - Schemes, 補題26.4.6, [Tag 01HP](https://stacks.math.columbia.edu/tag/01HP).
 - Cohomology on Sites, §21.4, “First cohomology and torsors”, [Tag 03AG](https://stacks.math.columbia.edu/tag/03AG), 定義21.4.1、補題21.4.2。
+- Cohomology of Sheaves, §20.15, “Refinements and Čech cohomology”, [Tag 09UY](https://stacks.math.columbia.edu/tag/09UY), 冒頭の被覆の細分によるcochain写像。
 
 **[FGMPS04]** J. Nathan Foster, Michael B. Greenwald, Jonathan T. Moore,
 Benjamin C. Pierce, and Alan Schmitt.
