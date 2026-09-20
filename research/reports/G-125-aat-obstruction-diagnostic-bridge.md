@@ -125,9 +125,11 @@ tracking Issue #4791の同期コメントに記録する。
   各ケースへ明示適用して、actual/diagnostic両類が粗細双方でそれぞれ零・非零になることを証明する。
 - 完了（仮定相対）: supplied face-index-empty nerveのpresentation係数cochainと、条件付きactual Ob層の実
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
-- 未完了: report上の最終対応確認、最終検証・独立査読。
-- 次のproof obligation: completion candidateの全宣言・前提・依存・非空虚性を最終snapshotで検証し、
-  `math-lean-review`とPR監査を完了する。
+- 完了: 数学・Lean実装はPR #4822でmainへ統合済み。implementation headのCI 7/7、
+  対象moduleのtargeted build、55宣言の標準公理監査、PR内容監査まで完了した。
+- 未完了: 同一completion headの標準PR review、schema-complete final packet、
+  packet入力後のfresh独立4査読、正式completion ledger、merge、report・Issue同期。
+- 次のproof obligation: Cycle 23のcompletion gateを規定順序で完了する。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -2746,4 +2748,110 @@ audits:
     - "cd research/lean && lake build ResearchLean.AG.ObstructionDiagnosticBridge.SelectedFiniteObstructionExamples: pass; 55 declarations, standard axioms only"
   blocking_findings: []
   next_obligation: "run final exact-head validation, math-lean-review, PR audit, and independent completion review"
+```
+
+## Cycle 23 — completion gate repair
+
+PR #4822の実装はmainへ統合済みだが、同PRのfinal packetはmerge後に投稿され、必須fieldと
+packet入力後のfresh独立4査読を欠いていたため、正式な完了証拠には採用しない。最初の修復
+PR #4823もdocs-reviewの許容再実行回数内に中心findingを解消できず、未マージでrejectした。
+Cycle 23では数学実装を変更せず、completion gateだけを新しい固定headで再構成する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 23
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: 1679b3058bada591be86a8d7b6922817de9ce1ef
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref:
+    - "PR #4823 reject audit: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4823#issuecomment-5746294189"
+    - "Issue checkpoint correction: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4791#issuecomment-5746296234"
+  proof_dag_predecessors:
+    - "Cycles 1-22 and implementation merge 1679b3058bada591be86a8d7b6922817de9ce1ef"
+  proof_obligation: "run the target-theorem completion gate on one fixed completion head without changing the mathematical implementation"
+  selection_reason: "all mathematical obligations are implemented; only the fail-closed completion protocol remains"
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - "the unchanged cumulative ResearchLean declarations recorded by Cycles 1-22"
+  risks:
+    - "using a packet created after merge"
+    - "omitting required final-packet fields"
+    - "reusing PR-content review as the independent completion review"
+    - "using direct response for a completion-review finding"
+    - "merging before the formal completion ledger"
+  unchecked:
+    - "same-head standard PR review and root acceptance recheck"
+    - "schema-complete final packet"
+    - "fresh completion math-lean-review"
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "No mathematical statement changes; this cycle records and executes the missing completion protocol on a new fixed head."
+  completion_candidate: yes
+  lean_artifacts:
+    - "the cumulative ResearchLean dependency DAG recorded by Cycles 1-22"
+    - "SelectedFiniteObstructionExamples.zero_example_outcomes"
+    - "SelectedFiniteObstructionExamples.nonzero_example_outcomes"
+  evidence:
+    - "A-C and the fixed finite zero/nonzero examples are merged"
+    - "implementation-head CI 7/7 and the 55-declaration standard-axiom audit passed"
+    - "implementation PR-content findings were resolved"
+  claim_mapping:
+    theorem_names:
+      - "SelectedFiniteObstructionExamples.zero_example_outcomes"
+      - "SelectedFiniteObstructionExamples.nonzero_example_outcomes"
+    source_labels:
+      - "GOAL completion criteria 1-4"
+      - "Issue #4791 paper design sections 1-10"
+    conjuncts:
+      - "A-C and both fixed finite examples are the cumulative completion-review subject"
+      - "this cycle changes only completion evidence and does not weaken the fixed target"
+    undischarged_assumptions: []
+    acceptance_point: "the completion gate has not yet run on the Cycle 23 head, so the current result remains a checkpoint"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "all mathematical premises recorded by Cycles 1-22"
+    remaining:
+      - "same-head standard PR review and root acceptance-contract recheck"
+      - "schema-complete final packet containing every field from completion-ledger.md"
+      - "fresh completion review using only the packet, fixed GOAL, and cumulative Lean artifacts"
+      - "root recheck and formal completion ledger with final_packet_ref and pr_review_gate_ref"
+      - "same-head CI confirmation and merge"
+      - "post-merge report and tracking-Issue synchronization"
+  certificate_provenance:
+    discharged:
+      - "the cumulative certificate provenance recorded by Cycles 1-22"
+    unresolved: []
+  proof_use:
+    used:
+      - "the cumulative proof-use paths recorded by Cycles 1-22"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass-for-completion-candidate
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "implementation PR #4822 exact-head CI 7/7"
+    - "SelectedFiniteObstructionExamples targeted build: 3746 jobs; 55 declarations, standard axioms only"
+  blocking_findings: []
+  invalidated_as_completion_evidence:
+    - "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4822#issuecomment-5746178104"
+    - "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4791#issuecomment-5746179835"
+  gate_order:
+    - "fix one completion head"
+    - "pass standard PR review and root acceptance recheck"
+    - "post the schema-complete final packet"
+    - "run fresh math A/B and Lean A/B completion review"
+    - "root recheck and post the formal completion ledger"
+    - "confirm same-head CI and merge"
+    - "sync report and tracking Issue after merge"
+  failure_path: "do not merge; post checkpoint, refuted, or blocked ledger to both the PR and tracking Issue"
+  lifecycle_boundary: "GOAL card/index status changes and Issue close require a separate human decision"
+  next_obligation: "open the Cycle 23 PR and complete its standard PR review"
 ```
