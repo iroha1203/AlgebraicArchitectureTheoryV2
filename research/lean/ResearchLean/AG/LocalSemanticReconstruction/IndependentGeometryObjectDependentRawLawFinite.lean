@@ -550,6 +550,17 @@ abbrev mappedPolynomial
   exact (IndependentRawLocal.restriction (localRows t ha A hA hf hc he hv ho)
     (localTyped t ha A hA hf hc he hv ho ht) f).polynomialMap p
 
+/-- Compile one native polynomial using the coefficient ring recovered from
+the selected foundation rows. -/
+noncomputable def polynomialExpression
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (hf : IndependentGeometryPrimitive.FoundationLaws t) {C : Type u}
+    (p : @MvPolynomial C (coefficientNative t hf).1
+      (coefficientNative t hf).2.toCommSemiring) :
+    IndependentPolynomialExpressions.Expr C (coefficientNative t hf).1 := by
+  letI : CommRing (coefficientNative t hf).1 := (coefficientNative t hf).2
+  exact IndependentPolynomialExpressions.compile p
+
 /-- Evaluate one selected target polynomial through the finite expression compiler. -/
 abbrev substitutionValue
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -570,7 +581,7 @@ abbrev substitutionValue
   exact IndependentPolynomialExpressions.evaluate
     (IndependentPolynomialExpressions.nativeTable MvPolynomial.C
       (variableImage t ha A hA hf hc he hv ho ht f))
-    (IndependentPolynomialExpressions.compile p)
+    (polynomialExpression t hf p)
 
 theorem substitutionValue_eq_mappedPolynomial
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -589,7 +600,7 @@ theorem substitutionValue_eq_mappedPolynomial
       mappedPolynomial t ha A hA hf hc he hv ho ht f p := by
   letI : CommRing (coefficientNative t hf).1 := (coefficientNative t hf).2
   simpa [substitutionValue, mappedPolynomial, IndependentRawLocal.restriction,
-    TypedCoordinateRestriction.polynomialMap] using
+    TypedCoordinateRestriction.polynomialMap, polynomialExpression] using
     (IndependentPolynomialExpressions.evaluate_compile MvPolynomial.C
       (variableImage t ha A hA hf hc he hv ho ht f) p)
 
@@ -630,12 +641,133 @@ noncomputable def substitutionCellFormula
   letI : CommRing (coefficientNative t hf).1 := (coefficientNative t hf).2
   exact IndependentPolynomialExpressions.expressionFormula
     (substitutionTable t ha A hA hf hc he hv ho ht f)
-    (IndependentPolynomialExpressions.compile p) expected
+    (polynomialExpression t hf p) expected
+
+/-- Anchor one coefficient-ring operation used by a synthetic polynomial
+query.  The operation arguments remain the exact native coefficient values
+appearing in that query. -/
+def coefficientOperationAnchor
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (hf : IndependentGeometryPrimitive.FoundationLaws t)
+    (q : IndependentRingPrimitive.Query (coefficientNative t hf).1)
+    (body : ObjectFormula.{u, v, w} U) : ObjectFormula.{u, v, w} U :=
+  .and (.cell (.coefficient (.operation (coefficientNative t hf).1 q))
+    (t (.coefficient (.operation (coefficientNative t hf).1 q)))) body
+
+@[simp] theorem coefficientOperationAnchor_evaluate
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (hf : IndependentGeometryPrimitive.FoundationLaws t)
+    (q : IndependentRingPrimitive.Query (coefficientNative t hf).1)
+    (body : ObjectFormula.{u, v, w} U) :
+    (coefficientOperationAnchor t hf q body).evaluate t ↔ body.evaluate t := by
+  simp [coefficientOperationAnchor, ObjectFormula.evaluate]
+
+/-- Anchor a finite list of coefficient-ring operation points. -/
+def coefficientOperationAnchors
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (hf : IndependentGeometryPrimitive.FoundationLaws t) :
+    List (IndependentRingPrimitive.Query (coefficientNative t hf).1) →
+      ObjectFormula.{u, v, w} U → ObjectFormula.{u, v, w} U
+  | [], body => body
+  | q :: qs, body => coefficientOperationAnchor t hf q
+      (coefficientOperationAnchors t hf qs body)
+
+@[simp] theorem coefficientOperationAnchors_evaluate
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (hf : IndependentGeometryPrimitive.FoundationLaws t)
+    (qs : List (IndependentRingPrimitive.Query (coefficientNative t hf).1))
+    (body : ObjectFormula.{u, v, w} U) :
+    (coefficientOperationAnchors t hf qs body).evaluate t ↔ body.evaluate t := by
+  induction qs with
+  | nil => rfl
+  | cons q qs ih => simp [coefficientOperationAnchors, ih]
+
+/-- Coefficient operations used pointwise by one native polynomial sum. -/
+noncomputable def polynomialAddQueries
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (hf : IndependentGeometryPrimitive.FoundationLaws t) {C : Type u}
+    (p q : @MvPolynomial C (coefficientNative t hf).1
+      (coefficientNative t hf).2.toCommSemiring) :
+    List (IndependentRingPrimitive.Query (coefficientNative t hf).1) := by
+  classical
+  letI : CommRing (coefficientNative t hf).1 := (coefficientNative t hf).2
+  exact .zero :: (p.support ∪ q.support).toList.map
+    (fun m => .add (p.coeff m) (q.coeff m))
+
+/-- Exact coefficient products that can contribute to one product monomial. -/
+noncomputable def polynomialProductTerms
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (hf : IndependentGeometryPrimitive.FoundationLaws t) {C : Type u}
+    (p q : @MvPolynomial C (coefficientNative t hf).1
+      (coefficientNative t hf).2.toCommSemiring) (m : C →₀ ℕ) :
+    List (coefficientNative t hf).1 := by
+  classical
+  letI : CommRing (coefficientNative t hf).1 := (coefficientNative t hf).2
+  exact (p.support.toList.flatMap fun left =>
+    q.support.toList.filterMap fun right =>
+      if left + right = m then some (p.coeff left * q.coeff right) else none)
+
+/-- Primitive additions used by the fixed right-associated sum of a finite
+coefficient list. -/
+def coefficientSumQueries
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (hf : IndependentGeometryPrimitive.FoundationLaws t) :
+    List (coefficientNative t hf).1 →
+      List (IndependentRingPrimitive.Query (coefficientNative t hf).1)
+  | [] => [.zero]
+  | value :: values => by
+      letI : CommRing (coefficientNative t hf).1 := (coefficientNative t hf).2
+      exact .add value (values.foldr (· + ·) 0) :: coefficientSumQueries t hf values
+
+/-- All coefficient multiplication and accumulation points used by a native
+polynomial product.  Both index sets come from native finite supports. -/
+noncomputable def polynomialMulQueries
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (hf : IndependentGeometryPrimitive.FoundationLaws t) {C : Type u}
+    (p q : @MvPolynomial C (coefficientNative t hf).1
+      (coefficientNative t hf).2.toCommSemiring) :
+    List (IndependentRingPrimitive.Query (coefficientNative t hf).1) := by
+  classical
+  letI : CommRing (coefficientNative t hf).1 := (coefficientNative t hf).2
+  let pairs := p.support.toList.flatMap fun left =>
+    q.support.toList.map fun right => (left, right)
+  let monomials := pairs.map (fun pair => pair.1 + pair.2) |>.eraseDups
+  exact pairs.map (fun pair => .mul (p.coeff pair.1) (q.coeff pair.2)) ++
+    monomials.flatMap (fun m =>
+      coefficientSumQueries t hf (polynomialProductTerms t hf p q m))
+
+/-- Original object-table cells that supply one query of a substitution AST.
+Variables use their raw image row; arithmetic queries name the corresponding
+finite coefficient-operation trace. -/
+noncomputable def substitutionQueryFormula
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
+    (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
+    (hf : IndependentGeometryPrimitive.FoundationLaws t)
+    (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
+    (he : IndependentGeometryPrimitive.EquationLaws (rows t ha A hA) hc)
+    (hv : IndependentGeometryPrimitive.CoverageLaws t hf (rows t ha A hA) hc he)
+    (ho : IndependentGeometryPrimitive.OverlapLaws (rows t ha A hA) hc)
+    (_ht : CandidateTyped t ha A hA hf hc he hv ho)
+    {X Y : (rawSite t ha A hA hf hc he hv ho).category} (f : X ⟶ Y) :
+    IndependentPolynomialExpressions.Query
+      (IndependentRawCandidate.coord (rawRows t ha A hA) Y.ctx)
+      (coefficientNative t hf).1
+      (@MvPolynomial (IndependentRawCandidate.coord (rawRows t ha A hA) X.ctx)
+        (coefficientNative t hf).1 (coefficientNative t hf).2.toCommSemiring) →
+      ObjectFormula.{u, v, max u v} U
+  | .coefficient _ => coefficientRefAnchor t hf .truth
+  | .variable c => selectedImageAnchor t ha A hA hf hc he hv ho f c .truth
+  | .zero => coefficientOperationAnchor t hf .zero .truth
+  | .one => coefficientOperationAnchors t hf [.zero, .one] .truth
+  | .add p q => coefficientOperationAnchors t hf
+      (polynomialAddQueries t hf p q) .truth
+  | .mul p q => coefficientOperationAnchors t hf
+      (polynomialMulQueries t hf p q) .truth
 
 /-- Object-table anchors corresponding to every query in the compiled AST
-support.  Variable queries name their raw image rows; the five arithmetic
-roles retain their exact synthetic cells in `substitutionCellFormula` and
-anchor the selected coefficient declaration here. -/
+support.  Variable queries name their raw image rows; arithmetic queries name
+the finite coefficient-operation trace used by the native polynomial value. -/
 noncomputable def substitutionObjectFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
@@ -652,16 +784,32 @@ noncomputable def substitutionObjectFormula
     ObjectFormula.{u, v, max u v} U := by
   letI : CommRing (coefficientNative t hf).1 := (coefficientNative t hf).2
   let table := substitutionTable t ha A hA hf hc he hv ho ht f
-  let expression := IndependentPolynomialExpressions.compile p
+  let expression := polynomialExpression t hf p
   exact ObjectFormula.allList
-    (IndependentPolynomialExpressions.support table expression).toList (fun q =>
-      match q with
-      | .coefficient _ => coefficientRefAnchor t hf .truth
-      | .variable c => selectedImageAnchor t ha A hA hf hc he hv ho f c .truth
-      | .zero => coefficientRefAnchor t hf .truth
-      | .one => coefficientRefAnchor t hf .truth
-      | .add _ _ => coefficientRefAnchor t hf .truth
-      | .mul _ _ => coefficientRefAnchor t hf .truth)
+    (IndependentPolynomialExpressions.support table expression).toList
+      (substitutionQueryFormula t ha A hA hf hc he hv ho ht f)
+
+/-- Every synthetic substitution query in the canonical AST support is
+supplied by a finite formula over the original object table. -/
+theorem substitutionSupport_anchored
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
+    (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
+    (hf : IndependentGeometryPrimitive.FoundationLaws t)
+    (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
+    (he : IndependentGeometryPrimitive.EquationLaws (rows t ha A hA) hc)
+    (hv : IndependentGeometryPrimitive.CoverageLaws t hf (rows t ha A hA) hc he)
+    (ho : IndependentGeometryPrimitive.OverlapLaws (rows t ha A hA) hc)
+    (ht : CandidateTyped t ha A hA hf hc he hv ho)
+    {X Y : (rawSite t ha A hA hf hc he hv ho).category} (f : X ⟶ Y)
+    (p : @MvPolynomial (IndependentRawCandidate.coord (rawRows t ha A hA) Y.ctx)
+      (coefficientNative t hf).1 (coefficientNative t hf).2.toCommSemiring) :
+    ∀ q ∈ IndependentPolynomialExpressions.support
+        (substitutionTable t ha A hA hf hc he hv ho ht f)
+        (polynomialExpression t hf p),
+      (substitutionQueryFormula t ha A hA hf hc he hv ho ht f q).evaluate t := by
+  intro q hq
+  cases q <;> simp [substitutionQueryFormula, ObjectFormula.evaluate]
 
 @[simp] theorem substitutionCellFormula_evaluate
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -682,7 +830,14 @@ noncomputable def substitutionObjectFormula
         (substitutionTable t ha A hA hf hc he hv ho ht f) ↔
       substitutionValue t ha A hA hf hc he hv ho ht f p = expected := by
   letI : CommRing (coefficientNative t hf).1 := (coefficientNative t hf).2
-  exact IndependentPolynomialExpressions.expressionFormula_evaluate _ _ _
+  constructor
+  · intro h
+    exact IndependentPolynomialExpressions.evaluate_eq_expected_of_expressionFormula
+      (substitutionTable t ha A hA hf hc he hv ho ht f)
+      (substitutionTable t ha A hA hf hc he hv ho ht f)
+      (polynomialExpression t hf p) expected h
+  · intro h
+    exact (IndependentPolynomialExpressions.expressionFormula_evaluate _ _ _).2 h
 
 @[simp] theorem substitutionObjectFormula_evaluate
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -701,7 +856,7 @@ noncomputable def substitutionObjectFormula
   letI : CommRing (coefficientNative t hf).1 := (coefficientNative t hf).2
   simp only [substitutionObjectFormula, ObjectFormula.evaluate_allList]
   intro q hq
-  cases q <;> simp [ObjectFormula.evaluate]
+  exact substitutionSupport_anchored t ha A hA hf hc he hv ho ht f p q (by simpa using hq)
 
 /-- Finite expression for the generator witness's sparse polynomial combination. -/
 noncomputable def witnessExpression
@@ -810,6 +965,35 @@ noncomputable def witnessCellFormula
     (witnessExpression t ha A hA hf hc he hv ho ht X w)
     (witnessValue t ha A hA hf hc he hv ho ht X w)
 
+/-- Original coefficient-operation cells supplying one synthetic query in the
+finite generator witness.  Relation-polynomial rows themselves are anchored
+separately by `witnessObjectFormula`. -/
+noncomputable def witnessQueryFormula
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
+    (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
+    (hf : IndependentGeometryPrimitive.FoundationLaws t)
+    (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
+    (he : IndependentGeometryPrimitive.EquationLaws (rows t ha A hA) hc)
+    (hv : IndependentGeometryPrimitive.CoverageLaws t hf (rows t ha A hA) hc he)
+    (ho : IndependentGeometryPrimitive.OverlapLaws (rows t ha A hA) hc)
+    (_ht : CandidateTyped t ha A hA hf hc he hv ho)
+    (X : (rawSite t ha A hA hf hc he hv ho).category) :
+    IndependentPolynomialExpressions.Query Unit
+      (@MvPolynomial (IndependentRawCandidate.coord (rawRows t ha A hA) X.ctx)
+        (coefficientNative t hf).1 (coefficientNative t hf).2.toCommSemiring)
+      (@MvPolynomial (IndependentRawCandidate.coord (rawRows t ha A hA) X.ctx)
+        (coefficientNative t hf).1 (coefficientNative t hf).2.toCommSemiring) →
+      ObjectFormula.{u, v, max u v} U
+  | .coefficient _ => coefficientRefAnchor t hf .truth
+  | .variable _ => coefficientOperationAnchor t hf .zero .truth
+  | .zero => coefficientOperationAnchor t hf .zero .truth
+  | .one => coefficientOperationAnchors t hf [.zero, .one] .truth
+  | .add p q => coefficientOperationAnchors t hf
+      (polynomialAddQueries t hf p q) .truth
+  | .mul p q => coefficientOperationAnchors t hf
+      (polynomialMulQueries t hf p q) .truth
+
 /-- Object rows and the selected coefficient declaration used by the finite
 generator-expression support. -/
 noncomputable def witnessObjectFormula
@@ -834,14 +1018,32 @@ noncomputable def witnessObjectFormula
     (ObjectFormula.allList w.support.toList (fun i =>
       selectedPolynomialAnchor t ha A hA hf hc he hv ho X i .truth))
     (ObjectFormula.allList
-      (IndependentPolynomialExpressions.support table expression).toList (fun q =>
-        match q with
-        | .coefficient _ => coefficientRefAnchor t hf .truth
-        | .variable _ => coefficientRefAnchor t hf .truth
-        | .zero => coefficientRefAnchor t hf .truth
-        | .one => coefficientRefAnchor t hf .truth
-        | .add _ _ => coefficientRefAnchor t hf .truth
-        | .mul _ _ => coefficientRefAnchor t hf .truth))
+      (IndependentPolynomialExpressions.support table expression).toList
+        (witnessQueryFormula t ha A hA hf hc he hv ho ht X))
+
+/-- Every synthetic generator-witness query in the canonical AST support is
+supplied by finite relation and coefficient-operation cells from the original
+object table. -/
+theorem witnessSupport_anchored
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
+    (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
+    (hf : IndependentGeometryPrimitive.FoundationLaws t)
+    (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
+    (he : IndependentGeometryPrimitive.EquationLaws (rows t ha A hA) hc)
+    (hv : IndependentGeometryPrimitive.CoverageLaws t hf (rows t ha A hA) hc he)
+    (ho : IndependentGeometryPrimitive.OverlapLaws (rows t ha A hA) hc)
+    (ht : CandidateTyped t ha A hA hf hc he hv ho)
+    (X : (rawSite t ha A hA hf hc he hv ho).category)
+    (w : IndependentRawCandidate.rel (rawRows t ha A hA) X.ctx →₀
+      @MvPolynomial (IndependentRawCandidate.coord (rawRows t ha A hA) X.ctx)
+        (coefficientNative t hf).1 (coefficientNative t hf).2.toCommSemiring) :
+    ∀ q ∈ IndependentPolynomialExpressions.support
+        (witnessTable t ha A hA hf hc he hv ho ht X)
+        (witnessExpression t ha A hA hf hc he hv ho ht X w),
+      (witnessQueryFormula t ha A hA hf hc he hv ho ht X q).evaluate t := by
+  intro q hq
+  cases q <;> simp [witnessQueryFormula, ObjectFormula.evaluate]
 
 @[simp] theorem witnessObjectFormula_evaluate
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -865,7 +1067,7 @@ noncomputable def witnessObjectFormula
   · intro i hi
     simp [ObjectFormula.evaluate]
   · intro q hq
-    cases q <;> simp [ObjectFormula.evaluate]
+    exact witnessSupport_anchored t ha A hA hf hc he hv ho ht X w q (by simpa using hq)
 
 @[simp] theorem witnessCellFormula_evaluate
     (t : IndependentGeometryPrimitive.Table.{u, v} U)

@@ -123,7 +123,46 @@ def witnessFormula
     (circuitAnchor t (.code _ i)
       (Equation.residualAnchor t ha A hA hc ht W B i a
         (Equation.observableActiveAnchor t ha A hA hc ht W .zero
-          (ObjectFormula.truth : ObjectFormula.{u, v, u} U))))
+          (.implies
+            (equationCell A (.residual W B
+              (IndependentEquationPrimitive.index (equationRows t ha A hA))
+              (IndependentEquationPrimitive.observableType
+                (equationRows t ha A hA) W) i a)
+              (ULift.up (some (Equation.observableActive t ha A hA hc ht W .zero))))
+            .falsity))))
+
+@[simp] theorem witnessFormula_evaluate
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
+    (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
+    (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
+    (ht : IndependentEquationPrimitive.IsTyped (contextPreorder t ha A hA hc)
+      (equationRows t ha A hA))
+    (hct : IndependentEquationPrimitive.Circuit.IsTyped
+      (IndependentEquationPrimitive.index (equationRows t ha A hA)) (circuitRows t))
+    (i : IndependentEquationPrimitive.index (equationRows t ha A hA))
+    (B : ArchitectureObject U) (d : FiniteCircuitDatum U) (W : ArchCtx A) (a : U.Atom) :
+    (witnessFormula t ha A hA hc ht hct i B d W a).evaluate t ↔
+      Equation.residualValue t ha A hA hc ht W B i a ≠
+        Equation.observableActive t ha A hA hc ht W .zero := by
+  simp only [witnessFormula, equationAnchor_evaluate, circuitAnchor_evaluate,
+    Equation.residualAnchor_evaluate, Equation.observableActiveAnchor_evaluate,
+    ObjectFormula.evaluate]
+  rw [equationCell_evaluate_iff t ha A hA]
+  let q : IndependentEquationPrimitive.Query A := .residual W B
+    (IndependentEquationPrimitive.index (equationRows t ha A hA))
+    (IndependentEquationPrimitive.observableType (equationRows t ha A hA) W) i a
+  have hq : (equationRows t ha A hA q).down.isSome :=
+    (ht.residual W B _ _ i a).2 ⟨rfl, rfl⟩
+  constructor
+  · intro hn hz
+    apply hn
+    apply ULift.ext
+    exact (Option.some_get hq).symm.trans (congrArg some hz)
+  · intro hn he
+    apply hn
+    have he' := congrArg ULift.down he
+    exact Option.some.inj ((Option.some_get hq).trans he')
 
 def LawInstances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -139,9 +178,7 @@ def LawInstances
     d.Matches B →
     (IndependentEquationPrimitive.Circuit.code (circuitRows t) hct i).eval d = true →
       ∃ (W : ArchCtx A) (a : U.Atom),
-        (witnessFormula t ha A hA hc ht hct i B d W a).evaluate t ∧
-          Equation.residualValue t ha A hA hc ht W B i a ≠
-            Equation.observableActive t ha A hA hc ht W .zero
+        (witnessFormula t ha A hA hc ht hct i B d W a).evaluate t
 
 theorem lawful_iff_instances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -158,13 +195,10 @@ theorem lawful_iff_instances
   constructor
   · intro hl i B d hm he
     obtain ⟨W, a, hn⟩ := hl i B d hm he
-    refine ⟨W, a, ?_, hn⟩
-    simp only [witnessFormula, equationAnchor_evaluate, circuitAnchor_evaluate,
-      Equation.residualAnchor_evaluate, Equation.observableActiveAnchor_evaluate,
-      ObjectFormula.evaluate]
+    exact ⟨W, a, (witnessFormula_evaluate t ha A hA hc ht hct i B d W a).2 hn⟩
   · intro hi i B d hm he
-    obtain ⟨W, a, _, hw⟩ := hi i B d hm he
-    exact ⟨W, a, hw⟩
+    obtain ⟨W, a, hw⟩ := hi i B d hm he
+    exact ⟨W, a, (witnessFormula_evaluate t ha A hA hc ht hct i B d W a).1 hw⟩
 
 structure Instances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)

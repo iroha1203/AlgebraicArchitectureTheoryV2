@@ -9652,3 +9652,36 @@ completion判定はRejectとする。
 合成fragmentの有限決定、指定改変反証、raw-only分離はこのcheckpointの受理済み基盤として再実装しない。
 修正後の小さい差分に新規4レーン査読を行い、全laneと親統合が`No major findings`となった場合にだけ、
 パートI完了を宣言する。パートII以後は未着手のままである。
+
+
+#### パートI completion candidateの有限provenance修正
+
+checkpoint後の小さい差分では、第4査読で残った三点だけを修正した。固定GOAL、元のHomの範囲、
+局所商、恒等・合成・圏法則、指定反証は変更していない。Cycleは79のままであり、パートII以後は
+開始していない。
+
+1. circuitの`witnessFormula`は、residual cellがobservableのzero cellと一致する場合に偽となる含意を
+   持つ。`witnessFormula_evaluate`は式の評価と元の非零条件の同値を証明し、`LawInstances`から式外の
+   非零fieldを削除した。
+2. coverageの`activationFormula`は、required equationのrole cell、selected witnessのindex cell、
+   required axisのaxis cellを読む。`pointFormula`はcoverage cellからこの式への含意となり、
+   `pointFormula_evaluate`は式の評価と元の`coverageRows q → Active q`の同値を証明する。
+   `Instances`から式外の`Active`結論を削除した。
+3. rawの`substitutionObjectFormula`と`witnessObjectFormula`は、synthetic ASTの実supportを走査し、
+   coefficient zero/one/add/mulの有限な演算点、選択したrelation polynomial、variable image、carrierと
+   raw型参照を元のobject formulaへ写す。加算は二つの有限supportの和集合、乗算は有限supportの直積と
+   各出力monomialの有限和だけを読む。`substitutionSupport_anchored`と`witnessSupport_anchored`は、
+   実supportの各queryに対応する元のobject formulaが供給されることを示す。
+
+`substitutionCellFormula_evaluate`の順方向は
+`IndependentPolynomialExpressions.evaluate_eq_expected_of_expressionFormula`を呼び、同定理から
+`evaluate_eq_of_support`を経て期待値を回復する。identity・composition・generatorの本番経路は全て
+この補題を使用する。したがって、完成した多項式等式だけを同じsynthetic table上で言い換える経路には
+戻っていない。
+
+Leanという言語一般について、任意命題を参照できないとは主張しない。今回の受入根拠は、実際に公開する
+builderが上記の原始cellと有限ASTだけから式を作り、式の評価から元のnative lawを回復することに限定する。
+
+変更した三sourceのfocused checkは順に26・21・114宣言を監査し、標準公理だけを使用した。
+この節はパートIのcompletion candidateを記録する。新規4レーン査読、CI、merge、Issue同期が完了するまで
+パートI完了とは扱わない。
