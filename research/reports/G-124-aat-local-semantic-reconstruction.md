@@ -9113,3 +9113,38 @@ observableの依存する型を同定する。その後、同じtableへrawとre
 最終検証にwarning・errorはない。placeholder・hidden/BiDi・privacy・語彙・docstring・
 module登録・差分整形を確認した。Research全体buildは行わず、固定GOALのblobは
 `4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
+
+
+#### 共通readerからの全core局所法則とnative core Hom全体の回復
+
+独立object stageから組み立てた両端の間の任意のnative core Homについて、共通readerが
+既存の全core局所法則を満たすことと、その局所商から元のcore Hom全体が戻ることを証明した。
+extraction・generation・operation・signatureに加え、equationのrole・restriction自然性・
+violation・residual・detectorを同じtable上へ接続している。不変量は既存の商に保持された
+object/index作用を使い、補助対応の選択を元のHomの計算成分へ追加していない。
+
+依存する写像の保存則では、添字写像とその上のfamilyをSigma対として比較した。
+`readWith_contextObservable_eq`が元のcontextとobservable族を同時に回復し、その等号を
+restriction・violation・residualの各原始保存則の導出に使用する。完成した保存則を
+局所lawのfieldへ移す変更は行っていない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentGeometryHomNativeRecovery.lean` / `IndependentGeometryHomPrimitive.NativeReader` | equation-index同値とobservable族を回復し、`readWith_contextObservable_eq`で依存する対の一致を得る。Atom・equation・axis・係数・context両方向の真の点と元の像の対応も公開する |
+| `IndependentGeometryHomNativeCorePreservation.lean` / 同namespace | `readWith_extraction`・`readWith_generation`・`readWith_selected`・`readWith_operation_preservation`・`readWith_coordinate_preservation`が、元のHomの保存則から独立stageの全候補に対する原始条件を導く |
+| `IndependentGeometryHomNativeEquationPreservation.lean` / 同namespace | role・restriction自然性・violation・residual・detectorの原始条件を導く。`readWith_equation_preservation`が既存の四つのequation局所条件を統合する |
+| `IndependentGeometryHomNativePackage.lean` / 同namespace | `readWith_package`・`localWith_package`が、同じreaderと局所商に全core条件を与える。`localWith_package_assemble`がlower/upper双方の計算成分と全依存familyを回復する。両方式の`local*_package`・`local*_package_assemble`が元の完全幾何Homのbaseへ接続する |
+| `IndependentGeometryHomNativeGeometryPreservation.lean` / 同namespace | coreの回復等式で既存のcoverage/overlap比較前提を放電する。`localWith_coverage`・`localWith_overlap`が元の幾何保存から独立stageの条件を導き、`localWith_coefficient`・`localWith_coefficient_assemble`が非可逆性を制限せず元の環準同型を回復する |
+
+新しい入力前提を追加せず、元のnative Homと独立object stageの既存条件からこの接続を得た。
+`readWith`のraw/realization引数は引き続き共通構成の差し込み口であり、今回閉じたのはcore全条件と
+coreのnative側回復、およびcoverage・overlap・係数の接続である。完全幾何のraw・realizationを
+同じ局所商の全条件へ接続し、全Homのnative側回復と全query側回復を閉じる義務が残る。
+全Homの分離、共通の恒等・合成、残る有限式・指定反証、パートI全体のPR・独立査読・CI・mergeも
+継続対象である。パートIIには進まず、固定GOAL・元のHomの範囲・Cycle 79を維持する。
+
+新規5 sourceの単一file検証が通り、namespace監査は順に9・5・6・7・4件(計31件)で
+標準公理のみだった。明示31宣言の個別`#print axioms`も全件を照合した。最終検証に
+warning・errorはなく、placeholder・hidden/BiDi・privacy・語彙・docstring・module登録・
+差分整形を確認した。Research全体buildは行わず、固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
