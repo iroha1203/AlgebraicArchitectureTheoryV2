@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1020" height="380" viewBox="0 0 1020 380" role="img" aria-labelledby="title desc">
+  <title id="title">八点空間と三chart・四chartの被覆</title>
+  <desc id="desc">左は八点の順序。頂点a0、a1、b、cから、それぞれに接続する辺点e01、ab、bc、acへ矢印が向く。中央は四chartのnerveで、四辺の輪をなす。右はUa0とUa1をUaへ併合した三chartのnerveで、面のない三辺の輪をなす。辺のラベルは二重交差を表す。</desc>
+  <defs>
+    <marker id="order-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#57606a"/>
+    </marker>
+    <style>
+      text { fill: #24292f; text-anchor: middle; }
+      .heading { font: 24px -apple-system, BlinkMacSystemFont, 'Noto Sans JP', sans-serif; }
+      .note { font: 21px -apple-system, BlinkMacSystemFont, 'Noto Sans JP', sans-serif; }
+      .math { font: 26px 'Times New Roman', 'Noto Serif', serif; }
+      .sub { font-size: 72%; baseline-shift: sub; }
+      .edge { fill: none; stroke: #57606a; stroke-width: 2.4; }
+      .order { fill: none; stroke: #57606a; stroke-width: 2; marker-end: url(#order-arrow); }
+      .vertex { fill: #24292f; }
+      .edge-point { fill: white; stroke: #24292f; stroke-width: 2; }
+    </style>
+  </defs>
+  <rect width="1020" height="380" fill="white"/>
+  <path d="M325,65 V355 M665,65 V355" stroke="#d0d7de" stroke-width="1"/>
+  <text x="160" y="36" class="heading">(a) 八点空間の順序</text>
+  <text x="495" y="36" class="heading">(b) 四chartのnerve</text>
+  <text x="845" y="36" class="heading">(c) 三chartのnerve</text>
+
+  <!-- All eight strict order relations, directed from vertices to edge points. -->
+  <g class="order">
+    <path d="M73,125 H143"/>
+    <path d="M237,125 H167"/>
+    <path d="M245,133 V180"/>
+    <path d="M245,252 V204"/>
+    <path d="M237,260 H167"/>
+    <path d="M73,260 H143"/>
+    <path d="M65,252 V204"/>
+    <path d="M65,133 V180"/>
+  </g>
+  <g class="vertex">
+    <circle cx="65" cy="125" r="7"/>
+    <circle cx="245" cy="125" r="7"/>
+    <circle cx="245" cy="260" r="7"/>
+    <circle cx="65" cy="260" r="7"/>
+  </g>
+  <g class="edge-point">
+    <rect x="149" y="119" width="12" height="12"/>
+    <rect x="239" y="186" width="12" height="12"/>
+    <rect x="149" y="254" width="12" height="12"/>
+    <rect x="59" y="186" width="12" height="12"/>
+  </g>
+  <g class="math">
+    <text x="65" y="97">a<tspan class="sub">0</tspan></text>
+    <text x="245" y="97">a<tspan class="sub">1</tspan></text>
+    <text x="245" y="300">b</text>
+    <text x="65" y="300">c</text>
+    <text x="155" y="97">e<tspan class="sub">01</tspan></text>
+    <text x="282" y="200">ab</text>
+    <text x="155" y="300">bc</text>
+    <text x="30" y="200">ac</text>
+  </g>
+  <text x="160" y="345" class="note">矢印：頂点 &lt; 辺点</text>
+
+  <!-- The four-chart nerve has four edges and no two-dimensional face. -->
+  <path d="M415,125 H605 V260 H415 Z" class="edge"/>
+  <g class="vertex">
+    <circle cx="415" cy="125" r="7"/>
+    <circle cx="605" cy="125" r="7"/>
+    <circle cx="605" cy="260" r="7"/>
+    <circle cx="415" cy="260" r="7"/>
+  </g>
+  <g class="math">
+    <text x="415" y="96">U<tspan class="sub">a₀</tspan></text>
+    <text x="605" y="96">U<tspan class="sub">a₁</tspan></text>
+    <text x="605" y="300">U<tspan class="sub">b</tspan></text>
+    <text x="415" y="300">U<tspan class="sub">c</tspan></text>
+    <text x="510" y="109">{e<tspan class="sub">01</tspan>}</text>
+    <text x="635" y="200">{ab}</text>
+    <text x="510" y="296">{bc}</text>
+    <text x="375" y="200">{ac}</text>
+  </g>
+  <text x="495" y="345" class="note">辺のラベル：二重交差</text>
+
+  <!-- The three-chart nerve is a one-dimensional cycle, not a filled triangle. -->
+  <path d="M835,125 L945,260 H725 Z" class="edge"/>
+  <g class="vertex">
+    <circle cx="835" cy="125" r="7"/>
+    <circle cx="945" cy="260" r="7"/>
+    <circle cx="725" cy="260" r="7"/>
+  </g>
+  <g class="math">
+    <text x="835" y="96">U<tspan class="sub">a</tspan></text>
+    <text x="945" y="300">U<tspan class="sub">b</tspan></text>
+    <text x="725" y="300">U<tspan class="sub">c</tspan></text>
+    <text x="930" y="190">{ab}</text>
+    <text x="740" y="190">{ac}</text>
+    <text x="835" y="296">{bc}</text>
+    <text x="845" y="345">U<tspan class="sub">a</tspan> = U<tspan class="sub">a₀</tspan> ∪ U<tspan class="sub">a₁</tspan></text>
+  </g>
+</svg>

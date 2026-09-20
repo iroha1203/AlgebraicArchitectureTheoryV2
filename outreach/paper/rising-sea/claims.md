@@ -106,3 +106,119 @@ CI の対象 commit・結果は PR に記録する。
 [cs-laws]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSAATLawSystems.lean
 [cs-typed]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSAATTypedOperationTranslation.lean
 [cs-forward]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSAATForwardMorphisms.lean
+
+## 第2章の下書き
+
+- 対象: [第2章 Lawの幾何と局所整合性](ja/05-law-geometry.md)。
+- 原稿 SHA-256: `d1cfbc4112e76cc51c8d1968d0b9b5813d0265b0fd4b9acb566055859b14ca96`。
+- リポジトリ内の一次資料の固定版: `313086df1e2071236b64ffd454615e927e428e26`（第1章の PR #4831 のマージ版）。
+- 確認者・日付: Codex（GPT-6）、2026-09-20。
+- 方法: 数学棚卸し2-A〜2-Iに従い、一次資料の定義・仮定・構成・証明と照合。原稿の全証明を読み直し、有限例は別途計算した。
+- Lean source は既存の形式化との対応に用いた。この作業で Lean の変更・再検証は行っていない。
+
+| ID | 原稿の節・主張 | 種類 | 対象・仮定 | 一次資料の箇所 | 確認結果 |
+| --- | --- | --- | --- | --- | --- |
+| C2-01 | §2.1、定義2.1・命題2.2 | 数学 | 構造関係の商、observable ring との表示同型、制限との整合 | [数学本文 III §§4・8、定理8.3][c2-math-iii]、第1章の定義1.25 | 配置の関手を定義し、多項式環と商の普遍性から自然な全単射を証明。原稿では有限性を仮定せず、任意の元が有限個の変数だけを使う普遍性を用いる |
+| C2-02 | 定義2.3・命題2.4 | 数学 | 記号的生成元の制限則、必須添字、層化したイデアルの像 | [数学本文 III §§5–6][c2-math-iii]、[WitnessIdeal][witness-ideal] | 生成元の有限和から制限の包含と層化後のイデアル性を確認。必須添字の和を明示 |
+| C2-03 | §§2.1–2.2、構成2.6・定理2.9・系2.11 | 数学 | 評価関手のアフィン表現、残差の正則性、開部分の比較・合成条件、被覆と重なりを保つchart対応 | [数学本文 III §§5.2–5.2C・11.1][c2-math-iii]、[Correspondence][law-correspondence]、[Stacks 01HR](https://stacks.math.columbia.edu/tag/01HR)・[01JA](https://stacks.math.columbia.edu/tag/01JA)・[01HP](https://stacks.math.columbia.edu/tag/01HP) | 方程式と残差の評価を等しくする商を作り、生成元の評価と局所化を証明。siteのイデアルとschemeのイデアルの比較を指定。加群の引き戻しの零性ではなく、構造層内で生成するイデアルの零性を用いる。対象の残差へ戻る同型は系2.11の追加条件 |
+| C2-04 | §2.3、構成2.12・命題2.15 | 数学 | 商係数、対象依存の残差、circuitの健全性・完全性、自然な係数実現と非零性 | [数学本文 III §5.1A][c2-math-iii]、[数学本文 IV §2.1A][c2-math-iv]、[数学本文 X §5.1][c2-math-x] | 文脈ごとの残差の失敗、局所configuration上の有限query、制限に安定な選択circuit族、局所健全性・局所完全性を明記。記号的生成元と残差類を区別し、集約の相殺条件を分離して単独circuitの検出命題を証明 |
+| C2-05 | §2.4、補題2.17・例2.19 | 数学 | 固定した有限単射射被覆、アーベル群値の係数、空交差の零係数 | [数学本文 IV §§3–4][c2-math-iv]、[数学本文 X §2][c2-math-x] | 微分の合成、固定被覆の商群、三chartのperiodによる同型を本文で計算 |
+| C2-06 | §2.5、命題2.21・定理2.22・系2.23 | 数学 | 交差図式上の自由かつ推移的な作用、局所atlas、空交差の高々一元性、実際の状態の層条件 | [数学本文 IV §§5・11][c2-math-iv]、[数学本文 X §8][c2-math-x]、[Stacks 03AG](https://stacks.math.columbia.edu/tag/03AG) | 差のcocycle、atlas変更によるcoboundary、補正後の貼り合わせを証明。自己交差・逆向き・空交差の一致を確認。Lawful状態が層になる理由と、有限検査からLawfulnessへ進むための条件を明記 |
+| C2-07 | §2.6、命題2.24–2.28 | 数学 | 有限次元・有限長、連結な交差、定数係数、forestの制限全射、単体のchainとcochain | [数学本文 IV §§12–13][c2-math-iv] | 容量下界、Euler交代和、nerve比較、forest消滅、Stokesを証明。群の次元と指定類の非零性を区別 |
+| C2-08 | 命題2.29 | 数学 | 有限単体複体の二部分複体による分解、共通の定数係数 | [数学本文 IV §§8–9・13][c2-math-iv] | 原稿では有限cochainの場合を構成。制限の差の全射、持ち上げ独立性、零性の同値、境界とのペアリングを直接証明 |
+| C2-09 | §2.7、命題2.32・例2.33–2.34 | 数学 | 宣言した意味変形族に対する抽出の不変性、構造座標、条件S、構造側の一次コホモロジー消滅 | [DependencyProfile][c2-two-phase-dependency]、[CoefficientComplex][c2-two-phase-complex]、[CohomologyComparison][c2-two-phase-h1]、[ForestSupport][c2-two-phase-forest]、[FiniteWitnesses][c2-two-phase-finite] | AtomKindだけの分類を用いず、商の微分と単射性を証明。条件S（原資料のConditionE）の不成立例と、それだけでは単射にならない例を計算。例2.34とLeanの複体はともに二組の二頂点・二平行辺からなる。原稿の一般の体に対し、Leanの係数はZMod 2 |
+| C2-10 | §2.8、定義2.35・補題2.36 | 数学 | 有限source・Law族、Law値を保つ原始関係、整数係数 | [PresentationGroup][c2-presentation] の `presentationGroupEquivBlocks` | 生成子関係の商と成分ごとの自由アーベル群の両逆を証明。四生成子・二関係の例を計算 |
+| C2-11 | 構成2.37–2.39 | 数学 | 選定した点・生成子のAtom族、開集合に対応する文脈、三chart・四chart、局所定数係数 | [PointGeneratorAtomInput][c2-atoms]、[FiniteCoverGeometry][c2-cover-geometry]、[CombinedAtomContextSupport][c2-support]、[CombinedAtomContextContinuity][c2-continuity]、[CombinedAtomActualNerve][c2-nerve] | 原稿では全生成子を読む開集合文脈の部分圏を明示して構成。より大きな文脈siteとの同値は主張しない。八点の位相から被覆・連結性・三重交差の空性を示し、実際の切断と制限でČech座標を得る |
+| C2-12 | 命題2.40–2.41・例2.42 | 数学 | 同じ整数係数と実被覆、任意のchart状態と辺遷移 | [SpecifiedAffineObstruction][c2-affine]、[ExistingObstructionBridge][c2-existing]、[CombinedAtomSpecifiedObstruction][c2-specified]、[SelectedFiniteObstructionExamples][c2-selected-examples] の `coarse_nonzero_actual` | 原始関係の方程式が評価・制限・平行移動で成立することを証明。実際の比較から指定cocycleを作り、torsorの貼り合わせ障害との一致と局所状態変更による類の不変性を記述 |
+| C2-13 | §2.9、定義2.43–構成2.46 | 数学 | semantic atom、supported generator、制限で保たれる修復関係、修復語の作用、別に選ぶ方程式側のlift | [数学本文 X §§3–6][c2-math-x]、[SAGA §§3.4–4](https://arxiv.org/html/2608.21458v1) | 二つの係数と二つの残差をそれぞれ構成。作用からtorsorを導く条件と、修復生成元を対象依存の残差類へ送る写像を明記 |
+| C2-14 | §2.10、補題2.48・定理2.49 | 数学 | 生成元に関して同変な局所状態写像、関係と生成元の完全性、空交差の正規化 | [数学本文 X §§6–7][c2-math-x]、[EquationRealization][c2-saga-realization] の `equationRelationSound`、[KappaComparison][c2-saga-kappa]、[SAGA 定理5.1(i)–(ii)](https://arxiv.org/html/2608.21458v1#S5) | 関係の健全性を状態写像と自由作用から導出。係数同型、次数0〜2の複体同型、一次コホモロジー同型を証明。独立に選んだatlasの差を明示的なcoboundaryとして比較 |
+| C2-15 | 系2.50・例2.51 | 数学 | 実際の修復状態の層条件、固定被覆、独立な偶奇表示と剰余表示 | [数学本文 X §§8・10.2][c2-math-x]、[SAGA 定理5.1(iii)・5.2、例5.3](https://arxiv.org/html/2608.21458v1#S5) | 零類から補正と層の貼り合わせを経て実際の修復へ進むことを証明。四chartの非零periodと遷移変更後の零類を検算 |
+
+### 有限例と読みやすさの確認
+
+第1章と同じく、概要、接続の目的、各節の問い、定義・証明・例、章末のまとめを置いた。
+冒頭のサービス間の基準の例を三chartのperiodへつなぎ、八点の空間から二つの実被覆を構成した。
+第3章に渡す係数・被覆・局所データ・指定障害類を章内で揃えた。
+原稿本文にはAAT内部の章番号、GOAL、Lean識別子、リポジトリ内パスへの案内を置いていない。
+
+Pythonによる有限計算では、八点の被覆、全chartと非空交差の連結性、三重交差の空性、
+有理数上の微分の階数（四chartで3、三chartで2）、四生成子二関係の商の階数2を確認した。
+二相の例では全体の一次コホモロジーの次元2、構造側の次元1を確認した。
+49個の整数chart状態について原始関係の評価が零であることを検算した。
+SAGAの偶奇例では、全16通りの局所補正でperiodが1に保たれて貼り合わないことと、
+遷移を零に変更すると零状態が貼り合うことを確認した。
+これらは有限例の計算であり、一般の定理は原稿内の証明により述べている。
+
+### 数式・引用と残る確認
+
+全504式（本文内461・独立行43）をKaTeX 0.18.7で構文検査し、エラー・警告なし。
+同じ数式から作ったローカルのMathMLプレビューで、数式の認識、本文幅676pxでの独立行数式のはみ出し、
+主要な定理の表示を確認した。数式の区切り、定義等51件・式番号39件、章内参照も確認した。
+ローカルの確認はGitHub上の描画結果を保証するものではない。
+
+SAGAの公開第1版とStacksの原典で引用内容を照合し、[文献](ja/14-references.md)と
+[references.csv](references.csv)に書誌・確認箇所・原稿一式のhashを記録した。
+2026-09-20、人間による原稿確認を経て、PR作成の承認を受けた。
+GitHubファイルプレビュー・描画済み差分の表示確認とCIの対象commit・結果はPRに記録する。
+Claudeによる独立レビューはPR上で受ける。
+
+同日、PR #4832の固定commit `64036ad552c5235c360f012610ff325fc0ea348d` のGitHubプレビューで、
+`\operatorname` が拒否され、16式が描画エラーになることを確認した。
+作用素名を `\mathrm` と明示的な空白で表し、全504式の数学的内容・順序と周辺の本文を保持した。
+原稿hashを更新し、修正後のcommitでプレビュー・描画済み差分とCIを確認する。
+
+### 第2章のPRレビューと修正
+
+2026-09-20、commit `53422eb867858e306daace5974ebc3eb684cb568` に対する
+[Claudeの独立レビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4832#issuecomment-5749801775)は、
+数学・有限例・引用・GitHub描画の検証結果を記録し、局所circuitの定義不足と第1章の要約の修正を要求した。
+[別の内容レビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4832#pullrequestreview-5260546350)は、
+数学的内容を支持し、torsor、二回の商、八点空間の図について説明の補強を提案した。
+各レビューの検証範囲はリンク先に記載されている。
+
+人間の採用指示に従い、定義2.14に局所検出の入力と成立条件を記述し、命題2.15の対象・文脈を明示した。
+局所circuitの制限は、選択した族のデータとして恒等・合成と一致・受理の保存を要求する。
+第1章の要約は、意味論の格納、対象・型付き射からの回復、法則の成立の同値を区別して書き直した。
+torsorの局所状態と係数の0-cochainの違い、評価の一致とLaw成立を課す二回の商、
+構成2.6の比較・chart対応、period、有限検査の条件を補足した。
+記号・訳語を整理し、準備節P.5の番号を付ける項目に「構成」を追加した。
+
+[図2.1](figures/ch02-finite-covers.svg)は、八点空間の八本の順序関係と、
+四chart・三chartそれぞれのnerveを分けて示す。図の三角形に面はない。
+辺点の記号 `e_{01}` は、一次資料の `k` と同じ点を指す。
+図のSVG自体を編集元とし、字形・矢印・交差ラベルは本文幅676pxのブラウザ表示で確認した。
+
+任意提案C3の「例2.34とLeanでは複体の形が異なる」という説明は採用しなかった。
+固定版の `FiniteWitnesses.lean` の `twoPhaseCycleNerve` は、原稿と同じ二組の平行辺である。
+原稿の一般の体とLeanの `ZMod 2` という係数の違いをC2-09に記録した。
+C2-01・C2-12・C2-14には、確認した直接の参照先を補った。
+
+修正版の第2章全534式（本文内487・独立行47）をKaTeX 0.18.7で検査し、エラー・警告なし。
+既存の番号付き39式は辺点の記号変更を除いて一致し、定義等51件・章内参照を保持した。
+準備節の全112式は変更していない。文書内の相対リンク318件、空白・不可視文字も検査した。
+八点空間の全47開集合を列挙し、両被覆の被覆性・連結性・交差と、SVG内の8本の順序矢印を検算した。
+本文と図を通読し、局所検出の定義から命題2.15、torsorから貼り合わせ、二回の商から定理2.9への接続を確認した。
+図のSHA-256は `0827c5487af26d4fde58149668d3900089ac27dbe6b680999bf171a6bc8f9e4e`。
+文献確認記録の原稿一式のhashも更新した。GitHubの表示確認とCIは、修正後commitを対象にPRへ記録する。
+修正後のClaudeによる確認と人間のmergeは未実施である。
+
+[c2-math-iii]: ../../../docs/aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md
+[c2-math-iv]: ../../../docs/aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md
+[c2-math-x]: ../../../docs/aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md
+[c2-two-phase-dependency]: ../../../research/lean/ResearchLean/AG/TwoPhase/DependencyProfile.lean
+[c2-two-phase-complex]: ../../../research/lean/ResearchLean/AG/TwoPhase/CoefficientComplex.lean
+[c2-two-phase-h1]: ../../../research/lean/ResearchLean/AG/TwoPhase/CohomologyComparison.lean
+[c2-two-phase-forest]: ../../../research/lean/ResearchLean/AG/TwoPhase/ForestSupport.lean
+[c2-two-phase-finite]: ../../../research/lean/ResearchLean/AG/TwoPhase/FiniteWitnesses.lean
+[c2-presentation]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/PresentationGroup.lean
+[c2-atoms]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/PointGeneratorAtomInput.lean
+[c2-cover-geometry]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/FiniteCoverGeometry.lean
+[c2-support]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomContextSupport.lean
+[c2-continuity]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomContextContinuity.lean
+[c2-nerve]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomActualNerve.lean
+[c2-affine]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/SpecifiedAffineObstruction.lean
+[c2-existing]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/ExistingObstructionBridge.lean
+[c2-specified]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomSpecifiedObstruction.lean
+[c2-saga-kappa]: ../../../Formal/AG/SemanticRepair/Saga/KappaComparison.lean
+[c2-selected-examples]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/SelectedFiniteObstructionExamples.lean
+[c2-saga-realization]: ../../../Formal/AG/SemanticRepair/Saga/EquationRealization.lean
