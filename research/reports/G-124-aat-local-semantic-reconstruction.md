@@ -9624,3 +9624,31 @@ raw・realization・完全Hom集約の中心13宣言を個別`#print axioms`で�
 placeholder・hidden/BiDi・privacy・語彙・import方向・module登録・差分整形・保護領域を確認し、
 任意命題を受け取る旧constructorまたは同等経路が残っていないことも検索した。
 Research全体buildとaggregate rootのelaborationはhard ruleに従って実行せず、Cycleは79のままである。
+
+
+#### 第4査読後のproof-checkpoint判定
+
+PR #4830は、パートIのcompletion candidateではなく、原始対象、両方式の全Hom、恒等・合成・圏法則、
+有限fragment、指定反証までの基盤を固定する`proof-checkpoint`として受理する。Cycleは79のままとし、
+このPRのmergeをパートI完了またはG-124全体の完了とは扱わない。
+
+exact head `c491d273df2184d05646b94cf12f5d630b7b6b48`に対する第4査読は、Math A/BがReject、
+Lean A/Bが`No major findings`となった。親統合では、任意のLean命題から構文を選べるという一般論だけを
+失格理由にはしない。一方、実際に公開するlaw builderについて、次の有限provenanceが未接続であるため、
+completion判定はRejectとする。
+
+1. circuitの非零residual条件とcoverageの`Active`条件は、元のlawとの論理同値には含まれるが、
+   現在のformula評価そのものには含まれていない。これらが参照する具体的な原始cellから決まることを、
+   専用formulaまたはbuilder単位のsupport保存定理で示す必要がある。
+2. rawのgenerator・identity・compositionはcanonicalなsynthetic polynomial table上ではAST式へ接続したが、
+   原始object tableからそのsynthetic tableへのsupport bridgeが本番のlaw経路に未接続である。
+   係数のzero/one/add/mul、relation polynomial、variable image、必要な型参照を原始supportへ含め、
+   `evaluate_eq_expected_of_expressionFormula`を実際の三法則から使用する必要がある。
+3. 「任意命題を構文上注入する経路がない」という一般的な主張は撤回する。以後の受入条件は、
+   実際に公開するlaw builderの引数が許可された原始dataに限られることと、そのbuilderについて
+   support保存・native law回復・全aggregateへの接続が証明されることとする。
+
+次PRは上記だけを扱う。恒等・合成・左右単位・結合則、局所商の選択非依存、完成Homとの両逆、
+合成fragmentの有限決定、指定改変反証、raw-only分離はこのcheckpointの受理済み基盤として再実装しない。
+修正後の小さい差分に新規4レーン査読を行い、全laneと親統合が`No major findings`となった場合にだけ、
+パートI完了を宣言する。パートII以後は未着手のままである。
