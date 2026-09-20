@@ -9076,3 +9076,40 @@ core・係数・raw・realizationを一つの共通Hom readerへまとめ、そ�
 warning・errorはない。placeholder・hidden/BiDi・privacy・語彙・登録・差分整形を確認した。
 Research全体buildは行わず、固定GOALのblobは
 `4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
+
+
+#### 共通native Hom readerと不変量の商への接続
+
+両方式の元の完全幾何Homを、一つの共通Boolean tableへ読み取る構成を追加した。
+まずobject・axis・contextの添字点を読み、その復元等式に沿ってoperation・signature座標・
+observableの依存する型を同定する。その後、同じtableへrawとrealizationの全queryを入れる。
+実際のsource/target object対に一致しない`atObjects`候補はfalseへ固定する。
+依存写像を完成した局所値として保持する方式は採らず、既存の候補点readerでBooleanへ読む。
+
+共通readerを有限部分集合へ制限した整合族は、元のobject/index作用を復元する。
+元の`invariant_transport`をその作用へ接続し、既存の補助対応付きpresentationと商を構成した。
+`point_localWith`・`point_localRepresentative`・`point_localExplicit`により、補助対応を消した後も
+元の全query値が保持される。これは不変量部分の法則とquery保持の接続であり、全Homの局所法則を
+満たすことと全体の両逆は引き続き未完了である。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentGeometryHomNativeIndices.lean` / `IndependentGeometryHomPrimitive.NativeReader` | `liftDependent`のactive/inactive APIが候補object対の応答を固定する。`indices`は元のsource・Atom・object・invariant・axis・係数・equation・context点を読み、`objectMap_indices`・`axisMap_indices`・`context_assemble_indices`で依存先の添字を回復する |
+| `IndependentGeometryHomNativeFamilies.lean` / 同namespace | 三つの`*Family`が証明済み添字等式に沿って元の依存写像を移す。各`*_heq`が値の保持を証明し、既存のindexed reading equivalenceから全候補の`*Rows`と法則を得る |
+| `IndependentGeometryHomNativeReader.lean` / 同namespace | `readWith`は共通宣言の全roleを一つのtableへ統合する。各projection APIが成分readerとの一致を示す。`readRepresentative`は元のdirected realizationを、`readExplicit`は明示rawと全actual context-actionを保持する |
+| `IndependentGeometryHomNativeInvariant.lean` / 同namespace | `retainedWith`が有限整合族を作り、object/index作用を回復する。`nativeWith`は元の不変量存在条件を使用し、`localWith`が既存の商へ接続する。`assemble_localWith`は不変量部分を回復し、両方式の`point_local*`が全query保持を証明する |
+| `IndependentGeometryHomNativeRows.lean` / 同namespace | 同じ完全readerのAtom一致、derived matching、source・equation・context・operation・axis・signature・observableの行法則を証明する。source・Atom・object・context・axisの復元等式と、operation/signatureの依存写像全体の復元を得る |
+
+今回の比較前提は元のnative Homの計算成分・元の不変量存在条件から放電した。
+`readWith`のraw/realization引数はmodeごとの既存readerを差し込むための共通構成であり、
+その任意引数から完全な局所Homの適法性を主張してはいない。次の中心義務は、独立object stageの
+原始保存則と、係数・raw・realizationを含む全局所法則を、この同じreaderから導くことである。
+続いて全Homの両逆・分離、共通の恒等・合成、残る有限式・指定反証を閉じる。
+パートI全体のPR・独立査読・CI・merge・Issue同期は未完了であり、パートIIは開始しない。
+固定GOAL、native Homの範囲、Cycle 79は変更していない。
+
+新規5 sourceの単一file検証が通った。namespace監査は順に19・12・22・14・18件
+(計85件)で標準公理のみであり、明示85宣言の個別`#print axioms`も全件を照合した。
+最終検証にwarning・errorはない。placeholder・hidden/BiDi・privacy・語彙・docstring・
+module登録・差分整形を確認した。Research全体buildは行わず、固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
