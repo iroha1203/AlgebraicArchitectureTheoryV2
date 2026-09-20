@@ -9332,3 +9332,58 @@ PR・独立査読・CI・mergeである。パートIIは開始せず、固定GOA
 照合した。最終検証にwarning・errorはなく、placeholder・hidden/BiDi・privacy・語彙・docstring・
 module登録・差分整形・保護領域を確認した。Research全体buildは実行せず、固定GOALのblobは
 `4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+
+#### rawの原始合成と共通core/raw tableの保存則
+
+明示方式のrawについて、coordinate・relation・local-dataの全queryを原始点から直接合成した。
+rawの添字は逆向きなので、後段のbackward context graphから中間contextを選び、前段の
+context点がtrueなら二つの値の行をsourceからtargetの順に合成する。falseなら行全体を
+falseに固定する。`composeAgainst`はこの構成と両方向の逆写像法則を一般の依存graphで証明する。
+
+local-dataでは、さらに前段のcoordinate点から中間座標を一つ選ぶ。後段のcoordinate点がtrueで、
+三つの元のlocal-data型応答が存在する場合に、その二つの値の行を合成する。context不一致、
+source coordinate carrier不一致、後段coordinate点不一致では全候補値をfalseにする。
+`composeLocalData_eq_native`は、これらの候補も含めて元のraw mapの合成との一致を示す。
+
+`ExplicitRaw.composeRaw`が三種類を元のraw queryへ統合し、`composeRaw_eq_native`が全queryの一致を
+証明する。続く`Composition.explicitRawRows`は、native rawを読み直したtableではなく、元の独立object
+stageと局所商のretained tableから直接定義する。`explicitRawRows_eq_native`では、既存のobject
+readingの両逆と実際のcore・係数assemblerから比較前提を放電した。
+
+`Composition.composeExplicitWith`は、既存のscalar/index・operation・signature・observable合成に
+このraw合成を接続する。`composeExplicitWith_eq_native`がcore・係数・rawの元の合成との一致を、
+`composeExplicitWith_raw_points`が合成後の全raw原始法則(逆写像、label、多項式、restriction)の保持を
+証明する。realizationには指定した点callbackを残しており、完全Homの合成と商上の全条件は未完了である。
+
+coordinate・relationの各出力は、両入力の二つのbackward context点と最大二つの値点で決まる。
+各`*_finite_support`は共通queryで最大四点、`rawCoordinate_finite_fragment`・
+`rawRelation_finite_fragment`は商の実際の有限fragmentで同じ決定性を示す。
+支持集合は元の入力と評価queryに依存し、比較入力には既存の原始行法則を要求する。
+local-dataの有限supportはまだ未証明であり、今回の四点決定に含めない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentIndexedInverseAgainstComposition.lean` / `IndependentIndexedInverseGraph` | `composeAgainst`・`*_at_pair`・`*_false_at_pair`・`*_isLawful`が後段の逆向き添字選択と原始fiber合成を構成し、rawのcoordinate・relation行へ使用する |
+| `IndependentGeometryHomRawCompositionRows.lean` / `IndependentGeometryHomPrimitive.ExplicitRaw` | `coordinateTable`・`relationTable`と各行法則を共通queryから得る。`composeCoordinate`・`composeRelation`と各active/inactive比較が元のraw stageを直接合成する |
+| `IndependentGeometryHomRawCompositionNative.lean` / 同namespace | `composeCoordinate_eq_native`・`composeRelation_eq_native`が全context・carrier候補を元のraw mapの合成と比較する |
+| `IndependentGeometryHomRawLocalDataComposition.lean` / 同namespace | `composeLocalDataFiber`・`composeLocalData`が元の型応答と一つの中間座標を使う。各active/inactive APIが型候補と点候補の全場合を扱う |
+| `IndependentGeometryHomRawLocalDataCompositionNative.lean` / 同namespace | `readLocalData_inactive_carriers`・`composeLocalData_eq_native`が依存する値の全候補を元のnative raw合成へ接続する |
+| `IndependentGeometryHomRawComposition.lean` / 同namespace | `composeRaw`・`composeRaw_eq_native`が三種類と両方向を元のraw query上で統合する |
+| `IndependentGeometryHomCoreRawComposition.lean` / `IndependentGeometryHomPrimitive.Composition` | `explicitRawRows`・`*_eq_native`が元の独立stageとの比較を放電する。`composeExplicitWith`・`*_eq_native`・`*_raw_points`がcore/raw全体の比較とraw原始法則の保存を与える |
+| `IndependentIndexedInverseAgainstCompositionFinite.lean` / `IndependentIndexedInverseGraph` | `composeAgainst_finite_support`・`composeAgainst_lifted_finite_support`が二つの逆向き添字点と最大二つの値点を構成し、元のqueryへの埋込みに接続する |
+| `IndependentGeometryHomRawCompositionFinite.lean` / `IndependentGeometryHomPrimitive.ExplicitRaw`, `Composition` | coordinate・relationの`*_finite_support`と`rawCoordinate_finite_fragment`・`rawRelation_finite_fragment`が同じ共通宣言と実際の商の有限片で最大四点の決定を証明する |
+
+入力前提は既存の独立object stage、局所商、package・係数・rawの原始法則である。完成したraw mapは
+直接tableを定義する入力にせず、元の写像の合成は比較と法則保持の証明で使う。対象条件・Homの意味・
+商の同一視条件を変更していない。
+
+残りは両方式のrealizationの直接合成、両方式の全幾何法則と商上の合成、全Homの恒等・単位・結合則・
+有限片との整合、local-data合成を含む残る原始式の有限support、指定反証の統合、パートI全体の
+PR・独立査読・CI・mergeである。パートIIは開始せず、固定GOAL・元のHomの範囲・Cycle 79を維持する。
+
+新規9 sourceを一つずつfocused checkし、全て通った。各fileのnamespace監査の合計は順に
+4・10・2・8・2・2・5・2・4件(計39件、生成されたmatch宣言1件を含む)で標準公理のみだった。
+明示38宣言全ての個別`#print axioms`も出力名まで照合した。最終検証にwarning・errorはなく、
+placeholder・hidden/BiDi・privacy・語彙・docstring・module登録・差分整形・保護領域を確認した。
+Research全体buildは実行せず、固定GOALのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
