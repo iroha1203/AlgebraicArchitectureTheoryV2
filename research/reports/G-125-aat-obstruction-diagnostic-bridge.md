@@ -3039,7 +3039,7 @@ result:
   completion_candidate: yes
   proof_obligation_delta: "ActualAffineOverlapCertificate is constructed from actual left/right sheaf restrictions, the derived translated-right lawfulness proof, and the derived affine comparison; selectedMismatch consumes the callback arguments and returns the comparison only for that certified pair."
   lean_artifacts:
-    - "ActualCechAffineLocalData.actualAffineOverlapData"
+    - "ActualCechAffineLocalData.ActualAffineOverlapCertificate"
     - "ActualCechAffineLocalData.ActualAffineOverlapCertificate.selectedMismatch"
     - "ActualCechAffineLocalData.ActualAffineOverlapCertificate.selectedMismatch_selected"
     - "ActualCechAffineLocalData.gluingMismatchData"
@@ -3152,7 +3152,7 @@ audits:
       lean_b: "ornamental translatedRightLawful certificate field"
     root_classification: "noncentral direct fix because removing the unused field does not change comparison provenance or any theorem route"
     direct_fix: "remove ActualAffineOverlapCertificate and pass ActualAffineOverlapData directly to the selected-data adapter; keep translatedRightLawfulSectionData_lawful as a separate theorem"
-    direct_confirmation: pending
+    direct_confirmation: "qualification lost because the fix deletes a structure and changes def bodies; the confirmation found no new central content issue but requires a full four-lane rerun"
   manuscript_boundary: "no manuscript exists; writing or updating manuscript prose is outside G-125 completion, and this report is the requested light mapping"
-  next_obligation: "fix a new head and obtain one fresh direct-confirmation review for the noncentral field removal"
+  next_obligation: "rerun the full four-lane standard review on the post-fix fixed head"
 ```
