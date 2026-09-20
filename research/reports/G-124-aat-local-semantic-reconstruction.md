@@ -8395,3 +8395,1260 @@ Cycle 79からの研究状態の昇格は行わない。PR・独立査読・検�
 - namespace全体の`#assert_standard_axioms_only`: 114宣言、標準公理のみ。
 - 差分・未追跡fileを含むplaceholder、hidden/BiDi、privacy、語彙、Research import方向、
   `git diff --check`: pass。Research全体buildは実行していない。
+
+### 継続実装：core生成の原始reading
+
+人間から最初の検証点全体の完了とPR/Issue操作の許可を受け、同じ独立検証として継続する。
+完了条件は承認済み設計の検証点I全体に置き、raw部分や以下のcore部品だけへ縮小しない。
+Cycleは加算しない。
+
+`IndependentCorePrimitiveReadings.lean`に、native coreの生成順序に沿う原始queryと構成を追加した。
+以下はfocused Lean検証済みの実装証拠であり、正式PR査読による受理はまだ行っていない。
+namespaceは`AAT.AG.LocalSemanticReconstruction.IndependentCorePrimitive`。
+
+| 構成 | 原始値と局所条件 | Nativeへの接続 |
+| --- | --- | --- |
+| `Extraction` | Source・vocabulary・semantic reading・resolutionの選択値と型参照、4つのadmissionの点評価、normalizeの点評価。選択外の候補型ではpredicateはfalse、normalizeはnone | `readingEquiv`が選択sourceを含む全`ExtractionDoctrine`と両逆。`atomize_mem_iff`が4条件の連言からAtom族を生成 |
+| `Composition` | 任意の有限Atom族とAtom対に対するrelation・identificationの評価。局所含意で両端のfamily所属を要求 | `readingEquiv`が全`CompositionReading`と両逆。供給されたfamilyそのものからconfigurationを作る |
+| `ObjectFormation` | 各configurationに対するStructureMapsとSelectedQuantitiesの選択値・型参照 | `readingEquiv`が全`ObjectReading`と両逆。入力configurationを保持してarchitecture objectを構成 |
+| `Operations` | 両端objectごとのoperation型参照と各Atomへの作用。family・relation・identification保存を点ごとに要求 | `readingEquiv`が全`OperationReading`と両逆。完成した`ConfigurationHom`を局所値に保存しない |
+| `Generation` | 上記の抽出・composition・object formationを依存順に合成 | `object_read`が任意のnative `CoreReading`の生成objectそのものを回復。family・relation・identificationの評価式も明示 |
+
+`SelectedValue`は一つのnativeな選択値とそのcarrier参照の依存対であり、完成coreや完成射ではない。
+各queryのconstructorが元のfieldと評価引数を固定する。source型を任意関数として実行する汎用APIや、
+任意のLean命題を法則として受け入れるconstructorは持たない。
+
+生成familyの`ListFinite`はnative core readingにも要求される条件であり、`Generation.family_read_listFinite`
+が元の条件を再構成先へ運ぶ。新たな有限carrierや選択済み有限列を対象データに追加しない。
+有限familyの証明の選び方も両逆で消える。`Composition.trueTable_not_lawful`は空familyの外にrelationを
+作るtableを排除し、`Extraction.eraseNormalization_not_typed`は選択sourceのnormalizeが欠けるtableを排除する。
+
+この段階でLaw/observable系・circuit・invariant・signature、coverage/overlapの原始組立ては未完了である。
+全core/siteの組立て、rawとの依存する接続、局所Homからの厳密なraw等式、
+完全幾何の対象/Hom両逆・恒等・合成、G-122/tagged両方式、共通宣言・有限片への接続を引き続き構成する。
+
+検証開始baseはraw独立検証のmerge commit `27a844fdd8812035c73575078a7ac6ed02b6a305`。
+単一fileのfocused check、明示63宣言の`#print axioms`、namespace211宣言の標準公理監査を実行した。
+Research全体buildは実行していない。
+
+#### Context preorderと可変carrierの環
+
+`IndependentContextPrimitiveReadings.lean`では、architecture object `A`上の全native contextを
+queryの引数とし、preorderを選ぶ前にrefinementのpredicateとsupport・axis・observableの点評価を定義した。
+3つのmapはrefinementが成り立つpairでのみactiveになる。反射・推移と各点の読み取り保存から、
+nativeな`ContextPreorderCategory A`を構成する。非生成条件はcontext自身のfamily所属条件から導く。
+`assemble_read`・`read_assemble`・`readingEquiv`は、refinementだけでなく選択された3つのmapをすべて回復する。
+`noRefinement_not_lawful`は全falseのrefinementを、`eraseSupport_not_typed`は必要なsupport像の欠損を排除する。
+
+`IndependentRingPrimitiveReadings.lean`は0・1・加法・乗法・負号の原始評価を用いる。
+`IsLawful`の7つの等式からmathlibの`CommRing.ofMinimalAxioms`で全可換環構造を作り、
+`CommRing.ext`により自然数/整数作用・べき・差などの補助演算も含めてnative構造を回復する。
+`Carrier.readingEquiv`は型参照を局所値に含め、任意のcarrierを持つ全native可換環との両逆を与える。
+完成した`CommRing`を局所値には置かず、候補型の各原始演算をOptionで読み、選択外の型はinactiveにする。
+
+同fileの`Hom.readingEquiv`は任意の環準同型を、その点評価と0・1・加法・乗法の保存式から回復する。
+`Hom.assemble_id`・`Hom.assemble_comp`により、点ごとの恒等・合成がnativeな恒等・合成へ写る。
+係数写像の可逆性は要求しない。`eraseMultiplication_not_lawful`は、非自明環の乗法を全て0へ変えた入力を
+単位元の式で排除する。
+
+Contextの既存入力は`A`、固定carrier版の環の既存入力は型`K`であり、どちらも任意に量化する。
+可変carrier版は`K`自体もtype-reference queryから構成する。今後、前段で生成した`A`へcontext構成を適用し、
+各contextの可変observable環、restriction、violation、residualを組み合わせてequation systemを構成する。
+この接続と最初の検証点全体の完了は未達であり、上記部品の正式PR査読も未実施である。
+
+単一file検証と次段のimport用の単一module出力は両fileでpass。
+明示宣言の公理監査はcontext 29件、ring 38件、namespace全体の監査はそれぞれ81件・108件である。
+新規sourceのplaceholder・hidden/BiDi・privacy・語彙・整形scanを行った。Research全体buildは実行していない。
+
+#### 方程式・回路・invariant・signature・選択幾何の原始評価
+
+以下は同じ独立検証の継続であり、Cycleを加算しない。対象は任意のnativeな各構造であり、
+特定fixtureの生成像へ限定していない。各componentの検証は通過したが、正式PR査読は未実施である。
+
+| Source / namespace末尾 | 構成と証明 |
+| --- | --- |
+| `IndependentEquationPrimitiveReadings.lean` / `IndependentEquationPrimitive` | equation index/role、各contextのobservable carrierと環演算、restriction、violation、residualを点評価から構成。環保存・恒等・合成・二つの自然性からnative equation systemを作り、`assemble_read`・`read_assemble`・`readingEquiv`で全fieldの両逆を証明 |
+| 同fileの`Circuit` | 有限detector codeだけを読む。`IsLawful`はaccepted matching datumごとのcontext/Atomにおける非零residualの存在条件。`assemble_sound`・`read_isLawful`・`lawful_iff_sound`がnative `Sound`との対応を証明。witness自体は対象dataに残さない |
+| `IndependentInvariantSignaturePrimitiveReadings.lean` / `IndependentInvariantSignaturePrimitive` | `Invariants`はindex、function/predicateの種別、value carrier、各objectでの点評価を、`Signature`はaxis、依存coordinate carrier、selected、coordinateの点評価を読む。両namespaceの`readingEquiv`・両逆・`read_injective`が全native構造を回復 |
+| `IndependentContextObjectPrimitiveReadings.lean` / `IndependentContextObjectPrimitive` | Support/Axis/Observableの型参照、原始Extensionの型と選択値、3種類のpredicate点評価からnative contextを作る。queryの宣言自体はarchitecture objectの選択に先行し、family所属条件を`IsLawful`に置く。`readingEquiv`が全context fieldを回復 |
+| 同fileの`Overlap` | overlapの返すcontextを上記queryへ展開。support所属と4つの順序条件から`ContextOverlapPullback`を作り、`assemble_read`・`read_assemble`・`readingEquiv`で全選択を回復 |
+| `IndependentCoveragePrimitiveReadings.lean` / `IndependentCoveragePrimitive` | 元の9述語を保持。candidate equation index/axisとrequired roleによるactive条件を明示し、`readingEquiv`が全`CoverageRequirements`を回復 |
+
+namespaceの共通prefixは`AAT.AG.LocalSemanticReconstruction`である。
+Equation/Coverageのqueryはarchitecture objectを既存parameterとし、選んだequation systemやsignatureを
+query型へ埋め込まない。Overlapの順序条件は前段で構成したcontextの値を引数にする。
+これらの依存するinstanceを共通有限queryへ接続する義務は後段に残る。
+
+誤入力の検査として、Equationの`eraseRestrictions_not_typed`は反射context上で必要なrestriction応答の欠損を、
+Signatureの`eraseCoordinates_not_typed`は宣言済みcoordinateの欠損を、Invariantsの
+`eraseFunctionValues_not_typed`はfunction種別のvalue欠損を排除する。
+Coverageの`nonrequired_rejected`はrequired以外のequationをrequired coordinateとして選ぶtableを排除する。
+設計で指定された全反証scenarioの統合検査は未完了である。
+
+#### 完全なcoreとrawを含むgeometry objectへの依存する接続
+
+`IndependentCoreTableAssembly.lean`のnamespace `IndependentCoreTableAssembly`に、次の接続を置いた。
+
+- `equationReadingEquiv`: primitive context、equation、circuit tableを依存順に組み合わせ、完全な
+  `EquationReading`と対応させる。circuit側の条件は上記の非零witness条件を用いる。
+- `finiteExtractionEquiv`・`foundationEquiv`: 選択sourceの元の有限family条件をPropとして保持し、
+  extraction・composition・object formation・invariant・signature・operationの原始tableを組み合わせる。
+- `generatedObject_eq`: この組合せが`IndependentCorePrimitive.Generation.object`そのものであることを示す。
+- `coreEquiv`・`assemble_read`・`read_assemble`: 全`CoreReading`と依存primitive tableの両逆。
+- `packageEquiv`・`assemblePackage_readPackage`・`readPackage_assemblePackage`: 元の2つのAtom法則を含む
+  全`AATCorePackage`との両逆。`package_object`は生成objectとequation tableの添字objectの一致を示す。
+
+`IndependentGeometryTableAssembly.lean`のnamespace `IndependentGeometryTableAssembly`では、このcore構成に
+原始coverage/overlap、可変carrierの係数環、受理済み`IndependentRawLocal.rawTableEquiv`を依存順で接続した。
+`objectEquiv : ReadingCore.{u,v} U ≃ ObjectData.{u,v} U`は任意のAtom carrier `U`、任意の係数universe `v`について
+成り立つ。`assemble_read`・`read_assemble`がrawを含む全fieldの厳密な両逆を、`read_injective`が全fieldの分離を示す。
+`core_assemble`・`geometry_assemble`・`coefficient_assemble`は実際のcomponent構成への評価式である。
+
+この`ObjectData`は、完成したcore/geometry/ring/rawを値として保持する五fieldの再包装ではない。
+保持するdataは各原始queryへの点応答であり、上記component assemblerからnative構造を作る。
+`nativeEquiv`等のnative構造の分解は比較証明だけに使い、局所response型には入れない。
+依存するSigmaの添字変更にはmathlibの`Equiv.sigmaCongrLeft'`・`sigmaCongrRight`を用いた。
+
+ただし、現在の`ObjectData`は前段の組立結果に依存するtableの型である。
+実現の選択に先行する共通宣言・有限図式・局所値型は未完成であり、これをその代用として受理しない。
+最初の検証点Iを閉じるには、この依存する構成への共通有限tableからの接続、各原始式の有限support、
+局所Homからの元と同じ厳密なraw等式、G-122/taggedの両Hom方式と全Hom両逆・恒等・合成、
+指定反証scenarioと正式査読が引き続き必要である。外側のtotal categoryやrouting wrapperは追加していない。
+
+6つの新規sourceを個別に検証した。明示宣言の`#print axioms`は順に47・44・33・13・36・24件、
+namespace監査は123・137・114・75・36・24件で、標準公理のみである。
+既存のResearch module manifestとaggregate importへ登録したが、aggregate自体のelaborationと
+Research全体buildは実行していない。新規sourceのplaceholder・hidden/BiDi・privacy・語彙・整形scanも行った。
+
+#### 両方式の全Hom再構成と有限なcontext作用の合成
+
+同じ独立検証の継続として、次の5つのsourceを追加した。Cycle 79を維持する。
+以下のLean検証は通過したが、正式PR査読による受理は未実施である。
+各namespaceのprefixは`AAT.AG.LocalSemanticReconstruction`。
+
+| Source / namespace末尾 | 構成と証明 |
+| --- | --- |
+| `IndependentRepresentativeHomReadings.lean` / `IndependentRepresentativeHom` | `transportTable`がinverse context作用と係数mapから各raw応答を直接計算。`raw_eq_iff_points`で元の厳密なraw等式を導く。package・係数・representative realizationの既存graph構成と接続し、`homEquiv`・`assemble_read`・`read_assemble`で全`GeometryTotalHom`を回復。`assemble_id`・`assemble_comp`は既存の直接graph合成との接続 |
+| `IndependentExplicitRawReadings.lean` / `IndependentExplicitRaw` | coordinate・依存LocalData・relationの両方向graph、labelとrelation polynomialの点等式、variable imageのsquareからnative raw mapを構成。多項式の自由性で全多項式の自然性へ延長。`readingEquiv`・両逆・`read_injective`が全`RawAmbientRestrictionSystemExactMapAgainst`に成り立つ |
+| `IndependentExplicitRealizationReadings.lean` / `IndependentExplicitRealization` | 3つのcarrierの両方向の点値と、実際の`ContextMorphism`への3成分の作用を保持。局所逆式・reading保存・自然性からrestriction保存も導く。`readingEquiv`・両逆で全native supplyを回復。`identityTable`・`composeTable`と`assemble_id`・`assemble_comp`が点合成をnative合成へ接続 |
+| `IndependentExplicitHomAssembly.lean` / `IndependentExplicitHom` | package graph、係数graph、上記raw/realizationの局所データ、9つのcoverage含意、overlapの両順序比較を依存順に接続。`homEquiv`・両逆・`read_injective`で全`ExplicitExactGeometryHom`を回復。`base_assemble`・`coefficient_assemble`・`raw_assemble`・`realization_assemble`が各component assemblerへの評価式 |
+| `IndependentHomRefutations.lean` / `IndependentHomRefutations` | 任意のcore・選択幾何上に、関係式`X=0`を持つrawを構成。`ℤ × ℤ → ℤ`の第一射影が非単射であり、両Hom方式の読み取り・組立て後にもそのまま残ることを証明 |
+
+representative方式の`Code`はraw全体系の等式をfieldに保存せず、各原始queryの比較を保持する。
+`complete`はその比較から旧certificateの厳密なraw等式を導く。
+explicit方式の`Data`は完成したbase Hom、raw map、realization supplyをfieldに保存しない。
+nativeな依存Sigmaの分解は比較証明で使い、出力の各fieldは原始graph・点tableとその局所条件から作る。
+両方式のraw/realizationの意味を同一化していない。
+
+explicit realizationの合成では、次の射のqueryへ前のcontext作用全体を渡さない。
+例えばsupport作用は、後段の逆support像、前段の実際のcontext作用の一点、後段のsupport像という
+3点から計算する。`read_comp`が自然性と両逆からnativeの合成との一致を示す。
+`composeTable_finite_support`は、9種類のqueryの各constructorについて、2つの入力tableの
+合計3点以下が一致すれば合成結果が一致することを証明する。
+この定理は任意のtableを比較し、比較先tableのlawfulnessを追加仮定にしない。
+ただしbase Hom `f,g`は固定しており、共通queryへのbase成分の有限support接続は後段に残る。
+
+反証検査は以下を追加した。
+
+- `changedPolynomialData_not_lawful`: 同じcoordinate・LocalData・relation名のidentity graphでも、
+  元の関係式`X`を`1`へ変えたtargetではrelation保存を満たさない。両端raw対象自体はlawfulである。
+- `finite_support_action_rejected`: 任意のcore上の2-support contextで、実際のswap射への作用だけを
+  identityへ変えると自然性で落ちる。carrier同値はidentityのまま保つ。
+- `coefficient_swap_not_lawful`: 受理済みの非対称raw fixtureの係数swapを、新しいraw点比較で排除する。
+- `explicit_reconstruction_noninjective`・`representative_reconstruction_noninjective`: 係数の
+  `(0,0)`と`(0,1)`を区別しない射影が両方式の再構成で保持される。
+
+現在の全Hom両逆は任意のnativeな完全幾何の両端をparameterとする。
+前段の`ObjectData`から構成した両端にも適用できるが、それだけでは共通有限tableからの
+対象/Hom再構成の完了根拠にならない。最初の検証点Iを閉じるための未完了項目は次である。
+
+1. 実現の選択より前に共通query・有限図式・局所値型を宣言し、型参照のactive/inactive条件と
+   全原始式の有限supportから、既存の依存するobject/Hom構成へ接続する。
+2. 共通の局所射について恒等・合成と両逆を接続する。explicit側ではraw・baseの合成も含む
+   全Homの局所合成が未接続であり、realization単独の点合成では代行しない。
+3. 共通の宣言に対して指定反証scenarioを統合し、完成fieldの混入、全Homの分離、
+   witness選択による余分な対象/自己同型がないことを検査する。
+4. 固定headのPR、標準の独立4本査読、root acceptance、CI、merge、Issue記録を完了する。
+
+外側のtotal categoryやrouting wrapperは追加していない。GOALカードは変更していない。
+
+5つのsourceの単一file検証はpass。明示宣言の`#print axioms`は表の順に27・33・29・21・11件
+(計121件)、namespace監査は35・52・107・28・11件(計233件)で、標準公理のみである。
+Research module manifestとaggregate importへの登録、placeholder・hidden/BiDi・privacy・語彙・
+整形scanも確認した。aggregateのelaborationとResearch全体buildは実行していない。
+
+#### 多項式の閉じた原始式と有限support
+
+`IndependentPolynomialExpressions.lean`は、共通有限queryへ接続するための算術部分を構成する。
+namespaceは`AAT.AG.LocalSemanticReconstruction.IndependentPolynomialExpressions`。
+`Query C k R`は原始carrierだけをparameterとし、係数像・変数像・zero・one・add・mulの6種類を持つ。
+tableの各値は`R`の一点であり、`Expr C k`はその6種類だけからなる有限構文である。
+完成した環、写像、任意の関数・命題を式のconstructorへ渡すfieldは持たない。
+
+`evaluate`と`support`を構文再帰で定義し、`evaluate_eq_of_support`をconstructorへの帰納法で証明した。
+supportは途中の加算・乗算の引数も含む。比較するtableには環法則を仮定しない。
+したがって係数像と変数像だけを固定し、実際に使う環演算を無条件に固定扱いする証明にはなっていない。
+
+`compile`はnative polynomialの有限supportから式を生成する。
+`evaluate_compile`は任意の係数準同型と変数像についてnative `MvPolynomial.eval₂Hom`との一致を示す。
+`polynomial_finite_support`は、そのnative評価を回復する有限な原始query集合を構成する。
+`evaluate_rename_map`は係数base change後のcoordinate renameも同じ評価式に接続する。
+有限リストは元のpolynomialから生成し、局所対象の追加選択として保持しない。
+
+さらに`Sparse C k z`は、原始carrier `C,k`とcandidate zero `z : k`だけで有限多項式の値型を定義する。
+宣言時に完成した`CommRing k`や`CommSemiring k`を要求しない。
+`sparseEquiv`と`Sparse.toNative`・両逆は、candidate zeroと実際のzeroの一致後に
+元のnative polynomialを全係数・指数込みで回復する。これにより、後続の共通raw queryで
+係数環を選ぶ前に値型を宣言するための部品を得た。
+
+この算術部分は単一file検証済みである。共通queryの全体宣言、core/contextの型参照、
+有限図式からの全object/Hom構成への接続は引き続き未完了であり、最初の検証点Iは未達である。
+明示25宣言の`#print axioms`とnamespace108宣言の監査は標準公理のみ。
+module登録と差分scanを確認し、Research全体buildは実行していない。
+
+#### 実現の選択に先行する共通queryと完全対象の有限片
+
+同じ独立検証の継続として、共通queryの添字・値型を、選択されたcore/site/係数環から切り離した。
+Cycle 79と固定GOALカードを維持し、正式PR査読による受理はまだ行っていない。
+先の「共通queryとobject接続は未完成」という進捗記録に対し、この節が追加の証拠を記録する。
+各namespaceのprefixは`AAT.AG.LocalSemanticReconstruction`。
+
+| Source / namespace末尾 | 構成と証明 |
+| --- | --- |
+| `IndependentRawCandidateReadings.lean` / `IndependentRawCandidate` | `Query A`はcandidate architecture参照だけを受け、site・preorder arrow・係数環を受けない。raw polynomial値はraw carrierとcandidate zeroによる`Sparse`。imageの添字はcontextの対とし、readabilityは後から点のactive条件で判定。`lower`・`raise`・両逆、`rawTableEquiv`・`assemble_read`・`read_assemble`が元の全raw系を回復 |
+| `IndependentGeneratedObjectMatching.lean` / `IndependentGeneratedObjectMatching` | family・configuration・architecture-object候補との一致を、原始admission・relation・選択値の点条件で判定。不一致には具体的な点の反証を要求。`family_iff`・`configuration_iff`・`object_iff`で生成参照との一致を導き、`eq_read`・`unique`で照合表の自由度を排除。`generated_object_active`で全域の存在条件をfieldに置かずactive参照を導く |
+| `IndependentOverlapCandidateReadings.lean` / `IndependentOverlapCandidate` | overlap結果を原始context fieldに分解し、candidate contextとの一致を各点で検査。`ContextMatch.matches_iff`・`eq_read`で照合flagを一意に決定。4つの順序条件はcandidate contextを直接引数に取り、`originalLaws`で元のoverlap条件へ戻す。`readingEquiv`・両逆で全native overlapを回復 |
+| `IndependentGeometryPrimitiveDeclaration.lean` / `IndependentGeometryPrimitive` | `Query U`はextraction・composition・formation・invariant・signature・operation・circuit・coefficient・matching・candidate objectの原始点という固定constructor群を持つ。全native実現で同じ添字・値型を使う。candidate objectの応答は単一flagでactiveになり、`inactive_eq_none`で非active応答を一意に固定 |
+| `IndependentGeometryPrimitiveAssembly.lean` / `IndependentGeometryPrimitive` | `FoundationLaws`・`DependentLaws`・`IsLawful`は各原始投影の型条件と元の法則を検査。`stages`が全fieldを構成し、`flatten_stages`・`stages_flatten`で既存の依存する段階別表示と両逆を証明。`objectEquiv`・`assemble_read`・`read_assemble`・`read_injective`がraw込みの全native対象へ成り立つ |
+| `IndependentGeometryFiniteFragments.lean` / `IndependentGeometryPrimitive` | 同じ`Query U`上の有限な依存tableを`Fragment`とし、包含の共有点一致を`Compatible`で定義。singletonの`glue`と`fragments`が両逆。`finiteObjectEquiv`と両逆が、全てのlawfulな有限片の族と元の完全対象を対応させる |
+| `IndependentOverlapFiniteExpressions.lean` / `IndependentOverlapFinite` | refinement・matching・context一点比較・guard付きsupport admission・論理結合という閉じた`Expr`を定義。`evaluate_iff_of_support`をconstructorへの帰納法で証明。`lawful_iff_expressions`は新しいoverlapの全法則をこの有限式の各instanceと正確に同定し、`evaluate_iff_of_commonSupport`が共通query上の有限supportへ接続 |
+
+`IndependentGeometryTableAssembly.GeometryData`と`RawData`も、上のcandidate overlap/raw表へ接続した。
+この段階別表示は比較証明に用い、共通の局所値型には完成core・site・係数環・raw系を格納しない。
+`ArchitectureObject`・contextなどのcandidate参照は、設計が指定したnativeな原始引数の参照であり、
+選択済みの`ReadingCore`や`GeometryPackage`を共通queryのparameterにしていない。
+
+照合の局所条件には、完成した対象やcontextの組立て結果への全体等式を置かない。
+一致は各原始点の比較、不一致は一つの異なる原始点で検査し、その後で参照の一致を定理として導く。
+対象の両逆は照合flagと非active応答も回復するので、照合のためのmetadataや存在証明の選択が
+元の意味にない対象の区別を生まない。
+
+有限片の存在・整合性から法則を自動的に結論していない。
+`eraseMatching_fragments_compatible`と`eraseMatching_not_lawful`は、照合flagを全falseにした場合、
+全ての有限restrictionは整合していても局所法則を満たさないことを同じ共通宣言上で示す。
+`LocalObject`は`Compatible`と、singletonから読んだ原始値に対する`IsLawful`を別々に要求する。
+
+overlapの各順序instanceは、結果contextを無限個のpredicate値から式中で組み立てる必要がなくなった。
+そのcandidate参照のmatching flagと、有限個のrefinement queryから評価する。
+`supportAdmission`はcandidate support carrierの宣言と、そのsupport/Atomの一点だけを読む。
+`lawful_iff_expressions`はsupport・正の照合・負の照合の反証witness・4つの順序条件を全て含む。
+個々の式の有限性を示しており、全引数に量化した法則全体の有限性やcarrier全体の有限性は主張しない。
+
+最初の検証点Iは引き続き未完了である。残る主要項目は次である。
+
+1. 共通宣言上で、overlapと算術以外を含む全原始式の有限supportを固定し、各object/Hom局所法則の
+   全instanceへ接続する。有限族のgluingだけでは、この義務を代行しない。
+2. 両Hom方式の原始query・型参照をnativeな完成両端や選択済みbase Homより前に宣言し、
+   既に証明した全Hom両逆へ接続する。共通object宣言の完成だけではHomの共通宣言を代行しない。
+3. 共通局所射の恒等・合成、特にexplicit raw・baseを含む全成分の点合成と有限片の合成を接続する。
+4. 指定反証scenarioを共通宣言へ統合し、全Hom分離・型不一致・片側overlap・witness選択などを検査する。
+5. 固定headのPR、標準の独立4本査読、root acceptance、CI、merge、Issue記録を完了する。
+
+今回の8つの対象sourceは単一fileで検証した。明示宣言の`#print axioms`はraw candidate 27、
+generated matching 17、共通宣言24、更新したgeometry stage 24、共通assembly 43、finite fragments 20、
+overlap candidate 21、overlap有限式21件の計197件。namespace監査は同順79・54・130・24・74・20・57・77件の
+計515件で、標準公理のみである。module manifestとaggregate importに登録し、aggregateのelaborationは
+行っていない。Research全体build、外側のtotal category、routing wrapperは追加していない。
+
+#### Homのcarrier選択に先行する点対graph
+
+`IndependentCarrierGraphReadings.lean`は、Homの共通宣言へ接続する点対graphの部品を構成する。
+namespaceは`AAT.AG.LocalSemanticReconstruction.IndependentCarrierGraph`。
+`Query`はsource/targetのcandidate raw carrierと一点対だけを持ち、全応答はBoolである。
+選択された二つのcarrierはquery型のparameterにせず、`IsTyped`の非active条件と
+`IsTotal`の行ごとの唯一出力条件に現れる。
+
+`graphEquiv`が受理済みの`PrimitiveFunctionGraph.GraphCode`と接続し、`functionEquiv`・
+`assemble_read`・`read_assemble`が任意の有向写像との両逆を与える。
+単射・全射・可逆性を要求しない。`mismatched_carrier_rejected`・`duplicate_outputs_rejected`・
+`false_table_rejected`が、それぞれcarrier不一致・二重出力・入力点がある場合の全falseを排除する。
+
+`compose`は第一のgraphの唯一出力を中間点として、第二のgraphの一点を読む。
+`compose_finite_support`は全queryについて、二つのtableの合計2点以下を構成する。
+比較する第一のgraphには同じcarrier上のtotality/uniquenessを要求するが、第二のtableにはlawfulnessを
+仮定しない。第一のgraphで中間点への辺が真であることが、その点の選択に依存しない根拠である。
+`compose_isLawful`・`assemble_compose`・`read_compose`、恒等の両単位則、`compose_assoc`まで接続した。
+
+この部品は単一file検証済みで、明示39宣言の`#print axioms`とnamespace52宣言の監査は標準公理のみ。
+module登録とsource scanを行った。各native Hom roleの型参照、保存則、全Homの共通宣言への接続は
+後続の義務であり、この任意写像の部品を全Hom再構成の完了とは扱わない。Cycle 79を維持する。
+
+#### 共通Hom宣言とAtom・生成則・context・operationの接続
+
+独立検証の継続として、nativeな完成両端やbase Homを選ぶ前に、両Hom方式の共通queryを宣言した。
+`IndependentGeometryHomPrimitiveDeclaration.lean`の`Query U mode`は、source、pointed/upper Atom、
+object、invariant、operation、signature、coefficient、輸送照合、候補objectに依存する各点を持つ。
+全応答はBoolである。representativeのrealizationは有向写像、explicit側はcarrier同値と
+実際の`ContextMorphism`への点作用を持ち、後者にだけraw同値のqueryを用意する。
+この宣言自体は`defined only`であり、全Homとの両逆は後続の接続義務である。
+
+| Source / namespace末尾 | 証明した対応 |
+| --- | --- |
+| `IndependentInverseGraphReadings.lean` / `IndependentInverseGraph` | 二つのcandidate carrier graphと一点対のinverse条件からnative同値を構成。`readingEquiv`・両逆は非active carrier応答も回復。`inverse_iff_of_support`は任意tableの二点一致からinverse instanceの一致を導く |
+| `IndependentGeometryHomAtomReadings.lean` / `IndependentGeometryHomPrimitive.Atom` | 共通Homのpointed/upper Atomをそれぞれ行の唯一出力と二点inverse条件から構成。`pointed_eq_upper`が点の一致からnative同値の全体一致を導く。`mismatch_rejected`が一つの異なる点を排除 |
+| `IndependentGeometryHomTransportMatching.lean` / `IndependentGeometryHomPrimitive.TransportMatch` | family/configuration輸送のflagを、membership・relation・identificationの点比較と不一致witnessで検査。`family_iff`・`configuration_iff`が元のdirect-image輸送との一致を導く。`completeMatching_isLawful`・`completeMatching_eq_self`で照合metadataの選択自由度を排除 |
+| `IndependentGeometryHomCoreLaws.lean` / `IndependentGeometryHomPrimitive.CoreLaws` | source行と正規化点、四つのadmission、compositionのrelation/identification、formationの二つの選択値から、元のnormalize/extraction・family・composition・object formation・configuration保存を導く。`extractionLaws_of_native`・`generationLaws_of_native`が逆方向も示す |
+| `IndependentGeometryHomContextReadings.lean` / `IndependentGeometryHomPrimitive.Context` | 共通context queryの両方向行、単調性、unit/counitの両向き順序比較を旧thin-equivalence graphへ接続。`readingEquiv`・両逆で全native context圏同値を回復。object上の逆写像等式を追加していない |
+| `IndependentGeometryHomContextExpressions.lean` / `IndependentGeometryHomPrimitive.ContextFinite` | source/target refinementとHom context点、論理結合だけからなる閉じた式を構成。`evaluate_iff_of_support`は共通object/object/Hom queryの三つの有限集合上の一致から任意tableで評価一致を示す。`lawful_iff_expressions`がcontext Homの全局所法則を各instanceへ接続 |
+| `IndependentIndexedCarrierGraphs.lean` / `IndependentIndexedCarrierGraph` | 候補index対のgraphがdependent carrierの行をactiveにする。`readingEquiv`・両逆が全有向fiber写像と、非active index/carrierのfalse応答を回復 |
+| `IndependentGeometryHomOperationReadings.lean` / `IndependentGeometryHomPrimitive.Operation` | 共通object graphの両端像からoperation行を選び、全native有向operation familyへ両逆を接続。単射・全射は要求しない。operation自然性はこのfamily再構成とは別の保存則として残る |
+| `IndependentRingCarrierGraphs.lean` / `IndependentRingCarrierGraph` | candidate carrier graphにzero/one/add/mulの点保存則を課して全native環準同型との両逆を証明。inverse点条件を追加した場合は全native環同型との両逆を証明。環演算を原始点tableから作る場合も`function_laws`で接続。共通Homのcoefficient/observable roleへの組込みは後続 |
+
+coreの抽出条件は、native定義の`normalize source`に対する四つのadmissionを比較する。
+未正規化sourceでのadmission保存を要求する強化はしていない。
+whole family/configuration輸送等式は局所条件のfieldに置かず、点の比較から証明する。
+各有限witnessの存在はPropに置き、選んだwitnessを追加データにしない。
+
+この段階では共通宣言への主要な接続が進んだが、最初の検証点Iは未完了である。
+残る主な義務は、equation/observable・invariant/signature・coefficient・coverage/overlap・
+両方式のraw/realizationを同じ共通Hom tableから組み立て、全Homとの両逆を統合すること、
+全原始法則の有限support、共通の恒等・合成、指定反証scenarioの統合、およびPR査読・CIである。
+既存のnative両端に相対的な全Hom両逆を、その共通table接続の代わりには扱わない。
+Cycle 79と固定GOALカードを維持し、外側のtotal categoryは追加していない。
+
+今回の10 sourceはそれぞれ単一fileで検証した。明示151宣言の`#print axioms`と
+namespace内534宣言の監査は標準公理のみであり、warningは残していない。
+module登録、placeholder・hidden/BiDi・privacy・語彙・差分整形scanを確認した。
+aggregateのelaborationとResearch全体buildは実行していない。
+
+#### 依存するinverse行とobservable family
+
+`IndependentIndexedInverseGraphs.lean`は、有向index graphで選んだfiberごとの同値を、
+candidate carrierの両方向graphと一点対のinverse条件から構成する。
+index map自身の単射性・全射性は要求しない。`readingEquiv`・両逆は、activeな両方向graphと、
+非activeなindex/carrierのfalse応答を全て回復する。
+
+`IndependentGeometryHomInverseRows.lean`は、共通Homのbackward queryがsource/target順を保つことと、
+独立inverse graphのbackward queryがtarget/source順を取ることを、一点対の`reverse`で接続する。
+`asInverse_fromInverse`・`fromInverse_asInverse`がこの変換の両逆を証明する。
+equation、observable、signature coordinate、explicit rawのcoordinate/local data/relationの各roleを
+この変換へ明示的に接続した。queryの向きを完成した写像の引数へ隠していない。
+
+`IndependentIndexedRingGraphs.lean`は、この依存するinverse行にprimitiveなring点保存則を加え、
+全native環同型familyとの両逆を証明する。
+`IndependentGeometryHomObservableReadings.lean`は共通Homのobservable行へこれを適用する。
+`context_index_eq`は、contextの唯一出力で選んだraw contextと、復元したnative functorの像との
+一致を示す。`nativeFamilyEquiv`で依存する型を輸送し、`readingEquiv`・`assemble_read`・
+`read_assemble`・`read_injective`が全native observable環同型familyと共通候補行を対応させる。
+
+`atPair_forward_iff`・`atPair_backward_iff`は、各true context対で復元した環同型と
+共通Homの両方向点を同定する。`assemble_eq_atPair`によりnative familyの成分も同じ点対へ接続する。
+
+#### Observableの自然性とequation transportの全field
+
+| Source / namespace末尾 | 局所条件からの構成と逆方向 |
+| --- | --- |
+| `IndependentGeometryHomObservableNaturality.lean` / `IndependentGeometryHomPrimitive.ObservableNatural` | `PointLaws`はsource/target restrictionの各1点、contextの2点、observableの入力・出力各1点だけを比較する。candidate carrierの正しさは元のequation typingから導く。`points_iff_nativeNaturality`が、復元したcontext functorと二つのequation systemのnative restriction自然性との同値を示す |
+| `IndependentGeometryHomObservableExpressions.lean` / `IndependentGeometryHomPrimitive.ObservableFinite` | 閉じた`Expr`と共通object/object/Hom query上の`support`を構成する。`evaluate_iff_of_support`は任意tableでの有限support上の一致から評価一致を示し、`pointLaws_iff_expressions`が全restriction instanceをその式へ接続する |
+| `IndependentGeometryHomEquationLaws.lean` / `IndependentGeometryHomPrimitive.EquationLaws` | `RolePoints`・`ViolationPoints`・`ResidualPoints`はcandidate carrier、原始応答、Homのtrue点対だけを使う。`role_points_iff`・`violation_points_iff`・`residual_points_iff`が、復元したequation/Atom/object/context/observable作用のnative保存式との両方向を示す。object作用には単射・全射を追加しない |
+| `IndependentGeometryHomEquationAssembly.lean` / `IndependentGeometryHomPrimitive.EquationAssembly` | 4つの点保存則と各成分の原始行から、`assemble`がnativeな`EquationSystemExactTransport`の全fieldを構成する。`contextObservableCode`で既存package assemblerのcontext/observable graphへ接続し、context選択とobservable familyの評価一致を証明する。3つの`read_assemble_*`がcontext・equation・observableの全候補行を回復する |
+| `IndependentGeometryHomEquationExpressions.lean` / `IndependentGeometryHomPrimitive.EquationFinite` | 原始equation応答と共通Hom点だけをleafとする閉じた式を構成する。role・violation・residualの全instanceを有限supportに接続し、activeな共通object行で元の点保存則と一致することを示す |
+
+この構成で使うequation objectのtyping/ring/restriction法則は、共通object再構成で既に対応した
+native objectの法則である。Hom側のcontext・equation・Atom・object・observable行の条件は、
+各成分の全native写像との両逆で対応を確認した方向仮定である。
+新たな4つの点保存則はnativeのrole・自然性・violation・residualの各fieldと同値であり、
+native保存式を追加の未放電fieldとして持たせてはいない。
+全Homへの適用では、これらの行を同じ共通tableから取得する接続を引き続き完了させる必要がある。
+
+最初の検証点Iは未完了である。残る主要項目は、invariant/signature・operation自然性・
+detector code・coefficient・coverage/overlap・両方式のraw/realizationを共通Homへ統合すること、
+全Hom両逆、残る全原始式の有限support、共通の恒等・合成、指定反証scenario、PR査読・CIである。
+Cycle 79と固定GOALを維持し、今回の作業は独立検証として扱う。
+
+今回の9 sourceは単一fileで検証した。明示宣言の`#print axioms`は、上の依存inverse・
+inverse row変換・依存ring・observable family・自然性・自然性の有限式・equation保存則・
+equation assembly・equation有限式の順に11・12・7・16・11・8・17・11・16件、計109件である。
+namespace監査は同順28・12・13・16・11・58・17・19・60件、計234件で、全て標準公理のみ。
+warning、placeholder、hidden/BiDi、privacy、追加文の語彙、差分整形、module登録を確認した。
+aggregateのelaborationとResearch全体buildは行っていない。
+
+#### Signatureの候補軸・座標行と保存則
+
+`IndependentCandidateIndexedInverseGraphs.lean`は、外側indexのcandidate carrierもqueryへ含め、
+内側fiberのcandidate carrierと合わせて二段階の型参照を扱う。
+`readingEquiv`・両逆が、選択された外側carrier上の全fiber同値と、その他のfalse応答を回復する。
+
+`IndependentGeometryHomSignatureReadings.lean`はこの構成を共通Homのsignature座標行に適用する。
+`axisMap`は有向graphから構成し、軸の単射性・全射性を課さない。
+`atPair_forward_iff`・`atPair_backward_iff`・`assemble_eq_atPair`により各true軸対の座標同値を
+native familyへ接続し、`readingEquiv`・`read_assemble`・`assemble_read`・`read_injective`が
+外側の軸carrierと内側の座標carrierを含む全候補行との両逆・分離を与える。
+
+`IndependentGeometryHomSignatureLaws.lean`の`SelectedPoints`・`CoordinatePoints`は、
+selected述語、座標の原始応答、object/axis/coordinateのHom点だけを比較する。
+`selected_points_iff`・`coordinate_points_iff`は復元したnative写像の二つの保存fieldと同値である。
+`IndependentGeometryHomSignatureExpressions.lean`はそれらを閉じた式へ接続し、
+`evaluate_iff_of_support`で任意tableに対する共通query上の有限supportを証明する。
+
+この段階でsignatureの計算成分と保存則は共通Homの点行へ接続した。
+全package/Homの統合、invariant、operation自然性、detector code、coefficient、
+coverage/overlap、両raw/realization方式、全体の両逆・恒等・合成・指定反証と査読は引き続き未完了である。
+
+今回の4 sourceは単一fileで検証済みである。明示宣言の`#print axioms`は上記順に
+11・14・10・8件、計43件。namespace監査は28・14・10・70件、計122件で、標準公理のみである。
+warningを残さず、placeholder・hidden/BiDi・privacy・語彙・差分整形・module登録を確認した。
+Cycleは追加せず、外側のtotal categoryとResearch全体buildにも進んでいない。
+
+#### Operation自然性の原始作用式への接続
+
+`IndependentGeometryHomOperationPoints.lean`は、二つのobject graphのtrue対で選ばれた
+operation行と、既に復元したnative有向operation familyの評価を接続する。
+`assemble_eq_atPair`・`assemble_point`は、依存する両端の型輸送後も同じ原始点を読むことを示す。
+
+`IndependentGeometryHomOperationNaturality.lean`の`PointLaws`は、二つのobject点、
+operation点、入力Atom点、source/targetのaction応答から出力Atom点を比較する。
+`points_iff_nativeSquare`がnativeの作用自然性との両方向を示す。
+`native_configuration_square_iff`は、構成したconfiguration mapのAtom作用との一致を使い、
+作用の一点ずつの等式から元の`ConfigurationHom.comp`全体の等式を導く。
+この補題のconfiguration mapとその作用一致は接続APIの引数であり、局所lawのfieldではない。
+全package組立てでは、既存の`PackageGraphData.configurationMap_atomMap`がこの一致を与える。
+
+`IndependentGeometryHomOperationExpressions.lean`は、同じ保存則の全instanceを閉じた式へ接続する。
+各式の`support`は共通object/object/Hom queryの有限集合であり、action squareは
+source/target応答の2点とHomの5点を使う。
+`evaluate_iff_of_support`は任意tableで評価一致を示す。
+
+残る主要項目はinvariant、detector code、coefficient、coverage/overlap、両方式のraw/realizationと、
+全Hom両逆・共通の恒等/合成・残る有限式・指定反証・PR査読/CIの統合である。
+Cycle 79を維持し、最初の検証点I全体を完了とは扱わない。
+
+今回の3 sourceは単一fileで検証した。明示宣言は各6件、計18件の`#print axioms`を確認した。
+namespace監査は順に6・6・50件、計62件で、標準公理のみである。
+warning・placeholder・hidden/BiDi・privacy・追加文の語彙・差分整形・module登録を確認した。
+
+#### Invariantの存在witness：二つの代替案の反証と未完了事項
+
+人間の指示により、パートIはAstraで完了・PR・査読・mergeまで進め、II以降はSolへ引き継ぐ。
+この担当分担は、以下の未証明事項の受理や検証点Iの縮小を意味しない。Cycle 79を維持する。
+
+`IndependentInvariantTransportCandidates.lean`は、nativeなfunction invariantの
+`∃ e : I.Value ≃ J.Value, ∀ A, e (I.evaluate A) = J.evaluate (f A)`を扱う設計検証である。
+この`e`は元のHomではProp内のwitnessであり、計算用fieldではない。
+以下の証拠は完成した局所Homの実装ではなく、その未解決点を明示する。
+
+- `FiniteApproximation.native_finite_constraints_do_not_imply_transport`は、有限部分ごとの
+  同値の存在から全体の同値の存在を導く案を反証する。受理済みの自然数からarchitecture objectへの
+  単射を使って全射の自然数readingを作り、各有限部分では有限巡回置換がsuccessorと一致する。
+  全体では0の原像がなく、元の`Invariant.TransportedAlong`は成立しない。readingの全射性は
+  `naturalReading_surjective`で放電しており、新たな入力仮定ではない。
+- `FiniteApproximation.chosen_constant_witness_forget_not_injective`は、0を返す`Fin 3`の
+  readingに対し、恒等と1・2の交換という二つのwitnessを示す。選択した同値を別々のHomデータに
+  残してから忘れる写像は単射でない。選択の違いを元の射の違いにしてはならない。
+- `InfiniteWitness.hasWitness_iff_transported`は、双方向graphの有限片の整合族全体について
+  Prop内で存在量化する候補と、nativeな存在条件との同値を証明する。
+  `transportEquiv`はそのwitnessを消去したときに対象作用の選択肢が増えないことを示す。
+  ただし`HasWitness`は有限witnessではなく、整合族全体の存在を条件としている。
+  承認済み設計3.2の「原始値や有限witness」との適合を証明しておらず、局所lawに採用しない。
+
+この二つの反証は指定した代替案への反証に限る。別の局所構成の不可能性、固定target A–Eの
+不成立、設計変更の論理的必然性は証明していない。native Hom・固定GOAL・承認済み設計は変更しない。
+対象/Hom assemblerはこの候補moduleを使用しない。
+
+次の中心義務は、nativeな存在条件を保ったまま、選択をHomデータに残さず、承認済みの局所存在条件へ
+落とすことである。ここは未放電であり、検証点Iの完了・PR査読・mergeはまだ行っていない。
+detector code、coefficient、coverage/overlap、両raw/realization方式と全Homの統合も引き続き未完了である。
+新規16明示宣言の個別公理監査とnamespace17宣言の監査、単一file検証を実施し、標準公理のみを確認した。
+
+#### Invariantの商による設計補足と原始行の再構成
+
+人間は「商を使う設計補足を認めて検証を進める」、続いて「GOALの固定ターゲットを変えずに、
+設計を変更することを許可します」と承認した。これを受け、当初設計3.2・4.1の局所Homの
+表示方法を次のように補足する。固定GOAL A–E、native Homの定義、Cycle 79は変更しない。
+
+1. 元の共通Hom全queryの有限Bool tableの整合族を保持する。
+2. function invariantの存在witnessは、候補index対と候補value型の双方向graph点を
+   補助queryとして宣言し、その有限Bool tableの整合族を**データとして**構成する。
+   行の存在・一意性、逆向き点との一致、元の評価の保存を点ごとの法則とする。
+3. この整合条件を満たすpresentationを作った後に、元の共通Hom全queryが一致するものを
+   同一視する。補助対応の選択だけが消え、context、coefficient、raw等の差は残る。
+
+商を各有限片で先に取る構成ではない。また、前節の`InfiniteWitness.HasWitness`を
+局所lawへ移す構成でもない。局所lawに全域の同値・射・整合族の存在条件を置かず、
+補助graphから全域の存在証明を組み立てる。補助点は元のHomの観測成分に追加せず、
+商の上の`point`と`fragment`は元の全queryだけを読む。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentGeometryHomInvariantWitnesses.lean` / `IndependentGeometryHomPrimitive.InvariantWitness` | `Query`はfamily選択前の候補index対とvalue graph点を宣言する。`Presentation`は元の全queryの`Retained`、補助整合族、原始行法則を持つ。`transported_of_row`・`assemblePresentation`はfunction/predicateの両種から元の`Invariant.TransportedAlong`を構成する。`readPresentation`・`assemble_readPresentation`は任意のnative不変量族を回復し、index/objectの可逆性やvalueの有限性を追加しない |
+| `IndependentGeometryHomInvariantQuotient.lean` / 同namespace | `presentationSetoid`・`Local`は整合後の商。`readingEquiv`・`assemble_read`・`read_assemble`が不変量保存条件との両逆を証明する。`retained_injective`・`point_ext`は分離、`auxiliary_choice_independent`は補助選択の消去、`retained_point_separates`は元の全成分の差を保持する。`fragment_coherent`で有限片の制限整合も保つ |
+| `IndependentGeometryHomInvariantPoints.lean` / 同namespaceの`Primitive` | `Row`は原始tableのkind応答で分岐し、完成したInvariantをlawの入力にしない。`row_iff`は組立てたnative行法則との両方向、`transports_of_rows`は全indexのnative保存証明への接続を与える。`FunctionPoint`は4セル、`PredicatePoint`は3セルを使い、両`*_of_same_cells`はその応答が同じなら評価も同じと示す。kind判定の2セル、index対の1セル、inverse/totalityの点則はこれらと別の原始instanceである |
+| `IndependentInverseGraphComposition.lean` / `IndependentInverseGraph` | `compose`はforwardを順方向、backwardを逆順の点合成で定める。`compose_isLawful`・`assemble_compose`は逆行法則とnative合成を保つ。forward/backwardの両support定理は各2セルで合成値を決め、`compose_inactive`は候補型不一致をfalseに固定する |
+| `IndependentGeometryHomInvariantComposition.lean` / `IndependentGeometryHomPrimitive.InvariantWitness` | `identityRow_law`・`composeRow_law`が不変量行の恒等・合成での閉性を証明する。合成の引数は元のobject点合成の中間値であり、完成したHomではない。種別不一致を両方向で拒否し、`successor_row_rejected`は有限片の各々が延長できても全体のwitnessが存在しない既存反例を拒否する。`package_transport`は商から既存package assemblerの`IsInvariantTransport` fieldを導く |
+
+`Native`は、この段階では「共通Homのobject/index行条件を満たす全tableに、元の不変量保存条件を
+課した型」である。これを完全なGeometry Homそのものと同定したとは扱わない。
+今回解いたのは、不変量の存在witnessを局所点から組み立て、選択だけを消して元の保存条件を
+厳密に保つ設計とその成分証明である。`Retained`には全queryを残しているため、後続の
+他成分の保存則を、補助対応の選択に依存させず同じtableへ課せる。
+
+パートIでは、全Hom組立てでこの商を使用する接続、共通の恒等・合成、detector code、coefficient、
+coverage/overlap、両raw/realization方式、全体の両逆・残る有限式・指定反証・PR査読/CIが残る。
+特にGOAL Bの全局所モデル圏への適合は、これらの統合後の標準査読でも確認する。
+
+新規5 sourceを一つずつfocused checkした。明示66宣言の個別`#print axioms`と、各sourceの
+namespace監査67・17・8・7・9件(計108件)は標準公理のみだった。warning・placeholder・
+hidden/BiDi・privacy・追加文の語彙・差分整形・module登録を確認した。Research全体buildは行わない。
+GOAL fileのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+#### 原始保存則からのcore Hom組立てと幾何成分への接続
+
+不変量の商を実際のpackage Hom組立てに接続した。入力は独立なobject tableの依存stageと、
+共通Hom全queryを保持する不変量の局所商である。source・Atom・operation・Law・signatureの
+保存則を原始点で課し、これらから`PackageTotalHom`の全fieldを構成する。
+固定target、native Homの定義、Cycle 79は変更しない。
+
+| Source / namespace末尾 | 今回の証拠と実際の使用先 |
+| --- | --- |
+| `IndependentGeometryHomDetectorLaws.lean` / `IndependentGeometryHomPrimitive.Detector` | `QueryMatch`・`ListMatch`・`CodeMatch`は有限detector構文の葉でAtom点を比較する。`codeMatch_iff`・`native_of_points`・`points_of_native`により、元のdetector保存等式との両方向を示す。`PackageAssembly.upper.detectorCode_eq`へ使用する |
+| `IndependentGeometryHomDetectorFinite.lean` / 同namespace | `querySupport`・`listSupport`・`codeSupport`は構文だけから有限supportを作る。各`*_iff_of_support`と`point_instance_iff_of_support`は任意tableで同じセル応答なら同じ保存判定となることを示す |
+| `IndependentGeometryHomCoefficientLaws.lean` / `IndependentGeometryHomPrimitive.Coefficient` | 原始環演算とdirected graphの`PointLaws`から`assemble`で環準同型を作る。`read_assemble`・`point_iff`は全候補carrierの点を回復し、`assemble_eq_native`は任意の元の環準同型を回復する。逆写像の条件は課さない |
+| `IndependentGeometryHomCoverageLaws.lean` / `IndependentGeometryHomPrimitive.Coverage` | 九つの原始含意を`PointLaws`で定め、`assemble`・`points_of_native`・`points_iff_native`で元の九つのcoverage条件との同値を示す。`Maps`は比較APIの前提であり、後述の`GeometryComponents.coverage_maps`で実際の組立てから放電する |
+| `IndependentGeometryHomOverlapLaws.lean` / `IndependentGeometryHomPrimitive.Overlap` | 三つの逆context点、二つのoverlap matching応答、順方向context点と両順序比較から`assemble`で元のoverlap同型を作る。`points_iff_native`は元の同型の存在との同値、`assemble_points_of_native`は同型全体の回復を示す。contextの同型を対象の等号へ強めない |
+| `IndependentGeometryHomPackageAssembly.lean` / `IndependentGeometryHomPrimitive.PackageAssembly` | `PointLaws`は原始点条件を統合する。`configurationMap`・`lower`・`upper`・`assemble`は全core fieldを構成する。`upper.invariant_transport`は不変量の商の`package_transport`を使用し、operation・equation・signatureの既存原始保存則と今回のdetector保存則も実際のfield生成へ使用する |
+| `IndependentGeometryHomPackagePoints.lean` / 同namespace | `read_source`・`read_pointedAtom`・`read_atom`・`object_point_iff`・`read_equation`・`read_context`・`read_operation`・`read_invariant`・`read_axis`・`read_signatureCoordinates`・`read_observables`は、組み立てたnative core Homから各計算成分の元の点tableを回復する。Atom・equation・axis・context両方向のpoint iffを幾何成分へ渡す |
+| `IndependentGeometryHomGeometryComponents.lean` / `IndependentGeometryHomPrimitive.GeometryComponents` | 独立object stageのcoverage・overlap・contextの読み戻しを使い、`coverage_points_iff`・`overlap_points_iff`を証明する。`coverage_maps`・`overlap_maps`はpackageのpoint定理で比較前提を放電する。`coverage`・`overlap`・`coefficientMap`は同じ組立てたcore Hom上で元の幾何保存条件と係数写像を構成する |
+
+今回の主要な依存は、原始Hom行 → 成分ごとの保存定理 → `PackageAssembly.upper/lower` →
+`PackageAssembly.assemble` → `PackagePoints`の点回復 → `GeometryComponents`の三成分である。
+元の保存等式を`PointLaws`のfieldに移す経路は取っていない。
+
+残る中心義務は、raw・realizationの両方式を同じ共通Hom tableへ接続し、完全幾何のHomについて
+読み取りと組立ての両逆を閉じることである。coreの各成分の読み戻しは証明済みだが、任意の
+native完全幾何Homから局所法則を満たす共通tableを生成する逆方向、全Homの分離、共通の
+恒等・合成、残る有限式・指定反証は引き続き未完了である。パートIのPR作成・独立査読・CI・
+merge・Issue同期を済ませるまで、パートI完了として扱わない。
+
+新規8 sourceをそれぞれ単一fileで検証した。各sourceのnamespace監査は順に
+13・7・7・27・14・26・16・15件(計125件)で標準公理のみだった。
+明示77宣言の個別`#print axioms`も標準公理のみで、warning・errorはなかった。
+placeholder・hidden/BiDi・privacy・追加文の語彙・差分整形・module登録を確認した。
+Research全体buildは行っていない。固定GOALのblobは引き続き
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`である。
+
+#### 共通Hom点からの両realization方式の組立てと回復
+
+代表方式のSupport・Axis・Observableのdirected mapと、明示方式の三つのfiber同値・
+実際のcontext射への作用を、共通Homの原始点から構成した。各成分の全query読み戻しと、
+任意のnative realizationを読み取って組み立て直す逆方向を証明した。
+独立object stageから構成したcore Homへも接続し、比較APIのcontext・Atom前提を放電した。
+固定GOAL、元のHomの範囲、Cycle 79は変更しない。
+
+明示方式では、元の自然性とfiber同値から、実際のcontext射への作用が一意に定まる。
+Support・Axisは「逆fiber写像 → 元の射 → 順fiber写像」、Observableはrestrictionの
+逆方向に対応する同じ式で構成する。別の全域写像を局所lawに要求せず、元のactual-action
+queryはすべて保持する。そのセルが対応するfiber graphのセルと一致する法則と、
+不一致context対のセルをfalseにする法則を、読み戻し証明で使用する。
+この補足は人間が許可した固定target内の設計変更であり、nativeな射を制限しない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentFixedIndexedPointGraphs.lean` / `IndependentFixedIndexedPointGraph` | 原始context参照から値carrierが定まる行の`IsLawful`・`InverseLaws`を宣言する。`assemble`・`assembleEquiv`は既存の全域・一意graph構成を使用し、`read_assemble`・`assemble_read`・`read_assembleEquiv`・`read_assembleEquiv_backward`・`assembleEquiv_read`でactive/inactive双方の全点を回復する |
+| `IndependentGeometryHomRepresentativeRealization.lean` / `IndependentGeometryHomPrimitive.RepresentativeRealization` | `PointLaws`は三つのdirected graph、一方向のreading保存、原始restriction応答の自然性を持つ。`assemble`は元の`RealizationTransportSupply`を構成し、`read_support`・`read_axis`・`read_observable`で全候補context対を回復する |
+| `IndependentGeometryHomRepresentativeRealizationNative.lean` / 同namespace | `points_of_native`は任意の元の代表方式supplyから全原始法則を導き、`assemble_points_of_native`は三つの計算成分を含むsupply全体の等号を示す。全行の読み取り一致はnative readerの比較前提であり、局所lawのfieldには入らない |
+| `IndependentGeometryHomExplicitRealization.lean` / `IndependentGeometryHomPrimitive.ExplicitRealization` | `PointLaws`は両向きのfiber graph、readingの同値、全actual-actionセルの法則を持つ。`supportEquiv`・`axisEquiv`・`observableEquiv`から`valueTable`を作り、`valueTable_isLawful`・`assemble`で元の全supplyを構成する。actual restrictionの保存も既存の原始value-table定理から導く |
+| `IndependentGeometryHomExplicitRealizationPoints.lean` / 同namespace | `readActualSupport`・`readActualAxis`・`readActualObservable`は両候補contextの等号で値を移し、不一致ならfalseを返す。三つの`read_*`は両向きのfiber点、三つの`read_actual*`は全actual-action点を回復する。後者はaction法則とinactive法則を実際に使用する |
+| `IndependentGeometryHomExplicitRealizationNative.lean` / 同namespace | `points_of_native`は任意の元の明示方式supplyが全局所lawを満たすことを示す。`assemble_eq_native`・`assemble_points_of_native`はfiberの両方向と実際のcontext作用を含むsupply全体を回復する。native自然性が作用の式を強制することを逆方向の証明で使用する |
+| `IndependentGeometryHomRealizationComponents.lean` / `IndependentGeometryHomPrimitive.GeometryComponents` | `representative_maps`・`explicit_maps`は実際の`PackageAssembly`の点定理を使用する。`RepresentativePoints`は元のobject stageのcontext応答を参照し、`representative_points_iff`でnative読み取りとの一致を証明する。`representativeRealization`・`explicitRealization`は独立objectと局所商から組み立てたcore Hom上に元のsupplyを構成する |
+
+今回閉じたのはrealization成分の構成・回復と、実際のcore Homへの接続である。
+任意のnative完全幾何Homから全局所法則を満たす共通tableを生成するreader、その全Homの両逆・
+分離、rawの両方式の原始点接続、共通の恒等・合成、残る有限式・指定反証は未完了である。
+パートIのPR・独立査読・CI・merge・Issue同期も継続義務として残す。
+
+新規7 sourceの単一file検証が通り、namespace監査は順に31・34・2・42・12・3・7件
+(計131件)で標準公理のみだった。明示73宣言の個別`#print axioms`も標準公理のみで、
+最終検証にwarning・errorはない。placeholder・hidden/BiDi・privacy・語彙・差分整形・
+module登録を確認した。Research全体buildは行わず、固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
+
+#### 原始raw保存則と完全な明示方式Homの構成
+
+明示方式について、元の独立object stageと不変量の局所商を入力に、core・coverage・overlap・
+係数・raw・realizationの全6成分を持つ`ExplicitExactGeometryHom`を構成した。
+各成分は同じ組立て済みcore Homと係数写像に接続される。今回は局所条件からnative Homを
+作る方向の証拠であり、全Homのreaderと両逆の完了は主張しない。
+固定target、元のHomの意味、Cycle 79は変更しない。
+
+rawの多項式保存では、座標が同値であることを使い、単項式の有限な指数supportの対応と、
+一つの係数graph点へ条件を分解した。係数写像はdirectedのままであり、非零係数が0へ写る
+場合も扱う。元の多項式の非零supportだけを確認すると余分なtarget単項式を見逃すため、
+各単項式対について有限な点条件を課す。完成した多項式写像やその保存等式は局所lawに入れない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentPolynomialPointTransport.lean` / `IndependentPolynomialPointTransport` | `sparseCoefficient`は原始zeroを持つSparse値から係数を読む。`MonomialMatch`は両指数support内の座標点と指数を比較し、`monomialMatch_iff`で同値によるrenameと一致する。`PointLaws`・`points_iff_rename_map`は原始係数点と元の係数変換・rename等式との両方向を証明する。`monomialMatch_iff_of_points`・`point_instance_iff_of_cells`は任意tableで各instanceの有限性を示す |
+| `IndependentPolynomialPointTransportControls.lean` / 同namespaceの`Controls` | `coordinate`・`coefficient`は一座標の恒等対応と整数積環の第一成分への射影を読む。`distinct_coefficients_share_image`・`annihilated_coefficient_admitted`で異なる係数が同じ値へ写り、非零係数が消える多項式を受理する。`extra_target_monomial_rejected`はsource supportが空でも余分なtarget単項式を拒否する |
+| `IndependentRawCandidatePoints.lean` / `IndependentRawCandidate` | 六つの`read_*`が座標carrier、relation carrier、label、local-data carrier、Sparse関係多項式、Sparse変数像のactive応答を公開する。raw Hom側はcandidate readerの実装を展開せず、このAPIを使用する |
+| `IndependentGeometryHomRawPointLaws.lean` / `IndependentGeometryHomPrimitive.ExplicitRaw` | `contextPoints`・`coordinatePoint`・`relationPoint`は共通Homの原始点を読む。`PointLaws`は逆context対での座標・relation・依存local-dataのinverse graph、labelの点保存、Sparse関係多項式・変数像の原始条件を持つ。site射、完成した環準同型、全多項式保存式をfieldにしない |
+| `IndependentGeometryHomExplicitRawAssembly.lean` / 同namespace | `Maps`は比較APIで逆contextと係数点だけを同定する。`coordinateEquiv`・`relationEquiv`・`coordinateTransport`がinverse graphから全carrier写像を作る。`polynomial_eq`・`image_eq`は原始Sparse条件を使用する。`assemble`は全多項式のrestriction保存を定数と変数から導き、元のraw map全体を構成する |
+| `IndependentGeometryHomRawComponents.lean` / `IndependentGeometryHomPrimitive.GeometryComponents` | `read_raw`は独立object stageの全原始raw応答を回復し、`explicitRaw_points_iff`で元のstage条件に戻す。`explicitRaw_maps`は実際のpackage・係数組立ての点定理を使用して比較前提を放電する。`explicitRaw`は同じcore Homと係数写像の上でnative raw mapを構成する |
+| `IndependentGeometryHomExplicitFullAssembly.lean` / `IndependentGeometryHomPrimitive.FullExplicit` | `PointLaws`は全6成分の原始条件を統合する。`assembleHom`は独立object stageと共通点を保持する不変量の商から、元の`ExplicitExactGeometryHom`の全fieldを構成する |
+
+この時点でも、代表方式のrawを同じ原始点へ接続する義務、明示rawの全候補query回復、任意の
+native完全幾何Homから局所法則を満たす共通tableを生成するreader、両方式の全Homの両逆・
+分離、共通の恒等・合成、残る有限式・指定反証が未完了である。今回の多項式controlはその
+成分を対象とし、完全な局所Homの非空性・全native Homの包含を代替しない。
+パートI全体のPR・独立査読・CI・merge・Issue同期まで継続する。
+
+新規7 sourceの単一file検証が通り、namespace監査は順に7・5・6・17・20・5・12件
+(計72件)で標準公理のみだった。明示40宣言の個別`#print axioms`も標準公理のみで、
+最終検証にwarning・errorはない。placeholder・hidden/BiDi・privacy・語彙・差分整形・
+module登録を確認し、Research全体buildは行っていない。固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+
+#### 代表方式rawの原始条件との同値と全Hom構成への接続
+
+代表方式のraw保存を、元のraw候補応答の比較と係数graphの点条件で記述した。
+座標名を同値で移す明示方式と異なり、代表方式は元の座標・relation・local-dataの型参照を
+そのまま保存する。多項式と変数像では候補応答の有無を比較し、各単項式の係数点を検査する。
+変数像の条件はtargetの原始refinement応答を前提とし、完成したsite射を局所lawに置かない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentPolynomialCoefficientPoints.lean` / `IndependentPolynomialCoefficientPoints` | `PointLaws`は各指数の一つの係数graph点、`OptionalPoints`は応答の有無とactive係数点を比較する。`points_iff_map`・`optional_points_iff_map`は元の係数変換等式との同値を証明する |
+| `IndependentRepresentativeRawResponses.lean` / `IndependentRepresentativeHom` | `polynomial_candidate_read`・`image_candidate_read`で元の候補応答へ接続し、`transport_polynomial_from_candidate`・`transport_image_from_candidate`で代表方式transportの評価をその応答と係数変換から回復する |
+| `IndependentGeometryHomRepresentativeRawLaws.lean` / `IndependentGeometryHomPrimitive.RepresentativeRaw` | `PointLaws`は型参照・label・local-data・多項式・変数像の原始保存条件を宣言する。係数参照は原始carrierとzeroから得る |
+| `IndependentGeometryHomRepresentativeRawAssembly.lean` / 同namespace | `assemble`は原始条件から元の厳密な`raw_eq`を構成する。`points_of_native`は任意の元のraw等式から全候補の原始条件を回復し、`points_iff_native`で両方向を統合する。context・係数の比較前提は次のstage接続で放電する |
+| `IndependentGeometryHomRepresentativeRawComponents.lean` / `IndependentGeometryHomPrimitive.GeometryComponents` | `primitiveCoefficientRef`・`coefficientRef_assemble`は元のcarrier/zeroを保持する。`representativeRaw_maps`は実際のcore・係数写像の点回復から比較前提を導き、`representativeRaw_points_iff`・`representativeRaw`で元の独立object stageへ接続する |
+| `IndependentGeometryHomRepresentativeFullAssembly.lean` / `IndependentGeometryHomPrimitive.FullRepresentative` | `PointLaws`は各成分の原始条件を統合する。`assembleHom`は同じ独立object stageと不変量の局所商から、元の`GeometryTotalHom`のcore・coverage・overlap・係数・厳密raw等式・三つのrealization成分と自然性を構成する |
+
+全query回復へ進む前の点検で、`atObjects A B`のうち実際の両端に一致しない候補への
+応答を、全Homの局所法則で固定していない箇所を見つけた。任意の値を残すとnative Homには
+現れない情報が局所tableに残るため、両方式の`PointLaws.inactiveObjects`でfalseへ固定した。
+これは設計§3.1の未使用候補の一意性を反映する補足であり、固定GOALやnative Homの定義は
+変更していない。この法則を含む全局所Homとnative Homとの両逆は、引き続き証明対象である。
+
+ここまでで、両方式の完全なnative Homを原始局所条件から構成する接続が揃う。
+任意のnative Homから全局所条件を満たす共通tableを生成するreader、明示rawの全候補query回復、
+両方式の全Homの両逆・分離、共通の恒等・合成、残る有限式・指定反証は未完了である。
+成分の比較同値は完全な局所Homの正負instanceや全射性の代用にしない。
+パートI全体のPR・独立査読・CI・merge・Issue同期まで継続し、Cycleは79のままとする。
+
+新規6 sourceとinactive条件を補った明示方式sourceの単一file検証が通った。
+namespace監査は順に4・4・12・11・6・13・13件(計63件)で標準公理のみだった。
+新規・変更した明示25宣言の個別`#print axioms`も標準公理のみで、最終検証にwarning・errorはない。
+placeholder・hidden/BiDi・privacy・語彙・差分整形・module登録を確認した。
+Research全体buildは行わず、固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
+
+
+#### 明示rawの全候補query回復と任意native raw mapの回復
+
+明示方式rawの三つの計算成分を、全候補context・座標carrier・local-data carrierを含む
+原始readerへ接続した。`read_coordinate`・`read_relation`・`read_localData`は、原始点から
+構成した写像を読んで元のtableが戻ることを示す。`read_raw`は両方向のqueryを元の
+source/target順へ戻し、共通宣言の全raw queryを回復する。
+
+任意のnative raw mapから進む逆方向では、同じbase・係数写像の点対応と、三つの全候補
+readerが共通tableの各行に一致することを比較前提とした。`points_of_native`は、この前提で
+nativeな型宣言・label・relation polynomial・restriction保存から全原始法則を導く。
+`assemble_points_of_native`は、得た法則を実際のassemblerに渡し、依存するlocal-dataと
+relationの成分を含めて元のraw map全体を回復する。完成したraw mapや全域保存等式を局所lawへ
+追加してはいない。これらの比較前提を一つの完全Hom readerから放電する接続は残る。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentGeometryHomExplicitRawReadings.lean` / `IndependentGeometryHomPrimitive.ExplicitRaw` | `readCoordinate`・`readRelation`・`readLocalData`が全候補のinverse graphを読む。各active APIとinactive APIにより、context・座標型・座標像が一致しない行をfalseへ固定する |
+| `IndependentGeometryHomExplicitRawPoints.lean` / 同namespace | `read_coordinate`・`read_relation`・`read_localData`は、実際に組み立てたraw mapから全行を回復する。原始inactive法則と候補carrierの型法則を回復証明で使用する |
+| `IndependentGeometryHomExplicitRawNative.lean` / 同namespace | `coordinate_rows_of_read`・`relation_rows_of_read`・二つの`*_point_iff_of_read`を経由し、`points_of_native`が全原始法則を導く。候補応答が存在することから元のcarrier/zero宣言を回復し、native多項式保存とrestriction自然性を係数点へ移す |
+| `IndependentGeometryHomExplicitRawRecovery.lean` / 同namespace | `readRaw`・`read_raw`は共通の全raw queryへ接続する。`inverse_read_heq`は座標像の等号から得るtarget fiberの等号を使い、`coordinateEquiv_eq_native`・`relationEquiv_eq_native`・`coordinateTransport_eq_native`で各成分を回復する。`assemble_eq_native`・`assemble_points_of_native`で元のraw map全体の回復を示す |
+
+今回の証拠により、明示raw成分の全query回復とnative成分回復が揃った。次の中心義務は、
+core・係数・raw・realizationを一つの共通Hom readerへまとめ、そのreaderから各比較前提と
+全局所法則を導くことである。全Homの両逆・分離、共通の恒等・合成、残る有限式・指定反証、
+パートI全体のPR・独立査読・CI・merge・Issue同期は未完了である。
+固定GOAL、native Homの範囲、Cycle 79は変更しない。
+
+新規4 sourceの単一file検証が通り、namespace監査は順に10・3・5・8件(計26件)で
+標準公理のみだった。明示26宣言の個別`#print axioms`も標準公理のみで、最終検証に
+warning・errorはない。placeholder・hidden/BiDi・privacy・語彙・登録・差分整形を確認した。
+Research全体buildは行わず、固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
+
+
+#### 共通native Hom readerと不変量の商への接続
+
+両方式の元の完全幾何Homを、一つの共通Boolean tableへ読み取る構成を追加した。
+まずobject・axis・contextの添字点を読み、その復元等式に沿ってoperation・signature座標・
+observableの依存する型を同定する。その後、同じtableへrawとrealizationの全queryを入れる。
+実際のsource/target object対に一致しない`atObjects`候補はfalseへ固定する。
+依存写像を完成した局所値として保持する方式は採らず、既存の候補点readerでBooleanへ読む。
+
+共通readerを有限部分集合へ制限した整合族は、元のobject/index作用を復元する。
+元の`invariant_transport`をその作用へ接続し、既存の補助対応付きpresentationと商を構成した。
+`point_localWith`・`point_localRepresentative`・`point_localExplicit`により、補助対応を消した後も
+元の全query値が保持される。これは不変量部分の法則とquery保持の接続であり、全Homの局所法則を
+満たすことと全体の両逆は引き続き未完了である。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentGeometryHomNativeIndices.lean` / `IndependentGeometryHomPrimitive.NativeReader` | `liftDependent`のactive/inactive APIが候補object対の応答を固定する。`indices`は元のsource・Atom・object・invariant・axis・係数・equation・context点を読み、`objectMap_indices`・`axisMap_indices`・`context_assemble_indices`で依存先の添字を回復する |
+| `IndependentGeometryHomNativeFamilies.lean` / 同namespace | 三つの`*Family`が証明済み添字等式に沿って元の依存写像を移す。各`*_heq`が値の保持を証明し、既存のindexed reading equivalenceから全候補の`*Rows`と法則を得る |
+| `IndependentGeometryHomNativeReader.lean` / 同namespace | `readWith`は共通宣言の全roleを一つのtableへ統合する。各projection APIが成分readerとの一致を示す。`readRepresentative`は元のdirected realizationを、`readExplicit`は明示rawと全actual context-actionを保持する |
+| `IndependentGeometryHomNativeInvariant.lean` / 同namespace | `retainedWith`が有限整合族を作り、object/index作用を回復する。`nativeWith`は元の不変量存在条件を使用し、`localWith`が既存の商へ接続する。`assemble_localWith`は不変量部分を回復し、両方式の`point_local*`が全query保持を証明する |
+| `IndependentGeometryHomNativeRows.lean` / 同namespace | 同じ完全readerのAtom一致、derived matching、source・equation・context・operation・axis・signature・observableの行法則を証明する。source・Atom・object・context・axisの復元等式と、operation/signatureの依存写像全体の復元を得る |
+
+今回の比較前提は元のnative Homの計算成分・元の不変量存在条件から放電した。
+`readWith`のraw/realization引数はmodeごとの既存readerを差し込むための共通構成であり、
+その任意引数から完全な局所Homの適法性を主張してはいない。次の中心義務は、独立object stageの
+原始保存則と、係数・raw・realizationを含む全局所法則を、この同じreaderから導くことである。
+続いて全Homの両逆・分離、共通の恒等・合成、残る有限式・指定反証を閉じる。
+パートI全体のPR・独立査読・CI・merge・Issue同期は未完了であり、パートIIは開始しない。
+固定GOAL、native Homの範囲、Cycle 79は変更していない。
+
+新規5 sourceの単一file検証が通った。namespace監査は順に19・12・22・14・18件
+(計85件)で標準公理のみであり、明示85宣言の個別`#print axioms`も全件を照合した。
+最終検証にwarning・errorはない。placeholder・hidden/BiDi・privacy・語彙・docstring・
+module登録・差分整形を確認した。Research全体buildは行わず、固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
+
+
+#### 共通readerからの全core局所法則とnative core Hom全体の回復
+
+独立object stageから組み立てた両端の間の任意のnative core Homについて、共通readerが
+既存の全core局所法則を満たすことと、その局所商から元のcore Hom全体が戻ることを証明した。
+extraction・generation・operation・signatureに加え、equationのrole・restriction自然性・
+violation・residual・detectorを同じtable上へ接続している。不変量は既存の商に保持された
+object/index作用を使い、補助対応の選択を元のHomの計算成分へ追加していない。
+
+依存する写像の保存則では、添字写像とその上のfamilyをSigma対として比較した。
+`readWith_contextObservable_eq`が元のcontextとobservable族を同時に回復し、その等号を
+restriction・violation・residualの各原始保存則の導出に使用する。完成した保存則を
+局所lawのfieldへ移す変更は行っていない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentGeometryHomNativeRecovery.lean` / `IndependentGeometryHomPrimitive.NativeReader` | equation-index同値とobservable族を回復し、`readWith_contextObservable_eq`で依存する対の一致を得る。Atom・equation・axis・係数・context両方向の真の点と元の像の対応も公開する |
+| `IndependentGeometryHomNativeCorePreservation.lean` / 同namespace | `readWith_extraction`・`readWith_generation`・`readWith_selected`・`readWith_operation_preservation`・`readWith_coordinate_preservation`が、元のHomの保存則から独立stageの全候補に対する原始条件を導く |
+| `IndependentGeometryHomNativeEquationPreservation.lean` / 同namespace | role・restriction自然性・violation・residual・detectorの原始条件を導く。`readWith_equation_preservation`が既存の四つのequation局所条件を統合する |
+| `IndependentGeometryHomNativePackage.lean` / 同namespace | `readWith_package`・`localWith_package`が、同じreaderと局所商に全core条件を与える。`localWith_package_assemble`がlower/upper双方の計算成分と全依存familyを回復する。両方式の`local*_package`・`local*_package_assemble`が元の完全幾何Homのbaseへ接続する |
+| `IndependentGeometryHomNativeGeometryPreservation.lean` / 同namespace | coreの回復等式で既存のcoverage/overlap比較前提を放電する。`localWith_coverage`・`localWith_overlap`が元の幾何保存から独立stageの条件を導き、`localWith_coefficient`・`localWith_coefficient_assemble`が非可逆性を制限せず元の環準同型を回復する |
+
+新しい入力前提を追加せず、元のnative Homと独立object stageの既存条件からこの接続を得た。
+`readWith`のraw/realization引数は引き続き共通構成の差し込み口であり、今回閉じたのはcore全条件と
+coreのnative側回復、およびcoverage・overlap・係数の接続である。完全幾何のraw・realizationを
+同じ局所商の全条件へ接続し、全Homのnative側回復と全query側回復を閉じる義務が残る。
+全Homの分離、共通の恒等・合成、残る有限式・指定反証、パートI全体のPR・独立査読・CI・mergeも
+継続対象である。パートIIには進まず、固定GOAL・元のHomの範囲・Cycle 79を維持する。
+
+新規5 sourceの単一file検証が通り、namespace監査は順に9・5・6・7・4件(計31件)で
+標準公理のみだった。明示31宣言の個別`#print axioms`も全件を照合した。最終検証に
+warning・errorはなく、placeholder・hidden/BiDi・privacy・語彙・docstring・module登録・
+差分整形を確認した。Research全体buildは行わず、固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+
+#### 共通局所商の全幾何法則と両方式のnative Hom全体の回復
+
+独立object stageから組み立てた両端の間の任意のnative Homについて、raw・realizationを
+同じ共通readerと不変量の局所商へ接続した。両方式の`localRepresentative_points`・
+`localExplicit_points`は、実際の全Hom assemblerが要求する全局所条件を導く。
+続く`localRepresentative_assemble`・`localExplicit_assemble`は、そのassemblerへ渡すと
+元の完全幾何Hom全体が戻ることを示す。今回閉じた方向はnative Homから局所商を経た回復である。
+
+明示rawでは、全候補の座標・relation・依存local-data行が共通readerのraw行に一致する。
+既存のnative raw converseの比較前提をこれらの等式で放電し、core・係数写像の回復を使って
+実際のstage assemblerの出力全体を元のraw mapと比較した。代表方式では、元のstrict raw等式から
+既存の原始条件を導く。代表方式のrawを明示raw mapへ置き換える変更は行っていない。
+
+realizationでは、代表方式の三つのdirected成分と、明示方式の三つのfiber同値・三つの
+actual context-action行を共通readerへ接続した。元のnative supplyから全原始法則を導き、
+core回復等式に沿って実際のstage assemblerのパラメータを同定してsupply全体を回復する。
+全Homの回復には既存のnative extensionalityを使い、coverageのproof-valued性と既存の
+thin-context overlapのsubsingleton性もその既存APIのまま使用する。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentGeometryHomNativeRawReadings.lean` / `IndependentGeometryHomPrimitive.NativeReader` | `readWith_explicitRaw_maps`と三つの`readWith_raw_*`がraw converseの比較前提を放電する。`readWith_explicitRaw_points`・`readWith_explicitRaw_assemble`が全原始法則とnative raw回復を与える |
+| `IndependentGeometryHomNativeRawPreservation.lean` / 同namespace | `localWith_explicitRaw`・`localWith_representativeRaw`が両方式の独立stage法則を導く。`localWith_explicitRaw_assemble_heq`はcore・係数の回復から実際の依存raw map全体を回復する |
+| `IndependentGeometryHomNativeRealizationReadings.lean` / 同namespace | 各fiberとactual-actionのprojection APIが元のreaderとの一致を示す。両方式の`readWith_*Realization_points`・`readWith_*Realization_assemble`が全法則と元のsupplyの回復へ接続する |
+| `IndependentGeometryHomNativeRealizationPreservation.lean` / 同namespace | 両方式の`localWith_*Realization`が独立stage法則を与える。対応する`*_assemble_heq`がcore回復を使用し、実際のstage assemblerから元のsupply全体を回復する |
+| `IndependentGeometryHomNativeFullRecovery.lean` / 同namespace | 両方式の`local*_points`が同じ局所商の全条件を統合し、`local*_assemble`が元の完全Hom全体を回復する。`representativeHom_ext`は既存native extensionalityをsupply全体の比較へ接続する |
+
+入力は既存の独立object stageと元のnative Homである。raw・realizationのmap・row比較前提は
+共通readerのprojectionから、assemblerのパラメータ一致は前節のcore・係数回復から放電した。
+完成した写像・保存証明を局所lawへ追加していない。非可逆な係数準同型も元の範囲で保持する。
+
+逆方向、すなわち任意の適法な局所商から組み立てたHomを読み直して全query値と局所商全体を
+回復する証明は未完了である。全Homの分離、共通の恒等・合成、残る有限式・指定反証も残る。
+今回の任意native Homからの法則導出を、完全な正負instance検査や全Homの両逆の代用にはしない。
+パートI全体のPR・独立査読・CI・merge・Issue同期まで継続し、パートIIは開始しない。
+固定GOAL・元のHomの範囲・Cycle 79は維持する。
+
+新規5 sourceの単一file検証が通った。namespace監査は順に6・4・15・6・5件(計36件)で
+標準公理のみだった。明示36宣言の個別`#print axioms`も全件を照合し、標準公理のみを確認した。
+最終検証にwarning・errorはなく、placeholder・hidden/BiDi・privacy・語彙・docstring・
+module登録・差分整形を確認した。Research全体buildは行わず、固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
+
+
+#### 任意の適法な局所商の全query回復と完全Homの両逆・分離
+
+独立object stageから組み立てた両端について、前節と逆の方向を閉じた。
+`readRepresentative_assemble`・`readExplicit_assemble`は、任意の適法な共通局所商から
+実際の全Hom assemblerで作ったHomを読み直すと、元の全query値が戻ることを示す。
+`localRepresentative_read_assemble`・`localExplicit_read_assemble`は、これを既存の
+`InvariantWitness.point_ext`へ渡し、補助不変量対応を消した商全体の回復を得る。
+
+この証明では、元の局所条件を満たす任意のtableを出発点とする。native readerの像であることを
+先に仮定していない。まずsource・両Atom・object・不変量・axis・contextと派生照合値を回復する。
+依存するoperation・signature・observableのreaderには、その添字点の等号と元のnative familyの
+異種等号を渡す。既存の成分ごとの両逆から、activeだけでなく全候補carrier・endpoint行を回復する。
+実際の両端に一致しないobject対では、全Hom局所法則の`inactiveObjects`を明示的に使用する。
+
+raw・realizationの比較を前提とする`readWith_assemble`へ、実際の両方式のraw/realization
+assemblerの全候補readbackを接続した。この最後の比較前提は`readRepresentative_assemble`・
+`readExplicit_assemble`で放電しており、完成したraw mapや保存証明を局所lawへ追加していない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentGeometryHomLocalIndexRecovery.lean` / `IndependentGeometryHomPrimitive.NativeReader` | `indices_assemble_*`が任意の適法な局所商のscalar・index・派生照合値を回復し、依存行のactivation比較を与える |
+| `IndependentGeometryHomReadingCongruence.lean` / `IndependentGeometryHomPrimitive.ReadingCongruence` | 既存のindexed function・candidate inverse・indexed ring readerの合同性を示す。`operation`・`signature`・`observable`は、対応する添字点と依存familyが等しければ全候補tableが等しいことを示す |
+| `IndependentGeometryHomLocalFamilyRecovery.lean` / `IndependentGeometryHomPrimitive.NativeReader` | `operationRows_assemble`・`signatureRows_assemble`・`observableRows_assemble`が、native readerの添字表現と元の局所tableを比較して全依存行を回復する |
+| `IndependentGeometryHomLocalTableRecovery.lean` / 同namespace | `readWith_assemble`が共通Queryの全constructorを場合分けし、両向きの点対順序、全依存行、inactive object対、raw/realizationの比較を使ってtable全体を回復する |
+| `IndependentGeometryHomLocalFullRecovery.lean` / 同namespace | 両方式の全query回復と局所商回復を示す。`representativeHomReadingEquiv`・`explicitHomReadingEquiv`は、前節のnative側回復と合わせ、元の完全Homと適法な局所商との同値を与える |
+| `IndependentGeometryHomFullSeparation.lean` / 同namespace | 両方式の`*_eq_iff_queries`・`*_distinct_query`が全Homの分離を示す。`*_unique_preimage`が任意の適法な局所商の一意なnative preimageを与える。`local_fragment_point`が有限fragmentの値を同じ元のqueryへ接続する |
+
+入力前提は既存の独立object stageと、原始条件を満たす局所商である。共通Hom宣言、各原始法則、
+商で同一視する条件を変更せずに、全fieldの両逆と分離が得られた。元の非可逆な係数・object・
+operation写像も同値の対象に残り、代表方式と明示方式のraw/realizationの違いも保持する。
+全queryの分離は、同じobject作用を持つ異なるHomにも適用される。
+
+パートIでは、共通の局所恒等・合成とその有限片への接続、残る原始式の有限support、指定反証scenarioの
+共通宣言への統合、PR・独立査読・CI・mergeが残る。このHom同値をパートI全体や主Nの完了とは扱わない。
+パートIIは開始せず、固定GOAL・元のHomの範囲・Cycle 79を維持する。
+
+新規6 sourceの単一file検証が通った。namespace監査は順に9・6・3・1・8・7件(計34件)で
+標準公理のみだった。明示34宣言の個別`#print axioms`も全件を照合し、標準公理のみを確認した。
+最終検証にwarning・errorはなく、placeholder・hidden/BiDi・privacy・語彙・docstring・
+module登録・差分整形を確認した。Research全体buildは行わず、固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
+
+
+#### 原始点による共通index・operation合成と有限fragmentへの接続
+
+承認済み設計§4.1の局所合成を、原始graphの点から構成した。最初の行の一意な像を中間値として
+選び、次のtableをその点で読む。Atom・contextのbackwardは順序を逆転する。contextには元の
+preorder同値の比較を保持し、context objectの全単射を新たに要求しない。両成分の恒等は対角点から
+定義し、適法性と元のnative恒等への組立てを証明した。
+
+共通Homでは、source・pointed/upper Atom・object・invariant index・signature axis・係数・
+family/configuration照合値・equation/context indexを同じQuery上で合成した。
+`Composition.indices_eq_native`は、それらが元のcore Homと係数準同型の合成を読む値に
+一致することを示す。係数・source・objectの可逆性は要求しない。依存する値の行は別に埋めるため、
+このindex table単独の完全Hom適法性を主張してはいない。
+
+operationでは、最初のobject graphから中間の両端を選び、そのoperation graphから中間の値を選ぶ。
+`Composition.operationRows_eq_native`が全候補endpoint/carrier行について元のnative合成との一致を
+証明する。添字同定と値の異種等号をSigma対で比較し、型の移し替えでoperationの値が変わらないことを
+導いた。完成したnative Homの合成は比較定理の右辺に現れ、直接tableを定義する入力には使わない。
+
+有限性は、一般の依存graphで一つのindex点と最大二つの値点に分解した。共通宣言のoperationでは
+index点が二つのobject点になるため、両入力を合わせて最大四つのqueryで各出力が決まる。
+`Composition.operationRows_finite_fragment`は、この主張を補助対応の商を取った後の実際の
+`InvariantWitness.fragment`へ接続する。支持集合は評価する元の入力とqueryに応じて選ぶ。
+最初の比較入力には既存の原始行法則を要求し、任意の不適法tableに対する有限決定性へ拡張しない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentIndexedCarrierComposition.lean` / `IndependentCarrierGraph`, `IndependentIndexedCarrierGraph` | `composeIndex`・`composeRows`が中間の原始添字・値を使う。`composeIndex_iff`は関係合成との一致、`composeRows_isLawful`はinactive/active行法則、`assemble_composeRows_heq`は依存写像の合成との一致を与える |
+| `IndependentGeometryHomAtomComposition.lean` / `IndependentGeometryHomPrimitive.Atom` | `identity`・`compose`を両方向の原始点から定義する。適法性・native assemblyとの一致と各方向二点のsupportを証明し、共通index合成へ使用する |
+| `IndependentGeometryHomContextComposition.lean` / `IndependentGeometryHomPrimitive.Context` | 対角恒等と前後のcontext graph合成を定義する。`compose_eq_read`・`assemble_compose`が元のthin-category同値へ接続し、両方向の二点supportを与える |
+| `IndependentGeometryHomCompositionIndices.lean` / `IndependentCarrierGraph`, `IndependentGeometryHomPrimitive.Composition` | `compose_eq_read`がdirected graphの比較APIを与える。`dependentIndices`・`indices`が共通Queryの添字部分を直接合成し、両`*_eq_native`が元のcore/係数合成との一致を示す |
+| `IndependentGeometryHomOperationComposition.lean` / `IndependentGeometryHomPrimitive.Operation`, `NativeReader`, `Composition` | operation値の型同定を`assemble_value_heq`・`indexed_comp_heq`・`operationIndexedFamily_heq`で処理する。`operationRows`が原始合成を共通宣言へ接続し、`operationRows_eq_native`が全候補値を元の合成と比較する |
+| `IndependentGeometryHomOperationCompositionFinite.lean` / `IndependentIndexedCarrierGraph`, `IndependentGeometryHomPrimitive.Composition` | `composeRows_finite_support`が一つのindex点と最大二つの値点を構成する。`operationRows_finite_support`・`operationRows_finite_fragment`が共通queryと実際の有限fragmentで最大四点の決定を証明する |
+
+入力前提は既存の独立object stage、補助対応を消した局所商、その原始行法則である。
+`operation_endpoints`が共通index合成と依存する両端の合成を同定し、native readerの型比較を放電する。
+対象条件・Homの意味・商の同一視条件を変更せず、同じHom同値へ接続する合成を構成している。
+
+残りはsignature/observable・raw・realizationの直接合成、それらの共通tableへの統合と商上の
+全局所法則、全Homの恒等・単位・結合則、各有限片との整合、残る原始式の有限support、指定反証の
+統合である。今回のoperation単独の四点決定を、全Homの合成やDの有限決定性とは扱わない。
+パートI全体のPR・独立査読・CI・merge・Issue同期まで継続し、パートIIは開始しない。
+固定GOAL・元のHomの範囲・Cycle 79を維持する。
+
+新規6 sourceを一つずつfocused checkし、全て通った。各fileのnamespace監査の合計は順に
+11・10・10・5・7・4件(計47件)で標準公理のみだった。47宣言全ての個別`#print axioms`を
+出力名まで照合した。最終検証にwarning・errorはなく、placeholder・hidden/BiDi・privacy・
+語彙・docstring・module登録・差分整形・保護領域を確認した。Research全体buildは実行せず、
+固定GOALのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+
+#### signature・observableの原始合成と共通core tableへの統合
+
+前節のscalar/index・operation合成に、signature座標とobservableの両方向の原始合成を接続した。
+最初の添字graphから中間添字を選び、次の添字点がtrueなら二つのfiber graphを合成する。
+次の添字点がfalseなら行全体をfalseに固定する。signatureの候補axis型が一致しない場合もfalseとし、
+添字写像の可逆性を追加していない。forward/backwardの点は元の向きで合成する。
+
+`Composition.signatureRows_eq_native`は、全候補axis・coordinate行を元のnative座標同値の合成と
+比較する。`Composition.observableRows_eq_native`は、全候補context・値carrier行を元の環同値の
+合成と比較する。observableではcontextの添字とring-equivalence familyをSigma対で比較し、
+型の移し替えが両方向の値を変えないことを導いた。必要な環構造は既存の独立object stageから得ている。
+
+有限性は、二つの添字点と最大二つのfiber点に分解した。`signatureRows_finite_support`・
+`observableRows_finite_support`は、共通宣言の両入力を合わせて最大四つのqueryで各出力が決まる
+ことを示す。各`*_finite_fragment`が補助対応を消した商の実際の有限fragmentへ接続する。
+その支持集合は元の入力と評価queryに依存し、指定した既存の行法則を満たす比較入力について使う。
+
+続く`Composition.composeWith`は、scalar/index・operation・signature・observableを同じ共通Queryの
+tableへ統合する。`composeWith_eq_native`は、元のcore Homと係数準同型の合成を共通readerで読んだ
+値との全queryの一致を証明する。raw・realizationには両辺で同じ点callbackを渡す段階であり、
+それらの合成や幾何法則はまだ導いていない。完全Homの合成の代わりにcoreだけで完了とはしない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentIndexedInverseComposition.lean` / `IndependentIndexedInverseGraph`, `IndependentCandidateIndexedInverseGraph` | `composeRows`が添字点と両方向のfiber点を合成する。`composeRows_isLawful`・`assemble_composeRows_heq`が元の依存同値に接続する。`extend`・`project_extend`・`extend_read`は外側carrier候補を保持した完全readerへ接続する |
+| `IndependentGeometryHomSignatureComposition.lean` / `IndependentGeometryHomPrimitive.Composition` | `signatureRows`が元のaxis/coordinate行を直接合成する。`signature_indices`が共通index tableとactivationを同定し、`signatureRows_eq_native`が全候補行を元のnative合成と比較する |
+| `IndependentGeometryHomObservableComposition.lean` / `IndependentGeometryHomPrimitive.Observable`, `NativeReader`, `Composition` | contextの型同定を両方向のfiberデータまで証明する。`observableRows`・`observable_indices`・`observableRows_eq_native`が原始の合成、共通activation、native環同値合成を接続する |
+| `IndependentIndexedInverseCompositionFinite.lean` / `IndependentInverseGraph`, `IndependentIndexedInverseGraph`, `IndependentCandidateIndexedInverseGraph` | 非依存の二点supportと、依存する二つの添字点・二つの値点を構成する。`composeRows_lifted_finite_support`が点projectionとの一致を使い、元のqueryへの埋込みでも最大四点であることを示す |
+| `IndependentGeometryHomAlgebraicCompositionFinite.lean` / `IndependentGeometryHomPrimitive.InvariantWitness`, `Composition` | `fragment_eq_iff_points`が有限fragmentの等号を元のqueryの等号と同定する。signature/observableの`*_finite_support`・`*_finite_fragment`が同じ共通宣言と商で四点の決定を与える |
+| `IndependentGeometryHomCoreComposition.lean` / `IndependentGeometryHomPrimitive.Composition` | `dependentWith`・`composeWith`が直接合成したcoreの全計算成分を統合する。各`*_eq_native`が任意の同じraw/realization点callbackの下で、元のcore/係数合成の共通readerとの一致を示す |
+
+入力前提は既存の独立object stage、局所商、原始行法則、係数の原始保存則である。
+有限supportの埋込み補題が要求する点projection等式は、実際の共通queryのconstructorを場合分けして
+放電した。native Homの合成は比較証明で使用し、直接合成するtableの値に完成した射を保持しない。
+対象条件・Homの意味・商の同一視条件は変更していない。
+
+残りはraw・realizationの直接合成、共通tableの全幾何法則と商上の合成への接続、全Homの恒等・
+単位・結合則・有限片との整合、残る原始式の有限support、指定反証の統合、パートI全体の
+PR・独立査読・CI・mergeである。パートIIは開始せず、固定GOAL・元のHomの範囲・Cycle 79を維持する。
+
+新規6 sourceを一つずつfocused checkし、全て通った。各fileのnamespace監査の合計は順に
+9・3・7・6・5・4件(計34件)で標準公理のみだった。34宣言全ての個別`#print axioms`も出力名まで
+照合した。最終検証にwarning・errorはなく、placeholder・hidden/BiDi・privacy・語彙・docstring・
+module登録・差分整形・保護領域を確認した。Research全体buildは実行せず、固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+
+#### rawの原始合成と共通core/raw tableの保存則
+
+明示方式のrawについて、coordinate・relation・local-dataの全queryを原始点から直接合成した。
+rawの添字は逆向きなので、後段のbackward context graphから中間contextを選び、前段の
+context点がtrueなら二つの値の行をsourceからtargetの順に合成する。falseなら行全体を
+falseに固定する。`composeAgainst`はこの構成と両方向の逆写像法則を一般の依存graphで証明する。
+
+local-dataでは、さらに前段のcoordinate点から中間座標を一つ選ぶ。後段のcoordinate点がtrueで、
+三つの元のlocal-data型応答が存在する場合に、その二つの値の行を合成する。context不一致、
+source coordinate carrier不一致、後段coordinate点不一致では全候補値をfalseにする。
+`composeLocalData_eq_native`は、これらの候補も含めて元のraw mapの合成との一致を示す。
+
+`ExplicitRaw.composeRaw`が三種類を元のraw queryへ統合し、`composeRaw_eq_native`が全queryの一致を
+証明する。続く`Composition.explicitRawRows`は、native rawを読み直したtableではなく、元の独立object
+stageと局所商のretained tableから直接定義する。`explicitRawRows_eq_native`では、既存のobject
+readingの両逆と実際のcore・係数assemblerから比較前提を放電した。
+
+`Composition.composeExplicitWith`は、既存のscalar/index・operation・signature・observable合成に
+このraw合成を接続する。`composeExplicitWith_eq_native`がcore・係数・rawの元の合成との一致を、
+`composeExplicitWith_raw_points`が合成後の全raw原始法則(逆写像、label、多項式、restriction)の保持を
+証明する。realizationには指定した点callbackを残しており、完全Homの合成と商上の全条件は未完了である。
+
+coordinate・relationの各出力は、両入力の二つのbackward context点と最大二つの値点で決まる。
+各`*_finite_support`は共通queryで最大四点、`rawCoordinate_finite_fragment`・
+`rawRelation_finite_fragment`は商の実際の有限fragmentで同じ決定性を示す。
+支持集合は元の入力と評価queryに依存し、比較入力には既存の原始行法則を要求する。
+local-dataの有限supportはまだ未証明であり、今回の四点決定に含めない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentIndexedInverseAgainstComposition.lean` / `IndependentIndexedInverseGraph` | `composeAgainst`・`*_at_pair`・`*_false_at_pair`・`*_isLawful`が後段の逆向き添字選択と原始fiber合成を構成し、rawのcoordinate・relation行へ使用する |
+| `IndependentGeometryHomRawCompositionRows.lean` / `IndependentGeometryHomPrimitive.ExplicitRaw` | `coordinateTable`・`relationTable`と各行法則を共通queryから得る。`composeCoordinate`・`composeRelation`と各active/inactive比較が元のraw stageを直接合成する |
+| `IndependentGeometryHomRawCompositionNative.lean` / 同namespace | `composeCoordinate_eq_native`・`composeRelation_eq_native`が全context・carrier候補を元のraw mapの合成と比較する |
+| `IndependentGeometryHomRawLocalDataComposition.lean` / 同namespace | `composeLocalDataFiber`・`composeLocalData`が元の型応答と一つの中間座標を使う。各active/inactive APIが型候補と点候補の全場合を扱う |
+| `IndependentGeometryHomRawLocalDataCompositionNative.lean` / 同namespace | `readLocalData_inactive_carriers`・`composeLocalData_eq_native`が依存する値の全候補を元のnative raw合成へ接続する |
+| `IndependentGeometryHomRawComposition.lean` / 同namespace | `composeRaw`・`composeRaw_eq_native`が三種類と両方向を元のraw query上で統合する |
+| `IndependentGeometryHomCoreRawComposition.lean` / `IndependentGeometryHomPrimitive.Composition` | `explicitRawRows`・`*_eq_native`が元の独立stageとの比較を放電する。`composeExplicitWith`・`*_eq_native`・`*_raw_points`がcore/raw全体の比較とraw原始法則の保存を与える |
+| `IndependentIndexedInverseAgainstCompositionFinite.lean` / `IndependentIndexedInverseGraph` | `composeAgainst_finite_support`・`composeAgainst_lifted_finite_support`が二つの逆向き添字点と最大二つの値点を構成し、元のqueryへの埋込みに接続する |
+| `IndependentGeometryHomRawCompositionFinite.lean` / `IndependentGeometryHomPrimitive.ExplicitRaw`, `Composition` | coordinate・relationの`*_finite_support`と`rawCoordinate_finite_fragment`・`rawRelation_finite_fragment`が同じ共通宣言と実際の商の有限片で最大四点の決定を証明する |
+
+入力前提は既存の独立object stage、局所商、package・係数・rawの原始法則である。完成したraw mapは
+直接tableを定義する入力にせず、元の写像の合成は比較と法則保持の証明で使う。対象条件・Homの意味・
+商の同一視条件を変更していない。
+
+残りは両方式のrealizationの直接合成、両方式の全幾何法則と商上の合成、全Homの恒等・単位・結合則・
+有限片との整合、local-data合成を含む残る原始式の有限support、指定反証の統合、パートI全体の
+PR・独立査読・CI・mergeである。パートIIは開始せず、固定GOAL・元のHomの範囲・Cycle 79を維持する。
+
+新規9 sourceを一つずつfocused checkし、全て通った。各fileのnamespace監査の合計は順に
+4・10・2・8・2・2・5・2・4件(計39件、生成されたmatch宣言1件を含む)で標準公理のみだった。
+明示38宣言全ての個別`#print axioms`も出力名まで照合した。最終検証にwarning・errorはなく、
+placeholder・hidden/BiDi・privacy・語彙・docstring・module登録・差分整形・保護領域を確認した。
+Research全体buildは実行せず、固定GOALのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+
+#### realizationの原始合成と全計算queryの統合
+
+代表方式のSupport・Axis・Observableの三つの有向写像と、明示方式の同じ三種類の両方向の
+fiber写像を、元のcontext点と値点から合成した。前向きでは前段の中間値から後段の値点を読み、
+後ろ向きでは後段の逆像から前段の逆向きの点を読む。候補contextが不一致の場合も含め、
+両方式の`composeRealization_eq_native`が元のrealization合成の読み取りとの一致を証明する。
+
+明示方式のactual context-actionは、既存の原始action法則に従い、合成したfiberの後ろ向きの
+一点、元のsource context-operationの一点評価、前向きの一点から構成する。Observableだけは
+restrictionの向きに合わせてcontextの順を逆にする。`action_point_iff`が元のnaturalityを使って
+この式とnative作用の一致を示す。完成したcontext作用や全域Homを局所値に追加していない。
+
+`representativeRealizationRows`・`explicitRealizationRows`は、独立object stageと局所商のretained
+queryからこの合成を定義する。比較定理は既存のobject readingの両逆と実際のpackage assemblerを
+使い、元のcontext表・Atom作用との比較前提を放電する。
+
+`composeRepresentative`・`composeExplicit`がcore・係数・raw・realizationの全計算queryを統合する。
+両`*_eq_native`は、元の各成分の合成を`NativeReader.readWith`で読んだtableとの全query一致を示す。
+両方式のrealization原始法則と、明示方式のraw原始法則も同じtable上で保持する。
+ここで定義したのは全計算queryのtableであり、全法則を備えた商上のHom合成は引き続き未完了である。
+
+代表方式では、任意の一出力は前段のcontext点一つ、前段の値点一つ、後段の値点一つで決まる。
+`representativeRealization_finite_fragment`は、同じ局所商の実際の二つの有限fragment上で、
+合計最大三点の決定を証明する。支持集合は元の入力と出力queryに依存し、比較入力には元の
+原始行法則を要求する。明示方式のactual-action合成の有限supportは今回の三点決定に含めない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentFixedIndexedPointComposition.lean` / `IndependentFixedIndexedPointGraph` | `compose`・`compose_at_pair`・`compose_isLawful`・`compose_eq_read`・`compose_index_iff`・`assemble_compose`が、依存する中間contextと中間値から合成し、元の写像に接続する |
+| `IndependentFixedIndexedInverseComposition.lean` / 同namespace | `composeBackward`・active/inactive比較・`composeBackward_eq_forward`・`compose_inverseLaws`が逆順の値合成と両方向の逆写像法則を与える |
+| `IndependentFixedIndexedPointAction.lean` / 同namespace | `action`・`action_active`・`action_inactive`・`action_point_iff`が一点ごとのcontext作用を構成し、native自然性に接続する |
+| `IndependentGeometryHomRepresentativeRealizationComposition.lean` / `IndependentGeometryHomPrimitive.RepresentativeRealization` | `composeRealization`と全候補queryのnative比較が、元の三つの有向写像を保持する |
+| `IndependentGeometryHomExplicitRealizationCompositionFibers.lean` / `IndependentGeometryHomPrimitive.ExplicitRealization` | Support・Axis・Observableの各`compose*`・`*_inverseLaws`・`*_eq_native`が両方向を元の同値合成へ接続する |
+| `IndependentGeometryHomExplicitRealizationComposition.lean` / 同namespace | `composeRealization`、三つのnative inactive API、`composeRealization_eq_native`がactual-actionを含む全候補値を扱う |
+| `IndependentGeometryHomRealizationCompositionRows.lean` / `IndependentGeometryHomPrimitive.Composition` | 両`*RealizationRows`と`*_eq_native`が、元の独立object stageと実際のassemblerへ接続する |
+| `IndependentGeometryHomFullTableComposition.lean` / 同namespace | 両`compose*`・`*_eq_native`・`*_realization_points`と`composeExplicit_raw_points`が、全計算queryの合成とrealization/raw法則保持を同じtableに統合する |
+| `IndependentFixedIndexedPointCompositionFinite.lean` / `IndependentFixedIndexedPointGraph` | `compose_lifted_finite_support`が元のquery型で最大三点の支持集合を構成する |
+| `IndependentGeometryHomRepresentativeRealizationCompositionFinite.lean` / `IndependentGeometryHomPrimitive.RepresentativeRealization`, `Composition` | `composeRealization_finite_support`と`representativeRealization_finite_fragment`が代表方式の共通query・実際の商fragmentへ三点決定を接続する |
+
+入力前提は既存の独立object stage、局所商、package・係数・raw・realizationの原始法則である。
+context/Atomのnative比較、元のnaturality、合成後のinverse/realization/raw法則は既存の
+assembler・readerおよび今回の証明から得た。GOAL・元のHomの範囲・商の同一視条件を変更していない。
+
+残りは全幾何法則と商上の合成、全Homの恒等・単位・結合則・有限片との整合、明示realizationと
+local-data合成を含む残る有限support、指定反証の統合、パートI全体のPR・独立査読・CI・mergeである。
+パートIIは開始せず、Cycle 79を維持する。
+
+新規10 sourceを一つずつfocused checkし、全て通った。各fileのnamespace監査は順に
+6・6・4・2・9・5・4・7・1・2件(計46件、生成されたmatch宣言1件を含む)で標準公理のみだった。
+明示45宣言全ての個別`#print axioms`も出力名まで照合した。最終検証にwarning・errorはなく、
+placeholder・hidden/BiDi・privacy・語彙・docstring・module登録・差分整形・保護領域を確認した。
+Research全体buildは実行せず、固定GOALのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+
+#### 原始の整合族からの商上の全Hom合成と結合則
+
+前節の全計算queryの合成tableから、商上の局所Homを構成した。`composeRetained`が元の有限tableを
+そのまま保持し、object行と不変量のindex行の合成法則を証明する。`composePresentation`は、
+前段の一意なindex像を中間添字として二つの補助graphを直接合成する。不一致のcarrier、inactiveな
+index対、predicateの補助点をfalseに保ち、object点の中間対象による分解から評価の整合性を示す。
+
+`exists_compositePresentation`は両入力の商の帰納法でこの構成を適用する。`composeLocal`は、
+構成済みの整合presentationを選んだ後で補助対応を消す。`composeLocal_table`・`composeLocal_point`が
+元の全queryを、`composeLocal_fragment`が任意の有限fragmentを保持する。`composeLocal_choice_independent`は
+同じ元のquery値を持つ任意の整合presentationが同じ合成結果になることを証明する。
+完成したnative Homやnative transportの存在条件を、補助行の定義に使用していない。
+
+`representativeLocal`・`explicitLocal`が、実際の独立object stageと完全局所法則を持つ二つのHomへ
+この構成を適用する。各`*_table`・`*_fragment`は原始合成tableとの正確な一致を与える。
+`*_eq_native`は元の完全Homの合成の読み取りとの一致を示し、`*_points`がinactive object、package、
+coverage、overlap、係数、raw、realizationの全局所法則を放電する。`*_assemble`はその合成を組み立てると
+元の完全Homの合成に戻ることを、全Homの両逆を使って証明する。
+
+`*_read_comp`は任意の元の完全Homの読み取りが局所合成と可換であることを示す。`*_assoc`は、
+局所側の直接構成と全成分の比較を証明した後で、元の完全Homの結合則を使い、商上の結合則を示す。
+代表方式の有向realization、明示方式のrawとactual context-action、非可逆な係数・object・operation
+写像を同じ範囲で保持する。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentGeometryHomRetainedComposition.lean` / `IndependentGeometryHomPrimitive.InvariantWitness` | `composeRetained`・`composeRetained_table`・`composite_index_point`・`composite_object_factor`が、元の全有限tableと原始object/index合成をつなぐ |
+| `IndependentGeometryHomInvariantPresentationComposition.lean` / 同namespace | `composeRow_inactive`、`compositeAuxRow`とactive/inactive比較、`composeAux`とcarrier/row/typing比較、`composePresentation`・`composePresentation_table`が、商を取る前の補助対応の整合性を構成する |
+| `IndependentGeometryHomInvariantLocalComposition.lean` / 同namespace | `exists_compositePresentation`・`composeLocal`とtable/point/fragment比較・`composeLocal_choice_independent`が、原始合成の整合証明後に補助対応を消す |
+| `IndependentGeometryHomFullCompositionNative.lean` / `IndependentGeometryHomPrimitive.Composition` | `composeRepresentative_eq_full_native`・`composeExplicit_eq_full_native`が、全計算queryを元の完全Homの合成に接続する |
+| `IndependentGeometryHomFullLocalComposition.lean` / 同namespace | 両方式の`*Local`・`*_table`・`*_fragment`・`*_eq_native`・`*_points`・`*_assemble`が、実際の局所商での合成・全法則・全成分の組立てを統合する |
+| `IndependentGeometryHomLocalCompositionLaws.lean` / 同namespace | 両方式の`*_read_comp`・`*_assoc`が、任意の元のHomの合成との可換性と局所商の結合則を示す |
+
+一般補題のobject/index合成条件は、この補題の明示した適用条件であり、完全Homへの適用では原始
+合成tableの定義から放電する。入力の完全局所法則から元のassemblerを得て、合成後の全法則を証明する。
+出力の法則・native比較・結合則を入力fieldへ移していない。補助対応の消去条件と固定GOALは変更していない。
+有限fragmentとの一致は、原始合成tableの制限との一致である。全出力の有限入力supportが完了した
+という主張ではなく、未証明の明示realization・local-data等のsupportは残す。
+
+残りは原始恒等と単位則、残る有限support・有限式・指定反証の統合、パートI全体のPR・独立査読・
+CI・mergeである。パートIIは開始せず、Cycle 79を維持する。
+
+新規6 sourceを一つずつfocused checkし、全て通った。各fileのnamespace監査は順に
+4・11・6・2・12・6件(計41件、生成された補助宣言3件を含む)で標準公理のみだった。
+明示38宣言全ての個別`#print axioms`も出力名まで照合した。最終検証にwarning・errorはなく、
+placeholder・hidden/BiDi・privacy・語彙・docstring・module登録・差分整形・保護領域を確認した。
+Research全体buildは実行せず、固定GOALのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+
+#### 例外フローにおけるパートIの恒等・有限support・反証統合
+
+この節はCycleを加算しない難所突破の例外フローであり、Cycleは79のままとする。固定GOAL A–E、
+native Homの定義、代表方式と明示方式の違い、元の全query値による商の同一視条件は変更していない。
+パートII以後の四族統合、三投影・normalization、共通有限読み取りDとEは開始していない。
+
+原始恒等は、共通query table全体を完成Homの`NativeReader`から定義せず、各constructorを原始graphと
+component恒等mapから構成した。source・Atom・object・invariant index・operation・signature・context・
+observable・係数は対角の原始graphと各候補の
+active/inactive条件から作る。代表方式のrawと三つの有向realizationを保持し、明示方式ではrawの
+coordinate・relation・依存local-dataの両方向、realizationの両方向fiberと実際のcontext作用を保持する。
+明示rawの三成分も、完成したraw恒等mapのreaderを経由せず、context/carrier/coordinateの一致判定と
+各carrier上の対角inverse graphから直接構成する。
+明示方式の実際の作用は元の`ContextMorphism`のSupport・Axis・Observable各成分を評価し、単なる対角
+Boolには置き換えていない。
+
+`presentationIdentity`はfunction invariantの対角補助graph、predicateとinactive行のfalse正規化、
+typingとrow lawを備えた整合presentationを作る。その後に`localIdentity`で補助対応を消す。
+`localIdentity_point`と`localIdentity_fragment`は元の全queryと任意の有限fragmentを直接恒等tableへ戻し、
+`localIdentity_choice_independent`は同じretained宣言を持つ別の補助presentationが別の恒等射を作らない
+ことを示す。両方式のnative恒等との一致、全`PointLaws`、全Hom assembly、左右単位則を証明した。
+
+| Source / namespace末尾 | 主な証拠 |
+| --- | --- |
+| `IndependentGeometryHomIdentityTable.lean` / `IndependentGeometryHomPrimitive.Identity` | `identityWith`、両`*Table_eq_native`、raw/realizationを含む全queryの直接恒等table |
+| `IndependentGeometryHomLocalIdentity.lean` / `IdentityLocal` | `presentationIdentity`、`localIdentity`、point/fragment/choice比較、両方式の`*_points`と`*_assemble` |
+| `IndependentGeometryHomLocalCategoryLaws.lean` / `CategoryLaws` | 代表・明示の`*_id_comp`と`*_comp_id` |
+| `IndependentGeometryHomLocalCompositionLaws.lean` / `Composition` | `representativeLocal_assoc`、`explicitLocal_assoc` |
+
+有限supportでは、明示realizationの全9 queryについて両方向fiberとactual-actionを分解した。
+actual-actionの一つの元の作用点は最大4個の原始cellで決まり、合成fiberの支持集合と有限和を取る。
+raw local-dataでは、後段のbackward context、前段のcoordinate像、三つの型応答、依存fiber値を別々に
+追跡し、missing response・inactive context・carrier/coordinate不一致も扱う。
+
+`composeWith_finite_support`は共通queryの全constructorを網羅する。source・Atom・object・invariant・
+equation・contextに加え、operation・signature・observable・両raw・両realizationの既存supportを統合した。
+family/configurationは無限のAtom写像を入力にせず、一つの真なtransport点から中間像を一意に回復し、
+後段の一セルと合わせて決定する。`composeRepresentative_finite_fragment`と
+`composeExplicit_finite_fragment`は一出力を実際の二つの`InvariantWitness.fragment`へ接続する。
+有限出力集合については各支持集合の`Finset.biUnion`を取り、両`*_finite_fragment_set`から最終的に
+`representativeLocal_finite_fragment_support`と`explicitLocal_finite_fragment_support`で、完成した
+局所Homの有限fragmentが二つの有限入力fragmentだけで決まることを示した。
+
+| Source / namespace末尾 | 主な証拠 |
+| --- | --- |
+| `IndependentFixedIndexedPointActionFinite.lean` / `IndependentFixedIndexedPointGraph` | `action_lifted_finite_support` |
+| `IndependentGeometryHomExplicitRealizationCompositionFinite.lean` / `ExplicitRealization`, `Composition` | fiber・actual-actionの全supportと`explicitRealization_finite_fragment` |
+| `IndependentGeometryHomRawLocalDataCompositionFinite.lean` / `ExplicitRaw`, `Composition` | local-data/raw全体のsupportと`explicitRaw_finite_fragment` |
+| `IndependentGeometryHomFullCompositionFinite.lean` / `Composition` | 全constructorの一出力・有限出力集合・完成局所Hom fragmentの有限決定 |
+
+有限式は、定義を目視して有限と判断せず、source object・target object・Homの三表を読む閉じた構文へ
+置き換えた。`IndependentFiniteLawFormula`の真偽を担うleafは、一つの正確な表セルとその応答値に
+限定した。型・添字・供給値の一致や不一致は式に格納せず、量化されたinstance側の前提または有限な
+構文分岐に置いた。`typeMarker`は構文のユニバースを保つための単位値で、評価は定数真であり、
+任意の型・命題・表応答を引数に取らない。
+これにより、表セルと無関係な任意の命題・値等式・完成したlaw certificateをleafから注入する経路はない。
+`Formula.support`は三表それぞれの`Finset`を返し、`Formula.evaluate_iff_of_support`は任意の比較表について、その
+三support上の一致だけで評価が保存されることを示す。carrier graphのtypingは型の不一致を外側の前提とし、
+totalityとuniquenessは選択した真witnessセルと異なるchallengerの偽セルで表した。inverse rowと依存rowを
+含むそれぞれについて、元の量化法則との同値を証明した。
+
+object側では、foundationのextraction・有限family・composition・invariant・signature・operation・Atom・
+coefficient、generated-object matching、active row、さらに各active objectのcontext・equation・circuit・
+coverage・overlap・rawを全て有限式族へ写し、逆向きに元の`IndependentGeometryPrimitive.IsLawful`を再構成した。
+rawのgenerator・identity・compositionは完成した命題をleafへ入れず、選択されたrelation/image row、有限
+`Finsupp` witness、有限変数集合を明示する。多項式は専用の`CellFormula`で6種類のAST queryセルを固定し、
+`expressionFormula_evaluate`と`evaluate_eq_expected_of_expressionFormula`が`support`上の一致から
+`IndependentPolynomialExpressions.evaluate_eq_of_support`を使って元の多項式値を回復する。identityにも
+`IndependentPolynomialExpressions.compile`と同じsupport評価を使う。`DependentLaws`とobject全体の集約も、
+前段の有限式族から再構成したlaw proofだけを後段へ渡し、完成したdependent/object certificateを
+instance dataとして保持しない。
+
+Hom側では、Atom coherence、extraction、transport matching、generation、object row、equation/context/
+observable、detector、operation、signatureを`PackageAssembly.PointLaws`の有限式族へ集約した。coverageの
+9条件、係数のzero/one/add/mul、overlap、代表・明示raw、代表・明示realizationを同じ三表構文へ接続し、
+`FullRepresentative.PointLaws`と`FullExplicit.PointLaws`の全fieldを両向きに復元した。inactive object rowも
+object参照の不一致を外側の前提とし、式自体は一つの正確な偽Homセルだけを読む。係数graphの型不一致と
+唯一性、代表・明示realizationのreading条件も量化法則側へ移し、式には対応するHomセルを残した。
+量化法則全体に単一supportを要求せず、引数・witness・challenger・monomialを固定した各instanceの有限性と、一つの
+合成出力queryの有限性を区別する。
+
+| Source / namespace末尾 | 主な証拠 |
+| --- | --- |
+| `IndependentFiniteLawFormula.lean`、`IndependentFiniteGraphLawFormula.lean`、`IndependentPolynomialExpressions.lean` | 三表`Formula`、多項式`CellFormula`、各`evaluate_iff_of_support`、total/inverse/dependent rowの`lawful_iff_instances` |
+| `IndependentGeometryObjectFoundation*LawFinite.lean`、`IndependentGeometryObjectMatchingLawFinite.lean` | `foundationLaws_iff_instances`、`Matching.lawful_iff_instances`、`Active.activeTyped_iff_instances` |
+| `IndependentGeometryObjectDependent*LawFinite.lean`、`IndependentGeometryObjectLawFinite.lean` | 6 dependent stage、`dependentLaws_iff_instances`、object全体の`lawful_iff_instances` |
+| `IndependentGeometryHomCoreLawFinite.lean`、`IndependentGeometryHomPackageLawFinite.lean` | core各成分と`PackageAssembly.PointLaws`の`pointLaws_iff_instances` |
+| `IndependentGeometryHomJointLawFinite.lean`、`IndependentGeometryHomRawLawFinite.lean`、`IndependentGeometryHomRealizationLawFinite.lean` | coverage・overlap・coefficient・raw・realizationの各`pointLaws_iff_instances` |
+| `IndependentGeometryHomLawFinite.lean` / `IndependentGeometryHomPrimitive.LawFinite` | `representativePointLaws_iff_instances`、`explicitPointLaws_iff_instances` |
+
+指定反証と非自明例は、部品だけの反証と共通宣言への適用を次のように区別して照合した。
+
+| 検査 | 証拠 |
+| --- | --- |
+| 全false、重複出力、carrier不一致 | `false_table_rejected`、`duplicate_outputs_rejected`、`mismatched_carrier_rejected`と、対象宣言の`eraseMatching_not_lawful` |
+| pointed/upper Atom不一致 | `IndependentGeometryHomPrimitive.Atom.mismatch_rejected` |
+| invariantの種別・native失敗・successor | `mixed_kind_rejected`、`reverse_mixed_kind_rejected`、`native_failure_rejected`、`successor_row_rejected` |
+| ring乗法の改変 | 成分反証`IndependentRingPrimitive.eraseMultiplication_not_lawful`に加え、実際の局所Hom要素を一セルだけ変更した`coefficientMultiplicationMutation_not_full` |
+| context restriction自然性の改変 | 成分反証`IndependentExplicitRealization.finite_support_action_rejected`に加え、具体的actual axis cellを変更した`axisActionMutation_not_full` |
+| overlap片側の改変 | `Overlap.one_sided_order_rejected`と、実際の局所Hom要素へ持ち上げた`overlapForwardMutation_not_full` |
+| raw relation polynomial / variable imageの改変 | 成分反証`not_lawful_of_polynomial_mismatch`・`not_lawful_of_image_mismatch`に加え、異なるlawful endpoint間の局所Homとして構成した`polynomialMismatch_not_full`・`imageMismatch_not_full` |
+| 同じbase・係数・object作用を持つ異なる全Hom | `boolRawSwapHom`と明示恒等HomはrawのBoolean座標交換だけが異なり、`boolRawSwapHom_distinct_query`が同じ具体的raw coordinate queryで分離する |
+| 非可逆係数写像 | `projection_not_injective`と両`*_reconstruction_noninjective`。今回の共通局所Hom同値はその完全Homを入力として保持する |
+| 補助選択による余分な区別 | `auxiliary_choice_independent`、`composeLocal_choice_independent`、新規`localIdentity_choice_independent`。対象側は`objectEquiv`の両逆とProp内のlaw witnessを使い、列挙を対象データへ追加しない |
+
+係数射影2本による既存の分離例に加え、`boolRawSwapHom`はbase・係数・object作用を恒等Homと定義上同じに
+保ち、raw座標だけで異なる。有限fixtureの同一contextで`false ↦ true`を問う具体的queryは交換Homでtrue、
+恒等Homでfalseになる。したがって一般の条件付き分離定理や係数差だけに依存せず、observable/raw/realization
+を含む全queryのうちraw成分が実際に別の完全Homを識別する。
+局所構造には完成した`GeometryPackage`、完成したHom、raw系全体の等式を新しいdata fieldとして追加して
+いない。完成fieldは比較定理とnative法則の回復にだけ現れる。
+
+| Source / namespace末尾 | 主な証拠 |
+| --- | --- |
+| `IndependentGeometryHomIntegratedRefutations.lean` / `IndependentHomRefutations` | 五つの`*_not_full`、`boolRawSwapHom_*_eq`、`boolRawSwapHom_ne_identity`、`boolRawSwapHom_distinct_query` |
+
+以上により、承認済み設計のパートIについて、原始対象、両方式の全Hom両逆、全fieldの保持と分離、
+恒等・合成・左右単位・結合則、有限局所式、指定反証、補助選択の消去が同じ共通宣言と局所商で接続した。
+これは固定GOAL全体の完了ではなく、パートIIへ渡す技術的検証点Iのcompletion candidateである。
+固定GOALカードのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+例外フローの既存10 sourceに加え、閉じた有限式、object各段、Hom各段と集約の18 sourceを追加し、
+`IndependentGeometryHomLawFinite.lean`を安全な三表構文の全Hom集約へ書き換えた。各sourceは単一fileの
+focused checkを通し、埋込みのnamespace監査は全て標準公理のみだった。中心集約であるraw dependent、
+`DependentLaws`、object `IsLawful`、代表・明示`PointLaws`も依存順に再検証した。
+基底式の`.olean`を更新した後に、基礎から完全Hom集約まで依存順に再コンパイルした。
+今回の有限式修正に関わる三表support保存、多項式`CellFormula`、raw・dependent・object・package・両方式の
+raw・realization・完全Hom集約の中心13宣言を個別`#print axioms`でも照合し、公理集合は
+`propext`・`Classical.choice`・`Quot.sound`だけだった。
+placeholder・hidden/BiDi・privacy・語彙・import方向・module登録・差分整形・保護領域を確認し、
+任意命題を受け取る旧constructorまたは同等経路が残っていないことも検索した。
+Research全体buildとaggregate rootのelaborationはhard ruleに従って実行せず、Cycleは79のままである。
+
+
+#### 第4査読後のproof-checkpoint判定
+
+PR #4830は、パートIのcompletion candidateではなく、原始対象、両方式の全Hom、恒等・合成・圏法則、
+有限fragment、指定反証までの基盤を固定する`proof-checkpoint`として受理する。Cycleは79のままとし、
+このPRのmergeをパートI完了またはG-124全体の完了とは扱わない。
+
+exact head `c491d273df2184d05646b94cf12f5d630b7b6b48`に対する第4査読は、Math A/BがReject、
+Lean A/Bが`No major findings`となった。親統合では、任意のLean命題から構文を選べるという一般論だけを
+失格理由にはしない。一方、実際に公開するlaw builderについて、次の有限provenanceが未接続であるため、
+completion判定はRejectとする。
+
+1. circuitの非零residual条件とcoverageの`Active`条件は、元のlawとの論理同値には含まれるが、
+   現在のformula評価そのものには含まれていない。これらが参照する具体的な原始cellから決まることを、
+   専用formulaまたはbuilder単位のsupport保存定理で示す必要がある。
+2. rawのgenerator・identity・compositionはcanonicalなsynthetic polynomial table上ではAST式へ接続したが、
+   原始object tableからそのsynthetic tableへのsupport bridgeが本番のlaw経路に未接続である。
+   係数のzero/one/add/mul、relation polynomial、variable image、必要な型参照を原始supportへ含め、
+   `evaluate_eq_expected_of_expressionFormula`を実際の三法則から使用する必要がある。
+3. 「任意命題を構文上注入する経路がない」という一般的な主張は撤回する。以後の受入条件は、
+   実際に公開するlaw builderの引数が許可された原始dataに限られることと、そのbuilderについて
+   support保存・native law回復・全aggregateへの接続が証明されることとする。
+
+次PRは上記だけを扱う。恒等・合成・左右単位・結合則、局所商の選択非依存、完成Homとの両逆、
+合成fragmentの有限決定、指定改変反証、raw-only分離はこのcheckpointの受理済み基盤として再実装しない。
+修正後の小さい差分に新規4レーン査読を行い、全laneと親統合が`No major findings`となった場合にだけ、
+パートI完了を宣言する。パートII以後は未着手のままである。
