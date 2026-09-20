@@ -6,7 +6,7 @@
 ## 第1章の下書き
 
 - 対象: [第1章 相対的アーキテクチャの構成](ja/04-relative-architecture.md)。
-- 原稿 SHA-256: `f6a6f57bd7b3a51f98a6f960873a36fc576b5715aba193cef313f89bd80898e9`。
+- 原稿 SHA-256: `0b257946663bbac32e118396f946873fba00e3f0083571eb60a5b523e2e868c2`。
 - リポジトリ内の一次資料の固定版: `babd4d0ba63384991b488d3779f19d0b239365e2`。
 - 確認者・日付: Codex（GPT-6）、2026-09-20。
 - 方法: 定義・仮定・構成・証明の読解と照合。本文の証明を読み直し、射の構成に必要な全成分、量化、保存条件を確認した。
@@ -18,7 +18,7 @@
 | C1-02 | §1.2、定理1.18 | 数学 | 有限抽出族、族を保つ composition、configuration を保つ object reading、operation reading | [数学本文 I §§4–6・10][math-i]、[ObjectAlgebra][object-algebra]、[AATCore][core] の `generate`、`algebra_object_nonempty_iff_reachable` と生成成分の定理 | operation を作用写像と同一視せず、最小閉包と有限到達可能性を両向きに証明 |
 | C1-03 | §§1.3–1.4、命題1.16 | 数学 | 対象依存の残差、必須添字、有限符号付き query、健全性と必須添字上の完全性 | [数学本文 I §§7–9][math-i]、[AATCore][core]、[ReadingFunctoriality/Core][reading-core]、[LawfulnessZero][lawfulness] | circuit の不在と方程式の成立に必要な条件を明記。量の零性との同値は零を反映する集約を条件として記載 |
 | C1-04 | §§1.5–1.6、命題1.21・1.23、例1.24 | 数学 | 小さい前順序文脈圏、選択した pullback、被覆要件 | [数学本文 II §§2–13][math-ii]、[Coverage][coverage]、[Topology][topology]、[Stacks Tag 00YW](https://stacks.math.columbia.edu/tag/00YW)、[Tag 00ZG](https://stacks.math.columbia.edu/tag/00ZG) | 生成位相と情報の可視性を区別。層化の構成・普遍性と、貼り合わせを追加する二点の例を記述 |
-| C1-05 | 定義1.25、補題1.26 | 数学 | 係数環、座標・構造関係、多項式制限によるイデアル保存 | [StructureSheaf][structure-sheaf]、[GeometryTransport/Basic][geometry-basic] の raw system の再添字づけ・係数変更 | 商前層の成立条件と、係数変更が制限・恒等・合成を保つ証明を記述 |
+| C1-05 | 定義1.25、補題1.26、章末 | 数学 | 係数環、座標・構造関係、多項式制限によるイデアル保存。方程式と幾何の対応には実現の条件が必要 | [StructureSheaf][structure-sheaf]、[GeometryTransport/Basic][geometry-basic] の raw system の再添字づけ・係数変更、[WitnessIdeal][witness-ideal]、[Correspondence][law-correspondence] | 商前層と係数変更を記述。第2章への接続では、記号的座標から作るイデアルと対象ごとの残差を区別し、両者を結ぶ実現の条件を明記 |
 | C1-06 | §1.7、命題1.29、定理1.31 | 数学 | Atom の全単射、一般の source 写像、exact core 射、被覆・overlap・係数・raw system・文脈データの比較 | [AtomFoundation/Doctrine][doctrine]、[Core の exact 射][reading-core]、[AtomFoundation/Categories][atom-categories]、[GeometryTransport/Categories][geometry-categories]、[ThreeStageProjection][three-stage] | 構成成分を定義してから射影の関手性を証明。文脈の前順序性と raw 表示データの等式を明記 |
 | C1-07 | §1.8、命題1.33・1.34、例1.35 | 数学 | 全域 lens の三法則、基準 view と有限基準 fiber | [LensSemantics][lens-semantics] の `canonicalNormalFormEquiv`、`homEquivFiberMap`、[相対的な操作保存][lens-relative]、[FGMPS04 §3.1](https://www.cis.upenn.edu/~bcpierce/papers/newlenses-full.pdf) | 積表示と射の制限・延長を証明。可視変更と補完の対応、get のみなら4個・put も保てば2個となる例を検算 |
 | C1-08 | §1.9、命題1.37・1.38 | 数学 | 有限グラフ・有限宣言関係・有限状態、観測関手、一般の意味保存射 | [ProtocolSchema][protocol-schema]、[ProtocolSemantics][protocol-semantics]、[ProtocolFinitePresentation][protocol-presentation]、[ProtocolReconstruction][protocol-reconstruction]、[Spivak12 §§3.2・3.4–3.5](https://arxiv.org/pdf/1009.1166v3) | 有限表から全経路への延長を合同関係と帰納法で証明。adapter の保存を頂点成分の平方で説明 |
@@ -37,7 +37,7 @@ lens の三法則、基準 fiber、射の延長、プロトコルの観測の意
 初稿との差分を照合し、独立行57式の内容・順序、43件の定義等の番号、28件の式番号、
 外部文献の引用4か所を保持した。本文内数式の分割は、役割・集合・操作を分けた表の10式であり、
 対応する集合と写像を維持した。定義の条件、定理の仮定・結論、証明の論理は変更していない。
-この確認は執筆者による通読・差分確認であり、独立レビューは次節のとおり PR 上で行う。
+この確認は執筆者による通読・差分確認であり、独立レビューの結果は次節に記録する。
 
 同日、追加の依頼に基づき、冒頭を概要として整理し、lens・プロトコルへ接続する理由と
 章末のまとめを加えた。接続の目的は、独立に定めた意味論の操作・法則・意味保存射を
@@ -59,8 +59,25 @@ GitHub のファイルプレビューでは、定義1.30の番号付きリスト
 `\tag` から数式末尾の `\qquad\text{(...)}` へ変更した。式の数学的内容と番号を保持した。
 
 2026-09-20、第1章は人間による原稿確認を経て、PR 作成の承認を受けた。
-Claude の独立レビューと GitHub のファイルプレビュー・描画済み差分の数式確認は、
-PR 上で行い、対象 commit と結果を PR に記録する。
+commit `3d867ccea586840681812e4e8beae1cf5542d1f9` に対し、
+[Claude のレビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4831#issuecomment-5749092682)は
+approve とし、記法と説明の任意提案3件を挙げた。
+[ChatGPT のレビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4831#pullrequestreview-5260310485)も
+主要証明を肯定し、記号的座標と残差の区別1件、読みやすさの改善3件を提案した。
+両者の確認範囲は各レビューに記載されている。GitHub 上の数式表示は、
+同 commit に対する Codex と Claude の確認結果を PR に記録している。
+
+同日、人間の採用指示に基づき、記号的座標から生成するイデアルと対象ごとの残差を、
+実現の条件の下で結ぶ説明へ修正した。`WitnessIdeal` の生成座標、`Correspondence` の実現条件、
+第2章の数学棚卸し2-A〜2-Dに照合した。reading の射と意味保存射の区別、
+core の射の条件と名前付き操作の構成の目的を先に示し、重複する説明を整理した。
+二点の例は貼り合わない部分を層化の前へ移し、層化の結果と普遍性を例1.24に残した。
+プロトコルの経路対集合を `Π` に統一し、molecule・adequacy・基準fiberの用途と、
+overlap の普遍性の説明を整えた。定義・結果43件と式番号28件を保持した。
+記号の変更を除き独立行57式の内容・順序は不変であり、本文内の追加数式は前層を指す `F` の2件である。
+修正版の全636式（本文内579・独立行57）を KaTeX 0.18.7 で検査し、エラー・警告がないことを確認した。
+引用内容・書誌は変更せず、原稿 hash を更新した。GitHub のプレビュー・描画済み差分の表示確認と
+CI の対象 commit・結果は PR に記録する。
 
 [math-i]: ../../../docs/aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md
 [math-ii]: ../../../docs/aat/algebraic_geometric_theory/part_2_architecture_geometry_sites_sheaves.md
@@ -72,6 +89,8 @@ PR 上で行い、対象 commit と結果を PR に記録する。
 [topology]: ../../../Formal/AG/Site/Topology.lean
 [reading-core]: ../../../Formal/AG/ReadingFunctoriality/Core.lean
 [structure-sheaf]: ../../../Formal/AG/LawAlgebra/StructureSheaf.lean
+[witness-ideal]: ../../../Formal/AG/LawAlgebra/WitnessIdeal.lean
+[law-correspondence]: ../../../Formal/AG/LawAlgebra/Correspondence.lean
 [doctrine]: ../../../research/lean/ResearchLean/AG/AtomFoundation/Doctrine.lean
 [atom-categories]: ../../../research/lean/ResearchLean/AG/AtomFoundation/Categories.lean
 [geometry-basic]: ../../../research/lean/ResearchLean/AG/GeometryTransport/Basic.lean
