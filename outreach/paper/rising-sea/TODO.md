@@ -31,7 +31,7 @@ Claude との PR 上でのレビューと修正を終えたら
 
 - [ ] 01 Abstract — `ja/01-abstract.md`
 - [ ] 02 Introduction — `ja/02-introduction.md`
-- [ ] 03 Preliminaries and Notation — `ja/03-preliminaries-and-notation.md`
+- [x] 03 Preliminaries and Notation — `ja/03-preliminaries-and-notation.md`
 - [ ] 04 第1章 相対的アーキテクチャの構成 — `ja/04-relative-architecture.md`
 - [ ] 05 第2章 Law の幾何と局所整合性 — `ja/05-law-geometry.md`
 - [ ] 06 第3章 標準解像度と診断不変性 — `ja/06-resolution-invariance.md`
