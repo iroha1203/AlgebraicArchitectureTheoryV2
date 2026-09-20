@@ -3040,6 +3040,7 @@ result:
   proof_obligation_delta: "ActualAffineOverlapCertificate is constructed from actual left/right sheaf restrictions, the derived translated-right lawfulness proof, and the derived affine comparison; selectedMismatch consumes the callback arguments and returns the comparison only for that certified pair."
   lean_artifacts:
     - "ActualCechAffineLocalData.ActualAffineOverlapCertificate"
+    - "ActualCechAffineLocalData.actualAffineOverlapCertificate"
     - "ActualCechAffineLocalData.ActualAffineOverlapCertificate.selectedMismatch"
     - "ActualCechAffineLocalData.ActualAffineOverlapCertificate.selectedMismatch_selected"
     - "ActualCechAffineLocalData.gluingMismatchData"
