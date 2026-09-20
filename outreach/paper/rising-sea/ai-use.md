@@ -18,7 +18,11 @@
 | Codex（GPT-6）、2026-09-20 | 人間が指定した初版・改訂版の収録方針と G-125 の数学内容を反映し、進行状況を記載しない方針へ修正 | `paper-structure.md`、`mathematics-inventory.md`、案内・ToDo・本利用記録 | commit `c245b49b0825f653307f396f4dc9f76e1ecad44a` の G-125 実装について、共通 Atom 入力、実 Čech・係数比較、既存障害の生成経路、整数補正による零性反映、reading 平方・類の輸送、条件 C、零・非零例の定義・定理・証明を照合。G-124 A・B を初版、C–E を改訂版の内容へ対応づけた。研究の進行状況と完了待ちの記述を削除し、数学内容・配置・一次資料の対応を記した。相対リンク・表・数式区切り・Unicode・公開情報・差分を検査。この作業では Lean 再検証と GOAL の完了再判定を実施しなかった。Claude Code の独立レビュー呼び出しは認証エラーで終了した |
 | Claude・ChatGPT（モデルの記載なし）、2026-09-20 | 収録方針と数学棚卸しの独立レビュー | commit `451234cb6` の変更5文書 | [Claude レビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4827#issuecomment-5748215209)と[ChatGPT レビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4827#pullrequestreview-5259830728)に、固定版の実装・G-124 の仕様との照合方法と範囲を記録。双方が承認相当とし、Claude は未使用の参照定義3件の削除と改訂版での定義の共通適用の明確化を提案 |
 | Codex（GPT-6）、2026-09-20 | Claude の軽微な提案2件を反映 | `mathematics-inventory.md`、本利用記録 | 未使用の参照定義3件を使用箇所がないことを確認して削除。§8.3 の定義を §8.5 の D で共通に適用する収録分担を明記。参照先・表・数式区切り・Unicode・公開情報・差分を検査。Lean の再実行は行っていない |
+| Codex（GPT-6）、2026-09-20 | 人間が指定した準備節の日本語下書きと引用文献・確認記録の作成、日本語原稿を英訳して公開する方針の明記 | `ja/03-preliminaries-and-notation.md`、`ja/14-references.md`、`references.csv`、`paper-structure.md`、`TODO.md`、案内・本利用記録 | 構成マスターの準備節、数学本文付録A.1、数学棚卸しの合成順序、`ReadingCore` の係数環と universe、局所再構成の圏同値を照合。標準的な圏論・係数の定義と書誌情報を The Stacks Project の原典で確認。人間の指示に従い、用語の日英対照表を削除し、日本語原稿で内容を確定して同じ内容の英語版を公開する工程を明記。Claude の独立レビューは PR 上で受ける。Lean の変更・再実行は行っていない |
+| Codex（GPT-6）、2026-09-20 | GitHub での数式表示の修正と、Markdown 原稿の表示確認条件の追加 | 準備節、`references.csv`、`TODO.md`、論文作成ガイドライン、本利用記録 | GitHub の PR 描画済み差分で、本文内数式の認識漏れ、添字・集合の括弧・字体の崩れ、命令の描画エラーを再現。GitHub 公式の区切り記法と対応する命令へ修正。MathML の字体指定が反映されない表示を確認し、黒板太字・筆記体・太字を対応する Unicode 数学記号で保持。全110式の数式内容と周辺の本文が保存されていることを照合。文献確認対象の原稿 hash を更新。表示結果は修正後の commit に対して PR に記録する |
+| Claude・ChatGPT（モデルの記載なし）、2026-09-20 | 準備節と執筆方針の独立レビュー | commit `cc3cfa412` の変更8文書 | [Claude レビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4829#issuecomment-5748522343)と[ChatGPT レビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4829#pullrequestreview-5260014777)に、数学・Lean の一次資料、Stacks 原典、文献 hash との照合方法と範囲を記録。双方が承認相当とした。Claude は GitHub の数式表示を独立に確認し、逆射の記法など3件の任意提案を示した |
+| Codex（GPT-6）、2026-09-20 | 人間が採用した逆射の記法改善とレビュー記録の反映 | 準備節 P.2、`references.csv`、`TODO.md`、本利用記録 | Stacks 定義4.2.4と直後の説明に照合し、射の存在、一意性、逆射の記法の順に記述。合成の始域・終域と逆射の一意性を確認し、原稿 hash を更新。任意提案の採用はこの1件とし、準備節の執筆・レビュー・修正の完了を ToDo に反映。数式表示の確認結果は修正後の commit に対して PR に記録する |
 
-利用範囲は論文の企画・構成と既存数学の棚卸しである。原稿作成、証明、文献調査、図表作成などに
-利用した場合は、実際の対象と検証方法を追記する。論文の開示文は、原稿の利用記録と
+AI の利用範囲は、論文の企画・構成、既存数学の棚卸し、準備節の執筆・レビュー・修正と文献確認である。
+今後の利用では、実際の対象と検証方法を追記する。論文の開示文は、原稿の利用記録と
 投稿先要件が揃った段階で作成する。
