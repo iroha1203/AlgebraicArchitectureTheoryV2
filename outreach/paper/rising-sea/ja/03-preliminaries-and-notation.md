@@ -4,21 +4,21 @@
 
 ## P.1 集合と圏の大きさ
 
-自然数は $`\mathbb{N}=\{0,1,2,\ldots\}`$ とし、整数環と有理数体をそれぞれ
-$`\mathbb{Z}`$、$`\mathbb{Q}`$ と書く。集合 $`I`$ で添字づけられた族を
+自然数は $`ℕ=\{0,1,2,\ldots\}`$ とし、整数環と有理数体をそれぞれ
+$`ℤ`$、$`ℚ`$ と書く。集合 $`I`$ で添字づけられた族を
 $`(X_i)_{i\in I}`$ と表す。有限族とは、添字集合 $`I`$ が有限である族をいう。
 各 $`X_i`$ の有限性は、添字集合の有限性とは別の条件である。
 
 集合の大きさは、選択公理を含む古典的な集合論と Grothendieck 宇宙で扱う。
-必要な宇宙 $`\mathbb{U}\in\mathbb{V}`$ を固定し、$`\mathbb{U}`$ に属する集合を
-$`\mathbb{U}`$-小さい集合と呼ぶ。小さい集合と写像の圏を
-$`\mathbf{Set}_{\mathbb{U}}`$ と書き、この圏自体は大きい宇宙 $`\mathbb{V}`$ で扱う。
-用いる宇宙が明らかな箇所では、添字を省いて $`\mathbf{Set}`$ と書く。
+必要な宇宙 $`𝕌\in𝕍`$ を固定し、$`𝕌`$ に属する集合を
+$`𝕌`$-小さい集合と呼ぶ。小さい集合と写像の圏を
+$`{𝐒𝐞𝐭}_{𝕌}`$ と書き、この圏自体は大きい宇宙 $`𝕍`$ で扱う。
+用いる宇宙が明らかな箇所では、添字を省いて $`{𝐒𝐞𝐭}`$ と書く。
 
-圏 $`\mathcal{C}`$ が $`\mathbb{U}`$-小さいとは、その対象全体と射全体が
-$`\mathbb{U}`$-小さい集合をなすことをいう。各対象対 $`X,Y`$ の射集合が
-$`\mathbb{U}`$-小さいとき、$`\mathcal{C}`$ は局所的に $`\mathbb{U}`$-小さいという。
-$`\mathbb{U}`$-小さい圏と同値な圏を、本質的に $`\mathbb{U}`$-小さい圏と呼ぶ。
+圏 $`𝒞`$ が $`𝕌`$-小さいとは、その対象全体と射全体が
+$`𝕌`$-小さい集合をなすことをいう。各対象対 $`X,Y`$ の射集合が
+$`𝕌`$-小さいとき、$`𝒞`$ は局所的に $`𝕌`$-小さいという。
+$`𝕌`$-小さい圏と同値な圏を、本質的に $`𝕌`$-小さい圏と呼ぶ。
 関手圏を含む構成には、その対象と射を収める大きさの宇宙を用いる。
 
 ## P.2 写像、射、合成
@@ -31,8 +31,8 @@ gf=g\circ f:X\longrightarrow Z,
 ```
 
 と書く。右側の写像が先に作用する。圏の射と関手にも同じ合成順序を用いる。
-対象 $`X`$ の恒等射は $`\mathrm{id}_X`$、圏 $`\mathcal{C}`$ の恒等関手は
-$`\mathrm{Id}_{\mathcal{C}}`$ と表す。
+対象 $`X`$ の恒等射は $`\mathrm{id}_X`$、圏 $`𝒞`$ の恒等関手は
+$`\mathrm{Id}_{𝒞}`$ と表す。
 
 写像 $`f:X\to Y`$、部分集合 $`S\subseteq X`$、$`T\subseteq Y`$ に対し、
 像を $`f(S)`$、原像を $`f^{-1}(T)`$、制限を $`f|_S:S\to Y`$ と書く。
@@ -45,13 +45,13 @@ X_y=f^{-1}(\{y\})=\{x\in X\mid f(x)=y\}
 である。全単射は $`f:X\xrightarrow{\sim}Y`$ と表し、その逆写像を
 $`f^{-1}:Y\to X`$ と書く。
 
-圏 $`\mathcal{C}`$ の対象全体を $`\mathrm{Ob}(\mathcal{C})`$、
-$`X`$ から $`Y`$ への射集合を $`\mathrm{Hom}_{\mathcal{C}}(X,Y)`$ とする。
+圏 $`𝒞`$ の対象全体を $`\mathrm{Ob}(𝒞)`$、
+$`X`$ から $`Y`$ への射集合を $`\mathrm{Hom}_{𝒞}(X,Y)`$ とする。
 圏が明らかな場合には後者を $`\mathrm{Hom}(X,Y)`$ と略す。
 射 $`f:X\to Y`$ が同型であるとは、$`f^{-1}:Y\to X`$ が存在して
 $`f^{-1}f=\mathrm{id}_X`$、$`ff^{-1}=\mathrm{id}_Y`$ となることをいう。
 同型な対象を $`X\cong Y`$、$`X`$ の自己同型群を
-$`\mathrm{Aut}_{\mathcal{C}}(X)`$ と書く。
+$`\mathrm{Aut}_{𝒞}(X)`$ と書く。
 
 図式の可換性は、同じ始域と終域を持つ経路の合成が等しいことを表す。
 たとえば $`f:X\to Y`$、$`f':X'\to Y'`$、$`a:X\to X'`$、$`b:Y\to Y'`$
@@ -60,11 +60,11 @@ $`\mathrm{Aut}_{\mathcal{C}}(X)`$ と書く。
 
 ## P.3 関手、自然変換、圏同値
 
-関手 $`F:\mathcal{C}\to\mathcal{D}`$ の対象と射への作用を、それぞれ $`F(X)`$、
-$`F(f)`$ と書く。反対圏を $`\mathcal{C}^{\mathrm{op}}`$ と表し、反変関手は
-$`\mathcal{C}^{\mathrm{op}}`$ を始域とする関手として記述する。
+関手 $`F:𝒞\to𝒟`$ の対象と射への作用を、それぞれ $`F(X)`$、
+$`F(f)`$ と書く。反対圏を $`𝒞^{\mathrm{op}}`$ と表し、反変関手は
+$`𝒞^{\mathrm{op}}`$ を始域とする関手として記述する。
 
-関手 $`F,G:\mathcal{C}\to\mathcal{D}`$ の間の自然変換 $`\alpha:F\Rightarrow G`$ は、
+関手 $`F,G:𝒞\to𝒟`$ の間の自然変換 $`\alpha:F\Rightarrow G`$ は、
 各対象 $`X`$ に射 $`\alpha_X:F(X)\to G(X)`$ を対応させる族であり、
 各射 $`f:X\to Y`$ に対して
 
@@ -77,24 +77,24 @@ $`\alpha:F\xRightarrow{\sim}G`$ と表す。自然変換
 $`\alpha:F\Rightarrow G`$、$`\beta:G\Rightarrow H`$ の合成は、
 $`(\beta\alpha)_X=\beta_X\alpha_X`$ で与えられる。
 
-関手 $`F:\mathcal{C}\to\mathcal{D}`$ が充満忠実であるとは、すべての対象対 $`X,Y`$ について
+関手 $`F:𝒞\to𝒟`$ が充満忠実であるとは、すべての対象対 $`X,Y`$ について
 
 ```math
-F_{X,Y}:\mathrm{Hom}_{\mathcal{C}}(X,Y)
-\longrightarrow\mathrm{Hom}_{\mathcal{D}}(F(X),F(Y)),
+F_{X,Y}:\mathrm{Hom}_{𝒞}(X,Y)
+\longrightarrow\mathrm{Hom}_{𝒟}(F(X),F(Y)),
 \qquad f\longmapsto F(f)
 ```
 
-が全単射であることをいう。すべての $`D\in\mathrm{Ob}(\mathcal{D})`$ が
+が全単射であることをいう。すべての $`D\in\mathrm{Ob}(𝒟)`$ が
 ある $`F(X)`$ と同型であるとき、$`F`$ は本質的全射であるという。
 
-圏同値 $`\mathcal{C}\simeq\mathcal{D}`$ は、関手
-$`F:\mathcal{C}\to\mathcal{D}`$、$`G:\mathcal{D}\to\mathcal{C}`$ と自然同型
+圏同値 $`𝒞\simeq𝒟`$ は、関手
+$`F:𝒞\to𝒟`$、$`G:𝒟\to𝒞`$ と自然同型
 
 ```math
-\eta:\mathrm{Id}_{\mathcal{C}}\xRightarrow{\sim}GF,
+\eta:\mathrm{Id}_{𝒞}\xRightarrow{\sim}GF,
 \qquad
-\varepsilon:FG\xRightarrow{\sim}\mathrm{Id}_{\mathcal{D}}
+\varepsilon:FG\xRightarrow{\sim}\mathrm{Id}_{𝒟}
 ```
 
 によって与える。$`G`$ を $`F`$ の準逆と呼ぶ。
@@ -104,7 +104,7 @@ $`F:\mathcal{C}\to\mathcal{D}`$、$`G:\mathcal{D}\to\mathcal{C}`$ と自然同�
 ## P.4 係数と代数の記法
 
 係数環 $`k`$ は単位元を持つ可換環とし、環準同型は単位元を保つものとする。
-可換環の圏を $`\mathbf{CommRing}`$、アーベル群の圏を $`\mathbf{Ab}`$ と書く。
+可換環の圏を $`{𝐂𝐨𝐦𝐦𝐑𝐢𝐧𝐠}`$、アーベル群の圏を $`{𝐀𝐛}`$ と書く。
 $`k`$-加群では $`1m=m`$ を仮定し、その圏を $`\mathrm{Mod}_k`$ と表す。
 可換 $`k`$-代数は、可換環 $`A`$ と構造準同型 $`k\to A`$ の組である。
 環には零環も含める。可換単位環と単位的加群の規約は
