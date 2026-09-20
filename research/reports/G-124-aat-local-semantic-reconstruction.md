@@ -9387,3 +9387,57 @@ PR・独立査読・CI・mergeである。パートIIは開始せず、固定GOA
 明示38宣言全ての個別`#print axioms`も出力名まで照合した。最終検証にwarning・errorはなく、
 placeholder・hidden/BiDi・privacy・語彙・docstring・module登録・差分整形・保護領域を確認した。
 Research全体buildは実行せず、固定GOALのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+
+#### realizationの原始合成と全計算queryの統合
+
+代表方式のSupport・Axis・Observableの三つの有向写像と、明示方式の同じ三種類の両方向の
+fiber写像を、元のcontext点と値点から合成した。前向きでは前段の中間値から後段の値点を読み、
+後ろ向きでは後段の逆像から前段の逆向きの点を読む。候補contextが不一致の場合も含め、
+両方式の`composeRealization_eq_native`が元のrealization合成の読み取りとの一致を証明する。
+
+明示方式のactual context-actionは、既存の原始action法則に従い、合成したfiberの後ろ向きの
+一点、元のsource context-operationの一点評価、前向きの一点から構成する。Observableだけは
+restrictionの向きに合わせてcontextの順を逆にする。`action_point_iff`が元のnaturalityを使って
+この式とnative作用の一致を示す。完成したcontext作用や全域Homを局所値に追加していない。
+
+`representativeRealizationRows`・`explicitRealizationRows`は、独立object stageと局所商のretained
+queryからこの合成を定義する。比較定理は既存のobject readingの両逆と実際のpackage assemblerを
+使い、元のcontext表・Atom作用との比較前提を放電する。
+
+`composeRepresentative`・`composeExplicit`がcore・係数・raw・realizationの全計算queryを統合する。
+両`*_eq_native`は、元の各成分の合成を`NativeReader.readWith`で読んだtableとの全query一致を示す。
+両方式のrealization原始法則と、明示方式のraw原始法則も同じtable上で保持する。
+ここで定義したのは全計算queryのtableであり、全法則を備えた商上のHom合成は引き続き未完了である。
+
+代表方式では、任意の一出力は前段のcontext点一つ、前段の値点一つ、後段の値点一つで決まる。
+`representativeRealization_finite_fragment`は、同じ局所商の実際の二つの有限fragment上で、
+合計最大三点の決定を証明する。支持集合は元の入力と出力queryに依存し、比較入力には元の
+原始行法則を要求する。明示方式のactual-action合成の有限supportは今回の三点決定に含めない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentFixedIndexedPointComposition.lean` / `IndependentFixedIndexedPointGraph` | `compose`・`compose_at_pair`・`compose_isLawful`・`compose_eq_read`・`compose_index_iff`・`assemble_compose`が、依存する中間contextと中間値から合成し、元の写像に接続する |
+| `IndependentFixedIndexedInverseComposition.lean` / 同namespace | `composeBackward`・active/inactive比較・`composeBackward_eq_forward`・`compose_inverseLaws`が逆順の値合成と両方向の逆写像法則を与える |
+| `IndependentFixedIndexedPointAction.lean` / 同namespace | `action`・`action_active`・`action_inactive`・`action_point_iff`が一点ごとのcontext作用を構成し、native自然性に接続する |
+| `IndependentGeometryHomRepresentativeRealizationComposition.lean` / `IndependentGeometryHomPrimitive.RepresentativeRealization` | `composeRealization`と全候補queryのnative比較が、元の三つの有向写像を保持する |
+| `IndependentGeometryHomExplicitRealizationCompositionFibers.lean` / `IndependentGeometryHomPrimitive.ExplicitRealization` | Support・Axis・Observableの各`compose*`・`*_inverseLaws`・`*_eq_native`が両方向を元の同値合成へ接続する |
+| `IndependentGeometryHomExplicitRealizationComposition.lean` / 同namespace | `composeRealization`、三つのnative inactive API、`composeRealization_eq_native`がactual-actionを含む全候補値を扱う |
+| `IndependentGeometryHomRealizationCompositionRows.lean` / `IndependentGeometryHomPrimitive.Composition` | 両`*RealizationRows`と`*_eq_native`が、元の独立object stageと実際のassemblerへ接続する |
+| `IndependentGeometryHomFullTableComposition.lean` / 同namespace | 両`compose*`・`*_eq_native`・`*_realization_points`と`composeExplicit_raw_points`が、全計算queryの合成とrealization/raw法則保持を同じtableに統合する |
+| `IndependentFixedIndexedPointCompositionFinite.lean` / `IndependentFixedIndexedPointGraph` | `compose_lifted_finite_support`が元のquery型で最大三点の支持集合を構成する |
+| `IndependentGeometryHomRepresentativeRealizationCompositionFinite.lean` / `IndependentGeometryHomPrimitive.RepresentativeRealization`, `Composition` | `composeRealization_finite_support`と`representativeRealization_finite_fragment`が代表方式の共通query・実際の商fragmentへ三点決定を接続する |
+
+入力前提は既存の独立object stage、局所商、package・係数・raw・realizationの原始法則である。
+context/Atomのnative比較、元のnaturality、合成後のinverse/realization/raw法則は既存の
+assembler・readerおよび今回の証明から得た。GOAL・元のHomの範囲・商の同一視条件を変更していない。
+
+残りは全幾何法則と商上の合成、全Homの恒等・単位・結合則・有限片との整合、明示realizationと
+local-data合成を含む残る有限support、指定反証の統合、パートI全体のPR・独立査読・CI・mergeである。
+パートIIは開始せず、Cycle 79を維持する。
+
+新規10 sourceを一つずつfocused checkし、全て通った。各fileのnamespace監査は順に
+6・6・4・2・9・5・4・7・1・2件(計46件、生成されたmatch宣言1件を含む)で標準公理のみだった。
+明示45宣言全ての個別`#print axioms`も出力名まで照合した。最終検証にwarning・errorはなく、
+placeholder・hidden/BiDi・privacy・語彙・docstring・module登録・差分整形・保護領域を確認した。
+Research全体buildは実行せず、固定GOALのblobは`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
