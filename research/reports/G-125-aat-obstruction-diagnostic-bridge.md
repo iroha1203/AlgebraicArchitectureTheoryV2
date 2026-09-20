@@ -105,11 +105,15 @@ tracking Issue #4791の同期コメントに記録する。
   式(2)のcoboundaryを加えclassを変えないこと、actual比較像とLaw-value生成式が一致すること、誘導H¹写像が
   specified obstruction classをdiagnostic classへ送ること、actual classの零からdiagnostic classの零が
   従うことを示し、coarse/fineのcombined-site入力でB1を放電する。
-- 完了（Cycle 24）: chart stateをprimitive relation ideal上のlawful sectionとして既存
+- 不合格（Cycle 24）: chart stateをprimitive relation ideal上のlawful sectionとして既存
   `LocalFlatnessData`へ載せ、既存`GluingMismatchData`のmismatch cochainが式(1)の
   `actualMismatch`と一致することを示した。同じcocycleから既存`descentObstructionClass`と
   additive H¹ readingを構成し、従来の`actualClass`との一致を証明した。これによりB1・B2・C1・C2と
-  有限零／非零例を、選定した既存`Ob`障害構成に対して直接述べ直した。
+  有限零／非零例を述べ直したが、標準レビュー再実行で`GluingMismatchData.mismatch`が左右restriction
+  引数を消費しない中心findingが残り、このheadはmerge不可となった。
+- 実装中（Cycle 25）: actual restriction、affine translationのlawfulness、式(1)のcomparisonを
+  入力から作るcertificateを先に構成し、既存selected-comparison APIはcertificateに固定された
+  restriction pairだけを受理するadapterとして扱う。
 - 完了: diagnostic classの零から得る有理degree-zero boundary証人を、各生成Law-value labelについて
   全chartに共通する実target代表の座標で読み、`R_q`から各block係数を回収して座標ごとにfloorする。得られた整数block係数を
   presentation groupとactual Čech C⁰へ戻し、そのactual coboundaryが指定mismatchに一致することを証明する。
@@ -134,10 +138,10 @@ tracking Issue #4791の同期コメントに記録する。
   `CoverRelativeCechComplex`との次数0–2同定とcochain square。
 - 完了: Cycles 1–22の数学・Lean実装はPR #4822でmainへ統合済み。implementation headのCI 7/7、
   対象moduleのtargeted build、55宣言の標準公理監査、PR内容監査まで完了した。Cycle 24の
-  既存障害provenance接続はPR #4825で標準レビュー中である。
-- 未完了: Cycle 24の同一completion headで標準PR review、schema-complete final packet、
+  既存障害provenance接続はPR #4825で継続中である。
+- 未完了: Cycle 25の同一completion headで標準PR review、schema-complete final packet、
   packet入力後のfresh独立4査読、正式completion ledger、CI、merge、report・Issue同期を行う。
-- 次のproof obligation: Cycle 24のcompletion gateを規定順序で完了する。
+- 次のproof obligation: Cycle 25のcertificate adapterを検証し、completion gateを規定順序で完了する。
 
 ## Cycle 1 — 生成子関係成分と Law-value label の比較
 
@@ -2999,4 +3003,74 @@ audits:
   blocking_findings: []
   manuscript_boundary: "no manuscript exists; writing or updating manuscript prose is outside G-125 completion, while this report records the light paper-design mapping requested by the user"
   next_obligation: "fix PR #4825 to a new head, then rerun standard review, final packet, fresh completion review, formal ledger, CI, merge, and synchronization in order"
+```
+
+Cycle 24はfixed head `fc89be411820ad93333e992a023da8b6af208bb1` の標準レビュー再実行で、
+数学A/B・Lean Aが合格した一方、Lean Bがmismatch callbackの左右restriction未使用を中心findingとした。
+rootはこのfindingを受理し、Cycle 24を`rejected`、同headをmerge不可と判定した。監査記録は
+[PR #4825 comment](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4825#issuecomment-5746725151)
+と[Issue #4791 checkpoint](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4791#issuecomment-5746726369)
+に固定した。
+
+## Cycle 25 — 入力由来certificateとselected-comparison adapter
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-125-aat-obstruction-diagnostic-bridge
+cycle: 25
+goal_blob_sha: 1e8df2624cf35704299c2cf47a879f2dc6565b03
+base_oid: fc89be411820ad93333e992a023da8b6af208bb1
+tracking_issue: 4791
+report_path: research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+selection:
+  proof_state_ref: "PR #4825 Cycle 24 rejected review https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4825#issuecomment-5746725151"
+  proof_obligation: "make the actual restriction, lawful affine translation, and equation (1) comparison one input-derived certificate, then adapt that selected pair to the existing GluingMismatchData API without ignoring its callback arguments"
+  selection_reason: "the existing Formal API intentionally accepts a selected comparison and erases the obstruction-section carrier from LawfulSectionData, so provenance must be certified before the adapter boundary and the callback must reject noncertified restriction pairs"
+  expected_result_type: proof-obligation-discharged
+  risks:
+    - "an equality guard that does not protect a separately constructed certificate would be target fitting"
+    - "storing a class or vanishing result in the certificate would be conclusion-equivalent"
+    - "translation lawfulness could remain unused"
+result:
+  proposed_result_type: proof-obligation-discharged
+  completion_candidate: yes
+  proof_obligation_delta: "ActualAffineOverlapCertificate is constructed from actual left/right sheaf restrictions, the derived translated-right lawfulness proof, and the derived affine comparison; selectedMismatch consumes the callback arguments and returns the comparison only for that certified pair."
+  lean_artifacts:
+    - "ActualCechAffineLocalData.ActualAffineOverlapCertificate"
+    - "ActualCechAffineLocalData.actualAffineOverlapCertificate"
+    - "ActualCechAffineLocalData.ActualAffineOverlapCertificate.selectedMismatch"
+    - "ActualCechAffineLocalData.ActualAffineOverlapCertificate.selectedMismatch_selected"
+    - "ActualCechAffineLocalData.gluingMismatchData"
+    - "ActualCechAffineLocalData.gluingMismatchCochain_eq_actualMismatch"
+  evidence:
+    - "the certificate is constructed from x.restrictedLawfulSection on both actual edge restriction morphisms"
+    - "translatedRightLawful is populated by translatedRightLawfulSectionData_lawful, so the affine-law proof is consumed"
+    - "comparisonValue is affineComparisonMismatch, already derived from transition plus actual right restriction minus actual left restriction"
+    - "selectedMismatch tests both supplied callback arguments against the certified pair and returns zero for every other pair"
+    - "gluingMismatchCochain_eq_actualMismatch first reduces the selected-data adapter to the certified comparison and only then applies equation (1)"
+audits:
+  material_premises:
+    ambient_boundary:
+      - "the existing GluingMismatchData API models restriction and comparison maps as selected data and does not expose an Ob-valued state inside LawfulSectionData"
+    direction_hypothesis:
+      - "B2 uses the discharged R_q reflection condition; C2 uses the discharged Condition C"
+    discharge_required: []
+    conclusion_equivalent_risk:
+      - "the certificate contains restriction and comparison data but no cohomology class, vanishing, injectivity, or B/C conclusion"
+  certificate_provenance:
+    discharged:
+      - "actualAffineOverlapCertificate constructs every field from localState, transition, actual sheaf restriction, and proved lawfulness"
+    unresolved: []
+  proof_use:
+    used:
+      - "the selectedMismatch branch condition consumes both restriction arguments"
+      - "the selected comparison theorem consumes the certificate comparison before the existing descent class is formed"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pending-independent-review
+  validation_refs:
+    - "command cd research/lean && lake build ResearchLean.AG.ObstructionDiagnosticBridge.SelectedFiniteObstructionExamples; result 3747 jobs success; output sha256 abfd7f598c575db6f6d605f43f83f460417455f4529d0e538d35ba4b47b13d4b; ExistingObstructionBridge 55 declarations and downstream namespaces standard axioms only"
+  blocking_findings: []
+  manuscript_boundary: "no manuscript exists; writing or updating manuscript prose is outside G-125 completion, and this report is the requested light mapping"
+  next_obligation: "run targeted validation, fix PR #4825 to a new head, and restart the standard four-lane review"
 ```
