@@ -10,6 +10,10 @@
 - Commutative Algebra, §10.2, “Conventions”, [Tag 00AQ](https://stacks.math.columbia.edu/tag/00AQ).
 - Sites and Sheaves, §7.47, “Topologies”, [Tag 00YW](https://stacks.math.columbia.edu/tag/00YW).
 - Sites and Sheaves, §7.49, “Sheafification in a topology”, [Tag 00ZG](https://stacks.math.columbia.edu/tag/00ZG).
+- Schemes, §26.5, “Affine schemes”, [Tag 01HR](https://stacks.math.columbia.edu/tag/01HR), 定義26.5.3・26.5.5、補題26.5.4。
+- Schemes, §26.14, “Glueing schemes”, [Tag 01JA](https://stacks.math.columbia.edu/tag/01JA), 補題26.14.1–26.14.2。
+- Schemes, 補題26.4.6, [Tag 01HP](https://stacks.math.columbia.edu/tag/01HP).
+- Cohomology on Sites, §21.4, “First cohomology and torsors”, [Tag 03AG](https://stacks.math.columbia.edu/tag/03AG), 定義21.4.1、補題21.4.2。
 
 **[FGMPS04]** J. Nathan Foster, Michael B. Greenwald, Jonathan T. Moore,
 Benjamin C. Pierce, and Alan Schmitt.
@@ -25,3 +29,10 @@ arXiv:1009.1166v3, March 21, 2012.
 [第3版の本文](https://arxiv.org/pdf/1009.1166v3).
 参照箇所: §§3.2, 3.4–3.5、特に定義3.2.1・3.2.4・3.2.6・3.2.8、
 構成3.4.2、定義3.5.1。
+
+**[SAGA]** Hiroyuki Nakahata.
+*SAGA: A Comparison Theorem for Local-to-Global Software Architecture - From Semantic Repair Cohomology to Algebraic-Geometric Descent*.
+arXiv:2608.21458v1, August 20, 2026.
+[書誌と版の履歴](https://arxiv.org/abs/2608.21458)、
+[第1版の本文](https://arxiv.org/html/2608.21458v1).
+参照箇所: §§3.4–3.7・4–5、特に定理5.1・5.2、§§5.3–5.6、例5.3。
