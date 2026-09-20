@@ -9192,3 +9192,46 @@ thin-context overlapのsubsingleton性もその既存APIのまま使用する。
 最終検証にwarning・errorはなく、placeholder・hidden/BiDi・privacy・語彙・docstring・
 module登録・差分整形を確認した。Research全体buildは行わず、固定GOALのblobは
 `4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
+
+
+#### 任意の適法な局所商の全query回復と完全Homの両逆・分離
+
+独立object stageから組み立てた両端について、前節と逆の方向を閉じた。
+`readRepresentative_assemble`・`readExplicit_assemble`は、任意の適法な共通局所商から
+実際の全Hom assemblerで作ったHomを読み直すと、元の全query値が戻ることを示す。
+`localRepresentative_read_assemble`・`localExplicit_read_assemble`は、これを既存の
+`InvariantWitness.point_ext`へ渡し、補助不変量対応を消した商全体の回復を得る。
+
+この証明では、元の局所条件を満たす任意のtableを出発点とする。native readerの像であることを
+先に仮定していない。まずsource・両Atom・object・不変量・axis・contextと派生照合値を回復する。
+依存するoperation・signature・observableのreaderには、その添字点の等号と元のnative familyの
+異種等号を渡す。既存の成分ごとの両逆から、activeだけでなく全候補carrier・endpoint行を回復する。
+実際の両端に一致しないobject対では、全Hom局所法則の`inactiveObjects`を明示的に使用する。
+
+raw・realizationの比較を前提とする`readWith_assemble`へ、実際の両方式のraw/realization
+assemblerの全候補readbackを接続した。この最後の比較前提は`readRepresentative_assemble`・
+`readExplicit_assemble`で放電しており、完成したraw mapや保存証明を局所lawへ追加していない。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentGeometryHomLocalIndexRecovery.lean` / `IndependentGeometryHomPrimitive.NativeReader` | `indices_assemble_*`が任意の適法な局所商のscalar・index・派生照合値を回復し、依存行のactivation比較を与える |
+| `IndependentGeometryHomReadingCongruence.lean` / `IndependentGeometryHomPrimitive.ReadingCongruence` | 既存のindexed function・candidate inverse・indexed ring readerの合同性を示す。`operation`・`signature`・`observable`は、対応する添字点と依存familyが等しければ全候補tableが等しいことを示す |
+| `IndependentGeometryHomLocalFamilyRecovery.lean` / `IndependentGeometryHomPrimitive.NativeReader` | `operationRows_assemble`・`signatureRows_assemble`・`observableRows_assemble`が、native readerの添字表現と元の局所tableを比較して全依存行を回復する |
+| `IndependentGeometryHomLocalTableRecovery.lean` / 同namespace | `readWith_assemble`が共通Queryの全constructorを場合分けし、両向きの点対順序、全依存行、inactive object対、raw/realizationの比較を使ってtable全体を回復する |
+| `IndependentGeometryHomLocalFullRecovery.lean` / 同namespace | 両方式の全query回復と局所商回復を示す。`representativeHomReadingEquiv`・`explicitHomReadingEquiv`は、前節のnative側回復と合わせ、元の完全Homと適法な局所商との同値を与える |
+| `IndependentGeometryHomFullSeparation.lean` / 同namespace | 両方式の`*_eq_iff_queries`・`*_distinct_query`が全Homの分離を示す。`*_unique_preimage`が任意の適法な局所商の一意なnative preimageを与える。`local_fragment_point`が有限fragmentの値を同じ元のqueryへ接続する |
+
+入力前提は既存の独立object stageと、原始条件を満たす局所商である。共通Hom宣言、各原始法則、
+商で同一視する条件を変更せずに、全fieldの両逆と分離が得られた。元の非可逆な係数・object・
+operation写像も同値の対象に残り、代表方式と明示方式のraw/realizationの違いも保持する。
+全queryの分離は、同じobject作用を持つ異なるHomにも適用される。
+
+パートIでは、共通の局所恒等・合成とその有限片への接続、残る原始式の有限support、指定反証scenarioの
+共通宣言への統合、PR・独立査読・CI・mergeが残る。このHom同値をパートI全体や主Nの完了とは扱わない。
+パートIIは開始せず、固定GOAL・元のHomの範囲・Cycle 79を維持する。
+
+新規6 sourceの単一file検証が通った。namespace監査は順に9・6・3・1・8・7件(計34件)で
+標準公理のみだった。明示34宣言の個別`#print axioms`も全件を照合し、標準公理のみを確認した。
+最終検証にwarning・errorはなく、placeholder・hidden/BiDi・privacy・語彙・docstring・
+module登録・差分整形を確認した。Research全体buildは行わず、固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
