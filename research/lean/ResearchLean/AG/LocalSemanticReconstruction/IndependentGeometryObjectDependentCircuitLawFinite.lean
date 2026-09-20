@@ -7,6 +7,14 @@ import Formal.Util.AssertStandardAxioms
 Circuit activation names the equation-index row and the exact finite-code row.
 Each soundness witness also names the residual coordinate and observable zero
 used by its nonvanishing check.
+
+## Implementation notes
+
+The witness formula puts the residual cell, the observable-zero cell, and their
+inequality in one finite implication.  This makes the primitive cells, rather
+than a separately stored native nonvanishing proof, the source of the circuit
+law.  We reject a truth anchor or an extra `LawInstances` field carrying the
+native inequality because either would bypass that finite provenance.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction.IndependentGeometryPrimitive.ObjectDependentFinite
@@ -107,6 +115,13 @@ theorem typed_iff_instances
       rw [he]
       rfl
 
+/-- Finite circuit-law formula whose consequent compares the selected residual
+cell with the observable-zero cell.  Its typing and matching hypotheses come
+from the preceding dependent-object stages; `witnessFormula_evaluate` is the
+API lemma connecting it to the native nonvanishing condition.  The circuit
+typing proof and datum remain as indices of the native law input, while code
+evaluation and datum matching stay in the outer antecedents of `LawInstances`.
+-/
 def witnessFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
@@ -166,6 +181,9 @@ from the selected zero observable. -/
     have he' := congrArg ULift.down he
     exact Option.some.inj ((Option.some_get hq).trans he')
 
+/-- Finite circuit certificates for every native circuit-law input.  The
+certificate stores only evaluation of `witnessFormula`; the native
+nonvanishing conclusion is reconstructed by `lawful_iff_instances`. -/
 def LawInstances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)

@@ -8,6 +8,23 @@ Raw activation formulas name every coordinate, relation, context, coefficient
 reference, and response row used by their condition.  Generator, identity, and
 composition formulas below additionally name every finite polynomial and
 variable-image row used by the corresponding point equation.
+
+## Implementation notes
+
+Raw-law certificates keep a comparison polynomial table distinct from the
+canonical native table.  Exact relation and image cells determine variables,
+while finite coefficient traces validate addition and every antidiagonal term
+of multiplication; root cells are checked only after support agreement.  This
+shape lets the bridge use `evaluate_eq_expected_of_expressionFormula` on two
+table assignments and then return to native evaluation.
+
+We reject evaluating the canonical table against itself, compiling relation
+rows as coefficient literals, and recording only an expected root value.  Each
+alternative could hide the primitive source cells needed by the law.  Finite
+sums use a right-associated trace so every intermediate addition is named by a
+cell formula.  Image rows are determined by source and target contexts because
+the context category is thin, so a separate morphism-proof cell would add no
+data.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction.IndependentGeometryPrimitive.ObjectDependentFinite

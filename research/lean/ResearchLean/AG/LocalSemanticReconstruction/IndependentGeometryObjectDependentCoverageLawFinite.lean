@@ -7,6 +7,14 @@ import Formal.Util.AssertStandardAxioms
 Each coverage implication anchors its predicate row.  Carrier- and role-sensitive
 queries additionally anchor the equation index, equation role, or signature axis
 from which their activation condition is computed.
+
+## Implementation notes
+
+Activation is split by coverage-query constructor so each guarded implication
+reads the exact role, index, or axis cell that determines the native `Active`
+predicate.  We reject an external `Active` certificate and a generic truth
+anchor because neither records which primitive row makes the implication
+applicable.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction.IndependentGeometryPrimitive.ObjectDependentFinite
@@ -109,7 +117,9 @@ def activeAnchor
 
 /-- Closed formula for the activation condition of one coverage row.  Required
 equation queries read the exact role cell; the remaining guarded queries use
-the selected index or axis cell named by `activeAnchor`. -/
+the selected index or axis cell named by `activeAnchor`.  The equation-law
+proof identifies the assembled equation system used by the evaluation theorem;
+the formula itself reads the primitive equation rows. -/
 noncomputable def activationFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
@@ -228,6 +238,10 @@ activation predicate for the selected query. -/
   | boundaryVisible W V =>
       simp [activationFormula, IndependentCoveragePrimitive.Active, ObjectFormula.evaluate]
 
+/-- Finite coverage-law formula for one query.  It anchors the selected
+coverage predicate and requires the constructor-specific activation formula;
+the foundation, context, and equation hypotheses are supplied by the preceding
+dependent-object stages. -/
 def pointFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
@@ -241,6 +255,9 @@ def pointFormula
       (.cell (.atObject A (.coverage q)) (some (ULift.up True)))
       (activationFormula t ha A hA _hf hc _he q))
 
+/-- Evaluation of `pointFormula` is exactly the native implication from a true
+coverage row to `Active`.  This is the API bridge used by
+`coverageLaws_iff_instances`. -/
 @[simp] theorem pointFormula_evaluate
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
@@ -270,6 +287,9 @@ def pointFormula
     have h'' := congrArg ULift.down h'
     exact (eq_iff_iff.1 h'').2 True.intro
 
+/-- Finite coverage certificates, one formula evaluation for every query whose
+predicate row is true.  Native `Active` proofs are reconstructed by
+`coverageLaws_iff_instances` rather than stored as fields. -/
 def Instances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
