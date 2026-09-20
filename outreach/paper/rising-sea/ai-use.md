@@ -19,7 +19,8 @@
 | Claude・ChatGPT（モデルの記載なし）、2026-09-20 | 収録方針と数学棚卸しの独立レビュー | commit `451234cb6` の変更5文書 | [Claude レビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4827#issuecomment-5748215209)と[ChatGPT レビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4827#pullrequestreview-5259830728)に、固定版の実装・G-124 の仕様との照合方法と範囲を記録。双方が承認相当とし、Claude は未使用の参照定義3件の削除と改訂版での定義の共通適用の明確化を提案 |
 | Codex（GPT-6）、2026-09-20 | Claude の軽微な提案2件を反映 | `mathematics-inventory.md`、本利用記録 | 未使用の参照定義3件を使用箇所がないことを確認して削除。§8.3 の定義を §8.5 の D で共通に適用する収録分担を明記。参照先・表・数式区切り・Unicode・公開情報・差分を検査。Lean の再実行は行っていない |
 | Codex（GPT-6）、2026-09-20 | 人間が指定した準備節の日本語下書きと引用文献・確認記録の作成、日本語原稿を英訳して公開する方針の明記 | `ja/03-preliminaries-and-notation.md`、`ja/14-references.md`、`references.csv`、`paper-structure.md`、`TODO.md`、案内・本利用記録 | 構成マスターの準備節、数学本文付録A.1、数学棚卸しの合成順序、`ReadingCore` の係数環と universe、局所再構成の圏同値を照合。標準的な圏論・係数の定義と書誌情報を The Stacks Project の原典で確認。人間の指示に従い、用語の日英対照表を削除し、日本語原稿で内容を確定して同じ内容の英語版を公開する工程を明記。Claude の独立レビューは PR 上で受ける。Lean の変更・再実行は行っていない |
+| Codex（GPT-6）、2026-09-20 | GitHub での数式表示の修正と、Markdown 原稿の表示確認条件の追加 | 準備節、`references.csv`、`TODO.md`、論文作成ガイドライン、本利用記録 | GitHub の PR 描画済み差分で、本文内数式の認識漏れ、添字・集合の括弧・字体の崩れ、命令の描画エラーを再現。GitHub 公式の区切り記法と対応する命令へ修正し、全110式の数式内容と周辺の本文が保存されていることを照合。文献確認対象の原稿 hash を更新。表示結果は修正後の commit に対して PR に記録する |
 
-AI の利用範囲は、論文の企画・構成、既存数学の棚卸し、準備節の原稿と文献確認記録の作成である。
+AI の利用範囲は、論文の企画・構成、既存数学の棚卸し、準備節の原稿と文献確認記録の作成・表示修正である。
 今後の利用では、実際の対象と検証方法を追記する。論文の開示文は、原稿の利用記録と
 投稿先要件が揃った段階で作成する。
