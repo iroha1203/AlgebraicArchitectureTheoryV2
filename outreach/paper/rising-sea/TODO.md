@@ -33,7 +33,7 @@ Claude との PR 上でのレビューと修正を終えたら
 - [ ] 02 Introduction — `ja/02-introduction.md`
 - [x] 03 Preliminaries and Notation — `ja/03-preliminaries-and-notation.md`
 - [x] 04 第1章 相対的アーキテクチャの構成 — [日本語原稿](ja/04-relative-architecture.md)のレビュー・修正・数式表示確認を終え、[PR #4831](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4831)をマージ済み。
-- [ ] 05 第2章 Law の幾何と局所整合性 — [日本語下書き](ja/05-law-geometry.md)を作成し、一次資料・有限例の計算・ローカルの数式表示を確認。人間による原稿確認と PR 作成の承認済み。GitHub のプレビュー・描画済み差分での表示確認と Claude レビューを PR で行う。
+- [ ] 05 第2章 Law の幾何と局所整合性 — [日本語下書き](ja/05-law-geometry.md)を作成し、一次資料・有限例の計算・ローカルの数式表示を確認。人間による原稿確認を経て[PR #4832](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4832)を作成。GitHub のプレビュー・描画済み差分での表示確認結果を PR に記録し、Claude レビューを受ける。
 - [ ] 06 第3章 標準解像度と診断不変性 — `ja/06-resolution-invariance.md`
 - [ ] 07 第4章 輸送と合成の整合性 — `ja/07-transport-coherence.md`
 - [ ] 08 第5章 基底変換と生成比較 — `ja/08-base-change.md`

@@ -119,12 +119,12 @@ optionalのLawも同時に課す場合は、そのイデアルを和に加える
 この節では、環を幾何的な空間として読み、記号的な方程式が対象の残差へ評価される仕組みを与える。
 
 **定義2.5（アフィンスキームと閉部分スキーム）.**
-可換環 $`B`$ に対し、$`\operatorname{Spec}B`$ は素イデアルの集合を台とし、
+可換環 $`B`$ に対し、$`\mathrm{Spec}\,B`$ は素イデアルの集合を台とし、
 
 ```math
 D(f)=\{𝔭\mid f\notin𝔭\},
 \qquad
-𝒪_{\operatorname{Spec}B}(D(f))=B_f
+𝒪_{\mathrm{Spec}\,B}(D(f))=B_f
 \qquad\text{(2.3)}
 ```
 
@@ -137,7 +137,7 @@ $`B_f`$ は $`f`$ を可逆にした局所化である。
 （[Stacks, §26.5, Tag 01HR](https://stacks.math.columbia.edu/tag/01HR)）。
 
 イデアル $`I\subseteq B`$ の定める閉部分スキームを
-$`V_B(I)=\operatorname{Spec}(B/I)`$ と書く。
+$`V_B(I)=\mathrm{Spec}(B/I)`$ と書く。
 環準同型 $`e:B\to R`$ が $`B/I`$ を経由することと、$`e(I)=0`$ は同値である。
 したがって $`V_B(I)`$ は、任意の係数環で方程式 $`I`$ を満たす点を表す。
 
@@ -148,7 +148,7 @@ $`V_B(I)=\operatorname{Spec}(B/I)`$ と書く。
 局所評価データ $`p`$ を考える。これらは係数環の変更で移送できるものとする。
 次の代数的な表示が与えられる場合を扱う。
 
-1. 局所評価データの関手がアフィンスキーム $`Y_W=\operatorname{Spec}D_W`$ で表され、
+1. 局所評価データの関手がアフィンスキーム $`Y_W=\mathrm{Spec}\,D_W`$ で表され、
    普遍的な環準同型 $`u_W:O_E(W)\to D_W`$ がその評価を与える。
 2. 残差の評価 $`p\mapsto e_p(\varepsilon_{W,A_p,i,a})`$ が正則関数であり、
    それを表す元 $`r_{W,i,a}\in D_W`$ が構成されている。
@@ -163,7 +163,7 @@ $`V_B(I)=\operatorname{Spec}(B/I)`$ と書く。
 ```math
 \begin{aligned}
 K_W&=(u_W(\nu_{W,i,a})-r_{W,i,a}\mid i,a),\\
-B_W&=D_W/K_W,\qquad X_W=\operatorname{Spec}B_W,\\
+B_W&=D_W/K_W,\qquad X_W=\mathrm{Spec}\,B_W,\\
 \eta_W&:O_E(W)\longrightarrow B_W.
 \end{aligned}
 \qquad\text{(2.4)}
@@ -218,7 +218,7 @@ J_i(W)B_{W,f}
 **定義2.8（Lawful locus）.**
 $`𝒥_{\mathrm{Ob}}=\sum_{i\in K_E^{\mathrm{req}}}𝒥_i`$ とし、
 その定める閉部分スキームを $`X_E^{\mathrm{law}}=V(𝒥_{\mathrm{Ob}})`$ と呼ぶ。
-各chartでは $`\operatorname{Spec}(B_W/\sum_iJ_i(W))`$ である。
+各chartでは $`\mathrm{Spec}(B_W/\sum_iJ_i(W))`$ である。
 また、$`s^{*}_{\mathrm{ideal}}𝒥`$ は、$`𝒥`$ の像が $`𝒪_T`$ 内で生成するイデアル層を表す。
 これは加群の引き戻し $`s^*𝒥`$ から $`𝒪_T`$ への射の像である。
 
@@ -380,7 +380,7 @@ $`d^1g=0`$ を満たす $`g`$ を1-cocycle、$`d^0b`$ の形の元を1-coboundar
 被覆 $`𝒰`$ に関する一次Čechコホモロジーは
 
 ```math
-\check H^1(𝒰,F)=\ker d^1/\operatorname{im}d^0
+\check H^1(𝒰,F)=\ker d^1/\mathrm{im}\,d^0
 \qquad\text{(2.12)}
 ```
 
@@ -397,7 +397,7 @@ $`d^1g=0`$ を満たす $`g`$ を1-cocycle、$`d^0b`$ の形の元を1-coboundar
 ```math
 \begin{aligned}
 d^0(b_0,b_1,b_2)&=(b_1-b_0,\ b_2-b_0,\ b_2-b_1),\\
-\operatorname{per}(g)&=g_{01}+g_{12}-g_{02}
+\mathrm{per}(g)&=g_{01}+g_{12}-g_{02}
 \end{aligned}
 \qquad\text{(2.13)}
 ```
@@ -527,10 +527,10 @@ $`k`$ を体とし、$`C^0,C^1,C^2`$ が有限次元 $`k`$-ベクトル空間で
 ```
 
 **証明.**
-$`\dim\check H^1=\dim\ker d^1-\dim\operatorname{im}d^0`$ に階数・退化次数の定理を適用する。
-$`\operatorname{rank}d^1\leq\dim C^2`$、$`\operatorname{rank}d^0\leq\dim C^0`$ から式(2.16)を得る。
+$`\dim\check H^1=\dim\ker d^1-\dim\mathrm{im}\,d^0`$ に階数・退化次数の定理を適用する。
+$`\mathrm{rank}\,d^1\leq\dim C^2`$、$`\mathrm{rank}\,d^0\leq\dim C^0`$ から式(2.16)を得る。
 式(2.17)は
-$`\dim C^n=\dim\operatorname{im}d^{n-1}+\dim H^n+\dim\operatorname{im}d^n`$
+$`\dim C^n=\dim\mathrm{im}\,d^{n-1}+\dim H^n+\dim\mathrm{im}\,d^n`$
 の交代和で、像の次元が隣接次数どうしで相殺されることから従う。□
 
 式(2.16)を障害容量の下界と呼ぶ。
@@ -639,8 +639,8 @@ sourceとAtomの対 $`(s,a)`$ が構造的であるとは
 
 ```math
 \forall\lambda\in\Lambda,\quad
-\bigl(a\in\operatorname{Atomize}_{D_\lambda}(s)
-\Longleftrightarrow a\in\operatorname{Atomize}_D(s)\bigr)
+\bigl(a\in\mathrm{Atomize}_{D_\lambda}(s)
+\Longleftrightarrow a\in\mathrm{Atomize}_D(s)\bigr)
 \qquad\text{(2.20)}
 ```
 
@@ -817,7 +817,7 @@ e_\alpha:P_R&\longrightarrowℤ,
 \qquad\text{(2.25)}
 ```
 
-と定める。この評価は $`J_R`$ を零に送り、$`\operatorname{Spec}(P_R/J_R)`$ の整数点を与える。
+と定める。この評価は $`J_R`$ を零に送り、$`\mathrm{Spec}(P_R/J_R)`$ の整数点を与える。
 実際の制限で得た重なり上の状態もlawfulである。
 さらに任意の $`\xi_e\in M_R`$ による平行移動後の状態もlawfulである。
 
@@ -838,8 +838,8 @@ $`\xi\in C^1(𝒰_q,F_R)`$ は重なりで右側の状態を左側の座標へ�
 
 ```math
 \begin{aligned}
-o_q(x)_e&=\xi_e+\operatorname{res}_{\beta,e}(p_\beta)
--\operatorname{res}_{\alpha,e}(p_\alpha),\\
+o_q(x)_e&=\xi_e+\mathrm{res}_{\beta,e}(p_\beta)
+-\mathrm{res}_{\alpha,e}(p_\alpha),\\
 o_q(x)&=\xi+d^0p.
 \end{aligned}
 \qquad\text{(2.26)}
@@ -1002,7 +1002,7 @@ $`\beta_V:P_{\mathrm{sem}}(V)\to P_E(V)`$ を構成し、各生成元に対し�
 ```math
 \ker\widetilde\chi_V\subseteq R_{\mathrm{rep}}(V),
 \qquad
-\operatorname{im}\widetilde\chi_V=Q_E(V)
+\mathrm{im}\,\widetilde\chi_V=Q_E(V)
 \qquad\text{(2.32)}
 ```
 

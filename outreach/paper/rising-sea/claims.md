@@ -110,7 +110,7 @@ CI の対象 commit・結果は PR に記録する。
 ## 第2章の下書き
 
 - 対象: [第2章 Lawの幾何と局所整合性](ja/05-law-geometry.md)。
-- 原稿 SHA-256: `b663681d1c6f7a2230dfffdf914545be61a7c41af746348ac04a87c1d04c863a`。
+- 原稿 SHA-256: `edeb3688627085c357282c034c6f23968dd77aad39d15b1ea282cba528f0910e`。
 - リポジトリ内の一次資料の固定版: `313086df1e2071236b64ffd454615e927e428e26`（第1章の PR #4831 のマージ版）。
 - 確認者・日付: Codex（GPT-6）、2026-09-20。
 - 方法: 数学棚卸し2-A〜2-Iに従い、一次資料の定義・仮定・構成・証明と照合。原稿の全証明を読み直し、有限例は別途計算した。
@@ -161,6 +161,11 @@ SAGAの公開第1版とStacksの原典で引用内容を照合し、[文献](ja/
 2026-09-20、人間による原稿確認を経て、PR作成の承認を受けた。
 GitHubファイルプレビュー・描画済み差分の表示確認とCIの対象commit・結果はPRに記録する。
 Claudeによる独立レビューはPR上で受ける。
+
+同日、PR #4832の固定commit `64036ad552c5235c360f012610ff325fc0ea348d` のGitHubプレビューで、
+`\operatorname` が拒否され、16式が描画エラーになることを確認した。
+作用素名を `\mathrm` と明示的な空白で表し、全504式の数学的内容・順序と周辺の本文を保持した。
+原稿hashを更新し、修正後のcommitでプレビュー・描画済み差分とCIを確認する。
 
 [c2-math-iii]: ../../../docs/aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md
 [c2-math-iv]: ../../../docs/aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md
