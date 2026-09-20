@@ -9148,3 +9148,47 @@ coreのnative側回復、およびcoverage・overlap・係数の接続である�
 warning・errorはなく、placeholder・hidden/BiDi・privacy・語彙・docstring・module登録・
 差分整形を確認した。Research全体buildは行わず、固定GOALのblobは
 `4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`のままである。
+
+
+#### 共通局所商の全幾何法則と両方式のnative Hom全体の回復
+
+独立object stageから組み立てた両端の間の任意のnative Homについて、raw・realizationを
+同じ共通readerと不変量の局所商へ接続した。両方式の`localRepresentative_points`・
+`localExplicit_points`は、実際の全Hom assemblerが要求する全局所条件を導く。
+続く`localRepresentative_assemble`・`localExplicit_assemble`は、そのassemblerへ渡すと
+元の完全幾何Hom全体が戻ることを示す。今回閉じた方向はnative Homから局所商を経た回復である。
+
+明示rawでは、全候補の座標・relation・依存local-data行が共通readerのraw行に一致する。
+既存のnative raw converseの比較前提をこれらの等式で放電し、core・係数写像の回復を使って
+実際のstage assemblerの出力全体を元のraw mapと比較した。代表方式では、元のstrict raw等式から
+既存の原始条件を導く。代表方式のrawを明示raw mapへ置き換える変更は行っていない。
+
+realizationでは、代表方式の三つのdirected成分と、明示方式の三つのfiber同値・三つの
+actual context-action行を共通readerへ接続した。元のnative supplyから全原始法則を導き、
+core回復等式に沿って実際のstage assemblerのパラメータを同定してsupply全体を回復する。
+全Homの回復には既存のnative extensionalityを使い、coverageのproof-valued性と既存の
+thin-context overlapのsubsingleton性もその既存APIのまま使用する。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentGeometryHomNativeRawReadings.lean` / `IndependentGeometryHomPrimitive.NativeReader` | `readWith_explicitRaw_maps`と三つの`readWith_raw_*`がraw converseの比較前提を放電する。`readWith_explicitRaw_points`・`readWith_explicitRaw_assemble`が全原始法則とnative raw回復を与える |
+| `IndependentGeometryHomNativeRawPreservation.lean` / 同namespace | `localWith_explicitRaw`・`localWith_representativeRaw`が両方式の独立stage法則を導く。`localWith_explicitRaw_assemble_heq`はcore・係数の回復から実際の依存raw map全体を回復する |
+| `IndependentGeometryHomNativeRealizationReadings.lean` / 同namespace | 各fiberとactual-actionのprojection APIが元のreaderとの一致を示す。両方式の`readWith_*Realization_points`・`readWith_*Realization_assemble`が全法則と元のsupplyの回復へ接続する |
+| `IndependentGeometryHomNativeRealizationPreservation.lean` / 同namespace | 両方式の`localWith_*Realization`が独立stage法則を与える。対応する`*_assemble_heq`がcore回復を使用し、実際のstage assemblerから元のsupply全体を回復する |
+| `IndependentGeometryHomNativeFullRecovery.lean` / 同namespace | 両方式の`local*_points`が同じ局所商の全条件を統合し、`local*_assemble`が元の完全Hom全体を回復する。`representativeHom_ext`は既存native extensionalityをsupply全体の比較へ接続する |
+
+入力は既存の独立object stageと元のnative Homである。raw・realizationのmap・row比較前提は
+共通readerのprojectionから、assemblerのパラメータ一致は前節のcore・係数回復から放電した。
+完成した写像・保存証明を局所lawへ追加していない。非可逆な係数準同型も元の範囲で保持する。
+
+逆方向、すなわち任意の適法な局所商から組み立てたHomを読み直して全query値と局所商全体を
+回復する証明は未完了である。全Homの分離、共通の恒等・合成、残る有限式・指定反証も残る。
+今回の任意native Homからの法則導出を、完全な正負instance検査や全Homの両逆の代用にはしない。
+パートI全体のPR・独立査読・CI・merge・Issue同期まで継続し、パートIIは開始しない。
+固定GOAL・元のHomの範囲・Cycle 79は維持する。
+
+新規5 sourceの単一file検証が通った。namespace監査は順に6・4・15・6・5件(計36件)で
+標準公理のみだった。明示36宣言の個別`#print axioms`も全件を照合し、標準公理のみを確認した。
+最終検証にwarning・errorはなく、placeholder・hidden/BiDi・privacy・語彙・docstring・
+module登録・差分整形を確認した。Research全体buildは行わず、固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
