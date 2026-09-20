@@ -57,16 +57,9 @@ def supportTypedFormula
     (base left right : ArchCtx A) (K : Type u) (s : K) (a : U.Atom) :
     ObjectFormula.{u, v, u + 1} U :=
   overlapAnchor t ha A hA (.context base left right (.carrier .support))
-    (overlapAnchor t ha A hA (.context base left right (.support K s a))
-      (.implies
-        (.notEqual K (IndependentContextObjectPrimitive.carrier
-          (IndependentContextObjectPrimitive.Overlap.context
-            (IndependentOverlapCandidate.context (overlapRows t ha A hA))
-            base left right) .support))
-        (.equal
-          (ULift.up ((overlapRows t ha A hA
-            (.context base left right (.support K s a))).down) : ULift.{u + 1} Prop)
-          (ULift.up False))))
+    (.cell (.atObject A (.overlap
+      (.context base left right (.support K s a))))
+      (some (ULift.up (ULift.up False))))
 
 def axisTypedFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -75,16 +68,9 @@ def axisTypedFormula
     (base left right : ArchCtx A) (K : Type u) (a : K) :
     ObjectFormula.{u, v, u + 1} U :=
   overlapAnchor t ha A hA (.context base left right (.carrier .axis))
-    (overlapAnchor t ha A hA (.context base left right (.axis K a))
-      (.implies
-        (.notEqual K (IndependentContextObjectPrimitive.carrier
-          (IndependentContextObjectPrimitive.Overlap.context
-            (IndependentOverlapCandidate.context (overlapRows t ha A hA))
-            base left right) .axis))
-        (.equal
-          (ULift.up ((overlapRows t ha A hA
-            (.context base left right (.axis K a))).down) : ULift.{u + 1} Prop)
-          (ULift.up False))))
+    (.cell (.atObject A (.overlap
+      (.context base left right (.axis K a))))
+      (some (ULift.up (ULift.up False))))
 
 def observableTypedFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -93,27 +79,98 @@ def observableTypedFormula
     (base left right : ArchCtx A) (K : Type u) (x : K) :
     ObjectFormula.{u, v, u + 1} U :=
   overlapAnchor t ha A hA (.context base left right (.carrier .observable))
-    (overlapAnchor t ha A hA (.context base left right (.observable K x))
-      (.implies
-        (.notEqual K (IndependentContextObjectPrimitive.carrier
-          (IndependentContextObjectPrimitive.Overlap.context
-            (IndependentOverlapCandidate.context (overlapRows t ha A hA))
-            base left right) .observable))
-        (.equal
-          (ULift.up ((overlapRows t ha A hA
-            (.context base left right (.observable K x))).down) : ULift.{u + 1} Prop)
-          (ULift.up False))))
+    (.cell (.atObject A (.overlap
+      (.context base left right (.observable K x))))
+      (some (ULift.up (ULift.up False))))
+
+@[simp] theorem supportTypedFormula_evaluate
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
+    (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
+    (base left right : ArchCtx A) (K : Type u) (s : K) (a : U.Atom) :
+    (supportTypedFormula t ha A hA base left right K s a).evaluate t ↔
+      ¬ (overlapRows t ha A hA
+        (.context base left right (.support K s a))).down := by
+  simp only [supportTypedFormula, overlapAnchor_evaluate, ObjectFormula.evaluate]
+  rw [← IndependentGeometryPrimitive.some_dependent t ha A hA
+    (.overlap (.context base left right (.support K s a)))]
+  constructor
+  · intro h
+    have h' := Option.some.inj h
+    have h'' := congrArg (fun value => value.down.down) h'
+    exact (eq_iff_iff.1 h'').mp
+  · intro h
+    congr 2
+    apply ULift.ext
+    apply ULift.ext
+    exact propext (iff_false_intro h)
+
+@[simp] theorem axisTypedFormula_evaluate
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
+    (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
+    (base left right : ArchCtx A) (K : Type u) (a : K) :
+    (axisTypedFormula t ha A hA base left right K a).evaluate t ↔
+      ¬ (overlapRows t ha A hA
+        (.context base left right (.axis K a))).down := by
+  simp only [axisTypedFormula, overlapAnchor_evaluate, ObjectFormula.evaluate]
+  rw [← IndependentGeometryPrimitive.some_dependent t ha A hA
+    (.overlap (.context base left right (.axis K a)))]
+  constructor
+  · intro h
+    have h' := Option.some.inj h
+    have h'' := congrArg (fun value => value.down.down) h'
+    exact (eq_iff_iff.1 h'').mp
+  · intro h
+    congr 2
+    apply ULift.ext
+    apply ULift.ext
+    exact propext (iff_false_intro h)
+
+@[simp] theorem observableTypedFormula_evaluate
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
+    (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
+    (base left right : ArchCtx A) (K : Type u) (x : K) :
+    (observableTypedFormula t ha A hA base left right K x).evaluate t ↔
+      ¬ (overlapRows t ha A hA
+        (.context base left right (.observable K x))).down := by
+  simp only [observableTypedFormula, overlapAnchor_evaluate, ObjectFormula.evaluate]
+  rw [← IndependentGeometryPrimitive.some_dependent t ha A hA
+    (.overlap (.context base left right (.observable K x)))]
+  constructor
+  · intro h
+    have h' := Option.some.inj h
+    have h'' := congrArg (fun value => value.down.down) h'
+    exact (eq_iff_iff.1 h'').mp
+  · intro h
+    congr 2
+    apply ULift.ext
+    apply ULift.ext
+    exact propext (iff_false_intro h)
 
 structure TypedInstances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
     (hA : IndependentGeometryPrimitive.matching t (.object A) = true) : Prop where
   support : ∀ base left right K s a,
-    (supportTypedFormula t ha A hA base left right K s a).evaluate t
+    K ≠ IndependentContextObjectPrimitive.carrier
+      (IndependentContextObjectPrimitive.Overlap.context
+        (IndependentOverlapCandidate.context (overlapRows t ha A hA))
+        base left right) .support →
+      (supportTypedFormula t ha A hA base left right K s a).evaluate t
   axis : ∀ base left right K a,
-    (axisTypedFormula t ha A hA base left right K a).evaluate t
+    K ≠ IndependentContextObjectPrimitive.carrier
+      (IndependentContextObjectPrimitive.Overlap.context
+        (IndependentOverlapCandidate.context (overlapRows t ha A hA))
+        base left right) .axis →
+      (axisTypedFormula t ha A hA base left right K a).evaluate t
   observable : ∀ base left right K x,
-    (observableTypedFormula t ha A hA base left right K x).evaluate t
+    K ≠ IndependentContextObjectPrimitive.carrier
+      (IndependentContextObjectPrimitive.Overlap.context
+        (IndependentOverlapCandidate.context (overlapRows t ha A hA))
+        base left right) .observable →
+      (observableTypedFormula t ha A hA base left right K x).evaluate t
 
 theorem typed_iff_instances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -124,47 +181,26 @@ theorem typed_iff_instances
   constructor
   · intro ht
     refine ⟨?_, ?_, ?_⟩
-    · intro base left right K s a
-      simp only [supportTypedFormula, overlapAnchor_evaluate, ObjectFormula.evaluate]
-      intro hK
-      apply ULift.ext
-      exact propext (iff_false_intro ((ht base left right).support K s a hK))
-    · intro base left right K a
-      simp only [axisTypedFormula, overlapAnchor_evaluate, ObjectFormula.evaluate]
-      intro hK
-      apply ULift.ext
-      exact propext (iff_false_intro ((ht base left right).axis K a hK))
-    · intro base left right K x
-      simp only [observableTypedFormula, overlapAnchor_evaluate, ObjectFormula.evaluate]
-      intro hK
-      apply ULift.ext
-      exact propext (iff_false_intro ((ht base left right).observable K x hK))
+    · intro base left right K s a hK
+      exact (supportTypedFormula_evaluate t ha A hA base left right K s a).2
+        ((ht base left right).support K s a hK)
+    · intro base left right K a hK
+      exact (axisTypedFormula_evaluate t ha A hA base left right K a).2
+        ((ht base left right).axis K a hK)
+    · intro base left right K x hK
+      exact (observableTypedFormula_evaluate t ha A hA base left right K x).2
+        ((ht base left right).observable K x hK)
   · intro hi base left right
     refine ⟨?_, ?_, ?_⟩
-    · intro K s a hK hs
-      have hp := hi.support base left right K s a
-      simp only [supportTypedFormula, overlapAnchor_evaluate, ObjectFormula.evaluate] at hp
-      have he := congrArg ULift.down (hp hK)
-      change (overlapRows t ha A hA
-        (.context base left right (.support K s a))).down at hs
-      rw [he] at hs
-      exact hs
-    · intro K a hK hs
-      have hp := hi.axis base left right K a
-      simp only [axisTypedFormula, overlapAnchor_evaluate, ObjectFormula.evaluate] at hp
-      have he := congrArg ULift.down (hp hK)
-      change (overlapRows t ha A hA
-        (.context base left right (.axis K a))).down at hs
-      rw [he] at hs
-      exact hs
-    · intro K x hK hs
-      have hp := hi.observable base left right K x
-      simp only [observableTypedFormula, overlapAnchor_evaluate, ObjectFormula.evaluate] at hp
-      have he := congrArg ULift.down (hp hK)
-      change (overlapRows t ha A hA
-        (.context base left right (.observable K x))).down at hs
-      rw [he] at hs
-      exact hs
+    · intro K s a hK
+      exact (supportTypedFormula_evaluate t ha A hA base left right K s a).1
+        (hi.support base left right K s a hK)
+    · intro K a hK
+      exact (axisTypedFormula_evaluate t ha A hA base left right K a).1
+        (hi.axis base left right K a hK)
+    · intro K x hK
+      exact (observableTypedFormula_evaluate t ha A hA base left right K x).1
+        (hi.observable base left right K x hK)
 
 abbrev LawInstances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)

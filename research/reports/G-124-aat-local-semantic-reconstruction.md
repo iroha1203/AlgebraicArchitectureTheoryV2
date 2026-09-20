@@ -9543,31 +9543,39 @@ family/configurationは無限のAtom写像を入力にせず、一つの真なtr
 | `IndependentGeometryHomFullCompositionFinite.lean` / `Composition` | 全constructorの一出力・有限出力集合・完成局所Hom fragmentの有限決定 |
 
 有限式は、定義を目視して有限と判断せず、source object・target object・Homの三表を読む閉じた構文へ
-置き換えた。`IndependentFiniteLawFormula.Formula`の静的leafは、供給済みの添字または値の等号・不等号に
-限られ、任意の命題や完成したlaw certificateを格納するconstructorはない。`Formula.support`は三表それぞれの
-`Finset`を返し、`Formula.evaluate_iff_of_support`は任意の比較表について、その三support上の一致だけで評価が
-保存されることを示す。carrier graphのtyping・totality・uniqueness、inverse row、依存rowも、witnessと
-challengerを固定した閉じた有限式族と元の量化法則の同値として固定した。
+置き換えた。`IndependentFiniteLawFormula`の真偽を担うleafは、一つの正確な表セルとその応答値に
+限定した。型・添字・供給値の一致や不一致は式に格納せず、量化されたinstance側の前提または有限な
+構文分岐に置いた。`typeMarker`は構文のユニバースを保つための単位値で、評価は定数真であり、
+任意の型・命題・表応答を引数に取らない。
+これにより、表セルと無関係な任意の命題・値等式・完成したlaw certificateをleafから注入する経路はない。
+`Formula.support`は三表それぞれの`Finset`を返し、`Formula.evaluate_iff_of_support`は任意の比較表について、その
+三support上の一致だけで評価が保存されることを示す。carrier graphのtypingは型の不一致を外側の前提とし、
+totalityとuniquenessは選択した真witnessセルと異なるchallengerの偽セルで表した。inverse rowと依存rowを
+含むそれぞれについて、元の量化法則との同値を証明した。
 
 object側では、foundationのextraction・有限family・composition・invariant・signature・operation・Atom・
 coefficient、generated-object matching、active row、さらに各active objectのcontext・equation・circuit・
 coverage・overlap・rawを全て有限式族へ写し、逆向きに元の`IndependentGeometryPrimitive.IsLawful`を再構成した。
 rawのgenerator・identity・compositionは完成した命題をleafへ入れず、選択されたrelation/image row、有限
-`Finsupp` witness、有限変数集合を明示し、`IndependentPolynomialExpressions.compile`の有限AST評価を通して
-元の多項式法則へ戻す。`DependentLaws`とobject全体の集約も、前段の有限式族から再構成したlaw proofだけを
-後段へ渡し、完成したdependent/object certificateをinstance dataとして保持しない。
+`Finsupp` witness、有限変数集合を明示する。多項式は専用の`CellFormula`で6種類のAST queryセルを固定し、
+`expressionFormula_evaluate`と`evaluate_eq_expected_of_expressionFormula`が`support`上の一致から
+`IndependentPolynomialExpressions.evaluate_eq_of_support`を使って元の多項式値を回復する。identityにも
+`IndependentPolynomialExpressions.compile`と同じsupport評価を使う。`DependentLaws`とobject全体の集約も、
+前段の有限式族から再構成したlaw proofだけを後段へ渡し、完成したdependent/object certificateを
+instance dataとして保持しない。
 
 Hom側では、Atom coherence、extraction、transport matching、generation、object row、equation/context/
 observable、detector、operation、signatureを`PackageAssembly.PointLaws`の有限式族へ集約した。coverageの
 9条件、係数のzero/one/add/mul、overlap、代表・明示raw、代表・明示realizationを同じ三表構文へ接続し、
 `FullRepresentative.PointLaws`と`FullExplicit.PointLaws`の全fieldを両向きに復元した。inactive object rowも
-object参照の不等号と一つのHom cellからなる通常の有限含意であり、旧任意命題constructorは削除した。量化法則
-全体に単一supportを要求せず、引数・witness・challenger・monomialを固定した各instanceの有限性と、一つの
+object参照の不一致を外側の前提とし、式自体は一つの正確な偽Homセルだけを読む。係数graphの型不一致と
+唯一性、代表・明示realizationのreading条件も量化法則側へ移し、式には対応するHomセルを残した。
+量化法則全体に単一supportを要求せず、引数・witness・challenger・monomialを固定した各instanceの有限性と、一つの
 合成出力queryの有限性を区別する。
 
 | Source / namespace末尾 | 主な証拠 |
 | --- | --- |
-| `IndependentFiniteLawFormula.lean`、`IndependentFiniteGraphLawFormula.lean` | 三表`Formula`、`evaluate_iff_of_support`、total/inverse/dependent rowの`lawful_iff_instances` |
+| `IndependentFiniteLawFormula.lean`、`IndependentFiniteGraphLawFormula.lean`、`IndependentPolynomialExpressions.lean` | 三表`Formula`、多項式`CellFormula`、各`evaluate_iff_of_support`、total/inverse/dependent rowの`lawful_iff_instances` |
 | `IndependentGeometryObjectFoundation*LawFinite.lean`、`IndependentGeometryObjectMatchingLawFinite.lean` | `foundationLaws_iff_instances`、`Matching.lawful_iff_instances`、`Active.activeTyped_iff_instances` |
 | `IndependentGeometryObjectDependent*LawFinite.lean`、`IndependentGeometryObjectLawFinite.lean` | 6 dependent stage、`dependentLaws_iff_instances`、object全体の`lawful_iff_instances` |
 | `IndependentGeometryHomCoreLawFinite.lean`、`IndependentGeometryHomPackageLawFinite.lean` | core各成分と`PackageAssembly.PointLaws`の`pointLaws_iff_instances` |
@@ -9609,8 +9617,10 @@ object参照の不等号と一つのHom cellからなる通常の有限含意で
 `IndependentGeometryHomLawFinite.lean`を安全な三表構文の全Hom集約へ書き換えた。各sourceは単一fileの
 focused checkを通し、埋込みのnamespace監査は全て標準公理のみだった。中心集約であるraw dependent、
 `DependentLaws`、object `IsLawful`、代表・明示`PointLaws`も依存順に再検証した。
-三表support保存、raw・dependent・object・package・両全Hom集約、左右単位・両結合則、raw分離例の
-中心12宣言を個別`#print axioms`でも照合し、公理集合は`propext`・`Classical.choice`・`Quot.sound`だけだった。
+基底式の`.olean`を更新した後に、基礎から完全Hom集約まで依存順に再コンパイルした。
+今回の有限式修正に関わる三表support保存、多項式`CellFormula`、raw・dependent・object・package・両方式の
+raw・realization・完全Hom集約の中心13宣言を個別`#print axioms`でも照合し、公理集合は
+`propext`・`Classical.choice`・`Quot.sound`だけだった。
 placeholder・hidden/BiDi・privacy・語彙・import方向・module登録・差分整形・保護領域を確認し、
 任意命題を受け取る旧constructorまたは同等経路が残っていないことも検索した。
 Research全体buildとaggregate rootのelaborationはhard ruleに従って実行せず、Cycleは79のままである。

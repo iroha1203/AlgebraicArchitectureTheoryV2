@@ -101,16 +101,37 @@ def pointFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
     (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
+    (_hf : IndependentGeometryPrimitive.FoundationLaws t)
+    (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
+    (_he : IndependentGeometryPrimitive.EquationLaws (rows t ha A hA) hc)
+    (q : IndependentCoveragePrimitive.Query A) : ObjectFormula.{u, v, 0} U :=
+  .and (ObjectMatchingFinite.matchCell (.object A) true)
+    (activeAnchor t ha A hA q
+      (.cell (.atObject A (.coverage q)) (some (ULift.up True))))
+
+@[simp] theorem pointFormula_evaluate
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
+    (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
     (hf : IndependentGeometryPrimitive.FoundationLaws t)
     (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
     (he : IndependentGeometryPrimitive.EquationLaws (rows t ha A hA) hc)
-    (q : IndependentCoveragePrimitive.Query A) : ObjectFormula.{u, v, 0} U :=
-  coverageAnchor t ha A hA q
-    (activeAnchor t ha A hA q
-      (.implies (.equal (coverageRows t ha A hA q) True)
-        (.equal (IndependentCoveragePrimitive.Active
-          (equationSystem t ha A hA hc he)
-          (IndependentGeometryPrimitive.assembledSignature t hf) q) True)))
+    (q : IndependentCoveragePrimitive.Query A) :
+    (pointFormula t ha A hA hf hc he q).evaluate t ↔
+      coverageRows t ha A hA q := by
+  simp only [pointFormula, ObjectFormula.evaluate,
+    ObjectMatchingFinite.matchCell_evaluate, hA, true_and,
+    activeAnchor_evaluate]
+  rw [← IndependentGeometryPrimitive.some_dependent t ha A hA (.coverage q)]
+  constructor
+  · intro h
+    have h' := Option.some.inj h
+    have h'' := congrArg ULift.down h'
+    exact (eq_iff_iff.1 h'').2 True.intro
+  · intro h
+    congr 2
+    apply ULift.ext
+    exact propext (iff_true_intro h)
 
 def Instances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -119,7 +140,10 @@ def Instances
     (hf : IndependentGeometryPrimitive.FoundationLaws t)
     (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
     (he : IndependentGeometryPrimitive.EquationLaws (rows t ha A hA) hc) : Prop :=
-  ∀ q, (pointFormula t ha A hA hf hc he q).evaluate t
+  ∀ q, (pointFormula t ha A hA hf hc he q).evaluate t →
+    IndependentCoveragePrimitive.Active
+      (equationSystem t ha A hA hc he)
+      (IndependentGeometryPrimitive.assembledSignature t hf) q
 
 theorem coverageLaws_iff_instances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -131,16 +155,10 @@ theorem coverageLaws_iff_instances
     IndependentGeometryPrimitive.CoverageLaws t hf (rows t ha A hA) hc he ↔
       Instances t ha A hA hf hc he := by
   constructor
-  · intro hl q
-    simp only [pointFormula, coverageAnchor_evaluate, activeAnchor_evaluate,
-      ObjectFormula.evaluate]
-    intro hq
-    exact eq_true (hl q ((eq_iff_iff.1 hq).2 True.intro))
+  · intro hl q hq
+    exact hl q ((pointFormula_evaluate t ha A hA hf hc he q).1 hq)
   · intro hi q hq
-    have hp := hi q
-    simp only [pointFormula, coverageAnchor_evaluate, activeAnchor_evaluate,
-      ObjectFormula.evaluate] at hp
-    exact (eq_iff_iff.1 (hp (eq_true hq))).2 True.intro
+    exact hi q ((pointFormula_evaluate t ha A hA hf hc he q).2 hq)
 
 end Coverage
 

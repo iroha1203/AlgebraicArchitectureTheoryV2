@@ -35,14 +35,14 @@ def monomialMatch {A B : ArchitectureObject U}
   .and
     (.allList m.support.toList fun c =>
       .anyList n.support.toList fun d =>
-        .and
-          (.hom (.atObjects A B (.raw (.coordinate .forward W V (.edge C D c d)))) true)
-          (.equal (m c) (n d)))
+        if m c = n d then
+          .hom (.atObjects A B (.raw (.coordinate .forward W V (.edge C D c d)))) true
+        else .falsity)
     (.allList n.support.toList fun d =>
       .anyList m.support.toList fun c =>
-        .and
-          (.hom (.atObjects A B (.raw (.coordinate .forward W V (.edge C D c d)))) true)
-          (.equal (m c) (n d)))
+        if m c = n d then
+          .hom (.atObjects A B (.raw (.coordinate .forward W V (.edge C D c d)))) true
+        else .falsity)
 
 @[simp] theorem evaluate_monomialMatch_iff
     {A B : ArchitectureObject U}
@@ -54,9 +54,37 @@ def monomialMatch {A B : ArchitectureObject U}
       IndependentPolynomialPointTransport.MonomialMatch
         (fun c d => h (.atObjects A B
           (.raw (.coordinate .forward W V (.edge C D c d))))) m n := by
+  classical
   simp only [monomialMatch, Formula.evaluate, Formula.evaluate_allList,
-    Formula.evaluate_anyList, Finset.mem_toList]
-  rfl
+    Formula.evaluate_anyList, Finset.mem_toList,
+    IndependentPolynomialPointTransport.MonomialMatch]
+  constructor
+  · rintro ⟨hleft, hright⟩
+    constructor
+    · intro c hc
+      obtain ⟨d, hd, hedge⟩ := hleft c hc
+      by_cases he : m c = n d
+      · have hcell : h (.atObjects A B
+            (.raw (.coordinate .forward W V (.edge C D c d)))) = true := by
+          simpa [he, Formula.evaluate] using hedge
+        exact ⟨d, hd, hcell, he⟩
+      · simp [he, Formula.evaluate] at hedge
+    · intro d hd
+      obtain ⟨c, hc, hedge⟩ := hright d hd
+      by_cases he : m c = n d
+      · have hcell : h (.atObjects A B
+            (.raw (.coordinate .forward W V (.edge C D c d)))) = true := by
+          simpa [he, Formula.evaluate] using hedge
+        exact ⟨c, hc, hcell, he⟩
+      · simp [he, Formula.evaluate] at hedge
+  · rintro ⟨hleft, hright⟩
+    constructor
+    · intro c hc
+      obtain ⟨d, hd, hcell, he⟩ := hleft c hc
+      exact ⟨d, hd, by simpa [he, Formula.evaluate] using hcell⟩
+    · intro d hd
+      obtain ⟨c, hc, hcell, he⟩ := hright d hd
+      exact ⟨c, hc, by simpa [he, Formula.evaluate] using hcell⟩
 
 /-! ## Explicit raw laws -/
 
@@ -157,7 +185,22 @@ def label (W : ArchCtx A) (V : ArchCtx B) (C D : Type u)
         (.and
           (.source (.atObject A (.raw (.label W C c))) (some ⟨sourceLabel⟩))
           (.target (.atObject B (.raw (.label V D d))) (some ⟨targetLabel⟩)))))
-    (.equal sourceLabel targetLabel)
+    (if sourceLabel = targetLabel then .truth else .falsity)
+
+@[simp] theorem label_evaluate_iff
+    (sourceTable targetTable : IndependentGeometryPrimitive.Table.{u, v} U)
+    (h : Table.{u, v} U .explicit) (W : ArchCtx A) (V : ArchCtx B)
+    (C D : Type u) (c : C) (d : D)
+    (sourceLabel targetLabel : Option LawAlgebra.CoordinateLabel) :
+    (label (U := U) W V C D c d sourceLabel targetLabel).evaluate
+        sourceTable targetTable h ↔
+      (h (.atObjects A B (.context .backward W V)) = true ∧
+        h (.atObjects A B (.raw (.coordinate .forward W V (.edge C D c d)))) = true ∧
+        sourceTable (.atObject A (.raw (.label W C c))) = some ⟨sourceLabel⟩ ∧
+        targetTable (.atObject B (.raw (.label V D d))) = some ⟨targetLabel⟩ →
+        sourceLabel = targetLabel) := by
+  by_cases heq : sourceLabel = targetLabel <;>
+    simp [label, Formula.evaluate, heq]
 
 def polynomial (W : ArchCtx A) (V : ArchCtx B)
     (C D I J : Type u) (rk rl : CoefficientRef.{v}) (i : I) (j : J)
@@ -308,7 +351,7 @@ theorem pointLaws_iff_instances (s t : ObjectData.{u, v} U)
       exact (localDataRows_iff_instances h W V C D c d L M).mp
         (hp.localDataRows W V C D c d L M hctx hcoord hs' ht')
     · intro W V C D c d sourceLabel targetLabel
-      simp only [label, Formula.evaluate,
+      simp only [label_evaluate_iff,
         IndependentGeometryPrimitive.flatten_at_generated,
         IndependentGeometryPrimitive.flattenDependent]
       rintro ⟨hctx, hcoord, hs, ht⟩
@@ -388,7 +431,7 @@ theorem pointLaws_iff_instances (s t : ObjectData.{u, v} U)
     · intro W V C D c d hctx hcoord
       have hf := hlabel W V C D c d
         (s.2.2.2.val (.label W C c)).down (t.2.2.2.val (.label V D d)).down
-      simp only [label, Formula.evaluate,
+      simp only [label_evaluate_iff,
         IndependentGeometryPrimitive.flatten_at_generated,
         IndependentGeometryPrimitive.flattenDependent] at hf
       exact hf ⟨hctx, hcoord, rfl, rfl⟩
@@ -458,7 +501,23 @@ def polynomialPresence (W : ArchCtx A) (V : ArchCtx B)
       (.and
         (.source (.atObject A (.raw (.polynomial W C I rk i))) (some ⟨p⟩))
         (.target (.atObject B (.raw (.polynomial V C I rl i))) (some ⟨q⟩))))
-    (.equal p.isSome q.isSome)
+    (if p.isSome = q.isSome then .truth else .falsity)
+
+@[simp] theorem polynomialPresence_evaluate_iff
+    (sourceTable targetTable : IndependentGeometryPrimitive.Table.{u, v} U)
+    (h : Table.{u, v} U .representative)
+    (W : ArchCtx A) (V : ArchCtx B) (C I : Type u)
+    (rk rl : CoefficientRef.{v}) (i : I)
+    (p : Option (IndependentPolynomialExpressions.Sparse C rk.1 rk.2))
+    (q : Option (IndependentPolynomialExpressions.Sparse C rl.1 rl.2)) :
+    (polynomialPresence (U := U) W V C I rk rl i p q).evaluate
+        sourceTable targetTable h ↔
+      (h (.atObjects A B (.context .backward W V)) = true ∧
+        sourceTable (.atObject A (.raw (.polynomial W C I rk i))) = some ⟨p⟩ ∧
+        targetTable (.atObject B (.raw (.polynomial V C I rl i))) = some ⟨q⟩ →
+        p.isSome = q.isSome) := by
+  by_cases heq : p.isSome = q.isSome <;>
+    simp [polynomialPresence, Formula.evaluate, heq]
 
 def polynomialCoefficient (W : ArchCtx A) (V : ArchCtx B)
     (C I : Type u) (rk rl : CoefficientRef.{v}) (i : I)
@@ -489,7 +548,25 @@ def imagePresence (W X : ArchCtx A) (V Y : ArchCtx B)
           (.and
             (.source (.atObject A (.raw (.image W X C D rk d))) (some ⟨p⟩))
             (.target (.atObject B (.raw (.image V Y C D rl d))) (some ⟨q⟩))))))
-    (.equal p.isSome q.isSome)
+    (if p.isSome = q.isSome then .truth else .falsity)
+
+@[simp] theorem imagePresence_evaluate_iff
+    (sourceTable targetTable : IndependentGeometryPrimitive.Table.{u, v} U)
+    (h : Table.{u, v} U .representative)
+    (W X : ArchCtx A) (V Y : ArchCtx B) (C D : Type u)
+    (rk rl : CoefficientRef.{v}) (d : D)
+    (p : Option (IndependentPolynomialExpressions.Sparse C rk.1 rk.2))
+    (q : Option (IndependentPolynomialExpressions.Sparse C rl.1 rl.2)) :
+    (imagePresence (U := U) W X V Y C D rk rl d p q).evaluate
+        sourceTable targetTable h ↔
+      (h (.atObjects A B (.context .backward W V)) = true ∧
+        h (.atObjects A B (.context .backward X Y)) = true ∧
+        (targetReadable (U := U) V Y).evaluate sourceTable targetTable h ∧
+        sourceTable (.atObject A (.raw (.image W X C D rk d))) = some ⟨p⟩ ∧
+        targetTable (.atObject B (.raw (.image V Y C D rl d))) = some ⟨q⟩ →
+        p.isSome = q.isSome) := by
+  by_cases heq : p.isSome = q.isSome <;>
+    simp [imagePresence, Formula.evaluate, heq]
 
 def imageCoefficient (W X : ArchCtx A) (V Y : ArchCtx B)
     (C D : Type u) (rk rl : CoefficientRef.{v}) (d : D)
@@ -585,7 +662,7 @@ theorem pointLaws_iff_instances (s t : ObjectData.{u, v} U)
       apply ULift.ext
       exact (hp.localData W V C c hctx).symm.trans hs'
     · intro W V C I i p q
-      simp only [polynomialPresence, Formula.evaluate,
+      simp only [polynomialPresence_evaluate_iff,
         IndependentGeometryPrimitive.flatten_at_generated,
         IndependentGeometryPrimitive.flattenDependent]
       rintro ⟨hctx, hs, ht⟩
@@ -606,7 +683,7 @@ theorem pointLaws_iff_instances (s t : ObjectData.{u, v} U)
         congrArg ULift.down (Option.some.inj ht)
       exact (hp.polynomial W V C I i hctx).2 p q hs' ht' m
     · intro W X V Y C D d p q
-      simp only [imagePresence, targetReadable, Formula.evaluate,
+      simp only [imagePresence_evaluate_iff, targetReadable, Formula.evaluate,
         IndependentGeometryPrimitive.flatten_at_generated,
         IndependentGeometryPrimitive.flattenDependent]
       rintro ⟨hWV, hXY, hreadable, hs, ht⟩
@@ -666,7 +743,7 @@ theorem pointLaws_iff_instances (s t : ObjectData.{u, v} U)
       · have hf := hpp W V C I i
           (s.2.2.2.val (.polynomial W C I rk i)).down
           (t.2.2.2.val (.polynomial V C I rl i)).down
-        simp only [polynomialPresence, Formula.evaluate,
+        simp only [polynomialPresence_evaluate_iff,
           IndependentGeometryPrimitive.flatten_at_generated,
           IndependentGeometryPrimitive.flattenDependent] at hf
         exact hf ⟨hctx, congrArg some (ULift.ext _ _ rfl),
@@ -683,7 +760,7 @@ theorem pointLaws_iff_instances (s t : ObjectData.{u, v} U)
       · have hf := hip W X V Y C D d
           (s.2.2.2.val (.image W X C D rk d)).down
           (t.2.2.2.val (.image V Y C D rl d)).down
-        simp only [imagePresence, targetReadable, Formula.evaluate,
+        simp only [imagePresence_evaluate_iff, targetReadable, Formula.evaluate,
           IndependentGeometryPrimitive.flatten_at_generated,
           IndependentGeometryPrimitive.flattenDependent] at hf
         have hreadable' :=

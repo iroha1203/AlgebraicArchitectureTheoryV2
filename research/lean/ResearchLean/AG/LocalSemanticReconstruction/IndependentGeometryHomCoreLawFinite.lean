@@ -84,21 +84,13 @@ def witness (role : Role) (direction : Direction) (a b : U.Atom) :
     BoolFormula.{max (u + 1) (v + 1), u} (Query.{u, v} U mode) :=
   .cell (query role direction a b) true
 
-def forwardUnique (role : Role) (a : U.Atom)
-    (selected challenger : U.Atom) :
+def forwardOther (role : Role) (a challenger : U.Atom) :
     BoolFormula.{max (u + 1) (v + 1), u} (Query.{u, v} U mode) :=
-  .implies
-    (.and (.cell (query role .forward a selected) true)
-      (.cell (query role .forward a challenger) true))
-    (.equal challenger selected)
+  .cell (query role .forward a challenger) false
 
-def backwardUnique (role : Role) (b : U.Atom)
-    (selected challenger : U.Atom) :
+def backwardOther (role : Role) (b challenger : U.Atom) :
     BoolFormula.{max (u + 1) (v + 1), u} (Query.{u, v} U mode) :=
-  .implies
-    (.and (.cell (query role .backward selected b) true)
-      (.cell (query role .backward challenger b) true))
-    (.equal challenger selected)
+  .cell (query role .backward challenger b) false
 
 def inverse (role : Role) (a b : U.Atom) :
     BoolFormula.{max (u + 1) (v + 1), 0} (Query.{u, v} U mode) :=
@@ -107,9 +99,9 @@ def inverse (role : Role) (a b : U.Atom) :
 
 structure RoleInstances (h : Table.{u, v} U mode) (role : Role) : Prop where
   forward : ∀ a, ∃ b, (witness role .forward a b).evaluate h ∧
-    ∀ c, (forwardUnique role a b c).evaluate h
+    ∀ c, c ≠ b → (forwardOther role a c).evaluate h
   backward : ∀ b, ∃ a, (witness role .backward a b).evaluate h ∧
-    ∀ c, (backwardUnique role b a c).evaluate h
+    ∀ c, c ≠ a → (backwardOther role b c).evaluate h
   inverse : ∀ a b, (inverse role a b).evaluate h
 
 theorem lawful_iff_roleInstances (h : Table.{u, v} U mode) (role : Role) :
@@ -121,18 +113,34 @@ theorem lawful_iff_roleInstances (h : Table.{u, v} U mode) (role : Role) :
     refine ⟨?_, ?_, hp.inverse⟩
     · intro a
       obtain ⟨b, hb, hu⟩ := hp.forward a
-      exact ⟨b, hb, fun c hc => hu c hc.2⟩
+      refine ⟨b, hb, ?_⟩
+      intro c hcb
+      cases hq : h (query role .forward a c) with
+      | false => exact hq
+      | true => exact (hcb (hu c hq)).elim
     · intro b
       obtain ⟨a, ha, hu⟩ := hp.backward b
-      exact ⟨a, ha, fun c hc => hu c hc.2⟩
+      refine ⟨a, ha, ?_⟩
+      intro c hca
+      cases hq : h (query role .backward c b) with
+      | false => exact hq
+      | true => exact (hca (hu c hq)).elim
   · intro hi
     refine ⟨?_, ?_, hi.inverse⟩
     · intro a
       obtain ⟨b, hb, hu⟩ := hi.forward a
-      exact ⟨b, hb, fun c hc => hu c ⟨hb, hc⟩⟩
+      refine ⟨b, hb, ?_⟩
+      intro c hc
+      by_contra hcb
+      have hf := hu c hcb
+      exact Bool.noConfusion (hf.symm.trans hc)
     · intro b
       obtain ⟨a, ha, hu⟩ := hi.backward b
-      exact ⟨a, ha, fun c hc => hu c ⟨ha, hc⟩⟩
+      refine ⟨a, ha, ?_⟩
+      intro c hc
+      by_contra hca
+      have hf := hu c hca
+      exact Bool.noConfusion (hf.symm.trans hc)
 
 def agreement (a b : U.Atom) :
     BoolFormula.{max (u + 1) (v + 1), 0} (Query.{u, v} U mode) :=
@@ -168,23 +176,30 @@ def witness (A B : ArchitectureObject U) :
     BoolFormula.{max (u + 1) (v + 1), u + 1} (Query.{u, v} U mode) :=
   .cell (.object A B) true
 
-def unique (A : ArchitectureObject U) (selected challenger : ArchitectureObject U) :
+def other (A challenger : ArchitectureObject U) :
     BoolFormula.{max (u + 1) (v + 1), u + 1} (Query.{u, v} U mode) :=
-  .implies (.and (.cell (.object A selected) true) (.cell (.object A challenger) true))
-    (.equal challenger selected)
+  .cell (.object A challenger) false
 
 def Instances (h : Table.{u, v} U mode) : Prop :=
-  ∀ A, ∃ B, (witness A B).evaluate h ∧ ∀ C, (unique A B C).evaluate h
+  ∀ A, ∃ B, (witness A B).evaluate h ∧ ∀ C, C ≠ B → (other A C).evaluate h
 
 theorem lawful_iff_instances (h : Table.{u, v} U mode) :
     CoreLaws.ObjectRows h ↔ Instances h := by
   constructor
   · intro hp A
     obtain ⟨B, hB, hu⟩ := hp A
-    exact ⟨B, hB, fun C hpair => hu C hpair.2⟩
+    refine ⟨B, hB, ?_⟩
+    intro C hCB
+    cases hq : h (.object A C) with
+    | false => exact hq
+    | true => exact (hCB (hu C hq)).elim
   · intro hp A
     obtain ⟨B, hB, hu⟩ := hp A
-    exact ⟨B, hB, fun C hC => hu C ⟨hB, hC⟩⟩
+    refine ⟨B, hB, ?_⟩
+    intro C hC
+    by_contra hCB
+    have hf := hu C hCB
+    exact Bool.noConfusion (hf.symm.trans hC)
 
 end ObjectRows
 
@@ -355,46 +370,41 @@ def configurationFlag (C C' : AtomConfiguration U) (value : Bool) :
 def atomPair (a b : U.Atom) : Formula.{u, v, 0} U mode :=
   .hom (.atom .forward a b) true
 
-def membership (F F' : AtomFamily U) (a b : U.Atom) :
-    Formula.{u, v, 0} U mode :=
-  .equal (F.mem a) (F'.mem b)
+def Membership (F F' : AtomFamily U) (a b : U.Atom) : Prop :=
+  F.mem a ↔ F'.mem b
 
-def membershipMismatch (F F' : AtomFamily U) (a b : U.Atom) :
-    Formula.{u, v, 0} U mode :=
-  .notEqual (F.mem a) (F'.mem b)
+def MembershipMismatch (F F' : AtomFamily U) (a b : U.Atom) : Prop :=
+  ¬ Membership F F' a b
 
-def configurationPoint (C C' : AtomConfiguration U)
-    (a a' b b' : U.Atom) : Formula.{u, v, 0} U mode :=
-  .and (.equal (C.relation a b) (C'.relation a' b'))
-    (.equal (C.identification a b) (C'.identification a' b'))
+def ConfigurationPoint (C C' : AtomConfiguration U)
+    (a a' b b' : U.Atom) : Prop :=
+  (C.relation a b ↔ C'.relation a' b') ∧
+    (C.identification a b ↔ C'.identification a' b')
 
-def configurationPointMismatch (C C' : AtomConfiguration U)
-    (a a' b b' : U.Atom) : Formula.{u, v, 0} U mode :=
-  .notEqual
-    ((C.relation a b ↔ C'.relation a' b') ∧
-      (C.identification a b ↔ C'.identification a' b')) True
+def ConfigurationPointMismatch (C C' : AtomConfiguration U)
+    (a a' b b' : U.Atom) : Prop :=
+  ¬ ConfigurationPoint C C' a a' b b'
 
 structure Instances (sourceTable targetTable : IndependentGeometryPrimitive.Table.{u, v} U)
     (h : Table.{u, v} U mode) : Prop where
   family_yes : ∀ F F', (familyFlag F F' true).evaluate sourceTable targetTable h →
     ∀ a b, (atomPair a b).evaluate sourceTable targetTable h →
-      (membership F F' a b).evaluate sourceTable targetTable h
+      Membership F F' a b
   family_no : ∀ F F', (familyFlag F F' false).evaluate sourceTable targetTable h →
     ∃ a b, (atomPair a b).evaluate sourceTable targetTable h ∧
-      (membershipMismatch F F' a b).evaluate sourceTable targetTable h
+      MembershipMismatch F F' a b
   configuration_yes : ∀ C C',
     (configurationFlag C C' true).evaluate sourceTable targetTable h →
       (familyFlag C.family C'.family true).evaluate sourceTable targetTable h ∧
         ∀ a a' b b', (atomPair a a').evaluate sourceTable targetTable h →
           (atomPair b b').evaluate sourceTable targetTable h →
-            (configurationPoint C C' a a' b b').evaluate sourceTable targetTable h
+            ConfigurationPoint C C' a a' b b'
   configuration_no : ∀ C C',
     (configurationFlag C C' false).evaluate sourceTable targetTable h →
       (familyFlag C.family C'.family false).evaluate sourceTable targetTable h ∨
         ∃ a a' b b', (atomPair a a').evaluate sourceTable targetTable h ∧
           (atomPair b b').evaluate sourceTable targetTable h ∧
-            (configurationPointMismatch C C' a a' b b').evaluate
-              sourceTable targetTable h
+            ConfigurationPointMismatch C C' a a' b b'
 
 theorem lawful_iff_instances
     (sourceTable targetTable : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -409,21 +419,21 @@ theorem lawful_iff_instances
       configuration_yes := ?_
       configuration_no := ?_ }
     · intro F F' hf a b hab
-      exact propext (hp.family_yes F F' hf a b hab)
+      exact hp.family_yes F F' hf a b hab
     · intro F F' hf
       obtain ⟨a, b, hab, hm⟩ := hp.family_no F F' hf
-      exact ⟨a, b, hab, fun he => hm (Iff.of_eq he)⟩
+      exact ⟨a, b, hab, hm⟩
     · intro C C' hc
       obtain ⟨hf, hp⟩ := hp.configuration_yes C C' hc
       refine ⟨hf, ?_⟩
       intro a a' b b' haa hbb
       obtain ⟨hr, hi⟩ := hp a a' b b' haa hbb
-      exact ⟨propext hr, propext hi⟩
+      exact ⟨hr, hi⟩
     · intro C C' hc
       rcases hp.configuration_no C C' hc with hf | ⟨a, a', b, b', haa, hbb, hm⟩
       · exact Or.inl hf
       · exact Or.inr ⟨a, a', b, b', haa, hbb,
-          fun he => hm ((prop_eq_true_iff _).mp he)⟩
+          hm⟩
   · intro hi
     refine {
       family_yes := ?_
@@ -431,21 +441,21 @@ theorem lawful_iff_instances
       configuration_yes := ?_
       configuration_no := ?_ }
     · intro F F' hf a b hab
-      exact Iff.of_eq (hi.family_yes F F' hf a b hab)
+      exact hi.family_yes F F' hf a b hab
     · intro F F' hf
       obtain ⟨a, b, hab, hm⟩ := hi.family_no F F' hf
-      exact ⟨a, b, hab, fun he => hm (propext he)⟩
+      exact ⟨a, b, hab, hm⟩
     · intro C C' hc
       obtain ⟨hf, hp⟩ := hi.configuration_yes C C' hc
       refine ⟨hf, ?_⟩
       intro a a' b b' haa hbb
       obtain ⟨hr, hi⟩ := hp a a' b b' haa hbb
-      exact ⟨Iff.of_eq hr, Iff.of_eq hi⟩
+      exact ⟨hr, hi⟩
     · intro C C' hc
       rcases hi.configuration_no C C' hc with hf | ⟨a, a', b, b', haa, hbb, hm⟩
       · exact Or.inl hf
       · exact Or.inr ⟨a, a', b, b', haa, hbb,
-          fun hp => hm ((prop_eq_true_iff _).mpr hp)⟩
+          hm⟩
 
 end TransportMatch
 
@@ -469,21 +479,19 @@ def compositionPoint (F F' : AtomFamily U)
 
 def sourceFormationMatch (C : AtomConfiguration U) (A : ArchitectureObject U) :
     Formula.{u, v, u} U mode :=
-  .and (.equal A.configuration C)
-    (.and
-      (.source (.formation (.structureMaps C))
-        (ULift.up (⟨A.StructureMaps, A.structureMaps⟩ : SelectedValue.{u})))
-      (.source (.formation (.selectedQuantities C))
-        (ULift.up (⟨A.SelectedQuantities, A.selectedQuantities⟩ : SelectedValue.{u}))))
+  .and
+    (.source (.formation (.structureMaps C))
+      (ULift.up (⟨A.StructureMaps, A.structureMaps⟩ : SelectedValue.{u})))
+    (.source (.formation (.selectedQuantities C))
+      (ULift.up (⟨A.SelectedQuantities, A.selectedQuantities⟩ : SelectedValue.{u})))
 
 def targetFormationMatch (C : AtomConfiguration U) (A : ArchitectureObject U) :
     Formula.{u, v, u} U mode :=
-  .and (.equal A.configuration C)
-    (.and
-      (.target (.formation (.structureMaps C))
-        (ULift.up (⟨A.StructureMaps, A.structureMaps⟩ : SelectedValue.{u})))
-      (.target (.formation (.selectedQuantities C))
-        (ULift.up (⟨A.SelectedQuantities, A.selectedQuantities⟩ : SelectedValue.{u}))))
+  .and
+    (.target (.formation (.structureMaps C))
+      (ULift.up (⟨A.StructureMaps, A.structureMaps⟩ : SelectedValue.{u})))
+    (.target (.formation (.selectedQuantities C))
+      (ULift.up (⟨A.SelectedQuantities, A.selectedQuantities⟩ : SelectedValue.{u})))
 
 def formationPoint (C C' : AtomConfiguration U) (A B : ArchitectureObject U) :
     Formula.{u, v, u} U mode :=
@@ -499,36 +507,38 @@ structure Instances (sourceTable targetTable : IndependentGeometryPrimitive.Tabl
     (h : Table.{u, v} U mode) : Prop where
   composition : ∀ F F' (hf : F.ListFinite) (hf' : F'.ListFinite) a a' b b',
     (compositionPoint F F' hf hf' a a' b b').evaluate sourceTable targetTable h
-  formation : ∀ C C' A B,
+  formation : ∀ C C' A B, A.configuration = C → B.configuration = C' →
     (formationPoint C C' A B).evaluate sourceTable targetTable h
   configuration : ∀ A B,
     (configurationPoint A B).evaluate sourceTable targetTable h
 
 theorem sourceFormationMatch_evaluate_iff
     (sourceTable targetTable : IndependentGeometryPrimitive.Table.{u, v} U)
-    (h : Table.{u, v} U mode) (C : AtomConfiguration U) (A : ArchitectureObject U) :
+    (h : Table.{u, v} U mode) (C : AtomConfiguration U) (A : ArchitectureObject U)
+    (hC : A.configuration = C) :
     (sourceFormationMatch C A).evaluate sourceTable targetTable h ↔
       CoreLaws.FormationMatch (IndependentGeometryPrimitive.formation sourceTable) C A := by
   simp only [sourceFormationMatch, Formula.evaluate, CoreLaws.FormationMatch,
     IndependentGeometryPrimitive.formation]
   constructor
-  · rintro ⟨hc, hs, hq⟩
-    exact ⟨hc, ((ulift_eq_iff _ _).mp hs).symm, ((ulift_eq_iff _ _).mp hq).symm⟩
-  · rintro ⟨hc, hs, hq⟩
-    exact ⟨hc, (ulift_eq_iff _ _).mpr hs.symm, (ulift_eq_iff _ _).mpr hq.symm⟩
+  · rintro ⟨hs, hq⟩
+    exact ⟨hC, ((ulift_eq_iff _ _).mp hs).symm, ((ulift_eq_iff _ _).mp hq).symm⟩
+  · rintro ⟨_, hs, hq⟩
+    exact ⟨(ulift_eq_iff _ _).mpr hs.symm, (ulift_eq_iff _ _).mpr hq.symm⟩
 
 theorem targetFormationMatch_evaluate_iff
     (sourceTable targetTable : IndependentGeometryPrimitive.Table.{u, v} U)
-    (h : Table.{u, v} U mode) (C : AtomConfiguration U) (A : ArchitectureObject U) :
+    (h : Table.{u, v} U mode) (C : AtomConfiguration U) (A : ArchitectureObject U)
+    (hC : A.configuration = C) :
     (targetFormationMatch C A).evaluate sourceTable targetTable h ↔
       CoreLaws.FormationMatch (IndependentGeometryPrimitive.formation targetTable) C A := by
   simp only [targetFormationMatch, Formula.evaluate, CoreLaws.FormationMatch,
     IndependentGeometryPrimitive.formation]
   constructor
-  · rintro ⟨hc, hs, hq⟩
-    exact ⟨hc, ((ulift_eq_iff _ _).mp hs).symm, ((ulift_eq_iff _ _).mp hq).symm⟩
-  · rintro ⟨hc, hs, hq⟩
-    exact ⟨hc, (ulift_eq_iff _ _).mpr hs.symm, (ulift_eq_iff _ _).mpr hq.symm⟩
+  · rintro ⟨hs, hq⟩
+    exact ⟨hC, ((ulift_eq_iff _ _).mp hs).symm, ((ulift_eq_iff _ _).mp hq).symm⟩
+  · rintro ⟨_, hs, hq⟩
+    exact ⟨(ulift_eq_iff _ _).mpr hs.symm, (ulift_eq_iff _ _).mpr hq.symm⟩
 
 theorem generationLaws_iff_instances
     (sourceTable targetTable : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -550,12 +560,12 @@ theorem generationLaws_iff_instances
       obtain ⟨hr, hi⟩ := hp.composition F F' hf hf' a a' b b' hF ha hb
       exact ⟨(ulift_prop_true_iff _).trans (hr.trans (ulift_prop_true_iff _).symm),
         (ulift_prop_true_iff _).trans (hi.trans (ulift_prop_true_iff _).symm)⟩
-    · intro C C' A B
+    · intro C C' A B hAC hBC
       simp only [formationPoint, Formula.evaluate]
       intro hC hA hB
       exact hp.formation C C' A B hC
-        ((sourceFormationMatch_evaluate_iff sourceTable targetTable h C A).mp hA)
-        ((targetFormationMatch_evaluate_iff sourceTable targetTable h C' B).mp hB)
+        ((sourceFormationMatch_evaluate_iff sourceTable targetTable h C A hAC).mp hA)
+        ((targetFormationMatch_evaluate_iff sourceTable targetTable h C' B hBC).mp hB)
     · intro A B
       exact hp.configuration A B
   · intro hi
@@ -570,11 +580,11 @@ theorem generationLaws_iff_instances
       exact ⟨(ulift_prop_true_iff _).symm.trans (hr.trans (ulift_prop_true_iff _)),
         (ulift_prop_true_iff _).symm.trans (hi.trans (ulift_prop_true_iff _))⟩
     · intro C C' A B hC hA hB
-      have hp := hi.formation C C' A B
+      have hp := hi.formation C C' A B hA.1 hB.1
       simp only [formationPoint, Formula.evaluate] at hp
       exact hp hC
-        ((sourceFormationMatch_evaluate_iff sourceTable targetTable h C A).mpr hA)
-        ((targetFormationMatch_evaluate_iff sourceTable targetTable h C' B).mpr hB)
+        ((sourceFormationMatch_evaluate_iff sourceTable targetTable h C A hA.1).mpr hA)
+        ((targetFormationMatch_evaluate_iff sourceTable targetTable h C' B hB.1).mpr hB)
     · intro A B
       exact hi.configuration A B
 

@@ -78,6 +78,59 @@ inductive Expr (C : Type u) (k : Type v) where
   /-- Finite product of two subexpressions. -/
   | mul (a b : Expr C k)
 
+/-- Closed formulas over one primitive polynomial-evaluation table.  Every
+truth-bearing leaf is an exact table cell; no proposition or completed
+polynomial equality can be inserted into the syntax. -/
+inductive CellFormula (C : Type u) (k : Type v) (R : Type w) where
+  | cell (q : Query C k R) (value : R)
+  | truth
+  | and (left right : CellFormula C k R)
+
+/-- Evaluate a closed formula against a primitive polynomial table. -/
+def CellFormula.evaluate (t : Table C k R) : CellFormula C k R → Prop
+  | .cell q value => t q = value
+  | .truth => True
+  | .and left right => left.evaluate t ∧ right.evaluate t
+
+/-- Finite conjunction of polynomial-table cells. -/
+def CellFormula.allList {α : Type*} (items : List α)
+    (formula : α → CellFormula C k R) : CellFormula C k R :=
+  match items with
+  | [] => .truth
+  | item :: rest => .and (formula item) (CellFormula.allList rest formula)
+
+@[simp] theorem CellFormula.evaluate_allList {α : Type*} (t : Table C k R)
+    (items : List α) (formula : α → CellFormula C k R) :
+    (CellFormula.allList items formula).evaluate t ↔
+      ∀ item ∈ items, (formula item).evaluate t := by
+  induction items with
+  | nil => simp [CellFormula.allList, CellFormula.evaluate]
+  | cons item items ih => simp [CellFormula.allList, CellFormula.evaluate, ih]
+
+/-- Exact polynomial-table queries read by a closed cell formula. -/
+noncomputable def CellFormula.support : CellFormula C k R → Finset (Query C k R)
+  | .cell q _ => {q}
+  | .truth => ∅
+  | .and left right => by
+      classical
+      exact left.support ∪ right.support
+
+/-- Agreement on the named polynomial cells preserves formula evaluation. -/
+theorem CellFormula.evaluate_iff_of_support (first second : Table C k R)
+    (formula : CellFormula C k R)
+    (agree : ∀ q ∈ formula.support, first q = second q) :
+    formula.evaluate first ↔ formula.evaluate second := by
+  classical
+  induction formula with
+  | cell q value =>
+      change first q = value ↔ second q = value
+      rw [agree q (by simp [CellFormula.support])]
+  | truth => rfl
+  | and left right ihLeft ihRight =>
+      exact and_congr
+        (ihLeft (fun q hq => agree q (by simp [CellFormula.support, hq])))
+        (ihRight (fun q hq => agree q (by simp [CellFormula.support, hq])))
+
 /-- Evaluate through primitive cells; the table need not satisfy any algebraic laws. -/
 def evaluate (t : Table C k R) : Expr C k → R
   | .coefficient a => t (.coefficient a)
@@ -86,6 +139,20 @@ def evaluate (t : Table C k R) : Expr C k → R
   | .one => t .one
   | .add a b => t (.add (evaluate t a) (evaluate t b))
   | .mul a b => t (.mul (evaluate t a) (evaluate t b))
+
+/-- The final primitive query whose response is the value of an expression.
+Its arguments are the recursively evaluated immediate subexpressions. -/
+def rootQuery (t : Table C k R) : Expr C k → Query C k R
+  | .coefficient a => .coefficient a
+  | .variable c => .variable c
+  | .zero => .zero
+  | .one => .one
+  | .add a b => .add (evaluate t a) (evaluate t b)
+  | .mul a b => .mul (evaluate t a) (evaluate t b)
+
+theorem evaluate_eq_rootQuery (t : Table C k R) (e : Expr C k) :
+    evaluate t e = t (rootQuery t e) := by
+  cases e <;> rfl
 
 /-- The finite queries actually needed by an expression, including all intermediate arithmetic. -/
 noncomputable def support (t : Table C k R) : Expr C k → Finset (Query C k R)
@@ -99,6 +166,26 @@ noncomputable def support (t : Table C k R) : Expr C k → Finset (Query C k R)
   | .mul a b => by
     classical
     exact insert (.mul (evaluate t a) (evaluate t b)) (support t a ∪ support t b)
+
+theorem rootQuery_mem_support (t : Table C k R) (e : Expr C k) :
+    rootQuery t e ∈ support t e := by
+  classical
+  cases e <;> simp [rootQuery, support]
+
+/-- One expression equation as a finite table-cell formula.  The first
+conjunct fixes every recursively used query, while the last cell requires the
+root response to be the expected value. -/
+noncomputable def expressionFormula (t : Table C k R) (e : Expr C k)
+    (expected : R) : CellFormula C k R :=
+  .and
+    (CellFormula.allList (support t e).toList (fun q => .cell q (t q)))
+    (.cell (rootQuery t e) expected)
+
+@[simp] theorem expressionFormula_evaluate (t : Table C k R) (e : Expr C k)
+    (expected : R) :
+    (expressionFormula t e expected).evaluate t ↔ evaluate t e = expected := by
+  classical
+  simp [expressionFormula, CellFormula.evaluate, evaluate_eq_rootQuery]
 
 /-- Agreement on the finite primitive support is sufficient for equality of evaluation. -/
 theorem evaluate_eq_of_support (t s : Table C k R) (e : Expr C k)
@@ -121,6 +208,28 @@ theorem evaluate_eq_of_support (t s : Table C k R) (e : Expr C k)
     dsimp only [evaluate]
     rw [← h1, ← h2]
     exact h _ (by simp [support])
+
+/-- The expression formula remains sound on any comparison table satisfying
+its exact finite cells.  This is the bridge from the formula syntax to the
+recursive `evaluate_eq_of_support` theorem. -/
+theorem evaluate_eq_expected_of_expressionFormula (t s : Table C k R)
+    (e : Expr C k) (expected : R)
+    (h : (expressionFormula t e expected).evaluate s) :
+    evaluate s e = expected := by
+  classical
+  have hcells : ∀ q ∈ support t e, s q = t q := by
+    intro q hq
+    exact (CellFormula.evaluate_allList s _ _).1 h.1 q
+      (by simpa using hq)
+  have hagree : ∀ q ∈ support t e, t q = s q :=
+    fun q hq => (hcells q hq).symm
+  have heval := evaluate_eq_of_support t s e hagree
+  have hroot : t (rootQuery t e) = expected :=
+    (hagree _ (rootQuery_mem_support t e)).trans h.2
+  calc
+    evaluate s e = evaluate t e := heval.symm
+    _ = t (rootQuery t e) := evaluate_eq_rootQuery t e
+    _ = expected := hroot
 
 /-- Powers are finite multiplication expressions, including the exponent-zero unit. -/
 def Expr.pow (e : Expr C k) : ℕ → Expr C k

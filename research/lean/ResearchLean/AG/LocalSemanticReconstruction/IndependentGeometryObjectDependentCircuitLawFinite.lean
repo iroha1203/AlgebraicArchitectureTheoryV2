@@ -55,17 +55,19 @@ def typedFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
     (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
-    (J : Type u) (j : J) : ObjectFormula.{u, v, 0} U :=
+    (J : Type u) (j : J) (value : Option (CircuitDetectorCode U)) :
+    ObjectFormula.{u, v, 0} U :=
   equationAnchor t ha A hA .index
-    (circuitAnchor t (.code J j)
-      (.equal ((circuitRows t (.code J j)).isSome = true)
-        (J = IndependentEquationPrimitive.index (equationRows t ha A hA))))
+    (circuitCell (.code J j) value)
 
-def TypedInstances
+structure TypedInstances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
-    (hA : IndependentGeometryPrimitive.matching t (.object A) = true) : Prop :=
-  ∀ J j, (typedFormula t ha A hA J j).evaluate t
+    (hA : IndependentGeometryPrimitive.matching t (.object A) = true) : Prop where
+  some : ∀ J j, J = IndependentEquationPrimitive.index (equationRows t ha A hA) →
+    ∃ value, (typedFormula t ha A hA J j (some value)).evaluate t
+  none : ∀ J j, J ≠ IndependentEquationPrimitive.index (equationRows t ha A hA) →
+    (typedFormula t ha A hA J j none).evaluate t
 
 theorem typed_iff_instances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -75,15 +77,35 @@ theorem typed_iff_instances
         (IndependentEquationPrimitive.index (equationRows t ha A hA)) (circuitRows t) ↔
       TypedInstances t ha A hA := by
   constructor
-  · intro ht J j
-    simp only [typedFormula, equationAnchor_evaluate, circuitAnchor_evaluate,
-      ObjectFormula.evaluate]
-    exact propext (ht J j)
+  · intro ht
+    constructor
+    · intro J j hJ
+      have hs := (ht J j).2 hJ
+      cases hv : circuitRows t (.code J j) with
+      | none => simp [hv] at hs
+      | some value =>
+          refine ⟨value, ?_⟩
+          simp only [typedFormula, equationAnchor_evaluate]
+          exact (circuitCell_evaluate_iff t _ _).2 hv
+    · intro J j hJ
+      have hn := IndependentInvariantSignaturePrimitive.option_none _ (mt (ht J j).1 hJ)
+      simp only [typedFormula, equationAnchor_evaluate]
+      exact (circuitCell_evaluate_iff t _ _).2 hn
   · intro hi J j
-    have h := hi J j
-    simp only [typedFormula, equationAnchor_evaluate, circuitAnchor_evaluate,
-      ObjectFormula.evaluate] at h
-    exact eq_iff_iff.1 h
+    constructor
+    · intro hs
+      by_contra hJ
+      have hn := hi.none J j hJ
+      simp only [typedFormula, equationAnchor_evaluate] at hn
+      have he := (circuitCell_evaluate_iff t _ _).1 hn
+      rw [he] at hs
+      exact Bool.noConfusion hs
+    · intro hJ
+      obtain ⟨value, hv⟩ := hi.some J j hJ
+      simp only [typedFormula, equationAnchor_evaluate] at hv
+      have he := (circuitCell_evaluate_iff t _ _).1 hv
+      rw [he]
+      rfl
 
 def witnessFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -92,25 +114,16 @@ def witnessFormula
     (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
     (ht : IndependentEquationPrimitive.IsTyped (contextPreorder t ha A hA hc)
       (equationRows t ha A hA))
-    (hct : IndependentEquationPrimitive.Circuit.IsTyped
+    (_hct : IndependentEquationPrimitive.Circuit.IsTyped
       (IndependentEquationPrimitive.index (equationRows t ha A hA)) (circuitRows t))
     (i : IndependentEquationPrimitive.index (equationRows t ha A hA))
-    (B : ArchitectureObject U) (d : FiniteCircuitDatum U) (W : ArchCtx A) (a : U.Atom) :
+    (B : ArchitectureObject U) (_d : FiniteCircuitDatum U) (W : ArchCtx A) (a : U.Atom) :
     ObjectFormula.{u, v, u} U :=
   equationAnchor t ha A hA .index
     (circuitAnchor t (.code _ i)
       (Equation.residualAnchor t ha A hA hc ht W B i a
         (Equation.observableActiveAnchor t ha A hA hc ht W .zero
-          (.and
-            (.equal (ULift.up (d.Matches B) : ULift.{u} Prop) (ULift.up True))
-            (.and
-              (.equal
-                (ULift.up
-                  ((IndependentEquationPrimitive.Circuit.code (circuitRows t) hct i).eval d) :
-                    ULift.{u} Bool)
-                (ULift.up true))
-              (.notEqual (Equation.residualValue t ha A hA hc ht W B i a)
-                (Equation.observableActive t ha A hA hc ht W .zero)))))))
+          (ObjectFormula.truth : ObjectFormula.{u, v, u} U))))
 
 def LawInstances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -126,7 +139,9 @@ def LawInstances
     d.Matches B →
     (IndependentEquationPrimitive.Circuit.code (circuitRows t) hct i).eval d = true →
       ∃ (W : ArchCtx A) (a : U.Atom),
-        (witnessFormula t ha A hA hc ht hct i B d W a).evaluate t
+        (witnessFormula t ha A hA hc ht hct i B d W a).evaluate t ∧
+          Equation.residualValue t ha A hA hc ht W B i a ≠
+            Equation.observableActive t ha A hA hc ht W .zero
 
 theorem lawful_iff_instances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -143,18 +158,13 @@ theorem lawful_iff_instances
   constructor
   · intro hl i B d hm he
     obtain ⟨W, a, hn⟩ := hl i B d hm he
-    refine ⟨W, a, ?_⟩
+    refine ⟨W, a, ?_, hn⟩
     simp only [witnessFormula, equationAnchor_evaluate, circuitAnchor_evaluate,
       Equation.residualAnchor_evaluate, Equation.observableActiveAnchor_evaluate,
       ObjectFormula.evaluate]
-    exact ⟨ULift.ext _ _ (eq_true hm), ULift.ext _ _ he, hn⟩
   · intro hi i B d hm he
-    obtain ⟨W, a, hw⟩ := hi i B d hm he
-    refine ⟨W, a, ?_⟩
-    simp only [witnessFormula, equationAnchor_evaluate, circuitAnchor_evaluate,
-      Equation.residualAnchor_evaluate, Equation.observableActiveAnchor_evaluate,
-      ObjectFormula.evaluate] at hw
-    exact hw.2.2
+    obtain ⟨W, a, _, hw⟩ := hi i B d hm he
+    exact ⟨W, a, hw⟩
 
 structure Instances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)

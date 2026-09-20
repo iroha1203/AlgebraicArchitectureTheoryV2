@@ -12,9 +12,9 @@ import Formal.Util.AssertStandardAxioms
 The complete representative and explicit `PointLaws` are decomposed into the
 safe three-table formula families for package, coverage, overlap, coefficient,
 raw, and realization data.  Source and target object lawfulness is included
-through the object-side finite aggregate.  Inactive object rows use an ordinary
-finite implication whose guard is equality of supplied object references; the
-syntax has no constructor for arbitrary propositions or completed law proofs.
+through the object-side finite aggregate.  Inactive object rows store only the
+exact false Hom cell; the supplied-object mismatch remains a quantified
+condition outside the formula syntax.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction.IndependentGeometryHomPrimitive.LawFinite
@@ -30,24 +30,20 @@ variable {U : AtomCarrier.{u}} {mode : Mode}
 abbrev CompleteFormula (mode : Mode) :=
   IndependentFiniteLawFormula.Formula.{u, v, u + 1} U mode
 
-/-- One normalized inactive object row, with both endpoint references visible
-as equality tests and the exact Hom cell visible as the conclusion. -/
+/-- One normalized inactive object row as an exact false Hom cell. -/
 def inactiveObjectFormula
-    (s t : ObjectData.{u, v} U) (_h : Table.{u, v} U mode)
     (A B : ArchitectureObject U) (q : DependentQuery mode A B) :
     CompleteFormula.{u, v} (U := U) mode :=
-  .implies
-    (.or
-      (.notEqual A (IndependentCoreTableAssembly.generatedObject s.1.val.1))
-      (.notEqual B (IndependentCoreTableAssembly.generatedObject t.1.val.1)))
-    (.hom (.atObjects A B q) false)
+  .hom (.atObjects A B q) false
 
 def InactiveInstances
     (s t : ObjectData.{u, v} U) (h : Table.{u, v} U mode) : Prop :=
   ∀ A B (q : DependentQuery mode A B),
-    (inactiveObjectFormula s t h A B q).evaluate
-      (IndependentGeometryPrimitive.flatten s)
-      (IndependentGeometryPrimitive.flatten t) h
+    (A ≠ IndependentCoreTableAssembly.generatedObject s.1.val.1 ∨
+      B ≠ IndependentCoreTableAssembly.generatedObject t.1.val.1) →
+      (inactiveObjectFormula (U := U) A B q).evaluate
+        (IndependentGeometryPrimitive.flatten s)
+        (IndependentGeometryPrimitive.flatten t) h
 
 theorem inactiveObjects_iff_instances
     (s t : ObjectData.{u, v} U) (h : Table.{u, v} U mode) :

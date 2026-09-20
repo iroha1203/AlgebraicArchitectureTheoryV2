@@ -92,73 +92,94 @@ def observableTypedFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
     (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
-    (W : ArchCtx A) (K : Type u) (q : IndependentRingPrimitive.Query K) :
+    (W : ArchCtx A) (K : Type u) (q : IndependentRingPrimitive.Query K)
+    (value : Option K) :
     ObjectFormula.{u, v, 0} U :=
   equationAnchor t ha A hA (.observable W .carrier)
-    (equationAnchor t ha A hA (.observable W (.operation K q))
-      (.equal ((equationRows t ha A hA (.observable W (.operation K q))).down.isSome = true)
-        (K = IndependentEquationPrimitive.observableType (equationRows t ha A hA) W)))
+    (equationCell A (.observable W (.operation K q)) (ULift.up value))
 
 def roleTypedFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
     (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
-    (I : Type u) (i : I) : ObjectFormula.{u, v, 0} U :=
+    (I : Type u) (i : I) (value : Option EquationRole) : ObjectFormula.{u, v, 0} U :=
   equationAnchor t ha A hA .index
-    (equationAnchor t ha A hA (.role I i)
-      (.equal ((equationRows t ha A hA (.role I i)).down.isSome = true)
-        (I = IndependentEquationPrimitive.index (equationRows t ha A hA))))
+    (equationCell A (.role I i) (ULift.up value))
 
 def restrictionTypedFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
     (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
-    (W V : ArchCtx A) (K L : Type u) (x : L) : ObjectFormula.{u, v, 0} U :=
+    (W V : ArchCtx A) (K L : Type u) (x : L) (value : Option K) :
+    ObjectFormula.{u, v, 0} U :=
   contextAnchor t ha A hA (.le W V)
     (equationAnchor t ha A hA (.observable W .carrier)
       (equationAnchor t ha A hA (.observable V .carrier)
-        (equationAnchor t ha A hA (.restriction W V K L x)
-          (.equal ((equationRows t ha A hA (.restriction W V K L x)).down.isSome = true)
-            (IndependentContextPrimitive.le
-                (IndependentGeometryPrimitive.contextTable (rows t ha A hA)) W V ∧
-              K = IndependentEquationPrimitive.observableType (equationRows t ha A hA) W ∧
-              L = IndependentEquationPrimitive.observableType (equationRows t ha A hA) V)))))
+        (equationCell A (.restriction W V K L x) (ULift.up value))))
 
 def violationTypedFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
     (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
-    (W : ArchCtx A) (I K : Type u) (i : I) (a : U.Atom) :
+    (W : ArchCtx A) (I K : Type u) (i : I) (a : U.Atom) (value : Option K) :
     ObjectFormula.{u, v, 0} U :=
   equationAnchor t ha A hA .index
     (equationAnchor t ha A hA (.observable W .carrier)
-      (equationAnchor t ha A hA (.violation W I K i a)
-        (.equal ((equationRows t ha A hA (.violation W I K i a)).down.isSome = true)
-          (I = IndependentEquationPrimitive.index (equationRows t ha A hA) ∧
-            K = IndependentEquationPrimitive.observableType (equationRows t ha A hA) W))))
+      (equationCell A (.violation W I K i a) (ULift.up value)))
 
 def residualTypedFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
     (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
-    (W : ArchCtx A) (B : ArchitectureObject U) (I K : Type u) (i : I) (a : U.Atom) :
+    (W : ArchCtx A) (B : ArchitectureObject U) (I K : Type u) (i : I) (a : U.Atom)
+    (value : Option K) :
     ObjectFormula.{u, v, 0} U :=
   equationAnchor t ha A hA .index
     (equationAnchor t ha A hA (.observable W .carrier)
-      (equationAnchor t ha A hA (.residual W B I K i a)
-        (.equal ((equationRows t ha A hA (.residual W B I K i a)).down.isSome = true)
-          (I = IndependentEquationPrimitive.index (equationRows t ha A hA) ∧
-            K = IndependentEquationPrimitive.observableType (equationRows t ha A hA) W))))
+      (equationCell A (.residual W B I K i a) (ULift.up value)))
 
 structure TypedInstances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
     (hA : IndependentGeometryPrimitive.matching t (.object A) = true) : Prop where
-  observable : ∀ W K q, (observableTypedFormula t ha A hA W K q).evaluate t
-  role : ∀ I i, (roleTypedFormula t ha A hA I i).evaluate t
-  restriction : ∀ W V K L x, (restrictionTypedFormula t ha A hA W V K L x).evaluate t
-  violation : ∀ W I K i a, (violationTypedFormula t ha A hA W I K i a).evaluate t
-  residual : ∀ W B I K i a, (residualTypedFormula t ha A hA W B I K i a).evaluate t
+  observableSome : ∀ W K q, K = IndependentEquationPrimitive.observableType
+      (equationRows t ha A hA) W →
+    ∃ y, (observableTypedFormula t ha A hA W K q (some y)).evaluate t
+  observableNone : ∀ W K q, K ≠ IndependentEquationPrimitive.observableType
+      (equationRows t ha A hA) W →
+    (observableTypedFormula t ha A hA W K q none).evaluate t
+  roleSome : ∀ I i, I = IndependentEquationPrimitive.index (equationRows t ha A hA) →
+    ∃ y, (roleTypedFormula t ha A hA I i (some y)).evaluate t
+  roleNone : ∀ I i, I ≠ IndependentEquationPrimitive.index (equationRows t ha A hA) →
+    (roleTypedFormula t ha A hA I i none).evaluate t
+  restrictionSome : ∀ W V K L x,
+    IndependentContextPrimitive.le
+        (IndependentGeometryPrimitive.contextTable (rows t ha A hA)) W V ∧
+      K = IndependentEquationPrimitive.observableType (equationRows t ha A hA) W ∧
+      L = IndependentEquationPrimitive.observableType (equationRows t ha A hA) V →
+    ∃ y, (restrictionTypedFormula t ha A hA W V K L x (some y)).evaluate t
+  restrictionNone : ∀ W V K L x,
+    ¬ (IndependentContextPrimitive.le
+        (IndependentGeometryPrimitive.contextTable (rows t ha A hA)) W V ∧
+      K = IndependentEquationPrimitive.observableType (equationRows t ha A hA) W ∧
+      L = IndependentEquationPrimitive.observableType (equationRows t ha A hA) V) →
+    (restrictionTypedFormula t ha A hA W V K L x none).evaluate t
+  violationSome : ∀ W I K i a,
+    I = IndependentEquationPrimitive.index (equationRows t ha A hA) ∧
+      K = IndependentEquationPrimitive.observableType (equationRows t ha A hA) W →
+    ∃ y, (violationTypedFormula t ha A hA W I K i a (some y)).evaluate t
+  violationNone : ∀ W I K i a,
+    ¬ (I = IndependentEquationPrimitive.index (equationRows t ha A hA) ∧
+      K = IndependentEquationPrimitive.observableType (equationRows t ha A hA) W) →
+    (violationTypedFormula t ha A hA W I K i a none).evaluate t
+  residualSome : ∀ W B I K i a,
+    I = IndependentEquationPrimitive.index (equationRows t ha A hA) ∧
+      K = IndependentEquationPrimitive.observableType (equationRows t ha A hA) W →
+    ∃ y, (residualTypedFormula t ha A hA W B I K i a (some y)).evaluate t
+  residualNone : ∀ W B I K i a,
+    ¬ (I = IndependentEquationPrimitive.index (equationRows t ha A hA) ∧
+      K = IndependentEquationPrimitive.observableType (equationRows t ha A hA) W) →
+    (residualTypedFormula t ha A hA W B I K i a none).evaluate t
 
 theorem typed_iff_instances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -170,27 +191,100 @@ theorem typed_iff_instances
   constructor
   · intro ht
     refine {
-      observable := ?_
-      role := ?_
-      restriction := ?_
-      violation := ?_
-      residual := ?_ }
-    · intro W K q
-      simp only [observableTypedFormula, equationAnchor_evaluate, ObjectFormula.evaluate]
-      exact propext (ht.observable W K q)
-    · intro I i
-      simp only [roleTypedFormula, equationAnchor_evaluate, ObjectFormula.evaluate]
-      exact propext (ht.role I i)
-    · intro W V K L x
-      simp only [restrictionTypedFormula, contextAnchor_evaluate,
-        equationAnchor_evaluate, ObjectFormula.evaluate]
-      exact propext (ht.restriction W V K L x)
-    · intro W I K i a
-      simp only [violationTypedFormula, equationAnchor_evaluate, ObjectFormula.evaluate]
-      exact propext (ht.violation W I K i a)
-    · intro W B I K i a
-      simp only [residualTypedFormula, equationAnchor_evaluate, ObjectFormula.evaluate]
-      exact propext (ht.residual W B I K i a)
+      observableSome := ?_
+      observableNone := ?_
+      roleSome := ?_
+      roleNone := ?_
+      restrictionSome := ?_
+      restrictionNone := ?_
+      violationSome := ?_
+      violationNone := ?_
+      residualSome := ?_
+      residualNone := ?_ }
+    · intro W K q hK
+      have hs := (ht.observable W K q).2 hK
+      cases hv : (equationRows t ha A hA (.observable W (.operation K q))).down with
+      | none => simp [hv] at hs
+      | some y =>
+          refine ⟨y, ?_⟩
+          simp only [observableTypedFormula, equationAnchor_evaluate]
+          apply (equationCell_evaluate_iff t ha A hA _ _).2
+          apply ULift.ext
+          exact hv
+    · intro W K q hK
+      have hn := IndependentInvariantSignaturePrimitive.option_none _
+        (mt (ht.observable W K q).1 hK)
+      simp only [observableTypedFormula, equationAnchor_evaluate]
+      apply (equationCell_evaluate_iff t ha A hA _ _).2
+      apply ULift.ext
+      exact hn
+    · intro I i hI
+      have hs := (ht.role I i).2 hI
+      cases hv : (equationRows t ha A hA (.role I i)).down with
+      | none => simp [hv] at hs
+      | some y =>
+          refine ⟨y, ?_⟩
+          simp only [roleTypedFormula, equationAnchor_evaluate]
+          apply (equationCell_evaluate_iff t ha A hA _ _).2
+          apply ULift.ext
+          exact hv
+    · intro I i hI
+      have hn := IndependentInvariantSignaturePrimitive.option_none _ (mt (ht.role I i).1 hI)
+      simp only [roleTypedFormula, equationAnchor_evaluate]
+      apply (equationCell_evaluate_iff t ha A hA _ _).2
+      apply ULift.ext
+      exact hn
+    · intro W V K L x htyped
+      have hs := (ht.restriction W V K L x).2 htyped
+      cases hv : (equationRows t ha A hA (.restriction W V K L x)).down with
+      | none => simp [hv] at hs
+      | some y =>
+          refine ⟨y, ?_⟩
+          simp only [restrictionTypedFormula, contextAnchor_evaluate, equationAnchor_evaluate]
+          apply (equationCell_evaluate_iff t ha A hA _ _).2
+          apply ULift.ext
+          exact hv
+    · intro W V K L x htyped
+      have hn := IndependentInvariantSignaturePrimitive.option_none _
+        (mt (ht.restriction W V K L x).1 htyped)
+      simp only [restrictionTypedFormula, contextAnchor_evaluate, equationAnchor_evaluate]
+      apply (equationCell_evaluate_iff t ha A hA _ _).2
+      apply ULift.ext
+      exact hn
+    · intro W I K i a htyped
+      have hs := (ht.violation W I K i a).2 htyped
+      cases hv : (equationRows t ha A hA (.violation W I K i a)).down with
+      | none => simp [hv] at hs
+      | some y =>
+          refine ⟨y, ?_⟩
+          simp only [violationTypedFormula, equationAnchor_evaluate]
+          apply (equationCell_evaluate_iff t ha A hA _ _).2
+          apply ULift.ext
+          exact hv
+    · intro W I K i a htyped
+      have hn := IndependentInvariantSignaturePrimitive.option_none _
+        (mt (ht.violation W I K i a).1 htyped)
+      simp only [violationTypedFormula, equationAnchor_evaluate]
+      apply (equationCell_evaluate_iff t ha A hA _ _).2
+      apply ULift.ext
+      exact hn
+    · intro W B I K i a htyped
+      have hs := (ht.residual W B I K i a).2 htyped
+      cases hv : (equationRows t ha A hA (.residual W B I K i a)).down with
+      | none => simp [hv] at hs
+      | some y =>
+          refine ⟨y, ?_⟩
+          simp only [residualTypedFormula, equationAnchor_evaluate]
+          apply (equationCell_evaluate_iff t ha A hA _ _).2
+          apply ULift.ext
+          exact hv
+    · intro W B I K i a htyped
+      have hn := IndependentInvariantSignaturePrimitive.option_none _
+        (mt (ht.residual W B I K i a).1 htyped)
+      simp only [residualTypedFormula, equationAnchor_evaluate]
+      apply (equationCell_evaluate_iff t ha A hA _ _).2
+      apply ULift.ext
+      exact hn
   · intro hi
     refine {
       observable := ?_
@@ -199,26 +293,90 @@ theorem typed_iff_instances
       violation := ?_
       residual := ?_ }
     · intro W K q
-      have h := hi.observable W K q
-      simp only [observableTypedFormula, equationAnchor_evaluate, ObjectFormula.evaluate] at h
-      exact eq_iff_iff.1 h
+      constructor
+      · intro hs
+        by_contra hK
+        have hn := hi.observableNone W K q hK
+        simp only [observableTypedFormula, equationAnchor_evaluate] at hn
+        have he := congrArg ULift.down
+          ((equationCell_evaluate_iff t ha A hA _ _).1 hn)
+        rw [he] at hs
+        exact Bool.noConfusion hs
+      · intro hK
+        obtain ⟨y, hy⟩ := hi.observableSome W K q hK
+        simp only [observableTypedFormula, equationAnchor_evaluate] at hy
+        have he := congrArg ULift.down
+          ((equationCell_evaluate_iff t ha A hA _ _).1 hy)
+        rw [he]
+        rfl
     · intro I i
-      have h := hi.role I i
-      simp only [roleTypedFormula, equationAnchor_evaluate, ObjectFormula.evaluate] at h
-      exact eq_iff_iff.1 h
+      constructor
+      · intro hs
+        by_contra hI
+        have hn := hi.roleNone I i hI
+        simp only [roleTypedFormula, equationAnchor_evaluate] at hn
+        have he := congrArg ULift.down
+          ((equationCell_evaluate_iff t ha A hA _ _).1 hn)
+        rw [he] at hs
+        exact Bool.noConfusion hs
+      · intro hI
+        obtain ⟨y, hy⟩ := hi.roleSome I i hI
+        simp only [roleTypedFormula, equationAnchor_evaluate] at hy
+        have he := congrArg ULift.down
+          ((equationCell_evaluate_iff t ha A hA _ _).1 hy)
+        rw [he]
+        rfl
     · intro W V K L x
-      have h := hi.restriction W V K L x
-      simp only [restrictionTypedFormula, contextAnchor_evaluate,
-        equationAnchor_evaluate, ObjectFormula.evaluate] at h
-      exact eq_iff_iff.1 h
+      constructor
+      · intro hs
+        by_contra htyped
+        have hn := hi.restrictionNone W V K L x htyped
+        simp only [restrictionTypedFormula, contextAnchor_evaluate, equationAnchor_evaluate] at hn
+        have he := congrArg ULift.down
+          ((equationCell_evaluate_iff t ha A hA _ _).1 hn)
+        rw [he] at hs
+        exact Bool.noConfusion hs
+      · intro htyped
+        obtain ⟨y, hy⟩ := hi.restrictionSome W V K L x htyped
+        simp only [restrictionTypedFormula, contextAnchor_evaluate, equationAnchor_evaluate] at hy
+        have he := congrArg ULift.down
+          ((equationCell_evaluate_iff t ha A hA _ _).1 hy)
+        rw [he]
+        rfl
     · intro W I K i a
-      have h := hi.violation W I K i a
-      simp only [violationTypedFormula, equationAnchor_evaluate, ObjectFormula.evaluate] at h
-      exact eq_iff_iff.1 h
+      constructor
+      · intro hs
+        by_contra htyped
+        have hn := hi.violationNone W I K i a htyped
+        simp only [violationTypedFormula, equationAnchor_evaluate] at hn
+        have he := congrArg ULift.down
+          ((equationCell_evaluate_iff t ha A hA _ _).1 hn)
+        rw [he] at hs
+        exact Bool.noConfusion hs
+      · intro htyped
+        obtain ⟨y, hy⟩ := hi.violationSome W I K i a htyped
+        simp only [violationTypedFormula, equationAnchor_evaluate] at hy
+        have he := congrArg ULift.down
+          ((equationCell_evaluate_iff t ha A hA _ _).1 hy)
+        rw [he]
+        rfl
     · intro W B I K i a
-      have h := hi.residual W B I K i a
-      simp only [residualTypedFormula, equationAnchor_evaluate, ObjectFormula.evaluate] at h
-      exact eq_iff_iff.1 h
+      constructor
+      · intro hs
+        by_contra htyped
+        have hn := hi.residualNone W B I K i a htyped
+        simp only [residualTypedFormula, equationAnchor_evaluate] at hn
+        have he := congrArg ULift.down
+          ((equationCell_evaluate_iff t ha A hA _ _).1 hn)
+        rw [he] at hs
+        exact Bool.noConfusion hs
+      · intro htyped
+        obtain ⟨y, hy⟩ := hi.residualSome W B I K i a htyped
+        simp only [residualTypedFormula, equationAnchor_evaluate] at hy
+        have he := congrArg ULift.down
+          ((equationCell_evaluate_iff t ha A hA _ _).1 hy)
+        rw [he]
+        rfl
 
 /-! ## Observable-ring equations -/
 
@@ -238,7 +396,7 @@ def observableActiveAnchor
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
     (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
     (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
-    (ht : IndependentEquationPrimitive.IsTyped (contextPreorder t ha A hA hc)
+    (_ht : IndependentEquationPrimitive.IsTyped (contextPreorder t ha A hA hc)
       (equationRows t ha A hA)) (W : ArchCtx A)
     (q : IndependentRingPrimitive.Query
       (IndependentEquationPrimitive.observableType (equationRows t ha A hA) W))
@@ -289,6 +447,42 @@ def observableActiveAnchors
   | nil => rfl
   | cons q qs ih => simp [observableActiveAnchors, ih]
 
+def observableActiveValue
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
+    (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
+    (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
+    (_ht : IndependentEquationPrimitive.IsTyped (contextPreorder t ha A hA hc)
+      (equationRows t ha A hA)) (W : ArchCtx A)
+    (q : IndependentRingPrimitive.Query
+      (IndependentEquationPrimitive.observableType (equationRows t ha A hA) W))
+    (value : IndependentEquationPrimitive.observableType (equationRows t ha A hA) W) :
+    ObjectFormula.{u, v, u} U :=
+  equationAnchor t ha A hA (.observable W .carrier)
+    (equationCell A (.observable W (.operation _ q)) (ULift.up (some value)))
+
+@[simp] theorem observableActiveValue_evaluate_iff
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
+    (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
+    (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
+    (ht : IndependentEquationPrimitive.IsTyped (contextPreorder t ha A hA hc)
+      (equationRows t ha A hA)) (W : ArchCtx A)
+    (q : IndependentRingPrimitive.Query
+      (IndependentEquationPrimitive.observableType (equationRows t ha A hA) W))
+    (value : IndependentEquationPrimitive.observableType (equationRows t ha A hA) W) :
+    (observableActiveValue t ha A hA hc ht W q value).evaluate t ↔
+      observableActive t ha A hA hc ht W q = value := by
+  simp only [observableActiveValue, equationAnchor_evaluate]
+  rw [equationCell_evaluate_iff t ha A hA]
+  constructor
+  · intro h
+    have he := congrArg ULift.down h
+    exact Option.some.inj ((Option.some_get _).trans he)
+  · intro h
+    apply ULift.ext
+    exact (Option.some_get _).symm.trans (congrArg some h)
+
 def ringAddAssoc
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
@@ -301,9 +495,8 @@ def ringAddAssoc
   observableActiveAnchors t ha A hA hc ht W
     [.add a b, .add (observableActive t ha A hA hc ht W (.add a b)) c,
       .add b c, .add a (observableActive t ha A hA hc ht W (.add b c))]
-    (.equal
-      (observableActive t ha A hA hc ht W
-        (.add (observableActive t ha A hA hc ht W (.add a b)) c))
+    (observableActiveValue t ha A hA hc ht W
+      (.add (observableActive t ha A hA hc ht W (.add a b)) c)
       (observableActive t ha A hA hc ht W
         (.add a (observableActive t ha A hA hc ht W (.add b c)))))
 
@@ -318,8 +511,8 @@ def ringZeroAdd
     ObjectFormula.{u, v, u} U :=
   observableActiveAnchors t ha A hA hc ht W
     [.zero, .add (observableActive t ha A hA hc ht W .zero) a]
-    (.equal (observableActive t ha A hA hc ht W
-      (.add (observableActive t ha A hA hc ht W .zero) a)) a)
+    (observableActiveValue t ha A hA hc ht W
+      (.add (observableActive t ha A hA hc ht W .zero) a) a)
 
 def ringNegAddCancel
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -332,8 +525,8 @@ def ringNegAddCancel
     ObjectFormula.{u, v, u} U :=
   observableActiveAnchors t ha A hA hc ht W
     [.neg a, .add (observableActive t ha A hA hc ht W (.neg a)) a, .zero]
-    (.equal (observableActive t ha A hA hc ht W
-      (.add (observableActive t ha A hA hc ht W (.neg a)) a))
+    (observableActiveValue t ha A hA hc ht W
+      (.add (observableActive t ha A hA hc ht W (.neg a)) a)
       (observableActive t ha A hA hc ht W .zero))
 
 def ringMulAssoc
@@ -348,9 +541,8 @@ def ringMulAssoc
   observableActiveAnchors t ha A hA hc ht W
     [.mul a b, .mul (observableActive t ha A hA hc ht W (.mul a b)) c,
       .mul b c, .mul a (observableActive t ha A hA hc ht W (.mul b c))]
-    (.equal
-      (observableActive t ha A hA hc ht W
-        (.mul (observableActive t ha A hA hc ht W (.mul a b)) c))
+    (observableActiveValue t ha A hA hc ht W
+      (.mul (observableActive t ha A hA hc ht W (.mul a b)) c)
       (observableActive t ha A hA hc ht W
         (.mul a (observableActive t ha A hA hc ht W (.mul b c)))))
 
@@ -364,7 +556,7 @@ def ringMulComm
     (a b : IndependentEquationPrimitive.observableType (equationRows t ha A hA) W) :
     ObjectFormula.{u, v, u} U :=
   observableActiveAnchors t ha A hA hc ht W [.mul a b, .mul b a]
-    (.equal (observableActive t ha A hA hc ht W (.mul a b))
+    (observableActiveValue t ha A hA hc ht W (.mul a b)
       (observableActive t ha A hA hc ht W (.mul b a)))
 
 def ringOneMul
@@ -378,8 +570,8 @@ def ringOneMul
     ObjectFormula.{u, v, u} U :=
   observableActiveAnchors t ha A hA hc ht W
     [.one, .mul (observableActive t ha A hA hc ht W .one) a]
-    (.equal (observableActive t ha A hA hc ht W
-      (.mul (observableActive t ha A hA hc ht W .one) a)) a)
+    (observableActiveValue t ha A hA hc ht W
+      (.mul (observableActive t ha A hA hc ht W .one) a) a)
 
 def ringLeftDistrib
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -395,9 +587,8 @@ def ringLeftDistrib
       .mul a b, .mul a c,
       .add (observableActive t ha A hA hc ht W (.mul a b))
         (observableActive t ha A hA hc ht W (.mul a c))]
-    (.equal
-      (observableActive t ha A hA hc ht W
-        (.mul a (observableActive t ha A hA hc ht W (.add b c))))
+    (observableActiveValue t ha A hA hc ht W
+      (.mul a (observableActive t ha A hA hc ht W (.add b c)))
       (observableActive t ha A hA hc ht W
         (.add (observableActive t ha A hA hc ht W (.mul a b))
           (observableActive t ha A hA hc ht W (.mul a c)))))
@@ -466,9 +657,9 @@ def restrictionAnchor
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
     (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
     (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
-    (ht : IndependentEquationPrimitive.IsTyped (contextPreorder t ha A hA hc)
+    (_ht : IndependentEquationPrimitive.IsTyped (contextPreorder t ha A hA hc)
       (equationRows t ha A hA)) {W V : ArchCtx A}
-    (h : (contextPreorder t ha A hA hc).le W V)
+    (_h : (contextPreorder t ha A hA hc).le W V)
     (x : IndependentEquationPrimitive.observableType (equationRows t ha A hA) V)
     (body : ObjectFormula.{u, v, w} U) : ObjectFormula.{u, v, w} U :=
   contextAnchor t ha A hA (.le W V)
@@ -491,6 +682,47 @@ def restrictionAnchor
     (restrictionAnchor t ha A hA hc ht h x body).evaluate t ↔ body.evaluate t := by
   simp [restrictionAnchor]
 
+def restrictionValueFormula
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
+    (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
+    (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
+    (_ht : IndependentEquationPrimitive.IsTyped (contextPreorder t ha A hA hc)
+      (equationRows t ha A hA)) {W V : ArchCtx A}
+    (_h : (contextPreorder t ha A hA hc).le W V)
+    (x : IndependentEquationPrimitive.observableType (equationRows t ha A hA) V)
+    (value : IndependentEquationPrimitive.observableType (equationRows t ha A hA) W) :
+    ObjectFormula.{u, v, u} U :=
+  contextAnchor t ha A hA (.le W V)
+    (equationAnchor t ha A hA (.observable W .carrier)
+      (equationAnchor t ha A hA (.observable V .carrier)
+        (equationCell A (.restriction W V
+          (IndependentEquationPrimitive.observableType (equationRows t ha A hA) W)
+          (IndependentEquationPrimitive.observableType (equationRows t ha A hA) V) x)
+          (ULift.up (some value)))))
+
+@[simp] theorem restrictionValueFormula_evaluate_iff
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
+    (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
+    (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
+    (ht : IndependentEquationPrimitive.IsTyped (contextPreorder t ha A hA hc)
+      (equationRows t ha A hA)) {W V : ArchCtx A}
+    (h : (contextPreorder t ha A hA hc).le W V)
+    (x : IndependentEquationPrimitive.observableType (equationRows t ha A hA) V)
+    (value : IndependentEquationPrimitive.observableType (equationRows t ha A hA) W) :
+    (restrictionValueFormula t ha A hA hc ht h x value).evaluate t ↔
+      restrictValue t ha A hA hc ht h x = value := by
+  simp only [restrictionValueFormula, contextAnchor_evaluate, equationAnchor_evaluate]
+  rw [equationCell_evaluate_iff t ha A hA]
+  constructor
+  · intro hvalue
+    have he := congrArg ULift.down hvalue
+    exact Option.some.inj ((Option.some_get _).trans he)
+  · intro hvalue
+    apply ULift.ext
+    exact (Option.some_get _).symm.trans (congrArg some hvalue)
+
 def restrictionZero
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
@@ -503,8 +735,8 @@ def restrictionZero
     (observableActiveAnchor t ha A hA hc ht W .zero
       (restrictionAnchor t ha A hA hc ht h
         (observableActive t ha A hA hc ht V .zero)
-        (.equal (restrictValue t ha A hA hc ht h
-          (observableActive t ha A hA hc ht V .zero))
+        (restrictionValueFormula t ha A hA hc ht h
+          (observableActive t ha A hA hc ht V .zero)
           (observableActive t ha A hA hc ht W .zero))))
 
 def restrictionOne
@@ -519,8 +751,8 @@ def restrictionOne
     (observableActiveAnchor t ha A hA hc ht W .one
       (restrictionAnchor t ha A hA hc ht h
         (observableActive t ha A hA hc ht V .one)
-        (.equal (restrictValue t ha A hA hc ht h
-          (observableActive t ha A hA hc ht V .one))
+        (restrictionValueFormula t ha A hA hc ht h
+          (observableActive t ha A hA hc ht V .one)
           (observableActive t ha A hA hc ht W .one))))
 
 def restrictionAdd
@@ -541,9 +773,8 @@ def restrictionAdd
           (observableActiveAnchor t ha A hA hc ht W
             (.add (restrictValue t ha A hA hc ht h a)
               (restrictValue t ha A hA hc ht h b))
-            (.equal
-              (restrictValue t ha A hA hc ht h
-                (observableActive t ha A hA hc ht V (.add a b)))
+            (restrictionValueFormula t ha A hA hc ht h
+              (observableActive t ha A hA hc ht V (.add a b))
               (observableActive t ha A hA hc ht W
                 (.add (restrictValue t ha A hA hc ht h a)
                   (restrictValue t ha A hA hc ht h b))))))))
@@ -566,9 +797,8 @@ def restrictionMul
           (observableActiveAnchor t ha A hA hc ht W
             (.mul (restrictValue t ha A hA hc ht h a)
               (restrictValue t ha A hA hc ht h b))
-            (.equal
-              (restrictValue t ha A hA hc ht h
-                (observableActive t ha A hA hc ht V (.mul a b)))
+            (restrictionValueFormula t ha A hA hc ht h
+              (observableActive t ha A hA hc ht V (.mul a b))
               (observableActive t ha A hA hc ht W
                 (.mul (restrictValue t ha A hA hc ht h a)
                   (restrictValue t ha A hA hc ht h b))))))))
@@ -667,7 +897,7 @@ def violationAnchor
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
     (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
     (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
-    (ht : IndependentEquationPrimitive.IsTyped (contextPreorder t ha A hA hc)
+    (_ht : IndependentEquationPrimitive.IsTyped (contextPreorder t ha A hA hc)
       (equationRows t ha A hA)) (W : ArchCtx A)
     (i : IndependentEquationPrimitive.index (equationRows t ha A hA)) (a : U.Atom)
     (body : ObjectFormula.{u, v, w} U) : ObjectFormula.{u, v, w} U :=
@@ -694,7 +924,7 @@ def residualAnchor
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
     (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
     (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
-    (ht : IndependentEquationPrimitive.IsTyped (contextPreorder t ha A hA hc)
+    (_ht : IndependentEquationPrimitive.IsTyped (contextPreorder t ha A hA hc)
       (equationRows t ha A hA)) (W : ArchCtx A) (B : ArchitectureObject U)
     (i : IndependentEquationPrimitive.index (equationRows t ha A hA)) (a : U.Atom)
     (body : ObjectFormula.{u, v,w} U) : ObjectFormula.{u, v, w} U :=
@@ -726,7 +956,8 @@ def identityFormula
     (x : IndependentEquationPrimitive.observableType (equationRows t ha A hA) W) :
     ObjectFormula.{u, v, u} U :=
   restrictionAnchor t ha A hA hc ht ((contextPreorder t ha A hA hc).refl W) x
-    (.equal (restrictValue t ha A hA hc ht ((contextPreorder t ha A hA hc).refl W) x) x)
+    (restrictionValueFormula t ha A hA hc ht
+      ((contextPreorder t ha A hA hc).refl W) x x)
 
 def compositionFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -742,8 +973,8 @@ def compositionFormula
   restrictionAnchor t ha A hA hc ht g x
     (restrictionAnchor t ha A hA hc ht h (restrictValue t ha A hA hc ht g x)
       (restrictionAnchor t ha A hA hc ht ((contextPreorder t ha A hA hc).trans h g) x
-        (.equal
-          (restrictValue t ha A hA hc ht ((contextPreorder t ha A hA hc).trans h g) x)
+        (restrictionValueFormula t ha A hA hc ht
+          ((contextPreorder t ha A hA hc).trans h g) x
           (restrictValue t ha A hA hc ht h (restrictValue t ha A hA hc ht g x)))))
 
 def violationFormula
@@ -759,7 +990,8 @@ def violationFormula
   violationAnchor t ha A hA hc ht V i a
     (violationAnchor t ha A hA hc ht W i a
       (restrictionAnchor t ha A hA hc ht h (violationValue t ha A hA hc ht V i a)
-        (.equal (restrictValue t ha A hA hc ht h (violationValue t ha A hA hc ht V i a))
+        (restrictionValueFormula t ha A hA hc ht h
+          (violationValue t ha A hA hc ht V i a)
           (violationValue t ha A hA hc ht W i a))))
 
 def residualFormula
@@ -775,7 +1007,8 @@ def residualFormula
   residualAnchor t ha A hA hc ht V B i a
     (residualAnchor t ha A hA hc ht W B i a
       (restrictionAnchor t ha A hA hc ht h (residualValue t ha A hA hc ht V B i a)
-        (.equal (restrictValue t ha A hA hc ht h (residualValue t ha A hA hc ht V B i a))
+        (restrictionValueFormula t ha A hA hc ht h
+          (residualValue t ha A hA hc ht V B i a)
           (residualValue t ha A hA hc ht W B i a))))
 
 structure LawInstances

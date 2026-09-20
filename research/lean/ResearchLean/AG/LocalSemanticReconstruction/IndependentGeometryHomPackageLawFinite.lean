@@ -44,8 +44,10 @@ def queryFormula : CircuitQuery U → CircuitQuery U → Formula.{u, v, 0} U mod
 def listFormula : List (CircuitQuery U × Bool) → List (CircuitQuery U × Bool) →
     Formula.{u, v, 0} U mode
   | [], [] => .truth
-  | x :: xs, y :: ys =>
-      .and (queryFormula x.1 y.1) (.and (.equal y.2 x.2) (listFormula xs ys))
+  | (x, false) :: xs, (y, false) :: ys =>
+      .and (queryFormula x y) (listFormula xs ys)
+  | (x, true) :: xs, (y, true) :: ys =>
+      .and (queryFormula x y) (listFormula xs ys)
   | _, _ => .falsity
 
 def codeFormula : CircuitDetectorCode U → CircuitDetectorCode U → Formula.{u, v, 0} U mode
@@ -70,12 +72,16 @@ theorem listFormula_evaluate_iff
   induction xs generalizing ys with
   | nil => cases ys <;> rfl
   | cons x xs ih =>
+      rcases x with ⟨x, hx⟩
       cases ys with
-      | nil => rfl
+      | nil => cases hx <;> rfl
       | cons y ys =>
-          simp only [listFormula, Formula.evaluate,
-            queryFormula_evaluate_iff sourceTable targetTable h, ih,
-            IndependentGeometryHomPrimitive.Detector.ListMatch]
+          rcases y with ⟨y, hy⟩
+          cases hx <;> cases hy <;>
+            simp only [listFormula, Formula.evaluate,
+              queryFormula_evaluate_iff sourceTable targetTable h, ih,
+              IndependentGeometryHomPrimitive.Detector.ListMatch, Bool.false_eq_true,
+              Bool.true_eq_false, and_false, false_and, true_and]
 
 theorem codeFormula_evaluate_iff
     (sourceTable targetTable : IndependentGeometryPrimitive.Table.{u, v} U)

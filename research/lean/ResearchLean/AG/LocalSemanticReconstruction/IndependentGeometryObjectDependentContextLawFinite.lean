@@ -380,52 +380,37 @@ def supportFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
     (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
-    (ht : IndependentContextPrimitive.IsTyped
+    (_ht : IndependentContextPrimitive.IsTyped
       (IndependentGeometryPrimitive.contextTable (rows t ha A hA)))
     (W V : ArchCtx A)
-    (h : IndependentContextPrimitive.le
+    (_h : IndependentContextPrimitive.le
       (IndependentGeometryPrimitive.contextTable (rows t ha A hA)) W V)
-    (s : W.Support) (a : U.Atom) : ObjectFormula.{u, v, 0} U :=
-  contextAnchor t ha A hA (.le W V)
-    (contextAnchor t ha A hA (.support W V s)
-      (.implies (.equal (W.minimal.supportReads s a) True)
-        (.equal (V.minimal.supportReads
-          (IndependentContextPrimitive.supportMap
-            (IndependentGeometryPrimitive.contextTable (rows t ha A hA)) ht h s) a) True)))
+    (s : W.Support) (y : V.Support) : ObjectFormula.{u, v, 0} U :=
+  supportSome A W V s y
 
 def axisFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
     (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
-    (ht : IndependentContextPrimitive.IsTyped
+    (_ht : IndependentContextPrimitive.IsTyped
       (IndependentGeometryPrimitive.contextTable (rows t ha A hA)))
     (W V : ArchCtx A)
-    (h : IndependentContextPrimitive.le
+    (_h : IndependentContextPrimitive.le
       (IndependentGeometryPrimitive.contextTable (rows t ha A hA)) W V)
-    (a : W.Axis) : ObjectFormula.{u, v, 0} U :=
-  contextAnchor t ha A hA (.le W V)
-    (contextAnchor t ha A hA (.axis W V a)
-      (.implies (.equal (W.minimal.axisReads a) True)
-        (.equal (V.minimal.axisReads
-          (IndependentContextPrimitive.axisMap
-            (IndependentGeometryPrimitive.contextTable (rows t ha A hA)) ht h a)) True)))
+    (a : W.Axis) (y : V.Axis) : ObjectFormula.{u, v, 0} U :=
+  axisSome A W V a y
 
 def observableFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
     (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
-    (ht : IndependentContextPrimitive.IsTyped
+    (_ht : IndependentContextPrimitive.IsTyped
       (IndependentGeometryPrimitive.contextTable (rows t ha A hA)))
     (W V : ArchCtx A)
-    (h : IndependentContextPrimitive.le
+    (_h : IndependentContextPrimitive.le
       (IndependentGeometryPrimitive.contextTable (rows t ha A hA)) W V)
-    (x : V.Observable) : ObjectFormula.{u, v, 0} U :=
-  contextAnchor t ha A hA (.le W V)
-    (contextAnchor t ha A hA (.observable W V x)
-      (.implies (.equal (V.minimal.observableReads x) True)
-        (.equal (W.minimal.observableReads
-          (IndependentContextPrimitive.observableRestrict
-            (IndependentGeometryPrimitive.contextTable (rows t ha A hA)) ht h x)) True)))
+    (x : V.Observable) (y : W.Observable) : ObjectFormula.{u, v, 0} U :=
+  observableSome A W V x y
 
 structure LawInstances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -435,9 +420,14 @@ structure LawInstances
       (IndependentGeometryPrimitive.contextTable (rows t ha A hA))) : Prop where
   refl : ∀ W, (reflFormula A W).evaluate t
   trans : ∀ W V X, (transFormula A W V X).evaluate t
-  support : ∀ W V h s a, (supportFormula t ha A hA ht W V h s a).evaluate t
-  axis : ∀ W V h a, (axisFormula t ha A hA ht W V h a).evaluate t
-  observable : ∀ W V h x, (observableFormula t ha A hA ht W V h x).evaluate t
+  support : ∀ W V h s a, W.minimal.supportReads s a →
+    ∃ y, (supportFormula t ha A hA ht W V h s y).evaluate t ∧
+      V.minimal.supportReads y a
+  axis : ∀ W V h a, W.minimal.axisReads a →
+    ∃ y, (axisFormula t ha A hA ht W V h a y).evaluate t ∧ V.minimal.axisReads y
+  observable : ∀ W V h x, V.minimal.observableReads x →
+    ∃ y, (observableFormula t ha A hA ht W V h x y).evaluate t ∧
+      W.minimal.observableReads y
 
 theorem lawful_iff_instances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -468,19 +458,24 @@ theorem lawful_iff_instances
       exact propext ⟨fun _ => True.intro, fun _ => hl.trans W V X
         ((IndependentGeometryHomPrimitive.CoreLawFinite.ulift_prop_true_iff _).mp hWV)
         ((IndependentGeometryHomPrimitive.CoreLawFinite.ulift_prop_true_iff _).mp hVX)⟩
-    · intro W V h s a
-      simp only [supportFormula, contextAnchor_evaluate, ObjectFormula.evaluate]
-      intro hs
-      exact eq_true (hl.support W V h s a ((eq_iff_iff.1 hs).2 True.intro))
-    · intro W V h a
-      simp only [axisFormula, contextAnchor_evaluate, ObjectFormula.evaluate]
-      intro hread
-      exact eq_true (hl.axis W V h a ((eq_iff_iff.1 hread).2 True.intro))
-    · intro W V h x
-      simp only [observableFormula, contextAnchor_evaluate, ObjectFormula.evaluate]
-      intro hread
-      exact eq_true
-        (hl.observable W V h x ((eq_iff_iff.1 hread).2 True.intro))
+    · intro W V h s a hs
+      let y := IndependentContextPrimitive.supportMap
+        (IndependentGeometryPrimitive.contextTable (rows t ha A hA)) ht h s
+      refine ⟨y, ?_, hl.support W V h s a hs⟩
+      apply (supportSome_evaluate_iff t ha A hA W V s y).2
+      exact ⟨h, (Option.some_get _).symm⟩
+    · intro W V h a hread
+      let y := IndependentContextPrimitive.axisMap
+        (IndependentGeometryPrimitive.contextTable (rows t ha A hA)) ht h a
+      refine ⟨y, ?_, hl.axis W V h a hread⟩
+      apply (axisSome_evaluate_iff t ha A hA W V a y).2
+      exact ⟨h, (Option.some_get _).symm⟩
+    · intro W V h x hread
+      let y := IndependentContextPrimitive.observableRestrict
+        (IndependentGeometryPrimitive.contextTable (rows t ha A hA)) ht h x
+      refine ⟨y, ?_, hl.observable W V h x hread⟩
+      apply (observableSome_evaluate_iff t ha A hA W V x y).2
+      exact ⟨h, (Option.some_get _).symm⟩
   · intro hi
     refine {
       refl := ?_
@@ -499,17 +494,26 @@ theorem lawful_iff_instances
         (h ((IndependentGeometryHomPrimitive.CoreLawFinite.ulift_prop_true_iff _).2 hWV)
           ((IndependentGeometryHomPrimitive.CoreLawFinite.ulift_prop_true_iff _).2 hVX))
     · intro W V h s a hs
-      have hp := hi.support W V h s a
-      simp only [supportFormula, contextAnchor_evaluate, ObjectFormula.evaluate] at hp
-      exact (eq_iff_iff.1 (hp (eq_true hs))).2 True.intro
+      obtain ⟨y, hy, hread⟩ := hi.support W V h s a hs
+      have hy' := (supportSome_evaluate_iff t ha A hA W V s y).1 hy
+      have he : IndependentContextPrimitive.supportMap
+          (IndependentGeometryPrimitive.contextTable (rows t ha A hA)) ht h s = y :=
+        Option.some.inj ((Option.some_get _).trans hy'.2)
+      simpa [he] using hread
     · intro W V h a hread
-      have hp := hi.axis W V h a
-      simp only [axisFormula, contextAnchor_evaluate, ObjectFormula.evaluate] at hp
-      exact (eq_iff_iff.1 (hp (eq_true hread))).2 True.intro
+      obtain ⟨y, hy, hyread⟩ := hi.axis W V h a hread
+      have hy' := (axisSome_evaluate_iff t ha A hA W V a y).1 hy
+      have he : IndependentContextPrimitive.axisMap
+          (IndependentGeometryPrimitive.contextTable (rows t ha A hA)) ht h a = y :=
+        Option.some.inj ((Option.some_get _).trans hy'.2)
+      simpa [he] using hyread
     · intro W V h x hread
-      have hp := hi.observable W V h x
-      simp only [observableFormula, contextAnchor_evaluate, ObjectFormula.evaluate] at hp
-      exact (eq_iff_iff.1 (hp (eq_true hread))).2 True.intro
+      obtain ⟨y, hy, hyread⟩ := hi.observable W V h x hread
+      have hy' := (observableSome_evaluate_iff t ha A hA W V x y).1 hy
+      have he : IndependentContextPrimitive.observableRestrict
+          (IndependentGeometryPrimitive.contextTable (rows t ha A hA)) ht h x = y :=
+        Option.some.inj ((Option.some_get _).trans hy'.2)
+      simpa [he] using hyread
 
 structure Instances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)

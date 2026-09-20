@@ -246,7 +246,7 @@ theorem pointLaws_iff_instances
         (IndependentGeometryPrimitive.flatten s)
         (IndependentGeometryPrimitive.flatten t) h := by
   unfold IndependentGeometryHomPrimitive.Overlap.PointLaws
-  simpa only [IndependentCoreTableAssembly.package_object, Instances, lawInstance, Formula.evaluate,
+  simp only [IndependentCoreTableAssembly.package_object, Instances, lawInstance, Formula.evaluate,
     flatten_overlap_match_true_iff, flatten_context_true_iff]
 
 end Overlap
@@ -266,11 +266,10 @@ def carriers (K : Type v) (L : Type v) : JointFormula.{u, v} U mode :=
 
 def typed (K : Type v) (L : Type v) (S T : Type v) (x : S) (y : T) :
     IndependentFiniteLawFormula.Formula.{u, v, v + 1} U mode :=
-  .implies
+  .and
     (.and (.source (.coefficient .carrier) ⟨K⟩)
       (.target (.coefficient .carrier) ⟨L⟩))
-    (.implies (.or (.notEqual S K) (.notEqual T L))
-      (.hom (.coefficient (.edge S T x y)) false))
+    (.hom (.coefficient (.edge S T x y)) false)
 
 def witness (K : Type v) (L : Type v) (x : K) (y : L) :
     JointFormula.{u, v} U mode :=
@@ -278,13 +277,11 @@ def witness (K : Type v) (L : Type v) (x : K) (y : L) :
 
 def unique (K : Type v) (L : Type v) (x : K) (y z : L) :
     IndependentFiniteLawFormula.Formula.{u, v, v} U mode :=
-  .implies
+  .and
     (.and (.source (.coefficient .carrier) ⟨K⟩)
       (.target (.coefficient .carrier) ⟨L⟩))
-    (.implies
-      (.and (.hom (.coefficient (.edge K L x y)) true)
-        (.hom (.coefficient (.edge K L x z)) true))
-      (.equal z y))
+    (.and (.hom (.coefficient (.edge K L x y)) true)
+      (.hom (.coefficient (.edge K L x z)) false))
 
 def sourceOperation (K : Type v) (q : IndependentRingPrimitive.Query K) (value : K) :
     JointFormula.{u, v} U mode :=
@@ -326,10 +323,12 @@ def mul (K : Type v) (L : Type v) (a b r : K) (c d s : L) :
 
 def Instances (sourceTable targetTable : IndependentGeometryPrimitive.Table.{u, v} U)
     (h : Table.{u, v} U mode) (K : Type v) (L : Type v) : Prop :=
-  (∀ S T x y, (typed (U := U) (mode := mode) K L S T x y).evaluate sourceTable targetTable h) ∧
+  (∀ S T x y, (S ≠ K ∨ T ≠ L) →
+    (typed (U := U) (mode := mode) K L S T x y).evaluate sourceTable targetTable h) ∧
   (∀ x : K, ∃ y : L,
     (witness (U := U) (mode := mode) K L x y).evaluate sourceTable targetTable h ∧
-    ∀ z : L, (unique (U := U) (mode := mode) K L x y z).evaluate sourceTable targetTable h) ∧
+    ∀ z : L, z ≠ y →
+      (unique (U := U) (mode := mode) K L x y z).evaluate sourceTable targetTable h) ∧
   (∀ a b, (zero (U := U) (mode := mode) K L a b).evaluate sourceTable targetTable h) ∧
   (∀ a b, (one (U := U) (mode := mode) K L a b).evaluate sourceTable targetTable h) ∧
   (∀ a b r c d s, (add (U := U) (mode := mode) K L a b r c d s).evaluate sourceTable targetTable h) ∧
@@ -379,7 +378,11 @@ theorem pointLaws_iff_instances (s t : ObjectData.{u, v} U)
     · exact hrows.1
     · intro x
       obtain ⟨y, hy, hu⟩ := hrows.2 x
-      exact ⟨y, hy, fun z hz => hu z hz.2⟩
+      refine ⟨y, hy, ?_⟩
+      intro z hzy
+      cases hz : coefficient h (.edge K L x z) with
+      | false => exact ⟨hy, hz⟩
+      | true => exact (hzy (hu z hz)).elim
     · intro a b hab
       rcases hab with ⟨ha, hb⟩
       simpa [rs, rt, ha, hb] using hpreserves.zero
@@ -396,7 +399,11 @@ theorem pointLaws_iff_instances (s t : ObjectData.{u, v} U)
     refine ⟨⟨htyped, ?_⟩, ⟨?_, ?_, ?_, ?_⟩⟩
     · intro x
       obtain ⟨y, hy, hu⟩ := htotal x
-      exact ⟨y, hy, fun z hz => hu z ⟨hy, hz⟩⟩
+      refine ⟨y, hy, ?_⟩
+      intro z hz
+      by_contra hzy
+      have hf := (hu z hzy).2
+      exact Bool.noConfusion (hf.symm.trans hz)
     · exact hzero (rs .zero) (rt .zero) ⟨rfl, rfl⟩
     · exact hone (rs .one) (rt .one) ⟨rfl, rfl⟩
     · intro a b c d ha hb

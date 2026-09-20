@@ -7,10 +7,9 @@ import Formal.Util.AssertStandardAxioms
 /-!
 # Closed finite formulas for independent realization Hom laws
 
-Every realization law instance below reads only the two flattened endpoint
-tables, the common Boolean Hom table, and equality between indices supplied by
-that instance.  In particular, restriction responses are endpoint table cells;
-no completed realization law is stored in a formula leaf.
+Every realization law formula below reads only exact cells of the two flattened
+endpoint tables and the common Boolean Hom table.  The realization reading
+predicates remain quantified conditions outside the finite formula syntax.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction.IndependentGeometryHomPrimitive.RealizationLawFinite
@@ -23,13 +22,6 @@ open Site IndependentGeometryTableAssembly IndependentFiniteLawFormula
   IndependentFiniteGraphLawFormula
 
 variable {U : AtomCarrier.{u}}
-
-private theorem prop_eq_true_iff (p : Prop) : p = True ↔ p := by
-  constructor
-  · intro h
-    exact h.symm ▸ trivial
-  · intro hp
-    exact propext (iff_true_intro hp)
 
 variable {A B : ArchitectureObject U}
 
@@ -114,27 +106,21 @@ namespace Representative
 def supportReads (W : ArchCtx A) (V : ArchCtx B)
     (x : W.Support) (y : V.Support) (a b : U.Atom) :
     Formula.{u, v, 0} U .representative :=
-  .implies (.hom (contextQuery W V) true)
-    (.implies (.hom (representativeSupportQuery W V x y) true)
-      (.implies (.hom (.atom .forward a b) true)
-        (.implies (.equal (W.minimal.supportReads x a) True)
-          (.equal (V.minimal.supportReads y b) True))))
+  .and (.hom (contextQuery W V) true)
+    (.and (.hom (representativeSupportQuery W V x y) true)
+      (.hom (.atom .forward a b) true))
 
 def axisReads (W : ArchCtx A) (V : ArchCtx B)
     (x : W.Axis) (y : V.Axis) :
     Formula.{u, v, 0} U .representative :=
-  .implies (.hom (contextQuery W V) true)
-    (.implies (.hom (representativeAxisQuery W V x y) true)
-      (.implies (.equal (W.minimal.axisReads x) True)
-        (.equal (V.minimal.axisReads y) True)))
+  .and (.hom (contextQuery W V) true)
+    (.hom (representativeAxisQuery W V x y) true)
 
 def observableReads (W : ArchCtx A) (V : ArchCtx B)
     (x : W.Observable) (y : V.Observable) :
     Formula.{u, v, 0} U .representative :=
-  .implies (.hom (contextQuery W V) true)
-    (.implies (.hom (representativeObservableQuery W V x y) true)
-      (.implies (.equal (W.minimal.observableReads x) True)
-        (.equal (V.minimal.observableReads y) True)))
+  .and (.hom (contextQuery W V) true)
+    (.hom (representativeObservableQuery W V x y) true)
 
 def supportNaturality (W X : ArchCtx A) (V Y : ArchCtx B)
     (x : W.Support) (y : V.Support) (xx : X.Support) (yy : Y.Support) :
@@ -189,13 +175,14 @@ structure Instances (sourceTable targetTable : IndependentGeometryPrimitive.Tabl
   supportReads : ∀ (W : ArchCtx A) (V : ArchCtx B)
     (x : W.Support) (y : V.Support) (a b : U.Atom),
     (supportReads (U := U) (A := A) (B := B) W V x y a b).evaluate
-      sourceTable targetTable h
+      sourceTable targetTable h → W.minimal.supportReads x a → V.minimal.supportReads y b
   axisReads : ∀ (W : ArchCtx A) (V : ArchCtx B) (x : W.Axis) (y : V.Axis),
-    (axisReads (U := U) (A := A) (B := B) W V x y).evaluate sourceTable targetTable h
+    (axisReads (U := U) (A := A) (B := B) W V x y).evaluate sourceTable targetTable h →
+      W.minimal.axisReads x → V.minimal.axisReads y
   observableReads : ∀ (W : ArchCtx A) (V : ArchCtx B)
     (x : W.Observable) (y : V.Observable),
     (observableReads (U := U) (A := A) (B := B) W V x y).evaluate
-      sourceTable targetTable h
+      sourceTable targetTable h → W.minimal.observableReads x → V.minimal.observableReads y
   supportNaturality : ∀ (W X : ArchCtx A) (V Y : ArchCtx B)
     (x : W.Support) (y : V.Support) (xx : X.Support) (yy : Y.Support),
     (supportNaturality (U := U) (A := A) (B := B) W X V Y x y xx yy).evaluate
@@ -229,15 +216,12 @@ theorem pointLaws_iff_instances (s t : ObjectData.{u, v} U)
       supportNaturality := ?_
       axisNaturality := ?_
       observableNaturality := ?_ }
-    · intro W V x y a b
-      simp only [supportReads, Formula.evaluate, prop_eq_true_iff]
-      exact hp.supportReads W V x y a b
-    · intro W V x y
-      simp only [axisReads, Formula.evaluate, prop_eq_true_iff]
-      exact hp.axisReads W V x y
-    · intro W V x y
-      simp only [observableReads, Formula.evaluate, prop_eq_true_iff]
-      exact hp.observableReads W V x y
+    · intro W V x y a b hcells hread
+      exact hp.supportReads W V x y a b hcells.1 hcells.2.1 hcells.2.2 hread
+    · intro W V x y hcells hread
+      exact hp.axisReads W V x y hcells.1 hcells.2 hread
+    · intro W V x y hcells hread
+      exact hp.observableReads W V x y hcells.1 hcells.2 hread
     · intro W X V Y x y xx yy
       simp only [supportNaturality, Formula.evaluate,
         IndependentGeometryPrimitive.flatten_at_generated,
@@ -273,15 +257,12 @@ theorem pointLaws_iff_instances (s t : ObjectData.{u, v} U)
       supportNaturality := ?_
       axisNaturality := ?_
       observableNaturality := ?_ }
-    · intro W V x y a b
-      simpa only [supportReads, Formula.evaluate, prop_eq_true_iff] using
-        hi.supportReads W V x y a b
-    · intro W V x y
-      simpa only [axisReads, Formula.evaluate, prop_eq_true_iff] using
-        hi.axisReads W V x y
-    · intro W V x y
-      simpa only [observableReads, Formula.evaluate, prop_eq_true_iff] using
-        hi.observableReads W V x y
+    · intro W V x y a b hctx hrow hatom hread
+      exact hi.supportReads W V x y a b ⟨hctx, hrow, hatom⟩ hread
+    · intro W V x y hctx hrow hread
+      exact hi.axisReads W V x y ⟨hctx, hrow⟩ hread
+    · intro W V x y hctx hrow hread
+      exact hi.observableReads W V x y ⟨hctx, hrow⟩ hread
     · intro W X V Y x y xx yy hWV hXY hxy hs ht
       have hf := hi.supportNaturality W X V Y x y xx yy
       simp only [supportNaturality, Formula.evaluate,
@@ -365,25 +346,19 @@ namespace Explicit
 def supportReads (W : ArchCtx A) (V : ArchCtx B)
     (x : W.Support) (y : V.Support) (a b : U.Atom) :
     Formula.{u, v, 0} U .explicit :=
-  .implies (.hom (contextQuery W V) true)
-    (.implies (.hom (explicitSupportQuery .forward W V x y) true)
-      (.implies (.hom (.atom .forward a b) true)
-        (.iff (.equal (W.minimal.supportReads x a) True)
-          (.equal (V.minimal.supportReads y b) True))))
+  .and (.hom (contextQuery W V) true)
+    (.and (.hom (explicitSupportQuery .forward W V x y) true)
+      (.hom (.atom .forward a b) true))
 
 def axisReads (W : ArchCtx A) (V : ArchCtx B)
     (x : W.Axis) (y : V.Axis) : Formula.{u, v, 0} U .explicit :=
-  .implies (.hom (contextQuery W V) true)
-    (.implies (.hom (explicitAxisQuery .forward W V x y) true)
-      (.iff (.equal (W.minimal.axisReads x) True)
-        (.equal (V.minimal.axisReads y) True)))
+  .and (.hom (contextQuery W V) true)
+    (.hom (explicitAxisQuery .forward W V x y) true)
 
 def observableReads (W : ArchCtx A) (V : ArchCtx B)
     (x : W.Observable) (y : V.Observable) : Formula.{u, v, 0} U .explicit :=
-  .implies (.hom (contextQuery W V) true)
-    (.implies (.hom (explicitObservableQuery .forward W V x y) true)
-      (.iff (.equal (W.minimal.observableReads x) True)
-        (.equal (V.minimal.observableReads y) True)))
+  .and (.hom (contextQuery W V) true)
+    (.hom (explicitObservableQuery .forward W V x y) true)
 
 def inactive (W X : ArchCtx A) (V Y : ArchCtx B)
     (cell : RealizationQuery A B .explicit) : Formula.{u, v, 0} U .explicit :=
@@ -420,13 +395,16 @@ structure Instances (sourceTable targetTable : IndependentGeometryPrimitive.Tabl
   supportReads : ∀ (W : ArchCtx A) (V : ArchCtx B)
     (x : W.Support) (y : V.Support) (a b : U.Atom),
     (supportReads (U := U) (A := A) (B := B) W V x y a b).evaluate
-      sourceTable targetTable h
+      sourceTable targetTable h →
+        (W.minimal.supportReads x a ↔ V.minimal.supportReads y b)
   axisReads : ∀ (W : ArchCtx A) (V : ArchCtx B) (x : W.Axis) (y : V.Axis),
-    (axisReads (U := U) (A := A) (B := B) W V x y).evaluate sourceTable targetTable h
+    (axisReads (U := U) (A := A) (B := B) W V x y).evaluate sourceTable targetTable h →
+      (W.minimal.axisReads x ↔ V.minimal.axisReads y)
   observableReads : ∀ (W : ArchCtx A) (V : ArchCtx B)
     (x : W.Observable) (y : V.Observable),
     (observableReads (U := U) (A := A) (B := B) W V x y).evaluate
-      sourceTable targetTable h
+      sourceTable targetTable h →
+        (W.minimal.observableReads x ↔ V.minimal.observableReads y)
   supportInactive : ∀ (W X : ArchCtx A) (V Y : ArchCtx B)
     (g : ContextMorphism W X) (y : V.Support) (z : Y.Support),
     (inactive (U := U) W X V Y (.actualSupport W X V Y g y z)).evaluate
@@ -481,14 +459,12 @@ theorem pointLaws_iff_instances (s t : ObjectData.{u, v} U)
       supportAction := ?_
       axisAction := ?_
       observableAction := ?_ }
-    · intro W V x y a b
-      simpa only [supportReads, Formula.evaluate, prop_eq_true_iff] using
-        hp.supportReads W V x y a b
-    · intro W V x y
-      simpa only [axisReads, Formula.evaluate, prop_eq_true_iff] using hp.axisReads W V x y
-    · intro W V x y
-      simpa only [observableReads, Formula.evaluate, prop_eq_true_iff] using
-        hp.observableReads W V x y
+    · intro W V x y a b hcells
+      exact hp.supportReads W V x y a b hcells.1 hcells.2.1 hcells.2.2
+    · intro W V x y hcells
+      exact hp.axisReads W V x y hcells.1 hcells.2
+    · intro W V x y hcells
+      exact hp.observableReads W V x y hcells.1 hcells.2
     · intro W X V Y g y z
       simpa only [inactive, Formula.evaluate] using hp.supportInactive W X V Y g y z
     · intro W X V Y g y z
@@ -521,14 +497,12 @@ theorem pointLaws_iff_instances (s t : ObjectData.{u, v} U)
       supportAction := ?_
       axisAction := ?_
       observableAction := ?_ }
-    · intro W V x y a b
-      simpa only [supportReads, Formula.evaluate, prop_eq_true_iff] using
-        hi.supportReads W V x y a b
-    · intro W V x y
-      simpa only [axisReads, Formula.evaluate, prop_eq_true_iff] using hi.axisReads W V x y
-    · intro W V x y
-      simpa only [observableReads, Formula.evaluate, prop_eq_true_iff] using
-        hi.observableReads W V x y
+    · intro W V x y a b hctx hrow hatom
+      exact hi.supportReads W V x y a b ⟨hctx, hrow, hatom⟩
+    · intro W V x y hctx hrow
+      exact hi.axisReads W V x y ⟨hctx, hrow⟩
+    · intro W V x y hctx hrow
+      exact hi.observableReads W V x y ⟨hctx, hrow⟩
     · intro W X V Y g y z
       simpa only [inactive, Formula.evaluate] using hi.supportInactive W X V Y g y z
     · intro W X V Y g y z

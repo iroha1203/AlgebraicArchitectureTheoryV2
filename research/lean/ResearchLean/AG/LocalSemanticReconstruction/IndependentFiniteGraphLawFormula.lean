@@ -31,34 +31,31 @@ namespace CarrierRows
 variable {Q : Type w}
 
 def typedSource (embed : IndependentCarrierGraph.Query.{u, v} → Q)
-    (α : Type u) (S : Type u) (T : Type v) (x : S) (y : T) :
+    (_α : Type u) (S : Type u) (T : Type v) (x : S) (y : T) :
     BoolFormula.{w, u + 1} Q :=
-  .implies (.notEqual S α) (.cell (embed (.edge S T x y)) false)
+  .cell (embed (.edge S T x y)) false
 
 def typedTarget (embed : IndependentCarrierGraph.Query.{u, v} → Q)
-    (β : Type v) (S : Type u) (T : Type v) (x : S) (y : T) :
+    (_β : Type v) (S : Type u) (T : Type v) (x : S) (y : T) :
     BoolFormula.{w, v + 1} Q :=
-  .implies (.notEqual T β) (.cell (embed (.edge S T x y)) false)
+  .cell (embed (.edge S T x y)) false
 
 def witness (embed : IndependentCarrierGraph.Query.{u, v} → Q)
     (α : Type u) (β : Type v) (x : α) (y : β) : BoolFormula.{w, v} Q :=
   .cell (embed (.edge α β x y)) true
 
-def unique (embed : IndependentCarrierGraph.Query.{u, v} → Q)
-    (α : Type u) (β : Type v) (x : α) (selected challenger : β) :
+def other (embed : IndependentCarrierGraph.Query.{u, v} → Q)
+    (α : Type u) (β : Type v) (x : α) (challenger : β) :
     BoolFormula.{w, v} Q :=
-  .implies
-    (.and (.cell (embed (.edge α β x selected)) true)
-      (.cell (embed (.edge α β x challenger)) true))
-    (.equal challenger selected)
+  .cell (embed (.edge α β x challenger)) false
 
 def Instances (table : Q → Bool)
     (embed : IndependentCarrierGraph.Query.{u, v} → Q)
     (α : Type u) (β : Type v) : Prop :=
-  (∀ S T x y, (typedSource embed α S T x y).evaluate table ∧
-    (typedTarget embed β S T x y).evaluate table) ∧
+  (∀ S T x y, (S ≠ α → (typedSource embed α S T x y).evaluate table) ∧
+    (T ≠ β → (typedTarget embed β S T x y).evaluate table)) ∧
   (∀ x : α, ∃ y : β, (witness embed α β x y).evaluate table ∧
-    ∀ z : β, (unique embed α β x y z).evaluate table)
+    ∀ z : β, z ≠ y → (other embed α β x z).evaluate table)
 
 theorem lawful_iff_instances (table : Q → Bool)
     (embed : IndependentCarrierGraph.Query.{u, v} → Q)
@@ -73,14 +70,22 @@ theorem lawful_iff_instances (table : Q → Bool)
         fun hT => htyped S T x y (Or.inr hT)⟩
     · intro x
       obtain ⟨y, hy, hu⟩ := htotal x
-      exact ⟨y, hy, fun z hz => hu z hz.2⟩
+      refine ⟨y, hy, ?_⟩
+      intro z hzy
+      cases hq : table (embed (.edge α β x z)) with
+      | false => exact hq
+      | true => exact (hzy (hu z hq)).elim
   · rintro ⟨htyped, htotal⟩
     constructor
     · intro S T x y hwrong
       exact hwrong.elim (htyped S T x y).1 (htyped S T x y).2
     · intro x
       obtain ⟨y, hy, hu⟩ := htotal x
-      exact ⟨y, hy, fun z hz => hu z ⟨hy, hz⟩⟩
+      refine ⟨y, hy, ?_⟩
+      intro z hz
+      by_contra hzy
+      have hf := hu z hzy
+      exact Bool.noConfusion (hf.symm.trans hz)
 
 end CarrierRows
 
@@ -141,20 +146,17 @@ def witness (value : ∀ i j, S i → T j → Q)
     (i : I) (j : J) (a : S i) (b : T j) : BoolFormula.{w, v} Q :=
   .cell (value i j a b) true
 
-def unique (value : ∀ i j, S i → T j → Q)
-    (i : I) (j : J) (a : S i) (selected challenger : T j) :
+def other (value : ∀ i j, S i → T j → Q)
+    (i : I) (j : J) (a : S i) (challenger : T j) :
     BoolFormula.{w, v} Q :=
-  .implies
-    (.and (.cell (value i j a selected) true)
-      (.cell (value i j a challenger) true))
-    (.equal challenger selected)
+  .cell (value i j a challenger) false
 
 def Instances (table : Q → Bool) (index : I → J → Q)
     (value : ∀ i j, S i → T j → Q) : Prop :=
   (∀ i j a b, (inactive index value i j a b).evaluate table) ∧
   (∀ i j, table (index i j) = true → ∀ a, ∃ b,
     (witness value i j a b).evaluate table ∧
-    ∀ c, (unique value i j a b c).evaluate table)
+    ∀ c, c ≠ b → (other value i j a c).evaluate table)
 
 theorem lawful_iff_instances (table : Q → Bool) (index : I → J → Q)
     (value : ∀ i j, S i → T j → Q) :
@@ -168,14 +170,22 @@ theorem lawful_iff_instances (table : Q → Bool) (index : I → J → Q)
       exact hp.inactive i j hij a b
     · intro i j hij a
       obtain ⟨b, hb, hu⟩ := hp.active i j hij a
-      exact ⟨b, hb, fun c hc => hu c hc.2⟩
+      refine ⟨b, hb, ?_⟩
+      intro c hcb
+      cases hq : table (value i j a c) with
+      | false => exact hq
+      | true => exact (hcb (hu c hq)).elim
   · rintro ⟨hinactive, hactive⟩
     constructor
     · intro i j hij a b
       exact hinactive i j a b hij
     · intro i j hij a
       obtain ⟨b, hb, hu⟩ := hactive i j hij a
-      exact ⟨b, hb, fun c hc => hu c ⟨hb, hc⟩⟩
+      refine ⟨b, hb, ?_⟩
+      intro c hc
+      by_contra hcb
+      have hf := hu c hcb
+      exact Bool.noConfusion (hf.symm.trans hc)
 
 def inverse (forward backward : ∀ i j, S i → T j → Q)
     (i : I) (j : J) (a : S i) (b : T j) : BoolFormula.{w, 0} Q :=
@@ -187,8 +197,8 @@ def InverseInstances (table : Q → Bool) (index : I → J → Q)
   (∀ i j, table (index i j) = true → ∀ b, ∃ a,
     (witness (S := fun j => T j) (T := fun i => S i)
       (fun j i b a => backward i j a b) j i b a).evaluate table ∧
-    ∀ c, (unique (S := fun j => T j) (T := fun i => S i)
-      (fun j i b a => backward i j a b) j i b a c).evaluate table) ∧
+    ∀ c, c ≠ a → (other (S := fun j => T j) (T := fun i => S i)
+      (fun j i b a => backward i j a b) j i b c).evaluate table) ∧
   ∀ i j a b, (inverse forward backward i j a b).evaluate table
 
 theorem inverseLaws_iff_instances (table : Q → Bool) (index : I → J → Q)
@@ -203,7 +213,11 @@ theorem inverseLaws_iff_instances (table : Q → Bool) (index : I → J → Q)
     refine ⟨(lawful_iff_instances table index forward).mp hp.forward, ?_, ?_⟩
     · intro i j hij b
       obtain ⟨a, ha, hu⟩ := hp.backward i j hij b
-      exact ⟨a, ha, fun c hc => hu c hc.2⟩
+      refine ⟨a, ha, ?_⟩
+      intro c hca
+      cases hq : table (backward i j c b) with
+      | false => exact hq
+      | true => exact (hca (hu c hq)).elim
     · intro i j a b
       exact Bool.eq_iff_iff.mp (hp.inverse i j a b)
   · rintro ⟨hf, hb, hi⟩
@@ -212,7 +226,11 @@ theorem inverseLaws_iff_instances (table : Q → Bool) (index : I → J → Q)
       backward := by
         intro i j hij b
         obtain ⟨a, ha, hu⟩ := hb i j hij b
-        exact ⟨a, ha, fun c hc => hu c ⟨ha, hc⟩⟩
+        refine ⟨a, ha, ?_⟩
+        intro c hc
+        by_contra hca
+        have hf := hu c hca
+        exact Bool.noConfusion (hf.symm.trans hc)
       inverse := fun i j a b => Bool.eq_iff_iff.mpr (hi i j a b) }
 
 end IndexedRows
@@ -225,20 +243,20 @@ variable {Q : Type w} {I : Type x} {J : Type y}
   {S : I → Type u} {T : J → Type v}
 
 def inactive (index : I → J → Q)
-    (value : ∀ (i : I) (j : J), IndependentCarrierGraph.Query.{u, v} → Q)
+    (value : ∀ (_i : I) (_j : J), IndependentCarrierGraph.Query.{u, v} → Q)
     (i : I) (j : J) (q : IndependentCarrierGraph.Query.{u, v}) :
     BoolFormula.{w, 0} Q :=
   .implies (.cell (index i j) false) (.cell (value i j q) false)
 
 def Instances (table : Q → Bool) (index : I → J → Q)
-    (value : ∀ (i : I) (j : J), IndependentCarrierGraph.Query.{u, v} → Q)
+    (value : ∀ (_i : I) (_j : J), IndependentCarrierGraph.Query.{u, v} → Q)
     (S : I → Type u) (T : J → Type v) : Prop :=
   (∀ i j q, (inactive index value i j q).evaluate table) ∧
   ∀ i j, table (index i j) = true →
     CarrierRows.Instances table (value i j) (S i) (T j)
 
 theorem lawful_iff_instances (table : Q → Bool) (index : I → J → Q)
-    (value : ∀ (i : I) (j : J), IndependentCarrierGraph.Query.{u, v} → Q)
+    (value : ∀ (_i : I) (_j : J), IndependentCarrierGraph.Query.{u, v} → Q)
     (S : I → Type u) (T : J → Type v) :
     IndependentIndexedCarrierGraph.IsLawful
       (fun i j => table (index i j)) S T
@@ -269,20 +287,20 @@ variable {Q : Type w} {I : Type x} {J : Type y}
   {S : I → Type u} {T : J → Type v}
 
 def inactive (index : I → J → Q)
-    (value : ∀ (i : I) (j : J), IndependentInverseGraph.Query.{u, v} → Q)
+    (value : ∀ (_i : I) (_j : J), IndependentInverseGraph.Query.{u, v} → Q)
     (i : I) (j : J) (q : IndependentInverseGraph.Query.{u, v}) :
     BoolFormula.{w, 0} Q :=
   .implies (.cell (index i j) false) (.cell (value i j q) false)
 
 def Instances (table : Q → Bool) (index : I → J → Q)
-    (value : ∀ (i : I) (j : J), IndependentInverseGraph.Query.{u, v} → Q)
+    (value : ∀ (_i : I) (_j : J), IndependentInverseGraph.Query.{u, v} → Q)
     (S : I → Type u) (T : J → Type v) : Prop :=
   (∀ i j q, (inactive index value i j q).evaluate table) ∧
   ∀ i j, table (index i j) = true →
     InverseRows.Instances table (value i j) (S i) (T j)
 
 theorem lawful_iff_instances (table : Q → Bool) (index : I → J → Q)
-    (value : ∀ (i : I) (j : J), IndependentInverseGraph.Query.{u, v} → Q)
+    (value : ∀ (_i : I) (_j : J), IndependentInverseGraph.Query.{u, v} → Q)
     (S : I → Type u) (T : J → Type v) :
     IndependentIndexedInverseGraph.IsLawful
       (fun i j => table (index i j)) S T
@@ -311,30 +329,30 @@ namespace CandidateDependentInverseRows
 
 variable {Q : Type w}
 
-def outerSourceInactive (value : ∀ (I : Type x) (J : Type y) (i : I) (j : J),
+def outerSourceInactive (value : ∀ (I : Type x) (J : Type y) (_i : I) (_j : J),
       IndependentInverseGraph.Query.{u, v} → Q)
-    (selectedI : Type x) (K : Type x) (L : Type y) (k : K) (l : L)
+    (_selectedI : Type x) (K : Type x) (L : Type y) (k : K) (l : L)
     (q : IndependentInverseGraph.Query.{u, v}) : BoolFormula.{w, x + 1} Q :=
-  .implies (.notEqual K selectedI) (.cell (value K L k l q) false)
+  .cell (value K L k l q) false
 
-def outerTargetInactive (value : ∀ (I : Type x) (J : Type y) (i : I) (j : J),
+def outerTargetInactive (value : ∀ (I : Type x) (J : Type y) (_i : I) (_j : J),
       IndependentInverseGraph.Query.{u, v} → Q)
-    (selectedJ : Type y) (K : Type x) (L : Type y) (k : K) (l : L)
+    (_selectedJ : Type y) (K : Type x) (L : Type y) (k : K) (l : L)
     (q : IndependentInverseGraph.Query.{u, v}) : BoolFormula.{w, y + 1} Q :=
-  .implies (.notEqual L selectedJ) (.cell (value K L k l q) false)
+  .cell (value K L k l q) false
 
 def Instances (table : Q → Bool) (I : Type x) (J : Type y)
     (index : I → J → Q)
-    (value : ∀ (K : Type x) (L : Type y) (k : K) (l : L),
+    (value : ∀ (K : Type x) (L : Type y) (_k : K) (_l : L),
       IndependentInverseGraph.Query.{u, v} → Q)
     (S : I → Type u) (T : J → Type v) : Prop :=
-  (∀ K L k l q, (outerSourceInactive value I K L k l q).evaluate table) ∧
-  (∀ K L k l q, (outerTargetInactive value J K L k l q).evaluate table) ∧
+  (∀ K L k l q, K ≠ I → (outerSourceInactive value I K L k l q).evaluate table) ∧
+  (∀ K L k l q, L ≠ J → (outerTargetInactive value J K L k l q).evaluate table) ∧
   DependentInverseRows.Instances (I := I) (J := J) table index (value I J) S T
 
 theorem lawful_iff_instances (table : Q → Bool) (I : Type x) (J : Type y)
     (index : I → J → Q)
-    (value : ∀ (K : Type x) (L : Type y) (k : K) (l : L),
+    (value : ∀ (K : Type x) (L : Type y) (_k : K) (_l : L),
       IndependentInverseGraph.Query.{u, v} → Q)
     (S : I → Type u) (T : J → Type v) :
     IndependentCandidateIndexedInverseGraph.IsLawful I J

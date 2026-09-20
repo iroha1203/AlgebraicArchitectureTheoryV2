@@ -6,10 +6,10 @@ import Formal.Util.AssertStandardAxioms
 
 This file supplies the support calculus used by the finite-law audit.  A
 formula can inspect one source-object cell, one target-object cell, or one Hom
-cell.  The only leaves without table support are explicit equalities or
-inequalities between already supplied indices and values.  In particular,
-there is no constructor accepting an arbitrary proposition or a completed
-law certificate.
+cell.  Every truth-bearing leaf is one of those cells.  Static index
+conditions belong to the surrounding quantified law instance, rather than to
+the formula syntax.  Consequently no constructor can accept an arbitrary
+proposition, value equality, completed map, or law certificate.
 
 The preservation theorem compares all three primitive tables.  Endpoint
 facts therefore cannot disappear into a Hom-only support calculation.
@@ -30,8 +30,9 @@ used for total-function and inverse-row laws before those rows are embedded in
 the complete common Hom declaration. -/
 inductive BoolFormula (Q : Type v) where
   | cell (q : Q) (value : Bool)
-  | equal {α : Type w} (left right : α)
-  | notEqual {α : Type w} (left right : α)
+  /-- Lifted unit marker with constant-true semantics.  It keeps the result
+  universe polymorphic without accepting a type or truth-bearing value. -/
+  | typeMarker (_marker : ULift.{w, 0} PUnit)
   | truth
   | falsity
   | and (left right : BoolFormula Q)
@@ -42,8 +43,7 @@ inductive BoolFormula (Q : Type v) where
 /-- Evaluate a closed Boolean-table formula. -/
 def BoolFormula.evaluate {Q : Type v} (table : Q → Bool) : BoolFormula.{v, w} Q → Prop
   | .cell q value => table q = value
-  | .equal left right => left = right
-  | .notEqual left right => left ≠ right
+  | .typeMarker _ => True
   | .truth => True
   | .falsity => False
   | .and left right => left.evaluate table ∧ right.evaluate table
@@ -54,8 +54,7 @@ def BoolFormula.evaluate {Q : Type v} (table : Q → Bool) : BoolFormula.{v, w} 
 /-- Exact Boolean cells read by the formula. -/
 def BoolFormula.support {Q : Type v} : BoolFormula.{v, w} Q → Finset Q
   | .cell q _ => {q}
-  | .equal _ _
-  | .notEqual _ _
+  | .typeMarker _
   | .truth
   | .falsity => ∅
   | .and left right
@@ -75,8 +74,7 @@ theorem BoolFormula.evaluate_iff_of_support {Q : Type v}
   | cell q value =>
       change first q = value ↔ second q = value
       rw [agree q (by simp [BoolFormula.support])]
-  | equal left right => rfl
-  | notEqual left right => rfl
+  | typeMarker α => rfl
   | truth => rfl
   | falsity => rfl
   | and left right ihLeft ihRight =>
@@ -102,8 +100,9 @@ theorem BoolFormula.support_finite {Q : Type v} (formula : BoolFormula.{v, w} Q)
 /-- A closed finite proposition over the single dependent object declaration. -/
 inductive ObjectFormula (U : AtomCarrier.{u}) where
   | cell (q : IndependentGeometryPrimitive.Query.{u, v} U) (value : q.Value)
-  | equal {α : Type w} (left right : α)
-  | notEqual {α : Type w} (left right : α)
+  /-- Lifted unit marker with constant-true semantics; it carries no table
+  value or proposition and is never used as a law atom. -/
+  | typeMarker (_marker : ULift.{w, 0} PUnit)
   | truth
   | falsity
   | and (left right : ObjectFormula U)
@@ -122,8 +121,7 @@ def ObjectFormula.allList {α : Type x} (items : List α)
 def ObjectFormula.evaluate (table : IndependentGeometryPrimitive.Table.{u, v} U) :
     ObjectFormula.{u, v, w} U → Prop
   | .cell q value => table q = value
-  | .equal left right => left = right
-  | .notEqual left right => left ≠ right
+  | .typeMarker _ => True
   | .truth => True
   | .falsity => False
   | .and left right => left.evaluate table ∧ right.evaluate table
@@ -144,8 +142,7 @@ def ObjectFormula.evaluate (table : IndependentGeometryPrimitive.Table.{u, v} U)
 def ObjectFormula.support : ObjectFormula.{u, v, w} U →
     Finset (IndependentGeometryPrimitive.Query.{u, v} U)
   | .cell q _ => {q}
-  | .equal _ _
-  | .notEqual _ _
+  | .typeMarker _
   | .truth
   | .falsity => ∅
   | .and left right
@@ -167,8 +164,7 @@ theorem ObjectFormula.evaluate_iff_of_support
   | cell q value =>
       change first q = value ↔ second q = value
       rw [agree q (by simp [ObjectFormula.support])]
-  | equal left right => rfl
-  | notEqual left right => rfl
+  | typeMarker α => rfl
   | truth => rfl
   | falsity => rfl
   | and left right ihLeft ihRight =>
@@ -192,8 +188,7 @@ theorem ObjectFormula.support_finite (formula : ObjectFormula.{u, v, w} U) :
     Finite formula.support := inferInstance
 
 /-- A closed finite proposition over the two primitive object tables and the
-common Boolean Hom table.  Static leaves are restricted to equality and
-inequality; arbitrary propositions are deliberately absent. -/
+common Boolean Hom table.  Every truth-bearing leaf reads one table cell. -/
 inductive Formula (U : AtomCarrier.{u}) (mode : Mode) where
   /-- One exact source-object response. -/
   | source (q : IndependentGeometryPrimitive.Query.{u, v} U) (value : q.Value)
@@ -201,10 +196,9 @@ inductive Formula (U : AtomCarrier.{u}) (mode : Mode) where
   | target (q : IndependentGeometryPrimitive.Query.{u, v} U) (value : q.Value)
   /-- One exact common-Hom response. -/
   | hom (q : IndependentGeometryHomPrimitive.Query.{u, v} U mode) (value : Bool)
-  /-- Equality of two supplied indices or values. -/
-  | equal {α : Type w} (left right : α)
-  /-- Inequality of two supplied indices or values. -/
-  | notEqual {α : Type w} (left right : α)
+  /-- Lifted unit marker with constant-true semantics; it carries no table
+  value or proposition and is never used as a law atom. -/
+  | typeMarker (_marker : ULift.{w, 0} PUnit)
   /-- Truth, used as the neutral element of finite conjunctions. -/
   | truth
   /-- Falsity, used for closed refutation instances. -/
@@ -224,8 +218,7 @@ def Formula.ofHom :
       (IndependentGeometryHomPrimitive.Query.{u, v} U mode) →
       Formula.{u, v, w} U mode
   | .cell q value => .hom q value
-  | .equal left right => .equal left right
-  | .notEqual left right => .notEqual left right
+  | .typeMarker marker => .typeMarker marker
   | .truth => .truth
   | .falsity => .falsity
   | .and left right => .and (Formula.ofHom left) (Formula.ofHom right)
@@ -256,8 +249,7 @@ def Formula.evaluate
   | .source q value => sourceTable q = value
   | .target q value => targetTable q = value
   | .hom q value => homTable q = value
-  | .equal left right => left = right
-  | .notEqual left right => left ≠ right
+  | .typeMarker _ => True
   | .truth => True
   | .falsity => False
   | .and left right => left.evaluate sourceTable targetTable homTable ∧
@@ -310,8 +302,7 @@ def Formula.support : Formula.{u, v, w} U mode → Support.{u, v} U mode
   | .source q _ => ({q}, ∅, ∅)
   | .target q _ => (∅, {q}, ∅)
   | .hom q _ => (∅, ∅, {q})
-  | .equal _ _
-  | .notEqual _ _
+  | .typeMarker _
   | .truth
   | .falsity => (∅, ∅, ∅)
   | .and left right
@@ -346,8 +337,7 @@ theorem Formula.evaluate_iff_of_support
   | hom q value =>
       change homTable q = value ↔ homTable' q = value
       rw [homAgree q (by simp [Formula.support])]
-  | equal left right => rfl
-  | notEqual left right => rfl
+  | typeMarker α => rfl
   | truth => rfl
   | falsity => rfl
   | and left right ihLeft ihRight =>

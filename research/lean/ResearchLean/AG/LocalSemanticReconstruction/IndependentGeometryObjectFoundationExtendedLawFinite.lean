@@ -546,57 +546,63 @@ theorem typed_iff_instances (t : IndependentGeometryPrimitive.Table.{u, v} U) :
       rw [he]
       rfl
 
-def familyLaw (t : IndependentGeometryPrimitive.Table.{u, v} U)
+@[simp] theorem actionSome_evaluate_iff
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ht : IndependentCorePrimitive.Operations.IsTyped
       (IndependentGeometryPrimitive.operation t))
     (A B : ArchitectureObject U)
     (op : IndependentCorePrimitive.Operations.carrier
-      (IndependentGeometryPrimitive.operation t) A B) (a : U.Atom) :
+      (IndependentGeometryPrimitive.operation t) A B) (a y : U.Atom) :
+    (actionSome t A B _ op a y).evaluate t ↔
+      IndependentCorePrimitive.Operations.action
+        (IndependentGeometryPrimitive.operation t) ht op a = y := by
+  simp only [actionSome, carrierAnchor_evaluate, ObjectFormula.evaluate]
+  constructor
+  · intro h
+    have he := congrArg (fun value => value.down.down) h
+    exact Option.some.inj ((Option.some_get _).trans he)
+  · intro h
+    apply ULift.ext
+    apply ULift.ext
+    exact (Option.some_get _).symm.trans (congrArg some h)
+
+def familyLaw (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (_ht : IndependentCorePrimitive.Operations.IsTyped
+      (IndependentGeometryPrimitive.operation t))
+    (A B : ArchitectureObject U)
+    (op : IndependentCorePrimitive.Operations.carrier
+      (IndependentGeometryPrimitive.operation t) A B) (a y : U.Atom) :
     ObjectFormula.{u, v, 0} U :=
-  actionAnchor t A B op a
-    (.implies (.equal (A.configuration.family.mem a) True)
-      (.equal (B.configuration.family.mem
-        (IndependentCorePrimitive.Operations.action
-          (IndependentGeometryPrimitive.operation t) ht op a)) True))
+  actionSome t A B _ op a y
 
 def relationLaw (t : IndependentGeometryPrimitive.Table.{u, v} U)
-    (ht : IndependentCorePrimitive.Operations.IsTyped
+    (_ht : IndependentCorePrimitive.Operations.IsTyped
       (IndependentGeometryPrimitive.operation t))
     (A B : ArchitectureObject U)
     (op : IndependentCorePrimitive.Operations.carrier
-      (IndependentGeometryPrimitive.operation t) A B) (a b : U.Atom) :
+      (IndependentGeometryPrimitive.operation t) A B) (a b x y : U.Atom) :
     ObjectFormula.{u, v, 0} U :=
-  actionAnchor t A B op a
-    (actionAnchor t A B op b
-      (.implies (.equal (A.configuration.relation a b) True)
-        (.equal (B.configuration.relation
-          (IndependentCorePrimitive.Operations.action
-            (IndependentGeometryPrimitive.operation t) ht op a)
-          (IndependentCorePrimitive.Operations.action
-            (IndependentGeometryPrimitive.operation t) ht op b)) True)))
+  .and (actionSome t A B _ op a x) (actionSome t A B _ op b y)
 
 def identificationLaw (t : IndependentGeometryPrimitive.Table.{u, v} U)
-    (ht : IndependentCorePrimitive.Operations.IsTyped
+    (_ht : IndependentCorePrimitive.Operations.IsTyped
       (IndependentGeometryPrimitive.operation t))
     (A B : ArchitectureObject U)
     (op : IndependentCorePrimitive.Operations.carrier
-      (IndependentGeometryPrimitive.operation t) A B) (a b : U.Atom) :
+      (IndependentGeometryPrimitive.operation t) A B) (a b x y : U.Atom) :
     ObjectFormula.{u, v, 0} U :=
-  actionAnchor t A B op a
-    (actionAnchor t A B op b
-      (.implies (.equal (A.configuration.identification a b) True)
-        (.equal (B.configuration.identification
-          (IndependentCorePrimitive.Operations.action
-            (IndependentGeometryPrimitive.operation t) ht op a)
-          (IndependentCorePrimitive.Operations.action
-            (IndependentGeometryPrimitive.operation t) ht op b)) True)))
+  .and (actionSome t A B _ op a x) (actionSome t A B _ op b y)
 
 structure LawInstances (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ht : IndependentCorePrimitive.Operations.IsTyped
       (IndependentGeometryPrimitive.operation t)) : Prop where
-  family : ∀ A B op a, (familyLaw t ht A B op a).evaluate t
-  relation : ∀ A B op a b, (relationLaw t ht A B op a b).evaluate t
-  identification : ∀ A B op a b, (identificationLaw t ht A B op a b).evaluate t
+  family : ∀ A B op a, A.configuration.family.mem a →
+    ∃ y, (familyLaw t ht A B op a y).evaluate t ∧ B.configuration.family.mem y
+  relation : ∀ A B op a b, A.configuration.relation a b →
+    ∃ x y, (relationLaw t ht A B op a b x y).evaluate t ∧ B.configuration.relation x y
+  identification : ∀ A B op a b, A.configuration.identification a b →
+    ∃ x y, (identificationLaw t ht A B op a b x y).evaluate t ∧
+      B.configuration.identification x y
 
 theorem lawful_iff_instances (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ht : IndependentCorePrimitive.Operations.IsTyped
@@ -609,35 +615,44 @@ theorem lawful_iff_instances (t : IndependentGeometryPrimitive.Table.{u, v} U)
       family := ?_
       relation := ?_
       identification := ?_ }
-    · intro A B op a
-      simp only [familyLaw, actionAnchor_evaluate, ObjectFormula.evaluate]
-      intro ha
-      exact (prop_eq_true_iff _).mpr
-        (hl.family A B op a ((prop_eq_true_iff _).mp ha))
-    · intro A B op a b
-      simp only [relationLaw, actionAnchor_evaluate, ObjectFormula.evaluate]
-      intro hab
-      exact (prop_eq_true_iff _).mpr
-        (hl.relation A B op a b ((prop_eq_true_iff _).mp hab))
-    · intro A B op a b
-      simp only [identificationLaw, actionAnchor_evaluate, ObjectFormula.evaluate]
-      intro hab
-      exact (prop_eq_true_iff _).mpr
-        (hl.identification A B op a b ((prop_eq_true_iff _).mp hab))
+    · intro A B op a ha
+      refine ⟨IndependentCorePrimitive.Operations.action
+        (IndependentGeometryPrimitive.operation t) ht op a, ?_, hl.family A B op a ha⟩
+      exact (actionSome_evaluate_iff t ht A B op a _).2 rfl
+    · intro A B op a b hab
+      refine ⟨IndependentCorePrimitive.Operations.action
+          (IndependentGeometryPrimitive.operation t) ht op a,
+        IndependentCorePrimitive.Operations.action
+          (IndependentGeometryPrimitive.operation t) ht op b, ?_,
+        hl.relation A B op a b hab⟩
+      exact ⟨(actionSome_evaluate_iff t ht A B op a _).2 rfl,
+        (actionSome_evaluate_iff t ht A B op b _).2 rfl⟩
+    · intro A B op a b hab
+      refine ⟨IndependentCorePrimitive.Operations.action
+          (IndependentGeometryPrimitive.operation t) ht op a,
+        IndependentCorePrimitive.Operations.action
+          (IndependentGeometryPrimitive.operation t) ht op b, ?_,
+        hl.identification A B op a b hab⟩
+      exact ⟨(actionSome_evaluate_iff t ht A B op a _).2 rfl,
+        (actionSome_evaluate_iff t ht A B op b _).2 rfl⟩
   · intro hi
     exact {
       family := fun A B op a ha => by
-        have h := hi.family A B op a
-        simp only [familyLaw, actionAnchor_evaluate, ObjectFormula.evaluate] at h
-        exact (prop_eq_true_iff _).mp (h ((prop_eq_true_iff _).mpr ha))
+        obtain ⟨y, hy, hm⟩ := hi.family A B op a ha
+        have he := (actionSome_evaluate_iff t ht A B op a y).1 hy
+        simpa [he] using hm
       relation := fun A B op a b hab => by
-        have h := hi.relation A B op a b
-        simp only [relationLaw, actionAnchor_evaluate, ObjectFormula.evaluate] at h
-        exact (prop_eq_true_iff _).mp (h ((prop_eq_true_iff _).mpr hab))
+        obtain ⟨x, y, hxy, hr⟩ := hi.relation A B op a b hab
+        have hx := (actionSome_evaluate_iff t ht A B op a x).1 hxy.1
+        have hy := (actionSome_evaluate_iff t ht A B op b y).1 hxy.2
+        rw [hx, hy]
+        exact hr
       identification := fun A B op a b hab => by
-        have h := hi.identification A B op a b
-        simp only [identificationLaw, actionAnchor_evaluate, ObjectFormula.evaluate] at h
-        exact (prop_eq_true_iff _).mp (h ((prop_eq_true_iff _).mpr hab)) }
+        obtain ⟨x, y, hxy, hi'⟩ := hi.identification A B op a b hab
+        have hx := (actionSome_evaluate_iff t ht A B op a x).1 hxy.1
+        have hy := (actionSome_evaluate_iff t ht A B op b y).1 hxy.2
+        rw [hx, hy]
+        exact hi' }
 
 structure Instances (t : IndependentGeometryPrimitive.Table.{u, v} U) : Prop where
   typed : TypedInstances t
@@ -734,7 +749,7 @@ theorem typed_iff_instances (t : IndependentGeometryPrimitive.Table.{u, v} U) :
       rfl
 
 def activeAnchor (t : IndependentGeometryPrimitive.Table.{u, v} U)
-    (ht : IndependentRingPrimitive.Carrier.IsTyped
+    (_ht : IndependentRingPrimitive.Carrier.IsTyped
       (IndependentGeometryPrimitive.coefficient t))
     (q : IndependentRingPrimitive.Query
       (IndependentRingPrimitive.Carrier.carrier
@@ -783,6 +798,37 @@ abbrev active (t : IndependentGeometryPrimitive.Table.{u, v} U)
       (IndependentGeometryPrimitive.coefficient t)) :=
   IndependentRingPrimitive.Carrier.active (IndependentGeometryPrimitive.coefficient t) ht
 
+def activeValue (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (_ht : IndependentRingPrimitive.Carrier.IsTyped
+      (IndependentGeometryPrimitive.coefficient t))
+    (q : IndependentRingPrimitive.Query
+      (IndependentRingPrimitive.Carrier.carrier
+        (IndependentGeometryPrimitive.coefficient t)))
+    (value : IndependentRingPrimitive.Carrier.carrier
+      (IndependentGeometryPrimitive.coefficient t)) : ObjectFormula.{u, v, v} U :=
+  carrierAnchor t
+    (.cell (.coefficient (.operation _ q)) (ULift.up (ULift.up (some value))))
+
+@[simp] theorem activeValue_evaluate_iff
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (ht : IndependentRingPrimitive.Carrier.IsTyped
+      (IndependentGeometryPrimitive.coefficient t))
+    (q : IndependentRingPrimitive.Query
+      (IndependentRingPrimitive.Carrier.carrier
+        (IndependentGeometryPrimitive.coefficient t)))
+    (value : IndependentRingPrimitive.Carrier.carrier
+      (IndependentGeometryPrimitive.coefficient t)) :
+    (activeValue t ht q value).evaluate t ↔ active t ht q = value := by
+  simp only [activeValue, carrierAnchor_evaluate, ObjectFormula.evaluate]
+  constructor
+  · intro h
+    have he := congrArg (fun result => result.down.down) h
+    exact Option.some.inj ((Option.some_get _).trans he)
+  · intro h
+    apply ULift.ext
+    apply ULift.ext
+    exact (Option.some_get _).symm.trans (congrArg some h)
+
 def addAssoc (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ht : IndependentRingPrimitive.Carrier.IsTyped
       (IndependentGeometryPrimitive.coefficient t))
@@ -791,7 +837,7 @@ def addAssoc (t : IndependentGeometryPrimitive.Table.{u, v} U)
   activeAnchors t ht
     [.add a b, .add ((active t ht) (.add a b)) c, .add b c,
       .add a ((active t ht) (.add b c))]
-    (.equal ((active t ht) (.add ((active t ht) (.add a b)) c))
+    (activeValue t ht (.add ((active t ht) (.add a b)) c)
       ((active t ht) (.add a ((active t ht) (.add b c)))))
 
 def zeroAdd (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -800,7 +846,7 @@ def zeroAdd (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (a : IndependentRingPrimitive.Carrier.carrier
       (IndependentGeometryPrimitive.coefficient t)) : ObjectFormula.{u, v, v} U :=
   activeAnchors t ht [.zero, .add ((active t ht) .zero) a]
-    (.equal ((active t ht) (.add ((active t ht) .zero) a)) a)
+    (activeValue t ht (.add ((active t ht) .zero) a) a)
 
 def negAddCancel (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ht : IndependentRingPrimitive.Carrier.IsTyped
@@ -808,7 +854,7 @@ def negAddCancel (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (a : IndependentRingPrimitive.Carrier.carrier
       (IndependentGeometryPrimitive.coefficient t)) : ObjectFormula.{u, v, v} U :=
   activeAnchors t ht [.neg a, .add ((active t ht) (.neg a)) a, .zero]
-    (.equal ((active t ht) (.add ((active t ht) (.neg a)) a)) ((active t ht) .zero))
+    (activeValue t ht (.add ((active t ht) (.neg a)) a) ((active t ht) .zero))
 
 def mulAssoc (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ht : IndependentRingPrimitive.Carrier.IsTyped
@@ -818,7 +864,7 @@ def mulAssoc (t : IndependentGeometryPrimitive.Table.{u, v} U)
   activeAnchors t ht
     [.mul a b, .mul ((active t ht) (.mul a b)) c, .mul b c,
       .mul a ((active t ht) (.mul b c))]
-    (.equal ((active t ht) (.mul ((active t ht) (.mul a b)) c))
+    (activeValue t ht (.mul ((active t ht) (.mul a b)) c)
       ((active t ht) (.mul a ((active t ht) (.mul b c)))))
 
 def mulComm (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -827,7 +873,7 @@ def mulComm (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (a b : IndependentRingPrimitive.Carrier.carrier
       (IndependentGeometryPrimitive.coefficient t)) : ObjectFormula.{u, v, v} U :=
   activeAnchors t ht [.mul a b, .mul b a]
-    (.equal ((active t ht) (.mul a b)) ((active t ht) (.mul b a)))
+    (activeValue t ht (.mul a b) ((active t ht) (.mul b a)))
 
 def oneMul (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ht : IndependentRingPrimitive.Carrier.IsTyped
@@ -835,7 +881,7 @@ def oneMul (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (a : IndependentRingPrimitive.Carrier.carrier
       (IndependentGeometryPrimitive.coefficient t)) : ObjectFormula.{u, v, v} U :=
   activeAnchors t ht [.one, .mul ((active t ht) .one) a]
-    (.equal ((active t ht) (.mul ((active t ht) .one) a)) a)
+    (activeValue t ht (.mul ((active t ht) .one) a) a)
 
 def leftDistrib (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ht : IndependentRingPrimitive.Carrier.IsTyped
@@ -845,7 +891,7 @@ def leftDistrib (t : IndependentGeometryPrimitive.Table.{u, v} U)
   activeAnchors t ht
     [.add b c, .mul a ((active t ht) (.add b c)), .mul a b, .mul a c,
       .add ((active t ht) (.mul a b)) ((active t ht) (.mul a c))]
-    (.equal ((active t ht) (.mul a ((active t ht) (.add b c))))
+    (activeValue t ht (.mul a ((active t ht) (.add b c)))
       ((active t ht) (.add ((active t ht) (.mul a b)) ((active t ht) (.mul a c)))))
 
 structure LawInstances (t : IndependentGeometryPrimitive.Table.{u, v} U)

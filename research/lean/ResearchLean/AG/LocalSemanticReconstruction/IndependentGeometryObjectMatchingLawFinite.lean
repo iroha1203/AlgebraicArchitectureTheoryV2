@@ -137,6 +137,21 @@ def matchCell (q : IndependentGeneratedObjectMatching.Query U) (value : Bool) :
       IndependentGeometryPrimitive.composition t q := by
   exact IndependentGeometryHomPrimitive.CoreLawFinite.ulift_prop_true_iff _
 
+@[simp] theorem compositionFalseCell_evaluate
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (q : IndependentCorePrimitive.Composition.Query U) :
+    (ObjectFormula.cell (.composition q) (ULift.up False) :
+      ObjectFormula.{u, v, w} U).evaluate t ↔
+      ¬ IndependentGeometryPrimitive.composition t q := by
+  change t (.composition q) = ULift.up False ↔
+    ¬ (t (.composition q)).down
+  rw [IndependentGeometryHomPrimitive.CoreLawFinite.ulift_eq_iff]
+  constructor
+  · intro h hp
+    exact h ▸ hp
+  · intro hn
+    exact propext (iff_false_intro hn)
+
 @[simp] theorem formationCell_evaluate
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (q : IndependentCorePrimitive.ObjectFormation.Query U)
@@ -156,28 +171,36 @@ def matchCell (q : IndependentGeneratedObjectMatching.Query U) (value : Bool) :
 
 namespace Matching
 
-def familyTrue (t : IndependentGeometryPrimitive.Table.{u, v} U)
+def familyPresent (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ht : Extraction.IsTyped (IndependentGeometryPrimitive.extraction t))
-    (F : AtomFamily U) (a : U.Atom) : ObjectFormula.{u, v, 0} U :=
-  .and (matchCell (.family F) true)
-    (.iff (.equal (F.mem a) True) (extractedFormula t ht a))
+    (F : AtomFamily U) (flag : Bool) (a : U.Atom) : ObjectFormula.{u, v, 0} U :=
+  .and (matchCell (.family F) flag) (extractedFormula t ht a)
 
-def familyFalse (t : IndependentGeometryPrimitive.Table.{u, v} U)
+def familyAbsent (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ht : Extraction.IsTyped (IndependentGeometryPrimitive.extraction t))
-    (F : AtomFamily U) (a : U.Atom) : ObjectFormula.{u, v, 0} U :=
-  .and (matchCell (.family F) false)
-    (.implies (.iff (.equal (F.mem a) True) (extractedFormula t ht a)) .falsity)
+    (F : AtomFamily U) (flag : Bool) (a : U.Atom) : ObjectFormula.{u, v, 0} U :=
+  .and (matchCell (.family F) flag)
+    (.implies (extractedFormula t ht a) .falsity)
 
-def configurationTrue (t : IndependentGeometryPrimitive.Table.{u, v} U)
+def relationPresent
     (C : AtomConfiguration U) (hf : C.family.ListFinite) (a b : U.Atom) :
     ObjectFormula.{u, v, 0} U :=
-  .and (matchCell (.configuration C) true)
-    (.and (matchCell (.family C.family) true)
-      (.and
-        (.iff (.equal (C.relation a b) True)
-          (.cell (.composition (.relation C.family hf a b)) (ULift.up True)))
-        (.iff (.equal (C.identification a b) True)
-          (.cell (.composition (.identification C.family hf a b)) (ULift.up True)))))
+  .cell (.composition (.relation C.family hf a b)) (ULift.up True)
+
+def relationAbsent
+    (C : AtomConfiguration U) (hf : C.family.ListFinite) (a b : U.Atom) :
+    ObjectFormula.{u, v, 0} U :=
+  .cell (.composition (.relation C.family hf a b)) (ULift.up False)
+
+def identificationPresent
+    (C : AtomConfiguration U) (hf : C.family.ListFinite) (a b : U.Atom) :
+    ObjectFormula.{u, v, 0} U :=
+  .cell (.composition (.identification C.family hf a b)) (ULift.up True)
+
+def identificationAbsent
+    (C : AtomConfiguration U) (hf : C.family.ListFinite) (a b : U.Atom) :
+    ObjectFormula.{u, v, 0} U :=
+  .cell (.composition (.identification C.family hf a b)) (ULift.up False)
 
 def configurationFamilyTrue (C : AtomConfiguration U) : ObjectFormula.{u, v, 0} U :=
   .and (matchCell (.configuration C) true) (matchCell (.family C.family) true)
@@ -185,18 +208,7 @@ def configurationFamilyTrue (C : AtomConfiguration U) : ObjectFormula.{u, v, 0} 
 def configurationFamilyFalse (C : AtomConfiguration U) : ObjectFormula.{u, v, 0} U :=
   .and (matchCell (.configuration C) false) (matchCell (.family C.family) false)
 
-def configurationPointFalse (C : AtomConfiguration U)
-    (hf : C.family.ListFinite) (a b : U.Atom) : ObjectFormula.{u, v, 0} U :=
-  .and (matchCell (.configuration C) false)
-    (.implies
-      (.and
-        (.iff (.equal (C.relation a b) True)
-          (.cell (.composition (.relation C.family hf a b)) (ULift.up True)))
-        (.iff (.equal (C.identification a b) True)
-          (.cell (.composition (.identification C.family hf a b)) (ULift.up True))))
-      .falsity)
-
-def objectTrue (t : IndependentGeometryPrimitive.Table.{u, v} U)
+def objectTrue (_t : IndependentGeometryPrimitive.Table.{u, v} U)
     (A : ArchitectureObject U) : ObjectFormula.{u, v, 0} U :=
   .and (matchCell (.object A) true)
     (.and (matchCell (.configuration A.configuration) true)
@@ -209,31 +221,43 @@ def objectTrue (t : IndependentGeometryPrimitive.Table.{u, v} U)
 def objectConfigurationFalse (A : ArchitectureObject U) : ObjectFormula.{u, v, 0} U :=
   .and (matchCell (.object A) false) (matchCell (.configuration A.configuration) false)
 
-def objectStructureMapsFalse (t : IndependentGeometryPrimitive.Table.{u, v} U)
-    (A : ArchitectureObject U) : ObjectFormula.{u, v, u + 1} U :=
+def objectStructureMapsValue
+    (A : ArchitectureObject U) (value : SelectedValue.{u}) : ObjectFormula.{u, v, u + 1} U :=
   .and (matchCell (.object A) false)
-    (.and (.cell (.formation (.structureMaps A.configuration))
-        (t (.formation (.structureMaps A.configuration))))
-      (.notEqual (t (.formation (.structureMaps A.configuration))).down
-        (⟨A.StructureMaps, A.structureMaps⟩ : SelectedValue.{u})))
+    (.cell (.formation (.structureMaps A.configuration)) (ULift.up value))
 
-def objectSelectedQuantitiesFalse (t : IndependentGeometryPrimitive.Table.{u, v} U)
-    (A : ArchitectureObject U) : ObjectFormula.{u, v, u + 1} U :=
+def objectSelectedQuantitiesValue
+    (A : ArchitectureObject U) (value : SelectedValue.{u}) : ObjectFormula.{u, v, u + 1} U :=
   .and (matchCell (.object A) false)
-    (.and (.cell (.formation (.selectedQuantities A.configuration))
-        (t (.formation (.selectedQuantities A.configuration))))
-      (.notEqual (t (.formation (.selectedQuantities A.configuration))).down
-        (⟨A.SelectedQuantities, A.selectedQuantities⟩ : SelectedValue.{u})))
+    (.cell (.formation (.selectedQuantities A.configuration)) (ULift.up value))
+
+def FamilyMismatch (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (ht : Extraction.IsTyped (IndependentGeometryPrimitive.extraction t))
+    (F : AtomFamily U) (a : U.Atom) : Prop :=
+  (F.mem a ∧ (familyAbsent t ht F false a).evaluate t) ∨
+    (¬ F.mem a ∧ (familyPresent t ht F false a).evaluate t)
+
+def ConfigurationMismatch (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (C : AtomConfiguration U) (hf : C.family.ListFinite) (a b : U.Atom) : Prop :=
+  (C.relation a b ∧ (relationAbsent C hf a b).evaluate t) ∨
+    (¬ C.relation a b ∧ (relationPresent C hf a b).evaluate t) ∨
+    (C.identification a b ∧ (identificationAbsent C hf a b).evaluate t) ∨
+    (¬ C.identification a b ∧ (identificationPresent C hf a b).evaluate t)
 
 structure Instances (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ht : Extraction.IsTyped (IndependentGeometryPrimitive.extraction t)) : Prop where
   familyTrue : ∀ F, IndependentGeometryPrimitive.matching t (.family F) = true →
-    ∀ a, (familyTrue t ht F a).evaluate t
+    ∀ a, (F.mem a → (familyPresent t ht F true a).evaluate t) ∧
+      (¬ F.mem a → (familyAbsent t ht F true a).evaluate t)
   familyFalse : ∀ F, IndependentGeometryPrimitive.matching t (.family F) = false →
-    ∃ a, (familyFalse t ht F a).evaluate t
+    ∃ a, FamilyMismatch t ht F a
   configurationTrue : ∀ C,
     IndependentGeometryPrimitive.matching t (.configuration C) = true →
-    ∀ (hf : C.family.ListFinite) a b, (configurationTrue t C hf a b).evaluate t
+    ∀ (hf : C.family.ListFinite) a b,
+      (C.relation a b → (relationPresent C hf a b).evaluate t) ∧
+      (¬ C.relation a b → (relationAbsent C hf a b).evaluate t) ∧
+      (C.identification a b → (identificationPresent C hf a b).evaluate t) ∧
+      (¬ C.identification a b → (identificationAbsent C hf a b).evaluate t)
   configurationFamilyTrue : ∀ C,
     IndependentGeometryPrimitive.matching t (.configuration C) = true →
     (configurationFamilyTrue C).evaluate t
@@ -241,13 +265,15 @@ structure Instances (t : IndependentGeometryPrimitive.Table.{u, v} U)
     IndependentGeometryPrimitive.matching t (.configuration C) = false →
     (configurationFamilyFalse C).evaluate t ∨
       ∃ (hf : C.family.ListFinite) (a b : U.Atom),
-        (configurationPointFalse C hf a b).evaluate t
+        ConfigurationMismatch t C hf a b
   objectTrue : ∀ A, IndependentGeometryPrimitive.matching t (.object A) = true →
     (objectTrue t A).evaluate t
   objectFalse : ∀ A, IndependentGeometryPrimitive.matching t (.object A) = false →
     (objectConfigurationFalse A).evaluate t ∨
-      (objectStructureMapsFalse t A).evaluate t ∨
-      (objectSelectedQuantitiesFalse t A).evaluate t
+      (∃ value, (objectStructureMapsValue A value).evaluate t ∧
+        value ≠ (⟨A.StructureMaps, A.structureMaps⟩ : SelectedValue.{u})) ∨
+      (∃ value, (objectSelectedQuantitiesValue A value).evaluate t ∧
+        value ≠ (⟨A.SelectedQuantities, A.selectedQuantities⟩ : SelectedValue.{u}))
 
 theorem lawful_iff_instances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -268,49 +294,102 @@ theorem lawful_iff_instances
       objectTrue := ?_
       objectFalse := ?_ }
     · intro F hF a
-      simpa only [familyTrue, ObjectFormula.evaluate, matchCell_evaluate,
-        extractedFormula_evaluate_iff, ObjectFoundationFinite.prop_eq_true_iff] using
-        And.intro hF (hl.family_true F hF a)
+      have hp := hl.family_true F hF a
+      constructor
+      · intro ha
+        exact ⟨(matchCell_evaluate t _ _).2 hF,
+          (extractedFormula_evaluate_iff t ht a).2 (hp.mp ha)⟩
+      · intro ha
+        refine ⟨(matchCell_evaluate t _ _).2 hF, ?_⟩
+        intro he
+        exact ha (hp.mpr ((extractedFormula_evaluate_iff t ht a).1 he))
     · intro F hF
-      obtain ⟨a, ha⟩ := hl.family_false F hF
+      obtain ⟨a, hm⟩ := hl.family_false F hF
       refine ⟨a, ?_⟩
-      simpa only [familyFalse, ObjectFormula.evaluate, matchCell_evaluate,
-        extractedFormula_evaluate_iff, ObjectFoundationFinite.prop_eq_true_iff] using
-        And.intro hF ha
+      by_cases ha : F.mem a
+      · left
+        refine ⟨ha, (matchCell_evaluate t _ _).2 hF, ?_⟩
+        intro he
+        exact hm ⟨fun _ => (extractedFormula_evaluate_iff t ht a).1 he, fun _ => ha⟩
+      · right
+        refine ⟨ha, (matchCell_evaluate t _ _).2 hF, ?_⟩
+        apply (extractedFormula_evaluate_iff t ht a).2
+        by_contra he
+        exact hm ⟨fun h => (ha h).elim, fun h => (he h).elim⟩
     · intro C hC hf a b
-      have hc := hl.configuration_true C hC
-      simpa only [configurationTrue, ObjectFormula.evaluate, matchCell_evaluate,
-        ObjectFoundationFinite.prop_eq_true_iff,
-        compositionCell_evaluate, compositionEqTrue_iff] using
-        ⟨hC, hc.1, hc.2 hf a b⟩
+      have hp := (hl.configuration_true C hC).2 hf a b
+      refine ⟨?_, ?_, ?_, ?_⟩
+      · intro hr
+        exact (compositionCell_evaluate t _).2 (hp.1.mp hr)
+      · intro hr
+        exact (compositionFalseCell_evaluate t _).2 (fun ht' => hr (hp.1.mpr ht'))
+      · intro hi
+        exact (compositionCell_evaluate t _).2 (hp.2.mp hi)
+      · intro hi
+        exact (compositionFalseCell_evaluate t _).2 (fun ht' => hi (hp.2.mpr ht'))
     · intro C hC
-      simpa only [configurationFamilyTrue, ObjectFormula.evaluate,
-        matchCell_evaluate] using And.intro hC (hl.configuration_true C hC).1
+      exact ⟨(matchCell_evaluate t _ _).2 hC,
+        (matchCell_evaluate t _ _).2 (hl.configuration_true C hC).1⟩
     · intro C hC
       rcases hl.configuration_false C hC with hF | ⟨hf, a, b, hp⟩
       · left
-        simpa only [configurationFamilyFalse, ObjectFormula.evaluate,
-          matchCell_evaluate] using And.intro hC hF
+        exact ⟨(matchCell_evaluate t _ _).2 hC, (matchCell_evaluate t _ _).2 hF⟩
       · right
         refine ⟨hf, a, b, ?_⟩
-        simpa only [configurationPointFalse, ObjectFormula.evaluate,
-          matchCell_evaluate, ObjectFoundationFinite.prop_eq_true_iff,
-          compositionCell_evaluate, compositionEqTrue_iff] using And.intro hC hp
+        by_cases hr : C.relation a b
+        · by_cases htr : IndependentGeometryPrimitive.composition t
+              (.relation C.family hf a b)
+          · have hriff : C.relation a b ↔ IndependentGeometryPrimitive.composition t
+                (.relation C.family hf a b) := ⟨fun _ => htr, fun _ => hr⟩
+            by_cases hi : C.identification a b
+            · by_cases hti : IndependentGeometryPrimitive.composition t
+                  (.identification C.family hf a b)
+              · exact (hp ⟨hriff, ⟨fun _ => hti, fun _ => hi⟩⟩).elim
+              · exact Or.inr (Or.inr (Or.inl
+                  ⟨hi, (compositionFalseCell_evaluate t _).2 hti⟩))
+            · by_cases hti : IndependentGeometryPrimitive.composition t
+                  (.identification C.family hf a b)
+              · exact Or.inr (Or.inr (Or.inr
+                  ⟨hi, (compositionCell_evaluate t _).2 hti⟩))
+              · exact (hp ⟨hriff, ⟨fun h => (hi h).elim, fun h => (hti h).elim⟩⟩).elim
+          · exact Or.inl ⟨hr, (compositionFalseCell_evaluate t _).2 htr⟩
+        · by_cases htr : IndependentGeometryPrimitive.composition t
+              (.relation C.family hf a b)
+          · exact Or.inr (Or.inl ⟨hr, (compositionCell_evaluate t _).2 htr⟩)
+          · have hriff : C.relation a b ↔ IndependentGeometryPrimitive.composition t
+                (.relation C.family hf a b) :=
+                ⟨fun h => (hr h).elim, fun h => (htr h).elim⟩
+            by_cases hi : C.identification a b
+            · by_cases hti : IndependentGeometryPrimitive.composition t
+                  (.identification C.family hf a b)
+              · exact (hp ⟨hriff, ⟨fun _ => hti, fun _ => hi⟩⟩).elim
+              · exact Or.inr (Or.inr (Or.inl
+                  ⟨hi, (compositionFalseCell_evaluate t _).2 hti⟩))
+            · by_cases hti : IndependentGeometryPrimitive.composition t
+                  (.identification C.family hf a b)
+              · exact Or.inr (Or.inr (Or.inr
+                  ⟨hi, (compositionCell_evaluate t _).2 hti⟩))
+              · exact (hp ⟨hriff, ⟨fun h => (hi h).elim, fun h => (hti h).elim⟩⟩).elim
     · intro A hA
       have ha := hl.object_true A hA
-      simpa only [objectTrue, ObjectFormula.evaluate, matchCell_evaluate,
-        formationCell_evaluate, formationEq_iff] using ⟨hA, ha⟩
+      exact ⟨(matchCell_evaluate t _ _).2 hA,
+        (matchCell_evaluate t _ _).2 ha.1,
+        (formationCell_evaluate t _ _).2 ha.2.1,
+        (formationCell_evaluate t _ _).2 ha.2.2⟩
     · intro A hA
       rcases hl.object_false A hA with hC | hS | hQ
       · left
-        simpa only [objectConfigurationFalse, ObjectFormula.evaluate,
-          matchCell_evaluate] using And.intro hA hC
+        exact ⟨(matchCell_evaluate t _ _).2 hA, (matchCell_evaluate t _ _).2 hC⟩
       · right; left
-        simpa only [objectStructureMapsFalse, ObjectFormula.evaluate,
-          matchCell_evaluate] using ⟨hA, trivial, hS⟩
+        refine ⟨IndependentGeometryPrimitive.formation t
+          (.structureMaps A.configuration), ?_, hS⟩
+        exact ⟨(matchCell_evaluate t _ _).2 hA,
+          (formationCell_evaluate t _ _).2 rfl⟩
       · right; right
-        simpa only [objectSelectedQuantitiesFalse, ObjectFormula.evaluate,
-          matchCell_evaluate] using ⟨hA, trivial, hQ⟩
+        refine ⟨IndependentGeometryPrimitive.formation t
+          (.selectedQuantities A.configuration), ?_, hQ⟩
+        exact ⟨(matchCell_evaluate t _ _).2 hA,
+          (formationCell_evaluate t _ _).2 rfl⟩
   · intro hi
     refine {
       family_true := ?_
@@ -320,49 +399,70 @@ theorem lawful_iff_instances
       object_true := ?_
       object_false := ?_ }
     · intro F hF a
-      have hf := hi.familyTrue F hF a
-      simpa only [familyTrue, ObjectFormula.evaluate, matchCell_evaluate,
-        extractedFormula_evaluate_iff, ObjectFoundationFinite.prop_eq_true_iff] using hf.2
+      constructor
+      · intro ha
+        have hp := (hi.familyTrue F hF a).1 ha
+        exact (extractedFormula_evaluate_iff t ht a).1 hp.2
+      · intro he
+        by_contra ha
+        have hp := (hi.familyTrue F hF a).2 ha
+        exact hp.2 ((extractedFormula_evaluate_iff t ht a).2 he)
     · intro F hF
-      obtain ⟨a, ha⟩ := hi.familyFalse F hF
+      obtain ⟨a, hm⟩ := hi.familyFalse F hF
       refine ⟨a, ?_⟩
-      simpa only [familyFalse, ObjectFormula.evaluate, matchCell_evaluate,
-        extractedFormula_evaluate_iff, ObjectFoundationFinite.prop_eq_true_iff] using ha.2
+      rcases hm with ⟨ha, hm⟩ | ⟨ha, hm⟩
+      · intro heq
+        exact hm.2 ((extractedFormula_evaluate_iff t ht a).2 (heq.mp ha))
+      · intro heq
+        exact ha (heq.mpr ((extractedFormula_evaluate_iff t ht a).1 hm.2))
     · intro C hC
       refine ⟨?_, ?_⟩
-      · have h := hi.configurationFamilyTrue C hC
-        simpa only [configurationFamilyTrue, ObjectFormula.evaluate,
-          matchCell_evaluate] using h.2
+      · exact (matchCell_evaluate t _ _).1 (hi.configurationFamilyTrue C hC).2
       · intro hf a b
-        have h := hi.configurationTrue C hC hf a b
-        simpa only [configurationTrue, ObjectFormula.evaluate, matchCell_evaluate,
-          ObjectFoundationFinite.prop_eq_true_iff,
-          compositionCell_evaluate, compositionEqTrue_iff] using h.2.2
+        have hp := hi.configurationTrue C hC hf a b
+        constructor
+        · constructor
+          · intro hr
+            exact (compositionCell_evaluate t _).1 (hp.1 hr)
+          · intro htr
+            by_contra hr
+            exact (compositionFalseCell_evaluate t _).1 (hp.2.1 hr) htr
+        · constructor
+          · intro hx
+            exact (compositionCell_evaluate t _).1 (hp.2.2.1 hx)
+          · intro htx
+            by_contra hx
+            exact (compositionFalseCell_evaluate t _).1 (hp.2.2.2 hx) htx
     · intro C hC
-      rcases hi.configurationFalse C hC with hF | ⟨hf, a, b, hp⟩
-      · left
-        simpa only [configurationFamilyFalse, ObjectFormula.evaluate,
-          matchCell_evaluate] using hF.2
+      rcases hi.configurationFalse C hC with hF | ⟨hf, a, b, hm⟩
+      · exact Or.inl ((matchCell_evaluate t _ _).1 hF.2)
       · right
         refine ⟨hf, a, b, ?_⟩
-        simpa only [configurationPointFalse, ObjectFormula.evaluate,
-          matchCell_evaluate, ObjectFoundationFinite.prop_eq_true_iff,
-          compositionCell_evaluate, compositionEqTrue_iff] using hp.2
+        rcases hm with hm | hm | hm | hm
+        · intro hp
+          exact (compositionFalseCell_evaluate t _).1 hm.2 (hp.1.mp hm.1)
+        · intro hp
+          exact hm.1 (hp.1.mpr ((compositionCell_evaluate t _).1 hm.2))
+        · intro hp
+          exact (compositionFalseCell_evaluate t _).1 hm.2 (hp.2.mp hm.1)
+        · intro hp
+          exact hm.1 (hp.2.mpr ((compositionCell_evaluate t _).1 hm.2))
     · intro A hA
       have ha := hi.objectTrue A hA
-      simpa only [objectTrue, ObjectFormula.evaluate, matchCell_evaluate,
-        formationCell_evaluate, formationEq_iff] using ha.2
+      exact ⟨(matchCell_evaluate t _ _).1 ha.2.1,
+        (formationCell_evaluate t _ _).1 ha.2.2.1,
+        (formationCell_evaluate t _ _).1 ha.2.2.2⟩
     · intro A hA
       rcases hi.objectFalse A hA with hC | hS | hQ
-      · left
-        simpa only [objectConfigurationFalse, ObjectFormula.evaluate,
-          matchCell_evaluate] using hC.2
+      · exact Or.inl ((matchCell_evaluate t _ _).1 hC.2)
       · right; left
-        simpa only [objectStructureMapsFalse, ObjectFormula.evaluate,
-          matchCell_evaluate] using hS.2.2
+        obtain ⟨value, hv, hne⟩ := hS
+        intro heq
+        exact hne ((formationCell_evaluate t _ _).1 hv.2 |>.symm.trans heq)
       · right; right
-        simpa only [objectSelectedQuantitiesFalse, ObjectFormula.evaluate,
-          matchCell_evaluate] using hQ.2.2
+        obtain ⟨value, hv, hne⟩ := hQ
+        intro heq
+        exact hne ((formationCell_evaluate t _ _).1 hv.2 |>.symm.trans heq)
 
 end Matching
 
