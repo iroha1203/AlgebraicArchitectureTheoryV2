@@ -12,23 +12,27 @@
 - 数学本文の命題、Lean 宣言、GOAL の要求、report の到達範囲を区別する。
   source 欄は対応する証拠への入口であり、候補命題や未接続の要求を証明済みに数えない。
   既存証明の全行再査読・Lean 再検証は、この棚卸しの確認範囲に含めない。
-- 数学資料の照合版は commit
+- 初版は G-125 の障害・診断比較と G-124 A・B の共通入力・局所再構成を収録する。
+  C–E の接続と有限決定性の体系化は改訂版に収録する。
+  個別結果の配置は §8.3、形式化との対応は §8.4、改訂版の内容は §8.5 に置く。
+- 既存の数学資料の照合版は commit
   [`b0a2d4b2`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/b0a2d4b2690a1aabdf64f033c9fc6ca975f7445e)
-  とする。特に局所再構成は、この版の [G-124 report][r124] の Cycle 68 と「未完了 ledger」までを照合した。
-  以下の証拠範囲はこの固定版について述べる。
+  とする。G-125 の実装と G-124 関連の形式化は
+  [`c245b49b`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/c245b49b0825f653307f396f4dc9f76e1ecad44a)
+  に照合する。G-124 の共通入力・局所再構成の仕様は GOAL の A・B に対応づける。
 - n1012・n1015 を含むノートは参考資料とし、章立ては構成マスター、数学の定義・証明は一次資料に従う。
   合成は `gf=g∘f` と書く。Lean の `f ≫ g` はこの `gf` に対応する。
 
 | 章 | 棚卸しの中心 | 後続へ渡すもの |
 | --- | --- | --- |
 | 1 | Atom・Law・operation・reading、相対的な対象・射・site | core と幾何の共通入力、射影の塔 |
-| 2 | Law algebra、lawful locus、具体的な貼り合わせ障害、SAGA | 係数と障害類の生成経路 |
-| 3 | 標準解像度、表示可能性、診断不変性の十分条件と一般判定 | 比較写像と、診断が保存される正確な条件 |
+| 2 | Law algebra、lawful locus、具体的な貼り合わせ障害、SAGA、整数係数のアフィン局所データ | 係数と既存 Čech 障害類の生成経路 |
+| 3 | 標準解像度、表示可能性、診断不変性、同じ入力の障害・診断比較 | 指定類の対応、零性判定、reading 変更に沿う可換平方と零性不変性 |
 | 4 | core・幾何の輸送、普遍性、合成と二層の障害 | 関手・比較同型・再選択の作用 |
 | 5 | doctrine の積、exact / refinement 基底変換、上段比較 | 型と生成元の揃った二経路と比較射 |
 | 6 | 冪等正規化、像、Karoubi 実現、自然性の反例 | raw 比較と像の比較、正規化関手 |
 | 7 | 比較保存群、観測と正規化、変更の持ち上げ、CS 共通分類 | 核・像・section・fiber と情報損失の判定 |
-| 8 | 有限表示、局所表示、対象・射の再構成、有限決定性 | 回復できる構造と、回復に必要な情報 |
+| 8 | 有限表示、共通入力宣言、原始読み取り、対象・射の局所再構成 | 主同値と四族への適用、個別結果の補足 |
 
 ## 第1章 相対的アーキテクチャの構成
 
@@ -81,7 +85,7 @@ view の集合 `V` と基準値 `v₀` を固定し、状態集合 `C`、読取�
 `V=K=Bool` の積 lens で `h(v,k)=(v,k⊕v)` を取る例を導入に置く。
 この変更は get を保つが put を保たず、可視変更を恒等に固定したとき、
 get のみを保つ変更 4 個のうち get・put を共に保つものは 2 個になる。
-この差を、第7章の変更分類と第8章の有限決定性へつなぐ。
+この差を、第7章の変更分類と第8章の意味保存射の再構成へつなぐ。
 
 一次資料: [LensSemantics][lens-semantics]、[一般射の有限 fiber 表示][lens-finite]、
 [可逆変更と共通分類の対応][lens-connection]。保存図式の一次資料は §4.2、有限例は §7.2 を参照。
@@ -125,6 +129,7 @@ adapter の保存図式は §4.2、有限例は §7.2 の一次資料へ対応�
 | 2-F Čech 障害 | 構成・条件付き定理。local mismatch の cocycle と類 `[g]`、local flatness gap、補正後の global section | abelian coefficient、実際の mismatch、cocycle 則、effective local adjustment / torsor と descent を固定する | [本文 IV §§3–7・11][math-iv]、[GluingMismatch][gluing-mismatch]、[FlatnessCriterion][flatness] |
 | 2-G 障害空間の次元・検出・消滅 | 定理・条件付き系。Topological Debt Capacity、定数係数の Betti 数、Euler Accounting、forest 消滅、boundary residue、period–Stokes、二相係数の support 単射 | 次元には有限次元性、Betti 数には選択した nerve との比較を使う。forest 消滅には triple face 不在・restriction 全射、二相には条件 E・構造側 `H¹=0` を使う | [本文 IV §§8–13][math-iv]、[CoverNerve][cover-nerve]、[二相比較][two-phase-h1]、[forest 系][two-phase-forest] |
 | 2-H semantic repair と SAGA | 構成・条件付き同型。独立に生成した semantic 係数と equation 係数の比較、residual class 対応、actual global repair | 有限 monomorphic cover、relation / generator completeness、equivariant local-state map、local atlas、empty-overlap normalization、true sheaf を明示する | [本文 X][math-x]、[EquationProduction][saga-production]、[KappaComparison][saga-kappa]、[TrueSheafDescent][saga-descent]、[Saga][saga] |
+| 2-I 診断へ渡す指定障害 | 構成・定理。生成子関係の整数係数 sheaf、lawful な chart state と実 restriction、アフィン比較から既存の Čech 障害類を生成 | 選定した点・生成子の共通 Atom 入力、3 chart / 4 chart の被覆、任意の chart state・edge transition。異なる三つの chart の交差が空であることを被覆から証明 | [共通 Atom 入力][bridge-atoms]、[実被覆][bridge-covers]、[アフィン局所データ][bridge-affine]、[既存障害との一致][bridge-existing] |
 
 ### 2.2 主要命題の強さを揃える
 
@@ -185,6 +190,44 @@ local atlas を独立に選んだ場合は、cochain の一致ではなく明示
 二つの小例は、forest / cycle と独立な semantic / equation 表示で十分かを検討し、
 大きなシステム設定を加えない。
 
+### 2.3 第3章へ渡す整数係数のアフィン障害
+
+2-I は、第2章から第3章へ整数係数の障害を渡す構成である。
+有限 Source と有限 Law 族から生成子 `g=(ℓ,s)` を取り、Law-value を保つ原始関係 `R` を宣言する。
+関係の連結成分集合を `B` とすると、整数係数の群とその標準形は
+
+\[
+ M_R=\mathbb Z[\{(\ell,s)\}]/\langle g-h\mid gRh\rangle
+ \cong\mathbb Z^{(B)}
+\]
+
+となる。[presentation group の構成][bridge-presentation]でこの同型を証明する。
+局所定数な `M_R` 値関数の sheaf を、AAT context から開集合への連続な support 関手で
+引き戻し、既存の `ObstructionSheaf` とする。選定した点と生成子の共通 Atom carrier について、
+support 関手の連続性、chart と overlap の非空性・連結性、実際の被覆と restriction を構成する。
+異なる三 chart の交差は空であり、幾何から定める完全な face 添字も空になる。
+これにより次数0・1は chart・edge 上の `M_R` 値、次数2は零として、
+実際の Čech 複体を表示する。[係数 sheaf][bridge-sheaf]、[support の連続性][bridge-continuity]、
+[有限被覆の幾何][bridge-cover-geometry]、[Čech 座標表示][bridge-cech]に対応する。
+
+局所データ `x=(ξ,p)` は edge 上の遷移 `ξ` と chart 上の状態 `p` である。重なりでの比較を
+
+\[
+ o_q(x)_e=\xi_e+\operatorname{res}_{j,e}(p_j)
+                    -\operatorname{res}_{i,e}(p_i),\qquad
+ o_q(x)=\xi+d^0_{\rm ob}p
+\]
+
+とする。chart state は多項式環 `ℤ[X_g]` の整数値評価を定め、原始関係から生成する ideal
+`(X_g-X_h \mid gRh)` を零へ送る。実 restriction と右状態のアフィン移動についても
+lawfulness を示す。重なりの `Ob` 値の左右状態と遷移から比較値を計算し、
+`GluingMismatchData`、`descentCocycle`、`descentObstructionClass` へ接続する。
+`existingDescentAdditiveClass_eq_actualClass` は、その既存障害類の加法的表示が
+上の cocycle の類に等しいことを述べる。
+
+局所状態を `p+h` に変えると mismatch は `d⁰_ob h` だけ変わり、障害類は不変である。
+ここから第3章へ渡すのは、同じ `x` から生成した具体的な類 `[o_q(x)]` とその係数・被覆である。
+
 ## 第3章 標準解像度と診断不変性
 
 ### 3.1 解像度・係数・被覆の比較
@@ -198,6 +241,11 @@ local atlas を独立に選んだ場合は、cochain の一致ではなく明示
 | 3-E 一様不変性の判定 | 必要十分条件・decider。全非空値部分集合 `A` の比較の kernel / cokernel defect が零 | law-value block と A-subnerve の同定、indicator Law による逆方向を使う。計算可能性は明示的 finite presentation 上で述べる | [UniformityReduction][uniform-reduction]、[DefectSemantics][uniform-defect]、[UniformPresentationDecider][uniform-decider] |
 | 3-F 十分域と観測限界 | 反例・不可能性。C 各条項の非必要性、同じ局所観測でも異なる一様不変性 | `ConditionCAllA` は一様不変域の真部分。`G_local-v1` の非因子化はその固定観測言語に相対化する | [AtlasPositioning][atlas-position]、[G-107 固定命題][g107]、[GLocalV1Nonfactorization][local-nonfactor] |
 | 3-G 構造台の不変性と係数選択 | 定理と反証。意味変形下で構造 nerve が等式として一致し、全 Atom nerve は変わり得る。一方、固定 source-label 生成係数の `H¹` は常に零 | G-105 の非零障害を要求する発火命題は反証済み。成立した nerve・restriction・局在化の結果と分ける | [NerveGeneration][struct-nerve]、[StructuralLocalization][struct-local]、[GeneratedH1Vanishing][struct-zero]、[G-105 report][r105] |
+| 3-H 障害係数と診断複体の比較 | 構成・定理。`M_R` から有理 Law-value 係数への写像、次数0–2の cochain 比較、加法的 H¹ 準同型 | 2-I の実 Čech 複体と同じ Law・台から生成する `lawGeneratedComplex` を比較し、二つの微分平方を証明 | [係数比較][bridge-coefficient]、[Čech cochain 比較][bridge-cech]、[H¹ 写像][bridge-h1]、[選定入力][bridge-input] |
+| 3-I 指定障害類の対応 | 定理。任意の許容局所データ `x` について `Φ_q([o_q(x)])=[a_q(x)]` と零性の保存 | 障害は 2-I の実 restriction と遷移から、診断は同じデータの Law 評価から生成する | [既存障害との一致][bridge-existing]、[選定入力での類の対応][bridge-classes] |
+| 3-J 指定類の零性反映 | 定理。`R_q` と各 label の全 chart 共通代表の下で `[a_q(x)]=0 ⇔ [o_q(x)]=0` | 有理補正の辺差から整数補正を構成。両条件は選定入力の粗細双方で証明済み | [整数化][bridge-integral]、[反映の一般証明][bridge-reflection]、[選定入力での放電][bridge-selected-reflection] |
+| 3-K reading 変更と障害判定 | 定理。比較平方、局所データと指定類の輸送、Atlas の条件 C による障害零性の不変性 | 選定した粗細 reading・3 chart / 4 chart の実 refinement。同じ nerve 射の `generatedComparisonH1Map` を診断側に使用 | [実 refinement][bridge-refinement]、[比較の自然性][bridge-naturality]、[条件 C と不変性][bridge-condition-c] |
+| 3-L 同一入力の零・非零例 | 有限例・定理。非零 mismatch を持つ零障害例と、非零障害例を粗細両側で判定 | 非単射の canonical factor、両端の反映条件、条件 C を固定し、遷移のみを変える | [SelectedFiniteObstructionExamples][bridge-examples]、[G-125 の固定要求][g125]・[成果対応][r125] |
 
 ### 3.2 不変性の仮定と正負例
 
@@ -234,10 +282,100 @@ C3 の局所非輪状性を含む十分条件であり、一般の必要十分�
 非表示例は [G-103 の反例][resolution-negative]、粗化・被覆の例は [G-104 の正負例][g104]、
 局所観測が一致する対は [G-107 の証拠][g107]に対応させる。
 
-**接続項目。** 第2章の一般の `Ob` / `Q_E` と、この章の K0・K1 による law-value 係数は
-入力も生成規則も異なる。診断不変性を第2章の特定の障害へ適用する箇所では、
-係数・nerve・比較写像の同定を明示する。source-label 係数での消滅を、他の係数や
-すべての AAT 障害の消滅へ拡張しない。
+### 3.3 障害の読み取りと診断比較
+
+3-H〜3-L は、同じ入力から生じる障害と診断の比較として初版へ収録する。採用入力は
+`Source=Bool×Bool`、第一成分を評価する一つの Law、粗い reading `q_c=pr₁` と
+細かい reading `q_f=id` である。原始関係には `(0,0)–(0,1)` と `(1,0)–(1,1)` の二辺を
+両向きに宣言する。両 reading の adequacy、同じ Law-value の生成子がこの関係で結ばれること、
+canonical factor `pr₁` の非単射性を [PointAtomLawInput][bridge-laws]で証明している。
+幾何の点とこれらの生成子を一つの Atom carrier に収め、§2.3 の実被覆と係数を使う。
+以下の結論は、各 reading で任意の遷移・chart state `x=(ξ,p)` について述べる。
+
+**係数から cochain・類への比較。** Law-value label の集合を `L_val` と書く。
+生成子の類をその label の有理 delta 関数へ送る加法的な写像
+`ε_R:M_R→(L_val→ℚ)` を構成する。実 Čech 座標と Law-value 座標の対応から
+
+\[
+ \phi_q^n:C_{\rm ob}^n(q)\longrightarrow C_{\rm diag}^n(q)\quad(n=0,1,2),\qquad
+ \phi_q^{n+1}d_{\rm ob}^n=d_{\rm diag}^n\phi_q^n\quad(n=0,1)
+\]
+
+を得る。cocycle と coboundary の保存から加法的な準同型
+`Φ_q:H¹_ob(q)→H¹_diag(q)` を構成する。障害側は整数 presentation 係数、診断側は
+有理数値の `lawGeneratedComplex` である。
+同じ局所データの診断を独立な生成式
+
+\[
+ a_q(x)=\phi_q^1(\xi)+d^0_{\rm diag}\phi_q^0(p)
+\]
+
+で定め、cochain 平方から `φ_q¹(o_q(x))=a_q(x)`、従って
+`Φ_q([o_q(x)])=[a_q(x)]` を証明する。§2.3 の既存障害類との一致を通して、
+これは第2章から受け取った指定障害類の対応になる。
+
+**零性を反映する条件と証明。** `R_q` は、同じ Law-value label を持つ任意の生成子対が
+原始関係で連結される条件とする。この条件から `B≃L_val` と `ε_R` の単射性を得る。
+加えて、各 label の値を持つ一つの target がすべての chart support に属する条件
+`CommonLabelChartSupport` を用いる。選定入力では、粗い側の代表を `value`、
+細かい側の代表を `(value,false)` として、この条件も証明する。
+
+診断類が零なら有理数値の0-cochainによる補正を取り、共通代表の座標で読み、
+`R_q` によって各整数 block 係数を回収する。辺差が整数なので、座標ごとに整数部分を取ると
+同じ辺差を持つ整数0-cochainが得られる。それを実 Čech section へ戻すことで
+
+\[
+ [a_q(x)]=0\quad\Longleftrightarrow\quad[o_q(x)]=0
+\]
+
+を示す。整数部分はこの補正を構成するために用いる。係数準同型の逆として扱わない。
+補足には、同じ label を持つ二生成子を関係で結ばない場合に係数比較が単射でなくなる
+[反例][bridge-coefficient]も置き、構造条件の役割を示す。
+
+**reading 変更に沿う可換性と不変性。** 粗い被覆の一つの chart を二つへ分ける
+3 chart から4 chartへの refinement を用いる。障害側は実 restriction による引戻しを使い、
+細かい側の内部辺 `k` には零 section を対応させる。これにより `T_ob` を構成し、
+診断側の同じ nerve 射から生成する `T_diag` との間で
+
+\[
+ \Phi_{q_f}T_{\rm ob}=T_{\rm diag}\Phi_{q_c},\qquad
+ T_{\rm ob}[o_{q_c}(x)]=[o_{q_f}(x_f)],\qquad
+ T_{\rm diag}[a_{q_c}(x)]=[a_{q_f}(x_f)]
+\]
+
+を証明する。`x_f` は粗い側の遷移と状態をこの refinement で運んだデータである。
+同じ入力について Atlas の条件 C0–C6 を証明し、既存の診断比較の全単射定理を適用する。
+両端の零性反映と併せて `[o_{q_c}(x)]=0 ⇔ [o_{q_f}(x_f)]=0` を得る。
+
+**二つの具体例。** `u` は生成子 `(唯一の Law,(false,false))` の `M_R` における類であり、
+対応する診断座標での値が `1` なので非零である。chart state を零に固定する。
+
+| 局所データ | 粗い側の遷移（ab, bc, ac） | 細かい側の遷移（k, ab, bc, ac） | 障害類・診断類 |
+| --- | --- | --- | --- |
+| 零障害例 | `(u,-u,0)=d⁰(0,u,0)` | `(0,u,-u,0)` | 粗細の両側で零。mismatch 自体は両側で非零 |
+| 非零障害例 | `(u,0,0)` | `(0,u,0,0)` | 粗細の両側で非零 |
+
+粗い三辺の向き付き和 `ξ_ab+ξ_bc−ξ_ac` は任意の coboundary で零になり、非零例では
+`u` になる。この計算と類の対応・零性反映・reading 輸送により表の結論を得る。
+被覆・係数・Law を同じに保ったまま、局所データの違いを障害判定へ戻す例として本論に置く。
+
+**付録への対応。** 付録Aでは次の宣言に対応させる。宣言の共通 namespace は
+`AAT.AG.ObstructionDiagnosticBridge` である。
+
+| 論文の内容 | 宣言・一次資料 |
+| --- | --- |
+| 2-I の既存障害の生成 | [ExistingObstructionBridge][bridge-existing] の `GeneratorPresentation.ActualCechAffineLocalData` 内の `ActualAffineOverlapData.comparison_eq_actualMismatch`、`gluingMismatchCochain_eq_actualMismatch`、`existingDescentAdditiveClass_eq_actualClass` |
+| 3-H の cochain・H¹ 比較 | [FaceEmptyCechNormalization][bridge-cech] の `GeneratorPresentation.actualCechCoefficient_comm0`・`actualCechCoefficient_comm1`、[CombinedAtomH1Input][bridge-input] の `coarseCochainMap`・`fineCochainMap`・`coarseH1Map`・`fineH1Map` |
+| 3-I の既存指定類の対応 | [CombinedAtomSpecifiedObstruction][bridge-classes] の `coarse_h1_map_existing_obstruction_class_eq_diagnostic_class` と `fine_h1_map_existing_obstruction_class_eq_diagnostic_class` |
+| 3-J の零性同値 | [CombinedAtomSpecifiedReflection][bridge-selected-reflection] の `coarse_diagnostic_class_eq_zero_iff_existing_obstruction_class_eq_zero` と `fine_diagnostic_class_eq_zero_iff_existing_obstruction_class_eq_zero` |
+| 3-K の比較平方と指定類の輸送 | [CombinedAtomReadingNaturality][bridge-naturality] の `h1_comparison_square`、`actualH1Map_existingObstructionClass`、`diagnosticH1Map_diagnosticClass` |
+| 3-K の条件 C と障害不変性 | [SelectedReadingConditionC][bridge-condition-c] の `conditionC`、`diagnosticH1Map_bijective`、`existing_obstruction_class_eq_zero_iff_mapped_existing_obstruction_class_eq_zero` |
+| 3-L の有限例 | [SelectedFiniteObstructionExamples][bridge-examples] の `canonical_factor_not_injective`、`coarse_reflectionCondition`・`fine_reflectionCondition`、`selected_conditionC`、`existing_zero_example_outcomes`・`existing_nonzero_example_outcomes` |
+
+付録Bには原始関係、被覆と全交差、微分・refinement の計算表、整数補正と二例の計算を置く。
+付録Cには冒頭の実装固定版と [G-125 report][r125] の検証・独立査読記録を対応づける。
+
+### 3.4 他の係数・輸送結果との対応
 
 [本文 VIII §7 の Class Transport][math-viii]は、この係数比較の説明へ統合する。
 選択した site の射 `ρ:X→Y`、環・標準 obstruction ideal・selected measurement ideal の比較、
@@ -283,7 +421,7 @@ lens の同時保存は、get・put の二つの可換図式を余積を用い�
 **接続項目。** 上記の操作図式、底を固定する資格、完全幾何の保存則は別々に照合する。
 完全幾何へ進むには context・coverage・overlap・係数・raw restriction・Support・Axis・Observable を
 具体的に構成する。充満忠実関手に沿う[比較群輸送][cs-comparison]は、その関手と許容射を
-構成した範囲で使う。四族を同じ実現・局所モデルへ結ぶ要求は §8.4 にまとめる。
+構成した範囲で使う。四族を同じ実現・局所モデルへ結ぶ内容は §8.2、形式化との対応は §8.4 にまとめる。
 
 ## 第5章 基底変換と生成比較
 
@@ -452,7 +590,10 @@ lens・protocol の一般射を定義した圏から、ここで用いる可逆�
 別の条件である。対応する関手・端点評価と部分群への制限を揃えてから、7-A〜7-G の
 どの群・section・核・fiber を CS 側へ運んだかを記載する。
 
-## 第8章 表示・局所再構成・有限決定性
+## 第8章 表示と局所再構成
+
+初版の主結果は、共通入力宣言と局所再構成とする。
+§8.1 の有限表示と再構成原理から §8.2 の主同値へ進み、形式化との対応を §8.4 に置く。
 
 [本文 VII §15 の Representation Completeness][math-vii]を、章を横断する説明として導入に置く。
 第3章の診断保存、第7章の比較適合性の反映・観測による検出、
@@ -470,8 +611,10 @@ lens・protocol の一般射を定義した圏から、ここで用いる可逆�
 | 8-E CS の有限再構成 | 構成・圏同値。lens の有限基準 fiber、protocol の有限生成 table から対象・一般射を回復 | operation・Law・観測を保つ一般射を扱う。Karoubi、retract、Arr への拡張を同じ制限・延長と整合させる | [CSKaroubiReconstruction][cs-karoubi]、[LensFiberModelEquivalence][lens-model]、[ProtocolObservedRestrictionEquivalence][protocol-model] |
 | 8-F 一般局所再構成原理 | 条件付き一般定理。Hom 分離、Hom 組立て、対象組立てから reading functor の圏同値を構成 | 三条件を独立に述べる。対象は読み取りが局所モデルと同型になる実現を構成し、射は制限・組立ての両逆を示す | [LocalReconstructionEquivalence][local-equivalence] |
 | 8-G タグ族の局所回復 | 構成・分類。source-choice 群、全有限 Bool table の整合族、正規化による情報損失、正規化を含む生成部分圏 | 全 source-choice 族と一様 flip を保持する。正規化後の単一像から全 source-choice を分離できるとはしない | [TagChangeFiniteReadingRecovery][tag-recovery]、[TagChangeNormalizedChoiceKernel][tag-kernel]、[TagChangeExactGeometryLocalModel][tag-model] |
-| 8-H 完全幾何の成分読み取り | 構成・分離。原始 Bool graph、全計算成分を読む graph functor、同値・環準同型・依存する同値族の組立て | 全 Hom の分離と成分ごとの組立てを確認。任意の整合 bundle からの完全 Hom 組立ては §8.4 の接続項目 | [CompleteGeometryFunctionGraphSeparation][graph-separation]、[CompleteGeometryGraphCategory][graph-category]、[DependentAlgebraicGraphCoherence][dependent-graph] |
-| 8-I G-122 比較の回復 | 構成・部分的接続。raw 比較の normalized 座標と full restriction-kernel 座標への分解、complete graph による分離 | 受理済み座標の両逆と、任意の独立な局所構文からその座標を組み立てる要求を分ける | [G122FullComparisonKernelDecomposition][full-kernel]、[G122CompleteGraphKernelReconstruction][graph-kernel]、[G-124 report][r124] |
+| 8-H 完全幾何の成分読み取り | 構成。原始 Bool graph、完全 Hom の分離、lawful graph code からの Hom 組立てと成分別合成 | package で添字づけた対象間の射を再構成する。対象を含む共通宣言からの構成は §8.2、形式化との対応は §8.4 に置く | [CompleteGeometryFunctionGraphSeparation][graph-separation]、[Hom の組立て][graph-assembly]、[直接定めた局所圏][graph-direct] |
+| 8-I G-122 比較の回復の材料 | 補足の既存構成。raw 比較の normalized 座標と full restriction-kernel 座標への分解、complete graph による分離 | 個別の座標表示として採用。主同値と投影・正規化・群分類との整合は §8.5 の改訂版へ | [G122FullComparisonKernelDecomposition][full-kernel]、[G122CompleteGraphKernelReconstruction][graph-kernel]、[G-124 report][r124] |
+| 8-J 共通入力と原始読み取り | 構成仕様。`Σ,D,Λ`、全構造保存射を持つ `R_Θ`、有限に組み立てた局所値と読み取り | 一つの宣言の任意のパラメータ `Θ`。タグ・固定生成比較・lens・プロトコルの必須四族を構成して収録 | 入力宣言の仕様は [G-124 A][g124] |
+| 8-K 共通の局所再構成 | 定理仕様。独立な整合式から `M_Θ` を構成し、原始読み取り `N_Θ` を圏同値にする | A のデータから Hom 分離・Hom 組立て・対象組立てを証明。Hom 両逆、同型・恒等・合成・評価との整合 | 主定理の仕様は [G-124 B][g124]、一般原理は [LocalReconstructionEquivalence][local-equivalence] |
 
 有限 decoder `D₀` の固定 code `P,Q` 間で、`b_P(s)` を source normalization 後の
 抽出 code の既定値、`s_f` を source map、`σ_f` を Atom 置換とすると、射の分類は
@@ -487,21 +630,62 @@ lens・protocol の一般射を定義した圏から、ここで用いる可逆�
 これは「対象を表示できる」「端点同型込みで射を覆える」「固定表示の間の任意の射を表示できる」
 という三つの問いを分ける例として使う。
 
-### 8.2 局所再構成で必要な三つの証明
+### 8.2 共通入力からの局所再構成
 
-`N:R→M` に対して、(i) 各 Hom の読み取りが単射、(ii) 独立な整合条件を満たす任意の
-局所 Hom を組み立てられる、(iii) 任意の局所対象を同型まで実現できる、を示す。
-(i)(ii) は充満忠実性、(iii) は本質的全射性を与え、圏同値へ接続する。
+一つのパラメータ型の宣言 `Σ`、Atom・Law・operation・完全幾何のデータ条件 `D`、
+局所読み取りの宣言を構成する。その宣言の任意のパラメータ `Θ` に対し、条件 `D_Θ` を
+満たす実現と、指定した構造を保つすべての写像から圏 `R_Θ` を定める。
+保持する carrier・係数環などの型と由来、評価、各成分の保存等式を入力宣言に記す。
+実現と許容射は、原始構造と保存条件によって独立に定める。
 
-CS の二族では、lens の fiber 上の任意の写像、protocol の観測と生成辺を保つ頂点写像が
-この構成の具体的な入力になる。有限表示との一致は
-[lens の Karoubi 整合][lens-karoubi]と [protocol の Karoubi 整合][protocol-karoubi]で追う。
-比較保存群は[充満忠実関手による輸送][cs-comparison]を通して回復する。
+読み取りの添字 `Λ_Θ` と各局所値を、型付き図式・table・パラメータ参照から構成する。
+operation の両端と作用、Law の添字・評価・残差、raw 座標と restriction、context、
+coverage・overlap、Support・Axis・Observable を原始評価で読む。
+一つの局所片は有限に組み立て、その値に完成した全域対象・全域射を保持しない。
+無限の carrier は宣言した型参照として保持でき、読み取り添字と整合族全体には無限を許す。
 
-対象が同じであるだけ、射が分離されるだけ、完成した全域射の像を局所モデルと定義するだけでは、
-(ii)(iii) の証明にならない。この区別を、完全幾何への適用にも同じまま用いる。
+同じ `Θ` に対し、局所対象と局所射を、制限・overlap・operation 輸送・Law・係数の
+局所等式を満たす族として定め、成分ごとの恒等・合成から `M_Θ` を構成する。
+原始読み取りは関手 `N_Θ:R_Θ→M_Θ` を与える。次の証明を個別に置く。
 
-### 8.3 有限決定性と CS への帰結
+1. **分離。** 読み取りが対象・射を区別し、特に各 Hom の読み取りが単射である。
+2. **射の組立て。** 独立な整合式を満たす任意の局所射を全域の構造保存射へ組み立てる。
+3. **対象の組立て。** 任意の局所モデル対象に対し、読み取りがそれと同型になる実現を構成する。
+
+一般原理ではこの分離・組立てを仮定して圏同値を証明する。AAT への適用では、
+上で構成したデータ条件と局所等式からこれらを証明し、
+
+\[
+ N_\Theta:\mathcal R_\Theta\simeq\mathcal M_\Theta,\qquad
+ \operatorname{Hom}_{\mathcal R_\Theta}(X,Y)
+ \underset{\operatorname{asm}}{\overset{\operatorname{read}}{\rightleftarrows}}
+ \operatorname{Hom}_{\mathcal M_\Theta}(N_\Theta X,N_\Theta Y),\qquad
+ \operatorname{read}\operatorname{asm}=1,\quad
+ \operatorname{asm}\operatorname{read}=1
+\]
+
+を主要定理にする。同型・恒等・合成・評価との整合を同じ構成で示す。
+整合式は局所データ間の等式として定め、全域の射の存在や延長可能性をその条件に含めない。
+
+| 必須の入力族 | 共通宣言の下で構成・収録する対象と射 |
+| --- | --- |
+| タグ付き operation | `taggedOperationPackage`、canonical 正規化、一様 flip、source-choice 族の全元 |
+| 固定生成比較 | `finiteAxisFoldBCDatumSquare` と `finiteAxisFoldFixedCoefficientGeometryFamily`、cell `second`、係数 `ℤ` の生成比較・正規化・端点自己同型 |
+| lens | get/put の三法則と有限基準 fiber を持つ実現、および独立に指定した意味保存射の全範囲 |
+| プロトコル | 商経路圏上の観測を持つ有限 carrier 実現、および観測を保つ自然変換の全範囲 |
+
+CS の二族では、lens の基準 fiber 上の任意の写像、protocol の観測と生成辺を保つ
+頂点写像の再構成を具体例として示す。両者をこの一つの宣言・主定理の適用として記述し、
+独立した意味論から対象・許容射が得られる構成と、局所データからそれを回復する証明を対応させる。
+主定理の量化と要求は [G-124 A・B][g124]に固定する。
+
+### 8.3 初版の例・系・補足に使う個別結果
+
+以下の個別結果は、指定した読み取り方式とともに例・系・補足へ配置する。
+§8.2 の共通主同値と有限表示・有限決定との接続は、§8.5 の改訂版でまとめる。
+有限表示の個別の経路は [lens の Karoubi 整合][lens-karoubi]と
+[protocol の Karoubi 整合][protocol-karoubi]、比較群の一般的な輸送は
+[充満忠実関手による輸送][cs-comparison]に対応する。
 
 有限読み取りには次の三性質を別々に定める。
 
@@ -532,7 +716,7 @@ lens では基準 fiber 上の置換 table、上記セッションモデルで�
 整合判定と延長の計算も示す。一般のプロトコル射には、前段の頂点・生成辺 table による
 再構成を適用する。
 
-同一定義で扱うタグ変更族では、二元巡回群 `C₂` を用いて、全有限制限の整合族との群同型
+タグ変更族の個別結果では、二元巡回群 `C₂` を用いて、全有限制限の整合族との群同型
 
 \[
  C_2^{\Omega}\cong\varprojlim_{S\subseteq_{\mathrm{fin}}\Omega}C_2^S
@@ -546,19 +730,34 @@ lens では基準 fiber 上の置換 table、上記セッションモデルで�
 [lens の可逆変更][lens-invertible]、[protocol の可逆変更][protocol-invertible]、
 [有限決定集合と成分][finite-components]、[タグの全有限読み取りの群同型][tag-group-reconstruction]。
 
-### 8.4 固定版で個別結果と共通再構成を分ける箇所
+### 8.4 形式化との対応
 
-| 入力族・接続 | 照合できる結果 | 一つの共通主定理へ残る接続 |
+第8章の構成要素と一次資料を次のように対応づける。
+
+| 構成要素 | 数学的な内容 | 一次資料 |
 | --- | --- | --- |
-| lens / protocol | 一般 Hom の制限・延長、各枝の対象組立てと圏同値、有限 table、Karoubi / retract / Arr 整合 | 同じ `Σ,D,Λ` の原始読み取りと、枝ごとの同値の一致 |
-| タグ付き operation | source-choice の全有限制限、actual 射への忠実な実現、正規化を含む生成部分圏の局所同値 | represented image の外を含む、共通の保存条件で定めた全 Hom・全局所対象の組立て |
-| G-122 固定生成比較 | 三比較の primitive probe、full 比較群の kernel 座標分解、complete graph による全 raw 比較の分離 | full kernel の任意の元の独立な局所表示、完全幾何の整合条件からの joint assembly |
-| 完全幾何一般 | raw graph 圏、reading の忠実性、代数的な graph 条件と一部の依存成分の両逆 | context 関手の射作用、operation・invariant・Support・Axis・Observable・raw naturality 等を含む整合条件と完全 Hom の組立て |
-| 四族の共通入力 | 必須の各入力・既存結果と一般再構成原理を特定できる | decoder 非依存の一つのデータ条件、共通局所モデル、投影・正規化・全比較群の回復を同じ同値へ接続する証明 |
+| lens / protocol | 各族の一般 Hom・対象の組立てと圏同値、有限 table、Karoubi / retract / Arr 整合 | [lens の局所モデル][lens-model]、[protocol の局所モデル][protocol-model]、[lens の Karoubi 整合][lens-karoubi]、[protocol の Karoubi 整合][protocol-karoubi] |
+| 枝ごとの再構成の総圏 | タグ、固定生成比較、lens、protocol の四枝を fiber とする総圏・組立て・圏同値 | [四族の総圏][four-family-total] |
+| 完全幾何の Hom | lawful graph code の組立て、成分ごとに直接定める恒等・合成、package で添字づけた圏同値 | [完全 Hom の組立て][graph-assembly]、[直接の局所圏][graph-direct] |
+| raw 対象の原始読み取り | 固定した site・係数上の型参照・有限多項式・変数像による独立な局所表示と型同値。有限片の整合族からの組立て | [独立 raw 検証][independent-raw] |
+| 共通宣言と主同値の仕様 | 一つの `Σ,D,Λ` からの `R_Θ,M_Θ,N_Θ`、必須四族の由来・全対象・全許容射の収録、分離と対象・射の組立て | [G-124 A・B][g124]、[一般再構成原理][local-equivalence] |
 
-根拠は [G-123 report][r123]、[G-124 の固定要求][g124]と [report の未完了 ledger][r124]。
-個別に構成された圏同値・分離・分類を収録し、四族を貫く主同値や全比較群の局所組立ては、
-この表の接続を満たす証拠と対応させる。個別の成果から G-123・G-124 の全要求の成立は推論しない。
+付録A・Cには、本文の命題・入力構成・前提の証明・主同値での使用先と、Lean 宣言・版を対応づける。
+
+### 8.5 改訂版で加える投影・比較群・有限決定性（C–E）
+
+初版の展望には、§8.2 の対象・関手から次の問いを述べる。
+改訂版では、それぞれを定理・証明・具体的帰結として展開する。
+
+| 条項 | 改訂版で収録する内容 | 初版から受け取るもの |
+| --- | --- | --- |
+| C | 底・観測・係数投影の自然な対応、任意の比較 `c` の `Γ_c≅Γ_{N_Θ(c)}`、底固定・許容部分群、正規化・Karoubi・Arr との整合。固定 G-122 例の可逆性・反映、section、分裂短完全列、核と全 lift fiber の回復 | 第6〜7章の比較・分類、8-K の主同値 |
+| D | §8.3 の区別・延長・実効性の定義を、A・B の局所読み取りと具体例へ共通に適用する。操作系の連結成分による必要十分条件と、明示的有限入力上の決定・延長計算 | 共通局所読み取りと §7.2 の操作系・変更分類 |
+| E1 | 全 source-choice 族の群同型と全有限片からの回復を主同値による回復と同定し、同じ定義で有限決定不能性と一様 flip の性質を示す | タグ族の収録、§8.3 の個別結果 |
+| E2 | lens・プロトコルの一般射の有限再構成、Karoubi / retract / Arr の経路、可逆変更の連結成分判定を同じ主同値へ接続し、比較群・section・核・fiber も回復する | CS の独立な意味論と A・B の適用、各族の既存の有限表示 |
+
+第7章の分類定理と §8.3 の個別結果は、それぞれの成立条件で初版にも収録できる。
+この表は、それらを共通の局所再構成と結ぶ改訂版の追加内容を定める。
 
 ## 全10部・付録の収録先と補足候補
 
@@ -575,7 +774,7 @@ lens では基準 fiber 上の置換 table、上記セッションモデルで�
 | [本文 V][math-v] | 第2章の補足に derived tensor product、`Tor_i(O/I_U,O/I_V)` による Law conflict、共有因子の repair 反例を置く。Transferred Obstruction（§10）・Derived Repair Criterion（§11）・本文 VIII §10 の support と pairing の基本条件は一つの修復の補足にまとめる | 同一 ambient、selected conflict class、repair direction、transfer pairing と修復の比較条件を指定する。Tor の非零性と特定 repair の非零転送を分け、修復条件の定義を一般の修復存在定理と区別する。Hilbert 計算・well-founded repair は補足候補 |
 | [本文 VI][math-vi] | 第2章の補足に Architecture Stratum、smoothness、Architecture Singularity、Singularity Criterion、God Object の再解釈（§§2・4–5、定理6.1、§7）を配置。第1・4章の operation / groupoid 語彙も補う | 特異性の補足では Law、deformation test、必要な tangent / cotangent complex を固定し、指定障害類の非零性に相対化した結論を保つ。複体の一般構成、square-zero lifting、monodromy、stack / gerbe は発展候補とし、各構成の入力・成立条件を個別に示す |
 | [本文 VII][math-vii] | 第3・7章の表現の保存・反映と情報損失。Period Separation（§6）は第7章冒頭の小例、Representation Completeness as a Spectrum（§15）は第8章導入で第3・7章とつなぐ説明にする。period pairing は第2章の補足 | strict な homology–cohomology pairing と broad reading を区別。metric / cost は追加 enrichment、repair margin / filling cost は補足候補 |
-| [本文 VIII][math-viii] | Class Transport（§7）は第3章の係数比較へ統合し、第4〜5章とは実比較を与える箇所で接続。第8章の実効性、付録Bの有限計算・Alexander dual（§5）・Measurement Packet（§11）の入力・係数・仮定・出力の意味を収録 | 有限な site と係数アルゴリズムを指定し、selected measurement ideal と標準 obstruction ideal を分ける。Support-Localized Transfer Measurement（§10）の基本条件は本文 V の補足へ、norm・support weight・Wasserstein 型の拡張は展望へ置く。Hodge / Tor base change の条件を保持し、stability の候補は候補として記す |
+| [本文 VIII][math-viii] | Class Transport（§7）は第3章の係数比較へ統合し、第4〜5章とは実比較を与える箇所で接続。§8.3 の個別結果に用いる有限計算と実効性、付録Bの有限計算・Alexander dual（§5）・Measurement Packet（§11）の入力・係数・仮定・出力の意味を収録 | 有限な site と係数アルゴリズムを指定し、selected measurement ideal と標準 obstruction ideal を分ける。Support-Localized Transfer Measurement（§10）の基本条件は本文 V の補足へ、norm・support weight・Wasserstein 型の拡張は展望へ置く。Hodge / Tor base change の条件を保持し、stability の候補は候補として記す |
 | [本文 IX][math-ix] | 第4章の操作合成への補足、結びの時間方向への展開 | measurement profile に従属する trace / product site / temporal coefficient。temporal descent、散逸、Lyapunov / force の条件付き reading を一般輸送定理へ同一視しない |
 | [本文 X][math-x] | 第2章の SAGA 比較を主要結果として収録 | semantic repair と equation geometry の独立生成、class 対応、true sheaf による actual repair |
 | [付録 A–B][math-app] | 第1章の相対パラメータ、第2章の通常の scheme との関係、補足の有限計算 | 付録Bで square-free ideal と Alexander dual の minimal hitting set を一つの有限例として扱い、実際の修復操作には別途意味論を与える。monomial Tor・period・circle nerve 上の独立表示は、必要な局所例を選ぶ |
@@ -590,12 +789,12 @@ lens では基準 fiber 上の置換 table、上記セッションモデルで�
 | 接続 | 論文で明示する内容 | 根拠・残る仕事 |
 | --- | --- | --- |
 | 第1→2章 | 同じ equation system から symbolic ideal、residual、係数、実 section 評価を生成する | 2-D・2-E・2-H の写像と成立条件を一つの図式へ整理 |
-| 第2→3章 | 選択した障害係数と law-value 診断係数の関係 | 対応がある範囲で比較を構成。一般の自動同定は置かない |
+| 第2→3章 | 同じ Atom・Law・被覆入力の既存 Čech 障害と law-value 診断 | G-125 の 2-I・3-H〜3-L を収録。cochain 比較、既存指定類の対応、零性反映、reading 平方・輸送・不変性と二例を対応づける |
 | 第3→8章 | ambient な存在と、指定した表示体系内での実現可能性を分ける | `q_L` の admissible 表示、底の code coverage、固定 Hom、局所組立てという別々の普遍性を説明 |
 | 第4→5→6章 | 輸送の普遍性から二経路・実比較・正規化因子へ進む | `α`、authored comparator、`β`、`barAlpha`、`barBeta` の端点と生成元を揃える |
-| 第6→7→8章 | 正規化関手、比較保存群、局所モデルでの回復を結ぶ | 6-D→7-H の群同定、6-E→7-I の比較群準同型と底への射影を接続。局所モデルへの移送では、採用する充満忠実関手ごとに資格部分群、section・核・fiber の対応を確認 |
+| 第6→7→8章 | 正規化と比較保存群の既存分類、その比較・変更を含む入力の局所再構成 | 初版は 6-D→7-H、6-E→7-I の分類と、A・B による対象・全許容射の回復を収録。共通主同値と投影・正規化・section・核・fiber の整合は §8.5 の C へ |
 | 第2章と第8章の「局所」 | site の被覆上の descent と、原始読み取りの整合族による reconstruction の関係 | 添字圏・制限・overlap・係数・assembly の比較を与える場合に限り接続。一般 `H¹` による同一の障害理論は追加の課題 |
-| 第1・4・7・8章の CS | 独立な意味論 → 入力構成 → 操作保存 → 共通分類 → 再構成・有限決定 | lens と protocol の各段の対応命題を揃える。操作が hidden state を恒等に運ぶ特殊形の結論を一般 protocol に広げない |
+| 第1・4・7・8章の CS | 独立な意味論 → 入力構成 → 操作保存 → 共通分類・局所再構成 | 初版は lens と protocol の対応命題と A・B の適用を揃える。有限決定と同じ主同値との整合は §8.5 の D・E へ。操作が hidden state を恒等に運ぶ特殊形の分類は、その入力を明記する |
 
 記号では、doctrine の source normalization、object の canonical 正規化、finite code の既定値正規化を
 別記号にする。有限性についても、Atom family、Source、cover / presentation、状態 fiber、
@@ -784,8 +983,6 @@ AAT 固有の寄与は、入力からの生成、仮定の導出、実比較と�
 [tag-kernel]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeNormalizedChoiceKernel.lean
 [tag-model]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeExactGeometryLocalModel.lean
 [graph-separation]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryFunctionGraphSeparation.lean
-[graph-category]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryGraphCategory.lean
-[dependent-graph]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/DependentAlgebraicGraphCoherence.lean
 [full-kernel]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122FullComparisonKernelDecomposition.lean
 [graph-kernel]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/G122CompleteGraphKernelReconstruction.lean
 [lens-karoubi]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LensFiberKaroubiCoherence.lean
@@ -812,5 +1009,31 @@ AAT 固有の寄与は、入力からの生成、仮定の導出、実比較と�
 [g124]: ../../../research/goals/G-124-aat-local-semantic-reconstruction.md
 [r105]: ../../../research/reports/G-105-aat-structural-cover-invariance.md
 [r117]: ../../../research/reports/G-117-aat-lax-diagnostic-projector.md
-[r123]: ../../../research/reports/G-123-aat-realization-reconstruction.md
 [r124]: ../../../research/reports/G-124-aat-local-semantic-reconstruction.md
+[g125]: ../../../research/goals/G-125-aat-obstruction-diagnostic-bridge.md
+[r125]: ../../../research/reports/G-125-aat-obstruction-diagnostic-bridge.md
+[bridge-atoms]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/PointGeneratorAtomInput.lean
+[bridge-laws]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/PointAtomLawInput.lean
+[bridge-presentation]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/PresentationGroup.lean
+[bridge-sheaf]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/AATLocallyConstantObstruction.lean
+[bridge-continuity]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomContextContinuity.lean
+[bridge-cover-geometry]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/FiniteCoverGeometry.lean
+[bridge-covers]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomActualNerve.lean
+[bridge-cech]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/FaceEmptyCechNormalization.lean
+[bridge-affine]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/SpecifiedAffineObstruction.lean
+[bridge-existing]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/ExistingObstructionBridge.lean
+[bridge-coefficient]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/CoefficientComparison.lean
+[bridge-h1]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/ActualCechH1Comparison.lean
+[bridge-input]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomH1Input.lean
+[bridge-classes]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomSpecifiedObstruction.lean
+[bridge-integral]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/IntegralReflection.lean
+[bridge-reflection]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/SpecifiedClassReflection.lean
+[bridge-selected-reflection]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomSpecifiedReflection.lean
+[bridge-refinement]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/SelectedReadingRefinement.lean
+[bridge-naturality]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/CombinedAtomReadingNaturality.lean
+[bridge-condition-c]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/SelectedReadingConditionC.lean
+[bridge-examples]: ../../../research/lean/ResearchLean/AG/ObstructionDiagnosticBridge/SelectedFiniteObstructionExamples.lean
+[graph-assembly]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryGraphAssembly.lean
+[graph-direct]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryDirectCategory.lean
+[four-family-total]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/AATFourFamilyTotalReconstruction.lean
+[independent-raw]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentRawLocalValidation.lean
