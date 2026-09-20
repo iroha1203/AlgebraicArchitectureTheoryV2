@@ -95,6 +95,87 @@ theorem chartLawfulSection_lawful (x : ActualCechAffineLocalData P C)
   apply Quotient.sound
   exact Relation.EqvGen.rel left right hrelation
 
+/-- The actual obstruction-sheaf restriction of one chart state to an overlap. -/
+def restrictedState (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) (chart : D.nerve.Chart)
+    (restriction : C.edgeContext edge ⟶ C.chartContext chart) :=
+  (P.aatLocallyConstantObstructionSheaf G).carrier.toPresheaf.map restriction.op
+    (x.localState chart)
+
+/-- Integral block coordinates of an actual chart-state restriction on an overlap. -/
+def restrictedBlockState (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) (chart : D.nerve.Chart)
+    (restriction : C.edgeContext edge ⟶ C.chartContext chart) : P.Block → ℤ :=
+  letI := C.edgeSupportNonempty edge
+  letI := C.edgeSupportPreconnected edge
+  fun block =>
+    FreeAbelianGroup.coeff block
+      (P.presentationToBlocks
+        (P.aatLocallyConstantObstructionSectionEquiv G (C.edgeContext edge)
+          (x.restrictedState edge chart restriction)))
+
+/-- Evaluation at the actual overlap restriction of one chart state. -/
+def restrictedLawEvaluation (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) (chart : D.nerve.Chart)
+    (restriction : C.edgeContext edge ⟶ C.chartContext chart) :
+    AffineLawRing laws →+* ℤ :=
+  MvPolynomial.eval₂Hom (RingHom.id ℤ)
+    (fun generator => x.restrictedBlockState edge chart restriction (P.blockOf generator))
+
+/-- Lawful-section data obtained from the actual sheaf restriction to an overlap. -/
+def restrictedLawfulSectionData (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) (chart : D.nerve.Chart)
+    (restriction : C.edgeContext edge ⟶ C.chartContext chart) :
+    LawAlgebra.LawfulLocus.LawfulSectionData (AffineLawRing laws) P.affineLawIdeal where
+  SectionRing := ℤ
+  commRing := inferInstance
+  pullback := x.restrictedLawEvaluation edge chart restriction
+
+omit [Fintype Source] in
+/-- Primitive relations remain lawful after the actual sheaf restriction. -/
+theorem restrictedLawfulSectionData_lawful (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) (chart : D.nerve.Chart)
+    (restriction : C.edgeContext edge ⟶ C.chartContext chart) :
+    (x.restrictedLawfulSectionData edge chart restriction).Lawful := by
+  rw [LawAlgebra.LawfulLocus.LawfulSectionData.Lawful,
+    LawAlgebra.LawfulLocus.LawfulSectionData.pulledObstructionIdeal,
+    Ideal.map_eq_bot_iff_le_ker]
+  change P.affineLawIdeal ≤ RingHom.ker (x.restrictedLawEvaluation edge chart restriction)
+  rw [affineLawIdeal, Ideal.span_le]
+  rintro f ⟨left, right, hrelation, rfl⟩
+  change x.restrictedLawEvaluation edge chart restriction
+      (MvPolynomial.X left - MvPolynomial.X right) = 0
+  rw [map_sub, sub_eq_zero]
+  change
+    (MvPolynomial.eval₂Hom (RingHom.id ℤ)
+        (fun generator =>
+          x.restrictedBlockState edge chart restriction (P.blockOf generator)))
+          (MvPolynomial.X left) =
+      (MvPolynomial.eval₂Hom (RingHom.id ℤ)
+        (fun generator =>
+          x.restrictedBlockState edge chart restriction (P.blockOf generator)))
+          (MvPolynomial.X right)
+  rw [MvPolynomial.eval₂Hom_X', MvPolynomial.eval₂Hom_X']
+  apply congrArg (x.restrictedBlockState edge chart restriction)
+  apply Quotient.sound
+  exact Relation.EqvGen.rel left right hrelation
+
+omit [Fintype Source] in
+/-- The overlap coordinates are the coordinates of the chart state under actual restriction. -/
+theorem restrictedBlockState_eq_chartBlockState
+    (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) (chart : D.nerve.Chart)
+    (restriction : C.edgeContext edge ⟶ C.chartContext chart) :
+    x.restrictedBlockState edge chart restriction = x.chartBlockState chart := by
+  funext block
+  letI := C.edgeSupportNonempty edge
+  letI := C.edgeSupportPreconnected edge
+  letI := C.chartSupportNonempty chart
+  letI := C.chartSupportPreconnected chart
+  unfold restrictedBlockState restrictedState chartBlockState
+  rw [P.aatLocallyConstantObstructionSectionEquiv_restriction G
+    (C.edgeContext edge) (C.chartContext chart) restriction (x.localState chart)]
+
 /-- Existing local-flatness package carried by the chart states. -/
 def localFlatnessData (x : ActualCechAffineLocalData P C) :
     LocalFlatnessData C.toCoverRelativeCechCover (AffineLawRing laws) P.affineLawIdeal where
@@ -103,13 +184,134 @@ def localFlatnessData (x : ActualCechAffineLocalData P C) :
 
 /-- Restriction witness for a selected chart state on one overlap. -/
 def restrictedLawfulSection (x : ActualCechAffineLocalData P C)
-    (edge : D.nerve.EdgeComponent) (chart : D.nerve.Chart) :
+    (edge : D.nerve.EdgeComponent) (chart : D.nerve.Chart)
+    (restriction : C.edgeContext edge ⟶ C.chartContext chart) :
     RestrictedLocalLawfulSection x.localFlatnessData edge chart where
-  restrictedSection := x.chartLawfulSection chart
+  restrictedSection := x.restrictedLawfulSectionData edge chart restriction
   restrictsLocalSection :=
-    x.chartLawfulSection chart = x.localFlatnessData.localSection chart
-  restriction_holds := rfl
-  restrictedLawful := x.chartLawfulSection_lawful chart
+    x.restrictedBlockState edge chart restriction = x.chartBlockState chart
+  restriction_holds := x.restrictedBlockState_eq_chartBlockState edge chart restriction
+  restrictedLawful := x.restrictedLawfulSectionData_lawful edge chart restriction
+
+/-- The actual left chart state restricted to an overlap. -/
+def leftRestrictedState (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) :=
+  x.restrictedState edge (D.nerve.edgeLeft edge) (C.edgeLeftRestriction edge)
+
+/-- The actual right chart state restricted to an overlap. -/
+def rightRestrictedState (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) :=
+  x.restrictedState edge (D.nerve.edgeRight edge) (C.edgeRightRestriction edge)
+
+/-- The primitive transition read in the actual obstruction sheaf on the overlap. -/
+def overlapTransition (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) :
+    (P.aatLocallyConstantObstructionSheaf G).carrier.toPresheaf.obj
+      (Opposite.op (C.edgeContext edge)) :=
+  x.transition edge
+
+/-- The restricted right state after the primitive affine transition. -/
+def translatedRightState (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) :
+    (P.aatLocallyConstantObstructionSheaf G).carrier.toPresheaf.obj
+      (Opposite.op (C.edgeContext edge)) :=
+  x.overlapTransition edge + x.rightRestrictedState edge
+
+/-- Integral block coordinates of the translated right overlap state. -/
+def translatedRightBlockState (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) : P.Block → ℤ :=
+  letI := C.edgeSupportNonempty edge
+  letI := C.edgeSupportPreconnected edge
+  fun block =>
+    FreeAbelianGroup.coeff block
+      (P.presentationToBlocks
+        (P.aatLocallyConstantObstructionSectionEquiv G (C.edgeContext edge)
+          (x.translatedRightState edge)))
+
+/-- Evaluation at the translated right overlap state. -/
+def translatedRightLawEvaluation (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) : AffineLawRing laws →+* ℤ :=
+  MvPolynomial.eval₂Hom (RingHom.id ℤ)
+    (fun generator => x.translatedRightBlockState edge (P.blockOf generator))
+
+/-- Lawful-section data carried by the translated right overlap state. -/
+def translatedRightLawfulSectionData (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) :
+    LawAlgebra.LawfulLocus.LawfulSectionData (AffineLawRing laws) P.affineLawIdeal where
+  SectionRing := ℤ
+  commRing := inferInstance
+  pullback := x.translatedRightLawEvaluation edge
+
+omit [Fintype Source] in
+/-- The primitive affine transition preserves the presentation relation ideal. -/
+theorem translatedRightLawfulSectionData_lawful
+    (x : ActualCechAffineLocalData P C) (edge : D.nerve.EdgeComponent) :
+    (x.translatedRightLawfulSectionData edge).Lawful := by
+  rw [LawAlgebra.LawfulLocus.LawfulSectionData.Lawful,
+    LawAlgebra.LawfulLocus.LawfulSectionData.pulledObstructionIdeal,
+    Ideal.map_eq_bot_iff_le_ker]
+  change P.affineLawIdeal ≤ RingHom.ker (x.translatedRightLawEvaluation edge)
+  rw [affineLawIdeal, Ideal.span_le]
+  rintro f ⟨left, right, hrelation, rfl⟩
+  change x.translatedRightLawEvaluation edge
+      (MvPolynomial.X left - MvPolynomial.X right) = 0
+  rw [map_sub, sub_eq_zero]
+  change
+    (MvPolynomial.eval₂Hom (RingHom.id ℤ)
+        (fun generator => x.translatedRightBlockState edge (P.blockOf generator)))
+          (MvPolynomial.X left) =
+      (MvPolynomial.eval₂Hom (RingHom.id ℤ)
+        (fun generator => x.translatedRightBlockState edge (P.blockOf generator)))
+          (MvPolynomial.X right)
+  rw [MvPolynomial.eval₂Hom_X', MvPolynomial.eval₂Hom_X']
+  apply congrArg (x.translatedRightBlockState edge)
+  apply Quotient.sound
+  exact Relation.EqvGen.rel left right hrelation
+
+/-- The actual Cech coboundary read in the overlap section type. -/
+def actualCoboundaryOnOverlap (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) :
+    (P.aatLocallyConstantObstructionSheaf G).carrier.toPresheaf.obj
+      (Opposite.op (C.edgeContext edge)) :=
+  ((P.faceEmptyCechComplex C).d 0 x.localState) edge
+
+/-- The actual mismatch read in the overlap section type. -/
+def actualMismatchOnOverlap (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) :
+    (P.aatLocallyConstantObstructionSheaf G).carrier.toPresheaf.obj
+      (Opposite.op (C.edgeContext edge)) :=
+  x.actualMismatch edge
+
+omit [Fintype Source] in
+/-- Actual Cech `d⁰` is the difference of the two actual chart restrictions. -/
+theorem actualCoboundaryOnOverlap_eq_restriction_sub
+    (x : ActualCechAffineLocalData P C) (edge : D.nerve.EdgeComponent) :
+    x.actualCoboundaryOnOverlap edge =
+      x.rightRestrictedState edge - x.leftRestrictedState edge :=
+  rfl
+
+/--
+The affine overlap comparison: translate the restricted right state by the
+primitive transition, then subtract the restricted left state.
+-/
+def affineComparisonMismatch (x : ActualCechAffineLocalData P C)
+    (edge : D.nerve.EdgeComponent) :
+    (P.aatLocallyConstantObstructionSheaf G).carrier.toPresheaf.obj
+      (Opposite.op (C.edgeContext edge)) :=
+  x.translatedRightState edge - x.leftRestrictedState edge
+
+omit [Fintype Source] in
+/-- The actual affine restriction comparison computes paper equation (1). -/
+theorem affineComparisonMismatch_eq_actualMismatch_apply
+    (x : ActualCechAffineLocalData P C) (edge : D.nerve.EdgeComponent) :
+    x.affineComparisonMismatch edge = x.actualMismatch edge := by
+  change
+    x.affineComparisonMismatch edge = x.actualMismatchOnOverlap edge
+  change x.affineComparisonMismatch edge =
+    x.overlapTransition edge + x.actualCoboundaryOnOverlap edge
+  rw [x.actualCoboundaryOnOverlap_eq_restriction_sub edge]
+  unfold affineComparisonMismatch translatedRightState
+  abel
 
 /--
 The existing gluing-mismatch input whose affine comparison value is equation (1).
@@ -122,17 +324,18 @@ def gluingMismatchData (x : ActualCechAffineLocalData P C) :
   leftIndex := D.nerve.edgeLeft
   rightIndex := D.nerve.edgeRight
   leftRestriction := fun edge =>
-    x.restrictedLawfulSection edge (D.nerve.edgeLeft edge)
+    x.restrictedLawfulSection edge (D.nerve.edgeLeft edge) (C.edgeLeftRestriction edge)
   rightRestriction := fun edge =>
-    x.restrictedLawfulSection edge (D.nerve.edgeRight edge)
-  mismatch := fun edge _left _right => x.actualMismatch edge
+    x.restrictedLawfulSection edge (D.nerve.edgeRight edge) (C.edgeRightRestriction edge)
+  mismatch := fun edge _left _right => x.affineComparisonMismatch edge
 
 omit [Fintype Source] in
 /-- The existing gluing mismatch cochain is the affine actual mismatch. -/
 theorem gluingMismatchCochain_eq_actualMismatch
     (x : ActualCechAffineLocalData P C) :
-    x.gluingMismatchData.gluingMismatchCochain = x.actualMismatch :=
-  rfl
+    x.gluingMismatchData.gluingMismatchCochain = x.actualMismatch := by
+  funext edge
+  exact x.affineComparisonMismatch_eq_actualMismatch_apply edge
 
 /-- Existing descent cocycle attached to the affine lawful local data. -/
 def existingDescentCocycle (x : ActualCechAffineLocalData P C) :
@@ -163,15 +366,18 @@ def existingDescentObstructionClass (x : ActualCechAffineLocalData P C) :
 /-- Additive reading of the existing descent-obstruction class. -/
 def existingDescentAdditiveClass (x : ActualCechAffineLocalData P C) :
     (P.faceEmptyCechComplex C).AdditiveCechH1 :=
-  (P.faceEmptyCechComplex C).additiveH1Class x.existingDescentCocycle
+  (P.faceEmptyCechComplex C).legacyCechH1EquivAdditiveCechH1
+    x.existingDescentObstructionClass
 
 omit [Fintype Source] in
 /-- The class used by B1--C2 is exactly the existing descent obstruction class. -/
 theorem existingDescentAdditiveClass_eq_actualClass
     (x : ActualCechAffineLocalData P C) :
     x.existingDescentAdditiveClass = x.actualClass := by
-  rw [existingDescentAdditiveClass, actualClass,
-    x.existingDescentCocycle_eq_actualCocycle]
+  change
+    (P.faceEmptyCechComplex C).additiveH1Class x.existingDescentCocycle =
+      (P.faceEmptyCechComplex C).additiveH1Class x.actualCocycle
+  rw [x.existingDescentCocycle_eq_actualCocycle]
 
 omit [Fintype Source] in
 /-- Equality of existing obstruction classes is exactly equality of the additive classes used below. -/
