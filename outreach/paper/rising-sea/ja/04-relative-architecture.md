@@ -313,7 +313,7 @@ $`\mathrm{res}_{jk}=\mathrm{res}_k\mathrm{res}_j`$ を満たすことをいう�
 \mathrm{res}_j(\nu_{W,i,a})=\nu_{W',i,a},
 \qquad
 \mathrm{res}_j(\varepsilon_{W,A,i,a})=\varepsilon_{W',A,i,a}
-\tag{1.1}
+\qquad\text{(1.1)}
 ```
 
 を課す。$`\nu`$ は方程式を代数的に表示するための座標、
@@ -458,7 +458,7 @@ B\in\mathrm{Obj}_r
 \exists n\inℕ,\
 A_r=A_0\xrightarrow{o_1}A_1\xrightarrow{o_2}
 \cdots\xrightarrow{o_n}A_n=B.
-\tag{1.2}
+\qquad\text{(1.2)}
 ```
 
 長さ $`0`$ の列も許す。
@@ -578,7 +578,7 @@ $`s_\alpha\in F(W_\alpha)`$ の族で、
 ```math
 F(\pi_\alpha)(s_\alpha)=F(\pi_\beta)(s_\beta)
 \quad\text{in }F(W_{\alpha\beta})
-\tag{1.3}
+\qquad\text{(1.3)}
 ```
 
 をすべての $`\alpha,\beta`$ について満たすものをいう。
@@ -589,7 +589,7 @@ $`\langle 𝒰\rangle\in J(W)`$ となるすべての族に対して
 ```math
 F(W)\longrightarrow\mathrm{Match}(𝒰,F),
 \qquad s\longmapsto(F(u_\alpha)(s))_\alpha
-\tag{1.4}
+\qquad\text{(1.4)}
 ```
 
 が全単射となることをいう。単射性を分離性、全射性を貼り合わせの存在と呼ぶ。
@@ -680,7 +680,7 @@ $`\rho_j:k[x_z\mid z\in Z_W]\to k[x_z\mid z\in Z_{W'}]`$ を与え、
 \rho_{\mathrm{id}}=\mathrm{id},
 \qquad
 \rho_{jk}=\rho_k\rho_j
-\tag{1.5}
+\qquad\text{(1.5)}
 ```
 
 を要求する。座標、関係、これらの多項式の制限をまとめてraw restriction system
@@ -742,7 +742,7 @@ N_{D'}f&=fN_D,\\
 \mathrm{Extracts}_{D'}(f(t),e(a))
 &&\text{for all }t,a
 \end{aligned}
-\tag{1.6}
+\qquad\text{(1.6)}
 ```
 
 を満たすものとする。恒等射は二つの恒等写像、合成は
@@ -754,7 +754,7 @@ $`(f',e')(f,e)=(f'f,e'e)`$ である。
 
 ```math
 \mathrm{Atomize}_{D'}(f(t))=e_*\mathrm{Atomize}_D(t)
-\tag{1.7}
+\qquad\text{(1.7)}
 ```
 
 が従う。実際、右辺の元は抽出の保存によって左辺に属する。
@@ -780,7 +780,7 @@ Atomを写してから対象を作る経路と、対象を作ってから写す�
 H(\mathrm{Form}_r(C))&=\mathrm{Form}_{r'}(e_*C),\\
 C_{H(A)}&=e_*C_A
 \end{aligned}
-\tag{1.8}
+\qquad\text{(1.8)}
 ```
 
 を要求する。operationの写像
@@ -789,7 +789,7 @@ configurationへの作用 $`d(o)`$ について
 
 ```math
 d(\Phi(o))_{\mathrm{At}}\,e=e\,d(o)_{\mathrm{At}}
-\tag{1.9}
+\qquad\text{(1.9)}
 ```
 
 を課す。$`e`$ 自身も $`C_A\to C_{H(A)}`$ のconfigurationの射を与えるため、
@@ -812,7 +812,7 @@ $`\lambda:K_{E_r}\xrightarrow{\sim}K_{E_{r'}}`$、
 &=\varepsilon'_{\theta W,H(A),\lambda i,e(a)},\\
 c'_{\lambda i}&=e_*c_i
 \end{aligned}
-\tag{1.10}
+\qquad\text{(1.10)}
 ```
 
 を満たすものとする。最後の等式はdetector codeの構文としての等式である。
@@ -831,7 +831,7 @@ signatureには軸の写像 $`\sigma:\Lambda_r\to\Lambda_{r'}`$ と
 \Longleftrightarrow \sigma\ell\in\Lambda'_{\mathrm{sel}},
 \qquad
 \beta_\ell(q_\ell(A))=q'_{\sigma\ell}(H(A))
-\tag{1.11}
+\qquad\text{(1.11)}
 ```
 
 を課す。射はこれらの構成写像をすべて保持する。
@@ -847,7 +847,7 @@ E_{r,i}(A)\Longleftrightarrow E_{r',\lambda i}(H(A)),
 \qquad
 \mathrm{Lawful}_{E_r}(A)\Longleftrightarrow
 \mathrm{Lawful}_{E_{r'}}(H(A)).
-\tag{1.12}
+\qquad\text{(1.12)}
 ```
 
 また、$`Q\mapsto e_*Q`$ は
@@ -896,7 +896,7 @@ $`\bar\theta`$ に沿って再添字づけしたものと等しい：
 
 ```math
 ℬ'=\bar\theta^{\,*}(\varphi_!ℬ).
-\tag{1.13}
+\qquad\text{(1.13)}
 ```
 
 右辺は、変更後の文脈 $`V`$ に $`\bar\theta V`$ の座標・種別・局所データ型・
@@ -921,7 +921,7 @@ observableの反変な制限を $`O_j`$ と書けば、
 S'_{\theta j}s_{W'}=s_WS_j,\qquad
 A'_{\theta j}a_{W'}=a_WA_j,\qquad
 O'_{\theta j}o_W=o_{W'}O_j
-\tag{1.14}
+\qquad\text{(1.14)}
 ```
 
 が成立する。
@@ -940,7 +940,7 @@ E_{\mathrm{geom}}
 E_{\mathrm{core}}
 \xrightarrow{\,q\,}
 B
-\tag{1.15}
+\qquad\text{(1.15)}
 ```
 
 を持つ。$`p`$ は幾何の選択とその比較を忘れてcoreを取り出し、
@@ -988,7 +988,7 @@ viewの集合 $`V`$ と基準値 $`v_0\in V`$ を固定する。
 p(c,g(c))=c,\qquad
 g(p(c,v))=v,\qquad
 p(p(c,v),w)=p(c,w)
-\tag{1.16}
+\qquad\text{(1.16)}
 ```
 
 をすべての $`c,v,w`$ について満たすものとする。
@@ -1009,7 +1009,7 @@ $`K_L=\{c\in C\mid g(c)=v_0\}`$ を有限とする。
 
 ```math
 g'h=g,\qquad h(p(c,v))=p'(h(c),v)
-\tag{1.17}
+\qquad\text{(1.17)}
 ```
 
 を満たすものとする。恒等と合成は状態写像の恒等と合成であり、
@@ -1026,7 +1026,7 @@ g'h=g,\qquad h(p(c,v))=p'(h(c),v)
 \zeta_L:V\times K_L&\longrightarrow C,
 &(v,k)&\longmapsto p(k,v)
 \end{aligned}
-\tag{1.18}
+\qquad\text{(1.18)}
 ```
 
 は互いに逆な全単射である。この表示で読取りは第一射影、更新は
@@ -1064,7 +1064,7 @@ h\longmapsto h|_{K_L}
 
 ```math
 \mathrm{ext}(t)(c)=p'\bigl(t(p(c,v_0)),g(c)\bigr)
-\tag{1.19}
+\qquad\text{(1.19)}
 ```
 
 で与えられる。これは、いったん基準viewへ更新し、その状態へ $`t`$ を適用した後、
@@ -1097,7 +1097,7 @@ $`p'(t(k),v_0)=t(k)`$ なので、$`\mathrm{res}(\mathrm{ext}(t))=t`$ である�
 
 ```math
 g'h=ug,\qquad h(p(c,v))=p'(h(c),u(v))
-\tag{1.20}
+\qquad\text{(1.20)}
 ```
 
 を要求する。積表示では第一成分は $`u(v)`$ である。
@@ -1164,7 +1164,7 @@ $`T_e:S_v\to S_w`$、各頂点に観測 $`b_v:S_v\to O(v)`$ を与える。
 ```math
 T_{\ell_j}=T_{r_j}\quad(j\in J_L),\qquad
 b_wT_e=O(e)b_v\quad(e:v\to w).
-\tag{1.21}
+\qquad\text{(1.21)}
 ```
 
 このとき、これらの状態・辺・観測を持つ実現がただ一つ定まる。
@@ -1188,7 +1188,7 @@ $`b_zT_eT_p=O(e)b_wT_p=O(e)O(p)b_v`$ である。
 
 ```math
 a_wX(e)=Y(e)a_v,\qquad o_Y(v)a_v=o_X(v)
-\tag{1.22}
+\qquad\text{(1.22)}
 ```
 
 をすべての名前付き辺 $`e:v\to w`$ と頂点について満たせば、
@@ -1217,7 +1217,7 @@ adapter $`q:X\to Y`$ と $`q':X'\to Y'`$ を比較するとき、
 
 ```math
 bq=q'a.
-\tag{1.23}
+\qquad\text{(1.23)}
 ```
 
 つまり、adapterを適用してから変更することと、
@@ -1300,7 +1300,7 @@ d_m(a)=
 m & a=*,\\
 t & a\ne *
 \end{cases}
-\tag{1.24}
+\qquad\text{(1.24)}
 ```
 
 を割り当てる。表の始域の役割 $`s`$ はすべて $`*`$ と異なる。
@@ -1325,7 +1325,7 @@ lensとプロトコルのsourceを、それぞれ
 &=1\sqcup\bigsqcup_{v\in Q_0}X(v)
  \sqcup\bigsqcup_{e\in Q_1}X(\mathrm{src}(e))
 \end{aligned}
-\tag{1.25}
+\qquad\text{(1.25)}
 ```
 
 とする。各直和の成分には、点、状態、view、更新入力、または辺入力というタグを付ける。
@@ -1381,7 +1381,7 @@ p(p(c,v),w)=p(c,w),\\[2pt]
 T_{\ell_j}(c)=T_{r_j}(c),\quad
 b_w(T_e(c))=O(e)(b_v(c)).
 \end{array}
-\tag{1.26}
+\qquad\text{(1.26)}
 ```
 
 lensではそれぞれ $`c`$、$`(c,v)`$、$`(c,v,w)`$ を走らせる。
@@ -1408,7 +1408,7 @@ O_E(W)=ℤ[x_{(i,a)}\mid (i,a)\in K\times\mathrm{At}],
 0 & P_i(A),\\
 1 & \text{それ以外}
 \end{cases}
-\tag{1.27}
+\qquad\text{(1.27)}
 ```
 
 とする。制限は恒等なので、式(1.1)は成立する。
@@ -1451,7 +1451,7 @@ $`𝒯(X)`$ と書く。その間の型付き射を、各役割の集合上の�
 \mathrm{Hom}_{\mathrm{Prot}(Q,L,O)}(X,Y)
 &\simeq\mathrm{Hom}_{\mathrm{typ}}(𝒯(X),𝒯(Y)).
 \end{aligned}
-\tag{1.28}
+\qquad\text{(1.28)}
 ```
 
 **証明.**
