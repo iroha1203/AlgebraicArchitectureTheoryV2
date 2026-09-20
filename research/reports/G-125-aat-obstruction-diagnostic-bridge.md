@@ -2815,7 +2815,7 @@ audits:
       - "all mathematical premises recorded by Cycles 1-22"
     remaining:
       - "same-head standard PR review and root acceptance-contract recheck"
-      - "schema-complete final packet containing every field from completion-ledger.md"
+      - "schema-complete final packet containing every field from the target_theorem_final_review schema in completion-ledger.md"
       - "fresh completion review using only the packet, fixed GOAL, and cumulative Lean artifacts"
       - "root recheck and formal completion ledger with final_packet_ref and pr_review_gate_ref"
       - "same-head CI confirmation and merge"
@@ -2837,7 +2837,7 @@ audits:
   validation_refs:
     - "implementation head 313019b37c7b15349b0b55d6e824a21e933a1320; exact-head CI 7/7 success: Lean run https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/35476601850 and Tool run https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/actions/runs/35476601862 plus Workers build ffafec0b-2fe5-4693-a3f3-9000bf7e80f1"
     - "command cd research/lean && lake build ResearchLean.AG.ObstructionDiagnosticBridge.SelectedFiniteObstructionExamples; result 3746 jobs success; output sha256 caffc4c43d24167b102e9fd3c5851dfbda8c56d94bcc6df3e4a529a881007d4f"
-    - "55-declaration namespace #print axioms audit: standard axioms only; immutable audit https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4822#issuecomment-5746164312"
+    - "55-declaration namespace #print axioms audit: standard axioms only; fixed-URL audit comment https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4822#issuecomment-5746164312"
   blocking_findings: []
   invalidated_as_completion_evidence:
     - "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4822#issuecomment-5746178104"
