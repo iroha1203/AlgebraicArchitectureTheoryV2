@@ -7,6 +7,14 @@ import Formal.Util.AssertStandardAxioms
 Circuit activation names the equation-index row and the exact finite-code row.
 Each soundness witness also names the residual coordinate and observable zero
 used by its nonvanishing check.
+
+## Implementation notes
+
+The witness formula puts the residual cell, the observable-zero cell, and their
+inequality in one finite implication.  This makes the primitive cells, rather
+than a separately stored native nonvanishing proof, the source of the circuit
+law.  We reject a truth anchor or an extra `LawInstances` field carrying the
+native inequality because either would bypass that finite provenance.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction.IndependentGeometryPrimitive.ObjectDependentFinite
@@ -107,6 +115,13 @@ theorem typed_iff_instances
       rw [he]
       rfl
 
+/-- Finite circuit-law formula whose consequent compares the selected residual
+cell with the observable-zero cell.  Its typing and matching hypotheses come
+from the preceding dependent-object stages; `witnessFormula_evaluate` is the
+API lemma connecting it to the native nonvanishing condition.  The circuit
+typing proof and datum remain as indices of the native law input, while code
+evaluation and datum matching stay in the outer antecedents of `LawInstances`.
+-/
 def witnessFormula
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
@@ -123,8 +138,52 @@ def witnessFormula
     (circuitAnchor t (.code _ i)
       (Equation.residualAnchor t ha A hA hc ht W B i a
         (Equation.observableActiveAnchor t ha A hA hc ht W .zero
-          (ObjectFormula.truth : ObjectFormula.{u, v, u} U))))
+          (.implies
+            (equationCell A (.residual W B
+              (IndependentEquationPrimitive.index (equationRows t ha A hA))
+              (IndependentEquationPrimitive.observableType
+                (equationRows t ha A hA) W) i a)
+              (ULift.up (some (Equation.observableActive t ha A hA hc ht W .zero))))
+            .falsity))))
 
+/-- The circuit witness formula is true exactly when its selected residual differs
+from the selected zero observable. -/
+@[simp] theorem witnessFormula_evaluate
+    (t : IndependentGeometryPrimitive.Table.{u, v} U)
+    (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
+    (hA : IndependentGeometryPrimitive.matching t (.object A) = true)
+    (hc : IndependentGeometryPrimitive.ContextLaws (rows t ha A hA))
+    (ht : IndependentEquationPrimitive.IsTyped (contextPreorder t ha A hA hc)
+      (equationRows t ha A hA))
+    (hct : IndependentEquationPrimitive.Circuit.IsTyped
+      (IndependentEquationPrimitive.index (equationRows t ha A hA)) (circuitRows t))
+    (i : IndependentEquationPrimitive.index (equationRows t ha A hA))
+    (B : ArchitectureObject U) (d : FiniteCircuitDatum U) (W : ArchCtx A) (a : U.Atom) :
+    (witnessFormula t ha A hA hc ht hct i B d W a).evaluate t ↔
+      Equation.residualValue t ha A hA hc ht W B i a ≠
+        Equation.observableActive t ha A hA hc ht W .zero := by
+  simp only [witnessFormula, equationAnchor_evaluate, circuitAnchor_evaluate,
+    Equation.residualAnchor_evaluate, Equation.observableActiveAnchor_evaluate,
+    ObjectFormula.evaluate]
+  rw [equationCell_evaluate_iff t ha A hA]
+  let q : IndependentEquationPrimitive.Query A := .residual W B
+    (IndependentEquationPrimitive.index (equationRows t ha A hA))
+    (IndependentEquationPrimitive.observableType (equationRows t ha A hA) W) i a
+  have hq : (equationRows t ha A hA q).down.isSome :=
+    (ht.residual W B _ _ i a).2 ⟨rfl, rfl⟩
+  constructor
+  · intro hn hz
+    apply hn
+    apply ULift.ext
+    exact (Option.some_get hq).symm.trans (congrArg some hz)
+  · intro hn he
+    apply hn
+    have he' := congrArg ULift.down he
+    exact Option.some.inj ((Option.some_get hq).trans he')
+
+/-- Finite circuit certificates for every native circuit-law input.  The
+certificate stores only evaluation of `witnessFormula`; the native
+nonvanishing conclusion is reconstructed by `lawful_iff_instances`. -/
 def LawInstances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
     (ha : IndependentGeometryPrimitive.IsActiveTyped t) (A : ArchitectureObject U)
@@ -139,9 +198,7 @@ def LawInstances
     d.Matches B →
     (IndependentEquationPrimitive.Circuit.code (circuitRows t) hct i).eval d = true →
       ∃ (W : ArchCtx A) (a : U.Atom),
-        (witnessFormula t ha A hA hc ht hct i B d W a).evaluate t ∧
-          Equation.residualValue t ha A hA hc ht W B i a ≠
-            Equation.observableActive t ha A hA hc ht W .zero
+        (witnessFormula t ha A hA hc ht hct i B d W a).evaluate t
 
 theorem lawful_iff_instances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
@@ -158,13 +215,10 @@ theorem lawful_iff_instances
   constructor
   · intro hl i B d hm he
     obtain ⟨W, a, hn⟩ := hl i B d hm he
-    refine ⟨W, a, ?_, hn⟩
-    simp only [witnessFormula, equationAnchor_evaluate, circuitAnchor_evaluate,
-      Equation.residualAnchor_evaluate, Equation.observableActiveAnchor_evaluate,
-      ObjectFormula.evaluate]
+    exact ⟨W, a, (witnessFormula_evaluate t ha A hA hc ht hct i B d W a).2 hn⟩
   · intro hi i B d hm he
-    obtain ⟨W, a, _, hw⟩ := hi i B d hm he
-    exact ⟨W, a, hw⟩
+    obtain ⟨W, a, hw⟩ := hi i B d hm he
+    exact ⟨W, a, (witnessFormula_evaluate t ha A hA hc ht hct i B d W a).1 hw⟩
 
 structure Instances
     (t : IndependentGeometryPrimitive.Table.{u, v} U)
