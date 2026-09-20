@@ -26,4 +26,5 @@ Atom と Law から、相対的なアーキテクチャの幾何、局所整合�
 `bib_sha256` に `ja/14-references.md` の SHA-256 を記録する。
 `manuscript_sha256` は、`ja/03-preliminaries-and-notation.md`、
 `ja/04-relative-architecture.md`、`ja/05-law-geometry.md` の順にファイルのバイト列を連結したものの SHA-256 とする。
+図の編集元は `figures/` の SVG とし、その hash は `claims.md` に記録する。
 TeX 化の際には、[共通検査](../_tools/README.md)が算出する書誌・原稿一式の hash へ更新する。
