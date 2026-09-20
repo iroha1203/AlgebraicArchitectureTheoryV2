@@ -9042,3 +9042,37 @@ namespace監査は順に4・4・12・11・6・13・13件(計63件)で標準公�
 placeholder・hidden/BiDi・privacy・語彙・差分整形・module登録を確認した。
 Research全体buildは行わず、固定GOALのblobは
 `4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
+
+
+#### 明示rawの全候補query回復と任意native raw mapの回復
+
+明示方式rawの三つの計算成分を、全候補context・座標carrier・local-data carrierを含む
+原始readerへ接続した。`read_coordinate`・`read_relation`・`read_localData`は、原始点から
+構成した写像を読んで元のtableが戻ることを示す。`read_raw`は両方向のqueryを元の
+source/target順へ戻し、共通宣言の全raw queryを回復する。
+
+任意のnative raw mapから進む逆方向では、同じbase・係数写像の点対応と、三つの全候補
+readerが共通tableの各行に一致することを比較前提とした。`points_of_native`は、この前提で
+nativeな型宣言・label・relation polynomial・restriction保存から全原始法則を導く。
+`assemble_points_of_native`は、得た法則を実際のassemblerに渡し、依存するlocal-dataと
+relationの成分を含めて元のraw map全体を回復する。完成したraw mapや全域保存等式を局所lawへ
+追加してはいない。これらの比較前提を一つの完全Hom readerから放電する接続は残る。
+
+| Source / namespace末尾 | 証拠と使用先 |
+| --- | --- |
+| `IndependentGeometryHomExplicitRawReadings.lean` / `IndependentGeometryHomPrimitive.ExplicitRaw` | `readCoordinate`・`readRelation`・`readLocalData`が全候補のinverse graphを読む。各active APIとinactive APIにより、context・座標型・座標像が一致しない行をfalseへ固定する |
+| `IndependentGeometryHomExplicitRawPoints.lean` / 同namespace | `read_coordinate`・`read_relation`・`read_localData`は、実際に組み立てたraw mapから全行を回復する。原始inactive法則と候補carrierの型法則を回復証明で使用する |
+| `IndependentGeometryHomExplicitRawNative.lean` / 同namespace | `coordinate_rows_of_read`・`relation_rows_of_read`・二つの`*_point_iff_of_read`を経由し、`points_of_native`が全原始法則を導く。候補応答が存在することから元のcarrier/zero宣言を回復し、native多項式保存とrestriction自然性を係数点へ移す |
+| `IndependentGeometryHomExplicitRawRecovery.lean` / 同namespace | `readRaw`・`read_raw`は共通の全raw queryへ接続する。`inverse_read_heq`は座標像の等号から得るtarget fiberの等号を使い、`coordinateEquiv_eq_native`・`relationEquiv_eq_native`・`coordinateTransport_eq_native`で各成分を回復する。`assemble_eq_native`・`assemble_points_of_native`で元のraw map全体の回復を示す |
+
+今回の証拠により、明示raw成分の全query回復とnative成分回復が揃った。次の中心義務は、
+core・係数・raw・realizationを一つの共通Hom readerへまとめ、そのreaderから各比較前提と
+全局所法則を導くことである。全Homの両逆・分離、共通の恒等・合成、残る有限式・指定反証、
+パートI全体のPR・独立査読・CI・merge・Issue同期は未完了である。
+固定GOAL、native Homの範囲、Cycle 79は変更しない。
+
+新規4 sourceの単一file検証が通り、namespace監査は順に10・3・5・8件(計26件)で
+標準公理のみだった。明示26宣言の個別`#print axioms`も標準公理のみで、最終検証に
+warning・errorはない。placeholder・hidden/BiDi・privacy・語彙・登録・差分整形を確認した。
+Research全体buildは行わず、固定GOALのblobは
+`4e6fdacf8b3de5865d5f1f14b058fc0774c1f088`を維持している。
