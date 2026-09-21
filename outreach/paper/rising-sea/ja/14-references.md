@@ -45,7 +45,7 @@ arXiv:2608.21458v1, August 20, 2026.
 Journal of the ACM 39(1), 95–146, 1992.
 DOI: [10.1145/147508.147524](https://doi.org/10.1145/147508.147524).
 [原論文の公開コピー](https://courses.grainger.illinois.edu/cs522/sp2016/InstitutionsAbstractModelTheory.pdf).
-参照箇所: §2.1、定義1、pp. 101–102。
+参照箇所: §2.1、定義1、pp. 101–102。定理11とその帰結、p. 108。
 
 **[AG97]** Robert Allen and David Garlan.
 *A Formal Basis for Architectural Connection*.
@@ -73,7 +73,7 @@ arXiv:2605.08609v1, May 9, 2026.
 arXiv:1102.0264v7, November 29, 2011.
 [書誌と版の履歴](https://arxiv.org/abs/1102.0264)、
 [第7版の本文](https://arxiv.org/pdf/1102.0264v7).
-参照箇所: §§2.2–2.4、定理8.1。
+参照箇所: §§2.2–2.5、定理8.1。
 
 **[AMB12]** Samson Abramsky, Shane Mansfield, and Rui Soares Barbosa.
 *The Cohomology of Non-Locality and Contextuality*.
@@ -94,14 +94,14 @@ arXiv:2603.27015v1, March 27, 2026.
 Proceedings of the ACM Symposium on Principles of Programming Languages (POPL), 238–252, 1977.
 [著者の書誌](https://www.di.ens.fr/~cousot/COUSOTpapers/POPL77.shtml)、
 [著者公開本文](https://www.di.ens.fr/~cousot/publications.www/CousotCousot-POPL-77-ACM-p238--252-1977.pdf).
-参照箇所: §§5–7、pp. 241–243。
+参照箇所: §§5–7、pp. 240–243。
 
 **[GRS00]** Roberto Giacobazzi, Francesco Ranzato, and Francesca Scozzari.
 *Making Abstract Interpretations Complete*.
 Journal of the ACM 47(2), 361–416, 2000.
 DOI: [10.1145/333979.333989](https://doi.org/10.1145/333979.333989).
 [著者公開本文](https://www.sci.unich.it/~scozzari/paper/JACM00.pdf).
-参照箇所: §3、特に pp. 371–372 の completeness と fixpoint completeness。
+参照箇所: §3、特に p. 372 の completeness と fixpoint completeness。
 
 **[SSVW17]** Patrick Schultz, David I. Spivak, Christina Vasilakopoulou, and Ryan Wisnesky.
 *Algebraic Databases*.
@@ -110,13 +110,14 @@ arXiv:1602.03501v3, January 16, 2025.
 [書誌と版の履歴](https://arxiv.org/abs/1602.03501)、
 [訂正を含む第3版](https://arxiv.org/pdf/1602.03501v3).
 参照箇所: §§6–7、特に§6.19、定義7.1、命題7.3–7.4。
+二重圏による記述は定義8.13、命題8.14、補題8.18、§§8.25–8.26・9。
 表示の射と意味の射に関する訂正は Appendix B.1–B.3。
 
 **[Shulman08]** Michael Shulman.
 *Framed bicategories and monoidal fibrations*.
 Theory and Applications of Categories 20(18), 650–738, 2008.
-[出版社の書誌](https://www.tac.mta.ca/tac/volumes/20/18/20-18abs.html)、
-[本文](https://www.kurims.kyoto-u.ac.jp/EMIS/journals/TAC/volumes/20/18/20-18.pdf).
+[出版社の書誌](https://tac.mta.ca/tac/volumes/20/18/20-18abs.html)、
+[本文](https://tac.mta.ca/tac/volumes/20/18/20-18.pdf).
 参照箇所: §13、定義13.11、p. 706 の mate と Beck–Chevalley 条件。
 
 **[BS81]** François Bancilhon and Nicolas Spyratos.
@@ -124,14 +125,14 @@ Theory and Applications of Categories 20(18), 650–738, 2008.
 ACM Transactions on Database Systems 6(4), 557–575, 1981.
 DOI: [10.1145/319628.319634](https://doi.org/10.1145/319628.319634).
 [原論文の公開コピー](https://www.inf.unibz.it/franconispace/lib/exe/fetch.php?media=organisation%3Asakt%3A2013%3A5.pdf).
-参照箇所: §§4–5・7、定義4.1、定理5.6・7.1。
+参照箇所: §§3–5・7、定義3.2–3.3・4.4、定理5.6・7.1。
 
 **[JRW12]** Michael Johnson, Robert Rosebrugh, and R. J. Wood.
 *Lenses, fibrations and universal translations*.
 Mathematical Structures in Computer Science 22(1), 25–42, 2012.
 DOI: [10.1017/S0960129511000442](https://doi.org/10.1017/S0960129511000442).
 [著者公開本文](https://mta.ca/~rrosebru/articles/Lens2Cambridge.pdf).
-参照箇所: §2、定義2.6、§3、定義3.1・命題3.1–3.2、§4、命題4.1・4.3。
+参照箇所: §2、定義2.6、§3、定義3.1・命題3.1–3.2、§4、注意4.1・系4.1・命題4.3。
 
 **[Lawvere63]** F. William Lawvere.
 *Functorial Semantics of Algebraic Theories*.
@@ -144,14 +145,14 @@ DOI: [10.1073/pnas.50.5.869](https://doi.org/10.1073/pnas.50.5.869).
 **[BW85]** Michael Barr and Charles Wells.
 *Toposes, Triples and Theories*.
 Springer, 1985. Reprints in Theory and Applications of Categories 12 (2005), 1–288.
-[再録本文](https://www.kurims.kyoto-u.ac.jp/EMIS/journals/TAC/reprints/articles/12/tr12.pdf).
+[再録本文](https://tac.mta.ca/tac/reprints/articles/12/tr12.pdf).
 参照箇所: 第4章 §1.2、sketch、model、model homomorphism の定義。
 
 **[Kelly82]** G. M. Kelly.
 *Basic Concepts of Enriched Category Theory*.
 Cambridge University Press, 1982.
 Reprints in Theory and Applications of Categories 10 (2005), 1–136.
-[再録版の書誌](https://www.tac.mta.ca/tac/reprints/articles/10/tr10abs.html)、
+[再録版の書誌](https://tac.mta.ca/tac/reprints/articles/10/tr10abs.html)、
 [再録本文の公開コピー](https://www.sas.rochester.edu/mth/sites/doug-ravenel/otherpapers/kelly-book.pdf).
 参照箇所: §5.8、定理5.36、pp. 100–101。集合で豊穣化された場合の Cauchy completion と冪等射の分裂。
 

@@ -35,11 +35,11 @@ Rising Seaの方針を短く示す。
 Joseph A. Goguen and Rod M. Burstall.
 *Institutions: Abstract Model Theory for Specification and Programming*.
 Journal of the ACM 39(1), 95–146. DOI: [10.1145/147508.147524](https://doi.org/10.1145/147508.147524).
-[著者の文献案内](https://www-cse.ucsd.edu/~goguen/projs/sem.html)、
+[著者の文献案内](https://cseweb.ucsd.edu/~goguen/projs/sem.html)、
 [先行技術報告 ECS-LFCS-90-106](https://publish.lfcs.inf.ed.ac.uk/reports/90/ECS-LFCS-90-106/)。
 
 - **対応・比較:** 第1章。署名・文・モデル・充足と、その変更に対する整合性を出発点に、AAT の Atom、Law、reading、生成する幾何の関係を説明する。仕様の構成を複数の論理に共通する基礎で扱う点も比較する。institution としての定式化を主張する場合には、その構成と充足条件の証明を別途示す。
-- **参照箇所:** [掲載論文](https://courses.grainger.illinois.edu/cs522/sp2016/InstitutionsAbstractModelTheory.pdf)の §2.1、定義1、pp. 101–102、および定理11、p. 108。署名・文・モデルの圏・充足条件と、署名の余極限からの理論の余極限の構成。
+- **参照箇所:** [掲載論文](https://courses.grainger.illinois.edu/cs522/sp2016/InstitutionsAbstractModelTheory.pdf)の §2.1、定義1、pp. 101–102、および定理11とその帰結、p. 108。署名・文・モデルの圏・充足条件と、署名の余極限からの理論の余極限の構成。
 
 **RW02 — Allen and Garlan (1997).**
 Robert Allen and David Garlan. *A Formal Basis for Architectural Connection*.
@@ -48,7 +48,7 @@ DOI: [10.1145/258077.258078](https://doi.org/10.1145/258077.258078)。
 [原論文の公開コピー](https://ix.cs.uoregon.edu/~michal/Classes/f01/fsv/papers/Allen-Garlan.pdf)。
 
 - **対応・比較:** 第1・4章のプロトコル。Wright の port・role・glue と CSP による適合性を、AAT で固定するプロトコルの意味論・観測保存射・adapter の構成と対比する。相手が指定する振舞いの下での適合性と、AAT の構造保存等式をそれぞれ述べる。
-- **参照箇所:** 本文 §8.1、定義8.1.2、定理8.2.3。適合する port への置換による deadlock-freedom の保持には、connector の保守性と deadlock-freedom の仮定がある。
+- **参照箇所:** 本文 §§8.1–8.2、定義8.1.2、定理8.2.3。保守的かつ deadlock-free な connector を適合する port で具体化すると、その connector も deadlock-free になる。
 
 ### 局所整合性とコホモロジー的障害
 
@@ -76,7 +76,7 @@ arXiv:1102.0264v7、2011-11-29。
 [著者・書誌・要旨](https://arxiv.org/abs/1102.0264)。
 
 - **対応・比較:** 第2章。測定 context と局所データの大域的延長という構造を説明する。AAT の局所状態・Law・修復データと、原論文の empirical model・support・global section の対応範囲を明示する。
-- **参照箇所:** [第7版本文](https://arxiv.org/pdf/1102.0264v7)の §§2.2–2.4、定理8.1。結果の割当て、分布、empirical model、大域的分布と factorizable hidden-variable model の対応。
+- **参照箇所:** [第7版本文](https://arxiv.org/pdf/1102.0264v7)の §§2.2–2.5、定理8.1。結果の割当て、分布、empirical model、大域的分布と factorizable hidden-variable model の対応。
 
 **RW06 — Abramsky, Mansfield, and Barbosa (2012).**
 Samson Abramsky, Shane Mansfield, and Rui Soares Barbosa.
@@ -114,7 +114,7 @@ POPL 1977, 238–252。
 [著者の書誌・解説・原論文へのリンク](https://www.di.ens.fr/~cousot/COUSOTpapers/POPL77.shtml)。
 
 - **対応・比較:** 第3章を中心に第6–7章。抽象領域と不動点の近似に対し、AAT が固定した Law の値を保つ商と、選んだ診断の保存・反映を何について要求するかを説明する。順序・Galois connection を使う場合は、その入力と対応を示す。
-- **参照箇所:** [原論文](https://www.di.ens.fr/~cousot/publications.www/CousotCousot-POPL-77-ACM-p238--252-1977.pdf)の §§5–7、pp. 241–243。抽象領域、抽象化・具体化、局所近似と大域的な不動点の関係。
+- **参照箇所:** [原論文](https://www.di.ens.fr/~cousot/publications.www/CousotCousot-POPL-77-ACM-p238--252-1977.pdf)の §§5–7、pp. 240–243。抽象領域、抽象化・具体化、局所近似と大域的な不動点の関係。
 
 **RW10 — Giacobazzi, Ranzato, and Scozzari (2000).**
 Roberto Giacobazzi, Francesco Ranzato, and Francesca Scozzari.
@@ -124,7 +124,7 @@ DOI: [10.1145/333979.333989](https://doi.org/10.1145/333979.333989)。
 [著者公開本文](https://www.sci.unich.it/~scozzari/paper/JACM00.pdf)。
 
 - **対応・比較:** 第3・7章。演算に関する abstraction の completeness と、第3章の Law に十分な reading、第7章の観測からの比較適合性の検出を対比する。保存対象を固定し、全構造の再構成を要求する第8章との関係も説明する。
-- **参照箇所:** 本文 §3、特に pp. 371–372 の completeness と fixpoint completeness の区別。
+- **参照箇所:** 本文 §3、特に p. 372 の completeness と fixpoint completeness の区別。
 
 ### 輸送と基底変換
 
@@ -149,8 +149,8 @@ Theory and Applications of Categories 32(16), 547–619。
 **RW13 — Shulman (2008).**
 Michael Shulman. *Framed bicategories and monoidal fibrations*.
 Theory and Applications of Categories 20(18), 650–738。
-[出版社の書誌](https://www.tac.mta.ca/tac/volumes/20/18/20-18abs.html)、
-[本文](https://www.kurims.kyoto-u.ac.jp/EMIS/journals/TAC/volumes/20/18/20-18.pdf)。
+[出版社の書誌](https://tac.mta.ca/tac/volumes/20/18/20-18abs.html)、
+[本文](https://tac.mta.ca/tac/volumes/20/18/20-18.pdf)。
 
 - **対応・比較:** 第4–5章。cartesian / opcartesian 輸送、mate、Beck–Chevalley の一般理論を帰属させる。AAT では reading と完全幾何から二経路を作り、実際に得た比較が可逆になる仮定を示す。
 - **参照箇所:** 本文 §13、特に定義13.11の mate と Beck–Chevalley 条件、および続く例。
@@ -172,8 +172,8 @@ ACM Transactions on Database Systems 6(4), 557–575.
 DOI: [10.1145/319628.319634](https://doi.org/10.1145/319628.319634)。
 [原論文の公開コピー](https://www.inf.unibz.it/franconispace/lib/exe/fetch.php?media=organisation%3Asakt%3A2013%3A5.pdf)。
 
-- **対応・比較:** 第1・7–8章。view の complement を用いる更新の選択を、lens の保持する情報と結びつける。第7章では、一つの更新方策の選択に対し、固定した比較を保つ変更全体、同じ観測を持つ複数の持ち上げ、その核と torsor を記述する点を比較する。
-- **参照箇所:** §§4–5・7、定義4.1、定理5.6・7.1。固定complementを保つtranslationの一意性と、更新族の閉性などの仮定。
+- **対応・比較:** 第1・7–8章。view の complement を用いる更新の選択を、lens の保持する情報と結びつける。AAT が固定した意味論の下で比較を保つ可逆変更を分類し、操作グラフの連結性から変更の自由度を捉える点を比較する。
+- **参照箇所:** §§3–5・7、定義3.2–3.3・4.4、定理5.6・7.1。固定complementを保つtranslationの一意性。合成で閉じ、各状態で更新を打ち消せる更新族の全更新が持ち上がるとき、そのtranslationは合成を保つ。
 
 **RW16 — Johnson, Rosebrugh, and Wood (2012).**
 Michael Johnson, Robert Rosebrugh, and R. J. Wood.
@@ -183,7 +183,7 @@ DOI: [10.1017/S0960129511000442](https://doi.org/10.1017/S0960129511000442)。
 [著者公開本文](https://mta.ca/~rrosebru/articles/Lens2Cambridge.pdf)。
 
 - **対応・比較:** 第1・4・7–8章の最優先文献。sketch のモデルと view、lens と constant complement、更新の普遍的な持ち上げを、AAT の意味論・輸送・再構成の各層と比較する。積表示と補完構造を既存研究へ帰属させ、AAT の全構造保存射の再構成に必要な入力と保存等式を述べる。
-- **参照箇所:** 本文 §§2–4、定義2.6・3.1、命題3.1–3.2・4.1・4.3。lensとcomplementの圏同値には有限積とviewから終対象への射の分裂を用いる。集合上のlens、categorical lens、普遍的更新をそれぞれ比較対象とする。
+- **参照箇所:** 本文 §§2–4、定義2.6・3.1、命題3.1–3.2、注意4.1・系4.1・命題4.3。lensとcomplementの圏同値には有限積とviewから終対象への射の分裂を用いる。集合上のlens、categorical lens、普遍的更新をそれぞれ比較対象とする。
 
 ### 表示と局所再構成
 
@@ -200,7 +200,7 @@ DOI: [10.1073/pnas.50.5.869](https://doi.org/10.1073/pnas.50.5.869)。
 **RW18 — Barr and Wells (1985 / 2005).**
 Michael Barr and Charles Wells. *Toposes, Triples and Theories*.
 Springer、1985。Reprints in Theory and Applications of Categories 12 (2005), 1–288。
-[再録本文](https://www.kurims.kyoto-u.ac.jp/EMIS/journals/TAC/reprints/articles/12/tr12.pdf)。
+[再録本文](https://tac.mta.ca/tac/reprints/articles/12/tr12.pdf)。
 
 - **対応・比較:** 第8章。sketch、型付き図式、等式、モデルと自然変換を、局所モデルの独立な定義の最も近い標準的な構成として比較する。AAT の各入力族について、どの局所値・整合等式が対象と全構造保存射の組立てを可能にするかを示す。
 - **参照箇所:** 本文第4章 §1.2 の sketch・model・model homomorphism。グラフ、可換にすべき図式、指定した錐と、それらを保つモデル。
@@ -209,7 +209,7 @@ Springer、1985。Reprints in Theory and Applications of Categories 12 (2005), 1
 G. M. Kelly. *Basic Concepts of Enriched Category Theory*.
 Cambridge University Press、1982。
 Reprints in Theory and Applications of Categories 10 (2005), 1–136。
-[再録版の書誌・本文案内](https://www.tac.mta.ca/tac/reprints/articles/10/tr10abs.html)。
+[再録版の書誌・本文案内](https://tac.mta.ca/tac/reprints/articles/10/tr10abs.html)。
 
 - **対応・比較:** 第6・8章。Cauchy completion、representable の retract、冪等射の分裂を帰属させる。AAT では生成比較の冪等性・像の構成、lens / protocol の具体的な再構成と Karoubi への拡張を比較対象にする。
 - **参照箇所:** [再録本文](https://www.sas.rochester.edu/mth/sites/doug-ravenel/otherpapers/kelly-book.pdf)の §5.8、定理5.36、pp. 100–101。集合で豊穣化された場合のsmall projective、表現可能前層のretract、冪等射の分裂。
@@ -243,10 +243,9 @@ DOI: [10.1016/j.jpaa.2012.02.039](https://doi.org/10.1016/j.jpaa.2012.02.039)。
 | 共通入力宣言、局所対象・局所射を定める独立な等式 | RW17–18、RW12 | 署名・型・演算・等式からモデル圏を定める先行構成と、AAT の読み取り添字・局所値・整合式の対応 |
 | Hom の分離・組立てと対象の同型による組立て | RW20–21 | 一般の圏同値判定への帰属と、各族でその仮定を実際に証明する内容。全域射の存在を局所整合条件へ含めない構成 |
 | lens の原始 get/put データ、有限基準 fiber と全意味保存射 | RW14–16 | lens 法則・補完構造・積表示を先行研究に位置づけ、基準 fiber の任意の写像の制限・延長と両逆を比較 |
-| プロトコルの頂点 carrier、生成辺・観測の graph、経路関係と全自然変換 | RW11–12、RW18 | 表示された圏のモデルと準同型を出発点に、原始局所データの整合式からの対象・射の組立てを説明 |
+| プロトコルの各頂点の有限な状態集合と有限リスト被覆、生成辺・観測の graph、経路関係と全自然変換 | RW11–12、RW18 | 表示された圏のモデルと準同型を出発点に、原始局所データの整合式からの対象・射の組立てを説明 |
 | 完全幾何の原始成分・関数 graph による対象と Hom の回復 | RW18・20 | 局所図式で読む構造、係数と評価の保存条件、局所モデルからの組立てを明示して比較 |
 | Karoubi、retract、射の圏への再構成の拡張 | RW19・21 | 標準的な圏論的拡張と、各モデルの具体的な制限・延長との整合を分けて説明 |
-| タグ族の全有限片からの回復、有限 code の表示可能性と反例 | RW20を表示の比較に使用 | 全有限片の整合族による回復、単一の有限決定集合、固定 code 間の射の表示可能性を別々に述べる。位相・逆極限の標準事実は第8章の該当箇所で出典を補う |
 
 第2章の局所 section の貼り合わせと、第8章の対象・射の再構成を比較する際は、
 添字、局所値、制限、整合条件、組立てをそれぞれ指定する。
