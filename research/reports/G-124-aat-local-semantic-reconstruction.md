@@ -9687,3 +9687,151 @@ builderが上記の原始cellと有限ASTだけから式を作り、式の評価
 変更した三sourceのfocused checkは順に26・21・120宣言を監査し、標準公理だけを使用した。
 この節はパートIのcompletion candidateを記録する。新規4レーン査読、CI、merge、Issue同期が完了するまで
 パートI完了とは扱わない。
+
+
+## 特例パートII PR 1/4 selection — geometry局所圏と圏同値
+
+この作業単位はユーザー指定の特例であり、正規Cycleを追加しない。Cycleは79のまま維持する。
+一次仕様は固定GOAL A/Bと、Issue #4711の
+[実装設計](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4711#issuecomment-5754509275)
+§3・§7である。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124
+cycle: 79
+special_work_unit: part2-pr1
+cycle_increment: false
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 17f61dcc6d58afb4ec9d8a2568981de9002dfac6
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Issue comment 5752520031 records Part I completion; implementation design is Issue comment 5754509275 sections 3 and 7"
+  proof_dag_predecessors:
+    - "Part I PR 4835 at reviewed head a82165fbf0ddd368170712180498da2a305b3c5c"
+    - "Cycle 65 LocalReconstructionEquivalence.ReconstructionData.equivalence"
+    - "IndependentGeometryPrimitive.finiteObjectEquiv"
+    - "NativeReader.representativeHomReadingEquiv and NativeReader.explicitHomReadingEquiv"
+    - "IdentityLocal, Composition, and CategoryLaws for both geometry modes"
+  proof_obligation: "Construct the representative and explicit primitive local categories, reading functors, concrete separation and assembly data, and both category equivalences for arbitrary geometry objects and all original Homs."
+  selection_reason: "Part I already proves object and Hom inverse laws plus direct local identity, composition, and category laws; this PR only supplies the categorical connection required before the lens and protocol branches."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryCategoryReconstruction.lean"
+    - "RepresentativeLocalObject and ExplicitLocalObject category instances"
+    - "representativeReadingFunctor and explicitReadingFunctor"
+    - "representativeReconstructionData and explicitReconstructionData"
+    - "representativeEquivalence and explicitEquivalence"
+  risks:
+    - "Endpoint transport could conceal a restriction of the native object or Hom types."
+    - "A local Hom definition could accidentally retain a completed GeometryTotalHom or ExplicitExactGeometryHom."
+    - "Functoriality could be proved for transported operations instead of the direct primitive identity and composition."
+  unchecked:
+    - "Lens primitive reading is PR 2/4."
+    - "Protocol primitive reading is PR 3/4."
+    - "The common declaration, mandatory inputs, and Cycle 79 comparison are PR 4/4."
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Both geometry modes now have primitive local categories, full Hom reading equivalences after exact endpoint conversion, concrete separation and assembly data, and category equivalences obtained from the Cycle 65 general theorem."
+  completion_candidate: no
+  lean_artifacts:
+    - "IndependentGeometryCategoryReconstruction.RepresentativeLocalObject"
+    - "IndependentGeometryCategoryReconstruction.ExplicitLocalObject"
+    - "IndependentGeometryCategoryReconstruction.representativeReadObject_injective"
+    - "IndependentGeometryCategoryReconstruction.explicitReadObject_injective"
+    - "IndependentGeometryCategoryReconstruction.representativeEndpointHomEquiv_read"
+    - "IndependentGeometryCategoryReconstruction.explicitEndpointHomEquiv_read"
+    - "IndependentGeometryCategoryReconstruction.representativeReadingFunctor"
+    - "IndependentGeometryCategoryReconstruction.explicitReadingFunctor"
+    - "IndependentGeometryCategoryReconstruction.representativeReconstructionData"
+    - "IndependentGeometryCategoryReconstruction.explicitReconstructionData"
+    - "IndependentGeometryCategoryReconstruction.representativeEquivalence"
+    - "IndependentGeometryCategoryReconstruction.explicitEquivalence"
+  evidence:
+    - "representativeEndpointHomEquiv_read and explicitEndpointHomEquiv_read identify the complete primitive tables before and after endpoint conversion"
+    - "representativeReadingHomEquiv_point and explicitReadingHomEquiv_point identify every local query with the original native Hom reader"
+    - "representativeReadObject_injective and explicitReadObject_injective connect Part I object separation to both new object readers"
+    - "representative_assemble_read and explicit_assemble_read"
+    - "representative_read_assemble and explicit_read_assemble"
+    - "representative_existsUnique_preimage and explicit_existsUnique_preimage"
+    - "representativeReadingHomEquiv_id/comp and explicitReadingHomEquiv_id/comp use the direct Part I local operations"
+  claim_mapping:
+    theorem_names:
+      - "representativeEquivalence"
+      - "explicitEquivalence"
+      - "representativeReadObject_injective"
+      - "explicitReadObject_injective"
+      - "representativeEndpointHomEquiv_read"
+      - "explicitEndpointHomEquiv_read"
+      - "representative_existsUnique_preimage"
+      - "explicit_existsUnique_preimage"
+    source_labels:
+      - "fixed GOAL A and B geometry branch"
+      - "Issue comment 5754509275 sections 3 and 7, implementation order 1"
+    conjuncts:
+      - "Part I LocalObject -> RepresentativeLocalObject and ExplicitLocalObject"
+      - "Part I readFragments_injective -> both native object readers are injective"
+      - "all GeometryTotalHom -> representativeReadingHomEquiv"
+      - "all ExplicitExactGeometryHom -> explicitReadingHomEquiv"
+      - "endpoint conversion preserves both complete native primitive tables"
+      - "Hom separation, Hom assembly, and object assembly -> both ReconstructionData values"
+      - "Cycle 65 general reconstruction -> both category equivalences"
+    undischarged_assumptions: []
+    acceptance_point: "This is the PR 1/4 obligation candidate. Fixed-head review, CI, and merge remain before acceptance."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "Object separation comes from readFragments_injective and is connected to both new object readers."
+      - "Object assembly comes from finiteObjectEquiv and readFragments_assembleFragments."
+      - "Hom separation and assembly come from both Part I Hom reading equivalences."
+      - "Endpoint conversion preserves the complete primitive tables by equality-isomorphism reduction in both modes."
+      - "Essential surjectivity uses the concrete finite-fragment assembler, not an assumed witness."
+    remaining: []
+  certificate_provenance:
+    discharged:
+      - "Object law proofs are the existing LocalObject IsLawful fields."
+      - "Hom law proofs are the existing FullRepresentative.PointLaws and FullExplicit.PointLaws constructors."
+      - "Identity and composition certificates are produced by the Part I IdentityLocal and Composition theorems."
+    unresolved: []
+  proof_use:
+    used:
+      - "assembleFragments_readFragments and readFragments_assembleFragments"
+      - "readFragments_injective"
+      - "representativeEndpointHomEquiv_read and explicitEndpointHomEquiv_read"
+      - "representativeHomReadingEquiv and explicitHomReadingEquiv"
+      - "representativeLocalIdentity_eq_native and explicitLocalIdentity_eq_native"
+      - "representativeLocal_read_comp and explicitLocal_read_comp"
+      - "ReconstructionData.equivalence and ReconstructionData.existsUnique_preimage"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryCategoryReconstruction.lean: 81 declarations, standard axioms only"
+    - "module registered in research/lean/research-modules.txt and ResearchLean/AG.lean"
+    - "individual #print axioms on 12 central declarations after review remediation: propext, Classical.choice, Quot.sound only"
+    - "git diff --check: pass"
+    - "hidden and bidirectional Unicode scan: no match"
+    - "Research import direction gate: 228 modules scanned, pass"
+    - "fixed GOAL blob: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088"
+  blocking_findings: []
+  next_obligation: "Part II PR 2/4: lens primitive reading, laws, finite reference fiber, all preserving Homs, and category equivalence."
+```
+
+`RepresentativeLocalObject`と`ExplicitLocalObject`が保持する対象dataは、パートIの`LocalObject`一つだけである。
+局所Homは`InvariantWitness.Local`と既存の全`PointLaws`からなり、完成済みHomをfieldに追加しない。
+任意のnative対象は`assemble_objectData_readFragments`で組立て後の対象と一致させ、`Iso.homCongr`でHomの
+型を合わせた後、パートIの全Hom同値へ渡す。`representativeEndpointHomEquiv_read`と
+`explicitEndpointHomEquiv_read`が変換前後のtable全体を同一視し、二つの`*_ReadingHomEquiv_point`は
+各primitive queryを変換前のnative Hom readerへ接続する。対象側も二つの`*ReadObject_injective`により、
+パートIの`readFragments_injective`を新しいobject readerへ接続する。
+
+恒等射と合成は`representativeIdentity` / `representativeComp`および`explicitIdentity` / `explicitComp`として
+直接定義し、Category instanceも同じ構成を使う。reading functorの恒等・合成保存は、端点の型変換と
+パートIの`*_Local_read_comp`を接続して証明した。両`ReconstructionData`の分離、Hom組立て、対象組立てに
+追加仮定はなく、`ReconstructionData.equivalence`を一度適用して両modeの圏同値を得た。
