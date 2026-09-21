@@ -689,7 +689,7 @@ Invariantの同値性は、対象数0〜4・値域の要素数0〜3の全4,430�
 [12884419d705624be39e8a87393ed50385395469](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/12884419d705624be39e8a87393ed50385395469)
 の一次資料と、第1〜5章の原稿を照合して[日本語初稿](ja/09-idempotent-normalization.md)を作成した。
 以下の一次資料の相対リンクは、この固定版で照合したファイルを示す。
-原稿のSHA-256は `3a8f382b2cde88bd011eefe3698daa1bd1e7946bc30464a343891e5afbee891d`。
+初稿のSHA-256は `3a8f382b2cde88bd011eefe3698daa1bd1e7946bc30464a343891e5afbee891d`。
 確認者はCodex（GPT-6）である。
 
 構成6.1〜命題6.31と式6.1〜6.48を置き、必要な定義・仮定・証明を原稿内に記述した。
@@ -713,7 +713,7 @@ Invariantの同値性は、対象数0〜4・値域の要素数0〜3の全4,430�
 | C6-13 | 例6.25 | 例6.18をHom×Boolのoperationへ拡張。元の対象に依存するBool反転 | [ModificationCounterexample][c6-counterexample]、[NormalizationNaturalityFailure][c6-naturality-failure] | 型の違いを使う既存反例の仕組みを、本文のcore上に構成。f²=1、fN=N、Nf≠fNを示す。f≠1とfN=Nから正規化関手の非忠実性も本文内で導く |
 | C6-14 | 定義6.26–命題6.28 | 任意の圏と関手、三段の射影 | [KaroubiArrowEquivalence][c6-arrow-equivalence]、[FunctorNaturality][c6-functor-naturality]、[ThreeStageProjection][c6-three-stage] | 冪等平方(c,e,d)をdceへ送る関手と逆を構成。往復の同型・自然性、関手への適合と射影の合成を成分で証明 |
 | C6-15 | 構成6.29 | 比較の圏の全対象、同型の端点変更 | [MaximalSubgroupoid][c6-groupoid]、[G116KaroubiPlacement][c6-placement] | 非可逆な比較も対象に残す最大亜群を説明。J(β)と像の間のβの端点と恒等射を区別 |
-| C6-16 | 例6.30・命題6.31 | 固定viewのlens三法則、有限状態のプロトコル実現、実行・観測を保つ冪等adapter | 第1章の定義1.32・命題1.33・定義1.36・命題1.38 | Lensの四状態から二状態への射を検算。プロトコルは固定点集合を実行・観測へ制限し、二つの意味保存adapterの分裂を直接証明。状態ごとの冪等性だけでは実行が閉じない反例を付す。本文で証明した帰結であり、同じCS命題のLean形式化完了とは記録しない |
+| C6-16 | 例6.30と直後の一般形・命題6.31 | 固定viewのlens三法則と有限な基準fiber、有限状態のプロトコル実現、実行・観測を保つ冪等adapter | 第1章の定義1.32・命題1.33・命題1.34・定義1.36・命題1.38 | Lensの四状態から二状態への射を検算。さらに積表示で自己射を(v,k)↦(v,t(k))と書き、tの固定点から同じLensの圏内で任意の冪等射を分裂させる。プロトコルは固定点集合を実行・観測へ制限し、二つの意味保存adapterの分裂を直接証明。状態ごとの冪等性だけでは実行が閉じない反例を付す。本文で証明した帰結であり、同じCS命題のLean形式化完了とは記録しない |
 
 ### 初稿の検証と確認範囲
 
@@ -729,6 +729,38 @@ Invariantの同値性は、対象数0〜4・値域の要素数0〜3の全4,430�
 上記の有限検算は、本文の一般的な証明を補助する。一回限りの検査を恒久CIへ追加していない。
 人間が原稿を確認し、PR作成を承認した。確認済みの原稿を保持してPRを作成し、
 GitHub表示確認とCIの対象commit・結果をPRに記録する。Claudeの独立レビューはPR上で行う。
+
+### PR #4839の独立レビューと採用済み修正
+
+2026-09-21、commit `fea1ddad9a23bab0e8cb0681550ccdafa2dc7a7c` に対する
+[Claudeレビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4839#issuecomment-5755976525)はapproveとした。
+全31項目の証明、一次資料との対応、全425式の構文とGitHub表示、六系統の有限検算と件数を独立に確認している。
+[別の内容レビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4839#pullrequestreview-5263374743)も、
+確認した範囲で修正必須の数学的誤りはないとした。一次資料の確認範囲は四ファイルであり、
+全27ファイルの監査・Lean再ビルド・GitHub表示の再確認は含まない。
+両レビューの任意提案は計8件で、例6.18への2案を一緒に扱う7項目を人間が採用した。
+
+| 採用項目 | 反映内容 |
+| --- | --- |
+| 式6.3の向き | 固定点からconfigurationへの射影と、その逆の選択を、定義域・値域を持つ二つの矢印で表示 |
+| 定理6.3への呼称 | 「この命題」を「この定理」へ統一 |
+| 命題6.7の型と値 | 量の型を一元集合、値をその唯一の元として明記 |
+| 定理6.16の意味 | 共役で得た始点の冪等射が、終点で独立に定まる正規化と一致することを説明 |
+| 例6.18の読み順 | 非恒等な入力を作る軸交換と、対象表現をまとめる正規化の役割を先に説明。Coreと幾何の全データを箇条書きで整理 |
+| 定理6.27の図 | [図6.1](figures/ch06-karoubi-arrow.svg)で、冪等な可換平方から両端の像の間の射dceへの対応を表示。左側の可換性dc=ceと、像の射の条件を区別 |
+| Lensの一般形 | 第1章の命題1.33・1.34から、固定view・有限な基準fiberのLensの圏で任意の冪等射が分裂することを証明。四状態の具体例も保持 |
+
+修正版の原稿SHA-256は `8a9ac9608fcca6ea6879f303be23d9117c75bf85b70c851ddaa4c8796efda906`。
+図6.1の編集元SVGのSHA-256は `8cfeecc13a2309c82c7f100ce861351c257afd9803b9fea4ef2a5733a6249ff6`。
+定義等31件と番号付き48式を保持し、追加したLensの一般形は本文の証明として記録する。
+Lean実装や、その形式化済み範囲は変更していない。
+
+- Lensの追加検算では、viewの要素数1〜3、基準fiberの要素数0〜4について全168組の冪等写像から分裂を構成し、読取り・更新の保存、両合成、基準fiberの有限性を確認した。元の状態を整数ラベルへ置き換え、積表示を通して射を戻す場合も検算した。
+- 別に、viewの要素数1〜2、基準fiberの要素数0〜3で、読取りを保つ全780状態写像を列挙した。更新も保つ66写像が積表示(v,k)↦(v,t(k))を持つこと、そのうち冪等な30写像がtの冪等性と対応することを確認した。これらは一般証明を補助する有限検算である。
+- 全451式（本文内399・独立行52）をKaTeX 0.18.7で検査し、構文エラー・警告なし。番号・章間参照・リンク、原稿と文献表のhash、空白・不可視文字・公開資料向けの検査を確認した。図6.1はSVGの構文、矢印の向きとラベルを式(6.42)の構成と照合した。既存4文献の書誌・引用内容は保持し、一般形は第1章の結果から本文内で導く。
+
+修正後のGitHubファイルプレビュー・描画済み差分・図6.1とCIの対象commit・結果はPRに記録する。
+初稿へのapproveと、修正版への独立再レビュー・人間による最終差分確認・マージを区別する。
 
 [c6-descent]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/ConfigurationDescent.lean
 [c6-core-normalization]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/BCAuthoredCanonicalObjectNormalization.lean
