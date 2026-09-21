@@ -939,10 +939,10 @@ Lean実装や、その形式化済み範囲は変更していない。
 [日本語初稿](ja/11-local-reconstruction.md)に対応する一次資料の固定版は
 [b738623af29f015ab2d12e11c94411c74f26d311](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/b738623af29f015ab2d12e11c94411c74f26d311)
 である。以下の相対リンクは、この固定版で照合したファイルを示す。
-原稿のSHA-256は `8ac9748fae62854a2d7a586c8be3fe543cc28e08147303b028e24461b43622f8`、英語の[図8.1](figures/ch08-local-reconstruction.svg)は
+原稿のSHA-256は `e173bc0dc6172702d6233c0a62f10a79eb79cd8dfff735e8c098e9d1708ffe3d`、英語の[図8.1](figures/ch08-local-reconstruction.svg)は
 `4b486994f4297015a6c2f98dd0a6eb08e1d0ef3af5607f39f2a5ede436cc7591`。確認者はCodex（GPT-6）。
 
-定義8.1〜命題8.33と式8.1〜8.35を置き、定義・仮定・構成・証明を論文内に記述した。
+定義8.1〜命題8.33と式8.1〜8.33を置き、定義・仮定・構成・証明を論文内に記述した。
 数学本文の内部章番号、GOAL番号、Lean宣言への案内は原稿に入れず、本記録に対応を置く。
 Lean sourceは成立条件と構成の照合に用い、変更・ローカル再実行は行っていない。
 
@@ -964,8 +964,8 @@ Lean sourceは成立条件と構成の照合に用い、変更・ローカル再
 | C8-16 | 例8.21 | 構成5.37〜5.40の元入力。固定有限例は二面・三軸交換、cell second、係数ℤ、初期defect/恒等cochain | [共通の固定生成入力][c8-common]、[G122OriginalInput][c8-original-input]、[ExactBarBetaFiniteWitness][c8-fixed-witness] | 元幾何・direct/via-base幾何・α/β/e/d・両端の全自己同型の回復を一般Hom再構成から導く。実際の固定有限入力を例示し、非可逆βとβ=αの場合を区別 |
 | C8-12 | 構成8.22・補題8.23・系8.25 | get/putの三法則、有限基準fiber。全状態写像にget/put保存を要求 | [IndependentLensPrimitiveReconstruction][c8-lens-primitive] | CS適用節で局所圏を定義し、carrier・get/putのgraphと有限coverから独立なLensを構成。Homの二条件と両逆を証明し、一般再構成原理から圏同値を得る |
 | C8-13 | 構成8.22・補題8.24・系8.25 | 有限schema、関係、観測関手、有限な各状態集合。全頂点写像に辺・観測保存を要求 | [IndependentProtocolPrimitiveReconstruction][c8-protocol-primitive] | CS適用節で局所圏を定義し、graphから生成辺・観測・頂点写像を構成。道への帰納的延長と商への降下、自然性、Hom両逆を証明し、一般再構成原理から圏同値を得る |
-| C8-17 | 命題8.26・例8.27 | 同じVとv₀のLens、有限基準fiber間の任意写像。非単射を許す | [LensSemantics][c8-lens-semantics]、[LensFiberModelEquivalence][c8-lens-fiber]、命題1.33・1.34 | res/extの式と両逆を再証明。例8.27は基準fiberの3値を2値へ送る非単射な表を用い、get/putを保つ一意な延長を示す |
-| C8-18 | 命題8.28・例8.29 | 生成辺・観測を保つ全頂点表。例は二頂点一辺、Bool対の4状態、第一成分の観測、両頂点で恒等の対応候補 | [ProtocolSemantics][c8-protocol-semantics]、[ProtocolObservedRestrictionEquivalence][c8-protocol-reading]、命題1.38 | 自然性を全道へ延長し一意性を証明。第二成分を0へ置き換える辺の作用は観測を保つが、第二成分1の二状態で候補の自然性が失敗する |
+| C8-17 | 命題8.26・例8.27 | 同じVとv₀のLens、有限基準fiber間の任意写像。非単射を許す | [LensSemantics][c8-lens-semantics]、[LensFiberModelEquivalence][c8-lens-fiber]、命題1.33・1.34 | 命題1.34のres/extの式と両逆を適用。例8.27は基準fiberの3値を2値へ送る非単射な表を用い、get/putを保つ一意な延長を示す |
+| C8-18 | 命題8.28・例8.29 | 全生成辺の自然性と全頂点の観測保存を満たす表。例は二頂点一辺、Bool対の4状態、第一成分の観測、両頂点で恒等の対応候補 | [ProtocolSemantics][c8-protocol-semantics]、[ProtocolObservedRestrictionEquivalence][c8-protocol-reading]、命題1.38 | 自然性を全道へ延長し一意性を証明。第二成分を0へ置き換える辺の作用は観測を保つが、第二成分1の二状態で候補の自然性が失敗する |
 | C8-19 | 系8.30 | 有限基準fiber/頂点状態の列挙、finite decoder、共通primitive同値の単位 | [LensFinitePresentation][c8-lens-presentation]、[ProtocolFinitePresentation][c8-protocol-presentation]、[共通のCS比較][c8-common] | 有限decoderの充満忠実性・本質的全射性と、直接reader/共通同値経由readerの自然同型を示す。原稿の向きは形式化のcomparison isoの逆に対応 |
 | C8-20 | 命題8.31 | Lens/観測付きprotocolの冪等射、有限decoder、KarとArr | [CSKaroubiReconstruction][c8-cs-karoubi]、[共通のCS Karoubi・Arrow接続][c8-common]、定理6.27 | 固定点による分裂、retract生成、Karoubiへの延長、包含上のdecoder、射圏と端点評価の整合を本文で説明 |
 | C8-23 | §8.8・概要・まとめ | 記憶領域のbit数、モデルの型・係数・contextと読み取り範囲を指定。有限query集合、各値の有限符号化、明示された有限列挙と計算可能な評価・等号判定 | 定義8.6・補題8.7、定理8.18、§8.7の有限表示、[有限片と貼り合わせ][c8-fragments] | 有限query集合の整合族を全体表と制限から回復する。金融例の完了・仕訳だけでは二候補を区別できず、出金・入金の読み取りで区別できることを計算。情報の十分性、有限の検査手順、時間・記憶費用を区別し、主同値から計算費用の上界は主張しない |
@@ -1005,7 +1005,7 @@ Lean sourceは成立条件と構成の照合に用い、変更・ローカル再
 - 金融例の16通りのBool値で、完了の含意と三つの整数残差の零条件が一致し、9通りが条件を満たすことを確認した。口座・送金・会計に分けた表の整合族からも同じ9通りが得られ、不整合候補の残差は(1,1,0)となった。この検算は金融例で明示したLawの評価部分を対象とし、完全幾何の全成分を構成した検証とはしない。
 - 例8.27の基準fiberの3値から2値への表について、二つのviewを持つ積Lensの6状態で非単射性とget/putの保存を確認した。
 
-全331式をKaTeX 0.18.7で構文検査し、エラー・警告は0。
+全325式をKaTeX 0.18.7で構文検査し、エラー・警告は0。
 既存章でGitHub表示を確認済みの命令に揃え、作用素名は `\mathrm` を用いた。
 同じ版のCSS・フォントを使うローカルプレビューで数式と英語SVGを描画し、概要、主定理、金融例、CS適用節に加え、有限モデルの節、無限対象の補足、まとめと図を目視した。
 本文幅676pxで独立行数式の横溢れがないこと、番号・参照・リンク・不可視文字・公開情報を確認した。
@@ -1022,7 +1022,6 @@ CSの入力・局所条件・組立ては§8.7で定義し、主定理の証明�
 上記の既存の有限列挙の対象となる例と構成は保持し、今回の分離では再実行していない。Leanの変更・再実行も行っていない。
 
 原稿は人間による確認とPR作成の承認を得た。
-GitHubのファイルプレビュー・描画済み差分での数式確認とCIの対象commit・結果をPRに記録する。
 Claudeの独立レビューと人間による最終差分確認・マージはPR上で行う。
 
 [c8-one-point]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/OnePointCode.lean
@@ -1112,7 +1111,7 @@ SAGAから継承する結果、lensの積表示、圏同値の一般判定、Cau
 | --- | --- |
 | Related Work本文 | `dc2c3cf09c9c1a778f7ce3f7b3cb9e5562e593acfc1916f8e9454ff7168d6128` |
 | 書誌 | `169768f62786cc80f94fe91d4012060309c601168850dbe9004dacda4ffc1e87` |
-| READMEに定めた準備節〜第8章とRelated Workの結合原稿 | `269bcf62346e3d13c789c2f4cc57caeb8ae1beae8afe70ac3e414eaec3d7d391` |
+| READMEに定めた準備節〜第8章とRelated Workの結合原稿 | `48a257f941d65a48bf6f45d4c2c07e6e1903f452d1127ae3b9b04f5dc4daafbc` |
 
 [rw-local]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LocalReconstructionEquivalence.lean
 [rw-lens]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean
