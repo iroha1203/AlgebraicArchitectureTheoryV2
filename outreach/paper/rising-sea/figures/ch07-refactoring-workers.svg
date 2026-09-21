@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="360" viewBox="0 0 1040 360" role="img" aria-labelledby="title desc">
+  <title id="title">Context-preserving refactoring in two workers</title>
+  <desc id="desc">Worker A advances from queued state 0 to running state 1, and worker B from queued state 2 to running state 3. Starting a job preserves its context code k. The same context mapping must be used in the queued and running states of each worker. The workers exchange no context in this model, so they may choose their internal representations independently.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#344054"/>
+    </marker>
+  </defs>
+  <rect width="1040" height="360" fill="#ffffff"/>
+  <g font-family="sans-serif" fill="#172b4d">
+    <rect x="24" y="24" width="480" height="258" rx="16" fill="#f2f7ff" stroke="#9fb8d9" stroke-width="2"/>
+    <rect x="536" y="24" width="480" height="258" rx="16" fill="#f1faf5" stroke="#9cbfa9" stroke-width="2"/>
+    <text x="264" y="64" text-anchor="middle" font-size="23" font-weight="600">Worker A</text>
+    <text x="776" y="64" text-anchor="middle" font-size="23" font-weight="600">Worker B</text>
+    <circle cx="125" cy="140" r="36" fill="#ffffff" stroke="#527ba8" stroke-width="2"/>
+    <circle cx="403" cy="140" r="36" fill="#ffffff" stroke="#527ba8" stroke-width="2"/>
+    <circle cx="637" cy="140" r="36" fill="#ffffff" stroke="#507d61" stroke-width="2"/>
+    <circle cx="915" cy="140" r="36" fill="#ffffff" stroke="#507d61" stroke-width="2"/>
+    <g font-size="25" text-anchor="middle">
+      <text x="125" y="149">0</text>
+      <text x="403" y="149">1</text>
+      <text x="637" y="149">2</text>
+      <text x="915" y="149">3</text>
+    </g>
+    <g stroke="#344054" stroke-width="2.5" marker-end="url(#arrow)">
+      <path d="M 171 140 L 354 140"/>
+      <path d="M 683 140 L 866 140"/>
+    </g>
+    <g font-size="20" text-anchor="middle">
+      <text x="264" y="120">a: start job</text>
+      <text x="776" y="120">b: start job</text>
+      <text x="264" y="172">preserves k</text>
+      <text x="776" y="172">preserves k</text>
+      <text x="125" y="201" font-size="18">Queued</text>
+      <text x="403" y="201" font-size="18">Running</text>
+      <text x="637" y="201" font-size="18">Queued</text>
+      <text x="915" y="201" font-size="18">Running</text>
+      <text x="125" y="229">φ₀</text>
+      <text x="403" y="229">φ₁</text>
+      <text x="637" y="229">φ₂</text>
+      <text x="915" y="229">φ₃</text>
+      <text x="264" y="253">Required: φ₀ = φ₁</text>
+      <text x="776" y="253">Required: φ₂ = φ₃</text>
+    </g>
+    <text x="520" y="327" text-anchor="middle" font-size="22">K = {0, 1}: identity or swap per worker → 2 × 2 = 4 choices</text>
+  </g>
+</svg>
