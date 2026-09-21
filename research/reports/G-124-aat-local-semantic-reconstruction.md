@@ -10219,3 +10219,230 @@ instances、relationと観測squareのpointwise有限式、各carrierのlist cov
 `booleanIdentityMap_observationPreservation_rejected`、
 `booleanIdentityMap_edgePreservation_rejected`で与えた。異なるstate型間の非可逆Homは`Fin 2`から`Fin 1`への
 既存decoder経路で構成し、そのprimitive componentが非単射であることを示す。
+
+## 特例パートII PR 4/4 selection — 共通宣言・必須入力・既存経路比較
+
+一次仕様は固定GOAL A/Bと、Issue #4711の実装設計§2・§5–§7である。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124
+cycle: 79
+special_work_unit: part2-pr4
+cycle_increment: false
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: a162077b5b937834aef8f71b6141347adc0edb64
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Part II PR 1/4--3/4 are present at the selected base; implementation design is Issue #4711 sections 2, 5, 6, and 7 order 4"
+  proof_dag_predecessors:
+    - "IndependentGeometryCategoryReconstruction representative and explicit reconstruction data"
+    - "IndependentLensPrimitiveReconstruction reconstruction data and existing finite-fiber reader"
+    - "IndependentProtocolPrimitiveReconstruction reconstruction data and observed-restriction reader"
+    - "IndependentFiniteFragments restriction, compatibility, glue, and inverse laws"
+    - "LocalReconstructionEquivalence.ReconstructionData.equivalence"
+    - "Mandatory-C tagged source choices and canonical normalization"
+    - "G122OriginalInput generated endpoints, comparisons, projectors, and raw comparison group"
+    - "AATFourFamilyTotalReconstruction Cycle 79 fiber inclusions and reading squares"
+  proof_obligation: "Connect the four accepted branch reconstructions through one parameter and reader, construct one reconstruction datum and main equivalence, include the mandatory tagged and G-122 inputs, and compare the accepted routes without rebuilding their internals."
+  selection_reason: "The four branch readers and their direct assembly data are available; the remaining Part II work is their common dependent interface and the fixed A/B route connections."
+  expected_result_type: proof-checkpoint
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentAATPrimitiveReconstruction.lean"
+    - "IndependentAATPrimitiveReconstruction.Parameter"
+    - "IndependentAATPrimitiveReconstruction.reading"
+    - "IndependentAATPrimitiveReconstruction.reconstructionData"
+    - "IndependentAATPrimitiveReconstruction.equivalence"
+  risks:
+    - "The four native Hom universes differ; the common family must add only the required ULiftHom wrappers."
+    - "The main equivalence must use direct branch assembly data rather than selecting four completed equivalences."
+    - "The G-122 Arrow comparison must retain both endpoint automorphisms."
+  unchecked:
+    - "The final scoped Part II/A/B completion decision and merge evidence are recorded in tracking Issue #4711 for this ledger head."
+    - "G-124 targets C--E remain later work."
+result:
+  reviewed_head: dcf3e951d533f8d2530c3ea0dc0a5be2e7dcf79b
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Common object, Hom, and packed tables now carry branch-specific independent data through compatible finite families. Geometry Hom certificates retain the full Part I presentation as data, while lens and protocol certificates retain their existing proof packages. Two-sided family equivalences connect those families to the four accepted primitive local categories, and one common ReconstructionData uses their inverse laws. Tagged and G-122 readers connect to their Cycle 79 fibers through direct lifts; lens and protocol decoder, retract, Karoubi, and Arrow routes reuse the accepted comparisons."
+  completion_candidate: no
+  milestone_completion_candidate: "Part II and fixed targets A/B"
+  lean_artifacts:
+    - "IndependentAATPrimitiveReconstruction.Parameter"
+    - "IndependentAATPrimitiveReconstruction.Query"
+    - "IndependentAATPrimitiveReconstruction.FragmentFamily"
+    - "IndependentAATPrimitiveReconstruction.ObjectTable"
+    - "IndependentAATPrimitiveReconstruction.HomTable"
+    - "IndependentAATPrimitiveReconstruction.ObjectTableLaws"
+    - "IndependentAATPrimitiveReconstruction.GeometryHomTableCertificate"
+    - "IndependentAATPrimitiveReconstruction.HomTableCertificate"
+    - "IndependentAATPrimitiveReconstruction.LawfulObjectFamily"
+    - "IndependentAATPrimitiveReconstruction.LawfulHomFamily"
+    - "IndependentAATPrimitiveReconstruction.localObjectFamilyEquiv"
+    - "IndependentAATPrimitiveReconstruction.localHomFamilyEquiv"
+    - "IndependentAATPrimitiveReconstruction.reading"
+    - "IndependentAATPrimitiveReconstruction.assembleObject"
+    - "IndependentAATPrimitiveReconstruction.assembleHom"
+    - "IndependentAATPrimitiveReconstruction.reconstructionData"
+    - "IndependentAATPrimitiveReconstruction.equivalence"
+    - "IndependentAATPrimitiveReconstruction.taggedRepresentedReadingIso"
+    - "IndependentAATPrimitiveReconstruction.finiteAxisFoldRawComparisonReadingIso"
+    - "IndependentAATPrimitiveReconstruction.lensFiberComparisonIso"
+    - "IndependentAATPrimitiveReconstruction.protocolObservedComparisonIso"
+    - "IndependentAATPrimitiveReconstruction.lensFiniteDecoder_retractGeneratedBy"
+    - "IndependentAATPrimitiveReconstruction.protocolFiniteDecoder_retractGeneratedBy"
+    - "IndependentAATPrimitiveReconstruction.lensKaroubiEquivalence"
+    - "IndependentAATPrimitiveReconstruction.protocolKaroubiEquivalence"
+    - "IndependentAATPrimitiveReconstruction.lensKaroubiArrowEquivalence"
+    - "IndependentAATPrimitiveReconstruction.protocolKaroubiArrowEquivalence"
+    - "IndependentAATPrimitiveReconstruction.cycle79TaggedRepresentedTotalReadingIso"
+    - "IndependentAATPrimitiveReconstruction.cycle79G122RawTotalReadingIso"
+    - "IndependentAATPrimitiveReconstruction.cycle79LensPrimitiveFiniteDecoderReadingIso"
+    - "IndependentAATPrimitiveReconstruction.cycle79ProtocolPrimitiveFiniteDecoderReadingIso"
+    - "IndependentAATPrimitiveReconstruction.cycle79LensPrimitiveKaroubiReadingIso"
+    - "IndependentAATPrimitiveReconstruction.cycle79ProtocolPrimitiveKaroubiReadingIso"
+    - "IndependentAATPrimitiveReconstruction.cycle79LensPrimitiveKaroubiArrowReadingIso"
+    - "IndependentAATPrimitiveReconstruction.cycle79ProtocolPrimitiveKaroubiArrowReadingIso"
+  evidence:
+    - "Parameter has representative geometry, explicit geometry, lens, and protocol input forms; NativeCategory and LocalCategory retain the accepted branch object and Hom conditions."
+    - "Query tags source-object, target-object, and Hom queries; ObjectTable, HomTable, packTable, localTable, and nativeTable expose the common finite cells."
+    - "ObjectTableLaws selects the existing object predicates. GeometryHomTableCertificate stores the full Part I Presentation, its retained table, point laws, and canonical readback; HomTableCertificate stores this geometry data or the existing lens and protocol proof packages without existential selection."
+    - "LawfulObjectFamily and LawfulHomFamily combine compatible finite fragments with the selected tables and certificates; localObjectFamilyEquiv and localHomFamilyEquiv prove both inverse directions to the existing local categories."
+    - "assembleObjectFamily and assembleHomFamily compose the family adapters with the PR 1--3 assemblers, and reconstructionData uses those family inverse laws."
+    - "homSeparation and existsUnique_preimage expose uniqueness and existence separately."
+    - "The lens certificate rejects mismatched carriers, an all-false table on an inhabited source, and duplicate outputs. The common lens reader retains a constant-false noninjective Hom, and the common explicit geometry reader separates two coefficient projections with the same base action."
+    - "lensPackageInclusion and protocolPackageInclusion retain the accepted fully faithful semantic package functors and all their Homs."
+    - "taggedSourceChoiceNativeHom ranges over every source choice; taggedUniformFlipNativeHom_base identifies the constant-true choice, and taggedNormalizationNativeHom_idempotent retains canonical normalization."
+    - "taggedRepresentedInclusion retains the old generated exact Homs, and taggedRepresentedReadingIso compares them through the common reader."
+    - "The fixed G-122 objects retain the original, direct, and via-base packages; barAlpha, both cochain-selected barBeta values, barE, and barD are native Homs with factorization, idempotence, and point-evaluation theorems."
+    - "finiteAxisFoldRawComparisonInclusion maps every old raw comparison to Arrow(NativeCategory), and its left and right theorems retain the two endpoint automorphisms separately."
+    - "taggedRepresentedReadingIso and finiteAxisFoldRawComparisonReadingIso use the accepted old equivalence inverse and Equivalence.funInvIdAssoc."
+    - "lensFiniteDecoder and protocolFiniteDecoder compose the accepted semantic decoders with the new primitive equivalence; their retract-generation theorems transport the accepted semantic retract witnesses."
+    - "The Karoubi and Arrow equivalences reuse the accepted semantic equivalences, and their comparison isomorphisms recover the existing finite-fiber and observed routes."
+    - "The tagged represented reader and raw G-122 reader are lifted directly into their existing Cycle 79 branches; cycle79TaggedTotalReading_common and cycle79G122TotalReading_common identify their total readings with the common readers on each Hom."
+    - "The lens and protocol decoder, Karoubi, and Arrow routes are connected by natural isomorphisms to the existing Cycle 79 total reading; no Cycle 79 category or decoder is rebuilt."
+  claim_mapping:
+    theorem_names:
+      - "fragments_compatible"
+      - "glue_fragments"
+      - "fragments_glue"
+      - "read_assembleHom"
+      - "assembleHom_read"
+      - "readAssembledObjectIso"
+      - "localObjectTable_read"
+      - "localTable_read"
+      - "localObjectFamilyEquiv"
+      - "localHomFamilyEquiv"
+      - "localHomFamily_read_assemble"
+      - "assembleHomFamily_read"
+      - "lawfulHomFamily_existsUnique_preimage"
+      - "homSeparation"
+      - "existsUnique_preimage"
+      - "equivalence"
+      - "lensHomTableCertificate_mismatched_carrier_rejected"
+      - "lensHomTableCertificate_false_table_rejected"
+      - "lensHomTableCertificate_duplicate_outputs_rejected"
+      - "lensConstantFalseNativeHom_family_recovery"
+      - "lensConstantFalseNativeHom_fiber_not_injective"
+      - "explicitCoefficientProjection_commonReading_distinct"
+      - "taggedUniformFlipNativeHom_base"
+      - "taggedNormalizationNativeHom_idempotent"
+      - "finiteAxisFoldBarBetaNativeHom_factor"
+      - "finiteAxisFoldBarBetaNativeHom_source_factorization"
+      - "finiteAxisFoldBarBetaNativeHom_target_factorization"
+      - "finiteAxisFoldIdentityCochain_barBeta_eq_barAlpha_common"
+      - "finiteAxisFoldRawComparisonInclusion_left"
+      - "finiteAxisFoldRawComparisonInclusion_right"
+      - "finiteAxisFoldTwistedComparison_left"
+      - "finiteAxisFoldTwistedComparison_right"
+      - "finiteAxisFoldTwistedComparison_read_raw"
+      - "finiteAxisFoldTwistedComparison_multiply"
+      - "lensFiberComparisonIso_hom_app_apply"
+      - "protocolObservedComparisonIso_hom_app_vertex"
+      - "lensFiniteDecoder_retractGeneratedBy"
+      - "protocolFiniteDecoder_retractGeneratedBy"
+      - "cycle79TaggedTotalReading_common"
+      - "cycle79G122TotalReading_common"
+    source_labels:
+      - "fixed GOAL A and B"
+      - "Issue #4711 implementation design sections 2, 5, 6, and 7 order 4"
+    conjuncts:
+      - "one fixed parameter family -> four existing native and local category forms"
+      - "one tagged query family -> existing dependent finite fragments"
+      - "direct concrete assembly and separation -> one common ReconstructionData"
+      - "ReconstructionData.equivalence -> main category equivalence"
+      - "mandatory tagged and G-122 inputs -> actual common native objects and Homs"
+      - "old generated, Arrow, finite-fiber, observed, and Cycle 79 routes -> explicit comparison APIs"
+    undischarged_assumptions: []
+    acceptance_point: "This is the Part II PR 4/4 and fixed A/B implementation candidate. Fixed-head four-lane review and CI passed at dcf3e951d533f8d2530c3ea0dc0a5be2e7dcf79b. The final scoped completion decision and merge evidence are recorded in Issue #4711."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "The four branch assembly and separation results are supplied by the accepted PR 1--3 reconstruction data."
+      - "No decoder image, finite presentation, invertibility, or extension premise is added to the native categories."
+      - "The fixed tagged and G-122 witnesses use their accepted semantic objects and Homs."
+    remaining: []
+  certificate_provenance:
+    discharged:
+      - "The common reconstruction datum is built in this module from direct branch assembly functions and their inverse proofs."
+      - "The geometry Hom certificate keeps the complete Part I Presentation, including retained and auxiliary finite families, as input data; localHomOfFamily consumes that value directly without Classical.choose."
+      - "Lens and protocol Hom certificates lift their existing proof packages into data and add no completed semantic Hom."
+      - "The tagged source-choice, normalization, G-122 comparison, and endpoint maps are existing semantic Homs lifted into the common categories."
+      - "The Arrow inclusion reads both endpoint maps from each raw comparison rather than replacing them with a selected subgroup code."
+    unresolved: []
+  proof_use:
+    used:
+      - "PR 1 representative and explicit geometry reconstruction data"
+      - "PR 2 lens primitive reconstruction data and finite-fiber reading"
+      - "PR 3 protocol primitive reconstruction data and observed-restriction reading"
+      - "LocalReconstructionEquivalence reconstruction theorem"
+      - "Mandatory-C tagged source-choice and normalization theorems"
+      - "G122OriginalInput generated comparison and projector theorems"
+      - "AATFourFamilyTotalReconstruction Cycle 79 APIs"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  completion_scope: "Part II and fixed targets A/B only. The overall G-124 result remains proof-checkpoint at Cycle 79 because C--E are still open."
+  validation_refs:
+    - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentAATPrimitiveReconstruction.lean: 379 declarations, standard axioms only"
+    - "fixed-head math A/B and Lean A/B review at dcf3e951d533f8d2530c3ea0dc0a5be2e7dcf79b: four No major findings decisions"
+    - "PR #4842 CI at dcf3e951d533f8d2530c3ea0dc0a5be2e7dcf79b: all 7 checks succeeded; merge state CLEAN"
+    - "module registered in research/lean/research-modules.txt and ResearchLean/AG.lean"
+    - "git diff --check: pass"
+    - "placeholder and axiom/admit/sorry/unsafe scan: no match"
+    - "hidden and bidirectional Unicode scan: no match"
+    - "privacy scan: no match"
+    - "Research import direction gate: pass"
+    - "fixed GOAL blob unchanged: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088"
+  blocking_findings: []
+  next_obligation: "After acceptance of this Part II/A/B milestone, G-124 target C is projections, normalization, and comparison-group compatibility, including the three fixed G-122 cases."
+```
+
+`IndependentAATPrimitiveReconstruction.lean`は、PR 1–3で確定した四つの圏と原始readerを
+一つの`Parameter`から選ぶ。共通部はqueryの役割付け、有限片、reading、直接組立て、両逆に限る。
+四つの完成済み同値を主結果として選ぶのではなく、各枝の組立てデータから一つの
+`reconstructionData`を作り、`ReconstructionData.equivalence`を一度適用する。
+
+必須入力では、タグ付きsource-choiceの全元、一様flip、canonical正規化をexplicit形へ収録した。
+G-122では固定した三対象、`barAlpha`、生成cochainと定数1 cochainの`barBeta`、左右の冪等射を
+representative形へ収録し、原始評価と因子化を示した。旧raw比較は両端の自己同型を保ったまま
+`Arrow`へ送る。geometryのHom certificateはPart Iの`Presentation`をデータとして保持し、
+そのretained familyとauxiliary familyを選び直さず組立てに渡す。lensとprotocolは既存の
+証明packageをデータとして保持する。carrier不一致、all-false、出力重複を拒否するfixture、
+非単射なconstant-false lens Hom、同じbase actionを持つ異なるgeometry Homも共通reader上で確認した。
+
+tagged represented readerとG-122 raw readerは既存Cycle 79の各枝へ直接liftし、total readingと
+共通readerのHom評価が一致することを示した。lensの有限fiber、protocolのobserved reading、
+decoder・Karoubi・Arrowの既存APIも作り直さず比較に接続した。
+
+この単位はパートIIと固定target A/Bの完了候補である。共通有限族から四つの局所圏への両逆、
+旧経路の成分評価、CSのdecoder・retract・Karoubi・Arrow、Cycle 79のtotal readingへの自然同型を
+focused checkで確認した。固定head `dcf3e951d533f8d2530c3ea0dc0a5be2e7dcf79b`に対する
+数学A/B・Lean A/Bの4本査読は全て`No major findings`、CIは7件全て成功した。最終の
+A/B・パートII限定完了判定とmerge証拠は、この台帳headを対象にIssue #4711へ記録する。
+G-124全体はC–Eが残るため、Cycle 79の`proof-checkpoint`を維持する。
