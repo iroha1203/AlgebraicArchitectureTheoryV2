@@ -17,7 +17,10 @@
   <text x="190" y="36" class="heading">冪等な可換平方</text>
   <text x="765" y="36" class="heading">像の間の比較</text>
 
-  <path d="M110,90 H270 M110,200 H270 M90,112 V176 M290,112 V176" class="arrow"/>
+  <path d="M110,90 H270" class="arrow"/>
+  <path d="M110,200 H270" class="arrow"/>
+  <path d="M90,112 V176" class="arrow"/>
+  <path d="M290,112 V176" class="arrow"/>
   <g class="math">
     <text x="90" y="99">X</text>
     <text x="290" y="99">Y</text>
