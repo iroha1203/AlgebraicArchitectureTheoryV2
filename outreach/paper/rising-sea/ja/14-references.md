@@ -6,7 +6,7 @@
 参照箇所:
 
 - Categories, §4.2, “Definitions”, [Tag 0013](https://stacks.math.columbia.edu/tag/0013).
-- Categories, §4.33, “Fibred categories”, [Tag 02XJ](https://stacks.math.columbia.edu/tag/02XJ), 定義4.33.1、補題4.33.2・4.33.7。第4章では強いcartesian射とその輸送の双対を用いる。
+- Categories, §4.33, “Fibred categories”, [Tag 02XJ](https://stacks.math.columbia.edu/tag/02XJ), 定義4.33.1・4.33.5–4.33.6、補題4.33.2・4.33.7。第4章では強いcartesian射とその輸送の双対を、第5章ではcartesian射と引き戻しを用いる。
 - Conventions, §2.4, “Algebra”, [Tag 0006](https://stacks.math.columbia.edu/tag/0006).
 - Commutative Algebra, §10.2, “Conventions”, [Tag 00AQ](https://stacks.math.columbia.edu/tag/00AQ).
 - Sites and Sheaves, §7.47, “Topologies”, [Tag 00YW](https://stacks.math.columbia.edu/tag/00YW).
