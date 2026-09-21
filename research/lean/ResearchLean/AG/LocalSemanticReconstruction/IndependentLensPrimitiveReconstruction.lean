@@ -1,4 +1,6 @@
 import ResearchLean.AG.LocalSemanticReconstruction.IndependentCarrierGraphReadings
+import ResearchLean.AG.LocalSemanticReconstruction.IndependentFiniteFragments
+import ResearchLean.AG.LocalSemanticReconstruction.IndependentFiniteGraphLawFormula
 import ResearchLean.AG.LocalSemanticReconstruction.IndependentFiniteLawFormula
 import ResearchLean.AG.LocalSemanticReconstruction.LensFiberModelEquivalence
 import ResearchLean.AG.LocalSemanticReconstruction.LensSemanticFiniteDetermination
@@ -9,10 +11,10 @@ import Formal.Util.AssertStandardAxioms
 # Primitive reconstruction of total lenses
 
 For a fixed `LensFamilyInput`, this module declares the lens queries before a
-state carrier is selected.  One tagged Boolean table contains the candidate
-graphs for `get` and every fixed-view `put`.  The three total-lens laws are
-closed `BoolFormula` instances at fixed points, and the reference fiber is the
-subtype selected by the reference `get` edge.
+state carrier is selected.  Compatible finite fragments contain the carrier
+reference cell and the candidate graphs for `get` and every fixed-view `put`.
+The three total-lens laws are closed `BoolFormula` instances at fixed points,
+and the reference fiber is the subtype selected by the reference `get` edge.
 
 Local Homs contain one candidate state-map graph and closed formulas for
 `get` and `put` preservation.  Identity and composition use
@@ -22,7 +24,7 @@ get/put-preserving maps, including noninvertible maps.
 
 ## Implementation notes
 
-The object and Hom records contain primitive tables and their point laws; they
+The object and Hom records contain finite fragment families and their point laws; they
 do not contain `LensRealization`, `LensRealization.Hom`, decoder membership, or
 extension data.  Native objects and Homs occur only in the two reading and
 assembly directions.  The fixed GOAL B equivalence is obtained by one use of
@@ -51,100 +53,297 @@ abbrev GraphTable := IndependentCarrierGraph.Table.{u, u}
 /-- A fixed lens-object query tags a candidate graph cell by its semantic
 role.  The query type depends only on the parameter-owned view type. -/
 inductive ObjectQuery (input : LensFamilyInput.{u}) where
+  /-- The unique state-carrier declaration cell. -/
+  | stateCarrier
   /-- One candidate edge of the `get` graph. -/
   | get (query : GraphQuery.{u})
   /-- One candidate edge of the `put` graph at a fixed view. -/
   | put (view : input.View) (query : GraphQuery.{u})
 
-/-- The single Boolean table containing all primitive lens-object cells. -/
-abbrev ObjectTable (input : LensFamilyInput.{u}) := ObjectQuery input → Bool
+/-- The dependent value type of each primitive object query. -/
+def ObjectValue {input : LensFamilyInput.{u}} : ObjectQuery input → Type (u + 1)
+  | .stateCarrier => Type u
+  | .get _ => ULift.{u + 1, 0} Bool
+  | .put _ _ => ULift.{u + 1, 0} Bool
+
+/-- The dependent table containing the carrier declaration and graph cells. -/
+abbrev ObjectTable (input : LensFamilyInput.{u}) :=
+  (query : ObjectQuery input) → ObjectValue query
+
+/-- Finite object-table fragments over the fixed query declaration. -/
+abbrev ObjectFragment {input : LensFamilyInput.{u}} (D : Finset (ObjectQuery input)) :=
+  IndependentFiniteFragments.Fragment (fun query : ObjectQuery input => ObjectValue query) D
+
+/-- A family of finite object-table fragments. -/
+abbrev ObjectFragmentFamily (input : LensFamilyInput.{u}) :=
+  IndependentFiniteFragments.FragmentFamily
+    (fun query : ObjectQuery input => ObjectValue query)
+
+/-- Compatibility of finite object-table fragments. -/
+abbrev ObjectCompatible {input : LensFamilyInput.{u}}
+    (family : ObjectFragmentFamily input) :=
+  IndependentFiniteFragments.Compatible family
+
+/-- Restrict an object table to every finite query set. -/
+def objectFragments {input : LensFamilyInput.{u}} (table : ObjectTable input) :
+    ObjectFragmentFamily input :=
+  IndependentFiniteFragments.fragments table
+
+/-- Glue compatible object fragments through singleton cells. -/
+def objectGlue {input : LensFamilyInput.{u}} (family : ObjectFragmentFamily input) :
+    ObjectTable input :=
+  IndependentFiniteFragments.glue family
+
+/-- Object-table restrictions are compatible. -/
+theorem objectFragments_compatible {input : LensFamilyInput.{u}} (table : ObjectTable input) :
+    ObjectCompatible (objectFragments table) :=
+  IndependentFiniteFragments.fragments_compatible table
+
+/-- Gluing all restrictions recovers the object table. -/
+theorem objectGlue_fragments {input : LensFamilyInput.{u}} (table : ObjectTable input) :
+    objectGlue (objectFragments table) = table :=
+  IndependentFiniteFragments.glue_fragments table
+
+/-- Compatible object fragments are recovered from their glued table. -/
+theorem objectFragments_glue {input : LensFamilyInput.{u}}
+    (family : ObjectFragmentFamily input) (compatible : ObjectCompatible family) :
+    objectFragments (objectGlue family) = family :=
+  IndependentFiniteFragments.fragments_glue family compatible
 
 /-- Restrict the tagged object table to the candidate `get` graph. -/
 def getTable {input : LensFamilyInput.{u}} (table : ObjectTable input) : GraphTable.{u} :=
-  fun query => table (.get query)
+  fun query => (table (.get query)).down
 
 /-- Restrict the tagged object table to the candidate `put` graph at one view. -/
 def putTable {input : LensFamilyInput.{u}} (table : ObjectTable input)
     (view : input.View) : GraphTable.{u} :=
-  fun query => table (.put view query)
+  fun query => (table (.put view query)).down
+
+/-- Embed a carrier-graph query into the object `get` cells. -/
+def getEmbed (input : LensFamilyInput.{u}) : GraphQuery.{u} → ObjectQuery input :=
+  ObjectQuery.get
+
+/-- Embed a carrier-graph query into one fixed-view object `put` row. -/
+def putEmbed (input : LensFamilyInput.{u}) (view : input.View) :
+    GraphQuery.{u} → ObjectQuery input :=
+  ObjectQuery.put view
+
+/-- Boolean law queries derived from the dependent primitive object table. -/
+inductive ObjectLawQuery (input : LensFamilyInput.{u}) where
+  /-- Compare one candidate type with the declared state carrier. -/
+  | carrierMatches (candidate : Type u)
+  /-- Read one candidate `get` edge. -/
+  | get (query : GraphQuery.{u})
+  /-- Read one fixed-view candidate `put` edge. -/
+  | put (view : input.View) (query : GraphQuery.{u})
+
+/-- Boolean table used only to evaluate derived object-law formulas. -/
+abbrev ObjectLawTable (input : LensFamilyInput.{u}) := ObjectLawQuery input → Bool
+
+/-- Derive law cells from the unique carrier declaration and the base graph cells. -/
+def objectLawTable {input : LensFamilyInput.{u}} (table : ObjectTable input) :
+    ObjectLawTable input := by
+  classical
+  intro query
+  cases query with
+  | carrierMatches candidate => exact decide (candidate = table .stateCarrier)
+  | get graphQuery => exact (table (.get graphQuery)).down
+  | put view graphQuery => exact (table (.put view graphQuery)).down
+
+/-- The selected carrier-reference cell as a closed Boolean formula. -/
+def carrierFormula (input : LensFamilyInput.{u}) (C : Type u) :
+    IndependentFiniteLawFormula.BoolFormula.{u + 1, 0} (ObjectLawQuery input) :=
+  .cell (.carrierMatches C) true
+
+/-- Raw evaluation of the carrier-reference formula. -/
+theorem carrierFormula_evaluate_raw (input : LensFamilyInput.{u}) (C : Type u)
+    (table : ObjectLawTable input) :
+    (carrierFormula input C).evaluate table ↔ table (.carrierMatches C) = true := Iff.rfl
+
+/-- A derived match cell is true exactly for the declared carrier type. -/
+theorem objectLawTable_carrierMatches_iff {input : LensFamilyInput.{u}}
+    (table : ObjectTable input) (C : Type u) :
+    objectLawTable table (.carrierMatches C) = true ↔ C = table .stateCarrier := by
+  classical
+  simp [objectLawTable]
+
+/-- Carrier-match cells depend only on the single base carrier declaration. -/
+theorem objectLawTable_carrierMatches_eq_of_stateCarrier_eq
+    {input : LensFamilyInput.{u}} {first second : ObjectTable input}
+    (equality : first .stateCarrier = second .stateCarrier) (C : Type u) :
+    objectLawTable first (.carrierMatches C) =
+      objectLawTable second (.carrierMatches C) := by
+  simp only [objectLawTable]
+  rw [equality]
 
 /-- The finite formula for `get(c) = v -> put_v(c) = c`. -/
 def putGetFormula (input : LensFamilyInput.{u}) (C : Type u)
     (c : C) (view : input.View) :
-    IndependentFiniteLawFormula.BoolFormula.{u + 1, 0} (ObjectQuery input) :=
-  .implies
-    (.cell (.get (.edge C input.View c view)) true)
-    (.cell (.put view (.edge C C c c)) true)
+    IndependentFiniteLawFormula.BoolFormula.{u + 1, 0} (ObjectLawQuery input) :=
+  .and (carrierFormula input C)
+    (.implies
+      (.cell (.get (.edge C input.View c view)) true)
+      (.cell (.put view (.edge C C c c)) true))
 
 /-- The finite formula for `put_v(c) = d -> get(d) = v`. -/
 def getPutFormula (input : LensFamilyInput.{u}) (C : Type u)
     (c d : C) (view : input.View) :
-    IndependentFiniteLawFormula.BoolFormula.{u + 1, 0} (ObjectQuery input) :=
-  .implies
-    (.cell (.put view (.edge C C c d)) true)
-    (.cell (.get (.edge C input.View d view)) true)
+    IndependentFiniteLawFormula.BoolFormula.{u + 1, 0} (ObjectLawQuery input) :=
+  .and (carrierFormula input C)
+    (.implies
+      (.cell (.put view (.edge C C c d)) true)
+      (.cell (.get (.edge C input.View d view)) true))
 
 /-- The finite formula for two consecutive updates to retain the last view. -/
 def putPutFormula (input : LensFamilyInput.{u}) (C : Type u)
     (c d e : C) (first second : input.View) :
-    IndependentFiniteLawFormula.BoolFormula.{u + 1, 0} (ObjectQuery input) :=
-  .implies
-    (.and
-      (.cell (.put first (.edge C C c d)) true)
-      (.cell (.put second (.edge C C d e)) true))
-    (.cell (.put second (.edge C C c e)) true)
+    IndependentFiniteLawFormula.BoolFormula.{u + 1, 0} (ObjectLawQuery input) :=
+  .and (carrierFormula input C)
+    (.implies
+      (.and
+        (.cell (.put first (.edge C C c d)) true)
+        (.cell (.put second (.edge C C d e)) true))
+      (.cell (.put second (.edge C C c e)) true))
+
+/-- Raw-table evaluation of one put-get formula. -/
+theorem putGetFormula_evaluate_raw (input : LensFamilyInput.{u}) (C : Type u)
+    (c : C) (view : input.View) (table : ObjectLawTable input) :
+    (putGetFormula input C c view).evaluate table ↔
+      table (.carrierMatches C) = true ∧
+        (table (.get (.edge C input.View c view)) = true →
+          table (.put view (.edge C C c c)) = true) := Iff.rfl
+
+/-- Raw-table evaluation of one get-put formula. -/
+theorem getPutFormula_evaluate_raw (input : LensFamilyInput.{u}) (C : Type u)
+    (c d : C) (view : input.View) (table : ObjectLawTable input) :
+    (getPutFormula input C c d view).evaluate table ↔
+      table (.carrierMatches C) = true ∧
+        (table (.put view (.edge C C c d)) = true →
+          table (.get (.edge C input.View d view)) = true) := Iff.rfl
+
+/-- Raw-table evaluation of one put-put formula. -/
+theorem putPutFormula_evaluate_raw (input : LensFamilyInput.{u}) (C : Type u)
+    (c d e : C) (first second : input.View) (table : ObjectLawTable input) :
+    (putPutFormula input C c d e first second).evaluate table ↔
+      table (.carrierMatches C) = true ∧
+        (table (.put first (.edge C C c d)) = true ∧
+            table (.put second (.edge C C d e)) = true →
+          table (.put second (.edge C C c e)) = true) := Iff.rfl
 
 /-- The reference fiber selected directly by the primitive `get` graph. -/
 abbrev PrimitiveFiber (input : LensFamilyInput.{u}) (C : Type u)
     (table : ObjectTable input) :=
-  {c : C // table (.get (.edge C input.View c input.reference)) = true}
+  {c : C // (table (.get (.edge C input.View c input.reference))).down = true}
+
+/-- A finite list covering every state in the primitive reference fiber. -/
+def FiberCover (input : LensFamilyInput.{u}) (C : Type u)
+    (table : ObjectTable input) : Prop :=
+  ∃ states : List (PrimitiveFiber input C table), ∀ state, state ∈ states
+
+/-- A list cover is equivalent to finiteness of the primitive reference fiber. -/
+theorem fiberCover_iff_finite (input : LensFamilyInput.{u}) (C : Type u)
+    (table : ObjectTable input) :
+    FiberCover input C table ↔ Finite (PrimitiveFiber input C table) := by
+  constructor
+  · rintro ⟨states, cover⟩
+    classical
+    letI : Fintype (PrimitiveFiber input C table) :=
+      ⟨states.toFinset, fun state => by simpa using cover state⟩
+    exact Finite.of_fintype _
+  · intro finite
+    letI : Finite (PrimitiveFiber input C table) := finite
+    letI := Fintype.ofFinite (PrimitiveFiber input C table)
+    exact ⟨Finset.univ.toList, fun state => by simp⟩
 
 /-- A fixed-GOAL A/B primitive lens object.  Its fields are exactly one state
-carrier reference, one tagged table, graph lawfulness, the three finite point
-formulas, and finiteness of the primitive reference fiber. -/
+carrier reference, compatible finite fragments, graph-row formula instances,
+the three finite point formulas, and a list cover of the primitive fiber. -/
 structure Object (input : LensFamilyInput.{u}) where
-  /-- The selected state carrier referenced by active graph queries. -/
-  Carrier : Type u
-  /-- The common tagged table for `get` and all fixed-view `put` graphs. -/
-  table : ObjectTable input
-  /-- The selected `get` graph is total and all mismatched carrier cells are false. -/
-  get_lawful : IndependentCarrierGraph.IsLawful Carrier input.View (getTable table)
-  /-- Every selected fixed-view `put` graph is total and typed. -/
-  put_lawful : ∀ view, IndependentCarrierGraph.IsLawful Carrier Carrier (putTable table view)
+  /-- Finite fragments containing all primitive object cells. -/
+  family : ObjectFragmentFamily input
+  /-- The finite fragments agree under inclusions. -/
+  compatible : ObjectCompatible family
+  /-- Closed graph-row instances for the selected `get` graph. -/
+  get_instances : IndependentFiniteGraphLawFormula.CarrierRows.Instances
+    (fun query => (objectGlue family (.get query)).down) id
+      (objectGlue family .stateCarrier) input.View
+  /-- Closed graph-row instances for every fixed-view `put` graph. -/
+  put_instances : ∀ view, IndependentFiniteGraphLawFormula.CarrierRows.Instances
+    (fun query => (objectGlue family (.put view query)).down) id
+      (objectGlue family .stateCarrier) (objectGlue family .stateCarrier)
   /-- Every fixed-point put-get formula evaluates from the primitive table. -/
   put_get_formula : ∀ c view,
-    (putGetFormula input Carrier c view).evaluate table
+    (putGetFormula input (objectGlue family .stateCarrier) c view).evaluate
+      (objectLawTable (objectGlue family))
   /-- Every fixed-point get-put formula evaluates from the primitive table. -/
   get_put_formula : ∀ c d view,
-    (getPutFormula input Carrier c d view).evaluate table
+    (getPutFormula input (objectGlue family .stateCarrier) c d view).evaluate
+      (objectLawTable (objectGlue family))
   /-- Every fixed-point put-put formula evaluates from the primitive table. -/
   put_put_formula : ∀ c d e first second,
-    (putPutFormula input Carrier c d e first second).evaluate table
-  /-- The primitive reference-edge subtype is finite. -/
-  fiber_finite : Finite (PrimitiveFiber input Carrier table)
+    (putPutFormula input (objectGlue family .stateCarrier) c d e first second).evaluate
+      (objectLawTable (objectGlue family))
+  /-- A finite list covers the primitive reference-edge subtype. -/
+  fiber_cover : FiberCover input (objectGlue family .stateCarrier) (objectGlue family)
 
 namespace Object
 
 variable {input : LensFamilyInput.{u}}
 
-/-- Primitive lens objects are equal when their carrier reference and tagged
-table agree; all remaining fields are propositions. -/
+/-- Primitive lens objects are equal when their dependent fragment families agree. -/
 @[ext]
 theorem ext {first second : Object input}
-    (carrier : first.Carrier = second.Carrier)
-    (table : first.table = second.table) : first = second := by
+    (family : first.family = second.family) : first = second := by
   cases first
   cases second
-  cases carrier
-  cases table
+  cases family
   rfl
+
+/-- Glue the primitive object table from its compatible finite fragments. -/
+def table (object : Object input) : ObjectTable input := objectGlue object.family
+
+/-- The state carrier is read from the unique dependent declaration cell. -/
+def Carrier (object : Object input) : Type u := object.table .stateCarrier
 
 /-- The primitive reference fiber of a local object. -/
 abbrev Fiber (object : Object input) :=
   PrimitiveFiber input object.Carrier object.table
 
-/-- Finiteness is supplied only for the primitive reference fiber. -/
-instance (object : Object input) : Finite object.Fiber := object.fiber_finite
+/-- The selected carrier-reference cell is true. -/
+theorem carrier_selected (object : Object input) :
+    objectLawTable object.table (.carrierMatches object.Carrier) = true := by
+  exact (objectLawTable_carrierMatches_iff object.table object.Carrier).mpr rfl
+
+/-- Every mismatched carrier-reference candidate is false. -/
+theorem carrier_mismatch (object : Object input) (C : Type u)
+    (mismatch : C ≠ object.Carrier) :
+    objectLawTable object.table (.carrierMatches C) = false := by
+  classical
+  change C ≠ object.table .stateCarrier at mismatch
+  simp [objectLawTable, mismatch]
+
+/-- Carrier-reference cells recognize exactly the selected carrier. -/
+theorem carrier_cell_iff (object : Object input) (C : Type u) :
+    objectLawTable object.table (.carrierMatches C) = true ↔ C = object.Carrier :=
+  objectLawTable_carrierMatches_iff object.table C
+
+/-- The selected `get` graph law follows from its finite row instances. -/
+theorem get_lawful (object : Object input) :
+    IndependentCarrierGraph.IsLawful object.Carrier input.View (getTable object.table) :=
+  (IndependentFiniteGraphLawFormula.CarrierRows.lawful_iff_instances
+    (getTable object.table) id object.Carrier input.View).mpr object.get_instances
+
+/-- Each selected fixed-view `put` graph law follows from its finite row instances. -/
+theorem put_lawful (object : Object input) (view : input.View) :
+    IndependentCarrierGraph.IsLawful object.Carrier object.Carrier
+      (putTable object.table view) :=
+  (IndependentFiniteGraphLawFormula.CarrierRows.lawful_iff_instances
+    (putTable object.table view) id object.Carrier object.Carrier).mpr
+      (object.put_instances view)
+
+/-- The stored list cover proves finiteness without adding a structure field or global instance. -/
+theorem fiber_finite (object : Object input) : Finite object.Fiber :=
+  (fiberCover_iff_finite input object.Carrier object.table).mp object.fiber_cover
 
 end Object
 
@@ -163,7 +362,7 @@ def assemblePut {input : LensFamilyInput.{u}} (object : Object input)
 /-- No-unfold API for a true primitive `get` edge. -/
 theorem get_edge_iff {input : LensFamilyInput.{u}} (object : Object input)
     (state : object.Carrier) (view : input.View) :
-    object.table (.get (.edge object.Carrier input.View state view)) = true ↔
+    (object.table (.get (.edge object.Carrier input.View state view))).down = true ↔
       assembleGet object state = view := by
   constructor
   · exact IndependentCarrierGraph.assemble_eq_of_edge
@@ -176,7 +375,8 @@ theorem get_edge_iff {input : LensFamilyInput.{u}} (object : Object input)
 /-- No-unfold API for a true primitive `put` edge. -/
 theorem put_edge_iff {input : LensFamilyInput.{u}} (object : Object input)
     (state target : object.Carrier) (view : input.View) :
-    object.table (.put view (.edge object.Carrier object.Carrier state target)) = true ↔
+    (object.table (.put view
+      (.edge object.Carrier object.Carrier state target))).down = true ↔
       assemblePut object state view = target := by
   constructor
   · exact IndependentCarrierGraph.assemble_eq_of_edge
@@ -199,26 +399,34 @@ def assembleObject {input : LensFamilyInput.{u}} (object : Object input) :
   condition :=
     { put_get := fun state => by
         apply (put_edge_iff object state state (assembleGet object state)).mp
-        exact object.put_get_formula state (assembleGet object state)
+        exact ((putGetFormula_evaluate_raw input object.Carrier state
+          (assembleGet object state) _).mp
+            (object.put_get_formula state (assembleGet object state))).2
           (IndependentCarrierGraph.edge_assemble object.Carrier input.View
             (getTable object.table) object.get_lawful state)
       get_put := fun state view => by
         apply (get_edge_iff object (assemblePut object state view) view).mp
-        exact object.get_put_formula state (assemblePut object state view) view
+        exact ((getPutFormula_evaluate_raw input object.Carrier state
+          (assemblePut object state view) view _).mp
+            (object.get_put_formula state (assemblePut object state view) view)).2
           (IndependentCarrierGraph.edge_assemble object.Carrier object.Carrier
             (putTable object.table view) (object.put_lawful view) state)
       put_put := fun state first second => by
         symm
         apply (put_edge_iff object state (assemblePut object (assemblePut object state first) second)
           second).mp
-        exact object.put_put_formula state (assemblePut object state first)
-          (assemblePut object (assemblePut object state first) second) first second
+        exact ((putPutFormula_evaluate_raw input object.Carrier state
+          (assemblePut object state first)
+          (assemblePut object (assemblePut object state first) second) first second _).mp
+            (object.put_put_formula state (assemblePut object state first)
+              (assemblePut object (assemblePut object state first) second) first second)).2
           ⟨IndependentCarrierGraph.edge_assemble object.Carrier object.Carrier
               (putTable object.table first) (object.put_lawful first) state,
             IndependentCarrierGraph.edge_assemble object.Carrier object.Carrier
               (putTable object.table second) (object.put_lawful second)
                 (assemblePut object state first)⟩
       finite_fiber := by
+        letI : Finite object.Fiber := object.fiber_finite
         let equivalence : object.Fiber ≃
             {state : object.Carrier // assembleGet object state = input.reference} :=
           { toFun := fun state =>
@@ -252,11 +460,15 @@ def primitiveFiberEquiv {input : LensFamilyInput.{u}} (object : Object input) :
 
 /-- Read raw lens data into the fixed tagged object table. -/
 def readDataTable {input : LensFamilyInput.{u}} (data : LensData input.View) :
-    ObjectTable input
-  | .get query => IndependentCarrierGraph.read data.Carrier input.View data.get query
-  | .put view query =>
-      IndependentCarrierGraph.read data.Carrier data.Carrier
-        (fun state => data.put state view) query
+    ObjectTable input := by
+  intro query
+  cases query with
+  | stateCarrier => exact data.Carrier
+  | get graphQuery =>
+      exact ULift.up (IndependentCarrierGraph.read data.Carrier input.View data.get graphQuery)
+  | put view graphQuery =>
+      exact ULift.up (IndependentCarrierGraph.read data.Carrier data.Carrier
+        (fun state => data.put state view) graphQuery)
 
 /-- The read table restricts to the existing `get` graph reader. -/
 @[simp] theorem getTable_readDataTable {input : LensFamilyInput.{u}}
@@ -288,14 +500,24 @@ def readFiberEquiv {input : LensFamilyInput.{u}}
 /-- Read an arbitrary semantic lens into the primitive object declaration. -/
 def readObject {input : LensFamilyInput.{u}}
     (lens : LensRealization input.View input.reference) : Object input where
-  Carrier := lens.Carrier
-  table := readDataTable lens.toLensData
-  get_lawful := IndependentCarrierGraph.read_isLawful _ _ lens.get
-  put_lawful view := IndependentCarrierGraph.read_isLawful _ _
-    (fun state => lens.put state view)
+  family := objectFragments (readDataTable lens.toLensData)
+  compatible := objectFragments_compatible _
+  get_instances :=
+    (IndependentFiniteGraphLawFormula.CarrierRows.lawful_iff_instances
+      (getTable (readDataTable lens.toLensData)) id lens.Carrier input.View).mp
+      (IndependentCarrierGraph.read_isLawful _ _ lens.get)
+  put_instances view :=
+    (IndependentFiniteGraphLawFormula.CarrierRows.lawful_iff_instances
+      (putTable (readDataTable lens.toLensData) view) id lens.Carrier lens.Carrier).mp
+      (IndependentCarrierGraph.read_isLawful _ _ (fun state => lens.put state view))
   put_get_formula state view := by
-    change
-      IndependentCarrierGraph.read lens.Carrier input.View lens.get
+    apply (putGetFormula_evaluate_raw input lens.Carrier state view _).mpr
+    refine ⟨?_, ?_⟩
+    · apply (objectLawTable_carrierMatches_iff _ lens.Carrier).mpr
+      rw [objectGlue_fragments]
+      rfl
+    simp only [objectGlue_fragments]
+    change IndependentCarrierGraph.read lens.Carrier input.View lens.get
           (.edge lens.Carrier input.View state view) = true →
         IndependentCarrierGraph.read lens.Carrier lens.Carrier
           (fun current => lens.put current view)
@@ -306,8 +528,13 @@ def readObject {input : LensFamilyInput.{u}}
       (IndependentCarrierGraph.read_edge _ _ _ _ _).mp premise
     simpa [getEquality] using lens.condition.put_get state
   get_put_formula state target view := by
-    change
-      IndependentCarrierGraph.read lens.Carrier lens.Carrier
+    apply (getPutFormula_evaluate_raw input lens.Carrier state target view _).mpr
+    refine ⟨?_, ?_⟩
+    · apply (objectLawTable_carrierMatches_iff _ lens.Carrier).mpr
+      rw [objectGlue_fragments]
+      rfl
+    simp only [objectGlue_fragments]
+    change IndependentCarrierGraph.read lens.Carrier lens.Carrier
           (fun current => lens.put current view)
             (.edge lens.Carrier lens.Carrier state target) = true →
         IndependentCarrierGraph.read lens.Carrier input.View lens.get
@@ -319,8 +546,13 @@ def readObject {input : LensFamilyInput.{u}}
     subst target
     exact lens.condition.get_put state view
   put_put_formula state middle target first second := by
-    change
-      (IndependentCarrierGraph.read lens.Carrier lens.Carrier
+    apply (putPutFormula_evaluate_raw input lens.Carrier state middle target first second _).mpr
+    refine ⟨?_, ?_⟩
+    · apply (objectLawTable_carrierMatches_iff _ lens.Carrier).mpr
+      rw [objectGlue_fragments]
+      rfl
+    simp only [objectGlue_fragments]
+    change (IndependentCarrierGraph.read lens.Carrier lens.Carrier
           (fun current => lens.put current first)
             (.edge lens.Carrier lens.Carrier state middle) = true ∧
         IndependentCarrierGraph.read lens.Carrier lens.Carrier
@@ -338,21 +570,27 @@ def readObject {input : LensFamilyInput.{u}}
     subst middle
     subst target
     exact (lens.condition.put_put state first second).symm
-  fiber_finite :=
-    Finite.of_equiv lens.Fiber (readFiberEquiv lens).symm
+  fiber_cover := by
+    apply (fiberCover_iff_finite input lens.Carrier _).mpr
+    exact Finite.of_equiv lens.Fiber (readFiberEquiv lens).symm
 
 /-- Reading after primitive object assembly recovers the whole tagged table. -/
 @[simp] theorem readObject_assembleObject {input : LensFamilyInput.{u}}
     (object : Object input) :
     readObject (assembleObject object) = object := by
   apply Object.ext
-  · rfl
+  change objectFragments (readDataTable (assembleObject object).toLensData) = object.family
+  rw [← objectFragments_glue object.family object.compatible]
+  apply congrArg (objectFragments (input := input))
   funext query
   cases query with
+  | stateCarrier => rfl
   | get query =>
+      apply ULift.ext
       exact congrFun (IndependentCarrierGraph.read_assemble object.Carrier input.View
         (getTable object.table) object.get_lawful) query
   | put view query =>
+      apply ULift.ext
       exact congrFun (IndependentCarrierGraph.read_assemble object.Carrier object.Carrier
         (putTable object.table view) (object.put_lawful view)) query
 
@@ -390,10 +628,10 @@ def assembleObjectReadIso {input : LensFamilyInput.{u}}
 /-- A fixed Hom-law query tags source-object, target-object, and state-map
 cells without storing either completed endpoint or a completed Hom. -/
 inductive HomQuery (input : LensFamilyInput.{u}) where
-  /-- A source-object primitive cell. -/
-  | source (query : ObjectQuery input)
-  /-- A target-object primitive cell. -/
-  | target (query : ObjectQuery input)
+  /-- A source-object derived law cell. -/
+  | source (query : ObjectLawQuery input)
+  /-- A target-object derived law cell. -/
+  | target (query : ObjectLawQuery input)
   /-- A candidate state-map graph cell. -/
   | map (query : GraphQuery.{u})
 
@@ -401,8 +639,8 @@ inductive HomQuery (input : LensFamilyInput.{u}) where
 evaluation of the closed Hom-preservation formulas. -/
 def homLawTable {input : LensFamilyInput.{u}} (source target : Object input)
     (table : GraphTable.{u}) : HomQuery input → Bool
-  | .source query => source.table query
-  | .target query => target.table query
+  | .source query => objectLawTable source.table query
+  | .target query => objectLawTable target.table query
   | .map query => table query
 
 /-- Finite formula saying that one true state-map edge preserves one `get`
@@ -411,13 +649,15 @@ def getPreservationFormula (input : LensFamilyInput.{u})
     (sourceCarrier targetCarrier : Type u)
     (source : sourceCarrier) (target : targetCarrier) (view : input.View) :
     IndependentFiniteLawFormula.BoolFormula.{u + 1, 0} (HomQuery input) :=
-  .implies
-    (.and
-      (.cell (.map (.edge sourceCarrier targetCarrier source target)) true)
-      (.cell (.source (.get
-        (.edge sourceCarrier input.View source view))) true))
-    (.cell (.target (.get
-      (.edge targetCarrier input.View target view))) true)
+  .and (.cell (.source (.carrierMatches sourceCarrier)) true)
+    (.and (.cell (.target (.carrierMatches targetCarrier)) true)
+      (.implies
+        (.and
+          (.cell (.map (.edge sourceCarrier targetCarrier source target)) true)
+          (.cell (.source (.get
+            (.edge sourceCarrier input.View source view))) true))
+        (.cell (.target (.get
+          (.edge targetCarrier input.View target view))) true)))
 
 /-- Finite formula saying that one state-map edge and the corresponding source
 and target update edges determine the updated state-map edge. -/
@@ -426,33 +666,152 @@ def putPreservationFormula (input : LensFamilyInput.{u})
     (source source' : sourceCarrier) (target target' : targetCarrier)
     (view : input.View) :
     IndependentFiniteLawFormula.BoolFormula.{u + 1, 0} (HomQuery input) :=
-  .implies
-    (.and
-      (.and
-        (.cell (.map (.edge sourceCarrier targetCarrier source target)) true)
-        (.cell (.source (.put view
-          (.edge sourceCarrier sourceCarrier source source'))) true))
-      (.cell (.target (.put view
-        (.edge targetCarrier targetCarrier target target'))) true))
-    (.cell (.map (.edge sourceCarrier targetCarrier source' target')) true)
+  .and (.cell (.source (.carrierMatches sourceCarrier)) true)
+    (.and (.cell (.target (.carrierMatches targetCarrier)) true)
+      (.implies
+        (.and
+          (.and
+            (.cell (.map (.edge sourceCarrier targetCarrier source target)) true)
+            (.cell (.source (.put view
+              (.edge sourceCarrier sourceCarrier source source'))) true))
+          (.cell (.target (.put view
+            (.edge targetCarrier targetCarrier target target'))) true))
+        (.cell (.map (.edge sourceCarrier targetCarrier source' target')) true)))
+
+/-- Raw-table evaluation of one get-preservation formula. -/
+theorem getPreservationFormula_evaluate_raw
+    (input : LensFamilyInput.{u}) (sourceCarrier targetCarrier : Type u)
+    (source : sourceCarrier) (target : targetCarrier) (view : input.View)
+    (table : HomQuery input → Bool) :
+    (getPreservationFormula input sourceCarrier targetCarrier source target view).evaluate table ↔
+      table (.source (.carrierMatches sourceCarrier)) = true ∧
+        table (.target (.carrierMatches targetCarrier)) = true ∧
+          (table (.map (.edge sourceCarrier targetCarrier source target)) = true ∧
+              table (.source (.get (.edge sourceCarrier input.View source view))) = true →
+            table (.target (.get (.edge targetCarrier input.View target view))) = true) := Iff.rfl
+
+/-- Raw-table evaluation of one put-preservation formula. -/
+theorem putPreservationFormula_evaluate_raw
+    (input : LensFamilyInput.{u}) (sourceCarrier targetCarrier : Type u)
+    (source source' : sourceCarrier) (target target' : targetCarrier)
+    (view : input.View) (table : HomQuery input → Bool) :
+    (putPreservationFormula input sourceCarrier targetCarrier
+      source source' target target' view).evaluate table ↔
+      table (.source (.carrierMatches sourceCarrier)) = true ∧
+        table (.target (.carrierMatches targetCarrier)) = true ∧
+          ((table (.map (.edge sourceCarrier targetCarrier source target)) = true ∧
+              table (.source (.put view
+                (.edge sourceCarrier sourceCarrier source source'))) = true) ∧
+            table (.target (.put view
+              (.edge targetCarrier targetCarrier target target'))) = true →
+            table (.map (.edge sourceCarrier targetCarrier source' target')) = true) := Iff.rfl
+
+/-- Finite state-map graph fragments of a primitive Hom. -/
+abbrev HomFragment (D : Finset GraphQuery.{u}) :=
+  IndependentFiniteFragments.Fragment (fun _ : GraphQuery.{u} => Bool) D
+
+/-- A family of finite state-map graph fragments. -/
+abbrev HomFragmentFamily :=
+  IndependentFiniteFragments.FragmentFamily (fun _ : GraphQuery.{u} => Bool)
+
+/-- Compatibility of finite state-map fragments. -/
+abbrev HomCompatible (family : HomFragmentFamily.{u}) :=
+  IndependentFiniteFragments.Compatible family
+
+/-- Restrict a state-map graph table to every finite query set. -/
+def homFragments (table : GraphTable.{u}) : HomFragmentFamily.{u} :=
+  IndependentFiniteFragments.fragments table
+
+/-- Glue state-map graph fragments through singleton cells. -/
+def homGlue (family : HomFragmentFamily.{u}) : GraphTable.{u} :=
+  IndependentFiniteFragments.glue family
+
+/-- State-map table restrictions are compatible. -/
+theorem homFragments_compatible (table : GraphTable.{u}) :
+    HomCompatible (homFragments table) :=
+  IndependentFiniteFragments.fragments_compatible table
+
+/-- Gluing all state-map restrictions recovers the table. -/
+theorem homGlue_fragments (table : GraphTable.{u}) :
+    homGlue (homFragments table) = table :=
+  IndependentFiniteFragments.glue_fragments table
+
+/-- Compatible state-map fragments are recovered from their glued table. -/
+theorem homFragments_glue (family : HomFragmentFamily.{u})
+    (compatible : HomCompatible family) :
+    homFragments (homGlue family) = family :=
+  IndependentFiniteFragments.fragments_glue family compatible
 
 /-- A primitive local Hom is one lawful candidate state-map graph together
 with the two finite preservation formula families. -/
-@[ext]
 structure Hom {input : LensFamilyInput.{u}} (source target : Object input) where
-  /-- Candidate state-map graph table. -/
-  table : GraphTable.{u}
-  /-- The state-map graph is total and typed at the selected carriers. -/
-  lawful : IndependentCarrierGraph.IsLawful source.Carrier target.Carrier table
+  /-- Finite fragments of the candidate state-map graph. -/
+  family : HomFragmentFamily.{u}
+  /-- The state-map fragments agree under inclusions. -/
+  compatible : HomCompatible family
+  /-- Closed graph-row instances for the selected state-map graph. -/
+  map_instances : IndependentFiniteGraphLawFormula.CarrierRows.Instances
+    (homGlue family) id source.Carrier target.Carrier
   /-- Every fixed-point `get` preservation formula evaluates. -/
   get_formula : ∀ sourceState targetState view,
     (getPreservationFormula input source.Carrier target.Carrier
-      sourceState targetState view).evaluate (homLawTable source target table)
+      sourceState targetState view).evaluate (homLawTable source target (homGlue family))
   /-- Every fixed-point `put` preservation formula evaluates. -/
   put_formula : ∀ sourceState sourceState' targetState targetState' view,
     (putPreservationFormula input source.Carrier target.Carrier
       sourceState sourceState' targetState targetState' view).evaluate
-        (homLawTable source target table)
+        (homLawTable source target (homGlue family))
+
+namespace Hom
+
+variable {input : LensFamilyInput.{u}} {source target : Object input}
+
+/-- Glue the candidate state-map table from its compatible finite fragments. -/
+def table (morphism : Hom source target) : GraphTable.{u} := homGlue morphism.family
+
+/-- The state-map graph law follows from its finite row instances. -/
+theorem lawful (morphism : Hom source target) :
+    IndependentCarrierGraph.IsLawful source.Carrier target.Carrier morphism.table :=
+  (IndependentFiniteGraphLawFormula.CarrierRows.lawful_iff_instances
+    morphism.table id source.Carrier target.Carrier).mpr morphism.map_instances
+
+/-- Primitive Homs are equal when their finite state-map families agree. -/
+@[ext]
+theorem ext {first second : Hom source target}
+    (family : first.family = second.family) : first = second := by
+  cases first
+  cases second
+  cases family
+  rfl
+
+end Hom
+
+/-- Extract the raw get-preservation implication from a primitive Hom formula. -/
+theorem Hom.get_rule {input : LensFamilyInput.{u}} {source target : Object input}
+    (morphism : Hom source target) (sourceState : source.Carrier)
+    (targetState : target.Carrier) (view : input.View) :
+    morphism.table (.edge source.Carrier target.Carrier sourceState targetState) = true ∧
+        (source.table (.get
+          (.edge source.Carrier input.View sourceState view))).down = true →
+      (target.table (.get
+        (.edge target.Carrier input.View targetState view))).down = true :=
+  ((getPreservationFormula_evaluate_raw input source.Carrier target.Carrier
+    sourceState targetState view _).mp (morphism.get_formula sourceState targetState view)).2.2
+
+/-- Extract the raw put-preservation implication from a primitive Hom formula. -/
+theorem Hom.put_rule {input : LensFamilyInput.{u}} {source target : Object input}
+    (morphism : Hom source target)
+    (sourceState sourceState' : source.Carrier)
+    (targetState targetState' : target.Carrier) (view : input.View) :
+    ((morphism.table (.edge source.Carrier target.Carrier sourceState targetState) = true ∧
+        (source.table (.put view
+          (.edge source.Carrier source.Carrier sourceState sourceState'))).down = true) ∧
+      (target.table (.put view
+        (.edge target.Carrier target.Carrier targetState targetState'))).down = true) →
+      morphism.table (.edge source.Carrier target.Carrier sourceState' targetState') = true :=
+  ((putPreservationFormula_evaluate_raw input source.Carrier target.Carrier
+    sourceState sourceState' targetState targetState' view _).mp
+      (morphism.put_formula sourceState sourceState' targetState targetState' view)).2.2
 
 /-- Assemble the state-map graph carried by a primitive Hom. -/
 def Hom.toFun {input : LensFamilyInput.{u}} {source target : Object input}
@@ -484,7 +843,7 @@ def assembleHom {input : LensFamilyInput.{u}} {source target : Object input}
     let image := morphism.toFun state
     let view := assembleGet source state
     apply (get_edge_iff target image view).mp
-    exact morphism.get_formula state image view
+    exact morphism.get_rule state image view
       ⟨(morphism.edge_iff state image).mpr rfl,
         (get_edge_iff source state view).mpr rfl⟩
   put_naturality state view := by
@@ -492,7 +851,7 @@ def assembleHom {input : LensFamilyInput.{u}} {source target : Object input}
     let source' := assemblePut source state view
     let target' := assemblePut target image view
     apply (morphism.edge_iff source' target').mp
-    exact morphism.put_formula state source' image target' view
+    exact morphism.put_rule state source' image target' view
       ⟨⟨(morphism.edge_iff state image).mpr rfl,
           (put_edge_iff source state source' view).mpr rfl⟩,
         (put_edge_iff target image target' view).mpr rfl⟩
@@ -502,11 +861,21 @@ preservation formulas. -/
 def readHom {input : LensFamilyInput.{u}}
     {source target : LensRealization input.View input.reference}
     (morphism : source ⟶ target) : Hom (readObject source) (readObject target) where
-  table := IndependentCarrierGraph.read source.Carrier target.Carrier morphism.toFun
-  lawful := IndependentCarrierGraph.read_isLawful _ _ morphism.toFun
+  family := homFragments
+    (IndependentCarrierGraph.read source.Carrier target.Carrier morphism.toFun)
+  compatible := homFragments_compatible _
+  map_instances :=
+    (IndependentFiniteGraphLawFormula.CarrierRows.lawful_iff_instances
+      (IndependentCarrierGraph.read source.Carrier target.Carrier morphism.toFun)
+      id source.Carrier target.Carrier).mp
+      (IndependentCarrierGraph.read_isLawful _ _ morphism.toFun)
   get_formula sourceState targetState view := by
-    change
-      (IndependentCarrierGraph.read source.Carrier target.Carrier morphism.toFun
+    apply (getPreservationFormula_evaluate_raw input source.Carrier target.Carrier
+      sourceState targetState view _).mpr
+    refine ⟨(readObject source).carrier_selected,
+      (readObject target).carrier_selected, ?_⟩
+    simp only [homGlue_fragments]
+    change (IndependentCarrierGraph.read source.Carrier target.Carrier morphism.toFun
           (.edge source.Carrier target.Carrier sourceState targetState) = true ∧
         IndependentCarrierGraph.read source.Carrier input.View source.get
           (.edge source.Carrier input.View sourceState view) = true) →
@@ -519,8 +888,12 @@ def readHom {input : LensFamilyInput.{u}}
     subst targetState
     exact (morphism.get_naturality sourceState).trans sourceEquality
   put_formula sourceState sourceState' targetState targetState' view := by
-    change
-      ((IndependentCarrierGraph.read source.Carrier target.Carrier morphism.toFun
+    apply (putPreservationFormula_evaluate_raw input source.Carrier target.Carrier
+      sourceState sourceState' targetState targetState' view _).mpr
+    refine ⟨(readObject source).carrier_selected,
+      (readObject target).carrier_selected, ?_⟩
+    simp only [homGlue_fragments]
+    change ((IndependentCarrierGraph.read source.Carrier target.Carrier morphism.toFun
           (.edge source.Carrier target.Carrier sourceState targetState) = true ∧
         IndependentCarrierGraph.read source.Carrier source.Carrier
           (fun current => source.put current view)
@@ -552,7 +925,7 @@ def assembleReadHom {input : LensFamilyInput.{u}}
     let view := source.get state
     apply (IndependentCarrierGraph.read_edge target.Carrier input.View target.get
       image view).mp
-    exact morphism.get_formula state image view
+    exact morphism.get_rule state image view
       ⟨(morphism.edge_iff state image).mpr rfl,
         (IndependentCarrierGraph.read_edge source.Carrier input.View source.get
           state view).mpr rfl⟩
@@ -561,7 +934,7 @@ def assembleReadHom {input : LensFamilyInput.{u}}
     let source' := source.put state view
     let target' := target.put image view
     apply (morphism.edge_iff source' target').mp
-    exact morphism.put_formula state source' image target' view
+    exact morphism.put_rule state source' image target' view
       ⟨⟨(morphism.edge_iff state image).mpr rfl,
           (IndependentCarrierGraph.read_edge source.Carrier source.Carrier
             (fun current => source.put current view) state source').mpr rfl⟩,
@@ -583,33 +956,48 @@ noninvertible ones. -/
     (morphism : Hom (readObject source) (readObject target)) :
     readHom (assembleReadHom morphism) = morphism := by
   apply Hom.ext
+  change homFragments (IndependentCarrierGraph.read source.Carrier target.Carrier
+    morphism.toFun) = morphism.family
+  rw [← homFragments_glue morphism.family morphism.compatible]
+  apply congrArg homFragments
   exact IndependentCarrierGraph.read_assemble source.Carrier target.Carrier
     morphism.table morphism.lawful
 
 /-- Direct primitive identity built from the carrier-graph diagonal. -/
 def identityHom {input : LensFamilyInput.{u}} (object : Object input) :
     Hom object object where
-  table := IndependentCarrierGraph.identity object.Carrier
-  lawful := IndependentCarrierGraph.identity_isLawful object.Carrier
+  family := homFragments (IndependentCarrierGraph.identity object.Carrier)
+  compatible := homFragments_compatible _
+  map_instances :=
+    (IndependentFiniteGraphLawFormula.CarrierRows.lawful_iff_instances
+      (IndependentCarrierGraph.identity object.Carrier) id
+      object.Carrier object.Carrier).mp
+      (IndependentCarrierGraph.identity_isLawful object.Carrier)
   get_formula source target view := by
-    change
-      (IndependentCarrierGraph.identity object.Carrier
+    apply (getPreservationFormula_evaluate_raw input object.Carrier object.Carrier
+      source target view _).mpr
+    refine ⟨object.carrier_selected, object.carrier_selected, ?_⟩
+    simp only [homGlue_fragments]
+    change (IndependentCarrierGraph.identity object.Carrier
           (.edge object.Carrier object.Carrier source target) = true ∧
-        object.table (.get (.edge object.Carrier input.View source view)) = true) →
-        object.table (.get (.edge object.Carrier input.View target view)) = true
+        (object.table (.get (.edge object.Carrier input.View source view))).down = true) →
+        (object.table (.get (.edge object.Carrier input.View target view))).down = true
     rintro ⟨identityEdge, sourceEdge⟩
     have equality :=
       (IndependentCarrierGraph.identity_edge object.Carrier source target).mp identityEdge
     subst target
     exact sourceEdge
   put_formula source source' target target' view := by
-    change
-      ((IndependentCarrierGraph.identity object.Carrier
+    apply (putPreservationFormula_evaluate_raw input object.Carrier object.Carrier
+      source source' target target' view _).mpr
+    refine ⟨object.carrier_selected, object.carrier_selected, ?_⟩
+    simp only [homGlue_fragments]
+    change ((IndependentCarrierGraph.identity object.Carrier
           (.edge object.Carrier object.Carrier source target) = true ∧
-        object.table (.put view
-          (.edge object.Carrier object.Carrier source source')) = true) ∧
-        object.table (.put view
-          (.edge object.Carrier object.Carrier target target')) = true) →
+        (object.table (.put view
+          (.edge object.Carrier object.Carrier source source'))).down = true) ∧
+        (object.table (.put view
+          (.edge object.Carrier object.Carrier target target'))).down = true) →
         IndependentCarrierGraph.identity object.Carrier
           (.edge object.Carrier object.Carrier source' target') = true
     rintro ⟨⟨identityEdge, sourceEdge⟩, targetEdge⟩
@@ -628,41 +1016,53 @@ def composeHom {input : LensFamilyInput.{u}}
     {source middle target : Object input}
     (first : Hom source middle) (second : Hom middle target) :
     Hom source target where
-  table := IndependentCarrierGraph.compose source.Carrier middle.Carrier target.Carrier
-    first.table first.lawful second.table
-  lawful := IndependentCarrierGraph.compose_isLawful
-    source.Carrier middle.Carrier target.Carrier first.table first.lawful
-      second.table second.lawful
-  get_formula sourceState targetState view := by
-    change
+  family := homFragments
+    (IndependentCarrierGraph.compose source.Carrier middle.Carrier target.Carrier
+      first.table first.lawful second.table)
+  compatible := homFragments_compatible _
+  map_instances :=
+    (IndependentFiniteGraphLawFormula.CarrierRows.lawful_iff_instances
       (IndependentCarrierGraph.compose source.Carrier middle.Carrier target.Carrier
+        first.table first.lawful second.table) id source.Carrier target.Carrier).mp
+      (IndependentCarrierGraph.compose_isLawful
+        source.Carrier middle.Carrier target.Carrier first.table first.lawful
+          second.table second.lawful)
+  get_formula sourceState targetState view := by
+    apply (getPreservationFormula_evaluate_raw input source.Carrier target.Carrier
+      sourceState targetState view _).mpr
+    refine ⟨source.carrier_selected, target.carrier_selected, ?_⟩
+    simp only [homGlue_fragments]
+    change (IndependentCarrierGraph.compose source.Carrier middle.Carrier target.Carrier
           first.table first.lawful second.table
             (.edge source.Carrier target.Carrier sourceState targetState) = true ∧
-        source.table (.get
-          (.edge source.Carrier input.View sourceState view)) = true) →
-        target.table (.get
-          (.edge target.Carrier input.View targetState view)) = true
+        (source.table (.get
+          (.edge source.Carrier input.View sourceState view))).down = true) →
+        (target.table (.get
+          (.edge target.Carrier input.View targetState view))).down = true
     rintro ⟨compositeEdge, sourceEdge⟩
     let middleState := first.toFun sourceState
     have secondEdge :
         second.table (.edge middle.Carrier target.Carrier middleState targetState) = true := by
       simpa [middleState, IndependentCarrierGraph.compose_edge] using compositeEdge
     have middleEdge :
-        middle.table (.get
-          (.edge middle.Carrier input.View middleState view)) = true :=
-      first.get_formula sourceState middleState view
+        (middle.table (.get
+          (.edge middle.Carrier input.View middleState view))).down = true :=
+      first.get_rule sourceState middleState view
         ⟨(first.edge_iff sourceState middleState).mpr rfl, sourceEdge⟩
-    exact second.get_formula middleState targetState view
+    exact second.get_rule middleState targetState view
       ⟨secondEdge, middleEdge⟩
   put_formula sourceState sourceState' targetState targetState' view := by
-    change
-      ((IndependentCarrierGraph.compose source.Carrier middle.Carrier target.Carrier
+    apply (putPreservationFormula_evaluate_raw input source.Carrier target.Carrier
+      sourceState sourceState' targetState targetState' view _).mpr
+    refine ⟨source.carrier_selected, target.carrier_selected, ?_⟩
+    simp only [homGlue_fragments]
+    change ((IndependentCarrierGraph.compose source.Carrier middle.Carrier target.Carrier
           first.table first.lawful second.table
             (.edge source.Carrier target.Carrier sourceState targetState) = true ∧
-        source.table (.put view
-          (.edge source.Carrier source.Carrier sourceState sourceState')) = true) ∧
-        target.table (.put view
-          (.edge target.Carrier target.Carrier targetState targetState')) = true) →
+        (source.table (.put view
+          (.edge source.Carrier source.Carrier sourceState sourceState'))).down = true) ∧
+        (target.table (.put view
+          (.edge target.Carrier target.Carrier targetState targetState'))).down = true) →
         IndependentCarrierGraph.compose source.Carrier middle.Carrier target.Carrier
           first.table first.lawful second.table
             (.edge source.Carrier target.Carrier sourceState' targetState') = true
@@ -677,19 +1077,19 @@ def composeHom {input : LensFamilyInput.{u}}
       simpa [middleState, IndependentCarrierGraph.compose_edge] using compositeEdge
     let targetMiddle := assemblePut middle middleState view
     have middlePutEdge :
-        middle.table (.put view
-          (.edge middle.Carrier middle.Carrier middleState targetMiddle)) = true :=
+        (middle.table (.put view
+          (.edge middle.Carrier middle.Carrier middleState targetMiddle))).down = true :=
       IndependentCarrierGraph.edge_assemble middle.Carrier middle.Carrier
         (putTable middle.table view) (middle.put_lawful view) middleState
     have firstEdge' :
         first.table (.edge source.Carrier middle.Carrier sourceState' targetMiddle) = true :=
-      first.put_formula sourceState sourceState' middleState targetMiddle view
+      first.put_rule sourceState sourceState' middleState targetMiddle view
         ⟨⟨firstEdge, sourcePutEdge⟩, middlePutEdge⟩
     have middleState'_eq : middleState' = targetMiddle :=
       (first.edge_iff sourceState' targetMiddle).mp firstEdge'
     have secondEdge' :
         second.table (.edge middle.Carrier target.Carrier targetMiddle targetState') = true :=
-      second.put_formula middleState targetMiddle targetState targetState' view
+      second.put_rule middleState targetMiddle targetState targetState' view
         ⟨⟨secondEdge, middlePutEdge⟩, targetPutEdge⟩
     rw [IndependentCarrierGraph.compose_edge]
     change second.table (.edge middle.Carrier target.Carrier middleState' targetState') = true
@@ -705,21 +1105,28 @@ instance {input : LensFamilyInput.{u}} : Category.{u + 1} (Object input) where
   comp := composeHom
   id_comp morphism := by
     apply Hom.ext
-    exact IndependentCarrierGraph.identity_compose _ _ morphism.table morphism.lawful
+    rw [← homFragments_glue morphism.family morphism.compatible]
+    simpa only [composeHom, identityHom] using congrArg homFragments
+      (IndependentCarrierGraph.identity_compose _ _ morphism.table morphism.lawful)
   comp_id morphism := by
     apply Hom.ext
-    exact IndependentCarrierGraph.compose_identity _ _ morphism.table morphism.lawful
+    rw [← homFragments_glue morphism.family morphism.compatible]
+    simpa only [composeHom, identityHom] using congrArg homFragments
+      (IndependentCarrierGraph.compose_identity _ _ morphism.table morphism.lawful)
   assoc first second third := by
     apply Hom.ext
-    exact IndependentCarrierGraph.compose_assoc _ _ _ _
-      first.table first.lawful second.table second.lawful third.table third.lawful
+    simpa only [composeHom] using congrArg homFragments
+      (IndependentCarrierGraph.compose_assoc _ _ _ _
+        first.table first.lawful second.table second.lawful third.table third.lawful)
 
 /-- Reading sends the semantic identity to the direct primitive diagonal. -/
 theorem readHom_id {input : LensFamilyInput.{u}}
     (lens : LensRealization input.View input.reference) :
     readHom (𝟙 lens) = identityHom (readObject lens) := by
   apply Hom.ext
-  rfl
+  simpa only [readHom, identityHom] using congrArg homFragments
+    (show IndependentCarrierGraph.read lens.Carrier lens.Carrier id =
+      IndependentCarrierGraph.identity lens.Carrier by rfl)
 
 /-- Reading sends semantic composition to direct primitive graph composition. -/
 theorem readHom_comp {input : LensFamilyInput.{u}}
@@ -727,8 +1134,9 @@ theorem readHom_comp {input : LensFamilyInput.{u}}
     (first : source ⟶ middle) (second : middle ⟶ target) :
     readHom (first ≫ second) = composeHom (readHom first) (readHom second) := by
   apply Hom.ext
-  exact IndependentCarrierGraph.read_compose source.Carrier middle.Carrier target.Carrier
-    first.toFun second.toFun
+  simpa only [readHom, composeHom] using congrArg homFragments
+    (IndependentCarrierGraph.read_compose source.Carrier middle.Carrier target.Carrier
+      first.toFun second.toFun)
 
 /-- Fixed-input native lens reading into the independent primitive local
 category. -/
@@ -752,7 +1160,9 @@ def readingFunctor (input : LensFamilyInput.{u}) :
     (morphism : source ⟶ target) (query : GraphQuery.{u}) :
     ((readingFunctor input).map morphism).table query =
       IndependentCarrierGraph.read source.Carrier target.Carrier
-        morphism.toFun query := rfl
+        morphism.toFun query :=
+  congrFun (homGlue_fragments
+    (IndependentCarrierGraph.read source.Carrier target.Carrier morphism.toFun)) query
 
 /-- Equal primitive object readings determine isomorphic semantic lens
 objects through their graph assemblies. -/
@@ -842,7 +1252,7 @@ def primitiveFiberMap {input : LensFamilyInput.{u}}
     source.Fiber → target.Fiber := fun state => by
   let image := morphism.toFun state
   refine ⟨image, ?_⟩
-  exact morphism.get_formula state image input.reference
+  exact morphism.get_rule state image input.reference
     ⟨(morphism.edge_iff state image).mpr rfl, state.property⟩
 
 /-- The primitive fiber action of a read Hom agrees pointwise with the
@@ -862,9 +1272,11 @@ theorem readFiberEquiv_primitiveFiberMap_readHom
 noncomputable def readObjectFiberIso
     (input : LensFamilyInput.{u})
     (lens : LensRealization input.View input.reference) :
-    finiteLocalValue (readObject lens).Fiber ≅
+    (@finiteLocalValue (readObject lens).Fiber (readObject lens).fiber_finite) ≅
       (lensSemanticFiberReading input).obj lens :=
-  FintypeCat.equivEquivIso (readFiberEquiv lens)
+  by
+    letI : Finite (readObject lens).Fiber := (readObject lens).fiber_finite
+    exact FintypeCat.equivEquivIso (readFiberEquiv lens)
 
 /-- No-unfold API for the object comparison: its forward map is exactly the
 primitive-to-native reference-fiber equivalence. -/
@@ -936,11 +1348,136 @@ theorem homFormula_support_finite
   ⟨IndependentFiniteLawFormula.BoolFormula.support_finite _,
     IndependentFiniteLawFormula.BoolFormula.support_finite _⟩
 
+/-- Every object-law formula support contains its selected carrier cell. -/
+theorem carrier_mem_objectFormula_support
+    (input : LensFamilyInput.{u}) (C : Type u) (c d e : C)
+    (first second : input.View) :
+    ObjectLawQuery.carrierMatches C ∈ (putGetFormula input C c first).support ∧
+      ObjectLawQuery.carrierMatches C ∈ (getPutFormula input C c d first).support ∧
+      ObjectLawQuery.carrierMatches C ∈
+        (putPutFormula input C c d e first second).support := by
+  classical
+  simp [putGetFormula, getPutFormula, putPutFormula, carrierFormula,
+    IndependentFiniteLawFormula.BoolFormula.support]
+
+/-- The put-get support contains the carrier cell and both graph cells it reads. -/
+theorem putGetFormula_support_cells
+    (input : LensFamilyInput.{u}) (C : Type u) (c : C) (view : input.View) :
+    ObjectLawQuery.carrierMatches C ∈ (putGetFormula input C c view).support ∧
+      ObjectLawQuery.get (.edge C input.View c view) ∈
+        (putGetFormula input C c view).support ∧
+      ObjectLawQuery.put view (.edge C C c c) ∈
+        (putGetFormula input C c view).support := by
+  classical
+  simp [putGetFormula, carrierFormula, IndependentFiniteLawFormula.BoolFormula.support]
+
+/-- The get-put support contains the carrier cell and both graph cells it reads. -/
+theorem getPutFormula_support_cells
+    (input : LensFamilyInput.{u}) (C : Type u) (c d : C) (view : input.View) :
+    ObjectLawQuery.carrierMatches C ∈ (getPutFormula input C c d view).support ∧
+      ObjectLawQuery.put view (.edge C C c d) ∈
+        (getPutFormula input C c d view).support ∧
+      ObjectLawQuery.get (.edge C input.View d view) ∈
+        (getPutFormula input C c d view).support := by
+  classical
+  simp [getPutFormula, carrierFormula, IndependentFiniteLawFormula.BoolFormula.support]
+
+/-- The put-put support contains the carrier cell and all three update graph cells. -/
+theorem putPutFormula_support_cells
+    (input : LensFamilyInput.{u}) (C : Type u) (c d e : C)
+    (first second : input.View) :
+    ObjectLawQuery.carrierMatches C ∈
+        (putPutFormula input C c d e first second).support ∧
+      ObjectLawQuery.put first (.edge C C c d) ∈
+        (putPutFormula input C c d e first second).support ∧
+      ObjectLawQuery.put second (.edge C C d e) ∈
+        (putPutFormula input C c d e first second).support ∧
+      ObjectLawQuery.put second (.edge C C c e) ∈
+        (putPutFormula input C c d e first second).support := by
+  classical
+  simp [putPutFormula, carrierFormula, IndependentFiniteLawFormula.BoolFormula.support]
+
+/-- Both Hom-law supports contain the source and target carrier cells. -/
+theorem carrier_mem_homFormula_support
+    (input : LensFamilyInput.{u}) (C D : Type u)
+    (c c' : C) (d d' : D) (view : input.View) :
+    (HomQuery.source (.carrierMatches C) ∈
+        (getPreservationFormula input C D c d view).support ∧
+      HomQuery.target (.carrierMatches D) ∈
+        (getPreservationFormula input C D c d view).support) ∧
+      (HomQuery.source (.carrierMatches C) ∈
+          (putPreservationFormula input C D c c' d d' view).support ∧
+        HomQuery.target (.carrierMatches D) ∈
+          (putPreservationFormula input C D c c' d d' view).support) := by
+  classical
+  simp [getPreservationFormula, putPreservationFormula,
+    IndependentFiniteLawFormula.BoolFormula.support]
+
+/-- The get-preservation support contains both carrier cells and all three graph cells. -/
+theorem getPreservationFormula_support_cells
+    (input : LensFamilyInput.{u}) (C D : Type u)
+    (c : C) (d : D) (view : input.View) :
+    HomQuery.source (.carrierMatches C) ∈
+        (getPreservationFormula input C D c d view).support ∧
+      HomQuery.target (.carrierMatches D) ∈
+        (getPreservationFormula input C D c d view).support ∧
+      HomQuery.map (.edge C D c d) ∈
+        (getPreservationFormula input C D c d view).support ∧
+      HomQuery.source (.get (.edge C input.View c view)) ∈
+        (getPreservationFormula input C D c d view).support ∧
+      HomQuery.target (.get (.edge D input.View d view)) ∈
+        (getPreservationFormula input C D c d view).support := by
+  classical
+  simp [getPreservationFormula, IndependentFiniteLawFormula.BoolFormula.support]
+
+/-- The put-preservation support contains both carrier cells and every graph cell it reads. -/
+theorem putPreservationFormula_support_cells
+    (input : LensFamilyInput.{u}) (C D : Type u)
+    (c c' : C) (d d' : D) (view : input.View) :
+    HomQuery.source (.carrierMatches C) ∈
+        (putPreservationFormula input C D c c' d d' view).support ∧
+      HomQuery.target (.carrierMatches D) ∈
+        (putPreservationFormula input C D c c' d d' view).support ∧
+      HomQuery.map (.edge C D c d) ∈
+        (putPreservationFormula input C D c c' d d' view).support ∧
+      HomQuery.source (.put view (.edge C C c c')) ∈
+        (putPreservationFormula input C D c c' d d' view).support ∧
+      HomQuery.target (.put view (.edge D D d d')) ∈
+        (putPreservationFormula input C D c c' d d' view).support ∧
+      HomQuery.map (.edge C D c' d') ∈
+        (putPreservationFormula input C D c c' d d' view).support := by
+  classical
+  simp [putPreservationFormula, IndependentFiniteLawFormula.BoolFormula.support]
+
+/-- The `get` graph row instances are equivalent to native graph lawfulness. -/
+theorem getLawful_iff_instances {input : LensFamilyInput.{u}}
+    (table : ObjectTable input) (C : Type u) :
+    IndependentCarrierGraph.IsLawful C input.View (getTable table) ↔
+      IndependentFiniteGraphLawFormula.CarrierRows.Instances
+        (getTable table) id C input.View :=
+  IndependentFiniteGraphLawFormula.CarrierRows.lawful_iff_instances
+    (getTable table) id C input.View
+
+/-- One fixed-view `put` graph's row instances are equivalent to native lawfulness. -/
+theorem putLawful_iff_instances {input : LensFamilyInput.{u}}
+    (table : ObjectTable input) (C : Type u) (view : input.View) :
+    IndependentCarrierGraph.IsLawful C C (putTable table view) ↔
+      IndependentFiniteGraphLawFormula.CarrierRows.Instances
+        (putTable table view) id C C :=
+  IndependentFiniteGraphLawFormula.CarrierRows.lawful_iff_instances
+    (putTable table view) id C C
+
+/-- State-map graph row instances are equivalent to native graph lawfulness. -/
+theorem homLawful_iff_instances (table : GraphTable.{u}) (C D : Type u) :
+    IndependentCarrierGraph.IsLawful C D table ↔
+      IndependentFiniteGraphLawFormula.CarrierRows.Instances table id C D :=
+  IndependentFiniteGraphLawFormula.CarrierRows.lawful_iff_instances table id C D
+
 /-- Agreement on the finite support of a put-get instance preserves its
 evaluation. -/
 theorem putGetFormula_evaluate_iff_of_support
     (input : LensFamilyInput.{u}) (C : Type u) (c : C) (view : input.View)
-    (first second : ObjectTable input)
+    (first second : ObjectLawTable input)
     (agree : ∀ query ∈ (putGetFormula input C c view).support,
       first query = second query) :
     (putGetFormula input C c view).evaluate first ↔
@@ -952,7 +1489,7 @@ theorem putGetFormula_evaluate_iff_of_support
 evaluation. -/
 theorem getPutFormula_evaluate_iff_of_support
     (input : LensFamilyInput.{u}) (C : Type u) (c d : C) (view : input.View)
-    (first second : ObjectTable input)
+    (first second : ObjectLawTable input)
     (agree : ∀ query ∈ (getPutFormula input C c d view).support,
       first query = second query) :
     (getPutFormula input C c d view).evaluate first ↔
@@ -964,7 +1501,7 @@ theorem getPutFormula_evaluate_iff_of_support
 evaluation. -/
 theorem putPutFormula_evaluate_iff_of_support
     (input : LensFamilyInput.{u}) (C : Type u) (c d e : C)
-    (firstView secondView : input.View) (first second : ObjectTable input)
+    (firstView secondView : input.View) (first second : ObjectLawTable input)
     (agree : ∀ query ∈
       (putPutFormula input C c d e firstView secondView).support,
       first query = second query) :
@@ -1004,30 +1541,38 @@ point implication holds. -/
 theorem putGetFormula_evaluate_iff
     {input : LensFamilyInput.{u}} (object : Object input)
     (state : object.Carrier) (view : input.View) :
-    (putGetFormula input object.Carrier state view).evaluate object.table ↔
+    (putGetFormula input object.Carrier state view).evaluate
+        (objectLawTable object.table) ↔
       (assembleGet object state = view → assemblePut object state view = state) := by
   constructor
   · intro formula getEquality
     exact (put_edge_iff object state state view).mp
-      (formula ((get_edge_iff object state view).mpr getEquality))
-  · intro implication getEdge
-    exact (put_edge_iff object state state view).mpr
-      (implication ((get_edge_iff object state view).mp getEdge))
+      (((putGetFormula_evaluate_raw input object.Carrier state view _).mp formula).2
+        ((get_edge_iff object state view).mpr getEquality))
+  · intro implication
+    apply (putGetFormula_evaluate_raw input object.Carrier state view _).mpr
+    exact ⟨object.carrier_selected, fun getEdge =>
+      (put_edge_iff object state state view).mpr
+        (implication ((get_edge_iff object state view).mp getEdge))⟩
 
 /-- A get-put formula evaluates exactly when the corresponding assembled
 point implication holds. -/
 theorem getPutFormula_evaluate_iff
     {input : LensFamilyInput.{u}} (object : Object input)
     (state target : object.Carrier) (view : input.View) :
-    (getPutFormula input object.Carrier state target view).evaluate object.table ↔
+    (getPutFormula input object.Carrier state target view).evaluate
+        (objectLawTable object.table) ↔
       (assemblePut object state view = target → assembleGet object target = view) := by
   constructor
   · intro formula putEquality
     exact (get_edge_iff object target view).mp
-      (formula ((put_edge_iff object state target view).mpr putEquality))
-  · intro implication putEdge
-    exact (get_edge_iff object target view).mpr
-      (implication ((put_edge_iff object state target view).mp putEdge))
+      (((getPutFormula_evaluate_raw input object.Carrier state target view _).mp formula).2
+        ((put_edge_iff object state target view).mpr putEquality))
+  · intro implication
+    apply (getPutFormula_evaluate_raw input object.Carrier state target view _).mpr
+    exact ⟨object.carrier_selected, fun putEdge =>
+      (get_edge_iff object target view).mpr
+        (implication ((put_edge_iff object state target view).mp putEdge))⟩
 
 /-- A put-put formula evaluates exactly when the corresponding assembled
 two-update point implication holds. -/
@@ -1035,21 +1580,24 @@ theorem putPutFormula_evaluate_iff
     {input : LensFamilyInput.{u}} (object : Object input)
     (state middle target : object.Carrier) (first second : input.View) :
     (putPutFormula input object.Carrier state middle target first second).evaluate
-        object.table ↔
+        (objectLawTable object.table) ↔
       (assemblePut object state first = middle →
         assemblePut object middle second = target →
         assemblePut object state second = target) := by
   constructor
   · intro formula firstEquality secondEquality
     exact (put_edge_iff object state target second).mp
-      (formula
+      (((putPutFormula_evaluate_raw input object.Carrier state middle target first second _).mp
+        formula).2
         ⟨(put_edge_iff object state middle first).mpr firstEquality,
           (put_edge_iff object middle target second).mpr secondEquality⟩)
-  · intro implication edges
-    exact (put_edge_iff object state target second).mpr
-      (implication
-        ((put_edge_iff object state middle first).mp edges.1)
-        ((put_edge_iff object middle target second).mp edges.2))
+  · intro implication
+    apply (putPutFormula_evaluate_raw input object.Carrier state middle target first second _).mpr
+    exact ⟨object.carrier_selected, fun edges =>
+      (put_edge_iff object state target second).mpr
+        (implication
+          ((put_edge_iff object state middle first).mp edges.1)
+          ((put_edge_iff object middle target second).mp edges.2))⟩
 
 /-- A get-preservation formula evaluates exactly when the assembled map
 preserves the chosen get-value implication. -/
@@ -1066,14 +1614,18 @@ theorem getPreservationFormula_evaluate_iff
   constructor
   · intro formula mapEquality sourceEquality
     exact (get_edge_iff target targetState view).mp
-      (formula
+      (((getPreservationFormula_evaluate_raw input source.Carrier target.Carrier
+        sourceState targetState view _).mp formula).2.2
         ⟨(morphism.edge_iff sourceState targetState).mpr mapEquality,
           (get_edge_iff source sourceState view).mpr sourceEquality⟩)
-  · intro implication edges
-    exact (get_edge_iff target targetState view).mpr
-      (implication
-        ((morphism.edge_iff sourceState targetState).mp edges.1)
-        ((get_edge_iff source sourceState view).mp edges.2))
+  · intro implication
+    apply (getPreservationFormula_evaluate_raw input source.Carrier target.Carrier
+      sourceState targetState view _).mpr
+    exact ⟨source.carrier_selected, target.carrier_selected, fun edges =>
+      (get_edge_iff target targetState view).mpr
+        (implication
+          ((morphism.edge_iff sourceState targetState).mp edges.1)
+          ((get_edge_iff source sourceState view).mp edges.2))⟩
 
 /-- A put-preservation formula evaluates exactly when the assembled map
 preserves the chosen source and target update edges. -/
@@ -1092,16 +1644,20 @@ theorem putPreservationFormula_evaluate_iff
   constructor
   · intro formula mapEquality sourceEquality targetEquality
     exact (morphism.edge_iff sourceState' targetState').mp
-      (formula
+      (((putPreservationFormula_evaluate_raw input source.Carrier target.Carrier
+        sourceState sourceState' targetState targetState' view _).mp formula).2.2
         ⟨⟨(morphism.edge_iff sourceState targetState).mpr mapEquality,
             (put_edge_iff source sourceState sourceState' view).mpr sourceEquality⟩,
           (put_edge_iff target targetState targetState' view).mpr targetEquality⟩)
-  · intro implication edges
-    exact (morphism.edge_iff sourceState' targetState').mpr
-      (implication
-        ((morphism.edge_iff sourceState targetState).mp edges.1.1)
-        ((put_edge_iff source sourceState sourceState' view).mp edges.1.2)
-        ((put_edge_iff target targetState targetState' view).mp edges.2))
+  · intro implication
+    apply (putPreservationFormula_evaluate_raw input source.Carrier target.Carrier
+      sourceState sourceState' targetState targetState' view _).mpr
+    exact ⟨source.carrier_selected, target.carrier_selected, fun edges =>
+      (morphism.edge_iff sourceState' targetState').mpr
+        (implication
+          ((morphism.edge_iff sourceState targetState).mp edges.1.1)
+          ((put_edge_iff source sourceState sourceState' view).mp edges.1.2)
+          ((put_edge_iff target targetState targetState' view).mp edges.2))⟩
 
 /-! ### Concrete positive and rejection fixtures -/
 
@@ -1114,9 +1670,11 @@ def ignoredUpdateTable : ObjectTable ({ View := Bool, reference := false } : Len
 `state = false`, `target = false`, and `view = true`. -/
 theorem ignoredUpdateTable_rejected :
     ¬ (getPutFormula ({ View := Bool, reference := false } : LensFamilyInput)
-      Bool false false true).evaluate ignoredUpdateTable := by
+      Bool false false true).evaluate (objectLawTable ignoredUpdateTable) := by
   intro formula
-  have conclusion := formula
+  have conclusion := ((getPutFormula_evaluate_raw
+    ({ View := Bool, reference := false } : LensFamilyInput)
+    Bool false false true (objectLawTable ignoredUpdateTable)).mp formula).2
     ((IndependentCarrierGraph.read_edge Bool Bool
       (fun state => LensRealization.ignoredUpdateData.put state true)
       false false).mpr rfl)
@@ -1125,11 +1683,76 @@ theorem ignoredUpdateTable_rejected :
       LensRealization.ignoredUpdateData.get false true).mp conclusion
   exact Bool.noConfusion impossible
 
-/-- Reading the existing noninvertible `constantFalseHom` produces an admitted
-primitive Hom in the same local category used by the main equivalence. -/
+/-- A product lens used to reject a state map that changes the visible value. -/
+abbrev booleanViewUnitLens : LensRealization Bool false :=
+  LensRealization.product Bool PUnit false
+
+/-- Candidate state-map table that flips the visible Boolean component. -/
+def flipVisibleTable : GraphTable :=
+  IndependentCarrierGraph.read (Bool × PUnit) (Bool × PUnit)
+    (fun state => (!state.1, state.2))
+
+/-- Combined raw table for the invalid visible-flipping state map. -/
+def flipVisibleHomLawTable :
+    HomQuery ({ View := Bool, reference := false } : LensFamilyInput) → Bool :=
+  homLawTable (readObject booleanViewUnitLens) (readObject booleanViewUnitLens)
+    flipVisibleTable
+
+/-- The visible-flipping candidate fails `get` preservation at a concrete point. -/
+theorem flipVisibleTable_getPreservation_rejected :
+    ¬ (getPreservationFormula
+      ({ View := Bool, reference := false } : LensFamilyInput)
+      (Bool × PUnit) (Bool × PUnit)
+      (false, PUnit.unit) (true, PUnit.unit) false).evaluate
+        flipVisibleHomLawTable := by
+  intro formula
+  have rule := ((getPreservationFormula_evaluate_raw
+    ({ View := Bool, reference := false } : LensFamilyInput)
+    (Bool × PUnit) (Bool × PUnit)
+    (false, PUnit.unit) (true, PUnit.unit) false
+    flipVisibleHomLawTable).mp formula).2.2
+  have targetEdge := rule ⟨
+    (IndependentCarrierGraph.read_edge (Bool × PUnit) (Bool × PUnit)
+      (fun state => (!state.1, state.2))
+      (false, PUnit.unit) (true, PUnit.unit)).mpr rfl,
+    (IndependentCarrierGraph.read_edge (Bool × PUnit) Bool Prod.fst
+      (false, PUnit.unit) false).mpr rfl⟩
+  have impossible :=
+    (IndependentCarrierGraph.read_edge (Bool × PUnit) Bool Prod.fst
+      (true, PUnit.unit) false).mp targetEdge
+  exact Bool.noConfusion impossible
+
+/-- The fixed input with a unit view and its unique reference value. -/
 def booleanFiberInput : LensFamilyInput where
   View := Unit
   reference := ()
+
+/-- A unit-complement lens whose carrier differs from the Boolean-complement fixture. -/
+abbrev unitFiberLens : LensRealization Unit () :=
+  LensRealization.product Unit PUnit ()
+
+/-- A noninvertible Hom from the Boolean-complement carrier to the unit-complement carrier. -/
+def booleanToUnitHom :
+    LensSemanticFiniteDetermination.booleanFiberLens ⟶ unitFiberLens where
+  toFun := fun state => (state.1, PUnit.unit)
+  get_naturality := fun _ => rfl
+  put_naturality := fun _ _ => rfl
+
+/-- The cross-carrier fixture is noninvertible because its state map is not injective. -/
+theorem booleanToUnitHom_not_injective :
+    ¬ Function.Injective booleanToUnitHom.toFun := by
+  intro injective
+  have equality := injective (show
+    booleanToUnitHom.toFun ((), false) = booleanToUnitHom.toFun ((), true) by rfl)
+  exact Bool.noConfusion (congrArg Prod.snd equality)
+
+/-- Primitive reading of the noninvertible Hom between distinct carrier types. -/
+def booleanToUnitPrimitiveHom :
+    Hom
+      (readObject (input := booleanFiberInput)
+        LensSemanticFiniteDetermination.booleanFiberLens)
+      (readObject (input := booleanFiberInput) unitFiberLens) :=
+  readHom (input := booleanFiberInput) booleanToUnitHom
 
 /-- Reading the existing noninvertible fixture produces an admitted primitive
 Hom at the explicit Boolean-fiber parameter. -/

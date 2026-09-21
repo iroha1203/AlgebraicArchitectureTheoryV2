@@ -9864,6 +9864,7 @@ selection:
   selection_reason: "The geometry branches are connected in PR 1/4; this work supplies the lens branch before protocol and common four-family integration."
   expected_result_type: proof-obligation-discharged
   lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentFiniteFragments.lean"
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean"
     - "IndependentLensPrimitiveReconstruction.Object and Hom"
     - "IndependentLensPrimitiveReconstruction.readingFunctor"
@@ -9879,9 +9880,11 @@ selection:
     - "The common declaration, mandatory inputs, and Cycle 79 comparison are PR 4/4."
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "The lens branch now has a fixed tagged primitive query, direct local category, full object and Hom assembly, explicit inverse laws, finite-fiber comparison, and a category equivalence derived from the general reconstruction theorem."
+  proof_obligation_delta: "The lens branch uses compatible finite fragments over one dependent carrier/get/put query, computes carrier-match law cells from the unique Type-valued declaration, derives graph laws from closed row instances, carries fiber finiteness as a list cover, and connects direct local assembly to the general reconstruction theorem."
   completion_candidate: no
   lean_artifacts:
+    - "IndependentFiniteFragments.FragmentFamily and Compatible"
+    - "IndependentFiniteFragments.glue_fragments and fragments_glue"
     - "IndependentLensPrimitiveReconstruction.Object"
     - "IndependentLensPrimitiveReconstruction.Hom"
     - "IndependentLensPrimitiveReconstruction.readObject"
@@ -9894,8 +9897,13 @@ result:
     - "IndependentLensPrimitiveReconstruction.primitiveFiberEquiv"
     - "IndependentLensPrimitiveReconstruction.readObjectFiberIso"
     - "IndependentLensPrimitiveReconstruction.assembleHom_eq_homEquivFiberMap_symm"
+    - "IndependentLensPrimitiveReconstruction.fiberCover_iff_finite"
   evidence:
-    - "putGetFormula, getPutFormula, and putPutFormula are closed finite BoolFormula instances over the tagged object table"
+    - "IndependentGeometryFiniteFragments keeps its public API as wrappers over the dependent generic fragment construction"
+    - "Object and Hom retain compatible finite FragmentFamily values; their tables are defined by singleton glue"
+    - "ObjectQuery carries one Type-valued stateCarrier cell and lifted Boolean get and fixed-view put cells"
+    - "ObjectLawQuery carrierMatches cells are computed from the unique stateCarrier declaration and are not free primitive data"
+    - "putGetFormula, getPutFormula, and putPutFormula include the derived carrier-match cell and graph cells"
     - "getPreservationFormula and putPreservationFormula are closed finite BoolFormula instances over endpoint cells and one state-map graph"
     - "all five formula families expose finite support, support-agreement preservation, and bidirectional assembled point-law APIs"
     - "readObject_assembleObject and assembleObjectReadIso recover primitive and native objects"
@@ -9904,7 +9912,9 @@ result:
     - "readFiberEquiv_primitiveFiberMap_readHom identifies the primitive fiber action with LensRealization.res"
     - "readObjectFiberIso_naturality compares the primitive object and map readings with lensSemanticFiberReading"
     - "constantFalsePrimitiveHom_fiber_not_injective connects the existing noninvertible fixture"
+    - "booleanToUnitPrimitiveHom reads a noninvertible Hom between distinct state-carrier types"
     - "ignoredUpdateTable_rejected gives a concrete failed total-lens formula instance"
+    - "flipVisibleTable_getPreservation_rejected gives a concrete failed Hom-preservation formula instance"
   claim_mapping:
     theorem_names:
       - "putGetFormula_evaluate_iff"
@@ -9922,8 +9932,9 @@ result:
       - "fixed GOAL A and B lens branch"
       - "Issue #4711 implementation design sections 2, 4.1, 4.2, 4.4, and 7 order 2"
     conjuncts:
-      - "fixed LensFamilyInput -> tagged get/put ObjectQuery"
-      - "graph lawfulness plus three finite formula families -> IsTotalLens"
+      - "fixed LensFamilyInput -> dependent stateCarrier/get/put ObjectQuery and derived Boolean ObjectLawQuery"
+      - "compatible finite fragments -> glued primitive object and state-map tables"
+      - "CarrierRows.Instances plus three finite formula families -> IsTotalLens"
       - "primitive reference edges <-> LensRealization.Fiber"
       - "one state-map graph plus two finite formula families -> every LensRealization.Hom"
       - "direct primitive identity and composition -> local Category"
@@ -9937,23 +9948,25 @@ result:
 audits:
   premise_delta:
     discharged:
-      - "Graph IsLawful supplies totality and uniqueness for get, every fixed-view put, and state maps."
+      - "CarrierRows.Instances supplies typed total rows for get, every fixed-view put, and state maps through lawful_iff_instances."
       - "The three object formula families derive put_get, get_put, and put_put."
       - "The two Hom formula families derive get_naturality and put_naturality."
-      - "Primitive fiber finiteness transfers to the assembled native reference fiber by primitiveFiberEquiv."
-      - "Native fiber finiteness transfers to the read primitive fiber by readFiberEquiv."
+      - "FiberCover transfers to native finite reference fibers through fiberCover_iff_finite and primitiveFiberEquiv."
+      - "Native finite reference fibers produce FiberCover through fiberCover_iff_finite and readFiberEquiv."
     remaining: []
   certificate_provenance:
     discharged:
-      - "Object and Hom law fields are evaluations of closed BoolFormula builders over primitive cells."
+      - "Object and Hom store closed formula evaluations and CarrierRows.Instances over glued primitive cells."
       - "Formula support uses BoolFormula.support_finite and evaluation preservation uses BoolFormula.evaluate_iff_of_support."
-      - "Object and Hom graph lawfulness is produced by IndependentCarrierGraph.read_isLawful or direct identity/compose lawfulness."
+      - "Native read, identity, and composition convert graph lawfulness to row instances with lawful_iff_instances.mp."
     unresolved: []
   proof_use:
     used:
       - "IndependentCarrierGraph.read/assemble and both inverse laws"
       - "IndependentCarrierGraph.identity/compose and category-law theorems"
       - "IndependentFiniteLawFormula.BoolFormula.evaluate_iff_of_support and support_finite"
+      - "IndependentFiniteFragments restrictions, compatibility, singleton glue, and both inverse laws"
+      - "IndependentFiniteGraphLawFormula.CarrierRows.lawful_iff_instances"
       - "LensRealization.res, ext_res, homEquivFiberMap, and LensRealization.Fiber"
       - "lensSemanticFiberReading and its exact LensRealization.res map"
       - "LocalReconstructionEquivalence.ReconstructionData.equivalence and existsUnique_preimage"
@@ -9965,8 +9978,10 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean: 166 declarations, standard axioms only"
-    - "module registered in research/lean/research-modules.txt and ResearchLean/AG.lean"
+    - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentFiniteFragments.lean: 10 declarations, standard axioms only"
+    - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryFiniteFragments.lean: 20 declarations, standard axioms only"
+    - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean: 259 declarations, standard axioms only"
+    - "IndependentFiniteFragments and the lens module are registered in research/lean/research-modules.txt and ResearchLean/AG.lean"
     - "git diff --check and the new-file whitespace check: pass"
     - "placeholder and axiom/admit/sorry/unsafe scan: no match"
     - "hidden and bidirectional Unicode scan: no match"
@@ -9977,13 +9992,15 @@ audits:
   next_obligation: "Part II PR 3/4: protocol primitive reading, finite path and observation laws, all preserving Homs, and category equivalence."
 ```
 
-`Object`はstate carrier、固定query上の一つのtagged Bool table、graph lawfulness、三法則の有限式、
-primitive reference fiberの有限性だけを保持する。`Hom`はcandidate state-map graphと二つの保存式だけを
+`Object`は、単一のType-valued state carrier宣言とlifted Bool graph cellからなるdependent tableの
+compatible finite fragments、row instances、三法則の有限式、primitive reference fiberのlist coverだけを保持する。
+候補型の一致Boolは宣言cellから`objectLawTable`が計算し、primitive dataには加えない。
+`Hom`はcandidate state-map graphのfinite fragmentsと二つの保存式だけを
 保持する。完成した`LensRealization`、完成した`LensRealization.Hom`、decoder像、extension証拠はfieldに
 含めない。
 
 対象の三法則とHomの二保存則は、固定pointごとの`BoolFormula`として定義した。5族すべてについて、
-`support_finite`と`evaluate_iff_of_support`を使う公開補題、およびgraph assembly上のpoint lawとの双方向対応を
+derived carrier-match cellを含む`support_finite`と`evaluate_iff_of_support`の公開補題、およびgraph assembly上のpoint lawとの双方向対応を
 証明した。対象組立てはこれらの式から`IsTotalLens`を作り、Hom組立ては保存式から既存の`Hom`を作る。
 恒等射と合成は`IndependentCarrierGraph.identity` / `compose`を直接使い、同APIの左右単位則・結合則から
 Category instanceを得た。
@@ -9992,7 +10009,8 @@ Category instanceを得た。
 同一のstate上で対応させる。`readFiberEquiv_primitiveFiberMap_readHom`はprimitive Homのfiber作用が既存
 `LensRealization.res`とpointwiseに一致することを示し、`assembleHom_eq_homEquivFiberMap_symm`は既存
 `homEquivFiberMap`の逆写像へ接続する。既存の非可逆`constantFalseHom`も同じreaderへ渡し、fiber作用が
-非単射のまま局所Homに含まれることを確認した。
+非単射のまま局所Homに含まれることを確認した。さらに異なるstate carrier型を結ぶ
+`booleanToUnitPrimitiveHom`と、Hom保存を破る`flipVisibleTable_getPreservation_rejected`を置いた。
 
 `homSeparation`、`homAssembly`、`objectAssembly`に追加仮定はなく、`reconstructionData`を構成した。
 主同値`equivalence`はこの値へ一般`ReconstructionData.equivalence`を一度適用して得る。
