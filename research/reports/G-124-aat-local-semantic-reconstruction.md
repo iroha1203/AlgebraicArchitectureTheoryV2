@@ -10031,3 +10031,191 @@ Category instanceを得た。
 `incompatibleBoolFamily_not_compatible`は包含で値が変わるfinite fragment familyを拒否する。
 `infiniteFiberData_point_laws`はNat carrierのraw get/putが三法則を満たすことを示し、
 `infiniteFiberTable_not_fiberCover`は同じtableをreference fiberの非有限性だけで拒否する。
+
+## 特例パートII PR 3/4 selection — protocol原始読取りと圏同値
+
+この作業単位はユーザー指定の特例であり、正規Cycleを追加しない。Cycleは79のまま維持する。
+一次仕様は固定GOAL A/Bと、Issue #4711の実装設計§2・§4.1・§4.3・§4.4・§7実装順3である。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124
+cycle: 79
+special_work_unit: part2-pr3
+cycle_increment: false
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 5f4f10f75ca78023d3a57b3de94939e599cca6be
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Part II PR 2/4 is present at the selected base; implementation design is Issue #4711 sections 2, 4.1, 4.3, 4.4, and 7 order 3"
+  proof_dag_predecessors:
+    - "IndependentCarrierGraph read/assemble, identity/compose, and inverse laws"
+    - "IndependentFiniteFragments compatible singleton gluing"
+    - "IndependentFiniteLawFormula.BoolFormula support preservation"
+    - "IndependentFiniteGraphLawFormula.CarrierRows.lawful_iff_instances"
+    - "ProtocolSchema pathFunctorOfEdgeAction and evaluatePath"
+    - "ProtocolRealization GeneratorMap, res/ext, ext_res/res_ext, res_id/res_comp"
+    - "LocalReconstructionEquivalence.ReconstructionData.equivalence"
+  proof_obligation: "Construct the fixed-input primitive protocol object and Hom category, derive schema relations and observation squares from finite formulas over existing paths, recover every native object and all preserving Homs, and obtain the category equivalence."
+  selection_reason: "The geometry and lens branches are connected; this work supplies the protocol branch before the common four-family integration."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentProtocolPrimitiveReconstruction.lean"
+    - "IndependentProtocolPrimitiveReconstruction.Object and Hom"
+    - "IndependentProtocolPrimitiveReconstruction.readingFunctor"
+    - "IndependentProtocolPrimitiveReconstruction.reconstructionData and equivalence"
+  risks:
+    - "Dependent Quiver.Path recursion and quotient-lift endpoint inference require focused elaboration."
+    - "The readObject constructor must identify graph assembly with native edge and observation functions under proof irrelevance."
+    - "The ProtocolPresentation two-to-one fixture uses lifted Fin carriers and requires inferred endpoint reduction."
+  unchecked:
+    - "Protocol primitive reading review, CI, and merge are pending."
+    - "The common declaration, mandatory inputs, and Cycle 79 comparison remain PR 4/4."
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The protocol branch uses one dependent carrier/edge/observation query, existing Quiver.Path recursion for finite relation formulas, list covers for vertex finiteness, direct vertex-map graph Homs, and the general reconstruction theorem."
+  completion_candidate: no
+  lean_artifacts:
+    - "IndependentProtocolPrimitiveReconstruction.Object"
+    - "IndependentProtocolPrimitiveReconstruction.Hom"
+    - "IndependentProtocolPrimitiveReconstruction.pathTraceFormula"
+    - "IndependentProtocolPrimitiveReconstruction.pathToFormula"
+    - "IndependentProtocolPrimitiveReconstruction.relationFormula"
+    - "IndependentProtocolPrimitiveReconstruction.observationFormula"
+    - "IndependentProtocolPrimitiveReconstruction.readObject"
+    - "IndependentProtocolPrimitiveReconstruction.assembleObject"
+    - "IndependentProtocolPrimitiveReconstruction.readHom"
+    - "IndependentProtocolPrimitiveReconstruction.assembleReadHom"
+    - "IndependentProtocolPrimitiveReconstruction.identityHom"
+    - "IndependentProtocolPrimitiveReconstruction.composeHom"
+    - "IndependentProtocolPrimitiveReconstruction.readingFunctor"
+    - "IndependentProtocolPrimitiveReconstruction.reconstructionData"
+    - "IndependentProtocolPrimitiveReconstruction.equivalence"
+  evidence:
+    - "ObjectQuery contains one Type-valued stateCarrier cell per vertex, named-edge graph cells, and vertex-observation graph cells."
+    - "ObjectLawQuery carrierMatches values are computed from stateCarrier cells and are not independent local data."
+    - "relationFormula recursively reads existing Quiver.Path edges; pathToFormula requires the second path to end at the first path evaluation."
+    - "observationFormula reads the named edge, source observation, and target observation at the mapped source value."
+    - "relationFormula_evaluate_iff_raw and observationFormula_evaluate_iff_raw connect finite formulas in both directions to native point laws."
+    - "edgePreservationFormula_evaluate_iff_raw and observationPreservationFormula_evaluate_iff_raw characterize Hom formulas directly on raw endpoint and map tables before any Hom is constructed."
+    - "objectFormula_evaluate_iff_of_base_support and homFormula_evaluate_iff_of_base_support include derived carrier checks and all graph cells in primitive support."
+    - "StateCover is Prop-valued and stateCover_iff_finite connects it to the existing finite carrier premise without adding enumerations to object data."
+    - "assembledPathFunctor_relation, assembledFunctor, assembledPathObservation, and assembledObservation use pathFunctorOfEdgeAction, Paths.liftNatTrans, and Quotient.lift."
+    - "Hom stores only finite vertex-map graph fragments and edge/observation preservation formulas."
+    - "assembleHom and assembleReadHom build the existing GeneratorMap and call ProtocolRealization.ext."
+    - "assembleReadHom_readHom and readHom_assembleReadHom use the existing res/ext inverse API and primitive graph inverse laws."
+    - "identityHom and composeHom use IndependentCarrierGraph.identity and compose directly."
+    - "Hom.ext_table, the table and vertexMapTable evaluation APIs, and assembleEdge_readObject expose semantic readings without unfolding constructors; Category laws, reader functoriality, and observed path comparison use these APIs."
+    - "observedRestriction_state, observedRestriction_edge, observedRestriction_path, observedRestriction_observation, and observedRestriction_map compare actual primitive evaluations with the accepted observed restriction reading."
+    - "togglingRelationFormula_rejected reuses the existing togglingProtocolLawStructure relation failure."
+    - "infiniteProtocol_relation_formula and infiniteProtocol_observation_formula keep the native laws true while infiniteProtocol_not_stateCover rejects the Nat state carrier only through StateCover."
+    - "booleanFlipEdge_observationFormula_rejected applies observationFormula_rejected to a finite Bool carrier with lawful flip-edge and identity-observation graphs."
+    - "booleanIdentityMap_observationPreservation_rejected applies observationPreservationFormula_rejected to lawful finite identity-map, identity-observation, and flip-observation graphs."
+    - "booleanIdentityMap_edgePreservation_rejected applies edgePreservationFormula_rejected to lawful finite flip-edge, identity-edge, and identity-map graphs."
+    - "twoToOnePrimitiveHom reads a noninvertible Hom between lifted Fin 2 and lifted Fin 1 state carriers."
+  claim_mapping:
+    theorem_names:
+      - "relationFormula_evaluate_iff_raw"
+      - "observationFormula_evaluate_iff_raw"
+      - "edgePreservationFormula_evaluate_iff_raw"
+      - "observationPreservationFormula_evaluate_iff_raw"
+      - "Hom.ext_table"
+      - "table_readHom"
+      - "table_identityHom"
+      - "table_composeHom"
+      - "vertexMapTable_readHom"
+      - "vertexMapTable_identityHom"
+      - "vertexMapTable_composeHom"
+      - "assembleEdge_readObject"
+      - "booleanFlipEdge_observationFormula_rejected"
+      - "booleanIdentityMap_observationPreservation_rejected"
+      - "booleanIdentityMap_edgePreservation_rejected"
+      - "readObject_assembleObject"
+      - "assembleObjectReadIso"
+      - "assembleReadHom_readHom"
+      - "readHom_assembleReadHom"
+      - "existsUnique_preimage"
+      - "equivalence"
+      - "observedRestriction_path"
+      - "twoToOnePrimitiveHom_not_injective"
+    source_labels:
+      - "fixed GOAL A and B protocol branch"
+      - "Issue #4711 implementation design sections 2, 4.1, 4.3, 4.4, and 7 order 3"
+    conjuncts:
+      - "fixed ProtocolFamilyInput -> dependent vertex carrier, named edge, and observation queries"
+      - "compatible finite fragments -> glued primitive object and vertex-map tables"
+      - "CarrierRows.Instances plus relation and observation formulas -> ProtocolRealization"
+      - "one map graph per vertex plus edge and observation formulas -> every GeneratorMap and semantic Hom"
+      - "direct primitive identity and composition -> local Category"
+      - "Hom separation, Hom assembly, and object assembly -> ReconstructionData"
+      - "ReconstructionData.equivalence -> protocol category equivalence"
+      - "primitive vertex, edge, observation, and map evaluation -> protocolObservedRestrictionObject and protocolObservedRestrictionMap"
+    undischarged_assumptions: []
+    acceptance_point: "This is the PR 3/4 implementation candidate. Focused elaboration, fixed-head review, CI, and merge remain before acceptance."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "CarrierRows.Instances produces lawful total functions for every named edge, observation, and vertex map."
+      - "The pointwise relation formulas discharge the quotient relation premise through the existing relation_sound equations."
+      - "The pointwise observation formulas discharge naturality through the existing ProtocolRealization observation transformation."
+      - "StateCover supplies exactly the existing finite-state premise through stateCover_iff_finite."
+      - "The Hom formulas discharge GeneratorMap edge and observation preservation for every state."
+    remaining: []
+  certificate_provenance:
+    discharged:
+      - "Object and Hom retain finite fragments, closed formula evaluations, graph-row instances, and state list covers over their glued primitive cells."
+      - "Derived carrier-match queries are computed from stateCarrier cells and are included in primitive support through objectFormulaBaseSupport and homFormulaBaseSupport."
+      - "Native read, identity, and composition derive row instances from IndependentCarrierGraph lawfulness rather than accepting completed semantic maps as local fields."
+      - "The relation, observation, edge-preservation, and observation-preservation formulas each have direct raw evaluation equivalences and concrete finite lawful rejection fixtures."
+    unresolved: []
+  proof_use:
+    used:
+      - "IndependentCarrierGraph read/assemble, identity/compose, and inverse and category laws"
+      - "IndependentFiniteFragments restriction, compatibility, singleton glue, and inverse laws"
+      - "IndependentFiniteLawFormula.BoolFormula support and evaluation preservation"
+      - "IndependentFiniteGraphLawFormula.CarrierRows.lawful_iff_instances"
+      - "ProtocolSchema evaluatePath, pathFunctorOfEdgeAction, relation_sound, Paths.liftNatTrans, and Quotient.lift"
+      - "ProtocolRealization res/ext, naturality, and category APIs"
+      - "LocalReconstructionEquivalence.ReconstructionData.equivalence and existsUnique_preimage"
+      - "Protocol observed-restriction object and map APIs"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  completion_scope: "Part II PR 3/4 only; A/B common integration, mandatory inputs, and Cycle 79 comparison are not claimed."
+  validation_refs:
+    - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentProtocolPrimitiveReconstruction.lean: 327 declarations, standard axioms only"
+    - "module registered in research/lean/research-modules.txt and ResearchLean/AG.lean"
+    - "git diff --check and the new-file whitespace check: pass"
+    - "placeholder and axiom/admit/sorry/unsafe scan: no match"
+    - "hidden and bidirectional Unicode scan: no match"
+    - "privacy scan: no match"
+    - "new Japanese prose forbidden-word scan: no match"
+    - "Research import direction gate: 228 modules scanned, pass"
+    - "fixed GOAL blob unchanged: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088"
+  blocking_findings: []
+  next_obligation: "Part II PR 4/4: common declaration, mandatory inputs, the main equivalence, and specified route comparisons."
+```
+
+`Object`は各頂点のcarrier宣言、生成辺graph、観測graphのcompatible finite fragments、各graphのrow
+instances、relationと観測squareのpointwise有限式、各carrierのlist coverだけを保持する。relation式は
+既存`Quiver.Path`を直接再帰し、左pathの実評価と同じ終点へ右pathが到達するセル列を要求する。
+`Hom`は各頂点mapのgraph fragmentsと、生成辺・観測を保存する式だけを保持する。
+
+対象組立ては生成辺作用からfree-path functorを作り、relation式からquotientへ降ろす。観測squareは
+`Paths.liftNatTrans`で全pathへ延長し、`Quotient.lift`で得たfunctor上の自然変換へ接続する。Hom組立ては
+各頂点graphから既存`GeneratorMap`を作り、`ProtocolRealization.ext`へ渡す。恒等射と合成はgraphの
+`identity`と`compose`から直接定義する。主同値は`ReconstructionData.equivalence`を一度適用して得る。
+
+既存protocol observed restrictionとの比較は、頂点carrier、生成辺評価、観測値、Homの頂点mapを個別の
+定理で固定した。成立例は任意のnative object/Homの`readObject`/`readHom`で与える。具体的な拒否例は
+既存のtoggle relation fixtureに加え、Bool carrier上のlawfulなedge・observation・map graphだけを使う
+`booleanFlipEdge_observationFormula_rejected`、
+`booleanIdentityMap_observationPreservation_rejected`、
+`booleanIdentityMap_edgePreservation_rejected`で与えた。異なるstate型間の非可逆Homは`Fin 2`から`Fin 1`への
+既存decoder経路で構成し、そのprimitive componentが非単射であることを示す。
