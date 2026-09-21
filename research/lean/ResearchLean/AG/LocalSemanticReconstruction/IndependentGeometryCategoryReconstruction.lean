@@ -513,7 +513,7 @@ def explicitAssemblyFunctor (U : AtomCarrier.{u}) :
     first.val first.property second.val second.property
 
 /-- Representative reading is separating on every complete native Hom type. -/
-def representativeHomSeparation (U : AtomCarrier.{u}) :
+theorem representativeHomSeparation (U : AtomCarrier.{u}) :
     HomSeparation (representativeReadingFunctor.{u, v} U) where
   hom G H := ⟨by
     intro first second equality
@@ -549,7 +549,7 @@ def representativeObjectAssembly (U : AtomCarrier.{u}) :
       object.localObject)
 
 /-- Explicit reading is separating on every complete native Hom type. -/
-def explicitHomSeparation (U : AtomCarrier.{u}) :
+theorem explicitHomSeparation (U : AtomCarrier.{u}) :
     HomSeparation (explicitReadingFunctor.{u, v} U) where
   hom G H := ⟨by
     intro first second equality
