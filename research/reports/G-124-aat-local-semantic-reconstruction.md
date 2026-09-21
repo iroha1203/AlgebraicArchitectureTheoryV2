@@ -10098,6 +10098,7 @@ result:
     - "relationFormula recursively reads existing Quiver.Path edges; pathToFormula requires the second path to end at the first path evaluation."
     - "observationFormula reads the named edge, source observation, and target observation at the mapped source value."
     - "relationFormula_evaluate_iff_raw and observationFormula_evaluate_iff_raw connect finite formulas in both directions to native point laws."
+    - "edgePreservationFormula_evaluate_iff_raw and observationPreservationFormula_evaluate_iff_raw characterize Hom formulas directly on raw endpoint and map tables before any Hom is constructed."
     - "objectFormula_evaluate_iff_of_base_support and homFormula_evaluate_iff_of_base_support include derived carrier checks and all graph cells in primitive support."
     - "StateCover is Prop-valued and stateCover_iff_finite connects it to the existing finite carrier premise without adding enumerations to object data."
     - "assembledPathFunctor_relation, assembledFunctor, assembledPathObservation, and assembledObservation use pathFunctorOfEdgeAction, Paths.liftNatTrans, and Quotient.lift."
@@ -10105,16 +10106,27 @@ result:
     - "assembleHom and assembleReadHom build the existing GeneratorMap and call ProtocolRealization.ext."
     - "assembleReadHom_readHom and readHom_assembleReadHom use the existing res/ext inverse API and primitive graph inverse laws."
     - "identityHom and composeHom use IndependentCarrierGraph.identity and compose directly."
+    - "Hom.ext_table, table_readHom, table_identityHom, and table_composeHom expose the glued map table without unfolding constructors; Category laws and reader functoriality use these APIs."
     - "observedRestriction_state, observedRestriction_edge, observedRestriction_path, observedRestriction_observation, and observedRestriction_map compare actual primitive evaluations with the accepted observed restriction reading."
     - "togglingRelationFormula_rejected reuses the existing togglingProtocolLawStructure relation failure."
     - "infiniteProtocol_relation_formula and infiniteProtocol_observation_formula keep the native laws true while infiniteProtocol_not_stateCover rejects the Nat state carrier only through StateCover."
-    - "observationFormula_rejected exposes a failed object observation square through its false expected target-observation cell."
-    - "observationPreservationFormula_rejected and edgePreservationFormula_rejected expose firing Hom formulas with false conclusion cells."
+    - "booleanFlipEdge_observationFormula_rejected applies observationFormula_rejected to a finite Bool carrier with lawful flip-edge and identity-observation graphs."
+    - "booleanIdentityMap_observationPreservation_rejected applies observationPreservationFormula_rejected to lawful finite identity-map, identity-observation, and flip-observation graphs."
+    - "booleanIdentityMap_edgePreservation_rejected applies edgePreservationFormula_rejected to lawful finite flip-edge, identity-edge, and identity-map graphs."
     - "twoToOnePrimitiveHom reads a noninvertible Hom between lifted Fin 2 and lifted Fin 1 state carriers."
   claim_mapping:
     theorem_names:
       - "relationFormula_evaluate_iff_raw"
       - "observationFormula_evaluate_iff_raw"
+      - "edgePreservationFormula_evaluate_iff_raw"
+      - "observationPreservationFormula_evaluate_iff_raw"
+      - "Hom.ext_table"
+      - "table_readHom"
+      - "table_identityHom"
+      - "table_composeHom"
+      - "booleanFlipEdge_observationFormula_rejected"
+      - "booleanIdentityMap_observationPreservation_rejected"
+      - "booleanIdentityMap_edgePreservation_rejected"
       - "readObject_assembleObject"
       - "assembleObjectReadIso"
       - "assembleReadHom_readHom"
@@ -10152,7 +10164,7 @@ audits:
       - "Object and Hom retain finite fragments, closed formula evaluations, graph-row instances, and state list covers over their glued primitive cells."
       - "Derived carrier-match queries are computed from stateCarrier cells and are included in primitive support through objectFormulaBaseSupport and homFormulaBaseSupport."
       - "Native read, identity, and composition derive row instances from IndependentCarrierGraph lawfulness rather than accepting completed semantic maps as local fields."
-      - "The relation, observation, edge-preservation, and observation-preservation formulas each have direct evaluation equivalences and concrete rejection fixtures."
+      - "The relation, observation, edge-preservation, and observation-preservation formulas each have direct raw evaluation equivalences and concrete finite lawful rejection fixtures."
     unresolved: []
   proof_use:
     used:
@@ -10173,7 +10185,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   completion_scope: "Part II PR 3/4 only; A/B common integration, mandatory inputs, and Cycle 79 comparison are not claimed."
   validation_refs:
-    - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentProtocolPrimitiveReconstruction.lean: 295 declarations, standard axioms only"
+    - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentProtocolPrimitiveReconstruction.lean: 322 declarations, standard axioms only"
     - "module registered in research/lean/research-modules.txt and ResearchLean/AG.lean"
     - "git diff --check and the new-file whitespace check: pass"
     - "placeholder and axiom/admit/sorry/unsafe scan: no match"
@@ -10197,6 +10209,9 @@ instances、relationと観測squareのpointwise有限式、各carrierのlist cov
 `identity`と`compose`から直接定義する。主同値は`ReconstructionData.equivalence`を一度適用して得る。
 
 既存protocol observed restrictionとの比較は、頂点carrier、生成辺評価、観測値、Homの頂点mapを個別の
-定理で固定した。成立例は任意のnative object/Homの`readObject`/`readHom`で与え、拒否例は既存のtoggle
-relation fixture、観測squareのfalse conclusion、辺保存のfalse conclusionを用いる。異なるstate型間の
-非可逆Homは`Fin 2`から`Fin 1`への既存decoder経路で構成し、そのprimitive componentが非単射であることを示す。
+定理で固定した。成立例は任意のnative object/Homの`readObject`/`readHom`で与える。具体的な拒否例は
+既存のtoggle relation fixtureに加え、Bool carrier上のlawfulなedge・observation・map graphだけを使う
+`booleanFlipEdge_observationFormula_rejected`、
+`booleanIdentityMap_observationPreservation_rejected`、
+`booleanIdentityMap_edgePreservation_rejected`で与えた。異なるstate型間の非可逆Homは`Fin 2`から`Fin 1`への
+既存decoder経路で構成し、そのprimitive componentが非単射であることを示す。

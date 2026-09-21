@@ -1050,6 +1050,46 @@ def observationPreservationFormula (input : ProtocolFamilyInput.{u})
           (.cell (.source (.observe vertex (.edge _ _ state value))) true))
         (.cell (.target (.observe vertex (.edge _ _ image value))) true)))
 
+/-- A raw edge-preservation formula is exactly its four carrier checks and
+the implication from the three firing graph cells to the target map cell. -/
+theorem edgePreservationFormula_evaluate_iff_raw
+    {input : ProtocolFamilyInput.{u}}
+    (sourceTable targetTable : ObjectTable input) (maps : HomTable input)
+    {v w : input.schema.Vertex} (edge : input.schema.Edge v w)
+    (state : State sourceTable v) (image : State targetTable v)
+    (sourceNext : State sourceTable w) (targetNext : State targetTable w) :
+    (edgePreservationFormula input sourceTable targetTable edge
+      state image sourceNext targetNext).evaluate
+        (homLawTable sourceTable targetTable maps) ↔
+      objectLawTable sourceTable (.carrierMatches v (State sourceTable v)) = true ∧
+      objectLawTable targetTable (.carrierMatches v (State targetTable v)) = true ∧
+      objectLawTable sourceTable (.carrierMatches w (State sourceTable w)) = true ∧
+      objectLawTable targetTable (.carrierMatches w (State targetTable w)) = true ∧
+      (((maps (.map v (.edge _ _ state image)) = true ∧
+          (sourceTable (.edge edge (.edge _ _ state sourceNext))).down = true) ∧
+        (targetTable (.edge edge (.edge _ _ image targetNext))).down = true) →
+        maps (.map w (.edge _ _ sourceNext targetNext)) = true) := by
+  rfl
+
+/-- A raw observation-preservation formula is exactly its two carrier checks
+and the implication from the map and source-observation cells to the target cell. -/
+theorem observationPreservationFormula_evaluate_iff_raw
+    {input : ProtocolFamilyInput.{u}}
+    (sourceTable targetTable : ObjectTable input) (maps : HomTable input)
+    (vertex : input.schema.Vertex)
+    (state : State sourceTable vertex) (image : State targetTable vertex)
+    (value : input.observation.obj (input.schema.vertexObject vertex)) :
+    (observationPreservationFormula input sourceTable targetTable vertex
+      state image value).evaluate (homLawTable sourceTable targetTable maps) ↔
+      objectLawTable sourceTable
+          (.carrierMatches vertex (State sourceTable vertex)) = true ∧
+      objectLawTable targetTable
+          (.carrierMatches vertex (State targetTable vertex)) = true ∧
+      ((maps (.map vertex (.edge _ _ state image)) = true ∧
+        (sourceTable (.observe vertex (.edge _ _ state value))).down = true) →
+        (targetTable (.observe vertex (.edge _ _ image value))).down = true) := by
+  rfl
+
 /-- A primitive protocol Hom with vertex maps and generator preservation formulas. -/
 structure Hom {input : ProtocolFamilyInput.{u}} (source target : Object input) where
   /-- Finite fragments containing all vertex-map graph cells. -/
@@ -1099,6 +1139,14 @@ theorem ext {first second : Hom source target} (family : first.family = second.f
   cases family
   rfl
 
+/-- Primitive protocol Homs are equal when their glued vertex-map tables agree. -/
+theorem ext_table {first second : Hom source target}
+    (tables : first.table = second.table) : first = second := by
+  apply ext
+  rw [← homFragments_glue first.family first.compatible,
+    ← homFragments_glue second.family second.compatible]
+  exact congrArg homFragments tables
+
 /-- Assemble the vertex map selected by a primitive Hom graph. -/
 def component (morphism : Hom source target) (vertex : input.schema.Vertex) :
     source.State vertex → target.State vertex :=
@@ -1129,7 +1177,9 @@ def assembleHom {input : ProtocolFamilyInput.{u}} {source target : Object input}
         let sourceNext := assembleEdge source edge state
         let targetNext := assembleEdge target edge image
         apply (morphism.edge_iff w sourceNext targetNext).mp
-        exact (morphism.edge_formula edge state image sourceNext targetNext).2.2.2.2
+        exact ((edgePreservationFormula_evaluate_iff_raw source.table target.table
+          morphism.table edge state image sourceNext targetNext).mp
+            (morphism.edge_formula edge state image sourceNext targetNext)).2.2.2.2
           ⟨⟨(morphism.edge_iff v state image).mpr rfl,
               (edge_edge_iff source edge state sourceNext).mpr rfl⟩,
             (edge_edge_iff target edge image targetNext).mpr rfl⟩
@@ -1138,7 +1188,9 @@ def assembleHom {input : ProtocolFamilyInput.{u}} {source target : Object input}
         let image := morphism.component vertex state
         let value := assembleObservation source vertex state
         apply (observe_edge_iff target vertex image value).mp
-        exact (morphism.observation_formula vertex state image value).2.2
+        exact ((observationPreservationFormula_evaluate_iff_raw source.table
+          target.table morphism.table vertex state image value).mp
+            (morphism.observation_formula vertex state image value)).2.2
           ⟨(morphism.edge_iff vertex state image).mpr rfl,
             (observe_edge_iff source vertex state value).mpr rfl⟩ }
 
@@ -1158,8 +1210,13 @@ def readHom {input : ProtocolFamilyInput.{u}}
       (IndependentCarrierGraph.read_isLawful _ _
         ((ProtocolRealization.res morphism).component vertex))
   edge_formula {v} {w} edge state image sourceNext targetNext := by
-    simp only [homGlue_fragments, edgePreservationFormula,
-      IndependentFiniteLawFormula.BoolFormula.evaluate]
+    rw [homGlue_fragments]
+    apply (edgePreservationFormula_evaluate_iff_raw
+      (readObject source).table (readObject target).table
+      (fun query => match query with
+        | .map vertex graphQuery => IndependentCarrierGraph.read _ _
+            ((ProtocolRealization.res morphism).component vertex) graphQuery)
+      edge state image sourceNext targetNext).mpr
     refine ⟨(readObject source).carrier_selected _,
       (readObject target).carrier_selected _,
       (readObject source).carrier_selected _,
@@ -1186,8 +1243,13 @@ def readHom {input : ProtocolFamilyInput.{u}}
     subst targetNext
     exact congrFun ((ProtocolRealization.res morphism).edge_naturality edge) state
   observation_formula vertex state image value := by
-    simp only [homGlue_fragments, observationPreservationFormula,
-      IndependentFiniteLawFormula.BoolFormula.evaluate]
+    rw [homGlue_fragments]
+    apply (observationPreservationFormula_evaluate_iff_raw
+      (readObject source).table (readObject target).table
+      (fun query => match query with
+        | .map current graphQuery => IndependentCarrierGraph.read _ _
+            ((ProtocolRealization.res morphism).component current) graphQuery)
+      vertex state image value).mpr
     refine ⟨(readObject source).carrier_selected vertex,
       (readObject target).carrier_selected vertex, ?_⟩
     change (IndependentCarrierGraph.read (source.State vertex) (target.State vertex)
@@ -1211,6 +1273,20 @@ def readHom {input : ProtocolFamilyInput.{u}}
     subst value
     exact congrFun ((ProtocolRealization.res morphism).observation_naturality vertex) state
 
+/-- Reading a semantic Hom evaluates each primitive map query by the existing
+generator component graph. -/
+@[simp] theorem table_readHom {input : ProtocolFamilyInput.{u}}
+    {source target : ProtocolRealization input.schema input.observation}
+    (morphism : source ⟶ target) (query : HomTableQuery input) :
+    (readHom morphism).table query =
+      match query with
+      | .map vertex graphQuery => IndependentCarrierGraph.read _ _
+          ((ProtocolRealization.res morphism).component vertex) graphQuery := by
+  change homGlue (homFragments (fun query => match query with
+    | .map vertex graphQuery => IndependentCarrierGraph.read _ _
+        ((ProtocolRealization.res morphism).component vertex) graphQuery)) query = _
+  exact congrFun (homGlue_fragments _) query
+
 /-- Assemble a local Hom directly between its original semantic endpoints. -/
 def assembleReadHom {input : ProtocolFamilyInput.{u}}
     {source target : ProtocolRealization input.schema input.observation}
@@ -1223,7 +1299,10 @@ def assembleReadHom {input : ProtocolFamilyInput.{u}}
         let sourceNext := source.edgeAction edge state
         let targetNext := target.edgeAction edge image
         apply (morphism.edge_iff w sourceNext targetNext).mp
-        exact (morphism.edge_formula edge state image sourceNext targetNext).2.2.2.2
+        exact ((edgePreservationFormula_evaluate_iff_raw
+          (readObject source).table (readObject target).table morphism.table
+          edge state image sourceNext targetNext).mp
+            (morphism.edge_formula edge state image sourceNext targetNext)).2.2.2.2
           ⟨⟨(morphism.edge_iff v state image).mpr rfl,
               (IndependentCarrierGraph.read_edge _ _ (source.edgeAction edge)
                 state sourceNext).mpr rfl⟩,
@@ -1235,7 +1314,10 @@ def assembleReadHom {input : ProtocolFamilyInput.{u}}
         let value := source.observe vertex state
         apply (IndependentCarrierGraph.read_edge _ _ (target.observe vertex)
           image value).mp
-        exact (morphism.observation_formula vertex state image value).2.2
+        exact ((observationPreservationFormula_evaluate_iff_raw
+          (readObject source).table (readObject target).table morphism.table
+          vertex state image value).mp
+            (morphism.observation_formula vertex state image value)).2.2
           ⟨(morphism.edge_iff vertex state image).mpr rfl,
             (IndependentCarrierGraph.read_edge _ _ (source.observe vertex)
               state value).mpr rfl⟩ }
@@ -1255,15 +1337,13 @@ def assembleReadHom {input : ProtocolFamilyInput.{u}}
     {source target : ProtocolRealization input.schema input.observation}
     (morphism : Hom (readObject source) (readObject target)) :
     readHom (assembleReadHom morphism) = morphism := by
-  apply Hom.ext
-  change homFragments (fun query => match query with
-    | .map vertex graphQuery => IndependentCarrierGraph.read _ _
-        (morphism.component vertex) graphQuery) = morphism.family
-  rw [← homFragments_glue morphism.family morphism.compatible]
-  apply congrArg homFragments
+  apply Hom.ext_table
   funext query
   cases query with
   | map vertex graphQuery =>
+      rw [table_readHom]
+      change IndependentCarrierGraph.read _ _ (morphism.component vertex) graphQuery =
+        morphism.table (.map vertex graphQuery)
       exact congrFun (IndependentCarrierGraph.read_assemble _ _
         (vertexMapTable morphism.table vertex) (morphism.lawful vertex)) graphQuery
 
@@ -1278,8 +1358,12 @@ def identityHom {input : ProtocolFamilyInput.{u}} (object : Object input) :
       (IndependentCarrierGraph.identity (object.State vertex)) id _ _).mp
       (IndependentCarrierGraph.identity_isLawful _)
   edge_formula {v} {w} edge state image sourceNext targetNext := by
-    simp only [homGlue_fragments, edgePreservationFormula,
-      IndependentFiniteLawFormula.BoolFormula.evaluate]
+    rw [homGlue_fragments]
+    apply (edgePreservationFormula_evaluate_iff_raw object.table object.table
+      (fun query => match query with
+        | .map vertex graphQuery =>
+            IndependentCarrierGraph.identity (object.State vertex) graphQuery)
+      edge state image sourceNext targetNext).mpr
     refine ⟨object.carrier_selected _, object.carrier_selected _,
       object.carrier_selected _, object.carrier_selected _, ?_⟩
     rintro ⟨⟨mapCell, sourceCell⟩, targetCell⟩
@@ -1291,13 +1375,29 @@ def identityHom {input : ProtocolFamilyInput.{u}} (object : Object input) :
         (IndependentCarrierGraph.assemble_eq_of_edge _ _ _
           (object.edge_lawful edge) targetCell)
   observation_formula vertex state image value := by
-    simp only [homGlue_fragments, observationPreservationFormula,
-      IndependentFiniteLawFormula.BoolFormula.evaluate]
+    rw [homGlue_fragments]
+    apply (observationPreservationFormula_evaluate_iff_raw object.table object.table
+      (fun query => match query with
+        | .map current graphQuery =>
+            IndependentCarrierGraph.identity (object.State current) graphQuery)
+      vertex state image value).mpr
     refine ⟨object.carrier_selected vertex, object.carrier_selected vertex, ?_⟩
     rintro ⟨mapCell, sourceCell⟩
     have imageEq := (IndependentCarrierGraph.identity_edge _ state image).mp mapCell
     subst image
     exact sourceCell
+
+/-- The direct primitive identity table is the diagonal graph at each vertex. -/
+@[simp] theorem table_identityHom {input : ProtocolFamilyInput.{u}}
+    (object : Object input) (query : HomTableQuery input) :
+    (identityHom object).table query =
+      match query with
+      | .map vertex graphQuery =>
+          IndependentCarrierGraph.identity (object.State vertex) graphQuery := by
+  change homGlue (homFragments (fun query => match query with
+    | .map vertex graphQuery =>
+        IndependentCarrierGraph.identity (object.State vertex) graphQuery)) query = _
+  exact congrFun (homGlue_fragments _) query
 
 /-- Direct primitive composition uses point composition of every vertex graph. -/
 def composeHom {input : ProtocolFamilyInput.{u}}
@@ -1321,8 +1421,14 @@ def composeHom {input : ProtocolFamilyInput.{u}}
         (vertexMapTable first.table vertex) (first.lawful vertex)
         (vertexMapTable second.table vertex) (second.lawful vertex))
   edge_formula {v} {w} edge state image sourceNext targetNext := by
-    simp only [homGlue_fragments, edgePreservationFormula,
-      IndependentFiniteLawFormula.BoolFormula.evaluate]
+    rw [homGlue_fragments]
+    apply (edgePreservationFormula_evaluate_iff_raw source.table target.table
+      (fun query => match query with
+        | .map vertex graphQuery => IndependentCarrierGraph.compose
+            (source.State vertex) (middle.State vertex) (target.State vertex)
+            (vertexMapTable first.table vertex) (first.lawful vertex)
+            (vertexMapTable second.table vertex) graphQuery)
+      edge state image sourceNext targetNext).mpr
     refine ⟨source.carrier_selected _, target.carrier_selected _,
       source.carrier_selected _, target.carrier_selected _, ?_⟩
     rintro ⟨⟨compositeCell, sourceCell⟩, targetCell⟩
@@ -1337,7 +1443,9 @@ def composeHom {input : ProtocolFamilyInput.{u}}
     have secondCell : second.table (.map v (.edge _ _ middleState image)) = true := by
       simpa [middleState, IndependentCarrierGraph.compose_edge] using compositeCell
     have firstNext : first.table (.map w (.edge _ _ sourceNext middleNext)) = true :=
-      (first.edge_formula edge state middleState sourceNext middleNext).2.2.2.2
+      ((edgePreservationFormula_evaluate_iff_raw source.table middle.table
+        first.table edge state middleState sourceNext middleNext).mp
+          (first.edge_formula edge state middleState sourceNext middleNext)).2.2.2.2
         ⟨⟨firstCell, sourceCell⟩,
           (edge_edge_iff middle edge middleState middleNext).mpr rfl⟩
     have middleNextEq : first.component w sourceNext = middleNext :=
@@ -1345,7 +1453,9 @@ def composeHom {input : ProtocolFamilyInput.{u}}
     change IndependentCarrierGraph.assemble (source.State w) (middle.State w)
       (vertexMapTable first.table w) (first.lawful w) sourceNext = middleNext at middleNextEq
     have secondNext : second.table (.map w (.edge _ _ middleNext targetNext)) = true :=
-      (second.edge_formula edge middleState image middleNext targetNext).2.2.2.2
+      ((edgePreservationFormula_evaluate_iff_raw middle.table target.table
+        second.table edge middleState image middleNext targetNext).mp
+          (second.edge_formula edge middleState image middleNext targetNext)).2.2.2.2
         ⟨⟨secondCell, (edge_edge_iff middle edge middleState middleNext).mpr rfl⟩,
           targetCell⟩
     change IndependentCarrierGraph.compose (source.State w) (middle.State w)
@@ -1355,8 +1465,14 @@ def composeHom {input : ProtocolFamilyInput.{u}}
     rw [IndependentCarrierGraph.compose_edge, middleNextEq]
     exact secondNext
   observation_formula vertex state image value := by
-    simp only [homGlue_fragments, observationPreservationFormula,
-      IndependentFiniteLawFormula.BoolFormula.evaluate]
+    rw [homGlue_fragments]
+    apply (observationPreservationFormula_evaluate_iff_raw source.table target.table
+      (fun query => match query with
+        | .map current graphQuery => IndependentCarrierGraph.compose
+            (source.State current) (middle.State current) (target.State current)
+            (vertexMapTable first.table current) (first.lawful current)
+            (vertexMapTable second.table current) graphQuery)
+      vertex state image value).mpr
     refine ⟨source.carrier_selected vertex, target.carrier_selected vertex, ?_⟩
     rintro ⟨compositeCell, sourceCell⟩
     let middleState := first.component vertex state
@@ -1371,10 +1487,33 @@ def composeHom {input : ProtocolFamilyInput.{u}}
     have secondCell : second.table (.map vertex (.edge _ _ middleState image)) = true := by
       simpa [middleState, IndependentCarrierGraph.compose_edge] using compositeCell
     have middleObservation :=
-      (first.observation_formula vertex state middleState value).2.2
+      ((observationPreservationFormula_evaluate_iff_raw source.table middle.table
+        first.table vertex state middleState value).mp
+          (first.observation_formula vertex state middleState value)).2.2
       ⟨firstCell, sourceCell⟩
-    exact (second.observation_formula vertex middleState image value).2.2
+    exact ((observationPreservationFormula_evaluate_iff_raw middle.table target.table
+      second.table vertex middleState image value).mp
+        (second.observation_formula vertex middleState image value)).2.2
       ⟨secondCell, middleObservation⟩
+
+/-- Direct primitive composition evaluates by carrier-graph composition at
+each vertex query. -/
+@[simp] theorem table_composeHom {input : ProtocolFamilyInput.{u}}
+    {source middle target : Object input}
+    (first : Hom source middle) (second : Hom middle target)
+    (query : HomTableQuery input) :
+    (composeHom first second).table query =
+      match query with
+      | .map vertex graphQuery => IndependentCarrierGraph.compose
+          (source.State vertex) (middle.State vertex) (target.State vertex)
+          (vertexMapTable first.table vertex) (first.lawful vertex)
+          (vertexMapTable second.table vertex) graphQuery := by
+  change homGlue (homFragments (fun query => match query with
+    | .map vertex graphQuery => IndependentCarrierGraph.compose
+        (source.State vertex) (middle.State vertex) (target.State vertex)
+        (vertexMapTable first.table vertex) (first.lawful vertex)
+        (vertexMapTable second.table vertex) graphQuery)) query = _
+  exact congrFun (homGlue_fragments _) query
 
 /-- Primitive protocol objects and direct graph Homs form a category. -/
 instance {input : ProtocolFamilyInput.{u}} : Category.{u + 1} (Object input) where
@@ -1383,114 +1522,82 @@ instance {input : ProtocolFamilyInput.{u}} : Category.{u + 1} (Object input) whe
   comp := composeHom
   id_comp := by
     intro source target morphism
-    apply Hom.ext
-    have tableEq : (fun query : HomTableQuery input => match query with
-      | .map vertex graphQuery =>
-          IndependentCarrierGraph.compose (source.State vertex)
-            (source.State vertex) (target.State vertex)
-            (IndependentCarrierGraph.identity (source.State vertex))
-            (IndependentCarrierGraph.identity_isLawful (source.State vertex))
-            (vertexMapTable morphism.table vertex) graphQuery) = morphism.table := by
-      funext query
-      cases query with
-      | map vertex graphQuery =>
-          exact congrFun (IndependentCarrierGraph.identity_compose _ _
+    apply Hom.ext_table
+    funext query
+    cases query with
+    | map vertex graphQuery =>
+        simpa only [table_composeHom, table_identityHom, vertexMapTable] using
+          congrFun (IndependentCarrierGraph.identity_compose _ _
             (vertexMapTable morphism.table vertex) (morphism.lawful vertex)) graphQuery
-    rw [← homFragments_glue morphism.family morphism.compatible]
-    simpa only [composeHom, identityHom] using congrArg homFragments tableEq
   comp_id := by
     intro source target morphism
-    apply Hom.ext
-    have tableEq : (fun query : HomTableQuery input => match query with
-      | .map vertex graphQuery =>
-          IndependentCarrierGraph.compose (source.State vertex)
-            (target.State vertex) (target.State vertex)
-            (vertexMapTable morphism.table vertex) (morphism.lawful vertex)
-            (IndependentCarrierGraph.identity (target.State vertex)) graphQuery) =
-        morphism.table := by
-      funext query
-      cases query with
-      | map vertex graphQuery =>
-          exact congrFun (IndependentCarrierGraph.compose_identity _ _
+    apply Hom.ext_table
+    funext query
+    cases query with
+    | map vertex graphQuery =>
+        simpa only [table_composeHom, table_identityHom, vertexMapTable] using
+          congrFun (IndependentCarrierGraph.compose_identity _ _
             (vertexMapTable morphism.table vertex) (morphism.lawful vertex)) graphQuery
-    rw [← homFragments_glue morphism.family morphism.compatible]
-    simpa only [composeHom, identityHom] using congrArg homFragments tableEq
   assoc := by
     intro firstObject secondObject thirdObject fourthObject first second third
-    apply Hom.ext
-    have tableEq : (fun query : HomTableQuery input => match query with
-      | .map vertex graphQuery =>
-          IndependentCarrierGraph.compose (firstObject.State vertex)
-            (thirdObject.State vertex) (fourthObject.State vertex)
-            (IndependentCarrierGraph.compose (firstObject.State vertex)
-              (secondObject.State vertex) (thirdObject.State vertex)
-              (vertexMapTable first.table vertex) (first.lawful vertex)
-              (vertexMapTable second.table vertex))
-            (IndependentCarrierGraph.compose_isLawful _ _ _ _ (first.lawful vertex)
-              _ (second.lawful vertex))
-            (vertexMapTable third.table vertex) graphQuery) =
-      (fun query : HomTableQuery input => match query with
-        | .map vertex graphQuery =>
-            IndependentCarrierGraph.compose (firstObject.State vertex)
-              (secondObject.State vertex) (fourthObject.State vertex)
-              (vertexMapTable first.table vertex) (first.lawful vertex)
-              (IndependentCarrierGraph.compose (secondObject.State vertex)
-                (thirdObject.State vertex) (fourthObject.State vertex)
-                (vertexMapTable second.table vertex) (second.lawful vertex)
-                (vertexMapTable third.table vertex)) graphQuery) := by
-      funext query
-      cases query with
-      | map vertex graphQuery =>
-          exact congrFun (IndependentCarrierGraph.compose_assoc _ _ _ _
+    apply Hom.ext_table
+    funext query
+    cases query with
+    | map vertex graphQuery =>
+        simpa only [table_composeHom, vertexMapTable] using
+          congrFun (IndependentCarrierGraph.compose_assoc _ _ _ _
             (vertexMapTable first.table vertex) (first.lawful vertex)
             (vertexMapTable second.table vertex) (second.lawful vertex)
             (vertexMapTable third.table vertex) (third.lawful vertex)) graphQuery
-    simpa only [composeHom] using congrArg homFragments tableEq
 
 /-- Reading sends semantic identities to direct primitive diagonal graphs. -/
 theorem readHom_id {input : ProtocolFamilyInput.{u}}
     (realization : ProtocolRealization input.schema input.observation) :
     readHom (𝟙 realization) = identityHom (readObject realization) := by
-  apply Hom.ext
-  have tableEq : (fun query : HomTableQuery input => match query with
-    | .map vertex graphQuery =>
-        IndependentCarrierGraph.read (realization.State vertex)
-          (realization.State vertex) id graphQuery) =
-      (fun query : HomTableQuery input => match query with
-        | .map vertex graphQuery =>
-            IndependentCarrierGraph.identity (realization.State vertex) graphQuery) := by
-    funext query
-    cases query with
-    | map vertex graphQuery => rfl
-  simpa only [readHom, identityHom] using congrArg homFragments tableEq
+  apply Hom.ext_table
+  funext query
+  cases query with
+  | map vertex graphQuery =>
+      rw [table_readHom, table_identityHom]
+      change IndependentCarrierGraph.read (realization.State vertex)
+          (realization.State vertex)
+          ((ProtocolRealization.res (𝟙 realization)).component vertex) graphQuery =
+        IndependentCarrierGraph.identity (realization.State vertex) graphQuery
+      have componentId : (ProtocolRealization.res (𝟙 realization)).component vertex = id := by
+        funext state
+        exact ProtocolRealization.res_id realization vertex state
+      rw [componentId]
+      rfl
 
 /-- Reading sends semantic composition to direct pointwise graph composition. -/
 theorem readHom_comp {input : ProtocolFamilyInput.{u}}
     {source middle target : ProtocolRealization input.schema input.observation}
     (first : source ⟶ middle) (second : middle ⟶ target) :
     readHom (first ≫ second) = composeHom (readHom first) (readHom second) := by
-  apply Hom.ext
-  have tableEq : (fun query : HomTableQuery input => match query with
-    | .map vertex graphQuery => IndependentCarrierGraph.read
-        (source.State vertex) (target.State vertex)
-        (((ProtocolRealization.res second).component vertex) ∘
-          ((ProtocolRealization.res first).component vertex)) graphQuery) =
-      (fun query : HomTableQuery input => match query with
-        | .map vertex graphQuery => IndependentCarrierGraph.compose
-            (source.State vertex) (middle.State vertex) (target.State vertex)
-            (IndependentCarrierGraph.read _ _
-              ((ProtocolRealization.res first).component vertex))
-            (IndependentCarrierGraph.read_isLawful _ _
-              ((ProtocolRealization.res first).component vertex))
-            (IndependentCarrierGraph.read _ _
-              ((ProtocolRealization.res second).component vertex)) graphQuery) := by
-    funext query
-    cases query with
-    | map vertex graphQuery =>
-        exact congrFun (IndependentCarrierGraph.read_compose _ _ _
-          ((ProtocolRealization.res first).component vertex)
-          ((ProtocolRealization.res second).component vertex)) graphQuery
-  simpa only [readHom, composeHom] using congrArg homFragments tableEq
+  apply Hom.ext_table
+  funext query
+  cases query with
+  | map vertex graphQuery =>
+      simp only [table_readHom, table_composeHom]
+      change IndependentCarrierGraph.read (source.State vertex) (target.State vertex)
+          ((ProtocolRealization.res (first ≫ second)).component vertex) graphQuery =
+        IndependentCarrierGraph.compose (source.State vertex) (middle.State vertex)
+          (target.State vertex)
+          (IndependentCarrierGraph.read (source.State vertex) (middle.State vertex)
+            ((ProtocolRealization.res first).component vertex))
+          _
+          (IndependentCarrierGraph.read (middle.State vertex) (target.State vertex)
+            ((ProtocolRealization.res second).component vertex)) graphQuery
+      have componentComp :
+          (ProtocolRealization.res (first ≫ second)).component vertex =
+            (ProtocolRealization.res second).component vertex ∘
+              (ProtocolRealization.res first).component vertex := by
+        funext state
+        exact ProtocolRealization.res_comp first second vertex state
+      rw [componentComp]
+      exact congrFun (IndependentCarrierGraph.read_compose _ _ _
+        ((ProtocolRealization.res first).component vertex)
+        ((ProtocolRealization.res second).component vertex)) graphQuery
 
 /-- Fixed-input semantic protocol reading into the primitive local category. -/
 def readingFunctor (input : ProtocolFamilyInput.{u}) :
@@ -1702,6 +1809,7 @@ theorem edgePreservationFormula_evaluate_iff
           (source.table (.edge edge (.edge _ _ state sourceNext))).down = true) ∧
         (target.table (.edge edge (.edge _ _ image targetNext))).down = true →
         morphism.component w sourceNext = targetNext) := by
+  rw [edgePreservationFormula_evaluate_iff_raw]
   constructor
   · intro formula premise
     exact (morphism.edge_iff w sourceNext targetNext).mp
@@ -1724,6 +1832,7 @@ theorem observationPreservationFormula_evaluate_iff
       (morphism.table (.map vertex (.edge _ _ state image)) = true ∧
         (source.table (.observe vertex (.edge _ _ state value))).down = true →
         assembleObservation target vertex image = value) := by
+  rw [observationPreservationFormula_evaluate_iff_raw]
   constructor
   · intro formula premise
     exact (observe_edge_iff target vertex image value).mp (formula.2.2 premise)
@@ -1865,7 +1974,9 @@ theorem observationPreservationFormula_rejected
     ¬ (observationPreservationFormula input sourceTable targetTable vertex
       state image value).evaluate (homLawTable sourceTable targetTable maps) := by
   intro evaluation
-  have targetTrue := evaluation.2.2 ⟨mapTrue, sourceTrue⟩
+  have targetTrue := ((observationPreservationFormula_evaluate_iff_raw
+    sourceTable targetTable maps vertex state image value).mp evaluation).2.2
+      ⟨mapTrue, sourceTrue⟩
   exact Bool.noConfusion (targetFalse.symm.trans targetTrue)
 
 /-- A false target vertex-map cell rejects an otherwise firing edge formula. -/
@@ -1883,9 +1994,207 @@ theorem edgePreservationFormula_rejected
       state image sourceNext targetNext).evaluate
         (homLawTable sourceTable targetTable maps) := by
   intro evaluation
-  have nextTrue := evaluation.2.2.2.2
+  have nextTrue := ((edgePreservationFormula_evaluate_iff_raw
+    sourceTable targetTable maps edge state image sourceNext targetNext).mp
+      evaluation).2.2.2.2
     ⟨⟨mapTrue, sourceEdgeTrue⟩, targetEdgeTrue⟩
   exact Bool.noConfusion (nextFalse.symm.trans nextTrue)
+
+/-- Boolean-valued observation on the one-vertex toggling schema, with every
+execution acting by the identity. -/
+def booleanProtocolObservation : togglingProtocolSchema.ExecutionCategory ⥤ Type where
+  obj _ := Bool
+  map _ := id
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/-- Fixed one-vertex protocol input used by the three concrete finite rejection fixtures. -/
+def booleanProtocolInput : ProtocolFamilyInput where
+  schema := togglingProtocolSchema
+  observation := booleanProtocolObservation
+
+/-- The named loop edge of the concrete Boolean protocol input. -/
+def booleanProtocolLoop : booleanProtocolInput.schema.Edge
+    TogglingProtocolVertex.point TogglingProtocolVertex.point := PUnit.unit
+
+/-- Raw Boolean protocol table read from one edge action and one observation action. -/
+def booleanProtocolTable (edgeAction observeAction : Bool → Bool) :
+    ObjectTable booleanProtocolInput := by
+  intro query
+  cases query with
+  | stateCarrier _ => exact Bool
+  | edge _ query =>
+      exact ULift.up (IndependentCarrierGraph.read Bool Bool edgeAction query)
+  | observe _ query =>
+      exact ULift.up (IndependentCarrierGraph.read Bool Bool observeAction query)
+
+/-- Every named-edge graph in a Boolean fixture table is lawful and total. -/
+theorem booleanProtocolEdgeLawful (edgeAction observeAction : Bool → Bool)
+    {source target} (edge : booleanProtocolInput.schema.Edge source target) :
+    IndependentCarrierGraph.IsLawful
+      (State (booleanProtocolTable edgeAction observeAction) source)
+      (State (booleanProtocolTable edgeAction observeAction) target)
+      (edgeTable (booleanProtocolTable edgeAction observeAction) edge) :=
+  IndependentCarrierGraph.read_isLawful Bool Bool edgeAction
+
+/-- Every observation graph in a Boolean fixture table is lawful and total. -/
+theorem booleanProtocolObserveLawful (edgeAction observeAction : Bool → Bool)
+    (vertex : booleanProtocolInput.schema.Vertex) :
+    IndependentCarrierGraph.IsLawful
+      (State (booleanProtocolTable edgeAction observeAction) vertex)
+      (booleanProtocolInput.observation.obj
+        (booleanProtocolInput.schema.vertexObject vertex))
+      (observeTable (booleanProtocolTable edgeAction observeAction) vertex) :=
+  IndependentCarrierGraph.read_isLawful Bool Bool observeAction
+
+/-- Every Boolean fixture table satisfies the finite state-cover condition. -/
+theorem booleanProtocolTable_stateCover (edgeAction observeAction : Bool → Bool) :
+    StateCover (booleanProtocolTable edgeAction observeAction)
+      TogglingProtocolVertex.point := by
+  rw [stateCover_iff_finite]
+  change Finite Bool
+  infer_instance
+
+/-- Raw Boolean vertex-map table read from one total Boolean function. -/
+def booleanProtocolMapTable (mapAction : Bool → Bool) : HomTable booleanProtocolInput
+  | .map _ query => IndependentCarrierGraph.read Bool Bool mapAction query
+
+/-- Every Boolean fixture vertex-map graph is lawful and total. -/
+theorem booleanProtocolMapLawful (mapAction : Bool → Bool)
+    (vertex : booleanProtocolInput.schema.Vertex) :
+    IndependentCarrierGraph.IsLawful Bool Bool
+      (vertexMapTable (booleanProtocolMapTable mapAction) vertex) :=
+  IndependentCarrierGraph.read_isLawful Bool Bool mapAction
+
+/-- Boolean object table with identity edge and identity observation graphs. -/
+def booleanIdentityObjectTable : ObjectTable booleanProtocolInput :=
+  booleanProtocolTable id id
+
+/-- Boolean object table with a flipping edge and identity observation graph. -/
+def booleanFlipEdgeObjectTable : ObjectTable booleanProtocolInput :=
+  booleanProtocolTable (fun state => !state) id
+
+/-- Boolean object table with identity edge and flipping observation graph. -/
+def booleanFlipObservationObjectTable : ObjectTable booleanProtocolInput :=
+  booleanProtocolTable id (fun state => !state)
+
+/-- Boolean identity vertex-map graph used by both concrete Hom rejection fixtures. -/
+def booleanIdentityMapTable : HomTable booleanProtocolInput :=
+  booleanProtocolMapTable id
+
+/-- The flip-edge object fixture has lawful total graphs and a finite carrier. -/
+theorem booleanFlipEdgeObjectTable_lawful_finite :
+    IndependentCarrierGraph.IsLawful Bool Bool
+        (edgeTable booleanFlipEdgeObjectTable booleanProtocolLoop) ∧
+      IndependentCarrierGraph.IsLawful Bool Bool
+        (observeTable booleanFlipEdgeObjectTable TogglingProtocolVertex.point) ∧
+      StateCover booleanFlipEdgeObjectTable TogglingProtocolVertex.point :=
+  ⟨booleanProtocolEdgeLawful (fun state => !state) id booleanProtocolLoop,
+    booleanProtocolObserveLawful (fun state => !state) id
+      TogglingProtocolVertex.point,
+    booleanProtocolTable_stateCover (fun state => !state) id⟩
+
+/-- The identity object fixture has lawful total graphs and a finite carrier. -/
+theorem booleanIdentityObjectTable_lawful_finite :
+    IndependentCarrierGraph.IsLawful Bool Bool
+        (edgeTable booleanIdentityObjectTable booleanProtocolLoop) ∧
+      IndependentCarrierGraph.IsLawful Bool Bool
+        (observeTable booleanIdentityObjectTable TogglingProtocolVertex.point) ∧
+      StateCover booleanIdentityObjectTable TogglingProtocolVertex.point :=
+  ⟨booleanProtocolEdgeLawful id id booleanProtocolLoop,
+    booleanProtocolObserveLawful id id TogglingProtocolVertex.point,
+    booleanProtocolTable_stateCover id id⟩
+
+/-- The flip-observation object fixture has lawful total graphs and a finite carrier. -/
+theorem booleanFlipObservationObjectTable_lawful_finite :
+    IndependentCarrierGraph.IsLawful Bool Bool
+        (edgeTable booleanFlipObservationObjectTable booleanProtocolLoop) ∧
+      IndependentCarrierGraph.IsLawful Bool Bool
+        (observeTable booleanFlipObservationObjectTable TogglingProtocolVertex.point) ∧
+      StateCover booleanFlipObservationObjectTable TogglingProtocolVertex.point :=
+  ⟨booleanProtocolEdgeLawful id (fun state => !state) booleanProtocolLoop,
+    booleanProtocolObserveLawful id (fun state => !state)
+      TogglingProtocolVertex.point,
+    booleanProtocolTable_stateCover id (fun state => !state)⟩
+
+/-- The identity map used by the Hom rejection fixtures is a lawful total graph. -/
+theorem booleanIdentityMapTable_lawful :
+    IndependentCarrierGraph.IsLawful Bool Bool
+      (vertexMapTable booleanIdentityMapTable TogglingProtocolVertex.point) :=
+  booleanProtocolMapLawful id TogglingProtocolVertex.point
+
+/-- The identity Boolean graph has no edge from `true` to `false`. -/
+theorem booleanReadIdentity_true_false :
+    IndependentCarrierGraph.read Bool Bool id (.edge Bool Bool true false) = false := by
+  apply Bool.eq_false_iff.mpr
+  intro cell
+  have equality := (IndependentCarrierGraph.read_edge Bool Bool id true false).mp cell
+  exact Bool.noConfusion equality
+
+/-- The Boolean flip graph has no edge from `false` to `false`. -/
+theorem booleanReadFlip_false_false :
+    IndependentCarrierGraph.read Bool Bool (fun state => !state)
+      (.edge Bool Bool false false) = false := by
+  apply Bool.eq_false_iff.mpr
+  intro cell
+  have equality := (IndependentCarrierGraph.read_edge Bool Bool
+    (fun state => !state) false false).mp cell
+  exact Bool.noConfusion equality
+
+/-- A finite lawful table with flip edge and identity observation concretely
+fails the named-edge observation square at `false`. -/
+theorem booleanFlipEdge_observationFormula_rejected :
+    ¬ (observationFormula booleanProtocolInput booleanFlipEdgeObjectTable
+      (fun edge => booleanProtocolEdgeLawful (fun state => !state) id edge)
+      (booleanProtocolObserveLawful (fun state => !state) id)
+      booleanProtocolLoop false).evaluate (objectLawTable booleanFlipEdgeObjectTable) := by
+  apply observationFormula_rejected booleanFlipEdgeObjectTable
+    (fun edge => booleanProtocolEdgeLawful (fun state => !state) id edge)
+    (booleanProtocolObserveLawful (fun state => !state) id) booleanProtocolLoop false
+  have edgeValue : assembleEdgeAction booleanFlipEdgeObjectTable
+      (fun edge => booleanProtocolEdgeLawful (fun state => !state) id edge)
+      booleanProtocolLoop false = true :=
+    congrFun (IndependentCarrierGraph.assemble_read Bool Bool
+      (fun state => !state)) false
+  have observationValue : assembleObserve booleanFlipEdgeObjectTable
+      (booleanProtocolObserveLawful (fun state => !state) id)
+      TogglingProtocolVertex.point false = false :=
+    congrFun (IndependentCarrierGraph.assemble_read Bool Bool id) false
+  rw [edgeValue, observationValue]
+  simpa [booleanProtocolInput, booleanProtocolObservation,
+    booleanFlipEdgeObjectTable, booleanProtocolTable, observeTable] using
+      booleanReadIdentity_true_false
+
+/-- Identity state map from identity observation to flip observation concretely
+fails observation preservation although every graph is lawful and finite. -/
+theorem booleanIdentityMap_observationPreservation_rejected :
+    ¬ (observationPreservationFormula booleanProtocolInput
+      booleanIdentityObjectTable booleanFlipObservationObjectTable
+      TogglingProtocolVertex.point false false false).evaluate
+        (homLawTable booleanIdentityObjectTable booleanFlipObservationObjectTable
+          booleanIdentityMapTable) := by
+  apply observationPreservationFormula_rejected booleanIdentityObjectTable
+    booleanFlipObservationObjectTable booleanIdentityMapTable
+    TogglingProtocolVertex.point false false false
+  · exact (IndependentCarrierGraph.read_edge Bool Bool id false false).mpr rfl
+  · exact (IndependentCarrierGraph.read_edge Bool Bool id false false).mpr rfl
+  · exact booleanReadFlip_false_false
+
+/-- Identity state map from flip edge to identity edge concretely fails edge
+preservation although every graph is lawful and finite. -/
+theorem booleanIdentityMap_edgePreservation_rejected :
+    ¬ (edgePreservationFormula booleanProtocolInput booleanFlipEdgeObjectTable
+      booleanIdentityObjectTable booleanProtocolLoop false false true false).evaluate
+        (homLawTable booleanFlipEdgeObjectTable booleanIdentityObjectTable
+          booleanIdentityMapTable) := by
+  apply edgePreservationFormula_rejected booleanFlipEdgeObjectTable
+    booleanIdentityObjectTable booleanIdentityMapTable booleanProtocolLoop
+    false false true false
+  · exact (IndependentCarrierGraph.read_edge Bool Bool id false false).mpr rfl
+  · exact (IndependentCarrierGraph.read_edge Bool Bool
+      (fun state => !state) false true).mpr rfl
+  · exact (IndependentCarrierGraph.read_edge Bool Bool id false false).mpr rfl
+  · exact booleanReadIdentity_true_false
 
 /-- Two-state presentation of the accepted toggling schema with identity edge action. -/
 def twoStateProtocolPresentation :
