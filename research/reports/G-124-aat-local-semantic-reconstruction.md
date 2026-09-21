@@ -10259,9 +10259,10 @@ selection:
     - "The main equivalence must use direct branch assembly data rather than selecting four completed equivalences."
     - "The G-122 Arrow comparison must retain both endpoint automorphisms."
   unchecked:
-    - "Fixed-head four-lane review, scoped Part II/A/B completion review, CI, and merge are pending."
+    - "The final scoped Part II/A/B completion decision and merge evidence are recorded in tracking Issue #4711 for this ledger head."
     - "G-124 targets C--E remain later work."
 result:
+  reviewed_head: dcf3e951d533f8d2530c3ea0dc0a5be2e7dcf79b
   proposed_result_type: proof-checkpoint
   proof_obligation_delta: "Common object, Hom, and packed tables now carry branch-specific independent data through compatible finite families. Geometry Hom certificates retain the full Part I presentation as data, while lens and protocol certificates retain their existing proof packages. Two-sided family equivalences connect those families to the four accepted primitive local categories, and one common ReconstructionData uses their inverse laws. Tagged and G-122 readers connect to their Cycle 79 fibers through direct lifts; lens and protocol decoder, retract, Karoubi, and Arrow routes reuse the accepted comparisons."
   completion_candidate: no
@@ -10373,7 +10374,7 @@ result:
       - "mandatory tagged and G-122 inputs -> actual common native objects and Homs"
       - "old generated, Arrow, finite-fiber, observed, and Cycle 79 routes -> explicit comparison APIs"
     undischarged_assumptions: []
-    acceptance_point: "This is the Part II PR 4/4 and fixed A/B implementation candidate. Fixed-head review, scoped completion review, CI, and merge remain before acceptance."
+    acceptance_point: "This is the Part II PR 4/4 and fixed A/B implementation candidate. Fixed-head four-lane review and CI passed at dcf3e951d533f8d2530c3ea0dc0a5be2e7dcf79b. The final scoped completion decision and merge evidence are recorded in Issue #4711."
     port_status: not-applicable
 audits:
   premise_delta:
@@ -10409,6 +10410,8 @@ audits:
   completion_scope: "Part II and fixed targets A/B only. The overall G-124 result remains proof-checkpoint at Cycle 79 because C--E are still open."
   validation_refs:
     - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentAATPrimitiveReconstruction.lean: 379 declarations, standard axioms only"
+    - "fixed-head math A/B and Lean A/B review at dcf3e951d533f8d2530c3ea0dc0a5be2e7dcf79b: four No major findings decisions"
+    - "PR #4842 CI at dcf3e951d533f8d2530c3ea0dc0a5be2e7dcf79b: all 7 checks succeeded; merge state CLEAN"
     - "module registered in research/lean/research-modules.txt and ResearchLean/AG.lean"
     - "git diff --check: pass"
     - "placeholder and axiom/admit/sorry/unsafe scan: no match"
@@ -10439,5 +10442,7 @@ decoder・Karoubi・Arrowの既存APIも作り直さず比較に接続した。
 
 この単位はパートIIと固定target A/Bの完了候補である。共通有限族から四つの局所圏への両逆、
 旧経路の成分評価、CSのdecoder・retract・Karoubi・Arrow、Cycle 79のtotal readingへの自然同型を
-focused checkで確認した。固定head査読、範囲をA/B・IIに限定した完了査読、CI、mergeが受理前に
-残る。G-124全体はC–Eが残るため、Cycle 79の`proof-checkpoint`を維持する。
+focused checkで確認した。固定head `dcf3e951d533f8d2530c3ea0dc0a5be2e7dcf79b`に対する
+数学A/B・Lean A/Bの4本査読は全て`No major findings`、CIは7件全て成功した。最終の
+A/B・パートII限定完了判定とmerge証拠は、この台帳headを対象にIssue #4711へ記録する。
+G-124全体はC–Eが残るため、Cycle 79の`proof-checkpoint`を維持する。
