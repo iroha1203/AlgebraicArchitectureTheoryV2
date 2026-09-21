@@ -762,6 +762,14 @@ Lean実装や、その形式化済み範囲は変更していない。
 修正後のGitHubファイルプレビュー・描画済み差分・図6.1とCIの対象commit・結果はPRに記録する。
 初稿へのapproveと、修正版への独立再レビュー・人間による最終差分確認・マージを区別する。
 
+### PR #4839のマージ確認
+
+2026-09-21、人間による第6章のマージを確認した。修正版のheadは
+`010fbe8f0dc8776f0257f550764eb32a78ec1072`、merge commitは
+`c08b1a0e078a242e4683fdb375dc1e7c6a3c4e14` である。
+初稿への独立レビューと採用済み修正、それに対する人間の確認・マージを記録する。
+修正版のGitHub表示確認とCIの結果は[PR #4839](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4839)を参照する。
+
 [c6-descent]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/ConfigurationDescent.lean
 [c6-core-normalization]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/BCAuthoredCanonicalObjectNormalization.lean
 [c6-idempotence]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeNormalization.lean
@@ -789,3 +797,113 @@ Lean実装や、その形式化済み範囲は変更していない。
 [c6-three-stage]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/ThreeStageProjection.lean
 [c6-groupoid]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/MaximalSubgroupoid.lean
 [c6-placement]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/G116KaroubiPlacement.lean
+
+## 第7章「比較を保つ変更と情報」
+
+2026-09-21、第6章マージ後の固定版
+[c08b1a0e078a242e4683fdb375dc1e7c6a3c4e14](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/c08b1a0e078a242e4683fdb375dc1e7c6a3c4e14)
+の一次資料と、第1〜6章の原稿を照合して[日本語初稿](ja/10-comparison-and-information.md)を作成した。
+以下の一次資料の相対リンクは、この固定版で照合したファイルを示す。
+原稿のSHA-256は `f7264c405ef24d31ca32389ecb3f40572599d2c498d2cbcdffb23f26cbc71832`。
+確認者はCodex（GPT-6）である。
+
+例7.1〜例7.30と式7.1〜7.47を置き、必要な定義・成立条件・構成・証明を本文に記述した。
+内部資料との対応は本記録に置く。既存Lean sourceは条件・結論・証明との照合に用い、
+変更・ローカル再検証は行っていない。
+
+| ID | 原稿の箇所 | 入力・成立条件 | 確認した一次資料 | 原稿での構成・証明 |
+| --- | --- | --- | --- | --- |
+| C7-01 | 例7.1 | 一頂点・一名前付きループ、二状態、恒等操作と反転操作 | [PeriodSeparation][c7-period] | 共通部品へ切り出す更新処理が、決済区分を保持する場合と反転する場合を小さな状態機械で説明。既存の二対象の有限witnessそのものではなく、本文用の別の例として定義・評価する |
+| C7-02 | 定義7.2・命題7.3 | 任意の圏の比較、許容端点部分群。底固定版では変更の底への像が恒等 | [QualifiedComparisonStabilizer][c7-stabilizer]、[QualifiedComparisonGroup][c7-object-group] | 比較保存群の部分群性とArr、恒等冪等のArr(Kar)との同定を証明。比較自身の底への像は恒等に限定しない |
+| C7-03 | 定理7.4・系7.5 | 一般の比較。共役による両射影の同型には比較の可逆性と許容群の対応を仮定 | [QualifiedComparisonStabilizer][c7-stabilizer] | 両端射影の核と像、追随変更の剰余類・左torsorを計算。同型の場合を共役のグラフとして導く |
+| C7-04 | 定理7.6 | 第5章§5.8の共通sourceと二経路、底を固定するsource自己同型 | [QualifiedComparisonGeneratedClassification][c7-generated] | 実際の二経路の因子化と生成mateの三角形から、core・幾何のcartesian一意性を順に使って適合性を証明。独立なsource変更の差を残余部分群へ帰着する |
+| C7-05 | 命題7.7 | 各sourceの底・係数固定同型から、辺・面・輸送の選択を移して入力を再構成 | [SourcePresentation F0][c7-source-input]、[F1][c7-source-legs]、[F2][c7-source-changes]、[F3][c7-source-comparison] | 新しい入力を作ってから両経路を生成し、普遍性から端点同型・比較と変更の共役式を得る。完成済み比較の共役を入力とはしない |
+| C7-06 | 定義7.8〜命題7.10 | 群準同型O、部分群Γ。Oの全射性は不要 | [ObservationKernel][c7-observation] | 判定の因子化とker O⊆Γ、飽和、観測fiber、基点付き剰余類を証明。計算可能な判定手続きの存在とは区別する |
+| C7-07 | 系7.11 | 完全幾何の同型比較と底固定端点群、係数観測 | [EndpointKernelClassification][c7-coefficient] | K/Lを剰余類集合とし、[(a,b)]↦bT(a)⁻¹を両逆つきで証明。S3の対角部分群の非正規性を計算。入力表示変更との整合は命題7.7から導く。実生成比較の不可視な対は構成7.20で別途構成する |
+| C7-08 | 命題7.12 | 関手による全端点自己同型群の写像、admissible core・完全幾何の充満部分圏 | [NormalizationComparisonGroup][c7-normalization-group]、第6章の定理6.21・命題6.22 | 関手性から比較保存を、射影の等式から底固定群への制限を導く |
+| C7-09 | 構成7.13・定理7.14 | dc=ceを満たす冪等射と中心化群。一般準同型rにはr(Γ₀)⊆Δ | [KaroubiRestriction][c7-karoubi]、[GroupHomRestriction][c7-group-restriction] | 保存、反映の二条件、適合するliftの存在・右核torsor、短完全列を証明。全端点群の核と適合部分群上の核を区別する |
+| C7-10 | 例7.15・例7.16 | 三点集合、恒等比較。定値冪等射とfiberサイズ1・2の冪等射 | [KaroubiRestrictionFiniteWitness][c7-karoubi-witness] | 不適合対が像で適合する計算と、fiberサイズが異なるため像の交換を持ち上げられない証明を本文に置く |
+| C7-11 | 構成7.17 | Configurationと全付随データの積表示、選択対象と共通の基準元 | [CanonicalNormalizationObjectSection][c7-object-section] | 出発・到着の二つの交換を合成して、選択対象を保つ延長を構成。中間の交換の消去から恒等・合成則を得る |
+| C7-12 | 補題7.18 | Adを満たすcoreを持つ完全幾何。型の等式に沿うoperationの同一視 | [CoreSection][c7-core-section]、[GeometrySection][c7-geometry-section]、[AutomorphismSection][c7-aut-section] | 正規化・射の適用・型の復元でoperationと対象依存の保存則を構成。残りの幾何成分を保持し、全射成分の恒等・合成・吸収から群準同型sectionを得る |
+| C7-13 | 定理7.19 | 両端がAdを満たす完全幾何の任意の同型比較 | [CanonicalNormalizationIsoComparisonSection][c7-iso-section] | Sourceのsectionと元の比較による共役を組み合わせ、両端で独立に選んだsectionの自然性を仮定せずに比較を保つsectionを構成。底・係数保持も証明 |
+| C7-14 | 構成7.20 | 同じ完全幾何と、選択値以外の二つの付随データ | [AmbientKernelObjectSwap][c7-swap]、[CoreLift][c7-swap-core]、[GeometryLift][c7-swap-geometry] | 実際の非恒等・対合な対象写像をoperation・全幾何成分へ延長。正規化による吸収と底・係数固定を示す |
+| C7-15 | 定理7.21 | 構成5.37の同一入力から生成したαとAd、canonical正規化 | [ExactBarAlphaCanonicalComparisonSection][c7-alpha-section]、[Exactness][c7-alpha-exactness]、[AmbientKernelComparisonWitness][c7-ambient-witness] | 分裂短完全列と全lift fiberの右torsorを導き、同じ生成比較の全fiberに適合・不適合な端点対を構成。底固定版と係数観測の情報損失も同じ対から導く |
+| C7-16 | 系7.22 | 構成5.40の選択子の二場合と、Ad下のcanonical正規化。中心化群上でαを保つ端点対 | [ExactBarBetaComparisonSection][c7-beta-section]、[ExactBarBetaComparisonGroup][c7-beta-group]、[BottomQualifiedClassification][c7-beta-bottom] | Sectionが中心化条件を満たすこと、反映の二場合を証明。反映が失われるのは正規化前のαへの適合性であり、像のβへの適合性の原像は元の圏でβを保つ部分群に等しいことを式7.36で明示 |
+| C7-17 | 定義7.23〜系7.26 | 有向多重グラフ、隠れ状態Kを恒等に運ぶ辺、任意の許容可視群H。個数では頂点とKが有限 | [FixedFComponentClassification][c7-components]、[AllAutomorphismGroup][c7-all-group]、[SplitExactSequenceAndTorsor][c7-split]、[FiberCardinality][c7-cardinality] | 実際の操作保存式から成分ごとの置換へ降下。再添字づけを含む積、分裂短完全列、右torsor、半直積と有限個数を証明。選択値保存版も点固定群から得る |
+| C7-18 | 命題7.27・例7.28 | 第1章の全域lens、有限な基準fiber、許容view変更。選択sectionにはputとの整合性 | [FixedFLensConnection][c7-lens]、[FixedFLensGroupConnection][c7-lens-group]、第1章の命題1.33 | 独立なget・put条件を共通グラフの式へ対応させ、合成も保つ群同型を構成。配送先編集と決済データを分離するリファクタリングを、二view・三内部状態のモデルで説明。新旧コードの対応を変更案の一部とし、示した読取り・未設定値・更新の条件から4対2の差を計算する |
+| C7-19 | 命題7.29・例7.30 | 有限グラフの各状態がK、各辺が恒等、観測先が定値一元集合。可視群は指定経路同値を保つ | [FixedFProtocolConnection][c7-protocol]、[FixedFProtocolGroupConnection][c7-protocol-group]、[FixedFFiniteExamples][c7-examples] | 実行・観測の条件から群・射影・section・各fiberを対応づける。独立な二ワーカーの待機中・実行中の間でコンテキストのコードを保持するモデルへ、既存の16対4と位数8の計算を適用。ワーカー間の受渡しがないという入力を明示。一般の状態遷移を恒等な辺の分類へ置き換えない |
+| C7-20 | §7.8導入・末尾・まとめ | 第1章の型付き射の圏と意味保存射の対応。前後の一対一な状態対応と、適合する基準h₀ | 命題1.43、定理7.4・定理7.14 | h=h₀aにより、前後の読取り・操作保存を元の自己同型の保存条件へ帰着する計算を本文に追加。合成と等号を保ち反映する対応により、比較保存群・端点射影・核・非空fiberのtorsorを移す。CSへの適用では型付き対象の圏を選び、完全幾何の全底固定自己同型群との同一視やAdの自動成立は主張しない。リファクタリングの説明は数学の応用可能性であり実証結果ではない |
+
+### 有限検算と読者向け確認
+
+一時的なPythonスクリプトで次を列挙し、全assertionが成功した。
+
+- 要素数0〜3の有限集合間の全60写像について、比較保存部分群と両端fiberの剰余類表示を確認した。
+- 同じ範囲の全835組の可換な冪等射・比較について、中心化群からの制限、保存、反映の必要十分条件、適合するlift fiberの核torsorを確認した。像の比較への適合性の原像と、元の圏のdceへの適合性の一致も確認した。
+- S3の全6部分群と3種の観測（自明、符号をC4へ埋め込む非全射、恒等を積へ埋め込む非全射）の18組で、所属判定・飽和・fiberを確認した。S3×S3の対角部分群の非正規性、全6剰余類と式7.15の全単射も確認した。
+- Configuration数1〜3、付随データ数3・4の全123選択族で、対象sectionの恒等・全自己写像の合成、選択値保持と正規化との交換を確認した。選択値以外の二点交換について、非恒等性・対合・吸収を確認した。この検算は対象写像の有限モデルであり、完全幾何の保存則は本文とLean sourceの照合による。
+- 頂点数0〜3の全有向グラフ（ループを含む、平行辺なし）、隠れ状態数0〜3、全頂点自己同型の計2,588組で、操作保存式と連結成分による分類・個数を確認した。独立二セッションと三隠れ状態では、全変更群の5,184組の積を状態置換の合成から確認し、式7.40・7.43の再添字づけを検算した。
+- Lensの六状態の全720置換を独立に調べ、get・選択sectionを保つ4個、さらにputを保つ2個を得た。プロトコルの八状態の全40,320置換を、恒等とセッション交換の各可視変更について調べ、16個から4個への制限を得た。
+
+読者向けには、冒頭のリファクタリングの例、各節の導入、小さな有限反例、
+対象sectionの三段の説明、Lensとワーカーの計算、章末のレビュー場面への接続を通読した。
+関手と中心化群の始域、二種類の核、αとβの適合条件、CSの型付き群の適用範囲を明記した。
+
+### リファクタリングを軸にした例の改善
+
+2026-09-21、人間の提案に基づき、概要・例7.1・§7.8・まとめを改稿した。
+注文データの分割と共通更新部品への切出し、ワーカーの引数をJobContextへまとめる変更を用い、
+読取りで分かることと更新・受渡しで確かめる条件を具体化した。
+前後のデータ型が異なる場合も、適合する基準対応h₀によって自己同型の分類へ移ることを説明した。
+
+番号付き47式と、例以外の番号付き定義・定理・証明の保持を差分で確認した。
+新たに加えたh=h₀aによる帰着は、状態数0〜3の読取り・操作・二つの全単射の全7,843組で検算した。
+注文の六状態を二つのデータ型へ詰め替える対応が更新を保つこと、配送先によるコード変換の分岐が
+表示と未設定値を保ったまま式7.46の不一致を起こすことも確認した。
+ワーカーのモデルは従来の二成分グラフと同じ状態・辺作用を使うため、既存の個数計算を保持する。
+図7.1は英語のままワーカーと実行開始を表す図へ変更し、ファイル名を更新した。
+
+### 数式・図・書誌と確認状態
+
+- 全522式（本文内475・独立行47）をKaTeX 0.18.7で検査し、構文エラー・警告なし。インデントしたmath fenceも検査対象に含めた。定義等30件、式47件の連番と章間の定義・定理参照を確認した。
+- [図7.1のSVG](figures/ch07-refactoring-workers.svg)は、ラベル・タイトル・説明文を英語に統一。ワーカー、待機中・実行中、実行開始によるコンテキストの保持を図示した。PNGに再描画し、文字切れがないこと、二つの矢印、置換の等式、4通りの計算を目視した。SVGのSHA-256は `eaa505fc2aa5158d917a3d6d5ad9e11e22ca899e1b232b8aaa2711483b3ceb15`。
+- 既存4文献の書誌・引用内容を保持し、新しい外部文献の引用は追加していない。書誌SHA-256は `58961cfd22055d4095b3547fc74340faf57d71df32fcab729fd6ee29043929ae`。READMEに定めた準備節〜第7章の結合原稿SHA-256は `33c8b33dcd46398f0a425c7d549b6c2de39da2bea80051617fb23da02808571d`。
+- 2026-09-21、リファクタリングの例と英語の図を含む原稿について、人間の確認とPR作成の承認を得た。GitHubのファイルプレビュー・描画済み差分での全数式・図の表示確認とCIの対象commit・結果はPRに記録し、Claudeの独立レビューはPR上で行う。ローカルの構文検査をGitHubの表示確認とは扱わない。
+
+[c7-period]: ../../../Formal/AG/RepresentationAnalysis/PeriodSeparation.lean
+[c7-stabilizer]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonStabilizer.lean
+[c7-object-group]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/QualifiedComparisonGroup.lean
+[c7-generated]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonGeneratedClassification.lean
+[c7-source-input]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF0.lean
+[c7-source-legs]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF1.lean
+[c7-source-changes]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF2.lean
+[c7-source-comparison]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF3.lean
+[c7-observation]: ../../../research/lean/ResearchLean/AG/ComparisonInformationLoss/ObservationKernel.lean
+[c7-coefficient]: ../../../research/lean/ResearchLean/AG/ComparisonInformationLoss/EndpointKernelClassification.lean
+[c7-normalization-group]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/NormalizationComparisonGroup.lean
+[c7-karoubi]: ../../../research/lean/ResearchLean/AG/ComparisonInformationLoss/KaroubiRestriction.lean
+[c7-group-restriction]: ../../../research/lean/ResearchLean/AG/ComparisonInformationLoss/GroupHomRestriction.lean
+[c7-karoubi-witness]: ../../../research/lean/ResearchLean/AG/ComparisonInformationLoss/KaroubiRestrictionFiniteWitness.lean
+[c7-object-section]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalizationObjectSection.lean
+[c7-core-section]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalizationCoreSection.lean
+[c7-geometry-section]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalizationGeometrySection.lean
+[c7-aut-section]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalizationAutomorphismSection.lean
+[c7-iso-section]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalizationIsoComparisonSection.lean
+[c7-swap]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/AmbientKernelObjectSwap.lean
+[c7-swap-core]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/AmbientKernelCoreLift.lean
+[c7-swap-geometry]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/AmbientKernelGeometryLift.lean
+[c7-alpha-section]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarAlphaCanonicalComparisonSection.lean
+[c7-alpha-exactness]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarAlphaCanonicalComparisonExactness.lean
+[c7-ambient-witness]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/AmbientKernelComparisonWitness.lean
+[c7-beta-section]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaComparisonSection.lean
+[c7-beta-group]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaComparisonGroup.lean
+[c7-beta-bottom]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaBottomQualifiedClassification.lean
+[c7-components]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFComponentClassification.lean
+[c7-all-group]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFAllAutomorphismGroup.lean
+[c7-split]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFSplitExactSequenceAndTorsor.lean
+[c7-cardinality]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFFiberCardinality.lean
+[c7-lens]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFLensConnection.lean
+[c7-lens-group]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFLensGroupConnection.lean
+[c7-protocol]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFProtocolConnection.lean
+[c7-protocol-group]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFProtocolGroupConnection.lean
+[c7-examples]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFFiniteExamples.lean
