@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="720" viewBox="0 0 1120 720" role="img" aria-labelledby="title desc">
+  <title id="title">Local reconstruction of an AAT model and a design change</title>
+  <desc id="desc">Account, payment and accounting teams describe their structures and old-to-new correspondences. All required primitive data must agree on shared readings and satisfy the declared conditions on types, actions, laws, geometry and realizations. Object assembly then gives an AAT model up to isomorphism. For fixed old and new models, morphism assembly gives a unique structure-preserving map.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#475569"/></marker>
+  </defs>
+  <rect width="1120" height="720" fill="#ffffff"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#172b4d">
+    <text x="560" y="42" text-anchor="middle" font-size="27" font-weight="600">Local descriptions for an internal transfer</text>
+    <text x="560" y="77" text-anchor="middle" font-size="20" fill="#475569">Declared structures and old-to-new correspondences</text>
+    <g stroke="#a5b4c8" stroke-width="1.5" fill="#f4f7fb">
+      <rect x="40" y="115" width="320" height="160" rx="8"/>
+      <rect x="400" y="115" width="320" height="160" rx="8"/>
+      <rect x="760" y="115" width="320" height="160" rx="8"/>
+    </g>
+    <g text-anchor="middle" font-size="21" font-weight="600">
+      <text x="200" y="150">Account management</text>
+      <text x="560" y="150">Payment management</text>
+      <text x="920" y="150">Accounting</text>
+    </g>
+    <g text-anchor="middle" font-size="18">
+      <text x="200" y="189">Accounts and balance changes</text>
+      <text x="200" y="219">Debit / credit operations</text>
+      <text x="200" y="249">Account correspondences</text>
+      <text x="560" y="189">Requests, amounts and states</text>
+      <text x="560" y="219">Acceptance / completion</text>
+      <text x="560" y="249">Transaction correspondences</text>
+      <text x="920" y="189">Journal entries and references</text>
+      <text x="920" y="219">Posting / correction operations</text>
+      <text x="920" y="249">Journal-entry correspondences</text>
+    </g>
+    <g fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)">
+      <path d="M 200 278 V 326"/>
+      <path d="M 560 278 V 326"/>
+      <path d="M 920 278 V 326"/>
+    </g>
+    <rect x="90" y="330" width="940" height="140" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.8"/>
+    <text x="560" y="365" text-anchor="middle" font-size="22" font-weight="600">All required primitive data and compatibility conditions</text>
+    <g text-anchor="middle" font-size="19">
+      <text x="560" y="400">Shared readings agree on types, transaction references, amounts and completion</text>
+      <text x="560" y="435">Actions, laws, geometry and realizations satisfy the declared conditions</text>
+    </g>
+    <g fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)">
+      <path d="M 315 473 V 529"/>
+      <path d="M 805 473 V 529"/>
+    </g>
+    <g stroke="#759b8a" stroke-width="1.6" fill="#f2f8f4">
+      <rect x="90" y="534" width="450" height="114" rx="8"/>
+      <rect x="580" y="534" width="450" height="114" rx="8"/>
+    </g>
+    <g text-anchor="middle" font-size="22" font-weight="600">
+      <text x="315" y="569">Object assembly</text>
+      <text x="805" y="569">Morphism assembly</text>
+    </g>
+    <g text-anchor="middle" font-size="18">
+      <text x="315" y="600">An AAT model, up to isomorphism</text>
+      <text x="805" y="600">A unique structure-preserving map</text>
+      <text x="805" y="627">between fixed old and new AAT models</text>
+    </g>
+    <text x="560" y="692" text-anchor="middle" font-size="20">AAT local reconstruction: Theorem 8.18</text>
+  </g>
+</svg>
