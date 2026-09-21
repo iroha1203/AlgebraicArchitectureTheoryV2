@@ -38,7 +38,7 @@ Claude との PR 上でのレビューと修正を終えたら
 - [x] 07 第4章 輸送と合成の整合性 — [日本語原稿](ja/07-transport-coherence.md)のPRレビューを受け、人間が採用した正確化1件・任意改善6件を反映。修正後のGitHub表示・CIを確認し、人間が[PR #4834](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4834)をマージ済み。
 - [x] 08 第5章 基底変換と生成比較 — [日本語原稿](ja/08-base-change.md)のPRレビューを受け、人間が採用した任意改善7件を反映。修正後のGitHub表示・CIを確認し、人間が[PR #4836](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4836)をマージ済み。
 - [x] 09 第6章 冪等正規化と実現 — [日本語原稿](ja/09-idempotent-normalization.md)のPRレビューを受け、人間が採用した任意改善7件を反映。図6.1とLensの一般的な分裂を追加し、人間が[PR #4839](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4839)をマージ済み。修正版のGitHub表示・CIは同PRの記録を参照する。
-- [ ] 10 第7章 比較を保つ変更と情報 — [日本語初稿](ja/10-comparison-and-information.md)と英語の図7.1を作成。例を共通部品の抽出・データ型の分割・ワーカーのコンテキスト整理というリファクタリングに統一。一次資料との照合、比較群・観測核・冪等像の有限検算、Lensとプロトコルの全置換による個数確認、全522式の構文検査を実施。原稿の人間確認とPR作成承認を得た。GitHub表示確認とCIの対象commit・結果はPRに記録し、Claudeの独立レビューと修正はPR上で行う。
+- [ ] 10 第7章 比較を保つ変更と情報 — [日本語原稿](ja/10-comparison-and-information.md)と英語の図7.1について、[PR #4841](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4841)でClaudeのapproveと別の内容レビューを受け、人間が採用した任意改善8件を反映。定理の動機・節間のつながり・脚の記号・参照を整え、全529式の構文と番号・参照を確認。修正版のGitHub表示・CIの対象commitと結果は同PRに記録する。人間による最終差分確認・マージ待ち。
 - [ ] 11 第8章 表示と局所再構成 — `ja/11-local-reconstruction.md`
 - [ ] 12 Related Work — `ja/12-related-work.md`
 - [ ] 13 Conclusions and Further Directions — `ja/13-conclusions-and-further-directions.md`
