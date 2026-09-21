@@ -933,3 +933,57 @@ Lean実装や、その形式化済み範囲は変更していない。
 [c7-protocol]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFProtocolConnection.lean
 [c7-protocol-group]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFProtocolGroupConnection.lean
 [c7-examples]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFFiniteExamples.lean
+
+## Related Workの比較と出典
+
+[Related Work](ja/12-related-work.md)は、主要21文献を六つの比較軸へ配置し、
+既存研究の対象・仮定・射・結論と、本稿の構成を対応づける。
+冒頭は、AATの対象と構造保存射、および比較する分野を示す。
+R.7は六つの比較を踏まえたAATの位置づけを述べる。
+個別の問題を共通の構成の特殊な場合として捉えるRising Seaの方針は、
+[構成マスター](paper-structure.md)の§§2–3に対応する。
+共通の分類定理を用いる具体例は、第7章の定理7.24・7.25と命題7.27・7.29による。
+SAGAから継承する結果、lensの積表示、圏同値の一般判定、Cauchy completionの出典を示す。
+
+### 比較する数学と固定版
+
+比較に用いる一次資料は、commit `64fb370d89559aa59b1a31bcbd38e97c531d99c5` の第1〜7章原稿、
+数学棚卸し、第8章の以下の個別構成・一般原理である。
+第8章の参照は、章と構成名による。
+
+| 本文の箇所 | 比較する結果・条件 | 本稿側の証拠 |
+| --- | --- | --- |
+| R.1 | Lawの値による相対core、方程式・イデアル・零点、型付き意味保存射 | [第1章](ja/04-relative-architecture.md)の命題1.38・1.43、[第2章](ja/05-law-geometry.md)の定理2.9、および本書の該当章の一次証拠対応 |
+| R.2 | 係数と修復状態のtorsor、層条件の下での指定障害類の零性、SAGAからの継承 | 第2章の定理2.22・2.49、系2.50。[第3章](ja/06-resolution-invariance.md)の定理3.40・3.43・3.44。判定対象は指定障害類の零性であり、実状態の延長にはtorsorと層の条件を用いる |
+| R.3 | Law-valueに十分なreading、条件C、指定診断の零性反映、観測核による所属判定 | 第3章の定理3.4・3.17・3.40、[第7章](ja/10-comparison-and-information.md)の定理7.9。係数全体の同型と指定類の判定を区別 |
+| R.4 | exactなreading変更からの輸送・引き戻し、随伴同値、mate、生成比較の冪等分解 | [第4章](ja/07-transport-coherence.md)の定理4.5・4.11・4.15、[第5章](ja/08-base-change.md)の命題5.8・定理5.11・命題5.12、[第6章](ja/09-idempotent-normalization.md)の定理6.16 |
+| R.5 | 全域lens、基準fiberと任意の意味保存射、操作グラフによる比較を保つ可逆変更の分類 | 第1章の命題1.33・1.34、第7章の定理7.24・7.25・命題7.27・7.29。分類は固定した意味論の下で、操作が隠れた状態をそのまま運ぶモデルを対象とする |
+| R.6の一般原理 | Hom分離、Hom組立て、対象の同型による組立てからの充満忠実性・本質的全射性・圏同値 | [LocalReconstructionEquivalence][rw-local]の`ReconstructionData.homEquiv`、`fullyFaithful`、`essSurj`、`equivalence`。標準判定の外部出典はStacks Tag 02C3 |
+| R.6のlens | get/put graph、三法則、有限基準fiberからの対象・全Homの組立て | [IndependentLensPrimitiveReconstruction][rw-lens]の`homAssembly`、`objectAssembly`、`reconstructionData`、`equivalence`、`assembleHom_eq_homEquivFiberMap_symm` |
+| R.6のプロトコル | 生成辺・観測graph、経路関係、各頂点の有限な状態集合とその有限リスト被覆、一般射の保存等式 | [IndependentProtocolPrimitiveReconstruction][rw-protocol]の`Object.state_cover`、`Object.state_finite`、`readingFunctor`、`homAssembly`、`objectAssembly`、`reconstructionData`、`equivalence` |
+| R.6の完全幾何 | 独立な原始対象、局所Homの不変量による商、対象・全Homの両逆と恒等・合成 | [IndependentGeometryCategoryReconstruction][rw-geometry]の`representativeReadingHomEquiv`・`explicitReadingHomEquiv`、各`HomAssembly`・`ObjectAssembly`、`representativeEquivalence`・`explicitEquivalence`。局所対象と射の定義、成分ごとの保存条件、端点同型による射の対応 |
+| R.6のretractと比較 | lens・protocolの有限表示からのKaroubi再構成と射の圏への拡張 | [CSKaroubiReconstruction][rw-karoubi]のlens・protocol各`KaroubiReconstructionEquivalence`、`RestrictionIso`、`KaroubiArrowReconstructionEquivalence`。第6章の定理6.12・6.16・6.27とも対応 |
+
+### 引用する版と範囲
+
+- 書誌は[文献](ja/14-references.md)、引用内容と原典の箇所・版は[文献確認記録](references.csv)に対応する。
+- Cousot and Cousotの参照箇所はpp. 240–243。Goguenの層意味論は公開稿の箇所番号を用いる。
+- Lawvereの原典は1963年PNAS論文。Kellyの引用は集合で豊穣化された場合を対象とする。
+- Institutionの充足条件は定義1、署名の余極限からの理論の構成は定理11とその帰結による。
+- 『Algebraic Databases』は2025年第3版を用いる。R.6の表示の射と意味の射の忠実性に関する訂正はAppendix B.1–B.3、migrationの構成は§§6–7、二重圏での移送・queryの記述は定義8.13・命題8.14・補題8.18・§§8.25–8.26・9による。
+- Gibson・Young・SAGAは版を固定したプレプリントとして扱う。Youngの引用対象はsiteと完全束値の前層の提案である。
+- 主要21文献と補足候補4件の役割は[収録案](related-work-plan.md)に記す。
+
+### 原稿と書誌の識別情報
+
+| 対象 | SHA-256 |
+| --- | --- |
+| Related Work本文 | `dc2c3cf09c9c1a778f7ce3f7b3cb9e5562e593acfc1916f8e9454ff7168d6128` |
+| 書誌 | `b8cae570c00f6da2307f18d9996d48d2d35e1ca8cae995bc43431ac629cc2950` |
+| READMEに定めた準備節〜第7章とRelated Workの結合原稿 | `7ad6e41fce489c9c8e84778f67b8ba123dcf3ad59d3a723916b1bc30ef74f112` |
+
+[rw-local]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LocalReconstructionEquivalence.lean
+[rw-lens]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean
+[rw-protocol]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentProtocolPrimitiveReconstruction.lean
+[rw-geometry]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryCategoryReconstruction.lean
+[rw-karoubi]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSKaroubiReconstruction.lean
