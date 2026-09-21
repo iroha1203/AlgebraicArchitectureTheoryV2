@@ -17,9 +17,12 @@
   個別結果の配置は §8.3、形式化との対応は §8.4、改訂版の内容は §8.5 に置く。
 - 既存の数学資料の照合版は commit
   [`b0a2d4b2`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/b0a2d4b2690a1aabdf64f033c9fc6ca975f7445e)
-  とする。G-125 の実装と G-124 関連の形式化は
+  とする。G-125 の実装と G-124 の既存の個別結果は
   [`c245b49b`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/c245b49b0825f653307f396f4dc9f76e1ecad44a)
-  に照合する。G-124 の共通入力・局所再構成の仕様は GOAL の A・B に対応づける。
+  に照合する。G-124 A・B の共通入力・局所再構成と既存結果への接続は、
+  [`b738623a`](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/b738623af29f015ab2d12e11c94411c74f26d311)
+  の実装に照合する。量化と対象は固定 GOAL の A・B、
+  証明済みの構成と定理は §8.4 の Lean 宣言に対応づける。
 - n1012・n1015 を含むノートは参考資料とし、章立ては構成マスター、数学の定義・証明は一次資料に従う。
   合成は `gf=g∘f` と書く。Lean の `f ≫ g` はこの `gf` に対応する。
 
@@ -592,8 +595,10 @@ lens・protocol の一般射を定義した圏から、ここで用いる可逆�
 
 ## 第8章 表示と局所再構成
 
-初版の主結果は、共通入力宣言と局所再構成とする。
+初版の主結果は、完全幾何の原始読み取りによる局所再構成とする。
 §8.1 の有限表示と再構成原理から §8.2 の主同値へ進み、形式化との対応を §8.4 に置く。
+原稿は AAT の主定理、行内送金などの設計変更への適用、既存 CS への適用の順に構成する。
+有限なモデルでの情報の十分性・検査手順・計算費用を扱い、無限対象に依存する反例は補足に置く。
 
 [本文 VII §15 の Representation Completeness][math-vii]を、章を横断する説明として導入に置く。
 第3章の診断保存、第7章の比較適合性の反映・観測による検出、
@@ -607,14 +612,14 @@ lens・protocol の一般射を定義した圏から、ここで用いる可逆�
 | 8-A 有限例外 code の意味 | 定理。離散 D の一点コンパクト化 `D⁺` について `Code(D)≃C(D⁺,Bool)` | code は既定値と有限例外集合。D が無限なら D 上の評価は単射。D が有限なら同じ評価に二つの既定値 code がある | [OnePointCode][one-point-code]、[EvaluationClassification][code-evaluation]、[CodeFibers][code-fibers] |
 | 8-B 底射 coverage の位相的特徴 | 必要十分条件。両 Source の有限性と、target 抽出述語の連続延長が anchored coverage を特徴づける | 離散 Source の compactness と有限性を接続。端点の意味同型を選べる coverage と、固定端点間の表示を区別する | [CoverageTopology][coverage-topology]、[DiscreteCompactness][discrete-compactness]、[G-121 B][g121] |
 | 8-C 固定 code 間の Hom | 必要十分条件・正規化。Atom 置換の有限 support と既定値の保存、decoder の忠実性、有限 carrier での正規化後の充満忠実性 | `R_fin` は既定値 false に揃え、decode 後の自然同型を与える。raw code の等号とは区別する | [FixedArrowClassification][fixed-arrow]、[FiniteFullSubcategory][finite-full]、[FiniteCodeNormalization][code-normalization]、[FiniteNormalizationRealizationIso][normalization-realization-iso] |
-| 8-D 有限構文の限界 | 反例・不可能性。意味が同型でも元 code 間に射がない例、無限 support 置換、可算 decoder の非全射性 | 固定自己同型群に `P(ℕ)` を埋める。可算構文に対する主張であり、任意の無限パラメータ参照を許す構文全般の不可能性ではない | [FinOneCounterexample][fin-one]、[NatAdjacentSwap][nat-swap]、[NatSubsetSwaps][nat-subset-swaps]、[CountableSyntaxObstruction][countable-syntax] |
+| 8-D 表示方式と無限対象の反例 | 意味が同型でも固定 code 間に射がない有限例と、無限 support 置換・可算 decoder の非全射性 | 有限例は本論、無限対象の例は補足に置く。有限例外表による表示と有限規則による記述を区別。`P(ℕ)` の埋込みは計算可能性を制限しない全自己同型を対象とし、有限資源下の実装や任意の無限パラメータ参照を許す構文全般の不可能性とはしない | [FinOneCounterexample][fin-one]、[NatAdjacentSwap][nat-swap]、[NatSubsetSwaps][nat-subset-swaps]、[CountableSyntaxObstruction][countable-syntax] |
 | 8-E CS の有限再構成 | 構成・圏同値。lens の有限基準 fiber、protocol の有限生成 table から対象・一般射を回復 | operation・Law・観測を保つ一般射を扱う。Karoubi、retract、Arr への拡張を同じ制限・延長と整合させる | [CSKaroubiReconstruction][cs-karoubi]、[LensFiberModelEquivalence][lens-model]、[ProtocolObservedRestrictionEquivalence][protocol-model] |
 | 8-F 一般局所再構成原理 | 条件付き一般定理。Hom 分離、Hom 組立て、対象組立てから reading functor の圏同値を構成 | 三条件を独立に述べる。対象は読み取りが局所モデルと同型になる実現を構成し、射は制限・組立ての両逆を示す | [LocalReconstructionEquivalence][local-equivalence] |
 | 8-G タグ族の局所回復 | 構成・分類。source-choice 群、全有限 Bool table の整合族、正規化による情報損失、正規化を含む生成部分圏 | 全 source-choice 族と一様 flip を保持する。正規化後の単一像から全 source-choice を分離できるとはしない | [TagChangeFiniteReadingRecovery][tag-recovery]、[TagChangeNormalizedChoiceKernel][tag-kernel]、[TagChangeExactGeometryLocalModel][tag-model] |
 | 8-H 完全幾何の成分読み取り | 構成。原始 Bool graph、完全 Hom の分離、lawful graph code からの Hom 組立てと成分別合成 | package で添字づけた対象間の射を再構成する。対象を含む共通宣言からの構成は §8.2、形式化との対応は §8.4 に置く | [CompleteGeometryFunctionGraphSeparation][graph-separation]、[Hom の組立て][graph-assembly]、[直接定めた局所圏][graph-direct] |
 | 8-I G-122 比較の回復の材料 | 補足の既存構成。raw 比較の normalized 座標と full restriction-kernel 座標への分解、complete graph による分離 | 個別の座標表示として採用。主同値と投影・正規化・群分類との整合は §8.5 の改訂版へ | [G122FullComparisonKernelDecomposition][full-kernel]、[G122CompleteGraphKernelReconstruction][graph-kernel]、[G-124 report][r124] |
-| 8-J 共通入力と原始読み取り | 構成仕様。`Σ,D,Λ`、全構造保存射を持つ `R_Θ`、有限に組み立てた局所値と読み取り | 一つの宣言の任意のパラメータ `Θ`。タグ・固定生成比較・lens・プロトコルの必須四族を構成して収録 | 入力宣言の仕様は [G-124 A][g124] |
-| 8-K 共通の局所再構成 | 定理仕様。独立な整合式から `M_Θ` を構成し、原始読み取り `N_Θ` を圏同値にする | A のデータから Hom 分離・Hom 組立て・対象組立てを証明。Hom 両逆、同型・恒等・合成・評価との整合 | 主定理の仕様は [G-124 B][g124]、一般原理は [LocalReconstructionEquivalence][local-equivalence] |
+| 8-J 共通入力と原始読み取り | 構成・証明済み。`Σ,D,Λ`、全構造保存射を持つ `R_Θ`、有限に組み立てた局所値と読み取り | 一つの宣言の任意のパラメータ `Θ`。タグ・固定生成比較・lens・プロトコルの必須四族を収録し、各法則の有限 support を原始評価へ接続 | [共通の原始読み取り][primitive-common]、[幾何][primitive-geometry-category]、[lens][primitive-lens]、[protocol][primitive-protocol]。固定要求は [G-124 A][g124] |
+| 8-K 共通の局所再構成 | 定理・証明済み。独立な整合式から `M_Θ` を構成し、原始読み取り `N_Θ` を圏同値にする | A のデータから分離・Hom 組立て・対象組立てを証明。任意端点間の非可逆射を含む全許容 Hom で両逆・存在一意性を示し、同型・恒等・合成・評価との整合を保つ | [共通の再構成と主同値][primitive-common]、[一般再構成原理][local-equivalence]。固定要求は [G-124 B][g124] |
 
 有限 decoder `D₀` の固定 code `P,Q` 間で、`b_P(s)` を source normalization 後の
 抽出 code の既定値、`s_f` を source map、`σ_f` を Atom 置換とすると、射の分類は
@@ -632,8 +637,8 @@ lens・protocol の一般射を定義した圏から、ここで用いる可逆�
 
 ### 8.2 共通入力からの局所再構成
 
-一つのパラメータ型の宣言 `Σ`、Atom・Law・operation・完全幾何のデータ条件 `D`、
-局所読み取りの宣言を構成する。その宣言の任意のパラメータ `Θ` に対し、条件 `D_Θ` を
+Atom の集合と完全幾何の射の方式を固定するパラメータ `Θ`、
+Atom・Law・operation・完全幾何のデータ条件 `D_Θ`、局所読み取りの宣言を構成する。条件 `D_Θ` を
 満たす実現と、指定した構造を保つすべての写像から圏 `R_Θ` を定める。
 保持する carrier・係数環などの型と由来、評価、各成分の保存等式を入力宣言に記す。
 実現と許容射は、原始構造と保存条件によって独立に定める。
@@ -667,25 +672,35 @@ coverage・overlap、Support・Axis・Observable を原始評価で読む。
 を主要定理にする。同型・恒等・合成・評価との整合を同じ構成で示す。
 整合式は局所データ間の等式として定め、全域の射の存在や延長可能性をその条件に含めない。
 
-| 必須の入力族 | 共通宣言の下で構成・収録する対象と射 |
+| 収録する入力族 | 構成・収録する対象と射 |
 | --- | --- |
 | タグ付き operation | `taggedOperationPackage`、canonical 正規化、一様 flip、source-choice 族の全元 |
 | 固定生成比較 | `finiteAxisFoldBCDatumSquare` と `finiteAxisFoldFixedCoefficientGeometryFamily`、cell `second`、係数 `ℤ` の生成比較・正規化・端点自己同型 |
 | lens | get/put の三法則と有限基準 fiber を持つ実現、および独立に指定した意味保存射の全範囲 |
 | プロトコル | 商経路圏上の観測を持つ有限 carrier 実現、および観測を保つ自然変換の全範囲 |
 
-CS の二族では、lens の基準 fiber 上の任意の写像、protocol の観測と生成辺を保つ
-頂点写像の再構成を具体例として示す。両者をこの一つの宣言・主定理の適用として記述し、
-独立した意味論から対象・許容射が得られる構成と、局所データからそれを回復する証明を対応させる。
-主定理の量化と要求は [G-124 A・B][g124]に固定する。
+原稿では、タグ族と固定生成比較を完全幾何の主定理の適用として置く。
+CS の二族の入力と局所モデルは、その後の適用節で定義する。
+独立した意味論の対象・全許容射について分離と組立てを証明し、一般再構成原理から圏同値を得る。
+さらに、lens の基準 fiber 上の任意の写像、protocol の観測と生成辺を保つ
+頂点写像の有限表による再構成を示す。
+完全幾何の主定理と CS の系を合わせた収録範囲を [G-124 A・B][g124]に対応させ、
+その証明を[共通の原始再構成][primitive-common]へ対応づける。
+
+形式化では、一つの `Parameter` が representative geometry、explicit geometry、lens、protocol の
+圏と原始読み取りを指定する。上表の必須四族のうち、タグ族は explicit geometry、固定生成比較は
+representative geometry に収録される。局所対象・局所射の条件を満たす有限片の整合族から、
+各枝の組立てを用いて一つの `reconstructionData` を構成し、一般再構成原理を一度適用する。
+主同値の前向き関手が原始読み取りそのものであることは `equivalence_functor` で確認する。
 
 ### 8.3 初版の例・系・補足に使う個別結果
 
 以下の個別結果は、指定した読み取り方式とともに例・系・補足へ配置する。
-§8.2 の共通主同値と有限表示・有限決定との接続は、§8.5 の改訂版でまとめる。
-有限表示の個別の経路は [lens の Karoubi 整合][lens-karoubi]と
-[protocol の Karoubi 整合][protocol-karoubi]、比較群の一般的な輸送は
-[充満忠実関手による輸送][cs-comparison]に対応する。
+lens の有限基準 fiber、protocol の観測付き読み取りと、有限 decoder・retract・Karoubi・Arr の
+経路は、A・B の主同値へ接続済みであり、§8.4 に対応を記す。各経路の既存結果は
+[lens の Karoubi 整合][lens-karoubi]と [protocol の Karoubi 整合][protocol-karoubi]にある。
+同じ局所読み取りによる有限決定性と、比較群・section・核・fiber までの統合は §8.5 の改訂版で扱う。
+比較群の一般的な輸送は [充満忠実関手による輸送][cs-comparison]に対応する。
 
 有限読み取りには次の三性質を別々に定める。
 
@@ -723,8 +738,10 @@ lens では基準 fiber 上の置換 table、上記セッションモデルで�
 \]
 
 を与える。
-`Ω` が無限なら、どの有限集合の外でも変更を残せるため有限読み取りによる区別は成立しない。
-全有限片からの再構成と有限決定性の違いを、lens・プロトコルの成立条件と並べて説明する。
+`Ω` が有限なら全体表から族を決定できる。無限なら、どの有限集合の外でも変更を残せるため、
+一つの有限片による区別は成立しない。この無限例は原稿の補足に置く。
+有限なモデルでは、全体表と選んだ部分の情報の十分性、明示的な列挙と等号判定による検査手順、
+計算費用を区別する。全有限片からの再構成だけで、実用的な検査の費用は結論しない。
 
 一次資料: [一般 lens 射][lens-finite]、[一般 protocol 射][protocol-finite]、
 [lens の可逆変更][lens-invertible]、[protocol の可逆変更][protocol-invertible]、
@@ -732,29 +749,55 @@ lens では基準 fiber 上の置換 table、上記セッションモデルで�
 
 ### 8.4 形式化との対応
 
-第8章の構成要素と一次資料を次のように対応づける。
+第8章の構成要素を、共通主同値の証明に使う順で一次資料へ対応づける。
+以下の原始構成と接続は、冒頭に記した `b738623a` に照合する。
 
 | 構成要素 | 数学的な内容 | 一次資料 |
 | --- | --- | --- |
-| lens / protocol | 各族の一般 Hom・対象の組立てと圏同値、有限 table、Karoubi / retract / Arr 整合 | [lens の局所モデル][lens-model]、[protocol の局所モデル][protocol-model]、[lens の Karoubi 整合][lens-karoubi]、[protocol の Karoubi 整合][protocol-karoubi] |
-| 枝ごとの再構成の総圏 | タグ、固定生成比較、lens、protocol の四枝を fiber とする総圏・組立て・圏同値 | [四族の総圏][four-family-total] |
-| 完全幾何の Hom | lawful graph code の組立て、成分ごとに直接定める恒等・合成、package で添字づけた圏同値 | [完全 Hom の組立て][graph-assembly]、[直接の局所圏][graph-direct] |
-| raw 対象の原始読み取り | 固定した site・係数上の型参照・有限多項式・変数像による独立な局所表示と型同値。有限片の整合族からの組立て | [独立 raw 検証][independent-raw] |
-| 共通宣言と主同値の仕様 | 一つの `Σ,D,Λ` からの `R_Θ,M_Θ,N_Θ`、必須四族の由来・全対象・全許容射の収録、分離と対象・射の組立て | [G-124 A・B][g124]、[一般再構成原理][local-equivalence] |
+| 有限片と制限 | 型付き query の有限部分集合ごとの値、包含に沿う整合、singleton からの貼り合わせと制限の両逆。query 全体には無限を許す | [IndependentFiniteFragments][primitive-fragments] の `fragment_finite`、`glue_fragments`、`fragments_glue` |
+| 幾何の局所対象 | Atom・core・幾何の原始評価を有限片に制限し、独立な構造条件から対象を組み立てる。raw の型参照・有限多項式・変数像も保持する | [幾何の原始宣言][primitive-geometry-declaration]、[対象の組立て][primitive-geometry-assembly]、[有限片からの回復][primitive-geometry-fragments]、[独立 raw 検証][independent-raw] |
+| 幾何の圏と全 Hom | representative / explicit の両形で原始局所対象・局所 Hom の圏を定め、対象の分離、端点を揃えた Hom の読取り・組立て、恒等・合成・原始評価の一致を証明 | [IndependentGeometryCategoryReconstruction][primitive-geometry-category] の `representativeReadObject_injective` / `explicitReadObject_injective`、`representativeReadingHomEquiv` / `explicitReadingHomEquiv`、`representativeReconstructionData` / `explicitReconstructionData` |
+| lens の原始構成 | state 型、get/put graph、三法則、有限な基準 fiber の list cover から対象を構成。map graph と二保存則から非可逆射を含む全 Hom を構成 | [IndependentLensPrimitiveReconstruction][primitive-lens] の `Object`、`Hom`、`readingFunctor`、`reconstructionData`。有限 fiber との既存同値は [LensFiberModelEquivalence][lens-model] |
+| protocol の原始構成 | 頂点ごとの state 型、生成辺・観測 graph、経路等式・観測 square、有限 list cover から対象を構成。辺・観測を保つ頂点 map から全 Hom を構成 | [IndependentProtocolPrimitiveReconstruction][primitive-protocol] の `Object`、`Hom`、`readingFunctor`、`reconstructionData`。既存の観測付き同値は [ProtocolObservedRestrictionEquivalence][protocol-model] |
+
+次の表の宣言は、特記した一般原理を除き、[IndependentAATPrimitiveReconstruction][primitive-common]
+の同名 namespace にある。
+
+| 共通構成・証明 | 対応する宣言と数学的な役割 |
+| --- | --- |
+| 入力・局所値・読み取り | `Parameter`、`NativeCategory`、`LocalCategory`、`ObjectQuery`、`Query`、`Value`、`reading`。対象の query と、始域・終域・Hom の役割を持つ query、その値型・原始読み取りを指定 |
+| 独立な局所条件 | `ObjectTableLaws`、`LawfulObjectFamily`、`HomTableCertificate`、`LawfulHomFamily`。幾何の Hom は保持成分・補助成分の有限片の族と局所法則をデータとして保持し、CS の Hom は原始 graph と保存式の証拠を用いる |
+| 整合族と局所圏の対応 | `localObjectFamilyEquiv`、`localHomFamilyEquiv`。独立な条件を満たす共通有限片の族と、各局所圏の対象・Hom が両方向に対応 |
+| 対象・Hom の組立て | `assembleObjectFamily`、`readAssembledObjectIso`、`assembleHomFamily`。対象は読み取り後の同型、Hom は元の端点間の射として回復 |
+| Hom の両逆・分離・存在一意性 | `localHomFamily_read_assemble`、`assembleHomFamily_read`、`homSeparation`、`lawfulHomFamily_existsUnique_preimage`、`existsUnique_preimage`。任意の端点間の全許容 Hom に適用 |
+| 主同値 | `reconstructionData` から [一般原理][local-equivalence]の `ReconstructionData.equivalence` を適用。`equivalence`、`equivalence_functor`、`homEquiv` が主同値・その前向き関手・Hom の両逆を与える |
+| タグ族の収録 | `taggedNativeObject`、`taggedSourceChoiceNativeHom`、`taggedNormalizationNativeHom`。全 source-choice、一様 flip、canonical 正規化の原始評価と既存 reader との比較を保持 |
+| 固定生成比較の収録 | `finiteAxisFoldOriginalNativeObject`、`finiteAxisFoldDirectNativeObject`、`finiteAxisFoldViaBaseNativeObject`、`finiteAxisFoldBarAlphaNativeHom`、`finiteAxisFoldBarBetaNativeHom`。生成 cochain と定数 1 cochain、左右の冪等射、`finiteAxisFoldRawComparisonInclusion` による両端自己同型の収録 |
+| CS の既存読み取りとの一致 | `lensFiberComparisonIso`、`protocolObservedComparisonIso` とその成分評価。主同値からの読み取りが既存の有限 fiber・観測付き読み取りと自然同型で対応 |
+| CS の有限表示との接続 | `lensFiniteDecoder_retractGeneratedBy` / `protocolFiniteDecoder_retractGeneratedBy`、`lensKaroubiEquivalence` / `protocolKaroubiEquivalence`、`lensKaroubiArrowEquivalence` / `protocolKaroubiArrowEquivalence`。既存の decoder・retract・Karoubi・Arr を主同値へ接続し、各経路の比較自然同型を与える |
+| 既存の四族総圏との一致 | [四族の総圏][four-family-total]への接続。`cycle79TaggedTotalReading_common`、`cycle79G122TotalReading_common` が同じ Hom の評価一致、CS の `cycle79LensPrimitiveFiniteDecoderReadingIso` / `cycle79ProtocolPrimitiveFiniteDecoderReadingIso` などが既存経路との自然同型を与える |
+| 条件と全 Hom の具体例 | `lensHomTableCertificate_mismatched_carrier_rejected` などの型・graph・法則違反の拒否、`lensConstantFalseNativeHom_family_recovery` / `protocolTwoToOneNativeHom_family_recovery` による非単射 Hom の回復、`explicitCoefficientProjection_commonReading_distinct` による同じ底作用を持つ異なる Hom の区別 |
+
+有限 support の共通宣言への接続は、`geometryFormula_evaluate_iff_of_commonSupport`、
+`lensHomFormula_evaluate_iff_of_commonSupport`、`protocolHomFormula_evaluate_iff_of_commonSupport`
+などに対応する。これらは support 上の原始評価の一致から法則の評価一致を与える。
+CS の各 module の `objectFormula_support_finite` / `homFormula_support_finite` も併せて用いる。
+局所片の有限性と、有限個の読み取りで全体が決まる有限決定性は分けて扱う。
 
 付録A・Cには、本文の命題・入力構成・前提の証明・主同値での使用先と、Lean 宣言・版を対応づける。
 
 ### 8.5 改訂版で加える投影・比較群・有限決定性（C–E）
 
 初版の展望には、§8.2 の対象・関手から次の問いを述べる。
-改訂版では、それぞれを定理・証明・具体的帰結として展開する。
+改訂版では、それぞれを定理・証明・具体的帰結として展開する。A・B は完了しているが、
+G-124 全体は C–E が未完了の `proof-checkpoint` である。
 
 | 条項 | 改訂版で収録する内容 | 初版から受け取るもの |
 | --- | --- | --- |
-| C | 底・観測・係数投影の自然な対応、任意の比較 `c` の `Γ_c≅Γ_{N_Θ(c)}`、底固定・許容部分群、正規化・Karoubi・Arr との整合。固定 G-122 例の可逆性・反映、section、分裂短完全列、核と全 lift fiber の回復 | 第6〜7章の比較・分類、8-K の主同値 |
+| C | 底・観測・係数投影の自然な対応、任意の比較 `c` の `Γ_c≅Γ_{N_Θ(c)}`、底固定・許容部分群への制限と正規化・Karoubi・Arr との整合。固定 G-122 例の可逆性・反映、section、分裂短完全列、核と全 lift fiber の回復 | 第6〜7章の比較・分類、8-K の主同値と固定例の収録 |
 | D | §8.3 の区別・延長・実効性の定義を、A・B の局所読み取りと具体例へ共通に適用する。操作系の連結成分による必要十分条件と、明示的有限入力上の決定・延長計算 | 共通局所読み取りと §7.2 の操作系・変更分類 |
 | E1 | 全 source-choice 族の群同型と全有限片からの回復を主同値による回復と同定し、同じ定義で有限決定不能性と一様 flip の性質を示す | タグ族の収録、§8.3 の個別結果 |
-| E2 | lens・プロトコルの一般射の有限再構成、Karoubi / retract / Arr の経路、可逆変更の連結成分判定を同じ主同値へ接続し、比較群・section・核・fiber も回復する | CS の独立な意味論と A・B の適用、各族の既存の有限表示 |
+| E2 | A・B で接続した CS の有限再構成・Karoubi / retract / Arr を基に、同じ読み取りによる有限決定性と可逆変更の連結成分判定を統合し、比較群・section・核・fiber も回復する | CS の独立な意味論、主同値と有限表示の比較自然同型、§8.3 の個別結果 |
 
 第7章の分類定理と §8.3 の個別結果は、それぞれの成立条件で初版にも収録できる。
 この表は、それらを共通の局所再構成と結ぶ改訂版の追加内容を定める。
@@ -1037,3 +1080,11 @@ AAT 固有の寄与は、入力からの生成、仮定の導出、実比較と�
 [graph-direct]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/CompleteGeometryDirectCategory.lean
 [four-family-total]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/AATFourFamilyTotalReconstruction.lean
 [independent-raw]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentRawLocalValidation.lean
+[primitive-fragments]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentFiniteFragments.lean
+[primitive-geometry-declaration]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryPrimitiveDeclaration.lean
+[primitive-geometry-assembly]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryPrimitiveAssembly.lean
+[primitive-geometry-fragments]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryFiniteFragments.lean
+[primitive-geometry-category]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryCategoryReconstruction.lean
+[primitive-lens]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean
+[primitive-protocol]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentProtocolPrimitiveReconstruction.lean
+[primitive-common]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentAATPrimitiveReconstruction.lean

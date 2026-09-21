@@ -934,6 +934,138 @@ Lean実装や、その形式化済み範囲は変更していない。
 [c7-protocol-group]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFProtocolGroupConnection.lean
 [c7-examples]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFFiniteExamples.lean
 
+## 第8章「表示と局所再構成」
+
+[日本語初稿](ja/11-local-reconstruction.md)に対応する一次資料の固定版は
+[b738623af29f015ab2d12e11c94411c74f26d311](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/b738623af29f015ab2d12e11c94411c74f26d311)
+である。以下の相対リンクは、この固定版で照合したファイルを示す。
+原稿のSHA-256は `8ac9748fae62854a2d7a586c8be3fe543cc28e08147303b028e24461b43622f8`、英語の[図8.1](figures/ch08-local-reconstruction.svg)は
+`4b486994f4297015a6c2f98dd0a6eb08e1d0ef3af5607f39f2a5ede436cc7591`。確認者はCodex（GPT-6）。
+
+定義8.1〜命題8.33と式8.1〜8.35を置き、定義・仮定・構成・証明を論文内に記述した。
+数学本文の内部章番号、GOAL番号、Lean宣言への案内は原稿に入れず、本記録に対応を置く。
+Lean sourceは成立条件と構成の照合に用い、変更・ローカル再実行は行っていない。
+
+| ID | 原稿の箇所 | 入力・成立条件 | 確認した一次資料 | 原稿での構成・証明 |
+| --- | --- | --- | --- | --- |
+| C8-01 | 定義8.1・命題8.2 | 離散集合D、Bool値、既定値と有限例外。Dの有限・無限を区別 | [OnePointCode][c8-one-point]、[EvaluationClassification][c8-evaluation]、[CodeFibers][c8-code-fibers] | 一点コンパクト化の位相を定義し、無限遠での値と連続性からcodeを回復。無限Dの評価の単射性、有限Dの各評価に対する二つのcodeを証明 |
+| C8-02 | §8.1の位相的な言い換え | 第5章定理5.15の端点同型を許すcoverage。両Source有限、target抽出有限または余有限 | [CoverageTopology][c8-coverage]、[DiscreteCompactness][c8-compactness]、定理5.15 | 連続延長と有限例外表を対応づけ、離散Sourceのcompactnessを有限性へ帰着。固定端点間のHomと区別 |
+| C8-03 | 命題8.3・例8.4 | 固定code間の意味的射。正規化後の既定値の保存と、実際のAtom置換の有限support | [FixedArrowClassification][c8-fixed]、[FixedArrowConsequences][c8-fixed-consequences]、[FinOneCounterexample][c8-fin-one] | 必要性と実際の置換を使う十分性を証明。表示の射をdecoded equalityで商することを明記。一Atomの既定値0/1による非充満性を計算 |
+| C8-04 | 系8.5 | 有限Atom carrier。正規化後の抽出codeが既定値falseとなる充満部分圏 | [FiniteFullSubcategory][c8-full]、[FiniteCodeNormalization][c8-code-normalization]、[FiniteNormalizationRealizationIso][c8-code-iso] | 評価を保つ正規化、全射成分の有限support、既定値保存から充満忠実性を導く。decodeとの自然同型を示し、raw codeの等号と区別 |
+| C8-06 | 定義8.6〜補題8.9・例8.10 | 依存する値の型、全有限query集合、型付きBool graph、各行の存在一意性 | [IndependentFiniteFragments][c8-fragments]、[IndependentCarrierGraphReadings][c8-graphs] | 単点glueと制限の両逆、graphと関数の両逆・恒等・合成を証明。整合する全偽graphと非一意なgraphによってrow条件の役割を説明 |
+| C8-07 | 定義8.11・定義8.15 | 原始評価の有限support、型参照、量化されたrow条件、有限carrierのcover、逆graph | [IndependentFiniteGraphLawFormula][c8-formulas]、[共通の有限support評価][c8-common] | 一式の有限supportと全量化・整合族全体の有限性を区別。操作の作用を保つ可換式を具体的な有限graph評価として説明 |
+| C8-08 | 定理8.12 | Hom分離、Hom組立て、同型までの対象組立て | [LocalReconstructionEquivalence][c8-principle]、[Stacks Tag 02C3](https://stacks.math.columbia.edu/tag/02C3) | Hom両逆、存在一意性、充満忠実性・本質的全射性を導く。逆関手と単位・余単位を本文に構成 |
+| C8-09 | 構成8.13・定義8.14 | Atomの集合とrepresentative/explicit geometryの射の方式を固定。形式化のParameter.geometryに対応 | [共通の原始再構成][c8-common]、[ExplicitExactGeometryHom][c8-explicit] | 完全幾何と全許容Homから実現圏を定義。二方式のraw・context作用・realizationの差を明示。CS入力は構成8.22へ分離 |
+| C8-10 | 定義8.15・補題8.16 | source/target/Homのquery、原始objectデータ、独立な型・保存式、整合後の補助選択の商 | [GeometryPrimitiveDeclaration][c8-geometry-declaration]、[GeometryHomPrimitiveDeclaration][c8-hom-declaration]、[InvariantQuotient][c8-invariant-quotient]、[GeometryCategoryReconstruction][c8-geometry-category] | 局所対象と射を原始データから定め、成分ごとのgraph合成から局所圏を作る。補助invariant witnessだけを消し、全保持成分を残す |
+| C8-11 | 補題8.17 | 完全幾何の全原始条件。source/core/context/site/raw/realizationの依存順 | [GeometryPrimitiveAssembly][c8-geometry-assembly]、[GeometryCategoryReconstruction][c8-geometry-category]、[InvariantQuotient][c8-invariant-quotient] | 型の依存順に対象を構成し、全Homの成分をgraphから組み立てる。保存式、raw二方式、証明上の補助選択、再読取りの両逆を説明 |
+| C8-14 | 定理8.18・系8.19 | Atomの集合と完全幾何の射の二方式。任意の完全幾何の端点対、非可逆を含む全許容Hom | [共通の原始再構成][c8-common]、[一般原理][c8-principle] | 補題8.17で両方式の分離・組立てを証明し、定理8.12を適用。原始reader自身が主同値の前向き関手となり、Hom両逆・存在一意性・恒等・合成・評価・同型反映を得る。CSの補題を依存先に含めない |
+| C8-22 | 概要・§8.6の金融例・図8.1・まとめ | 同一通貨・手数料なしの行内送金。指定取引と正の金額に対する完了・出金・入金・仕訳のBool読み取り。完全幾何の再構成には定義8.15の全原始データと条件を要求 | 定義8.11・8.15、補題8.17、定理8.18、[共通の原始再構成][c8-common]。業務領域の分担のみ[BIAN9](https://bian.org/wp-content/uploads/2024/12/BIAN-Service-Landscape-V9_0-Value-Chain-View.pdf)を参照 | 完了の含意を三つの整数残差で表し、不整合な対応候補の残差(1,1,0)を計算。担当ごとの記述と有限query片を区別し、対象は同型まで、固定端点間の射は一意に回復する条件付き適用を説明。金融の状態・Lawは本文用に定めた説明例であり、金融システム全体の形式化や実装の検証結果ではない |
+| C8-15 | 例8.20 | タグ付きoperationの全source-choiceと一様flip、canonical正規化、explicit geometry | [共通のタグ入力][c8-common]、[TagChangeExactGeometryLocalModel][c8-tag-model]、[TagChangeCanonicalNormalizationGeometryLaws][c8-tag-normalization] | 実際のoperation成分の変化を読む。全source-choiceと正規化を同じnative圏から回復し、configurationだけの観測との差を説明 |
+| C8-16 | 例8.21 | 構成5.37〜5.40の元入力。固定有限例は二面・三軸交換、cell second、係数ℤ、初期defect/恒等cochain | [共通の固定生成入力][c8-common]、[G122OriginalInput][c8-original-input]、[ExactBarBetaFiniteWitness][c8-fixed-witness] | 元幾何・direct/via-base幾何・α/β/e/d・両端の全自己同型の回復を一般Hom再構成から導く。実際の固定有限入力を例示し、非可逆βとβ=αの場合を区別 |
+| C8-12 | 構成8.22・補題8.23・系8.25 | get/putの三法則、有限基準fiber。全状態写像にget/put保存を要求 | [IndependentLensPrimitiveReconstruction][c8-lens-primitive] | CS適用節で局所圏を定義し、carrier・get/putのgraphと有限coverから独立なLensを構成。Homの二条件と両逆を証明し、一般再構成原理から圏同値を得る |
+| C8-13 | 構成8.22・補題8.24・系8.25 | 有限schema、関係、観測関手、有限な各状態集合。全頂点写像に辺・観測保存を要求 | [IndependentProtocolPrimitiveReconstruction][c8-protocol-primitive] | CS適用節で局所圏を定義し、graphから生成辺・観測・頂点写像を構成。道への帰納的延長と商への降下、自然性、Hom両逆を証明し、一般再構成原理から圏同値を得る |
+| C8-17 | 命題8.26・例8.27 | 同じVとv₀のLens、有限基準fiber間の任意写像。非単射を許す | [LensSemantics][c8-lens-semantics]、[LensFiberModelEquivalence][c8-lens-fiber]、命題1.33・1.34 | res/extの式と両逆を再証明。例8.27は基準fiberの3値を2値へ送る非単射な表を用い、get/putを保つ一意な延長を示す |
+| C8-18 | 命題8.28・例8.29 | 生成辺・観測を保つ全頂点表。例は二頂点一辺、Bool対の4状態、第一成分の観測、両頂点で恒等の対応候補 | [ProtocolSemantics][c8-protocol-semantics]、[ProtocolObservedRestrictionEquivalence][c8-protocol-reading]、命題1.38 | 自然性を全道へ延長し一意性を証明。第二成分を0へ置き換える辺の作用は観測を保つが、第二成分1の二状態で候補の自然性が失敗する |
+| C8-19 | 系8.30 | 有限基準fiber/頂点状態の列挙、finite decoder、共通primitive同値の単位 | [LensFinitePresentation][c8-lens-presentation]、[ProtocolFinitePresentation][c8-protocol-presentation]、[共通のCS比較][c8-common] | 有限decoderの充満忠実性・本質的全射性と、直接reader/共通同値経由readerの自然同型を示す。原稿の向きは形式化のcomparison isoの逆に対応 |
+| C8-20 | 命題8.31 | Lens/観測付きprotocolの冪等射、有限decoder、KarとArr | [CSKaroubiReconstruction][c8-cs-karoubi]、[共通のCS Karoubi・Arrow接続][c8-common]、定理6.27 | 固定点による分裂、retract生成、Karoubiへの延長、包含上のdecoder、射圏と端点評価の整合を本文で説明 |
+| C8-23 | §8.8・概要・まとめ | 記憶領域のbit数、モデルの型・係数・contextと読み取り範囲を指定。有限query集合、各値の有限符号化、明示された有限列挙と計算可能な評価・等号判定 | 定義8.6・補題8.7、定理8.18、§8.7の有限表示、[有限片と貼り合わせ][c8-fragments] | 有限query集合の整合族を全体表と制限から回復する。金融例の完了・仕訳だけでは二候補を区別できず、出金・入金の読み取りで区別できることを計算。情報の十分性、有限の検査手順、時間・記憶費用を区別し、主同値から計算費用の上界は主張しない |
+| C8-05 | 命題8.32・§8.9 | 底圏の一点Source、Atom=ℕ、常に真の抽出。計算可能性を制限しない全自己同型と可算な構文集合 | [NatAdjacentSwap][c8-adjacent]、[NatSubsetSwaps][c8-subsets]、[CountableSyntaxObstruction][c8-countable] | P(ℕ)から実際の自己同型への単射を構成し、可算decoderの非全射性を証明。無限対象の補足に配置し、有限資源の実装の不可能性とはしない。無限supportでも有限規則で記述できる隣接対交換により、表形式と規則の記述能力を区別。選択Atom族が無限なのでcoreの例とはしない |
+| C8-21 | 命題8.33・§8.9 | タグsource-choice部分群、全有限Bool table。有限と無限の添字Ωを区別 | [TagChangeFiniteReadingRecovery][c8-tag-recovery]、[TagChangeFiniteGroupReconstruction][c8-tag-group]、補題8.7 | 全有限片の逆極限と点ごとの加法の対応を証明。全自己同型群を分類せず、source-choice部分群に限定。有限Ωでは全体表で決定でき、無限Ωでは任意の有限片の外の一点で異なる二つの変更を構成する。第一の濃度の反例とは必要な条件を区別 |
+
+### 主同値と形式化の対応
+
+定理8.18・系8.19は `Parameter.geometry` の両方式への特殊化、
+構成8.22・系8.25は `Parameter.lens` と `Parameter.protocol` への特殊化に対応する。
+本文では、各入力の独立な局所条件から組立てを証明し、定理8.12をそれぞれに適用する。
+これらを `IndependentAATPrimitiveReconstruction.lean` の次の宣言へ対応づける。
+
+- 入力・原始値: `Parameter`、`NativeCategory`、`ObjectQuery`、`HomQuery`、`Query`、`Value`、`Fragment`、`Compatible`。
+- 独立な局所条件: `ObjectTableLaws`、`LawfulObjectFamily`、`HomTableCertificate`、`LawfulHomFamily`。
+- 局所圏との対応: `localObjectFamilyEquiv`、`localHomFamilyEquiv`。
+- 分離と組立て: `assembleObjectFamily`、`assembleHomFamily`、`localHomFamily_read_assemble`、`assembleHomFamily_read`、`nativeHom_eq_of_commonFamily_eq`。
+- 主結果: `reconstructionData`、`homSeparation`、`existsUnique_preimage`、`equivalence`、`equivalence_functor`、`homEquiv`。
+- CSとの整合: `lensFiberComparisonIso`、`protocolObservedComparisonIso`、`lensFiniteDecoder_retractGeneratedBy`、`protocolFiniteDecoder_retractGeneratedBy`、`lensKaroubiEquivalence`、`protocolKaroubiEquivalence`、`lensKaroubiArrowEquivalence`、`protocolKaroubiArrowEquivalence`。
+
+本章の完全幾何の主定理とCSの系を合わせ、G-124 A・Bの共通構成が扱う各入力の再構成を収録する。
+幾何全体の主同値と、投影・正規化・比較群・section・核・fiber・有限決定性までの
+統合は、棚卸し§8.5の改訂版の範囲に残す。
+系8.30・命題8.31は、構成済みのCSのdecoder・retract・Karoubi・Arrとの接続を述べる。
+命題8.33は個別のタグ読み取りの結果であり、共通primitive readerについての一般有限決定定理とはしない。
+
+### 検算と原稿の確認
+
+一時的なPythonスクリプトで次を列挙し、全assertionが成功した。
+
+- Atom数0〜4、一点Sourceの固定code間の意味的射1,772件で、既定値保存と表示可能性の同値を確認。表示可能なものは886件。各有限Bool関数が二つのcodeを持つこと、false-default正規化が評価を保つことも確認した。
+- 定義域・値域の要素数0〜3のBool関係689件から、全体性・一意性を満たす60件を抽出し、全関数との一致とgraphの両逆を確認した。
+- 添字数0〜5の63族で全有限片の制限・単点glueの両逆、1,365組でタグの加法と制限の整合を確認した。
+- 二つのview、基準fiber数0〜3の積Lens間の全52,444状態写像を独立に調べ、get/putを保つ60写像が基準fiberの全表と一致することとres/extの両逆を確認。15個の冪等写像の固定点分裂も確認した。
+- 一頂点一ループ、状態数0〜3、定値観測のプロトコルで21,737組の候補を調べ、2,199組のadapterが長さ0〜6の道でも自然となることを確認。100組の可換な冪等写像について固定点部分プロトコルと分裂を確認した。この有限検算は、本文の任意長の帰納的証明の代わりとはしていない。
+- 例8.29のBool対の4状態で、第二成分を0へ置く操作は第一成分の観測を保つ一方、第二成分1の2状態では恒等成分による候補の自然性が失敗することを確認した。
+- 金融例の16通りのBool値で、完了の含意と三つの整数残差の零条件が一致し、9通りが条件を満たすことを確認した。口座・送金・会計に分けた表の整合族からも同じ9通りが得られ、不整合候補の残差は(1,1,0)となった。この検算は金融例で明示したLawの評価部分を対象とし、完全幾何の全成分を構成した検証とはしない。
+- 例8.27の基準fiberの3値から2値への表について、二つのviewを持つ積Lensの6状態で非単射性とget/putの保存を確認した。
+
+全331式をKaTeX 0.18.7で構文検査し、エラー・警告は0。
+既存章でGitHub表示を確認済みの命令に揃え、作用素名は `\mathrm` を用いた。
+同じ版のCSS・フォントを使うローカルプレビューで数式と英語SVGを描画し、概要、主定理、金融例、CS適用節に加え、有限モデルの節、無限対象の補足、まとめと図を目視した。
+本文幅676pxで独立行数式の横溢れがないこと、番号・参照・リンク・不可視文字・公開情報を確認した。
+Stacksの圏同値の特徴づけは公式Tag 02C3を確認し、文献と `references.csv` に反映した。
+BIANの公式図表で版・題名とCurrent Account、Payment Execution、Financial Accountingの区分を確認した。
+引用は業務領域の分担に限り、本例のLawと再構成の根拠を区別した。
+その他の既存文献の書誌と確認記録は保持した。
+
+章全体を論文調に揃え、AATの主定理、行内送金などの設計変更への適用、既存CSへの適用の順に配置した。
+CSの入力・局所条件・組立ては§8.7で定義し、主定理の証明がCSの補題に依存しないことを確認した。
+§8.8では有限なモデルの読み取りの十分性・計算手順・計算費用を区別し、無限対象の二つの反例は§8.9の補足に分離した。
+この分離の前後で、番号変更を除く独立行35式、番号付き33項目、設計変更とCSの適用節の本文の一致を確認した。
+金融例の二候補について、完了と仕訳の読み取りがともに(1,1)となり、出金と入金を追加すると区別できること、残差が(1,1,0)と(0,0,0)になることを検算した。
+上記の既存の有限列挙の対象となる例と構成は保持し、今回の分離では再実行していない。Leanの変更・再実行も行っていない。
+
+原稿は人間による確認とPR作成の承認を得た。
+GitHubのファイルプレビュー・描画済み差分での数式確認とCIの対象commit・結果をPRに記録する。
+Claudeの独立レビューと人間による最終差分確認・マージはPR上で行う。
+
+[c8-one-point]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/OnePointCode.lean
+[c8-evaluation]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/EvaluationClassification.lean
+[c8-code-fibers]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/CodeFibers.lean
+[c8-coverage]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/CoverageTopology.lean
+[c8-compactness]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/DiscreteCompactness.lean
+[c8-fixed]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FixedArrowClassification.lean
+[c8-fixed-consequences]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FixedArrowConsequences.lean
+[c8-fin-one]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FinOneCounterexample.lean
+[c8-full]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FiniteFullSubcategory.lean
+[c8-code-normalization]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FiniteCodeNormalization.lean
+[c8-code-iso]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/FiniteNormalizationRealizationIso.lean
+[c8-adjacent]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/NatAdjacentSwap.lean
+[c8-subsets]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/NatSubsetSwaps.lean
+[c8-countable]: ../../../research/lean/ResearchLean/AG/FiniteDecoderRepresentability/CountableSyntaxObstruction.lean
+[c8-fragments]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentFiniteFragments.lean
+[c8-graphs]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentCarrierGraphReadings.lean
+[c8-formulas]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentFiniteGraphLawFormula.lean
+[c8-principle]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LocalReconstructionEquivalence.lean
+[c8-common]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentAATPrimitiveReconstruction.lean
+[c8-explicit]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSAATExplicitExactGeometryHom.lean
+[c8-geometry-declaration]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryPrimitiveDeclaration.lean
+[c8-hom-declaration]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryHomPrimitiveDeclaration.lean
+[c8-invariant-quotient]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryHomInvariantQuotient.lean
+[c8-geometry-category]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryCategoryReconstruction.lean
+[c8-geometry-assembly]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryPrimitiveAssembly.lean
+[c8-lens-primitive]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean
+[c8-protocol-primitive]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentProtocolPrimitiveReconstruction.lean
+[c8-tag-model]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeExactGeometryLocalModel.lean
+[c8-tag-normalization]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeCanonicalNormalizationGeometryLaws.lean
+[c8-original-input]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/G122OriginalInput.lean
+[c8-fixed-witness]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaFiniteWitness.lean
+[c8-lens-semantics]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/LensSemantics.lean
+[c8-lens-fiber]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LensFiberModelEquivalence.lean
+[c8-protocol-semantics]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolSemantics.lean
+[c8-protocol-reading]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/ProtocolObservedRestrictionEquivalence.lean
+[c8-lens-presentation]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/LensFinitePresentation.lean
+[c8-protocol-presentation]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolFinitePresentation.lean
+[c8-cs-karoubi]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSKaroubiReconstruction.lean
+[c8-tag-recovery]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeFiniteReadingRecovery.lean
+[c8-tag-group]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeFiniteGroupReconstruction.lean
+
 ## Related Workの比較と出典
 
 [Related Work](ja/12-related-work.md)は、主要21文献を六つの比較軸へ配置し、
@@ -979,8 +1111,8 @@ SAGAから継承する結果、lensの積表示、圏同値の一般判定、Cau
 | 対象 | SHA-256 |
 | --- | --- |
 | Related Work本文 | `dc2c3cf09c9c1a778f7ce3f7b3cb9e5562e593acfc1916f8e9454ff7168d6128` |
-| 書誌 | `b8cae570c00f6da2307f18d9996d48d2d35e1ca8cae995bc43431ac629cc2950` |
-| READMEに定めた準備節〜第7章とRelated Workの結合原稿 | `7ad6e41fce489c9c8e84778f67b8ba123dcf3ad59d3a723916b1bc30ef74f112` |
+| 書誌 | `169768f62786cc80f94fe91d4012060309c601168850dbe9004dacda4ffc1e87` |
+| READMEに定めた準備節〜第8章とRelated Workの結合原稿 | `269bcf62346e3d13c789c2f4cc57caeb8ae1beae8afe70ac3e414eaec3d7d391` |
 
 [rw-local]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LocalReconstructionEquivalence.lean
 [rw-lens]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean

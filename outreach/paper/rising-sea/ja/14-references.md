@@ -162,3 +162,9 @@ Journal of Pure and Applied Algebra 216(8–9), 2029–2048, 2012.
 DOI: [10.1016/j.jpaa.2012.02.039](https://doi.org/10.1016/j.jpaa.2012.02.039).
 [著者公開本文](https://math.univ-cotedazur.fr/~cberger/arities.pdf).
 参照箇所: 定理1.10の nerve theorem。
+
+**[BIAN9]** BIAN. *BIAN Service Domain Landscape version 9.0*.
+Value Chain View. 刊行年の記載なし。
+[公式公開図表](https://bian.org/wp-content/uploads/2024/12/BIAN-Service-Landscape-V9_0-Value-Chain-View.pdf).
+参照箇所: p. 1 の Current Account、Payment Execution、Financial Accounting。
+第8章の行内送金の例で、業務領域の分担の参照に用いる。
