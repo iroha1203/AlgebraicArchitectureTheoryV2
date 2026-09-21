@@ -40,7 +40,7 @@ Claude との PR 上でのレビューと修正を終えたら
 - [x] 09 第6章 冪等正規化と実現 — [日本語原稿](ja/09-idempotent-normalization.md)のPRレビューを受け、人間が採用した任意改善7件を反映。図6.1とLensの一般的な分裂を追加し、人間が[PR #4839](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4839)をマージ済み。修正版のGitHub表示・CIは同PRの記録を参照する。
 - [ ] 10 第7章 比較を保つ変更と情報 — [日本語原稿](ja/10-comparison-and-information.md)と英語の図7.1について、[PR #4841](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4841)でClaudeのapproveと別の内容レビューを受け、人間が採用した任意改善8件を反映。定理の動機・節間のつながり・脚の記号・参照を整え、全529式の構文と番号・参照を確認。修正版のGitHub表示・CIの対象commitと結果は同PRに記録する。人間による最終差分確認・マージ待ち。
 - [ ] 11 第8章 表示と局所再構成 — `ja/11-local-reconstruction.md`
-- [ ] 12 Related Work — `ja/12-related-work.md`
+- [ ] 12 Related Work — [日本語原稿](ja/12-related-work.md)
 - [ ] 13 Conclusions and Further Directions — `ja/13-conclusions-and-further-directions.md`
 - [ ] 14 References — `ja/14-references.md`
 - [ ] 15 付録A Lean 形式化との対応 — `ja/15-appendix-a-lean-correspondence.md`
