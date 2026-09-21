@@ -1,4 +1,5 @@
 import ResearchLean.AG.LocalSemanticReconstruction.IndependentGeometryPrimitiveAssembly
+import ResearchLean.AG.LocalSemanticReconstruction.IndependentFiniteFragments
 import Mathlib.Data.Finset.Basic
 import Formal.Util.AssertStandardAxioms
 
@@ -24,39 +25,41 @@ universe u v
 variable {U : AtomCarrier.{u}}
 
 /-- A finite piece uses the common query declaration before any realization is selected. -/
-abbrev Fragment (D : Finset (Query.{u, v} U)) := (q : D) → Query.Value q.val
+abbrev Fragment (D : Finset (Query.{u, v} U)) :=
+  IndependentFiniteFragments.Fragment (fun q : Query.{u, v} U => Query.Value q) D
 
 /-- A family supplies dependent primitive values on every finite query set. -/
-abbrev FragmentFamily (U : AtomCarrier.{u}) := (D : Finset (Query.{u, v} U)) → Fragment D
+abbrev FragmentFamily (U : AtomCarrier.{u}) :=
+  IndependentFiniteFragments.FragmentFamily (fun q : Query.{u, v} U => Query.Value q)
 
 /-- The address set of each diagram is finite even when the native carriers are infinite. -/
-theorem fragment_finite (D : Finset (Query.{u, v} U)) : Finite D := inferInstance
+theorem fragment_finite (D : Finset (Query.{u, v} U)) : Finite D :=
+  IndependentFiniteFragments.fragment_finite D
 
 /-- Restrict the common point table to one finite fragment at a time. -/
-def fragments (t : Table.{u, v} U) : FragmentFamily.{u, v} U := fun _ q => t q.val
+def fragments (t : Table.{u, v} U) : FragmentFamily.{u, v} U :=
+  IndependentFiniteFragments.fragments t
 
 /-- Shared primitive addresses have identical dependent values under every inclusion. -/
 def Compatible (m : FragmentFamily.{u, v} U) : Prop :=
-  ∀ (D E : Finset (Query.{u, v} U)) (h : D ⊆ E) (q : D), m D q = m E ⟨q.val, h q.property⟩
+  IndependentFiniteFragments.Compatible m
 
 /-- Read singleton fragments to construct the primitive point table. -/
-def glue (m : FragmentFamily.{u, v} U) : Table.{u, v} U := by
-  classical
-  exact fun q => m {q} ⟨q, by simp⟩
+def glue (m : FragmentFamily.{u, v} U) : Table.{u, v} U :=
+  IndependentFiniteFragments.glue m
 
 /-- Primitive table restrictions agree on all shared queries. -/
 theorem fragments_compatible (t : Table.{u, v} U) : Compatible (fragments t) :=
-  fun _ _ _ _ => rfl
+  IndependentFiniteFragments.fragments_compatible t
 
 /-- Singleton gluing restores every original primitive cell. -/
-theorem glue_fragments (t : Table.{u, v} U) : glue (fragments t) = t := rfl
+theorem glue_fragments (t : Table.{u, v} U) : glue (fragments t) = t :=
+  IndependentFiniteFragments.glue_fragments t
 
 /-- Inclusion compatibility recovers each finite fragment from its singleton cells. -/
 theorem fragments_glue (m : FragmentFamily.{u, v} U) (h : Compatible m) :
     fragments (glue m) = m := by
-  classical
-  funext D q
-  exact h {q.val} D (Finset.singleton_subset_iff.mpr q.property) ⟨q.val, by simp⟩
+  exact IndependentFiniteFragments.fragments_glue m h
 
 /-- Finite local objects satisfy the explicit primitive conditions in addition to compatibility. -/
 abbrev LocalObject (U : AtomCarrier.{u}) :=
