@@ -1,4 +1,5 @@
 import ResearchLean.AG.LocalSemanticReconstruction.IndependentGeometryCategoryReconstruction
+import ResearchLean.AG.LocalSemanticReconstruction.IndependentGeometryHomIntegrationControls
 import ResearchLean.AG.LocalSemanticReconstruction.IndependentLensPrimitiveReconstruction
 import ResearchLean.AG.LocalSemanticReconstruction.IndependentProtocolPrimitiveReconstruction
 import ResearchLean.AG.LocalSemanticReconstruction.AATFourFamilyTotalReconstruction
@@ -23,6 +24,15 @@ application of the general reconstruction theorem.
 The common query declaration only tags the existing object and Hom queries by
 their source, target, or Hom role.  Its finite fragments are the existing
 dependent finite fragments specialized to that declaration.
+
+Implementation notes: the common certificates reuse the law and data carried
+by each existing branch.  Geometry keeps the canonical `Presentation`
+obtained by reading its assembled invariant witness, while the two CS branches
+lift their existing propositions into data.  This construction does not choose
+one of the four completed equivalences: those equivalences are consequences of
+the common reconstruction and would make its input depend on its output.  A
+geometry presentation is also not hidden behind propositional existence,
+because the inverse construction must consume that presentation directly.
 -/
 
 namespace AAT.AG.LocalSemanticReconstruction
@@ -1137,46 +1147,107 @@ abbrev LawfulObjectFamily (parameter : Parameter.{u, v}) :=
   {family : ObjectFragmentFamily parameter //
     ObjectCompatible family ∧ ObjectTableLaws parameter (objectGlue family)}
 
-/-- Geometry Hom laws retain the existing auxiliary presentation while fixing
-its entire original point table; no native or local Hom is assumed. -/
-def GeometryHomTableLaws {carrier : AtomCarrier.{u}}
+/-- Existing geometry point laws selected by the common mode. -/
+def GeometryHomPointLaws {carrier : AtomCarrier.{u}}
     (mode : Mode)
     (source target : IndependentGeometryPrimitive.LocalObject.{u, v} carrier)
-    (table : IndependentGeometryHomPrimitive.Table.{u, v} carrier mode) : Prop :=
+    (presentation : InvariantWitness.Presentation
+      (IndependentGeometryTableAssembly.assemble
+        (IndependentGeometryCategoryReconstruction.objectData source)).core.reading.invariantReading
+      (IndependentGeometryTableAssembly.assemble
+        (IndependentGeometryCategoryReconstruction.objectData target)).core.reading.invariantReading
+      mode) : Prop :=
   match mode with
   | .representative =>
-      ∃ presentation : InvariantWitness.Presentation
-          (IndependentGeometryTableAssembly.assemble
-            (IndependentGeometryCategoryReconstruction.objectData source)).core.reading.invariantReading
-          (IndependentGeometryTableAssembly.assemble
-            (IndependentGeometryCategoryReconstruction.objectData target)).core.reading.invariantReading
-          .representative,
-        presentation.retained.table = table ∧
-          FullRepresentative.PointLaws
-            (IndependentGeometryCategoryReconstruction.objectData source)
-            (IndependentGeometryCategoryReconstruction.objectData target)
-            (Quotient.mk _ presentation)
+      FullRepresentative.PointLaws
+        (IndependentGeometryCategoryReconstruction.objectData source)
+        (IndependentGeometryCategoryReconstruction.objectData target)
+        (Quotient.mk _ presentation)
   | .explicit =>
-      ∃ presentation : InvariantWitness.Presentation
-          (IndependentGeometryTableAssembly.assemble
-            (IndependentGeometryCategoryReconstruction.objectData source)).core.reading.invariantReading
-          (IndependentGeometryTableAssembly.assemble
-            (IndependentGeometryCategoryReconstruction.objectData target)).core.reading.invariantReading
-          .explicit,
-        presentation.retained.table = table ∧
-          FullExplicit.PointLaws
-            (IndependentGeometryCategoryReconstruction.objectData source)
-            (IndependentGeometryCategoryReconstruction.objectData target)
-            (Quotient.mk _ presentation)
+      FullExplicit.PointLaws
+        (IndependentGeometryCategoryReconstruction.objectData source)
+        (IndependentGeometryCategoryReconstruction.objectData target)
+        (Quotient.mk _ presentation)
 
-/-- Independent Hom laws for one common local source and target. -/
-def HomTableLaws (parameter : Parameter.{u, v})
-    (source target : LocalCategory parameter) (table : HomTable parameter) : Prop := by
+/-- Geometry Hom certificate retaining the completed presentation as data,
+its whole original point table, and the existing branch point laws.  The
+canonicality field removes only the auxiliary representative choice already
+erased by `InvariantWitness.Local`. -/
+structure GeometryHomTableCertificate {carrier : AtomCarrier.{u}}
+    (mode : Mode)
+    (source target : IndependentGeometryPrimitive.LocalObject.{u, v} carrier)
+    (table : IndependentGeometryHomPrimitive.Table.{u, v} carrier mode) :
+    Type (max (u + 1) (v + 1)) where
+  /-- The completed coherent geometry presentation. -/
+  presentation : InvariantWitness.Presentation
+    (IndependentGeometryTableAssembly.assemble
+      (IndependentGeometryCategoryReconstruction.objectData source)).core.reading.invariantReading
+    (IndependentGeometryTableAssembly.assemble
+      (IndependentGeometryCategoryReconstruction.objectData target)).core.reading.invariantReading
+    mode
+  /-- The retained presentation table is exactly the selected common table. -/
+  retained_table : presentation.retained.table = table
+  /-- All existing point laws for the selected geometry branch. -/
+  point_laws : GeometryHomPointLaws mode source target presentation
+  /-- The stored representative is the canonical readback of its assembly. -/
+  canonical : presentation =
+    InvariantWitness.readPresentation _ _
+      (InvariantWitness.assemblePresentation _ _ presentation)
+
+/-- Two geometry certificates over one table store the same canonical
+presentation. -/
+theorem GeometryHomTableCertificate.presentation_eq
+    {carrier : AtomCarrier.{u}} {mode : Mode}
+    {source target : IndependentGeometryPrimitive.LocalObject.{u, v} carrier}
+    {table : IndependentGeometryHomPrimitive.Table.{u, v} carrier mode}
+    (first second : GeometryHomTableCertificate mode source target table) :
+    first.presentation = second.presentation := by
+  have retainedEquality :
+      first.presentation.retained = second.presentation.retained := by
+    apply InvariantWitness.Retained.ext
+    have tableEquality : first.presentation.retained.table =
+        second.presentation.retained.table :=
+      first.retained_table.trans second.retained_table.symm
+    have familyEquality := congrArg TagChange.read tableEquality
+    simpa only [InvariantWitness.Retained.table, TagChange.read_assemble] using
+      familyEquality
+  calc
+    first.presentation =
+        InvariantWitness.readPresentation _ _
+          (InvariantWitness.assemblePresentation _ _ first.presentation) :=
+      first.canonical
+    _ = InvariantWitness.readPresentation _ _
+          (InvariantWitness.assemblePresentation _ _ second.presentation) :=
+      congrArg (InvariantWitness.readPresentation _ _)
+        (InvariantWitness.assemblePresentation_congr _ _ _ _ retainedEquality)
+    _ = second.presentation := second.canonical.symm
+
+/-- Geometry certificates have no residual auxiliary choice once their table
+is fixed. -/
+instance geometryHomTableCertificateSubsingleton
+    {carrier : AtomCarrier.{u}} {mode : Mode}
+    {source target : IndependentGeometryPrimitive.LocalObject.{u, v} carrier}
+    {table : IndependentGeometryHomPrimitive.Table.{u, v} carrier mode} :
+    Subsingleton (GeometryHomTableCertificate mode source target table) where
+  allEq first second := by
+    have presentationEquality :=
+      GeometryHomTableCertificate.presentation_eq first second
+    cases first
+    cases second
+    cases presentationEquality
+    rfl
+
+/-- Independent Hom certificates for one common local source and target.  The
+geometry branches retain their presentation data; the two CS branches retain
+their existing proof packages through `PLift`. -/
+def HomTableCertificate (parameter : Parameter.{u, v})
+    (source target : LocalCategory parameter) (table : HomTable parameter) :
+    Type (max (u + 1) (v + 1)) := by
   cases parameter with
   | geometry carrier mode =>
       cases mode with
       | representative =>
-          exact GeometryHomTableLaws .representative
+          exact GeometryHomTableCertificate .representative
             (ULiftHom.objDown (C :=
               IndependentGeometryCategoryReconstruction.RepresentativeLocalObject.{u, v}
                 carrier) source).localObject
@@ -1184,7 +1255,7 @@ def HomTableLaws (parameter : Parameter.{u, v})
               IndependentGeometryCategoryReconstruction.RepresentativeLocalObject.{u, v}
                 carrier) target).localObject table
       | explicit =>
-          exact GeometryHomTableLaws .explicit
+          exact GeometryHomTableCertificate .explicit
             (ULiftHom.objDown (C :=
               IndependentGeometryCategoryReconstruction.ExplicitLocalObject.{u, v}
                 carrier) source).localObject
@@ -1198,7 +1269,7 @@ def HomTableLaws (parameter : Parameter.{u, v})
       let targetObject : IndependentLensPrimitiveReconstruction.Object input :=
         ULiftHom.objDown
           (C := IndependentLensPrimitiveReconstruction.Object input) target
-      exact
+      exact ULift.{max (u + 1) (v + 1)} (PLift (
         IndependentFiniteGraphLawFormula.CarrierRows.Instances table id
           sourceObject.Carrier targetObject.Carrier ∧
         (∀ sourceState targetState view,
@@ -1211,7 +1282,7 @@ def HomTableLaws (parameter : Parameter.{u, v})
             sourceObject.Carrier targetObject.Carrier sourceState sourceState'
               targetState targetState' view).evaluate
                 (IndependentLensPrimitiveReconstruction.homLawTable
-                  sourceObject targetObject table))
+                  sourceObject targetObject table))))
   | protocol input =>
       let sourceObject : IndependentProtocolPrimitiveReconstruction.Object input :=
         ULiftHom.objDown
@@ -1219,7 +1290,7 @@ def HomTableLaws (parameter : Parameter.{u, v})
       let targetObject : IndependentProtocolPrimitiveReconstruction.Object input :=
         ULiftHom.objDown
           (C := IndependentProtocolPrimitiveReconstruction.Object input) target
-      exact
+      exact ULift.{max (u + 1) (v + 1)} (PLift (
         (∀ vertex, IndependentFiniteGraphLawFormula.CarrierRows.Instances
           (IndependentProtocolPrimitiveReconstruction.vertexMapTable table vertex) id
           (sourceObject.State vertex) (targetObject.State vertex)) ∧
@@ -1236,17 +1307,53 @@ def HomTableLaws (parameter : Parameter.{u, v})
           (IndependentProtocolPrimitiveReconstruction.observationPreservationFormula input
             sourceObject.table targetObject.table vertex state image value).evaluate
               (IndependentProtocolPrimitiveReconstruction.homLawTable
-                sourceObject.table targetObject.table table))
+                sourceObject.table targetObject.table table))))
+
+/-- Every branch certificate is proof-irrelevant once its endpoint tables and
+Hom table are fixed. -/
+instance homTableCertificateSubsingleton (parameter : Parameter.{u, v})
+    (source target : LocalCategory parameter) (table : HomTable parameter) :
+    Subsingleton (HomTableCertificate parameter source target table) := by
+  cases parameter with
+  | geometry carrier mode =>
+      cases mode <;> simp only [HomTableCertificate] <;> infer_instance
+  | lens input =>
+      simp only [HomTableCertificate]
+      infer_instance
+  | protocol input =>
+      simp only [HomTableCertificate]
+      infer_instance
 
 /-- A lawful common Hom family includes both endpoint tables and one Hom table,
 all as compatible finite common fragments. -/
-abbrev LawfulHomFamily {parameter : Parameter.{u, v}}
-    (source target : LocalCategory parameter) :=
-  {family : FragmentFamily parameter //
-    Compatible family ∧
-      sourceTable (glue family) = localObjectTable parameter source ∧
-      targetTable (glue family) = localObjectTable parameter target ∧
-      HomTableLaws parameter source target (homTable (glue family))}
+structure LawfulHomFamily {parameter : Parameter.{u, v}}
+    (source target : LocalCategory parameter) :
+    Type (max (u + 1) (v + 1)) where
+  /-- Compatible finite cells for the source, target, and Hom roles. -/
+  family : FragmentFamily parameter
+  /-- The common finite cells agree under restriction. -/
+  compatible : Compatible family
+  /-- The glued source role is the selected local source table. -/
+  source_table : sourceTable (glue family) = localObjectTable parameter source
+  /-- The glued target role is the selected local target table. -/
+  target_table : targetTable (glue family) = localObjectTable parameter target
+  /-- Branch-specific data certifying the glued Hom table. -/
+  certificate : HomTableCertificate parameter source target
+    (homTable (glue family))
+
+/-- Lawful Hom families are equal when their finite common cells are equal. -/
+@[ext]
+theorem LawfulHomFamily.ext {parameter : Parameter.{u, v}}
+    {source target : LocalCategory parameter}
+    {first second : LawfulHomFamily source target}
+    (equality : first.family = second.family) : first = second := by
+  cases first with
+  | mk firstFamily firstCompatible firstSource firstTarget firstCertificate =>
+      cases second with
+      | mk secondFamily secondCompatible secondSource secondTarget secondCertificate =>
+          cases equality
+          cases Subsingleton.elim firstCertificate secondCertificate
+          rfl
 
 /-- Restrict one primitive local object to its lawful common object family. -/
 def localObjectFamily (parameter : Parameter.{u, v})
@@ -1432,8 +1539,12 @@ tables, to a lawful common finite Hom family. -/
 def localHomFamily (parameter : Parameter.{u, v})
     {source target : LocalCategory parameter} (morphism : source ⟶ target) :
     LawfulHomFamily source target := by
-  refine ⟨fragments (localTable parameter morphism),
-    IndependentFiniteFragments.fragments_compatible _, ?_, ?_, ?_⟩
+  refine
+    { family := fragments (localTable parameter morphism)
+      compatible := IndependentFiniteFragments.fragments_compatible _
+      source_table := ?_
+      target_table := ?_
+      certificate := ?_ }
   · calc
       sourceTable (glue (fragments (localTable parameter morphism))) =
           sourceTable (localTable parameter morphism) :=
@@ -1446,7 +1557,7 @@ def localHomFamily (parameter : Parameter.{u, v})
       _ = localObjectTable parameter target := targetTable_packTable _ _ _
   · rw [show glue (fragments (localTable parameter morphism)) =
         localTable parameter morphism from glue_fragments _]
-    change HomTableLaws parameter source target
+    change HomTableCertificate parameter source target
       (localHomTable parameter morphism)
     cases parameter with
     | geometry carrier mode =>
@@ -1454,33 +1565,76 @@ def localHomFamily (parameter : Parameter.{u, v})
         | representative =>
             rcases morphism with ⟨morphism⟩
             rcases morphism with ⟨pointLocal, pointLaws⟩
-            induction pointLocal using Quotient.inductionOn with
-            | _ presentation =>
-                refine ⟨presentation, ?_, pointLaws⟩
-                funext query
-                rfl
+            let native := InvariantWitness.assemble _ _ pointLocal
+            let presentation :=
+              InvariantWitness.readPresentation _ _ native
+            refine
+              { presentation := presentation
+                retained_table := ?_
+                point_laws := ?_
+                canonical := ?_ }
+            · funext query
+              change InvariantWitness.point _ _
+                  (InvariantWitness.read _ _
+                    (InvariantWitness.assemble _ _ pointLocal)) query =
+                InvariantWitness.point _ _ pointLocal query
+              exact congrArg
+                (fun localValue => InvariantWitness.point _ _ localValue query)
+                (InvariantWitness.read_assemble _ _ pointLocal)
+            · change FullRepresentative.PointLaws _ _
+                (InvariantWitness.read _ _
+                  (InvariantWitness.assemble _ _ pointLocal))
+              rw [InvariantWitness.read_assemble]
+              exact pointLaws
+            · dsimp [presentation, native]
+              exact
+                (congrArg (InvariantWitness.readPresentation _ _)
+                  (InvariantWitness.assemble_readPresentation _ _
+                    (InvariantWitness.assemble _ _ pointLocal))).symm
         | explicit =>
             rcases morphism with ⟨morphism⟩
             rcases morphism with ⟨pointLocal, pointLaws⟩
-            induction pointLocal using Quotient.inductionOn with
-            | _ presentation =>
-                refine ⟨presentation, ?_, pointLaws⟩
-                funext query
-                rfl
+            let native := InvariantWitness.assemble _ _ pointLocal
+            let presentation :=
+              InvariantWitness.readPresentation _ _ native
+            refine
+              { presentation := presentation
+                retained_table := ?_
+                point_laws := ?_
+                canonical := ?_ }
+            · funext query
+              change InvariantWitness.point _ _
+                  (InvariantWitness.read _ _
+                    (InvariantWitness.assemble _ _ pointLocal)) query =
+                InvariantWitness.point _ _ pointLocal query
+              exact congrArg
+                (fun localValue => InvariantWitness.point _ _ localValue query)
+                (InvariantWitness.read_assemble _ _ pointLocal)
+            · change FullExplicit.PointLaws _ _
+                (InvariantWitness.read _ _
+                  (InvariantWitness.assemble _ _ pointLocal))
+              rw [InvariantWitness.read_assemble]
+              exact pointLaws
+            · dsimp [presentation, native]
+              exact
+                (congrArg (InvariantWitness.readPresentation _ _)
+                  (InvariantWitness.assemble_readPresentation _ _
+                    (InvariantWitness.assemble _ _ pointLocal))).symm
     | lens input =>
         let primitive := morphism.down
-        exact ⟨primitive.map_instances, primitive.get_formula,
-          primitive.put_formula⟩
+        exact ULift.up (PLift.up ⟨primitive.map_instances, primitive.get_formula,
+          primitive.put_formula⟩)
     | protocol input =>
         let primitive := morphism.down
-        exact ⟨primitive.map_instances, primitive.edge_formula,
-          primitive.observation_formula⟩
+        exact ULift.up (PLift.up ⟨primitive.map_instances, primitive.edge_formula,
+          primitive.observation_formula⟩)
 
 /-- Gluing the lawful common family of a local Hom recovers its complete
 tagged table. -/
 theorem glue_localHomFamily (parameter : Parameter.{u, v})
     {source target : LocalCategory parameter} (morphism : source ⟶ target) :
-    glue (localHomFamily parameter morphism).val = localTable parameter morphism := by
+    glue (localHomFamily parameter morphism).family =
+      localTable parameter morphism := by
   change glue (fragments (localTable parameter morphism)) =
     localTable parameter morphism
   exact glue_fragments _
@@ -1495,18 +1649,18 @@ noncomputable def localHomOfFamily (parameter : Parameter.{u, v})
       cases mode with
       | representative =>
           exact fun family =>
-            let presentation := Classical.choose family.property.2.2.2
-            let laws := Classical.choose_spec family.property.2.2.2
-            ULift.up ⟨Quotient.mk _ presentation, laws.2⟩
+            ULift.up
+              ⟨Quotient.mk _ family.certificate.presentation,
+                family.certificate.point_laws⟩
       | explicit =>
           exact fun family =>
-            let presentation := Classical.choose family.property.2.2.2
-            let laws := Classical.choose_spec family.property.2.2.2
-            ULift.up ⟨Quotient.mk _ presentation, laws.2⟩
+            ULift.up
+              ⟨Quotient.mk _ family.certificate.presentation,
+                family.certificate.point_laws⟩
   | lens input =>
       exact fun family => by
-        let table := homTable (glue family.val)
-        let laws := family.property.2.2.2
+        let table := homTable (glue family.family)
+        let laws := family.certificate.down.down
         exact ULift.up
           { family := IndependentLensPrimitiveReconstruction.homFragments table
             compatible :=
@@ -1516,8 +1670,8 @@ noncomputable def localHomOfFamily (parameter : Parameter.{u, v})
             put_formula := laws.2.2 }
   | protocol input =>
       exact fun family => by
-        let table := homTable (glue family.val)
-        let laws := family.property.2.2.2
+        let table := homTable (glue family.family)
+        let laws := family.certificate.down.down
         exact ULift.up
           { family := IndependentProtocolPrimitiveReconstruction.homFragments table
             compatible :=
@@ -1537,8 +1691,8 @@ theorem localHomOfFamily_representative_point {carrier : AtomCarrier.{u}}
     InvariantWitness.point _ _
         (localHomOfFamily
           (Parameter.geometry carrier Mode.representative) family).down.val query =
-      homTable (glue family.val) query := by
-  exact congrFun (Classical.choose_spec family.property.2.2.2).1 query
+      homTable (glue family.family) query := by
+  exact congrFun family.certificate.retained_table query
 
 /-- The explicit Hom assembled from a lawful common family has exactly the
 glued Hom table selected by that family. -/
@@ -1551,8 +1705,8 @@ theorem localHomOfFamily_explicit_point {carrier : AtomCarrier.{u}}
     InvariantWitness.point _ _
         (localHomOfFamily
           (Parameter.geometry carrier Mode.explicit) family).down.val query =
-      homTable (glue family.val) query := by
-  exact congrFun (Classical.choose_spec family.property.2.2.2).1 query
+      homTable (glue family.family) query := by
+  exact congrFun family.certificate.retained_table query
 
 /-- Existing primitive local Homs are equivalent to independently lawful
 common finite Hom families with fixed endpoint tables. -/
@@ -1581,7 +1735,7 @@ noncomputable def localHomFamilyEquiv (parameter : Parameter.{u, v})
                     (glue
                       (localHomFamily
                         (Parameter.geometry carrier Mode.representative)
-                        morphism).val) query :=
+                        morphism).family) query :=
                 localHomOfFamily_representative_point _ query
               _ = homTable (localTable
                     (Parameter.geometry carrier Mode.representative) morphism) query :=
@@ -1609,7 +1763,7 @@ noncomputable def localHomFamilyEquiv (parameter : Parameter.{u, v})
                     (glue
                       (localHomFamily
                         (Parameter.geometry carrier Mode.explicit)
-                        morphism).val) query :=
+                        morphism).family) query :=
                 localHomOfFamily_explicit_point _ query
               _ = homTable (localTable
                     (Parameter.geometry carrier Mode.explicit) morphism) query :=
@@ -1638,16 +1792,16 @@ noncomputable def localHomFamilyEquiv (parameter : Parameter.{u, v})
         exact IndependentProtocolPrimitiveReconstruction.homFragments_glue _
           morphism.down.compatible
   right_inv family := by
-    apply Subtype.ext
+    apply LawfulHomFamily.ext
     have tableEquality :
         localTable parameter (localHomOfFamily parameter family) =
-          glue family.val := by
+          glue family.family := by
       funext query
       cases query with
       | source query =>
-          exact congrFun family.property.2.1.symm query
+          exact congrFun family.source_table.symm query
       | target query =>
-          exact congrFun family.property.2.2.1.symm query
+          exact congrFun family.target_table.symm query
       | hom query =>
           cases parameter with
           | geometry carrier mode =>
@@ -1661,15 +1815,15 @@ noncomputable def localHomFamilyEquiv (parameter : Parameter.{u, v})
           | lens input =>
               exact congrArg ULift.up (congrFun
                 (IndependentLensPrimitiveReconstruction.homGlue_fragments
-                  (homTable (glue family.val))) query)
+                  (homTable (glue family.family))) query)
           | protocol input =>
               exact congrArg ULift.up (congrFun
                 (IndependentProtocolPrimitiveReconstruction.homGlue_fragments
-                  (homTable (glue family.val))) query)
+                  (homTable (glue family.family))) query)
     change fragments
-        (localTable parameter (localHomOfFamily parameter family)) = family.val
+        (localTable parameter (localHomOfFamily parameter family)) = family.family
     rw [tableEquality]
-    exact fragments_glue family.val family.property.1
+    exact fragments_glue family.family family.compatible
 
 /-- Assemble a lawful common object family through the existing branch object
 assembler. -/
@@ -1912,6 +2066,76 @@ theorem lensFlipVisibleCommonTable_rejected :
   simpa only [homTable_packTable] using
     IndependentLensPrimitiveReconstruction.flipVisibleTable_getPreservation_rejected
 
+/-- A rejected candidate carrier graph cannot carry a common lens Hom-table
+certificate. -/
+theorem lensHomTableCertificate_not_of_not_lawful
+    (input : LensFamilyInput.{u})
+    (source target : IndependentLensPrimitiveReconstruction.Object input)
+    (table : HomTable (Parameter.lens input : Parameter.{u, u}))
+    (rejected : ¬ IndependentCarrierGraph.IsLawful
+      source.Carrier target.Carrier table) :
+    ¬ Nonempty
+      (HomTableCertificate
+        (Parameter.lens input : Parameter.{u, u})
+        (ULiftHom.objUp source) (ULiftHom.objUp target) table) := by
+  rintro ⟨certificate⟩
+  apply rejected
+  apply (IndependentFiniteGraphLawFormula.CarrierRows.lawful_iff_instances
+    table id source.Carrier target.Carrier).mpr
+  simpa only [CategoryTheory.objDown_objUp] using certificate.down.down.1
+
+/-- A true point on mismatched carriers cannot carry a common lens Hom-table
+certificate. -/
+theorem lensHomTableCertificate_mismatched_carrier_rejected
+    (input : LensFamilyInput.{u})
+    (source target : IndependentLensPrimitiveReconstruction.Object input)
+    (table : HomTable (Parameter.lens input : Parameter.{u, u}))
+    (S T : Type u) (x : S) (y : T)
+    (carrierMismatch : S ≠ source.Carrier ∨ T ≠ target.Carrier)
+    (edge : table (.edge S T x y) = true) :
+    ¬ Nonempty
+      (HomTableCertificate
+        (Parameter.lens input : Parameter.{u, u})
+        (ULiftHom.objUp source) (ULiftHom.objUp target) table) :=
+  lensHomTableCertificate_not_of_not_lawful input source target table
+    (IndependentCarrierGraph.mismatched_carrier_rejected
+      (α := source.Carrier) (β := target.Carrier)
+      table S T x y carrierMismatch edge)
+
+/-- An all-false candidate graph cannot carry a common lens Hom-table
+certificate when the source carrier is inhabited by a supplied point. -/
+theorem lensHomTableCertificate_false_table_rejected
+    (input : LensFamilyInput.{u})
+    (source target : IndependentLensPrimitiveReconstruction.Object input)
+    (point : source.Carrier) :
+    ¬ Nonempty
+      (HomTableCertificate
+        (Parameter.lens input : Parameter.{u, u})
+        (ULiftHom.objUp source) (ULiftHom.objUp target)
+        (fun _ => false)) :=
+  lensHomTableCertificate_not_of_not_lawful input source target
+    (fun _ => false)
+    (IndependentCarrierGraph.false_table_rejected
+      (α := source.Carrier) (β := target.Carrier) point)
+
+/-- Two different true outputs in one selected row cannot carry a common lens
+Hom-table certificate. -/
+theorem lensHomTableCertificate_duplicate_outputs_rejected
+    (input : LensFamilyInput.{u})
+    (source target : IndependentLensPrimitiveReconstruction.Object input)
+    (table : HomTable (Parameter.lens input : Parameter.{u, u}))
+    (x : source.Carrier) (y z : target.Carrier) (different : y ≠ z)
+    (firstEdge : table (.edge source.Carrier target.Carrier x y) = true)
+    (secondEdge : table (.edge source.Carrier target.Carrier x z) = true) :
+    ¬ Nonempty
+      (HomTableCertificate
+        (Parameter.lens input : Parameter.{u, u})
+        (ULiftHom.objUp source) (ULiftHom.objUp target) table) :=
+  lensHomTableCertificate_not_of_not_lawful input source target table
+    (IndependentCarrierGraph.duplicate_outputs_rejected
+      (α := source.Carrier) (β := target.Carrier)
+      table x y z different firstEdge secondEdge)
+
 /-- The infinite-fiber lens table placed in the source role of a common
 table. -/
 def lensInfiniteFiberCommonTable :
@@ -2079,6 +2303,47 @@ theorem lensBooleanToUnitNativeHom_not_injective :
           Parameter.{0, 0})).map lensBooleanToUnitNativeHom).down.toFun) :=
   IndependentLensPrimitiveReconstruction.booleanToUnitHom_not_injective
 
+/-- The accepted noninvertible constant-false lens Hom as a Hom of the common
+native lens category. -/
+def lensConstantFalseNativeHom :
+    ULiftHom.objUp
+        LensSemanticFiniteDetermination.booleanFiberLens ⟶
+      ULiftHom.objUp
+        LensSemanticFiniteDetermination.booleanFiberLens :=
+  ULift.up LensSemanticFiniteDetermination.constantFalseHom
+
+/-- Reading the constant-false lens Hom to a common lawful family and
+assembling it again recovers the original native Hom. -/
+theorem lensConstantFalseNativeHom_family_recovery :
+    assembleHomFamily
+        (Parameter.lens
+          IndependentLensPrimitiveReconstruction.booleanFiberInput :
+            Parameter.{0, 0})
+        (localHomFamily
+          (Parameter.lens
+            IndependentLensPrimitiveReconstruction.booleanFiberInput)
+          ((reading
+            (Parameter.lens
+              IndependentLensPrimitiveReconstruction.booleanFiberInput)).map
+                lensConstantFalseNativeHom)) =
+      lensConstantFalseNativeHom :=
+  assembleHomFamily_read _ _
+
+/-- The common primitive reading of the constant-false lens Hom retains its
+noninjective reference-fiber action. -/
+theorem lensConstantFalseNativeHom_fiber_not_injective :
+    ¬ Function.Injective
+      (IndependentLensPrimitiveReconstruction.primitiveFiberMap
+        ((reading
+          (Parameter.lens
+            IndependentLensPrimitiveReconstruction.booleanFiberInput :
+              Parameter.{0, 0})).map lensConstantFalseNativeHom).down) := by
+  change ¬ Function.Injective
+    (IndependentLensPrimitiveReconstruction.primitiveFiberMap
+      IndependentLensPrimitiveReconstruction.constantFalsePrimitiveHom)
+  exact
+    IndependentLensPrimitiveReconstruction.constantFalsePrimitiveHom_fiber_not_injective
+
 /-- The accepted two-to-one protocol Hom as a Hom of the common native
 category. -/
 def protocolTwoToOneNativeHom :
@@ -2146,6 +2411,71 @@ theorem explicit_read_point (carrier : AtomCarrier.{u})
       IndependentGeometryHomPrimitive.NativeReader.readExplicit morphism query := by
   exact IndependentGeometryCategoryReconstruction.explicitReadingHomEquiv_point
     morphism query
+
+/-- The first coefficient projection regarded as a Hom between the two
+canonical explicit object readings. -/
+def explicitFirstProjectionOnRead
+    {carrier : AtomCarrier.{u}} (package : AATCorePackage carrier)
+    (geometry : Site.SelectedGeometryReading package) :
+    ExplicitExactGeometryHom
+      (IndependentGeometryTableAssembly.assemble
+        (IndependentGeometryTableAssembly.read
+          (IndependentHomRefutations.unitPackage package geometry (ℤ × ℤ))))
+      (IndependentGeometryTableAssembly.assemble
+        (IndependentGeometryTableAssembly.read
+          (IndependentHomRefutations.unitPackage package geometry ℤ))) :=
+  IndependentHomRefutations.explicitCoefficientHomOnRead package geometry
+    IndependentHomRefutations.projection
+
+/-- The second coefficient projection regarded as a Hom between the same two
+canonical explicit object readings. -/
+def explicitSecondProjectionOnRead
+    {carrier : AtomCarrier.{u}} (package : AATCorePackage carrier)
+    (geometry : Site.SelectedGeometryReading package) :
+    ExplicitExactGeometryHom
+      (IndependentGeometryTableAssembly.assemble
+        (IndependentGeometryTableAssembly.read
+          (IndependentHomRefutations.unitPackage package geometry (ℤ × ℤ))))
+      (IndependentGeometryTableAssembly.assemble
+        (IndependentGeometryTableAssembly.read
+          (IndependentHomRefutations.unitPackage package geometry ℤ))) :=
+  IndependentHomRefutations.explicitCoefficientHomOnRead package geometry
+    IndependentHomRefutations.secondProjection
+
+/-- The two coefficient projections have the same base object action, while
+their Homs remain distinct after the common explicit primitive reading. -/
+theorem explicitCoefficientProjection_commonReading_distinct
+    {carrier : AtomCarrier.{u}} (package : AATCorePackage carrier)
+    (geometry : Site.SelectedGeometryReading package) :
+    (IndependentHomRefutations.explicitCoefficientHom package geometry
+          IndependentHomRefutations.projection).base =
+        (IndependentHomRefutations.explicitCoefficientHom package geometry
+          IndependentHomRefutations.secondProjection).base ∧
+      (reading
+        (Parameter.geometry carrier Mode.explicit : Parameter.{u, 0})).map
+          (ULift.up (explicitFirstProjectionOnRead package geometry)) ≠
+        (reading
+          (Parameter.geometry carrier Mode.explicit : Parameter.{u, 0})).map
+            (ULift.up (explicitSecondProjectionOnRead package geometry)) := by
+  constructor
+  · rfl
+  · obtain ⟨query, different⟩ :=
+      IndependentHomRefutations.explicit_projection_homs_distinct_query
+        package geometry
+    intro equality
+    have liftedEquality :=
+      ((homSeparation
+        (Parameter.geometry carrier Mode.explicit : Parameter.{u, 0})).hom
+          _ _).injective equality
+    have nativeEquality := congrArg ULift.down liftedEquality
+    have pointEquality := congrArg
+      (fun morphism =>
+        IndependentGeometryHomPrimitive.NativeReader.readExplicit
+          morphism query)
+      nativeEquality
+    apply different
+    simpa only [explicitFirstProjectionOnRead,
+      explicitSecondProjectionOnRead] using pointEquality
 
 /-! ### Comparisons with existing readings -/
 
@@ -2215,7 +2545,7 @@ noncomputable def lensFiberComparisonIso
     (equivalence (Parameter.lens input : Parameter.{u, u})).functor ⋙
       lensLocalToFiber input ≅
       lensFiberReader input :=
-  Equivalence.funInvIdAssoc
+  comparisonIso
     (equivalence (Parameter.lens input : Parameter.{u, u}))
     (lensFiberReader input)
 
@@ -2279,7 +2609,7 @@ noncomputable def protocolObservedComparisonIso
     (equivalence (Parameter.protocol input : Parameter.{u, u})).functor ⋙
         protocolLocalToObserved input ≅
       protocolObservedReader input :=
-  Equivalence.funInvIdAssoc
+  comparisonIso
     (equivalence (Parameter.protocol input : Parameter.{u, u}))
     (protocolObservedReader input)
 
@@ -3176,6 +3506,154 @@ theorem finiteAxisFoldTwistedComparison_multiply
 
 /-! ### Cycle 79 compatibility -/
 
+/-- Lift the represented tagged global category into Cycle 79's tagged
+global branch through the accepted package-generated equivalence. -/
+noncomputable def taggedCycle79GlobalLift :
+    TagChangeExactGeometryLocalModel.GlobalCategory ⥤
+      AATBranchGlobal .tagged :=
+  TagChangeExactGeometryNormalForm.representedMulEquivPackageGenerated.toSingleObjEquiv.functor ⋙
+    (ULiftHomULiftCategory.equiv.{1, 1}
+      TagChangeGeneratedCategoryEquivalence.GlobalCategory).functor
+
+/-- Lift the represented tagged local category into Cycle 79's tagged local
+branch. -/
+noncomputable def taggedCycle79LocalLift :
+    TagChangeExactGeometryLocalModel.LocalCategory ⥤
+      AATBranchLocal .tagged :=
+  (ULiftHomULiftCategory.equiv.{1, 1}
+    TagChangeGeneratedCategoryEquivalence.LocalCategory).functor
+
+/-- Lift the raw G-122 comparison category into Cycle 79's G-122 global
+branch. -/
+noncomputable def g122Cycle79GlobalLift :
+    G122FullComparisonTwistedGroup.GlobalCategory ⥤
+      AATBranchGlobal .g122 :=
+  (ULiftHomULiftCategory.equiv.{1, 1}
+    G122FullComparisonTwistedGroup.GlobalCategory).functor
+
+/-- Lift the twisted G-122 comparison category into Cycle 79's G-122 local
+branch. -/
+noncomputable def g122Cycle79LocalLift :
+    G122FullComparisonTwistedGroup.LocalCategory ⥤
+      AATBranchLocal .g122 :=
+  (ULiftHomULiftCategory.equiv.{1, 1}
+    G122FullComparisonTwistedGroup.LocalCategory).functor
+
+/-- The represented tagged reader is the tagged Cycle 79 branch reader after
+the canonical global and local lifts. -/
+noncomputable def taggedCycle79BranchReadingIso :
+    taggedCycle79GlobalLift ⋙ aatBranchReading .tagged ≅
+      TagChangeExactGeometryLocalModel.reading ⋙
+        taggedCycle79LocalLift :=
+  NatIso.ofComponents (fun _ => Iso.refl _) (by
+    intro source target morphism
+    simp only [Iso.refl_hom, Category.comp_id, Category.id_comp]
+    apply ULift.ext
+    change TagChangeGeneratedCategoryEquivalence.reading.map
+        (TagChangeExactGeometryNormalForm.representedMulEquivPackageGenerated
+          morphism) =
+      TagChangeExactGeometryLocalModel.reading.map morphism
+    rfl)
+
+/-- The raw-to-twisted G-122 reader is the G-122 Cycle 79 branch reader after
+the canonical global and local lifts. -/
+noncomputable def g122Cycle79BranchReadingIso :
+    g122Cycle79GlobalLift ⋙ aatBranchReading .g122 ≅
+      G122FullComparisonTwistedGroup.reading ⋙
+        g122Cycle79LocalLift :=
+  NatIso.ofComponents (fun _ => Iso.refl _) (by
+    intro source target morphism
+    simp only [Iso.refl_hom, Category.comp_id, Category.id_comp]
+    apply ULift.ext
+    change G122FullComparisonTwistedGroup.reading.map morphism =
+      G122FullComparisonTwistedGroup.reading.map morphism
+    rfl)
+
+/-- The represented tagged reader reaches the Cycle 79 total reader through
+the tagged global and local fibers. -/
+noncomputable def cycle79TaggedRepresentedTotalReadingIso :
+    taggedCycle79GlobalLift ⋙ aatGlobalFiberInclusion .tagged ⋙
+        aatTotalReading ≅
+      TagChangeExactGeometryLocalModel.reading ⋙
+        taggedCycle79LocalLift ⋙ aatLocalFiberInclusion .tagged :=
+  (Functor.isoWhiskerLeft taggedCycle79GlobalLift
+      (aatFiberReadingIso .tagged)).trans
+    (Functor.isoWhiskerRight taggedCycle79BranchReadingIso
+      (aatLocalFiberInclusion .tagged))
+
+/-- The raw G-122 reader reaches the Cycle 79 total reader through the G-122
+global and local fibers. -/
+noncomputable def cycle79G122RawTotalReadingIso :
+    g122Cycle79GlobalLift ⋙ aatGlobalFiberInclusion .g122 ⋙
+        aatTotalReading ≅
+      G122FullComparisonTwistedGroup.reading ⋙
+        g122Cycle79LocalLift ⋙ aatLocalFiberInclusion .g122 :=
+  (Functor.isoWhiskerLeft g122Cycle79GlobalLift
+      (aatFiberReadingIso .g122)).trans
+    (Functor.isoWhiskerRight g122Cycle79BranchReadingIso
+      (aatLocalFiberInclusion .g122))
+
+/-- Reading a represented tagged Hom and applying the common local comparison
+recovers the direct common reading of that represented Hom. -/
+theorem taggedLocalComparison_read_represented
+    {source target : TagChangeExactGeometryLocalModel.GlobalCategory}
+    (morphism : source ⟶ target) :
+    taggedLocalComparison.map
+        (TagChangeExactGeometryLocalModel.reading.map morphism) =
+      (reading
+        (Parameter.geometry FiniteModel.carrier Mode.explicit :
+          Parameter.{0, 0})).map
+        (taggedRepresentedInclusion.map morphism) := by
+  change (reading
+      (Parameter.geometry FiniteModel.carrier Mode.explicit :
+        Parameter.{0, 0})).map
+      (taggedRepresentedInclusion.map
+        (TagChangeExactGeometryLocalModel.representedMulEquivLocalSection.symm
+          (TagChangeExactGeometryLocalModel.representedMulEquivLocalSection
+            morphism))) = _
+  rw [TagChangeExactGeometryLocalModel.representedMulEquivLocalSection.symm_apply_apply]
+
+/-- Cycle 79 total reading of a represented tagged Hom agrees with its direct
+common explicit primitive reading. -/
+theorem cycle79TaggedTotalReading_common
+    {source target : TagChangeExactGeometryLocalModel.GlobalCategory}
+    (morphism : source ⟶ target) :
+    taggedLocalComparison.map
+        (aatTotalFiberReadingMap .tagged
+          (taggedCycle79GlobalLift.map morphism)).down =
+      (reading
+        (Parameter.geometry FiniteModel.carrier Mode.explicit :
+          Parameter.{0, 0})).map
+        (taggedRepresentedInclusion.map morphism) := by
+  rw [aatTotalFiberReadingMap_eq]
+  change taggedLocalComparison.map
+      (TagChangeExactGeometryLocalModel.reading.map morphism) = _
+  exact taggedLocalComparison_read_represented morphism
+
+/-- Cycle 79 total reading of a raw G-122 comparison agrees with its direct
+common representative Arrow reading. -/
+theorem cycle79G122TotalReading_common
+    (raw : FiniteAxisFoldComparisonRestrictionKernel.RawComparison) :
+    finiteAxisFoldTwistedComparison.map
+        (aatTotalFiberReadingMap .g122
+          (g122Cycle79GlobalLift.map
+            (X := SingleObj.star
+              FiniteAxisFoldComparisonRestrictionKernel.RawComparison)
+            (Y := SingleObj.star
+              FiniteAxisFoldComparisonRestrictionKernel.RawComparison)
+            raw)).down =
+      (Functor.mapArrow (reading finiteAxisFoldGeometryParameter)).map
+        (finiteAxisFoldRawComparisonInclusion.map
+          (X := SingleObj.star
+            FiniteAxisFoldComparisonRestrictionKernel.RawComparison)
+          (Y := SingleObj.star
+            FiniteAxisFoldComparisonRestrictionKernel.RawComparison)
+          raw) := by
+  rw [aatTotalFiberReadingMap_eq]
+  change finiteAxisFoldTwistedComparison.map
+      (G122FullComparisonTwistedGroup.read raw) = _
+  exact finiteAxisFoldTwistedComparison_read_raw raw
+
 /-- The new primitive lens decoder agrees with the accepted finite-fiber
 decoder after applying the common local-to-fiber comparison. -/
 noncomputable def lensFiniteDecoderFiberIso (input : LensFamilyInput.{0}) :
@@ -3313,6 +3791,33 @@ noncomputable def cycle79FiberArrowReadingIso
   exact Functor.mapIso (Functor.mapArrowFunctor _ _)
     (aatFiberReadingIso parameter)
 
+/-- The branch Arrow equivalence evaluates to the Arrow lift of the accepted
+branch reading. -/
+@[simp] theorem aatBranchArrowReconstructionEquivalence_functor
+    (parameter : AATBranchParameter) :
+    (aatBranchArrowReconstructionEquivalence parameter).functor =
+      Functor.mapArrow (aatBranchReading parameter) := rfl
+
+/-- The lens Karoubi Arrow equivalence evaluates through the accepted
+finite-fiber and branch equivalences. -/
+@[simp] theorem aatBranchLensKaroubiArrowEquivalence_functor
+    (input : LensFamilyInput) :
+    (aatBranchLensKaroubiArrowEquivalence input).functor =
+      (lensKaroubiFiberArrowEquivalence input).functor ⋙
+        Functor.mapArrow
+          (ULiftHom.up (C := CSBranchLocal (.lens input))) ⋙
+        (aatBranchArrowReconstructionEquivalence (.lens input)).inverse := rfl
+
+/-- The protocol Karoubi Arrow equivalence evaluates through the accepted
+observed and branch equivalences. -/
+@[simp] theorem aatBranchProtocolKaroubiArrowEquivalence_functor
+    (input : ProtocolFamilyInput) :
+    (aatBranchProtocolKaroubiArrowEquivalence input).functor =
+      (protocolKaroubiObservedRestrictionArrowEquivalence input).functor ⋙
+        Functor.mapArrow
+          (ULiftHom.up (C := CSBranchLocal (.protocol input))) ⋙
+        (aatBranchArrowReconstructionEquivalence (.protocol input)).inverse := rfl
+
 /-- Two left whiskers preserve the cancellation of the inverse and forward
 functors of an equivalence. -/
 private noncomputable def equivalenceCancellationAfterTwoIso
@@ -3339,13 +3844,8 @@ noncomputable def cycle79LensKaroubiArrowFiberReadingIso
   refine (Functor.isoWhiskerLeft
     (aatBranchLensKaroubiArrowEquivalence input).functor
     (cycle79FiberArrowReadingIso (.lens input))).trans ?_
-  rw [show (aatBranchLensKaroubiArrowEquivalence input).functor =
-    (lensKaroubiFiberArrowEquivalence input).functor ⋙
-      Functor.mapArrow
-        (ULiftHom.up (C := CSBranchLocal (.lens input))) ⋙
-      (aatBranchArrowReconstructionEquivalence (.lens input)).inverse from rfl]
-  rw [show Functor.mapArrow (aatBranchReading (.lens input)) =
-    (aatBranchArrowReconstructionEquivalence (.lens input)).functor from rfl]
+  rw [aatBranchLensKaroubiArrowEquivalence_functor]
+  rw [← aatBranchArrowReconstructionEquivalence_functor]
   exact equivalenceCancellationAfterTwoIso
     (lensKaroubiFiberArrowEquivalence input).functor
     (Functor.mapArrow
@@ -3366,13 +3866,8 @@ noncomputable def cycle79ProtocolKaroubiArrowObservedReadingIso
   refine (Functor.isoWhiskerLeft
     (aatBranchProtocolKaroubiArrowEquivalence input).functor
     (cycle79FiberArrowReadingIso (.protocol input))).trans ?_
-  rw [show (aatBranchProtocolKaroubiArrowEquivalence input).functor =
-    (protocolKaroubiObservedRestrictionArrowEquivalence input).functor ⋙
-      Functor.mapArrow
-        (ULiftHom.up (C := CSBranchLocal (.protocol input))) ⋙
-      (aatBranchArrowReconstructionEquivalence (.protocol input)).inverse from rfl]
-  rw [show Functor.mapArrow (aatBranchReading (.protocol input)) =
-    (aatBranchArrowReconstructionEquivalence (.protocol input)).functor from rfl]
+  rw [aatBranchProtocolKaroubiArrowEquivalence_functor]
+  rw [← aatBranchArrowReconstructionEquivalence_functor]
   exact equivalenceCancellationAfterTwoIso
     (protocolKaroubiObservedRestrictionArrowEquivalence input).functor
     (Functor.mapArrow
