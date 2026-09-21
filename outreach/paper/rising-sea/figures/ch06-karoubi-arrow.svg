@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1020" height="300" viewBox="0 0 1020 300" role="img" aria-labelledby="title desc">
+  <title id="title">冪等な可換平方から像の間の射へ</title>
+  <desc id="desc">左は射c:XからYへの冪等な変更を表す可換平方。上下の横の射はc、左の縦の射はe、右はdで、eとdは冪等、dc=ceを満たす。関手Φ_Eはこの対象を、冪等像(X,e)から(Y,d)への射dceに送る。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#57606a"/>
+    </marker>
+    <style>
+      text { fill: #24292f; text-anchor: middle; }
+      .heading { font: 24px -apple-system, BlinkMacSystemFont, 'Noto Sans JP', sans-serif; }
+      .math { font: 28px 'Times New Roman', 'Noto Serif', serif; }
+      .sub { font-size: 72%; baseline-shift: sub; }
+      .arrow { fill: none; stroke: #57606a; stroke-width: 2.4; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1020" height="300" fill="white"/>
+  <text x="190" y="36" class="heading">冪等な可換平方</text>
+  <text x="765" y="36" class="heading">像の間の比較</text>
+
+  <path d="M110,90 H270" class="arrow"/>
+  <path d="M110,200 H270" class="arrow"/>
+  <path d="M90,112 V176" class="arrow"/>
+  <path d="M290,112 V176" class="arrow"/>
+  <g class="math">
+    <text x="90" y="99">X</text>
+    <text x="290" y="99">Y</text>
+    <text x="90" y="209">X</text>
+    <text x="290" y="209">Y</text>
+    <text x="190" y="77">c</text>
+    <text x="190" y="187">c</text>
+    <text x="65" y="154">e</text>
+    <text x="315" y="154">d</text>
+    <text x="190" y="255">e² = e, d² = d</text>
+    <text x="190" y="288">dc = ce</text>
+  </g>
+
+  <path d="M385,132 V152" stroke="#57606a" stroke-width="2.4"/>
+  <path d="M385,142 H500" class="arrow"/>
+  <text x="440" y="120" class="math">Φ<tspan class="sub">E</tspan></text>
+
+  <path d="M672,142 H852" class="arrow"/>
+  <g class="math">
+    <text x="620" y="152">(X,e)</text>
+    <text x="910" y="152">(Y,d)</text>
+    <text x="762" y="126">dce</text>
+    <text x="765" y="255">d(dce)e = dce</text>
+  </g>
+</svg>
