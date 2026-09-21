@@ -677,19 +677,17 @@ $`N_Y\alpha=\alpha N_X`$ である。
 $`\Gamma=\Gamma_\alpha`$、$`\Delta=\Gamma_{\mathcal N(\alpha)}`$、
 $`r_N`$ を全端点群上の準同型、$`L=\ker(r_N|_\Gamma)`$ とする。このとき、
 
-1. $`r_N|_\Gamma`$ はsection $`\sigma_\alpha`$ を持ち、分裂短完全列
-
-   ```math
-   1\longrightarrow L\longrightarrow\Gamma
-   \xrightarrow{\bar r_N}\Delta\longrightarrow1
-   \qquad\text{(7.34)}
-   ```
-
-   を得る。
+1. $`r_N|_\Gamma`$ はsection $`\sigma_\alpha`$ を持ち、式(7.34)の分裂短完全列を得る。
 2. 任意の $`\delta\in\Delta`$ に対し、適合する持ち上げ全体は
    $`\sigma_\alpha(\delta)L`$ であり、右 $`L`$-torsorとなる。
 3. 全端点群には、同じ正規化後の値 $`\delta`$ を持つ不適合な変更も存在する。
    従って、$`\alpha`$ への適合性は正規化後の値だけからは判定できない。
+
+```math
+1\longrightarrow L\longrightarrow\Gamma
+\xrightarrow{\bar r_N}\Delta\longrightarrow1
+\qquad\text{(7.34)}
+```
 
 これらは、両端で底を固定する群についても成り立つ。
 
