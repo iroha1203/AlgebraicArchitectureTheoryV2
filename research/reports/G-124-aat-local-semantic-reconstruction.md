@@ -9898,6 +9898,10 @@ result:
     - "IndependentLensPrimitiveReconstruction.readObjectFiberIso"
     - "IndependentLensPrimitiveReconstruction.assembleHom_eq_homEquivFiberMap_symm"
     - "IndependentLensPrimitiveReconstruction.fiberCover_iff_finite"
+    - "IndependentLensPrimitiveReconstruction.objectFormula_evaluate_iff_of_base_support"
+    - "IndependentLensPrimitiveReconstruction.homFormula_evaluate_iff_of_base_support"
+    - "IndependentFiniteFragments.incompatibleBoolFamily_not_compatible"
+    - "IndependentLensPrimitiveReconstruction.infiniteFiberTable_not_fiberCover"
   evidence:
     - "IndependentGeometryFiniteFragments keeps its public API as wrappers over the dependent generic fragment construction"
     - "Object and Hom retain compatible finite FragmentFamily values; their tables are defined by singleton glue"
@@ -9905,7 +9909,11 @@ result:
     - "ObjectLawQuery carrierMatches cells are computed from the unique stateCarrier declaration and are not free primitive data"
     - "putGetFormula, getPutFormula, and putPutFormula include the derived carrier-match cell and graph cells"
     - "getPreservationFormula and putPreservationFormula are closed finite BoolFormula instances over endpoint cells and one state-map graph"
-    - "all five formula families expose finite support, support-agreement preservation, and bidirectional assembled point-law APIs"
+    - "objectFormulaBaseSupport maps every derived object-law support cell to the dependent ObjectTable cell that determines it"
+    - "homFormulaBaseSupport maps endpoint and state-map law support cells to one tagged dependent HomPrimitiveTable"
+    - "all five formula families preserve evaluation from agreement on their primitive base cells and expose bidirectional assembled point-law APIs"
+    - "objectFormula_evaluate_iff_of_base_support uses BoolFormula.evaluate_iff_of_support and the stateCarrier equality bridge for computed carrier matches"
+    - "homFormula_evaluate_iff_of_base_support connects source and target carrier declarations, endpoint graph cells, and map graph cells to the derived Hom law table"
     - "readObject_assembleObject and assembleObjectReadIso recover primitive and native objects"
     - "assembleReadHom_readHom and readHom_assembleReadHom prove both Hom inverse laws for all preserving Homs"
     - "identityHom and composeHom use IndependentCarrierGraph.identity and IndependentCarrierGraph.compose directly"
@@ -9915,6 +9923,8 @@ result:
     - "booleanToUnitPrimitiveHom reads a noninvertible Hom between distinct state-carrier types"
     - "ignoredUpdateTable_rejected gives a concrete failed total-lens formula instance"
     - "flipVisibleTable_getPreservation_rejected gives a concrete failed Hom-preservation formula instance"
+    - "incompatibleBoolFamily_not_compatible rejects a Boolean fragment family that changes under finite-set inclusion"
+    - "infiniteFiberData_point_laws verifies all three raw lens equations while infiniteFiberTable_not_fiberCover rejects its Nat reference fiber"
   claim_mapping:
     theorem_names:
       - "putGetFormula_evaluate_iff"
@@ -9958,6 +9968,8 @@ audits:
     discharged:
       - "Object and Hom store closed formula evaluations and CarrierRows.Instances over glued primitive cells."
       - "Formula support uses BoolFormula.support_finite and evaluation preservation uses BoolFormula.evaluate_iff_of_support."
+      - "The five public support-preservation theorems require dependent primitive-cell agreement through objectFormulaBaseSupport or homFormulaBaseSupport."
+      - "The compatibility and fiber-cover premises each have a concrete rejection theorem."
       - "Native read, identity, and composition convert graph lawfulness to row instances with lawful_iff_instances.mp."
     unresolved: []
   proof_use:
@@ -9978,9 +9990,9 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentFiniteFragments.lean: 10 declarations, standard axioms only"
+    - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentFiniteFragments.lean: 12 declarations, standard axioms only"
     - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryFiniteFragments.lean: 20 declarations, standard axioms only"
-    - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean: 259 declarations, standard axioms only"
+    - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean: 303 declarations, standard axioms only"
     - "IndependentFiniteFragments and the lens module are registered in research/lean/research-modules.txt and ResearchLean/AG.lean"
     - "git diff --check and the new-file whitespace check: pass"
     - "placeholder and axiom/admit/sorry/unsafe scan: no match"
@@ -10000,8 +10012,10 @@ compatible finite fragments、row instances、三法則の有限式、primitive 
 含めない。
 
 対象の三法則とHomの二保存則は、固定pointごとの`BoolFormula`として定義した。5族すべてについて、
-derived carrier-match cellを含む`support_finite`と`evaluate_iff_of_support`の公開補題、およびgraph assembly上のpoint lawとの双方向対応を
-証明した。対象組立てはこれらの式から`IsTotalLens`を作り、Hom組立ては保存式から既存の`Hom`を作る。
+derived carrier-match cellを含む`support_finite`、保存済みdependent tableのbase cell一致から導く評価保存、
+graph assembly上のpoint lawとの双方向対応を証明した。carrier matchはstate carrier宣言cellの一致から計算し、
+Hom側はsource、target、mapのprimitive cellを一つのdependent tableへtagして評価式へ接続する。
+対象組立てはこれらの式から`IsTotalLens`を作り、Hom組立ては保存式から既存の`Hom`を作る。
 恒等射と合成は`IndependentCarrierGraph.identity` / `compose`を直接使い、同APIの左右単位則・結合則から
 Category instanceを得た。
 
@@ -10014,3 +10028,6 @@ Category instanceを得た。
 
 `homSeparation`、`homAssembly`、`objectAssembly`に追加仮定はなく、`reconstructionData`を構成した。
 主同値`equivalence`はこの値へ一般`ReconstructionData.equivalence`を一度適用して得る。
+`incompatibleBoolFamily_not_compatible`は包含で値が変わるfinite fragment familyを拒否する。
+`infiniteFiberData_point_laws`はNat carrierのraw get/putが三法則を満たすことを示し、
+`infiniteFiberTable_not_fiberCover`は同じtableをreference fiberの非有限性だけで拒否する。

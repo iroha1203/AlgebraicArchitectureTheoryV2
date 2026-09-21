@@ -176,6 +176,46 @@ theorem objectLawTable_carrierMatches_eq_of_stateCarrier_eq
   simp only [objectLawTable]
   rw [equality]
 
+/-- Map a derived object-law query to the primitive cell that determines it. -/
+def objectLawQueryBase (input : LensFamilyInput.{u}) :
+    ObjectLawQuery input → ObjectQuery input
+  | .carrierMatches _ => .stateCarrier
+  | .get query => .get query
+  | .put view query => .put view query
+
+/-- Primitive cells needed to evaluate one finite object-law formula. -/
+def objectFormulaBaseSupport (input : LensFamilyInput.{u})
+    (formula : IndependentFiniteLawFormula.BoolFormula.{u + 1, 0}
+      (ObjectLawQuery input)) : Finset (ObjectQuery input) := by
+  classical
+  exact formula.support.image (objectLawQueryBase input)
+
+/-- Agreement on the primitive object cells supporting a formula preserves
+evaluation of its derived law table. -/
+theorem objectFormula_evaluate_iff_of_base_support
+    (input : LensFamilyInput.{u})
+    (formula : IndependentFiniteLawFormula.BoolFormula.{u + 1, 0}
+      (ObjectLawQuery input))
+    (first second : ObjectTable input)
+    (agree : ∀ query ∈ objectFormulaBaseSupport input formula,
+      first query = second query) :
+    formula.evaluate (objectLawTable first) ↔
+      formula.evaluate (objectLawTable second) := by
+  apply IndependentFiniteLawFormula.BoolFormula.evaluate_iff_of_support
+  intro query member
+  have baseMember : objectLawQueryBase input query ∈
+      objectFormulaBaseSupport input formula := by
+    classical
+    exact Finset.mem_image.mpr ⟨query, member, rfl⟩
+  cases query with
+  | carrierMatches candidate =>
+      exact objectLawTable_carrierMatches_eq_of_stateCarrier_eq
+        (agree .stateCarrier baseMember) candidate
+  | get graphQuery =>
+      exact congrArg ULift.down (agree (.get graphQuery) baseMember)
+  | put view graphQuery =>
+      exact congrArg ULift.down (agree (.put view graphQuery) baseMember)
+
 /-- The finite formula for `get(c) = v -> put_v(c) = c`. -/
 def putGetFormula (input : LensFamilyInput.{u}) (C : Type u)
     (c : C) (view : input.View) :
@@ -635,13 +675,141 @@ inductive HomQuery (input : LensFamilyInput.{u}) where
   /-- A candidate state-map graph cell. -/
   | map (query : GraphQuery.{u})
 
+/-- Primitive Hom queries tag source cells, target cells, and state-map cells. -/
+inductive HomPrimitiveQuery (input : LensFamilyInput.{u}) where
+  /-- One source-object primitive cell. -/
+  | source (query : ObjectQuery input)
+  /-- One target-object primitive cell. -/
+  | target (query : ObjectQuery input)
+  /-- One primitive state-map graph cell. -/
+  | map (query : GraphQuery.{u})
+
+/-- The dependent value type for primitive Hom queries. -/
+def HomPrimitiveValue {input : LensFamilyInput.{u}} :
+    HomPrimitiveQuery input → Type (u + 1)
+  | .source query => ObjectValue query
+  | .target query => ObjectValue query
+  | .map _ => ULift.{u + 1, 0} Bool
+
+/-- A dependent primitive Hom table contains both endpoint tables and one map table. -/
+abbrev HomPrimitiveTable (input : LensFamilyInput.{u}) :=
+  (query : HomPrimitiveQuery input) → HomPrimitiveValue query
+
+/-- Combine two primitive object tables and a state-map graph table. -/
+def homPrimitiveTable {input : LensFamilyInput.{u}}
+    (source target : ObjectTable input) (table : GraphTable.{u}) :
+    HomPrimitiveTable input
+  | .source query => source query
+  | .target query => target query
+  | .map query => ULift.up (table query)
+
+/-- Map a derived Hom-law query to the primitive cell that determines it. -/
+def homLawQueryBase (input : LensFamilyInput.{u}) :
+    HomQuery input → HomPrimitiveQuery input
+  | .source query => .source (objectLawQueryBase input query)
+  | .target query => .target (objectLawQueryBase input query)
+  | .map query => .map query
+
+/-- Primitive cells needed to evaluate one finite Hom-law formula. -/
+def homFormulaBaseSupport (input : LensFamilyInput.{u})
+    (formula : IndependentFiniteLawFormula.BoolFormula.{u + 1, 0}
+      (HomQuery input)) : Finset (HomPrimitiveQuery input) := by
+  classical
+  exact formula.support.image (homLawQueryBase input)
+
+/-- Derive a Boolean Hom-law table from its dependent primitive table. -/
+def homPrimitiveLawTable {input : LensFamilyInput.{u}}
+    (table : HomPrimitiveTable input) : HomQuery input → Bool := by
+  classical
+  intro query
+  cases query with
+  | source objectQuery =>
+      cases objectQuery with
+      | carrierMatches candidate =>
+          exact decide (candidate = table (.source .stateCarrier))
+      | get graphQuery => exact (table (.source (.get graphQuery))).down
+      | put view graphQuery => exact (table (.source (.put view graphQuery))).down
+  | target objectQuery =>
+      cases objectQuery with
+      | carrierMatches candidate =>
+          exact decide (candidate = table (.target .stateCarrier))
+      | get graphQuery => exact (table (.target (.get graphQuery))).down
+      | put view graphQuery => exact (table (.target (.put view graphQuery))).down
+  | map graphQuery => exact (table (.map graphQuery)).down
+
+/-- Agreement on the primitive Hom cells supporting a formula preserves
+evaluation of its derived law table. -/
+theorem homFormula_evaluate_iff_of_base_support
+    (input : LensFamilyInput.{u})
+    (formula : IndependentFiniteLawFormula.BoolFormula.{u + 1, 0}
+      (HomQuery input))
+    (first second : HomPrimitiveTable input)
+    (agree : ∀ query ∈ homFormulaBaseSupport input formula,
+      first query = second query) :
+    formula.evaluate (homPrimitiveLawTable first) ↔
+      formula.evaluate (homPrimitiveLawTable second) := by
+  classical
+  apply IndependentFiniteLawFormula.BoolFormula.evaluate_iff_of_support
+  intro query member
+  have baseMember : homLawQueryBase input query ∈
+      homFormulaBaseSupport input formula := by
+    classical
+    exact Finset.mem_image.mpr ⟨query, member, rfl⟩
+  cases query with
+  | source objectQuery =>
+      cases objectQuery with
+      | carrierMatches candidate =>
+          change decide (candidate = first (.source .stateCarrier)) =
+            decide (candidate = second (.source .stateCarrier))
+          exact congrArg (fun carrier => decide (candidate = carrier))
+            (agree (.source .stateCarrier) baseMember)
+      | get graphQuery =>
+          exact congrArg ULift.down (agree (.source (.get graphQuery)) baseMember)
+      | put view graphQuery =>
+          exact congrArg ULift.down
+            (agree (.source (.put view graphQuery)) baseMember)
+  | target objectQuery =>
+      cases objectQuery with
+      | carrierMatches candidate =>
+          change decide (candidate = first (.target .stateCarrier)) =
+            decide (candidate = second (.target .stateCarrier))
+          exact congrArg (fun carrier => decide (candidate = carrier))
+            (agree (.target .stateCarrier) baseMember)
+      | get graphQuery =>
+          exact congrArg ULift.down (agree (.target (.get graphQuery)) baseMember)
+      | put view graphQuery =>
+          exact congrArg ULift.down
+            (agree (.target (.put view graphQuery)) baseMember)
+  | map graphQuery =>
+      exact congrArg ULift.down (agree (.map graphQuery) baseMember)
+
+/-- Combine primitive endpoint tables and one candidate state-map table for
+evaluation of the closed Hom-preservation formulas. -/
+def homLawTableFromTables {input : LensFamilyInput.{u}}
+    (source target : ObjectTable input) (table : GraphTable.{u}) :
+    HomQuery input → Bool
+  | .source query => objectLawTable source query
+  | .target query => objectLawTable target query
+  | .map query => table query
+
+/-- The combined dependent primitive table derives the same Hom-law table as
+the three component tables. -/
+theorem homPrimitiveLawTable_homPrimitiveTable {input : LensFamilyInput.{u}}
+    (source target : ObjectTable input) (table : GraphTable.{u}) :
+    homPrimitiveLawTable (homPrimitiveTable source target table) =
+      homLawTableFromTables source target table := by
+  classical
+  funext query
+  cases query with
+  | source objectQuery => cases objectQuery <;> rfl
+  | target objectQuery => cases objectQuery <;> rfl
+  | map graphQuery => rfl
+
 /-- Combine fixed endpoint tables and one candidate state-map table solely for
 evaluation of the closed Hom-preservation formulas. -/
 def homLawTable {input : LensFamilyInput.{u}} (source target : Object input)
-    (table : GraphTable.{u}) : HomQuery input → Bool
-  | .source query => objectLawTable source.table query
-  | .target query => objectLawTable target.table query
-  | .map query => table query
+    (table : GraphTable.{u}) : HomQuery input → Bool :=
+  homLawTableFromTables source.table target.table table
 
 /-- Finite formula saying that one true state-map edge preserves one `get`
 value. -/
@@ -1473,68 +1641,83 @@ theorem homLawful_iff_instances (table : GraphTable.{u}) (C D : Type u) :
       IndependentFiniteGraphLawFormula.CarrierRows.Instances table id C D :=
   IndependentFiniteGraphLawFormula.CarrierRows.lawful_iff_instances table id C D
 
-/-- Agreement on the finite support of a put-get instance preserves its
-evaluation. -/
+/-- Agreement on the primitive cells supporting a put-get instance preserves
+evaluation of the derived law table. -/
 theorem putGetFormula_evaluate_iff_of_support
     (input : LensFamilyInput.{u}) (C : Type u) (c : C) (view : input.View)
-    (first second : ObjectLawTable input)
-    (agree : ∀ query ∈ (putGetFormula input C c view).support,
+    (first second : ObjectTable input)
+    (agree : ∀ query ∈
+      objectFormulaBaseSupport input (putGetFormula input C c view),
       first query = second query) :
-    (putGetFormula input C c view).evaluate first ↔
-      (putGetFormula input C c view).evaluate second :=
-  IndependentFiniteLawFormula.BoolFormula.evaluate_iff_of_support
-    first second _ agree
+    (putGetFormula input C c view).evaluate (objectLawTable first) ↔
+      (putGetFormula input C c view).evaluate (objectLawTable second) :=
+  objectFormula_evaluate_iff_of_base_support input _ first second agree
 
-/-- Agreement on the finite support of a get-put instance preserves its
-evaluation. -/
+/-- Agreement on the primitive cells supporting a get-put instance preserves
+evaluation of the derived law table. -/
 theorem getPutFormula_evaluate_iff_of_support
     (input : LensFamilyInput.{u}) (C : Type u) (c d : C) (view : input.View)
-    (first second : ObjectLawTable input)
-    (agree : ∀ query ∈ (getPutFormula input C c d view).support,
+    (first second : ObjectTable input)
+    (agree : ∀ query ∈
+      objectFormulaBaseSupport input (getPutFormula input C c d view),
       first query = second query) :
-    (getPutFormula input C c d view).evaluate first ↔
-      (getPutFormula input C c d view).evaluate second :=
-  IndependentFiniteLawFormula.BoolFormula.evaluate_iff_of_support
-    first second _ agree
+    (getPutFormula input C c d view).evaluate (objectLawTable first) ↔
+      (getPutFormula input C c d view).evaluate (objectLawTable second) :=
+  objectFormula_evaluate_iff_of_base_support input _ first second agree
 
-/-- Agreement on the finite support of a put-put instance preserves its
-evaluation. -/
+/-- Agreement on the primitive cells supporting a put-put instance preserves
+evaluation of the derived law table. -/
 theorem putPutFormula_evaluate_iff_of_support
     (input : LensFamilyInput.{u}) (C : Type u) (c d e : C)
-    (firstView secondView : input.View) (first second : ObjectLawTable input)
+    (firstView secondView : input.View) (first second : ObjectTable input)
     (agree : ∀ query ∈
-      (putPutFormula input C c d e firstView secondView).support,
+      objectFormulaBaseSupport input
+        (putPutFormula input C c d e firstView secondView),
       first query = second query) :
-    (putPutFormula input C c d e firstView secondView).evaluate first ↔
-      (putPutFormula input C c d e firstView secondView).evaluate second :=
-  IndependentFiniteLawFormula.BoolFormula.evaluate_iff_of_support
-    first second _ agree
+    (putPutFormula input C c d e firstView secondView).evaluate
+        (objectLawTable first) ↔
+      (putPutFormula input C c d e firstView secondView).evaluate
+        (objectLawTable second) :=
+  objectFormula_evaluate_iff_of_base_support input _ first second agree
 
-/-- Agreement on the finite support of a get-preservation instance preserves
-its evaluation. -/
+/-- Agreement on the primitive endpoint and map cells supporting a get
+preservation instance preserves evaluation of the derived law table. -/
 theorem getPreservationFormula_evaluate_iff_of_support
     (input : LensFamilyInput.{u}) (C D : Type u) (c : C) (d : D)
-    (view : input.View) (first second : HomQuery input → Bool)
-    (agree : ∀ query ∈ (getPreservationFormula input C D c d view).support,
-      first query = second query) :
-    (getPreservationFormula input C D c d view).evaluate first ↔
-      (getPreservationFormula input C D c d view).evaluate second :=
-  IndependentFiniteLawFormula.BoolFormula.evaluate_iff_of_support
-    first second _ agree
+    (view : input.View)
+    (firstSource firstTarget secondSource secondTarget : ObjectTable input)
+    (firstMap secondMap : GraphTable.{u})
+    (agree : ∀ query ∈
+      homFormulaBaseSupport input (getPreservationFormula input C D c d view),
+      homPrimitiveTable firstSource firstTarget firstMap query =
+        homPrimitiveTable secondSource secondTarget secondMap query) :
+    (getPreservationFormula input C D c d view).evaluate
+        (homLawTableFromTables firstSource firstTarget firstMap) ↔
+      (getPreservationFormula input C D c d view).evaluate
+        (homLawTableFromTables secondSource secondTarget secondMap) := by
+  rw [← homPrimitiveLawTable_homPrimitiveTable firstSource firstTarget firstMap,
+    ← homPrimitiveLawTable_homPrimitiveTable secondSource secondTarget secondMap]
+  exact homFormula_evaluate_iff_of_base_support input _ _ _ agree
 
-/-- Agreement on the finite support of a put-preservation instance preserves
-its evaluation. -/
+/-- Agreement on the primitive endpoint and map cells supporting a put
+preservation instance preserves evaluation of the derived law table. -/
 theorem putPreservationFormula_evaluate_iff_of_support
     (input : LensFamilyInput.{u}) (C D : Type u)
     (c c' : C) (d d' : D) (view : input.View)
-    (first second : HomQuery input → Bool)
+    (firstSource firstTarget secondSource secondTarget : ObjectTable input)
+    (firstMap secondMap : GraphTable.{u})
     (agree : ∀ query ∈
-      (putPreservationFormula input C D c c' d d' view).support,
-      first query = second query) :
-    (putPreservationFormula input C D c c' d d' view).evaluate first ↔
-      (putPreservationFormula input C D c c' d d' view).evaluate second :=
-  IndependentFiniteLawFormula.BoolFormula.evaluate_iff_of_support
-    first second _ agree
+      homFormulaBaseSupport input
+        (putPreservationFormula input C D c c' d d' view),
+      homPrimitiveTable firstSource firstTarget firstMap query =
+        homPrimitiveTable secondSource secondTarget secondMap query) :
+    (putPreservationFormula input C D c c' d d' view).evaluate
+        (homLawTableFromTables firstSource firstTarget firstMap) ↔
+      (putPreservationFormula input C D c c' d d' view).evaluate
+        (homLawTableFromTables secondSource secondTarget secondMap) := by
+  rw [← homPrimitiveLawTable_homPrimitiveTable firstSource firstTarget firstMap,
+    ← homPrimitiveLawTable_homPrimitiveTable secondSource secondTarget secondMap]
+  exact homFormula_evaluate_iff_of_base_support input _ _ _ agree
 
 /-- A put-get formula evaluates exactly when the corresponding assembled
 point implication holds. -/
@@ -1726,6 +1909,48 @@ theorem flipVisibleTable_getPreservation_rejected :
 def booleanFiberInput : LensFamilyInput where
   View := Unit
   reference := ()
+
+/-- Raw unit-view lens data with natural-number states and identity updates. -/
+def infiniteFiberData : LensData Unit where
+  Carrier := Nat
+  get := fun _ => ()
+  put := fun state _ => state
+
+/-- The infinite-fiber fixture satisfies all three pointwise lens equations. -/
+theorem infiniteFiberData_point_laws :
+    (∀ state, infiniteFiberData.put state (infiniteFiberData.get state) = state) ∧
+      (∀ state view, infiniteFiberData.get
+        (infiniteFiberData.put state view) = view) ∧
+      (∀ state first second, infiniteFiberData.put
+        (infiniteFiberData.put state first) second =
+          infiniteFiberData.put state second) := by
+  simp [infiniteFiberData]
+
+/-- Primitive cells for the natural-number state fixture. -/
+def infiniteFiberTable : ObjectTable booleanFiberInput :=
+  readDataTable infiniteFiberData
+
+/-- Every natural-number state lies in the primitive reference fiber. -/
+def infinitePrimitiveFiberEquiv :
+    PrimitiveFiber booleanFiberInput Nat infiniteFiberTable ≃ Nat where
+  toFun state := state.val
+  invFun state := ⟨state, by
+    change IndependentCarrierGraph.read Nat Unit (fun _ => ())
+      (.edge Nat Unit state ()) = true
+    exact (IndependentCarrierGraph.read_edge Nat Unit (fun _ => ()) state ()).mpr rfl⟩
+  left_inv _ := Subtype.ext rfl
+  right_inv _ := rfl
+
+/-- The natural-number fixture is rejected only by the finite reference-fiber
+requirement: its raw get and put operations satisfy all three lens equations. -/
+theorem infiniteFiberTable_not_fiberCover :
+    ¬ FiberCover booleanFiberInput Nat infiniteFiberTable := by
+  intro cover
+  have finitePrimitive :
+      Finite (PrimitiveFiber booleanFiberInput Nat infiniteFiberTable) :=
+    (fiberCover_iff_finite booleanFiberInput Nat infiniteFiberTable).mp cover
+  have finiteNat : Finite Nat := infinitePrimitiveFiberEquiv.finite_iff.mp finitePrimitive
+  exact (Infinite.not_finite : ¬ Finite Nat) finiteNat
 
 /-- A unit-complement lens whose carrier differs from the Boolean-complement fixture. -/
 abbrev unitFiberLens : LensRealization Unit () :=

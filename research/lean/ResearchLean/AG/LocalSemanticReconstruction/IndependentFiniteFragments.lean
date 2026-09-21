@@ -62,6 +62,19 @@ theorem fragments_glue (family : FragmentFamily Value) (compatible : Compatible 
   exact compatible {query.val} D
     (Finset.singleton_subset_iff.mpr query.property) ⟨query.val, by simp⟩
 
+/-- A concrete Boolean fragment family whose value changes when a singleton
+is enlarged. -/
+def incompatibleBoolFamily : FragmentFamily (fun _ : Bool => Bool) :=
+  fun D _ => decide (D.card = 1)
+
+/-- The changing Boolean fragment family is rejected by compatibility. -/
+theorem incompatibleBoolFamily_not_compatible :
+    ¬ Compatible incompatibleBoolFamily := by
+  intro compatible
+  have equality := compatible {false} {false, true} (by simp)
+    ⟨false, by simp⟩
+  simp [incompatibleBoolFamily] at equality
+
 end
 
 end AAT.AG.LocalSemanticReconstruction.IndependentFiniteFragments
