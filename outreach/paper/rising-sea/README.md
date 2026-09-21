@@ -22,6 +22,7 @@ Atom と Law から、相対的なアーキテクチャの幾何、局所整合�
 [第3章 標準解像度と診断不変性](ja/06-resolution-invariance.md)、
 [第4章 輸送と合成の整合性](ja/07-transport-coherence.md)、
 [第5章 基底変換と生成比較](ja/08-base-change.md)、
+[第6章 冪等正規化と実現](ja/09-idempotent-normalization.md)、
 [文献](ja/14-references.md)の下書きを作成している。
 執筆・照合・PR レビューの完了は ToDo で管理する。
 
@@ -30,7 +31,7 @@ Atom と Law から、相対的なアーキテクチャの幾何、局所整合�
 `manuscript_sha256` は、`ja/03-preliminaries-and-notation.md`、
 `ja/04-relative-architecture.md`、`ja/05-law-geometry.md`、
 `ja/06-resolution-invariance.md`、`ja/07-transport-coherence.md`、
-`ja/08-base-change.md`
+`ja/08-base-change.md`、`ja/09-idempotent-normalization.md`
 の順にファイルのバイト列を連結したものの SHA-256 とする。
 図の編集元は `figures/` の SVG とし、その hash は `claims.md` に記録する。
 TeX 化の際には、[共通検査](../_tools/README.md)が算出する書誌・原稿一式の hash へ更新する。

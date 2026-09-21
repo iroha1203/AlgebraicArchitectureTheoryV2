@@ -674,3 +674,86 @@ Invariantの同値性は、対象数0〜4・値域の要素数0〜3の全4,430�
 [c5-geom-normalization]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalization.lean
 [c5-beta-factor]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaFactorization.lean
 [c5-beta-projection]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaProjection.lean
+
+### PR #4836のマージ確認
+
+2026-09-21、人間による第5章のマージを確認した。修正版のheadは
+`32e12f8c8685f2fc04c0085ff6b610696b6f87a2`、merge commitは
+`ccdfd313e12d64d17ecfe2f16fd460bf8b121310` である。
+同PRの7件のCIはすべて成功している。GitHubの表示確認はPRの記録を参照する。
+修正版の独立再レビューとは区別し、原稿と採用済み修正の人間による確認・マージを記録する。
+
+## 第6章「冪等正規化と実現」
+
+2026-09-21、第5章を含む固定版
+[12884419d705624be39e8a87393ed50385395469](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/12884419d705624be39e8a87393ed50385395469)
+の一次資料と、第1〜5章の原稿を照合して[日本語初稿](ja/09-idempotent-normalization.md)を作成した。
+以下の一次資料の相対リンクは、この固定版で照合したファイルを示す。
+原稿のSHA-256は `3a8f382b2cde88bd011eefe3698daa1bd1e7946bc30464a343891e5afbee891d`。
+確認者はCodex（GPT-6）である。
+
+構成6.1〜命題6.31と式6.1〜6.48を置き、必要な定義・仮定・証明を原稿内に記述した。
+内部資料への案内とLean宣言との対応は本記録に置く。
+既存Lean sourceは条件・結論・証明の照合に使い、変更・ローカル再検証は行っていない。
+
+| ID | 原稿の箇所 | 入力・成立条件 | 確認した一次資料 | 原稿での構成・証明 |
+| --- | --- | --- | --- | --- |
+| C6-01 | 構成6.1–例6.4 | 対象形成のconfiguration保存、全architecture object、任意の値集合 | [ConfigurationDescent][c6-descent] | 射影とsection、固定点とconfigurationの対応、商、正規化で不変な写像の一意因子化を証明。四対象のモデルはこの集合上の構成を説明する本文用の例 |
+| C6-02 | 定理6.5 | 定義5.39のAd。型の等号に沿うoperation写像 | [Core normalization][c6-core-normalization]、[IdempotentExchangeNormalization][c6-idempotence] | 対象だけでなく、operation・底・文脈・方程式・invariant・signatureを含む射全体の冪等性を証明。任意の選択同型を型の同一視と扱わない |
+| C6-03 | 補題6.6 | 任意のcore射の対象形成・configuration保存。Adは不要 | [CanonicalObjectNormalizationNaturality][c6-object-naturality] | 対象写像の自然性を導き、operationまで含む自然性の条件と分ける |
+| C6-04 | 命題6.7・定理6.8 | 任意のconfiguration上の全architecture object。Core内の分裂は両射がcore射であることを要求 | [DistinctArchitectureObjects][c6-distinct]、[InternalNormalizationSplitNoGo][c6-no-split] | 一元型・二元型の対象から非単射性を示す。仮想的なsectionの単射性と対象自然性から、全対象が固定点になる矛盾を導く |
+| C6-05 | 定義6.9–例6.13 | 任意の圏、同型α、冪等射d | [RawFailureLocus][c6-raw-failure]、[Karoubi image][c6-image] | 冪等完備化・分裂を定義から説明。β=dα、e=α⁻¹dα、γ=α⁻¹dについて両側逆を計算し、元の圏の可逆性と像の同型を区別。四点の例は本文で追加した有限集合の計算 |
+| C6-06 | 定理6.14・命題6.22 | Adを満たすcoreを持つ完全幾何と、その充満部分圏の全射 | [CanonicalNormalization][c6-geom-normalization] | Coreと被覆・overlap・係数・support・軸・observable・raw systemを含めて冪等性と片側吸収を確認。正規化関手の充満性、coreへの射影、底・係数の保存を証明 |
+| C6-07 | 補題6.15 | 同じ再添字づけから生成したexactな輸送・引き戻しと実際のlift | [ExactNormalizationNaturality][c6-exact-naturality] | Adの保存とoperationの同一視の整合からliftとの交換を証明し、普遍性から正規化射の輸送を同定。任意のcore射の両側自然性へは拡張しない |
+| C6-08 | 定理6.16 | 構成5.37・5.40の共通square・面・cochain・source core・係数・完全幾何 | [ExactDerivedBarAlphaTriangle][c6-alpha-triangle]、[ExactBarAlphaNormalizationNaturality][c6-alpha-naturality]、[ExactBarBetaFactorization][c6-beta-factor]、[ExactBarBetaClassification][c6-beta-classification] | 同じ生成比較の冪等分解・可逆性分類・像の同型を証明。χのとき両端の冪等射をcanonical正規化へ同定。恒等でない診断だけから正規化の許容性や診断の消滅を主張しない |
+| C6-09 | 命題6.17 | 第5章の端点同型と、同じsourceの正規化 | [ExactBarBetaProjection][c6-beta-projection]、[G116KaroubiPlacement][c6-placement] | 標準比較・二冪等射・生成比較のcore射影を照合。Karoubi内の端点同型は冪等射を合成したe j_D・E j_Vとして与える |
+| C6-10 | 例6.18 | 一Atom・一source、二つの選択軸、configurationのHomをoperationとするcore、空の方程式・invariant添字 | 第1章の定義1.6・1.7・1.10・1.12・1.17・1.25・1.28と定理6.16。[ExactBarBetaFiniteWitness][c6-beta-witness]の補助幾何の構成も照合 | 本文用に恒等な底の平方と非自明な軸交換を用いる別の入力を構成。文脈・環・detector・raw座標・関係・制限を指定。既存Leanの固定axis-fold witnessそのものを引用したとは扱わず、新しい入力から本文内で非可逆性を導く |
+| C6-11 | 補題6.19–定理6.21 | Ad coreの充満部分圏、全てのcore射 | [CanonicalNormalizationAbsorption][c6-absorption]、[NormalizationCategory][c6-category]、[NormalizationProjection][c6-projection] | N_Q f N_P=f N_Pを全成分で示す。Sandwich条件を満たす射の圏、恒等射N_P、充満関手f↦f N_Pを構成 |
+| C6-12 | 命題6.23・命題6.24 | 同じ充満部分圏。正規化のoperation写像を固定 | [NormalizationNaturalityFailure][c6-naturality-failure]、[ModificationBlocker][c6-operation-coherence] | Karoubi内の包含の自然性を片側吸収から証明。逆方向の族の自然性をf N_P=N_Q f、さらにoperation成分の等式と同値とする |
+| C6-13 | 例6.25 | 例6.18をHom×Boolのoperationへ拡張。元の対象に依存するBool反転 | [ModificationCounterexample][c6-counterexample]、[NormalizationNaturalityFailure][c6-naturality-failure] | 型の違いを使う既存反例の仕組みを、本文のcore上に構成。f²=1、fN=N、Nf≠fNを示す。f≠1とfN=Nから正規化関手の非忠実性も本文内で導く |
+| C6-14 | 定義6.26–命題6.28 | 任意の圏と関手、三段の射影 | [KaroubiArrowEquivalence][c6-arrow-equivalence]、[FunctorNaturality][c6-functor-naturality]、[ThreeStageProjection][c6-three-stage] | 冪等平方(c,e,d)をdceへ送る関手と逆を構成。往復の同型・自然性、関手への適合と射影の合成を成分で証明 |
+| C6-15 | 構成6.29 | 比較の圏の全対象、同型の端点変更 | [MaximalSubgroupoid][c6-groupoid]、[G116KaroubiPlacement][c6-placement] | 非可逆な比較も対象に残す最大亜群を説明。J(β)と像の間のβの端点と恒等射を区別 |
+| C6-16 | 例6.30・命題6.31 | 固定viewのlens三法則、有限状態のプロトコル実現、実行・観測を保つ冪等adapter | 第1章の定義1.32・命題1.33・定義1.36・命題1.38 | Lensの四状態から二状態への射を検算。プロトコルは固定点集合を実行・観測へ制限し、二つの意味保存adapterの分裂を直接証明。状態ごとの冪等性だけでは実行が閉じない反例を付す。本文で証明した帰結であり、同じCS命題のLean形式化完了とは記録しない |
+
+### 初稿の検証と確認範囲
+
+- 原稿を通読し、対象の正規化、射全体の冪等性、元の圏内の非分裂、Karoubi内の像、正規化関手を区別した。Overview・節の導入・章末のまとめを置き、モノリス分割後の設計比較と、実装方式による操作ラベルの違いへ戻る説明を加えた。
+- Configuration descentは、対象数0〜4・configuration数0〜3の全151組の全射・sectionについて、値域の要素数0〜3の12,974通りの読み取りを列挙し、一意因子化との同値を確認した。
+- 要素数0〜4の全1,052組の全単射・冪等写像について、βの可逆性分類、共役の冪等性、像の間の二つの合成を確認した。例6.13の表も同じ計算で確認した。
+- 端点集合の要素数0〜3の冪等平方835件と、端点の要素数0〜2のsandwich条件を満たす可換平方1,273件で、Karoubiと射の圏の往復・端点の同型を確認した。
+- 例6.25の二対象・二種類の印の有限部分で全8操作を検算し、二つの順序で印が0と1に分かれること、片側吸収と正規化後の射の一致を確認した。これを全architecture objectのLean検証とは扱わない。
+- Lensの全4状態と2更新値で三法則・射の条件・固定点の閉性を確認した。一頂点・一操作、状態数0〜3、定値の観測先への二値観測で、自然性と観測保存を満たす249組の遷移・冪等写像・観測を列挙し、像の実行・観測と分裂を確認した。非自然な交換操作・定値正規化の反例も検算した。
+- 全425式（本文内375・独立行50）をKaTeX 0.18.7で検査し、構文エラー・警告はない。ローカルのMathMLプレビューで式の個数・表示幅と、主要式・表・本文の表示を確認した。GitHubファイルプレビューとPRの描画済み差分での確認は、PR作成後に行う。
+- 番号、章間の参照、リンク、空白・不可視文字・公開資料向けの検査、原稿と文献確認表のhashを確認した。参考文献4件の引用文・書誌は変更せず、原稿一式のhashに第6章を含めた。
+
+上記の有限検算は、本文の一般的な証明を補助する。一回限りの検査を恒久CIへ追加していない。
+人間が原稿を確認し、PR作成を承認した。確認済みの原稿を保持してPRを作成し、
+GitHub表示確認とCIの対象commit・結果をPRに記録する。Claudeの独立レビューはPR上で行う。
+
+[c6-descent]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/ConfigurationDescent.lean
+[c6-core-normalization]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/BCAuthoredCanonicalObjectNormalization.lean
+[c6-idempotence]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeNormalization.lean
+[c6-object-naturality]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/CanonicalObjectNormalizationNaturality.lean
+[c6-distinct]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/DistinctArchitectureObjects.lean
+[c6-no-split]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/InternalNormalizationSplitNoGo.lean
+[c6-raw-failure]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeRawFailureLocus.lean
+[c6-image]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeKaroubiImage.lean
+[c6-geom-normalization]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalization.lean
+[c6-exact-naturality]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactNormalizationNaturality.lean
+[c6-alpha-triangle]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedBarAlphaTriangle.lean
+[c6-alpha-naturality]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarAlphaNormalizationNaturality.lean
+[c6-beta-factor]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaFactorization.lean
+[c6-beta-classification]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaClassification.lean
+[c6-beta-projection]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaProjection.lean
+[c6-beta-witness]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaFiniteWitness.lean
+[c6-absorption]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/CanonicalNormalizationAbsorption.lean
+[c6-category]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/NormalizationCategory.lean
+[c6-projection]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/NormalizationProjection.lean
+[c6-naturality-failure]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/NormalizationNaturalityFailure.lean
+[c6-operation-coherence]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/LaxDiagnosticProjectorModificationBlocker.lean
+[c6-counterexample]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/LaxDiagnosticProjectorModificationCounterexample.lean
+[c6-arrow-equivalence]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/KaroubiArrowEquivalence.lean
+[c6-functor-naturality]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/FunctorNaturality.lean
+[c6-three-stage]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/ThreeStageProjection.lean
+[c6-groupoid]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/MaximalSubgroupoid.lean
+[c6-placement]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/G116KaroubiPlacement.lean
