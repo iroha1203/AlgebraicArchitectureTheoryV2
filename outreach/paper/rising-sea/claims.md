@@ -512,11 +512,11 @@ Claudeのapproveは修正前のcommitに対するものであり、修正版の�
 [c4-protocol]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSAATProtocolAdapterSquares.lean
 [c4-fully-faithful]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSAATFullyFaithfulComparisonTransport.lean
 
-## 第5章の初稿と一次資料の対応
+## 第5章の原稿と一次資料の対応
 
-確認対象は [第5章 基底変換と生成比較](ja/08-base-change.md) の日本語初稿である。
+確認対象は [第5章 基底変換と生成比較](ja/08-base-change.md) の日本語原稿である。
 一次資料の固定版は、第4章マージ後の `9364f25d1b54dff9ad059ae95c71d0404626d0d6`。
-原稿のSHA-256は `cc408055daa2532d61b552ac00885d291e50a73fcfa235a05ebd766b97cf8080`。
+原稿のSHA-256は `f878b074b73e210f4944b3eefc9058cf11dd2f9ccaccb1d344e02affbdb7c439`。
 確認者はCodex（GPT-6）、確認日は2026-09-21である。
 
 必要な定義・仮定・構成・証明を原稿内に記述し、内部の数学・Leanとの対応をこの記録に置いた。
@@ -532,7 +532,7 @@ Leanの変更・ローカル再検証は行っていない。
 | C5-04 | 構成5.10–命題5.12・例5.13 | Exactなpointed pullback、実際の二輸送経路と単位・余単位。指定比較との一致は三角形で判定 | [CoreBeckChevalleyMate][c5-bc-mate]、[PackageProjectionBeckChevalleyExactness][c5-bc-exactness] | 三段のmateを記述し、三角形で特徴づけ、cleavageを替えた場合も端点同型の下で一致することを証明。既存mate宣言の有限presentation・Atom等号判定という入力と、本文のsemanticな構成範囲を区別する。本文では定理5.6・命題5.8から一般のexact squareに同じ構成を行う証明を与えた |
 | C5-05 | 定義5.14・定理5.15・例5.16 | Source有限表、Atom述語の既定値と有限例外、有限台の置換。端点同型も許す表示可能性 | [Schema][c5-code]、[CoverageSchema][c5-coverage-schema]、[CoverageClassification][c5-coverage] | 両端sourceの有限性と全target sourceの有限・余有限抽出を必要十分条件として証明。正規化の像だけで元の述語を符号化し、正規化の冪等性を要求しない。任意のAtom全単射はtarget端点同型へ移す。固定code間のHomの充満性とは量化を分ける |
 | C5-06 | 定義5.17・構成5.18 | 有限の底の図式、辺平方、sourceの強い辺lift、頂点でのcanonical輸送 | [IndexedBaseDiagram][c5-diagram]、[IndexedDiagnosticAssembly][c5-assembly] | 生成辺から道の自然性を帰納的に導出し、同じ平方で上段の辺を因子分解。合成・単位・貼り合わせを一意性から比較 |
-| C5-07 | 命題5.19・例5.20 | 変更前の関係、変更先の生の辺と可換平方の族。Epiは出発点での消去に使用 | [IndexedRawFamilyClassification][c5-raw-family] | 面の両経路は頂点射との前合成後に等しいことを示す。全対象・全平行射への一様な消去条件とepiの同値を述べ、固定した図式の整合性の必要条件とはしない。二点のsourceで非epiの失敗例と整合する対照例を構成 |
+| C5-07 | 命題5.19・例5.20 | 変更前の関係、変更先の生の辺と可換平方の族。Epiは指定面の始点での消去に使用 | [IndexedRawFamilyClassification][c5-raw-family] | 面の両経路は頂点射との前合成後に等しいことを示す。本文の十分条件は指定面の始点だけにepiを要求し、既存Leanの生成辺の始点も含むSupportEpiより弱い条件で、本文内の消去証明を用いる。全対象・全平行射への一様な消去条件とepiの同値は、固定した図式の整合性の必要条件とは区別する。二点のsourceで非epiの失敗例と整合する対照例を構成 |
 | C5-08 | 構成5.21・定理5.22・例5.23 | 両端で関係を満たす固定図式、同じ入力から生成した辺と指定比較、全てのedge gauge | [EndpointExactness][c5-endpoint]、[CoherenceExactness][c5-coherence]、[ObstructionExactness][c5-obstruction]、[OrbitExactness][c5-orbit] | Fiber同値から終点群の同型を作り、cochain・再選択を両方向へ対応づける。標準比較とraw defectの自然性を示し、整合性、消滅する再選択の存在、任意cochainの軌道所属を保存・反映。S3の例は本文内の群による検算 |
 | C5-09 | 定義5.24・定理5.25 | 前向きの抽出保存、上段のexact条件、target coreが存在する選択点での抽出の反映 | [RealizedSupport][c5-realized]、[Refinement Projection][c5-ref-projection]、[Qualification][c5-qualification] | 実現台をcore fiberの非空性で定義。反映条件から逆再添字づけを作り、逆に任意のliftの選択族等式から反映を導く。空fiberの空虚な場合を明示 |
 | C5-10 | 構成5.26・命題5.27 | Exact cospanと一方のlegへのrefinement、compatibleなsource対。逆方向にはその点の実現台条件 | [Configuration][c5-ref-configuration]、[Regime][c5-regime]、[Mate][c5-ref-mate]、[Qualification][c5-qualification] | 前向きの平方を反映条件なしで作る。Exactな第一射影によるcore輸送で実現台を移し、二つの逆経路とmateを構成。全compatible点での分類と、恒等・合成の閉性を証明 |
@@ -541,7 +541,7 @@ Leanの変更・ローカル再検証は行っていない。
 | C5-13 | 定理5.32後半・補題5.33 | 有限根付き図式、同じ底のfiberのsource core図式、二段の強い辺lift、固定係数、同じsourceから引き戻す指定比較 | [CompatibleInput][c5-compatible-input]、[UpperRefinementBCProblem][c5-upper-problem]、[CompatibleMateNaturality][c5-compatible-natural]、[CompatibleGlobalMate][c5-compatible-global]、[SolutionContracts][c5-solution-contracts]、[SolutionEquivalence][c5-solution-equiv] | 辺と指定比較のintertwiningを二段のcartesian一意性から証明。端点同型によるc⁻¹sbと逆を明示し、三角形・道・貼り合わせを含む解と再選択軌道を両方向へ移す |
 | C5-14 | 命題5.34–命題5.36 | 第1章の全域lens三法則とlens同型、残す操作と関係のプロトコル、自然なadapter | 第1章の定義1.32・1.36と第4章の定義4.36・命題4.40 | Lensのviewの制限と更新の閉性、移行と制限の可換性を三法則から直接証明。プロトコルの前合成とadapter自然性を生成辺から証明。この章で追加した意味論内の命題であり、新たなLean theoremとは扱わない。AATへ適用する際の入力構成・exactness・幾何の指定は別途必要 |
 | C5-15 | 構成5.37・命題5.38 | 同じexact square・比較図式・面・cochain・source core・完全幾何・係数、実際の二経路と端点同型 | [ExactDerivedMateComposite][c5-derived-mate]、[ExactDerivedBarAlphaTriangle][c5-alpha-triangle]、[ExactDerivedBarAlphaProjection][c5-alpha-projection] | 完全幾何の二経路を実際のpush-pullで構成し、単位・始点同型・逆経路mate・終点同型・余単位による比較を説明。三角形の一意性からcanonical mateとの一致とcoreへの射影式を証明 |
-| C5-16 | 定義5.39・構成5.40・まとめ | Sourceのconfigurationを保つ対象正規化、残差・operation・invariant・座標のadmissibility、同じcochainによる分岐 | [ObjectNormalization][c5-normalization]、[CanonicalNormalization][c5-geom-normalization]、[ExactBarBetaFactorization][c5-beta-factor]、[ExactBarBetaProjection][c5-beta-projection] | 条件を明記してcoreと幾何の自己射を構成し、二番目の実経路で運んだ因子とcanonical mateの積としてβ・barβを定める。射影式までを本章で示し、射としての冪等性・可逆性分類・像の実現は第6章へ接続。分岐を有限アルゴリズムとは扱わない |
+| C5-16 | 定義5.39・構成5.40・まとめ | Sourceのconfigurationを保つ対象正規化、残差・operation・invariant・座標のadmissibility、同じcochainによる分岐 | [ObjectNormalization][c5-normalization]、[CanonicalNormalization][c5-geom-normalization]、[ExactBarBetaFactorization][c5-beta-factor]、[ExactBarBetaProjection][c5-beta-projection] | 関数型invariantの輸送条件と値の不変性の同値を、対象写像の冪等性と値域の全単射の単射性から本文内で導出。条件を明記してcoreと幾何の自己射を構成し、二番目の実経路で運んだ因子とcanonical mateの積としてβ・barβを定める。射影式までを本章で示し、射としての冪等性・可逆性分類・像の実現は第6章へ接続。分岐を有限アルゴリズムとは扱わない |
 
 ### 本文用の例と有限検算
 
@@ -558,7 +558,7 @@ Pythonの有限列挙で、本文の例と主要な式を次の範囲で検算�
 有限検算は既存Lean package全体の再検証でも、一般定理の証明の代替でもない。
 モノリスの分割とコードレビューの説明は応用可能性を示す例であり、実コードの評価結果は追加していない。
 
-### 表示・引用と確認状態
+### 初稿の表示・引用と確認状態
 
 全416式（本文内368・独立行48）をKaTeX 0.18.7で構文検査し、エラー・警告なし。
 数式区切り、定義等40件・式番号48件、前章からの参照、内部資料への案内が本文にないことを確認した。
@@ -603,6 +603,34 @@ GitHub上の表示確認とCIの対象commit・結果はPRに記録し、Claude�
 定義・命題・定理・補題・構成の本文と証明、番号、引用を差分で照合し、
 四状態のlensの対応と制限後の更新、数式構文、参照・Unicode・公開情報・hashを確認した。
 既存の形式化と証明範囲は変更していない。この修正を含む原稿について人間の確認とPR作成の承認を得た。
+
+### PR #4836のレビューと採用した7件の改善
+
+2026-09-21、[Claudeレビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4836#issuecomment-5754757670)は
+`04754169df819fdd4f8f2212726610da7741a385` をapproveとし、任意提案3件を示した。
+[別の内容レビュー](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4836#pullrequestreview-5262708668)も
+同じcommitで修正必須の数学的な誤りを認めず、任意提案5件を示した。
+両者は一次資料の照合と有限例の独立検算を行い、Claudeは全416式の構文とGitHub表示も確認した。
+導入に関する重複をまとめ、人間が採用した次の7件を反映した。
+
+1. §5.3に導入文と四頂点の対応表を加え、モノリスの分割と範囲の選択をD・Vへ対応づけた。頂点をdoctrineと選択sourceの組とし、sourceの範囲の選択とcore内のAtomの削除を区別した。
+2. §5.4で、存在結果と有限表示の分類の関係、および§5.5から比較と診断へ戻る流れを説明した。
+3. 命題5.19のepi条件を、実際に消去を使う指定面の始点へ限定した。本文の証明と、より広いsupportを使う既存Leanの条件の違いをC5-07へ記した。
+4. 例5.35で、状態の対応hと選ぶ表示値W′の説明を二文に分けた。
+5. 構成5.37に、逆経路の比較と、単位・比較・余単位を合成する端点付きの式を加えた。別のliftを選ぶ場合の二つの端点同型は、中央の比較の前後へ入れることを明記した。
+6. 定義5.39の関数型invariantを値の不変性で記述し、全単射による輸送条件との同値性を本文内で証明した。使用する冪等性は対象写像のもので、次章の射としての冪等性を仮定していない。
+7. §5.10の冒頭に、標準比較へ正規化を組み込み、表現の区別がどこまで残るかを調べる目的を置いた。
+
+定義等40件の番号・見出しと、式番号5.1〜5.48の全数式を保持した。
+新しい独立行の式3件は番号なしとし、全436式（本文内385・独立行51）の構文を
+KaTeX 0.18.7で検査してエラー・警告なし。引用URLと引用内容は保持した。
+Invariantの同値性は、対象数0〜4・値域の要素数0〜3の全4,430組の冪等写像・値関数と、
+23,291通りの値域置換で検算した。輸送条件を満たす1,235通りすべてで値が不変であり、
+逆向きも恒等の置換で成立する。単射性または冪等性を外した二つの反例も確認した。
+この有限検算は本文の一般的な証明を補うものであり、新たなLean theoremは追加していない。
+
+修正版に対する独立再レビューは未記録である。
+数式のGitHub表示とCIは修正後のcommitで確認し、その結果をPRに記録する。
 
 [c5-pullback]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/DoctrinePullback.lean
 [c5-pointed]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/PointedDoctrinePullback.lean
