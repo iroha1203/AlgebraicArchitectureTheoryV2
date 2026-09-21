@@ -10106,7 +10106,7 @@ result:
     - "assembleHom and assembleReadHom build the existing GeneratorMap and call ProtocolRealization.ext."
     - "assembleReadHom_readHom and readHom_assembleReadHom use the existing res/ext inverse API and primitive graph inverse laws."
     - "identityHom and composeHom use IndependentCarrierGraph.identity and compose directly."
-    - "Hom.ext_table, table_readHom, table_identityHom, and table_composeHom expose the glued map table without unfolding constructors; Category laws and reader functoriality use these APIs."
+    - "Hom.ext_table, the table and vertexMapTable evaluation APIs, and assembleEdge_readObject expose semantic readings without unfolding constructors; Category laws, reader functoriality, and observed path comparison use these APIs."
     - "observedRestriction_state, observedRestriction_edge, observedRestriction_path, observedRestriction_observation, and observedRestriction_map compare actual primitive evaluations with the accepted observed restriction reading."
     - "togglingRelationFormula_rejected reuses the existing togglingProtocolLawStructure relation failure."
     - "infiniteProtocol_relation_formula and infiniteProtocol_observation_formula keep the native laws true while infiniteProtocol_not_stateCover rejects the Nat state carrier only through StateCover."
@@ -10124,6 +10124,10 @@ result:
       - "table_readHom"
       - "table_identityHom"
       - "table_composeHom"
+      - "vertexMapTable_readHom"
+      - "vertexMapTable_identityHom"
+      - "vertexMapTable_composeHom"
+      - "assembleEdge_readObject"
       - "booleanFlipEdge_observationFormula_rejected"
       - "booleanIdentityMap_observationPreservation_rejected"
       - "booleanIdentityMap_edgePreservation_rejected"
@@ -10185,7 +10189,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   completion_scope: "Part II PR 3/4 only; A/B common integration, mandatory inputs, and Cycle 79 comparison are not claimed."
   validation_refs:
-    - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentProtocolPrimitiveReconstruction.lean: 322 declarations, standard axioms only"
+    - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentProtocolPrimitiveReconstruction.lean: 327 declarations, standard axioms only"
     - "module registered in research/lean/research-modules.txt and ResearchLean/AG.lean"
     - "git diff --check and the new-file whitespace check: pass"
     - "placeholder and axiom/admit/sorry/unsafe scan: no match"

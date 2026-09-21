@@ -786,6 +786,13 @@ def readObject {input : ProtocolFamilyInput.{u}}
     apply (stateCover_iff_finite (readDataTable realization) vertex).mpr
     exact realization.state_finite vertex
 
+/-- Assembling a named edge after semantic reading recovers its original action. -/
+@[simp] theorem assembleEdge_readObject {input : ProtocolFamilyInput.{u}}
+    (realization : ProtocolRealization input.schema input.observation)
+    {source target} (edge : input.schema.Edge source target) :
+    assembleEdge (readObject realization) edge = realization.edgeAction edge :=
+  IndependentCarrierGraph.assemble_read _ _ (realization.edgeAction edge)
+
 /-- Reading after primitive object assembly recovers every primitive cell. -/
 @[simp] theorem readObject_assembleObject {input : ProtocolFamilyInput.{u}}
     (object : Object input) : readObject (assembleObject object) = object := by
@@ -895,6 +902,13 @@ theorem homFragments_glue {input : ProtocolFamilyInput.{u}}
 def vertexMapTable {input : ProtocolFamilyInput.{u}} (table : HomTable input)
     (vertex : input.schema.Vertex) : GraphTable.{u} :=
   fun query => table (.map vertex query)
+
+/-- Evaluating a vertex-map restriction is evaluating the corresponding tagged
+Hom-table query. -/
+@[simp] theorem vertexMapTable_apply {input : ProtocolFamilyInput.{u}}
+    (table : HomTable input) (vertex : input.schema.Vertex)
+    (query : GraphQuery.{u}) :
+    vertexMapTable table vertex query = table (.map vertex query) := rfl
 
 /-- Derived protocol Hom-law queries tag both endpoints and the vertex maps. -/
 inductive HomLawQuery (input : ProtocolFamilyInput.{u}) where
@@ -1287,6 +1301,16 @@ generator component graph. -/
         ((ProtocolRealization.res morphism).component vertex) graphQuery)) query = _
   exact congrFun (homGlue_fragments _) query
 
+/-- Restricting a semantic Hom reading at one vertex recovers its component graph. -/
+@[simp] theorem vertexMapTable_readHom {input : ProtocolFamilyInput.{u}}
+    {source target : ProtocolRealization input.schema input.observation}
+    (morphism : source ⟶ target) (vertex : input.schema.Vertex) :
+    vertexMapTable (readHom morphism).table vertex =
+      IndependentCarrierGraph.read _ _
+        ((ProtocolRealization.res morphism).component vertex) := by
+  funext query
+  rw [vertexMapTable_apply, table_readHom]
+
 /-- Assemble a local Hom directly between its original semantic endpoints. -/
 def assembleReadHom {input : ProtocolFamilyInput.{u}}
     {source target : ProtocolRealization input.schema input.observation}
@@ -1398,6 +1422,14 @@ def identityHom {input : ProtocolFamilyInput.{u}} (object : Object input) :
     | .map vertex graphQuery =>
         IndependentCarrierGraph.identity (object.State vertex) graphQuery)) query = _
   exact congrFun (homGlue_fragments _) query
+
+/-- Restricting the direct identity at one vertex recovers the diagonal graph. -/
+@[simp] theorem vertexMapTable_identityHom {input : ProtocolFamilyInput.{u}}
+    (object : Object input) (vertex : input.schema.Vertex) :
+    vertexMapTable (identityHom object).table vertex =
+      IndependentCarrierGraph.identity (object.State vertex) := by
+  funext query
+  rw [vertexMapTable_apply, table_identityHom]
 
 /-- Direct primitive composition uses point composition of every vertex graph. -/
 def composeHom {input : ProtocolFamilyInput.{u}}
@@ -1515,6 +1547,19 @@ each vertex query. -/
         (vertexMapTable second.table vertex) graphQuery)) query = _
   exact congrFun (homGlue_fragments _) query
 
+/-- Restricting direct Hom composition at one vertex recovers graph composition. -/
+@[simp] theorem vertexMapTable_composeHom {input : ProtocolFamilyInput.{u}}
+    {source middle target : Object input}
+    (first : Hom source middle) (second : Hom middle target)
+    (vertex : input.schema.Vertex) :
+    vertexMapTable (composeHom first second).table vertex =
+      IndependentCarrierGraph.compose
+        (source.State vertex) (middle.State vertex) (target.State vertex)
+        (vertexMapTable first.table vertex) (first.lawful vertex)
+        (vertexMapTable second.table vertex) := by
+  funext query
+  rw [vertexMapTable_apply, table_composeHom]
+
 /-- Primitive protocol objects and direct graph Homs form a category. -/
 instance {input : ProtocolFamilyInput.{u}} : Category.{u + 1} (Object input) where
   Hom := fun source target => IndependentProtocolPrimitiveReconstruction.Hom source target
@@ -1526,7 +1571,8 @@ instance {input : ProtocolFamilyInput.{u}} : Category.{u + 1} (Object input) whe
     funext query
     cases query with
     | map vertex graphQuery =>
-        simpa only [table_composeHom, table_identityHom, vertexMapTable] using
+        simpa only [table_composeHom, vertexMapTable_identityHom,
+          vertexMapTable_apply] using
           congrFun (IndependentCarrierGraph.identity_compose _ _
             (vertexMapTable morphism.table vertex) (morphism.lawful vertex)) graphQuery
   comp_id := by
@@ -1535,7 +1581,8 @@ instance {input : ProtocolFamilyInput.{u}} : Category.{u + 1} (Object input) whe
     funext query
     cases query with
     | map vertex graphQuery =>
-        simpa only [table_composeHom, table_identityHom, vertexMapTable] using
+        simpa only [table_composeHom, vertexMapTable_identityHom,
+          vertexMapTable_apply] using
           congrFun (IndependentCarrierGraph.compose_identity _ _
             (vertexMapTable morphism.table vertex) (morphism.lawful vertex)) graphQuery
   assoc := by
@@ -1544,7 +1591,7 @@ instance {input : ProtocolFamilyInput.{u}} : Category.{u + 1} (Object input) whe
     funext query
     cases query with
     | map vertex graphQuery =>
-        simpa only [table_composeHom, vertexMapTable] using
+        simpa only [table_composeHom, vertexMapTable_composeHom] using
           congrFun (IndependentCarrierGraph.compose_assoc _ _ _ _
             (vertexMapTable first.table vertex) (first.lawful vertex)
             (vertexMapTable second.table vertex) (second.lawful vertex)
@@ -1578,16 +1625,7 @@ theorem readHom_comp {input : ProtocolFamilyInput.{u}}
   funext query
   cases query with
   | map vertex graphQuery =>
-      simp only [table_readHom, table_composeHom]
-      change IndependentCarrierGraph.read (source.State vertex) (target.State vertex)
-          ((ProtocolRealization.res (first ≫ second)).component vertex) graphQuery =
-        IndependentCarrierGraph.compose (source.State vertex) (middle.State vertex)
-          (target.State vertex)
-          (IndependentCarrierGraph.read (source.State vertex) (middle.State vertex)
-            ((ProtocolRealization.res first).component vertex))
-          _
-          (IndependentCarrierGraph.read (middle.State vertex) (target.State vertex)
-            ((ProtocolRealization.res second).component vertex)) graphQuery
+      simp only [table_readHom, table_composeHom, vertexMapTable_readHom]
       have componentComp :
           (ProtocolRealization.res (first ≫ second)).component vertex =
             (ProtocolRealization.res second).component vertex ∘
@@ -1688,8 +1726,8 @@ theorem observedRestriction_edge
     assembleEdge (readObject realization) edge state =
       (protocolObservedRestrictionObject input realization).stateDiagram.map
         (input.schema.edgeMorphism edge).op.op state := by
-  exact congrFun (IndependentCarrierGraph.assemble_read _ _
-    (realization.edgeAction edge)) state
+  rw [assembleEdge_readObject]
+  rfl
 
 /-- Primitive edge assembly along every existing path agrees with the observed restriction. -/
 theorem observedRestriction_path
@@ -1700,27 +1738,13 @@ theorem observedRestriction_path
     input.schema.evaluatePath (assembleEdge (readObject realization)) path state =
       (protocolObservedRestrictionObject input realization).stateDiagram.map
         (input.schema.pathMorphism path).op.op state := by
-  change input.schema.evaluatePath
-      (fun {source target} (edge : input.schema.Edge source target) =>
-        IndependentCarrierGraph.assemble (realization.State source)
-          (realization.State target)
-          (IndependentCarrierGraph.read _ _ (realization.edgeAction edge))
-          (IndependentCarrierGraph.read_isLawful _ _
-            (realization.edgeAction edge))) path state =
-    (protocolObservedRestrictionObject input realization).stateDiagram.map
-      (input.schema.pathMorphism path).op.op state
   have edgeAssembly :
       (fun {source target} (edge : input.schema.Edge source target) =>
-        IndependentCarrierGraph.assemble (realization.State source)
-          (realization.State target)
-          (IndependentCarrierGraph.read _ _ (realization.edgeAction edge))
-          (IndependentCarrierGraph.read_isLawful _ _
-            (realization.edgeAction edge))) =
+        assembleEdge (readObject realization) edge) =
         (fun {source target} (edge : input.schema.Edge source target) =>
           realization.edgeAction edge) := by
-    funext source target edge state
-    exact congrFun (IndependentCarrierGraph.assemble_read _ _
-      (realization.edgeAction edge)) state
+    funext source target edge
+    exact assembleEdge_readObject realization edge
   rw [edgeAssembly, protocolEvaluatePath_eq_pathAction]
   rfl
 
