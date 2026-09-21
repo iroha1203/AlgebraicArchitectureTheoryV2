@@ -216,22 +216,57 @@ def explicitReadObject (G : ExplicitExactGeomCategory.{u, v} U) :
     ExplicitLocalObject.{u, v} U :=
   ⟨IndependentGeometryPrimitive.readFragments G.toGeometryPackage⟩
 
+/-- API lemma for the fixed GOAL B geometry branch: the Part I finite
+fragment reader separates representative native objects after they are wrapped
+as objects of the new local category. -/
+theorem representativeReadObject_injective :
+    Function.Injective (representativeReadObject.{u, v} (U := U)) := by
+  intro G H equality
+  apply IndependentGeometryPrimitive.readFragments_injective
+  exact congrArg (fun object => object.localObject) equality
+
+/-- API lemma for the fixed GOAL B geometry branch: the same Part I finite
+fragment reader separates explicit native objects after they are wrapped as
+objects of the new local category. -/
+theorem explicitReadObject_injective :
+    Function.Injective (explicitReadObject.{u, v} (U := U)) := by
+  intro G H equality
+  cases G with
+  | mk G =>
+      cases H with
+      | mk H =>
+          have fragmentEquality :
+              IndependentGeometryPrimitive.readFragments G =
+                IndependentGeometryPrimitive.readFragments H :=
+            congrArg (fun object => object.localObject) equality
+          have packageEquality : G = H :=
+            IndependentGeometryPrimitive.readFragments_injective fragmentEquality
+          cases packageEquality
+          rfl
+
 /-- The assembled representative reading is canonically isomorphic to its
 native source object. -/
 def representativeObjectIso (G : GeomReadCategory.{u, v} U) :
     assemble (objectData (representativeReadObject G).localObject) ≅ G :=
   eqToIso (assemble_objectData_readFragments G)
 
-/-- The assembled explicit reading is canonically isomorphic to its native
-source object. -/
-def explicitObjectIso (G : ExplicitExactGeomCategory.{u, v} U) :
+/-- Part I object recovery lifted through the explicit native-category wrapper;
+this is the object equality used by the Issue #4711 §3 endpoint conversion. -/
+theorem explicit_assemble_objectData_readFragments
+    (G : ExplicitExactGeomCategory.{u, v} U) :
     ExplicitExactGeomCategory.ofGeometryPackage
-        (assemble (objectData (explicitReadObject G).localObject)) ≅ G := by
-  apply eqToIso
+        (assemble (objectData (explicitReadObject G).localObject)) = G := by
   cases G with
   | mk package =>
       exact congrArg ExplicitExactGeomCategory.ofGeometryPackage
         (assemble_objectData_readFragments package)
+
+/-- The assembled explicit reading is canonically isomorphic to its native
+source object. -/
+def explicitObjectIso (G : ExplicitExactGeomCategory.{u, v} U) :
+    ExplicitExactGeomCategory.ofGeometryPackage
+        (assemble (objectData (explicitReadObject G).localObject)) ≅ G :=
+  eqToIso (explicit_assemble_objectData_readFragments G)
 
 /-- Convert representative native Hom endpoints to the independently
 assembled primitive endpoints. -/
@@ -250,6 +285,57 @@ def explicitEndpointHomEquiv (G H : ExplicitExactGeomCategory.{u, v} U) :
         ExplicitExactGeomCategory.ofGeometryPackage
           (assemble (objectData (explicitReadObject H).localObject))) :=
   (explicitObjectIso G).symm.homCongr (explicitObjectIso H).symm
+
+/-- Transporting the endpoints of a representative Hom along equality
+isomorphisms leaves its Part I primitive table unchanged.  This helper exposes
+the proof principle used by the Issue #4711 §3 API theorem below. -/
+private theorem readRepresentative_eqToIso_homCongr
+    {G H G' H' : GeomReadCategory.{u, v} U}
+    (source : G' = G) (target : H' = H) (morphism : G ⟶ H) :
+    NativeReader.readRepresentative
+        (((eqToIso source).symm.homCongr (eqToIso target).symm) morphism) =
+      NativeReader.readRepresentative morphism := by
+  subst G
+  subst H
+  simp
+
+/-- Transporting the endpoints of an explicit Hom along equality isomorphisms
+leaves its Part I primitive table unchanged.  This is the explicit counterpart
+of the helper used by the Issue #4711 §3 API theorem below. -/
+private theorem readExplicit_eqToIso_homCongr
+    {G H G' H' : ExplicitExactGeomCategory.{u, v} U}
+    (source : G' = G) (target : H' = H) (morphism : G ⟶ H) :
+    NativeReader.readExplicit
+        (((eqToIso source).symm.homCongr (eqToIso target).symm) morphism) =
+      NativeReader.readExplicit morphism := by
+  subst G
+  subst H
+  simp
+
+/-- Issue #4711 §3 representative endpoint conversion preserves the complete
+Part I primitive table.  Its only equalities are supplied by the Part I object
+round trip. -/
+theorem representativeEndpointHomEquiv_read
+    (G H : GeomReadCategory.{u, v} U) (morphism : G ⟶ H) :
+    NativeReader.readRepresentative
+        (representativeEndpointHomEquiv G H morphism) =
+      NativeReader.readRepresentative morphism := by
+  simpa [representativeEndpointHomEquiv, representativeObjectIso] using
+    readRepresentative_eqToIso_homCongr
+      (assemble_objectData_readFragments G)
+      (assemble_objectData_readFragments H) morphism
+
+/-- Issue #4711 §3 explicit endpoint conversion preserves the complete Part I
+primitive table.  Its only equalities are supplied by the lifted Part I object
+round trip. -/
+theorem explicitEndpointHomEquiv_read
+    (G H : ExplicitExactGeomCategory.{u, v} U) (morphism : G ⟶ H) :
+    NativeReader.readExplicit (explicitEndpointHomEquiv G H morphism) =
+      NativeReader.readExplicit morphism := by
+  simpa [explicitEndpointHomEquiv, explicitObjectIso] using
+    readExplicit_eqToIso_homCongr
+      (explicit_assemble_objectData_readFragments G)
+      (explicit_assemble_objectData_readFragments H) morphism
 
 /-- Endpoint conversion followed by the Part I representative Hom reading is
 an equivalence for every native object pair. -/
@@ -271,24 +357,36 @@ def explicitReadingHomEquiv
       (objectData (explicitReadObject G).localObject)
       (objectData (explicitReadObject H).localObject))
 
-/-- Every representative primitive query reads the endpoint-converted native
-Hom without changing its response. -/
+/-- Issue #4711 §3 point API: every representative local query agrees with
+the original native Hom before endpoint conversion. -/
 theorem representativeReadingHomEquiv_point
     {G H : GeomReadCategory.{u, v} U} (morphism : G ⟶ H)
     (query : IndependentGeometryHomPrimitive.Query.{u, v} U .representative) :
     InvariantWitness.point _ _ (representativeReadingHomEquiv G H morphism).val query =
+      NativeReader.readRepresentative morphism query := by
+  calc
+    InvariantWitness.point _ _
+        (representativeReadingHomEquiv G H morphism).val query =
       NativeReader.readRepresentative
         (representativeEndpointHomEquiv G H morphism) query :=
-  NativeReader.point_localRepresentative _ query
+      NativeReader.point_localRepresentative _ query
+    _ = NativeReader.readRepresentative morphism query :=
+      congrFun (representativeEndpointHomEquiv_read G H morphism) query
 
-/-- Every explicit primitive query reads the endpoint-converted native Hom
-without changing its response. -/
+/-- Issue #4711 §3 point API: every explicit local query agrees with the
+original native Hom before endpoint conversion. -/
 theorem explicitReadingHomEquiv_point
     {G H : ExplicitExactGeomCategory.{u, v} U} (morphism : G ⟶ H)
     (query : IndependentGeometryHomPrimitive.Query.{u, v} U .explicit) :
     InvariantWitness.point _ _ (explicitReadingHomEquiv G H morphism).val query =
+      NativeReader.readExplicit morphism query := by
+  calc
+    InvariantWitness.point _ _
+        (explicitReadingHomEquiv G H morphism).val query =
       NativeReader.readExplicit (explicitEndpointHomEquiv G H morphism) query :=
-  NativeReader.point_localExplicit _ query
+      NativeReader.point_localExplicit _ query
+    _ = NativeReader.readExplicit morphism query :=
+      congrFun (explicitEndpointHomEquiv_read G H morphism) query
 
 /-- Reading a representative identity gives the direct primitive local
 identity. -/
@@ -486,16 +584,18 @@ def explicitObjectAssembly (U : AtomCarrier.{u}) :
     exact IndependentGeometryPrimitive.readFragments_assembleFragments
       object.localObject)
 
-/-- The representative primitive reader discharges all three inputs of the
-general reconstruction theorem. -/
+/-- Fixed GOAL B representative reconstruction data.  Part I supplies Hom
+separation, Hom assembly, and finite-object assembly; this value packages
+those three inputs for the Cycle 65 reconstruction theorem. -/
 def representativeReconstructionData (U : AtomCarrier.{u}) :
     ReconstructionData (representativeReadingFunctor.{u, v} U) where
   separation := representativeHomSeparation U
   homAssembly := representativeHomAssembly U
   objectAssembly := representativeObjectAssembly U
 
-/-- The explicit primitive reader discharges all three inputs of the general
-reconstruction theorem. -/
+/-- Fixed GOAL B explicit reconstruction data.  Part I supplies Hom
+separation, Hom assembly, and finite-object assembly; this value packages
+those three inputs for the Cycle 65 reconstruction theorem. -/
 def explicitReconstructionData (U : AtomCarrier.{u}) :
     ReconstructionData (explicitReadingFunctor.{u, v} U) where
   separation := explicitHomSeparation U
@@ -560,14 +660,16 @@ theorem explicit_existsUnique_preimage {U : AtomCarrier.{u}}
       (explicitReadingFunctor.{u, v} U).map global = morphism :=
   (explicitReconstructionData U).existsUnique_preimage morphism
 
-/-- Representative complete geometry and its independent finite local model
-are equivalent categories. -/
+/-- Main theorem for the fixed GOAL B representative geometry branch.  It
+applies the Cycle 65 theorem to the concrete Part I reconstruction data, with
+no additional premise. -/
 def representativeEquivalence (U : AtomCarrier.{u}) :
     GeomReadCategory.{u, v} U ≌ RepresentativeLocalObject.{u, v} U :=
   (representativeReconstructionData U).equivalence
 
-/-- Explicit complete geometry and its independent finite local model are
-equivalent categories. -/
+/-- Main theorem for the fixed GOAL B explicit geometry branch.  It applies
+the Cycle 65 theorem to the concrete Part I reconstruction data, with no
+additional premise. -/
 def explicitEquivalence (U : AtomCarrier.{u}) :
     ExplicitExactGeomCategory.{u, v} U ≌ ExplicitLocalObject.{u, v} U :=
   (explicitReconstructionData U).equivalence

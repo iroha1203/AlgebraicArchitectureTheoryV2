@@ -9738,6 +9738,10 @@ result:
   lean_artifacts:
     - "IndependentGeometryCategoryReconstruction.RepresentativeLocalObject"
     - "IndependentGeometryCategoryReconstruction.ExplicitLocalObject"
+    - "IndependentGeometryCategoryReconstruction.representativeReadObject_injective"
+    - "IndependentGeometryCategoryReconstruction.explicitReadObject_injective"
+    - "IndependentGeometryCategoryReconstruction.representativeEndpointHomEquiv_read"
+    - "IndependentGeometryCategoryReconstruction.explicitEndpointHomEquiv_read"
     - "IndependentGeometryCategoryReconstruction.representativeReadingFunctor"
     - "IndependentGeometryCategoryReconstruction.explicitReadingFunctor"
     - "IndependentGeometryCategoryReconstruction.representativeReconstructionData"
@@ -9745,7 +9749,9 @@ result:
     - "IndependentGeometryCategoryReconstruction.representativeEquivalence"
     - "IndependentGeometryCategoryReconstruction.explicitEquivalence"
   evidence:
-    - "representativeReadingHomEquiv_point and explicitReadingHomEquiv_point preserve every primitive query after endpoint conversion"
+    - "representativeEndpointHomEquiv_read and explicitEndpointHomEquiv_read identify the complete primitive tables before and after endpoint conversion"
+    - "representativeReadingHomEquiv_point and explicitReadingHomEquiv_point identify every local query with the original native Hom reader"
+    - "representativeReadObject_injective and explicitReadObject_injective connect Part I object separation to both new object readers"
     - "representative_assemble_read and explicit_assemble_read"
     - "representative_read_assemble and explicit_read_assemble"
     - "representative_existsUnique_preimage and explicit_existsUnique_preimage"
@@ -9754,6 +9760,10 @@ result:
     theorem_names:
       - "representativeEquivalence"
       - "explicitEquivalence"
+      - "representativeReadObject_injective"
+      - "explicitReadObject_injective"
+      - "representativeEndpointHomEquiv_read"
+      - "explicitEndpointHomEquiv_read"
       - "representative_existsUnique_preimage"
       - "explicit_existsUnique_preimage"
     source_labels:
@@ -9761,9 +9771,11 @@ result:
       - "Issue comment 5754509275 sections 3 and 7, implementation order 1"
     conjuncts:
       - "Part I LocalObject -> RepresentativeLocalObject and ExplicitLocalObject"
+      - "Part I readFragments_injective -> both native object readers are injective"
       - "all GeometryTotalHom -> representativeReadingHomEquiv"
       - "all ExplicitExactGeometryHom -> explicitReadingHomEquiv"
-      - "object and Hom separation/assembly -> both ReconstructionData values"
+      - "endpoint conversion preserves both complete native primitive tables"
+      - "Hom separation, Hom assembly, and object assembly -> both ReconstructionData values"
       - "Cycle 65 general reconstruction -> both category equivalences"
     undischarged_assumptions: []
     acceptance_point: "This is the PR 1/4 obligation candidate. Fixed-head review, CI, and merge remain before acceptance."
@@ -9771,8 +9783,10 @@ result:
 audits:
   premise_delta:
     discharged:
+      - "Object separation comes from readFragments_injective and is connected to both new object readers."
       - "Object assembly comes from finiteObjectEquiv and readFragments_assembleFragments."
       - "Hom separation and assembly come from both Part I Hom reading equivalences."
+      - "Endpoint conversion preserves the complete primitive tables by equality-isomorphism reduction in both modes."
       - "Essential surjectivity uses the concrete finite-fragment assembler, not an assumed witness."
     remaining: []
   certificate_provenance:
@@ -9784,6 +9798,8 @@ audits:
   proof_use:
     used:
       - "assembleFragments_readFragments and readFragments_assembleFragments"
+      - "readFragments_injective"
+      - "representativeEndpointHomEquiv_read and explicitEndpointHomEquiv_read"
       - "representativeHomReadingEquiv and explicitHomReadingEquiv"
       - "representativeLocalIdentity_eq_native and explicitLocalIdentity_eq_native"
       - "representativeLocal_read_comp and explicitLocal_read_comp"
@@ -9796,8 +9812,9 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "lake env lean ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryCategoryReconstruction.lean: 76 declarations, standard axioms only"
-    - "individual #print axioms on 12 central declarations: propext, Classical.choice, Quot.sound only"
+    - "check_research_modules.sh --focused ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryCategoryReconstruction.lean: 81 declarations, standard axioms only"
+    - "module registered in research/lean/research-modules.txt and ResearchLean/AG.lean"
+    - "individual #print axioms on 12 central declarations after review remediation: propext, Classical.choice, Quot.sound only"
     - "git diff --check: pass"
     - "hidden and bidirectional Unicode scan: no match"
     - "Research import direction gate: 228 modules scanned, pass"
@@ -9809,8 +9826,10 @@ audits:
 `RepresentativeLocalObject`と`ExplicitLocalObject`が保持する対象dataは、パートIの`LocalObject`一つだけである。
 局所Homは`InvariantWitness.Local`と既存の全`PointLaws`からなり、完成済みHomをfieldに追加しない。
 任意のnative対象は`assemble_objectData_readFragments`で組立て後の対象と一致させ、`Iso.homCongr`でHomの
-型を合わせた後、パートIの全Hom同値へ渡す。`representativeReadingHomEquiv_point`と
-`explicitReadingHomEquiv_point`は、この型変換後も全primitive queryの応答が元のreaderと一致することを示す。
+型を合わせた後、パートIの全Hom同値へ渡す。`representativeEndpointHomEquiv_read`と
+`explicitEndpointHomEquiv_read`が変換前後のtable全体を同一視し、二つの`*_ReadingHomEquiv_point`は
+各primitive queryを変換前のnative Hom readerへ接続する。対象側も二つの`*ReadObject_injective`により、
+パートIの`readFragments_injective`を新しいobject readerへ接続する。
 
 恒等射と合成は`representativeIdentity` / `representativeComp`および`explicitIdentity` / `explicitComp`として
 直接定義し、Category instanceも同じ構成を使う。reading functorの恒等・合成保存は、端点の型変換と
