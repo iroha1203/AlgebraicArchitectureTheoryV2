@@ -178,6 +178,45 @@ theorem getGroup_inf_putGroup (L : GeneralLens.{u}) :
     L.getGroup ⊓ L.putGroup = L.putGroup := by
   exact inf_eq_right.mpr L.putGroup_le_getGroup
 
+/-- The state component of a lens automorphism is a permutation. -/
+private def statePermOfAut {L : GeneralLens.{u}} (a : Aut L) :
+    Equiv.Perm L.State where
+  toFun := a.hom.state
+  invFun := a.inv.state
+  left_inv x := by
+    have h := congrArg (fun f : L ⟶ L => f.state x) a.hom_inv_id
+    exact h
+  right_inv x := by
+    have h := congrArg (fun f : L ⟶ L => f.state x) a.inv_hom_id
+    exact h
+
+/-- The view component of a lens automorphism is a permutation. -/
+private def viewPermOfAut {L : GeneralLens.{u}} (a : Aut L) :
+    Equiv.Perm L.View where
+  toFun := a.hom.view
+  invFun := a.inv.view
+  left_inv x := by
+    have h := congrArg (fun f : L ⟶ L => f.view x) a.hom_inv_id
+    exact h
+  right_inv x := by
+    have h := congrArg (fun f : L ⟶ L => f.view x) a.inv_hom_id
+    exact h
+
+/-- Equation (4.38): reversible relative changes of `L` are exactly the
+put-preserving state/view permutations, with the same group law. -/
+def autMulEquivPutGroup (L : GeneralLens.{u}) : Aut L ≃* L.putGroup where
+  toFun a := ⟨(statePermOfAut a, viewPermOfAut a), a.hom.put_comm⟩
+  invFun p := invertibleOfPut p.1.1 p.1.2 p.2
+  left_inv a := by
+    apply Aut.ext
+    apply Hom.ext <;> rfl
+  right_inv p := by
+    apply Subtype.ext
+    apply Prod.ext <;> apply Equiv.ext <;> intro x <;> rfl
+  map_mul' a b := by
+    apply Subtype.ext
+    apply Prod.ext <;> apply Equiv.ext <;> intro x <;> rfl
+
 /-- A nontrivial get-preserving state permutation on the Boolean product lens. -/
 def boolFiberTwist : Equiv.Perm (Bool × Bool) where
   toFun := fun (v, k) => (v, xor k v)

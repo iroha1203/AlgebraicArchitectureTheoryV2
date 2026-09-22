@@ -20,21 +20,21 @@ construction of 1.39, with independently selected reference views. -/
 noncomputable def aatComparisonMulEquiv
     {X Y : Pointed.{u}} (c : X ⟶ Y) :
     GeneratedArrowComparisonSubgroup c ≃*
-      GeneratedArrowComparisonSubgroup (aatTypedFunctor.map c) :=
+      GeneratedArrowComparisonSubgroup (aatConstructedFunctor.map c) :=
   generatedArrowComparisonMulEquivOfFullyFaithful
-    aatTypedFunctor aatTypedFunctorFullyFaithful c
+    aatConstructedFunctor aatConstructedFunctorFullyFaithful c
 
 /-- The comparison isomorphism respects the source automorphism projection. -/
 theorem aatComparison_source_compatibility
     {X Y : Pointed.{u}} (c : X ⟶ Y)
     (pair : GeneratedArrowComparisonSubgroup c) :
-    generatedArrowComparisonSourceHom (aatTypedFunctor.map c)
+    generatedArrowComparisonSourceHom (aatConstructedFunctor.map c)
         (aatComparisonMulEquiv c pair) =
       fullyFaithfulEndpointAutMulEquiv
-        aatTypedFunctor aatTypedFunctorFullyFaithful X
+        aatConstructedFunctor aatConstructedFunctorFullyFaithful X
         (generatedArrowComparisonSourceHom c pair) :=
   generatedArrowComparison_source_compatibility
-    aatTypedFunctor aatTypedFunctorFullyFaithful c pair
+    aatConstructedFunctor aatConstructedFunctorFullyFaithful c pair
 
 end GeneralLens
 
