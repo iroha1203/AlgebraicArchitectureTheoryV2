@@ -1,0 +1,16 @@
+{
+  "schema": "paper-project/v1",
+  "main": "main.tex",
+  "environment": {
+    "tectonic": "Tectonic 0.16.9",
+    "texlive": "2025"
+  },
+  "files": [
+    {"source": "en/main.tex", "target": "main.tex"},
+    {"source": "en/01-abstract.tex", "target": "01-abstract.tex"},
+    {"source": "en/02-introduction.tex", "target": "02-introduction.tex"},
+    {"source": "en/03-preliminaries-and-notation.tex", "target": "03-preliminaries-and-notation.tex"},
+    {"source": "en/pending-labels.tex", "target": "pending-labels.tex"},
+    {"source": "en/references.bib", "target": "references.bib"}
+  ]
+}

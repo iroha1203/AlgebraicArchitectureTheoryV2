@@ -1,0 +1,150 @@
+\chapter*{Preliminaries and Notation}
+\addcontentsline{toc}{chapter}{Preliminaries and Notation}
+
+We assume the basic facts about sets, groups, rings, and modules, and about
+categories, functors, and natural transformations.
+
+\section{Sizes of sets and categories}\label{sec:P.1}
+
+The natural numbers are $\mathbb{N}=\{0,1,2,\ldots\}$, and we write
+$\mathbb{Z}$ and $\mathbb{Q}$ for the ring of integers and the field of
+rational numbers, respectively. A family indexed by a set $I$ is written
+$(X_i)_{i\in I}$. A finite family is a family whose index set $I$ is finite.
+Finiteness of each $X_i$ is a condition separate from finiteness of the index
+set.
+
+Sizes of sets are handled in classical set theory with the axiom of choice,
+together with Grothendieck universes. We fix universes
+$\mathbb{U}\in\mathbb{V}$ as needed, and call a set that belongs to
+$\mathbb{U}$ a $\mathbb{U}$-small set. We write
+${\mathbf{Set}}_{\mathbb{U}}$ for the category of small sets and maps between
+them, and treat this category itself in the larger universe $\mathbb{V}$. Where the
+universe in use is clear, we omit the subscript and write ${\mathbf{Set}}$.
+
+A category $\mathcal{C}$ is $\mathbb{U}$-small if its objects and its
+morphisms form $\mathbb{U}$-small sets. The category $\mathcal{C}$ is locally $\mathbb{U}$-small if the set of
+morphisms between each pair of objects $X,Y$ is $\mathbb{U}$-small, and
+essentially $\mathbb{U}$-small if it is equivalent to a $\mathbb{U}$-small
+category. Constructions that involve functor
+categories use a universe large enough to contain their objects and
+morphisms.
+
+\section{Maps, morphisms, and composition}\label{sec:P.2}
+
+The composite of maps $f:X\to Y$ and $g:Y\to Z$ is written
+\[
+gf=g\circ f:X\longrightarrow Z,
+\qquad (gf)(x)=g(f(x)).
+\]
+The map on the right acts first. We use the same order of composition for
+morphisms of categories and for functors. The identity morphism of an object
+$X$ is written $\mathrm{id}_X$, and the identity functor of a category
+$\mathcal{C}$ is written $\mathrm{Id}_{\mathcal{C}}$.
+
+For a map $f:X\to Y$ and subsets $S\subseteq X$ and $T\subseteq Y$, we write
+$f(S)$ for the image, $f^{-1}(T)$ for the preimage, and $f|_S:S\to Y$ for the
+restriction. The fiber over $y\in Y$ is
+\[
+X_y=f^{-1}(\{y\})=\{x\in X\mid f(x)=y\}.
+\]
+A bijection is written $f:X\xrightarrow{\sim}Y$, and its inverse map is
+written $f^{-1}:Y\to X$.
+
+For a category $\mathcal{C}$, we write $\mathrm{Ob}(\mathcal{C})$ for its
+collection of objects and $\mathrm{Hom}_{\mathcal{C}}(X,Y)$ for the set of
+morphisms from $X$ to $Y$. When the category is clear, the latter is
+abbreviated to $\mathrm{Hom}(X,Y)$. A morphism $f:X\to Y$ is an isomorphism if
+there is a morphism $g:Y\to X$ with $gf=\mathrm{id}_X$ and
+$fg=\mathrm{id}_Y$. Such a $g$ is unique, and we denote it by $f^{-1}$. We write
+$X\cong Y$ for isomorphic objects, and $\mathrm{Aut}_{\mathcal{C}}(X)$ for the
+automorphism group of $X$.
+
+Commutativity of a diagram means that the composites along any two paths with
+the same domain and codomain are equal. For example, the commutativity
+condition for the square formed by $f:X\to Y$, $f':X'\to Y'$,
+$a:X\to X'$, and $b:Y\to Y'$ is $bf=f'a$. When a comparison is made through a natural isomorphism, that natural
+isomorphism is specified as part of the data of the diagram.
+
+\section[Functors, natural transformations, and equivalences of
+categories]{Functors, natural transformations,\texorpdfstring{\\}{ }and
+equivalences of categories}\label{sec:P.3}
+
+The actions of a functor $F:\mathcal{C}\to\mathcal{D}$ on objects and on
+morphisms are written $F(X)$ and $F(f)$, respectively. The opposite category is written
+$\mathcal{C}^{\mathrm{op}}$, and a contravariant functor is regarded as a
+functor whose domain is $\mathcal{C}^{\mathrm{op}}$.
+
+A natural transformation $\alpha:F\Rightarrow G$ between functors
+$F,G:\mathcal{C}\to\mathcal{D}$ is a family that assigns to each object $X$ a
+morphism $\alpha_X:F(X)\to G(X)$ such that, for each morphism $f:X\to Y$,
+\[
+G(f)\alpha_X=\alpha_YF(f).
+\]
+If every $\alpha_X$ is an isomorphism, $\alpha$ is called a natural
+isomorphism and is written $\alpha:F\xRightarrow{\sim}G$. The composite of
+natural transformations $\alpha:F\Rightarrow G$ and $\beta:G\Rightarrow H$ is
+given by $(\beta\alpha)_X=\beta_X\alpha_X$.
+
+A functor $F:\mathcal{C}\to\mathcal{D}$ is fully faithful if, for every pair
+of objects $X,Y$, the map
+\[
+F_{X,Y}:\mathrm{Hom}_{\mathcal{C}}(X,Y)
+\longrightarrow\mathrm{Hom}_{\mathcal{D}}(F(X),F(Y)),
+\qquad f\longmapsto F(f)
+\]
+is a bijection. If every $D\in\mathrm{Ob}(\mathcal{D})$ is isomorphic to some
+$F(X)$, $F$ is called essentially surjective.
+
+An equivalence of categories $\mathcal{C}\simeq\mathcal{D}$ is given by
+functors $F:\mathcal{C}\to\mathcal{D}$ and $G:\mathcal{D}\to\mathcal{C}$
+together with natural isomorphisms
+\[
+\eta:\mathrm{Id}_{\mathcal{C}}\xRightarrow{\sim}GF,
+\qquad
+\varepsilon:FG\xRightarrow{\sim}\mathrm{Id}_{\mathcal{D}}.
+\]
+We call $G$ a quasi-inverse of $F$. For the standard definitions of
+categories, functors, natural transformations, and equivalences of categories
+we follow
+\cite[\href{https://stacks.math.columbia.edu/tag/0013}{Tag~0013}]{Stacks}.
+
+\section{Notation for coefficients and algebra}\label{sec:P.4}
+
+A coefficient ring $k$ is a commutative ring with identity, and ring
+homomorphisms preserve the identity. We write ${\mathbf{CommRing}}$ for the
+category of commutative rings and ${\mathbf{Ab}}$ for the category of abelian
+groups. Modules over $k$ are unital, $1m=m$, and we write $\mathrm{Mod}_k$ for
+their category. A commutative $k$-algebra is a pair consisting of a commutative ring $A$
+and a structure homomorphism $k\to A$. We allow the zero ring. These
+conventions for commutative rings with identity and unital modules agree with
+\cite[\href{https://stacks.math.columbia.edu/tag/0006}{Tag~0006},
+\href{https://stacks.math.columbia.edu/tag/00AQ}{Tag~00AQ}]{Stacks}.
+
+We write $A/I$ for the quotient ring of a ring $A$ by an ideal $I$, and $M/N$
+for the quotient module of a module $M$ by a submodule $N$. The set of linear
+maps between modules is written $\mathrm{Hom}_k(M,N)$, and the kernel and the
+image of a homomorphism $u$ are written $\ker u$ and $\mathrm{im}\,u$. Abelian
+groups and modules are written additively, and the zero element and the zero
+map are both written $0$, according to context. General groups and
+automorphism groups are written multiplicatively, with identity element $1$.
+
+The tensor product over a fixed coefficient ring is written $M\otimes_k N$. A
+change of coefficient ring is specified by a ring homomorphism
+$\varphi:k\to k'$, and the extension of scalars of a module along it is
+written $k'\otimes_k M$.
+
+\section{Numbering and references}\label{sec:P.5}
+
+Definitions, constructions, theorems, lemmas, propositions, corollaries, and
+examples are numbered in one common sequence within each chapter of the main
+body. For example, ``Definition~2.1'', ``Proposition~2.2'', and
+``Definition~2.3'' all refer to items of Chapter~\ref{chap:2}. Sections, equations,
+figures, and tables are each numbered within each chapter, and are referred to
+as ``\S2.1'', ``(2.1)'', ``Figure~2.1'', and ``Table~2.1''. In the
+Preliminaries the letter P, and in the appendices the letters A and B, are
+used in place of the chapter number.
+
+A citation gives a key such as \cite{Stacks}
+together with the section or theorem number cited. Citations of the Stacks
+project also give, in addition to section numbers, its permanent identifiers
+called Tags. The bibliographic data are collected in the References.

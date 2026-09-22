@@ -15,6 +15,7 @@ Atom と Law から、相対的なアーキテクチャの幾何、局所整合�
 - [主張と証拠の対応](claims.md): 原稿の主張と、数学・形式化の固定版との対応。
 - [Lean対応の全件照合記録](lean-correspondence-audit.md): 第1〜8章の314項目と番号外の主張について、対応宣言・適用条件・未確認箇所を記録する。
 - [ResearchLean実行検証記録](researchlean-execution-report.md): 検証時の付録Aに記載されたResearchLean宣言の実行成否と再現手順を記録する。
+- [英語版 TeX 原稿](en/README.md): 公開する英語版の構成、原稿の規約、用語の対応、日英照合の手順。
 - [論文作成ガイドライン](../../../docs/paper/guideline.md): 共通の執筆・検証・公開手順。
 
 日本語原稿を `ja/` で執筆・レビューし、内容を確定してから英訳して公開する。
@@ -38,6 +39,9 @@ Atom と Law から、相対的なアーキテクチャの幾何、局所整合�
 [付録B リポジトリとLeanのビルド](ja/16-appendix-b-verification-and-reproduction.md)、
 [付録C AI利用の開示](ja/17-appendix-c-ai-disclosure.md)に配置する。
 執筆・照合・PR レビューの完了は ToDo で管理する。
+
+英語版の編集元は [en/](en/) の TeX 原稿である。本文は日本語原稿と同じ名前のパートに分け、
+書誌は [en/references.bib](en/references.bib) に置く。
 
 [文献確認記録](references.csv)の hash は、Markdown 原稿の段階では、
 `bib_sha256` に `ja/14-references.md` の SHA-256 を記録する。
