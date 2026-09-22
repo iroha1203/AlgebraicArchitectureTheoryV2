@@ -618,7 +618,7 @@ SAGAから継承する結果、lensの積表示、圏同値の一般判定、Cau
 | --- | --- |
 | Related Work本文 | `9382581b81d0ff9a5e90e37ed2ae11b5c02059817d35adb91c3178ad4241390d` |
 | 書誌 | `6cdd089505603658f57da51535eb9b19255311365dffb0e3f31529ddab7455a5` |
-| READMEに定めた要旨〜結び（要旨・序論・準備節・第1〜8章・Related Work・結び）の結合原稿 | `bb069a208e3150a15c6b6a0730992b57dbb35c54577be9a0a43b8a25dd35fe09` |
+| READMEに定めた要旨〜結び（要旨・序論・準備節・第1〜8章・Related Work・結び）の結合原稿 | `b159fd741e543036636f29e202e09b1cac0dd922040ddee33046b9140017c1d0` |
 
 [rw-local]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LocalReconstructionEquivalence.lean
 [rw-lens]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean
