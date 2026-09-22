@@ -80,7 +80,7 @@ theorem stronglyCocartesian_of_comp_projection
   exact hχuniq χ' ⟨liftχ', hχ'.2⟩
 
 /-- API equivalence for F19: once the projected edge is strong, intermediate
-and composite qualifications are equivalent.  The reverse implication is the
+and composite qualifications are equivalent.  The forward implication is the
 existing composition theorem. -/
 theorem stronglyCocartesian_iff_comp_projection
     {E : Type u₁} {C : Type u₂} {B : Type u₃}
