@@ -13,11 +13,11 @@
 
 ## 1. 執筆の準備
 
-- [ ] 日本語原稿で共用する記号・用語、定義・定理・図表・引用の参照方法を定め、準備節へ記す。
-- [ ] 各章の定義・定理・証明の依存順を棚卸しから整理し、収録する章間の接続に必要な構成・証明を特定する。
-- [ ] G-125 の成果を第2・3章の原稿へ、定理と Lean 宣言・固定版の対応を付録A・Bへ反映する。内容と成立条件は数学棚卸しの 2-I・3-H〜3-L に従う。
-- [ ] 第8章の共通入力・局所再構成を Lean 宣言と対応づける。四族の収録、原始読み取り、分離・対象と射の組立て、Hom 両逆・恒等・合成・評価の証明を本文と付録A・Bへ配置する。
-- [ ] 文献確認用の `references.csv` を[雛形](../../../docs/paper/templates/references.csv)から用意し、執筆と並行して原典の書誌と引用箇所を確認する。
+- [x] 日本語原稿で共用する記号・用語、定義・定理・図表・引用の参照方法を定め、準備節へ記す。
+- [x] 各章の定義・定理・証明の依存順を棚卸しから整理し、収録する章間の接続に必要な構成・証明を特定する。
+- [x] G-125 の成果を第2・3章の原稿へ、定理と Lean 宣言・固定版の対応を付録A・Bへ反映する。内容と成立条件は数学棚卸しの 2-I・3-H〜3-L に従う。
+- [x] 第8章の共通入力・局所再構成を Lean 宣言と対応づける。四族の収録、原始読み取り、分離・対象と射の組立て、Hom 両逆・恒等・合成・評価の証明を本文と付録A・Bへ配置する。
+- [x] 文献確認用の `references.csv` を[雛形](../../../docs/paper/templates/references.csv)から用意し、執筆と並行して原典の書誌と引用箇所を確認する。
 
 ## 2. 日本語原稿を16ファイルで執筆する
 
@@ -29,8 +29,8 @@
 Claude との PR 上でのレビューと修正を終えたら
 チェックする。PR の主対象を1パートに絞り、必要な相互参照の修正を併せて行う。
 
-- [ ] 01 Abstract — [日本語初稿](ja/01-abstract.md)を作成。原稿レビュー・表示確認は引き続き必要。
-- [ ] 02 Introduction — [日本語初稿](ja/02-introduction.md)を作成。原稿レビュー・表示確認は引き続き必要。
+- [x] 01 Abstract — [日本語初稿](ja/01-abstract.md)を作成し、[PR #4852](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4852)をマージ済み。原稿レビュー・表示確認は§3の原稿全体の確認で行う。
+- [x] 02 Introduction — [日本語初稿](ja/02-introduction.md)を作成し、[PR #4852](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4852)をマージ済み。原稿レビュー・表示確認は§3の原稿全体の確認で行う。
 - [x] 03 Preliminaries and Notation — `ja/03-preliminaries-and-notation.md`
 - [x] 04 第1章 相対的アーキテクチャの構成 — [日本語原稿](ja/04-relative-architecture.md)のレビュー・修正・数式表示確認を終え、[PR #4831](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4831)をマージ済み。
 - [x] 05 第2章 Law の幾何と局所整合性 — [日本語原稿](ja/05-law-geometry.md)と図2.1のレビュー・修正・GitHub数式表示確認を終え、Claudeのapprove後に[PR #4832](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4832)をマージ済み。
@@ -39,12 +39,12 @@ Claude との PR 上でのレビューと修正を終えたら
 - [x] 08 第5章 基底変換と生成比較 — [日本語原稿](ja/08-base-change.md)のPRレビューを受け、人間が採用した任意改善7件を反映。修正後のGitHub表示・CIを確認し、人間が[PR #4836](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4836)をマージ済み。
 - [x] 09 第6章 冪等正規化と実現 — [日本語原稿](ja/09-idempotent-normalization.md)のPRレビューを受け、人間が採用した任意改善7件を反映。図6.1とLensの一般的な分裂を追加し、人間が[PR #4839](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4839)をマージ済み。修正版のGitHub表示・CIは同PRの記録を参照する。
 - [x] 10 第7章 比較を保つ変更と情報 — [日本語原稿](ja/10-comparison-and-information.md)と英語の図7.1について、[PR #4841](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4841)でClaudeのapproveと別の内容レビューを受け、人間が採用した任意改善8件を反映。定理の動機・節間のつながり・脚の記号・参照を整え、全529式の構文と番号・参照を確認。修正版のGitHub表示・CIの対象commitと結果は同PRに記録する。人間が同PRをマージ済み。
-- [ ] 11 第8章 表示と局所再構成 — [日本語初稿](ja/11-local-reconstruction.md)と英語の図8.1を作成。完全幾何の入力・局所モデル・組立て・主定理を§8.4–8.5で完結させ、§8.6に行内送金などの設計変更への適用、§8.7にLensとプロトコルの入力・局所再構成・有限表による再構成を配置。§8.8で有限モデルの情報の十分性・検査手順・計算費用を区別し、§8.9で無限対象の反例を補足として扱う。一次資料との照合、有限検算、数式構文、ローカル描画と参照を確認。人間による原稿確認とPR作成の承認を得た。GitHub上の表示確認結果をPRに記録し、Claudeの独立レビューをPRで行う。
-- [ ] 12 Related Work — [日本語原稿](ja/12-related-work.md)
-- [ ] 13 Conclusions and Further Directions — [日本語初稿](ja/13-conclusions-and-further-directions.md)を作成。原稿レビュー・表示確認は引き続き必要。
-- [ ] 14 References — `ja/14-references.md`
-- [ ] 15 付録A Lean 形式化との対応 — [日本語初稿](ja/15-appendix-a-lean-correspondence.md)を作成。[全件照合記録](lean-correspondence-audit.md)で第1〜8章の314項目と番号外の主張を分類し、確認できた宣言と適用条件を採録。未確認箇所は同記録からリンクする1件の統合Issueで追跡する。原稿レビュー・表示確認・形式化との全件対応の確定は引き続き必要。
-- [ ] 16 付録B 検証資料と再現手順 — [日本語初稿](ja/16-appendix-b-verification-and-reproduction.md)を作成。原稿レビュー・表示確認は引き続き必要。
+- [x] 11 第8章 表示と局所再構成 — [日本語原稿](ja/11-local-reconstruction.md)と英語の図8.1を作成。完全幾何の入力・局所モデル・組立て・主定理を§8.4–8.5で完結させ、§8.6に行内送金などの設計変更への適用、§8.7にLensとプロトコルの入力・局所再構成・有限表による再構成を配置。§8.8で有限モデルの情報の十分性・検査手順・計算費用を区別し、§8.9で無限対象の反例を補足として扱う。一次資料との照合、有限検算、数式構文、描画と参照を確認し、Claudeの独立レビューを経て人間が[PR #4845](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4845)をマージ済み。
+- [x] 12 Related Work — [日本語原稿](ja/12-related-work.md)のレビューを経て、人間が[PR #4843](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4843)をマージ済み。
+- [x] 13 Conclusions and Further Directions — [日本語初稿](ja/13-conclusions-and-further-directions.md)を作成し、[PR #4852](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4852)をマージ済み。原稿レビュー・表示確認は§3の原稿全体の確認で行う。
+- [x] 14 References — [日本語原稿](ja/14-references.md)を作成し、書誌を`references.csv`と突合。
+- [x] 15 付録A Lean 形式化との対応 — [日本語初稿](ja/15-appendix-a-lean-correspondence.md)を作成。[全件照合記録](lean-correspondence-audit.md)で第1〜8章の314項目と番号外の主張を分類し、確認できた宣言と適用条件を採録。未確認箇所は同記録からリンクする1件の統合Issueで追跡する。形式化との全件対応の確定はIssue #4847の節で、原稿レビュー・表示確認は§3の原稿全体の確認で行う。
+- [x] 16 付録B 検証資料と再現手順 — [日本語初稿](ja/16-appendix-b-verification-and-reproduction.md)を作成。原稿レビュー・表示確認は§3の原稿全体の確認で行う。
 
 執筆は数学の依存順で進める。準備節・各章・対応する付録を整え、関連研究と文献確認を
 並行し、Introduction・Conclusions・Abstract は本論全体に合わせて仕上げる。
