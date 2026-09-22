@@ -5,6 +5,17 @@
 書誌・引用箇所・引用する版は[文献確認記録](references.csv)による。
 共通基準は[論文作成ガイドライン](../../../docs/paper/guideline.md)に従う。
 
+## 固定版の構成5.37と追加Lean宣言
+
+[固定版 `719f81f47d410701fd82c2bc88613cc140c59377` の構成5.37](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/719f81f47d410701fd82c2bc88613cc140c59377/outreach/paper/rising-sea/ja/08-base-change.md#L1018)の完全幾何の二経路は、任意の`BCSemanticInput`、南西のcoreと完全幾何、対応する基点の等式、exactなCartesian平方から生成する。`endpoint_eq`は本文のcoreが南西の基点上にあるという入力を表す。
+
+| 固定本文の結論 | Lean宣言 |
+| --- | --- |
+| 左引き戻し・上輸送と下輸送・右引き戻しの二経路、および直接比較と三角式 | [SemanticDerivedEndpointBridge](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedEndpointBridge.lean) の `semanticDerivedDirectGeometryAt`、`semanticDerivedViaBaseGeometryAt`、`semanticDerivedBarAlphaIsoAt` と [SemanticDerivedBarAlphaTriangle](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaTriangle.lean) の `semanticDerivedBarAlphaIsoAt_triangle` |
+| G-118で生成された両端との同型、生成mateと直接mateの一致 | [SemanticDerivedGeneratedEndpointBridge](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedGeneratedEndpointBridge.lean) の `semanticDerivedBToGeneratedBaseNorthwestIsoAt`、`semanticDerivedGeneratedPulledToTNorthwestIsoAt`、`semanticDerivedGeneratedMateOnLiteralEndpoints_triangle`、`semanticDerivedGeneratedMateOnLiteralEndpoints_eq_literal` |
+| 比較射のunit・端点比較・G-118のmate・端点比較・counitの五因子式 | 同moduleの `semanticDerivedBarAlphaIsoAt_generatedFiveFactor_hom` |
+| 診断入力のface `z` にあるcore `P_z` への特殊化 | [SemanticDerivedDiagnosticEndpointBridge](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedDiagnosticEndpointBridge.lean) の `semanticDiagnosticSourceCoreAt`、`semanticDiagnosticDirectGeometryAt`、`semanticDiagnosticViaBaseGeometryAt`、`semanticDiagnosticBarAlphaIsoAt`、`semanticDiagnosticBarAlphaIsoAt_triangle`、`semanticDiagnosticBarAlphaIsoAt_generatedFiveFactor_hom` |
+
 ## 固定版の補題6.15と追加Lean宣言
 
 [固定版 `719f81f47d410701fd82c2bc88613cc140c59377` の補題6.15](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/719f81f47d410701fd82c2bc88613cc140c59377/outreach/paper/rising-sea/ja/09-idempotent-normalization.md#L368)が述べる任意のexactなpointed底射は、`ExtInstHom`で表す。`CanonicalObjectNormalizationAdmissible`は、正規化を定める側のcoreに対する本文の`Ad`条件であり、輸送先または引き戻し先の条件はこの入力から導く。
