@@ -357,6 +357,8 @@ class Inline:
         text = re.sub(r'`([^`]+)`', lambda m: hold(texttt(m[1])), text)
         def link(m):
             label, target = m[1], m[2]
+            # A raw # or % in an \href target breaks when \cite carries it, so escape both.
+            target = target.replace('%', '\\%').replace('#', '\\#')
             key = re.match(r'([A-Za-z][A-Za-z0-9]*)(?:,\s*(.+))?$', label)
             if key and key[1] in self.keys:
                 if key[2]:
@@ -545,7 +547,8 @@ def parts():
 def aux_numbers(aux):
     table = {}
     for path in [aux, *aux.parent.glob('*.aux')]:
-        for label, number in re.findall(r'\\newlabel\{([^}]+)\}\{\{([^}]*)\}', path.read_text(errors='replace')):
+        # \tag'd equations write the number with an extra brace group: {{{1.1}}...}.
+        for label, number in re.findall(r'\\newlabel\{([^}]+)\}\{\{\{?([^{}]*)\}', path.read_text(errors='replace')):
             table[label] = number
     return table
 

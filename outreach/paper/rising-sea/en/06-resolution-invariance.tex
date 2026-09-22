@@ -1,0 +1,1658 @@
+\chapter{Canonical Resolution and Diagnostic Invariance}\label{chap:3}
+
+\section*{Overview of the Chapter}
+
+The question of this chapter is \textbf{under what conditions the same obstruction can be
+diagnosed when we merge information or repartition the regions that are read locally}.
+In Chapter~\ref{chap:2} we built obstruction classes to gluing from local states and
+transitions. To share that verdict across different resolutions, we must specify the
+information to retain and the maps that compare local data.
+
+For example, suppose that a state is a pair of a displayed value and an internal value,
+and that the chosen Law reads only the displayed value. Merging states with the same
+displayed value loses no Law value. If, however, we merge even the regions on which
+local states are placed, the cycles of overlaps may change. Preserving Law values and
+preserving obstructions on cycles each require conditions to be checked.
+
+In the first half we construct the coarsest resolution that preserves the evaluation of
+the Laws, and generate a diagnostic complex from its evaluation values. We then build an
+actual cochain map from a comparison of covers, and prove a sufficient condition for it
+to be an isomorphism on first cohomology. In the second half we reduce invariance over
+all Law families for which both resolutions are adequate to a finite computation, and
+connect the integer-coefficient obstructions of Chapter~\ref{chap:2} with the
+rational-valued diagnoses of this chapter.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Question & Construction & Outcome \\
+\midrule
+\endhead
+How far can information be merged while the Laws remain readable? & Identify sources on which all Law values agree & Universality of the canonical resolution, and conditions for presentation by specified extraction methods (\S\S\ref{sec:3.1}--\ref{sec:3.2}) \\
+\addlinespace[3pt]
+How to compare changes of resolution and of local structure? & Build maps from coefficients per Law value and from comparisons of edges and faces & Maps carrying diagnostic classes, and isomorphism under Condition C (\S\S\ref{sec:3.3}--\ref{sec:3.5}) \\
+\addlinespace[3pt]
+Is the diagnosis preserved whichever Laws are chosen? & Compute kernels and cokernels for each subset of values & A necessary and sufficient condition for uniform invariance, finite decision, and a counterexample for local observation (\S\S\ref{sec:3.6}--\ref{sec:3.7}) \\
+\addlinespace[3pt]
+Does fixing the structure also fix the obstruction? & Examine the structural support and the chosen coefficients separately & Invariance of the structural nerve, and vanishing for per-source coefficients (\S\ref{sec:3.8}) \\
+\addlinespace[3pt]
+Does a vanishing diagnosis mean a vanishing actual obstruction? & Send integer generators to Law-value coordinates, and turn rational corrections into integer ones & Correspondence of specified obstruction classes and equivalence of vanishing (\S\S\ref{sec:3.9}--\ref{sec:3.10}) \\
+\addlinespace[3pt]
+Does refining the cover give the same verdict? & Use an actual refinement from three charts to four & The comparison square, invariance of the obstruction verdict, and concrete zero and nonzero examples (\S\ref{sec:3.11}) \\
+\bottomrule
+\end{xltabular}
+
+\subsection*{Why compare diagnoses}
+
+The same state of software may be read down to its internal values, or only through its
+published values. Local consistency, too, can be examined component by component, or
+over regions that group several components together. Comparing results while varying
+such choices requires maps that preserve the meaning of diagnostic values.
+
+The diagnosis of this chapter is a first cohomology built from Law values and overlap
+information, together with specified classes in it. For the lenses and protocols of
+Chapter~\ref{chap:1}, choosing the required readouts and results of operations as the
+evaluations determines what the resolution retains. For the gluing problem of
+Chapter~\ref{chap:2}, what matters is that the vanishing of a diagnostic class can be
+brought back to the existence of local corrections.
+\S\S\ref{sec:3.9}--\ref{sec:3.11} provide this way back, with the same inputs and
+concrete maps.
+
+\section{The canonical resolution preserving Law evaluations}\label{sec:3.1}
+
+A resolution specifies which sources are distinguished. Here we represent by a
+surjection the part of the choices carried by a reading of Chapter~\ref{chap:1} that
+concerns this distinction. Local covers and coefficients are added from
+\S\ref{sec:3.3} on.
+
+\begin{definition}[Resolutions and Law evaluations]\label{def:3.1}
+
+Let $S$ be the set of sources, and give a resolution as a surjection $q:S\to Q$.
+Fix a finite Law index set $L$ and evaluations
+$v_\ell:S\to\mathrm{Val}_\ell$.
+These are the same kind of input as the Law evaluations used in Definition~\ref{def:2.35}.
+When studying the equations of Chapter~\ref{chap:1}, chosen residuals and the like can
+serve as evaluations.
+
+We say that $q$ is $L$-adequate if for each $\ell\in L$ there exists
+$\bar v_\ell:Q\to\mathrm{Val}_\ell$ with
+\begin{equation*}
+v_\ell=\bar v_\ell q
+\tag{3.1}\label{eq:3.1}
+\end{equation*}
+This is the condition that ``the value of each Law can be read back from $q(s)$''.
+Since the data involved differ from those of the adequacy of Chapter~\ref{chap:1} (that a cover
+can read information and interactions), we call this notion $L$-adequacy to distinguish
+the two.
+
+For two resolutions we write
+\begin{equation*}
+q_c\preceq q_f
+\quad\Longleftrightarrow\quad
+\forall s,t\in S,\
+q_f(s)=q_f(t)\Rightarrow q_c(s)=q_c(t)
+\tag{3.2}\label{eq:3.2}
+\end{equation*}
+and say that $q_c$ is coarser than $q_f$.
+Two sources identified on the finer side are identified on the coarser side as well.
+
+\end{definition}
+
+\begin{lemma}[Descent of evaluations and comparison maps]\label{lem:3.2}
+
+The following hold.
+
+\begin{enumerate}
+\item A map $v:S\to V$ descends through $q$ if and only if
+$q(s)=q(t)\Rightarrow v(s)=v(t)$. The descended map is unique.
+\item If $q_c\preceq q_f$, there is a unique surjection $\pi:Q_f\to Q_c$ with
+$q_c=\pi q_f$.
+\item If both sides are $L$-adequate, then $\bar v_{\ell,c}\pi=\bar v_{\ell,f}$.
+\end{enumerate}
+
+\end{lemma}
+
+\begin{proof}
+
+The forward direction of 1 follows by composing maps. For the converse, take a
+representative $s$ of $u\in Q$ and set $\bar v(u)=v(s)$. By the hypothesis this does
+not depend on the representative, and by the surjectivity of $q$ it is unique.
+For 2, apply 1 with $v=q_c$; the surjectivity of $q_c$ makes $\pi$ surjective as well.
+For 3, both sides equal $v_\ell(s)$ at $q_f(s)$, so they agree by surjectivity.
+
+\end{proof}
+
+\begin{definition}[The canonical resolution]\label{def:3.3}
+
+Define an equivalence relation on sources by
+\begin{equation*}
+s\sim_L t
+\quad\Longleftrightarrow\quad
+\forall\ell\in L,\ v_\ell(s)=v_\ell(t)
+\tag{3.3}\label{eq:3.3}
+\end{equation*}
+We call the quotient map $q_L:S\to S/{\sim_L}$ the canonical resolution of this
+Law family.
+
+\end{definition}
+
+\begin{theorem}[Universality of the canonical resolution]\label{thm:3.4}
+
+The map $q_L$ is $L$-adequate, and for every $L$-adequate $q:S\to Q$ there is a
+unique map $u_q:Q\to S/{\sim_L}$ satisfying
+\begin{equation*}
+u_q q=q_L
+\tag{3.4}\label{eq:3.4}
+\end{equation*}
+Hence $q_L\preceq q$.
+A resolution with this property is unique up to a unique bijection commuting with the
+maps from the sources.
+
+\end{theorem}
+
+\begin{proof}
+
+The assignment $[s]\mapsto v_\ell(s)$ does not depend on the representative by
+\eqref{eq:3.3}, so $q_L$ is adequate. If $q$ is adequate, then $q(s)=q(t)$ implies
+that all Law values agree, hence $s\sim_L t$. By Lemma~\ref{lem:3.2} the map $u_q$
+exists and is unique. If two resolutions have the same universal property, we obtain
+maps through each other. Both composites commute with the maps from the sources, and
+by uniqueness they are the identities.
+
+\end{proof}
+
+The canonical resolution is the coarsest among the resolutions that can read the
+chosen Laws. The distinctions to be retained are thus determined before any choice of
+implementation or of local covers.
+
+\begin{example}[Displayed and internal values]\label{ex:3.5}
+
+Take $S=\{0,1\}^2$ and a single Law $v_\ell(v,h)=v$.
+The canonical resolution has the same equivalence relation as $q_c(v,h)=v$, which
+reads the first component. The identity $q_f(v,h)=(v,h)$ is a finer adequate
+resolution, and the comparison map is $\pi(v,h)=v$.
+The states $(v,0)$ and $(v,1)$ can be merged, while $v=0$ and $v=1$, which the Law
+distinguishes, remain apart. Adding a Law that also reads the internal value makes the
+canonical resolution agree with the identity.
+
+\end{example}
+
+\section{Finite computation and presentation by extraction methods}\label{sec:3.2}
+
+That the quotient of the canonical resolution can be formed, and that an available
+extraction method realizes this quotient, are verified separately. For finite sources,
+both can be computed as comparisons of equivalence relations.
+
+\begin{construction}[Computing the finite partition]\label{cons:3.6}
+
+Suppose that $S$ is finite and that equality of evaluation values is decidable.
+For each source, compute the finite tuple $(v_\ell(s))_{\ell\in L}$.
+Let $\mathcal{P}_L$ be the family of nonempty subsets obtained by grouping sources
+according to agreement of these tuples.
+The map $s\mapsto\{t\in S\mid t\sim_L s\}$ is a surjection onto $\mathcal{P}_L$.
+Equality of two outputs is equivalent to \eqref{eq:3.3}, so this computation presents
+the canonical resolution. If the Law index set is empty and the set of sources is not,
+everything merges into a single component.
+
+\end{construction}
+
+\begin{definition}[Presentation by permitted extraction methods]\label{def:3.7}
+
+Let $\mathcal{D}$ be a specified family of extraction doctrines of
+Chapter~\ref{chap:1} over a common source set $S$.
+The resolution induced by $D\in\mathcal{D}$ is the quotient by
+\begin{equation*}
+s\sim_D t
+\quad\Longleftrightarrow\quad
+\mathrm{Atomize}_D(s)=\mathrm{Atomize}_D(t)
+\tag{3.5}\label{eq:3.5}
+\end{equation*}
+When $\sim_D=\sim_L$ for some $D\in\mathcal{D}$, we say that the canonical resolution
+is presentable by this family.
+Given a finite $\mathcal{D}$ and a method for deciding equality of extracted families,
+presentability can be decided by comparing \eqref{eq:3.3} and \eqref{eq:3.5} over all
+pairs of sources.
+
+\end{definition}
+
+\begin{example}[Adequate extraction methods alone do not yield presentability]\label{ex:3.8}
+
+Take six sources $a_0,a_1,a_2,b_0,b_1,b_2$, with Law value 0 on the $a_i$ and 1 on
+the $b_i$. Each of the following rows is a partition of the sources on which the
+extraction results agree.
+
+\begin{xltabular}{\linewidth}{@{}LL@{}}
+\toprule
+Extraction method & Components of sources with the same result \\
+\midrule
+\endhead
+$D_0$ & $\{a_0,a_1,a_2\},\ \{b_0,b_1,b_2\}$ \\
+\addlinespace[3pt]
+$D_a$ & $\{a_0\},\ \{a_1,a_2\},\ \{b_0,b_1,b_2\}$ \\
+\addlinespace[3pt]
+$D_b$ & $\{a_0,a_1,a_2\},\ \{b_0\},\ \{b_1,b_2\}$ \\
+\bottomrule
+\end{xltabular}
+
+Assigning a distinct Atom to each component and taking its singleton as the
+extraction result realizes these partitions by actual doctrines. In
+Definition~\ref{def:1.3} it suffices to take the normalization to be the identity, to
+define the semantics of a source as ``it is the assigned Atom'', and to take the
+remaining permission predicates to be true.
+
+All three preserve the Law values. In $\{D_0,D_a\}$, the doctrine $D_0$ presents the
+canonical resolution. By contrast, each member of $\{D_a,D_b\}$ retains a distinction
+that the Law does not need. The former separates $a_0,a_1$ and the latter
+separates $b_0,b_1$, so a family permitting only these two cannot present the
+canonical resolution.
+
+\end{example}
+
+\section{The diagnostic complex from Law values}\label{sec:3.3}
+
+From now on, sources are finite and $q:S\to Q$ is $L$-adequate.
+For each local region we take as coordinates the distinct Law values readable there.
+The point of the construction is that coordinates are not duplicated as more sources
+share the same value.
+
+\begin{definition}[Finite nerves with supports]\label{def:3.9}
+
+Let finite sets $N_0,N_1,N_2$ be the sets of charts, edges, and faces, respectively.
+An edge $e$ has a start $s(e)$ and an end $t(e)$.
+A face $f$ has, for some charts $\alpha,\beta,\gamma$, three edges
+$e_0:\alpha\to\beta$, $e_1:\alpha\to\gamma$, and
+$e_2:\beta\to\gamma$. Parallel edges, self-loops, and repeated vertices are allowed.
+
+To each chart we assign a nonempty support $S_\alpha\subseteq Q$, and we form the
+supports of edges and faces by
+\begin{equation*}
+S_e=S_{s(e)}\cap S_{t(e)},\qquad
+S_f=S_{e_0}\cap S_{e_1}\cap S_{e_2}
+\tag{3.6}\label{eq:3.6}
+\end{equation*}
+The support of an edge or a face may be empty.
+This support represents the values of the resolution readable on each cell.
+The existence of edges and faces is part of the chosen local comparison data.
+When this is applied to a cover of a space $X$, an open set $U_\alpha\subseteq X$
+represents the region on which local states are placed, and the support
+$S_\alpha\subseteq Q$ represents the values of the resolution readable there.
+Cells are taken from intersections of the open sets, and which Law values are read on
+a cell is determined by its support.
+
+\end{definition}
+
+\begin{construction}[The Law-value diagnostic complex]\label{cons:3.10}
+
+Let $\Lambda=\{(\ell,v_\ell(s))\mid\ell\in L,\ s\in S\}$ be the set of labels
+occurring overall.
+Define the labels occurring on a cell $\sigma$ by
+\begin{equation*}
+\Lambda_\sigma
+=\{(\ell,\bar v_\ell(u))\mid \ell\in L,\ u\in S_\sigma\}
+\subseteq\Lambda
+\tag{3.7}\label{eq:3.7}
+\end{equation*}
+A label is a pair of a Law index and a value; the element $u$ realizing the value is
+not part of it. This pair is the name of a coordinate, distinguished from the rational
+number placed in that coordinate.
+Define the diagnostic cochain groups by
+\begin{equation*}
+D_L^n(q,N)=\prod_{\sigma\in N_n}\mathbb{Q}^{\Lambda_\sigma}
+\quad(n=0,1,2)
+\tag{3.8}\label{eq:3.8}
+\end{equation*}
+and the differentials, between coordinates with the same label, by
+\begin{equation*}
+\begin{aligned}
+(d^0b)_{e,\lambda}
+&=b_{t(e),\lambda}-b_{s(e),\lambda},\\
+(d^1z)_{f,\lambda}
+&=z_{e_0,\lambda}-z_{e_1,\lambda}+z_{e_2,\lambda}
+\end{aligned}
+\tag{3.9}\label{eq:3.9}
+\end{equation*}
+A label occurring on an edge occurs on both endpoints, and a label occurring on a face
+occurs on its three edges, so every term on the right-hand side is defined.
+
+\end{construction}
+
+\begin{lemma}[Differentials and the diagnostic group]\label{lem:3.11}
+
+We have $d^1d^0=0$. Hence
+\begin{equation*}
+H^1_{\mathrm{diag}}(q,N;L)
+=\ker d^1/\mathrm{im}\,d^0
+\tag{3.10}\label{eq:3.10}
+\end{equation*}
+is defined.
+
+\end{lemma}
+
+\begin{proof}
+
+Computing \eqref{eq:3.9} on one face and one label gives
+$(b_\beta-b_\alpha)-(b_\gamma-b_\alpha)+(b_\gamma-b_\beta)=0$.
+
+\end{proof}
+
+Diagnostic classes arising from concrete local data are constructed as elements of
+this group by means of the coefficient comparison of \S\ref{sec:3.9}.
+
+\begin{proposition}[Decomposition by Law value]\label{prop:3.12}
+
+For $\lambda\in\Lambda$, let $N_\lambda$ be the subnerve retaining exactly the cells
+with $\lambda\in\Lambda_\sigma$. With its complex of constant rational coefficients
+we have
+\begin{equation*}
+\begin{aligned}
+D_L^\bullet(q,N)
+&\cong\bigoplus_{\lambda\in\Lambda}C^\bullet(N_\lambda;\mathbb{Q}),\\
+H^1_{\mathrm{diag}}(q,N;L)
+&\cong\bigoplus_{\lambda\in\Lambda}H^1(N_\lambda;\mathbb{Q})
+\end{aligned}
+\tag{3.11}\label{eq:3.11}
+\end{equation*}
+\end{proposition}
+
+\begin{proof}
+
+Reorder the coordinates $(\sigma,\lambda)$ of \eqref{eq:3.8} with $\lambda$ first.
+The sets are finite, so products and direct sums agree.
+The differentials do not change labels, so the reordering commutes with them.
+The cocycle condition and membership in the coboundaries also hold label by label,
+giving an isomorphism on the quotients as well.
+
+\end{proof}
+
+By this decomposition, the comparison of diagnoses splits into comparisons of ``the
+regions where a single Law value is visible''. For example, taking every chart support
+in Example~\ref{ex:3.5} to be the whole set, one copy of the complex of the same nerve
+appears for each of the two Law values 0 and 1.
+
+\section{From comparisons of resolutions to cochain maps}\label{sec:3.4}
+
+The map carrying the diagnosis of the coarser side to the finer side can be built
+from the correspondence between evaluation values and local regions.
+Note that the direction in which resolution values are sent is opposite to the
+direction in which cochains are pulled back.
+Below we also call the coarser side coarse and the finer side fine.
+
+\begin{definition}[Local comparison data]\label{def:3.13}
+
+Take $q_c\preceq q_f$ and the comparison map $\pi:Q_f\to Q_c$ of Lemma~\ref{lem:3.2}.
+For the nerves with supports on the two sides, specify the following.
+
+\begin{itemize}
+\item A chart map $r:N_{f,0}\to N_{c,0}$.
+\item A map $r_1$ sending each fine edge either to a coarse edge or to a symbol
+$\bot$ denoting contraction.
+\item A map $r_2$ sending each fine face either to a coarse face or to $\bot$.
+\end{itemize}
+
+A mapped edge preserves the start and the end, and a mapped face preserves the
+numbering of its three edges.
+The two endpoints of a contracted edge map to the same coarse chart.
+For a contracted face, its three edges are all contracted as well.
+We also assume
+\begin{equation*}
+\pi(S^f_\alpha)\subseteq S^c_{r(\alpha)}
+\tag{3.12}\label{eq:3.12}
+\end{equation*}
+The corresponding inclusions of supports for edges and faces follow from
+\eqref{eq:3.6} and the incidence relations.
+
+\end{definition}
+
+\begin{proposition}[The generated diagnostic comparison]\label{prop:3.14}
+
+From the data of Definition~\ref{def:3.13} and $L$-adequacy on both sides, linear
+maps $T^n:D_L^n(q_c,N_c)\to D_L^n(q_f,N_f)$ are given by
+\begin{equation*}
+\begin{aligned}
+(T^0b)_{\alpha,\lambda}&=b_{r(\alpha),\lambda},\\
+(T^1z)_{e,\lambda}
+&=\begin{cases}
+z_{r_1(e),\lambda}&r_1(e)\ne\bot,\\
+0&r_1(e)=\bot,
+\end{cases}\\
+(T^2w)_{f,\lambda}
+&=\begin{cases}
+w_{r_2(f),\lambda}&r_2(f)\ne\bot,\\
+0&r_2(f)=\bot
+\end{cases}
+\end{aligned}
+\tag{3.13}\label{eq:3.13}
+\end{equation*}
+and satisfy $T^1d_c^0=d_f^0T^0$ and $T^2d_c^1=d_f^1T^1$.
+The same maps therefore induce a linear map
+\begin{equation*}
+T_{\mathrm{diag}}:
+H^1_{\mathrm{diag}}(q_c,N_c;L)
+\longrightarrow H^1_{\mathrm{diag}}(q_f,N_f;L),
+\qquad [z]\longmapsto[T^1z]
+\tag{3.14}\label{eq:3.14}
+\end{equation*}
+Under the decomposition \eqref{eq:3.11}, this is the direct sum of the comparisons of
+the individual $N_\lambda$.
+
+\end{proposition}
+
+\begin{proof}
+
+Take $u$ realizing $\lambda=(\ell,v)$ on a fine cell.
+On a mapped cell, \eqref{eq:3.12} and Lemma~\ref{lem:3.2} show that $\pi(u)$ realizes
+the same label on the coarse side.
+The coordinates in \eqref{eq:3.13} therefore exist.
+
+On a mapped edge, $T^1d_c^0=d_f^0T^0$ follows from the condition that the endpoints
+are preserved. On a contracted edge, the two chart values agree and their difference
+is zero. On a mapped face, the numbering of the three edges is preserved, so
+$T^2d_c^1=d_f^1T^1$. On a contracted face, all three edges are contracted and all
+three terms are zero. The maps preserve cocycles and coboundaries, hence descend to
+the quotients, and since they do not change labels they also commute with the
+decomposition.
+
+\end{proof}
+
+The same argument applies to cochain maps with coefficients in abelian groups.
+A comparison commuting with the differentials carries classes and sends zero classes
+to zero classes. If, moreover, the comparison in each degree is an isomorphism, its
+inverse also commutes with the differentials, and the comparison of classes is an
+isomorphism. The standard \v{C}ech comparison by refinement of covers and restriction
+of sections is given in
+\cite[\href{https://stacks.math.columbia.edu/tag/09UY}{Tag 09UY}]{Stacks}.
+In \S\ref{sec:3.11} we compute the restriction maps for the actual covers of
+Chapter~\ref{chap:2}.
+
+\section{Diagnostic invariance under Condition C}\label{sec:3.5}
+
+Once the comparison map is built, the question is whether it loses no class and
+captures every class on the fine side. We prove these two properties as injectivity
+and surjectivity, respectively. To this end we examine the structure on the
+fine side that gathers inside a single coarse chart.
+
+\begin{definition}[Coordinate fibers and Condition C]\label{def:3.15}
+
+Fix a label $\lambda$ and work in the subnerve of \eqref{eq:3.11}.
+The fiber of a coarse chart $v$ consists of the fine charts with $r(\alpha)=v$,
+together with all fine edges whose two endpoints lie in this fiber.
+A face whose three edges all lie within the fiber is called an internal face.
+The edges within a fiber include, besides contracted edges, edges mapping to coarse
+self-loops.
+
+Condition C consists of the following seven clauses.
+
+\begin{xltabular}{\linewidth}{@{}LL@{}}
+\toprule
+Clause & Content \\
+\midrule
+\endhead
+C0: agreement of supports & For each coarse chart $v$, $S^c_v=\bigcup_{r(\alpha)=v}\pi(S^f_\alpha)$ \\
+\addlinespace[3pt]
+C1: connectedness of fibers & For each chart of the coarse subnerve of each $\lambda$, the fiber is nonempty and connected as a graph with edge orientations forgotten \\
+\addlinespace[3pt]
+C2: lifting of edges & Each coarse edge and each of its labels admits a fine edge with the same label mapping to that edge \\
+\addlinespace[3pt]
+C3: cycles within fibers & Every rational 1-cycle within a fiber is a rational linear combination of boundaries of internal faces \\
+\addlinespace[3pt]
+C4: lifting of faces & Each coarse face and each of its labels admits a fine face with the same label mapping to that face \\
+\addlinespace[3pt]
+C5: uniqueness of edge lifts & At most one fine edge maps to any given coarse edge \\
+\addlinespace[3pt]
+C6: reflection of self-loops & A fine edge mapping to a coarse self-loop is itself a self-loop \\
+\bottomrule
+\end{xltabular}
+
+C0, C5, and C6 are imposed on the whole nerve, and C1--C4 on every
+$\lambda\in\Lambda$. The boundaries of chains in C3 are $\partial e=t(e)-s(e)$ and
+$\partial f=e_0-e_1+e_2$. A 1-cycle is a finite sum of edges with rational
+coefficients in which, at each vertex, the inflowing and the outflowing coefficients
+agree.
+
+\end{definition}
+
+\begin{lemma}[Correction within fibers]\label{lem:3.16}
+
+Assume C1 and C3 in the subnerve of a single label. For every 1-cocycle $z$ on the
+fine side there is a 0-cochain $p$ such that $z-d_f^0p$ vanishes on all edges within
+fibers.
+
+\end{lemma}
+
+\begin{proof}
+
+Choose a root vertex within one fiber.
+Let $p(\alpha)$ be the signed sum of $z$ along a path from the root to $\alpha$.
+A path exists by C1. The difference of two paths is a 1-cycle, and by C3 a sum of
+boundaries of internal faces.
+A cocycle vanishes on the boundary of each face, so $p(\alpha)$ does not depend on
+the choice of path.
+For an edge $e:\alpha\to\beta$, appending $e$ to a path from the root to $\alpha$
+gives $p(\beta)-p(\alpha)=z(e)$.
+Carrying out this construction in each fiber defines $p$ on all fine vertices.
+
+\end{proof}
+
+\begin{theorem}[Diagnostic invariance]\label{thm:3.17}
+
+If both sides are $L$-adequate and the comparison of Definition~\ref{def:3.13}
+satisfies Condition C, then the actual comparison map $T_{\mathrm{diag}}$ of
+\eqref{eq:3.14} is an isomorphism.
+In particular, for every coarse diagnostic class $\alpha$,
+\begin{equation*}
+\alpha=0\quad\Longleftrightarrow\quad T_{\mathrm{diag}}(\alpha)=0
+\tag{3.15}\label{eq:3.15}
+\end{equation*}
+\end{theorem}
+
+\begin{proof}
+
+By Propositions~\ref{prop:3.12} and~\ref{prop:3.14} it suffices to fix one label and
+prove injectivity and surjectivity.
+C0 ensures that the support of each coarse chart is covered by the images of the
+supports of the fine charts in its fiber, and is used throughout as the premise for
+comparing the two subnerves of the fixed label over the same support.
+
+\textbf{Injectivity.}
+Suppose that the image of a coarse cocycle $z$ satisfies $T^1z=d_f^0b$.
+If an edge within a fiber is contracted, then $d_f^0b=0$ on it.
+If it is not contracted, it maps to a coarse self-loop, and by C6 it is a self-loop
+on the fine side as well, so the values of $b$ at its two endpoints again agree.
+By C1, $b$ is constant on each fiber and defines values $\bar b$ at the coarse
+vertices.
+Taking a lift of each coarse edge by C2 gives
+$z(e)=\bar b(t(e))-\bar b(s(e))$.
+Hence $z=d_c^0\bar b$, and the original class is zero.
+
+\textbf{Surjectivity.}
+Take a fine cocycle $w$. By Lemma~\ref{lem:3.16} the cochain
+$w'=w-d_f^0p$, representing the same class, can be made zero within fibers.
+By C2 and C5, each coarse edge has exactly one lift with the same label.
+Let $z(e)$ be the value of $w'$ there.
+On mapped fine edges $T^1z=w'$, and contracted edges lie within fibers, so both sides
+are zero there.
+Lifting each coarse face by C4, the uniqueness of the three edges shows that
+$d_c^1z$ equals $d_f^1w'=0$ on the lifted face.
+Hence $z$ is a cocycle and $[w]=T_{\mathrm{diag}}[z]$.
+
+\end{proof}
+
+Condition C is the condition for correcting locally removable differences within
+fibers and reading the remaining differences back to the coarse side uniquely.
+In the next section we also give a decision that computes the comparison itself,
+without using Condition C.
+
+\begin{example}[Comparison from three charts to four]\label{ex:3.18}
+
+Use the two resolutions of Example~\ref{ex:3.5}, with every chart support equal to
+the whole set of resolution values.
+The nerves are taken from the three-chart and four-chart covers of
+Lemma~\ref{lem:2.38}; the two covers and the merging of charts were shown in
+Figure~\ref{fig:2.1}.
+Map $a_0,a_1$ to $a$, and $b,c$ to the charts of the same name.
+Contract the edge $e_{01}$, and map $ab,bc,ac$ to the edges of the same name.
+
+For each label, the fiber over $a$ is a tree joining two vertices by a single edge,
+and the fibers over $b,c$ are single points.
+The supports agree, the lifts of the three coarse edges are unique, and faces and
+coarse self-loops are absent on both sides.
+Condition C therefore holds.
+Each of the two nerves has one independent cycle and there are two labels 0 and 1,
+so both diagnostic groups are $\mathbb{Q}^2$.
+The comparison sends the values $(z_{ab},z_{bc},z_{ac})$ on the three edges to
+$(0,z_{ab},z_{bc},z_{ac})$.
+The period of a fine 1-cochain $w$ is
+$w_{e_{01}}+w_{ab}+w_{bc}-w_{ac}$.
+On the image of the comparison, the value $w_{e_{01}}$ on the internal edge is zero
+and the period agrees with the coarse period $z_{ab}+z_{bc}-z_{ac}$, so nonzero
+classes are preserved as well.
+
+\end{example}
+
+\begin{example}[Preserving Laws versus preserving diagnoses]\label{ex:3.19}
+
+Let the sources be $\{0,1,2\}$, the coarse resolution
+$q_c(0)=q_c(1)=0,\ q_c(2)=1$, and the fine resolution the identity.
+The Law $v_0=q_c$ is readable on both sides.
+Take every chart support to be the whole set and consider the following two comparisons.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Coarse nerve & Fine nerve and comparison & Comparison of $H^1$ for one Law value \\
+\midrule
+\endhead
+One vertex, one self-loop, no face & Send a single edge joining two vertices to the self-loop & $\mathbb{Q}\to0$; the nonzero coarse class dies \\
+\addlinespace[3pt]
+Two vertices, one edge, no face & Send two parallel edges between the two vertices to the single coarse edge & $0\to\mathbb{Q}$; the nonzero fine class is not captured \\
+\bottomrule
+\end{xltabular}
+
+In the first row, any value on the fine edge is a difference of vertex values, and C6
+fails. In the second row, a coboundary takes the same value on the two edges, so
+their difference detects the nonzero class, and C5 fails.
+In both rows, adequacy with respect to $L=\{0\}$ does hold.
+
+Now add a Law reading $v_1(1)=1,\ v_1(0)=v_1(2)=0$; then $q_c$ can no longer read
+this Law.
+For an arbitrary resolution, one can still build the diagnosis from the subfamily
+$L(q)=\{\ell\in L\mid v_\ell\text{ descends through }q\text{}\}$
+of Laws that descend. In this example $L(q_c)=\{0\}$ and
+$L(q_f)=\{0,1\}$.
+The fine diagnosis of the first row is zero even with the added Law, while in the
+second row the nonzero class from the original Law remains.
+With a subfamily the computation is defined, but one must check both the retained
+Laws and the comparison conditions on the covers in order to judge the correspondence
+with the original diagnosis.
+
+\end{example}
+
+\section{Deciding invariance for all Laws}\label{sec:3.6}
+
+Having verified invariance for one Law family, we may ask whether the same comparison
+geometry works for every Law family for which both resolutions are adequate.
+Instead of enumerating all Law families, it suffices to examine subsets of the values
+of the coarse resolution.
+
+\begin{definition}[Nerves selected by subsets of values]\label{def:3.20}
+
+Fix the pair of resolutions and the comparison of Definition~\ref{def:3.13}.
+For $A\subseteq Q_c$, retain the coarse cells whose supports meet $A$ and the fine
+cells whose supports meet $\pi^{-1}(A)$.
+Write these as $N_{c,A}$ and $N_{f,\pi^{-1}(A)}$.
+If a face remains, so do its three edges; if an edge remains, so do its two
+endpoints.
+The image of a mapped fine cell also remains, so the same rule as \eqref{eq:3.13}
+yields
+\begin{equation*}
+T_A:H^1(N_{c,A};\mathbb{Q})
+\longrightarrow H^1(N_{f,\pi^{-1}(A)};\mathbb{Q})
+\tag{3.16}\label{eq:3.16}
+\end{equation*}
+Define the pair of dimensions of its kernel and cokernel as
+\begin{equation*}
+J_A=\left(\dim_{\mathbb{Q}}\ker T_A,\
+\dim_{\mathbb{Q}}\bigl(H^1(N_{f,\pi^{-1}(A)};\mathbb{Q})/\mathrm{im}\,T_A\bigr)\right)
+\tag{3.17}\label{eq:3.17}
+\end{equation*}
+The first component is the dimension of the coarse classes killed by the comparison,
+and the second is the dimension of the fine classes not captured by the image from
+the coarse side.
+
+\end{definition}
+
+\begin{definition}[Uniform invariance]\label{def:3.21}
+
+We say that the comparison is uniformly invariant if, for every finite Law family on
+the same sources, the map \eqref{eq:3.14} is an isomorphism whenever both resolutions
+are adequate.
+The quantification here ranges over Law families including the value sets and the
+evaluation maps of the individual Laws.
+The resolutions, the nerves, the supports, and the cell comparison maps are fixed.
+
+\end{definition}
+
+\begin{theorem}[Reduction of uniform invariance to finite subsets]\label{thm:3.22}
+
+The following are equivalent.
+
+\begin{enumerate}
+\item The comparison is uniformly invariant.
+\item For every nonempty $A\subseteq Q_c$, the map $T_A$ is an isomorphism.
+\item For every nonempty $A\subseteq Q_c$, we have $J_A=(0,0)$.
+\end{enumerate}
+
+\end{theorem}
+
+\begin{proof}
+
+We first show that 2 implies 1. Take a Law family for which both resolutions are
+adequate and one label $\lambda=(\ell,v)$, and set
+\begin{equation*}
+A_\lambda=\{u\in Q_c\mid\bar v_{\ell,c}(u)=v\}
+\tag{3.18}\label{eq:3.18}
+\end{equation*}
+This set is nonempty because the label is realized on the sources.
+A coarse cell carries $\lambda$ exactly when its support meets $A_\lambda$.
+On the fine side, by Lemma~\ref{lem:3.2}, the corresponding condition is that the
+support meets $\pi^{-1}(A_\lambda)$.
+The complex and the comparison map for each label therefore coincide with those of
+\eqref{eq:3.16}.
+By 2 and Proposition~\ref{prop:3.12}, the total comparison is an isomorphism as well.
+
+Conversely, assume 1. For a nonempty $A\subseteq Q_c$, define the evaluation of a
+single Law by setting $v_A(s)$ equal to 1 when $q_c(s)\in A$ and to 0 otherwise.
+This Law is readable on both resolutions, and the comparison of the subnerves for
+its value 1 is exactly $T_A$.
+The total comparison is the direct sum over Law values, so its bijectivity implies
+the bijectivity of each summand.
+
+The equivalence of 2 and 3 is finite-dimensional linear algebra.
+Zero kernel dimension means injectivity and zero cokernel dimension means
+surjectivity, and conversely.
+
+\end{proof}
+
+\begin{proposition}[Decision from a finite presentation]\label{prop:3.23}
+
+If finite enumerations of the sources, of the values of both resolutions, and of the
+cells, the value tables of both readings, membership in the supports, and the
+incidence relations and the cell comparison are given in computable form, then
+uniform invariance is decidable.
+
+\end{proposition}
+
+\begin{proof}
+
+For each $u\in Q_f$, find a source representative by finite search and compute
+$\pi(u)=q_c(s)$.
+Lemma~\ref{lem:3.2} guarantees independence of the representative.
+For each nonempty subset $A\subseteq Q_c$, enumerate the remaining cells and build
+the rational matrices $d_c^0,d_c^1,d_f^0,d_f^1,T^1$ from \eqref{eq:3.9} and \eqref{eq:3.13}.
+
+By rational elimination, compute bases of $Z_c=\ker d_c^1$, $Z_f=\ker d_f^1$,
+$B_c=\mathrm{im}\,d_c^0$, and $B_f=\mathrm{im}\,d_f^0$.
+Extending the basis of each $B$ to a basis of the corresponding $Z$ yields a basis
+of the quotient.
+Expressing $T^1$ in these bases and writing $r_A$ for the rank of the induced map,
+we have
+\begin{equation*}
+J_A=(\dim Z_c-\dim B_c-r_A,\
+\dim Z_f-\dim B_f-r_A)
+\tag{3.19}\label{eq:3.19}
+\end{equation*}
+Check whether both components are zero for the finitely many $A$.
+The generated matrices are exactly the differentials and the comparison defined above, so
+Theorem~\ref{thm:3.22} gives the correctness of the decision.
+
+\end{proof}
+
+This decision does not merely compare the dimensions of the groups on the two sides.
+A map between groups of the same dimension can still be the zero map, so we compute
+the rank $r_A$ of the actual comparison.
+
+\begin{corollary}[Condition C for all subsets]\label{cor:3.24}
+
+Suppose that C0, C5, and C6 hold globally, and that for every nonempty
+$A\subseteq Q_c$ the clauses C1--C4 hold on the two selected subnerves.
+Then the comparison is uniformly invariant.
+These geometric conditions themselves are decidable from the same finite
+presentation as in Proposition~\ref{prop:3.23}.
+
+\end{corollary}
+
+\begin{proof}
+
+For an arbitrary Law family for which both resolutions are adequate, take the sets
+$A_\lambda$ of \eqref{eq:3.18}.
+The identification used in the proof of Theorem~\ref{thm:3.22} preserves vertices,
+edges, faces, their incidences, and the partial maps, so the paths of C1, the lifts
+of C2 and C4, and the chains and internal faces of C3 transfer directly to the
+subnerves of the labels.
+C0, C5, and C6 already hold globally. Uniform invariance follows from
+Theorem~\ref{thm:3.17}.
+
+For the finite decision, use finite matching for C0, C2, C4, C5, and C6, and graph
+reachability for C1.
+For C3, compute bases of $\ker\partial_1$ and $\mathrm{im}\,\partial_2$ for each
+fiber and check whether the former is contained in the latter.
+Since $\partial_1\partial_2=0$, this is also a test of equality of the two spaces.
+
+\end{proof}
+
+\begin{example}[Condition C is sufficient, and its clauses are not necessary]\label{ex:3.25}
+
+The following finite examples show that uniform invariance can hold while individual
+clauses fail.
+The resolutions are the $q_c,q_f$ of Example~\ref{ex:3.5}, and every chart support is
+the whole set.
+To both sides of each row we add, as an independent component, a component with one
+vertex, one self-loop $h$, and no face, on which the comparison is the identity.
+This common component has nonzero $H^1\cong\mathbb{Q}$.
+Adding it makes each comparison an example that also carries a nonzero class.
+The table records only the parts added beyond it.
+
+\begin{xltabular}{\linewidth}{@{}LL@{}}
+\toprule
+Failing clause & Added parts on the coarse and fine sides, and the comparison \\
+\midrule
+\endhead
+C0 & Add one isolated vertex on the coarse side, with no corresponding vertex on the fine side \\
+\addlinespace[3pt]
+C1 & Map two isolated fine vertices to one isolated coarse vertex \\
+\addlinespace[3pt]
+C2 & Take a triangle with a face on the coarse side and the path formed by two of its edges on the fine side, compared by the inclusion \\
+\addlinespace[3pt]
+C3 & Add to both sides a component with one vertex, one self-loop, and no face, compared by the identity \\
+\addlinespace[3pt]
+C4 & On the coarse triangle place two faces with the same boundary; on the fine side place the same three edges and one face \\
+\addlinespace[3pt]
+C5 & Take a triangle with a face on the coarse side; on the fine side split one edge into two parallel edges and place one face using each. Send the parallel edges to the same edge \\
+\addlinespace[3pt]
+C6 & On the coarse side place one self-loop $e$ and a face with boundary $e-e+e=e$. The fine side is a single edge joining two vertices, sent to $e$ \\
+\bottomrule
+\end{xltabular}
+
+The comparisons in the table send the remaining vertices and edges to those of the
+same name.
+In the C4 row the fine face is sent to one of the two coarse faces, and in the C5
+row the two fine faces are sent to the coarse face.
+All satisfy Definition~\ref{def:3.13}.
+
+On the added part of the C3 row the comparison is the identity.
+In every other row, $H^1$ of the added part is zero on both sides.
+The C0 and C1 rows have no edges, and in the path and the faced triangle of the C2
+row every cocycle is a difference of vertex values.
+The two faces of the C4 row impose the same equation, so the kernel is the same as
+with a single face.
+In the C5 row, subtracting the equations of the two faces makes the values on the
+parallel edges equal, and the remaining triangle equation then writes the cocycle as
+a difference of vertex values.
+In the C6 row the coarse face equation imposes $z_e=0$, and the fine side is a path,
+hence zero as well.
+
+Since all supports are the whole set, the cells of the two nerves are unchanged for any
+choice of nonempty $A$.
+Each $T_A$ is the identity on the common nonzero component and the isomorphism above
+on the rest.
+By Theorem~\ref{thm:3.22} each row is uniformly invariant, which shows that the
+sufficient condition of Corollary~\ref{cor:3.24} is strictly stronger than uniform
+invariance.
+The common self-loop without a face cannot be expressed as a boundary of internal
+faces, so C3 also fails in every row.
+In this way, clauses other than the listed one may fail simultaneously in each row.
+Each row is an example showing that the clause listed in the table is not necessary.
+
+\end{example}
+
+\section{An example undecidable from local incidence information alone}\label{sec:3.7}
+
+The finite decision computed the relations among faces on the complex as a whole.
+Reading only the kinds and numbers of incidences locally need not allow the same
+decision.
+We fix which information is read, and compare two examples on which it agrees.
+
+\begin{definition}[Local observation of incidence information]\label{def:3.26}
+
+Let $\mathrm{Obs}_{\mathrm{loc}}$ be the observation given by the following rules.
+
+\begin{enumerate}
+\item Record the sources, the values of both resolutions, and both readings.
+For each $A\subseteq Q_c$ with $A\ne\varnothing$, form the two subnerves of
+Definition~\ref{def:3.20}.
+\item Record as the color of each cell its degree, whether it is coarse or fine, and
+its support within the chosen subset.
+For a fine cell, also record whether the comparison maps it to a cell of the same
+degree or contracts it.
+\item For each cell, tally the colors of the directly incident cells by kind of
+incidence: the start and the end of an edge, and the 0th, 1st, and 2nd edges of a
+face.
+The count for each item is collapsed to the three values 0, 1, and 2 or more.
+The color of the cell itself together with this tally is the local type of that
+cell.
+\item The numbers of occurrences of the local types on each side are likewise
+collapsed to 0, 1, and 2 or more.
+The tables obtained for all $A$ form the observation value.
+\end{enumerate}
+
+Incidence is read between charts and edges and between edges and faces, and the
+proper names of cells are not recorded.
+This is an explicit observation rule retaining the kinds of neighbors and their
+truncated counts.
+
+\end{definition}
+
+\begin{construction}[Sequences of faces of length 3 and length 6]\label{cons:3.27}
+
+Take the same $S=\{0,1,2\}$ and resolutions as in Example~\ref{ex:3.19}.
+Place charts $w_0,w_1$ on both sides, with supports
+\begin{equation*}
+\begin{array}{c|cc}
+&w_0&w_1\\ \hline
+\text{coarse}&\{0\}&\{0,1\}\\
+\text{fine}&\{0,1\}&\{2\}
+\end{array}
+\tag{3.20}\label{eq:3.20}
+\end{equation*}
+Place one self-loop $h$ at $w_0$ and self-loops $e_0,\ldots,e_{n-1}$ at $w_1$.
+Let $f_0,\ldots,f_{n-1}$ be the faces over $w_1$, the three edges of $f_j$ being
+$(e_j,e_{j+1},e_{j+2})$, with indices read modulo $n$.
+The comparison of charts, edges, and faces is the identity onto the cells of the
+same name.
+Since \eqref{eq:3.20} satisfies \eqref{eq:3.12}, the comparison is defined.
+We call the two inputs with $n=3,6$ respectively $P_3,P_6$.
+
+\end{construction}
+
+\begin{proposition}[Same local observation, different uniform invariance]\label{prop:3.28}
+
+We have $\mathrm{Obs}_{\mathrm{loc}}(P_3)=\mathrm{Obs}_{\mathrm{loc}}(P_6)$.
+On the other hand, $P_3$ is uniformly invariant and $P_6$ is not.
+Hence no predicate of this observation value alone can decide uniform invariance.
+
+\end{proposition}
+
+\begin{proof}
+
+We first compare the observations. The component of $h$ is identical in the two
+inputs.
+When the component of $w_1$ remains, each $e_j$ has charts of the same color at both
+endpoints and is incident to exactly one face in each of the three edge positions of
+a face.
+Each face is likewise incident to edges of the same color in its three positions.
+The number of edges incident to $w_1$, and the numbers of occurrences of the local
+types of edges and faces, are all 2 or more for both $n=3,6$.
+For each subset, which sides retain this component is determined by \eqref{eq:3.20}
+and does not depend on $n$.
+All observation tables therefore agree.
+
+We next compute the cohomology. All edges are self-loops, so $d^0=0$.
+The cocycle condition over $w_1$ is
+\begin{equation*}
+z_j-z_{j+1}+z_{j+2}=0
+\qquad(j\ \bmod n)
+\tag{3.21}\label{eq:3.21}
+\end{equation*}
+Starting from $z_0=a,z_1=b$, the sequence is
+\begin{equation*}
+a,\ b,\ b-a,\ -a,\ -b,\ a-b,\ a,\ b,\ldots
+\tag{3.22}\label{eq:3.22}
+\end{equation*}
+Imposing period 3 gives $a=-a,\ b=-b$ and hence $a=b=0$, while with period 6
+arbitrary $a,b\in\mathbb{Q}$ are allowed.
+The dimension of $H^1$ of this component is therefore 0 for $n=3$ and 2 for $n=6$.
+
+For $A=\{0\}$, both components remain on the coarse side and only the component of
+$h$ remains on the fine side.
+The map $T_A$ preserves the value on $h$ and discards the component of $w_1$.
+For $A=\{1\}$, only the component of $w_1$ remains on both sides, and the comparison
+is the identity.
+For $A=\{0,1\}$, all components remain on both sides, and the comparison is again
+the identity.
+Hence
+\begin{equation*}
+\begin{array}{c|ccc}
+&A=\{0\}&A=\{1\}&A=\{0,1\}\\ \hline
+P_3:\ J_A&(0,0)&(0,0)&(0,0)\\
+P_6:\ J_A&(2,0)&(0,0)&(0,0)
+\end{array}
+\tag{3.23}\label{eq:3.23}
+\end{equation*}
+and Theorem~\ref{thm:3.22} gives the conclusion.
+If uniform invariance were determined by a predicate of the observation value alone,
+these two inputs, whose observations agree, would receive the same truth value.
+This contradicts the computation above.
+
+\end{proof}
+
+What produces the difference is the period obtained by following the face relations
+around a full turn.
+In this example, a relation that cannot be read off from the agreement of local
+types is retained by the totality of \eqref{eq:3.21}.
+
+\section{Structural supports and the role of coefficients}\label{sec:3.8}
+
+Chapter~\ref{chap:2} compared the obstructions of the structural and semantic
+phases.
+Here we directly build the structural support that survives changes of semantic
+choices, and study how the choice of coefficients placed on it affects the
+diagnosis.
+To this end we generate a nerve from all tuples of Atoms holding at a common source,
+and also separate the coefficients by source.
+In this construction the correction from a reference Atom can be made explicit, and
+we can trace the mechanism by which all diagnostic classes become zero.
+
+\begin{definition}[Supports invariant under semantic changes]\label{def:3.29}
+
+For an extraction doctrine of Chapter~\ref{chap:1}, fix the vocabulary, the
+resolution, the semantics of sources, and the normalization, and vary only the
+semantic reading and its permission predicates. Specify these options by a set
+$\Theta$.
+Designate a reference choice $\theta_0\in\Theta$, and let $E_\theta(s,a)$ mean that
+``Atom $a$ is extracted from source $s$''.
+Define the structural support by
+\begin{equation*}
+E_{\mathrm{str}}(s,a)
+\quad\Longleftrightarrow\quad
+E_{\theta_0}(s,a)\ \land\
+\forall\theta\in\Theta,\
+\bigl(E_\theta(s,a)\Longleftrightarrow E_{\theta_0}(s,a)\bigr)
+\tag{3.24}\label{eq:3.24}
+\end{equation*}
+The nerve built from a support $E(s,a)$ has as cells the ordered tuples of Atoms
+holding at a common source.
+In degree 0 take $(a)$, in degree 1 take $(a,b)$, and in degree 2 take $(a,b,c)$,
+the condition being the existence of a source satisfying all entries simultaneously.
+Repeated Atoms are allowed, and the incidences of edges and faces are given by the
+projections of the tuples.
+
+\end{definition}
+
+\begin{proposition}[Invariance of the structural nerve]\label{prop:3.30}
+
+The nerve obtained from $E_{\mathrm{str}}$ has the same cells and incidence
+relations when the reference semantic reading is replaced by another member of the
+same family.
+
+\end{proposition}
+
+\begin{proof}
+
+\eqref{eq:3.24} is equivalent to $\forall\theta\in\Theta,\ E_\theta(s,a)$, and hence
+does not depend on the reference member. Since the support is the same, the
+vertices, edges, and faces defined by the existence of a common source, and the
+projections of the tuples, all coincide.
+
+\end{proof}
+
+\begin{example}[The all-Atom nerve can change]\label{ex:3.31}
+
+Consider the case of one source and two Atoms $a,b$.
+Suppose that one semantic reading extracts only $a$ and the other extracts $a,b$.
+Only $a$ remains in the structural support, while the all-Atom nerve acquires the
+vertex $b$ under the latter.
+Invariance of the structural part is distinguished from the conclusion that the
+whole nerves are equal.
+
+\end{example}
+
+\begin{proposition}[Vanishing with coefficients separated by source]\label{prop:3.32}
+
+Suppose that $S$ and the set of Atoms are finite.
+On each cell of the ordered nerve of Definition~\ref{def:3.29}, place one rational
+coordinate for each source realizing that cell simultaneously.
+The differentials leave the source unchanged and are given by
+\begin{equation*}
+\begin{aligned}
+(d^0c)(a,b;s)&=c(b;s)-c(a;s),\\
+(d^1z)(a,b,c;s)&=z(b,c;s)-z(a,c;s)+z(a,b;s)
+\end{aligned}
+\tag{3.25}\label{eq:3.25}
+\end{equation*}
+The $H^1$ of this complex is zero.
+
+\end{proposition}
+
+\begin{proof}
+
+For each source $s$ with nonempty support, choose one Atom satisfying $E(s,a_s)$.
+For a cocycle $z$, set $c(a;s)=z(a_s,a;s)$.
+If the edge $(a,b;s)$ exists, then so does the face $(a_s,a,b;s)$, and its cocycle
+condition gives $z(a,b;s)=z(a_s,b;s)-z(a_s,a;s)$.
+That is, $z=d^0c$. A source with empty support has no coordinates.
+
+\end{proof}
+
+In this construction, the coordinates sharing a source can each be corrected from
+the reference Atom.
+To diagnose a nonzero gluing obstruction, therefore, one must examine the relation
+between these coefficients separated by source and the actual obstruction
+coefficients.
+In the next section we give this comparison, using the integer coefficients built
+from the generator relations of Chapter~\ref{chap:2}.
+
+\section{Mapping integer obstruction coefficients to the Law-value diagnosis}\label{sec:3.9}
+
+The obstructions of Chapter~\ref{chap:2} arose from differences obtained by actually
+restricting local states and comparing them along transitions.
+In this section we read the Law values of the generators composing those
+differences and transfer them to the diagnostic coordinates.
+We construct in turn the map of coefficients, the map of cochains, and the map of
+obstruction classes.
+
+\begin{construction}[Coefficient comparison]\label{cons:3.33}
+
+Take the generators $G=L\times S$ of Definition~\ref{def:2.35}, the label-preserving
+primitive relation $R$, the set $\mathfrak{B}$ of relation components, and the
+integer coefficients $M_R$.
+Write $\lambda_B\in\Lambda$ for the common label of a component $B\in\mathfrak{B}$.
+Send the class of a generator to the rational delta function of its label:
+\begin{equation*}
+\varepsilon_R:M_R\longrightarrow \mathbb{Q}^\Lambda,\qquad
+\varepsilon_R([e_g])(\lambda)
+=\begin{cases}
+1&\lambda=\lambda_g,\\
+0&\lambda\ne\lambda_g.
+\end{cases}
+\tag{3.26}\label{eq:3.26}
+\end{equation*}
+If $gRh$ then the labels are equal and $e_g-e_h$ maps to zero, so this is well
+defined as an additive homomorphism on the quotient.
+Under the presentation $M_R\cong\mathbb{Z}^{(\mathfrak{B})}$ of
+Lemma~\ref{lem:2.36},
+\begin{equation*}
+\varepsilon_R(m)(\lambda)
+=\sum_{\lambda_B=\lambda}m_B
+\quad\text{(integers read as rationals via the inclusion)}
+\tag{3.27}\label{eq:3.27}
+\end{equation*}
+The coefficients of the relation components carrying the same Law value are added
+into a single diagnostic coordinate.
+
+\end{construction}
+
+\begin{lemma}[Injectivity of the coefficient comparison]\label{lem:3.34}
+
+Suppose that any two generators with the same label are joined by a finite chain of
+primitive relations.
+Then $B\mapsto\lambda_B$ gives $\mathfrak{B}\cong\Lambda$, and
+$\varepsilon_R$ is injective.
+
+\end{lemma}
+
+\begin{proof}
+
+Every label admits a generator, so the map is surjective.
+If the labels of two components are equal, the hypothesis joins their representative
+generators by relations, and the components are equal as well.
+Hence \eqref{eq:3.27} becomes $\varepsilon_R(m)(\lambda_B)=m_B$.
+Since the inclusion of the integers into the rationals is injective, all coordinates
+can be read back.
+
+\end{proof}
+
+\begin{example}[Different components sent to the same Law value]\label{ex:3.35}
+
+Take two sources, one constant Law, and the empty primitive relation.
+Then $M_R=\mathbb{Z}^2$, the set $\Lambda$ is a singleton, and
+$\varepsilon_R(m,n)=m+n$.
+The nonzero element $(1,-1)$ maps to zero.
+Making ``reading the same Law value'' coincide with ``lying in the same component of
+the primitive relation'' is the role of Lemma~\ref{lem:3.34}.
+
+\end{example}
+
+\begin{construction}[Comparison with the actual \v{C}ech complex]\label{cons:3.36}
+
+Take a finite cover $\mathcal{U}_q$ consisting of nonempty connected charts, in which the
+nonempty double intersections are connected and the intersections of three distinct
+charts are empty.
+The nerve has as edges the nonempty intersections of distinct pairs of charts,
+oriented by the order of the charts.
+On this cover place the locally constant sheaf $F_R$ of $M_R$-values from
+Construction~\ref{cons:2.39}.
+
+By connectedness, each section is determined by a single $M_R$-value, and the
+restrictions preserve that value.
+The normalized \v{C}ech complex used in Chapter~\ref{chap:2} can therefore be
+presented as
+\begin{equation*}
+C_{\mathrm{ob}}^0(q)=M_R^{N_{q,0}},\qquad
+C_{\mathrm{ob}}^1(q)=M_R^{N_{q,1}},\qquad
+C_{\mathrm{ob}}^2(q)=0
+\tag{3.28}\label{eq:3.28}
+\end{equation*}
+Here $d_{\mathrm{ob}}^0p$ is the difference, after the actual restrictions, between
+the value on the end side and the value on the start side of an edge.
+On the same nerve, specify the chart supports of an $L$-adequate $q$ and build the
+diagnostic complex of Construction~\ref{cons:3.10}.
+Define the comparisons in degrees 0 and 1 by
+\begin{equation*}
+(\phi_q^n c)_{\sigma,\lambda}
+=\varepsilon_R(c_\sigma)(\lambda)
+\quad(n=0,1),\qquad
+\phi_q^2:0\longrightarrow0
+\tag{3.29}\label{eq:3.29}
+\end{equation*}
+On the diagnostic side, only the labels occurring on the cell are read.
+The additivity of $\varepsilon_R$ and the presentation of the restrictions give
+\begin{equation*}
+\phi_q^1d_{\mathrm{ob}}^0=d_{\mathrm{diag}}^0\phi_q^0,\qquad
+\phi_q^2d_{\mathrm{ob}}^1=d_{\mathrm{diag}}^1\phi_q^1
+\tag{3.30}\label{eq:3.30}
+\end{equation*}
+the latter because degree 2 is zero on both sides.
+We therefore obtain an additive homomorphism
+\begin{equation*}
+\Phi_q:\check H^1(\mathcal{U}_q,F_R)\longrightarrow
+H^1_{\mathrm{diag}}(q,N_q;L),\qquad
+[z]\longmapsto[\phi_q^1z]
+\tag{3.31}\label{eq:3.31}
+\end{equation*}
+The domain is an abelian group with integer coefficients, and the structure of this
+comparison is that of an additive homomorphism.
+
+\end{construction}
+
+\begin{theorem}[Obstruction and diagnostic classes from the same local data]\label{thm:3.37}
+
+For the input of Construction~\ref{cons:3.36}, take any local states and affine
+transitions $x=(\xi,p)$.
+Define the obstruction cochain of Proposition~\ref{prop:2.41} and the diagnostic
+cochain generated from Law values by
+\begin{equation*}
+\begin{aligned}
+o_q(x)&=\xi+d_{\mathrm{ob}}^0p,\\
+a_q(x)&=\phi_q^1\xi+d_{\mathrm{diag}}^0\phi_q^0p
+\end{aligned}
+\tag{3.32}\label{eq:3.32}
+\end{equation*}
+Then
+\begin{equation*}
+\phi_q^1o_q(x)=a_q(x),\qquad
+\Phi_q([o_q(x)])=[a_q(x)]
+\tag{3.33}\label{eq:3.33}
+\end{equation*}
+In particular, $[o_q(x)]=0$ implies $[a_q(x)]=0$.
+
+\end{theorem}
+
+\begin{proof}
+
+The value of the diagnosis at an edge coordinate $(e,\lambda)$ is the sum of the
+Law-value coordinate $\varepsilon_R(\xi_e)(\lambda)$ of the transition and the
+difference of the Law-value coordinates of the states on the two sides.
+By \eqref{eq:3.30} and additivity, this equals $\varepsilon_R(o_q(x)_e)(\lambda)$.
+Degree 2 is zero on both sides, so both cochains are cocycles, and passing to the
+quotients gives \eqref{eq:3.33}.
+
+\end{proof}
+
+In this comparison, we first prepare the integer transitions and states, and then
+read their Law values to build the diagnosis.
+Thus \eqref{eq:3.33} does more than compare two groups abstractly: it determines the
+destination of the concrete obstruction classes received from
+Chapter~\ref{chap:2}.
+
+\section{From vanishing diagnoses to integer corrections}\label{sec:3.10}
+
+In the reverse direction, a correction seen in the diagnosis must be brought back to
+a correction in the original integer coefficients.
+For this we use the facts that the relation components can be distinguished by Law
+values, and that the required Law values can be read on every chart and every edge.
+
+\begin{definition}[Two conditions reflecting vanishing]\label{def:3.38}
+
+Impose the following conditions on the input of Construction~\ref{cons:3.36}.
+
+\begin{itemize}
+\item \textbf{$R_q$: identification of relation components.} Any two generators with
+the same label are joined by a finite chain of primitive relations.
+\item \textbf{Existence of common representatives.} For each
+$\lambda=(\ell,v)\in\Lambda$ there is a single $u_\lambda\in Q$ that belongs to
+every chart support and satisfies $\bar v_\ell(u_\lambda)=v$.
+\end{itemize}
+
+By the second condition, that representative belongs to the support of every edge as
+well.
+Each label therefore has one diagnostic coordinate on every chart and every edge.
+Even if the representatives are chosen differently, the coordinates of
+Construction~\ref{cons:3.10} are treated as the same label.
+
+\end{definition}
+
+\begin{lemma}[Integer corrections from rational ones]\label{lem:3.39}
+
+Let an integer-valued 1-cochain $z$ and a rational-valued 0-cochain $b$ on a
+directed graph satisfy $b_{t(e)}-b_{s(e)}=z_e$.
+Setting $n_\alpha=\lfloor b_\alpha\rfloor$ gives
+$n_{t(e)}-n_{s(e)}=z_e$.
+
+\end{lemma}
+
+\begin{proof}
+
+From $b_{t(e)}=b_{s(e)}+z_e$ and $z_e\in\mathbb{Z}$ it follows that
+$\lfloor b_{t(e)}\rfloor=\lfloor b_{s(e)}\rfloor+z_e$.
+
+\end{proof}
+
+For example, the difference of $1/2,3/2$ is 1, and the integer parts $0,1$ have the
+same difference.
+The integer parts are used to construct a correction preserving these specific edge
+differences.
+
+\begin{theorem}[Reflection of vanishing for specified obstruction classes]\label{thm:3.40}
+
+Under the two conditions of Definition~\ref{def:3.38}, for arbitrary local data
+$x=(\xi,p)$ we have
+\begin{equation*}
+[a_q(x)]=0
+\quad\Longleftrightarrow\quad
+[o_q(x)]=0
+\tag{3.34}\label{eq:3.34}
+\end{equation*}
+\end{theorem}
+
+\begin{proof}
+
+Right to left is Theorem~\ref{thm:3.37}.
+Assuming the left side, there is a diagnostic 0-cochain $b$ with
+$a_q(x)=d_{\mathrm{diag}}^0b$.
+Write $z_{e,B}$ for the integer coefficient of the relation component $B$ in
+$o_q(x)_e$.
+By the common representatives the coordinate $\lambda_B$ exists on the edges, and by
+$R_q$ and Lemma~\ref{lem:3.34} we get
+\begin{equation*}
+\begin{aligned}
+b_{t(e),\lambda_B}-b_{s(e),\lambda_B}
+&=a_q(x)_{e,\lambda_B}\\
+&=\varepsilon_R(o_q(x)_e)(\lambda_B)
+=z_{e,B}
+\end{aligned}
+\tag{3.35}\label{eq:3.35}
+\end{equation*}
+Applying Lemma~\ref{lem:3.39} to each component and setting
+\begin{equation*}
+n_\alpha=\sum_{B\in\mathfrak{B}}
+\lfloor b_{\alpha,\lambda_B}\rfloor e_B\in M_R
+\tag{3.36}\label{eq:3.36}
+\end{equation*}
+we obtain $d_{\mathrm{ob}}^0n=o_q(x)$.
+Since $\mathfrak{B}$ is finite, this sum defines an element of $M_R$.
+On the connected charts of Construction~\ref{cons:3.36}, $n_\alpha$ gives an actual
+locally constant section.
+The original obstruction class is therefore zero as well.
+
+\end{proof}
+
+This proof produces the correction itself.
+Changing the original states to $p-n$ gives
+$\xi+d_{\mathrm{ob}}^0(p-n)=0$, and the local states become consistent with respect
+to the transitions.
+In the sheaf of states of Proposition~\ref{prop:2.41}, the corrected family glues to
+a global state.
+
+\begin{example}[Without the reflection conditions the diagnosis loses differences]\label{ex:3.41}
+
+On the three-chart cover of Lemma~\ref{lem:2.38}, place the locally constant
+coefficients $M_R=\mathbb{Z}^2$ of Example~\ref{ex:3.35} and chart supports reading
+all values of the resolution.
+Taking $p=0$, $\xi_{ab}=(1,-1)$, and $\xi_{bc}=\xi_{ac}=0$, the period of the
+obstruction is nonzero while the diagnostic cochain is zero. This is an example
+lacking $R_q$.
+
+The role of the common representatives can be checked in the same fashion.
+This time use two Law values 0 and 1, with an $M_R\cong\mathbb{Z}^2$ satisfying
+$R_q$.
+Taking each chart support to be a set on which only the value 0 occurs, the
+coordinate of value 1 does not appear in the diagnosis.
+Placing the basis element $u$ of value 1 in $\xi_{ab}$ and zero elsewhere, the
+period of the obstruction is $u\ne0$ while the diagnosis is zero.
+Even when the coefficient comparison is injective, the reflection of vanishing can
+break if the coordinates reading a component are locally missing.
+
+\end{example}
+
+\section{Refinement of covers and invariance of the obstruction verdict}\label{sec:3.11}
+
+Finally, we tie the preceding comparisons together over the same Atom input.
+We use the eight-point space and generator relations of Chapter~\ref{chap:2} and the
+two resolutions of Example~\ref{ex:3.5}.
+The integer obstruction, the rational diagnosis, and the refinement from three
+charts to four then appear as one commutative comparison.
+
+\begin{construction}[Coarse--fine comparison from the same input]\label{cons:3.42}
+
+Take the sources $S=\{0,1\}^2$, the Law $v_\ell(v,h)=v$, and the primitive relation
+consisting of the two pairs joining $(v,0)$ and $(v,1)$.
+The coefficients are $M_R\cong\mathbb{Z}e_{B_0}\oplus\mathbb{Z}e_{B_1}$.
+Use the point Atoms and generator Atoms of Construction~\ref{cons:2.37}; each
+context reads the points of the corresponding open set and all generators.
+
+On the coarse side use $q_c(v,h)=v$ and the three-chart cover
+$\mathcal{U}_c=(U_a,U_b,U_c)$; on the fine side use $q_f=\mathrm{id}_S$ and the
+four-chart cover $\mathcal{U}_f=(U_{a_0},U_{a_1},U_b,U_c)$.
+Every chart reads all generators, so the diagnostic chart supports are all of
+$Q_c,Q_f$, respectively.
+Below we abbreviate the obstruction group as
+$H^1_{\mathrm{ob}}(q)=\check H^1(\mathcal{U}_q,F_R)$ and the diagnostic group as
+$H^1_{\mathrm{diag}}(q)=H^1_{\mathrm{diag}}(q,N_q;L)$.
+
+The inclusions $U_{a_0},U_{a_1}\subseteq U_a$, together with the identity inclusions
+of the remaining charts, give an actual refinement of covers.
+In the coordinates of \eqref{eq:3.28}, the maps by restriction of sections are
+\begin{equation*}
+\begin{aligned}
+T_{\mathrm{ob}}^0(p_a,p_b,p_c)&=(p_a,p_a,p_b,p_c),\\
+T_{\mathrm{ob}}^1(z_{ab},z_{bc},z_{ac})&=(0,z_{ab},z_{bc},z_{ac}),\\
+T_{\mathrm{ob}}^2&:0\longrightarrow0
+\end{aligned}
+\tag{3.37}\label{eq:3.37}
+\end{equation*}
+with the fine edges ordered $(e_{01},ab,bc,ac)$.
+The value on the internal edge $e_{01}$ is zero, being a self-comparison of the same
+coarse chart.
+On the remaining edges, restriction to the actual overlaps preserves the same
+$M_R$-value.
+
+The fine differential is
+\begin{equation*}
+d_f^0p=
+(p_{a_1}-p_{a_0},\
+p_b-p_{a_1},\
+p_c-p_b,\
+p_c-p_{a_0})
+\tag{3.38}\label{eq:3.38}
+\end{equation*}
+so $T_{\mathrm{ob}}^1d_c^0=d_f^0T_{\mathrm{ob}}^0$ can be checked directly.
+This yields $T_{\mathrm{ob}}:H^1_{\mathrm{ob}}(q_c)\to H^1_{\mathrm{ob}}(q_f)$.
+On the diagnostic side we use the map $T_{\mathrm{diag}}$ generated from the same
+cell comparison as in Example~\ref{ex:3.18}.
+
+\end{construction}
+
+\begin{theorem}[Commutativity of obstruction, diagnosis, and refinement]\label{thm:3.43}
+
+In Construction~\ref{cons:3.42} the following square commutes.
+\begin{equation*}
+\begin{array}{ccc}
+H^1_{\mathrm{ob}}(q_c)&\xrightarrow{\ \Phi_{q_c}\ }&
+H^1_{\mathrm{diag}}(q_c)\\
+\big\downarrow T_{\mathrm{ob}}&&\big\downarrow T_{\mathrm{diag}}\\
+H^1_{\mathrm{ob}}(q_f)&\xrightarrow{\ \Phi_{q_f}\ }&
+H^1_{\mathrm{diag}}(q_f)
+\end{array}
+\tag{3.39}\label{eq:3.39}
+\end{equation*}
+For any coarse local data $x=(\xi,p)$, setting
+$x_f=(T_{\mathrm{ob}}^1\xi,T_{\mathrm{ob}}^0p)$ gives
+\begin{equation*}
+\begin{aligned}
+T_{\mathrm{ob}}[o_{q_c}(x)]&=[o_{q_f}(x_f)],\\
+T_{\mathrm{diag}}[a_{q_c}(x)]&=[a_{q_f}(x_f)]
+\end{aligned}
+\tag{3.40}\label{eq:3.40}
+\end{equation*}
+\end{theorem}
+
+\begin{proof}
+
+The coefficient comparisons on the two sides send the same generator $[e_g]$ to the
+delta function of the same Law value.
+On mapped edges and charts, applying \eqref{eq:3.37} first and then reading Law
+values yields the same coordinates as reading Law values first and then pulling back
+by \eqref{eq:3.13}.
+On the internal edge both are zero, and degree 2 is zero on both sides as well.
+The comparisons therefore commute in each degree, and passing to classes gives
+\eqref{eq:3.39}.
+
+For the local data, commutation with the differentials gives
+\begin{equation*}
+o_{q_f}(x_f)
+=T_{\mathrm{ob}}^1\xi+d_f^0T_{\mathrm{ob}}^0p
+=T_{\mathrm{ob}}^1(\xi+d_c^0p)
+\tag{3.41}\label{eq:3.41}
+\end{equation*}
+This gives the first equation of \eqref{eq:3.40}.
+The second follows from the first, Theorem~\ref{thm:3.37}, and \eqref{eq:3.39}.
+
+\end{proof}
+
+\begin{theorem}[Invariance of the obstruction verdict along a change of reading]\label{thm:3.44}
+
+For any local data of Construction~\ref{cons:3.42}, the following four statements
+are equivalent.
+\begin{equation*}
+\begin{aligned}
+[o_{q_c}(x)]=0
+&\quad\Longleftrightarrow\quad[a_{q_c}(x)]=0\\
+&\quad\Longleftrightarrow\quad[a_{q_f}(x_f)]=0\\
+&\quad\Longleftrightarrow\quad[o_{q_f}(x_f)]=0.
+\end{aligned}
+\tag{3.42}\label{eq:3.42}
+\end{equation*}
+
+\end{theorem}
+
+\begin{proof}
+
+For the coarse and the fine resolution alike, the Law value can be read from the
+first component, so both are adequate.
+Two generators with the same Law value are joined by one of the declared relations,
+so $R_q$ holds.
+As a common representative of a value $v$ we may take $v$ on the coarse side and
+$(v,0)$ on the fine side; these belong to the supports of all charts.
+Theorem~\ref{thm:3.40} therefore applies on both ends.
+
+The diagnostic comparison satisfies Condition C, as verified in
+Example~\ref{ex:3.18}, and is an isomorphism by Theorem~\ref{thm:3.17}.
+Theorem~\ref{thm:3.43} matches the specified diagnostic classes, so their vanishing
+is equivalent as well.
+Composing these three equivalences gives \eqref{eq:3.42}.
+
+\end{proof}
+
+In this proof, the merging map $\pi(v,h)=v$ is not injective.
+Nevertheless, because the Law values, the relation components, and the comparison of
+covers satisfy the conditions above, the obstruction verdict for the same local data
+can be shared by the two resolutions.
+
+\begin{example}[A nonzero difference that can be removed, and one that cannot]\label{ex:3.45}
+
+Let $u=e_{B_0}\in M_R$ and fix all chart states to zero.
+With the same coefficients, Law, and covers, vary only the transitions as follows.
+
+\begin{xltabular}{\linewidth}{@{}LLLL@{}}
+\toprule
+Local data & Coarse transitions $(ab,bc,ac)$ & Transitions carried to fine $(e_{01},ab,bc,ac)$ & Obstruction and diagnostic classes \\
+\midrule
+\endhead
+A correctable difference & $(u,-u,0)$ & $(0,u,-u,0)$ & Zero on both sides \\
+\addlinespace[3pt]
+A difference surviving correction & $(u,0,0)$ & $(0,u,0,0)$ & Nonzero on both sides \\
+\bottomrule
+\end{xltabular}
+
+The first row is $d^0(0,u,0)$ on the coarse side and
+$d^0(0,0,u,0)$ on the fine side.
+The difference itself is thus nonzero, but adding the negative of the corresponding
+0-cochain to the local states restores consistency.
+
+In the second row the coarse period is $u$, and the fine period is $u$ as well.
+The fine period is
+$z_{e_{01}}+z_{ab}+z_{bc}-z_{ac}$, and substituting \eqref{eq:3.38} shows that it is
+zero on every coboundary.
+On the other hand, the coordinate of $\varepsilon_R(u)$ at the value 0 is 1, so the
+diagnostic period is nonzero as well.
+This gives the nonzero verdicts in the table.
+
+In the presentation by periods, the groups and the comparison of this example are
+$H^1_{\mathrm{ob}}\cong\mathbb{Z}^2$, $H^1_{\mathrm{diag}}\cong\mathbb{Q}^2$, and
+$\Phi:\mathbb{Z}^2\hookrightarrow\mathbb{Q}^2$.
+While keeping the difference between integer and rational coefficients,
+\eqref{eq:3.42} decides the same vanishing.
+
+\end{example}
+
+\subsection*{Transporting coefficients and local contexts by isomorphisms}
+
+Another basic comparison is the case in which the chosen local contexts and
+coefficients are carried by isomorphisms.
+If the covers and their intersection diagrams correspond, and the isomorphisms of
+coefficients over each intersection commute with the restrictions, then the
+comparison of sections gives isomorphisms of the \v{C}ech complexes in each degree.
+The differentials are alternating sums of restrictions, hence commute with the
+comparison, and the inverse coefficient isomorphisms yield an inverse cochain map.
+The vanishing of the corresponding obstruction classes is therefore equivalent.
+
+When the coefficients are built from a ring and an ideal, a ring isomorphism
+matching the ideals that define the coefficients induces an isomorphism of the
+quotients as well. Matching also the Laws, the witnesses, and the readouts of the
+axes can place the classes built from specified residuals into the same comparison.
+The comparison by refinement in this chapter goes beyond the case of direct
+degreewise isomorphisms: it gives a way to preserve the obstruction verdict through
+Condition C and the integer-correction construction.
+
+\section*{Summary of the Chapter}
+
+In this chapter we connected the retained Laws, the local structure, the
+coefficients, and the specified local data, and constructed diagnoses along changes
+of resolution.
+
+\begin{itemize}
+\item \textbf{Canonical resolution.} The quotient merging sources on which all Law
+values agree can be read uniquely through every $L$-adequate resolution. Whether it
+can be presented by specified extraction methods is determined by comparison with
+the equivalence relations of the extraction results.
+\item \textbf{Comparison of diagnoses.} We built coefficients from the distinct Law
+values occurring on cells, and generated maps commuting with the differentials from
+local comparisons. Under Condition C, the map is an isomorphism on $H^1$.
+\item \textbf{Uniform invariance.} That the comparison is an isomorphism for every
+Law family for which both resolutions are adequate is equivalent to the kernel and
+cokernel dimensions being zero for all nonempty subsets of values, and is decidable
+from a finite presentation. Condition C is a sufficient condition, and there are
+examples on which a fixed local observation agrees while the verdicts differ.
+\item \textbf{The role of coefficients.} Even when the structural support is
+invariant, which coefficients read the differences is specified independently. For
+the coefficients generating all tuples per source, we showed that $H^1$ is zero, by
+an explicit formula for the correction.
+\item \textbf{Correspondence of obstruction and diagnosis.} We built a map from the
+integer generator relations to the Law-value coefficients, and matched the
+obstruction and diagnostic classes of the same local data. Under the conditions of
+identification of relation components and of common representatives, rational
+corrections can be made integral and vanishing is reflected.
+\item \textbf{Concrete invariance.} We constructed the comparison square for the
+refinement from three charts to four and, on the same input with the non-injective
+comparison map $\pi$, carried zero and nonzero obstruction verdicts to both sides.
+\end{itemize}
+
+In the opening example, merging internal values that the Law does not read is a
+change of resolution preserving the evaluation.
+When the regions on which local states are placed are repartitioned as well, a map
+built from the comparison of overlaps also becomes necessary.
+The results of this chapter give the conditions under which that map preserves
+obstruction classes and vanishing, and delimit the range over which the same verdict
+can be shared.
+
+\subsection*{Potential applications to code review}
+
+The results of this chapter provide a starting point for thinking about what to
+retain in a summary and at what granularity to check during code review.
+Consider, for example, a change to order processing in which the inventory update
+and the order persistence are reviewed separately.
+Besides the description of each process, we also want to check that values and
+assumptions are handed over so that the two handle the same order and the same
+processing result.
+Can the per-function implementations and a description summarizing the handoffs
+between modules capture the same inconsistency?
+
+To treat this question with the constructions of this chapter, fix a version and a
+semantics of the target code, and define the sources and the Law evaluations from
+states and behavior.
+The canonical resolution gives the distinctions that a summary must retain in order
+to preserve the chosen evaluations.
+Taking the reviewed regions as charts, if their overlaps and the correspondences
+between regions can be expressed by the nerves and comparison maps of this chapter,
+then Condition C of Theorem~\ref{thm:3.17} lets us confirm the preservation of
+diagnostic classes along splits and mergers.
+
+Moreover, when obstruction and diagnosis are built from the same local data and the
+constructions and hypotheses of \S\S\ref{sec:3.9}--\ref{sec:3.10} are satisfied, a
+vanishing diagnosis on the summary can be brought back to the existence of a
+correction that makes the original local states consistent.
+What vanishing asserts here is correctability under the chosen Laws and
+coefficients.
+How to realize that correction as an actual code change is a task to be settled at
+application time.
+
+The first thing to verify is the agreement of diagnoses when the same code is read
+at different granularities.
+Checking concretely the correspondence from code to model and the hypotheses of the
+comparison leads to a method for evaluating summaries and partitions for review.
+To advance to applications comparing the programs before and after a change, one
+adds a construction matching their inputs and the specified obstruction classes.
+
+For the gluing obstructions of Chapter~\ref{chap:2}, this chapter has clarified what
+is read, and under which conditions the way of reading can be changed while the
+same verdict is obtained. The next chapter treats the construction that transports
+objects and morphisms along a change of reading, and studies its universality and
+its coherence with units and composition.

@@ -10,6 +10,7 @@
 | `main.tex` | preamble、題名、要旨、各パートの取り込み、文献 |
 | `NN-*.tex` | 日本語原稿 `../ja/NN-*.md` と同じ名前の各パート(01 要旨は `main.tex` の abstract 環境に取り込む) |
 | `references.bib` | 文献。書誌は `../ja/14-references.md`、原典確認は [`../references.csv`](../references.csv) |
+| `figures/*.tex` | 図(TikZ)。日本語原稿の図 [`../figures/`](../figures/) の SVG と同じ内容を描き直したもの |
 | `pending-labels.tex` | 未翻訳のパートにある番号の仮ラベル。全パートの翻訳後に削除する |
 | `arxiv-abstract.txt` | arXiv の要旨欄に入れる短縮版要旨(metadata 用) |
 
@@ -47,6 +48,8 @@ ASCII のみで書き、数式・特殊文字を使わない(Čech は Cech と�
 - TeX と BibTeX の source は ASCII のみで書く(アクセントは `\v{C}` などの命令)。
 - 長い段落は、読みやすさのために話題の強い切れ目(章の境目、例示の前など)で分割してよい。
   文の内容と順序は変えない。太字見出しで始まるブロックは2〜3段落に保ち、細切れにしない。
+- 図は日本語原稿の SVG と同じ内容を `figures/*.tex` に TikZ で描き、図中の文字は英語にする。
+  本文へは `\input{figures/...}` で取り込み、ラベルは `fig:2.1` のように番号で付ける。
 - 本文にはリポジトリ内部の管理用語を書かない([論文の語彙](../../../../docs/paper/guideline.md#論文の語彙))。
 
 ## 日英照合
@@ -154,7 +157,7 @@ Atom・Law は大文字で書き、reading・core・configuration・source な�
 | 分裂短完全列 | split short exact sequence | |
 | 表示(第8章・有限表示・表示の射) | presentation | 画面の表示は display、表示値は displayed value |
 | 積表示 | product decomposition | |
-| 有限片、整合族、整合条件 | finite fragment, compatible family, compatibility condition | |
+| 有限片、整合族、整合条件 | finite fragment, compatible family, compatibility condition | 比較・図式の文脈の整合条件は coherence condition |
 | 分離、組立て | separation, assembly | |
 | 原始データ、局所モデル、局所圏 | primitive data, local model, local category | |
 | 再構成、局所再構成、回復 | reconstruction, local reconstruction, recovery | |

@@ -1,0 +1,1384 @@
+\chapter{Transport and Coherence of Composition}\label{chap:4}
+
+\section*{Overview of the Chapter}
+
+The question of this chapter is \textbf{under what conditions structure can be carried along
+a change of reading and, when such changes are performed in succession, the same result can
+be reached coherently}.
+Chapter~\ref{chap:1} defined objects and morphisms at the three levels of extraction, core,
+and geometry. In this chapter we construct, from a change of extraction and an object before
+the change, the core and the geometry after the change.
+
+For example, consider a refactoring that tidies up the field names and data formats of an
+order-processing API. We want to read and write the same orders after the change, and to
+keep conditions such as ``the total amount equals the sum of the line items.'' Transport in
+the sense of this chapter is a construction that carries over to the target not only the
+correspondence of data but also the operations and conditions.
+
+Moreover, if there are two routes, one that moves from the old version to the new one through an
+intermediate version and one that moves directly, we want the same order to give the
+same result along either route. When the conversions are implemented by different teams,
+however, discrepancies can arise, such as the correspondence between shipping and billing
+addresses being swapped along one route only. Even if each conversion can be undone, the
+results of the two routes need not agree.
+
+In the first half we characterize transport by the universal property that every further
+change factors through it uniquely. This uniqueness makes the canonical comparisons for
+units and composition coherent. In the second half we express the difference between a
+separately specified comparison and the canonical comparison as an automorphism, and prove
+that this difference can be removed by reselecting edges if and only if all comparison
+diagrams can be made commutative at once.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Question & Construction & Outcome \\
+\midrule
+\endhead
+What can be carried from a change of extraction? & Reindexing by a bijection of Atoms & Transport of the core and unique factorization \\
+\addlinespace[3pt]
+Can covers and coefficients also be carried? & Images of coverage requirements, comparison of overlaps and local data & Transport of the geometry and conditions for its existence \\
+\addlinespace[3pt]
+What happens under successive transports? & Composition comparisons built from universality & Coherence for units, triple composites, and between levels \\
+\addlinespace[3pt]
+Can discrepancies of specified comparisons be removed? & Edge reselection and noncommutative defects & Equivalence with the existence of a coherent reselection \\
+\addlinespace[3pt]
+Can coherence at the levels be combined? & Projection to the core and its kernel & Decision using lifts and the same selection of edges \\
+\addlinespace[3pt]
+How to preserve the meaning of operations? & Commutative diagrams for lenses and protocols & Simultaneous preservation of reads, updates, and named executions \\
+\bottomrule
+\end{xltabular}
+
+The diagnosis of Chapter~\ref{chap:3} compared complexes built from Law values and their
+classes. The transport of this chapter compares object formation, operations, equations, and
+local geometry all at once. What the two have in common is not the statement that equal
+values or isomorphic objects exist, but the study of actual comparison maps built from the
+input.
+
+\section{Characterizing transport by unique factorization}\label{sec:4.1}
+
+We write the projections of Chapter~\ref{chap:1} as
+\begin{equation*}
+E_{\mathrm{geom}}\xrightarrow{p}E_{\mathrm{core}}
+\xrightarrow{q}B
+\tag{4.1}\label{eq:4.1}
+\end{equation*}
+An object of the base is a pair of an extraction doctrine and a selected source, and a
+morphism of the base is an exact change in the sense of Definition~\ref{def:1.27}. The
+vocabulary of Atoms is fixed.
+
+\begin{definition}[Strongly opcartesian morphism]\label{def:4.1}
+
+Take a functor $r:E\to B$ and a morphism $\eta:X\to X'$, and let
+$r(\eta)=\sigma:b\to b'$.
+If, for every object $Y$, every base morphism $\tau:b'\to r(Y)$, and every morphism
+$h:X\to Y$ with $r(h)=\tau\sigma$, we have
+\begin{equation*}
+\exists!\,k:X'\longrightarrow Y,\qquad
+r(k)=\tau,\quad k\eta=h
+\tag{4.2}\label{eq:4.2}
+\end{equation*}
+then $\eta$ is called a strongly opcartesian morphism with respect to $r$.
+A morphism whose base image is an identity, as in $r(k)=\mathrm{id}_{b'}$, is called a
+vertical morphism.
+
+Equation~\eqref{eq:4.2} expresses that, once the base change $\sigma$ has been carried out
+first, any further change $h$ splits uniquely, leaving the remaining morphism $k$. Here $\tau$
+is arbitrary, which includes the case where the base changes again afterwards. This is the
+dual of a strongly cartesian morphism
+(\cite[\href{https://stacks.math.columbia.edu/tag/02XJ}{Tag 02XJ, Definition 4.33.1}]{Stacks}).
+
+\end{definition}
+
+\begin{lemma}[Uniqueness and composition of transport]\label{lem:4.2}
+
+If strongly opcartesian morphisms $\eta:X\to X'$ and $\eta':X\to X''$ lift the same base
+morphism $\sigma$ from the same object $X$, then there exists a unique isomorphism
+\begin{equation*}
+c:X'\xrightarrow{\sim}X'',\qquad
+r(c)=\mathrm{id},\quad c\eta=\eta'
+\tag{4.3}\label{eq:4.3}
+\end{equation*}
+Moreover, identity morphisms are strongly opcartesian, and composites of such morphisms are
+again strongly opcartesian.
+
+\end{lemma}
+
+\begin{proof}
+
+Applying \eqref{eq:4.2} to the identity morphism of the base, we obtain $c$ and a morphism
+$d$ in the opposite direction. Applying uniqueness to $dc\eta=\eta$ and $cd\eta'=\eta'$
+gives $dc=\mathrm{id}$ and $cd=\mathrm{id}$.
+For composites, a morphism out of $X\xrightarrow{\eta}X'\xrightarrow{\zeta}X''$ is factored
+first through $\eta$ and then through $\zeta$. The two applications of uniqueness give
+uniqueness for the composite. For an identity morphism, $k=h$.
+
+\end{proof}
+
+\section{Constructing the core along an exact change}\label{sec:4.2}
+
+To obtain the transported core, we reread the names of the Atoms as their names after the
+change. An input is first sent back to the original names, the original construction is
+used, and the output is sent to the new names. The same procedure applies to operations and
+to equations.
+
+\begin{construction}[Reindexing of Atoms]\label{cons:4.3}
+
+Let $\sigma=(f,e):(D,s)\to(D',s')$ be an exact morphism of the base. Here $e$ is a
+bijection of Atoms and $s'=f(s)$. For families and configurations we use the direct image
+$e_*$ of Chapter~\ref{chap:1}. On objects we define
+\begin{equation*}
+T_e(A)=(e_*C_A,S_A,Q_A)
+\tag{4.4}\label{eq:4.4}
+\end{equation*}
+The structure data and the observed values are kept, and the configuration is carried. The
+map $T_{e^{-1}}$ is inverse to $T_e$.
+The Atom map $d$ of a morphism of configurations is carried to $ede^{-1}$.
+
+For a core reading $P$, the reading after the change is defined as follows.
+\begin{equation*}
+\begin{aligned}
+\mathrm{Comp}^{\sigma}(F)
+ &=e_*\mathrm{Comp}_P(e_*^{-1}F),\\
+\mathrm{Form}^{\sigma}(C)
+ &=T_e\mathrm{Form}_P(e_*^{-1}C),\\
+\mathrm{Op}^{\sigma}(A,B)
+ &=\mathrm{Op}_P(T_{e^{-1}}A,T_{e^{-1}}B).
+\end{aligned}
+\tag{4.5}\label{eq:4.5}
+\end{equation*}
+The names of the operations are kept as they are, and their actions on configurations are
+conjugated. The evaluations of invariants and signatures are defined by composition with
+$T_{e^{-1}}$, and the indices, value ranges, and selected axes are kept.
+
+The sets of supports, axes, and observables of a context $W$ are also kept. The condition
+that a support reads an Atom $a'$ is defined as the condition that the original support
+reads $e^{-1}(a')$.
+This yields an equivalence of context categories $\theta_e:\mathcal{C}_P\simeq \mathcal{C}^\sigma$.
+We write $\bar\theta_e$ for the reindexing in the opposite direction.
+Keeping the equation indices and roles, we define
+\begin{equation*}
+\begin{aligned}
+O^\sigma(W')&=O_P(\bar\theta_eW'),\\
+\nu^\sigma_{W',i,a'}&=\nu_{P,\bar\theta_eW',i,e^{-1}(a')},\\
+\varepsilon^\sigma_{W',A',i,a'}
+ &=\varepsilon_{P,\bar\theta_eW',T_{e^{-1}}A',i,e^{-1}(a')}
+\end{aligned}
+\tag{4.6}\label{eq:4.6}
+\end{equation*}
+The restriction maps are also reindexed along $\bar\theta_e$.
+In the detector code, we apply $e$ to each Atom appearing in a query.
+The positive and negative signs, the logical operations, and the operation names are
+unchanged.
+
+\end{construction}
+
+\begin{proposition}[The transported core and the canonical morphism]\label{prop:4.4}
+
+Construction~\ref{cons:4.3} yields a core $\sigma_!P$ over the base $(D',s')$ and a
+morphism of cores
+$\eta_{\sigma,P}:P\to\sigma_!P$ over the base morphism $\sigma$.
+Its extracted family, base object, and generated object family satisfy
+\begin{equation*}
+F_{\sigma_!P}=e_*F_P,\qquad
+A_{\sigma_!P}=T_eA_P,\qquad
+\mathrm{Obj}_{\sigma_!P}=T_e(\mathrm{Obj}_P)
+\tag{4.7}\label{eq:4.7}
+\end{equation*}
+\end{proposition}
+
+\begin{proof}
+
+The first equality follows from preservation and reflection of extraction and from the
+bijectivity of $e$. Hence the extracted family is finite, and \eqref{eq:4.5} can be
+applied. Applying the object-formation formula next gives the equality for the base
+objects. Finite sequences of operations are carried into each other by $T_e$ and
+$T_{e^{-1}}$, so the equality for the generated object families follows from
+Theorem~\ref{thm:1.18}.
+
+The object map of the canonical morphism is $T_e$, and its operation map is the
+correspondence of \eqref{eq:4.5}.
+The commutative square for configurations is $(ede^{-1})e=ed$.
+Equation~\eqref{eq:4.6} preserves coordinates and residuals, and commutation with the
+restrictions follows from the original commutation.
+Agreement of queries is preserved and reflected for both the positive and the negative
+sign, so acceptance and soundness of the detectors are carried as well.
+The conditions on invariants and signatures are obtained by composing with the inverse
+maps. This verifies all the conditions of Definition~\ref{def:1.28}.
+
+\end{proof}
+
+\begin{theorem}[Universality of core transport]\label{thm:4.5}
+
+The morphism $\eta_{\sigma,P}$ is strongly opcartesian with respect to
+$q:E_{\mathrm{core}}\to B$.
+
+\end{theorem}
+
+\begin{proof}
+
+Take $h:P\to R$ with $q(h)=\tau\sigma$.
+We build the factor $k$ by sending each datum of $\sigma_!P$ back to its original names
+and then applying $h$. For example, its object map is
+\begin{equation*}
+H_k=H_hT_{e^{-1}}
+\tag{4.8}\label{eq:4.8}
+\end{equation*}
+and the operation map likewise returns to the original operations by the correspondence of
+\eqref{eq:4.5} and then applies $\Phi_h$.
+The comparison of equations is reindexed along $\bar\theta_e$, and $e^{-1}$ is substituted
+into the Atoms of the coordinates, the residuals, and the detectors.
+For the maps of invariant indices and of signature axes and value ranges we use those of
+$h$. For the base morphism we use $\tau$.
+
+Substituting these into \eqref{eq:4.5}--\eqref{eq:4.6}, the preservation equations for $h$
+become exactly the preservation equations for $k$. Hence $k$ is a morphism of cores.
+From $T_{e^{-1}}T_e=\mathrm{id}$ and the inverse correspondences of the indices we obtain
+$k\eta_{\sigma,P}=h$.
+
+Conversely, the object map of any morphism satisfying this composition equation is
+determined to be \eqref{eq:4.8} by the surjectivity of $T_e$.
+The components for operations, contexts, coordinates of equations, and invariants and
+signatures are likewise determined uniquely through the invertible correspondences of the
+canonical morphism.
+Since the base is fixed to $\tau$, the whole morphism is unique.
+
+\end{proof}
+
+Bijectivity of the source map $f$ is not needed for this construction.
+What is needed is that extraction is preserved and reflected by the specified
+correspondence of Atoms.
+
+\begin{example}[Forward preservation of extraction is not enough]\label{ex:4.6}
+
+Let the Atoms be $\{a,b,c\}$, with a single source and identity normalization.
+Let the extracted family before the change be $\{a,b\}$ and the one after the change be
+$\{a,b,c\}$, and let the correspondence of Atoms be the bijection that swaps $a,b$ and
+fixes $c$.
+Extraction is preserved in the forward direction, but reflection fails for $c$.
+The family after the change is not the direct image of the original family, so this is not
+an exact transport satisfying \eqref{eq:4.7}.
+
+Object formation that uses the added Atom requires data about the added part.
+The next construction makes this role explicit.
+
+\end{example}
+
+\begin{construction}[Additional data for a change that enlarges extraction]\label{cons:4.7}
+
+Take a change $(f,e)$ that preserves extraction in the forward direction, with $e$ a
+bijection.
+Finiteness of the extracted family $F'$ after the change is given as part of the data.
+Let $A'$ be the base object built from $F'$ by the object formation of \eqref{eq:4.5}, and
+add the following data.
+
+\begin{enumerate}
+\item An actual operation $A'\to T_eA_P$ in the transported operation reading.
+\item An equation system on the contexts of $A'$, together with a bijection to the original
+equation indices.
+\item Soundness, with respect to that equation system, of the code obtained by carrying the
+original detector code along $e$.
+\end{enumerate}
+
+From these data the core after the change can be constructed.
+Moreover, the images of the original generated objects are contained in the generated
+objects after the change.
+Indeed, it suffices to follow the added operation by the image of an original finite
+sequence of operations.
+On the images of the original objects, agreement of queries and acceptance by the
+detectors are preserved.
+This follows from the commutation of the evaluation of queries and codes with the
+reindexing of Atoms.
+Operations, invariants, and signatures are also preserved by the corresponding maps.
+What this construction provides is a comparison equipped with the forward preservation
+just described.
+
+\end{construction}
+
+\section{Lifting the transport of the core to the geometry}\label{sec:4.3}
+
+After the core has been carried, we carry the choice of which local data are viewed
+together. For the coverage requirements we use their images, and for the coefficients and
+the presentations of rings we use reindexing. The supports, axes, and observables inside a
+context are compared together with their readable elements and restriction maps.
+
+\begin{construction}[Transport of the components of a geometry]\label{cons:4.8}
+
+Take a geometry $G$ and a morphism of cores $h:pG\to P'$.
+Let $\theta$ be its equivalence of contexts and $\bar\theta$ a specified quasi-inverse.
+The coverage requirements after the change are defined as the images under existential
+quantification along the maps of Definition~\ref{def:1.30}.
+For example, the required supports and their visibility are
+\begin{equation*}
+\begin{aligned}
+\mathrm{Req}'(a')
+ &\Longleftrightarrow \exists a,\ \mathrm{Req}(a)\land e(a)=a',\\
+\mathrm{Vis}'(W',a')
+ &\Longleftrightarrow
+ \exists W,a,\ \mathrm{Vis}(W,a)\land\theta W=W'\land e(a)=a'
+\end{aligned}
+\tag{4.9}\label{eq:4.9}
+\end{equation*}
+The equation coordinates, the witnesses, the axes, and the visibility between two contexts
+are carried by the same rule.
+The overlaps are
+\begin{equation*}
+\mathrm{Ov}'(U'\to W'\leftarrow V')
+=\theta\bigl(\mathrm{Ov}(\bar\theta U'\to
+\bar\theta W'\leftarrow\bar\theta V')\bigr)
+\tag{4.10}\label{eq:4.10}
+\end{equation*}
+and the projections are sent to $U',V'$ using the counit.
+The universal property of the overlaps follows from the equivalence $\theta,\bar\theta$.
+The coefficient ring $k$ is kept, and the raw system is
+$\mathcal{B}'=\bar\theta^*\mathcal{B}$.
+The coordinate types, the local data types, and the relation polynomials and restrictions
+are all reindexed.
+We write $h_*G$ for this geometry.
+
+\end{construction}
+
+\begin{definition}[Transport condition for local realizations]\label{def:4.9}
+
+Define $H_{\mathrm{geom}}(G,h)$ to be a family, over the contexts, of three comparison maps
+\begin{equation*}
+\begin{aligned}
+s_W&:\mathrm{Supp}(W)\to\mathrm{Supp}'(\theta W),\\
+a_W&:\mathrm{Ax}(W)\to\mathrm{Ax}'(\theta W),\\
+o_W&:\mathrm{Obs}(W)\to\mathrm{Obs}'(\theta W)
+\end{aligned}
+\tag{4.11}\label{eq:4.11}
+\end{equation*}
+that preserves readable elements in the sense of Definition~\ref{def:1.30} and satisfies
+the naturality of \eqref{eq:1.14}.
+The three sets on the target side and their readouts are those carried by the contexts of
+the target core.
+
+\end{definition}
+
+\begin{proposition}[Existence condition for morphisms of geometries]\label{prop:4.10}
+
+The data of $H_{\mathrm{geom}}(G,h)$ exist if and only if a morphism of geometries
+$G\to h_*G$ exists over $h$.
+Moreover, any morphism of geometries over $h$ yields $H_{\mathrm{geom}}(G,h)$.
+
+\end{proposition}
+
+\begin{proof}
+
+Equation~\eqref{eq:4.9} gives forward preservation of the coverage requirements.
+Equation~\eqref{eq:4.10} gives the comparison of overlaps; for the coefficients we use the
+identity map, and for the raw system the reindexing equality.
+The remaining comparisons are \eqref{eq:4.11} together with their preservation and
+naturality, and these are exactly the data of $H_{\mathrm{geom}}(G,h)$.
+In the opposite direction, one extracts this family of three comparisons from a morphism
+of geometries.
+
+\end{proof}
+
+\begin{theorem}[Canonical geometry transport and universality]\label{thm:4.11}
+
+For the canonical morphism of cores $h=\eta_{\sigma,pG}$, the data
+$H_{\mathrm{geom}}(G,h)$ can be constructed.
+We write
+$\sigma_!^{\mathrm g}G$ and $\widetilde\eta_{\sigma,G}:G\to\sigma_!^{\mathrm g}G$
+for the resulting geometry and morphism. This morphism is strongly opcartesian with
+respect to $p:E_{\mathrm{geom}}\to E_{\mathrm{core}}$, and it satisfies
+\begin{equation*}
+p(\sigma_!^{\mathrm g}G)=\sigma_!(pG),\qquad
+p(\widetilde\eta_{\sigma,G})=\eta_{\sigma,pG}
+\tag{4.12}\label{eq:4.12}
+\end{equation*}
+\end{theorem}
+
+\begin{proof}
+
+In the context transport of Construction~\ref{cons:4.3}, the sets of supports, axes, and
+observables were kept. We use these identity correspondences in \eqref{eq:4.11}. Since the
+readout of supports was defined by $e^{-1}$, the condition of mapping Atoms by $e$ is
+satisfied, and the three naturalities follow from the original structure maps.
+Hence Proposition~\ref{prop:4.10} gives a morphism of geometries.
+
+To prove universality, take an arbitrary morphism of cores
+$t:\sigma_!(pG)\to pK$ and a morphism of geometries $F:G\to K$ with
+$p(F)=t\eta_{\sigma,pG}$.
+We send each context back by $\bar\theta_e$, invert the three invertible correspondences
+of the canonical morphism, and then apply the comparison maps of $F$.
+This defines the comparisons of supports, axes, and observables of the factor.
+The coefficient map is set equal to the coefficient map of $F$.
+
+Each coverage requirement on the target has, by \eqref{eq:4.9}, a witness coming from an
+original requirement.
+Applying the preservation laws of $F$ to that witness yields the preservation laws of the
+factor.
+The comparison of overlaps is built by composing the two equivalences of categories, and
+the equality of raw systems is obtained from the commutation of reindexing with the change
+of coefficients.
+We thus obtain a morphism of geometries whose base is $t$, and its composite with the
+canonical morphism is $F$.
+
+The three comparisons of the canonical morphism are bijections and its coefficient map is
+the identity, so each map of the factor is unique.
+The comparisons of overlaps inside the context category are determined by the uniqueness
+of parallel morphisms in a preorder category.
+This establishes the existence and uniqueness of \eqref{eq:4.2}.
+Equation~\eqref{eq:4.12} follows from the construction.
+
+\end{proof}
+
+For a general morphism of cores, Proposition~\ref{prop:4.10} gives the existence
+condition; for the canonical core transport, both that condition and the universal
+property have now been constructed.
+
+\section{Units, composition, and projections of transport}\label{sec:4.4}
+
+The universal property of transport determines not only how objects are carried but also
+how comparison morphisms are carried. Carrying morphisms between objects over the same
+base yields functors between the fibers.
+
+\begin{lemma}[Universality in the tower]\label{lem:4.12}
+
+If a morphism $v:G\to G'$ is strongly opcartesian with respect to $p$, and $p(v)$ is
+strongly opcartesian with respect to $q$, then
+$v$ is strongly opcartesian with respect to $qp$.
+
+\end{lemma}
+
+\begin{proof}
+
+A factorization problem over $qp$ is first split by the universal property of $q$ into a
+factor at the level of cores, and the universal property of $p$ is then applied with that
+core factor as the base morphism.
+Existence and uniqueness at the two levels give the required existence and uniqueness.
+
+\end{proof}
+
+\begin{construction}[Transport functors between fibers]\label{cons:4.13}
+
+In this section we write $r:E\to B$ for the core projection $q$ of \eqref{eq:4.1} or for
+the projection $qp$ from geometries to the extraction base. The fiber $E_b$ is the
+category consisting of the objects satisfying $r(X)=b$ and the vertical morphisms
+between them.
+For the lift $\eta_{\sigma,X}:X\to T_\sigma X$ along each exact morphism
+$\sigma:b\to b'$ we use the canonical construction, Construction~\ref{cons:4.3} for cores
+and Theorem~\ref{thm:4.11} for geometries.
+By Theorems~\ref{thm:4.5} and~\ref{thm:4.11} and Lemma~\ref{lem:4.12}, these are strongly
+opcartesian with respect to $r$.
+The image of a vertical morphism $v:X\to Y$ is defined to be the unique vertical morphism
+\begin{equation*}
+T_\sigma(v):T_\sigma X\longrightarrow T_\sigma Y,\qquad
+T_\sigma(v)\eta_{\sigma,X}=\eta_{\sigma,Y}v
+\tag{4.13}\label{eq:4.13}
+\end{equation*}
+The right-hand side lies over the base $\sigma$, so this morphism exists.
+Identity morphisms and composites of two morphisms satisfy the same equation, so
+uniqueness shows that $T_\sigma:E_b\to E_{b'}$ is a functor.
+
+\end{construction}
+
+\begin{construction}[Composition comparisons and unit comparisons]\label{cons:4.14}
+
+For $b\xrightarrow{\sigma}b'\xrightarrow{\tau}b''$, applying Lemma~\ref{lem:4.2} to the
+twofold lift and the single lift yields an isomorphism
+\begin{equation*}
+\begin{aligned}
+c_{\tau,\sigma,X}&:T_\tau T_\sigma X\xrightarrow{\sim}T_{\tau\sigma}X,\\
+c_{\tau,\sigma,X}\eta_{\tau,T_\sigma X}\eta_{\sigma,X}
+ &=\eta_{\tau\sigma,X}
+\end{aligned}
+\tag{4.14}\label{eq:4.14}
+\end{equation*}
+For identity morphisms we similarly obtain
+\begin{equation*}
+\epsilon_X:T_{\mathrm{id}}X\xrightarrow{\sim}X,\qquad
+\epsilon_X\eta_{\mathrm{id},X}=\mathrm{id}_X
+\tag{4.15}\label{eq:4.15}
+\end{equation*}
+We call these the compositor and the unitor, respectively.
+
+\end{construction}
+
+\begin{theorem}[Coherence of composition comparisons]\label{thm:4.15}
+
+The families $c_{\tau,\sigma}$ and $\epsilon$ are natural isomorphisms.
+Moreover, for composable morphisms $\sigma,\tau,\rho$,
+\begin{equation*}
+\begin{aligned}
+c_{\rho,\tau\sigma,X}\,T_\rho(c_{\tau,\sigma,X})
+ &=c_{\rho\tau,\sigma,X}\,c_{\rho,\tau,T_\sigma X},\\
+c_{\mathrm{id},\sigma,X}&=\epsilon_{T_\sigma X},\\
+c_{\sigma,\mathrm{id},X}&=T_\sigma(\epsilon_X)
+\end{aligned}
+\tag{4.16}\label{eq:4.16}
+\end{equation*}
+Associativity and units of composed base morphisms are identified through the equalities
+of the category $B$.
+The structure consisting of the fibers, the transport functors, and these natural
+isomorphisms is called a pseudofunctor.
+
+\end{theorem}
+
+\begin{proof}
+
+We compose the two routes of the naturality square for $c$ with the twofold lift from the
+starting point.
+By \eqref{eq:4.13}--\eqref{eq:4.14}, both become $\eta_{\tau\sigma,Y}v$.
+The twofold lift is strongly opcartesian, so the two routes are equal.
+Naturality of $\epsilon$ follows by the same argument.
+
+Both sides of the first equation of \eqref{eq:4.16} are vertical morphisms from
+$T_\rho T_\tau T_\sigma X$ to $T_{\rho\tau\sigma}X$.
+Composed with the threefold lift, both become $\eta_{\rho\tau\sigma,X}$.
+Again they are equal by uniqueness. The two unit equations are checked in the same way by
+composing with the corresponding twofold lifts.
+
+\end{proof}
+
+This canonical construction is the dual of the cartesian case treated in
+\cite[\href{https://stacks.math.columbia.edu/tag/02XJ}{Tag 02XJ, Lemmas 4.33.2 and 4.33.7}]{Stacks}.
+The reason for the coherence lies in the uniqueness of the factorizations that determined
+the comparisons.
+
+\begin{theorem}[Compatibility with the projection to the core]\label{thm:4.16}
+
+Let $p_b$ be the projection from the fiber of geometries to the fiber of cores.
+Write $T^{\mathrm g}_\sigma$ and $T^{\mathrm c}_\sigma$ for the transport of geometries
+and the transport of cores, respectively.
+There is a natural isomorphism
+\begin{equation*}
+\chi_\sigma:p_{b'}T^{\mathrm g}_\sigma
+\xRightarrow{\sim}T^{\mathrm c}_\sigma p_b
+\tag{4.17}\label{eq:4.17}
+\end{equation*}
+and, for composition and units, it satisfies
+\begin{equation*}
+\begin{aligned}
+\chi_{\tau\sigma,G}\,p(c^{\mathrm g}_{\tau,\sigma,G})
+ &=
+c^{\mathrm c}_{\tau,\sigma,pG}\,
+T^{\mathrm c}_\tau(\chi_{\sigma,G})\,
+\chi_{\tau,T^{\mathrm g}_\sigma G},\\
+p(\epsilon^{\mathrm g}_G)
+ &=\epsilon^{\mathrm c}_{pG}\,\chi_{\mathrm{id},G}
+\end{aligned}
+\tag{4.18}\label{eq:4.18}
+\end{equation*}
+\end{theorem}
+
+\begin{proof}
+
+The morphisms $p(\widetilde\eta_{\sigma,G})$ and $\eta_{\sigma,pG}$ are strongly
+opcartesian morphisms lifting the same base morphism from the same object.
+The unique comparison connecting them is $\chi_{\sigma,G}$.
+In the canonical construction the two lifts correspond by \eqref{eq:4.12}.
+Equation~\eqref{eq:4.13} still holds after projecting a vertical morphism of geometries,
+so the comparison is natural.
+The two routes of \eqref{eq:4.18} also become the same morphism when composed with the
+lift from the original core.
+Uniqueness gives the two equations.
+
+\end{proof}
+
+Hence the route that carries the geometry and then reads off the core and the route that
+reads off the core and then carries it are compatible, including objects, morphisms, and
+composition comparisons.
+
+\section{The difference between specified and canonical comparisons}\label{sec:4.5}
+
+The canonical comparisons were coherent by uniqueness.
+In practice, however, a correspondence of state names or of local data is sometimes
+specified separately.
+To measure how far such a correspondence differs from the canonical comparison, we read
+both as automorphisms of the same object.
+
+In \S\S\ref{sec:4.5}--\ref{sec:4.7} we use the category of cores of \eqref{eq:4.1} and the
+projection $r=q:E_{\mathrm{core}}\to B$.
+We fix the vocabulary of Atoms and place cores and strong lifts of edges on a finite
+comparison diagram.
+What is finite here are the indices of vertices, edges, and faces; no finiteness is
+imposed on the objects of the cores or on the totality of operations.
+The input that treats geometries and cores simultaneously is defined in \S\ref{sec:4.9}.
+
+\begin{definition}[Finite comparison data]\label{def:4.17}
+
+On each vertex $i$ of a finite directed graph we place a core $X_i$, and on each edge
+$e:i\to j$ a base morphism $\sigma_e:r(X_i)\to r(X_j)$ and a strongly opcartesian
+morphism $L_e:X_i\to X_j$ over it.
+We write $L_\pi$ for the composite along a path $\pi$; the composite along the empty path
+is the identity.
+
+We further specify finitely many faces $f$.
+A face is a pair of paths $\ell_f,\rho_f:i\to j$ with the same start and end whose
+composites in the base are equal.
+To each face we assign a fiber automorphism of the end,
+$u_f\in\mathrm{Aut}_r(X_j)$, where
+\begin{equation*}
+\mathrm{Aut}_r(X)
+=\{a:X\xrightarrow{\sim}X\mid r(a)=\mathrm{id}_{r(X)}\}
+\tag{4.19}\label{eq:4.19}
+\end{equation*}
+The automorphism $u_f$ represents the comparison we wish to adopt on that face.
+At this stage we do not assume $u_fL_{\ell_f}=L_{\rho_f}$.
+
+\end{definition}
+
+\begin{construction}[Canonical comparisons and raw defects]\label{cons:4.18}
+
+By Lemma~\ref{lem:4.2}, each face carries a unique fiber automorphism
+\begin{equation*}
+\phi_fL_{\ell_f}=L_{\rho_f},\qquad
+\phi_f\in\mathrm{Aut}_r(X_j)
+\tag{4.20}\label{eq:4.20}
+\end{equation*}
+The difference from the specified comparison is defined as
+\begin{equation*}
+\delta_f=u_f\phi_f^{-1}
+\tag{4.21}\label{eq:4.21}
+\end{equation*}
+and called the raw defect.
+Thus $\delta_f=1$ means that the specified comparison agrees with the canonical one.
+Products are composites of morphisms, and the right-hand factor acts first.
+
+If the automorphism group is noncommutative, the result depends on the order of the
+comparisons.
+For this reason a discrepancy cannot in general be treated as a numerical difference or as
+an element of a commutative group.
+Equation~\eqref{eq:4.21} is a difference that also records the order of the comparisons.
+
+\end{construction}
+
+\section{Removing discrepancies by reselecting edges}\label{sec:4.6}
+
+We now keep the comparisons fixed and change the lift adopted on each edge.
+By Lemma~\ref{lem:4.2}, lifts of the same base morphism with the same start and end are
+carried into one another by composing with a fiber automorphism of the end.
+
+\begin{definition}[Edge reselection]\label{def:4.19}
+
+For each edge $e:i\to j$ choose
+$a_e\in\mathrm{Aut}_r(X_j)$ and set
+\begin{equation*}
+L_e^a=a_eL_e,\qquad
+\mathcal{A}=\prod_{e:i\to j}\mathrm{Aut}_r(X_j)
+\tag{4.22}\label{eq:4.22}
+\end{equation*}
+We call $a=(a_e)_e$ an edge reselection.
+A vertical isomorphism $a_e$ is strongly opcartesian, since the factor in \eqref{eq:4.2}
+is uniquely determined as $k=ha_e^{-1}$. By Lemma~\ref{lem:4.2}, the composite $a_eL_e$ is
+then strongly opcartesian as well.
+For the composites $L_\pi^a$ along paths we define \eqref{eq:4.20}--\eqref{eq:4.21} in the
+same way and write $\phi_f(a)$ and $\delta_f(a)$.
+The specified comparisons $u_f$ stay fixed.
+
+\end{definition}
+
+\begin{example}[A comparison of two independent edges can be absorbed into one of them]\label{ex:4.20}
+
+Here we compute the comparison equations in the permutation group $S_3$ on three points.
+For the group product we use composition acting from the right.
+Take two parallel edges $x,y$ and one face $x\Rightarrow y$.
+Let both original lifts be the identity, and let the specified comparison be an arbitrary
+group element $u$.
+For edge selections $a_x,a_y$ we have
+\begin{equation*}
+\phi(a)=a_ya_x^{-1},\qquad
+\delta(a)=u\,a_xa_y^{-1}
+\tag{4.23}\label{eq:4.23}
+\end{equation*}
+Setting $a_x=1$ and $a_y=u$ makes the defect vanish.
+The two edges can be reselected independently, so the specified comparison can be absorbed
+into one of the edges.
+
+In a comparison diagram of cores as in Definition~\ref{def:4.17}, the selection at each
+edge acts on several paths and faces.
+We therefore examine the change arising at the end of a path, and determine how it alters
+the comparison on each face.
+
+\end{example}
+
+\begin{lemma}[The change at the end of a path]\label{lem:4.21}
+
+If a reselection $a$ is followed by $b$, each path $\pi:i\to j$ carries a unique
+automorphism
+\begin{equation*}
+A_\pi(a,b)L_\pi^a=L_\pi^{ba}
+\tag{4.24}\label{eq:4.24}
+\end{equation*}
+where $(ba)_e=b_ea_e$.
+This automorphism satisfies
+\begin{equation*}
+\begin{aligned}
+A_\pi(a,1)&=1,\\
+A_\pi(ba,c)A_\pi(a,b)&=A_\pi(a,cb)
+\end{aligned}
+\tag{4.25}\label{eq:4.25}
+\end{equation*}
+and, for each face,
+\begin{equation*}
+\begin{aligned}
+\phi_f(ba)
+ &=A_{\rho_f}(a,b)\phi_f(a)A_{\ell_f}(a,b)^{-1},\\
+\delta_f(ba)
+ &=\bigl(u_fA_{\ell_f}(a,b)u_f^{-1}\bigr)
+   \delta_f(a)A_{\rho_f}(a,b)^{-1}
+\end{aligned}
+\tag{4.26}\label{eq:4.26}
+\end{equation*}
+\end{lemma}
+
+\begin{proof}
+
+Existence and uniqueness in \eqref{eq:4.24} follow from the composite along a path being
+strongly opcartesian.
+Composing both sides of \eqref{eq:4.25} with $L_\pi^a$ gives the same morphism, so
+uniqueness applies again.
+The first equation of \eqref{eq:4.26} is obtained by applying uniqueness to
+$\phi_f(ba)A_{\ell_f}(a,b)L_{\ell_f}^a=A_{\rho_f}(a,b)\phi_f(a)L_{\ell_f}^a$.
+Substituting its inverse into \eqref{eq:4.21} yields the second.
+
+\end{proof}
+
+\begin{proposition}[The action of reselections]\label{prop:4.22}
+
+Let $\mathcal{Z}=\prod_f\mathrm{Aut}_r(X_{\mathrm{end}(f)})$ be the family of
+automorphisms at the ends of the faces.
+On $\mathcal{A}\times \mathcal{Z}$, a left action is defined by
+\begin{equation*}
+\Gamma_b(a,z)=
+\left(ba,\
+\left(
+u_fA_{\ell_f}(a,b)u_f^{-1}\,
+z_f\,A_{\rho_f}(a,b)^{-1}
+\right)_f\right)
+\tag{4.27}\label{eq:4.27}
+\end{equation*}
+In particular, the orbit of $(1,\delta(1))$ is
+$\{(a,\delta(a))\mid a\in \mathcal{A}\}$.
+
+\end{proposition}
+
+\begin{proof}
+
+Substituting \eqref{eq:4.25} gives $\Gamma_1=\mathrm{id}$ and
+$\Gamma_c\Gamma_b=\Gamma_{cb}$.
+The description of the orbit is by \eqref{eq:4.26}.
+
+\end{proof}
+
+This action also records the current edge selection $a$.
+The reason is that, for a path through several edges, the change $A_\pi(a,b)$ at the end
+depends on the current selection.
+
+\begin{theorem}[Vanishing of the obstruction and coherent selections]\label{thm:4.23}
+
+We call the orbit of Proposition~\ref{prop:4.22} the obstruction class of the finite
+comparison data.
+When the orbit meets $\mathcal{A}\times\{1\}$, we say that the obstruction vanishes.
+This vanishing is equivalent to the existence of an edge reselection $a$ such that, for
+all faces simultaneously,
+\begin{equation*}
+u_fL_{\ell_f}^a=L_{\rho_f}^a
+\tag{4.28}\label{eq:4.28}
+\end{equation*}
+\end{theorem}
+
+\begin{proof}
+
+Vanishing of the obstruction amounts to $\delta_f(a)=1$ for all faces, which by
+\eqref{eq:4.21} is equivalent to $u_f=\phi_f(a)$.
+This equality gives \eqref{eq:4.28}.
+Conversely, if \eqref{eq:4.28} holds, then $u_f$ and $\phi_f(a)$ both send
+$L_{\ell_f}^a$ to $L_{\rho_f}^a$.
+They are equal by the uniqueness for strongly opcartesian morphisms.
+
+\end{proof}
+
+\section{Additional conditions for pasting faces}\label{sec:4.7}
+
+Performing the comparison of one face and then that of another produces a route that
+rewrites paths.
+For example, when three paths are compared, there are the direct comparison and the
+comparison through the third path.
+Agreement of these two routes must also be examined as a separate condition.
+
+\begin{lemma}[Transport of automorphisms along a subsequent path]\label{lem:4.24}
+
+Fix an edge selection $a$.
+For a path $\beta:j\to k$ and $v\in\mathrm{Aut}_r(X_j)$, a unique automorphism
+$\beta_*v$ satisfies
+\begin{equation*}
+(\beta_*v)L_\beta^a=L_\beta^av
+\tag{4.29}\label{eq:4.29}
+\end{equation*}
+\end{lemma}
+
+\begin{proof}
+
+We use the universal property of the strongly opcartesian morphism $L_\beta^a$.
+The morphism obtained from $v^{-1}$ is the inverse.
+This yields the automorphism and \eqref{eq:4.29}.
+
+\end{proof}
+
+\begin{construction}[Pasting of comparisons]\label{cons:4.25}
+
+Consider a single step that rewrites the path $\alpha\ell_f\beta$ into
+$\alpha \rho_f\beta$.
+Paths proceed from left to right. Since composition of morphisms acts from the right,
+\[
+L_{\alpha\ell_f\beta}^{a}
+=L_\beta^{a}L_{\ell_f}^{a}L_\alpha^{a}
+\]
+The specified comparison of this step is $\beta_*u_f$, and its canonical comparison is
+$\beta_*\phi_f(a)$.
+For a rewriting in the opposite direction we use the respective inverses.
+
+Along a sequence of rewritings $P$, we write $U_P(a)$ and $\Phi_P(a)$ for the composites
+of these in order.
+If the initial path is $\pi$ and the final path is $\rho$, then
+\begin{equation*}
+\Phi_P(a)L_\pi^a=L_\rho^a,\qquad
+D_P(a)=U_P(a)\Phi_P(a)^{-1}
+\tag{4.30}\label{eq:4.30}
+\end{equation*}
+We call $D_P(a)$ the pasted raw defect.
+The canonical comparison $\Phi_P(a)$ is uniquely determined by the initial and final
+paths.
+
+\end{construction}
+
+\begin{proposition}[Coherence condition among relations]\label{prop:4.26}
+
+A pair of rewriting sequences $P,Q$ from the same path to the same path is called a
+syzygy.
+Specify finitely many syzygies, and suppose that for the edge selection $a$
+\begin{equation*}
+U_P(a)=U_Q(a)
+\tag{4.31}\label{eq:4.31}
+\end{equation*}
+holds for each of them. Then
+$D_P(a)=D_Q(a)$.
+
+\end{proposition}
+
+\begin{proof}
+
+The comparisons $\Phi_P(a)$ and $\Phi_Q(a)$ send the same strongly opcartesian morphism
+to the same morphism, hence are equal. Multiply \eqref{eq:4.31} by their common inverse
+on the right.
+
+\end{proof}
+
+A raw defect is defined by \eqref{eq:4.21} alone.
+To obtain the cocycle condition $D_P(a)=D_Q(a)$ along the specified syzygies,
+\eqref{eq:4.31} is required.
+Condition~\eqref{eq:4.31} is a relation among the specified comparisons; it does not
+assume the vanishing of the defect on each face.
+
+\begin{proposition}[Obstruction for closed comparisons]\label{prop:4.27}
+
+For any syzygy, writing $\Phi$ for the common canonical comparison,
+\begin{equation*}
+D_Q^{-1}D_P
+=\Phi\,(U_Q^{-1}U_P)\,\Phi^{-1}
+\tag{4.32}\label{eq:4.32}
+\end{equation*}
+In particular, the left-hand side being the identity is equivalent to \eqref{eq:4.31}.
+
+\end{proposition}
+
+\begin{proof}
+
+Substitute $D_P=U_P\Phi^{-1}$ and $D_Q=U_Q\Phi^{-1}$.
+
+\end{proof}
+
+Equation~\eqref{eq:4.32} shows that, once the edge selection is fixed, a mismatch of the
+specified pastings persists through conjugation.
+If every face satisfies \eqref{eq:4.28}, then every specified pasting agrees with the
+canonical comparison.
+Failure of \eqref{eq:4.31} therefore obstructs overall coherence for that edge selection.
+
+\section{Removable and irremovable discrepancies}\label{sec:4.8}
+
+In Example~\ref{ex:4.20}, the comparison of a single face could be made coherent by
+reselecting one of two independent edges.
+When several faces share edges, each face may be made coherent on its own, and yet not all of them at
+once by the same selection.
+The following are computations in the same permutation group as Example~\ref{ex:4.20}.
+
+\begin{example}[Different requirements on the same two edges]\label{ex:4.28}
+
+Let the group be the permutation group $S_3$ on three points, and place two faces on the
+same two edges.
+Let the specified comparisons be $s=(12)$ and $t=(23)$.
+The canonical comparison of both faces is the same $a_ya_x^{-1}$, so coherence requires
+\begin{equation*}
+a_ya_x^{-1}=s,\qquad a_ya_x^{-1}=t
+\tag{4.33}\label{eq:4.33}
+\end{equation*}
+Since $s\ne t$, no selection satisfies both at once.
+Each face on its own can be made coherent by Example~\ref{ex:4.20}.
+Making the two faces coherent by the same edge selection is the new condition.
+
+\end{example}
+
+\begin{example}[Three comparisons and order]\label{ex:4.29}
+
+Take three parallel edges $x_0,x_1,x_2$, with all original lifts the identity.
+Specify the comparison of $x_0\Rightarrow x_1$ to be $s$,
+that of $x_1\Rightarrow x_2$ to be $t$, and
+that of $x_0\Rightarrow x_2$ to be $st$.
+The indirect comparison is $ts$ and the direct comparison is $st$.
+For $s=(12)$ and $t=(23)$, the two differ.
+
+Indeed, if the first two faces are coherent, then
+$a_1=sa_0$ and $a_2=ta_1=tsa_0$.
+The third face requires $a_2=sta_0$, so the three faces are not coherent simultaneously.
+The corresponding syzygy has no subsequent path, and the two specified routes do not
+depend on the edge selection.
+The mismatch of the two specified routes is
+\begin{equation*}
+(st)^{-1}ts=t^{-1}s^{-1}ts\ne1
+\tag{4.34}\label{eq:4.34}
+\end{equation*}
+and it persists for every selection.
+In this example, besides each correspondence being a bijection, the orders of composition
+must be brought into line.
+
+\end{example}
+
+\section{Achieving coherence of the core and the geometry with the same selection}\label{sec:4.9}
+
+Projecting a comparison of geometries to the core yields a comparison of cores.
+After correcting the discrepancies visible at the core, we want to correct the
+discrepancies that remain only in the geometry.
+The key that connects these two stages is to lift the changes selected at the core to the
+geometry, and to examine the remaining conditions using that same selection.
+
+\begin{definition}[The projection and its kernel]\label{def:4.30}
+
+For an object $G$ and $P=pG$, set
+\begin{equation*}
+\begin{aligned}
+C_G&=\mathrm{Aut}_{qp}(G),&
+B_P&=\mathrm{Aut}_q(P),\\
+\pi_G:C_G&\longrightarrow B_P,&
+\pi_G(a)&=p(a),\\
+H_G&=\ker\pi_G=\mathrm{Aut}_p(G)
+\end{aligned}
+\tag{4.35}\label{eq:4.35}
+\end{equation*}
+Here $C_G$ represents the changes of the geometry that fix the extraction, $B_P$ the
+changes of the core that fix the extraction, and $H_G$ the changes of the geometry that
+fix the entire core.
+The map $\pi_G$ is a group homomorphism, and $H_G$ is a normal subgroup.
+
+On each vertex of a finite comparison diagram we place a geometry $G_i$.
+We assume that each edge $L_e$ of geometries is strongly opcartesian with respect to $p$
+and that its projection $p(L_e)$ is strongly opcartesian with respect to $q$. The two
+paths of each face map to the same morphism in the extraction base.
+By Lemma~\ref{lem:4.12}, $L_e$ is strongly opcartesian with respect to $qp$ as well.
+The canonical transport of \S\ref{sec:4.4} satisfies these two-level conditions.
+The specified comparisons are $u_f\in C_{G_j}$, and for the specified comparisons of
+cores we use $p(u_f)$.
+We write $\phi_f$ for the canonical comparison of geometries and $\bar\phi_f$ for the
+canonical comparison of cores.
+
+\end{definition}
+
+\begin{proposition}[Projection of defects]\label{prop:4.31}
+
+For every edge reselection $c$ of the geometries,
+\begin{equation*}
+p(\phi_f(c))=\bar\phi_f(p(c)),\qquad
+p(\delta_f(c))=\bar\delta_f(p(c))
+\tag{4.36}\label{eq:4.36}
+\end{equation*}
+\end{proposition}
+
+\begin{proof}
+
+Project $\phi_f(c)L_{\ell_f}^c=L_{\rho_f}^c$.
+The paths of cores are also strongly opcartesian, so the first equation follows from the
+uniqueness of comparisons.
+The second follows because $p$ preserves composites and inverses.
+
+\end{proof}
+
+\begin{definition}[Edgewise lifts and alignment]\label{def:4.32}
+
+For an edge reselection $a_e\in B_{P_j}$ of the cores, choose
+$\widetilde a_e\in C_{G_j}$ with $p(\widetilde a_e)=a_e$.
+These finitely many edgewise lifts are called an edge section.
+The section is said to be aligned when, for each face, the composites of the core paths
+satisfy
+\begin{equation*}
+p(u_f)\,\bar L_{\ell_f}^{\,a}
+=\bar L_{\rho_f}^{\,a}
+\tag{4.37}\label{eq:4.37}
+\end{equation*}
+Here $\bar L^{\,a}$ is the path whose projected edges have been reselected by $a$.
+
+Alignment is the condition that all comparisons visible at the core are coherent for that
+edge selection.
+As in Definition~\ref{def:4.32}, an edge section is the datum that provides, together
+with the reselection at the core, a lift realizing it on the side of the geometry.
+
+\end{definition}
+
+\begin{theorem}[Order-preserving decomposition of the defect]\label{thm:4.33}
+
+Take an aligned edge section, and write $\phi_f^0=\phi_f(1)$ for the comparison before
+reselection and $m_f=\phi_f(\widetilde a)$ for the comparison at the chosen section. Then
+\begin{equation*}
+p(m_f)=p(u_f)
+\tag{4.38}\label{eq:4.38}
+\end{equation*}
+and the original defect decomposes as
+\begin{equation*}
+\underbrace{u_f(\phi_f^0)^{-1}}_{\delta_f}
+=
+\underbrace{u_fm_f^{-1}}_{\delta_f^{\mathrm{in}}}
+\underbrace{m_f(\phi_f^0)^{-1}}_{\widetilde\delta_f^{\mathrm{out}}}
+\tag{4.39}\label{eq:4.39}
+\end{equation*}
+where
+$\delta_f^{\mathrm{in}}\in H_{G_j}$ and
+$p(\widetilde\delta_f^{\mathrm{out}})=\bar\delta_f(1)$.
+
+\end{theorem}
+
+\begin{proof}
+
+By Proposition~\ref{prop:4.31} we have $p(m_f)=\bar\phi_f(a)$.
+From \eqref{eq:4.37} and the uniqueness of canonical comparisons we obtain
+$\bar\phi_f(a)=p(u_f)$, which is \eqref{eq:4.38}.
+Hence $p(u_fm_f^{-1})=1$.
+Equation~\eqref{eq:4.39} is checked by cancelling the middle $m_f^{-1}m_f$.
+The last claim follows from
+$p(m_f(\phi_f^0)^{-1})=p(u_f)\bar\phi_f(1)^{-1}$.
+
+\end{proof}
+
+In this decomposition, the factor that lifts the defect visible at the core acts first,
+and the factor invisible to the core acts next.
+In general the order of the two factors cannot be interchanged.
+
+\begin{theorem}[Condition for simultaneous vanishing]\label{thm:4.34}
+
+Fix an aligned edge section $\widetilde a$.
+Then there exists, over its core selection $a$, an edge selection of the geometries that
+is coherent on all faces if and only if there exists a family of kernel elements
+$h_e\in H_{G_j}$ with
+\begin{equation*}
+u_f=\phi_f(h\widetilde a)\qquad\text{(for every face }f\text{)}
+\tag{4.40}\label{eq:4.40}
+\end{equation*}
+Consequently, the obstruction for the geometries vanishes if and only if an aligned edge
+section can be chosen for which \eqref{eq:4.40} can be satisfied.
+
+\end{theorem}
+
+\begin{proof}
+
+Since $h$ lies in the kernel, $p(h\widetilde a)=a$.
+Equation~\eqref{eq:4.40} states that the canonical comparison of the geometries under
+$h\widetilde a$ equals the specified comparison.
+It is therefore the required coherent selection.
+Conversely, given a coherent selection $c$ with $p(c)=a$, set
+$h_e=c_e\widetilde a_e^{-1}$ on each edge.
+Its projection is $a_ea_e^{-1}=1$, so $h_e\in H_{G_j}$, and
+$c=h\widetilde a$ gives \eqref{eq:4.40}.
+For the forward direction of the final equivalence, the coherent selection of the
+geometries itself can be used as the edge section.
+
+\end{proof}
+
+Here the same edge selection is used for the core and the geometry, and all faces are
+examined at once.
+Even if a coherent selection is found at each level on its own, the question remains whether
+that selection can be lifted to the next level.
+
+\begin{example}[Four axes and a solution that does not lift]\label{ex:4.35}
+
+We illustrate the lifting condition by the following equations in finite groups.
+Take the group $S_4$ permuting the four axes $1,2,3,4$, and from the permutations
+preserving $\{1,2\}$ and a two-valued extra component form
+\begin{equation*}
+\begin{aligned}
+K&=\{\gamma\in S_4\mid\gamma\{1,2\}=\{1,2\}\}\times C_2,\\
+\pi:K&\longrightarrow S_4,\qquad(\gamma,z)\longmapsto\gamma
+\end{aligned}
+\tag{4.41}\label{eq:4.41}
+\end{equation*}
+The group $C_2=\mathbb{Z}/2\mathbb{Z}$ is written additively.
+The kernel is $\{1\}\times C_2$, a degree of freedom that does not change the image in
+$S_4$.
+
+Take one vertex and two loops $e,g$, with the original lifts the identity.
+The faces and the specified comparisons are
+\begin{equation*}
+e^2\Rightarrow\varnothing:\quad u=(b,0),\quad b=(12)(34),
+\qquad
+g\Rightarrow\varnothing:\quad v=(1,1)
+\tag{4.42}\label{eq:4.42}
+\end{equation*}
+Here $\varnothing$ is the empty path.
+The coherence conditions in $S_4$ are $a_e^2=b$ and $a_g=1$, and
+$a_e=(1324)$, $a_g=1$ is a solution.
+
+On the other hand, the permutation component of $K$ preserves $\{1,2\}$ and $\{3,4\}$
+separately.
+The permutation part is therefore $S_2\times S_2$, in which every element squares to the
+identity.
+No selection $c_e$ in $K$ can satisfy $c_e^2=(b,0)$.
+The square root $(1324)$ in $S_4$ does not preserve the two selected axes.
+
+The second face is coherent with the kernel selection $c_g=(1,1)$.
+Thus the conditions projected to $S_4$ and the conditions belonging to the kernel each
+have solutions.
+Still, no overall solution exists.
+The obstruction is that the solution in $S_4$ cannot be lifted to an element of $K$.
+
+\end{example}
+
+\section{Carrying the reads and updates of a lens by the same map}\label{sec:4.10}
+
+To connect the comparisons of the preceding sections with software operations, we must
+determine which changes preserve the meaning of the operations.
+In the lenses of Chapter~\ref{chap:1}, one state appeared both in reads and in updates.
+Through this sharing, the maps of the two commutative diagrams are tied together.
+
+\begin{definition}[Morphisms of lenses including a change of view]\label{def:4.36}
+
+Fix a common view set $V$ and a reference view $v_0\in V$.
+A relative morphism between lenses $L=(C,V,g,p)$ and $L'=(C',V,g',p')$ that satisfy the
+three laws and have finite reference fibers is a pair of maps
+$h:C\to C'$ and $u:V\to V$ satisfying
+\begin{equation*}
+g'h=ug,\qquad
+h\,p=p'(h\times u)
+\tag{4.43}\label{eq:4.43}
+\end{equation*}
+The state sets $C,C'$ may differ.
+
+\end{definition}
+
+\begin{proposition}[Typewise maps and the two commutative squares]\label{prop:4.37}
+
+Assigning to the four roles state, view, read, and write of Definition~\ref{def:1.42} the
+respective maps
+\begin{equation*}
+h:C\to C',\quad u:V\to V,\quad
+h:C\to C',\quad
+h\times u:C\times V\to C'\times V
+\tag{4.44}\label{eq:4.44}
+\end{equation*}
+we obtain, for the named operations get and put, the commutative squares
+\begin{equation*}
+u\,g=g'\,h,\qquad
+h\,p=p'(h\times u)
+\tag{4.45}\label{eq:4.45}
+\end{equation*}
+\end{proposition}
+
+\begin{proof}
+
+The maps for the four roles are the state map, the view map, the state map, and the
+product of the two maps, respectively. The equations for get and put are the two
+conditions of Definition~\ref{def:4.36}.
+
+\end{proof}
+
+The same $h$ is used for the input of reads, for the state component of the input of
+updates, and for the output of updates.
+
+\begin{proposition}[Connection with fixed-view morphisms and invertible changes]\label{prop:4.38}
+
+The relative morphisms with $u=\mathrm{id}_V$ correspond bijectively to the fixed-view
+morphisms of Chapter~\ref{chap:1}.
+Moreover, when $h,u$ are each given as bijections, the two preservation equations
+become the conditions for a lens change by bijections of states and views.
+The operation that extracts from a relative morphism a change equipped with these
+bijections and the operation that returns the two maps of a change to a relative morphism
+are mutually inverse.
+
+\end{proposition}
+
+\begin{proof}
+
+Substituting $u=\mathrm{id}_V$ into \eqref{eq:4.43} gives the conditions for a fixed-view
+morphism preserving reads and updates.
+Conversely, attaching the identity view map to such a morphism gives a relative morphism.
+Both operations keep the same state map, so they are mutually inverse.
+In the case of given bijections as well, extracting the two maps with the same
+preservation equations and returning them yields the two-sided inverse.
+
+\end{proof}
+
+\begin{example}[A semantics-preserving morphism that merges information]\label{ex:4.39}
+
+Take the product lens with the one-element view set $V=\{*\}$ and $K=\{0,1\}$.
+Let the reference view be $*$, and define an endomorphism by
+\begin{equation*}
+h(*,k)=(*,0),\qquad u=\mathrm{id}_V
+\tag{4.46}\label{eq:4.46}
+\end{equation*}
+The read is always $*$, and an update to the view does not change the state, so this map
+satisfies \eqref{eq:4.43}.
+It sends the two states of the reference fiber to the same state, so the map on the
+reference fiber is not injective.
+
+\end{example}
+
+\section{Carrying protocol operations and adapters}\label{sec:4.11}
+
+In a protocol, what is shared are the state sets at the vertices.
+The same state map is used for the operations that enter a vertex and for those that
+leave it.
+Furthermore, if an adapter connects two protocols, that connection is preserved at the
+same time.
+
+\begin{proposition}[Preservation from named operations to all executions]\label{prop:4.40}
+
+Take realizations $X,X'$ of $\mathrm{Prot}(Q,\Pi,O)$ of Chapter~\ref{chap:1} and vertex
+maps $a_v:X(v)\to X'(v)$.
+If, for each named edge $e:v\to w$ and each observation,
+\begin{equation*}
+a_wX(e)=X'(e)a_v,\qquad
+o_{X'}(v)a_v=o_X(v)
+\tag{4.47}\label{eq:4.47}
+\end{equation*}
+then $a$ determines a unique semantics-preserving morphism of protocols.
+Moreover, for adapters $q:X\to Y$ and $q':X'\to Y'$ and semantics-preserving morphisms
+$a:X\to X'$ and $b:Y\to Y'$,
+\begin{equation*}
+bq=q'a
+\quad\Longleftrightarrow\quad
+b_vq_v=q'_va_v\quad\text{(for every vertex }v\text{)}
+\tag{4.48}\label{eq:4.48}
+\end{equation*}
+\end{proposition}
+
+\begin{proof}
+
+Condition~\eqref{eq:4.47} is the condition of Proposition~\ref{prop:1.38} and gives a
+unique semantics-preserving morphism.
+Reading the preservation condition for adapters in \eqref{eq:1.23} componentwise as a
+natural transformation gives \eqref{eq:4.48}.
+
+\end{proof}
+
+In this check, operations with different names are treated as separate generating edges
+even when their actions coincide.
+When adapters are changed in succession, pasting the two commutative squares shows that
+\eqref{eq:4.48} also holds for the composed change.
+
+\section{Comparison of semantics and typed constructions}\label{sec:4.12}
+
+Invertible changes that preserve a semantics-preserving morphism of lenses or a
+protocol adapter can be recovered after passing to the typed constructions.
+Common to both is the following correspondence through a fully faithful functor.
+
+\begin{theorem}[Preserving comparisons between semantics and typed constructions]\label{thm:4.41}
+
+For a fully faithful functor $F:\mathcal{C}\to \mathcal{D}$ and a morphism $c:X\to Y$,
+define the group preserving the comparison by
+\begin{equation*}
+\mathrm{Cmp}(c)=
+\{(a,b)\in\mathrm{Aut}_{\mathcal{C}}(X)\times\mathrm{Aut}_{\mathcal{C}}(Y)
+\mid bc=ca\}
+\tag{4.49}\label{eq:4.49}
+\end{equation*}
+Then
+\begin{equation*}
+\mathrm{Cmp}(c)\xrightarrow{\sim}\mathrm{Cmp}(F(c)),
+\qquad(a,b)\longmapsto(F(a),F(b))
+\tag{4.50}\label{eq:4.50}
+\end{equation*}
+is a group isomorphism.
+If $c$ is an isomorphism, the inverse of the first projection,
+$a\mapsto(a,cac^{-1})$, also commutes with this correspondence.
+
+\end{theorem}
+
+\begin{proof}
+
+A functor preserves the equation $bc=ca$, so the map is defined and is a group
+homomorphism.
+By fullness, the automorphisms of $F(X),F(Y)$ and their inverses lift to the original
+category.
+By faithfulness, the composites of the lifted morphisms are identities, and
+$bc=ca$ also follows from $F(b)F(c)=F(c)F(a)$.
+Hence the map is surjective. Injectivity also follows from faithfulness.
+When $c$ is an isomorphism, $b=cac^{-1}$, and the last claim follows because a functor
+preserves composites and inverses.
+
+\end{proof}
+
+Proposition~\ref{prop:1.43} of Chapter~\ref{chap:1} gives fully faithful functors from
+the semantics of fixed-view lenses and of fixed protocols to the categories of typed
+objects constructed from each.
+Therefore the invertible changes that preserve semantics-preserving morphisms of
+lenses or protocol adapters can be recovered exactly from the typed constructions.
+In this application the view and the protocol schema are fixed.
+The relative lens morphisms of Definition~\ref{def:4.36} handle the two
+operation-preservation equations over a common view.
+
+To connect the core defects of this chapter with changes of operations, we again supply
+the input of Definition~\ref{def:4.17}.
+We place a core on each vertex and, on each edge, a strong lift with respect to the
+projection to the extraction base, and we fix two paths over the same base together with
+specified comparisons.
+When geometries are treated as well, we use the two-level universality and the edge
+sections of \S\ref{sec:4.9}.
+
+\section*{Summary of the Chapter}
+
+In this chapter we constructed transport along changes of reading, and gave conditions
+under which several transports and specified comparisons become coherent for the same
+selection of edges.
+
+\begin{itemize}
+\item \textbf{Existence and universality of transport.} We constructed the core from an
+exact change of extraction and showed that its canonical morphism is strongly
+opcartesian.
+We also constructed the canonical transport of geometries and, for general morphisms of
+cores, extracted the three comparisons of local realizations as the existence condition
+(\S\S\ref{sec:4.2}--\ref{sec:4.3}).
+\item \textbf{Coherence of units and composition.} From the uniqueness of factorizations
+we obtained the functors between fibers and the natural isomorphisms for units and
+composition of the canonical transport. Triple composites and the projection to the core
+are coherent as well (\S\ref{sec:4.4}).
+\item \textbf{Obstructions for specified comparisons.} We expressed the difference from
+the canonical comparison as a noncommutative automorphism and showed, for finite
+comparison diagrams of cores, that vanishing of the obstruction is equivalent to an edge
+reselection making all faces coherent.
+Pasting faces requires additional coherence conditions among the specified comparisons
+(\S\S\ref{sec:4.5}--\ref{sec:4.8}).
+\item \textbf{Simultaneous vanishing across levels.} After the selection at the core has
+been lifted to the geometry, being able to remove the remainder by kernel changes for the
+same selection corresponds to overall coherence.
+Even if each level has a solution independently, without a lift there is no overall
+solution (\S\ref{sec:4.9}).
+\item \textbf{Comparisons preserving the meaning of operations.} For lenses over a common
+view, the same state map is used for reads and updates.
+For protocols, all named operations and adapters are preserved simultaneously.
+For fixed-view lenses and fixed-schema protocols, the invertible changes preserving a
+comparison can be recovered across the constructed typed categories
+(\S\S\ref{sec:4.10}--\ref{sec:4.12}).
+\end{itemize}
+
+For the order-processing API of the opening, the discrepancy between the route that moves
+directly from the old version to the new one and the route through the intermediate
+version is extracted as a defect.
+Even a discrepancy that could be absorbed into one of two independent edges must be made
+coherent simultaneously once that edge is shared with another face.
+Given the core input of Definition~\ref{def:4.17}, Theorem~\ref{thm:4.23} characterizes
+the existence of an edge selection realizing the specified comparisons on all faces as
+the vanishing of the obstruction.
+When both levels, core and geometry, are treated, the lifts and the kernel changes are
+again performed for the same selection.
+
+In the next chapter we compare the route that changes the base of the input before
+constructing and the route that constructs first and then changes.
