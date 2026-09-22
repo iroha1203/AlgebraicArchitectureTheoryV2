@@ -885,6 +885,200 @@ theorem arbitrary_semantic_to_canonical_app_fac
     (exact_bottom_semantic_global_cartesian_cleavage hom)
     targetPackage
 
+/-- The comparison carries the arbitrary identity unitor to the canonical one. -/
+theorem arbitrary_semantic_to_canonical_unitor_app
+    {U : AtomCarrier.{u}} [SemanticCartesianCleavageFamily U]
+    (object : ExtractionInstance U) (targetPackage : CoreFiber object) :
+    (arbitrary_semantic_unitor_app object targetPackage).hom ≫
+        (arbitrary_semantic_to_canonical (𝟙 object)).hom.app targetPackage =
+      (exact_bottom_semantic_global_unitor_app object targetPackage).hom := by
+  apply CategoryTheory.Functor.Fiber.hom_ext
+  let directLift := exact_bottom_semantic_global_selected_lift
+    (𝟙 object) targetPackage
+  letI : (packageProjection U).IsStronglyCartesian (𝟙 object)
+      directLift.hom := directLift.isStronglyCartesian
+  apply CategoryTheory.Functor.IsStronglyCartesian.ext
+    (packageProjection U) (𝟙 object) directLift.hom (𝟙 object)
+  change
+    ((arbitrary_semantic_unitor_app object targetPackage).hom.1 ≫
+        ((arbitrary_semantic_to_canonical (𝟙 object)).hom.app
+          targetPackage).1) ≫ directLift.hom =
+      (exact_bottom_semantic_global_unitor_app object targetPackage).hom.1 ≫
+        directLift.hom
+  rw [Category.assoc, arbitrary_semantic_to_canonical_app_fac,
+    arbitrary_semantic_unitor_app_hom_fac,
+    exact_bottom_semantic_global_unitor_app_hom_fac]
+
+/-- The comparison carries the arbitrary compositor to the canonical compositor. -/
+theorem arbitrary_semantic_to_canonical_compositor_app
+    {U : AtomCarrier.{u}} [SemanticCartesianCleavageFamily U]
+    {source middle target : ExtractionInstance U}
+    (first : source ⟶ middle) (second : middle ⟶ target)
+    (targetPackage : CoreFiber target) :
+    (arbitrary_semantic_compositor_app first second targetPackage).hom ≫
+        (arbitrary_semantic_to_canonical (first ≫ second)).hom.app
+          targetPackage =
+      (arbitrary_semantic_reindex_functor first).map
+          ((arbitrary_semantic_to_canonical second).hom.app
+            targetPackage) ≫
+        (arbitrary_semantic_to_canonical first).hom.app
+          ((exact_bottom_semantic_global_reindex_functor second).obj
+            targetPackage) ≫
+        (exact_bottom_semantic_global_compositor_app first second
+          targetPackage).hom := by
+  apply CategoryTheory.Functor.Fiber.hom_ext
+  let directLift := exact_bottom_semantic_global_selected_lift
+    (first ≫ second) targetPackage
+  letI : (packageProjection U).IsStronglyCartesian (first ≫ second)
+      directLift.hom := directLift.isStronglyCartesian
+  apply CategoryTheory.Functor.IsStronglyCartesian.ext
+    (packageProjection U) (first ≫ second) directLift.hom (𝟙 source)
+  change
+    (((arbitrary_semantic_compositor_app first second targetPackage).hom.1 ≫
+      ((arbitrary_semantic_to_canonical (first ≫ second)).hom.app
+        targetPackage).1) ≫ directLift.hom) =
+    ((((arbitrary_semantic_reindex_functor first).map
+      ((arbitrary_semantic_to_canonical second).hom.app
+        targetPackage)).1 ≫
+      ((arbitrary_semantic_to_canonical first).hom.app
+        ((exact_bottom_semantic_global_reindex_functor second).obj
+          targetPackage)).1) ≫
+      (exact_bottom_semantic_global_compositor_app first second
+        targetPackage).hom.1) ≫ directLift.hom
+  calc
+    _ = (arbitrary_semantic_compositor_app first second
+          targetPackage).hom.1 ≫
+        (((arbitrary_semantic_to_canonical (first ≫ second)).hom.app
+          targetPackage).1 ≫ directLift.hom) := Category.assoc _ _ _
+    _ = (arbitrary_semantic_compositor_app first second
+          targetPackage).hom.1 ≫
+        (arbitrary_semantic_selected_lift (first ≫ second)
+          targetPackage).hom := by
+      rw [arbitrary_semantic_to_canonical_app_fac]
+    _ = (arbitrary_semantic_iterated_lift first second
+          targetPackage).hom :=
+      arbitrary_semantic_compositor_app_hom_fac first second targetPackage
+    _ = (arbitrary_semantic_selected_lift first
+          ((arbitrary_semantic_reindex_functor second).obj
+            targetPackage)).hom ≫
+        (arbitrary_semantic_selected_lift second targetPackage).hom := rfl
+    _ = (arbitrary_semantic_selected_lift first
+          ((arbitrary_semantic_reindex_functor second).obj
+            targetPackage)).hom ≫
+        (((arbitrary_semantic_to_canonical second).hom.app
+          targetPackage).1 ≫
+          (exact_bottom_semantic_global_selected_lift second
+            targetPackage).hom) := by
+      rw [arbitrary_semantic_to_canonical_app_fac]
+    _ = ((arbitrary_semantic_selected_lift first
+          ((arbitrary_semantic_reindex_functor second).obj
+            targetPackage)).hom ≫
+        ((arbitrary_semantic_to_canonical second).hom.app
+          targetPackage).1) ≫
+        (exact_bottom_semantic_global_selected_lift second
+          targetPackage).hom := (Category.assoc _ _ _).symm
+    _ = (((arbitrary_semantic_reindex_functor first).map
+          ((arbitrary_semantic_to_canonical second).hom.app
+            targetPackage)).1 ≫
+        (arbitrary_semantic_selected_lift first
+          ((exact_bottom_semantic_global_reindex_functor second).obj
+            targetPackage)).hom) ≫
+        (exact_bottom_semantic_global_selected_lift second
+          targetPackage).hom := by
+      rw [arbitrary_semantic_reindex_map_fac]
+    _ = ((arbitrary_semantic_reindex_functor first).map
+          ((arbitrary_semantic_to_canonical second).hom.app
+            targetPackage)).1 ≫
+        ((arbitrary_semantic_selected_lift first
+          ((exact_bottom_semantic_global_reindex_functor second).obj
+            targetPackage)).hom ≫
+          (exact_bottom_semantic_global_selected_lift second
+            targetPackage).hom) := Category.assoc _ _ _
+    _ = ((arbitrary_semantic_reindex_functor first).map
+          ((arbitrary_semantic_to_canonical second).hom.app
+            targetPackage)).1 ≫
+        (((arbitrary_semantic_to_canonical first).hom.app
+          ((exact_bottom_semantic_global_reindex_functor second).obj
+            targetPackage)).1 ≫
+          (exact_bottom_semantic_global_selected_lift first
+            ((exact_bottom_semantic_global_reindex_functor second).obj
+              targetPackage)).hom) ≫
+          (exact_bottom_semantic_global_selected_lift second
+            targetPackage).hom := by
+      rw [arbitrary_semantic_to_canonical_app_fac]
+    _ = (((arbitrary_semantic_reindex_functor first).map
+          ((arbitrary_semantic_to_canonical second).hom.app
+            targetPackage)).1 ≫
+        ((arbitrary_semantic_to_canonical first).hom.app
+          ((exact_bottom_semantic_global_reindex_functor second).obj
+            targetPackage)).1) ≫
+        ((exact_bottom_semantic_global_selected_lift first
+          ((exact_bottom_semantic_global_reindex_functor second).obj
+            targetPackage)).hom ≫
+          (exact_bottom_semantic_global_selected_lift second
+            targetPackage).hom) := by
+      simp only [Category.assoc]
+    _ = (((arbitrary_semantic_reindex_functor first).map
+          ((arbitrary_semantic_to_canonical second).hom.app
+            targetPackage)).1 ≫
+        ((arbitrary_semantic_to_canonical first).hom.app
+          ((exact_bottom_semantic_global_reindex_functor second).obj
+            targetPackage)).1) ≫
+        (exact_bottom_semantic_global_iterated_lift first second
+          targetPackage).hom := rfl
+    _ = (((arbitrary_semantic_reindex_functor first).map
+          ((arbitrary_semantic_to_canonical second).hom.app
+            targetPackage)).1 ≫
+        ((arbitrary_semantic_to_canonical first).hom.app
+          ((exact_bottom_semantic_global_reindex_functor second).obj
+            targetPackage)).1) ≫
+        ((exact_bottom_semantic_global_compositor_app first second
+          targetPackage).hom.1 ≫ directLift.hom) := by
+      rw [exact_bottom_semantic_global_compositor_app_hom_fac]
+    _ = _ := (Category.assoc _ _ _).symm
+
+/-- The natural comparison respects the identity unitor. -/
+theorem arbitrary_semantic_to_canonical_unitor
+    {U : AtomCarrier.{u}} [SemanticCartesianCleavageFamily U]
+    (object : ExtractionInstance U) :
+    (arbitrary_semantic_unitor object).trans
+        (arbitrary_semantic_to_canonical (𝟙 object)) =
+      exact_bottom_semantic_global_unitor object := by
+  apply Iso.ext
+  apply NatTrans.ext
+  funext targetPackage
+  exact arbitrary_semantic_to_canonical_unitor_app object targetPackage
+
+/-- Compare two successive arbitrary reindexings with the canonical ones. -/
+noncomputable def arbitrary_semantic_horizontal_to_canonical
+    {U : AtomCarrier.{u}} [SemanticCartesianCleavageFamily U]
+    {source middle target : ExtractionInstance U}
+    (first : source ⟶ middle) (second : middle ⟶ target) :
+    arbitrary_semantic_reindex_functor second ⋙
+        arbitrary_semantic_reindex_functor first ≅
+      exact_bottom_semantic_global_reindex_functor second ⋙
+        exact_bottom_semantic_global_reindex_functor first :=
+  (Functor.isoWhiskerRight
+    (arbitrary_semantic_to_canonical second)
+    (arbitrary_semantic_reindex_functor first)).trans
+  (Functor.isoWhiskerLeft
+    (exact_bottom_semantic_global_reindex_functor second)
+    (arbitrary_semantic_to_canonical first))
+
+/-- The natural comparison respects the composition compositor. -/
+theorem arbitrary_semantic_to_canonical_compositor
+    {U : AtomCarrier.{u}} [SemanticCartesianCleavageFamily U]
+    {source middle target : ExtractionInstance U}
+    (first : source ⟶ middle) (second : middle ⟶ target) :
+    (arbitrary_semantic_compositor first second).trans
+        (arbitrary_semantic_to_canonical (first ≫ second)) =
+      (arbitrary_semantic_horizontal_to_canonical first second).trans
+        (exact_bottom_semantic_global_compositor first second) := by
+  apply Iso.ext
+  apply NatTrans.ext
+  funext targetPackage
+  exact arbitrary_semantic_to_canonical_compositor_app first second targetPackage
+
 end AAT.AG.DoctrineFiberProduct
 
 #assert_standard_axioms_only AAT.AG.DoctrineFiberProduct
