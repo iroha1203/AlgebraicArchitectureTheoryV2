@@ -5,6 +5,19 @@
 書誌・引用箇所・引用する版は[文献確認記録](references.csv)による。
 共通基準は[論文作成ガイドライン](../../../docs/paper/guideline.md)に従う。
 
+## 固定版の補題6.15と追加Lean宣言
+
+[固定版 `719f81f47d410701fd82c2bc88613cc140c59377` の補題6.15](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/719f81f47d410701fd82c2bc88613cc140c59377/outreach/paper/rising-sea/ja/09-idempotent-normalization.md#L368)が述べる任意のexactなpointed底射は、`ExtInstHom`で表す。`CanonicalObjectNormalizationAdmissible`は、正規化を定める側のcoreに対する本文の`Ad`条件であり、輸送先または引き戻し先の条件はこの入力から導く。
+
+| 固定本文の結論 | Lean宣言 |
+| --- | --- |
+| coreの輸送・引き戻しによる`Ad`保存 | [SemanticExactCoreNormalizationNaturality](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactCoreNormalizationNaturality.lean) の `canonicalCoreNormalizationAdmissible_semanticTransport`、`canonicalCoreNormalizationAdmissible_semanticPull` |
+| coreの生成liftとの交換(6.17)と関手による保存(6.16) | 同moduleの `semanticCoreFiberLift_normalization_natural`、`semanticCoreInverseLift_normalization_natural`、`semanticCoreFiberTransportFunctor_map_normalization`、`semanticCoreInverseReindexFunctor_map_normalization`。後者の引き戻し関手は既存のsemantic-global関手と `semanticCoreInverseReindexToGlobalIso` で比較する |
+| 完全幾何の輸送による`Ad`保存、liftとの交換、関手による保存 | [SemanticExactNormalizationPush](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactNormalizationPush.lean) の `canonicalGeometryNormalizationAdmissible_semanticExactTransport`、`semanticGeomFiberLift_normalization_natural`、`semanticGeomFiberTransportFunctor_map_normalization` |
+| 完全幾何の引き戻しと`Ad`保存、liftとの交換、関手による保存 | [SemanticExactGeometryPull](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactGeometryPull.lean) の `semanticGeometryPullFunctor` と [SemanticExactNormalizationNaturality](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactNormalizationNaturality.lean) の `canonicalGeometryNormalizationAdmissible_semanticExactPull`、`semanticGeometryPullLift_normalization_natural`、`semanticGeometryPullFunctor_map_normalization` |
+
+以下のC型表は、そこに明記した固定版の既存宣言と本文修正との対応を記す。上の追加宣言によって、その固定版の入力や当時の判定を遡って変更するものではない。
+
 ## C型の本文修正と既存宣言の対応
 
 対象は Issue #4847 の F18・F19・F20・F23・F24・F31・F37・F40 と F25。
