@@ -1,0 +1,59 @@
+% Figure 2.1 -- the eight-point space and its two covers.
+% Same content as the Japanese manuscript's figure ../../figures/ch02-finite-covers.svg, redrawn in TikZ.
+\begin{tikzpicture}[
+    x=1mm, y=1mm,
+    vertex/.style={circle, fill, inner sep=0pt, minimum size=4.6pt},
+    edgepoint/.style={rectangle, draw, semithick, fill=white, inner sep=0pt, minimum size=5pt},
+    order/.style={-{Stealth[length=4.5pt]}, semithick},
+    nerve/.style={semithick},
+    every label/.style={font=\normalsize},
+    panel/.style={font=\small},
+    note/.style={font=\small}
+  ]
+  % (a) The order on the eight-point space: circles are vertices, squares are
+  % edge points, and the arrows point from a vertex to a larger edge point.
+  \begin{scope}
+    \node[panel, align=center] at (16,44) {(a) Order on the\\ eight-point space};
+    \node[vertex, label=above:{$a_0$}] (a0) at (0,32) {};
+    \node[vertex, label=above:{$a_1$}] (a1) at (32,32) {};
+    \node[vertex, label=below:{$b$}]   (b)  at (32,0)  {};
+    \node[vertex, label=below:{$c$}]   (c)  at (0,0)   {};
+    \node[edgepoint, label=above:{$e_{01}$}] (e01) at (16,32) {};
+    \node[edgepoint, label=right:{$ab$}]     (ab)  at (32,16) {};
+    \node[edgepoint, label=below:{$bc$}]     (bc)  at (16,0)  {};
+    \node[edgepoint, label=left:{$ac$}]      (ac)  at (0,16)  {};
+    \draw[order] (a0) -- (e01);
+    \draw[order] (a1) -- (e01);
+    \draw[order] (a1) -- (ab);
+    \draw[order] (b)  -- (ab);
+    \draw[order] (b)  -- (bc);
+    \draw[order] (c)  -- (bc);
+    \draw[order] (c)  -- (ac);
+    \draw[order] (a0) -- (ac);
+    \node[note] at (16,-11) {arrows: vertex $<$ edge point};
+  \end{scope}
+  % (b) The nerve of the four-chart cover: four edges and no face.
+  \begin{scope}[xshift=50mm]
+    \node[panel, align=center] at (16,44) {(b) Nerve of the\\ four-chart cover};
+    \node[vertex, label=above:{$U_{a_0}$}] (Ua0) at (0,32) {};
+    \node[vertex, label=above:{$U_{a_1}$}] (Ua1) at (32,32) {};
+    \node[vertex, label=below:{$U_b$}]     (Ub)  at (32,0)  {};
+    \node[vertex, label=below:{$U_c$}]     (Uc)  at (0,0)   {};
+    \draw[nerve] (Ua0) -- (Ua1) node[midway, above, note] {$\{e_{01}\}$};
+    \draw[nerve] (Ua1) -- (Ub)  node[midway, right, note] {$\{ab\}$};
+    \draw[nerve] (Ub)  -- (Uc)  node[midway, below, note] {$\{bc\}$};
+    \draw[nerve] (Uc)  -- (Ua0) node[midway, left, note]  {$\{ac\}$};
+    \node[note] at (16,-11) {edge labels: double intersections};
+  \end{scope}
+  % (c) The nerve of the three-chart cover: a triangle of edges with no face.
+  \begin{scope}[xshift=100mm]
+    \node[panel, align=center] at (16,44) {(c) Nerve of the\\ three-chart cover};
+    \node[vertex, label=above:{$U_a$}] (Ua) at (16,32) {};
+    \node[vertex, label=below:{$U_b$}] (Vb) at (32,0)  {};
+    \node[vertex, label=below:{$U_c$}] (Vc) at (0,0)   {};
+    \draw[nerve] (Ua) -- (Vb) node[midway, right=2pt, note] {$\{ab\}$};
+    \draw[nerve] (Vb) -- (Vc) node[midway, below, note]     {$\{bc\}$};
+    \draw[nerve] (Vc) -- (Ua) node[midway, left=2pt, note]  {$\{ac\}$};
+    \node[note] at (16,-11) {$U_a = U_{a_0} \cup U_{a_1}$};
+  \end{scope}
+\end{tikzpicture}

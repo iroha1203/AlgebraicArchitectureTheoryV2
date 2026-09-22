@@ -1,0 +1,1565 @@
+\chapter{Geometry of Laws and Local Consistency}\label{chap:2}
+
+\section*{Overview of the Chapter}
+
+The question of this chapter is \textbf{when states that satisfy the Laws on each part can
+be glued into a state of the whole}. Even if the Laws hold on each part, the parts need not
+represent the same state once they are connected. Suppose, for example, that three services
+record the same value against different references. Even if a correction between references
+can be specified for each connection, no reference common to all three can be chosen unless
+the corrections add up to zero around the cycle through the three. This discrepancy is
+invisible from the equations inside the individual services alone.
+
+This chapter treats the problem in two stages. First, we collect the equations of the Laws
+into an ideal and construct the space of states that satisfy the equations. Second, we
+compare the differences of the states chosen on the parts over the overlaps, and remove the
+differences that can be resolved by local corrections. The equivalence class that remains
+is the obstruction class that prevents gluing.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Question & Construction & Outcome \\
+\midrule
+\endhead
+Where do the states that satisfy the Laws live? & Construct coordinate rings, ideals of equations, and evaluations & Equivalence of the Laws holding with factorization through the lawful locus (\S\S\ref{sec:2.1}--\ref{sec:2.2}) \\
+\addlinespace[3pt]
+What is still missing after local success? & Construct differences on overlaps and the \v{C}ech complex & The obstruction class of specified local data, and gluing conditions after correction (\S\S\ref{sec:2.3}--\ref{sec:2.5}) \\
+\addlinespace[3pt]
+How do covers and coefficients affect obstructions? & Examine cycles, dimensions, differences on boundaries, and the structural and semantic phases & Conditions for vanishing, detection, and comparison (\S\S\ref{sec:2.6}--\ref{sec:2.7}) \\
+\addlinespace[3pt]
+How are concrete obstructions passed to the diagnosis of the next chapter? & Build integer-coefficient local data from Atoms, generator relations, and an actual cover & Obstruction classes computed from states and transitions (\S\ref{sec:2.8}) \\
+\addlinespace[3pt]
+Do the semantics of repair and the computation with equations agree? & Construct and compare two coefficients and their local states & Correspondence of the SAGA obstruction classes, and conditions for the existence of a global repair (\S\S\ref{sec:2.9}--\ref{sec:2.10}) \\
+\bottomrule
+\end{xltabular}
+
+The central conclusions are that, under the necessary conditions on evaluation, the
+validity of the Laws can be read as a geometric zero-locus condition, and that, when the
+actual repair states form a sheaf, a global repair is obtained from the vanishing of the
+obstruction class. The former requires a map connecting the symbolic equations with their
+evaluation, and the latter requires the action of local corrections and gluing. We define
+each of these maps and conditions before the theorems that use them.
+
+\subsection*{Why we connect to the semantics of repair}
+
+In Chapter~\ref{chap:1} we encoded the independently defined semantics of lenses and
+protocols into objects of AAT, and recovered the operations and the semantics-preserving
+morphisms from those objects and typed morphisms. We also showed that the validity of the
+constructed Laws is equivalent to the validity of the laws of the original semantics. For
+local consistency as well, we need to know how the computed obstructions correspond to the
+repairs that are actually permitted. To this end, we specify which local changes count as
+the same repair and which residuals of the equations are identified, and prove the
+correspondence between the two.
+
+This comparison is given by SAGA, the preceding paper
+(\cite[\href{https://arxiv.org/abs/2608.21458}{\S\S4--5}]{SAGA}).
+In this chapter we construct its coefficients, local states, and comparison maps, and prove
+the correspondence of obstruction classes and the existence of repairs. This lets us carry
+the zero and nonzero verdicts obtained on the equation side back to repairability in the
+chosen semantics.
+
+\section{Local algebras and ideals of equations}\label{sec:2.1}
+
+To solve equations, we first fix the variables and the structural relations that they
+satisfy from the outset. Using the ring attached to each context in Chapter~\ref{chap:1},
+we incorporate, in order, the relations expressing the structure and the equations of the
+Laws to be checked.
+
+Throughout, we fix a reading of the architecture, a site $(\mathcal{C},J)$, and an equation
+system $E$. We write $W$ for a context, $i\in K_E$ for a Law index, and
+$K_E^{\mathrm{req}}$ for the set of required indices. The two families of coordinates
+$\nu_{W,i,a}$ and $\varepsilon_{W,A,i,a}$ of Definition~\ref{def:1.12} represent the
+symbolic equations and the residuals at an object $A$, respectively.
+
+\begin{definition}[Presentation of local algebras]\label{def:2.1}
+
+For the coordinate set $Z_W$ and the ideal of structural relations $I_W^{\mathrm{str}}$ of
+Definition~\ref{def:1.25}, we choose a $k$-algebra isomorphism
+\begin{equation*}
+B_{\mathrm{raw}}(W)=k[x_z\mid z\in Z_W]/I_W^{\mathrm{str}},
+\qquad
+\theta_W:B_{\mathrm{raw}}(W)\xrightarrow{\sim}O_E(W)
+\tag{2.1}\label{eq:2.1}
+\end{equation*}
+We require that $\theta_W$ commute with the restrictions of contexts and send the equation
+coordinates and the residual coordinates in the presentation to the corresponding $\nu$ and
+$\varepsilon$. We call this a presentation of the local algebras of $E$. The sheaf of rings
+$\mathcal{O}=a_JO_E$ is obtained by transferring addition and multiplication to the
+sheafification of Proposition~\ref{prop:1.23}. The operations can be computed on the local
+presentation, and the ring axioms are preserved as local identities.
+
+\end{definition}
+
+\begin{proposition}[Algebraic presentation of local configurations]\label{prop:2.2}
+
+For a commutative $k$-algebra $R$, let $\mathrm{Conf}_W(R)$ be the set of families of
+coordinate values $(c_z)_{z\in Z_W}$ that satisfy all the structural relations. Then there
+is a bijection
+\[
+\mathrm{Conf}_W(R)
+\cong\mathrm{Hom}_{k\text{-}\mathrm{Alg}}(B_{\mathrm{raw}}(W),R)
+\]
+natural in $R$.
+
+\end{proposition}
+
+\begin{proof}
+
+A family of coordinate values determines a unique homomorphism from the polynomial ring to
+$R$. That all structural relations map to zero is equivalent to the kernel containing
+$I_W^{\mathrm{str}}$, so the homomorphism factors through the quotient. Conversely,
+evaluating a homomorphism from the quotient at each $x_z$ recovers the original family.
+Composition with a ring homomorphism $R\to R'$ is exactly the transfer of coordinate
+values, so naturality follows.
+
+\end{proof}
+
+The relations imposed here are the structural relations that describe one and the same
+local configuration. The Laws that such a configuration must satisfy are expressed by the
+following ideals.
+
+\begin{definition}[Witness ideals and obstruction ideals]\label{def:2.3}
+
+We define the witness ideal of a Law $i$ and the obstruction ideal of the required Laws by
+\begin{equation*}
+\begin{aligned}
+I_i^E(W)&=(\nu_{W,i,a}\mid a\in\mathrm{At})\subseteq O_E(W),\\
+I_{\mathrm{Ob}}^E(W)&=\sum_{i\in K_E^{\mathrm{req}}}I_i^E(W)
+\end{aligned}
+\tag{2.2}\label{eq:2.2}
+\end{equation*}
+An element of a generated ideal is a finite sum of the generators with ring coefficients.
+Hence, even when the index set is infinite, each individual element is expressed by a
+finite sum.
+
+\end{definition}
+
+\begin{proposition}[Restriction and sheafification of ideals]\label{prop:2.4}
+
+A restriction $j:W'\to W$ satisfies $\mathrm{res}_j(I_i^E(W))\subseteq I_i^E(W')$. The same
+holds for $I_{\mathrm{Ob}}^E$. The image of the sheafified morphism
+$a_JI_i^E\to\mathcal{O}$ is a sheaf of ideals of $\mathcal{O}$. We write it
+$\mathcal{I}_i^E$, and write $\mathcal{I}_{\mathrm{Ob}}^E$ for its sum over the required
+indices.
+
+\end{proposition}
+
+\begin{proof}
+
+The restriction of a generator is $\nu_{W',i,a}$, and the restriction of any element of the
+generated ideal is again a finite sum of generators. Closure under addition and under
+multiplication by ring elements can be checked locally, so it is preserved in the image
+after sheafification. For the sum, the same argument applies once each section is expressed
+locally as a finite sum.
+
+\end{proof}
+
+Enlarging the set of required indices enlarges the ideal and strengthens its zero-locus
+condition. When optional Laws are imposed at the same time, their ideals are added to the
+sum.
+
+\section{Spaces satisfying the Laws and evaluation}\label{sec:2.2}
+
+An ideal collects the equations, but by itself it does not express that the equations hold
+at an object. In this section we read the rings as geometric spaces and provide the
+mechanism by which the symbolic equations are evaluated into the residuals of objects.
+
+\begin{definition}[Affine schemes and closed subschemes]\label{def:2.5}
+
+For a commutative ring $B$, $\mathrm{Spec}\,B$ is the affine scheme whose underlying set is
+the set of prime ideals, and whose basic open sets and their rings are given by
+\begin{equation*}
+D(f)=\{\mathfrak{p}\mid f\notin\mathfrak{p}\},
+\qquad
+\mathcal{O}_{\mathrm{Spec}\,B}(D(f))=B_f
+\tag{2.3}\label{eq:2.3}
+\end{equation*}
+Here $B_f$ is the localization that inverts $f$. Sections over a general open set are
+defined by gluing compatible sections over basic open sets. The local ring at each point is
+$B_{\mathfrak{p}}$. A space equipped with a sheaf of rings that locally has this form is
+called a scheme. These are the usual constructions of the prime spectrum and the structure
+sheaf
+(\cite[\href{https://stacks.math.columbia.edu/tag/01HR}{\S26.5, Tag~01HR}]{Stacks}).
+
+We write $V_B(I)=\mathrm{Spec}(B/I)$ for the closed subscheme defined by an ideal
+$I\subseteq B$. A ring homomorphism $e:B\to R$ factors through $B/I$ if and only if
+$e(I)=0$. Hence $V_B(I)$ represents the points that satisfy the equations $I$ in an
+arbitrary coefficient ring.
+
+\end{definition}
+
+\subsection*{Evaluating symbolic equations into residuals}
+
+We impose conditions in two stages on a space representing local evaluation data. First, we
+make the evaluation of the symbolic equations agree with the evaluation of the residuals of
+objects. Second, we set the required residuals to zero. Below, $Y_W$, $X_W$, and
+$X_E^{\mathrm{law}}\cap X_W$ denote, in order, the space before the conditions are imposed
+and the spaces after each condition is imposed.
+
+\begin{construction}[Geometric realization of the equations]\label{cons:2.6}
+
+In each context, consider local evaluation data $p$ consisting of a reading $A_p$ of an
+object and a homomorphism $e_p:O_E(W)\to R$ into a commutative $k$-algebra $R$. We assume
+that these data can be transferred along changes of the coefficient ring. We treat the case
+in which the following algebraic presentation is given.
+
+\begin{enumerate}
+\item The functor of local evaluation data is represented by an affine scheme
+$Y_W=\mathrm{Spec}\,D_W$, and a universal ring homomorphism $u_W:O_E(W)\to D_W$ gives the
+evaluation.
+\item The evaluation of the residuals $p\mapsto e_p(\varepsilon_{W,A_p,i,a})$ is a regular
+function, and an element $r_{W,i,a}\in D_W$ representing it has been constructed.
+\item The comparisons of the presentations between contexts give isomorphisms on open
+parts and preserve structure, coordinates, and residuals on the overlaps. On triple
+overlaps the open parts being compared correspond, and the composites of the isomorphisms
+agree there.
+\item The assignment of charts after gluing, $W\mapsto X_W$ (defined in \eqref{eq:2.4}
+below), sends morphisms of contexts to inclusions of open parts and preserves identities,
+composites, and overlaps. Covers in $J$ are sent to open covers of charts.
+\end{enumerate}
+
+The first condition says that the evaluation data can be described by coordinates, and the
+second that the residuals are algebraic functions of those coordinates. The third is the
+condition for gluing the local presentations without contradiction. The fourth says that
+restrictions, overlaps, and covers of contexts can be handled in the same way on the open
+parts of the resulting space. We then impose the relations that equate the evaluation of
+the symbolic equations with that of the residuals.
+\begin{equation*}
+\begin{aligned}
+K_W&=(u_W(\nu_{W,i,a})-r_{W,i,a}\mid i,a),\\
+B_W&=D_W/K_W,\qquad X_W=\mathrm{Spec}\,B_W,\\
+\eta_W&:O_E(W)\longrightarrow B_W.
+\end{aligned}
+\tag{2.4}\label{eq:2.4}
+\end{equation*}
+Since the comparison isomorphisms preserve $K_W$, the open parts of the $X_W$ can also be
+compared by isomorphisms. Let $X_E$ be the scheme obtained by gluing them. Concretely, we
+identify corresponding points in the disjoint union of the $X_W$, and define the functions
+on an open set as the families of functions that agree on each chart. The composition
+condition on the overlaps makes the identification transitive, and each $X_W$ is embedded
+as an open part. The local rings are also those of the charts, so the resulting space is a
+scheme
+(\cite[\href{https://stacks.math.columbia.edu/tag/01JA}{\S26.14, Tag~01JA}]{Stacks}).
+
+For $s:T\to X_E$, put $T_W=T\times_{X_E}X_W$. We define its evaluation
+$\mathrm{ev}_{s,W}:O_E(W)\to\Gamma(T_W,\mathcal{O}_T)$ as the composite of $\eta_W$ with
+the pullback of regular functions. We write $A_s$ for the object read off from the
+representing functor, and $\varepsilon_{W,i,a}(s)=\mathrm{ev}_{s,W}(\varepsilon_{W,A_s,i,a})$
+for its residuals. For a general $T$, we read this formula on affine open sets and glue the
+agreeing values.
+
+\end{construction}
+
+\begin{lemma}[Evaluation of generators and localization]\label{lem:2.7}
+
+The evaluation obtained in Construction~\ref{cons:2.6} is compatible with restriction of
+contexts and with base change of $T$, and satisfies
+\begin{equation*}
+\mathrm{ev}_{s,W}(\nu_{W,i,a})=\varepsilon_{W,i,a}(s)
+\tag{2.5}\label{eq:2.5}
+\end{equation*}
+Moreover, putting $J_i(W)=(\eta_W(\nu_{W,i,a})\mid a)$, on a basic open set
+$D(f)\subseteq X_W$ this ideal becomes
+\begin{equation*}
+J_i(W)B_{W,f}
+=(\eta_W(\nu_{W,i,a})/1\mid a)
+\tag{2.6}\label{eq:2.6}
+\end{equation*}
+These local ideals glue into a quasi-coherent sheaf of ideals $\mathcal{J}_i$ on $X_E$.
+
+\end{lemma}
+
+\begin{proof}
+
+Equation~\eqref{eq:2.5} is the identity obtained by pulling back along $s$ the fact that
+the generators of $K_W$ become zero in $B_W$. The left-hand side is tied to the residual
+because, by condition~1, $u_W$ represents the evaluation, and by condition~2, $r_{W,i,a}$
+represents the evaluation of the residual. The composition rule for evaluations follows
+from that for ring homomorphisms. An element of the localized ideal is a finite sum of
+generators written with a denominator, which gives \eqref{eq:2.6}. On each chart we take
+the sheaf $\widetilde{J_i(W)}$ associated with the module $J_i(W)$ and glue along the
+isomorphisms on the overlaps, which preserve the same generators. Quasi-coherence means
+precisely that on each affine open set the sheaf arises in this form from a module.
+
+\end{proof}
+
+By the condition preserving covers and overlaps, $W\mapsto\Gamma(X_W,\mathcal{O}_{X_E})$
+is a sheaf with respect to $J$. Hence $\eta$ factors through the sheafification, and we can
+compare $\mathcal{I}_i^E$ on the site with $\mathcal{J}_i$ on the scheme. Mapping the local
+generators of the former to the charts and taking sums with ring coefficients yields the
+$J_i(W)$ of the latter. This comparison is determined by the original generators and
+localization.
+
+\begin{definition}[Lawful locus]\label{def:2.8}
+
+Put $\mathcal{J}_{\mathrm{Ob}}=\sum_{i\in K_E^{\mathrm{req}}}\mathcal{J}_i$, and write
+$X_E^{\mathrm{law}}=V(\mathcal{J}_{\mathrm{Ob}})$ for the closed subscheme that it defines.
+On each chart it is $\mathrm{Spec}(B_W/\sum_iJ_i(W))$. Further,
+$s^{*}_{\mathrm{ideal}}\mathcal{J}$ denotes the sheaf of ideals generated inside
+$\mathcal{O}_T$ by the image of $\mathcal{J}$; it is the image of the morphism from the
+module pullback $s^*\mathcal{J}$ to $\mathcal{O}_T$.
+
+On the ring side, the two-stage conditions correspond to the two quotients
+\[
+D_W\longrightarrow B_W=D_W/K_W
+\longrightarrow B_W/\sum_{i\in K_E^{\mathrm{req}}}J_i(W)
+\]
+The first quotient equates the evaluation of the equations with that of the residuals, and
+the second imposes the validity of the required Laws. This order is what makes the
+zero-locus condition of the next theorem test the residuals of objects.
+
+\end{definition}
+
+\begin{theorem}[Correspondence of equations, ideals, and zero loci]\label{thm:2.9}
+
+Under the conditions of Construction~\ref{cons:2.6}, for every $s:T\to X_E$ the following
+are equivalent.
+\begin{equation*}
+\begin{aligned}
+&\forall W\ \forall i\in K_E^{\mathrm{req}}\ \forall a,
+\quad\varepsilon_{W,i,a}(s)=0;\\
+&s^{*}_{\mathrm{ideal}}\mathcal{J}_{\mathrm{Ob}}=0;\\
+&s\text{ factors through }X_E^{\mathrm{law}}\text{.}
+\end{aligned}
+\tag{2.7}\label{eq:2.7}
+\end{equation*}
+
+\end{theorem}
+
+\begin{proof}
+
+That the pulled-back ideal is zero is equivalent to all of its generators becoming zero on
+$T_W$. By \eqref{eq:2.5}, the vanishing of these generators coincides with the vanishing of
+the residuals. Pulling back a sum of ideals and taking the generated ideal is the same as taking the sum of
+the pulled-back generators, so the first two conditions are equivalent over all required
+indices.
+
+The last condition is obtained, on each affine open set, from the universal property of
+homomorphisms factoring through the quotient ring. The local factorizations are unique, so
+they agree on overlaps and glue. Conversely, if a factorization exists, the pullbacks of
+all generators that become zero in the quotient are zero.
+
+\end{proof}
+
+This factorization is also the standard universal property of closed subschemes
+(\cite[\href{https://stacks.math.columbia.edu/tag/01HP}{Lemma~26.4.6, Tag~01HP}]{Stacks}).
+We write $\mathrm{EquationLawful}_E(s)$ for the first condition of the theorem.
+
+\begin{example}[Synchronization of two values]\label{ex:2.10}
+
+Let the coordinate ring be $k[x,y]$, and express the Law equating the two values by
+$f=y-x$. The residual under the evaluation $x\mapsto u$, $y\mapsto v$ is $v-u$. The ring of
+the lawful locus is $k[x,y]/(y-x)\cong k[x]$, and a point of it amounts to assigning one
+value to both sides. In this case \eqref{eq:2.5} is verified by the substitution
+$f(u,v)=v-u$.
+
+\end{example}
+
+\begin{corollary}[Comparison with lawfulness of objects]\label{cor:2.11}
+
+Suppose that there is a realization $s_A:T_A\to X_E$ of an object $A$, together with, in
+each context, a ring isomorphism $\Gamma((T_A)_W,\mathcal{O}_{T_A})\cong O_E(W)$ carrying
+the evaluation of the residuals back to the original $\varepsilon_{W,A,i,a}$. Then
+$\mathrm{Lawful}_E(A)$ of Definition~\ref{def:1.13} is equivalent to $s_A$ factoring
+through $X_E^{\mathrm{law}}$.
+
+\end{corollary}
+
+\begin{proof}
+
+The isomorphisms preserve and reflect zero, so the vanishing of each residual of the
+object coincides with the vanishing after evaluation. Apply Theorem~\ref{thm:2.9}.
+
+\end{proof}
+
+\section{Coefficients representing obstructions}\label{sec:2.3}
+
+Adding and subtracting the discrepancies of local states requires an abelian group in
+which their values live. We define a way to build quotient groups from the equations and a
+way to map finite failure patterns into the coefficients. The choice of coefficients
+determines which differences are treated as the same.
+
+\begin{construction}[Quotient coefficients generated from the equations]\label{cons:2.12}
+
+In each context, put
+\begin{equation*}
+Q_E(W)=O_E(W)/I_{\mathrm{Ob}}^E(W),
+\qquad
+\overline\varepsilon_{W,A,i,a}=[\varepsilon_{W,A,i,a}]
+\tag{2.8}\label{eq:2.8}
+\end{equation*}
+By Proposition~\ref{prop:2.4} the restrictions descend to the quotients, and $Q_E$ becomes
+a presheaf with values in additive groups. The restriction of a residual class equals the
+residual of the same object, Law, and Atom, restricted and then passed to the quotient.
+Moreover
+\[
+\overline\varepsilon_{W,A,i,a}=0
+\quad\Longleftrightarrow\quad
+\varepsilon_{W,A,i,a}\in I_{\mathrm{Ob}}^E(W).
+\]
+This is the definition of the zero element of a quotient group. If the Law holds and the
+residual itself is zero, then the residual class is also zero. Detection in the converse
+direction requires that a failing residual not lie in the ideal.
+
+\end{construction}
+
+\begin{example}[Residuals distinguished in the quotient]\label{ex:2.13}
+
+If $O_E(W)=\mathbb{Z}[x]$ and $I_{\mathrm{Ob}}^E(W)=(x)$, then $Q_E(W)\cong\mathbb{Z}$.
+The class of the symbolic generator $x$ is zero, while the class of $1$, chosen as the
+residual of some object, is nonzero. If the residual is $x$, it is itself nonzero but
+becomes zero in the quotient. A verdict in the quotient coefficients therefore reads the
+information of the specified residual modulo the ideal.
+
+\end{example}
+
+\begin{definition}[Local circuits and realization in coefficients]\label{def:2.14}
+
+For an object $A$ and a context $W$, we define the Law $i$ to hold on $W$ by
+\[
+E_{i,W}(A)\quad\Longleftrightarrow\quad
+\forall a\in\mathrm{At},\quad\varepsilon_{W,A,i,a}=0
+\]
+Its failure means that at least one residual is nonzero. The condition $E_i(A)$ of
+Chapter~\ref{chap:1} imposes this local validity condition on all contexts.
+
+We choose a configuration read in each context and a detector code of the form of
+Definition~\ref{def:1.15}. Let $T_{i,W}$ be its finite accepted set, and write
+$\mathrm{Matches}_W(Q,A)$ for the matching condition obtained by evaluating each query of
+Definition~\ref{def:1.14} on this local configuration. Among the finite patterns that are
+accepted and match, we select those to be used as
+\[
+\mathrm{Circ}^{\mathrm{loc}}_E(A,i;W)
+\subseteq\{Q\in T_{i,W}\mid\mathrm{Matches}_W(Q,A)\}
+\]
+and call its elements local circuits. We equip this family with maps that preserve
+matching and acceptance along the restrictions of the adopted contexts, and impose the
+identity and composition laws. Choosing a family that remains usable after restriction in
+this way is also part of the data of local detection. Local soundness, and local
+completeness for the required Laws, are the conditions
+\[
+\begin{aligned}
+c\in\mathrm{Circ}^{\mathrm{loc}}_E(A,i;W)
+&\Longrightarrow\neg E_{i,W}(A),\\
+i\in K_E^{\mathrm{req}}\ \land\ \neg E_{i,W}(A)
+&\Longrightarrow\mathrm{Circ}^{\mathrm{loc}}_E(A,i;W)\ne\varnothing
+\end{aligned}
+\]
+respectively. We verify these conditions for the objects, contexts, and Laws to which they
+are applied.
+
+We further choose a sheaf of abelian groups $F$. To each local circuit $c$ we associate a
+witness index $a(c)\in\mathrm{At}$ and assign the generator
+$\nu(c)=\nu_{W,i,a(c)}\in I_i^E(W)$. When, in addition, an additive map commuting with
+restriction
+\begin{equation*}
+\rho_{i,W}:I_i^E(W)\longrightarrow F(W),
+\qquad \kappa_{i,W}(c)=\rho_{i,W}(\nu(c))
+\tag{2.9}\label{eq:2.9}
+\end{equation*}
+has been constructed, we call it a realization of circuits in the coefficients. The
+assignment of generators is also required to commute with the restrictions of local
+circuits and of the rings. For example, the sheafified quotient map
+$I_i^E\to a_J(I_i^E/(I_i^E)^2)$ is a candidate for such a map. Whether its image detects
+the circuits is checked on the chosen generators.
+
+\end{definition}
+
+\begin{proposition}[Detection of finite failures by coefficients]\label{prop:2.15}
+
+Fix an object $A$ and a context $W$. Suppose that local soundness and local completeness
+of Definition~\ref{def:2.14} hold for the required Laws, and that the image under
+\eqref{eq:2.9} of each local circuit is nonzero. Then at least one required Law fails on
+$W$ if and only if there exists a nonzero circuit image for some required Law.
+
+\end{proposition}
+
+\begin{proof}
+
+From a failure, completeness yields a circuit, whose image is nonzero by assumption.
+Conversely, if a circuit exists, soundness implies that the corresponding Law fails.
+
+\end{proof}
+
+When several images are aggregated into one, we also need the condition that nonzero
+images do not cancel in the sum. For example, if each image is stored in a direct sum with
+independent coordinates, the vanishing of the whole coincides with the vanishing of each
+coordinate. The coefficients chosen at this stage are also used in the local comparisons
+that follow.
+
+\section{Comparison on overlaps and \v{C}ech obstruction classes}\label{sec:2.4}
+
+When comparing differences of local states, we place the differences on double overlaps
+and the coherence conditions among the differences on triple overlaps. The \v{C}ech
+complex assembles this computation from restriction maps and addition and subtraction.
+
+\begin{definition}[Covers and the \v{C}ech complex]\label{def:2.16}
+
+Fix a finite cover $\mathcal{U}=(U_\alpha\to W)_{\alpha\in A}$. We take each morphism to
+be injective and choose a total order on $A$. The overlaps $U_{\alpha\beta}$ and
+$U_{\alpha\beta\gamma}$ are pullbacks over $W$. The coefficients $F$ form a presheaf with
+values in abelian groups. On empty overlaps we set $F(\varnothing)=0$ and omit those
+components from the following products.
+\begin{equation*}
+\begin{aligned}
+C^0(\mathcal{U},F)&=\prod_\alpha F(U_\alpha),\\
+C^1(\mathcal{U},F)&=\prod_{\alpha<\beta}F(U_{\alpha\beta}),\\
+C^2(\mathcal{U},F)&=\prod_{\alpha<\beta<\gamma}F(U_{\alpha\beta\gamma}).
+\end{aligned}
+\tag{2.10}\label{eq:2.10}
+\end{equation*}
+We call these elements cochains. Correction amounts for local states live in degree 0,
+and differences on overlaps in degree 1. We define the differentials by
+\begin{equation*}
+\begin{aligned}
+(d^0b)_{\alpha\beta}&=b_\beta|_{U_{\alpha\beta}}-b_\alpha|_{U_{\alpha\beta}},\\
+(d^1g)_{\alpha\beta\gamma}&=g_{\beta\gamma}|_{U_{\alpha\beta\gamma}}
+-g_{\alpha\gamma}|_{U_{\alpha\beta\gamma}}
++g_{\alpha\beta}|_{U_{\alpha\beta\gamma}}
+\end{aligned}
+\tag{2.11}\label{eq:2.11}
+\end{equation*}
+From now on, restriction to the same overlap is abbreviated by $|$. In higher degrees,
+likewise, degree $n$ consists of the product of sections on $n+1$-fold intersections,
+and the differential is the alternating sum of restrictions.
+
+\end{definition}
+
+\begin{lemma}[Composition of the differentials]\label{lem:2.17}
+
+We have $d^1d^0=0$.
+
+\end{lemma}
+
+\begin{proof}
+
+The component restricted to a triple overlap is
+$(b_\gamma-b_\beta)-(b_\gamma-b_\alpha)+(b_\beta-b_\alpha)=0$. That the two ways of
+restricting each $b$ agree uses the composition rule of the presheaf.
+
+\end{proof}
+
+\begin{definition}[Obstruction groups on a fixed cover]\label{def:2.18}
+
+A $g$ satisfying $d^1g=0$ is called a 1-cocycle, and an element of the form $d^0b$ a
+1-coboundary. The first \v{C}ech cohomology with respect to the cover $\mathcal{U}$ is
+\begin{equation*}
+\check H^1(\mathcal{U},F)=\ker d^1/\mathrm{im}\,d^0
+\tag{2.12}\label{eq:2.12}
+\end{equation*}
+Here $[g]$ denotes the equivalence class of $g$. Two cocycles have the same class when
+they differ by some $d^0b$. In particular, $[g]=0$ means that there exists a local
+correction $b$ with $g=d^0b$. Throughout this chapter, $\check H^1$ denotes this group
+with respect to the cover and coefficients made explicit.
+
+\end{definition}
+
+\begin{example}[Three local references]\label{ex:2.19}
+
+Suppose that the double overlaps of three charts are all nonempty and the triple overlap
+is empty. Take the same abelian group $M$ as the coefficients on each chart and overlap,
+with identity maps as restrictions. Then
+\begin{equation*}
+\begin{aligned}
+d^0(b_0,b_1,b_2)&=(b_1-b_0,\ b_2-b_0,\ b_2-b_1),\\
+\mathrm{per}(g)&=g_{01}+g_{12}-g_{02}
+\end{aligned}
+\tag{2.13}\label{eq:2.13}
+\end{equation*}
+We call the sum around the cycle, $\mathrm{per}(g)$, the period. Since there is no triple
+overlap, every 1-cochain is a cocycle. The period of $d^0b$ is zero; conversely, if the
+period is zero, then putting $b_0=0$, $b_1=g_{01}$, $b_2=g_{02}$ gives $d^0b=g$. Hence
+$\check H^1(\mathcal{U},M)\cong M$.
+
+If $M=\mathbb{Z}$, $g_{01}=1$, and $g_{02}=g_{12}=0$, the period is 1. No matter how
+the pairwise differences of references are corrected, this difference around the cycle
+remains. An actual cover of this shape is constructed from a finite topological space in
+\S\ref{sec:2.8}.
+
+\end{example}
+
+\section{From vanishing of the obstruction class to gluing}\label{sec:2.5}
+
+Equation~\eqref{eq:2.12} is an algebraic condition for finding correction amounts. When
+the corrections act on the local states and the corrected states glue, a global state is
+obtained. We describe these two conditions in terms of torsors and sheaves.
+
+\begin{definition}[Local states and torsors]\label{def:2.20}
+
+Take a presheaf $P$ of local states and a coefficient presheaf $F$. In this section, the
+``intersections of the cover'' include each chart itself. Suppose that $F(V)$ acts on
+$P(V)$ on each intersection of the cover, and that these actions commute with the
+restrictions between intersections. When, on each nonempty intersection $V$ of the cover,
+for any $p,q\in P(V)$ there exists a unique $m\in F(V)$ with $q=m+p$, we call the nonempty
+$P(V)$ an $F(V)$-torsor.
+
+A torsor has no designated zero state serving as a reference. Instead, the difference
+$q-p=m$ of two states is uniquely determined. Every element of the coefficient group acts
+as an actual change of state, so a correction amount found as a cochain can be applied to
+the states. Over an empty intersection, we take $P$ to have at most one element. A family of local
+states $p_\alpha\in P(U_\alpha)$ is called a local atlas.
+
+Each $p_\alpha$ is given as an element of the state space $P(U_\alpha)$, and no
+identification with the coefficient group $F(U_\alpha)$ has been chosen yet. To treat this
+family as a 0-cochain of coefficients, we need a reference expressing each state in the
+coefficients. Choosing a reference state locally yields such an expression, but these
+references may themselves disagree on the overlaps. Whether a common reference compatible
+with the restrictions can be chosen is the gluing problem studied here. In \S\ref{sec:2.8}
+we make the coordinates in the local references explicit as $p$ and the shifts between
+references as $\xi$, and compute the difference of states as $\xi+d^0p$.
+
+\end{definition}
+
+\begin{proposition}[The obstruction class defined by differences of states]\label{prop:2.21}
+
+Defining $g_{\alpha\beta}=p_\beta| -p_\alpha|$ from a local atlas, $g$ is a cocycle.
+Changing the atlas to $p'_\alpha=b_\alpha+p_\alpha$ gives
+\begin{equation*}
+g'=g+d^0b,
+\qquad [g']=[g]
+\tag{2.14}\label{eq:2.14}
+\end{equation*}
+We call this $[g]$ the obstruction class for gluing the local states.
+
+\end{proposition}
+
+\begin{proof}
+
+On a triple overlap, the difference that yields $p_\gamma$ directly from $p_\alpha$ equals
+the difference obtained via $p_\beta$. By freeness of the action,
+$g_{\alpha\gamma}=g_{\beta\gamma}+g_{\alpha\beta}$, and we get $d^1g=0$. Computing the
+difference after the change gives $g'_{\alpha\beta}=g_{\alpha\beta}+b_\beta|-b_\alpha|$,
+so \eqref{eq:2.14} follows.
+
+\end{proof}
+
+\begin{theorem}[Local corrections and global states]\label{thm:2.22}
+
+Suppose that $P$ of Definition~\ref{def:2.20} is a sheaf on the site $(\mathcal{C},J)$.
+Then, for the obstruction class of a local atlas,
+\begin{equation*}
+P(W)\ne\varnothing
+\quad\Longleftrightarrow\quad
+[g]=0\text{ in }\check H^1(\mathcal{U},F)
+\tag{2.15}\label{eq:2.15}
+\end{equation*}
+holds. If $g=d^0b$, the corrected family $(-b_\alpha)+p_\alpha$ glues uniquely into a
+global state.
+
+\end{theorem}
+
+\begin{proof}
+
+Suppose $g=d^0b$. By Proposition~\ref{prop:2.21} the differences after correction are
+zero. On overlaps with the order reversed, the difference merely changes sign and is again
+zero. On self-intersections the two projections agree by injectivity of the covering
+morphisms, and on empty intersections they agree since there is at most one element. Hence
+the corrected family is a matching family agreeing on all overlaps. By the sheaf condition
+it glues into a unique global state.
+
+Conversely, given $p\in P(W)$, on each chart we can take a difference with
+$p_\alpha=b_\alpha+p|_{U_\alpha}$. Computing on the overlaps gives $g=d^0b$.
+
+\end{proof}
+
+What is unique is the gluing of the fixed corrected family. Different choices of
+correction may yield different global states. For torsors under a sheaf of abelian groups,
+this argument amounts to the standard criterion for trivialization
+(\cite[\href{https://stacks.math.columbia.edu/tag/03AG}{\S21.4, Tag~03AG}]{Stacks}).
+
+\subsection*{Application to local states satisfying the Laws}
+
+\begin{corollary}[Gluing of lawful states]\label{cor:2.23}
+
+Suppose there are a sheaf of states $\mathcal{T}$ and a natural family of required
+residuals with values in the sheaf of rings $\mathcal{O}$, and let
+$P(V)\subseteq\mathcal{T}(V)$ be the set of states on which all required residuals are
+zero. Suppose that the action of $F$ preserves $P$ and satisfies the conditions of
+Definition~\ref{def:2.20} on the chosen cover. Then the obstruction class of the local
+lawful states is zero if and only if $P(W)\ne\varnothing$.
+
+\end{corollary}
+
+\begin{proof}
+
+$P$ is a sheaf. Indeed, a matching family glues uniquely in $\mathcal{T}$, and each of its
+residuals is zero on the cover. By separatedness of $\mathcal{O}$ it is zero globally as
+well. Apply Theorem~\ref{thm:2.22}.
+
+\end{proof}
+
+Using the evaluation of Construction~\ref{cons:2.6}, this residual condition coincides
+with factorization through the lawful locus of Theorem~\ref{thm:2.9}. To return to
+lawfulness of objects, we also use the comparison of evaluations of
+Corollary~\ref{cor:2.11}.
+
+When local lawfulness is verified from finite checks, the connection between the checks
+and the residuals must be specified. Concretely, we verify the following conditions.
+
+\begin{itemize}
+\item \textbf{The information can be read.} The cover is
+$(E,\mathcal{R},\mathrm{Ov})$-adequate in the sense of Chapter~\ref{chap:1}, and the
+necessary coordinates and interactions can be read.
+\item \textbf{Failures can be detected.} Local soundness and local completeness of
+Definition~\ref{def:2.14} hold, and all necessary witnesses are checked within the cover.
+\item \textbf{Zero verdicts correspond.} The zero verdict on the adopted axes is
+equivalent to the vanishing of the corresponding residuals.
+\item \textbf{Aggregation loses no failure.} When circuit images are aggregated, each
+image is nonzero and they do not cancel in the sum.
+\end{itemize}
+
+These conditions tie the local checks to membership in $P(U_\alpha)$, and the torsor
+action and the sheaf condition give the global conclusion.
+
+\section{Shape of covers, capacity of obstructions, and detection by cycles}\label{sec:2.6}
+
+The size of the obstruction group expresses how many independent discrepancies it can
+record. Whether the local states at hand carry an obstruction, on the other hand, is
+determined by examining the class built from those states. In this section we study the
+former by dimensions and the latter by sums along cycles.
+
+\begin{proposition}[Dimension of the obstruction space and alternating sums]\label{prop:2.24}
+
+Let $k$ be a field and suppose that $C^0,C^1,C^2$ are finite-dimensional $k$-vector
+spaces. Then
+\begin{equation*}
+\dim_k\check H^1
+\geq\dim_k C^1-\dim_k C^0-\dim_k C^2.
+\tag{2.16}\label{eq:2.16}
+\end{equation*}
+Moreover, for a finite-dimensional complex of finite length,
+\begin{equation*}
+\chi(C^\bullet)
+=\sum_n(-1)^n\dim_k C^n
+=\sum_n(-1)^n\dim_k H^n(C^\bullet).
+\tag{2.17}\label{eq:2.17}
+\end{equation*}
+
+\end{proposition}
+
+\begin{proof}
+
+Apply the rank-nullity theorem to
+$\dim\check H^1=\dim\ker d^1-\dim\mathrm{im}\,d^0$. From
+$\mathrm{rank}\,d^1\leq\dim C^2$ and $\mathrm{rank}\,d^0\leq\dim C^0$ we get
+\eqref{eq:2.16}. Equation~\eqref{eq:2.17} follows by taking the alternating sum of
+$\dim C^n=\dim\mathrm{im}\,d^{n-1}+\dim H^n+\dim\mathrm{im}\,d^n$, in which the dimensions
+of the images cancel between adjacent degrees.
+
+\end{proof}
+
+We call \eqref{eq:2.16} the lower bound on obstruction capacity. A change preserving the
+cochain dimensions in each degree preserves $\chi$, but the dimensions of the individual
+cohomology groups and a specified class $[g]$ also involve the differentials and $g$
+itself.
+
+\begin{proposition}[Constant coefficients and the nerve of a cover]\label{prop:2.25}
+
+Take a finite open cover of a topological space and suppose that all of its nonempty
+finite intersections are connected. Take as coefficients the sheaf of locally constant
+$k$-valued functions. Let $N(\mathcal{U})$ be the complex with a simplex for each
+nonempty intersection $U_{\alpha_0\cdots\alpha_n}$. Then the \v{C}ech complex is
+isomorphic to the usual cochain complex of $N(\mathcal{U})$ with coefficients in $k$, and
+$\dim_k\check H^1(\mathcal{U},k)=\beta_1(N(\mathcal{U});k)$.
+
+\end{proposition}
+
+\begin{proof}
+
+A locally constant function on a connected intersection is determined by a single value.
+Under this identification the restrictions become identity maps, and \eqref{eq:2.11}
+coincides with the alternating sum along the faces of a simplex. Taking this
+identification in each degree gives the isomorphism of complexes. Moreover,
+$\beta_1(N(\mathcal{U});k)$ is the dimension of the first cohomology of this complex.
+
+\end{proof}
+
+When an intersection has several connected components, we place one coordinate per
+component. When the components split into finitely many open connected parts, the same
+construction can be carried out on the complex whose vertices, edges, and faces are the
+components.
+
+\begin{proposition}[Vanishing on forests]\label{prop:2.26}
+
+Suppose that there are no triple overlaps and that the finite graph whose vertices are the
+charts and whose edges are the components of the nonempty overlaps is a forest. If the
+coefficients decompose along the components and the restriction
+$F(U_\alpha)\to F(U_e)$ from each endpoint to each edge component is surjective, then
+$\check H^1(\mathcal{U},F)=0$.
+
+\end{proposition}
+
+\begin{proof}
+
+Choose a root in each tree and set the correction at the root to zero. Once the correction
+of a parent is determined, choose the correction of each child so that the difference
+along the parent-child edge equals the specified $g_e$. Surjectivity of the restriction to
+the edges makes this choice possible. Since each child has only one parent, we can proceed
+without altering the conditions on edges already satisfied. After processing all vertices
+we have $d^0b=g$.
+
+\end{proof}
+
+\begin{example}[Paths and cycles]\label{ex:2.27}
+
+On a three-vertex path with identity restrictions, the two differences can be absorbed in
+order from the root. Adding an edge joining the two ends leaves the period of
+Example~\ref{ex:2.19}. If moreover there is a triple overlap with the same coefficients
+and restrictions, the cocycle condition of \eqref{eq:2.11} makes this period zero. Thus
+not only the edges of the overlaps but also the faces filling the space between them enter
+the computation of the obstruction group.
+
+\end{example}
+
+\subsection*{Sums along cycles and differences on the boundary}
+
+\begin{proposition}[Periods and the Stokes formula]\label{prop:2.28}
+
+Pair the chains and cochains of a finite complex $N$ with constant coefficients in $k$ by
+multiplying the coefficients of simplices with matching orientation and summing. For the
+boundary map $\partial$ of chains and the differential $d$ of cochains,
+\begin{equation*}
+\langle d\omega,z\rangle=\langle\omega,\partial z\rangle
+\tag{2.18}\label{eq:2.18}
+\end{equation*}
+holds. Hence $\langle g,z\rangle$ over a 1-cycle $z$ is unchanged when a coboundary is
+added to $g$. If this value is nonzero, then $[g]\ne0$.
+
+\end{proposition}
+
+\begin{proof}
+
+For a single simplex, both sides are the sum of the values on its faces with the same
+alternating signs. Linearity extends this to general chains. If $\partial z=0$, then
+$\langle d^0b,z\rangle=0$, and the remaining claims follow.
+
+\end{proof}
+
+\begin{proposition}[Obstructions arising from differences on the boundary]\label{prop:2.29}
+
+Split a finite complex into two subcomplexes, $N=N_A\cup N_B$, and put $L=N_A\cap N_B$.
+For 0-cochains with constant coefficients, the difference of restrictions
+$(u,v)\mapsto u|_L-v|_L$ is surjective. Take $b\in H^0(L,k)$, that is, a 0-cochain with
+$db=0$, and choose 0-cochains $u,v$ with $u|_L-v|_L=b$. Then $du,dv$ glue into a
+single 1-cocycle $h$, and $\delta(b)=[h]\in H^1(N,k)$ does not depend on the choices.
+Moreover,
+\begin{equation*}
+\begin{aligned}
+\delta(b)=0\quad\Longleftrightarrow\quad
+&\exists a\in H^0(N_A,k),\ \exists c\in H^0(N_B,k),\\
+&b=a|_L-c|_L.
+\end{aligned}
+\tag{2.19}\label{eq:2.19}
+\end{equation*}
+
+\end{proposition}
+
+\begin{proof}
+
+Surjectivity is obtained by extending the value on each simplex of $L$ to $N_A$. Since
+$d(u|_L-v|_L)=db=0$, the cochains $du,dv$ agree and glue into $h$. That $dh=0$
+follows from $d^2=0$ on both parts. The difference from another lift is the restriction of
+a 0-cochain $w$ on $N$, and $h$ changes by $dw$. Moreover, if $h=dw$, then
+$a=u-w|_{N_A}$ and $c=v-w|_{N_B}$ are 0-cocycles whose difference is $b$. For the
+converse, it suffices to choose $a,c$ as the lifts.
+
+\end{proof}
+
+We can read this $\delta(b)$ as the obstruction created by the difference $b$ on the
+boundary. Splitting a cycle $z=z_A+z_B$ into chains on the two parts,
+$\partial z_A=-\partial z_B$ is supported on $L$. By Proposition~\ref{prop:2.28},
+$\langle h,z\rangle=\langle b,\partial z_A\rangle$. The difference around the whole cycle
+coincides with the signed sum of the differences compared on the boundary of the two
+parts.
+
+\section{Comparison of the structural and semantic phases}\label{sec:2.7}
+
+Whether a fact belongs to structure or to semantics is determined by what changes under
+the permitted changes of semantics. From this classification we split the coefficients and
+study conditions under which no obstruction is lost by looking only at the semantic side.
+
+\begin{definition}[Two phases by invariance of extraction]\label{def:2.30}
+
+For the extraction doctrine $D$ of Chapter~\ref{chap:1}, choose a family
+$(D_\lambda)_{\lambda\in\Lambda}$ that preserves the vocabulary, the normalization, the
+resolution, and the structure of sources, and changes only the semantic reading and its
+admissible predicates. We require this family to contain $D$ itself. A pair $(s,a)$ of a
+source and an Atom is structural if
+\begin{equation*}
+\forall\lambda\in\Lambda,\quad
+\bigl(a\in\mathrm{Atomize}_{D_\lambda}(s)
+\Longleftrightarrow a\in\mathrm{Atomize}_D(s)\bigr)
+\tag{2.20}\label{eq:2.20}
+\end{equation*}
+holds. A pair that is not structural is called semantic. For example, if the existence of
+a component is extracted under every reading while only a fact about the interpretation
+of values ceases to be extracted under some reading, then the former is structural and
+the latter semantic.
+
+\end{definition}
+
+\begin{definition}[The two-phase coefficient complex]\label{def:2.31}
+
+Assign to each coordinate of a finite-dimensional complex $C^\bullet_{\mathrm{all}}$ a
+pair of a source and an Atom. Let $C^n_{\mathrm{str}}$ be the subspace spanned by the
+coordinates belonging to structural pairs. We write Condition~S for the requirement that the
+restrictions and the differentials preserve this part. Under this condition the
+differential descends to $C^n_{\mathrm{sem}}=C^n_{\mathrm{all}}/C^n_{\mathrm{str}}$, and
+\begin{equation*}
+0\longrightarrow C^\bullet_{\mathrm{str}}
+\longrightarrow C^\bullet_{\mathrm{all}}
+\longrightarrow C^\bullet_{\mathrm{sem}}\longrightarrow0
+\tag{2.21}\label{eq:2.21}
+\end{equation*}
+is an exact sequence in each degree. This $C^\bullet_{\mathrm{sem}}$ is the quotient
+complex built from the two phases of extraction. In \S\ref{sec:2.9} we will separately
+build coefficients $M_{\mathrm{sem}}$ from the relations of repair operations.
+
+\end{definition}
+
+\begin{proposition}[Retention of obstructions on the semantic side]\label{prop:2.32}
+
+If Condition~S holds and $H^1(C^\bullet_{\mathrm{str}})=0$, then the induced map
+\begin{equation*}
+H^1(C^\bullet_{\mathrm{all}})
+\longrightarrow H^1(C^\bullet_{\mathrm{sem}})
+\tag{2.22}\label{eq:2.22}
+\end{equation*}
+is injective.
+
+\end{proposition}
+
+\begin{proof}
+
+Suppose that a cocycle $g$ becomes a coboundary on the semantic side. Lift the
+corresponding semantic 0-cochain to some $b\in C^0_{\mathrm{all}}$ by surjectivity in
+degree 0. Then $g-d^0b$ is a cocycle belonging to the structural part. Since $H^1=0$ on
+the structural side, there is a structural $c$ with $g-d^0b=d^0c$. Hence $g=d^0(b+c)$.
+
+\end{proof}
+
+If the structural complex satisfies the forest condition of Proposition~\ref{prop:2.26},
+the required $H^1=0$ is obtained. The roles of the two conditions are visible in the
+following small examples.
+
+\begin{example}[A case where Condition S fails]\label{ex:2.33}
+
+Let $s$ be a pair that is always extracted before and after the semantic changes, and $t$
+a pair whose extraction truth value changes. On the complex with two vertices and one
+edge, assign $s$ to the left vertex and $t$ to the right vertex and the edge. Then
+$C^0_{\mathrm{all}}=k^2$, $C^1_{\mathrm{all}}=k$, and $d^0(a,b)=b-a$; the structural part
+is $k(1,0)$ in degree 0 and zero in degree 1. Since $d^0(1,0)=-1$, the structural
+part is not preserved, and this differential does not descend to the semantic quotient.
+
+\end{example}
+
+\begin{example}[A case where Condition S alone does not give injectivity]\label{ex:2.34}
+
+Take two copies of the complex joining two vertices by two parallel edges, and assign $s$
+to all coordinates of one copy and $t$ to all coordinates of the other. The differential
+of each copy is $(a,b)\mapsto(b-a,b-a)$, and degree 2 is zero. The structural part is
+exactly the first copy, so Condition~S holds. However, the 1-cochain $(1,0)$ of the
+first copy is not a coboundary, because the values on the two edges differ. This nonzero
+class maps to zero on the semantic side. It is thus the condition that obstructions
+vanish on the structural side that supports the injectivity of
+Proposition~\ref{prop:2.32}.
+
+\end{example}
+
+\section{Concrete integer-coefficient obstructions built from Atoms}\label{sec:2.8}
+
+To compare with the diagnosis in the next chapter, we construct coefficients and covers
+concretely. The generators of the coefficients are pairs of a Law and a source, and the
+points of the geometry represent the ranges read locally. We keep both in a single Atom
+family and compute obstruction classes from local states and transitions.
+
+\subsection*{Building coefficients from generator relations}
+
+\begin{definition}[Generators and primitive relations]\label{def:2.35}
+
+Take a finite set of sources $S$ and a finite family of Laws $(\ell)_{\ell\in L}$. Each
+Law has a set of values $\mathrm{Val}_\ell$ and an evaluation
+$v_\ell:S\to\mathrm{Val}_\ell$. Let the set of generators be $G=L\times S$, and let the
+label of $g=(\ell,s)$ be $(\ell,v_\ell(s))$. A primitive relation $R\subseteq G\times G$
+is declared as a relation preserving these labels. Let $\mathfrak{B}$ be the quotient set
+by the reflexive, symmetric, and transitive closure of $R$, and write
+$[g]_R\in\mathfrak{B}$ for the component of a generator $g$. We define the
+integer-coefficient group by
+\begin{equation*}
+M_R=\mathbb{Z}^{(G)}/\langle e_g-e_h\mid gRh\rangle
+\tag{2.23}\label{eq:2.23}
+\end{equation*}
+Here $\mathbb{Z}^{(G)}$ is the free abelian group with basis $e_g$.
+
+\end{definition}
+
+\begin{lemma}[Standard form of the coefficients]\label{lem:2.36}
+
+The map $e_g\mapsto e_{[g]_R}$ induces an isomorphism
+$M_R\cong\mathbb{Z}^{(\mathfrak{B})}$.
+
+\end{lemma}
+
+\begin{proof}
+
+Basis elements joined by a primitive relation map to the same component, so the map
+descends to the quotient. In the other direction, choose a representative generator of
+each component and assign its class in $M_R$. Two generators in the same component are
+joined by a finite sequence of primitive relations, and their difference is the sum of
+the differences of these relations, so the assignment does not depend on the choice. The
+composites of the two maps are the identity on the bases, so they are mutually inverse.
+
+\end{proof}
+
+As a concrete example, let $S=\{0,1\}^2$, $L=\{\ell\}$, and $v_\ell(v,h)=v$. The
+primitive relation consists of the two pairs joining $(v,0)$ and $(v,1)$ with the same
+$v$. Writing the generators as $g_{00},g_{01},g_{10},g_{11}$, there are two components
+$B_0=\{g_{00},g_{01}\}$ and $B_1=\{g_{10},g_{11}\}$, and $M_R\cong\mathbb{Z}^2$. Even
+though the second component of the original sources is identified, the two components
+with different Law values remain distinguished.
+
+\subsection*{The eight-point space and two covers}
+
+\begin{construction}[Atom input carrying points and generators]\label{cons:2.37}
+
+Take a set $X$ with four vertices $a_0,a_1,b,c$ and four edge points $e_{01},ab,bc,ac$.
+The endpoints of the edge points are $e_{01}:(a_0,a_1)$, $ab:(a_1,b)$, $bc:(b,c)$, and
+$ac:(a_0,c)$. The order is defined only by the relations placing each vertex below the
+edge points incident to it, together with reflexivity. The open sets are the upward
+closed subsets.
+
+We attach tags distinguishing point Atoms from generator Atoms, and let the Atom family
+be $X\sqcup G$. A point Atom has the point itself as its subject, with fixed values for
+the predicate, the payload, and the axis. A generator Atom $(\ell,s)$ has the source $s$,
+the Law index $\ell$, and the Law value $v_\ell(s)$ as its subject, predicate, and
+payload, respectively, with a single fixed axis. Each Atom is uniquely determined by its
+kind and these coordinates. The relation of the configuration is the $R$ declared between
+the generator Atoms.
+
+The context $c_V$ corresponding to an open set $V\subseteq X$ reads the point Atoms of
+$V$ and all generator Atoms. Inclusions $V'\subseteq V$ are the restriction morphisms,
+and the overlaps are given by $c_{V'\cap V}$. For covers we adopt families that cover the
+open set and also cover the generators that are read. We use the Grothendieck topology on
+the context site generated by these families. In a nonempty covering family each context
+reads all generators, so the covering condition on generators also holds. The two covers
+below are covers of this context site.
+
+\end{construction}
+
+\begin{lemma}[The three-chart and four-chart covers]\label{lem:2.38}
+
+The minimal open neighborhoods of the vertices are
+\begin{equation*}
+\begin{aligned}
+U_{a_0}&=\{a_0,e_{01},ac\},& U_{a_1}&=\{a_1,e_{01},ab\},\\
+U_b&=\{b,ab,bc\},& U_c&=\{c,bc,ac\}.
+\end{aligned}
+\tag{2.24}\label{eq:2.24}
+\end{equation*}
+These cover $X$. Setting $U_a=U_{a_0}\cup U_{a_1}$, the family $(U_a,U_b,U_c)$ is also a
+cover. In both covers, the charts and the nonempty double overlaps are connected, and the
+intersection of three distinct charts is empty.
+
+\end{lemma}
+
+\begin{proof}
+
+Each vertex lies in its own neighborhood and each edge point lies in the neighborhoods of
+its two endpoints, so these families are covers. Each minimal neighborhood has a least
+element. Any attempt to separate it into two relatively open sets fails, because the side
+containing the least element contains all points above it. Since $U_{a_0}$ and $U_{a_1}$
+meet in $e_{01}$, their union is also connected. The nonempty double intersections of the
+four-chart cover are $\{e_{01}\},\{ab\},\{bc\},\{ac\}$, and those of the three-chart
+cover are $\{ab\},\{bc\},\{ac\}$. Each edge point has only two endpoints, so even after
+merging the charts as above, no point is shared by three of them.
+
+\end{proof}
+
+\begin{figure}[htbp]
+\centering
+\input{figures/ch02-finite-covers}
+\caption{\textbf{The eight-point space and the two covers.} The left panel shows the
+eight points of the space $X$: circles are vertices, squares are edge points, and arrows
+indicate the order from vertices to edge points. The middle and right panels show the
+nerves of the covers, with nodes for charts and edges for nonempty double intersections.
+When $U_{a_0}$ and $U_{a_1}$ in the middle are merged into $U_a$, their intersection
+point $e_{01}$ moves into the interior of $U_a$. The triangle on the right has no face,
+and the triple intersection is empty.}\label{fig:2.1}
+\end{figure}
+
+In this computation, the vanishing of degree 2 comes from the actual intersections
+being empty.
+
+\begin{construction}[The sheaf of locally constant obstruction coefficients]\label{cons:2.39}
+
+Let $F_R(c_V)$ be the group of locally constant $M_R$-valued functions on $V$, with
+restriction of functions as restriction. Functions agreeing on overlaps glue uniquely,
+and local constancy is checked locally, so $F_R$ is a sheaf. On the empty open set it is
+the zero group. The map $c_V\mapsto V$ from contexts to open sets preserves intersections
+and covers, so these coefficients form an actual sheaf on the chosen context site.
+
+By the connectedness of Lemma~\ref{lem:2.38}, a section over a chart or a nonempty
+intersection is determined by a single value in $M_R$. In this presentation the
+restrictions are identity homomorphisms. Hence the \v{C}ech complexes of both covers are
+complexes with $M_R$-values on vertices and edges and zero in degree 2.
+
+\end{construction}
+
+\subsection*{Computing obstructions from local states and affine transitions}
+
+\begin{proposition}[Lawful chart states]\label{prop:2.40}
+
+Through the isomorphism of Lemma~\ref{lem:2.36}, read each chart state $p_\alpha\in M_R$
+as componentwise integers $(p_{\alpha,B})_{B\in\mathfrak{B}}$. Define the polynomial ring
+and the relation ideal by
+\begin{equation*}
+\begin{aligned}
+P_R&=\mathbb{Z}[X_g\mid g\in G],\\
+J_R&=(X_g-X_h\mid gRh),\\
+e_\alpha:P_R&\longrightarrow\mathbb{Z},
+\qquad X_g\longmapsto p_{\alpha,[g]_R}
+\end{aligned}
+\tag{2.25}\label{eq:2.25}
+\end{equation*}
+This evaluation sends $J_R$ to zero and gives an integer point of
+$\mathrm{Spec}(P_R/J_R)$. The states on the overlaps obtained by actual restriction are
+also lawful. Moreover, the states after translation by an arbitrary $\xi_e\in M_R$ are
+lawful.
+
+\end{proposition}
+
+\begin{proof}
+
+If $gRh$, then $[g]_R=[h]_R$, so the evaluation of each generator $X_g-X_h$ is zero.
+Restriction to an overlap preserves the integer value of each component. After a
+translation, the same $\xi_{e,B}$ is added to the same component, so the identities are
+preserved.
+
+\end{proof}
+
+The polynomial equations here require the coordinates to agree along the declared
+primitive relations. The Law values of Definition~\ref{def:2.35} retain the origin of
+each generator, and in the next chapter we use them to map these coefficients into the
+diagnosis.
+
+\begin{proposition}[Obstruction of specified affine local data]\label{prop:2.41}
+
+Write $\mathcal{U}_q$ for either of the covers and choose local data $x=(\xi,p)$. Here
+$p\in C^0(\mathcal{U}_q,F_R)$ consists of the chart states, and
+$\xi\in C^1(\mathcal{U}_q,F_R)$ is the translation carrying the state on the right into
+the coordinates on the left across each overlap. The orientation of the edges is chosen
+by the order of the charts. When an orientation is reversed, the signs of the transition
+and of the comparison value are reversed. The comparison value on an edge
+$e:\alpha\to\beta$ is
+\begin{equation*}
+\begin{aligned}
+o_q(x)_e&=\xi_e+\mathrm{res}_{\beta,e}(p_\beta)
+-\mathrm{res}_{\alpha,e}(p_\alpha),\\
+o_q(x)&=\xi+d^0p.
+\end{aligned}
+\tag{2.26}\label{eq:2.26}
+\end{equation*}
+This is the difference obtained by actually restricting the lawful states on the two
+sides, carrying one of them by the transition, and then comparing. Since degree 2 is
+zero, it is a cocycle and defines $[o_q(x)]\in\check H^1(\mathcal{U}_q,F_R)$. Changing
+the local states to $p+h$ gives
+\begin{equation*}
+o_q(\xi,p+h)=o_q(\xi,p)+d^0h,
+\qquad [o_q(\xi,p+h)]=[o_q(\xi,p)]
+\tag{2.27}\label{eq:2.27}
+\end{equation*}
+\end{proposition}
+
+\begin{proof}
+
+Equation~\eqref{eq:2.26} computes the difference between the transported right state and
+the left state, and by Proposition~\ref{prop:2.40} both states being compared are lawful.
+Additivity of the differential gives \eqref{eq:2.27}.
+
+This class is also obtained as the gluing obstruction of Proposition~\ref{prop:2.21}.
+Place a locally constant $M_R$-valued state on each chart and compare coordinates from
+right to left on each overlap by $m\mapsto\xi_e+m$. The reverse direction uses $-\xi_e$,
+and self-comparison is zero. Since the intersection of three distinct charts is empty, no
+additional condition arises on triple overlaps. Defining the states over an open set as
+the families of local states satisfying these comparisons yields a sheaf. On each chart
+and each nonempty intersection, the action of the coefficients $F_R$ is free and
+transitive, and the difference of the $p$ chosen in chart coordinates equals
+\eqref{eq:2.26}. Hence the same cochain yields the same obstruction class.
+
+\end{proof}
+
+\begin{example}[Changing local states and changing transitions]\label{ex:2.42}
+
+Order the three-chart cover by $a<b<c$ and let $u=e_{B_0}\in M_R\cong\mathbb{Z}^2$.
+Choose $p=0$, $\xi_{ab}=u$, and $\xi_{ac}=\xi_{bc}=0$. The period of
+Example~\ref{ex:2.19} is $u$, so $[o_q(x)]\ne0$. The chart states each satisfy the Laws of
+Proposition~\ref{prop:2.40}, but under the fixed transitions they do not glue into a
+global state.
+
+Changing only $p$ does not change the class, by \eqref{eq:2.27}. On the other hand,
+changing $\xi_{ab}$ itself to zero leaves $p=0$ compatible as it is, and the obstruction
+becomes zero. This computation distinguishes the differences removable by changing local
+coordinates from those removable only by changing the transitions.
+
+The data passed to Chapter~\ref{chap:3} are the coefficients $F_R$, the cover
+$\mathcal{U}_q$, the local data $x$, and the concrete class $[o_q(x)]$ generated from
+them.
+
+\end{example}
+
+\section{Semantic local repair and obstruction classes of equations}\label{sec:2.9}
+
+On the repair side, we build coefficients from the available changes and the relations
+identifying changes with the same effect. On the equation side, we use the quotient
+coefficients of \S\ref{sec:2.3}. After building an obstruction class from the local
+states on each side, we compare the two in the next section.
+
+Throughout, we fix a finite cover $\mathcal{U}$ by injective morphisms as in
+Definition~\ref{def:2.16}. We call the diagram consisting of the charts, the nonempty
+double and triple intersections, and their restriction morphisms the intersection
+diagram of the cover. The algebraic conditions needed for the comparison are imposed on
+this diagram.
+
+\begin{definition}[Presentation of semantic repair]\label{def:2.43}
+
+To each context $V$ we assign a set $\Lambda(V)$ of Atoms distinguished on the semantic
+side, a map $\pi_V:\Lambda(V)\to\mathrm{At}$ giving the underlying Atom, and a subset
+$S(V)\subseteq\Lambda(V)$ usable for repair. These carry functorial restrictions; the
+restrictions preserve $S$ and commute with $\pi$. Here the underlying Atoms are read as
+the same under restriction.
+
+A repair word is a finite integer combination of elements of $S(V)$. We declare, as a subgroup
+$R_{\mathrm{rep}}(V)$, the differences of words regarded as locally having the same
+effect, and require this subgroup to be preserved by restriction as well.
+We define the semantic coefficients by
+\begin{equation*}
+\begin{aligned}
+F_{\mathrm{rep}}(V)&=\mathbb{Z}^{(S(V))},\\
+M_{\mathrm{sem}}(V)&=F_{\mathrm{rep}}(V)/R_{\mathrm{rep}}(V)
+\end{aligned}
+\tag{2.28}\label{eq:2.28}
+\end{equation*}
+The restrictions extend linearly to the free abelian groups and preserve the relation
+subgroups, so they descend to the quotients. The identity and composition rules hold on
+generators, so $M_{\mathrm{sem}}$ is a presheaf with values in abelian groups.
+
+\end{definition}
+
+\begin{proposition}[Torsors obtained from the action of repair words]\label{prop:2.44}
+
+Suppose that $F_{\mathrm{rep}}$ acts on a presheaf $P_{\mathrm{sem}}$ of semantic local
+repair states and that the action commutes with restriction. On the intersection diagram
+we impose the following three conditions.
+
+\begin{itemize}
+\item If $w\in R_{\mathrm{rep}}(V)$, then $w+p=p$ for every state.
+\item If $w+p=p$, then $w\in R_{\mathrm{rep}}(V)$.
+\item For any two states $p,q$, some repair word $w$ satisfies $q=w+p$.
+\end{itemize}
+
+Then each nonempty $P_{\mathrm{sem}}(V)$ is an $M_{\mathrm{sem}}(V)$-torsor.
+
+\end{proposition}
+
+\begin{proof}
+
+By the first condition, the action descends to the quotient by the relations. By the
+second condition, a repair that is nonzero in the quotient fixes no state, so the action
+is free. The third condition gives transitivity.
+
+\end{proof}
+
+The first two conditions state that the repair words declared to have zero effect
+coincide with the words that actually leave every state unchanged. The third condition
+states that the states being compared can reach one another by the chosen repairs.
+
+\begin{definition}[Two local states and their obstruction classes]\label{def:2.45}
+
+On the semantic side, choose a local atlas $p_\alpha\in P_{\mathrm{sem}}(U_\alpha)$. On
+the equation side, choose $Q_E$ of Construction~\ref{cons:2.12} and a presheaf $P_E$ of
+local states on which it acts. We require $P_E(V)$ on each nonempty intersection to be a
+$Q_E(V)$-torsor, with restrictions commuting with the action. Let its local atlas be
+$e_\alpha\in P_E(U_\alpha)$. An element of $P_E$ represents a state that concretely
+realizes the chosen local equation data.
+
+With the two coefficients we form the \v{C}ech complexes
+$C^\bullet_{\mathrm{rep}}=C^\bullet(\mathcal{U},M_{\mathrm{sem}})$ and
+$C^\bullet_E=C^\bullet(\mathcal{U},Q_E)$, and define the residuals by
+\begin{equation*}
+\begin{aligned}
+r_{\mathrm{sem},\alpha\beta}&=p_\beta|-p_\alpha|,\\
+r_{E,\alpha\beta}&=e_\beta|-e_\alpha|
+\end{aligned}
+\tag{2.29}\label{eq:2.29}
+\end{equation*}
+By Proposition~\ref{prop:2.21}, both are cocycles and their classes do not depend on the
+choice of atlas. We abbreviate the semantic group
+$\check H^1(\mathcal{U},M_{\mathrm{sem}})$ to $H^1_{\mathrm{sem}}(\mathcal{U})$.
+
+On empty intersections, we take the two coefficients to be the zero groups and the
+two state sets to have at most one element. Since the local atlases restrict, the state set on each
+nonempty intersection is nonempty.
+
+\end{definition}
+
+\begin{construction}[Correspondence between Atoms and equations]\label{cons:2.46}
+
+To each $\lambda\in S(V)$ we assign a required equation index $i_\lambda$ and a reading
+$A_\lambda$ of an object, preserved under restriction. We define the map sending a
+repair generator to the residual class of the corresponding equation by
+\begin{equation*}
+\chi_V(\lambda)
+=[\varepsilon_{V,A_\lambda,i_\lambda,\pi_V(\lambda)}]
+\in Q_E(V)
+\tag{2.30}\label{eq:2.30}
+\end{equation*}
+By the restriction rule for residuals, $\chi$ commutes with restriction. By the
+universal property of free abelian groups, it extends uniquely to a homomorphism
+$\widetilde\chi_V:F_{\mathrm{rep}}(V)\to Q_E(V)$. The map $\chi$ specifies which repair
+generator represents the residual of which object, equation, and Atom.
+
+\end{construction}
+
+\section{The SAGA comparison and global repair}\label{sec:2.10}
+
+We now connect the two constructions above by a correspondence of local states. To
+obtain an isomorphism of coefficients, we need the relations among repair words to hold
+on the equation side as well, every repair word lost on the equation side to be
+contained in the relations, and the coefficients on the equation side to be expressible
+by the repair generators. The first property can be derived from the correspondence of
+states.
+
+\begin{definition}[Correspondence of local states and completeness]\label{def:2.47}
+
+On the intersection diagram, we construct maps
+$\beta_V:P_{\mathrm{sem}}(V)\to P_E(V)$ commuting with restriction, and require, for
+each generator,
+\begin{equation*}
+\beta_V(\lambda+p)=\chi_V(\lambda)+\beta_V(p)
+\tag{2.31}\label{eq:2.31}
+\end{equation*}
+The $\lambda$ on the left-hand side denotes the action of a basis element of the free
+abelian group. Furthermore, on each nonempty intersection $V$ we require
+\begin{equation*}
+\ker\widetilde\chi_V\subseteq R_{\mathrm{rep}}(V),
+\qquad
+\mathrm{im}\,\widetilde\chi_V=Q_E(V)
+\tag{2.32}\label{eq:2.32}
+\end{equation*}
+We call the first condition completeness of relations and the second completeness of
+generators. The former says that the repair relations account for all words whose effect
+becomes zero on the equation side, and the latter that each coefficient on the equation
+side can be expressed by a repair word.
+
+\end{definition}
+
+\begin{lemma}[The correspondence of states gives soundness of the relations]\label{lem:2.48}
+
+Under the conditions of Proposition~\ref{prop:2.44} and
+Definitions~\ref{def:2.45} and~\ref{def:2.47},
+\begin{equation*}
+R_{\mathrm{rep}}(V)\subseteq\ker\widetilde\chi_V
+\tag{2.33}\label{eq:2.33}
+\end{equation*}
+holds.
+
+\end{lemma}
+
+\begin{proof}
+
+Extending \eqref{eq:2.31} to finite sums and additive inverses, we get
+$\beta_V(w+p)=\widetilde\chi_V(w)+\beta_V(p)$ for every repair word $w$. Let
+$w\in R_{\mathrm{rep}}(V)$ and take a state $p$ obtained from the local atlas; then
+\[
+\beta_V(p)=\beta_V(w+p)
+=\widetilde\chi_V(w)+\beta_V(p).
+\]
+Since the action on the equation side is free, $\widetilde\chi_V(w)=0$.
+
+\end{proof}
+
+\begin{theorem}[The SAGA comparison of coefficients and obstruction classes]\label{thm:2.49}
+
+Under the data and conditions from Definition~\ref{def:2.43} through
+Definition~\ref{def:2.47}, we obtain a natural isomorphism on the intersection diagram
+\begin{equation*}
+\Phi:M_{\mathrm{sem}}\xrightarrow{\sim}Q_E,
+\qquad\Phi_V([w])=\widetilde\chi_V(w)
+\tag{2.34}\label{eq:2.34}
+\end{equation*}
+It induces isomorphisms of the complexes in degrees 0 through 2 and of the first
+cohomology, and matches the obstruction classes built from the two local atlases.
+\begin{equation*}
+\begin{aligned}
+\kappa^n &: C^n_{\mathrm{rep}}\xrightarrow{\sim}C^n_E,
+\qquad (\kappa^nc)_V=\Phi_V(c_V)\quad(n=0,1,2),\\
+\kappa^{n+1}d^n_{\mathrm{rep}}&=d^n_E\kappa^n
+\quad(n=0,1),
+\end{aligned}
+\tag{2.35}\label{eq:2.35}
+\end{equation*}
+\begin{equation*}
+\begin{aligned}
+\kappa_* &: H^1_{\mathrm{sem}}(\mathcal{U})\xrightarrow{\sim}\check H^1(\mathcal{U},Q_E),\\
+\kappa_*[r_{\mathrm{sem}}]&=[r_E].
+\end{aligned}
+\tag{2.36}\label{eq:2.36}
+\end{equation*}
+
+\end{theorem}
+
+\begin{proof}
+
+We first compare the coefficients. By Lemma~\ref{lem:2.48}, $\widetilde\chi_V$ descends
+to the quotient and gives $\Phi_V$. If $\Phi_V([w])=0$, then completeness of relations
+gives $w\in R_{\mathrm{rep}}(V)$, so $[w]=0$. By completeness of generators, $\Phi_V$ is
+also surjective. Commutation with restriction holds for $\chi$ and extends from the
+generators to the whole. This gives \eqref{eq:2.34}.
+
+Next we apply $\Phi_V$ to the components on each intersection. By additivity and
+commutation with restriction, in degree 0 for example
+\[
+\begin{aligned}
+(\kappa^1d^0_{\mathrm{rep}}b)_{\alpha\beta}
+&=\Phi_{U_{\alpha\beta}}(b_\beta|-b_\alpha|)\\
+&=\Phi_{U_\beta}(b_\beta)|-\Phi_{U_\alpha}(b_\alpha)|\\
+&=(d^0_E\kappa^0b)_{\alpha\beta}.
+\end{aligned}
+\]
+The same computation applies to the alternating sum of three terms in degree 1. Using
+the inverse of each $\Phi_V$ componentwise gives the inverse map of complexes, so
+cocycles and coboundaries are preserved in both directions. Hence
+$[c]\mapsto[\kappa^1c]$ gives the isomorphism of \eqref{eq:2.36}.
+
+Finally we compare the specified residuals. On each chart, take
+$h_\alpha\in Q_E(U_\alpha)$ with $e_\alpha=h_\alpha+\beta(p_\alpha)$. Descending
+\eqref{eq:2.31} to the action of the quotient and computing the difference on the
+overlaps gives
+\begin{equation*}
+r_E=\kappa^1(r_{\mathrm{sem}})+d^0_Eh
+\tag{2.37}\label{eq:2.37}
+\end{equation*}
+Hence the two residuals correspond to the same cohomology class.
+
+\end{proof}
+
+When the two atlases are aligned by $e_\alpha=\beta(p_\alpha)$, the $h$ in
+\eqref{eq:2.37} is zero. Even when they are chosen separately, the difference is an
+explicit coboundary, so the correspondence of obstruction classes is preserved. This is
+the comparison of
+\cite[\href{https://arxiv.org/html/2608.21458v1\#S5}{Theorem~5.1(i)--(ii),
+\S\S5.3--5.5}]{SAGA}.
+
+\begin{corollary}[SAGA and global repair]\label{cor:2.50}
+
+In addition to the conditions of Theorem~\ref{thm:2.49}, suppose that the actual repair
+states $P_{\mathrm{sem}}$ form a sheaf on the chosen site. Then
+\begin{equation*}
+P_{\mathrm{sem}}(W)\ne\varnothing
+\quad\Longleftrightarrow\quad
+[r_{\mathrm{sem}}]=0
+\quad\Longleftrightarrow\quad
+[r_E]=0.
+\tag{2.38}\label{eq:2.38}
+\end{equation*}
+
+\end{corollary}
+
+\begin{proof}
+
+The first equivalence is obtained by applying Theorem~\ref{thm:2.22} to the torsor
+action derived from the repair words. The second follows from the isomorphism of
+Theorem~\ref{thm:2.49} and the correspondence of residual classes. Concretely, finding a
+correction with $r_{\mathrm{sem}}=d^0b$ and gluing $(-b_\alpha)+p_\alpha$ by the sheaf
+condition yields a global repair.
+
+\end{proof}
+
+This is the global repair statement of
+\cite[\href{https://arxiv.org/html/2608.21458v1\#S5.SS6}{Theorems~5.1(iii) and~5.2,
+\S5.6}]{SAGA}. The zero class expressing the existence of corrections and the gluing of
+the repair states themselves are tied together by the sheaf condition.
+
+\begin{example}[Two presentations by parity]\label{ex:2.51}
+
+We use the four-chart cover of Lemma~\ref{lem:2.38}. On the semantic side, we declare on
+each nonempty intersection a repair generator $\sigma$ and the relation $2\sigma=0$. On
+the equation side, we take the ring $\mathbb{Z}$, the symbolic generator 2, and one
+required residual equal to 1. The coefficients on the two sides are obtained as
+\begin{equation*}
+M_{\mathrm{sem}}=\mathbb{Z}\sigma/(2\sigma),
+\qquad Q_E=\mathbb{Z}/(2),
+\qquad\chi(\sigma)=[1]
+\tag{2.39}\label{eq:2.39}
+\end{equation*}
+The restrictions between intersections are identity maps. The coefficients are constant
+presheaves on nonempty contexts and zero on the empty context. The action of the
+semantic repair words is determined by parity alone, and its stabilizer subgroup is
+$2\mathbb{Z}\sigma$. The kernel of the map $n\sigma\mapsto[n]$ is $2\mathbb{Z}\sigma$
+and its image is all of $\mathbb{Z}/(2)$, so the two completeness conditions can be
+checked directly.
+
+The local states can also be constructed. On the semantic side we place the two states
+$\{0,1\}$ with changes by parity, and on the equation side the two residue classes
+$\{[0],[1]\}$ with the additive action. Orient the four edges as
+$a_0\to a_1\to b\to c\to a_0$, and on both sides choose the comparison that shifts the
+reference by one on the first edge only and leaves it unshifted on the other three.
+Since the coefficients have characteristic 2, returning the last edge to the
+orientation of the total order does not change the values. As in
+Proposition~\ref{prop:2.41}, these define a sheaf of states obtained by gluing chart
+states along affine transitions. The map sending a semantic state $n$ to $[n]$ on the
+equation side is $\beta$, and it commutes with restriction and with the action of
+generators.
+
+Choosing the zero state on every chart, the residuals on the two sides become
+$(1,0,0,0)$ in their respective presentations. The sum over the four edges is 1, while
+the sum of any coboundary is zero, so both obstruction classes are nonzero.
+Theorem~\ref{thm:2.49} matches these two nonzero classes, and Corollary~\ref{cor:2.50}
+shows that no global repair exists under the fixed transitions. If the first transition
+is also changed to zero, the zero states glue as they are, and the obstruction classes
+on both sides become zero.
+
+\end{example}
+
+\section*{Summary of the Chapter}
+
+In this chapter we connected equations, comparison of local states, and semantic repair
+as follows.
+
+\begin{itemize}
+\item \textbf{Geometry of Laws.} We built local algebras from the structural relations
+and ideals from the symbolic equations. Under the algebraic presentation of the
+evaluation data and the localization condition, simultaneous vanishing of the residuals
+coincides with factorization through the lawful locus (Theorem~\ref{thm:2.9}).
+\item \textbf{Obstructions to local consistency.} The differences on overlaps form a
+cocycle, and changing the local states adds a coboundary. When the corrections are
+realized as a torsor action and the states form a sheaf, the zero class is equivalent to
+the existence of a global state (Theorem~\ref{thm:2.22}).
+\item \textbf{Roles of covers and coefficients.} On a forest, obstructions vanish by
+surjectivity of the restrictions, while a nonzero period along a cycle detects a
+concrete obstruction. In the comparison that removes the structural phase, the
+differential preserving the structural part and the vanishing of first-degree
+obstructions on the structural side give injectivity
+(Propositions~\ref{prop:2.26}, \ref{prop:2.28}, and~\ref{prop:2.32}).
+\item \textbf{Concrete local data.} From an Atom family with points and generators we
+built covers and an integer-coefficient sheaf, and obtained $o_q(x)=\xi+d^0p$ as the
+comparison of lawful chart states along affine transitions
+(Proposition~\ref{prop:2.41}).
+\item \textbf{Correspondence with the semantics of repair.} The two coefficients, one
+built from a presentation by repair words and the other from the quotient by the
+equations, become isomorphic under the correspondence of local states and the
+completeness conditions. This isomorphism matches the specified obstruction classes and,
+combined with the sheaf condition on the actual repair states, characterizes the
+existence of a global repair (Theorem~\ref{thm:2.49}, Corollary~\ref{cor:2.50}).
+\end{itemize}
+
+For the three services at the opening of the chapter, the correction summed around the
+cycle expresses the discrepancy that remains however the reference of each part is
+rechosen. If the obstruction class is zero, the local corrections can be applied so that
+the states agree on the overlaps. That the corrected states form a single global state
+is guaranteed by the sheaf condition on the actual states.
+
+In the next chapter we study what is preserved in the diagnosis when the resolution or
+the cover reading the same Laws is changed. We map the concrete obstruction classes
+obtained in \S\ref{sec:2.8} into the diagnosis generated from Law evaluations, and
+clarify the conditions under which the zero and nonzero information is preserved.

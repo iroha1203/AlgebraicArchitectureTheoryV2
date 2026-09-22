@@ -1,0 +1,1935 @@
+\chapter{Construction of Relative Architecture}\label{chap:1}
+
+\section*{Overview of the Chapter}
+
+In this chapter we construct the objects and maps used to compare the structure of
+software. The starting point is to make explicit the choice of what to read as
+structure and which operations and laws to preserve.
+
+For example, consider a state consisting of a displayed value and an internal value.
+A read returns the displayed value, and an update keeps the internal value and
+replaces the displayed value. If a change of the state representation leaves the
+displayed value unchanged, reads are preserved. However, applying the change and
+then updating need not give the same final state as updating and then applying the
+change. To preserve both reads and updates, the two orders must also give the same
+result.
+
+Such a comparison requires both the structure of objects and the way operations act
+on that structure. In AAT, a typed primitive fact is called an Atom, a family of
+Atoms together with relations is called a configuration, and an object that also
+keeps state sets, the interpretation of operations, and the like is called an architecture
+object. The equations that objects must satisfy are specified as Laws, and we
+provide the local structure for reading information part by part and gluing it
+together. The choice of vocabulary, extraction rules, object formation, equations,
+operations, and locality used in these constructions is called a reading.
+Relativizing architecture to a reading means making this choice explicit together
+with the objects.
+
+The structure of the chapter and its main results are as follows.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Question & Construction & Outcome \\
+\midrule
+\endhead
+What to take as objects, and which operations to permit & Equip an Atom family with relations, structure, and operations & A core with a family of objects closed under operations (\S\S\ref{sec:1.1}--\ref{sec:1.4}, Theorem~\ref{thm:1.18}) \\
+\addlinespace[3pt]
+Which information to read locally and glue & Choose contexts, covers, and coefficients & A geometry with a site and a ring for each context (\S\S\ref{sec:1.5}--\ref{sec:1.6}) \\
+\addlinespace[3pt]
+What to preserve when the reading changes & Define morphisms comparing the data at each stage & The tower of projections connecting extraction, core, and geometry (\S\ref{sec:1.7}, Theorem~\ref{thm:1.31}) \\
+\addlinespace[3pt]
+How to express existing semantics of CS & Construct objects, operations, and Laws from lenses and protocols & Equivalence of the validity of laws, and recovery of semantics-preserving morphisms (\S\S\ref{sec:1.8}--\ref{sec:1.10}, Propositions~\ref{prop:1.41} and~\ref{prop:1.43}) \\
+\bottomrule
+\end{xltabular}
+
+\section{Atoms and relative extraction}\label{sec:1.1}
+
+To identify a single fact, one must specify, in addition to its content, what the
+fact is about and from which viewpoint it is stated. An Atom carries this
+information in five coordinates.
+
+\begin{definition}[Vocabulary of Atoms]\label{def:1.1}
+
+Let $K$, $X$, $S$, $P$, and $T$ be the sets of kinds, axes, subjects, predicates,
+and payloads, respectively. The set of Atoms $\mathrm{At}$ is a nonempty set
+equipped with maps
+\[
+\begin{aligned}
+\mathrm{kind}&:\mathrm{At}\to K,&
+\mathrm{axis}&:\mathrm{At}\to X,&
+\mathrm{subject}&:\mathrm{At}\to S,\\
+\mathrm{predicate}&:\mathrm{At}\to P,&
+\mathrm{payload}&:\mathrm{At}\to T
+\end{aligned}
+\]
+The combined map
+$\mathrm{At}\to K\times X\times S\times P\times T$ is required to be injective.
+Hence two Atoms are equal if and only if all five coordinates are equal.
+The kind expresses the type of the fact, the axis the structure under attention,
+and the subject what the fact is about. The predicate and the payload give what is
+stated about that subject. For example, the existence of a component, a named
+operation, a state quantity of an object, and a relation between two objects can
+be expressed by Atoms of different kinds. The payload holds names, types, values,
+and the like. Facts treated together are collected into a family of Atoms, and
+their relations into a configuration.
+
+\end{definition}
+
+\begin{definition}[Atom families]\label{def:1.2}
+
+An Atom family is a subset $F\subseteq\mathrm{At}$. Its support and its
+restriction to an axis $x\in X$ are defined by
+\[
+\mathrm{supp}(F)=\{\mathrm{subject}(a)\mid a\in F\},
+\qquad
+F|_x=\{a\in F\mid \mathrm{axis}(a)=x\}
+\]
+Finiteness of an Atom family means finiteness of $F$.
+An extracted family may in general be infinite. The composition reading of
+\S\ref{sec:1.2} takes finite families as input.
+
+The data from which extraction is performed are called a source. Even for the same
+source, the facts extracted may vary with the choice of vocabulary and resolution.
+An extraction doctrine collects this choice together with the conditions for
+adopting an Atom.
+
+\end{definition}
+
+\begin{definition}[Extraction doctrines]\label{def:1.3}
+
+An extraction doctrine $D$ consists of a set of sources $\mathrm{Src}_D$,
+parameters $v_D,\gamma_D,\rho_D$ for vocabulary, meaning, and resolution, a
+normalization map $N_D:\mathrm{Src}_D\to\mathrm{Src}_D$ of sources, and the
+following four predicates.
+
+\begin{xltabular}{\linewidth}{@{}LL@{}}
+\toprule
+Predicate & Meaning \\
+\midrule
+\endhead
+$V_D(v,a)$ & The vocabulary $v$ admits the Atom $a$ \\
+\addlinespace[3pt]
+$M_D(\gamma,s,a)$ & The meaning reading $\gamma$ admits $a$ on the source $s$ \\
+\addlinespace[3pt]
+$R_D(\rho,s,a)$ & The resolution $\rho$ admits $a$ on $s$ \\
+\addlinespace[3pt]
+$E_D(s,a)$ & $a$ holds in the semantics of the source \\
+\bottomrule
+\end{xltabular}
+
+After normalizing the source, we adopt the Atoms that satisfy all four conditions.
+The extraction predicate and the extracted family are defined by
+\[
+\begin{aligned}
+\mathrm{Extracts}_D(s,a)
+&\Longleftrightarrow
+V_D(v_D,a)\land M_D(\gamma_D,N_D(s),a)\\
+&\hspace{2em}\land R_D(\rho_D,N_D(s),a)\land E_D(N_D(s),a),\\
+\mathrm{Atomize}_D(s)
+&=\{a\in\mathrm{At}\mid \mathrm{Extracts}_D(s,a)\}
+\end{aligned}
+\]
+At this stage we use the structure of $N_D$ as a map; constructions that need
+idempotence state it explicitly as an additional condition.
+
+\end{definition}
+
+\begin{proposition}[Existence and uniqueness of the extracted family]\label{prop:1.4}
+
+Fix $D$ and $s\in\mathrm{Src}_D$. Then an Atom family $F$ satisfying
+\[
+\forall a\in\mathrm{At},\qquad
+a\in F\ \Longleftrightarrow\ \mathrm{Extracts}_D(s,a)
+\]
+exists and is unique.
+
+\end{proposition}
+
+\begin{proof}
+
+The family $\mathrm{Atomize}_D(s)$ of Definition~\ref{def:1.3} satisfies this
+condition. If two families $F,G$ satisfy the condition, then
+$a\in F\Longleftrightarrow a\in G$ for every Atom, and hence $F=G$ by
+extensionality of sets.
+
+\end{proof}
+
+What this uniqueness fixes is the family of facts for a given source and doctrine.
+A readout of that family is given by a separate map $o:F\to Y$.
+If distinct Atoms satisfy $o(a)=o(b)$, this readout does not distinguish them.
+The construction of the extracted family and the amount of information read out of
+it can therefore be described separately.
+
+\section{Configurations, objects, and operations}\label{sec:1.2}
+
+An Atom family is the collection of adopted facts. To treat it as a single object,
+we add the relations between the facts, together with the state sets and the
+interpretation of operations. The relations are kept in a configuration, and the concrete structure
+data in an architecture object.
+
+\begin{definition}[Configuration]\label{def:1.5}
+
+A configuration is a triple $C=(F_C,R_C,I_C)$, where $F_C\subseteq\mathrm{At}$
+and $R_C,I_C\subseteq\mathrm{At}\times\mathrm{At}$.
+Here $R_C$ expresses relations and $I_C$ specified identifications.
+When the identifications are used as an equivalence relation, we require its
+reflexivity, symmetry, and transitivity.
+When $R_C,I_C\subseteq F_C\times F_C$, we say that the relations and
+identifications are supported by the family.
+
+A composition reading is a rule that assigns to each finite family $F$ a
+configuration
+\[
+\mathrm{Comp}(F)=(F,R_F,I_F),
+\qquad R_F,I_F\subseteq F\times F
+\]
+A configuration obtained by restricting the relations and identifications to a
+finite subfamily is called a molecule. It is the finite unit for handling several
+Atoms together with their relations when comparing local structure.
+
+\end{definition}
+
+\begin{definition}[Architecture object]\label{def:1.6}
+
+An architecture object is a triple $A=(C_A,S_A,Q_A)$, where $C_A$ is a
+configuration, $S_A$ is structure data of a chosen type, and $Q_A$ is a quantity
+of a chosen type; the types themselves are included in the data of the object.
+The structure data may hold state sets and transition maps, graphs, diagrams,
+algebras, and the like. The quantity may hold specified values or results of
+evaluation. The totality of such objects, in a universe of sufficient size, is
+written $\mathrm{ArchObj}(\mathrm{At})$.
+
+An object reading is a rule that sends a configuration $C$ to an object
+$\mathrm{Form}(C)$ with $C_{\mathrm{Form}(C)}=C$.
+Fixing this rule, from a finite family we obtain the construction
+\[
+F\longmapsto \mathrm{Comp}(F)\longmapsto
+\mathrm{Form}(\mathrm{Comp}(F))
+\]
+One may also change the state sets or the interpretation of operations while
+keeping the configuration the same, in which case the result is a different
+architecture object.
+
+\end{definition}
+
+\begin{definition}[Morphisms of configurations and operations]\label{def:1.7}
+
+An operation between objects is accompanied by an action on Atoms, relations, and
+identifications. A morphism of configurations expresses this action.
+
+A morphism of configurations $h:C\to D$ is a map
+$h_{\mathrm{At}}:\mathrm{At}\to\mathrm{At}$ such that
+\[
+\begin{aligned}
+a\in F_C&\Longrightarrow h_{\mathrm{At}}(a)\in F_D,\\
+(a,b)\in R_C&\Longrightarrow
+(h_{\mathrm{At}}(a),h_{\mathrm{At}}(b))\in R_D,\\
+(a,b)\in I_C&\Longrightarrow
+(h_{\mathrm{At}}(a),h_{\mathrm{At}}(b))\in I_D
+\end{aligned}
+\]
+With identity maps and composition of maps, configurations form a category.
+Indeed, the three implications all hold for the identity map and are closed under
+composition.
+
+An operation reading consists of a set $\mathrm{Op}(A,B)$ for each pair of
+objects and maps
+\[
+d_{A,B}:\mathrm{Op}(A,B)\longrightarrow
+\mathrm{Hom}(C_A,C_B)
+\]
+An element $o\in\mathrm{Op}(A,B)$ is called an operation from $A$ to $B$.
+An operation keeps its own name and additional data, and $d_{A,B}$ gives its
+action on configurations. Even when two operations have the same action, the
+operations themselves are kept distinct.
+If identity operations and composition are specified so that the unit and
+associativity laws hold and $d$ preserves them, the objects and operations form a
+category.
+
+\end{definition}
+
+\begin{example}[Named operations with the same action]\label{ex:1.8}
+
+Let $e_1,e_2$ be two operations on the state set $\{0,1\}$, both acting as the
+identity map. Taking the operation set to be $\{e_1,e_2\}$, one can distinguish a
+condition specified for $e_1$ from a condition specified for $e_2$ even though
+their execution results are equal.
+In \S\ref{sec:1.10} we actually construct morphisms of configurations whose Atoms
+include the operation names.
+
+\end{example}
+
+\begin{definition}[Invariants and signatures]\label{def:1.9}
+
+Values and properties to be preserved by operations are specified as invariants,
+and the tuple of values used for comparison is collected into a signature.
+
+A functional invariant is a map $I:\mathrm{ArchObj}(\mathrm{At})\to V_I$, and a
+predicate invariant is a predicate $P(A)$ on objects.
+Preservation under an operation $o:A\to B$ means
+$I(A)=I(B)$ and $P(A)\Rightarrow P(B)$, respectively.
+For ordered quantities, the condition $I(B)\leq I(A)$ can also be specified
+separately. An invariant reading chooses an index set and assigns to each index a
+functional or predicate invariant.
+
+A signature reading consists of a set of axes $\Lambda$, a value range
+$V_\lambda$ for each axis, a subset $\Lambda_{\mathrm{sel}}$ of selected axes,
+and values $q_\lambda(A)\in V_\lambda$ for each object.
+The signature of an object is
+$(q_\lambda(A))_{\lambda\in\Lambda_{\mathrm{sel}}}$.
+Selecting finitely many axes yields a finite multi-axis representation.
+
+\end{definition}
+
+\section{Local contexts and Laws}\label{sec:1.3}
+
+Instead of handling all the information of an object at once, we consider
+extracting part of its structure and observed values. A context specifies at
+which positions, along which axes, and what can be read. Expressing an equation
+on a context as a residual, so that the equation holds when the value is zero, allows Laws to be
+evaluated locally.
+
+\begin{definition}[Contexts and restrictions]\label{def:1.10}
+
+A context $W$ of an object $A$ carries three sets
+$\mathrm{Supp}(W)$, $\mathrm{Ax}(W)$, and $\mathrm{Obs}(W)$, together with
+\[
+\mathrm{reads}_W\subseteq\mathrm{Supp}(W)\times\mathrm{At},
+\quad
+\mathrm{readAx}_W\subseteq\mathrm{Ax}(W),
+\quad
+\mathrm{readObs}_W\subseteq\mathrm{Obs}(W)
+\]
+An element of $\mathrm{Obs}(W)$ is called an observable.
+If $\mathrm{reads}_W(s,a)$ holds, we require $a\in F_{C_A}$.
+An element of the support is a position at which Atoms are read; its role differs
+from that of the set of subjects in Definition~\ref{def:1.2}.
+Any additional data needed are also included in the context.
+
+A context reading chooses a small preorder of contexts.
+The relation $W'\leq W$ expresses the direction in which data obtained on $W$ can
+be restricted to $W'$.
+For each $W'\leq W$ we specify maps
+\[
+\mathrm{Supp}(W')\longrightarrow\mathrm{Supp}(W),\qquad
+\mathrm{Ax}(W')\longrightarrow\mathrm{Ax}(W),\qquad
+\mathrm{Obs}(W)\longrightarrow\mathrm{Obs}(W')
+\]
+The support map preserves the reading of the same Atom, the axis map preserves
+readable axes, and the restriction of observables sends readable observables to
+readable ones.
+The three maps are compatible with identities and composition in their respective directions.
+We regard this preorder as a category and write $W'\to W$ for the morphism
+corresponding to $W'\leq W$.
+The context category is denoted $\mathcal{C}_A$.
+
+\end{definition}
+
+\begin{example}[Contexts given by subsets]\label{ex:1.11}
+
+For a finite family $F$, take the subsets $U\subseteq F$ as contexts and the
+inclusions as morphisms. Setting $\mathrm{Supp}(U)=U$, with each element read as
+its own Atom, taking the axes to be a one-element set, and taking
+$\mathrm{Obs}(U)$ to be the set $B^U$ of functions into a set $B$, the
+restriction of observables is the restriction of functions.
+The intersection of two contexts is given by $U\cap V$.
+
+To handle equations, we choose a ring in which local values can be added and
+subtracted. Taking the difference of the two sides of an equation expresses its
+validity as the vanishing of a residual. Below we keep both the symbolic
+coordinates that present the equations and the residuals evaluated on objects.
+
+\end{example}
+
+\begin{definition}[Architectural equation system]\label{def:1.12}
+
+Fix a context category $\mathcal{C}$ and a set of architecture objects.
+An equation system $E$ consists of the following data.
+
+\begin{itemize}
+\item A set $K_E$ of equation indices and a role for each index,
+\[
+\mathrm{role}_E:K_E\to\{\mathrm{required},\mathrm{optional},\mathrm{derived}\}.
+\]
+\item A presheaf of commutative rings
+$O_E:\mathcal{C}^{\mathrm{op}}\to{\mathbf{CommRing}}$.
+The restriction along a morphism $j:W'\to W$ is written
+$\mathrm{res}_j:O_E(W)\to O_E(W')$.
+\item A symbolic coordinate $\nu_{W,i,a}\in O_E(W)$ for each context, index, and
+Atom.
+\item A residual $\varepsilon_{W,A,i,a}\in O_E(W)$ depending in addition on an
+object $A$.
+\end{itemize}
+
+By a presheaf we mean here that the rings and restriction homomorphisms satisfy
+$\mathrm{res}_{\mathrm{id}}=\mathrm{id}$ and
+$\mathrm{res}_{jk}=\mathrm{res}_k\mathrm{res}_j$.
+On the two families of coordinates we impose
+\begin{equation*}
+\mathrm{res}_j(\nu_{W,i,a})=\nu_{W',i,a},
+\qquad
+\mathrm{res}_j(\varepsilon_{W,A,i,a})=\varepsilon_{W',A,i,a}
+\tag{1.1}\label{eq:1.1}
+\end{equation*}
+The $\nu$ are coordinates for presenting the equations algebraically, and the
+$\varepsilon$ are residuals evaluating whether the equations hold on an object.
+The Law $L_i$ is the name for the equation with index $i$ together with its
+meaning.
+
+\end{definition}
+
+\begin{definition}[Lawfulness]\label{def:1.13}
+
+The validity of an equation and the condition of satisfying all required
+equations are defined by
+\[
+\begin{aligned}
+E_i(A)
+&\Longleftrightarrow
+\forall W\in\mathrm{Ob}(\mathcal{C})\ \forall a\in\mathrm{At},\
+\varepsilon_{W,A,i,a}=0,\\
+\mathrm{Lawful}_E(A)
+&\Longleftrightarrow
+\forall i\in K_E^{\mathrm{req}},\ E_i(A),\\
+K_E^{\mathrm{req}}
+&=\{i\in K_E\mid\mathrm{role}_E(i)=\mathrm{required}\}
+\end{aligned}
+\]
+That is, lawfulness means that for each required equation the residual vanishes
+on every context and Atom. Validity at all indices is written
+$\mathrm{FullyLawful}_E(A)$.
+The roles required, optional, and derived designate an equation as mandatory, as
+optional, and as one to be derived, respectively.
+To conclude the validity of a derived equation from the other equations, one
+proves the implication.
+
+\end{definition}
+
+\section{Finite detection and generation of the core}\label{sec:1.4}
+
+The failure of an equation can sometimes be detected by inspecting a small number
+of Atoms and relations. To describe this finite detection, we define queries
+about structure and their combinations. We then collect objects, operations,
+equations, and detection methods, and construct as the core the totality of
+objects reachable by operations.
+
+\begin{definition}[Signed finite queries]\label{def:1.14}
+
+A query on a configuration is one of the following: membership of an Atom $a$,
+validity of a relation $R(a,b)$, or validity of an identification $I(a,b)$.
+Queries for relations and identifications also require that the Atoms at both
+ends belong to the family.
+We write $\mathrm{Holds}_A(q)$ when a query $q$ holds on an object $A$.
+
+A signed finite query sequence is $Q=((q_1,b_1),\ldots,(q_n,b_n))$ with
+$b_j\in\{0,1\}$, and we define
+\[
+\mathrm{Matches}(Q,A)
+\Longleftrightarrow
+\forall j,\quad \mathrm{Holds}_A(q_j)\Longleftrightarrow b_j=1
+\]
+The sign $0$ allows the absence of an Atom or a relation to be expressed as a
+finite condition as well.
+For example, attaching the signs $1,1,0$ to the three queries ``$a$ belongs'',
+``$b$ belongs'', and ``$R(a,b)$ holds'' expresses the pattern in which the two
+Atoms exist but the specified relation between them does not.
+
+\end{definition}
+
+\begin{definition}[Finite detectors and circuits]\label{def:1.15}
+
+A detector code is obtained by finitely many applications of the constructors
+$\mathrm{reject}$, which expresses the empty selection, $\mathrm{exact}(Q)$,
+which specifies a single sequence, and $\mathrm{any}(c,d)$, the disjunction of
+two codes.
+The sequences it accepts are, respectively, the empty set, $\{Q\}$, and the union
+of the accepted sets.
+To each $i\in K_E$ we assign a code $c_i$ and write $T_i$ for its finite
+accepted set.
+
+The set of circuits on an object $A$ is
+\[
+\mathrm{Circ}_E(A,i)=\{Q\in T_i\mid\mathrm{Matches}(Q,A)\}
+\]
+That is, a circuit is a finite pattern, among those specified by the code, that actually holds
+on the object.
+To use circuits as evidence for the failure of an equation, we require the
+soundness below.
+The condition that the failure of every required equation can be detected is
+called completeness.
+Each condition is required for all objects $A$, indices $i$, and query
+sequences $Q$.
+\[
+\begin{aligned}
+Q\in\mathrm{Circ}_E(A,i)&\Longrightarrow \neg E_i(A),\\
+i\in K_E^{\mathrm{req}}\ \land\ \neg E_i(A)
+&\Longrightarrow\mathrm{Circ}_E(A,i)\ne\varnothing.
+\end{aligned}
+\]
+Soundness states that the failure of the equation follows from an accepted
+structural pattern.
+Completeness states that a failure of a required equation always has such a
+finite pattern.
+Both are conditions to be proved for the specified equation system and detector.
+
+\end{definition}
+
+\begin{proposition}[Deciding lawfulness by circuits]\label{prop:1.16}
+
+If the detector is sound, all required circuits of a lawful object are empty.
+If it is moreover complete for the required equations, then
+\[
+\mathrm{Lawful}_E(A)
+\Longleftrightarrow
+\forall i\in K_E^{\mathrm{req}},\
+\mathrm{Circ}_E(A,i)=\varnothing.
+\]
+
+\end{proposition}
+
+\begin{proof}
+
+If a lawful object had a required circuit, soundness would make the
+corresponding required equation fail, a contradiction.
+Conversely, if some required equation fails, completeness provides a
+corresponding circuit.
+
+\end{proof}
+
+The same applies when the presence or absence of failures is expressed by quantities
+$\omega_i(A)$. Given $E_i(A)\Longleftrightarrow\omega_i(A)=0$ and an aggregation
+with $\mathrm{Agg}((v_i)_i)=0\Longleftrightarrow\forall i,\ v_i=0$, the vanishing
+of the aggregation over the required indices is equivalent to lawfulness.
+This equivalence follows by composing the two equivalences.
+
+\begin{definition}[Core reading]\label{def:1.17}
+
+A core reading $r$ includes the following choices.
+
+\begin{itemize}
+\item \textbf{Extraction}: choose a doctrine and a source $(D,s)$, and require
+the extracted family $F_r=\mathrm{Atomize}_D(s)$ to be finite.
+\item \textbf{Object formation}: choose a composition reading and an object
+reading.
+\item \textbf{Operations and values for comparison}: choose an operation
+reading, an invariant reading, and a signature reading.
+\end{itemize}
+
+From these we define the initial configuration and object
+\[
+C_r=\mathrm{Comp}_r(F_r),\qquad A_r=\mathrm{Form}_r(C_r)
+\]
+We further choose the context category $\mathcal{C}_r$ of the base object $A_r$,
+an equation system $E_r$ on it, and a sound detector.
+The residuals are required to be evaluable on every object of
+$\mathrm{ArchObj}(\mathrm{At})$, and the context category chosen from the base
+object is used in common for evaluating the generated family of objects.
+
+A subset $Z\subseteq\mathrm{ArchObj}(\mathrm{At})$ of objects is closed under
+operations if $A\in Z$ and $o\in\mathrm{Op}_r(A,B)$ imply $B\in Z$.
+Let $\mathrm{Obj}_r$ be the intersection of all such subsets containing the base
+object.
+The core $\mathrm{Core}(r)$ is the combined data of this family of objects, the
+base object, the context category, the equation system, the family of circuits,
+the family of operations, and the invariants and signature.
+
+\end{definition}
+
+\begin{theorem}[Generation of the relative core]\label{thm:1.18}
+
+From a core reading $r$ the core $\mathrm{Core}(r)$ is constructed.
+The family of its initial configuration equals $F_r$, and the configuration of
+the base object equals $C_r$.
+Moreover, $\mathrm{Obj}_r$ is the smallest family of objects containing the base
+object and closed under operations, and it is also characterized by the
+following finite reachability.
+\begin{equation*}
+B\in\mathrm{Obj}_r
+\Longleftrightarrow
+\exists n\in\mathbb{N},\
+A_r=A_0\xrightarrow{o_1}A_1\xrightarrow{o_2}
+\cdots\xrightarrow{o_n}A_n=B.
+\tag{1.2}\label{eq:1.2}
+\end{equation*}
+Sequences of length $0$ are allowed.
+
+\end{theorem}
+
+\begin{proof}
+
+The extracted family is obtained by Proposition~\ref{prop:1.4}, and the
+finiteness condition of the reading allows it to be fed into the composition.
+The conditions on the composition and object readings yield the two equalities
+of configuration components.
+Since the set of all objects contains the base object and is closed under
+operations, the family over which the intersection of
+Definition~\ref{def:1.17} is taken is nonempty.
+
+The intersection contains the base object. If $A$ belongs to the intersection
+and there is an operation $o:A\to B$, then $B$ belongs to every subset defining
+the intersection, so the intersection is also closed under operations.
+Minimality follows from the definition of the intersection.
+
+Let $Z_{\mathrm{fin}}$ be the set of objects reachable from the base object by
+finite sequences.
+By the sequences of length $0$ and the appending of an operation to the end of a
+sequence, $Z_{\mathrm{fin}}$ contains the base object and is closed under
+operations.
+Hence $\mathrm{Obj}_r\subseteq Z_{\mathrm{fin}}$.
+The reverse inclusion is obtained by induction on the length of the sequence.
+Finally, restricting the specified equations, detector, invariants, and
+signature to this family of objects and taking the operations for each pair of
+objects gives all the components of the core.
+
+\end{proof}
+
+The finiteness in \eqref{eq:1.2} is a condition on the length of each witness of
+reachability.
+The size of the whole family of objects closed under operations is determined by
+the specified operation reading.
+
+\section{From covers to sites}\label{sec:1.5}
+
+To read structure part by part, one needs a family of contexts covering the
+whole and a place where the information read on two parts can be compared.
+For the subsets of Example~\ref{ex:1.11}, the latter is the intersection.
+For general contexts we choose this overlap as a pullback, and take as the
+starting point of covers the families that can jointly read the required
+information among Atoms, equations, and signatures.
+
+\begin{definition}[Overlaps and coverage requirements]\label{def:1.19}
+
+For each diagram $U\to W\leftarrow V$ of two morphisms in the context category
+$\mathcal{C}$, we choose an object $U\times_W V$ and projections $\pi_U,\pi_V$.
+The composites of the two projections with $U\to W$ and $V\to W$, respectively,
+are required to be equal.
+Moreover, any $T\to U$ and $T\to V$ satisfying this commutativity are obtained
+by composing a unique $T\to U\times_W V$ with the projections.
+This pullback is called the overlap, and its choice is written $\mathrm{Ov}$.
+When the preorder of contexts is a partial order, the overlap is the greatest
+lower bound of the two contexts below $W$.
+
+Coverage requirements $\mathcal{R}$, with an equation system $E$ and a signature
+fixed, choose the following.
+
+\begin{itemize}
+\item A subset $A_{\mathrm{req}}\subseteq\mathrm{At}$ of required Atoms.
+\item Required equation coordinates
+$C_{\mathrm{req}}\subseteq K_E^{\mathrm{req}}\times\mathrm{At}$.
+\item A subset $C_{\mathrm{wit}}\subseteq K_E\times\mathrm{At}$ of indices of
+the symbolic coordinates $\nu_{W,i,a}$ to be read as witnesses (evidence of
+violation).
+\item Required signature axes $\Lambda_{\mathrm{req}}\subseteq\Lambda$.
+\item Four visibility predicates expressing that these can be read on each
+context, and a predicate $B_{\mathcal{R}}(U,W)$ expressing that the required
+interaction can be read on the overlap.
+\end{itemize}
+
+The selected coordinates and witness indices are kept along the specified
+restrictions.
+For example, the restriction \eqref{eq:1.1} restricts the value while keeping
+the index $(i,a)$.
+Visibility is a separate condition for a context to actually read the data of
+that index.
+
+A family of morphisms $\mathcal{U}=(u_\alpha:W_\alpha\to W)_{\alpha\in I}$ is
+$(E,\mathcal{R},\mathrm{Ov})$-admissible if it satisfies the following
+conditions.
+
+\begin{itemize}
+\item \textbf{Information read on the parts}: each required Atom and signature
+axis is readable on at least one $W_\alpha$.
+\item \textbf{Information read on parts or overlaps}: each required equation
+coordinate and selected witness is readable on at least one $W_\alpha$ or
+$W_{\alpha\beta}=W_\alpha\times_W W_\beta$.
+\item \textbf{Interaction on overlaps}: $B_{\mathcal{R}}(W_{\alpha\beta},W)$
+holds for all $\alpha,\beta$.
+\item \textbf{Correspondence with the object}: the Atoms read by the support map
+of each leg belong to the family of the underlying object.
+\end{itemize}
+
+A system of covers is required to be closed under restriction to another context
+and under further covering of each part.
+We define this system using the following sieves.
+
+\end{definition}
+
+\begin{definition}[Sieves and Grothendieck topologies]\label{def:1.20}
+
+A sieve $S$ on $W$ is a collection of morphisms with codomain $W$ such that if
+$f:V\to W$ belongs to it, then so does $fg$ for every $g:V'\to V$.
+The pullback along a morphism $u:W'\to W$ is
+$u^*S=\{g:V\to W'\mid ug\in S\}$.
+The sieve $\langle \mathcal{U}\rangle$ generated by a family $\mathcal{U}$
+consists of all morphisms that factor through at least one $u_\alpha$.
+
+A Grothendieck topology $J$ assigns to each $W$ a set $J(W)$ of covering sieves
+such that the following hold.
+
+\begin{enumerate}
+\item The maximal sieve consisting of all morphisms with codomain $W$ belongs
+to $J(W)$.
+\item If $S\in J(W)$, then $u^*S\in J(W')$.
+\item If $S\in J(W)$ and another sieve $T$ satisfies $u^*T\in J(W')$ for every
+$u:W'\to W$ with $u\in S$, then $T\in J(W)$.
+\end{enumerate}
+
+We use the definition of
+\cite[\href{https://stacks.math.columbia.edu/tag/00YW}{\S7.47, Tag 00YW}]{Stacks}.
+
+\end{definition}
+
+\begin{proposition}[Generation of the topology from coverage requirements]\label{prop:1.21}
+
+There exists a smallest Grothendieck topology containing the sieves generated by
+all admissible families.
+We write it $J_{E,\mathcal{R},\mathrm{Ov}}$.
+
+\end{proposition}
+
+\begin{proof}
+
+The topology in which every sieve on every object is a cover contains all the
+specified sieves.
+Take, objectwise, the intersection of all topologies containing them.
+The maximal-sieve condition and stability under pullback hold in each topology
+and hence in the intersection.
+As for transitivity, if its hypothesis holds in the intersection, it holds in
+each topology, and the concluding sieve belongs to all of them.
+The intersection is therefore a topology, and it is smallest by definition.
+
+\end{proof}
+
+A site is a pair of a small category and a Grothendieck topology.
+The pair $(\mathcal{C}_r,J_{E_r,\mathcal{R},\mathrm{Ov}})$ obtained from the
+base object $A_r$ is called the AAT site.
+The choices of the equation system, the signature, the coverage requirements,
+and the overlaps are also kept as its construction data.
+A covering family of the generated topology that also satisfies the specified
+visibility and interaction requirements is called
+$(E,\mathcal{R},\mathrm{Ov})$-adequate.
+The topology gives the rules for local gluing, and adequacy expresses that the
+information used in the theorems is available on the cover.
+It is used in Chapter~\ref{chap:2} to connect the local validity of equations
+with the consistency of gluing.
+
+\section{Presheaves, sheaves, and geometries with coefficients}\label{sec:1.6}
+
+A presheaf assigns data to each context and has rules for restricting them to
+smaller contexts.
+A sheaf satisfies in addition the condition that from local data agreeing on the
+overlaps, the data on the whole are obtained uniquely.
+
+\begin{definition}[Presheaves and sheaves]\label{def:1.22}
+
+A set-valued presheaf is a contravariant functor
+$F:\mathcal{C}^{\mathrm{op}}\to{\mathbf{Set}}$.
+An element of $F(W)$ is called a section over $W$.
+A matching family on a family $\mathcal{U}=(u_\alpha:W_\alpha\to W)_\alpha$ is a
+family of elements $s_\alpha\in F(W_\alpha)$ satisfying
+\begin{equation*}
+F(\pi_\alpha)(s_\alpha)=F(\pi_\beta)(s_\beta)
+\quad\text{in }F(W_{\alpha\beta})
+\tag{1.3}\label{eq:1.3}
+\end{equation*}
+for all $\alpha,\beta$.
+The set of matching families is written $\mathrm{Match}(\mathcal{U},F)$.
+A presheaf $F$ is a sheaf for $J$ if, for every family with
+$\langle \mathcal{U}\rangle\in J(W)$, the map
+\begin{equation*}
+F(W)\longrightarrow\mathrm{Match}(\mathcal{U},F),
+\qquad s\longmapsto(F(u_\alpha)(s))_\alpha
+\tag{1.4}\label{eq:1.4}
+\end{equation*}
+is a bijection. Injectivity is called separatedness, and surjectivity the
+existence of gluings.
+A morphism of sheaves is a natural transformation of presheaves, and the
+category of sheaves is written $\mathrm{Sh}(\mathcal{C},J)$.
+
+A matching family on a sieve $S$ assigns to each $u:V\to W$ with $u\in S$ an
+element $s_u\in F(V)$ satisfying $s_{uv}=F(v)(s_u)$.
+A matching family on a covering family becomes, by restriction to the morphisms
+factoring through the $u_\alpha$, a matching family on the generated sieve.
+The values obtained from two factorizations are equal by the universal property
+of the pullback and \eqref{eq:1.3}.
+Conversely, reading a family on the sieve at each $u_\alpha$ yields
+\eqref{eq:1.3}.
+The definition therefore also agrees with the definition of sheaves by covering
+sieves.
+
+As an example in which the sheaf condition is needed, take the subsets of the
+two-point set $\{p,q\}$ as contexts and the families covering by unions as
+covers. Consider the presheaf $F$ that takes a one-element set on the empty
+context and $\{0,1\}$ on the nonempty contexts, with the identity map as the
+restriction between nonempty contexts.
+The values $s_p=0$ and $s_q=1$ on the one-point contexts agree on the overlap,
+but they glue to neither element over the two points.
+Sheafification is the operation that fills such gaps by adding compatible local
+data as new sections.
+
+\end{definition}
+
+\begin{proposition}[Sheafification]\label{prop:1.23}
+
+For every presheaf $F$ there exist a sheaf $a_JF$ and a natural transformation
+$\eta_F:F\to a_JF$. For every sheaf $G$ and natural transformation
+$t:F\to G$ there is a unique $\bar t:a_JF\to G$ with $t=\bar t\eta_F$.
+
+\end{proposition}
+
+\begin{proof}[Construction and proof]
+
+We treat a matching family on a cover as a single section and identify
+presentations that agree locally.
+Performing this operation twice yields a sheaf equipped with all the required
+gluings.
+
+An element of $F^+(W)$ is presented by a matching family on a covering sieve
+$S\in J(W)$.
+Two presentations are equivalent when they agree on a covering sieve contained
+in both.
+A finite intersection of covering sieves is again a cover; this follows by
+applying the transitivity of Definition~\ref{def:1.20} to the pullbacks along
+the morphisms of one of the sieves.
+The equivalence relation is therefore transitive.
+Pullback defines the restrictions of $F^+$, and the families of restrictions of
+global sections give $F\to F^+$.
+
+If two elements of $F^+$ are equal on a cover, we can collect the local covering
+sieves expressing this equality. On the cover obtained by the transitivity of
+the topology the presentations agree, so the two elements are equal.
+Hence $F^+$ is separated.
+When $F$ itself is separated, each element of a matching family of $F^+$ is
+presented by local sections of $F$. Equality on the overlaps holds after further
+localization, and by the separatedness of $F$ it holds on the overlaps themselves.
+The family on a covering sieve collecting these presentations gives the gluing.
+Thus $F^+$ is a sheaf whenever $F$ is separated.
+
+We therefore set $a_JF=(F^+)^+$.
+A transformation $t:F\to G$ sends each presentation to a matching family of $G$
+and, by the unique gluing in $G$, determines $F^+\to G$.
+Performing the same operation twice gives $\bar t$.
+Each element is determined by a local presentation, and since $G$ is separated,
+the extension is unique.
+
+\end{proof}
+
+This is the standard sheafification
+(\cite[\href{https://stacks.math.columbia.edu/tag/00ZG}{\S7.49, Tag 00ZG}]{Stacks}).
+In particular, if the original $F$ is a sheaf, then $\eta_F$ is an isomorphism
+by the universal property.
+
+\begin{example}[Sheafification adding local sections]\label{ex:1.24}
+
+The sheafification of the presheaf $F$ on the two-point set above is
+$U\mapsto\{0,1\}^U$.
+A family taking a different value at each point is also retained, as a single
+function.
+Indeed, a function is determined uniquely by its restrictions to the single
+points, and arbitrary values at the single points can be glued.
+From the original presheaf, each value is sent to the constant function.
+A natural transformation to any sheaf is determined by its values on the
+one-point contexts, and gluing these extends it uniquely from
+$U\mapsto\{0,1\}^U$.
+The universal property of Proposition~\ref{prop:1.23} is therefore satisfied as
+well.
+
+To treat equations algebraically, we give the local data the structure of a
+ring.
+Taking the coordinates of each context as variables and imposing the structural
+relations as polynomial equations produces the ring used on that context.
+Specifying restrictions between contexts then yields a ring-valued presheaf.
+
+\end{example}
+
+\begin{definition}[Rings for each context and restrictions]\label{def:1.25}
+
+Choose a coefficient ring $k$. To each context $W$ we assign a set of
+coordinates $Z_W$, the kind of each coordinate and the type of its local data,
+an index set $H_W$ of structural relations, and polynomials
+$r_{W,h}\in k[x_z\mid z\in Z_W]$.
+Each element of the polynomial ring is a finite sum in finitely many variables.
+The ideal generated by the structural relations and the quotient are
+\[
+I_W^{\mathrm{str}}=(r_{W,h}\mid h\in H_W),
+\qquad
+B_{\mathrm{raw}}(W)=k[x_z\mid z\in Z_W]/I_W^{\mathrm{str}}
+\]
+To each morphism $j:W'\to W$ we assign a $k$-algebra homomorphism
+$\rho_j:k[x_z\mid z\in Z_W]\to k[x_z\mid z\in Z_{W'}]$ sending variables to
+polynomials, and require
+\begin{equation*}
+\rho_j(I_W^{\mathrm{str}})\subseteq I_{W'}^{\mathrm{str}},
+\qquad
+\rho_{\mathrm{id}}=\mathrm{id},
+\qquad
+\rho_{jk}=\rho_k\rho_j
+\tag{1.5}\label{eq:1.5}
+\end{equation*}
+The coordinates, the relations, and these restrictions of polynomials together
+are called a raw restriction system $\mathcal{B}$.
+By \eqref{eq:1.5} the restrictions descend to the quotients, and
+$B_{\mathrm{raw}}$ becomes a presheaf of commutative $k$-algebras.
+This claim follows because the difference of two representatives of the same
+residue class stays in the structural ideal after restriction, and because
+identities and composition hold at the level of polynomials.
+
+An architecture geometry with coefficients is
+\[
+G=(r,\mathcal{R},\mathrm{Ov},k,\mathcal{B})
+\]
+The base object, the contexts, the equations, and the signature come from $r$,
+and the topology from Proposition~\ref{prop:1.21}.
+The structural relations determine, on each context, the ring representing the
+local data.
+Chapter~\ref{chap:2} gives a realization connecting this presheaf of rings with
+the equation system, and makes explicit the condition under which the
+evaluation of the symbolic coordinates corresponds to the residuals of each
+object.
+
+\end{definition}
+
+\begin{lemma}[Change of coefficients for raw systems]\label{lem:1.26}
+
+A ring homomorphism $\varphi:k\to k'$ yields a raw system
+$\varphi_!\mathcal{B}$ by applying $\varphi$ to the coefficients of all
+polynomials while keeping the indices of coordinates and relations.
+This construction respects identity homomorphisms and composition of
+homomorphisms.
+
+\end{lemma}
+
+\begin{proof}
+
+Send each variable $x_z$ to the same variable and each coefficient $c$ to
+$\varphi(c)$.
+The new structural ideal is the ideal generated by the images of the structural
+relations.
+That the original restrictions preserve the structural ideal is expressed by
+equations presenting the image of each generating relation as a finite ideal
+combination, and these equations remain valid after applying the coefficient
+map.
+The same applies to the identity and composition equations of \eqref{eq:1.5}.
+Successive application of coefficient maps equals application of their
+composite, which gives the last claim.
+
+\end{proof}
+
+\section{Morphisms of readings and the three-level projections}\label{sec:1.7}
+
+Changing the reading changes the extracted Atoms, the way objects are formed,
+and the choice of equations and locality.
+To compare the situations before and after a change, one needs maps connecting
+the respective data and the conditions they satisfy.
+We define three categories according to the range of data compared.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Category & Data carried by an object & What a morphism compares \\
+\midrule
+\endhead
+$B$ & Extraction doctrine and source & Sources and Atoms \\
+\addlinespace[3pt]
+$E_{\mathrm{core}}$ & Core reading & In addition to extraction: object formation, operations, equations, detection, invariants, and signatures \\
+\addlinespace[3pt]
+$E_{\mathrm{geom}}$ & Geometry with coefficients & In addition to the core: covers, overlaps, coefficients, presentations of rings, and the data of contexts \\
+\bottomrule
+\end{xltabular}
+
+We require the validity of extraction and the validity of equations to be
+equivalent before and after the change.
+A change equipped with this preservation and reflection is called an exact
+change.
+
+\begin{definition}[The category of extraction bases]\label{def:1.27}
+
+Fix the vocabulary of Atoms. An object of the category $B$ is a pair $(D,s)$ of
+an extraction doctrine and a selected source. A morphism $(D,s)\to(D',s')$ is a
+map $f:\mathrm{Src}_D\to\mathrm{Src}_{D'}$ together with a bijection
+$e:\mathrm{At}\xrightarrow{\sim}\mathrm{At}$ satisfying
+\begin{equation*}
+\begin{aligned}
+f(s)&=s',&
+N_{D'}f&=fN_D,\\
+\mathrm{Extracts}_D(t,a)
+&\Longleftrightarrow
+\mathrm{Extracts}_{D'}(f(t),e(a))
+&&\text{for all }t,a
+\end{aligned}
+\tag{1.6}\label{eq:1.6}
+\end{equation*}
+The identity morphism consists of the two identity maps, and composition is
+$(f',e')(f,e)=(f'f,e'e)$.
+Composing the equalities and equivalences of \eqref{eq:1.6} shows that the same
+conditions hold after composition.
+
+The direct image of a family is written $e_*F=\{e(a)\mid a\in F\}$.
+From \eqref{eq:1.6} and the bijectivity of $e$ we obtain
+\begin{equation*}
+\mathrm{Atomize}_{D'}(f(t))=e_*\mathrm{Atomize}_D(t)
+\tag{1.7}\label{eq:1.7}
+\end{equation*}
+Indeed, an element of the right-hand side belongs to the left-hand side by
+preservation of extraction.
+For an element $b$ of the left-hand side, take $a=e^{-1}(b)$ and use reflection
+of extraction.
+The source map $f$ is a general map; for example, it may send distinct states
+to a single one.
+
+The direct image of a configuration is defined by letting $e$ act on the family
+and on both relations.
+On finite query sequences and detector codes, $e$ acts on all the Atoms that
+occur. These are also written $e_*$.
+
+In the following conditions, the maps are chosen so that, even when the
+presentation of objects changes, the validity or failure of the Laws and the
+finite patterns witnessing failures correspond.
+
+\end{definition}
+
+\begin{definition}[Morphisms of cores]\label{def:1.28}
+
+The objects of $E_{\mathrm{core}}$ are the core readings with a fixed vocabulary
+of Atoms.
+A morphism from $r$ to $r'$ consists of a base morphism $(f,e)$ and the
+following data and conditions.
+
+\textbf{Object formation and operations.}
+We require that the route mapping the Atoms first and then forming the object
+agree with the route forming the object first and then mapping it.
+We give a map $H:\mathrm{ArchObj}(\mathrm{At})\to\mathrm{ArchObj}(\mathrm{At})$
+and require, for every finite family $F$, configuration $C$, and object $A$,
+\begin{equation*}
+\begin{aligned}
+\mathrm{Comp}_{r'}(e_*F)&=e_*\mathrm{Comp}_r(F),\\
+H(\mathrm{Form}_r(C))&=\mathrm{Form}_{r'}(e_*C),\\
+C_{H(A)}&=e_*C_A
+\end{aligned}
+\tag{1.8}\label{eq:1.8}
+\end{equation*}
+On the operation maps
+$\Phi_{A,B}:\mathrm{Op}_r(A,B)\to\mathrm{Op}_{r'}(H(A),H(B))$ we impose, for
+the action $d(o)$ on configurations,
+\begin{equation*}
+d(\Phi(o))_{\mathrm{At}}\,e=e\,d(o)_{\mathrm{At}}
+\tag{1.9}\label{eq:1.9}
+\end{equation*}
+Since $e$ itself gives a morphism of configurations $C_A\to C_{H(A)}$,
+\eqref{eq:1.9} is also a commutative square of configurations.
+
+\textbf{Equations and detection.}
+We match up the contexts, the equation indices, and the rings in which values
+are taken, and preserve the coordinates, residuals, and detector codes under
+this correspondence.
+We give an equivalence of categories
+$\theta:\mathcal{C}_r\simeq\mathcal{C}_{r'}$ with a specified quasi-inverse, a
+bijection of indices $\lambda:K_{E_r}\xrightarrow{\sim}K_{E_{r'}}$, and ring
+isomorphisms $\alpha_W:O_{E_r}(W)\xrightarrow{\sim}O_{E_{r'}}(\theta W)$ for
+each context. These are required to satisfy
+\begin{equation*}
+\begin{aligned}
+\mathrm{role}_{E_{r'}}(\lambda i)&=\mathrm{role}_{E_r}(i),\\
+\alpha_{W'}\mathrm{res}_j&=\mathrm{res}'_{\theta j}\alpha_W,\\
+\alpha_W(\nu_{W,i,a})&=\nu'_{\theta W,\lambda i,e(a)},\\
+\alpha_W(\varepsilon_{W,A,i,a})
+&=\varepsilon'_{\theta W,H(A),\lambda i,e(a)},\\
+c'_{\lambda i}&=e_*c_i
+\end{aligned}
+\tag{1.10}\label{eq:1.10}
+\end{equation*}
+The last equality is an equality of detector codes as syntax.
+
+\textbf{Invariants and signatures.}
+We give an index map $\mu$ preserving the kind of invariant.
+For corresponding functional invariants, we require a bijection $t_i$ of the
+value ranges with $t_i(I_i(A))=I'_{\mu i}(H(A))$ for every object $A$.
+For predicate invariants we require
+$P_i(A)\Longleftrightarrow P'_{\mu i}(H(A))$.
+For the signatures we give a map of axes $\sigma:\Lambda_r\to\Lambda_{r'}$ and
+bijections $\beta_\ell:V_\ell\xrightarrow{\sim}V'_{\sigma\ell}$ of the value
+ranges, and impose
+\begin{equation*}
+\ell\in\Lambda_{\mathrm{sel}}
+\Longleftrightarrow \sigma\ell\in\Lambda'_{\mathrm{sel}},
+\qquad
+\beta_\ell(q_\ell(A))=q'_{\sigma\ell}(H(A))
+\tag{1.11}\label{eq:1.11}
+\end{equation*}
+A morphism retains all of these constituent maps.
+Even morphisms with the same action on configurations are distinct if their
+maps of objects, operations, axes, and so on differ.
+
+\end{definition}
+
+\begin{proposition}[Action of exact core changes]\label{prop:1.29}
+
+A morphism as in Definition~\ref{def:1.28} sends $A_r$ to $A_{r'}$ and
+satisfies $H(\mathrm{Obj}_r)\subseteq\mathrm{Obj}_{r'}$.
+For every object $A$ and equation index $i$,
+\begin{equation*}
+E_{r,i}(A)\Longleftrightarrow E_{r',\lambda i}(H(A)),
+\qquad
+\mathrm{Lawful}_{E_r}(A)\Longleftrightarrow
+\mathrm{Lawful}_{E_{r'}}(H(A)).
+\tag{1.12}\label{eq:1.12}
+\end{equation*}
+Moreover, $Q\mapsto e_*Q$ gives a bijection between
+$\mathrm{Circ}_{E_r}(A,i)$ and $\mathrm{Circ}_{E_{r'}}(H(A),\lambda i)$.
+
+\end{proposition}
+
+\begin{proof}
+
+Using \eqref{eq:1.7} and \eqref{eq:1.8} in turn gives the equality of base objects.
+Letting $H,\Phi$ act on a finite sequence of operations from the base
+object and using \eqref{eq:1.2} yields the inclusion of generated object
+families.
+
+By the residual comparison in \eqref{eq:1.10} and the preservation and
+reflection of zero by the ring isomorphisms, the vanishing of a residual on $W$
+is equivalent to its vanishing on $\theta W$.
+Since $e$ is a bijection, the quantification over all Atoms corresponds as
+well.
+Every context $V$ after the change is isomorphic to some $\theta W$, and the
+restriction along this isomorphism is a ring isomorphism.
+Applying \eqref{eq:1.1} to this isomorphism gives the same equivalence for the
+residuals on $V$.
+Using the bijection of indices and the preservation of roles yields the
+equivalence of lawfulness.
+
+By \eqref{eq:1.8}, membership of Atoms and validity of relations and
+identifications are preserved and reflected along $e$.
+Hence $\mathrm{Matches}(Q,A)\Longleftrightarrow\mathrm{Matches}(e_*Q,H(A))$ for
+both truth signs.
+From the equality of codes, the accepted sets satisfy $T'_{\lambda i}=e_*T_i$.
+Together with the inverse map of query sequences given by $e^{-1}$, we obtain
+the bijection of circuits.
+
+\end{proof}
+
+\begin{definition}[Morphisms of geometries]\label{def:1.30}
+
+A morphism from a geometry $G=(r,\mathcal{R},\mathrm{Ov},k,\mathcal{B})$ to
+$G'=(r',\mathcal{R}',\mathrm{Ov}',k',\mathcal{B}')$ consists of a morphism of
+cores $h:r\to r'$ and the following data and conditions.
+The specified quasi-inverse of $\theta$ is written $\bar\theta$.
+
+\textbf{1. Preservation of coverage requirements.} Each requirement is
+preserved forward, using $e$ for the required Atoms,
+$(i,a)\mapsto(\lambda i,e(a))$ for the equation coordinates and witnesses, and
+$\sigma$ for the signature axes.
+The four visibility predicates are also preserved along $W\mapsto\theta W$ and
+these maps, and
+$B_{\mathcal{R}}(U,W)\Rightarrow B_{\mathcal{R}'}(\theta U,\theta W)$ holds.
+
+\textbf{2. Comparison of overlaps.} For each diagram $U\to W\leftarrow V$ in
+the context category after the change, we specify an isomorphism between the
+carried overlap chosen before the change and the overlap chosen after the
+change; that is,
+$\theta(\bar\theta U\times_{\bar\theta W}\bar\theta V)\cong U\times_W V$.
+The comparison with the projections uses the counit of the equivalence.
+
+\textbf{3. Change of coefficients.} We specify a ring homomorphism
+$\varphi:k\to k'$.
+
+\textbf{4. Agreement of ring presentations.} The raw system after the change
+equals the raw system before the change with its coefficients changed by
+$\varphi$ and reindexed along $\bar\theta$:
+\begin{equation*}
+\mathcal{B}'=\bar\theta^{\,*}(\varphi_!\mathcal{B}).
+\tag{1.13}\label{eq:1.13}
+\end{equation*}
+The right-hand side places on a context $V$ after the change the coordinates,
+kinds, local data types, and relation indices of $\bar\theta V$, with the
+coefficients of the polynomials changed.
+The restrictions are built from the restrictions along the morphisms sent by
+$\bar\theta$.
+The equality covers all of these presentation data.
+
+\textbf{5. Comparison of the data contained in contexts.} To each $W$ we
+assign comparison maps for supports, axes, and observables
+\[
+s_W:\mathrm{Supp}(W)\to\mathrm{Supp}'(\theta W),\quad
+a_W:\mathrm{Ax}(W)\to\mathrm{Ax}'(\theta W),\quad
+o_W:\mathrm{Obs}(W)\to\mathrm{Obs}'(\theta W)
+\]
+The readings of the support are preserved with the Atoms carried by $e$, and
+the readable elements of axes and observables are preserved as well.
+Writing $S_j,A_j$ for the covariant structure maps of supports and axes and
+$O_j$ for the contravariant restriction of observables along $j:W'\to W$, we
+require
+\begin{equation*}
+S'_{\theta j}s_{W'}=s_WS_j,\qquad
+A'_{\theta j}a_{W'}=a_WA_j,\qquad
+O'_{\theta j}o_W=o_{W'}O_j
+\tag{1.14}\label{eq:1.14}
+\end{equation*}
+Since the context category is a preorder category, any two parallel morphisms
+that exist are equal.
+Hence the commutativity with the projections in item~2 and the unit and
+composition coherence of the overlap comparisons are determined uniquely.
+The comparison maps for supports and the like are retained as actual maps and
+satisfy the conditions of item~5 separately.
+
+\end{definition}
+
+\begin{theorem}[The three-level categories and projections]\label{thm:1.31}
+
+The objects and morphisms of Definitions~\ref{def:1.27}, 1.28, and 1.30 form
+categories $B$, $E_{\mathrm{core}}$, and $E_{\mathrm{geom}}$, respectively,
+with functors
+\begin{equation*}
+E_{\mathrm{geom}}
+\xrightarrow{\,p\,}
+E_{\mathrm{core}}
+\xrightarrow{\,q\,}
+B
+\tag{1.15}\label{eq:1.15}
+\end{equation*}
+The functor $p$ forgets the choice of geometry and its comparisons and extracts
+the core, and $q$ extracts the extraction doctrine, the selected source, and
+their maps.
+
+\end{theorem}
+
+\begin{proof}
+
+For $B$ this was checked in Definition~\ref{def:1.27}.
+Morphisms of cores are composed by composing the maps of sources, Atoms,
+objects, indices, and operations in turn.
+For the equivalences of context categories we use the composite equivalence,
+and for the ring isomorphisms of each context the ring isomorphisms applied in
+turn.
+Each of \eqref{eq:1.8}--\eqref{eq:1.11} holds after composition by substituting
+the two corresponding equalities.
+The bijections of value ranges of functional invariants compose, and so do the
+equivalences for predicate invariants.
+For identity morphisms we use the respective identity maps.
+The unit and associativity laws follow from the composition laws of maps and
+the uniqueness of comparison morphisms in a preorder category.
+
+The coefficient maps of morphisms of geometries are composed as ring
+homomorphisms.
+The comparisons of supports and the like are composed, for example, as
+$s''_W=s'_{\theta W}s_W$.
+The visibility implications and \eqref{eq:1.14} are closed under this
+composition.
+For raw systems, reindexing commutes with the change of coefficients, and by
+Lemma~\ref{lem:1.26} two successive changes of coefficients equal the change by
+the composite homomorphism.
+Hence the two instances of \eqref{eq:1.13} yield \eqref{eq:1.13} for the
+composite morphism.
+The identity and associativity laws hold as well in each component: the
+coordinates, the relation polynomials, and the restriction maps.
+
+The two projections extract the corresponding components of these composites.
+They are therefore defined on objects and morphisms and preserve identities
+and composition.
+
+\end{proof}
+
+The diagram \eqref{eq:1.15} is a construction for treating, in a single
+diagram, different object formations with the same extraction and different
+local geometries with the same core.
+Chapter~\ref{chap:4} studies transport, which builds the objects and morphisms
+of the upper levels from a change of the base, through its existence and
+universal property.
+
+\section{Model synchronization: the semantics of reads and updates}\label{sec:1.8}
+
+In \S\ref{sec:1.7} we compared choices of reading, such as extraction and
+equations.
+From here on we compare states and operations under semantics defined
+independently of AAT.
+We take up lenses, which treat the consistency of reads and updates, and
+protocols, which treat executions chaining named operations together with their
+observations.
+
+In \S\ref{sec:1.10} we construct from both of them objects, operations, and
+Laws organized by role, and show that the constructed Laws hold if and only if
+the original laws hold.
+We further check that typed morphisms between the constructed objects are in
+one-to-one correspondence with the original semantics-preserving morphisms.
+Through this correspondence, the results obtained in later chapters from the
+common theorems, such as the classification of changes and local
+reconstruction, are brought back to the original semantics.
+
+For lenses, we first determine a decomposition of states and the maps
+preserving reads and updates.
+In model synchronization, part of the internal state is displayed, and changes
+to the displayed value are reflected back into the internal state.
+The displayed part is called the view.
+When the consistency of reads and updates is specified by the three lens laws,
+a state decomposes into a displayed value and a component preserved by updates.
+
+\begin{definition}[Total lenses and their morphisms]\label{def:1.32}
+
+Fix a set $V$ of views and a reference value $v_0\in V$.
+A total lens is a state set $C$, a read $g:C\to V$, and an update
+$p:C\times V\to C$ satisfying
+\begin{equation*}
+p(c,g(c))=c,\qquad
+g(p(c,v))=v,\qquad
+p(p(c,v),w)=p(c,w)
+\tag{1.16}\label{eq:1.16}
+\end{equation*}
+for all $c,v,w$.
+The three equations express, in order, the following.
+
+\begin{enumerate}
+\item Writing back the current displayed value unchanged does not change the
+state.
+\item Reading after an update yields the specified displayed value.
+\item Updating twice in succession gives the same result as updating once with
+the last displayed value.
+\end{enumerate}
+
+In standard lens terminology, this is a total, very well-behaved lens
+(\cite[\href{https://www.cis.upenn.edu/~bcpierce/papers/newlenses-full.pdf}{\S3.1}]{FGMPS04}).
+For the lenses treated below, the reference fiber
+$K_L=\{c\in C\mid g(c)=v_0\}$ is required to be finite.
+This is the set of states remaining when the display is fixed at the reference
+value.
+The set $V$ of displayed values itself may be infinite.
+The finiteness of the reference fiber is used later to describe
+semantics-preserving morphisms by finite tables.
+
+A morphism $h:L\to L'$ over the fixed view is a map of states $h:C\to C'$
+satisfying
+\begin{equation*}
+g'h=g,\qquad h(p(c,v))=p'(h(c),v)
+\tag{1.17}\label{eq:1.17}
+\end{equation*}
+Identities and composites are the identities and composites of state maps, and
+by substitution in \eqref{eq:1.17} they satisfy \eqref{eq:1.17} again.
+This category is written $\mathrm{Lens}(V,v_0)$.
+
+\end{definition}
+
+\begin{proposition}[Product decomposition of lenses]\label{prop:1.33}
+
+For a total lens $L=(C,g,p)$, the maps
+\begin{equation*}
+\begin{aligned}
+\eta_L:C&\longrightarrow V\times K_L,
+&c&\longmapsto(g(c),p(c,v_0)),\\
+\zeta_L:V\times K_L&\longrightarrow C,
+&(v,k)&\longmapsto p(k,v)
+\end{aligned}
+\tag{1.18}\label{eq:1.18}
+\end{equation*}
+are mutually inverse bijections. In this decomposition the read is the first
+projection, and the update is $((v,k),w)\mapsto(w,k)$.
+
+\end{proposition}
+
+\begin{proof}
+
+Since $g(p(c,v_0))=v_0$, the map $\eta_L$ is well defined.
+The three laws give
+\[
+p(p(c,v_0),g(c))=p(c,g(c))=c
+\]
+Hence $\zeta_L\eta_L=\mathrm{id}$. On the other hand, for $k\in K_L$ we have
+$g(p(k,v))=v$ and
+$p(p(k,v),v_0)=p(k,v_0)=p(k,g(k))=k$, so
+$\eta_L\zeta_L=\mathrm{id}$ holds as well.
+The formula for the read follows from the first component. After an update the
+second component $p(p(c,w),v_0)=p(c,v_0)$ is unchanged, and the first component
+becomes $w$.
+
+\end{proof}
+
+The second component of the product decomposition represents the information
+retained when the displayed value changes.
+A map preserving reads and updates is likewise determined solely by how it acts
+on this component.
+
+\begin{proposition}[Recovery of morphisms from the reference fiber]\label{prop:1.34}
+
+For any two lenses, the restriction
+\[
+\mathrm{res}:\mathrm{Hom}(L,L')
+\longrightarrow\mathrm{Map}(K_L,K_{L'}),\qquad
+h\longmapsto h|_{K_L}
+\]
+is a bijection. Here $\mathrm{Map}(K,K')$ denotes the set of all maps between
+the sets.
+The inverse is given, for any $t:K_L\to K_{L'}$, by
+\begin{equation*}
+\mathrm{ext}(t)(c)=p'\bigl(t(p(c,v_0)),g(c)\bigr)
+\tag{1.19}\label{eq:1.19}
+\end{equation*}
+This is the operation of updating once to the reference view, applying $t$ to
+that state, and then updating back to the original displayed value.
+
+\end{proposition}
+
+\begin{proof}
+
+A morphism $h$ preserves reads and therefore sends the reference fiber into the
+reference fiber.
+In the product decomposition of Proposition~\ref{prop:1.33}, $\mathrm{ext}(t)$
+is $(v,k)\mapsto(v,t(k))$, which preserves reads and updates.
+Hence \eqref{eq:1.19} indeed gives a morphism of lenses.
+
+For $k\in K_L$ we have $p(k,v_0)=k$ and
+$p'(t(k),v_0)=t(k)$, so $\mathrm{res}(\mathrm{ext}(t))=t$.
+In the other direction, \eqref{eq:1.17} and the three laws give
+\[
+\begin{aligned}
+\mathrm{ext}(\mathrm{res}(h))(c)
+&=p'(h(p(c,v_0)),g(c))\\
+&=p'(p'(h(c),v_0),g(c))\\
+&=p'(h(c),g(c))
+=p'(h(c),g'(h(c)))=h(c)
+\end{aligned}
+\]
+That both restriction and extension preserve identities and composition is seen
+from the product decomposition.
+
+\end{proof}
+
+As a normal form including visible changes, we treat here self-changes of the
+same product lens $V\times K$ for a finite set $K$.
+When $u:V\xrightarrow{\sim}V$ and $h:V\times K\xrightarrow{\sim}V\times K$
+satisfy
+\begin{equation*}
+gh=ug,\qquad h(p(c,v))=p(h(c),u(v))
+\tag{1.20}\label{eq:1.20}
+\end{equation*}
+there is a unique permutation $\phi:K\xrightarrow{\sim}K$ with
+\[
+h(v,k)=(u(v),\phi(k))
+\]
+Preservation of updates gives that the permutation of the hidden component
+obtained over each view equals the permutation over the reference view.
+Reading the second component at $v=v_0$ also gives the uniqueness of that
+permutation.
+
+\begin{example}[Changes preserving only reads]\label{ex:1.35}
+
+Consider the product lens with $V=K=\{0,1\}$, where $\oplus$ denotes addition
+modulo $2$.
+The bijection $h(v,k)=(v,k\oplus v)$ preserves reads, but
+\[
+h(p((0,0),1))=(1,1),\qquad
+p(h(0,0),1)=(1,0)
+\]
+The bijections over the fixed view preserving reads number $2\cdot2=4$,
+choosing the identity or the swap independently on the two fibers.
+Those preserving updates as well number $2$, making the same choice on both
+fibers.
+By tying the different fibers together, the update constrains the permitted
+changes.
+
+\end{example}
+
+\section{Protocols: named operations and all executions}\label{sec:1.9}
+
+A protocol has individual operations and execution sequences chaining them.
+When cycles can be repeated, finitely many operations give rise to execution
+sequences of arbitrary length.
+The meaning of all executions is fixed by specifying the action of each
+operation and the pairs of paths to be treated as equal executions.
+For this description we use the standard constructions of presenting a category
+by a graph with path equations and of realization by set-valued functors
+(\cite[\href{https://arxiv.org/pdf/1009.1166v3}{\S\S3.2, 3.4--3.5}]{Spivak12}).
+
+\begin{definition}[Realizations of protocols]\label{def:1.36}
+
+A finite directed multigraph $Q$ is given by a vertex set $Q_0$, a set $Q_1$ of
+named edges, and start and end maps.
+A path is a composable finite sequence of edges, and the empty sequence at each
+vertex is the identity path.
+We specify finitely many pairs of paths
+$\Pi=\{(\ell_j,r_j)\}_{j\in J_\Pi}$ with the same start and end.
+
+On all paths we impose the smallest equivalence relation that identifies the
+specified pairs and is preserved by composition on either side.
+The category with the vertices as objects and the equivalence classes of paths
+as morphisms is called $\mathcal{C}_Q$.
+Composition is induced by concatenation of paths and is well defined on
+equivalence classes by congruence.
+Associativity and the unit laws follow from concatenation of paths.
+
+Fix a functor $O:\mathcal{C}_Q\to{\mathbf{Set}}$ of observation targets.
+A realization of the protocol is a pair of a functor
+$X:\mathcal{C}_Q\to{\mathbf{Set}}$ whose state set $X(v)$ at each vertex is
+finite and a natural transformation $o_X:X\Rightarrow O$.
+For an edge $e:v\to w$, the map $X(e)$ represents the transition of states, and
+$o_X(v)$ gives the observed value readable from a state at the vertex $v$.
+Naturality of the observation is the condition that transitioning the state
+and then observing agrees with carrying the observed value by $O(e)$.
+
+A morphism $a:(X,o_X)\to(Y,o_Y)$ is a natural transformation $a:X\Rightarrow Y$
+with $o_Ya=o_X$. Its components $a_v$ are general maps of states.
+Naturality preserves executions, and the latter equation preserves
+observations.
+With componentwise identities and composition we obtain the category
+$\mathrm{Prot}(Q,\Pi,O)$.
+
+\end{definition}
+
+\begin{proposition}[Realization from finite operation tables]\label{prop:1.37}
+
+Assign to each vertex a finite set $S_v$, to each edge $e:v\to w$ a map
+$T_e:S_v\to S_w$, and to each vertex an observation $b_v:S_v\to O(v)$.
+Define the action of paths by composing the edge maps, and assume the
+following.
+\begin{equation*}
+T_{\ell_j}=T_{r_j}\quad(j\in J_\Pi),\qquad
+b_wT_e=O(e)b_v\quad(e:v\to w).
+\tag{1.21}\label{eq:1.21}
+\end{equation*}
+Then there is exactly one realization with these states, edges, and
+observations.
+
+\end{proposition}
+
+\begin{proof}
+
+Assign the identity map to the empty path and $T_{e_n}\cdots T_{e_1}$ to
+$e_n\cdots e_1$.
+This is a functor from the free path category to the category of sets.
+The pairs of paths inducing the same map form an equivalence relation preserved
+by composition on either side and containing the declared relations of
+\eqref{eq:1.21}.
+The action is therefore well defined on the equivalence classes of paths of
+$\mathcal{C}_Q$.
+
+Commutativity of the observations also follows by induction on the length of
+the path.
+Indeed, for $p:v\to w$ and $e:w\to z$, if $b_wT_p=O(p)b_v$, then
+$b_zT_eT_p=O(e)b_wT_p=O(e)O(p)b_v$.
+Hence $b$ is a natural transformation.
+Since every path is a composite of edges, uniqueness of the extension follows
+as well.
+
+\end{proof}
+
+\begin{proposition}[Recovery of semantics-preserving morphisms from vertex maps]\label{prop:1.38}
+
+For realizations $X,Y$, if vertexwise maps $a_v:X(v)\to Y(v)$ satisfy
+\begin{equation*}
+a_wX(e)=Y(e)a_v,\qquad o_Y(v)a_v=o_X(v)
+\tag{1.22}\label{eq:1.22}
+\end{equation*}
+for all named edges $e:v\to w$ and all vertices, they extend to a unique
+morphism of protocols.
+
+\end{proposition}
+
+\begin{proof}
+
+Commutativity for the empty path is a property of identity maps, and for a
+path $p:v\to w$ and an edge $e:w\to z$ we have
+\[
+a_zX(e)X(p)=Y(e)a_wX(p)=Y(e)Y(p)a_v
+\]
+By induction we obtain naturality with respect to all paths.
+Since the actions of both realizations depend on the equivalence class of
+a path, naturality holds for all morphisms of the quotient category.
+Preservation of observations is exactly \eqref{eq:1.22}.
+A natural transformation is determined by its components at the objects, so it
+is unique.
+
+\end{proof}
+
+Since the vertices, the named edges, the declared relations, and the state sets
+are all finite, the inputs of Propositions~\ref{prop:1.37} and 1.38 are given
+by finitely many tables.
+On the other hand, paths repeating cycles can have arbitrary length.
+Conclusions about all executions are obtained not by enumerating them but from
+path induction and the congruence relation.
+
+We regard a semantics-preserving morphism connecting two realizations as an
+adapter.
+When comparing adapters $q:X\to Y$ and $q':X'\to Y'$, the condition for
+changes $a:X\to X'$ and $b:Y\to Y'$ to preserve the adapters is
+\begin{equation*}
+bq=q'a.
+\tag{1.23}\label{eq:1.23}
+\end{equation*}
+That is, applying the adapter and then the change agrees with applying the
+change and then the adapter after the change.
+As an equation of natural transformations, this is equivalent to
+$b_vq_v=q'_va_v$ at each vertex.
+By \eqref{eq:1.22}, both sides commute with all executions.
+When studying invertible changes we restrict $a,b$ to isomorphisms.
+The adapters $q,q'$ themselves continue to be treated as general
+semantics-preserving morphisms.
+
+\section{Constructing Atoms, operations, and Laws from semantics}\label{sec:1.10}
+
+To express lenses and protocols as objects of AAT, one must decide where to
+keep the operation names, the state values, the state sets, and the meaning of
+the operations.
+Here we place the type roles and the operation names in Atoms, and the
+individual state values in the source.
+The state sets are kept in architecture objects, and the functions such as
+reads, updates, and transitions in operations.
+This arrangement keeps the vocabulary finite while still handling general maps
+sending states to other states.
+
+\begin{construction}[Type roles and named operations]\label{cons:1.39}
+
+We record the difference of object roles in the target of the relations, and
+the difference of operation names in the image of a special Atom.
+This assigns a morphism of configurations to each operation while still
+distinguishing operations that act as the same function on states.
+
+The Atom set of a lens $L=(C,g,p)$ consists of the seven distinct symbols
+\[
+\mathrm{At}_L=
+\{*,\mathrm{state},\mathrm{view},\mathrm{read},
+\mathrm{write},\mathrm{get},\mathrm{put}\}
+\]
+Taking this set as the value range of all five coordinates and the coordinate
+maps to be the identity satisfies Definition~\ref{def:1.1}.
+The vocabulary of a protocol is built in the same way from the distinct
+symbols
+\[
+\mathrm{At}_Q=
+\{*\}\sqcup
+\{\mathrm{state}_v,\mathrm{observation}_v,\mathrm{observe}_v
+\mid v\in Q_0\}
+\sqcup\{\mathrm{edge}_e\mid e\in Q_1\}
+\]
+Both are nonempty finite sets.
+
+For a selected role $t\in\mathrm{At}$, define the configuration
+\[
+C_t=(\mathrm{At},R_t,\varnothing),\qquad
+R_t(a,b)\ \Longleftrightarrow\ b=t
+\]
+All Atoms are contained in the family, and the relations point to the selected
+role.
+Which role a configuration represents can therefore be seen from the target
+$t$ of its relations.
+The set corresponding to the role is placed in the structure data $S_{A_t}$,
+with $Q_{A_t}=v_0$ for lenses and $Q_{A_t}=*$ for protocols.
+The sets for the roles are as follows.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Semantics & Role & Set kept \\
+\midrule
+\endhead
+lens & $\mathrm{state}$ & The states $C$ \\
+\addlinespace[3pt]
+lens & $\mathrm{view}$ & The displayed values $V$ \\
+\addlinespace[3pt]
+lens & $\mathrm{read}$ & The inputs $C$ of the read \\
+\addlinespace[3pt]
+lens & $\mathrm{write}$ & The inputs $C\times V$ of the update \\
+\addlinespace[3pt]
+protocol & $\mathrm{state}_v$ & The states $X(v)$ at the vertex $v$ \\
+\addlinespace[3pt]
+protocol & $\mathrm{observation}_v$ & The observed values $O(v)$ at the vertex $v$ \\
+\bottomrule
+\end{xltabular}
+
+At state and read of the lens we place the same set $C$; it serves as the role
+of update results and as the role of read inputs, respectively.
+At write we place the pairs of a current state and a specified displayed value.
+
+Between these objects we provide the following named operations.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Operation name & Roles of domain and codomain & Function giving the meaning \\
+\midrule
+\endhead
+$\mathrm{get}$ & $\mathrm{read}\to\mathrm{view}$ & $g$ \\
+\addlinespace[3pt]
+$\mathrm{put}$ & $\mathrm{write}\to\mathrm{state}$ & $(c,v)\mapsto p(c,v)$ \\
+\addlinespace[3pt]
+$\mathrm{edge}_e$ ($e:v\to w$) & $\mathrm{state}_v\to\mathrm{state}_w$ & $X(e)$ \\
+\addlinespace[3pt]
+$\mathrm{observe}_v$ & $\mathrm{state}_v\to\mathrm{observation}_v$ & $o_X(v)$ \\
+\bottomrule
+\end{xltabular}
+
+To an operation $s\to t$ with name $m$ we assign the map on Atoms
+\begin{equation*}
+d_m(a)=
+\begin{cases}
+m & a=*,\\
+t & a\ne *
+\end{cases}
+\tag{1.24}\label{eq:1.24}
+\end{equation*}
+Every domain role $s$ in the table differs from $*$.
+Hence $R_s(a,b)$ implies $b=s$, so $d_m(b)=t$, that is,
+$R_t(d_m(a),d_m(b))$.
+Preservation of the family follows because it contains all Atoms, and
+preservation of the identifications because they are empty.
+Thus $d_m:C_s\to C_t$ is indeed a morphism of configurations.
+
+We take an operation to be the tuple of its name, the objects at its two ends,
+$d_m$, and the function in the table giving its meaning.
+This provides the operation reading of Definition~\ref{def:1.7}.
+Since $d_m(*)=m$, distinct names are distinguished even as morphisms of
+configurations.
+
+\end{construction}
+
+\begin{construction}[Extraction sources carrying state values]\label{cons:1.40}
+
+Take the sources of a lens and of a protocol to be
+\begin{equation*}
+\begin{aligned}
+\mathrm{Src}_L
+&=1\sqcup C\sqcup V\sqcup(C\times V),\\
+\mathrm{Src}_X
+&=1\sqcup\bigsqcup_{v\in Q_0}X(v)
+ \sqcup\bigsqcup_{e\in Q_1}X(\mathrm{src}(e))
+\end{aligned}
+\tag{1.25}\label{eq:1.25}
+\end{equation*}
+Each summand carries a tag: point, state, view, update input, or edge input.
+Normalization is the identity, and the vocabulary, meaning, and resolution
+parameters are one-element sets.
+The predicates $V_D,M_D,R_D$ of Definition~\ref{def:1.3} are always true, and
+$E_D$ is defined by the following table.
+
+\begin{xltabular}{\linewidth}{@{}LL@{}}
+\toprule
+Tag of the source & Atoms extracted \\
+\midrule
+\endhead
+Point (both semantics) & All Atoms of the vocabulary \\
+\addlinespace[3pt]
+State $c$ of the lens & $\mathrm{state},\mathrm{read},\mathrm{get}$ \\
+\addlinespace[3pt]
+View $v$ of the lens & $\mathrm{view}$ \\
+\addlinespace[3pt]
+Update input $(c,v)$ of the lens & $\mathrm{write},\mathrm{put}$ \\
+\addlinespace[3pt]
+State $c$ at a vertex $v$ of the protocol & $\mathrm{state}_v,\mathrm{observation}_v,\mathrm{observe}_v$ \\
+\addlinespace[3pt]
+Input state $c$ of an edge $e$ of the protocol & $\mathrm{edge}_e$ \\
+\bottomrule
+\end{xltabular}
+
+Taking the point as the selected source, the extracted family is the whole
+vocabulary, which is finite.
+The state values are kept in the sources \eqref{eq:1.25}, and the extraction
+predicate reads their tags.
+
+A morphism of lenses $h:L\to L'$ determines a map of sources using the
+identity, $h$, the identity, and $h\times\mathrm{id}_V$ on the respective
+summands.
+A morphism of protocols $a:X\to Y$ uses $a_v$ on the state summands and
+$a_{\mathrm{src}(e)}$ on the edge input summands, and sends the point to the
+point.
+Together with the identity map on Atoms, these give morphisms as in
+Definition~\ref{def:1.27}.
+Commutation with normalization is a property of identity maps, and the
+equivalence of extraction follows because the tags are preserved.
+
+Identities and composites of source maps agree with identities and composites
+on each summand.
+Moreover, reading the state summands off the source map recovers $h$ or all
+the $a_v$.
+The correspondence is therefore faithful on morphisms, and it also retains
+non-injective semantics-preserving maps.
+
+\end{construction}
+
+\begin{proposition}[Laws expressing the laws of the semantics]\label{prop:1.41}
+
+Fix the sets $C,V$ of a lens or the family of state sets $(S_v)$ of a protocol.
+Consider operation data $d$ on which no laws have yet been imposed:
+$d=(g,p)$ for a lens and $d=((T_e),(b_v))$ for a protocol.
+From these data one can construct an architecture object $A_d$ and an equation
+system such that being Lawful is equivalent to the laws of the respective
+semantics.
+
+\end{proposition}
+
+\begin{proof}[Proof and construction]
+
+We split each law into equations indexed by input values and build residuals
+that are zero when the equation holds and one when it does not.
+
+Let the configuration of $A_d$ be $C_*$ and its structure data the operation
+data $d$.
+As the quantity we keep the reference view for a lens and the element of a
+one-element set for a protocol.
+The indices of the index set $K$ of equations are the pairs of one of the
+following equations and an input value.
+\begin{equation*}
+\begin{array}{ll}
+\text{lens:}&
+p(c,g(c))=c,\quad
+g(p(c,v))=v,\quad
+p(p(c,v),w)=p(c,w),\\[2pt]
+\text{protocol:}&
+T_{\ell_j}(c)=T_{r_j}(c),\quad
+b_w(T_e(c))=O(e)(b_v(c)).
+\end{array}
+\tag{1.26}\label{eq:1.26}
+\end{equation*}
+For the lens, $c$, $(c,v)$, and $(c,v,w)$ range over the inputs, respectively.
+For the protocol, the declared relations together with a state at their start,
+and the edges $e:v\to w$ together with $c\in S_v$, range likewise.
+All indices are required.
+
+There is a single context $W$, whose support reads all Atoms from a
+one-element set.
+The axes and observables are also one-element sets.
+This is a context of $A_d$, whose family contains all Atoms.
+The constant ring presheaf and the equation coordinates are given by
+\[
+O_E(W)=\mathbb{Z}[x_{(i,a)}\mid (i,a)\in K\times\mathrm{At}],
+\qquad \nu_{W,i,a}=x_{(i,a)}
+\]
+When an object $A$ under evaluation carries operation data of the same type,
+let $P_i(A)$ be the equation of index $i$ for those data.
+For objects without structure data of the corresponding type, $P_i(A)$ is
+defined to be false.
+The residuals are the constant polynomials
+\begin{equation*}
+\varepsilon_{W,A,i,a}=
+\begin{cases}
+0 & P_i(A),\\
+1 & \text{otherwise}
+\end{cases}
+\tag{1.27}\label{eq:1.27}
+\end{equation*}
+Since the restrictions are identities, \eqref{eq:1.1} holds.
+
+If all the equations of \eqref{eq:1.26} hold, all residuals of $A_d$ are zero.
+Conversely, if lawfulness holds, we evaluate each $i$ at the context $W$ and
+the Atom $*$.
+Since $0\ne1$ in the polynomial ring over $\mathbb{Z}$, the vanishing of
+\eqref{eq:1.27} implies $P_i(A_d)$.
+This yields all the equations of \eqref{eq:1.26}.
+In the protocol case, by Proposition~\ref{prop:1.37} these agree with the
+conditions defining a functor and a natural observation.
+
+\end{proof}
+
+For example, if $C=V=\{0,1\}$, $g(c)=c$, and $p(c,v)=c$, then
+$g(p(0,1))=0\ne1$. The residual corresponding to this input is indeed $1$, and
+the constructed object is not Lawful.
+
+\begin{definition}[Morphisms between the constructed typed objects]\label{def:1.42}
+
+We write $\mathcal{T}(L)$ or $\mathcal{T}(X)$ for the totality of the roles,
+objects, and named operations with their meanings from
+Construction~\ref{cons:1.39}.
+A typed morphism between them is a family of maps on the sets of the roles
+satisfying the following conditions.
+
+\begin{itemize}
+\item \textbf{Lens}: the maps at state and read are the same $h:C\to C'$, the
+map at view is the identity, and the map at write is $h\times\mathrm{id}_V$.
+We require the two commutativities for get and put.
+\item \textbf{Protocol}: the maps at state are $a_v:X(v)\to Y(v)$ and the maps
+at observation are the identity, and we require the commutativity for each
+edge and observe.
+\end{itemize}
+
+With componentwise identities and composition, these objects and typed
+morphisms form a category.
+
+Construction~\ref{cons:1.40} connects the state maps given by these typed
+morphisms with the source maps of the extraction doctrines.
+
+\end{definition}
+
+\begin{proposition}[Recovery of semantics-preserving morphisms]\label{prop:1.43}
+
+Reading the sets of the roles and the meanings of the operations off the
+constructed objects recovers the original state sets, reads, updates, edge
+actions, and observations. Moreover, the following natural bijections hold.
+\begin{equation*}
+\begin{aligned}
+\mathrm{Hom}_{\mathrm{Lens}(V,v_0)}(L,L')
+&\simeq\mathrm{Hom}_{\mathrm{typ}}(\mathcal{T}(L),\mathcal{T}(L')),\\
+\mathrm{Hom}_{\mathrm{Prot}(Q,\Pi,O)}(X,Y)
+&\simeq\mathrm{Hom}_{\mathrm{typ}}(\mathcal{T}(X),\mathcal{T}(Y)).
+\end{aligned}
+\tag{1.28}\label{eq:1.28}
+\end{equation*}
+
+\end{proposition}
+
+\begin{proof}
+
+For the objects, it suffices to project the sets and functions encoded in
+Construction~\ref{cons:1.39}.
+The operation names are also recovered from the value of \eqref{eq:1.24} at
+$*$.
+
+A semantics-preserving morphism $h$ of lenses determines the maps on the four
+roles of Definition~\ref{def:1.42}.
+The commutativities for get and put are \eqref{eq:1.17}, so we obtain a typed
+morphism.
+Conversely, taking the map at state from a typed morphism gives a morphism of
+lenses by the two commutativities.
+The maps on the other roles are determined by the map at state, so the two
+operations are mutually inverse.
+
+For protocols as well, taking the vertex components of a semantics-preserving
+morphism as the maps at state gives a typed morphism.
+Conversely, the commutativities for edge and observe of a typed morphism are
+\eqref{eq:1.22}, and by Proposition~\ref{prop:1.38} a natural transformation
+with respect to all paths is recovered uniquely.
+These two constructions are also mutually inverse at the components of each
+vertex.
+
+Both send identities to identities and composites to componentwise composites.
+Hence \eqref{eq:1.28} is natural with respect to pre- and postcomposition at
+both ends.
+
+\end{proof}
+
+A typed morphism of lenses can be recovered, by Proposition~\ref{prop:1.34},
+from the map between reference fibers alone.
+A typed morphism of protocols extends to all executions from finitely many
+vertex maps and the commutativities for the generating edges.
+For a lens with a visible change $u$, taking the map at view to be $u$ and the
+map at write to be $h\times u$ turns the commutativities for the two
+operations into \eqref{eq:1.20}.
+Commutativity with protocol adapters likewise agrees with \eqref{eq:1.23} upon
+reading back the vertex components.
+
+\section*{Summary of the Chapter}
+
+In this chapter we made explicit the choices of extraction, object formation,
+operations, Laws, and locality, and constructed relative architecture and its
+comparisons. The main results are the following four.
+
+\begin{itemize}
+\item \textbf{Generation of objects.} From an extracted finite family of Atoms
+we form the base object. The smallest family of objects containing it and
+closed under the permitted operations equals the totality of objects reachable
+by finite sequences of operations (Theorem~\ref{thm:1.18}).
+Under soundness of the detector and completeness for the required equations,
+the validity of the Laws is equivalent to the absence of required circuits
+(Proposition~\ref{prop:1.16}).
+\item \textbf{Construction of local structure.} From contexts and covers we
+constructed a site, and from restriction maps compatible with the coordinates
+and structural relations a presheaf of rings. We also constructed the
+sheafification, which provides the gluing of local data
+(\S\S\ref{sec:1.5}--\ref{sec:1.6}).
+\item \textbf{Comparison of readings.} We defined objects and morphisms at
+each of the stages of extraction, core, and geometry, and constructed the
+projection functors connecting them (Theorem~\ref{thm:1.31}).
+\item \textbf{Recovery of the semantics of CS.} We described the lenses and
+protocols treated in this chapter in the common framework of objects,
+operations, and Laws. The constructed Laws hold if and only if the original
+laws hold (Proposition~\ref{prop:1.41}), and typed morphisms correspond
+one-to-one to the original semantics-preserving morphisms
+(Proposition~\ref{prop:1.43}).
+\end{itemize}
+
+In the next chapter we construct an ideal from the symbolic equation
+coordinates.
+Under a realization condition connecting the evaluation of the coordinates
+with the residuals of each object, we describe the part satisfying the Laws
+inside the local geometry.

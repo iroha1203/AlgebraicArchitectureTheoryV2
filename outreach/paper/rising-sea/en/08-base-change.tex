@@ -1,0 +1,1474 @@
+\chapter{Base Change and Generated Comparisons}\label{chap:5}
+
+\section*{Overview of the Chapter}
+
+The question of this chapter is \textbf{whether the operation that carries structure and the
+operation that changes the input under consideration can be interchanged}.
+Chapter~\ref{chap:4} treated transport along a single change and the coherence of successive
+transports. In this chapter we construct the two routes formed from these two kinds of
+operations and study the comparison between them.
+
+For example, suppose that a monolith with order processing and inventory management is split
+into an order service and an inventory service. In a design review we first want to examine
+the part related to order cancellation. That part contains the operations of cancellation
+request, release of an inventory reservation, and cancellation completion, together with the
+condition that if a cancellation is complete then the corresponding inventory reservation has
+been released. Under the same splitting policy, we compare two routes that yield the design of
+this part.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Procedure & First step & Next step \\
+\midrule
+\endhead
+Split the whole, then select the scope & Split the whole monolith into the order and inventory
+services & Extract the part related to order cancellation from the design after the split \\
+\addlinespace[3pt]
+Select the scope, then split & Extract the part related to order cancellation from the
+original design & Apply the same splitting policy to that part \\
+\bottomrule
+\end{xltabular}
+
+Does the splitting proposal that the person in charge drew up by focusing on the order-cancellation
+part remain consistent with the design obtained after splitting the whole? For example,
+consider a design in which, after the split, the order service asks the inventory service to
+release the reservation and proceeds to cancellation completion only after confirming the
+release. Between the designs obtained by the two routes, we want to verify that this
+interaction and the condition above correspond. Extracting only the processing placed in the
+order service leaves the release of inventory reservations outside the scope, and we lose the
+dependencies needed to check the condition.
+
+We therefore look for the inputs on the original that correspond to the scope selected on the
+target. In this example, this means tracing the operations and dependencies needed for the
+cancellation condition back to the design before the split. In this chapter we construct that
+correspondence as pairs of inputs and pull the structure of objects, operations, and Laws back
+onto it. This is base change. Moreover, from the universal properties of transport and
+pullback, we build a map that compares the results of the two routes. We call this map the
+canonical comparison.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Question & Construction & Outcome \\
+\midrule
+\endhead
+Can two inputs be matched under the same condition? & Pairs of sources with a common image &
+Fiber products of extraction doctrines \\
+\addlinespace[3pt]
+Can the structure on the target be read on the original? & Backward reindexing of Atoms &
+Cartesian pullback and its equivalence with transport \\
+\addlinespace[3pt]
+Can the order of transport and pullback be exchanged? & Squares generated from finite codes,
+and mates & A canonical invertible comparison \\
+\addlinespace[3pt]
+Can several comparisons and diagnoses also be carried? & Commutative base diagrams and the
+correspondence of end groups & Preservation and reflection of coherence, vanishing of defects,
+and reselection orbits \\
+\addlinespace[3pt]
+Can structure still be carried back even along a change that enlarges the extracted content? & Reflection of extraction at
+inputs that actually carry structure & A necessary and sufficient condition for backward
+transport along refinements \\
+\addlinespace[3pt]
+What is compared when geometry and normalization are included? & Two routes of full geometries
+built from a finitely presented square and the same comparison diagram & The generated
+comparison analyzed in Chapter~\ref{chap:6} \\
+\bottomrule
+\end{xltabular}
+
+For the exact changes of the first half, the Atoms extracted from the selected sources agree,
+including the change of names. For the refinements of the second half, only forward
+preservation of the extracted content is required. This difference determines which structure
+can be carried backwards. When treating the split of a monolith as well, we specify whether we
+read the business operations and conditions or also communication, failures, and retries, and
+we check the preservation conditions for extraction and structure in that reading.
+
+\section{Constructing corresponding inputs by fiber products}\label{sec:5.1}
+
+An extraction doctrine is a reading that normalizes a source and then extracts Atoms. The
+category $B$ of Chapter~\ref{chap:1} has objects that in addition select one source. We first
+carry out the construction in the category of doctrines with the selected source forgotten,
+and then restore the selection.
+
+\begin{construction}[Fiber product of exact doctrines]\label{cons:5.1}
+
+Over a common Atom set $\mathrm{At}$, take two exact morphisms.
+\begin{equation*}
+D_1\xrightarrow{\sigma_1}D_0\xleftarrow{\sigma_2}D_2,
+\qquad \sigma_i=(f_i,e_i).
+\tag{5.1}\label{eq:5.1}
+\end{equation*}
+Here $f_i$ is the source map and $e_i$ is the bijection of Atoms. We define the sources and
+the normalization of the new doctrine $D_{12}$ by
+\begin{equation*}
+\begin{aligned}
+\mathrm{Src}_{12}
+ &=\{(s_1,s_2)\mid f_1(s_1)=f_2(s_2)\},\\
+N_{12}(s_1,s_2)&=(N_1s_1,N_2s_2)
+\end{aligned}
+\tag{5.2}\label{eq:5.2}
+\end{equation*}
+The normalization preserves this set because $f_iN_i=N_0f_i$. The choices of vocabulary,
+semantics, and resolution are taken from $D_1$, and the predicates that read a source receive
+the first component. Hence
+\begin{equation*}
+\mathrm{Extracts}_{12}((s_1,s_2),a)
+\Longleftrightarrow \mathrm{Extracts}_1(s_1,a).
+\tag{5.3}\label{eq:5.3}
+\end{equation*}
+The two projections are
+\begin{equation*}
+\pi_1=(\mathrm{pr}_1,\mathrm{id}_{\mathrm{At}}),
+\qquad
+\pi_2=(\mathrm{pr}_2,e_2^{-1}e_1)
+\tag{5.4}\label{eq:5.4}
+\end{equation*}
+The Atom map of the second projection carries the first names to the names of the common base
+and returns from there to the second names. Exactness follows from
+\begin{equation*}
+\begin{aligned}
+\mathrm{Extracts}_1(s_1,a)
+&\Longleftrightarrow\mathrm{Extracts}_0(f_1(s_1),e_1(a))\\
+&\Longleftrightarrow\mathrm{Extracts}_2(s_2,e_2^{-1}e_1(a))
+\end{aligned}
+\tag{5.5}\label{eq:5.5}
+\end{equation*}
+In both the source and the Atom components we have $\sigma_1\pi_1=\sigma_2\pi_2$.
+
+\end{construction}
+
+\begin{proposition}[Universal property with respect to all cones]\label{prop:5.2}
+
+If exact morphisms $h_i:T\to D_i$ satisfy $\sigma_1h_1=\sigma_2h_2$, then there is a unique
+exact morphism $h:T\to D_{12}$ with $\pi_i h=h_i$. Hence $D_{12}$ is the fiber product
+of~\eqref{eq:5.1}.
+
+\end{proposition}
+
+\begin{proof}
+
+Write $h_i=(g_i,d_i)$, and let the source map of $h$ be $t\mapsto(g_1(t),g_2(t))$ and its
+Atom map be $d_1$. The pair of sources belongs to~\eqref{eq:5.2} by the commutativity of the
+cone. Commutation with the normalizations holds componentwise, and the equivalence of
+extraction is the exactness of $h_1$. For the second projection, from $e_1d_1=e_2d_2$ we
+obtain $e_2^{-1}e_1d_1=d_2$. The equations with the two projections determine the source map
+uniquely, and the equation with the first projection determines the Atom map uniquely.
+
+\end{proof}
+
+When the selected sources $s_i$ satisfy $f_1(s_1)=f_2(s_2)$, we select $(s_1,s_2)$ in
+$D_{12}$. If the two morphisms of a cone with specified selected sources (a pointed cone)
+preserve the selected sources, then so does the universal morphism above. In this way the
+same fiber product is obtained in $B$.
+
+\begin{example}[Inputs corresponding to a scope on the target]\label{ex:5.3}
+
+We check Construction~\ref{cons:5.1} in a case where the sources form small finite sets. Let
+the sources of the original be $\{a,b,c\}$ and the sources of the target be $\{0,1\}$, with
+the correspondence $f(a)=f(b)=0$ and $f(c)=1$. The fiber product along the inclusion
+$j:\{0\}\to\{0,1\}$, which selects the object $\{0\}$ after the change, is
+\begin{equation*}
+\{a,b,c\}\times_{\{0,1\}}\{0\}
+=\{(a,0),(b,0)\}.
+\tag{5.6}\label{eq:5.6}
+\end{equation*}
+If every source extracts the same finite Atom set and the normalizations and the Atom maps
+are identities, this becomes a concrete instance of Construction~\ref{cons:5.1}. Even though
+$a,b$ are sent to the same source of the target, both remain as corresponding inputs of the
+original. When applying this to the split of a monolith, we take design documents and code as
+sources, specify the reading used for the design change and the selection of the scope, and
+check~\eqref{eq:5.5}.
+
+\end{example}
+
+\section{Pulling back cores from the target}\label{sec:5.2}
+
+The transport $\sigma_!$ of Chapter~\ref{chap:4} started from a core on the original. The
+pullback $\sigma^*$ starts from a core on the target. Both correspond to the same base
+morphism $\sigma:b\to b'$, but the direction in which the object is constructed is reversed.
+
+\begin{definition}[Strongly cartesian morphism]\label{def:5.4}
+
+Take a functor $r:E\to B$ and a morphism $\kappa:Y\to Q$ with $r(\kappa)=\sigma:b\to b'$. We
+call $\kappa$ a strongly cartesian morphism when, for every object $R$, base morphism
+$\tau:r(R)\to b$, and morphism $h:R\to Q$ with $r(h)=\sigma\tau$,
+\begin{equation*}
+\exists!\,k:R\longrightarrow Y,\qquad
+r(k)=\tau,\quad \kappa k=h
+\tag{5.7}\label{eq:5.7}
+\end{equation*}
+This is the condition that a morphism into $Q$ splits uniquely into a final step
+corresponding to $\sigma$ on the base and a morphism up to that point
+(\cite[\href{https://stacks.math.columbia.edu/tag/02XJ}{Tag 02XJ, Definition 4.33.1}]{Stacks}).
+
+\end{definition}
+
+\begin{construction}[Backward reindexing]\label{cons:5.5}
+
+Let $\sigma=(f,e):(D,s)\to(D',s')$ be an exact morphism and let $Q$ be a core on $(D',s')$.
+Writing $F_D(s)$ for the selected extracted family, we have
+\begin{equation*}
+F_{D'}(s')=e_*F_D(s),\qquad
+F_D(s)=(e^{-1})_*F_{D'}(s').
+\tag{5.8}\label{eq:5.8}
+\end{equation*}
+Since the right-hand side is finite, we obtain a finite family on the original as well that
+can serve as input to a core. We place the base at $(D,s)$ and define composition, object
+formation, and operations as follows.
+\begin{equation*}
+\begin{aligned}
+\mathrm{Comp}_{\sigma^*Q}(F)
+ &=(e^{-1})_*\mathrm{Comp}_Q(e_*F),\\
+\mathrm{Form}_{\sigma^*Q}(C)
+ &=T_{e^{-1}}\mathrm{Form}_Q(e_*C),\\
+\mathrm{Op}_{\sigma^*Q}(A,B)
+ &=\mathrm{Op}_Q(T_eA,T_eB).
+\end{aligned}
+\tag{5.9}\label{eq:5.9}
+\end{equation*}
+Here $T_e$ is the reindexing of objects from Construction~\ref{cons:4.3}. We conjugate the
+configuration maps of the operations and compose the invariants and signatures with $T_e$.
+The contexts, equations, residuals, and detector code are reindexed by the same $e^{-1}$.
+By~\eqref{eq:5.8} and the formulas for composition and object formation, the generated base
+object coincides with the base object of $T_{e^{-1}}Q$. This coincidence aligns the base
+objects of the equation reading.
+
+The resulting morphism $\kappa_{\sigma,Q}:\sigma^*Q\to Q$ has $\sigma$ as its base. The
+upper-level reading map $u$ has a two-sided inverse $u^{-1}$ given by the inverse reindexing.
+The information about sources used by this construction is $f(s)=s'$ and the equivalence of
+extraction.
+
+\end{construction}
+
+\begin{theorem}[Cartesian lifts along arbitrary exact morphisms]\label{thm:5.6}
+
+For every exact base morphism $\sigma:b\to b'$ and every core $Q$ on $b'$, the morphism
+$\kappa_{\sigma,Q}$ of Construction~\ref{cons:5.5} is strongly cartesian with respect to
+$q:E_{\mathrm{core}}\to B$.
+
+\end{theorem}
+
+\begin{proof}
+
+For $h:R\to Q$ as in~\eqref{eq:5.7}, let the base of $k$ be $\tau$ and its upper level be
+$u^{-1}h_{\mathrm{up}}$. The Atom component agrees with the Atom component of $\tau$, by the fact that
+the base of $h$ is $\sigma\tau$ and by $u^{-1}$. The other components are composites of
+morphisms of readings, so they preserve object formation, operations, equations, invariants,
+and signatures. From $uu^{-1}=1$ we get $\kappa_{\sigma,Q}k=h$. Any other factor also has
+base $\tau$, and composing its upper-level equation with $u^{-1}$ gives the same $k$.
+
+\end{proof}
+
+\begin{lemma}[Pullback functors and composition comparisons]\label{lem:5.7}
+
+Choose one cartesian lift for each $\sigma,Q$ by Theorem~\ref{thm:5.6} and fix it as the
+canonical choice. For this choice we obtain a functor $\sigma^*:E_{b'}\to E_b$ between fiber
+categories. The image of a vertical morphism $v:Q\to Q'$ is determined uniquely by
+\begin{equation*}
+\kappa_{\sigma,Q'}\,\sigma^*(v)
+=v\,\kappa_{\sigma,Q}
+\tag{5.10}\label{eq:5.10}
+\end{equation*}
+For $\sigma:b_0\to b_1$ and $\tau:b_1\to b_2$ there are natural isomorphisms of unit and
+composition
+\begin{equation*}
+1_{E_b}\xrightarrow{\sim}(1_b)^*,
+\qquad
+\sigma^*\tau^*\xrightarrow{\sim}(\tau\sigma)^*
+\tag{5.11}\label{eq:5.11}
+\end{equation*}
+satisfying the coherence for units and triple composites.
+
+\end{lemma}
+
+\begin{proof}
+
+Applying~\eqref{eq:5.10} to identities and to composites of morphisms and using uniqueness
+yields the functor laws. A composite of cartesian morphisms is cartesian, by
+applying~\eqref{eq:5.7} twice. Hence between the two-step lift and the direct lift there is a
+unique isomorphism making the triangle into their common target commute. The two comparisons
+arising from a three-step lift also satisfy the same triangle and are therefore equal. For
+the unit we use the same uniqueness.
+
+\end{proof}
+
+\begin{proposition}[Adjoint equivalence between transport and pullback]\label{prop:5.8}
+
+For an exact morphism $\sigma:b\to b'$, the transport of Chapter~\ref{chap:4} and the
+pullback of this section form an adjunction
+\begin{equation*}
+\sigma_!:E_b\rightleftarrows E_{b'}:\sigma^*,
+\qquad \sigma_!\dashv\sigma^*
+\tag{5.12}\label{eq:5.12}
+\end{equation*}
+whose unit $\eta^\sigma:1\to\sigma^*\sigma_!$ and counit
+$\epsilon^\sigma:\sigma_!\sigma^*\to1$ are invertible.
+
+\end{proposition}
+
+\begin{proof}
+
+Write $\iota_{\sigma,P}:P\to\sigma_!P$ for the opcartesian morphism in the same direction as
+in Chapter~\ref{chap:4}. The two universal properties give the following natural bijections.
+\begin{equation*}
+\begin{aligned}
+\mathrm{Hom}_{E_{b'}}(\sigma_!P,Q)
+&\cong\{h:P\to Q\mid q(h)=\sigma\}\\
+&\cong\mathrm{Hom}_{E_b}(P,\sigma^*Q).
+\end{aligned}
+\tag{5.13}\label{eq:5.13}
+\end{equation*}
+The first correspondence is $v\mapsto v\iota_{\sigma,P}$, and the inverse of the second is
+$w\mapsto\kappa_{\sigma,Q}w$. The unit and the counit are produced by transposing identity
+morphisms. The triangle identities follow from the fact that both composites become identities
+after composition with the respective lifts, together with uniqueness.
+
+Moreover, the upper levels of the two lifts are built from mutually inverse Atom reindexings.
+Using the proof of Theorem~\ref{thm:5.6} for factorizations in the opposite direction, each
+lift is both cartesian and opcartesian. The unit is the comparison of two cartesian lifts
+with the same base morphism and the same end, and the counit is the comparison of two
+opcartesian lifts with the same base morphism and the same start. Both are invertible by
+uniqueness.
+
+\end{proof}
+
+\begin{example}[Fibers become equivalent even when the base is not invertible]\label{ex:5.9}
+
+Take the constant map from the source set $\{0,1\}$ to $\{*\}$ and select $0$ in the former.
+Every source extracts the same finite family $F$, and the normalizations and Atom maps are
+identities. This is an exact morphism, but it is not an isomorphism of bases, since the
+source map has no two-sided inverse. Proposition~\ref{prop:5.8} shows that the fiber
+categories over the selected sources are nevertheless equivalent. What travels back and
+forth is the object formation, the operations, and the Laws read at that source. Recovering
+the distinctions among all sources is a different question.
+
+\end{example}
+
+\section{The canonical comparison exchanging transport and pullback}\label{sec:5.3}
+
+We express the two splitting plans from the opening as routes with the same start and end.
+Let $V$ be the route that splits the whole and then selects the scope, and $D$ the route that
+selects the scope and then splits; from the universal properties of transport and pullback
+we build a comparison between them.
+
+In what follows we assume that Atom equality is decidable. We fix two morphisms presented by
+the finite codes of Definition~\ref{def:5.14}, a table of selected sources with a common
+image, and a finite diagnostic diagram. The two morphisms have a common target. The square of
+this section is the pointed fiber product obtained by decoding these data and applying
+Construction~\ref{cons:5.1}. The concrete definition of the finite codes is given
+in~\S\ref{sec:5.4}. For transport we use the canonical construction of Chapter~\ref{chap:4},
+and for pullback the canonical lifts determined by these finite codes.
+
+\begin{construction}[Two routes with matched types]\label{cons:5.10}
+
+Write the pointed fiber product constructed from these finite codes as
+\begin{equation*}
+\begin{array}{ccc}
+b_{12}&\xrightarrow{\ \pi_2\ }&b_2\\
+{\scriptstyle\pi_1}\downarrow&&\downarrow{\scriptstyle\sigma_2}\\
+b_1&\xrightarrow{\ \sigma_1\ }&b_0
+\end{array}
+\qquad \sigma_1\pi_1=\sigma_2\pi_2
+\tag{5.14}\label{eq:5.14}
+\end{equation*}
+Each vertex is a pair of a doctrine and a selected source, and in the opening example the
+vertices play the following roles.
+
+\begin{xltabular}{\linewidth}{@{}LL@{}}
+\toprule
+Vertex & How the input is read \\
+\midrule
+\endhead
+$b_1$ & Reads the input on the monolith side before the split \\
+\addlinespace[3pt]
+$b_0$ & Reads the whole input after the split \\
+\addlinespace[3pt]
+$b_2$ & Reads the scope of input selected for order cancellation after the split \\
+\addlinespace[3pt]
+$b_{12}$ & Reads the pairs of sources, on the monolith side and in the selected scope,
+that point to the same target \\
+\bottomrule
+\end{xltabular}
+
+The morphism $\sigma_1$ is the correspondence given by the splitting policy, and $\sigma_2$
+is the correspondence from the selected scope into the whole. The projections $\pi_1,\pi_2$
+extract the components from a corresponding pair of sources. The selection of the scope here
+is performed on sources, and is distinguished from the operation of removing Atoms inside a
+single core. To express these as exact base morphisms, we check the equivalence of
+extraction of~\eqref{eq:5.5} for each correspondence.
+
+The two routes from cores on $b_1$ to cores on $b_2$ are
+\begin{equation*}
+D=(\pi_2)_!\pi_1^*,\qquad
+V=\sigma_2^*(\sigma_1)_!,\qquad
+D,V:E_{b_1}\longrightarrow E_{b_2}.
+\tag{5.15}\label{eq:5.15}
+\end{equation*}
+The route $D$ pulls back to the corresponding inputs and then carries them over; the route
+$V$ carries them to the common base and then pulls back. From the composition comparisons of
+transport in Chapter~\ref{chap:4} and~\eqref{eq:5.14} we obtain a natural isomorphism
+\begin{equation*}
+\Sigma:(\sigma_2)_!(\pi_2)_!
+\xrightarrow{\sim}(\sigma_1)_!(\pi_1)_!
+\tag{5.16}\label{eq:5.16}
+\end{equation*}
+It is built by comparing both with the direct transport along the same composite base
+morphism.
+
+\end{construction}
+
+\begin{theorem}[Canonical Beck--Chevalley mate]\label{thm:5.11}
+
+The following three-step composite defines a natural isomorphism
+$\alpha:D\xrightarrow{\sim}V$.
+\begin{equation*}
+\begin{aligned}
+DP&\xrightarrow{\ \eta^{\sigma_2}_{DP}\ }
+ \sigma_2^*(\sigma_2)_!DP\\
+&\xrightarrow{\ \sigma_2^*(\Sigma_{\pi_1^*P})\ }
+ \sigma_2^*(\sigma_1)_!(\pi_1)_!\pi_1^*P\\
+&\xrightarrow{\ \sigma_2^*(\sigma_1)_!(\epsilon^{\pi_1}_P)\ }
+ VP.
+\end{aligned}
+\tag{5.17}\label{eq:5.17}
+\end{equation*}
+We call this comparison the canonical Beck--Chevalley mate. Moreover, if the choice of
+pullbacks is changed, the mates whose two ends are aligned by the unique lift comparisons
+coincide.
+
+\end{theorem}
+
+\begin{proof}
+
+The three arrows are, respectively, the images under functors of the unit, the natural
+isomorphism of transports, and the counit. Hence the composite is a natural transformation.
+By Proposition~\ref{prop:5.8} the unit and the counit are invertible, and functors preserve
+isomorphisms, so all three arrows are invertible.
+
+Independence of the choices follows because the next equation characterizes the comparison
+itself.
+\begin{equation*}
+\kappa_{\sigma_2,(\sigma_1)_!P}\,
+\alpha_P\,\iota_{\pi_2,\pi_1^*P}
+=\iota_{\sigma_1,P}\,\kappa_{\pi_1,P}.
+\tag{5.18}\label{eq:5.18}
+\end{equation*}
+Factoring the right-hand side first through $\iota_{\pi_2,\pi_1^*P}$ and then through
+$\kappa_{\sigma_2,(\sigma_1)_!P}$ yields $\alpha_P$ uniquely. Substituting the
+factorizations of the unit and counit of the adjunction shows that this morphism
+is~\eqref{eq:5.17}. Aligning a different choice of lifts by the canonical isomorphisms
+preserves~\eqref{eq:5.18}, so the comparisons coincide.
+
+\end{proof}
+
+The reason for invertibility lies not only in the shape of the fiber product but in the fact
+that the unit and counit of the actual transport of cores are invertible. The proof also
+shows which components of the comparison have to be checked.
+
+\begin{proposition}[Comparisons under a different choice of lifts]\label{prop:5.12}
+
+In the square of the same finite codes as in Construction~\ref{cons:5.10}, choose different
+cartesian lifts along $\pi_1$ and $\sigma_2$. Let $D',V'$ be the resulting two routes and
+$\alpha':D'\to V'$ the mate built from the adjunctions. Composing the unique isomorphisms
+that connect each lift with the canonical choice, together with the remaining transport
+functors, to form $j_D:D'\xrightarrow{\sim}D$ and $j_V:V'\xrightarrow{\sim}V$, we have
+\begin{equation*}
+\alpha\,j_D=j_V\,\alpha'
+\tag{5.19}\label{eq:5.19}
+\end{equation*}
+\end{proposition}
+
+\begin{proof}
+
+The comparisons of lifts preserve composition with those lifts. Substituting this equation
+into the factorizations of the units and counits of the adjunctions, the three-step
+composite that builds the modified mate agrees with the composite that places $j_D,j_V$
+before and after the canonical mate.
+
+\end{proof}
+
+\begin{example}[A mix-up in implementing the comparison]\label{ex:5.13}
+
+Suppose that, after separating orders and inventory, in comparing the designs obtained by
+the two routes the correspondence between two inventory reservations is mixed up. If this
+swap is an automorphism $s$ in the chosen reading, set $a_P=s\alpha_P$. Writing the mismatch
+of this example as $\Delta_P=a_P\alpha_P^{-1}$, we have $\Delta_P=s$. Here both $a_P$ and
+$\alpha_P$ are invertible. Invertibility, and correctly matching the two specified routes,
+must each be checked by its own equation.
+
+\end{example}
+
+\section{Existence of the constructions and the scope of finite presentation}\label{sec:5.4}
+
+The pullback of cores in~\S\ref{sec:5.2} exists along every exact morphism. The canonical
+comparison of~\S\ref{sec:5.3} used a square generated from finite codes. Here we fix that
+format and classify which base morphisms can be presented when the presentations of the
+endpoints may be rechosen. The same format is also used for the reconstruction in
+Chapter~\ref{chap:8}. The discussion of comparisons and diagnoses continues
+in~\S\ref{sec:5.5}.
+
+\begin{definition}[Codes by finite exception tables]\label{def:5.14}
+
+The sources are enumerated as a finite set, and the normalization map is given by a table.
+The Atom predicate used at each normalized source is represented by a default truth value
+and a finite exception set that flips it. A default value of false represents a finite set,
+and a default of true a cofinite set, that is, a set with finite complement. A pointed code
+adds the selected source. A morphism between codes uses a finite table of sources and an
+Atom permutation table with finite support, and we require commutation with the
+normalizations, preservation of the selected sources, and the following equality of codes.
+The extraction code obtained by normalizing an original source and transporting it by the
+Atom permutation is equal to the extraction code itself obtained by normalizing the
+corresponding source of the target. This transport preserves the default value and sends the
+finite exception set by the Atom permutation. The equality is therefore required both for
+the default values and for the finite exception sets.
+
+An exact morphism $\sigma:b\to b'$ is presentable in this format if there are a morphism
+$\widehat\sigma:\widehat b\to\widehat b'$ decoded from a code and isomorphisms of bases
+$i:\widehat b\xrightarrow{\sim}b$ and $j:\widehat b'\xrightarrow{\sim}b'$ such that
+\begin{equation*}
+\sigma i=j\widehat\sigma
+\tag{5.20}\label{eq:5.20}
+\end{equation*}
+The presentation of the whole morphism, the isomorphisms $i,j$ included, is what is being
+compared.
+
+\end{definition}
+
+\begin{theorem}[Presentability by this code]\label{thm:5.15}
+
+Assume that Atom equality is decidable. An exact morphism $\sigma=(f,e):b\to b'$ is
+presentable in the sense of Definition~\ref{def:5.14} if and only if the following two
+conditions hold.
+
+\begin{enumerate}
+\item The source sets of both endpoints are finite.
+\item For every source $t$ of the target, the extraction set $F_{D'}(t)$ is finite or
+cofinite.
+\end{enumerate}
+
+\end{theorem}
+
+\begin{proof}
+
+If a presentation exists, the enumeration of the sources and the endpoint isomorphisms give
+finiteness of both endpoints. The set represented by a finite exception table is finite or
+cofinite, and this property is preserved by bijections of Atoms. The endpoint isomorphisms
+match up all sources, so condition~2 holds for every extraction set of the target.
+
+Conversely, assume the two conditions. By exactness, each extraction set of the original is
+$e^{-1}_*F_{D'}(f(s))$ and hence also finite or cofinite. We enumerate the sources of both
+endpoints and express the normalization and the source map in that enumeration. At sources
+in the image of the normalization map, the extraction table encodes the conjunction of the
+original predicates. That conjunction equals the extraction predicate of the inputs that
+normalize there. The table outside the image may be set to false, because decoding always
+normalizes before reading the table. This procedure does not require idempotence of the
+normalization.
+
+Choose the Atom components of the endpoint isomorphisms to be the identity on the original
+and $e$ on the target. Rereading the tables of the target along $e$ as well, the identity
+can be used for the Atom permutation inside the code. For equal extraction sets we choose
+the same default value and exception set, making the normalized tables of the original agree
+with the corresponding tables of the target. In this way the equality of codes holds in
+addition to the equivalence of predicates. The pair with the table of sources is a morphism
+in the sense of Definition~\ref{def:5.14} and satisfies~\eqref{eq:5.20}.
+
+\end{proof}
+
+In this conclusion the presentations of the endpoints are also rechosen. Fullness of the Hom
+sets---whether, after fixing two codes in advance, every morphism between the decoded
+objects can be presented by a morphism of codes---is a further question about those fixed
+presentations.
+
+\begin{example}[Finitely many sources are not enough]\label{ex:5.16}
+
+Let the Atom set be $\mathbb{N}$, take a single source, let the normalization be the
+identity, and let the extraction set be the even numbers. The identity morphism of this
+doctrine is exact, but since both the even and the odd numbers are infinite, it cannot be
+presented by a finite exception table. On the other hand, with the same source and
+extraction set $\mathbb{N}\setminus\{1,3\}$, it can be presented with default value true and
+exceptions $\{1,3\}$. The selected family of the latter is infinite, and no core exists at
+that point, since cores of Chapter~\ref{chap:1} require a finite family. The presentation of
+the base by finite codes and the existence of a core at the point each have their own
+conditions.
+
+\end{example}
+
+\section{Assembling commutative squares into whole diagrams}\label{sec:5.5}
+
+In an actual change we treat not just one square but several APIs, conversions, and
+inspection routes at the same time. This requires building correspondences of paths from the
+correspondences of the individual edges, and preserving the relations between pairs of
+paths.
+
+\begin{definition}[Base diagrams and their changes]\label{def:5.17}
+
+Fix a shape with finitely many vertices, generating edges, and specified pairs of parallel
+paths. A base diagram $X$ assigns $X_v\in B$ to each vertex $v$ and $X_a:X_v\to X_w$ to each
+edge $a:v\to w$. For the two paths $\ell_f,\rho_f$ of each face $f$ we require
+$X_{\ell_f}=X_{\rho_f}$.
+
+A change between diagrams $X,Y$ of the same shape is a family of exact morphisms
+$i_v:X_v\to Y_v$, one for each vertex, satisfying for each generating edge
+\begin{equation*}
+Y_a i_v=i_w X_a
+\tag{5.21}\label{eq:5.21}
+\end{equation*}
+Then $Y_\gamma i_v=i_wX_\gamma$ holds for every path $\gamma:v\to w$ as well. This is proved
+by using the identity law for the empty path and substituting~\eqref{eq:5.21} each time the
+path is extended by one edge.
+
+What a diagram specifies here is the objects and morphisms of the base and their relations.
+Cores, lifts of edges, and automorphisms for comparisons are placed on top of them next.
+
+\end{definition}
+
+\begin{construction}[Building upper-level edges from the same squares]\label{cons:5.18}
+
+Suppose given a core $P_v$ at each vertex and a strongly opcartesian lift $L_a:P_v\to P_w$
+for each edge. At the vertices set $P'_v=(i_v)_!P_v$ and write $I_v:P_v\to P'_v$ for the
+canonical lift. The edge $L'_a$ on the target is constructed as the unique morphism
+satisfying
+\begin{equation*}
+L'_a I_v=I_wL_a,\qquad q(L'_a)=Y_a
+\tag{5.22}\label{eq:5.22}
+\end{equation*}
+Its existence is given by opcartesianness of $I_v$ and by~\eqref{eq:5.21}. Moreover, since
+$I_wL_a$ is opcartesian, $L'_a$ is opcartesian as well. Indeed, compose a morphism out of
+the target of $L'_a$ with $I_v$ and factor it through $I_wL_a$. Eliminating $I_v$ from the
+resulting equation by the universal property yields the factorization through $L'_a$ and
+its uniqueness.
+
+Composing~\eqref{eq:5.22} along a path gives $L'_\gamma I_v=I_wL_\gamma$. For identities,
+composites of changes of diagrams, and horizontal and vertical pasting of squares, the two
+constructions satisfy the same factorization equations and therefore agree under the
+canonical comparisons.
+
+\end{construction}
+
+\begin{proposition}[Conditions for obtaining relations from a family of squares]\label{prop:5.19}
+
+Suppose given only the diagram $X$ on the original, the vertices and edges of the target,
+the vertex morphisms $i_v$, and~\eqref{eq:5.21}. The equation obtained for the two paths of
+a face $f:v\Rightarrow w$ is
+\begin{equation*}
+Y_{\ell_f}i_v=i_wX_{\ell_f}
+=i_wX_{\rho_f}=Y_{\rho_f}i_v.
+\tag{5.23}\label{eq:5.23}
+\end{equation*}
+If $i_v$ is epi, then $Y_{\ell_f}=Y_{\rho_f}$ follows. Hence, if $i_v$ is epi at every
+vertex that appears as the start of a specified face, the family of squares yields a diagram
+on the target and a change of diagrams.
+
+Moreover, for a single $i:X\to Y$, the property
+\begin{equation*}
+ui=vi\Longrightarrow u=v
+\tag{5.24}\label{eq:5.24}
+\end{equation*}
+for all objects $Z$ and all parallel morphisms $u,v:Y\to Z$ is equivalent to $i$ being epi.
+
+\end{proposition}
+
+\begin{proof}
+
+From~\eqref{eq:5.21} for paths and the relations on the original we
+obtain~\eqref{eq:5.23}. Applying the cancellation property of epis establishes the relation
+for each face. The final equivalence is precisely the definition of an epi.
+
+\end{proof}
+
+The quantification in~\eqref{eq:5.24}, which ranges over all parallel morphisms, differs
+from the agreement of only the finitely many paths selected here. For a particular diagram
+to be coherent, it is not necessary that each $i_v$ be epi.
+
+\begin{example}[Discrepancy at inputs that are not read]\label{ex:5.20}
+
+Use doctrines that extract the same finite family at every source, with identity
+normalizations and Atom maps. Consider the source maps
+\begin{equation*}
+i:\{*\}\to\{0,1\},\quad i(*)=0,\qquad
+u=\mathrm{id}_{\{0,1\}},\quad v(0)=v(1)=0
+\tag{5.25}\label{eq:5.25}
+\end{equation*}
+Taking every selected source to be $*$ or $0$, these become base morphisms. If the two
+parallel edges on the original are both identities, the edges $u,v$ on the target
+individually form commutative squares. But even though $ui=vi$, we have $u(1)\ne v(1)$.
+Agreement at the input $0$ alone does not yield agreement at the input $1$.
+
+If both edges on the target are taken to be $u$, the relation holds even with the same
+non-epi $i$. These two examples show the difference between a uniform cancellation
+condition and the coherence of an individual diagram.
+
+\end{example}
+
+\section{Carrying diagnoses and edge reselections back and forth}\label{sec:5.6}
+
+Chapter~\ref{chap:4} expressed the difference between a specified comparison and the
+canonical comparison as a defect. When the base diagram is changed, we want to carry this
+difference as well from the same input. By the fiber equivalence of
+Proposition~\ref{prop:5.8}, not only the values of the diagnosis but also the edge
+reselections that change those values correspond.
+
+\begin{construction}[End groups, cochains, and the correspondence of reselections]\label{cons:5.21}
+
+Fix the change of diagrams of Definition~\ref{def:5.17} and the cores and edges of
+Construction~\ref{cons:5.18}. Let $G_v=\mathrm{Aut}_{E_{X_v}}(P_v)$ be the group of vertical
+automorphisms at a vertex $v$, and $G'_v$ its counterpart on the target. The transport
+functor induces a group isomorphism
+\begin{equation*}
+\Phi_v:G_v\xrightarrow{\sim}G'_v,
+\qquad \Phi_v(g)=(i_v)_!(g)
+\tag{5.26}\label{eq:5.26}
+\end{equation*}
+Surjectivity comes from fullness and injectivity from faithfulness. A cochain
+$\omega=(\omega_f)_f$ on faces and an edge reselection $a=(a_e)_e$ are each sent by applying
+this isomorphism at the ends.
+\begin{equation*}
+(\Phi_C\omega)_f=\Phi_{t(f)}(\omega_f),
+\qquad
+(\Phi_R a)_e=\Phi_{t(e)}(a_e).
+\tag{5.27}\label{eq:5.27}
+\end{equation*}
+Here $t(f)$ and $t(e)$ are the ends of the face and of the edge. Using each $\Phi_v^{-1}$
+componentwise, both assignments have two-sided inverses. The value of a specified comparison
+$u_f$ on the target is likewise taken to be $u'_f=\Phi_{t(f)}(u_f)$.
+
+\end{construction}
+
+\begin{theorem}[Preservation and reflection of coherence and reselection orbits]\label{thm:5.22}
+
+Suppose that the base diagram on the target also satisfies the specified path relations. For
+the construction above, the canonical comparisons $\phi_f$ of Chapter~\ref{chap:4} and the
+raw defects satisfy
+\begin{equation*}
+\begin{aligned}
+\phi'_f(\Phi_Ra)&=\Phi_{t(f)}(\phi_f(a)),\\
+\delta'_f(\Phi_Ra)&=\Phi_{t(f)}(\delta_f(a))
+\end{aligned}
+\tag{5.28}\label{eq:5.28}
+\end{equation*}
+Consequently, the following equivalences hold.
+
+\begin{enumerate}
+\item All faces are coherent at $a$ if and only if all faces are coherent at $\Phi_Ra$.
+\item A reselection making all faces coherent exists before the change if and only if one
+exists after the change.
+\item $\omega$ belongs to the reselection orbit of the raw defect if and only if
+$\Phi_C\omega$ belongs to the orbit after the change.
+\end{enumerate}
+
+For an arbitrary cochain after the change as well, the same verdicts hold for the value
+brought back by $\Phi_C^{-1}$.
+
+\end{theorem}
+
+\begin{proof}
+
+A reselected edge is $L_e^a=a_eL_e$. By the action of transport on morphisms
+and~\eqref{eq:5.22}, its image is $\Phi_{t(e)}(a_e)L'_e$. Extending to paths, the morphism
+obtained by carrying the canonical comparison of the original satisfies the equation comparing the
+two paths after the change. By uniqueness of strongly opcartesian lifts, this is the
+canonical comparison after the change. Since group homomorphisms preserve products and
+inverses, the second equation of~\eqref{eq:5.28} follows from $\delta_f=u_f\phi_f^{-1}$.
+
+Each $\Phi_v$ preserves and reflects the identity element, so the defect being the identity
+in all components is equivalent on the two sides. Moreover $\Phi_R$ is a bijection, so every
+reselection after the change can be brought back as well. Carrying the witness
+$\omega=\delta(a)$ of orbit membership by~\eqref{eq:5.28}, and using $\Phi_R^{-1}$ and
+$\Phi_C^{-1}$ in the reverse direction, the three conclusions follow.
+
+\end{proof}
+
+This diagnosis concerns the fixed diagram and the comparisons generated from it. When new
+faces or new Laws are added after the change, a diagram including them is specified anew.
+For geometries involving a coefficient ring, this section keeps the same coefficient ring
+fixed.
+
+\begin{example}[Correspondence of reselections that cancel the defect]\label{ex:5.23}
+
+In the one-object group category example of Chapter~\ref{chap:4}, take the automorphism
+group to be the permutation group $S_3$ on three letters. On two parallel identity edges,
+place the specified comparison $u=(12)$. Reselecting the left edge to $a=1$ and the right
+edge to $b=(12)$, the canonical comparison becomes $ba^{-1}=(12)$ and the defect vanishes.
+
+Under the group isomorphism $\Phi(g)=cgc^{-1}$ given by the renaming $c=(123)$, the
+specified comparison and the reselection of the right edge are both carried to $(23)$. Hence
+the same face is coherent after the change. Not only is the truth value ``vanished''
+preserved; the reselection that achieved it is carried along.
+
+\end{example}
+
+\section{Conditions for backward transport along refinements}\label{sec:5.7}
+
+When the extraction rules are made more detailed, Atoms that were not extracted before may
+appear. Such a change cannot always be carried backwards in the way an exact morphism can.
+What is needed is that, at the sources where cores are actually placed, the extraction on
+the target can be brought back to the original.
+
+\begin{definition}[Refinements and the realized locus]\label{def:5.24}
+
+A refinement of bases $r:(D,s)\to(D',s')$ has a source map $f$ and a bijection $e$ of
+Atoms, and satisfies $f(s)=s'$, $fN_D=N_{D'}f$, and the forward implication
+\begin{equation*}
+\mathrm{Extracts}_D(t,a)
+\Longrightarrow\mathrm{Extracts}_{D'}(f(t),e(a))
+\tag{5.29}\label{eq:5.29}
+\end{equation*}
+Exactness is the condition that adds the backward implication to this.
+
+The collection of objects of the base that carry at least one core is called the realized
+locus. We say that $r$ reflects extraction on the realized locus if, whenever $E_{b'}$ has
+an object, for every Atom $a$ we have
+\begin{equation*}
+\mathrm{Extracts}_{D'}(s',e(a))
+\Longrightarrow\mathrm{Extracts}_D(s,a)
+\tag{5.30}\label{eq:5.30}
+\end{equation*}
+We write $R(r)$ for this conditional property, namely ``if $E_{b'}$ has an object,
+then~\eqref{eq:5.30} holds''.
+
+For core morphisms over refinements, only the base is relaxed to~\eqref{eq:5.29}, while the
+upper level is subject to the same preservation conditions for readings as in
+Definition~\ref{def:1.28}. In particular, the comparison of selected families is still
+required as an equality. These morphisms and objects are closed under composition and
+define a category $E_{\mathrm{core}}^{\mathrm{ref}}$ with a projection $q_{\mathrm{ref}}$
+to the base.
+
+\end{definition}
+
+\begin{theorem}[Classification of cartesian lifts by the realized locus]\label{thm:5.25}
+
+Fix one pointed refinement $r:b\to b'$. That a strongly cartesian lift with respect to
+$q_{\mathrm{ref}}$ can be chosen for every core on $b'$ is equivalent to $R(r)$.
+
+\end{theorem}
+
+\begin{proof}
+
+Assume $R(r)$ and take a core $Q$ on $b'$. Combining~\eqref{eq:5.29} and \eqref{eq:5.30} gives
+$F_{D'}(s')=e_*F_D(s)$. From this equality we bring finiteness back and build a core $P$ by
+the same inverse reindexing as in Construction~\ref{cons:5.5}. The upper level of the
+morphism $P\to Q$ with base $r$ has a two-sided inverse. The same factorization as in
+Theorem~\ref{thm:5.6} works after an arbitrary refinement base morphism as well.
+
+Conversely, suppose that lifts can be chosen, and take one core $Q$ on $b'$. The upper
+level of its lift $P\to Q$ satisfies $F_Q=e_*F_P$ for the selected families. If $e(a)$ is
+extracted on the target, then $a\in F_P$ by injectivity of $e$, so it is extracted on the
+original as well. This is~\eqref{eq:5.30}. When there is no core on $b'$, there is no
+object for which to choose a lift, and both conditions hold vacuously.
+
+\end{proof}
+
+\begin{construction}[Forward base change of refinements]\label{cons:5.26}
+
+Take an exact cospan $D_1\to D_0\leftarrow D_2$ and a refinement $r:D'_1\to D_1$. Define
+the pairs of corresponding sources by
+\begin{equation*}
+\mathrm{Src}'_{12}
+=\{(s'_1,s_2)\mid f_1(f_r(s'_1))=f_2(s_2)\}
+\tag{5.31}\label{eq:5.31}
+\end{equation*}
+and define extraction from the first component in $D'_1$. The first projection
+$\pi'_1:D'_{12}\to D'_1$ is exact, and $(s'_1,s_2)\mapsto(f_r(s'_1),s_2)$ together with the
+Atom map $e_r$ defines a refinement $r_{12}:D'_{12}\to D_{12}$. Preservation of extraction
+follows from~\eqref{eq:5.29}, and the following square commutes.
+\begin{equation*}
+\begin{array}{ccc}
+D'_{12}&\xrightarrow{\ r_{12}\ }&D_{12}\\
+{\scriptstyle\pi'_1}\downarrow&&\downarrow{\scriptstyle\pi_1}\\
+D'_1&\xrightarrow{\ r\ }&D_1.
+\end{array}
+\tag{5.32}\label{eq:5.32}
+\end{equation*}
+This construction does not require $R(r)$. Choosing one pair in~\eqref{eq:5.31} fixes the
+sources of the four vertices and a pointed square.
+
+\end{construction}
+
+\begin{proposition}[Transfer of the realized locus and the two backward routes]\label{prop:5.27}
+
+Choose a compatible pair in~\eqref{eq:5.31} and suppose that $R(r)$ holds at that point.
+Then $R(r_{12})$ holds as well, and we obtain two functors from cores on $D_1$ to cores on
+$D'_{12}$ and a natural comparison
+\begin{equation*}
+(\pi'_1)^*r^*
+\longrightarrow r_{12}^*\pi_1^*
+\tag{5.33}\label{eq:5.33}
+\end{equation*}
+That both refinement lifts can be chosen at every compatible pair is equivalent to $R(r)$
+holding at all such pairs. Moreover, pointed refinements that reflect extraction on the
+realized locus are closed under identities and composition.
+
+\end{proposition}
+
+\begin{proof}
+
+If there is a core at the selected point of $D_{12}$, it can be transported forwards along
+the exact $\pi_1$. This yields a core at the corresponding point of $D_1$ as well, and
+$R(r)$ can be used. The extraction of both fiber products is that of the first component,
+so~\eqref{eq:5.30} carries over to $r_{12}$ as it stands. Theorem~\ref{thm:5.25} gives the
+two refinement lifts, and Theorem~\ref{thm:5.6} the two exact lifts. Factoring the two-step
+lifts along the commutative square gives~\eqref{eq:5.33}. Its naturality follows because
+the two factors obtained by composing with a vertical morphism satisfy the same triangle.
+For the equivalence over all pairs we apply Theorem~\ref{thm:5.25} pointwise.
+
+For a composite $b_0\xrightarrow{r}b_1\xrightarrow{t}b_2$, a core on $b_1$ is built by
+pulling a core on $b_2$ back along $t$. This also satisfies the realization condition of
+$R(r)$. Reflecting extraction along $t$ and then along $r$ yields $R(tr)$. In the case of
+an identity, \eqref{eq:5.30} becomes the identity implication.
+
+\end{proof}
+
+\begin{example}[A forward-only change and the scope that can be carried back]\label{ex:5.28}
+
+Let the Atoms be $\{A,B,C\}$ and the sources $\{\mathrm{partial},\mathrm{all}\}$. Take the
+identity normalization and define the extractions of the original and the target as
+follows.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Source & Original & Target \\
+\midrule
+\endhead
+partial & A, B & A, B, C \\
+\addlinespace[3pt]
+all & A, B, C & A, B, C \\
+\bottomrule
+\end{xltabular}
+
+The source map is the identity, and the Atom map is the bijection that swaps $A,B$ and
+fixes $C$. This is a refinement. All extracted families are finite, and a core can be
+placed at each point. For instance, set $\mathrm{Comp}(F)=(F,\varnothing,\varnothing)$, and
+let object formation preserve the configuration and place the element of a one-element set
+in the structure data and in the quantity. If the operations are only the identities
+between equal objects, and the equation indices, invariants, and signature axes are empty,
+we can construct a core satisfying the conditions of the reading.
+
+If partial is selected, the Atom $C$ on the target cannot be brought back to the
+original. By Theorem~\ref{thm:5.25}, no lift to a core on the target exists. If both cospan
+legs are the identity of the target doctrine, the forward square of
+Construction~\ref{cons:5.26} can still be built.
+
+On the other hand, let the second cospan leg be the exact morphism into all on the target
+from the doctrine that has a single source and extracts all Atoms. In a compatible pair
+the first source is then restricted to all, where~\eqref{eq:5.30} holds. Hence that square
+has both backward transports. The original refinement still enlarges the extraction at
+partial. The reason backward transport became possible is that the inputs matched this
+time are narrowed to the scope of all.
+
+\end{example}
+
+\begin{example}[Contrast with the case where no object exists]\label{ex:5.29}
+
+Consider the identity refinement with one source, Atoms $\mathbb{N}$, and the whole of
+$\mathbb{N}$ as the extracted family. Since the selected family is infinite, no core
+exists. Both conditions of Theorem~\ref{thm:5.25} hold, but this is not an example of cores
+actually traveling back and forth. Example~\ref{ex:5.28} compares the two behaviors after
+confirming that objects exist.
+
+\end{example}
+
+\section{Comparisons including covers and local data}\label{sec:5.8}
+
+A comparison of cores includes the objects, the operations, and the Laws. To compare local
+inspections under the same conditions, we must also carry which contexts read what and
+where they overlap. The full geometries of Chapter~\ref{chap:1} are the objects that add
+these covers, overlaps, coefficients, and raw systems to a core.
+
+\begin{definition}[Morphisms of geometries over refinements]\label{def:5.30}
+
+For a morphism of geometries $G\to H$, take its lower level to be a morphism of
+$E_{\mathrm{core}}^{\mathrm{ref}}$, and take the correspondences of contexts, equations,
+Atoms, and axes from its upper-level reading map. On the components of the geometries we
+impose the same five conditions as in Definition~\ref{def:1.30}: forward preservation of
+coverage requirements, comparison of overlaps, a coefficient homomorphism, the transport
+equations for raw systems, and the readouts of support, axes, and observables together with
+their naturality. These define a category $E_{\mathrm{geom}}^{\mathrm{ref}}$ and
+projections
+\begin{equation*}
+E_{\mathrm{geom}}^{\mathrm{ref}}
+\xrightarrow{\ p_{\mathrm{ref}}\ }
+E_{\mathrm{core}}^{\mathrm{ref}}
+\xrightarrow{\ q_{\mathrm{ref}}\ }B^{\mathrm{ref}}
+\tag{5.34}\label{eq:5.34}
+\end{equation*}
+The exact three-level categories enter here by restricting the base to exact morphisms.
+
+\end{definition}
+
+\begin{construction}[Pullback of geometries along the generated backward transport]\label{cons:5.31}
+
+Take a lift of cores $K:P\to Q$ built by Theorem~\ref{thm:5.6} or 5.25, and a geometry $H$
+on $Q$. Let $u,u^{-1}$ be the upper level of $K$ and its generated inverse, and
+$\theta,\bar\theta$ the correspondence of contexts. We build a geometry $K^*H$ on $P$ as
+follows.
+
+\begin{xltabular}{\linewidth}{@{}LL@{}}
+\toprule
+Data & How it is pulled back \\
+\midrule
+\endhead
+Coverage requirements and visibility & Send Atoms, equations, and axes forward, then read
+the predicates of $H$ \\
+\addlinespace[3pt]
+Overlap of two contexts & Send them to $H$ by $\theta$, take the overlap in $H$, and return
+by the specified quasi-inverse \\
+\addlinespace[3pt]
+Coefficient ring & Use the same ring $k$ as $H$ \\
+\addlinespace[3pt]
+Raw system & In a context $W$, read the coordinates, relations, and local data of $H$ at
+$\theta W$ \\
+\addlinespace[3pt]
+Support, axes, observables & Use the same correspondence of carriers that accompanies the
+reindexing \\
+\bottomrule
+\end{xltabular}
+
+For the restriction maps of the raw system we use the morphisms sent by $\theta$. The
+identity and composition laws and the preservation of relation polynomials follow from the
+original raw system. The universal property of overlaps is brought back by the equivalence
+of context categories. In this way we obtain a morphism with identity coefficient
+component,
+\begin{equation*}
+\widehat K:K^*H\longrightarrow H
+\tag{5.35}\label{eq:5.35}
+\end{equation*}
+This morphism is strongly cartesian with respect to $p_{\mathrm{ref}}$. Indeed, for a
+morphism passing through $K$ on the lower level, the cover conditions return to the
+preimage conditions just defined, and the raw-system equations return by the reindexing of
+$u^{-1}$. The comparison maps of local data are also brought back by the generated
+two-sided inverses. These constitute the factor, and uniqueness follows by composing with
+the same inverses.
+
+\end{construction}
+
+\begin{theorem}[Two backward routes built from the same geometry]\label{thm:5.32}
+
+Fix the point and the realized-locus condition of Proposition~\ref{prop:5.27}, and place a
+geometry $H$ on a core $Q$ on $D_1$. Repeating Construction~\ref{cons:5.31} along the two
+routes yields geometries $H_B,H_P$ and morphisms $K_B:H_B\to H$ and $K_P:H_P\to H$. Between
+them there is a natural comparison $m_H:H_B\to H_P$ satisfying
+\begin{equation*}
+K_Pm_H=K_B,
+\qquad p_{\mathrm{ref}}(m_H)=m_Q
+\tag{5.36}\label{eq:5.36}
+\end{equation*}
+Here $m_Q$ is the comparison of cores obtained by aligning the endpoints of the two routes
+of~\eqref{eq:5.33} by the canonical isomorphisms. For the generated routes $m_H$ is
+invertible, and its coefficient component is $1_k$.
+
+\end{theorem}
+
+\begin{proof}
+
+The core morphisms of the two routes are each composites of two strongly cartesian
+morphisms. Since the square of bases commutes, the comparison $m_Q$ aligning their starts
+and ends, and its inverse, are obtained uniquely. The two routes of geometries are likewise
+composites of cartesian morphisms from Construction~\ref{cons:5.31}. We first build $m_Q$
+on the lower level and lift its factorization to the upper level to obtain $m_H$.
+Performing the same procedure in the opposite direction and applying uniqueness gives a
+two-sided inverse. The coefficient map at each step is the identity, so the coefficient map
+of the comparison is the identity as well.
+
+\end{proof}
+
+To compare a whole diagram, we take a finite rooted diagram with a path to each vertex, and
+fix a diagram of cores inside the fiber category at the same point of the base, geometries
+on it, and a coefficient ring $k$. We further give the two-level transport data of
+Chapter~\ref{chap:4}: each edge of cores and of geometries is a strongly opcartesian
+morphism with respect to its projection, and the coefficient components of the edges and of
+the specified comparisons are identities. Applying Theorem~\ref{thm:5.32} at each vertex,
+we pull the edges and the specified comparisons of the same source back to both routes. As
+a result, the generated comparison matches up not only the edges but also the specified
+comparisons of the faces.
+\begin{equation*}
+\begin{aligned}
+m_w L^B_e&=L^P_e m_v,\\
+m_{t(f)}u^B_f&=u^P_fm_{t(f)}.
+\end{aligned}
+\tag{5.37}\label{eq:5.37}
+\end{equation*}
+Composed with $K_P$, both sides of the second equation become the same morphism, obtained by carrying
+a single source comparison. The equation is obtained by reflecting it first through
+cartesianness of cores and then through cartesianness of geometries. The first equation is
+similar, and naturality for paths follows by induction from the generating edges. When the
+specified comparisons are chosen separately on the two routes, the second equation becomes
+an additional condition to be checked.
+
+\begin{lemma}[Transfer of solutions by endpoint isomorphisms]\label{lem:5.33}
+
+Suppose that between the diagrams of the two routes and other presentations of them there
+are natural isomorphisms
+$b_v:\widetilde H_{B,v}\xrightarrow{\sim}H_{B,v}$ and
+$c_v:\widetilde H_{P,v}\xrightarrow{\sim}H_{P,v}$.
+Assume the isomorphisms fix the coefficients and match up the morphisms of the routes and
+the specified comparisons. The families of comparisons $s_v$ satisfying the fixed
+lower-level comparison, the triangles, and~\eqref{eq:5.37} then correspond in both
+directions by
+\begin{equation*}
+\widetilde s_v=c_v^{-1}s_vb_v,
+\qquad
+s_v=c_v\widetilde s_vb_v^{-1}
+\tag{5.38}\label{eq:5.38}
+\end{equation*}
+The endpoints of the lower-level comparisons and of the triangles are aligned by the same
+isomorphisms.
+
+\end{lemma}
+
+\begin{proof}
+
+Substitute the naturality of $b,c$ into the naturality for edges and cancel adjacent
+inverses. The same computation applies to the equations for the specified comparisons and
+to the triangles. Using the identity law for the empty path and associativity for
+concatenation of paths and pasting of faces, all conditions are preserved. The two formulas
+of~\eqref{eq:5.38} are mutually inverse.
+
+\end{proof}
+
+Using the same conjugation at the ends for reselections and defects, vanishing and
+reselection orbits correspond in both directions, for the same reason as
+in~\eqref{eq:5.28}. What this correspondence uses is routes generated from the same source
+and endpoint isomorphisms that preserve the components. For an arbitrarily given morphism
+of geometries, the preservation of coverage requirements and local data may be forward
+only, and transferring solutions backwards requires the inverse morphisms that
+form~\eqref{eq:5.38}.
+
+\section{Reading the exchange of order in lenses and protocols}\label{sec:5.9}
+
+When the view of a lens or the operations of a protocol are restricted, we ask whether
+semantics-preserving changes can also be restricted to that scope. For lenses we show that
+after the restriction the updates stay within the scope; for protocols, that the
+comparisons of executions and adapters are preserved.
+
+\begin{proposition}[Restriction of the view of a lens]\label{prop:5.34}
+
+For a total lens $g:C\to V$, $p:C\times V\to C$ satisfying the three laws and a subset
+$W\subseteq V$, set
+\begin{equation*}
+C_W=\{c\in C\mid g(c)\in W\}
+\tag{5.39}\label{eq:5.39}
+\end{equation*}
+The restrictions of read and update define a total lens $C_W\to W$.
+
+\end{proposition}
+
+\begin{proof}
+
+The read after an update is $g(p(c,w))=w$, so if $w\in W$ the state after the update also
+belongs to $C_W$. Reading the equations of the three laws on this subset gives the three
+laws after the restriction.
+
+\end{proof}
+
+\begin{example}[Restriction and update with four states]\label{ex:5.35}
+
+We compute the restriction of views and the correspondence of states on a product lens
+with four states. Let the displayed values be $V=\{0,1\}$ and the component preserved by
+updates be $R=\{0,1\}$, and use the product lens $C=V\times R$. Read returns the first
+component, and update rewrites only the first component. Let the displayed values of the
+target be $V'=\{A,B\}$, with the bijection $u$ sending 0 to A and 1 to B. The
+correspondence of states $h$ converts the displayed value by $u$ and swaps 0 and 1 in the
+second component. Let $W'$ be the set of displayed values to select, keeping only A on the
+target. That is, we set
+\begin{equation*}
+h(v,r)=(u(v),1-r),\qquad W'=\{A\}
+\tag{5.40}\label{eq:5.40}
+\end{equation*}
+Selecting the states with displayed value 0 on the original and then applying the
+correspondence, or selecting the states with displayed value A on the target, reaches the
+same two states. The restricted update is closed in the selected view, and $h$ preserves
+updates as well. In this example, comparing the two routes specifies at the same time
+which states to keep and which updates to allow.
+
+\end{example}
+
+\begin{proposition}[Restriction of protocols and adapters]\label{prop:5.36}
+
+Let $\mathcal{P}$ be the presented protocol category of Chapter~\ref{chap:1}, and let
+$j:\mathcal{Q}\to\mathcal{P}$ be the inclusion of the protocol consisting of the vertices
+and operations to be kept and the relations between them. Two realizations
+$F,F':\mathcal{P}\to{\mathbf{Set}}$ and a semantics-preserving adapter $a:F\Rightarrow F'$
+determine restrictions $Fj,F'j$ and an adapter $aj:Fj\Rightarrow F'j$. Comparison triangles
+and commutative adapter squares are also preserved by the restriction.
+
+\end{proposition}
+
+\begin{proof}
+
+The restrictions $Fj,F'j$ are given by composition of functors. The naturality of $a$ for
+an arbitrary morphism $e:x\to y$ of $\mathcal{Q}$, namely
+$a_{j(y)}F(j(e))=F'(j(e))a_{j(x)}$, gives the naturality of $aj$. Preservation of
+observations and the equations of the triangles and squares are likewise restricted at
+each vertex.
+
+\end{proof}
+
+In the example of splitting the monolith, from the protocol of the whole we keep the
+cancellation request, the release of inventory reservations, and cancellation completion,
+together with the relations between them. Giving realizations before and after the split
+and checking the naturality of the adapter for each operation, we obtain a correspondence
+for the execution of a cancellation that chains them. In selecting this part, we include
+the operations carried by the inventory service. Only then does the cancellation process
+that crosses services become an object of comparison. The Laws on the states of
+cancellation completion and reservation release are checked together on the corresponding
+states.
+
+When communication failures and retries are read as new operations and states, we specify
+a protocol and a correspondence that include them. Coherence of the comparison is a
+property of the selected operations and relations, and for diagrams that also contain
+operations outside the selection, it must be checked separately, as in
+Example~\ref{ex:5.20}.
+
+\section{The generated comparison including the two routes and normalization}\label{sec:5.10}
+
+The canonical comparison $\alpha$ gives the correspondence of structure along the two
+routes. The generated comparison $\beta$ additionally incorporates a normalization
+selected according to the diagnosis. Even when a normalization preserves the operations and
+the Laws, the distinctions among the original representations may not be recoverable. We
+construct this comparison from the same input, and Chapter~\ref{chap:6} analyzes its
+invertibility and the information that remains.
+
+\begin{construction}[Two routes of full geometries]\label{cons:5.37}
+
+In this section we fix the following input.
+
+\begin{itemize}
+\item Decidable Atom equality, and the square~\eqref{eq:5.14} obtained by decoding the
+finite codes of~\S\ref{sec:5.3}.
+\item A core at each vertex of the finite diagnostic diagram included in those codes, and a
+strongly opcartesian lift for each edge, where the strength is with respect to the projection to
+the extraction base.
+\item That the images in the base of the two paths of each face are equal, and that the
+core at the end of each face lies over $b_1$.
+\item A specified automorphism at the end of each face, fixing the extraction base.
+\end{itemize}
+
+Choose a face $z$ of these same data and write $P_z$ for the core at its end. Fix a
+commutative coefficient ring $k$ and a full geometry $G_z$ on $P_z$. The geometry includes
+the coverage requirements, the overlaps, and the raw system. The cochain $\omega$ used
+later is also taken for this same diagram and these cores. Using the canonical transport of
+geometries of Chapter~\ref{chap:4} and Construction~\ref{cons:5.31}, we form
+\begin{equation*}
+\overline D(G_z)=(\pi_2)_!\pi_1^*G_z,
+\qquad
+\overline V(G_z)=\sigma_2^*(\sigma_1)_!G_z
+\tag{5.41}\label{eq:5.41}
+\end{equation*}
+The lower and upper indices denote the operations on entire geometries. Both routes keep
+the coefficient ring $k$.
+
+We construct the canonical comparison of full geometries from the comparison of the two
+backward routes of~\S\ref{sec:5.8}. Setting $H_0=(\sigma_1)_!G_z$, the comparison that
+traces the same square backwards is
+\[
+m_{H_0}:\pi_1^*\sigma_1^*H_0
+\xrightarrow{\sim}\pi_2^*\sigma_2^*H_0
+\]
+Aligning the choices at the endpoints, the following three steps can be composed using the
+unit and the counit.
+\[
+\begin{aligned}
+\overline D(G_z)
+&\xrightarrow{\ (\pi_2)_!\pi_1^*(\eta^{\sigma_1}_{G_z})\ }
+(\pi_2)_!\pi_1^*\sigma_1^*H_0\\
+&\xrightarrow{\ (\pi_2)_!(m_{H_0})\ }
+(\pi_2)_!\pi_2^*\sigma_2^*H_0\\
+&\xrightarrow{\ \epsilon^{\pi_2}_{\sigma_2^*H_0}\ }
+\overline V(G_z).
+\end{aligned}
+\]
+The first morphism is the unit pulled back and then transported, and the last is the
+counit. When a different choice of lifts is used, the endpoint isomorphisms built from
+Construction~\ref{cons:5.31} are inserted before and after the middle comparison. The order
+is: unit, isomorphism at the start, comparison of the backward routes, isomorphism at the
+end, counit. Substituting~\eqref{eq:5.36} and the unit-counit triangles yields the
+geometric version of~\eqref{eq:5.18}, and we write $\overline\alpha_z$ for the resulting
+isomorphism.
+
+\end{construction}
+
+\begin{proposition}[Compatibility with the projection to cores]\label{prop:5.38}
+
+Write $p$ for the functor that forgets the geometry, and
+$j_D:p\overline D(G_z)\xrightarrow{\sim}DP_z$ and
+$j_V:p\overline V(G_z)\xrightarrow{\sim}VP_z$ for the generated endpoint isomorphisms.
+Then
+\begin{equation*}
+j_V\,p(\overline\alpha_z)=\alpha_{P_z}\,j_D.
+\tag{5.42}\label{eq:5.42}
+\end{equation*}
+
+\end{proposition}
+
+\begin{proof}
+
+Projecting the lifts of geometries yields the lifts of cores used in the generation. Even
+when the choices differ, $j_D,j_V$ are their unique comparisons. Projecting the geometric
+version of~\eqref{eq:5.18} and aligning it by these comparisons gives~\eqref{eq:5.18} for
+cores. That morphism is unique, so it coincides with the mate of Theorem~\ref{thm:5.11}.
+
+\end{proof}
+
+So far, the structures obtained by the two routes have been matched by an invertible
+canonical comparison. Next we choose which differences of representation to keep in the
+comparison. For example, we may want to align several design representations with the same
+configuration after the split to a common standard representation. To add this processing,
+we must preserve not only the presentation of objects but also the operations and the
+Laws. We first extract the conditions under which such a normalization can be defined.
+
+\begin{definition}[Normalization preserving configurations]\label{def:5.39}
+
+A core $P$ selects an object $\mathrm{Form}_P(C)$ for each configuration $C$. Let the map
+sending an arbitrary object $A$ to the selected object on the same configuration be
+\begin{equation*}
+n_P(A)=\mathrm{Form}_P(C_A)
+\tag{5.43}\label{eq:5.43}
+\end{equation*}
+By the conditions on object formation, $C_{n_P(A)}=C_A$ and $n_P^2(A)=n_P(A)$. To make
+this map a morphism of cores, we let $\mathrm{Ad}(P)$ be the following conditions.
+
+\begin{itemize}
+\item In every context, object, equation index, and Atom, the residual is unchanged under
+$A\mapsto n_P(A)$.
+\item $\mathrm{Op}_P(A,B)$ and $\mathrm{Op}_P(n_P(A),n_P(B))$ have the same type, and this
+identification preserves the configuration maps.
+\item The indices and kinds of the invariants are preserved, and on every object the truth
+values of predicate-type invariants and the values of function-type invariants are
+unchanged by the normalization.
+\item On every signature axis, the coordinate values are unchanged under
+$A\mapsto n_P(A)$.
+\end{itemize}
+
+The function-type condition is equivalent to the correspondence by bijections of the value
+ranges in Definition~\ref{def:1.28}. Indeed, abbreviate $n=n_P$ and suppose there are
+bijections $t_i$ with $t_i(I_i(A))=I_i(n(A))$ for all objects. By idempotence $n^2=n$ of
+the object map,
+\[
+t_i(I_i(A))=I_i(n(A))=I_i(n(n(A)))=t_i(I_i(n(A))).
+\]
+Injectivity of $t_i$ gives $I_i(A)=I_i(n(A))$. Conversely, if the values are unchanged, we
+may choose $t_i=\mathrm{id}$.
+
+We then define an endomorphism $N_P$ of the core by using $n_P$ on objects, the type
+identification above on operations, and identities on Atoms, contexts, equation indices,
+and axes. Since configurations are preserved, the detector code is also kept identical.
+For a geometry $G$ we further define an endomorphism $N_G$ using the identity maps on
+coefficients, support, axes, and observables. The equations for covers, overlaps, and raw
+systems hold with identity comparisons.
+
+This normalization is incorporated into the comparison of the two routes according to a
+specified diagnosis. In the next construction, the normalization is selected when a
+component of the cochain is not the identity and the preservation conditions above hold.
+In this way, which diagnosis was responded to, and on which route the representations were
+aligned, can be expressed as a single comparison morphism.
+
+\end{definition}
+
+\begin{construction}[Generated comparisons selected by the same diagnosis]\label{cons:5.40}
+
+We use the common input of Construction~\ref{cons:5.37} and a cochain $\omega$ on the same
+diagram. For the chosen face $z$ and its end $P_z,G_z$, the endomorphism used on the
+original core is selected by
+\begin{equation*}
+S_{z,\omega}=
+\begin{cases}
+N_{P_z},&\omega_z\ne1\ \text{and}\ \mathrm{Ad}(P_z),\\
+1_{P_z},&\text{otherwise}
+\end{cases}
+\tag{5.44}\label{eq:5.44}
+\end{equation*}
+This selection is a mathematical case distinction and does not assume a finite decision
+procedure for $\mathrm{Ad}(P_z)$. For the full geometry we likewise select $N_{G_z}$ or
+the identity under the same condition and write $\overline S_{z,\omega}$. Next, this
+endomorphism is carried along the actual second route.
+\begin{equation*}
+\begin{aligned}
+E_{z,\omega}&=V(S_{z,\omega}):VP_z\longrightarrow VP_z,\\
+\overline d_{z,\omega}
+ &=\overline V(\overline S_{z,\omega}):
+ \overline V(G_z)\longrightarrow\overline V(G_z),\\
+\beta_{z,\omega}&=E_{z,\omega}\alpha_{P_z},\\
+\overline\beta_{z,\omega}
+ &=\overline d_{z,\omega}\overline\alpha_z.
+\end{aligned}
+\tag{5.45}\label{eq:5.45}
+\end{equation*}
+This is one generation rule that incorporates the permitted normalization when the
+component of the specified cochain is not the identity. The current raw defect may also be
+chosen as the cochain. The square, the face, the cochain, the coefficients, and the
+original geometry used in the construction are common to the two routes. Under the same
+projections and endpoint isomorphisms,
+\begin{equation*}
+j_V\,p(\overline d_{z,\omega})=E_{z,\omega}j_V,
+\qquad
+j_V\,p(\overline\beta_{z,\omega})=\beta_{z,\omega}j_D
+\tag{5.46}\label{eq:5.46}
+\end{equation*}
+The first equation follows from having selected the same normalization on the original
+object and from the projection compatibility of transport. The second is the composite of
+the first with~\eqref{eq:5.42}.
+
+Three kinds of comparisons are now in place.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Comparison & What determines it & What to check \\
+\midrule
+\endhead
+The canonical $\alpha$ & The universal properties of transport and pullback & It satisfies
+the triangle of the two routes and is invertible \\
+\addlinespace[3pt]
+A separately specified $a$ & A comparison chosen by an implementation or a way of reading &
+Whether it satisfies the triangle, and what its difference from $\alpha$ is \\
+\addlinespace[3pt]
+The generated comparison $\beta$ & The $\alpha$ of the same input, and the normalization
+selected by the diagnosis & Invertibility and image after the normalization is
+incorporated \\
+\bottomrule
+\end{xltabular}
+
+Chapter~\ref{chap:6} proves the idempotence of $N_P$ and $N_G$ as morphisms and studies
+when this generated comparison is invertible and, when it is not, what it leaves as its
+image.
+
+\end{construction}
+
+\section*{Summary of the Chapter}
+
+In this chapter we built two routes from transport and changes of input, and extended
+their comparison to diagnoses, geometries, and normalization.
+
+\begin{itemize}
+\item \textbf{Base change and the exchange of order.} We built the inputs corresponding to
+a common condition as fiber products and pulled structure back. Along an exact base
+morphism a cartesian lift to any core on the target is obtained, and transport and
+pullback form an adjoint equivalence. The Beck--Chevalley mate built from its unit and
+counit is invertible (\S\S\ref{sec:5.1}--\ref{sec:5.3}).
+\item \textbf{Correspondence of diagrams and diagnoses.} In diagrams whose base relations
+are aligned, the end groups, cochains, and edge reselections correspond, preserving and
+reflecting the vanishing of defects and membership in reselection orbits. In aligning the
+relations of a whole diagram, we distinguish conditions cancellable by epis from relations
+imposed individually (\S\S\ref{sec:5.5}--\ref{sec:5.6}).
+\item \textbf{The scope of backward transport.} For refinements, reflection of extraction
+on the realized locus is necessary and sufficient for backward transport. Even when the
+doctrine as a whole is not exact, backward transport is possible if the extractions agree
+at the sources actually matched (\S\ref{sec:5.7}).
+\item \textbf{Extension to geometries and operations.} By carrying the covers and local
+data as well from the same original geometry, we raised the comparison of the two routes
+to full geometries. For lenses we showed the condition that updates stay within the
+selected scope, and for protocols the correspondence of all executions of the kept
+operations (\S\S\ref{sec:5.8}--\ref{sec:5.9}).
+\item \textbf{Generated comparisons including normalization.} We selected a normalization
+according to the diagnosis and composed it with the canonical comparison to form
+$\beta=E\alpha$. Since the same normalization is selected for the geometry and the core,
+this comparison is also compatible with the projection (\S\ref{sec:5.10}).
+\end{itemize}
+
+For the split of the monolith from the opening, we compare the splitting proposal built
+from the order-cancellation part with the cancellation part extracted after splitting the
+whole. Including the cancellation request, the release of inventory reservations, and
+cancellation completion in the scope makes the operations and Laws of the two routes
+correspond. If, on top of this, several design representations are aligned to a common
+representative, the generated comparison provides the correspondence including that
+normalization.
+
+The next chapter examines the normalization factor of the generated comparison and
+clarifies its invertibility and the information that remains.

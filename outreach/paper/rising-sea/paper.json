@@ -10,6 +10,12 @@
     {"source": "en/01-abstract.tex", "target": "01-abstract.tex"},
     {"source": "en/02-introduction.tex", "target": "02-introduction.tex"},
     {"source": "en/03-preliminaries-and-notation.tex", "target": "03-preliminaries-and-notation.tex"},
+    {"source": "en/04-relative-architecture.tex", "target": "04-relative-architecture.tex"},
+    {"source": "en/05-law-geometry.tex", "target": "05-law-geometry.tex"},
+    {"source": "en/06-resolution-invariance.tex", "target": "06-resolution-invariance.tex"},
+    {"source": "en/07-transport-coherence.tex", "target": "07-transport-coherence.tex"},
+    {"source": "en/08-base-change.tex", "target": "08-base-change.tex"},
+    {"source": "en/figures/ch02-finite-covers.tex", "target": "figures/ch02-finite-covers.tex"},
     {"source": "en/pending-labels.tex", "target": "pending-labels.tex"},
     {"source": "en/references.bib", "target": "references.bib"}
   ]
