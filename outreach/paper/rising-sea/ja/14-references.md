@@ -168,3 +168,21 @@ Value Chain View. 刊行年の記載なし。
 [公式公開図表](https://bian.org/wp-content/uploads/2024/12/BIAN-Service-Landscape-V9_0-Value-Chain-View.pdf).
 参照箇所: p. 1 の Current Account、Payment Execution、Financial Accounting。
 第8章の行内送金の例で、業務領域の分担の参照に用いる。
+
+**[ReS]** Alexandre Grothendieck.
+*Récoltes et semailles: Réflexions et témoignage sur un passé de mathématicien*.
+1985–1987年のtypescript。Gallimard, 2022（2分冊、ISBN 9782072889752）として刊行.
+[仏語全文の公開コピー](https://webusers.imj-prg.fr/~leila.schneps/grothendieckcircle/RetSbis.pdf)、
+[刊行版の書誌](https://www.gallimard.fr/catalogue/recoltes-et-semailles-i-ii/9782072889752).
+参照箇所: ReS III、注122「La mer qui monte…」。公開コピー pp. 682–689、
+比喩の本体は pp. 687–689。typescriptでは pp. 552–553・555（[McLarty03]の引用による）。
+序論のRising Seaの比喩の出典に用いる。
+
+**[McLarty03]** Colin McLarty.
+*The Rising Sea: Grothendieck on simplicity and generality I*.
+2003年5月24日の公開稿。改稿版は Jeremy J. Gray and Karen Hunger Parshall 編
+*Episodes in the History of Modern Algebra (1800–1950)*（History of Mathematics 32,
+American Mathematical Society, 2007）に収録.
+[公開稿](https://www.landsburg.com/grothendieck/mclarty1.pdf).
+参照箇所: 公開稿 pp. 1–2。「la mer qui monte」の訳語としてのrising seaと、
+[ReS]の該当箇所の英訳・引用。序論で使用し、本文の参照は公開稿による。
