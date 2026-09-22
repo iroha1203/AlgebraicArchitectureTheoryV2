@@ -38,6 +38,10 @@ EXEMPT_REFS = {
     '03-preliminaries-and-notation': {'def:2.1', 'prop:2.2', 'def:2.3', 'sec:2.1', 'eq:2.1', 'fig:2.1', 'tab:2.1'},
 }
 
+# 付録A の日本語原稿は数式記法($)を使わず Unicode 文字(ℤ・≃ など)を地の文に
+# 書くため、英語側の数式モードとの機械照合が成立しない。翻訳レビューで確認する。
+EXEMPT_MATH = {'15-appendix-a-lean-correspondence'}
+
 NUM = r'\d+\.\d+(?![.\d])'
 SECNUM = r'(?:[PRA-C]|\d+)\.\d+(?![.\d])'
 ITEM_REF = re.compile(rf'({"|".join(KINDS)})({NUM})((?:[・/](?:{NUM}))*)(?:[–](({NUM})))?')
@@ -288,7 +292,8 @@ def en_sections(tex):
         label = label_after(tex, m.end())
         if label:
             found.append(label)
-    found += re.findall(r'\\label\{(fig:[^}]+|app:[^}]+)\}', tex)
+    # app: ラベルは \chapter 直後の \label として収集済み(二重計上しない)。
+    found += re.findall(r'\\label\{(fig:[^}]+)\}', tex)
     return found
 
 
@@ -439,6 +444,15 @@ def skeleton(path):
                 out.append(f'\\[\n{body}\n\\]')
             i = j + 1
             continue
+        if line.startswith('```'):
+            flush()
+            close_env()
+            j = i + 1
+            while lines[j] != '```':
+                j += 1
+            out.append('\\begin{verbatim}\n' + '\n'.join(lines[i + 1:j]) + '\n\\end{verbatim}')
+            i = j + 1
+            continue
         if not line.strip():
             flush()
             i += 1
@@ -569,18 +583,21 @@ def check(aux=None):
         en_list, en_tags, bad = en_math(tex)
         for b in bad:
             err(b)
-        ja_c = collections.Counter(canon(m) for m in ja_list)
-        en_c = collections.Counter(canon(m) for m in en_list)
-        left_ja, left_en = ja_c - en_c, en_c - ja_c
-        masked_ja = collections.Counter(mask_text(m) for m in left_ja.elements())
-        masked_en = collections.Counter(mask_text(m) for m in left_en.elements())
-        text_only = masked_ja & masked_en
-        for m in (masked_ja - masked_en).elements():
-            err(f'英語原稿にない数式: {m[:160]}')
-        for m in (masked_en - masked_ja).elements():
-            err(f'日本語原稿にない数式: {m[:160]}')
-        if text_only:
-            notes.append(f'{name}: \\text{{}} の中身だけが異なる数式 {sum(text_only.values())} 件(翻訳した注記を目視確認)')
+        if name in EXEMPT_MATH:
+            notes.append(f'{name}: 数式は照合対象外(日本語原稿が数式記法を使わない)。英語側 {len(en_list)} 件は翻訳レビューで確認')
+        else:
+            ja_c = collections.Counter(canon(m) for m in ja_list)
+            en_c = collections.Counter(canon(m) for m in en_list)
+            left_ja, left_en = ja_c - en_c, en_c - ja_c
+            masked_ja = collections.Counter(mask_text(m) for m in left_ja.elements())
+            masked_en = collections.Counter(mask_text(m) for m in left_en.elements())
+            text_only = masked_ja & masked_en
+            for m in (masked_ja - masked_en).elements():
+                err(f'英語原稿にない数式: {m[:160]}')
+            for m in (masked_en - masked_ja).elements():
+                err(f'日本語原稿にない数式: {m[:160]}')
+            if text_only:
+                notes.append(f'{name}: \\text{{}} の中身だけが異なる数式 {sum(text_only.values())} 件(翻訳した注記を目視確認)')
         if sorted(ja_tags) != sorted(en_tags):
             err(f'式番号の不一致: ja={sorted(set(ja_tags) - set(en_tags))} en={sorted(set(en_tags) - set(ja_tags))}')
         # 番号付き項目・見出し

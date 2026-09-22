@@ -1,0 +1,43 @@
+\chapter{Repository and Lean Build}\label{app:B}
+
+The proof sources are publicly available in the \href{https://github.com/iroha1203/AlgebraicArchitectureTheoryV2}{AlgebraicArchitectureTheoryV2 repository}.
+
+With Git and elan installed, run the following to build the main body (\texttt{Formal}).
+This uses the Lean version specified by \texttt{lean-toolchain} and the dependency libraries fixed by \texttt{lake-manifest.json}.
+
+{\small\begin{verbatim}
+git clone https://github.com/iroha1203/AlgebraicArchitectureTheoryV2.git
+cd AlgebraicArchitectureTheoryV2
+git checkout --detach 719f81f47d410701fd82c2bc88613cc140c59377
+lake exe cache get
+lake build +Formal.AG
+\end{verbatim}}
+
+Next, run the following in \texttt{research/lean}.
+The targets below, together with the dependency modules that are built automatically, contain all the Research-side proof sources referred to in Appendix~\ref{app:A}.
+
+{\small\begin{verbatim}
+cd research/lean
+lake build \
+  ResearchLean.AG.AtomFoundation.RefinementSupply \
+  ResearchLean.AG.CanonicalResolution.NegativeWitness \
+  ResearchLean.AG.ComparisonInformationLoss.KaroubiRestrictionFiniteWitness \
+  ResearchLean.AG.ComparisonInformationLoss.PresentationTransport \
+  ResearchLean.AG.DiagnosticConservativity.ObstructionExactness \
+  ResearchLean.AG.DiagnosticConservativity.OrbitExactness \
+  ResearchLean.AG.DoctrineFiberProduct.ConfigurationDescent \
+  ResearchLean.AG.DoctrineFiberProduct.IndexedRawFamilyClassification \
+  ResearchLean.AG.DoctrineFiberProduct.InternalNormalizationSplitNoGo \
+  ResearchLean.AG.FiniteDecoderRepresentability.CountableSyntaxObstruction \
+  ResearchLean.AG.LocalSemanticReconstruction.IndependentAATPrimitiveReconstruction \
+  ResearchLean.AG.ObstructionDiagnosticBridge.SelectedFiniteObstructionExamples \
+  ResearchLean.AG.RealizationComparisonIdempotents.MaximalSubgroupoid \
+  ResearchLean.AG.RealizationReconstruction.CSAATProtocolAdapterSquares \
+  ResearchLean.AG.RealizationReconstruction.CSAATRestrictionKernelFiberTransport \
+  ResearchLean.AG.RealizationReconstruction.FixedFLensGroupConnection \
+  ResearchLean.AG.RealizationReconstruction.FixedFProtocolGroupConnection \
+  ResearchLean.AG.StructuralCover.GeneratedH1Vanishing \
+  ResearchLean.AG.UniformInvariance.AtlasPositioning \
+  ResearchLean.AG.UniformInvariance.ConditionCAllAFiring \
+  ResearchLean.AG.UniformInvariance.GLocalV1T3T6Uniformity
+\end{verbatim}}

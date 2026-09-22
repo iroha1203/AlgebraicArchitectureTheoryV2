@@ -11,7 +11,6 @@
 | `NN-*.tex` | 日本語原稿 `../ja/NN-*.md` と同じ名前の各パート(01 要旨は `main.tex` の abstract 環境に取り込む) |
 | `references.bib` | 文献。書誌は `../ja/14-references.md`、原典確認は [`../references.csv`](../references.csv) |
 | `figures/*.tex` | 図(TikZ)。日本語原稿の図 [`../figures/`](../figures/) の SVG と同じ内容を描き直したもの |
-| `pending-labels.tex` | 未翻訳のパートにある番号の仮ラベル。全パートの翻訳後に削除する |
 | `arxiv-abstract.txt` | arXiv の要旨欄に入れる短縮版要旨(metadata 用) |
 
 ## ビルド
@@ -67,7 +66,7 @@ python3 outreach/paper/rising-sea/tools/ja_en.py check --aux .tmp/paper-rising-s
 - 英語原稿に日本語・ASCII 以外の文字・未解決の Markdown リンクが残っていない。
 
 `skeleton` は、日本語原稿の構造・数式・番号・参照を TeX へ移し、地の文を日本語のまま残した
-翻訳用の骨組みを出力する。`pending` は `pending-labels.tex` を生成する。
+翻訳用の骨組みを出力する。
 
 ## 用語の対応
 
