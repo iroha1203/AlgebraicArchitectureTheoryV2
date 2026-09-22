@@ -4,6 +4,7 @@
 
 | ツール・モデル・利用時期 | 用途 | 対象範囲 | 検証方法・確認者 |
 | --- | --- | --- | --- |
+| Codex（GPT-6）、2026-09-22 | Issue #4847のC型8群とF25について、著者が指定した既存Leanの範囲へ本文と依存先を修正 | 第1・4〜8章、Related Work、主張一覧、数学棚卸し、構成・検証記録 | 固定版ceaf361ecの宣言・入力構造と対象・量化・仮定・結論を照合。一般化した公式・群同型・適用を限定または削除し、A/Bの特例による代替証明を追加していない。Lean sourceは変更していない。独立レビューとGitHub表示確認はPRの対象commitに対して記録する |
 | Codex（GPT-6）、2026-09-19 | 人間との対話に基づく論文構成の初版作成、CS 対応詳細の棚卸し文書への移管 | `paper-structure.md`、`mathematics-inventory.md` とディレクトリの案内 | Codex が n1012・n1015、AAT 数学本文の構成、関連 GOAL、論文作成ガイドラインと照合。CS 対応は G-123・G-124 の report と lens・protocol・変更分類・有限決定の Lean 宣言にも照合。移管前後の数学内容、相対リンク・表記・差分を検査 |
 | Codex（GPT-6）、2026-09-19 | 数学棚卸しを第1〜8章全体へ拡張し、成立条件・反例・章間の接続を整理 | `mathematics-inventory.md`、`README.md` | Codex が構成マスター、固定版の数学本文全10部・付録、G-101〜G-124 の関連固定命題・report、対応する主要 Lean 宣言と入力条件を照合。G-105・G-117 の反証と G-123・G-124 の個別成果・共通再構成の接続項目を区別。参照先・章別収録・表・数式区切り・Unicode・公開情報・差分を検査。既存証明の全行再査読と Lean 再検証は実施していない |
 | Claude Code、2026-09-19 | 構成・数学棚卸しの独立レビュー | `paper-structure.md`、`mathematics-inventory.md` を中心とする PR #4784 | commit `2f26ff2f5` に対する[レビュー記録](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4784#issuecomment-5739468612)に、一次資料との照合方法、修正要求1〜5、推奨事項を記載 |

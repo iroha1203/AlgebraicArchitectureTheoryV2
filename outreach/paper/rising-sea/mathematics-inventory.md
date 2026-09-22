@@ -82,7 +82,9 @@ view の集合 `V` と基準値 `v₀` を固定し、状態集合 `C`、読取�
 
 可視変更 `u:V≃V` に追随する可逆変更 `h:C≃C'` には、同じ `h,u` による
 `g'h=ug` と `h(p(c,v))=p'(h(c),u(v))` の同時成立を要求する。
-積表示での形 `h(v,k)=(u(v),φ(k))` により、変更を一つの補完の全単射 `φ` で記述する。
+正規形は、有限集合 `K` の同じ積lens `V×K` の自己変更について述べる。
+基準viewと可視置換 `u` を固定すると、`h(v,k)=(u(v),φ(k))` により、
+変更を一意な隠れた置換 `φ:K≃K` で記述する。
 `u` は `v₀` を固定する必要がない。
 
 `V=K=Bool` の積 lens で `h(v,k)=(v,k⊕v)` を取る例を導入に置く。
@@ -398,9 +400,9 @@ site の同値、環・両 ideal・係数の比較同型、witness・axis の re
 | 4-A exact core 輸送 | 構成・普遍性。`transportAlong σ P` と strongly opcartesian lift、一意な factor、同型を除く lift 一意性 | 固定 Atom carrier、exact doctrine 射、package のみから family・configuration・equation・detector 等を運ぶ。任意の tail とその合成上の射を量化する | [Transport][core-transport]、[Opcartesian][core-opcartesian]、[LiftUniqueness][core-unique] |
 | 4-B refinement の失敗 | 反例・条件付き供給。抽出の前進保存だけでは exact core lift が存在しない | Atom map が全単射でも extraction 反映が失われる例。有限な拡張 family・operation・equation の追加供給から得るのは positive core 射であり、exact lift とは区別する | [RefinementObstruction][core-refinement-no]、[RefinementSupply][core-refinement-supply]、[G-101][g101] |
 | 4-C 幾何の輸送 | 構成・普遍性。canonical core lift 上の geometry lift、全成分の輸送、一意性 | `E_geom→E_core` の選択された底射に沿う partial op-cleavage。一般 core 射については局所 realization の三比較族と read-preservation を表す `H_geom` が必要 | [幾何の Opcartesian][geom-opcartesian]、[Factorization][geom-factorization]、[LiftUniqueness][geom-unique]、[Supply][geom-supply]、[G-108][g108] |
-| 4-D 合成と射影 | 定理。fiber 間 transport functor、compositor / unitor、単位・三重合成の整合、塔の pseudonatural compatibility | 底を pointed `ExtractionInstance` に揃え、対象と vertical 射の両方で証明する | [CorePseudofunctor][core-pseudo]、[Pseudofunctor][geom-pseudo]、[TowerCompatibility][tower-coherence] |
-| 4-E authored 比較の障害 | 構成・同値。raw 2-cell defect、辺 reselection の作用、障害消滅と coherent な再選択の存在 | 有限 presentation と許容比較を固定。raw defect は無条件に定義し、3-cell の cocycle 則には syzygy compatibility を使う | [PastingObstruction][transport-pasting]、[VanishingCoherence][transport-vanishing]、[UnifiedObstruction][transport-unified] |
-| 4-F 段横断の障害 | 構成・条件付き分解。core への射影、kernel、辺水準 section、全体障害と段内・段間障害の関係 | 因子順を保つ。各段の消滅と joint な coherentization を区別し、alignment の失敗を扱う | [SectionDecomposition][section-decomposition]、[GlobalVanishing][global-vanishing]、[FiniteWitnesses][cross-witness] |
+| 4-D 合成と射影 | 定理。fiber 間 transport functor、compositor / unitor、単位・三重合成の整合、塔の pseudonatural compatibility | 標準core輸送と標準幾何輸送を用い、底をpointed ExtractionInstanceに揃える。対象とvertical射、compositor・unitorを同じ構成で扱う | [CorePseudofunctor][core-pseudo]、[Pseudofunctor][geom-pseudo]、[TowerCompatibility][tower-coherence] |
+| 4-E authored 比較の障害 | 構成・同値。raw 2-cell defect、辺 reselection の作用、障害消滅と coherent な再選択の存在 | Coreの有限比較図式、抽出の底に関して強い辺lift、底の二道の一致、指定自己同型を固定。Cocycle則には指定syzygyの整合を要求 | [PastingObstruction][transport-pasting]、[VanishingCoherence][transport-vanishing]、[UnifiedObstruction][transport-unified] |
+| 4-F 段横断の障害 | 構成・条件付き分解。core への射影、kernel、辺水準 section、全体障害と段内・段間障害の関係 | 幾何の辺はp-strong、射影はq-strong。底の二道の一致と同じ整列したedge sectionの下で、順序を保つ分解と同時消滅を扱う | [SectionDecomposition][section-decomposition]、[GlobalVanishing][global-vanishing]、[FiniteWitnesses][cross-witness] |
 
 raw defect の比較式を `δ=uφ⁻¹` とすると、辺から生成した中間比較 `m` に対して
 `uφ⁻¹=(um⁻¹)(mφ⁻¹)` となる。段内項が kernel に入ることは、alignment と射影の
@@ -415,9 +417,11 @@ raw defect の比較式を `δ=uφ⁻¹` とすると、辺から生成した中
 第1章の独立な意味論と保存則を AAT の射へ対応させる。非単射な状態写像や補完 table も
 一般の意味保存射として保持する。
 
-lens の同時保存は、get・put の二つの可換図式を余積を用いて一つにまとめ、射
-`c_L:C⊔(C×V)→V⊔C` と、連動する端点変更 `h⊔(h×u)`、`u⊔h` の可換図式で表す。
-同じ状態 carrier が現れる箇所に同じ `h` を作用させる条件を、許容変更の部分群として保持する。
+本文4.36–4.38と同じく、共通のview・基準viewを持ち、三法則を満たし、
+基準fiberが有限なlensを扱う。state・view・read・writeの四役割にそれぞれ
+`h,u,h,h×u` を割り当て、get・putの二つの可換図式で操作保存を表す。
+読取りの入力、更新の入力の状態成分、更新の出力に同じ状態写像 `h` を使う。
+この対象・仮定の下で、固定viewの射との対応と、可逆な状態写像・可視写像を備えた変更との対応を扱う。
 プロトコルでは名前付き操作の可換図式と adapter の `bq=q'a` を保持し、合成の保存を示す。
 一次資料は [lens の相対操作図式][lens-squares]、[protocol の adapter 図式][protocol-squares]。
 
@@ -433,9 +437,9 @@ lens の同時保存は、get・put の二つの可換図式を余積を用い�
 | 項目 | 種類・数学内容 | 入力・成立条件と結論 | 主な一次資料 |
 | --- | --- | --- | --- |
 | 5-A doctrine fiber product | 構成・普遍性。exact cospan から compatible source pair の doctrine を生成 | 全 cone を量化し、Atom 成分を恒等に制限しない。pointed 版は選択した compatible point を用いる | [DoctrinePullback][doctrine-pullback]、[PointedDoctrinePullback][pointed-pullback] |
-| 5-B cartesian reindexing | 構成・普遍性。任意の exact semantic 底射と target package への strong cartesian lift、cleavage と合成整合 | finite code の存在とは独立の semantic-global な構成。G-110 の表示付き入力への制限と G-112 の全域の結論を対応させる | [CartesianTarget][cartesian-target]、[ExactBottomGlobalLift][global-lift]、[同 coherence][global-lift-coherence] |
-| 5-C exact-bottom の有限 code coverage | 分類。端点同型を含む arrow 圏の coverage | 両 Source の有限性と、target の全抽出述語の有限／余有限性による成立域。固定 code 間の Hom の充満性とは別問題 | [ExactBottomCoverageClassification][coverage-classification]、[G-112][g112]；第8章へ |
-| 5-D canonical Beck–Chevalley mate | 構成・同型。pointed exact pullback square の push / pull 二経路と canonical mate | 普遍性から生成する mate、authored 比較との一致、後の projector を含む比較を区別する | [CoreBeckChevalleyMate][bc-mate]、[PackageProjectionBeckChevalleyExactness][bc-exact]、[G-110][g110] |
+| 5-B cartesian reindexing | 構成・普遍性。任意の exact semantic 底射と target package への strong cartesian lift、cleavage と合成整合 | 一般のexact射のcore liftは有限codeを仮定しない。合成・単位の整合性は存在定理から固定した標準選択について述べる | [CartesianTarget][cartesian-target]、[ExactBottomGlobalLift][global-lift]、[同 coherence][global-lift-coherence] |
+| 5-C exact-bottom の有限 code coverage | 分類。端点同型を含む arrow 圏の coverage | 両Sourceの有限性とtarget全抽出の有限・余有限性。Code射は正規化後の既定値・例外集合の輸送等号を要求。固定code間のHomと端点同型を許すcoverageを区別 | [ExactBottomCoverageClassification][coverage-classification]、[G-112][g112]；第8章へ |
+| 5-D canonical Beck–Chevalley mate | 構成・同型。pointed exact pullback square の push / pull 二経路と canonical mate | Atomの等号判定とBCPresentation。有限codeのcospan、compatibleな選択source、有限診断図式から生成した平方でmate・可逆性・lift選択変更を比較 | [CoreBeckChevalleyMate][bc-mate]、[PackageProjectionBeckChevalleyExactness][bc-exact]、[G-110][g110] |
 | 5-E indexed assembly | 構成・条件分類。底の頂点・辺・関係から action、輸送データ、reselection、coherence / vanishing 保存を生成 | coherent base diagram 上の結論。任意の raw square family が自動的に組み上がるわけではない。全 right legs についての一様な関係反映は index の epi 性と同値 | [IndexedBaseDiagram][indexed-diagram]、[IndexedDiagnosticAssembly][indexed-assembly]、[IndexedRawFamilyClassification][indexed-raw-classification]、[G-111][g111] |
 | 5-F 診断輸送の同値 | 定理。push / reindex 同値、endpoint・cochain・reselection の両逆、coherence・消滅・orbit membership の反映 | 指定した indexed diagram と生成 interpretation 上で、係数を固定する。底射の同型性を仮定せず、輸送同値から底射の同型性も従わない | [TransportEquivalence][diagnostic-equivalence]、[OrbitExactness][diagnostic-orbit]、[BaseIsoIndependence][base-iso] |
 | 5-G refinement base change | 構成・必要十分条件。forward pullback と、package が実現する台での逆輸送 | `Nonempty(RefinementCartesianCleavage r) ⇔ RealizedLocusExtractionReflecting r`。各 compatible source で組み上げる条件と、実現台の移送を証明する | [RefinementBaseChange/Classification][refinement-classification]、[RealizedSupport][refinement-realized]、[Qualification][refinement-qualification]、[G-114][g114] |
@@ -470,7 +474,7 @@ finite code coverage、診断同値にはそれぞれ固有の量化域がある
 | 6-E 正規化関手と片側自然性 | 構成・定理。admissible な core の充満部分圏から sandwich 射の圏への充満関手 `N(f)=fe_P` | `e_Qfe_P=fe_P` を全成分で証明。Karoubi 内の包含 `i:KN→J` は自然。逆向きの射影の自然性は追加の operation coherence と同値 | [NormalizationCategory][normalization-category]、[CanonicalNormalizationAbsorption][normalization-absorption]、[NormalizationNaturalityFailure][normalization-failure] |
 | 6-F 自然性の反例 | 反例。configuration に見えない Bool operation tag によって `fe_P≠e_Qf` | full admissible 圏の実射で成立。G-117 の全域 modification 要求の反証を、object-map naturality や 6-E の否定と混同しない | [ModificationCounterexample][normalization-counterexample]、[G-117 report][r117] |
 | 6-G 完全幾何の正規化 | 構成・定理。`n_G²=n_G`、底・係数への像は恒等、`N_geom` の充満性、core 正規化との可換性 | admissible core を持つ geometry の全射について片側吸収を示す。Support・Axis・Observable、coverage、overlap、raw の各成分を保持する | [CanonicalNormalization][geom-normalization]、[G-122 A][g122] |
-| 6-H 完全幾何での実比較 | 定理・非可逆例。実生成 `barAlpha` の core mate への射影、`barBeta=bar d barAlpha`、Karoubi 同型と可逆性分類 | 同じ square・cell・cochain・係数・source geometry から両経路を生成する。G-116 と G-118 の接続を endpoint triangle で証明する | [ExactDerivedBarAlphaTriangle][bar-alpha]、[ExactBarBetaClassification][bar-beta]、[ExactBarBetaFiniteWitness][bar-beta-witness] |
+| 6-H 完全幾何での実比較 | 定理・非可逆例。実生成 `barAlpha` の core mate への射影、`barBeta=bar d barAlpha`、Karoubi 同型と可逆性分類 | AuthoredBCDatumSquareの有限codeによる同じ平方、図式のcore・強い辺、各面の終点と底の二道、指定比較、同じ面・cochain・係数・元幾何。既存の有限witnessと本文の別入力を区別 | [ExactDerivedBarAlphaTriangle][bar-alpha]、[ExactBarBetaClassification][bar-beta]、[ExactBarBetaFiniteWitness][bar-beta-witness] |
 
 ### 6.2 一本の比較について保つ式
 
@@ -568,16 +572,16 @@ lift 非存在を収録候補とする。AAT の生成比較に section があ�
 \]
 
 は、隠れ状態を変えない変更を section として分裂する。
-各 `u` 上の変更の集合は核の torsor であり、`V,K` が有限なら個数は
-`(|K|!)^{|π₀(Q)|}` になる。`H` の連結成分への作用を合成に含め、半直積として記述する。
+各 `u` 上の変更の集合は核の右torsorであり、`V,K` が有限なら個数は
+`(|K|!)^{|π₀(Q)|}` になる。積の再添字式、分裂短完全列、section、fiberの全単射と個数を記述する。
 
-積 lens はすべての view 間の put を辺とする連結な入力であり、核は `Sym(K)` となる。
+積lensでは、基準viewと有限集合 `K` を固定し、同じ `V×K` の自己変更を扱う。
+一つの可視置換 `u` に追随してget/putを保つ変更は、`Sym(K)` と全単射に対応する。
 プロトコルには、各制御点の状態を同じ `K`、各生成辺の状態作用を恒等とする
 セッションモデルを代入し、連結成分ごとに独立な補完の変更を得る。
-この共通分類の適用範囲は、ここに定めた辺の作用を持つ入力とする。
 
 基準補完 `k₀` を保つ版では `Sym(K)` を `k₀` の固定部分群に置き換える。
-lens 側では、`g(s(v))=v`、`p(s(v),w)=s(w)` を満たす選択 section `s:V→C` の保存に対応する。
+積lens側では、選択section `s(v)=(v,k₀)` の保存に対応する。
 `V=Bool`、`K={0,1,2}`、`k₀=0` の有限例では、get と選択値を保つ変更 4 個のうち
 put も保つものは 2 個になる。ここでも可視変更は恒等に固定する。
 プロトコルの有限例は、頂点 `{0,1,2,3}`、辺 `0→1` と `2→3`、`K=Bool` とする。
