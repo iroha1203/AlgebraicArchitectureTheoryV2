@@ -62,7 +62,7 @@ F20・F40の依存先である命題7.27は同じ積lensの自己変更へ限定
 
 - 原稿: [第1章](ja/04-relative-architecture.md)。
 - 一次資料の固定版: `babd4d0ba63384991b488d3779f19d0b239365e2`。
-- 原稿 SHA-256: `debf0268ca628f27ecba141ac462eed8990ee99f01c8112437c954ada24ba9b6`。
+- 原稿 SHA-256: `14f49d54fe1b9295b5d1bfe28636ba8b66c41af7ce46878da354e8cc6d50db40`。
 
 | ID | 原稿の節・主張 | 種類 | 対象・仮定 | 一次資料の箇所 | 原稿での構成・証明 |
 | --- | --- | --- | --- | --- | --- |
@@ -109,7 +109,7 @@ F20・F40の依存先である命題7.27は同じ積lensの自己変更へ限定
 
 - 原稿: [第2章](ja/05-law-geometry.md)。
 - 一次資料の固定版: `313086df1e2071236b64ffd454615e927e428e26`。
-- 原稿 SHA-256: `e0bcedbb61d772a1c27df9db64e7911fff279a5090f7d413913646d073023761`。
+- 原稿 SHA-256: `e97b905662d639ce5d605351e67f581732f169c21aa36faaaf9b3e915e53d65b`。
 - [図2.1](figures/ch02-finite-covers.svg)の SHA-256: `0827c5487af26d4fde58149668d3900089ac27dbe6b680999bf171a6bc8f9e4e`。
 
 | ID | 原稿の節・主張 | 種類 | 対象・仮定 | 一次資料の箇所 | 原稿での構成・証明 |
@@ -158,7 +158,7 @@ F20・F40の依存先である命題7.27は同じ積lensの自己変更へ限定
 
 - 原稿: [第3章](ja/06-resolution-invariance.md)。
 - 一次資料の固定版: `8d949b2c116551f680f9792842e79e58d529e30a`。
-- 原稿 SHA-256: `984a98300a33dae5c9491deaeee9c2a8c4dfea0c1d79dad09772bc17e9d17976`。
+- 原稿 SHA-256: `45afaa65c6cffd7ddccbf9f188ad0c43a40592e853ba5103cc460192f83176fe`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
 | --- | --- | --- | --- | --- |
@@ -234,7 +234,7 @@ targetの同時再ラベル等を含む別の観測仕様である。
 
 - 原稿: [第4章](ja/07-transport-coherence.md)。
 - 一次資料の固定版: `bb9c533efbd68adc0e8004a90e5a782c8497a1c2`。
-- 原稿 SHA-256: `1526efade97ab1b7081e571df5187a4597609a4a5aca7fb9c87d28c88a8e2ec0`。
+- 原稿 SHA-256: `45fd889da90a59abb00bdcac0efc3801bffe61850c8731eef9841fda7b7fee87`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
 | --- | --- | --- | --- | --- |
@@ -285,7 +285,7 @@ targetの同時再ラベル等を含む別の観測仕様である。
 
 - 原稿: [第5章](ja/08-base-change.md)。
 - 一次資料の固定版: `9364f25d1b54dff9ad059ae95c71d0404626d0d6`。
-- 原稿 SHA-256: `93c450376b3f2d8ad0a912a93db70b34bae1eb796817dad9c91f252dab19ef7a`。
+- 原稿 SHA-256: `8ce677c00c994881f6cf2617e0f4991a449b1f25cea7fd12a3e685b6303a84e7`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
 | --- | --- | --- | --- | --- |
@@ -356,7 +356,7 @@ targetの同時再ラベル等を含む別の観測仕様である。
 
 - 原稿: [第6章](ja/09-idempotent-normalization.md)。
 - 一次資料の固定版: `12884419d705624be39e8a87393ed50385395469`。
-- 原稿 SHA-256: `fb543ba64b8aef97bdc65aa2291c524d14df147b79568773eb73fc2be36494f2`。
+- 原稿 SHA-256: `b09a3690e2d51759c1574a9e955e5a38acc6342927e0f8bbaa6e683cb0812114`。
 - [図6.1](figures/ch06-karoubi-arrow.svg)の SHA-256: `6e37897fd7912478b5b3391100dead8fa1eb3c8318759bfd97e2519a197dae4a`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
@@ -410,7 +410,7 @@ targetの同時再ラベル等を含む別の観測仕様である。
 
 - 原稿: [第7章](ja/10-comparison-and-information.md)。
 - 一次資料の固定版: `c08b1a0e078a242e4683fdb375dc1e7c6a3c4e14`。
-- 原稿 SHA-256: `de113c164e41a570d450bedf166d5a37c3869ef375aced9dfd2505e2b68d087e`。
+- 原稿 SHA-256: `f3214e74b8a16353e1408dde31b421fb3e33b2179860e34cb787d900b1e30b86`。
 - [図7.1](figures/ch07-refactoring-workers.svg)の SHA-256: `eaa505fc2aa5158d917a3d6d5ad9e11e22ca899e1b232b8aaa2711483b3ceb15`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
@@ -478,7 +478,7 @@ targetの同時再ラベル等を含む別の観測仕様である。
 
 - 原稿: [第8章](ja/11-local-reconstruction.md)。
 - 一次資料の固定版: `b738623af29f015ab2d12e11c94411c74f26d311`。
-- 原稿 SHA-256: `807e02a95b05062498e7318ca81b0a4a59e021a636050ef77192808f503136af`。
+- 原稿 SHA-256: `a1f668eb10a3ce196d04b1895374a100b5ba8766366e02bc745910f0952cc020`。
 - [図8.1](figures/ch08-local-reconstruction.svg)の SHA-256: `4b486994f4297015a6c2f98dd0a6eb08e1d0ef3af5607f39f2a5ede436cc7591`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
@@ -616,9 +616,9 @@ SAGAから継承する結果、lensの積表示、圏同値の一般判定、Cau
 
 | 対象 | SHA-256 |
 | --- | --- |
-| Related Work本文 | `9382581b81d0ff9a5e90e37ed2ae11b5c02059817d35adb91c3178ad4241390d` |
-| 書誌 | `6cdd089505603658f57da51535eb9b19255311365dffb0e3f31529ddab7455a5` |
-| READMEに定めた要旨〜結び（要旨・序論・準備節・第1〜8章・Related Work・結び）の結合原稿 | `c7378a640c12e2d4227877544f3607c8d8f74bf8737f443b004ecad159a92940` |
+| Related Work本文 | `6b911a7e42b70a69ca356f8bd799897ac7ad24dc3426cec8aa2fec588c16f0cd` |
+| 書誌 | `bdb267f950d7747c510cd1c411f1e3da821808be623064933e67d12667828884` |
+| READMEに定めた要旨〜結び（要旨・序論・準備節・第1〜8章・Related Work・結び）の結合原稿 | `2c5650e9a54f57219d8c53195de61be05510117d00777a01bdb5d5eab10808c6` |
 
 [rw-local]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LocalReconstructionEquivalence.lean
 [rw-lens]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean

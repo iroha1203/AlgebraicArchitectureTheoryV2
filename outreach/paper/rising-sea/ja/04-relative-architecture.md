@@ -243,7 +243,8 @@ $`\mathrm{Supp}(W)`$、$`\mathrm{Ax}(W)`$、$`\mathrm{Obs}(W)`$ と、
 \mathrm{readObs}_W\subseteq\mathrm{Obs}(W)
 ```
 
-を持つ。$`\mathrm{reads}_W(s,a)`$ なら $`a\in F_{C_A}`$ とする。
+を持つ。$`\mathrm{Obs}(W)`$ の元をobservableと呼ぶ。
+$`\mathrm{reads}_W(s,a)`$ なら $`a\in F_{C_A}`$ とする。
 supportの元はAtomを読む位置であり、定義1.2のsubjectの集合とは役割が異なる。
 必要な追加データも文脈に含める。
 
@@ -479,13 +480,13 @@ Atom・方程式・signatureのうち必要な情報を共同で読める族を�
 さらに、この可換条件を満たす任意の $`T\to U`$ と $`T\to V`$ は、
 ただ一つの $`T\to U\times_W V`$ を射影と合成することで得られるとする。
 この引き戻しをoverlapと呼び、その選択を $`\mathrm{Ov}`$ と書く。
-文脈が半順序の場合、overlapは $`W`$ 以下での二つの文脈の共通の最大下界である。
+文脈の前順序が半順序の場合、overlapは $`W`$ 以下での二つの文脈の最大下界である。
 
 被覆要件 $`ℛ`$ は、方程式系 $`E`$ とsignatureを固定した上で、次を選ぶ。
 
 - 必要なAtomの部分集合 $`A_{\mathrm{req}}\subseteq\mathrm{At}`$。
 - 必要な方程式座標 $`C_{\mathrm{req}}\subseteq K_E^{\mathrm{req}}\times\mathrm{At}`$。
-- 記号的違反座標 $`\nu_{W,i,a}`$ のうち、witnessとして読む添字の部分集合
+- 記号的座標 $`\nu_{W,i,a}`$ のうち、witness（違反の証拠）として読む添字の部分集合
   $`C_{\mathrm{wit}}\subseteq K_E\times\mathrm{At}`$。
 - 必要なsignature軸 $`\Lambda_{\mathrm{req}}\subseteq\Lambda`$。
 - 各文脈でこれらを読めることを表す四つの可視性述語と、
@@ -501,7 +502,7 @@ $`(E,ℛ,\mathrm{Ov})`$-admissibleであるとは、次の条件を満たすこ�
 - **各部分で読む情報**：必要なAtomとsignature軸は、それぞれ少なくとも一つの
   $`W_\alpha`$ で読める。
 - **部分または重なりで読む情報**：必要な方程式座標と選択したwitnessは、
-  それぞれ一つの $`W_\alpha`$ または
+  それぞれ少なくとも一つの $`W_\alpha`$ または
   $`W_{\alpha\beta}=W_\alpha\times_W W_\beta`$ で読める。
 - **重なりでの相互作用**：すべての $`\alpha,\beta`$ について
   $`B_{ℛ}(W_{\alpha\beta},W)`$ が成立する。
@@ -555,6 +556,7 @@ $`(E,ℛ,\mathrm{Ov})`$-adequateと呼ぶ。
 
 **定義1.22（前層と層）.**
 集合値の前層は反変関手 $`F:𝒞^{\mathrm{op}}\to{𝐒𝐞𝐭}`$ である。
+$`F(W)`$ の元を $`W`$ 上の切断と呼ぶ。
 族 $`𝒰=(u_\alpha:W_\alpha\to W)_\alpha`$ 上のmatching familyとは、
 $`s_\alpha\in F(W_\alpha)`$ の族で、
 
@@ -752,7 +754,7 @@ configurationの直像は、族と二つの関係のすべてに $`e`$ を作用
 有限query列とdetector codeにも、出現するすべてのAtomへ $`e`$ を作用させる。
 これらも $`e_*`$ と書く。
 
-次の条件は、対象の表示を変更しても、Lawの成否と、その失敗を示す有限パターンが対応するように選ぶ。
+次の条件では、対象の表示を変更しても、Lawの成否と、その失敗を示す有限パターンが対応するように各写像を選ぶ。
 
 **定義1.28（Coreの射）.**
 Atomの語彙を固定したcore readingを $`E_{\mathrm{core}}`$ の対象とする。
@@ -997,7 +999,7 @@ p(p(c,v),w)=p(c,w)
 
 標準的なlensの用語では、全域でvery well-behavedなlensに当たる
 （[FGMPS04, §3.1](https://www.cis.upenn.edu/~bcpierce/papers/newlenses-full.pdf)）。
-以下で扱う族では基準fiber
+以下で扱うlensでは基準fiber
 $`K_L=\{c\in C\mid g(c)=v_0\}`$ を有限とする。
 これは、表示を基準値に固定したときに残る状態の集合である。
 表示値の集合 $`V`$ 自体は無限でもよい。
@@ -1038,7 +1040,7 @@ $`g(p(c,v_0))=v_0`$ なので $`\eta_L`$ は定義できる。
 p(p(c,v_0),g(c))=p(c,g(c))=c
 ```
 
-である。一方、$`k\in K_L`$ について
+である。よって $`\zeta_L\eta_L=\mathrm{id}`$ が成り立つ。一方、$`k\in K_L`$ について
 $`g(p(k,v))=v`$、
 $`p(p(k,v),v_0)=p(k,v_0)=p(k,g(k))=k`$ となるので、
 $`\eta_L\zeta_L=\mathrm{id}`$ も成立する。
@@ -1090,8 +1092,8 @@ $`p'(t(k),v_0)=t(k)`$ なので、$`\mathrm{res}(\mathrm{ext}(t))=t`$ である�
 
 となる。制限も延長も恒等と合成を保つことは、積表示から分かる。□
 
-可視変更を含む正規形は、ここでは有限集合 $`K`$ の同じ積lens
-$`V\times K`$ の自己変更について述べる。
+可視変更を含む正規形として、ここでは有限集合 $`K`$ の同じ積lens
+$`V\times K`$ の自己変更を扱う。
 $`u:V\xrightarrow{\sim}V`$ と $`h:V\times K\xrightarrow{\sim}V\times K`$ が
 
 ```math
@@ -1369,7 +1371,7 @@ architecture object $`A_d`$ とequation systemを構成できる。
 
 $`A_d`$ のconfigurationを $`C_*`$、構造データを操作データ $`d`$ とする。
 lensでは基準view、プロトコルでは一元集合の元を量として保持する。
-方程式の添字集合 $`K`$ は、次の各等式に、その入力値も含めて付ける。
+方程式の添字集合 $`K`$ の添字は、次の各等式とその入力値の組とする。
 
 ```math
 \begin{array}{ll}
@@ -1482,7 +1484,7 @@ writeの写像を $`h\times u`$ とすれば、二つの操作の可換性は式
 
 - **対象の生成。** 抽出した有限Atom族から基点となる対象を作る。その対象を含み、
   許された操作で閉じた最小の対象族は、有限列の操作で到達できる対象全体に等しい（定理1.18）。
-  Lawの成立は、検出器の健全性と必須方程式についての完全性の下で、
+  Lawの成立は、detectorの健全性と必須方程式についての完全性の下で、
   必須circuitの不在と同値になる（命題1.16）。
 - **局所構造の構成。** 文脈と被覆からsiteを、座標・構造関係と整合する制限写像から
   環の前層を構成した。局所データの貼り合わせを与える層化も構成した（§§1.5–1.6）。
