@@ -2,7 +2,9 @@
 
 検証日：2026-09-22
 
-対象：[付録A Lean形式化との対応](ja/15-appendix-a-lean-correspondence.md) に記載された AAT 側の `ResearchLean` 宣言。Formal 側は CI で確認済みという依頼に従い、この記録の対象外とした。
+対象：[検証時の付録A Lean形式化との対応](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/49f9ffabdbfc383db767c9fa01561ac6a9ff295f/outreach/paper/rising-sea/ja/15-appendix-a-lean-correspondence.md) に記載された AAT 側の `ResearchLean` 宣言。Formal 側は CI で確認済みという依頼に従い、この記録の対象外とした。
+
+以下の件数と結果は、この固定版の実行記録である。[現行の付録A](ja/15-appendix-a-lean-correspondence.md)への参照追加後も、検証時の対象を保持する。
 
 ## 判定
 

@@ -14,7 +14,7 @@ Atom と Law から、相対的なアーキテクチャの幾何、局所整合�
 - [AI 利用記録](ai-use.md): 構成・執筆・文献確認に用いた AI、その利用範囲。
 - [主張と証拠の対応](claims.md): 原稿の主張と、数学・形式化の固定版との対応。
 - [Lean対応の全件照合記録](lean-correspondence-audit.md): 第1〜8章の314項目と番号外の主張について、対応宣言・適用条件・未確認箇所を記録する。
-- [ResearchLean実行検証記録](researchlean-execution-report.md): 付録Aに記載されたResearchLean宣言173件のLean実行成否と再現手順を記録する。
+- [ResearchLean実行検証記録](researchlean-execution-report.md): 検証時の付録Aに記載されたResearchLean宣言の実行成否と再現手順を記録する。
 - [論文作成ガイドライン](../../../docs/paper/guideline.md): 共通の執筆・検証・公開手順。
 
 日本語原稿を `ja/` で執筆・レビューし、内容を確定してから英訳して公開する。
