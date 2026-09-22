@@ -43,7 +43,7 @@ Claude との PR 上でのレビューと修正を終えたら
 - [ ] 12 Related Work — [日本語原稿](ja/12-related-work.md)
 - [ ] 13 Conclusions and Further Directions — `ja/13-conclusions-and-further-directions.md`
 - [ ] 14 References — `ja/14-references.md`
-- [ ] 15 付録A Lean 形式化との対応 — `ja/15-appendix-a-lean-correspondence.md`
+- [ ] 15 付録A Lean 形式化との対応 — [日本語初稿](ja/15-appendix-a-lean-correspondence.md)を作成。[全件照合記録](lean-correspondence-audit.md)で第1〜8章の314項目と番号外の主張を分類し、確認できた宣言と適用条件を採録。未確認箇所は同記録からリンクする1件の統合Issueで追跡する。原稿レビュー・表示確認・形式化との全件対応の確定は引き続き必要。
 - [ ] 16 付録B 補足証明と有限例 — `ja/16-appendix-b-proofs-and-finite-examples.md`
 - [ ] 17 付録C 検証資料と再現手順 — `ja/17-appendix-c-verification-and-reproduction.md`
 
