@@ -612,13 +612,13 @@ SAGAから継承する結果、lensの積表示、圏同値の一般判定、Cau
 
 ### 原稿と書誌の識別情報
 
-今回の変更では外部文献に帰属させる内容と書誌は変えていない。引用に隣接するAAT側の主張を既存Leanの範囲へ限定し、文献確認日の記録を維持して原稿hashを更新した。
+書誌と結合原稿の識別情報は次のとおりとする。結合原稿の範囲と連結順はREADMEの定義による。
 
 | 対象 | SHA-256 |
 | --- | --- |
 | Related Work本文 | `9382581b81d0ff9a5e90e37ed2ae11b5c02059817d35adb91c3178ad4241390d` |
-| 書誌 | `169768f62786cc80f94fe91d4012060309c601168850dbe9004dacda4ffc1e87` |
-| READMEに定めた準備節〜第8章とRelated Workの結合原稿 | `5d3e82760312680f719c757f8056a1241e152da6fd189e560bc415c6e7165f32` |
+| 書誌 | `6cdd089505603658f57da51535eb9b19255311365dffb0e3f31529ddab7455a5` |
+| READMEに定めた要旨〜結び（要旨・序論・準備節・第1〜8章・Related Work・結び）の結合原稿 | `4c7e8131a05c1a9399416ac62be35a21a3dea577eaafbb8e36c73c9b5c275592` |
 
 [rw-local]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LocalReconstructionEquivalence.lean
 [rw-lens]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean

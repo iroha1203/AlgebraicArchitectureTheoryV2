@@ -20,6 +20,8 @@ Atom と Law から、相対的なアーキテクチャの幾何、局所整合�
 日本語原稿を `ja/` で執筆・レビューし、内容を確定してから英訳して公開する。
 公開する英語版は、日本語原稿と同じ内容とする。
 日本語原稿の各パートは、
+[要旨](ja/01-abstract.md)、
+[序論](ja/02-introduction.md)、
 [準備と記法](ja/03-preliminaries-and-notation.md)、
 [第1章 相対的アーキテクチャの構成](ja/04-relative-architecture.md)、
 [第2章 Lawの幾何と局所整合性](ja/05-law-geometry.md)、
@@ -30,18 +32,20 @@ Atom と Law から、相対的なアーキテクチャの幾何、局所整合�
 [第7章 比較を保つ変更と情報](ja/10-comparison-and-information.md)、
 [第8章 表示と局所再構成](ja/11-local-reconstruction.md)、
 [Related Work](ja/12-related-work.md)、
+[結論と今後の方向](ja/13-conclusions-and-further-directions.md)、
 [文献](ja/14-references.md)、
 [付録A Lean形式化との対応](ja/15-appendix-a-lean-correspondence.md)に配置する。
 執筆・照合・PR レビューの完了は ToDo で管理する。
 
 [文献確認記録](references.csv)の hash は、Markdown 原稿の段階では、
 `bib_sha256` に `ja/14-references.md` の SHA-256 を記録する。
-`manuscript_sha256` は、`ja/03-preliminaries-and-notation.md`、
+`manuscript_sha256` は、`ja/01-abstract.md`、`ja/02-introduction.md`、
+`ja/03-preliminaries-and-notation.md`、
 `ja/04-relative-architecture.md`、`ja/05-law-geometry.md`、
 `ja/06-resolution-invariance.md`、`ja/07-transport-coherence.md`、
 `ja/08-base-change.md`、`ja/09-idempotent-normalization.md`、
 `ja/10-comparison-and-information.md`、`ja/11-local-reconstruction.md`、
-`ja/12-related-work.md`
+`ja/12-related-work.md`、`ja/13-conclusions-and-further-directions.md`
 の順にファイルのバイト列を連結したものの SHA-256 とする。
 図の編集元は `figures/` の SVG とし、その hash は `claims.md` に記録する。
 TeX 化の際には、[共通検査](../_tools/README.md)が算出する書誌・原稿一式の hash へ更新する。
