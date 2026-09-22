@@ -410,7 +410,7 @@ targetの同時再ラベル等を含む別の観測仕様である。
 
 - 原稿: [第7章](ja/10-comparison-and-information.md)。
 - 一次資料の固定版: `c08b1a0e078a242e4683fdb375dc1e7c6a3c4e14`。
-- 原稿 SHA-256: `5cac99c0e64168455c9e7153afe0e2611f65bb83716ec8a9ea3734d9934cb69d`。
+- 原稿 SHA-256: `f3214e74b8a16353e1408dde31b421fb3e33b2179860e34cb787d900b1e30b86`。
 - [図7.1](figures/ch07-refactoring-workers.svg)の SHA-256: `eaa505fc2aa5158d917a3d6d5ad9e11e22ca899e1b232b8aaa2711483b3ceb15`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
@@ -478,7 +478,7 @@ targetの同時再ラベル等を含む別の観測仕様である。
 
 - 原稿: [第8章](ja/11-local-reconstruction.md)。
 - 一次資料の固定版: `b738623af29f015ab2d12e11c94411c74f26d311`。
-- 原稿 SHA-256: `4d5fc363a9cd20a9170dc057b79c6c7c27657d567e490e374fa349ab097bad59`。
+- 原稿 SHA-256: `a1f668eb10a3ce196d04b1895374a100b5ba8766366e02bc745910f0952cc020`。
 - [図8.1](figures/ch08-local-reconstruction.svg)の SHA-256: `4b486994f4297015a6c2f98dd0a6eb08e1d0ef3af5607f39f2a5ede436cc7591`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
@@ -618,7 +618,7 @@ SAGAから継承する結果、lensの積表示、圏同値の一般判定、Cau
 | --- | --- |
 | Related Work本文 | `6b911a7e42b70a69ca356f8bd799897ac7ad24dc3426cec8aa2fec588c16f0cd` |
 | 書誌 | `bdb267f950d7747c510cd1c411f1e3da821808be623064933e67d12667828884` |
-| READMEに定めた要旨〜結び（要旨・序論・準備節・第1〜8章・Related Work・結び）の結合原稿 | `b38d4370584850738a7b4f13165e7d2c4090740d9d1b749dd1619ffca38b81e9` |
+| READMEに定めた要旨〜結び（要旨・序論・準備節・第1〜8章・Related Work・結び）の結合原稿 | `2c5650e9a54f57219d8c53195de61be05510117d00777a01bdb5d5eab10808c6` |
 
 [rw-local]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LocalReconstructionEquivalence.lean
 [rw-lens]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean
