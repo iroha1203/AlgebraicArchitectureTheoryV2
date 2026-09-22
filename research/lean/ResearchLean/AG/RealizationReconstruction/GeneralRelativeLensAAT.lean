@@ -200,34 +200,108 @@ instance : Category Pointed.{u} where
   comp_id := by intros; exact Category.comp_id _
   assoc := by intros; exact Category.assoc _ _ _
 
-/-- The objects of the generated AAT typed construction. Each object keeps
-its four AAT architecture objects and its two complete named operations via
-the underlying pointed lens; morphisms below are tested against those actual
-operation packages. -/
+/-- An independently stored AAT typed object. Its carriers, selected reference,
+lens laws, four architecture objects, and two named operations are target data;
+no source `Pointed` object is retained. The equations identify the AAT data
+with construction 1.39 on these carriers and semantic functions. -/
 structure AATConstructed where
-  source : Pointed.{u}
+  State : Type u
+  View : Type u
+  reference : View
+  get : State → View
+  put : State → View → State
+  put_get : ∀ c, put c (get c) = c
+  get_put : ∀ c v, get (put c v) = v
+  put_put : ∀ c v w, put (put c v) w = put c w
+  stateObject : ArchitectureObject
+    (lensAATCarrier (aatInput
+      { State := State, View := View, get := get, put := put,
+        put_get := put_get, get_put := get_put, put_put := put_put } reference))
+  viewObject : ArchitectureObject
+    (lensAATCarrier (aatInput
+      { State := State, View := View, get := get, put := put,
+        put_get := put_get, get_put := get_put, put_put := put_put } reference))
+  readObject : ArchitectureObject
+    (lensAATCarrier (aatInput
+      { State := State, View := View, get := get, put := put,
+        put_get := put_get, get_put := get_put, put_put := put_put } reference))
+  writeObject : ArchitectureObject
+    (lensAATCarrier (aatInput
+      { State := State, View := View, get := get, put := put,
+        put_get := put_get, get_put := get_put, put_put := put_put } reference))
+  getOperation : AATSemanticOperation
+    { State := State, View := View, get := get, put := put,
+      put_get := put_get, get_put := get_put, put_put := put_put } reference
+  putOperation : AATSemanticOperation
+    { State := State, View := View, get := get, put := put,
+      put_get := put_get, get_put := get_put, put_put := put_put } reference
+  getSemantic : State → View
+  putSemantic : State × View → State
+  stateObject_eq : stateObject = aatRoleObject
+    { State := State, View := View, get := get, put := put,
+      put_get := put_get, get_put := get_put, put_put := put_put } reference .state
+  viewObject_eq : viewObject = aatRoleObject
+    { State := State, View := View, get := get, put := put,
+      put_get := put_get, get_put := get_put, put_put := put_put } reference .view
+  readObject_eq : readObject = aatRoleObject
+    { State := State, View := View, get := get, put := put,
+      put_get := put_get, get_put := get_put, put_put := put_put } reference .read
+  writeObject_eq : writeObject = aatRoleObject
+    { State := State, View := View, get := get, put := put,
+      put_get := put_get, get_put := get_put, put_put := put_put } reference .write
+  getOperation_eq : getOperation = aatGetSemanticOperation
+    { State := State, View := View, get := get, put := put,
+      put_get := put_get, get_put := get_put, put_put := put_put } reference
+  putOperation_eq : putOperation = aatPutSemanticOperation
+    { State := State, View := View, get := get, put := put,
+      put_get := put_get, get_put := get_put, put_put := put_put } reference
+  getSemantic_eq : getSemantic = get
+  putSemantic_eq : putSemantic = fun x => put x.1 x.2
+
+/-- Construction 1.39, with every AAT component installed as object data. -/
+def toAATConstructed (X : Pointed.{u}) : AATConstructed.{u} where
+  State := X.lens.State
+  View := X.lens.View
+  reference := X.reference
+  get := X.lens.get
+  put := X.lens.put
+  put_get := X.lens.put_get
+  get_put := X.lens.get_put
+  put_put := X.lens.put_put
+  stateObject := aatRoleObject X.lens X.reference .state
+  viewObject := aatRoleObject X.lens X.reference .view
+  readObject := aatRoleObject X.lens X.reference .read
+  writeObject := aatRoleObject X.lens X.reference .write
+  stateObject_eq := rfl
+  viewObject_eq := rfl
+  readObject_eq := rfl
+  writeObject_eq := rfl
+  getOperation := aatGetSemanticOperation X.lens X.reference
+  putOperation := aatPutSemanticOperation X.lens X.reference
+  getSemantic := X.lens.get
+  putSemantic := fun x => X.lens.put x.1 x.2
+  getOperation_eq := rfl
+  putOperation_eq := rfl
+  getSemantic_eq := rfl
+  putSemantic_eq := rfl
 
 namespace AATConstructed
 
-/-- Definition 1.42 with a variable visible map. The equations use the
-semantic functions inside the constructed named AAT operations. -/
+/-- Definition 1.42 with a variable visible map. The equations preserve the
+stored semantic readings certified by the two named AAT operation packages. -/
 @[ext]
 structure Hom (X Y : AATConstructed.{u}) where
-  state : X.source.lens.State → Y.source.lens.State
-  view : X.source.lens.View → Y.source.lens.View
-  read : (aatRoleObject X.source.lens X.source.reference .read).structureMaps →
-    (aatRoleObject Y.source.lens Y.source.reference .read).structureMaps
-  write : (aatRoleObject X.source.lens X.source.reference .write).structureMaps →
-    (aatRoleObject Y.source.lens Y.source.reference .write).structureMaps
+  state : X.State → Y.State
+  view : X.View → Y.View
+  read : X.State → Y.State
+  write : X.State × X.View → Y.State × Y.View
   read_coord : ∀ c, read c = state c
   write_coord : ∀ c,
     write c = (state c.1, view c.2)
   get_comm : ∀ c,
-    (aatGetSemanticOperation Y.source.lens Y.source.reference).semanticFunction (read c) =
-      view ((aatGetSemanticOperation X.source.lens X.source.reference).semanticFunction c)
+    Y.getSemantic (read c) = view (X.getSemantic c)
   put_comm : ∀ c,
-    (aatPutSemanticOperation Y.source.lens Y.source.reference).semanticFunction (write c) =
-      state ((aatPutSemanticOperation X.source.lens X.source.reference).semanticFunction c)
+    Y.putSemantic (write c) = state (X.putSemantic c)
 
 instance : Category AATConstructed.{u} where
   Hom := Hom
@@ -259,7 +333,7 @@ end AATConstructed
 /-- A relative lens morphism acts on all four constructed AAT role objects
 and commutes with the semantic functions of the named get and put operations. -/
 def toAATConstructedHom {X Y : Pointed.{u}} (f : X ⟶ Y) :
-    (⟨X⟩ : AATConstructed.{u}) ⟶ ⟨Y⟩ where
+    toAATConstructed X ⟶ toAATConstructed Y where
   state := f.state
   view := f.view
   read := f.state
@@ -271,7 +345,7 @@ def toAATConstructedHom {X Y : Pointed.{u}} (f : X ⟶ Y) :
 
 /-- The named AAT operations recover both relative preservation equations. -/
 def fromAATConstructedHom {X Y : Pointed.{u}}
-    (f : (⟨X⟩ : AATConstructed.{u}) ⟶ ⟨Y⟩) : X ⟶ Y where
+    (f : toAATConstructed X ⟶ toAATConstructed Y) : X ⟶ Y where
   state := f.state
   view := f.view
   get_comm c := by
@@ -292,7 +366,7 @@ def fromAATConstructedHom {X Y : Pointed.{u}}
 
 /-- Hom recovery is an actual equivalence for the named AAT construction. -/
 def homEquivAATConstructed (X Y : Pointed.{u}) :
-    (X ⟶ Y) ≃ ((⟨X⟩ : AATConstructed.{u}) ⟶ ⟨Y⟩) where
+    (X ⟶ Y) ≃ (toAATConstructed X ⟶ toAATConstructed Y) where
   toFun := toAATConstructedHom
   invFun := fromAATConstructedHom
   left_inv f := by apply Hom.ext <;> rfl
@@ -307,7 +381,7 @@ def homEquivAATConstructed (X Y : Pointed.{u}) :
 
 /-- The construction 1.39 functor into actual named AAT typed objects. -/
 def aatConstructedFunctor : Pointed.{u} ⥤ AATConstructed.{u} where
-  obj X := ⟨X⟩
+  obj := toAATConstructed
   map := toAATConstructedHom
   map_id X := by apply AATConstructed.Hom.ext <;> rfl
   map_comp f g := by apply AATConstructed.Hom.ext <;> rfl

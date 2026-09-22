@@ -202,7 +202,7 @@ private def viewPermOfAut {L : GeneralLens.{u}} (a : Aut L) :
     have h := congrArg (fun f : L ⟶ L => f.view x) a.inv_hom_id
     exact h
 
-/-- Equation (4.38): reversible relative changes of `L` are exactly the
+/-- Proposition 4.38, equation (4.47): reversible relative changes of `L` are exactly the
 put-preserving state/view permutations, with the same group law. -/
 def autMulEquivPutGroup (L : GeneralLens.{u}) : Aut L ≃* L.putGroup where
   toFun a := ⟨(statePermOfAut a, viewPermOfAut a), a.hom.put_comm⟩
