@@ -1,4 +1,4 @@
-# 付録C リポジトリとLeanのビルド
+# 付録B リポジトリとLeanのビルド
 
 証明ソースは、[AlgebraicArchitectureTheoryV2リポジトリ](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2)で公開している。
 

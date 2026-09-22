@@ -280,7 +280,7 @@ C3 の局所非輪状性を含む十分条件であり、一般の必要十分�
 `ConditionCAllA` の[非退化な正例][atlas-all-a-firing]では `firing_conditionCAllA` と
 有限表示 `pFire` の `pFire_conditionCAllACheck` を対応させる。
 [checker の正しさ][atlas-all-a-checker]は、有限表示から生成した幾何について
-`conditionCAllACheck = true ↔ ConditionCAllA` を述べる。正例の有限表と checker の詳細は付録Bに置く。
+`conditionCAllACheck = true ↔ ConditionCAllA` を述べる。正例の有限表と checker の詳細は一次資料の宣言に残す。
 
 最小限の反例枠は、admissible class 内での最粗 reading の非表示、非 adequate 粗化による
 偽の類・真の類の隠蔽、adequate でも被覆条件が破れる例、観測等値な T3 / T6 の対とする。
@@ -377,8 +377,7 @@ canonical factor `pr₁` の非単射性を [PointAtomLawInput][bridge-laws]で�
 | 3-K の条件 C と障害不変性 | [SelectedReadingConditionC][bridge-condition-c] の `conditionC`、`diagnosticH1Map_bijective`、`existing_obstruction_class_eq_zero_iff_mapped_existing_obstruction_class_eq_zero` |
 | 3-L の有限例 | [SelectedFiniteObstructionExamples][bridge-examples] の `canonical_factor_not_injective`、`coarse_reflectionCondition`・`fine_reflectionCondition`、`selected_conditionC`、`existing_zero_example_outcomes`・`existing_nonzero_example_outcomes` |
 
-付録Bには原始関係、被覆と全交差、微分・refinement の計算表、整数補正と二例の計算を置く。
-付録Cには冒頭の実装固定版と [G-125 report][r125] の検証・独立査読記録を対応づける。
+付録Bには冒頭の実装固定版と [G-125 report][r125] の検証・独立査読記録を対応づける。
 
 ### 3.4 他の係数・輸送結果との対応
 
@@ -388,8 +387,8 @@ canonical factor `pr₁` の非単射性を [PointAtomLawInput][bridge-laws]で�
 site の同値、環・両 ideal・係数の比較同型、witness・axis の reading の保存の下で、
 対応する類の零性の同値を述べる。
 第4〜5章との接続では、採用する輸送・基底変換がこの site・係数比較を与える箇所を示す。
-付録Bの有限計算では、本文 VIII §11 の Measurement Packet のうち、入力・係数・成立条件・
-出力が表す数学的対象を記載する。これらは各計算の仕様としてまとめる。
+本文 VIII §11 の Measurement Packet の入力・係数・成立条件・出力が表す数学的対象は、
+補足候補として一次資料に残す。
 
 ## 第4章 輸送と合成の整合性
 
@@ -788,7 +787,7 @@ lens では基準 fiber 上の置換 table、上記セッションモデルで�
 CS の各 module の `objectFormula_support_finite` / `homFormula_support_finite` も併せて用いる。
 局所片の有限性と、有限個の読み取りで全体が決まる有限決定性は分けて扱う。
 
-付録A・Cには、本文の命題・入力構成・前提の証明・主同値での使用先と、Lean 宣言・版を対応づける。
+付録A・Bには、本文の命題・入力構成・前提の証明・主同値での使用先と、Lean 宣言・版を対応づける。
 
 ### 8.5 改訂版で加える投影・比較群・有限決定性（C–E）
 
@@ -816,15 +815,15 @@ G-124 全体は C–E が未完了の `proof-checkpoint` である。
 | --- | --- | --- |
 | [本文 I][math-i] | 第1章の公理・生成・operation・Law、第6章の configuration descent | 有限 detector の検出条件と operation 自体の同一性を保持 |
 | [本文 II][math-ii] | 第1章の context / site、第2章の sheaf / descent、第4章の幾何輸送 | overlap と生成 topology の依存を統一 |
-| [本文 III][math-iii] | 第2章の代数・ideal・scheme・lawful locus。square-free witness と Stanley–Reisner 表示は本文 VIII §5 の Alexander dual と一体で付録Bに置く | closed / open / constructible Law の型を分ける。Architecture Nullstellensatz の候補を一般確定定理にしない |
+| [本文 III][math-iii] | 第2章の代数・ideal・scheme・lawful locus。square-free witness と Stanley–Reisner 表示は本文 VIII §5 の Alexander dual と一体の補足候補とする | closed / open / constructible Law の型を分ける。Architecture Nullstellensatz の候補を一般確定定理にしない |
 | [本文 IV][math-iv] | 第2章の mismatch / boundary residue / forest / Stokes、Topological Debt Capacity・Betti 数・Euler Accounting、第3章の診断比較 | Scale-Stable Debt（§14）は第3章に関連する展望に置く。higher overlap、Mayer–Vietoris・Leray の候補は、採用する条件と形式化済み特殊形を別途対応づける |
 | [本文 V][math-v] | 第2章の補足に derived tensor product、`Tor_i(O/I_U,O/I_V)` による Law conflict、共有因子の repair 反例を置く。Transferred Obstruction（§10）・Derived Repair Criterion（§11）・本文 VIII §10 の support と pairing の基本条件は一つの修復の補足にまとめる | 同一 ambient、selected conflict class、repair direction、transfer pairing と修復の比較条件を指定する。Tor の非零性と特定 repair の非零転送を分け、修復条件の定義を一般の修復存在定理と区別する。Hilbert 計算・well-founded repair は補足候補 |
 | [本文 VI][math-vi] | 第2章の補足に Architecture Stratum、smoothness、Architecture Singularity、Singularity Criterion、God Object の再解釈（§§2・4–5、定理6.1、§7）を配置。第1・4章の operation / groupoid 語彙も補う | 特異性の補足では Law、deformation test、必要な tangent / cotangent complex を固定し、指定障害類の非零性に相対化した結論を保つ。複体の一般構成、square-zero lifting、monodromy、stack / gerbe は発展候補とし、各構成の入力・成立条件を個別に示す |
 | [本文 VII][math-vii] | 第3・7章の表現の保存・反映と情報損失。Period Separation（§6）は第7章冒頭の小例、Representation Completeness as a Spectrum（§15）は第8章導入で第3・7章とつなぐ説明にする。period pairing は第2章の補足 | strict な homology–cohomology pairing と broad reading を区別。metric / cost は追加 enrichment、repair margin / filling cost は補足候補 |
-| [本文 VIII][math-viii] | Class Transport（§7）は第3章の係数比較へ統合し、第4〜5章とは実比較を与える箇所で接続。§8.3 の個別結果に用いる有限計算と実効性、付録Bの有限計算・Alexander dual（§5）・Measurement Packet（§11）の入力・係数・仮定・出力の意味を収録 | 有限な site と係数アルゴリズムを指定し、selected measurement ideal と標準 obstruction ideal を分ける。Support-Localized Transfer Measurement（§10）の基本条件は本文 V の補足へ、norm・support weight・Wasserstein 型の拡張は展望へ置く。Hodge / Tor base change の条件を保持し、stability の候補は候補として記す |
+| [本文 VIII][math-viii] | Class Transport（§7）は第3章の係数比較へ統合し、第4〜5章とは実比較を与える箇所で接続。§8.3 の個別結果に用いる有限計算と実効性を収録し、Alexander dual（§5）・Measurement Packet（§11）は補足候補とする | 有限な site と係数アルゴリズムを指定し、selected measurement ideal と標準 obstruction ideal を分ける。Support-Localized Transfer Measurement（§10）の基本条件は本文 V の補足へ、norm・support weight・Wasserstein 型の拡張は展望へ置く。Hodge / Tor base change の条件を保持し、stability の候補は候補として記す |
 | [本文 IX][math-ix] | 第4章の操作合成への補足、結びの時間方向への展開 | measurement profile に従属する trace / product site / temporal coefficient。temporal descent、散逸、Lyapunov / force の条件付き reading を一般輸送定理へ同一視しない |
 | [本文 X][math-x] | 第2章の SAGA 比較を主要結果として収録 | semantic repair と equation geometry の独立生成、class 対応、true sheaf による actual repair |
-| [付録 A–B][math-app] | 第1章の相対パラメータ、第2章の通常の scheme との関係、補足の有限計算 | 付録Bで square-free ideal と Alexander dual の minimal hitting set を一つの有限例として扱い、実際の修復操作には別途意味論を与える。monomial Tor・period・circle nerve 上の独立表示は、必要な局所例を選ぶ |
+| [付録 A–B][math-app] | 第1章の相対パラメータ、第2章の通常の scheme との関係、補足の有限計算 | square-free ideal と Alexander dual の minimal hitting set の有限例は補足候補とし、実際の修復操作には別途意味論を与える。monomial Tor・period・circle nerve 上の独立表示は、必要な局所例を選ぶ |
 
 補足の Lean 照合先は [Derived][formal-derived]、[SingularityMonodromyStack][formal-singularity]、
 [RepresentationAnalysis][formal-representation]、[Measurement][formal-measurement]、[Evolution][formal-evolution]。
