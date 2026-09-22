@@ -11,6 +11,7 @@
 | `NN-*.tex` | 日本語原稿 `../ja/NN-*.md` と同じ名前の各パート(01 要旨は `main.tex` の abstract 環境に取り込む) |
 | `references.bib` | 文献。書誌は `../ja/14-references.md`、原典確認は [`../references.csv`](../references.csv) |
 | `pending-labels.tex` | 未翻訳のパートにある番号の仮ラベル。全パートの翻訳後に削除する |
+| `arxiv-abstract.txt` | arXiv の要旨欄に入れる短縮版要旨(metadata 用) |
 
 ## ビルド
 
@@ -21,6 +22,16 @@
 python3 outreach/paper/_tools/paper.py check outreach/paper/rising-sea/paper.json
 python3 outreach/paper/_tools/paper.py build outreach/paper/rising-sea/paper.json --out .tmp/paper-rising-sea
 ```
+
+## arXiv 用の短縮版要旨
+
+`arxiv-abstract.txt` は、arXiv の投稿画面の要旨欄にそのまま貼る短縮版である。
+本文の要旨(`01-abstract.tex`)は日本語原稿と同じ内容を保ち、短縮版はそこから
+五つの判定と主定理を保持して、要旨欄の字数上限(1,920文字、
+[arXiv 投稿要件](../../../../docs/paper/arxiv.md))に収めた派生物とする。
+ASCII のみで書き、数式・特殊文字を使わない(Čech は Cech と書く)。
+本文の要旨を変更したときは短縮版へも反映する。投稿前確認では、字数と最新の
+投稿要件を再確認して `submission.md` に記録する。
 
 ## 原稿の規約
 
