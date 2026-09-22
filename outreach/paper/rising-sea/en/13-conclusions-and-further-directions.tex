@@ -1,0 +1,184 @@
+\chapter*{Conclusions and Further Directions}
+\addcontentsline{toc}{chapter}{Conclusions and Further Directions}
+
+This paper has constructed architecture relative to a reading from Atoms and Laws, and has
+developed geometry, local consistency, diagnosis, transport, comparison, and reconstruction
+as one system. We review the questions that each group of results answered, and state the
+mathematical problems that arise next from this system.
+
+\section*{Conclusions}
+
+\begin{itemize}
+\item \textbf{Foundational geometry.} We made explicit, as a reading and on the side of the objects, the choice of what to
+take as objects and which operations and laws to preserve.
+From a finite family of Atoms we generated a core carrying a family of objects closed under
+the operations (Theorem~\ref{thm:1.18}), from contexts, covers, and coefficients we
+constructed a geometry equipped with a site and a presheaf of rings, and we connected the
+three levels of extraction, core, and geometry by projections (Theorem~\ref{thm:1.31}). The
+independently defined semantics of lenses and protocols is encoded in this framework, and
+the validity of the laws and the semantics-preserving morphisms correspond on both sides
+(Propositions~\ref{prop:1.41} and~\ref{prop:1.43}).
+\item \textbf{Obstructions to local consistency.} We answered, by an obstruction class, when
+states that satisfy the Laws on each part glue into a whole. Satisfaction of the Laws reads
+as factorization through the space defined by the ideal of the equations
+(Theorem~\ref{thm:2.9}), and when the corrections act as a torsor and the states form a
+sheaf, the vanishing of the first obstruction class is equivalent to the existence of a
+global state (Theorem~\ref{thm:2.22}). The repair defined on the side of the semantics and
+the computation on the side of the equations are connected by a comparison isomorphism of
+coefficients, which gives a condition for the existence of a global repair
+(Theorem~\ref{thm:2.49}, Corollary~\ref{cor:2.50}).
+\item \textbf{Diagnostic invariance.} We gave conditions under which the same obstruction
+can be diagnosed even after information is summarized and the ranges read locally are
+repartitioned. The canonical resolution that preserves the evaluation of Laws is
+characterized by a universal property (Theorem~\ref{thm:3.4}), and the comparison map of
+covers, coefficients, and resolutions is an isomorphism on first cohomology under
+Condition~C (Theorem~\ref{thm:3.17}). Invariance for all families of Laws for which both
+resolutions are adequate can be decided by a finite computation (Theorem~\ref{thm:3.22},
+Proposition~\ref{prop:3.23}). Under conditions on the identification of relation components
+and on common representatives, the vanishing of the integer-coefficient obstruction and that
+of the rational-valued diagnosis agree
+(Theorems~\ref{thm:3.37} and~\ref{thm:3.40}). Moreover, for the refinement from three charts
+to four charts built from the same Atom input, we constructed the comparison square and
+showed that the verdicts, zero or nonzero, agree
+(Theorems~\ref{thm:3.43} and~\ref{thm:3.44}).
+\item \textbf{Transport and coherence of routes.} We characterized the construction that
+carries structure along a change of reading by the universal property that every further
+change factors uniquely (Theorems~\ref{thm:4.5} and~\ref{thm:4.11}). The removal of the
+discrepancy between a specified comparison and the canonical comparison is equivalent to the
+existence of an edge reselection that makes all faces commute at once
+(Theorem~\ref{thm:4.23}). For squares generated from finite codes, the exchange of the order
+of transport and base change is realized as an invertible canonical comparison
+(Theorem~\ref{thm:5.11}), and the range over which one can carry backward is characterized
+as the reflection of extraction on the realized locus (Theorem~\ref{thm:5.25}).
+\item \textbf{Normalization of comparisons and information about changes.} We factored a
+generated comparison involving normalization into an invertible comparison and an idempotent
+normalization factor, and showed that invertibility is equivalent to that factor being the
+identity (Theorem~\ref{thm:6.16}). Even when it is not the identity, an isomorphism between
+the images in the idempotent completion remains (Theorem~\ref{thm:6.12}). For
+comparison-preserving changes we gave a necessary and sufficient condition for determination
+by observations alone (Theorem~\ref{thm:7.9}), the construction of compatible lifts and the
+classification of their totality as a torsor under the kernel
+(\S\S\ref{sec:7.4}--\ref{sec:7.6}, Theorems~\ref{thm:7.19} and~\ref{thm:7.21}), and a split
+short exact sequence for the operation-preserving changes in systems of operations that keep
+hidden states (Theorems~\ref{thm:7.24} and~\ref{thm:7.25}).
+\item \textbf{Presentation and local reconstruction.} We showed that, once separation of
+morphisms, assembly of morphisms, and assembly of objects are available, the readout functor
+gives an equivalence of categories (Theorem~\ref{thm:8.12}), and proved that the category of
+full geometries and all their structure-preserving morphisms is equivalent to the category
+of local models given by primitive data and independently defined compatibility conditions
+(Theorem~\ref{thm:8.18}). The same principle applies to lenses, protocols, and design
+descriptions divided among teams, and gives the unique extension from finite tables
+(Propositions~\ref{prop:8.26} and~\ref{prop:8.28}) and the distinction between information,
+procedure, and computational cost for finite models (\S\ref{sec:8.8}).
+\end{itemize}
+
+The questions of the introduction, the freedom of change and the information needed for a
+judgment, received the following answers.
+The degrees of freedom of the permitted changes are determined by how far the operations
+tie the correspondences between states together, and for systems of operations that keep
+hidden states the number of such changes is given by the families of permutations indexed
+by connected components together with the torsor under the kernel (\S\S\ref{sec:7.6}--\ref{sec:7.8}). The information needed for a
+judgment is characterized by the inclusion of the kernel of the observation
+homomorphism in the comparison-preserving group (Theorem~\ref{thm:7.9}).
+Even when compatible lifts can be constructed from the normalized information, judging a
+given change may require information that normalization has lost
+(\S\S\ref{sec:7.4}--\ref{sec:7.5}).
+
+These results were proved starting from constructions on the same input and using the output
+of an earlier result as the input of the next. The answers to the questions of local consistency, diagnosis,
+transport, comparison, and reconstruction are connected to one another as theorems about
+common objects.
+
+\section*{Further directions}
+
+From the objects and constructions of this paper, the following problems can be formulated.
+
+\begin{enumerate}
+\item \textbf{Coherence of reconstruction and comparison groups.}
+Chapters~\ref{chap:6}--\ref{chap:7} constructed the normalization of generated comparisons,
+the group of comparison-preserving changes, and a section of the restriction homomorphism.
+Chapter~\ref{chap:8} gave the recovery of objects and all structure-preserving morphisms.
+The next question is how to give, for an arbitrary generated comparison, the
+correspondence
+between its comparison-preserving group and the comparison-preserving group after
+normalization in a form naturally compatible with the projections to the base, the
+observations, and the coefficients, and to derive it all at once from the recovery given by
+the main equivalence (Theorem~\ref{thm:8.18}), including compatibility with the subgroup
+that fixes the base, with idempotent completion, and with the category of morphisms. The
+sections, split short exact sequences, and descriptions of kernels and fibers constructed
+individually in Chapter~\ref{chap:7} become checkpoints for this general correspondence.
+\item \textbf{A common definition of distinction, extension, and effectiveness.} In
+\S\ref{sec:8.8} we distinguished the information that determines objects and morphisms, the
+checking procedure based on enumeration and equality tests, and the computational cost. The
+next task is to give a common definition for these and to establish it as a necessary and
+sufficient condition in terms of the connected components of the system of operations
+(\S\ref{sec:7.7}) and as a computation of determination and extension over explicit finite
+inputs.
+\item \textbf{Unification of finite determinacy.} Proposition~\ref{prop:8.32} showed the
+limits of a countable syntax with respect to automorphisms of the extraction base.
+Proposition~\ref{prop:8.33} showed that, even when a family of tags is recovered from all
+finite fragments, it is not determined by a single finite fragment over an infinite index.
+For lenses and protocols we obtained the unique extension from finite tables
+(Propositions~\ref{prop:8.26} and~\ref{prop:8.28}) and the connection with retracts,
+idempotent completion, and comparison squares (Proposition~\ref{prop:8.31}). The question is
+to unify these as recovery by the main equivalence under the same readout, and to state, as
+a single theory of finite determinacy, the judgment of invertible changes by connected
+components together with the recovery of comparison groups, sections, kernels, and fibers.
+\item \textbf{Descent for families and global representation.} The gluing of
+Chapter~\ref{chap:2} and the obstruction to composition of Chapter~\ref{chap:4} treated
+obstruction classes for each fixed input. Once sites, coefficients, and transport are
+indexed by families, one can ask for the relation between the vanishing of the obstruction
+for each family and globalization, the correspondence between the first cohomology that
+classifies lifts of local changes and the existing obstruction classes, and Morita-type
+equivalences between categories of comparisons. Beyond that we place the problem of
+representability: whether the functor of realizations, natural in the coefficient algebra,
+is represented by a geometric object such as a scheme or a stack.
+If representability holds, the totality of realizations for a fixed input becomes a single
+geometric object, individual realizations can be treated as its points, and families of
+realizations as morphisms into that object. The range of repairable realizations, and the places
+where the value of the diagnosis jumps, can then be stated globally as computations of
+subsets of that object.
+These objects and assumptions are formulated separately from the problems treated by the
+foundational constructions of this paper.
+\item \textbf{Structure in the time direction.} The reading of this paper reads the
+structure of a single version. Introducing traces subordinate to a sequence of measurements,
+a product site, and coefficients in the time direction, one can ask under which assumptions
+transport and gluing along time can be compared with the constructions of transport and
+descent of this paper.
+\item \textbf{Connection with measurement and with a theory of evolution.} The input of this
+paper consists of observed Atoms, a specification of Laws and coefficients, and a fixed
+reading. ArchSig, the author's measurement tool, computes diagnoses from two streams of
+input: observation records of source code, and a specification of laws and equations. To
+connect this measurement with the present paper, one must formulate as verifiable conditions
+that the extracted observations satisfy the conditions on extraction of
+Chapter~\ref{chap:1}, and that the computed diagnoses satisfy the assumptions on comparison
+of Chapter~\ref{chap:3}. Once this connection is complete, the judgments of each chapter of
+this paper become measurements with evidence, returning the same result from the same input
+on actual source code. Besides the detection of inconsistencies that are correct locally but
+break as a whole (Chapter~\ref{chap:2}) and the sharing of that verdict along a replacement
+of the unit of review (Chapter~\ref{chap:3}), the scope of measurement extends to the
+computation of the discrepancies between several migration routes and the decision whether a
+reselection that removes them exists (Chapter~\ref{chap:4}); the check that the procedure of
+splitting the whole and then selecting a scope agrees with the procedure of selecting a
+scope and then splitting (Chapter~\ref{chap:5}); the decision of what a normalization to the
+standard representation preserves and whether one can return to the original
+(Chapter~\ref{chap:6}); the determination by observations whether a proposed change
+preserves a comparison, and the number of all compatible candidate changes
+(Chapter~\ref{chap:7}); and the finite check whether design descriptions divided among teams
+assemble into a single model and a structure-preserving morphism (Chapter~\ref{chap:8}).
+For this last check, Chapter~\ref{chap:8} even gives the distinction between the information
+required, the procedure, and the computational cost.
+Furthermore, for the connection with a theory that treats how artifacts and practices change
+the reachable future of software evolution (Software Field Theory), the question is to
+formulate a correspondence that takes the freedom given by the classification of changes of
+Chapter~\ref{chap:7} and by the reconstruction of Chapter~\ref{chap:8} as the input of a
+description of evolution. Once this correspondence is obtained, the process of development
+is described as motion in the space formed by all realizations, and one can ask, as an
+object of computation, which changes and practices widen the range of reachable designs and
+which narrow it.
+\end{enumerate}
+
+Every one of these problems can be stated from the objects and maps constructed in this
+paper. The Rising Sea approach, of enveloping individual problems by raising the water level
+of the theory, continues on this foundation. The higher the water rises, the more the problems
+of development practice acquire coordinates, become theorems, and descend to measurement.

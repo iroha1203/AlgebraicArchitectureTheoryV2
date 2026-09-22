@@ -1,0 +1,279 @@
+\chapter*{Related Work}
+\addcontentsline{toc}{chapter}{Related Work}
+
+AAT is a mathematical theory that constructs relative architecture from Atoms and Laws.
+It defines objects and structure-preserving morphisms relative to a reading, and develops
+their geometry, transport, comparison, and local reconstruction. Below we compare objects,
+assumptions, morphisms, and conclusions, focusing on algebraic specification, sheaf
+semantics, abstract interpretation, data migration, and bidirectional transformation, and
+situate the constructions and consequences proper to AAT.
+
+\section{Semantics of specifications and architecture}\label{sec:R.1}
+
+When the description of a specification changes, its meaning must change accordingly.
+The institutions of Goguen and Burstall define this relation independently of the logic.
+An institution carries signatures, sentences, categories of models, and a satisfaction
+relation, and requires that the translation of sentences and the reduction of models along
+a change of signature preserve the satisfaction relation. Morphisms between models are also
+part of this framework
+(\cite[\href{https://courses.grainger.illinois.edu/cs522/sp2016/InstitutionsAbstractModelTheory.pdf}{\S2.1, Definition 1}]{GB92}).
+Moreover, colimits of theories can be constructed from colimits of signatures.
+This result makes it possible to state the principle of assembling large specifications from
+small ones on a foundation common to different logics
+(\cite[\href{https://courses.grainger.illinois.edu/cs522/sp2016/InstitutionsAbstractModelTheory.pdf}{Theorem 11 and its consequences, p. 108}]{GB92}).
+
+Once the connection of parts is taken as the object of study, compatibility of behavior
+becomes the issue. Allen and Garlan's Wright describes the ports of components and the roles
+and glue of connectors in CSP. If a connector is conservative and deadlock-free, and
+the ports attached to each role satisfy the compatibility condition, then the connector
+instantiated with those ports is deadlock-free as well
+(\cite[\href{https://ix.cs.uoregon.edu/~michal/Classes/f01/fsv/papers/Allen-Garlan.pdf}{\S\S8.1--8.2, Definition 8.1.2, Theorem 8.2.3}]{AG97}).
+
+AAT fixes a reading of Atoms and determines the relative core from the values of the Laws.
+Adding covers, coefficients, and evaluation, it constructs a geometry and, through equations
+and ideals, expresses the satisfaction of Laws as a geometric zero condition and defines the
+lawful locus (Theorem~\ref{thm:2.9}).
+This geometry is the object on which obstructions to repair, transport along readings, and
+comparison of construction routes are treated.
+
+For protocols, that correspondence can be captured by preservation equations for operations
+and observations. Once named operations, the relations among paths, and the observations are
+fixed, a morphism between realizations is a vertexwise state map that preserves the
+operations and the observations. AAT constructs a typed input from this independent
+semantics and puts the morphisms on the two sides in correspondence
+(Propositions~\ref{prop:1.38} and~\ref{prop:1.43}).
+
+\section{Local consistency and cohomological obstructions}\label{sec:R.2}
+
+Behaviors given part by part are read as the behavior of a single system.
+Goguen's sheaf semantics is a precedent for this local-to-global description.
+It treats objects as sheaves and interactions as diagrams, and, under suitable completeness,
+obtains the behavior of a system as the limit of a diagram
+(\cite[\href{https://ncatlab.org/nlab/files/Goguen-SheafSemantics.pdf}{public manuscript, \S\S2, 3.1--3.3, Proposition 26}]{Goguen92}).
+Gibson's preprint, which treats design views, likewise takes the assignment of values to
+each parameter as a presheaf and glues views that agree on the shared parameters. What is at
+work here is the sheaf condition given by agreement on pairwise intersections
+(\cite[\href{https://arxiv.org/html/2605.08609v1}{Definition 3.2, Theorem 4.1, \S\S3--5}]{Gibson26}).
+
+Before gluing there is the question of whether the mismatches can be resolved.
+The pattern of asking for the existence of a global extension also appears in the study of
+contextuality. Abramsky and Brandenburger treat the distribution of outcomes for each
+measurement context as a compatible empirical model, and put the extension to a global
+distribution in correspondence with the existence of a factorizable hidden-variable model
+(\cite[\href{https://arxiv.org/pdf/1102.0264v7}{\S\S2.2--2.5, Theorem 8.1}]{AB11}).
+
+Abramsky, Mansfield, and Barbosa go further and linearize the support over a free abelian
+group, constructing a \v{C}ech obstruction class for the extension of a local section.
+A nonzero obstruction shows non-extendability. When the obstruction vanishes, on the other
+hand, what one obtains is a compatible family after linearization, and an extension to an
+actual assignment of outcomes requires an additional condition.
+The Hardy model is an example that exhibits this difference
+(\cite[\href{https://arxiv.org/pdf/1111.3620v2}{\S4, Propositions 4.2--4.3, \S5}]{AMB12}).
+
+AAT constructs a global repair from the vanishing of the specified obstruction class, under
+the torsor structure of repair states given by abelian-group coefficients, the equivariance
+of restriction and action, and the sheaf condition (Theorem~\ref{thm:2.22}).
+This is a construction that ties the standard fact---that a section of a torsor
+trivializes it---to the evaluation of Laws and to repair states
+(\cite[\href{https://stacks.math.columbia.edu/tag/03AG}{Tag 03AG}]{Stacks}).
+
+The choice of coefficients also determines the meaning of a diagnosis.
+Young's proposal for program analysis takes the substructures of a program as a site and
+uses presheaves whose values are complete lattices of semantic properties
+(\cite[\href{https://arxiv.org/html/2603.27015v1}{\S\S3.1--3.4}]{Young26}).
+
+AAT compares abelian-group coefficients generated independently from the relations among
+repair words and from the equations of the Laws.
+We showed this comparison in the earlier work SAGA.
+From an equivariant correspondence of local states we derive the soundness of the relations,
+and under two completeness conditions we obtain a coefficient isomorphism and a
+correspondence of cochains and residual classes. Adding the sheaf condition on repair states
+leads to a judgment of global repair
+(\cite[\href{https://arxiv.org/html/2608.21458v1}{\S\S3.4--3.7, 4--5, Theorems 5.1--5.2}]{SAGA}).
+
+On the basis of this comparison from SAGA (Theorem~\ref{thm:2.49},
+Corollary~\ref{cor:2.50}), AAT compares obstructions and diagnoses along a change of
+reading. Under conditions on the relation between coefficients and on common
+representatives, it reflects the vanishing of the original obstruction class from the
+vanishing of the diagnosis (Theorem~\ref{thm:3.40}).
+It further compares the two along a refinement of covers, and carries diagnostic invariance
+back to the verdict on obstructions
+(Theorems~\ref{thm:3.43} and~\ref{thm:3.44}).
+
+\section{Abstraction and preservation of information}\label{sec:R.3}
+
+The information that a readout must retain varies with the question one wants to answer.
+In the abstract interpretation of Cousot and Cousot, the concrete and the abstract domains are connected by an order structure, and the correctness of a global fixpoint computation is
+derived from approximations of local semantic operations. The relation between abstraction
+and concretization underlies approximations that contain the actual behavior
+(\cite[\href{https://www.di.ens.fr/~cousot/publications.www/CousotCousot-POPL-77-ACM-p238--252-1977.pdf}{\S\S5--7, pp. 240--243}]{CC77}).
+Giacobazzi et al. study in more detail the form of completeness in which abstraction
+commutes with the semantic operations, and distinguish it from completeness for the fixpoint result
+(\cite[\href{https://www.sci.unich.it/~scozzari/paper/JACM00.pdf}{\S3, p. 372}]{GRS00}).
+Besides what is approximated, what is preserved exactly for the specified operations becomes
+the issue.
+
+AAT constructs, as the canonical resolution, the coarsest reading that retains the values of
+the Laws exactly (Theorem~\ref{thm:3.4}).
+Preserving diagnoses requires, in addition, comparisons of coefficients and covers.
+The isomorphism on first cohomology under Condition~C (Theorem~\ref{thm:3.17}) and the
+reflection of the vanishing of the specified obstruction class (Theorem~\ref{thm:3.40})
+capture the sufficiency of this information with different strengths.
+
+AAT characterizes the information needed to judge a change by the kernel of the observation.
+For a comparison $c$, let $\Gamma_c$ be the subgroup of changes that preserve it, and let
+$O$ be the observation homomorphism. Membership in $\Gamma_c$ can be determined by
+observations alone
+if and only if $\ker O\subseteq\Gamma_c$ (Theorem~\ref{thm:7.9}).
+If every change that observations do not distinguish preserves the comparison, then the same
+observation yields the same judgment.
+
+The sufficiency here concerns the judgment of a fixed property.
+Local reconstruction, which recovers objects and all structure-preserving morphisms,
+requires in addition the separation and assembly of local data (Chapter~\ref{chap:8}).
+
+\section{Transport and base change}\label{sec:R.4}
+
+If the schema changes, the data must be moved along with it.
+Spivak's functorial data migration treats a schema as a category presented by a generating
+graph and relations among paths, an instance as a set-valued functor, and a morphism of
+instances as a natural transformation. Restriction along a functor of schemas has both a
+left and a right adjoint, which yields three transfer functors
+(\cite[\href{https://arxiv.org/pdf/1009.1166v3}{\S\S3.2, 3.4--3.5, 4, Propositions 4.2.1, 4.3.1}]{Spivak12}).
+The algebraic databases of Schultz et al. incorporate types, operations, and equations into
+this description, and construct instances that link entities with algebras on the type side,
+together with restriction along a schema mapping and its left and right adjoints
+(\cite[\href{https://arxiv.org/pdf/1602.03501v3}{\S\S6--7, especially \S6.19, Propositions 7.3--7.4}]{SSVW17}).
+
+In this theory, schemas and their morphisms, instances, and queries fit into a common
+double-categorical structure called a proarrow equipment. Transfers and the evaluation of
+queries are also described using composition and adjunctions in that structure
+(\cite[\href{https://arxiv.org/pdf/1602.03501v3}{Definition 8.13, Proposition 8.14, Lemma 8.18, \S\S8.25--8.26, 9}]{SSVW17}).
+Treating objects and transfers in the same framework is a point of contact with AAT at
+the level of the overall system.
+
+AAT builds a reindexing from an exact change of reading, and constructs the transport and
+the pullback of the relative core.
+Its universal property rests on the standard theory of fibered categories
+(\cite[\href{https://stacks.math.columbia.edu/tag/02XJ}{Tag 02XJ}]{Stacks}).
+In contrast with the adjunctions of general data migration, it is this exactness condition
+that makes the transport and the pullback of the core an adjoint equivalence
+(Proposition~\ref{prop:5.8}).
+
+Once two transfers are combined, a comparison of routes is needed in turn.
+The method of forming a mate from the units and counits of adjunctions and of capturing its
+invertibility as the Beck--Chevalley condition is made explicit in Shulman's study of framed
+bicategories and fibrations
+(\cite[\href{https://tac.mta.ca/tac/volumes/20/18/20-18.pdf}{\S13, Definition 13.11}]{Shulman08}).
+AAT forms this mate for squares of readings generated from finite codes, and shows its
+coherence with the comparison obtained by changing the choice of cartesian lift
+(Theorem~\ref{thm:5.11}, Proposition~\ref{prop:5.12}).
+
+From the square realized by finite codes and the common comparison diagram of
+Construction~\ref{cons:5.37}, AAT builds the generated comparison of full geometries and
+factors it into a composite of an invertible morphism and an idempotent.
+Restricting to the image of the idempotent yields an invertible comparison
+(Theorem~\ref{thm:6.16}).
+
+\section{Lenses, updates, and comparison-preserving changes}\label{sec:R.5}
+
+Even when the shipping address of an order is updated, we want the payment information to be
+carried over unchanged. In updating a view, what matters is how to treat information that,
+as here, does not appear in the readout.
+Bancilhon and Spyratos specify that information as a complement, and define the translation
+of an update by the condition that a fixed complement be preserved.
+When a lift exists, that translation is unique.
+For a family of updates that is closed under composition and in which updates can be undone
+at each state, if all updates can be lifted under this condition, one obtains a translator
+that preserves composition
+(\cite[\href{https://www.inf.unibz.it/franconispace/lib/exe/fetch.php?media=organisation\%3Asakt\%3A2013\%3A5.pdf}{\S\S3, 5, 7, Theorems 5.6, 7.1}]{BS81}).
+
+The lenses of Foster et al. treat bidirectional transformations through the laws of the read
+operation get and the update operation put. The total lenses that AAT treats correspond to the very
+well-behaved and total lenses of the original paper
+(\cite[\href{https://www.cis.upenn.edu/~bcpierce/papers/newlenses-full.pdf}{\S3.1, Definitions 3.1.2--3.1.3, PutPut}]{FGMPS04}).
+It is Johnson et al. who captured the relation between these laws and complements
+category-theoretically. In a category with finite products, if the morphism from the view to
+the terminal object splits, then the category of lenses is equivalent to the category of
+complements. In the case of sets, once a reference point of the view is chosen, states can
+be expressed as the product of the view and its reference fiber
+(\cite[\href{https://mta.ca/~rrosebru/articles/Lens2Cambridge.pdf}{\S3, Propositions 3.1--3.2}]{JRW12}).
+
+Using this product decomposition, AAT describes any morphism that preserves get and put as
+the restriction and extension of a map of reference fibers
+(Propositions~\ref{prop:1.33} and~\ref{prop:1.34}).
+We connect this description to typed morphisms and to comparisons.
+
+As for the universal property of lifting updates, Johnson et al. relate categorical lenses
+to split opfibrations
+(\cite[\href{https://mta.ca/~rrosebru/articles/Lens2Cambridge.pdf}{\S4, Remark 4.1, Corollary 4.1, Proposition 4.3}]{JRW12}).
+AAT classifies the invertible changes that preserve a comparison under a fixed semantics.
+For models in which the operations carry hidden states unchanged, AAT classifies the changes
+of those states by the connected components of the operation graph, and expresses their
+relation to visible changes by a split short exact sequence
+(Theorems~\ref{thm:7.24} and~\ref{thm:7.25}).
+For self-changes of the same product lens, under a fixed visible permutation the hidden
+permutation agrees on all views.
+For protocols that keep internal states, it can be chosen for each independent connected
+component (Propositions~\ref{prop:7.27} and~\ref{prop:7.29}).
+In these models, the way the operations tie states together determines the freedom of
+change.
+
+\section{Presentation and local reconstruction}\label{sec:R.6}
+
+To treat objects and their changes by local presentations, structure-preserving morphisms
+must be recoverable as well.
+AAT assembles objects from local data and compatibility equations defined independently for
+each input family, and puts local morphisms in correspondence with global
+structure-preserving morphisms (Chapter~\ref{chap:8}).
+
+At the basis of obtaining a category of models from operations and equations lies Lawvere's
+functorial semantics. It treats an algebraic theory as a category with finite products, an
+algebra as a product-preserving functor, and a homomorphism as a natural transformation
+(\cite[\href{https://www.sas.rochester.edu/mth/sites/doug-ravenel/otherpapers/lawvere.pdf}{pp. 869--870}]{Lawvere63}).
+The sketches of Barr and Wells give a graph together with diagrams to be made commutative
+and specified cones. A model is an interpretation that makes the diagrams commute and sends
+the cones to limit cones, and a morphism is a natural transformation
+(\cite[\href{https://tac.mta.ca/tac/reprints/articles/12/tr12.pdf}{Chapter 4, \S1.2}]{BW85}).
+
+The nerve theorem of Berger et al. constructs a fully faithful nerve from the category of
+algebras to a presheaf category, under conditions on a dense generator and on a monad having
+it as arities. Its essential image is characterized by a condition on restriction
+(\cite[\href{https://math.univ-cotedazur.fr/~cberger/arities.pdf}{Theorem 1.10}]{BMW12}).
+
+Here it also matters how presentations with the same meaning are identified.
+The 2025 third version of \emph{Algebraic Databases} corrects the equivalence it had stated
+between the category of presentations and the category of meanings, on the ground that
+distinct syntactic morphisms can represent the same semantic morphism
+(\cite[\href{https://arxiv.org/pdf/1602.03501v3}{Appendix B.1--B.3}]{SSVW17}).
+AAT proves separately that a global morphism can be built from local maps and that morphisms
+with the same readout coincide, and assembles local objects as well, up to isomorphism.
+Deriving these three properties from the independent local conditions on each input family,
+we obtain the equivalence between the category of realizations and the category of local
+models. It is standard to derive an equivalence of categories from full faithfulness and
+essential surjectivity
+(\cite[\href{https://stacks.math.columbia.edu/tag/02C3}{Tag 02C3, Lemma 4.2.19}]{Stacks}).
+
+Among the local conditions appear the graphs of get and put for lenses together with the
+three laws, the graphs of generating edges and observations for protocols together with the
+relations among paths, and the preservation conditions on coefficients and evaluation for
+full geometries. For lenses we use finite reference fibers, and for protocols the finite
+state set at each vertex and its finite list cover.
+
+For the extension to images of idempotents we use the standard theory of Cauchy completion.
+Kelly shows that, in the case enriched over sets, the small projectives of the presheaf
+category over a small category are the retracts of representable presheaves, and that the
+Cauchy completion corresponds to the completion that adds splittings of idempotents
+(\cite[\href{https://www.sas.rochester.edu/mth/sites/doug-ravenel/otherpapers/kelly-book.pdf}{\S5.8, Theorem 5.36}]{Kelly82}).
+AAT factors a generated comparison through the idempotent of normalization and builds the
+restriction and extension to the image
+(Theorems~\ref{thm:6.12}, \ref{thm:6.16}, and~\ref{thm:6.27}). The reconstruction of lenses
+and protocols from reference fibers and generating tables also extends to the Karoubi
+envelope and to the category of morphisms.
+
+\section{Situating AAT}\label{sec:R.7}
+
+The contribution of AAT lies in the theorems that connect its constructions and in the
+correspondence with the semantics of individual problems.
+The \textbf{Rising Sea} that AAT takes as its approach is to build foundations of this
+kind and thereby to see individual problems as special cases of common constructions.

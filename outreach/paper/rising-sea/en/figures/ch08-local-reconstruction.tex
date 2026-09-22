@@ -1,0 +1,44 @@
+% Figure 8.1 -- local reconstruction of an AAT model and a design change.
+% Same content as the Japanese manuscript's figure ../../figures/ch08-local-reconstruction.svg, redrawn in TikZ.
+\begin{tikzpicture}[
+    x=1mm, y=1mm,
+    team/.style={rounded corners=1.5mm, draw=black!45, semithick, fill=black!3,
+                 align=center, font=\footnotesize, inner sep=2mm, text width=44mm,
+                 minimum height=26mm,
+                 execute at begin node={\hyphenpenalty=10000 \exhyphenpenalty=10000 }},
+    wide/.style={rounded corners=1.5mm, draw=black!60, semithick, fill=white,
+                 align=center, font=\footnotesize, inner sep=2mm, text width=136mm},
+    result/.style={rounded corners=1.5mm, draw=black!45, semithick, fill=black!3,
+                align=center, font=\footnotesize, inner sep=2mm, text width=62mm,
+                minimum height=17mm},
+    arr/.style={-{Stealth[length=5pt]}, semithick},
+    head/.style={font=\small\bfseries},
+    note/.style={font=\small}
+  ]
+  \node[head] at (75,97) {Local descriptions for an internal transfer};
+  \node[note] at (75,90) {Declared structures and old-to-new correspondences};
+  \node[team] (acct) at (25,72)
+    {\textbf{Account management}\\[1pt]
+     Accounts and balance changes\\ Debit / credit operations\\ Account correspondences};
+  \node[team] (pay) at (75,72)
+    {\textbf{Payment management}\\[1pt]
+     Requests, amounts and states\\ Acceptance / completion\\ Transaction correspondences};
+  \node[team] (jrnl) at (125,72)
+    {\textbf{Accounting}\\[1pt]
+     Journal entries and references\\ Posting / correction operations\\ Journal-entry correspondences};
+  \node[wide] (cond) at (75,44)
+    {\textbf{All required primitive data and compatibility conditions}\\[1pt]
+     Shared readings agree on types, transaction references, amounts and completion\\
+     Actions, laws, geometry and realizations satisfy the declared conditions};
+  \node[result] (obj) at (39,17)
+    {\textbf{Object assembly}\\[1pt] An AAT model, up to isomorphism};
+  \node[result] (mor) at (111,17)
+    {\textbf{Morphism assembly}\\[1pt]
+     A unique structure-preserving map\\ between fixed old and new AAT models};
+  \draw[arr] (acct.south) -- (acct.south |- cond.north);
+  \draw[arr] (pay.south)  -- (pay.south  |- cond.north);
+  \draw[arr] (jrnl.south) -- (jrnl.south |- cond.north);
+  \draw[arr] (obj.north |- cond.south) -- (obj.north);
+  \draw[arr] (mor.north |- cond.south) -- (mor.north);
+  \node[note] at (75,3) {AAT local reconstruction: Theorem 8.18};
+\end{tikzpicture}

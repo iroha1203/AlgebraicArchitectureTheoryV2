@@ -15,7 +15,15 @@
     {"source": "en/06-resolution-invariance.tex", "target": "06-resolution-invariance.tex"},
     {"source": "en/07-transport-coherence.tex", "target": "07-transport-coherence.tex"},
     {"source": "en/08-base-change.tex", "target": "08-base-change.tex"},
+    {"source": "en/09-idempotent-normalization.tex", "target": "09-idempotent-normalization.tex"},
+    {"source": "en/10-comparison-and-information.tex", "target": "10-comparison-and-information.tex"},
+    {"source": "en/11-local-reconstruction.tex", "target": "11-local-reconstruction.tex"},
+    {"source": "en/12-related-work.tex", "target": "12-related-work.tex"},
+    {"source": "en/13-conclusions-and-further-directions.tex", "target": "13-conclusions-and-further-directions.tex"},
     {"source": "en/figures/ch02-finite-covers.tex", "target": "figures/ch02-finite-covers.tex"},
+    {"source": "en/figures/ch06-karoubi-arrow.tex", "target": "figures/ch06-karoubi-arrow.tex"},
+    {"source": "en/figures/ch07-refactoring-workers.tex", "target": "figures/ch07-refactoring-workers.tex"},
+    {"source": "en/figures/ch08-local-reconstruction.tex", "target": "figures/ch08-local-reconstruction.tex"},
     {"source": "en/pending-labels.tex", "target": "pending-labels.tex"},
     {"source": "en/references.bib", "target": "references.bib"}
   ]

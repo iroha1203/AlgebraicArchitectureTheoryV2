@@ -43,7 +43,7 @@ SECNUM = r'(?:[PRA-C]|\d+)\.\d+(?![.\d])'
 ITEM_REF = re.compile(rf'({"|".join(KINDS)})({NUM})((?:[・/](?:{NUM}))*)(?:[–](({NUM})))?')
 SEC_REF = re.compile(rf'(§§?)({SECNUM})(?:[–]({SECNUM}))?((?:[・,]\s*{SECNUM})*)')
 CHAP_REF = re.compile(r'第(\d+(?:[・〜]\d+)*)章')
-EQ_REF = re.compile(rf'式\(({NUM})\)(?:[–]\(({NUM})\))?')
+EQ_REF = re.compile(rf'式\(({NUM})\)((?:[・、]\({NUM}\))*)(?:[–]\(({NUM})\))?')
 FIG_REF = re.compile(rf'(図|表)({NUM})')
 APP_REF = re.compile(r'付録([A-C])(?![A-Za-z])')
 
@@ -204,11 +204,14 @@ def convert_refs(text, kinds, labels, warnings):
         plural = len(parts) > 1 or '〜' in m[1]
         return ('Chapters' if plural else 'Chapter') + '~' + join_refs(parts)
     def eq(m):
-        labels.add(f'eq:{m[1]}')
-        if m[2]:
-            labels.add(f'eq:{m[2]}')
-            return f'\\eqref{{eq:{m[1]}}}--\\eqref{{eq:{m[2]}}}'
-        return f'\\eqref{{eq:{m[1]}}}'
+        nums = [m[1]] + re.findall(NUM, m[2] or '')
+        for n in nums:
+            labels.add(f'eq:{n}')
+        refs = [f'\\eqref{{eq:{n}}}' for n in nums]
+        if m[3]:
+            labels.add(f'eq:{m[3]}')
+            return f'{refs[0]}--\\eqref{{eq:{m[3]}}}'
+        return join_refs(refs)
     def fig(m):
         prefix, name = ('fig', 'Figure') if m[1] == '図' else ('tab', 'Table')
         labels.add(f'{prefix}:{m[2]}')

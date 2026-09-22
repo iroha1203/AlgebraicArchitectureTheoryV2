@@ -1,0 +1,1640 @@
+\chapter{Presentation and Local Reconstruction}\label{chap:8}
+
+\section*{Overview of the Chapter}
+
+The question of this chapter is \textbf{when the overall geometry and the
+structure-preserving morphisms can be recovered from local descriptions}.
+For the changes preserving structure treated in Chapter~\ref{chap:7}, we treat the problem of
+constructing a single morphism from the descriptions of its individual components.
+
+As an example, consider the case where the modernization of an intrabank transfer system is
+divided among the account, payment, and accounting teams.
+The descriptions of the teams must agree on the shared transactions, amounts, and
+completion conditions.
+For the correspondence before and after the modernization as well, the correspondence
+of transactions, the actions of the operations, and the evaluation of the Laws are
+aligned across the teams.
+In this chapter we construct the overall model from such divided descriptions and explain the
+conditions under which the changes on the parts are assembled into a single
+structure-preserving morphism.
+
+We impose three conditions on reconstruction:
+that the local data distinguish different overall morphisms,
+that an overall morphism can be constructed from compatible correspondence tables,
+and that an object can be constructed from a local description of the structure.
+In this chapter we formulate these as separation, assembly of morphisms, and assembly of
+objects, respectively, and prove them.
+For full geometries we give these constructions from the primitive data of types, operations,
+Laws, local geometry, and realization.
+The main theorem shows that the category of full geometries and all their
+structure-preserving morphisms is equivalent to the category of local models defined from
+primitive data and compatibility conditions.
+
+In the gluing of Chapter~\ref{chap:2} we fixed a geometry and a cover of contexts and glued
+the states chosen on each context after correcting them.
+There ``local'' refers to the range of the context in which a state is read.
+In this chapter ``local'' refers to the readout of the finitely many types, values, and
+equations that describe a geometry and a morphism.
+The covers and the contexts themselves are included in the data that are read, and we assemble
+the geometries equipped with them together with the structure-preserving morphisms.
+
+What is used in the general reconstruction is a compatible family over all finite fragments.
+Reconstruction requires specifying readout items sufficient to determine the objects and
+morphisms, together with their compatibility conditions.
+After the main theorem we treat the application to design changes and the cases where, by the laws of the operations, a finite
+description suffices.
+For finite models as well, we distinguish the choice of the necessary information from the
+computational cost of checking and of reconstruction.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Question & Construction & Outcome \\
+\midrule
+\endhead
+When can objects and morphisms be finitely presented? & Finite exception codes and morphisms between fixed endpoints & Conditions for finite presentation and its limits \\
+\addlinespace[3pt]
+When can finite fragments be glued into a single table or function? & Restrictions and graphs of typed functions & Gluing of tables, and the conditions for being a function \\
+\addlinespace[3pt]
+What are the conditions for recovering the whole from local data? & Separation, assembly of morphisms, assembly of objects & Equivalence of categories given by the readout functor \\
+\addlinespace[3pt]
+From what are the geometries and morphisms of AAT assembled? & Primitive data of operations, Laws, geometry, and realization & Reconstruction of objects and of all structure-preserving morphisms \\
+\addlinespace[3pt]
+Can a design change be constructed from divided descriptions? & Local descriptions and correspondences for an intrabank transfer & Construction of the model and of the change from divided descriptions \\
+\addlinespace[3pt]
+Can an overall morphism be recovered from a finite table? & Unique extension by the laws of the operations & Conditions for recovering an overall morphism from a finite description \\
+\addlinespace[3pt]
+How can one check in a finite model? & Choice of readout items, enumeration and decision of equality & Distinction between the information sufficient for reconstruction and the computational procedure \\
+\bottomrule
+\end{xltabular}
+
+The diagnostic invariance of Chapter~\ref{chap:3} guarantees that the verdict of a chosen
+diagnosis does not change when the reading is changed.
+The reflection of Chapter~\ref{chap:7} is the property that compatibility of the original
+change follows from compatibility in the normalized image.
+The reconstruction of this chapter recovers the objects and morphisms themselves.
+Each of these properties holds for specified objects, morphisms, and observed quantities.
+
+\section{Recovery of objects and morphisms by finite presentation}\label{sec:8.1}
+
+In Chapter~\ref{chap:5} we showed that, if the presentations of the endpoints may be chosen,
+a base morphism can be presented from a finite source and a finite or cofinite extraction.
+When the presentations of the endpoints are fixed, not every semantic morphism can be
+presented as a morphism between them.
+In this section we use finite exception codes to make this difference explicit.
+
+\subsection*{Finite exception tables and the one-point compactification}
+
+\begin{definition}[Finite exception code]\label{def:8.1}
+
+For a set $D$, we take a code to be a pair of a default value $b\in\{0,1\}$ and a finite set
+$E\subseteq D$. The evaluation is
+\begin{equation*}
+\mathrm{ev}(b,E)(x)=
+\begin{cases}
+1-b,&x\in E,\\
+b,&x\notin E
+\end{cases}
+\tag{8.1}\label{eq:8.1}
+\end{equation*}
+The default value 0 represents the characteristic function of a finite set, and the default
+value 1 that of a cofinite set.
+
+The default value specifies the value of the evaluation outside the finite exception set.
+To represent it by a single point, we consider $D^+=D\sqcup\{\infty\}$.
+We take each point of $D$ to be isolated, and we take a set containing $\infty$ to be open
+if its complement is a finite subset of $D$.
+This is the one-point compactification of the discrete space $D$.
+When $D$ is finite, $\infty$ is isolated as well.
+
+\end{definition}
+
+\begin{proposition}[Topological meaning of codes]\label{prop:8.2}
+
+Giving $\{0,1\}$ the discrete topology, we have the following bijection.
+\begin{equation*}
+\begin{aligned}
+\mathrm{Code}(D)&\ \cong\ C(D^+,\{0,1\}),\\
+(b,E)&\longmapsto
+\left[
+x\longmapsto
+\begin{cases}
+\mathrm{ev}(b,E)(x),&x\in D,\\
+b,&x=\infty.
+\end{cases}
+\right]
+\end{aligned}
+\tag{8.2}\label{eq:8.2}
+\end{equation*}
+If $D$ is infinite, the code is determined uniquely by its evaluation on $D$ alone.
+If $D$ is finite, then for every function $a:D\to\{0,1\}$ there are two codes, one with
+default value 0 and one with default value 1.
+
+\end{proposition}
+
+\begin{proof}
+
+The function obtained from a code is constant on the neighborhood $D^+\setminus E$ of
+$\infty$ and is therefore continuous.
+Conversely, for a continuous function $a$, put $b=a(\infty)$.
+By continuity $a^{-1}(\{b\})$ is a neighborhood of $\infty$, so
+$E=\{x\in D\mid a(x)\ne b\}$ is finite. The two constructions are mutually inverse.
+
+For infinite $D$, a point can be taken outside the union of two finite exception sets.
+If the evaluations agree, the default values agree there, and the exception sets agree as
+well.
+For finite $D$, the set $E_b=\{x\mid a(x)\ne b\}$ is finite for each $b$, and these give the
+two codes.
+
+\end{proof}
+
+Theorem~\ref{thm:5.15} of Chapter~\ref{chap:5} therefore gives the following topological
+characterization. Finiteness of the sources at both ends, together with the extension of each
+extraction predicate of the target to a continuous function on $D^+$, characterizes the
+finite presentation of a base morphism including the endpoint isomorphisms.
+Finiteness of a discrete source is also equivalent, topologically, to compactness.
+Indeed, that the open cover consisting of the individual points has a finite subcover means
+that the total number of points is finite.
+This characterization permits meaning-preserving changes of the enumeration of the
+endpoints and of the correspondence of Atoms.
+
+\subsection*{Morphisms between fixed presentations}
+
+Next we investigate which semantic morphisms can be presented between fixed presentations.
+We take as objects the codes of Chapter~\ref{chap:5} with a finite source, a normalization
+table, and a finite exception table.
+A morphism of presentations records a finite table of sources and a permutation moving only
+finitely many Atoms.
+We require that the normalization and the designated point be preserved and that the
+transported extraction code be equal to the code of the target.
+We identify the descriptions of permutations that give the same semantic morphism, and we
+write $D_0$ for the decoding functor of the category obtained by this quotient.
+
+We fix two presentations $P,Q$ and write $D_0P,D_0Q$ for their meanings.
+We take $b_P(s)$ to be the default value of the extraction code used after normalizing the
+source $s$.
+
+\begin{proposition}[Existence condition for morphisms between fixed presentations]\label{prop:8.3}
+
+Let $s_f$ be the source map and $\sigma_f$ the permutation of Atoms of a semantic base
+morphism $f:D_0P\to D_0Q$. Then
+\begin{equation*}
+\exists h:P\to Q,\ D_0(h)=f
+\quad\Longleftrightarrow\quad
+\left\{
+\begin{aligned}
+&\{a\in D\mid \sigma_f(a)\ne a\}\text{ is finite},\\
+&b_Q(s_f(s))=b_P(s)\quad\text{for all }s.
+\end{aligned}
+\right.
+\tag{8.3}\label{eq:8.3}
+\end{equation*}
+
+\end{proposition}
+
+\begin{proof}
+
+A presented permutation moves only finitely many Atoms.
+Moreover, the transport of a code does not change the default value, so the left-hand side
+implies the right-hand side.
+
+Conversely, assume the right-hand side.
+Enumerating the finite set moved by $\sigma_f$ and writing the permutation on it as a table,
+this permutation extends to $\sigma_f$ itself.
+For the source map we use $s_f$.
+Preservation of the normalization and of the designated point is a condition on $f$.
+By exactness of the extraction, the evaluations of the transported code and of the target
+code are equal.
+Since the default values are equal as well, \eqref{eq:8.1} shows that the exception sets are
+equal, and we obtain the equality of codes.
+
+\end{proof}
+
+The semantic morphisms that escape this presentation are therefore only those that move
+infinitely many Atoms and those whose default values after normalization do not agree at
+corresponding sources.
+The next example shows that the latter occurs even for a finite set of Atoms.
+
+\begin{example}[Non-fullness between fixed presentations]\label{ex:8.4}
+
+We take $D=\{a\}$, a single source, and the identity normalization.
+If the extraction codes are taken to be $(0,\varnothing)$ and $(1,\{a\})$, then both
+extractions are always false.
+The semantic identity morphism exists, but since the default values differ, that identity
+morphism cannot be presented between these two codes.
+
+This example shows that recovery of the Hom-sets between fixed presentations does not follow
+from agreement of the meanings of the objects.
+The information about the default values that remains in a presentation constrains the
+presentability of semantic morphisms.
+
+\end{example}
+
+\begin{corollary}[Normalization of presentations over finitely many Atoms]\label{cor:8.5}
+
+If $D$ is finite, each extraction code can be replaced by
+\begin{equation*}
+R_{\mathrm{fin}}(b,E)
+=
+\bigl(0,\{a\in D\mid\mathrm{ev}(b,E)(a)=1\}\bigr)
+\tag{8.4}\label{eq:8.4}
+\end{equation*}
+On the full subcategory of the objects for which all the default values of the extraction
+codes used after normalization are 0, the functor $D_0$ is fully faithful.
+Moreover $D_0R_{\mathrm{fin}}\cong D_0$, and the semantic objects and morphisms are
+preserved.
+
+\end{corollary}
+
+\begin{proof}
+
+Equation~\eqref{eq:8.4} does not change the evaluation.
+A permutation of a finite set has finite support and the default values at both ends are 0,
+so Proposition~\ref{prop:8.3} applies to every semantic morphism.
+Faithfulness comes from having identified the descriptions that give the same semantic
+morphism.
+The construction $R_{\mathrm{fin}}$ also acts on morphisms, retaining the source map and the
+Atom permutation.
+After evaluation each component is an identity isomorphism, and naturality with respect to
+morphisms holds as well.
+
+\end{proof}
+
+\section{Compatibility of finite fragments and gluing}\label{sec:8.2}
+
+In the previous section we saw that, even when the meanings of objects agree, the morphisms
+between fixed presentations need not be recoverable.
+In what follows we read the individual components of morphisms in addition to the objects,
+and investigate the conditions under which the overall objects and morphisms are constructed
+from compatible local descriptions.
+In the gluing of finite fragments we distinguish the agreement of values on the common part
+from the conditions under which the glued table defines a function or a structure.
+We define the former as compatibility of finite fragments.
+The latter includes the existence and uniqueness of an output for each input, as well as
+preservation of the operations.
+
+\subsection*{Indices and restrictions of the readout}
+
+\begin{definition}[Compatible family of finite fragments]\label{def:8.6}
+
+We take $\Lambda$ to be the set of the items to be read and $V_q$ to be the type of the value
+of an item $q$.
+For a finite subset $S\subseteq\Lambda$, we take a finite fragment to be an element of
+\begin{equation*}
+T_S=\prod_{q\in S}V_q
+\tag{8.5}\label{eq:8.5}
+\end{equation*}
+For $S\subseteq T$ we use the restriction map $r_{S,T}:T_T\to T_S$ that forgets components.
+A family $(a_S)_S$ over all the finite subsets is said to be \textbf{compatible} if
+\begin{equation*}
+r_{S,T}(a_T)=a_S
+\quad\text{whenever }S\subseteq T
+\tag{8.6}\label{eq:8.6}
+\end{equation*}
+holds.
+
+What is finite here is the number of items contained in a single fragment.
+The types of the values may include Booleans, elements of a ring, finite polynomials,
+references to declared sets, and so on.
+A finite fragment therefore does not necessarily represent a bit string of finite length.
+
+\end{definition}
+
+\begin{lemma}[Gluing from single points]\label{lem:8.7}
+
+Between the overall table and the compatible families of finite fragments there is the
+following bijection.
+\begin{equation*}
+\prod_{q\in\Lambda}V_q
+\ \cong\
+\left\{(a_S)_S\ \middle|\ r_{S,T}(a_T)=a_S\right\}.
+\tag{8.7}\label{eq:8.7}
+\end{equation*}
+
+\end{lemma}
+
+\begin{proof}
+
+From the overall table we take the restrictions to the finite subsets.
+In the other direction, we define the value at $q$ to be the single-point fragment
+$a_{\{q\}}(q)$.
+By \eqref{eq:8.6}, each component of any finite fragment agrees with this value.
+Restriction and gluing compose to the identity in both directions.
+
+\end{proof}
+
+\subsection*{Representation by graphs of typed functions}
+
+\begin{definition}[Graph of a typed function]\label{def:8.8}
+
+We describe a function between declared sets $A,B$ by a Boolean table $R(x,y)$ on the pairs
+of an input and an output.
+When the candidate pairs of types are also included in the indices, we set the value to 0 on
+the pairs other than the selected $(A,B)$.
+Over the valid types we require the following.
+\begin{equation*}
+\forall x\in A,\quad\exists!y\in B,\quad R(x,y)=1.
+\tag{8.8}\label{eq:8.8}
+\end{equation*}
+That is, each row has exactly one output.
+We take the readout of a function $f:A\to B$ to be
+$R_f(x,y)=1\Longleftrightarrow f(x)=y$.
+
+\end{definition}
+
+\begin{lemma}[Readout and assembly of graphs of functions]\label{lem:8.9}
+
+The functions $A\to B$ and the tables satisfying Definition~\ref{def:8.8} are in one-to-one
+correspondence.
+This correspondence preserves identities and composition.
+
+\end{lemma}
+
+\begin{proof}
+
+We take $f_R(x)$ to be the unique output in \eqref{eq:8.8}.
+By definition $R_{f_R}=R$ and $f_{R_f}=f$.
+The table of the identity is the diagonal $x=y$.
+Composition is given by
+\begin{equation*}
+(R_g\star R_f)(x,z)=1
+\quad\Longleftrightarrow\quad
+\exists y,\ R_f(x,y)=1\ \land\ R_g(y,z)=1
+\tag{8.9}\label{eq:8.9}
+\end{equation*}
+which is equivalent to $g(f(x))=z$.
+By the uniqueness in each row, \eqref{eq:8.8} holds after composition as well.
+
+\end{proof}
+
+\begin{example}[Compatibility and the conditions for a graph of a function]\label{ex:8.10}
+
+When $A$ is nonempty, the finite fragments of the Boolean table all of whose values are 0 are
+compatible.
+No row, however, has an output, so \eqref{eq:8.8} is not satisfied.
+Moreover, placing two different outputs on one input satisfies existence but loses
+uniqueness.
+Compatibility of finite fragments alone therefore does not guarantee the conditions for a
+graph of a function.
+
+\end{example}
+
+\begin{definition}[Local conditions by primitive evaluation]\label{def:8.11}
+
+A formula of primitive evaluation is an equation or an implication assembled from
+finitely many components of types, values, and graphs of functions.
+We take the support of a formula to be the finite set of the indices referred to in it.
+We take a local condition to be such a formula quantified over the specified inputs.
+
+For example, for the actions of operations $d:A\to B$ and $d':A'\to B'$, the condition that
+correspondences $h_A:A\to A'$ and $h_B:B\to B'$ preserve the actions,
+\begin{equation*}
+h_B(d(a))=d'(h_A(a))
+\tag{8.10}\label{eq:8.10}
+\end{equation*}
+becomes, once $a$ and the intermediate output are fixed, a finite formula evaluating four
+applications of functions.
+Requiring this condition for all $a$ yields preservation of the actions of the operations.
+
+Likewise, \eqref{eq:8.8} takes an output $y$ for each $x$ and requires its value to be 1 and
+the value at every other candidate $z$ to be 0.
+The formula of the evaluation for each candidate is finite, but the condition expressing the
+totality of a row requires quantification.
+When a finite carrier is required, the existence of a finite list covering all the elements
+is also included in the conditions.
+That each formula of evaluation has finite support is distinguished from the whole condition being verifiable by finitely many checks.
+
+\end{definition}
+
+\section{Reconstruction principle by separation and assembly}\label{sec:8.3}
+
+Before turning to individual structures, we state a sufficient condition for local
+reconstruction.
+Let $N:\mathcal{R}\to\mathcal{M}$ be a functor that reads the overall structures and
+morphisms into local models.
+
+\begin{theorem}[Local reconstruction principle]\label{thm:8.12}
+
+If $N$ satisfies the following three conditions, we obtain an equivalence of categories
+$\mathcal{R}\simeq\mathcal{M}$ whose forward functor is $N$.
+
+\begin{enumerate}
+\item \textbf{Separation.} For $f,g$ with the same endpoints, $N(f)=N(g)$ implies $f=g$.
+\item \textbf{Assembly of morphisms.} From any $u:NX\to NY$ we can construct
+$\mathrm{asm}(u):X\to Y$ with $N(\mathrm{asm}(u))=u$.
+\item \textbf{Assembly of objects.} From any $m\in\mathcal{M}$ we can construct an object
+$A(m)\in\mathcal{R}$ and an isomorphism
+$\varepsilon_m:N(A(m))\xrightarrow{\sim}m$.
+\end{enumerate}
+
+Then for each Hom-set we have
+\begin{equation*}
+\mathrm{Hom}_{\mathcal{R}}(X,Y)
+\ \underset{\mathrm{asm}}{\overset{N}{\rightleftarrows}}\
+\mathrm{Hom}_{\mathcal{M}}(NX,NY),\qquad
+N\mathrm{asm}=1,\quad
+\mathrm{asm}N=1
+\tag{8.11}\label{eq:8.11}
+\end{equation*}
+and to each local morphism there corresponds exactly one overall morphism.
+
+\end{theorem}
+
+\begin{proof}
+
+For a morphism $f:X\to Y$, assembly of morphisms gives $N(\mathrm{asm}(Nf))=Nf$.
+Using separation we obtain $\mathrm{asm}(Nf)=f$, and \eqref{eq:8.11} holds.
+Hence $N$ is fully faithful.
+Assembly of objects gives essential surjectivity, so we obtain an equivalence of categories.
+This is the standard characterization of an equivalence of categories
+(\cite[\href{https://stacks.math.columbia.edu/tag/02C3}{Lemma 4.2.19, Tag 02C3}]{Stacks}).
+
+We construct the inverse functor as follows.
+To an object we assign $A(m)$, and for $u:m\to n$ we put
+\begin{equation*}
+A(u)=
+\mathrm{asm}
+\bigl(\varepsilon_n^{-1}\,u\,\varepsilon_m\bigr)
+\tag{8.12}\label{eq:8.12}
+\end{equation*}
+Preservation of identities and composition holds in the image of $N$, and by separation it
+holds in $\mathcal{R}$ as well.
+By \eqref{eq:8.12}, $\varepsilon$ is a natural isomorphism.
+The other natural isomorphism is given by the unique assembly of
+$\varepsilon_{NX}^{-1}:NX\to N(A(NX))$.
+Naturality of this natural isomorphism and the triangle identity on the $\mathcal{R}$ side
+are checked by applying $N$ to both sides.
+Using \eqref{eq:8.12} and the inverse laws of assembly and reducing the composites of
+$\varepsilon$ with its inverse, the morphisms being compared agree.
+By separation we obtain the original equality. The triangle identity on the $\mathcal{M}$
+side follows from the fact that the composite of $\varepsilon_{NX}$ with its inverse is the
+identity morphism.
+
+\end{proof}
+
+In this principle, separation guarantees the uniqueness of morphisms.
+The existence of the morphisms and the objects requires proofs that construct the respective
+structures from the local conditions.
+In what follows we define local objects and local morphisms from types and equations and
+prove these three conditions.
+
+\section{Local models of full geometries}\label{sec:8.4}
+
+\subsection*{The category of realizations and the variants of morphisms}
+
+\begin{construction}[Input for full geometries and the category of realizations]\label{cons:8.13}
+
+We fix a set of Atoms and a variant of morphisms defined below, and we take $\Theta$ to be
+this pair.
+We write $\mathcal{R}_\Theta$ for the category whose objects are the full geometries of
+Chapter~\ref{chap:1} and whose morphisms are all the structure-preserving morphisms of the
+chosen variant.
+The local model is defined from the primitive data that constitute these objects and
+morphisms.
+
+Changes of full geometries arise in two ways: comparing the presentations after
+transport by an equality, and retaining the concrete correspondence maps between
+the two presentations. We use the following two variants, one for each.
+
+\end{construction}
+
+\begin{definition}[The two variants of morphisms of full geometries]\label{def:8.14}
+
+In the \textbf{representative variant} we use the morphisms of Definition~\ref{def:1.30}.
+They have maps of the base and of the core, transport of covers and overlaps, and a
+homomorphism of coefficient rings, and we require the raw system of the codomain to be equal
+to the raw system of the domain with its coefficients and contexts transported.
+The comparison maps for supports, axes, and observables are natural with respect to the
+restrictions chosen there.
+
+In the \textbf{explicit-map variant} the components of the base, the core, the covers, the
+overlaps, and the coefficients are the same, and the equality of raw systems is replaced by
+the following concrete correspondence.
+On each context after transport, the raw coordinates, the local data, and the relation
+indices are put in bijection.
+This correspondence preserves the evaluation of polynomials using the map of coefficients,
+the relations, and the restrictions.
+The image of each context morphism is also specified, and restriction morphisms are required
+to be sent to restriction morphisms.
+Bijections are specified for the supports, axes, and observables of each context as well, and
+the predicates of the readout and naturality along these context morphisms are required.
+For the raw coordinates, for example, we specify which coordinate a given coordinate is sent
+to, and apply that correspondence to the relations and to the polynomials of the
+restrictions.
+
+In either variant, the maps of the base and of architecture objects and the map of
+coefficients need not be invertible.
+The identity is the identity in each component, and composition is the composition of the
+corresponding components.
+
+\end{definition}
+
+\subsection*{Primitive data and local compatibility conditions}
+
+\begin{definition}[Local objects and local morphisms of full geometries]\label{def:8.15}
+
+We fix $\Theta$.
+The following table collects the data that are read in order to reconstruct the objects and
+morphisms of full geometries.
+Each datum is read as a value or as one point of the graph of a function.
+The sets that serve as the domain and the codomain of a function are specified by the type
+reference of the corresponding role.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Layer read & Primitive data read from an object & Primitive data read from a morphism \\
+\midrule
+\endhead
+Base and Atoms & Types of the sources, the designated point, the graph of the normalization, the extraction predicates & Graphs of the source map and of the bijection of Atoms \\
+\addlinespace[3pt]
+architecture & Composition relations of finite Atom families, object formation, types and endpoints of the operations and their actions on Atoms & Graphs of the object map and of the operation map \\
+\addlinespace[3pt]
+Laws and invariants & Indices, both sides, and evaluations of the Laws, detectors, types and values of the invariants, signatures & Correspondence of indices, preservation of evaluations and of actions, correspondence of signatures \\
+\addlinespace[3pt]
+Contexts and observables & Types and relations of the contexts, restrictions, ring operations and readouts of the observables & Correspondence of contexts, ring isomorphisms of the observables and preservation of restrictions \\
+\addlinespace[3pt]
+Selected geometry & Coverage requirements, overlaps, coefficient ring, raw coordinates, relations, polynomials of the restrictions & Preservation of covers and overlaps, map of coefficients, and, according to the variant, the equality of raw systems or the graph of the correspondence \\
+\addlinespace[3pt]
+Realization & Types of supports, axes, and observables, readout predicates, actions of the context morphisms & Comparisons of each realization component and naturality \\
+\bottomrule
+\end{xltabular}
+
+For example, one item of the action of an operation $u:A\to B$ represents the truth value of
+the proposition that its morphism of configurations sends an Atom $a$ to an Atom $b$.
+One item of the multiplication of the coefficient ring represents the truth value of the
+equation $a\cdot b=c$.
+The restrictions of the raw system are written as finite polynomials, and the types of their
+variables and coefficients are matched up.
+For a local value we specify these primitive components, and the geometry or the morphism as
+a whole is constructed by assembling them.
+
+In the readout of a morphism we distinguish the items of the domain object, of the codomain
+object, and of the morphism itself.
+Their common index set is
+\begin{equation*}
+\Lambda_\Theta
+=
+\Lambda_\Theta^{\mathrm{src}}
+\sqcup
+\Lambda_\Theta^{\mathrm{tgt}}
+\sqcup
+\Lambda_\Theta^{\mathrm{hom}}.
+\tag{8.13}\label{eq:8.13}
+\end{equation*}
+We assign a type of values to each item and define the finite fragments and restrictions of
+Definition~\ref{def:8.6}.
+In the case of an object, only the items of the object are used.
+For the domain and codomain parts of a morphism we require agreement with the specified local
+objects at the two ends.
+
+We take a \textbf{local object} to be a compatible family of finite fragments of an object
+satisfying the following conditions.
+
+\begin{itemize}
+\item The types declared for each role agree, and each graph of a function satisfies
+Definition~\ref{def:8.8}.
+\item The laws of each structure constituting a full geometry of Chapter~\ref{chap:1} hold as
+formulas of primitive evaluation.
+\item The family of Atoms selected in the core is finite.
+\end{itemize}
+
+We take a \textbf{local morphism} to be a compatible family of finite fragments of a morphism
+satisfying the agreement of the types and of the two ends, the totality and uniqueness of the
+graphs of functions, and the preservation conditions listed in the table.
+For the components that must be bijections we specify the graph in the opposite direction and
+the two inverse laws.
+On a ring homomorphism we impose preservation of 0, 1, addition, and multiplication, and on a
+Law we impose the correspondence of the indices and preservation of the evaluations of both
+sides.
+Naturality is a componentwise equation for each specified restriction or context morphism.
+The conditions on the polynomials of the raw system are evaluated from the correspondence of
+finitely many coefficients and variables.
+
+For example, writing $e$ for the correspondence of Atoms, $\Phi$ for the correspondence of
+operations, and $d(u)$ for the morphism of configurations of an operation $u$, the condition that operations and their actions on configurations be preserved reads
+\begin{equation*}
+e\bigl(d(u)_{\mathrm{At}}(a)\bigr)
+=
+d(\Phi(u))_{\mathrm{At}}\bigl(e(a)\bigr)
+\tag{8.14}\label{eq:8.14}
+\end{equation*}
+Naturality for the restrictions and the observables requires that applying the restriction and
+the component maps in either order give equal values.
+Expanding each formula at a fixed input gives finite support.
+Requiring the formulas at all inputs yields the preservation conditions for the structure as
+a whole.
+
+In the invariant condition of Definition~\ref{def:1.28}, the bijection of value ranges is only
+required to exist and is not included among the components retained by a morphism.
+To express such an existence condition, we attach to the local presentation auxiliary graphs
+representing the maps in both directions.
+On these too we impose the types, the inverse laws, preservation of evaluations, and
+compatibility with the restrictions of finite fragments.
+After constructing a compatible presentation, we identify presentations that differ only in
+the choice of the auxiliary graphs.
+This quotient leaves the components of a morphism that are to be retained, such as the source,
+the operations, the contexts, the coefficients, and the raw system.
+
+\end{definition}
+
+\begin{lemma}[The local category and the readout functor]\label{lem:8.16}
+
+The local objects and local morphisms of Definition~\ref{def:8.15} form a category
+$\mathcal{M}_\Theta$.
+The readout of the primitive data defines a functor
+\begin{equation*}
+N_\Theta:\mathcal{R}_\Theta\longrightarrow\mathcal{M}_\Theta
+\tag{8.15}\label{eq:8.15}
+\end{equation*}
+
+\end{lemma}
+
+\begin{proof}
+
+The identity of a local morphism is defined by the diagonal graph, and composition
+componentwise by \eqref{eq:8.9}.
+Each graph is again total and unique.
+The preservation equation for a composite follows from two preservation equations, and the
+graphs in the opposite direction preserve the inverse laws by being composed in the reverse
+order.
+The implications required for the covers and the restrictions are preserved as well, by
+chaining two implications.
+In the formulas of the raw system we compose the map of coefficients and the substitution of
+variables in turn.
+
+The correspondences in both directions can also be composed for the auxiliary presentations
+of the invariants.
+Presentations with equal retained components give composites with equal retained components,
+so composition is still defined after the identification.
+The unit and associativity laws follow from the composition of graphs and from componentwise
+composition.
+
+If each component of a realization is read, the types and laws hold by the definition of that
+realization.
+Since the readout of graphs of functions preserves identities and composition, these readouts
+form a functor.
+
+\end{proof}
+
+\section{The local reconstruction theorem for full geometries}\label{sec:8.5}
+
+From the primitive data and the conditions of Definition~\ref{def:8.15} we construct full
+geometries and their structure-preserving morphisms.
+With this construction we prove the conditions of separation and assembly of
+Theorem~\ref{thm:8.12} and obtain the equivalence between the category of full geometries and
+the category of local models.
+
+\subsection*{Assembly of full geometries}
+
+\begin{lemma}[Assembly and separation for full geometries]\label{lem:8.17}
+
+For both variants of full geometries, a full geometry can be assembled from a local object.
+Moreover, between any full geometries $G,H$, the readout and the assembly relating the local
+morphisms $N_\Theta G\to N_\Theta H$ to the morphisms of full geometries $G\to H$ are
+mutually inverse.
+
+\end{lemma}
+
+\begin{proof}
+
+We first construct the objects in the order of dependence of the types and then assemble the
+morphisms between those objects.
+Finally we check that these constructions and the readout of the primitive data are mutually
+inverse.
+
+We glue the finite fragments by Lemma~\ref{lem:8.7}.
+We obtain the types of the sources, the Atoms, the architecture objects, the configurations,
+and the operations, construct from each graph, by Lemma~\ref{lem:8.9}, the normalization and
+the actions of the operations on Atoms, and extract the values of the extraction, of the
+composition relations of finite Atom families, and of the object formation.
+The designated point belongs to the sources by the conditions on the types.
+The conditions on the normalization and the extraction, the finiteness of the selected family
+of Atoms, the conditions on the object formation and the composition relations, and the
+conditions on the endpoints of the operations and on the morphisms of configurations give the
+structures of the base and of the architecture of Chapter~\ref{chap:1}.
+
+Next we extract the invariants and the signatures and the indices of the Laws.
+We then construct the contexts and their relations and the ring operations and restrictions
+of the observables of each context, and check their respective axioms. Using these contexts
+and rings, we construct both sides of the Laws and their evaluations.
+Rereading the primitive conditions as equations about the values of the assembled functions,
+the conditions for the Laws and for detection hold.
+This determines the core.
+
+Over this core we take the coverage requirements and the overlaps and construct the selected
+site.
+The type and the operations of the coefficient ring satisfy the ring axioms.
+We assemble the raw coordinates, the local data, the relation indices, and the polynomials of
+the restrictions of each context.
+The primitive conditions include preservation of the relations and the equations for the
+identities and the composition of the restrictions, so these form a raw system.
+Finally we combine the supports, axes, and observables with their readouts and with the
+actions of the context morphisms, and obtain a full geometry.
+By this order, the types referred to by the later data are already determined by the data
+constructed earlier.
+
+For morphisms as well, we first assemble the graph of each retained component into a function.
+For the components that are bijections, the two inverse laws give the inverse map.
+The local conditions for the sources, the normalizations, the extractions, the operations, the
+Laws, and the observables give the preservation equations for the assembled maps as they
+stand.
+The same holds for preservation of the covers and the overlaps and for the homomorphism of
+coefficients.
+In the representative variant we obtain the equality of transported raw systems.
+In the explicit-map variant we obtain the correspondence of raw systems and naturality along
+the actual context morphisms.
+The auxiliary graphs of the invariants give the existence of the required bijections of
+values.
+Changing the choice of the auxiliary graphs does not change the retained components of the
+assembled morphism.
+
+The graph of each function in this construction agrees with the original table by
+Lemma~\ref{lem:8.9}.
+Agreement of the finite fragments follows from Lemma~\ref{lem:8.7} as well.
+Conversely, assembling the readout of a morphism of full geometries, the value of each
+function agrees with the value of the original morphism.
+Equality of morphisms is determined by the equality of these retained components, so the
+result of the assembly is equal to the original morphism.
+For objects as well, each structure is recovered, and we obtain a canonical isomorphism
+through the identification of the types.
+
+\end{proof}
+
+\subsection*{The main theorem}
+
+\begin{theorem}[Local reconstruction of full geometries]\label{thm:8.18}
+
+We fix the set of Atoms and the variant of morphisms of Construction~\ref{cons:8.13}.
+The primitive readout functor $N_\Theta$ into the local model of Definition~\ref{def:8.15}
+gives an equivalence of categories.
+\begin{equation*}
+\mathcal{R}_\Theta\simeq\mathcal{M}_\Theta.
+\tag{8.16}\label{eq:8.16}
+\end{equation*}
+Its forward functor is $N_\Theta$ of \eqref{eq:8.15} itself.
+For any full geometries $X,Y$, the maps
+\begin{equation*}
+\mathrm{Hom}_{\mathcal{R}_\Theta}(X,Y)
+\ \underset{\mathrm{asm}_\Theta}
+{\overset{N_\Theta}{\rightleftarrows}}\
+\mathrm{Hom}_{\mathcal{M}_\Theta}(N_\Theta X,N_\Theta Y)
+\tag{8.17}\label{eq:8.17}
+\end{equation*}
+are bijections, and the readout and the assembly compose to the identity in both directions.
+
+\end{theorem}
+
+\begin{proof}
+
+By Lemma~\ref{lem:8.17}, for either variant of morphisms the primitive readout separates
+morphisms and all local morphisms and local objects can be assembled.
+The three conditions of Theorem~\ref{thm:8.12} are therefore satisfied, and we obtain an
+equivalence of categories whose forward functor is $N_\Theta$.
+
+\end{proof}
+
+The Hom-sets of the main theorem consist of all the structure-preserving morphisms,
+including the
+noninvertible ones permitted by the chosen variant.
+Their existence is derived from the primitive types and the preservation conditions by
+Lemma~\ref{lem:8.17}.
+Objects are recovered up to isomorphism, and the morphisms between fixed endpoints are
+recovered uniquely.
+
+\begin{corollary}[Recovery of evaluations, composition, and isomorphisms]\label{cor:8.19}
+
+For $u:N_\Theta X\to N_\Theta Y$ and
+$v:N_\Theta Y\to N_\Theta Z$ we have
+\begin{equation*}
+\begin{aligned}
+\mathrm{asm}_\Theta(1)&=1,\\
+\mathrm{asm}_\Theta(vu)
+&=\mathrm{asm}_\Theta(v)\mathrm{asm}_\Theta(u).
+\end{aligned}
+\tag{8.18}\label{eq:8.18}
+\end{equation*}
+The evaluation of each primitive component agrees with the value of the original local table.
+Moreover, $N_\Theta(f)$ is an isomorphism if and only if $f$ is an isomorphism.
+
+\end{corollary}
+
+\begin{proof}
+
+Reading both sides of \eqref{eq:8.18}, they become equal by functoriality of the readout and
+by \eqref{eq:8.17}.
+By separation the original morphisms are equal as well.
+The agreement of the evaluations follows from the definition of the output chosen in the
+assembly of graphs.
+If a local morphism has an inverse, assembling that inverse and using \eqref{eq:8.18} gives
+the inverse of the overall morphism.
+The converse direction is functoriality.
+
+\end{proof}
+
+\section{Application to design changes}\label{sec:8.6}
+
+\subsection*{Modernization of an intrabank transfer system}
+
+We make the intrabank transfer of the opening concrete as an example explaining the
+reconstruction of full geometries.
+The division of business responsibilities that distinguishes account management, payment
+execution, and accounting is also found in the
+\href{https://bian.org/wp-content/uploads/2024/12/BIAN-Service-Landscape-V9_0-Value-Chain-View.pdf}{BIAN Service Domain Landscape 9.0}.
+In this example we treat a transfer in a single currency without fees, and we set the
+following states and Laws.
+
+Suppose that the old design kept the information about the transfer, the update of the
+accounts, and the posting in a single transaction record.
+In the new design these are separated into a transfer record, an account statement, and a
+journal entry, linked by a shared transaction reference.
+Each team describes the following structures and the correspondence from the old design.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Team & Structures described & Matters made compatible with the other descriptions \\
+\midrule
+\endhead
+Account & Accounts, balances, debit and credit operations & Correspondence between transactions and balance changes, sending and receiving accounts of a transfer, amount \\
+\addlinespace[3pt]
+Payment & Transfer requests, amounts, processing states, acceptance and completion operations & The transaction referred to by each record, the completion condition of a transfer \\
+\addlinespace[3pt]
+Accounting & Journal entries, transaction references, posting and correction operations & Correspondence between transactions and journal entries, agreement of amounts, balance of debits and credits \\
+\bottomrule
+\end{xltabular}
+
+The division among the teams is a division of descriptions, and a finite fragment of this
+chapter consists of the finitely many types, values, and equations that each team describes.
+After declaring the shared types of transactions and amounts, we specify the endpoints and
+actions of the operations, the evaluations of the Laws, the contexts and their restrictions,
+and the data of the selected geometry and of the realization, following
+Definition~\ref{def:8.15}.
+When the same readout item appears in several descriptions, its values must agree.
+
+We exhibit part of the compatibility conditions through a Law about the completion of a
+transfer.
+We fix a transfer identifier $q$ and a positive amount $m$ in a single currency.
+We take $c,d,i,j\in\{0,1\}$ to be the values representing, respectively, the completion
+verdict, the record of the debit from the sending account, the record of the credit to the receiving account, and the existence of the corresponding pair of debit and credit journal
+entries.
+For the last three, the determination also requires that the transaction reference and
+the amount agree with $q,m$, respectively.
+The completion condition of this example is $c=1\Longrightarrow d=i=j=1$.
+Evaluating the values as integers, this can be expressed as the condition that the three
+residuals $c(1-d)$, $c(1-i)$, and $c(1-j)$ are all 0.
+Since each residual refers to finitely many values, it can be described as a primitive
+evaluation in the sense of Definition~\ref{def:8.11}.
+
+Suppose, for example, that for a completed transaction of the old design the payment team and
+the accounting team specify the completed and posted records of the new design, while the
+account team specifies the records before the debit and the credit.
+
+\begin{xltabular}{\linewidth}{@{}LLLL@{}}
+\toprule
+Readout item & Transaction in the old design & Incompatible candidate correspondence & Candidate correspondence satisfying this Law \\
+\midrule
+\endhead
+Completion verdict $c$ & 1 & 1 & 1 \\
+\addlinespace[3pt]
+Debit record $d$ & 1 & 0 & 1 \\
+\addlinespace[3pt]
+Credit record $i$ & 1 & 0 & 1 \\
+\addlinespace[3pt]
+Pair of journal entries $j$ & 1 & 1 & 1 \\
+\bottomrule
+\end{xltabular}
+
+For the incompatible candidate, the first two residuals are 1.
+Even though the types of the references to each record are correct, this candidate does
+not preserve the evaluation of the Law required for a completed transfer.
+The rightmost candidate satisfies this Law. To construct an overall morphism we further
+require that the actions of the operations and all the preservation conditions listed in
+Definition~\ref{def:8.15} be satisfied.
+
+In the assembly of objects we glue these primitive data by Lemma~\ref{lem:8.7} and construct
+the full geometry of the new design by Lemma~\ref{lem:8.17}.
+Once the necessary data are collected and a local object is defined, its realization is
+obtained together with an isomorphism to the readout.
+In the assembly of morphisms we fix the set of Atoms and the variant of morphisms as a common
+input $\Theta$.
+We write $G_{\mathrm{old}},G_{\mathrm{new}}$ for the full geometries of the old and the new
+design and specify the correspondences of the teams as a local morphism
+$u:N_\Theta G_{\mathrm{old}}\to N_\Theta G_{\mathrm{new}}$.
+Theorem~\ref{thm:8.18} gives a unique structure-preserving morphism
+$h:G_{\mathrm{old}}\to G_{\mathrm{new}}$ whose readout is this morphism.
+The objects and morphisms constructed here are those of an AAT model in which the data of
+types, operations, Laws, local geometry, and realization are made explicit.
+
+\begin{figure}[htbp]
+\centering
+\input{figures/ch08-local-reconstruction}
+\caption{\textbf{Descriptions of the primitive data and the correspondences by the account,
+payment, and accounting teams.}
+From all the required data and the compatibility conditions, objects are reconstructed up to
+isomorphism and the morphisms between fixed endpoints are reconstructed uniquely.
+In addition to the agreement of the types of the individual records, we require preservation of the actions of the operations, of the evaluations of the Laws,
+and of the selected geometry and the realization.}\label{fig:8.1}
+\end{figure}
+
+By this construction, the compatibility of a design change divided among teams can be
+described as the existence of an overall structure-preserving morphism.
+For another modernization proposal as well, we can fix the same old design and the structures
+to be retained and compare the proposals by checking whether the local correspondences to that
+proposal satisfy the preservation conditions.
+
+\subsection*{Application to normalization and generated comparisons}
+
+\begin{example}[Tagged operations]\label{ex:8.20}
+
+The operation $(u,t)$ of Example~\ref{ex:6.25} carries an action $u$ on configurations
+together with a tag $t\in\{0,1\}$ that does not affect that action.
+We take $\Omega$ to be the set of all architecture objects and put, for
+$\chi:\Omega\to\{0,1\}$,
+\begin{equation*}
+T_\chi(u,t)=(u,t+\chi(A))
+\quad\text{for }u:A\to B
+\tag{8.19}\label{eq:8.19}
+\end{equation*}
+Addition is modulo 2.
+Since the Laws, the invariants, and the geometry of this example do not depend on the value of
+the tag, $T_\chi$ is an automorphism of the full geometry in the explicit-map variant.
+The uniform tag flip is $\chi=1$.
+We call $\chi$ a selection of flips at each starting object.
+
+Theorem~\ref{thm:8.18} recovers all these $T_\chi$, together with the canonical normalization
+of the same example, as morphisms of the original full geometry.
+By reading the tag component, two morphisms with equal actions on configurations can also be
+distinguished.
+The equations for the composition with the normalization hold in the local category as they
+stand as well, by Corollary~\ref{cor:8.19}.
+
+\end{example}
+
+\begin{example}[Objects, morphisms, and changes of endpoints for generated comparisons]\label{ex:8.21}
+
+We use the common input of Construction~\ref{cons:5.37}. We fix the square realized by finite
+codes and, for the same comparison diagram, the core, the strong edges, the conditions on the
+end of the face and on the two routes in the base, and the specified comparisons.
+On this basis we build a comparison from the same face, cochain, coefficients, and original
+full geometry.
+
+We take $G_{\mathrm d},G_{\mathrm v}$ to be the full geometries of the two routes and
+$\overline\alpha:G_{\mathrm d}\xrightarrow{\sim}G_{\mathrm v}$ to be the canonical
+comparison.
+Writing $e,d$ for the normalizations of Chapter~\ref{chap:6} at the two ends, the generated
+comparison satisfies
+\begin{equation*}
+\overline\beta=d\overline\alpha,\qquad
+e^2=e,\quad d^2=d,\qquad
+d\overline\alpha=\overline\alpha e
+\tag{8.20}\label{eq:8.20}
+\end{equation*}
+Hence $d\overline\beta=\overline\beta=\overline\beta e$.
+
+These are objects and morphisms of the representative variant, and Theorem~\ref{thm:8.18}
+recovers all of the original geometry used in the generation, the geometries of the two
+routes, and $\overline\alpha,\overline\beta,e,d$.
+It also recovers all the automorphisms at the two ends and the commutative squares between
+them.
+By Corollary~\ref{cor:8.19}, \eqref{eq:8.20} is preserved in the local model as well.
+
+\end{example}
+
+\section{Application of the reconstruction principle to the semantics of CS}\label{sec:8.7}
+
+We apply the local reconstruction principle of Theorem~\ref{thm:8.12} to the lenses and the
+protocols with observations introduced in Chapter~\ref{chap:1}.
+We first recover the objects and the general morphisms from the primitive data and the
+preservation conditions.
+Next, using the respective laws, we exhibit the reconstruction from a finite description, the
+reference fiber or the table of generating edges.
+
+\subsection*{Local models and assembly}
+
+\begin{construction}[Local models for the semantics of CS]\label{cons:8.22}
+
+We choose the input $\Theta$ from the following table and write $\mathcal{R}_\Theta$ for the
+category of realizations.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Input & What is fixed & Category of realizations $\mathcal{R}_\Theta$ \\
+\midrule
+\endhead
+lens & The set $V$ of views and a reference value $v_0\in V$ & The lenses that satisfy the three laws and have a finite reference fiber, and all the maps preserving get and put \\
+\addlinespace[3pt]
+protocol & A finite presentation $Q$ and an observation functor $O$ on the quotient path category & The realizations whose state set at each vertex is finite, and all the natural transformations preserving the observations \\
+\bottomrule
+\end{xltabular}
+
+The objects and morphisms are defined from the semantics of Definitions~\ref{def:1.32}
+and~\ref{def:1.36}, respectively.
+Their operations and Laws are connected to descriptions by Atoms and operations through the
+typed construction of \S\ref{sec:1.10}.
+An arbitrary map between reference fibers, and a noninjective state map, are also morphisms if
+they satisfy the respective preservation conditions.
+
+For the local description we use the following primitive data.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Input & Data read from an object & Data read from a morphism \\
+\midrule
+\endhead
+lens & The type of the states, the graphs of get and of each put & The graph of the state map \\
+\addlinespace[3pt]
+protocol & The type of the states at each vertex, the graphs of the generating edges and of the observations & The graphs of the maps at each vertex \\
+\bottomrule
+\end{xltabular}
+
+Types are specified by the reference for their role, and we take each value of a graph of a
+function to be a readout item.
+Among the items of a morphism we distinguish the source, the target, and the morphism itself,
+and we use the finite fragments and restrictions of \S\ref{sec:8.2}.
+We take a local object to be a compatible family of finite fragments satisfying the agreement
+of the types and the totality and uniqueness of each graph.
+On lenses we impose the three laws and the finiteness of the reference fiber, and on protocols
+the relations of paths, the naturality of the observations, and the finiteness of the state
+set at each vertex, as conditions of primitive evaluation.
+Finiteness is expressed by the existence of a finite list covering all the elements of the set
+in question.
+
+On a local morphism we require agreement with the specified objects at the two ends and the
+totality and uniqueness of the graphs.
+For lenses we impose preservation of get and put, and for protocols preservation of the
+generating edges and of the observations, by componentwise equations.
+The preservation equations for the operations and the observations have finite support once
+the input is fixed.
+The diagonal graph and the composition of \eqref{eq:8.9} preserve these conditions, so we
+obtain a local category $\mathcal{M}_\Theta$.
+We write $N_\Theta:\mathcal{R}_\Theta\to\mathcal{M}_\Theta$ for the functor that reads each
+component of a realization.
+
+\end{construction}
+
+\begin{lemma}[Assembly and separation for lenses]\label{lem:8.23}
+
+From the local objects and local morphisms for lenses, the lenses and their general morphisms
+can be assembled.
+The readout and the assembly are mutually inverse on each Hom-set, and the objects are
+recovered up to isomorphism as well.
+
+\end{lemma}
+
+\begin{proof}
+
+From a local object we take the state set $C$ and assemble the graph of get and the graph of
+put at each view $v$.
+We write $g:C\to V$ and $p:C\times V\to C$ for the resulting maps.
+The three pointwise conditions of the local object are
+\begin{equation*}
+p(c,g(c))=c,\qquad
+g(p(c,v))=v,\qquad
+p(p(c,v),w)=p(c,w)
+\tag{8.21}\label{eq:8.21}
+\end{equation*}
+Hence $(C,g,p)$ is a total lens.
+The local object also carries the condition that a finite list covering $g^{-1}(v_0)$ exists,
+so its reference fiber is finite.
+
+We assemble the graph of a local morphism into $h:C\to C'$.
+The two local conditions of a morphism give
+\begin{equation*}
+g'h=g,\qquad
+h(p(c,v))=p'(h(c),v)
+\tag{8.22}\label{eq:8.22}
+\end{equation*}
+so $h$ is a morphism of lenses.
+By Lemmas~\ref{lem:8.7} and~\ref{lem:8.9}, the two directions are mutually inverse for
+all the graphs and finite fragments.
+
+\end{proof}
+
+\begin{lemma}[Assembly and separation for protocols]\label{lem:8.24}
+
+From the local objects and local morphisms for protocols with observations, the realizations
+and their general morphisms can be assembled.
+The readout and the assembly are mutually inverse on each Hom-set, and the objects are
+recovered up to isomorphism as well.
+
+\end{lemma}
+
+\begin{proof}
+
+For each vertex $v$ of the finite presentation $Q$ we obtain the state set $X_v$.
+By the condition that a finite list covers all the states, $X_v$ is finite.
+We assemble the graph of a generating edge $e:v\to w$ into $X_e:X_v\to X_w$ and the graph of
+the observation into $o_v:X_v\to O(v)$.
+
+A local object satisfies the equality of actions for each specified relation $p=q$.
+Moreover, the local condition at each generating edge gives
+\begin{equation*}
+o_wX_e=O(e)o_v
+\tag{8.23}\label{eq:8.23}
+\end{equation*}
+By Proposition~\ref{prop:1.37}, there is therefore a unique realization $(X,o)$ with these
+finite states, edge maps, and observations.
+
+From a local morphism we obtain the vertex maps $h_v:X_v\to Y_v$.
+The local conditions are
+\begin{equation*}
+h_wX_e=Y_eh_v,\qquad
+o_v^Yh_v=o_v^X
+\tag{8.24}\label{eq:8.24}
+\end{equation*}
+where the first equation holds at all the generating edges and the second at all the vertices.
+By Proposition~\ref{prop:1.38}, these vertex maps determine a unique semantics-preserving
+morphism $h:X\Rightarrow Y$.
+All the components are obtained uniquely from the graphs, and the extension is unique as
+well.
+Since the maps of Lemmas~\ref{lem:8.7} and~\ref{lem:8.9} are mutually inverse, so are
+the readout and the assembly.
+
+\end{proof}
+
+\begin{corollary}[Local reconstruction for the semantics of CS]\label{cor:8.25}
+
+For each input of Construction~\ref{cons:8.22}, the primitive readout functor $N_\Theta$ gives
+an equivalence of categories $\mathcal{R}_\Theta\simeq\mathcal{M}_\Theta$.
+The objects are recovered up to isomorphism, and between any fixed realizations the readout
+and the assembly are mutually inverse, including for noninvertible morphisms.
+This reconstruction preserves identities, composition, and the primitive evaluations, and
+reflects isomorphisms.
+
+\end{corollary}
+
+\begin{proof}
+
+Lemmas~\ref{lem:8.23} and~\ref{lem:8.24} each give the three conditions of
+Theorem~\ref{thm:8.12}.
+We therefore obtain an equivalence of categories whose forward functor is the primitive
+readout.
+Preservation of identities and composition and reflection of isomorphisms follow from
+functoriality of the readout and from the mutual inverses on each Hom-set.
+Agreement of the primitive evaluations follows from the mutual inverses of the readout and the
+assembly in Lemmas~\ref{lem:8.7} and~\ref{lem:8.9}.
+
+\end{proof}
+
+\subsection*{Reconstruction of lenses from the reference fiber}
+
+We restate Proposition~\ref{prop:1.34} of Chapter~\ref{chap:1} as the table used for the
+reconstruction of morphisms and its extension.
+
+\begin{proposition}[Tables on the reference fiber and general morphisms of lenses]\label{prop:8.26}
+
+Let $L=(C,g,p)$ and $L'=(C',g',p')$ be lenses with the same views $V$ and the same reference
+value $v_0$.
+Put $K=g^{-1}(v_0)$ and $K'=(g')^{-1}(v_0)$.
+Every map $t:K\to K'$ extends uniquely to a morphism of lenses by
+\begin{equation*}
+\mathrm{ext}(t)(c)
+=
+p'\bigl(t(p(c,v_0)),\,g(c)\bigr)
+\tag{8.25}\label{eq:8.25}
+\end{equation*}
+Here $p(c,v_0)$ is read as an element of $K$.
+This extension and the restriction to the reference fiber are mutually inverse.
+
+\end{proposition}
+
+\begin{proof}
+
+Equation~\eqref{eq:8.25} is the extension \eqref{eq:1.19} of Proposition~\ref{prop:1.34}.
+By the same proposition, this extension preserves get and put and is inverse to the
+restriction to the reference fiber.
+
+\end{proof}
+
+The table needed for the reconstruction of a morphism is a map between $K,K'$, and finiteness
+of the set $V$ of views is not assumed.
+The correspondence at each view is determined as the unique extension by the law for put.
+
+\begin{example}[Merging complementary information]\label{ex:8.27}
+
+We take the state of a product lens to be $(a,k)\in V\times K$, take get to read the first
+component, and take put to replace the first component by the specified view.
+From a map $t:K\to K'$ of reference fibers we obtain
+\begin{equation*}
+h(a,k)=(a,t(k))
+\tag{8.26}\label{eq:8.26}
+\end{equation*}
+For example, taking $K=\{0,1,2\}$ and $K'=\{0,1\}$ with $t(0)=t(1)=0$ and $t(2)=1$ gives a
+noninjective morphism merging two values of the complementary information.
+Equation~\eqref{eq:8.26} preserves get and put and, by Proposition~\ref{prop:8.26}, is
+determined uniquely by this table on the reference fiber.
+
+\end{example}
+
+\subsection*{Reconstruction of protocols from the generating edges}
+
+\begin{proposition}[Unique extension of an adapter from the generating edges]\label{prop:8.28}
+
+For two realizations $(X,o^X),(Y,o^Y)$ of a protocol with observations, finite tables
+$h_v:X_v\to Y_v$ at each vertex extend to a general morphism if and only if they satisfy the
+first equation of \eqref{eq:8.24} at all the generating edges and the second at all the
+vertices.
+The extension is unique, and restriction and extension are mutually inverse.
+
+\end{proposition}
+
+\begin{proof}
+
+Necessity follows from the naturality and the preservation of observations of
+Definition~\ref{def:1.36}.
+Sufficiency and uniqueness of the extension are obtained by applying
+Proposition~\ref{prop:1.38} to the vertex tables $h_v$.
+The vertex components of the resulting morphism are the original tables themselves, so
+restriction and extension are mutually inverse.
+
+\end{proof}
+
+Preservation of observations is required for isolated vertices with no generating edges as
+well.
+
+For lenses, a map on the reference fiber determines, by the law for put, a morphism on all the
+states.
+For protocols, the maps at each vertex determine, by naturality at the generating edges, a
+natural transformation on all the paths.
+In both cases the laws of the operations are used to extend a local map to an overall
+morphism.
+
+\begin{example}[Preservation of observations and naturality]\label{ex:8.29}
+
+Consider a protocol with two vertices and one generating edge $e:v\to w$.
+We take the state set at each vertex of both realizations to be $\{0,1\}\times\{0,1\}$, and
+the observation functor assigns $\{0,1\}$ to both vertices and the identity map to the edge.
+We take the observation of each state to be $(a,k)\mapsto a$.
+We define the actions of the edge on states by $X_e(a,k)=(a,k)$ and $Y_e(a,k)=(a,0)$.
+Taking the identity map at both vertices as the candidate correspondence, the observations are
+preserved.
+At $k=1$, however, $h_wX_e(a,1)=(a,1)$ while $Y_eh_v(a,1)=(a,0)$, so naturality fails.
+The preservation condition at the generating edges thus detects a difference of actions that
+the observations alone cannot distinguish.
+
+\end{example}
+
+\subsection*{Compatibility of finite presentations with the primitive readout}
+
+\begin{corollary}[Compatibility with the finite decoding functor]\label{cor:8.30}
+
+For lenses and for protocols there are, respectively, the following category
+$\mathcal{P}_\Theta$ of finite tables and decoding functor
+$D_\Theta:\mathcal{P}_\Theta\to\mathcal{R}_\Theta$.
+
+We take the presentation objects for lenses to be the natural numbers $n$ and the morphisms to
+be arbitrary tables $\mathrm{Fin}(n)\to\mathrm{Fin}(m)$.
+The decoding functor sends $n$ to the product lens $V\times\mathrm{Fin}(n)$ and a table $t$ to
+$(v,k)\mapsto(v,t(k))$.
+
+We take the presentation objects for protocols to be a natural number $n_v$ at each vertex, a
+table for each generating edge, and a table of the observations, satisfying the relations and
+the naturality of the observations.
+A morphism is a vertex table preserving the generating edges and the observations.
+The decoding functor extends the tables of the generating edges to the composites of paths.
+
+Both decoding functors are equivalences of categories, and the composite with the primitive
+readout of Corollary~\ref{cor:8.25},
+\begin{equation*}
+\mathcal{P}_\Theta
+\xrightarrow{D_\Theta}
+\mathcal{R}_\Theta
+\xrightarrow{N_\Theta}
+\mathcal{M}_\Theta
+\tag{8.27}\label{eq:8.27}
+\end{equation*}
+is an equivalence of categories as well.
+Moreover, the route that assembles the local model from the primitive data and then reads the
+reference fiber or the table of generating edges agrees, up to natural isomorphism, with the
+route that reads them directly from the realization.
+
+\end{corollary}
+
+\begin{proof}
+
+For lenses, by Proposition~\ref{prop:8.26} the decoding functor is a bijection on each
+Hom-set.
+For objects, combining the isomorphism of Proposition~\ref{prop:1.33},
+\begin{equation*}
+C\xrightarrow{\sim}V\times K,\qquad
+c\longmapsto\bigl(g(c),p(c,v_0)\bigr)
+\tag{8.28}\label{eq:8.28}
+\end{equation*}
+with an enumeration of the finite set $K$, every lens becomes isomorphic to an image of the
+decoding functor.
+For protocols we enumerate the finite state set at each vertex and transport the generating
+edges and the observations to that enumeration.
+Proposition~\ref{prop:8.28} gives the bijection of the Hom-sets, so we obtain an equivalence
+of categories in the same way.
+Equation~\eqref{eq:8.27} is the composite of these with Corollary~\ref{cor:8.25}.
+
+To exhibit the last natural isomorphism, we take $F_\Theta$ to be the functor that reads the
+reference fiber or the table of generating edges and $A_\Theta$ to be the inverse functor of
+the equivalence of Corollary~\ref{cor:8.25}.
+Applying $F_\Theta$ to the unit isomorphism $1\cong A_\Theta N_\Theta$ of
+Theorem~\ref{thm:8.12}, we obtain
+\begin{equation*}
+F_\Theta
+\ \cong\
+F_\Theta A_\Theta N_\Theta
+\tag{8.29}\label{eq:8.29}
+\end{equation*}
+Hence the two routes agree not only on the objects but also on the general morphisms.
+
+\end{proof}
+
+The procedure for obtaining a morphism from a finite presentation differs between the two
+semantics.
+For lenses we take as input a table between the finite reference fibers and construct by
+\eqref{eq:8.25} a map on all the states.
+Preservation of get and put is guaranteed on all the states by Proposition~\ref{prop:8.26}.
+When the set of views is infinite, the preservation conditions for an arbitrarily given map on all
+the states need not be checkable on finitely many states alone.
+
+For protocols we enumerate the finite states at each vertex and check, for a candidate vertex
+table, the naturality of \eqref{eq:8.24} at all the generating edges and the preservation of
+observations at all the vertices.
+When the presentation object itself is also checked, in addition to the tables of the edges
+and the naturality of the observations, we compare the actions of paths of finite length for
+the specified finitely many relations.
+If the evaluation of the necessary tables and the decision of equality are computable, these
+can be carried out as finite checks.
+
+\begin{proposition}[Connection with retracts, the Karoubi envelope, and comparison squares]\label{prop:8.31}
+
+For both inputs, lenses and protocols, the category of realizations is idempotent complete.
+Writing $D_\Theta$ for the finite decoding functor, \eqref{eq:8.27} extends to
+\begin{equation*}
+\mathrm{Kar}(\mathcal{P}_\Theta)
+\simeq
+\mathcal{R}_\Theta
+\simeq
+\mathcal{M}_\Theta
+\tag{8.30}\label{eq:8.30}
+\end{equation*}
+and agrees, up to natural isomorphism, with the original decoding functor on the inclusion of
+the finite presentations.
+Moreover, these equivalences extend to the arrow categories and to the commutative squares of
+comparisons, and they are compatible with the evaluation at the endpoints and with the
+exchange of the Karoubi envelope and the arrow category of Chapter~\ref{chap:6}.
+
+\end{proposition}
+
+\begin{proof}
+
+Idempotent completeness of lenses over a fixed view is given by Proposition~\ref{prop:6.30}.
+For protocols, for an idempotent semantics-preserving adapter $p:X\Rightarrow X$ we take
+\begin{equation*}
+X_v^p=\{x\in X_v\mid p_v(x)=x\}
+\tag{8.31}\label{eq:8.31}
+\end{equation*}
+By Proposition~\ref{prop:6.31}, this image, with the executions and observations restricted,
+is a realization of the same protocol, and $p_v$ together with the inclusion gives its
+splitting.
+
+By Corollary~\ref{cor:8.30}, every realization is isomorphic to an image of the finite decoding
+functor and is in particular a retract of that image.
+Using the fully faithful decoding functor and the splitting above, sending $(P,e)$ to the split
+image of $D_\Theta(e)$ yields \eqref{eq:8.30} from the Karoubi envelope of
+Chapter~\ref{chap:6}.
+When $e=1$, the result is isomorphic to the decoded original object.
+
+The action on the arrow categories is defined by applying the equivalence functors at both ends
+of a morphism and of a commutative square.
+Compatibility with the evaluation at the endpoints follows from this definition.
+The equivalence
+$\mathrm{Kar}(\mathrm{Arr}(\mathcal{C}))\simeq\mathrm{Arr}(\mathrm{Kar}(\mathcal{C}))$ of
+Chapter~\ref{chap:6} also uses the same idempotents at both ends and the same squares.
+Taking the arrow category after the Karoubi envelope and taking the Karoubi envelope after
+the arrow category give the same data of endpoints, morphisms, and squares.
+The differences coming from the choice of the splittings agree under that canonical
+isomorphism.
+
+\end{proof}
+
+\section{Description and reconstruction in finite models}\label{sec:8.8}
+
+\subsection*{Resource constraints of implementations and finiteness of models}
+
+In an implementation whose storage is fixed at $b$ bits, the states that can be stored in that
+memory number at most $2^b$.
+Integers of fixed bit width, and strings with an upper bound on the character set and on the
+stored length, also form finite sets.
+Under such resource constraints, the problem of reconstruction becomes the question of which
+information a specified structure and change can be recovered from.
+
+To use the finiteness of an implementation for reconstruction from finite tables, the types,
+coefficients, and contexts adopted by the model and the range of the readout items must also
+be specified.
+In what follows we separate the case of tabulating all the required items from the case of
+recovering by the laws from a partial readout.
+
+\subsection*{The overall table and partial readouts}
+
+If the index set $\Lambda$ in Definition~\ref{def:8.6} is finite, a compatible family consists
+of the table $a_\Lambda$ containing all the items and its restrictions.
+The gluing of Lemma~\ref{lem:8.7} is the recovery of this overall table.
+When each value can be encoded finitely, the overall table also has a finite description.
+
+Even when the items are finitely many, a chosen part alone need not distinguish the
+candidates.
+In the intrabank transfer example of \S\ref{sec:8.6}, if only the completion verdict $c$ and
+the existence $j$ of journal entries are read, the incompatible candidate and the candidate
+satisfying the Law both return $(c,j)=(1,1)$.
+Adding the debit record $d$ and the credit record $i$, we distinguish $(d,i)=(0,0)$ for the
+former from $(d,i)=(1,1)$ for the latter and can check the completion condition.
+This shows that, even for finite candidates, the choice of the items read governs the outcome
+of the check.
+
+Theorem~\ref{thm:8.18} recovers the overall structure and morphisms using all the necessary
+primitive data and preservation conditions.
+To recover a morphism between fixed endpoints from fewer items, the values of the omitted
+components must be determined uniquely by the laws.
+The reconstructions from the reference fiber and from the table of generating edges in the
+previous section are examples of such a unique extension.
+
+\subsection*{Finite checking procedures and computational cost}
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Property & Content & Counterpart in this chapter \\
+\midrule
+\endhead
+Reconstruction from all the required data & Recovers objects up to isomorphism and morphisms between fixed endpoints uniquely from descriptions satisfying the compatibility conditions & Theorem~\ref{thm:8.18} \\
+\addlinespace[3pt]
+Determination by a chosen finite table & The table extends uniquely to an overall morphism & Reconstruction from the reference fiber and from the table of generating edges \\
+\addlinespace[3pt]
+Finite executable procedure & Computes the check of the conditions and the extension using explicit enumerations and decisions of equality & The finite presentations of \S\ref{sec:8.7} \\
+\bottomrule
+\end{xltabular}
+
+If the tables in question and the conditions to be checked can be enumerated finitely and each
+evaluation and decision of equality can be computed, then whether the specified conditions hold
+can be decided by finitely many checks.
+The existence of a finite set alone does not amount to giving these enumerations or
+computational procedures.
+
+Moreover, a check terminating in finitely many steps is different from its being executable
+within given time and memory resources.
+A practical check requires examining the size of the input tables and the cost of evaluating
+each condition.
+The reconstruction theorems of this chapter show the existence and uniqueness of the
+reconstruction and do not give upper bounds on the computational cost.
+
+\section{Supplement: presentation and reconstruction when infinite objects are allowed}\label{sec:8.9}
+
+As a mathematical generalization, we treat the case where infinite sets are allowed for the
+Atoms and for the indices of the readout.
+Specification models that abstract away resource bounds sometimes use such sets.
+The two counterexamples below are statements about the morphisms and the readouts that such a
+model permits.
+They do not mean that presentation or reconstruction is impossible for an implementation under
+fixed finite resources.
+
+\subsection*{Limits of presentation by a countable syntax}
+
+In the first counterexample we consider all the automorphisms of an infinite set and
+impose no computability restriction.
+Using the cardinality of that set, we show that a decoding map from a countable syntax is not
+surjective.
+
+\begin{proposition}[Impossibility of a surjective presentation by a countable syntax]\label{prop:8.32}
+
+The base category $B$ of Chapter~\ref{chap:1} has an object whose set of automorphisms does not
+fit into the image of the decoding map from any countable set of syntax.
+
+\end{proposition}
+
+\begin{proof}
+
+We take the Atoms to be $\mathbb{N}$, the source to be a single point, the normalization to be
+the identity, and the extraction to be always true.
+We write $b_\infty$ for this base object.
+For any $S\subseteq \mathbb{N}$ we define the permutation $\sigma_S$ that exchanges $2n$ and
+$2n+1$ exactly when $n\in S$.
+Since the extraction is constant, each $\sigma_S$ is an automorphism of $b_\infty$.
+The set of exchanged pairs determines $S$ uniquely, so
+\begin{equation*}
+\mathcal P(\mathbb{N})\hookrightarrow\mathrm{Aut}_{B}(b_\infty),
+\qquad S\longmapsto\sigma_S
+\tag{8.32}\label{eq:8.32}
+\end{equation*}
+is injective. The left-hand side is uncountable, so there is no surjection from a countable set
+onto the right-hand side.
+
+\end{proof}
+
+For example, the set of all finite strings over countably many symbols is countable, and this
+conclusion applies to it.
+This argument by cardinality depends on imposing no computability condition and on allowing all
+subsets $S\subseteq \mathbb{N}$.
+From this proposition one cannot conclude the impossibility of presentation when the scope is restricted to computable changes described by finite codes.
+
+Moreover, the permutation $\sigma_{\mathbb{N}}$ exchanging all the adjacent pairs has infinite
+support, so by Proposition~\ref{prop:8.3} it cannot be presented as a morphism of finite
+exception codes.
+On the other hand, this permutation can be described by the finite rule of adding 1 to even
+numbers and subtracting 1 from odd numbers.
+Presentability in a specified tabular format and describability by a finite rule are different.
+
+This example holds for an object of the base category. The selected extraction is infinite, and the family of Atoms selected in the core is
+therefore not finite.
+In the local descriptions from \S\ref{sec:8.2} on, sets are retained as type references and the
+whole index set is allowed to be infinite.
+Reconstruction by this readout and surjective presentation by a countable syntax are different
+properties.
+
+\subsection*{Limits of finite fragments for infinite indices}
+
+The second counterexample uses the tag change of Example~\ref{ex:8.20}.
+For each $A$ in the set $\Omega$ of architecture objects, whether the tags of the operations
+starting at $A$ are flipped is determined independently of the choices at the other objects.
+We recover the map $\chi:\Omega\to\{0,1\}$ representing this choice from all the finite
+fragments.
+
+\begin{proposition}[Recovery of a tag change from all the finite fragments]\label{prop:8.33}
+
+The selections of flips at each starting object $\chi:\Omega\to\{0,1\}$ of Example~\ref{ex:8.20} and the
+compatible families of Boolean tables $a_S$ on the finite sets $S\subseteq\Omega$ are in
+one-to-one correspondence.
+With addition modulo 2, this becomes the group isomorphism
+\begin{equation*}
+\{0,1\}^{\Omega}
+\ \cong\
+\varprojlim_{S\subseteq\Omega,\ S\text{ finite}}\{0,1\}^{S}
+\tag{8.33}\label{eq:8.33}
+\end{equation*}
+If $\Omega$ is infinite, the readout on any single finite set $S$ cannot distinguish all these
+selections of flips at each starting object.
+
+\end{proposition}
+
+\begin{proof}
+
+The bijection is Lemma~\ref{lem:8.7} applied to $V_q=\{0,1\}$.
+Addition and restriction are defined pointwise, so the bijection preserves the group
+operation.
+Moreover, \eqref{eq:8.19} gives $T_\psi T_\chi=T_{\chi+\psi}$.
+Since $\chi(A)$ is determined by the action on the operation obtained by attaching the tag 0
+to the identity action of each $A$, this family is also represented faithfully as a subgroup of
+the actual automorphisms.
+
+If $\Omega$ is infinite and $S$ is finite, take $A\notin S$ and compare the function that is
+identically 0 with the function that is 1 only at $A$.
+Their values on $S$ are equal, but their actions on the tags of the operations starting at $A$
+differ.
+
+\end{proof}
+
+If $\Omega$ is finite, this family can be determined by reading the whole of it with
+$S=\Omega$.
+The counterexample in the infinite case uses the fact that outside every finite fragment there
+remains a place that can be changed.
+Unlike the first counterexample, which uses cardinality, this argument needs only a change that
+differs at a single point outside the range of the readout.
+
+When applying these counterexamples, therefore, one must specify the infinite sets in the
+model, the range of the changes allowed, and the readout scheme.
+The questions of sufficiency of information and of computational cost for finite models are
+treated by the conditions stated in \S\ref{sec:8.8}.
+
+\section*{Summary of the Chapter}
+
+In this chapter we gave a method for recovering objects and all the structure-preserving
+morphisms between them from local descriptions of geometries and morphisms.
+
+\begin{itemize}
+\item \textbf{The scope of finite presentation.} With finite exception codes, even when the
+meaning of an object can be recovered, the morphisms between fixed presentations need not
+represent the whole semantic Hom-set.
+Over finitely many Atoms, normalization of the presentations resolves this non-fullness
+(\S\ref{sec:8.1}).
+\item \textbf{Separation and assembly.} From typed readout items, compatibility of finite
+fragments, and the totality and uniqueness of graphs of functions, we assembled tables and
+functions.
+Once separation of morphisms, assembly of morphisms, and assembly of objects are all in place,
+the readout functor gives an equivalence of categories (\S\S\ref{sec:8.2}--\ref{sec:8.3}).
+\item \textbf{Recovery of full geometries.} We proved the three conditions for the primitive
+data of types, operations, Laws, local geometry, and realization.
+The equivalence of categories of the main theorem recovers the objects and all the
+structure-preserving morphisms of the chosen variant, including the noninvertible ones, and
+preserves identities and composition (\S\S\ref{sec:8.4}--\ref{sec:8.5}).
+\item \textbf{Finite descriptions by the laws of the operations.} The same reconstruction
+principle applies to lenses and protocols as well.
+From a finite reference fiber or a table of generating edges, a general morphism extends
+uniquely by the laws of the operations (\S\ref{sec:8.7}).
+\item \textbf{Sufficiency of information and computation.} For finite models we distinguish the
+information that determines objects and morphisms, the procedure based on enumeration and
+decision of equality, and the computational cost.
+When infinite objects are allowed, a difference appears between reconstruction from all the
+finite fragments and presentation by a single finite table or a countable syntax
+(\S\S\ref{sec:8.8}--\ref{sec:8.9}).
+\end{itemize}
+
+In the modernization of an intrabank transfer system, once the descriptions of the account, payment,
+and accounting teams define a local object that supplies the necessary primitive data
+and satisfies the conditions, the whole design is constructed up to isomorphism.
+Between a fixed old design and a fixed new design, when the correspondences of the teams
+satisfy all the preservation conditions, they can be assembled into a unique
+structure-preserving morphism.
+Hence, if the same old design and the structures to be retained are fixed, several
+modernization proposals can be compared from the point of view of whether a change that is
+compatible overall exists.

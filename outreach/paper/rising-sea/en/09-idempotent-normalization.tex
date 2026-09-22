@@ -1,0 +1,1314 @@
+\chapter{Idempotent Normalization and Realization}\label{chap:6}
+
+\section*{Overview of the Chapter}
+
+The question of this chapter is \textbf{what a comparison that includes a normalization
+retains, and when one can return to the original}.
+Chapter~\ref{chap:5} built two routes from the transport of structure and the selection of
+the input, and obtained the invertible canonical comparison $\alpha$ between them.
+It further incorporated a normalization $E$ chosen according to the diagnosis, and
+constructed the generated comparison $\beta=E\alpha$.
+In this chapter we examine how this last step changes the meaning of the comparison.
+
+For example, consider a situation in which a design split into an order service and an
+inventory service is brought together into a common design model.
+We want to keep the operations of cancellation request, release of an inventory
+reservation, and cancellation completion together with their dependencies, and to align the
+class structure inside the services and the auxiliary data representations with a chosen
+standard representation.
+If we can check that the operations, Laws, and evaluation values that are kept are
+unchanged by this processing, then the two design proposals can be compared on the standard
+representation.
+Whether the original class structure can be recovered from that comparison, however, must
+be checked separately.
+
+A normalization is idempotent when aligning something that has already been aligned once more to
+the standard representation does not change the result.
+Idempotence is the property that ``standardization is stable under repetition,'' and it
+differs from invertibility, the property that ``the original representation can be
+recovered.''
+In this chapter we explain this difference at three stages: the map of objects, the
+structure-preserving morphism, and the image after normalization.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Question & Construction & Outcome \\
+\midrule
+\endhead
+Which objects remain after normalization? & The object selected for each configuration & Correspondence between fixed points and configurations, unique factorization of readouts \\
+\addlinespace[3pt]
+Can normalization be repeated including operations and Laws? & Endomorphisms of cores and full geometries & Idempotence of the entire morphism \\
+\addlinespace[3pt]
+When is a comparison with a normalization added invertible? & Factorization into the canonical comparison and an idempotent factor & Equivalence with the normalization factor being the identity \\
+\addlinespace[3pt]
+How is a noninvertible comparison to be read between the pieces of information that remain? & The image in the idempotent completion & Isomorphism between the images given by the same generated comparison \\
+\addlinespace[3pt]
+Can the order of a normalization and an arbitrary design change be interchanged? & The normalization functor and the condition of naturality & A one-sided equation that always holds, and a counterexample from additional information on operations \\
+\addlinespace[3pt]
+Can a comparison itself be made an object of change? & The arrow category and idempotent completion & A category for classifying comparison-preserving changes in Chapter~\ref{chap:7} \\
+\bottomrule
+\end{xltabular}
+
+In \S\S\ref{sec:6.1}--\ref{sec:6.4} we analyze a single generated comparison and proceed as
+far as the classification of invertibility for full geometries.
+In \S\S\ref{sec:6.5}--\ref{sec:6.7} we construct the changes between objects and the
+category of comparisons, and in \S\ref{sec:6.8} we return to the semantics of lenses and
+protocols.
+
+\section{Selecting one representation for each configuration}\label{sec:6.1}
+
+The architecture object of Chapter~\ref{chap:1} was an object obtained by adding structure
+data and a quantity to a configuration.
+What remains when the objects with the same configuration are aligned to a single one?
+We first answer this question at the level of the map of objects, before operations and
+Laws are added.
+
+\begin{construction}[Projection to configurations and selection]\label{cons:6.1}
+
+We fix the vocabulary of Atoms and write $\mathcal{A}$ for the totality of architecture
+objects and $\mathcal{C}$ for the totality of configurations. For a core $P$ we set
+\begin{equation*}
+\pi:\mathcal{A}\longrightarrow\mathcal{C},\quad \pi(A)=C_A,
+\qquad
+s_P:\mathcal{C}\longrightarrow\mathcal{A},\quad s_P(C)=\mathrm{Form}_P(C)
+\tag{6.1}\label{eq:6.1}
+\end{equation*}
+Here $\mathcal{A},\mathcal{C}$ are collections of objects, and \eqref{eq:6.1} defines maps
+between them.
+By the conditions on object formation, $\pi s_P=1_{\mathcal{C}}$.
+Hence the normalization of Definition~\ref{def:5.39} satisfies
+\begin{equation*}
+n_P=s_P\pi,\qquad \pi n_P=\pi,\qquad n_P^2=n_P
+\tag{6.2}\label{eq:6.2}
+\end{equation*}
+The last equation is the computation $s_P\pi s_P\pi=s_P\pi$.
+
+\end{construction}
+
+\begin{proposition}[Fixed points and configurations]\label{prop:6.2}
+
+Between the collection of fixed points $\mathrm{Fix}(n_P)=\{A\mid n_P(A)=A\}$ and
+$\mathcal{C}$ there are mutually inverse correspondences
+\begin{equation*}
+\begin{aligned}
+\pi:\mathrm{Fix}(n_P)&\longrightarrow\mathcal{C},& A&\longmapsto C_A,\\
+s_P:\mathcal{C}&\longrightarrow\mathrm{Fix}(n_P),& C&\longmapsto s_P(C)
+\end{aligned}
+\tag{6.3}\label{eq:6.3}
+\end{equation*}
+Moreover, if we define $A\sim B$ by $C_A=C_B$, then
+$\mathcal{A}/{\sim}\cong\mathcal{C}$.
+
+\end{proposition}
+
+\begin{proof}
+
+Since $n_Ps_P=s_P$, the object $s_P(C)$ is a fixed point.
+The equation $\pi s_P=1$ and the equation $s_P\pi(A)=A$ at fixed points give a two-sided
+inverse.
+For the quotient, $[A]\mapsto C_A$ is well defined, and the inverse is $C\mapsto[s_P(C)]$.
+The configurations of an object and of its selected object are equal, so this is also a
+two-sided inverse.
+
+\end{proof}
+
+\begin{theorem}[Readouts unchanged by normalization]\label{thm:6.3}
+
+For any set of values $Y$ and any map $f:\mathcal{A}\to Y$,
+\begin{equation*}
+fn_P=f
+\quad\Longleftrightarrow\quad
+\exists!\,\widetilde f:\mathcal{C}\to Y,
+\qquad f=\widetilde f\pi.
+\tag{6.4}\label{eq:6.4}
+\end{equation*}
+
+\end{theorem}
+
+\begin{proof}
+
+When the left-hand side holds, setting $\widetilde f=fs_P$ gives
+$\widetilde f\pi=fn_P=f$.
+If another factor $g$ satisfies $g\pi=f$, composing with $s_P$ on the right gives
+$g=fs_P$. Conversely, if $f=\widetilde f\pi$, then
+$fn_P=f$ by $\pi n_P=\pi$.
+
+\end{proof}
+
+This theorem characterizes the information that a normalization retains, from the point of
+view of readouts.
+A value that is unchanged before and after normalization can be read uniquely from the
+configuration alone.
+This theorem can also be applied to the invariance of residuals, invariants, and signatures
+required in Definition~\ref{def:5.39}.
+In that case we read with the arguments other than the object, such as the context, the
+equation index, and the axis, held fixed.
+
+\begin{example}[A finite model with two representations]\label{ex:6.4}
+
+We take the set of configurations to be $\{c_0,c_1\}$, the tags of the representations
+to be $\{0,1\}$, the objects to be $(c_i,t)$, and the selected objects to be $(c_i,0)$.
+\begin{equation*}
+n(c_i,t)=(c_i,0).
+\tag{6.5}\label{eq:6.5}
+\end{equation*}
+Two of the four objects are fixed points.
+The readout $f(c_i,t)=i$ is unchanged by the normalization and can be read from the
+configuration.
+The readout $g(c_i,t)=t$, on the other hand, distinguishes the original representations, so
+the same value cannot be recovered after the normalization.
+In the software example, one may take the selected operations and dependencies to
+correspond to the former, and which auxiliary data represent that structure to correspond
+to the latter.
+
+\end{example}
+
+\section{Lifting object normalization to a structure-preserving idempotent}\label{sec:6.2}
+
+Even if a map of objects is idempotent, that alone does not make it a morphism preserving
+operations and Laws.
+The condition $\mathrm{Ad}(P)$ of Definition~\ref{def:5.39} supplies the preservation laws
+needed for this.
+In this section we show that the entire morphism built from that condition is idempotent.
+
+\begin{theorem}[Idempotence of the normalization of a core]\label{thm:6.5}
+
+For a core $P$ satisfying $\mathrm{Ad}(P)$, the endomorphism
+$N_P:P\to P$ of Definition~\ref{def:5.39} satisfies
+\begin{equation*}
+N_P^2=N_P,\qquad q(N_P)=1_{q(P)}
+\tag{6.6}\label{eq:6.6}
+\end{equation*}
+Here $q:E_{\mathrm{core}}\to B$ is the projection to the base.
+
+\end{theorem}
+
+\begin{proof}
+
+For the object map we use \eqref{eq:6.2}.
+The maps of Atoms, the base, contexts, equation indices, invariant indices, and signature
+axes are identities, so composing them twice gives the same maps.
+The correspondence of the rings of the equations and the correspondence of the value ranges
+of the signatures are identities as well, and preservation of the residuals is by
+$\mathrm{Ad}(P)$.
+
+For the operations we use the identification along the equality of the types
+$\mathrm{Op}_P(A,B)$ and $\mathrm{Op}_P(n_P(A),n_P(B))$.
+Composing the identification twice is equal to the identification taken once, after the
+endpoints have been aligned by $n_P^2=n_P$.
+Its configuration map is the same as well, by the operation-preservation condition of
+$\mathrm{Ad}(P)$.
+This shows that all the data of a morphism in Definition~\ref{def:1.28} agree.
+The base morphism is the identity by construction.
+
+\end{proof}
+
+\begin{lemma}[Naturality for the object map]\label{lem:6.6}
+
+Let $H$ be the object map of an arbitrary morphism of cores $h:P\to Q$. Then
+\begin{equation*}
+Hn_P=n_QH.
+\tag{6.7}\label{eq:6.7}
+\end{equation*}
+Neither $\mathrm{Ad}(P)$ nor $\mathrm{Ad}(Q)$ is needed for this conclusion.
+
+\end{lemma}
+
+\begin{proof}
+
+Let $e$ be the bijection of Atoms of $h$. By the preservation of object formation and of
+configurations in Definition~\ref{def:1.28}, we obtain
+\[
+H(n_P(A))
+=H(\mathrm{Form}_P(C_A))
+=\mathrm{Form}_Q(e_*C_A)
+=\mathrm{Form}_Q(C_{H(A)})
+=n_Q(H(A))
+\]
+
+\end{proof}
+
+Equation~\eqref{eq:6.7} is an equality about the correspondence of objects.
+The condition $hN_P=N_Qh$, which includes the correspondence of the operations as well, is examined in \S\ref{sec:6.6}.
+
+\begin{proposition}[Distinct objects over the same configuration]\label{prop:6.7}
+
+Over any configuration $C$ there exist at least two distinct architecture objects.
+Hence, for every core $P$, the map $n_P$ is not injective, and if $\mathrm{Ad}(P)$ holds,
+then $N_P$ is not an isomorphism.
+
+\end{proposition}
+
+\begin{proof}
+
+Take the types of the structure data to be the one-element set $\{*\}$ and the two-element
+set $\{0,1\}$, respectively, and the values of the structure data to be $*$ and $0$,
+respectively.
+For the quantities, in both objects we take the type to be a one-element set and the value
+to be its unique element.
+These are objects with the same $C$, but they are not equal, since the cardinalities of the
+types of their structure data differ.
+Both are normalized to $\mathrm{Form}_P(C)$, so $n_P$ is not injective.
+If a morphism of cores had an inverse, its object map would have a two-sided inverse as
+well, contradicting the noninjectivity of $n_P$. Hence $N_P$ is not an isomorphism.
+
+\end{proof}
+
+What we treat here is not only the selected representations but the totality of
+architecture objects of Definition~\ref{def:1.6}.
+This collection contains objects that represent the same configuration with different
+structure data.
+Collecting that distinction into a single selected object is what produces the
+noninvertibility of $N_P$.
+
+\begin{theorem}[Normalization does not split within the category of cores]\label{thm:6.8}
+
+Suppose $\mathrm{Ad}(P)$ holds.
+There exist no core $Q$ and morphisms of cores $r:P\to Q$ and $i:Q\to P$ satisfying
+\begin{equation*}
+ri=1_Q,\qquad ir=N_P
+\tag{6.8}\label{eq:6.8}
+\end{equation*}
+
+\end{theorem}
+
+\begin{proof}
+
+Suppose they exist, and let the object maps of $r,i$ be $R,I$, respectively.
+Since $RI=1$, the map $I$ is injective.
+By Lemma~\ref{lem:6.6} and $IR=n_P$, for every object $A$ we obtain
+\[
+I(n_Q(A))=n_P(I(A))=IR(I(A))=I(A)
+\]
+Injectivity gives $n_Q(A)=A$, contradicting Proposition~\ref{prop:6.7}.
+
+\end{proof}
+
+For the collections of objects, \eqref{eq:6.2} gave a splitting through the configurations.
+A core, however, is not the set of configurations itself: it carries the readings of object
+formation, operations, and Laws for all architecture objects. Merely extracting the set of
+configurations does not yield the intermediate core of \eqref{eq:6.8}.
+To treat the image of a normalization as an object of a category, in the next section we
+extend the objects and the morphisms.
+
+\section{Making the remaining information into objects by idempotent completion}\label{sec:6.3}
+
+For an idempotent map on a set, the set of its fixed points can be extracted as its image.
+The idempotent completion is what makes it possible to treat objects playing the same role
+in a general category.
+By this construction, the information that the original comparison loses and the
+correspondence preserved between the images can be expressed by the same equations.
+
+\begin{definition}[Karoubi envelope]\label{def:6.9}
+
+An object of the idempotent completion $\mathrm{Kar}(E)$ of a category $E$ is a pair
+$(X,e)$ of an object $X\in E$ and an idempotent $e:X\to X$.
+A morphism $a:(X,e)\to(Y,d)$ is a morphism $a:X\to Y$ of $E$ satisfying
+\begin{equation*}
+dae=a
+\quad\Longleftrightarrow\quad
+da=a=ae
+\tag{6.9}\label{eq:6.9}
+\end{equation*}
+For the composition we use the composition of $E$, and we take the identity morphism of
+$(X,e)$ to be $e$.
+These form a category, by the category laws of $E$ and \eqref{eq:6.9}.
+
+\end{definition}
+
+\begin{construction}[Embedding of the original category and splitting of idempotents]\label{cons:6.10}
+
+Define $J:E\to\mathrm{Kar}(E)$ by $J(X)=(X,1_X)$ and $J(f)=f$.
+It is fully faithful. For any $(X,e)$ there are two morphisms, each of which is $e$ as a
+morphism of the original category,
+\begin{equation*}
+J(X)\xrightarrow{\ r_X\ }(X,e)
+\xrightarrow{\ i_X\ }J(X)
+\tag{6.10}\label{eq:6.10}
+\end{equation*}
+and
+\begin{equation*}
+r_Xi_X=1_{(X,e)},\qquad i_Xr_X=J(e).
+\tag{6.11}\label{eq:6.11}
+\end{equation*}
+
+\end{construction}
+
+\begin{proof}
+
+Between objects $(X,1_X)$, condition \eqref{eq:6.9} holds for every morphism, so $J$ is
+fully faithful.
+Checking \eqref{eq:6.9} for $r_X,i_X$, we find that both amount to $e^2=e$.
+The underlying morphism of both composites is $e$, which is the identity on $(X,e)$ and is
+$J(e)$ on $J(X)$.
+
+\end{proof}
+
+\begin{proposition}[Realization of the image of an idempotent]\label{prop:6.11}
+
+In $\mathrm{Kar}(E)$ every idempotent splits.
+Moreover, when there is a splitting in $E$ satisfying $ri=1_Z$ and $ir=e$, we have
+$(X,e)\cong J(Z)$.
+
+\end{proposition}
+
+\begin{proof}
+
+An idempotent morphism $a:(X,e)\to(X,e)$ satisfies $a^2=a$ and $ea=a=ae$.
+Forming the object $(X,a)$ and taking the underlying morphism in both directions to be $a$
+gives its splitting.
+For the second claim, we regard the given $r,i$ as morphisms between $(X,e)$ and $J(Z)$.
+The equations $re=r$ and $ei=i$ and the two-sided inverse equations follow from the
+equations of the splitting.
+
+\end{proof}
+
+Hence $(P,N_P)$ becomes a new object that handles the information retained by the
+normalization of a core.
+Theorem~\ref{thm:6.8} shows that this is not an object obtained by splitting the same
+normalization inside $E_{\mathrm{core}}$.
+In the idempotent completion, taking the identity morphism to be $N_P$ specifies the
+morphisms appropriate to that image.
+
+\begin{theorem}[Normalization factorization of a comparison and isomorphism of images]\label{thm:6.12}
+
+In an arbitrary category $E$, take an isomorphism $\alpha:X\xrightarrow{\sim}Y$ and an
+idempotent $d:Y\to Y$, and set
+\begin{equation*}
+\beta=d\alpha,\qquad e=\alpha^{-1}d\alpha
+\tag{6.12}\label{eq:6.12}
+\end{equation*}
+Then $e^2=e$, and the following hold.
+\begin{equation*}
+\begin{gathered}
+\beta\text{ is invertible in }E\text{}
+\quad\Longleftrightarrow\quad d=1_Y,\\
+\beta:(X,e)\xrightarrow{\sim}(Y,d)
+\quad\text{in }\mathrm{Kar}(E).
+\end{gathered}
+\tag{6.13}\label{eq:6.13}
+\end{equation*}
+The underlying morphism of the inverse between the images is $\gamma=\alpha^{-1}d$.
+
+\end{theorem}
+
+\begin{proof}
+
+The computation with conjugation gives $e^2=\alpha^{-1}d^2\alpha=e$.
+Since $\alpha$ is invertible, invertibility of $\beta$ is equivalent to invertibility of
+$d$.
+For an invertible idempotent, cancelling one $d$ in $d^2=d$ gives $d=1_Y$.
+The converse is clear.
+
+Next we check $d\beta e=\beta$ and $e\gamma d=\gamma$ using $d^2=d$.
+The two composites are
+\begin{equation*}
+\gamma\beta=e=1_{(X,e)},\qquad
+\beta\gamma=d=1_{(Y,d)}
+\tag{6.14}\label{eq:6.14}
+\end{equation*}
+so $\gamma$ is the inverse morphism in $\mathrm{Kar}(E)$.
+
+\end{proof}
+
+What becomes isomorphic in this result are the images that remain after the normalization.
+The morphism used for the isomorphism of the images is the same $\beta$ that was not
+invertible in the original category, and what has changed are the objects at the two ends
+and their identity morphisms.
+
+\begin{example}[From four points to an image with two points]\label{ex:6.13}
+
+Take the sets $X=\{a,b,c,d\}$ and $Y=\{0,1,2,3\}$, and give the isomorphism $\alpha$ and
+the normalization $d_Y$ by the following table.
+
+\begin{xltabular}{\linewidth}{@{}LLLL@{}}
+\toprule
+$x$ & $\alpha(x)$ & $\beta(x)=d_Y(\alpha(x))$ & $e_X(x)$ \\
+\midrule
+\endhead
+$a$ & $1$ & $0$ & $c$ \\
+\addlinespace[3pt]
+$b$ & $3$ & $2$ & $d$ \\
+\addlinespace[3pt]
+$c$ & $0$ & $0$ & $c$ \\
+\addlinespace[3pt]
+$d$ & $2$ & $2$ & $d$ \\
+\bottomrule
+\end{xltabular}
+
+Here $d_Y(0)=d_Y(1)=0$, $d_Y(2)=d_Y(3)=2$, and
+$e_X=\alpha^{-1}d_Y\alpha$.
+Since $\beta$ identifies $a,c$ with each other and $b,d$ with each other, it is not
+invertible between the four points.
+Between the sets of fixed points $\{c,d\}$ and $\{0,2\}$, on the other hand, it is a
+bijection.
+Equation~\eqref{eq:6.14} expresses this correspondence of images in a general category.
+
+\end{example}
+
+\section{Classifying the generated comparisons of full geometries}\label{sec:6.4}
+
+In the generated comparison of Chapter~\ref{chap:5}, whether to normalize was determined by
+the diagnosis and the preservation conditions, and that endomorphism was carried along the
+actual route.
+To apply Theorem~\ref{thm:6.12} to this construction, we verify idempotence for morphisms
+that include the covers, the overlaps, the coefficients, and the local data, in addition to
+the operations and Laws of a core.
+
+\begin{theorem}[Idempotent normalization of a full geometry]\label{thm:6.14}
+
+For a full geometry $G$ whose core $P=p(G)$ satisfies $\mathrm{Ad}(P)$, the endomorphism
+$N_G:G\to G$ of Definition~\ref{def:5.39} satisfies
+\begin{equation*}
+N_G^2=N_G,\qquad p(N_G)=N_P,\qquad
+qp(N_G)=1_{qp(G)}
+\tag{6.15}\label{eq:6.15}
+\end{equation*}
+The map to the coefficient ring is the identity.
+
+\end{theorem}
+
+\begin{proof}
+
+Idempotence of the core component is by Theorem~\ref{thm:6.5}.
+In the remaining components of a morphism of geometries, the maps of contexts, Atoms, and
+axes are identities, the coverage requirements are preserved as they are, and the
+comparison of overlaps is the identity isomorphism.
+The coefficient homomorphism and the comparison maps of supports, axes, and observables are
+identities as well, so the twofold composite equals the single one.
+The raw system is preserved by the identity reindexing and the identity change of
+coefficients.
+Hence all the components of Definition~\ref{def:1.30} agree. The equations for the
+projections follow from the construction.
+
+\end{proof}
+
+\begin{lemma}[Interchange of generated transport and normalization]\label{lem:6.15}
+
+The canonical transport of cores along an arbitrary exact base morphism $\sigma:b\to b'$,
+and the pullback of cores by the reindexing in the opposite direction, preserve
+$\mathrm{Ad}$.
+The canonical forward transport of geometries also preserves the same condition on cores.
+
+Assume further that Atom equality is decidable, and let $\sigma$ be the decoding of a
+morphism of finite codes of Definition~\ref{def:5.14}.
+The canonical pullback of full geometries for this input also preserves $\mathrm{Ad}$, and
+for the two functors of transport and pullback
+\begin{equation*}
+\sigma_!(N_G)=N_{\sigma_!G},\qquad
+\sigma^*(N_H)=N_{\sigma^*H}
+\tag{6.16}\label{eq:6.16}
+\end{equation*}
+hold. Here the cores of $G,H$ satisfy $\mathrm{Ad}$.
+
+For the actual lifts of cores along an arbitrary exact morphism,
+\begin{equation*}
+N_{\sigma_!P}\iota_{\sigma,P}=\iota_{\sigma,P}N_P,
+\qquad
+N_Q\kappa_{\sigma,Q}=\kappa_{\sigma,Q}N_{\sigma^*Q}
+\tag{6.17}\label{eq:6.17}
+\end{equation*}
+hold. The same interchange equations hold for the forward lifts of geometries.
+For the pullback lifts of geometries we use the morphism realized by the finite code above.
+
+\end{lemma}
+
+\begin{proof}
+
+Write $e$ for the Atom map of the base morphism and $T_e$ for the reindexing of objects.
+From the definition of the transported object formation we obtain
+\begin{equation*}
+n_{\sigma_!P}(T_eA)=T_e(n_P(A))
+\tag{6.18}\label{eq:6.18}
+\end{equation*}
+Since $T_e$ has $T_{e^{-1}}$ as its inverse,
+the preservation laws on the target of the transport can be brought back to the
+preservation laws before the transport.
+Carrying the invariance of residuals, invariants, and signatures, the equality of the types
+of operations, and the commutativity of the configuration maps along this correspondence,
+we see that $\mathrm{Ad}$ is preserved. For the pullback of cores we use $e^{-1}$.
+
+The operation map of a generated lift is built from the reindexing and the identification
+by the equality of the types at the endpoints.
+Moving the normalization before or after it, aligning the endpoints by \eqref{eq:6.18}
+yields the same operation.
+The other core components agree as well, and \eqref{eq:6.17} holds.
+For the forward lifts of geometries and the pullback lifts from a finite code, composing
+the identity local comparisons of Theorem~\ref{thm:6.14} gives the interchange equations
+for all the components.
+Finally, using the universal property of each lift for this finite-code input, the image of
+the normalization morphism in \eqref{eq:6.16} is uniquely determined.
+
+\end{proof}
+
+Naturality of the object map for a general morphism of cores is by Lemma~\ref{lem:6.6}.
+The interchange condition for morphisms that have their own operation map beyond the
+objects is examined in \S\ref{sec:6.6}.
+
+\begin{theorem}[Normalization factorization of the generated comparison and classification of invertibility]\label{thm:6.16}
+
+We fix the common input of Construction~\ref{cons:5.37}, namely the square decoded from
+finite codes, the core at each vertex and the strong edges, the conditions on the end of
+each face and on the two paths in the base, and the specified comparisons.
+From a face $z$ of the same diagram, a cochain $\omega$, the core $P_z$ at its end, a
+commutative coefficient ring $k$, and a full geometry $G_z$, we form the comparison of
+Construction~\ref{cons:5.40}.
+We abbreviate the ends of the two routes and the canonical comparison as
+\begin{equation*}
+X=\overline D(G_z),\qquad Y=\overline V(G_z),\qquad
+\overline\alpha=\overline\alpha_z:X\xrightarrow{\sim}Y
+\tag{6.19}\label{eq:6.19}
+\end{equation*}
+The condition for selecting the normalization and the generated morphisms are taken to be
+\begin{equation*}
+\begin{aligned}
+\chi&\Longleftrightarrow
+   (\omega_z\ne1)\ \text{and}\ \mathrm{Ad}(P_z),\\
+\overline d&=\overline V(\overline S_{z,\omega}),\qquad
+\overline\beta=\overline d\,\overline\alpha,\qquad
+\overline e=\overline\alpha^{-1}\overline d\,\overline\alpha
+\end{aligned}
+\tag{6.20}\label{eq:6.20}
+\end{equation*}
+Then $\overline d^2=\overline d$ and $\overline e^2=\overline e$, and
+\begin{equation*}
+\overline\beta\text{ is invertible in }E_{\mathrm{geom}}\text{}
+\quad\Longleftrightarrow\quad
+\overline d=1_Y
+\quad\Longleftrightarrow\quad
+\neg\chi.
+\tag{6.21}\label{eq:6.21}
+\end{equation*}
+Moreover, the same morphism $\overline\beta$ gives an isomorphism
+\begin{equation*}
+(X,\overline e)\xrightarrow{\ \overline\beta\ }(Y,\overline d)
+\quad\text{in }\mathrm{Kar}(E_{\mathrm{geom}})
+\tag{6.22}\label{eq:6.22}
+\end{equation*}
+and the underlying morphism of its inverse is $\overline\alpha^{-1}\overline d$.
+When $\chi$ holds, the cores at both ends satisfy $\mathrm{Ad}$ as well, and
+\begin{equation*}
+\overline d=N_Y,\qquad \overline e=N_X.
+\tag{6.23}\label{eq:6.23}
+\end{equation*}
+Hence, when the normalization is selected, the same generated comparison matches the
+normalization images $(X,N_X)$ and $(Y,N_Y)$, determined at the respective ends of the
+two routes, by an isomorphism.
+The idempotent at the start was defined by conjugation with the comparison, and we see
+further that it agrees with the normalization $N_X$ of the start itself.
+When $\chi$ does not hold, both idempotents are identities.
+
+\end{theorem}
+
+\begin{proof}
+
+The endomorphism on the source in Construction~\ref{cons:5.40} is $N_{G_z}$ if $\chi$ holds
+and the identity otherwise.
+By Theorem~\ref{thm:6.14} and functoriality, its image $\overline d$ is idempotent.
+Since $\overline\alpha$ of Construction~\ref{cons:5.37} is an isomorphism,
+Theorem~\ref{thm:6.12} gives the first equivalence of \eqref{eq:6.21}, the idempotence of
+$\overline e$, and \eqref{eq:6.22}.
+
+Suppose $\chi$ holds. Applying Lemma~\ref{lem:6.15} to the transports and pullbacks along
+the four edges gives $\mathrm{Ad}$ at both ends and $\overline d=N_Y$.
+Furthermore, into the geometric version of \eqref{eq:5.18}, which characterizes the
+canonical comparison,
+\begin{equation*}
+\kappa_{\sigma_2,(\sigma_1)_!G_z}\,
+\overline\alpha\,\iota_{\pi_2,\pi_1^*G_z}
+=\iota_{\sigma_1,G_z}\,\kappa_{\pi_1,G_z}
+\tag{6.24}\label{eq:6.24}
+\end{equation*}
+we substitute \eqref{eq:6.17} for each lift.
+After composing with the lifts on both outer sides, $N_Y\overline\alpha$ and
+$\overline\alpha N_X$ become the same morphism.
+Using in turn the uniqueness of each lift for cores and for geometries gives
+$N_Y\overline\alpha=\overline\alpha N_X$, which is the second equation of \eqref{eq:6.23}.
+
+By Proposition~\ref{prop:6.7}, $N_{p(Y)}$ is not the identity.
+Since $p(N_Y)=N_{p(Y)}$, we have $\overline d=N_Y\ne1_Y$.
+If, on the other hand, $\neg\chi$, then both the endomorphism on the source and its image
+are identities, and the conjugated $\overline e$ is the identity as well. This gives the
+remaining equivalence of \eqref{eq:6.21}.
+
+\end{proof}
+
+Equation~\eqref{eq:6.21} is a classification for the generation rule chosen in
+Construction~\ref{cons:5.40}.
+Even when the diagnosis is not the identity, this rule selects the identity morphism unless
+the preservation conditions for the normalization are satisfied.
+Moreover, selecting a normalization and removing the value of the diagnosis are
+separate statements.
+What this theorem clarifies is the invertibility and the image of the comparison generated
+from that selection.
+
+\begin{proposition}[Projection to the comparison of cores]\label{prop:6.17}
+
+For the input of Theorem~\ref{thm:6.16} we write $\alpha=\alpha_{P_z}$,
+$\beta=\beta_{z,\omega}$, and $e=\alpha^{-1}E_{z,\omega}\alpha$.
+Under the endpoint isomorphisms $j_D:pX\xrightarrow{\sim}DP_z$ and
+$j_V:pY\xrightarrow{\sim}VP_z$ of Proposition~\ref{prop:5.38},
+\begin{equation*}
+\begin{aligned}
+j_Vp(\overline\alpha)&=\alpha j_D,&
+j_Vp(\overline d)&=E_{z,\omega}j_V,\\
+j_Dp(\overline e)&=e j_D,&
+j_Vp(\overline\beta)&=\beta j_D.
+\end{aligned}
+\tag{6.25}\label{eq:6.25}
+\end{equation*}
+Hence, projecting the isomorphism of images of geometries to the core gives the isomorphism
+of images constructed at the core.
+
+\end{proposition}
+
+\begin{proof}
+
+The first two equations and the last one are \eqref{eq:5.42} and \eqref{eq:5.46}.
+The remaining equation is obtained by projecting
+$\overline e=\overline\alpha^{-1}\overline d\,\overline\alpha$, using that $p$ preserves
+composites and inverses.
+In the idempotent completion, the underlying morphisms of the isomorphisms that align the
+endpoints are $e j_D$ and $E_{z,\omega} j_V$, respectively.
+By \eqref{eq:6.25} and idempotence, these define isomorphisms between the images and make
+the square of the comparisons commute.
+
+\end{proof}
+
+\begin{example}[A normalization that collects the objects over the same configuration]\label{ex:6.18}
+
+To see the action of a normalization, we define the data of a core as follows.
+
+\begin{itemize}
+\item \textbf{Atoms and sources.} We take one Atom and one source, let the extracted family
+be that one-element set of Atoms, and take the source normalization to be the identity.
+\item \textbf{Composition and object formation.} We set
+$\mathrm{Comp}(F)=(F,\varnothing,\varnothing)$.
+For every configuration we take the types of the structure data and of the quantity to be
+one-element sets and their values to be the unique elements.
+\item \textbf{Operations.} We set $\mathrm{Op}_P(A,B)=\mathrm{Hom}(C_A,C_B)$.
+\item \textbf{Signatures.} We take two axes and let both values be the integer 0. Both axes
+are taken to be selected axes.
+\item \textbf{Contexts and local readouts.} A context is a pair $(U,T)$ of a subset $U$ of
+the extracted family and a subset $T$ of the signature axes, and the morphisms are the
+componentwise inclusions. The support reads each Atom of $U$ as it is, and all of $T$ can
+be read as axes.
+The observables form a one-element set that can be read, and for the restrictions we use
+the inclusions on supports and axes and the identity on observables.
+\item \textbf{Equations and invariants.} We take both index sets to be empty, the ring of
+the equations to be the constant $\mathbb{Z}$, and the restrictions to be identities.
+Since the indices are empty, the conditions on the residuals and the specification of the
+detectors are empty.
+\end{itemize}
+
+This core $P$ satisfies $\mathrm{Ad}(P)$.
+The normalization $N_P$ of Theorem~\ref{thm:6.5} sends the objects over the same
+configuration to the selected object.
+By Proposition~\ref{prop:6.7}, $N_P$ is not invertible.
+
+For the full geometry we add the following data.
+
+\begin{itemize}
+\item \textbf{Overlaps and covers.} On the contexts above we take the overlaps to be the
+componentwise intersections and the coverage requirements to be empty.
+\item \textbf{Coefficients and the raw system.} We take the coefficients to be $\mathbb{Z}$,
+and use a single raw coordinate $x$ for each context together with the relation $x^2-x$.
+We take the kind of the coordinates to be semantic, the type of the local data to be a
+one-element set, and all the restrictions to be identities.
+\end{itemize}
+
+The restrictions preserve the relations and respect identities and composition, so a full
+geometry $G$ is obtained.
+Since $N_G$ of Theorem~\ref{thm:6.14} projects to $N_P$, it is not invertible for the full
+geometry either.
+By Definition~\ref{def:6.9}, the identity morphism of $(G,N_G)$ is this $N_G$.
+
+\end{example}
+
+\section{Collecting normalized objects and changes into a single category}\label{sec:6.5}
+
+Having constructed the image for a single comparison, we next treat several cores and the
+changes between them at the same time.
+The aim is to build the morphisms between the images consistently from the original
+morphisms, rather than to choose them anew at each design change.
+
+\begin{lemma}[One-sided absorption law]\label{lem:6.19}
+
+Let $\mathcal{C}_{\mathrm{ad}}$ be the full subcategory of cores satisfying
+$\mathrm{Ad}$. For every morphism $f:P\to Q$ of this subcategory,
+\begin{equation*}
+N_QfN_P=fN_P.
+\tag{6.26}\label{eq:6.26}
+\end{equation*}
+
+\end{lemma}
+
+\begin{proof}
+
+Let $F$ be the object map. By Lemma~\ref{lem:6.6},
+$n_QFn_P=Fn_P^2=Fn_P$.
+An operation $o\in\mathrm{Op}_P(A,B)$ is first identified with one at the normalized
+endpoints and is then sent by the operation map of $f$.
+Its target objects $F(n_P(A)),F(n_P(B))$ are already fixed points by the equality of object
+maps just obtained.
+Hence the operation map of the final $N_Q$ is the identity identification on the same type.
+For the components of the base, Atoms, contexts, equations, invariant indices, axes, and
+value ranges, only an identity is composed at the end.
+All the components of the morphisms are equal, so we obtain \eqref{eq:6.26}.
+
+\end{proof}
+
+\begin{construction}[The category of normalized cores]\label{cons:6.20}
+
+For the objects of $\mathcal{C}_{\mathrm{nor}}$ we use the same cores as in
+$\mathcal{C}_{\mathrm{ad}}$. Its morphisms and identity morphisms are defined by
+\begin{equation*}
+\begin{aligned}
+\mathrm{Hom}_{\mathcal{C}_{\mathrm{nor}}}(P,Q)
+ &=\{a:P\to Q\text{ in }\mathcal{C}_{\mathrm{ad}}\mid N_QaN_P=a\},\\
+1_P^{\mathrm{nor}}&=N_P
+\end{aligned}
+\tag{6.27}\label{eq:6.27}
+\end{equation*}
+The composition is the composition of the original morphisms of cores.
+By \eqref{eq:6.9}, this is the category whose morphisms are all the Karoubi morphisms between the objects
+$(P,N_P)$.
+Hence
+\begin{equation*}
+K:\mathcal{C}_{\mathrm{nor}}\longrightarrow\mathrm{Kar}(\mathcal{C}_{\mathrm{ad}}),
+\qquad K(P)=(P,N_P),\quad K(a)=a
+\tag{6.28}\label{eq:6.28}
+\end{equation*}
+is a fully faithful functor. Even though the objects are denoted by the same symbol $P$,
+the identity morphisms and the sets of morphisms have changed.
+
+\end{construction}
+
+\begin{theorem}[Fullness of the normalization functor]\label{thm:6.21}
+
+The following assignment defines a full functor.
+\begin{equation*}
+\begin{gathered}
+\mathsf{N}_{\mathrm{core}}:\mathcal{C}_{\mathrm{ad}}\longrightarrow\mathcal{C}_{\mathrm{nor}},\\
+\mathsf{N}_{\mathrm{core}}(P)=P,\qquad
+\mathsf{N}_{\mathrm{core}}(f)=fN_P.
+\end{gathered}
+\tag{6.29}\label{eq:6.29}
+\end{equation*}
+
+\end{theorem}
+
+\begin{proof}
+
+By \eqref{eq:6.26} and $N_P^2=N_P$, the morphism $fN_P$ is a morphism of \eqref{eq:6.27}.
+The identity morphism is sent to $1_PN_P=N_P=1_P^{\mathrm{nor}}$.
+For $f:P\to Q$ and $g:Q\to R$,
+\begin{equation*}
+(gN_Q)(fN_P)=g(N_QfN_P)=gfN_P
+\tag{6.30}\label{eq:6.30}
+\end{equation*}
+so the composition is preserved.
+Every morphism $a:P\to Q$ in $\mathcal{C}_{\mathrm{nor}}$ satisfies $aN_P=a$ by
+\eqref{eq:6.9}.
+Choosing the underlying morphism of cores $a$ itself as a preimage, we have
+$\mathsf{N}_{\mathrm{core}}(a)=a$.
+
+\end{proof}
+
+Fullness is the assertion that every morphism permitted after the normalization has an
+original morphism of cores.
+Distinct morphisms of cores can have the same image, and \S\ref{sec:6.6} gives an example.
+
+\begin{proposition}[Extension to full geometries and compatibility with the projection]\label{prop:6.22}
+
+Let $\mathcal{G}_{\mathrm{ad}}$ be the full subcategory of full geometries whose cores
+satisfy $\mathrm{Ad}$. For every morphism $f:G\to H$,
+\begin{equation*}
+N_HfN_G=fN_G.
+\tag{6.31}\label{eq:6.31}
+\end{equation*}
+Hence we obtain the category $\mathcal{G}_{\mathrm{nor}}$ whose morphisms are defined by
+$N_HaN_G=a$, and the full functor $\mathsf{N}_{\mathrm{geom}}(f)=fN_G$.
+Writing $p_{\mathrm{ad}},p_{\mathrm{nor}}$ for the functors induced by the projection to
+cores,
+\begin{equation*}
+p_{\mathrm{nor}}\mathsf{N}_{\mathrm{geom}}
+=\mathsf{N}_{\mathrm{core}}p_{\mathrm{ad}}.
+\tag{6.32}\label{eq:6.32}
+\end{equation*}
+Moreover, the base and the coefficient homomorphism of a morphism after the normalization
+are equal to those of the original morphism.
+
+\end{proposition}
+
+\begin{proof}
+
+For the core component we use Lemma~\ref{lem:6.19}.
+In the components of the geometry, the final $N_H$ composes identity maps onto the
+coefficients, supports, axes, and observables, so the result equals the original $fN_G$.
+This gives \eqref{eq:6.31}.
+Functoriality and fullness are the same computation as in Theorem~\ref{thm:6.21}.
+By $p(N_G)=N_{p(G)}$, equation \eqref{eq:6.32} holds both on objects and on morphisms.
+For the base and the coefficients, the components of $N_G$ are identities, so composing
+with them does not change the original morphism.
+
+\end{proof}
+
+\section{Conditions for interchanging the order of a normalization and a change}\label{sec:6.6}
+
+That the normalization is a functor does not mean that the order of an arbitrary change and
+the normalization can be interchanged.
+What the former required was \eqref{eq:6.26}, and the latter is a stronger equation.
+We examine in which component that difference appears.
+
+\begin{proposition}[Naturality of the inclusion and the condition for the projection]\label{prop:6.23}
+
+We use $K$ of Construction~\ref{cons:6.20} and the embedding $J$ obtained by applying
+Construction~\ref{cons:6.10} to $\mathcal{C}_{\mathrm{ad}}$.
+The inclusion $i_P:(P,N_P)\to J(P)$ whose underlying morphism is $N_P$ defines a natural
+transformation
+\begin{equation*}
+i:K\mathsf{N}_{\mathrm{core}}\Longrightarrow J
+\tag{6.33}\label{eq:6.33}
+\end{equation*}
+The morphism $r_P:J(P)\to(P,N_P)$ in the opposite direction satisfies
+$r_Pi_P=1_{(P,N_P)}$ objectwise, and naturality of that family with respect to a morphism
+$f:P\to Q$ is equivalent to
+\begin{equation*}
+fN_P=N_Qf
+\tag{6.34}\label{eq:6.34}
+\end{equation*}
+
+\end{proposition}
+
+\begin{proof}
+
+The underlying morphisms of the two sides of the naturality of the inclusion are $fN_P$ and
+$N_QfN_P$, which are equal by Lemma~\ref{lem:6.19}.
+The objectwise splitting is by \eqref{eq:6.11}.
+Naturality of the family in the opposite direction is the equation $(fN_P)N_P=N_Qf$, which
+becomes \eqref{eq:6.34} on using $N_P^2=N_P$.
+
+\end{proof}
+
+\begin{proposition}[Deciding naturality by the correspondence of operations]\label{prop:6.24}
+
+Suppose $\mathrm{Ad}(P)$ and $\mathrm{Ad}(Q)$ hold, and let $F$ be the object map of
+$f:P\to Q$.
+We write the operation map of the normalization as
+\begin{equation*}
+c^P_{A,B}:\mathrm{Op}_P(A,B)
+\longrightarrow\mathrm{Op}_P(n_P(A),n_P(B))
+\tag{6.35}\label{eq:6.35}
+\end{equation*}
+Then \eqref{eq:6.34} is equivalent to the statement that, for all $A,B,o$,
+\begin{equation*}
+f^{\mathrm{op}}_{n_P(A),n_P(B)}(c^P_{A,B}(o))
+=c^Q_{F(A),F(B)}(f^{\mathrm{op}}_{A,B}(o))
+\tag{6.36}\label{eq:6.36}
+\end{equation*}
+holds. The endpoints of the two sides are identified by Lemma~\ref{lem:6.6}.
+
+\end{proposition}
+
+\begin{proof}
+
+Equation~\eqref{eq:6.36} is the equality of the operation components of two composite
+morphisms.
+The object components are equal by Lemma~\ref{lem:6.6}, and the components of the base,
+Atoms, contexts, equations, invariant indices, axes, and value ranges are equal because the
+identity maps of the normalization are composed either before or after.
+Hence agreement of the operation components is equivalent to agreement of the entire
+morphisms.
+
+\end{proof}
+
+In \eqref{eq:6.36} we compare not only the action of an operation on configurations but the
+operation itself.
+As in Example~\ref{ex:1.8} of Chapter~\ref{chap:1}, operations with the same action can
+differ in their names or in additional information.
+
+\begin{example}[The order changes according to the tag of an operation]\label{ex:6.25}
+
+We replace the operations of the core of Example~\ref{ex:6.18} by
+\begin{equation*}
+\mathrm{Op}_{P^{\mathrm{tag}}}(A,B)
+=\mathrm{Hom}(C_A,C_B)\times\{0,1\}
+\tag{6.37}\label{eq:6.37}
+\end{equation*}
+For the action on configurations we use only the first component, and the other readings
+are kept as they are.
+The second component is a tag that distinguishes two operations with the same action.
+This core also satisfies $\mathrm{Ad}$, and the normalization keeps the configuration map
+and the tag as they are.
+
+Over a configuration $C$, let $A_\bullet$ be an object whose type of structure data is a
+two-element set.
+The type of the structure data of its selected object $n(A_\bullet)$ is a one-element set,
+so $n(A_\bullet)\ne A_\bullet$.
+Keeping the objects, the base, and the other readings identical, we apply to the operations
+alone
+\begin{equation*}
+f^{\mathrm{op}}_{A,B}(u,t)=
+\begin{cases}
+(u,1-t),&A=A_\bullet,\\
+(u,t),&A\ne A_\bullet
+\end{cases}
+\tag{6.38}\label{eq:6.38}
+\end{equation*}
+Since the first component $u$ is unchanged, the commutative square for configurations in
+Definition~\ref{def:1.28} is satisfied.
+The other components are identities as well, and $f$ is an actual endomorphism of cores.
+Applying it twice returns to the original, so $f^2=1$ as well.
+
+Taking the start and the end to be $A_\bullet$ and the operation to be $(1_C,0)$, the
+following difference arises.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Order of application & Start and end after normalization & Final tag \\
+\midrule
+\endhead
+Normalize and then apply $f$ & Both $n(A_\bullet)$ & 0 \\
+\addlinespace[3pt]
+Apply $f$ and then normalize & Both $n(A_\bullet)$ & 1 \\
+\bottomrule
+\end{xltabular}
+
+Hence $fN\ne Nf$, and the family in the opposite direction in Proposition~\ref{prop:6.23}
+is not natural.
+The object map and the action on configurations agree along both routes.
+What detects the difference of order is the tag kept in the operations.
+
+Furthermore, all the targets of the normalization have one-element structure data, so none
+of them is $A_\bullet$.
+From this, $fN=N=1N$.
+Two distinct morphisms $f\ne1$ are sent to the same morphism after the normalization, so
+the full functor of Theorem~\ref{thm:6.21} is not faithful in general.
+
+Read in terms of design changes, even when the correspondence of operations after the
+alignment to the standard representation is the same, the specification of operations that
+depends on the original representation can differ.
+For example, for the same cancellation operation one may consider processing that changes
+the label for auditing according to the original implementation variant.
+If the distinction of implementation variants is collected first, the operations whose
+labels are to be changed can no longer be distinguished.
+When one wants to interchange the order before and after the normalization freely, a review
+checks \eqref{eq:6.36} in addition to the correspondence of objects.
+
+\end{example}
+
+\section{The category of comparisons themselves and the three-level projections}\label{sec:6.7}
+
+Chapter~\ref{chap:7} studies the changes that preserve a single comparison.
+For this it is convenient to take the comparison morphisms themselves as objects and to
+treat the changes at the two ends as morphisms.
+The idempotent completion is compatible with this category of comparisons as well.
+
+\begin{definition}[The arrow category and the category of comparisons]\label{def:6.26}
+
+The arrow category $\mathrm{Arr}(E)$ of a category $E$ has the morphisms $c:X\to Y$ as its
+objects.
+A morphism from $c$ to $c':X'\to Y'$ is a pair of $a:X\to X'$ and $b:Y\to Y'$ satisfying
+\begin{equation*}
+bc=c'a
+\tag{6.39}\label{eq:6.39}
+\end{equation*}
+Identities and composition are defined componentwise at the two ends.
+We take the category that handles the comparisons after normalization to be
+\begin{equation*}
+\mathcal{M}(E)=\mathrm{Arr}(\mathrm{Kar}(E))
+\tag{6.40}\label{eq:6.40}
+\end{equation*}
+
+\end{definition}
+
+\begin{theorem}[Interchange of comparison and idempotent completion]\label{thm:6.27}
+
+For every category $E$ there is a natural equivalence of categories
+\begin{equation*}
+\Phi_E:\mathrm{Kar}(\mathrm{Arr}(E))
+\simeq\mathrm{Arr}(\mathrm{Kar}(E))
+\tag{6.41}\label{eq:6.41}
+\end{equation*}
+Representing an object of the left-hand side by a morphism $c:X\to Y$ and an idempotent
+commutative square $(e,d)$, that is, by $e^2=e$, $d^2=d$, and $dc=ce$, the functor $\Phi_E$
+sends it to
+\begin{equation*}
+(X,e)\xrightarrow{\ dce\ }(Y,d)
+\tag{6.42}\label{eq:6.42}
+\end{equation*}
+This correspondence is shown in Figure~\ref{fig:6.1}.
+
+\end{theorem}
+
+\begin{figure}[htbp]
+\centering
+\input{figures/ch06-karoubi-arrow}
+\caption{\textbf{From an idempotent change of a comparison to a comparison between the images.}
+On the left we require $e^2=e$, $d^2=d$, and the commutativity $dc=ce$.
+On the right the two ends are changed to the idempotent images, and the comparison between
+them is $dce$.
+In general $dce=c$ need not hold, so the round trip in the other direction returns to the
+original by the isomorphism in the proof.}\label{fig:6.1}
+\end{figure}
+
+\begin{proof}
+
+From $dc=ce$ and idempotence, $dce$ satisfies \eqref{eq:6.9}.
+Let $a,b$ be the two ends of a morphism of the left-hand side. In addition to the original
+commutative square, $e'ae=a$ and $d'bd=b$ hold.
+Hence, regarding the same $a,b$ as Karoubi morphisms,
+$b(dce)=(d'c'e')a$ holds.
+Identities and composition are the same computation at the two ends, so this gives a
+functor.
+
+In the opposite direction, from a Karoubi morphism $u:(X,e)\to(Y,d)$ we take the underlying
+morphism $u:X\to Y$ and the idempotent square $(e,d)$. The square commutes by $du=u=ue$.
+For morphisms as well we take the underlying morphisms at the two ends.
+Applying $\Phi_E$ after this returns to the original, since $due=u$.
+
+In the round trip in the other direction, the comparison of $(c,e,d)$ changes to $dce$.
+Placing the squares whose two ends are $(e,d)$ in both directions, we obtain an
+isomorphism inside the idempotent completion.
+The reason is that the two ends of both composites are $(e,d)$, which are the identity
+morphisms there.
+Naturality of this isomorphism also follows from the equations $e'ae=a$ and $d'bd=b$ at the
+two ends of a morphism.
+
+\end{proof}
+
+\begin{proposition}[Compatibility with functors and projections]\label{prop:6.28}
+
+A functor $F:E\to E'$ induces $\mathrm{Kar}(F)$ by $(X,e)\mapsto(FX,F(e))$ and its action
+on morphisms.
+This action and \eqref{eq:6.41} commute under a natural isomorphism.
+In particular, the three-level projections induce functors
+\begin{equation*}
+\mathcal{M}(E_{\mathrm{geom}})
+\longrightarrow\mathcal{M}(E_{\mathrm{core}})
+\longrightarrow\mathcal{M}(B)
+\tag{6.43}\label{eq:6.43}
+\end{equation*}
+and the projection obtained by following two levels agrees with the composite projection.
+
+\end{proposition}
+
+\begin{proof}
+
+A functor preserves idempotence and \eqref{eq:6.9}.
+The comparison obtained by applying the functor to \eqref{eq:6.42} is $F(dce)$, and the
+comparison obtained by sending each component first is $F(d)F(c)F(e)$. The two are equal
+because a functor preserves composites.
+The endpoints and the components at the two ends of a morphism are the same as well, and we
+obtain a natural isomorphism whose components are the identity morphisms at the endpoints.
+Carrying out the same computation of components for the composite of two functors yields
+the last claim.
+
+\end{proof}
+
+\begin{construction}[Invertible changes of comparisons]\label{cons:6.29}
+
+Keeping all the objects of $\mathcal{M}(E)$ and taking as morphisms only the isomorphisms
+between them yields the maximal groupoid.
+We do not ask for invertibility of the comparison $c$ itself, which serves as an object.
+What is required to be invertible are the changes at the two ends that match the
+comparisons.
+Indeed, an isomorphism of the arrow category is equivalent to a commutative square whose
+two ends are isomorphisms.
+One direction follows by evaluating at the two ends, and the other follows because the
+inverse morphisms at the two ends form the inverse commutative square.
+
+There are two ways of reading the generated comparison $\beta$ as an object.
+They are $J(\beta):J(X)\to J(Y)$, the embedding of the original morphism, and
+$\beta:(X,e)\to(Y,d)$, the morphism between the images of Theorem~\ref{thm:6.12}.
+Even when the former is not invertible, the latter is an isomorphism.
+By making these endpoints explicit, Chapter~\ref{chap:7} can specify ``which change
+preserves which comparison.''
+
+\end{construction}
+
+\section{What remains in the image for lenses and protocols}\label{sec:6.8}
+
+We examine whether reads, updates, and executions can be continued with the remaining
+states after the states have been collected by an idempotent.
+For fixed-view lenses and protocols with observations, the image of a semantics-preserving
+idempotent can be realized inside each semantics.
+
+\begin{proposition}[Splitting of the idempotents of fixed-view lenses]\label{prop:6.30}
+
+The category $\mathrm{Lens}(V,v_0)$ of Definition~\ref{def:1.32} is idempotent complete.
+That is, every idempotent semantics-preserving morphism $h:L\to L$ splits within the same
+category.
+
+\end{proposition}
+
+\begin{proof}
+
+By Propositions~\ref{prop:1.33} and~\ref{prop:1.34}, under the product decomposition
+$C\cong V\times K_L$ of a lens $L$, an endomorphism can be written as
+\[
+h(v,k)=(v,t(k)),\qquad t:K_L\to K_L
+\]
+If $h^2=h$, then $t^2=t$, so we take
+\[
+K_t=\{k\in K_L\mid t(k)=k\},\qquad C_t=V\times K_t
+\]
+and take the read to be the first projection and the update to be
+$((v,k),w)\mapsto(w,k)$.
+Under the product decomposition, setting $r:C\to C_t$ to be $r(v,k)=(v,t(k))$ and
+$i:C_t\to C$ to be the inclusion $i(v,k)=(v,k)$, both morphisms preserve reads and updates.
+By idempotence $t(k)\in K_t$, and at fixed points $t(k)=k$, so we obtain
+$ri=1_{C_t}$ and $ir=h$.
+The reference fiber is in one-to-one correspondence with $K_t$, a subset of the finite set
+$K_L$, so this is a splitting within the same category of lenses.
+
+\end{proof}
+
+We check the splitting of Proposition~\ref{prop:6.30} on a lens with four states.
+We take the product lens of the two-element sets $V=R=\{0,1\}$, with states $C=V\times R$.
+We take the reference view to be 0, the read to be $g(v,r)=v$, and the update to be
+$p((v,r),w)=(w,r)$.
+The map that aligns the second component to 0,
+\begin{equation*}
+h(v,r)=(v,0)
+\tag{6.44}\label{eq:6.44}
+\end{equation*}
+defines an endomorphism of $\mathrm{Lens}(V,0)$. Indeed,
+\begin{equation*}
+gh=g,\qquad
+h(p((v,r),w))=(w,0)=p(h(v,r),w),\qquad h^2=h.
+\tag{6.45}\label{eq:6.45}
+\end{equation*}
+It forgets the distinction of the second component while preserving reads and updates.
+The state set of the fixed points $C_0=V\times\{0\}$ is closed under updates and becomes a
+lens by the same equations.
+Taking $C\to C_0$ to be $h$ and the map in the opposite direction to be the inclusion, and
+using the identity on views in both cases, we see that this idempotent splits within the
+category of
+lenses.
+
+Hence the image obtained by applying Theorem~\ref{thm:6.12} to the category of lenses can,
+in this example, be expressed as the actual lens $C_0\to V$.
+Processing that uses only reads and updates can be continued on it, while processing that
+asks for the original second component needs the original states.
+
+In this way, for lenses over a fixed view, the image of a normalization can be realized
+again as a lens.
+For the normalization of cores treated in Theorem~\ref{thm:6.8}, what was required of an intermediate object was a core carrying the readings for all
+the objects, together with its
+morphisms.
+Even in the same discussion of idempotents, the conclusion changes according to the
+category in which the image is realized.
+
+\begin{proposition}[Images of protocols preserving executions]\label{prop:6.31}
+
+Fix the category of paths $\mathcal{C}_Q$ of Definition~\ref{def:1.36} and the observation
+targets $O$, and take a realization $F:\mathcal{C}_Q\to{\mathbf{Set}}$ and an observation
+$o_F:F\Rightarrow O$.
+The state set at each vertex is taken to be finite.
+Suppose a semantics-preserving adapter $n:F\Rightarrow F$ satisfies $n^2=n$.
+In particular, we are assuming naturality with respect to all executions and preservation
+of observations, $o_Fn=o_F$.
+At each vertex we set
+\begin{equation*}
+F_n(x)=\{s\in F(x)\mid n_x(s)=s\}
+\tag{6.46}\label{eq:6.46}
+\end{equation*}
+Restricting the executions and the observations then yields a realization $(F_n,o_{F_n})$
+of the same protocol.
+The maps $r_x(s)=n_x(s)$ and the inclusions $i_x$ are adapters preserving executions and
+observations, and
+\begin{equation*}
+ri=1_{F_n},\qquad ir=n.
+\tag{6.47}\label{eq:6.47}
+\end{equation*}
+
+\end{proposition}
+
+\begin{proof}
+
+For an execution $a:x\to y$ and a fixed point $s\in F_n(x)$, naturality gives
+\begin{equation*}
+n_y(F(a)(s))=F(a)(n_x(s))=F(a)(s)
+\tag{6.48}\label{eq:6.48}
+\end{equation*}
+so the result after the execution again belongs to the fixed points.
+For identities and composition it suffices to restrict the functor laws of $F$.
+Naturality of $r$ is naturality of $n$, and naturality of $i$ is by the definition of the
+restriction.
+Setting the observation to be $o_{F_n}=o_Fi$, we have $o_{F_n}r=o_Fn=o_F$, so $r$ preserves
+observations as well.
+Each set of fixed points is a subset of the original finite set, so finiteness is preserved
+as well.
+Equation~\eqref{eq:6.47} follows from the definition of fixed points and idempotence.
+
+\end{proof}
+
+Having an idempotent map of states at each vertex alone does not give \eqref{eq:6.48}.
+For example, realize a protocol with one vertex, one operation, and no declared relations
+by two states and a constant observation.
+Take the operation to be the exchange of 0 and 1, and the normalization to be the constant
+map to 0.
+Then the execution from the fixed point 0 goes out to 1.
+In this case the normalization of states and the operation do not commute.
+
+Equations \eqref{eq:6.45} for lenses and \eqref{eq:6.48} for protocols give the condition
+under which operations can be continued with only the information retained after the
+normalization.
+Given a semantics-preserving isomorphism $\alpha$ and such an idempotent adapter $d$, the
+morphism $d\alpha$ of Theorem~\ref{thm:6.12} matches the images at the two ends by an
+isomorphism.
+The reason why Chapter~\ref{chap:1} kept the names and the actions of operations separately
+also appears here.
+By checking the correspondence of the selected operations in addition to the agreement of
+the actions on states and configurations, one can make clear which meaning the
+normalization preserves.
+
+\section*{Summary of the Chapter}
+
+In this chapter we analyzed the generated comparison through its normalization factor and
+clarified its invertibility and the structure that remains in the image.
+
+\begin{itemize}
+\item \textbf{Normalization and the information retained.} The map to the selected object
+for each configuration is idempotent, and the fixed points are in one-to-one correspondence
+with the configurations.
+A readout unchanged by normalization factors uniquely through the configurations.
+Under the conditions preserving operations, residuals, invariants, and signatures, this map
+becomes an idempotent of full geometries (\S\S\ref{sec:6.1}--\ref{sec:6.2},
+\S\ref{sec:6.4}).
+\item \textbf{Invertibility and image of the generated comparison.} The generated
+comparison, obtained by composing an invertible canonical comparison with a normalization,
+is invertible if and only if the normalization factor is the identity.
+The same comparison morphism gives an isomorphism between the images in the idempotent
+completion even when the normalization is not the identity, and is compatible with the
+projection to cores (\S\S\ref{sec:6.3}--\ref{sec:6.4}).
+\item \textbf{Normalized changes.} The objects and morphisms after normalization form a category, and the normalization functor obtained from the original changes is full.
+Whether the order of an original change and the normalization can be interchanged is
+determined by the correspondence of the operations themselves, and it can fail to hold even
+when only the actions on objects and configurations agree
+(\S\S\ref{sec:6.5}--\ref{sec:6.6}).
+\item \textbf{The category of comparisons themselves.} Combining the arrow category with
+idempotent completion, comparisons and their changes can be handled.
+The interchange of the two constructions is compatible with the three-level projections of
+extraction, core, and geometry (\S\ref{sec:6.7}).
+\item \textbf{Images on which operations can be continued.} The idempotents of fixed-view
+lenses split within the same category.
+For protocols as well, executions and observations are restricted to the image of an
+idempotent adapter that preserves executions and observations (\S\ref{sec:6.8}).
+\end{itemize}
+
+For the design review of the opening, we select a standard representation that preserves
+the operations, the dependencies, and the Laws of order cancellation.
+Even when the two proposals after normalization can be compared by an isomorphism, the
+original class structure and the auxiliary representations need not be recoverable.
+The classification of this chapter answers separately what remains in the image and whether
+one can return to the original representation.
+To move a further design change across the normalization, one checks that the
+correspondence of the operations commutes with the normalization.
+
+In the next chapter we use the category of comparisons constructed here to classify the
+changes that preserve a single comparison.
+The next question is how far the changes that look the same after normalization can be
+distinguished on the original objects.
