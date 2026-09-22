@@ -1,0 +1,1417 @@
+\chapter{Comparison-Preserving Changes and Information}\label{chap:7}
+
+\section*{Overview of the Chapter}
+
+The question of this chapter is \textbf{by what information the changes preserving a
+comparison can be distinguished, and how they can be constructed}.
+Chapter~\ref{chap:6} used normalization to gather together the differences between
+representations, and obtained a way of comparing the remaining images.
+Now we consider the situation of a refactoring, which changes the internal design while
+keeping the correspondence of processing and data.
+
+For example, we extract the update logic from the processing that edits an order into a
+shared component, and split the shipping address and the payment information contained in a
+single order record into separate data types.
+That the shipping address can still be displayed correctly after the change does not tell us
+that the payment information is not mixed up when the shipping address is updated.
+What is needed is that moving the old data into the new format and then updating, and updating
+in the old format and then moving, give the same state of the order.
+When only the display on the screen and the call relations are compared, this carrying over
+of data can drop out of the check.
+
+In this chapter we single out the changes under which chosen states and structures can be put
+into one-to-one correspondence, and study the conditions under which this correspondence
+preserves reads, updates, and the carrying over by the processing.
+
+There are two tasks here. One is to \textbf{determine} whether a given change preserves the
+comparison.
+The other is to \textbf{construct}, from a change of the summarized design, a change of the
+detailed design that preserves the comparison.
+In this chapter we exhibit, for the normalization of AAT, cases where compatible changes can
+be constructed and yet determining a given change requires the information lost in the
+normalization.
+On that basis, we classify all the options for compatible changes by a group action.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Question & Construction & Outcome \\
+\midrule
+\endhead
+What are the changes that preserve a comparison? & The comparison-preserving group and the
+projections to the endpoints & Existence conditions and freedom for a change following a
+change on one side (\S\S\ref{sec:7.1}--\ref{sec:7.2}) \\
+\addlinespace[3pt]
+Can compatibility be determined by observations alone? & The kernel of the observation
+homomorphism & Conditions on the information necessary and sufficient for the determination,
+and classification of the changes with the same observation (\S\ref{sec:7.3}) \\
+\addlinespace[3pt]
+Can a change after normalization be lifted to the original? & Restriction to the idempotent
+image and a section of it & General conditions for the determination, and construction of
+lifts for the generated comparisons of AAT (\S\S\ref{sec:7.4}--\ref{sec:7.6}) \\
+\addlinespace[3pt]
+How do the operations of software constrain changes? & Connected components of the graph of
+operations & Classification and number of the changes that preserve operations
+(\S\S\ref{sec:7.7}--\ref{sec:7.8}) \\
+\bottomrule
+\end{xltabular}
+
+\section{Changes preserving a single comparison}\label{sec:7.1}
+
+We first confirm that, even when the call relations of the processing are the same, a
+refactoring can break the data that ought to be carried over.
+We then gather the condition of preserving the correspondence with operations and adapters
+into a group.
+
+\begin{example}[Extraction into a shared component changes what is carried over]\label{ex:7.1}
+
+We extract the update of the shipping address of an order into a shared component.
+Suppose there is a condition that this update does not change the payment category.
+Focusing on the internal code $\{0,1\}$ of the payment category, we gather the processing
+into a small state machine.
+We take a single control point, and let the operation that returns to the same control point
+before and after the update be a named self-loop $a$.
+We define the correct implementation $X$ and the implementation $Y$ whose conversion in the
+extracted component inverts this code by
+\begin{equation*}
+T_a^X(k)=k,\qquad T_a^Y(k)=1-k
+\tag{7.1}\label{eq:7.1}
+\end{equation*}
+If we read only the vertices and the edges, both have the same update operation.
+Updating an order with code 0 once, however, leaves it 0 in $X$ and turns it into 1 in $Y$.
+Reading the Law ``an update of the shipping address keeps the payment category'' lets us
+distinguish this difference.
+In addition to the agreement of the call relations, we need to read the conditions on the
+data that the processing carries over.
+
+Likewise for changes, the part remaining in the observation can agree while the
+compatibility with operations and adapters differs.
+To describe this difference, we fix a single comparison.
+
+\end{example}
+
+\begin{definition}[Comparison-preserving group]\label{def:7.2}
+
+Take a morphism $c:X\to Y$ of a category $E$ and subgroups
+$G_X\le\mathrm{Aut}_E(X)$, $G_Y\le\mathrm{Aut}_E(Y)$ of the permitted endpoint changes.
+We take the group of changes preserving $c$ to be
+\begin{equation*}
+\Gamma_c=\{(u,v)\in G_X\times G_Y\mid vc=cu\}
+\tag{7.2}\label{eq:7.2}
+\end{equation*}
+A change satisfying this equation is said to be \textbf{compatible} with the comparison.
+The product of the group is composition of morphisms, and $u_2u_1$ applies $u_2$ after
+$u_1$.
+
+In a refactoring as well, once a single compatible invertible reference correspondence
+linking the old and the new states is fixed, the difference from another invertible
+correspondence of states can be expressed as an automorphism of the original set of states.
+In \S\ref{sec:7.8} we use this reduction to move the conditions for preserving reads and
+operations to conditions on automorphisms.
+
+In AAT we take $E=E_{\mathrm{geom}}$ and write the composite of the two-level projections of
+Chapter~\ref{chap:1} as $\pi:E_{\mathrm{geom}}\to B$.
+Besides the case where all automorphisms are permitted, we use the changes fixing the base
+\begin{equation*}
+G_X^0=\ker\bigl(\mathrm{Aut}(X)\xrightarrow{\pi}
+\mathrm{Aut}(\pi X)\bigr),\qquad
+\Gamma_c^0=\Gamma_c\cap(G_X^0\times G_Y^0)
+\tag{7.3}\label{eq:7.3}
+\end{equation*}
+The unadorned $\Gamma_c$ is the notation for the case where Definition~\ref{def:7.2} is used
+with the full endpoint automorphism groups.
+What is fixed is the image in the base of the changes $u,v$, and $\pi(c)$ may remain a
+general comparison.
+Moreover, the condition of fixing the base and the condition of fixing the coefficients can
+be specified separately.
+
+\end{definition}
+
+\begin{proposition}[The group obtained from a comparison object of full geometries]\label{prop:7.3}
+
+For a comparison $c:X\to Y$ of full geometries, the group $\Gamma_c^0$ of \eqref{eq:7.3} is
+a subgroup of $G_X^0\times G_Y^0$.
+Using the embedding $J:E_{\mathrm{geom}}\to\mathrm{Kar}(E_{\mathrm{geom}})$ by the identity
+idempotents, it is isomorphic to the group of invertible changes of $J(c)$ fixing the base
+in the category of comparisons $\mathcal{M}(E_{\mathrm{geom}})$ of Chapter~\ref{chap:6}.
+This identification commutes with the projections to the endpoints.
+
+\end{proposition}
+
+\begin{proof}
+
+The identity pair is compatible, and the product and the inverse of two compatible pairs
+also satisfy $vc=cu$.
+These operations preserve the identity map of the base as well.
+Since the morphisms between the $J(X)=(X,1_X)$ carry no additional constraint from
+idempotents, the same endpoint pair can be read as an invertible square in the category of
+morphisms of the idempotent completion.
+This correspondence and its inverse preserve the morphisms at the endpoints, hence preserve
+the group law, the projections, and the condition of fixing the base.
+
+\end{proof}
+
+When only one side is changed, the other need not be able to follow.
+When $(u,v)$ preserves the comparison, we say that $v$ follows $u$.
+When following is possible, all the candidates can be described by the changes that leave
+the comparison as it is.
+
+\begin{theorem}[Projections to the endpoints and following changes]\label{thm:7.4}
+
+We use the same comparison of full geometries and base-fixing groups as in
+Proposition~\ref{prop:7.3}.
+Take the projections to the endpoints $p_X:\Gamma_c^0\to G_X^0$ and
+$p_Y:\Gamma_c^0\to G_Y^0$.
+Their kernels are, respectively,
+\begin{equation*}
+\ker p_X\cong T_c:=\{v\in G_Y^0\mid vc=c\},\qquad
+\ker p_Y\cong S_c:=\{u\in G_X^0\mid cu=c\}
+\tag{7.4}\label{eq:7.4}
+\end{equation*}
+A necessary and sufficient condition for the existence of a $v$ following $u\in G_X^0$ is
+$u\in\mathrm{im}\,p_X$.
+If one following change $v_0$ exists, all the candidates are $T_cv_0$.
+Likewise, if a $u_0$ following $v\in G_Y^0$ exists, all the candidates are $S_cu_0$.
+
+\end{theorem}
+
+\begin{proof}
+
+The first kernel is obtained by substituting $u=1_X$ into \eqref{eq:7.2}. The second is
+similar.
+From $v_0c=cu$ we get $v_0^{-1}c=cu^{-1}$. Using this together with $vc=cu$, we obtain
+\begin{equation*}
+(vv_0^{-1})c=vc\,u^{-1}=c
+\tag{7.5}\label{eq:7.5}
+\end{equation*}
+Hence we may write it uniquely as $v=tv_0$, $t=vv_0^{-1}\in T_c$.
+Conversely, if $t\in T_c$ then $tv_0c=tcu=cu$.
+For the other side the computation is the same, using $cu_0^{-1}=v^{-1}c$.
+
+\end{proof}
+
+When the action of a group on a nonempty set is free and transitive, the set is called a
+\textbf{torsor} under the group.
+That is, between two candidates there is exactly one element of the group carrying one to
+the other.
+The candidate sets of Theorem~\ref{thm:7.4} are torsors under $T_c$ and $S_c$ respectively,
+by composition on the left.
+Choosing one candidate as a reference identifies the set with the group, but the candidate
+set itself needs no specified reference.
+
+\begin{corollary}[Changes of an isomorphism comparison]\label{cor:7.5}
+
+If a comparison $c:X\xrightarrow{\sim}Y$ of full geometries is an isomorphism, then
+\begin{equation*}
+\Gamma_c^0=\{(u,cuc^{-1})\mid u\in G_X^0\},\qquad
+\Gamma_c^0\cong G_X^0
+\tag{7.6}\label{eq:7.6}
+\end{equation*}
+When the full endpoint automorphism groups are used in an arbitrary category as well, the
+comparison-preserving group is isomorphic as a group to $\mathrm{Aut}(X)$ via
+$u\mapsto(u,cuc^{-1})$.
+
+\end{corollary}
+
+\begin{proof}
+
+The equation $vc=cu$ is equivalent to $v=cuc^{-1}$.
+In the case of the full endpoint groups, this gives both inverses and the group law.
+In the base-fixing version for full geometries,
+$\pi(cuc^{-1})=\pi(c)1\pi(c)^{-1}=1$ shows that the same correspondence preserves the
+base-fixing groups.
+
+\end{proof}
+
+\section{Carrying changes from the same generator}\label{sec:7.2}
+
+In Chapter~\ref{chap:5} we constructed two routes and a comparison from the same generator.
+Sharing this generator also answers which changes are to be combined at the two endpoints.
+
+\begin{theorem}[Compatibility of generated changes]\label{thm:7.6}
+
+Take the common original object $S$ of Chapter~\ref{chap:5}, \S\ref{sec:5.8}, the ends
+$X,Y$ of the two routes, and the generated comparison $c:X\to Y$.
+Let $G_S^0$ be the group of automorphisms of the original object $S$ fixing the base.
+Writing the homomorphisms induced by the transports and the pullbacks along the two routes
+as $F_*:G_S^0\to G_X^0$ and $G_*:G_S^0\to G_Y^0$, we have
+\begin{equation*}
+G_*(a)c=cF_*(a)\qquad(a\in G_S^0).
+\tag{7.7}\label{eq:7.7}
+\end{equation*}
+Setting further $J=G_*^{-1}(T_c)$, for independently chosen $a,b\in G_S^0$,
+\begin{equation*}
+\bigl(F_*(a),G_*(b)\bigr)\in\Gamma_c^0
+\quad\Longleftrightarrow\quad ba^{-1}\in J.
+\tag{7.8}\label{eq:7.8}
+\end{equation*}
+Hence, once the change $a$ on one side is fixed, the changes of the source usable on the
+other side are $Ja$.
+
+\end{theorem}
+
+\begin{proof}
+
+Write the cartesian legs of the two routes as $q_X:X\to S$ and $q_Y:Y\to S$.
+Here, as in Chapter~\ref{chap:5}, we compose the legs after moving to the refinement side
+when necessary.
+The factorizations at the time of generation and the triangle of the comparison are
+$q_XF_*(a)=aq_X$, $q_YG_*(a)=aq_Y$, and $q_Yc=q_X$.
+Composing both sides of \eqref{eq:7.7} with $q_Y$ therefore gives $aq_X$ in either case.
+Both sides lie over the same morphism of the base. Using the uniqueness coming from
+cartesianness of the core and then from cartesianness of the geometry, we obtain
+\eqref{eq:7.7}.
+
+By \eqref{eq:7.7} and Theorem~\ref{thm:7.4}, compatibility of $G_*(b)$ with $F_*(a)$ is
+equivalent to $G_*(b)G_*(a)^{-1}\in T_c$.
+Since these are homomorphisms, this becomes \eqref{eq:7.8}.
+
+\end{proof}
+
+Carrying the same change along both routes gives compatibility, and when different changes
+are chosen the remaining difference must lie in $J$.
+This description is preserved when the presentation of the generator is changed.
+
+\begin{proposition}[Change of presentation of the input and regeneration]\label{prop:7.7}
+
+Write the diagram consisting of the common original objects of Chapter~\ref{chap:5} as
+$(S_v,L_e,\kappa_f)$.
+Here $L_e$ is the morphism of an edge and $\kappa_f$ is the comparison specified on a face.
+Give at each vertex an isomorphism $\theta_v:S'_v\xrightarrow{\sim}S_v$ fixing the base and
+the coefficients, and form the new input by
+\begin{equation*}
+L'_e=\theta_{t(e)}^{-1}L_e\theta_{s(e)},\qquad
+\kappa'_f=\theta_{t(f)}^{-1}\kappa_f\theta_{t(f)}
+\tag{7.9}\label{eq:7.9}
+\end{equation*}
+The choices of transport of Chapter~\ref{chap:4} are also carried through these
+isomorphisms, and the two routes are constructed from the new input.
+Then, with the endpoint isomorphisms
+$b_v:X'_v\xrightarrow{\sim}X_v$ and $d_v:Y'_v\xrightarrow{\sim}Y_v$ given by universality,
+\begin{equation*}
+\begin{aligned}
+c'_v&=d_v^{-1}c_vb_v,\\
+F'_*(\theta_v^{-1}a\theta_v)&=b_v^{-1}F_*(a)b_v,\\
+G'_*(\theta_v^{-1}a\theta_v)&=d_v^{-1}G_*(a)d_v
+\end{aligned}
+\tag{7.10}\label{eq:7.10}
+\end{equation*}
+The comparison-preserving group, the residual subgroup of \eqref{eq:7.8}, and the set of
+following changes are carried along this correspondence.
+
+\end{proposition}
+
+\begin{proof}
+
+The edges carried through the isomorphisms are again strongly opcartesian morphisms.
+Indeed, composing $\theta$ and its inverse before and after the original factorization
+carries over existence and uniqueness.
+The same holds for the cartesian morphisms of the pullback.
+Hence the universality of each route, old and new, yields $b_v,d_v$ uniquely.
+Abbreviating the two legs as $q_X,q_Y$, these satisfy
+$q'_X=\theta^{-1}q_Xb$ and $q'_Y=\theta^{-1}q_Yd$.
+The candidate $d^{-1}cb$ satisfies the triangle of the new comparison, hence coincides with
+$c'$ by uniqueness.
+The formulas for the two changes are obtained likewise, by substituting into the new
+factorizations.
+The conditions on edges and faces are preserved because the intermediate inverses in
+\eqref{eq:7.9} cancel.
+Finally, substituting \eqref{eq:7.10} into \eqref{eq:7.2} and \eqref{eq:7.8} yields the
+correspondence of the groups and of the candidates.
+
+\end{proof}
+
+\section{Conditions for distinguishing by observation}\label{sec:7.3}
+
+To distinguish the changes compatible with a single comparison, it is not always necessary
+to read all the components of a change.
+Which components may be forgotten can be stated precisely by studying the changes that look
+like the identity under the observation.
+
+\begin{definition}[Observation of a change]\label{def:7.8}
+
+Take a group $Q$ of changes, a compatible subgroup $\Gamma\le Q$, and a group homomorphism
+$O:Q\to R$.
+We call $O(q)$ the observation of the change $q$ and set
+\begin{equation*}
+K=\ker O,\qquad L=K\cap\Gamma
+\tag{7.11}\label{eq:7.11}
+\end{equation*}
+Here $K$ consists of all the changes that do not appear in the observation, and $L$ of
+those among them that are also compatible with the comparison.
+The observation here is defined as a map preserving the composition of changes.
+
+\end{definition}
+
+\begin{theorem}[Determination by the observation alone]\label{thm:7.9}
+
+The following conditions are equivalent.
+
+\begin{enumerate}
+\item There is a predicate $D:R\to\{\text{true},\text{false}\}$ such that
+$q\in\Gamma\Longleftrightarrow D(O(q))$ for every $q\in Q$.
+\item $K\subseteq\Gamma$.
+\end{enumerate}
+
+Moreover,
+\begin{equation*}
+O^{-1}(O(\Gamma))=\Gamma K
+\tag{7.12}\label{eq:7.12}
+\end{equation*}
+always holds. Surjectivity of $O$ is not assumed.
+
+\end{theorem}
+
+\begin{proof}
+
+Assume 1. Then $k\in K$ has the same observation as the identity element.
+The identity element belongs to $\Gamma$, so $k\in\Gamma$, which gives 2.
+Conversely, assume 2 and define $D(r)$ to be $r\in O(\Gamma)$.
+If $O(q)=O(\gamma)$ with $\gamma\in\Gamma$, then
+$k=\gamma^{-1}q\in K$ and $q=\gamma k\in\Gamma$.
+This decomposition shows both inclusions of \eqref{eq:7.12} without assuming 2.
+
+\end{proof}
+
+What we have obtained here is the condition for compatibility to depend only on the observed
+value.
+To actually build a program that determines it, a way of computing $D$ is needed as well.
+
+\begin{proposition}[Differences remaining within the same observation]\label{prop:7.10}
+
+For $\gamma\in\Gamma$, the fiber of the observation and its compatible part are
+\begin{equation*}
+O^{-1}(O(\gamma))=\gamma K,\qquad
+O^{-1}(O(\gamma))\cap\Gamma=\gamma L
+\tag{7.13}\label{eq:7.13}
+\end{equation*}
+Specifying the base point $L$ in the set of left cosets $K/L=\{kL\mid k\in K\}$, we have
+\begin{equation*}
+\gamma k\in\Gamma\quad\Longleftrightarrow\quad kL=L.
+\tag{7.14}\label{eq:7.14}
+\end{equation*}
+Hence $K/L$ being a single point is equivalent to the condition for the determination in
+Theorem~\ref{thm:7.9}.
+
+\end{proposition}
+
+\begin{proof}
+
+Agreement of the observations is equivalent to $\gamma^{-1}q\in K$.
+Moreover, since $\gamma\in\Gamma$, the condition $\gamma k\in\Gamma$ is equivalent to
+$k\in\Gamma$.
+This gives \eqref{eq:7.13} and \eqref{eq:7.14}.
+The set of cosets being a single point is equivalent to $K=L$, that is, to
+$K\subseteq\Gamma$.
+
+\end{proof}
+
+$L$ is a normal subgroup of $\Gamma$, but need not be a normal subgroup of $K$.
+What is needed here is therefore the set of cosets with a base point.
+
+\begin{corollary}[The case of reading the coefficients only]\label{cor:7.11}
+
+Fix an isomorphism comparison $c:X\xrightarrow{\sim}Y$ of full geometries.
+From the groups fixing the base at the two endpoints, we take the homomorphisms reading the
+coefficient component to be
+$o_X:G_X^0\to\mathrm{Aut}(k_X)$ and $o_Y:G_Y^0\to\mathrm{Aut}(k_Y)$.
+Write the coefficient isomorphism of the comparison as $\kappa:k_X\xrightarrow{\sim}k_Y$.
+The conjugation $T(u)=cuc^{-1}$ satisfies
+$o_Y(T(u))=\kappa o_X(u)\kappa^{-1}$.
+Setting $K_X=\ker o_X$, $K_Y=\ker o_Y$, and $O=o_X\times o_Y$, we have
+\begin{equation*}
+\begin{gathered}
+K=K_X\times K_Y,\qquad L=\{(a,T(a))\mid a\in K_X\},\\
+K/L\xrightarrow{\sim}K_Y,\qquad [(a,b)]\longmapsto bT(a)^{-1}.
+\end{gathered}
+\tag{7.15}\label{eq:7.15}
+\end{equation*}
+The last correspondence is a bijection of sets sending the base point to the identity
+element.
+A necessary and sufficient condition for compatibility with the comparison to be
+determinable from the observation of the coefficients alone is $K_Y=\{1\}$.
+
+\end{corollary}
+
+\begin{proof}
+
+By the composition rule for the coefficient maps and Corollary~\ref{cor:7.5}, $T$ gives
+$K_X\cong K_Y$, and $L$ is its graph.
+Even if the representative of a coset is changed to $(a,b)(x,T(x))$, we have
+$bT(x)T(ax)^{-1}=bT(a)^{-1}$, so \eqref{eq:7.15} is well defined.
+The inverse is $y\mapsto[(1,y)]$.
+Indeed, $(a,b)(a^{-1},T(a)^{-1})=(1,bT(a)^{-1})$, and both composites are the identity.
+The condition for the determination follows from Proposition~\ref{prop:7.10}.
+
+\end{proof}
+
+Cases in which this set of cosets cannot be treated as a quotient group also occur in concrete cases.
+If $K_X=K_Y=S_3$ (the group of permutations of three points) and $T=\mathrm{id}$, then $L$
+is the diagonal subgroup.
+For $s=(12)$ and $t=(23)$, the element
+$(s,1)(t,t)(s,1)^{-1}=(sts^{-1},t)$ does not belong to the diagonal.
+The bijection of \eqref{eq:7.15} is still valid in this case.
+
+When the presentation of the input is carried as in Proposition~\ref{prop:7.7}, the
+conjugations of the endpoint groups and of the coefficient groups commute with the
+observation homomorphism.
+Hence $K,L$ and the pointed cosets correspond as well.
+Changing the presentation and regenerating does not change the conclusion as to whether
+compatibility can be determined from the observation.
+
+\section{Restriction to the normalization, reflection, and lifting}\label{sec:7.4}
+
+When normalization is used as an observation, we study three properties separately.
+That a change compatible in the original is compatible in the image as well is called
+\textbf{preservation}, and that compatibility in the image implies compatibility in the
+original is called \textbf{reflection}. Constructing an original of a compatible change
+given in the image is \textbf{lifting}.
+
+\begin{proposition}[Preservation of a comparison by a functor]\label{prop:7.12}
+
+A functor $F:E\to D$ and a comparison $c:X\to Y$ induce the homomorphism
+\begin{equation*}
+\begin{gathered}
+r_F:\mathrm{Aut}(X)\times\mathrm{Aut}(Y)
+\longrightarrow\mathrm{Aut}(FX)\times\mathrm{Aut}(FY),\\
+(u,v)\longmapsto(Fu,Fv)
+\end{gathered}
+\tag{7.16}\label{eq:7.16}
+\end{equation*}
+and we have $r_F(\Gamma_c)\subseteq\Gamma_{F(c)}$.
+Applying this to the core normalization functor $\mathcal N$ of Chapter~\ref{chap:6} gives
+preservation of an arbitrary comparison.
+Moreover, the equality $\pi_N\mathcal N=\pi$ of the projections to the base in
+Theorem~\ref{thm:6.21} yields a homomorphism between the comparison-preserving groups that
+fix the base as well.
+By Proposition~\ref{prop:6.22}, the same holds for the normalization functor of full
+geometries.
+
+\end{proposition}
+
+\begin{proof}
+
+Functors preserve isomorphisms, identities, and composition, so \eqref{eq:7.16} is a
+homomorphism.
+Applying $F$ to $vc=cu$ gives preservation.
+Applying the equality on the base to $u,v$ shows that the condition of fixing the base is
+preserved as well.
+
+\end{proof}
+
+Separately, a restriction can also be formed when idempotents are specified in an arbitrary
+category.
+In this case we choose the changes commuting with the normalization as the domain.
+
+\begin{construction}[Restriction to the idempotent image]\label{cons:7.13}
+
+Assume $dc=ce$ for a morphism $c:X\to Y$ and idempotents $e:X\to X$ and $d:Y\to Y$.
+We take the centralizer groups and the comparison of the images to be
+\begin{equation*}
+\begin{aligned}
+C_e&=\{u\in\mathrm{Aut}(X)\mid ue=eu\},\quad
+C_d=\{v\in\mathrm{Aut}(Y)\mid vd=dv\},\\
+H&=C_e\times C_d,\qquad
+a=dce:(X,e)\longrightarrow(Y,d)
+\end{aligned}
+\tag{7.17}\label{eq:7.17}
+\end{equation*}
+Here $a$ is a morphism of $\mathrm{Kar}(E)$. The restriction is given by
+\begin{equation*}
+\begin{gathered}
+r:H\longrightarrow\mathrm{Aut}_{\mathrm{Kar}(E)}(X,e)
+\times\mathrm{Aut}_{\mathrm{Kar}(E)}(Y,d),\\
+r(u,v)=(eue,dvd)
+\end{gathered}
+\tag{7.18}\label{eq:7.18}
+\end{equation*}
+The inverse of $eue$ is $eu^{-1}e$, and both composites are the identity morphism $e$ of
+$(X,e)$.
+By the commutation condition, the restriction preserves products as well.
+Setting $\Gamma_0=H\cap\Gamma_c$ and $\Delta=\Gamma_a$, we have $r(\Gamma_0)\subseteq\Delta$.
+Indeed, it suffices to sandwich $vc=cu$ between the idempotents and use $ue=eu$ and $vd=dv$.
+
+Proposition~\ref{prop:7.12} treats all the automorphisms on which the normalization functor
+is defined, and Construction~\ref{cons:7.13} treats the centralizer groups.
+For the normalization functor of Chapter~\ref{chap:6}, the two homomorphisms agree on the centralizing changes.
+
+In Theorem~\ref{thm:7.9} membership in the set of observed compatible changes could be used
+for the determination.
+Here the compatible subgroup on the side of the image is determined independently.
+Besides the condition on the kernel, it is therefore also necessary that the compatible
+changes on the side of the image that are actually reached be obtained from changes
+compatible in the original. The second condition of the next theorem expresses this.
+
+\end{construction}
+
+\begin{theorem}[General determination of reflection and lifting]\label{thm:7.14}
+
+Assume $r(\Gamma_0)\subseteq\Delta$ for a group homomorphism $r:H\to R$ and subgroups
+$\Gamma_0\le H$ and $\Delta\le R$. Then
+\begin{equation*}
+r^{-1}(\Delta)=\Gamma_0
+\quad\Longleftrightarrow\quad
+\begin{cases}
+\ker r\subseteq\Gamma_0,\\
+r(\Gamma_0)=\Delta\cap\mathrm{im}\,r.
+\end{cases}
+\tag{7.19}\label{eq:7.19}
+\end{equation*}
+We take the restricted homomorphism to be $\bar r:\Gamma_0\to\Delta$ and its kernel to be
+$L=\ker\bar r$.
+A compatible lift of $\delta\in\Delta$ exists if and only if $\delta\in r(\Gamma_0)$.
+Taking one of them to be $\gamma_0$, all the compatible lifts are
+\begin{equation*}
+\bar r^{-1}(\delta)=\gamma_0L
+\tag{7.20}\label{eq:7.20}
+\end{equation*}
+and form a torsor under $L$ by multiplication on the right.
+If $\bar r$ is surjective, the inclusion $L\hookrightarrow\Gamma_0$ gives the short exact
+sequence
+\begin{equation*}
+1\longrightarrow L\longrightarrow\Gamma_0
+\xrightarrow{\bar r}\Delta\longrightarrow1
+\tag{7.21}\label{eq:7.21}
+\end{equation*}
+Here short exact means that the first map is injective, its image is the kernel of the next
+map, and the last map is surjective.
+When there is a group homomorphism $\sigma:\Delta\to\Gamma_0$ satisfying
+$\bar r\sigma=\mathrm{id}_\Delta$, the sequence is said to split and $\sigma$ is called a
+section.
+
+\end{theorem}
+
+\begin{proof}
+
+If reflection holds, the preimage of the identity element lies in $\Gamma_0$, and every
+image of $r$ belonging to $\Delta$ comes from $\Gamma_0$.
+Conversely, assume the right-hand side and let $r(q)\in\Delta$.
+By the condition on the image there is $\gamma\in\Gamma_0$ with $r(\gamma)=r(q)$, and
+$\gamma^{-1}q\in\ker r\subseteq\Gamma_0$ gives $q\in\Gamma_0$.
+
+If the lifts $\gamma_0,\gamma$ have the same observation, then $\gamma_0^{-1}\gamma\in L$.
+This gives \eqref{eq:7.20}. The right action satisfies
+$(\gamma\ell_1)\ell_2=\gamma(\ell_1\ell_2)$, and the element between two lifts is uniquely
+determined as $\gamma_0^{-1}\gamma$.
+Short exactness is just the definition of the kernel and surjectivity.
+
+\end{proof}
+
+It is $L=\ker\bar r$ that expresses the freedom of lifting.
+What obstructs the reflection of compatibility, on the other hand, are those elements of the
+kernel $\ker r$ of all endpoint changes that do not lie in $\Gamma_0$.
+The two can be distinguished by the following examples.
+
+\begin{example}[Lifts exist even when reflection fails]\label{ex:7.15}
+
+In the category of finite sets we set $X=Y=\{0,1,2\}$ and $c=1_X$, and take $e=d$ to be the
+constant map $x\mapsto0$.
+The permutation $\tau=(12)$ commutes with $e$, but the endpoint pair $(\tau,1)$ does not
+preserve the identity comparison.
+Since the image is a one-element set, after the restriction both endpoints become the
+identity, which preserves the comparison of the images.
+The comparison-preserving group of the image is the trivial group, so its unique element
+lifts to $(1,1)$.
+Moreover, $(\tau,\tau)$ is a compatible lift of the same element as well.
+
+\end{example}
+
+\begin{example}[A case where a change of the image does not lift]\label{ex:7.16}
+
+Using the same three-element set and $c=1_X$, we now take
+\begin{equation*}
+e(0)=0,\qquad e(1)=1,\qquad e(2)=1,
+\qquad d=e
+\tag{7.22}\label{eq:7.22}
+\end{equation*}
+Exchanging 0 and 1 at both endpoints of the image $\{0,1\}$ preserves the identity
+comparison of the images.
+A permutation $u$ commuting with $e$, however, puts $e^{-1}(0)$ and $e^{-1}(u(0))$ in
+bijection.
+The former has one element and $e^{-1}(1)$ has two, so $u(0)=1$ is impossible.
+Since $e^{-1}(2)$ is empty, $u(0)=2$ is impossible as well.
+Hence this exchange in the image has no lift inside the centralizer group.
+
+These examples show that preservation, reflection, and the existence of lifts each require
+their own proof.
+In the next section we construct lifts using the concrete form of object formation and
+normalization in AAT.
+
+\end{example}
+
+\section{Constructing lifts for full geometries}\label{sec:7.5}
+
+A general idempotent can have fibers of different sizes, as in Example~\ref{ex:7.16}.
+In the canonical normalization of AAT, an object splits into a configuration and the
+structure data accompanying it.
+Using this common form, a change given on the normalized image can be extended consistently
+to all the original objects.
+
+In this section we assume that the core $P$ of a full geometry $G$ satisfies
+$\mathrm{Ad}(P)$ of Definition~\ref{def:5.39}.
+That is, the normalization leaves the residuals of the equations and the coordinates of the
+invariants and of the signature unchanged, and the identification of the types of operations
+preserves the configuration maps.
+We write $\mathcal A$ for the full subcategory of full geometries satisfying this assumption.
+We use the normalization functor of Chapter~\ref{chap:6} as
+$\mathcal N:\mathcal A\to\mathrm{Kar}(\mathcal A)$,
+$\mathcal N(G)=(G,N_G)$, $\mathcal N(f)=fN_G$.
+
+\subsection*{Carrying the data accompanying an object}
+
+\begin{construction}[Extension preserving the selected objects]\label{cons:7.17}
+
+We split an architecture object $A$ of Chapter~\ref{chap:1} into a configuration $C_A$ and
+accompanying data $(S_A,Q_A,s_A,q_A)$. We write the set of all accompanying data, in a
+universe of the required size, as
+\begin{equation*}
+D=\coprod_{S,Q\in\mathbb{U}}(S\times Q)
+\tag{7.23}\label{eq:7.23}
+\end{equation*}
+Since the types $S,Q$ themselves are included in the data, all the objects are in one-to-one
+correspondence with $\mathcal C\times D$.
+Here $\mathcal C$ is the set of configurations.
+We write the object selected by the core as $s_P(C)=(C,d_C)$ and fix a reference element
+$d_*$ of $D$.
+Such a $d_*$ is obtained using two one-element sets and their elements.
+
+Let $\theta_C$ be the permutation exchanging $d_C$ and $d_*$.
+When the two are equal we use the identity. Then
+\begin{equation*}
+\theta_C^2=1,\qquad \theta_C(d_C)=d_*,\qquad
+\theta_C(d_*)=d_C.
+\tag{7.24}\label{eq:7.24}
+\end{equation*}
+Let $\sigma$ be the Atom component of an automorphism $a$ of the normalized image, and
+abbreviate the transport of a configuration as $\sigma C$.
+If we simply take $(C,d)\mapsto(\sigma C,d)$, the selected object $(C,d_C)$ goes to
+$(\sigma C,d_C)$, which need not agree with the selected object $(\sigma C,d_{\sigma C})$ at
+the target.
+We therefore combine the two exchanges, at the start and at the target, and define the
+extension to all the objects by
+\begin{equation*}
+\widehat a(C,d)=
+\bigl(\sigma C,\theta_{\sigma C}\theta_C(d)\bigr)
+\tag{7.25}\label{eq:7.25}
+\end{equation*}
+This first aligns the selected value at the start with the common reference, and returns to
+the selected value at the target.
+Hence $\widehat a(s_P(C))=s_P(\sigma C)$, so object formation is preserved.
+The same formula can be defined for a self-map of Atoms as well.
+
+With this construction, the intermediate permutations cancel when changes are performed in
+succession.
+For the two extensions corresponding to the Atom components $\sigma,\rho$, we have
+\begin{equation*}
+\theta_{\rho\sigma C}\theta_{\sigma C}
+\theta_{\sigma C}\theta_C
+=\theta_{\rho\sigma C}\theta_C.
+\tag{7.26}\label{eq:7.26}
+\end{equation*}
+Hence the map on objects preserves identities and composition.
+That this equality holds not only for the selected objects but for all the accompanying data
+is the reason we obtain a lift as a group homomorphism.
+
+\end{construction}
+
+\subsection*{Extending the components of the operations and of the geometry}
+
+\begin{lemma}[A section for the automorphisms of a full geometry]\label{lem:7.18}
+
+For every $G\in\mathcal A$ there exists a group homomorphism
+\begin{equation*}
+\sigma_G:\mathrm{Aut}(\mathcal N G)\longrightarrow\mathrm{Aut}(G),
+\qquad \mathcal N(\sigma_G(a))=a
+\tag{7.27}\label{eq:7.27}
+\end{equation*}
+This section keeps the base and the coefficient components, and its values commute with
+$N_G$.
+
+\end{lemma}
+
+\begin{proof}
+
+We represent a morphism of the normalized image by a morphism $f:G\to G$ of the original
+category with $N_GfN_G=f$.
+For objects we use Construction~\ref{cons:7.17}. We abbreviate the normalization of objects
+of Chapter~\ref{chap:6} as $n=n_P$ and write the identification of the types of operations as
+$\nu_{A,B}:\mathrm{Op}(A,B)\xrightarrow{\sim}\mathrm{Op}(nA,nB)$.
+These identifications, which follow the equalities of the types, are the identity on the
+selected objects and are compatible with the composition of successive identifications.
+Object formation gives $f(nA)=n\widehat f(A)$, so we define the action on operations by
+\begin{equation*}
+S_G(f)_{A,B}^{\mathrm{op}}
+=\nu_{\widehat f(A),\widehat f(B)}^{-1}
+\,f_{nA,nB}^{\mathrm{op}}\,\nu_{A,B}
+\tag{7.28}\label{eq:7.28}
+\end{equation*}
+For the identification of the intermediate objects we use the equality of object formation
+above.
+This is the map that normalizes at the start, applies the given morphism, and returns to the
+type at the target of the extension.
+Since $\nu$ and $f$ each preserve the action on configurations, so does this composite.
+
+For the maps of the Atoms, the contexts, the equation indices, the invariant indices, and
+the axes and their value ranges we use the components of $f$.
+Preservation of the residuals of the equations follows by replacing $A$ with $nA$ at the
+start, applying the preservation law of $f$, and returning $n\widehat f(A)$ to
+$\widehat f(A)$ at the target.
+The same three-step computation is carried out for the coordinates of the invariants and of
+the signature.
+The base and the coefficients, the covers and the overlaps, and the local maps of the
+supports, the axes, and the observables are taken over from those of $f$.
+Since the maps of Atoms and contexts to which these refer are unchanged, the equalities of
+the raw system and the commutativity of the local restrictions are preserved as well.
+Hence $S_G(f)$ is a morphism of full geometries.
+
+By \eqref{eq:7.26} for objects and the cancellation of the intermediate $\nu\nu^{-1}$ in
+\eqref{eq:7.28} for operations, we obtain, for endomorphisms $f,g$ of the normalized image,
+\begin{equation*}
+S_G(N_G)=1_G,\qquad
+S_G(gf)=S_G(g)S_G(f),\qquad
+S_G(f)N_G=N_GS_G(f)=f
+\tag{7.29}\label{eq:7.29}
+\end{equation*}
+In the last equality we also use that $f=N_GfN_G$ gives $fN_G=N_Gf=f$.
+The other components are taken over from $f,g$, so they satisfy the same equalities.
+In particular, applying $S_G$ to the morphisms in both directions of an automorphism of
+the normalized image, we find that both composites are $1_G$.
+Taking this to be $\sigma_G$, we obtain \eqref{eq:7.27} and the homomorphism property.
+Keeping the base and the coefficients follows from the construction, and commutation with
+$N_G$ follows from \eqref{eq:7.29}.
+
+\end{proof}
+
+\subsection*{Combining the two endpoints so as to preserve the comparison}
+
+Sections built separately at the two endpoints of a comparison need not be compatible with
+that comparison.
+We therefore lift only one side and determine the other by conjugation with the original
+comparison.
+
+\begin{theorem}[Compatible lifts for an isomorphism comparison]\label{thm:7.19}
+
+Take $X,Y\in\mathcal A$ and an isomorphism $c:X\xrightarrow{\sim}Y$.
+The restriction
+$\bar r_N:\Gamma_c\to\Gamma_{\mathcal N(c)}$ of Proposition~\ref{prop:7.12} has the section
+\begin{equation*}
+\sigma_c(a,b)=\bigl(\sigma_X(a),\ c\sigma_X(a)c^{-1}\bigr)
+\tag{7.30}\label{eq:7.30}
+\end{equation*}
+The base and coefficient components at the two endpoints agree with those of the given
+$a,b$.
+Hence the restriction to the subgroups fixing the base has a section as well.
+
+\end{theorem}
+
+\begin{proof}
+
+Since the second component is built by conjugation, \eqref{eq:7.30} preserves the original
+comparison $c$.
+The normalization of the first component is $a$.
+By $(a,b)\in\Gamma_{\mathcal N(c)}$ and functoriality, the normalization of the second
+component is
+\begin{equation*}
+\mathcal N(c)\,a\,\mathcal N(c)^{-1}=b
+\tag{7.31}\label{eq:7.31}
+\end{equation*}
+This gives $\bar r_N\sigma_c=\mathrm{id}$.
+Both the section on the first component and the conjugation are group homomorphisms, so
+$\sigma_c$ is a group homomorphism.
+Since the normalization does not change the base and coefficient components, keeping them
+for the second component follows from \eqref{eq:7.31}.
+
+\end{proof}
+
+\section{Information remaining in a generated comparison, and all the lifts}\label{sec:7.6}
+
+Given a section, a compatible change in the original can be built from a compatible change
+after normalization.
+Not every change with the same value after normalization is compatible, however.
+This difference can be confirmed by building an actual automorphism on all the objects of
+AAT.
+
+\begin{construction}[A nonidentity change that does not appear in the normalization]\label{cons:7.20}
+
+Let $G\in\mathcal A$ and use the presentation $(C,d)$ of Construction~\ref{cons:7.17}.
+The set $D$ has at least three distinct elements.
+For instance, it suffices to fix $S=\{0,1,2\}$ and $Q=\{*\}$ and use the structure values
+$s=0,1,2$.
+For each $C$, choose two elements different from the selected value $d_C$ and let $\rho_C$
+be the permutation exchanging them.
+The map on objects
+\begin{equation*}
+\tau_G(C,d)=(C,\rho_C(d))
+\tag{7.32}\label{eq:7.32}
+\end{equation*}
+fixes the configurations and all the selected objects, and applying it twice gives the
+identity.
+For instance, a configuration specified by the core has two objects that are exchanged, so
+this map is not the identity.
+
+This map can be extended to an automorphism of the full geometry.
+For the operations we use $\nu_{\tau_G A,\tau_G B}^{-1}\nu_{A,B}$, and for the maps of the
+Atoms, the base, the contexts, the equation indices, the invariant indices, the axes, the
+coefficients, and the local geometry we use the identity.
+The normalizations of the two objects agree, so the preservation conditions follow by the
+same computation through the normalization as in Lemma~\ref{lem:7.18}.
+The exchange of the accompanying data and the identification of the types of operations
+return after two applications. Hence
+\begin{equation*}
+\begin{gathered}
+\tau_G\ne1_G,\qquad \tau_G^2=1_G,\\
+N_G\tau_G=\tau_GN_G=N_G,\qquad
+\mathcal N(\tau_G)=1_{\mathcal N G}.
+\end{gathered}
+\tag{7.33}\label{eq:7.33}
+\end{equation*}
+This change fixes the base and the coefficients.
+While it moves the distinction between objects, it does not appear in the components read
+through the normalization under Ad.
+
+\end{construction}
+
+\begin{theorem}[Distinguishing and lifting for a generated comparison]\label{thm:7.21}
+
+Fix the common input of Construction~\ref{cons:5.37}. From the square realized by finite
+codes, the core and the strong edges at each vertex, the conditions on the end of each face
+and on the two paths in the base, the specified comparisons, the chosen face, the
+coefficients, and the original full geometry, we generate the canonical comparison
+$\alpha:X\xrightarrow{\sim}Y$ of full geometries.
+We assume Ad for the source core and use the canonical normalizations at the two endpoints.
+By Lemma~\ref{lem:6.15} and Theorem~\ref{thm:6.16} of Chapter~\ref{chap:6}, the two
+endpoints satisfy Ad as well, and $N_Y\alpha=\alpha N_X$.
+
+We set $\Gamma=\Gamma_\alpha$ and $\Delta=\Gamma_{\mathcal N(\alpha)}$, take
+$r_N$ to be the homomorphism on the full endpoint groups, and set $L=\ker(r_N|_\Gamma)$. Then:
+
+\begin{enumerate}
+\item $r_N|_\Gamma$ has a section $\sigma_\alpha$, and we obtain the split short exact
+sequence \eqref{eq:7.34} below.
+\item For every $\delta\in\Delta$, all the compatible lifts are
+$\sigma_\alpha(\delta)L$, a right $L$-torsor.
+\item The full endpoint groups also contain incompatible changes with the same value
+$\delta$ after normalization.
+Hence compatibility with $\alpha$ cannot be determined from the value after normalization
+alone.
+\end{enumerate}
+\begin{equation*}
+1\longrightarrow L\longrightarrow\Gamma
+\xrightarrow{\bar r_N}\Delta\longrightarrow1
+\tag{7.34}\label{eq:7.34}
+\end{equation*}
+These also hold for the groups fixing the base at the two endpoints.
+
+\end{theorem}
+
+\begin{proof}
+
+1 and 2 follow from Theorems~\ref{thm:7.19} and 7.14.
+For 3, set $q_-=(\tau_X,1_Y)$. By Construction~\ref{cons:7.20}, $r_N(q_-)=1$.
+If $q_-\in\Gamma$, then $\alpha=\alpha\tau_X$, and invertibility of $\alpha$ gives the
+contradiction $\tau_X=1_X$.
+Hence
+\begin{equation*}
+q_+=\sigma_\alpha(\delta),\qquad
+q_{\mathrm{bad}}=\sigma_\alpha(\delta)q_-
+\tag{7.35}\label{eq:7.35}
+\end{equation*}
+have the same value $\delta$, and only the former is compatible.
+If the latter were compatible as well, their difference $q_-$ would lie in the subgroup
+$\Gamma$.
+The section keeps the base component and $q_-$ fixes the base, so the same proof applies to
+the base-fixing version.
+
+\end{proof}
+
+In the case of reading the coefficients only, Construction~\ref{cons:7.20} also gives an
+actual incompatible pair.
+The pair $(\tau_X,\alpha\tau_X\alpha^{-1})$ is compatible and $(\tau_X,1_Y)$ is not, yet the
+observations of the base and the coefficients of both pairs are the same identity pair.
+Hence the loss of information in Corollary~\ref{cor:7.11} occurs for comparisons of full
+geometries generated from the same input as well.
+
+\begin{corollary}[Selection of the normalization by the diagnosis]\label{cor:7.22}
+
+Take the common input of Construction~\ref{cons:5.37} and a cochain on the same diagram, and
+write the selection condition of Construction~\ref{cons:5.40} as $\chi$.
+In the notation of Chapter~\ref{chap:6} we set $\beta=d\alpha=\alpha e$ and let $H$ be the
+group of endpoint changes commuting with $e,d$.
+The restriction of Construction~\ref{cons:7.13}, from $\Gamma_\alpha\cap H$ to
+the comparison-preserving group $\Gamma_{\beta:(X,e)\to(Y,d)}$ of the image, has a
+section.
+Preservation and reflection of compatibility with $\alpha$ under this restriction are as
+follows.
+
+\begin{xltabular}{\linewidth}{@{}LLLL@{}}
+\toprule
+Normalization & Preservation of the comparison & Reflection of compatibility with $\alpha$ &
+Lifting of the compatible changes of the image \\
+\midrule
+\endhead
+$\chi$ is false, $e=1_X,d=1_Y$ & Holds & Holds & A section exists \\
+\addlinespace[3pt]
+$\chi$ is true, $e=N_X,d=N_Y$ & Holds & Fails & A section exists \\
+\addlinespace[3pt]
+The canonical normalization is chosen directly under Ad & Holds & Fails & A section exists \\
+\bottomrule
+\end{xltabular}
+
+Each row holds for the subgroups fixing the base as well.
+
+\end{corollary}
+
+\begin{proof}
+
+If the selection condition is false, the restriction is to the identity idempotents, so the
+group is the same as the original comparison group.
+In the true case, Theorem~\ref{thm:6.16} gives $e=N_X,d=N_Y$.
+The element $\sigma_X(a)$ of Lemma~\ref{lem:7.18} commutes with $N_X$.
+From $\alpha N_X=N_Y\alpha$, the conjugate $\alpha\sigma_X(a)\alpha^{-1}$ commutes with
+$N_Y$ as well.
+Hence \eqref{eq:7.30} gives a section inside $H$.
+The failure of reflection follows from $(\tau_X,1_Y)$, which belongs to $H$ as well.
+The proof is the same when the canonical normalization is chosen directly. The condition on
+the base is kept in every construction.
+
+\end{proof}
+
+What is not reflected here is compatibility with $\alpha$ before normalization.
+On the centralizer group $H$, preserving $\beta$ in the image is equivalent to preserving
+$\beta$ as a morphism of the original category, and
+\begin{equation*}
+r^{-1}\bigl(\Gamma_{\beta:(X,e)\to(Y,d)}\bigr)
+=H\cap\Gamma_{\beta:X\to Y}
+\tag{7.36}\label{eq:7.36}
+\end{equation*}
+Indeed, by $d\beta=\beta=\beta e$ and the centralizing condition, the equality
+$(dvd)\beta=\beta(eue)$ in the image reduces to $v\beta=\beta u$.
+The normalization moves to a comparison that has forgotten part of the condition for
+preserving the original comparison.
+
+\section{Classification of changes by the connections of operations}\label{sec:7.7}
+
+We bring the classification so far back to the operations of software.
+An operation that carries part of the state unchanged ties together the changes that are
+invisible to the readout.
+The update of a lens, and a protocol that proceeds while keeping an internal state, have
+this same form.
+
+\begin{definition}[Systems of operations keeping hidden states]\label{def:7.23}
+
+Take a directed multigraph $Q=(V,E,s,t)$, a set $K$, and a group
+$H\le\mathrm{Aut}(Q)$ of the permitted visible changes.
+An automorphism $u$ of the graph consists of a permutation $u_V$ of the vertices and a
+permutation $u_E$ of the named edges, and we take it to preserve starts and ends.
+We define the states, the observation, and the operation of each edge by
+\begin{equation*}
+S=V\times K,\qquad o(v,k)=v,\qquad
+T_e(s(e),k)=(t(e),k)
+\tag{7.37}\label{eq:7.37}
+\end{equation*}
+Here $K$ is the internal state that the operations do not change.
+We take a state change following a visible change $u\in H$ to be a bijection
+$h:S\xrightarrow{\sim}S$ satisfying $oh=u_Vo$.
+The condition of preserving the named operations is, moreover, $hT_e=T_{u_E(e)}h$ on the
+fiber over the start of each edge.
+The directions and the names of the edges are kept as the input of this equality.
+
+We write $B_Q$ for the group of all pairs $(u,h)$ following the readout, and $A_Q$ for the
+subgroup of those that also preserve the named operations.
+The observation of a change is the visible projection $(u,h)\mapsto u$.
+These correspond to all the changes, the compatible changes, and the observation of
+Theorem~\ref{thm:7.9}.
+In what follows we study between which vertices the condition of preserving the operations
+propagates, and determine this subgroup concretely.
+
+\end{definition}
+
+\begin{theorem}[Preservation of operations and connected components]\label{thm:7.24}
+
+A state change following a fixed $u$ can be written uniquely, using permutations for each
+vertex ($\mathrm{Sym}(K)$ is the group of all permutations of $K$), as
+\begin{equation*}
+h(v,k)=(u_V(v),\phi_v(k)),\qquad \phi_v\in\mathrm{Sym}(K)
+\tag{7.38}\label{eq:7.38}
+\end{equation*}
+A necessary and sufficient condition for preserving the operations is
+\begin{equation*}
+\phi_{s(e)}=\phi_{t(e)}\qquad(e\in E)
+\tag{7.39}\label{eq:7.39}
+\end{equation*}
+Hence the changes preserving the operations are in one-to-one correspondence with the
+choices of one permutation for each element of the set $\pi_0(Q)$ of connected components
+with the directions forgotten.
+
+\end{theorem}
+
+\begin{proof}
+
+By the condition on the observation, $h$ sends $\{v\}\times K$ to $\{u_V(v)\}\times K$.
+The inverse map also returns to the corresponding fiber, so the second component is a
+permutation $\phi_v$.
+Evaluating both sides of the preservation of operations at $(s(e),k)$, the first components
+are $u_V(t(e))$ in either case, and the second components are $\phi_{t(e)}(k)$ and
+$\phi_{s(e)}(k)$ respectively.
+This gives \eqref{eq:7.39}.
+
+The quotient of $V$ by the equivalence relation generated by the relation $s(e)\sim t(e)$
+between vertices is $\pi_0(Q)$.
+Since \eqref{eq:7.39} is preserved under reflexivity, symmetry, and transitivity, the family
+of permutations descends uniquely to this quotient.
+Conversely, a family of permutations indexed by the connected components satisfies
+\eqref{eq:7.39} once pulled back to the vertices.
+
+\end{proof}
+
+Since the operation of an edge carries the internal state as it is, the same permutation is
+required at its two ends.
+The connected components express the range over which this equality propagates regardless of
+the directions of the edges.
+
+\begin{theorem}[Split short exact sequence and the freedom of changes]\label{thm:7.25}
+
+We take the projection from the group $A_Q$ of changes preserving the operations to the
+visible changes to be $p:A_Q\to H$.
+The composition is $(u,h)(u',h')=(uu',hh')$, and for the families of \eqref{eq:7.38} it is
+\begin{equation*}
+(\phi\star\phi')_v=\phi_{u'_V(v)}\phi'_v
+\tag{7.40}\label{eq:7.40}
+\end{equation*}
+Setting $M_Q=\prod_{j\in\pi_0(Q)}\mathrm{Sym}(K)$, we obtain the split short exact sequence
+\begin{equation*}
+1\longrightarrow M_Q\longrightarrow A_Q
+\xrightarrow{p}H\longrightarrow1
+\tag{7.41}\label{eq:7.41}
+\end{equation*}
+The section is $\sigma(u)=(u,h_u)$ with $h_u(v,k)=(u_V(v),k)$.
+The set of changes over each $u\in H$ is a right torsor under $M_Q$.
+For finite $V,K$, the number of such changes is
+\begin{equation*}
+|p^{-1}(u)|=(|K|!)^{|\pi_0(Q)|}
+\tag{7.42}\label{eq:7.42}
+\end{equation*}
+\end{theorem}
+
+\begin{proof}
+
+The equalities for the observation and the operations are preserved under composition and
+inverses, so $A_Q$ is a group.
+By Theorem~\ref{thm:7.24}, the fiber over $u=1$ is isomorphic as a group to $M_Q$.
+Since $\sigma(u)$ preserves the operations and satisfies $\sigma(uu')=\sigma(u)\sigma(u')$
+and $p\sigma=\mathrm{id}$, the short exact sequence splits.
+The right torsor structure of each fiber is obtained by applying Theorem~\ref{thm:7.14} to
+$p$.
+Counting the families of permutations of Theorem~\ref{thm:7.24} gives \eqref{eq:7.42}.
+
+\end{proof}
+
+\begin{corollary}[The version preserving the selected states]\label{cor:7.26}
+
+Fix $k_0\in K$ and take $s_0(v)=(v,k_0)$ as the selected state.
+If $hs_0=s_0u_V$ is required as well, the permutation of each connected component is
+restricted to $\mathrm{Sym}(K)_{k_0}=\{\phi\mid\phi(k_0)=k_0\}$.
+We obtain the bijection between this family of permutations and each fiber, the split short
+exact sequence, and the right torsor under the kernel.
+The section is the same $\sigma(u)$, which does not change the internal state.
+In the finite case, the number of elements of each fiber is $((|K|-1)!)^{|\pi_0(Q)|}$.
+
+\end{corollary}
+
+\begin{proof}
+
+Evaluating \eqref{eq:7.38} at $(v,k_0)$, the additional condition is $\phi_v(k_0)=k_0$.
+The identity action on the hidden state satisfies this condition, so the same section can be
+used.
+
+\end{proof}
+
+Using this classification, we find the condition under which preservation of the operations
+can be determined from the visible change alone.
+The kernel of the visible projection of the group $B_Q$ of changes following the readout is
+$\prod_{v\in V}\mathrm{Sym}(K)$, and the part of it preserving the operations is $M_Q$.
+Hence, by Theorem~\ref{thm:7.9}, preservation of the operations can be determined from the
+visible change alone exactly when these two agree.
+If there is an edge joining distinct vertices and $K$ has two or more elements, choosing
+different permutations at its two ends gives a counterexample.
+Reading the operations brings out the constraint forgotten by the visible projection.
+
+\section{Consequences for lenses and protocols}\label{sec:7.8}
+
+In Chapter~\ref{chap:1} we defined the states, the operations, and the
+semantics-preserving morphisms of lenses and protocols independently, and put them in
+correspondence with the construction of AAT having the roles of objects and typed operations.
+Here we use that construction for the one-to-one correspondence of states linking the
+situations before and after a refactoring.
+
+Write the states before and after the change as $C,C'$, the reads as $g,g'$, and the
+operations as $T_e,T'_e$.
+Once the view and the names of the operations are fixed, what we require of a state
+correspondence $h:C\xrightarrow{\sim}C'$ is $g'h=g$ and $hT_e=T'_eh$.
+The former expresses the agreement of the results of the reads, and the latter the agreement
+of ``convert and then operate'' with ``operate and then convert.''
+
+Once one compatible correspondence $h_0$ has been obtained, every other correspondence can
+be written uniquely as $h=h_0a$ using $a=h_0^{-1}h\in\mathrm{Sym}(C)$.
+The condition on the reads then becomes $ga=g$ and the condition on the operations becomes
+$aT_e=T_ea$.
+Indeed, it suffices to compose $h_0^{-1}$ on the left of $h_0aT_e=T'_eh_0a=h_0T_ea$.
+Once the states before and after are expressed in the same form through a reference
+correspondence in this way, the automorphism groups of the previous section classify the
+options for the state correspondence that remain in the refactoring.
+
+\subsection*{Lenses: the total update ties all the views together}
+
+\begin{proposition}[Changes of a product lens]\label{prop:7.27}
+
+Fix a reference view $v_0\in V$ and a finite set $K$, and consider the self-changes of the
+same product lens $C=V\times K$.
+Fix a visible permutation $u:V\xrightarrow{\sim}V$.
+The preservation conditions for a bijection $h:C\xrightarrow{\sim}C$ are
+\begin{equation*}
+gh=ug,\qquad h(p(c,w))=p(h(c),u(w))
+\tag{7.43}\label{eq:7.43}
+\end{equation*}
+In the graph whose vertices are the views and whose named edges of updates are the ordered
+pairs $(v,w)$, these changes correspond bijectively to the state changes that follow the
+visible permutation $u$ and preserve all the named operations.
+Each change has a unique permutation $\phi\in\mathrm{Sym}(K)$ with
+\begin{equation*}
+h(v,k)=(u(v),\phi(k))
+\tag{7.44}\label{eq:7.44}
+\end{equation*}
+Conversely, this formula builds a change from an arbitrary $\phi$.
+Hence there are $|K|!$ changes following a fixed visible permutation.
+
+\end{proposition}
+
+\begin{proof}
+
+The read of a product lens is the first component, and the named edge $(v,w)$ sends
+$(v,k)$ to $(w,k)$. Reading the two preservation conditions in their respective types gives
+the conditions for a following state change.
+Since the updates for all the ordered pairs are preserved, the hidden permutation at each
+view agrees with the permutation at the reference view.
+This is \eqref{eq:7.44}, and evaluating at the reference view gives uniqueness as well.
+Conversely, $u\times\phi$ satisfies both preservation equations.
+From these two inverses we obtain the bijection between the set of changes and
+$\mathrm{Sym}(K)$, and the number.
+
+\end{proof}
+
+When the selected section is fixed as $s_0(v)=(v,k_0)$, the condition $hs_0=s_0u$ is
+equivalent to the permutation of each fiber fixing $k_0$.
+
+\begin{example}[Carrying over the payment data even when the editing of the shipping
+address is separated]\label{ex:7.28}
+
+In the refactoring of the opening, we separate the processing that edits the shipping
+address from the keeping of the payment data.
+The \texttt{Order(address, payment)} before the change is moved to the pair
+\texttt{OrderDetails(address)} and \texttt{PaymentDetails(payment)} after the change. This
+repackaging is the reference state correspondence.
+We take the shipping addresses to be $V=\{0,1\}$ and the internal code of the payment data,
+which is not displayed, to be $K=\{0,1,2\}$.
+Views 0 and 1 are the two shipping addresses, home and work, and $k_0=0$ represents the
+unset value of the payment data.
+The correspondence between the old and the new codes is also part of the proposed change,
+and the correspondence of the unset value 0 is fixed.
+This is the product lens whose read returns the shipping address and whose update rewrites
+only the shipping address and carries over the payment data.
+
+We fix the visible change to be the identity and align the states before and after into the
+same product decomposition.
+The correspondences preserving the read of the shipping address and the unset value are the
+four given by choosing at each view whether to exchange 1 and 2.
+The correspondences that also preserve the update are the two that use the same
+correspondence of codes at both shipping addresses.
+
+For instance, suppose the conversion branches on the shipping address, keeping the code at
+view 0 while exchanging 1 and 2 only at view 1. For this correspondence $h$,
+\begin{equation*}
+h(p((0,1),1))=(1,2),\qquad
+p(h((0,1)),1)=(1,1)
+\tag{7.45}\label{eq:7.45}
+\end{equation*}
+Changing the shipping address first and then moving to the new format gives code 2, while
+moving to the new format and then changing the shipping address gives code 1, so the payment
+data carried over does not match.
+A test of the display of the shipping address and a test on an order whose payment data is
+unset both miss this difference.
+What is needed is to check the update and the conversion of states in both orders for an
+order that already has payment data.
+
+\end{example}
+
+\subsection*{Protocols: independent changes remain on independent components}
+
+\begin{proposition}[Protocols keeping an internal state]\label{prop:7.29}
+
+Take the finite protocol graph $Q$ of Definition~\ref{def:1.36} and a finite set $K$, and
+take the state at each vertex to be $F(v)=K$ and the action of each generating edge to be
+$F(e)=\mathrm{id}_K$.
+We take the target of the observation to be the constant one-element set. All parallel paths
+then give the same identity map, so we obtain a realization satisfying the specified path
+equations $\Pi$.
+
+Take the group $H\le\mathrm{Aut}(Q)$ of visible changes preserving the path equivalence
+generated by $\Pi$.
+The invertible changes of the realization following a fixed $u\in H$ are the vertexwise
+bijections $\phi_v:K\to K$ satisfying
+\begin{equation*}
+\phi_{t(e)}F(e)=F(u_E(e))\phi_{s(e)}
+\tag{7.46}\label{eq:7.46}
+\end{equation*}
+and are the same as the operation-preserving changes of Definition~\ref{def:7.23}.
+The classification of Theorem~\ref{thm:7.25} by the split short exact sequence, the section,
+and the torsor under the kernel therefore applies to the group of changes.
+
+\end{proposition}
+
+\begin{proof}
+
+We gather all the states of the realization, keeping the control points distinct, into
+$\coprod_{v\in V}F(v)=V\times K$.
+The readout of the control point is the observation $o(v,k)=v$ of the previous section.
+Equation~\eqref{eq:7.46} is equivalent to $\phi_{t(e)}=\phi_{s(e)}$.
+By the same induction on paths as in Proposition~\ref{prop:1.38}, this equality extends to
+all the executions.
+The visible changes preserve the path equivalence as well, so the correspondence is
+determined on the quotient category too.
+Conversely, an invertible change of the realization returns to this family of permutations
+once the vertex components are read.
+Both directions preserve composition, so the groups and the fibers over each visible change
+correspond.
+
+\end{proof}
+
+The changes with $u=1$ over a fixed graph are the automorphisms of this realization in
+$\mathrm{Prot}(Q,\Pi,1)$, where the observation is constant to a one-element set.
+When $u$ is moved as well, we record at the same time the isomorphisms following the
+reindexing of the control points and of the names of the operations.
+For protocols with general state transitions, the actual edge maps remain inside
+\eqref{eq:7.46}.
+The classification above by the connected components alone is a consequence obtained from
+the input that each edge carries the internal state by the identity.
+
+\begin{example}[Gathering the execution contexts of workers]\label{ex:7.30}
+
+Suppose two workers A and B with the same role each receive and execute jobs independently.
+Consider a refactoring that gathers the arguments scattered inside each worker into a data
+type \texttt{JobContext} and tidies up the handoff from the queue to the execution.
+Even when a job proceeds to Running, the context in which it runs must not change.
+
+We represent by the internal code $K=\{0,1\}$ one component of the context whose handoff we examine.
+A permutation is the choice of how to match the old and the new representations of the same
+context.
+Among the four control points $V=\{0,1,2,3\}$, we take 0 and 1 to be Queued and Running for
+A, and 2 and 3 to be Queued and Running for B.
+The edges $a:0\to1$ and $b:2\to3$ representing the start of execution carry this code as it
+is.
+In this model there is no edge handing a context between the workers, so it has two
+connected components.
+
+\end{example}
+
+\begin{figure}[htbp]
+\centering
+\input{figures/ch07-refactoring-workers}
+\caption{\textbf{Aligning the correspondence at both ends of a handoff.} If the visible
+change is the identity, $\phi_0=\phi_1$ is required for A and $\phi_2=\phi_3$ for B.
+If, for instance, the codes are exchanged on the queue side only while the execution side
+uses the previous correspondence, then it can still be confirmed that a job proceeds from
+Queued to Running, but the correspondence of the contexts breaks.
+Since there is no handoff between the two workers, the internal representation of A and that
+of B can be chosen independently.}\label{fig:7.1}
+\end{figure}
+
+We compare the case where the placement of the workers is fixed with the case where A and B,
+which have the same role, are exchanged.
+
+\begin{xltabular}{\linewidth}{@{}LLL@{}}
+\toprule
+Condition checked & Placement of the workers fixed & Workers A and B exchanged \\
+\midrule
+\endhead
+Following the readout of the control points & $2^4=16$ & $2^4=16$ \\
+\addlinespace[3pt]
+Named operations preserved as well & $2^2=4$ & $2^2=4$ \\
+\bottomrule
+\end{xltabular}
+
+The exchange moves the vertices $0\leftrightarrow2$ and $1\leftrightarrow3$ and the edges
+$a\leftrightarrow b$ at the same time.
+One exchange that does not change the internal state can be chosen.
+Composing it with the permutations of the two components gives the four
+operation-preserving changes following the exchange.
+
+\subsection*{Connection with the comparison-preserving group}
+
+For lenses, restricting the correspondence of typed morphisms of
+Proposition~\ref{prop:1.43} to invertible morphisms identifies the group of
+semantics-preserving automorphisms for a fixed view with the group of typed automorphisms on
+the side of AAT.
+For protocols as well, the same proposition makes the invertible morphisms preserving the
+vertex maps, the named operations, and the observation correspond.
+Fix an adapter $c:X\to Y$ and apply Theorem~\ref{thm:4.41} to the fully faithful functor of
+Proposition~\ref{prop:1.43}.
+The group of endpoint pairs satisfying $vc=cu$ is then identified between lenses over a
+fixed view, or protocols over a fixed schema, and their typed constructions.
+This correspondence is compatible with the projections to the endpoints.
+
+The equalities for the operations determine which subgroup of the comparison-preserving
+group is chosen, and restrict the freedom of lifting.
+For lenses the total update ties all the views together, and in the example of protocols a
+change remains for each independent worker.
+For product lenses we describe this freedom by the bijection and the number over a fixed
+visible permutation, and for protocols by the split short exact sequence and each fiber.
+
+\section*{Summary of the Chapter}
+
+In this chapter we distinguished the determination, the construction, and the classification
+of all the candidates for changes preserving a comparison, and found the information needed
+for each.
+
+\begin{itemize}
+\item \textbf{The group of changes preserving a comparison.} For a single comparison $c$, we
+constructed the group of endpoint pairs satisfying $vc=cu$.
+For the base-fixing groups of full geometries, its projections and kernels give the
+condition for following and the freedom among all the candidates.
+Changes generated from a common original object preserve the comparison and are compatible
+with the re-presentation of the input by isomorphisms
+(\S\S\ref{sec:7.1}--\ref{sec:7.2}).
+\item \textbf{Determination by observation.} A necessary and sufficient condition for
+compatibility to be determinable from the observation $O$ of changes alone is
+$\ker O\subseteq\Gamma$.
+When a change that does not appear in the observation breaks the comparison, a compatible
+change and an incompatible change have the same observation (\S\ref{sec:7.3}).
+\item \textbf{Construction of lifts and reflection.} For the canonical normalization of AAT,
+a section can be constructed from the common presentation of the accompanying data.
+For the same generated comparison, even when compatible lifts exist, the compatibility of a
+given change cannot in some cases be determined from the value after normalization alone
+(\S\S\ref{sec:7.4}--\ref{sec:7.5}).
+\item \textbf{The freedom among all the lifts.} A section gives one compatible lift, and the
+kernel of the restricted homomorphism describes the other candidates.
+Each fiber is a torsor under this kernel, and the loss of information and the options for
+lifting can be read from the same restriction map (\S\ref{sec:7.6}).
+\item \textbf{Classification by operations.} We described the state changes preserving the
+operations for each connected component, and obtained a split short exact sequence onto the
+visible group.
+For product lenses we put the changes following a single visible permutation in
+correspondence with the hidden permutations.
+For protocols keeping an internal state, independent changes remain on independent
+components (\S\S\ref{sec:7.7}--\ref{sec:7.8}).
+\end{itemize}
+
+In the refactoring of the opening, we require that the payment data be carried over by the
+same correspondence after the shipping address has been updated.
+In the example of a lens, the four candidates preserving the display of the shipping address
+and the unset value are narrowed down to the two that also preserve updates.
+In the example of workers as well, the sixteen candidates preserving the correspondence of
+the control points are narrowed down to the four that preserve the handoff of contexts.
+These numbers show how much freedom of change remains once each operation ties the
+correspondences between states together.
+
+In Chapter~\ref{chap:8} we move on to the problem of assembling the original structure and
+the structure-preserving morphisms from the local data read off from objects and changes.
+The classification of changes in this chapter gives concretely the morphisms that this
+reconstruction must keep and the freedom remaining in the observation.

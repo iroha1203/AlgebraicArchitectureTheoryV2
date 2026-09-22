@@ -1,0 +1,39 @@
+% Figure 7.1 -- context-preserving refactoring in two workers.
+% Same content as the Japanese manuscript's figure ../../figures/ch07-refactoring-workers.svg, redrawn in TikZ.
+\begin{tikzpicture}[
+    x=1mm, y=1mm,
+    state/.style={circle, draw, semithick, minimum size=8mm, inner sep=0pt, fill=white},
+    box/.style={rounded corners=2mm, draw=black!45, semithick, fill=black!4},
+    arr/.style={-{Stealth[length=5pt]}, semithick},
+    lbl/.style={font=\small},
+    note/.style={font=\small}
+  ]
+  % Worker A
+  \draw[box] (0,0) rectangle (62,36);
+  \node[font=\small\bfseries] at (31,32) {Worker A};
+  \node[state] (a0) at (12,20) {$0$};
+  \node[state] (a1) at (50,20) {$1$};
+  \draw[arr] (a0) -- (a1) node[midway, above, lbl] {$a$: start job}
+                          node[midway, below, lbl] {preserves $k$};
+  \node[lbl] at (12,11) {Queued};
+  \node[lbl] at (50,11) {Running};
+  \node[lbl] at (12,6)  {$\varphi_0$};
+  \node[lbl] at (50,6)  {$\varphi_1$};
+  \node[lbl] at (31,2.5) {Required: $\varphi_0 = \varphi_1$};
+  % Worker B
+  \begin{scope}[xshift=68mm]
+    \draw[box] (0,0) rectangle (62,36);
+    \node[font=\small\bfseries] at (31,32) {Worker B};
+    \node[state] (b2) at (12,20) {$2$};
+    \node[state] (b3) at (50,20) {$3$};
+    \draw[arr] (b2) -- (b3) node[midway, above, lbl] {$b$: start job}
+                            node[midway, below, lbl] {preserves $k$};
+    \node[lbl] at (12,11) {Queued};
+    \node[lbl] at (50,11) {Running};
+    \node[lbl] at (12,6)  {$\varphi_2$};
+    \node[lbl] at (50,6)  {$\varphi_3$};
+    \node[lbl] at (31,2.5) {Required: $\varphi_2 = \varphi_3$};
+  \end{scope}
+  \node[note] at (65,-7)
+    {$K = \{0,1\}$: identity or swap per worker $\to$ $2 \times 2 = 4$ choices};
+\end{tikzpicture}

@@ -1,0 +1,30 @@
+% Figure 6.1 -- from an idempotent commutative square to a morphism between images.
+% Same content as the Japanese manuscript's figure ../../figures/ch06-karoubi-arrow.svg, redrawn in TikZ.
+\begin{tikzpicture}[
+    x=1mm, y=1mm,
+    arr/.style={-{Stealth[length=4.5pt]}, semithick},
+    mapsto/.style={{Bar[width=5pt]}-{Stealth[length=4.5pt]}, semithick},
+    panel/.style={font=\small},
+    note/.style={font=\small}
+  ]
+  % Left: the idempotent commutative square.
+  \node[panel] at (15,31) {Idempotent commutative square};
+  \node (XT) at (0,22)  {$X$};
+  \node (YT) at (30,22) {$Y$};
+  \node (XB) at (0,0)   {$X$};
+  \node (YB) at (30,0)  {$Y$};
+  \draw[arr] (XT) -- (YT) node[midway, above] {$c$};
+  \draw[arr] (XB) -- (YB) node[midway, below] {$c$};
+  \draw[arr] (XT) -- (XB) node[midway, left]  {$e$};
+  \draw[arr] (YT) -- (YB) node[midway, right] {$d$};
+  \node[note] at (15,-10) {$e^2 = e$, \ $d^2 = d$};
+  \node[note] at (15,-17) {$dc = ce$};
+  % Middle: the functor sending the square to a morphism of images.
+  \draw[mapsto] (44,11) -- (60,11) node[midway, above] {$\Phi_E$};
+  % Right: the induced comparison between the idempotent images.
+  \node[panel] at (95,31) {Comparison between images};
+  \node (L) at (75,11)  {$(X,e)$};
+  \node (R) at (115,11) {$(Y,d)$};
+  \draw[arr] (L) -- (R) node[midway, above] {$dce$};
+  \node[note] at (95,-10) {$d(dce)e = dce$};
+\end{tikzpicture}
