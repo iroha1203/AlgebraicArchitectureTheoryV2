@@ -1,5 +1,5 @@
 % Rising Sea paper -- English LaTeX source.
-% Japanese manuscript: ../ja/*.md (one file per part; the English parts keep the same file names).
+% Japanese manuscript: ../ja/*.md (one file per manuscript part; the English parts keep the same file names).
 % Bibliography: references.bib. Build: tectonic main.tex (run from this directory).
 
 \documentclass[11pt]{report}
@@ -20,6 +20,7 @@
 \usepackage{xcolor}
 \definecolor{linkblue}{RGB}{20,60,150}
 \usepackage[colorlinks=true,linkcolor=linkblue,citecolor=linkblue,urlcolor=linkblue]{hyperref}
+\usepackage{bookmark}
 
 % ---------------------------------------------------------------------------
 % Numbered items share one counter per chapter, as in the Japanese manuscript
@@ -47,7 +48,7 @@
 
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
 
-% Bibliography labels are the citation keys, e.g. [Stacks, Tag 0013].
+% Bibliography labels are the citation keys, e.g., [Stacks, Tag 0013].
 \let\keybibitem\bibitem
 \renewcommand{\bibitem}[1]{\keybibitem[#1]{#1}}
 \let\keythebibliography\thebibliography
@@ -64,7 +65,7 @@
 
 \begin{document}
 
-% The order of the list of references follows the Japanese manuscript.
+% The order of the list of references follows that of the Japanese manuscript.
 \nocite{Stacks,FGMPS04,Spivak12,SAGA,GB92,AG97,Goguen92,Gibson26,AB11,AMB12,Young26,CC77,GRS00,SSVW17,Shulman08,BS81,JRW12,Lawvere63,BW85,Kelly82,BMW12,BIAN9,ReS,McLarty03}
 
 \maketitle
@@ -81,15 +82,27 @@
 \input{03-preliminaries-and-notation}
 \chaptersections
 
+% The four parts group Chapters 1--8 as stated in the introduction; the divider
+% pages and the table of contents carry only "Part N / Chapters M--M+1".
+% The preliminaries stay before Part I, and Related Work onward stays outside
+% the parts (startatroot keeps the PDF bookmarks at the root level as well).
+\part{Chapters 1--2}
 \input{04-relative-architecture}
 \input{05-law-geometry}
+
+\part{Chapters 3--4}
 \input{06-resolution-invariance}
 \input{07-transport-coherence}
+
+\part{Chapters 5--6}
 \input{08-base-change}
 \input{09-idempotent-normalization}
+
+\part{Chapters 7--8}
 \input{10-comparison-and-information}
 \input{11-local-reconstruction}
 
+\bookmarksetup{startatroot}
 \lettersections{R}
 \input{12-related-work}
 
@@ -98,6 +111,10 @@
 \bibliographystyle{unsrturl}
 \bibliography{references}
 
-\input{pending-labels}
+\appendix
+\chaptersections
+\input{15-appendix-a-lean-correspondence}
+\input{16-appendix-b-verification-and-reproduction}
+\input{17-appendix-c-ai-disclosure}
 
 \end{document}

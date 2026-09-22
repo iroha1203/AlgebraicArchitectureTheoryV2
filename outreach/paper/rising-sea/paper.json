@@ -23,8 +23,10 @@
     {"source": "en/figures/ch02-finite-covers.tex", "target": "figures/ch02-finite-covers.tex"},
     {"source": "en/figures/ch06-karoubi-arrow.tex", "target": "figures/ch06-karoubi-arrow.tex"},
     {"source": "en/figures/ch07-refactoring-workers.tex", "target": "figures/ch07-refactoring-workers.tex"},
+    {"source": "en/15-appendix-a-lean-correspondence.tex", "target": "15-appendix-a-lean-correspondence.tex"},
+    {"source": "en/16-appendix-b-verification-and-reproduction.tex", "target": "16-appendix-b-verification-and-reproduction.tex"},
+    {"source": "en/17-appendix-c-ai-disclosure.tex", "target": "17-appendix-c-ai-disclosure.tex"},
     {"source": "en/figures/ch08-local-reconstruction.tex", "target": "figures/ch08-local-reconstruction.tex"},
-    {"source": "en/pending-labels.tex", "target": "pending-labels.tex"},
     {"source": "en/references.bib", "target": "references.bib"}
   ]
 }
