@@ -1,4 +1,5 @@
 import ResearchLean.AG.CrossStageCoherence.ArbitraryStrongLiftPseudofunctor
+import ResearchLean.AG.TransportCoherence.ArbitraryFinitePresentation
 import ResearchLean.AG.CrossStageCoherence.CompositeQualification
 import ResearchLean.AG.CrossStageCoherence.CompatiblePairRefutation
 import ResearchLean.AG.CrossStageCoherence.CellChain
