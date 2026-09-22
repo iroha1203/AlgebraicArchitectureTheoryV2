@@ -278,7 +278,7 @@ noncomputable def arbitrary_semantic_compositor
 
 /-- The literal identity cartesian lift. -/
 noncomputable def arbitrary_semantic_identity_lift
-    {U : AtomCarrier.{u}} [SemanticCartesianCleavageFamily U] (object : ExtractionInstance U)
+    {U : AtomCarrier.{u}} (object : ExtractionInstance U)
     (targetPackage : CoreFiber object) :
     StrongCartesianLift (cartSemanticInputOfHom (𝟙 object))
       targetPackage where
@@ -293,7 +293,7 @@ noncomputable def arbitrary_semantic_identity_lift
 
 /-- The literal identity lift family. -/
 noncomputable def arbitrary_semantic_identity_cleavage
-    {U : AtomCarrier.{u}} [SemanticCartesianCleavageFamily U] (object : ExtractionInstance U) :
+    {U : AtomCarrier.{u}} (object : ExtractionInstance U) :
     CoreFiberCartesianCleavage (cartSemanticInputOfHom (𝟙 object)) where
   lift := arbitrary_semantic_identity_lift object
 
