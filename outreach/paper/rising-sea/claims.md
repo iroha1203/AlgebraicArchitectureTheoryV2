@@ -7,14 +7,14 @@
 
 ## 固定版の構成5.37と追加Lean宣言
 
-[固定版 `719f81f47d410701fd82c2bc88613cc140c59377` の構成5.37](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/719f81f47d410701fd82c2bc88613cc140c59377/outreach/paper/rising-sea/ja/08-base-change.md#L1018)の完全幾何の二経路は、任意の`BCSemanticInput`、南西のcoreと完全幾何、対応する基点の等式、exactなCartesian平方から生成する。`endpoint_eq`は本文のcoreが南西の基点上にあるという入力を表す。本文で併せて固定するcochain `ω` は後続の生成比較に用い、ここでの標準比較 `barAlpha` の構成には使わない。
+[固定版 `719f81f47d410701fd82c2bc88613cc140c59377` の構成5.37](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/719f81f47d410701fd82c2bc88613cc140c59377/outreach/paper/rising-sea/ja/08-base-change.md#L1018)の完全幾何の二経路は、任意の`BCSemanticInput`、南西のcoreと完全幾何、対応する基点の等式、exactなCartesian平方から生成する。`endpoint_eq`は本文のcoreが南西の基点上にあるという入力を表す。
 
 | 固定本文の結論 | Lean宣言 |
 | --- | --- |
 | 左引き戻し・上輸送と下輸送・右引き戻しの二経路、および直接比較と三角式 | [SemanticDerivedEndpointBridge](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedEndpointBridge.lean) の `semanticDerivedDirectGeometryAt`、`semanticDerivedViaBaseGeometryAt`、`semanticDerivedBarAlphaIsoAt` と [SemanticDerivedBarAlphaTriangle](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaTriangle.lean) の `semanticDerivedBarAlphaIsoAt_triangle` |
 | G-118で生成された両端との同型、生成mateと直接mateの一致 | [SemanticDerivedGeneratedEndpointBridge](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedGeneratedEndpointBridge.lean) の `semanticDerivedBToGeneratedBaseNorthwestIsoAt`、`semanticDerivedGeneratedPulledToTNorthwestIsoAt`、`semanticDerivedGeneratedMateOnLiteralEndpoints_triangle`、`semanticDerivedGeneratedMateOnLiteralEndpoints_eq_literal` |
 | 比較射のunit・端点比較・G-118のmate・端点比較・counitの五因子式 | 同moduleの `semanticDerivedBarAlphaIsoAt_generatedFiveFactor_hom` |
-| 診断入力のface `z` にあるcore `P_z` への特殊化。`endpoint_eq`は固定本文が要求する「`P_z` は南西の点 `b_1` 上」の対応であり、比較射の結論を仮定しない | [SemanticDerivedDiagnosticEndpointBridge](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedDiagnosticEndpointBridge.lean) の `semanticDerivedDiagnosticSourcePackageAt`、`semanticDerivedDiagnosticDirectGeometryAt`、`semanticDerivedDiagnosticViaBaseGeometryAt`、`semanticDerivedDiagnosticBarAlphaIsoAt`、`semanticDerivedDiagnosticBarAlphaIsoAt_triangle`、`semanticDerivedDiagnosticBarAlphaIsoAt_generatedFiveFactor_hom` |
+| 診断入力のface `z` にあるcore `P_z` への特殊化 | [SemanticDerivedDiagnosticEndpointBridge](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedDiagnosticEndpointBridge.lean) の `semanticDerivedDiagnosticSourcePackageAt`、`semanticDerivedDiagnosticDirectGeometryAt`、`semanticDerivedDiagnosticViaBaseGeometryAt`、`semanticDerivedDiagnosticBarAlphaIsoAt`、`semanticDerivedDiagnosticBarAlphaIsoAt_triangle`、`semanticDerivedDiagnosticBarAlphaIsoAt_generatedFiveFactor_hom` |
 
 ## 固定版の補題6.15と追加Lean宣言
 
