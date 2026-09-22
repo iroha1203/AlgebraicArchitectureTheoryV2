@@ -13,6 +13,7 @@ Atom と Law から、相対的なアーキテクチャの幾何、局所整合�
 - [論文作成 ToDo](TODO.md): 日本語原稿17パートの執筆・レビュー、英訳・TeX化、投稿前確認。
 - [AI 利用記録](ai-use.md): 構成・執筆・文献確認に用いた AI、その利用範囲。
 - [主張と証拠の対応](claims.md): 原稿の主張と、数学・形式化の固定版との対応。
+- [Lean対応の全件照合記録](lean-correspondence-audit.md): 第1〜8章の314項目と番号外の主張について、対応宣言・適用条件・未確認箇所を記録する。
 - [論文作成ガイドライン](../../../docs/paper/guideline.md): 共通の執筆・検証・公開手順。
 
 日本語原稿を `ja/` で執筆・レビューし、内容を確定してから英訳して公開する。
@@ -28,7 +29,8 @@ Atom と Law から、相対的なアーキテクチャの幾何、局所整合�
 [第7章 比較を保つ変更と情報](ja/10-comparison-and-information.md)、
 [第8章 表示と局所再構成](ja/11-local-reconstruction.md)、
 [Related Work](ja/12-related-work.md)、
-[文献](ja/14-references.md)に配置する。
+[文献](ja/14-references.md)、
+[付録A Lean形式化との対応](ja/15-appendix-a-lean-correspondence.md)に配置する。
 執筆・照合・PR レビューの完了は ToDo で管理する。
 
 [文献確認記録](references.csv)の hash は、Markdown 原稿の段階では、
