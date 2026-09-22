@@ -309,6 +309,93 @@ theorem invertibleNormalForm {L M : GeneralLens.{u}} (e : L ≅ M)
           fiberEquiv e v₀ w₀ (L.productEquiv v₀ c).2) :=
   normalForm e.hom v₀ w₀ c
 
+/-- The converse of the two-fiber normal form: independent view and reference
+fiber equivalences assemble an invertible relative change of arbitrary lenses. -/
+def isoOfViewFiberEquiv {L M : GeneralLens.{u}}
+    (v₀ : L.View) (w₀ : M.View)
+    (visible : L.View ≃ M.View)
+    (hidden : L.Fiber v₀ ≃ M.Fiber w₀) : L ≅ M := by
+  let h : L.State ≃ M.State :=
+    (L.productEquiv v₀).trans
+      ((Equiv.prodCongr visible hidden).trans (M.productEquiv w₀).symm)
+  apply invertibleOfPut h visible
+  intro c v
+  apply (M.productEquiv w₀).injective
+  change (M.productEquiv w₀) (h (L.put c v)) =
+    (M.productEquiv w₀) (M.put (h c) (visible v))
+  rw [M.productEquiv_put]
+  have hc := L.productEquiv_put v₀ c v
+  simp only [h, Equiv.trans_apply]
+  rw [hc]
+  simp
+
+/-- The constructed change has exactly the stipulated product normal form. -/
+theorem isoOfViewFiberEquiv_state {L M : GeneralLens.{u}}
+    (v₀ : L.View) (w₀ : M.View)
+    (visible : L.View ≃ M.View)
+    (hidden : L.Fiber v₀ ≃ M.Fiber w₀) (c : L.State) :
+    (isoOfViewFiberEquiv v₀ w₀ visible hidden).hom.state c =
+      (M.productEquiv w₀).symm
+        (visible (L.get c), hidden (L.productEquiv v₀ c).2) := rfl
+
+/-- Extracting the visible and hidden equivalences from an arbitrary lens
+isomorphism and reconstructing gives the original isomorphism. -/
+theorem isoOfViewFiberEquiv_viewEquiv_fiberEquiv
+    {L M : GeneralLens.{u}} (e : L ≅ M)
+    (v₀ : L.View) (w₀ : M.View) :
+    isoOfViewFiberEquiv v₀ w₀ (viewEquiv e) (fiberEquiv e v₀ w₀) = e := by
+  apply Iso.ext
+  apply Hom.ext
+  · funext c
+    exact (invertibleNormalForm e v₀ w₀ c).symm
+  · rfl
+
+theorem viewEquiv_isoOfViewFiberEquiv {L M : GeneralLens.{u}}
+    (v₀ : L.View) (w₀ : M.View)
+    (visible : L.View ≃ M.View)
+    (hidden : L.Fiber v₀ ≃ M.Fiber w₀) :
+    viewEquiv (isoOfViewFiberEquiv v₀ w₀ visible hidden) = visible := by
+  ext v
+  rfl
+
+theorem fiberEquiv_isoOfViewFiberEquiv {L M : GeneralLens.{u}}
+    (v₀ : L.View) (w₀ : M.View)
+    (visible : L.View ≃ M.View)
+    (hidden : L.Fiber v₀ ≃ M.Fiber w₀) :
+    fiberEquiv (isoOfViewFiberEquiv v₀ w₀ visible hidden) v₀ w₀ = hidden := by
+  ext k
+  change M.put ((isoOfViewFiberEquiv v₀ w₀ visible hidden).hom.state k.1) w₀ =
+    (hidden k).1
+  rw [isoOfViewFiberEquiv_state]
+  have hk : (L.productEquiv v₀ k.1).2 = k := by
+    apply Subtype.ext
+    change L.put k.1 v₀ = k.1
+    calc
+      L.put k.1 v₀ = L.put k.1 (L.get k.1) :=
+        congrArg (L.put k.1) k.2.symm
+      _ = k.1 := L.put_get _
+  rw [k.2, hk]
+  change M.put (M.put (hidden k).1 (visible v₀)) w₀ = (hidden k).1
+  rw [M.put_put]
+  calc
+    M.put (hidden k).1 w₀ = M.put (hidden k).1 (M.get (hidden k).1) :=
+      congrArg (M.put (hidden k).1) (hidden k).2.symm
+    _ = (hidden k).1 := M.put_get _
+
+/-- The complete classification of invertible relative lens changes by an
+arbitrary visible equivalence and an equivalence of independent reference
+fibers. -/
+def isoEquivViewFiberEquiv {L M : GeneralLens.{u}}
+    (v₀ : L.View) (w₀ : M.View) :
+    (L ≅ M) ≃ ((L.View ≃ M.View) × (L.Fiber v₀ ≃ M.Fiber w₀)) where
+  toFun e := (viewEquiv e, fiberEquiv e v₀ w₀)
+  invFun pair := isoOfViewFiberEquiv v₀ w₀ pair.1 pair.2
+  left_inv e := isoOfViewFiberEquiv_viewEquiv_fiberEquiv e v₀ w₀
+  right_inv pair := by
+    apply Prod.ext
+    · exact viewEquiv_isoOfViewFiberEquiv v₀ w₀ pair.1 pair.2
+    · exact fiberEquiv_isoOfViewFiberEquiv v₀ w₀ pair.1 pair.2
+
 /-- The product construction has no restriction on the hidden type. -/
 def productLens (V K : Type u) : GeneralLens.{u} where
   State := V × K
