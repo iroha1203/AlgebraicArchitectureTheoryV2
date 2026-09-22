@@ -1090,24 +1090,24 @@ $`p'(t(k),v_0)=t(k)`$ なので、$`\mathrm{res}(\mathrm{ext}(t))=t`$ である�
 
 となる。制限も延長も恒等と合成を保つことは、積表示から分かる。□
 
-可視変更 $`u:V\xrightarrow{\sim}V`$ を同時に許すときは、
-同じ $`h:C\xrightarrow{\sim}C'`$ と $`u`$ に
+可視変更を含む正規形は、ここでは有限集合 $`K`$ の同じ積lens
+$`V\times K`$ の自己変更について述べる。
+$`u:V\xrightarrow{\sim}V`$ と $`h:V\times K\xrightarrow{\sim}V\times K`$ が
 
 ```math
-g'h=ug,\qquad h(p(c,v))=p'(h(c),u(v))
+gh=ug,\qquad h(p(c,v))=p(h(c),u(v))
 \qquad\text{(1.20)}
 ```
 
-を要求する。積表示では第一成分は $`u(v)`$ である。
-第二成分を $`\phi_v(k)`$ と書けば、更新の式から
-$`\phi_w(k)=\phi_v(k)`$ となる。よって式(1.20)を満たす変更はちょうど
+を満たすとき、一意な置換 $`\phi:K\xrightarrow{\sim}K`$ があり、
 
 ```math
-h(v,k)=(u(v),\phi(k)),\qquad \phi:K_L\xrightarrow{\sim}K_{L'}
+h(v,k)=(u(v),\phi(k))
 ```
 
-である。全単射性は $`u`$ の全単射性と、空でない $`V`$ 上の積表示から従う。
-この記述は $`u(v_0)=v_0`$ という条件を必要とせず、両lensをそれぞれの基準fiberで表示する。
+となる。更新の保存は、各view上で得られる隠れた成分の置換が、
+基準viewでの置換に等しいことを与える。
+$`v=v_0`$ で第二成分を読むと、その置換の一意性も得られる。
 
 **例1.35（読取りだけを保つ変更）.**
 $`V=K=\{0,1\}`$ の積lensを考える。$`\oplus`$ は $`2`$ を法とする加法を表す。
