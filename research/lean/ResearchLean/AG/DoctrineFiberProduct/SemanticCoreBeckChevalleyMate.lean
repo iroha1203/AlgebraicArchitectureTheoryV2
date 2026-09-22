@@ -143,7 +143,7 @@ noncomputable instance semanticCoreBeckChevalleyMate_app_isIso
     (semanticCoreBeckChevalleyMate square)).mp
       (semanticCoreBeckChevalleyMate_isIso square) sourcePackage
 
-/-- Equation (5.19): the discrepancy from the canonical comparison is the
+/-- The source-route discrepancy from the canonical comparison is the
 identity exactly when the specified comparison is canonical. -/
 theorem semanticCoreBeckChevalley_discrepancy_eq_id_iff
     {U : AtomCarrier.{u}} (square : ExtInstSquare U)
@@ -171,6 +171,60 @@ theorem semanticCoreBeckChevalley_discrepancy_eq_id_iff
       _ = (semanticCoreBeckChevalleyMate square).app sourcePackage := by
               rw [h, Category.id_comp]
   · intro h
+    rw [h]
+    simp
+
+/-- The discrepancy of an invertible specified comparison is an automorphism
+of the target route, in the orientation of (5.19). -/
+noncomputable def semanticCoreBeckChevalleyDiscrepancyAut
+    {U : AtomCarrier.{u}} (square : ExtInstSquare U)
+    (sourcePackage : CoreFiber square.southwest)
+    (specified :
+      (exact_bottom_semantic_global_reindex_functor square.left ⋙
+        coreFiberTransportFunctor square.top).obj sourcePackage ⟶
+      (coreFiberTransportFunctor square.bottom ⋙
+        exact_bottom_semantic_global_reindex_functor square.right).obj
+          sourcePackage)
+    [IsIso specified] :
+    Aut ((coreFiberTransportFunctor square.bottom ⋙
+      exact_bottom_semantic_global_reindex_functor square.right).obj
+        sourcePackage) :=
+  (asIso ((semanticCoreBeckChevalleyMate square).app sourcePackage)).symm ≪≫
+    asIso specified
+
+/-- The target-route discrepancy is the identity exactly for the canonical
+Beck--Chevalley comparison. -/
+theorem semanticCoreBeckChevalleyDiscrepancyAut_eq_one_iff
+    {U : AtomCarrier.{u}} (square : ExtInstSquare U)
+    (sourcePackage : CoreFiber square.southwest)
+    (specified :
+      (exact_bottom_semantic_global_reindex_functor square.left ⋙
+        coreFiberTransportFunctor square.top).obj sourcePackage ⟶
+      (coreFiberTransportFunctor square.bottom ⋙
+        exact_bottom_semantic_global_reindex_functor square.right).obj
+          sourcePackage)
+    [IsIso specified] :
+    semanticCoreBeckChevalleyDiscrepancyAut square sourcePackage specified = 1 ↔
+      specified = (semanticCoreBeckChevalleyMate square).app sourcePackage := by
+  constructor
+  · intro h
+    have hhom := congrArg Iso.hom h
+    change inv ((semanticCoreBeckChevalleyMate square).app sourcePackage) ≫
+      specified = 𝟙 _ at hhom
+    calc
+      specified =
+          ((semanticCoreBeckChevalleyMate square).app sourcePackage ≫
+            inv ((semanticCoreBeckChevalleyMate square).app sourcePackage)) ≫
+            specified := by simp
+      _ = (semanticCoreBeckChevalleyMate square).app sourcePackage ≫
+            (inv ((semanticCoreBeckChevalleyMate square).app sourcePackage) ≫
+              specified) := Category.assoc _ _ _
+      _ = (semanticCoreBeckChevalleyMate square).app sourcePackage := by
+            rw [hhom, Category.comp_id]
+  · intro h
+    apply Iso.ext
+    change inv ((semanticCoreBeckChevalleyMate square).app sourcePackage) ≫
+      specified = 𝟙 _
     rw [h]
     simp
 
