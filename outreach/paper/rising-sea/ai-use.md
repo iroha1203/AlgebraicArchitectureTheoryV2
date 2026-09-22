@@ -4,6 +4,7 @@
 
 | ツール・モデル・利用時期 | 用途 | 対象範囲 | 検証方法・確認者 |
 | --- | --- | --- | --- |
+| Codex（GPT-6）、2026-09-22 | 著者が採用した付録Cの日本語原稿を作成。リポジトリへのリンクとLeanのビルド手順を記載 | `ja/17-appendix-c-verification-and-reproduction.md`、本利用記録 | 固定版の設定・ソース、ビルド対象とimport依存関係、シェル構文を確認。整数障害の有限例の対象モジュールはビルド成功。記載した全対象の再ビルドと独立レビューは未実施 |
 | Claude（Fable 5）、2026-09-22 | 要旨・序論・結び（01・02・13）の日本語初稿の執筆と、序論のRising Sea出典（ReS・McLarty03）の追加・文献確認 | `ja/01-abstract.md`、`ja/02-introduction.md`、`ja/13-conclusions-and-further-directions.md`、`ja/14-references.md`、`references.csv`、README、TODO、本利用記録 | 各章の「本章の概要」「本章のまとめ」と構成マスターを一次資料として要約し、引用した定理・命題・系53件の番号を本文見出しと機械突合。要旨はarXivの要旨1,920文字制限に合わせ約820字へ圧縮。ReSは仏語全文公開コピーの注122本文（pp. 682–689）、McLarty03は公開稿pp. 1–2を開いて引用箇所を確認し、確認内容を`references.csv`に記録。独立レビューとGitHub表示確認はPRの対象commitに対して行う |
 | Codex（GPT-6）、2026-09-22 | Issue #4847のC型8群とF25について、著者が指定した既存Leanの範囲へ本文と依存先を修正 | 第1・4〜8章、Related Work、主張一覧、数学棚卸し、構成・検証記録 | 固定版ceaf361ecの宣言・入力構造と対象・量化・仮定・結論を照合。一般化した公式・群同型・適用を限定または削除し、A/Bの特例による代替証明を追加していない。Lean sourceは変更していない。独立レビューとGitHub表示確認はPRの対象commitに対して記録する |
 | Codex（GPT-6）、2026-09-19 | 人間との対話に基づく論文構成の初版作成、CS 対応詳細の棚卸し文書への移管 | `paper-structure.md`、`mathematics-inventory.md` とディレクトリの案内 | Codex が n1012・n1015、AAT 数学本文の構成、関連 GOAL、論文作成ガイドラインと照合。CS 対応は G-123・G-124 の report と lens・protocol・変更分類・有限決定の Lean 宣言にも照合。移管前後の数学内容、相対リンク・表記・差分を検査 |
