@@ -1,3 +1,4 @@
+import ResearchLean.AG.CrossStageCoherence.CompositeQualification
 import ResearchLean.AG.CrossStageCoherence.CompatiblePairRefutation
 import ResearchLean.AG.CrossStageCoherence.CellChain
 import ResearchLean.AG.CrossStageCoherence.CellChainInstances
