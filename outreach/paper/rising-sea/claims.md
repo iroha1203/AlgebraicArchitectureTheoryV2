@@ -56,7 +56,7 @@
 
 - 原稿: [第2章](ja/05-law-geometry.md)。
 - 一次資料の固定版: `313086df1e2071236b64ffd454615e927e428e26`。
-- 原稿 SHA-256: `d1cfbc4112e76cc51c8d1968d0b9b5813d0265b0fd4b9acb566055859b14ca96`。
+- 原稿 SHA-256: `e0bcedbb61d772a1c27df9db64e7911fff279a5090f7d413913646d073023761`。
 - [図2.1](figures/ch02-finite-covers.svg)の SHA-256: `0827c5487af26d4fde58149668d3900089ac27dbe6b680999bf171a6bc8f9e4e`。
 
 | ID | 原稿の節・主張 | 種類 | 対象・仮定 | 一次資料の箇所 | 原稿での構成・証明 |
@@ -105,7 +105,7 @@
 
 - 原稿: [第3章](ja/06-resolution-invariance.md)。
 - 一次資料の固定版: `8d949b2c116551f680f9792842e79e58d529e30a`。
-- 原稿 SHA-256: `bc865566dcb6a96aeaa6a8c7b9fae0171ca06d0739ed26048fa438485d75fca7`。
+- 原稿 SHA-256: `984a98300a33dae5c9491deaeee9c2a8c4dfea0c1d79dad09772bc17e9d17976`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
 | --- | --- | --- | --- | --- |
@@ -181,7 +181,7 @@ targetの同時再ラベル等を含む別の観測仕様である。
 
 - 原稿: [第4章](ja/07-transport-coherence.md)。
 - 一次資料の固定版: `bb9c533efbd68adc0e8004a90e5a782c8497a1c2`。
-- 原稿 SHA-256: `4cbd45afbd4bb6b8730412fa43466b2644352cf440fdcf6c49d0de7360f2eb9d`。
+- 原稿 SHA-256: `f6a6ee407ada5639a149daf0892bac38d15f87fb8d24c94ea5a0b401605a4102`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
 | --- | --- | --- | --- | --- |
@@ -232,7 +232,7 @@ targetの同時再ラベル等を含む別の観測仕様である。
 
 - 原稿: [第5章](ja/08-base-change.md)。
 - 一次資料の固定版: `9364f25d1b54dff9ad059ae95c71d0404626d0d6`。
-- 原稿 SHA-256: `a076b99cbd9a013e52ef98db518eca6d75a64af76c961129bca2efbbdc01999d`。
+- 原稿 SHA-256: `67b4cbb898502c51141b1de0d00b5f25841ee19cd6aac2c1125537e6038dedfd`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
 | --- | --- | --- | --- | --- |
@@ -303,7 +303,7 @@ targetの同時再ラベル等を含む別の観測仕様である。
 
 - 原稿: [第6章](ja/09-idempotent-normalization.md)。
 - 一次資料の固定版: `12884419d705624be39e8a87393ed50385395469`。
-- 原稿 SHA-256: `bb191de8bcb00f676156b229f96f90544def38fff2c73c455e0e4ff54766cf33`。
+- 原稿 SHA-256: `49a37effe1fca63f14861e56de44041e0118d09455f3affccd45e2d622354033`。
 - [図6.1](figures/ch06-karoubi-arrow.svg)の SHA-256: `6e37897fd7912478b5b3391100dead8fa1eb3c8318759bfd97e2519a197dae4a`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
@@ -357,7 +357,7 @@ targetの同時再ラベル等を含む別の観測仕様である。
 
 - 原稿: [第7章](ja/10-comparison-and-information.md)。
 - 一次資料の固定版: `c08b1a0e078a242e4683fdb375dc1e7c6a3c4e14`。
-- 原稿 SHA-256: `f778f6712c652360342e3dc9a6946b64ad9f8fe3891fca3cf0625bba7afefb57`。
+- 原稿 SHA-256: `ef2605e7f2f4fe7f2552a863a7946913d78df27df94ebb825f61948804bbfa35`。
 - [図7.1](figures/ch07-refactoring-workers.svg)の SHA-256: `eaa505fc2aa5158d917a3d6d5ad9e11e22ca899e1b232b8aaa2711483b3ceb15`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
@@ -425,7 +425,7 @@ targetの同時再ラベル等を含む別の観測仕様である。
 
 - 原稿: [第8章](ja/11-local-reconstruction.md)。
 - 一次資料の固定版: `b738623af29f015ab2d12e11c94411c74f26d311`。
-- 原稿 SHA-256: `9e6f5c30acad089c6454f5848228b904dbaa9d497916fdfbe190c1f04e6878b0`。
+- 原稿 SHA-256: `cad829bdced3383ea8cf3611299d7378d66c6c99f095fe914b937ee216c89bb1`。
 - [図8.1](figures/ch08-local-reconstruction.svg)の SHA-256: `4b486994f4297015a6c2f98dd0a6eb08e1d0ef3af5607f39f2a5ede436cc7591`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
@@ -563,7 +563,7 @@ SAGAから継承する結果、lensの積表示、圏同値の一般判定、Cau
 | --- | --- |
 | Related Work本文 | `dc2c3cf09c9c1a778f7ce3f7b3cb9e5562e593acfc1916f8e9454ff7168d6128` |
 | 書誌 | `169768f62786cc80f94fe91d4012060309c601168850dbe9004dacda4ffc1e87` |
-| READMEに定めた準備節〜第8章とRelated Workの結合原稿 | `a6c262405b04ec3445b85d8bf4679f817ce1ac81c5d1e80c24d986c6ef832dc2` |
+| READMEに定めた準備節〜第8章とRelated Workの結合原稿 | `e36127a8a71153ad1d5fd2f7ed770451c592b60cff572b5c08457e42603ce1b8` |
 
 [rw-local]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LocalReconstructionEquivalence.lean
 [rw-lens]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean

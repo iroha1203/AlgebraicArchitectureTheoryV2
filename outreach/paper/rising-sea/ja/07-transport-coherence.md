@@ -933,7 +933,7 @@ $`p(m_f(\phi_f^0)^{-1})=p(u_f)\bar\phi_f(1)^{-1}`$ による。□
 核の元の族 $`h_e\in H_{G_j}`$ で
 
 ```math
-u_f=\phi_f(h\widetilde a)\qquad\text{（全ての面 }f\text{）}
+u_f=\phi_f(h\widetilde a)\qquad\text{（すべての面 }f\text{）}
 \qquad\text{(4.41)}
 ```
 
@@ -1127,7 +1127,7 @@ o_{X'}(v)a_v=o_X(v)
 ```math
 bq=q'a
 \quad\Longleftrightarrow\quad
-b_vq_v=q'_va_v\quad\text{（全ての頂点 }v\text{）}
+b_vq_v=q'_va_v\quad\text{（すべての頂点 }v\text{）}
 \qquad\text{(4.50)}
 ```
 
