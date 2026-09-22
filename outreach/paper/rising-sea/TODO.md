@@ -45,7 +45,7 @@ Claude との PR 上でのレビューと修正を終えたら
 - [x] 14 References — [日本語原稿](ja/14-references.md)、書誌を`references.csv`と照合する。
 - [x] 15 付録A Lean 形式化との対応 — [日本語原稿](ja/15-appendix-a-lean-correspondence.md)
 - [x] 16 付録B 検証資料と再現手順 — [日本語原稿](ja/16-appendix-b-verification-and-reproduction.md)
-- [ ] 17 付録C AI利用の開示 — [日本語原稿](ja/17-appendix-c-ai-disclosure.md)
+- [x] 17 付録C AI利用の開示 — [日本語原稿](ja/17-appendix-c-ai-disclosure.md)
 
 執筆は数学の依存順で進める。準備節・各章・対応する付録を整え、関連研究と文献確認を
 並行し、Introduction・Conclusions・Abstract は本論全体に合わせて仕上げる。
