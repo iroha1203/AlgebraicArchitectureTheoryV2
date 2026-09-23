@@ -92,7 +92,7 @@
 | 完全幾何の全Homの読取りと一意な再組立て、全端点自己同型の回復 | 同moduleの `semanticComparisonHom_assemble_read`、`semanticComparisonHom_existsUnique`、`semanticComparisonDirectAutomorphismEquiv`、`semanticComparisonViaBaseAutomorphismEquiv` |
 | `barAlpha`の生成と既存G118の五因子式への接続 | 同moduleの `semanticComparisonAlphaNativeHom`、`semanticComparisonAlpha_eq_G118FiveFactor`、`semanticComparisonReadAlpha_eq_G118FiveFactor` |
 | `barBeta,e,d`の生成と(8.20)、`d barBeta=barBeta=barBeta e` | 同moduleの `semanticComparisonBetaNativeHom`、`semanticComparisonENativeHom`、`semanticComparisonDNativeHom`、`semanticComparisonBeta_factor`、`semanticComparisonE_idem`、`semanticComparisonD_idem`、`semanticComparisonAlpha_projector_natural`、`semanticComparisonBeta_projector_factorizations` |
-| 生成された全射のprimitive readbackと可換平方の保存・反映 | 同moduleの `semanticComparisonAlpha_assemble_read`、`semanticComparisonBeta_assemble_read`、`semanticComparisonE_assemble_read`、`semanticComparisonD_assemble_read`、`semanticComparisonGeneratedSquare_iff`、`semanticComparisonGeneratedLocalSquare_iff` |
+| 生成された各射のprimitive readbackと可換平方の保存・反映 | 同moduleの `semanticComparisonAlpha_assemble_read`、`semanticComparisonBeta_assemble_read`、`semanticComparisonE_assemble_read`、`semanticComparisonD_assemble_read`、`semanticComparisonGeneratedSquare_iff`、`semanticComparisonGeneratedLocalSquare_iff` |
 | 三軸の選択・非選択cochain特例 | 既存moduleの `finiteAxisFoldBarBetaNativeHom_factor`、`finiteAxisFoldIdentityCochain_barBeta_eq_barAlpha_common`、`finiteAxisFoldBarBeta_read_point` |
 
 以下のC型表は、そこに明記した固定版の既存宣言と本文修正との対応を記す。上の追加宣言によって、その固定版の入力や当時の判定を遡って変更するものではない。
