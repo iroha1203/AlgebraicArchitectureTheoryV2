@@ -15,7 +15,7 @@
 | Language | English |
 | Version | 1.0.0 |
 | License | TBD(SAGA 前例は CC BY 4.0。単一レコード全体 — PDF・tex/bib source — に適用) |
-| DOI | TBD(draft の「Get a DOI now」で publish 前に予約し、title page へ印字してから最終ビルドする) |
+| DOI | publish 時の自動付与でよい(title page への印字はしない — 2026-09-23 著者裁定。予約も不要) |
 | Related identifiers | `https://github.com/iroha1203/AlgebraicArchitectureTheoryV2`(isSupplementTo、release tag TBD を付す) |
 | Keywords | software architecture; algebraic geometry; algebraic architecture theory; sheaf; site; Čech cohomology; transport; base change; Karoubi envelope; local reconstruction; lens; formal verification; Lean |
 
@@ -40,7 +40,8 @@ Zenodo description は HTML whitelist のみ(MathJax 不可)。数式は Unicode
 
 ## 3. Citation guide(concept DOI / version DOI)
 
-- **Concept DOI**: 全 version を束ねる DOI。publish 時に自動付与されるため、
-  bundle 内の文書には書かず、Zenodo record ページを参照先とする。
-- **Version DOI**: v1.0.0 に固定される DOI。draft の「Get a DOI now」で
-  **publish 前に予約**し、title page と本 guide へ転記する。
+- **Concept DOI**: 全 version を束ねる DOI。常に最新 version へ解決される。
+- **Version DOI**: v1.0.0 に固定される DOI。再現性の文脈ではこちらを引用する。
+
+いずれも publish 時に自動付与され、PDF へは印字しない(2026-09-23 著者裁定)。
+publish 後に両 DOI を本 guide と `submission.md` へ転記する。
