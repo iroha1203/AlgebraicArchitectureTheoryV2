@@ -1390,22 +1390,23 @@ from the product decomposition.
 
 \end{proof}
 
-As a normal form including visible changes, we treat here self-changes of the
-same product lens $V\times K$ for a finite set $K$.
-When $u:V\xrightarrow{\sim}V$ and $h:V\times K\xrightarrow{\sim}V\times K$
-satisfy
+When a visible change $u:V\xrightarrow{\sim}V$ is allowed as well, require
+the same $h:C\xrightarrow{\sim}C'$ and $u$ to satisfy
 \begin{equation*}
-gh=ug,\qquad h(p(c,v))=p(h(c),u(v))
+g'h=ug,\qquad h(p(c,v))=p'(h(c),u(v))
 \tag{1.20}\label{eq:1.20}
 \end{equation*}
-there is a unique permutation $\phi:K\xrightarrow{\sim}K$ with
+
+In the product decompositions the first component is $u(v)$.
+Writing the second component as $\phi_v(k)$, the update equation gives
+$\phi_w(k)=\phi_v(k)$. Thus the changes satisfying \eqref{eq:1.20} are exactly
 \[
-h(v,k)=(u(v),\phi(k))
+h(v,k)=(u(v),\phi(k)),\qquad \phi:K_L\xrightarrow{\sim}K_{L'}
 \]
-Preservation of updates gives that the permutation of the hidden component
-obtained over each view equals the permutation over the reference view.
-Reading the second component at $v=v_0$ also gives the uniqueness of that
-permutation.
+Bijectivity follows from the bijectivity of $u$ and the product decompositions
+over the nonempty set $V$.
+This description does not require $u(v_0)=v_0$; each lens is expressed using
+its own reference fiber.
 
 \begin{example}[Changes preserving only reads]\label{ex:1.35}
 

@@ -483,76 +483,68 @@ projections follow from the construction.
 
 \end{proof}
 
-\begin{lemma}[Interchange of generated transport and normalization]\label{lem:6.15}
+\begin{lemma}[Commutation of generated transport and normalization]\label{lem:6.15}
 
-The canonical transport of cores along an arbitrary exact base morphism $\sigma:b\to b'$,
-and the pullback of cores by the reindexing in the opposite direction, preserve
-$\mathrm{Ad}$.
-The canonical forward transport of geometries also preserves the same condition on cores.
-
-Assume further that Atom equality is decidable, and let $\sigma$ be the decoding of a
-morphism of finite codes of Definition~\ref{def:5.14}.
-The canonical pullback of full geometries for this input also preserves $\mathrm{Ad}$, and
-for the two functors of transport and pullback
+The canonical transport and pullback of Chapters~\ref{chap:4} and~\ref{chap:5}
+along an exact base morphism $\sigma:b\to b'$ preserve $\mathrm{Ad}$.
+Moreover, for admissible cores and full geometries,
 \begin{equation*}
-\sigma_!(N_G)=N_{\sigma_!G},\qquad
-\sigma^*(N_H)=N_{\sigma^*H}
+\sigma_!(N_P)=N_{\sigma_!P},\qquad
+\sigma^*(N_Q)=N_{\sigma^*Q},
 \tag{6.16}\label{eq:6.16}
 \end{equation*}
-hold. Here the cores of $G,H$ satisfy $\mathrm{Ad}$.
 
-For the actual lifts of cores along an arbitrary exact morphism,
+The same equations hold for full geometries with $G,H$ in place of $P,Q$.
+The actual generated lifts $\iota_{\sigma,P}:P\to\sigma_!P$ and
+$\kappa_{\sigma,Q}:\sigma^*Q\to Q$ satisfy
 \begin{equation*}
 N_{\sigma_!P}\iota_{\sigma,P}=\iota_{\sigma,P}N_P,
 \qquad
 N_Q\kappa_{\sigma,Q}=\kappa_{\sigma,Q}N_{\sigma^*Q}
 \tag{6.17}\label{eq:6.17}
 \end{equation*}
-hold. The same interchange equations hold for the forward lifts of geometries.
-For the pullback lifts of geometries we use the morphism realized by the finite code above.
+
+and the same equations hold for the lifts of geometries.
 
 \end{lemma}
 
 \begin{proof}
 
 Write $e$ for the Atom map of the base morphism and $T_e$ for the reindexing of objects.
-From the definition of the transported object formation we obtain
+From the definition of transported object formation,
 \begin{equation*}
 n_{\sigma_!P}(T_eA)=T_e(n_P(A))
 \tag{6.18}\label{eq:6.18}
 \end{equation*}
-Since $T_e$ has $T_{e^{-1}}$ as its inverse,
-the preservation laws on the target of the transport can be brought back to the
-preservation laws before the transport.
-Carrying the invariance of residuals, invariants, and signatures, the equality of the types
-of operations, and the commutativity of the configuration maps along this correspondence,
-we see that $\mathrm{Ad}$ is preserved. For the pullback of cores we use $e^{-1}$.
 
-The operation map of a generated lift is built from the reindexing and the identification
-by the equality of the types at the endpoints.
-Moving the normalization before or after it, aligning the endpoints by \eqref{eq:6.18}
-yields the same operation.
-The other core components agree as well, and \eqref{eq:6.17} holds.
-For the forward lifts of geometries and the pullback lifts from a finite code, composing
-the identity local comparisons of Theorem~\ref{thm:6.14} gives the interchange equations
-for all the components.
-Finally, using the universal property of each lift for this finite-code input, the image of
-the normalization morphism in \eqref{eq:6.16} is uniquely determined.
+Since $T_e$ has inverse $T_{e^{-1}}$, the preservation laws for every object
+after transport can be brought back to those for objects before transport.
+Carrying the invariance of residuals, invariants, and signatures through this
+correspondence gives the same conditions after transport.
+The equality of operation types and the commutativity of configuration maps are
+carried by the same reindexing. This is preservation of $\mathrm{Ad}$.
+For pullback, use $e^{-1}$.
+
+The operation map of a generated lift is built from reindexing and identification
+by equality of the endpoint types. Moving the normalization identification before
+or after it yields the same original operation once the endpoints are aligned by
+\eqref{eq:6.18}. The other core components are identity maps or the same reindexing,
+giving \eqref{eq:6.17}. For geometries, the identity local comparisons of
+Theorem~\ref{thm:6.14} are composed before and after, so the same equations hold
+in all components. Finally, by the universal property of the lifts, the vertical
+morphism satisfying \eqref{eq:6.17} is unique, giving \eqref{eq:6.16}.
 
 \end{proof}
 
-Naturality of the object map for a general morphism of cores is by Lemma~\ref{lem:6.6}.
-The interchange condition for morphisms that have their own operation map beyond the
-objects is examined in \S\ref{sec:6.6}.
+This lemma concerns transport and pullback generated from the same reindexing.
+For general morphisms having their own operation maps beyond objects,
+\S\ref{sec:6.6} examines the interchange condition.
 
 \begin{theorem}[Normalization factorization of the generated comparison and classification of invertibility]\label{thm:6.16}
 
-We fix the common input of Construction~\ref{cons:5.37}, namely the square decoded from
-finite codes, the core at each vertex and the strong edges, the conditions on the end of
-each face and on the two paths in the base, and the specified comparisons.
-From a face $z$ of the same diagram, a cochain $\omega$, the core $P_z$ at its end, a
-commutative coefficient ring $k$, and a full geometry $G_z$, we form the comparison of
-Construction~\ref{cons:5.40}.
+Fix the same exact pointed pullback square, face $z$ of the comparison diagram,
+cochain $\omega$, source core $P_z$, commutative coefficient ring $k$, and
+full geometry $G_z$ as in Constructions~\ref{cons:5.37} and~\ref{cons:5.40}.
 We abbreviate the ends of the two routes and the canonical comparison as
 \begin{equation*}
 X=\overline D(G_z),\qquad Y=\overline V(G_z),\qquad
@@ -664,7 +656,7 @@ of images constructed at the core.
 
 \begin{proof}
 
-The first two equations and the last one are \eqref{eq:5.42} and \eqref{eq:5.46}.
+The first two equations and the last one are \eqref{eq:5.44} and \eqref{eq:5.48}.
 The remaining equation is obtained by projecting
 $\overline e=\overline\alpha^{-1}\overline d\,\overline\alpha$, using that $p$ preserves
 composites and inverses.
@@ -675,9 +667,13 @@ the square of the comparisons commute.
 
 \end{proof}
 
-\begin{example}[A normalization that collects the objects over the same configuration]\label{ex:6.18}
+\begin{example}[A case in which normalization is selected]\label{ex:6.18}
 
-To see the action of a normalization, we define the data of a core as follows.
+We prepare an exchange of axes to produce a nonidentity cochain and a normalization
+that merges object representations over the same configuration.
+The exchange of axes is used to satisfy the selection condition of Construction~\ref{cons:5.40}.
+The selected normalization merges object representations and leaves the axes unchanged.
+First, define the core data as follows.
 
 \begin{itemize}
 \item \textbf{Atoms and sources.} We take one Atom and one source, let the extracted family
@@ -702,9 +698,13 @@ detectors are empty.
 \end{itemize}
 
 This core $P$ satisfies $\mathrm{Ad}(P)$.
-The normalization $N_P$ of Theorem~\ref{thm:6.5} sends the objects over the same
-configuration to the selected object.
-By Proposition~\ref{prop:6.7}, $N_P$ is not invertible.
+The morphism $\tau:P\to P$ that exchanges the two axes and fixes the other
+components is an automorphism with $\tau^2=1$ and $\tau\ne1$.
+Take an identity square of bases and a comparison diagram with one specified face,
+and choose $\omega_z=\tau$.
+Identifying each endpoint with $P$ by the unit comparisons of identity reindexing,
+the two routes and the canonical comparison become identities.
+The generation rule selects $N_P$, so $\beta=N_P$ is not invertible.
 
 For the full geometry we add the following data.
 
@@ -719,9 +719,9 @@ one-element set, and all the restrictions to be identities.
 
 The restrictions preserve the relations and respect identities and composition, so a full
 geometry $G$ is obtained.
-Since $N_G$ of Theorem~\ref{thm:6.14} projects to $N_P$, it is not invertible for the full
-geometry either.
-By Definition~\ref{def:6.9}, the identity morphism of $(G,N_G)$ is this $N_G$.
+Aligning the geometry endpoints by the same unit comparisons gives
+$\overline\beta=N_G$. This is not invertible in $E_{\mathrm{geom}}$, but is
+the identity morphism of $(G,N_G)$.
 
 \end{example}
 

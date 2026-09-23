@@ -970,13 +970,8 @@ stand as well, by Corollary~\ref{cor:8.19}.
 
 \begin{example}[Objects, morphisms, and changes of endpoints for generated comparisons]\label{ex:8.21}
 
-We use the common input of Construction~\ref{cons:5.37}. We fix the square realized by finite
-codes and, for the same comparison diagram, the core, the strong edges, the conditions on the
-end of the face and on the two routes in the base, and the specified comparisons.
-On this basis we build a comparison from the same face, cochain, coefficients, and original
-full geometry.
-
-We take $G_{\mathrm d},G_{\mathrm v}$ to be the full geometries of the two routes and
+Using the input of Constructions~\ref{cons:5.37}--\ref{cons:5.40},
+we take $G_{\mathrm d},G_{\mathrm v}$ to be the full geometries of the two routes and
 $\overline\alpha:G_{\mathrm d}\xrightarrow{\sim}G_{\mathrm v}$ to be the canonical
 comparison.
 Writing $e,d$ for the normalizations of Chapter~\ref{chap:6} at the two ends, the generated
@@ -995,6 +990,23 @@ routes, and $\overline\alpha,\overline\beta,e,d$.
 It also recovers all the automorphisms at the two ends and the commutative squares between
 them.
 By Corollary~\ref{cor:8.19}, \eqref{eq:8.20} is preserved in the local model as well.
+
+As an example, take a comparison diagram over a core satisfying $\mathrm{Ad}(P_z)$,
+with two faces having the same endpoints and with both routes acting as identities.
+The input of Construction~\ref{cons:5.37} includes the choice of face and cochain
+used for the comparison. Take the first face to be the identity, and for the second
+use an input exchanging two of three signature axes.
+Take coefficients in $\mathbb{Z}$ and apply Constructions~\ref{cons:5.37}--\ref{cons:5.40}
+to the second face.
+
+For a choice whose initial defect exchanges those two axes, the defect is not the
+identity, so the normalization selection condition holds.
+Theorem~\ref{thm:6.16} gives a nontrivial idempotent normalization and a noninvertible
+$\overline\beta$. On the other hand, choosing the identity cochain on the same
+comparison diagram makes the normalization the identity and gives
+$\overline\beta=\overline\alpha$.
+In both cases, reconstruction applies to the selected comparison and all admissible
+morphisms at its two endpoints.
 
 \end{example}
 

@@ -454,15 +454,10 @@ Existence and uniqueness at the two levels give the required existence and uniqu
 
 \begin{construction}[Transport functors between fibers]\label{cons:4.13}
 
-In this section we write $r:E\to B$ for the core projection $q$ of \eqref{eq:4.1} or for
-the projection $qp$ from geometries to the extraction base. The fiber $E_b$ is the
-category consisting of the objects satisfying $r(X)=b$ and the vertical morphisms
-between them.
-For the lift $\eta_{\sigma,X}:X\to T_\sigma X$ along each exact morphism
-$\sigma:b\to b'$ we use the canonical construction, Construction~\ref{cons:4.3} for cores
-and Theorem~\ref{thm:4.11} for geometries.
-By Theorems~\ref{thm:4.5} and~\ref{thm:4.11} and Lemma~\ref{lem:4.12}, these are strongly
-opcartesian with respect to $r$.
+For a functor $r:E\to B$, the fiber $E_b$ is the category consisting of the
+objects satisfying $r(X)=b$ and the vertical morphisms between them.
+For each $\sigma:b\to b'$ and $X\in E_b$, choose a strongly opcartesian lift
+$\eta_{\sigma,X}:X\to T_\sigma X$.
 The image of a vertical morphism $v:X\to Y$ is defined to be the unique vertical morphism
 \begin{equation*}
 T_\sigma(v):T_\sigma X\longrightarrow T_\sigma Y,\qquad
@@ -472,6 +467,8 @@ T_\sigma(v)\eta_{\sigma,X}=\eta_{\sigma,Y}v
 The right-hand side lies over the base $\sigma$, so this morphism exists.
 Identity morphisms and composites of two morphisms satisfy the same equation, so
 uniqueness shows that $T_\sigma:E_b\to E_{b'}$ is a functor.
+By Theorems~\ref{thm:4.5} and~\ref{thm:4.11} and Lemma~\ref{lem:4.12}, this
+construction applies to cores and to geometries with base $B$.
 
 \end{construction}
 
@@ -590,17 +587,13 @@ specified separately.
 To measure how far such a correspondence differs from the canonical comparison, we read
 both as automorphisms of the same object.
 
-In \S\S\ref{sec:4.5}--\ref{sec:4.7} we use the category of cores of \eqref{eq:4.1} and the
-projection $r=q:E_{\mathrm{core}}\to B$.
-We fix the vocabulary of Atoms and place cores and strong lifts of edges on a finite
-comparison diagram.
-What is finite here are the indices of vertices, edges, and faces; no finiteness is
-imposed on the objects of the cores or on the totality of operations.
-The input that treats geometries and cores simultaneously is defined in \S\ref{sec:4.9}.
+Henceforth, let $r:E\to B$ be a functor and choose strongly opcartesian
+morphisms on the required edges.
+For cores we may use $r=q$, and for full geometries, $r=qp$.
 
 \begin{definition}[Finite comparison data]\label{def:4.17}
 
-On each vertex $i$ of a finite directed graph we place a core $X_i$, and on each edge
+On each vertex $i$ of a finite directed graph we place an object $X_i$, and on each edge
 $e:i\to j$ a base morphism $\sigma_e:r(X_i)\to r(X_j)$ and a strongly opcartesian
 morphism $L_e:X_i\to X_j$ over it.
 We write $L_\pi$ for the composite along a path $\pi$; the composite along the empty path
@@ -673,7 +666,8 @@ The specified comparisons $u_f$ stay fixed.
 
 \begin{example}[A comparison of two independent edges can be absorbed into one of them]\label{ex:4.20}
 
-Here we compute the comparison equations in the permutation group $S_3$ on three points.
+Regard a group as a one-object category, with the terminal category as base.
+All morphisms are invertible and strongly opcartesian.
 For the group product we use composition acting from the right.
 Take two parallel edges $x,y$ and one face $x\Rightarrow y$.
 Let both original lifts be the identity, and let the specified comparison be an arbitrary
@@ -688,7 +682,7 @@ Setting $a_x=1$ and $a_y=u$ makes the defect vanish.
 The two edges can be reselected independently, so the specified comparison can be absorbed
 into one of the edges.
 
-In a comparison diagram of cores as in Definition~\ref{def:4.17}, the selection at each
+In a general comparison diagram, the selection at each
 edge acts on several paths and faces.
 We therefore examine the change arising at the end of a path, and determine how it alters
 the comparison on each face.
@@ -768,6 +762,21 @@ This action also records the current edge selection $a$.
 The reason is that, for a path through several edges, the change $A_\pi(a,b)$ at the end
 depends on the current selection.
 
+For example, take the functor from a one-object group category to the terminal
+category, and let both initial edge lifts be identities.
+Writing $12$ for the path that traverses edge 1 and then edge 2, we have
+\[
+\begin{aligned}
+L_{12}^{a}&=a_2a_1,\\
+L_{12}^{ba}&=b_2a_2b_1a_1,\\
+A_{12}(a,b)&=L_{12}^{ba}(L_{12}^{a})^{-1}
+=b_2a_2b_1a_2^{-1}.
+\end{aligned}
+\]
+The current selection $a_2$ remains in the last expression.
+In a noncommutative group, even reselection by the same $b_1,b_2$ can produce
+different changes at the end depending on $a_2$.
+
 \begin{theorem}[Vanishing of the obstruction and coherent selections]\label{thm:4.23}
 
 We call the orbit of Proposition~\ref{prop:4.22} the obstruction class of the finite
@@ -809,13 +818,14 @@ $\beta_*v$ satisfies
 (\beta_*v)L_\beta^a=L_\beta^av
 \tag{4.29}\label{eq:4.29}
 \end{equation*}
+The map $\beta_*$ is a group homomorphism.
 \end{lemma}
 
 \begin{proof}
 
 We use the universal property of the strongly opcartesian morphism $L_\beta^a$.
 The morphism obtained from $v^{-1}$ is the inverse.
-This yields the automorphism and \eqref{eq:4.29}.
+For identities and products, apply \eqref{eq:4.29} and uniqueness as well.
 
 \end{proof}
 
@@ -846,6 +856,22 @@ paths.
 
 \end{construction}
 
+For two successive rewrites, write $u_1,u_2$ for the specified comparisons,
+$\phi_1,\phi_2$ for the canonical comparisons, and $\delta_1,\delta_2$ for the defects.
+Then
+\begin{equation*}
+\begin{aligned}
+U_P\Phi_P^{-1}
+ &=u_2u_1(\phi_2\phi_1)^{-1}\\
+ &=(u_2\delta_1u_2^{-1})\delta_2.
+\end{aligned}
+\tag{4.31}\label{eq:4.31}
+\end{equation*}
+
+The later comparison conjugates the earlier defect.
+Thus the defect of a pasting cannot be replaced by the simple product of the defects
+of its faces.
+
 \begin{proposition}[Coherence condition among relations]\label{prop:4.26}
 
 A pair of rewriting sequences $P,Q$ from the same path to the same path is called a
@@ -853,7 +879,7 @@ syzygy.
 Specify finitely many syzygies, and suppose that for the edge selection $a$
 \begin{equation*}
 U_P(a)=U_Q(a)
-\tag{4.31}\label{eq:4.31}
+\tag{4.32}\label{eq:4.32}
 \end{equation*}
 holds for each of them. Then
 $D_P(a)=D_Q(a)$.
@@ -863,15 +889,15 @@ $D_P(a)=D_Q(a)$.
 \begin{proof}
 
 The comparisons $\Phi_P(a)$ and $\Phi_Q(a)$ send the same strongly opcartesian morphism
-to the same morphism, hence are equal. Multiply \eqref{eq:4.31} by their common inverse
+to the same morphism, hence are equal. Multiply \eqref{eq:4.32} by their common inverse
 on the right.
 
 \end{proof}
 
 A raw defect is defined by \eqref{eq:4.21} alone.
 To obtain the cocycle condition $D_P(a)=D_Q(a)$ along the specified syzygies,
-\eqref{eq:4.31} is required.
-Condition~\eqref{eq:4.31} is a relation among the specified comparisons; it does not
+\eqref{eq:4.32} is required.
+Condition~\eqref{eq:4.32} is a relation among the specified comparisons; it does not
 assume the vanishing of the defect on each face.
 
 \begin{proposition}[Obstruction for closed comparisons]\label{prop:4.27}
@@ -880,9 +906,9 @@ For any syzygy, writing $\Phi$ for the common canonical comparison,
 \begin{equation*}
 D_Q^{-1}D_P
 =\Phi\,(U_Q^{-1}U_P)\,\Phi^{-1}
-\tag{4.32}\label{eq:4.32}
+\tag{4.33}\label{eq:4.33}
 \end{equation*}
-In particular, the left-hand side being the identity is equivalent to \eqref{eq:4.31}.
+In particular, the left-hand side being the identity is equivalent to \eqref{eq:4.32}.
 
 \end{proposition}
 
@@ -892,11 +918,11 @@ Substitute $D_P=U_P\Phi^{-1}$ and $D_Q=U_Q\Phi^{-1}$.
 
 \end{proof}
 
-Equation~\eqref{eq:4.32} shows that, once the edge selection is fixed, a mismatch of the
+Equation~\eqref{eq:4.33} shows that, once the edge selection is fixed, a mismatch of the
 specified pastings persists through conjugation.
 If every face satisfies \eqref{eq:4.28}, then every specified pasting agrees with the
 canonical comparison.
-Failure of \eqref{eq:4.31} therefore obstructs overall coherence for that edge selection.
+Failure of \eqref{eq:4.32} therefore obstructs overall coherence for that edge selection.
 
 \section{Removable and irremovable discrepancies}\label{sec:4.8}
 
@@ -904,7 +930,7 @@ In Example~\ref{ex:4.20}, the comparison of a single face could be made coherent
 reselecting one of two independent edges.
 When several faces share edges, each face may be made coherent on its own, and yet not all of them at
 once by the same selection.
-The following are computations in the same permutation group as Example~\ref{ex:4.20}.
+Again, regard a group as a one-object category, with the terminal category as base.
 
 \begin{example}[Different requirements on the same two edges]\label{ex:4.28}
 
@@ -914,7 +940,7 @@ Let the specified comparisons be $s=(12)$ and $t=(23)$.
 The canonical comparison of both faces is the same $a_ya_x^{-1}$, so coherence requires
 \begin{equation*}
 a_ya_x^{-1}=s,\qquad a_ya_x^{-1}=t
-\tag{4.33}\label{eq:4.33}
+\tag{4.34}\label{eq:4.34}
 \end{equation*}
 Since $s\ne t$, no selection satisfies both at once.
 Each face on its own can be made coherent by Example~\ref{ex:4.20}.
@@ -936,10 +962,10 @@ $a_1=sa_0$ and $a_2=ta_1=tsa_0$.
 The third face requires $a_2=sta_0$, so the three faces are not coherent simultaneously.
 The corresponding syzygy has no subsequent path, and the two specified routes do not
 depend on the edge selection.
-The mismatch of the two specified routes is
+The inner discrepancy in \eqref{eq:4.33} is
 \begin{equation*}
 (st)^{-1}ts=t^{-1}s^{-1}ts\ne1
-\tag{4.34}\label{eq:4.34}
+\tag{4.35}\label{eq:4.35}
 \end{equation*}
 and it persists for every selection.
 In this example, besides each correspondence being a bijection, the orders of composition
@@ -966,19 +992,17 @@ B_P&=\mathrm{Aut}_q(P),\\
 \pi_G(a)&=p(a),\\
 H_G&=\ker\pi_G=\mathrm{Aut}_p(G)
 \end{aligned}
-\tag{4.35}\label{eq:4.35}
+\tag{4.36}\label{eq:4.36}
 \end{equation*}
 Here $C_G$ represents the changes of the geometry that fix the extraction, $B_P$ the
 changes of the core that fix the extraction, and $H_G$ the changes of the geometry that
 fix the entire core.
 The map $\pi_G$ is a group homomorphism, and $H_G$ is a normal subgroup.
 
-On each vertex of a finite comparison diagram we place a geometry $G_i$.
-We assume that each edge $L_e$ of geometries is strongly opcartesian with respect to $p$
-and that its projection $p(L_e)$ is strongly opcartesian with respect to $q$. The two
-paths of each face map to the same morphism in the extraction base.
-By Lemma~\ref{lem:4.12}, $L_e$ is strongly opcartesian with respect to $qp$ as well.
-The canonical transport of \S\ref{sec:4.4} satisfies these two-level conditions.
+Place $G_i$ on each vertex of Definition~\ref{def:4.17}, and assume that the
+edges $L_e$ of geometries and their projections $p(L_e)$ are strongly opcartesian
+with respect to $qp$ and $q$, respectively.
+The transport constructed in \S\ref{sec:4.4} satisfies this condition.
 The specified comparisons are $u_f\in C_{G_j}$, and for the specified comparisons of
 cores we use $p(u_f)$.
 We write $\phi_f$ for the canonical comparison of geometries and $\bar\phi_f$ for the
@@ -992,7 +1016,7 @@ For every edge reselection $c$ of the geometries,
 \begin{equation*}
 p(\phi_f(c))=\bar\phi_f(p(c)),\qquad
 p(\delta_f(c))=\bar\delta_f(p(c))
-\tag{4.36}\label{eq:4.36}
+\tag{4.37}\label{eq:4.37}
 \end{equation*}
 \end{proposition}
 
@@ -1015,7 +1039,7 @@ satisfy
 \begin{equation*}
 p(u_f)\,\bar L_{\ell_f}^{\,a}
 =\bar L_{\rho_f}^{\,a}
-\tag{4.37}\label{eq:4.37}
+\tag{4.38}\label{eq:4.38}
 \end{equation*}
 Here $\bar L^{\,a}$ is the path whose projected edges have been reselected by $a$.
 
@@ -1032,7 +1056,7 @@ Take an aligned edge section, and write $\phi_f^0=\phi_f(1)$ for the comparison 
 reselection and $m_f=\phi_f(\widetilde a)$ for the comparison at the chosen section. Then
 \begin{equation*}
 p(m_f)=p(u_f)
-\tag{4.38}\label{eq:4.38}
+\tag{4.39}\label{eq:4.39}
 \end{equation*}
 and the original defect decomposes as
 \begin{equation*}
@@ -1040,7 +1064,7 @@ and the original defect decomposes as
 =
 \underbrace{u_fm_f^{-1}}_{\delta_f^{\mathrm{in}}}
 \underbrace{m_f(\phi_f^0)^{-1}}_{\widetilde\delta_f^{\mathrm{out}}}
-\tag{4.39}\label{eq:4.39}
+\tag{4.40}\label{eq:4.40}
 \end{equation*}
 where
 $\delta_f^{\mathrm{in}}\in H_{G_j}$ and
@@ -1051,10 +1075,10 @@ $p(\widetilde\delta_f^{\mathrm{out}})=\bar\delta_f(1)$.
 \begin{proof}
 
 By Proposition~\ref{prop:4.31} we have $p(m_f)=\bar\phi_f(a)$.
-From \eqref{eq:4.37} and the uniqueness of canonical comparisons we obtain
-$\bar\phi_f(a)=p(u_f)$, which is \eqref{eq:4.38}.
+From \eqref{eq:4.38} and the uniqueness of canonical comparisons we obtain
+$\bar\phi_f(a)=p(u_f)$, which is \eqref{eq:4.39}.
 Hence $p(u_fm_f^{-1})=1$.
-Equation~\eqref{eq:4.39} is checked by cancelling the middle $m_f^{-1}m_f$.
+Equation~\eqref{eq:4.40} is checked by cancelling the middle $m_f^{-1}m_f$.
 The last claim follows from
 $p(m_f(\phi_f^0)^{-1})=p(u_f)\bar\phi_f(1)^{-1}$.
 
@@ -1072,23 +1096,22 @@ is coherent on all faces if and only if there exists a family of kernel elements
 $h_e\in H_{G_j}$ with
 \begin{equation*}
 u_f=\phi_f(h\widetilde a)\qquad\text{(for every face }f\text{)}
-\tag{4.40}\label{eq:4.40}
+\tag{4.41}\label{eq:4.41}
 \end{equation*}
 Consequently, the obstruction for the geometries vanishes if and only if an aligned edge
-section can be chosen for which \eqref{eq:4.40} can be satisfied.
+section can be chosen for which \eqref{eq:4.41} can be satisfied.
 
 \end{theorem}
 
 \begin{proof}
 
 Since $h$ lies in the kernel, $p(h\widetilde a)=a$.
-Equation~\eqref{eq:4.40} states that the canonical comparison of the geometries under
-$h\widetilde a$ equals the specified comparison.
-It is therefore the required coherent selection.
+By \eqref{eq:4.41} and Theorem~\ref{thm:4.23}, $h\widetilde a$ is the
+required coherent selection.
 Conversely, given a coherent selection $c$ with $p(c)=a$, set
 $h_e=c_e\widetilde a_e^{-1}$ on each edge.
 Its projection is $a_ea_e^{-1}=1$, so $h_e\in H_{G_j}$, and
-$c=h\widetilde a$ gives \eqref{eq:4.40}.
+$c=h\widetilde a$ gives \eqref{eq:4.41}.
 For the forward direction of the final equivalence, the coherent selection of the
 geometries itself can be used as the edge section.
 
@@ -1101,19 +1124,22 @@ that selection can be lifted to the next level.
 
 \begin{example}[Four axes and a solution that does not lift]\label{ex:4.35}
 
-We illustrate the lifting condition by the following equations in finite groups.
-Take the group $S_4$ permuting the four axes $1,2,3,4$, and from the permutations
-preserving $\{1,2\}$ and a two-valued extra component form
+We illustrate the distinction by a finite tower in which groups are regarded
+as one-object categories.
+Regard the four indices $1,2,3,4$ as axes, and take their permutation group $S_4$
+as the group of core changes. At the level of geometries, select $\{1,2\}$
+among the four axes. From the permutations preserving this selection and a
+two-valued extra component, form
 \begin{equation*}
 \begin{aligned}
 K&=\{\gamma\in S_4\mid\gamma\{1,2\}=\{1,2\}\}\times C_2,\\
 \pi:K&\longrightarrow S_4,\qquad(\gamma,z)\longmapsto\gamma
 \end{aligned}
-\tag{4.41}\label{eq:4.41}
+\tag{4.42}\label{eq:4.42}
 \end{equation*}
 The group $C_2=\mathbb{Z}/2\mathbb{Z}$ is written additively.
-The kernel is $\{1\}\times C_2$, a degree of freedom that does not change the image in
-$S_4$.
+The kernel is $\{1\}\times C_2$, a degree of freedom that changes only the geometry.
+Take the terminal category as the base category.
 
 Take one vertex and two loops $e,g$, with the original lifts the identity.
 The faces and the specified comparisons are
@@ -1121,24 +1147,24 @@ The faces and the specified comparisons are
 e^2\Rightarrow\varnothing:\quad u=(b,0),\quad b=(12)(34),
 \qquad
 g\Rightarrow\varnothing:\quad v=(1,1)
-\tag{4.42}\label{eq:4.42}
+\tag{4.43}\label{eq:4.43}
 \end{equation*}
 Here $\varnothing$ is the empty path.
-The coherence conditions in $S_4$ are $a_e^2=b$ and $a_g=1$, and
+The coherence conditions at the core are $a_e^2=b$ and $a_g=1$, and
 $a_e=(1324)$, $a_g=1$ is a solution.
 
-On the other hand, the permutation component of $K$ preserves $\{1,2\}$ and $\{3,4\}$
+On the other hand, the permutations allowed at the geometry preserve $\{1,2\}$ and $\{3,4\}$
 separately.
 The permutation part is therefore $S_2\times S_2$, in which every element squares to the
 identity.
-No selection $c_e$ in $K$ can satisfy $c_e^2=(b,0)$.
-The square root $(1324)$ in $S_4$ does not preserve the two selected axes.
+No selection $c_e$ of the geometry can satisfy $c_e^2=(b,0)$.
+The square root $(1324)$ at the core does not preserve the two selected axes.
 
-The second face is coherent with the kernel selection $c_g=(1,1)$.
-Thus the conditions projected to $S_4$ and the conditions belonging to the kernel each
+The second face, belonging only to the geometry, is coherent with the kernel selection $c_g=(1,1)$.
+Thus all core conditions and the conditions belonging only to the geometry each
 have solutions.
 Still, no overall solution exists.
-The obstruction is that the solution in $S_4$ cannot be lifted to an element of $K$.
+The obstruction is the absence of an edge section lifting the core solution.
 
 \end{example}
 
@@ -1151,83 +1177,114 @@ Through this sharing, the maps of the two commutative diagrams are tied together
 
 \begin{definition}[Morphisms of lenses including a change of view]\label{def:4.36}
 
-Fix a common view set $V$ and a reference view $v_0\in V$.
-A relative morphism between lenses $L=(C,V,g,p)$ and $L'=(C',V,g',p')$ that satisfy the
-three laws and have finite reference fibers is a pair of maps
-$h:C\to C'$ and $u:V\to V$ satisfying
+A relative morphism between lenses $L=(C,V,g,p)$ and $L'=(C',V',g',p')$
+satisfying the three laws is a pair of maps $h:C\to C'$ and $u:V\to V'$ such that
 \begin{equation*}
 g'h=ug,\qquad
 h\,p=p'(h\times u)
-\tag{4.43}\label{eq:4.43}
+\tag{4.44}\label{eq:4.44}
 \end{equation*}
-The state sets $C,C'$ may differ.
+
+Identities and composition are componentwise and preserve \eqref{eq:4.44}.
+Taking $u=\mathrm{id}_V$ recovers the fixed-view morphisms of Chapter~\ref{chap:1}.
 
 \end{definition}
 
-\begin{proposition}[Typewise maps and the two commutative squares]\label{prop:4.37}
+Under the lens laws of this chapter, preservation of updates implies preservation of reads.
+Indeed, for any state $c$, applying the first law before the change
+(\eqref{eq:1.16}), preservation of updates, and the second law after the change gives
+\[
+\begin{aligned}
+g'(h(c))
+&=g'\bigl(h(p(c,g(c)))\bigr)\\
+&=g'\bigl(p'(h(c),u(g(c)))\bigr)\\
+&=u(g(c)).
+\end{aligned}
+\]
+This derivation does not require $h,u$ to be invertible.
+The following construction expresses preservation of reads and updates by the same
+maps as one commutative diagram.
 
-Assigning to the four roles state, view, read, and write of Definition~\ref{def:1.42} the
-respective maps
+\begin{proposition}[A square combining the two operations]\label{prop:4.37}
+
+Combine reads and updates into a single map of sum types,
 \begin{equation*}
-h:C\to C',\quad u:V\to V,\quad
-h:C\to C',\quad
-h\times u:C\times V\to C'\times V
-\tag{4.44}\label{eq:4.44}
-\end{equation*}
-we obtain, for the named operations get and put, the commutative squares
-\begin{equation*}
-u\,g=g'\,h,\qquad
-h\,p=p'(h\times u)
+c_L:C\sqcup(C\times V)\longrightarrow V\sqcup C,\qquad
+c_L|_C=g,\quad c_L|_{C\times V}=p
 \tag{4.45}\label{eq:4.45}
 \end{equation*}
-\end{proposition}
 
-\begin{proof}
-
-The maps for the four roles are the state map, the view map, the state map, and the
-product of the two maps, respectively. The equations for get and put are the two
-conditions of Definition~\ref{def:4.36}.
-
-\end{proof}
-
-The same $h$ is used for the input of reads, for the state component of the input of
-updates, and for the output of updates.
-
-\begin{proposition}[Connection with fixed-view morphisms and invertible changes]\label{prop:4.38}
-
-The relative morphisms with $u=\mathrm{id}_V$ correspond bijectively to the fixed-view
-morphisms of Chapter~\ref{chap:1}.
-Moreover, when $h,u$ are each given as bijections, the two preservation equations
-become the conditions for a lens change by bijections of states and views.
-The operation that extracts from a relative morphism a change equipped with these
-bijections and the operation that returns the two maps of a change to a relative morphism
-are mutually inverse.
+where the right-hand side uses the inclusion into the corresponding summand.
+The following equation is equivalent to \eqref{eq:4.44}:
+\begin{equation*}
+(u\sqcup h)c_L
+=c_{L'}\bigl(h\sqcup(h\times u)\bigr).
+\tag{4.46}\label{eq:4.46}
+\end{equation*}
 
 \end{proposition}
 
 \begin{proof}
 
-Substituting $u=\mathrm{id}_V$ into \eqref{eq:4.43} gives the conditions for a fixed-view
-morphism preserving reads and updates.
-Conversely, attaching the identity view map to such a morphism gives a relative morphism.
-Both operations keep the same state map, so they are mutually inverse.
-In the case of given bijections as well, extracting the two maps with the same
-preservation equations and returning them yields the two-sided inverse.
+Restriction to the left input summand $C$ gives the read equation, and restriction
+to the right input summand $C\times V$ gives the update equation.
+Conversely, equality on both summands gives equality of maps on the sum.
 
 \end{proof}
+
+In \eqref{eq:4.46}, the same $h$ is used for the input of reads, the state
+component of the input of updates, and the output of updates.
+This is the preservation condition for the shared state.
+
+\begin{proposition}[Invertible changes preserving both operations]\label{prop:4.38}
+
+The group of invertible changes of a lens is the following subgroup of
+$\mathrm{Aut}(C)\times\mathrm{Aut}(V)$:
+\begin{equation*}
+\begin{aligned}
+G_L
+ &=G_{\mathrm{get}}\cap G_{\mathrm{put}}
+ =G_{\mathrm{put}}\subseteq G_{\mathrm{get}},\\
+G_{\mathrm{get}}&=\{(h,u)\mid gh=ug\},\\
+G_{\mathrm{put}}&=\{(h,u)\mid hp=p(h\times u)\}
+\end{aligned}
+\tag{4.47}\label{eq:4.47}
+\end{equation*}
+
+Equation~\eqref{eq:4.46} says that the input and output changes constructed from
+this same pair $(h,u)$ commute with $c_L$.
+
+\end{proposition}
+
+\begin{proof}
+
+Both conditions are closed under identities, composition, and inverses.
+Their intersection consists exactly of the invertible morphisms satisfying
+\eqref{eq:4.44}. Since preservation of updates implies preservation of reads,
+this intersection equals $G_{\mathrm{put}}$.
+The last assertion follows from Proposition~\ref{prop:4.37}.
+
+\end{proof}
+
+In Example~\ref{ex:1.35} of Chapter~\ref{chap:1}, of the four bijections
+preserving reads, only two also preserved updates.
+Thus the inclusion in \eqref{eq:4.47} is strict in general.
+Preserving updates further constrains the allowed correspondence of states.
 
 \begin{example}[A semantics-preserving morphism that merges information]\label{ex:4.39}
 
-Take the product lens with the one-element view set $V=\{*\}$ and $K=\{0,1\}$.
-Let the reference view be $*$, and define an endomorphism by
+For product lenses $C=V\times K$ and $C'=V\times K'$ over a nonempty view set $V$,
+any map $t:K\to K'$ satisfies \eqref{eq:4.44} through
 \begin{equation*}
-h(*,k)=(*,0),\qquad u=\mathrm{id}_V
-\tag{4.46}\label{eq:4.46}
+h(v,k)=(v,t(k)),\qquad u=\mathrm{id}_V
+\tag{4.48}\label{eq:4.48}
 \end{equation*}
-The read is always $*$, and an update to the view does not change the state, so this map
-satisfies \eqref{eq:4.43}.
-It sends the two states of the reference fiber to the same state, so the map on the
-reference fiber is not injective.
+
+Indeed, both reads give $v$, and an update to the displayed value $w$ gives
+$(w,t(k))$ in either order.
+If $K=\{0,1\}$ and $K'=\{*\}$, then $h$ is not injective.
+General semantics-preserving morphisms include such aggregation of information;
+taking the invertible ones yields the group in \eqref{eq:4.47}.
 
 \end{example}
 
@@ -1247,7 +1304,7 @@ If, for each named edge $e:v\to w$ and each observation,
 \begin{equation*}
 a_wX(e)=X'(e)a_v,\qquad
 o_{X'}(v)a_v=o_X(v)
-\tag{4.47}\label{eq:4.47}
+\tag{4.49}\label{eq:4.49}
 \end{equation*}
 then $a$ determines a unique semantics-preserving morphism of protocols.
 Moreover, for adapters $q:X\to Y$ and $q':X'\to Y'$ and semantics-preserving morphisms
@@ -1256,23 +1313,23 @@ $a:X\to X'$ and $b:Y\to Y'$,
 bq=q'a
 \quad\Longleftrightarrow\quad
 b_vq_v=q'_va_v\quad\text{(for every vertex }v\text{)}
-\tag{4.48}\label{eq:4.48}
+\tag{4.50}\label{eq:4.50}
 \end{equation*}
 \end{proposition}
 
 \begin{proof}
 
-Condition~\eqref{eq:4.47} is the condition of Proposition~\ref{prop:1.38} and gives a
+Condition~\eqref{eq:4.49} is the condition of Proposition~\ref{prop:1.38} and gives a
 unique semantics-preserving morphism.
 Reading the preservation condition for adapters in \eqref{eq:1.23} componentwise as a
-natural transformation gives \eqref{eq:4.48}.
+natural transformation gives \eqref{eq:4.50}.
 
 \end{proof}
 
 In this check, operations with different names are treated as separate generating edges
 even when their actions coincide.
 When adapters are changed in succession, pasting the two commutative squares shows that
-\eqref{eq:4.48} also holds for the composed change.
+\eqref{eq:4.50} also holds for the composed change.
 
 \section{Comparison of semantics and typed constructions}\label{sec:4.12}
 
@@ -1288,13 +1345,13 @@ define the group preserving the comparison by
 \mathrm{Cmp}(c)=
 \{(a,b)\in\mathrm{Aut}_{\mathcal{C}}(X)\times\mathrm{Aut}_{\mathcal{C}}(Y)
 \mid bc=ca\}
-\tag{4.49}\label{eq:4.49}
+\tag{4.51}\label{eq:4.51}
 \end{equation*}
 Then
 \begin{equation*}
 \mathrm{Cmp}(c)\xrightarrow{\sim}\mathrm{Cmp}(F(c)),
 \qquad(a,b)\longmapsto(F(a),F(b))
-\tag{4.50}\label{eq:4.50}
+\tag{4.52}\label{eq:4.52}
 \end{equation*}
 is a group isomorphism.
 If $c$ is an isomorphism, the inverse of the first projection,
@@ -1321,17 +1378,19 @@ the semantics of fixed-view lenses and of fixed protocols to the categories of t
 objects constructed from each.
 Therefore the invertible changes that preserve semantics-preserving morphisms of
 lenses or protocol adapters can be recovered exactly from the typed constructions.
-In this application the view and the protocol schema are fixed.
-The relative lens morphisms of Definition~\ref{def:4.36} handle the two
-operation-preservation equations over a common view.
+For lenses whose views also change, take the view component in
+Definition~\ref{def:1.42} to be $u$ and the write component to be $h\times u$.
+By \eqref{eq:4.44} and Proposition~\ref{prop:4.37}, extracting and assembling
+the role maps are mutually inverse, giving the same conclusion.
 
-To connect the core defects of this chapter with changes of operations, we again supply
-the input of Definition~\ref{def:4.17}.
-We place a core on each vertex and, on each edge, a strong lift with respect to the
-projection to the extraction base, and we fix two paths over the same base together with
-specified comparisons.
-When geometries are treated as well, we use the two-level universality and the edge
-sections of \S\ref{sec:4.9}.
+Once a category with these semantics-preservation conditions and a functor to the
+base have been defined, choose strongly opcartesian edge lifts and specified comparisons.
+The defects of \S\S\ref{sec:4.5}--\ref{sec:4.7} then express discrepancies
+between changes that preserve the actual operations.
+To connect further with transport of readings equipped with geometry, supply
+the core morphism and the comparisons of local realizations of Definition~\ref{def:4.9}.
+Providing these data in this order connects the meaning of operations, changes of
+reading, and lifts of geometries.
 
 \section*{Summary of the Chapter}
 
@@ -1348,11 +1407,10 @@ cores, extracted the three comparisons of local realizations as the existence co
 (\S\S\ref{sec:4.2}--\ref{sec:4.3}).
 \item \textbf{Coherence of units and composition.} From the uniqueness of factorizations
 we obtained the functors between fibers and the natural isomorphisms for units and
-composition of the canonical transport. Triple composites and the projection to the core
+composition. Triple composites and the projection to the core
 are coherent as well (\S\ref{sec:4.4}).
 \item \textbf{Obstructions for specified comparisons.} We expressed the difference from
-the canonical comparison as a noncommutative automorphism and showed, for finite
-comparison diagrams of cores, that vanishing of the obstruction is equivalent to an edge
+the canonical comparison as a noncommutative automorphism and showed that vanishing of the obstruction is equivalent to an edge
 reselection making all faces coherent.
 Pasting faces requires additional coherence conditions among the specified comparisons
 (\S\S\ref{sec:4.5}--\ref{sec:4.8}).
@@ -1361,12 +1419,11 @@ been lifted to the geometry, being able to remove the remainder by kernel change
 same selection corresponds to overall coherence.
 Even if each level has a solution independently, without a lift there is no overall
 solution (\S\ref{sec:4.9}).
-\item \textbf{Comparisons preserving the meaning of operations.} For lenses over a common
-view, the same state map is used for reads and updates.
-For protocols, all named operations and adapters are preserved simultaneously.
-For fixed-view lenses and fixed-schema protocols, the invertible changes preserving a
-comparison can be recovered across the constructed typed categories
-(\S\S\ref{sec:4.10}--\ref{sec:4.12}).
+\item \textbf{Comparisons preserving the meaning of operations.} For lenses,
+reads and updates use the same state map, and preservation of updates also implies
+preservation of reads. For protocols, all named operations and adapters are preserved
+simultaneously. The invertible changes preserving these comparisons can be recovered
+across the constructed typed categories (\S\S\ref{sec:4.10}--\ref{sec:4.12}).
 \end{itemize}
 
 For the order-processing API of the opening, the discrepancy between the route that moves
@@ -1374,9 +1431,9 @@ directly from the old version to the new one and the route through the intermedi
 version is extracted as a defect.
 Even a discrepancy that could be absorbed into one of two independent edges must be made
 coherent simultaneously once that edge is shared with another face.
-Given the core input of Definition~\ref{def:4.17}, Theorem~\ref{thm:4.23} characterizes
-the existence of an edge selection realizing the specified comparisons on all faces as
-the vanishing of the obstruction.
+Theorem~\ref{thm:4.23} characterizes the existence of a family of transformations
+realizing the specified comparisons on every face under consideration as the vanishing
+of the obstruction.
 When both levels, core and geometry, are treated, the lifts and the kernel changes are
 again performed for the same selection.
 

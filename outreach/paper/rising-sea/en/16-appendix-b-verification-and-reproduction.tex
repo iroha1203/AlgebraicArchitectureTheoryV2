@@ -14,7 +14,7 @@ lake build +Formal.AG
 \end{verbatim}}
 
 Next, run the following in \texttt{research/lean}.
-The targets below, together with the dependency modules that are built automatically, contain all the Research-side proof sources referred to in Appendix~\ref{app:A}.
+The targets below, together with the dependency modules that are built automatically, contain the Research-side proof sources that Appendix~\ref{app:A} cites at version \texttt{719f81f47d41}.
 
 {\small\begin{verbatim}
 cd research/lean
@@ -40,4 +40,27 @@ lake build \
   ResearchLean.AG.UniformInvariance.AtlasPositioning \
   ResearchLean.AG.UniformInvariance.ConditionCAllAFiring \
   ResearchLean.AG.UniformInvariance.GLocalV1T3T6Uniformity
+\end{verbatim}}
+
+For general transport, lenses, base change, and comparison groups, run the following in the same \texttt{research/lean} directory.
+The declarations cited at this version in Appendix~\ref{app:A} are all contained in these targets and their dependency modules.
+
+{\small\begin{verbatim}
+git checkout --detach 7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6
+lake build \
+  ResearchLean.AG.ComparisonInformation.F37GeneralComparison \
+  ResearchLean.AG.CrossStageCoherence.ArbitraryStrongLiftPseudofunctor \
+  ResearchLean.AG.CrossStageCoherence.CompositeQualification \
+  ResearchLean.AG.DoctrineFiberProduct.ArbitrarySemanticCleavageCoherence \
+  ResearchLean.AG.FullGeometryNormalization.\
+SemanticDerivedCanonicalComparisonIdentification \
+  ResearchLean.AG.FullGeometryNormalization.SemanticDerivedDiagnosticEndpointBridge \
+  ResearchLean.AG.FullGeometryNormalization.\
+SemanticDerivedSelectorGlobalBottomReflection \
+  ResearchLean.AG.FullGeometryNormalization.SemanticExactBarBetaKaroubiProjection \
+  ResearchLean.AG.LocalSemanticReconstruction.\
+SemanticGeneratedComparisonReconstruction \
+  ResearchLean.AG.RealizationReconstruction.FixedFSemidirectProduct \
+  ResearchLean.AG.RealizationReconstruction.GeneralRelativeLensComparison \
+  ResearchLean.AG.TransportCoherence.ArbitraryObstruction
 \end{verbatim}}

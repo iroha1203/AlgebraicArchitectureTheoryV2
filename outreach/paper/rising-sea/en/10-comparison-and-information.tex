@@ -50,7 +50,7 @@ image and a section of it & General conditions for the determination, and constr
 lifts for the generated comparisons of AAT (\S\S\ref{sec:7.4}--\ref{sec:7.6}) \\
 \addlinespace[3pt]
 How do the operations of software constrain changes? & Connected components of the graph of
-operations & Classification and number of the changes that preserve operations
+operations & A split short exact sequence common to lenses and protocols, and the number of changes
 (\S\S\ref{sec:7.7}--\ref{sec:7.8}) \\
 \bottomrule
 \end{xltabular}
@@ -117,7 +117,7 @@ G_X^0=\ker\bigl(\mathrm{Aut}(X)\xrightarrow{\pi}
 \Gamma_c^0=\Gamma_c\cap(G_X^0\times G_Y^0)
 \tag{7.3}\label{eq:7.3}
 \end{equation*}
-The unadorned $\Gamma_c$ is the notation for the case where Definition~\ref{def:7.2} is used
+In this application to AAT, the unadorned $\Gamma_c$ denotes the case where Definition~\ref{def:7.2} is used
 with the full endpoint automorphism groups.
 What is fixed is the image in the base of the changes $u,v$, and $\pi(c)$ may remain a
 general comparison.
@@ -126,27 +126,29 @@ be specified separately.
 
 \end{definition}
 
-\begin{proposition}[The group obtained from a comparison object of full geometries]\label{prop:7.3}
+\begin{proposition}[The group obtained from a comparison object]\label{prop:7.3}
 
-For a comparison $c:X\to Y$ of full geometries, the group $\Gamma_c^0$ of \eqref{eq:7.3} is
-a subgroup of $G_X^0\times G_Y^0$.
-Using the embedding $J:E_{\mathrm{geom}}\to\mathrm{Kar}(E_{\mathrm{geom}})$ by the identity
-idempotents, it is isomorphic to the group of invertible changes of $J(c)$ fixing the base
-in the category of comparisons $\mathcal{M}(E_{\mathrm{geom}})$ of Chapter~\ref{chap:6}.
-This identification commutes with the projections to the endpoints.
+Equation~\eqref{eq:7.2} defines a subgroup of $G_X\times G_Y$.
+With the full endpoint groups, it is the automorphism group of $c$ in the arrow
+category $\mathrm{Arr}(E)$ of Chapter~\ref{chap:6}.
+Via the embedding $J:E\to\mathrm{Kar}(E)$ by identity idempotents, it is also
+isomorphic to the automorphism group of $J(c)$ in the category of comparisons
+$\mathcal{M}(E)=\mathrm{Arr}(\mathrm{Kar}(E))$.
+These identifications commute with the endpoint projections and, in AAT, restrict
+to the subgroups fixing the base.
 
 \end{proposition}
 
 \begin{proof}
 
-The identity pair is compatible, and the product and the inverse of two compatible pairs
-also satisfy $vc=cu$.
-These operations preserve the identity map of the base as well.
-Since the morphisms between the $J(X)=(X,1_X)$ carry no additional constraint from
-idempotents, the same endpoint pair can be read as an invertible square in the category of
-morphisms of the idempotent completion.
-This correspondence and its inverse preserve the morphisms at the endpoints, hence preserve
-the group law, the projections, and the condition of fixing the base.
+The identity pair satisfies \eqref{eq:7.2}.
+For two compatible pairs, $v_2v_1c=v_2cu_1=cu_2u_1$, so their product is compatible.
+Composing inverses on both sides of $vc=cu$ gives $v^{-1}c=cu^{-1}$.
+An automorphism in the arrow category is precisely a commutative square with
+isomorphisms at both ends. Moreover, morphisms between $J(X)=(X,1_X)$ carry no
+additional constraint from idempotents, and $J$ is fully faithful.
+Both directions of the correspondence retain the endpoint morphisms, so they also
+preserve the projections and the conditions on the base.
 
 \end{proof}
 
@@ -157,20 +159,18 @@ the comparison as it is.
 
 \begin{theorem}[Projections to the endpoints and following changes]\label{thm:7.4}
 
-We use the same comparison of full geometries and base-fixing groups as in
-Proposition~\ref{prop:7.3}.
-Take the projections to the endpoints $p_X:\Gamma_c^0\to G_X^0$ and
-$p_Y:\Gamma_c^0\to G_Y^0$.
+Take the projections to the endpoints $p_X:\Gamma_c\to G_X$ and
+$p_Y:\Gamma_c\to G_Y$.
 Their kernels are, respectively,
 \begin{equation*}
-\ker p_X\cong T_c:=\{v\in G_Y^0\mid vc=c\},\qquad
-\ker p_Y\cong S_c:=\{u\in G_X^0\mid cu=c\}
+\ker p_X\cong T_c:=\{v\in G_Y\mid vc=c\},\qquad
+\ker p_Y\cong S_c:=\{u\in G_X\mid cu=c\}
 \tag{7.4}\label{eq:7.4}
 \end{equation*}
-A necessary and sufficient condition for the existence of a $v$ following $u\in G_X^0$ is
+A necessary and sufficient condition for the existence of a $v$ following $u\in G_X$ is
 $u\in\mathrm{im}\,p_X$.
 If one following change $v_0$ exists, all the candidates are $T_cv_0$.
-Likewise, if a $u_0$ following $v\in G_Y^0$ exists, all the candidates are $S_cu_0$.
+Likewise, if a $u_0$ following $v\in G_Y$ exists, all the candidates are $S_cu_0$.
 
 \end{theorem}
 
@@ -200,25 +200,21 @@ set itself needs no specified reference.
 
 \begin{corollary}[Changes of an isomorphism comparison]\label{cor:7.5}
 
-If a comparison $c:X\xrightarrow{\sim}Y$ of full geometries is an isomorphism, then
+If $c$ is an isomorphism and conjugation $u\mapsto cuc^{-1}$ matches $G_X$ with $G_Y$, then
 \begin{equation*}
-\Gamma_c^0=\{(u,cuc^{-1})\mid u\in G_X^0\},\qquad
-\Gamma_c^0\cong G_X^0
+\Gamma_c=\{(u,cuc^{-1})\mid u\in G_X\},\qquad
+\Gamma_c\cong G_X\cong G_Y.
 \tag{7.6}\label{eq:7.6}
 \end{equation*}
-When the full endpoint automorphism groups are used in an arbitrary category as well, the
-comparison-preserving group is isomorphic as a group to $\mathrm{Aut}(X)$ via
-$u\mapsto(u,cuc^{-1})$.
 
 \end{corollary}
 
 \begin{proof}
 
-The equation $vc=cu$ is equivalent to $v=cuc^{-1}$.
-In the case of the full endpoint groups, this gives both inverses and the group law.
-In the base-fixing version for full geometries,
-$\pi(cuc^{-1})=\pi(c)1\pi(c)^{-1}=1$ shows that the same correspondence preserves the
-base-fixing groups.
+Solve \eqref{eq:7.2} as $v=cuc^{-1}$.
+The conjugation condition holds automatically for the full endpoint groups.
+It also holds for the groups fixing the base, since
+$\pi(cuc^{-1})=\pi(c)1\pi(c)^{-1}=1$.
 
 \end{proof}
 
@@ -872,10 +868,8 @@ through the normalization under Ad.
 
 \begin{theorem}[Distinguishing and lifting for a generated comparison]\label{thm:7.21}
 
-Fix the common input of Construction~\ref{cons:5.37}. From the square realized by finite
-codes, the core and the strong edges at each vertex, the conditions on the end of each face
-and on the two paths in the base, the specified comparisons, the chosen face, the
-coefficients, and the original full geometry, we generate the canonical comparison
+From the same exact square of bases, face, original core, coefficients, and
+original geometry of Construction~\ref{cons:5.37}, generate the canonical comparison
 $\alpha:X\xrightarrow{\sim}Y$ of full geometries.
 We assume Ad for the source core and use the canonical normalizations at the two endpoints.
 By Lemma~\ref{lem:6.15} and Theorem~\ref{thm:6.16} of Chapter~\ref{chap:6}, the two
@@ -932,8 +926,7 @@ geometries generated from the same input as well.
 
 \begin{corollary}[Selection of the normalization by the diagnosis]\label{cor:7.22}
 
-Take the common input of Construction~\ref{cons:5.37} and a cochain on the same diagram, and
-write the selection condition of Construction~\ref{cons:5.40} as $\chi$.
+Take the same input of Construction~\ref{cons:5.40} and write its selection condition as $\chi$.
 In the notation of Chapter~\ref{chap:6} we set $\beta=d\alpha=\alpha e$ and let $H$ be the
 group of endpoint changes commuting with $e,d$.
 The restriction of Construction~\ref{cons:7.13}, from $\Gamma_\alpha\cap H$ to
@@ -1090,6 +1083,15 @@ For finite $V,K$, the number of such changes is
 |p^{-1}(u)|=(|K|!)^{|\pi_0(Q)|}
 \tag{7.42}\label{eq:7.42}
 \end{equation*}
+Moreover, writing the action of $H$ on the connected components as $u\cdot j$, we have
+\begin{equation*}
+A_Q\cong M_Q\rtimes H,\qquad
+(u\cdot\psi)_j=\psi_{u^{-1}\cdot j}
+\tag{7.43}\label{eq:7.43}
+\end{equation*}
+
+The product on the right is $(\psi,u)(\eta,u')=(\psi(u\cdot\eta),uu')$.
+
 \end{theorem}
 
 \begin{proof}
@@ -1103,16 +1105,19 @@ The right torsor structure of each fiber is obtained by applying Theorem~\ref{th
 $p$.
 Counting the families of permutations of Theorem~\ref{thm:7.24} gives \eqref{eq:7.42}.
 
+For the semidirect product, index the family by the component at the destination
+rather than at the source. Sending $(\psi,u)$ to
+$h(v,k)=(u_V(v),\psi_{[u_V(v)]}(k))$ turns \eqref{eq:7.40} into the product
+of \eqref{eq:7.43}. Every change has a unique such expression, giving a group isomorphism.
+
 \end{proof}
 
 \begin{corollary}[The version preserving the selected states]\label{cor:7.26}
 
 Fix $k_0\in K$ and take $s_0(v)=(v,k_0)$ as the selected state.
-If $hs_0=s_0u_V$ is required as well, the permutation of each connected component is
-restricted to $\mathrm{Sym}(K)_{k_0}=\{\phi\mid\phi(k_0)=k_0\}$.
-We obtain the bijection between this family of permutations and each fiber, the split short
-exact sequence, and the right torsor under the kernel.
-The section is the same $\sigma(u)$, which does not change the internal state.
+If $hs_0=s_0u_V$ is also required, replace $\mathrm{Sym}(K)$ in
+Theorems~\ref{thm:7.24} and~\ref{thm:7.25} by
+$\mathrm{Sym}(K)_{k_0}=\{\phi\mid\phi(k_0)=k_0\}$.
 In the finite case, the number of elements of each fiber is $((|K|-1)!)^{|\pi_0(Q)|}$.
 
 \end{corollary}
@@ -1161,45 +1166,51 @@ options for the state correspondence that remain in the refactoring.
 
 \subsection*{Lenses: the total update ties all the views together}
 
-\begin{proposition}[Changes of a product lens]\label{prop:7.27}
+\begin{proposition}[A common classification of lens changes]\label{prop:7.27}
 
-Fix a reference view $v_0\in V$ and a finite set $K$, and consider the self-changes of the
-same product lens $C=V\times K$.
-Fix a visible permutation $u:V\xrightarrow{\sim}V$.
-The preservation conditions for a bijection $h:C\xrightarrow{\sim}C$ are
+Take a total lens $L=(C,g,p)$ of Definition~\ref{def:1.32} and its finite
+reference fiber $K_L$. Using the product decomposition $C\cong V\times K_L$
+of Proposition~\ref{prop:1.33}, form the graph whose vertices are views and whose
+edge for each ordered pair $(v,w)$ is the update to $w$.
+Any admissible visible group $H\le\mathrm{Sym}(V)$ moves edges by
+$(v,w)\mapsto(u(v),u(w))$. This input satisfies Definition~\ref{def:7.23},
+and its $A_Q$ is isomorphic as a group to the invertible lens changes satisfying
 \begin{equation*}
 gh=ug,\qquad h(p(c,w))=p(h(c),u(w))
-\tag{7.43}\label{eq:7.43}
-\end{equation*}
-In the graph whose vertices are the views and whose named edges of updates are the ordered
-pairs $(v,w)$, these changes correspond bijectively to the state changes that follow the
-visible permutation $u$ and preserve all the named operations.
-Each change has a unique permutation $\phi\in\mathrm{Sym}(K)$ with
-\begin{equation*}
-h(v,k)=(u(v),\phi(k))
 \tag{7.44}\label{eq:7.44}
 \end{equation*}
-Conversely, this formula builds a change from an arbitrary $\phi$.
-Hence there are $|K|!$ changes following a fixed visible permutation.
+
+The set $V$ is nonempty because it has a reference view, and the graph is connected.
+Thus we obtain
+\begin{equation*}
+1\longrightarrow\mathrm{Sym}(K_L)\longrightarrow A_L
+\longrightarrow H\longrightarrow1,
+\qquad
+h(v,k)=(u(v),\phi(k))
+\tag{7.45}\label{eq:7.45}
+\end{equation*}
+
+Here the action on connected components is trivial, so the semidirect product
+is a direct product. There are $|K_L|!$ changes following each visible change.
 
 \end{proposition}
 
 \begin{proof}
 
-The read of a product lens is the first component, and the named edge $(v,w)$ sends
-$(v,k)$ to $(w,k)$. Reading the two preservation conditions in their respective types gives
-the conditions for a following state change.
-Since the updates for all the ordered pairs are preserved, the hidden permutation at each
-view agrees with the permutation at the reference view.
-This is \eqref{eq:7.44}, and evaluating at the reference view gives uniqueness as well.
-Conversely, $u\times\phi$ satisfies both preservation equations.
-From these two inverses we obtain the bijection between the set of changes and
-$\mathrm{Sym}(K)$, and the number.
+In the product decomposition, $g(v,k)=v$ and $p((v,k),w)=(w,k)$.
+The first part of \eqref{eq:7.44} is exactly the observation condition of
+Definition~\ref{def:7.23}, and the second is preservation of operations on every edge.
+The correspondence through the product decomposition works in both directions
+and preserves identities and composition.
+By Theorem~\ref{thm:7.24}, the necessary and sufficient condition is to use the
+same permutation $\phi$ at every vertex.
+The rest follows from Theorem~\ref{thm:7.25}.
 
 \end{proof}
 
-When the selected section is fixed as $s_0(v)=(v,k_0)$, the condition $hs_0=s_0u$ is
-equivalent to the permutation of each fiber fixing $k_0$.
+Requiring a selected section $s:V\to C$ to satisfy $gs=\mathrm{id}$ and
+$p(s(v),w)=s(w)$ makes it $s(v)=(v,k_0)$ in the product decomposition.
+Changes preserving this section as well correspond to Corollary~\ref{cor:7.26}.
 
 \begin{example}[Carrying over the payment data even when the editing of the shipping
 address is separated]\label{ex:7.28}
@@ -1230,7 +1241,7 @@ view 0 while exchanging 1 and 2 only at view 1. For this correspondence $h$,
 \begin{equation*}
 h(p((0,1),1))=(1,2),\qquad
 p(h((0,1)),1)=(1,1)
-\tag{7.45}\label{eq:7.45}
+\tag{7.46}\label{eq:7.46}
 \end{equation*}
 Changing the shipping address first and then moving to the new format gives code 2, while
 moving to the new format and then changing the shipping address gives code 1, so the payment
@@ -1259,7 +1270,7 @@ The invertible changes of the realization following a fixed $u\in H$ are the ver
 bijections $\phi_v:K\to K$ satisfying
 \begin{equation*}
 \phi_{t(e)}F(e)=F(u_E(e))\phi_{s(e)}
-\tag{7.46}\label{eq:7.46}
+\tag{7.47}\label{eq:7.47}
 \end{equation*}
 and are the same as the operation-preserving changes of Definition~\ref{def:7.23}.
 The classification of Theorem~\ref{thm:7.25} by the split short exact sequence, the section,
@@ -1272,7 +1283,7 @@ and the torsor under the kernel therefore applies to the group of changes.
 We gather all the states of the realization, keeping the control points distinct, into
 $\coprod_{v\in V}F(v)=V\times K$.
 The readout of the control point is the observation $o(v,k)=v$ of the previous section.
-Equation~\eqref{eq:7.46} is equivalent to $\phi_{t(e)}=\phi_{s(e)}$.
+Equation~\eqref{eq:7.47} is equivalent to $\phi_{t(e)}=\phi_{s(e)}$.
 By the same induction on paths as in Proposition~\ref{prop:1.38}, this equality extends to
 all the executions.
 The visible changes preserve the path equivalence as well, so the correspondence is
@@ -1289,7 +1300,7 @@ $\mathrm{Prot}(Q,\Pi,1)$, where the observation is constant to a one-element set
 When $u$ is moved as well, we record at the same time the isomorphisms following the
 reindexing of the control points and of the names of the operations.
 For protocols with general state transitions, the actual edge maps remain inside
-\eqref{eq:7.46}.
+\eqref{eq:7.47}.
 The classification above by the connected components alone is a consequence obtained from
 the input that each edge carries the internal state by the identity.
 
@@ -1340,9 +1351,11 @@ Named operations preserved as well & $2^2=4$ & $2^2=4$ \\
 
 The exchange moves the vertices $0\leftrightarrow2$ and $1\leftrightarrow3$ and the edges
 $a\leftrightarrow b$ at the same time.
-One exchange that does not change the internal state can be chosen.
-Composing it with the permutations of the two components gives the four
-operation-preserving changes following the exchange.
+The exchange leaving the internal state unchanged gives a section, and choosing
+the permutations of the two components after it gives all candidates.
+For the visible group consisting of the identity and the worker exchange, the kernel
+is $S_2\times S_2$. The exchange interchanges these factors, so the full change
+group is $(S_2\times S_2)\rtimes S_2$, of order 8.
 
 \subsection*{Connection with the comparison-preserving group}
 
@@ -1352,18 +1365,28 @@ semantics-preserving automorphisms for a fixed view with the group of typed auto
 the side of AAT.
 For protocols as well, the same proposition makes the invertible morphisms preserving the
 vertex maps, the named operations, and the observation correspond.
-Fix an adapter $c:X\to Y$ and apply Theorem~\ref{thm:4.41} to the fully faithful functor of
-Proposition~\ref{prop:1.43}.
-The group of endpoint pairs satisfying $vc=cu$ is then identified between lenses over a
-fixed view, or protocols over a fixed schema, and their typed constructions.
-This correspondence is compatible with the projections to the endpoints.
+When visible changes are allowed, specify the same reindexing of views or control
+points and operation names on both sides.
+Equations~\eqref{eq:7.44} and~\eqref{eq:7.47} are the commutativity conditions
+for these typed operations.
+
+Fix also an adapter $c:X\to Y$ and apply Theorem~\ref{thm:4.41} to the fully
+faithful functor of Proposition~\ref{prop:1.43}.
+Then the group of endpoint pairs satisfying the compatibility condition $vc=cu$
+is identified between the original semantics and the typed construction.
+Since the identification matches the endpoint components, it also matches the
+projections, their kernels, and the torsors of nonempty fibers.
+In this application take $E$ of Definition~\ref{def:7.2} to be the category of
+typed objects, with the typed changes preserving the specified operations and
+observations as admissible groups.
+The classifications of Theorems~\ref{thm:7.4} and~\ref{thm:7.14} then become
+classifications of the original semantics.
 
 The equalities for the operations determine which subgroup of the comparison-preserving
 group is chosen, and restrict the freedom of lifting.
 For lenses the total update ties all the views together, and in the example of protocols a
 change remains for each independent worker.
-For product lenses we describe this freedom by the bijection and the number over a fixed
-visible permutation, and for protocols by the split short exact sequence and each fiber.
+Their difference is thus explained by different inputs to the same theorem on connected components.
 
 \section*{Summary of the Chapter}
 
@@ -1374,8 +1397,8 @@ for each.
 \begin{itemize}
 \item \textbf{The group of changes preserving a comparison.} For a single comparison $c$, we
 constructed the group of endpoint pairs satisfying $vc=cu$.
-For the base-fixing groups of full geometries, its projections and kernels give the
-condition for following and the freedom among all the candidates.
+Its projections and kernels give the condition for following a change on one side
+and the freedom among all following candidates.
 Changes generated from a common original object preserve the comparison and are compatible
 with the re-presentation of the input by isomorphisms
 (\S\S\ref{sec:7.1}--\ref{sec:7.2}).
@@ -1393,13 +1416,10 @@ given change cannot in some cases be determined from the value after normalizati
 kernel of the restricted homomorphism describes the other candidates.
 Each fiber is a torsor under this kernel, and the loss of information and the options for
 lifting can be read from the same restriction map (\S\ref{sec:7.6}).
-\item \textbf{Classification by operations.} We described the state changes preserving the
-operations for each connected component, and obtained a split short exact sequence onto the
-visible group.
-For product lenses we put the changes following a single visible permutation in
-correspondence with the hidden permutations.
-For protocols keeping an internal state, independent changes remain on independent
-components (\S\S\ref{sec:7.7}--\ref{sec:7.8}).
+\item \textbf{Classification by operations.} Using the connected components of the
+operation graph, we described lens and protocol changes by a common split short exact
+sequence. Correspondences agree along operations within each component, while independent
+changes remain on independent components (\S\S\ref{sec:7.7}--\ref{sec:7.8}).
 \end{itemize}
 
 In the refactoring of the opening, we require that the payment data be carried over by the
