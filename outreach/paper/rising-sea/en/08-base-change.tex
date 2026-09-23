@@ -57,8 +57,7 @@ Fiber products of extraction doctrines \\
 Can the structure on the target be read on the original? & Backward reindexing of Atoms &
 Cartesian pullback and its equivalence with transport \\
 \addlinespace[3pt]
-Can the order of transport and pullback be exchanged? & Squares generated from finite codes,
-and mates & A canonical invertible comparison \\
+Can the order of transport and pullback be exchanged? & A mate built from the two universal properties & A canonical invertible comparison \\
 \addlinespace[3pt]
 Can several comparisons and diagnoses also be carried? & Commutative base diagrams and the
 correspondence of end groups & Preservation and reflection of coherence, vanishing of defects,
@@ -69,7 +68,7 @@ inputs that actually carry structure & A necessary and sufficient condition for 
 transport along refinements \\
 \addlinespace[3pt]
 What is compared when geometry and normalization are included? & Two routes of full geometries
-built from a finitely presented square and the same comparison diagram & The generated
+built from the same input & The generated
 comparison analyzed in Chapter~\ref{chap:6} \\
 \bottomrule
 \end{xltabular}
@@ -259,8 +258,7 @@ base $\tau$, and composing its upper-level equation with $u^{-1}$ gives the same
 
 \begin{lemma}[Pullback functors and composition comparisons]\label{lem:5.7}
 
-Choose one cartesian lift for each $\sigma,Q$ by Theorem~\ref{thm:5.6} and fix it as the
-canonical choice. For this choice we obtain a functor $\sigma^*:E_{b'}\to E_b$ between fiber
+Choosing a cartesian lift for each $\sigma,Q$ gives a functor $\sigma^*:E_{b'}\to E_b$ between fiber
 categories. The image of a vertical morphism $v:Q\to Q'$ is determined uniquely by
 \begin{equation*}
 \kappa_{\sigma,Q'}\,\sigma^*(v)
@@ -349,17 +347,9 @@ Let $V$ be the route that splits the whole and then selects the scope, and $D$ t
 selects the scope and then splits; from the universal properties of transport and pullback
 we build a comparison between them.
 
-In what follows we assume that Atom equality is decidable. We fix two morphisms presented by
-the finite codes of Definition~\ref{def:5.14}, a table of selected sources with a common
-image, and a finite diagnostic diagram. The two morphisms have a common target. The square of
-this section is the pointed fiber product obtained by decoding these data and applying
-Construction~\ref{cons:5.1}. The concrete definition of the finite codes is given
-in~\S\ref{sec:5.4}. For transport we use the canonical construction of Chapter~\ref{chap:4},
-and for pullback the canonical lifts determined by these finite codes.
-
 \begin{construction}[Two routes with matched types]\label{cons:5.10}
 
-Write the pointed fiber product constructed from these finite codes as
+Write the pointed fiber product of Construction~\ref{cons:5.1} as
 \begin{equation*}
 \begin{array}{ccc}
 b_{12}&\xrightarrow{\ \pi_2\ }&b_2\\
@@ -463,25 +453,24 @@ The reason for invertibility lies not only in the shape of the fiber product but
 that the unit and counit of the actual transport of cores are invertible. The proof also
 shows which components of the comparison have to be checked.
 
-\begin{proposition}[Comparisons under a different choice of lifts]\label{prop:5.12}
+\begin{proposition}[Testing agreement with a specified comparison]\label{prop:5.12}
 
-In the square of the same finite codes as in Construction~\ref{cons:5.10}, choose different
-cartesian lifts along $\pi_1$ and $\sigma_2$. Let $D',V'$ be the resulting two routes and
-$\alpha':D'\to V'$ the mate built from the adjunctions. Composing the unique isomorphisms
-that connect each lift with the canonical choice, together with the remaining transport
-functors, to form $j_D:D'\xrightarrow{\sim}D$ and $j_V:V'\xrightarrow{\sim}V$, we have
+A separately specified morphism $a_P:DP\to VP$ satisfies \eqref{eq:5.18}
+if and only if $a_P=\alpha_P$.
+In particular, if $a_P$ is invertible, then
 \begin{equation*}
-\alpha\,j_D=j_V\,\alpha'
+\Delta_P=a_P\alpha_P^{-1}\in\mathrm{Aut}_{E_{b_2}}(VP),
+\qquad
+a_P=\alpha_P\Longleftrightarrow\Delta_P=1.
 \tag{5.19}\label{eq:5.19}
 \end{equation*}
+
 \end{proposition}
 
 \begin{proof}
 
-The comparisons of lifts preserve composition with those lifts. Substituting this equation
-into the factorizations of the units and counits of the adjunctions, the three-step
-composite that builds the modified mate agrees with the composite that places $j_D,j_V$
-before and after the canonical mate.
+The first assertion follows from the two applications of uniqueness in \eqref{eq:5.18}.
+For the second, compose on the right with $\alpha_P$.
 
 \end{proof}
 
@@ -498,12 +487,11 @@ must each be checked by its own equation.
 
 \section{Existence of the constructions and the scope of finite presentation}\label{sec:5.4}
 
-The pullback of cores in~\S\ref{sec:5.2} exists along every exact morphism. The canonical
-comparison of~\S\ref{sec:5.3} used a square generated from finite codes. Here we fix that
-format and classify which base morphisms can be presented when the presentations of the
-endpoints may be rechosen. The same format is also used for the reconstruction in
-Chapter~\ref{chap:8}. The discussion of comparisons and diagnoses continues
-in~\S\ref{sec:5.5}.
+The pullbacks and canonical comparisons of \S\S\ref{sec:5.2}--\ref{sec:5.3}
+exist even when all sources cannot be described by a finite table.
+Which base morphisms a finite input format can represent needs a separate classification.
+Here we specify one concrete format also used in the subsequent reconstruction.
+The discussion of comparisons and diagnoses continues in~\S\ref{sec:5.5}.
 
 \begin{definition}[Codes by finite exception tables]\label{def:5.14}
 
@@ -1147,6 +1135,14 @@ C_W=\{c\in C\mid g(c)\in W\}
 \tag{5.39}\label{eq:5.39}
 \end{equation*}
 The restrictions of read and update define a total lens $C_W\to W$.
+Moreover, for a lens isomorphism $(h,u):(C,V)\to(C',V')$ and $W'\subseteq V'$,
+restriction of $h$ gives a lens isomorphism
+\begin{equation*}
+(C_{u^{-1}(W')},u^{-1}(W'))
+\xrightarrow{\sim}(C'_{W'},W')
+\tag{5.40}\label{eq:5.40}
+\end{equation*}
+
 
 \end{proposition}
 
@@ -1154,14 +1150,20 @@ The restrictions of read and update define a total lens $C_W\to W$.
 
 The read after an update is $g(p(c,w))=w$, so if $w\in W$ the state after the update also
 belongs to $C_W$. Reading the equations of the three laws on this subset gives the three
-laws after the restriction.
+laws after the restriction. Next, $g'h=ug$ gives
+\begin{equation*}
+h^{-1}(C'_{W'})=C_{u^{-1}(W')}.
+\tag{5.41}\label{eq:5.41}
+\end{equation*}
+
+Hence $h$ and $h^{-1}$ match the state sets.
+The update equation $h(p(c,v))=p'(h(c),u(v))$ restricts as well.
 
 \end{proof}
 
 \begin{example}[Restriction and update with four states]\label{ex:5.35}
 
-We compute the restriction of views and the correspondence of states on a product lens
-with four states. Let the displayed values be $V=\{0,1\}$ and the component preserved by
+We check Proposition~\ref{prop:5.34} on a product lens with four states. Let the displayed values be $V=\{0,1\}$ and the component preserved by
 updates be $R=\{0,1\}$, and use the product lens $C=V\times R$. Read returns the first
 component, and update rewrites only the first component. Let the displayed values of the
 target be $V'=\{A,B\}$, with the bijection $u$ sending 0 to A and 1 to B. The
@@ -1170,7 +1172,7 @@ second component. Let $W'$ be the set of displayed values to select, keeping onl
 target. That is, we set
 \begin{equation*}
 h(v,r)=(u(v),1-r),\qquad W'=\{A\}
-\tag{5.40}\label{eq:5.40}
+\tag{5.42}\label{eq:5.42}
 \end{equation*}
 Selecting the states with displayed value 0 on the original and then applying the
 correspondence, or selecting the states with displayed value A on the target, reaches the
@@ -1179,6 +1181,12 @@ updates as well. In this example, comparing the two routes specifies at the same
 which states to keep and which updates to allow.
 
 \end{example}
+
+This restriction takes place within the semantics of lenses.
+To use it as a base change of cores, construct the rolewise Atoms, operations, and Laws
+of Chapter~\ref{chap:1} and check exactness at the base and the operation-preservation
+diagrams. Preservation of semantics in \eqref{eq:5.40} alone does not uniquely
+determine the choices of covers or local data.
 
 \begin{proposition}[Restriction of protocols and adapters]\label{prop:5.36}
 
@@ -1228,35 +1236,31 @@ invertibility and the information that remains.
 
 \begin{construction}[Two routes of full geometries]\label{cons:5.37}
 
-In this section we fix the following input.
-
-\begin{itemize}
-\item Decidable Atom equality, and the square~\eqref{eq:5.14} obtained by decoding the
-finite codes of~\S\ref{sec:5.3}.
-\item A core at each vertex of the finite diagnostic diagram included in those codes, and a
-strongly opcartesian lift for each edge, where the strength is with respect to the projection to
-the extraction base.
-\item That the images in the base of the two paths of each face are equal, and that the
-core at the end of each face lies over $b_1$.
-\item A specified automorphism at the end of each face, fixing the extraction base.
-\end{itemize}
-
-Choose a face $z$ of these same data and write $P_z$ for the core at its end. Fix a
-commutative coefficient ring $k$ and a full geometry $G_z$ on $P_z$. The geometry includes
-the coverage requirements, the overlaps, and the raw system. The cochain $\omega$ used
-later is also taken for this same diagram and these cores. Using the canonical transport of
-geometries of Chapter~\ref{chap:4} and Construction~\ref{cons:5.31}, we form
+Fix the exact pointed pullback square of \eqref{eq:5.14}, a finite comparison
+diagram, a face $z$ and a cochain $\omega$, the corresponding core $P_z$ over $b_1$,
+a commutative coefficient ring $k$, and a geometry $G_z$ over $P_z$.
+The geometry is specified together with its coverage requirements, overlaps, and raw system.
+Using the canonical geometry transport of Chapter~\ref{chap:4} and
+Construction~\ref{cons:5.31}, form
 \begin{equation*}
 \overline D(G_z)=(\pi_2)_!\pi_1^*G_z,
 \qquad
 \overline V(G_z)=\sigma_2^*(\sigma_1)_!G_z
-\tag{5.41}\label{eq:5.41}
+\tag{5.43}\label{eq:5.43}
 \end{equation*}
 The lower and upper indices denote the operations on entire geometries. Both routes keep
 the coefficient ring $k$.
 
-We construct the canonical comparison of full geometries from the comparison of the two
-backward routes of~\S\ref{sec:5.8}. Setting $H_0=(\sigma_1)_!G_z$, the comparison that
+Construct the canonical comparison of full geometries
+$\overline\alpha_z:\overline D(G_z)\xrightarrow{\sim}\overline V(G_z)$ as the morphism
+satisfying the triangle corresponding to \eqref{eq:5.18}.
+The lifts of Construction~\ref{cons:5.31} and canonical geometry transport have
+two-sided inverses in their upper-level and local-data comparisons, so the units
+and counits for geometries are invertible as well.
+Thus the three-step construction of \eqref{eq:5.17} performed for geometries is invertible.
+
+This comparison also arises from the comparison of the two backward routes of
+\S\ref{sec:5.8}. Setting $H_0=(\sigma_1)_!G_z$, the comparison that
 traces the same square backwards is
 \[
 m_{H_0}:\pi_1^*\sigma_1^*H_0
@@ -1280,8 +1284,7 @@ counit. When a different choice of lifts is used, the endpoint isomorphisms buil
 Construction~\ref{cons:5.31} are inserted before and after the middle comparison. The order
 is: unit, isomorphism at the start, comparison of the backward routes, isomorphism at the
 end, counit. Substituting~\eqref{eq:5.36} and the unit-counit triangles yields the
-geometric version of~\eqref{eq:5.18}, and we write $\overline\alpha_z$ for the resulting
-isomorphism.
+geometric version of~\eqref{eq:5.18}, so uniqueness gives the same $\overline\alpha_z$.
 
 \end{construction}
 
@@ -1293,7 +1296,7 @@ $j_V:p\overline V(G_z)\xrightarrow{\sim}VP_z$ for the generated endpoint isomorp
 Then
 \begin{equation*}
 j_V\,p(\overline\alpha_z)=\alpha_{P_z}\,j_D.
-\tag{5.42}\label{eq:5.42}
+\tag{5.44}\label{eq:5.44}
 \end{equation*}
 
 \end{proposition}
@@ -1320,7 +1323,7 @@ A core $P$ selects an object $\mathrm{Form}_P(C)$ for each configuration $C$. Le
 sending an arbitrary object $A$ to the selected object on the same configuration be
 \begin{equation*}
 n_P(A)=\mathrm{Form}_P(C_A)
-\tag{5.43}\label{eq:5.43}
+\tag{5.45}\label{eq:5.45}
 \end{equation*}
 By the conditions on object formation, $C_{n_P(A)}=C_A$ and $n_P^2(A)=n_P(A)$. To make
 this map a morphism of cores, we let $\mathrm{Ad}(P)$ be the following conditions.
@@ -1364,16 +1367,14 @@ aligned, can be expressed as a single comparison morphism.
 
 \begin{construction}[Generated comparisons selected by the same diagnosis]\label{cons:5.40}
 
-We use the common input of Construction~\ref{cons:5.37} and a cochain $\omega$ on the same
-diagram. For the chosen face $z$ and its end $P_z,G_z$, the endomorphism used on the
-original core is selected by
+For the fixed $z,\omega,P_z,G_z$, select the endomorphism used on the original core by
 \begin{equation*}
 S_{z,\omega}=
 \begin{cases}
 N_{P_z},&\omega_z\ne1\ \text{and}\ \mathrm{Ad}(P_z),\\
 1_{P_z},&\text{otherwise}
 \end{cases}
-\tag{5.44}\label{eq:5.44}
+\tag{5.46}\label{eq:5.46}
 \end{equation*}
 This selection is a mathematical case distinction and does not assume a finite decision
 procedure for $\mathrm{Ad}(P_z)$. For the full geometry we likewise select $N_{G_z}$ or
@@ -1389,7 +1390,7 @@ E_{z,\omega}&=V(S_{z,\omega}):VP_z\longrightarrow VP_z,\\
 \overline\beta_{z,\omega}
  &=\overline d_{z,\omega}\overline\alpha_z.
 \end{aligned}
-\tag{5.45}\label{eq:5.45}
+\tag{5.47}\label{eq:5.47}
 \end{equation*}
 This is one generation rule that incorporates the permitted normalization when the
 component of the specified cochain is not the identity. The current raw defect may also be
@@ -1400,11 +1401,11 @@ projections and endpoint isomorphisms,
 j_V\,p(\overline d_{z,\omega})=E_{z,\omega}j_V,
 \qquad
 j_V\,p(\overline\beta_{z,\omega})=\beta_{z,\omega}j_D
-\tag{5.46}\label{eq:5.46}
+\tag{5.48}\label{eq:5.48}
 \end{equation*}
 The first equation follows from having selected the same normalization on the original
 object and from the projection compatibility of transport. The second is the composite of
-the first with~\eqref{eq:5.42}.
+the first with~\eqref{eq:5.44}.
 
 Three kinds of comparisons are now in place.
 

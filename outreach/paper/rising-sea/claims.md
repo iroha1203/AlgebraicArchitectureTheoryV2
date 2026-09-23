@@ -1,7 +1,7 @@
 # 主張と証拠の対応
 
 論文の各主張・成立条件と、根拠となる数学本文・Lean sourceを対応づける。
-一次資料の版は各章に示し、本文用の有限例と既存の形式化の範囲を各項目で区別する。
+一次資料の版は各章と個別のリンクに示す。個別リンクに固定版がある場合はその版を用い、本文用の有限例と既存の形式化の範囲を各項目で区別する。
 書誌・引用箇所・引用する版は[文献確認記録](references.csv)による。
 共通基準は[論文作成ガイドライン](../../../docs/paper/guideline.md)に従う。
 
@@ -11,10 +11,10 @@
 
 | 固定本文の結論 | Lean宣言 |
 | --- | --- |
-| 左引き戻し・上輸送と下輸送・右引き戻しの二経路、および直接比較と三角式 | [SemanticDerivedEndpointBridge](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedEndpointBridge.lean) の `semanticDerivedDirectGeometryAt`、`semanticDerivedViaBaseGeometryAt`、`semanticDerivedBarAlphaIsoAt` と [SemanticDerivedBarAlphaTriangle](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaTriangle.lean) の `semanticDerivedBarAlphaIsoAt_triangle` |
-| G-118で生成された両端との同型、生成mateと直接mateの一致 | [SemanticDerivedGeneratedEndpointBridge](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedGeneratedEndpointBridge.lean) の `semanticDerivedBToGeneratedBaseNorthwestIsoAt`、`semanticDerivedGeneratedPulledToTNorthwestIsoAt`、`semanticDerivedGeneratedMateOnLiteralEndpoints_triangle`、`semanticDerivedGeneratedMateOnLiteralEndpoints_eq_literal` |
+| 左引き戻し・上輸送と下輸送・右引き戻しの二経路、および直接比較と三角式 | [SemanticDerivedEndpointBridge](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedEndpointBridge.lean) の `semanticDerivedDirectGeometryAt`、`semanticDerivedViaBaseGeometryAt`、`semanticDerivedBarAlphaIsoAt` と [SemanticDerivedBarAlphaTriangle](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaTriangle.lean) の `semanticDerivedBarAlphaIsoAt_triangle` |
+| G-118で生成された両端との同型、生成mateと直接mateの一致 | [SemanticDerivedGeneratedEndpointBridge](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedGeneratedEndpointBridge.lean) の `semanticDerivedBToGeneratedBaseNorthwestIsoAt`、`semanticDerivedGeneratedPulledToTNorthwestIsoAt`、`semanticDerivedGeneratedMateOnLiteralEndpoints_triangle`、`semanticDerivedGeneratedMateOnLiteralEndpoints_eq_literal` |
 | 比較射のunit・端点比較・G-118のmate・端点比較・counitの五因子式 | 同moduleの `semanticDerivedBarAlphaIsoAt_generatedFiveFactor_hom` |
-| 診断入力のface `z` にあるcore `P_z` への特殊化 | [SemanticDerivedDiagnosticEndpointBridge](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedDiagnosticEndpointBridge.lean) の `semanticDerivedDiagnosticSourcePackageAt`、`semanticDerivedDiagnosticDirectGeometryAt`、`semanticDerivedDiagnosticViaBaseGeometryAt`、`semanticDerivedDiagnosticBarAlphaIsoAt`、`semanticDerivedDiagnosticBarAlphaIsoAt_triangle`、`semanticDerivedDiagnosticBarAlphaIsoAt_generatedFiveFactor_hom` |
+| 診断入力のface `z` にあるcore `P_z` への特殊化 | [SemanticDerivedDiagnosticEndpointBridge](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedDiagnosticEndpointBridge.lean) の `semanticDerivedDiagnosticSourcePackageAt`、`semanticDerivedDiagnosticDirectGeometryAt`、`semanticDerivedDiagnosticViaBaseGeometryAt`、`semanticDerivedDiagnosticBarAlphaIsoAt`、`semanticDerivedDiagnosticBarAlphaIsoAt_triangle`、`semanticDerivedDiagnosticBarAlphaIsoAt_generatedFiveFactor_hom` |
 
 ## 固定版の命題5.38と追加Lean宣言
 
@@ -22,9 +22,9 @@
 
 | 固定本文の結論 | Lean宣言 |
 | --- | --- |
-| core側のBeck–Chevalley mate `alpha` と選択liftに対する因子式 | [SemanticCoreBeckChevalleyMate](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticCoreBeckChevalleyMate.lean) の `semanticCoreBeckChevalleyMate`、`semanticCoreBeckChevalleyMate_app_iterated_fac` |
-| 完全幾何の二経路を射影したcoreと、core側で生成した二経路の端点同型`j_D`・`j_V` | [SemanticDerivedCoreEndpointProjection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCoreEndpointProjection.lean) の `semanticDerivedDirectCoreIsoAt`、`semanticDerivedViaBaseCoreIsoAt`、`semanticDerivedPullCoreLift_eq` |
-| 完全幾何の三角式とcore比較の射影等式(5.44) | [SemanticDerivedBarAlphaTriangle](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaTriangle.lean) の `semanticDerivedBarAlphaIsoAt_triangle` と [SemanticCoreBeckChevalleyMateIdentification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticCoreBeckChevalleyMateIdentification.lean) の `semanticCoreBeckChevalleyMate_eq_doctrine`、`semanticDerivedBarAlphaIsoAt_projection_doctrineMate`。後者は [SemanticDerivedBarAlphaProjection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaProjection.lean) の生成liftの因子式・二段のlift消去と、既存の定理5.11のmateの一意性から導く |
+| core側のBeck–Chevalley mate `alpha` と選択liftに対する因子式 | [SemanticCoreBeckChevalleyMate](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticCoreBeckChevalleyMate.lean) の `semanticCoreBeckChevalleyMate`、`semanticCoreBeckChevalleyMate_app_iterated_fac` |
+| 完全幾何の二経路を射影したcoreと、core側で生成した二経路の端点同型`j_D`・`j_V` | [SemanticDerivedCoreEndpointProjection](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCoreEndpointProjection.lean) の `semanticDerivedDirectCoreIsoAt`、`semanticDerivedViaBaseCoreIsoAt`、`semanticDerivedPullCoreLift_eq` |
+| 完全幾何の三角式とcore比較の射影等式(5.44) | [SemanticDerivedBarAlphaTriangle](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaTriangle.lean) の `semanticDerivedBarAlphaIsoAt_triangle` と [SemanticCoreBeckChevalleyMateIdentification](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticCoreBeckChevalleyMateIdentification.lean) の `semanticCoreBeckChevalleyMate_eq_doctrine`、`semanticDerivedBarAlphaIsoAt_projection_doctrineMate`。後者は [SemanticDerivedBarAlphaProjection](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaProjection.lean) の生成liftの因子式・二段のlift消去と、既存の定理5.11のmateの一意性から導く |
 
 ## 固定版の構成5.40と追加Lean宣言
 
@@ -32,9 +32,9 @@
 
 | 固定本文の結論 | Lean宣言 |
 | --- | --- |
-| (5.46) 同じ診断から選ぶcoreの`S`と幾何の`barS`、射影の一致 | [SemanticExactCoreBarSelector](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactCoreBarSelector.lean) の `semanticExactBarSourceCoreSelectorAt`、`semanticExactBarSourceGeometrySelectorAt`、`semanticExactBarSourceSelector_projection` |
-| (5.47) coreの`E=V(S)`、`beta=E alpha`、幾何の`d=barV(barS)`、`barBeta=d barAlpha` | 同moduleの `semanticExactBarTargetGlobalCoreProjectorAt`、`semanticExactBarCoreBetaAt`、[SemanticExactBarBetaProjection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaProjection.lean) の `semanticExactBarDAt_eq_sourceSelector_map`、`semanticExactBarCoreBetaAt_eq_doctrineMate`。幾何の`d`と`barBeta`は[SemanticExactBarBetaClassification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaClassification.lean) の `semanticExactBarDAt`、`semanticExactBarBetaAt` |
-| (5.48) 生成された端点同型の下での`d`と`barBeta`のcore射影 | [SemanticDerivedViaCoreNaturality](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedViaCoreNaturality.lean) の `semanticDerivedViaCoreComparison_naturality`を用いる`semanticExactBarDAt_projection`、`semanticExactBarBetaAt_projection_doctrineMate`。幾何のpull射の射影には [SemanticDerivedPullCoreMapNaturality](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedPullCoreMapNaturality.lean) の `semanticDerivedPullCoreMap_eq` を用いる |
+| (5.46) 同じ診断から選ぶcoreの`S`と幾何の`barS`、射影の一致 | [SemanticExactCoreBarSelector](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactCoreBarSelector.lean) の `semanticExactBarSourceCoreSelectorAt`、`semanticExactBarSourceGeometrySelectorAt`、`semanticExactBarSourceSelector_projection` |
+| (5.47) coreの`E=V(S)`、`beta=E alpha`、幾何の`d=barV(barS)`、`barBeta=d barAlpha` | 同moduleの `semanticExactBarTargetGlobalCoreProjectorAt`、`semanticExactBarCoreBetaAt`、[SemanticExactBarBetaProjection](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaProjection.lean) の `semanticExactBarDAt_eq_sourceSelector_map`、`semanticExactBarCoreBetaAt_eq_doctrineMate`。幾何の`d`と`barBeta`は[SemanticExactBarBetaClassification](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaClassification.lean) の `semanticExactBarDAt`、`semanticExactBarBetaAt` |
+| (5.48) 生成された端点同型の下での`d`と`barBeta`のcore射影 | [SemanticDerivedViaCoreNaturality](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedViaCoreNaturality.lean) の `semanticDerivedViaCoreComparison_naturality`を用いる`semanticExactBarDAt_projection`、`semanticExactBarBetaAt_projection_doctrineMate`。幾何のpull射の射影には [SemanticDerivedPullCoreMapNaturality](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedPullCoreMapNaturality.lean) の `semanticDerivedPullCoreMap_eq` を用いる |
 
 ## 固定版の補題6.15と追加Lean宣言
 
@@ -42,10 +42,10 @@
 
 | 固定本文の結論 | Lean宣言 |
 | --- | --- |
-| coreの輸送・引き戻しによる`Ad`保存 | [SemanticExactCoreNormalizationNaturality](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactCoreNormalizationNaturality.lean) の `canonicalCoreNormalizationAdmissible_semanticTransport`、`canonicalCoreNormalizationAdmissible_semanticPull` |
+| coreの輸送・引き戻しによる`Ad`保存 | [SemanticExactCoreNormalizationNaturality](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactCoreNormalizationNaturality.lean) の `canonicalCoreNormalizationAdmissible_semanticTransport`、`canonicalCoreNormalizationAdmissible_semanticPull` |
 | coreの生成liftとの交換(6.17)と関手による保存(6.16) | 同moduleの `semanticCoreFiberLift_normalization_natural`、`semanticCoreInverseLift_normalization_natural`、`semanticCoreFiberTransportFunctor_map_normalization`、`semanticCoreInverseReindexFunctor_map_normalization`。後者の引き戻し関手は既存のsemantic-global関手と `semanticCoreInverseReindexToGlobalIso` で比較する |
-| 完全幾何の輸送による`Ad`保存、liftとの交換、関手による保存 | [SemanticExactNormalizationPush](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactNormalizationPush.lean) の `canonicalGeometryNormalizationAdmissible_semanticExactTransport`、`semanticGeomFiberLift_normalization_natural`、`semanticGeomFiberTransportFunctor_map_normalization` |
-| 完全幾何の引き戻しと`Ad`保存、liftとの交換、関手による保存 | [SemanticExactGeometryPull](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactGeometryPull.lean) の `semanticGeometryPullFunctor` と [SemanticExactNormalizationNaturality](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactNormalizationNaturality.lean) の `canonicalGeometryNormalizationAdmissible_semanticExactPull`、`semanticGeometryPullLift_normalization_natural`、`semanticGeometryPullFunctor_map_normalization` |
+| 完全幾何の輸送による`Ad`保存、liftとの交換、関手による保存 | [SemanticExactNormalizationPush](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactNormalizationPush.lean) の `canonicalGeometryNormalizationAdmissible_semanticExactTransport`、`semanticGeomFiberLift_normalization_natural`、`semanticGeomFiberTransportFunctor_map_normalization` |
+| 完全幾何の引き戻しと`Ad`保存、liftとの交換、関手による保存 | [SemanticExactGeometryPull](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactGeometryPull.lean) の `semanticGeometryPullFunctor` と [SemanticExactNormalizationNaturality](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactNormalizationNaturality.lean) の `canonicalGeometryNormalizationAdmissible_semanticExactPull`、`semanticGeometryPullLift_normalization_natural`、`semanticGeometryPullFunctor_map_normalization` |
 
 ## 固定版の定理6.16と追加Lean宣言
 
@@ -53,21 +53,21 @@
 
 | 固定本文の結論 | Lean宣言 |
 | --- | --- |
-| selector、両端の二経路、生成射`d`・`e`・`beta` | [SemanticExactBarBetaClassification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaClassification.lean) の `semanticExactBarSelectedAt`、`semanticExactBarDAt`、`semanticExactBarEAt`、`semanticExactBarBetaAt` |
+| selector、両端の二経路、生成射`d`・`e`・`beta` | [SemanticExactBarBetaClassification](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaClassification.lean) の `semanticExactBarSelectedAt`、`semanticExactBarDAt`、`semanticExactBarEAt`、`semanticExactBarBetaAt` |
 | `d`・`e`の冪等性、`beta`の可逆性とselectorの同値条件 | 同moduleの `semanticExactBarDAt_idem`、`semanticExactBarEAt_idem`、`semanticExactBarBetaAt_isIso_iff_barDAt_eq_id`、`semanticExactBarDAt_eq_id_iff`、`semanticExactBarBetaAt_isIso_iff_not_selected` |
 | Karoubi圏での同型と逆射`d`の後に`barAlpha`の逆を合成した射 | 同moduleの `semanticExactBarBetaKaroubiIsoAt` |
-| selector発火時の両端`Ad`、`d=N_Y`、`e=N_X` | 同moduleの `semanticExactBarEndpoints_admissible`、`semanticExactBarProjectorsAt_eq_endpoint_normalizations`。始点等式には [SemanticDerivedBarAlphaNormalizationNaturality](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaNormalizationNaturality.lean) の `semanticDerivedBarAlphaIsoAt_normalization_natural` を用いる |
+| selector発火時の両端`Ad`、`d=N_Y`、`e=N_X` | 同moduleの `semanticExactBarEndpoints_admissible`、`semanticExactBarProjectorsAt_eq_endpoint_normalizations`。始点等式には [SemanticDerivedBarAlphaNormalizationNaturality](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaNormalizationNaturality.lean) の `semanticDerivedBarAlphaIsoAt_normalization_natural` を用いる |
 | selector非発火時の両端の恒等射 | `semanticExactBarProjectorsAt_eq_id` |
 
 ## 固定版の命題6.17と追加Lean宣言
 
-[固定版 `719f81f47d410701fd82c2bc88613cc140c59377` の命題6.17](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/719f81f47d410701fd82c2bc88613cc140c59377/outreach/paper/rising-sea/ja/09-idempotent-normalization.md#L504)の入力は、定理6.16の一般semantic平方と同じ面・cochain・source core・係数幾何・端点条件・pullback条件である。coreの比較射の可逆性は [SemanticCoreMateIso](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticCoreMateIso.lean) の `semanticCoreBeckChevalleyMate_app_isIso` で得る。
+[固定版 `719f81f47d410701fd82c2bc88613cc140c59377` の命題6.17](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/719f81f47d410701fd82c2bc88613cc140c59377/outreach/paper/rising-sea/ja/09-idempotent-normalization.md#L504)の入力は、定理6.16の一般semantic平方と同じ面・cochain・source core・係数幾何・端点条件・pullback条件である。coreの比較射の可逆性は [SemanticCoreMateIso](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticCoreMateIso.lean) の `semanticCoreBeckChevalleyMate_app_isIso` で得る。
 
 | 固定本文の結論 | Lean宣言 |
 | --- | --- |
-| (6.25)の`j_V p(barAlpha)=alpha j_D` | [SemanticCoreBeckChevalleyMateIdentification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticCoreBeckChevalleyMateIdentification.lean) の `semanticDerivedBarAlphaIsoAt_projection_doctrineMate`。`semanticCoreBeckChevalleyMate_eq_doctrine` が本文の`alpha`を既存の定理5.11のmateに同定する |
-| (6.25)の`j_V p(bar d)=E j_V`と`j_V p(bar beta)=beta j_D` | [SemanticExactBarBetaProjection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaProjection.lean) の `semanticExactBarDAt_projection`、`semanticExactBarBetaAt_projection_doctrineMate` |
-| (6.25)の`j_D p(bar e)=e j_D`、coreの`e`と冪等性 | [SemanticExactBarBetaKaroubiProjection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaKaroubiProjection.lean) の `semanticExactBarCoreEAt`、`semanticExactBarEAt_projection`、`semanticExactBarCoreEAt_idem` |
+| (6.25)の`j_V p(barAlpha)=alpha j_D` | [SemanticCoreBeckChevalleyMateIdentification](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticCoreBeckChevalleyMateIdentification.lean) の `semanticDerivedBarAlphaIsoAt_projection_doctrineMate`。`semanticCoreBeckChevalleyMate_eq_doctrine` が本文の`alpha`を既存の定理5.11のmateに同定する |
+| (6.25)の`j_V p(bar d)=E j_V`と`j_V p(bar beta)=beta j_D` | [SemanticExactBarBetaProjection](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaProjection.lean) の `semanticExactBarDAt_projection`、`semanticExactBarBetaAt_projection_doctrineMate` |
+| (6.25)の`j_D p(bar e)=e j_D`、coreの`e`と冪等性 | [SemanticExactBarBetaKaroubiProjection](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaKaroubiProjection.lean) の `semanticExactBarCoreEAt`、`semanticExactBarEAt_projection`、`semanticExactBarCoreEAt_idem` |
 | 幾何のKaroubi像の同型をcoreへ射影して得る像の同型と、coreで構成した像の同型の一致 | 同moduleの `semanticExactBarCoreBetaKaroubiIsoAt`、`semanticExactBarBetaProjectedKaroubiIsoAt`、`semanticExactBarBetaKaroubiProjectionAlignmentAt`。射影した両端の像とcore像は `semanticExactBarESourceKaroubiProjectionIsoAt`、`semanticExactBarDTargetKaroubiProjectionIsoAt` で同定する |
 
 ## 固定版の定理7.21と追加Lean宣言
@@ -76,11 +76,11 @@
 
 | 固定本文の結論 | Lean宣言 |
 | --- | --- |
-| 生成された二経路の`Ad`、実際の`barAlpha`を用いる比較群 | [SemanticDerivedCanonicalComparisonExactness](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonExactness.lean) の `semanticDerivedDirectGeometryAt_admissible`、`semanticDerivedViaBaseGeometryAt_admissible`、`semanticDerivedBarAlphaAdmissibleIsoAt` |
+| 生成された二経路の`Ad`、実際の`barAlpha`を用いる比較群 | [SemanticDerivedCanonicalComparisonExactness](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonExactness.lean) の `semanticDerivedDirectGeometryAt_admissible`、`semanticDerivedViaBaseGeometryAt_admissible`、`semanticDerivedBarAlphaAdmissibleIsoAt` |
 | 制限準同型のsectionと分裂短完全列 (7.34) | 同moduleの `semanticDerivedCanonicalComparisonSectionHom`、`semanticDerivedCanonicalComparisonSection_rightInverse`、`semanticDerivedCanonicalComparison_shortExact` |
 | 各`delta`上の適合liftがsection値の右kernel陪集合であり、右torsorになる | 同moduleの `semanticDerivedCanonicalComparisonLiftFiber_nonempty`、`semanticDerivedCanonicalComparisonLiftFiber_unique_rightKernel`、`semanticDerivedCanonicalComparisonLiftFiber_existsUnique_smul_eq` |
-| 同じ正規化値を持つ適合変更`q_plus`と不適合変更`q_bad` (7.35) | [SemanticDerivedCanonicalComparisonIdentification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonIdentification.lean) の `semanticDerivedCanonicalComparison_identification`。不適合な差は既存の内部生成 `ambientKernelComparisonPair` |
-| 底固定のsection、分裂短完全列、右kernel torsor、同じ正規化値の適合・不適合変更 | [SemanticDerivedCanonicalBottomComparison](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalBottomComparison.lean) の `semanticDerivedCanonicalBottomComparisonSectionHom`、`semanticDerivedCanonicalBottomComparisonSection_rightInverse` と、[SemanticDerivedCanonicalComparisonIdentification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonIdentification.lean) の `semanticDerivedCanonicalBottomComparison_shortExact`、`semanticDerivedCanonicalBottomComparison_identification`、`semanticDerivedCanonicalBottomComparisonLiftFiber_existsUnique_smul_eq` |
+| 同じ正規化値を持つ適合変更`q_plus`と不適合変更`q_bad` (7.35) | [SemanticDerivedCanonicalComparisonIdentification](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonIdentification.lean) の `semanticDerivedCanonicalComparison_identification`。不適合な差は既存の内部生成 `ambientKernelComparisonPair` |
+| 底固定のsection、分裂短完全列、右kernel torsor、同じ正規化値の適合・不適合変更 | [SemanticDerivedCanonicalBottomComparison](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalBottomComparison.lean) の `semanticDerivedCanonicalBottomComparisonSectionHom`、`semanticDerivedCanonicalBottomComparisonSection_rightInverse` と、[SemanticDerivedCanonicalComparisonIdentification](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonIdentification.lean) の `semanticDerivedCanonicalBottomComparison_shortExact`、`semanticDerivedCanonicalBottomComparison_identification`、`semanticDerivedCanonicalBottomComparisonLiftFiber_existsUnique_smul_eq` |
 
 ## 固定版の系7.22と追加Lean宣言
 
@@ -88,88 +88,56 @@
 
 | 固定本文の結論 | Lean宣言 |
 | --- | --- |
-| `barAlpha`と`e,d`の交換、像の比較射`barBeta`、完全幾何の全端点自己同型による中心化群`H`と像の比較保存群 | [SemanticDerivedSelectorGlobalComparison](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalComparison.lean) の `semanticExactGlobalAlpha_projector_comm`、`semanticExactGlobalBetaImage`、`SemanticExactGlobalH`、`SemanticExactGlobalImageComparison`。fiber内で生成した射は`semanticExactGlobalInclusion`で完全幾何の圏へ写す |
+| `barAlpha`と`e,d`の交換、像の比較射`barBeta`、完全幾何の全端点自己同型による中心化群`H`と像の比較保存群 | [SemanticDerivedSelectorGlobalComparison](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalComparison.lean) の `semanticExactGlobalAlpha_projector_comm`、`semanticExactGlobalBetaImage`、`SemanticExactGlobalH`、`SemanticExactGlobalImageComparison`。fiber内で生成した射は`semanticExactGlobalInclusion`で完全幾何の圏へ写す |
 | 全端点群での非選択時反映成立、選択時の内部生成不適合対による反映失敗 | 同moduleの `semanticExactGlobalRestriction_preimage_eq_raw_iff_not_selected`。選択時の証人は `semanticExactGlobalSelectedKernelPair` |
-| 全端点群で選択の両枝の像の適合変更にsectionがある | [SemanticDerivedSelectorGlobalSection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalSection.lean) の `semanticExactGlobalComparisonSectionHom`、`semanticExactGlobalComparisonSection_rightInverse`。像の比較射は同moduleの `semanticExactGlobalBetaIso` で構成する |
-| 全群の実際の底固定核における反映同値条件 | [SemanticDerivedSelectorGlobalBottomReflection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalBottomReflection.lean) の `semanticExactGlobalBottomRestriction_preimage_eq_raw_iff_not_selected`。`mem_SemanticExactGlobalBottomRestrictionPreimage_iff_imageBottom` が実際の像側底固定群との対応を示し、選択時の証人は `semanticExactGlobalSelectedKernelPair_mem_bottom` で底固定核に属する。固定fiber版は [SemanticDerivedSelectorBottomReflection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorBottomReflection.lean) の `semanticExactBottomRestrictionPreimage_eq_raw_iff_not_selected` |
-| 全端点群の(7.36)における像の`barBeta`保存条件の元の射への引き戻し | [SemanticDerivedSelectorGlobalComparison](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalComparison.lean) の `semanticExactGlobalRestriction_preimage_eq_beta`。底固定fiber版は [SemanticDerivedSelectorBetaPreimage](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorBetaPreimage.lean) の `semanticExactBottomRestrictionPreimage_eq_barBeta` |
-| 全群の底固定核と固定fiberの中心化群の一致、像側の底固定群と制限 | [SemanticDerivedSelectorGlobalBottomBridge](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalBottomBridge.lean) の `semanticExactFiberHGlobalBottomIso` と [SemanticDerivedSelectorGlobalImageBottom](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalImageBottom.lean) の `SemanticExactGlobalBottomImageComparison`、`semanticExactGlobalBottomCompatibleRestrictionHom` |
-| 全群の底固定核におけるsection、分裂短完全列、各fiberの右kernel torsor | [SemanticDerivedSelectorGlobalImageBottom](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalImageBottom.lean) の `semanticExactGlobalBottomComparisonSectionHom`、`semanticExactGlobalBottomComparisonSection_rightInverse` と [SemanticDerivedSelectorGlobalBottomExactness](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalBottomExactness.lean) の `semanticExactGlobalBottomComparison_shortExact`、`semanticExactGlobalBottomComparisonLiftFiber_existsUnique_smul_eq`。固定fiber上の対応する定理は [SemanticDerivedSelectorBottomExactness](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorBottomExactness.lean) の `semanticExactBottomComparison_shortExact`、`semanticExactBottomComparisonLiftFiber_existsUnique_smul_eq` |
-| `Ad`の下のcanonical正規化を直接選ぶ行 | 定理7.21の [SemanticDerivedCanonicalComparisonExactness](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonExactness.lean) と [SemanticDerivedCanonicalBottomComparison](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalBottomComparison.lean) のsection・非反映、[SemanticDerivedCanonicalComparisonIdentification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonIdentification.lean) の底固定完全列・torsor |
+| 全端点群で選択の両枝の像の適合変更にsectionがある | [SemanticDerivedSelectorGlobalSection](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalSection.lean) の `semanticExactGlobalComparisonSectionHom`、`semanticExactGlobalComparisonSection_rightInverse`。像の比較射は同moduleの `semanticExactGlobalBetaIso` で構成する |
+| 全群の実際の底固定核における反映同値条件 | [SemanticDerivedSelectorGlobalBottomReflection](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalBottomReflection.lean) の `semanticExactGlobalBottomRestriction_preimage_eq_raw_iff_not_selected`。`mem_SemanticExactGlobalBottomRestrictionPreimage_iff_imageBottom` が実際の像側底固定群との対応を示し、選択時の証人は `semanticExactGlobalSelectedKernelPair_mem_bottom` で底固定核に属する。固定fiber版は [SemanticDerivedSelectorBottomReflection](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorBottomReflection.lean) の `semanticExactBottomRestrictionPreimage_eq_raw_iff_not_selected` |
+| 全端点群の(7.36)における像の`barBeta`保存条件の元の射への引き戻し | [SemanticDerivedSelectorGlobalComparison](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalComparison.lean) の `semanticExactGlobalRestriction_preimage_eq_beta`。底固定fiber版は [SemanticDerivedSelectorBetaPreimage](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorBetaPreimage.lean) の `semanticExactBottomRestrictionPreimage_eq_barBeta` |
+| 全群の底固定核と固定fiberの中心化群の一致、像側の底固定群と制限 | [SemanticDerivedSelectorGlobalBottomBridge](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalBottomBridge.lean) の `semanticExactFiberHGlobalBottomIso` と [SemanticDerivedSelectorGlobalImageBottom](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalImageBottom.lean) の `SemanticExactGlobalBottomImageComparison`、`semanticExactGlobalBottomCompatibleRestrictionHom` |
+| 全群の底固定核におけるsection、分裂短完全列、各fiberの右kernel torsor | [SemanticDerivedSelectorGlobalImageBottom](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalImageBottom.lean) の `semanticExactGlobalBottomComparisonSectionHom`、`semanticExactGlobalBottomComparisonSection_rightInverse` と [SemanticDerivedSelectorGlobalBottomExactness](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalBottomExactness.lean) の `semanticExactGlobalBottomComparison_shortExact`、`semanticExactGlobalBottomComparisonLiftFiber_existsUnique_smul_eq`。固定fiber上の対応する定理は [SemanticDerivedSelectorBottomExactness](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorBottomExactness.lean) の `semanticExactBottomComparison_shortExact`、`semanticExactBottomComparisonLiftFiber_existsUnique_smul_eq` |
+| `Ad`の下のcanonical正規化を直接選ぶ行 | 定理7.21の [SemanticDerivedCanonicalComparisonExactness](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonExactness.lean) と [SemanticDerivedCanonicalBottomComparison](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalBottomComparison.lean) のsection・非反映、[SemanticDerivedCanonicalComparisonIdentification](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonIdentification.lean) の底固定完全列・torsor |
 
 ## 固定版の例8.21と追加Lean宣言
 
-[固定版 `719f81f47d410701fd82c2bc88613cc140c59377` の例8.21](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/719f81f47d410701fd82c2bc88613cc140c59377/outreach/paper/rising-sea/ja/11-local-reconstruction.md#L712)の冒頭は、構成5.37〜5.40が生成する一般semantic平方の元の幾何・二経路・`barAlpha`・`barBeta`・`e,d`と、全端点自己同型・可換平方を対象とする。三軸finiteAxisFoldの特例は既存の [IndependentAATPrimitiveReconstruction](../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentAATPrimitiveReconstruction.lean) にあり、追加宣言は一般生成入力を同じprimitive readingへ接続する。
+[固定版 `719f81f47d410701fd82c2bc88613cc140c59377` の例8.21](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/719f81f47d410701fd82c2bc88613cc140c59377/outreach/paper/rising-sea/ja/11-local-reconstruction.md#L712)の冒頭は、構成5.37〜5.40が生成する一般semantic平方の元の幾何・二経路・`barAlpha`・`barBeta`・`e,d`と、全端点自己同型・可換平方を対象とする。三軸finiteAxisFoldの特例は既存の [IndependentAATPrimitiveReconstruction](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentAATPrimitiveReconstruction.lean) にあり、追加宣言は一般生成入力を同じprimitive readingへ接続する。
 
 | 固定本文の結論 | Lean宣言 |
 | --- | --- |
-| 元の幾何と生成された二経路の対象のprimitive再構成 | [SemanticGeneratedComparisonReconstruction](../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/SemanticGeneratedComparisonReconstruction.lean) の `semanticComparisonOriginal_reconstructionIso`、`semanticComparisonDirect_reconstructionIso`、`semanticComparisonViaBase_reconstructionIso` |
+| 元の幾何と生成された二経路の対象のprimitive再構成 | [SemanticGeneratedComparisonReconstruction](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/LocalSemanticReconstruction/SemanticGeneratedComparisonReconstruction.lean) の `semanticComparisonOriginal_reconstructionIso`、`semanticComparisonDirect_reconstructionIso`、`semanticComparisonViaBase_reconstructionIso` |
 | 完全幾何の全Homの読取りと一意な再組立て、全端点自己同型の回復 | 同moduleの `semanticComparisonHom_assemble_read`、`semanticComparisonHom_existsUnique`、`semanticComparisonDirectAutomorphismEquiv`、`semanticComparisonViaBaseAutomorphismEquiv` |
 | `barAlpha`の生成と既存G118の五因子式への接続 | 同moduleの `semanticComparisonAlphaNativeHom`、`semanticComparisonAlpha_eq_G118FiveFactor`、`semanticComparisonReadAlpha_eq_G118FiveFactor` |
 | `barBeta,e,d`の生成と(8.20)、`d barBeta=barBeta=barBeta e` | 同moduleの `semanticComparisonBetaNativeHom`、`semanticComparisonENativeHom`、`semanticComparisonDNativeHom`、`semanticComparisonBeta_factor`、`semanticComparisonE_idem`、`semanticComparisonD_idem`、`semanticComparisonAlpha_projector_natural`、`semanticComparisonBeta_projector_factorizations` |
 | 生成された各射のprimitive readbackと可換平方の保存・反映 | 同moduleの `semanticComparisonAlpha_assemble_read`、`semanticComparisonBeta_assemble_read`、`semanticComparisonE_assemble_read`、`semanticComparisonD_assemble_read`、`semanticComparisonGeneratedSquare_iff`、`semanticComparisonGeneratedLocalSquare_iff` |
 | 三軸の選択・非選択cochain特例 | 既存moduleの `finiteAxisFoldBarBetaNativeHom_factor`、`finiteAxisFoldIdentityCochain_barBeta_eq_barAlpha_common`、`finiteAxisFoldBarBeta_read_point` |
 
-以下のC型表は、そこに明記した固定版の既存宣言と本文修正との対応を記す。上の追加宣言によって、その固定版の入力や当時の判定を遡って変更するものではない。
+以下の表は、一般の輸送・lens・基底変換・比較群について、本文の対象・仮定とLean宣言を対応づける。
 
-## C型の本文修正と既存宣言の対応
+## C型の主張とLean宣言の対応
 
-対象は Issue #4847 の F18・F19・F20・F23・F24・F31・F37・F40 と F25。
-参照する Lean source の固定版は `ceaf361ec0533c954ba03089879ec8c5d8a4fff9`。
-以下は本文修正の対応であり、A/B型の検証完了を表すものではない。
-今回の個別の特例を、C型の結論を紙上証明で保持する根拠にはしない。
+対象は F18・F19・F20・F23・F24・F31・F37・F40。以下の一次証拠の固定版は `7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6`。
+対象・量化・仮定は各行に示す。F31の個別の対応は上掲の各表に詳記する。
 
-| 対象 | 本文へ反映する対象・仮定・結論 | 既存宣言 |
+| 対象 | 対象・仮定・結論 | Lean宣言 |
 | --- | --- | --- |
-| F18・4.13–4.16 | 抽出の底に沿う標準core・幾何輸送の関手、合成・単位比較、射影との整合 | [CorePseudofunctor][c4-core-pseudo] の `coreFiberTransportFunctor`、`coreFiberCompositor_assoc`、`coreFiberCompositor_left_unit`、`coreFiberCompositor_right_unit`。[Pseudofunctor][c4-geom-pseudo] の `geomFiberCompositor_assoc`、`geomFiberCompositor_left_unit`、`geomFiberCompositor_right_unit`。[TowerCompatibility][c4-tower] の `towerTransportComparison_compositor`、`towerTransportComparison_unitor` |
-| F18・4.17–4.23 | 有限比較図式のcore、抽出の底に関して強い辺、底の二道の等号、指定自己同型。再選択の作用と消滅 | [FinitePresentation][c4-presentation] の `AdmissibleLiftData`、`AdmissibleTransportData`、`pathReselectionTransition_mul`、`reselectionStep_one`、`reselectionStep_mul`。[VanishingCoherence][c4-vanishing] の `transportObstructionVanishes_iff_coherentizable` |
-| F18・4.24–4.27 | 同じcoreデータで後続道への自己同型輸送、貼り合わせ、指定syzygyに沿う等式、閉じた不一致 | `whiskerFiberAut`、`whiskerFiberAut_fac`。[PastingObstruction][c4-pasting] の `canonicalPastingComparator_fac`、`rawDefect_cocycle_of_syzygy`、`closedPastingRawObstruction_eq_conjugate`、`closedPastingRawObstruction_eq_one_iff` |
-| F19・4.31–4.34 | 幾何の辺はp-strong、射影した辺はq-strong。同じedge sectionでの射影・分解・同時消滅 | [UpperObstruction](../../../research/lean/ResearchLean/AG/CrossStageCoherence/UpperObstruction.lean) の `TwoLayerLiftData`、`pushforward_upperCanonicalTwoCellComparator`、`pushforward_upperRawTwoCellDefect`。[SectionDecomposition][c4-section] の `totalObstruction_kernel_decomposition`、[GlobalVanishing][c4-global] の `jointVanishes_iff_alignedSectionVanishes` |
-| F20・1.34後、4.36–4.39 | 共通view・基準viewと有限基準fiber。役割別写像、get/put平方、固定viewの対応、可逆変更の両逆。非単射例はUnit×Boolの定値自己射 | [相対lens][c4-lens] の `LensAATRelativeForwardMorphism`、`typedObjectMap`、`get_square`、`put_square`、`identityVisibleEquiv`、`ofLensInvertibleChange`、`toLensInvertibleChange`。[FixedFLensConnection](../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFLensConnection.lean) の `normalForm`、`hiddenPermutation_unique`。[LensSemanticFiniteDetermination](../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LensSemanticFiniteDetermination.lean) の `constantFalseHom`、`constantFalseHom_res_not_injective` |
-| F20・4.41の適用 | 固定viewのlens・固定schemaのプロトコルの比較群対応 | [充満忠実な比較の輸送][c4-fully-faithful] の `generatedArrowComparisonMulEquivOfFullyFaithful`、`lensAATIndependentPackageComparisonMulEquiv`、`protocolAATIndependentPackageComparisonMulEquiv` |
-| F23・5.7 | 一般のexact射について、存在定理から選んだ標準cartesian liftの合成・単位の整合 | [ExactBottomGlobalLiftCoherence](../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/ExactBottomGlobalLiftCoherence.lean) の `exact_bottom_semantic_global_reindex_functor`、`exact_bottom_semantic_global_compositor`、`exact_bottom_semantic_global_unitor`、`exact_bottom_semantic_global_pentagon`、`exact_bottom_semantic_global_triangle` |
-| F24・5.10–5.12 | Atomの等号判定、有限codeのcospan・compatibleな選択source・診断図式から生成した平方のmate、可逆性、選択変更との比較 | [BCSchema](../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/BCSchema.lean) の `BCPresentation`。[CoreBeckChevalleyMate](../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/CoreBeckChevalleyMate.lean) の `coreBeckChevalleyMate`。[PackageProjectionBeckChevalleyExactness](../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/PackageProjectionBeckChevalleyExactness.lean) の `coreBeckChevalleyMate_isIso`。[選択変更](../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/CoreBeckChevalleyMateCleavageIndependence.lean) の `coreBeckChevalleyCleavageMate_selectedComparison` |
-| F25・5.14–5.15 | 正規化とAtom置換による輸送後のcodeそのものの等号 | [Schema](../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/Schema.lean) の `CartPresentationBetween.extraction_eq`。[CoverageClassification][c5-coverage] の `finiteCofiniteExtractionCode_eq_of_mem_range`、`endpointFiniteTargetCofinitePresentation` |
-| F31・5.37–5.40 | 有限codeで実現した平方、同じ有限図式のcore・lift・終点・底の二道・指定比較、面、係数環、完全幾何から生成する比較 | [BCRelativeSchema](../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/BCRelativeSchema.lean) の `AuthoredSupportContext`、`AuthoredBCDatumSquare`。[標準比較][c5-derived-mate] の `authoredExactBarAlphaIsoAt`、[三角式][c5-alpha-triangle] の `authoredExactBarAlphaIsoAt_triangle`、[射影][c5-alpha-projection] の `authoredExactBarAlphaIsoAt_projection`、[分解][c5-beta-factor] の `authoredExactBarDAt`、`authoredExactBarBetaAt_factor` |
-| F31・6.15 | Coreと前向き幾何の標準liftの一般性を保持。完全幾何の引き戻し・fiber関手上の保存は有限codeで実現された射 | [ExactNormalizationNaturality][c6-exact-naturality] の `transportAlongHom_normalization_natural`、`inverseCorePackageHom_normalization_natural`、`geomTransportAlongHom_normalization_natural`、`exactGeometryPullLift_normalization_natural`、`geomFiberTransportFunctor_map_normalization`、`exactGeometryPullFunctor_map_normalization` |
-| F31・6.16–6.17 | 5.37の同じ入力からの冪等射・可逆性分類・Karoubi同型・core射影 | [分類][c6-beta-classification] の `authoredExactBarProjectorsAt_eq_endpoint_normalizations`、`authoredExactBarBetaAt_isIso_iff_not_selected`、[射影][c6-beta-projection] の `authoredExactBarBetaAt_projection` |
-| F31・7.21–7.22、8.21 | 同じ生成比較のsection・fiber・再構成。三軸の具体例は削除 | [ExactBarAlphaCanonicalComparisonSection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarAlphaCanonicalComparisonSection.lean) の `authoredExactCanonicalComparisonSectionHom`、[ExactBarBetaBottomQualifiedClassification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaBottomQualifiedClassification.lean) の `authoredExactBottomComparisonSectionHom`、[原始再構成](../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentAATPrimitiveReconstruction.lean) のG122入力と全Homの再構成 |
-| F37・7.3–7.5 | 完全幾何の比較と底固定の端点変更群、射圏の可逆変更、射影核とfiber、可逆比較の共役 | [QualifiedComparisonGroup](../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/QualifiedComparisonGroup.lean) の `qualifiedComparisonReversibleMulEquiv`。[QualifiedComparisonStabilizer](../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonStabilizer.lean) の `qualifiedComparisonSourceProjectionKernelMulEquiv`、`qualifiedComparisonTargetProjectionKernelMulEquiv`、`qualifiedComparisonIsoGraphMulEquiv` |
-| F40・7.25–7.26、7.30 | 積の再添字式、許容可視部分群上の分裂短完全列、各fiberと置換族の対応・個数、指定点を固定する版 | [FixedFSplitExactSequenceAndTorsor](../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFSplitExactSequenceAndTorsor.lean) の `isGroupShortExact`、`canonicalSection_rightInverse`、`componentGroupEquivProjectionFiber`。[指定点版](../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFPointedSplitExactSequenceAndTorsor.lean)、[個数](../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFFiberCardinality.lean)、[具体例](../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFFiniteExamples.lean) |
+| F18・4.13–4.15 | 任意の関手と選択した強いopcartesian liftから、fiber輸送・合成比較・単位比較とその整合性を構成する。 | [CrossStageCoherence/ArbitraryStrongLiftPseudofunctor](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/CrossStageCoherence/ArbitraryStrongLiftPseudofunctor.lean) の `StrongLiftSelection.transport`、`compositor`、`unitor`、`compositor_assoc`、`compositor_left_unit`、`compositor_right_unit` |
+| F18・4.17–4.27 | 任意の関手上の有限比較図式。非可換な道の遷移、再選択作用・軌道、消滅と整合化の同値、whisker、順序付きpastingと閉じた共役。 | [TransportCoherence/ArbitraryObstruction](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/TransportCoherence/ArbitraryObstruction.lean) の `pathReselectionTransition_mul`、`twoEdgeEndpointTransition_formula`、`reselectionStep_mul`、`transportObstructionVanishes_iff_coherentizable`、`whiskerFiberAutHom`。入力と比較は [TransportCoherence/ArbitraryFinitePresentation](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/TransportCoherence/ArbitraryFinitePresentation.lean) の `LiftData`、`TransportData`、`canonicalFaceComparator` |
+| F19・4.31–4.34 | 合成射影に関するstrong性と射影後のstrong性から、中段のstrong性を導く。同じsectionを使う射影・分解・同時消滅。 | [CrossStageCoherence/CompositeQualification](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/CrossStageCoherence/CompositeQualification.lean) の `stronglyCocartesian_of_comp_projection`、`stronglyCocartesian_iff_comp_projection`、`sectionRelativeCoherentizable_iff_exists_coherent_lift` |
+| F20・1.34後、4.36–4.39 | 任意の状態型・view型を持つlens間の射。put保存からget保存、直和で束ねた操作平方、可逆変更の部分群、任意の隠れ成分写像。非単射の具体例には一点viewを用いる。 | [RealizationReconstruction/GeneralRelativeLens](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/RealizationReconstruction/GeneralRelativeLens.lean) の `get_comm_of_put_comm`、`operation_square_iff`、`autMulEquivPutGroup`、`getGroup_inf_putGroup`、`productMap`、`boolToPoint_not_injective` |
+| F20・4.41の適用 | 異なるviewを許すlens圏から役割・操作を持つ型付き圏への充満忠実関手と比較群の同型。 | [RealizationReconstruction/GeneralRelativeLensComparison](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/RealizationReconstruction/GeneralRelativeLensComparison.lean) の `aatComparisonMulEquiv`。型付き構成は [RealizationReconstruction/GeneralRelativeLensTyped](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/RealizationReconstruction/GeneralRelativeLensTyped.lean) と [RealizationReconstruction/GeneralRelativeLensAAT](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/RealizationReconstruction/GeneralRelativeLensAAT.lean) |
+| F23・5.7 | 任意に選択したsemantic cartesian liftから引き戻し関手・合成比較・単位比較を構成し、pentagonとtriangleを導く。 | [DoctrineFiberProduct/ArbitrarySemanticCleavageCoherence](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/DoctrineFiberProduct/ArbitrarySemanticCleavageCoherence.lean) の `arbitrary_semantic_reindex_functor`、`arbitrary_semantic_compositor`、`arbitrary_semantic_unitor`、`arbitrary_semantic_pentagon`、`arbitrary_semantic_triangle` |
+| F24・5.10–5.12 | 一般semantic exact平方の随伴mate、可逆性、liftの因子式による特徴づけ。有限codeとAtomの等号判定を仮定しない。 | [DoctrineFiberProduct/SemanticCoreBeckChevalleyMate](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/DoctrineFiberProduct/SemanticCoreBeckChevalleyMate.lean) の `semanticCoreBeckChevalleyMate_app`、`semanticCoreBeckChevalleyMate_isIso`。一致判定は [DoctrineFiberProduct/SemanticCoreBeckChevalleyFactorization](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/DoctrineFiberProduct/SemanticCoreBeckChevalleyFactorization.lean) の `semanticCoreBeckChevalleyMate_lift_fac_iff` |
+| F31・5.37–5.40、6.15–6.17、7.21–7.22、8.21 | 同じ一般semantic平方と診断面・source core・完全幾何から得る二経路、五因子式、冪等正規化・射影・比較群・局所再構成。 | [LocalSemanticReconstruction/SemanticGeneratedComparisonReconstruction](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/LocalSemanticReconstruction/SemanticGeneratedComparisonReconstruction.lean) の宣言、および上掲の各対応表： `semanticComparisonAlpha_eq_G118FiveFactor`、`semanticComparisonBeta_factor`、`semanticComparisonGeneratedSquare_iff` |
+| F37・7.3–7.5 | 任意の圏と端点部分群に対する比較部分群、射圏・Karoubi射圏、両射影の核とfiber、可逆比較の制限付き共役。 | [ComparisonInformation/F37GeneralComparison](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/ComparisonInformation/F37GeneralComparison.lean) の `generalComparisonSubgroup`、`generalComparisonArrowMulEquiv`、`generalComparisonKaroubiArrowMulEquiv`、`generalSourceKernelMulEquiv`、`generalTargetKernelMulEquiv`、`generalIsoGraphMulEquiv` |
+| F40・7.25–7.26、7.30 | 連結成分の再添字作用による半直積、指定点を保つ版、二ワーカーの位数8の半直積。 | [RealizationReconstruction/FixedFSemidirectProduct](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/RealizationReconstruction/FixedFSemidirectProduct.lean) の `actualEquivSemidirect`、`pointedActualEquivSemidirect`、`TwoWorkers.actualEquivWorkerSemidirect`、`TwoWorkers.natCard_workerChangeGroup` |
 
-F37の系7.5で全端点群を用いる場合は、任意の圏の同型に対する
-[G122GeneratedComparisonGroup](../../../research/lean/ResearchLean/AG/RealizationReconstruction/G122GeneratedComparisonGroup.lean)
-の `generatedArrowComparisonSourceEquiv` に対応させる。
-F20・F40の依存先である命題7.27は同じ積lensの自己変更へ限定し、
-[FixedFLensConnection](../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFLensConnection.lean)
-の `equivPreservingFollowingChanges`、`normalForm`、`equivHiddenPermutations`、
-`natCard_productLensChanges`、`preservesSection_iff` に対応させる。
-任意lensへの群同型の移送、直積群への同定は残さない。
-
-
-### 式番号の対応
-
-命題・定理・例の番号は維持した。式は次のように詰め、本文中の参照も同時に更新した。
-
-| 修正前の式番号 | 修正後 |
-| --- | --- |
-| 4.31、4.47 | 削除 |
-| 4.32–4.46 | 4.31–4.45 |
-| 4.48–4.52 | 4.46–4.50 |
-| 5.40–5.41 | 削除 |
-| 5.42–5.48 | 5.40–5.46 |
-| 7.43 | 削除 |
-| 7.44–7.47 | 7.43–7.46 |
-
-この表には、式の内容も修正した箇所を含む。旧(4.45)–(4.46)に対応する新(4.44)–(4.45)は、
-余積による表示を四役割の写像と二つの可換平方へ置き換えた。
-旧(7.45)に対応する新(7.44)は、同じ積lensの正規形に内容を限定した。
+F25の定義5.14・定理5.15では、正規化とAtom置換による輸送後のcodeそのものの等号を要求する。
+[DoctrineFiberProduct/Schema](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/DoctrineFiberProduct/Schema.lean) の `CartPresentationBetween.extraction_eq` と [DoctrineFiberProduct/ExactBottomCoverageClassification](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageClassification.lean) の `finiteCofiniteExtractionCode_eq_of_mem_range` に対応する。
 
 ## 第1章 相対的アーキテクチャの構成
 
 - 原稿: [第1章](ja/04-relative-architecture.md)。
 - 一次資料の固定版: `babd4d0ba63384991b488d3779f19d0b239365e2`。
-- 原稿 SHA-256: `14f49d54fe1b9295b5d1bfe28636ba8b66c41af7ce46878da354e8cc6d50db40`。
+- 原稿 SHA-256: `9ddb0162e820c7df7d578045f06aa7f72ae1492ea541189212134df4b197d41d`。
 
 | ID | 原稿の節・主張 | 種類 | 対象・仮定 | 一次資料の箇所 | 原稿での構成・証明 |
 | --- | --- | --- | --- | --- | --- |
@@ -179,7 +147,7 @@ F20・F40の依存先である命題7.27は同じ積lensの自己変更へ限定
 | C1-04 | §§1.5–1.6、命題1.21・1.23、例1.24 | 数学 | 小さい前順序文脈圏、選択した pullback、被覆要件 | [数学本文 II §§2–13][math-ii]、[Coverage][coverage]、[Topology][topology]、[Stacks Tag 00YW](https://stacks.math.columbia.edu/tag/00YW)、[Tag 00ZG](https://stacks.math.columbia.edu/tag/00ZG) | 生成位相と情報の可視性を区別。層化の構成・普遍性と、貼り合わせを追加する二点の例を記述 |
 | C1-05 | 定義1.25、補題1.26、章末 | 数学 | 係数環、座標・構造関係、多項式制限によるイデアル保存。方程式と幾何の対応には実現の条件が必要 | [StructureSheaf][structure-sheaf]、[GeometryTransport/Basic][geometry-basic] の raw system の再添字づけ・係数変更、[WitnessIdeal][witness-ideal]、[Correspondence][law-correspondence] | 商前層と係数変更を記述。第2章への接続では、記号的座標から作るイデアルと対象ごとの残差を区別し、両者を結ぶ実現の条件を明記 |
 | C1-06 | §1.7、命題1.29、定理1.31 | 数学 | Atom の全単射、一般の source 写像、exact core 射、被覆・overlap・係数・raw system・文脈データの比較 | [AtomFoundation/Doctrine][doctrine]、[Core の exact 射][reading-core]、[AtomFoundation/Categories][atom-categories]、[GeometryTransport/Categories][geometry-categories]、[ThreeStageProjection][three-stage] | 構成成分を定義してから射影の関手性を証明。文脈の前順序性と raw 表示データの等式を明記 |
-| C1-07 | §1.8、命題1.33・1.34、例1.35 | 数学 | 全域lens、共通view・基準viewと有限基準fiber。可視変更の正規形は同じ積lensの自己変更 | [LensSemantics][lens-semantics] の `canonicalNormalFormEquiv`、`homEquivFiberMap`、[相対的な操作保存][lens-relative]、[FGMPS04 §3.1](https://www.cis.upenn.edu/~bcpierce/papers/newlenses-full.pdf) | 固定viewの積表示と射の制限・延長。可視変更は同じV×KのnormalFormと隠れた置換の一意性へ限定。既存の4対2の例は今回の検証完了に含めない |
+| C1-07 | §1.8、命題1.33・1.34、例1.35 | 数学 | 全域 lens の三法則、基準 view と有限基準 fiber | [LensSemantics][lens-semantics] の `canonicalNormalFormEquiv`、`homEquivFiberMap`、[相対的な操作保存][lens-relative]、[FGMPS04 §3.1](https://www.cis.upenn.edu/~bcpierce/papers/newlenses-full.pdf) | 積表示と射の制限・延長を証明。可視変更と補完の対応、get のみなら4個・put も保てば2個となる例を検算 |
 | C1-08 | §1.9、命題1.37・1.38 | 数学 | 有限グラフ・有限宣言関係・有限状態、観測関手、一般の意味保存射 | [ProtocolSchema][protocol-schema]、[ProtocolSemantics][protocol-semantics]、[ProtocolFinitePresentation][protocol-presentation]、[ProtocolReconstruction][protocol-reconstruction]、[Spivak12 §§3.2・3.4–3.5](https://arxiv.org/pdf/1009.1166v3) | 有限表から全経路への延長を合同関係と帰納法で証明。adapter の保存を頂点成分の平方で説明 |
 | C1-09 | 構成1.39・1.40、命題1.41 | 数学 | 型の役割と操作名の有限語彙、状態値を持つ source、法則をまだ課していない操作データ | [CSAATArchitectureObjects][cs-objects]、[CSAATLawSystems][cs-laws] の role 対象・名前付き操作・抽出・Lawfulness 同値 | source と Atom の役割を区別し、非単射の状態写像を保持。Law は固定 carrier の操作データを評価。定数環前層を一文脈へ制限した場合を本文に構成し、三法則・経路等式との同値を証明 |
 | C1-10 | 定義1.42、命題1.43 | 数学 | 明示した型付き役割写像と、get/put または edge/observe の可換性 | [CSAATTypedOperationTranslation][cs-typed]、[CSAATForwardMorphisms][cs-forward]、[ProtocolReconstruction][protocol-reconstruction] | 型付き射と意味保存射の Hom 全単射を両逆・恒等・合成まで証明。§1.7 の exact core 射とは射の定義を区別 |
@@ -202,7 +170,7 @@ F20・F40の依存先である命題7.27は同じ積lensの自己変更へ限定
 [geometry-categories]: ../../../research/lean/ResearchLean/AG/GeometryTransport/Categories.lean
 [three-stage]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/ThreeStageProjection.lean
 [lens-semantics]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/LensSemantics.lean
-[lens-relative]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSAATLensRelativeOperationSquares.lean
+[lens-relative]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/RealizationReconstruction/GeneralRelativeLens.lean
 [protocol-schema]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolSchema.lean
 [protocol-semantics]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolSemantics.lean
 [protocol-presentation]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/ProtocolFinitePresentation.lean
@@ -341,7 +309,7 @@ targetの同時再ラベル等を含む別の観測仕様である。
 
 - 原稿: [第4章](ja/07-transport-coherence.md)。
 - 一次資料の固定版: `bb9c533efbd68adc0e8004a90e5a782c8497a1c2`。
-- 原稿 SHA-256: `45fd889da90a59abb00bdcac0efc3801bffe61850c8731eef9841fda7b7fee87`。
+- 原稿 SHA-256: `be82abaabf761b072619bbdb59da8d606158761cb7fcd79cb5a387d15f629406`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
 | --- | --- | --- | --- | --- |
@@ -349,17 +317,17 @@ targetの同時再ラベル等を含む別の観測仕様である。
 | C4-02 | 構成4.3–定理4.5 | Exactな抽出射、Atom全単射、一般のsource写像、元のcore | [AtomFoundation/Transport][c4-core-transport]、[Opcartesian][c4-core-opcart] | configuration・対象形成・名前付きoperation・方程式・detector・invariant・signatureを再添字づけし、任意のexactな後続射に対する因子を逆再添字づけで構成。各成分の一意性を確認 |
 | C4-03 | 例4.6・構成4.7 | 前向き抽出保存、Atom全単射、追加抽出族の有限性、実際のbase operation、方程式とdetector健全性 | [RefinementObstruction][c4-refinement-obstruction]、[RefinementSupply][c4-refinement-supply] | 三Atomの交換と追加によるexact性の失敗を記述。追加operationの向きは拡大基点から旧基点の像とし、到達可能性と像の上でのquery・受理保存を導出 |
 | C4-04 | 構成4.8–定理4.11 | Coreの文脈同値、被覆要件の存在量化像、選択overlap、同じ係数でのraw system再添字づけ、三つの実現比較 | [GeometryTransport/Transport][c4-geom-transport]、[Supply][c4-geom-supply]、[Factorization][c4-geom-factor]、[Opcartesian][c4-geom-opcart] | 一般のcore射にはH_geomを必要十分な存在条件として示す。標準core輸送では三つの可逆な実現比較を構成し、任意のcoreの後続射について幾何の因子を構成・一意化 |
-| C4-05 | 補題4.12–定理4.16 | 抽出の底に沿う標準core・幾何lift、fiberの対象とvertical射、coreへの射影 | [CorePseudofunctor][c4-core-pseudo]、[Pseudofunctor][c4-geom-pseudo]、[TowerCompatibility][c4-tower] | 標準輸送の関手、compositor、unitor、自然性、三重合成・単位・射影整合を対応づける |
-| C4-06 | 定義4.17–構成4.18 | 有限グラフの各頂点のcore、抽出の底で等しい二道、強い辺lift、底固定の指定自己同型 | [FinitePresentation][c4-presentation] | AdmissibleLiftData・AdmissibleTransportDataに揃え、指定比較と標準比較の差を定義する |
-| C4-07 | 定義4.19・補題4.21–定理4.23 | 同じcoreの有限比較データ、終点fiber群の再選択、現在の選択を含む作用空間 | [FinitePresentation][c4-presentation]、[VanishingCoherence][c4-vanishing] | 道の終点変化、作用則、消滅と整合性を既存宣言に対応づける。番号外の一般群圏の二辺公式を削除 |
-| C4-08 | 補題4.24–命題4.27 | 同じcoreデータの後続道、向き付きの貼り合わせ、指定した有限syzygy | [PastingObstruction][c4-pasting] | 後続道への自己同型と因子化、標準貼り合わせの端点式、syzygy条件下の等式、閉じた不一致の共役式を保持。群準同型という追加結論と二因子公式を削除 |
-| C4-09 | 例4.20・例4.28–例4.29 | S3の独立な平行二辺、共有辺の二要求、三比較の有限計算 | [VanishingCoherence][c4-vanishing]、[FiniteWitnesses][c4-finite]、[UnifiedObstruction][c4-unified] | 元から記載された有限計算を保持し、限定後のcoreの定理への適用という説明を外す。A/B型の検証完了とは扱わない |
-| C4-10 | 定義4.30–定理4.33 | 有限図式の幾何のp-strongな辺、射影したq-strongな辺、底の二道の一致、指定比較 | [SectionDecomposition][c4-section] | TwoLayerLiftDataに揃えて射影を示す。整列したedge sectionに対し、核と順序を保つdefect分解を記述 |
-| C4-11 | 定理4.34 | 同じ二段の強い辺、整列したedge section、核の再選択、全ての面 | [GlobalVanishing][c4-global] | 同じsection上の幾何の整合性と核の補正を対応づける。Coreだけの消滅定理を幾何へ代入しない |
-| C4-12 | 例4.35 | S4、選択した二軸の安定化群とC2の直積、一頂点・二loop・二面 | [CrossStageCoherence/FiniteWitnesses][c4-stage-finite]の四軸と平方根の機構 | K→S4の有限群の方程式。S4の二つの平方根がどちらもKへ持ち上がらず、核の条件は解ける例。幾何packageの実例とはしない。元の例の個別照合はA/B側に残る |
-| C4-13 | 定義4.36–例4.39 | 共通V・v₀、有限基準fiber、一般の状態写像とV上の自己写像 | [CSAATLensRelativeOperationSquares][c4-lens]、第1章の定義1.32・命題1.34・例1.35・定義1.42 | 四役割のh,u,h,h×uとget/put平方、固定viewの対応、全単射を備えた変更の両逆。Unit×Boolの定値自己射の非単射性を既存宣言へ対応させる |
+| C4-05 | 補題4.12–定理4.16 | 選択した強いlift、fiberの対象とvertical射、coreへの射影 | [ArbitraryStrongLiftPseudofunctor][c4-core-pseudo]、[Pseudofunctor][c4-geom-pseudo]、[TowerCompatibility][c4-tower] | 輸送関手、compositor、unitorを因子分解から作り、自然性、三重合成・単位と段間の二経路の一致を同じ普遍性から証明 |
+| C4-06 | 定義4.17–構成4.18 | 有限グラフ、底で等しい二道、強い辺lift、独立に指定した終点自己同型 | [ArbitraryFinitePresentation][c4-presentation] | 指定比較とcanonical comparatorを区別し、raw defectを合成順序込みで定義。指定比較の整合性を入力へ含めない |
+| C4-07 | 定義4.19・補題4.21–定理4.23 | 終点fiber群のedge gauge、現在の辺の選択を含む作用空間 | [ArbitraryFinitePresentation][c4-presentation]、[ArbitraryObstruction][c4-vanishing] | vertical同型の因子分解を明示し、道の終点変化とdefectの共変式から作用則を証明。二辺の計算で現在の選択への依存を示す。軌道による消滅と独立な道の可換式を、強いliftの一意性で同値化 |
+| C4-08 | 補題4.24–命題4.27 | 後続道へのwhiskering、向き付き面の貼り合わせ、同じ始終道を持つsyzygy | [ArbitraryObstruction][c4-pasting] | 逆向きでは指定比較と標準比較をそれぞれ反転。貼り合わせのdefectには共役を含め、cocycle条件には指定比較のsyzygy整合を要求。閉じた不一致の共役式は固定したedge gaugeで証明 |
+| C4-09 | 例4.20・例4.28–例4.29 | 一対象群圏、恒等の初期lift、独立な平行二辺と一面、辺を共有する複数面 | [ArbitraryObstruction][c4-vanishing]、[FiniteWitnesses][c4-finite]、[UnifiedObstruction][c4-unified] | 独立な二辺での比較の吸収、同じ二辺への異なる要求、S3の非可換な三比較を本文用の群圏で直接計算。既存のAAT package全成分をこの小例に含めたとは扱わない |
+| C4-10 | 定義4.30–定理4.33 | 抽出を固定する上下の自己同型群、core射影と核、辺ごとのlift、coreの道の整列 | [SectionDecomposition][c4-section]、[CompositeQualification][c4-composite] | 無条件のdefect射影を先に示す。整列と一意性からp(m)=p(u)を導き、核への所属とuφ⁻¹=(um⁻¹)(mφ⁻¹)をこの順序で証明 |
+| C4-11 | 定理4.34 | 同じcoreの辺の選択の上のlift、核のedge gauge、全ての面 | [GlobalVanishing][c4-global]、[CompositeQualification][c4-composite] | 固定sectionの上の全体整合性と、同じsectionに相対的な核の補正を両向きに構成。さらにsectionの存在を量化して同時消滅を特徴づける |
+| C4-12 | 例4.35 | S4、選択した二軸の安定化群とC2の直積、一頂点・二loop・二面 | [CrossStageCoherence/FiniteWitnesses][c4-stage-finite]の四軸と平方根の機構 | 本文用に群準同型K→S4を構成。Coreの二つの平方根がどちらも持ち上がらず、独立な核の条件は解けることを証明・全数検算。元の係数環ℤ×ℤの幾何packageの代わりに、核を明示的なC2とした有限群の塔を用いた |
+| C4-13 | 定義4.36–例4.39 | 三法則を持つlens、一般の状態・view写像、同じ状態写像の再利用 | [GeneralRelativeLens][c4-lens]、第1章の定義1.32・命題1.34・例1.35・定義1.42 | getとputを直和写像に束ね、共有されたhとh×uによる一つの平方との同値を証明。第一・第二法則から更新保存が読取り保存を含意することを原稿内で導出し、可逆な組の共通部分がput保存群に等しいことを示す。一点viewで非単射となる意味保存射も示す |
 | C4-14 | 命題4.40 | 固定プロトコル、名前付き生成辺、頂点写像、観測とadapter | [CSAATProtocolAdapterSquares][c4-protocol]、第1章の命題1.38・式(1.23) | 命題1.38を適用して生成辺から全実行への保存を得て、式(1.23)からadapter平方を頂点成分で特徴づける |
-| C4-15 | §4.12、定理4.41・章末 | 充満忠実関手と比較射。CSへの適用は固定viewのlens・固定schemaのプロトコル | [CSAATFullyFaithfulComparisonTransport][c4-fully-faithful]、第1章の命題1.43 | 比較保存群と射影の対応を保持。相対view全体の充満忠実性と任意の意味論の圏へのdefect理論の代入を削除 |
+| C4-15 | §4.12、定理4.41・章末 | 充満忠実関手、任意の比較射、両端の自己同型。Sectionの対応には比較射の可逆性 | [CSAATFullyFaithfulComparisonTransport][c4-fully-faithful]、[GeneralRelativeLensComparison][c4-relative-comparison]、第1章の命題1.43 | 比較を保つ群の全単射をfullnessとfaithfulnessから証明。適用先は実際に構成した型付き圏とし、幾何の輸送には別途core射と局所実現の比較を指定 |
 
 概要とまとめの注文APIの例は、構成4.18・定理4.23・命題4.37・4.38・4.40の応用可能性を示す。
 実開発での実証結果は含まない。
@@ -373,18 +341,18 @@ targetの同時再ラベル等を含む別の観測仕様である。
 [c4-geom-supply]: ../../../research/lean/ResearchLean/AG/GeometryTransport/Supply.lean
 [c4-geom-factor]: ../../../research/lean/ResearchLean/AG/GeometryTransport/Factorization.lean
 [c4-geom-opcart]: ../../../research/lean/ResearchLean/AG/GeometryTransport/Opcartesian.lean
-[c4-core-pseudo]: ../../../research/lean/ResearchLean/AG/CrossStageCoherence/CorePseudofunctor.lean
+[c4-core-pseudo]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/CrossStageCoherence/ArbitraryStrongLiftPseudofunctor.lean
 [c4-geom-pseudo]: ../../../research/lean/ResearchLean/AG/CrossStageCoherence/Pseudofunctor.lean
 [c4-tower]: ../../../research/lean/ResearchLean/AG/CrossStageCoherence/TowerCompatibility.lean
-[c4-presentation]: ../../../research/lean/ResearchLean/AG/TransportCoherence/FinitePresentation.lean
-[c4-vanishing]: ../../../research/lean/ResearchLean/AG/TransportCoherence/VanishingCoherence.lean
-[c4-pasting]: ../../../research/lean/ResearchLean/AG/TransportCoherence/PastingObstruction.lean
+[c4-presentation]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/TransportCoherence/ArbitraryFinitePresentation.lean
+[c4-vanishing]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/TransportCoherence/ArbitraryObstruction.lean
+[c4-pasting]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/TransportCoherence/ArbitraryObstruction.lean
 [c4-finite]: ../../../research/lean/ResearchLean/AG/TransportCoherence/FiniteWitnesses.lean
 [c4-unified]: ../../../research/lean/ResearchLean/AG/TransportCoherence/UnifiedObstruction.lean
 [c4-section]: ../../../research/lean/ResearchLean/AG/CrossStageCoherence/SectionDecomposition.lean
 [c4-global]: ../../../research/lean/ResearchLean/AG/CrossStageCoherence/GlobalVanishing.lean
 [c4-stage-finite]: ../../../research/lean/ResearchLean/AG/CrossStageCoherence/FiniteWitnesses.lean
-[c4-lens]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSAATLensRelativeOperationSquares.lean
+[c4-lens]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/RealizationReconstruction/GeneralRelativeLens.lean
 [c4-protocol]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSAATProtocolAdapterSquares.lean
 [c4-fully-faithful]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSAATFullyFaithfulComparisonTransport.lean
 
@@ -392,14 +360,14 @@ targetの同時再ラベル等を含む別の観測仕様である。
 
 - 原稿: [第5章](ja/08-base-change.md)。
 - 一次資料の固定版: `9364f25d1b54dff9ad059ae95c71d0404626d0d6`。
-- 原稿 SHA-256: `8ce677c00c994881f6cf2617e0f4991a449b1f25cea7fd12a3e685b6303a84e7`。
+- 原稿 SHA-256: `19ef299df843a151debd2f40b006f4c29754e7640031df192699b189147f93df`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
 | --- | --- | --- | --- | --- |
 | C5-01 | 構成5.1・命題5.2・例5.3 | 同じAtom carrier、exactなcospan、一般のcone。Pointed版ではcompatibleな選択source | [DoctrinePullback][c5-pullback]、[PointedDoctrinePullback][c5-pointed] | Sourceのcompatible pair、成分ごとの正規化、第一成分の抽出を定義。第二射影のAtom成分をe₂⁻¹e₁とし、Atom成分が恒等とは限らない全coneに普遍射を構成・一意化 |
 | C5-02 | 定義5.4・構成5.5・定理5.6 | 任意のsemantic exact底射、任意のtarget core。有限codeによる表示は仮定しない | [CartesianTarget][c5-cartesian]、[ExactBottomGlobalLift][c5-global]、[Stacks §4.33](https://stacks.math.columbia.edu/tag/02XJ) | 有限な選択族を逆Atom写像で戻し、対象形成・operation・方程式・detector・invariant・signatureを再添字づけ。任意の先行底射を量化する強いcartesian性を上段の逆から証明 |
-| C5-03 | 補題5.7・命題5.8・例5.9 | 一般のexact射について存在定理から固定した標準cartesian liftと標準の前向き輸送 | [GlobalLiftCoherence][c5-global-coherence]、[PackageProjectionBeckChevalleyExactness][c5-bc-exactness]、[TransportEquivalence][c5-transport-equiv] | 標準選択の引き戻し関手、単位・合成比較と整合性を記述。一般の任意cleavageについての一括した主張を除く |
-| C5-04 | 構成5.10–命題5.12・例5.13 | Atom等号判定、有限codeのcospan・compatibleな選択source・有限診断図式から生成した平方 | [CoreBeckChevalleyMate][c5-bc-mate]、[PackageProjectionBeckChevalleyExactness][c5-bc-exactness] | 標準mate、三角式、可逆性を対応づける。5.12は任意比較の一致判定から、liftの選択変更と両端同型の比較式へ置換 |
+| C5-03 | 補題5.7・命題5.8・例5.9 | 選択したlift、fiber内の対象と射、第4章のcanonicalな前向き輸送 | [ArbitrarySemanticCleavageCoherence][c5-global-coherence]、[SemanticCoreBeckChevalleyFactorization][c5-bc-exactness]、[TransportEquivalence][c5-transport-equiv] | 引き戻し関手・単位・合成比較を普遍性から作る。底がσである射の集合を介して随伴を構成し、両方向のliftの上段逆から単位・余単位の可逆性を証明。Sourceを二点から一点へ潰す例は本文内の例 |
+| C5-04 | 構成5.10–命題5.12・例5.13 | Exactなpointed pullback、実際の二輸送経路と単位・余単位。指定比較との一致は三角形で判定 | [SemanticCoreBeckChevalleyMate][c5-bc-mate]、[SemanticCoreBeckChevalleyFactorization][c5-bc-exactness] | 三段のmateを記述し、三角形で特徴づけ、cleavageを替えた場合も端点同型の下で一致することを証明。既存mate宣言の有限presentation・Atom等号判定という入力と、本文のsemanticな構成範囲を区別する。本文では定理5.6・命題5.8から一般のexact squareに同じ構成を行う証明を与えた |
 | C5-05 | 定義5.14・定理5.15・例5.16 | Source有限表、既定値・有限例外、有限台Atom置換。正規化後に輸送したcode自体の等号を要求 | [Schema][c5-code]、[CoverageSchema][c5-coverage-schema]、[CoverageClassification][c5-coverage] | 抽出述語の評価の同値とcode等号を区別。端点の表示を選び直すcoverageと固定code間のHomを分け、第8章と条件を同期 |
 | C5-06 | 定義5.17・構成5.18 | 有限の底の図式、辺平方、sourceの強い辺lift、頂点でのcanonical輸送 | [IndexedBaseDiagram][c5-diagram]、[IndexedDiagnosticAssembly][c5-assembly] | 生成辺から道の自然性を帰納的に導出し、同じ平方で上段の辺を因子分解。合成・単位・貼り合わせを一意性から比較 |
 | C5-07 | 命題5.19・例5.20 | 変更前の関係、変更先の生の辺と可換平方の族。Epiは指定面の始点での消去に使用 | [IndexedRawFamilyClassification][c5-raw-family] | 面の両経路は頂点射との前合成後に等しいことを示す。本文の十分条件は指定面の始点だけにepiを要求し、既存Leanの生成辺の始点も含むSupportEpiより弱い条件で、本文内の消去証明を用いる。全対象・全平行射への一様な消去条件とepiの同値は、固定した図式の整合性の必要条件とは区別する。二点のsourceで非epiの失敗例と整合する対照例を構成 |
@@ -409,9 +377,9 @@ targetの同時再ラベル等を含む別の観測仕様である。
 | C5-11 | 例5.28・例5.29 | 三Atom、二source、非自明なAtom交換、各点の実core。別に無限抽出による空fiber | [Refinement Witnesses][c5-ref-witnesses] | 前向きだけの点と、compatibleな入力をallへ絞ると逆輸送できる点を対照化。本文用の小例ではcomposition・対象形成・恒等operation・空Law等を指定し、coreの存在を説明。既存witness packageをそのまま引用したとは扱わない |
 | C5-12 | 定義5.30・構成5.31・定理5.32前半 | 生成したcore liftの上段逆、完全な被覆・overlap・raw systemと同じ係数環 | [RefinementGeometry][c5-ref-geometry]、[UpperGeometryCleavage][c5-upper-cleavage]、[UpperGeometryCleavageRealization][c5-upper-realization]、[UpperGeometryMate][c5-upper-mate] | 幾何の全成分を引き戻し、coreと幾何の二段のcartesian性からmate・逆・下段射影・三角形・係数恒等を構成。任意の一方向の幾何射を可逆とは扱わない |
 | C5-13 | 定理5.32後半・補題5.33 | 有限根付き図式、同じ底のfiberのsource core図式、二段の強い辺lift、固定係数、同じsourceから引き戻す指定比較 | [CompatibleInput][c5-compatible-input]、[UpperRefinementBCProblem][c5-upper-problem]、[CompatibleMateNaturality][c5-compatible-natural]、[CompatibleGlobalMate][c5-compatible-global]、[SolutionContracts][c5-solution-contracts]、[SolutionEquivalence][c5-solution-equiv] | 辺と指定比較のintertwiningを二段のcartesian一意性から証明。端点同型によるc⁻¹sbと逆を明示し、三角形・道・貼り合わせを含む解と再選択軌道を両方向へ移す |
-| C5-14 | 命題5.34–命題5.36 | 既存のview制限と四状態の計算、残す操作・関係のプロトコルとadapter | 第1章の定義1.32・1.36と第4章の命題4.40。元のF30の個別検証は未実施 | 一般の相対lens同型によるview制限の移送を削除。四状態の元の計算とプロトコルの制限は保持し、A/B型の検証完了には含めない |
-| C5-15 | 構成5.37・命題5.38 | Atom等号判定、有限codeで実現した平方、同じ図式のcore・強い辺、各面の終点b₁・底の二道、指定比較、面、係数環、完全幾何 | [ExactDerivedMateComposite][c5-derived-mate]、[ExactDerivedBarAlphaTriangle][c5-alpha-triangle]、[ExactDerivedBarAlphaProjection][c5-alpha-projection] | AuthoredBCDatumSquareの全入力を本文に列挙し、その同じ入力の実二経路・標準同型・三角式・core射影へ対応させる |
-| C5-16 | 定義5.39・構成5.40・まとめ | 構成5.37の共通入力と同じ図式のcochain、元coreのAd条件 | [ObjectNormalization][c5-normalization]、[CanonicalNormalization][c5-geom-normalization]、[ExactBarBetaFactorization][c5-beta-factor]、[ExactBarBetaProjection][c5-beta-projection] | 元の正規化の定義を保持し、同じ有限表示された平方とcochainから選ぶ自己射・β・barβ・射影を記述 |
+| C5-14 | 命題5.34–命題5.36 | 第1章の全域lens三法則とlens同型、残す操作と関係のプロトコル、自然なadapter | 第1章の定義1.32・1.36と第4章の定義4.36・命題4.40 | Lensのviewの制限と更新の閉性、移行と制限の可換性を三法則から直接証明。プロトコルの前合成とadapter自然性を、関手の合成と元の自然性から証明。根拠は本文の証明であり、対応するLean theoremを示す項目ではない。AATへ適用する際の入力構成・exactness・幾何の指定は別途必要 |
+| C5-15 | 構成5.37・命題5.38 | 同じexact square・比較図式・面・cochain・source core・完全幾何・係数、実際の二経路と端点同型 | [SemanticDerivedEndpointBridge][c5-derived-mate]、[SemanticDerivedBarAlphaTriangle][c5-alpha-triangle]、[SemanticCoreBeckChevalleyMateIdentification][c5-alpha-projection] | 完全幾何の二経路を実際のpush-pullで構成し、単位・始点同型・逆経路mate・終点同型・余単位による比較を説明。三角形の一意性からcanonical mateとの一致とcoreへの射影式を証明 |
+| C5-16 | 定義5.39・構成5.40・まとめ | Sourceのconfigurationを保つ対象正規化、残差・operation・invariant・座標のadmissibility、同じcochainによる分岐 | [ObjectNormalization][c5-normalization]、[CanonicalNormalization][c5-geom-normalization]、[SemanticExactBarBetaClassification][c5-beta-factor]、[SemanticExactBarBetaProjection][c5-beta-projection] | 関数型invariantの輸送条件と値の不変性の同値を、対象写像の冪等性と値域の全単射の単射性から本文内で導出。条件を明記してcoreと幾何の自己射を構成し、二番目の実経路で運んだ因子とcanonical mateの積としてβ・barβを定める。射影式までを本章で示し、射としての冪等性・可逆性分類・像の実現は第6章へ接続。分岐を有限アルゴリズムとは扱わない |
 
 モノリスの分割例では、業務操作を読む場合と通信・失敗・再試行まで読む場合とで、
 入力と保存条件をそれぞれ指定する。説明の対象は指定した範囲の比較であり、実コードの評価結果は含まない。
@@ -420,9 +388,9 @@ targetの同時再ラベル等を含む別の観測仕様である。
 [c5-pointed]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/PointedDoctrinePullback.lean
 [c5-cartesian]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/CartesianTarget.lean
 [c5-global]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/ExactBottomGlobalLift.lean
-[c5-global-coherence]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/ExactBottomGlobalLiftCoherence.lean
-[c5-bc-mate]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/CoreBeckChevalleyMate.lean
-[c5-bc-exactness]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/PackageProjectionBeckChevalleyExactness.lean
+[c5-global-coherence]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/DoctrineFiberProduct/ArbitrarySemanticCleavageCoherence.lean
+[c5-bc-mate]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/DoctrineFiberProduct/SemanticCoreBeckChevalleyMate.lean
+[c5-bc-exactness]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/DoctrineFiberProduct/SemanticCoreBeckChevalleyFactorization.lean
 [c5-transport-equiv]: ../../../research/lean/ResearchLean/AG/DiagnosticConservativity/TransportEquivalence.lean
 [c5-code]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/Schema.lean
 [c5-coverage-schema]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/ExactBottomCoverageSchema.lean
@@ -451,19 +419,19 @@ targetの同時再ラベル等を含む別の観測仕様である。
 [c5-compatible-global]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleGlobalMate.lean
 [c5-solution-contracts]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSolutionContracts.lean
 [c5-solution-equiv]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSolutionEquivalence.lean
-[c5-derived-mate]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedMateComposite.lean
-[c5-alpha-triangle]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedBarAlphaTriangle.lean
-[c5-alpha-projection]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedBarAlphaProjection.lean
+[c5-derived-mate]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedEndpointBridge.lean
+[c5-alpha-triangle]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaTriangle.lean
+[c5-alpha-projection]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticCoreBeckChevalleyMateIdentification.lean
 [c5-normalization]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/BCAuthoredCanonicalObjectNormalization.lean
 [c5-geom-normalization]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalization.lean
-[c5-beta-factor]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaFactorization.lean
-[c5-beta-projection]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaProjection.lean
+[c5-beta-factor]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaClassification.lean
+[c5-beta-projection]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaProjection.lean
 
 ## 第6章 冪等正規化と実現
 
 - 原稿: [第6章](ja/09-idempotent-normalization.md)。
 - 一次資料の固定版: `12884419d705624be39e8a87393ed50385395469`。
-- 原稿 SHA-256: `b09a3690e2d51759c1574a9e955e5a38acc6342927e0f8bbaa6e683cb0812114`。
+- 原稿 SHA-256: `44114aff78c39a41e92b755e7ae21748f71d4442a2beb566a990ab315e5cd60e`。
 - [図6.1](figures/ch06-karoubi-arrow.svg)の SHA-256: `6e37897fd7912478b5b3391100dead8fa1eb3c8318759bfd97e2519a197dae4a`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
@@ -474,10 +442,10 @@ targetの同時再ラベル等を含む別の観測仕様である。
 | C6-04 | 命題6.7・定理6.8 | 任意のconfiguration上の全architecture object。Core内の分裂は両射がcore射であることを要求 | [DistinctArchitectureObjects][c6-distinct]、[InternalNormalizationSplitNoGo][c6-no-split] | 一元型・二元型の対象から非単射性を示す。仮想的なsectionの単射性と対象自然性から、全対象が固定点になる矛盾を導く |
 | C6-05 | 定義6.9–例6.13 | 任意の圏、同型α、冪等射d | [RawFailureLocus][c6-raw-failure]、[Karoubi image][c6-image] | 冪等完備化・分裂を定義から説明。β=dα、e=α⁻¹dα、γ=α⁻¹dについて両側逆を計算し、元の圏の可逆性と像の同型を区別。四点の例は本文の有限集合の計算 |
 | C6-06 | 定理6.14・命題6.22 | Adを満たすcoreを持つ完全幾何と、その充満部分圏の全射 | [CanonicalNormalization][c6-geom-normalization] | Coreと被覆・overlap・係数・support・軸・observable・raw systemを含めて冪等性と片側吸収を確認。正規化関手の充満性、coreへの射影、底・係数の保存を証明 |
-| C6-07 | 補題6.15 | 一般exact射のcore liftと幾何の前向きlift。完全幾何の引き戻しとfiber関手上の正規化保存にはAtom等号判定とRealizableHom | [ExactNormalizationNaturality][c6-exact-naturality] | 一般のliftの交換式と、有限codeで実現された射についての幾何のmap-normalizationを分けて記述 |
-| C6-08 | 定理6.16 | 構成5.37の有限codeによる共通入力、同じ面・cochain・元core・係数・完全幾何 | [ExactDerivedBarAlphaTriangle][c6-alpha-triangle]、[ExactBarAlphaNormalizationNaturality][c6-alpha-naturality]、[ExactBarBetaFactorization][c6-beta-factor]、[ExactBarBetaClassification][c6-beta-classification] | 同じ生成比較の冪等分解、可逆性分類、像の同型と端点正規化との一致を既存宣言へ対応させる |
-| C6-09 | 命題6.17 | 定理6.16の同じ有限code入力と生成された端点同型 | [ExactBarBetaProjection][c6-beta-projection]、[G116KaroubiPlacement][c6-placement] | 標準比較・二冪等射・生成比較を同じcore射影と端点同型で対応づける |
-| C6-10 | 例6.18 | 元から本文に定めた一Atom・一source、二軸、configurationのHomをoperationとするcoreと完全幾何 | 第1章の元の入力、定理6.5・命題6.7・定理6.14。元のF32の個別検証は未実施 | 正規化自体の例へ縮小。有限code・AuthoredBCDatumSquareとの対応がない生成比較への適用を削除。6.25で用いる元のcoreは保持し、A/B型の検証完了とは扱わない |
+| C6-07 | 補題6.15 | 同じ再添字づけから生成したexactな輸送・引き戻しと実際のlift | [SemanticExactNormalizationNaturality][c6-exact-naturality] | Adの保存とoperationの同一視の整合からliftとの交換を証明し、普遍性から正規化射の輸送を同定。任意のcore射の両側自然性へは拡張しない |
+| C6-08 | 定理6.16 | 構成5.37・5.40の共通square・面・cochain・source core・係数・完全幾何 | [SemanticDerivedBarAlphaTriangle][c6-alpha-triangle]、[SemanticDerivedBarAlphaNormalizationNaturality][c6-alpha-naturality]、[SemanticExactBarBetaClassification][c6-beta-factor]、[SemanticExactBarBetaClassification][c6-beta-classification] | 同じ生成比較の冪等分解・可逆性分類・像の同型を証明。χのとき両端の冪等射をcanonical正規化へ同定。恒等でない診断だけから正規化の許容性や診断の消滅を主張しない |
+| C6-09 | 命題6.17 | 第5章の端点同型と、同じsourceの正規化 | [SemanticExactBarBetaKaroubiProjection][c6-beta-projection]、[G116KaroubiPlacement][c6-placement] | 標準比較・二冪等射・生成比較のcore射影を照合。Karoubi内の端点同型は冪等射を合成したe j_D・E j_Vとして与える |
+| C6-10 | 例6.18 | 一Atom・一source、二つの選択軸、configurationのHomをoperationとするcore、空の方程式・invariant添字 | 第1章の定義1.6・1.7・1.10・1.12・1.17・1.25・1.28と定理6.16。[ExactBarBetaFiniteWitness][c6-beta-witness]の補助幾何の構成も照合 | 本文用に恒等な底の平方と非自明な軸交換を用いる別の入力を構成。文脈・環・detector・raw座標・関係・制限を指定。既存Leanの固定axis-fold witnessそのものを引用したとは扱わず、新しい入力から本文内で非可逆性を導く |
 | C6-11 | 補題6.19–定理6.21 | Ad coreの充満部分圏、全てのcore射 | [CanonicalNormalizationAbsorption][c6-absorption]、[NormalizationCategory][c6-category]、[NormalizationProjection][c6-projection] | N_Q f N_P=f N_Pを全成分で示す。Sandwich条件を満たす射の圏、恒等射N_P、充満関手f↦f N_Pを構成 |
 | C6-12 | 命題6.23・命題6.24 | 同じ充満部分圏。正規化のoperation写像を固定 | [NormalizationNaturalityFailure][c6-naturality-failure]、[ModificationBlocker][c6-operation-coherence] | Karoubi内の包含の自然性を片側吸収から証明。逆方向の族の自然性をf N_P=N_Q f、さらにoperation成分の等式と同値とする |
 | C6-13 | 例6.25 | 例6.18をHom×Boolのoperationへ拡張。元の対象に依存するBool反転 | [ModificationCounterexample][c6-counterexample]、[NormalizationNaturalityFailure][c6-naturality-failure] | 型の違いを使う既存反例の仕組みを、本文のcore上に構成。f²=1、fN=N、Nf≠fNを示す。f≠1とfN=Nから正規化関手の非忠実性も本文内で導く |
@@ -494,12 +462,12 @@ targetの同時再ラベル等を含む別の観測仕様である。
 [c6-raw-failure]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeRawFailureLocus.lean
 [c6-image]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/IdempotentExchangeKaroubiImage.lean
 [c6-geom-normalization]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/CanonicalNormalization.lean
-[c6-exact-naturality]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactNormalizationNaturality.lean
-[c6-alpha-triangle]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactDerivedBarAlphaTriangle.lean
-[c6-alpha-naturality]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarAlphaNormalizationNaturality.lean
-[c6-beta-factor]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaFactorization.lean
-[c6-beta-classification]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaClassification.lean
-[c6-beta-projection]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaProjection.lean
+[c6-exact-naturality]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactNormalizationNaturality.lean
+[c6-alpha-triangle]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaTriangle.lean
+[c6-alpha-naturality]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaNormalizationNaturality.lean
+[c6-beta-factor]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaClassification.lean
+[c6-beta-classification]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaClassification.lean
+[c6-beta-projection]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaKaroubiProjection.lean
 [c6-beta-witness]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaFiniteWitness.lean
 [c6-absorption]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/CanonicalNormalizationAbsorption.lean
 [c6-category]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/NormalizationCategory.lean
@@ -517,14 +485,14 @@ targetの同時再ラベル等を含む別の観測仕様である。
 
 - 原稿: [第7章](ja/10-comparison-and-information.md)。
 - 一次資料の固定版: `c08b1a0e078a242e4683fdb375dc1e7c6a3c4e14`。
-- 原稿 SHA-256: `f3214e74b8a16353e1408dde31b421fb3e33b2179860e34cb787d900b1e30b86`。
+- 原稿 SHA-256: `824121b3f5320e91d9534e665404ce8e4ef283d01cead40e1babd57bc9be78b6`。
 - [図7.1](figures/ch07-refactoring-workers.svg)の SHA-256: `eaa505fc2aa5158d917a3d6d5ad9e11e22ca899e1b232b8aaa2711483b3ceb15`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
 | --- | --- | --- | --- | --- |
 | C7-01 | 例7.1 | 一頂点・一名前付きループ、二状態、恒等操作と反転操作 | [PeriodSeparation][c7-period] | 共通部品へ切り出す更新処理が、決済区分を保持する場合と反転する場合を小さな状態機械で説明。既存の二対象の有限witnessそのものではなく、本文用の別の例として定義・評価する |
-| C7-02 | 定義7.2・命題7.3 | 完全幾何の比較と底固定の端点変更群。比較自身の底は任意 | [QualifiedComparisonStabilizer][c7-stabilizer]、[QualifiedComparisonGroup][c7-object-group] | 底固定の比較保存群とArr(Kar(E_geom))の底固定可逆変更群の同型、端点射影を記述 |
-| C7-03 | 定理7.4・系7.5 | 7.4は完全幾何と底固定群。7.5はその可逆比較、および任意圏の全端点群の場合 | [QualifiedComparisonStabilizer][c7-stabilizer] | 射影核・像・追随fiberをqualified宣言へ対応させる。一般圏の全端点群の共役同型にはgeneratedArrowComparisonSourceEquivを使用 |
+| C7-02 | 定義7.2・命題7.3 | 任意の圏の比較、許容端点部分群。底固定版では変更の底への像が恒等 | [F37GeneralComparison][c7-stabilizer]、[F37GeneralComparison][c7-object-group] | 比較保存群の部分群性とArr、恒等冪等のArr(Kar)との同定を証明。比較自身の底への像は恒等に限定しない |
+| C7-03 | 定理7.4・系7.5 | 一般の比較。共役による両射影の同型には比較の可逆性と許容群の対応を仮定 | [F37GeneralComparison][c7-stabilizer] | 両端射影の核と像、追随変更の剰余類・左torsorを計算。同型の場合を共役のグラフとして導く |
 | C7-04 | 定理7.6 | 第5章§5.8の共通sourceと二経路、底を固定するsource自己同型 | [QualifiedComparisonGeneratedClassification][c7-generated] | 実際の二経路の因子化と生成mateの三角形から、core・幾何のcartesian一意性を順に使って適合性を証明。独立なsource変更の差を残余部分群へ帰着する |
 | C7-05 | 命題7.7 | 各sourceの底・係数固定同型から、辺・面・輸送の選択を移して入力を再構成 | [SourcePresentation F0][c7-source-input]、[F1][c7-source-legs]、[F2][c7-source-changes]、[F3][c7-source-comparison] | 新しい入力を作ってから両経路を生成し、普遍性から端点同型・比較と変更の共役式を得る。完成済み比較の共役を入力とはしない |
 | C7-06 | 定義7.8〜命題7.10 | 群準同型O、部分群Γ。Oの全射性は不要 | [ObservationKernel][c7-observation] | 判定の因子化とker O⊆Γ、飽和、観測fiber、基点付き剰余類を証明。計算可能な判定手続きの存在とは区別する |
@@ -536,16 +504,16 @@ targetの同時再ラベル等を含む別の観測仕様である。
 | C7-12 | 補題7.18 | Adを満たすcoreを持つ完全幾何。型の等式に沿うoperationの同一視 | [CoreSection][c7-core-section]、[GeometrySection][c7-geometry-section]、[AutomorphismSection][c7-aut-section] | 正規化・射の適用・型の復元でoperationと対象依存の保存則を構成。残りの幾何成分を保持し、全射成分の恒等・合成・吸収から群準同型sectionを得る |
 | C7-13 | 定理7.19 | 両端がAdを満たす完全幾何の任意の同型比較 | [CanonicalNormalizationIsoComparisonSection][c7-iso-section] | Sourceのsectionと元の比較による共役を組み合わせ、両端で独立に選んだsectionの自然性を仮定せずに比較を保つsectionを構成。底・係数保持も証明 |
 | C7-14 | 構成7.20 | 同じ完全幾何と、選択値以外の二つの付随データ | [AmbientKernelObjectSwap][c7-swap]、[CoreLift][c7-swap-core]、[GeometryLift][c7-swap-geometry] | 実際の非恒等・対合な対象写像をoperation・全幾何成分へ延長。正規化による吸収と底・係数固定を示す |
-| C7-15 | 定理7.21 | 構成5.37の有限code・core・強い辺・面の終点・底の二道・指定比較から生成したα、元coreのAd | [ExactBarAlphaCanonicalComparisonSection][c7-alpha-section]、[Exactness][c7-alpha-exactness]、[AmbientKernelComparisonWitness][c7-ambient-witness] | 同じ入力のsection、分裂短完全列、右torsor、反映の失敗に対象を揃える |
-| C7-16 | 系7.22 | 構成5.37の共通入力、同じ図式のcochain、5.40の選択、正規化と交換する端点変更 | [ExactBarBetaComparisonSection][c7-beta-section]、[ExactBarBetaComparisonGroup][c7-beta-group]、[BottomQualifiedClassification][c7-beta-bottom] | 同じ生成比較について、sectionと保存・反映の分類、底固定版を記述 |
-| C7-17 | 定義7.23〜系7.26 | 有向多重グラフ、内部状態Kを恒等に運ぶ辺、可視部分群H。個数にはV,Kの有限性 | [FixedFComponentClassification][c7-components]、[AllAutomorphismGroup][c7-all-group]、[SplitExactSequenceAndTorsor][c7-split]、[FiberCardinality][c7-cardinality] | 再添字積、分裂短完全列、section、右torsor、fiber個数、指定点版を保持。半直積同型を削除 |
-| C7-18 | 命題7.27・例7.28 | 同じ積lens V×K、基準view、有限K、固定した可視置換u | [FixedFLensConnection][c7-lens]、[FixedFLensGroupConnection][c7-lens-group]、第1章の命題1.33 | 操作保存変更と追随変更の全単射、一意な隠れた置換、個数、指定section保存を既存宣言へ対応。任意lensの共役移送・群同型・直積同定を削除。例7.28の元の有限計算は検証完了に含めない |
-| C7-19 | 命題7.29・例7.30 | 有限グラフで全状態K・全辺が恒等。二ワーカーの四頂点・二辺・Bool | [FixedFProtocolConnection][c7-protocol]、[FixedFProtocolGroupConnection][c7-protocol-group]、[FixedFFiniteExamples][c7-examples] | 分裂短完全列とfiberの対応、16対4と交換に追随する4個を保持。全変更群の半直積同型と位数8を削除 |
-| C7-20 | §7.8導入・末尾・まとめ | 固定viewのlens・固定schemaのプロトコル、型付き射への充満忠実関手 | 命題1.43、定理4.41、[CSAATFullyFaithfulComparisonTransport][c4-fully-faithful] | 定理4.41による比較保存群と端点射影の対応へ限定。一般可視変更への拡張、および7.4からの核・torsor分類の適用を削除 |
+| C7-15 | 定理7.21 | 構成5.37の同一入力から生成したαとAd、canonical正規化 | [SemanticDerivedCanonicalComparisonExactness][c7-alpha-section]、[SemanticDerivedCanonicalComparisonIdentification][c7-alpha-exactness]、[AmbientKernelComparisonWitness][c7-ambient-witness] | 分裂短完全列と全lift fiberの右torsorを導き、同じ生成比較の全fiberに適合・不適合な端点対を構成。底固定版と係数観測の情報損失も同じ対から導く |
+| C7-16 | 系7.22 | 構成5.40の選択子の二場合と、Ad下のcanonical正規化。中心化群上でαを保つ端点対 | [SemanticDerivedSelectorGlobalSection][c7-beta-section]、[SemanticDerivedSelectorGlobalComparison][c7-beta-group]、[SemanticDerivedSelectorGlobalBottomReflection][c7-beta-bottom] | Sectionが中心化条件を満たすこと、反映の二場合を証明。反映が失われるのは正規化前のαへの適合性であり、像のβへの適合性の原像は元の圏でβを保つ部分群に等しいことを式7.36で明示 |
+| C7-17 | 定義7.23〜系7.26 | 有向多重グラフ、隠れ状態Kを恒等に運ぶ辺、任意の許容可視群H。個数では頂点とKが有限 | [FixedFComponentClassification][c7-components]、[AllAutomorphismGroup][c7-all-group]、[SplitExactSequenceAndTorsor][c7-split]、[FiberCardinality][c7-cardinality]、[FixedFSemidirectProduct][c7-semidirect] | 実際の操作保存式から成分ごとの置換へ降下。再添字づけを含む積、分裂短完全列、右torsor、半直積と有限個数を証明。選択値保存版も点固定群から得る |
+| C7-18 | 命題7.27・例7.28 | 第1章の全域lens、有限な基準fiber、許容view変更。選択sectionにはputとの整合性 | [FixedFLensConnection][c7-lens]、[FixedFLensGroupConnection][c7-lens-group]、第1章の命題1.33 | 独立なget・put条件を共通グラフの式へ対応させ、合成も保つ群同型を構成。配送先編集と決済データを分離するリファクタリングを、二view・三内部状態のモデルで説明。新旧コードの対応を変更案の一部とし、示した読取り・未設定値・更新の条件から4対2の差を計算する |
+| C7-19 | 命題7.29・例7.30 | 有限グラフの各状態がK、各辺が恒等、観測先が定値一元集合。可視群は指定経路同値を保つ | [FixedFProtocolConnection][c7-protocol]、[FixedFProtocolGroupConnection][c7-protocol-group]、[FixedFFiniteExamples][c7-examples] | 実行・観測の条件から群・射影・section・各fiberを対応づける。独立な二ワーカーの待機中・実行中の間でコンテキストのコードを保持するモデルへ、既存の16対4と位数8の計算を適用。ワーカー間の受渡しがないという入力を明示。一般の状態遷移を恒等な辺の分類へ置き換えない |
+| C7-20 | §7.8導入・末尾・まとめ | 第1章の型付き射の圏と意味保存射の対応。前後の一対一な状態対応と、適合する基準h₀ | 命題1.43、定理4.41、定理7.4・定理7.14 | h=h₀aにより、前後の読取り・操作保存を元の自己同型の保存条件へ帰着する。命題1.43の充満忠実関手に定理4.41を適用し、比較保存群・端点射影・核・非空fiberのtorsorを移す。CSへの適用では型付き対象の圏を選び、完全幾何の全底固定自己同型群との同一視やAdの自動成立は主張しない。リファクタリングの説明は数学の応用可能性であり実証結果ではない |
 
 [c7-period]: ../../../Formal/AG/RepresentationAnalysis/PeriodSeparation.lean
-[c7-stabilizer]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonStabilizer.lean
-[c7-object-group]: ../../../research/lean/ResearchLean/AG/RealizationComparisonIdempotents/QualifiedComparisonGroup.lean
+[c7-stabilizer]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/ComparisonInformation/F37GeneralComparison.lean
+[c7-object-group]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/ComparisonInformation/F37GeneralComparison.lean
 [c7-generated]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/QualifiedComparisonGeneratedClassification.lean
 [c7-source-input]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF0.lean
 [c7-source-legs]: ../../../research/lean/ResearchLean/AG/DoctrineFiberProduct/UpperGeometryCompatibleSourcePresentationNaturalityF1.lean
@@ -565,12 +533,12 @@ targetの同時再ラベル等を含む別の観測仕様である。
 [c7-swap]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/AmbientKernelObjectSwap.lean
 [c7-swap-core]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/AmbientKernelCoreLift.lean
 [c7-swap-geometry]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/AmbientKernelGeometryLift.lean
-[c7-alpha-section]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarAlphaCanonicalComparisonSection.lean
-[c7-alpha-exactness]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarAlphaCanonicalComparisonExactness.lean
+[c7-alpha-section]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonExactness.lean
+[c7-alpha-exactness]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonIdentification.lean
 [c7-ambient-witness]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/AmbientKernelComparisonWitness.lean
-[c7-beta-section]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaComparisonSection.lean
-[c7-beta-group]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaComparisonGroup.lean
-[c7-beta-bottom]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaBottomQualifiedClassification.lean
+[c7-beta-section]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalSection.lean
+[c7-beta-group]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalComparison.lean
+[c7-beta-bottom]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorGlobalBottomReflection.lean
 [c7-components]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFComponentClassification.lean
 [c7-all-group]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFAllAutomorphismGroup.lean
 [c7-split]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/FixedFSplitExactSequenceAndTorsor.lean
@@ -585,7 +553,7 @@ targetの同時再ラベル等を含む別の観測仕様である。
 
 - 原稿: [第8章](ja/11-local-reconstruction.md)。
 - 一次資料の固定版: `b738623af29f015ab2d12e11c94411c74f26d311`。
-- 原稿 SHA-256: `a1f668eb10a3ce196d04b1895374a100b5ba8766366e02bc745910f0952cc020`。
+- 原稿 SHA-256: `614fa8f5fed71e9123fb1dbcd6201bdfbd29f2884ada203ace2ea8c6669d9145`。
 - [図8.1](figures/ch08-local-reconstruction.svg)の SHA-256: `4b486994f4297015a6c2f98dd0a6eb08e1d0ef3af5607f39f2a5ede436cc7591`。
 
 | ID | 原稿の箇所 | 入力・成立条件 | 一次資料の箇所 | 原稿での構成・証明 |
@@ -603,7 +571,7 @@ targetの同時再ラベル等を含む別の観測仕様である。
 | C8-14 | 定理8.18・系8.19 | Atomの集合と完全幾何の射の二方式。任意の完全幾何の端点対、非可逆を含む全許容Hom | [共通の原始再構成][c8-common]、[一般原理][c8-principle] | 補題8.17で両方式の分離・組立てを証明し、定理8.12を適用。原始reader自身が主同値の前向き関手となり、Hom両逆・存在一意性・恒等・合成・評価・同型反映を得る。CSの補題を依存先に含めない |
 | C8-22 | 概要・§8.6の金融例・図8.1・まとめ | 同一通貨・手数料なしの行内送金。指定取引と正の金額に対する完了・出金・入金・仕訳のBool読み取り。完全幾何の再構成には定義8.15の全原始データと条件を要求 | 定義8.11・8.15、補題8.17、定理8.18、[共通の原始再構成][c8-common]。業務領域の分担のみ[BIAN9](https://bian.org/wp-content/uploads/2024/12/BIAN-Service-Landscape-V9_0-Value-Chain-View.pdf)を参照 | 完了の含意を三つの整数残差で表し、不整合な対応候補の残差(1,1,0)を計算。担当ごとの記述と有限query片を区別し、対象は同型まで、固定端点間の射は一意に回復する条件付き適用を説明。金融の状態・Lawは本文用に定めた説明例であり、金融システム全体の形式化や実装の検証結果ではない |
 | C8-15 | 例8.20 | タグ付きoperationの全source-choiceと一様flip、canonical正規化、explicit geometry | [共通のタグ入力][c8-common]、[TagChangeExactGeometryLocalModel][c8-tag-model]、[TagChangeCanonicalNormalizationGeometryLaws][c8-tag-normalization] | 実際のoperation成分の変化を読む。全source-choiceと正規化を同じnative圏から回復し、configurationだけの観測との差を説明 |
-| C8-16 | 例8.21 | 構成5.37の有限code・図式・core・強い辺・終点・底の二道・指定比較、同じ面・cochain・係数・完全幾何 | [共通の固定生成入力][c8-common]、[G122OriginalInput][c8-original-input]、[ExactBarBetaFiniteWitness][c8-fixed-witness] | 同じ生成比較の元幾何・二経路・α/β/e/d・全端点自己同型を回復。具体的な三軸の有限例は削除 |
+| C8-16 | 例8.21 | 構成5.37〜5.40の元入力。固定有限例は二面・三軸交換、cell second、係数ℤ、初期defect/恒等cochain | [共通の固定生成入力][c8-common]、[SemanticGeneratedComparisonReconstruction][c8-original-input]、[ExactBarBetaFiniteWitness][c8-fixed-witness] | 元幾何・direct/via-base幾何・α/β/e/d・両端の全自己同型の回復を一般Hom再構成から導く。実際の固定有限入力を例示し、非可逆βとβ=αの場合を区別 |
 | C8-12 | 構成8.22・補題8.23・系8.25 | get/putの三法則、有限基準fiber。全状態写像にget/put保存を要求 | [IndependentLensPrimitiveReconstruction][c8-lens-primitive] | CS適用節で局所圏を定義し、carrier・get/putのgraphと有限coverから独立なLensを構成。Homの二条件と両逆を証明し、一般再構成原理から圏同値を得る |
 | C8-13 | 構成8.22・補題8.24・系8.25 | 有限schema、関係、観測関手、有限な各状態集合。全頂点写像に辺・観測保存を要求 | [IndependentProtocolPrimitiveReconstruction][c8-protocol-primitive]、命題1.37・1.38、補題8.7・8.9 | CS適用節で局所圏を定義し、graphから生成辺・観測・頂点写像を構成。命題1.37・1.38から実現と意味保存射を得て、読み取りと組立てのHom両逆を示す。一般再構成原理から圏同値を得る |
 | C8-17 | 命題8.26・例8.27 | 同じVとv₀のLens、有限基準fiber間の任意写像。非単射を許す | [LensSemantics][c8-lens-semantics]、[LensFiberModelEquivalence][c8-lens-fiber]、命題1.33・1.34 | 命題1.34のres/extの式と両逆を適用。例8.27は基準fiberの3値を2値へ送る非単射な表を用い、get/putを保つ一意な延長を示す |
@@ -665,7 +633,7 @@ BIANの引用は業務領域の分担に限り、Lawと再構成の根拠は本�
 [c8-protocol-primitive]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentProtocolPrimitiveReconstruction.lean
 [c8-tag-model]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeExactGeometryLocalModel.lean
 [c8-tag-normalization]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/TagChangeCanonicalNormalizationGeometryLaws.lean
-[c8-original-input]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/G122OriginalInput.lean
+[c8-original-input]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/LocalSemanticReconstruction/SemanticGeneratedComparisonReconstruction.lean
 [c8-fixed-witness]: ../../../research/lean/ResearchLean/AG/FullGeometryNormalization/ExactBarBetaFiniteWitness.lean
 [c8-lens-semantics]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/LensSemantics.lean
 [c8-lens-fiber]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LensFiberModelEquivalence.lean
@@ -685,13 +653,13 @@ BIANの引用は業務領域の分担に限り、Lawと再構成の根拠は本�
 R.7は六つの比較を踏まえたAATの位置づけを述べる。
 個別の問題を共通の構成の特殊な場合として捉えるRising Seaの方針は、
 [構成マスター](paper-structure.md)の§§2–3に対応する。
-操作保存の分類は、第7章の定理7.24・7.25による。積lensの固定可視置換上の対応は命題7.27、プロトコルへの群構造の接続は命題7.29に分ける。
+共通の分類定理を用いる具体例は、第7章の定理7.24・7.25と命題7.27・7.29による。
 SAGAから継承する結果、lensの積表示、圏同値の一般判定、Cauchy completionの出典を示す。
 
 ### 比較する数学と固定版
 
 比較に用いる一次資料は、commit `64fb370d89559aa59b1a31bcbd38e97c531d99c5` の第1〜7章原稿、
-数学棚卸し、第8章の以下の個別構成・一般原理である。C型の修正には本書冒頭の固定版と対応表を適用する。
+数学棚卸し、第8章の以下の個別構成・一般原理である。
 第8章の参照は、章と構成名による。
 
 | 本文の箇所 | 比較する結果・条件 | 本稿側の証拠 |
@@ -723,12 +691,18 @@ SAGAから継承する結果、lensの積表示、圏同値の一般判定、Cau
 
 | 対象 | SHA-256 |
 | --- | --- |
-| Related Work本文 | `6b911a7e42b70a69ca356f8bd799897ac7ad24dc3426cec8aa2fec588c16f0cd` |
+| Related Work本文 | `7bf2f7bbc341080eae632b2abefe4352719c1dcbf1ca19269ba291809bb58709` |
 | 書誌 | `bdb267f950d7747c510cd1c411f1e3da821808be623064933e67d12667828884` |
-| READMEに定めた要旨〜結び（要旨・序論・準備節・第1〜8章・Related Work・結び）の結合原稿 | `2c5650e9a54f57219d8c53195de61be05510117d00777a01bdb5d5eab10808c6` |
+| READMEに定めた要旨〜結び（要旨・序論・準備節・第1〜8章・Related Work・結び）の結合原稿 | `cf27b172bdefb5a6f08b9e3bcf51950a1c4aae9c607f69b77b3eac78a0973d34` |
 
 [rw-local]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LocalReconstructionEquivalence.lean
 [rw-lens]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean
 [rw-protocol]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentProtocolPrimitiveReconstruction.lean
 [rw-geometry]: ../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryCategoryReconstruction.lean
 [rw-karoubi]: ../../../research/lean/ResearchLean/AG/RealizationReconstruction/CSKaroubiReconstruction.lean
+
+[c4-composite]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/CrossStageCoherence/CompositeQualification.lean
+
+[c4-relative-comparison]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/RealizationReconstruction/GeneralRelativeLensComparison.lean
+
+[c7-semidirect]: https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/7e68ec6e77ef0249ede6a4c875715cfaf1cb3ee6/research/lean/ResearchLean/AG/RealizationReconstruction/FixedFSemidirectProduct.lean
