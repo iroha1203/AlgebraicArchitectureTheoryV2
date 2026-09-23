@@ -4,391 +4,347 @@
 Software designs keep changing. We replace the representation of data, factor
 processing out into shared components, and split one system into several
 services. In every case the question is what is preserved across the change.
-Is it the value that is read, the action of an operation, or a law that held
-on each part? The answer depends on the choice of what to read as structure.
+A change of data representation may leave the displayed shipping address
+unchanged while altering what happens when that address is updated. To compare
+the two representations, we must specify both what is read and which operations
+must be preserved. This distinction will recur throughout the paper.
 
-This question has gained weight now that AI generates changes. The speed at
-which candidate changes are written, and their volume, have grown by orders
-of magnitude, and the focus of development is shifting from writing changes to
-judging them.
-Among the generated changes, which one preserves what? Where does the whole
-break? How many choices remain? The problem that software engineering faces in
-the age of AI is to judge, on solid grounds, changes that are generated faster
-than a person can read them one by one. These decisions need a foundation. The whole
-of it is not a task for a single paper. As that foundation, this paper
-provides the objects to be judged and the theorems about them.
+AI-generated changes make these questions increasingly important. As more
+candidate changes become available, we need grounds for deciding which ones
+preserve the required structure, where local consistency fails to extend to
+the whole, and how much freedom remains among the permitted changes. This
+paper develops mathematical objects and theorems for making these decisions.
+We call the resulting foundations Algebraic Architecture Theory (AAT).
 
-This paper constructs a mathematics of comparison in which the choice of what
-to read and what to preserve is explicit. We start from Atoms, which are typed
-primitive facts, and Laws, which are equations that objects must satisfy. We
-fix a choice of vocabulary, extraction rules, object formation, equations,
-operations, and locality, and call it a \emph{reading}. We define objects and
-morphisms of architecture relative to a reading, and develop their geometry,
-local consistency, diagnosis, transport, comparison, and reconstruction as one
-system, the foundations of Algebraic Architecture Theory (AAT).
+The starting point is an explicit choice of what counts as structure and what
+a change must preserve. We call this choice a \emph{reading}. For the order
+example, a reading specifies whether the comparison concerns only the displayed
+address or also the update and the payment data it must retain. AAT defines
+architecture objects and their structure-preserving maps relative to such
+choices. The following five questions explain what we want to do with these
+objects before we describe how they are constructed.
 
 \section*{Five questions}
 
-We introduce, through concrete situations, the questions that this paper
-answers.
+\textbf{When do local states fit together?}
+Suppose that three services record the time of the same event using their own
+clocks. For each connection, we specify a fixed offset for converting a time
+from one clock to the other. If conversion from the first clock through the
+second and third and back to the first does not recover the original time,
+no assignment of offsets to the three clocks can satisfy all these conversion
+rules. Each service's records may be internally consistent, yet following the
+connections around the cycle reveals a contradiction. Can we correct each
+service's timestamps to obtain records satisfying every specified conversion
+rule? The question is whether a global state exists that simultaneously
+satisfies the relations required on overlaps (Chapter~\ref{chap:2}).
 
-\textbf{When do locally valid states glue into a whole?}
-Suppose that three services record the same value against different
-references. Even if a correction between references can be specified for each
-connection, no reference common to all three can be chosen unless the
-corrections add up to zero around the cycle through the three. However
-thoroughly one checks the equations inside each service, this discrepancy
-stays invisible. To decide whether states that satisfy the Laws on each part
-can be glued into a whole, one needs comparisons on the overlaps of the parts,
-and coefficients that measure the differences (Chapter~\ref{chap:2}).
+\textbf{When does a change of reading preserve a diagnosis?}
+Suppose that we extract a list of shipping addresses from order data, omitting
+internal payment data. Conditions involving only addresses can still be
+checked from this list. But checking conditions on individual entries and
+detecting discrepancies between services are different tasks. In the clock
+example, inspecting each service separately does not reveal the discrepancy
+around the cycle. If we group several services into a single region for
+inspection, we must also retain the connection and conversion data needed
+for that diagnosis. Which information can we omit, and how can we repartition
+the regions we inspect, while still detecting the same discrepancies that
+corrections cannot remove (Chapter~\ref{chap:3})?
 
-\textbf{Can the same obstruction be diagnosed under a different way of
-reading?}
-The same state may be read including its internal values, or only through its
-published values. For a Law that reads only displayed values, merging states
-with the same displayed values loses no Law value. If, however, we also
-repartition the regions on which local states are placed, the cycles of
-overlaps may change. To keep the same verdict while changing summaries and
-partitions, one needs a map that preserves the meaning of diagnoses and a
-condition under which this map is an isomorphism (Chapter~\ref{chap:3}).
+\textbf{When do different routes of change agree?}
+When migrating an order-processing API, we want a direct migration from the
+old version to the new one and a migration through an intermediate version to
+yield the same order and the same behavior when it is read or updated.
+Being able to undo each conversion does not by itself ensure agreement
+between the two routes.
+The order of operations matters too. We may split order processing and
+inventory management into services and then extract the operations involved
+in order cancellation, or extract those operations first and apply the same
+splitting policy. Do the resulting designs agree on completion of the
+cancellation and release of the inventory reservation, preserving the condition
+that a completed cancellation has no outstanding reservation? What is needed
+to put the data and operations obtained by the two routes in correspondence
+and ensure that they satisfy the same conditions
+(Chapters~\ref{chap:4}--\ref{chap:5})?
 
-\textbf{When can structure be carried along a change, and different
-construction routes be made coherent?}
-In a refactoring that tidies up the field names and data formats of an
-order-processing API, we want to carry over to the target not only the correspondence of data
-but also the operations and conditions. Moreover, several construction routes
-arise from the same input: moving from the old version to the new one through
-an intermediate version or directly, and splitting the whole before selecting
-a part or selecting a part before splitting. Even if each conversion can be
-undone, the results of the routes need not agree. We need to construct
-comparisons between the routes and to decide when their discrepancies can be
-removed (Chapters~\ref{chap:4}--\ref{chap:5}).
-
-\textbf{By what information can changes that preserve a comparison be
-distinguished, and how many of them remain?}
-In model synchronization, a view is read from a state, and changes to the view
-are written back to the state. If a change of state representation leaves the
-view unchanged, reads are preserved; but applying the change and then
-updating need not give the same result as updating and then applying the
-change. Some changes preserve
-reads and yet break updates. For protocols, we look for changes that preserve
-named operations and observations and are compatible with existing adapters.
-In both problems, the question is how much freedom remains among the permitted
-changes, and what information is needed to pin them down
+\textbf{Which changes preserve a comparison, and how can we distinguish them?}
+Suppose that we extract the shipping-address update into a shared component.
+The displayed address may remain the same even though an update mishandles
+the payment data. We want moving old data to the new format and then updating
+the address to yield the same order state, including payment data, as updating
+first and then moving. There may be more than one invertible change of the internal representations
+that preserves this correspondence between old and new.
+Can the display and the pattern of calls alone tell us whether a candidate
+change is compatible, or must we also inspect the internal values passed
+through operations? We seek to identify the information needed, construct all
+compatible changes, and describe the freedom in choosing them
 (Chapters~\ref{chap:6}--\ref{chap:7}).
 
-\textbf{When can the whole be recovered from local descriptions?}
+\textbf{When do local descriptions determine the whole?}
 Suppose that the modernization of an intrabank transfer system is divided
 among the account, payment, and accounting teams. Each team describes the
-types, operations, and conditions in its own scope, and the correspondence
-between the system before and after the modernization. For these descriptions to determine the
-overall design and a single structure-preserving morphism, one needs
-compatibility conditions between the descriptions and a construction that
-assembles the whole from them (Chapter~\ref{chap:8}).
+types of data it handles, its operations and required conditions, and the
+correspondence between the old and new designs. For a given transfer, the
+teams' descriptions must refer to the same transaction and amount, with
+compatible completion conditions, if they are to combine into a single
+transfer process. Their old-to-new correspondences must agree too: a
+transaction migrated by the payment team and its record migrated by the
+accounting team must still refer to the same transaction. What must be
+described, and what must agree across teams, to assemble an overall design
+and a single migration preserving its operations and conditions? When can
+we also rule out distinct migrations that differ only where the descriptions
+say nothing (Chapter~\ref{chap:8})?
 
-The five questions need the same ingredients: the structure of objects, the
-action of operations, the readouts on each part together with their overlaps, and
-the equations to be satisfied. Instead of preparing a separate tool for each
-problem, this paper constructs objects that carry all of these at once, and
-proves the answers to the five questions as theorems about them.
+These questions share several ingredients: objects, operations, local readouts
+and their overlaps, and equations to be satisfied. We now describe the objects
+that bring these ingredients together.
 
 \section*{Architecture relative to a reading}
 
-We call typed primitive facts \emph{Atoms}. A finite family of Atoms together
-with relations is a \emph{configuration}, and an object that also keeps state
-sets and the interpretation of operations is an \emph{architecture object}.
-The equations that objects must satisfy are specified as \emph{Laws}. To read
-information part by part, we choose local contexts, their covers, and
-coefficients that measure differences. The totality of these choices is a
-\emph{reading}. Relativizing architecture to a reading means making this
-choice explicit together with the objects.
+What facts are to be retained? An \emph{Atom} is a typed primitive fact, such
+as the existence of a component or a named operation. A finite family of
+Atoms together with relations is a \emph{configuration}. Adding structure
+data, such as state sets and interpretations of operations, gives an
+\emph{architecture object}. The equations that objects must satisfy are
+specified as \emph{Laws}. These specify, for example, the required relationship
+between reading and updating a state.
 
-Chapter~\ref{chap:1} constructs three stages from this input. From an
-extracted finite family of Atoms we form a base object and generate a core,
-which carries the smallest family of objects closed under the permitted
-operations (Theorem~\ref{thm:1.18}). From contexts and covers we construct a
-site, and from restriction maps compatible with coordinates and structural
-relations we construct a presheaf of rings and its sheafification, which together
-give a geometry (\S\S\ref{sec:1.5}--\ref{sec:1.6}). We then define objects and
-morphisms at each of the stages of extraction, core, and geometry, and
-construct the tower of projections that connects them
-(Theorem~\ref{thm:1.31}). We call a core enriched with covers, overlaps, and
-coefficients a \emph{full geometry}; the later chapters carry out comparison
-and reconstruction on these objects.
+Which objects can arise under the permitted operations? From the extracted
+Atom family we form a base object and generate a \emph{core}: it carries
+the smallest family of objects closed under those operations. The core keeps
+the choices of object formation, operations, and equations together. This
+lets us ask what a change must preserve beyond the extracted facts alone.
 
-Individual problems become special cases in the theory of these common
-objects. The
-\emph{Rising Sea} of the title comes from a metaphor with which Grothendieck
-described his way of doing mathematics. A problem is treated not as a hard
-shell to be cracked with a chisel, but as something that opens by itself when
-immersed in a sea whose level rises quietly
+To return to the three-service example, we also need to read information on
+parts and compare it on overlaps. We choose local contexts, covers that
+specify how the parts cover a whole, and coefficients that measure differences.
+A core equipped with the covers, overlaps, coefficients, and local data is a
+\emph{full geometry}. These are the objects on which the later chapters carry
+out comparison and reconstruction.
+
+The choices of vocabulary, extraction rules, object formation, equations,
+operations, and locality together constitute a reading. Making the reading
+explicit fixes the meaning of each preservation question. In the order
+example, the choice to retain updates as well as displayed values changes
+which maps are admitted. Chapter~\ref{chap:1} defines these choices and the
+maps that compare them.
+
+The \emph{Rising Sea} of the title comes from a metaphor with which
+Grothendieck described his way of doing mathematics. A problem is treated not
+as a hard shell to be cracked with a chisel, but as something that opens by
+itself when immersed in a sea whose level rises quietly
 (\cite[\href{https://webusers.imj-prg.fr/~leila.schneps/grothendieckcircle/RetSbis.pdf}{Part~III, note~122, ``La mer qui monte\ldots''}]{ReS};
 the English phrase \emph{rising sea} follows the translation in
-\cite{McLarty03}). This paper applies this approach, raising the level
-of the theory so that it envelops individual problems, to the comparison of
-architectures. Indeed, gluing in Chapter~\ref{chap:2}, diagnosis in
-Chapter~\ref{chap:3}, transport and base change in
-Chapters~\ref{chap:4}--\ref{chap:5}, normalization and the classification of
-changes in Chapters~\ref{chap:6}--\ref{chap:7}, and reconstruction in
-Chapter~\ref{chap:8} all begin with constructions from the same input, and
-later chapters use the outputs of earlier chapters as their inputs.
-
-\section*{Main constructions and their consequences}
-
-The question that each chapter answers and its main results are as follows.
-
-\begin{xltabular}{\linewidth}{@{}>{\hsize=.75\hsize}L>{\hsize=.95\hsize}L>{\hsize=1.3\hsize}L@{}}
-\toprule
-Group of results & Question answered & Main results \\
-\midrule
-\endhead
-Foundational geometry (Chapter~\ref{chap:1}) & What to take as objects, and which operations and laws to preserve? & Generation of the core (Theorem~\ref{thm:1.18}), three-level projections (Theorem~\ref{thm:1.31}), encoding of semantics (Propositions~\ref{prop:1.41} and~\ref{prop:1.43}) \\
-\addlinespace[3pt]
-Local consistency (Chapter~\ref{chap:2}) & When do local states glue into a whole? & Factorization through the zero locus (Theorem~\ref{thm:2.9}), zero class and global states (Theorem~\ref{thm:2.22}), correspondence with repair (Theorem~\ref{thm:2.49}, Corollary~\ref{cor:2.50}) \\
-\addlinespace[3pt]
-Diagnostic invariance (Chapter~\ref{chap:3}) & Can the same obstruction be diagnosed under a different way of reading? & Canonical resolution (Theorem~\ref{thm:3.4}), isomorphism under Condition~C (Theorem~\ref{thm:3.17}), finite decision (Theorem~\ref{thm:3.22}, Proposition~\ref{prop:3.23}), vanishing in both directions (Theorems~\ref{thm:3.37} and~\ref{thm:3.40}) \\
-\addlinespace[3pt]
-Transport (Chapter~\ref{chap:4}) & Can structure be carried along a change and routes be made coherent? & Universality of transport (Theorems~\ref{thm:4.5} and~\ref{thm:4.11}), discrepancies and reselection (Theorem~\ref{thm:4.23}), simultaneous vanishing (Theorem~\ref{thm:4.34}) \\
-\addlinespace[3pt]
-Base change (Chapter~\ref{chap:5}) & Can the order of transfer and change of input be interchanged? & Cartesian lifts (Theorem~\ref{thm:5.6}), invertible canonical comparison (Theorem~\ref{thm:5.11}), characterization of backward transport (Theorem~\ref{thm:5.25}), generated comparison (\S\ref{sec:5.10}) \\
-\addlinespace[3pt]
-Normalization (Chapter~\ref{chap:6}) & What does a comparison involving normalization retain, and when is it invertible? & Idempotent normalization (Theorem~\ref{thm:6.14}), factorization and classification of invertibility (Theorem~\ref{thm:6.16}), isomorphism of images (Theorem~\ref{thm:6.12}) \\
-\addlinespace[3pt]
-Changes and information (Chapter~\ref{chap:7}) & By what information can changes that preserve a comparison be distinguished, and how many are there? & Determination by observation (Theorem~\ref{thm:7.9}), construction and classification of lifts (Theorems~\ref{thm:7.19} and~\ref{thm:7.21}), split short exact sequence (Theorem~\ref{thm:7.25}) \\
-\addlinespace[3pt]
-Presentation and reconstruction (Chapter~\ref{chap:8}) & Can the whole be recovered from local descriptions? & Reconstruction principle (Theorem~\ref{thm:8.12}), main equivalence (Theorem~\ref{thm:8.18}), extension from finite tables (Propositions~\ref{prop:8.26} and~\ref{prop:8.28}) \\
-\bottomrule
-\end{xltabular}
-
-Below we describe, for each group of results, its input, the new objects and
-maps it constructs, the main conditions under which it holds, and what it
-passes on to later chapters.
-
-\textbf{Foundational geometry and local consistency (Part~I,
-Chapters~\ref{chap:1}--\ref{chap:2}).}
-The input is a finite family of Atoms and a reading. The family of objects
-generated in Chapter~\ref{chap:1} equals the family of all objects reachable by
-finite sequences of operations (Theorem~\ref{thm:1.18}).
-
-Chapter~\ref{chap:2} builds an ideal from symbolic equations and shows that,
-under an algebraic presentation of the evaluation data and a localization
-condition, the simultaneous vanishing of the residuals coincides with
-factorization through the subspace on which the Laws hold
-(Theorem~\ref{thm:2.9}). The differences of local states on overlaps define a
-cocycle of degree one, and changing the local states adds a coboundary. When the
-corrections act so that the local states form torsors, and the actual states
-form a sheaf, the vanishing
-of the obstruction class is equivalent to the existence of a global state
-(Theorem~\ref{thm:2.22}). The semantics of repair and the computation with
-equations are connected by a comparison isomorphism between two coefficients,
-one built from a presentation by repair words and the other from a quotient by
-the equations; this gives the correspondence of specified obstruction classes
-and a condition for the existence of a global repair
-(Theorem~\ref{thm:2.49}, Corollary~\ref{cor:2.50}).
-
-The chapter also computes,
-on an actual cover of an Atom family with points and generators, an
-integer-coefficient obstruction class from local states and affine
-transitions (\S\ref{sec:2.8}, Proposition~\ref{prop:2.41}), and passes it to
-Chapter~\ref{chap:3} as input.
-
-\textbf{Diagnostic invariance (Part~II, Chapter~\ref{chap:3}).}
-As the quotient that identifies sources on which all Law values agree, we
-construct the coarsest resolution that preserves the evaluation of Laws. This
-quotient factors uniquely through every resolution that preserves the
-evaluation (Theorem~\ref{thm:3.4}). From the distinct Law values that appear
-on the cells we form coefficients and generate a diagnostic complex, and from
-the comparisons of covers, coefficients, and resolutions we build a cochain map
-that commutes with the differentials (Proposition~\ref{prop:3.14}). Under
-Condition~C on the comparison of covers and coefficients, this map induces an
-isomorphism on first cohomology (Theorem~\ref{thm:3.17}). Invariance for all
-families of Laws for which both resolutions are adequate is equivalent to the
-vanishing of the kernels and cokernels for all nonempty subsets of values, and
-can be decided from a finite presentation (Theorem~\ref{thm:3.22},
-Proposition~\ref{prop:3.23}). There are examples in which fixed local
-observations agree but the verdicts differ, so local incidence information
-alone cannot decide invariance (Proposition~\ref{prop:3.28}).
-
-Moreover, we map
-the integer-coefficient obstruction class of Chapter~\ref{chap:2} to a
-diagnostic class of Law values (Theorem~\ref{thm:3.37}), and, under conditions
-on the identification of relation components and on common representatives,
-we make rational corrections integral and thereby reflect vanishing
-(Theorem~\ref{thm:3.40}). For the refinement from three charts to four charts
-built from the same Atom input, the comparison square carries the verdict,
-zero or nonzero, in both directions (Theorems~\ref{thm:3.43}
-and~\ref{thm:3.44}).
-
-\textbf{Transport and comparison of construction routes (Parts~II--III,
-Chapters~\ref{chap:4}--\ref{chap:5}).}
-Along an exact change, which gives a bijective reindexing of the extracted
-Atoms, we construct the core after the change. The canonical morphism to this core has the
-universal property that every further change factors through it uniquely
-(Theorem~\ref{thm:4.5}). Transport to geometry (Theorem~\ref{thm:4.11}), coherence
-with units and composition, and compatibility with projections
-(Theorems~\ref{thm:4.15} and~\ref{thm:4.16}) follow from this uniqueness. The
-difference between a specified comparison and the canonical comparison is
-expressed as an automorphism. For finite comparison diagrams, the vanishing of
-this discrepancy is equivalent to the existence of an edge reselection that
-makes all faces commute at once (Theorem~\ref{thm:4.23}). At both levels, core
-and geometry, lifts and kernel changes for the same choice correspond to global
-coherence (Theorem~\ref{thm:4.34}).
-
-Chapter~\ref{chap:5} constructs, as a fiber
-product, the original input corresponding to a scope chosen in the target,
-and pulls back the structure of objects, operations, and Laws. Along an exact
-base morphism, a cartesian lift to any target core exists
-(Theorem~\ref{thm:5.6}), and transport and pullback form an adjoint
-equivalence (Proposition~\ref{prop:5.8}). For exact pointed pullback squares,
-the Beck--Chevalley comparison built from the units and counits
-of these adjunctions is invertible and gives the exchange of the two routes
-(Theorem~\ref{thm:5.11}). This correspondence preserves and reflects diagnoses
-and orbits of edge reselections (Theorem~\ref{thm:5.22}). For a refinement
-that increases the extracted content, reflection of extraction on the realized
-locus is necessary and sufficient for backward transport
-(Theorem~\ref{thm:5.25}).
-
-At the end of the chapter, we generate the two
-routes of full geometries, including covers and local data, from the same
-square, finite comparison diagram, and geometry, and construct the generated
-comparison $\beta=E\alpha$ by
-composing the canonical comparison $\alpha$ with a normalization $E$ chosen
-according to the diagnosis (\S\ref{sec:5.10}).
-
-\textbf{Normalization and classification of changes (Parts~III--IV,
-Chapters~\ref{chap:6}--\ref{chap:7}).}
-The map that selects one representation for each configuration is idempotent,
-and under conditions ensuring that operations, residuals, invariants, and
-signatures are preserved, it lifts to an idempotent morphism of full geometries
-(Theorems~\ref{thm:6.5} and~\ref{thm:6.14}). A generated comparison factors
-into an invertible comparison and an idempotent normalization factor, and it
-is invertible if and only if the normalization factor is the identity
-(Theorem~\ref{thm:6.16}). Even when the factor is not the identity, the same
-comparison morphism gives an isomorphism between images in the idempotent
-completion, compatible with the projection to the core
-(Theorem~\ref{thm:6.12}). Normalized objects and morphisms form a category,
-and we obtain a full normalization functor (Theorem~\ref{thm:6.21}), the
-interchange of forming the comparison category and idempotent completion
-(Theorem~\ref{thm:6.27}), and compatibility with the three-level projections
-(Proposition~\ref{prop:6.28}).
-
-Chapter~\ref{chap:7} constructs the group of
-endpoint changes that preserve a single comparison
-(Proposition~\ref{prop:7.3}), and determines, from the projections to the endpoints and their kernels,
-whether a given change on one side admits a following change on the other,
-and how much freedom remains in choosing it (Theorem~\ref{thm:7.4}). Compatibility can be determined by observations alone
-if and only if the kernel of the observation homomorphism is contained in the
-comparison-preserving group (Theorem~\ref{thm:7.9}). For canonical
-normalizations, we construct a section of the restriction homomorphism from a
-common presentation of the accompanying data, and classify all compatible
-lifts as a torsor under the kernel (\S\S\ref{sec:7.4}--\ref{sec:7.6},
-Theorems~\ref{thm:7.19} and~\ref{thm:7.21}). Even when compatible lifts can be
-constructed, the compatibility of a given change cannot always be determined by
-the normalized information alone (\S\S\ref{sec:7.4}--\ref{sec:7.5}). For
-systems of operations that keep hidden states, the state changes that preserve
-operations are described as families of permutations indexed by connected
-components, and we obtain a split short exact sequence onto the visible group
-(Theorems~\ref{thm:7.24} and~\ref{thm:7.25}).
-
-\textbf{Presentation and local reconstruction (Part~IV,
-Chapter~\ref{chap:8}).}
-Even when a finite presentation recovers the meaning of an object, morphisms
-between fixed presentations need not represent the whole semantic Hom-set;
-over finitely many Atoms, normalization of presentations closes this gap
-(\S\ref{sec:8.1}). When three conditions hold, namely separation of
-morphisms by typed readout items, assembly of morphisms from compatible
-correspondence tables, and assembly of objects from local descriptions, the
-readout functor gives an equivalence of categories (Theorem~\ref{thm:8.12}). In the main theorem we prove that the
-primitive data of types, operations, Laws, local geometry, and realization
-satisfy these three conditions, and show that the category of full geometries
-and all their structure-preserving morphisms is equivalent to the category of
-local models given by primitive data and compatibility conditions defined
-independently (Theorem~\ref{thm:8.18}). This equivalence recovers evaluation,
-composition, and isomorphisms (Corollary~\ref{cor:8.19}), and applies to
-design descriptions divided among teams, such as the modernization of an
-intrabank transfer system (\S\ref{sec:8.6}).
-
-The same principle applies to
-lenses and protocols (Corollary~\ref{cor:8.25}): from finite tables of
-reference fibers or of generating edges, general morphisms extend uniquely by
-the laws of the operations (Propositions~\ref{prop:8.26}
-and~\ref{prop:8.28}). For finite models, we distinguish the information
-sufficient for reconstruction, the checking procedure, and the computational
-cost (\S\ref{sec:8.8}), and, as a supplement, we discuss the limits of
-presentation and reconstruction when infinite objects are allowed
-(\S\ref{sec:8.9}).
+\cite{McLarty03}). Here the common objects allow different software questions
+to be addressed by the same mathematical constructions. To explain how this
+works, we next describe the connection to two independently defined semantics.
 
 \section*{Correspondence with the semantics of CS}
 
-Each application to a problem in computer science (CS) follows a single
-pattern of argument.
-From an independently defined problem and its semantics we construct an
-input for AAT, prove a correspondence proposition, apply a common theorem, and bring
-the consequence back to the original problem. Each correspondence proposition
-states in which direction it holds: equivalence, implication, or preservation.
+In model synchronization, a \emph{lens} consists of states, views, reads, and
+updates satisfying specified laws. In a protocol, named operations connect
+states at control points, and observations record what can be read from those
+states. We define these semantics independently in \S\S\ref{sec:1.8}--\ref{sec:1.9}.
+For lenses, we construct Atoms and operations together with Laws that hold
+if and only if the original laws hold (Proposition~\ref{prop:1.41}). Typed
+morphisms recover the original semantics-preserving morphisms
+(Proposition~\ref{prop:1.43}). For protocols, finite operation tables satisfying the declared path relations
+and observation conditions determine realizations, and vertex maps satisfying
+preservation conditions recover
+semantics-preserving morphisms (Propositions~\ref{prop:1.37}
+and~\ref{prop:1.38}).
 
-For model synchronization, we define state sets, views, reads, updates, and
-their laws independently (\S\ref{sec:1.8}). When Atoms, operations, and Laws
-are constructed from this semantics, the constructed Laws hold if and only if
-the original laws hold (Proposition~\ref{prop:1.41}), and typed morphisms
-are in one-to-one correspondence with the original semantics-preserving
-morphisms
-(Proposition~\ref{prop:1.43}). For protocols, we define control points,
-states, named operations, and observations independently (\S\ref{sec:1.9}).
-Protocols are encoded in the same framework through realization from finite
-operation tables (Proposition~\ref{prop:1.37}) and recovery of
-semantics-preserving morphisms from vertex maps
-(Proposition~\ref{prop:1.38}).
+These correspondences give a route from a software question to an AAT theorem
+and back: construct the AAT input, prove the correspondence, apply the common
+theorem, and interpret its conclusion in the original semantics. Each
+correspondence states whether it gives an equivalence, an implication, or
+preservation in one direction.
 
-Applied to these correspondences, the common theorems yield the following
-consequences: simultaneous preservation of reads and updates, and transport
-of named operations and adapters by commutative diagrams
-(\S\S\ref{sec:4.10}--\ref{sec:4.11}), together with a correspondence
-between the semantics and typed constructions that preserves comparisons
-(Theorem~\ref{thm:4.41}); compatibility of restriction to a chosen scope
-with splitting (Propositions~\ref{prop:5.34} and~\ref{prop:5.36}); the
-operations that remain in the image of a normalization (\S\ref{sec:6.8});
-and the classification and number of changes that preserve operations
-(\S\S\ref{sec:7.7}--\ref{sec:7.8}).
+For example, consider the product lens used for the shipping address and
+payment data. Of the four candidate changes that preserve the displayed
+address and the unset payment value, only two also preserve updates. In the
+worker protocol example, sixteen candidates preserve the correspondence of
+control points, but only four preserve the handoff of contexts
+(\S\ref{sec:7.8}). In both examples, an operation keeps an internal state
+unchanged. Preserving that operation forces the changes of internal state at
+its two ends to agree. The common classification theorem expresses this as
+one permutation per connected component of the operation graph
+(Theorem~\ref{thm:7.24}). Thus the same constraint explains both reductions in
+the number of choices.
 
-For example, for a product lens, of the four
-candidate changes that preserve the displayed shipping address and the unset
-value, only two also preserve updates. In the example of workers with
-internal states, of the sixteen candidates that preserve the correspondence
-of control points, only four preserve the handoff of contexts. These
-numbers show how much freedom of change remains once each operation ties the
-correspondences between states together. Finally, reconstruction from finite
-tables supports the division of descriptions and their checking
-(\S\ref{sec:8.7}).
+The correspondence also identifies, by a group isomorphism, the changes that
+preserve a comparison in the original semantics and in the typed construction
+(Theorem~\ref{thm:4.41}). Restricting the views of a lens also restricts its reads, updates, and lens
+isomorphisms to the corresponding states (Proposition~\ref{prop:5.34}).
+For protocols, realizations and semantics-preserving adapters restrict to
+selected vertices, operations, and relations (Proposition~\ref{prop:5.36}). Section~\ref{sec:6.8}
+examines which operations remain after normalization. At the end of the paper,
+the same reconstruction principle yields unique extensions of morphisms from
+compatible finite tables for lenses and protocols (Propositions~\ref{prop:8.26}
+and~\ref{prop:8.28}).
 
-\section*{Organization of the paper}
+\section*{Main constructions and their consequences}
 
-The main body consists of four parts and eight chapters. Part~I
-(Chapters~\ref{chap:1}--\ref{chap:2}) constructs the objects and addresses
-local consistency. Part~II (Chapters~\ref{chap:3}--\ref{chap:4}) treats
-changes of reading and transport. Part~III
-(Chapters~\ref{chap:5}--\ref{chap:6}) compares construction routes and
-studies normalization. Part~IV (Chapters~\ref{chap:7}--\ref{chap:8})
-classifies changes and carries out recovery from presentations. The
-Preliminaries, which precede the main body, fix the assumptions shared by all
-chapters, such as the sizes of sets and categories, the order of maps and
-composition, and the conventions for coefficients and notation. Definitions
-specific to AAT are introduced from Chapter~\ref{chap:1} on. For general
-notions such as sites, sheaves, cohomology, and idempotent completion, the
-needed content and the original sources are given in the chapters that use
-them.
+The four parts organize the results as follows. The table gives a reading
+guide; the paragraphs below state the principal conditions and conclusions.
 
-Readers mainly interested in diagnosis may concentrate on
-Chapters~\ref{chap:1}--\ref{chap:3}; for transport and generated comparisons,
-on Chapters~\ref{chap:1}, \ref{chap:2}, and~\ref{chap:4}--\ref{chap:6}; and
-for the classification of changes and reconstruction, on
-Chapters~\ref{chap:6}--\ref{chap:8}.
+\begin{xltabular}{\linewidth}{@{}>{\hsize=.7\hsize}L>{\hsize=1.15\hsize}L>{\hsize=1.15\hsize}L@{}}
+\toprule
+Part and chapters & Question & Results developed \\
+\midrule
+\endhead
+I: Geometry and Local Consistency (Chapters~\ref{chap:1}--\ref{chap:2}) & What structure is compared, and when do local states fit together? & Construction of objects and geometry; obstructions to gluing and their relation to repair \\
+\addlinespace[3pt]
+II: Diagnosis and Transport (Chapters~\ref{chap:3}--\ref{chap:4}) & When does a diagnosis survive a change of reading, and when can structure be carried along a change? & Diagnostic invariance; universal transport and coherence of comparisons \\
+\addlinespace[3pt]
+III: Comparison and Normalization (Chapters~\ref{chap:5}--\ref{chap:6}) & When do two construction routes agree, and what does normalization retain? & Base-change comparisons; factorization and classification of invertibility \\
+\addlinespace[3pt]
+IV: Classification and Reconstruction (Chapters~\ref{chap:7}--\ref{chap:8}) & Which changes preserve a comparison, and when do local descriptions determine the whole? & Classification of compatible changes; recovery of objects and morphisms \\
+\bottomrule
+\end{xltabular}
 
-Related Work examines, for each main result, the closely related original
-literature and compares objects, assumptions, admissible morphisms, and
-conclusions.
-Appendix~\ref{app:A} lists the Lean declarations that correspond to the
-definitions, constructions, and results of the text, together with their
-objects, assumptions, conclusions, and the fixed version of the sources.
-Appendix~\ref{app:B} describes where the sources of the proofs are published
-and how to check them by building.
+\textbf{Geometry and local consistency (Part~I).}
+Chapter~\ref{chap:1} constructs the core generated by a finite Atom family
+and a reading. Its objects are exactly those reachable by finite sequences
+of the permitted operations (Theorem~\ref{thm:1.18}). Contexts and covers
+define a site; compatible restriction maps give a presheaf of rings and its
+sheafification (\S\S\ref{sec:1.5}--\ref{sec:1.6}). The categories of
+extraction, cores, and geometries are connected by projections that retain
+the preceding levels of structure (Theorem~\ref{thm:1.31}).
+
+Chapter~\ref{chap:2} expresses the satisfaction of Laws geometrically.
+Under an algebraic presentation of the evaluation data and a localization
+condition, simultaneous vanishing of the residuals is equivalent to
+factorization through the space defined by the ideal of the equations
+(Theorem~\ref{thm:2.9}). Differences of local states on overlaps determine a
+degree-one \v{C}ech obstruction class. When local corrections give torsor
+structures compatible with restriction and the states form a sheaf, vanishing
+of this class is equivalent to the existence of a global state
+(Theorem~\ref{thm:2.22}). Under the correspondence and completeness conditions
+relating repair semantics to equations, a coefficient isomorphism identifies
+their obstruction classes and connects vanishing with global repair
+(Theorem~\ref{thm:2.49}, Corollary~\ref{cor:2.50}). An explicit
+integer-coefficient example supplies an obstruction for the diagnostic
+comparisons of the next chapter (\S\ref{sec:2.8}).
+
+\textbf{Diagnosis and transport (Part~II).}
+Chapter~\ref{chap:3} asks whether a diagnosis is preserved when the reading
+changes. It constructs the coarsest resolution retaining all chosen Law
+values (Theorem~\ref{thm:3.4}) and comparison maps between diagnostic
+complexes. Under Condition~C on covers and coefficients, the comparison
+induces an isomorphism on first cohomology (Theorem~\ref{thm:3.17}). Uniform
+invariance, over all finite Law families for which both resolutions are
+adequate, reduces to vanishing of kernels and cokernels indexed by nonempty
+subsets of values. It is decidable when the required finite enumerations,
+value tables, supports, and incidence data are computable
+(Theorem~\ref{thm:3.22}, Proposition~\ref{prop:3.23}). The chapter also maps
+the integer obstruction to the diagnosis and, under conditions on relation
+components and common representatives, reflects vanishing
+(Theorems~\ref{thm:3.37} and~\ref{thm:3.40}).
+
+Chapter~\ref{chap:4} addresses a different question: carrying the structure
+itself along a change. An exact change gives a bijective reindexing of
+extracted Atoms. The transported core is characterized by unique
+factorization of further changes (Theorem~\ref{thm:4.5}); transport to
+geometry and its coherence with composition and projections are then
+established (Theorems~\ref{thm:4.11}, \ref{thm:4.15}, and~\ref{thm:4.16}).
+Specified comparisons may still differ from the canonical ones. For finite
+comparison diagrams, the obstruction to removing these discrepancies
+vanishes exactly when one can reselect edges to make all faces commute
+(Theorem~\ref{thm:4.23}). Diagnosis and transport thus answer distinct
+preservation questions about the structures constructed in Part~I.
+
+\textbf{Comparison and normalization (Part~III).}
+Chapter~\ref{chap:5} compares transporting structure with selecting an input
+scope by pullback. It constructs the corresponding original input as a fiber
+product and pulls back objects, operations, and Laws. For exact pointed
+pullback squares, transport and pullback are related by an invertible
+Beck--Chevalley comparison (Theorem~\ref{thm:5.11}). This is the precise
+sense in which the two orders agree. For refinements that enlarge the
+extracted content, backward transport instead requires reflection of
+extraction on the realized locus (Theorem~\ref{thm:5.25}).
+
+The chapter then builds two routes of full geometries from the same square,
+finite comparison diagram, and geometry. Their generated comparison
+$\beta=E\alpha$ combines an invertible comparison $\alpha$ with a
+normalization $E$ chosen according to the diagnosis (\S\ref{sec:5.10}).
+Chapter~\ref{chap:6} proves that, under the preservation conditions on
+operations, residuals, invariants, and signatures, normalization defines an
+idempotent morphism of full geometries (Theorem~\ref{thm:6.14}). The generated
+comparison is invertible exactly when its normalization factor is the
+identity (Theorem~\ref{thm:6.16}). Otherwise, the same comparison still gives
+an isomorphism between the retained images in the idempotent completion
+(Theorem~\ref{thm:6.12}). This distinguishes agreement after normalization
+from recovery of the original structure.
+
+\textbf{Classification and reconstruction (Part~IV).}
+Chapter~\ref{chap:7} studies changes of the two endpoints that preserve a
+chosen comparison. It separates two tasks: deciding whether a given change
+is compatible, and constructing a compatible change from one specified after
+normalization. Observations suffice for the first task exactly when the
+kernel of the observation homomorphism is contained in the comparison-preserving
+group (Theorem~\ref{thm:7.9}). For an invertible comparison and canonical
+normalizations with a common presentation of the accompanying data, the
+restriction homomorphism has a section. The compatible lifts of each fixed
+normalized change form a torsor under its kernel
+(Theorems~\ref{thm:7.19} and~\ref{thm:7.21}). Such lifts can exist even when
+the normalized information does not determine compatibility of a given
+change (\S\S\ref{sec:7.4}--\ref{sec:7.5}). For systems whose operations keep
+hidden states, the classification by connected components also gives a split
+short exact sequence onto the visible group (Theorem~\ref{thm:7.25}).
+
+Chapter~\ref{chap:8} asks how to recover the objects and maps themselves
+from local descriptions. The reconstruction principle has three requirements:
+local readouts distinguish morphisms, compatible local morphisms can be
+assembled, and local objects can be assembled (Theorem~\ref{thm:8.12}). The
+main theorem proves these requirements for the primitive data of full
+geometries, including types, operations, Laws, local geometry, and realization.
+It gives an equivalence between the category of full geometries with all
+their structure-preserving morphisms and the category of local models given
+by primitive data and independently defined compatibility conditions
+(Theorem~\ref{thm:8.18}). Objects are recovered up to isomorphism; morphisms
+between fixed endpoints are recovered uniquely, with evaluation, composition,
+and isomorphisms preserved (Corollary~\ref{cor:8.19}).
+
+Here ``local'' refers to fragments of the data describing the geometry and
+its maps, including the contexts and covers themselves. In Chapter~\ref{chap:2},
+by contrast, the geometry and cover were fixed and the states were glued.
+The reconstruction theorem applies to design descriptions divided among
+teams when the required primitive data and compatibility conditions are
+specified (\S\ref{sec:8.6}). In general the reconstruction uses compatible
+data over all finite fragments. The special cases for lenses and protocols
+explain when a finite table suffices (\S\ref{sec:8.7}); for finite models,
+we also distinguish sufficient information from the checking procedure and
+its computational cost (\S\ref{sec:8.8}).
+
+\section*{Organization and reading guide}
+
+The four parts comprise eight chapters. We assume basic familiarity with
+sets, groups, rings, modules, categories, functors, and natural transformations.
+The Preliminaries fix the notation; Chapter~\ref{chap:1} introduces AAT.
+The chapters using sites, sheaves, cohomology, and idempotent completion
+provide the needed definitions and references.
+
+Begin with the objects and maps of Chapter~\ref{chap:1}, especially the core,
+local geometry, and three-level projections (\S\S\ref{sec:1.4}--\ref{sec:1.7}).
+For software applications, also read the lens and protocol semantics and
+their encoding (\S\S\ref{sec:1.8}--\ref{sec:1.10}). Then choose a route:
+
+\begin{itemize}
+\item For local consistency and diagnosis, continue through
+Chapters~\ref{chap:2}--\ref{chap:3}.
+\item For transport and comparison of construction routes, concentrate on
+Chapters~\ref{chap:4}--\ref{chap:6}, using the obstruction constructions of
+Chapter~\ref{chap:2} and the diagnostic comparisons of Chapter~\ref{chap:3}
+where they are invoked.
+\item For classification and reconstruction, follow the construction of the
+generated comparison in \S\ref{sec:5.10}, then read
+Chapters~\ref{chap:6}--\ref{chap:8}, returning to the earlier transport and
+base-change constructions as needed.
+\end{itemize}
+
+Related Work compares the objects, assumptions, admissible morphisms, and
+conclusions with those of the closely related literature. Appendix~\ref{app:A}
+lists the Lean declarations corresponding to the definitions, constructions,
+and results, together with their assumptions and fixed source versions.
+Appendix~\ref{app:B} gives the source locations and build instructions for
+checking the proofs.
