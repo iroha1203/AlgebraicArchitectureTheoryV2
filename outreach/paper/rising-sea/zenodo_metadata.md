@@ -1,6 +1,6 @@
-# Zenodo deposit metadata(ドラフト)
+# Zenodo deposit metadata
 
-> release identity(tag / DOI)確定時に `TBD` を埋めて deposit フォームへ転記する。
+> 2026-09-23 に publish 済み。record: https://zenodo.org/records/22913489
 > description の正本は `en/main.tex` の abstract(`en/01-abstract.tex`)であり、
 > 本文 abstract を変更したら下記変種を同期する。
 
@@ -11,13 +11,13 @@
 | Resource type | Publication / Preprint |
 | Title | Foundations of Algebraic Architecture Theory: A Rising Sea of Geometry, Transport, Comparison, and Reconstruction |
 | Creators | Nakahata, Hiroyuki(Independent Researcher、ORCID 0009-0008-5928-0234) |
-| Publication date | TBD(release 日) |
+| Publication date | 2026-09-23 |
 | Language | English |
 | Version | 1.0.0 |
-| License | TBD(SAGA 前例は CC BY 4.0。単一レコード全体 — PDF・tex/bib source — に適用) |
-| DOI | publish 時の自動付与でよい(title page への印字はしない — 2026-09-23 著者裁定。予約も不要) |
-| Related identifiers | `https://github.com/iroha1203/AlgebraicArchitectureTheoryV2`(isSupplementTo、release tag TBD を付す) |
-| Keywords | software architecture; algebraic geometry; algebraic architecture theory; sheaf; site; Čech cohomology; transport; base change; Karoubi envelope; local reconstruction; lens; formal verification; Lean |
+| License | CC BY 4.0(2026-09-23 確定。単一レコード全体 — PDF・tex/bib source — に適用) |
+| DOI | version DOI `10.5281/zenodo.22913489`、concept DOI `10.5281/zenodo.22913488`(title page への印字はしない — 2026-09-23 著者裁定) |
+| Related identifiers | 未設定(repository・固定版への参照は PDF の付録Bが担う) |
+| Keywords | software architecture; algebraic geometry; algebraic architecture theory(deposit 時に3語へ絞った) |
 
 Notes: AI 協働開示は論文本体の付録Cが正本(metadata の追加開示は不要)。
 
@@ -43,5 +43,7 @@ Zenodo description は HTML whitelist のみ(MathJax 不可)。数式は Unicode
 - **Concept DOI**: 全 version を束ねる DOI。常に最新 version へ解決される。
 - **Version DOI**: v1.0.0 に固定される DOI。再現性の文脈ではこちらを引用する。
 
-いずれも publish 時に自動付与され、PDF へは印字しない(2026-09-23 著者裁定)。
-publish 後に両 DOI を本 guide と `submission.md` へ転記する。
+- version DOI(v1.0.0): `10.5281/zenodo.22913489`
+- concept DOI: `10.5281/zenodo.22913488`
+
+PDF へは印字しない(2026-09-23 著者裁定)。
