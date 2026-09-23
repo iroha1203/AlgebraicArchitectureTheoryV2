@@ -27,6 +27,18 @@
 | 完全幾何の輸送による`Ad`保存、liftとの交換、関手による保存 | [SemanticExactNormalizationPush](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactNormalizationPush.lean) の `canonicalGeometryNormalizationAdmissible_semanticExactTransport`、`semanticGeomFiberLift_normalization_natural`、`semanticGeomFiberTransportFunctor_map_normalization` |
 | 完全幾何の引き戻しと`Ad`保存、liftとの交換、関手による保存 | [SemanticExactGeometryPull](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactGeometryPull.lean) の `semanticGeometryPullFunctor` と [SemanticExactNormalizationNaturality](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactNormalizationNaturality.lean) の `canonicalGeometryNormalizationAdmissible_semanticExactPull`、`semanticGeometryPullLift_normalization_natural`、`semanticGeometryPullFunctor_map_normalization` |
 
+## 固定版の定理6.16と追加Lean宣言
+
+[固定版 `719f81f47d410701fd82c2bc88613cc140c59377` の定理6.16](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/719f81f47d410701fd82c2bc88613cc140c59377/outreach/paper/rising-sea/ja/09-idempotent-normalization.md#L415)の入力は、構成5.37の一般semantic平方、面`z`、cochain`omega`、その面のcore、係数環、完全幾何、および本文で固定した基点・pullback条件である。正規化の条件は`omega z ≠ 1`とsource coreの`Ad`の連言である。
+
+| 固定本文の結論 | Lean宣言 |
+| --- | --- |
+| selector、両端の二経路、生成射`d`・`e`・`beta` | [SemanticExactBarBetaClassification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaClassification.lean) の `semanticExactBarSelectedAt`、`semanticExactBarDAt`、`semanticExactBarEAt`、`semanticExactBarBetaAt` |
+| `d`・`e`の冪等性、`beta`の可逆性とselectorの同値条件 | 同moduleの `semanticExactBarDAt_idem`、`semanticExactBarEAt_idem`、`semanticExactBarBetaAt_isIso_iff_barDAt_eq_id`、`semanticExactBarDAt_eq_id_iff`、`semanticExactBarBetaAt_isIso_iff_not_selected` |
+| Karoubi圏での同型と逆射`d`の後に`barAlpha`の逆を合成した射 | 同moduleの `semanticExactBarBetaKaroubiIsoAt` |
+| selector発火時の両端`Ad`、`d=N_Y`、`e=N_X` | 同moduleの `semanticExactBarEndpoints_admissible`、`semanticExactBarProjectorsAt_eq_endpoint_normalizations`。始点等式には [SemanticDerivedBarAlphaNormalizationNaturality](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaNormalizationNaturality.lean) の `semanticDerivedBarAlphaIsoAt_normalization_natural` を用いる |
+| selector非発火時の両端の恒等射 | `semanticExactBarProjectorsAt_eq_id` |
+
 以下のC型表は、そこに明記した固定版の既存宣言と本文修正との対応を記す。上の追加宣言によって、その固定版の入力や当時の判定を遡って変更するものではない。
 
 ## C型の本文修正と既存宣言の対応
