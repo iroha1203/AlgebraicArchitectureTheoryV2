@@ -59,6 +59,17 @@
 | selector発火時の両端`Ad`、`d=N_Y`、`e=N_X` | 同moduleの `semanticExactBarEndpoints_admissible`、`semanticExactBarProjectorsAt_eq_endpoint_normalizations`。始点等式には [SemanticDerivedBarAlphaNormalizationNaturality](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaNormalizationNaturality.lean) の `semanticDerivedBarAlphaIsoAt_normalization_natural` を用いる |
 | selector非発火時の両端の恒等射 | `semanticExactBarProjectorsAt_eq_id` |
 
+## 固定版の命題6.17と追加Lean宣言
+
+[固定版 `719f81f47d410701fd82c2bc88613cc140c59377` の命題6.17](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/719f81f47d410701fd82c2bc88613cc140c59377/outreach/paper/rising-sea/ja/09-idempotent-normalization.md#L504)の入力は、定理6.16の一般semantic平方と同じ面・cochain・source core・係数幾何・端点条件・pullback条件である。coreの比較射の可逆性は [SemanticCoreMateIso](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticCoreMateIso.lean) の `semanticCoreBeckChevalleyMate_app_isIso` で得る。
+
+| 固定本文の結論 | Lean宣言 |
+| --- | --- |
+| (6.25)の`j_V p(barAlpha)=alpha j_D` | [SemanticCoreBeckChevalleyMateIdentification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticCoreBeckChevalleyMateIdentification.lean) の `semanticDerivedBarAlphaIsoAt_projection_doctrineMate`。`semanticCoreBeckChevalleyMate_eq_doctrine` が本文の`alpha`を既存の定理5.11のmateに同定する |
+| (6.25)の`j_V p(bar d)=E j_V`と`j_V p(bar beta)=beta j_D` | [SemanticExactBarBetaProjection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaProjection.lean) の `semanticExactBarDAt_projection`、`semanticExactBarBetaAt_projection_doctrineMate` |
+| (6.25)の`j_D p(bar e)=e j_D`、coreの`e`と冪等性 | [SemanticExactBarBetaKaroubiProjection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaKaroubiProjection.lean) の `semanticExactBarCoreEAt`、`semanticExactBarEAt_projection`、`semanticExactBarCoreEAt_idem` |
+| 幾何のKaroubi像の同型をcoreへ射影して得る像の同型と、coreで構成した像の同型の一致 | 同moduleの `semanticExactBarCoreBetaKaroubiIsoAt`、`semanticExactBarBetaProjectedKaroubiIsoAt`、`semanticExactBarBetaKaroubiProjectionAlignmentAt`。射影した両端の像とcore像は `semanticExactBarESourceKaroubiProjectionIsoAt`、`semanticExactBarDTargetKaroubiProjectionIsoAt` で同定する |
+
 以下のC型表は、そこに明記した固定版の既存宣言と本文修正との対応を記す。上の追加宣言によって、その固定版の入力や当時の判定を遡って変更するものではない。
 
 ## C型の本文修正と既存宣言の対応
