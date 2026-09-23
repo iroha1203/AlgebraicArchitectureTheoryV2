@@ -80,7 +80,7 @@ noncomputable def semanticExactBarCoreEAt
   m ≫ semanticExactBarTargetGlobalCoreProjectorAt
     input interpretation z omega endpoint_eq ≫ inv m
 
-/-- Fourth projection square of (6.25): the conjugate source projector. -/
+/-- Third projection square of (6.25): the conjugate source projector. -/
 theorem semanticExactBarEAt_projection
     {U : AtomCarrier.{u}}
     (input : BCSemanticInput U)
