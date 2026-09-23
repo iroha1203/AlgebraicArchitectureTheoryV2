@@ -82,6 +82,20 @@
 | 同じ正規化値を持つ適合変更`q_plus`と不適合変更`q_bad` (7.35) | [SemanticDerivedCanonicalComparisonIdentification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonIdentification.lean) の `semanticDerivedCanonicalComparison_identification`。不適合な差は既存の内部生成 `ambientKernelComparisonPair` |
 | 底固定のsection、分裂短完全列、右kernel torsor、同じ正規化値の適合・不適合変更 | [SemanticDerivedCanonicalBottomComparison](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalBottomComparison.lean) の `semanticDerivedCanonicalBottomComparisonSectionHom`、`semanticDerivedCanonicalBottomComparisonSection_rightInverse` と、[SemanticDerivedCanonicalComparisonIdentification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonIdentification.lean) の `semanticDerivedCanonicalBottomComparison_shortExact`、`semanticDerivedCanonicalBottomComparison_identification`、`semanticDerivedCanonicalBottomComparisonLiftFiber_existsUnique_smul_eq` |
 
+## 固定版の系7.22と追加Lean宣言
+
+[固定版 `719f81f47d410701fd82c2bc88613cc140c59377` の系7.22](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/719f81f47d410701fd82c2bc88613cc140c59377/outreach/paper/rising-sea/ja/10-comparison-and-information.md#L728)は、構成5.40の一般semantic平方・面・cochainから同じ条件で選んだ`barAlpha`、`e`、`d`、`barBeta`を使う。端点群`H`は両冪等射との交換条件であり、`Ad`を仮定したcanonical正規化の行は定理7.21の生成比較で扱う。
+
+| 固定本文の結論 | Lean宣言 |
+| --- | --- |
+| `barAlpha`と`e,d`の交換、像の比較射`barBeta`、中心化群`H`と像の比較保存群 | [SemanticDerivedSelectorComparisonGroup](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorComparisonGroup.lean) の `semanticExactBarAlphaAt_projector_comm`、`semanticExactIdempotentImageComparison_eq_barBeta`、`SemanticExactCentralizingEndpointSubgroup`、`SemanticExactKaroubiComparisonSubgroup` |
+| 非選択時に反映成立、選択時に内部生成の不適合対から反映失敗 | 同moduleの `semanticExactEndpointRestriction_preimage_eq_raw_iff_not_selected`。選択時の証人は `semanticExactSelectedAmbientKernelCentralizingPair` |
+| 選択の両枝で像の適合変更にsectionがある | [SemanticDerivedSelectorComparisonSection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorComparisonSection.lean) の `semanticExactComparisonSectionHom`、`semanticExactComparisonSection_rightInverse` |
+| 底固定端点の反映同値条件 | [SemanticDerivedSelectorBottomReflection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorBottomReflection.lean) の `semanticExactBottomRestrictionPreimage_eq_raw_iff_not_selected`。底固定は `semanticGeometryFiberMorphism_packageBase_identity` により実際のfiberの射から導く |
+| (7.36)の像での`barBeta`保存条件の元の射への引き戻し | [SemanticDerivedSelectorBetaPreimage](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorBetaPreimage.lean) の `semanticExactEndpointRestriction_preimage_eq_barBeta`、`semanticExactEndpointRestriction_preimage_map_eq_inf_barBeta`、底固定版 `semanticExactBottomRestrictionPreimage_eq_barBeta` |
+| 底固定のsection、分裂短完全列、各fiberの右kernel torsor | [SemanticDerivedSelectorBottomSection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorBottomSection.lean) の `semanticExactBottomComparisonSectionHom`、`semanticExactBottomComparisonSection_rightInverse` と [SemanticDerivedSelectorBottomExactness](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorBottomExactness.lean) の `semanticExactBottomComparison_shortExact`、`semanticExactBottomComparisonLiftFiber_existsUnique_smul_eq` |
+| `Ad`の下のcanonical正規化を直接選ぶ行 | 定理7.21の [SemanticDerivedCanonicalComparisonExactness](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonExactness.lean) と [SemanticDerivedCanonicalBottomComparison](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalBottomComparison.lean) のsection・非反映、[SemanticDerivedCanonicalComparisonIdentification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonIdentification.lean) の底固定完全列・torsor |
+
 以下のC型表は、そこに明記した固定版の既存宣言と本文修正との対応を記す。上の追加宣言によって、その固定版の入力や当時の判定を遡って変更するものではない。
 
 ## C型の本文修正と既存宣言の対応
