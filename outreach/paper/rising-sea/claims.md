@@ -70,6 +70,18 @@
 | (6.25)の`j_D p(bar e)=e j_D`、coreの`e`と冪等性 | [SemanticExactBarBetaKaroubiProjection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticExactBarBetaKaroubiProjection.lean) の `semanticExactBarCoreEAt`、`semanticExactBarEAt_projection`、`semanticExactBarCoreEAt_idem` |
 | 幾何のKaroubi像の同型をcoreへ射影して得る像の同型と、coreで構成した像の同型の一致 | 同moduleの `semanticExactBarCoreBetaKaroubiIsoAt`、`semanticExactBarBetaProjectedKaroubiIsoAt`、`semanticExactBarBetaKaroubiProjectionAlignmentAt`。射影した両端の像とcore像は `semanticExactBarESourceKaroubiProjectionIsoAt`、`semanticExactBarDTargetKaroubiProjectionIsoAt` で同定する |
 
+## 固定版の定理7.21と追加Lean宣言
+
+[固定版 `719f81f47d410701fd82c2bc88613cc140c59377` の定理7.21](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/719f81f47d410701fd82c2bc88613cc140c59377/outreach/paper/rising-sea/ja/10-comparison-and-information.md#L682)は、構成5.37が同じ一般semantic平方から生成する`barAlpha`について、source coreの`Ad`を前提とする。`CanonicalObjectNormalizationAdmissible Q`はこの前提に対応し、両端の`Ad`と正規化の自然性は生成射に沿って導く。
+
+| 固定本文の結論 | Lean宣言 |
+| --- | --- |
+| 生成された二経路の`Ad`、実際の`barAlpha`を用いる比較群 | [SemanticDerivedCanonicalComparisonExactness](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonExactness.lean) の `semanticDerivedDirectGeometryAt_admissible`、`semanticDerivedViaBaseGeometryAt_admissible`、`semanticDerivedBarAlphaAdmissibleIsoAt` |
+| 制限準同型のsectionと分裂短完全列 (7.34) | 同moduleの `semanticDerivedCanonicalComparisonSectionHom`、`semanticDerivedCanonicalComparisonSection_rightInverse`、`semanticDerivedCanonicalComparison_shortExact` |
+| 各`delta`上の適合liftがsection値の右kernel陪集合であり、右torsorになる | 同moduleの `semanticDerivedCanonicalComparisonLiftFiber_nonempty`、`semanticDerivedCanonicalComparisonLiftFiber_unique_rightKernel`、`semanticDerivedCanonicalComparisonLiftFiber_existsUnique_smul_eq` |
+| 同じ正規化値を持つ適合変更`q_plus`と不適合変更`q_bad` (7.35) | [SemanticDerivedCanonicalComparisonIdentification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonIdentification.lean) の `semanticDerivedCanonicalComparison_identification`。不適合な差は既存の内部生成 `ambientKernelComparisonPair` |
+| 底固定のsection、分裂短完全列、右kernel torsor、同じ正規化値の適合・不適合変更 | [SemanticDerivedCanonicalBottomComparison](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalBottomComparison.lean) の `semanticDerivedCanonicalBottomComparisonSectionHom`、`semanticDerivedCanonicalBottomComparisonSection_rightInverse` と、[SemanticDerivedCanonicalComparisonIdentification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonIdentification.lean) の `semanticDerivedCanonicalBottomComparison_shortExact`、`semanticDerivedCanonicalBottomComparison_identification`、`semanticDerivedCanonicalBottomComparisonLiftFiber_existsUnique_smul_eq` |
+
 以下のC型表は、そこに明記した固定版の既存宣言と本文修正との対応を記す。上の追加宣言によって、その固定版の入力や当時の判定を遡って変更するものではない。
 
 ## C型の本文修正と既存宣言の対応
