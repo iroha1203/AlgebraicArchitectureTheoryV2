@@ -24,7 +24,7 @@
 | --- | --- |
 | core側のBeck–Chevalley mate `alpha` と選択liftに対する因子式 | [SemanticCoreBeckChevalleyMate](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticCoreBeckChevalleyMate.lean) の `semanticCoreBeckChevalleyMate`、`semanticCoreBeckChevalleyMate_app_iterated_fac` |
 | 完全幾何の二経路を射影したcoreと、core側で生成した二経路の端点同型`j_D`・`j_V` | [SemanticDerivedCoreEndpointProjection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCoreEndpointProjection.lean) の `semanticDerivedDirectCoreIsoAt`、`semanticDerivedViaBaseCoreIsoAt`、`semanticDerivedPullCoreLift_eq` |
-| 完全幾何の三角式とcore比較の射影等式(5.44) | [SemanticDerivedBarAlphaTriangle](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaTriangle.lean) の `semanticDerivedBarAlphaIsoAt_triangle` と [SemanticDerivedBarAlphaProjection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaProjection.lean) の `semanticDerivedBarAlphaIsoAt_projection`。後者は生成liftの因子式と二段のlift消去から導く |
+| 完全幾何の三角式とcore比較の射影等式(5.44) | [SemanticDerivedBarAlphaTriangle](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaTriangle.lean) の `semanticDerivedBarAlphaIsoAt_triangle` と [SemanticCoreBeckChevalleyMateIdentification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticCoreBeckChevalleyMateIdentification.lean) の `semanticCoreBeckChevalleyMate_eq_doctrine`、`semanticDerivedBarAlphaIsoAt_projection_doctrineMate`。後者は [SemanticDerivedBarAlphaProjection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaProjection.lean) の生成liftの因子式・二段のlift消去と、既存の定理5.11のmateの一意性から導く |
 
 ## 固定版の補題6.15と追加Lean宣言
 
