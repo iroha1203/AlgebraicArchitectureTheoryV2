@@ -1,51 +1,41 @@
-Now that AI generates software changes in large numbers, the central problem
-of software engineering is to judge which change preserves what, where the
-whole breaks, and how many choices remain. Such decisions require an
-explicit choice of what to read as structure and which operations and laws to
-preserve. Starting from Atoms, which are typed primitive facts, and Laws,
-which are equations that objects must satisfy, the paper fixes this choice as
-a \emph{reading}. It then organizes the theory of architecture relative to a reading into a
-single system as the foundations of Algebraic Architecture Theory (AAT). From a
-finite family of Atoms we generate a core, closed under operations, and a
-geometry equipped with a site and coefficients. The satisfaction of Laws is
-expressed as factorization through the space defined by the ideal of the
-equations.
+AI-generated software changes make it increasingly important to determine what
+a change preserves, where local consistency fails to extend globally, and which
+alternatives remain. This paper develops the foundations of Algebraic
+Architecture Theory (AAT) from Atoms, typed primitive facts, and Laws, equations
+that objects must satisfy. We make explicit the choice of what counts as
+structure and which operations and laws to preserve, calling this choice a
+\emph{reading}. Objects and structure-preserving morphisms are defined relative
+to a reading. From finite Atom families we construct cores closed under
+operations and geometries equipped with sites and coefficients.
 
-Within this system we prove theorems for five kinds of decision: gluing,
-diagnosis, transport, the classification of changes, and reconstruction. The
-obstruction to gluing local states is represented by a \v{C}ech obstruction
-class in degree one. Given an action of corrections and the sheaf condition,
-the vanishing of this class is equivalent both to the existence of a global
-state and to the existence of a global repair on the semantic side. For
-changes of resolution, cover, and coefficients that preserve the evaluation of
-Laws, we construct a map that carries diagnoses along the change. We give a
-condition under which it induces an isomorphism on first cohomology, and show
-that invariance for all families of Laws for which both resolutions are
-adequate can be decided finitely.
-We characterize transport along exact changes by a universal property, and
-show that for exact pointed pullback squares, the exchange of transport
-and base change is given by an invertible Beck--Chevalley comparison. The
-comparison of two construction routes generated from the same square, finite
-comparison diagram, and geometry factors into an invertible
-comparison and an idempotent normalization factor, and its invertibility is
-classified. For changes that preserve a comparison, we give a necessary and
-sufficient condition for determining from observations alone whether a change
-preserves the comparison, and a classification of all compatible lifts as a
-torsor.
+The theory addresses five kinds of decision: gluing, diagnosis, transport,
+classification of changes, and reconstruction. Its culmination is a
+reconstruction theorem: the category of full geometries and all their
+structure-preserving morphisms is equivalent to a category of local models
+given by primitive data and independently defined compatibility conditions.
+Objects are recovered up to isomorphism, and morphisms between fixed endpoints
+are recovered uniquely. This allows the overall structure and its changes to
+be assembled from local descriptions written by separate parties.
 
-The culmination is reconstruction. The category of full geometries and all
-their structure-preserving morphisms is equivalent to the category of local
-models given by primitive data and compatibility conditions defined
-independently.
-This equivalence supports recovering the whole from local descriptions written
-by separate parties.
+To support these decisions, we construct a degree-one \v{C}ech obstruction to
+gluing local states. Under torsor and sheaf conditions, its vanishing is
+equivalent to the existence of a global state; under the conditions required
+for comparison with repair semantics, it also corresponds to the existence of
+a global repair. We compare diagnoses along evaluation-preserving changes of
+resolution, cover, and coefficients, and give conditions for preserving first
+cohomology. Invariance for all finite Law families for which both resolutions are
+adequate is decidable when computable finite data are given.
 
-The semantics of lenses (model synchronization) and of protocols, defined
-independently of this system, are encoded in it. From this encoding we obtain the
-equivalence of the validity of laws, a one-to-one correspondence between
-semantics-preserving morphisms and typed morphisms, the classification and
-number of changes that preserve operations, and unique extension from finite
-tables. The Lean declarations corresponding to the results of the text are
-listed in the correspondence tables of the appendix. Together these results
-give a foundation that treats the individual decisions, from local consistency
-to reconstruction, as special cases of theorems about common objects.
+Transport along exact changes is characterized by a universal property and
+commutes with base change through an invertible comparison on exact pointed
+pullback squares. Comparisons of two routes generated from the same square,
+finite comparison diagram, and geometry factor into an invertible comparison
+and an idempotent normalization. We characterize when observations alone
+determine comparison preservation and classify all compatible lifts.
+
+We encode independently defined lens (model synchronization) and protocol
+semantics in this framework, proving equivalence of law satisfaction and a
+one-to-one correspondence between semantics-preserving and typed morphisms.
+Through these correspondences, common theorems classify and count operation-preserving
+changes and yield unique extensions of morphisms from finite tables. The
+corresponding Lean declarations are listed in the appendix.

@@ -13,6 +13,18 @@
 | `figures/*.tex` | 図(TikZ)。日本語原稿の図 [`../figures/`](../figures/) の SVG と同じ内容を描き直したもの |
 | `arxiv-abstract.txt` | arXiv の要旨欄に入れる短縮版要旨(metadata 用) |
 
+## 部扉
+
+部扉はPart番号・部題・章範囲の順に表示する。目次とPDFのブックマークには部題を載せる。
+日本語の部題は[構成マスター](../paper-structure.md)と対応する。
+
+| 部 | English | 日本語 | 章 |
+| --- | --- | --- | --- |
+| I | Geometry and Local Consistency | 幾何と局所整合性 | 1〜2 |
+| II | Diagnosis and Transport | 診断と輸送 | 3〜4 |
+| III | Comparison and Normalization | 比較と正規化 | 5〜6 |
+| IV | Classification and Reconstruction | 分類と再構成 | 7〜8 |
+
 ## ビルド
 
 共通の検査・隔離ビルド・投稿用 source の作成は [paper tools](../../_tools/README.md) と
