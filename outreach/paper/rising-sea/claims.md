@@ -16,6 +16,16 @@
 | 比較射のunit・端点比較・G-118のmate・端点比較・counitの五因子式 | 同moduleの `semanticDerivedBarAlphaIsoAt_generatedFiveFactor_hom` |
 | 診断入力のface `z` にあるcore `P_z` への特殊化 | [SemanticDerivedDiagnosticEndpointBridge](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedDiagnosticEndpointBridge.lean) の `semanticDerivedDiagnosticSourcePackageAt`、`semanticDerivedDiagnosticDirectGeometryAt`、`semanticDerivedDiagnosticViaBaseGeometryAt`、`semanticDerivedDiagnosticBarAlphaIsoAt`、`semanticDerivedDiagnosticBarAlphaIsoAt_triangle`、`semanticDerivedDiagnosticBarAlphaIsoAt_generatedFiveFactor_hom` |
 
+## 固定版の命題5.38と追加Lean宣言
+
+[固定版 `719f81f47d410701fd82c2bc88613cc140c59377` の命題5.38](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/719f81f47d410701fd82c2bc88613cc140c59377/outreach/paper/rising-sea/ja/08-base-change.md#L1068)の`p`は完全幾何からcoreへの射影である。構成5.37で生成した二経路の端点同型`j_D`・`j_V`は、同じ一般semantic平方から導く。
+
+| 固定本文の結論 | Lean宣言 |
+| --- | --- |
+| core側のBeck–Chevalley mate `alpha` と選択liftに対する因子式 | [SemanticCoreBeckChevalleyMate](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticCoreBeckChevalleyMate.lean) の `semanticCoreBeckChevalleyMate`、`semanticCoreBeckChevalleyMate_app_iterated_fac` |
+| 完全幾何の二経路を射影したcoreと、core側で生成した二経路の端点同型`j_D`・`j_V` | [SemanticDerivedCoreEndpointProjection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCoreEndpointProjection.lean) の `semanticDerivedDirectCoreIsoAt`、`semanticDerivedViaBaseCoreIsoAt`、`semanticDerivedPullCoreLift_eq` |
+| 完全幾何の三角式とcore比較の射影等式(5.44) | [SemanticDerivedBarAlphaTriangle](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaTriangle.lean) の `semanticDerivedBarAlphaIsoAt_triangle` と [SemanticCoreBeckChevalleyMateIdentification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticCoreBeckChevalleyMateIdentification.lean) の `semanticCoreBeckChevalleyMate_eq_doctrine`、`semanticDerivedBarAlphaIsoAt_projection_doctrineMate`。後者は [SemanticDerivedBarAlphaProjection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedBarAlphaProjection.lean) の生成liftの因子式・二段のlift消去と、既存の定理5.11のmateの一意性から導く |
+
 ## 固定版の補題6.15と追加Lean宣言
 
 [固定版 `719f81f47d410701fd82c2bc88613cc140c59377` の補題6.15](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/719f81f47d410701fd82c2bc88613cc140c59377/outreach/paper/rising-sea/ja/09-idempotent-normalization.md#L368)が述べる任意のexactなpointed底射は、`ExtInstHom`で表す。`CanonicalObjectNormalizationAdmissible`は、正規化を定める側のcoreに対する本文の`Ad`条件であり、輸送先または引き戻し先の条件はこの入力から導く。
