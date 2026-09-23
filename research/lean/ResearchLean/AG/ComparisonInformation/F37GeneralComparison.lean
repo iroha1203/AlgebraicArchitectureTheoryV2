@@ -56,6 +56,7 @@ def generalComparisonSourceProjection (c : X ⟶ Y)
     generalComparisonSubgroup c GX GY →* GX :=
   (MonoidHom.fst GX GY).comp (generalComparisonSubgroup c GX GY).subtype
 
+/-- The target endpoint projection of Definition 7.2; its inputs are the chosen endpoint subgroups. -/
 def generalComparisonTargetProjection (c : X ⟶ Y)
     (GX : Subgroup (Aut X)) (GY : Subgroup (Aut Y)) :
     generalComparisonSubgroup c GX GY →* GY :=
@@ -297,11 +298,13 @@ noncomputable def targetLiftAction (c : X ⟶ Y)
       _ = a.1.hom ≫ (c ≫ t.1.1.hom) := Category.assoc _ _ _
       _ = a.1.hom ≫ c := by rw [t.2]⟩
 
+/-- The target stabilizer acts on the actual target followers in Theorem 7.4. -/
 noncomputable instance targetLiftSMul (c : X ⟶ Y)
     (GX : Subgroup (Aut X)) (GY : Subgroup (Aut Y)) (a : GX) :
     SMul (generalTargetStabilizer c GY) (TargetLift c GX GY a) where
   smul := targetLiftAction c GX GY a
 
+/-- The group action laws for Theorem 7.4 follow from composition of target changes. -/
 noncomputable instance targetLiftMulAction (c : X ⟶ Y)
     (GX : Subgroup (Aut X)) (GY : Subgroup (Aut Y)) (a : GX) :
     MulAction (generalTargetStabilizer c GY) (TargetLift c GX GY a) where
@@ -371,11 +374,13 @@ noncomputable def sourceLiftAction (c : X ⟶ Y)
       _ = lift.1.1.hom ≫ c := by rw [s.2]
       _ = c ≫ b.1.hom := lift.2⟩
 
+/-- The source stabilizer acts on the actual source followers in Theorem 7.4. -/
 noncomputable instance sourceLiftSMul (c : X ⟶ Y)
     (GX : Subgroup (Aut X)) (GY : Subgroup (Aut Y)) (b : GY) :
     SMul (generalSourceStabilizer c GX) (SourceLift c GX GY b) where
   smul := sourceLiftAction c GX GY b
 
+/-- The group action laws for Theorem 7.4 follow from composition of source changes. -/
 noncomputable instance sourceLiftMulAction (c : X ⟶ Y)
     (GX : Subgroup (Aut X)) (GY : Subgroup (Aut Y)) (b : GY) :
     MulAction (generalSourceStabilizer c GX) (SourceLift c GX GY b) where

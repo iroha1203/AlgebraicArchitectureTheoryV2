@@ -23,6 +23,7 @@ open FixedFRestrictedKernelIdentification
 
 variable {F : FixedFDirectedMultigraph} {K : Type w}
 
+/-- The hidden permutation group indexed by components of the graph in Theorem 7.25. -/
 abbrev ComponentGroup (F : FixedFDirectedMultigraph) (K : Type w) :=
   FixedFComponent F → Equiv.Perm K
 
@@ -58,6 +59,7 @@ def componentAction (H : Subgroup (FixedFGraphAutomorphism F)) :
     funext component
     simp [reindex, mul_inv_rev]
 
+/-- Theorem 7.25 uses this semidirect product with the proved component action. -/
 abbrev Semidirect (H : Subgroup (FixedFGraphAutomorphism F)) :=
   ComponentGroup F K ⋊[componentAction (K := K) H] H
 
@@ -228,6 +230,7 @@ def pointedReindex (H : Subgroup (FixedFGraphAutomorphism F))
   right_inv family := by funext component; simp
   map_mul' first second := by funext component; rfl
 
+/-- Corollary 7.26 restricts the component action to permutations fixing the chosen state. -/
 def pointedComponentAction
     (H : Subgroup (FixedFGraphAutomorphism F)) (basepoint : K) :
     H →* MulAut (PointedComponentGroup F K basepoint) where
@@ -243,6 +246,7 @@ def pointedComponentAction
     funext component
     simp [pointedReindex, mul_inv_rev]
 
+/-- The semidirect product in Corollary 7.26 for the given hidden-state basepoint. -/
 abbrev PointedSemidirect
     (H : Subgroup (FixedFGraphAutomorphism F)) (basepoint : K) :=
   PointedComponentGroup F K basepoint ⋊[pointedComponentAction H basepoint] H
@@ -261,6 +265,7 @@ def forgetPointedSemidirect
       rfl
     · rfl
 
+/-- This API lemma preserves the pointed subgroup when comparing concrete changes. -/
 theorem forgetPointedSemidirect_injective
     (H : Subgroup (FixedFGraphAutomorphism F)) (basepoint : K) :
     Function.Injective (forgetPointedSemidirect H basepoint) := by
@@ -299,6 +304,7 @@ def pointedRealizeHom
         realizeHom (K := K) H (forgetPointedSemidirect H basepoint second)
     rw [map_mul, map_mul]
 
+/-- Injectivity of the concrete pointed realization used in Corollary 7.26. -/
 theorem pointedRealize_injective
     (H : Subgroup (FixedFGraphAutomorphism F)) (basepoint : K) :
     Function.Injective (pointedRealizeHom H basepoint) := by
@@ -307,6 +313,7 @@ theorem pointedRealize_injective
   apply realize_injective (K := K) H
   exact congrArg Subtype.val equality
 
+/-- Every pointed operation-preserving change yields the component family required by Corollary 7.26. -/
 theorem pointedRealize_surjective
     (H : Subgroup (FixedFGraphAutomorphism F)) (basepoint : K) :
     Function.Surjective (pointedRealizeHom H basepoint) := by
@@ -360,6 +367,7 @@ namespace TwoWorkers
 
 open FixedFFiniteExamples
 
+/-- The two-worker visible exchange of Example 7.30 has order two. -/
 private theorem sessionSwap_mul_self :
     protocolSessionSwapAutomorphism * protocolSessionSwapAutomorphism = 1 := by
   apply FixedFGraphAutomorphism.ext
@@ -371,6 +379,7 @@ private theorem sessionSwap_mul_self :
     intro edge
     cases edge <;> rfl
 
+/-- The inverse of the two-worker exchange is itself, for the visible subgroup construction. -/
 private theorem sessionSwap_inv :
     protocolSessionSwapAutomorphism⁻¹ = protocolSessionSwapAutomorphism := by
   calc
@@ -399,11 +408,14 @@ def visibleGroup : Subgroup (FixedFGraphAutomorphism protocolGraph) where
     · left; simp
     · right; exact sessionSwap_inv
 
+/-- The identity visible change in the two-worker model of Example 7.30. -/
 def visibleIdentity : visibleGroup := ⟨1, Or.inl rfl⟩
 
+/-- The concrete worker-exchange visible change of Example 7.30. -/
 def visibleSwap : visibleGroup :=
   ⟨protocolSessionSwapAutomorphism, Or.inr rfl⟩
 
+/-- Worker exchange differs from the identity on the first control vertex. -/
 private theorem swap_ne_one : visibleSwap ≠ visibleIdentity := by
   intro equality
   have vertexEquality := congrArg
@@ -442,6 +454,7 @@ noncomputable def visibleEquivBool : visibleGroup ≃ Bool := by
   · intro value
     cases value <;> simp [swap_ne_one]
 
+/-- The visible subgroup in Example 7.30 has the two required elements. -/
 theorem natCard_visibleGroup : Nat.card visibleGroup = 2 := by
   rw [Nat.card_congr visibleEquivBool]
   norm_num
@@ -452,6 +465,7 @@ def visiblePermutationHom : visibleGroup →* Equiv.Perm Bool :=
   (protocolComponentEquivBool.permCongrHom).toMonoidHom.comp
     (FixedFGraphAutomorphism.restrictedComponentAction visibleGroup)
 
+/-- Worker exchange acts as the nontrivial permutation of the two components. -/
 theorem visiblePermutationHom_swap :
     visiblePermutationHom visibleSwap = Equiv.swap false true := by
   apply Equiv.ext
@@ -459,6 +473,7 @@ theorem visiblePermutationHom_swap :
   cases label <;>
     rfl
 
+/-- The two allowed visible changes are distinguished by their action on components. -/
 theorem visiblePermutationHom_injective :
     Function.Injective visiblePermutationHom := by
   intro first second equality
@@ -483,6 +498,7 @@ theorem visiblePermutationHom_injective :
     cases impossible
   · exact Subtype.ext (firstSwap.trans secondSwap.symm)
 
+/-- Example 7.30 identifies its visible group with the genuine group S2. -/
 noncomputable def visibleEquivPermBool :
     visibleGroup ≃* Equiv.Perm Bool := by
   classical
@@ -564,6 +580,7 @@ theorem componentPair_swap (family : ComponentGroup protocolGraph Bool) :
     rw [swap_component]
     rfl
 
+/-- The two componentwise S2 factors in the kernel of Example 7.30. -/
 abbrev HiddenPair := Equiv.Perm Bool × Equiv.Perm Bool
 
 /-- The visible action on the explicit pair of hidden permutation factors. -/
@@ -581,6 +598,7 @@ def hiddenPairAction : visibleGroup →* MulAut HiddenPair where
     intro pair
     simp [MulEquiv.trans_apply, map_mul]
 
+/-- The worker exchange interchanges the two hidden-permutation factors. -/
 theorem hiddenPairAction_swap (pair : HiddenPair) :
     hiddenPairAction visibleSwap pair = pair.swap := by
   change componentPairEquiv
@@ -638,6 +656,7 @@ noncomputable def actualEquivExplicitWorker :
         · exact map_mul visibleEquivPermBool first.right second.right }
   exact actualEquivHiddenPair.trans convert
 
+/-- The nontrivial visible S2 element swaps the hidden S2 factors in Example 7.30. -/
 theorem permutationPairAction_swap (pair : HiddenPair) :
     permutationPairAction (Equiv.swap false true) pair = pair.swap := by
   have : visibleEquivPermBool visibleSwap = Equiv.swap false true :=
