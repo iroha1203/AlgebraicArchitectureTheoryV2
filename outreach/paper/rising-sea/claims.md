@@ -96,6 +96,19 @@
 | 底固定のsection、分裂短完全列、各fiberの右kernel torsor | [SemanticDerivedSelectorBottomSection](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorBottomSection.lean) の `semanticExactBottomComparisonSectionHom`、`semanticExactBottomComparisonSection_rightInverse` と [SemanticDerivedSelectorBottomExactness](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedSelectorBottomExactness.lean) の `semanticExactBottomComparison_shortExact`、`semanticExactBottomComparisonLiftFiber_existsUnique_smul_eq` |
 | `Ad`の下のcanonical正規化を直接選ぶ行 | 定理7.21の [SemanticDerivedCanonicalComparisonExactness](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonExactness.lean) と [SemanticDerivedCanonicalBottomComparison](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalBottomComparison.lean) のsection・非反映、[SemanticDerivedCanonicalComparisonIdentification](../../../research/lean/ResearchLean/AG/FullGeometryNormalization/SemanticDerivedCanonicalComparisonIdentification.lean) の底固定完全列・torsor |
 
+## 固定版の例8.21と追加Lean宣言
+
+[固定版 `719f81f47d410701fd82c2bc88613cc140c59377` の例8.21](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/719f81f47d410701fd82c2bc88613cc140c59377/outreach/paper/rising-sea/ja/11-local-reconstruction.md#L712)の冒頭は、構成5.37〜5.40が生成する一般semantic平方の元の幾何・二経路・`barAlpha`・`barBeta`・`e,d`と、全端点自己同型・可換平方を対象とする。三軸finiteAxisFoldの特例は既存の [IndependentAATPrimitiveReconstruction](../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentAATPrimitiveReconstruction.lean) にあり、追加宣言は一般生成入力を同じprimitive readingへ接続する。
+
+| 固定本文の結論 | Lean宣言 |
+| --- | --- |
+| 元の幾何と生成された二経路の対象のprimitive再構成 | [SemanticGeneratedComparisonReconstruction](../../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/SemanticGeneratedComparisonReconstruction.lean) の `semanticComparisonOriginal_reconstructionIso`、`semanticComparisonDirect_reconstructionIso`、`semanticComparisonViaBase_reconstructionIso` |
+| 完全幾何の全Homの読取りと一意な再組立て、全端点自己同型の回復 | 同moduleの `semanticComparisonHom_assemble_read`、`semanticComparisonHom_existsUnique`、`semanticComparisonDirectAutomorphismEquiv`、`semanticComparisonViaBaseAutomorphismEquiv` |
+| `barAlpha`の生成と既存G118の五因子式への接続 | 同moduleの `semanticComparisonAlphaNativeHom`、`semanticComparisonAlpha_eq_G118FiveFactor`、`semanticComparisonReadAlpha_eq_G118FiveFactor` |
+| `barBeta,e,d`の生成と(8.20)、`d barBeta=barBeta=barBeta e` | 同moduleの `semanticComparisonBetaNativeHom`、`semanticComparisonENativeHom`、`semanticComparisonDNativeHom`、`semanticComparisonBeta_factor`、`semanticComparisonE_idem`、`semanticComparisonD_idem`、`semanticComparisonAlpha_projector_natural`、`semanticComparisonBeta_projector_factorizations` |
+| 生成された各射のprimitive readbackと可換平方の保存・反映 | 同moduleの `semanticComparisonAlpha_assemble_read`、`semanticComparisonBeta_assemble_read`、`semanticComparisonE_assemble_read`、`semanticComparisonD_assemble_read`、`semanticComparisonGeneratedSquare_iff`、`semanticComparisonGeneratedLocalSquare_iff` |
+| 三軸の選択・非選択cochain特例 | 既存moduleの `finiteAxisFoldBarBetaNativeHom_factor`、`finiteAxisFoldIdentityCochain_barBeta_eq_barAlpha_common`、`finiteAxisFoldBarBeta_read_point` |
+
 以下のC型表は、そこに明記した固定版の既存宣言と本文修正との対応を記す。上の追加宣言によって、その固定版の入力や当時の判定を遡って変更するものではない。
 
 ## C型の本文修正と既存宣言の対応
