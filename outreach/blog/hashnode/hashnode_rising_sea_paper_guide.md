@@ -71,7 +71,7 @@ AAT calls a typed basic fact—such as the existence of a component or a named o
 
 We also specify how those operations must behave. A requirement expressed as an equation is called a **Law**.
 
-Let $s$ be an order state and $a$ a shipping address. Then `read(s)` is the current address, and `update(s, a)` is the state after setting the address to $a$.
+Let `s` be an order state and `a` a shipping address. Then `read(s)` is the current address, and `update(s, a)` is the state after setting the address to `a`.
 
 Reading the address after an update should return the address we just supplied:
 
@@ -87,13 +87,13 @@ $$
 \operatorname{update}(s, \operatorname{read}(s)) = s
 $$
 
-The right-hand side is the **entire order state**, not just the address. An operation that changes payment information when we set an already home-bound order to “home” again would violate this Law. These equations must hold for every order state $s$ and every address $a$ to which they apply.
+The right-hand side is the **entire order state**, not just the address. An operation that changes payment information when we set an already home-bound order to “home” again would violate this Law. These equations must hold for every order state `s` and every address `a` to which they apply.
 
 Expressing the structure and conditions we want to analyze through Atoms and Laws makes the analysis independent of a particular programming language or framework. Different implementations can be described in a common language: which components and operations exist, and what they must satisfy.
 
 ### From software requirements to geometry
 
-Let $x$ be the refund expected by the order service and $y$ the refund recorded by the payment service. The requirement that they agree is $x-y=0$. The pairs $(x,y)$ satisfying that equation form a line in the plane. We have moved from checking one order to studying the space of states the requirement permits.
+Let `x` be the refund expected by the order service and `y` the refund recorded by the payment service. The requirement that they agree is `x - y = 0`. The pairs `(x, y)` satisfying that equation form a line in the plane. We have moved from checking one order to studying the space of states the requirement permits.
 
 The idea extends to more values and more conditions: represent states with variables, express requirements as equations, and study their solutions. This is the entry point from software descriptions to algebraic geometry. AAT makes explicit both this interpretation and how operations act on states.
 
