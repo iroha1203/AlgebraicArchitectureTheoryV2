@@ -1,6 +1,6 @@
 # The Mathematics of Software Change
 
-*A developer's guide to consistency, migrations, and reconstruction in Algebraic Architecture Theory.*
+*Exploring consistency, migration, and reconstruction through Algebraic Architecture Theory.*
 
 What should software engineering provide in an age when AI writes code?
 
