@@ -1,6 +1,7 @@
 # Zenodo deposit metadata
 
 > 2026-09-23 に publish 済み。record: https://zenodo.org/records/22913489
+> arXiv 版(同一 source): **arXiv:2609.27638**(2026-09-24 announce、cs.SE + cs.PL)
 > description の正本は `en/main.tex` の abstract(`en/01-abstract.tex`)であり、
 > 本文 abstract を変更したら下記変種を同期する。
 
