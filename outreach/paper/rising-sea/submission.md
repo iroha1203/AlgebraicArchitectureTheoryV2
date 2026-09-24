@@ -22,5 +22,16 @@
 - 人間の著者による最終確認・日付: 2026-09-23(著者が最終版を確認して deposit・publish を実施)
 - 投稿先生成 preview の hash・確認者・結果: publish 前 preview の独立記録はなし。代替として公開 record 上で file 一覧(2点)と checksum を突合し一致(2026-09-23、Claude)
 - 実際の投稿日時・識別子: 2026-09-23、Zenodo record 22913489
-- 公開 URL・DOI / arXiv ID・版: https://zenodo.org/records/22913489 、version DOI `10.5281/zenodo.22913489`、concept DOI `10.5281/zenodo.22913488`、v1.0.0。arXiv は未投稿(改訂版で判断)
+- 公開 URL・DOI / arXiv ID・版: https://zenodo.org/records/22913489 、version DOI `10.5281/zenodo.22913489`、concept DOI `10.5281/zenodo.22913488`、v1.0.0。arXiv: **arXiv:2609.27638** (v1)
 - 公開後に取得した source・PDF の hash・照合結果: 公開 record からダウンロードした main.pdf の SHA-256 `6aeaafe0208f84bb60bbcfb2f0578ed54616b23c11933bb14d848e0069bbba8a`、source.zip の SHA-256 `12acdee48775d3712c46650ed98e767395877e53b7e812d2d2c0ca607829b411` が投稿前確認の記録と一致。record の MD5(25a03522… / 24be6fb3…)もローカル成果物と一致(2026-09-23、Claude)
+
+## arXiv 投稿(v1)
+
+- 要件の再確認日: 2026-09-23(docs/paper/arxiv.md の原典を再確認。TeX Live 2025 既定・要旨1,920字・`.bbl` は主 TeX と同 basename で同梱可 — 変更なし)
+- 種別・カテゴリ: 研究論文。投稿は cs.PL 指定(2026-09-23 著者裁定)、公開時の分類は **cs.SE (primary) + cs.PL (cross-list)**
+- 投稿 source: `rising-sea-arxiv-v1.0.0.zip`(22 files = TeX source 21 + `main.bbl`、SHA-256 `c0b5a8bf096df12d3ac0d221b2d981ba6b393048d98e56a976cc487d8c08f2a5`)。Zenodo v1.0.0 の source から references.bib を除き `main.bbl` を追加した構成。除外後の展開先で pdflatex ×3 = 285頁・引用/参照警告 0 を確認
+- 利用処理系: 手元検証は TeX Live 2025 pdflatex(TinyTeX 固定環境、build.json = `.tmp/paper-rs-pdflatex-0923/`)。arXiv 側処理も pdflatex
+- フォーム: 要旨1,830字(`en/arxiv-abstract.txt`)、Comments = 285 pages, 4 figures + Zenodo concept DOI、License = CC BY 4.0、Journal-ref/DOI 欄 = 空欄
+- 投稿・announce: 2026-09-23 投稿(人間の著者)、2026-09-24 announce = https://arxiv.org/abs/2609.27638
+- 公開物の確認(2026-09-24、Claude): abs ページの題名・著者・要旨・Comments・CC BY 4.0 を突合、arXiv 生成 PDF は285頁で表紙(題名・著者・ORCID・`[cs.SE]` スタンプ)を確認
+

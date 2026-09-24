@@ -4,6 +4,7 @@
 
 | ツール・モデル・利用時期 | 用途 | 対象範囲 | 検証方法・確認者 |
 | --- | --- | --- | --- |
+| Claude(Fable 5)、2026-09-23〜24 | arXiv 投稿の準備と公開後確認 | `submission.md`、`zenodo_metadata.md`、本利用記録 | arXiv 公式要件(TeX Live 2025・要旨1,920字・.bbl 同梱)を原典で再確認。投稿 zip(TeX source 21+main.bbl、references.bib は除外)を作成し、展開先 pdflatex ×3 で285頁・引用/参照警告 0 を確認。要旨1,830字・ASCII を機械計数。announce 後に abs ページ(題名・著者・要旨・Comments・CC BY 4.0・分類 cs.SE+cs.PL)と arXiv 生成 PDF(285頁・表紙)を突合し、arXiv:2609.27638 を記録。投稿・preview 確認は人間の著者が実施 |
 | Claude(Fable 5)、2026-09-23 | 公開後確認と投稿記録の完成 | `submission.md`、`zenodo_metadata.md`、`TODO.md`、本利用記録 | 公開 record(Zenodo 22913489)の metadata を API で取得して zenodo_metadata.md と突合し、公開ファイル2点をダウンロードして SHA-256 が投稿前確認の記録と一致することを確認。record の MD5 とローカル成果物の一致も確認。投稿日時・DOI・URL・hash を submission.md へ記録し、状態を published へ更新 |
 | Claude(Fable 5)、2026-09-23 | 投稿前確認(ToDo§5)の実施と記録の作成 | `references.csv`、`submission.md`、`zenodo_metadata.md`、本利用記録 | Zenodo の投稿要件を公式ページで確認。文献確認記録の hash 列を README の TeX 化規約に従い共通検査の hash へ更新し、照合時点以降の原稿差分の影響を評価(引用キーの集合と references.bib の不変、記録が参照する本文アンカー15件の番号・内容の保持を機械照合)。claims.md の結合原稿 hash の一致を再計算で確認。Tectonic 0.16.9 と TeX Live 2025(TinyTeX v2025.08+凍結スナップショットの追加 package、xelatex+bibtex)の固定環境ビルドは共に285ページ・未解決参照/overfull/underfull ゼロ、抽出テキスト検査 0 件。投稿用 source.zip を作成し展開先で再ビルド(警告 0)。完成 PDF 全285ページを目視。原稿本文・Lean source は変更していない |
 | Codex（GPT-6）、2026-09-23 | PRレビューR1の用語統一 | 日本語序論、結合原稿hash、本利用記録 | 同じ注文例の「支払情報」3箇所を「決済情報」へ統一。英語のpayment dataとの対応を確認し、日英機械照合・差分・Unicode・結合hashを検査。英語原稿と数学的内容は変更なし |
