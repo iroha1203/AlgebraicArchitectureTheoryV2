@@ -1,4 +1,6 @@
-# What Does a Software Change Preserve? A Guide to the Rising Sea Paper
+# The Mathematics of Software Change
+
+*A developer's guide to consistency, migrations, and reconstruction in Algebraic Architecture Theory.*
 
 What should software engineering provide in an age when AI writes code?
 
