@@ -85,7 +85,8 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-123-aat-realization-reconstruction](G-123-aat-realization-reconstruction.md)
   (Cycle 189で研究終了。固定targetは未決着。成果の上に後継G-124を立てた)
 - [G-105-aat-structural-cover-invariance](G-105-aat-structural-cover-invariance.md)
-  (`target-refuted`。改訂裁定待ち — 反証記録と salvage reading はカードを参照)
+  (`target-refuted`。全support生成では各sourceの成分がconeになりH¹が普遍的に零となる。
+  反証記録と salvage reading はカードを参照)
 
 ## GOAL カードの型
 
