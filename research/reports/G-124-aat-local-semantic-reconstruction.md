@@ -10593,10 +10593,11 @@ selection:
     - "The remaining III-3 and IV-1/IV-2/IV-3 obligations remain open."
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "The primitive object condition is equivalent to native canonical admissibility. The local projector is constructed by reading canonical normalization of the assembled primitive object, with explicit source, operation, object, coefficient and component evaluations; it is idempotent and is the main reader image of native normalization. General Karoubi/Arrow and all comparison groups use the same reader. Direct projection natural isomorphisms give exact arbitrary component-subgroup map equations and the qualified squares used for G-120 kernel, fiber, lift, and exactness transport."
+  proof_obligation_delta: "The primitive object condition is equivalent to native canonical admissibility. The local projector is formed first by localWith from the normalized core map, coefficient component, and directed realization points of the assembled primitive object; its all-query evaluation and equality to the accepted native reader are proved separately. The local projector is idempotent and is the main reader image of native normalization. General Karoubi/Arrow and all comparison groups use the same reader. Direct projection natural isomorphisms give exact arbitrary component-subgroup map equations and the qualified squares used for G-120 kernel, fiber, lift, and exactness transport."
   completion_candidate: no
   lean_artifacts:
     - "G124PrimitiveNormalization.representative_read_projector"
+    - "G124PrimitiveNormalization.representativeProjector_primitive_point"
     - "G124PrimitiveNormalization.main_read_projector"
     - "G124PrimitiveNormalization.main_canonicalKaroubi_projector"
     - "G124PrimitiveNormalization.representativeProjector_idem"
@@ -10633,7 +10634,7 @@ audits:
     remaining: []
   certificate_provenance:
     discharged:
-      - "The projector uses canonical normalization computed from assembled primitive object rows, with separate source, operation, object, coefficient, bottom, and observation point/component equations; the accepted native constructor supplies the complete-Hom law witness."
+      - "The projector Hom value is constructed by localWith from normalized core, coefficient, and directed realization points. Its equality to the accepted native reader supplies the complete-Hom law witness; all-query and component evaluations are separate."
       - "Comparison transport uses the accepted main equivalence and direct component squares."
     unresolved: []
   proof_use:
@@ -10649,7 +10650,7 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "Targeted G124TaggedNormalization and G124ComparisonObservationTransport builds: pass; all six namespace audits standard axioms only."
-    - "Initial PR head review rejected III-2 completeness; revised fixed-head review, CI, and final scans remain pending."
+    - "Initial and second PR fixed-head reviews rejected the local projector construction path. A third head with a direct localWith value awaits fixed-head review, CI, and final scans."
   blocking_findings: []
   next_obligation: "After III-2 acceptance, prove design III-3 primitive kernel and G-122 three-case connection."
 ```

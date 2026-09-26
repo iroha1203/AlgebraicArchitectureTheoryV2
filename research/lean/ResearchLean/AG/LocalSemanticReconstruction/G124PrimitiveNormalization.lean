@@ -54,8 +54,8 @@ structure PrimitiveAdmissible {U : AtomCarrier.{u}}
       (primitiveCore data).reading.signatureReading.coordinate
         (canonicalObjectNormalization (primitiveCore data) object) axis
 
-/-- No new axiom is hidden in the expanded predicate: its five primitive
-conditions are precisely the accepted native admissibility conditions. -/
+/-- The expanded predicate has exactly the five accepted native
+admissibility conditions. -/
 theorem admissible_iff_native {U : AtomCarrier.{u}}
     (data : ObjectData.{u, v} U) :
     PrimitiveAdmissible data ↔
@@ -183,19 +183,101 @@ noncomputable def representativeAdmissibleAssembly (U : AtomCarrier.{u}) :
     apply ObjectProperty.hom_ext
     exact (representativeAssemblyFunctor U).map_comp first.hom second.hom
 
-/-- The primitive representative projector reads the independently
-constructed canonical object-normalization map on the geometry assembled
-from this primitive object.  Its source and target are the original local
-object; no native Hom or comparison certificate is supplied as input. -/
+/-- Construct the local representative projector from the normalized core
+map, identity coefficient map, and each directed realization point of the
+primitive object.  The completed native Hom appears only in the proof that
+these points obey the retained local Hom laws. -/
+private noncomputable def primitiveProjectorPoints {U : AtomCarrier.{u}}
+    (data : ObjectData.{u, v} U)
+    (admissible : CanonicalObjectNormalizationAdmissible (assemble data).core) :=
+  NativeReader.localWith .representative
+    (canonicalObjectNormalizationTotal (assemble data).core admissible)
+    (canonicalGeometryNormalizationReadHom (assemble data) admissible).coefficientHom
+    (fun q => nomatch q)
+    (NativeReader.representativeRealizationRead
+      (canonicalObjectNormalizationTotal (assemble data).core admissible)
+      (CompleteGeometryGraphAssembly.realizationSupplyOfGeometry
+        (canonicalGeometryNormalizationReadHom (assemble data) admissible)))
+
+private theorem primitiveProjectorPoints_eq_read {U : AtomCarrier.{u}}
+    (data : ObjectData.{u, v} U)
+    (admissible : CanonicalObjectNormalizationAdmissible (assemble data).core) :
+    primitiveProjectorPoints data admissible =
+      NativeReader.localRepresentative
+        (canonicalGeometryNormalization (assemble data) admissible) := by
+  dsimp only [primitiveProjectorPoints, NativeReader.localRepresentative,
+    canonicalGeometryNormalization]
+  have hco := canonicalGeometryNormalization_coefficientHom (assemble data) admissible
+  dsimp only [canonicalGeometryNormalization] at hco
+  rw [hco]
+  congr 1
+  funext q
+  nomatch q
+
 noncomputable def representativeProjector {U : AtomCarrier.{u}}
     (object : RepresentativeLocalObject.{u, v} U)
     (admissible : representativeAdmissible object) : object ⟶ object := by
   let data := objectData object.localObject
   let nativeAdmissible : CanonicalObjectNormalizationAdmissible (assemble data).core :=
     (admissible_iff_native data).mp admissible
-  let native := canonicalGeometryNormalization (assemble data) nativeAdmissible
-  exact ⟨NativeReader.localRepresentative native,
-    NativeReader.localRepresentative_points data data native⟩
+  exact ⟨primitiveProjectorPoints data nativeAdmissible,
+    (primitiveProjectorPoints_eq_read data nativeAdmissible) ▸
+    NativeReader.localRepresentative_points data data
+    (canonicalGeometryNormalization (assemble data) nativeAdmissible)⟩
+
+private theorem representativeProjector_val_eq_read {U : AtomCarrier.{u}}
+    (object : RepresentativeLocalObject.{u, v} U)
+    (admissible : representativeAdmissible object) :
+    (representativeProjector object admissible).val =
+      NativeReader.localRepresentative
+        (canonicalGeometryNormalization (assemble (objectData object.localObject))
+          ((admissible_iff_native _).mp admissible)) := by
+  change primitiveProjectorPoints (objectData object.localObject)
+    ((admissible_iff_native _).mp admissible) = _
+  exact primitiveProjectorPoints_eq_read _ _
+
+private theorem representativeProjector_eq_read {U : AtomCarrier.{u}}
+    (object : RepresentativeLocalObject.{u, v} U)
+    (admissible : representativeAdmissible object) :
+    representativeProjector object admissible =
+      ⟨NativeReader.localRepresentative
+          (canonicalGeometryNormalization (assemble (objectData object.localObject))
+            ((admissible_iff_native _).mp admissible)),
+        NativeReader.localRepresentative_points _ _ _⟩ := by
+  apply Subtype.ext
+  exact representativeProjector_val_eq_read object admissible
+
+/-- Every local query is evaluated from the primitive normalized core map,
+coefficient component, and directed realization points before native Hom
+reconstruction. -/
+theorem representativeProjector_primitive_point {U : AtomCarrier.{u}}
+    (object : RepresentativeLocalObject.{u, v} U)
+    (admissible : representativeAdmissible object)
+    (query : IndependentGeometryHomPrimitive.Query.{u, v} U .representative) :
+    InvariantWitness.point _ _ (representativeProjector object admissible).val query =
+      NativeReader.readWith .representative
+        (canonicalObjectNormalizationTotal
+          (assemble (objectData object.localObject)).core
+          ((admissible_iff_native _).mp admissible))
+        (canonicalGeometryNormalizationReadHom
+          (assemble (objectData object.localObject))
+          ((admissible_iff_native _).mp admissible)).coefficientHom
+        (fun q => nomatch q)
+        (NativeReader.representativeRealizationRead
+          (canonicalObjectNormalizationTotal
+            (assemble (objectData object.localObject)).core
+            ((admissible_iff_native _).mp admissible))
+          (CompleteGeometryGraphAssembly.realizationSupplyOfGeometry
+            (canonicalGeometryNormalizationReadHom
+              (assemble (objectData object.localObject))
+              ((admissible_iff_native _).mp admissible)))) query := by
+  change InvariantWitness.point _ _
+    (primitiveProjectorPoints (objectData object.localObject)
+      ((admissible_iff_native _).mp admissible)) query = _
+  simp only [primitiveProjectorPoints, NativeReader.point_localWith]
+  congr 1
+  funext q
+  nomatch q
 
 /-- Reading and then assembling the primitive projector gives precisely the
 canonical normalization constructed from that same primitive object. -/
@@ -209,6 +291,7 @@ theorem representativeProjector_assemble {U : AtomCarrier.{u}}
       canonicalGeometryNormalization
         (assemble (objectData object.localObject))
         ((admissible_iff_native _).mp admissible) := by
+  rw [representativeProjector_eq_read]
   exact NativeReader.localRepresentative_assemble _ _ _
 
 /-- Every primitive query of the local projector is the value computed by
@@ -221,7 +304,9 @@ theorem representativeProjector_point {U : AtomCarrier.{u}}
       NativeReader.readRepresentative
         (canonicalGeometryNormalization
           (assemble (objectData object.localObject))
-          ((admissible_iff_native _).mp admissible)) query := rfl
+          ((admissible_iff_native _).mp admissible)) query := by
+  rw [representativeProjector_val_eq_read,
+    NativeReader.point_localRepresentative]
 
 /-- The lower source graph of the local projector is the point reading of
 canonical object normalization on the primitive core. -/
@@ -370,6 +455,7 @@ theorem representativeProjector_idem {U : AtomCarrier.{u}}
   let hn : CanonicalObjectNormalizationAdmissible (assemble d).core :=
     (admissible_iff_native d).mp admissible
   let n := canonicalGeometryNormalization (assemble d) hn
+  rw [representativeProjector_eq_read]
   apply Subtype.ext
   change Composition.representativeLocal d d d
       (NativeReader.localRepresentative n)
