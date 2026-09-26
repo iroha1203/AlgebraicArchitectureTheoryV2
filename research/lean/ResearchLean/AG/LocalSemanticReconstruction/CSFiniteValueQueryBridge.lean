@@ -250,6 +250,27 @@ theorem protocol_effectivenessProgram_primitive_point
   have hstate := congrFun h ⟨⟨vertex,state⟩, Finset.mem_univ _⟩
   simpa [FiniteReading.restrict] using hstate ▸ Iff.rfl
 
+/-- Every actual lens semantic Hom is the extension of its complete finite
+reference-fiber value table. -/
+theorem lens_assemble_restricted_values [Fintype X.Fiber] (f : X ⟶ Y) :
+    LensSemanticFiniteDetermination.assembleTable X Y
+      (FiniteReading.restrict (LensSemanticFiniteDetermination.readLensHomAt X Y)
+        (LensSemanticFiniteDetermination.fullFiber X) f) = f := by
+  apply LensSemanticFiniteDetermination.fullFiber_separates X Y
+  exact LensSemanticFiniteDetermination.restrict_assembleTable X Y _
+
+/-- Every actual protocol semantic Hom is the extension of its independently
+coherent finite vertex table, including all quotient executions. -/
+theorem protocol_assemble_restricted_values
+    [Fintype (ProtocolObservedFiniteDetermination.InputPoint P)]
+    [DecidableEq protocolInput.schema.Vertex] (f : P ⟶ Q) :
+    ProtocolObservedFiniteDetermination.assembleTable P Q
+      (FiniteReading.restrict (ProtocolObservedFiniteDetermination.readProtocolHomAt P Q)
+        (ProtocolObservedFiniteDetermination.fullInput P) f)
+      (ProtocolObservedFiniteDetermination.read_table_coherent P Q f) = f := by
+  apply ProtocolObservedFiniteDetermination.fullInput_separates P Q
+  exact ProtocolObservedFiniteDetermination.restrict_assembleTable P Q _ _
+
 
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.CSFiniteValueQueryBridge
 
