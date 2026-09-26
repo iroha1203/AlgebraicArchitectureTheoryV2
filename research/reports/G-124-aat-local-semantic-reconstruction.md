@@ -11407,7 +11407,7 @@ selection:
   unchecked:
     - "Fixed-head 4-lane standard review, final completion packet and independent final math-lean-review."
 result:
-  proposed_result_type: proof-checkpoint
+  proposed_result_type: rejected
   completion_candidate: no
   proof_obligation_delta: "The first corrected head added C/E1/E2 closure, but the first four-lane review rejected missing C G-120 restriction classification, fixed G-122 section splitting and E2 all-H local group recovery. The second implementation added those conclusions, but the second four-lane review found G-120 reflection classification still absent from the IV-4 proof-use. Cycle 90 is rejected; Cycle 91 retains the same IV-4 PR."
   lean_artifacts:
@@ -11477,17 +11477,17 @@ selection:
   risks: ["Two separate reflection criteria without their native/local iff would leave the main-reader connection unproved.", "The ambient obstruction must remain the actual fixed G-122 element, not a selected replacement."]
   unchecked: ["Fixed-head standard review, final packet and independent completion review."]
 result:
-  proposed_result_type: proof-checkpoint
-  completion_candidate: no
-  proof_obligation_delta: "Both selected statements are implemented from the existing predecessor equivalences and primitive points; focused and targeted validation passed. Formal acceptance is pending."
+  proposed_result_type: proof-obligation-discharged
+  completion_candidate: yes
+  proof_obligation_delta: "Both selected statements are implemented from the existing predecessor equivalences and primitive points; focused and targeted validation passed. The fixed-head standard PR four-lane review and CI passed. Independent cumulative completion review remains."
   lean_artifacts: ["G124MainCClosure.lean: comparison_g120_reflection_transport, fixed_g122_ambient_obstruction_points"]
-  evidence: ["Focused G124MainCClosure.lean check: standard-axiom-only namespace audit for 10 declarations.", "Targeted G124MainTheorem build passed (log SHA256 4983ea9738bc8984fb3db0e595e5128b51f1fbef62f1a83152f1132c6d494a75).", "All 28 main-family declaration axiom prints have only propext, Classical.choice and Quot.sound (log SHA256 36f3d1d73dddc9a37b4216a158b07783d5340d23ebcb2d42239eafbad4367cc7).", "Placeholder, hidden Unicode, local private-path and git diff --check scans passed."]
+  evidence: ["Focused G124MainCClosure.lean check: standard-axiom-only namespace audit for 10 declarations.", "Targeted G124MainTheorem build passed (log SHA256 4983ea9738bc8984fb3db0e595e5128b51f1fbef62f1a83152f1132c6d494a75).", "All 28 main-family declaration axiom prints have only propext, Classical.choice and Quot.sound (log SHA256 36f3d1d73dddc9a37b4216a158b07783d5340d23ebcb2d42239eafbad4367cc7).", "Placeholder, hidden Unicode, local private-path and git diff --check scans passed.", "Standard PR review at head 9a57d75b0: Math A/B and Lean A/B all No major findings; PR comment #issuecomment-5848280494. All PR checks passed."]
   claim_mapping:
     theorem_names: ["G124MainTheorem.comparison_g120_reflection_transport", "G124MainTheorem.fixed_g122_ambient_obstruction_points"]
     source_labels: ["GOAL C; design III-2, III-3 and IV-4"]
     conjuncts: ["Same arbitrary comparison native/local reflection iff and both kernel/image criteria", "Actual fixed ambient element nonmembership with four bottom/coefficient primitive points"]
     undischarged_assumptions: []
-    acceptance_point: "Implementation checkpoint only; review and final completion gates pending."
+    acceptance_point: "Cycle 91 content accepted by four-lane standard PR review at head 9a57d75b0; cumulative completion gate pending."
     port_status: not-applicable
 audits:
   premise_delta:
@@ -11500,12 +11500,12 @@ audits:
     used: ["G124ComparisonObservationTransport.nativeBottomSource_reflection_iff", "G124ComparisonObservationTransport.localBottomSource_reflection_iff", "G124ComparisonTransport.source_compatibility", "G124ProjectionGroupSquare.bottom_fixed_iff", "G124ProjectionGroupSquare.bottom_comparison_mem_iff", "G124PrimitiveKernel.fixedG122PrimitiveAmbientElement_not_restricted_range and four point theorems"]
     unused: []
   structure_field_escape: none-found
-  route_integrity: pending-independent-review
+  route_integrity: pass
   target_fitting: none-found
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs: ["G124MainCClosure.lean and G124MainTheorem.lean focused checks", "Targeted G124MainTheorem build", "28 declaration axiom prints", "static and diff scans"]
   blocking_findings: []
-  next_obligation: "Run targeted validation and new fixed-head four-lane PR review; if accepted, generate the final packet and start a separate cumulative four-lane completion audit."
+  next_obligation: "Generate the same-head final packet and start a separate cumulative four-lane completion audit."
 ```
