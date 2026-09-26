@@ -1,5 +1,7 @@
 import ResearchLean.AG.LocalSemanticReconstruction.G124ComparisonObservationTransport
 import ResearchLean.AG.LocalSemanticReconstruction.G122FullComparisonKernelDecomposition
+import ResearchLean.AG.LocalSemanticReconstruction.G122FullComparisonTwistedGroup
+import ResearchLean.AG.RealizationReconstruction.G122RestrictedAmbientKernelSeparation
 import Formal.Util.AssertStandardAxioms
 
 /-! Local comparison normalization and primitive kernel conditions for
@@ -59,6 +61,16 @@ theorem comparisonArrowEqMulEquiv_val
     (comparisonArrowEqMulEquiv h pair).1 = pair.1 := by
   cases h
   rfl
+
+theorem aut_eq_symm_conjAut_of_comp
+    {C : Type u} [Category C] {X Y : C} (e : X ≅ Y)
+    (a : Aut X) (b : Aut Y)
+    (h : a.hom ≫ e.hom = e.hom ≫ b.hom) :
+    a = e.symm.conjAut b := by
+  apply Iso.ext
+  rw [Iso.conjAut_hom, Iso.conj_apply]
+  simpa only [Iso.symm_inv, Iso.symm_hom, Category.assoc] using
+    (Iso.eq_comp_inv e).mpr h
 
 /-- The accepted representative Hom equivalence restricts to the two
 object-admissible full subcategories without a new condition on morphisms. -/
@@ -740,6 +752,25 @@ noncomputable def fixedG122NativeArrow :=
 noncomputable def fixedG122LocalArrow :=
   (representativeAdmissibleReading fixedG122Carrier).map fixedG122NativeArrow
 
+noncomputable def fixedG122LocalIso :=
+  (representativeAdmissibleReading fixedG122Carrier).mapIso
+    (authoredExactBarAlphaAdmissibleIsoAt
+      finiteAxisFoldBCDatumSquare
+      (Discrete.mk DoubleDiamondTwoCell.second)
+      Int
+      (finiteAxisFoldFixedCoefficientGeometryFamily
+        (Discrete.mk DoubleDiamondTwoCell.second))
+      finiteCanonicalObjectNormalization_admissible)
+
+theorem fixedG122LocalIso_hom : fixedG122LocalIso.hom = fixedG122LocalArrow := rfl
+
+noncomputable def fixedG122NormalizedLocalIso :=
+  (localNormalizationFunctor fixedG122Carrier).mapIso fixedG122LocalIso
+
+theorem fixedG122NormalizedLocalIso_hom :
+    fixedG122NormalizedLocalIso.hom =
+      (localNormalizationFunctor fixedG122Carrier).map fixedG122LocalArrow := rfl
+
 noncomputable abbrev fixedG122Source :=
   authoredExactDirectAdmissibleGeometryAt
     finiteAxisFoldBCDatumSquare
@@ -772,6 +803,48 @@ theorem admissibleAssembly_read_obj {U : AtomCarrier.{u}}
       assemble_objectData_readFragments geometry
     exact ObjectProperty.FullSubcategory.ext hobj
 
+theorem normalizedAssembly_read_obj {U : AtomCarrier.{u}}
+    (G : CanonicalNormalizationAdmissibleGeometry.{u, v} U) :
+    (normalizedRepresentativeAssembly U).obj
+        ((localNormalizationFunctor U).obj
+          ((representativeAdmissibleReading U).obj G)) =
+      (geometryNormalizationFunctor U).obj G :=
+  (normalization_assembly_object U _).trans
+    (congrArg (geometryNormalizationFunctor U).obj
+      (admissibleAssembly_read_obj G))
+
+theorem fixedG122NormalizedSourceEq :
+    (normalizedRepresentativeAssembly fixedG122Carrier).obj
+        ((localNormalizationFunctor fixedG122Carrier).obj
+          ((representativeAdmissibleReading fixedG122Carrier).obj
+            fixedG122Source)) =
+      (geometryNormalizationFunctor fixedG122Carrier).obj fixedG122Source := by
+  rw [normalization_assembly_object]
+  exact congrArg (geometryNormalizationFunctor fixedG122Carrier).obj
+    (admissibleAssembly_read_obj fixedG122Source)
+
+noncomputable def fixedG122NormalizedSourceMulEquiv :
+    Aut ((geometryNormalizationFunctor fixedG122Carrier).obj fixedG122Source) ≃*
+      Aut ((localNormalizationFunctor fixedG122Carrier).obj
+        ((representativeAdmissibleReading fixedG122Carrier).obj
+          fixedG122Source)) :=
+  ((eqToIso fixedG122NormalizedSourceEq).symm.conjAut).trans
+    (fullyFaithfulEndpointAutMulEquiv
+      (normalizedRepresentativeAssembly fixedG122Carrier)
+      (normalizedAssemblyFullyFaithful fixedG122Carrier)
+      ((localNormalizationFunctor fixedG122Carrier).obj
+        ((representativeAdmissibleReading fixedG122Carrier).obj
+          fixedG122Source))).symm
+
+noncomputable def fixedG122NormalizedComparisonEquiv :
+    NormalizedComparison ≃*
+      GeneratedArrowComparisonSubgroup
+        ((localNormalizationFunctor fixedG122Carrier).map
+          fixedG122LocalArrow) :=
+  normalizedComparisonSourceMulEquiv.trans
+    (fixedG122NormalizedSourceMulEquiv.trans
+      (generatedArrowComparisonSourceEquiv fixedG122NormalizedLocalIso).symm)
+
 theorem fullSubcategory_eqToHom_hom {C : Type u} [Category C]
     {P : ObjectProperty C} {X Y : P.FullSubcategory} (h : X = Y) :
     (eqToHom h).hom = eqToHom (congrArg ObjectProperty.FullSubcategory.obj h) := by
@@ -799,6 +872,106 @@ theorem admissibleAssembly_read_map {U : AtomCarrier.{u}}
   simp [representativeEndpointHomEquiv, representativeObjectIso,
     Iso.homCongr, Category.assoc]
 
+theorem normalizedAssembly_read_map {U : AtomCarrier.{u}}
+    {G H : CanonicalNormalizationAdmissibleGeometry.{u, v} U}
+    (c : G ⟶ H) :
+    (normalizedRepresentativeAssembly U).map
+        ((localNormalizationFunctor U).map
+          ((representativeAdmissibleReading U).map c)) ≫
+          eqToHom (normalizedAssembly_read_obj H) =
+      eqToHom (normalizedAssembly_read_obj G) ≫
+        (geometryNormalizationFunctor U).map c := by
+  rw [normalizationAssemblyArrowEq]
+  have h := congrArg (geometryNormalizationFunctor U).map
+    (admissibleAssembly_read_map c)
+  simpa only [Functor.map_comp, eqToHom_map] using h
+
+theorem normalizedAssembly_read_aut {U : AtomCarrier.{u}}
+    (G : CanonicalNormalizationAdmissibleGeometry.{u, v} U)
+    (a : Aut G) :
+    fullyFaithfulEndpointAutMulEquiv
+        (normalizedRepresentativeAssembly U)
+        (normalizedAssemblyFullyFaithful U)
+        ((localNormalizationFunctor U).obj
+          ((representativeAdmissibleReading U).obj G))
+        (functorAutomorphismHom (localNormalizationFunctor U)
+          ((representativeAdmissibleReading U).obj G)
+          (fullyFaithfulEndpointAutMulEquiv
+            (representativeAdmissibleReading U)
+            (admissibleReadingFullyFaithful U) G a)) =
+      (eqToIso (normalizedAssembly_read_obj G)).symm.conjAut
+        (functorAutomorphismHom (geometryNormalizationFunctor U) G a) := by
+  apply aut_eq_symm_conjAut_of_comp
+    (eqToIso (normalizedAssembly_read_obj G))
+  exact normalizedAssembly_read_map a.hom
+
+noncomputable def normalizedEndpointReadingEquiv {U : AtomCarrier.{u}}
+    (G : CanonicalNormalizationAdmissibleGeometry.{u, v} U) :
+    Aut ((geometryNormalizationFunctor U).obj G) ≃*
+      Aut ((localNormalizationFunctor U).obj
+        ((representativeAdmissibleReading U).obj G)) :=
+  ((eqToIso (normalizedAssembly_read_obj G)).symm.conjAut).trans
+    (fullyFaithfulEndpointAutMulEquiv
+      (normalizedRepresentativeAssembly U)
+      (normalizedAssemblyFullyFaithful U)
+      ((localNormalizationFunctor U).obj
+        ((representativeAdmissibleReading U).obj G))).symm
+
+theorem normalizedEndpointReading_square {U : AtomCarrier.{u}}
+    (G : CanonicalNormalizationAdmissibleGeometry.{u, v} U)
+    (a : Aut G) :
+    normalizedEndpointReadingEquiv G
+        (functorAutomorphismHom (geometryNormalizationFunctor U) G a) =
+      functorAutomorphismHom (localNormalizationFunctor U)
+        ((representativeAdmissibleReading U).obj G)
+        (fullyFaithfulEndpointAutMulEquiv
+          (representativeAdmissibleReading U)
+          (admissibleReadingFullyFaithful U) G a) := by
+  let E := fullyFaithfulEndpointAutMulEquiv
+    (normalizedRepresentativeAssembly U)
+    (normalizedAssemblyFullyFaithful U)
+    ((localNormalizationFunctor U).obj
+      ((representativeAdmissibleReading U).obj G))
+  apply E.injective
+  calc
+    E (normalizedEndpointReadingEquiv G
+        (functorAutomorphismHom (geometryNormalizationFunctor U) G a)) =
+      (eqToIso (normalizedAssembly_read_obj G)).symm.conjAut
+        (functorAutomorphismHom (geometryNormalizationFunctor U) G a) :=
+      E.apply_symm_apply _
+    _ = _ := (normalizedAssembly_read_aut G a).symm
+
+theorem fixedG122NormalizedSource_square (a : Aut fixedG122Source) :
+    fixedG122NormalizedSourceMulEquiv
+        (functorAutomorphismHom
+          (geometryNormalizationFunctor fixedG122Carrier)
+          fixedG122Source a) =
+      functorAutomorphismHom
+        (localNormalizationFunctor fixedG122Carrier)
+        ((representativeAdmissibleReading fixedG122Carrier).obj
+          fixedG122Source)
+        (fullyFaithfulEndpointAutMulEquiv
+          (representativeAdmissibleReading fixedG122Carrier)
+          (admissibleReadingFullyFaithful fixedG122Carrier)
+          fixedG122Source a) := by
+  let E := fullyFaithfulEndpointAutMulEquiv
+    (normalizedRepresentativeAssembly fixedG122Carrier)
+    (normalizedAssemblyFullyFaithful fixedG122Carrier)
+    ((localNormalizationFunctor fixedG122Carrier).obj
+      ((representativeAdmissibleReading fixedG122Carrier).obj
+        fixedG122Source))
+  apply E.injective
+  calc
+    E (fixedG122NormalizedSourceMulEquiv
+        (functorAutomorphismHom
+          (geometryNormalizationFunctor fixedG122Carrier)
+          fixedG122Source a)) =
+      (eqToIso fixedG122NormalizedSourceEq).symm.conjAut
+        (functorAutomorphismHom
+          (geometryNormalizationFunctor fixedG122Carrier)
+          fixedG122Source a) := E.apply_symm_apply _
+    _ = _ := (normalizedAssembly_read_aut fixedG122Source a).symm
+
 theorem fixedG122AssemblyReadArrow :
     (representativeAdmissibleAssembly fixedG122Carrier).map
         fixedG122LocalArrow ≫
@@ -813,6 +986,579 @@ noncomputable def fixedG122RawComparisonEquiv :
       GeneratedArrowComparisonSubgroup fixedG122LocalArrow :=
   (nativeRawGeneratedEquiv fixedG122NativeArrow).trans
     (admissibleRawComparisonEquiv fixedG122NativeArrow)
+
+theorem fixedG122Restriction_source (raw : RawComparison) :
+    normalizedComparisonSourceMulEquiv (restrictionHom raw) =
+      functorAutomorphismHom
+        (geometryNormalizationFunctor fixedG122Carrier)
+        fixedG122Source raw.1.1 := rfl
+
+theorem fixedG122LocalNormalization_source (raw : RawComparison) :
+    generatedArrowComparisonSourceEquiv fixedG122NormalizedLocalIso
+      (localComparisonNormalization fixedG122LocalArrow
+        (fixedG122RawComparisonEquiv raw)) =
+      functorAutomorphismHom
+        (localNormalizationFunctor fixedG122Carrier)
+        ((representativeAdmissibleReading fixedG122Carrier).obj
+          fixedG122Source)
+        (fullyFaithfulEndpointAutMulEquiv
+          (representativeAdmissibleReading fixedG122Carrier)
+          (admissibleReadingFullyFaithful fixedG122Carrier)
+          fixedG122Source raw.1.1) := rfl
+
+/-- The G-122 restriction and the primitive local normalization form the
+fixed comparison-group square on the unchanged finite-axis-fold input. -/
+theorem fixedG122Normalization_commutes (raw : RawComparison) :
+    fixedG122NormalizedComparisonEquiv (restrictionHom raw) =
+      localComparisonNormalization fixedG122LocalArrow
+        (fixedG122RawComparisonEquiv raw) := by
+  apply (generatedArrowComparisonSourceEquiv fixedG122NormalizedLocalIso).injective
+  calc
+    _ = fixedG122NormalizedSourceMulEquiv
+        (normalizedComparisonSourceMulEquiv (restrictionHom raw)) :=
+      (generatedArrowComparisonSourceEquiv
+        fixedG122NormalizedLocalIso).apply_symm_apply _
+    _ = fixedG122NormalizedSourceMulEquiv
+        (functorAutomorphismHom
+          (geometryNormalizationFunctor fixedG122Carrier)
+          fixedG122Source raw.1.1) := by
+      rw [fixedG122Restriction_source]
+    _ = functorAutomorphismHom
+        (localNormalizationFunctor fixedG122Carrier)
+        ((representativeAdmissibleReading fixedG122Carrier).obj
+          fixedG122Source)
+        (fullyFaithfulEndpointAutMulEquiv
+          (representativeAdmissibleReading fixedG122Carrier)
+          (admissibleReadingFullyFaithful fixedG122Carrier)
+          fixedG122Source raw.1.1) :=
+      fixedG122NormalizedSource_square raw.1.1
+    _ = _ := (fixedG122LocalNormalization_source raw).symm
+
+/-- G-122's full restricted kernel is precisely the kernel classified by
+the primitive local forward/backward Hom conditions. -/
+noncomputable def fixedG122RestrictedKernelMulEquiv :
+    FullKernel ≃* (localComparisonNormalization fixedG122LocalArrow).ker :=
+  RestrictionKernelFiberTransport.kernelMulEquiv
+    restrictionHom (localComparisonNormalization fixedG122LocalArrow)
+    fixedG122RawComparisonEquiv fixedG122NormalizedComparisonEquiv
+    (fun raw => (fixedG122Normalization_commutes raw).symm)
+
+noncomputable def fixedG122PrimitiveKernelMulEquiv :
+    FullKernel ≃* PrimitiveKernelCode fixedG122LocalArrow :=
+  fixedG122RestrictedKernelMulEquiv.trans
+    (primitiveKernelMulEquiv fixedG122LocalArrow).symm
+
+/-- The G-122 canonical section transported to the actual primitive local
+comparison group. -/
+noncomputable def fixedG122LocalSectionHom :
+    GeneratedArrowComparisonSubgroup
+        ((localNormalizationFunctor fixedG122Carrier).map
+          fixedG122LocalArrow) →*
+      GeneratedArrowComparisonSubgroup fixedG122LocalArrow :=
+  fixedG122RawComparisonEquiv.toMonoidHom.comp
+    (canonicalSectionHom.comp
+      fixedG122NormalizedComparisonEquiv.symm.toMonoidHom)
+
+theorem fixedG122LocalSection_rightInverse
+    (normalized : GeneratedArrowComparisonSubgroup
+      ((localNormalizationFunctor fixedG122Carrier).map
+        fixedG122LocalArrow)) :
+    localComparisonNormalization fixedG122LocalArrow
+        (fixedG122LocalSectionHom normalized) = normalized := by
+  calc
+    _ = fixedG122NormalizedComparisonEquiv
+      (restrictionHom
+        (canonicalSectionHom
+          (fixedG122NormalizedComparisonEquiv.symm normalized))) :=
+      (fixedG122Normalization_commutes _).symm
+    _ = fixedG122NormalizedComparisonEquiv
+      (fixedG122NormalizedComparisonEquiv.symm normalized) := by
+      rw [restriction_canonicalSection]
+    _ = normalized := fixedG122NormalizedComparisonEquiv.apply_symm_apply normalized
+
+theorem fixedG122LocalNormalization_surjective :
+    Function.Surjective
+      (localComparisonNormalization fixedG122LocalArrow) := by
+  intro normalized
+  exact ⟨fixedG122LocalSectionHom normalized,
+    fixedG122LocalSection_rightInverse normalized⟩
+
+/-- The fixed local normalization has a split short exact sequence with its
+entire restricted kernel, identified below with the primitive four-Hom code. -/
+theorem fixedG122Local_shortExact :
+    AAT.AG.ComparisonInformationLoss.IsGroupShortExact
+      (localComparisonNormalization fixedG122LocalArrow).ker.subtype
+      (localComparisonNormalization fixedG122LocalArrow) := by
+  exact ⟨Subtype.val_injective, by
+    rw [MonoidHom.mulExact_iff]
+    exact ((localComparisonNormalization fixedG122LocalArrow).ker.range_subtype).symm,
+    fixedG122LocalNormalization_surjective⟩
+
+/-- The unique right displacement of a local raw comparison from its
+canonical section lift. -/
+noncomputable def fixedG122LocalDisplacement
+    (raw : GeneratedArrowComparisonSubgroup fixedG122LocalArrow) :
+    (localComparisonNormalization fixedG122LocalArrow).ker := by
+  refine ⟨(fixedG122LocalSectionHom
+      (localComparisonNormalization fixedG122LocalArrow raw))⁻¹ * raw, ?_⟩
+  apply MonoidHom.mem_ker.mpr
+  rw [map_mul, map_inv, fixedG122LocalSection_rightInverse]
+  simp
+
+theorem fixedG122LocalRead_assemble
+    (raw : GeneratedArrowComparisonSubgroup fixedG122LocalArrow) :
+    fixedG122LocalSectionHom
+        (localComparisonNormalization fixedG122LocalArrow raw) *
+      (fixedG122LocalDisplacement raw).1 = raw := by
+  simp [fixedG122LocalDisplacement]
+
+theorem fixedG122LocalDisplacement_formula
+    (raw : GeneratedArrowComparisonSubgroup fixedG122LocalArrow) :
+    (fixedG122LocalDisplacement raw).1 =
+      (fixedG122LocalSectionHom
+        (localComparisonNormalization fixedG122LocalArrow raw))⁻¹ * raw := rfl
+
+/-- The right-kernel multiplication includes conjugation by the second
+normalized coordinate, matching G-122's opposite-kernel convention. -/
+theorem fixedG122LocalDisplacement_mul
+    (first second : GeneratedArrowComparisonSubgroup fixedG122LocalArrow) :
+    (fixedG122LocalDisplacement (first * second)).1 =
+      (fixedG122LocalSectionHom
+        (localComparisonNormalization fixedG122LocalArrow second))⁻¹ *
+      (fixedG122LocalDisplacement first).1 *
+      fixedG122LocalSectionHom
+        (localComparisonNormalization fixedG122LocalArrow second) *
+      (fixedG122LocalDisplacement second).1 := by
+  rw [fixedG122LocalDisplacement_formula,
+    map_mul, map_mul, fixedG122LocalDisplacement_formula,
+    fixedG122LocalDisplacement_formula]
+  group
+
+/-- Fixed G-122 coordinates after replacing the complete restriction-kernel
+leaf by the independent four-Hom primitive kernel code. -/
+structure FixedPrimitiveTwistedCode where
+  kernel : (PrimitiveKernelCode fixedG122LocalArrow)ᵐᵒᵖ
+  normalized : GeneratedArrowComparisonSubgroup
+    ((localNormalizationFunctor fixedG122Carrier).map fixedG122LocalArrow)
+
+noncomputable def fixedPrimitiveTwistedEquiv :
+    G122FullComparisonTwistedGroup.TwistedCode ≃
+      FixedPrimitiveTwistedCode where
+  toFun code :=
+    ⟨MulOpposite.op
+      (fixedG122PrimitiveKernelMulEquiv (MulOpposite.unop code.kernel)),
+     fixedG122NormalizedComparisonEquiv code.normalized⟩
+  invFun code :=
+    ⟨MulOpposite.op
+      (fixedG122PrimitiveKernelMulEquiv.symm
+        (MulOpposite.unop code.kernel)),
+     fixedG122NormalizedComparisonEquiv.symm code.normalized⟩
+  left_inv code := by
+    cases code
+    simp only [MulOpposite.unop_op, MulOpposite.op_unop,
+      fixedG122PrimitiveKernelMulEquiv.symm_apply_apply,
+      fixedG122NormalizedComparisonEquiv.symm_apply_apply]
+  right_inv code := by
+    cases code
+    simp only [MulOpposite.unop_op, MulOpposite.op_unop,
+      fixedG122PrimitiveKernelMulEquiv.apply_symm_apply,
+      fixedG122NormalizedComparisonEquiv.apply_symm_apply]
+
+noncomputable instance : Group FixedPrimitiveTwistedCode :=
+  fixedPrimitiveTwistedEquiv.symm.group
+
+noncomputable def fixedPrimitiveTwistedMulEquiv :
+    FixedPrimitiveTwistedCode ≃*
+      GeneratedArrowComparisonSubgroup fixedG122LocalArrow :=
+  { toEquiv := fixedPrimitiveTwistedEquiv.symm.trans
+      (G122FullComparisonTwistedGroup.twistedCodeMulEquiv.toEquiv.trans
+        fixedG122RawComparisonEquiv.toEquiv)
+    map_mul' first second := by
+      change fixedG122RawComparisonEquiv
+          (G122FullComparisonTwistedGroup.twistedCodeMulEquiv
+            (fixedPrimitiveTwistedEquiv.symm (first * second))) =
+        fixedG122RawComparisonEquiv
+          (G122FullComparisonTwistedGroup.twistedCodeMulEquiv
+            (fixedPrimitiveTwistedEquiv.symm first)) *
+        fixedG122RawComparisonEquiv
+          (G122FullComparisonTwistedGroup.twistedCodeMulEquiv
+            (fixedPrimitiveTwistedEquiv.symm second))
+      rw [show fixedPrimitiveTwistedEquiv.symm (first * second) =
+        fixedPrimitiveTwistedEquiv.symm first *
+          fixedPrimitiveTwistedEquiv.symm second from by
+        change fixedPrimitiveTwistedEquiv.symm
+          (fixedPrimitiveTwistedEquiv
+            (fixedPrimitiveTwistedEquiv.symm first *
+              fixedPrimitiveTwistedEquiv.symm second)) = _
+        exact fixedPrimitiveTwistedEquiv.symm_apply_apply _]
+      rw [map_mul, map_mul] }
+
+/-- Read a complete local comparison into one primitive restricted-kernel
+coordinate and one locally normalized coordinate. -/
+noncomputable def fixedPrimitiveTwistedRead
+    (raw : GeneratedArrowComparisonSubgroup fixedG122LocalArrow) :
+    FixedPrimitiveTwistedCode :=
+  fixedPrimitiveTwistedMulEquiv.symm raw
+
+/-- Assemble both independent primitive coordinates into a complete local
+comparison element. -/
+noncomputable def fixedPrimitiveTwistedAssemble
+    (code : FixedPrimitiveTwistedCode) :
+    GeneratedArrowComparisonSubgroup fixedG122LocalArrow :=
+  fixedPrimitiveTwistedMulEquiv code
+
+theorem fixedPrimitiveTwistedRead_assemble (code : FixedPrimitiveTwistedCode) :
+    fixedPrimitiveTwistedRead (fixedPrimitiveTwistedAssemble code) = code :=
+  fixedPrimitiveTwistedMulEquiv.symm_apply_apply code
+
+theorem fixedPrimitiveTwistedAssemble_read
+    (raw : GeneratedArrowComparisonSubgroup fixedG122LocalArrow) :
+    fixedPrimitiveTwistedAssemble (fixedPrimitiveTwistedRead raw) = raw :=
+  fixedPrimitiveTwistedMulEquiv.apply_symm_apply raw
+
+theorem fixedG122PrimitiveKernel_read_assemble
+    (code : PrimitiveKernelCode fixedG122LocalArrow) :
+    fixedG122PrimitiveKernelMulEquiv
+        (fixedG122PrimitiveKernelMulEquiv.symm code) = code :=
+  fixedG122PrimitiveKernelMulEquiv.apply_symm_apply code
+
+theorem fixedG122PrimitiveKernel_assemble_read (kernel : FullKernel) :
+    fixedG122PrimitiveKernelMulEquiv.symm
+        (fixedG122PrimitiveKernelMulEquiv kernel) = kernel :=
+  fixedG122PrimitiveKernelMulEquiv.symm_apply_apply kernel
+
+/-- All fixed G-122 lift fibers, with the actual normalized comparison
+coordinate transported to the primitive local group. -/
+noncomputable def fixedG122FiberEquiv (normalized : NormalizedComparison) :
+    RestrictionKernelFiberTransport.Fiber restrictionHom normalized ≃
+      RestrictionKernelFiberTransport.Fiber
+        (localComparisonNormalization fixedG122LocalArrow)
+        (fixedG122NormalizedComparisonEquiv normalized) :=
+  RestrictionKernelFiberTransport.fiberEquiv
+    restrictionHom (localComparisonNormalization fixedG122LocalArrow)
+    fixedG122RawComparisonEquiv fixedG122NormalizedComparisonEquiv
+    (fun raw => (fixedG122Normalization_commutes raw).symm)
+    normalized
+
+theorem fixedG122FiberEquiv_smul (normalized : NormalizedComparison)
+    (kernel : FullKernelᵐᵒᵖ)
+    (point : RestrictionKernelFiberTransport.Fiber
+      restrictionHom normalized) :
+    fixedG122FiberEquiv normalized
+        (RestrictionKernelFiberTransport.rightKernelAction
+          restrictionHom normalized kernel point) =
+      RestrictionKernelFiberTransport.rightKernelAction
+        (localComparisonNormalization fixedG122LocalArrow)
+        (fixedG122NormalizedComparisonEquiv normalized)
+        (MulOpposite.op
+          (fixedG122RestrictedKernelMulEquiv (MulOpposite.unop kernel)))
+        (fixedG122FiberEquiv normalized point) :=
+  RestrictionKernelFiberTransport.fiberEquiv_smul
+    restrictionHom (localComparisonNormalization fixedG122LocalArrow)
+    fixedG122RawComparisonEquiv fixedG122NormalizedComparisonEquiv
+    (fun raw => (fixedG122Normalization_commutes raw).symm)
+    normalized kernel point
+
+/-- Any two primitive local lifts of the same normalized comparison differ
+by exactly one restricted-kernel element. -/
+theorem fixedG122LocalFiber_existsUnique_kernel
+    (normalized : GeneratedArrowComparisonSubgroup
+      ((localNormalizationFunctor fixedG122Carrier).map fixedG122LocalArrow))
+    (first second : RestrictionKernelFiberTransport.Fiber
+      (localComparisonNormalization fixedG122LocalArrow) normalized) :
+    ∃! kernel : ((localComparisonNormalization fixedG122LocalArrow).ker)ᵐᵒᵖ,
+      RestrictionKernelFiberTransport.rightKernelAction
+        (localComparisonNormalization fixedG122LocalArrow) normalized
+        kernel first = second :=
+  RestrictionKernelFiberTransport.fiber_existsUnique_smul_eq
+    (localComparisonNormalization fixedG122LocalArrow) normalized first second
+
+noncomputable def fixedG122EndpointEquiv :
+    (Aut fixedG122Source × Aut fixedG122Target) ≃*
+      (Aut ((representativeAdmissibleReading fixedG122Carrier).obj
+          fixedG122Source) ×
+        Aut ((representativeAdmissibleReading fixedG122Carrier).obj
+          fixedG122Target)) :=
+  (fullyFaithfulEndpointAutMulEquiv
+    (representativeAdmissibleReading fixedG122Carrier)
+    (admissibleReadingFullyFaithful fixedG122Carrier)
+    fixedG122Source).prodCongr
+    (fullyFaithfulEndpointAutMulEquiv
+      (representativeAdmissibleReading fixedG122Carrier)
+      (admissibleReadingFullyFaithful fixedG122Carrier)
+      fixedG122Target)
+
+noncomputable def fixedG122NormalizedEndpointEquiv :
+    (Aut ((geometryNormalizationFunctor fixedG122Carrier).obj
+        fixedG122Source) ×
+      Aut ((geometryNormalizationFunctor fixedG122Carrier).obj
+        fixedG122Target)) ≃*
+      (Aut ((localNormalizationFunctor fixedG122Carrier).obj
+          ((representativeAdmissibleReading fixedG122Carrier).obj
+            fixedG122Source)) ×
+        Aut ((localNormalizationFunctor fixedG122Carrier).obj
+          ((representativeAdmissibleReading fixedG122Carrier).obj
+            fixedG122Target))) :=
+  (normalizedEndpointReadingEquiv fixedG122Source).prodCongr
+    (normalizedEndpointReadingEquiv fixedG122Target)
+
+theorem fixedG122AmbientNormalization_commutes
+    (pair : Aut fixedG122Source × Aut fixedG122Target) :
+    fixedG122NormalizedEndpointEquiv
+        (geometryNormalizationEndpointAutomorphismHom
+          fixedG122Source fixedG122Target pair) =
+      localEndpointNormalization
+        ((representativeAdmissibleReading fixedG122Carrier).obj
+          fixedG122Source)
+        ((representativeAdmissibleReading fixedG122Carrier).obj
+          fixedG122Target)
+        (fixedG122EndpointEquiv pair) := by
+  apply Prod.ext
+  · exact normalizedEndpointReading_square fixedG122Source pair.1
+  · exact normalizedEndpointReading_square fixedG122Target pair.2
+
+/-- The ambient endpoint kernel is transported separately from the
+comparison-preserving restricted kernel. -/
+noncomputable def fixedG122AmbientKernelMulEquiv :
+    (geometryNormalizationEndpointAutomorphismHom
+      fixedG122Source fixedG122Target).ker ≃*
+      (localEndpointNormalization
+        ((representativeAdmissibleReading fixedG122Carrier).obj
+          fixedG122Source)
+        ((representativeAdmissibleReading fixedG122Carrier).obj
+          fixedG122Target)).ker :=
+  RestrictionKernelFiberTransport.kernelMulEquiv
+    (geometryNormalizationEndpointAutomorphismHom
+      fixedG122Source fixedG122Target)
+    (localEndpointNormalization
+      ((representativeAdmissibleReading fixedG122Carrier).obj
+        fixedG122Source)
+      ((representativeAdmissibleReading fixedG122Carrier).obj
+        fixedG122Target))
+    fixedG122EndpointEquiv fixedG122NormalizedEndpointEquiv
+    (fun pair => (fixedG122AmbientNormalization_commutes pair).symm)
+
+noncomputable def fixedG122PrimitiveAmbientKernelMulEquiv :
+    (geometryNormalizationEndpointAutomorphismHom
+      fixedG122Source fixedG122Target).ker ≃*
+      (PrimitiveEndpointKernelCode
+          ((representativeAdmissibleReading fixedG122Carrier).obj
+            fixedG122Source) ×
+        PrimitiveEndpointKernelCode
+          ((representativeAdmissibleReading fixedG122Carrier).obj
+            fixedG122Target)) :=
+  fixedG122AmbientKernelMulEquiv.trans
+    (primitiveAmbientKernelMulEquiv _ _).symm
+
+theorem fixedG122RestrictedAmbient_square (kernel : FullKernel) :
+    fixedG122AmbientKernelMulEquiv
+        (geometryComparisonRestrictedKernelToAmbientKernel
+          fixedG122NativeArrow kernel) =
+      localRestrictedToAmbient fixedG122LocalArrow
+        (fixedG122RestrictedKernelMulEquiv kernel) := by
+  apply Subtype.ext
+  rfl
+
+noncomputable def fixedG122LocalAmbientElement :
+    (localEndpointNormalization
+      ((representativeAdmissibleReading fixedG122Carrier).obj
+        fixedG122Source)
+      ((representativeAdmissibleReading fixedG122Carrier).obj
+        fixedG122Target)).ker :=
+  fixedG122AmbientKernelMulEquiv
+    FiniteAxisFoldRestrictedAmbientKernel.ambientElement
+
+theorem fixedG122LocalAmbientElement_not_restricted_range :
+    fixedG122LocalAmbientElement ∉
+      (localRestrictedToAmbient fixedG122LocalArrow).range := by
+  rintro ⟨localKernel, equality⟩
+  let nativeKernel := fixedG122RestrictedKernelMulEquiv.symm localKernel
+  have hnative :
+      geometryComparisonRestrictedKernelToAmbientKernel
+        fixedG122NativeArrow nativeKernel =
+        FiniteAxisFoldRestrictedAmbientKernel.ambientElement := by
+    apply fixedG122AmbientKernelMulEquiv.injective
+    rw [fixedG122RestrictedAmbient_square]
+    simpa [nativeKernel, fixedG122LocalAmbientElement] using equality
+  exact FiniteAxisFoldRestrictedAmbientKernel.ambientElement_not_mem_restrictedKernel_range
+    ⟨nativeKernel, hnative⟩
+
+noncomputable def fixedG122PrimitiveAmbientElement :=
+  fixedG122PrimitiveAmbientKernelMulEquiv
+    FiniteAxisFoldRestrictedAmbientKernel.ambientElement
+
+theorem fixedG122PrimitiveAmbientElement_not_restricted_range :
+    fixedG122PrimitiveAmbientElement ∉
+      (primitiveRestrictedToAmbient fixedG122LocalArrow).range := by
+  rintro ⟨code, equality⟩
+  apply fixedG122LocalAmbientElement_not_restricted_range
+  refine ⟨primitiveKernelMulEquiv fixedG122LocalArrow code, ?_⟩
+  calc
+    localRestrictedToAmbient fixedG122LocalArrow
+        (primitiveKernelMulEquiv fixedG122LocalArrow code) =
+      primitiveAmbientKernelMulEquiv _ _
+        (primitiveRestrictedToAmbient fixedG122LocalArrow code) :=
+      (primitiveRestrictedToAmbient_square fixedG122LocalArrow code).symm
+    _ = primitiveAmbientKernelMulEquiv _ _
+        fixedG122PrimitiveAmbientElement := by rw [equality]
+    _ = fixedG122LocalAmbientElement := by
+      exact (primitiveAmbientKernelMulEquiv _ _).apply_symm_apply _
+
+theorem fixedG122PrimitiveAmbientElement_sourceForward :
+    fixedG122PrimitiveAmbientElement.1.forward =
+      (representativeAdmissibleReading fixedG122Carrier).map
+        FiniteAxisFoldRestrictedAmbientKernel.ambientElement.1.1.hom := rfl
+
+theorem fixedG122PrimitiveAmbientElement_targetForward :
+    fixedG122PrimitiveAmbientElement.2.forward =
+      (representativeAdmissibleReading fixedG122Carrier).map
+        FiniteAxisFoldRestrictedAmbientKernel.ambientElement.1.2.hom := rfl
+
+theorem fixedG122Ambient_sourceQuery
+    (q : IndependentCarrierGraph.Query) :
+    IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        FiniteAxisFoldRestrictedAmbientKernel.ambientElement.1.1.hom.hom
+        (.source q) =
+      IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        (𝟙 fixedG122Source.obj) (.source q) := by
+  have h := FiniteAxisFoldRestrictedAmbientKernel.ambientElement_bottom_coefficient_packet.1
+  change IndependentCarrierGraph.read _ _
+      FiniteAxisFoldRestrictedAmbientKernel.ambientElement.1.1.hom.hom.base.base.doctrineHom.sourceMap q =
+    IndependentCarrierGraph.read _ _
+      (𝟙 fixedG122Source.obj : GeometryTotalHom _ _).base.base.doctrineHom.sourceMap q
+  dsimp only [FiniteAxisFoldRestrictedAmbientKernel.ambientElement]
+  rw [h]
+  rfl
+
+theorem fixedG122Ambient_coefficientQuery
+    (q : IndependentCarrierGraph.Query) :
+    IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        FiniteAxisFoldRestrictedAmbientKernel.ambientElement.1.1.hom.hom
+        (.coefficient q) =
+      IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        (𝟙 fixedG122Source.obj) (.coefficient q) := by
+  have h := FiniteAxisFoldRestrictedAmbientKernel.ambientElement_bottom_coefficient_packet.2.1
+  change IndependentCarrierGraph.read _ _
+      FiniteAxisFoldRestrictedAmbientKernel.ambientElement.1.1.hom.hom.geometry.coefficientHom q =
+    IndependentCarrierGraph.read _ _
+      (𝟙 fixedG122Source.obj : GeometryTotalHom _ _).geometry.coefficientHom q
+  dsimp only [FiniteAxisFoldRestrictedAmbientKernel.ambientElement]
+  rw [h]
+  rfl
+
+theorem fixedG122Ambient_targetSourceQuery
+    (q : IndependentCarrierGraph.Query) :
+    IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        FiniteAxisFoldRestrictedAmbientKernel.ambientElement.1.2.hom.hom
+        (.source q) =
+      IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        (𝟙 fixedG122Target.obj) (.source q) := by
+  have h := FiniteAxisFoldRestrictedAmbientKernel.ambientElement_bottom_coefficient_packet.2.2.1
+  change IndependentCarrierGraph.read _ _
+      FiniteAxisFoldRestrictedAmbientKernel.ambientElement.1.2.hom.hom.base.base.doctrineHom.sourceMap q =
+    IndependentCarrierGraph.read _ _
+      (𝟙 fixedG122Target.obj : GeometryTotalHom _ _).base.base.doctrineHom.sourceMap q
+  dsimp only [FiniteAxisFoldRestrictedAmbientKernel.ambientElement]
+  rw [h]
+  rfl
+
+theorem fixedG122Ambient_targetCoefficientQuery
+    (q : IndependentCarrierGraph.Query) :
+    IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        FiniteAxisFoldRestrictedAmbientKernel.ambientElement.1.2.hom.hom
+        (.coefficient q) =
+      IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        (𝟙 fixedG122Target.obj) (.coefficient q) := by
+  have h := FiniteAxisFoldRestrictedAmbientKernel.ambientElement_bottom_coefficient_packet.2.2.2
+  change IndependentCarrierGraph.read _ _
+      FiniteAxisFoldRestrictedAmbientKernel.ambientElement.1.2.hom.hom.geometry.coefficientHom q =
+    IndependentCarrierGraph.read _ _
+      (𝟙 fixedG122Target.obj : GeometryTotalHom _ _).geometry.coefficientHom q
+  dsimp only [FiniteAxisFoldRestrictedAmbientKernel.ambientElement]
+  rw [h]
+  rfl
+
+theorem fixedG122PrimitiveAmbient_sourcePoint
+    (q : IndependentCarrierGraph.Query) :
+    IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        fixedG122PrimitiveAmbientElement.1.forward.hom.val (.source q) =
+      IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        ((representativeAdmissibleReading fixedG122Carrier).map
+          (𝟙 fixedG122Source)).hom.val (.source q) := by
+  calc
+    _ = IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        FiniteAxisFoldRestrictedAmbientKernel.ambientElement.1.1.hom.hom
+        (.source q) := by
+      rw [fixedG122PrimitiveAmbientElement_sourceForward]
+      exact representativeReadingHomEquiv_point _ (.source q)
+    _ = IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        (𝟙 fixedG122Source.obj) (.source q) :=
+      fixedG122Ambient_sourceQuery q
+    _ = _ := by
+      exact (representativeReadingHomEquiv_point
+        (𝟙 fixedG122Source.obj) (.source q)).symm
+
+
+
+theorem fixedG122PrimitiveAmbient_source_coefficientPoint
+    (q : IndependentCarrierGraph.Query) :
+    IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        fixedG122PrimitiveAmbientElement.1.forward.hom.val (.coefficient q) =
+      IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        ((representativeAdmissibleReading fixedG122Carrier).map
+          (𝟙 fixedG122Source)).hom.val (.coefficient q) := by
+  calc
+    _ = IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        FiniteAxisFoldRestrictedAmbientKernel.ambientElement.1.1.hom.hom
+        (.coefficient q) := by
+      rw [fixedG122PrimitiveAmbientElement_sourceForward]
+      exact representativeReadingHomEquiv_point _ (.coefficient q)
+    _ = IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        (𝟙 fixedG122Source.obj) (.coefficient q) :=
+      fixedG122Ambient_coefficientQuery q
+    _ = _ := by
+      exact (representativeReadingHomEquiv_point
+        (𝟙 fixedG122Source.obj) (.coefficient q)).symm
+
+theorem fixedG122PrimitiveAmbient_target_sourcePoint
+    (q : IndependentCarrierGraph.Query) :
+    IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        fixedG122PrimitiveAmbientElement.2.forward.hom.val (.source q) =
+      IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        ((representativeAdmissibleReading fixedG122Carrier).map
+          (𝟙 fixedG122Target)).hom.val (.source q) := by
+  calc
+    _ = IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        FiniteAxisFoldRestrictedAmbientKernel.ambientElement.1.2.hom.hom
+        (.source q) := by
+      rw [fixedG122PrimitiveAmbientElement_targetForward]
+      exact representativeReadingHomEquiv_point _ (.source q)
+    _ = IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        (𝟙 fixedG122Target.obj) (.source q) :=
+      fixedG122Ambient_targetSourceQuery q
+    _ = _ := by
+      exact (representativeReadingHomEquiv_point
+        (𝟙 fixedG122Target.obj) (.source q)).symm
+
+theorem fixedG122PrimitiveAmbient_target_coefficientPoint
+    (q : IndependentCarrierGraph.Query) :
+    IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        fixedG122PrimitiveAmbientElement.2.forward.hom.val (.coefficient q) =
+      IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        ((representativeAdmissibleReading fixedG122Carrier).map
+          (𝟙 fixedG122Target)).hom.val (.coefficient q) := by
+  calc
+    _ = IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        FiniteAxisFoldRestrictedAmbientKernel.ambientElement.1.2.hom.hom
+        (.coefficient q) := by
+      rw [fixedG122PrimitiveAmbientElement_targetForward]
+      exact representativeReadingHomEquiv_point _ (.coefficient q)
+    _ = IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        (𝟙 fixedG122Target.obj) (.coefficient q) :=
+      fixedG122Ambient_targetCoefficientQuery q
+    _ = _ := by
+      exact (representativeReadingHomEquiv_point
+        (𝟙 fixedG122Target.obj) (.coefficient q)).symm
 
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G124PrimitiveKernel
 
