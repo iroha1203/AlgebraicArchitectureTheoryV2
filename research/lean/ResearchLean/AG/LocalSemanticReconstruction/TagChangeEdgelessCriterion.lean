@@ -75,6 +75,18 @@ theorem finite_determining_iff :
   exact (FinitePermutationReadingCriteria.exists_finite_determining_iff
     graph Bool identity).trans component_finite_iff
 
+/-- The actual architecture-object index is infinite, so the same D
+predicate admits no finite determining reading on the tagged graph. -/
+theorem no_finite_determining :
+    ¬ ∃ S : Finset graph.Vertex,
+      FiniteReading.Determining
+        (FinitePermutationReadingCriteria.readAt graph Bool identity) S
+        (FinitePermutationReadingCriteria.EdgeCoherent graph Bool S) := by
+  intro h
+  letI : Finite TagChange.TaggedArchitectureIndex :=
+    finite_determining_iff.mp h
+  exact not_finite TagChange.TaggedArchitectureIndex
+
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeEdgelessCriterion
 
 end TagChangeEdgelessCriterion

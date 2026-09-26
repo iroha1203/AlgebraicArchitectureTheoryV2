@@ -23,6 +23,13 @@ noncomputable def t : (reading TagParameter).obj X ⟶ (reading TagParameter).ob
 noncomputable def e : (reading TagParameter).obj X ⟶ (reading TagParameter).obj X :=
   (reading TagParameter).map taggedNormalizationNativeHom
 
+/-- The uniform flip is the member of the same coherent-family section map
+used for every tagged source choice. -/
+theorem t_eq_J_true :
+    t = TagChangeMainRecovery.J (TagChange.read (fun _ => true)) := by
+  rw [TagChangeMainRecovery.J_eq_read_assembled]
+  simp [t]
+
 theorem native_t_square :
     taggedSourceChoiceNativeHom (fun _ => true) ≫
         taggedSourceChoiceNativeHom (fun _ => true) = 𝟙 X := by
