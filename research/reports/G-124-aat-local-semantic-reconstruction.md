@@ -10447,7 +10447,7 @@ focused checkで確認した。固定head `dcf3e951d533f8d2530c3ea0dc0a5be2e7dcf
 A/B・パートII限定完了判定とmerge証拠は、この台帳headを対象にIssue #4711へ記録する。
 G-124全体はC–Eが残るため、Cycle 79の`proof-checkpoint`を維持する。
 
-## Cycle 80 proposal: D finite vertex reading
+## Cycle 80 proposal: IV-1 finite determination and effectiveness
 
 ```yaml
 ledger_type: target_cycle_result
@@ -10463,14 +10463,18 @@ selection:
     - "PermutationRestriction.restrictPreservingChange_injective_iff_meetsEveryFullComponent"
     - "PermutationRestriction.restrictPreservingChange_surjective_iff_retainsFullConnectivity"
     - "FiniteCoherentExtension.componentFamilyEquivCoherentVertexTable"
-  proof_obligation: "D: identify arbitrary finite raw vertex readings with the accepted component criteria"
-  selection_reason: "The accepted component theorems do not yet state the GOAL's common FiniteReading properties for an arbitrary finite vertex set."
+  proof_obligation: "IV-1: identify the general finite raw vertex reading with D's component criteria, finite point graph, executable extension, and accepted finite counts"
+  selection_reason: "The accepted component criteria, primitive graph presentation, and finite program need a shared FiniteReading interface on the same actual changes and selected vertices."
   expected_result_type: proof-obligation-discharged
   lean_targets:
     - "FinitePermutationReadingCriteria.separates_iff"
     - "FinitePermutationReadingCriteria.extends_iff"
     - "FinitePermutationReadingCriteria.determining_iff"
     - "FinitePermutationReadingCriteria.exists_finite_determining_iff"
+    - "FinitePermutationPointGraph.finitePointTable_injective"
+    - "FinitePermutationReadingEffectiveness.effectivenessProgram"
+    - "FinitePermutationReadingEffectiveness.exists_effective_determining"
+    - "FinitePermutationReadingEffectiveness.finite_effective_fiber_count"
   risks:
     - "Do not impose finiteness on the full graph or hidden carrier."
     - "Raw coherence must use actual retained edges, not global extension."
@@ -10478,39 +10482,58 @@ selection:
     - "The fixed-head review and CI are pending."
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "The four FiniteReading equivalences now quantify over any graph, hidden type with at least two elements, visible automorphism, and finite vertex subset."
+  proof_obligation_delta: "The four general FiniteReading equivalences quantify over any graph and hidden type with at least two elements. Finite K supplies an exact finite Bool point table; enumerated finite graphs inherit the accepted executable program and named fiber counts on the same reading."
   completion_candidate: no
   lean_artifacts:
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FiniteReadingCore.lean"
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationReadingCriteria.lean"
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationPointGraph.lean"
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationReadingEffectiveness.lean"
   evidence:
     - "FinitePermutationReadingCriteria.separates_iff"
     - "FinitePermutationReadingCriteria.extends_iff"
     - "FinitePermutationReadingCriteria.determining_iff"
     - "FinitePermutationReadingCriteria.exists_finite_determining_iff"
+    - "FinitePermutationPointGraph.readAtPoint_forward_iff"
+    - "FinitePermutationPointGraph.readAtPoint_backward_iff"
+    - "FinitePermutationPointGraph.finitePointTable_injective"
+    - "FinitePermutationReadingEffectiveness.coherent_iff"
+    - "FinitePermutationReadingEffectiveness.effectivenessProgram"
+    - "FinitePermutationReadingEffectiveness.effective_of_extends"
+    - "FinitePermutationReadingEffectiveness.exists_effective_determining"
+    - "FinitePermutationReadingEffectiveness.finite_effective_fiber_count"
+    - "FinitePermutationReadingEffectiveness.boolLens_flip_effective_count"
+    - "FinitePermutationReadingEffectiveness.protocol_sessionSwap_effective_count"
   claim_mapping:
     theorem_names:
       - "FinitePermutationReadingCriteria.separates_iff"
       - "FinitePermutationReadingCriteria.extends_iff"
       - "FinitePermutationReadingCriteria.determining_iff"
       - "FinitePermutationReadingCriteria.exists_finite_determining_iff"
-    source_labels: ["fixed GOAL D, first three general criteria"]
+      - "FinitePermutationPointGraph.finitePointTable_injective"
+      - "FinitePermutationReadingEffectiveness.effectivenessProgram"
+      - "FinitePermutationReadingEffectiveness.exists_effective_determining"
+      - "FinitePermutationReadingEffectiveness.finite_effective_fiber_count"
+    source_labels: ["fixed GOAL D, design IV-1"]
     conjuncts:
       - "Separates iff the finite vertex set meets each full component."
       - "Extends every retained-edge-coherent raw table iff retained vertices preserve full connectivity."
       - "Finite determining set exists iff the full component type is finite."
+      - "Finite K gives a finite Bool point table that determines each vertex permutation."
+      - "Finite enumerated graphs transfer the exact coherence test, rejection, and readback to the same Finset reading."
+      - "The accepted factorial-per-component formula and identity/nonidentity lens/protocol fiber counts measure the actual output type of effective determining readings."
     undischarged_assumptions: []
-    acceptance_point: "Proposed for fixed-head review; this does not close D effectiveness or C/E."
+    acceptance_point: "Proposed for fixed-head review of IV-1; primitive localHomTable evaluation belongs to IV-2/3, and C/E remain open."
     port_status: not-applicable
 audits:
   premise_delta:
     discharged: ["The existing component classification and raw-table descent are connected through exact point evaluation."]
-    remaining: ["D computational finite examples and common primitive-query evaluation remain."]
+    remaining: ["The common localHomTable evaluation for each named application remains in IV-2/3; C/E remain open."]
   certificate_provenance:
     discharged: ["Retained-edge coherence is defined on raw vertex tables by the existing EdgeCoherent predicate."]
     unresolved: []
   proof_use:
-    used: ["component classification", "induced-component restriction", "coherent raw-table descent"]
+    used: ["component classification", "induced-component restriction", "coherent raw-table descent", "lawful inverse graph code", "permutationEffectivenessProgram", "accepted finite fiber counts"]
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
@@ -10520,6 +10543,8 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "lake env lean ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationReadingCriteria.lean: pass, six declarations, standard axioms only"
+    - "lake env lean ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationPointGraph.lean: pass, ten declarations, standard axioms only"
+    - "lake env lean ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationReadingEffectiveness.lean: pass, eighteen declarations, standard axioms only"
   blocking_findings: []
-  next_obligation: "Connect the finite raw reading to the common primitive query and existing effectiveness programs; C and E remain open."
+  next_obligation: "Build III-1 and III-2 as full design-part PRs, then connect the application readings to common primitive localHomTable queries in IV-2/3."
 ```
