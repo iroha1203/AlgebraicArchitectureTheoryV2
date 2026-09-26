@@ -10555,3 +10555,102 @@ III-1は一つのPR単位として固定する。`BottomTarget`、`ObservationTa
 元の成分圏を`ULift`と`ULiftHom`で表示し、`componentEquivalence`で元の全対象・全射へ戻る。
 局所関手の対象・射の定義は原始表の対応する成分を選び、完成した幾何やCSの逆組立ては
 自然同型や関手則の証明にのみ使う。全体G-124の完了判定はCの残部とD・Eの証拠を要する。
+
+## Cycle 82 — Part III-2 normalization and comparison transport (proposal)
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124
+cycle: 82
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: ed962bae2677474676ea14f50cff8ecfd9e3a7b9
+tracking_issue: 4711
+selection:
+  proof_state_ref: "III-1 was accepted and merged as PR #4936; the fixed design III-2 is the next C obligation. The rejected IV-1 Cycle 80 remains separate."
+  proof_dag_predecessors:
+    - "Accepted A/B main reader and fully faithful comparison transport"
+    - "Accepted III-1 direct bottom, observation, and coefficient natural isomorphisms"
+    - "CanonicalNormalization and independent primitive object/Hom assemblies"
+    - "G-119 Karoubi/Arrow naturality and G-120 ObservationEquiv/GroupHomRestriction"
+  proof_obligation: "Construct primitive canonical normalization and the local projector, connect it to main N, evaluate Karoubi/Arrow on all parameters, and transport arbitrary comparison groups and qualified observation diagrams through direct projection squares."
+  selection_reason: "III-2 composes the accepted component projections with normalization and comparison transport before III-3 kernel analysis."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "G124PrimitiveNormalization"
+    - "G124KaroubiProjection"
+    - "G124ComparisonTransport"
+    - "G124ProjectionGroupSquare"
+    - "G124ComparisonObservationTransport"
+    - "G124TaggedNormalization"
+  risks:
+    - "Canonical admissibility is an object condition only; all original local Homs remain available."
+    - "Projector equality must use the accepted main reader, not a replacement equivalence."
+    - "Arbitrary comparison arrows need no inverse, section, or surjectivity premise."
+    - "Restricted kernels must be distinguished from ambient kernels."
+  unchecked:
+    - "Revised fixed-head standard PR review, including the local projector construction-strength question raised on the first head."
+    - "PR CI and Issue synchronization after review."
+    - "The remaining III-3 and IV-1/IV-2/IV-3 obligations remain open."
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The primitive object condition is equivalent to native canonical admissibility. The local projector is formed first by localWith from the normalized core map, identity coefficient map, and three direct identity-comparison realization point families of the assembled primitive object; its all-query evaluation and equality to the accepted native reader are proved separately. The local projector is idempotent and is the main reader image of native normalization. General Karoubi/Arrow and all comparison groups use the same reader. Direct projection natural isomorphisms give exact arbitrary component-subgroup map equations and the qualified squares used for G-120 kernel, fiber, lift, and exactness transport."
+  completion_candidate: no
+  lean_artifacts:
+    - "G124PrimitiveNormalization.representative_read_projector"
+    - "G124PrimitiveNormalization.representativeProjector_primitive_point"
+    - "G124PrimitiveNormalization.main_read_projector"
+    - "G124PrimitiveNormalization.main_canonicalKaroubi_projector"
+    - "G124PrimitiveNormalization.representativeProjector_idem"
+    - "G124PrimitiveNormalization.localNormalizationFunctor"
+    - "G124KaroubiProjection.karoubiArrowReaderNaturality"
+    - "G124KaroubiProjection.karoubiComparisonHomEquiv"
+    - "G124ComparisonTransport.comparisonMulEquiv"
+    - "G124ProjectionGroupSquare.bottom_comparison_mem_iff"
+    - "G124ProjectionGroupSquare.qualifiedComparison_map_eq"
+    - "G124ComparisonObservationTransport.bottomRestrictedKernelEquiv"
+    - "G124ComparisonObservationTransport.bottomRestricted_shortExact_iff"
+    - "G124TaggedNormalization.taggedLocalProjector_generation"
+  claim_mapping:
+    source_labels:
+      - "Fixed GOAL C: normalization, Karoubi/Arrow, arbitrary comparison groups, G-120"
+      - "Design III-2: all four parameters and three direct projections"
+    conjuncts:
+      - "Primitive five-law admissibility iff accepted native condition; corresponding full subcategories"
+      - "Local projector point/object evaluation, main reader image, complete-Hom idempotence, absorption, and normalized identity"
+      - "General Kar/Arr/Kar(Arr) reader and three projection evaluations"
+      - "Any-arrow comparison group isomorphism, source and iso-section compatibility"
+      - "Endpoint/pair squares; bottom-fixed and arbitrary specified component subgroup preservation, reflection, and exact map equalities"
+      - "Normalized Karoubi comparisons are preserved and reflected on all Homs by the main reader"
+      - "The tagged explicit normalization and source-choice rewrite are read by the same main reader"
+      - "G-120 compatible kernels, fibers, actions, reflection criterion, lifts, and conditional short exactness"
+    undischarged_assumptions:
+      - "CanonicalObjectNormalizationAdmissible is an explicit object condition of the normalization full subcategory; it is not asserted for every geometry."
+    acceptance_point: "Proposal for the complete III-2 design part. Fixed-head independent review and CI are required before acceptance."
+audits:
+  premise_delta:
+    discharged:
+      - "The canonical normalization five laws are identified with the same primitive object predicate; no arbitrary-object existence is claimed."
+      - "The main reader, component natural isomorphisms, and fully faithful comparison transport are accepted predecessors."
+    remaining: []
+  certificate_provenance:
+    discharged:
+      - "The projector Hom value is constructed by localWith from normalized core, identity coefficient map, and direct identity-comparison realization point readers. The native normalization ReadHom appears only in the separate equality proof, which supplies the complete-Hom law witness; all-query and component evaluations are separate."
+      - "Comparison transport uses the accepted main equivalence and direct component squares."
+    unresolved: []
+  proof_use:
+    used:
+      - "Independent primitive assembly and NativeReader point laws"
+      - "CanonicalNormalization, G-119 Karoubi/Arrow, G-120 ObservationEquiv and GroupHomRestriction"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "Targeted G124TaggedNormalization and G124ComparisonObservationTransport builds: pass; all six namespace audits standard axioms only."
+    - "The third PR fixed-head review found that localWith still extracted coefficient and realization fields from a completed native ReadHom. The next revision constructs those point values directly; fixed-head review, CI, and final scans remain pending."
+  blocking_findings: []
+  next_obligation: "After III-2 acceptance, prove design III-3 primitive kernel and G-122 three-case connection."
+```
