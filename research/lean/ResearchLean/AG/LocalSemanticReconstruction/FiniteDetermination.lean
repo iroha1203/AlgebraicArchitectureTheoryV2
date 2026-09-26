@@ -1,4 +1,5 @@
 import ResearchLean.AG.LocalSemanticReconstruction.TagChangeGroupLaw
+import ResearchLean.AG.LocalSemanticReconstruction.FiniteReadingCore
 import Formal.Util.AssertStandardAxioms
 
 /-!
@@ -15,37 +16,6 @@ namespace AAT.AG.LocalSemanticReconstruction
 
 open CategoryTheory
 open AAT.AG.RealizationReconstruction
-
-namespace FiniteReading
-
-/-- The table obtained by reading an element only at the finite index set
-`S`. -/
-def restrict {A Index Value : Type*} (read : A → Index → Value)
-    (S : Finset Index) (a : A) : {index // index ∈ S} → Value :=
-  fun index => read a index.1
-
-/-- A finite reading separates the selected global elements when its table
-map is injective. -/
-def Separates {A Index Value : Type*} (read : A → Index → Value)
-    (S : Finset Index) : Prop :=
-  Function.Injective (restrict read S)
-
-/-- A finite reading extends every table satisfying a separately supplied
-coherence predicate.  Each application must establish that predicate's
-independent provenance rather than defining it by global extendability. -/
-def Extends {A Index Value : Type*} (read : A → Index → Value)
-    (S : Finset Index)
-    (Coherent : ({index // index ∈ S} → Value) → Prop) : Prop :=
-  ∀ table, Coherent table → ∃ a, restrict read S a = table
-
-/-- A determining set has both separation and extension.  The two properties
-remain separately accessible; effectiveness is a third, later condition. -/
-def Determining {A Index Value : Type*} (read : A → Index → Value)
-    (S : Finset Index)
-    (Coherent : ({index // index ∈ S} → Value) → Prop) : Prop :=
-  Separates read S ∧ Extends read S Coherent
-
-end FiniteReading
 
 /-- The actual automorphisms belonging to the tagged source-choice image. -/
 noncomputable def TaggedSourceChoiceAutFamily :
