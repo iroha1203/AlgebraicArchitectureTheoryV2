@@ -187,17 +187,46 @@ noncomputable def representativeAdmissibleAssembly (U : AtomCarrier.{u}) :
 map, identity coefficient map, and each directed realization point of the
 primitive object.  The completed native Hom appears only in the proof that
 these points obey the retained local Hom laws. -/
+private noncomputable def primitiveRealizationPoints {U : AtomCarrier.{u}}
+    (data : ObjectData.{u, v} U)
+    (admissible : CanonicalObjectNormalizationAdmissible (assemble data).core) :
+    RealizationQuery (assemble data).core.object (assemble data).core.object
+      .representative → Bool
+  | .representativeSupport W V x y =>
+      IndependentFixedIndexedPointGraph.read
+        (RepresentativeRealization.forward
+          (canonicalObjectNormalizationTotal (assemble data).core admissible))
+        (fun _ => _root_.id) W V x y
+  | .representativeAxis W V x y =>
+      IndependentFixedIndexedPointGraph.read
+        (RepresentativeRealization.forward
+          (canonicalObjectNormalizationTotal (assemble data).core admissible))
+        (fun _ => _root_.id) W V x y
+  | .representativeObservable W V x y =>
+      IndependentFixedIndexedPointGraph.read
+        (RepresentativeRealization.forward
+          (canonicalObjectNormalizationTotal (assemble data).core admissible))
+        (fun _ => _root_.id) W V x y
+
+private theorem primitiveRealizationPoints_eq_native {U : AtomCarrier.{u}}
+    (data : ObjectData.{u, v} U)
+    (admissible : CanonicalObjectNormalizationAdmissible (assemble data).core) :
+    primitiveRealizationPoints data admissible =
+      NativeReader.representativeRealizationRead
+        (canonicalObjectNormalizationTotal (assemble data).core admissible)
+        (CompleteGeometryGraphAssembly.realizationSupplyOfGeometry
+          (canonicalGeometryNormalizationReadHom (assemble data) admissible)) := by
+  funext query
+  cases query <;> rfl
+
 private noncomputable def primitiveProjectorPoints {U : AtomCarrier.{u}}
     (data : ObjectData.{u, v} U)
     (admissible : CanonicalObjectNormalizationAdmissible (assemble data).core) :=
   NativeReader.localWith .representative
     (canonicalObjectNormalizationTotal (assemble data).core admissible)
-    (canonicalGeometryNormalizationReadHom (assemble data) admissible).coefficientHom
+    (RingHom.id (assemble data).Coefficient)
     (fun q => nomatch q)
-    (NativeReader.representativeRealizationRead
-      (canonicalObjectNormalizationTotal (assemble data).core admissible)
-      (CompleteGeometryGraphAssembly.realizationSupplyOfGeometry
-        (canonicalGeometryNormalizationReadHom (assemble data) admissible)))
+    (primitiveRealizationPoints data admissible)
 
 private theorem primitiveProjectorPoints_eq_read {U : AtomCarrier.{u}}
     (data : ObjectData.{u, v} U)
@@ -210,6 +239,7 @@ private theorem primitiveProjectorPoints_eq_read {U : AtomCarrier.{u}}
   have hco := canonicalGeometryNormalization_coefficientHom (assemble data) admissible
   dsimp only [canonicalGeometryNormalization] at hco
   rw [hco]
+  rw [primitiveRealizationPoints_eq_native]
   congr 1
   funext q
   nomatch q
@@ -259,18 +289,10 @@ theorem representativeProjector_primitive_point {U : AtomCarrier.{u}}
         (canonicalObjectNormalizationTotal
           (assemble (objectData object.localObject)).core
           ((admissible_iff_native _).mp admissible))
-        (canonicalGeometryNormalizationReadHom
-          (assemble (objectData object.localObject))
-          ((admissible_iff_native _).mp admissible)).coefficientHom
+        (RingHom.id (assemble (objectData object.localObject)).Coefficient)
         (fun q => nomatch q)
-        (NativeReader.representativeRealizationRead
-          (canonicalObjectNormalizationTotal
-            (assemble (objectData object.localObject)).core
-            ((admissible_iff_native _).mp admissible))
-          (CompleteGeometryGraphAssembly.realizationSupplyOfGeometry
-            (canonicalGeometryNormalizationReadHom
-              (assemble (objectData object.localObject))
-              ((admissible_iff_native _).mp admissible)))) query := by
+        (primitiveRealizationPoints (objectData object.localObject)
+          ((admissible_iff_native _).mp admissible)) query := by
   change InvariantWitness.point _ _
     (primitiveProjectorPoints (objectData object.localObject)
       ((admissible_iff_native _).mp admissible)) query = _
