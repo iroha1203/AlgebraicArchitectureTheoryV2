@@ -10955,3 +10955,301 @@ audits:
 ```
 
 For each coherent family b and source A, `decodeTagAt A (localHomTable N (J b)) = assemble(b)(A)` evaluates the original `.operation A A A A` graph point. The equivalence `choiceEquivPreserving` covers every D preserving change; `main_operation_determining_iff_D` transfers its complete finite determining predicate to these J operation queries. The inverse-limit lift, finite witness, and uniform flip use this fixed tagged input and the same J and N.
+
+## Cycle 86 — Part IV-3 lens/protocol CS and finite reading (proposal)
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124
+cycle: 86
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 5c160c7068a650bdbdb855fb0ececa2214da6ee1
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 85 / design IV-2 was accepted in merged PR #4940; E2 and the final A–E package remained open."
+  proof_dag_predecessors:
+    - "IndependentAATPrimitiveReconstruction common main reading and its Hom inverse, finite decoder, Karoubi and Arrow equivalences"
+    - "LensSemanticFiniteDetermination and ProtocolObservedFiniteDetermination value tables, coherence, and effectiveness programs"
+    - "FixedFLensGroupConnection, FixedFProtocolGroupConnection, FixedFSemidirectProduct, and the common D component criterion"
+  proof_obligation: "Connect both general-morphism finite value tables and all-H fixed-visible CS change groups to actual points and automorphisms of the same main local Hom, then transfer D, comparison groups, and adapter squares."
+  selection_reason: "This closes the remaining E2 application layer before the IV-4 A–E theorem family; the accepted finite and group constructions can be reused rather than reassembled."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "CSFiniteValueQueryBridge, CSFiniteDecoderValueBridge, and CSComparisonMain"
+    - "CSLensKernelLocal, CSProtocolKernelLocal, and CSComponentLocalGroup"
+    - "CSFixedFDetermining, CSFixedFFiberD, and CSProtocolAdapterLocal"
+  risks:
+    - "The finite query cells must be actual graph points of the common main Hom, and be chosen without knowing the tested morphism."
+    - "Kernel-to-Aut must use actual inverse semantic Homs and preserve the full visible subgroup H, including section and every lift fiber."
+    - "D must apply to the full fixed-u preserving-change domain, with nontrivial hidden K where required."
+    - "Protocol adapter square must retain visible vertex reindexing and execution naturality."
+  unchecked:
+    - "Fixed-head four-lane PR review, root acceptance audit, CI, and Issue synchronization."
+    - "IV-4 A–E package and independent completion review remain outside this part."
+result:
+  proposed_result_type: rejected
+  proof_obligation_delta: "Actual general lens/protocol morphisms have finite common-main query selections, value-table and effectiveness-program readback, and explicit finite decoder/fiber/observed comparison squares; actual all-H fixed-visible change groups have main-local kernel Aut, transported component action and semidirect form, projection/section/lift-fiber compatibility; common D and comparison groups are transported to these same objects."
+  completion_candidate: no
+  lean_artifacts:
+    - "CSFiniteValueQueryBridge: lens_value_iff_primitive_point, protocol_value_iff_primitive_point, lens_finite_query_separates, protocol_finite_query_separates, lens_assembled_table_primitive_point, protocol_assembled_table_primitive_point"
+    - "CSFiniteValueQueryBridge: lens_effectivenessProgram_primitive_point, protocol_effectivenessProgram_reject_iff, protocol_effectivenessProgram_primitive_point"
+    - "CSFiniteDecoderValueBridge: both decoder_value_iff_main_point, decoder_restricted_table_iff_main_point, finite_decoder_*_square, and assembled_table_*_square"
+    - "CSLensKernelLocal and CSProtocolKernelLocal: kernelAutMulEquiv, kernelLocalAutMulEquiv, kernelLocalAut_point"
+    - "CSComponentLocalGroup: componentKernelMulEquiv, protocolComponentLocalAutMulEquiv, lensComponentLocalAutMulEquiv, both ChangeLocalSemidirectMulEquiv, both ChangeLocal_visible/section and ProjectionFiberLocalEquiv, protocolComponentLocal_point"
+    - "CSFixedFDetermining and CSFixedFFiberD: lens_reference_determining, protocol_representatives_determining, both FiberEquivPreserving and determining_on_changes, both fiber readAt equations"
+    - "CSComparisonMain: both ComparisonMainMulEquiv and four endpoint Hom equations; CSProtocolAdapterLocal.adapter_square_iff_main_points"
+  evidence:
+    - "The original finite value readings are equivalent to decodeLensPoint/decodeProtocolPoint on the same main local Hom; admissible/coherent assembled values have the same point readings."
+    - "Finite decoder arrows read their original restricted value tables at those same point cells, and their accepted fiber/observed natural squares commute; arbitrary assembled table Homs commute with the semantic-to-primitive fiber/observed comparison squares. The existing Karoubi restriction and Karoubi/Arrow reading isomorphisms are applied to these unchanged finite decoder and comparison functors."
+    - "For every successful output of the accepted lens/protocol effectiveness programs, the common point reading equals the input table value; the protocol rejection iff uses explicit observation-value equality decision without a finite observation carrier."
+    - "Both kernel Aut equivalences are built from original product-lens and protocol semantic Hom/inverse data and moved to the main reading via ULift; protocol component point evaluation equals the original component permutation."
+    - "The actual CS projection fibers identify with full D preserving-change domains and with corresponding semidirect-coordinate fibers; visible and canonical section equations are retained."
+  claim_mapping:
+    theorem_names:
+      - "lens_finite_query_separates"
+      - "protocol_finite_query_separates"
+      - "lens_assembled_table_primitive_point"
+      - "protocol_assembled_table_primitive_point"
+      - "lens_effectivenessProgram_primitive_point"
+      - "protocol_effectivenessProgram_primitive_point"
+      - "lens_decoder_restricted_table_iff_main_point"
+      - "protocol_decoder_restricted_table_iff_main_point"
+      - "lens_assembled_table_fiber_square"
+      - "protocol_assembled_table_observed_square"
+      - "kernelLocalAutMulEquiv"
+      - "protocolChangeLocalSemidirectMulEquiv"
+      - "lensChangeLocalSemidirectMulEquiv"
+      - "protocolProjectionFiberLocalEquiv"
+      - "lensProjectionFiberLocalEquiv"
+      - "lens_reference_determining_on_changes"
+      - "protocol_representatives_determining_on_changes"
+      - "lensComparisonMainMulEquiv"
+      - "protocolComparisonMainMulEquiv"
+      - "adapter_square_iff_main_points"
+    source_labels:
+      - "Fixed GOAL E2 general morphism and fixed-visible change layers"
+      - "Design IV-3 finite value reading, decoder, comparison, D, kernel/semidirect, and adapter requirements"
+    conjuncts:
+      - "For finite source/target carriers, independently selected main primitive graph cells separate all actual general semantic morphisms. The source input Fintype is explicit; finite target carriers use Finite, with computational enumeration restricted to the predecessor effectiveness programs."
+      - "The predecessor finite decoder, retract generation, Karoubi/Arrow equivalences, and fiber/observed natural isomorphisms remain the same constructions. New equations evaluate original small value tables on those finite decoder arrows, prove the relevant fiber/observed comparison squares for assembled Homs, and apply the existing Karoubi restriction/Arrow reading route to the unchanged decoder."
+      - "The accepted explicit finite effectiveness programs supply actual Homs. New readback theorems connect every successful program output to the common graph query; protocol rejection is equivalent to incoherence under its explicit observation equality decision."
+      - "Both literal fixed-visible kernels are equivalent to semantic object Aut and to Aut of the same main local Hom, with pointwise readback; the complete-update and protocol component groups transport along these constructed equivalences."
+      - "All H survives in the actual group-to-semideirect equivalences; the visible coordinate, canonical section and each literal projection fiber are identified in main-local coordinates."
+      - "The common D criterion makes the lens reference view and a finite protocol set of one vertex per component determining for the full fixed-u preserving-change domains, hence the independent CS projection fibers."
+      - "The two existing comparison groups are transported, including arbitrary noninvertible semantic morphisms, to groups on the main local Hom with endpoint equations. The protocol adapter square is equivalent to reindexed main point equations."
+    undischarged_assumptions:
+      - "At fixed head 6dbb122a2, explicit finite-table reassembly through Karoubi/Arrow routes was absent."
+      - "At fixed head 6dbb122a2, reversible change effectiveness-program outputs were not read in the common main local Hom."
+    acceptance_point: "Rejected after the second independent review batch at fixed head 6dbb122a2; Cycle 87 selects the remaining IV-3 E2 connections."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "Only the fixed finite source input and finite target carrier are used for the finite graph query selection; protocol effectiveness readback states the predecessor's explicit observation equality decision input."
+      - "Nontrivial K in the lens necessity/sufficiency criterion is stated explicitly; no finite visible subgroup restriction is introduced."
+    remaining:
+      - "Karoubi/Arrow retract-arrow finite-table connection and reversible change program-to-main-point connection, selected in Cycle 87."
+  certificate_provenance:
+    discharged:
+      - "Original semantic Hom values and assembled table Homs feed the common main local graph decoder, without supplied primitive-query values."
+      - "Kernel automorphisms are constructed from original lens/protocol semantic morphisms and their actual inverse laws, not from a supplied Aut field."
+    unresolved: []
+  proof_use:
+    used:
+      - "Accepted finite lens/protocol table and effectiveness theorems, finite decoder/Karoubi restriction/Arrow and comparison isomorphisms"
+      - "Actual all-H GroupConnection, fixed-F semidirect and component-kernel theorems"
+      - "Common D determining_iff criterion, protocol adapter square and execution naturality"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "Registered focused checks of all nine IV-3 files: standard axioms only."
+    - "Targeted build of the nine IV-3 modules; Research aggregate was not built."
+    - "Initial fifteen plus nine repair spine #print axioms declarations: propext, Classical.choice, Quot.sound only; placeholder/Unicode/privacy/import-direction scans and git diff --check: clean."
+  blocking_findings:
+    - "Second fixed-head review: Lean B found no explicit Karoubi/Arrow retract-arrow small-table reassembly in the common main Hom."
+    - "Second fixed-head review: Lean B found no reversible lens/protocol effectiveness-program output readback at a reindexed main local point."
+  next_obligation: "Cycle 87: complete the two remaining IV-3 E2 connections at the same IV-3 PR boundary."
+```
+
+The finite value tables read actual points of the common main Hom. The two kernel equivalences evaluate original semantic Homs and inverse Homs, and their transported actions preserve all visible changes in H. For the D application the finite determining domains are fixed visible fibers; neither a hidden table nor a point reading is asserted to distinguish distinct visible changes.
+
+## Cycle 87 — Part IV-3 finite-table and program closure (rejected)
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124
+cycle: 87
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 6dbb122a2c7f1299f9867779047333eda3836977
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 86 was rejected after the second fixed-head review batch in IV-3 PR #4941; its finite decoder and general Hom program links did not cover Karoubi/Arrow retract arrows or reversible-change program outputs."
+  proof_dag_predecessors:
+    - "Cycle 86 CSFiniteValueQueryBridge and CSFiniteDecoderValueBridge"
+    - "Accepted semantic finite table restrictions/extensions and lens/protocol Karoubi and Arrow reconstruction equivalences"
+    - "Cycle 86 all-H CSComponentLocalGroup and accepted LensFiniteDetermination / ProtocolFiniteDetermination programs"
+  proof_obligation: "Close IV-3/E2 finite readback under the existing Karoubi/Arrow routes and under successful reversible-change program outputs in the common main local Hom, preserving visible reindexing."
+  selection_reason: "The second review isolated two missing edges in one finite-table-to-main-reading proof route; both can be closed without changing the fixed target or adding a second IV-3 PR."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "CSFiniteValueQueryBridge.lens_assemble_restricted_values and protocol_assemble_restricted_values"
+    - "CSKaroubiValueBridge arbitrary Karoubi/Arrow Hom reassembly and primitive point evaluation"
+    - "CSChangeProgramLocal all-H local point evaluation and both effectiveness program readbacks"
+  risks:
+    - "Karoubi/Arrow equations must quantify over arbitrary retract arrows, not only finite presentation arrows."
+    - "A successful change with nonidentity visible coordinate must read at the destination vertex u(v), not silently as a fixed-object semantic Hom."
+    - "Program rejection must be the original independent local coherence criterion; successful output must be the program's actual change."
+  unchecked:
+    - "A fresh fixed-head four-lane review, root acceptance audit, CI, and Issue synchronization."
+    - "IV-4 A–E theorem family and final independent completion review."
+result:
+  proposed_result_type: rejected
+  proof_obligation_delta: "Every finite-valued actual semantic Hom equals the extension of its restricted table; arbitrary Karoubi and Karoubi Arrow morphisms therefore have the identical common-main Hom as the table extension. Both original reversible-change programs have exact success-value point readback through the full-visible semidirect local Aut coordinate, at u(v), and exact incoherence rejection."
+  completion_candidate: no
+  lean_artifacts:
+    - "CSFiniteValueQueryBridge.lens_assemble_restricted_values, protocol_assemble_restricted_values"
+    - "CSKaroubiValueBridge: lens/protocol karoubi_value_iff_main_point, karoubi_arrow_value_iff_main_point, karoubi_assemble_restricted_values, karoubi_arrow_assemble_restricted_values"
+    - "CSChangeProgramLocal: protocol_change_local_point, lens_component_local_point, lens_change_local_point, lensChangeToFullGroup, protocolChangeToFullGroup, lens_effectivenessProgram_main_point, protocol_effectivenessProgram_main_point, both effectivenessProgram_reject_iff"
+  evidence:
+    - "The two-sided finite separation/restriction construction proves assemble(restrict(f))=f for all actual lens/protocol Homs, including those produced by Karoubi and Arrow reconstruction."
+    - "The Karoubi/Arrow equations identify the exact main local Hom of every reconstructed retract arrow with the reading of that table extension; corresponding point equations evaluate the same arrow."
+    - "The accepted all-H semidirect coordinate and destination component equation turn each change into a main-local Aut point at u(v); success readback uses the original program's restrict_eq_of_extend_eq_some field, while rejection uses extend_eq_none_iff."
+  claim_mapping:
+    theorem_names:
+      - "lens_karoubi_assemble_restricted_values"
+      - "protocol_karoubi_assemble_restricted_values"
+      - "lens_karoubi_arrow_assemble_restricted_values"
+      - "protocol_karoubi_arrow_assemble_restricted_values"
+      - "lens_effectivenessProgram_main_point"
+      - "protocol_effectivenessProgram_main_point"
+      - "lens_effectivenessProgram_reject_iff"
+      - "protocol_effectivenessProgram_reject_iff"
+    source_labels:
+      - "Fixed GOAL E2 and design IV-3 finite decoder/Karoubi/Arrow and effectiveness requirements"
+      - "Cycle 86 second fixed-head central review findings"
+    conjuncts:
+      - "For arbitrary Karoubi objects and arrows and arbitrary Karoubi Arrow objects, the original semantic Hom is reconstructed from its independently restricted finite value table; its common main local Hom is exactly the read image of the assembled table."
+      - "The lens/protocol change programs operate on actual invertible changes at any visible coordinate. Their successful outputs are embedded into the full visible group and evaluated via the original semidirect coordinate at the renamed destination vertex."
+      - "Lens table bijectivity and protocol retained-edge coherence are exactly the respective program rejection predicates; the main point readback is proved for every successful output and selected finite input."
+    undischarged_assumptions:
+      - "At fixed head 42ecdd37c, the finite-table assembly of both component Homs of an arbitrary morphism (commutative square) between Karoubi Arrow objects was not explicit."
+    acceptance_point: "Rejected on the fixed-head Cycle 87 review: Lean A found the arbitrary Arrow square component route missing; Cycle 88 repairs it in the same IV-3 PR."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "Finite source value enumeration is explicit in every table restriction; protocol table coherence is generated by read_table_coherent from an actual semantic Hom."
+      - "The visible subgroup for program outputs is the full top subgroup, and the input program supplies the actual change only upon success."
+    remaining:
+      - "Arbitrary Arrow square component reassembly in the common main local Hom, selected in Cycle 88."
+  certificate_provenance:
+    discharged:
+      - "Karoubi/Arrow semantic Homs come from accepted reconstruction functors; table reassembly uses actual finite separation and extension."
+      - "Success/rejection equations are inherited from the actual finite programs, and destination indexing is derived from semidirect realization_fiberPerm."
+    unresolved: []
+  proof_use:
+    used:
+      - "Lens/ProtocolSemanticFiniteDetermination fullFiber/fullInput separation, restrict_assembleTable, read_table_coherent"
+      - "Accepted lens/protocol Karoubi and Karoubi Arrow reconstruction equivalence functors and the same common main reading"
+      - "FixedFSemidirectProduct.realize_fiberPerm, both all-H GroupConnection equivalences, CSComponentLocalGroup local Aut and point equations"
+      - "LensFiniteDetermination and ProtocolFiniteDetermination effectivenessProgram success and none iff fields"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "Registered focused checks of the three modified/new files: standard axioms only."
+    - "Targeted build of all eleven IV-3 modules: pass; Research aggregate was not built."
+    - "Nineteen Cycle 87 #print axioms declarations: only propext, Classical.choice, Quot.sound; placeholder/Unicode/privacy/import-direction scans and git diff --check: clean."
+  blocking_findings:
+    - "Lean A: object-internal Arrow Hom was covered, but an arbitrary morphism between Karoubi Arrow objects and both of its component Homs were not explicitly reconstructed from finite tables."
+  next_obligation: "Cycle 88: cover arbitrary Karoubi Arrow squares and their two component Homs in the same IV-3 PR."
+```
+
+These connections use the existing Karoubi and Arrow equivalences on all retract arrows and all displayed arrow objects. The program point equations preserve nonidentity visible changes by querying the local automorphism at the destination of the original source vertex.
+
+## Cycle 88 — Part IV-3 arbitrary Arrow square components (proposal)
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124
+cycle: 88
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 42ecdd37c252983fadc2596cb37fd4326542e1ba
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 87 review found one central missing Arrow-square route despite passing checks for the general Hom and program outputs."
+  proof_dag_predecessors:
+    - "Cycle 87 CSFiniteValueQueryBridge generic assemble(restrict(f))=f for both semantic families"
+    - "Accepted lens/protocol Karoubi Arrow reconstruction equivalences and common main reading"
+  proof_obligation: "For an arbitrary morphism between two Karoubi Arrow objects, reassemble both left and right semantic component Homs from their original finite value tables in the common main local Hom."
+  selection_reason: "The Arrow-square route is the remaining fixed-head central review finding; the two components use the already constructed generic finite separation lemma."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "CSKaroubiValueBridge.lens_karoubi_arrow_square_assemble_restricted_values"
+    - "CSKaroubiValueBridge.protocol_karoubi_arrow_square_assemble_restricted_values"
+  risks:
+    - "An Arrow object internal hom does not quantify the Arrow-category morphism; the new statements must take an arbitrary square."
+    - "Both left and right components must retain their exact semantic endpoints and the same main reader."
+  unchecked:
+    - "Fresh fixed-head four-lane review, root acceptance audit, CI, and Issue synchronization."
+    - "IV-4 A–E theorem family and final independent completion review."
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Both components of every arbitrary Karoubi Arrow square are reconstructed as the common main reading of the extension of their original finite semantic value tables."
+  completion_candidate: no
+  lean_artifacts:
+    - "CSKaroubiValueBridge.lens_karoubi_arrow_square_assemble_restricted_values"
+    - "CSKaroubiValueBridge.protocol_karoubi_arrow_square_assemble_restricted_values"
+  evidence:
+    - "The square is universally quantified between arbitrary Karoubi Arrow objects. Its two semantic component Homs are obtained from the accepted Arrow reconstruction functor."
+    - "The generic lens/protocol assemble(restrict(f))=f is applied separately to each component, and the actual Arrow functor's component equations identify them with the common main reader."
+  claim_mapping:
+    theorem_names:
+      - "lens_karoubi_arrow_square_assemble_restricted_values"
+      - "protocol_karoubi_arrow_square_assemble_restricted_values"
+    source_labels:
+      - "Fixed GOAL E2 and design IV-3 Karoubi/Arrow arbitrary retract-arrow route"
+      - "Cycle 87 Lean A central fixed-head review finding"
+    conjuncts:
+      - "For every Karoubi Arrow square, the left and right component Homs both equal the reading of their finite-table extensions in main N."
+    undischarged_assumptions: []
+    acceptance_point: "Proposal; independent fixed-head review and CI decide acceptance."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "Both source component value tables are finite by the same source Finite/Fintype hypotheses as the accepted generic semantic table theorem."
+    remaining: []
+  certificate_provenance:
+    discharged:
+      - "No table witness is supplied: each table is the restriction of the actual reconstructed square component."
+    unresolved: []
+  proof_use:
+    used:
+      - "Both accepted Karoubi Arrow reconstruction functors, the common main reading, and the generic semantic table reassembly equations"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "Registered focused check of CSKaroubiValueBridge: ten declarations, standard axioms only."
+    - "Targeted build of CSKaroubiValueBridge: pass; Research aggregate was not built."
+    - "Both new square declarations' #print axioms: propext, Classical.choice, Quot.sound only; placeholder/Unicode/privacy/import-direction scans and git diff --check: clean."
+  blocking_findings: []
+  next_obligation: "After Cycle 88/IV-3 acceptance, design IV-4 A–E theorem family and independent completion review."
+```
