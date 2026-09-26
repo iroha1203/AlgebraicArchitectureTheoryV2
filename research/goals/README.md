@@ -18,9 +18,7 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-124-aat-local-semantic-reconstruction](G-124-aat-local-semantic-reconstruction.md)
   (G-123後続。整合する局所データの族から実現・許容射・比較を再構成し、
   有限データで決まる条件を操作の連結性から判定する)
-- [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
-- [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
 
 ## draft（人間の確認待ち）
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
@@ -69,6 +67,8 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
   (`target-theorem-proved`。exchange 反例の背後の冪等正規化、raw failure
   classification、fixed finite witness。Gr4 を閉じるカードは作らない。G-114 /
   G-115 成分の同型判定は G-117 (i) へ)
+- [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
+  (SCORE型。active threshold 15000に到達し、Cycle 106で区切った)
 - [G-aat-quality-surface-02](G-aat-quality-surface-02.md)
 - [G-aat-quality-surface-05](G-aat-quality-surface-05.md)
 - [G-aat-quality-surface-06](G-aat-quality-surface-06.md)
@@ -76,6 +76,9 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## inactive
 
+- [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
+  (Cycle 130で研究終了。固定targetは未決着。semantic repair-gluingの問題は
+  G-05・G-06を経てSAGAへ引き継いだ)
 - [G-117-aat-lax-diagnostic-projector](G-117-aat-lax-diagnostic-projector.md)
   (`target-refuted`。実AdmCoreFiberの射で規定canonical正規化成分の自然性が破れ、
   (c)が偽。(d)–(i)は追行しない)

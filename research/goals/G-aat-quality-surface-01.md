@@ -1,7 +1,7 @@
 # G-aat-quality-surface-01 — atom-supported quality geometry によるアーキテクチャ品質の幾何化
 
 - `id`: `G-aat-quality-surface-01`
-- `status`: `active`
+- `status`: `completed`
 - `source note`: [docs/note/aat_quality_surface.md](../../docs/note/aat_quality_surface.md)
 - `research aim`: AAT 代数幾何版に atom-supported quality geometry を導入する。固定した architecture `A` に対し、profile 圏 `Prof_A`、profile ごとの certificate space `C_A(p)`、profile change に沿う comparison map `Phi_u` を置き、その Grothendieck construction を品質の数学的本体として扱う。Quality Surface はその二次元 profile slice として定義し、アーキテクチャ品質を単一スカラーではなく、multi-axis quality signature、obstruction certificate、minimal atom support family、repair direction、verdict、trace information を持つ certificate geometry として語れるようにする。次フェーズでは semantic atom を中心に置き、構文的な component / dependency だけでなく、業務意味、責務、補償、状態遷移、不変条件、side-effect discipline を支える atom support と repair coherence を AAT 代数幾何の対象として扱う。
 - `core tension`: intrinsic obstruction、profile-dependent observation、repair reachability、reading projection artifact を、一つの追跡可能な品質 certificate geometry として統合できるか。profile change によって certificate transport が保存される、ridge / discriminant が現れる、profile curvature が生じる、reading fold で異なる certificate が同じ数値に潰れる、といった現象を区別して扱えるか。さらに、各 certificate が supporting atom family と semantic atom support を持ち、利用可能な ArchMap source reference へ trace できるか。単にコードベースを広く読むだけでは復元できない semantic obligation、repair frontier、local-to-global obstruction class を、finite AAT geometry の中で分離できるか。
