@@ -16,7 +16,7 @@
 - current proof obligation: Cycle 189 equips the single closed parameter declaration with one decoder-independent category family whose tagged, original G-122, lens, and protocol fibers retain their full existing morphism classes, including the mandatory uniform flip and a fixed non-surjective CS map
 - current target state: `target-proof-checkpoint`
 - completion candidate: no
-- next proof obligation: replace the Cycle 189 branchwise law selection by one common independently defined D_Theta preservation interface, construct every branch map into it, then classify the remaining mandatory-C source-choice family and derive final treeGenerated/provenance
+- next proof obligation: none. The loop ended at Cycle 189 (PR #4710) with the fixed target undecided; the successor is [G-124](../goals/G-124-aat-local-semantic-reconstruction.md).
 
 ## Requirement ledger
 

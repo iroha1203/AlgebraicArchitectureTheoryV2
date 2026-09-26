@@ -1,7 +1,7 @@
 # G-123-aat-realization-reconstruction — 独立な実現と有限表示からの再構成
 
 - `id`: `G-123-aat-realization-reconstruction`
-- `status`: `active`
+- `status`: `inactive`
 - `research mode`: `target-theorem`
 - `tracking issue`: [#4520](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4520)
 - `source note`: [n1010 §6・§7.2・§9.5](../../docs/note/n1010_aat_post_annapurna_conjectures_research_plan.md)、[n1014](../../docs/note/n1014_aat_realization_reconstruction_design.md)、[n1015](../../docs/note/n1015_aat_reconstruction_cs_correspondence_design.md)
