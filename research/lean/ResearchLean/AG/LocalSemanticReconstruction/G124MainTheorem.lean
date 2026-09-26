@@ -13,6 +13,7 @@ import ResearchLean.AG.LocalSemanticReconstruction.G124MainCClosure
 import ResearchLean.AG.LocalSemanticReconstruction.G124MainE1Closure
 import ResearchLean.AG.LocalSemanticReconstruction.G124MainE2Finite
 import ResearchLean.AG.LocalSemanticReconstruction.G124MainE2Route
+import ResearchLean.AG.LocalSemanticReconstruction.G124MainE2Groups
 import Formal.Util.AssertStandardAxioms
 
 /-! Design IV-4: one quantified theorem family over the same primitive reader.

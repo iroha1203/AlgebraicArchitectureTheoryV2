@@ -11407,37 +11407,39 @@ selection:
   unchecked:
     - "Fixed-head 4-lane standard review, final completion packet and independent final math-lean-review."
 result:
-  proposed_result_type: proof-obligation-discharged
-  completion_candidate: yes
-  proof_obligation_delta: "The IV-4 theorem family now exposes arbitrary comparison group and qualified restrictions, Arrow squares, G-120 kernels/fibers, fixed G-122 section evaluations, the source-choice group/finite inverse limit/main-N identification, and both semantic finite criteria, Arrow square, comparison and executable readback routes."
+  proposed_result_type: proof-checkpoint
+  completion_candidate: no
+  proof_obligation_delta: "The first corrected head added C/E1/E2 closure, but the Cycle 90 first four-lane review rejected missing C G-120 restriction classification, fixed G-122 section splitting and E2 all-H local group recovery. The second implementation adds those exact conclusions; formal rereview is pending."
   lean_artifacts:
-    - "G124MainCClosure.lean: comparison_full_and_bottom, comparison_all_qualifications, arbitrary_karoubi_arrow_square, comparison_g120_kernel_and_fibers, fixed_g122_section_bottom_and_coefficient"
+    - "G124MainCClosure.lean: comparison_full_and_bottom, comparison_all_qualifications, arbitrary_karoubi_arrow_square, comparison_g120_kernel_and_fibers, comparison_g120_restriction_classification, comparison_g120_lift_exists_iff, fixed_g122_section_bottom_and_coefficient, fixed_g122_three_case_section_classification"
     - "G124MainE1Closure.lean: tag_group_limit_main, tag_limit_projection_and_unique"
     - "G124MainE2Finite.lean: lens_general_finite_reading, protocol_general_finite_reading, protocol_general_effective"
     - "G124MainE2Route.lean: lens_arrow_and_comparison, protocol_arrow_and_comparison, lens_program_main_point_and_rejection, protocol_program_main_point_and_rejection"
+    - "G124MainE2Groups.lean: protocol_local_change_group_recovery, lens_local_change_group_recovery"
   evidence:
     - "PR #4942 initial review comment records the three central gaps at head 6fa7032f8."
-    - "Focused checks of all four new files and G124MainTheorem.lean passed; all reported declarations have standard-axiom-only namespace audits."
-    - "Targeted lake build ResearchLean.AG.LocalSemanticReconstruction.G124MainTheorem passed."
+    - "PR #4942 Cycle 90 first review comment records C and E2 central gaps at head 7e8eaf263."
+    - "First correction head: focused checks of four new files and G124MainTheorem.lean, targeted G124MainTheorem build, and all 21 declaration axiom prints passed."
+    - "Second implementation: focused checks of amended G124MainCClosure.lean, new G124MainE2Groups.lean and G124MainTheorem.lean passed; targeted G124MainTheorem build passed (log SHA256 1d32a0cc4da4b8fdfe16a84d1decf891a25ed79c8f3193d3c0d78489e469d939); all 26 declaration axiom prints contain only propext, Classical.choice, Quot.sound (log SHA256 2730db2a5f5863d1a912d574814880343ce61b8a5099a73217d11251fdb2123c)."
   claim_mapping:
-    theorem_names: ["G124MainTheorem.comparison_full_and_bottom", "G124MainTheorem.comparison_all_qualifications", "G124MainTheorem.arbitrary_karoubi_arrow_square", "G124MainTheorem.comparison_g120_kernel_and_fibers", "G124MainTheorem.fixed_g122_section_bottom_and_coefficient", "G124MainTheorem.tag_group_limit_main", "G124MainTheorem.tag_limit_projection_and_unique", "G124MainTheorem.lens_general_finite_reading", "G124MainTheorem.protocol_general_finite_reading", "G124MainTheorem.protocol_general_effective", "G124MainTheorem.lens_arrow_and_comparison", "G124MainTheorem.protocol_arrow_and_comparison", "G124MainTheorem.lens_program_main_point_and_rejection", "G124MainTheorem.protocol_program_main_point_and_rejection"]
+    theorem_names: ["G124MainTheorem.comparison_full_and_bottom", "G124MainTheorem.comparison_all_qualifications", "G124MainTheorem.arbitrary_karoubi_arrow_square", "G124MainTheorem.comparison_g120_kernel_and_fibers", "G124MainTheorem.comparison_g120_restriction_classification", "G124MainTheorem.comparison_g120_lift_exists_iff", "G124MainTheorem.fixed_g122_section_bottom_and_coefficient", "G124MainTheorem.fixed_g122_three_case_section_classification", "G124MainTheorem.tag_group_limit_main", "G124MainTheorem.tag_limit_projection_and_unique", "G124MainTheorem.lens_general_finite_reading", "G124MainTheorem.protocol_general_finite_reading", "G124MainTheorem.protocol_general_effective", "G124MainTheorem.lens_arrow_and_comparison", "G124MainTheorem.protocol_arrow_and_comparison", "G124MainTheorem.lens_program_main_point_and_rejection", "G124MainTheorem.protocol_program_main_point_and_rejection", "G124MainTheorem.protocol_local_change_group_recovery", "G124MainTheorem.lens_local_change_group_recovery"]
     source_labels: ["GOAL C/E1/E2; design IV-4"]
     conjuncts:
-      - "C: full and qualified comparison groups, bottom restriction, arbitrary Arrow square, G-120 kernel/fiber, fixed G-122 section points."
+      - "C: full and qualified comparison groups, bottom restriction, arbitrary Arrow square, G-120 restriction square, short exact iff, kernel action on all fibers and lift iff, fixed G-122 three-case section right inverse, short exact, two kernel equivalences, all lift fibers and four point evaluations."
       - "E1: actual source-choice group and all-finite coherent family equivalences, projection lift/value/uniqueness, common main-N equation."
-      - "E2: general semantic finite separation/extension/effectiveness under explicit finite inputs, finite-table main-N equation, arbitrary Karoubi Arrow square, comparison group, reversible program rejection and successful output point."
-    undischarged_assumptions: []
-    acceptance_point: "Implementation checkpoint; final acceptance depends on independent fixed-head PR and completion reviews."
+      - "E2: general semantic finite separation/extension/effectiveness under explicit finite inputs, finite-table main-N equation, arbitrary Karoubi Arrow square, comparison group, reversible program rejection and successful output point, all-H component kernel/main-local Aut, action, section and all lift fibers."
+    undischarged_assumptions: ["Formal second four-lane rereview and independent completion review pending."]
+    acceptance_point: "Implementation checkpoint after first rejected Cycle 90 review; no acceptance verdict until new fixed-head review."
     port_status: not-applicable
 audits:
   premise_delta:
-    discharged: ["C full comparison/Arrow/G-120/section route", "E1 group/limit/main-N route", "E2 finite semantic/Arrow/program route"]
-    remaining: []
+    discharged: ["C full comparison/Arrow/G-120/section route in Lean", "E1 group/limit/main-N route in Lean", "E2 finite semantic/Arrow/program/all-H group route in Lean"]
+    remaining: ["Independent fixed-head rereview and cumulative final review"]
   certificate_provenance:
     discharged: []
     unresolved: []
   proof_use:
-    used: ["G124ComparisonTransport", "G124ProjectionGroupSquare", "G124ComparisonObservationTransport", "G124KaroubiProjection", "G124PrimitiveKernel", "TagChangeInverseLimitUniversal", "TagChangeMainRecovery", "LensSemanticFiniteDetermination", "ProtocolObservedFiniteDetermination", "CSFiniteValueQueryBridge", "CSKaroubiValueBridge", "CSComparisonMain", "CSChangeProgramLocal"]
+    used: ["G124ComparisonTransport", "G124ProjectionGroupSquare", "G124ComparisonObservationTransport", "G124KaroubiProjection", "G124PrimitiveKernel", "TagChangeInverseLimitUniversal", "TagChangeMainRecovery", "LensSemanticFiniteDetermination", "ProtocolObservedFiniteDetermination", "CSFiniteValueQueryBridge", "CSKaroubiValueBridge", "CSComparisonMain", "CSChangeProgramLocal", "CSComponentLocalGroup"]
     unused: []
   structure_field_escape: none-found
   route_integrity: pending-independent-review
@@ -11446,6 +11448,6 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs: []
-  blocking_findings: []
-  next_obligation: "Review the corrected fixed head, then construct the final A–E packet and run a separate cumulative four-lane completion review."
+  blocking_findings: ["Cycle 90 first formal review rejected C G-120 classification, fixed G-122 section splitting and E2 all-H group recovery; repair awaits second formal review."]
+  next_obligation: "Run second fixed-head formal review. If central findings remain, mark Cycle 90 rejected and reselect Cycle 91 in the same IV-4 PR."
 ```

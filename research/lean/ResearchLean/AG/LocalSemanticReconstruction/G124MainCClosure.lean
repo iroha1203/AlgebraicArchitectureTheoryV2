@@ -9,6 +9,7 @@ and coefficient evaluations in the resulting local comparison group. -/
 namespace AAT.AG.LocalSemanticReconstruction.G124MainTheorem
 open CategoryTheory CategoryTheory.Idempotents
 open RealizationReconstruction IndependentAATPrimitiveReconstruction
+open ComparisonInformationLoss G124ProjectionGlobal G124ProjectionGroupSquare
 universe u v
 
 /-- The full comparison group of every arrow, including noninvertible ones,
@@ -115,6 +116,69 @@ theorem comparison_g120_kernel_and_fibers
     fun a => (G124ComparisonObservationTransport.sourceRestrictionFiberEquiv
       parameter c a).bijective⟩
 
+/-- The G-120 qualified source restriction itself commutes with main N.
+Its short exact criterion and the kernel action on every fiber transport
+without asserting surjectivity for an arbitrary comparison. -/
+theorem comparison_g120_restriction_classification
+    (parameter : Parameter.{u, v})
+    {X Y : NativeCategory parameter} (c : X ⟶ Y) :
+    (∀ pair : nativeBottomFixedComparison parameter c,
+      G124ComparisonObservationTransport.localBottomSourceRestriction parameter
+          ((reading parameter).map c)
+          (G124ComparisonObservationTransport.bottomFixedComparisonEquiv parameter c pair) =
+        G124ComparisonObservationTransport.bottomFixedEndpointEquiv parameter X
+          (G124ComparisonObservationTransport.nativeBottomSourceRestriction parameter c pair)) ∧
+    (IsGroupShortExact
+        (restrictedKernelInclusion (generatedArrowComparisonSourceHom c)
+          (nativeBottomFixedComparison parameter c)
+          (nativeBottomFixed parameter X)
+          (G124ComparisonObservationTransport.nativeBottomSource_preserves parameter c))
+        (G124ComparisonObservationTransport.nativeBottomSourceRestriction parameter c) ↔
+      IsGroupShortExact
+        (restrictedKernelInclusion
+          (generatedArrowComparisonSourceHom ((reading parameter).map c))
+          (localBottomFixedComparison parameter ((reading parameter).map c))
+          (localBottomFixed parameter ((reading parameter).obj X))
+          (G124ComparisonObservationTransport.localBottomSource_preserves parameter
+            ((reading parameter).map c)))
+        (G124ComparisonObservationTransport.localBottomSourceRestriction parameter
+          ((reading parameter).map c))) ∧
+    (∀ (a : nativeBottomFixed parameter X)
+      (kernelElement : ((G124ComparisonObservationTransport.nativeBottomSourceRestriction
+        parameter c).ker)ᵐᵒᵖ)
+      (point : RestrictionKernelFiberTransport.Fiber
+        (G124ComparisonObservationTransport.nativeBottomSourceRestriction parameter c) a),
+      G124ComparisonObservationTransport.bottomRestrictedFiberEquiv parameter c a
+          (RestrictionKernelFiberTransport.rightKernelAction
+            (G124ComparisonObservationTransport.nativeBottomSourceRestriction parameter c)
+            a kernelElement point) =
+        RestrictionKernelFiberTransport.rightKernelAction
+          (G124ComparisonObservationTransport.localBottomSourceRestriction parameter
+            ((reading parameter).map c))
+          (G124ComparisonObservationTransport.bottomFixedEndpointEquiv parameter X a)
+          (MulOpposite.op
+            (G124ComparisonObservationTransport.bottomRestrictedKernelEquiv parameter c
+              (MulOpposite.unop kernelElement)))
+          (G124ComparisonObservationTransport.bottomRestrictedFiberEquiv parameter c a point)) := by
+  exact ⟨G124ComparisonObservationTransport.bottomSourceRestriction_square parameter c,
+    G124ComparisonObservationTransport.bottomRestricted_shortExact_iff parameter c,
+    G124ComparisonObservationTransport.bottomRestrictedFiberEquiv_smul parameter c⟩
+
+/-- Every qualified source element has a native lift exactly when its
+transported main-local element has a lift. -/
+theorem comparison_g120_lift_exists_iff
+    (parameter : Parameter.{u, v})
+    {X Y : NativeCategory parameter} (c : X ⟶ Y)
+    (a : nativeBottomFixed parameter X) :
+    Nonempty (RestrictionKernelFiberTransport.Fiber
+      (G124ComparisonObservationTransport.nativeBottomSourceRestriction parameter c) a) ↔
+    Nonempty (RestrictionKernelFiberTransport.Fiber
+      (G124ComparisonObservationTransport.localBottomSourceRestriction parameter
+        ((reading parameter).map c))
+      (G124ComparisonObservationTransport.bottomFixedEndpointEquiv parameter X a)) :=
+  Equiv.nonempty_congr
+    (G124ComparisonObservationTransport.bottomRestrictedFiberEquiv parameter c a)
+
 /-- In the fixed three-case G-122 classification, the entire canonical
 section has the original bottom and coefficient values on both endpoints
 after passage through the main reader. -/
@@ -149,6 +213,57 @@ theorem fixed_g122_section_bottom_and_coefficient
     G124PrimitiveKernel.fixedG122LocalSection_sourceCoefficientPoint normalized q,
     G124PrimitiveKernel.fixedG122LocalSection_targetSourcePoint normalized q,
     G124PrimitiveKernel.fixedG122LocalSection_targetCoefficientPoint normalized q⟩
+
+/-- In the fixed G-122 three-case input, the same local normalization has a
+genuine right-inverse section on every normalized group element. The entire
+restricted kernel and each lift fiber, rather than a selected witness, are
+recovered alongside the generated and constant-one readings. -/
+theorem fixed_g122_three_case_section_classification :
+    (reading finiteAxisFoldGeometryParameter).map
+        finiteAxisFoldIdentityCochainBarBetaNativeHom =
+      (reading finiteAxisFoldGeometryParameter).map
+        finiteAxisFoldBarAlphaNativeHom ∧
+    (reading finiteAxisFoldGeometryParameter).map
+        finiteAxisFoldBarBetaNativeHom ≠
+      (reading finiteAxisFoldGeometryParameter).map
+        finiteAxisFoldBarAlphaNativeHom ∧
+    ¬ IsIso ((reading finiteAxisFoldGeometryParameter).map
+      finiteAxisFoldBarBetaNativeHom) ∧
+    (∀ normalized : GeneratedArrowComparisonSubgroup
+      ((G124PrimitiveNormalization.localNormalizationFunctor
+        G124PrimitiveKernel.fixedG122Carrier).map
+          G124PrimitiveKernel.fixedG122LocalArrow),
+      G124PrimitiveKernel.localComparisonNormalization
+          G124PrimitiveKernel.fixedG122LocalArrow
+          (G124PrimitiveKernel.fixedG122LocalSectionHom normalized) = normalized) ∧
+    IsGroupShortExact
+      (G124PrimitiveKernel.localComparisonNormalization
+        G124PrimitiveKernel.fixedG122LocalArrow).ker.subtype
+      (G124PrimitiveKernel.localComparisonNormalization
+        G124PrimitiveKernel.fixedG122LocalArrow) ∧
+    Function.Bijective G124PrimitiveKernel.fixedG122RestrictedKernelMulEquiv ∧
+    Function.Bijective G124PrimitiveKernel.fixedG122PrimitiveKernelMulEquiv ∧
+    (∀ (normalized : GeneratedArrowComparisonSubgroup
+      ((G124PrimitiveNormalization.localNormalizationFunctor
+        G124PrimitiveKernel.fixedG122Carrier).map
+          G124PrimitiveKernel.fixedG122LocalArrow))
+      (first second : RestrictionKernelFiberTransport.Fiber
+        (G124PrimitiveKernel.localComparisonNormalization
+          G124PrimitiveKernel.fixedG122LocalArrow) normalized),
+      ∃! kernel : ((G124PrimitiveKernel.localComparisonNormalization
+        G124PrimitiveKernel.fixedG122LocalArrow).ker)ᵐᵒᵖ,
+        RestrictionKernelFiberTransport.rightKernelAction
+          (G124PrimitiveKernel.localComparisonNormalization
+            G124PrimitiveKernel.fixedG122LocalArrow) normalized
+          kernel first = second) := by
+  exact ⟨G124PrimitiveKernel.fixedG122MainReading_identityBarBeta,
+    G124PrimitiveKernel.fixedG122MainReading_generatedBarBeta_ne_barAlpha,
+    G124PrimitiveKernel.fixedG122MainReading_generatedBarBeta_not_isIso,
+    G124PrimitiveKernel.fixedG122LocalSection_rightInverse,
+    G124PrimitiveKernel.fixedG122Local_shortExact,
+    G124PrimitiveKernel.fixedG122RestrictedKernelMulEquiv.bijective,
+    G124PrimitiveKernel.fixedG122PrimitiveKernelMulEquiv.bijective,
+    G124PrimitiveKernel.fixedG122LocalFiber_existsUnique_kernel⟩
 
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G124MainTheorem
 
