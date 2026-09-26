@@ -10446,3 +10446,80 @@ focused checkで確認した。固定head `dcf3e951d533f8d2530c3ea0dc0a5be2e7dcf
 数学A/B・Lean A/Bの4本査読は全て`No major findings`、CIは7件全て成功した。最終の
 A/B・パートII限定完了判定とmerge証拠は、この台帳headを対象にIssue #4711へ記録する。
 G-124全体はC–Eが残るため、Cycle 79の`proof-checkpoint`を維持する。
+
+## Cycle 80 proposal: D finite vertex reading
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124-aat-local-semantic-reconstruction
+cycle: 80
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: b6e60f2c42acf551659d7b064bae416c982fbdc6
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Issue #4711 A/B acceptance and design IV-1"
+  proof_dag_predecessors:
+    - "PermutationRestriction.restrictPreservingChange_injective_iff_meetsEveryFullComponent"
+    - "PermutationRestriction.restrictPreservingChange_surjective_iff_retainsFullConnectivity"
+    - "FiniteCoherentExtension.componentFamilyEquivCoherentVertexTable"
+  proof_obligation: "D: identify arbitrary finite raw vertex readings with the accepted component criteria"
+  selection_reason: "The accepted component theorems do not yet state the GOAL's common FiniteReading properties for an arbitrary finite vertex set."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "FinitePermutationReadingCriteria.separates_iff"
+    - "FinitePermutationReadingCriteria.extends_iff"
+    - "FinitePermutationReadingCriteria.determining_iff"
+    - "FinitePermutationReadingCriteria.exists_finite_determining_iff"
+  risks:
+    - "Do not impose finiteness on the full graph or hidden carrier."
+    - "Raw coherence must use actual retained edges, not global extension."
+  unchecked:
+    - "The fixed-head review and CI are pending."
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The four FiniteReading equivalences now quantify over any graph, hidden type with at least two elements, visible automorphism, and finite vertex subset."
+  completion_candidate: no
+  lean_artifacts:
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FiniteReadingCore.lean"
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationReadingCriteria.lean"
+  evidence:
+    - "FinitePermutationReadingCriteria.separates_iff"
+    - "FinitePermutationReadingCriteria.extends_iff"
+    - "FinitePermutationReadingCriteria.determining_iff"
+    - "FinitePermutationReadingCriteria.exists_finite_determining_iff"
+  claim_mapping:
+    theorem_names:
+      - "FinitePermutationReadingCriteria.separates_iff"
+      - "FinitePermutationReadingCriteria.extends_iff"
+      - "FinitePermutationReadingCriteria.determining_iff"
+      - "FinitePermutationReadingCriteria.exists_finite_determining_iff"
+    source_labels: ["fixed GOAL D, first three general criteria"]
+    conjuncts:
+      - "Separates iff the finite vertex set meets each full component."
+      - "Extends every retained-edge-coherent raw table iff retained vertices preserve full connectivity."
+      - "Finite determining set exists iff the full component type is finite."
+    undischarged_assumptions: []
+    acceptance_point: "Proposed for fixed-head review; this does not close D effectiveness or C/E."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["The existing component classification and raw-table descent are connected through exact point evaluation."]
+    remaining: ["D computational finite examples and common primitive-query evaluation remain."]
+  certificate_provenance:
+    discharged: ["Retained-edge coherence is defined on raw vertex tables by the existing EdgeCoherent predicate."]
+    unresolved: []
+  proof_use:
+    used: ["component classification", "induced-component restriction", "coherent raw-table descent"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "lake env lean ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationReadingCriteria.lean: pass, six declarations, standard axioms only"
+  blocking_findings: []
+  next_obligation: "Connect the finite raw reading to the common primitive query and existing effectiveness programs; C and E remain open."
+```
