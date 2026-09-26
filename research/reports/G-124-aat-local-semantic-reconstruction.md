@@ -10760,3 +10760,94 @@ The case connection uses the same fixed G-122 family, cell, coefficient and geom
 | Actual five-factor `barAlpha`; canonical object admissibility | `finiteAxisFoldBarAlphaNativeIso`, `finiteAxisFoldBarAlpha_read_point`, `fixedG122LocalIso`, `fixedG122NormalizedLocalIso`. | Raw/normalized full groups, bottom-fixed subgroup via III-2 `bottom_comparison_mem_iff`, split short exact sequence, restricted and ambient kernels, the ambient counterexample, and all lift fibers via the Cycle 83 declarations above. |
 
 The local ambient witness fixes source and target bottom/coefficient point evaluations by `fixedG122PrimitiveAmbient_sourcePoint`, `fixedG122PrimitiveAmbient_source_coefficientPoint`, `fixedG122PrimitiveAmbient_target_sourcePoint`, and `fixedG122PrimitiveAmbient_target_coefficientPoint`. Its failure to preserve the comparison square is witnessed by `fixedG122PrimitiveAmbientElement_not_restricted_range`. These statements use one and the same local ambient element.
+
+## Cycle 84 — Part IV-1 common finite reading and D criteria (proposal)
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124
+cycle: 84
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: eb0a2d68766d29a290047b0259ba88ffc75a304f
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 83 / Part III-3 was accepted in merged PR #4938; closed unmerged PR #4935 supplied reusable D evidence but did not discharge IV-1."
+  proof_dag_predecessors:
+    - "G-123 accepted following-change classification, finite coherent extension, and permutation restriction criteria"
+    - "FiniteEffectiveness.permutationEffectivenessProgram and FinitePermutationExampleCardinality"
+    - "IndependentAATPrimitiveReconstruction main reading and direct primitive Hom tables"
+  proof_obligation: "Prove the common finite-reading D criteria and executable finite specialization for arbitrary Q/K/fixed visible u, and connect tag/lens/protocol application point readings to the same main-N Hom table with finite query supports."
+  selection_reason: "D and the E application criteria require one common FiniteReading API and exact decoder equations, not three unrelated finite predicates."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "FiniteReadingCore, FinitePermutationReadingCriteria, FinitePermutationPointGraph"
+    - "FinitePermutationReadingEffectiveness, FiniteCommonHomReading, FiniteApplicationHomDecoders"
+  risks:
+    - "The general graph and hidden K must remain arbitrary; finite Bool point tables require separate Fintype K."
+    - "Effectiveness must use retained-edge coherence and the extension criterion, not finite cardinality alone."
+    - "The tag decoder must use an operation query; equality with the full source-choice family belongs to IV-2."
+  unchecked:
+    - "Fixed-head standard PR review, root acceptance audit, CI, and Issue synchronization."
+    - "IV-2 tag-choice recovery and E1, IV-3 lens/protocol determination and E2, IV-4 main completion remain."
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "General Finset separation/extension/determination criteria, finite point-graph equivalence, retained-edge executable readback, concrete finite effective examples, and exact application-specific main-reader Hom point decoders are now Lean declarations."
+  completion_candidate: no
+  lean_artifacts:
+    - "FinitePermutationReadingCriteria.separates_iff, extends_iff, determining_iff, exists_finite_determining_iff"
+    - "FinitePermutationPointGraph.finitePermutationPointTableEquiv"
+    - "FinitePermutationReadingEffectiveness.effective_of_extends, exists_effective_determining, univ_effective_determining"
+    - "FiniteApplicationHomDecoders.lensSemanticPointReading_decode, protocolSemanticPointReading_decode, tagPoint_read"
+    - "FiniteApplicationHomDecoders.decodeLensPoint_eq_of_support_agreement, decodeProtocolPoint_eq_of_support_agreement, decodeTagAt_eq_of_support_agreement"
+  claim_mapping:
+    source_labels:
+      - "Fixed GOAL D: distinct separation, extension, effectiveness, and finite determining-set criterion"
+      - "Design IV-1: common main-N Hom reading and application decoders with finite primitive support"
+    conjuncts:
+      - "FiniteReadingCore keeps Separates, Extends, Determining; existing FiniteEffectiveness keeps EffectivenessProgram and Effective."
+      - "FinitePermutationReadingCriteria identifies arbitrary-Q Finset readings with meetsEveryFullComponent and retainsFullConnectivity, then finite determining existence with Finite(FixedFComponent F)."
+      - "FinitePermutationPointGraph proves independent forward/backward point laws and, only for finite K, an equivalence with finite Bool tables."
+      - "FinitePermutationReadingEffectiveness uses retained-edge coherence, exact rejection/readback under the proved extension condition, a concrete univ selection, and fixed finite lens/protocol fiber counts."
+      - "FiniteCommonHomReading proves main-N equality on every primitive Hom query and any finite support. FiniteApplicationHomDecoders specializes it to lens semantic state-map points, protocol semantic vertex-map points, and actual tagged operation points."
+      - "The common Query source/target/hom roles preserve dependent object values and ULift Bool Hom values. TagAgrees is a separate local condition; IV-2 must prove that the decoded operation point equals each specified source-choice value."
+    undischarged_assumptions: []
+    acceptance_point: "Proposal for design IV-1 only; the four-lane PR review and CI decide acceptance."
+audits:
+  premise_delta:
+    discharged:
+      - "[Nontrivial K] is the general |K|≥2 premise; Fintype V/E/K and decidable inputs enter only the finite executable specialization."
+      - "RetainsFullConnectivity is derived for the concrete univ selection and is the exact condition in extends_iff for other selections."
+    remaining: []
+  certificate_provenance:
+    discharged:
+      - "The lawful forward/backward point-table code is assembled from graph cells, and the finite table equivalence is proved only under Fintype K."
+      - "Application decoder supports are explicit singleton Hom-query sets, and evaluation agreement follows from each support membership, not from an assumed completed map."
+    unresolved: []
+  proof_use:
+    used:
+      - "FiniteCoherentExtension.componentFamilyEquivCoherentVertexTable and accepted PermutationRestriction criteria"
+      - "FiniteEffectiveness.permutationEffectivenessProgram and finite example cardinality declarations"
+      - "IndependentAATPrimitiveReconstruction.localTable_read and original lens/protocol semantic maps"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "Focused FiniteApplicationHomDecoders elaboration: 24 namespace declarations, standard axioms only."
+    - "Targeted FiniteApplicationHomDecoders build: pass; focused/targeted D modules inherited from the prior draft were rebuilt in this branch."
+    - "Eleven IV-1 spine #print axioms declarations: propext, Classical.choice, Quot.sound only."
+  blocking_findings: []
+  next_obligation: "After IV-1 acceptance, design IV-2 tag source-choice reading, inverse limit, finite nonseparation, and uniform flip."
+```
+
+The application decoding equations quantify over every indicated semantic Hom (and, for the tag family, every source-choice function). The finite supports determine each selected Bool point; no finiteness of an arbitrary lens carrier, protocol state set, or general hidden K is inferred.
+
+| Application reading `r_i(f)` | Same main-N table decoder | Finite support and boundary |
+| --- | --- | --- |
+| Original tagged geometry **operation graph point** `tagNativeOperationPoint choice source` at `taggedIdentityOperation source` and its true-tag output | `decodeTagAt source`, with equality `tagPoint_read` for every `choice` and `source` | `tagPointSupport` and `decodeTagAt_eq_of_support_agreement`; `TagAgrees` is an independent condition. The stronger `decodeTagAt = choice source` assertion remains the IV-2 obligation. |
+| Semantic lens state-map point `lensSemanticPointReading input morphism x y` | `decodeLensPoint input source target x y`, with exact Bool equality `lensSemanticPointReading_decode` for every morphism | `lensPointSupport` and `decodeLensPoint_eq_of_support_agreement`; the original map equation is also `lensPoint_decode`. |
+| Semantic protocol vertex-map point `protocolSemanticPointReading input morphism vertex x y` | `decodeProtocolPoint input source target vertex x y`, with exact Bool equality `protocolSemanticPointReading_decode` for every morphism and vertex | `protocolPointSupport` and `decodeProtocolPoint_eq_of_support_agreement`; the original generator-map equation is also `protocolPoint_decode`. |

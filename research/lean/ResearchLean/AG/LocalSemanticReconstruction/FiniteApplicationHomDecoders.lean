@@ -43,6 +43,29 @@ theorem lensPoint_decode (input : LensFamilyInput.{u})
   rw [decodeLensPoint, FiniteCommonHomReading.homPoint_read]
   exact IndependentCarrierGraph.read_edge _ _ morphism.down.toFun x y
 
+/-- The application reading is the actual semantic lens map's point graph. -/
+noncomputable def lensSemanticPointReading (input : LensFamilyInput.{u})
+    {source target : NativeCategory (LensParameter input)}
+    (morphism : source ⟶ target)
+    (x : (ULiftHom.objDown source).Carrier)
+    (y : (ULiftHom.objDown target).Carrier) : Bool := by
+  classical
+  exact decide (morphism.down.toFun x = y)
+
+theorem lensSemanticPointReading_decode (input : LensFamilyInput.{u})
+    {source target : NativeCategory (LensParameter input)}
+    (morphism : source ⟶ target)
+    (x : (ULiftHom.objDown source).Carrier)
+    (y : (ULiftHom.objDown target).Carrier) :
+    lensSemanticPointReading input morphism x y =
+      decodeLensPoint input source target x y
+        (localHomTable (LensParameter input)
+          ((reading (LensParameter input)).map morphism)) := by
+  classical
+  apply Bool.eq_iff_iff.mpr
+  simpa [lensSemanticPointReading] using
+    (lensPoint_decode input morphism x y).symm
+
 /-- One lens point requires exactly one primitive Hom query. -/
 def lensPointSupport (input : LensFamilyInput.{u})
     (source target : NativeCategory (LensParameter input))
@@ -61,6 +84,18 @@ theorem lensPointSupport_read (input : LensFamilyInput.{u})
           ((reading (LensParameter input)).map morphism) query.1 =
         nativeHomTable (LensParameter input) morphism query.1 :=
   FiniteCommonHomReading.finiteHomSupport_read _ morphism _
+
+theorem decodeLensPoint_eq_of_support_agreement
+    (input : LensFamilyInput.{u})
+    (source target : NativeCategory (LensParameter input))
+    (x : (ULiftHom.objDown source).Carrier)
+    (y : (ULiftHom.objDown target).Carrier)
+    (first second : HomTable (LensParameter input))
+    (agree : ∀ query ∈ lensPointSupport input source target x y,
+      first query = second query) :
+    decodeLensPoint input source target x y first =
+      decodeLensPoint input source target x y second := by
+  exact agree _ (by simp [lensPointSupport])
 
 private abbrev ProtocolParameter (input : ProtocolFamilyInput.{u}) :
     Parameter.{u, u} := .protocol input
@@ -103,6 +138,33 @@ theorem protocolPoint_decode (input : ProtocolFamilyInput.{u})
   exact IndependentCarrierGraph.read_edge _ _
     ((ProtocolRealization.res morphism.down).component vertex) x y
 
+/-- The application reading uses the original semantic protocol generator. -/
+noncomputable def protocolSemanticPointReading (input : ProtocolFamilyInput.{u})
+    {source target : NativeCategory (ProtocolParameter input)}
+    (morphism : source ⟶ target) (vertex : input.schema.Vertex)
+    (x : (ULiftHom.objDown source).toFunctor.obj
+      (input.schema.vertexObject vertex))
+    (y : (ULiftHom.objDown target).toFunctor.obj
+      (input.schema.vertexObject vertex)) : Bool := by
+  classical
+  exact decide ((ProtocolRealization.res morphism.down).component vertex x = y)
+
+theorem protocolSemanticPointReading_decode (input : ProtocolFamilyInput.{u})
+    {source target : NativeCategory (ProtocolParameter input)}
+    (morphism : source ⟶ target) (vertex : input.schema.Vertex)
+    (x : (ULiftHom.objDown source).toFunctor.obj
+      (input.schema.vertexObject vertex))
+    (y : (ULiftHom.objDown target).toFunctor.obj
+      (input.schema.vertexObject vertex)) :
+    protocolSemanticPointReading input morphism vertex x y =
+      decodeProtocolPoint input source target vertex x y
+        (localHomTable (ProtocolParameter input)
+          ((reading (ProtocolParameter input)).map morphism)) := by
+  classical
+  apply Bool.eq_iff_iff.mpr
+  simpa [protocolSemanticPointReading] using
+    (protocolPoint_decode input morphism vertex x y).symm
+
 /-- Each selected protocol vertex-map point has one primitive Hom query. -/
 def protocolPointSupport (input : ProtocolFamilyInput.{u})
     (source target : NativeCategory (ProtocolParameter input))
@@ -127,6 +189,21 @@ theorem protocolPointSupport_read (input : ProtocolFamilyInput.{u})
         nativeHomTable (ProtocolParameter input) morphism query.1 :=
   FiniteCommonHomReading.finiteHomSupport_read _ morphism _
 
+theorem decodeProtocolPoint_eq_of_support_agreement
+    (input : ProtocolFamilyInput.{u})
+    (source target : NativeCategory (ProtocolParameter input))
+    (vertex : input.schema.Vertex)
+    (x : (ULiftHom.objDown source).toFunctor.obj
+      (input.schema.vertexObject vertex))
+    (y : (ULiftHom.objDown target).toFunctor.obj
+      (input.schema.vertexObject vertex))
+    (first second : HomTable (ProtocolParameter input))
+    (agree : ∀ query ∈ protocolPointSupport input source target vertex x y,
+      first query = second query) :
+    decodeProtocolPoint input source target vertex x y first =
+      decodeProtocolPoint input source target vertex x y second := by
+  exact agree _ (by simp [protocolPointSupport])
+
 private abbrev TagParameter : Parameter.{0, 0} :=
   .geometry FiniteModel.carrier Mode.explicit
 
@@ -144,6 +221,20 @@ noncomputable def decodeTagAt
     (table : HomTable TagParameter) : Bool :=
   table (tagPointQuery source)
 
+/-- The selected original geometry operation point is the tag application's
+native reading before applying the common reconstruction. -/
+noncomputable def tagNativeOperationPoint
+    (choice : ArchitectureObject FiniteModel.carrier → Bool)
+    (source : ArchitectureObject FiniteModel.carrier) : Bool :=
+  nativeHomTable TagParameter (taggedSourceChoiceNativeHom choice)
+    (tagPointQuery source)
+
+/-- Agreement with a proposed tag family is an independent local condition on
+the decoded table; it is not built into the query or Hom value. -/
+def TagAgrees (choice : ArchitectureObject FiniteModel.carrier → Bool)
+    (table : HomTable TagParameter) : Prop :=
+  ∀ source, decodeTagAt source table = choice source
+
 /-- One tag reading depends on a singleton operation query. -/
 noncomputable def tagPointSupport
     (source : ArchitectureObject FiniteModel.carrier) :
@@ -159,6 +250,26 @@ theorem tagPointSupport_read
             (taggedSourceChoiceNativeHom choice)) query.1 =
         nativeHomTable TagParameter (taggedSourceChoiceNativeHom choice) query.1 :=
   FiniteCommonHomReading.finiteHomSupport_read _ _ _
+
+/-- The fixed tagged application point is the same native and common local
+operation query, for every source choice. -/
+theorem tagPoint_read
+    (choice : ArchitectureObject FiniteModel.carrier → Bool)
+    (source : ArchitectureObject FiniteModel.carrier) :
+    tagNativeOperationPoint choice source =
+      decodeTagAt source
+        (localHomTable TagParameter
+          ((reading TagParameter).map (taggedSourceChoiceNativeHom choice))) :=
+  (FiniteCommonHomReading.homPoint_read TagParameter
+    (taggedSourceChoiceNativeHom choice) (tagPointQuery source)).symm
+
+theorem decodeTagAt_eq_of_support_agreement
+    (source : ArchitectureObject FiniteModel.carrier)
+    (first second : HomTable TagParameter)
+    (agree : ∀ query ∈ tagPointSupport source,
+      first query = second query) :
+    decodeTagAt source first = decodeTagAt source second := by
+  exact agree _ (by simp [tagPointSupport])
 
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.FiniteApplicationHomDecoders
 
