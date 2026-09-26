@@ -53,6 +53,35 @@ theorem assembleHom_J
   rw [J_eq_read_assembled]
   exact assembleHom_read TagParameter _
 
+/-- Distinct coherent finite families remain distinct after mapping into the
+same main local Hom: its B inverse recovers the actual source-choice map. -/
+theorem J_injective : Function.Injective J := by
+  intro first second equality
+  have hnative := congrArg (assembleHom TagParameter) equality
+  rw [assembleHom_J, assembleHom_J] at hnative
+  have hchoice := taggedSourceChoiceNativeHom_injective hnative
+  have hfamily := congrArg TagChange.read hchoice
+  simpa only [TagChange.read_assemble] using hfamily
+
+/-- Every finite source selection misses a distinct actual member of the
+same local section map. Its unseen bit is supplied by the existing
+outside-point source-choice witness. -/
+theorem finite_J_not_separating
+    (S : Finset TagChange.TaggedArchitectureIndex) :
+    ∃ family : TagChange.CoherentFamily TagChange.TaggedArchitectureIndex,
+      J family ≠ J (TagChange.read (fun _ => false)) ∧
+        ∀ source ∈ S, TagChange.assemble family source = false := by
+  obtain ⟨choice, hchoice, hagree⟩ :=
+    TagChange.taggedSourceChoice_finite_reading_not_separating S
+  refine ⟨TagChange.read choice, ?_, ?_⟩
+  · intro equality
+    apply hchoice
+    have hfamily := J_injective equality
+    have hassembled := congrArg TagChange.assemble hfamily
+    simpa only [TagChange.assemble_read] using hassembled
+  · intro source hsource
+    simpa only [TagChange.assemble_read] using hagree source hsource
+
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeMainRecovery
 
 end TagChangeMainRecovery
