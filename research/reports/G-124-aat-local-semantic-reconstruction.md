@@ -11509,3 +11509,19 @@ audits:
   blocking_findings: []
   next_obligation: "Generate the same-head final packet and start a separate cumulative four-lane completion audit."
 ```
+
+## G-124 固定target A–Eの主張・証拠対応
+
+同じ `IndependentAATPrimitiveReconstruction.Parameter` と `Query`・`Value`・`reading` を A–E で用いる。主定理の宣言群は `G124MainTheorem.lean`、C・E1・E2 の同一入力での結論は `G124MainCClosure.lean`、`G124MainE1Closure.lean`、`G124MainE2Finite.lean`、`G124MainE2Route.lean`、`G124MainE2Groups.lean` に置く。
+
+| 固定条項 | 直接の構成・結論 | 依存する受理済み構成 |
+| --- | --- | --- |
+| A・B | `IndependentAATPrimitiveReconstruction.reconstructionData`、`equivalence`、`G124MainTheorem.aatLocalSemanticReconstruction_abc` | 四族の原始query、有限fragment、局所法則、対象・全Homの両逆 |
+| C | `G124MainCClosure` の全比較群、三投影・Karoubi/Arrow・G-120反映、固定G-122のsection・二核・fiberとambient点値、`G124MainTheorem.aatLocalSemanticReconstruction_c_g122` | `G124ProjectionGlobal`、`G124ProjectionGroupSquare`、`G124ComparisonTransport`、`G124ComparisonObservationTransport`、`G124PrimitiveKernel` |
+| D | `G124MainTheorem.aatLocalSemanticReconstruction_d` の区別・延長・決定集合の各同値と、列挙入力の実効性 | `FinitePermutationReadingCriteria`、`FiniteEffectiveness`、固定FixedF分類 |
+| E1 | `G124MainE1Closure` の群・逆極限・主Nの一致、`G124MainTheorem.aatLocalSemanticReconstruction_e1_universal` と `_e1` の有限非区別・flip | `TagChangeFiniteGroupReconstruction`、`TagChangeInverseLimitUniversal`、`TagChangeMainRecovery`、`TagChangeMainFlip` |
+| E2 | `G124MainE2Finite`、`G124MainE2Route`、`G124MainE2Groups` の一般Hom・有限読み取り・program・Karoubi/Arrow・全H変更群、`G124MainTheorem.aatLocalSemanticReconstruction_e2_lens` と `_e2_protocol` | lens/protocol意味論、`CSFiniteValueQueryBridge`、`CSKaroubiValueBridge`、`CSComparisonMain`、`CSChangeProgramLocal`、`CSComponentLocalGroup` |
+
+A の有限局所片は、型付きqueryの有限supportとその有限tableを指す。carrier・係数などの型参照は一つの役割付きセルで保持し、値集合の有限濃度を主張しない。lensの `stateCarrier` とprotocolの頂点ごとの `stateCarrier` はこの型参照である。Dの有限個の読取りによる区別・延長は一つの局所値の情報量を制限せず、有限量の入力から計算する実効性では別に列挙tableと等号判定を与える。完成した全域射を一つのセルに格納する構成ではない。
+
+一般圏論の再構成、Karoubi/Arrow輸送、G-120の群論判定、有限graphの連結成分・逆極限の原理は受理済みの定理を用いる。AAT固有の証拠は、Atom・Law・operation・完全幾何の原始評価からの四族の局所法則と主読取り、三投影・正規化・固定G-122比較の成分式、タグ変更族および二つのCS意味論への同じ読取りの適用である。これが n1012 第8章の主張と Lean の対応範囲となる。
