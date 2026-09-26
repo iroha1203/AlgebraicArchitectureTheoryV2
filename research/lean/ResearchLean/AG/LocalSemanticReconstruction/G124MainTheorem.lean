@@ -9,6 +9,10 @@ import ResearchLean.AG.LocalSemanticReconstruction.TagChangeEdgelessCriterion
 import ResearchLean.AG.LocalSemanticReconstruction.TagChangeInverseLimitUniversal
 import ResearchLean.AG.LocalSemanticReconstruction.FinitePermutationReadingCriteria
 import ResearchLean.AG.LocalSemanticReconstruction.FinitePermutationReadingEffectiveness
+import ResearchLean.AG.LocalSemanticReconstruction.G124MainCClosure
+import ResearchLean.AG.LocalSemanticReconstruction.G124MainE1Closure
+import ResearchLean.AG.LocalSemanticReconstruction.G124MainE2Finite
+import ResearchLean.AG.LocalSemanticReconstruction.G124MainE2Route
 import Formal.Util.AssertStandardAxioms
 
 /-! Design IV-4: one quantified theorem family over the same primitive reader.

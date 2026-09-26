@@ -11254,7 +11254,7 @@ audits:
   next_obligation: "After Cycle 88/IV-3 acceptance, design IV-4 A–E theorem family and independent completion review."
 ```
 
-## Cycle 89 — Design IV-4 A–E quantified main theorem family (proposal)
+## Cycle 89 — Design IV-4 A–E quantified main theorem family (rejected)
 
 ```yaml
 ledger_type: target_cycle_result
@@ -11289,8 +11289,8 @@ selection:
   unchecked:
     - "The exact PR head, 4-lane standard review, completion packet, independent 4-lane final math-lean-review, all CI, and root integration."
 result:
-  proposed_result_type: proof-obligation-discharged
-  completion_candidate: yes
+  proposed_result_type: rejected
+  completion_candidate: no
   proof_obligation_delta: "Seven declarations in one G124MainTheorem module expose the common main reader's all-Hom and object reconstruction, three natural projection pair squares and arbitrary Karoubi Hom reflection, fixed G-122 classification, general graph D criteria and finite effectiveness, one coherent tag family with its universal finite projection lift and common-main flip/nonseparation, and lens/protocol general-Hom assembly jointly with the original fixed-u determining criteria."
   lean_artifacts:
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/G124MainTheorem.lean"
@@ -11323,8 +11323,9 @@ result:
       - "D finite readings separately expose separation, extension, determination and conditional executable effectiveness; no graph finiteness in the first three criteria."
       - "E1 main J recovers source-choice assembly, every finite selection misses a nonidentity family, flip squares/commutes/separates, and the same edgeless D predicate has no finite determining set."
       - "E2 each general Hom is the main reading of its original finite table assembly; the original fixed-u lens/protocol change fibers have reference/representative determining sets."
-    undischarged_assumptions: []
-    acceptance_point: "Completion proposal; only fixed-head standard review and independent final completion review may accept it."
+    undischarged_assumptions:
+      - "At head 6fa7032f8, C subgroup/G-120/Arrow/section equations, E1 group/limit isomorphism, and E2 independent extension/program/group connections are absent from the new theorem-family conclusions and proof-use."
+    acceptance_point: "Rejected by the first independent PR review at head 6fa7032f8; Cycle 90 selects full A–E statement/proof-use closure in the same IV-4 PR."
     port_status: not-applicable
 audits:
   premise_delta:
@@ -11355,8 +11356,11 @@ audits:
     - "Registered focused check of G124MainTheorem: seven declarations and standard axioms only."
     - "Targeted build of ResearchLean.AG.LocalSemanticReconstruction.G124MainTheorem: pass (4645 dependency jobs); Research aggregate was not built."
     - "All seven new declarations' #print axioms: propext, Classical.choice, Quot.sound only."
-  blocking_findings: []
-  next_obligation: "Fix the PR head and run standard review-pr, then final packet and independent math-lean-review across all A–E evidence before any completion verdict."
+  blocking_findings:
+    - "Math A and Lean A/B: C subgroup/G-120/Arrow and fixed G-122 section clauses are not exposed in the seven theorem types."
+    - "Math A: E1 C2^Omega group and finite inverse-limit isomorphisms are absent from the new theorem family."
+    - "Math A and Lean A/B: E2 arbitrary coherent-table extension, general finite criteria, Karoubi/Arrow and actual program/group recovery are absent from the new theorem-family conclusions."
+  next_obligation: "Cycle 90: expose and use the missing C/E1/E2 predecessor theorems in exact same-input A–E statement clauses in PR #4942."
 ```
 
 ### Fixed-target correspondence for the completion packet
@@ -11372,3 +11376,76 @@ audits:
 | E2 protocol | `ProtocolObservedFiniteDetermination`, `CSFiniteValueQueryBridge`, `CSKaroubiValueBridge`, `CSFixedFFiberD`, `CSChangeProgramLocal`, `CSProtocolKernelLocal`, `CSProtocolAdapterLocal` | `_e2_protocol` joins arbitrary original f's coherent vertex table assembly in main N to the fixed-u original projection-fiber determining criterion | Original tagged/edge/observation coherence and all-path naturality, component action and u(v) adapter/program point readback are IV-3 theorem sources. |
 
 For n1012 chapter 8, the reusable categorical separation/assembly principle is `LocalReconstructionEquivalence.ReconstructionData`; the fixed primitive data, four-family inclusion, explicit comparison projection/normalization, graph restriction criteria and two CS finite value readings are AAT-specific construction. The same `FiniteReading.Separates`/`Extends`/`Determining` definitions classify the finite protocol/lens applications and the infinite tagged obstruction. Existence of a local reconstruction is separate from finite determinability: the tagged family reconstructs from all finite restrictions yet has no finite separating selection.
+
+## Cycle 90 — IV-4 statement and proof-use closure
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124
+cycle: 90
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 6fa7032f8743dfbda913b96d7e34a930d483a862
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 89 head was rejected by the first independent IV-4 PR review: three central statement/proof-use gaps in C, E1, E2."
+  proof_dag_predecessors:
+    - "The Cycle 89 A/B, D and partial C/E1/E2 quantified theorem family"
+    - "G124ComparisonTransport, G124ProjectionGroupSquare, G124ComparisonObservationTransport, G124KaroubiProjection, G124PrimitiveKernel"
+    - "TagChangeFiniteGroupReconstruction, TagChangeInverseLimitUniversal, TagChangeMainRecovery, TagChangeMainFlip"
+    - "LensSemanticFiniteDetermination, ProtocolObservedFiniteDetermination, CSKaroubiValueBridge, CSChangeProgramLocal, CSComparisonMain, CSComponentLocalGroup"
+  proof_obligation: "Expose missing full comparison/restriction/Arrow/G-120 and fixed G-122 section equations; group and inverse-limit tagged reconstruction; general-Hom finite separation/extension/effectiveness plus Karoubi/Arrow, actual program and change group links, all in exact same-input theorem-family conclusions."
+  selection_reason: "The first review established that available predecessor declarations were only cited in the report, not conclusions or proof dependencies of the claimed final assembly."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "G124MainTheorem C full comparison/restriction/Arrow/G-122 section result family"
+    - "G124MainTheorem E1 group and inverse-limit result family"
+    - "G124MainTheorem E2 general finite criteria, Karoubi/Arrow, program and local-group result family"
+  risks:
+    - "Merely adding aliases, Nonempty markers, or supplied certificate fields would not repair the fixed-target statement."
+    - "Any group or finite program clause must retain original arbitrary inputs and semantic endpoints."
+  unchecked:
+    - "Fixed-head 4-lane standard review, final completion packet and independent final math-lean-review."
+result:
+  proposed_result_type: proof-obligation-discharged
+  completion_candidate: yes
+  proof_obligation_delta: "The IV-4 theorem family now exposes arbitrary comparison group and qualified restrictions, Arrow squares, G-120 kernels/fibers, fixed G-122 section evaluations, the source-choice group/finite inverse limit/main-N identification, and both semantic finite criteria, Arrow square, comparison and executable readback routes."
+  lean_artifacts:
+    - "G124MainCClosure.lean: comparison_full_and_bottom, comparison_all_qualifications, arbitrary_karoubi_arrow_square, comparison_g120_kernel_and_fibers, fixed_g122_section_bottom_and_coefficient"
+    - "G124MainE1Closure.lean: tag_group_limit_main, tag_limit_projection_and_unique"
+    - "G124MainE2Finite.lean: lens_general_finite_reading, protocol_general_finite_reading, protocol_general_effective"
+    - "G124MainE2Route.lean: lens_arrow_and_comparison, protocol_arrow_and_comparison, lens_program_main_point_and_rejection, protocol_program_main_point_and_rejection"
+  evidence:
+    - "PR #4942 initial review comment records the three central gaps at head 6fa7032f8."
+    - "Focused checks of all four new files and G124MainTheorem.lean passed; all reported declarations have standard-axiom-only namespace audits."
+    - "Targeted lake build ResearchLean.AG.LocalSemanticReconstruction.G124MainTheorem passed."
+  claim_mapping:
+    theorem_names: ["G124MainTheorem.comparison_full_and_bottom", "G124MainTheorem.comparison_all_qualifications", "G124MainTheorem.arbitrary_karoubi_arrow_square", "G124MainTheorem.comparison_g120_kernel_and_fibers", "G124MainTheorem.fixed_g122_section_bottom_and_coefficient", "G124MainTheorem.tag_group_limit_main", "G124MainTheorem.tag_limit_projection_and_unique", "G124MainTheorem.lens_general_finite_reading", "G124MainTheorem.protocol_general_finite_reading", "G124MainTheorem.protocol_general_effective", "G124MainTheorem.lens_arrow_and_comparison", "G124MainTheorem.protocol_arrow_and_comparison", "G124MainTheorem.lens_program_main_point_and_rejection", "G124MainTheorem.protocol_program_main_point_and_rejection"]
+    source_labels: ["GOAL C/E1/E2; design IV-4"]
+    conjuncts:
+      - "C: full and qualified comparison groups, bottom restriction, arbitrary Arrow square, G-120 kernel/fiber, fixed G-122 section points."
+      - "E1: actual source-choice group and all-finite coherent family equivalences, projection lift/value/uniqueness, common main-N equation."
+      - "E2: general semantic finite separation/extension/effectiveness under explicit finite inputs, finite-table main-N equation, arbitrary Karoubi Arrow square, comparison group, reversible program rejection and successful output point."
+    undischarged_assumptions: []
+    acceptance_point: "Implementation checkpoint; final acceptance depends on independent fixed-head PR and completion reviews."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["C full comparison/Arrow/G-120/section route", "E1 group/limit/main-N route", "E2 finite semantic/Arrow/program route"]
+    remaining: []
+  certificate_provenance:
+    discharged: []
+    unresolved: []
+  proof_use:
+    used: ["G124ComparisonTransport", "G124ProjectionGroupSquare", "G124ComparisonObservationTransport", "G124KaroubiProjection", "G124PrimitiveKernel", "TagChangeInverseLimitUniversal", "TagChangeMainRecovery", "LensSemanticFiniteDetermination", "ProtocolObservedFiniteDetermination", "CSFiniteValueQueryBridge", "CSKaroubiValueBridge", "CSComparisonMain", "CSChangeProgramLocal"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pending-independent-review
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: []
+  blocking_findings: []
+  next_obligation: "Review the corrected fixed head, then construct the final A–E packet and run a separate cumulative four-lane completion review."
+```
