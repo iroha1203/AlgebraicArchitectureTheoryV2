@@ -179,6 +179,75 @@ theorem comparison_g120_lift_exists_iff
   Equiv.nonempty_congr
     (G124ComparisonObservationTransport.bottomRestrictedFiberEquiv parameter c a)
 
+/-- G-120's exact reflection classification is transported by the whole
+comparison equivalence and the endpoint square of the same main N. Each
+side retains its kernel-and-image criterion; reflection is not postulated
+for an arbitrary comparison. -/
+theorem comparison_g120_reflection_transport
+    (parameter : Parameter.{u, v})
+    {X Y : NativeCategory parameter} (c : X ⟶ Y) :
+    ((nativeBottomFixed parameter X).comap
+        (generatedArrowComparisonSourceHom c) =
+      nativeBottomFixedComparison parameter c ↔
+      (localBottomFixed parameter ((reading parameter).obj X)).comap
+        (generatedArrowComparisonSourceHom ((reading parameter).map c)) =
+      localBottomFixedComparison parameter ((reading parameter).map c)) ∧
+    ((nativeBottomFixed parameter X).comap
+        (generatedArrowComparisonSourceHom c) =
+      nativeBottomFixedComparison parameter c ↔
+      (generatedArrowComparisonSourceHom c).ker ≤
+        nativeBottomFixedComparison parameter c ∧
+      (nativeBottomFixedComparison parameter c).map
+          (generatedArrowComparisonSourceHom c) =
+        nativeBottomFixed parameter X ⊓
+          (generatedArrowComparisonSourceHom c).range) ∧
+    ((localBottomFixed parameter ((reading parameter).obj X)).comap
+        (generatedArrowComparisonSourceHom ((reading parameter).map c)) =
+      localBottomFixedComparison parameter ((reading parameter).map c) ↔
+      (generatedArrowComparisonSourceHom ((reading parameter).map c)).ker ≤
+        localBottomFixedComparison parameter ((reading parameter).map c) ∧
+      (localBottomFixedComparison parameter ((reading parameter).map c)).map
+          (generatedArrowComparisonSourceHom ((reading parameter).map c)) =
+        localBottomFixed parameter ((reading parameter).obj X) ⊓
+          (generatedArrowComparisonSourceHom ((reading parameter).map c)).range) := by
+  let E := G124ComparisonTransport.comparisonMulEquiv parameter c
+  have hSource (pair : GeneratedArrowComparisonSubgroup c) :
+      pair ∈ (nativeBottomFixed parameter X).comap
+          (generatedArrowComparisonSourceHom c) ↔
+        E pair ∈ (localBottomFixed parameter ((reading parameter).obj X)).comap
+          (generatedArrowComparisonSourceHom ((reading parameter).map c)) := by
+    change generatedArrowComparisonSourceHom c pair ∈ nativeBottomFixed parameter X ↔
+      generatedArrowComparisonSourceHom ((reading parameter).map c) (E pair) ∈
+        localBottomFixed parameter ((reading parameter).obj X)
+    rw [G124ComparisonTransport.source_compatibility]
+    exact bottom_fixed_iff parameter X _
+  have hBottom (pair : GeneratedArrowComparisonSubgroup c) :
+      pair ∈ nativeBottomFixedComparison parameter c ↔
+        E pair ∈ localBottomFixedComparison parameter ((reading parameter).map c) :=
+    bottom_comparison_mem_iff parameter c pair
+  refine ⟨?_,
+    G124ComparisonObservationTransport.nativeBottomSource_reflection_iff parameter c,
+    G124ComparisonObservationTransport.localBottomSource_reflection_iff parameter
+      ((reading parameter).map c)⟩
+  constructor
+  · intro hn
+    apply Subgroup.ext
+    intro localPair
+    obtain ⟨pair, rfl⟩ := E.surjective localPair
+    constructor
+    · intro hp
+      exact (hBottom pair).mp (by simpa only [hn] using (hSource pair).mpr hp)
+    · intro hp
+      exact (hSource pair).mp (by simpa only [hn] using (hBottom pair).mpr hp)
+  · intro hl
+    apply Subgroup.ext
+    intro pair
+    constructor
+    · intro hp
+      exact (hBottom pair).mpr (by simpa only [hl] using (hSource pair).mp hp)
+    · intro hp
+      exact (hSource pair).mpr (by simpa only [hl] using (hBottom pair).mp hp)
+
 /-- In the fixed three-case G-122 classification, the entire canonical
 section has the original bottom and coefficient values on both endpoints
 after passage through the main reader. -/
@@ -264,6 +333,48 @@ theorem fixed_g122_three_case_section_classification :
     G124PrimitiveKernel.fixedG122RestrictedKernelMulEquiv.bijective,
     G124PrimitiveKernel.fixedG122PrimitiveKernelMulEquiv.bijective,
     G124PrimitiveKernel.fixedG122LocalFiber_existsUnique_kernel⟩
+
+/-- The concrete ambient-kernel obstruction used in the fixed three-case
+classification has all four bottom/coefficient primitive point evaluations,
+while remaining outside the range of the restricted kernel. -/
+theorem fixed_g122_ambient_obstruction_points
+    (q : IndependentCarrierGraph.Query) :
+    G124PrimitiveKernel.fixedG122PrimitiveAmbientElement ∉
+      (G124PrimitiveKernel.primitiveRestrictedToAmbient
+        G124PrimitiveKernel.fixedG122LocalArrow).range ∧
+    IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        G124PrimitiveKernel.fixedG122PrimitiveAmbientElement.1.forward.hom.val
+        (.source q) =
+      IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        ((G124PrimitiveNormalization.representativeAdmissibleReading
+          G124PrimitiveKernel.fixedG122Carrier).map
+            (𝟙 G124PrimitiveKernel.fixedG122Source)).hom.val (.source q) ∧
+    IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        G124PrimitiveKernel.fixedG122PrimitiveAmbientElement.1.forward.hom.val
+        (.coefficient q) =
+      IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        ((G124PrimitiveNormalization.representativeAdmissibleReading
+          G124PrimitiveKernel.fixedG122Carrier).map
+            (𝟙 G124PrimitiveKernel.fixedG122Source)).hom.val (.coefficient q) ∧
+    IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        G124PrimitiveKernel.fixedG122PrimitiveAmbientElement.2.forward.hom.val
+        (.source q) =
+      IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        ((G124PrimitiveNormalization.representativeAdmissibleReading
+          G124PrimitiveKernel.fixedG122Carrier).map
+            (𝟙 G124PrimitiveKernel.fixedG122Target)).hom.val (.source q) ∧
+    IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        G124PrimitiveKernel.fixedG122PrimitiveAmbientElement.2.forward.hom.val
+        (.coefficient q) =
+      IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        ((G124PrimitiveNormalization.representativeAdmissibleReading
+          G124PrimitiveKernel.fixedG122Carrier).map
+            (𝟙 G124PrimitiveKernel.fixedG122Target)).hom.val (.coefficient q) := by
+  exact ⟨G124PrimitiveKernel.fixedG122PrimitiveAmbientElement_not_restricted_range,
+    G124PrimitiveKernel.fixedG122PrimitiveAmbient_sourcePoint q,
+    G124PrimitiveKernel.fixedG122PrimitiveAmbient_source_coefficientPoint q,
+    G124PrimitiveKernel.fixedG122PrimitiveAmbient_target_sourcePoint q,
+    G124PrimitiveKernel.fixedG122PrimitiveAmbient_target_coefficientPoint q⟩
 
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.G124MainTheorem
 
