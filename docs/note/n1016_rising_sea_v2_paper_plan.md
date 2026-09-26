@@ -55,7 +55,7 @@ Lawの評価値も保存する場合は $`o`$ に含める。操作と観測は�
 観測値の等号を判定できるものとする。二つの操作経路 $`p,q`$ を一致させる要求は、
 $`R=\{(T_p(x),T_q(x))\mid x\in S\}`$ として表す。
 
-操作合同関係とは、各 $`T_e`$ が保つ同値関係である。その全体を $`\operatorname{Con}_T(S)`$
+操作合同関係とは、各 $`T_e`$ が保つ同値関係である。その全体を $`\mathrm{Con}_T(S)`$
 とし、包含で順序づける。$`R`$ を含む最小の操作合同関係を $`\equiv_R`$ とする。
 一方、空語を含むすべての操作語 $`w`$ について
 
@@ -72,7 +72,7 @@ x\approx_o y
 主定理候補は、元の $`S`$ からの商写像と可換な同型までの修復商を、次の区間で分類する。
 
 ```math
-\{\theta\in\operatorname{Con}_T(S)
+\{\theta\in\mathrm{Con}_T(S)
   \mid \equiv_R\ \subseteq\theta\subseteq\ \approx_o\}.
 ```
 
@@ -168,24 +168,24 @@ $`N=ir`$ に $`N\delta=\delta N=N`$ まで求める場合には $`r\delta=r`$ �
 有限fiber間の全単射へ広げる。有限有向グラフ $`Q`$ と経路関係 $`\Pi`$、
 それを満たす有限集合値の実現 $`F`$ を固定する。追加の観測は定値とする。
 各連結成分で根と全域木を選び、辺とその逆輸送からなる閉路の置換が生成する群を
-$`\operatorname{Hol}_j(F)`$ とする。これは操作のholonomyである。
+$`\mathrm{Hol}_j(F)`$ とする。これは操作のholonomyである。
 
 最初の定理候補は、底を固定する変更群を、閉路の作用と可換な置換から求める式である。
 
 ```math
-\operatorname{Aut}_Q(F)\cong
-\prod_j C_{\operatorname{Sym}(K_j)}(\operatorname{Hol}_j(F)).
+\mathrm{Aut}_Q(F)\cong
+\prod_j C_{\mathrm{Sym}(K_j)}(\mathrm{Hol}_j(F)).
 ```
 
 ここで $`K_j`$ は根のfiber、$`C`$ は中心化群を表す。木の辺から他の頂点の変更を
 決定し、残る辺の条件を中心化条件へ移す。根や木を変えたときの共役も対応させる。
-次に、$`\Pi`$ が生成する経路同値を保つ群 $`H\le\operatorname{Aut}(Q)`$ を指定する。
+次に、$`\Pi`$ が生成する経路同値を保つ群 $`H\le\mathrm{Aut}(Q)`$ を指定する。
 底の変更で再添字づけた実現と、各閉路の作用を同時に共役で結べる条件から、
 持ち上がる部分群 $`H_{\mathrm{lift}}\le H`$ を特定する。
 底の変更とその持ち上げの対の群 $`A_F`$ について
 
 ```math
-1\longrightarrow\operatorname{Aut}_Q(F)
+1\longrightarrow\mathrm{Aut}_Q(F)
 \longrightarrow A_F\longrightarrow H_{\mathrm{lift}}\longrightarrow1
 ```
 
@@ -365,10 +365,10 @@ R14・R8・R10・R15・R3を中心に選ぶ。
 v1の欠損は
 
 ```math
-J_A=(\dim\ker T_A,\ \dim\operatorname{coker}T_A)
+J_A=(\dim\ker T_A,\ \dim\mathrm{coker}T_A)
 ```
 
-である。R14では、cochain水準の比較 $`u_A`$ の写像錐 $`D_A=\operatorname{Cone}(u_A)`$
+である。R14では、cochain水準の比較 $`u_A`$ の写像錐 $`D_A=\mathrm{Cone}(u_A)`$
 を用い、Lawごとの比較と領域ごとの比較を同じ構成で記述する案を検討する。
 錐の長完全列には他次数も現れるため、$`J_A`$ と錐のコホモロジーの次元との
 対応を明示する。
@@ -475,9 +475,9 @@ $`\mathbb Z/2`$ の非零障害がある。有理化で失われる障害を、�
 各fiberが自由でも一次コホモロジーにねじれが生じるかを確かめる。
 
 有限自由整数複体については、有理化で消える一次の類をねじれ部分として特定し、
-零性の反映を $`\operatorname{im}d^0`$ が $`\ker d^1`$ の中で飽和する条件に結ぶ。
+零性の反映を $`\mathrm{im}d^0`$ が $`\ker d^1`$ の中で飽和する条件に結ぶ。
 ここで飽和とは、$`z\in\ker d^1`$ と正整数 $`n`$ について
-$`nz\in\operatorname{im}d^0`$ なら $`z\in\operatorname{im}d^0`$ となることである。
+$`nz\in\mathrm{im}d^0`$ なら $`z\in\mathrm{im}d^0`$ となることである。
 Smith標準形から、零の場合には整数の補正、非零の場合には残る障害の有限表示を
 返す構成を問う。ラベルの欠落など、係数比較自体による情報損失は別に判定する。
 
@@ -504,19 +504,19 @@ cell比較から示す。群の抽象的な同型型に加え、与えられた�
 求める集合は
 
 ```math
-\operatorname{Lift}_\phi(z,b)
+\mathrm{Lift}_\phi(z,b)
 =\{a\in C^0\mid d_Ca=z,\ \phi^0a=b\}.
 ```
 
-写像錐の規約を $`\operatorname{Cone}(\phi)^n=D^n\oplus C^{n+1}`$、
+写像錐の規約を $`\mathrm{Cone}(\phi)^n=D^n\oplus C^{n+1}`$、
 $`d(b,c)=(d_Db+\phi c,-d_Cc)`$ とする。$`(b,-z)`$ は次数0のcocycleであり、
-その類の零性と $`\operatorname{Lift}_\phi(z,b)`$ の非空性を同値にする。
-この判定には $`\operatorname{Cone}(\phi)^{-1}=C^0`$ を保持する。
+その類の零性と $`\mathrm{Lift}_\phi(z,b)`$ の非空性を同値にする。
+この判定には $`\mathrm{Cone}(\phi)^{-1}=C^0`$ を保持する。
 $`d(0,a)=(\phi^0a,-d_Ca)`$ が、指定補正との一致と修復条件を同時に表す。
 
 元の側の補正 $`a_0`$ が一つある場合、
 $`k_\phi:Z^0(C)\to Z^0(D)`$ を誘導写像とし、
-$`[b-\phi^0a_0]\in\operatorname{coker}k_\phi`$ を持ち上げ障害とする。
+$`[b-\phi^0a_0]\in\mathrm{coker}k_\phi`$ を持ち上げ障害とする。
 この類は $`a_0`$ によらず、零なら持ち上げ全体は $`\ker k_\phi`$ のtorsorになる。
 すべての診断側補正が持ち上がる条件は $`k_\phi`$ の全射性、
 存在する持ち上げが一意となる条件は単射性として記述する。
@@ -533,16 +533,16 @@ G-125の実比較、候補07の写像錐、候補16・17の比較へ、この解
 後続の候補として、係数や辺作用を動かしたときに診断の自由度が変わる場所を求める。
 有限表示の可換 $`k`$-代数 $`R`$ 上で、同じLaw・制限式から有限自由複体
 $`C_R^0\xrightarrow{d^0}C_R^1\xrightarrow{d^1}C_R^2`$ を作る。
-点 $`s\in\operatorname{Spec}R`$ における剰余体を $`\kappa(s)`$ とすると、
+点 $`s\in\mathrm{Spec}R`$ における剰余体を $`\kappa(s)`$ とすると、
 
 ```math
 \beta_1(s)=\dim_{\kappa(s)}H^1(C_R\otimes_R\kappa(s))
-=\operatorname{rank}_R C_R^1
- -\operatorname{rank}d^0_s-\operatorname{rank}d^1_s.
+=\mathrm{rank}_R C_R^1
+ -\mathrm{rank}d^0_s-\mathrm{rank}d^1_s.
 ```
 
 狙うのは、$`\beta_1(s)\ge r`$ となる閉集合を、行列
-$`\operatorname{diag}(d^0,d^1)`$ の小行列式で構成することである。
+$`\mathrm{diag}(d^0,d^1)`$ の小行列式で構成することである。
 これは有限自由複体のfiberのコホモロジーを扱う標準結果
 （[Stacks Project, Lemma 36.31.1](https://stacks.math.columbia.edu/tag/0BDH)）を、
 実際の診断入力から生成した複体へ適用する課題となる。
@@ -901,9 +901,9 @@ G-125のA–Cは、[v1第3章](../../outreach/paper/rising-sea/ja/06-resolution-
 - **入力**：三段の有限解像度、Law値・台・セル比較のデータ。有理係数を用い、同じ入力から
   各段のcochain写像と直接比較を構成する。
 - **target案**：比較の合成則をcochain水準で示す。一次診断の線形比較 $`f,g`$ に対して
-  $`\chi:\ker g\to\operatorname{coker}f`$ を構成し、六項完全列と
-  $`\dim\ker(gf)=\dim\ker f+\dim\ker g-\operatorname{rank}\chi`$、
-  $`\dim\operatorname{coker}(gf)=\dim\operatorname{coker}f+\dim\operatorname{coker}g-\operatorname{rank}\chi`$
+  $`\chi:\ker g\to\mathrm{coker}f`$ を構成し、六項完全列と
+  $`\dim\ker(gf)=\dim\ker f+\dim\ker g-\mathrm{rank}\chi`$、
+  $`\dim\mathrm{coker}(gf)=\dim\mathrm{coker}f+\dim\mathrm{coker}g-\mathrm{rank}\chi`$
   を導く。写像錐とLawごとの直和分解を対応させる。
   台によるセル選択の一致から $`\Sigma_M`$ を構成し、同じ比較複体を与えるLawの
   再添字づけと、診断値の一致だけを求める同一視を区別する。
@@ -1065,7 +1065,7 @@ G-125のA–Cは、[v1第3章](../../outreach/paper/rising-sea/ja/06-resolution-
 - **入力**：非負次数のアーベル群の複体 $`C,D`$、cochain写像 $`\phi:C\to D`$、
   $`z\in Z^1(C)`$、$`d_Db=\phi^1z`$ を満たす $`b\in D^0`$。
   AATへの接続では、これらを同じ修復入力から構成する。
-- **target案**：$`[(b,-z)]\in H^0(\operatorname{Cone}(\phi))`$ の零性を、
+- **target案**：$`[(b,-z)]\in H^0(\mathrm{Cone}(\phi))`$ の零性を、
   $`d_Ca=z`$ かつ $`\phi^0a=b`$ となる補正の存在と同値にする。
   元の補正がある場合には $`k_\phi:Z^0(C)\to Z^0(D)`$ の余核による障害へ対応させ、
   非空な持ち上げ集合をその核のtorsorとして分類する。全補正の持ち上げ・一意性の条件を導く。
