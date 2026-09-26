@@ -15,9 +15,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## active
 
-- [G-124-aat-local-semantic-reconstruction](G-124-aat-local-semantic-reconstruction.md)
-  (G-123後続。整合する局所データの族から実現・許容射・比較を再構成し、
-  有限データで決まる条件を操作の連結性から判定する)
 - [G-sft-conway-01](G-sft-conway-01.md)
 
 ## draft（人間の確認待ち）
@@ -28,6 +25,9 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## completed
 
+- [G-124-aat-local-semantic-reconstruction](G-124-aat-local-semantic-reconstruction.md)
+  (`target-theorem-proved`。同じ局所読み取りによる実現・許容射・比較の再構成、
+  有限決定性の判定、タグ変更族と二つのCS意味論への適用を確定)
 - [G-125-aat-obstruction-diagnostic-bridge](G-125-aat-obstruction-diagnostic-bridge.md)
   (`target-theorem-proved`。採用入力族の既存Čech障害類とlaw-value診断の比較、
   整数補正による零性反映、reading変更に沿う類の輸送と障害判定の不変性を確定)
