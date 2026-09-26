@@ -10446,3 +10446,112 @@ focused checkで確認した。固定head `dcf3e951d533f8d2530c3ea0dc0a5be2e7dcf
 数学A/B・Lean A/Bの4本査読は全て`No major findings`、CIは7件全て成功した。最終の
 A/B・パートII限定完了判定とmerge証拠は、この台帳headを対象にIssue #4711へ記録する。
 G-124全体はC–Eが残るため、Cycle 79の`proof-checkpoint`を維持する。
+
+## Cycle 81 — Part III-1 direct component projections (proposal)
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124
+cycle: 81
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: b6e60f2c42acf551659d7b064bae416c982fbdc6
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Fixed A/B main reader is accepted; Issue #4711 and the G-124 design III-1 identify direct bottom, observation, and coefficient projections as the next C obligation. Rejected Cycle 80 IV-1 remains separate and unmerged."
+  proof_dag_predecessors:
+    - "IndependentAATPrimitiveReconstruction.Parameter, reading, localObjectTable, localHomTable"
+    - "IndependentCoreTableAssembly.finiteExtractionEquiv and IndependentGeometryHomPrimitive.PackageAssembly.lower"
+    - "IndependentGeometryHomPrimitive Context, Observable, and realization point assemblers"
+    - "IndependentLensPrimitiveReconstruction and IndependentProtocolPrimitiveReconstruction direct primitive graph readers"
+    - "CSAATArchitectureObjects exact doctrine and source-map formulas"
+    - "FullGeometryNormalization.rawGeometryBottomProjection"
+  proof_obligation: "Construct bottom, observation, and coefficient component categories and direct primitive local functors for all four fixed parameters; prove three natural isomorphisms along the one main reader and preserve the original component evaluation and bottom-fixed condition."
+  selection_reason: "The main A/B reader exists; III-1 supplies the component maps and naturality required before C comparison groups and normalization can be transported."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "G124ProjectionBottom and G124ProjectionCoefficient"
+    - "G124ProjectionObservationComponents and G124ProjectionCS"
+    - "G124ProjectionLift, G124ProjectionCSLift, and G124ProjectionGlobal"
+    - "G124ProjectionBottomNormalization"
+  risks:
+    - "A projection target must retain its actual component data and laws without requiring full realization liftability."
+    - "Local functor definitions must select primitive rows; complete assemblers may occur only in comparison proofs."
+    - "Explicit context action, CS noninjective state maps, path naturality, and directed coefficient maps must survive."
+    - "Universe presentation must be categorically equivalent to each original component target."
+  unchecked:
+    - "Fixed-head standard PR review and independent mathematical/Lean lane decisions."
+    - "PR CI and Issue synchronization after review."
+    - "The remaining III-2/III-3 and IV-1/IV-2/IV-3 work is outside this one design part."
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Direct geometry and CS component categories and primitive local functors now evaluate bottom, observation, and coefficient data. Each parameter has three natural comparisons with the fixed main reader; bottom fixedness is preserved and reflected by canonical conjugation."
+  completion_candidate: no
+  lean_artifacts:
+    - "G124ProjectionGlobal.bottomReadingIso"
+    - "G124ProjectionGlobal.observationReadingIso"
+    - "G124ProjectionGlobal.coefficientReadingIso"
+    - "G124ProjectionBottomNormalization.bottom_fixed_iff"
+    - "G124ProjectionGlobal.componentEquivalence"
+  evidence:
+    - "G124ProjectionBottom representative/explicit direct lower and core functors, natural isomorphisms"
+    - "G124ProjectionObservationComponents representative/explicit retained observation target categories and natural isomorphisms"
+    - "G124ProjectionCS direct lens/protocol get and path observation, pointed source maps, and natural isomorphisms"
+    - "G124ProjectionCoefficient directed CommRingCat maps; CS fixed integer identity"
+    - "G124ProjectionLift original local object/Hom table point evaluations and auxiliary choice independence"
+  claim_mapping:
+    theorem_names:
+      - "G124ProjectionGlobal.bottomReadingIso"
+      - "G124ProjectionGlobal.observationReadingIso"
+      - "G124ProjectionGlobal.coefficientReadingIso"
+      - "G124ProjectionBottomNormalization.bottom_fixed_iff"
+    source_labels:
+      - "Fixed GOAL C first sentence: bottom, observation, coefficient projections and main N natural comparisons"
+      - "Design III-1: original component evaluation, geometry modes, CS readers, and canonical bottom conjugation"
+    conjuncts:
+      - "Every Parameter branch -> exact component category, native functor, direct local functor, and natural iso"
+      - "Bottom -> pointed extraction/source action; geometry core intermediate; admissible raw bottom agreement"
+      - "Observation -> context/restriction/observable ring and realization actions, including explicit actual context action and CS slices"
+      - "Coefficient -> directed geometry ring hom; fixed CS integer identity"
+      - "Bottom-fixed endomorphism -> preservation and reflection through canonical conjugation"
+    undischarged_assumptions: []
+    acceptance_point: "Proposal for the complete III-1 design part only. Fixed-head independent review and CI remain required before acceptance or merge."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "The four branch native/local categories and main reader are the accepted fixed A/B predecessors."
+      - "Projection target objects and Homs are constructed with retained components and their original preservation laws."
+    remaining: []
+  certificate_provenance:
+    discharged:
+      - "Geometry lower/source, coefficient, context, observable, and realization maps consume the retained common primitive table and point laws."
+      - "CS bottom/observation maps consume carrier, get, state, edge, and observe point graphs; path naturality is proved from generators and quotient extension."
+      - "ULiftHom/ULift are equivalences of the exact component categories, not image or liftability restrictions."
+    unresolved: []
+  proof_use:
+    used:
+      - "Primitive extraction, package, context, observable, and realization assemblers"
+      - "CS exact doctrine and direct point graph/path APIs"
+      - "The one main IndependentAATPrimitiveReconstruction.reading"
+      - "Raw geometry bottom and canonical normalization predecessor"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "G124ProjectionBottomNormalization targeted build, including all eight new projection dependencies: pass; all namespace audits standard axioms only."
+    - "Global focused check: pass; six spine #print axioms: propext, Classical.choice, Quot.sound only."
+    - "git diff --cached --check, placeholder/privacy/Unicode/import-direction scans: pass."
+    - "Review and CI: pending PR."
+  blocking_findings: []
+  next_obligation: "After acceptance of III-1, design III-2 normalization, Karoubi/Arrow, and arbitrary comparison-group transport."
+```
+
+III-1は一つのPR単位として固定する。`BottomTarget`、`ObservationTarget`、`CoefficientTarget`は
+元の成分圏を`ULift`と`ULiftHom`で表示し、`componentEquivalence`で元の全対象・全射へ戻る。
+局所関手の対象・射の定義は原始表の対応する成分を選び、完成した幾何やCSの逆組立ては
+自然同型や関手則の証明にのみ使う。全体G-124の完了判定はCの残部とD・Eの証拠を要する。
