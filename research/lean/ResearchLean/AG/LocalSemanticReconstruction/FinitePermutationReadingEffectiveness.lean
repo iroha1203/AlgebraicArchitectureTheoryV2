@@ -137,6 +137,59 @@ theorem finite_effective_fiber_count
   exact ⟨S, determining, effective,
     FinitePermutationExampleCardinality.natCard_preservingChange H visible⟩
 
+/-- Selecting every vertex is a concrete finite set when the graph's vertex
+type is enumerated.  Every original named edge remains present. -/
+theorem univ_retainsFullConnectivity [Fintype F.Vertex] :
+    InducedComponent.RetainsFullConnectivity F
+      (fun vertex => vertex ∈ (Finset.univ : Finset F.Vertex)) := by
+  have lift : ∀ (a b : F.Vertex), FixedFUndirectedReachable F a b →
+      ∀ (ha : a ∈ (Finset.univ : Finset F.Vertex))
+        (hb : b ∈ (Finset.univ : Finset F.Vertex)),
+        InducedComponent.Reachable F
+          (fun vertex => vertex ∈ (Finset.univ : Finset F.Vertex))
+          ⟨a, ha⟩ ⟨b, hb⟩ := by
+    intro a b reachable
+    induction reachable with
+    | rel a b step =>
+      obtain ⟨edge, hsource, htarget⟩ := step
+      intro ha hb
+      apply Relation.EqvGen.rel
+      refine ⟨⟨edge, by simp⟩, ?_, ?_⟩
+      · exact Subtype.ext hsource
+      · exact Subtype.ext htarget
+    | refl vertex =>
+        intro ha hb
+        exact Relation.EqvGen.refl _
+    | symm a b relation ih =>
+        intro ha hb
+        exact Relation.EqvGen.symm _ _ (ih hb ha)
+    | trans a b c first second ihFirst ihSecond =>
+        intro ha hc
+        exact Relation.EqvGen.trans _ _ _
+          (ihFirst ha (Finset.mem_univ b))
+          (ihSecond (Finset.mem_univ b) hc)
+  intro first second reachable
+  exact lift first.1 second.1 reachable first.2 second.2
+
+/-- All vertices form an explicit executable determining selection, with
+the extension premise derived from retained named edges. -/
+theorem univ_effective_determining
+    [Fintype F.Vertex] [DecidableEq F.Vertex] [Fintype F.Edge]
+    [Fintype K] [DecidableEq K] [Nontrivial K] :
+    FiniteReading.Determining (readAt F K visible) Finset.univ
+      (EdgeCoherent F K Finset.univ) ∧
+    FiniteReading.Effective (readAt F K visible) Finset.univ
+      (EdgeCoherent F K Finset.univ) := by
+  have meets : InducedComponent.MeetsEveryFullComponent F
+      (fun vertex => vertex ∈ (Finset.univ : Finset F.Vertex)) := by
+    intro vertex
+    exact ⟨⟨vertex, Finset.mem_univ vertex⟩, Relation.EqvGen.refl _⟩
+  have retains := univ_retainsFullConnectivity F
+  have determining :=
+    (determining_iff F K visible Finset.univ).2 ⟨meets, retains⟩
+  exact ⟨determining,
+    effective_of_extends F K visible Finset.univ determining.2⟩
+
 open RealizationReconstruction.FixedFFiniteExamples
 
 section BoolLensExample
@@ -156,35 +209,33 @@ local instance : Fintype BoolLensGraph.Edge := by
 /-- The accepted Bool-lens identity fiber count belongs to the actual output
 type of a finite effective determining reading. -/
 theorem boolLens_identity_effective_count :
-    ∃ S : Finset BoolLensGraph.Vertex,
-      FiniteReading.Determining
-        (readAt BoolLensGraph Bool boolLensIdentityAutomorphism) S
-        (EdgeCoherent BoolLensGraph Bool S) ∧
+    FiniteReading.Determining
+        (readAt BoolLensGraph Bool boolLensIdentityAutomorphism) Finset.univ
+        (EdgeCoherent BoolLensGraph Bool Finset.univ) ∧
       FiniteReading.Effective
-        (readAt BoolLensGraph Bool boolLensIdentityAutomorphism) S
-        (EdgeCoherent BoolLensGraph Bool S) ∧
+        (readAt BoolLensGraph Bool boolLensIdentityAutomorphism) Finset.univ
+        (EdgeCoherent BoolLensGraph Bool Finset.univ) ∧
       Nat.card (PermutationRestriction.PreservingChange BoolLensGraph Bool
         boolLensIdentityAutomorphism) = 2 := by
-  obtain ⟨S, determining, effective⟩ :=
-    exists_effective_determining BoolLensGraph Bool boolLensIdentityAutomorphism
-  exact ⟨S, determining, effective,
+  obtain ⟨determining, effective⟩ :=
+    univ_effective_determining BoolLensGraph Bool boolLensIdentityAutomorphism
+  exact ⟨determining, effective,
     FinitePermutationExampleCardinality.boolLens_preservingChange_count_identity⟩
 
 /-- The nonidentity visible Bool-lens change has the same exact finite
 reading and the accepted two-element output fiber. -/
 theorem boolLens_flip_effective_count :
-    ∃ S : Finset BoolLensGraph.Vertex,
-      FiniteReading.Determining
-        (readAt BoolLensGraph Bool boolLensFlipAutomorphism) S
-        (EdgeCoherent BoolLensGraph Bool S) ∧
+    FiniteReading.Determining
+        (readAt BoolLensGraph Bool boolLensFlipAutomorphism) Finset.univ
+        (EdgeCoherent BoolLensGraph Bool Finset.univ) ∧
       FiniteReading.Effective
-        (readAt BoolLensGraph Bool boolLensFlipAutomorphism) S
-        (EdgeCoherent BoolLensGraph Bool S) ∧
+        (readAt BoolLensGraph Bool boolLensFlipAutomorphism) Finset.univ
+        (EdgeCoherent BoolLensGraph Bool Finset.univ) ∧
       Nat.card (PermutationRestriction.PreservingChange BoolLensGraph Bool
         boolLensFlipAutomorphism) = 2 := by
-  obtain ⟨S, determining, effective⟩ :=
-    exists_effective_determining BoolLensGraph Bool boolLensFlipAutomorphism
-  exact ⟨S, determining, effective,
+  obtain ⟨determining, effective⟩ :=
+    univ_effective_determining BoolLensGraph Bool boolLensFlipAutomorphism
+  exact ⟨determining, effective,
     FinitePermutationExampleCardinality.boolLens_preservingChange_count_flip⟩
 
 end BoolLensExample
@@ -206,35 +257,33 @@ local instance : Fintype protocolGraph.Edge := by
 /-- The fixed two-session protocol has the accepted four-element actual
 output fiber together with one executable determining reading. -/
 theorem protocol_identity_effective_count :
-    ∃ S : Finset protocolGraph.Vertex,
-      FiniteReading.Determining
-        (readAt protocolGraph Bool protocolIdentityAutomorphism) S
-        (EdgeCoherent protocolGraph Bool S) ∧
+    FiniteReading.Determining
+        (readAt protocolGraph Bool protocolIdentityAutomorphism) Finset.univ
+        (EdgeCoherent protocolGraph Bool Finset.univ) ∧
       FiniteReading.Effective
-        (readAt protocolGraph Bool protocolIdentityAutomorphism) S
-        (EdgeCoherent protocolGraph Bool S) ∧
+        (readAt protocolGraph Bool protocolIdentityAutomorphism) Finset.univ
+        (EdgeCoherent protocolGraph Bool Finset.univ) ∧
       Nat.card (PermutationRestriction.PreservingChange protocolGraph Bool
         protocolIdentityAutomorphism) = 4 := by
-  obtain ⟨S, determining, effective⟩ :=
-    exists_effective_determining protocolGraph Bool protocolIdentityAutomorphism
-  exact ⟨S, determining, effective,
+  obtain ⟨determining, effective⟩ :=
+    univ_effective_determining protocolGraph Bool protocolIdentityAutomorphism
+  exact ⟨determining, effective,
     FinitePermutationExampleCardinality.protocol_preservingChange_count_identity⟩
 
 /-- The named session swap also has an effective determining reading whose
 actual output fiber has the accepted four elements. -/
 theorem protocol_sessionSwap_effective_count :
-    ∃ S : Finset protocolGraph.Vertex,
-      FiniteReading.Determining
-        (readAt protocolGraph Bool protocolSessionSwapAutomorphism) S
-        (EdgeCoherent protocolGraph Bool S) ∧
+    FiniteReading.Determining
+        (readAt protocolGraph Bool protocolSessionSwapAutomorphism) Finset.univ
+        (EdgeCoherent protocolGraph Bool Finset.univ) ∧
       FiniteReading.Effective
-        (readAt protocolGraph Bool protocolSessionSwapAutomorphism) S
-        (EdgeCoherent protocolGraph Bool S) ∧
+        (readAt protocolGraph Bool protocolSessionSwapAutomorphism) Finset.univ
+        (EdgeCoherent protocolGraph Bool Finset.univ) ∧
       Nat.card (PermutationRestriction.PreservingChange protocolGraph Bool
         protocolSessionSwapAutomorphism) = 4 := by
-  obtain ⟨S, determining, effective⟩ :=
-    exists_effective_determining protocolGraph Bool protocolSessionSwapAutomorphism
-  exact ⟨S, determining, effective,
+  obtain ⟨determining, effective⟩ :=
+    univ_effective_determining protocolGraph Bool protocolSessionSwapAutomorphism
+  exact ⟨determining, effective,
     FinitePermutationExampleCardinality.protocol_preservingChange_count_sessionSwap⟩
 
 end ProtocolExample

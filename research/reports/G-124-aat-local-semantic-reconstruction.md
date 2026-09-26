@@ -10472,9 +10472,12 @@ selection:
     - "FinitePermutationReadingCriteria.determining_iff"
     - "FinitePermutationReadingCriteria.exists_finite_determining_iff"
     - "FinitePermutationPointGraph.finitePointTable_injective"
+    - "FinitePermutationPointGraph.finitePermutationPointTableEquiv"
     - "FinitePermutationReadingEffectiveness.effectivenessProgram"
     - "FinitePermutationReadingEffectiveness.exists_effective_determining"
     - "FinitePermutationReadingEffectiveness.finite_effective_fiber_count"
+    - "FinitePermutationReadingEffectiveness.univ_effective_determining"
+    - "FiniteCommonHomReading.homPoint_read"
   risks:
     - "Do not impose finiteness on the full graph or hidden carrier."
     - "Raw coherence must use actual retained edges, not global extension."
@@ -10482,13 +10485,14 @@ selection:
     - "The fixed-head review and CI are pending."
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "The four general FiniteReading equivalences quantify over any graph and hidden type with at least two elements. Finite K supplies an exact finite Bool point table; enumerated finite graphs inherit the accepted executable program and named fiber counts on the same reading."
+  proof_obligation_delta: "The four general FiniteReading equivalences quantify over any graph and hidden type with at least two elements. Finite K supplies an independently lawful Bool point table equivalent to each hidden permutation; enumerated finite graphs inherit the executable program and named fiber counts on the same reading. The common N preserves every primitive Hom point on any selected finite support."
   completion_candidate: no
   lean_artifacts:
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FiniteReadingCore.lean"
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationReadingCriteria.lean"
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationPointGraph.lean"
     - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationReadingEffectiveness.lean"
+    - "research/lean/ResearchLean/AG/LocalSemanticReconstruction/FiniteCommonHomReading.lean"
   evidence:
     - "FinitePermutationReadingCriteria.separates_iff"
     - "FinitePermutationReadingCriteria.extends_iff"
@@ -10497,11 +10501,15 @@ result:
     - "FinitePermutationPointGraph.readAtPoint_forward_iff"
     - "FinitePermutationPointGraph.readAtPoint_backward_iff"
     - "FinitePermutationPointGraph.finitePointTable_injective"
+    - "FinitePermutationPointGraph.finitePermutationPointTableEquiv"
     - "FinitePermutationReadingEffectiveness.coherent_iff"
     - "FinitePermutationReadingEffectiveness.effectivenessProgram"
     - "FinitePermutationReadingEffectiveness.effective_of_extends"
     - "FinitePermutationReadingEffectiveness.exists_effective_determining"
     - "FinitePermutationReadingEffectiveness.finite_effective_fiber_count"
+    - "FinitePermutationReadingEffectiveness.univ_effective_determining"
+    - "FiniteCommonHomReading.homPoint_read"
+    - "FiniteCommonHomReading.finiteHomSupport_read"
     - "FinitePermutationReadingEffectiveness.boolLens_flip_effective_count"
     - "FinitePermutationReadingEffectiveness.protocol_sessionSwap_effective_count"
   claim_mapping:
@@ -10511,29 +10519,34 @@ result:
       - "FinitePermutationReadingCriteria.determining_iff"
       - "FinitePermutationReadingCriteria.exists_finite_determining_iff"
       - "FinitePermutationPointGraph.finitePointTable_injective"
+      - "FinitePermutationPointGraph.finitePermutationPointTableEquiv"
       - "FinitePermutationReadingEffectiveness.effectivenessProgram"
       - "FinitePermutationReadingEffectiveness.exists_effective_determining"
       - "FinitePermutationReadingEffectiveness.finite_effective_fiber_count"
+      - "FinitePermutationReadingEffectiveness.univ_effective_determining"
+      - "FiniteCommonHomReading.homPoint_read"
     source_labels: ["fixed GOAL D, design IV-1"]
     conjuncts:
       - "Separates iff the finite vertex set meets each full component."
       - "Extends every retained-edge-coherent raw table iff retained vertices preserve full connectivity."
       - "Finite determining set exists iff the full component type is finite."
-      - "Finite K gives a finite Bool point table that determines each vertex permutation."
+      - "Finite K gives an independent lawful finite Bool point table equivalent to each vertex permutation, with both reconstruction laws."
       - "Finite enumerated graphs transfer the exact coherence test, rejection, and readback to the same Finset reading."
+      - "Finset.univ is an explicit finite example selection whose retained named edges preserve full connectivity."
       - "The accepted factorial-per-component formula and identity/nonidentity lens/protocol fiber counts measure the actual output type of effective determining readings."
+      - "Every primitive Hom point of the main N equals the native point, including every point of an explicitly selected finite support."
     undischarged_assumptions: []
-    acceptance_point: "Proposed for fixed-head review of IV-1; primitive localHomTable evaluation belongs to IV-2/3, and C/E remain open."
+    acceptance_point: "Proposed for fixed-head review of IV-1; each named application's decoder equation is specialized in IV-2/3, and C/E remain open."
     port_status: not-applicable
 audits:
   premise_delta:
     discharged: ["The existing component classification and raw-table descent are connected through exact point evaluation."]
-    remaining: ["The common localHomTable evaluation for each named application remains in IV-2/3; C/E remain open."]
+    remaining: ["The named tag/lens/protocol decoder equations from the common Hom point equality remain in IV-2/3; C/E remain open."]
   certificate_provenance:
     discharged: ["Retained-edge coherence is defined on raw vertex tables by the existing EdgeCoherent predicate."]
     unresolved: []
   proof_use:
-    used: ["component classification", "induced-component restriction", "coherent raw-table descent", "lawful inverse graph code", "permutationEffectivenessProgram", "accepted finite fiber counts"]
+    used: ["component classification", "induced-component restriction", "coherent raw-table descent", "lawful inverse graph code", "permutationEffectivenessProgram", "accepted finite fiber counts", "main N localTable_read"]
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
@@ -10543,8 +10556,10 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs:
     - "lake env lean ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationReadingCriteria.lean: pass, six declarations, standard axioms only"
-    - "lake env lean ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationPointGraph.lean: pass, ten declarations, standard axioms only"
-    - "lake env lean ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationReadingEffectiveness.lean: pass, eighteen declarations, standard axioms only"
+    - "lake env lean ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationPointGraph.lean: pass, twenty-three declarations, standard axioms only"
+    - "lake env lean ResearchLean/AG/LocalSemanticReconstruction/FinitePermutationReadingEffectiveness.lean: pass, twenty declarations, standard axioms only"
+    - "lake env lean ResearchLean/AG/LocalSemanticReconstruction/FiniteCommonHomReading.lean: pass, two declarations, standard axioms only"
+    - "Individual #print axioms on the ten IV-1 spine declarations: propext, Classical.choice, Quot.sound only"
   blocking_findings: []
   next_obligation: "Build III-1 and III-2 as full design-part PRs, then connect the application readings to common primitive localHomTable queries in IV-2/3."
 ```
