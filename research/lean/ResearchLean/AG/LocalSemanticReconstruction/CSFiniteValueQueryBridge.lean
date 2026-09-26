@@ -188,6 +188,68 @@ theorem protocol_assembled_table_primitive_point
     ⟨⟨vertex,state⟩, Finset.mem_univ _⟩
   simpa [FiniteReading.restrict] using h ▸ Iff.rfl
 
+/-- A successful execution of the accepted finite lens program returns an
+actual semantic Hom whose value is the supplied entry at the same main
+primitive point. -/
+theorem lens_effectivenessProgram_primitive_point [Fintype X.Fiber]
+    (table : LensSemanticFiniteDetermination.RawTable X Y)
+    (f : X ⟶ Y)
+    (success : (LensSemanticFiniteDetermination.effectivenessProgram X Y).extend?
+      table = some f)
+    (state : X.Fiber) (output : Y.Fiber) :
+    decodeLensPoint input (ULiftHom.objUp X) (ULiftHom.objUp Y)
+        state.1 output.1
+        (localHomTable (.lens input)
+          ((reading (.lens input)).map (ULift.up f))) = true ↔
+      table ⟨state, Finset.mem_univ _⟩ = output := by
+  rw [← lens_value_iff_primitive_point]
+  have h := (LensSemanticFiniteDetermination.effectivenessProgram X Y).restrict_eq_of_extend_eq_some
+    table f success
+  have hstate := congrFun h ⟨state, Finset.mem_univ _⟩
+  simpa [FiniteReading.restrict] using hstate ▸ Iff.rfl
+
+/-- The accepted protocol program rejects precisely the incoherent tables,
+using its explicit vertex, edge, state, and observation equality decisions. -/
+theorem protocol_effectivenessProgram_reject_iff
+    [Fintype protocolInput.schema.Vertex]
+    [DecidableEq protocolInput.schema.Vertex]
+    [∀ vertex, Fintype (P.State vertex)]
+    [∀ vertex, DecidableEq (Q.State vertex)]
+    [∀ source target, Fintype (protocolInput.schema.Edge source target)]
+    [DecidableEq (ProtocolObservedFiniteDetermination.ObservationValue
+      (S := protocolInput.schema) (O := protocolInput.observation))]
+    (table : ProtocolObservedFiniteDetermination.RawTable P Q) :
+    (ProtocolObservedFiniteDetermination.effectivenessProgram P Q).extend? table = none ↔
+      ¬ ProtocolObservedFiniteDetermination.TableCoherent P Q table :=
+  (ProtocolObservedFiniteDetermination.effectivenessProgram P Q).extend_eq_none_iff table
+
+/-- A successful execution of the accepted protocol program has exact
+readback at the same main primitive vertex point. -/
+theorem protocol_effectivenessProgram_primitive_point
+    [Fintype protocolInput.schema.Vertex]
+    [DecidableEq protocolInput.schema.Vertex]
+    [∀ vertex, Fintype (P.State vertex)]
+    [∀ vertex, DecidableEq (Q.State vertex)]
+    [∀ source target, Fintype (protocolInput.schema.Edge source target)]
+    [DecidableEq (ProtocolObservedFiniteDetermination.ObservationValue
+      (S := protocolInput.schema) (O := protocolInput.observation))]
+    (table : ProtocolObservedFiniteDetermination.RawTable P Q)
+    (f : P ⟶ Q)
+    (success : (ProtocolObservedFiniteDetermination.effectivenessProgram P Q).extend?
+      table = some f)
+    (vertex : protocolInput.schema.Vertex) (state : P.State vertex)
+    (output : Q.State vertex) :
+    decodeProtocolPoint protocolInput (ULiftHom.objUp P) (ULiftHom.objUp Q)
+        vertex state output
+        (localHomTable (.protocol protocolInput)
+          ((reading (.protocol protocolInput)).map (ULift.up f))) = true ↔
+      table ⟨⟨vertex,state⟩, Finset.mem_univ _⟩ = ⟨vertex,output⟩ := by
+  rw [← protocol_value_iff_primitive_point]
+  have h := (ProtocolObservedFiniteDetermination.effectivenessProgram P Q).restrict_eq_of_extend_eq_some
+    table f success
+  have hstate := congrFun h ⟨⟨vertex,state⟩, Finset.mem_univ _⟩
+  simpa [FiniteReading.restrict] using hstate ▸ Iff.rfl
+
 
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.CSFiniteValueQueryBridge
 

@@ -10976,7 +10976,7 @@ selection:
   selection_reason: "This closes the remaining E2 application layer before the IV-4 A–E theorem family; the accepted finite and group constructions can be reused rather than reassembled."
   expected_result_type: proof-obligation-discharged
   lean_targets:
-    - "CSFiniteValueQueryBridge and CSComparisonMain"
+    - "CSFiniteValueQueryBridge, CSFiniteDecoderValueBridge, and CSComparisonMain"
     - "CSLensKernelLocal, CSProtocolKernelLocal, and CSComponentLocalGroup"
     - "CSFixedFDetermining, CSFixedFFiberD, and CSProtocolAdapterLocal"
   risks:
@@ -10989,16 +10989,20 @@ selection:
     - "IV-4 A–E package and independent completion review remain outside this part."
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "Actual general lens/protocol morphisms have finite common-main query selections and value-table readback; actual all-H fixed-visible change groups have main-local kernel Aut, transported component action and semidirect form, projection/section/lift-fiber compatibility; common D and comparison groups are transported to these same objects."
+  proof_obligation_delta: "Actual general lens/protocol morphisms have finite common-main query selections, value-table and effectiveness-program readback, and explicit finite decoder/fiber/observed comparison squares; actual all-H fixed-visible change groups have main-local kernel Aut, transported component action and semidirect form, projection/section/lift-fiber compatibility; common D and comparison groups are transported to these same objects."
   completion_candidate: no
   lean_artifacts:
     - "CSFiniteValueQueryBridge: lens_value_iff_primitive_point, protocol_value_iff_primitive_point, lens_finite_query_separates, protocol_finite_query_separates, lens_assembled_table_primitive_point, protocol_assembled_table_primitive_point"
+    - "CSFiniteValueQueryBridge: lens_effectivenessProgram_primitive_point, protocol_effectivenessProgram_reject_iff, protocol_effectivenessProgram_primitive_point"
+    - "CSFiniteDecoderValueBridge: both decoder_value_iff_main_point, decoder_restricted_table_iff_main_point, finite_decoder_*_square, and assembled_table_*_square"
     - "CSLensKernelLocal and CSProtocolKernelLocal: kernelAutMulEquiv, kernelLocalAutMulEquiv, kernelLocalAut_point"
     - "CSComponentLocalGroup: componentKernelMulEquiv, protocolComponentLocalAutMulEquiv, lensComponentLocalAutMulEquiv, both ChangeLocalSemidirectMulEquiv, both ChangeLocal_visible/section and ProjectionFiberLocalEquiv, protocolComponentLocal_point"
     - "CSFixedFDetermining and CSFixedFFiberD: lens_reference_determining, protocol_representatives_determining, both FiberEquivPreserving and determining_on_changes, both fiber readAt equations"
     - "CSComparisonMain: both ComparisonMainMulEquiv and four endpoint Hom equations; CSProtocolAdapterLocal.adapter_square_iff_main_points"
   evidence:
     - "The original finite value readings are equivalent to decodeLensPoint/decodeProtocolPoint on the same main local Hom; admissible/coherent assembled values have the same point readings."
+    - "Finite decoder arrows read their original restricted value tables at those same point cells, and their accepted fiber/observed natural squares commute; arbitrary assembled table Homs commute with the semantic-to-primitive fiber/observed comparison squares. The existing Karoubi restriction and Karoubi/Arrow reading isomorphisms are applied to these unchanged finite decoder and comparison functors."
+    - "For every successful output of the accepted lens/protocol effectiveness programs, the common point reading equals the input table value; the protocol rejection iff uses explicit observation-value equality decision without a finite observation carrier."
     - "Both kernel Aut equivalences are built from original product-lens and protocol semantic Hom/inverse data and moved to the main reading via ULift; protocol component point evaluation equals the original component permutation."
     - "The actual CS projection fibers identify with full D preserving-change domains and with corresponding semidirect-coordinate fibers; visible and canonical section equations are retained."
   claim_mapping:
@@ -11007,6 +11011,12 @@ result:
       - "protocol_finite_query_separates"
       - "lens_assembled_table_primitive_point"
       - "protocol_assembled_table_primitive_point"
+      - "lens_effectivenessProgram_primitive_point"
+      - "protocol_effectivenessProgram_primitive_point"
+      - "lens_decoder_restricted_table_iff_main_point"
+      - "protocol_decoder_restricted_table_iff_main_point"
+      - "lens_assembled_table_fiber_square"
+      - "protocol_assembled_table_observed_square"
       - "kernelLocalAutMulEquiv"
       - "protocolChangeLocalSemidirectMulEquiv"
       - "lensChangeLocalSemidirectMulEquiv"
@@ -11022,7 +11032,8 @@ result:
       - "Design IV-3 finite value reading, decoder, comparison, D, kernel/semidirect, and adapter requirements"
     conjuncts:
       - "For finite source/target carriers, independently selected main primitive graph cells separate all actual general semantic morphisms. The source input Fintype is explicit; finite target carriers use Finite, with computational enumeration restricted to the predecessor effectiveness programs."
-      - "The predecessor finite decoder, retract generation, Karoubi/Arrow equivalences, and fiber/observed natural isomorphisms remain the same constructions; new equations connect original small value tables and assembled semantic Homs to their main primitive graph cells."
+      - "The predecessor finite decoder, retract generation, Karoubi/Arrow equivalences, and fiber/observed natural isomorphisms remain the same constructions. New equations evaluate original small value tables on those finite decoder arrows, prove the relevant fiber/observed comparison squares for assembled Homs, and apply the existing Karoubi restriction/Arrow reading route to the unchanged decoder."
+      - "The accepted explicit finite effectiveness programs supply actual Homs. New readback theorems connect every successful program output to the common graph query; protocol rejection is equivalent to incoherence under its explicit observation equality decision."
       - "Both literal fixed-visible kernels are equivalent to semantic object Aut and to Aut of the same main local Hom, with pointwise readback; the complete-update and protocol component groups transport along these constructed equivalences."
       - "All H survives in the actual group-to-semideirect equivalences; the visible coordinate, canonical section and each literal projection fiber are identified in main-local coordinates."
       - "The common D criterion makes the lens reference view and a finite protocol set of one vertex per component determining for the full fixed-u preserving-change domains, hence the independent CS projection fibers."
@@ -11033,7 +11044,7 @@ result:
 audits:
   premise_delta:
     discharged:
-      - "Only the fixed finite source input and finite target carrier are used for the finite graph query selection; the protocol effectiveness predecessor retains its explicit observation equality decision input."
+      - "Only the fixed finite source input and finite target carrier are used for the finite graph query selection; protocol effectiveness readback states the predecessor's explicit observation equality decision input."
       - "Nontrivial K in the lens necessity/sufficiency criterion is stated explicitly; no finite visible subgroup restriction is introduced."
     remaining: []
   certificate_provenance:
@@ -11043,7 +11054,7 @@ audits:
     unresolved: []
   proof_use:
     used:
-      - "Accepted finite lens/protocol table and effectiveness theorems, finite decoder/Karoubi/Arrow and comparison isomorphisms"
+      - "Accepted finite lens/protocol table and effectiveness theorems, finite decoder/Karoubi restriction/Arrow and comparison isomorphisms"
       - "Actual all-H GroupConnection, fixed-F semidirect and component-kernel theorems"
       - "Common D determining_iff criterion, protocol adapter square and execution naturality"
     unused: []
@@ -11054,9 +11065,9 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "Registered focused checks of all eight IV-3 files: standard axioms only."
-    - "Targeted build of the eight IV-3 modules; Research aggregate was not built."
-    - "Fifteen IV-3 spine #print axioms declarations: propext, Classical.choice, Quot.sound only; placeholder/Unicode/privacy/import-direction scans and git diff --check: clean."
+    - "Registered focused checks of all nine IV-3 files: standard axioms only."
+    - "Targeted build of the nine IV-3 modules; Research aggregate was not built."
+    - "Initial fifteen plus nine repair spine #print axioms declarations: propext, Classical.choice, Quot.sound only; placeholder/Unicode/privacy/import-direction scans and git diff --check: clean."
   blocking_findings: []
   next_obligation: "After IV-3 acceptance, design IV-4 A–E theorem family and independent completion review."
 ```
