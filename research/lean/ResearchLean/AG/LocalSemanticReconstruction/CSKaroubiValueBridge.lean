@@ -194,6 +194,82 @@ theorem protocol_karoubi_arrow_assemble_restricted_values
   dsimp only
   rw [CSFiniteValueQueryBridge.protocol_assemble_restricted_values]
   rfl
+
+/-- Both sides of an arbitrary square between Karoubi Arrow objects are
+recovered in the same main local Hom from their original finite value tables. -/
+theorem lens_karoubi_arrow_square_assemble_restricted_values
+    (input : LensFamilyInput.{u})
+    {p q : Karoubi (Arrow LensPresentation)} (square : p ⟶ q)
+    [Fintype ((LensRealization.lensKaroubiArrowReconstructionEquivalence
+      (V := input.View) (v₀ := input.reference)).functor.obj p).left.Fiber]
+    [Fintype ((LensRealization.lensKaroubiArrowReconstructionEquivalence
+      (V := input.View) (v₀ := input.reference)).functor.obj p).right.Fiber] :
+    let R := (LensRealization.lensKaroubiArrowReconstructionEquivalence
+      (V := input.View) (v₀ := input.reference)).functor
+    let source := R.obj p
+    let target := R.obj q
+    let f := R.map square
+    ((lensKaroubiArrowEquivalence input).functor.map square).left =
+      (reading (Parameter.lens input : Parameter.{u, u})).map
+        (ULift.up (LensSemanticFiniteDetermination.assembleTable
+          source.left target.left
+          (FiniteReading.restrict
+            (LensSemanticFiniteDetermination.readLensHomAt source.left target.left)
+            (LensSemanticFiniteDetermination.fullFiber source.left) f.left))) ∧
+    ((lensKaroubiArrowEquivalence input).functor.map square).right =
+      (reading (Parameter.lens input : Parameter.{u, u})).map
+        (ULift.up (LensSemanticFiniteDetermination.assembleTable
+          source.right target.right
+          (FiniteReading.restrict
+            (LensSemanticFiniteDetermination.readLensHomAt source.right target.right)
+            (LensSemanticFiniteDetermination.fullFiber source.right) f.right))) := by
+  dsimp only
+  constructor
+  · rw [CSFiniteValueQueryBridge.lens_assemble_restricted_values]
+    rfl
+  · rw [CSFiniteValueQueryBridge.lens_assemble_restricted_values]
+    rfl
+
+theorem protocol_karoubi_arrow_square_assemble_restricted_values
+    (input : ProtocolFamilyInput.{u})
+    {p q : Karoubi (Arrow
+      (ProtocolPresentation input.schema input.observation))} (square : p ⟶ q)
+    [Fintype (ProtocolObservedFiniteDetermination.InputPoint
+      ((ProtocolPresentation.protocolKaroubiArrowReconstructionEquivalence
+        (S := input.schema) (O := input.observation)).functor.obj p).left)]
+    [Fintype (ProtocolObservedFiniteDetermination.InputPoint
+      ((ProtocolPresentation.protocolKaroubiArrowReconstructionEquivalence
+        (S := input.schema) (O := input.observation)).functor.obj p).right)]
+    [DecidableEq input.schema.Vertex] :
+    let R := (ProtocolPresentation.protocolKaroubiArrowReconstructionEquivalence
+      (S := input.schema) (O := input.observation)).functor
+    let source := R.obj p
+    let target := R.obj q
+    let f := R.map square
+    ((protocolKaroubiArrowEquivalence input).functor.map square).left =
+      (reading (Parameter.protocol input : Parameter.{u, u})).map
+        (ULift.up (ProtocolObservedFiniteDetermination.assembleTable
+          source.left target.left
+          (FiniteReading.restrict
+            (ProtocolObservedFiniteDetermination.readProtocolHomAt source.left target.left)
+            (ProtocolObservedFiniteDetermination.fullInput source.left) f.left)
+          (ProtocolObservedFiniteDetermination.read_table_coherent
+            source.left target.left f.left))) ∧
+    ((protocolKaroubiArrowEquivalence input).functor.map square).right =
+      (reading (Parameter.protocol input : Parameter.{u, u})).map
+        (ULift.up (ProtocolObservedFiniteDetermination.assembleTable
+          source.right target.right
+          (FiniteReading.restrict
+            (ProtocolObservedFiniteDetermination.readProtocolHomAt source.right target.right)
+            (ProtocolObservedFiniteDetermination.fullInput source.right) f.right)
+          (ProtocolObservedFiniteDetermination.read_table_coherent
+            source.right target.right f.right))) := by
+  dsimp only
+  constructor
+  · rw [CSFiniteValueQueryBridge.protocol_assemble_restricted_values]
+    rfl
+  · rw [CSFiniteValueQueryBridge.protocol_assemble_restricted_values]
+    rfl
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.CSKaroubiValueBridge
 
 end CSKaroubiValueBridge
