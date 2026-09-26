@@ -18,9 +18,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-124-aat-local-semantic-reconstruction](G-124-aat-local-semantic-reconstruction.md)
   (G-123後続。整合する局所データの族から実現・許容射・比較を再構成し、
   有限データで決まる条件を操作の連結性から判定する)
-- [G-117-aat-lax-diagnostic-projector](G-117-aat-lax-diagnostic-projector.md)
-  (G-116 後続。冪等 modification `ν` と診断選択子の lax law。G-114 refinement mate /
-  G-115 `upperDecisionSolution` の同型判定を (i) として引き受ける)
 - [G-aat-quality-surface-01](G-aat-quality-surface-01.md)
 - [G-sft-conway-01](G-sft-conway-01.md)
 - [G-aat-quality-surface-04](G-aat-quality-surface-04.md)
@@ -79,6 +76,9 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## inactive
 
+- [G-117-aat-lax-diagnostic-projector](G-117-aat-lax-diagnostic-projector.md)
+  (`target-refuted`。実AdmCoreFiberの射で規定canonical正規化成分の自然性が破れ、
+  (c)が偽。(d)–(i)は追行しない)
 - [G-123-aat-realization-reconstruction](G-123-aat-realization-reconstruction.md)
   (Cycle 189で研究終了。固定targetは未決着。成果の上に後継G-124を立てた)
 - [G-105-aat-structural-cover-invariance](G-105-aat-structural-cover-invariance.md)

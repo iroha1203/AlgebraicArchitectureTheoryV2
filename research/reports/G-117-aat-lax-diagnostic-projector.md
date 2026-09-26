@@ -10,7 +10,7 @@ proof obligation delta を記録する。GOAL の statement は変更しない�
 - tracking Issue: #4359
 - fixed GOAL blob: `107263cd9185412b72453a6ebfe0c3e7cf979740`
 - base commit: `8b669569525c0125e809d2d8b56d885edd8a3724`
-- current status: `target-refuted pending fixed-head review`
+- current status: `target-refuted`(Cycle 4、PR #4365、決定定理 `no_taggedAdmissibleCanonicalNormalizationNatTrans`)
 
 ## Proof obligation state
 
