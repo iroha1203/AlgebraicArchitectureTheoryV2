@@ -789,6 +789,82 @@ noncomputable abbrev fixedG122Target :=
       (Discrete.mk DoubleDiamondTwoCell.second))
     finiteCanonicalObjectNormalization_admissible
 
+/-- The fixed admissible `barAlpha` is literally the same primitive Hom as
+the representative branch of the common main reader, after its universe lift. -/
+theorem fixedG122MainReading_barAlpha :
+    (((reading finiteAxisFoldGeometryParameter).map
+      finiteAxisFoldBarAlphaNativeHom).down) =
+      fixedG122LocalArrow.hom := rfl
+
+/-- The constant-one comparison has exactly the same common local Hom and
+hence the same fixed admissible comparison group and section. -/
+theorem fixedG122MainReading_identityBarBeta :
+    (reading finiteAxisFoldGeometryParameter).map
+        finiteAxisFoldIdentityCochainBarBetaNativeHom =
+      (reading finiteAxisFoldGeometryParameter).map
+        finiteAxisFoldBarAlphaNativeHom := by
+  rw [finiteAxisFoldIdentityCochain_barBeta_eq_barAlpha_common]
+
+theorem fixedG122MainReading_identityBarBeta_local :
+    (((reading finiteAxisFoldGeometryParameter).map
+      finiteAxisFoldIdentityCochainBarBetaNativeHom).down) =
+      fixedG122LocalArrow.hom := by
+  rw [fixedG122MainReading_identityBarBeta]
+  exact fixedG122MainReading_barAlpha
+
+/-- The generated defect comparison remains distinct from the five-factor
+comparison after the common primitive reader; Hom separation supplies the
+reverse implication, so this is not only a native distinction. -/
+theorem fixedG122MainReading_generatedBarBeta_ne_barAlpha :
+    (reading finiteAxisFoldGeometryParameter).map
+        finiteAxisFoldBarBetaNativeHom ≠
+      (reading finiteAxisFoldGeometryParameter).map
+        finiteAxisFoldBarAlphaNativeHom := by
+  intro equality
+  have nativeEquality := (homEquiv finiteAxisFoldGeometryParameter
+    finiteAxisFoldDirectNativeObject finiteAxisFoldViaBaseNativeObject).injective
+      equality
+  exact FiniteAxisFoldComparisonCode.generatedBarBeta_ne_barAlpha
+    (congrArg ULift.down nativeEquality)
+
+/-- The generated defect comparison is also noninvertible in the common
+primitive local category.  Reflecting an inverse along the main equivalence
+would invert the original fixed generated comparison. -/
+theorem fixedG122MainReading_generatedBarBeta_not_isIso :
+    ¬ IsIso ((reading finiteAxisFoldGeometryParameter).map
+      finiteAxisFoldBarBetaNativeHom) := by
+  intro localIso
+  letI : (reading finiteAxisFoldGeometryParameter).ReflectsIsomorphisms :=
+    (equivalence finiteAxisFoldGeometryParameter).fullyFaithfulFunctor.reflectsIsomorphisms
+  haveI : IsIso finiteAxisFoldBarBetaNativeHom :=
+    isIso_of_reflects_iso finiteAxisFoldBarBetaNativeHom
+      (reading finiteAxisFoldGeometryParameter)
+  haveI : IsIso ((ULiftHom.down (C := GeomReadCategory FiniteModel.carrier)).map
+      finiteAxisFoldBarBetaNativeHom) := inferInstance
+  haveI : IsIso
+      (authoredExactBarBetaAt finiteAxisFoldBCDatumSquare
+        (Discrete.mk DoubleDiamondTwoCell.second)
+        (initialRawDefectCochain finiteAxisFoldBCDatumSquare.toTransportData)
+        Int
+        (finiteAxisFoldFixedCoefficientGeometryFamily
+          (Discrete.mk DoubleDiamondTwoCell.second))).1 := by
+    change IsIso ((ULiftHom.down (C := GeomReadCategory FiniteModel.carrier)).map
+      finiteAxisFoldBarBetaNativeHom)
+    infer_instance
+  exact finiteAxisFold_authoredExactBarBetaAt_not_isIso
+    (geomFiberHom_isIso_of_total_isIso _)
+
+/-- The original defect projector factorization holds in the same common
+local Hom type as the five-factor comparison. -/
+theorem fixedG122MainReading_generatedFactor :
+    (reading finiteAxisFoldGeometryParameter).map
+        finiteAxisFoldBarBetaNativeHom =
+      (reading finiteAxisFoldGeometryParameter).map
+          finiteAxisFoldBarAlphaNativeHom ≫
+        (reading finiteAxisFoldGeometryParameter).map
+          finiteAxisFoldBarDNativeHom := by
+  rw [finiteAxisFoldBarBetaNativeHom_factor, Functor.map_comp]
+
 theorem admissibleAssembly_read_obj {U : AtomCarrier.{u}}
     (G : CanonicalNormalizationAdmissibleGeometry.{u, v} U) :
     (representativeAdmissibleAssembly U).obj
@@ -987,6 +1063,20 @@ noncomputable def fixedG122RawComparisonEquiv :
   (nativeRawGeneratedEquiv fixedG122NativeArrow).trans
     (admissibleRawComparisonEquiv fixedG122NativeArrow)
 
+/-- Every source component of the full fixed comparison is read by the
+same main functor used for all three generated comparisons. -/
+theorem fixedG122MainReading_rawSource (raw : RawComparison) :
+    (((reading finiteAxisFoldGeometryParameter).map
+      (ULift.up raw.1.1.hom.1 :
+        finiteAxisFoldDirectNativeObject ⟶ finiteAxisFoldDirectNativeObject)).down) =
+      (fixedG122RawComparisonEquiv raw).1.1.hom.hom := rfl
+
+theorem fixedG122MainReading_rawTarget (raw : RawComparison) :
+    (((reading finiteAxisFoldGeometryParameter).map
+      (ULift.up raw.1.2.hom.1 :
+        finiteAxisFoldViaBaseNativeObject ⟶ finiteAxisFoldViaBaseNativeObject)).down) =
+      (fixedG122RawComparisonEquiv raw).1.2.hom.hom := rfl
+
 theorem fixedG122Restriction_source (raw : RawComparison) :
     normalizedComparisonSourceMulEquiv (restrictionHom raw) =
       functorAutomorphismHom
@@ -1058,6 +1148,184 @@ noncomputable def fixedG122LocalSectionHom :
   fixedG122RawComparisonEquiv.toMonoidHom.comp
     (canonicalSectionHom.comp
       fixedG122NormalizedComparisonEquiv.symm.toMonoidHom)
+
+/-- The local section's source and target are the main primitive readings
+of the actual G-122 canonical section, for every normalized comparison. -/
+theorem fixedG122LocalSection_sourceForward (normalized : NormalizedComparison) :
+    (fixedG122LocalSectionHom
+      (fixedG122NormalizedComparisonEquiv normalized)).1.1.hom =
+      (representativeAdmissibleReading fixedG122Carrier).map
+        (canonicalSectionHom normalized).1.1.hom := by
+  change (fixedG122RawComparisonEquiv
+    (canonicalSectionHom (fixedG122NormalizedComparisonEquiv.symm
+      (fixedG122NormalizedComparisonEquiv normalized)))).1.1.hom = _
+  rw [fixedG122NormalizedComparisonEquiv.symm_apply_apply]
+  rfl
+
+theorem fixedG122LocalSection_targetForward (normalized : NormalizedComparison) :
+    (fixedG122LocalSectionHom
+      (fixedG122NormalizedComparisonEquiv normalized)).1.2.hom =
+      (representativeAdmissibleReading fixedG122Carrier).map
+        (canonicalSectionHom normalized).1.2.hom := by
+  change (fixedG122RawComparisonEquiv
+    (canonicalSectionHom (fixedG122NormalizedComparisonEquiv.symm
+      (fixedG122NormalizedComparisonEquiv normalized)))).1.2.hom = _
+  rw [fixedG122NormalizedComparisonEquiv.symm_apply_apply]
+  rfl
+
+/-- The transported section is also the common main reader's Arrow-endpoint
+map, so its component equations below apply to the same local model. -/
+theorem fixedG122MainReading_sectionSource (normalized : NormalizedComparison) :
+    (((reading finiteAxisFoldGeometryParameter).map
+      (ULift.up (canonicalSectionHom normalized).1.1.hom.1 :
+        finiteAxisFoldDirectNativeObject ⟶ finiteAxisFoldDirectNativeObject)).down) =
+      (fixedG122LocalSectionHom
+        (fixedG122NormalizedComparisonEquiv normalized)).1.1.hom.hom := by
+  calc
+    _ = (fixedG122RawComparisonEquiv (canonicalSectionHom normalized)).1.1.hom.hom :=
+      fixedG122MainReading_rawSource _
+    _ = _ := by rw [fixedG122LocalSection_sourceForward]; rfl
+
+theorem fixedG122MainReading_sectionTarget (normalized : NormalizedComparison) :
+    (((reading finiteAxisFoldGeometryParameter).map
+      (ULift.up (canonicalSectionHom normalized).1.2.hom.1 :
+        finiteAxisFoldViaBaseNativeObject ⟶ finiteAxisFoldViaBaseNativeObject)).down) =
+      (fixedG122LocalSectionHom
+        (fixedG122NormalizedComparisonEquiv normalized)).1.2.hom.hom := by
+  calc
+    _ = (fixedG122RawComparisonEquiv (canonicalSectionHom normalized)).1.2.hom.hom :=
+      fixedG122MainReading_rawTarget _
+    _ = _ := by rw [fixedG122LocalSection_targetForward]; rfl
+
+theorem fixedG122NativeSection_sourceQuery
+    (normalized : NormalizedComparison) (q : IndependentCarrierGraph.Query) :
+    IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        (canonicalSectionHom normalized).1.1.hom.hom (.source q) =
+      IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        normalized.1.1.hom.f.hom (.source q) := by
+  have h := authoredExactCanonicalComparisonSection_fst_hom_base_base
+    finiteAxisFoldBCDatumSquare
+    (Discrete.mk DoubleDiamondTwoCell.second)
+    Int
+    (finiteAxisFoldFixedCoefficientGeometryFamily
+      (Discrete.mk DoubleDiamondTwoCell.second))
+    finiteCanonicalObjectNormalization_admissible normalized
+  change IndependentCarrierGraph.read _ _
+      (canonicalSectionHom normalized).1.1.hom.hom.base.base.doctrineHom.sourceMap q =
+    IndependentCarrierGraph.read _ _
+      normalized.1.1.hom.f.hom.base.base.doctrineHom.sourceMap q
+  rw [h]
+  rfl
+
+/-- The source-bottom point of the local section is the normalized input's
+source-bottom point, through the fixed main primitive reading. -/
+theorem fixedG122LocalSection_sourcePoint
+    (normalized : NormalizedComparison) (q : IndependentCarrierGraph.Query) :
+    IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        (fixedG122LocalSectionHom
+          (fixedG122NormalizedComparisonEquiv normalized)).1.1.hom.hom.val
+        (.source q) =
+      IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        normalized.1.1.hom.f.hom (.source q) := by
+  rw [fixedG122LocalSection_sourceForward]
+  exact (representativeReadingHomEquiv_point _ (.source q)).trans
+    (fixedG122NativeSection_sourceQuery normalized q)
+
+theorem fixedG122NativeSection_sourceCoefficientQuery
+    (normalized : NormalizedComparison) (q : IndependentCarrierGraph.Query) :
+    IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        (canonicalSectionHom normalized).1.1.hom.hom (.coefficient q) =
+      IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        normalized.1.1.hom.f.hom (.coefficient q) := by
+  have h := authoredExactCanonicalComparisonSection_fst_hom_coefficientHom
+    finiteAxisFoldBCDatumSquare
+    (Discrete.mk DoubleDiamondTwoCell.second)
+    Int
+    (finiteAxisFoldFixedCoefficientGeometryFamily
+      (Discrete.mk DoubleDiamondTwoCell.second))
+    finiteCanonicalObjectNormalization_admissible normalized
+  change IndependentCarrierGraph.read _ _
+      (canonicalSectionHom normalized).1.1.hom.hom.geometry.coefficientHom q =
+    IndependentCarrierGraph.read _ _
+      normalized.1.1.hom.f.hom.geometry.coefficientHom q
+  rw [h]
+  rfl
+
+theorem fixedG122LocalSection_sourceCoefficientPoint
+    (normalized : NormalizedComparison) (q : IndependentCarrierGraph.Query) :
+    IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        (fixedG122LocalSectionHom
+          (fixedG122NormalizedComparisonEquiv normalized)).1.1.hom.hom.val
+        (.coefficient q) =
+      IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        normalized.1.1.hom.f.hom (.coefficient q) := by
+  rw [fixedG122LocalSection_sourceForward]
+  exact (representativeReadingHomEquiv_point _ (.coefficient q)).trans
+    (fixedG122NativeSection_sourceCoefficientQuery normalized q)
+
+theorem fixedG122NativeSection_targetSourceQuery
+    (normalized : NormalizedComparison) (q : IndependentCarrierGraph.Query) :
+    IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        (canonicalSectionHom normalized).1.2.hom.hom (.source q) =
+      IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        normalized.1.2.hom.f.hom (.source q) := by
+  have h := authoredExactCanonicalComparisonSection_snd_hom_base_base
+    finiteAxisFoldBCDatumSquare
+    (Discrete.mk DoubleDiamondTwoCell.second)
+    Int
+    (finiteAxisFoldFixedCoefficientGeometryFamily
+      (Discrete.mk DoubleDiamondTwoCell.second))
+    finiteCanonicalObjectNormalization_admissible normalized
+  change IndependentCarrierGraph.read _ _
+      (canonicalSectionHom normalized).1.2.hom.hom.base.base.doctrineHom.sourceMap q =
+    IndependentCarrierGraph.read _ _
+      normalized.1.2.hom.f.hom.base.base.doctrineHom.sourceMap q
+  rw [h]
+  rfl
+
+theorem fixedG122LocalSection_targetSourcePoint
+    (normalized : NormalizedComparison) (q : IndependentCarrierGraph.Query) :
+    IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        (fixedG122LocalSectionHom
+          (fixedG122NormalizedComparisonEquiv normalized)).1.2.hom.hom.val
+        (.source q) =
+      IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        normalized.1.2.hom.f.hom (.source q) := by
+  rw [fixedG122LocalSection_targetForward]
+  exact (representativeReadingHomEquiv_point _ (.source q)).trans
+    (fixedG122NativeSection_targetSourceQuery normalized q)
+
+theorem fixedG122NativeSection_targetCoefficientQuery
+    (normalized : NormalizedComparison) (q : IndependentCarrierGraph.Query) :
+    IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        (canonicalSectionHom normalized).1.2.hom.hom (.coefficient q) =
+      IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        normalized.1.2.hom.f.hom (.coefficient q) := by
+  have h := authoredExactCanonicalComparisonSection_snd_hom_coefficientHom
+    finiteAxisFoldBCDatumSquare
+    (Discrete.mk DoubleDiamondTwoCell.second)
+    Int
+    (finiteAxisFoldFixedCoefficientGeometryFamily
+      (Discrete.mk DoubleDiamondTwoCell.second))
+    finiteCanonicalObjectNormalization_admissible normalized
+  change IndependentCarrierGraph.read _ _
+      (canonicalSectionHom normalized).1.2.hom.hom.geometry.coefficientHom q =
+    IndependentCarrierGraph.read _ _
+      normalized.1.2.hom.f.hom.geometry.coefficientHom q
+  rw [h]
+  rfl
+
+theorem fixedG122LocalSection_targetCoefficientPoint
+    (normalized : NormalizedComparison) (q : IndependentCarrierGraph.Query) :
+    IndependentGeometryHomPrimitive.InvariantWitness.point _ _
+        (fixedG122LocalSectionHom
+          (fixedG122NormalizedComparisonEquiv normalized)).1.2.hom.hom.val
+        (.coefficient q) =
+      IndependentGeometryHomPrimitive.NativeReader.readRepresentative
+        normalized.1.2.hom.f.hom (.coefficient q) := by
+  rw [fixedG122LocalSection_targetForward]
+  exact (representativeReadingHomEquiv_point _ (.coefficient q)).trans
+    (fixedG122NativeSection_targetCoefficientQuery normalized q)
 
 theorem fixedG122LocalSection_rightInverse
     (normalized : GeneratedArrowComparisonSubgroup

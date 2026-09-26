@@ -10691,10 +10691,17 @@ result:
   lean_artifacts:
     - "G124PrimitiveKernel.primitiveKernelPoints_iff"
     - "G124PrimitiveKernel.fixedG122Normalization_commutes"
+    - "G124PrimitiveKernel.fixedG122MainReading_barAlpha"
+    - "G124PrimitiveKernel.fixedG122MainReading_generatedBarBeta_not_isIso"
+    - "G124PrimitiveKernel.fixedG122MainReading_generatedFactor"
     - "G124PrimitiveKernel.fixedG122PrimitiveKernelMulEquiv"
     - "G124PrimitiveKernel.fixedG122PrimitiveAmbientKernelMulEquiv"
     - "G124PrimitiveKernel.fixedG122PrimitiveAmbientElement_not_restricted_range"
     - "G124PrimitiveKernel.fixedG122Local_shortExact"
+    - "G124PrimitiveKernel.fixedG122LocalSection_sourcePoint"
+    - "G124PrimitiveKernel.fixedG122LocalSection_sourceCoefficientPoint"
+    - "G124PrimitiveKernel.fixedG122LocalSection_targetSourcePoint"
+    - "G124PrimitiveKernel.fixedG122LocalSection_targetCoefficientPoint"
     - "G124PrimitiveKernel.fixedPrimitiveTwistedMulEquiv"
     - "G124PrimitiveKernel.fixedG122FiberEquiv_smul"
   claim_mapping:
@@ -10703,9 +10710,10 @@ result:
       - "Design III-3: independent primitive kernel and fixed G-122 three-case connection"
     conjuncts:
       - "Raw and normalized full comparison groups: fixedG122RawComparisonEquiv, fixedG122NormalizedComparisonEquiv, fixedG122Normalization_commutes"
+      - "Same main reader: fixedG122MainReading_barAlpha, fixedG122MainReading_identityBarBeta, fixedG122MainReading_generatedBarBeta_ne_barAlpha, fixedG122MainReading_rawSource/rawTarget"
       - "Restricted kernel: PrimitiveKernelPoints, primitiveKernelPoints_iff, fixedG122PrimitiveKernelMulEquiv, both inverse laws"
       - "Ambient endpoint kernel: primitiveEndpointKernelMulEquiv, fixedG122PrimitiveAmbientKernelMulEquiv, inclusion square and counterexample outside restricted image"
-      - "Section/split/fibers: fixedG122LocalSectionHom, fixedG122Local_shortExact, fixedG122LocalDisplacement_formula/mul, fixedPrimitiveTwistedMulEquiv, fixedG122FiberEquiv_smul, fixedG122LocalFiber_existsUnique_kernel"
+      - "Section/split/fibers: fixedG122LocalSectionHom, fixedG122MainReading_sectionSource/sectionTarget, four fixedG122LocalSection component point equations, fixedG122Local_shortExact, fixedG122LocalDisplacement_formula/mul, fixedPrimitiveTwistedMulEquiv, fixedG122FiberEquiv_smul, fixedG122LocalFiber_existsUnique_kernel"
       - "Three fixed cases: direct main-reader point evaluation and existing generated/constant-one/five-factor results listed in the table below"
     undischarged_assumptions: []
     acceptance_point: "Proposal for the entire III-3 design part; independent review and CI are required before acceptance."
@@ -10718,7 +10726,7 @@ audits:
   certificate_provenance:
     discharged:
       - "PrimitiveKernelCode retains four local Homs with inverse equations, the comparison square, and all normalized query equations."
-      - "PrimitiveAmbientKernelCode is obtained from independently stated local endpoint conditions, not from restricted-kernel membership."
+      - "PrimitiveEndpointKernelCode is obtained from independently stated local endpoint conditions, not from restricted-kernel membership."
       - "The local ambient element is the image of the accepted fixed G-122 native ambient pair, with source and target bottom/coefficient query equations."
     unresolved: []
   proof_use:
@@ -10734,21 +10742,21 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "Focused G124PrimitiveKernel check: 174 namespace declarations, standard axioms only."
-    - "Targeted G124PrimitiveKernel module build: pass; 174 namespace declarations, standard axioms only."
+    - "Focused G124PrimitiveKernel check: 194 namespace declarations, standard axioms only."
+    - "Targeted G124PrimitiveKernel module build: pass on the revised 194-declaration head."
     - "git diff --check, placeholder, hidden/BiDi Unicode, and local-path/privacy scans: pass."
-    - "Eight reported spine declarations #print axioms: propext, Classical.choice, Quot.sound only; namespace macro audits all 174 declarations."
-    - "PR review and CI: pending."
+    - "Twenty-two reported and revised spine declarations #print axioms: propext, Classical.choice, Quot.sound only; namespace macro audits all 194 declarations."
+    - "First fixed-head PR review identified main-reader and section-component gaps; the revised head awaits fresh four-lane review and CI."
   blocking_findings: []
   next_obligation: "After III-3 acceptance, design IV-1 common finite-reading criterion and D cases."
 ```
 
-The case connection uses the same fixed G-122 family, cell, coefficient and geometry in every row. Its main-N comparison is `IndependentAATPrimitiveReconstruction.reading finiteAxisFoldGeometryParameter`; `finiteAxisFoldTwistedComparison_left/right/read_raw/multiply` is the preexisting path from old twisted coordinates into its Arrow object.
+The case connection uses the same fixed G-122 family, cell, coefficient and geometry in every row. Its main-N comparison is `IndependentAATPrimitiveReconstruction.reading finiteAxisFoldGeometryParameter`. `fixedG122MainReading_barAlpha` identifies its five-factor Hom with the fixed admissible local arrow; `fixedG122MainReading_rawSource/rawTarget` identify every source and target automorphism of the old full comparison with the same local group used by the kernel, section, and fiber results. `finiteAxisFoldTwistedComparison_left/right/read_raw/multiply` is the preexisting path from old twisted coordinates into the main reader's Arrow object.
 
 | Fixed case and premise | Original declaration and common local reading | Classification used |
 | --- | --- | --- |
-| `initialRawDefectCochain` `barBeta`; no inverse premise | `finiteAxisFoldBarBetaNativeHom`, `finiteAxisFoldBarBeta_read_point`; `finiteAxisFoldBarBetaNativeHom_factor`, source/target factorization and `barE/barD` idempotence; `finiteAxisFoldBarBetaKaroubiHom` and `primitiveKaroubiReading_barBeta_f` give its original comparison square. | `finiteAxisFold_generatedGeometry_barBeta_not_isIso`, `FiniteAxisFoldComparisonCode.generatedBarBeta_ne_barAlpha`; G-120 arbitrary-arrow comparison/observation criterion from III-2 applies, while the isomorphism-only G-122 section does not. |
-| Constant-one cochain `barBeta`; same geometry and endpoints | `finiteAxisFoldIdentityCochainBarBetaNativeHom`, `finiteAxisFoldIdentityCochainBarBeta_read_point`; `finiteAxisFoldIdentityCochain_barBeta_eq_barAlpha_common` and `FiniteAxisFoldComparisonCode.evaluate_identityBarBeta_eq_barAlpha`. | The equality transports the actual `barAlpha` comparison, section and endpoint bottom/coefficient evaluations; `fixedG122LocalSectionHom` and III-1 component natural isomorphisms read those evaluations. |
+| `initialRawDefectCochain` `barBeta`; no inverse premise | `finiteAxisFoldBarBetaNativeHom`, `finiteAxisFoldBarBeta_read_point`; `finiteAxisFoldBarBetaNativeHom_factor`, source/target factorization and `barE/barD` idempotence; `finiteAxisFoldBarBetaKaroubiHom` and `primitiveKaroubiReading_barBeta_f` give its original comparison square. | `fixedG122MainReading_generatedBarBeta_ne_barAlpha` proves the distinction in the common local Hom by main-N separation; `fixedG122MainReading_generatedBarBeta_not_isIso` reflects a hypothetical local inverse to the fixed G-122 noninvertibility witness. G-120 arbitrary-arrow comparison/observation criterion from III-2 applies, while the isomorphism-only G-122 section does not. |
+| Constant-one cochain `barBeta`; same geometry and endpoints | `finiteAxisFoldIdentityCochainBarBetaNativeHom`, `finiteAxisFoldIdentityCochainBarBeta_read_point`; `finiteAxisFoldIdentityCochain_barBeta_eq_barAlpha_common` and `fixedG122MainReading_identityBarBeta`. | The local equality gives the actual `barAlpha` comparison and section. `fixedG122MainReading_sectionSource/sectionTarget` and the four `fixedG122LocalSection_*Point` equations read the section's two bottom and two coefficient components. |
 | Actual five-factor `barAlpha`; canonical object admissibility | `finiteAxisFoldBarAlphaNativeIso`, `finiteAxisFoldBarAlpha_read_point`, `fixedG122LocalIso`, `fixedG122NormalizedLocalIso`. | Raw/normalized full groups, bottom-fixed subgroup via III-2 `bottom_comparison_mem_iff`, split short exact sequence, restricted and ambient kernels, the ambient counterexample, and all lift fibers via the Cycle 83 declarations above. |
 
 The local ambient witness fixes source and target bottom/coefficient point evaluations by `fixedG122PrimitiveAmbient_sourcePoint`, `fixedG122PrimitiveAmbient_source_coefficientPoint`, `fixedG122PrimitiveAmbient_target_sourcePoint`, and `fixedG122PrimitiveAmbient_target_coefficientPoint`. Its failure to preserve the comparison square is witnessed by `fixedG122PrimitiveAmbientElement_not_restricted_range`. These statements use one and the same local ambient element.
