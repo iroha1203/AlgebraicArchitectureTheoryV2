@@ -18,6 +18,47 @@ noncomputable def karoubiReading (parameter : Parameter.{u, v}) :
     Karoubi (NativeCategory parameter) ⥤ Karoubi (LocalCategory parameter) :=
   (functorExtension₂ _ _).obj (reading parameter)
 
+/-- A raw arrow is a normalized Karoubi comparison exactly when its main
+primitive reading is one.  Reflection uses the accepted Hom injectivity. -/
+theorem karoubi_comparison_iff (parameter : Parameter.{u, v})
+    (P Q : Karoubi (NativeCategory parameter)) (f : P.X ⟶ Q.X) :
+    P.p ≫ f ≫ Q.p = f ↔
+      ((karoubiReading parameter).obj P).p ≫ (reading parameter).map f ≫
+          ((karoubiReading parameter).obj Q).p = (reading parameter).map f := by
+  change P.p ≫ f ≫ Q.p = f ↔
+    (reading parameter).map P.p ≫ (reading parameter).map f ≫
+      (reading parameter).map Q.p = (reading parameter).map f
+  constructor
+  · intro h
+    simpa only [← Functor.map_comp] using congrArg (reading parameter).map h
+  · intro h
+    apply (equivalence parameter).fullyFaithfulFunctor.map_injective
+    simpa only [Functor.map_comp] using h
+
+/-- The main reader is bijective on the complete Hom between any two
+normalized Karoubi objects; no new coherence premise is imposed on Homs. -/
+noncomputable def karoubiComparisonHomEquiv (parameter : Parameter.{u, v})
+    (P Q : Karoubi (NativeCategory parameter)) :
+    (P ⟶ Q) ≃ ((karoubiReading parameter).obj P ⟶
+      (karoubiReading parameter).obj Q) where
+  toFun := (karoubiReading parameter).map
+  invFun g := by
+    let f := (equivalence parameter).fullyFaithfulFunctor.preimage g.f
+    have h : P.p ≫ f ≫ Q.p = f := by
+      apply (equivalence parameter).fullyFaithfulFunctor.map_injective
+      simp only [Functor.map_comp]
+      change (reading parameter).map P.p ≫ (reading parameter).map f ≫
+        (reading parameter).map Q.p = (reading parameter).map f
+      simpa only [show (reading parameter).map f = g.f from
+        (equivalence parameter).fullyFaithfulFunctor.map_preimage g.f] using g.comm
+    exact ⟨f, h⟩
+  left_inv f := by
+    apply Karoubi.Hom.ext
+    exact (equivalence parameter).fullyFaithfulFunctor.preimage_map f.f
+  right_inv g := by
+    apply Karoubi.Hom.ext
+    exact (equivalence parameter).fullyFaithfulFunctor.map_preimage g.f
+
 /-- The one accepted reader on arbitrary comparisons. -/
 noncomputable def arrowReading (parameter : Parameter.{u, v}) :
     Arrow (NativeCategory parameter) ⥤ Arrow (LocalCategory parameter) :=

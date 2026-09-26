@@ -10581,28 +10581,34 @@ selection:
     - "G124ComparisonTransport"
     - "G124ProjectionGroupSquare"
     - "G124ComparisonObservationTransport"
+    - "G124TaggedNormalization"
   risks:
     - "Canonical admissibility is an object condition only; all original local Homs remain available."
     - "Projector equality must use the accepted main reader, not a replacement equivalence."
     - "Arbitrary comparison arrows need no inverse, section, or surjectivity premise."
     - "Restricted kernels must be distinguished from ambient kernels."
   unchecked:
-    - "Fixed-head standard PR review and independent mathematical/Lean lane decisions."
+    - "Revised fixed-head standard PR review, including the local projector construction-strength question raised on the first head."
     - "PR CI and Issue synchronization after review."
     - "The remaining III-3 and IV-1/IV-2/IV-3 obligations remain open."
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "The primitive object condition is equivalent to native canonical admissibility; its point-defined local projector is idempotent and is the main reader image of native normalization. General Karoubi/Arrow and all comparison groups are carried through the same reader. Direct projection natural isomorphisms give the qualified subgroup squares used for G-120 kernel, fiber, lift, and exactness transport."
+  proof_obligation_delta: "The primitive object condition is equivalent to native canonical admissibility. The local projector is constructed by reading canonical normalization of the assembled primitive object, with explicit source, operation, object, coefficient and component evaluations; it is idempotent and is the main reader image of native normalization. General Karoubi/Arrow and all comparison groups use the same reader. Direct projection natural isomorphisms give exact arbitrary component-subgroup map equations and the qualified squares used for G-120 kernel, fiber, lift, and exactness transport."
   completion_candidate: no
   lean_artifacts:
     - "G124PrimitiveNormalization.representative_read_projector"
+    - "G124PrimitiveNormalization.main_read_projector"
+    - "G124PrimitiveNormalization.main_canonicalKaroubi_projector"
     - "G124PrimitiveNormalization.representativeProjector_idem"
     - "G124PrimitiveNormalization.localNormalizationFunctor"
     - "G124KaroubiProjection.karoubiArrowReaderNaturality"
+    - "G124KaroubiProjection.karoubiComparisonHomEquiv"
     - "G124ComparisonTransport.comparisonMulEquiv"
     - "G124ProjectionGroupSquare.bottom_comparison_mem_iff"
+    - "G124ProjectionGroupSquare.qualifiedComparison_map_eq"
     - "G124ComparisonObservationTransport.bottomRestrictedKernelEquiv"
     - "G124ComparisonObservationTransport.bottomRestricted_shortExact_iff"
+    - "G124TaggedNormalization.taggedLocalProjector_generation"
   claim_mapping:
     source_labels:
       - "Fixed GOAL C: normalization, Karoubi/Arrow, arbitrary comparison groups, G-120"
@@ -10612,19 +10618,22 @@ result:
       - "Local projector point/object evaluation, main reader image, complete-Hom idempotence, absorption, and normalized identity"
       - "General Kar/Arr/Kar(Arr) reader and three projection evaluations"
       - "Any-arrow comparison group isomorphism, source and iso-section compatibility"
-      - "Endpoint/pair squares, bottom-fixed subgroup preservation and reflection"
+      - "Endpoint/pair squares; bottom-fixed and arbitrary specified component subgroup preservation, reflection, and exact map equalities"
+      - "Normalized Karoubi comparisons are preserved and reflected on all Homs by the main reader"
+      - "The tagged explicit normalization and source-choice rewrite are read by the same main reader"
       - "G-120 compatible kernels, fibers, actions, reflection criterion, lifts, and conditional short exactness"
-    undischarged_assumptions: []
+    undischarged_assumptions:
+      - "CanonicalObjectNormalizationAdmissible is an explicit object condition of the normalization full subcategory; it is not asserted for every geometry."
     acceptance_point: "Proposal for the complete III-2 design part. Fixed-head independent review and CI are required before acceptance."
 audits:
   premise_delta:
     discharged:
-      - "The canonical normalization five laws are read from the same primitive core."
+      - "The canonical normalization five laws are identified with the same primitive object predicate; no arbitrary-object existence is claimed."
       - "The main reader, component natural isomorphisms, and fully faithful comparison transport are accepted predecessors."
     remaining: []
   certificate_provenance:
     discharged:
-      - "Projector local Hom is obtained by the independent primitive reader of the canonical normalization of assembled finite object rows; its point graph is explicit."
+      - "The projector uses canonical normalization computed from assembled primitive object rows, with separate source, operation, object, coefficient, bottom, and observation point/component equations; the accepted native constructor supplies the complete-Hom law witness."
       - "Comparison transport uses the accepted main equivalence and direct component squares."
     unresolved: []
   proof_use:
@@ -10639,8 +10648,8 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "Targeted G124PrimitiveNormalization and G124ComparisonObservationTransport builds: pass; all five namespace audits standard axioms only."
-    - "Fixed-head review, CI, and final scans: pending PR."
+    - "Targeted G124TaggedNormalization and G124ComparisonObservationTransport builds: pass; all six namespace audits standard axioms only."
+    - "Initial PR head review rejected III-2 completeness; revised fixed-head review, CI, and final scans remain pending."
   blocking_findings: []
   next_obligation: "After III-2 acceptance, prove design III-3 primitive kernel and G-122 three-case connection."
 ```

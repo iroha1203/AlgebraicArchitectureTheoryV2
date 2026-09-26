@@ -9,6 +9,7 @@ namespace AAT.AG.LocalSemanticReconstruction.G124PrimitiveNormalization
 
 open CategoryTheory CategoryTheory.Idempotents AtomFoundation DoctrineFiberProduct
 open IndependentGeometryCategoryReconstruction IndependentGeometryTableAssembly
+open IndependentAATPrimitiveReconstruction
 open FullGeometryNormalization
 open IndependentGeometryHomPrimitive
 
@@ -117,6 +118,39 @@ theorem explicit_read_admissible_iff {U : AtomCarrier.{u}}
         cases G with
         | mk package => exact assemble_objectData_readFragments package]
 
+/-- The explicit native full subcategory has exactly the same five object
+conditions; the underlying explicit Homs retain raw and actual-context data. -/
+abbrev explicitNativeAdmissibleProperty (U : AtomCarrier.{u}) :
+    ObjectProperty (RealizationReconstruction.ExplicitExactGeomCategory.{u, v} U) :=
+  fun G => CanonicalObjectNormalizationAdmissible G.toGeometryPackage.core
+
+abbrev ExplicitAdmissibleNative (U : AtomCarrier.{u}) :=
+  (explicitNativeAdmissibleProperty.{u, v} U).FullSubcategory
+
+noncomputable def explicitAdmissibleReading (U : AtomCarrier.{u}) :
+    ExplicitAdmissibleNative.{u, v} U ⥤ ExplicitAdmissibleLocal.{u, v} U where
+  obj G := ⟨explicitReadObject G.obj,
+    (explicit_read_admissible_iff G.obj).mpr G.property⟩
+  map f := ObjectProperty.homMk ((explicitReadingFunctor U).map f.hom)
+  map_id G := by
+    apply ObjectProperty.hom_ext
+    exact (explicitReadingFunctor U).map_id G.obj
+  map_comp first second := by
+    apply ObjectProperty.hom_ext
+    exact (explicitReadingFunctor U).map_comp first.hom second.hom
+
+noncomputable def explicitAdmissibleAssembly (U : AtomCarrier.{u}) :
+    ExplicitAdmissibleLocal.{u, v} U ⥤ ExplicitAdmissibleNative.{u, v} U where
+  obj object := ⟨⟨assemble (objectData object.obj.localObject)⟩,
+    (admissible_iff_native _).mp object.property⟩
+  map f := ObjectProperty.homMk ((explicitAssemblyFunctor U).map f.hom)
+  map_id object := by
+    apply ObjectProperty.hom_ext
+    exact (explicitAssemblyFunctor U).map_id object.obj
+  map_comp first second := by
+    apply ObjectProperty.hom_ext
+    exact (explicitAssemblyFunctor U).map_comp first.hom second.hom
+
 /-- Restrict the accepted representative reader to precisely the native and
 primitive full subcategories satisfying the same five admissibility laws. -/
 noncomputable def representativeAdmissibleReading (U : AtomCarrier.{u}) :
@@ -189,6 +223,52 @@ theorem representativeProjector_point {U : AtomCarrier.{u}}
           (assemble (objectData object.localObject))
           ((admissible_iff_native _).mp admissible)) query := rfl
 
+/-- The lower source graph of the local projector is the point reading of
+canonical object normalization on the primitive core. -/
+theorem representativeProjector_source_point {U : AtomCarrier.{u}}
+    (object : RepresentativeLocalObject.{u, v} U)
+    (admissible : representativeAdmissible object)
+    (query : IndependentCarrierGraph.Query.{u, u}) :
+    InvariantWitness.point _ _ (representativeProjector object admissible).val
+        (.source query) =
+      IndependentCarrierGraph.read _ _
+        (canonicalObjectNormalizationTotal
+          (primitiveCore (objectData object.localObject))
+          ((admissible_iff_native _).mp admissible)).base.doctrineHom.sourceMap
+        query := by
+  rw [representativeProjector_point]
+  rfl
+
+/-- Operation cells use the canonical normalized core map and the identity
+coefficient map, at every candidate source and target pair. -/
+theorem representativeProjector_operation_point {U : AtomCarrier.{u}}
+    (object : RepresentativeLocalObject.{u, v} U)
+    (admissible : representativeAdmissible object)
+    (A B A' B' : ArchitectureObject U)
+    (query : IndependentCarrierGraph.Query.{u, u}) :
+    InvariantWitness.point _ _ (representativeProjector object admissible).val
+        (.operation A B A' B' query) =
+      NativeReader.operationRows .representative
+        (canonicalObjectNormalizationTotal
+          (primitiveCore (objectData object.localObject))
+          ((admissible_iff_native _).mp admissible))
+        (RingHom.id (assemble (objectData object.localObject)).Coefficient)
+        (.edge (A, B) (A', B') query) := by
+  rw [representativeProjector_point]
+  rfl
+
+/-- The directed coefficient cell is the graph of the identity ring map. -/
+theorem representativeProjector_coefficient_point {U : AtomCarrier.{u}}
+    (object : RepresentativeLocalObject.{u, v} U)
+    (admissible : representativeAdmissible object)
+    (query : IndependentCarrierGraph.Query.{v, v}) :
+    InvariantWitness.point _ _ (representativeProjector object admissible).val
+        (.coefficient query) =
+      IndependentCarrierGraph.read _ _
+        (RingHom.id (assemble (objectData object.localObject)).Coefficient) query := by
+  rw [representativeProjector_point]
+  rfl
+
 /-- The projector's object graph is exactly canonical object normalization
 of the primitive core, for every candidate source and target object. -/
 theorem representativeProjector_object_point {U : AtomCarrier.{u}}
@@ -244,6 +324,39 @@ theorem representative_read_projector {U : AtomCarrier.{u}}
     ((admissible_iff_native _).mp
       ((representative_read_admissible_iff G).mpr admissible))
     admissible query).symm
+
+/-- The projector equality in the four-branch main reader's exact category
+presentation, rather than only in the underlying geometry branch. -/
+theorem main_read_projector {U : AtomCarrier.{u}}
+    (G : GeometryTransport.GeomReadCategory.{u, v} U)
+    (admissible : CanonicalObjectNormalizationAdmissible G.core) :
+    (reading (Parameter.geometry U .representative)).map
+        (ULift.up (canonicalGeometryNormalization G admissible)) =
+      ULift.up (representativeProjector (representativeReadObject G)
+        ((representative_read_admissible_iff G).mpr admissible)) := by
+  exact congrArg ULift.up (representative_read_projector G admissible)
+
+/-- Native canonical normalization as an actual idempotent in the same
+four-branch category used by the main reader. -/
+noncomputable def nativeCanonicalKaroubi {U : AtomCarrier.{u}}
+    (G : GeometryTransport.GeomReadCategory.{u, v} U)
+    (admissible : CanonicalObjectNormalizationAdmissible G.core) :
+    Karoubi (NativeCategory (Parameter.geometry U .representative)) where
+  X := (ULiftHom.up (C := GeometryTransport.GeomReadCategory.{u, v} U)).obj G
+  p := ULift.up (canonicalGeometryNormalization G admissible)
+  idem := congrArg ULift.up (canonicalGeometryNormalization_idem G admissible)
+
+/-- `Kar(N)` sends the native normalization idempotent to the actual local
+projector, so its Hom equivalence applies to normalized comparisons. -/
+theorem main_canonicalKaroubi_projector {U : AtomCarrier.{u}}
+    (G : GeometryTransport.GeomReadCategory.{u, v} U)
+    (admissible : CanonicalObjectNormalizationAdmissible G.core) :
+    ((G124KaroubiProjection.karoubiReading
+        (Parameter.geometry U .representative)).obj
+        (nativeCanonicalKaroubi G admissible)).p =
+      ULift.up (representativeProjector (representativeReadObject G)
+        ((representative_read_admissible_iff G).mpr admissible)) := by
+  exact main_read_projector G admissible
 
 /-- Idempotence is equality of complete local Homs, including all retained
 primitive graph components and the invariant quotient. -/
