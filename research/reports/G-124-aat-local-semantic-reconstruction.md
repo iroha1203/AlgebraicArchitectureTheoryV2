@@ -11512,7 +11512,7 @@ audits:
 
 ## G-124 固定target A–Eの主張・証拠対応
 
-同じ `IndependentAATPrimitiveReconstruction.Parameter` と `Query`・`Value`・`reading` を A–E で用いる。主定理の宣言群は `G124MainTheorem.lean`、C・E1・E2 の同一入力での結論は `G124MainCClosure.lean`、`G124MainE1Closure.lean`、`G124MainE2Finite.lean`、`G124MainE2Route.lean`、`G124MainE2Groups.lean` に置く。
+A–C の局所再構成と E の主読取りへの接続には、同じ `IndependentAATPrimitiveReconstruction.Parameter` と `Query`・`Value`・`reading` を用いる。D の一般判定は操作系を独立に量化し、その判定を E の適用で同じ読取りへ接続する。主定理の宣言群は `G124MainTheorem.lean`、C・E1・E2 の同一入力での結論は `G124MainCClosure.lean`、`G124MainE1Closure.lean`、`G124MainE2Finite.lean`、`G124MainE2Route.lean`、`G124MainE2Groups.lean` に置く。
 
 | 固定条項 | 直接の構成・結論 | 依存する受理済み構成 |
 | --- | --- | --- |
