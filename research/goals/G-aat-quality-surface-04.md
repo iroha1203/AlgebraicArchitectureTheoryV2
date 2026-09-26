@@ -1,7 +1,7 @@
 # G-aat-quality-surface-04 — universal semantic repair obstruction tower theorem の証明
 
 - `id`: `G-aat-quality-surface-04`
-- `status`: `active`
+- `status`: `inactive`
 - `research mode`: `target-theorem`
 - `predecessor`: `G-aat-quality-surface-02` の finite descent、G-05 の selected true-sheaf descent、G-06 / SAGA の atom-generated grounding を証明済みの地盤として読む。高優先の `G-aat-quality-surface-07` が law-generated conormal coefficient 上の abelian first-order descent を担当し、G-04 はその成果を再包装せず、ideal-power higher stages、nonabelian / stacky descent、higher obstruction、universalityへ進む ultimate GOAL とする。`G-aat-quality-surface-03` の relation-atom 展開は一般 generated nerve を供給する並行研究として読む。
 - `source report`: [research/reports/G-aat-quality-surface-02.md](../reports/G-aat-quality-surface-02.md)
