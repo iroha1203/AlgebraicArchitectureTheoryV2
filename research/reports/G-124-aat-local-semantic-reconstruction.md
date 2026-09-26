@@ -10883,14 +10883,14 @@ selection:
     - "IV-3 E2 and IV-4 A–E completion remain outside this part."
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "The original tagged operation graph point now recovers every choice bit through the main Hom; coherent finite group projections lift uniquely; J recovers the actual assembled native morphism; the edgeless D reading, finite nonseparation, and uniform flip are tied to this same family."
+  proof_obligation_delta: "The original tagged operation graph point now recovers every choice bit through the main Hom; coherent finite group projections lift uniquely; J recovers the actual assembled native morphism; the edgeless D preserving-change domain and finite determining predicate transport to the same J operation family; finite nonseparation and uniform flip hold there."
   completion_candidate: no
   lean_artifacts:
     - "TagChangeCommonFiniteBridge.tagNativeOperationPoint_eq_choice, decodeTagAt_read_choice, decodeTagAt_J"
-    - "TagChangeCommonFiniteBridge.edgeless_readAt_eq_main_operation, finite_operation_points_not_separating"
+    - "TagChangeCommonFiniteBridge.edgeless_readAt_eq_main_operation, main_operation_determining_iff_D, finite_main_operation_determining_iff, finite_operation_points_not_separating"
     - "TagChangeInverseLimitUniversal.toCoherentFamily, lift_value, lift_unique"
     - "TagChangeMainRecovery.J_eq_read_assembled, assembleHom_J, J_injective"
-    - "TagChangeEdgelessCriterion.boolPermMulEquiv, componentEquiv, finite_determining_iff, no_finite_determining"
+    - "TagChangeEdgelessCriterion.boolPermMulEquiv, componentEquiv, choiceEquivPreserving, finite_determining_iff, no_finite_determining"
     - "TagChangeMainFlip.t_eq_J_true, t_square, e_commutes_t, e_comp_t_ne_e"
   evidence:
     - "Operation.Point.forward_iff, NativeReader.readWith_operation_assemble_heq, and cast_heq identify the point with the original native operation map."
@@ -10902,6 +10902,8 @@ result:
       - "assembleHom_J"
       - "finite_operation_points_not_separating"
       - "finite_determining_iff"
+      - "main_operation_determining_iff_D"
+      - "finite_main_operation_determining_iff"
       - "t_square"
       - "e_commutes_t"
       - "e_comp_t_ne_e"
@@ -10912,8 +10914,8 @@ result:
       - "The existing source-choice group equivalence and coherent-family equivalence are retained; Projections/lift establish the universal compatible finite group projections."
       - "J is the existing taggedLocalComparison raw section; J_eq_read_assembled and assembleHom_J identify it with the same B main reader and its inverse."
       - "The false-tagged identity to true-tagged identity operation point evaluates to choice(source), and decodeTagAt_J transports that exact point through the same J and N."
-      - "The edgeless component type is Ω, Perm Bool is xor C2, and its D point code agrees with the main operation decoder for every coherent family."
-      - "The D finite determining criterion is equivalent to Finite Ω, and the actual Infinite Ω disproves existence; the outside-point witness gives finite operation-point nonseparation inside J."
+      - "The edgeless component type is Ω, Perm Bool is xor C2, and choiceEquivPreserving identifies every D preserving change with exactly one source-choice function."
+      - "For every finite S, the full D Determining predicate is equivalent to Determining on the same J operation-point reading; both exist exactly when Ω is finite. The actual Infinite Ω disproves existence, and the outside-point witness exhibits finite operation-point nonseparation inside J."
       - "The same local uniform member t=J(read true) is involutive, commutes with canonical e, and remains distinguished after e."
     undischarged_assumptions: []
     acceptance_point: "Proposal for design IV-2/E1 only; fixed-head review and CI decide acceptance."
@@ -10934,6 +10936,7 @@ audits:
       - "NativeReader.readWith_object_assemble and readWith_operation_assemble_heq, Operation.Point.forward_iff and atPair_cast"
       - "taggedSourceChoiceSubgroupMulEquivCoherentFamily, TagChange.read_assemble/assemble_read, taggedSourceChoiceNativeHom_injective"
       - "FinitePermutationReadingCriteria.exists_finite_determining_iff and taggedSourceChoice_finite_reading_not_separating"
+      - "TagChangeEdgelessCriterion.choiceEquivPreserving and the two-sided finite-reading transport across the actual J operation decoder"
       - "Canonical normalization/source-choice composition and nontrivial uniform-flip declarations"
     unused: []
   structure_field_escape: none-found
@@ -10943,12 +10946,12 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs:
-    - "Registered focused TagChangeCommonFiniteBridge check: pass; five declarations, standard axioms only."
-    - "Targeted build of TagChangeCommonFiniteBridge, TagChangeInverseLimitUniversal, TagChangeMainFlip: pass (4603 dependency jobs); Research aggregate was not built."
-    - "Fourteen IV-2 spine #print axioms declarations: propext, Classical.choice, Quot.sound only."
+    - "Registered focused TagChangeCommonFiniteBridge check: pass after transport repair; seven declarations, standard axioms only."
+    - "Targeted build of TagChangeCommonFiniteBridge, TagChangeInverseLimitUniversal, TagChangeMainFlip: pass after transport repair (4603 dependency jobs); Research aggregate was not built."
+    - "Initial fourteen IV-2 spine #print axioms declarations and three new transfer declarations: propext, Classical.choice, Quot.sound only."
     - "git diff --check, placeholder/hidden Unicode/privacy scans, and Formal-to-Research import scan: clean."
   blocking_findings: []
   next_obligation: "After IV-2 acceptance, design IV-3 E2 lens/protocol finite determination, comparison groups, and main-N point evaluations."
 ```
 
-For each coherent family b and source A, `decodeTagAt A (localHomTable N (J b)) = assemble(b)(A)` evaluates the original `.operation A A A A` graph point. The inverse-limit lift, D reading, finite witness, and uniform flip all use this fixed tagged input and the same J and N.
+For each coherent family b and source A, `decodeTagAt A (localHomTable N (J b)) = assemble(b)(A)` evaluates the original `.operation A A A A` graph point. The equivalence `choiceEquivPreserving` covers every D preserving change; `main_operation_determining_iff_D` transfers its complete finite determining predicate to these J operation queries. The inverse-limit lift, finite witness, and uniform flip use this fixed tagged input and the same J and N.

@@ -1,7 +1,12 @@
 import ResearchLean.AG.LocalSemanticReconstruction.TagChangeFiniteGroupReconstruction
 import Formal.Util.AssertStandardAxioms
 
-/-! Universal property of the existing finite tagged table family. -/
+/-! Universal property of the existing finite tagged table family.
+
+Implementation notes: `Projections` records maps into the accepted finite
+`LocalTagTable` groups and their restriction equations. The lift is constructed
+through the existing coherent-family equivalence, so its codomain is the
+actual tagged source-choice subgroup used by the local reconstruction. -/
 
 namespace AAT.AG.LocalSemanticReconstruction
 
@@ -43,6 +48,8 @@ noncomputable def lift (p : Projections G) : G →* taggedSourceChoiceAutSubgrou
   taggedSourceChoiceSubgroupMulEquivCoherentFamily.symm.toMonoidHom.comp
     (toCoherentFamily p)
 
+/-- The lift has exactly the prescribed projection at each finite source set;
+this is the projection API for the universal property. -/
 theorem lift_value (p : Projections G) (g : G)
     (S : Finset TaggedArchitectureIndex) :
     (taggedSourceChoiceSubgroupMulEquivCoherentFamily (lift p g)).toAdd.value S =

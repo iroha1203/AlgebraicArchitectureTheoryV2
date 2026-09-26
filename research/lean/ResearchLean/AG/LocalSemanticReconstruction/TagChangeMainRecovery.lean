@@ -2,7 +2,11 @@ import ResearchLean.AG.LocalSemanticReconstruction.IndependentAATPrimitiveRecons
 import ResearchLean.AG.LocalSemanticReconstruction.TagChangeFiniteReconstruction
 import Formal.Util.AssertStandardAxioms
 
-/-! The raw tagged coherent family in the common local Hom reconstruction. -/
+/-! The raw tagged coherent family in the common local Hom reconstruction.
+
+Implementation notes: `J` uses the accepted comparison map on the raw local
+section. Its recovery lemmas identify this map with the existing native
+source-choice morphism through the main reading and its inverse. -/
 
 namespace AAT.AG.LocalSemanticReconstruction
 
@@ -11,6 +15,7 @@ open IndependentAATPrimitiveReconstruction
 
 namespace TagChangeMainRecovery
 
+/-- The fixed finite-carrier explicit-geometry parameter of the main reading. -/
 private abbrev TagParameter : Parameter.{0, 0} :=
   .geometry FiniteModel.carrier IndependentGeometryHomPrimitive.Mode.explicit
 

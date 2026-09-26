@@ -3,11 +3,71 @@ import ResearchLean.AG.LocalSemanticReconstruction.TagChangeMainRecovery
 import ResearchLean.AG.LocalSemanticReconstruction.TagChangeEdgelessCriterion
 import Formal.Util.AssertStandardAxioms
 
+/-! Relate finite D readings to operation queries in the fixed main local Hom.
+
+Implementation notes: the bridge reads the existing operation point of the
+native source-choice morphism through `J`. Its determining-predicate transfer
+uses equivalences of the full coherent-family and preserving-change domains
+and of their Bool-permutation values. This avoids restricting either family
+to a finite presentation of the tagged source index. -/
+
 namespace AAT.AG.LocalSemanticReconstruction
 open CategoryTheory RealizationReconstruction IndependentAATPrimitiveReconstruction
 open IndependentGeometryHomPrimitive
 namespace TagChangeCommonFiniteBridge
 open FiniteApplicationHomDecoders
+
+/-- Transport the complete `Determining` predicate across equivalent global
+families and pointwise equivalent reading values. This supplies the reusable
+finite-reading step for the fixed J-to-D comparison. -/
+private theorem determining_equiv
+    {A B V W I : Type*} (global : A ≃ B) (value : V ≃ W)
+    (readA : A → I → V) (readB : B → I → W)
+    (hread : ∀ a i, readB (global a) i = value (readA a i))
+    (S : Finset I) :
+    FiniteReading.Determining readA S (fun _ => True) ↔
+      FiniteReading.Determining readB S (fun _ => True) := by
+  constructor
+  · rintro ⟨hsep, hext⟩
+    constructor
+    · intro first second htable
+      obtain ⟨first, rfl⟩ := global.surjective first
+      obtain ⟨second, rfl⟩ := global.surjective second
+      apply congrArg global
+      apply hsep
+      funext x
+      apply value.injective
+      simpa only [FiniteReading.restrict, ← hread] using congrFun htable x
+    · intro table _
+      let localTable : {x // x ∈ S} → V := fun x => value.symm (table x)
+      obtain ⟨a, ha⟩ := hext localTable True.intro
+      refine ⟨global a, ?_⟩
+      funext x
+      change readB (global a) x.1 = table x
+      rw [hread]
+      have hv := congrFun ha x
+      change readA a x.1 = value.symm (table x) at hv
+      rw [hv]
+      exact value.apply_symm_apply _
+  · rintro ⟨hsep, hext⟩
+    constructor
+    · intro first second htable
+      apply global.injective
+      apply hsep
+      funext x
+      change readB (global first) x.1 = readB (global second) x.1
+      rw [hread, hread]
+      exact congrArg value (congrFun htable x)
+    · intro table _
+      let localTable : {x // x ∈ S} → W := fun x => value (table x)
+      obtain ⟨b, hb⟩ := hext localTable True.intro
+      refine ⟨global.symm b, ?_⟩
+      funext x
+      change readA (global.symm b) x.1 = table x
+      apply value.injective
+      rw [← hread, global.apply_symm_apply]
+      exact congrFun hb x
+
 
 /-- The common operation graph point tests the actual source-choice bit. -/
 theorem tagNativeOperationPoint_eq_choice (choice : ArchitectureObject FiniteModel.carrier → Bool)
@@ -87,6 +147,7 @@ theorem decodeTagAt_read_choice
   rw [← tagPoint_read]
   exact tagNativeOperationPoint_eq_choice choice source
 
+/-- The fixed main-reading parameter shared with `TagChangeMainRecovery.J`. -/
 private abbrev TagParameter : Parameter.{0, 0} :=
   .geometry FiniteModel.carrier Mode.explicit
 
@@ -132,6 +193,99 @@ theorem finite_operation_points_not_separating
   intro source hsource
   rw [decodeTagAt_J, decodeTagAt_J]
   simpa only [TagChange.assemble_read] using hagree source hsource
+
+/-- Identify every coherent tagged family with every preserving change of the
+edgeless graph, using the existing assembly and the D-domain equivalence. -/
+private noncomputable def familyEquivPreserving :
+    TagChange.CoherentFamily TagChange.TaggedArchitectureIndex ≃
+      PermutationRestriction.PreservingChange TagChangeEdgelessCriterion.graph Bool
+        TagChangeEdgelessCriterion.identity :=
+  TagChange.globalTagChangeEquivCoherentFamily.symm.trans
+    TagChangeEdgelessCriterion.choiceEquivPreserving
+
+/-- Translate an operation-point Bool bit to its full D Bool permutation. -/
+private noncomputable def bitEquivPerm : Bool ≃ Equiv.Perm Bool where
+  toFun := TagChangeEdgelessCriterion.boolPerm
+  invFun permutation := permutation false
+  left_inv bit := by cases bit <;> rfl
+  right_inv permutation := by
+    exact TagChangeEdgelessCriterion.boolPermMulEquiv.left_inv permutation
+
+/-- Pointwise compatibility of the actual J operation reading with D's
+permutation reading under the two domain and value equivalences. -/
+private theorem main_read_transport
+    (family : TagChange.CoherentFamily TagChange.TaggedArchitectureIndex)
+    (source : TagChange.TaggedArchitectureIndex) :
+    FinitePermutationReadingCriteria.readAt
+      TagChangeEdgelessCriterion.graph Bool TagChangeEdgelessCriterion.identity
+      (familyEquivPreserving family) source =
+        bitEquivPerm
+          (FiniteApplicationHomDecoders.decodeTagAt source
+            (localHomTable TagParameter
+              (TagChangeMainRecovery.J family))) := by
+  apply TagChangeEdgelessCriterion.boolPermMulEquiv.injective
+  change TagChangeEdgelessCriterion.boolPermMulEquiv
+      (FinitePermutationReadingCriteria.readAt
+        TagChangeEdgelessCriterion.graph Bool TagChangeEdgelessCriterion.identity
+        (TagChangeEdgelessCriterion.edgelessChangeOfChoice
+          (TagChange.assemble family)) source) = _
+  rw [TagChangeEdgelessCriterion.edgeless_readAt_code]
+  rw [TagChangeCommonFiniteBridge.decodeTagAt_J]
+  cases hbit : TagChange.assemble family source <;> rfl
+
+/-- Every finite permutation table is edge coherent because the tagged graph
+has no edges; this discharges D's table-side premise in the transfer. -/
+private theorem edgeless_edge_coherent
+    (S : Finset TagChange.TaggedArchitectureIndex)
+    (table : {source // source ∈ S} → Equiv.Perm Bool) :
+    FinitePermutationReadingCriteria.EdgeCoherent
+      TagChangeEdgelessCriterion.graph Bool S table := by
+  intro namedEdge
+  exact namedEdge.1.elim
+
+/-- At every finite source selection, the determining predicate for the
+actual J operation queries is equivalent to D's determining predicate over
+all preserving changes of the edgeless graph. -/
+theorem main_operation_determining_iff_D
+    (S : Finset TagChange.TaggedArchitectureIndex) :
+    FiniteReading.Determining
+      (fun family source => FiniteApplicationHomDecoders.decodeTagAt source
+        (localHomTable TagParameter
+          (TagChangeMainRecovery.J family))) S (fun _ => True) ↔
+    FiniteReading.Determining
+      (FinitePermutationReadingCriteria.readAt
+        TagChangeEdgelessCriterion.graph Bool TagChangeEdgelessCriterion.identity) S
+      (FinitePermutationReadingCriteria.EdgeCoherent
+        TagChangeEdgelessCriterion.graph Bool S) := by
+  rw [show FiniteReading.Determining
+      (FinitePermutationReadingCriteria.readAt
+        TagChangeEdgelessCriterion.graph Bool TagChangeEdgelessCriterion.identity) S
+      (FinitePermutationReadingCriteria.EdgeCoherent
+        TagChangeEdgelessCriterion.graph Bool S) ↔
+    FiniteReading.Determining
+      (FinitePermutationReadingCriteria.readAt
+        TagChangeEdgelessCriterion.graph Bool TagChangeEdgelessCriterion.identity) S
+      (fun _ => True) from by
+        simp only [FiniteReading.Determining, FiniteReading.Extends]
+        constructor
+        · rintro ⟨hsep, hext⟩
+          exact ⟨hsep, fun table _ => hext table (edgeless_edge_coherent S table)⟩
+        · rintro ⟨hsep, hext⟩
+          exact ⟨hsep, fun table _ => hext table True.intro⟩]
+  exact determining_equiv familyEquivPreserving bitEquivPerm _ _
+    main_read_transport S
+
+/-- A finite set of main J operation queries determines the whole family
+exactly when its source index is finite. -/
+theorem finite_main_operation_determining_iff :
+    (∃ S : Finset TagChange.TaggedArchitectureIndex,
+      FiniteReading.Determining
+        (fun family source => FiniteApplicationHomDecoders.decodeTagAt source
+          (localHomTable TagParameter
+            (TagChangeMainRecovery.J family))) S (fun _ => True)) ↔
+      Finite TagChange.TaggedArchitectureIndex := by
+  simp_rw [main_operation_determining_iff_D]
+  exact TagChangeEdgelessCriterion.finite_determining_iff
 
 #assert_standard_axioms_only AAT.AG.LocalSemanticReconstruction.TagChangeCommonFiniteBridge
 end TagChangeCommonFiniteBridge

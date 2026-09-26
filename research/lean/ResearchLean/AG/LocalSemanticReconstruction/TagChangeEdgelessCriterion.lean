@@ -5,7 +5,12 @@ import ResearchLean.AG.LocalSemanticReconstruction.TagChangeFiniteReconstruction
 import ResearchLean.AG.LocalSemanticReconstruction.TagChangeAmbientLocalEquivalence
 import Formal.Util.AssertStandardAxioms
 
-/-! Specialize the general D criterion to the fixed edgeless tag index. -/
+/-! Specialize the general D criterion to the fixed edgeless tag index.
+
+Implementation notes: the graph has the actual tagged source objects as
+vertices and no edges, so each component has an independent Bool permutation.
+The equivalence with source choices covers every preserving change in D's
+domain, rather than selecting a finite subfamily of changes. -/
 
 namespace AAT.AG.LocalSemanticReconstruction
 
@@ -17,6 +22,8 @@ namespace TagChangeEdgelessCriterion
 noncomputable def boolPerm (bit : Bool) : Equiv.Perm Bool :=
   if bit then Equiv.boolNot else 1
 
+/-- Evaluation at `false` determines every Bool permutation, the calculation
+used to identify D's value group with the source-choice xor group. -/
 private theorem perm_apply_eq_xor (permutation : Equiv.Perm Bool) (bit : Bool) :
     permutation bit = Bool.xor (permutation false) bit := by
   cases bit with
@@ -29,6 +36,7 @@ private theorem perm_apply_eq_xor (permutation : Equiv.Perm Bool) (bit : Bool) :
     cases h : permutation false <;> cases h' : permutation true <;>
       simp [h, h'] at hne ⊢
 
+/-- Evaluation at `false` recovers the bit defining an xor translation. -/
 private theorem boolPerm_false (bit : Bool) : boolPerm bit false = bit := by
   cases bit <;> rfl
 
@@ -58,12 +66,15 @@ def graph : FixedFDirectedMultigraph where
   source := Empty.elim
   target := Empty.elim
 
+/-- The visible graph automorphism is the identity for the D specialization. -/
 def identity : FixedFGraphAutomorphism graph where
   vertex := Equiv.refl _
   edge := Equiv.refl _
   source_rename := by intro e; exact e.elim
   target_rename := by intro e; exact e.elim
 
+/-- Reachability in the edgeless graph identifies only equal source objects;
+this computes the components used by D's finite-reading criterion. -/
 theorem reachable_iff_eq (first second : graph.Vertex) :
     FixedFUndirectedReachable graph first second ↔ first = second := by
   constructor
@@ -93,6 +104,8 @@ noncomputable def componentEquiv :
     rfl
   right_inv := by intro source; rfl
 
+/-- Transfer finiteness between D's graph components and the actual tagged
+source-object index through `componentEquiv`. -/
 theorem component_finite_iff :
     Finite (FixedFComponent graph) ↔
       Finite TagChange.TaggedArchitectureIndex := by
@@ -135,6 +148,7 @@ noncomputable def edgelessChangeOfChoice
   FixedFFollowingStateChange.preservingEquivComponentPermutationFamilies.symm
     (fun component => boolPerm (choice (componentEquiv component)))
 
+/-- D's pointwise reading at `false` recovers the choice at the same source. -/
 theorem edgeless_readAt_false
     (choice : TagChange.GlobalTagChange TagChange.TaggedArchitectureIndex)
     (source : TagChange.TaggedArchitectureIndex) :
@@ -144,6 +158,8 @@ theorem edgeless_readAt_false
     (edgelessChangeOfChoice choice) (fixedFComponentMk graph source)) false = _
   simp [edgelessChangeOfChoice, boolPerm_false, componentEquiv, fixedFComponentMk]
 
+/-- Identify the complete Bool permutation value of D's reading with the
+source-choice bit under the permutation group equivalence. -/
 theorem edgeless_readAt_code
     (choice : TagChange.GlobalTagChange TagChange.TaggedArchitectureIndex)
     (source : TagChange.TaggedArchitectureIndex) :
@@ -153,6 +169,33 @@ theorem edgeless_readAt_code
       Multiplicative.ofAdd (choice source) := by
   apply Multiplicative.ext
   exact edgeless_readAt_false choice source
+
+/-- Every identity-visible preserving change of the edgeless system is
+exactly one actual source-choice function. This identifies the full domain
+of D's predicate with the fixed E1 tag family. -/
+noncomputable def choiceEquivPreserving :
+    TagChange.GlobalTagChange TagChange.TaggedArchitectureIndex ≃
+      PermutationRestriction.PreservingChange graph Bool identity where
+  toFun := edgelessChangeOfChoice
+  invFun change source :=
+    (FinitePermutationReadingCriteria.readAt graph Bool identity change source) false
+  left_inv choice := by
+    funext source
+    exact edgeless_readAt_false choice source
+  right_inv change := by
+    apply FixedFFollowingStateChange.preservingEquivComponentPermutationFamilies.injective
+    funext component
+    refine Quotient.inductionOn component ?_
+    intro source
+    change boolPerm ((FinitePermutationReadingCriteria.readAt graph Bool identity change source) false) =
+      FixedFFollowingStateChange.preservingEquivComponentPermutationFamilies change
+        (fixedFComponentMk graph source)
+    apply boolPermMulEquiv.injective
+    apply Multiplicative.ext
+    change (boolPerm ((FinitePermutationReadingCriteria.readAt graph Bool identity change source) false)) false =
+      (FinitePermutationReadingCriteria.readAt graph Bool identity change source) false
+    cases hbit : (FinitePermutationReadingCriteria.readAt graph Bool identity change source) false <;>
+      rfl
 
 /-- The edgeless D reading is the same pointwise source choice classified by
 the existing ambient tagged subgroup. -/
