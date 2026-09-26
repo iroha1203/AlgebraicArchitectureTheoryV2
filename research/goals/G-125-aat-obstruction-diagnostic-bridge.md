@@ -1,7 +1,7 @@
 # G-125-aat-obstruction-diagnostic-bridge — 障害類と診断を結ぶ比較
 
 - `id`: `G-125-aat-obstruction-diagnostic-bridge`
-- `status`: `active`
+- `status`: `completed`
 - `research mode`: `target-theorem`
 - `tracking issue`: [#4791](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4791)
 - `paper`: [Rising Sea 構成マスター第2・3章](../../outreach/paper/rising-sea/paper-structure.md)、[数学棚卸し第2・3章](../../outreach/paper/rising-sea/mathematics-inventory.md)、[執筆準備](../../outreach/paper/rising-sea/TODO.md)
