@@ -27,6 +27,7 @@ GOAL(研究で成し遂げたいこと)
 | --- | --- |
 | `goals/README.md` | GOAL 一覧、GOAL card contract、運用規則 |
 | `goals/<goal-id>.md` | 個別 GOAL の静的定義と reward function。`target-theorem` の内容と共通基準の参照は [GOAL カードの型](goals/README.md#goal-カードの型)に従う |
+| [designs/](designs/README.md) | GOALごとの構成・証明方針、依存関係、受入条件、既存宣言との対応 |
 | `ideas/` | 候補を一件ずつ書いたカード。選にもれたものや保留は `ideas/archived/` へ移す |
 | `reports/` | GOAL の能力がどう増えたかを書くレポート。GOAL ひとつにつき一つ |
 | `DESIGN.md` | この仕組みをいまの形にした理由の記録 |
