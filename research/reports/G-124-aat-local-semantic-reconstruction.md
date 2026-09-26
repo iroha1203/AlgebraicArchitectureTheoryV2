@@ -10955,3 +10955,110 @@ audits:
 ```
 
 For each coherent family b and source A, `decodeTagAt A (localHomTable N (J b)) = assemble(b)(A)` evaluates the original `.operation A A A A` graph point. The equivalence `choiceEquivPreserving` covers every D preserving change; `main_operation_determining_iff_D` transfers its complete finite determining predicate to these J operation queries. The inverse-limit lift, finite witness, and uniform flip use this fixed tagged input and the same J and N.
+
+## Cycle 86 — Part IV-3 lens/protocol CS and finite reading (proposal)
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124
+cycle: 86
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: 5c160c7068a650bdbdb855fb0ececa2214da6ee1
+tracking_issue: 4711
+report_path: research/reports/G-124-aat-local-semantic-reconstruction.md
+selection:
+  proof_state_ref: "Cycle 85 / design IV-2 was accepted in merged PR #4940; E2 and the final A–E package remained open."
+  proof_dag_predecessors:
+    - "IndependentAATPrimitiveReconstruction common main reading and its Hom inverse, finite decoder, Karoubi and Arrow equivalences"
+    - "LensSemanticFiniteDetermination and ProtocolObservedFiniteDetermination value tables, coherence, and effectiveness programs"
+    - "FixedFLensGroupConnection, FixedFProtocolGroupConnection, FixedFSemidirectProduct, and the common D component criterion"
+  proof_obligation: "Connect both general-morphism finite value tables and all-H fixed-visible CS change groups to actual points and automorphisms of the same main local Hom, then transfer D, comparison groups, and adapter squares."
+  selection_reason: "This closes the remaining E2 application layer before the IV-4 A–E theorem family; the accepted finite and group constructions can be reused rather than reassembled."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "CSFiniteValueQueryBridge and CSComparisonMain"
+    - "CSLensKernelLocal, CSProtocolKernelLocal, and CSComponentLocalGroup"
+    - "CSFixedFDetermining, CSFixedFFiberD, and CSProtocolAdapterLocal"
+  risks:
+    - "The finite query cells must be actual graph points of the common main Hom, and be chosen without knowing the tested morphism."
+    - "Kernel-to-Aut must use actual inverse semantic Homs and preserve the full visible subgroup H, including section and every lift fiber."
+    - "D must apply to the full fixed-u preserving-change domain, with nontrivial hidden K where required."
+    - "Protocol adapter square must retain visible vertex reindexing and execution naturality."
+  unchecked:
+    - "Fixed-head four-lane PR review, root acceptance audit, CI, and Issue synchronization."
+    - "IV-4 A–E package and independent completion review remain outside this part."
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Actual general lens/protocol morphisms have finite common-main query selections and value-table readback; actual all-H fixed-visible change groups have main-local kernel Aut, transported component action and semidirect form, projection/section/lift-fiber compatibility; common D and comparison groups are transported to these same objects."
+  completion_candidate: no
+  lean_artifacts:
+    - "CSFiniteValueQueryBridge: lens_value_iff_primitive_point, protocol_value_iff_primitive_point, lens_finite_query_separates, protocol_finite_query_separates, lens_assembled_table_primitive_point, protocol_assembled_table_primitive_point"
+    - "CSLensKernelLocal and CSProtocolKernelLocal: kernelAutMulEquiv, kernelLocalAutMulEquiv, kernelLocalAut_point"
+    - "CSComponentLocalGroup: componentKernelMulEquiv, protocolComponentLocalAutMulEquiv, lensComponentLocalAutMulEquiv, both ChangeLocalSemidirectMulEquiv, both ChangeLocal_visible/section and ProjectionFiberLocalEquiv, protocolComponentLocal_point"
+    - "CSFixedFDetermining and CSFixedFFiberD: lens_reference_determining, protocol_representatives_determining, both FiberEquivPreserving and determining_on_changes, both fiber readAt equations"
+    - "CSComparisonMain: both ComparisonMainMulEquiv and four endpoint Hom equations; CSProtocolAdapterLocal.adapter_square_iff_main_points"
+  evidence:
+    - "The original finite value readings are equivalent to decodeLensPoint/decodeProtocolPoint on the same main local Hom; admissible/coherent assembled values have the same point readings."
+    - "Both kernel Aut equivalences are built from original product-lens and protocol semantic Hom/inverse data and moved to the main reading via ULift; protocol component point evaluation equals the original component permutation."
+    - "The actual CS projection fibers identify with full D preserving-change domains and with corresponding semidirect-coordinate fibers; visible and canonical section equations are retained."
+  claim_mapping:
+    theorem_names:
+      - "lens_finite_query_separates"
+      - "protocol_finite_query_separates"
+      - "lens_assembled_table_primitive_point"
+      - "protocol_assembled_table_primitive_point"
+      - "kernelLocalAutMulEquiv"
+      - "protocolChangeLocalSemidirectMulEquiv"
+      - "lensChangeLocalSemidirectMulEquiv"
+      - "protocolProjectionFiberLocalEquiv"
+      - "lensProjectionFiberLocalEquiv"
+      - "lens_reference_determining_on_changes"
+      - "protocol_representatives_determining_on_changes"
+      - "lensComparisonMainMulEquiv"
+      - "protocolComparisonMainMulEquiv"
+      - "adapter_square_iff_main_points"
+    source_labels:
+      - "Fixed GOAL E2 general morphism and fixed-visible change layers"
+      - "Design IV-3 finite value reading, decoder, comparison, D, kernel/semidirect, and adapter requirements"
+    conjuncts:
+      - "For finite source/target carriers, independently selected main primitive graph cells separate all actual general semantic morphisms. The source input Fintype is explicit; finite target carriers use Finite, with computational enumeration restricted to the predecessor effectiveness programs."
+      - "The predecessor finite decoder, retract generation, Karoubi/Arrow equivalences, and fiber/observed natural isomorphisms remain the same constructions; new equations connect original small value tables and assembled semantic Homs to their main primitive graph cells."
+      - "Both literal fixed-visible kernels are equivalent to semantic object Aut and to Aut of the same main local Hom, with pointwise readback; the complete-update and protocol component groups transport along these constructed equivalences."
+      - "All H survives in the actual group-to-semideirect equivalences; the visible coordinate, canonical section and each literal projection fiber are identified in main-local coordinates."
+      - "The common D criterion makes the lens reference view and a finite protocol set of one vertex per component determining for the full fixed-u preserving-change domains, hence the independent CS projection fibers."
+      - "The two existing comparison groups are transported, including arbitrary noninvertible semantic morphisms, to groups on the main local Hom with endpoint equations. The protocol adapter square is equivalent to reindexed main point equations."
+    undischarged_assumptions: []
+    acceptance_point: "Proposal for design IV-3/E2 only; fixed-head independent review and CI decide acceptance."
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged:
+      - "Only the fixed finite source input and finite target carrier are used for the finite graph query selection; the protocol effectiveness predecessor retains its explicit observation equality decision input."
+      - "Nontrivial K in the lens necessity/sufficiency criterion is stated explicitly; no finite visible subgroup restriction is introduced."
+    remaining: []
+  certificate_provenance:
+    discharged:
+      - "Original semantic Hom values and assembled table Homs feed the common main local graph decoder, without supplied primitive-query values."
+      - "Kernel automorphisms are constructed from original lens/protocol semantic morphisms and their actual inverse laws, not from a supplied Aut field."
+    unresolved: []
+  proof_use:
+    used:
+      - "Accepted finite lens/protocol table and effectiveness theorems, finite decoder/Karoubi/Arrow and comparison isomorphisms"
+      - "Actual all-H GroupConnection, fixed-F semidirect and component-kernel theorems"
+      - "Common D determining_iff criterion, protocol adapter square and execution naturality"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "Registered focused checks of all eight IV-3 files: standard axioms only."
+    - "Targeted build of the eight IV-3 modules; Research aggregate was not built."
+    - "Fifteen IV-3 spine #print axioms declarations: propext, Classical.choice, Quot.sound only; placeholder/Unicode/privacy/import-direction scans and git diff --check: clean."
+  blocking_findings: []
+  next_obligation: "After IV-3 acceptance, design IV-4 A–E theorem family and independent completion review."
+```
+
+The finite value tables read actual points of the common main Hom. The two kernel equivalences evaluate original semantic Homs and inverse Homs, and their transported actions preserve all visible changes in H. For the D application the finite determining domains are fixed visible fibers; neither a hidden table nor a point reading is asserted to distinguish distinct visible changes.
