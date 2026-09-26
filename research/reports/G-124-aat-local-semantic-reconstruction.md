@@ -10555,3 +10555,92 @@ III-1は一つのPR単位として固定する。`BottomTarget`、`ObservationTa
 元の成分圏を`ULift`と`ULiftHom`で表示し、`componentEquivalence`で元の全対象・全射へ戻る。
 局所関手の対象・射の定義は原始表の対応する成分を選び、完成した幾何やCSの逆組立ては
 自然同型や関手則の証明にのみ使う。全体G-124の完了判定はCの残部とD・Eの証拠を要する。
+
+## Cycle 82 — Part III-2 normalization and comparison transport (proposal)
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-124
+cycle: 82
+goal_blob_sha: 4e6fdacf8b3de5865d5f1f14b058fc0774c1f088
+base_oid: ed962bae2677474676ea14f50cff8ecfd9e3a7b9
+tracking_issue: 4711
+selection:
+  proof_state_ref: "III-1 was accepted and merged as PR #4936; the fixed design III-2 is the next C obligation. The rejected IV-1 Cycle 80 remains separate."
+  proof_dag_predecessors:
+    - "Accepted A/B main reader and fully faithful comparison transport"
+    - "Accepted III-1 direct bottom, observation, and coefficient natural isomorphisms"
+    - "CanonicalNormalization and independent primitive object/Hom assemblies"
+    - "G-119 Karoubi/Arrow naturality and G-120 ObservationEquiv/GroupHomRestriction"
+  proof_obligation: "Construct primitive canonical normalization and the local projector, connect it to main N, evaluate Karoubi/Arrow on all parameters, and transport arbitrary comparison groups and qualified observation diagrams through direct projection squares."
+  selection_reason: "III-2 composes the accepted component projections with normalization and comparison transport before III-3 kernel analysis."
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - "G124PrimitiveNormalization"
+    - "G124KaroubiProjection"
+    - "G124ComparisonTransport"
+    - "G124ProjectionGroupSquare"
+    - "G124ComparisonObservationTransport"
+  risks:
+    - "Canonical admissibility is an object condition only; all original local Homs remain available."
+    - "Projector equality must use the accepted main reader, not a replacement equivalence."
+    - "Arbitrary comparison arrows need no inverse, section, or surjectivity premise."
+    - "Restricted kernels must be distinguished from ambient kernels."
+  unchecked:
+    - "Fixed-head standard PR review and independent mathematical/Lean lane decisions."
+    - "PR CI and Issue synchronization after review."
+    - "The remaining III-3 and IV-1/IV-2/IV-3 obligations remain open."
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The primitive object condition is equivalent to native canonical admissibility; its point-defined local projector is idempotent and is the main reader image of native normalization. General Karoubi/Arrow and all comparison groups are carried through the same reader. Direct projection natural isomorphisms give the qualified subgroup squares used for G-120 kernel, fiber, lift, and exactness transport."
+  completion_candidate: no
+  lean_artifacts:
+    - "G124PrimitiveNormalization.representative_read_projector"
+    - "G124PrimitiveNormalization.representativeProjector_idem"
+    - "G124PrimitiveNormalization.localNormalizationFunctor"
+    - "G124KaroubiProjection.karoubiArrowReaderNaturality"
+    - "G124ComparisonTransport.comparisonMulEquiv"
+    - "G124ProjectionGroupSquare.bottom_comparison_mem_iff"
+    - "G124ComparisonObservationTransport.bottomRestrictedKernelEquiv"
+    - "G124ComparisonObservationTransport.bottomRestricted_shortExact_iff"
+  claim_mapping:
+    source_labels:
+      - "Fixed GOAL C: normalization, Karoubi/Arrow, arbitrary comparison groups, G-120"
+      - "Design III-2: all four parameters and three direct projections"
+    conjuncts:
+      - "Primitive five-law admissibility iff accepted native condition; corresponding full subcategories"
+      - "Local projector point/object evaluation, main reader image, complete-Hom idempotence, absorption, and normalized identity"
+      - "General Kar/Arr/Kar(Arr) reader and three projection evaluations"
+      - "Any-arrow comparison group isomorphism, source and iso-section compatibility"
+      - "Endpoint/pair squares, bottom-fixed subgroup preservation and reflection"
+      - "G-120 compatible kernels, fibers, actions, reflection criterion, lifts, and conditional short exactness"
+    undischarged_assumptions: []
+    acceptance_point: "Proposal for the complete III-2 design part. Fixed-head independent review and CI are required before acceptance."
+audits:
+  premise_delta:
+    discharged:
+      - "The canonical normalization five laws are read from the same primitive core."
+      - "The main reader, component natural isomorphisms, and fully faithful comparison transport are accepted predecessors."
+    remaining: []
+  certificate_provenance:
+    discharged:
+      - "Projector local Hom is obtained by the independent primitive reader of the canonical normalization of assembled finite object rows; its point graph is explicit."
+      - "Comparison transport uses the accepted main equivalence and direct component squares."
+    unresolved: []
+  proof_use:
+    used:
+      - "Independent primitive assembly and NativeReader point laws"
+      - "CanonicalNormalization, G-119 Karoubi/Arrow, G-120 ObservationEquiv and GroupHomRestriction"
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs:
+    - "Targeted G124PrimitiveNormalization and G124ComparisonObservationTransport builds: pass; all five namespace audits standard axioms only."
+    - "Fixed-head review, CI, and final scans: pending PR."
+  blocking_findings: []
+  next_obligation: "After III-2 acceptance, prove design III-3 primitive kernel and G-122 three-case connection."
+```
