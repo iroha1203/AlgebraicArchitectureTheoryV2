@@ -888,3 +888,4 @@ import ResearchLean.AG.ProtocolHolonomy.HolonomyChoice
 import ResearchLean.AG.ProtocolHolonomy.ChoiceTorsor
 import ResearchLean.AG.ProtocolHolonomy.ChoiceGroup
 import ResearchLean.AG.ProtocolHolonomy.ChoiceGroupFormula
+import ResearchLean.AG.ProtocolHolonomy.RenameComposition

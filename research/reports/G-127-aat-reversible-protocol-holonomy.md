@@ -1152,3 +1152,56 @@ audits:
   blocking_findings: []
   next_obligation: Prove D semantic isomorphism composition and projection/kernel/fiber compatibility
 ```
+
+## Cycle 22 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 22
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: f92d494c77528d4f6a1b922f0e95056d0b68903c
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 16 quotient rename and Cycle 17 semantic natural isomorphism
+  proof_dag_predecessors: [FiniteProtocolInput.renameExecutionFunctor, FiniteProtocolInput.renamePathFunctor_relation, FixedFGraphAutomorphism group law]
+  proof_obligation: Prove that the original H action on the complete independent quotient execution category respects identity, composition, and inverse visible renaming
+  selection_reason: Supplies the actual semantic reindexing group laws needed to compare the A2 composition of original lifts with composed semantic natural isomorphisms
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/RenameComposition.lean]
+  risks: [functor composition order, quotient morphisms beyond generators, named edge preservation, inverse membership in H]
+  unchecked: [D semantic natural-isomorphism A2/projection/kernel/fiber compatibility, identity specialization, arbitrary undirected-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The quotient execution rename functors generated from the original named graph action satisfy exact composition and identity laws on every quotient morphism; inverse visible changes give two-sided inverse functors
+  completion_candidate: no
+  lean_artifacts: [renameTypedEdge_mul, renamePositive_mul, FiniteProtocolInput.renamePath_mul, FiniteProtocolInput.renamePath_one]
+  evidence: [FiniteProtocolInput.renameExecutionFunctor_mul, FiniteProtocolInput.renameExecutionFunctor_one, FiniteProtocolInput.renameExecutionFunctor_inv_right, FiniteProtocolInput.renameExecutionFunctor_inv_left]
+  claim_mapping:
+    theorem_names: [FiniteProtocolInput.renameExecutionFunctor_mul, FiniteProtocolInput.renameExecutionFunctor_one, FiniteProtocolInput.renameExecutionFunctor_inv_right, FiniteProtocolInput.renameExecutionFunctor_inv_left]
+    source_labels: [D independent semantics reindexing and composition]
+    conjuncts: [original H automorphisms, original vertex and named edge actions, congruence-preserving quotient descent, every quotient execution, product order, identity and both inverse laws]
+    undischarged_assumptions: [D semantic natural-isomorphism composition/projection/kernel/fiber, identity specialization, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: Reindexing is proved as a genuine quotient-execution group action; natural-isomorphism compatibility and full G-127 remain open
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D semantic execution reindexing group laws on the full quotient]
+    remaining: [D natural-isomorphism group/fiber compatibility and identity specialization, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [renaming from original vertex and named-edge automorphisms; quotient descent from original H congruence-preservation]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [original graph automorphism product, named edge and path rename, quotient induction on every execution, previous congruence preservation]
+    unused: [fiber operation values because reindexing concerns execution names]
+  structure_field_escape: none-found
+  route_integrity: pass-for-quotient-execution-reindexing
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and nine-declaration standard axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Prove D semantic natural-isomorphism composition using this reindexing law and the original A2 lift law
+```
