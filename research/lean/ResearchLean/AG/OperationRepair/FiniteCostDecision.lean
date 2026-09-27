@@ -104,28 +104,28 @@ def runWithCount (input : FiniteRepairInput n m O) :
     FiniteConstruction.RunOutput n m O × Nat :=
   let lower := FiniteRamEnumeration.lower input
   let upper := FiniteRamUpper.upper input
-  let decision := scan input upper.value (FiniteClosure.pairs n)
+  let decision := FiniteRamDecision.decision input upper.value
   let lowerPart := FiniteConstruction.lowerPartitionFrom input lower.value
     (FiniteRamEnumeration.lower_value input)
   let upperPart := FiniteConstruction.upperPartitionFrom input upper.value
     (FiniteRamUpper.upper_value input)
-  let outcome := match decision.1 with
+  let outcome := match decision.value with
     | some bad => Sum.inl bad
     | none => Sum.inr
         (FiniteConstruction.makeSuccessTablesFrom input lowerPart upperPart)
   (⟨lower.value, upper.value, outcome⟩,
-    lower.cost + upper.cost + decision.2)
+    lower.cost + upper.cost + decision.cost)
 
 /-- The partially counted program has exactly the original run output. -/
 theorem runWithCount_value (input : FiniteRepairInput n m O) :
     (runWithCount input).1 = FiniteConstruction.runRepair input := by
-  simp only [runWithCount, scan_pairs_value]
+  simp only [runWithCount]
   rfl
 
 /-- A numeric bound for the counted lower, upper, and decision stages.
 The success table generation is excluded from this counter. -/
 theorem runWithCount_cost_le (input : FiniteRepairInput n m O) :
-    (runWithCount input).2 ≤ 668 * (m + 1) * (n + 1) ^ 5 := by
+    (runWithCount input).2 ≤ 690 * (m + 1) * (n + 1) ^ 5 := by
   let P := (m + 1) * (n + 1) ^ 5
   have hlow : (FiniteRamEnumeration.lower input).cost ≤ 600 * P := by
     simpa only [P, Nat.mul_assoc] using FiniteRamEnumeration.lower_cost_poly input
@@ -138,30 +138,30 @@ theorem runWithCount_cost_le (input : FiniteRepairInput n m O) :
         exact Nat.mul_le_mul_left (60 * (m + 1))
           (Nat.pow_le_pow_right (by omega) (by decide))
       _ = 60 * P := by ring
-  have hd := scan_pairs_cost_le input (FiniteRamUpper.upper input).value
-  have hsqplus : n * n + 1 ≤ (n + 1) ^ 2 := by
-    rw [pow_two]
-    nlinarith
+  have hd := FiniteRamDecision.decision_cost_le input
+    (FiniteRamUpper.upper input).value
   have hpow : (n + 1) ^ 2 ≤ (n + 1) ^ 5 :=
     Nat.pow_le_pow_right (by omega) (by decide)
   have hdecision :
-      (scan input (FiniteRamUpper.upper input).value
-        (FiniteClosure.pairs n)).2 ≤ 8 * P := by
+      (FiniteRamDecision.decision input
+        (FiniteRamUpper.upper input).value).cost ≤ 30 * P := by
     calc
-      (scan input (FiniteRamUpper.upper input).value
-          (FiniteClosure.pairs n)).2 ≤ 8 * (n * n + 1) := hd
-      _ ≤ 8 * (n + 1) ^ 5 :=
-        Nat.mul_le_mul_left 8 (hsqplus.trans hpow)
-      _ ≤ 8 * (m + 1) * (n + 1) ^ 5 := by
+      (FiniteRamDecision.decision input
+          (FiniteRamUpper.upper input).value).cost ≤
+            30 * (n + 1) ^ 2 := hd
+      _ ≤ 30 * (n + 1) ^ 5 := Nat.mul_le_mul_left 30 hpow
+      _ ≤ 30 * (m + 1) * (n + 1) ^ 5 := by
         have hm : 1 ≤ m + 1 := by omega
         nlinarith
-      _ = 8 * P := by ring
+      _ = 30 * P := by ring
   change (FiniteRamEnumeration.lower input).cost +
       (FiniteRamUpper.upper input).cost +
-      (scan input (FiniteRamUpper.upper input).value
-        (FiniteClosure.pairs n)).2 ≤ 668 * (m + 1) * (n + 1) ^ 5
+      (FiniteRamDecision.decision input
+        (FiniteRamUpper.upper input).value).cost ≤
+          690 * (m + 1) * (n + 1) ^ 5
   have hsum := Nat.add_le_add (Nat.add_le_add hlow hupper) hdecision
-  have hP : 600 * P + 60 * P + 8 * P = 668 * (m + 1) * (n + 1) ^ 5 := by
+  have hP : 600 * P + 60 * P + 30 * P =
+      690 * (m + 1) * (n + 1) ^ 5 := by
     dsimp [P]
     ring
   exact hsum.trans (le_of_eq hP)
