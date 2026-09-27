@@ -906,3 +906,4 @@ import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolKernel
 import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolVertical
 import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolFiberAction
 import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolFiberEquiv
+import ResearchLean.AG.ProtocolHolonomy.IdentityG124Bridge
