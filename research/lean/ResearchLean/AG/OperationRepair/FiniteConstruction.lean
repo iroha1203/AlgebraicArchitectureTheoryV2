@@ -212,6 +212,31 @@ theorem quotientObservation_comm (input : FiniteRepairInput n m O)
   simp only [quotientObservationTable, FiniteTable.get_ofFn]
   exact (compatible x _ (p.quotient_section_related x)).symm
 
+/-- The same numbered standard-quotient equivalence intertwines the
+operation induced on classes and the returned operation table. -/
+theorem standardEquiv_operation_comm (input : FiniteRepairInput n m O)
+    (p : PartitionTable n)
+    (stable : ∀ e x y, p.cells.get x y = true →
+      p.cells.get (input.step e x) (input.step e y) = true)
+    (e : Fin m) (x : Fin n) :
+    (FiniteTable.get (quotientOperationTable input p) e).get
+      (p.standardEquiv (Quotient.mk (Setoid.ker p.quotient) x)) =
+      p.standardEquiv (Quotient.mk (Setoid.ker p.quotient)
+        (input.step e x)) := by
+  simpa only [p.standardEquiv_mk] using quotientOperation_comm input p stable e x
+
+/-- The same equivalence also intertwines the induced observation. -/
+theorem standardEquiv_observation_comm (input : FiniteRepairInput n m O)
+    (p : PartitionTable n)
+    (compatible : ∀ x y, p.cells.get x y = true →
+      input.observe x = input.observe y)
+    (x : Fin n) :
+    (quotientObservationTable input p).get
+      (p.standardEquiv (Quotient.mk (Setoid.ker p.quotient) x)) =
+      input.observe x := by
+  simpa only [p.standardEquiv_mk] using
+    quotientObservation_comm input p compatible x
+
 /-- Scan the original requested pairs, retaining the first already computed
 upper-table witness. No search for a new word occurs here. -/
 def failureSearchFrom (input : FiniteRepairInput n m O)
