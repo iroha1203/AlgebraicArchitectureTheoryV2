@@ -27,15 +27,86 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. D: extend the primitive trace from the synchronous lower closure to its
-   enumeration and initial table, upper search, decision, and success-table
-   assembly; prove the total bound for the complete same success/failure
-   procedure.
+1. D: charge lower enumeration-list construction, upper search, decision,
+   and success-table assembly; prove the total bound for the complete same
+   success/failure procedure.
 2. E: final crosscheck of the complete Law/path declaration map against the
    fixed GOAL remains. The general path-numbering bridge is now constructed
    in `PathEnumeration.lean`; E completion is subject to independent review.
 3. Independently review all three fixed examples as a whole after the cycle
    15 additions, and perform the cumulative E crosscheck.
+
+## Cycle 21: concrete lower trace through all synchronous rounds
+
+`FiniteRamLower.lean` instantiates the conditional pass bound for the actual
+converse, transitivity, and operation-image callbacks. It proves the trace of
+one synchronous round is at most
+`3*n*(2*n+2) + 13*n² + 22*n³ + 23*m*n²`. Its `initialCell` reads the
+request, compares indices, computes the Boolean cell and records its
+allocation together with those steps. `initial` constructs the table from
+those cells. `rounds` feeds each counted value into the next round; the
+value theorem matches `FiniteClosure.rounds`. `lower_trace_cost_poly` bounds
+the resulting recorded trace by `200*(m+1)*(n+1)^5`. The proof reuses the
+older lower counter's polynomial inequality solely as arithmetic; it does
+not treat that counter as a RAM correspondence certificate.
+
+This checkpoint covers initial table generation and the recorded primitives
+inside each closure pass for `n²` rounds. The `pairs`/`triples`/operation-item
+enumeration lists are built in the value program but their cell construction
+is not charged. The result therefore is a bound on a partial trace, not the
+complete lower RAM cost or G-126 D total cost. Upper search, decision, and
+success-table assembly also remain open.
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 21
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: c352fa41acabf59dd73382c46b9438bbce69992f
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 20 comment and lower trace remaining obligation"
+  proof_dag_predecessors: ["OperationRepair/FiniteRamPrimitives.lean", "OperationRepair/FiniteCostLower.lean"]
+  proof_obligation: "Bound the concrete lower closure trace through initial table and all synchronous rounds"
+  selection_reason: "Discharges the generic callback bounds and connects the primitive trace to the same lower value across n² rounds"
+  expected_result_type: proof-checkpoint
+  lean_targets: ["OperationRepair/FiniteRamLower.lean", "OperationRepair/FiniteRamPrimitives.lean"]
+  risks: ["callback charge mismatch", "initial table trace disconnected", "enumeration list cells uncharged", "old counter mistaken for RAM evidence"]
+  unchecked: ["lower enumeration-list charge", "upper/decision/success trace", "full same-run polynomial bound", "cumulative E and examples review"]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Concrete per-round trace bound, initial cell/table trace, n²-round value equality, and partial lower polynomial bound"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/FiniteRamLower.lean", "OperationRepair/FiniteRamPrimitives.lean"]
+  evidence: ["closeStep_cost_le", "initialCell_value", "initialCell_cost", "initial_value", "initial_cost", "rounds_value", "rounds_cost_le", "lower_value", "lower_trace_cost_poly"]
+  claim_mapping:
+    theorem_names: ["closeStep_cost_le", "lower_value", "lower_trace_cost_poly"]
+    source_labels: ["G-126 D lower synchronous closure value and partial RAM accounting"]
+    conjuncts: ["same lower table after n² rounds", "uniform bound for recorded lower primitives"]
+    undischarged_assumptions: ["enumeration-list cell allocation", "complete run primitive coverage"]
+    acceptance_point: "partial lower trace checkpoint only; D cost clause remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["concrete lower callback trace bounds", "initial table value and trace", "lower iteration value and trace bound"]
+    remaining: ["enumeration-list charge", "upper/decision/success trace", "full total cost"]
+  certificate_provenance:
+    discharged: ["initialCell value and trace from one cell computation", "each round uses preceding counted value"]
+    unresolved: ["complete RAM cost certificate"]
+  proof_use:
+    used: ["markPass_cost_le", "concrete callback charges", "closeStep_value", "FiniteCostLower.lowerWithCost_bound as arithmetic only"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["focused FiniteRamLower check passed", "#assert_standard_axioms_only passed"]
+  blocking_findings: []
+  next_obligation: "charge lower enumeration lists, then upper/decision/success primitive trace and total bound"
+```
 
 ## Cycle 20: RAM primitive trace for a lower closure pass
 
