@@ -781,3 +781,56 @@ audits:
   blocking_findings: []
   next_obligation: Construct A execution quotient realization from the original finite input and then finish D compatibility and conjugacy
 ```
+
+## Cycle 15 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 15
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 72ab35169118d26af5e2d9ade015fbde41d31a44
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 14 and PathEquations primitive input
+  proof_dag_predecessors: [FiniteProtocolInput.satisfies, ReversibleData.positiveTransport, ProtocolSchema.pathFunctorOfEdgeAction, ProtocolRealization]
+  proof_obligation: Construct the independent quotient execution realization from every original finite reversible protocol input, preserving all named edges and original positive-path actions
+  selection_reason: Discharges the construction half of D's independent semantics from the exact A input without restricting the vertex, edge, or fiber universes
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/ProtocolConnection.lean]
+  risks: [three universe levels, original edge names through ULift, relation descent from original Pi, one-point observation, quotient path readback]
+  unchecked: [visible rename descent and A1 natural-isomorphism correspondence, D other clauses, undirected-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The original finite vertices, named edges, equation indices, and fibers are embedded via ULift; the original edge actions generate a free-path functor, original Pi validity proves quotient descent, and a ProtocolRealization with singleton observation is constructed; original named-edge and every original positive-path action are read back exactly
+  completion_candidate: no
+  lean_artifacts: [FiniteProtocolInput.schema, FiniteProtocolInput.pathFunctor, FiniteProtocolInput.executionFunctor, FiniteProtocolInput.singletonObservation, FiniteProtocolInput.realization]
+  evidence: [FiniteProtocolInput.pathFunctor_map_up, FiniteProtocolInput.pathFunctor_relation, FiniteProtocolInput.realization_edgeAction_down, FiniteProtocolInput.realization_pathAction_down]
+  claim_mapping:
+    theorem_names: [FiniteProtocolInput.realization, FiniteProtocolInput.realization_edgeAction_down, FiniteProtocolInput.realization_pathAction_down]
+    source_labels: [A primitive input, D independent protocol semantics]
+    conjuncts: [arbitrary three-universe original finite input, exact original named edges, exact original Pi, quotient execution category, finite state carriers, singleton observation, original edge and directed-path actions]
+    undischarged_assumptions: [visible-renaming quotient descent, natural-isomorphism correspondence, D remaining clauses, E algorithm, fixed examples]
+    acceptance_point: The execution realization is built from the primitive input, while the change/natural-isomorphism correspondence and full target remain open
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D realization construction and original edge/path action readback]
+    remaining: [visible renaming and natural isomorphism, root/tree bridge and D compatibilities, E, fixed examples]
+  certificate_provenance:
+    discharged: [schema and functor constructed from P rather than supplied, relation proof from P.satisfies, observation from actual singleton]
+    unresolved: [visible rename and executable finite tables]
+  proof_use:
+    used: [P.finiteVertex, P.finiteEdge, P.finiteFiber, P.equations, P.satisfies, P.data.edgeEquiv, quotient lift]
+    unused: [P.H and renaming_preserves because no visible change is constructed in this cycle]
+  structure_field_escape: none-found
+  route_integrity: pass-for-original-execution-realization
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and 16-declaration standard axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Descend each selected visible renaming through Pi and identify A1 lifts with natural isomorphisms of the independent realization
+```
