@@ -1974,3 +1974,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and two-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 38 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 38
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: f26b47d21
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 37 original vertical homomorphism and pointwise readback
+  proof_dag_predecessors: [identityVerticalToProtocolKernel, ReversibleData.verticalLiftEquivLiftableKernel, ReversibleData.projectionToLiftable_ker, identityProtocolKernelMulEquiv]
+  proof_obligation: Prove the original vertical A1 group maps bijectively onto the independent FixedF protocol projection kernel
+  selection_reason: Completes D's identity-kernel group identification with a genuine inverse from the original C3 kernel theorem
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityProtocolVertical.lean]
+  risks: [assuming surjectivity from the section, identifying the wrong projection kernel, loss of original fiber readback]
+  unchecked: [D fiber action and G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The original vertical A1 group is group-isomorphic to the literal independent protocol kernel; injectivity and surjectivity factor through the original C3 vertical-to-actual-kernel equivalence and the direct original-to-protocol kernel equivalence, retaining Cycle 37 pointwise readback
+  completion_candidate: no
+  lean_artifacts: [identityVerticalProtocolKernelMulEquiv]
+  evidence: [identityVerticalProtocolKernelMulEquiv, identityVerticalToProtocolKernel_fiber]
+  claim_mapping:
+    theorem_names: [identityVerticalProtocolKernelMulEquiv, identityVerticalToProtocolKernel_fiber]
+    source_labels: [D Π-empty original vertical group and independent FixedF protocol kernel]
+    conjuncts: [original C3 vertical A1 group, independent protocol literal kernel, group multiplication, both inverse directions, original pointwise fiber maps]
+    undischarged_assumptions: [D fiber action and G-124, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: Full original vertical-to-protocol kernel group equivalence is proved; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D identity FixedF original vertical-to-protocol kernel equivalence]
+    remaining: [D fiber action and G-124, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [original C3 verticalLiftEquivLiftableKernel, equality of original actual kernels, Cycle 36 direct protocol kernel equivalence]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [actual original C3 kernel isomorphism, literal protocol kernel isomorphism, Cycle 37 homomorphism]
+    unused: [section-based surjectivity or abstract replacement group]
+  structure_field_escape: none-found
+  route_integrity: pass-for-fixedf-vertical-kernel-equivalence
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and three-declaration standard axiom audit to be recorded in PR]
+```

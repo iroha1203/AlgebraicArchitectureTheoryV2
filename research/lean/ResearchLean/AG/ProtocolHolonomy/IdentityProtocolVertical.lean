@@ -50,8 +50,44 @@ theorem identityVerticalToProtocolKernel_fiber
       a.fiber v x := by
   rfl
 
+/-- The original C3 vertical group is all of the independent protocol kernel,
+not merely a subgroup of it. -/
+noncomputable def identityVerticalProtocolKernelMulEquiv :
+    (identityReversibleData Q K).Lift (1 : FixedFGraphAutomorphism Q) ≃*
+    MonoidHom.ker (ProtocolChangeGroup.projection (K := K) (H := H)) := by
+  let D := identityReversibleData Q K
+  let f := identityVerticalToProtocolKernel (Q := Q) (K := K) (H := H)
+  apply MulEquiv.ofBijective f
+  constructor
+  · intro a b h
+    apply (D.verticalLiftEquivLiftableKernel H).injective
+    apply Subtype.ext
+    have h' := identityProtocolKernelMulEquiv.injective h
+    change (originalVerticalToActualKernel a).1 =
+      (originalVerticalToActualKernel b).1
+    exact congrArg Subtype.val h'
+  · intro b
+    let c := identityProtocolKernelMulEquiv.symm b
+    let c' : (D.projectionToLiftable H).ker := ⟨c.1, by
+      rw [D.projectionToLiftable_ker H]
+      exact c.2⟩
+    refine ⟨(D.verticalLiftEquivLiftableKernel H).symm c', ?_⟩
+    have h' : originalVerticalToActualKernel
+        ((D.verticalLiftEquivLiftableKernel H).symm c') = c := by
+      apply Subtype.ext
+      change (((D.verticalLiftEquivLiftableKernel H)
+        ((D.verticalLiftEquivLiftableKernel H).symm c')).1) = c.1
+      exact congrArg Subtype.val
+        ((D.verticalLiftEquivLiftableKernel H).apply_symm_apply c')
+    change identityProtocolKernelMulEquiv
+      (originalVerticalToActualKernel
+        ((D.verticalLiftEquivLiftableKernel H).symm c')) = b
+    rw [h']
+    exact identityProtocolKernelMulEquiv.apply_symm_apply b
+
 end AAT.AG.ProtocolHolonomy
 
 #print axioms AAT.AG.ProtocolHolonomy.identityVerticalToProtocolKernel
 #print axioms AAT.AG.ProtocolHolonomy.identityVerticalToProtocolKernel_fiber
+#print axioms AAT.AG.ProtocolHolonomy.identityVerticalProtocolKernelMulEquiv
 #assert_standard_axioms_only AAT.AG.ProtocolHolonomy
