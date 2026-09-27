@@ -18,6 +18,7 @@ variable (T : OperationSystem S E)
 def generated (R : S → S → Prop) : OperationCongruence T :=
   sInf {c | ∀ x y, R x y → c.setoid.r x y}
 
+/-- GOAL A: the generated congruence contains each requested pair. -/
 theorem generated_contains {R : S → S → Prop} {x y : S} (h : R x y) :
     (generated T R).setoid.r x y := by
   intro c hc
@@ -42,11 +43,13 @@ def behavior (observe : S → O) : OperationCongruence T where
     funext word
     exact congrFun h (e :: word)
 
+/-- GOAL A API: unfold behavioral equivalence to all future words. -/
 @[simp] theorem behavior_iff (observe : S → O) (x y : S) :
     (behavior T observe).setoid.r x y ↔
       ∀ word : List E, observe (T.eval x word) = observe (T.eval y word) := by
   simp [behavior, Setoid.ker_def, funext_iff]
 
+/-- GOAL A: the empty word makes behavior refine the current observation kernel. -/
 theorem behavior_le_kernel (observe : S → O) :
     (behavior T observe).setoid ≤ Setoid.ker observe := by
   intro x y h
@@ -72,6 +75,7 @@ theorem le_behavior_iff (observe : S → O) (c : OperationCongruence T) :
           exact ih (T.step e a) (T.step e b) (c.stable e a b hab)
     exact h (stable_word word x y hxy)
 
+/-- API for the later GOAL B existence criterion. -/
 theorem generated_le_behavior_iff (observe : S → O) (R : S → S → Prop) :
     generated T R ≤ behavior T observe ↔
       ∀ x y, R x y → (behavior T observe).setoid.r x y :=

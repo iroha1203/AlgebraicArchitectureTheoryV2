@@ -23,15 +23,19 @@ variable {S : Type u} {E : Type v} (T : OperationSystem S E)
 /-- Execute a word in list order, including the empty word. -/
 def eval (s : S) (w : List E) : S := w.foldl (fun x e => T.step e x) s
 
+/-- GOAL A API: the empty word acts as the identity. -/
 @[simp] theorem eval_nil (s : S) : T.eval s [] = s := rfl
 
+/-- GOAL A API: the first letter acts before the remaining word. -/
 @[simp] theorem eval_cons (s : S) (e : E) (w : List E) :
     T.eval s (e :: w) = T.eval (T.step e s) w := rfl
 
+/-- GOAL A API: concatenation executes the left word first. -/
 theorem eval_append (s : S) (u v : List E) :
     T.eval s (u ++ v) = T.eval (T.eval s u) v := by
   simp [eval, List.foldl_append]
 
+/-- GOAL A API: a one-letter word is the named operation. -/
 @[simp] theorem eval_singleton (s : S) (e : E) : T.eval s [e] = T.step e s := rfl
 
 end OperationSystem
@@ -46,12 +50,15 @@ namespace OperationCongruence
 
 variable {S : Type u} {E : Type v} {T : OperationSystem S E}
 
+/-- Inclusion of underlying equivalence relations, the order fixed by GOAL A. -/
 instance : LE (OperationCongruence T) :=
   ⟨fun a b => a.setoid ≤ b.setoid⟩
 
+/-- API for identifying operation congruences by their relations. -/
 @[ext] theorem ext {a b : OperationCongruence T} (h : a.setoid = b.setoid) : a = b := by
   cases a; cases b; cases h; rfl
 
+/-- GOAL A order on operation congruences. -/
 instance : PartialOrder (OperationCongruence T) where
   le_refl _ := fun x y h => h
   le_trans _ _ _ hab hbc := fun x y h => hbc (hab h)
@@ -66,9 +73,11 @@ instance : InfSet (OperationCongruence T) where
         rcases hc with ⟨a, ha, rfl⟩
         exact a.stable e x y (h a.setoid ⟨a, ha, rfl⟩) }
 
+/-- API: an arbitrary infimum has the intersection relation. -/
 theorem sInf_setoid (A : Set (OperationCongruence T)) :
     (sInf A).setoid = sInf (OperationCongruence.setoid '' A) := rfl
 
+/-- GOAL A complete lattice, derived from intersections of stable equivalences. -/
 instance : CompleteLattice (OperationCongruence T) :=
   { completeLatticeOfInf (OperationCongruence T) (by
       intro A
@@ -96,3 +105,5 @@ instance : CompleteLattice (OperationCongruence T) :=
 end OperationCongruence
 
 end AAT.AG.OperationRepair
+
+#assert_standard_axioms_only AAT.AG.OperationRepair
