@@ -1099,3 +1099,56 @@ audits:
   blocking_findings: []
   next_obligation: Prove the explicit root-coordinate A2 evaluation formula or semantic isomorphism composition
 ```
+
+## Cycle 21 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 21
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: c84b90104690271c41960c9219be36a1329aca2c
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 20 group isomorphism and original A2 fiber law
+  proof_dag_predecessors: [liftPair_mul_fiber_apply, liftPairEquivRootPair, RootSolutions.reconstructedFiber_root]
+  proof_obligation: Compute the actual A2 multiplication of two arbitrary C1 root pairs at each component root, including the moved-vertex index
+  selection_reason: Supplies the pointwise formula explicitly left open by Cycle 20 and prevents a transported group isomorphism from replacing the original fiber evaluation
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/ChoiceGroupFormula.lean]
+  risks: [dependent target fiber, composition order, selected-root reconstruction, conflating root values with full lift]
+  unchecked: [D semantic composition and identity specialization, arbitrary undirected-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: At every original component root, multiplication of arbitrary C1 root pairs evaluates as the first reconstructed lift at the vertex moved by the second visible change, applied to the second root value, exactly the original A2 equation
+  completion_candidate: no
+  lean_artifacts: [ReversibleData.rootPair_mul_rootFiber]
+  evidence: [ReversibleData.liftPair_mul_fiber_apply, ReversibleData.RootSolutions.reconstructedFiber_root]
+  claim_mapping:
+    theorem_names: [ReversibleData.rootPair_mul_rootFiber]
+    source_labels: [A2, D root and tree change composition compatibility]
+    conjuncts: [arbitrary two visible changes and C1 solutions, every component root and root fiber element, original shifted vertex, actual A2 composition]
+    undischarged_assumptions: [D semantic composition and identity specialization, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: Actual A2's dependent root evaluation is explicit for the accepted RootPair group, while full G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D explicit A2 root-coordinate point formula]
+    remaining: [D semantic/identity compatibility, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [original LiftPair multiplication from StateChange, root values from C1/C2 reconstruction]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [original A2 dependent fiber formula, C1/C2 reconstructed root equation, Cycle 20 root group definition]
+    unused: [Pi because the group-coordinate clause concerns original A1 data]
+  structure_field_escape: none-found
+  route_integrity: pass-for-rooted-paths
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and one-declaration standard axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Prove D semantic isomorphism composition and projection/kernel/fiber compatibility
+```
