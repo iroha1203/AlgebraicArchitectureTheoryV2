@@ -257,6 +257,26 @@ theorem verticalRightAction_fiber_apply
     FixedFGraphAutomorphism.one_vertex] using
     eq_of_heq (Sigma.mk.inj_iff.mp h).2
 
+/-- Read the unique vertical displacement between two lifts directly from
+their original fiber equivalences. -/
+theorem verticalRightAction_displacement_fiber
+    (H : Subgroup (FixedFGraphAutomorphism Q))
+    (g : D.LiftableVisible H)
+    (a b : D.Lift g.1.1)
+    (α : D.Lift (1 : FixedFGraphAutomorphism Q))
+    (h : D.verticalRightAction H g a α = b)
+    (v : Q.Vertex) :
+    α.fiber v = (b.fiber v).trans (a.fiber v).symm := by
+  apply Equiv.ext
+  intro x
+  have hv := congrArg (fun z : D.Lift g.1.1 => z.fiber v x) h
+  change (D.verticalRightAction H g a α).fiber v x = b.fiber v x at hv
+  rw [D.verticalRightAction_fiber_apply H g a α v x] at hv
+  change a.fiber v (α.fiber v x) = b.fiber v x at hv
+  calc
+    α.fiber v x = (a.fiber v).symm (a.fiber v (α.fiber v x)) := by simp
+    _ = (a.fiber v).symm (b.fiber v x) := congrArg (a.fiber v).symm hv
+
 end ReversibleData
 end AAT.AG.ProtocolHolonomy
 
@@ -266,4 +286,5 @@ end AAT.AG.ProtocolHolonomy
 #print axioms AAT.AG.ProtocolHolonomy.ReversibleData.lift_action_existsUnique
 #print axioms AAT.AG.ProtocolHolonomy.ReversibleData.verticalRightAction_existsUnique
 #print axioms AAT.AG.ProtocolHolonomy.ReversibleData.verticalRightAction_fiber_apply
+#print axioms AAT.AG.ProtocolHolonomy.ReversibleData.verticalRightAction_displacement_fiber
 #assert_standard_axioms_only AAT.AG.ProtocolHolonomy

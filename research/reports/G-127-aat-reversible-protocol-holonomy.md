@@ -700,7 +700,7 @@ result:
   proof_obligation_delta: Literal right multiplication by the actual projection kernel acts freely and transitively on every actual projection fiber; the fiber is equivalent to the original Lift type; transporting the action through the accepted vertical group isomorphism gives a right Aut_Q(F) action with identity/composition laws, unique displacement, and the requested vertexwise formula
   completion_candidate: no
   lean_artifacts: [ReversibleData.LiftableFiber, ReversibleData.liftEquivLiftableFiber, ReversibleData.liftRightAction, ReversibleData.verticalRightAction]
-  evidence: [ReversibleData.liftableFiber_action_free, ReversibleData.liftableFiber_action_transitive, ReversibleData.liftRightAction_one, ReversibleData.liftRightAction_mul, ReversibleData.verticalRightAction_one, ReversibleData.verticalRightAction_mul, ReversibleData.verticalRightAction_existsUnique, ReversibleData.verticalRightAction_fiber_apply]
+  evidence: [ReversibleData.liftableFiber_action_free, ReversibleData.liftableFiber_action_transitive, ReversibleData.liftRightAction_one, ReversibleData.liftRightAction_mul, ReversibleData.verticalRightAction_one, ReversibleData.verticalRightAction_mul, ReversibleData.verticalRightAction_existsUnique, ReversibleData.verticalRightAction_fiber_apply, ReversibleData.verticalRightAction_displacement_fiber]
   claim_mapping:
     theorem_names: [ReversibleData.verticalRightAction_existsUnique, ReversibleData.verticalRightAction_fiber_apply]
     source_labels: [C3 right torsor and formula]
