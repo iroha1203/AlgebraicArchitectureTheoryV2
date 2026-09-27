@@ -27,14 +27,84 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. D: extend the primitive trace to the decision scan,
-   success-table assembly and failure output; prove the total bound for the
+1. D: charge success-table assembly and failure output, then prove the total bound for the
    complete same success/failure procedure.
 2. E: final crosscheck of the complete Law/path declaration map against the
    fixed GOAL remains. The general path-numbering bridge is now constructed
    in `PathEnumeration.lean`; E completion is subject to independent review.
 3. Independently review all three fixed examples as a whole after the cycle
    15 additions, and perform the cumulative E crosscheck.
+
+## Cycle 25: first-failure decision primitive trace
+
+`FiniteRamDecision` constructs the ordered state-pair list and passes it to a
+counted first-failure scan. Each visited pair pays for the request-table
+reads, index and branch operations; only requested pairs read the stored
+upper witness table. The first requested pair with a witness determines the
+same failure triple as `failureSearchFrom`. The witness word is shared with
+the upper table at this stage; output copying remains a separate cost.
+`decision_cost_le` bounds this counted decision trace by `30*(n+1)^2`.
+
+`FiniteConstruction.runRepair` now branches on the counted decision value
+computed from the same stored upper table. Its existing success and failure
+theorems still establish the mathematical output. `runWithCount` uses the
+counted lower, upper, and decision computations, and its value equals
+`runRepair`; `runWithCount_cost_le` bounds their combined trace by
+`690*(m+1)*(n+1)^5`. The success-table assembly and output transfer are
+still outside this counter. In particular, the existing `Finset`-based
+class numbering and table construction have not been given a primitive
+RAM trace, so the fixed D total cost theorem remains open.
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 25
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: 3a319d1de27f41d20bbfda80fef3a355ea91f430
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 24 comment and provisional decision numeric counter"
+  proof_dag_predecessors: ["OperationRepair/FiniteRamEnumeration.lean", "OperationRepair/FiniteRamUpper.lean", "OperationRepair/FiniteConstruction.lean", "OperationRepair/FiniteCostDecision.lean"]
+  proof_obligation: "Trace the actual first-failure decision scan and connect it to runRepair"
+  selection_reason: "Completes the last branch search before success/failure output charges"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/FiniteRamDecision.lean", "OperationRepair/FiniteConstruction.lean", "OperationRepair/FiniteCostDecision.lean"]
+  risks: ["request bit and upper-word read coverage", "first-failure order", "uncounted pair-list construction", "word-copy overclaim", "same-run route"]
+  unchecked: ["success-table primitive trace", "failure-word output copy", "complete same-run total bound", "cumulative E and examples review"]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The executed runRepair decision uses counted pair enumeration and first-failure scanning; its trace has a quadratic bound"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/FiniteRamDecision.lean", "OperationRepair/FiniteConstruction.lean", "OperationRepair/FiniteCostDecision.lean"]
+  evidence: ["scan_value", "scan_cost_le", "decision_value", "decision_cost_le", "countedDecision_value", "runRepair_decision_counted", "runWithCount_value", "runWithCount_cost_le"]
+  claim_mapping:
+    theorem_names: ["decision_value", "decision_cost_le", "runRepair_decision_counted", "runWithCount_value"]
+    source_labels: ["G-126 D first-failure decision stage"]
+    conjuncts: ["first requested separated pair and stored witness", "concrete decision trace", "same runRepair branch decision"]
+    undischarged_assumptions: ["success-table primitive coverage", "failure-word output copy", "same complete procedure total bound"]
+    acceptance_point: "executed decision-stage trace connected; full D remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["decision pair enumeration and request/word table read trace", "counted decision connection to executed runRepair"]
+    remaining: ["success/failure output primitive trace", "full total bound"]
+  certificate_provenance:
+    discharged: ["failure pair and word come from the first counted scan success using the stored upper table"]
+    unresolved: ["external failure-word copy", "success-table output RAM certificate"]
+  proof_use:
+    used: ["counted pair-list values", "counted decision.value in runRepair", "counted decision.cost in runWithCount"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: partial-executed-decision-only
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["focused FiniteRamDecision/FiniteConstruction/FiniteCostDecision checks passed", "targeted FiniteCostDecision build passed", "#assert_standard_axioms_only passed"]
+  blocking_findings: []
+  next_obligation: "charge success-table assembly and failure-word transfer, then prove full same-run D bound"
+```
 
 ## Cycle 24: upper witness-word RAM trace on the executed path
 
