@@ -1427,6 +1427,7 @@ ResearchLean.AG.OperationRepair.PathEnumeration	ResearchLean/AG/OperationRepair/
 ResearchLean.AG.OperationRepair.FiniteGeneralBridge	ResearchLean/AG/OperationRepair/FiniteGeneralBridge.lean
 ResearchLean.AG.OperationRepair.FiniteCostUpper	ResearchLean/AG/OperationRepair/FiniteCostUpper.lean
 ResearchLean.AG.OperationRepair.FiniteCostDecision	ResearchLean/AG/OperationRepair/FiniteCostDecision.lean
+ResearchLean.AG.OperationRepair.EmptyInputs	ResearchLean/AG/OperationRepair/EmptyInputs.lean
 ResearchLean.AG.OperationRepair.Examples	ResearchLean/AG/OperationRepair/Examples.lean
 ResearchLean.AG.OperationRepair.ExampleSequential	ResearchLean/AG/OperationRepair/ExampleSequential.lean
 ResearchLean.AG.OperationRepair.ExampleLaw	ResearchLean/AG/OperationRepair/ExampleLaw.lean
