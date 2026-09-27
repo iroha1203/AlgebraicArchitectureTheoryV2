@@ -1,8 +1,12 @@
 # Tool Docs
 
 `docs/tool/` は ArchMap / LawPolicy / law-equation-surface /
-MeasurementProfile / ArchSig / ArchView / FieldSig の現行 tooling contract を扱う。
+MeasurementProfile / ArchSig / ArchView / FieldSig の現行 tooling contract と製品コンセプトを扱う。
 AAT の数学的主張は定義せず、各toolが supplied artifact から何を読み、何を生成するかを固定する。
+
+## 製品コンセプト
+
+- [ArchSig v0.6.0 製品コンセプト](archsig_v0_6_0_concept.md): AI Agent SKILLを通してAATの構造を解析する、AIネイティブなアーキテクチャ計算基盤の製品像と設計原則。
 
 ## Product map
 
