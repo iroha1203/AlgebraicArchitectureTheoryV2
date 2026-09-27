@@ -1450,6 +1450,7 @@ ResearchLean.AG.ProtocolHolonomy.SpanningTrees	ResearchLean/AG/ProtocolHolonomy/
 ResearchLean.AG.ProtocolHolonomy.UndirectedNamedTrees	ResearchLean/AG/ProtocolHolonomy/UndirectedNamedTrees.lean
 ResearchLean.AG.ProtocolHolonomy.FiniteDirectDecision	ResearchLean/AG/ProtocolHolonomy/FiniteDirectDecision.lean
 ResearchLean.AG.ProtocolHolonomy.FiniteRootDecision	ResearchLean/AG/ProtocolHolonomy/FiniteRootDecision.lean
+ResearchLean.AG.ProtocolHolonomy.FiniteCentralizerDecision	ResearchLean/AG/ProtocolHolonomy/FiniteCentralizerDecision.lean
 ResearchLean.AG.ProtocolHolonomy.LiftRootCondition	ResearchLean/AG/ProtocolHolonomy/LiftRootCondition.lean
 ResearchLean.AG.ProtocolHolonomy.LiftRootReconstruction	ResearchLean/AG/ProtocolHolonomy/LiftRootReconstruction.lean
 ResearchLean.AG.ProtocolHolonomy.LiftableVisible	ResearchLean/AG/ProtocolHolonomy/LiftableVisible.lean
