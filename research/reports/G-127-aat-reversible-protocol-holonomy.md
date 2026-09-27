@@ -1668,3 +1668,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and two-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 32 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 32
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 62de92438
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycles 27 and 31 identity H_lift=H and split sequence
+  proof_dag_predecessors: [identityLift, ReversibleData.mem_liftableVisible_iff_lift, ReversibleData.verticalRightAction_existsUnique, ReversibleData.verticalRightAction_fiber_apply]
+  proof_obligation: State the original C3 right torsor on every A1 lift fiber over every supplied g∈H in the identity-operation system, preserving the actual pointwise formula
+  selection_reason: Turns the arbitrary liftable-visible torsor into the D identity specialization over all H using explicit original identity lifts
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityFiberTorsor.lean]
+  risks: [restricting to a chosen fiber/visible element, replacing original vertical group, mere existential without action law, wrong composition order]
+  unchecked: [D identity FixedF/G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Every original g∈H is liftable by an explicit identity-fiber A1 lift; on its whole original A1 lift fiber the original vertical group has a right action with unit and multiplication laws, unique displacement between any two lifts, and literal vertex formula φ_v(α_v x)
+  completion_candidate: no
+  lean_artifacts: [identityLiftableVisible, identityRightAction]
+  evidence: [identityRightAction_one, identityRightAction_mul, identityRightAction_existsUnique, identityRightAction_fiber_apply]
+  claim_mapping:
+    theorem_names: [identityRightAction_existsUnique, identityRightAction_fiber_apply]
+    source_labels: [C3 original right torsor, D identity each-fiber torsor]
+    conjuncts: [all supplied H elements, all A1 lifts over each visible element, original vertical A1 group, right action law, free/transitive unique displacement, original vertexwise composition]
+    undischarged_assumptions: [D identity FixedF/G-124 comparison, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: Identity-operation original C3 right torsor is available on every visible H-fiber, with the same maps and action law; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D identity each-fiber right torsor]
+    remaining: [D identity FixedF/G-124, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [Cycle 27 explicit identity lift for each H element, original C3 actual vertical right action and unique displacement]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [Cycle 27 original identity A1 lift, original C3 vertical right action and torsor]
+    unused: [replacement component-group action; Cycle 30 group equivalence is a separate identification]
+  structure_field_escape: none-found
+  route_integrity: pass-for-identity-fiber-torsor
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and six-declaration standard axiom audit to be recorded in PR]
+```
