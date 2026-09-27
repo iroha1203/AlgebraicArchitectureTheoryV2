@@ -1424,6 +1424,7 @@ ResearchLean.AG.OperationRepair.LawUniverse	ResearchLean/AG/OperationRepair/LawU
 ResearchLean.AG.OperationRepair.FiniteLawBridge	ResearchLean/AG/OperationRepair/FiniteLawBridge.lean
 ResearchLean.AG.OperationRepair.LawInputMaps	ResearchLean/AG/OperationRepair/LawInputMaps.lean
 ResearchLean.AG.OperationRepair.PathEnumeration	ResearchLean/AG/OperationRepair/PathEnumeration.lean
+ResearchLean.AG.OperationRepair.FiniteGeneralBridge	ResearchLean/AG/OperationRepair/FiniteGeneralBridge.lean
 ResearchLean.AG.OperationRepair.Examples	ResearchLean/AG/OperationRepair/Examples.lean
 ResearchLean.AG.OperationRepair.ExampleSequential	ResearchLean/AG/OperationRepair/ExampleSequential.lean
 ResearchLean.AG.OperationRepair.ExampleLaw	ResearchLean/AG/OperationRepair/ExampleLaw.lean

@@ -4,7 +4,7 @@
 - Tracking Issue: [#4945](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4945)
 - Applied GOAL and common-standard commit: `93cbcedece216238edfd40e2329bcc69c4f7ae2d`
 - GOAL blob: `255a64df4bdc851f64f799ef89189ea81e78aa70`
-- Proof state: A–C proved in ResearchLean; D and cumulative E/fixed-example
+- Proof state: A–C proved in ResearchLean; D RAM cost and cumulative E/fixed-example
   review remain open.
 
 The fixed statement and completion criteria are in the GOAL card. This report
@@ -29,14 +29,78 @@ operation invariance, or finite-observation premise.
 
 1. D: prove that the lower counter covers the specified RAM primitives; cost
    the upper word loop and remaining output work, combine them into the same
-   success/failure procedure, and prove the total bound and general
-   finite-output bridge.
+   success/failure procedure, and prove the total bound.
 2. E: final crosscheck of the complete Law/path declaration map against the
    fixed GOAL remains. The general path-numbering bridge is now constructed
    in `PathEnumeration.lean`; E completion is subject to independent review.
 3. Independently review all three fixed examples as a whole after the cycle
    15 additions, and check empty input cases through the general API and
    finite algorithm.
+
+## Cycle 16: general finite-output transport
+
+`FiniteGeneralBridge.lean` reindexes the original request, generated
+congruence, and behavioral congruence through the supplied state and
+operation equivalences. The unchanged D `runRepair` succeeds exactly when a
+repair exists for the original source. Its returned lower and upper tables
+construct source-level repair quotients with kernels exactly `generated` and
+`behavior`; the same returned factor table gives a source-level repair
+morphism. On failure, the returned numbered pair and word reindex to the
+original requested pair and a separating word of length less than `n²`.
+The construction accepts zero states and zero operation names without a
+nonempty input or default state. This discharges D's general output bridge;
+the cost clause remains open.
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 16
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: 23dafef7d3d1b42652e459ee81534920e4005783
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 15 comment and D remaining obligations"
+  proof_dag_predecessors: ["OperationRepair/FiniteConstruction.lean", "OperationRepair/FiniteEnumeration.lean", "OperationRepair/PathEnumeration.lean"]
+  proof_obligation: "Transport the unchanged finite procedure's success, failure, both quotient outputs, and factor map to arbitrary enumerated source types"
+  selection_reason: "Closes the remaining D output-to-B gap before the RAM cost proof"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/FiniteGeneralBridge.lean"]
+  risks: ["numbering transport of generated kernel", "arbitrary universes", "zero states and operations", "actual returned factor map"]
+  unchecked: ["D RAM primitive cost and total bound", "cumulative E and fixed-example review", "empty input evaluation"]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "The same runRepair output now gives source-level endpoint quotients, factor map, and bounded failure certificate for arbitrary enumerated input"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/FiniteGeneralBridge.lean"]
+  evidence: ["Input.generated_iff_tables", "Input.run_success_iff_repair_exists", "Input.sourceLowerRepair_kernel_eq", "Input.sourceUpperRepair_kernel_eq", "Input.sourceFactorHom", "Input.run_failure"]
+  claim_mapping:
+    theorem_names: ["Input.sourceLowerRepair_kernel_eq", "Input.sourceUpperRepair_kernel_eq", "Input.sourceFactorHom", "Input.run_failure"]
+    source_labels: ["G-126 D success/failure output and B connection"]
+    conjuncts: ["both original-source endpoint tables and maps", "descended operations and observations", "same factor table", "original requested pair and short separating word"]
+    undischarged_assumptions: []
+    acceptance_point: "D output bridge; D RAM cost remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["explicit source/operation enumeration", "original request relation", "original observation"]
+    remaining: ["D RAM primitive correspondence and total cost bound", "cumulative E and fixed-example review"]
+  certificate_provenance:
+    discharged: ["success tables and factor from runRepair", "failure pair and word from runRepair"]
+    unresolved: []
+  proof_use:
+    used: ["both enumeration equivalences", "generated and behavior endpoint characterizations", "runRepair success/failure soundness"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["targeted lake build FiniteGeneralBridge passed", "#assert_standard_axioms_only passed"]
+  blocking_findings: []
+  next_obligation: "D actual RAM primitive correspondence, upper/output cost, and total polynomial bound"
+```
 
 ## Cycle 15: sequential and Law completion candidates for fixed examples
 
