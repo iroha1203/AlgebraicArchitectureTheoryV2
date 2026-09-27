@@ -305,12 +305,13 @@ open AAT.AG.CanonicalResolution
 
 variable {S : Type u} {E : Type v} {n m : Nat}
 variable (laws : FiniteLawFamily S) (T : OperationSystem S E)
-variable (request : S → S → Bool) (states : S ≃ Fin n)
+variable (states : S ≃ Fin n)
 variable (operations : E ≃ Fin m)
 
+-- The request field is initialized here and replaced by the path table before D runs.
 private def sourceInput : FiniteEnumeration.Input S E
     ((law : laws.Law) → laws.Value law) n m :=
-  FiniteLawBridge.input laws T request states operations
+  FiniteLawBridge.input laws T (fun _ _ => false) states operations
 
 /-- Execute D on a source path list, with Law observation from the original
 finite family and explicit state/operation numberings. -/
@@ -318,18 +319,18 @@ def runPaths (paths : List (List E × List E)) :
     FiniteConstruction.RunOutput n m
       ((law : laws.Law) → laws.Value law) := by
   letI := FiniteLawBridge.observationDecidableEq laws
-  exact (sourceInput laws T request states operations).runPaths paths
+  exact (sourceInput laws T states operations).runPaths paths
 
 /-- The actual returned upper quotient, transported to original sources. -/
 def returnedUpper (paths : List (List E × List E))
     (tables : FiniteConstruction.SuccessTables n m
       ((law : laws.Law) → laws.Value law))
-    (h : (runPaths laws T request states operations paths).outcome =
+    (h : (runPaths laws T states operations paths).outcome =
       Sum.inr tables) :
     RepairQuotient.{u, v, u, 0} T (lawObserve laws)
       (pathRequest T paths) := by
   letI := FiniteLawBridge.observationDecidableEq laws
-  exact (sourceInput laws T request states operations).pathUpperRepairSource
+  exact (sourceInput laws T states operations).pathUpperRepairSource
     paths tables h
 
 /-- This path run's upper output is the semantic future-Law quotient, as a
@@ -337,72 +338,72 @@ source-commuting equivalence of the actual numbered target. -/
 noncomputable def betaEquiv (paths : List (List E × List E))
     (tables : FiniteConstruction.SuccessTables n m
       ((law : laws.Law) → laws.Value law))
-    (h : (runPaths laws T request states operations paths).outcome =
+    (h : (runPaths laws T states operations paths).outcome =
       Sum.inr tables) :
     (betaReading laws T).Target ≃
-      (returnedUpper laws T request states operations paths tables h).Target :=
+      (returnedUpper laws T states operations paths tables h).Target :=
   (Quotient.congrRight (fun x y => by
-    rw [show (returnedUpper laws T request states operations paths tables h).kernel.setoid =
+    rw [show (returnedUpper laws T states operations paths tables h).kernel.setoid =
       (behavior T (lawObserve laws)).setoid from
-      (sourceInput laws T request states operations).pathUpperRepairSource_kernel_eq
+      (sourceInput laws T states operations).pathUpperRepairSource_kernel_eq
         paths tables h])).trans
-      (returnedUpper laws T request states operations paths tables h).standardEquiv
+      (returnedUpper laws T states operations paths tables h).standardEquiv
 
 @[simp] theorem betaEquiv_read (paths : List (List E × List E))
     (tables : FiniteConstruction.SuccessTables n m
       ((law : laws.Law) → laws.Value law))
-    (h : (runPaths laws T request states operations paths).outcome =
+    (h : (runPaths laws T states operations paths).outcome =
       Sum.inr tables) (x : S) :
-    betaEquiv laws T request states operations paths tables h
+    betaEquiv laws T states operations paths tables h
       ((betaReading laws T).read x) =
-        (returnedUpper laws T request states operations paths tables h).read x :=
+        (returnedUpper laws T states operations paths tables h).read x :=
   rfl
 
 /-- The path output comparison preserves every original named operation. -/
 theorem betaEquiv_step (paths : List (List E × List E))
     (tables : FiniteConstruction.SuccessTables n m
       ((law : laws.Law) → laws.Value law))
-    (h : (runPaths laws T request states operations paths).outcome =
+    (h : (runPaths laws T states operations paths).outcome =
       Sum.inr tables) (e : E) (z : (betaReading laws T).Target) :
-    betaEquiv laws T request states operations paths tables h
+    betaEquiv laws T states operations paths tables h
       (FiniteLawBridge.betaStep laws T e z) =
-      (returnedUpper laws T request states operations paths tables h).step e
-        (betaEquiv laws T request states operations paths tables h z) := by
+      (returnedUpper laws T states operations paths tables h).step e
+        (betaEquiv laws T states operations paths tables h z) := by
   obtain ⟨x, rfl⟩ := (betaReading laws T).surjective z
   rw [FiniteLawBridge.betaStep_read, betaEquiv_read, betaEquiv_read]
-  exact (returnedUpper laws T request states operations paths tables h).step_comm
+  exact (returnedUpper laws T states operations paths tables h).step_comm
     e x
 
 /-- Every Law evaluation is preserved by the same output equivalence. -/
 theorem betaEquiv_law (paths : List (List E × List E))
     (tables : FiniteConstruction.SuccessTables n m
       ((law : laws.Law) → laws.Value law))
-    (h : (runPaths laws T request states operations paths).outcome =
+    (h : (runPaths laws T states operations paths).outcome =
       Sum.inr tables) (law : laws.Law)
     (z : (betaReading laws T).Target) :
-    (returnedUpper laws T request states operations paths tables h).observation
-      (betaEquiv laws T request states operations paths tables h z) law =
+    (returnedUpper laws T states operations paths tables h).observation
+      (betaEquiv laws T states operations paths tables h z) law =
         betaLawFactor laws T law z := by
   obtain ⟨x, rfl⟩ := (betaReading laws T).surjective z
   rw [betaEquiv_read,
-    (returnedUpper laws T request states operations paths tables h).observation_comm]
+    (returnedUpper laws T states operations paths tables h).observation_comm]
   rfl
 
 /-- Source commutation uniquely determines this Law/operation comparison. -/
 theorem betaEquiv_unique (paths : List (List E × List E))
     (tables : FiniteConstruction.SuccessTables n m
       ((law : laws.Law) → laws.Value law))
-    (h : (runPaths laws T request states operations paths).outcome =
+    (h : (runPaths laws T states operations paths).outcome =
       Sum.inr tables)
     (f : (betaReading laws T).Target →
-      (returnedUpper laws T request states operations paths tables h).Target)
+      (returnedUpper laws T states operations paths tables h).Target)
     (hsource : ∀ x : S, f ((betaReading laws T).read x) =
-      (returnedUpper laws T request states operations paths tables h).read x) :
-    f = betaEquiv laws T request states operations paths tables h := by
+      (returnedUpper laws T states operations paths tables h).read x) :
+    f = betaEquiv laws T states operations paths tables h := by
   funext z
   obtain ⟨x, rfl⟩ := (betaReading laws T).surjective z
   exact (hsource x).trans
-    (betaEquiv_read laws T request states operations paths tables h x).symm
+    (betaEquiv_read laws T states operations paths tables h x).symm
 
 end FiniteLawPath
 
