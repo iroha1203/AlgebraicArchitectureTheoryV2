@@ -1450,3 +1450,4 @@ ResearchLean.AG.ProtocolHolonomy.SpanningTrees	ResearchLean/AG/ProtocolHolonomy/
 ResearchLean.AG.ProtocolHolonomy.LiftRootCondition	ResearchLean/AG/ProtocolHolonomy/LiftRootCondition.lean
 ResearchLean.AG.ProtocolHolonomy.LiftRootReconstruction	ResearchLean/AG/ProtocolHolonomy/LiftRootReconstruction.lean
 ResearchLean.AG.ProtocolHolonomy.LiftableVisible	ResearchLean/AG/ProtocolHolonomy/LiftableVisible.lean
+ResearchLean.AG.ProtocolHolonomy.LiftFiberTorsor	ResearchLean/AG/ProtocolHolonomy/LiftFiberTorsor.lean

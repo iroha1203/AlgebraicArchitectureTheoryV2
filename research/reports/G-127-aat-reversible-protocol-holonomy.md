@@ -675,3 +675,56 @@ audits:
   blocking_findings: []
   next_obligation: Prove right action of Aut_Q(F) on each Lift_F(u) is free and transitive with fiber formula
 ```
+
+## Cycle 13 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 13
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 83f009a5ca6e0ef733b0613b3e15b9dfc6c59654
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 12 proof state and liftable_shortExact
+  proof_dag_predecessors: [liftEquivStateChangeOver, verticalLiftEquivLiftableKernel, projectionToLiftable, liftable_shortExact]
+  proof_obligation: Prove the C3 right Aut_Q(F) action on every Lift_F(u) is free and transitive and has the specified fiber formula
+  selection_reason: Closes the torsor clause after the actual image and short exact sequence
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/LiftFiberTorsor.lean]
+  risks: [right versus left action order, opposite kernel group, actual change group fiber versus original Lift fiber, dependent fiber formula]
+  unchecked: [arbitrary undirected named-tree bridge, A execution quotient, D, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Literal right multiplication by the actual projection kernel acts freely and transitively on every actual projection fiber; the fiber is equivalent to the original Lift type; transporting the action through the accepted vertical group isomorphism gives a right Aut_Q(F) action with identity/composition laws, unique displacement, and the requested vertexwise formula
+  completion_candidate: no
+  lean_artifacts: [ReversibleData.LiftableFiber, ReversibleData.liftEquivLiftableFiber, ReversibleData.liftRightAction, ReversibleData.verticalRightAction]
+  evidence: [ReversibleData.liftableFiber_action_free, ReversibleData.liftableFiber_action_transitive, ReversibleData.liftRightAction_one, ReversibleData.liftRightAction_mul, ReversibleData.verticalRightAction_one, ReversibleData.verticalRightAction_mul, ReversibleData.verticalRightAction_existsUnique, ReversibleData.verticalRightAction_fiber_apply, ReversibleData.verticalRightAction_displacement_fiber]
+  claim_mapping:
+    theorem_names: [ReversibleData.verticalRightAction_existsUnique, ReversibleData.verticalRightAction_fiber_apply]
+    source_labels: [C3 right torsor and formula]
+    conjuncts: [every liftable visible u, original Lift_F(u), original vertical Aut_Q(F), right action law, free and transitive, unique vertical displacement, each vertex/state formula φ_v after α_v]
+    undischarged_assumptions: [arbitrary undirected named-tree bridge, A execution quotient, terminating finite-table solver]
+    acceptance_point: C1/C2 and all C3 structural clauses hold using original changes; GOAL still requires A completion, B tree bridge, D, E, and fixed examples
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [C3 right action, free and transitive law, fiber formula]
+    remaining: [undirected-tree bridge, A quotient semantics, D, E, fixed examples]
+  certificate_provenance:
+    discharged: [fiber action from literal actual ChangeGroup product, vertical input from original Lift 1 via group iso]
+    unresolved: [finite-table witness and solver]
+  proof_use:
+    used: [actual projection fiber, actual kernel, C3 kernel iso, StateChange multiplication, A2 fiber formula]
+    unused: [finite input and path equations because torsor is structural]
+  structure_field_escape: none-found
+  route_integrity: pass-for-actual-fiber
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Prove arbitrary undirected named spanning-tree orientation bridge or A execution quotient semantics
+```
