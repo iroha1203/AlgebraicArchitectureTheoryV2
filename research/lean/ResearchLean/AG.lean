@@ -849,3 +849,6 @@ import ResearchLean.AG.OperationRepair.FiniteEnumeration
 import ResearchLean.AG.OperationRepair.FiniteCostLower
 import ResearchLean.AG.OperationRepair.LawBridge
 import ResearchLean.AG.OperationRepair.PathBridge
+import ResearchLean.AG.OperationRepair.LawUniverse
+import ResearchLean.AG.OperationRepair.FiniteLawBridge
+import ResearchLean.AG.OperationRepair.LawInputMaps

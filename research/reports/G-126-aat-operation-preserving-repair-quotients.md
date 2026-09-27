@@ -31,10 +31,10 @@ operation invariance, or finite-observation premise.
    the upper word loop and remaining output work, combine them into the same
    success/failure procedure, and prove the total bound and general
    finite-output bridge.
-2. E: connect the general finite output to the Law reading and complete the
-   arbitrary-universe Reading correspondence and Law-preserving input-map
-   compatibility. Path-request construction and numbered-table execution are
-   now proved in `PathBridge.lean`.
+2. E: transport an arbitrary source path-pair list through state and operation
+   numberings to D's request table. The arbitrary-universe Reading
+   correspondence, finite Law upper output comparison, and independent Law
+   input-map compatibility are proved in cycle 12.
 3. Three fixed examples and empty input cases, evaluated through the same
    general API and finite algorithm.
 
@@ -137,6 +137,91 @@ evaluations, hence the existing C endpoint maps apply. This is a partial E
 result: general finite Law output comparison, arbitrary universe quotient
 normalization, and the fully general independently specified Law input map
 remain open.
+
+## E: arbitrary repair targets and numbered Law output (partial)
+
+`LawUniverse.lean` maps any B repair target universe to the existing
+`Reading S` by quotienting the source by its actual kernel. The resulting
+Reading satisfies operation descent, Law adequacy, and request identification.
+Recovering its repair preserves the kernel and yields mutually inverse
+`RepairHom`s to the original target; the forward map is B's standard quotient
+equivalence. This extends cycle 10's same-universe round trip to all B repair
+quotients up to structure-preserving isomorphism.
+
+`FiniteLawBridge.lean` takes explicit state and operation numberings, the
+original finite Law family, operation system, and Boolean request. It builds
+D's input tables with the dependent-product Law observation and derives its
+decidable equality from the finite Law index and value decisions.
+`behavior_iff_tables` transports future words through both numberings, and
+`run_success_iff_repair_exists` compares D's actual branch to B's condition
+on the original states. On success, `returnedUpper` is the actual upper table
+output. `betaReturnedEquiv` compares it to `betaReading` by exact kernels,
+commutes with the source map, preserves every Law value, and is the unique
+source-commuting map. With no operation names,
+`returnedJointEquiv_of_isEmpty` compares the returned output with G-103's
+`jointKernelReading`, again uniquely and with Law preservation.
+
+`LawInputMaps.lean` accepts two independently specified evaluations over
+shared Law names and value types. Pointwise Law preservation and operation
+commutation construct C's `InputHom` for path-generated requests, so C's
+endpoint maps, square, identity, and composition theorems apply. The
+remaining E connection is the explicit theorem sending a general source
+path-pair list through arbitrary numberings into `runPathRepair`'s table.
+D's general finite-output and RAM-cost obligations and the fixed examples
+remain open.
+
+## Cycle 12 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 12
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: e6c5d6fd0d50a9b657cbe40d0e2992f8c024ccbd
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 11 comment and report E finite Law obligation"
+  proof_dag_predecessors: ["OperationRepair/LawBridge.lean", "OperationRepair/PathBridge.lean", "OperationRepair/FiniteEnumeration.lean", "OperationRepair/FiniteConstruction.lean", "OperationRepair/InputMaps.lean"]
+  proof_obligation: "E arbitrary target universe Reading normalization, numbered finite Law upper output comparison, and independent Law input maps"
+  selection_reason: "Connects the original Law evaluations and actual D upper output to the semantic Reading without a prepared quotient input"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/LawUniverse.lean", "OperationRepair/FiniteLawBridge.lean", "OperationRepair/LawInputMaps.lean"]
+  risks: ["universe normalization", "word relabeling", "returned output versus semantic quotient", "Law value transport", "independent Law input maps"]
+  unchecked: ["D RAM cost and general finite-output bridge", "E general source path input through numberings", "fixed examples"]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Normalized every repair universe into an existing Reading, identified the numbered Law upper output with beta and the empty-operation standard resolution, and built independent Law/path input maps"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/LawUniverse.lean", "OperationRepair/FiniteLawBridge.lean", "OperationRepair/LawInputMaps.lean"]
+  evidence: ["RepairQuotient.standardReading_conditions", "RepairQuotient.standardReadingHomTo", "RepairQuotient.standardReadingHomFrom", "RepairQuotient.standardReadingHomTo_eq_standardEquiv", "FiniteLawBridge.behavior_iff_tables", "FiniteLawBridge.run_success_iff_repair_exists", "FiniteLawBridge.betaReturnedEquiv", "FiniteLawBridge.betaReturnedEquiv_law", "FiniteLawBridge.returnedJointEquiv_of_isEmpty_law", "independentLawPathInputHom"]
+  claim_mapping:
+    theorem_names: ["RepairQuotient.standardReading_conditions", "RepairQuotient.standardReadingHom_left_inv", "RepairQuotient.standardReadingHom_right_inv", "FiniteLawBridge.betaReturnedEquiv_read", "FiniteLawBridge.betaReturnedEquiv_law", "FiniteLawBridge.returnedJointEquiv_of_isEmpty_unique", "independentLawPathInputHom"]
+    source_labels: ["G-126 E Reading correspondence, finite Law upper output, input-map clauses"]
+    conjuncts: ["all repair target universes up to isomorphism", "actual finite Law upper output", "beta Reading comparison", "empty-operation G-103 comparison", "independently specified Law maps"]
+    undischarged_assumptions: []
+    acceptance_point: "selected E Law/output bridge only; full E and G-126 remain open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["arbitrary repair target universe by kernel normalization", "Law value decisions from original family", "explicit state and operation numberings", "actual D upper success output", "independent Law evaluations with shared names and values"]
+    remaining: ["D cost and general finite-output bridge", "E arbitrary source path list to numbered D table", "fixed examples"]
+  certificate_provenance:
+    discharged: ["standard Reading from original repair kernel", "finite table from original system and Law evaluations", "upper quotient from runRepair success", "comparison from kernel equality and source surjectivity"]
+    unresolved: []
+  proof_use:
+    used: ["kernel stability and Law factorization", "both inverse RepairHom compositions", "word relabeling in both directions", "successUpperRepair_kernel_eq", "pointwise Law preservation for C InputHom"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["LawUniverse, FiniteLawBridge, LawInputMaps focused checks pass", "targeted builds for LawUniverse, FiniteLawBridge, LawInputMaps pass", "module audits: 10, 17, 2 declarations with standard axioms only", "eighteen spine #print axioms: propext, Classical.choice, Quot.sound only", "git diff --check and placeholder, Unicode, privacy, import-direction scans pass"]
+  blocking_findings: []
+  next_obligation: "E general path input numbering bridge, then D general finite-output and RAM cost"
+```
 
 ## Cycle 11 ledger
 
