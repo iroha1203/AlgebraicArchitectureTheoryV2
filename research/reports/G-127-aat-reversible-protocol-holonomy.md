@@ -357,3 +357,56 @@ audits:
   blocking_findings: []
   next_obligation: Construct edge-loop holonomy and prove it equals all rooted-loop transports
 ```
+
+## Cycle 7 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 7
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 38a1bfb1ef3c3c07b8f2ae55caf3f7780e7523fe
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 6 proof state and RootedPaths/Transport
+  proof_dag_predecessors: [RootedPaths, SignedPath, ReversibleData.transport]
+  proof_obligation: Construct B1 edge-loop monodromies from the original named table and identify their generated subgroup with all rooted-loop transports
+  selection_reason: Directly discharges the holonomy-generation calculation needed by B2 and C1
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/HolonomyGenerators.lean]
+  risks: [inverse traversal, multiplication order, quotient component indexing, arbitrary root-path choices]
+  unchecked: [B spanning-tree specialization and centralizer classification, C through E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Each original edge gives an actual signed root loop whose transport is P_target inverse composed with T_edge and P_source; its generated subgroup equals the subgroup whose members are exactly transports of all root loops
+  completion_candidate: no
+  lean_artifacts: [RootedPaths.edgeLoopAt, ReversibleData.edgeMonodromyAt, ReversibleData.holonomy, ReversibleData.rootedLoopTransportGroup]
+  evidence: [ReversibleData.transport_edgeLoopAt, ReversibleData.normalizedTransport_edge_mem, ReversibleData.normalizedTransport_mem_holonomy, ReversibleData.holonomy_eq_rootedLoopTransportGroup]
+  claim_mapping:
+    theorem_names: [ReversibleData.transport_edgeLoopAt, ReversibleData.holonomy_eq_rootedLoopTransportGroup]
+    source_labels: [B1 edge monodromy and equality with all root-loop transports]
+    conjuncts: [original named edge, positive and negative traversal, root-to-endpoint paths, table-derived monodromy, both subgroup inclusions, actual loop-transport carrier]
+    undischarged_assumptions: [B specialization to paths from any chosen spanning tree, E terminating finite-table spanning-forest construction]
+    acceptance_point: B1 holds for any RootedPaths choice; the fixed target still requires the spanning-tree route and B2 through E
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [named edge loop transport identity, each signed path normalized into table holonomy, rooted-loop equality]
+    remaining: [B chosen-tree specialization and centralizer, C through E, fixed examples]
+  certificate_provenance:
+    discharged: [holonomy generators from original edgeEquiv and selected root paths, loop group from actual signed path transport]
+    unresolved: [finite-table spanning forest]
+  proof_use:
+    used: [edgeEquiv through transport, original edge names through typed signed steps, positive and negative path induction]
+    unused: [finite input and Π because the structural B1 identity does not require them]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Prove B2 vertical changes are exactly the product of holonomy centralizers, then connect arbitrary chosen spanning trees
+```
