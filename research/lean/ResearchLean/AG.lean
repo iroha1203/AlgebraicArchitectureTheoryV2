@@ -872,3 +872,4 @@ import ResearchLean.AG.ProtocolHolonomy.ChangeGroup
 import ResearchLean.AG.ProtocolHolonomy.LiftBridge
 import ResearchLean.AG.ProtocolHolonomy.Transport
 import ResearchLean.AG.ProtocolHolonomy.PathEquations
+import ResearchLean.AG.ProtocolHolonomy.RootedPaths
