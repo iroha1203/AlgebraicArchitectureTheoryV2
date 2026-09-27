@@ -2433,3 +2433,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and ten-declaration standard axiom audit to be recorded in PR; #eval direct one-vertex Bool search true]
 ```
+
+## Cycle 47 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 47
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: c03375e79
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 46 executable direct A1 baseline, original C1/C2 equivalence, open B/C finite route
+  proof_dag_predecessors: [ExplicitEnumeration.pi, ReversibleData.allCandidateMaps, ReversibleData.liftEquivRootSolutions]
+  proof_obligation: For supplied original RootedPaths and explicit finite tables, decide the simultaneous C1 condition from named edge loops, reconstruct a genuine original Lift by C2, and prove none exactly excludes original lifts
+  selection_reason: Connects explicit finite enumeration to the required C1/C2 route rather than merely reusing direct A1 decision
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteRootDecision.lean]
+  risks: [testing only a subset of named edges, hidden quotient-component enumeration, using direct A1 test instead of C1, putting C1 in supplied certificate, nonexecutable root path choice]
+  unchecked: [input-generated executable named forest/RootedPaths, B1/B2 finite centralizer enumeration, H_lift/torsor connection, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: On supplied RootedPaths, explicit finite lists enumerate candidate tables and test both inverse laws plus the simultaneous pointwise C1 equation for every original named edge loop; a passing table gives actual RootSolutions and its C2 lift, while a negative answer excludes all original lifts and all C1 root solutions
+  completion_candidate: no
+  lean_artifacts: [ReversibleData.ValidRootCandidate, ReversibleData.rootSolutionsOfValidCandidate, ReversibleData.findRootLift]
+  evidence: [ReversibleData.validRootCandidate_of_lift, ReversibleData.findRootLift_none, ReversibleData.findRootLift_isSome_iff, ReversibleData.findRootLift_isSome_iff_rootSolutions]
+  claim_mapping:
+    theorem_names: [ReversibleData.rootSolutionsOfValidCandidate, ReversibleData.findRootLift_none, ReversibleData.findRootLift_isSome_iff_rootSolutions]
+    source_labels: [C1/C2 and E finite simultaneous root test]
+    conjuncts: [all original named edges, simultaneous root values, C1 pointwise test, C2 original Lift, both decision directions]
+    undischarged_assumptions: [executable root/forest construction from input, B1/B2 centralizer enumeration, H_lift and examples]
+    acceptance_point: C1/C2 finite procedure on supplied RootedPaths is exact for original Lift and RootSolutions; input-generated executable roots/forest and B1/B2 remain required
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [simultaneous finite C1 test and C2 reconstruction for supplied original root paths]
+    remaining: [E input-generated forest, B1/B2 centralizer enumeration, H_lift/torsor connection and examples]
+  certificate_provenance:
+    discharged: [all candidate tables from explicit lists, C1 check computed for every original named edge, RootSolutions and original Lift constructed on success]
+    unresolved: [runtime root paths from finite named forest]
+  proof_use:
+    used: [every original named edge loop C1 test, both inverse laws, original RootSolutions.toLift C2, Lift-to-C1 converse]
+    unused: [direct A1 validity test is not called by this C1 search]
+  structure_field_escape: none-found-for-conditional-root-solver
+  route_integrity: pass-for-supplied-root-paths-only
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and seven-declaration standard axiom audit to be recorded in PR; #eval zero-edge Bool true; #eval two named-loop C1 positive true and negative false]
+```
