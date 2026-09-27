@@ -622,3 +622,56 @@ audits:
   blocking_findings: []
   next_obligation: Define H_lift as the actual projection image and prove C3 with the fiber torsor
 ```
+
+## Cycle 12 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 12
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 778b1c3864d7b00e2a2947c5b74ba75b4997a9fc
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 11 proof state and liftEquivRootSolutions
+  proof_dag_predecessors: [ChangeGroup.projection, liftEquivStateChangeOver, liftMulEquivVerticalStateGroup, liftEquivRootSolutions]
+  proof_obligation: Identify H_lift with the actual projection image and prove C3's short exact sequence with the original vertical lift group
+  selection_reason: Establishes the visible-image and exactness clauses before the fiber torsor action
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/LiftableVisible.lean]
+  risks: [dependent visible subgroup membership, kernel identification, group law compatibility, exactness direction]
+  unchecked: [C3 right torsor on every lift fiber, arbitrary undirected named-tree bridge, A execution quotient, D, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: H_lift is the range of the actual visible projection and membership is equivalent to nonempty actual Lift and nonempty C1 RootSolutions; projection restricted to H_lift is surjective; its kernel is group-isomorphic to the original vertical A1 lift group, yielding C3 short exactness
+  completion_candidate: no
+  lean_artifacts: [ReversibleData.LiftableVisible, ReversibleData.projectionToLiftable, ReversibleData.verticalLiftEquivLiftableKernel, ReversibleData.verticalLiftInclusion]
+  evidence: [ReversibleData.mem_liftableVisible_iff_lift, ReversibleData.mem_liftableVisible_iff_rootSolutions, ReversibleData.projectionToLiftable_surjective, ReversibleData.projectionToLiftable_ker, ReversibleData.liftable_shortExact]
+  claim_mapping:
+    theorem_names: [ReversibleData.mem_liftableVisible_iff_rootSolutions, ReversibleData.liftable_shortExact]
+    source_labels: [C3 H_lift definition and short exact sequence]
+    conjuncts: [actual H subgroup, actual projection image, C1 solution equivalence, vertical Aut_Q(F), actual A_F, injective inclusion, exactness at A_F, surjectivity to H_lift]
+    undischarged_assumptions: [right-kernel free and transitive action on each Lift_F(u), arbitrary undirected named-tree orientation bridge, finite decision procedure]
+    acceptance_point: C3 image and exactness hold for the actual change group; the torsor clause remains open
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [H_lift subgroup from actual image, C1 membership iff liftability, vertical kernel identification, C3 exactness]
+    remaining: [C3 torsor, undirected-tree bridge, A quotient semantics, D, E, fixed examples]
+  certificate_provenance:
+    discharged: [C1 solution to actual lift via Cycle 11, kernel iso from actual total-state changes]
+    unresolved: [finite-table solver and fiber torsor identification]
+  proof_use:
+    used: [C1/C2 equivalence in visible image theorem, actual StateChange and ChangeGroup projection, vertical Lift group iso, literal kernel inclusion]
+    unused: [finite input and Π because image/exactness are structural group statements]
+  structure_field_escape: none-found
+  route_integrity: pass-for-image-and-exactness
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Prove right action of Aut_Q(F) on each Lift_F(u) is free and transitive with fiber formula
+```
