@@ -1,6 +1,7 @@
 import ResearchLean.AG.OperationRepair.FiniteClosure
 import ResearchLean.AG.OperationRepair.FiniteBehavior
 import ResearchLean.AG.OperationRepair.FiniteRamEnumeration
+import ResearchLean.AG.OperationRepair.FiniteRamUpper
 import ResearchLean.AG.OperationRepair.Classification
 import Mathlib.Data.Finset.Sort
 import Mathlib.Data.Finset.Max
@@ -400,14 +401,22 @@ theorem lowerPartitionFrom_counted_eq (input : FiniteRepairInput n m O) :
   apply PartitionTable.ext
   exact FiniteRamEnumeration.lower_value input
 
+theorem upperPartitionFrom_counted_eq (input : FiniteRepairInput n m O) :
+    upperPartitionFrom input (FiniteRamUpper.upper input).value
+        (FiniteRamUpper.upper_value input) =
+      upperPartitionFrom input (FiniteBehavior.upper input) rfl := by
+  apply PartitionTable.ext
+  simp [upperPartitionFrom, FiniteRamUpper.upper_value]
+
 /-- One terminating finite program. It computes both endpoints once, then
 uses the stored upper witnesses to choose a failure or numbered success. -/
 def runRepair (input : FiniteRepairInput n m O) : RunOutput n m O :=
   let lowerCells := (FiniteRamEnumeration.lower input).value
-  let upperWords := FiniteBehavior.upper input
+  let upperWords := (FiniteRamUpper.upper input).value
   let lowerPart := lowerPartitionFrom input lowerCells
     (FiniteRamEnumeration.lower_value input)
-  let upperPart := upperPartitionFrom input upperWords rfl
+  let upperPart := upperPartitionFrom input upperWords
+    (FiniteRamUpper.upper_value input)
   let outcome := match failureSearchFrom input upperWords with
     | some bad => Sum.inl bad
     | none => Sum.inr (makeSuccessTablesFrom input lowerPart upperPart)
@@ -427,7 +436,14 @@ theorem runRepair_lower_counted (input : FiniteRepairInput n m O) :
   exact ⟨rfl, FiniteRamEnumeration.lower_cost_poly input⟩
 
 @[simp] theorem runRepair_upperWords (input : FiniteRepairInput n m O) :
-    (runRepair input).upperWords = FiniteBehavior.upper input := rfl
+    (runRepair input).upperWords = FiniteBehavior.upper input :=
+  FiniteRamUpper.upper_value input
+
+theorem runRepair_upper_counted (input : FiniteRepairInput n m O) :
+    (runRepair input).upperWords = (FiniteRamUpper.upper input).value ∧
+      (FiniteRamUpper.upper input).cost ≤
+        60 * (m + 1) * (n + 1) ^ 4 := by
+  exact ⟨rfl, FiniteRamUpper.upper_cost_le input⟩
 
 theorem runRepair_failure (input : FiniteRepairInput n m O)
     (x y : Fin n) (word : List (Fin m))
@@ -435,6 +451,7 @@ theorem runRepair_failure (input : FiniteRepairInput n m O)
     input.requestRel x y ∧ word.length < n * n ∧
       FiniteBehavior.separates input x y word := by
   unfold runRepair at h
+  simp only [FiniteRamUpper.upper_value] at h
   cases hs : failureSearchFrom input (FiniteBehavior.upper input) with
   | none => simp [hs] at h
   | some bad =>
@@ -450,6 +467,7 @@ theorem runRepair_success_iff (input : FiniteRepairInput n m O) :
   constructor
   · rintro ⟨tables, htables⟩
     unfold runRepair at htables
+    simp only [FiniteRamUpper.upper_value] at htables
     cases hs : failureSearchFrom input (FiniteBehavior.upper input) with
     | some bad => simp [hs] at htables
     | none => exact failureSearch_none input hs
@@ -459,7 +477,9 @@ theorem runRepair_success_iff (input : FiniteRepairInput n m O) :
         (lowerPartitionFrom input (FiniteClosure.lower input) rfl)
         (upperPartitionFrom input (FiniteBehavior.upper input) rfl), ?_⟩
       change failureSearchFrom input (FiniteBehavior.upper input) = none at hnone
-      simp [runRepair, hnone, lowerPartitionFrom_counted_eq input]
+      simp [runRepair, hnone, FiniteRamUpper.upper_value input,
+        lowerPartitionFrom_counted_eq input,
+        upperPartitionFrom_counted_eq input]
     · cases hs : failureSearch input with
       | none => contradiction
       | some bad =>
@@ -504,6 +524,7 @@ theorem runRepair_success_payload (input : FiniteRepairInput n m O)
     (h : (runRepair input).outcome = Sum.inr tables) :
     tables = makeSuccessTables input := by
   unfold runRepair at h
+  simp only [FiniteRamUpper.upper_value] at h
   cases hs : failureSearchFrom input (FiniteBehavior.upper input) with
   | some bad => simp [hs] at h
   | none =>
@@ -517,6 +538,7 @@ theorem success_failureSearch_none (input : FiniteRepairInput n m O)
     (h : (runRepair input).outcome = Sum.inr tables) :
     failureSearch input = none := by
   unfold runRepair at h
+  simp only [FiniteRamUpper.upper_value] at h
   cases hs : failureSearchFrom input (FiniteBehavior.upper input) with
   | none => exact hs
   | some bad => simp [hs] at h

@@ -27,7 +27,7 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. D: extend the primitive trace to upper word search, the decision scan,
+1. D: extend the primitive trace to the decision scan,
    success-table assembly and failure output; prove the total bound for the
    complete same success/failure procedure.
 2. E: final crosscheck of the complete Law/path declaration map against the
@@ -35,6 +35,81 @@ operation invariance, or finite-observation premise.
    in `PathEnumeration.lean`; E completion is subject to independent review.
 3. Independently review all three fixed examples as a whole after the cycle
    15 additions, and perform the cumulative E crosscheck.
+
+## Cycle 24: upper witness-word RAM trace on the executed path
+
+`FiniteRamUpper` charges the actual ordered operation-name scan, including
+transition and witness-table reads, branch tests, and each newly prepended
+word cell. Each upper-table cell either reuses its stored word or constructs
+the operation-name list and scans it. `step` stores these counted cell
+computations before projecting their values to the next table and aggregating
+their traces. It charges pair enumeration and both table allocations.
+`initial` similarly counts observation equality tests and table construction.
+`rounds` passes each counted table value into the next synchronous step.
+The value theorems identify these tables with the accepted `FiniteBehavior`
+recurrence, and `upper_cost_le` bounds the concrete upper trace by
+`60*(m+1)*(n+1)^4`.
+
+`FiniteConstruction.runRepair` now obtains its upper words directly from this
+counted run and uses the same table for failure selection and the upper
+partition. `runRepair_upper_counted` identifies the returned table with the
+counted value and its cost bound. `FiniteCostDecision.runWithCount` also uses
+the counted upper value and cost, retaining whole-output value equality to
+`runRepair`; its partial lower/upper/decision bound is now
+`668*(m+1)*(n+1)^5`. The decision scan's numeric charge remains provisional,
+and success/failure output assembly is still uncharged. This is an upper-stage
+proof obligation, not the fixed D total RAM theorem.
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 24
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: 455f0f73261e9d2949e0ac47a82a18430464a43e
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 23 comment and provisional upper numeric counter"
+  proof_dag_predecessors: ["OperationRepair/FiniteRamEnumeration.lean", "OperationRepair/FiniteBehavior.lean", "OperationRepair/FiniteCostUpper.lean", "OperationRepair/FiniteConstruction.lean"]
+  proof_obligation: "Construct and connect the upper witness-word primitive trace through every synchronous round"
+  selection_reason: "Closes the largest remaining loop before decision and output charges"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/FiniteRamUpper.lean", "OperationRepair/FiniteConstruction.lean", "OperationRepair/FiniteCostDecision.lean"]
+  risks: ["word-cell allocation", "first-success scan order", "table assembly coverage", "counted value not consumed by runRepair", "whole-D overclaim"]
+  unchecked: ["decision scan primitive trace", "success/failure output charge", "complete same-run total bound", "cumulative E and examples review"]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Counted upper witness discovery, table construction, and all rounds yield the executed runRepair upper table with a degree-four trace bound"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/FiniteRamUpper.lean", "OperationRepair/FiniteConstruction.lean", "OperationRepair/FiniteCostDecision.lean"]
+  evidence: ["scan_value", "scan_cost_le", "cell_value", "cell_cost_le", "step_value", "step_cost_components", "step_cost_le", "initialCell_value", "initialCell_cost", "initial_value", "initial_cost_le", "rounds_value", "rounds_cost_le", "upper_value", "upper_cost_le", "runRepair_upper_counted", "runWithCount_value", "runWithCount_cost_le"]
+  claim_mapping:
+    theorem_names: ["upper_value", "upper_cost_le", "runRepair_upper_counted", "runWithCount_value"]
+    source_labels: ["G-126 D upper word-search and same-procedure upper stage"]
+    conjuncts: ["same upper witness table", "first ordered separator and word-cell trace", "executed upper value and bounded trace"]
+    undischarged_assumptions: ["decision primitive coverage", "success/failure output primitive coverage", "same complete procedure total bound"]
+    acceptance_point: "executed upper-stage trace connected; full D remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["upper word-search operation and word-cell charges", "upper initial table and all-round trace", "counted upper connection to executed runRepair"]
+    remaining: ["decision/output primitive trace", "full total bound"]
+  certificate_provenance:
+    discharged: ["each new separating word is constructed by the counted successful scan branch", "stored counted cell values feed the next upper table and runRepair"]
+    unresolved: ["complete output RAM cost certificate"]
+  proof_use:
+    used: ["counted cell values and traces", "counted upper.value in runRepair", "counted upper.cost in runWithCount"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: partial-executed-upper-only
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["focused FiniteRamUpper/FiniteConstruction/FiniteCostDecision checks passed", "targeted FiniteCostDecision build passed", "#assert_standard_axioms_only passed"]
+  blocking_findings: []
+  next_obligation: "charge the decision scan and success/failure output in the same run, then prove total bound"
+```
 
 ## Cycle 23: counted lower on the executed run path
 
