@@ -844,6 +844,7 @@ import ResearchLean.AG.OperationRepair.FullTree
 import ResearchLean.AG.OperationRepair.FiniteTables
 import ResearchLean.AG.OperationRepair.FiniteClosure
 import ResearchLean.AG.OperationRepair.FiniteRamPrimitives
+import ResearchLean.AG.OperationRepair.FiniteRamLower
 import ResearchLean.AG.OperationRepair.FiniteBehavior
 import ResearchLean.AG.OperationRepair.FiniteConstruction
 import ResearchLean.AG.OperationRepair.FiniteEnumeration
