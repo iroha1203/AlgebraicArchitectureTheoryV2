@@ -1464,3 +1464,4 @@ ResearchLean.AG.ProtocolHolonomy.SemanticComposition	ResearchLean/AG/ProtocolHol
 ResearchLean.AG.ProtocolHolonomy.SemanticGroup	ResearchLean/AG/ProtocolHolonomy/SemanticGroup.lean
 ResearchLean.AG.ProtocolHolonomy.SemanticFiberTorsor	ResearchLean/AG/ProtocolHolonomy/SemanticFiberTorsor.lean
 ResearchLean.AG.ProtocolHolonomy.IdentityTransport	ResearchLean/AG/ProtocolHolonomy/IdentityTransport.lean
+ResearchLean.AG.ProtocolHolonomy.IdentityLiftability	ResearchLean/AG/ProtocolHolonomy/IdentityLiftability.lean
