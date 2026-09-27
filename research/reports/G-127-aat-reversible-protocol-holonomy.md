@@ -2280,3 +2280,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and four-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 44 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 44
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: a4d2f7df3
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycles 41–43 G-124 actual carrier, representative root values and all-vertex C2 extension comparison
+  proof_dag_predecessors: [CSFixedFDetermining.protocol_representatives_determining, identityLiftEquivG124Preserving, identityG124_readAt]
+  proof_obligation: Transport G-124's exact determining predicate, including separation and coherent table extension, to original identity-operation A1 lifts on the same finite representative set
+  selection_reason: Closes the accepted G-124 D/E representative theorem comparison rather than relying on equal example values alone
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityG124Determining.lean]
+  risks: [omitting extension or coherence, adding Nontrivial K to B2/C2, using a different selected finite set, replacing original lifts with abstract families]
+  unchecked: [arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: On exactly G-124's finite protocolRepresentativeSet, original A1 lift vertex readings have the same FiniteReading.Determining property as accepted G-124 actual preserving changes: injective restriction and extension of every accepted EdgeCoherent table; Nontrivial K appears only in this accepted determining statement
+  completion_candidate: no
+  lean_artifacts: [identityLift_representatives_determining]
+  evidence: [identityLift_representatives_determining, identityG124_readAt, identity_G124_C2_extension_agree]
+  claim_mapping:
+    theorem_names: [identityLift_representatives_determining, identityG124_B2_representative_reading, identity_G124_C2_extension_agree]
+    source_labels: [D G-124 D/E representative reading and extension agree with B2/C2 identity specialization]
+    conjuncts: [same actual preserving changes and original A1 lifts, exact selected representative Finset, actual readAt equals original fiber, B2 root coordinate, G-124 separation, coherent table extension, C2/G-124 all-vertex equality]
+    undischarged_assumptions: [arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: D G-124 representative comparison is established across Cycles 41–44; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D G-124 determining representatives versus B2/C2 identity comparison]
+    remaining: [undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [accepted G-124 determining theorem with its original Nontrivial K restriction, Cycle 41 actual carrier/readAt bridge, Cycles 42–43 root and extension formulas]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [both halves of G-124 FiniteReading.Determining, same finite representative set and EdgeCoherent predicate, original A1 Lift via direct equivalence]
+    unused: [new weaker determining predicate or extra Nontrivial K in B2/C2]
+  structure_field_escape: none-found
+  route_integrity: pass-for-g124-determining-comparison
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and one-declaration standard axiom audit to be recorded in PR]
+```

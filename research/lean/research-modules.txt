@@ -1480,3 +1480,4 @@ ResearchLean.AG.ProtocolHolonomy.IdentityProtocolFiberEquiv	ResearchLean/AG/Prot
 ResearchLean.AG.ProtocolHolonomy.IdentityG124Bridge	ResearchLean/AG/ProtocolHolonomy/IdentityG124Bridge.lean
 ResearchLean.AG.ProtocolHolonomy.IdentityG124Representatives	ResearchLean/AG/ProtocolHolonomy/IdentityG124Representatives.lean
 ResearchLean.AG.ProtocolHolonomy.IdentityG124Extension	ResearchLean/AG/ProtocolHolonomy/IdentityG124Extension.lean
+ResearchLean.AG.ProtocolHolonomy.IdentityG124Determining	ResearchLean/AG/ProtocolHolonomy/IdentityG124Determining.lean
