@@ -569,3 +569,56 @@ audits:
   blocking_findings: []
   next_obligation: Construct the inverse from any C1 RootSolutions using C2 and prove the full bijection
 ```
+
+## Cycle 11 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 11
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 15c65c63b10d8055b7188deb06698809b1f12efd
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 10 proof state and LiftRootCondition
+  proof_dag_predecessors: [RootSolutions, signed_path_naturality, Lift.eq_of_root_fiber_eq, RootedPaths.edgeLoopAt]
+  proof_obligation: Construct C2 from every C1 root solution, prove A1 on all original named edges, and close both inverse laws
+  selection_reason: Completes the C1/C2 classification needed to characterize the visible lift image in C3
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/LiftRootReconstruction.lean]
+  risks: [transport composition order, named inverse passages, dependent root indexing, target root distinct from chosen root]
+  unchecked: [arbitrary undirected named spanning-tree bridge, A execution quotient, C3, D, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Renaming respects signed path composition and reversal; C2 reconstructs every vertex fiber from a C1 root solution; the root loop equations imply all A1 original-edge squares; root evaluation and reconstruction form an equivalence
+  completion_candidate: no
+  lean_artifacts: [renameSigned_comp, renameSigned_reverse, ReversibleData.RootSolutions.reconstructedFiber, ReversibleData.RootSolutions.toLift, ReversibleData.liftEquivRootSolutions]
+  evidence: [ReversibleData.RootSolutions.reconstructed_edge_naturality, ReversibleData.RootSolutions.reconstructedFiber_root, ReversibleData.RootSolutions.toLift_toRootSolutions, ReversibleData.Lift.toRootSolutions_toLift]
+  claim_mapping:
+    theorem_names: [ReversibleData.liftEquivRootSolutions]
+    source_labels: [C1 C2 full root-solution lift classification]
+    conjuncts: [all components, each original named edge loop, arbitrary visible graph automorphism, target fiber at g of selected root, C2 vertex formula, A1 for every named edge, both inverse laws]
+    undischarged_assumptions: [arbitrary undirected named-tree orientation bridge, terminating finite-table C1 solver]
+    acceptance_point: For any RootedPaths family from original signed named edges, C1 root solutions are equivalent to actual A1 lifts; C3 image and torsor remain open
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [C1 sufficiency, C2 formula, A1 preservation, both inverses]
+    remaining: [undirected-tree bridge, A execution quotient, C3, D, E, fixed examples]
+  certificate_provenance:
+    discharged: [every RootSolutions value yields a genuine Lift through root equation calculations]
+    unresolved: [finite-table decision and explicit witness]
+  proof_use:
+    used: [C1 edge_holonomy in square_of_root_equation, original edgeEquiv and renamedEdgeEquiv, signed path composition/reversal, root path normalization, accepted Cycle 10 injectivity]
+    unused: [finite input and path equations because this structural classification applies to any reversible named operation table]
+  structure_field_escape: none-found-for-C1-C2
+  route_integrity: pass-for-rooted-paths
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Define H_lift as the actual projection image and prove C3 with the fiber torsor
+```
