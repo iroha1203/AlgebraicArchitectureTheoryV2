@@ -1311,3 +1311,54 @@ audits:
   blocking_findings: []
   next_obligation: Prove semantic each-fiber right torsor action compatibility
 ```
+
+## Cycle 25 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 25
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 2a207e26c
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 24 original A2 semantic group/composition checkpoint
+  proof_dag_predecessors: [FiniteProtocolInput.liftEquivSemanticIso, FiniteProtocolInput.semanticPair_mul_composite, ReversibleData.verticalRightAction_existsUnique, ReversibleData.verticalRightAction_fiber_apply]
+  proof_obligation: Preserve C3's original right vertical torsor action on every D semantic isomorphism fiber, including its pointwise fiber formula
+  selection_reason: Completes the remaining semantic action compatibility of D using the original vertical group and all actual natural isomorphisms
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/SemanticFiberTorsor.lean]
+  risks: [replacing original vertical group, selected iso rather than whole fiber, reversing right action, merely transported formula]
+  unchecked: [D identity specialization, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Every liftable visible semantic isomorphism fiber carries the original vertical group's free transitive right action, and each vertex component is literal right composition of the original fiber maps
+  completion_candidate: no
+  lean_artifacts: [FiniteProtocolInput.semanticVerticalRightAction]
+  evidence: [FiniteProtocolInput.semanticVerticalRightAction_one, FiniteProtocolInput.semanticVerticalRightAction_mul, FiniteProtocolInput.semanticVerticalRightAction_free, FiniteProtocolInput.semanticVerticalRightAction_transitive, FiniteProtocolInput.semanticVerticalRightAction_fiber_apply]
+  claim_mapping:
+    theorem_names: [FiniteProtocolInput.semanticVerticalRightAction_free, FiniteProtocolInput.semanticVerticalRightAction_transitive, FiniteProtocolInput.semanticVerticalRightAction_fiber_apply]
+    source_labels: [C3 original right action, D independent semantic each-fiber action compatibility]
+    conjuncts: [original vertical group, every liftable visible fiber, all semantic isomorphisms, right action laws, free and transitive, literal pointwise fiber formula]
+    undischarged_assumptions: [D identity specialization, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: D semantic action is a genuine right torsor with C3's same original vertical maps; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D semantic each-fiber right action compatibility]
+    remaining: [D identity specialization, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [all semantic isomorphisms from independent quotient realization and inverse by vertex restriction, original vertical group through C3 actual state-change kernel]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [Cycle 17 full semantic iso equivalence, C3 original vertical right action and torsor]
+    unused: [Cycle 24 semantic group presentation and B/C coordinates because semantic fiber action follows directly from original A1 and C3]
+  structure_field_escape: none-found
+  route_integrity: pass-for-semantic-action
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and six-declaration standard axiom audit to be recorded in PR]
+```
