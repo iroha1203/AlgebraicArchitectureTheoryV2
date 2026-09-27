@@ -893,3 +893,4 @@ import ResearchLean.AG.ProtocolHolonomy.SemanticComposition
 import ResearchLean.AG.ProtocolHolonomy.SemanticGroup
 import ResearchLean.AG.ProtocolHolonomy.SemanticFiberTorsor
 import ResearchLean.AG.ProtocolHolonomy.IdentityTransport
+import ResearchLean.AG.ProtocolHolonomy.IdentityLiftability

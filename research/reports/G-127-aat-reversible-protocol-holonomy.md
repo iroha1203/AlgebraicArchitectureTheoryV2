@@ -1413,3 +1413,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and five-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 27 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 27
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 53aaadaeb
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 26 identity transport and holonomy checkpoint
+  proof_dag_predecessors: [identity_transport, ReversibleData.mem_liftableVisible_iff_lift, ReversibleData.Lift.toStateChange]
+  proof_obligation: Construct arbitrary finite identity-operation A input with its original path equations and admissible H, prove every visible change lifts and H_lift equals H
+  selection_reason: Connects identity transport calculation to the original C3 visible image without replacing equations or selecting a restricted subgroup
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityLiftability.lean]
+  risks: [changing Π or H, assuming equation satisfaction, imposing nonempty K, replacing original H_lift]
+  unchecked: [D identity component classification and section/split sequence/torsor, FixedF/G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: For arbitrary finite Q and K, arbitrary authored equations and H satisfying A's renaming condition, identity edge actions satisfy every equation; the original LiftableVisible subgroup is top in H because every visible element has its literal identity-fiber A1 lift
+  completion_candidate: no
+  lean_artifacts: [identityFiniteProtocolInput, identityLift]
+  evidence: [identity_liftableVisible_eq_top, identityFiniteProtocolInput_liftableVisible_eq_top]
+  claim_mapping:
+    theorem_names: [identityFiniteProtocolInput, identityLift, identityFiniteProtocolInput_liftableVisible_eq_top]
+    source_labels: [A original finite input, A1 lifts, C3 original visible projection image, D identity H_lift]
+    conjuncts: [arbitrary finite named graph Q, arbitrary finite common K including empty, arbitrary A-admissible equations and H, original identity named operations, all visible changes have A1 lifts, original H_lift equals H]
+    undischarged_assumptions: [D identity component classification/section/FixedF/G-124, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: Identity operations satisfy the original finite A contract and give H_lift=H on the actual change-group projection; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D identity finite A input and H_lift=H]
+    remaining: [D identity component classification and group section/split/FixedF/G-124, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [equation truth from all-path identity transport, A1 identity fiber lifts, original projection-range definition of LiftableVisible]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [Cycle 26 identity transport, A finite input contract, original C3 liftable-visible characterization]
+    unused: [semantic realization because H_lift is the original C3 image]
+  structure_field_escape: none-found
+  route_integrity: pass-for-identity-liftability
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and four-declaration standard axiom audit to be recorded in PR]
+```
