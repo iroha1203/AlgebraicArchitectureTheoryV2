@@ -1445,3 +1445,4 @@ ResearchLean.AG.ProtocolHolonomy.Transport	ResearchLean/AG/ProtocolHolonomy/Tran
 ResearchLean.AG.ProtocolHolonomy.PathEquations	ResearchLean/AG/ProtocolHolonomy/PathEquations.lean
 ResearchLean.AG.ProtocolHolonomy.RootedPaths	ResearchLean/AG/ProtocolHolonomy/RootedPaths.lean
 ResearchLean.AG.ProtocolHolonomy.HolonomyGenerators	ResearchLean/AG/ProtocolHolonomy/HolonomyGenerators.lean
+ResearchLean.AG.ProtocolHolonomy.VerticalCentralizer	ResearchLean/AG/ProtocolHolonomy/VerticalCentralizer.lean

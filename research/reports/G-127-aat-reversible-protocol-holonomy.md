@@ -410,3 +410,56 @@ audits:
   blocking_findings: []
   next_obligation: Prove B2 vertical changes are exactly the product of holonomy centralizers, then connect arbitrary chosen spanning trees
 ```
+
+## Cycle 8 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 8
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 873db15063655c09006eacb72473961d006d5059
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 7 proof state and HolonomyGenerators/LiftBridge
+  proof_dag_predecessors: [ReversibleData.Lift, ReversibleData.transport, ReversibleData.holonomy, ReversibleData.StateChange]
+  proof_obligation: Construct B2 group isomorphism from actual vertical A1 lifts to the product of holonomy centralizers
+  selection_reason: Closes the principal B classification and supplies the vertical group for C's exact sequence and torsor
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/VerticalCentralizer.lean]
+  risks: [inverse path naturality, centralizer multiplication order, dependent component indexing, group-law provenance]
+  unchecked: [B spanning-tree specialization, C through E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: A vertical A1 lift commutes with all signed transports; root evaluation lands in the holonomy centralizers and is invertible by the conjugation formula at every vertex; the correspondence is a group isomorphism under actual state-change composition
+  completion_candidate: no
+  lean_artifacts: [ReversibleData.RootCentralizers, ReversibleData.reconstructedFiber, ReversibleData.VerticalStateGroup, ReversibleData.verticalRootMulEquiv]
+  evidence: [ReversibleData.vertical_transport_naturality, ReversibleData.vertical_root_mem_centralizer, ReversibleData.reconstructed_edge_naturality, ReversibleData.verticalRootEquiv, ReversibleData.vertical_mul_fiber_apply, ReversibleData.verticalRootMulEquiv]
+  claim_mapping:
+    theorem_names: [ReversibleData.verticalRootEquiv, ReversibleData.verticalRootMulEquiv]
+    source_labels: [B2 root evaluation and inverse P_v a_j P_v inverse]
+    conjuncts: [all components, named-edge A1, root centralizer of B1 holonomy, inverse reconstruction, both inverse laws, actual group composition]
+    undischarged_assumptions: [B specialization to paths from any chosen spanning tree, E terminating finite-table spanning-forest construction]
+    acceptance_point: B2 holds for every RootedPaths family built from the original component relation; arbitrary-tree specialization and later clauses remain open
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [vertical path naturality, centralizer membership, root reconstruction A1, root evaluation inverse laws, group compatibility]
+    remaining: [B chosen-tree specialization, C through E, fixed examples]
+  certificate_provenance:
+    discharged: [centralizers from B1 original edge table, reconstructed vertical lift from centralizing root values]
+    unresolved: [finite-table spanning forest]
+  proof_use:
+    used: [A1 edge_naturality in path naturality, holonomy generator membership in reconstruction, actual StateChange group in vertical group law]
+    unused: [finite input and Π because B2's structural classification works for arbitrary reversible named operations]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Connect every chosen spanning tree to RootedPaths and then construct C1/C2 lift criterion
+```
