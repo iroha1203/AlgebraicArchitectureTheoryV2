@@ -27,15 +27,84 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. D: prove that both endpoint counters cover the specified RAM primitives;
-   cost the remaining output work, combine the stages into the same
-   success/failure procedure, and prove the total bound.
+1. D: prove that the staged counters cover all specified RAM primitives;
+   cost the success-table assembly, then prove the total bound for the
+   complete same success/failure procedure.
 2. E: final crosscheck of the complete Law/path declaration map against the
    fixed GOAL remains. The general path-numbering bridge is now constructed
    in `PathEnumeration.lean`; E completion is subject to independent review.
 3. Independently review all three fixed examples as a whole after the cycle
    15 additions, and check empty input cases through the general API and
    finite algorithm.
+
+## Cycle 18: shared counted run through the decision branch
+
+`FiniteCostDecision.lean` adds a counted scan over the original requested
+pairs and the upper word table. `scan_pairs_value` identifies its result with
+`failureSearchFrom`, while `scan_pairs_cost_le` bounds its counter by
+`8 * (n²+1)`. `runWithCount` invokes the counted lower and upper engines,
+uses their computed values for the same success/failure decision, and
+assembles the existing D payload. `runWithCount_value` proves equality of
+the entire value with `FiniteConstruction.runRepair`; neither endpoint is
+rerun to construct this output. `runWithCount_cost_le` gives the numeric
+counter bound `226 * (m+1) * (n+1)^5` for the lower, upper, and decision
+stages together.
+
+The counter does not yet charge success-table construction or certify the
+RAM primitives behind the three counted stages. The displayed inequality
+is for a partial counter, not D's final cost claim. This is a checkpoint
+with a whole-value comparison and a still-open cost certificate.
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 18
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: 01aaa3e1246f98d3f03c39a95a98e6f4d259a885
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 17 comment and D remaining cost stages"
+  proof_dag_predecessors: ["OperationRepair/FiniteCostLower.lean", "OperationRepair/FiniteCostUpper.lean", "OperationRepair/FiniteConstruction.lean"]
+  proof_obligation: "Couple both counted endpoint loops to the same success/failure decision and bound its partial counter"
+  selection_reason: "Connects the separate endpoint counters to the exact D run output while locating the uncounted success assembly"
+  expected_result_type: proof-checkpoint
+  lean_targets: ["OperationRepair/FiniteCostDecision.lean"]
+  risks: ["output value mismatch", "branch mismatch", "success-table work uncounted", "RAM primitive correspondence"]
+  unchecked: ["RAM primitive correspondence", "success-table cost", "complete same-procedure total bound", "cumulative E/fixed-example review"]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "One value/counter run computes the full D output and bounds the lower, upper, and decision counters, excluding success-table work"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/FiniteCostDecision.lean"]
+  evidence: ["scan_value", "scan_cost_le", "scan_pairs_value", "scan_pairs_cost_le", "runWithCount_value", "runWithCount_cost_le"]
+  claim_mapping:
+    theorem_names: ["runWithCount_value", "runWithCount_cost_le"]
+    source_labels: ["G-126 D same-run partial cost preparation"]
+    conjuncts: ["whole value equals runRepair", "first-failure decision from stored upper words", "uniform partial numeric bound"]
+    undischarged_assumptions: ["RAM primitive cost coverage", "success-table assembly cost"]
+    acceptance_point: "same-value and partial-counter checkpoint only"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["decision value/counter coupling", "whole output value equality", "partial counter arithmetic bound"]
+    remaining: ["RAM primitive correspondence", "success-table cost", "complete total bound"]
+  certificate_provenance:
+    discharged: ["decision pair and word from the counted scan of computed upper words"]
+    unresolved: ["RAM cost certificate"]
+  proof_use:
+    used: ["counted lower and upper values", "original request table", "upper stored words", "existing success-table assembler"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["focused FiniteCostDecision check passed", "#assert_standard_axioms_only passed"]
+  blocking_findings: []
+  next_obligation: "cost success-table construction and prove RAM primitive coverage of the full counted run"
+```
 
 ## Cycle 17: upper word-loop counter checkpoint
 
