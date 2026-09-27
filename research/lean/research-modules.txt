@@ -1466,3 +1466,4 @@ ResearchLean.AG.ProtocolHolonomy.SemanticFiberTorsor	ResearchLean/AG/ProtocolHol
 ResearchLean.AG.ProtocolHolonomy.IdentityTransport	ResearchLean/AG/ProtocolHolonomy/IdentityTransport.lean
 ResearchLean.AG.ProtocolHolonomy.IdentityLiftability	ResearchLean/AG/ProtocolHolonomy/IdentityLiftability.lean
 ResearchLean.AG.ProtocolHolonomy.IdentitySection	ResearchLean/AG/ProtocolHolonomy/IdentitySection.lean
+ResearchLean.AG.ProtocolHolonomy.IdentityComponents	ResearchLean/AG/ProtocolHolonomy/IdentityComponents.lean
