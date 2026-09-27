@@ -27,8 +27,8 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. D: prove that the lower counter covers the specified RAM primitives; cost
-   the upper word loop and remaining output work, combine them into the same
+1. D: prove that both endpoint counters cover the specified RAM primitives;
+   cost the remaining output work, combine the stages into the same
    success/failure procedure, and prove the total bound.
 2. E: final crosscheck of the complete Law/path declaration map against the
    fixed GOAL remains. The general path-numbering bridge is now constructed
@@ -36,6 +36,74 @@ operation invariance, or finite-observation premise.
 3. Independently review all three fixed examples as a whole after the cycle
    15 additions, and check empty input cases through the general API and
    finite algorithm.
+
+## Cycle 17: upper word-loop counter checkpoint
+
+`FiniteCostUpper.lean` computes a counted first-success operation search for
+each pair. Its value is the original `List.findSome?` result; its counter
+charges eight per visited operation and one for exhausting the list. `step` constructs the
+table of value/counter cells once, then reads its two projections;
+`step_value` identifies the resulting word table with the original
+`FiniteBehavior.step`. `rounds` feeds the same counted table into the next
+round. `upper_value` identifies its final value with the already proved
+upper endpoint, and `upper_cost_le` bounds this counter uniformly by
+`18 * (m+1) * (n+1)^4`, including zero states and operations.
+
+The counter covers visited operations and fixed cell assembly charges. It
+does not yet certify all GOAL D RAM primitives of `FiniteTable.ofFn`, table
+copying, or output table generation. It is a value/counter checkpoint only;
+the same-procedure total RAM bound remains open.
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 17
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: 52f3d92c5e7afd5d056241c3c19167adac537738
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 16 comment and D remaining RAM cost obligation"
+  proof_dag_predecessors: ["OperationRepair/FiniteBehavior.lean", "OperationRepair/FiniteCostLower.lean"]
+  proof_obligation: "Instrument the actual upper word search with a coupled value/counter and establish its polynomial bound"
+  selection_reason: "The upper search is a missing stage in the common D cost proof"
+  expected_result_type: proof-checkpoint
+  lean_targets: ["OperationRepair/FiniteCostUpper.lean"]
+  risks: ["counter may not cover RAM primitives", "value/search mismatch", "zero-state edge", "table assembly overhead"]
+  unchecked: ["RAM primitive correspondence of both counters", "output cost", "same-procedure total bound", "cumulative E/fixed-example review"]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Coupled upper search/step/rounds value and counter with uniform O((m+1)(n+1)^4) numeric bound"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/FiniteCostUpper.lean"]
+  evidence: ["scan_value", "scan_cost_le", "cell_value", "cell_cost_le", "step_value", "step_cost_le", "rounds_value", "rounds_cost_le", "upper_value", "upper_cost_le"]
+  claim_mapping:
+    theorem_names: ["upper_value", "upper_cost_le"]
+    source_labels: ["G-126 D upper word-loop cost preparation"]
+    conjuncts: ["same computed upper witness table", "numbered operation scan counter", "uniform polynomial counter bound"]
+    undischarged_assumptions: ["counter covers all RAM primitives", "same procedure total bound"]
+    acceptance_point: "value/counter checkpoint; not the D cost clause"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["upper search value/counter coupling", "upper counter arithmetic bound"]
+    remaining: ["RAM primitive correspondence", "output cost", "total bound"]
+  certificate_provenance:
+    discharged: ["word result from counted search and same prior table"]
+    unresolved: ["RAM cost certificate"]
+  proof_use:
+    used: ["original upper recurrence", "same numbered input", "per-cell counted search"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["focused FiniteCostUpper check passed", "#assert_standard_axioms_only passed"]
+  blocking_findings: []
+  next_obligation: "RAM primitive correspondence and total costed runRepair output"
+```
 
 ## Cycle 16: general finite-output transport
 
