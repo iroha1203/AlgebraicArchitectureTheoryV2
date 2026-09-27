@@ -31,7 +31,8 @@ operation invariance, or finite-observation premise.
    the upper word loop and remaining output work, combine them into the same
    success/failure procedure, and prove the total bound and general
    finite-output bridge.
-2. E: the existing `FiniteLawFamily` and `Reading` bridge and path requests.
+2. E: connect the finite output to the Law reading and prove path-request
+   construction, descent, classification, and input-map compatibility.
 3. Three fixed examples and empty input cases, evaluated through the same
    general API and finite algorithm.
 
@@ -81,6 +82,88 @@ initialization, list construction, and table updates. Thus this module is a
 value/counter scaffold; no D cost subclaim is discharged by that inequality.
 The next step is a primitive-operation cost semantics and a correspondence
 proof for the executed loops before charging the whole `runRepair` procedure.
+
+## E: Law observation and standard reading (partial)
+
+`LawBridge.lean` uses the actual `FiniteLawFamily.eval` as a dependent-product
+observation. `lawObserve_eq_iff` identifies equality of this observation with
+the existing `FiniteLawFamily.Equivalent` relation. For a same-universe
+surjective `Reading`, `LawReadingConditions` states operation descent, Law
+adequacy, and request identification. `repair_to_lawReadingConditions` and
+`lawReadingToRepair` construct both directions; the latter obtains descended
+operations and the joint observation from the Reading factorization theorems,
+without accepting a prepared repair quotient as an input.
+`lawReadingToRepair_toReading` proves the Reading round trip. Conversely,
+`repair_lawReading_roundtrip_step` and
+`repair_lawReading_roundtrip_observation` recover the descended data from
+surjectivity; the two identity `RepairHom`s give mutually inverse maps that
+preserve operations and the Law observation.
+
+`behavior_eq_jointKernel_iff_stable` and
+`lawKernelStable_iff_jointKernelFactors` prove E's present-Law-kernel /
+future-observation / operation-descent criterion. `betaReading_adequate`,
+`jointKernel_coarser_beta`, and `jointKernel_factorsThrough_beta` establish the
+specified Reading order. For an empty operation type,
+`betaJointEquiv_of_isEmpty` and its source-commuting and uniqueness theorems
+identify this quotient with G-103's `jointKernelReading`.
+`betaJointEquiv_of_isEmpty_law` also records preservation of every Law value.
+
+This is an E core checkpoint. The D finite-output comparison, the general
+path-pair request and its output/reading consequences, and C input-map
+compatibility for Law/path data remain open. E as a whole is not proved.
+
+## Cycle 10 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 10
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: 148b6b0bbe5e5ab750290197e7d57a33f221967e
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 9 comment and report E open obligation"
+  proof_dag_predecessors: ["OperationRepair/Endpoints.lean", "OperationRepair/Classification.lean", "CanonicalResolution/Reading.lean", "CanonicalResolution/JointKernel.lean"]
+  proof_obligation: "E Law observation, existing Reading repair conditions, standard Law-kernel stability/descent, empty-operation quotient comparison"
+  selection_reason: "The Law bridge is independent of the unresolved RAM cost model and supplies E's required source-of-truth correspondence"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/LawBridge.lean"]
+  risks: ["dependent-product observation", "Reading order orientation", "same-universe correspondence", "empty operation type", "remaining path bridge"]
+  unchecked: ["D RAM cost and general finite-output bridge", "E finite-output Law comparison", "E path requests and input-map compatibility", "fixed examples"]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed the same-universe Reading/repair round trips with operation and Law-observation preservation, and proved the standard Law kernel equals future behavior exactly under operation stability/descent"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/LawBridge.lean"]
+  evidence: ["lawObserve_eq_iff", "repair_to_lawReadingConditions", "lawReadingToRepair", "lawReadingToRepair_toReading", "repair_lawReading_roundtrip_step", "repair_lawReading_roundtrip_observation", "repair_lawReading_roundtrip_hom", "repair_lawReading_roundtrip_hom_inv", "behavior_eq_jointKernel_iff_stable", "lawKernelStable_iff_jointKernelFactors", "betaReading_adequate", "jointKernel_coarser_beta", "betaJointEquiv_of_isEmpty_law", "betaJointEquiv_of_isEmpty_unique"]
+  claim_mapping:
+    theorem_names: ["repair_to_lawReadingConditions", "lawReadingToRepair_toReading", "repair_lawReading_roundtrip_hom", "repair_lawReading_roundtrip_hom_inv", "lawKernel_behavior_stability_descent", "betaReading_adequate", "jointKernel_factorsThrough_beta", "betaJointEquiv_of_isEmpty_law", "betaJointEquiv_of_isEmpty_unique"]
+    source_labels: ["G-126 E Law and standard-reading subclauses"]
+    conjuncts: ["joint Law observation", "Reading repair correspondence", "present versus future kernel criterion", "Reading factorization order", "empty-operation canonical quotient"]
+    undischarged_assumptions: []
+    acceptance_point: "Law/reading core only; full E remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["dependent-product observation from original Law evaluations", "operation descent and Law adequacy from Reading conditions", "both same-universe Reading/repair round trips", "standard Law kernel criterion", "empty-operation quotient comparison with Law preservation"]
+    remaining: ["D cost and finite-output comparison", "E path requests and input maps", "fixed examples"]
+  certificate_provenance:
+    discharged: ["Law observation built from eval", "repair quotient operations and observation constructed from Reading factorization", "beta Reading constructed from behavior"]
+    unresolved: []
+  proof_use:
+    used: ["operation factorization to construct descended step", "Law adequacy to construct joint observation", "request identification to construct repair", "behavior maximality for kernel criterion"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["focused LawBridge check and standard-axiom audit pass after round-trip repair", "targeted LawBridge build pass after round-trip repair", "initial fourteen spine #print axioms: propext, Classical.choice, Quot.sound only", "git diff --check and placeholder, hidden Unicode, privacy, import-direction scans pass"]
+  blocking_findings: []
+  next_obligation: "E finite-output Law comparison and path-pair requests"
+```
 
 ## Cycle 9 ledger
 

@@ -1418,3 +1418,4 @@ ResearchLean.AG.OperationRepair.FiniteBehavior	ResearchLean/AG/OperationRepair/F
 ResearchLean.AG.OperationRepair.FiniteConstruction	ResearchLean/AG/OperationRepair/FiniteConstruction.lean
 ResearchLean.AG.OperationRepair.FiniteEnumeration	ResearchLean/AG/OperationRepair/FiniteEnumeration.lean
 ResearchLean.AG.OperationRepair.FiniteCostLower	ResearchLean/AG/OperationRepair/FiniteCostLower.lean
+ResearchLean.AG.OperationRepair.LawBridge	ResearchLean/AG/OperationRepair/LawBridge.lean
