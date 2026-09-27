@@ -1414,6 +1414,57 @@ audits:
   validation_refs: [focused Lean check and five-declaration standard axiom audit to be recorded in PR]
 ```
 
+## Cycle 49 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 49
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 7b68a4fdb977dc5455a2f15641867a904d16a5b8
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 48 conditional B2 search with supplied component equality
+  proof_dag_predecessors: [fixedFDirectedEdgeStep, FixedFUndirectedReachable, fixedFComponentSetoid, ExplicitEnumeration.toFintype]
+  proof_obligation: Derive a terminating equality decision for the original component quotient from explicit original vertex and edge tables, including loops and parallel edges
+  selection_reason: Removes a runtime premise of Cycle 48 and supplies the component membership test needed by B2 and forest construction
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteComponents.lean]
+  risks: [replacing original component relation, losing loops/parallel names in the source, noncomputable equality oracle, failure on empty graph]
+  unchecked: [input-generated executable named forest/root paths, all-component B2 assembly, H_lift/torsor finite output, fixed examples]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: A finite simple adjacency from original edge endpoints has reachability exactly equal to the existing EqvGen component relation; bounded walks and explicit vertex/edge enumerations compute decidable equality on the original quotient
+  completion_candidate: no
+  lean_artifacts: [finiteReachabilityGraph, finiteReachable_iff_original, finiteAdjDecidable, finiteComponentDecidableEq]
+  evidence: [finiteReachable_iff_original, finiteComponentDecidableEq, executable connected and disconnected Bool evaluations]
+  claim_mapping:
+    theorem_names: [finiteReachable_iff_original, finiteComponentDecidableEq]
+    source_labels: [E original finite graph component construction]
+    conjuncts: [original endpoint relation, symmetric closure, finite bounded-walk decision, original quotient equality]
+    undischarged_assumptions: [explicit vertex/edge lists and their GOAL E equality decisions are inputs; finite named forest paths remain]
+    acceptance_point: Input-generated decidable equality on the exact original component quotient, not yet a named forest/root-path algorithm
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [component equality decision from original finite vertex/edge tables]
+    remaining: [executable named forest/root paths, all-component B2/E construction and examples]
+  certificate_provenance:
+    discharged: [finite adjacency searches original edge list; bounded-walk theorem supplies reachability decision; equivalence to existing EqvGen transports decision to quotient]
+    unresolved: [named edge and signed path witnesses for executable root paths]
+  proof_use:
+    used: [explicit vertex and edge enumerations, original fixedFDirectedEdgeStep, both directions of reachability equivalence, Quotient.decidableEq]
+    unused: [B2/C1 solvers are downstream users; no root paths constructed here]
+  structure_field_escape: none-found
+  route_integrity: pass-for-original-component-equality
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and four-declaration standard axiom audit to be recorded in PR; #eval connected true and disconnected false]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
