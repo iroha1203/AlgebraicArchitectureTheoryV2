@@ -18,6 +18,8 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 - [G-sft-conway-01](G-sft-conway-01.md)
 
 ## draft（人間の確認待ち）
+- [G-126-aat-operation-preserving-repair-quotients](G-126-aat-operation-preserving-repair-quotients.md)
+  (操作と観測を保つ修復商の分類、修復要求の合成、有限表からの判定と構成)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
