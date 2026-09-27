@@ -31,8 +31,10 @@ operation invariance, or finite-observation premise.
    the upper word loop and remaining output work, combine them into the same
    success/failure procedure, and prove the total bound and general
    finite-output bridge.
-2. E: connect the finite output to the Law reading and prove path-request
-   construction, descent, classification, and input-map compatibility.
+2. E: connect the general finite output to the Law reading and complete the
+   arbitrary-universe Reading correspondence and Law-preserving input-map
+   compatibility. Path-request construction and numbered-table execution are
+   now proved in `PathBridge.lean`.
 3. Three fixed examples and empty input cases, evaluated through the same
    general API and finite algorithm.
 
@@ -111,6 +113,83 @@ identify this quotient with G-103's `jointKernelReading`.
 This is an E core checkpoint. The D finite-output comparison, the general
 path-pair request and its output/reading consequences, and C input-map
 compatibility for Law/path data remain open. E as a whole is not proved.
+
+## E: finite path-pair requests (partial)
+
+`PathBridge.lean` constructs `pathRequest` from a finite list of word pairs
+and all source states. `RepairQuotient.eval_comm` proves that every word
+descends, and `pathRequest_identified_iff` identifies the request condition
+with the target operation equations for every surjective repair quotient.
+`withPathEquations` constructs the repair from an unconstrained quotient and
+those equations, while `forgetPathRequests` retains the source and descended
+data. `pathRepair_exists_iff` specializes B's classification to the generated
+relation. `pathLawRepair_adequate` derives descent of every original Law value.
+
+For numbered inputs, `FiniteRepairInput.withPathRequest` constructs the
+Boolean request table by finite word-pair and state enumeration.
+`runPathRepair` passes it to the same D `runRepair` procedure;
+`runPathRepair_success_iff`, `runPathRepair_upper_equations`, and
+`runPathRepair_failure` give success, target equations, and the original
+path-generated pair with a short distinguishing word. `pathInputHom` shows
+that operation- and observation-preserving maps preserve this generated
+relation; `pathLawInputHom` supplies the same interface for pulled-back Law
+evaluations, hence the existing C endpoint maps apply. This is a partial E
+result: general finite Law output comparison, arbitrary universe quotient
+normalization, and the fully general independently specified Law input map
+remain open.
+
+## Cycle 11 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 11
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: bfd1449322859a7b9e5f9a15aaf1db539de6d5da
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 10 comment and report E path obligation"
+  proof_dag_predecessors: ["OperationRepair/Classification.lean", "OperationRepair/InputMaps.lean", "OperationRepair/FiniteConstruction.lean", "OperationRepair/LawBridge.lean"]
+  proof_obligation: "E finite path-pair request generation, quotient equations, C map preservation, and same D procedure on the generated table"
+  selection_reason: "This makes the path data an actual generated request table and connects the E equations to B and D without assuming a prebuilt repair"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/PathBridge.lean"]
+  risks: ["unbounded existential in finite table", "operation-word order", "target surjectivity", "Law evaluation preservation", "D output use"]
+  unchecked: ["D RAM cost and general finite-output bridge", "E finite Law output and arbitrary-universe correspondence", "independent Law-family input maps", "fixed examples"]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed finite path requests and the D input table, proved path equation classification and same-procedure success/failure statements"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/PathBridge.lean"]
+  evidence: ["pathRequest", "RepairQuotient.eval_comm", "RepairQuotient.pathRequest_identified_iff", "RepairQuotient.withPathEquations", "pathRepair_exists_iff", "pathLawRepair_adequate", "pathInputHom", "pathLawInputHom", "FiniteRepairInput.withPathRequest_requestRel", "FiniteRepairInput.runPathRepair_success_iff", "FiniteRepairInput.runPathRepair_upper_equations", "FiniteRepairInput.runPathRepair_failure"]
+  claim_mapping:
+    theorem_names: ["RepairQuotient.pathRequest_identified_iff", "pathRepair_exists_iff", "pathLawRepair_adequate", "pathLawInputHom", "FiniteRepairInput.runPathRepair_success_iff", "FiniteRepairInput.runPathRepair_upper_equations", "FiniteRepairInput.runPathRepair_failure"]
+    source_labels: ["G-126 E finite path-pair clauses"]
+    conjuncts: ["request generated from path pairs", "target path equations iff identification", "B feasibility criterion", "Law adequacy", "C map compatibility for pulled-back Laws", "D table success and failure"]
+    undischarged_assumptions: []
+    acceptance_point: "finite path request core only; full E remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["finite path relation from original word pairs and transitions", "target equations from source requests via surjectivity", "same D algorithm applied to generated request table"]
+    remaining: ["D cost and general finite-output bridge", "E finite Law output and arbitrary universes", "independent Law-family input maps", "fixed examples"]
+  certificate_provenance:
+    discharged: ["request Bool cells from finite list and state enumeration", "failure pair and word from runRepair", "Law evaluation from original family"]
+    unresolved: []
+  proof_use:
+    used: ["surjectivity for equations at every target state", "operation commutation for words", "actual request table for D", "C InputHom for path maps"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["PathBridge focused check pass", "targeted PathBridge build pass", "module audit: 25 declarations with standard axioms only", "fourteen spine #print axioms: no axiom or only propext, Classical.choice, Quot.sound", "git diff --check and placeholder, Unicode, privacy, import-direction scans pass"]
+  blocking_findings: []
+  next_obligation: "E general finite Law output and arbitrary-universe correspondence"
+```
 
 ## Cycle 10 ledger
 

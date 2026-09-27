@@ -1419,3 +1419,4 @@ ResearchLean.AG.OperationRepair.FiniteConstruction	ResearchLean/AG/OperationRepa
 ResearchLean.AG.OperationRepair.FiniteEnumeration	ResearchLean/AG/OperationRepair/FiniteEnumeration.lean
 ResearchLean.AG.OperationRepair.FiniteCostLower	ResearchLean/AG/OperationRepair/FiniteCostLower.lean
 ResearchLean.AG.OperationRepair.LawBridge	ResearchLean/AG/OperationRepair/LawBridge.lean
+ResearchLean.AG.OperationRepair.PathBridge	ResearchLean/AG/OperationRepair/PathBridge.lean
