@@ -23,16 +23,6 @@ def update_shipping(order: Order, new: Address) -> None:
     order.shipping_address = normalize_address(new)
 ```
 
-リポジトリには、ArchSig のファイルを置く `.archsig/` がある。
-
-```text
-.archsig/
-  law/     Law(DSL)
-  map/     観測した Atom(ArchMap)
-  plans/   変更の候補
-  runs/    計算結果
-```
-
 ## 1. 人が頼む
 
 人はエージェントにこう頼む。
@@ -83,8 +73,7 @@ archsig status
 ```
 
 ArchSig は、ArchMap を観測したときのソースと今のソースを比べ、変わったソースを返す。
-変わったソースだけを観測し直せばよい。
-このリポジトリの ArchMap は、これまでの Law に関わるソースだけを観測してある。読んでいないソースは、必要になったときに読む(第10章)。観測は二段に分かれる。
+変わったソースだけを観測し直せばよい。観測は二段に分かれる。
 
 - 構造 Atom は、エージェントが言語に合う解析器を選んで取り出し、`archsig record` で ArchMap に書く。
 - 意味 Atom は、軽いモデルのエージェント二つが、Law の語彙を手がかりに別々に観測する。一致したものを記録する。
@@ -210,8 +199,7 @@ ArchSig は、条件で分かれるすべての分岐について、二つの順
 archsig plan split split-order
 ```
 
-ArchSig は、局所ごとの候補を `.archsig/plans/split-order/<局所>/` に書き出し、担当が満たす条件と、局所の間でそろえる条件を返す。
-人に見せる形で表示すると次のようになる。
+ArchSig は、局所ごとに、担当が満たす条件と、局所の間でそろえる条件を返す。
 
 ```text
 shop/shipping   候補 split-order/shop/shipping
@@ -224,18 +212,12 @@ shop/payment    候補 split-order/shop/payment
                 Order.payment_ref → OrderPayment.ref(shop/order と shop/payment)
 ```
 
-エージェントは、局所の候補の名前をそれぞれの担当(別のエージェントでもよい)に渡す。
+エージェントは、局所ごとの条件をそれぞれの担当(別のエージェントでもよい)に渡す。
 各担当は、自分の局所の候補と、共有の条件だけを見て実装できる。
 
 ## 7. 実装して比べる
 
-実装が終わった局所から、SKILL は変わったソースを観測し直し、その局所の候補と比べる。
-
-```text
-archsig compare --plan split-order --only shop/payment
-```
-
-全部の局所がそろったら、全体を比べる。
+実装が終わったら、SKILL は変わったソースを観測し直し、候補と比べる。
 
 ```text
 archsig compare --plan split-order
@@ -249,35 +231,3 @@ archsig compare --plan split-order
 候補と違う実装があれば、ここで分かる。
 たとえば決済側が `OrderPayment.ref` を `None` ではなく空文字にしていたら、ArchSig はその書き込みの場所と、候補の値との違いを返す。
 新しい `OrderPayment.ref` が決済情報として使われているかも、観測し直した意味 Atom で確かめる。
-ビルドとテストは、これとは別に SKILL が実行する。
-
-## 8. 次の変更へ
-
-計算結果は `.archsig/runs/` に残る。どの結果も、根拠にした Atom、Law、ソースの内容の hash を持つ。
-次の変更では、根拠が変わっていない結果を確かめ直して使い、変わった所だけを計算し直す。
-次の仕事は、この変更で更新された構造から始まる。
-
-## エージェントが読む出力
-
-ここまでの出力は、人に見せるための文字の表示(`--format text`)で書いた。
-エージェントが読むのは JSON のサマリで、必要なときに詳細を取り出す。
-
-```json
-{
-  "run": "r-0193",
-  "command": "plan check split-order",
-  "commit": "a1b2c3d",
-  "law": "sha256:41ac…",
-  "results": [
-    {"id": "r-0193/1", "question": "change", "law": "payment-follows-order",
-     "subject": "shop.shipping.service.update_shipping", "outcome": "fails", "kind": "counterexample",
-     "at": ["shop/shipping/service.py:4"]}
-  ],
-  "counts": {"holds": 0, "fails": 1, "silent": 0},
-  "next": []
-}
-```
-
-`archsig show r-0193/1` で、その結論の詳細を取り出す。
-詳細には、根拠の Atom と Law、反例の入力と二つの結果、成り立つ条件が入る。
-結果の読み方は[第6章](06_results.md)で扱う。

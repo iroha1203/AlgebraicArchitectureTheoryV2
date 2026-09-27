@@ -1,73 +1,36 @@
 # 8. コマンド
 
-ArchSig のコマンドの一覧である。呼び出すのは SKILL に従うエージェントで、人が直接打つことは前提にしない。
-
 ```text
-archsig <コマンド> [引数] [オプション]
+archsig <コマンド> [引数]
 ```
 
-ArchSig は、カレントディレクトリから上へたどって見つけた `.archsig/` を使う。
-
-## どのコマンドにも付けられるオプション
-
-- `--format json|text|github`:表示の形。何も指定しなければ `json`。
-- `--detail`:すべての結果の詳細を書き出す。
-- `--allow-silent`:沈黙を、終了コードの判定では成り立たない結果として数えない。
-- `--changed <コミット>`:そのコミットから変わったソースに関わる結果だけを、終了コードの判定に使う。
-
-終了コードは第6章のとおり、`0` 成り立たない結果なし、`1` あり、`2` 入力を受け付けない、`3` 内部エラーである。
-
-## 準備と状態
+## 観測と Law
 
 | コマンド | すること |
 | --- | --- |
-| `archsig init` | `.archsig/` と、その下の `law/`、`map/`、`plans/`、`runs/` を作る。 |
-| `archsig status` | 古い範囲、古い意味 Atom、読んでいない範囲、古くなった結果、前回から変わった Law を返す。読んでいないソースの数と、読む意味の数も返す。観測の費用はこの数に比例する。 |
-| `archsig validate` | ArchMap と候補を、形と Law の語彙に照らして検査する。 |
-| `archsig schema atom\|law\|result\|error` | Atom、Law、結果の形と、入力を受け付けない理由の一覧を、エージェントが読める形で返す。 |
-
-## 観測
-
-| コマンド | すること |
-| --- | --- |
-| `archsig record <Atom のファイル>…` | エージェントが解析器で取り出した構造 Atom を検査し、読んだソースの hash を付けて、Atom と読んだ範囲を ArchMap に書く。 |
-| `archsig observe task [--for <結果>] [--stale] [--unread]` | 意味の観測の仕事を返す。読むソースと範囲、意味の語彙と観測の手がかり、書き出す Atom の形が入り、Law の規則は入らない。 |
-| `archsig observe merge <観測> <観測>` | 二つの観測を突き合わせ、一致した Atom と読んだ範囲を、二つの観測者付きで ArchMap に書く。一致しなかった Atom を返す。 |
-
-## Law
-
-| コマンド | すること |
-| --- | --- |
-| `archsig law check` | Law ファイルが正しく書けているかを確かめ、Law ごとに当てはまる要素の数を返す。当てはまる要素が 0 件の Law は警告する。 |
-| `archsig law diff <コミット>` | 定義を展開した後の Law で、そのコミットから何が変わったかを示す。 |
-
-## 照会
-
-| コマンド | すること |
-| --- | --- |
-| `archsig query "<要素の選び方>"` | Law の規則と同じ書き方で要素を選び、要素と根拠の Atom を返す。 |
-| `archsig locals [--reading <読み>]` | 局所、各局所の要素、局所どうしの重なりを返す。 |
-| `archsig view --reading <読み>` | 粗い読みでまとめた構造を返す(第5章の問い5)。 |
+| `archsig status` | 古い範囲と、読んでいない範囲を返す。 |
+| `archsig record <Atom のファイル>…` | 取り出した Atom を検査し、ArchMap に書く。 |
+| `archsig law check` | Law ファイルが正しく書けているかを確かめる。 |
 
 ## 問い
 
 | コマンド | 問い(第5章) |
 | --- | --- |
-| `archsig check [--law <名前>]` | 1. Law を守っているか、2. 全体で貼り合うか |
+| `archsig check` | 1. Law を守っているか、2. 全体で貼り合うか |
 | `archsig plan check <候補>` | 3. 変更の後も保たれるか |
-| `archsig compare --plan <候補> [--only <局所>]` | 3. 実装が候補どおりで、変更の後も保たれるか |
-| `archsig compare --base <コミット>` | 3. 候補なしで、そのコミットからの変更の後も保たれるか |
+| `archsig compare --plan <候補>`、`--base <コミット>` | 3. 実装の後も保たれ、候補どおりか |
 | `archsig paths <経路> <経路>` | 4. 経路や順序で結果が変わるか |
 | `archsig check --reading <読み> --against <読み>` | 5. 粒度を変えても診断は変わらないか |
+| `archsig view --reading <読み>` | 5. 粗い読みでまとめた構造 |
 | `archsig plan choices <候補>` | 6. 条件を満たす変更は何通りあるか |
-| `archsig plan split <候補> [--reading <読み>]` | 7. 仕事をどう分けるか |
+| `archsig plan split <候補>` | 7. 仕事をどう分けるか |
 | `archsig plan glue <候補> <候補> … --as <名前>` | 7. 局所の候補をどう組み立てるか |
-| `archsig next [--for <結果、候補、Law>]` | 8. 次にどこを読むか |
+| `archsig next` | 8. 次にどこを読むか |
 
 ## 結果
 
 | コマンド | すること |
 | --- | --- |
 | `archsig show <結果>` | 一つの結果の詳細を返す。 |
-| `archsig diff <実行> <実行>` | 二つの実行で、新しく成り立たなくなった結果と、成り立つようになった結果を返す。Law が変わっていれば、Law の変更で変わった結果を分けて返す。 |
+| `archsig diff <実行> <実行>` | 二つの実行で、新しく成り立たなくなった結果と、成り立つようになった結果を返す。 |
 | `archsig verify <実行>` | 実行の検算データを確かめる。 |
