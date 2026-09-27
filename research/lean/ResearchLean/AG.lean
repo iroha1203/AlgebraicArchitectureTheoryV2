@@ -881,3 +881,4 @@ import ResearchLean.AG.ProtocolHolonomy.LiftRootReconstruction
 import ResearchLean.AG.ProtocolHolonomy.LiftableVisible
 import ResearchLean.AG.ProtocolHolonomy.LiftFiberTorsor
 import ResearchLean.AG.ProtocolHolonomy.ChoiceChange
+import ResearchLean.AG.ProtocolHolonomy.ProtocolConnection
