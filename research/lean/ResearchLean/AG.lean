@@ -848,3 +848,4 @@ import ResearchLean.AG.OperationRepair.FiniteConstruction
 import ResearchLean.AG.OperationRepair.FiniteEnumeration
 import ResearchLean.AG.OperationRepair.FiniteCostLower
 import ResearchLean.AG.OperationRepair.LawBridge
+import ResearchLean.AG.OperationRepair.PathBridge
