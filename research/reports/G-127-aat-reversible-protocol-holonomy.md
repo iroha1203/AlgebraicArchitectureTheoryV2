@@ -2127,3 +2127,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and two-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 41 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 41
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: f9ca04d94
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 40 complete FixedF protocol comparison; G-124 D/E determining representative API
+  proof_dag_predecessors: [identityReversibleData, FixedFFollowingStateChange.preservingEquivEdgeConstantFamilies, FinitePermutationReadingCriteria.readAt]
+  proof_obligation: Construct a direct all-visible bridge between original identity-operation A1 lifts and G-124 actual operation-preserving following changes, preserving every vertex reading
+  selection_reason: G-124 representative determining and C2 extension cannot be compared merely by juxtaposing their theorems without matching their actual carriers and readAt maps
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityG124Bridge.lean]
+  risks: [vertical-identity-only bridge, replacing actual preserving changes with an abstract family, dropping named-edge squares, assuming readAt equality]
+  unchecked: [D G-124 representative B2/C2 extension comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: For every fixed visible graph automorphism g, the original identity-operation A1 lifts and G-124 actual named-operation-preserving following changes are equivalent through the same edge-constant family; G-124 readAt at every vertex equals the original A1 fiber permutation
+  completion_candidate: no
+  lean_artifacts: [identityLiftEquivG124Family, identityLiftEquivG124Preserving]
+  evidence: [identityG124_readAt]
+  claim_mapping:
+    theorem_names: [identityLiftEquivG124Preserving, identityG124_readAt]
+    source_labels: [D G-124 actual preserving-change comparison input]
+    conjuncts: [arbitrary original visible graph automorphism, all original A1 lifts, all G-124 actual preserving changes, named-edge naturality, both inverse directions, every vertex readAt and original fiber map]
+    undischarged_assumptions: [D G-124 representative B2/C2 extension comparison, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: The two actual carriers and their vertex readings coincide; representative extension/C2 equality remains; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D G-124 actual preserving-change carrier and readAt bridge]
+    remaining: [D G-124 representative B2/C2 extension, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [original A1 named-edge squares and G-124 preservingEquivEdgeConstantFamilies]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [actual G-124 PreservingChange, original A1 Lift, source-owned edge-constant family, G-124 readAt]
+    unused: [replacement group or selected representative]
+  structure_field_escape: none-found
+  route_integrity: pass-for-g124-carrier-reading
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and five-declaration standard axiom audit to be recorded in PR]
+```
