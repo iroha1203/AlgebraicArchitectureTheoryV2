@@ -836,3 +836,5 @@ import ResearchLean.AG.OperationRepair.Endpoints
 import ResearchLean.AG.OperationRepair.Classification
 import ResearchLean.AG.OperationRepair.ClassOrder
 import ResearchLean.AG.OperationRepair.Universal
+import ResearchLean.AG.OperationRepair.Composition
+import ResearchLean.AG.OperationRepair.InputMaps

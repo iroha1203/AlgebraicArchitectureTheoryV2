@@ -1407,3 +1407,5 @@ ResearchLean.AG.OperationRepair.Endpoints	ResearchLean/AG/OperationRepair/Endpoi
 ResearchLean.AG.OperationRepair.Classification	ResearchLean/AG/OperationRepair/Classification.lean
 ResearchLean.AG.OperationRepair.ClassOrder	ResearchLean/AG/OperationRepair/ClassOrder.lean
 ResearchLean.AG.OperationRepair.Universal	ResearchLean/AG/OperationRepair/Universal.lean
+ResearchLean.AG.OperationRepair.Composition	ResearchLean/AG/OperationRepair/Composition.lean
+ResearchLean.AG.OperationRepair.InputMaps	ResearchLean/AG/OperationRepair/InputMaps.lean
