@@ -877,3 +877,4 @@ import ResearchLean.AG.ProtocolHolonomy.HolonomyGenerators
 import ResearchLean.AG.ProtocolHolonomy.VerticalCentralizer
 import ResearchLean.AG.ProtocolHolonomy.SpanningTrees
 import ResearchLean.AG.ProtocolHolonomy.LiftRootCondition
+import ResearchLean.AG.ProtocolHolonomy.LiftRootReconstruction
