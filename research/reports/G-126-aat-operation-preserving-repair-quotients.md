@@ -4,8 +4,8 @@
 - Tracking Issue: [#4945](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4945)
 - Applied GOAL and common-standard commit: `93cbcedece216238edfd40e2329bcc69c4f7ae2d`
 - GOAL blob: `255a64df4bdc851f64f799ef89189ea81e78aa70`
-- Proof state: A–C proved in ResearchLean; D RAM cost and cumulative E/fixed-example
-  review remain open.
+- Proof state: A–C proved in ResearchLean; D total RAM trace has a Lean
+  completion candidate; cumulative E/fixed-example review remains open.
 
 The fixed statement and completion criteria are in the GOAL card. This report
 indexes proof evidence and the next obligations.
@@ -27,13 +27,87 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. D: charge success-table assembly and failure output, then prove the total bound for the
-   complete same success/failure procedure.
+1. D: independently review the complete counted run and its primitive
+   coverage, especially shared cell evaluation, output transfer, and the
+   equivalence to the mathematical procedure.
 2. E: final crosscheck of the complete Law/path declaration map against the
    fixed GOAL remains. The general path-numbering bridge is now constructed
    in `PathEnumeration.lean`; E completion is subject to independent review.
 3. Independently review all three fixed examples as a whole after the cycle
    15 additions, and perform the cumulative E crosscheck.
+
+## Cycle 26: complete counted finite repair run
+
+`FiniteRamNumbering` scans the computed partition for least representatives,
+uses the counted representative-list length as the output class count,
+locates quotient numbers, and builds the map, section, operation,
+observation, and lower-to-upper tables from stored counted cells. Its
+`successTablesFrom_value` identifies the result with the previously proved
+numbered tables; `successTablesFrom_cost_le` bounds the trace by
+`300*(m+1)*(n+1)^4`. `FiniteCostOutput.runWithTrace` consumes the counted
+lower, upper, and decision values. Its success branch builds the upper Bool
+partition from the stored witness table and then assembles counted quotient
+tables. Its failure branch returns a copied word produced by `copyWord`.
+Both branches include output structure charges. This counted run returns
+exactly `FiniteConstruction.runRepair`; success existence and failure
+correctness theorems are transported to this same counted run. Its trace
+obeys `1100*(m+1)*(n+1)^5`. Focused Lean checks and namespace axiom audits
+passed for the new files. Mathematical completeness of D remains subject to
+independent primitive-coverage and same-procedure audit.
+
+The referenced finite-construction design estimates a quadratic bound for
+partition, numbering, and quotient-output work. This implementation scans
+the counted representative list again for each output cell; its proved local
+bound is quartic, as stated above. No quadratic local bound is claimed for
+this implementation. The fixed GOAL D requires the total fifth-degree bound,
+which `runWithTrace_cost_le` establishes for the same counted run.
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 26
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: e71e2e0770f431364fac5d21afbd8a61e3703afd
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 25 comment and report D obligation"
+  proof_dag_predecessors: ["OperationRepair/FiniteConstruction.lean", "OperationRepair/FiniteRamEnumeration.lean", "OperationRepair/FiniteRamUpper.lean", "OperationRepair/FiniteRamDecision.lean"]
+  proof_obligation: "Count both numbered quotient outputs and the failure word in the same finite repair procedure"
+  selection_reason: "Closes the only local D cost gap before cumulative target review"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/FiniteRamNumbering.lean", "OperationRepair/FiniteCostOutput.lean"]
+  risks: ["class enumeration and numbering", "nested table-cell trace", "output copy", "same-run route"]
+  unchecked: ["independent D primitive-coverage audit", "cumulative E and fixed-example review"]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "A complete counted lower/upper/decision/output run equals runRepair and has a fifth-degree primitive bound"
+  completion_candidate: yes
+  lean_artifacts: ["OperationRepair/FiniteRamNumbering.lean", "OperationRepair/FiniteCostOutput.lean"]
+  evidence: ["rep_value", "representatives_sort_eq", "quotient_value", "tabulate_get", "numberedTables_value", "successTablesFrom_value", "successTablesFrom_cost_le", "upperCells_value", "upperCells_cost_le", "copyWord_value", "copyWord_cost", "runWithTrace_value", "runWithTrace_failure", "runWithTrace_success_iff_repair_exists", "runWithTrace_cost_le"]
+  claim_mapping:
+    theorem_names: ["runWithTrace_value", "runWithTrace_cost_le"]
+    source_labels: ["G-126 D total finite procedure"]
+    conjuncts: ["same successful and failed output", "counted quotient cells and failure word", "O((m+1)(n+1)^5) bound"]
+    undischarged_assumptions: ["cumulative independent review of D/E/examples"]
+    acceptance_point: "D total-cost Lean candidate; target completion depends on final review"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["least representative and quotient numbering", "counted class-count controlled success tables", "upper Bool partition conversion", "constructed failure-word copy", "complete branch-sensitive trace"]
+    remaining: ["independent primitive coverage and cumulative E/example audit"]
+  certificate_provenance:
+    discharged: ["failure word from counted upper witness decision", "successful table cells from counted partition scans"]
+    unresolved: []
+  proof_use:
+    used: ["counted lower/upper/decision values", "counted success-cell values", "branch trace in runWithTrace"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pending-independent-review
+  target_fitting: none-found
+  classification: completion-candidate
+  next_obligation: "Standard PR review and fresh cumulative math/Lean completion review"
+```
 
 ## Cycle 25: first-failure decision primitive trace
 
