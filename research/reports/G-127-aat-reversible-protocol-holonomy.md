@@ -887,3 +887,56 @@ audits:
   blocking_findings: []
   next_obligation: Identify original A1 lifts with natural isomorphisms from realization to its visible rename, including all quotient-path naturality
 ```
+
+## Cycle 17 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 17
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: f647644febc1a9b843f7ff0e2ba1cf8542ad3b2f
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 16 quotient rename and Cycle 15 independent realization
+  proof_dag_predecessors: [FiniteProtocolInput.realization, FiniteProtocolInput.renameExecutionFunctor, ReversibleData.Lift, ProtocolRealization.ext, ProtocolRealization.res]
+  proof_obligation: Construct and invert the correspondence between every original A1 lift and natural isomorphisms from the independent realization to its quotient-execution rename
+  selection_reason: Closes the central D semantic comparison without accepting any completed natural transformation as input to the forward direction
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/NaturalIsomorphism.lean]
+  risks: [inverse edge square, all quotient-execution naturality, dependent vertex fibers, actual observation, two inverse laws]
+  unchecked: [semantic compatibility with A2/projection/kernel/torsor, rename functor group laws, D other clauses, undirected-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Each original A1 lift yields generator maps in both directions, a full observation-preserving natural isomorphism on the quotient execution category, and an inverse restriction from any such semantic isomorphism; both inverse laws retain the original vertex equivalences and full natural transformations
+  completion_candidate: no
+  lean_artifacts: [FiniteProtocolInput.renamedRealization, FiniteProtocolInput.liftGeneratorMap, FiniteProtocolInput.liftInverseGeneratorMap, FiniteProtocolInput.liftIso, FiniteProtocolInput.isoToLift, FiniteProtocolInput.liftEquivSemanticIso]
+  evidence: [FiniteProtocolInput.renamed_edgeAction_down, FiniteProtocolInput.isoToLift_liftIso, FiniteProtocolInput.liftIso_isoToLift, ProtocolRealization.ext]
+  claim_mapping:
+    theorem_names: [FiniteProtocolInput.liftEquivSemanticIso]
+    source_labels: [D independent semantics correspondence]
+    conjuncts: [every selected g in original H, original A1 Lift, original quotient execution realization, actual renamed realization, vertexwise map preservation, all quotient-path naturality, observation preservation, both inverse laws]
+    undischarged_assumptions: [semantic A2/projection/kernel/torsor compatibility, rename functor group laws, D other clauses, E, fixed examples]
+    acceptance_point: D's bidirectional lift/natural-isomorphism comparison is proved; its cross-fiber compatibility and the full G-127 target remain open
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [A1 to semantic natural isomorphism and reverse restriction, all quotient-path naturality]
+    remaining: [semantic group and torsor compatibility, D other clauses, E and fixed examples]
+  certificate_provenance:
+    discharged: [forward semantic isomorphism from original Lift A1, inverse map from actual isomorphism components and inverse laws]
+    unresolved: [finite-table witness and executable solver]
+  proof_use:
+    used: [A1 named-edge condition, inverse A1 square, ProtocolRealization.ext path and quotient induction, semantic isomorphism laws, singleton observation]
+    unused: [B/C holonomy because semantic equivalence is constructed directly from A]
+  structure_field_escape: none-found
+  route_integrity: pass-for-semantic-isomorphism
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and eleven-declaration standard axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Prove semantic A2 composition, projection, kernel, and fiber/torsor compatibility using the bidirectional correspondence
+```
