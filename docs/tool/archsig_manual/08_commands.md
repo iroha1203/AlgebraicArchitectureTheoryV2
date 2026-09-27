@@ -29,7 +29,7 @@ ArchSig は、カレントディレクトリから上へたどって見つけた
 
 | コマンド | すること |
 | --- | --- |
-| `archsig extract <パス>…` | ソースの言語に合う解析器を呼び、構造 Atom と、構造を読んだ範囲を ArchMap に書く。 |
+| `archsig record <Atom のファイル>…` | エージェントが解析器で取り出した構造 Atom を検査し、読んだソースの hash を付けて、Atom と読んだ範囲を ArchMap に書く。 |
 | `archsig observe task [--for <結果>] [--stale] [--unread]` | 意味の観測の仕事を返す。読むソースと範囲、意味の語彙と観測の手がかり、書き出す Atom の形が入り、Law の規則は入らない。 |
 | `archsig observe merge <観測> <観測>` | 二つの観測を突き合わせ、一致した Atom と読んだ範囲を、二つの観測者付きで ArchMap に書く。一致しなかった Atom を返す。 |
 

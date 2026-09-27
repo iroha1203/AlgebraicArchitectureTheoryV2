@@ -55,7 +55,7 @@ Atom の同一性は、`kind`、`subject`、`object`、`value`、`when`、`meani
 
 ## 構造 Atom
 
-構造 Atom は、構文から決まる事実だ。言語ごとの解析器が取り出す。種類は次の九つで、言語によらず同じである。
+構造 Atom は、構文から決まる事実だ。エージェントが言語に合う解析器を選んで取り出す(第7章)。種類は次の九つで、言語によらず同じである。
 
 - `defines`:要素を定義する。`value` は `operation`、`type`、`field` のどれか。
   操作は `params` に引数の名前と型を持つ(`{"order": "shop.order.model.Order", "new": "shop.shipping.model.Address"}`)。フィールドは `type` に型を持つ。
@@ -130,7 +130,7 @@ ArchMap は、Atom のほかに、どこを読んだかを記録する。
 
 ```json
 {"kind": "observed", "subject": "shop/shipping/address.py", "scope": "structure",
- "hash": "sha256:9f2c…", "at": "shop/shipping/address.py@a1b2c3d", "by": "extractor:python@0.6.0"}
+ "hash": "sha256:9f2c…", "at": "shop/shipping/address.py@a1b2c3d", "by": "tool:tree-sitter-python@0.23"}
 {"kind": "observed", "subject": "shop/shipping/address.py", "scope": "meaning:payment-info",
  "hash": "sha256:9f2c…", "at": "shop/shipping/address.py@a1b2c3d",
  "by": ["model:claude-sonnet-5#1", "model:claude-sonnet-5#2"]}

@@ -85,7 +85,7 @@ archsig status
 ArchSig は、ArchMap を観測したときのソースと今のソースを比べ、変わったソースを返す。
 変わったソースだけを観測し直せばよい。観測は二段に分かれる。
 
-- 構造 Atom は、`archsig extract` で言語ごとの解析器が取り出す。
+- 構造 Atom は、エージェントが言語に合う解析器を選んで取り出し、`archsig record` で ArchMap に書く。
 - 意味 Atom は、軽いモデルのエージェント二つが、Law の語彙を手がかりに別々に観測する。一致したものを記録する。
 
 ArchMap に記録される Atom は、たとえば次の形をしている。
@@ -94,7 +94,7 @@ ArchMap に記録される Atom は、たとえば次の形をしている。
 {"kind": "writes", "subject": "shop.shipping.service.update_shipping",
  "object": "shop.order.model.Order.payment_ref", "value": "None",
  "when": "$new.country != $order.shipping_address.country",
- "at": "shop/shipping/service.py:4@a1b2c3d", "by": "extractor:python@0.6.0"}
+ "at": "shop/shipping/service.py:4@a1b2c3d", "by": "tool:tree-sitter-python@0.23"}
 {"kind": "meaning", "subject": "shop.order.model.Order.payment_ref", "meaning": "payment-info",
  "uses": ["shop/payment/charge.py:22@a1b2c3d", "shop/order/confirm.py:57@a1b2c3d"],
  "at": "shop/order/model.py:18@a1b2c3d", "by": ["model:claude-sonnet-5#1", "model:claude-sonnet-5#2"]}
