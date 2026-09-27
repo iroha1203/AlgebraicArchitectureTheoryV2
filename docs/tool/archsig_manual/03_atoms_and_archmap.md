@@ -16,14 +16,18 @@ Atom は JSON の一行で書く。どの Atom も次の欄を持つ。
 | 種類 | 加わる欄 |
 | --- | --- |
 | `defines` | `value`(要素の種類)、`params`(操作の引数と型)、`type`(フィールドの型)、`file`(候補の中だけ) |
-| `calls`、`reads`、`imports` | `object`、`when` |
-| `writes`、`passes`、`sends`、`receives` | `object`、`value`、`when` |
+| `calls`、`reads` | `object`、`when` |
+| `imports` | `object` |
+| `writes`、`passes`、`sends` | `object`、`value`、`when` |
+| `receives` | `object`、`value` |
 | `returns` | `value`、`when` |
 | `meaning` | `meaning`、`value`、`uses` |
 | `observed` | `scope`、`hash` |
 | `plan` | `base` |
 | `corresponds` | `object` |
 | `removes` | なし |
+
+構造 Atom は、エージェントが解決したものに限り `uses` も持つ(次の節)。
 
 Atom の同一性は、`kind`、`subject`、`object`、`value`、`when`、`meaning`、`scope` で決まる。
 `at` と `by` は同一性に入らない。行がずれても、同じ事実は同じ Atom である。
@@ -111,7 +115,7 @@ ArchSig は、操作の呼び出しの結果を、同じ操作に同じ値を渡
 意味は、要素一つずつではなく、局所ごとにまとめて観測することもできる。局所というのは、読みでコードを分けた一まとまりのこと(第4章)。
 
 ```json
-{"kind": "meaning", "subject": "local:service:shop/payment", "meaning": "unit", "value": "minor",
+{"kind": "meaning", "subject": "local:service:money", "meaning": "unit", "value": "minor",
  "uses": ["shop/payment/charge.py:22@a1b2c3d"], "at": "shop/payment@a1b2c3d",
  "by": ["model:claude-sonnet-5#1", "model:claude-sonnet-5#2"]}
 ```
@@ -172,6 +176,7 @@ ArchMap と同じ形をとり、`.archsig/plans/<候補の名前>/` に置く。
 ```
 
 続けて、変更後のコードの構造 Atom を書く。`at` には `plan:<候補の名前>` と書く。
+候補の中の Atom は行を持たないので、一つの操作の中の書き込みと呼び出しの順は、ファイルに書いた Atom の順とする。呼び出しの `#2`、`#3` もこの順で付ける。
 
 - 候補の中で `subject` に Atom を書いた要素は、その要素についての元の Atom がすべて置き換わる。要素から出る呼び出し(`<要素>->…`)の Atom も置き換わる。
 - それ以外の要素は、元のコードのまま扱う。

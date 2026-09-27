@@ -27,21 +27,21 @@ ArchSig を一度呼ぶと、一つの実行ができる。実行には `r-0193`
 
 ```json
 {
-  "run": "r-0193",
-  "command": "plan check split-order",
-  "commit": "a1b2c3d",
-  "law": "sha256:41ac…",
+  "run": "r-0201",
+  "command": "check",
+  "commit": "b7e9f01",
+  "law": "sha256:9d30…",
   "results": [
-    {"id": "r-0193/1", "question": "change", "law": "payment-follows-order",
-     "subject": "shop.shipping.service.update_shipping", "outcome": "fails", "kind": "counterexample",
-     "at": ["shop/shipping/service.py:4"]},
-    {"id": "r-0193/2", "question": "law", "law": "identity-mail-from-auth",
-     "subject": "shop.order.confirm.confirm->mail.send", "outcome": "silent", "reason": "unread",
-     "at": ["shop/order/confirm.py:61"]}
+    {"id": "r-0201/1", "question": "law", "law": "identity-mail-from-auth",
+     "subject": "shop.order.signup.register->mail.send", "outcome": "fails", "kind": "violation",
+     "at": ["shop/order/signup.py:30"]},
+    {"id": "r-0201/2", "question": "law", "law": "identity-mail-from-auth",
+     "subject": "shop.shipping.notify.notify->mail.send", "outcome": "silent", "reason": "unread",
+     "at": ["shop/shipping/notify.py:12"]}
   ],
   "counts": {"holds": 13, "fails": 1, "silent": 1},
   "next": [
-    {"read": "shop/order/confirm.py", "scope": "meaning:role", "decides": ["r-0193/2"]}
+    {"read": "shop/shipping/notify.py", "scope": "meaning:role", "decides": ["r-0201/2"]}
   ]
 }
 ```
@@ -49,7 +49,7 @@ ArchSig を一度呼ぶと、一つの実行ができる。実行には `r-0193`
 詳細は、結果一つごとに一つのファイルになる。
 
 ```text
-archsig show r-0193/1
+archsig show r-0201/1
 ```
 
 `show` で一つの結果の詳細を読む。`--detail` を付けて実行すると、すべての詳細をまとめて書き出す。
@@ -63,7 +63,7 @@ archsig show r-0193/1
 ## 結果に共通する欄
 
 - `id`:結果の名前。実行の名前と番号でできている。
-- `question`:どの問いの結果か。`law`、`glue`、`change`、`paths`、`reading`、`choices`、`split`、`next` のどれか。
+- `question`:どの問いの結果か。`law`、`agree`、`change`、`paths`、`reading`、`choices`、`split`、`assemble`、`next` のどれか。`assemble` は `plan glue` の結果である。
 - `law`:どの Law の結果か。
 - `subject`:何についての結果か。要素、候補、局所の名前。
 - `outcome`:`holds`(成り立つ)、`fails`(成り立たない)、`silent`(沈黙)のどれか。
@@ -75,10 +75,11 @@ archsig show r-0193/1
   - `mismatch`:候補と実装の食い違い。
   - `divergence`:経路による食い違い。
   - `conflict`:局所の候補どうしが食い違う、または条件が局所に閉じない。
+  - `refine`:粗い読みでは Law の値か障害が保たれない。細かく読む局所がある。
 - `reason`:沈黙の理由。`outcome` が `silent` のときだけ付く。
 - `at`:ソースの場所。候補の中なら `plan:<名前>`。
 
-`choices`、`split`、`next` の結果は、ほかの問いの判定ではなく、一覧を返す。`outcome` は `holds` で、一覧は詳細に入る。
+`choices`、`split`、`next` は、一覧を返せたとき `outcome` を `holds` とし、一覧を詳細に入れる。一覧を返せないときは、ほかの問いと同じく `fails` か `silent` になる。
 
 詳細には、さらに次の欄が入る。
 
@@ -128,11 +129,11 @@ archsig verify r-0193
 入力から決められないとき、ArchSig は結論を出さない。沈黙の理由は四つある。
 
 - `unread`:結論に関わる範囲を読んでいない。
-- `unresolved`:結論に関わる名前や値が `?` である。
+- `unresolved`:結論に関わる名前や値が `?` である。または、`convert` にない定数との掛け算や割り算で、換算が決まらない。
 - `unchecked`:計算の前提になる条件を、入力の上で確かめられない。粗い読みで Law の値を読み戻せるかを確かめられない場合などである。
 - `limit`:計算の量が上限を超えた。分岐や組み合わせの数え上げ、呼び出しの展開で起きる。
 
-`unread` と `unresolved` には、何を読めば決まるかが付く。
+`unread` と、`?` による `unresolved` には、何を読めば決まるかが付く。`convert` にない定数による `unresolved` は、読み足しても決まらない。Law に `convert` を足すか、コードを直す。
 沈黙した結果も一つずつ `results` に入り、`counts` で数えられる。
 
 ## 成り立つ条件

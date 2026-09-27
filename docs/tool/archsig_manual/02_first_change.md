@@ -115,6 +115,12 @@ ArchMap に記録される Atom は、たとえば次の形をしている。
  "file": "shop/shipping/model.py", "at": "plan:split-order"}
 {"kind": "defines", "subject": "shop.payment.model.OrderPayment", "value": "type",
  "file": "shop/payment/model.py", "at": "plan:split-order"}
+{"kind": "defines", "subject": "shop.shipping.model.OrderShipping.address", "value": "field",
+ "type": "shop.shipping.model.Address", "file": "shop/shipping/model.py", "at": "plan:split-order"}
+{"kind": "defines", "subject": "shop.shipping.model.OrderShipping.order_id", "value": "field",
+ "type": "str", "file": "shop/shipping/model.py", "at": "plan:split-order"}
+{"kind": "defines", "subject": "shop.payment.model.OrderPayment.ref", "value": "field",
+ "type": "str", "file": "shop/payment/model.py", "at": "plan:split-order"}
 {"kind": "corresponds", "subject": "shop.order.model.Order.shipping_address",
  "object": "shop.shipping.model.OrderShipping.address", "at": "plan:split-order"}
 {"kind": "corresponds", "subject": "shop.order.model.Order.payment_ref",
@@ -125,12 +131,18 @@ ArchMap に記録される Atom は、たとえば次の形をしている。
 {"kind": "defines", "subject": "shop.shipping.service.update_shipping", "value": "operation",
  "params": {"shipping": "shop.shipping.model.OrderShipping", "new": "shop.shipping.model.Address"},
  "file": "shop/shipping/service.py", "at": "plan:split-order"}
+{"kind": "calls", "subject": "shop.shipping.service.update_shipping",
+ "object": "shop.shipping.address.normalize_address", "at": "plan:split-order"}
+{"kind": "passes", "subject": "shop.shipping.service.update_shipping->shop.shipping.address.normalize_address",
+ "object": "shop.shipping.address.normalize_address.$addr", "value": "$new", "at": "plan:split-order"}
 {"kind": "writes", "subject": "shop.shipping.service.update_shipping",
  "object": "shop.shipping.model.OrderShipping.address",
  "value": "shop.shipping.address.normalize_address($new)", "at": "plan:split-order"}
 ```
 
+新しい型とフィールドは、置く予定のソースを `file` に書く。局所はこのパスで決まる。
 `update_shipping` は名前が変わらないので、変更前の `update_shipping` に対応する。引数 `order` は `shipping` に変わるので、対応を書いた。
+`update_shipping` の Atom を書いたので、その要素についての元の Atom は置き換わる。`normalize_address` の呼び出しも、候補に書き直してある。
 候補には意味 Atom を書かない。`OrderPayment.ref` が決済情報であることは、`Order.payment_ref` からの対応で移る。
 
 候補を検査する。

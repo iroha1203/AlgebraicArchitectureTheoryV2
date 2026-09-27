@@ -10,7 +10,10 @@ sources "shop/**"
   except "**/tests/**", "**/test_*.py"
 
 reading module = dir(depth: 2)
-reading service = dir(depth: 1)
+reading service = groups
+  commerce: "shop/order/**", "shop/shipping/**"
+  money:    "shop/payment/**"
+  rest:     "**"
 
 fresh "shop.common.ids.new_*"
 
@@ -85,7 +88,7 @@ ArchSig は、読みと Atom から局所を作る。
 ### 細かい読みと粗い読み
 
 ある読みの局所がどれも、別の読みの局所のどれか一つに収まるとき、前者は後者より細かい。
-上の例では `module` が `service` より細かい。ArchSig はこの関係を読みの定義から導く。
+上の例では、`module` の局所 `shop/order` と `shop/shipping` は `service` の局所 `commerce` に、`shop/payment` は `money` に収まるので、`module` が `service` より細かい。ArchSig はこの関係を読みの定義から導く。
 読みを変えても診断が変わらないかという問いは、この関係の上で計算する。
 
 ## 呼ぶたびに新しい値を返す操作
