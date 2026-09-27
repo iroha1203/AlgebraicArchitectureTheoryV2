@@ -27,14 +27,85 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. D: prove that the staged counters cover all specified RAM primitives;
-   cost the success-table assembly, then prove the total bound for the
-   complete same success/failure procedure.
+1. D: extend the primitive trace from the synchronous lower closure to its
+   enumeration and initial table, upper search, decision, and success-table
+   assembly; prove the total bound for the complete same success/failure
+   procedure.
 2. E: final crosscheck of the complete Law/path declaration map against the
    fixed GOAL remains. The general path-numbering bridge is now constructed
    in `PathEnumeration.lean`; E completion is subject to independent review.
 3. Independently review all three fixed examples as a whole after the cycle
    15 additions, and perform the cumulative E crosscheck.
+
+## Cycle 20: RAM primitive trace for a lower closure pass
+
+`FiniteRamPrimitives.lean` introduces a value paired with an explicit trace of
+the RAM primitives named in D. Table reads and writes, relation-table copies,
+transition reads, and the conditional closure fold all append named trace
+entries on the same branch that computes the value. `markPass_value` and
+`closeStep_value` identify the trace-producing values with the existing
+synchronous lower closure. `copyRelation_cost`, `markItem_cost`, and
+`markPass_cost_le` prove the trace length for copies and a uniform per-pass
+upper bound from charged predicate and target callbacks. The concrete
+`closeStep` uses counted table reads for every premise and counted transition
+reads for operation images.
+
+This is a proof checkpoint for one part of D's RAM accounting. Enumeration
+list construction, initial table construction, iteration over `n²` rounds,
+the upper word search, decision scan, and success-table assembly are not yet
+covered by this trace. The old numeric counters are not identified with
+the primitive trace, so the full D cost clause remains open.
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 20
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: d34e29eec85e1a8d71ab2f1adc8df992f179298e
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 19 comment and D cost gap"
+  proof_dag_predecessors: ["OperationRepair/FiniteTables.lean", "OperationRepair/FiniteClosure.lean"]
+  proof_obligation: "Trace and bound the RAM primitives of a synchronous lower marking pass"
+  selection_reason: "Makes lower value/charge coupling explicit before the total cost proof"
+  expected_result_type: proof-checkpoint
+  lean_targets: ["OperationRepair/FiniteRamPrimitives.lean"]
+  risks: ["implicit table copy", "predicate callback cost", "enumeration allocation", "full-run cost still open"]
+  unchecked: ["enumeration and initial table charge", "upper/decision/success charge", "full same-run polynomial bound", "cumulative E and examples review"]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Named RAM trace for lower closure passes with value agreement and copy/branch cost lemmas"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/FiniteRamPrimitives.lean"]
+  evidence: ["copyRelation_value", "copyRelation_cost", "markItem_value", "markItem_cost", "markPass_value", "markPass_cost_le", "readStep_cost", "closeStep_value"]
+  claim_mapping:
+    theorem_names: ["markPass_value", "markPass_cost_le", "closeStep_value"]
+    source_labels: ["G-126 D RAM table primitives and synchronous lower closure"]
+    conjuncts: ["same lower closure pass value", "explicit copy and per-item branch charges"]
+    undischarged_assumptions: ["bounded callbacks needed to instantiate generic pass bound", "complete run primitive coverage"]
+    acceptance_point: "lower primitive trace checkpoint only; D total cost remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["relation copy value/cost", "conditional table-write value/cost", "concrete synchronous-round value"]
+    remaining: ["full lower trace bound", "upper/decision/output trace", "total cost"]
+  certificate_provenance:
+    discharged: ["trace constructed by the same branch as each marked value"]
+    unresolved: ["complete RAM cost certificate"]
+  proof_use:
+    used: ["counted table accesses", "counted transition accesses", "existing synchronous closure value"]
+    unused: ["generic Counted.bind", "observationEqual; reserved for later stages"]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["focused FiniteRamPrimitives check passed", "#assert_standard_axioms_only passed"]
+  blocking_findings: []
+  next_obligation: "complete lower trace bound including enumeration and initialization, then upper/decision/output trace"
+```
 
 ## Cycle 19: empty finite inputs
 
