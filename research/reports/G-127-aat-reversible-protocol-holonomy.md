@@ -2369,8 +2369,8 @@ audits:
     discharged: [arbitrary undirected named forest and arbitrary roots map to original B/C root-path data]
     remaining: [input-generated forest existence and executable E, fixed examples]
   certificate_provenance:
-    discharged: [selected original Q.Edge names, signed path evidence through selected edges]
-    unresolved: [executable finite-table forest constructor]
+    discharged: [conversion of a supplied selected-edge path witness to RootedPaths while preserving original Q.Edge names]
+    unresolved: [forest connectivity witness and executable finite-table forest constructor from the original graph input]
   proof_use:
     used: [tree connectedness, selected-edge witness, normalized root path]
     unused: [bridge condition is part of the intrinsic tree predicate and not needed for B/C path theorems]
