@@ -2382,3 +2382,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and four-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 46 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 46
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 5bc7f3039
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 45 structural undirected-tree bridge and open E computation
+  proof_dag_predecessors: [ReversibleData.Lift, ReversibleData.Lift.edge_naturality]
+  proof_obligation: From explicit finite enumerations and equality decisions, decide existence of an original A1 Lift for any visible graph automorphism and return one genuine lift or a proof of nonexistence
+  selection_reason: Establishes a terminating exact original-Lift decision baseline and a reusable table candidate enumeration for the B/C-derived E procedure and fixed examples
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteDirectDecision.lean]
+  risks: [using Classical.choice or Fintype.ofFinite in executable search, testing only injectivity, deciding a wrapper instead of original Lift, silently assuming root/forest input]
+  unchecked: [finite forest construction, B1/B2/C1-derived E decision, H_lift enumeration and torsor reconstruction, both fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Explicit vertex/edge/fiber lists generate all forward/inverse vertex table families by terminating List.pi and List.product; the executable search checks both inverse laws and every original A1 named-edge square, returns a genuine Lift, and a none result excludes every original Lift
+  completion_candidate: no
+  lean_artifacts: [ExplicitEnumeration.pi, ReversibleData.allCandidateMaps, ReversibleData.findDirectLift]
+  evidence: [ReversibleData.findDirectLift_none, ReversibleData.findDirectLift_isSome_iff, executable one-vertex zero-edge Bool evaluation]
+  claim_mapping:
+    theorem_names: [ExplicitEnumeration.pi, ReversibleData.findDirectLift_none, ReversibleData.findDirectLift_isSome_iff]
+    source_labels: [E original Lift soundness and completeness baseline]
+    conjuncts: [explicit finite input, total candidate enumeration, A1 validity, positive lift and negative nonexistence]
+    undischarged_assumptions: [finite forest construction and B/C-derived E procedure, fixed examples]
+    acceptance_point: Complete direct A1 finite decision baseline on explicit input lists; B/C-derived algorithm and forest construction remain required for G-127 E
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [explicit candidate generation, original A1 table decision with both directions of existence]
+    remaining: [finite forest construction, B1/B2/C1-derived E route, H_lift enumeration and torsor connection, fixed examples]
+  certificate_provenance:
+    discharged: [allCandidateMaps from explicit vertex and fiber lists, ValidCandidate inverse and edge checks, direct construction of original Lift]
+    unresolved: [same solver applied through input-generated B/C data]
+  proof_use:
+    used: [every supplied enumeration completeness proof in List.pi, finite quantified inverse and edge checks, original A1 Lift fields]
+    unused: [no forest or RootSolutions input is consumed by this direct baseline]
+  structure_field_escape: none-found-for-direct-A1-baseline
+  route_integrity: pass-for-direct-A1-baseline-only
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and ten-declaration standard axiom audit to be recorded in PR; #eval direct one-vertex Bool search true]
+```
