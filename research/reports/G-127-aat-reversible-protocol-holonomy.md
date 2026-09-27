@@ -1923,3 +1923,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and one-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 37 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 37
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 978076fd9
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycles 31 and 36 original split kernel and direct protocol kernel equivalence
+  proof_dag_predecessors: [ReversibleData.verticalLiftInclusion, ReversibleData.verticalLiftEquivLiftableKernel, identityProtocolKernelMulEquiv]
+  proof_obligation: Map each original vertical A1 lift into the literal independent protocol kernel and preserve its pointwise fiber map and multiplication
+  selection_reason: Connects the original C3 vertical group itself to D's FixedF protocol kernel rather than only comparing projection kernels abstractly
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityProtocolVertical.lean]
+  risks: [replacing the original C3 vertical group, losing pointwise maps, assuming injectivity or surjectivity without proof]
+  unchecked: [D vertical-kernel equivalence/fiber action and G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The original vertical A1 inclusion followed by direct literal-kernel equivalence is a group homomorphism into the independent FixedF protocol kernel, and its vertexwise state maps equal the original A1 fiber maps pointwise
+  completion_candidate: no
+  lean_artifacts: [identityVerticalToProtocolKernel]
+  evidence: [identityVerticalToProtocolKernel_fiber]
+  claim_mapping:
+    theorem_names: [identityVerticalToProtocolKernel, identityVerticalToProtocolKernel_fiber]
+    source_labels: [D original vertical group to FixedF protocol kernel]
+    conjuncts: [original C3 vertical A1 group, original actual inclusion, independent literal protocol kernel, group homomorphism, every vertex and hidden state map]
+    undischarged_assumptions: [D vertical-kernel equivalence/fiber action and G-124, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: Original vertical group map and pointwise readback are fixed; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D original vertical inclusion to independent protocol kernel with pointwise readback]
+    remaining: [D vertical-kernel equivalence/fiber action and G-124, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [original C3 verticalLiftInclusion, Cycle 36 direct literal-kernel equivalence]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [original verticalLiftEquivLiftableKernel membership, original C3 inclusion, direct independent protocol kernel equivalence]
+    unused: [replacement vertical group or chosen generator]
+  structure_field_escape: none-found
+  route_integrity: pass-for-fixedf-original-vertical-map
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and two-declaration standard axiom audit to be recorded in PR]
+```
