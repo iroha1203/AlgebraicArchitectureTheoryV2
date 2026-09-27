@@ -2229,3 +2229,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and three-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 43 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 43
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 303ee2642
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycles 41–42 actual G-124 carrier/readAt and matching representative roots
+  proof_dag_predecessors: [identity_transport, ReversibleData.RootSolutions.reconstructedFiber, FixedFFollowingStateChange.preservingEquivComponentPermutationFamilies, FinitePermutationReadingCriteria.readAt]
+  proof_obligation: Prove identity-operation C2 reconstruction from every component-root family agrees at every vertex with G-124's actual preserving-change extension from the same component family
+  selection_reason: Discharges the all-vertex extension formula rather than only root-value agreement
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityG124Extension.lean]
+  risks: [using a different source component quotient, assuming C1 instead of proving it, treating classical roots as E runtime, only checking representatives]
+  unchecked: [D G-124 determining predicate synchronization, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Every component permutation family satisfies the original C1 edge-loop equations for identity operations; C2 reconstructs α(component(v)) at every vertex, and G-124's actual preserving change reconstructed through the accepted component classification has the identical readAt value at every vertex
+  completion_candidate: no
+  lean_artifacts: [identityComponentRootSolutions]
+  evidence: [identity_C2_component_extension, identity_G124_C2_extension_agree]
+  claim_mapping:
+    theorem_names: [identityComponentRootSolutions, identity_C2_component_extension, identity_G124_C2_extension_agree]
+    source_labels: [D G-124 representative extension equals C2 identity specialization]
+    conjuncts: [original C1 root equations, original signed transport, original C2 reconstruction, original full component quotient, actual G-124 preserving change, all vertices and hidden permutations]
+    undischarged_assumptions: [D G-124 determining predicate synchronization, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: All-vertex extension formulas agree on the same component family; G-124 determining theorem synchronization remains; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D identity C2 and actual G-124 all-vertex extension equality]
+    remaining: [D G-124 determining predicate synchronization, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [Cycle 26 identity transport on all signed paths, original C1 RootSolutions condition, G-124 accepted component-family classification]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [identity transport on original and renamed paths, original RootSolutions.reconstructedFiber, G-124 actual PreservingChange classification and readAt]
+    unused: [replacement extension or selected representative only]
+  structure_field_escape: none-found
+  route_integrity: pass-for-g124-c2-all-vertices
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and four-declaration standard axiom audit to be recorded in PR]
+```
