@@ -40,8 +40,8 @@ operation invariance, or finite-observation premise.
 ## Cycle 17: upper word-loop counter checkpoint
 
 `FiniteCostUpper.lean` computes a counted first-success operation search for
-each pair. Its value is the original `List.findSome?` result and its counter
-is bounded by eight charges per visited operation. `step` constructs the
+each pair. Its value is the original `List.findSome?` result; its counter
+charges eight per visited operation and one for exhausting the list. `step` constructs the
 table of value/counter cells once, then reads its two projections;
 `step_value` identifies the resulting word table with the original
 `FiniteBehavior.step`. `rounds` feeds the same counted table into the next
