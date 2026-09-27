@@ -4,8 +4,8 @@
 - Tracking Issue: [#4945](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4945)
 - Applied GOAL and common-standard commit: `93cbcedece216238edfd40e2329bcc69c4f7ae2d`
 - GOAL blob: `255a64df4bdc851f64f799ef89189ea81e78aa70`
-- Proof state: A–C proved in ResearchLean; D–E and the three fixed examples
-  remain open.
+- Proof state: A–C proved in ResearchLean; D, cumulative E review, and parts
+  of the fixed examples remain open.
 
 The fixed statement and completion criteria are in the GOAL card. This report
 indexes proof evidence and the next obligations.
@@ -34,8 +34,87 @@ operation invariance, or finite-observation premise.
 2. E: final crosscheck of the complete Law/path declaration map against the
    fixed GOAL remains. The general path-numbering bridge is now constructed
    in `PathEnumeration.lean`; E completion is subject to independent review.
-3. Three fixed examples and empty input cases, evaluated through the same
-   general API and finite algorithm.
+3. Complete the fixed examples' sequential quotient maps, Law adequacy and
+   factorization, and path-generated relation/target identification; check
+   empty input cases through the general API and finite algorithm.
+
+## Cycle 14: fixed finite instances (partial)
+
+`Examples.lean` instantiates the actual `FiniteRepairInput` tables and
+`runRepair` procedure. In the four-state instance, `lowerOne_cells` gives
+`{0,1}|{2}|{3}`, `upper_cells` gives `{0,1}|{2,3}`, and
+`lowerOne_count`/`upper_count` compute three and two classes. The source
+quotient map kernels are exposed by `lowerOne_map_eq_iff` and
+`upper_map_eq_iff`. `interval_two_endpoints` uses the general A/B interval,
+and `exactly_two_repair_classes` proves there are exactly two repair
+isomorphism classes. The two individual and combined requests all make the
+finite failure search return `none`; `lowerBoth_cells` computes the combined
+generated endpoint as the behavioral endpoint. `runOne_counts` connects the
+concrete counts to the actual success payload.
+
+In the three-state instance, `lower_universal` and `upper_equality` compute
+the two partitions. `run_failure_exact` shows the actual D procedure returns
+the original pair `(0,1)` and the one-letter word `[0]`;
+`run_failure_certificate` uses D's general soundness theorem, and `no_repair`
+uses its impossibility equivalence. `empty_word_same` and
+`one_step_separates` distinguish present and future observations.
+`law_kernel_not_stable` and `joint_law_operation_not_descended` use the
+single original Boolean Law and the general E descent criterion.
+
+For the path example, `generated_cells` and `future_cells` compute the same
+two-block relation from `[(ε,T)]`, and `generated_eq_behavior` identifies the
+general A endpoints. `run_upper_two_states`, `run_upper_operation_identity`,
+and `run_law_nonconstant` prove properties of the same returned D upper
+tables: two classes, identity operation, and two distinct observation values.
+The observation is the intended single Boolean Law evaluation, but the
+explicit Law-family adequacy/factorization connection and both sequential
+repair orders are still open.
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 14
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: 145ca9fb4598fd0a93390f3e9c889fee7a46dbfb
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 13 comment and fixed-example completion criteria"
+  proof_dag_predecessors: ["OperationRepair/Classification.lean", "OperationRepair/FiniteConstruction.lean", "OperationRepair/PathBridge.lean", "OperationRepair/LawBridge.lean"]
+  proof_obligation: "Evaluate the three prescribed concrete inputs through A/B and the actual D procedure"
+  selection_reason: "Establishes concrete source partitions, repair-class count, failure certificate, and path output facts required by completion"
+  expected_result_type: proof-checkpoint
+  lean_targets: ["OperationRepair/Examples.lean"]
+  risks: ["table computation vs actual run output", "exactly two repair classes", "original failure witness", "path quotient operation"]
+  unchecked: ["sequential quotient maps", "four-state Law adequacy and factorization", "path Law bridge", "D RAM cost and general finite-output transport", "cumulative E review"]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Concrete four-state classification, three-state D failure and Law obstruction, path-generated endpoint equality and actual upper output properties"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/Examples.lean"]
+  evidence: ["Four.exactly_two_repair_classes", "Four.runOne_counts", "Three.run_failure_exact", "Three.no_repair", "Three.joint_law_operation_not_descended", "Path.generated_eq_behavior", "Path.run_upper_two_states", "Path.run_upper_operation_identity", "Path.run_law_nonconstant"]
+  claim_mapping:
+    theorem_names: ["Four.exactly_two_repair_classes", "Three.run_failure_certificate", "Path.generated_eq_behavior", "Path.run_upper_operation_identity"]
+    source_labels: ["G-126 fixed examples 2-4, partial"]
+    conjuncts: ["four-state endpoint tables and exactly two classes", "three-state actual one-letter failure witness", "path generated=behavior, two-state identity-operation output"]
+    undischarged_assumptions: []
+    acceptance_point: "fixed-example proof checkpoint; G-126 completion remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["concrete state, transition, and observation tables for all three instances", "three-state single Law data", "four-state inputOne and path success payload facts; three-state actual failure payload"]
+    remaining: ["sequential repairs", "Law adequacy/factorization for feasible instances", "D cost and general finite-output bridge"]
+  certificate_provenance:
+    discharged: ["three-state pair and word from runRepair", "success table from runRepair_success_payload", "path target operation from computed upper quotient"]
+    unresolved: []
+  proof_use:
+    used: ["concrete finite input tables", "A/B interval classification", "D success/failure result", "E Law descent criterion"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+```
 
 ## D: finite endpoint table loops (partial)
 
