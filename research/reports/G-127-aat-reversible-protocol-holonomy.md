@@ -2331,3 +2331,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and one-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 45 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 45
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: f9555bd1c
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 44 closure of G-124 identity comparison; SpanningTrees.lean outward arborescence only
+  proof_dag_predecessors: [RootedPaths, SpanningTrees, B1/B2/C1 root-path theorems]
+  proof_obligation: Supply arbitrary undirected named-edge tree selections and arbitrary roots to the original B/C rooted-path API while retaining original edge names and signs
+  selection_reason: Removes the oriented-arborescence restriction on structural B/C inputs without modifying their statements
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/UndirectedNamedTrees.lean]
+  risks: [mistaking outward arborescence for undirected tree, losing parallel edge names, assuming chosen paths are executable, hiding the connectedness or acyclicity requirement]
+  unchecked: [constructing such a forest from every finite table, executable E, two fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: An intrinsic undirected tree selects original edge names, requires within-component connectivity and every selected edge to be a bridge, and yields RootedPaths for any roots with every root path using only selected signed named edges
+  completion_candidate: no
+  lean_artifacts: [UsesNamedEdges, UndirectedNamedSpanningTree, UndirectedNamedSpanningForest.toRootedPaths]
+  evidence: [UndirectedNamedSpanningTree.pathFromRoot_usesEdges, UndirectedNamedSpanningForest.toRootedPaths_path_usesEdges]
+  claim_mapping:
+    theorem_names: [UndirectedNamedSpanningForest.toRootedPaths, UndirectedNamedSpanningForest.toRootedPaths_path_usesEdges]
+    source_labels: [B arbitrary roots and undirected named spanning trees, D choice change]
+    conjuncts: [original named edges and orientation-sensitive signed passages, independent edge selection, arbitrary component roots, normalized empty root path, selected-edge provenance]
+    undischarged_assumptions: [finite-table construction and proof of forest existence, E decision procedure, fixed examples]
+    acceptance_point: Every genuine undirected named forest supplies B/C input; existence and executable construction remain open
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [arbitrary undirected named forest and arbitrary roots map to original B/C root-path data]
+    remaining: [input-generated forest existence and executable E, fixed examples]
+  certificate_provenance:
+    discharged: [conversion of a supplied selected-edge path witness to RootedPaths while preserving original Q.Edge names]
+    unresolved: [forest connectivity witness and executable finite-table forest constructor from the original graph input]
+  proof_use:
+    used: [tree connectedness, selected-edge witness, normalized root path]
+    unused: [bridge condition is part of the intrinsic tree predicate and not needed for B/C path theorems]
+  structure_field_escape: none-found
+  route_integrity: pass-for-undirected-tree-to-rooted-paths
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and four-declaration standard axiom audit to be recorded in PR]
+```
