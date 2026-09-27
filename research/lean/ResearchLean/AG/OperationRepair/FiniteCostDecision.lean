@@ -102,33 +102,32 @@ theorem scan_pairs_cost_le (input : FiniteRepairInput n m O)
 /-- The counted endpoint values and decision scan feed one output branch. -/
 def runWithCount (input : FiniteRepairInput n m O) :
     FiniteConstruction.RunOutput n m O × Nat :=
-  let lower := FiniteCostLower.lowerWithCost input
+  let lower := FiniteRamEnumeration.lower input
   let upper := FiniteCostUpper.upper input
   let decision := scan input upper.1 (FiniteClosure.pairs n)
-  let lowerPart := FiniteConstruction.lowerPartitionFrom input lower.1
-    (FiniteCostLower.lowerWithCost_value input)
+  let lowerPart := FiniteConstruction.lowerPartitionFrom input lower.value
+    (FiniteRamEnumeration.lower_value input)
   let upperPart := FiniteConstruction.upperPartitionFrom input upper.1
     (FiniteCostUpper.upper_value input)
   let outcome := match decision.1 with
     | some bad => Sum.inl bad
     | none => Sum.inr
         (FiniteConstruction.makeSuccessTablesFrom input lowerPart upperPart)
-  (⟨lower.1, upper.1, outcome⟩, lower.2 + upper.2 + decision.2)
+  (⟨lower.value, upper.1, outcome⟩, lower.cost + upper.2 + decision.2)
 
 /-- The partially counted program has exactly the original run output. -/
 theorem runWithCount_value (input : FiniteRepairInput n m O) :
     (runWithCount input).1 = FiniteConstruction.runRepair input := by
-  simp only [runWithCount, FiniteCostLower.lowerWithCost_value,
-    FiniteCostUpper.upper_value, scan_pairs_value]
+  simp only [runWithCount, FiniteCostUpper.upper_value, scan_pairs_value]
   rfl
 
 /-- A numeric bound for the counted lower, upper, and decision stages.
 The success table generation is excluded from this counter. -/
 theorem runWithCount_cost_le (input : FiniteRepairInput n m O) :
-    (runWithCount input).2 ≤ 226 * (m + 1) * (n + 1) ^ 5 := by
+    (runWithCount input).2 ≤ 626 * (m + 1) * (n + 1) ^ 5 := by
   let P := (m + 1) * (n + 1) ^ 5
-  have hlow : (FiniteCostLower.lowerWithCost input).2 ≤ 200 * P := by
-    simpa only [P, Nat.mul_assoc] using FiniteCostLower.lowerWithCost_bound input
+  have hlow : (FiniteRamEnumeration.lower input).cost ≤ 600 * P := by
+    simpa only [P, Nat.mul_assoc] using FiniteRamEnumeration.lower_cost_poly input
   have hu := FiniteCostUpper.upper_cost_le input
   have hupper : (FiniteCostUpper.upper input).2 ≤ 18 * P := by
     calc
@@ -156,12 +155,12 @@ theorem runWithCount_cost_le (input : FiniteRepairInput n m O) :
         have hm : 1 ≤ m + 1 := by omega
         nlinarith
       _ = 8 * P := by ring
-  change (FiniteCostLower.lowerWithCost input).2 +
+  change (FiniteRamEnumeration.lower input).cost +
       (FiniteCostUpper.upper input).2 +
       (scan input (FiniteCostUpper.upper input).1
-        (FiniteClosure.pairs n)).2 ≤ 226 * (m + 1) * (n + 1) ^ 5
+        (FiniteClosure.pairs n)).2 ≤ 626 * (m + 1) * (n + 1) ^ 5
   have hsum := Nat.add_le_add (Nat.add_le_add hlow hupper) hdecision
-  have hP : 200 * P + 18 * P + 8 * P = 226 * (m + 1) * (n + 1) ^ 5 := by
+  have hP : 600 * P + 18 * P + 8 * P = 626 * (m + 1) * (n + 1) ^ 5 := by
     dsimp [P]
     ring
   exact hsum.trans (le_of_eq hP)

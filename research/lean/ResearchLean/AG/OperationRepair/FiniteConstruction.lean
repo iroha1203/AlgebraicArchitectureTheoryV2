@@ -1,5 +1,6 @@
 import ResearchLean.AG.OperationRepair.FiniteClosure
 import ResearchLean.AG.OperationRepair.FiniteBehavior
+import ResearchLean.AG.OperationRepair.FiniteRamEnumeration
 import ResearchLean.AG.OperationRepair.Classification
 import Mathlib.Data.Finset.Sort
 import Mathlib.Data.Finset.Max
@@ -390,12 +391,22 @@ structure RunOutput (n m : Nat) (O : Type*) where
   upperWords : FiniteBehavior.WitnessTable n m
   outcome : Sum (Fin n × Fin n × List (Fin m)) (SuccessTables n m O)
 
+/-- The counted lower value supplies the same proved partition as the
+canonical lower table. This identifies the actual table and its proof fields. -/
+theorem lowerPartitionFrom_counted_eq (input : FiniteRepairInput n m O) :
+    lowerPartitionFrom input (FiniteRamEnumeration.lower input).value
+        (FiniteRamEnumeration.lower_value input) =
+      lowerPartitionFrom input (FiniteClosure.lower input) rfl := by
+  apply PartitionTable.ext
+  exact FiniteRamEnumeration.lower_value input
+
 /-- One terminating finite program. It computes both endpoints once, then
 uses the stored upper witnesses to choose a failure or numbered success. -/
 def runRepair (input : FiniteRepairInput n m O) : RunOutput n m O :=
-  let lowerCells := FiniteClosure.lower input
+  let lowerCells := (FiniteRamEnumeration.lower input).value
   let upperWords := FiniteBehavior.upper input
-  let lowerPart := lowerPartitionFrom input lowerCells rfl
+  let lowerPart := lowerPartitionFrom input lowerCells
+    (FiniteRamEnumeration.lower_value input)
   let upperPart := upperPartitionFrom input upperWords rfl
   let outcome := match failureSearchFrom input upperWords with
     | some bad => Sum.inl bad
@@ -403,7 +414,17 @@ def runRepair (input : FiniteRepairInput n m O) : RunOutput n m O :=
   ⟨lowerCells, upperWords, outcome⟩
 
 @[simp] theorem runRepair_lowerCells (input : FiniteRepairInput n m O) :
-    (runRepair input).lowerCells = FiniteClosure.lower input := rfl
+    (runRepair input).lowerCells = FiniteClosure.lower input :=
+  FiniteRamEnumeration.lower_value input
+
+/-- The lower table actually used by `runRepair` is the counted lower value;
+its trace has a uniform bound. This concerns the lower stage only. -/
+theorem runRepair_lower_counted (input : FiniteRepairInput n m O) :
+    (runRepair input).lowerCells =
+        (FiniteRamEnumeration.lower input).value ∧
+      (FiniteRamEnumeration.lower input).cost ≤
+        600 * (m + 1) * (n + 1) ^ 5 := by
+  exact ⟨rfl, FiniteRamEnumeration.lower_cost_poly input⟩
 
 @[simp] theorem runRepair_upperWords (input : FiniteRepairInput n m O) :
     (runRepair input).upperWords = FiniteBehavior.upper input := rfl
@@ -438,7 +459,7 @@ theorem runRepair_success_iff (input : FiniteRepairInput n m O) :
         (lowerPartitionFrom input (FiniteClosure.lower input) rfl)
         (upperPartitionFrom input (FiniteBehavior.upper input) rfl), ?_⟩
       change failureSearchFrom input (FiniteBehavior.upper input) = none at hnone
-      simp [runRepair, hnone]
+      simp [runRepair, hnone, lowerPartitionFrom_counted_eq input]
     · cases hs : failureSearch input with
       | none => contradiction
       | some bad =>
@@ -488,7 +509,7 @@ theorem runRepair_success_payload (input : FiniteRepairInput n m O)
   | none =>
       simp [hs] at h
       subst tables
-      rw [lowerPartitionFrom_eq, upperPartitionFrom_eq]
+      rw [lowerPartitionFrom_counted_eq, lowerPartitionFrom_eq, upperPartitionFrom_eq]
       exact makeSuccessTablesFrom_eq input
 
 theorem success_failureSearch_none (input : FiniteRepairInput n m O)
