@@ -6,7 +6,10 @@ import ResearchLean.AG.OperationRepair.FiniteClosure
 The cost model in G-126 D gives unit charge to a table read/write, index or
 Boolean operation, and observation equality test. Table copying and word-cell
 allocation are represented by one charge per copied or allocated cell.
-`Counted` retains the actual value and a trace of these named primitives.
+`Counted` retains the actual value and a ghost trace of these named
+primitives. Trace-list construction is bookkeeping for the cost semantics;
+its `List.append` calls are not operations of the RAM program obtained by
+erasing the trace. Value-erasure theorems below identify that program.
 
 Implementation notes: a primitive trace is data constructed by the same
 branch as the value; a separately attached polynomial would not establish
@@ -79,14 +82,17 @@ def test (value : Bool) : Counted Bool := ⟨value, [.boolOp]⟩
 def observationEqual [DecidableEq α] (x y : α) : Counted Bool :=
   ⟨decide (x = y), [.observationEq]⟩
 
+/-- Attach an explicit allowance for a fixed number of index projections,
+tuple constructions, or other constant-time index operations. -/
+def withIndexOps (q : Nat) (a : Counted α) : Counted α :=
+  ⟨a.value, List.replicate q .indexOp ++ a.trace⟩
+
 /-- Construct a copied table rather than aliasing the original array.
 Both the copy's source read and new cell allocation are charged. -/
 def copy (table : FiniteTable α k) : Counted (FiniteTable α k) :=
-  let cells : FiniteTable (Counted α) k :=
-    FiniteTable.ofFn fun i => read table i
-  let result := FiniteTable.ofFn fun i => (cells.get i).value
-  let trace := (List.finRange k).flatMap fun i =>
-    (cells.get i).trace ++ [.copiedCell]
+  let result := FiniteTable.ofFn fun i => table.get i
+  let trace := (List.finRange k).flatMap fun _ =>
+    [.tableRead, .copiedCell]
   ⟨result, trace⟩
 
 /-- The copied table has the same contents as its source. -/
@@ -94,20 +100,22 @@ theorem copy_value (table : FiniteTable α k) :
     (copy table).value = table := by
   apply FiniteTable.ext
   intro i
-  simp [copy, read]
+  simp [copy]
 
 /-- The copy trace contains a read and allocation for each copied cell. -/
 theorem copy_cost (table : FiniteTable α k) :
     (copy table).cost = 2 * k := by
-  simp [Counted.cost, copy, read, List.length_flatMap, Nat.mul_comm]
+  simp [Counted.cost, copy, List.length_flatMap, Nat.mul_comm]
 
 /-- A relation-table copy recursively copies every row and its outer cell. -/
 def copyRelation (table : RelationTable n) : Counted (RelationTable n) :=
-  let rows : FiniteTable (Counted (FiniteTable Bool n)) n :=
-    FiniteTable.ofFn fun x => copy (FiniteTable.get table x)
-  let result := FiniteTable.ofFn fun x => (rows.get x).value
-  let trace := (List.finRange n).flatMap fun x =>
-    [.tableRead] ++ (rows.get x).trace ++ [.copiedCell]
+  let result := FiniteTable.ofFn fun x =>
+    let row := FiniteTable.get table x
+    (copy row).value
+  let trace := (List.finRange n).flatMap fun _ =>
+    [.tableRead] ++
+      ((List.finRange n).flatMap fun _ => [.tableRead, .copiedCell]) ++
+      [.copiedCell]
   ⟨result, trace⟩
 
 /-- Copying a relation table preserves every Boolean cell. -/
@@ -120,10 +128,8 @@ theorem copyRelation_value (table : RelationTable n) :
 /-- Relation copying charges its two-dimensional contents and row cells. -/
 theorem copyRelation_cost (table : RelationTable n) :
     (copyRelation table).cost = n * (2 * n + 2) := by
-  have hc (i : Fin n) :
-      (copy (FiniteTable.get table i)).trace.length = 2 * n :=
-    copy_cost (FiniteTable.get table i)
-  simp [Counted.cost, copyRelation, List.length_flatMap, hc, Nat.mul_add]
+  simp [Counted.cost, copyRelation, List.length_flatMap, Nat.mul_add,
+    Nat.mul_comm]
   omega
 
 variable {γ : Type*}
@@ -140,7 +146,7 @@ def markItem (pred : γ → Counted Bool)
       destination.value.2 true
     ⟨changed.value,
       acc.trace ++ condition.trace ++ destination.trace ++ changed.trace ++
-        [.boolOp]⟩
+        [.indexOp, .indexOp, .boolOp]⟩
   else
     ⟨acc.value, acc.trace ++ condition.trace ++ [.boolOp]⟩
 
@@ -168,7 +174,7 @@ theorem markItem_cost (pred : γ → Counted Bool)
     (acc : Counted (RelationTable n)) (item : γ) :
     (markItem pred target acc item).cost =
       acc.cost + (pred item).cost +
-        (if (pred item).value then (target item).cost + 4 else 1) := by
+        (if (pred item).value then (target item).cost + 6 else 1) := by
   cases h : (pred item).value <;>
     simp [markItem, h, Counted.cost, writeRelation, read, write,
       List.length_append, Nat.add_assoc]
@@ -204,7 +210,7 @@ private theorem markPass_cost_aux (items : List γ)
     (htarget : ∀ a ∈ items, (target a).cost ≤ t)
     (acc : Counted (RelationTable n)) :
     (items.foldl (markItem pred target) acc).cost ≤
-      acc.cost + items.length * (p + t + 4) := by
+      acc.cost + items.length * (p + t + 6) := by
   induction items generalizing acc with
   | nil => simp [Counted.cost]
   | cons item rest ih =>
@@ -220,11 +226,11 @@ private theorem markPass_cost_aux (items : List γ)
       have hitem := markItem_cost pred target acc item
       simp only [List.foldl_cons, List.length_cons] at hrest ⊢
       have hstep : (markItem pred target acc item).cost ≤
-          acc.cost + (p + t + 4) := by
+          acc.cost + (p + t + 6) := by
         rw [hitem]
         cases (pred item).value <;> simp <;> omega
       have hbound := hrest.trans
-        (Nat.add_le_add_right hstep (rest.length * (p + t + 4)))
+        (Nat.add_le_add_right hstep (rest.length * (p + t + 6)))
       simpa only [Nat.succ_mul, Nat.add_assoc, Nat.add_comm, Nat.add_left_comm]
         using hbound
 
@@ -236,7 +242,7 @@ theorem markPass_cost_le (items : List γ)
     (p t : Nat) (hpred : ∀ a ∈ items, (pred a).cost ≤ p)
     (htarget : ∀ a ∈ items, (target a).cost ≤ t) :
     (markPass items pred target out).cost ≤
-      n * (2 * n + 2) + items.length * (p + t + 4) := by
+      n * (2 * n + 2) + items.length * (p + t + 6) := by
   have h := markPass_cost_aux items pred target p t hpred htarget
     (copyRelation out)
   simpa [markPass, copyRelation_cost] using h
@@ -271,29 +277,31 @@ source in all three marking passes. The trace includes each pass copy. -/
 def closeStep (input : FiniteRepairInput n m O) (old : RelationTable n) :
     Counted (RelationTable n) :=
   let converse := markPass (FiniteClosure.pairs n)
-    (fun p => readRelation old p.1 p.2)
-    (fun p => Counted.pure (p.2, p.1)) old
+    (fun p => withIndexOps 2 (readRelation old p.1 p.2))
+    (fun p => withIndexOps 3 (Counted.pure (p.2, p.1))) old
   let transitive := markPass (FiniteClosure.triples n)
     (fun p =>
       let first := readRelation old p.1 p.2.1
       let second := readRelation old p.2.1 p.2.2
-      ⟨first.value && second.value,
+      withIndexOps 7 ⟨first.value && second.value,
         first.trace ++ second.trace ++ [.boolOp]⟩)
-    (fun p => Counted.pure (p.1, p.2.2)) converse.value
+    (fun p => withIndexOps 4 (Counted.pure (p.1, p.2.2))) converse.value
   let image := markPass ((FiniteClosure.states m).flatMap fun e =>
       (FiniteClosure.pairs n).map fun p => (e, p))
-    (fun p => readRelation old p.2.1 p.2.2)
+    (fun p => withIndexOps 4 (readRelation old p.2.1 p.2.2))
     (fun p =>
       let x := readStep input p.1 p.2.1
       let y := readStep input p.1 p.2.2
-      ⟨(x.value, y.value), x.trace ++ y.trace⟩) transitive.value
+      withIndexOps 7 ⟨(x.value, y.value), x.trace ++ y.trace⟩)
+    transitive.value
   ⟨image.value, converse.trace ++ transitive.trace ++ image.trace⟩
 
 /-- The trace-producing round has exactly the original synchronous value. -/
 theorem closeStep_value (input : FiniteRepairInput n m O)
     (old : RelationTable n) :
     (closeStep input old).value = FiniteClosure.closeStep input old := by
-  simp only [closeStep, FiniteClosure.closeStep, markPass_value]
+  simp only [closeStep, FiniteClosure.closeStep, markPass_value,
+    withIndexOps]
   rfl
 
 end AAT.AG.OperationRepair.FiniteRamPrimitives
