@@ -86,8 +86,8 @@ ArchMap に記録される Atom は、たとえば次の形をしている。
  "when": "$new.country != $order.shipping_address.country",
  "at": "shop/shipping/service.py:4@blob:3f2a9c1", "by": "tool:tree-sitter-python@0.23"}
 {"kind": "meaning", "subject": "shop.order.model.Order.payment_ref", "meaning": "payment-info",
- "uses": ["shop/payment/charge.py:22@blob:3f2a9c1", "shop/order/confirm.py:57@blob:3f2a9c1"],
- "at": "shop/order/model.py:18@blob:3f2a9c1", "by": "model:claude-sonnet-5"}
+ "uses": ["shop/payment/charge.py:22@blob:8b41d07", "shop/order/confirm.py:57@blob:c52e6fa"],
+ "at": "shop/order/model.py:18@blob:1d9e3b4", "by": "model:claude-sonnet-5"}
 ```
 
 一行目は構造 Atom で、条件付きの書き込みを記録している。

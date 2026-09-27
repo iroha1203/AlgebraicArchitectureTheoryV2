@@ -28,7 +28,7 @@ ArchSig の出力を最初に読むのはエージェントだ。人は、エー
 
 ## 結果の欄
 
-- `question`:どの問いの結果か。`law`、`agree`、`change`、`paths`、`reading`、`choices`、`split`、`assemble`、`next` のどれか。
+- `question`:どの問いの結果か。`law`、`agree`、`change`、`roundtrip`、`paths`、`reading`、`choices`、`split`、`assemble`、`next` のどれか。
 - `law`、`subject`、`at`:どの Law の、何についての結果で、ソースのどこか。
 - `outcome`:`holds`(成り立つ)、`fails`(成り立たない)、`silent`(沈黙)のどれか。
 - `kind`:成り立たないときの形。

@@ -22,7 +22,7 @@ Atom は JSON の一行で書く。どの Atom も次の欄を持つ。
 | `receives` | `object`、`value` |
 | `returns` | `value`、`when` |
 | `meaning` | `meaning`、`value`、`uses` |
-| `observed` | `scope`、`hash` |
+| `observed` | `scope` |
 | `plan` | `base` |
 | `corresponds` | `object` |
 | `removes` | なし |
@@ -90,11 +90,11 @@ ArchSig は、操作の呼び出しの結果を、同じ操作に同じ値を渡
 
 ```json
 {"kind": "meaning", "subject": "shop.order.model.Order.payment_ref", "meaning": "payment-info",
- "uses": ["shop/payment/charge.py:22@blob:3f2a9c1", "shop/order/confirm.py:57@blob:3f2a9c1"],
- "at": "shop/order/model.py:18@blob:3f2a9c1", "by": "model:claude-sonnet-5"}
+ "uses": ["shop/payment/charge.py:22@blob:8b41d07", "shop/order/confirm.py:57@blob:c52e6fa"],
+ "at": "shop/order/model.py:18@blob:1d9e3b4", "by": "model:claude-sonnet-5"}
 {"kind": "meaning", "subject": "shop.order.confirm.confirm->mail.send", "meaning": "role",
- "value": "order-notice", "uses": ["shop/order/confirm.py:61-64@blob:3f2a9c1"],
- "at": "shop/order/confirm.py:61@blob:3f2a9c1", "by": "model:claude-sonnet-5"}
+ "value": "order-notice", "uses": ["shop/order/confirm.py:61-64@blob:c52e6fa"],
+ "at": "shop/order/confirm.py:61@blob:c52e6fa", "by": "model:claude-sonnet-5"}
 ```
 
 `meaning` には、Law が定めた意味の語彙の名前を書く。語彙が `values` で値を並べていれば、その一つを `value` に書く。
@@ -108,7 +108,7 @@ ArchSig は、操作の呼び出しの結果を、同じ操作に同じ値を渡
 
 ```json
 {"kind": "meaning", "subject": "local:service:money", "meaning": "unit", "value": "minor",
- "uses": ["shop/payment/charge.py:22@blob:3f2a9c1"], "at": "shop/payment@3e1d0b2",
+ "uses": ["shop/payment/charge.py:22@blob:8b41d07"], "at": "shop/payment@3e1d0b2",
  "by": "model:claude-sonnet-5"}
 ```
 
@@ -122,13 +122,12 @@ ArchMap は、Atom のほかに、どこを読んだかを記録する。
 
 ```json
 {"kind": "observed", "subject": "shop/shipping/address.py", "scope": "structure",
- "hash": "sha256:9f2c…", "at": "shop/shipping/address.py@blob:9f2c4e7", "by": "tool:tree-sitter-python@0.23"}
+ "at": "shop/shipping/address.py@blob:9f2c4e7", "by": "tool:tree-sitter-python@0.23"}
 {"kind": "observed", "subject": "shop/shipping/address.py", "scope": "meaning:payment-info",
- "hash": "sha256:9f2c…", "at": "shop/shipping/address.py@blob:9f2c4e7",
- "by": "model:claude-sonnet-5"}
+ "at": "shop/shipping/address.py@blob:9f2c4e7", "by": "model:claude-sonnet-5"}
 ```
 
-`scope` は、構造を読んだのか、どの意味を読んだのかを示す。`hash` は、読んだときのソースの内容の hash だ。
+`scope` は、構造を読んだのか、どの意味を読んだのかを示す。`at` の版が、読んだときのソースの内容を指す。
 
 読んだ範囲に Atom がなければ、その事実はない。読んでいない所の事実は、分からない。
 ArchSig はこの二つを区別する。分からない所が結論に関わるとき、ArchSig は沈黙し、そこを次に読む場所として返す。
