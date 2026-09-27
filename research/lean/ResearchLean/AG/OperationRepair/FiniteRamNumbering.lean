@@ -3,10 +3,8 @@ import ResearchLean.AG.OperationRepair.FiniteConstruction
 /-!
 # Counted least representatives for numbered repair quotients
 
-The representative is found by scanning numbered states and reading the
-computed partition table. This gives a primitive trace for one piece of the
-success-table construction. Class-list and quotient-table assembly remain
-separate obligations.
+Representatives, class names, quotient indices, and numbered output tables
+are constructed from counted scans of the computed partition table.
 -/
 
 namespace AAT.AG.OperationRepair.FiniteRamNumbering
@@ -397,55 +395,77 @@ theorem tabulate_cost_le (k : Nat) (f : Fin k → Counted β)
 
 variable {m : Nat} {O : Type*} [DecidableEq O]
 
-/-- Build every numbered quotient table from counted indexed cells. -/
+/-- Build the dependent output at an explicitly supplied computed class count. -/
+private def numberedTablesCore (input : FiniteRepairInput n m O)
+    (p : PartitionTable n) (k : Nat) (h : k = p.classCount)
+    (repTrace : List Primitive) : Counted (NumberedQuotientTables n m O) :=
+  let map := tabulate n fun x =>
+    let q := quotient p x
+    ⟨Fin.cast h.symm q.value, q.trace⟩
+  let sectionTable := tabulate k fun c => classSection p (Fin.cast h c)
+  let operations := tabulate m fun e =>
+    let row := tabulate k fun c =>
+      let selected := classSection p (Fin.cast h c)
+      let image := quotient p (input.step e selected.value)
+      ⟨Fin.cast h.symm image.value,
+        selected.trace ++ [.tableRead, .tableRead] ++ image.trace⟩
+    row
+  let observations := tabulate k fun c =>
+    let selected := classSection p (Fin.cast h c)
+    ⟨input.observe selected.value, selected.trace ++ [.tableRead]⟩
+  ⟨⟨k, map.value, sectionTable.value,
+      operations.value, observations.value⟩,
+    repTrace ++ map.trace ++ sectionTable.trace ++
+      operations.trace ++ observations.trace⟩
+
+/-- Build every numbered quotient table from counted indexed cells. The
+returned class count is the length of the counted representative list. -/
 def numberedTables (input : FiniteRepairInput n m O)
     (p : PartitionTable n) : Counted (NumberedQuotientTables n m O) :=
-  let map := tabulate n (quotient p)
-  let sectionTable := tabulate p.classCount (classSection p)
-  let operations := tabulate m fun e =>
-    let row := tabulate p.classCount fun c =>
-      let selected := classSection p c
-      let image := quotient p (input.step e selected.value)
-      ⟨image.value, selected.trace ++ [.tableRead] ++ image.trace⟩
-    row
-  let observations := tabulate p.classCount fun c =>
-    let selected := classSection p c
-    ⟨input.observe selected.value, selected.trace ++ [.tableRead]⟩
-  ⟨⟨p.classCount, map.value, sectionTable.value,
-      operations.value, observations.value⟩,
-    map.trace ++ sectionTable.trace ++ operations.trace ++ observations.trace⟩
+  let reps := representatives p
+  numberedTablesCore input p reps.value.length
+    (representatives_length p) reps.trace
+
+omit [DecidableEq O] in
+private theorem numberedTablesCore_value (input : FiniteRepairInput n m O)
+    (p : PartitionTable n) (k : Nat) (h : k = p.classCount)
+    (repTrace : List Primitive) :
+    (numberedTablesCore input p k h repTrace).value =
+      makeNumberedTables input p := by
+  cases h
+  unfold numberedTablesCore makeNumberedTables
+  simp only
+  congr 1
+  · apply FiniteTable.ext
+    intro x
+    simp [quotientMapTable, tabulate_get, quotient_value]
+  · apply FiniteTable.ext
+    intro c
+    simp [tabulate_get, classSection_value]
+  · apply FiniteTable.ext
+    intro e
+    apply FiniteTable.ext
+    intro c
+    simp [quotientOperationTable, tabulate_get,
+      classSection_value, quotient_value]
+  · apply FiniteTable.ext
+    intro c
+    simp [quotientObservationTable, tabulate_get, classSection_value]
 
 omit [DecidableEq O] in
 theorem numberedTables_value (input : FiniteRepairInput n m O)
     (p : PartitionTable n) :
     (numberedTables input p).value = makeNumberedTables input p := by
-  unfold numberedTables makeNumberedTables
-  simp only
-  congr 1
-  · apply FiniteTable.ext
-    intro x
-    simp [quotientMapTable,
-      tabulate_get, quotient_value]
-  · apply FiniteTable.ext
-    intro c
-    simp [tabulate_get,
-      classSection_value]
-  · apply FiniteTable.ext
-    intro e
-    apply FiniteTable.ext
-    intro c
-    simp [quotientOperationTable,
-      tabulate_get, classSection_value, quotient_value]
-  · apply FiniteTable.ext
-    intro c
-    simp [quotientObservationTable,
-      tabulate_get, classSection_value]
+  exact numberedTablesCore_value input p _ _ _
 
 omit [DecidableEq O] in
-theorem numberedTables_cost_le (input : FiniteRepairInput n m O)
-    (p : PartitionTable n) :
-    (numberedTables input p).cost ≤
+private theorem numberedTablesCore_cost_le (input : FiniteRepairInput n m O)
+    (p : PartitionTable n) (k : Nat) (h : k = p.classCount)
+    (repTrace : List Primitive)
+    (hrep : repTrace.length ≤ 20 * (n + 1) ^ 4) :
+    (numberedTablesCore input p k h repTrace).cost ≤
       100 * (m + 1) * (n + 1) ^ 4 := by
+  cases h
   let N := n + 1
   let c := p.classCount
   have hc : c ≤ n := by
@@ -463,13 +483,14 @@ theorem numberedTables_cost_le (input : FiniteRepairInput n m O)
       (tabulate c fun x =>
         let selected := classSection p x
         let image := quotient p (input.step e selected.value)
-        ⟨image.value, selected.trace ++ [.tableRead] ++ image.trace⟩).cost ≤
-          c * (30 * N ^ 2 + 7) := by
+        ⟨image.value, selected.trace ++ [.tableRead, .tableRead] ++ image.trace⟩).cost ≤
+          c * (30 * N ^ 2 + 8) := by
     apply tabulate_cost_le
     intro x
     have ha := classSection_cost_le p x
     have hb := quotient_cost_le p (input.step e (classSection p x).value)
-    simp only [Counted.cost, List.length_append, List.length_singleton]
+    simp only [Counted.cost, List.length_append, List.length_cons,
+      List.length_nil]
     dsimp [Counted.cost] at ha hb
     dsimp [N]
     omega
@@ -478,8 +499,8 @@ theorem numberedTables_cost_le (input : FiniteRepairInput n m O)
         tabulate c fun x =>
           let selected := classSection p x
           let image := quotient p (input.step e selected.value)
-          ⟨image.value, selected.trace ++ [.tableRead] ++ image.trace⟩).cost ≤
-        m * (c * (30 * N ^ 2 + 7) + 6) := by
+          ⟨image.value, selected.trace ++ [.tableRead, .tableRead] ++ image.trace⟩).cost ≤
+        m * (c * (30 * N ^ 2 + 8) + 6) := by
     exact tabulate_cost_le m _ _ hi
   have hb :
       (tabulate c fun x =>
@@ -493,8 +514,8 @@ theorem numberedTables_cost_le (input : FiniteRepairInput n m O)
     dsimp [Counted.cost] at ha
     dsimp [N]
     omega
-  simp only [numberedTables, Counted.cost, List.length_append]
-  dsimp [Counted.cost] at hm hs ho hb
+  simp only [numberedTablesCore, Counted.cost, List.length_append,
+    Fin.cast_eq_self] at *
   have hn : 1 ≤ N := by dsimp [N]; omega
   have hcN : c ≤ N := by omega
   have hnN : n ≤ N := by dsimp [N]; omega
@@ -514,13 +535,72 @@ theorem numberedTables_cost_le (input : FiniteRepairInput n m O)
     nlinarith [Nat.mul_le_mul_right 6 hcN, hN3]
   have hobs : p.classCount * (10 * N ^ 2 + 7) ≤ 17 * N ^ 4 := by
     nlinarith [Nat.mul_le_mul_right 7 hcN, hN3]
-  have hrow : p.classCount * (30 * N ^ 2 + 7) + 6 ≤ 43 * N ^ 4 := by
-    nlinarith [Nat.mul_le_mul_right 7 hcN, hN3]
+  have hrow : p.classCount * (30 * N ^ 2 + 8) + 6 ≤ 44 * N ^ 4 := by
+    nlinarith [Nat.mul_le_mul_right 8 hcN, hN3]
   have hoperation :
-      m * (p.classCount * (30 * N ^ 2 + 7) + 6) ≤
-        m * (43 * N ^ 4) := Nat.mul_le_mul_left m hrow
+      m * (p.classCount * (30 * N ^ 2 + 8) + 6) ≤
+        m * (44 * N ^ 4) := Nat.mul_le_mul_left m hrow
   dsimp only [N] at *
   nlinarith
+
+omit [DecidableEq O] in
+theorem numberedTables_cost_le (input : FiniteRepairInput n m O)
+    (p : PartitionTable n) :
+    (numberedTables input p).cost ≤
+      100 * (m + 1) * (n + 1) ^ 4 := by
+  have hr := representatives_cost_le p
+  have hn : n ≤ n + 1 := Nat.le_succ n
+  have hpow : n + 1 ≤ (n + 1) ^ 4 := by
+    simpa using Nat.pow_le_pow_right (by omega : 1 ≤ n + 1)
+      (by decide : 1 ≤ 4)
+  have hsq : n * n ≤ (n + 1) ^ 2 := by
+    simpa [pow_two] using Nat.mul_le_mul hn hn
+  have hpow2 : (n + 1) ^ 2 ≤ (n + 1) ^ 4 :=
+    Nat.pow_le_pow_right (by omega) (by decide)
+  have hrep : (representatives p).trace.length ≤
+      20 * (n + 1) ^ 4 := by
+    dsimp [Counted.cost] at hr
+    nlinarith [hn.trans hpow, hsq.trans hpow2]
+  exact numberedTablesCore_cost_le input p _ _ _ hrep
+
+private def comparisonTable (lowerPart upperPart : PartitionTable n)
+    (kL kU : Nat) (hlow : kL = lowerPart.classCount)
+    (hup : kU = upperPart.classCount) :
+    Counted (FiniteTable (Fin kU) kL) :=
+  tabulate kL fun c =>
+    let selected := classSection lowerPart (Fin.cast hlow c)
+    let image := quotient upperPart selected.value
+    ⟨Fin.cast hup.symm image.value, selected.trace ++ image.trace⟩
+
+private theorem comparisonTable_value (lowerPart upperPart : PartitionTable n)
+    (kL kU : Nat) (hlow : kL = lowerPart.classCount)
+    (hup : kU = upperPart.classCount) :
+    HEq (comparisonTable lowerPart upperPart kL kU hlow hup).value
+      (FiniteTable.ofFn fun c : Fin lowerPart.classCount =>
+        upperPart.quotient (lowerPart.classSection c)) := by
+  cases hlow
+  cases hup
+  apply heq_of_eq
+  apply FiniteTable.ext
+  intro c
+  simp [comparisonTable, tabulate_get, classSection_value, quotient_value]
+
+private theorem comparisonTable_cost_le (lowerPart upperPart : PartitionTable n)
+    (kL kU : Nat) (hlow : kL = lowerPart.classCount)
+    (hup : kU = upperPart.classCount) :
+    (comparisonTable lowerPart upperPart kL kU hlow hup).cost ≤
+      kL * (30 * (n + 1) ^ 2 + 6) := by
+  cases hlow
+  cases hup
+  unfold comparisonTable
+  simp only [Fin.cast_eq_self]
+  apply tabulate_cost_le
+  intro c
+  have hs := classSection_cost_le lowerPart c
+  have hq := quotient_cost_le upperPart (classSection lowerPart c).value
+  simp only [Counted.cost, List.length_append]
+  dsimp [Counted.cost] at hs hq
+  omega
 
 /-- Assemble both numbered quotients and their canonical comparison map. -/
 def successTablesFrom (input : FiniteRepairInput n m O)
@@ -528,10 +608,14 @@ def successTablesFrom (input : FiniteRepairInput n m O)
     Counted (SuccessTables n m O) :=
   let lower := numberedTables input lowerPart
   let upper := numberedTables input upperPart
-  let comparison := tabulate lowerPart.classCount fun c =>
-    let selected := classSection lowerPart c
-    let image := quotient upperPart selected.value
-    ⟨image.value, selected.trace ++ image.trace⟩
+  let hlow : lower.value.classCount = lowerPart.classCount := by
+    rw [numberedTables_value]
+    rfl
+  let hup : upper.value.classCount = upperPart.classCount := by
+    rw [numberedTables_value]
+    rfl
+  let comparison := comparisonTable lowerPart upperPart
+    lower.value.classCount upper.value.classCount hlow hup
   ⟨⟨lower.value, upper.value, comparison.value⟩,
     lower.trace ++ upper.trace ++ comparison.trace⟩
 
@@ -540,14 +624,16 @@ theorem successTablesFrom_value (input : FiniteRepairInput n m O)
     (lowerPart upperPart : PartitionTable n) :
     (successTablesFrom input lowerPart upperPart).value =
       makeSuccessTablesFrom input lowerPart upperPart := by
+  have hlow : (numberedTables input lowerPart).value.classCount =
+      lowerPart.classCount := by rw [numberedTables_value]; rfl
+  have hup : (numberedTables input upperPart).value.classCount =
+      upperPart.classCount := by rw [numberedTables_value]; rfl
   unfold successTablesFrom makeSuccessTablesFrom
   simp only
   congr 1
   · exact numberedTables_value input lowerPart
   · exact numberedTables_value input upperPart
-  · apply FiniteTable.ext
-    intro c
-    simp [tabulate_get, classSection_value, quotient_value]
+  · exact comparisonTable_value lowerPart upperPart _ _ hlow hup
 
 omit [DecidableEq O] in
 theorem successTablesFrom_cost_le (input : FiniteRepairInput n m O)
@@ -559,31 +645,28 @@ theorem successTablesFrom_cost_le (input : FiniteRepairInput n m O)
   have hc : lowerPart.classCount ≤ n := by
     unfold PartitionTable.classCount
     exact (Finset.card_image_le).trans (by simp)
-  have hcomp :
-      (tabulate lowerPart.classCount fun c =>
-        let selected := classSection lowerPart c
-        let image := quotient upperPart selected.value
-        ⟨image.value, selected.trace ++ image.trace⟩).cost ≤
-      lowerPart.classCount * (30 * (n + 1) ^ 2 + 6) := by
-    apply tabulate_cost_le
-    intro c
-    have hs := classSection_cost_le lowerPart c
-    have hq := quotient_cost_le upperPart (classSection lowerPart c).value
-    simp only [Counted.cost, List.length_append]
-    dsimp [Counted.cost] at hs hq
-    omega
+  have hlow : (numberedTables input lowerPart).value.classCount =
+      lowerPart.classCount := by rw [numberedTables_value]; rfl
+  have hup : (numberedTables input upperPart).value.classCount =
+      upperPart.classCount := by rw [numberedTables_value]; rfl
+  have hcomp := comparisonTable_cost_le lowerPart upperPart
+    _ _ hlow hup
+  have hc' : (numberedTables input lowerPart).value.classCount ≤ n :=
+    hlow.le.trans hc
   simp only [successTablesFrom, Counted.cost, List.length_append]
   dsimp [Counted.cost] at hl hu hcomp
   have hn : 1 ≤ n + 1 := by omega
   have hN3 : (n + 1) ^ 3 ≤ (n + 1) ^ 4 :=
     Nat.pow_le_pow_right hn (by decide)
   have hN4 : 1 ≤ (n + 1) ^ 4 := by nlinarith
-  have hcm : lowerPart.classCount * (n + 1) ^ 2 ≤ (n + 1) ^ 3 := by
-    nlinarith [Nat.mul_le_mul_right ((n + 1) ^ 2) (hc.trans (Nat.le_succ n))]
+  have hcm : (numberedTables input lowerPart).value.classCount *
+      (n + 1) ^ 2 ≤ (n + 1) ^ 3 := by
+    nlinarith [Nat.mul_le_mul_right ((n + 1) ^ 2) (hc'.trans (Nat.le_succ n))]
   have hcomparison :
-      lowerPart.classCount * (30 * (n + 1) ^ 2 + 6) ≤
+      (numberedTables input lowerPart).value.classCount *
+        (30 * (n + 1) ^ 2 + 6) ≤
         36 * (n + 1) ^ 4 := by
-    nlinarith [Nat.mul_le_mul_right 6 (hc.trans (Nat.le_succ n))]
+    nlinarith [Nat.mul_le_mul_right 6 (hc'.trans (Nat.le_succ n))]
   nlinarith
 
 end AAT.AG.OperationRepair.FiniteRamNumbering

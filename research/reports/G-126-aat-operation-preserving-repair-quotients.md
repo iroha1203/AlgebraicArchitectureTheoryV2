@@ -38,18 +38,22 @@ operation invariance, or finite-observation premise.
 
 ## Cycle 26: complete counted finite repair run
 
-`FiniteRamNumbering` scans the computed partition for each least representative,
-selects sorted class names, locates each quotient number, and builds the map,
-section, operation, observation, and lower-to-upper tables from stored counted
-cells. Its `successTablesFrom_value` identifies the result with the previously
-proved numbered tables; `successTablesFrom_cost_le` bounds the primitive trace
-by `300*(m+1)*(n+1)^4`. `FiniteCostOutput.runWithTrace` consumes the counted
-lower, upper, and decision values. Only its success branch assembles counted
-quotient tables; the failure branch charges copying the returned word. The
-run returns exactly `FiniteConstruction.runRepair`, and its full trace obeys
-`1000*(m+1)*(n+1)^5`. Focused Lean checks and namespace axiom audits passed
-for the new files. Mathematical completeness of D is a review candidate,
-subject to independent primitive-coverage and same-procedure audit.
+`FiniteRamNumbering` scans the computed partition for least representatives,
+uses the counted representative-list length as the output class count,
+locates quotient numbers, and builds the map, section, operation,
+observation, and lower-to-upper tables from stored counted cells. Its
+`successTablesFrom_value` identifies the result with the previously proved
+numbered tables; `successTablesFrom_cost_le` bounds the trace by
+`300*(m+1)*(n+1)^4`. `FiniteCostOutput.runWithTrace` consumes the counted
+lower, upper, and decision values. Its success branch builds the upper Bool
+partition from the stored witness table and then assembles counted quotient
+tables. Its failure branch returns a copied word produced by `copyWord`.
+Both branches include output structure charges. This counted run returns
+exactly `FiniteConstruction.runRepair`; success existence and failure
+correctness theorems are transported to this same counted run. Its trace
+obeys `1100*(m+1)*(n+1)^5`. Focused Lean checks and namespace axiom audits
+passed for the new files. Mathematical completeness of D remains subject to
+independent primitive-coverage and same-procedure audit.
 
 ```yaml
 ledger_type: target_cycle_result
@@ -73,7 +77,7 @@ result:
   proof_obligation_delta: "A complete counted lower/upper/decision/output run equals runRepair and has a fifth-degree primitive bound"
   completion_candidate: yes
   lean_artifacts: ["OperationRepair/FiniteRamNumbering.lean", "OperationRepair/FiniteCostOutput.lean"]
-  evidence: ["rep_value", "representatives_sort_eq", "quotient_value", "tabulate_get", "numberedTables_value", "successTablesFrom_value", "successTablesFrom_cost_le", "runWithTrace_value", "runWithTrace_cost_le"]
+  evidence: ["rep_value", "representatives_sort_eq", "quotient_value", "tabulate_get", "numberedTables_value", "successTablesFrom_value", "successTablesFrom_cost_le", "upperCells_value", "upperCells_cost_le", "copyWord_value", "copyWord_cost", "runWithTrace_value", "runWithTrace_failure", "runWithTrace_success_iff_repair_exists", "runWithTrace_cost_le"]
   claim_mapping:
     theorem_names: ["runWithTrace_value", "runWithTrace_cost_le"]
     source_labels: ["G-126 D total finite procedure"]
@@ -83,7 +87,7 @@ result:
     port_status: not-applicable
 audits:
   premise_delta:
-    discharged: ["least representative and quotient numbering", "counted success tables", "failure-word copy", "complete branch-sensitive trace"]
+    discharged: ["least representative and quotient numbering", "counted class-count controlled success tables", "upper Bool partition conversion", "constructed failure-word copy", "complete branch-sensitive trace"]
     remaining: ["independent primitive coverage and cumulative E/example audit"]
   certificate_provenance:
     discharged: ["failure word from counted upper witness decision", "successful table cells from counted partition scans"]
