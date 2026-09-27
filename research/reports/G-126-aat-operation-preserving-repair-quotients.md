@@ -27,14 +27,89 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. D: charge lower enumeration-list construction, upper search, decision,
-   and success-table assembly; prove the total bound for the complete same
-   success/failure procedure.
+1. D: connect the counted lower run to the executed `runRepair` path, extend
+   the primitive trace to upper word search, the decision scan,
+   success-table assembly and failure output; prove the total bound for the
+   complete same success/failure procedure.
 2. E: final crosscheck of the complete Law/path declaration map against the
    fixed GOAL remains. The general path-numbering bridge is now constructed
    in `PathEnumeration.lean`; E completion is subject to independent review.
 3. Independently review all three fixed examples as a whole after the cycle
    15 additions, and perform the cumulative E crosscheck.
+
+## Cycle 22: lower enumeration lists and counted lower trace
+
+`FiniteRamEnumeration.lean` constructs finite-state enumerations through
+counted list `map`, `append`, and `flatMap`. Each list cell construction and
+item visit has an explicit primitive charge. The resulting ordered pairs,
+triples, and operation/pair items agree with the lists used by the accepted
+`FiniteClosure.closeStep`. `closeStepWithItems` consumes these counted list
+values directly in its three passes; the counted lists are not rebuilt
+afterward. `closeStep_value` and `lower_value` prove that the same counted
+round and `n²`-round run compute the accepted lower table.
+
+`closeStep_cost_le` includes the enumeration and pass traces, and
+`lower_cost_poly` proves the counted lower table construction's modeled
+primitive trace is at most `600*(m+1)*(n+1)^5`. The older
+`FiniteCostLower.lowerWithCost_bound` is used only after proving a numerical
+comparison with this trace; it supplies polynomial arithmetic, not missing
+RAM-operation coverage. The accepted `FiniteConstruction.runRepair` still
+calls `FiniteClosure.lower` directly. `lower_value` proves equality of the
+returned table values, but does not establish a cost correspondence for that
+call. This cycle is a proof checkpoint for the counted lower construction;
+the same-procedure lower connection, upper word loop, decision scan,
+success-table assembly, failure output, and total cost remain open.
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 22
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: be7630e15e53f15c49f453602782b9c0801b0066
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 21 comment and uncharged lower enumerations"
+  proof_dag_predecessors: ["OperationRepair/FiniteRamPrimitives.lean", "OperationRepair/FiniteRamLower.lean", "OperationRepair/FiniteClosure.lean"]
+  proof_obligation: "Charge the actual lower enumeration lists and bound all lower RAM primitives through n² rounds"
+  selection_reason: "Closes the known hole in the lower-stage cost certificate before the upper and output stages"
+  expected_result_type: proof-checkpoint
+  lean_targets: ["OperationRepair/FiniteRamEnumeration.lean", "OperationRepair/FiniteRamPrimitives.lean"]
+  risks: ["list value order", "duplicate enumeration", "append-cell copying", "ghost trace overhead", "whole-D cost overclaim"]
+  unchecked: ["counted lower connection to executed runRepair", "upper word-search primitive trace", "decision and success/failure output charge", "complete same-run total bound", "cumulative E and examples review"]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: "Counted pair/triple/operation enumerations feed the counted lower passes, with value equality and a degree-five bound on that trace; connection to executed runRepair is open"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/FiniteRamEnumeration.lean", "OperationRepair/FiniteRamPrimitives.lean"]
+  evidence: ["appendItems_value", "appendItems_cost", "mapItems_value", "mapItems_cost_le", "flatMapItems_value", "flatMapItems_cost_le", "pairs_value", "pairs_cost_le", "triples_value", "triples_cost_le", "operationItems_value", "operationItems_cost_le", "closeStepWithItems_canonical", "closeStep_value", "closeStep_cost_le", "lower_value", "lower_cost_poly"]
+  claim_mapping:
+    theorem_names: ["closeStep_value", "closeStep_cost_le", "lower_value", "lower_cost_poly"]
+    source_labels: ["G-126 D lower synchronous closure and RAM cost stage, partial evidence"]
+    conjuncts: ["same lower relation table value", "counted lower enumeration, copy, table, index, Boolean primitive traces", "uniform degree-five bound for counted lower"]
+    undischarged_assumptions: ["counted lower connection to executed runRepair", "upper/decision/output primitive coverage", "same complete procedure total bound"]
+    acceptance_point: "counted lower trace checkpoint; executed lower-stage cost and full D remain open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["counted lower enumeration-list cell charges", "counted lower initial table and n²-round primitive trace bound"]
+    remaining: ["executed lower-stage cost correspondence", "upper/decision/output primitive trace", "full total bound"]
+  certificate_provenance:
+    discharged: ["list cells constructed by counted map/append/flatMap", "same counted enumerated values drive closure passes"]
+    unresolved: ["counted lower connection to executed runRepair", "full-run RAM cost certificate"]
+  proof_use:
+    used: ["counted enumeration values", "concrete marking pass", "FiniteCostLower.lowerWithCost_bound for arithmetic after trace comparison"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: partial-counted-lower-only
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["focused FiniteRamEnumeration check passed", "#assert_standard_axioms_only passed"]
+  blocking_findings: ["Math A: executed runRepair calls FiniteClosure.lower; lower_value alone does not give a cost correspondence"]
+  next_obligation: "same-procedure connection for counted lower, then upper word-loop primitive trace and complete output trace"
+```
 
 ## Cycle 21: concrete lower trace through all synchronous rounds
 
