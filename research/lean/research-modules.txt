@@ -1439,3 +1439,4 @@ ResearchLean.AG.OperationRepair.Examples	ResearchLean/AG/OperationRepair/Example
 ResearchLean.AG.OperationRepair.ExampleSequential	ResearchLean/AG/OperationRepair/ExampleSequential.lean
 ResearchLean.AG.OperationRepair.ExampleLaw	ResearchLean/AG/OperationRepair/ExampleLaw.lean
 ResearchLean.AG.ProtocolHolonomy.Basic	ResearchLean/AG/ProtocolHolonomy/Basic.lean
+ResearchLean.AG.ProtocolHolonomy.ChangeGroup	ResearchLean/AG/ProtocolHolonomy/ChangeGroup.lean
