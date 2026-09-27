@@ -1617,3 +1617,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and two-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 31 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 31
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 4d293036e
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycles 27–30 identity H_lift, section, component group
+  proof_dag_predecessors: [ReversibleData.verticalLiftEquivLiftableKernel, ReversibleData.projectionToLiftable_ker, identitySection_rightInverse]
+  proof_obligation: Exhibit the original identity-operation A1 vertical group, actual change group, and full supplied visible H as a split short exact sequence
+  selection_reason: Makes D's exactness and split explicit on the original projection rather than the restricted liftable-visible presentation
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentitySplitExact.lean]
+  risks: [codomain only H_lift, substitute kernel, abstract split without actual section]
+  unchecked: [D identity fiber torsor and FixedF/G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Original vertical A1 lifts include into actual identity-operation ChangeGroup H; their image is exactly the original visible projection kernel, that projection is surjective onto full H, and the literal identity-hidden section is a group-homomorphic right inverse
+  completion_candidate: no
+  lean_artifacts: [identity_shortExact]
+  evidence: [identity_shortExact_section]
+  claim_mapping:
+    theorem_names: [identity_shortExact, identity_shortExact_section]
+    source_labels: [C3 original exact sequence, D identity split exact sequence]
+    conjuncts: [original A1 vertical group, original actual named-operation change group, full supplied H, literal kernel, injectivity, surjectivity, homomorphic identity-hidden section]
+    undischarged_assumptions: [D identity fiber torsor/FixedF/G-124, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: The original identity-operation C3 sequence is exact and split over H, with actual maps; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D identity split short exact sequence]
+    remaining: [D identity fiber torsor/FixedF/G-124, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [original C3 vertical inclusion and kernel equivalence, original projection kernel equality, Cycle 28 literal identity-hidden section]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [original C3 vertical inclusion and kernel equivalence, original projection, Cycle 28 actual section]
+    unused: [abstract replacement extension]
+  structure_field_escape: none-found
+  route_integrity: pass-for-identity-split-sequence
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and two-declaration standard axiom audit to be recorded in PR]
+```
