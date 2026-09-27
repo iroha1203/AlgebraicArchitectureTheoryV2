@@ -853,6 +853,7 @@ import ResearchLean.AG.OperationRepair.LawUniverse
 import ResearchLean.AG.OperationRepair.FiniteLawBridge
 import ResearchLean.AG.OperationRepair.LawInputMaps
 import ResearchLean.AG.OperationRepair.PathEnumeration
+import ResearchLean.AG.OperationRepair.FiniteGeneralBridge
 import ResearchLean.AG.OperationRepair.Examples
 import ResearchLean.AG.OperationRepair.ExampleSequential
 import ResearchLean.AG.OperationRepair.ExampleLaw
