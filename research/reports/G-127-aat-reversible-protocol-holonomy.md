@@ -1566,3 +1566,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and five-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 30 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 30
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 65ca73d75
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 29 original vertical carrier/component equivalence
+  proof_dag_predecessors: [identityVerticalEquivComponents, ReversibleData.vertical_mul_fiber_apply]
+  proof_obligation: Show the original identity-operation vertical group is isomorphic as a group to component-indexed hidden permutation families
+  selection_reason: Discharges the group-law part of D's component permutation classification from the actual A2 state-change product
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityComponentGroup.lean]
+  risks: [pointwise carrier equivalence without multiplication, replacement vertical group, wrong A2 composition order]
+  unchecked: [D identity explicit split exact sequence/torsor and FixedF/G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The full original vertical A1 lift group, whose law is actual total-state composition, is group-isomorphic to the component-indexed permutation product, reading the original fiber equivalence at every vertex
+  completion_candidate: no
+  lean_artifacts: [identityVerticalMulEquivComponents]
+  evidence: [identityVerticalMulEquivComponents_apply]
+  claim_mapping:
+    theorem_names: [identityVerticalMulEquivComponents, identityVerticalMulEquivComponents_apply]
+    source_labels: [A2 actual composition, C3 original vertical group, D identity component permutation group]
+    conjuncts: [all original vertical A1 lifts, actual StateChange-derived group law, original undirected component quotient, pointwise permutation multiplication, original vertex maps]
+    undischarged_assumptions: [D identity explicit split exact sequence/torsor/FixedF/G-124, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: Identity vertical group is the component permutation group with actual A2 multiplication; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D identity vertical component group law]
+    remaining: [D identity explicit split exact sequence/torsor/FixedF/G-124, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [Cycle 29 full original vertical carrier equivalence, original actual vertical multiplication formula]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [Cycle 29 original A1/component equivalence, actual StateChange-derived vertical multiplication]
+    unused: [abstract group law on a replacement carrier]
+  structure_field_escape: none-found
+  route_integrity: pass-for-identity-component-group
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and two-declaration standard axiom audit to be recorded in PR]
+```
