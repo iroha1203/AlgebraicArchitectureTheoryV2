@@ -869,3 +869,4 @@ import ResearchLean.AG.OperationRepair.ExampleSequential
 import ResearchLean.AG.OperationRepair.ExampleLaw
 import ResearchLean.AG.ProtocolHolonomy.Basic
 import ResearchLean.AG.ProtocolHolonomy.ChangeGroup
+import ResearchLean.AG.ProtocolHolonomy.LiftBridge
