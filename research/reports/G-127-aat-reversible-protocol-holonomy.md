@@ -940,3 +940,56 @@ audits:
   blocking_findings: []
   next_obligation: Prove semantic A2 composition, projection, kernel, and fiber/torsor compatibility using the bidirectional correspondence
 ```
+
+## Cycle 18 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 18
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 9e75f32b3f993e700c12257f951e6c12cc5a7797
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 14 root coordinates and accepted B1 root-loop group equality
+  proof_dag_predecessors: [holonomy_eq_rootedLoopTransportGroup, transport_comp, transport_reverse, oldRootToNewRoot]
+  proof_obligation: Prove that changing component roots conjugates the complete table-generated holonomy subgroups by original named-path transport
+  selection_reason: Closes the remaining holonomy-group assertion of D root change rather than only changing centralizer and C1 coordinates
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/HolonomyChoice.lean]
+  risks: [group multiplication orientation, different root fiber types, both membership directions, arbitrary signed named connecting path]
+  unchecked: [arbitrary undirected-tree bridge, D semantic and identity compatibilities, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Transport along any original signed named path between chosen roots induces a permutation-group isomorphism; its conjugation maps table-generated holonomy membership equivalently in both directions, including the path used in the D coordinate change
+  completion_candidate: no
+  lean_artifacts: [ReversibleData.permutationConjugation, ReversibleData.rootLoopTransport_conjugate_mem]
+  evidence: [ReversibleData.holonomy_change_iff, ReversibleData.holonomy_choice_iff]
+  claim_mapping:
+    theorem_names: [ReversibleData.holonomy_change_iff, ReversibleData.holonomy_choice_iff]
+    source_labels: [D root and tree change, B1 original table holonomy]
+    conjuncts: [arbitrary two rooted-path choices, any signed named root-to-root path, original operation transport, full table-generated holonomy on both root fibers, conjugation in both directions]
+    undischarged_assumptions: [arbitrary undirected named-tree bridge, D semantic and identity compatibility, E and fixed examples]
+    acceptance_point: D's holonomy conjugacy follows from accepted B1 equality and original named-path transport; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [holonomy subgroup conjugacy for any chosen roots]
+    remaining: [undirected-tree bridge, D semantic and identity compatibility, E and fixed examples]
+  certificate_provenance:
+    discharged: [conjugating equivalence from original D.transport of named path; subgroup equality from B1]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [B1 equality with all rooted signed-loop transports, actual path reversal and composition, both root choices]
+    unused: [Pi/H because holonomy concerns original reversible operation tables]
+  structure_field_escape: none-found
+  route_integrity: pass-for-rooted-paths
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and four-declaration standard axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Prove remaining D semantic composition and torsor compatibility or arbitrary undirected named-tree orientation bridge
+```
