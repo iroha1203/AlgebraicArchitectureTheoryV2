@@ -4,8 +4,8 @@
 - Tracking Issue: [#4945](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4945)
 - Applied GOAL and common-standard commit: `93cbcedece216238edfd40e2329bcc69c4f7ae2d`
 - GOAL blob: `255a64df4bdc851f64f799ef89189ea81e78aa70`
-- Proof state: A–C proved in ResearchLean; D, cumulative E review, and parts
-  of the fixed examples remain open.
+- Proof state: A–C proved in ResearchLean; D and cumulative E/fixed-example
+  review remain open.
 
 The fixed statement and completion criteria are in the GOAL card. This report
 indexes proof evidence and the next obligations.
@@ -34,9 +34,84 @@ operation invariance, or finite-observation premise.
 2. E: final crosscheck of the complete Law/path declaration map against the
    fixed GOAL remains. The general path-numbering bridge is now constructed
    in `PathEnumeration.lean`; E completion is subject to independent review.
-3. Complete the fixed examples' sequential quotient maps, Law adequacy and
-   factorization, and path-generated relation/target identification; check
-   empty input cases through the general API and finite algorithm.
+3. Independently review all three fixed examples as a whole after the cycle
+   15 additions, and check empty input cases through the general API and
+   finite algorithm.
+
+## Cycle 15: sequential and Law completion candidates for fixed examples
+
+`ExampleSequential.lean` uses `sequentialList` for both chronological orders
+of the four-state requests. `first12_map_eq_iff` and
+`first21_map_eq_iff` calculate each first-stage source map kernel as the
+specified three-block partition. `order12_source_map` and
+`order21_source_map` exhibit each composite source map through its actual
+second quotient map, formed from the image of the second request.
+`generated_join_eq_behavior` and the two final map equations calculate both
+composite kernels as `{0,1}|{2,3}`. `orderCompare_read` and
+`orderCompare_step` identify the two orders. The one-shot D run on the
+combined Boolean request table succeeds; `runBoth_counts` calculates its two
+two-state endpoint outputs. `order12ToD` and `order21ToD` compare both
+sequential carriers to that actual returned D upper target, with source-map,
+operation, and observation commutation. The first individual and second
+individual D runs have three/two class-count success outputs as well.
+
+`ExampleLaw.lean` takes the original four-state Boolean observation as a
+single `FiniteLawFamily` evaluation. `behavior_law_eq` checks that its future
+Law kernel is the same upper endpoint. Both feasible endpoint repairs are
+Law-adequate and the standard joint-kernel Reading factors through their
+Readings, using the general E theorem. The path example reuses this very
+Law family: its upper repair satisfies the specified path equation on every
+target point, is Law-adequate, receives the joint-kernel factorization, and
+has a nonconstant Law value. `run_upper_law_value` identifies the actual D
+upper output's observation table with the same Law evaluation at every
+source state. These are fixed-example completion candidates pending
+independent review; they do not discharge D's general cost obligation.
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 15
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: c07c6fb12d72eb62cdbd6ad0cda481b2b868c594
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 14 comment and remaining fixed-example obligations"
+  proof_dag_predecessors: ["OperationRepair/Examples.lean", "OperationRepair/FiniteSequential.lean", "OperationRepair/ClassOrder.lean", "OperationRepair/LawBridge.lean"]
+  proof_obligation: "Complete both chronological sequential quotient maps and original single-Law adequacy/factorization in the prescribed feasible examples"
+  selection_reason: "Closes the fixed examples' missing C and E connections while preserving the actual D outputs"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/ExampleSequential.lean", "OperationRepair/ExampleLaw.lean"]
+  risks: ["chronological list direction", "first-stage image request", "one-shot D payload comparison", "Law observation mismatch"]
+  unchecked: ["independent cumulative fixed-example review", "D RAM cost and general finite-output transport", "cumulative E crosscheck", "empty input evaluation"]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Both sequential orders and their source/operation/observation comparison to the actual one-shot D output; single original Law adequacy, factorization, and path output value"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/ExampleSequential.lean", "OperationRepair/ExampleLaw.lean"]
+  evidence: ["Four.first12_map_eq_iff", "Four.first21_map_eq_iff", "Four.order12_source_map", "Four.order21_source_map", "Four.generated_join_eq_behavior", "Four.order12ToD_read", "Four.order21ToD_read", "Four.order12ToD_step", "Four.order21ToD_step", "Four.order12ToD_observation", "Four.order21ToD_observation", "Four.lawLower_adequate", "Four.lawUpper_jointKernel_factors", "Path.lawUpper_path_equations", "Path.lawUpper_nonconstant", "Path.run_upper_law_value"]
+  claim_mapping:
+    theorem_names: ["Four.generated_join_eq_behavior", "Four.order12ToD_read", "Four.order21ToD_read", "Four.lawLower_jointKernel_factors", "Path.lawUpper_path_equations", "Path.run_upper_law_value"]
+    source_labels: ["G-126 fixed examples 2 and 4, C/E connections"]
+    conjuncts: ["both sequential quotient maps", "combined one-shot D output comparison", "single original Law adequacy and standard Reading factorization", "path equation and Law value on target"]
+    undischarged_assumptions: []
+    acceptance_point: "fixed-example C/E additions; G-126 completion remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["two explicit request orders", "actual one-shot D success output", "original single Boolean Law evaluation"]
+    remaining: ["D RAM cost and general finite-output bridge", "cumulative E and fixed-example review", "empty input evaluation"]
+  certificate_provenance:
+    discharged: ["stage kernels from sequentialList", "D upper target from runRepair_success_payload", "Law values from original evaluation"]
+    unresolved: []
+  proof_use:
+    used: ["both original raw requests", "source surjectivity", "kernel equality", "operation and observation commutation", "Law descent and joint-kernel factorization"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+```
 
 ## Cycle 14: fixed finite instances (partial)
 
