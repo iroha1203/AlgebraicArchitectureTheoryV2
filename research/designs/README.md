@@ -10,4 +10,4 @@ GOALごとの構成・証明方針、依存関係、受入条件、既存宣言�
 | GOAL | 設計 | tracking Issue |
 | --- | --- | --- |
 | [G-124](../goals/G-124-aat-local-semantic-reconstruction.md) | [パートIII・IV：C–Eの実装設計](G-124-aat-local-semantic-reconstruction/README.md)、[再利用対応表](G-124-aat-local-semantic-reconstruction/reuse-map.md) | [#4711](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4711) |
-| [G-126](../goals/G-126-aat-operation-preserving-repair-quotients.md) | [A–Eの実装設計](G-126-aat-operation-preserving-repair-quotients/README.md)、[再利用対応表](G-126-aat-operation-preserving-repair-quotients/reuse-map.md)、[有限構成と費用](G-126-aat-operation-preserving-repair-quotients/finite-construction.md) | GOALのtracking issue欄に従う |
+| [G-126](../goals/G-126-aat-operation-preserving-repair-quotients.md) | [A–Eの実装設計](G-126-aat-operation-preserving-repair-quotients/README.md)、[再利用対応表](G-126-aat-operation-preserving-repair-quotients/reuse-map.md)、[有限構成と費用](G-126-aat-operation-preserving-repair-quotients/finite-construction.md) | [#4945](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4945) |
