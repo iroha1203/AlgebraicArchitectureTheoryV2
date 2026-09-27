@@ -899,3 +899,4 @@ import ResearchLean.AG.ProtocolHolonomy.IdentityComponents
 import ResearchLean.AG.ProtocolHolonomy.IdentityComponentGroup
 import ResearchLean.AG.ProtocolHolonomy.IdentitySplitExact
 import ResearchLean.AG.ProtocolHolonomy.IdentityFiberTorsor
+import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolCarrier

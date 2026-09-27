@@ -1470,3 +1470,4 @@ ResearchLean.AG.ProtocolHolonomy.IdentityComponents	ResearchLean/AG/ProtocolHolo
 ResearchLean.AG.ProtocolHolonomy.IdentityComponentGroup	ResearchLean/AG/ProtocolHolonomy/IdentityComponentGroup.lean
 ResearchLean.AG.ProtocolHolonomy.IdentitySplitExact	ResearchLean/AG/ProtocolHolonomy/IdentitySplitExact.lean
 ResearchLean.AG.ProtocolHolonomy.IdentityFiberTorsor	ResearchLean/AG/ProtocolHolonomy/IdentityFiberTorsor.lean
+ResearchLean.AG.ProtocolHolonomy.IdentityProtocolCarrier	ResearchLean/AG/ProtocolHolonomy/IdentityProtocolCarrier.lean
