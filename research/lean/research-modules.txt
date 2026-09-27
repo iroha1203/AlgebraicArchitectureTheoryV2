@@ -1414,6 +1414,7 @@ ResearchLean.AG.OperationRepair.FiniteSequential	ResearchLean/AG/OperationRepair
 ResearchLean.AG.OperationRepair.FullTree	ResearchLean/AG/OperationRepair/FullTree.lean
 ResearchLean.AG.OperationRepair.FiniteTables	ResearchLean/AG/OperationRepair/FiniteTables.lean
 ResearchLean.AG.OperationRepair.FiniteClosure	ResearchLean/AG/OperationRepair/FiniteClosure.lean
+ResearchLean.AG.OperationRepair.FiniteRamPrimitives	ResearchLean/AG/OperationRepair/FiniteRamPrimitives.lean
 ResearchLean.AG.OperationRepair.FiniteBehavior	ResearchLean/AG/OperationRepair/FiniteBehavior.lean
 ResearchLean.AG.OperationRepair.FiniteConstruction	ResearchLean/AG/OperationRepair/FiniteConstruction.lean
 ResearchLean.AG.OperationRepair.FiniteEnumeration	ResearchLean/AG/OperationRepair/FiniteEnumeration.lean
