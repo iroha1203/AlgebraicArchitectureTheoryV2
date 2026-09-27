@@ -99,6 +99,90 @@ theorem lawReadingToRepair_read (laws : FiniteLawFamily S)
     (h : LawReadingConditions laws T R q) (x : S) :
     (lawReadingToRepair laws T R q h).read x = q.read x := rfl
 
+/-- Recovering repair data does not alter the original Reading. -/
+theorem lawReadingToRepair_toReading (laws : FiniteLawFamily S)
+    (T : OperationSystem S E) (R : S → S → Prop) (q : Reading S)
+    (h : LawReadingConditions laws T R q) :
+    (lawReadingToRepair laws T R q h).toReading = q := by
+  cases q
+  rfl
+
+/-- Surjectivity makes the descended operations in the repair round trip unique. -/
+theorem repair_lawReading_roundtrip_step (laws : FiniteLawFamily S)
+    (T : OperationSystem S E) (R : S → S → Prop)
+    (repair : RepairQuotient.{u, v, u, u} T (lawObserve laws) R) :
+    (lawReadingToRepair laws T R repair.toReading
+      (repair_to_lawReadingConditions laws T R repair)).step = repair.step := by
+  let recovered := lawReadingToRepair laws T R repair.toReading
+    (repair_to_lawReadingConditions laws T R repair)
+  funext e z
+  obtain ⟨x, rfl⟩ := repair.surjective z
+  exact (recovered.step_comm e x).symm.trans (repair.step_comm e x)
+
+/-- The joint Law observation is also recovered on every target point. -/
+theorem repair_lawReading_roundtrip_observation (laws : FiniteLawFamily S)
+    (T : OperationSystem S E) (R : S → S → Prop)
+    (repair : RepairQuotient.{u, v, u, u} T (lawObserve laws) R) :
+    (lawReadingToRepair laws T R repair.toReading
+      (repair_to_lawReadingConditions laws T R repair)).observation =
+        repair.observation := by
+  let recovered := lawReadingToRepair laws T R repair.toReading
+    (repair_to_lawReadingConditions laws T R repair)
+  funext z
+  obtain ⟨x, rfl⟩ := repair.surjective z
+  exact (recovered.observation_comm x).trans
+    (repair.observation_comm x).symm
+
+/-- The two repairs are related by a source-commuting, operation- and
+observation-preserving identity morphism. -/
+def repair_lawReading_roundtrip_hom (laws : FiniteLawFamily S)
+    (T : OperationSystem S E) (R : S → S → Prop)
+    (repair : RepairQuotient.{u, v, u, u} T (lawObserve laws) R) :
+    RepairHom T (lawObserve laws) R
+      (lawReadingToRepair laws T R repair.toReading
+        (repair_to_lawReadingConditions laws T R repair)) repair where
+  toFun := id
+  source_comm := by intro x; rfl
+  step_comm := by
+    intro e z
+    exact congrFun (congrFun
+      (repair_lawReading_roundtrip_step laws T R repair) e) z
+  observation_comm := by
+    intro z
+    exact (congrFun
+      (repair_lawReading_roundtrip_observation laws T R repair) z).symm
+
+/-- The reverse identity morphism completes the structure-preserving
+round trip on the same target. -/
+def repair_lawReading_roundtrip_hom_inv (laws : FiniteLawFamily S)
+    (T : OperationSystem S E) (R : S → S → Prop)
+    (repair : RepairQuotient.{u, v, u, u} T (lawObserve laws) R) :
+    RepairHom T (lawObserve laws) R repair
+      (lawReadingToRepair laws T R repair.toReading
+        (repair_to_lawReadingConditions laws T R repair)) where
+  toFun := id
+  source_comm := by intro x; rfl
+  step_comm := by
+    intro e z
+    exact (congrFun (congrFun
+      (repair_lawReading_roundtrip_step laws T R repair) e) z).symm
+  observation_comm := by
+    intro z
+    exact congrFun
+      (repair_lawReading_roundtrip_observation laws T R repair) z
+
+theorem repair_lawReading_roundtrip_left_inv (laws : FiniteLawFamily S)
+    (T : OperationSystem S E) (R : S → S → Prop)
+    (repair : RepairQuotient.{u, v, u, u} T (lawObserve laws) R) :
+    (repair_lawReading_roundtrip_hom laws T R repair).toFun ∘
+      (repair_lawReading_roundtrip_hom_inv laws T R repair).toFun = id := rfl
+
+theorem repair_lawReading_roundtrip_right_inv (laws : FiniteLawFamily S)
+    (T : OperationSystem S E) (R : S → S → Prop)
+    (repair : RepairQuotient.{u, v, u, u} T (lawObserve laws) R) :
+    (repair_lawReading_roundtrip_hom_inv laws T R repair).toFun ∘
+      (repair_lawReading_roundtrip_hom laws T R repair).toFun = id := rfl
+
 theorem jointKernel_coarser_of_lawReadingConditions
     (laws : FiniteLawFamily S) (T : OperationSystem S E)
     (R : S → S → Prop) (q : Reading S)
@@ -206,6 +290,19 @@ theorem betaReading_adequate (laws : FiniteLawFamily S)
   exact behavior_le_lawKernel laws T x y
     ((betaReading_kernel_iff laws T x y).mp hxy)
 
+/-- A specified Law evaluation on the future-observation quotient. -/
+def betaLawFactor (laws : FiniteLawFamily S)
+    (T : OperationSystem S E) (law : laws.Law) :
+    (betaReading laws T).Target → laws.Value law :=
+  Quotient.lift (laws.eval law) (by
+    intro x y hxy
+    exact behavior_le_lawKernel laws T x y hxy law)
+
+@[simp] theorem betaLawFactor_read (laws : FiniteLawFamily S)
+    (T : OperationSystem S E) (law : laws.Law) (x : S) :
+    betaLawFactor laws T law ((betaReading laws T).read x) =
+      laws.eval law x := rfl
+
 /-- The canonical current-Law Reading is coarser than the future-observation
 Reading, with the orientation fixed by `Reading.CoarserThan`. -/
 theorem jointKernel_coarser_beta (laws : FiniteLawFamily S)
@@ -240,6 +337,16 @@ theorem betaJointEquiv_of_isEmpty_comm (laws : FiniteLawFamily S)
     (T : OperationSystem S E) [IsEmpty E] (x : S) :
     betaJointEquiv_of_isEmpty laws T ((betaReading laws T).read x) =
       laws.jointKernelReading.read x := by
+  rfl
+
+/-- The empty-operation comparison preserves each original Law evaluation. -/
+theorem betaJointEquiv_of_isEmpty_law (laws : FiniteLawFamily S)
+    (T : OperationSystem S E) [IsEmpty E] (law : laws.Law)
+    (z : (betaReading laws T).Target) :
+    laws.jointKernelLawFactor law (betaJointEquiv_of_isEmpty laws T z) =
+      betaLawFactor laws T law z := by
+  obtain ⟨x, rfl⟩ := (betaReading laws T).surjective z
+  rw [betaJointEquiv_of_isEmpty_comm]
   rfl
 
 theorem betaJointEquiv_of_isEmpty_unique (laws : FiniteLawFamily S)
