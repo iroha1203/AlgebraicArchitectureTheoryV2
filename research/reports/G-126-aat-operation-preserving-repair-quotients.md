@@ -27,8 +27,7 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. D: connect the counted lower run to the executed `runRepair` path, extend
-   the primitive trace to upper word search, the decision scan,
+1. D: extend the primitive trace to upper word search, the decision scan,
    success-table assembly and failure output; prove the total bound for the
    complete same success/failure procedure.
 2. E: final crosscheck of the complete Law/path declaration map against the
@@ -36,6 +35,75 @@ operation invariance, or finite-observation premise.
    in `PathEnumeration.lean`; E completion is subject to independent review.
 3. Independently review all three fixed examples as a whole after the cycle
    15 additions, and perform the cumulative E crosscheck.
+
+## Cycle 23: counted lower on the executed run path
+
+`FiniteConstruction.runRepair` now obtains its lower table directly from
+`FiniteRamEnumeration.lower input`. Its lower partition packages that same
+table with the previously proved value equality. `runRepair_lower_counted`
+ties the returned lower table to the counted value and its degree-five trace
+bound; `runRepair_lowerCells` and the existing success/failure proofs preserve
+the accepted mathematical output.
+
+`FiniteCostDecision.runWithCount` now uses this same counted lower call instead
+of the provisional lower numeric counter. `runWithCount_value` identifies its
+complete output value with `runRepair`, and `runWithCount_cost_le` bounds the
+partial lower/upper/decision counter by `626*(m+1)*(n+1)^5`. Its upper and
+decision charges are still provisional, and success-table assembly and output
+are excluded. Therefore the partial counter is not the fixed D total RAM
+cost certificate. The executed lower stage is connected; the remaining
+stages and total cost stay open.
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 23
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: 58c9c0e367eb082db8276dc65ebf6a25f1a03cf5
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 22 comment and Math A runRepair cost-route finding"
+  proof_dag_predecessors: ["OperationRepair/FiniteRamEnumeration.lean", "OperationRepair/FiniteConstruction.lean", "OperationRepair/FiniteCostDecision.lean"]
+  proof_obligation: "Connect the counted lower computation and its cost to the executed runRepair lower stage"
+  selection_reason: "Discharges the exact cost-route gap found in cycle 22 before the remaining D stages"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/FiniteConstruction.lean", "OperationRepair/FiniteCostDecision.lean"]
+  risks: ["downstream output proof breakage", "counter/value mismatch", "whole-D cost overclaim"]
+  unchecked: ["upper word-search primitive trace", "decision and success/failure output charge", "complete same-run total bound", "cumulative E and examples review"]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "runRepair invokes the counted lower computation for its lower table, with a theorem relating the returned table and that computation's trace bound"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/FiniteConstruction.lean", "OperationRepair/FiniteCostDecision.lean"]
+  evidence: ["lowerPartitionFrom_counted_eq", "runRepair_lowerCells", "runRepair_lower_counted", "runWithCount_value", "runWithCount_cost_le"]
+  claim_mapping:
+    theorem_names: ["runRepair_lower_counted", "runWithCount_value", "runWithCount_cost_le"]
+    source_labels: ["G-126 D same-procedure lower stage, partial execution route"]
+    conjuncts: ["runRepair returns the counted lower table", "counted lower trace has the established degree-five bound", "partial counted run preserves whole output value"]
+    undischarged_assumptions: ["upper/decision/output primitive coverage", "complete same-procedure total bound"]
+    acceptance_point: "executed lower-stage trace connected; full D remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["counted lower connection to executed runRepair"]
+    remaining: ["upper/decision/output primitive trace", "full total bound"]
+  certificate_provenance:
+    discharged: ["runRepair directly consumes FiniteRamEnumeration.lower.value and packages that table"]
+    unresolved: ["full-run RAM cost certificate"]
+  proof_use:
+    used: ["counted lower.value in runRepair", "counted lower.cost in runWithCount", "FiniteRamEnumeration.lower_cost_poly"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: partial-executed-lower-only
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["focused FiniteConstruction and FiniteCostDecision checks passed", "targeted FiniteCostDecision build passed", "#assert_standard_axioms_only passed"]
+  blocking_findings: []
+  next_obligation: "charge upper word search primitives, then decision and complete output trace"
+```
 
 ## Cycle 22: lower enumeration lists and counted lower trace
 
