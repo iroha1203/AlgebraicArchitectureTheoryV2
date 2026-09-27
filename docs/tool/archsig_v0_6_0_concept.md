@@ -74,7 +74,7 @@ APIの直接移行と中間版を経由する移行のように、変更の合�
 
 ### 観測とLawを共通の計算構造へ接続する
 
-ArchMapは、観測したAtom・Context・Coverをソース参照とともに記録する。LawPolicyはLawと適用・評価条件を定義し、観測と分離する。入力の責務は[Tooling guideline](guideline.md#責務範囲入力トライアドの正本)に従う。
+ArchMapは、観測したAtomをソース参照とともに記録する。Context・Cover・重なりは、記録したAtomからArchSigが導出する。LawPolicyはLawと適用・評価条件を定義し、観測と分離する。入力の責務は[Tooling guideline](guideline.md#責務範囲入力トライアドの正本)に従う。
 
 ```text
 実装コード・仕様・開発上の文脈
