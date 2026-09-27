@@ -15,8 +15,9 @@ tracking Issue と PR に置く。
 | --- | --- | --- |
 | A の可変 fiber と辺作用 | `ReversibleData.Fiber`, `ReversibleData.edgeEquiv` | 任意のグラフ上の型と可逆辺作用。有限性と `Π,H` は未接続 |
 | A1 の持ち上げ | `ReversibleData.Lift`, `ReversibleData.renamedEdgeEquiv` | 元の名前付き辺作用と改名後の辺作用を全状態で結ぶ等式。`Lift` の存在は入力しない |
-| A の全状態写像 | `ReversibleData.Lift.stateEquiv`, `stateEquiv_observation`, `stateEquiv_injective` | 各 fiber の全単射から `Σ_v F(v)` 上の全単射を構成し、観測と忠実性を証明。逆方向の対応は未構成 |
-| A2 の実際の変更群 | `ReversibleData.NamedExecution`, `StateChange`, `ChangeGroup`, `ChangeGroup.projection` | 名前付き実行関係を保つ全状態の全単射を合成・逆で群にし、指定可視部分群 `H` への射影を構成。`Lift` との同定は未構成 |
+| A の全状態写像 | `ReversibleData.Lift.stateEquiv`, `stateEquiv_observation`, `stateEquiv_injective` | 各 fiber の全単射から `Σ_v F(v)` 上の全単射を構成し、観測と固定可視変更での単射性を証明 |
+| A2 の実際の変更群 | `ReversibleData.NamedExecution`, `StateChange`, `ChangeGroup`, `ChangeGroup.projection` | 名前付き実行関係を保つ全状態の全単射を合成・逆で群にし、指定可視部分群 `H` への射影を構成 |
+| A1 と A2 の実変更への対応 | `Lift.maps_namedExecution`, `Lift.preserves_namedExecution`, `StateChange.toLift`, `liftEquivStateChangeOver`, `liftPairMulEquivChangeGroup`, `liftPair_mul_fiber_apply`, `liftPairProjection` | 各 fiber の A1 と名前付き実行保存を同定し、固定可視変更と全対の群を実変更に対応させ、(A2) の評価式と射影を証明 |
 
 ## 前提・構成の状態
 
@@ -25,8 +26,7 @@ tracking Issue と PR に置く。
 `renamedEdgeEquiv` の型変換は `FixedFGraphAutomorphism.source_rename` と
 `target_rename` の証明だけを使用する。
 
-A の有限性・`Π`・`H` の入力条件、全状態写像による操作保存の明示定理と
-逆方向の対応、A2 の `Lift` との群同定と式(A2)、B の道とholonomy、C の持ち上げ分類・完全列・torsor、
+A の有限性・`Π`・`H` の入力条件、B の道とholonomy、C の持ち上げ分類・完全列・torsor、
 D の表示変更と意味論、E の有限手続き、二つの固定例は未完了である。
 現在の宣言を固定targetの完了証拠として扱わない。
 
@@ -134,4 +134,57 @@ audits:
   validation_refs: [focused Lean check and axiom audit to be recorded in PR]
   blocking_findings: []
   next_obligation: Identify Lift with the fixed-visible state-change fiber and prove A2 component formula
+```
+
+## Cycle 3 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 3
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 271bce5ca699e105b0317bfe2f8bc7b3b439fffb
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 2 proof state and Basic/ChangeGroup declarations
+  proof_dag_predecessors: [ReversibleData.Lift, ReversibleData.StateChange, ReversibleData.ChangeGroup]
+  proof_obligation: Identify Lift with actual state changes and prove pair group formula A2
+  selection_reason: Closes the bridge between A1's independently defined solution type and A2's actual state-change group
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/LiftBridge.lean]
+  risks: [dependent fiber extraction, reverse operation preservation, group transport, hidden conditionality]
+  unchecked: [finite input, Pi equations, H congruence preservation, B through E, fixed examples]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: A1 solutions and actual changes are equivalent at fixed visible renaming; pair group is isomorphic to actual changes and has formula A2
+  completion_candidate: no
+  lean_artifacts: [LiftBridge.lean]
+  evidence: [Lift.preserves_namedExecution, StateChange.fiberEquiv_naturality, liftEquivStateChangeOver, liftPairMulEquivChangeGroup, liftPair_mul_fiber_apply, liftPairProjection]
+  claim_mapping:
+    theorem_names: [liftEquivStateChangeOver, liftPairMulEquivChangeGroup, liftPair_mul_fiber_apply, liftPairProjection]
+    source_labels: [A1, A2, A total state change]
+    conjuncts: [actual named-operation preservation, fiberwise recovery, both inverse laws, group correspondence, pair multiplication formula, visible group projection]
+    undischarged_assumptions: [finite input, Pi equations, H congruence preservation]
+    acceptance_point: The selected A1-to-A2 group bridge is proved on arbitrary reversible edge data; the full fixed input and B-E remain open
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [Lift-StateChange correspondence, pair group correspondence, A2 component formula]
+    remaining: [finite input, Pi equations, H congruence preservation, B through E, fixed examples]
+  certificate_provenance:
+    discharged: [fiber equivalences recovered from actual total-state equivalence and observation, inverse law from proved equivalences]
+    unresolved: [finite protocol semantics]
+  proof_use:
+    used: [Lift.edge_naturality in operation preservation, StateChange.preserves in recovered naturality, group multiplication in A2 formula]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Integrate finite Q/F, path equations Pi, and congruence-preserving H into the primitive input
 ```

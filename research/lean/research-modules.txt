@@ -1440,3 +1440,4 @@ ResearchLean.AG.OperationRepair.ExampleSequential	ResearchLean/AG/OperationRepai
 ResearchLean.AG.OperationRepair.ExampleLaw	ResearchLean/AG/OperationRepair/ExampleLaw.lean
 ResearchLean.AG.ProtocolHolonomy.Basic	ResearchLean/AG/ProtocolHolonomy/Basic.lean
 ResearchLean.AG.ProtocolHolonomy.ChangeGroup	ResearchLean/AG/ProtocolHolonomy/ChangeGroup.lean
+ResearchLean.AG.ProtocolHolonomy.LiftBridge	ResearchLean/AG/ProtocolHolonomy/LiftBridge.lean
