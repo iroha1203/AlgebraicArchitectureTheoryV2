@@ -993,3 +993,56 @@ audits:
   blocking_findings: []
   next_obligation: Prove remaining D semantic composition and torsor compatibility or arbitrary undirected named-tree orientation bridge
 ```
+
+## Cycle 19 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 19
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 9bafc64b23312a09684d140ec7adc24a1aba0960
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycles 14 and 18 choice changes and Cycle 12 original vertical right action
+  proof_dag_predecessors: [liftChoiceChange_reconstruct, verticalChoiceChange_reconstruct, verticalRightAction_fiber_apply, RootSolutions.toLift_toRootSolutions]
+  proof_obligation: Prove that changing roots and trees preserves the original right torsor action on C1 lift coordinates, with the actual root-fiber composition formula
+  selection_reason: Connects D root-change coordinates to C's literal group action instead of only preserving individual lifts
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/ChoiceTorsor.lean]
+  risks: [right-action composition order, root-value evaluation, action provenance through the original state-change group, arbitrary roots]
+  unchecked: [D A2/projection/kernel and semantic compatibility, identity specialization, arbitrary undirected-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: C1 root solutions inherit the original right action by actual vertical A1 lifts; its root value is phi_root composed after alpha_root, and arbitrary coordinate change preserves the action while changing centralizer coordinates
+  completion_candidate: no
+  lean_artifacts: [ReversibleData.rootRightAction, ReversibleData.rootRightAction_rootFiber]
+  evidence: [ReversibleData.liftChoiceChange_rootRightAction]
+  claim_mapping:
+    theorem_names: [ReversibleData.rootRightAction_rootFiber, ReversibleData.liftChoiceChange_rootRightAction]
+    source_labels: [C3 right torsor, D root and tree choice compatibility]
+    conjuncts: [original liftable visible g, original right action via actual change group, arbitrary rooted choices, changed B2/C1 coordinates, root-fiber right composition]
+    undischarged_assumptions: [remaining D A2/projection/kernel and semantic compatibility, identity specialization, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: The original right action and D coordinate change commute for every liftable g; full G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D root-coordinate compatibility with the original C3 right action]
+    remaining: [D other compatibilities and specialization, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [root solutions reconstruct an original A1 lift; centralizers reconstruct an original vertical lift; action is the original right group action]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [C1/C2 reconstruction equivalence, B2 vertical reconstruction, literal verticalRightAction, both choice-change reconstruction equalities]
+    unused: [Pi because this action clause concerns original A1 data]
+  structure_field_escape: none-found
+  route_integrity: pass-for-rooted-paths
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and three-declaration standard axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Prove D A2/projection/kernel compatibility with presentation changes or semantic isomorphism composition
+```

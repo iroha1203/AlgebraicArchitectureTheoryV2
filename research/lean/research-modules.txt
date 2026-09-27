@@ -1456,3 +1456,4 @@ ResearchLean.AG.ProtocolHolonomy.ProtocolConnection	ResearchLean/AG/ProtocolHolo
 ResearchLean.AG.ProtocolHolonomy.VisibleRename	ResearchLean/AG/ProtocolHolonomy/VisibleRename.lean
 ResearchLean.AG.ProtocolHolonomy.NaturalIsomorphism	ResearchLean/AG/ProtocolHolonomy/NaturalIsomorphism.lean
 ResearchLean.AG.ProtocolHolonomy.HolonomyChoice	ResearchLean/AG/ProtocolHolonomy/HolonomyChoice.lean
+ResearchLean.AG.ProtocolHolonomy.ChoiceTorsor	ResearchLean/AG/ProtocolHolonomy/ChoiceTorsor.lean
