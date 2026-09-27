@@ -6,11 +6,11 @@ import Formal.Util.AssertStandardAxioms
 /-!
 # Direct finite-table decision for original A1 lifts
 
-Given a list of vertexwise forward/inverse function tables, a finite decision
-test filters for the original A1 named-edge square and both inverse laws.
-The search itself is executable. Constructing a complete candidate list from
-GOAL E's vertex and fiber enumerations, and then following the B1/B2/C1
-route, remain separate obligations.
+Explicit vertex and fiber enumerations generate every vertexwise forward and
+inverse function table. A finite test checks both inverse laws and the
+original A1 named-edge square. The search is executable. Constructing the
+finite named forest and the B1/B2/C1-based procedure remain separate
+obligations of GOAL E.
 -/
 
 namespace AAT.AG.ProtocolHolonomy
