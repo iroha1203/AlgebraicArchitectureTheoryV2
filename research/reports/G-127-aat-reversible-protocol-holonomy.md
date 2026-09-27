@@ -1464,3 +1464,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and four-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 28 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 28
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: be8a4383c
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 27 arbitrary identity input and H_lift=H
+  proof_dag_predecessors: [identityLift, ReversibleData.Lift.toStateChange, ReversibleData.ChangeGroup.projection]
+  proof_obligation: Construct an actual homomorphic identity-hidden section of the original visible projection for the arbitrary identity-operation system
+  selection_reason: Turns the proven H_lift=H into the D split-extension map without replacing the original state-change group
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentitySection.lean]
+  risks: [section as arbitrary choice only, fake extension, wrong composition order, losing original edge names]
+  unchecked: [D identity component classification and explicit split exact sequence/torsor, FixedF/G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The literal identity-fiber state changes define a monoid homomorphism from the supplied H into the original actual operation-preserving ChangeGroup H, with state map (v,x) to (g v,x), and the original visible projection composed with this section is identity
+  completion_candidate: no
+  lean_artifacts: [identityChange, identitySection]
+  evidence: [identityChange_state_apply, identitySection_rightInverse]
+  claim_mapping:
+    theorem_names: [identitySection, identitySection_rightInverse]
+    source_labels: [A2 original actual change group, C3 original projection, D identity-hidden section]
+    conjuncts: [arbitrary original H, original named-operation preserving state changes, literal identity hidden map, composition preservation, original visible projection right inverse]
+    undischarged_assumptions: [D identity component classification/split exact sequence/torsor/FixedF/G-124, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: The identity system has an actual group-homomorphic section of the original visible projection; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D identity-hidden section of original visible projection]
+    remaining: [D identity component classification and explicit split exact sequence/torsor/FixedF/G-124, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [A1 identity lift to actual state change, state-change group composition, original projection]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [Cycle 27 identity lift, original Lift-to-StateChange bridge, original ChangeGroup projection]
+    unused: [abstract group extension and chosen section]
+  structure_field_escape: none-found
+  route_integrity: pass-for-identity-section
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and four-declaration standard axiom audit to be recorded in PR]
+```
