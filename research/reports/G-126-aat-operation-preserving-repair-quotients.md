@@ -31,10 +31,9 @@ operation invariance, or finite-observation premise.
    the upper word loop and remaining output work, combine them into the same
    success/failure procedure, and prove the total bound and general
    finite-output bridge.
-2. E: transport an arbitrary source path-pair list through state and operation
-   numberings to D's request table. The arbitrary-universe Reading
-   correspondence, finite Law upper output comparison, and independent Law
-   input-map compatibility are proved in cycle 12.
+2. E: final crosscheck of the complete Law/path declaration map against the
+   fixed GOAL remains. The general path-numbering bridge is now constructed
+   in `PathEnumeration.lean`; E completion is subject to independent review.
 3. Three fixed examples and empty input cases, evaluated through the same
    general API and finite algorithm.
 
@@ -170,6 +169,82 @@ remaining E connection is the explicit theorem sending a general source
 path-pair list through arbitrary numberings into `runPathRepair`'s table.
 D's general finite-output and RAM-cost obligations and the fixed examples
 remain open.
+
+## E: general finite path numbering and output (candidate)
+
+`PathEnumeration.lean` maps each source operation word through the supplied
+`E ≃ Fin m`, proves the numbered word action commutes with `S ≃ Fin n`, and
+proves the finite Boolean request table is exactly the image of the original
+`pathRequest`. `runPaths` invokes the existing D `runRepair` on that table.
+`runPaths_success_iff_repair_exists` matches success to B's repairability on
+the original source. `runPaths_failure` maps the returned requested pair and
+short separating word back to original states and operation names.
+
+On success, `pathUpperRepairSource` transports the actual numbered upper
+output to a repair quotient of the original system; its kernel is exactly the
+original future-observation congruence. `runPaths_upper_equations` proves
+all listed operation-word equations on every returned target point after
+reindexing operation names. For the original Law family, `FiniteLawPath.runPaths`
+uses the same path table and procedure, and `FiniteLawPath.betaEquiv` compares
+its returned upper quotient to the Law future-observation Reading. This
+equivalence commutes with the source map, preserves each named operation and
+Law value, and is uniquely determined by source commutation. The full E
+claim remains a candidate until independent review checks the cumulative
+declaration mapping; D's RAM cost and general finite-output transport remain
+open.
+
+## Cycle 13 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 13
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: ac7aa033f8b81f7ea913c9ae5396432a26073561
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 12 comment and report E path numbering obligation"
+  proof_dag_predecessors: ["OperationRepair/PathBridge.lean", "OperationRepair/FiniteEnumeration.lean", "OperationRepair/FiniteConstruction.lean", "OperationRepair/FiniteLawBridge.lean", "OperationRepair/LawUniverse.lean"]
+  proof_obligation: "E general source path-pair list through explicit numberings to D's request table and Law upper output"
+  selection_reason: "Closes the gap between semantic path requests on arbitrary finite sources and the actual numbered D run"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/PathEnumeration.lean"]
+  risks: ["word transport order", "path relation image", "failure certificate back-transport", "returned target equations", "Law output comparison"]
+  unchecked: ["D RAM cost and general finite-output bridge", "fixed examples", "cumulative E crosscheck"]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Transported general source path requests into the exact D table, proved source-level success/failure and upper output equations, and linked the Law path output to beta"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/PathEnumeration.lean"]
+  evidence: ["FiniteEnumeration.Input.numberPaths_request_iff", "FiniteEnumeration.Input.pathTables_requestRel", "FiniteEnumeration.Input.runPaths_success_iff_repair_exists", "FiniteEnumeration.Input.runPaths_failure", "FiniteEnumeration.Input.runPaths_upper_equations", "FiniteEnumeration.Input.pathUpperRepairSource", "FiniteEnumeration.Input.pathUpperRepairSource_kernel_eq", "FiniteLawPath.betaEquiv_read", "FiniteLawPath.betaEquiv_step", "FiniteLawPath.betaEquiv_law", "FiniteLawPath.betaEquiv_unique"]
+  claim_mapping:
+    theorem_names: ["FiniteEnumeration.Input.numberPaths_request_iff", "FiniteEnumeration.Input.runPaths_success_iff_repair_exists", "FiniteEnumeration.Input.runPaths_failure", "FiniteEnumeration.Input.runPaths_upper_equations", "FiniteEnumeration.Input.pathUpperRepairSource_kernel_eq", "FiniteLawPath.betaEquiv_step", "FiniteLawPath.betaEquiv_law"]
+    source_labels: ["G-126 E arbitrary finite path-pair output clauses"]
+    conjuncts: ["original R_P to numbered table", "same D success/failure", "original source and operation-word failure witness", "all target path equations", "Law and operation preserving returned upper comparison"]
+    undischarged_assumptions: []
+    acceptance_point: "general E path input/output bridge; G-126 completion remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["arbitrary original finite source and operation numberings", "finite path list", "D's actual returned success/failure payload", "original Law evaluation"]
+    remaining: ["D RAM cost and general finite-output bridge", "fixed examples", "cumulative E review"]
+  certificate_provenance:
+    discharged: ["request table from original path pairs", "failure pair and word from runRepair", "upper quotient from successUpperRepair", "Law comparison from exact source kernel"]
+    unresolved: []
+  proof_use:
+    used: ["both numbering inverses", "behavior transport for all words", "source surjectivity", "path relation identification", "successUpperRepair_kernel_eq"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["PathEnumeration focused check pass", "targeted PathEnumeration build pass", "module audit: 21 declarations with standard axioms only", "sixteen spine #print axioms: propext, Classical.choice, Quot.sound only", "git diff --check and placeholder, Unicode, privacy, import-direction scans pass"]
+  blocking_findings: []
+  next_obligation: "D general finite-output transport and RAM cost, then fixed examples"
+```
 
 ## Cycle 12 ledger
 
