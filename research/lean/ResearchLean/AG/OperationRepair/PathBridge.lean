@@ -76,7 +76,7 @@ theorem RepairQuotient.path_equations
   (q.pathRequest_identified_iff paths).mp q.identifies
 
 /-- Conversely, a surjective operation/observation preserving quotient with
-the target path equations is a repair for exactly the generated requests. -/
+the target path equations is a repair that identifies the generated requests. -/
 def RepairQuotient.withPathEquations
     {T : OperationSystem S E} {observe : S → O}
     (q : RepairQuotient T observe (fun _ _ => False))
