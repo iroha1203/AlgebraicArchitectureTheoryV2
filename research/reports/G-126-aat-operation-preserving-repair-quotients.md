@@ -34,8 +34,71 @@ operation invariance, or finite-observation premise.
    fixed GOAL remains. The general path-numbering bridge is now constructed
    in `PathEnumeration.lean`; E completion is subject to independent review.
 3. Independently review all three fixed examples as a whole after the cycle
-   15 additions, and check empty input cases through the general API and
-   finite algorithm.
+   15 additions, and perform the cumulative E crosscheck.
+
+## Cycle 19: empty finite inputs
+
+`EmptyInputs.lean` instantiates the actual finite input tables without a
+state or operation default. With zero states and zero operations, the same
+`runRepair` has empty lower/upper tables, no failure pair, and a successful
+payload with both quotient class counts zero. With one state and zero
+operations it succeeds and returns one class at both endpoints. With two
+states and zero operations, a requested pair with distinct present Boolean
+observations makes the same run return `(0,1,[])`; `runRepair_failure`
+proves this is the original requested pair and an empty separating word.
+These concrete evaluations close the remaining empty-input check. They do
+not change the open D RAM cost obligation.
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 19
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: 11e34bddca0051983c70a565014b944b064cbb55
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 18 comment and empty-input evaluation item"
+  proof_dag_predecessors: ["OperationRepair/FiniteConstruction.lean", "OperationRepair/FiniteGeneralBridge.lean"]
+  proof_obligation: "Evaluate the same D finite algorithm on zero states and zero operation names, including empty-word failure"
+  selection_reason: "Closes the fixed target's empty-set boundary and nonvacuity audit"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/EmptyInputs.lean"]
+  risks: ["default state inserted", "success payload only existential", "empty word omitted", "cost claim confusion"]
+  unchecked: ["D RAM cost", "cumulative E and fixed-example review"]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Actual runRepair success and class counts for n=0,m=0 and n=1,m=0; actual empty-word failure for n=2,m=0"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/EmptyInputs.lean"]
+  evidence: ["zero_lower_empty", "zero_upper_empty", "zero_failureSearch_none", "zero_success_counts", "oneNoOps_success_counts", "twoNoOps_empty_word_failure", "twoNoOps_failure_certificate"]
+  claim_mapping:
+    theorem_names: ["zero_success_counts", "oneNoOps_success_counts", "twoNoOps_failure_certificate"]
+    source_labels: ["G-126 A/D empty finite-set and empty-word cases"]
+    conjuncts: ["zero-state zero-class output", "operation-free success", "operation-free empty-word impossibility certificate"]
+    undischarged_assumptions: []
+    acceptance_point: "concrete empty-input evaluation; D total cost remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["zero-state table construction", "zero-operation success/failure examples", "empty separating word"]
+    remaining: ["D RAM cost", "cumulative E/fixed-example review"]
+  certificate_provenance:
+    discharged: ["same runRepair failure outcome (0,1,[]) and soundness theorem"]
+    unresolved: []
+  proof_use:
+    used: ["actual input tables", "runRepair_success_payload", "runRepair_failure"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["focused EmptyInputs check passed", "#assert_standard_axioms_only passed"]
+  blocking_findings: []
+  next_obligation: "D complete RAM primitive cost certificate; cumulative E and example review"
+```
 
 ## Cycle 18: shared counted run through the decision branch
 
