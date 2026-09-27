@@ -2025,3 +2025,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and three-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 39 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 39
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: b838a03cb
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycles 25, 32, 36–38 original and independent right actions and kernel isomorphism
+  proof_dag_predecessors: [identityRightAction, identityVerticalProtocolKernelMulEquiv, ProtocolChangeGroup.projectionFiberSMul, identityChangeMulEquivProtocol]
+  proof_obligation: Compare the original C3 right vertical action on every identity-operation A1 lift fiber with the independent FixedF protocol right literal-kernel action
+  selection_reason: Finishes the pointwise action-compatibility clause of D's Π-empty FixedF comparison on the actual original lifts and independently defined projection fibers
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityProtocolFiberAction.lean]
+  risks: [using a selected fiber only, switching left/right composition, replacing literal kernel, dropping named-edge visible action]
+  unchecked: [D full fiber equivalence and G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Every original A1 lift over every g∈H maps to the independent literal protocol projection fiber, and the original vertical right action equals the protocol kernel right action under the original-to-protocol vertical group equivalence; equality is at the full protocol element and uses the original vertexwise fiber composition formula
+  completion_candidate: no
+  lean_artifacts: [identityLiftToProtocolFiber]
+  evidence: [identityLiftToProtocolFiber_action]
+  claim_mapping:
+    theorem_names: [identityLiftToProtocolFiber, identityLiftToProtocolFiber_action]
+    source_labels: [D Π-empty FixedF every-fiber right action]
+    conjuncts: [every supplied g∈H, all original A1 lifts over g, independent literal projection fiber, original vertical A1 group, independent literal kernel, right action, each vertex/state map, full visible automorphism]
+    undischarged_assumptions: [D full fiber equivalence and G-124, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: Original and independent FixedF right actions coincide on the direct lift-to-protocol fiber map; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D identity FixedF right-action compatibility]
+    remaining: [D full fiber equivalence and G-124, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [original C3 right action, original-to-independent group and vertical-kernel equivalences, independent literal kernel action]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [original identityRightAction, original verticalRightAction_fiber_apply, independent ProjectionFiber action, direct group and kernel maps]
+    unused: [selected basepoint or replacement action]
+  structure_field_escape: none-found
+  route_integrity: pass-for-fixedf-fiber-action
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and two-declaration standard axiom audit to be recorded in PR]
+```
