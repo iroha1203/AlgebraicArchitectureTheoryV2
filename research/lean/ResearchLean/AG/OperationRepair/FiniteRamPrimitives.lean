@@ -27,7 +27,7 @@ universe u
 /-- Primitive operations named in G-126 D's RAM cost model. -/
 inductive Primitive where
   | tableRead | tableWrite | indexOp | boolOp | observationEq
-  | tableCell | copiedCell | wordCell
+  | tableCell | copiedCell | listCell | wordCell
   deriving DecidableEq, Repr
 
 /-- A computation value and its explicit primitive-operation trace. -/

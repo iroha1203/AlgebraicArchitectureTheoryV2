@@ -27,14 +27,85 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. D: charge lower enumeration-list construction, upper search, decision,
-   and success-table assembly; prove the total bound for the complete same
-   success/failure procedure.
+1. D: extend the primitive trace to upper word search, the decision scan,
+   success-table assembly and failure output; prove the total bound for the
+   complete same success/failure procedure.
 2. E: final crosscheck of the complete Law/path declaration map against the
    fixed GOAL remains. The general path-numbering bridge is now constructed
    in `PathEnumeration.lean`; E completion is subject to independent review.
 3. Independently review all three fixed examples as a whole after the cycle
    15 additions, and perform the cumulative E crosscheck.
+
+## Cycle 22: lower enumeration lists and complete lower trace
+
+`FiniteRamEnumeration.lean` constructs finite-state enumerations through
+counted list `map`, `append`, and `flatMap`. Each list cell construction and
+item visit has an explicit primitive charge. The resulting ordered pairs,
+triples, and operation/pair items agree with the lists used by the accepted
+`FiniteClosure.closeStep`. `closeStepWithItems` consumes these counted list
+values directly in its three passes; the counted lists are not rebuilt
+afterward. `closeStep_value` and `lower_value` prove that the same counted
+round and `n²`-round run compute the accepted lower table.
+
+`closeStep_cost_le` includes the enumeration and pass traces, and
+`lower_cost_poly` proves the complete lower table construction's modeled
+primitive trace is at most `600*(m+1)*(n+1)^5`. The older
+`FiniteCostLower.lowerWithCost_bound` is used only after proving a numerical
+comparison with this trace; it supplies polynomial arithmetic, not missing
+RAM-operation coverage. This closes the lower stage of D's cost accounting.
+The upper word loop, decision scan, success-table assembly, failure output,
+and same-procedure total cost remain open.
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 22
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: be7630e15e53f15c49f453602782b9c0801b0066
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 21 comment and uncharged lower enumerations"
+  proof_dag_predecessors: ["OperationRepair/FiniteRamPrimitives.lean", "OperationRepair/FiniteRamLower.lean", "OperationRepair/FiniteClosure.lean"]
+  proof_obligation: "Charge the actual lower enumeration lists and bound all lower RAM primitives through n² rounds"
+  selection_reason: "Closes the known hole in the lower-stage cost certificate before the upper and output stages"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/FiniteRamEnumeration.lean", "OperationRepair/FiniteRamPrimitives.lean"]
+  risks: ["list value order", "duplicate enumeration", "append-cell copying", "ghost trace overhead", "whole-D cost overclaim"]
+  unchecked: ["upper word-search primitive trace", "decision and success/failure output charge", "complete same-run total bound", "cumulative E and examples review"]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Counted pair/triple/operation enumerations feed the counted lower passes, with value equality and a degree-five bound on the complete lower-stage trace"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/FiniteRamEnumeration.lean", "OperationRepair/FiniteRamPrimitives.lean"]
+  evidence: ["appendItems_value", "appendItems_cost", "mapItems_value", "mapItems_cost_le", "flatMapItems_value", "flatMapItems_cost_le", "pairs_value", "pairs_cost_le", "triples_value", "triples_cost_le", "operationItems_value", "operationItems_cost_le", "closeStepWithItems_canonical", "closeStep_value", "closeStep_cost_le", "lower_value", "lower_cost_poly"]
+  claim_mapping:
+    theorem_names: ["closeStep_value", "closeStep_cost_le", "lower_value", "lower_cost_poly"]
+    source_labels: ["G-126 D lower synchronous closure and RAM cost stage"]
+    conjuncts: ["same lower relation table", "all lower enumeration, copy, table, index, Boolean primitive traces", "uniform degree-five lower bound"]
+    undischarged_assumptions: ["upper/decision/output primitive coverage", "same complete procedure total bound"]
+    acceptance_point: "lower-stage RAM cost discharged; full D remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["lower enumeration-list cell charges", "lower initial table and n²-round primitive trace bound"]
+    remaining: ["upper/decision/output primitive trace", "full total bound"]
+  certificate_provenance:
+    discharged: ["list cells constructed by counted map/append/flatMap", "same counted enumerated values drive closure passes"]
+    unresolved: ["full-run RAM cost certificate"]
+  proof_use:
+    used: ["counted enumeration values", "concrete marking pass", "FiniteCostLower.lowerWithCost_bound for arithmetic after trace comparison"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["focused FiniteRamEnumeration check passed", "#assert_standard_axioms_only passed"]
+  blocking_findings: []
+  next_obligation: "upper word-loop primitive trace, then decision and success/failure output trace"
+```
 
 ## Cycle 21: concrete lower trace through all synchronous rounds
 
