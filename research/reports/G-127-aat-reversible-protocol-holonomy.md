@@ -1414,108 +1414,6 @@ audits:
   validation_refs: [focused Lean check and five-declaration standard axiom audit to be recorded in PR]
 ```
 
-## Cycle 34 selection / proposed result
-
-```yaml
-ledger_type: target_cycle_result
-goal: G-127-aat-reversible-protocol-holonomy
-cycle: 34
-goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
-base_oid: 58d30e2aa
-tracking_issue: 4981
-report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
-selection:
-  proof_state_ref: Issue #4981 Cycle 33 direct carrier correspondence
-  proof_dag_predecessors: [identityChangeEquivProtocol, ReversibleData.Lift.comp_fiber_apply, ReversibleData.StateChange.toStateChange_toLift]
-  proof_obligation: Prove the direct correspondence preserves the actual group product, including the original visible named-edge automorphism
-  selection_reason: Completes the first group-level step of D's Π-empty FixedF comparison on the two original groups
-  expected_result_type: proof-checkpoint
-  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityProtocolGroup.lean]
-  risks: [transported replacement group law, omission of visible edge rename, reversal of fiber composition order]
-  unchecked: [D projection/section/kernel/fiber action and G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
-result:
-  proposed_result_type: proof-checkpoint
-  proof_obligation_delta: The original actual identity-operation ChangeGroup H is group-isomorphic to the independent FixedF ProtocolChangeGroup H; multiplication follows the original A2 total-state composition and retains the full supplied visible H element
-  completion_candidate: no
-  lean_artifacts: [identityChangeMulEquivProtocol]
-  evidence: [identityChangeMulEquivProtocol_visible]
-  claim_mapping:
-    theorem_names: [identityChangeMulEquivProtocol, identityChangeMulEquivProtocol_visible]
-    source_labels: [D Π-empty existing FixedF protocol group law]
-    conjuncts: [all original actual changes, independent FixedF protocol group, original multiplication, original visible vertex and named-edge automorphism]
-    undischarged_assumptions: [D projection/section/kernel/fiber action and G-124, arbitrary undirected named-tree bridge, E and fixed examples]
-    acceptance_point: Direct original-to-protocol group isomorphism is established; G-127 remains incomplete
-    port_status: unported
-audits:
-  premise_delta:
-    discharged: [D identity/FixedF direct group isomorphism]
-    remaining: [D projection/section/kernel/fiber action and G-124, undirected-tree bridge, E and fixed examples]
-  certificate_provenance:
-    discharged: [Cycle 33 direct carrier equivalence, actual A2 lift composition formula]
-    unresolved: [E finite table construction]
-  proof_use:
-    used: [original StateChange group multiplication, original A1 Lift bridge, independent FixedF protocol multiplication]
-    unused: [replacement transported group structure]
-  structure_field_escape: none-found
-  route_integrity: pass-for-fixedf-group-law
-  target_fitting: none-found
-  vacuity: none-found
-  one_way_as_equivalence: none-found
-  goal_or_report_reinterpretation: none-found
-  validation_refs: [focused Lean check and two-declaration standard axiom audit to be recorded in PR]
-```
-
-## Cycle 35 selection / proposed result
-
-```yaml
-ledger_type: target_cycle_result
-goal: G-127-aat-reversible-protocol-holonomy
-cycle: 35
-goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
-base_oid: 3033ee9c6
-tracking_issue: 4981
-report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
-selection:
-  proof_state_ref: Issue #4981 Cycle 34 direct original-to-protocol group isomorphism
-  proof_dag_predecessors: [identityChangeMulEquivProtocol, identitySection, ProtocolChangeGroup.projection, ProtocolChangeGroup.canonicalSection]
-  proof_obligation: Show the group isomorphism preserves the two original visible projections and maps the actual identity-hidden section to the independently defined protocol canonical section
-  selection_reason: Verifies the original structure maps rather than inferring them from an uninspected abstract group equivalence
-  expected_result_type: proof-checkpoint
-  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityProtocolCompatibility.lean]
-  risks: [projection equality only on vertices, section of a replacement group, loss of named operation rename]
-  unchecked: [D kernel/fiber action and G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
-result:
-  proposed_result_type: proof-checkpoint
-  proof_obligation_delta: Both visible projections literally return the same original H element, and the actual identity-hidden section over every g∈H maps to the existing independent protocol canonical section
-  completion_candidate: no
-  lean_artifacts: [identityProtocol_projection, identityProtocol_section]
-  evidence: [identityProtocol_projection, identityProtocol_section]
-  claim_mapping:
-    theorem_names: [identityProtocol_projection, identityProtocol_section]
-    source_labels: [D Π-empty FixedF projection and section compatibility]
-    conjuncts: [original actual projection, independent protocol projection, all supplied H elements and named-edge renames, actual identity-hidden section, independent canonical section]
-    undischarged_assumptions: [D kernel/fiber action and G-124, arbitrary undirected named-tree bridge, E and fixed examples]
-    acceptance_point: Original-to-protocol projection and section compatibility is proved; G-127 remains incomplete
-    port_status: unported
-audits:
-  premise_delta:
-    discharged: [D identity/FixedF projection and section compatibility]
-    remaining: [D kernel/fiber action and G-124, undirected-tree bridge, E and fixed examples]
-  certificate_provenance:
-    discharged: [Cycle 34 direct group isomorphism, actual identitySection, independent ProtocolChangeGroup.canonicalSection]
-    unresolved: [E finite table construction]
-  proof_use:
-    used: [both independently defined projection maps and section maps]
-    unused: [replacement extension or chosen visible generator]
-  structure_field_escape: none-found
-  route_integrity: pass-for-fixedf-projection-section
-  target_fitting: none-found
-  vacuity: none-found
-  one_way_as_equivalence: none-found
-  goal_or_report_reinterpretation: none-found
-  validation_refs: [focused Lean check and two-declaration standard axiom audit to be recorded in PR]
-```
-
 ## Cycle 27 selection / proposed result
 
 ```yaml
@@ -1871,4 +1769,157 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and five-declaration standard axiom audit to be recorded in PR]
+```
+
+## Cycle 34 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 34
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 58d30e2aa
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 33 direct carrier correspondence
+  proof_dag_predecessors: [identityChangeEquivProtocol, ReversibleData.Lift.comp_fiber_apply, ReversibleData.StateChange.toStateChange_toLift]
+  proof_obligation: Prove the direct correspondence preserves the actual group product, including the original visible named-edge automorphism
+  selection_reason: Completes the first group-level step of D's Π-empty FixedF comparison on the two original groups
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityProtocolGroup.lean]
+  risks: [transported replacement group law, omission of visible edge rename, reversal of fiber composition order]
+  unchecked: [D projection/section/kernel/fiber action and G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The original actual identity-operation ChangeGroup H is group-isomorphic to the independent FixedF ProtocolChangeGroup H; multiplication follows the original A2 total-state composition and retains the full supplied visible H element
+  completion_candidate: no
+  lean_artifacts: [identityChangeMulEquivProtocol]
+  evidence: [identityChangeMulEquivProtocol_visible]
+  claim_mapping:
+    theorem_names: [identityChangeMulEquivProtocol, identityChangeMulEquivProtocol_visible]
+    source_labels: [D Π-empty existing FixedF protocol group law]
+    conjuncts: [all original actual changes, independent FixedF protocol group, original multiplication, original visible vertex and named-edge automorphism]
+    undischarged_assumptions: [D projection/section/kernel/fiber action and G-124, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: Direct original-to-protocol group isomorphism is established; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D identity/FixedF direct group isomorphism]
+    remaining: [D projection/section/kernel/fiber action and G-124, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [Cycle 33 direct carrier equivalence, actual A2 lift composition formula]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [original StateChange group multiplication, original A1 Lift bridge, independent FixedF protocol multiplication]
+    unused: [replacement transported group structure]
+  structure_field_escape: none-found
+  route_integrity: pass-for-fixedf-group-law
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and two-declaration standard axiom audit to be recorded in PR]
+```
+
+## Cycle 35 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 35
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 3033ee9c6
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 34 direct original-to-protocol group isomorphism
+  proof_dag_predecessors: [identityChangeMulEquivProtocol, identitySection, ProtocolChangeGroup.projection, ProtocolChangeGroup.canonicalSection]
+  proof_obligation: Show the group isomorphism preserves the two original visible projections and maps the actual identity-hidden section to the independently defined protocol canonical section
+  selection_reason: Verifies the original structure maps rather than inferring them from an uninspected abstract group equivalence
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityProtocolCompatibility.lean]
+  risks: [projection equality only on vertices, section of a replacement group, loss of named operation rename]
+  unchecked: [D kernel/fiber action and G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Both visible projections literally return the same original H element, and the actual identity-hidden section over every g∈H maps to the existing independent protocol canonical section
+  completion_candidate: no
+  lean_artifacts: [identityProtocol_projection, identityProtocol_section]
+  evidence: [identityProtocol_projection, identityProtocol_section]
+  claim_mapping:
+    theorem_names: [identityProtocol_projection, identityProtocol_section]
+    source_labels: [D Π-empty FixedF projection and section compatibility]
+    conjuncts: [original actual projection, independent protocol projection, all supplied H elements and named-edge renames, actual identity-hidden section, independent canonical section]
+    undischarged_assumptions: [D kernel/fiber action and G-124, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: Original-to-protocol projection and section compatibility is proved; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D identity/FixedF projection and section compatibility]
+    remaining: [D kernel/fiber action and G-124, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [Cycle 34 direct group isomorphism, actual identitySection, independent ProtocolChangeGroup.canonicalSection]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [both independently defined projection maps and section maps]
+    unused: [replacement extension or chosen visible generator]
+  structure_field_escape: none-found
+  route_integrity: pass-for-fixedf-projection-section
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and two-declaration standard axiom audit to be recorded in PR]
+```
+
+## Cycle 36 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 36
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: f06179695
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycles 34–35 direct group and projection compatibility
+  proof_dag_predecessors: [identityChangeMulEquivProtocol, identityProtocol_projection]
+  proof_obligation: Restrict the direct original-to-protocol isomorphism to the literal kernels of the independently defined visible projections
+  selection_reason: Fixes D's kernel comparison at the original group level before comparing the original vertical inclusion and every fiber action
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityProtocolKernel.lean]
+  risks: [replacing the original kernel by an abstract subgroup, only set-level correspondence, projection from a different H]
+  unchecked: [D vertical inclusion/fiber action and G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The direct group isomorphism restricts to a group isomorphism of literal projection kernels, with membership proved by equality of the two original H-valued projections
+  completion_candidate: no
+  lean_artifacts: [identityProtocolKernelMulEquiv]
+  evidence: [identityProtocolKernelMulEquiv]
+  claim_mapping:
+    theorem_names: [identityProtocolKernelMulEquiv]
+    source_labels: [D Π-empty FixedF literal kernel comparison]
+    conjuncts: [original actual projection kernel, independent protocol projection kernel, group law, all elements in both directions]
+    undischarged_assumptions: [D vertical inclusion/fiber action and G-124, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: Direct literal kernel correspondence is proved; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D identity/FixedF literal projection kernel isomorphism]
+    remaining: [D vertical inclusion/fiber action and G-124, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [Cycle 34 group isomorphism, Cycle 35 H-valued projection compatibility]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [literal MonoidHom.ker on both independently defined projection homomorphisms]
+    unused: [abstract replacement kernel]
+  structure_field_escape: none-found
+  route_integrity: pass-for-fixedf-literal-kernel
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and one-declaration standard axiom audit to be recorded in PR]
 ```
