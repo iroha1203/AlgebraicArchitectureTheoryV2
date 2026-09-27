@@ -1465,6 +1465,57 @@ audits:
   validation_refs: [focused Lean check and two-declaration standard axiom audit to be recorded in PR]
 ```
 
+## Cycle 35 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 35
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 3033ee9c6
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 34 direct original-to-protocol group isomorphism
+  proof_dag_predecessors: [identityChangeMulEquivProtocol, identitySection, ProtocolChangeGroup.projection, ProtocolChangeGroup.canonicalSection]
+  proof_obligation: Show the group isomorphism preserves the two original visible projections and maps the actual identity-hidden section to the independently defined protocol canonical section
+  selection_reason: Verifies the original structure maps rather than inferring them from an uninspected abstract group equivalence
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityProtocolCompatibility.lean]
+  risks: [projection equality only on vertices, section of a replacement group, loss of named operation rename]
+  unchecked: [D kernel/fiber action and G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Both visible projections literally return the same original H element, and the actual identity-hidden section over every g∈H maps to the existing independent protocol canonical section
+  completion_candidate: no
+  lean_artifacts: [identityProtocol_projection, identityProtocol_section]
+  evidence: [identityProtocol_projection, identityProtocol_section]
+  claim_mapping:
+    theorem_names: [identityProtocol_projection, identityProtocol_section]
+    source_labels: [D Π-empty FixedF projection and section compatibility]
+    conjuncts: [original actual projection, independent protocol projection, all supplied H elements and named-edge renames, actual identity-hidden section, independent canonical section]
+    undischarged_assumptions: [D kernel/fiber action and G-124, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: Original-to-protocol projection and section compatibility is proved; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D identity/FixedF projection and section compatibility]
+    remaining: [D kernel/fiber action and G-124, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [Cycle 34 direct group isomorphism, actual identitySection, independent ProtocolChangeGroup.canonicalSection]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [both independently defined projection maps and section maps]
+    unused: [replacement extension or chosen visible generator]
+  structure_field_escape: none-found
+  route_integrity: pass-for-fixedf-projection-section
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and two-declaration standard axiom audit to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
