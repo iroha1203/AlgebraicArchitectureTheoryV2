@@ -2482,5 +2482,5 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [focused Lean check and seven-declaration standard axiom audit to be recorded in PR; #eval supplied-root one-vertex Bool C1 search true]
+  validation_refs: [focused Lean check and seven-declaration standard axiom audit to be recorded in PR; #eval zero-edge Bool true; #eval two named-loop C1 positive true and negative false]
 ```

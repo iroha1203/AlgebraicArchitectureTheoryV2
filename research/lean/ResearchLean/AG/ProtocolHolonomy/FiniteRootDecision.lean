@@ -274,4 +274,83 @@ private instance (x : smokeQ.Vertex) : DecidableEq (smokeD.Fiber x) := by
   infer_instance
 
 #eval (smokeD.findRootLift smokeR 1 smokeVertices smokeEdges smokeFibers).isSome
+
+/- The same two named loops test both outcomes of the actual C1 edge check.
+These are executable branch checks, not the full fixed-example classification. -/
+private def edgeSmokeQ : AAT.AG.RealizationReconstruction.FixedFDirectedMultigraph.{0, 0} where
+  Vertex := PUnit
+  Edge := Bool
+  source := fun _ => PUnit.unit
+  target := fun _ => PUnit.unit
+
+private def edgeSmokeR : AAT.AG.ProtocolHolonomy.RootedPaths edgeSmokeQ where
+  root := fun _ => PUnit.unit
+  root_component := by
+    intro j
+    have h := Quotient.out_eq j
+    have he : Quotient.out j = PUnit.unit := by
+      cases Quotient.out j
+      rfl
+    simpa [he] using h
+  path := by
+    intro j x hx
+    cases x
+    exact AAT.AG.ProtocolHolonomy.signedNil edgeSmokeQ PUnit.unit
+  path_root := by
+    intro j
+    rfl
+
+private instance : DecidableEq edgeSmokeQ.Vertex := by
+  unfold edgeSmokeQ
+  infer_instance
+
+private instance : DecidableEq edgeSmokeQ.Edge := by
+  unfold edgeSmokeQ
+  infer_instance
+
+private def edgeSmokeRename :
+    AAT.AG.RealizationReconstruction.FixedFGraphAutomorphism edgeSmokeQ where
+  vertex := Equiv.refl PUnit
+  edge := Equiv.swap false true
+  source_rename := by intro e; rfl
+  target_rename := by intro e; rfl
+
+private def edgeSmokePositive :
+    AAT.AG.ProtocolHolonomy.ReversibleData.{0, 0, 0} edgeSmokeQ where
+  Fiber := fun _ => Bool
+  edgeEquiv := fun _ => Equiv.refl Bool
+
+private def edgeSmokeNegative :
+    AAT.AG.ProtocolHolonomy.ReversibleData.{0, 0, 0} edgeSmokeQ where
+  Fiber := fun _ => Bool
+  edgeEquiv := fun e => if e = true then Equiv.swap false true else Equiv.refl Bool
+
+private def edgeSmokeVertices :
+    AAT.AG.ProtocolHolonomy.ExplicitEnumeration edgeSmokeQ.Vertex where
+  values := [PUnit.unit]
+  complete := by intro x; cases x; simp
+
+private def edgeSmokeEdges :
+    AAT.AG.ProtocolHolonomy.ExplicitEnumeration edgeSmokeQ.Edge where
+  values := [false, true]
+  complete := by intro e; cases e <;> simp
+
+private def edgeSmokeFibers :
+    ∀ x, AAT.AG.ProtocolHolonomy.ExplicitEnumeration (edgeSmokePositive.Fiber x) :=
+  fun _ => { values := [false, true], complete := by intro x; cases x <;> simp }
+
+private instance (x : edgeSmokeQ.Vertex) :
+    DecidableEq (edgeSmokePositive.Fiber x) := by
+  unfold edgeSmokePositive
+  infer_instance
+
+private instance (x : edgeSmokeQ.Vertex) :
+    DecidableEq (edgeSmokeNegative.Fiber x) := by
+  unfold edgeSmokeNegative
+  infer_instance
+
+#eval (edgeSmokePositive.findRootLift edgeSmokeR edgeSmokeRename
+  edgeSmokeVertices edgeSmokeEdges edgeSmokeFibers).isSome
+#eval (edgeSmokeNegative.findRootLift edgeSmokeR edgeSmokeRename
+  edgeSmokeVertices edgeSmokeEdges edgeSmokeFibers).isSome
 #assert_standard_axioms_only AAT.AG.ProtocolHolonomy
