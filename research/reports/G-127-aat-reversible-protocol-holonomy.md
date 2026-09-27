@@ -1258,3 +1258,56 @@ audits:
   blocking_findings: []
   next_obligation: Prove D semantic projection/kernel/each-fiber right-action compatibility
 ```
+
+## Cycle 24 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 24
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: f941a7a6da72a66a788d44eea31fdeb2665a4e23
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycles 17 and 23 full semantic natural isomorphism equivalence and A2 composition
+  proof_dag_predecessors: [FiniteProtocolInput.liftEquivSemanticIso, FiniteProtocolInput.liftIsoSemanticComposite_eq, ReversibleData.liftPairMulEquivChangeGroup, ReversibleData.liftPairProjection]
+  proof_obligation: Identify the complete group of original visible changes paired with independent semantic natural isomorphisms, including its original visible projection and literal kernel
+  selection_reason: Connects semantic A2 composition to the original change-group projection and kernel rather than leaving the semantic correspondence fiberwise only
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/SemanticGroup.lean]
+  risks: [dependent renamed target, supplied semantic group law, original projection preservation, kernel substitution]
+  unchecked: [semantic each-fiber right torsor action, D identity specialization, arbitrary undirected-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Original A1 lift pairs and full independent semantic isomorphism pairs are group-isomorphic; multiplication of arbitrary semantic pairs has the actual reindexed natural-isomorphism composite as hom; the semantic projection is the original visible projection, and its literal kernel membership is exactly original identity-visible pair membership
+  completion_candidate: no
+  lean_artifacts: [FiniteProtocolInput.SemanticIsoPair, FiniteProtocolInput.liftPairEquivSemanticPair, FiniteProtocolInput.liftPairMulEquivSemanticPair, FiniteProtocolInput.semanticPairProjection]
+  evidence: [FiniteProtocolInput.semanticPair_mul_toNatTrans, FiniteProtocolInput.semanticPair_mul_composite, FiniteProtocolInput.semanticPairProjection_apply, FiniteProtocolInput.semanticPair_mem_ker_iff, FiniteProtocolInput.liftPairEquivSemanticPair_mem_ker_iff]
+  claim_mapping:
+    theorem_names: [FiniteProtocolInput.liftPairMulEquivSemanticPair, FiniteProtocolInput.semanticPair_mul_composite, FiniteProtocolInput.liftPairEquivSemanticPair_mem_ker_iff]
+    source_labels: [A2, C3 original projection and kernel, D independent semantic projection/kernel compatibility]
+    conjuncts: [original H and all its A1 lifts, full semantic isomorphisms, original actual A2 group, reindexed natural-isomorphism composite on arbitrary semantic pairs, original visible projection, literal projection kernel, bidirectional correspondence]
+    undischarged_assumptions: [semantic fiber right-action compatibility, D identity specialization, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: The semantic group/projection/kernel all descend from and return to the original A1/A2 change group; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D semantic group and reindexed composition, visible projection, and literal kernel compatibility]
+    remaining: [D semantic each-fiber right action and identity specialization, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [semantic isomorphisms from original A1 lifts and inverse by vertex restriction; group law from original StateChange group]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [Cycle 17 semantic iso equivalence, original LiftPair group and projection, Cycle 23 semantic A2 natural-transformation composition]
+    unused: [B/C because semantic correspondence follows directly from original A]
+  structure_field_escape: none-found
+  route_integrity: pass-for-semantic-group
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and eight-declaration standard axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Prove semantic each-fiber right torsor action compatibility
+```
