@@ -4,9 +4,8 @@
 - Tracking Issue: [#4945](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4945)
 - Applied GOAL and common-standard commit: `93cbcedece216238edfd40e2329bcc69c4f7ae2d`
 - GOAL blob: `255a64df4bdc851f64f799ef89189ea81e78aa70`
-- Proof state: A and B proved; C's request-family composition and input maps
-  and two-stage sequential quotient are constructed; finite-family order and
-  bracketing coherence, D–E, and the three fixed examples remain open.
+- Proof state: A–C proved in ResearchLean; D–E and the three fixed examples
+  remain open.
 
 The fixed statement and completion criteria are in the GOAL card. This report
 indexes proof evidence and the next obligations.
@@ -28,12 +27,10 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. C: generalize the two-stage sequential quotient to all finite orders and
-   parenthesizations and prove comparison coherence.
-2. D: one executable finite table algorithm with correctness, short failure
+1. D: one executable finite table algorithm with correctness, short failure
    words, and the stated cost upper bound.
-3. E: the existing `FiniteLawFamily` and `Reading` bridge and path requests.
-4. Three fixed examples and empty input cases, evaluated through the same
+2. E: the existing `FiniteLawFamily` and `Reading` bridge and path requests.
+3. Three fixed examples and empty input cases, evaluated through the same
    general API and finite algorithm.
 
 ## B: quotient and kernel core
@@ -188,7 +185,7 @@ audits:
 The maps of inputs require the fixed GOAL equations, with no injectivity or
 surjectivity assumption on the input map. The endpoint quotient maps are
 constructed from the preserved congruence relations, not supplied as data.
-The finite-order and bracketing coherence claims remain open.
+The finite-order and bracketing coherence evidence is indexed below.
 
 ## C: two-stage sequential quotient
 
@@ -202,7 +199,82 @@ The finite-order and bracketing coherence claims remain open.
 The kernel theorem has no repairability premise. Observation descent uses exactly
 `c ≤ behavior T observe` and `generated T R ≤ behavior T observe`, which hold
 for the first generated congruence and second request in the fixed C claim.
-The finite-order and bracketing coherence claim remains open.
+The finite-order and bracketing coherence evidence is indexed below.
+
+## C: finite orders, bracketings, and coherence
+
+| Fixed C component | Lean declaration | Construction and proof use |
+| --- | --- | --- |
+| Quotient-stage infrastructure | `SequentialStage`, `sequentialBase`, `sequentialExtend`, `generated_mappedRequest_kernel` in `FiniteSequential.lean` | Each extension forms an actual quotient by a request's image under the composite source map and proves that its kernel joins the previous kernel with the new generated request |
+| Recursive binary parentheses | `fullTreeStage`, `fullRepairTreeStage` in `FullTree.lean` | Both child subtrees are recursively constructed as quotient systems. The right child's actual kernel is mapped into the left child's current quotient; it is not replaced by an unconstructed leaf union |
+| Raw-request image at each node | `generated_mappedRequest_congr`, `fullTree_branch_image`, `fullRepairTree_branch_image` | The right-child kernel and the union of its raw leaf requests generate the same congruence after mapping to the current left stage |
+| Repair and observation at every node | `sequentialExtend_image_repairable`, `sequentialExtend_observation_comm`, `RepairableSequentialStage`, `repairableSequentialExtend` | Every node has descended observation, the next image request is repairable against it, and the next observation agrees on its actual quotient map |
+| All orders and parentheses | `fullRepairTreeStage_generated`, `fullRepairTreeCompare`, `_read`, `_step`, `_observation`, `_unique` | Any two fully evaluated trees whose leaf lists are permutations have a unique source-commuting operation- and observation-preserving comparison |
+| Coherence | `fullRepairTreeCompare_coherent` | Source surjectivity makes the composite comparison equal to the direct comparison |
+| Finite indexed family | `indexedFamilyTree_request_iff`, `fullIndexedFamilyStage_kernel`, `fullIndexedFamilyEquiv`, `_read`, `_step`, `_observation`, `_unique` | `Fintype` enumeration gives a fully recursive repair tree and a direct comparison with the union quotient, including an empty index type |
+
+`FiniteSequential.lean` also provides flat leafwise and left-spine block
+calculi. The fixed all-parenthesizations claim uses `FullTree.lean`, whose
+branch evaluator calls itself on **both** children. The constructed right
+child contributes its proved kernel as a request, and the image-congruence
+theorem identifies that request with the original right leaves. At every
+node, the per-leaf repairability premise builds the descended observation.
+No stage, kernel, comparison, or intermediate observation certificate is
+supplied by the caller.
+
+## Cycle 6 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 6
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: f4b20da0d9e06a2c269e34b92cf507976a568d64
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 5 comment and report C two-stage section"
+  proof_dag_predecessors: ["OperationRepair/Sequential.lean", "OperationRepair/Composition.lean"]
+  proof_obligation: "C all finite orders and bracketings, comparison coherence, and finite-indexed-family bridge"
+  selection_reason: "Completes the remaining fixed C composition claim using actual repeated quotient steps"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/FiniteSequential.lean", "OperationRepair/FullTree.lean"]
+  risks: ["kernel invariant escape", "request image at wrong stage", "tree order", "empty family", "observation premise", "comparison coherence"]
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed actual finite sequential stages and tree parenthesizations, their canonical structure-preserving comparisons, and coherence"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/FiniteSequential.lean", "OperationRepair/FullTree.lean"]
+  evidence: ["generated_mappedRequest_kernel", "fullRepairTreeStage_generated", "fullRepairTree_branch_image", "fullRepairTreeCompare_coherent", "fullRepairTreeCompare_observation", "fullIndexedFamilyEquiv"]
+  claim_mapping:
+    theorem_names: ["generated_mappedRequest_kernel", "sequentialExtend_image_repairable", "sequentialExtend_observation_comm", "fullRepairTreeStage_generated", "fullRepairTree_branch_image", "fullRepairTreeCompare_read", "fullRepairTreeCompare_step", "fullRepairTreeCompare_observation", "fullRepairTreeCompare_unique", "fullRepairTreeCompare_coherent", "fullIndexedFamilyEquiv_observation"]
+    source_labels: ["G-126 C finite-family sequential quotient and coherence"]
+    conjuncts: ["actual staged quotient", "every finite order and bracketing", "empty family", "source commuting unique isomorphism", "operations and observations", "comparison coherence"]
+    undischarged_assumptions: []
+    acceptance_point: "Both child subtrees are recursively constructed; kernel, raw-image congruence, repairability, and observation descent are proved at each node"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["C finite-order and bracketing coherence"]
+    remaining: ["D", "E", "fixed examples"]
+  certificate_provenance:
+    discharged: ["stage kernel invariants built by sequentialBase/sequentialExtend", "intermediate observation descent built by repairableSequentialExtend", "comparison maps built from source quotients"]
+    unresolved: []
+  proof_use:
+    used: ["right subtree's constructed kernel and its equality with raw leaf-union generation", "new request image under current left composite source map", "surjectivity for kernel and comparison uniqueness", "each repairability premise at every recursively constructed observation stage"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["FiniteSequential focused check: pass, 162 declarations standard axioms", "FullTree focused check: pass, 25 declarations standard axioms", "lake build ResearchLean.AG.OperationRepair.FullTree: pass", "eight FullTree spine #print axioms: standard axioms only", "git diff --check: pass", "placeholder and hidden Unicode scans: no matches"]
+  blocking_findings: []
+  review_findings_resolved: ["initial flat tree did not realize grouped bracket carriers", "initial sequence lacked explicit intermediate observation descent", "left-spine grouping did not recursively evaluate right subtrees"]
+  next_obligation: "D executable finite table procedure and proof of correctness/cost"
+```
 
 ## Cycle 5 ledger
 

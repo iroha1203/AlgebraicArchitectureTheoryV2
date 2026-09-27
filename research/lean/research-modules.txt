@@ -1410,3 +1410,5 @@ ResearchLean.AG.OperationRepair.Universal	ResearchLean/AG/OperationRepair/Univer
 ResearchLean.AG.OperationRepair.Composition	ResearchLean/AG/OperationRepair/Composition.lean
 ResearchLean.AG.OperationRepair.InputMaps	ResearchLean/AG/OperationRepair/InputMaps.lean
 ResearchLean.AG.OperationRepair.Sequential	ResearchLean/AG/OperationRepair/Sequential.lean
+ResearchLean.AG.OperationRepair.FiniteSequential	ResearchLean/AG/OperationRepair/FiniteSequential.lean
+ResearchLean.AG.OperationRepair.FullTree	ResearchLean/AG/OperationRepair/FullTree.lean

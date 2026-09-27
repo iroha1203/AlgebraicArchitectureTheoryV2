@@ -839,3 +839,5 @@ import ResearchLean.AG.OperationRepair.Universal
 import ResearchLean.AG.OperationRepair.Composition
 import ResearchLean.AG.OperationRepair.InputMaps
 import ResearchLean.AG.OperationRepair.Sequential
+import ResearchLean.AG.OperationRepair.FiniteSequential
+import ResearchLean.AG.OperationRepair.FullTree
