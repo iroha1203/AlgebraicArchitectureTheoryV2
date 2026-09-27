@@ -728,3 +728,56 @@ audits:
   blocking_findings: []
   next_obligation: Prove arbitrary undirected named spanning-tree orientation bridge or A execution quotient semantics
 ```
+
+## Cycle 14 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 14
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: e4204a39aa9c52dccf1265ebaa14c21b3660ab84
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 13 and the accepted B2/C1-C2 declarations
+  proof_dag_predecessors: [verticalRootMulEquiv, liftEquivRootSolutions, vertical_transport_naturality, Lift.signed_path_naturality]
+  proof_obligation: Construct coherent root and chosen-path coordinate changes with the actual conjugation formulas in D
+  selection_reason: The same original vertical changes and lifts underlie all B2 and C1 presentations; making the transition maps explicit reduces the D compatibility proof distance
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/ChoiceChange.lean]
+  risks: [conjugation direction, renamed target path, preservation of original A1 family, arbitrary root and tree choices]
+  unchecked: [holonomy subgroup conjugacy, A2/projection/kernel/torsor compatibility, undirected-tree bridge, A quotient semantics, D identity specialization, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: For any two RootedPaths choices, the B2 group coordinates and C1 solution coordinates are changed through the original A1 changes; direct and successive transitions coincide, reconstruction yields the identical original fiber family, and each new root value obeys the actual old-to-new transport conjugation formula
+  completion_candidate: no
+  lean_artifacts: [ReversibleData.verticalChoiceChange, ReversibleData.liftChoiceChange, ReversibleData.oldRootToNewRoot]
+  evidence: [ReversibleData.verticalChoiceChange_comp, ReversibleData.liftChoiceChange_comp, ReversibleData.verticalChoiceChange_reconstruct, ReversibleData.liftChoiceChange_reconstruct, ReversibleData.verticalChoiceChange_root_formula, ReversibleData.liftChoiceChange_root_formula]
+  claim_mapping:
+    theorem_names: [ReversibleData.verticalChoiceChange_root_formula, ReversibleData.liftChoiceChange_root_formula]
+    source_labels: [D root and tree change]
+    conjuncts: [arbitrary normalized root/path choices, original named signed path between roots, vertical transport conjugation, renamed lift transport formula, coherent successive changes, unchanged original fiber maps]
+    undischarged_assumptions: [holonomy subgroup conjugacy, arbitrary undirected named-tree bridge, remaining D compatibilities, A quotient semantics, E finite construction and two fixed examples]
+    acceptance_point: A genuine D coordinate-change construction and formulas are proved; the full D clause and G-127 completion remain open
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [coordinate transitions for arbitrary RootedPaths choices and explicit root transport formulas]
+    remaining: [holonomy conjugacy, A2/projection/kernel/torsor compatibility, semantic and identity-specialization clauses, E and examples]
+  certificate_provenance:
+    discharged: [choice changes derived from original Lift and vertical group, path transport derived from original named edges]
+    unresolved: [arbitrary undirected-tree orientation bridge and E executable forest]
+  proof_use:
+    used: [B2 group equivalence, C1/C2 lift equivalence, actual signed-path naturality]
+    unused: [finite equations and H because coordinate changes apply to each original lift]
+  structure_field_escape: none-found
+  route_integrity: pass-for-rooted-paths
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Construct A execution quotient realization from the original finite input and then finish D compatibility and conjugacy
+```
