@@ -1417,3 +1417,4 @@ ResearchLean.AG.OperationRepair.FiniteClosure	ResearchLean/AG/OperationRepair/Fi
 ResearchLean.AG.OperationRepair.FiniteBehavior	ResearchLean/AG/OperationRepair/FiniteBehavior.lean
 ResearchLean.AG.OperationRepair.FiniteConstruction	ResearchLean/AG/OperationRepair/FiniteConstruction.lean
 ResearchLean.AG.OperationRepair.FiniteEnumeration	ResearchLean/AG/OperationRepair/FiniteEnumeration.lean
+ResearchLean.AG.OperationRepair.FiniteCostLower	ResearchLean/AG/OperationRepair/FiniteCostLower.lean
