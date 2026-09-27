@@ -1438,3 +1438,4 @@ ResearchLean.AG.OperationRepair.EmptyInputs	ResearchLean/AG/OperationRepair/Empt
 ResearchLean.AG.OperationRepair.Examples	ResearchLean/AG/OperationRepair/Examples.lean
 ResearchLean.AG.OperationRepair.ExampleSequential	ResearchLean/AG/OperationRepair/ExampleSequential.lean
 ResearchLean.AG.OperationRepair.ExampleLaw	ResearchLean/AG/OperationRepair/ExampleLaw.lean
+ResearchLean.AG.ProtocolHolonomy.Basic	ResearchLean/AG/ProtocolHolonomy/Basic.lean
