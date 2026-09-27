@@ -1443,3 +1443,4 @@ ResearchLean.AG.ProtocolHolonomy.ChangeGroup	ResearchLean/AG/ProtocolHolonomy/Ch
 ResearchLean.AG.ProtocolHolonomy.LiftBridge	ResearchLean/AG/ProtocolHolonomy/LiftBridge.lean
 ResearchLean.AG.ProtocolHolonomy.Transport	ResearchLean/AG/ProtocolHolonomy/Transport.lean
 ResearchLean.AG.ProtocolHolonomy.PathEquations	ResearchLean/AG/ProtocolHolonomy/PathEquations.lean
+ResearchLean.AG.ProtocolHolonomy.RootedPaths	ResearchLean/AG/ProtocolHolonomy/RootedPaths.lean
