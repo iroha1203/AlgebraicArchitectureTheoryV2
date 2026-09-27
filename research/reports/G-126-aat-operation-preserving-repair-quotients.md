@@ -55,6 +55,13 @@ obeys `1100*(m+1)*(n+1)^5`. Focused Lean checks and namespace axiom audits
 passed for the new files. Mathematical completeness of D remains subject to
 independent primitive-coverage and same-procedure audit.
 
+The referenced finite-construction design estimates a quadratic bound for
+partition, numbering, and quotient-output work. This implementation scans
+the counted representative list again for each output cell; its proved local
+bound is quartic, as stated above. No quadratic local bound is claimed for
+this implementation. The fixed GOAL D requires the total fifth-degree bound,
+which `runWithTrace_cost_le` establishes for the same counted run.
+
 ```yaml
 ledger_type: target_cycle_result
 goal: G-126-aat-operation-preserving-repair-quotients
