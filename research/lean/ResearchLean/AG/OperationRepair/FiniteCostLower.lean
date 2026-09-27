@@ -3,14 +3,13 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 
 /-!
-# Charged execution of the lower finite closure
+# Provisional counter instrumentation of the lower finite closure
 
-The value and charge are accumulated by the same folds. Each visited item is
-charged thirty-two primitive RAM actions, enough for its relation reads, Boolean
-test, index operations, and optional two-cell array update. Enumeration
-construction is charged one action per generated item; initialization is
-charged one action per relation cell. These are deliberately conservative
-charges for the finite-table RAM model, not Lean runtime measurements.
+The value and a numeric counter are accumulated by the same folds. The
+counter records a candidate budget for visited items and finite enumeration.
+Its arithmetic bound below is a scaffold: a proof that this counter covers
+every primitive RAM operation, including array-copy behavior and list
+construction, is still required for GOAL D's cost clause.
 -/
 
 namespace AAT.AG.OperationRepair
@@ -85,7 +84,7 @@ theorem operationItems_length (n m : Nat) :
   simp [operationItems, FiniteClosure.pairs, FiniteClosure.states,
     List.length_flatMap]
 
-/-- A costed version of exactly the three passes of one synchronous update. -/
+/-- A counter-instrumented version of the three synchronous passes. -/
 def closeStepWithCost (input : FiniteRepairInput n m O)
     (old : RelationTable n) : RelationTable n × Nat := Id.run do
   let ps := FiniteClosure.pairs n
@@ -121,7 +120,7 @@ theorem closeStepWithCost_cost (input : FiniteRepairInput n m O)
 /-- Each round uses the costed pass result as the next round's input. -/
 def roundsWithCost (input : FiniteRepairInput n m O) :
     Nat → RelationTable n × Nat
-  | 0 => (FiniteClosure.initial input, n * n + 1)
+  | 0 => (FiniteClosure.initial input, 8 * (n * n + n + 1))
   | k + 1 =>
       let previous := roundsWithCost input k
       let next := closeStepWithCost input previous.1
@@ -137,7 +136,7 @@ theorem roundsWithCost_value (input : FiniteRepairInput n m O) (k : Nat) :
 
 theorem roundsWithCost_cost (input : FiniteRepairInput n m O) (k : Nat) :
     (roundsWithCost input k).2 =
-      n * n + 1 +
+      8 * (n * n + n + 1) +
         k * (m + n + 1 + n * n +
           33 * (n * n + n * n * n + m * (n * n))) := by
   induction k with
@@ -157,12 +156,14 @@ theorem lowerWithCost_value (input : FiniteRepairInput n m O) :
 
 theorem lowerWithCost_cost (input : FiniteRepairInput n m O) :
     (lowerWithCost input).2 =
-      n * n + 1 +
+      8 * (n * n + n + 1) +
         (n * n) *
           (m + n + 1 + n * n +
             33 * (n * n + n * n * n + m * (n * n))) := by
   exact roundsWithCost_cost input (n * n)
 
+/-- Arithmetic bound for the provisional counter. A RAM-operation
+correspondence theorem is still required before using this as GOAL D cost. -/
 theorem lowerWithCost_bound (input : FiniteRepairInput n m O) :
     (lowerWithCost input).2 ≤ 200 * (m + 1) * (n + 1) ^ 5 := by
   rw [lowerWithCost_cost]
@@ -192,20 +193,22 @@ theorem lowerWithCost_bound (input : FiniteRepairInput n m O) :
         Nat.mul_le_mul_left (m + 1)
           (Nat.pow_le_pow_right hN (by decide))
   have hpoly :
-      n * n + 1 + (n * n) *
+      8 * (n * n + n + 1) + (n * n) *
           (m + n + 1 + n * n +
             33 * (n * n + n * n * n + m * (n * n))) =
-        1 + n ^ 2 + m * n ^ 2 + n ^ 3 + n ^ 2 +
+        8 + 8 * n + 8 * n ^ 2 + m * n ^ 2 + n ^ 3 + n ^ 2 +
           34 * n ^ 4 + 33 * n ^ 5 + 33 * (m * n ^ 4) := by
     ring
   rw [hpoly]
   rw [Nat.mul_assoc]
   have h0 := hpow 0 (by decide)
+  have h1 := hpow 1 (by decide)
   have h2 := hpow 2 (by decide)
   have h3 := hpow 3 (by decide)
   have h4 := hpow 4 (by decide)
   have h5 := hpow 5 (by decide)
   norm_num at h0
+  simp only [pow_one] at h1
   omega
 
 end FiniteCostLower
