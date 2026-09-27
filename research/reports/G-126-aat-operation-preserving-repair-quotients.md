@@ -156,7 +156,8 @@ decidable equality from the finite Law index and value decisions.
 `run_success_iff_repair_exists` compares D's actual branch to B's condition
 on the original states. On success, `returnedUpper` is the actual upper table
 output. `betaReturnedEquiv` compares it to `betaReading` by exact kernels,
-commutes with the source map, preserves every Law value, and is the unique
+commutes with the source map, preserves each descended named operation and
+every Law value, and is the unique
 source-commuting map. With no operation names,
 `returnedJointEquiv_of_isEmpty` compares the returned output with G-103's
 `jointKernelReading`, again uniquely and with Law preservation.
@@ -194,11 +195,11 @@ result:
   proof_obligation_delta: "Normalized every repair universe into an existing Reading, identified the numbered Law upper output with beta and the empty-operation standard resolution, and built independent Law/path input maps"
   completion_candidate: no
   lean_artifacts: ["OperationRepair/LawUniverse.lean", "OperationRepair/FiniteLawBridge.lean", "OperationRepair/LawInputMaps.lean"]
-  evidence: ["RepairQuotient.standardReading_conditions", "RepairQuotient.standardReadingHomTo", "RepairQuotient.standardReadingHomFrom", "RepairQuotient.standardReadingHomTo_eq_standardEquiv", "FiniteLawBridge.behavior_iff_tables", "FiniteLawBridge.run_success_iff_repair_exists", "FiniteLawBridge.betaReturnedEquiv", "FiniteLawBridge.betaReturnedEquiv_law", "FiniteLawBridge.returnedJointEquiv_of_isEmpty_law", "independentLawPathInputHom"]
+  evidence: ["RepairQuotient.standardReading_conditions", "RepairQuotient.standardReadingHomTo", "RepairQuotient.standardReadingHomFrom", "RepairQuotient.standardReadingHomTo_eq_standardEquiv", "FiniteLawBridge.behavior_iff_tables", "FiniteLawBridge.run_success_iff_repair_exists", "FiniteLawBridge.betaReturnedEquiv", "FiniteLawBridge.betaReturnedEquiv_step", "FiniteLawBridge.betaReturnedEquiv_law", "FiniteLawBridge.returnedJointEquiv_of_isEmpty_law", "independentLawPathInputHom"]
   claim_mapping:
-    theorem_names: ["RepairQuotient.standardReading_conditions", "RepairQuotient.standardReadingHom_left_inv", "RepairQuotient.standardReadingHom_right_inv", "FiniteLawBridge.betaReturnedEquiv_read", "FiniteLawBridge.betaReturnedEquiv_law", "FiniteLawBridge.returnedJointEquiv_of_isEmpty_unique", "independentLawPathInputHom"]
+    theorem_names: ["RepairQuotient.standardReading_conditions", "RepairQuotient.standardReadingHom_left_inv", "RepairQuotient.standardReadingHom_right_inv", "FiniteLawBridge.betaReturnedEquiv_read", "FiniteLawBridge.betaReturnedEquiv_step", "FiniteLawBridge.betaReturnedEquiv_law", "FiniteLawBridge.returnedJointEquiv_of_isEmpty_unique", "independentLawPathInputHom"]
     source_labels: ["G-126 E Reading correspondence, finite Law upper output, input-map clauses"]
-    conjuncts: ["all repair target universes up to isomorphism", "actual finite Law upper output", "beta Reading comparison", "empty-operation G-103 comparison", "independently specified Law maps"]
+    conjuncts: ["all repair target universes up to isomorphism", "actual finite Law upper output", "source, operation, and Law preserving beta Reading comparison", "empty-operation G-103 comparison", "independently specified Law maps"]
     undischarged_assumptions: []
     acceptance_point: "selected E Law/output bridge only; full E and G-126 remain open"
     port_status: not-applicable
@@ -218,7 +219,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: ["LawUniverse, FiniteLawBridge, LawInputMaps focused checks pass", "targeted builds for LawUniverse, FiniteLawBridge, LawInputMaps pass", "module audits: 10, 17, 2 declarations with standard axioms only", "eighteen spine #print axioms: propext, Classical.choice, Quot.sound only", "git diff --check and placeholder, Unicode, privacy, import-direction scans pass"]
+  validation_refs: ["LawUniverse, FiniteLawBridge, LawInputMaps focused checks pass", "targeted builds for LawUniverse, FiniteLawBridge, LawInputMaps pass", "module audits: 10, 20, 2 declarations with standard axioms only", "twenty-one spine #print axioms: propext, Classical.choice, Quot.sound only", "git diff --check and placeholder, Unicode, privacy, import-direction scans pass"]
   blocking_findings: []
   next_obligation: "E general path input numbering bridge, then D general finite-output and RAM cost"
 ```

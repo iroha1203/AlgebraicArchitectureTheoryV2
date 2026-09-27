@@ -46,6 +46,19 @@ variable (laws : FiniteLawFamily S) (T : OperationSystem S E)
 variable (request : S → S → Bool) (states : S ≃ Fin n)
 variable (operations : E ≃ Fin m)
 
+/-- The future-observation Reading carries the operations descended from
+the original system's stable behavioral kernel. -/
+def betaStep (e : E) : (betaReading laws T).Target →
+    (betaReading laws T).Target :=
+  Quotient.lift (fun x =>
+    Quotient.mk (behavior T (lawObserve laws)).setoid (T.step e x))
+    (fun x y hxy => Quotient.sound
+      ((behavior T (lawObserve laws)).stable e x y hxy))
+
+@[simp] theorem betaStep_read (e : E) (x : S) :
+    betaStep laws T e ((betaReading laws T).read x) =
+      (betaReading laws T).read (T.step e x) := rfl
+
 private theorem tables_eval (x : S) (word : List E) :
     (input laws T request states operations).toTables.system.eval
       (states x) (word.map operations) = states (T.eval x word) := by
@@ -238,6 +251,35 @@ noncomputable def betaReturnedEquiv
         (returnedUpper laws T request states operations tables h).read
           (states x) :=
   betaToReturned_read laws T request states operations tables h x
+
+/-- The finite upper equivalence also preserves every named operation,
+with operation names transported by the supplied enumeration. -/
+theorem betaReturnedEquiv_step
+    (tables : FiniteConstruction.SuccessTables n m
+      ((law : laws.Law) → laws.Value law))
+    (h : (run laws T request states operations).outcome = Sum.inr tables)
+    (e : E) (z : (betaReading laws T).Target) :
+    betaReturnedEquiv laws T request states operations tables h
+      (betaStep laws T e z) =
+      (returnedUpper laws T request states operations tables h).step
+        (operations e)
+        (betaReturnedEquiv laws T request states operations tables h z) := by
+  obtain ⟨x, rfl⟩ := (betaReading laws T).surjective z
+  rw [betaStep_read, betaReturnedEquiv_read, betaReturnedEquiv_read]
+  have hs := (input laws T request states operations).toTables_step e x
+  have hs' :
+      (input laws T request states operations).toTables.system.step
+        (operations e) (states x) = states (T.step e x) := hs
+  change
+    (returnedUpper laws T request states operations tables h).read
+      (states (T.step e x)) =
+        (returnedUpper laws T request states operations tables h).step
+          (operations e)
+          ((returnedUpper laws T request states operations tables h).read
+            (states x))
+  rw [← hs']
+  exact (returnedUpper laws T request states operations tables h).step_comm
+    (operations e) (states x)
 
 /-- The returned observation table preserves every original Law value
 under this equivalence, on every quotient point. -/
