@@ -92,11 +92,11 @@ ArchMap に記録される Atom は、たとえば次の形をしている。
 
 ```json
 {"kind": "writes", "subject": "shipping.update_shipping", "object": "Order.payment_ref",
- "value": "None", "when": "new.country != order.shipping_address.country",
- "at": "shop/shipping/service.py:4@a1b2c3d"}
+ "value": "None", "when": "$new.country != $order.shipping_address.country",
+ "at": "shop/shipping/service.py:4@a1b2c3d", "by": "extractor:python@0.6.0"}
 {"kind": "meaning", "subject": "Order.payment_ref", "meaning": "payment-info",
  "uses": ["shop/payment/charge.py:22", "shop/order/confirm.py:57"],
- "at": "shop/order/model.py:18@a1b2c3d"}
+ "at": "shop/order/model.py:18@a1b2c3d", "by": "model:claude-sonnet-5"}
 ```
 
 一行目は構造 Atom で、条件付きの書き込みを記録している。
@@ -114,7 +114,7 @@ ArchMap に記録される Atom は、たとえば次の形をしている。
 {"kind": "corresponds", "subject": "Order.shipping_address", "object": "OrderShipping.address",
  "at": "plan:split-order"}
 {"kind": "writes", "subject": "shipping.update_shipping", "object": "OrderShipping.address",
- "value": "normalize_address(new)", "at": "plan:split-order"}
+ "value": "normalize_address($new)", "at": "plan:split-order"}
 ```
 
 候補を検査する。
@@ -140,8 +140,8 @@ ArchMap は読んだ範囲も記録する。読んだ範囲に書き込みの At
 
 ```text
 ✘ 反例  payment-follows-order  update_shipping
-  入力              注文: 配送先の国 JP、payment_ref = p
-                    新しい配送先: 国 US
+  入力              注文 order: payment_ref = p
+                    新しい配送先 new: $new.country != $order.shipping_address.country
   更新してから移す  OrderPayment.ref = None
   移してから更新    OrderPayment.ref = p
   食い違いの元      shop/shipping/service.py:4  order.payment_ref = None
@@ -150,7 +150,7 @@ ArchMap は読んだ範囲も記録する。読んだ範囲に書き込みの At
 
 今の `update_shipping` は、国が変わると決済情報を消す。候補の新しい `update_shipping` は配送先しか書かない。
 だから、国をまたぐ配送先の変更では、移行と更新の順番で決済情報が変わる。
-反例は、入力と二つの結果を具体的な値で持つので、誰でもたどって確かめられる。
+反例は、入力が満たす条件と、二つの順番の結果を具体的に持つ。どの書き込みを通ったかも分かるので、誰でもたどって確かめられる。
 
 ## 5. 人が判断する
 
