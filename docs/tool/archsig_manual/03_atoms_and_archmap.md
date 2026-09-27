@@ -11,7 +11,7 @@ Atom は JSON の一行で書く。どの Atom も次の欄を持つ。
 - `at`:観測した場所。`パス:行@<版>` の形で書く。版はソースの内容を指す。行は `10-14` のような範囲でもよい。
 - `by`:誰が観測したか。解析器の名前と版、またはモデルの名前を書く。
 
-種類ごとに、次の欄が加わる。ここに挙げていない欄を持つ Atom は受け付けない。
+種類ごとに、次の欄が加わる。
 
 | 種類 | 加わる欄 |
 | --- | --- |
@@ -91,21 +91,16 @@ ArchSig は、操作の呼び出しの結果を、同じ操作に同じ値を渡
 ```json
 {"kind": "meaning", "subject": "shop.order.model.Order.payment_ref", "meaning": "payment-info",
  "uses": ["shop/payment/charge.py:22@blob:3f2a9c1", "shop/order/confirm.py:57@blob:3f2a9c1"],
- "at": "shop/order/model.py:18@blob:3f2a9c1", "by": ["model:claude-sonnet-5#1", "model:claude-sonnet-5#2"]}
+ "at": "shop/order/model.py:18@blob:3f2a9c1", "by": "model:claude-sonnet-5"}
 {"kind": "meaning", "subject": "shop.order.confirm.confirm->mail.send", "meaning": "role",
  "value": "order-notice", "uses": ["shop/order/confirm.py:61-64@blob:3f2a9c1"],
- "at": "shop/order/confirm.py:61@blob:3f2a9c1", "by": ["model:claude-sonnet-5#1", "model:claude-sonnet-5#2"]}
+ "at": "shop/order/confirm.py:61@blob:3f2a9c1", "by": "model:claude-sonnet-5"}
 ```
 
 `meaning` には、Law が定めた意味の語彙の名前を書く。語彙が `values` で値を並べていれば、その一つを `value` に書く。
 
 意味は使われ方で決まる。`uses` には、その意味だと読んだ根拠の使用箇所を書く。
-呼び出し元、前後の処理、値の渡し先、分岐である。一つ以上が必要で、書き方は `at` と同じだ。
-名前、型、コメント、文書は根拠にしない。
-
-意味 Atom は、別々の二回の観測が一致したものだけを記録する。これは観測する SKILL の手順である(第7章)。
-`by` には二つの観測者を並べる。一致は Atom の同一性で決め、`uses` は二つを合わせて記録する。
-一致しなかったものを強いモデルが元のコードを読んで決めたときは、`by` の三つ目に `decided:model:<名前>` を加える。
+呼び出し元、前後の処理、値の渡し先、分岐である。書き方は `at` と同じだ。
 
 ### 局所ごとの意味 Atom
 
@@ -114,12 +109,11 @@ ArchSig は、操作の呼び出しの結果を、同じ操作に同じ値を渡
 ```json
 {"kind": "meaning", "subject": "local:service:money", "meaning": "unit", "value": "minor",
  "uses": ["shop/payment/charge.py:22@blob:3f2a9c1"], "at": "shop/payment@3e1d0b2",
- "by": ["model:claude-sonnet-5#1", "model:claude-sonnet-5#2"]}
+ "by": "model:claude-sonnet-5"}
 ```
 
 `subject` は `local:<読み>:<局所の名前>` と書く。
 この Atom は、その局所の中で、意味の語彙が対象にする要素すべてに同じ値を与える。
-使えるのは、`values` を持つ語彙だけである。`values` のない語彙(`payment-info` など)は、要素ごとに読む。
 まとめて読むと観測の手間が減る。まとめてよいかは、第5章の問い5で確かめる。
 
 ## 読んだ範囲
@@ -131,11 +125,10 @@ ArchMap は、Atom のほかに、どこを読んだかを記録する。
  "hash": "sha256:9f2c…", "at": "shop/shipping/address.py@blob:9f2c4e7", "by": "tool:tree-sitter-python@0.23"}
 {"kind": "observed", "subject": "shop/shipping/address.py", "scope": "meaning:payment-info",
  "hash": "sha256:9f2c…", "at": "shop/shipping/address.py@blob:9f2c4e7",
- "by": ["model:claude-sonnet-5#1", "model:claude-sonnet-5#2"]}
+ "by": "model:claude-sonnet-5"}
 ```
 
 `scope` は、構造を読んだのか、どの意味を読んだのかを示す。`hash` は、読んだときのソースの内容の hash だ。
-意味を読んだ範囲も、二つの観測者がどちらも読んだ範囲だけを記録する。
 
 読んだ範囲に Atom がなければ、その事実はない。読んでいない所の事実は、分からない。
 ArchSig はこの二つを区別する。分からない所が結論に関わるとき、ArchSig は沈黙し、そこを次に読む場所として返す。
@@ -188,11 +181,10 @@ ArchMap と同じ形をとり、`.archsig/plans/<候補の名前>/` に置く。
 ```
 
 行き先をまだ決めていない対応は、`object` に行き先を `|` で並べて書ける(`"a.X | b.Y"`)。
-`|` を含む候補を受け付けるのは `archsig plan choices` だけである(第5章の問い6)。
+`|` を含む候補は、`archsig plan choices` で決め方を数え上げる(第5章の問い6)。
 
 候補が書き直していない操作が、`removes` した要素を使っていれば、`plan check` はその操作を `missing` として挙げる。書き直す範囲はここで分かる。
 
 実装を先にして、候補には対応だけを書いてもよい(第5章の問い3)。
 
-候補には意味 Atom を書かない。変更後の要素の意味は、`corresponds` で変更前の要素の意味を移したものとして扱う。
-実装した後の意味は、観測し直した意味 Atom で確かめる。
+変更後の要素の意味は、`corresponds` で変更前の要素の意味を移したものとして扱う。実装した後の意味は、観測し直した意味 Atom で確かめる。

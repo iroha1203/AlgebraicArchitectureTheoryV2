@@ -76,7 +76,7 @@ ArchSig は、ArchMap を観測したときのソースと今のソースを比�
 変わったソースだけを観測し直せばよい。観測は二段に分かれる。
 
 - 構造 Atom は、エージェントが言語に合う解析器を選んで取り出し、`archsig record` で ArchMap に書く。
-- 意味 Atom は、軽いモデルのエージェント二つが、Law の語彙を手がかりに別々に観測する。一致したものを記録する。
+- 意味 Atom は、軽いモデルのエージェントが、Law の語彙を手がかりに観測する。
 
 ArchMap に記録される Atom は、たとえば次の形をしている。
 
@@ -87,11 +87,11 @@ ArchMap に記録される Atom は、たとえば次の形をしている。
  "at": "shop/shipping/service.py:4@blob:3f2a9c1", "by": "tool:tree-sitter-python@0.23"}
 {"kind": "meaning", "subject": "shop.order.model.Order.payment_ref", "meaning": "payment-info",
  "uses": ["shop/payment/charge.py:22@blob:3f2a9c1", "shop/order/confirm.py:57@blob:3f2a9c1"],
- "at": "shop/order/model.py:18@blob:3f2a9c1", "by": ["model:claude-sonnet-5#1", "model:claude-sonnet-5#2"]}
+ "at": "shop/order/model.py:18@blob:3f2a9c1", "by": "model:claude-sonnet-5"}
 ```
 
 一行目は構造 Atom で、条件付きの書き込みを記録している。
-二行目は意味 Atom だ。`uses` に、決済情報だと読んだ根拠の使用箇所が並ぶ。`by` の二つは、別々に観測した二つのエージェントである。
+二行目は意味 Atom だ。`uses` に、決済情報だと読んだ根拠の使用箇所が並ぶ。
 どちらにも「正しい」「おかしい」という判定は書かない。
 
 ## 4. 候補を書いて検査する
@@ -134,7 +134,7 @@ ArchMap に記録される Atom は、たとえば次の形をしている。
 `update_shipping` は名前が変わらないので、変更前の `update_shipping` に対応する。引数 `order` は `shipping` に変わるので、対応を書いた。
 `update_shipping` の Atom を書いたので、その要素についての元の Atom は置き換わる。`normalize_address` の呼び出しも、候補に書き直してある。
 候補を書くエージェントはコードを読んで書いているが、ArchMap にはまだ `address.py` の構造がない。
-候補には意味 Atom を書かない。`OrderPayment.ref` が決済情報であることは、`Order.payment_ref` からの対応で移る。
+`OrderPayment.ref` が決済情報であることは、`Order.payment_ref` からの対応で移る。
 
 候補を検査する。
 
