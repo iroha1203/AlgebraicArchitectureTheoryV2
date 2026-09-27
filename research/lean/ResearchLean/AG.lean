@@ -884,3 +884,4 @@ import ResearchLean.AG.ProtocolHolonomy.ChoiceChange
 import ResearchLean.AG.ProtocolHolonomy.ProtocolConnection
 import ResearchLean.AG.ProtocolHolonomy.VisibleRename
 import ResearchLean.AG.ProtocolHolonomy.NaturalIsomorphism
+import ResearchLean.AG.ProtocolHolonomy.HolonomyChoice
