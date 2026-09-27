@@ -834,3 +834,56 @@ audits:
   blocking_findings: []
   next_obligation: Descend each selected visible renaming through Pi and identify A1 lifts with natural isomorphisms of the independent realization
 ```
+
+## Cycle 16 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 16
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 4ec1cab76d5d19767edd8e2cb06bf68bc35afdb5
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 15 quotient realization and PathEquations visible congruence preservation
+  proof_dag_predecessors: [FiniteProtocolInput.schema, PathEquations.Congruent, FiniteProtocolInput.visible_preserves_congruence, ProtocolSchema.ExecutionCategory]
+  proof_obligation: Descend every selected visible graph automorphism from its original named-edge action to the quotient execution category
+  selection_reason: Uses the remaining H congruence-preservation input in the independent semantic bridge and enables the subsequent A1-natural-isomorphism equivalence
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/VisibleRename.lean]
+  risks: [equation congruence versus quotient relation, endpoint-dependent names, path composition, actual use of H membership]
+  unchecked: [visible functor inverse/composition laws, A1-natural-isomorphism equivalence, D other clauses, undirected-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Every original generated congruence consequence is sound in the independent quotient; H membership supplies preservation of its generating equations, constructing a rename functor on all quotient executions; its map on any original path is precisely the original named-edge rename
+  completion_candidate: no
+  lean_artifacts: [FiniteProtocolInput.renamePrefunctor, FiniteProtocolInput.renamePathFunctor, FiniteProtocolInput.renameExecutionFunctor]
+  evidence: [FiniteProtocolInput.congruent_sound, FiniteProtocolInput.renamePath_up, FiniteProtocolInput.renamePathFunctor_relation, FiniteProtocolInput.renameExecutionFunctor_map_up]
+  claim_mapping:
+    theorem_names: [FiniteProtocolInput.renameExecutionFunctor, FiniteProtocolInput.renameExecutionFunctor_map_up]
+    source_labels: [A congruence-preserving H, D visible execution renaming]
+    conjuncts: [every g in original H, original vertex and named-edge maps, generated Pi congruence, quotient descent, all original positive-path rename evaluation]
+    undischarged_assumptions: [functor group laws and equivalence, A1 natural-isomorphism correspondence, D other clauses, E and fixed examples]
+    acceptance_point: The visible rename genuinely descends from the original H condition, but the full D semantics and G-127 completion remain open
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [H congruence-preservation used for quotient rename descent]
+    remaining: [rename functor inverse/composition, A1 natural isomorphism, D other clauses, E and examples]
+  certificate_provenance:
+    discharged: [rename functor from original graph maps; relation preservation from P.renaming_preserves via generated congruence soundness]
+    unresolved: [independent natural-isomorphism correspondence and finite solver]
+  proof_use:
+    used: [P.H membership, P.renaming_preserves, original vertex and edge actions, original Pi and quotient soundness]
+    unused: [P.data.edgeEquiv because quotient rename is a schema-side construction]
+  structure_field_escape: none-found
+  route_integrity: pass-for-quotient-rename
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and nine-declaration standard axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Identify original A1 lifts with natural isomorphisms from realization to its visible rename, including all quotient-path naturality
+```

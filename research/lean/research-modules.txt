@@ -1453,3 +1453,4 @@ ResearchLean.AG.ProtocolHolonomy.LiftableVisible	ResearchLean/AG/ProtocolHolonom
 ResearchLean.AG.ProtocolHolonomy.LiftFiberTorsor	ResearchLean/AG/ProtocolHolonomy/LiftFiberTorsor.lean
 ResearchLean.AG.ProtocolHolonomy.ChoiceChange	ResearchLean/AG/ProtocolHolonomy/ChoiceChange.lean
 ResearchLean.AG.ProtocolHolonomy.ProtocolConnection	ResearchLean/AG/ProtocolHolonomy/ProtocolConnection.lean
+ResearchLean.AG.ProtocolHolonomy.VisibleRename	ResearchLean/AG/ProtocolHolonomy/VisibleRename.lean
