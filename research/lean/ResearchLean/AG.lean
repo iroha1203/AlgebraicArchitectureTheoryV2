@@ -831,3 +831,5 @@ import ResearchLean.AG.UniformInvariance.UniformPresentationDecider
 import ResearchLean.AG.UniformInvariance.UniformPresentationInstancePairs
 import ResearchLean.AG.UniformInvariance.UniformityReduction
 import ResearchLean.AG.UniformInvariance.UniformityInstancePairs
+import ResearchLean.AG.OperationRepair.Basic
+import ResearchLean.AG.OperationRepair.Endpoints
