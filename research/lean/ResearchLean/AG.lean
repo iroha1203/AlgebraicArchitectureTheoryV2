@@ -890,3 +890,4 @@ import ResearchLean.AG.ProtocolHolonomy.ChoiceGroup
 import ResearchLean.AG.ProtocolHolonomy.ChoiceGroupFormula
 import ResearchLean.AG.ProtocolHolonomy.RenameComposition
 import ResearchLean.AG.ProtocolHolonomy.SemanticComposition
+import ResearchLean.AG.ProtocolHolonomy.SemanticGroup
