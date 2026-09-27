@@ -27,7 +27,9 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. D: prove the cost bound for the same finite success/failure procedure.
+1. D: cost the upper word loop and remaining output work, combine them with
+   the costed lower loop into the same success/failure procedure, and prove
+   the total bound and general finite-output bridge.
 2. E: the existing `FiniteLawFamily` and `Reading` bridge and path requests.
 3. Three fixed examples and empty input cases, evaluated through the same
    general API and finite algorithm.
@@ -67,6 +69,68 @@ from the original request table and a stored word shorter than `n²`.
 the exact raw tables consumed by this procedure; the transition, observation,
 and request value equations are proved. The remaining D obligation is a
 costed implementation of this same procedure and the stated uniform bound.
+
+`FiniteCostLower.lean` instruments each lower closure pass with an accumulated
+RAM charge and proves its value is exactly `FiniteClosure.closeStep`.
+`lowerWithCost_value` matches the complete `n²`-round computation, while
+`lowerWithCost_bound` proves the fixed uniform bound
+`200 * (m+1) * (n+1)^5` for this lower component. The charge includes table
+initialization, list construction, table-cell work, and a conservative fixed
+charge for each visited relation item. This is a component bound, not yet
+the GOAL D bound on `runRepair` as a whole.
+
+## Cycle 9 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 9
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: 56a9d6e04590f9f2c9eda4119d749eac7bb6f425
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 8 comment and report D section"
+  proof_dag_predecessors: ["OperationRepair/FiniteClosure.lean", "OperationRepair/FiniteConstruction.lean"]
+  proof_obligation: "D lower-loop costed execution and uniform component bound"
+  selection_reason: "The most expensive closure component must be instrumented before the common procedure can carry a justified charge"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/FiniteCostLower.lean"]
+  risks: ["value/charge coupling", "list construction charge", "zero states", "uniform polynomial arithmetic", "full procedure cost still open"]
+  unchecked: ["D upper/output cost and same-procedure total bound", "D general finite-output bridge", "E", "fixed examples"]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Costed lower folds produce exactly the existing closure value and a fixed input-independent polynomial component bound"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/FiniteCostLower.lean"]
+  evidence: ["markPassWithCost_value", "markPassWithCost_cost", "closeStepWithCost_value", "closeStepWithCost_cost", "lowerWithCost_value", "lowerWithCost_cost", "lowerWithCost_bound"]
+  claim_mapping:
+    theorem_names: ["closeStepWithCost_value", "lowerWithCost_value", "lowerWithCost_bound"]
+    source_labels: ["G-126 D lower closure cost component"]
+    conjuncts: ["same lower loop value", "finite rounds", "uniform lower component cost"]
+    undischarged_assumptions: []
+    acceptance_point: "Lower component only; total D cost remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["lower closure charge tied to loop", "lower component polynomial bound"]
+    remaining: ["D upper/output/total cost", "D general finite-output bridge", "E", "fixed examples"]
+  certificate_provenance:
+    discharged: ["value and charge accumulated by the same lower folds and iteration"]
+    unresolved: []
+  proof_use:
+    used: ["the existing raw transition and request tables in each costed lower pass"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["focused check and standard-axiom audit: FiniteCostLower pass", "parent targeted build: FiniteCostLower pass", "seven spine #print axioms: propext, Classical.choice, Quot.sound only", "git diff --check and placeholder, hidden Unicode, privacy, import-direction scans pass"]
+  blocking_findings: []
+  next_obligation: "D upper and remaining output charge, then common runRepairWithCost"
+```
 
 ## Cycle 8 ledger
 
