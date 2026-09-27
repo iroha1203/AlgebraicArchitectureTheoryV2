@@ -463,3 +463,56 @@ audits:
   blocking_findings: []
   next_obligation: Connect every chosen spanning tree to RootedPaths and then construct C1/C2 lift criterion
 ```
+
+## Cycle 9 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 9
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: b854968d4ec27f1204bbd86d84f645872545dc33
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 8 proof state and RootedPaths/HolonomyGenerators/VerticalCentralizer
+  proof_dag_predecessors: [SignedPath, FixedFComponent, RootedPaths, B1, B2]
+  proof_obligation: Connect original named-edge spanning trees and unique root paths to the RootedPaths family used by B1/B2
+  selection_reason: Discharges the chosen-root/tree route left open by structural B1/B2 calculations
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/SpanningTrees.lean]
+  risks: [parallel edge identity, reverse edge identity, empty components, path uniqueness, arbitrary undirected tree orientation]
+  unchecked: [undirected-tree to outward-arborescence orientation bridge, E terminating finite-table forest, C through E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Each original component becomes a signed named-edge quiver; every chosen outward named spanning arborescence has unique root paths and maps to RootedPaths; a geodesic named arborescence exists from any chosen root
+  completion_candidate: no
+  lean_artifacts: [ComponentVertex, NamedSpanningTree, NamedSpanningForest, geodesicNamedSpanningTree, chooseNamedSpanningForest]
+  evidence: [component_rootedConnected, NamedSpanningTree.rootPath_unique, geodesicNamedSpanningTree_root, NamedSpanningForest.toRootedPaths]
+  claim_mapping:
+    theorem_names: [NamedSpanningTree.rootPath_unique, NamedSpanningForest.toRootedPaths, geodesicNamedSpanningTree_root]
+    source_labels: [B chosen roots and spanning trees with unique paths]
+    conjuncts: [original positive and negative named passages, existing undirected component, chosen root, unique path in an outward selected tree, empty self path, arbitrary chosen outward arborescence]
+    undischarged_assumptions: [formal orientation bridge from an arbitrary undirected named spanning tree to the outward arborescence representation, E terminating finite-table forest]
+    acceptance_point: B1/B2 can use the unique paths of any selected NamedSpanningForest; the full arbitrary-undirected-tree reading remains to be connected formally
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [component rooted connectedness from original signed paths, chosen outward tree unique-path-to-RootedPaths construction, geodesic tree existence from any root]
+    remaining: [arbitrary undirected spanning-tree orientation bridge, E terminating construction, C through E, fixed examples]
+  certificate_provenance:
+    discharged: [component reachability from existing quotient, geodesic tree from Mathlib shortest paths, arbitrary chosen outward tree root path from Arborescence.uniquePath]
+    unresolved: [finite-table forest]
+  proof_use:
+    used: [original named signed edges in component quiver and tree path map, component reachability in RootedConnected, uniquePath in toRootedPaths]
+    unused: [finite input and Π because structural tree existence uses choice and shortest-path selection]
+  structure_field_escape: none-found-for-chosen-tree-reading
+  route_integrity: pass-for-chosen-outward-arborescences
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Formalize orientation of every undirected named spanning tree into an outward arborescence; then construct C1/C2
+```
