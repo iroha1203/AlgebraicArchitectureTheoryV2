@@ -95,7 +95,7 @@ noncomputable def pathFromRoot
       (component_eq_iff_signedReachable Q _ _).mp hsame
     exact Classical.choice hpath
 
-/-- The selected root-to-root path is definitionally the empty execution. -/
+/-- The selected root-to-root path equals the empty execution. -/
 theorem pathFromRoot_self
     (Q : FixedFDirectedMultigraph.{u, v})
     (root : FixedFComponent Q → Q.Vertex)
@@ -119,7 +119,7 @@ noncomputable def rootedPathsOfRoots
     intro j
     exact pathFromRoot_self Q root hroot j
 
-/-- A canonical choice of roots is available even for empty/disconnected
+/-- A choice of roots is available even for empty/disconnected
 graphs. Finite spanning-tree construction remains an E obligation. -/
 noncomputable def chooseRootedPaths
     (Q : FixedFDirectedMultigraph.{u, v}) : RootedPaths Q :=
