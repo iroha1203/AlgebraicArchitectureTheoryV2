@@ -5,8 +5,9 @@ import ResearchLean.AG.OperationRepair.FiniteCostLower
 # Concrete primitive-trace bound for one lower closure round
 
 This module instantiates the generic marking-pass bound with the actual
-converse, transitivity, and operation-image callbacks. Enumeration and
-initial-table construction are still separate obligations.
+converse, transitivity, and operation-image callbacks, then accounts for
+initial-table construction and all lower rounds. Enumeration-list cell
+construction remains a separate obligation.
 -/
 
 namespace AAT.AG.OperationRepair.FiniteRamLower
