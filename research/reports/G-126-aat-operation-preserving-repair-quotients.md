@@ -27,9 +27,10 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. D: cost the upper word loop and remaining output work, combine them with
-   the costed lower loop into the same success/failure procedure, and prove
-   the total bound and general finite-output bridge.
+1. D: prove that the lower counter covers the specified RAM primitives; cost
+   the upper word loop and remaining output work, combine them into the same
+   success/failure procedure, and prove the total bound and general
+   finite-output bridge.
 2. E: the existing `FiniteLawFamily` and `Reading` bridge and path requests.
 3. Three fixed examples and empty input cases, evaluated through the same
    general API and finite algorithm.
@@ -121,7 +122,7 @@ audits:
     discharged: ["value and numeric counter accumulated by the same lower folds and iteration"]
     unresolved: ["RAM interpretation of the counter"]
   proof_use:
-    used: ["the existing raw transition and request tables in each costed lower pass"]
+    used: ["request table in lower initialization", "old relation table in each closure pass", "transition table in the operation-image pass"]
     unused: []
   structure_field_escape: none-found
   route_integrity: pass
