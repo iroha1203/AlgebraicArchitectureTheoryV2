@@ -897,3 +897,4 @@ import ResearchLean.AG.ProtocolHolonomy.IdentityLiftability
 import ResearchLean.AG.ProtocolHolonomy.IdentitySection
 import ResearchLean.AG.ProtocolHolonomy.IdentityComponents
 import ResearchLean.AG.ProtocolHolonomy.IdentityComponentGroup
+import ResearchLean.AG.ProtocolHolonomy.IdentitySplitExact
