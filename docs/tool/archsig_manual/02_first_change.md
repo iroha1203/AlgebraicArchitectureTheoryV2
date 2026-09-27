@@ -224,8 +224,9 @@ archsig compare --plan split-order
   "commit": "a1b2c3d",
   "plan": "split-order",
   "results": [
-    {"id": "r-0193/1", "law": "payment-follows-order", "subject": "shipping.update_shipping",
-     "outcome": "counterexample", "at": ["shop/shipping/service.py:4"]}
+    {"id": "r-0193/1", "question": "change", "law": "payment-follows-order",
+     "subject": "shipping.update_shipping", "outcome": "fails", "kind": "counterexample",
+     "at": ["shop/shipping/service.py:4"]}
   ],
   "silent": [],
   "next": []
@@ -234,3 +235,4 @@ archsig compare --plan split-order
 
 `archsig show r-0193/1` で、その結論の詳細を取り出す。
 詳細には、根拠の Atom と Law、反例の入力と二つの結果、成り立つ条件が入る。
+結果の読み方は[第6章](06_results.md)で扱う。

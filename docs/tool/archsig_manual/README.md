@@ -14,3 +14,7 @@ ArchSig を直接呼び出すのは AI エージェントで、人はエージ�
 3. [Atom と ArchMap](03_atoms_and_archmap.md)
 4. [Law と読み](04_laws_and_readings.md)
 5. [ArchSig に聞けること](05_questions.md)
+6. [結果の読み方](06_results.md)
+7. [SKILL](07_skills.md)
+8. [コマンド](08_commands.md)
+9. [Rising Sea との対応](09_rising_sea.md)
