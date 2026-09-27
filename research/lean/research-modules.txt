@@ -1405,3 +1405,5 @@ ResearchLean.AG.LocalSemanticReconstruction.IndependentGeometryHomIntegratedRefu
 ResearchLean.AG.OperationRepair.Basic	ResearchLean/AG/OperationRepair/Basic.lean
 ResearchLean.AG.OperationRepair.Endpoints	ResearchLean/AG/OperationRepair/Endpoints.lean
 ResearchLean.AG.OperationRepair.Classification	ResearchLean/AG/OperationRepair/Classification.lean
+ResearchLean.AG.OperationRepair.ClassOrder	ResearchLean/AG/OperationRepair/ClassOrder.lean
+ResearchLean.AG.OperationRepair.Universal	ResearchLean/AG/OperationRepair/Universal.lean

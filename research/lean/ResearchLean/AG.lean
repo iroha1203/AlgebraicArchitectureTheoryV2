@@ -834,3 +834,5 @@ import ResearchLean.AG.UniformInvariance.UniformityInstancePairs
 import ResearchLean.AG.OperationRepair.Basic
 import ResearchLean.AG.OperationRepair.Endpoints
 import ResearchLean.AG.OperationRepair.Classification
+import ResearchLean.AG.OperationRepair.ClassOrder
+import ResearchLean.AG.OperationRepair.Universal

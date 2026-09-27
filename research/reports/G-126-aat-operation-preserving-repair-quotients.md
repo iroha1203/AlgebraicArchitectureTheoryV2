@@ -4,9 +4,8 @@
 - Tracking Issue: [#4945](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4945)
 - Applied GOAL and common-standard commit: `93cbcedece216238edfd40e2329bcc69c4f7ae2d`
 - GOAL blob: `255a64df4bdc851f64f799ef89189ea81e78aa70`
-- Proof state: A proved; B kernel and quotient constructions proved, with the
-  isomorphism-class order correspondence and general factorization still open;
-  C–E and the three fixed examples remain open.
+- Proof state: A proved; B classification and universal factorization are
+  proposed complete; C–E and the three fixed examples remain open.
 
 The fixed statement and completion criteria are in the GOAL card. This report
 indexes proof evidence and the next obligations.
@@ -28,15 +27,11 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. B: prove the order isomorphism on actual structure-preserving isomorphism
-   classes, including identity/composition preservation, and factorization into
-   arbitrary target sets. The core construction, descended-data uniqueness,
-   and endpoint morphisms are indexed below.
-2. C: joins, sequential quotients, coherence, and maps between inputs.
-3. D: one executable finite table algorithm with correctness, short failure
+1. C: joins, sequential quotients, coherence, and maps between inputs.
+2. D: one executable finite table algorithm with correctness, short failure
    words, and the stated cost upper bound.
-4. E: the existing `FiniteLawFamily` and `Reading` bridge and path requests.
-5. Three fixed examples and empty input cases, evaluated through the same
+3. E: the existing `FiniteLawFamily` and `Reading` bridge and path requests.
+4. Three fixed examples and empty input cases, evaluated through the same
    general API and finite algorithm.
 
 ## B: quotient and kernel core
@@ -52,9 +47,8 @@ operation invariance, or finite-observation premise.
 
 These declarations discharge the quotient-to-kernel and kernel-to-quotient
 construction, uniqueness of descended data, and the morphism existence
-criterion. The `OrderIso` on isomorphism classes, including preservation of
-identity and composition, and the arbitrary-target universal property are
-separate remaining B obligations. The constructed quotient proves its own operation,
+criterion. The class order and arbitrary-target universal property are mapped
+below. The constructed quotient proves its own operation,
 observation, and request equations; it receives no repaired quotient data.
 
 ## Cycle 2 ledger
@@ -108,6 +102,75 @@ audits:
   validation_refs: ["check_research_modules.sh --focused ResearchLean/AG/OperationRepair/Classification.lean: pass", "lake build ResearchLean.AG.OperationRepair.Classification: pass", "Classification in-module axiom audit: 60 declarations, standard axioms only", "#print axioms for 12 B spine declarations plus two descent uniqueness declarations: standard axioms only", "git diff --check: pass", "placeholder and hidden Unicode scans: no matches"]
   blocking_findings: []
   next_obligation: "B isomorphism-class OrderIso and arbitrary-target factorization"
+```
+
+## B: isomorphism classes and universal factorization
+
+| Fixed B component | Lean declaration | Construction and proof use |
+| --- | --- | --- |
+| Actual structure-preserving isomorphism across target universes | `RepairIso`, `repairIso_iff_kernel_eq`, `canonicalRepairIso` | Opposite repair morphisms are inverses by surjectivity; every target is isomorphic over `S` to its kernel quotient |
+| Classes exactly up to actual isomorphism | `repairClassSetoid`, `repairClass_eq_iff_iso`, `RepairClass` | The quotient relation is kernel equality and the equivalence theorem identifies it with actual isomorphism |
+| Order isomorphism with the interval | `classKernel`, `classOfInterval`, `classKernel_classOfInterval`, `classOfInterval_classKernel`, `repairOrderIso` | Both inverse laws use `quotientRepair_kernel`; the order is kernel inclusion |
+| Identity and composition | `repairHomOfLe`, `repairHomOfLe_refl`, `repairHomOfLe_comp` | `RepairHom.subsingleton` identifies the canonical map for each inclusion with identities and composites |
+| Factorization into arbitrary target, without surjectivity | `mapKernel`, `generated_le_mapKernel`, `repairable_of_map`, `generatedLift`, `generatedLift_step`, `generatedLift_observation`, `generatedLift_unique`, `generated_universal` | An input map's kernel is a congruence; source request identification yields a lift by `Quotient.lift`; quotient induction proves preservation and uniqueness |
+
+The abstract class construction uses a common universe for representatives;
+`canonicalRepairIso` connects every repair quotient in an independent target
+universe to a standard quotient in that class. `X` in `generated_universal` has
+an independent universe and no finite or surjective hypothesis. The factor
+is built from the original map and generated relation, not provided as data.
+
+## Cycle 3 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 3
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: 14f4cb24a4394aa3af5890a691706ca1061ef834
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 2 comment and report B core"
+  proof_dag_predecessors: ["OperationRepair/Basic.lean", "OperationRepair/Endpoints.lean", "OperationRepair/Classification.lean"]
+  proof_obligation: "B completion: actual-isomorphism class OrderIso and arbitrary-target universal factorization"
+  selection_reason: "Closes B's remaining classification and universal-property obligations before C"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/ClassOrder.lean", "OperationRepair/Universal.lean"]
+  risks: ["actual iso versus kernel equality", "universe strength", "identity/composition", "factor proof-use", "non-surjective target map"]
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed actual repair isomorphisms, class OrderIso, functorial maps, and universal lift to arbitrary target"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/ClassOrder.lean", "OperationRepair/Universal.lean"]
+  evidence: ["repairIso_iff_kernel_eq", "repairClass_eq_iff_iso", "repairOrderIso", "repairHomOfLe_comp", "generated_universal"]
+  claim_mapping:
+    theorem_names: ["repairIso_iff_kernel_eq", "repairOrderIso", "repairHomOfLe_refl", "repairHomOfLe_comp", "generated_universal"]
+    source_labels: ["G-126 B"]
+    conjuncts: ["actual isomorphism classes", "interval order isomorphism", "identity/composition", "arbitrary-target factorization and uniqueness"]
+    undischarged_assumptions: []
+    acceptance_point: "B's remaining claims follow from the constructed A endpoints and cycle-2 quotient/kernel core"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["actual iso/class equivalence", "class OrderIso", "arbitrary-target universal factorization"]
+    remaining: ["C", "D", "E", "fixed examples"]
+  certificate_provenance:
+    discharged: ["repairHomOfLe from kernel inclusion", "generatedLift from input map and generated relation"]
+    unresolved: []
+  proof_use:
+    used: ["quotientRepair_kernel in inverse class laws", "source surjectivity in actual iso inverse", "hstep/hobserve/hR in universal factor"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["ClassOrder focused check: pass, 32 declarations standard axioms", "Universal focused check: pass, 9 declarations standard axioms", "lake build ResearchLean.AG.OperationRepair.Universal: pass", "#print axioms for 16 B completion declarations: standard axioms only", "git diff --check: pass", "placeholder and hidden Unicode scans: no matches"]
+  blocking_findings: []
+  next_obligation: "C: generated union/join, sequential quotient, and input maps"
 ```
 
 ## Cycle 1 ledger
