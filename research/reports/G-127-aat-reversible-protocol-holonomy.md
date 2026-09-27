@@ -24,7 +24,8 @@ tracking Issue と PR に置く。
 `renamedEdgeEquiv` の型変換は `FixedFGraphAutomorphism.source_rename` と
 `target_rename` の証明だけを使用する。
 
-A2 の対の群・射影、B の道とholonomy、C の持ち上げ分類・完全列・torsor、
+A の有限性・`Π`・`H` の入力条件、全状態写像による操作保存の明示定理と
+逆方向の対応、A2 の対の群・射影、B の道とholonomy、C の持ち上げ分類・完全列・torsor、
 D の表示変更と意味論、E の有限手続き、二つの固定例は未完了である。
 現在の宣言を固定targetの完了証拠として扱わない。
 
@@ -46,10 +47,10 @@ selection:
   expected_result_type: proof-checkpoint
   lean_targets: [ResearchLean/AG/ProtocolHolonomy/Basic.lean]
   risks: [dependent endpoint transports, state-map faithfulness, absent A2 group]
-  unchecked: [A2 through E, finite examples]
+  unchecked: [finite input, Pi equations, H congruence preservation, operation preservation on total states, reverse state-map correspondence, A2 through E, finite examples]
 result:
   proposed_result_type: proof-checkpoint
-  proof_obligation_delta: A1 is typed and its total equivalence is constructed injectively
+  proof_obligation_delta: The A1 solution type is defined and maps injectively to total state equivalences over a fixed visible automorphism
   completion_candidate: no
   lean_artifacts: [ReversibleData.Lift, ReversibleData.Lift.stateEquiv]
   evidence: [ReversibleData.Lift.stateEquiv_observation, ReversibleData.Lift.stateEquiv_injective]
@@ -58,12 +59,12 @@ result:
     source_labels: [A1, A total state change]
     conjuncts: [named-edge square in Lift.edge_naturality, state equivalence in stateEquiv]
     undischarged_assumptions: [finite input, Pi equations, H congruence preservation]
-    acceptance_point: A source model and faithful state map are proved; the full A–E target remains open
+    acceptance_point: Varying fibers, edge actions and the A1 solution type are defined; a fixed-visible total-state map is constructed injectively
     port_status: unported
 audits:
   premise_delta:
     discharged: [state equivalence generated from each fiber equivalence]
-    remaining: [A2 through E and fixed examples]
+    remaining: [finite input, Pi equations, H congruence preservation, explicit operation preservation on total states, reverse state-map correspondence, A2 through E, fixed examples]
   certificate_provenance:
     discharged: [stateEquiv from Lift.fiber and graph vertex equivalence]
     unresolved: [finite input and protocol semantics]
