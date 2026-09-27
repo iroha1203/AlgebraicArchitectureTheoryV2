@@ -2076,3 +2076,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and two-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 40 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 40
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: a599d56a0
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 39 direct action-compatibility map on every original A1 lift fiber
+  proof_dag_predecessors: [identityLiftToProtocolFiber, identityProtocolToChange, ReversibleData.StateChange.toLift, ReversibleData.Lift.toStateChange]
+  proof_obligation: Prove the direct original lift-to-protocol map is a full equivalence on every literal visible projection fiber, retaining each vertexwise state map
+  selection_reason: Ensures D's every-fiber action comparison is on complete original and independent fibers, not only a selected subcarrier
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityProtocolFiberEquiv.lean]
+  risks: [replacing the original fiber by a selected lift, forgetting original named edges, one-way map presented as equivalence, hidden cast changing state maps]
+  unchecked: [D G-124 representative comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: For every supplied g∈H, all original A1 lifts and all independent FixedF protocol changes in the literal projection fiber correspond in both directions; the visible automorphism and every vertex/state map are retained, and Cycle 39 right-action compatibility holds on the whole fibers
+  completion_candidate: no
+  lean_artifacts: [identityLiftEquivProtocolFiber]
+  evidence: [identityLiftEquivProtocolFiber_state, identityLiftToProtocolFiber_action]
+  claim_mapping:
+    theorem_names: [identityLiftEquivProtocolFiber, identityLiftEquivProtocolFiber_state, identityLiftToProtocolFiber_action]
+    source_labels: [D Π-empty FixedF all projection fibers and right actions]
+    conjuncts: [every g∈H, all original A1 lifts, literal independent protocol projection fiber, both inverse directions, full named-edge visible automorphism, all vertexwise state maps, original/protocol right action]
+    undischarged_assumptions: [D G-124 representative comparison, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: Original-to-independent FixedF group/projection/section/kernel/each-fiber action comparison is established; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D identity FixedF all-fiber equivalence]
+    remaining: [D G-124 comparison, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [Cycle 33 direct carrier equivalence, original A1 Lift/StateChange bridge, Cycle 39 action compatibility]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [original-to-independent protocol carrier conversion in both directions, literal ProjectionFiber, original A1 lift and actual state-change inverse laws]
+    unused: [selected basepoint or replacement fiber]
+  structure_field_escape: none-found
+  route_integrity: pass-for-fixedf-all-fibers
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and two-declaration standard axiom audit to be recorded in PR]
+```

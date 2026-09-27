@@ -905,3 +905,4 @@ import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolCompatibility
 import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolKernel
 import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolVertical
 import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolFiberAction
+import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolFiberEquiv
