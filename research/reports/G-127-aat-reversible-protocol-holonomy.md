@@ -1362,3 +1362,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and six-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 26 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 26
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 0df72d2f3
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 25 completed D semantic fiber-action checkpoint
+  proof_dag_predecessors: [ReversibleData.transport, ReversibleData.transport_edgeLoopAt, ReversibleData.holonomy_eq_rootedLoopTransportGroup]
+  proof_obligation: For the original A-side identity-operation data with arbitrary named graph and common fiber K, all signed transports and B1 holonomy are trivial for every root choice
+  selection_reason: Establishes the starting calculation of D's arbitrary identity-operation specialization directly on the original named input
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityTransport.lean]
+  risks: [assuming holonomy trivial as input, omitting reverse named passages, fixing a special graph or root]
+  unchecked: [D identity H_lift, component classification, section, FixedF/G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Identity operations on any original named graph have identity signed-path transport, identity B1 edge generators, and bottom holonomy for every root-path choice
+  completion_candidate: no
+  lean_artifacts: [identityReversibleData]
+  evidence: [identity_signedEdgeEquiv, identity_transport, identity_edgeMonodromyAt, identity_holonomy]
+  claim_mapping:
+    theorem_names: [identity_transport, identity_edgeMonodromyAt, identity_holonomy]
+    source_labels: [D arbitrary identity-operation specialization, B1 original named-edge monodromy]
+    conjuncts: [original edge names, both signed orientations, all signed paths, every component and root choice, actual holonomy subgroup]
+    undischarged_assumptions: [D identity H_lift/component/section/FixedF/G-124, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: The identity specialization calculates transport and holonomy from edge actions rather than supplying either as a premise; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D identity signed transports and holonomy triviality]
+    remaining: [D identity H_lift and group classification, section and FixedF/G-124 comparison, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [identity edgeEquiv on the original named graph, induction on signed paths, B1 actual named-loop transport]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [A-side reversible primitive data, signed transport recursion, B1 named-loop and holonomy equality]
+    unused: [semantic presentation because this calculation is on the original A input]
+  structure_field_escape: none-found
+  route_integrity: pass-for-identity-transport
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and five-declaration standard axiom audit to be recorded in PR]
+```
