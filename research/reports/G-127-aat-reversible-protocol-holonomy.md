@@ -2178,3 +2178,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and five-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 42 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 42
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 590f17280
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 41 G-124 actual preserving-change and readAt bridge
+  proof_dag_predecessors: [InducedComponent.representative, CSFixedFDetermining.protocolRepresentativeSet, rootedPathsOfRoots, ReversibleData.verticalRootMulEquiv, identityG124_readAt]
+  proof_obligation: Identify G-124's exact determining representative vertices with B2 roots and show their readings agree on each original vertical A1 lift
+  selection_reason: Moves the G-124/B2 comparison from carrier coincidence to the actual selected representative/root values
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityG124Representatives.lean]
+  risks: [using a different representative choice, claiming all-vertex extension from root equality alone, conflating finite-table runtime with noncomputable structural roots]
+  unchecked: [D G-124 determining extension/C2 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: A RootedPaths choice uses exactly G-124's InducedComponent.representative for each component; every root lies in G-124's finite protocolRepresentativeSet, and B2 verticalRootMulEquiv reads exactly G-124 readAt on the corresponding actual preserving change at that representative
+  completion_candidate: no
+  lean_artifacts: [g124RepresentativeRootedPaths]
+  evidence: [g124_root_mem_representativeSet, identityG124_B2_representative_reading]
+  claim_mapping:
+    theorem_names: [g124RepresentativeRootedPaths, g124_root_mem_representativeSet, identityG124_B2_representative_reading]
+    source_labels: [D G-124 determining representatives match B2 identity roots]
+    conjuncts: [same original component quotient, exact G-124 chosen representative and finite set, B2 root centralizer coordinate, actual G-124 readAt, original A1 fiber]
+    undischarged_assumptions: [D G-124 determining extension/C2, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: G-124 and B2 share literal selected root values; all-vertex extension/C2 equality remains; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D G-124 chosen representative and B2 root reading comparison]
+    remaining: [D G-124 determining extension/C2, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [G-124 InducedComponent.representative and protocolRepresentativeSet, Cycle 41 actual readAt equality, B2 original root evaluation]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [original G-124 representative choice, original finite representative set, original B2 verticalRootMulEquiv, actual G-124 readAt]
+    unused: [new representative choice or executable forest claim]
+  structure_field_escape: none-found
+  route_integrity: pass-for-g124-b2-representatives
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and three-declaration standard axiom audit to be recorded in PR]
+```
