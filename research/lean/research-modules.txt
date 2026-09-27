@@ -1420,3 +1420,6 @@ ResearchLean.AG.OperationRepair.FiniteEnumeration	ResearchLean/AG/OperationRepai
 ResearchLean.AG.OperationRepair.FiniteCostLower	ResearchLean/AG/OperationRepair/FiniteCostLower.lean
 ResearchLean.AG.OperationRepair.LawBridge	ResearchLean/AG/OperationRepair/LawBridge.lean
 ResearchLean.AG.OperationRepair.PathBridge	ResearchLean/AG/OperationRepair/PathBridge.lean
+ResearchLean.AG.OperationRepair.LawUniverse	ResearchLean/AG/OperationRepair/LawUniverse.lean
+ResearchLean.AG.OperationRepair.FiniteLawBridge	ResearchLean/AG/OperationRepair/FiniteLawBridge.lean
+ResearchLean.AG.OperationRepair.LawInputMaps	ResearchLean/AG/OperationRepair/LawInputMaps.lean
