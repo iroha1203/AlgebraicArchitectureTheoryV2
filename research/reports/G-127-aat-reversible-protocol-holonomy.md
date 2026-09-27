@@ -1515,3 +1515,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and four-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 29 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 29
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: ef68153f7
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 28 original identity-hidden section
+  proof_dag_predecessors: [identityReversibleData, ReversibleData.Lift.edge_naturality, FixedFEdgeConstantPermutationFamily.equivComponentPermutationFamilies]
+  proof_obligation: Classify all original vertical A1 lifts in the identity-operation system by one hidden permutation per original undirected graph component, preserving their actual vertexwise maps
+  selection_reason: Connects D identity specialization to the existing FixedF component quotient without replacing the original vertical group
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityComponents.lean]
+  risks: [classifying a replacement edge-constant input instead of actual A1 lifts, losing named-edge square, fixing component representatives, claiming group law from a type equivalence]
+  unchecked: [D identity group-law correspondence and explicit split exact sequence/torsor, FixedF/G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The full original vertical A1 lift type is equivalent to the existing edge-constant family and then to one permutation per undirected component; evaluation at a vertex reads exactly the original fiber equivalence
+  completion_candidate: no
+  lean_artifacts: [identityVerticalToEdgeConstant, identityEdgeConstantToVertical, identityVerticalEquivEdgeConstant, identityVerticalEquivComponents]
+  evidence: [identityVerticalEquivComponents_apply]
+  claim_mapping:
+    theorem_names: [identityVerticalEquivComponents, identityVerticalEquivComponents_apply]
+    source_labels: [C3 original vertical group carrier, D identity component-permutation classification]
+    conjuncts: [all original vertical A1 lifts, original named-edge square, generated undirected component quotient, one permutation per component, same vertex maps]
+    undischarged_assumptions: [identity group-law correspondence and split exact sequence/torsor/FixedF/G-124, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: Identity vertical lifts have the stated component-permutation classification as a type equivalence, with group compatibility still explicit as a remaining obligation; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D identity vertical carrier and pointwise component classification]
+    remaining: [D identity group-law correspondence and split exact sequence/torsor/FixedF/G-124, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [A1 named-edge square gives edge constancy, inverse edge-constant family gives A1, existing original component quotient]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [original A1 vertical lifts, FixedF component classification equivalence]
+    unused: [section because this is the vertical kernel carrier]
+  structure_field_escape: none-found
+  route_integrity: pass-for-identity-component-carrier
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and five-declaration standard axiom audit to be recorded in PR]
+```
