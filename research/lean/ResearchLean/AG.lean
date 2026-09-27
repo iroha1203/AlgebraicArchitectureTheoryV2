@@ -838,3 +838,4 @@ import ResearchLean.AG.OperationRepair.ClassOrder
 import ResearchLean.AG.OperationRepair.Universal
 import ResearchLean.AG.OperationRepair.Composition
 import ResearchLean.AG.OperationRepair.InputMaps
+import ResearchLean.AG.OperationRepair.Sequential

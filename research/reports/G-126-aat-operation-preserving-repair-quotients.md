@@ -5,8 +5,8 @@
 - Applied GOAL and common-standard commit: `93cbcedece216238edfd40e2329bcc69c4f7ae2d`
 - GOAL blob: `255a64df4bdc851f64f799ef89189ea81e78aa70`
 - Proof state: A and B proved; C's request-family composition and input maps
-  are constructed, while sequential quotient and coherence remain open;
-  D–E and the three fixed examples remain open.
+  and two-stage sequential quotient are constructed; finite-family order and
+  bracketing coherence, D–E, and the three fixed examples remain open.
 
 The fixed statement and completion criteria are in the GOAL card. This report
 indexes proof evidence and the next obligations.
@@ -28,8 +28,8 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. C: sequential quotients, all finite orders and parenthesizations, and
-   coherence. Request-family joins and maps between inputs are indexed below.
+1. C: generalize the two-stage sequential quotient to all finite orders and
+   parenthesizations and prove comparison coherence.
 2. D: one executable finite table algorithm with correctness, short failure
    words, and the stated cost upper bound.
 3. E: the existing `FiniteLawFamily` and `Reading` bridge and path requests.
@@ -188,7 +188,74 @@ audits:
 The maps of inputs require the fixed GOAL equations, with no injectivity or
 surjectivity assumption on the input map. The endpoint quotient maps are
 constructed from the preserved congruence relations, not supplied as data.
-The C sequential-quotient and finite-order coherence claims remain open.
+The finite-order and bracketing coherence claims remain open.
+
+## C: two-stage sequential quotient
+
+| Fixed C component | Lean declaration | Construction and proof use |
+| --- | --- | --- |
+| Operations on the first quotient and image of the second request | `quotientSystem`, `imageRequest`, `quotientMap` | Descend each named operation using operation stability; form the literal image relation under the first quotient map |
+| Second generated congruence | `generated_imageRequest_eq_kernel` | The image-generated operation congruence is proved equal to the kernel of the map from `S/c` to `S/(c ⊔ generated T R)`; the reverse inclusion pulls the generated congruence back to `S` and uses join minimality |
+| Sequential quotient equivalence over `S` | `sequentialEquiv`, `sequentialEquiv_mk`, `sequentialEquiv_unique` | The third isomorphism theorem is applied after kernel identification; source representatives prove source compatibility and uniqueness |
+| Operation and observation preservation | `sequentialEquiv_step`, `imageRequest_repairable`, `sequentialEquiv_observation` | Quotient induction proves the operation equation; repairability of both stages descends the observations and proves their agreement through the same equivalence |
+
+The kernel theorem has no repairability premise. Observation descent uses exactly
+`c ≤ behavior T observe` and `generated T R ≤ behavior T observe`, which hold
+for the first generated congruence and second request in the fixed C claim.
+The finite-order and bracketing coherence claim remains open.
+
+## Cycle 5 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 5
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: 6fa4bbf62c04ef4a2bd94b47c25fab16ae806ebf
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 4 comment and report C section"
+  proof_dag_predecessors: ["OperationRepair/Composition.lean", "OperationRepair/InputMaps.lean", "Mathlib.Data.Setoid.Basic"]
+  proof_obligation: "C two-stage sequential quotient with generated image request and structure-preserving comparison"
+  selection_reason: "Kernel identification is the required prerequisite for the third-isomorphism comparison and finite-family coherence"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/Sequential.lean"]
+  risks: ["image relation direction", "kernel equality", "quotient operation stability", "observation descent", "source commuting uniqueness"]
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Identified the second generated congruence with the join quotient-map kernel and constructed the unique operation/observation-preserving sequential equivalence"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/Sequential.lean"]
+  evidence: ["generated_imageRequest_eq_kernel", "sequentialEquiv_mk", "sequentialEquiv_step", "imageRequest_repairable", "sequentialEquiv_observation", "sequentialEquiv_unique"]
+  claim_mapping:
+    theorem_names: ["generated_imageRequest_eq_kernel", "sequentialEquiv", "sequentialEquiv_step", "sequentialEquiv_observation", "sequentialEquiv_unique"]
+    source_labels: ["G-126 C sequential two-stage clause"]
+    conjuncts: ["image-generated congruence", "third-isomorphism comparison", "source compatibility", "operation and observation preservation", "uniqueness"]
+    undischarged_assumptions: []
+    acceptance_point: "Two-stage comparison is constructed from raw congruences and request image; all finite-order coherence remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["C two-stage sequential quotient"]
+    remaining: ["C finite-order and bracketing coherence", "D", "E", "fixed examples"]
+  certificate_provenance:
+    discharged: ["quotient-map kernel and third-isomorphism equivalence constructed"]
+    unresolved: []
+  proof_use:
+    used: ["first congruence in quotient operations", "second request in image generator", "both repairability hypotheses in observation descent"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["Sequential focused check: pass, 18 declarations standard axioms", "lake build ResearchLean.AG.OperationRepair.Sequential: pass", "#print axioms for six C spine declarations: propext and Quot.sound only", "git diff --check: pass", "placeholder and hidden Unicode scans: no matches"]
+  blocking_findings: []
+  next_obligation: "C finite-family order/bracketing coherence"
+```
 
 ## Cycle 4 ledger
 
