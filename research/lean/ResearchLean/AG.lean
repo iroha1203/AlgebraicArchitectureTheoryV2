@@ -873,3 +873,4 @@ import ResearchLean.AG.ProtocolHolonomy.LiftBridge
 import ResearchLean.AG.ProtocolHolonomy.Transport
 import ResearchLean.AG.ProtocolHolonomy.PathEquations
 import ResearchLean.AG.ProtocolHolonomy.RootedPaths
+import ResearchLean.AG.ProtocolHolonomy.HolonomyGenerators
