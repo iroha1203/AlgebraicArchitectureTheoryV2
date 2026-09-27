@@ -4,8 +4,9 @@
 - Tracking Issue: [#4945](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4945)
 - Applied GOAL and common-standard commit: `93cbcedece216238edfd40e2329bcc69c4f7ae2d`
 - GOAL blob: `255a64df4bdc851f64f799ef89189ea81e78aa70`
-- Proof state: A proved; B classification and universal factorization are
-  proposed complete; C–E and the three fixed examples remain open.
+- Proof state: A and B proved; C's request-family composition and input maps
+  are constructed, while sequential quotient and coherence remain open;
+  D–E and the three fixed examples remain open.
 
 The fixed statement and completion criteria are in the GOAL card. This report
 indexes proof evidence and the next obligations.
@@ -27,7 +28,8 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. C: joins, sequential quotients, coherence, and maps between inputs.
+1. C: sequential quotients, all finite orders and parenthesizations, and
+   coherence. Request-family joins and maps between inputs are indexed below.
 2. D: one executable finite table algorithm with correctness, short failure
    words, and the stated cost upper bound.
 3. E: the existing `FiniteLawFamily` and `Reading` bridge and path requests.
@@ -171,6 +173,74 @@ audits:
   validation_refs: ["ClassOrder focused check: pass, 32 declarations standard axioms", "Universal focused check: pass, 9 declarations standard axioms", "lake build ResearchLean.AG.OperationRepair.Universal: pass", "#print axioms for 16 B completion declarations: standard axioms only", "git diff --check: pass", "placeholder and hidden Unicode scans: no matches"]
   blocking_findings: []
   next_obligation: "C: generated union/join, sequential quotient, and input maps"
+```
+
+## C: request families and maps between inputs
+
+| Fixed C component | Lean declaration | Construction and proof use |
+| --- | --- | --- |
+| Union of a request family and generated join | `requestUnion`, `generated_requestUnion`, `generated_empty` | Universal property of `generated` gives both inclusion directions; the empty family yields equality relation |
+| Individual versus joint repairability | `repairable_requestUnion_iff` | The generated join is below the fixed behavioral upper endpoint iff each term is below it |
+| Maps between inputs | `InputHom`, `eval_comm`, `generated_preserve`, `behavior_preserve` | Pullback of target generated congruence proves lower preservation; word evaluation and observation preservation prove upper preservation |
+| Maps between endpoint quotients and their square | `lowerMap`, `upperMap`, `_mk` rules, `endpoint_square`, `lowerMap_step`, `lowerMap_observation`, `upperMap_step`, `upperMap_observation` | Quotient lifts preserve the source map, descended operations, observation, and the lower-to-upper factorization |
+| Identity, composition, and input isomorphisms | `InputHom.id`, `InputHom.comp`, `lowerMap_id`, `upperMap_id`, `lowerMap_comp`, `upperMap_comp`, `InputIso.lowerEquiv`, `InputIso.upperEquiv` | Quotient induction proves identity/composition; inverse input maps induce inverse quotient maps |
+
+The maps of inputs require the fixed GOAL equations, with no injectivity or
+surjectivity assumption on the input map. The endpoint quotient maps are
+constructed from the preserved congruence relations, not supplied as data.
+The C sequential-quotient and finite-order coherence claims remain open.
+
+## Cycle 4 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 4
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: 64c24ee31d10b821d7f0521a20a9fb63e297e985
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 3 comment and report B section"
+  proof_dag_predecessors: ["OperationRepair/Endpoints.lean", "OperationRepair/Classification.lean", "OperationRepair/Universal.lean"]
+  proof_obligation: "C structural functoriality: union/join and maps between raw inputs and endpoint quotients"
+  selection_reason: "Supplies the request and input-map calculus used by sequential repair and Law path requests"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/Composition.lean", "OperationRepair/InputMaps.lean"]
+  risks: ["join orientation", "empty family", "future-word direction", "input map non-surjectivity", "endpoint square"]
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Constructed generated joins, repairability equivalence, and input-induced lower/upper quotient maps with laws"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/Composition.lean", "OperationRepair/InputMaps.lean"]
+  evidence: ["generated_requestUnion", "repairable_requestUnion_iff", "generated_preserve", "behavior_preserve", "endpoint_square", "lowerMap_comp", "upperMap_comp"]
+  claim_mapping:
+    theorem_names: ["generated_requestUnion", "repairable_requestUnion_iff", "generated_preserve", "behavior_preserve", "endpoint_square"]
+    source_labels: ["G-126 C union and input-map clauses"]
+    conjuncts: ["request join", "joint repairability", "both endpoint maps", "commuting square", "identity/composition/input iso"]
+    undischarged_assumptions: []
+    acceptance_point: "Selected C structural subclaims follow from raw family/input maps; sequential quotient remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["generated union/join", "family repairability", "input-preserved endpoints and quotient maps"]
+    remaining: ["C sequential quotient/coherence", "D", "E", "fixed examples"]
+  certificate_provenance:
+    discharged: ["induced quotient maps from input map and congruence preservation"]
+    unresolved: []
+  proof_use:
+    used: ["request_preserve in lower map", "step_comm in both congruences and quotient operations", "observe_comm in behavior and quotient observations"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["Composition focused check: pass, 4 declarations standard axioms", "InputMaps focused check: pass, 52 declarations standard axioms", "lake build ResearchLean.AG.OperationRepair.InputMaps: pass", "#print axioms for 17 C spine declarations: standard axioms only", "git diff --check: pass", "placeholder and hidden Unicode scans: no matches"]
+  blocking_findings: []
+  next_obligation: "C sequential quotient and finite-order coherence"
 ```
 
 ## Cycle 1 ledger
