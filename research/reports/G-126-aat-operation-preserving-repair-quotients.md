@@ -102,7 +102,7 @@ result:
     port_status: not-applicable
 audits:
   premise_delta:
-    discharged: ["concrete state, transition, observation, request, and single Law data", "D's actual output equations"]
+    discharged: ["concrete state, transition, and observation tables for all three instances", "three-state single Law data", "four-state inputOne and path success payload facts; three-state actual failure payload"]
     remaining: ["sequential repairs", "Law adequacy/factorization for feasible instances", "D cost and general finite-output bridge"]
   certificate_provenance:
     discharged: ["three-state pair and word from runRepair", "success table from runRepair_success_payload", "path target operation from computed upper quotient"]
