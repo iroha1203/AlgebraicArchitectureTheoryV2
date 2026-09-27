@@ -2484,3 +2484,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and seven-declaration standard axiom audit to be recorded in PR; #eval zero-edge Bool true; #eval two named-loop C1 positive true and negative false]
 ```
+
+## Cycle 48 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 48
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 70563f4bb981df2b236a727057e1bff981cf058d
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 47 supplied-root C1 procedure and open finite B2/forest construction
+  proof_dag_predecessors: [ExplicitEnumeration.pi, ReversibleData.edgeMonodromyAt, ReversibleData.holonomy, ReversibleData.verticalRootMulEquiv]
+  proof_obligation: From explicit finite edge/root-fiber tables and supplied root paths/component equality, enumerate precisely the root permutations centralizing all original named-edge B1 generators in one component
+  selection_reason: Closes the componentwise finite B2 centralizer enumeration before combining components and constructing input-generated forest/component decisions
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteCentralizerDecision.lean]
+  risks: [testing an unnamed or incomplete edge set, supplied centralizer certificate, noncomputable component test hidden in runtime, claiming all-component E from one-component list]
+  unchecked: [input-generated named forest and component equality decision, combination of all component centralizer lists, H_lift/torsor output, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Candidate forward/inverse root tables are completely enumerated; finite validity tests both inverse laws and commutation with every original named edge whose source belongs to the component; each passing table constructs an element of the actual B2 centralizer and every such element occurs in the resulting list
+  completion_candidate: no
+  lean_artifacts: [ReversibleData.ValidCentralizerCandidate, ReversibleData.finiteRootCentralizers]
+  evidence: [ReversibleData.centralizerOfValidCandidate, ReversibleData.validCentralizerCandidate_of_mem, ReversibleData.centralizer_mem_finiteRootCentralizers]
+  claim_mapping:
+    theorem_names: [ReversibleData.centralizerOfValidCandidate, ReversibleData.centralizer_mem_finiteRootCentralizers]
+    source_labels: [B1 named-edge generators, B2 component centralizer, E finite enumeration]
+    conjuncts: [original named-edge monodromy, both inverse laws, generator commutation, centralizer soundness and exhaustive membership]
+    undischarged_assumptions: [supplied RootedPaths, supplied DecidableEq on original component quotient, all-component and full E procedure]
+    acceptance_point: Exact componentwise centralizer list conditional on supplied root paths/component equality; not a full input-generated E algorithm
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [finite root-permutation enumeration and B1-generator centralizer check for one chosen component]
+    remaining: [finite named forest/component decision, all-component B2 assembly, E H_lift/torsor and examples]
+  certificate_provenance:
+    discharged: [candidate tables generated from explicit root-fiber values, original edgeMonodromyAt computed from named edge actions, B2 membership derived via centralizer_closure]
+    unresolved: [runtime production of RootedPaths and decidable original component equality]
+  proof_use:
+    used: [all root-fiber table candidates, each named edge in component, both inverse laws, holonomy closure equality, original B2 centralizer]
+    unused: [verticalRootMulEquiv is a later all-component connection; finiteRootLift C1 search is independent]
+  structure_field_escape: none-found-for-conditional-component-list
+  route_integrity: pass-for-B1-generator-to-B2-component-list
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and five-declaration standard axiom audit to be recorded in PR]
+```
