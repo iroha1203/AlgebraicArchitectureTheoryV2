@@ -1404,3 +1404,4 @@ ResearchLean.AG.LocalSemanticReconstruction.IndependentGeometryHomIntegrationCon
 ResearchLean.AG.LocalSemanticReconstruction.IndependentGeometryHomIntegratedRefutations	ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryHomIntegratedRefutations.lean
 ResearchLean.AG.OperationRepair.Basic	ResearchLean/AG/OperationRepair/Basic.lean
 ResearchLean.AG.OperationRepair.Endpoints	ResearchLean/AG/OperationRepair/Endpoints.lean
+ResearchLean.AG.OperationRepair.Classification	ResearchLean/AG/OperationRepair/Classification.lean
