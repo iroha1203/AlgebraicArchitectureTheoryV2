@@ -334,7 +334,7 @@ result:
     theorem_names: [signedReachable_iff_undirected, component_eq_iff_signedReachable, pathFromRoot_self]
     source_labels: [B undirected components and root paths]
     conjuncts: [original named positive and negative steps, reachability equivalence, arbitrary component roots, empty root path]
-    undischarged_assumptions: [finite-table spanning forest and tree-derived paths remain E construction obligations]
+    undischarged_assumptions: [B specialization to paths from any chosen spanning forest, E terminating finite-table spanning-forest construction]
     acceptance_point: Root paths can be constructed for every component and arbitrary chosen root; tree-generated paths and holonomy remain open
     port_status: unported
 audits:
