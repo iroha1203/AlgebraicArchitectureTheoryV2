@@ -908,3 +908,4 @@ import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolFiberAction
 import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolFiberEquiv
 import ResearchLean.AG.ProtocolHolonomy.IdentityG124Bridge
 import ResearchLean.AG.ProtocolHolonomy.IdentityG124Representatives
+import ResearchLean.AG.ProtocolHolonomy.IdentityG124Extension
