@@ -27,8 +27,7 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. D: combine the verified endpoint table loops into one success/failure
-   procedure, construct numbered quotient tables, and prove the cost bound.
+1. D: prove the cost bound for the same finite success/failure procedure.
 2. E: the existing `FiniteLawFamily` and `Reading` bridge and path requests.
 3. Three fixed examples and empty input cases, evaluated through the same
    general API and finite algorithm.
@@ -55,8 +54,72 @@ behavioral congruence, and `upper_some_certificate` proves the strict length
 bound for stored words. The empty state and operation types require no
 default element.
 
-These are the two endpoint engines, not yet GOAL D as a whole. A common
-`runRepair` output, numbered quotient tables, and cost proof remain open.
+`FiniteConstruction.lean` builds ordered class representatives and concrete
+sections from each computed partition, even for zero states. The success
+branch of `runRepair` returns both numbered quotient tables, quotient maps,
+descended operations and observations, and their factor map. Its equations
+identify the kernels with `generated` and `behavior`, and its concrete section
+gives the canonical quotient equivalence. The failure branch returns a pair
+from the original request table and a stored word shorter than `n²`.
+`runRepair_success_iff_repair_exists` and
+`runRepair_failure_iff_no_repair` connect both outcomes to B's classification.
+`FiniteEnumeration.lean` turns explicit state and operation numberings into
+the exact raw tables consumed by this procedure; the transition, observation,
+and request value equations are proved. The remaining D obligation is a
+costed implementation of this same procedure and the stated uniform bound.
+
+## Cycle 8 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 8
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: b970a93d1c00ec3cffe4c8aeb45bcea62e100869
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 7 comment and report D section"
+  proof_dag_predecessors: ["OperationRepair/FiniteClosure.lean", "OperationRepair/FiniteBehavior.lean", "OperationRepair/Classification.lean"]
+  proof_obligation: "D common output: numbered quotient tables, concrete maps, failure witness, and explicit enumeration bridge"
+  selection_reason: "The verified endpoint engines need one output connected to B before cost instrumentation"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/FiniteConstruction.lean", "OperationRepair/FiniteEnumeration.lean"]
+  risks: ["numbered class kernel", "empty states", "shared endpoint values", "classification equivalence", "cost model still open"]
+  unchecked: ["D cost proof", "E", "fixed examples"]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "A single finite outcome returns computed numbered endpoints or a stored original-request separator, with both cases matched to B"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/FiniteConstruction.lean", "OperationRepair/FiniteEnumeration.lean"]
+  evidence: ["PartitionTable.standardEquiv", "runRepair_failure", "runRepair_success_iff_repair_exists", "runRepair_success_payload", "successLowerRepair", "successUpperRepair", "successFactorHom", "runRepair_failure_iff_no_repair", "FiniteEnumeration.Input.toTables_step", "FiniteEnumeration.Input.toTables_observe", "FiniteEnumeration.Input.toTables_wants"]
+  claim_mapping:
+    theorem_names: ["runRepair_failure", "runRepair_success_iff_repair_exists", "runRepair_failure_iff_no_repair", "success_lower_map_kernel", "success_upper_map_kernel"]
+    source_labels: ["G-126 D output and correctness subclauses"]
+    conjuncts: ["both numbered quotient tables", "descending operations and observations", "factor map", "short original-request separator", "existence and nonexistence equivalence", "numbered raw input bridge"]
+    undischarged_assumptions: []
+    acceptance_point: "Output and correctness subclaims only; D cost remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["numbered quotient representatives and sections", "output branch correctness", "classification connection", "explicit finite numbering"]
+    remaining: ["D cost", "E", "fixed examples"]
+  certificate_provenance:
+    discharged: ["both endpoints computed from raw input", "failure word stored by upper recurrence", "quotient maps built from computed partitions"]
+    unresolved: []
+  proof_use:
+    used: ["lower closure in lower quotient", "upper words in decision and upper quotient", "request table in failure search", "operation and observation tables in descended output"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["focused checks: FiniteConstruction and FiniteEnumeration pass with standard axioms", "parent targeted build: FiniteConstruction pass", "module-level standard-axiom audits pass", "git diff --check and placeholder, hidden Unicode, privacy, import-direction scans pass"]
+  blocking_findings: []
+  next_obligation: "D costed execution and uniform O((m+1)(n+1)^5) proof"
+```
 
 ## Cycle 7 ledger
 
