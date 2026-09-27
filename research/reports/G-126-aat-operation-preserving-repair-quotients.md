@@ -83,7 +83,7 @@ result:
     port_status: not-applicable
 audits:
   premise_delta:
-    discharged: ["explicit source/operation enumeration", "original request relation", "original observation"]
+    discharged: ["generated and behavior transport through the input numberings", "source-level quotient, factor, and failure output from the same table run"]
     remaining: ["D RAM primitive correspondence and total cost bound", "cumulative E and fixed-example review"]
   certificate_provenance:
     discharged: ["success tables and factor from runRepair", "failure pair and word from runRepair"]
