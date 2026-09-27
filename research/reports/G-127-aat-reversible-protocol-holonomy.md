@@ -1046,3 +1046,56 @@ audits:
   blocking_findings: []
   next_obligation: Prove D A2/projection/kernel compatibility with presentation changes or semantic isomorphism composition
 ```
+
+## Cycle 20 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 20
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 9d5d82f685618ee45c9d3b15f044c0efc564d9a0
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycles 14 and 19 root-coordinate changes and A2 original pair group
+  proof_dag_predecessors: [liftPairMulEquivChangeGroup, liftPair_mul_fiber_apply, liftEquivRootSolutions, liftChoiceChange, verticalChoiceChange]
+  proof_obligation: Preserve the original A2 group law, visible projection, and literal kernel under arbitrary changes of C1 root coordinates
+  selection_reason: Connects coordinate changes to the complete original change group and projection, extending the prior individual-lift and right-action compatibility
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/ChoiceGroup.lean]
+  risks: [dependent visible fiber, transported group provenance, projection/kernel equality, agreement with earlier C1 choice map]
+  unchecked: [explicit root-coordinate A2 point formula, D semantic composition, identity specialization, arbitrary undirected-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Root-pair coordinates are group-isomorphic to the original A2 lift-pair group; changing arbitrary roots is a group isomorphism whose fiber map is the prior C1 change, and it preserves visible projection and actual kernel membership
+  completion_candidate: no
+  lean_artifacts: [ReversibleData.RootPair, ReversibleData.liftPairEquivRootPair, ReversibleData.liftPairMulEquivRootPair, ReversibleData.rootPairProjection]
+  evidence: [ReversibleData.rootPairChoiceChange, ReversibleData.rootPairChoiceChange_projection, ReversibleData.rootPairChoiceChange_fiber, ReversibleData.rootPairChoiceChange_mem_ker_iff]
+  claim_mapping:
+    theorem_names: [ReversibleData.liftPairMulEquivRootPair, ReversibleData.rootPairChoiceChange_projection, ReversibleData.rootPairChoiceChange_mem_ker_iff]
+    source_labels: [A2 original pair group, D root and tree choice compatibility]
+    conjuncts: [original H and A1 lift pairs, actual A2 group law, all C1 root solutions, arbitrary rooted choices, original visible projection, literal projection kernel, changed fiber value]
+    undischarged_assumptions: [explicit coordinate A2 point formula, remaining D semantic/identity compatibility, undirected named-tree bridge, E and fixed examples]
+    acceptance_point: Group/projection/kernel compatibility of D root presentations follows through the original A2 group, but remaining D/E/example obligations keep G-127 incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D root-choice group law, projection, and kernel compatibility]
+    remaining: [explicit root-coordinate A2 point formula, D semantic/identity compatibility, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [root solution reconstruction into original A1 lift; original A2 group law from actual state-change composition]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [C1/C2 lift equivalence, original LiftPair group, original projection, prior choice changes]
+    unused: [Pi because the group-coordinate clause concerns original A1 data]
+  structure_field_escape: none-found
+  route_integrity: pass-for-rooted-paths
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and seven-declaration standard axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Prove the explicit root-coordinate A2 evaluation formula or semantic isomorphism composition
+```
