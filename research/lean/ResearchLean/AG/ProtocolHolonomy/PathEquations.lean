@@ -253,19 +253,23 @@ end FiniteProtocolInput
 
 /-! ## Nonvacuity examples for the new path predicates -/
 
+/-- Two distinct named loops at one control point for nonvacuity checks. -/
 private def witnessGraph : FixedFDirectedMultigraph where
   Vertex := PUnit
   Edge := Bool
   source := fun _ => PUnit.unit
   target := fun _ => PUnit.unit
 
+/-- Retain the chosen loop name in the typed edge. -/
 private def witnessEdge (e : Bool) :
     TypedEdge witnessGraph PUnit.unit PUnit.unit := ⟨e, rfl, rfl⟩
 
+/-- The one-step execution of either named loop. -/
 private def witnessPath (e : Bool) :
     PositivePath witnessGraph PUnit.unit PUnit.unit :=
   positiveCons witnessGraph (positiveNil witnessGraph PUnit.unit) (witnessEdge e)
 
+/-- A nonempty equation family identifying only the first loop with id. -/
 private def witnessEquations : PathEquations witnessGraph where
   Index := PUnit
   finiteIndex := inferInstance
@@ -274,6 +278,8 @@ private def witnessEquations : PathEquations witnessGraph where
   left := fun _ => witnessPath false
   right := fun _ => positiveNil witnessGraph PUnit.unit
 
+/-- A separating action: the first loop acts identically, the second swaps
+the two states. -/
 private def witnessData : ReversibleData witnessGraph where
   Fiber := fun _ => Bool
   edgeEquiv := fun e =>
@@ -318,6 +324,7 @@ private theorem witness_not_congruent :
 example : ¬ witnessEquations.Congruent (witnessPath true)
     (positiveNil witnessGraph PUnit.unit) := witness_not_congruent
 
+/-- The graph automorphism that exchanges the two original operation names. -/
 private noncomputable def witnessSwap : FixedFGraphAutomorphism witnessGraph where
   vertex := Equiv.refl PUnit
   edge := by classical exact Equiv.swap false true
@@ -348,6 +355,7 @@ private theorem witness_swap_not_preserves_generators :
   rw [hleft, hright] at hr
   exact witness_not_congruent hr
 
+/-- Negative generator-preservation instance, using the separating action. -/
 example : ¬ witnessEquations.PreservesGenerators witnessSwap :=
   witness_swap_not_preserves_generators
 
