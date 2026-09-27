@@ -1719,3 +1719,54 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check and six-declaration standard axiom audit to be recorded in PR]
 ```
+
+## Cycle 33 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 33
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 42a61f494
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycles 27–32 identity A input, group, split sequence, torsor
+  proof_dag_predecessors: [ReversibleData.StateChange.toLift, ReversibleData.Lift.toStateChange, FixedFProtocolGroupConnection.ProtocolChangeGroup]
+  proof_obligation: Give a direct bidirectional carrier correspondence between the original identity-operation actual change group and the existing independent FixedF protocol change group, retaining the original visible name rename and state map
+  selection_reason: Starts D's Π-empty FixedF comparison using the two real groups rather than an abstract replacement extension
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/IdentityProtocolCarrier.lean]
+  risks: [dropping original named edge squares, identifying only selected changes, claiming group compatibility before proof, changing universe/input]
+  unchecked: [D FixedF group/projection/section/kernel/fiber action and G-124 comparison, arbitrary undirected named-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: In the finite no-equation FixedF universe, every original actual identity-operation change and every independent FixedF ProtocolChangeGroup element correspond in both directions; visible automorphism including edge rename is identical, and protocol state adapters evaluate the original total-state map at every vertex and hidden state
+  completion_candidate: no
+  lean_artifacts: [identityChangeToProtocol, identityProtocolToChange, identityChangeEquivProtocol]
+  evidence: [identityChangeEquivProtocol_visible, identityChangeEquivProtocol_state]
+  claim_mapping:
+    theorem_names: [identityChangeEquivProtocol, identityChangeEquivProtocol_visible, identityChangeEquivProtocol_state]
+    source_labels: [D Π-empty existing FixedF protocol change group carrier]
+    conjuncts: [original actual identity-operation ChangeGroup H, independent FixedF ProtocolChangeGroup H, all named-edge squares, original graph automorphism and edge names, same total-state map, both inverse directions]
+    undischarged_assumptions: [D FixedF group/projection/section/kernel/fiber action and G-124, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: The full two-input carrier correspondence is fixed without claiming its group law yet; G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D identity/FixedF full carrier, visible and total-state readback]
+    remaining: [D FixedF group/projection/section/kernel/fiber action and G-124, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [actual StateChange.toLift and A1 Lift.toStateChange, independent protocol named-edge naturality]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [original A1/actual StateChange equivalence, existing FixedF independent protocol group definition]
+    unused: [abstract extension or selected subgroup]
+  structure_field_escape: none-found
+  route_integrity: pass-for-fixedf-carrier
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and five-declaration standard axiom audit to be recorded in PR]
+```
