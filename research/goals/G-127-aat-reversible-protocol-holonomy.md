@@ -1,9 +1,9 @@
 # G-127-aat-reversible-protocol-holonomy — 可逆な操作のholonomyによる変更群と持ち上げの分類
 
 - `id`: `G-127-aat-reversible-protocol-holonomy`
-- `status`: `draft`
+- `status`: `active`
 - `research mode`: `target-theorem`
-- `tracking issue`: 未設定
+- `tracking issue`: [#4981](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4981)
 - `source note`: [n1016 §2.3・候補03](../../docs/note/n1016_rising_sea_v2_paper_plan.md)
 - `design`: [A–Eの実装設計](../designs/G-127-aat-reversible-protocol-holonomy/README.md)
 
