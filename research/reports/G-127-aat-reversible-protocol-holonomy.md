@@ -1205,3 +1205,56 @@ audits:
   blocking_findings: []
   next_obligation: Prove D semantic natural-isomorphism composition using this reindexing law and the original A2 lift law
 ```
+
+## Cycle 23 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 23
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 3dd337b66796cc111e1eaeb7eac37dd53c7193fd
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycles 17 and 22 semantic natural isomorphisms and quotient rename group law
+  proof_dag_predecessors: [FiniteProtocolInput.liftIso, FiniteProtocolInput.renameExecutionFunctor_mul, ReversibleData.Lift.comp_fiber_apply]
+  proof_obligation: Show the independently constructed semantic natural isomorphism of an original A2 product equals the reindexed composite of the two original semantic natural isomorphisms on every quotient execution
+  selection_reason: Connects D's semantic correspondence to the original A2 composition beyond vertex generator maps
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/SemanticComposition.lean]
+  risks: [reindexing order, functor target equality, natural transformation on all quotient objects, dependent moved vertex]
+  unchecked: [D semantic projection/kernel/fiber action compatibility, identity specialization, arbitrary undirected-tree bridge, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The semantic target of a product equals iterated quotient rename, and the full natural transformation from the original A2 lift is exactly the composite of the second semantic lift with the first semantic lift whiskered by the second visible rename
+  completion_candidate: no
+  lean_artifacts: [FiniteProtocolInput.renamedFunctor_mul, FiniteProtocolInput.liftIsoSemanticComposite]
+  evidence: [FiniteProtocolInput.liftIso_comp_vertex, FiniteProtocolInput.liftIsoSemanticComposite_eq]
+  claim_mapping:
+    theorem_names: [FiniteProtocolInput.liftIsoSemanticComposite_eq]
+    source_labels: [A2, D independent semantic correspondence and composition]
+    conjuncts: [original input P and H, arbitrary two visible changes and A1 lifts, actual quotient-execution reindexing, full natural transformations, original A2 fiber law, all quotient-path naturality]
+    undischarged_assumptions: [D semantic projection/kernel/fiber compatibility, identity specialization, arbitrary undirected named-tree bridge, E and fixed examples]
+    acceptance_point: Semantic natural-isomorphism composition is equal to the original A2 lift image as a full natural transformation; full G-127 remains incomplete
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D semantic correspondence respects original A2 composition on all quotient executions]
+    remaining: [D semantic projection/kernel/fiber and identity specialization, undirected-tree bridge, E and fixed examples]
+  certificate_provenance:
+    discharged: [semantic isomorphisms from original A1 lifts; quotient rename product from original H; A2 product from actual state changes]
+    unresolved: [E finite table construction]
+  proof_use:
+    used: [original A2 dependent fiber formula, genuine semantic natural isomorphisms, quotient rename group law, functor whiskering and natural-transformation equality]
+    unused: [B/C because semantic A2 correspondence follows directly from original A]
+  structure_field_escape: none-found
+  route_integrity: pass-for-semantic-A2
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and four-declaration standard axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Prove D semantic projection/kernel/each-fiber right-action compatibility
+```

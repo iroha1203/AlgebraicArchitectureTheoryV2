@@ -1460,3 +1460,4 @@ ResearchLean.AG.ProtocolHolonomy.ChoiceTorsor	ResearchLean/AG/ProtocolHolonomy/C
 ResearchLean.AG.ProtocolHolonomy.ChoiceGroup	ResearchLean/AG/ProtocolHolonomy/ChoiceGroup.lean
 ResearchLean.AG.ProtocolHolonomy.ChoiceGroupFormula	ResearchLean/AG/ProtocolHolonomy/ChoiceGroupFormula.lean
 ResearchLean.AG.ProtocolHolonomy.RenameComposition	ResearchLean/AG/ProtocolHolonomy/RenameComposition.lean
+ResearchLean.AG.ProtocolHolonomy.SemanticComposition	ResearchLean/AG/ProtocolHolonomy/SemanticComposition.lean
