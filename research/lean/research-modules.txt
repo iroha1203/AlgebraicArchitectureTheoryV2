@@ -1458,3 +1458,4 @@ ResearchLean.AG.ProtocolHolonomy.NaturalIsomorphism	ResearchLean/AG/ProtocolHolo
 ResearchLean.AG.ProtocolHolonomy.HolonomyChoice	ResearchLean/AG/ProtocolHolonomy/HolonomyChoice.lean
 ResearchLean.AG.ProtocolHolonomy.ChoiceTorsor	ResearchLean/AG/ProtocolHolonomy/ChoiceTorsor.lean
 ResearchLean.AG.ProtocolHolonomy.ChoiceGroup	ResearchLean/AG/ProtocolHolonomy/ChoiceGroup.lean
+ResearchLean.AG.ProtocolHolonomy.ChoiceGroupFormula	ResearchLean/AG/ProtocolHolonomy/ChoiceGroupFormula.lean
