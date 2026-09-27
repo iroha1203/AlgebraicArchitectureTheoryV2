@@ -128,7 +128,7 @@ ArchMap に書くのは Atom だけである。局所の分け方や局所どう
 
 変更の候補も、ArchMap と同じ形の Atom で書く。置き場所は `.archsig/plans/<候補の名前>/` だ。
 
-最初の行で、候補の名前と、元にするコミットを書く。
+最初の行で、候補の名前と、元にするものを書く。元にするのは、コミットか、別の候補(`plan:<名前>`)である。
 
 ```json
 {"kind": "plan", "subject": "split-order", "base": "a1b2c3d"}
@@ -141,6 +141,7 @@ ArchMap に書くのは Atom だけである。局所の分け方や局所どう
 候補には、変更のための Atom が二つ加わる。
 
 - `corresponds`:変更前の要素と変更後の要素の対応。一つの要素を二つに分けるなら、対応を二つ書く。
+  行き先をまだ決めていなければ、`object` に候補を `|` で並べる(`"OrderShipping.note | OrderPayment.note"`)。
 - `removes`:変更後に無くなる要素。
 
 ```json

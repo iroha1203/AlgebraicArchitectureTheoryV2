@@ -13,3 +13,4 @@ ArchSig を直接呼び出すのは AI エージェントで、人はエージ�
 2. [変更を一周する](02_first_change.md)
 3. [Atom と ArchMap](03_atoms_and_archmap.md)
 4. [Law と読み](04_laws_and_readings.md)
+5. [ArchSig に聞けること](05_questions.md)
