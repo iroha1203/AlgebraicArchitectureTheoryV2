@@ -83,7 +83,8 @@ archsig status
 ```
 
 ArchSig は、ArchMap を観測したときのソースと今のソースを比べ、変わったソースを返す。
-変わったソースだけを観測し直せばよい。観測は二段に分かれる。
+変わったソースだけを観測し直せばよい。
+このリポジトリの ArchMap は、これまでの Law に関わるソースだけを観測してある。読んでいないソースは、必要になったときに読む(第10章)。観測は二段に分かれる。
 
 - 構造 Atom は、エージェントが言語に合う解析器を選んで取り出し、`archsig record` で ArchMap に書く。
 - 意味 Atom は、軽いモデルのエージェント二つが、Law の語彙を手がかりに別々に観測する。一致したものを記録する。
@@ -94,10 +95,10 @@ ArchMap に記録される Atom は、たとえば次の形をしている。
 {"kind": "writes", "subject": "shop.shipping.service.update_shipping",
  "object": "shop.order.model.Order.payment_ref", "value": "None",
  "when": "$new.country != $order.shipping_address.country",
- "at": "shop/shipping/service.py:4@a1b2c3d", "by": "tool:tree-sitter-python@0.23"}
+ "at": "shop/shipping/service.py:4@blob:3f2a9c1", "by": "tool:tree-sitter-python@0.23"}
 {"kind": "meaning", "subject": "shop.order.model.Order.payment_ref", "meaning": "payment-info",
- "uses": ["shop/payment/charge.py:22@a1b2c3d", "shop/order/confirm.py:57@a1b2c3d"],
- "at": "shop/order/model.py:18@a1b2c3d", "by": ["model:claude-sonnet-5#1", "model:claude-sonnet-5#2"]}
+ "uses": ["shop/payment/charge.py:22@blob:3f2a9c1", "shop/order/confirm.py:57@blob:3f2a9c1"],
+ "at": "shop/order/model.py:18@blob:3f2a9c1", "by": ["model:claude-sonnet-5#1", "model:claude-sonnet-5#2"]}
 ```
 
 一行目は構造 Atom で、条件付きの書き込みを記録している。
@@ -143,6 +144,7 @@ ArchMap に記録される Atom は、たとえば次の形をしている。
 新しい型とフィールドは、置く予定のソースを `file` に書く。局所はこのパスで決まる。
 `update_shipping` は名前が変わらないので、変更前の `update_shipping` に対応する。引数 `order` は `shipping` に変わるので、対応を書いた。
 `update_shipping` の Atom を書いたので、その要素についての元の Atom は置き換わる。`normalize_address` の呼び出しも、候補に書き直してある。
+候補を書くエージェントはコードを読んで書いているが、ArchMap にはまだ `address.py` の構造がない。
 候補には意味 Atom を書かない。`OrderPayment.ref` が決済情報であることは、`Order.payment_ref` からの対応で移る。
 
 候補を検査する。
@@ -198,6 +200,7 @@ SKILL はそこだけを観測し、ArchMap に書き足す。
 
 ArchSig は、条件で分かれるすべての分岐について、二つの順番の結果を比べる。
 どの分岐でも一致したので、この候補は Law を保つ。
+ただし、ArchSig は同じ型の別々の実体を区別しない。`reset_authorization` が正しい注文の決済を消すか、つまり渡した `order_id` が正しいかは、この結論に入らない。結果の `conditions` にもそう書かれる。
 
 ## 6. 仕事を分ける
 
@@ -239,7 +242,7 @@ archsig compare --plan split-order
 ```
 
 ```text
-✔ 候補の Atom 14 件すべてに、対応する観測がある
+✔ 候補の構造 Atom 13 件すべてに、対応する観測がある
 ✔ payment-follows-order は実装後のコードで成り立つ
 ```
 

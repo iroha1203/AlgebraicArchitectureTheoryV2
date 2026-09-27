@@ -18,3 +18,4 @@ ArchSig を直接呼び出すのは AI エージェントで、人はエージ�
 7. [SKILL](07_skills.md)
 8. [コマンド](08_commands.md)
 9. [Rising Sea との対応](09_rising_sea.md)
+10. [導入と運用](10_adoption.md)

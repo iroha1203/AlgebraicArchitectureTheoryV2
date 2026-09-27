@@ -8,7 +8,8 @@ Atom は JSON の一行で書く。どの Atom も次の欄を持つ。
 
 - `kind`:Atom の種類。
 - `subject`:何についての事実か。コードの要素の名前を書く。
-- `at`:観測した場所。`パス:行@コミット` の形で書く。行は `10-14` のような範囲でもよい。
+- `at`:観測した場所。`パス:行@blob:<内容の hash>` の形で書く。内容の hash は、git がそのソースの内容に付ける blob の id である。行は `10-14` のような範囲でもよい。
+  コミットではなく内容の hash で書くので、squash merge や rebase の後もたどれる。
 - `by`:誰が観測したか。解析器の名前と版、またはモデルの名前を書く。
 
 種類ごとに、次の欄が加わる。ここに挙げていない欄を持つ Atom は受け付けない。
@@ -93,11 +94,11 @@ ArchSig は、操作の呼び出しの結果を、同じ操作に同じ値を渡
 
 ```json
 {"kind": "meaning", "subject": "shop.order.model.Order.payment_ref", "meaning": "payment-info",
- "uses": ["shop/payment/charge.py:22@a1b2c3d", "shop/order/confirm.py:57@a1b2c3d"],
- "at": "shop/order/model.py:18@a1b2c3d", "by": ["model:claude-sonnet-5#1", "model:claude-sonnet-5#2"]}
+ "uses": ["shop/payment/charge.py:22@blob:3f2a9c1", "shop/order/confirm.py:57@blob:3f2a9c1"],
+ "at": "shop/order/model.py:18@blob:3f2a9c1", "by": ["model:claude-sonnet-5#1", "model:claude-sonnet-5#2"]}
 {"kind": "meaning", "subject": "shop.order.confirm.confirm->mail.send", "meaning": "role",
- "value": "order-notice", "uses": ["shop/order/confirm.py:61-64@a1b2c3d"],
- "at": "shop/order/confirm.py:61@a1b2c3d", "by": ["model:claude-sonnet-5#1", "model:claude-sonnet-5#2"]}
+ "value": "order-notice", "uses": ["shop/order/confirm.py:61-64@blob:3f2a9c1"],
+ "at": "shop/order/confirm.py:61@blob:3f2a9c1", "by": ["model:claude-sonnet-5#1", "model:claude-sonnet-5#2"]}
 ```
 
 `meaning` には、Law が定めた意味の語彙の名前を書く。語彙が `values` で値を並べていれば、その一つを `value` に書く。
@@ -106,7 +107,7 @@ ArchSig は、操作の呼び出しの結果を、同じ操作に同じ値を渡
 呼び出し元、前後の処理、値の渡し先、分岐である。一つ以上が必要で、書き方は `at` と同じだ。
 名前、型、コメント、文書は根拠にしない。
 
-意味 Atom は、別々の二回の観測が一致したものだけを記録する。
+意味 Atom は、別々の二回の観測が一致したものだけを記録する。これは観測する SKILL の手順である(第7章)。
 `by` には二つの観測者を並べる。一致は Atom の同一性で決め、`uses` は二つを合わせて記録する。
 一致しなかったものを強いモデルが元のコードを読んで決めたときは、`by` の三つ目に `decided:model:<名前>` を加える。
 
@@ -116,12 +117,13 @@ ArchSig は、操作の呼び出しの結果を、同じ操作に同じ値を渡
 
 ```json
 {"kind": "meaning", "subject": "local:service:money", "meaning": "unit", "value": "minor",
- "uses": ["shop/payment/charge.py:22@a1b2c3d"], "at": "shop/payment@a1b2c3d",
+ "uses": ["shop/payment/charge.py:22@blob:3f2a9c1"], "at": "shop/payment@3e1d0b2",
  "by": ["model:claude-sonnet-5#1", "model:claude-sonnet-5#2"]}
 ```
 
 `subject` は `local:<読み>:<局所の名前>` と書く。
 この Atom は、その局所の中で、意味の語彙が対象にする要素すべてに同じ値を与える。
+使えるのは、`values` を持つ語彙だけである。`values` のない語彙(`payment-info` など)は、要素ごとに読む。
 まとめて読むと観測の手間が減る。まとめてよいかは、第5章の問い5で確かめる。
 
 ## 読んだ範囲
@@ -130,9 +132,9 @@ ArchMap は、Atom のほかに、どこを読んだかを記録する。
 
 ```json
 {"kind": "observed", "subject": "shop/shipping/address.py", "scope": "structure",
- "hash": "sha256:9f2c…", "at": "shop/shipping/address.py@a1b2c3d", "by": "tool:tree-sitter-python@0.23"}
+ "hash": "sha256:9f2c…", "at": "shop/shipping/address.py@blob:9f2c4e7", "by": "tool:tree-sitter-python@0.23"}
 {"kind": "observed", "subject": "shop/shipping/address.py", "scope": "meaning:payment-info",
- "hash": "sha256:9f2c…", "at": "shop/shipping/address.py@a1b2c3d",
+ "hash": "sha256:9f2c…", "at": "shop/shipping/address.py@blob:9f2c4e7",
  "by": ["model:claude-sonnet-5#1", "model:claude-sonnet-5#2"]}
 ```
 
@@ -145,6 +147,7 @@ ArchSig はこの二つを区別する。分からない所が結論に関わる
 ソースが今の内容と違えば、その範囲は古い。
 意味 Atom は、`at` のソースと `uses` のソースがどれも今の内容と同じときだけ使う。
 意味は使われ方で決まるので、使う側のソースが変われば読み直す。
+その要素を読む操作、受け取る操作、渡す操作の集まりが構造 Atom の上で変わったときも、使われ方が変わったので古いとみなす。
 `archsig status` は古い範囲と古い意味 Atom を返す。
 
 ## ArchMap のファイル
@@ -158,6 +161,7 @@ ArchMap は、ソースのファイルごとに一つの JSON Lines ファイル
 ```
 
 一つのファイルには、そのソースについての `observed` と、そこで観測した Atom が入る。
+ブランチどうしで同じファイルが衝突したら、どちらかを採って `archsig status` を実行し、古いと出た所を観測し直せばよい。
 局所ごとの意味 Atom は、`.archsig/map/local/<読み>/<局所の名前>.jsonl` に置く。
 ソースが変わったら、そのファイルだけを観測し直して置き換える。
 ArchMap はリポジトリにコミットする。観測には手間がかかるので、次の担当やセッションが使い回せるようにするためだ。
@@ -198,6 +202,11 @@ ArchMap と同じ形をとり、`.archsig/plans/<候補の名前>/` に置く。
 行き先をまだ決めていない対応は、`object` に行き先を `|` で並べて書ける(`"a.X | b.Y"`)。
 `|` を含む候補を受け付けるのは `archsig plan choices` だけである(第5章の問い6)。
 
+候補が書き直していない操作が、`removes` した要素を使っていれば、`plan check` はその操作を `missing` として挙げる。書き直す範囲はここで分かる。
+
+実装を先にしてもよい。そのときは、候補に `plan` の行と `corresponds`、`removes` だけを書き、`compare --plan` で、元のコミットの ArchMap と今の ArchMap を比べる。
+名前を変えない変更なら、対応は書かなくても自分自身に対応するので、`compare --base <コミット>` だけで比べられる。
+
 候補には意味 Atom を書かない。変更後の要素の意味は、`corresponds` で変更前の要素の意味を移したものとして扱う。
 実装した後の意味は、観測し直した意味 Atom で確かめる。
 
@@ -208,9 +217,8 @@ ArchMap と同じ形をとり、`.archsig/plans/<候補の名前>/` に置く。
 - 知らない種類、その種類が持たない欄。
 - Law の語彙にない `meaning`、語彙の `values` にない `value`。
 - `uses` が空の意味 Atom。
-- `by` に観測者が一人しかいない意味 Atom、意味の `observed`。
 - `observed` のないソースの Atom。
-- 指定したコミットでたどれない `at` と `uses`。
+- 内容の hash に当たるソースをたどれない `at` と `uses`。
 - `plans/` の外にある `plan`、`corresponds`、`removes`、`file`。
 - 候補の中の意味 Atom。
 - 候補の中で、同じ分岐の同じフィールドへ二度書く Atom。

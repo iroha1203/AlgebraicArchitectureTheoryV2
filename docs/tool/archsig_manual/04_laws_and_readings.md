@@ -218,7 +218,8 @@ law order-view-sync
 
 条件は `that` の後に書き、`and` でつなぐ。
 
-- `writes <要素>`、`reads <要素>`、`calls <要素>`、`sends <要素>`、`receives <要素>`。
+- `writes <要素>`、`reads <要素>`、`calls <要素>`、`sends <要素>`、`receives <要素>`。`calls` は直接の呼び出しだけに当たる。
+- `reaches <要素>`:呼び出し先をたどって、いずれその要素を呼ぶ。ヘルパーを通した呼び出しも当たる。
 - `has <意味> <値>`:その意味の値を持つ。
 - `inside "<局所>"`、`outside "<局所>"`:その局所の中か外か。
   要素が属する局所で決める。呼び出しは、呼び出し元の局所で決める。
@@ -254,6 +255,6 @@ archsig law check
 archsig law diff <比べるコミット>
 ```
 
-`law check` は、Law ファイルが正しく書けているかを確かめる。
+`law check` は、Law ファイルが正しく書けているかを確かめる。Law ごとに当てはまる要素の数も返し、0 件なら警告する。どの要素にも当てはまらない Law は、何も検出しない。
 `law diff` は、定義を展開した後の Law で、何が変わったかを示す。
 Law を足したり変えたりしたら、`archsig next` で、新しく観測が必要な所を確かめる。
