@@ -1280,20 +1280,20 @@ selection:
   unchecked: [semantic each-fiber right torsor action, D identity specialization, arbitrary undirected-tree bridge, E, fixed examples]
 result:
   proposed_result_type: proof-checkpoint
-  proof_obligation_delta: Original A1 lift pairs and full independent semantic isomorphism pairs are group-isomorphic; the semantic projection is the original visible projection, and its literal kernel membership is exactly original identity-visible pair membership
+  proof_obligation_delta: Original A1 lift pairs and full independent semantic isomorphism pairs are group-isomorphic; multiplication of arbitrary semantic pairs has the actual reindexed natural-isomorphism composite as hom; the semantic projection is the original visible projection, and its literal kernel membership is exactly original identity-visible pair membership
   completion_candidate: no
   lean_artifacts: [FiniteProtocolInput.SemanticIsoPair, FiniteProtocolInput.liftPairEquivSemanticPair, FiniteProtocolInput.liftPairMulEquivSemanticPair, FiniteProtocolInput.semanticPairProjection]
-  evidence: [FiniteProtocolInput.semanticPairProjection_apply, FiniteProtocolInput.semanticPair_mem_ker_iff, FiniteProtocolInput.liftPairEquivSemanticPair_mem_ker_iff]
+  evidence: [FiniteProtocolInput.semanticPair_mul_toNatTrans, FiniteProtocolInput.semanticPair_mul_composite, FiniteProtocolInput.semanticPairProjection_apply, FiniteProtocolInput.semanticPair_mem_ker_iff, FiniteProtocolInput.liftPairEquivSemanticPair_mem_ker_iff]
   claim_mapping:
-    theorem_names: [FiniteProtocolInput.liftPairMulEquivSemanticPair, FiniteProtocolInput.liftPairEquivSemanticPair_mem_ker_iff]
+    theorem_names: [FiniteProtocolInput.liftPairMulEquivSemanticPair, FiniteProtocolInput.semanticPair_mul_composite, FiniteProtocolInput.liftPairEquivSemanticPair_mem_ker_iff]
     source_labels: [A2, C3 original projection and kernel, D independent semantic projection/kernel compatibility]
-    conjuncts: [original H and all its A1 lifts, full semantic isomorphisms, original actual A2 group, original visible projection, literal projection kernel, bidirectional correspondence]
+    conjuncts: [original H and all its A1 lifts, full semantic isomorphisms, original actual A2 group, reindexed natural-isomorphism composite on arbitrary semantic pairs, original visible projection, literal projection kernel, bidirectional correspondence]
     undischarged_assumptions: [semantic fiber right-action compatibility, D identity specialization, arbitrary undirected named-tree bridge, E and fixed examples]
     acceptance_point: The semantic group/projection/kernel all descend from and return to the original A1/A2 change group; G-127 remains incomplete
     port_status: unported
 audits:
   premise_delta:
-    discharged: [D semantic group, visible projection, and literal kernel compatibility]
+    discharged: [D semantic group and reindexed composition, visible projection, and literal kernel compatibility]
     remaining: [D semantic each-fiber right action and identity specialization, undirected-tree bridge, E and fixed examples]
   certificate_provenance:
     discharged: [semantic isomorphisms from original A1 lifts and inverse by vertex restriction; group law from original StateChange group]
@@ -1307,7 +1307,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [focused Lean check and six-declaration standard axiom audit to be recorded in PR]
+  validation_refs: [focused Lean check and eight-declaration standard axiom audit to be recorded in PR]
   blocking_findings: []
   next_obligation: Prove semantic each-fiber right torsor action compatibility
 ```

@@ -56,6 +56,46 @@ noncomputable def liftPairMulEquivSemanticPair :
     change E (a * b) = E (E.symm (E a) * E.symm (E b))
     simp
 
+/-- Semantic multiplication on every pair coming from original A1 lifts
+has precisely the reindexed quotient-execution composite as its hom. -/
+theorem semanticPair_mul_toNatTrans
+    (a b : P.data.LiftPair P.H) :
+    ((P.liftPairMulEquivSemanticPair (a * b)).2).hom.toNatTrans =
+      P.liftIsoSemanticComposite a.1.1 b.1.1 a.1.2 b.1.2 a.2 b.2 := by
+  change (P.liftIso (a * b).1.1 (a * b).1.2 (a * b).2).hom.toNatTrans = _
+  exact (P.liftIsoSemanticComposite_eq a.1.1 b.1.1 a.1.2 b.1.2 a.2 b.2).symm
+
+/-- For arbitrary semantic isomorphism pairs, their group product is the
+image of the original A2 product, and its hom is the genuine reindexed
+natural-isomorphism composite. The inverse equivalence supplies the unique
+original A1 lifts of the two semantic isomorphisms. -/
+theorem semanticPair_mul_composite (p q : P.SemanticIsoPair) :
+    p * q = P.liftPairMulEquivSemanticPair
+        (P.liftPairMulEquivSemanticPair.symm p *
+          P.liftPairMulEquivSemanticPair.symm q) ∧
+      ((P.liftPairMulEquivSemanticPair
+        (P.liftPairMulEquivSemanticPair.symm p *
+          P.liftPairMulEquivSemanticPair.symm q)).2).hom.toNatTrans =
+        P.liftIsoSemanticComposite
+          (P.liftPairMulEquivSemanticPair.symm p).1.1
+          (P.liftPairMulEquivSemanticPair.symm q).1.1
+          (P.liftPairMulEquivSemanticPair.symm p).1.2
+          (P.liftPairMulEquivSemanticPair.symm q).1.2
+          (P.liftPairMulEquivSemanticPair.symm p).2
+          (P.liftPairMulEquivSemanticPair.symm q).2 := by
+  constructor
+  · calc
+      p * q = P.liftPairMulEquivSemanticPair
+          (P.liftPairMulEquivSemanticPair.symm p) *
+          P.liftPairMulEquivSemanticPair
+          (P.liftPairMulEquivSemanticPair.symm q) := by simp
+      _ = _ := (P.liftPairMulEquivSemanticPair.map_mul
+        (P.liftPairMulEquivSemanticPair.symm p)
+        (P.liftPairMulEquivSemanticPair.symm q)).symm
+  · exact P.semanticPair_mul_toNatTrans
+      (P.liftPairMulEquivSemanticPair.symm p)
+      (P.liftPairMulEquivSemanticPair.symm q)
+
 /-- The semantic presentation projects to the same original visible H. -/
 noncomputable def semanticPairProjection : P.SemanticIsoPair →* P.H :=
   (P.data.liftPairProjection P.H).comp
@@ -88,6 +128,8 @@ end AAT.AG.ProtocolHolonomy
 
 #print axioms AAT.AG.ProtocolHolonomy.FiniteProtocolInput.liftPairEquivSemanticPair
 #print axioms AAT.AG.ProtocolHolonomy.FiniteProtocolInput.liftPairMulEquivSemanticPair
+#print axioms AAT.AG.ProtocolHolonomy.FiniteProtocolInput.semanticPair_mul_toNatTrans
+#print axioms AAT.AG.ProtocolHolonomy.FiniteProtocolInput.semanticPair_mul_composite
 #print axioms AAT.AG.ProtocolHolonomy.FiniteProtocolInput.semanticPairProjection
 #print axioms AAT.AG.ProtocolHolonomy.FiniteProtocolInput.semanticPairProjection_apply
 #print axioms AAT.AG.ProtocolHolonomy.FiniteProtocolInput.semanticPair_mem_ker_iff
