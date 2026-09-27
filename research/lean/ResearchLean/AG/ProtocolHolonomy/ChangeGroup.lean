@@ -121,7 +121,7 @@ def projection : D.StateChange →* FixedFGraphAutomorphism Q where
   map_one' := rfl
   map_mul' _ _ := rfl
 
-/-- The total-state component is a faithful group representation. -/
+/-- The total-state component is a group homomorphism. -/
 def totalState : D.StateChange →* Equiv.Perm (Σ x, D.Fiber x) where
   toFun a := a.state
   map_one' := rfl
