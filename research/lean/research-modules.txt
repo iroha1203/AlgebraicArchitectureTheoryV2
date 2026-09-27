@@ -1447,3 +1447,4 @@ ResearchLean.AG.ProtocolHolonomy.RootedPaths	ResearchLean/AG/ProtocolHolonomy/Ro
 ResearchLean.AG.ProtocolHolonomy.HolonomyGenerators	ResearchLean/AG/ProtocolHolonomy/HolonomyGenerators.lean
 ResearchLean.AG.ProtocolHolonomy.VerticalCentralizer	ResearchLean/AG/ProtocolHolonomy/VerticalCentralizer.lean
 ResearchLean.AG.ProtocolHolonomy.SpanningTrees	ResearchLean/AG/ProtocolHolonomy/SpanningTrees.lean
+ResearchLean.AG.ProtocolHolonomy.LiftRootCondition	ResearchLean/AG/ProtocolHolonomy/LiftRootCondition.lean

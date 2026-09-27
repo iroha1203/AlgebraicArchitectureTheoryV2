@@ -516,3 +516,56 @@ audits:
   blocking_findings: []
   next_obligation: Formalize orientation of every undirected named spanning tree into an outward arborescence; then construct C1/C2
 ```
+
+## Cycle 10 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 10
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: e3d2585c1da654318fb8dde2f87777f64edc905f
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 9 proof state and SpanningTrees/LiftBridge/Transport
+  proof_dag_predecessors: [Lift.edge_naturality, SignedPath, transport, RootedPaths.edgeLoopAt]
+  proof_obligation: Derive the C1 root equations and root-value uniqueness from every actual A1 lift
+  selection_reason: C1 forward implication is the first direct link from actual changes to the root solution space; the arbitrary undirected tree orientation bridge requires a separate named-simple-path development
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/LiftRootCondition.lean]
+  risks: [inverse passage naturality, cast coherence, path composition direction, root indexing]
+  unchecked: [C2 converse construction, arbitrary undirected named spanning tree bridge, A execution quotient, C3, D, E, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Every A1 lift is natural on all signed original named paths; its root values satisfy the C1 equations on every original edge loop and determine every fiber equivalence uniquely
+  completion_candidate: no
+  lean_artifacts: [renameSignedEdge, renameSigned, ReversibleData.RootSolutions, ReversibleData.Lift.toRootSolutions, ReversibleData.Lift.eq_of_root_fiber_eq]
+  evidence: [ReversibleData.Lift.signed_edge_naturality, ReversibleData.Lift.signed_path_naturality, ReversibleData.Lift.toRootSolutions, ReversibleData.Lift.eq_of_root_fiber_eq]
+  claim_mapping:
+    theorem_names: [ReversibleData.Lift.toRootSolutions, ReversibleData.Lift.eq_of_root_fiber_eq]
+    source_labels: [C1 forward implication, C2 root evaluation injectivity]
+    conjuncts: [original positive edge names, inverse edge passages, all signed paths, every component root, all original edge loops, uniqueness of a lift from root values]
+    undischarged_assumptions: [constructing a lift from each C1 solution, arbitrary undirected tree orientation bridge, terminating finite-table decision procedure]
+    acceptance_point: C1 is necessary for an actual lift and root evaluation is injective; surjectivity and the full C1/C2 bijection remain open
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [A1 edge square extends to signed paths, necessary C1 equations, root-value uniqueness]
+    remaining: [C2 sufficiency and inverse laws, undirected-tree bridge, A quotient semantics, C3 through E, fixed examples]
+  certificate_provenance:
+    discharged: [RootSolutions is populated from each actual Lift by root evaluation]
+    unresolved: [existence of Lift from an arbitrary RootSolutions value]
+  proof_use:
+    used: [A1 edge_naturality in positive passage case, inverse equivalence in negative case, path induction, root loops, root paths]
+    unused: [finite input and path equations because this C1 direction applies to arbitrary reversible named operations]
+  structure_field_escape: none-found-for-the-necessary-condition
+  route_integrity: pass-for-C1-forward
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and axiom audit to be recorded in PR]
+  blocking_findings: []
+  next_obligation: Construct the inverse from any C1 RootSolutions using C2 and prove the full bijection
+```
