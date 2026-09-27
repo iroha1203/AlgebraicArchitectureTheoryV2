@@ -841,3 +841,6 @@ import ResearchLean.AG.OperationRepair.InputMaps
 import ResearchLean.AG.OperationRepair.Sequential
 import ResearchLean.AG.OperationRepair.FiniteSequential
 import ResearchLean.AG.OperationRepair.FullTree
+import ResearchLean.AG.OperationRepair.FiniteTables
+import ResearchLean.AG.OperationRepair.FiniteClosure
+import ResearchLean.AG.OperationRepair.FiniteBehavior

@@ -27,11 +27,89 @@ operation invariance, or finite-observation premise.
 
 ## Remaining proof obligations
 
-1. D: one executable finite table algorithm with correctness, short failure
-   words, and the stated cost upper bound.
+1. D: combine the verified endpoint table loops into one success/failure
+   procedure, construct numbered quotient tables, and prove the cost bound.
 2. E: the existing `FiniteLawFamily` and `Reading` bridge and path requests.
 3. Three fixed examples and empty input cases, evaluated through the same
    general API and finite algorithm.
+
+## D: finite endpoint table loops (partial)
+
+`FiniteTables.lean` stores the transition, observation, and request as
+size-indexed arrays over `Fin m` and `Fin n`. It derives `system` and
+`requestRel` from those tables. No repairability or answer certificate is an
+input field. `FiniteClosure.lean` performs exactly `n²` synchronous rounds,
+reading only the old Boolean relation and writing converse, transitive, and
+operation-image cells into a new table. `closeStep_get_iff` proves the update
+formula, `lower_fixed` proves stabilization by counting at most `n²` pairs,
+and `computedLower_eq_generated` identifies the output with A's least
+operation congruence.
+
+`FiniteBehavior.lean` stores an optional concrete word for every pair.
+`rounds_none_iff` proves that `none` means all words of the current bounded
+length preserve observation equality; `rounds_some_sound` proves every stored
+word separates its pair. `short_separator` removes loops in the pair-state
+DFA, giving a separating word shorter than `n²` whenever one exists.
+`computedUpper_iff_behavior` identifies the final `none` cells with A's
+behavioral congruence, and `upper_some_certificate` proves the strict length
+bound for stored words. The empty state and operation types require no
+default element.
+
+These are the two endpoint engines, not yet GOAL D as a whole. A common
+`runRepair` output, numbered quotient tables, and cost proof remain open.
+
+## Cycle 7 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-126-aat-operation-preserving-repair-quotients
+cycle: 7
+goal_blob_sha: 255a64df4bdc851f64f799ef89189ea81e78aa70
+base_oid: 83115265429dadc0794e2e098f4fe5d73cafcbaa
+tracking_issue: 4945
+report_path: research/reports/G-126-aat-operation-preserving-repair-quotients.md
+selection:
+  proof_state_ref: "Issue #4945 cycle 6 comment and report C section"
+  proof_dag_predecessors: ["OperationRepair/Endpoints.lean"]
+  proof_obligation: "D endpoint engines: numbered raw tables, lower synchronous closure, upper stored separator words"
+  selection_reason: "The common decision and quotient constructor must use computed endpoints from the same raw tables"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["OperationRepair/FiniteTables.lean", "OperationRepair/FiniteClosure.lean", "OperationRepair/FiniteBehavior.lean"]
+  risks: ["sync update", "n² stabilization", "empty states", "word direction and bound", "cost model still open"]
+  unchecked: ["common runRepair", "numbered quotient tables", "cost proof"]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Both finite endpoint tables and stored short separator words are constructed and matched to generated and behavior"
+  completion_candidate: no
+  lean_artifacts: ["OperationRepair/FiniteTables.lean", "OperationRepair/FiniteClosure.lean", "OperationRepair/FiniteBehavior.lean"]
+  evidence: ["closeStep_get_iff", "lower_fixed", "computedLower_eq_generated", "rounds_none_iff", "short_separator", "computedUpper_iff_behavior", "upper_some_certificate"]
+  claim_mapping:
+    theorem_names: ["computedLower_eq_generated", "computedUpper_iff_behavior", "upper_some_certificate"]
+    source_labels: ["G-126 D endpoint construction and separator-bound subclauses"]
+    conjuncts: ["lower partition", "upper partition", "stored separator correctness", "strict n² word bound"]
+    undischarged_assumptions: []
+    acceptance_point: "Endpoint subclaims only; full D remains open"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["numbered table input", "lower closure and fixed point", "upper behavior and short witness"]
+    remaining: ["D common output and cost", "E", "fixed examples"]
+  certificate_provenance:
+    discharged: ["lower and upper tables computed from raw inputs", "witness word stored by the same upper recurrence"]
+    unresolved: []
+  proof_use:
+    used: ["request table in initial lower", "operation table in closure and word search", "observation table in base word cases"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["focused checks: FiniteTables, FiniteClosure, FiniteBehavior pass with standard axioms", "parent targeted builds: FiniteTables, FiniteClosure, FiniteBehavior pass", "#print axioms for eight endpoint spine declarations: propext, Classical.choice, Quot.sound only", "git diff --check and placeholder, hidden Unicode, import-direction scans: pass"]
+  blocking_findings: []
+  next_obligation: "D common success/failure output, numbered quotient tables, and cost"
+```
 
 ## B: quotient and kernel core
 
