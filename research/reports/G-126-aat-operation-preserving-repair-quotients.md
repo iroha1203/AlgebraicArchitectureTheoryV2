@@ -29,7 +29,8 @@ operation invariance, or finite-observation premise.
 ## Remaining proof obligations
 
 1. B: prove the order isomorphism on actual structure-preserving isomorphism
-   classes, and factorization into arbitrary target sets. The core construction
+   classes, including identity/composition preservation, and factorization into
+   arbitrary target sets. The core construction, descended-data uniqueness,
    and endpoint morphisms are indexed below.
 2. C: joins, sequential quotients, coherence, and maps between inputs.
 3. D: one executable finite table algorithm with correctness, short failure
@@ -42,7 +43,7 @@ operation invariance, or finite-observation premise.
 
 | GOAL clause | Declaration | Proof route |
 | --- | --- | --- |
-| Repair quotient object and finite target | `RepairQuotient`, `RepairQuotient.finite_target` | Input quotient is surjective by definition; finite target follows from finite source; the target may live in an independent universe |
+| Repair quotient object, finite target, and uniqueness of descents | `RepairQuotient`, `RepairQuotient.finite_target`, `descended_step_unique`, `descended_observation_unique` | Input quotient is surjective by definition; finite target follows from finite source; any other descending operations or observation are equal by surjectivity; the target may live in an independent universe |
 | Structure preserving morphisms and uniqueness/surjectivity | `RepairHom`, `RepairHom.unique`, `RepairHom.subsingleton`, `RepairHom.surjective`, `RepairHom.id`, `RepairHom.comp` | Surjectivity of the source map determines every morphism on all target values, including maps between target universes |
 | Kernel in the interval | `RepairQuotient.kernel`, `generated_le_kernel`, `kernel_le_behavior`, `intervalPoint`, `standardEquiv`, `standardEquiv_mk` | Commuting operation and observation equations give stability and present observation equality; A's universal properties give both inequalities; a surjection canonically identifies its target with the standard kernel quotient |
 | Actual quotient from each interval congruence | `quotientRepair`, `quotientRepair_kernel` | Quotient lifts the operations and observation; the relation is recovered exactly |
@@ -50,9 +51,10 @@ operation invariance, or finite-observation premise.
 | Existence and endpoints | `repair_exists_iff`, `generated_le_kernel_observe_iff`, `repair_exists_iff_request_behavior`, `lowerRepair`, `upperRepair`, `lower_hom`, `upper_hom` | Existence is derived from the interval; endpoint morphisms use kernel inclusion |
 
 These declarations discharge the quotient-to-kernel and kernel-to-quotient
-construction and the morphism existence criterion. The `OrderIso` on
-isomorphism classes and the arbitrary-target universal property are separate
-remaining B obligations. The constructed quotient proves its own operation,
+construction, uniqueness of descended data, and the morphism existence
+criterion. The `OrderIso` on isomorphism classes, including preservation of
+identity and composition, and the arbitrary-target universal property are
+separate remaining B obligations. The constructed quotient proves its own operation,
 observation, and request equations; it receives no repaired quotient data.
 
 ## Cycle 2 ledger
@@ -76,10 +78,10 @@ selection:
   unchecked: []
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: "Both quotient/kernel constructions and morphism iff kernel inclusion are proved"
+  proof_obligation_delta: "Both quotient/kernel constructions, descended-data uniqueness, and morphism iff kernel inclusion are proved"
   completion_candidate: no
   lean_artifacts: ["OperationRepair/Classification.lean"]
-  evidence: ["RepairQuotient.intervalPoint", "quotientRepair", "quotientRepair_kernel", "RepairHom.nonempty_iff_kernel_le", "repair_exists_iff"]
+  evidence: ["RepairQuotient.intervalPoint", "quotientRepair", "quotientRepair_kernel", "descended_step_unique", "descended_observation_unique", "RepairHom.nonempty_iff_kernel_le", "repair_exists_iff"]
   claim_mapping:
     theorem_names: ["quotientRepair_kernel", "RepairHom.nonempty_iff_kernel_le", "repair_exists_iff"]
     source_labels: ["G-126 B"]
@@ -89,7 +91,7 @@ result:
     port_status: not-applicable
 audits:
   premise_delta:
-    discharged: ["quotient operation/observation descent", "repair quotient kernel bounds", "morphism construction"]
+    discharged: ["quotient operation/observation descent and uniqueness", "repair quotient kernel bounds", "morphism construction"]
     remaining: ["B isomorphism-class OrderIso", "B arbitrary-target universal property", "C", "D", "E", "fixed examples"]
   certificate_provenance:
     discharged: ["interval congruence from actual quotient kernel or supplied classification variable", "constructed quotient from c"]
@@ -103,7 +105,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: ["check_research_modules.sh --focused ResearchLean/AG/OperationRepair/Classification.lean: pass", "lake build ResearchLean.AG.OperationRepair.Classification: pass", "Classification in-module axiom audit: 58 declarations, standard axioms only", "#print axioms for 12 B spine declarations: standard axioms only", "git diff --check: pass", "placeholder and hidden Unicode scans: no matches"]
+  validation_refs: ["check_research_modules.sh --focused ResearchLean/AG/OperationRepair/Classification.lean: pass", "lake build ResearchLean.AG.OperationRepair.Classification: pass", "Classification in-module axiom audit: 60 declarations, standard axioms only", "#print axioms for 12 B spine declarations plus two descent uniqueness declarations: standard axioms only", "git diff --check: pass", "placeholder and hidden Unicode scans: no matches"]
   blocking_findings: []
   next_obligation: "B isomorphism-class OrderIso and arbitrary-target factorization"
 ```

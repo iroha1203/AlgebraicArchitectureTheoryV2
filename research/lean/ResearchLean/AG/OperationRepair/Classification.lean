@@ -77,6 +77,28 @@ theorem finite_target [Finite S] (q : RepairQuotient T observe R) :
 
 end RepairQuotient
 
+/-- GOAL B: a surjective source map determines at most one descended family
+of operations. The quotient target may be in any universe. -/
+theorem descended_step_unique {Q : Type z} (read : S → Q)
+    (hsurj : Function.Surjective read) (step₁ step₂ : E → Q → Q)
+    (h₁ : ∀ e x, read (T.step e x) = step₁ e (read x))
+    (h₂ : ∀ e x, read (T.step e x) = step₂ e (read x)) :
+    step₁ = step₂ := by
+  funext e q
+  obtain ⟨x, rfl⟩ := hsurj q
+  exact (h₁ e x).symm.trans (h₂ e x)
+
+/-- GOAL B: a surjective source map determines at most one descended
+observation map. -/
+theorem descended_observation_unique {Q : Type z} (read : S → Q)
+    (hsurj : Function.Surjective read) (observe₁ observe₂ : Q → O)
+    (h₁ : ∀ x, observe₁ (read x) = observe x)
+    (h₂ : ∀ x, observe₂ (read x) = observe x) :
+    observe₁ = observe₂ := by
+  funext q
+  obtain ⟨x, rfl⟩ := hsurj q
+  exact (h₁ x).trans (h₂ x).symm
+
 /-- A morphism of repair quotients preserves the named operations and observation
 and commutes with the original state map, as required by GOAL B. -/
 structure RepairHom (q : RepairQuotient.{u, v, w, z} T observe R)
