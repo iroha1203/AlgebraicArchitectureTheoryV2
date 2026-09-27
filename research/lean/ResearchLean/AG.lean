@@ -903,3 +903,4 @@ import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolCarrier
 import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolGroup
 import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolCompatibility
 import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolKernel
+import ResearchLean.AG.ProtocolHolonomy.IdentityProtocolVertical
