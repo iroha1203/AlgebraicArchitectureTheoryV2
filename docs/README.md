@@ -129,7 +129,7 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 - [PRD guideline](prd/guideline.md): PRDの責務、参照禁止、完了後削除の規律。
 - [AAT / Lean guideline](aat/guideline.md): `Formal/AG`、AAT 数学本文、Lean status、proof obligation の編集方針。
 - [SFT guideline](sft/guideline.md): SFT 本文、AAT / SFT interface、forecast / governance claim boundary の編集方針。
-- [Tooling guideline](tool/guideline.md): ArchMap、LawPolicy、ArchSig、FieldSig、schema、CLI、fixture の編集方針。
+- [Tooling guideline](tool/guideline.md): ArchSig をはじめとするツールの作り方の規律。
 - [Website guideline](website/guideline.md): Cloudflare Pages 公開面、route、tone、asset path、sitemap の編集方針。
 - [Paper guideline](paper/guideline.md): 論文の執筆、品質基準、検証、投稿・公開。
 - [ブログ執筆ガイドライン](outreach/guideline.md): 研究・実務・思想記事の執筆と読者向け品質のレビュー基準。
