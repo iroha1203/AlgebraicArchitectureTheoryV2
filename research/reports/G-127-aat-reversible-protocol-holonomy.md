@@ -2026,6 +2026,57 @@ audits:
   validation_refs: [focused Lean check, four #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 61 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 61
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 71cf2ec4a
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 60 actual selected signed-path existence, Cycle 59 bridge, and open forest structure
+  proof_dag_predecessors: [finiteSpanningEdgeSelection_originalReachable, finiteSpanningEdgeSelection_bridge, selectedNamedReachable_iff_usesNamedEdges, UndirectedNamedSpanningForest]
+  proof_obligation: Construct the actual named spanning forest from the generated selected original edge set on every original component
+  selection_reason: Packages component restriction, selected-path connectivity, and exact bridge into the fixed B/E forest structure
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteNamedForest.lean]
+  risks: [selected edges from other components leaking into a tree, non-original edge names, supplied tree certificate, noncomputable path choice passed off as E procedure]
+  unchecked: [terminating selected root-path computation, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The finite original-name selection restricted by source component yields the actual UndirectedNamedSpanningForest; every selected signed path from that component stays within it, and the exact bridge theorem supplies its bridge field
+  completion_candidate: no
+  lean_artifacts: [usesNamedEdges_mono, usesNamedEdges_restrictComponent]
+  evidence: [finiteNamedSpanningForest]
+  claim_mapping:
+    theorem_names: [finiteNamedSpanningForest]
+    source_labels: [B original named spanning forest, E finite table forest construction]
+    conjuncts: [every original component, original selected edge names, within, connected via actual SignedPath, bridge excluding alternate same-name route]
+    undischarged_assumptions: [explicit finite original vertex and edge tables and equality decisions; executable selected root-path selection still open]
+    acceptance_point: Actual forest structure generated from finite tables with connected and bridge proofs; no terminating selected path output claimed
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [componentwise original named forest structure]
+    remaining: [terminating selected root-path computation, fixed examples]
+  certificate_provenance:
+    discharged: [forest derived from input-generated edge selection and proved reachability and bridge; no supplied forest/tree certificate]
+    unresolved: [finite computational extraction of selected tree root paths]
+  proof_use:
+    used: [component equality, original selected path equivalence, signed path component restriction, generated bridge theorem]
+    unused: [no assumed tree or arbitrary spanning certificate]
+  structure_field_escape: none-found-for-forest
+  route_integrity: pass-for-generated-original-names-to-intrinsic-forest
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, three #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
