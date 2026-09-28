@@ -2587,6 +2587,57 @@ audits:
   validation_refs: [focused Lean check, eleven #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 72 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 72
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: a7369cec7
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 71 both original and renamed holonomy C2
+  proof_dag_predecessors: [oneLoopData, oneLoopRootedPaths, oneLoop_original_holonomy_top, ReversibleData.verticalRootMulEquiv]
+  proof_obligation: Apply actual B2 vertical-group isomorphism and calculate every holonomy centralizer in the first fixed example
+  selection_reason: GOAL condition 2 requires B2 to apply to the same primitive input as the negative lift proof
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/OneVertexTwoLoopsCentralizer.lean]
+  risks: [using a newly defined vertical group, assuming one component without proof, only calculating one root, deriving commutativity from an unproved H]
+  unchecked: [H_lift trivial, second fixed example]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Prove the original graph has exactly one component; its actual B1 holonomy centralizer is the full two-point permutation group at every root; instantiate B2 as an isomorphism from the actual vertical A1 group with its A2 law to the product of those centralizers
+  completion_candidate: no
+  lean_artifacts: [oneLoopB2]
+  evidence: [oneLoop_component_unique, oneLoop_holonomy_centralizer_top, oneLoop_holonomy_centralizer_top_every, oneLoopB2]
+  claim_mapping:
+    theorem_names: [oneLoop_holonomy_centralizer_top_every, oneLoopB2]
+    source_labels: [completion condition 2 B2 centralizer display]
+    conjuncts: [unique component, full holonomy centralizer, actual vertical A1 group and A2 multiplication, root evaluation isomorphism]
+    undischarged_assumptions: [H_lift trivial, second fixed example]
+    acceptance_point: B2 is specialized to the exact first-example input and its centralizer is calculated
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [first-example B2 centralizer and vertical-group display]
+    remaining: [first-example H_lift and second fixed example]
+  certificate_provenance:
+    discharged: [actual B1 holonomy, quotient-component uniqueness, cyclic order-two permutation commutativity, generic B2 proof]
+    unresolved: [H_lift classification]
+  proof_use:
+    used: [original holonomy equality, two-point permutation group cardinal, actual verticalRootMulEquiv]
+    unused: [no supplied vertical-classification certificate]
+  structure_field_escape: none-found-for-B2
+  route_integrity: pass-for-first-example-B2
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, four #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
