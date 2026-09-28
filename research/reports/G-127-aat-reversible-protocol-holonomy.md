@@ -3199,6 +3199,57 @@ audits:
   validation_refs: [focused Lean check, five #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 84 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 84
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 8edcf0e2c
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 83 finite E output
+  proof_dag_predecessors: [twoVertex_swap_lift_cases, ReversibleData.verticalRightAction_fiber_apply, ReversibleData.verticalRightAction_existsUnique, twoVertexVerticalSwap]
+  proof_obligation: Specialize the actual C right torsor to both original swap lifts in the second fixed example
+  selection_reason: Fixed condition 3 requires that the C torsor recover both lifts, not only a two-point set enumeration
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/TwoVertexTorsor.lean]
+  risks: [abstract torsor without original fiber action, proving only transitivity, wrong vertical group]
+  unchecked: [projection quotient compatibility]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The specified visible swap is in the actual C1 liftable subgroup; literal right action by original vertical transposition maps the first A1 swap lift to the second, identity fixes the first, and the action gives a unique vertical displacement between any two original swap lifts
+  completion_candidate: no
+  lean_artifacts: [twoVertexSwapLiftable]
+  evidence: [twoVertex_rightAction_swap, twoVertex_rightAction_one, twoVertex_rightAction_reaches_both, twoVertex_rightAction_existsUnique]
+  claim_mapping:
+    theorem_names: [twoVertex_rightAction_swap, twoVertex_rightAction_reaches_both, twoVertex_rightAction_existsUnique]
+    source_labels: [completion condition 3 C torsor recovers both lifts]
+    conjuncts: [actual liftable visible swap, original vertical A1 group, literal right action on fibers, both classified A1 lifts, free transitive action]
+    undischarged_assumptions: [projection quotient compatibility]
+    acceptance_point: The specified two-lift fiber is an explicit original C torsor
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [second-example explicit C torsor]
+    remaining: [projection quotient]
+  certificate_provenance:
+    discharged: [actual original vertical A1 swap, literal fiber-action formula, generic C freeness and transitivity]
+    unresolved: [quotient compatibility]
+  proof_use:
+    used: [original vertical right action, explicit Bool fiber calculation, exhaustive original swap lift cases]
+    unused: [no supplied torsor certificate]
+  structure_field_escape: none-found-for-torsor
+  route_integrity: pass-for-second-example-C-torsor
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, four #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
