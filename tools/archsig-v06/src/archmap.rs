@@ -13,25 +13,30 @@ pub struct Store {
 }
 
 impl Store {
-    /// 今の場所から上へたどって `.archsig/` を探す。
-    pub fn find(start: &Path) -> Result<Store, String> {
-        let mut dir = start.canonicalize().map_err(|e| format!("{}: {e}", start.display()))?;
-        loop {
-            if dir.join(".archsig").is_dir() {
-                return Ok(Store { root: dir });
-            }
-            if !dir.pop() {
-                return Err(".archsig/ が見つからない".to_string());
-            }
+    /// `.archsig/` を置いたリポジトリの根。
+    pub fn open(root: &Path) -> Result<Store, String> {
+        if !root.join(".archsig").is_dir() {
+            return Err(format!("{} に .archsig/ がない", root.display()));
         }
+        Ok(Store { root: root.to_path_buf() })
     }
 
     pub fn dir(&self) -> PathBuf {
         self.root.join(".archsig")
     }
 
+    /// `.archsig/law/` の `.law` ファイルを名前順に読む。
     pub fn laws(&self) -> Result<LawSet, String> {
-        LawSet::load_dir(&self.dir().join("law"))
+        let dir = self.dir().join("law");
+        let mut entries: Vec<String> = std::fs::read_dir(&dir)
+            .map_err(|e| format!("{}: {e}", dir.display()))?
+            .filter_map(|e| e.ok())
+            .filter(|e| e.path().extension().is_some_and(|x| x == "law"))
+            .map(|e| format!(".archsig/law/{}", e.file_name().to_string_lossy()))
+            .collect();
+        entries.sort();
+        let read = |p: &str| std::fs::read_to_string(self.root.join(p)).map_err(|e| format!("{p}: {e}"));
+        LawSet::load(&entries, &read)
     }
 
     /// ArchMap。ソースのファイルごとの JSON Lines をすべて読む。
@@ -87,6 +92,11 @@ impl Store {
         Some(format!("blob:{}", blob_hash(&bytes)))
     }
 
+    /// 局所ごとの意味 Atom の `at` が指す、局所のディレクトリか。
+    fn is_dir(&self, path: &str) -> bool {
+        self.root.join(path).is_dir()
+    }
+
     fn with_version(&self, at: &str, path: &str) -> Result<String, String> {
         let v = self.version(path).ok_or(format!("ソースがない: {path}"))?;
         Ok(format!("{at}@{v}"))
@@ -106,13 +116,11 @@ impl Store {
     pub fn record(&self, atoms: Vec<Atom>) -> Result<Vec<(String, String, usize)>, String> {
         let mut groups: BTreeMap<(String, String), Vec<Atom>> = BTreeMap::new();
         for mut a in atoms {
-            a.validate()?;
-            let scope = a.scope_name().ok_or(format!("{} は ArchMap に書けない", a.kind))?;
-            let loc = a.location().ok_or(format!("at がない: {}", a.subject))?;
-            if loc.path.starts_with("plan:") {
-                return Err(format!("候補の Atom は ArchMap に書けない: {}", a.subject));
-            }
-            if loc.version.is_none() {
+            let scope = a.scope_name().ok_or(format!("{} は ArchMap に書けない: {}", a.kind, a.subject))?;
+            a.at = a.at.map(|at| at.trim_start_matches("./").to_string());
+            let mut loc = a.location().ok_or(format!("at がない: {}", a.subject))?;
+            loc.path = relative(&loc.path)?;
+            if loc.version.is_none() && !self.is_dir(&loc.path) {
                 a.at = Some(self.with_version(a.at.as_deref().unwrap(), &loc.path)?);
             }
             if let Some(uses) = a.uses.take() {
@@ -145,14 +153,17 @@ impl Store {
                 let n = atoms.iter().filter(|a| a.kind != "observed").count();
                 if !atoms.iter().any(|a| a.kind == "observed") {
                     let first = &atoms[0];
-                    let version = first.location().and_then(|l| l.version).unwrap_or_default();
+                    let at = match first.location().and_then(|l| l.version) {
+                        Some(v) => format!("{path}@{v}"),
+                        None => path.clone(),
+                    };
                     atoms.insert(
                         0,
                         Atom {
                             kind: "observed".to_string(),
                             subject: path.clone(),
                             scope: Some(scope.clone()),
-                            at: Some(format!("{path}@{version}")),
+                            at: Some(at),
                             by: first.by.clone(),
                             ..Atom::default()
                         },
@@ -182,6 +193,10 @@ pub fn status(store: &Store) -> Result<serde_json::Value, String> {
     let current = |path: &str, version: &str| store.version(path).filter(|c| same_version(c, version));
     let mut stale = Vec::new();
     for ((path, scope), version) in &observed {
+        // 局所ごとの意味 Atom は版を持たない。古いかは uses で決まる。
+        if store.is_dir(path) {
+            continue;
+        }
         if current(path, version).is_none() {
             stale.push(json!({"source": path, "scope": scope, "observed": version, "current": store.version(path)}));
         }
@@ -203,7 +218,7 @@ pub fn status(store: &Store) -> Result<serde_json::Value, String> {
     let mut unread = Vec::new();
     for s in &sources {
         let mut scopes = Vec::new();
-        let wanted = std::iter::once("structure".to_string()).chain(laws.meanings.iter().map(|m| format!("meaning:{}", m.name)));
+        let wanted = std::iter::once("structure".to_string()).chain(laws.meanings.iter().map(|m| format!("meaning:{m}")));
         for sc in wanted {
             if !observed.contains_key(&(s.clone(), sc.clone())) {
                 scopes.push(sc);
@@ -213,7 +228,16 @@ pub fn status(store: &Store) -> Result<serde_json::Value, String> {
             unread.push(json!({"source": s, "scopes": scopes}));
         }
     }
-    Ok(json!({"sources": sources.len(), "stale": stale, "unread": unread}))
+    Ok(json!({"stale": stale, "unread": unread}))
+}
+
+/// `at` のパスを、リポジトリの根からの相対パスにそろえる。
+fn relative(path: &str) -> Result<String, String> {
+    let p = path.trim_start_matches("./");
+    if p.is_empty() || p.starts_with('/') || p.split('/').any(|c| c == "..") {
+        return Err(format!("at のパスは、リポジトリの中の相対パスで書く: {path}"));
+    }
+    Ok(p.to_string())
 }
 
 pub fn globs(patterns: &[String]) -> Result<GlobSet, String> {
@@ -228,7 +252,7 @@ pub fn globs(patterns: &[String]) -> Result<GlobSet, String> {
 pub fn same_version(a: &str, b: &str) -> bool {
     let (a, b) = (a.trim_start_matches("blob:"), b.trim_start_matches("blob:"));
     let n = a.len().min(b.len());
-    n >= 7 && a[..n] == b[..n]
+    n >= 7 && a.is_char_boundary(n) && b.is_char_boundary(n) && a[..n] == b[..n]
 }
 
 fn blob_hash(bytes: &[u8]) -> String {

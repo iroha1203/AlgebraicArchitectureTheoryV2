@@ -1,9 +1,8 @@
 mod archmap;
 mod atom;
-#[allow(dead_code)]
 mod law;
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand};
@@ -14,9 +13,6 @@ use archmap::Store;
 #[derive(Parser)]
 #[command(name = "archsig", version, about = "コードから観測した Atom と Law の上で、アーキテクチャを計算する")]
 struct Cli {
-    /// `.archsig/` を探し始める場所。
-    #[arg(long, global = true, default_value = ".")]
-    root: PathBuf,
     #[command(subcommand)]
     command: Cmd,
 }
@@ -42,13 +38,13 @@ fn main() -> ExitCode {
         }
         Err(e) => {
             eprintln!("archsig: {e}");
-            ExitCode::from(2)
+            ExitCode::FAILURE
         }
     }
 }
 
 fn run(cli: Cli) -> Result<Value, String> {
-    let store = Store::find(&cli.root)?;
+    let store = Store::open(Path::new("."))?;
     match cli.command {
         Cmd::Status => archmap::status(&store),
         Cmd::Record { files, drop } => {

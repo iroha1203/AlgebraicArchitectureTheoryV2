@@ -141,6 +141,54 @@ fn record_accepts_every_atom_kind_of_chapter_3() {
 }
 
 #[test]
+fn a_path_with_at_sign_is_not_a_version() {
+    let repo = Repo::new("atsign");
+    repo.write("src/@app/x.ts", "x\n");
+    repo.record(r#"{"kind": "defines", "subject": "app.x", "value": "type", "at": "src/@app/x.ts:1"}"#);
+    let atoms = repo.map("src/@app/x.ts");
+    assert_eq!(atoms[1]["at"], format!("src/@app/x.ts:1@{}", blob("x\n")));
+    let v = repo.ok(&["status"]);
+    assert!(!v["unread"].as_array().unwrap().iter().any(|u| u["source"] == "src/@app/x.ts" && u["scopes"][0] == "structure"));
+}
+
+#[test]
+fn record_keeps_paths_inside_the_repository() {
+    let repo = Repo::new("paths");
+    repo.record(r#"{"kind": "defines", "subject": "src.a.A", "value": "type", "at": "./src/a.py:1"}"#);
+    assert_eq!(repo.map("src/a.py")[0]["subject"], "src/a.py");
+    for at in ["/etc/a.py:1", "src/../../a.py:1"] {
+        let f = repo.dir.join("in.jsonl");
+        std::fs::write(&f, format!(r#"{{"kind": "defines", "subject": "x", "value": "type", "at": "{at}"}}"#)).unwrap();
+        let out = repo.run(&["record", f.to_str().unwrap()]);
+        assert!(!out.status.success(), "{at}");
+    }
+}
+
+/// マニュアル第3章の局所ごとの意味 Atom と、読んだ範囲の例。
+#[test]
+fn manual_chapter_3_local_meaning_and_observed() {
+    let repo = Repo::new("local");
+    repo.write(".archsig/law/a.law", "sources \"shop/**\"\n\nmeaning unit on field\n  values minor | major\n  \"金額の単位\"\n");
+    repo.write("shop/payment/charge.py", "def charge(): pass\n");
+    repo.write("shop/shipping/address.py", "def normalize_address(a): return a\n");
+    repo.record(concat!(
+        r#"{"kind": "meaning", "subject": "local:service:money", "meaning": "unit", "value": "minor", "uses": ["shop/payment/charge.py:1"], "at": "shop/payment", "by": "model:claude-sonnet-5"}"#, "\n",
+        r#"{"kind": "observed", "subject": "shop/shipping/address.py", "scope": "structure", "at": "shop/shipping/address.py", "by": "tool:tree-sitter-python@0.23"}"#, "\n",
+    ));
+    let local = repo.map("shop/payment");
+    assert_eq!(local[0]["kind"], "observed");
+    assert_eq!(local[0]["at"], "shop/payment", "局所のディレクトリは版を持たない");
+    let v = repo.ok(&["status"]);
+    assert_eq!(v["stale"].as_array().unwrap().len(), 0, "{v}");
+
+    repo.write("shop/payment/charge.py", "def charge(): return 1\n");
+    let v = repo.ok(&["status"]);
+    let stale = v["stale"].as_array().unwrap();
+    assert_eq!(stale.len(), 1, "{v}");
+    assert_eq!(stale[0]["element"], "local:service:money");
+}
+
+#[test]
 fn record_rejects_an_unknown_kind() {
     let repo = Repo::new("unknown");
     let f = repo.dir.join("in.jsonl");
@@ -168,14 +216,17 @@ fn drop_removes_a_deleted_source() {
 fn status_reports_unread_and_stale_scopes() {
     let repo = Repo::new("status");
     let v = repo.ok(&["status"]);
-    assert_eq!(v["sources"], 2, "テストコードは sources の except で外れる");
     let unread: Vec<(&str, Vec<&str>)> = v["unread"]
         .as_array()
         .unwrap()
         .iter()
         .map(|u| (u["source"].as_str().unwrap(), u["scopes"].as_array().unwrap().iter().map(|s| s.as_str().unwrap()).collect()))
         .collect();
-    assert_eq!(unread, vec![("src/a.py", vec!["structure", "meaning:m"]), ("src/b.py", vec!["structure", "meaning:m"])]);
+    assert_eq!(
+        unread,
+        vec![("src/a.py", vec!["structure", "meaning:m"]), ("src/b.py", vec!["structure", "meaning:m"])],
+        "テストコードは sources の except で外れる"
+    );
 
     repo.record(concat!(
         r#"{"kind": "defines", "subject": "src.a.A.x", "value": "field", "type": "int", "at": "src/a.py:1"}"#, "\n",
