@@ -290,5 +290,5 @@ audits:
   goal_or_report_reinterpretation: none-found
   validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
   blocking_findings: []
-  next_obligation: Cの有限表構成と実行可能な終端判定
+  next_obligation: Cの有限表からの最小集合・判定不能の元・greedy構成
 ```
