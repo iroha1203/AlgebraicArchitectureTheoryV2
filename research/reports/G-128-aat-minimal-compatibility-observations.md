@@ -15,7 +15,7 @@
 | A: 観測と点安定化群 | `PointObservation.observe`, `pointStabilizer`, `observe_eq_iff` | 証明済み |
 | A1: 適合性判定 | `Sufficient`, `exists_predicate_iff_sufficient` | 証明済み |
 | A2: 最小観測数 | `minObservations`, `minObservations_eq_top_iff`, `minObservations_attained`, `minObservations_eq_zero_iff`, `sufficient_bot_iff_injective` | 証明済み |
-| A: G-120 の同じ観測 | `hom_observe_one`, `hom_pointStabilizer_one`, `hom_predicate_iff_original` | 証明済み |
+| A: G-120 の同じ観測 | `singletonTableEquiv`, `singletonPredicateEquiv`, `hom_observe_one`, `hom_tableEquiv_observe`, `hom_predicate_apply`, `hom_pointStabilizer_one`, `hom_predicate_iff_original`, `hom_predicate_iff_kernel` | 証明済み |
 | B: 適応的問い合わせ | — | 未証明 |
 | C: 有限構成・greedy・延長 | — | 未実装 |
 | D: 独立系の合成・単調性 | — | 未証明 |
@@ -27,6 +27,8 @@ Aの `Group G`、`MulAction G X`、`Gamma : Subgroup G` は固定targetの入力
 濃度の `ℕ∞` 下限であり、集合が存在しない場合は `∞` になる。
 `hom_pointStabilizer_one` は G-120 の実際の kernel と一致し、
 `hom_observe_one` はその観測値を同じ `O g` として評価する。
+`singletonTableEquiv` と `singletonPredicateEquiv` は表・述語を双方向へ移し、
+`hom_predicate_apply` が任意の述語と変更で判定値の一致を与える。
 
 ## 指定した有限例
 
@@ -61,7 +63,7 @@ result:
   split_reason: none
   completion_candidate: no
   lean_artifacts: [PointObservation.lean]
-  evidence: [observe_eq_iff, exists_predicate_iff_sufficient, minObservations_eq_top_iff, minObservations_attained, minObservations_eq_zero_iff, sufficient_bot_iff_injective, hom_predicate_iff_original]
+  evidence: [observe_eq_iff, exists_predicate_iff_sufficient, minObservations_eq_top_iff, minObservations_attained, minObservations_eq_zero_iff, sufficient_bot_iff_injective, singletonTableEquiv, singletonPredicateEquiv, hom_predicate_apply, hom_predicate_iff_original, hom_predicate_iff_kernel]
   claim_mapping:
     theorem_names: [observe_eq_iff, exists_predicate_iff_sufficient, minObservations_eq_zero_iff, hom_predicate_iff_original]
     source_labels: [A1, A2, G-120特殊化]
@@ -77,7 +79,7 @@ audits:
     discharged: [観測表と点安定化群を入力作用から定義]
     unresolved: []
   proof_use:
-    used: [observe_eq_iff in exists_predicate_iff_sufficient, G-120 kernel theorem in hom_predicate_iff_original]
+    used: [observe_eq_iff in exists_predicate_iff_sufficient, singletonTableEquiv in singletonPredicateEquiv, hom_tableEquiv_observe in hom_predicate_apply, hom_predicate_apply in hom_predicate_iff_original, G-120 kernel theorem in hom_predicate_iff_kernel]
     unused: []
   structure_field_escape: none-found
   route_integrity: pass

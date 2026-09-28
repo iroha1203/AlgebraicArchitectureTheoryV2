@@ -146,11 +146,34 @@ theorem sufficient_bot_iff_injective (B : Finset X) :
     have heq : observe B g = observe B (1 : G) :=
       (observe_eq_iff B g 1).2 (by simpa using hg)
     have hone : g = 1 := hinj heq
-    simpa [hone]
+    simp [hone]
 
 section HomObservation
 
 variable {L : Type*} [Group L] (O : G →* L)
+
+/-- A table on the singleton identity point is exactly one value of `L`. -/
+def singletonTableEquiv :
+    ({x : L // x ∈ ({1} : Finset L)} → L) ≃ L where
+  toFun t := t ⟨1, by simp⟩
+  invFun l := fun _ => l
+  left_inv := by
+    intro t
+    funext x
+    have hx : x = (⟨1, by simp⟩ : {x : L // x ∈ ({1} : Finset L)}) :=
+      Subtype.ext (Finset.mem_singleton.mp x.2)
+    subst x
+    rfl
+  right_inv := by intro l; rfl
+
+/-- Predicates on singleton observation tables and predicates on values are
+transported in both directions along the table equivalence. -/
+def singletonPredicateEquiv :
+    (({x : L // x ∈ ({1} : Finset L)} → L) → Prop) ≃ (L → Prop) where
+  toFun P := fun l => P (singletonTableEquiv.symm l)
+  invFun h := fun t => h (singletonTableEquiv t)
+  left_inv := by intro P; funext t; simp
+  right_inv := by intro h; funext l; simp
 
 /-- Left multiplication through a homomorphism gives G-120's observation
 as the value at the identity point. -/
@@ -158,6 +181,20 @@ theorem hom_observe_one (g : G) :
     letI : MulAction G L := MulAction.compHom L O
     observe ({1} : Finset L) g ⟨1, by simp⟩ = O g := by
   change O g * 1 = O g
+  simp
+
+theorem hom_tableEquiv_observe (g : G) :
+    letI : MulAction G L := MulAction.compHom L O
+    singletonTableEquiv (observe ({1} : Finset L) g) = O g :=
+  hom_observe_one O g
+
+theorem hom_predicate_apply
+    (P : ({x : L // x ∈ ({1} : Finset L)} → L) → Prop) (g : G) :
+    letI : MulAction G L := MulAction.compHom L O
+    singletonPredicateEquiv P (O g) ↔ P (observe ({1} : Finset L) g) := by
+  letI : MulAction G L := MulAction.compHom L O
+  change P (singletonTableEquiv.symm (O g)) ↔ P (observe ({1} : Finset L) g)
+  rw [← hom_tableEquiv_observe O g]
   simp
 
 /-- The point stabilizer of the identity under the homomorphism action is
@@ -177,9 +214,25 @@ theorem hom_predicate_iff_original (Gamma : Subgroup G) :
       ∀ g : G, P (observe ({1} : Finset L) g) ↔ g ∈ Gamma) ↔
     (∃ h : L → Prop, ∀ g : G, g ∈ Gamma ↔ h (O g)) := by
   letI : MulAction G L := MulAction.compHom L O
-  rw [exists_predicate_iff_sufficient, Sufficient, hom_pointStabilizer_one]
-  exact (AAT.AG.ComparisonInformationLoss.exists_observation_predicate_iff_ker_le
-    O Gamma).symm
+  constructor
+  · rintro ⟨P, hP⟩
+    refine ⟨singletonPredicateEquiv P, fun g => ?_⟩
+    exact (hP g).symm.trans (hom_predicate_apply O P g).symm
+  · rintro ⟨h, hh⟩
+    refine ⟨singletonPredicateEquiv.symm h, fun g => ?_⟩
+    have hp := hom_predicate_apply O (singletonPredicateEquiv.symm h) g
+    simpa using hp.symm.trans (hh g).symm
+
+/-- Transporting the actual predicate recovers the existing G-120 kernel
+criterion on the same observation homomorphism. -/
+theorem hom_predicate_iff_kernel (Gamma : Subgroup G) :
+    letI : MulAction G L := MulAction.compHom L O
+    (∃ P : (({x : L // x ∈ ({1} : Finset L)} → L) → Prop),
+      ∀ g : G, P (observe ({1} : Finset L) g) ↔ g ∈ Gamma) ↔
+    O.ker ≤ Gamma := by
+  rw [hom_predicate_iff_original O Gamma]
+  exact AAT.AG.ComparisonInformationLoss.exists_observation_predicate_iff_ker_le
+    O Gamma
 
 end HomObservation
 
