@@ -35,8 +35,7 @@ equations, and only the identity visible change. -/
 def identityG128Input (Q : FixedFDirectedMultigraph.{u, u}) (K : Type u)
     [Finite Q.Vertex] [Finite Q.Edge] [Finite K] : FiniteProtocolInput Q :=
   identityFiniteProtocolInput Q K (identityEmptyEquations Q) ⊥ (by
-    intro g hg
-    intro r
+    intro g hg r
     cases r)
 
 /-- G-124's chosen representatives, paired with all original fiber points. -/
@@ -49,6 +48,7 @@ noncomputable def identityRepresentativeStates
   exact (CSFixedFDetermining.protocolRepresentativeSet Q).biUnion fun r =>
     Finset.univ.image fun x : K => (⟨r, x⟩ : ProtocolStates (identityReversibleData Q K))
 
+omit [Finite Q.Edge] in
 /-- Membership retains precisely the original G-124 representative and a
 fiber point; no replacement root choice is introduced. -/
 theorem mem_identityRepresentativeStates
@@ -67,6 +67,7 @@ def identityAmbientOfLift
   fiberPairToAmbient (identityReversibleData Q K) ⊥
     ⟨(1 : (⊥ : Subgroup (FixedFGraphAutomorphism Q))), a.fiber⟩
 
+omit [Finite Q.Vertex] [Finite Q.Edge] [Finite K] in
 theorem identityAmbientOfLift_compatible
     (a : (identityReversibleData Q K).Lift (1 : FixedFGraphAutomorphism Q)) :
     identityAmbientOfLift a ∈ compatibleChange (identityReversibleData Q K) ⊥ := by
@@ -74,6 +75,7 @@ theorem identityAmbientOfLift_compatible
     ⟨(1 : (⊥ : Subgroup (FixedFGraphAutomorphism Q))), a.fiber⟩).2
   exact a.edge_naturality
 
+omit [Finite Q.Vertex] [Finite Q.Edge] [Finite K] in
 /-- Every point evaluation of G-128's state action is the corresponding
 G-124 permutation reading of the same original lift. -/
 theorem identityAmbientOfLift_readAt
@@ -97,6 +99,7 @@ noncomputable def identityPointTable
   fun p => ⟨p.1.1,
     tR ⟨p.1.1, (mem_identityRepresentativeStates (K := K) p.1.1 p.1.2).mp p.2⟩ p.1.2⟩
 
+omit [Finite Q.Edge] in
 /-- Equality of the G-124 representative permutation table yields equality
 with the exact state table submitted to C. -/
 theorem identity_observe_eq_pointTable
@@ -167,6 +170,7 @@ noncomputable def identityLiftOfCompatiblePair
   exact ⟨f, (fiberPair_compatible_iff
     (identityReversibleData Q K) ⊥ ⟨1, f⟩).mp hp⟩
 
+omit [Finite Q.Vertex] [Finite Q.Edge] [Finite K] in
 theorem identityLiftOfCompatiblePair_state
     (p : AmbientFiberPair (identityReversibleData Q K) ⊥)
     (hp : fiberPairToAmbient (identityReversibleData Q K) ⊥ p ∈
@@ -191,6 +195,7 @@ noncomputable def identityLiftOfCompatible
     (ambientEquivFiberPair (identityReversibleData Q K) ⊥).left_inv b
   exact identityLiftOfCompatiblePair p (by rw [hp]; exact hb)
 
+omit [Finite Q.Vertex] [Finite Q.Edge] [Finite K] in
 /-- The recovered lift acts at every original state exactly as the ambient
 change returned by C. -/
 theorem identityLiftOfCompatible_state
