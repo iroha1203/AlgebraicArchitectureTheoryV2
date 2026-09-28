@@ -2383,6 +2383,57 @@ audits:
   validation_refs: [focused Lean check, three #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 68 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 68
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 3a3af457d
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 67 complete selected-forest E output and open fixed nonliftable example
+  proof_dag_predecessors: [ReversibleData.Lift.edge_naturality, ReversibleData.findSelectedRootLift_isSome_iff]
+  proof_obligation: Instantiate the exact one-vertex two-named-loop input and prove the name-swap has no original A1 lift and the E decision returns none
+  selection_reason: Begins fixed completion condition 2 with the original input and an actual negative lift proof
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/OneVertexTwoLoops.lean]
+  risks: [identifying distinct loop names, changing identity or swap edge action, deriving only a C1 failure without original A1 nonexistence, treating a smoke as a proof]
+  unchecked: [fixed example 2 holonomy and B2 centralizer classification, H=C2 and H_lift trivial, full fixed example 3]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Define precisely one PUnit vertex, two Bool loop names, two-point Bool fiber, identity action on false and transposition on true, and visible edge-name transposition; original A1 naturality at false forces a fixed point of the transposition and is impossible; the selected-forest C1 search therefore returns none and an executable smoke evaluates false
+  completion_candidate: no
+  lean_artifacts: [oneLoopGraph, oneLoopData, oneLoopSwap, oneLoopVertices, oneLoopEdges, oneLoopFibers]
+  evidence: [oneLoopSwap_noLift, oneLoopSwap_finiteSelected_none]
+  claim_mapping:
+    theorem_names: [oneLoopSwap_noLift, oneLoopSwap_finiteSelected_none]
+    source_labels: [completion condition 2 original A1 nonliftability, E negative decision]
+    conjuncts: [one original vertex, two distinct named loops, id and transposition edge actions, visible name swap, original Lift is empty, E returns none]
+    undischarged_assumptions: [holonomy equality, B2 centralizer and H_lift classification, second fixed example]
+    acceptance_point: Original A1 nonliftability and E negative result for exact first-example primitive graph and edge actions
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [fixed first-example data and original name-swap nonliftability with exact E negative result]
+    remaining: [first-example holonomy/B2/H classification, full second example]
+  certificate_provenance:
+    discharged: [A1 contradiction uses actual false-loop equation at a concrete Bool state; finite decision uses the same explicit vertex edge fiber tables]
+    unresolved: [first-example H and holonomy classification]
+  proof_use:
+    used: [original edge_naturality at false, Equiv.swap no fixed Bool point, selected C1 success equivalence]
+    unused: [no supplied failed-search certificate or abstract nonliftability premise]
+  structure_field_escape: none-found-for-original-A1-negative-example
+  route_integrity: pass-for-fixed-input-to-A1-and-E-negative
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, five #print axioms, namespace standard-axiom assertion, #eval false to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
