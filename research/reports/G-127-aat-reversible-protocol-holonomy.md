@@ -2944,6 +2944,57 @@ audits:
   validation_refs: [focused Lean check, six #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 79 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 79
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: f9d433c8a
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 78 exactly two original swap lifts
+  proof_dag_predecessors: [twoVertex_H_exact, twoVertex_vertical_card_two, ReversibleData.verticalLiftEquivLiftableKernel, twoVertexCycleChange_order_four]
+  proof_obligation: Prove the actual second-example A2 change group is cyclic of order four and identify it with C4
+  selection_reason: Fixed condition 3 requires the total group, not merely one order-four element
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/TwoVertexTotalGroup.lean]
+  risks: [assuming total cardinality from one element, using an abstract substitute extension, failing actual projection surjectivity, forgetting kernel provenance]
+  unchecked: [projection quotient compatibility, second swap lift order four, no section, E and torsor]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The actual ChangeGroup projection reaches both visible elements, its kernel has cardinality two by the actual vertical A1 group isomorphism, and its range has cardinality two; subgroup index gives total cardinality four; the already proved order-four swap change generates the entire actual group; a cyclic-four group isomorphism is constructed
+  completion_candidate: no
+  lean_artifacts: [twoVertexProjection, twoVertexC4]
+  evidence: [twoVertex_projection_surjective, twoVertex_projection_kernel_card_two, twoVertex_projection_range_card_two, twoVertex_changeGroup_card_four, twoVertexCycleChange_generates, twoVertex_changeGroup_isCyclic]
+  claim_mapping:
+    theorem_names: [twoVertex_changeGroup_card_four, twoVertexCycleChange_generates, twoVertexC4]
+    source_labels: [completion condition 3 A_F=C4]
+    conjuncts: [actual A2 ChangeGroup, actual visible projection, actual vertical kernel, four elements, chosen original swap lift generates all, group isomorphism with C4]
+    undischarged_assumptions: [quotient compatibility, second swap lift order four, no section, E and torsor]
+    acceptance_point: The specified total A_F is cyclic of order four
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [second-example A_F=C4]
+    remaining: [projection quotient, second lift and nonsplitting, E and torsor]
+  certificate_provenance:
+    discharged: [actual ChangeGroup.projection kernel/range, original swap lift, vertical A1 equivalence, subgroup cardinal-index theorem]
+    unresolved: [quotient compatibility]
+  proof_use:
+    used: [actual projection surjectivity, verticalLiftEquivLiftableKernel, group index/cardinality, order-four chosen generator]
+    unused: [no supplied total-group cardinality certificate]
+  structure_field_escape: none-found-for-total-group
+  route_integrity: pass-for-second-example-C4
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, seven #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
