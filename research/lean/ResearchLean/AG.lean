@@ -951,3 +951,4 @@ import ResearchLean.AG.ProtocolHolonomy.IdentityG124Bridge
 import ResearchLean.AG.ProtocolHolonomy.IdentityG124Representatives
 import ResearchLean.AG.ProtocolHolonomy.IdentityG124Extension
 import ResearchLean.AG.ProtocolHolonomy.IdentityG124Determining
+import ResearchLean.AG.MinimalCompatibilityObservations.PointObservation
