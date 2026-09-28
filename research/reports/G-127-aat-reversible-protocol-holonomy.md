@@ -1618,6 +1618,57 @@ audits:
   validation_refs: [focused Lean check and six-declaration standard axiom audit to be recorded in PR; #eval root false, path length one, C1 search true]
 ```
 
+## Cycle 53 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 53
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 23db4aa08dae7340c01153d70c3cc9c001da78b9
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 52 input-generated C1 decision and open finite visible-image computation
+  proof_dag_predecessors: [ReversibleData.findFiniteRootLift_isSome_iff, ReversibleData.mem_liftableVisible_iff_lift, ExplicitEnumeration]
+  proof_obligation: Enumerate exactly H_lift from a complete finite list of original visible changes by running the input-generated simultaneous C1 decision for every member, retaining a genuine A1 lift on success
+  selection_reason: Extends the exact per-visible-change finite C1 solver to the actual C3 image without a supplied liftability predicate or certificate
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteLiftableVisible.lean]
+  risks: [assuming the selected list already contains only liftable changes, testing only sample changes, confusing existence with a section, claiming all lifts from one witness]
+  unchecked: [genuine named spanning forest, all-component B2 assembly, full torsor output, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Filter the complete original H list by the input-generated C1 search; list membership is equivalent to the original projection range H_lift, and each accepted member has a returned original A1 lift
+  completion_candidate: no
+  lean_artifacts: [ReversibleData.finiteLiftableVisible]
+  evidence: [ReversibleData.mem_finiteLiftableVisible_iff, ReversibleData.finiteLiftableVisible_lift_iff]
+  claim_mapping:
+    theorem_names: [ReversibleData.mem_finiteLiftableVisible_iff, ReversibleData.finiteLiftableVisible_lift_iff]
+    source_labels: [C1/C3 visible image and E finite H_lift decision]
+    conjuncts: [every original H element via explicit complete list, simultaneous C1 computation, exact original projection image, actual A1 witness on success]
+    undischarged_assumptions: [the GOAL E finite visible list and original finite graph/fiber tables are inputs; no forest or all-lift output is claimed]
+    acceptance_point: Exact finite enumeration of H_lift through the original C1 route, conditional only on E's stipulated finite input tables; full E remains open
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [complete finite visible-image scan and exact C3 subgroup membership decision]
+    remaining: [genuine finite named spanning forest, all-component B2 and torsor output, fixed examples]
+  certificate_provenance:
+    discharged: [every visible candidate is drawn from the supplied complete H table; input-generated named roots feed the C1 search; accepted results carry original A1 lifts]
+    unresolved: [forest structure for the chosen paths]
+  proof_use:
+    used: [complete H enumeration, findFiniteRootLift_isSome_iff, actual mem_liftableVisible_iff_lift]
+    unused: [direct A1 search and a supplied H_lift certificate]
+  structure_field_escape: none-found-for-finite-visible-scan
+  route_integrity: pass-for-C1-to-original-H_lift
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and three-declaration standard axiom audit to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
