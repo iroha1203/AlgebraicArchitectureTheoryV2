@@ -71,7 +71,7 @@ Cの `candidateSets` は入力点列の全 sublist を集合に変換する。�
 `findIncompatibleFixer` は全点を固定する不適合な元を変更列挙から走査し、
 `minimumOrWitness` の失敗枝で実際にその元を返す。恒等元と同じ全点観測で
 適合性が異なること、`b_Γ=D_Γ=∞` を同じ出力に対して証明する。
-集合被覆とgreedy法・調和数保証は後続のC義務である。
+greedy法・調和数保証は後続のC義務である。
 `incompatibleSet` は不適合変更全体、`detectedSet x` は点 `x` で動く不適合変更を
 入力変更表から構成する。`sufficient_iff_cover` は任意の有限 `B` について、
 元の `Sufficient Gamma B` と `B` の検出集合の和集合が全不適合変更に等しいことを
@@ -379,7 +379,7 @@ tracking_issue: 5075
 report_path: research/reports/G-128-aat-minimal-compatibility-observations.md
 selection:
   proof_state_ref: Issue #5075 cycle 5 accepted state
-  proof_dag_predecessors: [PointObservation.Sufficient, FiniteMinimum.sufficientBool]
+  proof_dag_predecessors: [PointObservation.Sufficient, ProtocolHolonomy.ExplicitEnumeration.toFintype]
   milestone: Cの元の作用表に対する集合被覆対応
   proof_obligations: [Uの構成, 点ごとの検出集合, 十分性と被覆の両方向]
   exit_criteria: [同じGamma・作用からUとS_xを定義, 全Bについて被覆との同値, focused checkと公理監査]
