@@ -41,7 +41,7 @@ source of truth として扱わない。
 エージェント向け作業文書に適用する。
 
 - 文書は3層で構成する。**入口**(AGENTS.md / CLAUDE.md)、**規律の正本**(各 guideline)、
-  **実行手順**(`.codex/skills` の SKILL と `_shared` の共有契約)。
+  **実行手順**(Codex は `.codex/skills` の SKILL と `_shared` の共有契約、Claude は `.claude/skills` の SKILL)。
 - 各 hard rule の正本はちょうど1箇所に置く。他の文書・SKILL は link で参照し、
   言い換えで再掲しない。
 - 先例・事故の経緯はルール本文に書かず、GitHub Issue / PR に残す。
