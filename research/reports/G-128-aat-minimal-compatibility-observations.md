@@ -12,7 +12,7 @@
 
 | 条項 | 宣言・証拠 | 状態 |
 | --- | --- | --- |
-| A: 観測と点安定化群 | `PointObservation.observe`, `pointStabilizer`, `observe_eq_iff` | 証明済み |
+| A: 観測と点安定化群 | `observe`, `pointStabilizer`, `observe_eq_iff` | 証明済み |
 | A1: 適合性判定 | `Sufficient`, `exists_predicate_iff_sufficient` | 証明済み |
 | A2: 最小観測数 | `minObservations`, `minObservations_eq_top_iff`, `minObservations_attained`, `minObservations_eq_zero_iff`, `sufficient_bot_iff_injective` | 証明済み |
 | A: G-120 の同じ観測 | `singletonTableEquiv`, `singletonPredicateEquiv`, `hom_observe_one`, `hom_tableEquiv_observe`, `hom_predicate_apply`, `hom_pointStabilizer_one`, `hom_predicate_iff_original`, `hom_predicate_iff_kernel` | 証明済み |
