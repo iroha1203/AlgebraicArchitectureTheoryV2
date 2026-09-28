@@ -881,6 +881,7 @@ import ResearchLean.AG.ProtocolHolonomy.FiniteDirectDecision
 import ResearchLean.AG.ProtocolHolonomy.FiniteRootDecision
 import ResearchLean.AG.ProtocolHolonomy.FiniteCentralizerDecision
 import ResearchLean.AG.ProtocolHolonomy.FiniteComponents
+import ResearchLean.AG.ProtocolHolonomy.FiniteNamedWalks
 import ResearchLean.AG.ProtocolHolonomy.LiftRootCondition
 import ResearchLean.AG.ProtocolHolonomy.LiftRootReconstruction
 import ResearchLean.AG.ProtocolHolonomy.LiftableVisible
