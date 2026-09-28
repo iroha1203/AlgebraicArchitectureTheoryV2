@@ -953,3 +953,4 @@ import ResearchLean.AG.ProtocolHolonomy.IdentityG124Extension
 import ResearchLean.AG.ProtocolHolonomy.IdentityG124Determining
 import ResearchLean.AG.MinimalCompatibilityObservations.PointObservation
 import ResearchLean.AG.MinimalCompatibilityObservations.FiniteExtension
+import ResearchLean.AG.MinimalCompatibilityObservations.AdaptiveLowerBound
