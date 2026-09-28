@@ -1516,6 +1516,57 @@ audits:
   validation_refs: [focused Lean check and five-declaration standard axiom audit to be recorded in PR; #eval forward and reverse length one, plus selected original edge false with forward and reverse tags]
 ```
 
+## Cycle 51 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 51
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 0e8f38cb1e8a1dfa6b9a8dfc4eac36f19485dc14
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 50 finite-walk-to-original-named-path conversion and open bounded walk selection
+  proof_dag_predecessors: [finiteComponentDecidableEq, finiteReachable_iff_original, signedPathOfFiniteWalk, SimpleGraph.Reachable.elim_path]
+  proof_obligation: From complete original finite vertex and edge lists, terminate with a named SignedPath for connected endpoints and none for disconnected endpoints, using bounded explicit walk enumeration
+  selection_reason: Removes the supplied-walk premise of Cycle 50 and provides pairwise executable original named paths needed for rooted paths and forest construction
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteNamedPaths.lean]
+  risks: [noncomputable Finset.toList or Classical.choose path selection, incomplete walk bound, decidability supplied by an oracle, untyped or unnamed output]
+  unchecked: [consistent named spanning forest and RootedPaths from pairwise paths, all-component B2/E assembly, H_lift/torsor output, fixed examples]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: Structural List recursion enumerates every walk of a fixed length from explicit vertex/edge tables; a simple path has length below the vertex count, so bounded walk enumeration contains one whenever the original component relation holds; the first list path converts to original SignedPath, while component equality decides none exactly on disconnected endpoints
+  completion_candidate: no
+  lean_artifacts: [finiteWalksExact, finiteBoundedWalks, finiteNamedPathOfReachable, findFiniteNamedPath]
+  evidence: [mem_finiteWalksExact, findFiniteNamedPath_isSome_iff, executable connected some one-step and disconnected none evaluations]
+  claim_mapping:
+    theorem_names: [mem_finiteWalksExact, finiteNamedPathOfReachable, findFiniteNamedPath_isSome_iff]
+    source_labels: [B original signed named paths, E finite graph path construction]
+    conjuncts: [finite vertex/edge enumeration, complete fixed-length walks, bounded reachable witness, named signed output, success and failure exactness]
+    undischarged_assumptions: [GOAL E explicit finite tables and equality decisions are inputs; consistent named spanning forest and component roots remain]
+    acceptance_point: Pairwise input-generated named path decision is exact; it does not yet select a common tree or root for each component
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [bounded finite walk selection and pairwise original named SignedPath decision]
+    remaining: [input-generated genuine named spanning forest and RootedPaths, all-component E assembly and examples]
+  certificate_provenance:
+    discharged: [all walks enumerated from explicit vertex and original adjacency tables, finite path-length bound from Mathlib, returned edge names selected by Cycle 50 list scan]
+    unresolved: [common root/tree selection and selected-edge acyclicity]
+  proof_use:
+    used: [component decision from Cycle 49, complete finiteWalksExact, simple path bound, original signedPathOfFiniteWalk]
+    unused: [supplied RootedPaths from earlier B/C modules; pairwise paths need later forest organization]
+  structure_field_escape: none-found
+  route_integrity: pass-for-pairwise-original-named-path-decision
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and six-declaration standard axiom audit to be recorded in PR; #eval connected true and some one-step, disconnected false]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
