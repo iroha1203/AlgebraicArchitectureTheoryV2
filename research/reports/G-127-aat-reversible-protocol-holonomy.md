@@ -1567,6 +1567,57 @@ audits:
   validation_refs: [focused Lean check and six-declaration standard axiom audit to be recorded in PR; #eval connected true and some one-step, disconnected false]
 ```
 
+## Cycle 52 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 52
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: a9db1b8d031b5def80a5fe8c0659516f8c83d99a
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 51 pairwise input-generated named path decision and open RootedPaths provenance
+  proof_dag_predecessors: [finiteComponentDecidableEq, finiteNamedPathOfReachable, RootedPaths, ReversibleData.findRootLift_isSome_iff]
+  proof_obligation: From original finite vertex/edge tables, choose one root per original component and normalized original named paths to all vertices, then run the simultaneous C1 lift decision without supplied root paths
+  selection_reason: Removes the supplied RootedPaths premise from the C1 procedure, directly shrinking E's input-generated construction gap
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteRootedPaths.lean]
+  risks: [Quotient.out used as runtime root, disconnected or empty graph failure, nonempty path oracle, claiming a spanning forest from arbitrary pairwise paths]
+  unchecked: [genuine named spanning forest and proof that root paths use its selected edges, all-component B2/E assembly, H_lift/torsor output, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: First matching original vertex in each component is selected from the explicit list; bounded pairwise path search supplies normalized root paths, yielding actual RootedPaths. The C1 finite root search now runs on that input-generated data and succeeds exactly when an original Lift exists
+  completion_candidate: no
+  lean_artifacts: [finiteRootForComponent, finitePathFromRoot, finiteRootedPaths, ReversibleData.findFiniteRootLift]
+  evidence: [finitePathFromRoot_self, ReversibleData.findFiniteRootLift_isSome_iff, executable root false/path length one/C1 search true evaluations]
+  claim_mapping:
+    theorem_names: [finiteRootedPaths, ReversibleData.findFiniteRootLift_isSome_iff]
+    source_labels: [B chosen roots and original named paths, C1/C2, E input-generated finite lift decision]
+    conjuncts: [all original components including disconnected/empty graph, root representative from finite list, named path from same tables, root nil normalization, C1 decision exact for original A1]
+    undischarged_assumptions: [GOAL E explicit finite tables/equality decisions are inputs; genuine named spanning forest and all-component B2/E output remain]
+    acceptance_point: Input-generated RootedPaths and C1 lift decision are exact, but chosen paths have not been organized into one named spanning forest as GOAL B/E demand
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [finite component roots and original named RootedPaths from original tables, C1 solver's formerly supplied-root premise]
+    remaining: [genuine finite named spanning forest, all-component B2 and H_lift/torsor output, fixed examples]
+  certificate_provenance:
+    discharged: [filtered explicit vertex list computes roots; Cycle 51 bounded path search computes root paths; Cycle 47 C1 search consumes this exact RootedPaths]
+    unresolved: [selected-edge tree structure and acyclicity for the same paths]
+  proof_use:
+    used: [input-generated component decision, complete vertex list, normalized finite named path, original findRootLift_isSome_iff]
+    unused: [UndirectedNamedSpanningForest predicate remains an independent forest proof obligation]
+  structure_field_escape: none-found-for-generated-RootedPaths
+  route_integrity: pass-for-input-generated-C1-route-without-forest
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and six-declaration standard axiom audit to be recorded in PR; #eval root false, path length one, C1 search true]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
