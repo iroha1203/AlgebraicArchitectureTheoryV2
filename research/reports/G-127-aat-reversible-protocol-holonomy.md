@@ -1822,6 +1822,57 @@ audits:
   validation_refs: [focused Lean check, eight-declaration standard axiom audit, selected true/empty false evaluations to be recorded in PR]
 ```
 
+## Cycle 57 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 57
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 9b3ee46438cca1fa45702056c4cd617ff735c2b9
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 56 exact finite selected-edge connectivity decision and open forest selection
+  proof_dag_predecessors: [selectedReachableDecidable, allNamedEdges_reachable_iff_original, ExplicitEnumeration.toFintype]
+  proof_obligation: From complete finite original vertex/edge tables, execute a terminating edge-name deletion search whose output remains a subset of the original names and connects every original undirected component
+  selection_reason: Produces an actual input-generated spanning edge selection before proving irredundancy/bridge and tree paths
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteSpanningSelection.lean]
+  risks: [using noncomputable connectivity choice, deleting a necessary named edge, treating parallel names as one, claiming acyclicity or bridge without proof]
+  unchecked: [retained-edge irredundancy/bridge, actual named forest and root paths, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: A structurally recursive deletion over the original edge-name list removes each name only if the exact finite selected-edge decision proves all original component connections survive; the output uses only original names and spans each original component
+  completion_candidate: no
+  lean_artifacts: [SpansOriginalComponents, pruneNamedEdges, finiteSpanningEdgeSelection]
+  evidence: [pruneNamedEdges_spans, pruneNamedEdges_subset, finiteSpanningEdgeSelection_originalReachable, parallel-edge-plus-loop evaluation yielding one selected edge and loop false]
+  claim_mapping:
+    theorem_names: [finiteSpanningEdgeSelection_subset, finiteSpanningEdgeSelection_spans, finiteSpanningEdgeSelection_originalReachable]
+    source_labels: [E input-generated finite named spanning selection]
+    conjuncts: [complete original name list, terminating deletion, exact connectivity decision at every step, all original components, subset of original edge names]
+    undischarged_assumptions: [GOAL E finite tables and equality decisions only; retained edges are not yet proved bridges]
+    acceptance_point: Input-generated connected spanning named-edge subset, not yet a genuine undirected named spanning forest
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [finite input-generated spanning named-edge selection with original component connectedness]
+    remaining: [irredundancy and bridge proof, forest structure and selected tree paths, fixed examples]
+  certificate_provenance:
+    discharged: [runtime deletion uses only exact Cycle 56 finite connectivity decision and original edge list; no supplied spanning certificate]
+    unresolved: [edge-minimality and bridge condition]
+  proof_use:
+    used: [all original edge names, selected-edge finite decision, all-edge-to-original component relation, recursive spanning preservation and subset proofs]
+    unused: [no noncomputable tree/group action in runtime selection]
+  structure_field_escape: none-found-for-connected-selection
+  route_integrity: pass-for-input-generated-original-edge-selection
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and twelve-declaration standard axiom audit to be recorded in PR; parallel-edge-plus-loop #eval card one and loop false]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
