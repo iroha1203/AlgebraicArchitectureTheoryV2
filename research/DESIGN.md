@@ -6,7 +6,7 @@
 
 **SCORE を theorem count ではなく研究貢献に与える。** 定理数、ファイル数、証明の容易さは主報酬ではない。主報酬は、GOAL の見方を変えること、複数の現象を圧縮すること、新しい測定量や obstruction を作ること、次の研究を開くことに与える。証拠段階は multiplier であり、Lean proof は研究価値を検証する強い証拠として扱う。
 
-**大定理証明モードを、SCORE 積み上げとは別の skill として分離する。** SCORE phase は広い frontier を探索し、研究能力の増分を積み上げるのに向いている。一方で、特定の大定理へ向かう研究では、毎サイクル一つの proof obligation を潰し、Lean theorem / finite witness / concrete certificate または blocker として固定する方が速く厳密である。このため `$research-loop` は探索型 GOAL 専用にし、`research mode: target-theorem` の GOAL は `$target-theorem-loop` で扱う。GOAL カードには target theorem、proof boundary、proof obligation priority、completion criteria を定義し、tracking Issue には proof state、完了 / 未完 proof obligation、blocker、PR、final review 結果を置く。target theorem の statement や completion criteria は人間が定める GOAL 定義であり、ループはそれを弱めて成功扱いしない。
+**大定理証明モードを、SCORE 積み上げとは別の skill として分離する。** SCORE phase は広い frontier を探索し、研究能力の増分を積み上げるのに向いている。一方で、特定の大定理へ向かう研究では、固定 target に対する証明・構成の進捗を管理する必要がある。このため `$research-loop` は探索型 GOAL 専用にし、`research mode: target-theorem` の GOAL は `$target-theorem-loop` で扱う。GOAL カードには target theorem、proof boundary、proof obligation priority、completion criteria を定義し、tracking Issue には proof state、完了 / 未完 proof obligation、blocker、PR、final review 結果を置く。target theorem の statement や completion criteria は人間が定める GOAL 定義であり、ループはそれを弱めて成功扱いしない。
 
 **PRレビューと大定理の完了判定を分ける。** 各PRは標準`$review-pr`で差分を監査する。完了候補は別の`$math-lean-review`4本で固定GOALと累積証拠を照合し、PRレビューの判定を代用しない。全査読を完了できない、coverage gapが残る、reviewer vetoがある、または`No major findings`以外ならcheckpointとする。
 
@@ -22,7 +22,7 @@
 
 **停止は通常 GOAL では完全達成ではなく研究フェーズの区切りとして読む。** 通常 GOAL は、完全達成を機械的に判定できる性質のものではない。tracking Issue の active SCORE threshold、portfolio constraint、phase boundary criteria を満たしたら、独立審判が「ここで整理・執筆・次フェーズ設計へ移る方が研究としてキリが良いか」を判定する。フェーズ区切りなら Issue は閉じず、phase summary を残して人間に返す。`target-theorem` GOAL では例外的に、GOAL カードの completion criteria を満たし、かつ `$math-lean-review` gate を通った target theorem proof が完了条件になる。ただし、この場合も tracking Issue の closure は人間判断であり、ループは proof completion summary を残して返す。
 
-**完了 GOAL の Lean 成果物は退役させ、現役 tree には進行中の研究だけを置く。** 検証ゲートの合格は受理時点の固定 head に紐づく事実であり、成果物を現在の基礎語彙へ追随させ続けても研究価値は増えない。追随を義務にすると基礎語彙の改訂のたびに完了済み研究へ移行費が発生し、放置すると「受理済み証拠」を名乗る Lean が elaborate しない状態になる。どちらも避けるため、完了 GOAL の成果物は markdown 記録と Git 履歴に証拠を固定して退役する。条件と手順は [README](README.md) の「Lean 成果物の退役」を正本とする。
+**完了 GOAL の Lean 成果物は退役させ、現役 tree には進行中の研究だけを置く。** 検証ゲートの合格は受理時点の固定 head に紐づく事実であり、成果物を現在の基礎語彙へ追随させ続けても研究価値は増えない。追随を義務にすると基礎語彙の改訂のたびに完了済み研究へ移行費が発生し、放置すると「受理済み証拠」を名乗る Lean が elaborate しない状態になる。どちらも避けるため、完了 GOAL の成果物は markdown 記録と Git 履歴に証拠を固定して退役する。退役の手順と条件への参照は [Lean 成果物の退役](lean/README.md#lean-成果物の退役) にある。
 
 **research はトップレベルに置き、検証結果は `research/reports/` にまとめる。** docs は読むための場所、research は手を動かす場所という住み分けである。検証または証拠固定を経た結果は `research/reports/` に置き、メモにすぎない docs/note には置かない。AAT の数学本文への取り込みや正式版への昇格をループの外に置くのは、検証ゲートでは判定できない人間の判断、すなわち本文へどう位置づけるかや理論との整合を、ループの不変条件に紛れ込ませないためである。
 

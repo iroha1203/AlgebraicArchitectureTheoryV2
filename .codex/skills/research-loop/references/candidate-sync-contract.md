@@ -1,5 +1,16 @@
 # Candidate Sync Contract
 
+## 候補カードの状態語彙
+
+探索型の候補カードは、候補の採否と証拠段階を別々に記録する。
+
+| field | 値と意味 |
+| --- | --- |
+| `status` | `idea`: 生成した候補、`picked`: 四審判を通った採用候補、`archived`: 不採用または検証失敗 |
+| `evidence_stage` | `proved-in-research`: 証明済み、`conjectured-sorry`: 結論部を保留した予想、`finite-evidence`: 有限例の検算、`orientation-evidence`: 反例やobstruction等の証拠 |
+| `cycle` (任意) | 候補を扱った研究Cycleの番号 |
+| `lean` (任意) | `none`、`stated`、`conjectured-sorry`、`proved-in-research`、`failed`。Lean検証の補助的な状態 |
+
 ## G3.5 同期項目
 
 G4 へ進む前に、候補カードには最低限、次を反映する。

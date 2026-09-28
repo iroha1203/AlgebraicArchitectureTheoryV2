@@ -29,13 +29,15 @@ genius_support_role:
 origin: NT-XX
 tags: []
 created:
-# 以下はループが picked 以降に付ける(任意)。語彙は README を参照。
+# 以下はループが picked 以降に付ける(任意)。語彙は本文冒頭の参照先に従う。
 # cycle: 1
 # lean: none
 # archived_reason:
 ---
 
 # <タイトル>
+
+候補カードの状態語彙は [Candidate Sync Contract](../../.codex/skills/research-loop/references/candidate-sync-contract.md#候補カードの状態語彙) を参照。
 
 ## 主張
 
