@@ -3046,6 +3046,57 @@ audits:
   validation_refs: [focused Lean check, three #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 81 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 81
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 3fa1cfea7
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 80 both original swap lifts have order four
+  proof_dag_predecessors: [twoVertex_projection_surjective, ReversibleData.LiftableVisible, ReversibleData.mem_liftableVisible_iff_lift]
+  proof_obligation: Identify the actual C1 liftable subgroup with the entire specified H in the second fixed example
+  selection_reason: The fixed example requires H_lift=H and the nonsplitting argument needs the full visible codomain
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/TwoVertexLiftableVisible.lean]
+  risks: [showing only nonempty abstract changes, confusing H with its projection image, omitting original A1 solutions]
+  unchecked: [projection quotient compatibility, no section, E and torsor]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The actual projection range defining H_lift is top, and every chosen visible change has an original A1 lift
+  completion_candidate: no
+  lean_artifacts: [twoVertex_liftableVisible_eq_top]
+  evidence: [twoVertex_projection_surjective, twoVertex_all_visible_lift]
+  claim_mapping:
+    theorem_names: [twoVertex_liftableVisible_eq_top, twoVertex_all_visible_lift]
+    source_labels: [completion condition 3 H_lift=H]
+    conjuncts: [specified original input, actual C1 liftable subgroup, entire selected H, original A1 lift for each element]
+    undischarged_assumptions: [projection quotient compatibility, no section, E and torsor]
+    acceptance_point: The specified H_lift equals H
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [second-example H_lift=H]
+    remaining: [projection quotient, nonsplitting, E and torsor]
+  certificate_provenance:
+    discharged: [original A2 projection surjectivity and C1 image theorem]
+    unresolved: [quotient compatibility]
+  proof_use:
+    used: [actual A2 projection range, original A1 lift equivalence]
+    unused: [no supplied liftability certificate]
+  structure_field_escape: none-found-for-liftable-visible
+  route_integrity: pass-for-second-example-H-lift
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, two #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
