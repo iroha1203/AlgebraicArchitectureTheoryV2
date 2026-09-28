@@ -1,76 +1,48 @@
-# research — ループ研究の作業場
+# research — AAT / SFT の研究領域
 
-この `research/` は、AAT / SFT(代数的アーキテクチャ理論とソフトウェア場の理論)の数学を研究として育てていくための作業場である。確定した内容を読むための `docs/` に対して、こちらは候補を出し、検証し、研究貢献を SCORE として積み上げていく場所、つまり手を動かす側にあたる。
+`research/` は、AAT / SFT の研究目標、候補、証明設計、検証成果を置く領域である。
+研究の方向は [研究の全体目標](../docs/research_goal.md) に従う。
+数学本文は `docs/`、研究用の Lean 証拠は独立 package の `research/lean/`、
+本体の Lean 形式化は `Formal/AG` にある。
 
-研究は、ひとつの研究 GOAL のもとで進める。通常の GOAL は「証明したい定理の一覧」ではない。文字通り、研究で成し遂げたい能力や到達像である。たとえば「アーキテクチャ品質を定量的に計測できるようにする」のように、理論が獲得すべき力を表す。例外として、GOAL カードが `research mode: target-theorem` を持つ場合は、その能力を代表する一つの大定理を GOAL カードで定義し、その証明を完了条件にしてよい。
+## 研究の種類
 
-その GOAL のもとで、次の流れを繰り返す。
+研究は GOAL ごとに目的と達成条件を定める。
 
-```text
-GOAL(研究で成し遂げたいこと)
-  → 候補を出す
-  → 四審判が価値とライバルに対する有効性を判定する
-  → Lean 検証または証拠固定を行う
-  → SCORE を監査して report / PR にまとめる
-  → 研究フェーズとしてキリが良ければ止まり、そうでなければ同じ GOAL で次へ進む
-```
+| 種類 | 研究対象 | 実行手順 |
+| --- | --- | --- |
+| 探索型 (`score-phase`) | 研究で獲得したい能力。候補の貢献を既存手法との比較と SCORE で評価する | [research-loop](../.codex/skills/research-loop/SKILL.md) |
+| 大定理証明型 (`target-theorem`) | 固定された定理と、その証明・構成に必要な義務 | [target-theorem-loop](../.codex/skills/target-theorem-loop/SKILL.md) |
 
-`target-theorem` の GOAL では、探索型ループとは別に大定理証明専用ループを使う。SCORE と候補カードは使わず、次に潰す proof obligation を一つ選び、Lean theorem / finite witness / concrete certificate または blocker として固定する。完了条件は GOAL カードの完了条件と参照適用する共通基準を満たすことであり、target theorem 本体が未証明なら checkpoint に留める。完了判定では final_review_packet を作り、`$math-lean-review` の4本の独立査読を必須 gate にし、全査読を完了できない場合、reviewer veto がある場合、または `No major findings` 以外の場合は `target-theorem-proved` にしない。
+GOAL の一覧と記載基準は [goals/README.md](goals/README.md) にある。
 
-探索型の流れを自動で回すのが `$research-loop` であり、`$research-loop <goal-id>` で起動する。`research mode: target-theorem` の GOAL は `$target-theorem-loop <goal-id>` で起動する。回せるのは active な GOAL だけで、draft を active に昇格させるのは人間が判断する。各段のゲート、止まる条件、安全規則は、探索型は [`$research-loop` の定義](../.codex/skills/research-loop/SKILL.md)、大定理証明型は [`$target-theorem-loop` の定義](../.codex/skills/target-theorem-loop/SKILL.md) にある。
+## 成果物の所在
 
-## 置き場所
+以下のパスは `research/` からの相対パスである。
 
-研究の途中で生まれるものは、役割ごとに次の場所へ分けて置く。
-
-| 場所 | 置くもの |
+| 場所 | 役割 |
 | --- | --- |
-| `goals/README.md` | GOAL 一覧、GOAL card contract、運用規則 |
-| `goals/<goal-id>.md` | 個別 GOAL の静的定義と reward function。`target-theorem` の内容と共通基準の参照は [GOAL カードの型](goals/README.md#goal-カードの型)に従う |
-| [designs/](designs/README.md) | GOALごとの構成・証明方針、依存関係、受入条件、既存宣言との対応 |
-| `ideas/` | 候補を一件ずつ書いたカード。選にもれたものや保留は `ideas/archived/` へ移す |
-| `reports/` | GOAL の能力がどう増えたかを書くレポート。GOAL ひとつにつき一つ |
-| `DESIGN.md` | この仕組みをいまの形にした理由の記録 |
-| `research/lean/ResearchLean/` | Lean による検証の作業場。`Formal/AG` には入れず、`research/lean` の独立 package に置く。`Formal/AG` 本体は参照のみ可 |
+| [goals/](goals/README.md) | 個別 GOAL の研究目的、固定 target、評価基準、達成条件 |
+| [designs/](designs/README.md) | GOAL ごとの構成・証明方針、依存関係、既存宣言との対応 |
+| `ideas/` | 探索型の候補カードと証拠段階。`archived/` は不採用・保留の候補 |
+| `reports/` | GOAL ごとの成果、主張と証拠の対応、未解決事項 |
+| [lean/](lean/README.md) | 研究用 Lean package。本体を参照できるが、本体からは依存しない |
+| [DESIGN.md](DESIGN.md) | 研究方式の設計背景 |
 
-2026-07-12 の Research Lean package 移動に伴い、それ以前の ideas / reports にある
-filesystem path と検証 command は、移動後に再利用できる同等手順へ正規化している。
-移動前の日付に付いた `pass` は当時の実行結果を表し、正規化後の command を再実行したという
-意味ではない。現行の focused check は
-`cd research/lean && lake env lean ResearchLean/AG/<file>.lean` とする。
-Research Lean の配置と検証手順は、この README、`lean/README.md`、両 package の
-`lakefile.toml`、`.github/workflows/lean.yml` を現行 source of truth とする。
+検証方法と build 制約は [Lean package の案内](lean/README.md) と
+[AAT guideline](../docs/aat/guideline.md#lean-build-運用hard-rule) を参照する。
 
-## Lean 成果物の退役
+## 定義・証拠・進行状態
 
-completed な GOAL の Lean 成果物は、証拠を固定した上で現役 tree から退役(削除)できる。
-退役の既定条件は蒸留完了(本体側の下限到達)である。未蒸留 conjunct が残る場合、
-本体が必要とする内容は unported 台帳(GitHub Issue)へ起票してから退役し、
-本体に不要と人間が裁定した内容は裁定を記録した上で退役してよい。
+GOAL カードは研究目標と達成条件を定義し、候補カード・report・Lean 成果物は
+主張と証拠を対応させる。実行・査読・PR・merge の履歴と再開に必要な進行状態は、
+GOAL ごとに一本の GitHub tracking Issue `Research Loop: <goal-id>` に集約する。
 
-手順は次の3段とする。
+完了した GOAL の Lean 成果物を退役できる既定条件は、本体への蒸留完了である。
+未蒸留部分が残る場合は、本体に必要な内容の unported 台帳への Issue 起票、または
+本体に不要という人間の判断記録を退役条件とする。退役した成果物は現役 tree に残さず、
+report または proof record に最終検証 commit と成果物一覧を保持し、現行文書からも
+その固定版を参照する。
 
-1. report(または対応する proof record)へ、最終検証 head の commit hash と
-   退役する成果物一覧を追記して証拠を固定する。
-2. `research/lean/research-modules.txt` と `ResearchLean` の aggregate から除去する。
-3. ファイルを削除する。履歴は Git と report が担う。現行 docs に残る path 参照は
-   commit hash 付き参照へ置換する。
-
-ビルド対象から外すだけで tree にファイルを残す「凍結」は退役として認めない。
-検証されない Lean が現役 tree に残る状態を作らないためである。
-
-## 状態の正本
-
-ループの進行状態の正本は、GOAL ごとに一本立てる GitHub の tracking Issue `Research Loop: <goal-id>` に置く。候補ごと、サイクルごとの tracking Issue は作らず、探索型 GOAL では active SCORE threshold、current SCORE、候補カード、PR、iteration comment をこの Issue に集約する。`goals/<goal-id>.md` は GOAL 定義、カードの frontmatter と検証結果のレポートは証拠 artifact であり、作業を中断してもこの Issue を読めば同じ地点から再開できる。`target-theorem` では候補カードを作らず、target theorem の statement と completion criteria は `goals/<goal-id>.md` が正本で、tracking Issue には proof state、完了 / 未完 proof obligation、blocker、PR、review結果を置く。
-
-tracking Issue は、通常 GOAL の「完全達成」を機械的に閉じるためのものではない。tracking Issue の active SCORE threshold、portfolio constraint、phase boundary criteria を満たしたら、研究フェーズとしてキリが良いかを判定し、phase summary を残して人間に返す。GOAL を閉じる、次フェーズへ移す、reward rubric を改訂する、といった判断はループ外で行う。`target-theorem` では、GOAL カードの completion criteria を満たし、さらに `$math-lean-review` gate を通った場合だけ `target-theorem-proved` として止まる。target が未証明、または `$math-lean-review` が通らない場合は checkpoint にすぎない。
-
-探索型（score-phase）の GOAL は `rival` を持つ。`rival` は、その GOAL が比較対象にする既存概念、手法、tooling、理論枠組みである。候補は GOAL の内部で面白いだけでなく、rival がすでに得意なことを踏まえ、どの能力で優位性、新規性、統合力、分離力、検証可能性を作るかを示す。G2 では審判 D がこの比較を担当し、rival の言い換えに留まる候補を落とす。
-
-## 候補カードの状態
-
-探索型 GOAL の候補カードは一件につき一ファイルとし、frontmatter で二つの状態を持つ。`target-theorem` GOAL では候補カードを作らない。
-
-ひとつは候補そのものの進み具合を表す `status` で、生成された時点の `idea` から、四審判を通った `picked`、選にもれたか検証に失敗した `archived` へと移る。もうひとつは証拠段階を表す `evidence_stage` で、`proved-in-research`、`conjectured-sorry`、`finite-evidence`、`orientation-evidence` などをとる。
-
-Lean に関する細かい段階を記録する場合は、補助的に `lean` を使ってよい。値は `none`、`stated`、`conjectured-sorry`、`proved-in-research`、`failed` とする。ただし SCORE は Lean ファイル数や定理数ではなく、GOAL の能力がどう増えたかに対して与える。
+過去の ideas / reports には package 移動に合わせてパス・検証コマンドを正規化した
+記録がある。当時の `pass` は当時の実行結果を表し、正規化後のコマンドの再実行を意味しない。
