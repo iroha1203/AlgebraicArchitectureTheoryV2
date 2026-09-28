@@ -169,7 +169,7 @@ fn record_keeps_paths_inside_the_repository() {
     repo.record(r#"{"kind": "defines", "subject": "src.b.B", "value": "type", "at": "src/../src/b.py:1"}"#);
     assert_eq!(repo.map("src/b.py").iter().filter(|a| a["kind"] == "defines").count(), 1, "根の中を指す .. はたどる");
     assert!(repo.dir.join(".archsig/map/src/a.py.jsonl").exists(), "別のソースの Atom は残る");
-    for subject in ["local:x:../../../escaped", "local:x"] {
+    for subject in ["local:x:../../../escaped", "local:x", "local:..:src/a.py"] {
         let f = repo.dir.join("in.jsonl");
         std::fs::write(&f, format!(r#"{{"kind": "meaning", "subject": "{subject}", "meaning": "m", "at": "src"}}"#)).unwrap();
         assert!(!repo.run(&["record", f.to_str().unwrap()]).status.success(), "{subject}");
@@ -223,10 +223,17 @@ fn manual_chapter_3_local_meaning_and_observed() {
         r#"{"kind": "observed", "subject": "shop/shipping/address.py", "scope": "structure", "at": "shop/shipping/address.py", "by": "tool:tree-sitter-python@0.23"}"#, "\n",
     ));
     repo.record(r#"{"kind": "meaning", "subject": "local:module:shop/payment", "meaning": "unit", "value": "minor", "uses": ["shop/payment/charge.py:1"], "by": "model:claude-sonnet-5"}"#);
-    let money = repo.map("local/service/money");
+    let local = |p: &str| -> Vec<serde_json::Value> {
+        let text = std::fs::read_to_string(repo.dir.join(format!(".archsig/local/{p}.jsonl"))).unwrap();
+        text.lines().map(|l| serde_json::from_str(l).unwrap()).collect()
+    };
+    let money = local("service/money");
     assert_eq!(money.len(), 1, "局所ごとの意味 Atom は局所の名前で置き、observed を補わない");
     assert_eq!(money[0]["at"], "shop/payment", "at に版を補わない");
-    assert_eq!(repo.map("local/module/shop/payment")[0]["subject"], "local:module:shop/payment", "読みの違う局所は置き換え合わない");
+    assert_eq!(local("module/shop/payment")[0]["subject"], "local:module:shop/payment", "読みの違う局所は置き換え合わない");
+    repo.write("local/service/money", "x\n");
+    repo.record(r#"{"kind": "observed", "subject": "local/service/money", "scope": "meaning:unit", "at": "local/service/money"}"#);
+    assert_eq!(local("service/money")[0]["subject"], "local:service:money", "同じ名前のソースを記録しても、局所の Atom は消えない");
     let v = repo.ok(&["status"]);
     assert_eq!(v["stale"].as_array().unwrap().len(), 0, "{v}");
     let charge = v["unread"].as_array().unwrap().iter().find(|u| u["source"] == "shop/payment/charge.py").unwrap();
@@ -258,8 +265,8 @@ fn drop_removes_a_deleted_source() {
     let v = repo.ok(&["status"]);
     assert_eq!(v["stale"][0]["source"], "src/b.py");
     assert!(v["stale"][0]["current"].is_null());
-    let v = repo.ok(&["record", "--drop", "src/b.py"]);
-    assert_eq!(v["dropped"][0], "src/b.py");
+    let v = repo.ok(&["record", "--drop", "./src//b.py"]);
+    assert_eq!(v["dropped"][0], "src/b.py", "外したソースは、そろえたパスで返す");
     assert!(!repo.dir.join(".archsig/map/src/b.py.jsonl").exists());
     assert_eq!(repo.ok(&["status"])["stale"].as_array().unwrap().len(), 0);
 }

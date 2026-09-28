@@ -120,7 +120,7 @@ ArchSig は、操作の呼び出しの結果を、同じ操作に同じ値を渡
 
 `subject` は `local:<読み>:<局所の名前>` と書く。
 この Atom は、その局所の中で、意味の語彙が対象にする要素すべてに同じ値を与える。
-ArchMap は、局所ごとの意味 Atom を局所の名前ごとに置く(`.archsig/map/local/<読み>/<局所>.jsonl`)。`at` は読んだ場所の目安で、版を補わない。
+ArchMap は、局所ごとの意味 Atom を局所の名前ごとに置く(`.archsig/local/<読み>/<局所>.jsonl`)。ソースのファイルとぶつからないように、`.archsig/map/` の外に置く。`at` は読んだ場所の目安で、版を補わない。
 この Atom が古いかは、`uses` のソースで決まる。ソースごとの読んだ範囲には数えない。
 まとめて読むと観測の手間が減る。まとめてよいかは、第5章の問い5で確かめる。
 
@@ -156,6 +156,8 @@ ArchSig はこの二つを区別する。分からない所が結論に関わる
 
 ## ArchMap のファイル
 
+リポジトリの根は、`archsig` を実行するディレクトリで、そこに `.archsig/` を置く。パスはどれも、この根からの相対パスである。
+
 ArchMap は、ソースのファイルごとに一つの JSON Lines ファイルに分けて置く。
 
 ```text
@@ -169,7 +171,7 @@ ArchMap は、ソースのファイルごとに一つの JSON Lines ファイル
 `archsig record` は、ソースと観測の範囲(構造か、どの意味か)ごとに、元の Atom を置き換える。
 `at` と `uses` に版がなければ今のソースの版を補い、`observed` がなければ補う。読んだが Atom がなかった範囲は、`observed` だけを書く。
 消えたソースは、`archsig record --drop <ソース>` で ArchMap から外す。
-`record` は、書いたソースと範囲ごとの Atom の数を `recorded`(`source`、`scope`、`atoms`)に、外したソースを `dropped` に返す。
+`record` は、書いたソースと範囲ごとの Atom の数を `recorded`(`source`、`scope`、`atoms`)に、外したソースをそろえたパスで `dropped` に返す。局所ごとの意味 Atom では、`source` は局所の名前である。
 `uses` のパスも、`at` と同じくリポジトリの根からの相対パスにそろえる。根の外を指すパスは書かない。
 
 ArchMap に書くのは Atom だけである。局所の分け方や局所どうしの重なりは、ArchSig が Atom と Law の読みから導く。

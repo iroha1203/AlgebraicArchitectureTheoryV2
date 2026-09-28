@@ -40,15 +40,14 @@ impl Store {
     }
 
     /// ArchMap。ソースのファイルごとの JSON Lines をすべて読む。
+    /// 局所ごとの意味 Atom は `.archsig/local/` にある。
     pub fn map(&self) -> Result<Vec<Atom>, String> {
-        let dir = self.dir().join("map");
         let mut out = Vec::new();
-        if !dir.is_dir() {
-            return Ok(out);
-        }
-        let mut files: Vec<PathBuf> = walkdir::WalkDir::new(&dir)
-            .into_iter()
-            .filter_map(|e| e.ok())
+        let mut files: Vec<PathBuf> = ["map", "local"]
+            .iter()
+            .map(|d| self.dir().join(d))
+            .filter(|d| d.is_dir())
+            .flat_map(|d| walkdir::WalkDir::new(d).into_iter().filter_map(|e| e.ok()))
             .filter(|e| e.file_type().is_file() && e.path().extension().is_some_and(|x| x == "jsonl"))
             .map(|e| e.into_path())
             .collect();
@@ -60,13 +59,13 @@ impl Store {
         Ok(out)
     }
 
-    /// ソースの ArchMap のファイル。局所ごとの意味 Atom は `local/<読み>/<局所>.jsonl`。
+    /// ソースの ArchMap のファイルは `.archsig/map/<ソース>.jsonl`。
+    /// 局所ごとの意味 Atom は、ソースとぶつからないように `.archsig/local/<読み>/<局所>.jsonl` に置く。
     fn map_file(&self, key: &str) -> PathBuf {
-        let rel = match key.strip_prefix("local:") {
-            Some(rest) => format!("local/{}", rest.replacen(':', "/", 1)),
-            None => key.to_string(),
-        };
-        self.dir().join("map").join(format!("{rel}.jsonl"))
+        match key.strip_prefix("local:") {
+            Some(rest) => self.dir().join("local").join(format!("{}.jsonl", rest.replacen(':', "/", 1))),
+            None => self.dir().join("map").join(format!("{key}.jsonl")),
+        }
     }
 
     /// Law の `sources` に当たる、今のソースのファイル。
@@ -112,13 +111,15 @@ impl Store {
     }
 
     /// 消えたソースを ArchMap から外す。
-    pub fn drop_source(&self, source: &str) -> Result<bool, String> {
-        let file = self.map_file(&relative(source)?);
+    /// 消えたソースを ArchMap から外す。外したら、そろえたソースのパスを返す。
+    pub fn drop_source(&self, source: &str) -> Result<Option<String>, String> {
+        let source = relative(source)?;
+        let file = self.map_file(&source);
         if !file.exists() {
-            return Ok(false);
+            return Ok(None);
         }
         std::fs::remove_file(&file).map_err(|e| format!("{}: {e}", file.display()))?;
-        Ok(true)
+        Ok(Some(source))
     }
 
     /// 取り出した Atom を ArchMap に書く。ソースと観測の範囲ごとに、元の Atom を置き換える。
@@ -275,7 +276,9 @@ fn relative(path: &str) -> Result<String, String> {
 fn local_name(subject: &str) -> Result<String, String> {
     let rest = subject.strip_prefix("local:").unwrap_or(subject);
     match rest.split_once(':') {
-        Some((reading, local)) if !reading.is_empty() && !reading.contains('/') => Ok(format!("local:{reading}:{}", relative(local)?)),
+        Some((reading, local)) if !matches!(reading, "" | "." | "..") && !reading.contains('/') => {
+            Ok(format!("local:{reading}:{}", relative(local)?))
+        }
         _ => Err(format!("局所ごとの意味 Atom は local:<読み>:<局所> と書く: {subject}")),
     }
 }

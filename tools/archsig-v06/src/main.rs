@@ -56,8 +56,8 @@ fn run(cli: Cli) -> Result<Value, String> {
             let recorded = store.record(atoms)?;
             let mut dropped = Vec::new();
             for d in &drop {
-                if store.drop_source(d)? {
-                    dropped.push(d.clone());
+                if let Some(source) = store.drop_source(d)? {
+                    dropped.push(source);
                 }
             }
             Ok(json!({
