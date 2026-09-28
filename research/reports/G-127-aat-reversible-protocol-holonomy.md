@@ -2536,6 +2536,57 @@ audits:
   validation_refs: [focused Lean check, seven #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 71 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 71
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 10e53b43c
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 70 actual visible H=C2
+  proof_dag_predecessors: [oneLoopInput, oneLoopRootedPaths, ReversibleData.edgeMonodromyAt, ReversibleData.holonomy, FiniteProtocolInput.renamedRealization]
+  proof_obligation: Calculate original and name-exchanged holonomy groups for the exact first fixed input and connect the exchanged table to the renamed realization
+  selection_reason: GOAL condition 2 requires both holonomy groups to be C2 despite no lift of the swap
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/OneVertexTwoLoopsHolonomy.lean]
+  risks: [inventing a disconnected renamed table, computing only abstract isomorphic groups, confusing edge names, omitting actual B1 generated subgroup]
+  unchecked: [B2 centralizer, H_lift trivial, second fixed example]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Use the unique vertex's empty root paths; original true edge and renamed false edge each generate the full Bool permutation group; both actual B1 subgroups have cardinality two and are cyclic; the renamed table agrees with the independently constructed renamed realization on each original named edge
+  completion_candidate: no
+  lean_artifacts: [oneLoopRootedPaths, oneLoopRenamedData, oneLoopComponent]
+  evidence: [oneLoop_renamed_semantic_edge, oneLoop_original_monodromy, oneLoop_renamed_monodromy, oneLoop_original_holonomy_top, oneLoop_renamed_holonomy_top, oneLoop_original_holonomy_card_two, oneLoop_renamed_holonomy_card_two, oneLoop_original_holonomy_isCyclic, oneLoop_renamed_holonomy_isCyclic]
+  claim_mapping:
+    theorem_names: [oneLoop_original_holonomy_top, oneLoop_renamed_holonomy_top, oneLoop_original_holonomy_card_two, oneLoop_renamed_holonomy_card_two]
+    source_labels: [completion condition 2 original and renamed holonomy C2]
+    conjuncts: [same original graph, same chosen root paths, original id and swap generators, actual name-swapped realization action, both cyclic order-two holonomy groups]
+    undischarged_assumptions: [B2 centralizer, H_lift, second fixed example]
+    acceptance_point: Both specified first-example holonomy groups are the full two-point permutation group, linked to actual edge semantics
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [original and renamed first-example holonomy C2]
+    remaining: [first-example B2 and H_lift, second fixed example]
+  certificate_provenance:
+    discharged: [original named-edge B1 generators and renamed realization edge action]
+    unresolved: [vertical centralizer and H_lift]
+  proof_use:
+    used: [actual B1 holonomy closure, original named edges, Bool permutation exhaustion, semantic renamed edge theorem]
+    unused: [no supplied holonomy equality premise]
+  structure_field_escape: none-found-for-holonomy
+  route_integrity: pass-for-first-example-B1-and-renamed-semantics
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, eleven #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
