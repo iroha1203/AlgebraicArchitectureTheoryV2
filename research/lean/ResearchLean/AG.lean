@@ -903,6 +903,7 @@ import ResearchLean.AG.ProtocolHolonomy.OneVertexTwoLoops
 import ResearchLean.AG.ProtocolHolonomy.OneVertexTwoLoopsInput
 import ResearchLean.AG.ProtocolHolonomy.OneVertexTwoLoopsVisibleGroup
 import ResearchLean.AG.ProtocolHolonomy.OneVertexTwoLoopsHolonomy
+import ResearchLean.AG.ProtocolHolonomy.OneVertexTwoLoopsCentralizer
 import ResearchLean.AG.ProtocolHolonomy.LiftRootCondition
 import ResearchLean.AG.ProtocolHolonomy.LiftRootReconstruction
 import ResearchLean.AG.ProtocolHolonomy.LiftableVisible
