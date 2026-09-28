@@ -1870,7 +1870,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [focused Lean check and twelve-declaration standard axiom audit to be recorded in PR; parallel-edge-plus-loop #eval card one and loop false]
+  validation_refs: [focused Lean check, ten explicit #print axioms and namespace standard-axiom assertion to be recorded in PR; parallel-edge-plus-loop #eval card one and loop false]
 ```
 
 ## Cycle 27 selection / proposed result
