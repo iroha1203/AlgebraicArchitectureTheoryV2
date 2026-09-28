@@ -90,6 +90,7 @@
 `compare --plan` と `compare --base` が、マニュアル第5章 問い3の「実装後に比べる」のとおりに動く。
 
 - 変更前は、base のコミットの ArchMap とする。
+- 変更後の ArchMap で `changes` の規則を計算し直す。変更後の要素の意味は、観測し直した意味 Atom で確かめる。
 - 候補の構造 Atom が、出現の数まで観測されているかを確かめる。足りなければ `mismatch` を返す。
 - 候補にない書き込みも `mismatch` として返す。
 
@@ -138,7 +139,7 @@ AC10 と AC11 は、どの PR でも確かめる。
 
 ## スコープ外
 
-- 問い1、2、4〜8 の計算。`check`(`no`、`each`、`agrees`)、`roundtrips`、`paths`、`plan choices`、`plan glue`、`next`、`view`、`verify`、`diff` は含めない。
+- 問い1、2、4〜8 の計算。ただし AC6 の `plan split`(問い7の「分ける」)は含む。`check`(`no`、`each`、`agrees`)、`roundtrips`、`paths`、`plan choices`、`plan glue`、`next`、`view`、`verify`、`diff` は含めない。
 - 製品として配る SKILL と、エージェントによる実際の観測。fixture の Atom は手で書く。
 - v0.5.4 の撤去と、`tools/archsig/` への移設。
 - 性能の作り込み。
