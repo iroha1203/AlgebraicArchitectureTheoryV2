@@ -18,7 +18,8 @@
 | A: G-120 の同じ観測 | `singletonTableEquiv`, `singletonPredicateEquiv`, `hom_observe_one`, `hom_tableEquiv_observe`, `hom_predicate_apply`, `hom_pointStabilizer_one`, `hom_predicate_iff_original`, `hom_predicate_iff_kernel` | 証明済み |
 | B: 適応的問い合わせの最適値 | `QueryRun`, `QueryRun.deterministic`, `QueryRun.replay_identity`, `identity_queries_sufficient`, `worstQueries`, `worstQueries_attained`, `optimalQueries`, `finiteFixedProcedure`, `finiteFixedProcedure_executable_optimal`, `optimalQueries_eq_minObservations` | B1、有限群の最悪時最大値、有限表の固定集合による達成を証明済み |
 | C: 指定観測表の延長 | `FiniteExtension.findExtension`, `findExtension_some`, `findExtension_none_iff`, `findCompatibleExtension`, `findCompatibleExtension_some`, `findCompatibleExtension_none_iff`, `classify_correct` | 証明済み |
-| C: 最小集合・判定不能・greedy | — | 未実装 |
+| C: 最小集合と判定不能の証拠 | `candidateSets`, `minimumObservation`, `minimumObservation_card`, `findIncompatibleFixer`, `minimumOrWitness`, `minimumOrWitness_correct`, `minimumOrWitness_invisible`, `minimumOrWitness_optimalProcedure` | 入力列挙からの全探索、実際の最小集合または不適合な全点固定元、A・Bとの対応を証明済み |
+| C: 集合被覆・greedy・C1 | — | 未実装 |
 | D: 独立系の合成・単調性 | — | 未証明 |
 | E: 名前付き操作と固定例 | — | 未実装 |
 
@@ -58,7 +59,18 @@ Bの `QueryRun` は履歴だけから次の点または結果を選ぶ手続き�
 長さが集合の濃度と一致する。`finiteFixedProcedure_executable_optimal` はこの
 点列と変更列挙を使う全変更で停止・正答する手続きが `b_Γ` 回を達成することを示す。
 `optimalQueries_eq_minObservations` はB1の両方向を結ぶ。最小集合自体を入力表から
-全探索で計算する構成はCの残課題である。
+全探索で計算する構成は `minimumObservation` に置く。`minimumOrWitness_optimalProcedure`
+はその同じ出力集合をBの実行可能な固定質問手続きへ渡す。
+
+Cの `candidateSets` は入力点列の全 sublist を集合に変換する。重複した列挙からも
+任意の有限 `B` が現れることを `mem_candidateSets` が示す。`sufficientBool` は入力の
+変更列挙から作った有限量化で点安定化群の包含を決定し、`minimumObservation`
+はその真となる候補を `argmin` で選ぶ。`some B` なら同じ `B` が十分で全候補より
+濃度が小さく、`B.card=b_Γ` となる。`none` なら十分な有限集合は存在しない。
+`findIncompatibleFixer` は全点を固定する不適合な元を変更列挙から走査し、
+`minimumOrWitness` の失敗枝で実際にその元を返す。恒等元と同じ全点観測で
+適合性が異なること、`b_Γ=D_Γ=∞` を同じ出力に対して証明する。
+集合被覆とgreedy法・調和数保証は後続のC義務である。
 
 ## 指定した有限例
 
@@ -291,4 +303,61 @@ audits:
   validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
   blocking_findings: []
   next_obligation: Cの有限表からの最小集合・判定不能の元・greedy構成
+```
+
+## Cycle 5 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-128-aat-minimal-compatibility-observations
+cycle: 5
+goal_blob_sha: e50d778b5b0592a79c1b12506a6c04fe71a6c147
+base_oid: 7bf21af3eb4a0fe75460fb97d61de5dd6c3f5f6c
+tracking_issue: 5075
+report_path: research/reports/G-128-aat-minimal-compatibility-observations.md
+selection:
+  proof_state_ref: Issue #5075 cycle 4 accepted state
+  proof_dag_predecessors: [PointObservation.minObservations_attained, QueryOptimum.finiteFixedProcedure, FiniteExtension.scan]
+  milestone: Cの有限表からの最小観測集合または判定不能の実際の元
+  proof_obligations: [全有限集合の実行可能な列挙, 十分性の決定, 最小濃度, 失敗時の全点固定不適合元, AとBへの対応]
+  exit_criteria: [二分岐の停止する関数, 返した同じ集合・元の正確性, focused checkと公理監査]
+  selection_reason: Bの有限表手続きに入力表から構成した最小集合を渡し、Cの判定不能を実元で証明する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/MinimalCompatibilityObservations/FiniteMinimum.lean]
+  risks: [重複した入力列挙, 空点集合, Cの失敗枝に結論相当の証書を渡す危険]
+  unchecked: [C集合被覆・greedy・C1, D, E, 指定例]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 入力列から全候補を探索し最小集合または全点を固定する不適合元を返し、その同じ値から分類とBの最適手続きを導出
+  exit_criteria_status: [二分岐のOptionとSum探索, 最小濃度・失敗元の証明, focused checkと公理監査成功]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [FiniteMinimum.lean]
+  evidence: [mem_candidateSets, sufficientBool_iff, minimumObservation_some, minimumObservation_none_iff, minimumObservation_card, findIncompatibleFixer_some, no_sufficient_iff_incompatible_fixer, minimumOrWitness_correct, minimumOrWitness_classifier, minimumOrWitness_optimalProcedure, minimumOrWitness_invisible]
+  claim_mapping:
+    theorem_names: [minimumOrWitness_correct, minimumOrWitness_optimalProcedure, minimumOrWitness_invisible]
+    source_labels: [C 最小集合と判定不能の証拠, B 有限表からの最適手続き]
+    conjuncts: [候補の完全性, 返した集合の最小性, 返した元の不適合性と全点固定, bとDの∞, 同じ集合による分類と最適質問]
+    undischarged_assumptions: []
+    acceptance_point: 実際の有限表関数の両分岐から元の群作用・適合群の結論を取得
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [Cの最小集合と判定不能の元, 有限表からBの最適手続きへの接続]
+    remaining: [Cの集合被覆とgreedy・C1, D, E, 指定例]
+  certificate_provenance:
+    discharged: [最小集合は入力点列のsublistsからargminで選択, 判定不能元は入力変更列からscanで選択]
+    unresolved: []
+  proof_use:
+    used: [AのSufficientとminObservations, BのfiniteFixedProcedure, FiniteExtension.scan, G-127のExplicitEnumeration]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
+  blocking_findings: []
+  next_obligation: Cの集合被覆・greedy・調和数近似保証
 ```
