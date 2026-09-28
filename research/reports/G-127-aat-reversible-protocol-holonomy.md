@@ -2689,6 +2689,57 @@ audits:
   validation_refs: [focused Lean check, one #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 74 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 74
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 08c3faf02
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 first fixed example complete through Cycle 73 and second fixed example open
+  proof_dag_predecessors: [ReversibleData.Lift, PathEquations, FiniteProtocolInput]
+  proof_obligation: Instantiate the exact second fixed primitive input and exhibit an original A1 lift of its simultaneous vertex/name exchange
+  selection_reason: The required C4 extension must be built from this specific two-vertex/two-opposite-edge input
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/TwoVertexOppositeEdges.lean]
+  risks: [misorienting the named edges, changing id or transposition actions, replacing the original A1 square by a certificate, assuming C4 prematurely]
+  unchecked: [second-example H=C2, Aut_Q(F)=C2, A_F=C4, projection quotient, both swap lifts order four, no section, E output and C torsor]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Define Bool vertices and original Bool edge names with false:0-to-1 and true:1-to-0; set false edge action to identity and true to the Bool swap; define the simultaneous visible exchange and its actual A1 lift with identity fiber at 0 and swap fiber at 1; package the same data with empty Pi and full visible H into a finite protocol input
+  completion_candidate: no
+  lean_artifacts: [twoVertexGraph, twoVertexData, twoVertexSwap, twoVertexSwapLift, twoVertexEmptyEquations, twoVertexInput]
+  evidence: [twoVertexSwap_mem_H, twoVertexInput_no_equations, twoVertexSwapLift.edge_naturality]
+  claim_mapping:
+    theorem_names: [twoVertexSwapLift, twoVertexSwap_mem_H, twoVertexInput_no_equations]
+    source_labels: [completion condition 3 exact primitive input and existence of a swap lift]
+    conjuncts: [two opposite original named edges, Bool fibers, id and transposition actions, simultaneous vertex/name exchange, empty Pi, finite witnesses, original A1 lift]
+    undischarged_assumptions: [H=C2, vertical and total group classifications, quotient and section, E and torsor]
+    acceptance_point: Exact second-example primitive input and one original A1 lift exist in Lean
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [second-example finite primitive input and explicit swap lift]
+    remaining: [second-example group extension, E and torsor classification]
+  certificate_provenance:
+    discharged: [edge naturality proved directly by cases on both original names and both fiber states]
+    unresolved: [group and finite output calculations]
+  proof_use:
+    used: [actual ReversibleData.Lift A1 edge square, original named edge actions]
+    unused: [no assumed swap-lift certificate]
+  structure_field_escape: none-found-for-second-example-input
+  route_integrity: pass-for-second-example-A1
+  target_fitting: none-found
+  vacuity: only-the-specified-empty-Pi
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, eight #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
