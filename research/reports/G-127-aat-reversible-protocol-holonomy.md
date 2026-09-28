@@ -2638,6 +2638,57 @@ audits:
   validation_refs: [focused Lean check, four #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 73 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 73
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: b99c388d6
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 72 first-example B2 centralizer
+  proof_dag_predecessors: [oneLoop_H_exact, oneLoopSwap_noLift, ReversibleData.LiftableVisible, ReversibleData.mem_liftableVisible_iff_lift]
+  proof_obligation: Prove the actual visible projection image H_lift is the identity subgroup in the first fixed example
+  selection_reason: This closes the remaining subgroup classification in fixed completion condition 2
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/OneVertexTwoLoopsLiftable.lean]
+  risks: [claiming only swap nonliftability without exhausting H, defining a replacement image, assuming identity has a lift]
+  unchecked: [second fixed example, final cumulative A-E audit]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The actual H has only identity and the original name swap; the swap has no A1 lift and the identity belongs to the projection image by the group unit, so the actual H_lift subgroup equals bottom
+  completion_candidate: no
+  lean_artifacts: [oneLoop_H_lift_eq_bot]
+  evidence: [oneLoop_H_lift_eq_bot]
+  claim_mapping:
+    theorem_names: [oneLoop_H_lift_eq_bot]
+    source_labels: [completion condition 2 H_lift={1}]
+    conjuncts: [actual A2 projection range, exhaustive H=C2 classification, swap nonliftability, identity membership]
+    undischarged_assumptions: [second fixed example, final cumulative audit]
+    acceptance_point: First fixed example's H_lift is exactly the identity subgroup
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [first fixed example H_lift={1}]
+    remaining: [second fixed example and cumulative A-E completion]
+  certificate_provenance:
+    discharged: [actual projection range definition, original A1 nonliftability at named false edge, group-unit membership]
+    unresolved: [second fixed example]
+  proof_use:
+    used: [actual mem_liftableVisible_iff_lift, H identity-or-swap classification, original swap noLift]
+    unused: [no assumed subgroup image certificate]
+  structure_field_escape: none-found-for-first-example-H-lift
+  route_integrity: pass-for-first-example-C3-image
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, one #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
