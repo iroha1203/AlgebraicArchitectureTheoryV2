@@ -2332,6 +2332,57 @@ audits:
   validation_refs: [focused Lean check, six #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 67 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 67
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 5243ed7c5
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 65 selected-root B2 vertical list and Cycle 66 selected-root C1/H_lift search
+  proof_dag_predecessors: [ReversibleData.findSelectedRootLift_isSome_iff, ReversibleData.finiteSelectedVerticalLifts, ReversibleData.composeVertical_eq_rightAction, ReversibleData.verticalRightAction_transitive]
+  proof_obligation: Recover every original A1 lift over each visible change by combining the selected-forest C1 output with all B2 vertical lifts via the original C3 torsor
+  selection_reason: Completes the selected-forest E fiber output and exact negative branch before the fixed examples
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteSelectedAllLifts.lean]
+  risks: [composing in the wrong action order, missing an original vertical lift, claiming empty list without lift nonexistence, introducing a supplied torsor certificate]
+  unchecked: [the two fixed examples and cumulative A-E completion audit]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: For a visible change the selected-forest C1 search returns either no lift or one original A1 lift; the successful branch composes that lift on the right with the complete selected-forest B2 vertical list; C3 transitivity proves every original Lift g appears, and the output is empty exactly when the original Lift g is empty
+  completion_candidate: no
+  lean_artifacts: [ReversibleData.finiteSelectedAllLifts]
+  evidence: [ReversibleData.mem_finiteSelectedAllLifts, ReversibleData.finiteSelectedAllLifts_eq_nil_iff]
+  claim_mapping:
+    theorem_names: [ReversibleData.mem_finiteSelectedAllLifts, ReversibleData.finiteSelectedAllLifts_eq_nil_iff]
+    source_labels: [C3 original right torsor, E all-lifts finite output and negative decision]
+    conjuncts: [same selected forest in C1 and B2, original A1 Lift g, actual C3 right composition, exhaustive list, empty iff nonexistent]
+    undischarged_assumptions: [GOAL E explicit finite tables and equality decisions; fixed examples and final cumulative audit remain]
+    acceptance_point: Exact all-original-lifts output from the input-generated named forest for every visible change
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [selected-forest C1/B2/C3 all-lift output and negative branch]
+    remaining: [two fixed examples, final A-E matching and completion audit]
+  certificate_provenance:
+    discharged: [C1 output generated from finite tables; vertical list from all original component B2 tables; C3 transitivity proves completeness; no supplied lift or torsor certificate]
+    unresolved: [concrete finite example data and evaluations]
+  proof_use:
+    used: [selected C1 success equivalence, selected B2 vertical completeness, original composeVertical/rightAction equality, original torsor transitivity]
+    unused: [no external choice of a reference lift]
+  structure_field_escape: none-found-for-all-lifts-output
+  route_integrity: pass-for-selected-forest-C1-B2-C3-to-original-Lift-fiber
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, three #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
