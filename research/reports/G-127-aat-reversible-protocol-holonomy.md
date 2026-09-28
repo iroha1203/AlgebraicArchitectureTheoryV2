@@ -2281,6 +2281,57 @@ audits:
   validation_refs: [focused Lean check, two #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 66 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 66
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 56cd8e9f2
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 65 selected-forest B2/vertical enumeration and open C1 visible branch
+  proof_dag_predecessors: [finiteSelectedRootedPaths, ReversibleData.findRootLift_isSome_iff, ReversibleData.findRootLift_isSome_iff_rootSolutions, ReversibleData.mem_liftableVisible_iff_lift]
+  proof_obligation: Run the original simultaneous C1 search with selected-forest root paths and scan finite visible H to compute exactly the original H_lift
+  selection_reason: Connects the same finite generated forest to C1 and the actual original visible image
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteSelectedLiftability.lean]
+  risks: [checking a different root family, changing the original A1 lift fiber, assuming a successful lift as input, scanning only a candidate subset of H]
+  unchecked: [all A1 lifts via selected-forest B2 torsor, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The exact C1 search is instantiated with finiteSelectedRootedPaths; success is equivalent both to original A1 Lift nonemptiness and genuine C1 RootSolutions nonemptiness; filtering the complete visible table returns exactly LiftableVisible H and a successful original lift
+  completion_candidate: no
+  lean_artifacts: [ReversibleData.findSelectedRootLift, ReversibleData.findSelectedRootLift_isSome_iff, ReversibleData.findSelectedRootLift_isSome_iff_rootSolutions, ReversibleData.finiteSelectedLiftableVisible]
+  evidence: [ReversibleData.mem_finiteSelectedLiftableVisible_iff, ReversibleData.finiteSelectedLiftableVisible_lift_iff]
+  claim_mapping:
+    theorem_names: [ReversibleData.findSelectedRootLift_isSome_iff, ReversibleData.findSelectedRootLift_isSome_iff_rootSolutions, ReversibleData.mem_finiteSelectedLiftableVisible_iff]
+    source_labels: [C1 simultaneous lift condition, E original H_lift decision]
+    conjuncts: [same selected forest roots, full finite original edge and fiber tables, exact success/nonexistence, complete finite H scan, original A1 lift fiber]
+    undischarged_assumptions: [GOAL E explicit finite tables and complete H enumeration; all-lift torsor output and fixed examples still open]
+    acceptance_point: Exact selected-forest C1 decision and original liftable visible image list
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [selected-root C1 decision and finite original H_lift scan]
+    remaining: [selected-root all-lift enumeration via B2/C3, fixed examples]
+  certificate_provenance:
+    discharged: [root paths generated from finite original tables; C1 candidates generated from finite fiber tables; H elements from complete supplied visible table; no successful lift certificate]
+    unresolved: [complete all-lift list and fixed examples]
+  proof_use:
+    used: [same finiteSelectedRootedPaths in C1 and root solutions, complete H enumeration, original LiftableVisible characterization]
+    unused: [no supplied root or C1 solution]
+  structure_field_escape: none-found-for-C1-H-lift-list
+  route_integrity: pass-for-selected-forest-to-original-visible-image
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, six #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
