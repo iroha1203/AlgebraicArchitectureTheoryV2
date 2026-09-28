@@ -53,7 +53,7 @@ ArchMap(.archsig/map)  候補(.archsig/plans)  Law ファイル(.archsig/law)
 - ArchMap は、ソースのファイルごとに `.archsig/map/<ソースのパス>.jsonl` に置く。
 - 一つのファイルには、そのソースの `observed` と、そのソースで観測した Atom が入る。
 - `archsig record` は、入力の Atom をソースと観測の範囲(`structure` か `meaning:<名前>`)でまとめ、その組の元の Atom をすべて置き換える。
-  - `at` に版がなければ、今のソースの版を補う。
+  - `at` と `uses` に版がなければ、今のソースの版を補う。
   - その組の `observed` がなければ補う。読んだが Atom がなかった範囲は、`observed` だけを渡して記録する。
 - 版は、ソースの中身の git blob hash である。7文字以上の前方一致で同じ版とみなす。
 - 消えたソースは `archsig record --drop <ソース>` で、そのソースのファイルごと ArchMap から外す。

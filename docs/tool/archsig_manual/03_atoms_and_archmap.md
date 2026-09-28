@@ -159,7 +159,7 @@ ArchMap は、ソースのファイルごとに一つの JSON Lines ファイル
 一つのファイルには、そのソースについての `observed` と、そこで観測した Atom が入る。ソースが変わったら、そのファイルだけを観測し直す。
 
 `archsig record` は、ソースと観測の範囲(構造か、どの意味か)ごとに、元の Atom を置き換える。
-`at` に版がなければ今のソースの版を補い、`observed` がなければ補う。読んだが Atom がなかった範囲は、`observed` だけを書く。
+`at` と `uses` に版がなければ今のソースの版を補い、`observed` がなければ補う。読んだが Atom がなかった範囲は、`observed` だけを書く。
 消えたソースは、`archsig record --drop <ソース>` で ArchMap から外す。
 
 ArchMap に書くのは Atom だけである。局所の分け方や局所どうしの重なりは、ArchSig が Atom と Law の読みから導く。
