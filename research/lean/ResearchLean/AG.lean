@@ -956,3 +956,4 @@ import ResearchLean.AG.MinimalCompatibilityObservations.FiniteExtension
 import ResearchLean.AG.MinimalCompatibilityObservations.AdaptiveLowerBound
 import ResearchLean.AG.MinimalCompatibilityObservations.QueryOptimum
 import ResearchLean.AG.MinimalCompatibilityObservations.FiniteMinimum
+import ResearchLean.AG.MinimalCompatibilityObservations.FiniteCover

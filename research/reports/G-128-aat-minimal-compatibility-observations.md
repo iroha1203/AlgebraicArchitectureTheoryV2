@@ -19,7 +19,8 @@
 | B: 適応的問い合わせの最適値 | `QueryRun`, `QueryRun.deterministic`, `QueryRun.replay_identity`, `identity_queries_sufficient`, `worstQueries`, `worstQueries_attained`, `optimalQueries`, `finiteFixedProcedure`, `finiteFixedProcedure_executable_optimal`, `optimalQueries_eq_minObservations` | B1、有限群の最悪時最大値、有限表の固定集合による達成を証明済み |
 | C: 指定観測表の延長 | `FiniteExtension.findExtension`, `findExtension_some`, `findExtension_none_iff`, `findCompatibleExtension`, `findCompatibleExtension_some`, `findCompatibleExtension_none_iff`, `classify_correct` | 証明済み |
 | C: 最小集合と判定不能の証拠 | `candidateSets`, `minimumObservation`, `minimumObservation_card`, `findIncompatibleFixer`, `minimumOrWitness`, `minimumOrWitness_correct`, `minimumOrWitness_invisible`, `minimumOrWitness_optimalProcedure` | 入力列挙からの全探索、実際の最小集合または不適合な全点固定元、A・Bとの対応を証明済み |
-| C: 集合被覆・greedy・C1 | — | 未実装 |
+| C: 集合被覆 | `incompatibleSet`, `detectedSet`, `sufficient_iff_cover` | 入力有限表の不適合元と点ごとの検出集合から、十分性と被覆の同値を証明済み |
+| C: greedy・C1 | — | 未実装 |
 | D: 独立系の合成・単調性 | — | 未証明 |
 | E: 名前付き操作と固定例 | — | 未実装 |
 
@@ -70,7 +71,11 @@ Cの `candidateSets` は入力点列の全 sublist を集合に変換する。�
 `findIncompatibleFixer` は全点を固定する不適合な元を変更列挙から走査し、
 `minimumOrWitness` の失敗枝で実際にその元を返す。恒等元と同じ全点観測で
 適合性が異なること、`b_Γ=D_Γ=∞` を同じ出力に対して証明する。
-集合被覆とgreedy法・調和数保証は後続のC義務である。
+greedy法・調和数保証は後続のC義務である。
+`incompatibleSet` は不適合変更全体、`detectedSet x` は点 `x` で動く不適合変更を
+入力変更表から構成する。`sufficient_iff_cover` は任意の有限 `B` について、
+元の `Sufficient Gamma B` と `B` の検出集合の和集合が全不適合変更に等しいことを
+双方向に証明する。greedy法とC1はこの同じ被覆族を使う。
 
 ## 指定した有限例
 
@@ -360,4 +365,61 @@ audits:
   validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
   blocking_findings: []
   next_obligation: Cの集合被覆・greedy・調和数近似保証
+```
+
+## Cycle 6 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-128-aat-minimal-compatibility-observations
+cycle: 6
+goal_blob_sha: e50d778b5b0592a79c1b12506a6c04fe71a6c147
+base_oid: fb8a968b2ac59f07506793bd17a346bd975ba100
+tracking_issue: 5075
+report_path: research/reports/G-128-aat-minimal-compatibility-observations.md
+selection:
+  proof_state_ref: Issue #5075 cycle 5 accepted state
+  proof_dag_predecessors: [PointObservation.Sufficient, ProtocolHolonomy.ExplicitEnumeration.toFintype]
+  milestone: Cの元の作用表に対する集合被覆対応
+  proof_obligations: [Uの構成, 点ごとの検出集合, 十分性と被覆の両方向]
+  exit_criteria: [同じGamma・作用からUとS_xを定義, 全Bについて被覆との同値, focused checkと公理監査]
+  selection_reason: greedyが最大新規被覆点を選ぶ前に、最適化対象と元の適合性判定の一致を固定する
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/MinimalCompatibilityObservations/FiniteCover.lean]
+  risks: [S_xがUの外に出る誤り, 被覆の片方向だけの証明, 結論相当のcover仮定]
+  unchecked: [C greedy・C1, D, E, 指定例]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: 入力表からUとS_xを構成し、任意のBについて十分性と和集合による被覆が同値と証明
+  exit_criteria_status: [UとS_xを定義, 被覆同値を証明, focused checkと公理監査成功]
+  split_reason: set-coverの双方向同値はgreedyの証明で独立に再利用される中心補題なので選択規則の実装前に査読する
+  completion_candidate: no
+  lean_artifacts: [FiniteCover.lean]
+  evidence: [mem_incompatibleSet, mem_detectedSet, cover_subset_incompatible, sufficient_iff_cover]
+  claim_mapping:
+    theorem_names: [sufficient_iff_cover]
+    source_labels: [C 集合被覆]
+    conjuncts: [Uは全不適合変更, S_xは動く不適合変更, 任意Bの十分性と被覆の双方向]
+    undischarged_assumptions: []
+    acceptance_point: AとCの元の適合性判定を同じ有限表のset-cover条件へ結ぶ
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [Cの集合被覆対応]
+    remaining: [C greedy・C1, D, E, 指定例]
+  certificate_provenance:
+    discharged: [UとS_xは入力のGammaと作用から定義]
+    unresolved: []
+  proof_use:
+    used: [PointObservation.Sufficient, G-127のExplicitEnumeration]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
+  blocking_findings: []
+  next_obligation: Cのgreedy実行関数と調和数近似保証
 ```
