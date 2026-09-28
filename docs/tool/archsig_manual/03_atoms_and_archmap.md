@@ -150,7 +150,7 @@ ArchSig はこの二つを区別する。分からない所が結論に関わる
 
 `archsig status` は、古い範囲を `stale` に、読んでいない範囲を `unread` に返す。
 `stale` の一つ一つは、観測し直す範囲(`source` と `scope`)、観測したときの版(`observed`)、今の版(`current`)を持つ。ソースが消えていれば、`current` は `null` である。
-`uses` が変わった意味 Atom では、`source` と `scope` はその意味 Atom の範囲(局所ごとの意味 Atom なら `source` は局所の名前)で、要素(`element`)と、変わった使用箇所(`use`)も持つ。`observed` と `current` は、変わった使用箇所のソースの版である。
+`uses` が変わった意味 Atom では、`source` と `scope` はその意味 Atom の範囲(局所ごとの意味 Atom なら `source` はその `subject`)で、要素(`element`)と、変わった使用箇所(`use`)も持つ。`observed` と `current` は、変わった使用箇所のソースの版である。
 `stale` は `source`、`scope`、`element`、`use` の順に並ぶ。
 `unread` の一つ一つは、`sources` のソース(`source`)と、構造と Law が宣言した意味のうち読んでいない範囲(`scopes`)を持つ。
 
@@ -171,7 +171,7 @@ ArchMap は、ソースのファイルごとに一つの JSON Lines ファイル
 `archsig record` は、ソースと観測の範囲(構造か、どの意味か)ごとに、元の Atom を置き換える。
 `at` と `uses` に版がなければ今のソースの版を補い、`observed` がなければ補う。読んだが Atom がなかった範囲は、`observed` だけを書く。
 消えたソースは、`archsig record --drop <ソース>` で ArchMap から外す。
-`record` は、書いたソースと範囲ごとの Atom の数を `recorded`(`source`、`scope`、`atoms`)に、外したソースをそろえたパスで `dropped` に返す。局所ごとの意味 Atom では、`source` は局所の名前である。
+`record` は、書いたソースと範囲ごとの Atom の数を `recorded`(`source`、`scope`、`atoms`)に、外したソースをそろえたパスで `dropped` に返す。局所ごとの意味 Atom では、`source` はその Atom の `subject`(`local:<読み>:<局所>`)である。
 `uses` のパスも、`at` と同じくリポジトリの根からの相対パスにそろえる。根の外を指すパスは書かない。
 
 ArchMap に書くのは Atom だけである。局所の分け方や局所どうしの重なりは、ArchSig が Atom と Law の読みから導く。

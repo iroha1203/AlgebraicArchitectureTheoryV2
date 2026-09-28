@@ -61,10 +61,10 @@ impl Store {
 
     /// ソースの ArchMap のファイルは `.archsig/map/<ソース>.jsonl`。
     /// 局所ごとの意味 Atom は、ソースとぶつからないように `.archsig/local/<読み>/<局所>.jsonl` に置く。
-    fn map_file(&self, key: &str) -> PathBuf {
-        match key.strip_prefix("local:") {
-            Some(rest) => self.dir().join("local").join(format!("{}.jsonl", rest.replacen(':', "/", 1))),
-            None => self.dir().join("map").join(format!("{key}.jsonl")),
+    fn map_file(&self, place: &Place) -> PathBuf {
+        match place {
+            Place::Source(path) => self.dir().join("map").join(format!("{path}.jsonl")),
+            Place::Local { reading, local } => self.dir().join("local").join(reading).join(format!("{local}.jsonl")),
         }
     }
 
@@ -110,11 +110,10 @@ impl Store {
         Ok(loc.to_at())
     }
 
-    /// 消えたソースを ArchMap から外す。
     /// 消えたソースを ArchMap から外す。外したら、そろえたソースのパスを返す。
     pub fn drop_source(&self, source: &str) -> Result<Option<String>, String> {
         let source = relative(source)?;
-        let file = self.map_file(&source);
+        let file = self.map_file(&Place::Source(source.clone()));
         if !file.exists() {
             return Ok(None);
         }
@@ -125,37 +124,38 @@ impl Store {
     /// 取り出した Atom を ArchMap に書く。ソースと観測の範囲ごとに、元の Atom を置き換える。
     /// 局所ごとの意味 Atom は、ソースの代わりに局所の名前ごとに置き換える。
     pub fn record(&self, atoms: Vec<Atom>) -> Result<Vec<(String, String, usize)>, String> {
-        let mut groups: BTreeMap<(String, String), Vec<Atom>> = BTreeMap::new();
+        let mut groups: BTreeMap<(Place, String), Vec<Atom>> = BTreeMap::new();
         for mut a in atoms {
             let scope = a.scope_name().ok_or(format!("{} は ArchMap に書けない: {}", a.kind, a.subject))?;
             if let Some(uses) = a.uses.take() {
                 a.uses = Some(uses.iter().map(|u| self.versioned(u)).collect::<Result<_, _>>()?);
             }
-            let key = if is_local(&a) {
-                a.subject = local_name(&a.subject)?;
+            let place = if is_local(&a) {
+                let (reading, local) = local_name(&a.subject)?;
+                a.subject = format!("local:{reading}:{local}");
                 if let Some(at) = a.at.take() {
                     let mut loc = atom::parse_location(&at).ok_or(format!("場所が読めない: {at}"))?;
                     loc.path = relative(&loc.path)?;
                     a.at = Some(loc.to_at());
                 }
-                a.subject.clone()
+                Place::Local { reading, local }
             } else {
                 let at = a.at.as_deref().ok_or(format!("at がない: {}", a.subject))?;
                 a.at = Some(self.versioned(at)?);
                 if a.kind == "observed" {
                     a.subject = relative(&a.subject)?;
                 }
-                a.location().unwrap().path
+                Place::Source(a.location().unwrap().path)
             };
-            groups.entry((key, scope)).or_default().push(a);
+            groups.entry((place, scope)).or_default().push(a);
         }
         let mut report = Vec::new();
-        let mut by_file: BTreeMap<String, Vec<(String, Vec<Atom>)>> = BTreeMap::new();
-        for ((key, scope), atoms) in groups {
-            by_file.entry(key).or_default().push((scope, atoms));
+        let mut by_file: BTreeMap<Place, Vec<(String, Vec<Atom>)>> = BTreeMap::new();
+        for ((place, scope), atoms) in groups {
+            by_file.entry(place).or_default().push((scope, atoms));
         }
-        for (key, scopes) in by_file {
-            let file = self.map_file(&key);
+        for (place, scopes) in by_file {
+            let file = self.map_file(&place);
             let mut kept: Vec<Atom> = if file.exists() {
                 let text = std::fs::read_to_string(&file).map_err(|e| e.to_string())?;
                 atom::parse_jsonl(&text, &file.display().to_string())?
@@ -165,23 +165,23 @@ impl Store {
             for (scope, mut atoms) in scopes {
                 kept.retain(|a| a.scope_name().as_deref() != Some(scope.as_str()));
                 let n = atoms.iter().filter(|a| a.kind != "observed").count();
-                if !key.starts_with("local:") && !atoms.iter().any(|a| a.kind == "observed") {
+                if let (Place::Source(path), false) = (&place, atoms.iter().any(|a| a.kind == "observed")) {
                     let first = &atoms[0];
                     let version = first.location().and_then(|l| l.version).unwrap_or_default();
                     atoms.insert(
                         0,
                         Atom {
                             kind: "observed".to_string(),
-                            subject: key.clone(),
+                            subject: path.clone(),
                             scope: Some(scope.clone()),
-                            at: Some(format!("{key}@{version}")),
+                            at: Some(format!("{path}@{version}")),
                             by: first.by.clone(),
                             ..Atom::default()
                         },
                     );
                 }
                 kept.extend(atoms);
-                report.push((key.clone(), scope, n));
+                report.push((place.name(), scope, n));
             }
             std::fs::create_dir_all(file.parent().unwrap()).map_err(|e| e.to_string())?;
             std::fs::write(&file, atom::to_jsonl(&kept)).map_err(|e| e.to_string())?;
@@ -245,6 +245,23 @@ pub fn status(store: &Store) -> Result<serde_json::Value, String> {
     Ok(json!({"stale": stale, "unread": unread}))
 }
 
+/// ArchMap の中の置き場所。ソースと局所は別の名前の空間にある。
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+enum Place {
+    Source(String),
+    Local { reading: String, local: String },
+}
+
+impl Place {
+    /// 出力で使う名前。ソースはパス、局所は `local:<読み>:<局所>`。
+    fn name(&self) -> String {
+        match self {
+            Place::Source(path) => path.clone(),
+            Place::Local { reading, local } => format!("local:{reading}:{local}"),
+        }
+    }
+}
+
 /// 局所ごとの意味 Atom か。
 fn is_local(a: &Atom) -> bool {
     a.kind == "meaning" && a.subject.starts_with("local:")
@@ -272,12 +289,12 @@ fn relative(path: &str) -> Result<String, String> {
     Ok(parts.join("/"))
 }
 
-/// 局所ごとの意味 Atom の名前 `local:<読み>:<局所>` をそろえる。局所の名前はパスと同じくそろえる。
-fn local_name(subject: &str) -> Result<String, String> {
+/// 局所ごとの意味 Atom の名前 `local:<読み>:<局所>` を、読みと局所に分ける。局所の名前はパスと同じくそろえる。
+fn local_name(subject: &str) -> Result<(String, String), String> {
     let rest = subject.strip_prefix("local:").unwrap_or(subject);
     match rest.split_once(':') {
         Some((reading, local)) if !matches!(reading, "" | "." | "..") && !reading.contains('/') => {
-            Ok(format!("local:{reading}:{}", relative(local)?))
+            Ok((reading.to_string(), relative(local)?))
         }
         _ => Err(format!("局所ごとの意味 Atom は local:<読み>:<局所> と書く: {subject}")),
     }

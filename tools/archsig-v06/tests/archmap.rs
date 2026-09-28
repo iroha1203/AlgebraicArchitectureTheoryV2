@@ -185,6 +185,9 @@ fn record_keeps_paths_inside_the_repository() {
         assert!(!repo.run(&["record", f.to_str().unwrap()]).status.success(), "uses {at}");
     }
     assert!(!repo.run(&["record", "--drop", "../victim"]).status.success());
+    let v = repo.ok(&["record", "--drop", "local:..:map/src/a.py"]);
+    assert_eq!(v["dropped"].as_array().unwrap().len(), 0);
+    assert!(repo.dir.join(".archsig/map/src/a.py.jsonl").exists(), "--drop の引数はソースのパスとして読む");
     std::fs::remove_file(outside).unwrap();
 }
 
@@ -234,6 +237,13 @@ fn manual_chapter_3_local_meaning_and_observed() {
     repo.write("local/service/money", "x\n");
     repo.record(r#"{"kind": "observed", "subject": "local/service/money", "scope": "meaning:unit", "at": "local/service/money"}"#);
     assert_eq!(local("service/money")[0]["subject"], "local:service:money", "同じ名前のソースを記録しても、局所の Atom は消えない");
+    repo.write("local:service:money", "y\n");
+    repo.record(r#"{"kind": "observed", "subject": "local:service:money", "scope": "meaning:unit", "at": "local:service:money"}"#);
+    assert_eq!(local("service/money")[0]["subject"], "local:service:money", "local: で始まる名前のソースも、局所とぶつからない");
+    assert_eq!(repo.map("local:service:money")[0]["kind"], "observed");
+    let v = repo.ok(&["record", "--drop", "local:service:money"]);
+    assert_eq!(v["dropped"][0], "local:service:money");
+    assert_eq!(local("service/money").len(), 1, "--drop はソースだけを外す");
     let v = repo.ok(&["status"]);
     assert_eq!(v["stale"].as_array().unwrap().len(), 0, "{v}");
     let charge = v["unread"].as_array().unwrap().iter().find(|u| u["source"] == "shop/payment/charge.py").unwrap();

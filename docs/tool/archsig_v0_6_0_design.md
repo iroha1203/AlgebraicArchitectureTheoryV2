@@ -9,7 +9,7 @@
 ## 1. 全体の流れ
 
 ```text
-ArchMap(.archsig/map)  候補(.archsig/plans)  Law ファイル(.archsig/law)
+ArchMap(.archsig/map, local)  候補(.archsig/plans)  Law ファイル(.archsig/law)
         │                      │                      │
         ▼                      ▼                      ▼
      Atom の列 ──重ねる──▶ Atom の列               Law の構文木
