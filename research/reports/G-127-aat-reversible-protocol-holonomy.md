@@ -4,41 +4,34 @@
 - tracking Issue: [#4981](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4981)
 - 固定 GOAL・共通基準・既存宣言 commit: `b80cb54dcc7ab5e2cd3316727e23d968490f2345`
 - 固定 GOAL blob: `86ed6948771755a19db802e01e42dbd00a8f9abf`
-- proof state: `target-proof-checkpoint`
 
-この report は固定 GOAL の条項と Lean 証拠の対応を示す。実行・レビュー履歴は
-tracking Issue と PR に置く。
+この report は固定 GOAL の条項、Lean 宣言、前提の生成元と使用先を対応させる。
+査読・CI・merge の実行記録は tracking Issue と PR に置く。
 
-## 宣言と条項
+## A–E の宣言対応
 
-| 条項 | Lean 宣言 | 対応と残る義務 |
+| 条項 | 原始入力からの構成 | 結論への接続 |
 | --- | --- | --- |
-| A の可変 fiber と辺作用 | `ReversibleData.Fiber`, `ReversibleData.edgeEquiv` | 任意のグラフ上の型と可逆辺作用。`FiniteProtocolInput` はこれを `data` とし、有限の `Π` と `H` を別fieldに保持する |
-| A1 の持ち上げ | `ReversibleData.Lift`, `ReversibleData.renamedEdgeEquiv` | 元の名前付き辺作用と改名後の辺作用を全状態で結ぶ等式。`Lift` の存在は入力しない |
-| A の全状態写像 | `ReversibleData.Lift.stateEquiv`, `stateEquiv_observation`, `stateEquiv_injective` | 各 fiber の全単射から `Σ_v F(v)` 上の全単射を構成し、観測と固定可視変更での単射性を証明 |
-| A2 の実際の変更群 | `ReversibleData.NamedExecution`, `StateChange`, `ChangeGroup`, `ChangeGroup.projection` | 名前付き実行関係を保つ全状態の全単射を合成・逆で群にし、指定可視部分群 `H` への射影を構成 |
-| A1 と A2 の実変更への対応 | `Lift.maps_namedExecution`, `Lift.preserves_namedExecution`, `StateChange.toLift`, `liftEquivStateChangeOver`, `liftPairMulEquivChangeGroup`, `liftPair_mul_fiber_apply`, `liftPairProjection` | 各 fiber の A1 と名前付き実行保存を同定し、固定可視変更と全対の群を実変更に対応させ、(A2) の評価式と射影を証明 |
-| B の符号付き道と輸送 | `TypedEdge`, `SignedPath`, `ReversibleData.signedEdgeEquiv`, `ReversibleData.transport`, `transport_comp`, `transport_reverse` | 元の辺名を持つ有向辺と逆向き通過の道を構成し、辺作用の逆・道の連結・反転に対する輸送を証明。根道との接続は下行 |
-| A の有限入力・経路等式・可視群 | `PositivePath`, `PathEquations`, `PathEquations.Congruent`, `FiniteProtocolInput`, `FiniteProtocolInput.preserves_congruence`, `PathEquations.preservesCongruence_iff_generators`, `FiniteProtocolInput.visible_preserves_congruence` | 有限の頂点・元の辺名・fiber・生成等式、等式を満たす辺作用と合同を保つ `H` を同じ入力に保持。生成等式から作用の全合同保存を証明し、`H` の生成条件と全合同保存を同値化。実行圏との同定と E の表は未構成 |
-| B の成分と根道 | `SignedReachable`, `signedReachable_iff_undirected`, `component_eq_iff_signedReachable`, `RootedPaths`, `rootedPathsOfRoots`, `chooseRootedPaths` | 元の名前付き辺の正逆道の存在と既存の無向成分を同定。各成分の任意の根選択から根道を構成し、根自身への道を空道に固定。有限表の全域森とholonomyは未構成 |
+| A: 名前付き入力と実変更 | `FiniteProtocolInput`, `PathEquations.Congruent`, `ReversibleData.Lift`, `Lift.toStateChange`, `StateChange.toLift` | `liftEquivStateChangeOver`, `liftPairMulEquivChangeGroup`, `liftPair_mul_fiber_apply`, `ChangeGroup.projection` が同じ元の辺名・fiber写像と(A1)・(A2)を保つ |
+| B: 道、holonomy、中心化群 | `SignedPath`, `transport`, `RootedPaths`, `edgeMonodromyAt`, `holonomy`, `chooseNamedSpanningForest` | `holonomy_eq_rootedLoopTransportGroup` が(B1)を、`verticalRootMulEquiv` が元の `Lift 1` と各根の中心化群の(B2)を与える |
+| C: 根条件、完全列、torsor | `RootSolutions`, `RootSolutions.toLift`, `liftEquivRootSolutions`, `LiftableVisible` | `mem_liftableVisible_iff_rootSolutions`, `liftable_shortExact`, `verticalRightAction_existsUnique`, `verticalRightAction_fiber_apply` が(C1)–(C3)と全選択肢を元のA1/A2へ戻す |
+| D: 表示変更と独立意味論 | `verticalChoiceChange`, `liftChoiceChange`, `holonomy_choice_iff`, `FiniteProtocolInput.realization`, `renameExecutionFunctor`, `liftEquivSemanticIso` | `liftPairMulEquivRootPair`, `liftPairMulEquivSemanticPair`, `semanticPairProjection`, `semanticVerticalRightAction_fiber_apply` が合成・射影・核・右作用を保つ。恒等操作系は `identity_holonomy`, `identity_liftableVisible_eq_top`, `identity_shortExact_section`, `identityRightAction_existsUnique`, `identityChangeMulEquivProtocol`, `identityProtocolKernelMulEquiv`, `identityLiftEquivProtocolFiber`, `identity_G124_C2_extension_agree` に接続する |
+| E: 有限表での停止と正確性 | `ExplicitEnumeration`, `finiteNamedSpanningForest`, `finiteSelectedRootedPaths`, `findSelectedRootLift`, `finiteSelectedRootCentralizerFamilies` | `findSelectedRootLift_isSome_iff_rootSolutions`, `mem_finiteSelectedLiftableVisible_iff`, `mem_finiteSelectedAllLifts`, `finiteSelectedAllLifts_eq_nil_iff` が同じ選択森から(C1)、(B2)、全A1解を判定・復元する |
 
-`PathEquations.lean` の一頂点二ループ例では、`a=空道` から生成した合同は
-`a` と空道を結ぶが `b` と空道を結ばない。辺名の交換は生成等式と
-合同全体のどちらも保たず、恒等変更はどちらも保つ。
-`RootedPaths.lean` の無辺二頂点例では同一点間に空道があり、異なる
-二頂点間には符号付き道がない。`RootedPaths` 自体は任意のグラフで
-`chooseRootedPaths` が構成するため、不成立例は存在しない。
+`Q, Π, F(v), T_e, H` と有限表・等号判定はA・Eの原始入力である。
+`Lift.fiber` と `Lift.edge_naturality` は分類する(A1)解のデータと条件であり、
+一般入力に解の存在を仮定していない。根・木・道は `RootedPaths` と
+`finiteNamedSpanningForest` がグラフから構成し、B・Cの表示へ渡す。
+中心化群とC1解は元の辺作用から定まり、`liftEquivRootSolutions` と
+`verticalRootMulEquiv` が元のA1変更へ戻す。Dの実現は同じ `FiniteProtocolInput`
+から実行圏上に構成し、Eの有限表出力も同じ `ReversibleData.Lift` を返す。
 
-## 前提・構成の状態
+## 指定した有限例
 
-`Q` と可変 `F(v),T_e`、有限性、`Π`、`H` は A の入力。`Lift` の `fiber` は分類対象の要素であり、
-`edge_naturality` は A1 そのもの。`stateEquiv` はこの入力から生成する。
-`renamedEdgeEquiv` の型変換は `FixedFGraphAutomorphism.source_rename` と
-`target_rename` の証明だけを使用する。
-
-B の有限表の全域森とholonomy、C の持ち上げ分類・完全列・torsor、
-D の表示変更と意味論、E の有限手続き、二つの固定例は未完了である。
-現在の宣言を固定targetの完了証拠として扱わない。
+| 完了条件 | 固定入力と評価の証拠 |
+| --- | --- |
+| 2: 一頂点二ループ | `oneLoopInput` は元の二辺、Bool fiber、id/τ、空の `Π` と全可視 `H` を保持する。`oneLoop_original_holonomy_card_two`, `oneLoop_renamed_holonomy_card_two`, `oneLoopB2`, `oneLoop_H_lift_eq_bot`, `oneLoopSwap_noLift`, `oneLoopSwap_finiteSelected_none` がB–Eの正・負の判定を結ぶ |
+| 3: 二頂点反対辺 | `twoVertexInput` は元の二頂点・辺名、id/τ、空の `Π` と全可視 `H` を保持する。`twoVertexVerticalEquivPermBool`, `twoVertexC4`, `twoVertex_liftableVisible_eq_top`, `twoVertex_projection_is_mod_two`, `twoVertexCycleChange_order_four`, `twoVertexSecondCycleChange_order_four`, `twoVertex_no_group_section`, `twoVertex_finite_selected_some`, `twoVertex_mem_finite_all_lifts`, `twoVertex_rightAction_swap` が同じ実際の群・射影・A1解・有限表を接続する |
 
 ## Cycle 1 selection / proposed result
 
@@ -3299,6 +3292,57 @@ audits:
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
   validation_refs: [focused Lean check, five #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
+## Cycle 86 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 86
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 2c11be424
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 85 projection quotient compatibility
+  proof_dag_predecessors: [A-E accepted declarations through Cycle 67, fixed examples through Cycle 85]
+  proof_obligation: Replace stale report scope statements with a current A-E clause-to-declaration and premise-provenance map before completion audit
+  selection_reason: Completion condition 4 requires the report to identify the same primitive input, constructions, examples, stopping and correctness evidence
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/]
+  risks: [stale negative status, missing A-E mapping, conflating report with theorem evidence]
+  unchecked: [fresh cumulative A-E and two-example completion audit]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The report maps A-E and both fixed examples to current Lean declarations and states premise provenance and proof-use without asserting a pre-review completion verdict
+  completion_candidate: yes
+  lean_artifacts: [accepted A-E and fixed-example declaration family]
+  evidence: [current declaration mapping and prior cycle ledgers]
+  claim_mapping:
+    theorem_names: [liftPairMulEquivChangeGroup, holonomy_eq_rootedLoopTransportGroup, verticalRootMulEquiv, liftEquivRootSolutions, liftable_shortExact, liftPairMulEquivSemanticPair, findSelectedRootLift_isSome_iff_rootSolutions, twoVertex_projection_is_mod_two]
+    source_labels: [fixed target A-E, completion conditions 2-4]
+    conjuncts: [same primitive input and actual A2 group, arbitrary roots and trees, original C1/C2/B2, semantic and FixedF correspondences, finite termination and correctness, two exact examples]
+    undischarged_assumptions: []
+    acceptance_point: Report mapping is ready for an independent cumulative completion verdict
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [report mapping for fixed input, B/C construction, D correspondences, E exact finite tables, both fixed examples]
+    remaining: [fresh cumulative completion review]
+  certificate_provenance:
+    discharged: [Lean constructors and reviewed predecessor declarations identified in the clause map]
+    unresolved: []
+  proof_use:
+    used: [A actual lift and change data through B/C/D/E, original fixed-example inputs through all conclusions]
+    unused: [no new mathematical proof in this report synchronization]
+  structure_field_escape: none-found-in-report-map
+  route_integrity: pass-for-report-map
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [declaration name scan and final review to be recorded in PR]
 ```
 
 ## Cycle 27 selection / proposed result
