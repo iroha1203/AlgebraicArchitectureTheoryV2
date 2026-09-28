@@ -1924,6 +1924,57 @@ audits:
   validation_refs: [focused Lean check, four #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 59 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 59
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 18d3a3443
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 58 retained original edge names are individually necessary for all-component spanning
+  proof_dag_predecessors: [SelectedNamedReachable, UsesNamedEdges, finiteSpanningEdgeSelection_spans, finiteSpanningEdgeSelection_irredundant]
+  proof_obligation: Convert edge irredundancy into the literal named-path bridge property required by the fixed undirected spanning-tree field
+  selection_reason: Closes the exact retained-edge bridge condition while preserving original edge names and signed orientations
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteSelectionBridge.lean]
+  risks: [using unnamed graph reachability, treating the selected set as an assumed tree, missing backward traversals, proving only a weak endpoint relation]
+  unchecked: [actual componentwise forest construction and selected tree paths, terminating forest-root path output, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: An alternate endpoint route reroutes every selected EqvGen connection around the erased edge; actual signed paths using the remaining original names induce that alternate route; irredundancy therefore excludes the literal signed-path bridge counterexample for every retained name
+  completion_candidate: no
+  lean_artifacts: [selectedNamedReachable_erase_of_endpoints, usesNamedEdges_selectedReachable]
+  evidence: [finiteSpanningEdgeSelection_bridge]
+  claim_mapping:
+    theorem_names: [selectedNamedReachable_erase_of_endpoints, usesNamedEdges_selectedReachable, finiteSpanningEdgeSelection_bridge]
+    source_labels: [E original named-edge bridge condition]
+    conjuncts: [actual retained original name, its original source and target, all signed paths through remaining names, both edge orientations, failure of alternate path]
+    undischarged_assumptions: [GOAL E explicit finite original tables and equality decisions; componentwise forest and root paths still open]
+    acceptance_point: Literal bridge proposition for the generated selected edge set; no forest object or path constructor yet
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [exact retained-edge bridge condition in original signed paths]
+    remaining: [actual named forest and selected tree paths, terminating root-path computation, fixed examples]
+  certificate_provenance:
+    discharged: [bridge derives from input-generated pruning, selected-name reachability, and original signed path edge names; no supplied tree certificate]
+    unresolved: [construction of componentwise forest fields and executable selected paths]
+  proof_use:
+    used: [all-component spanning, final retained-edge irredundancy, EqvGen closure, signed path induction for forward and backward original edges]
+    unused: [no supplied forest, root path, or noncomputable choice in the bridge theorem]
+  structure_field_escape: none-found-for-bridge-proposition
+  route_integrity: pass-for-selected-original-names-to-literal-bridge
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, three #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
