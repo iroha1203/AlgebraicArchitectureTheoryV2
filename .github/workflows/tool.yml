@@ -18,6 +18,16 @@ jobs:
       - name: Test ArchSig
         run: cargo test --manifest-path tools/archsig/Cargo.toml
 
+  archsig-v06:
+    name: archsig v0.6.0 cargo test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test ArchSig v0.6.0
+        run: cargo test --manifest-path tools/archsig-v06/Cargo.toml
+
   fieldsig:
     name: fieldsig cargo test
     runs-on: ubuntu-latest

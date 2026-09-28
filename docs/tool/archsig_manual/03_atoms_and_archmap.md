@@ -8,7 +8,7 @@ Atom は JSON の一行で書く。どの Atom も次の欄を持つ。
 
 - `kind`:Atom の種類。
 - `subject`:何についての事実か。コードの要素の名前を書く。
-- `at`:観測した場所。`パス:行@<版>` の形で書く。版はソースの内容を指す。行は `10-14` のような範囲でもよい。
+- `at`:観測した場所。`パス:行@<版>` の形で書く。パスはリポジトリの根からの相対パスである。版はソースの内容を指し、`blob:<hex>` か 7 文字以上の `<hex>` で書く。行は `10-14` のような範囲でもよい。
 - `by`:誰が観測したか。解析器の名前と版、またはモデルの名前を書く。
 
 種類ごとに、次の欄が加わる。
@@ -114,12 +114,14 @@ ArchSig は、操作の呼び出しの結果を、同じ操作に同じ値を渡
 
 ```json
 {"kind": "meaning", "subject": "local:service:money", "meaning": "unit", "value": "minor",
- "uses": ["shop/payment/charge.py:22@blob:8b41d07"], "at": "shop/payment@3e1d0b2",
+ "uses": ["shop/payment/charge.py:22@blob:8b41d07"], "at": "shop/payment",
  "by": "model:claude-sonnet-5"}
 ```
 
 `subject` は `local:<読み>:<局所の名前>` と書く。
 この Atom は、その局所の中で、意味の語彙が対象にする要素すべてに同じ値を与える。
+ArchMap は、局所ごとの意味 Atom を局所の名前ごとに置く(`.archsig/local/<読み>/<局所>.jsonl`)。ソースのファイルとぶつからないように、`.archsig/map/` の外に置く。`at` は読んだ場所の目安で、版を補わない。
+この Atom が古いかは、`uses` のソースで決まる。ソースごとの読んだ範囲には数えない。
 まとめて読むと観測の手間が減る。まとめてよいかは、第5章の問い5で確かめる。
 
 ## 読んだ範囲
@@ -146,7 +148,15 @@ ArchSig はこの二つを区別する。分からない所が結論に関わる
 
 ソースが今の内容と違えば、その範囲は古い。意味 Atom は使われ方で決まるので、`uses` のソースが変わったときも古い。
 
+`archsig status` は、古い範囲を `stale` に、読んでいない範囲を `unread` に返す。
+`stale` の一つ一つは、観測し直す範囲(`source` と `scope`)、観測したときの版(`observed`)、今の版(`current`)を持つ。ソースが消えていれば、`current` は `null` である。
+`uses` が変わった意味 Atom では、`source` と `scope` はその意味 Atom の範囲(局所ごとの意味 Atom なら `source` はその `subject`)で、要素(`element`)と、変わった使用箇所(`use`)も持つ。`observed` と `current` は、変わった使用箇所のソースの版である。
+`stale` は `source`、`scope`、`element`、`use` の順に並ぶ。
+`unread` の一つ一つは、`sources` のソース(`source`)と、構造と Law が宣言した意味のうち読んでいない範囲(`scopes`)を持つ。
+
 ## ArchMap のファイル
+
+リポジトリの根は、`archsig` を実行するディレクトリで、そこに `.archsig/` を置く。パスはどれも、この根からの相対パスである。
 
 ArchMap は、ソースのファイルごとに一つの JSON Lines ファイルに分けて置く。
 
@@ -159,8 +169,10 @@ ArchMap は、ソースのファイルごとに一つの JSON Lines ファイル
 一つのファイルには、そのソースについての `observed` と、そこで観測した Atom が入る。ソースが変わったら、そのファイルだけを観測し直す。
 
 `archsig record` は、ソースと観測の範囲(構造か、どの意味か)ごとに、元の Atom を置き換える。
-`at` に版がなければ今のソースの版を補い、`observed` がなければ補う。読んだが Atom がなかった範囲は、`observed` だけを書く。
+`at` と `uses` に版がなければ今のソースの版を補い、`observed` がなければ補う。一つの範囲の Atom に古い版が混ざっていれば、その範囲は古い。`observed` は `subject` のソースに置く。読んだが Atom がなかった範囲は、`observed` だけを書く。
 消えたソースは、`archsig record --drop <ソース>` で ArchMap から外す。
+`record` は、書いたソースと範囲ごとの Atom の数を `recorded`(`source`、`scope`、`atoms`)に、外したソースをそろえたパスで `dropped` に返す。局所ごとの意味 Atom では、`source` はその Atom の `subject`(`local:<読み>:<局所>`)である。
+`uses` のパスも、`at` と同じくリポジトリの根からの相対パスにそろえる。根の外を指すパスは書かない。
 
 ArchMap に書くのは Atom だけである。局所の分け方や局所どうしの重なりは、ArchSig が Atom と Law の読みから導く。
 

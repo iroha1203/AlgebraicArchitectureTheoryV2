@@ -9,7 +9,7 @@
 ## 1. 全体の流れ
 
 ```text
-ArchMap(.archsig/map)  候補(.archsig/plans)  Law ファイル(.archsig/law)
+ArchMap(.archsig/map, local)  候補(.archsig/plans)  Law ファイル(.archsig/law)
         │                      │                      │
         ▼                      ▼                      ▼
      Atom の列 ──重ねる──▶ Atom の列               Law の構文木
@@ -53,9 +53,13 @@ ArchMap(.archsig/map)  候補(.archsig/plans)  Law ファイル(.archsig/law)
 - ArchMap は、ソースのファイルごとに `.archsig/map/<ソースのパス>.jsonl` に置く。
 - 一つのファイルには、そのソースの `observed` と、そのソースで観測した Atom が入る。
 - `archsig record` は、入力の Atom をソースと観測の範囲(`structure` か `meaning:<名前>`)でまとめ、その組の元の Atom をすべて置き換える。
-  - `at` に版がなければ、今のソースの版を補う。
+  - `at`、`uses`、`observed` の `subject`、`--drop` のパスは、リポジトリの根からの相対パスにそろえる。`./` と空の区切りは落とし、`..` はたどる。根の外を指すパスは書かない。局所ごとの意味 Atom の局所の名前も同じくそろえる。
+  - `at` と `uses` に版がなければ、今のソースの版を補う。
+  - `observed` は、`subject` のソースに置き、`at` をそのソースと版にそろえる。
+  - 補う `observed` の版は、組の Atom の版がそろっていればその版とする。そろっていなければ今の版と違う版で補い、その範囲を古いとみなす。
+  - 局所ごとの意味 Atom は、ソースの代わりに局所の名前ごとに置き換え、ソースのファイルとぶつからないように `.archsig/local/<読み>/<局所>.jsonl` に置く。`at` に版を補わず、`observed` も補わない。古いかは `uses` で決まる。
   - その組の `observed` がなければ補う。読んだが Atom がなかった範囲は、`observed` だけを渡して記録する。
-- 版は、ソースの中身の git blob hash である。7文字以上の前方一致で同じ版とみなす。
+- 版は、ソースの中身の git blob hash である。`at` の最後の `@` の後ろが `blob:<hex>` か 7 文字以上の `<hex>` のときだけ版と読み、パスの中の `@` と区別する。7文字以上の前方一致で、大文字と小文字を区別せずに同じ版とみなす。
 - 消えたソースは `archsig record --drop <ソース>` で、そのソースのファイルごと ArchMap から外す。
 
 ### 3.2 構造を作る
