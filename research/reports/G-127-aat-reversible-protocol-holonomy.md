@@ -1465,6 +1465,57 @@ audits:
   validation_refs: [focused Lean check and four-declaration standard axiom audit to be recorded in PR; #eval connected true and disconnected false]
 ```
 
+## Cycle 50 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 50
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 9380bfb4d3326b35d111a0ee10b39ea2c3bfbbb9
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 49 input-generated original component decision and open executable named root paths
+  proof_dag_predecessors: [finiteReachabilityGraph, finiteReachable_iff_original, SignedPath, ExplicitEnumeration.complete]
+  proof_obligation: Resolve each bounded-walk adjacency into an original named edge and signed orientation by finite edge-list search, then compute a SignedPath for any finite graph walk
+  selection_reason: Supplies name-preserving executable path conversion needed after bounded-walk selection and before constructing roots/forest
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteNamedWalks.lean]
+  risks: [Classical.choose extraction of edge name, collapsed parallel names, missing reverse orientation, proof-only recursor that cannot execute]
+  unchecked: [finite bounded-walk selection from roots, executable named forest and root paths, all-component B2/E assembly, H_lift/torsor output, fixed examples]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: Every adjacency of the finite simple reachability graph is resolved by an explicit scan of the original named edge list; structurally recursive walk conversion concatenates these signed passages into the exact original SignedPath type
+  completion_candidate: no
+  lean_artifacts: [signedStepCandidate, signedEdgeOfAdj, signedPathOfFiniteWalk]
+  evidence: [signedStepCandidate_ne_none_of_pos, signedStepCandidate_ne_none_of_neg, signedEdgeOfAdj, executable forward/reverse one-edge Bool evaluations]
+  claim_mapping:
+    theorem_names: [signedEdgeOfAdj, signedPathOfFiniteWalk]
+    source_labels: [B original signed named paths, E finite named path construction]
+    conjuncts: [original edge-list witness, positive and negative traversal, names retained in SignedPath, total computed conversion]
+    undischarged_assumptions: [complete finite edge list and decidable vertex equality are GOAL E input; bounded root walk/forest construction remains]
+    acceptance_point: Computable name-preserving conversion from finite graph walk to original signed path, not yet root path or spanning forest generation
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [original named-edge resolution and executable signed path conversion for a supplied finite graph walk]
+    remaining: [select bounded root walks and a consistent named spanning forest, all-component E assembly and examples]
+  certificate_provenance:
+    discharged: [adjacency forces an original edge witness; complete edge list and findSome search compute an actual named edge, including inverse traversal]
+    unresolved: [runtime selection of the finite walk and common tree paths]
+  proof_use:
+    used: [both adjacency orientations, explicit edge enumeration completeness, structural walk recursion, original SignedPath constructors]
+    unused: [component decision supplies future reachability test but is not needed for converting a supplied walk]
+  structure_field_escape: none-found
+  route_integrity: pass-for-original-named-path-conversion
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and five-declaration standard axiom audit to be recorded in PR; #eval forward and reverse length one, plus selected original edge false with forward and reverse tags]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
