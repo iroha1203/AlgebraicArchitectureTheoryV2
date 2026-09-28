@@ -2179,6 +2179,57 @@ audits:
   validation_refs: [focused Lean check, four #print axioms, namespace standard-axiom assertion, one #eval length-1 smoke to be recorded in PR]
 ```
 
+## Cycle 64 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 64
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 7adba59dd
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 63 terminating selected path search and open normalized root-path family
+  proof_dag_predecessors: [finiteRootForComponent, finiteSpanningEdgeSelection_originalReachable, finiteSelectedNamedPathOfReachable, usesNamedEdges_restrictComponent, finiteNamedSpanningForest]
+  proof_obligation: Compute normalized root-to-vertex paths inside the generated original named forest for every finite original component
+  selection_reason: Supplies the exact B/C RootedPaths input from finite tables and proves its paths stay in the same E forest
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteSelectedRootedPaths.lean]
+  risks: [noncomputable choice of roots or paths, failing root-path normalization, a path leaving its component tree, claiming all E integration or examples]
+  unchecked: [B2/C1/E decision integration with these selected root paths, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The first vertex in each component is chosen from the explicit input list; for other vertices the bounded selected path search computes an original named path and component restriction proves it stays in the generated tree; the root itself receives the empty path, yielding RootedPaths and a forest-membership theorem
+  completion_candidate: no
+  lean_artifacts: [finiteSelectedPathFromRoot, finiteSelectedPathFromRoot_self, finiteSelectedRootedPaths]
+  evidence: [finiteSelectedRootedPaths_path_usesForest]
+  claim_mapping:
+    theorem_names: [finiteSelectedRootedPaths, finiteSelectedRootedPaths_path_usesForest]
+    source_labels: [B root paths in named spanning forest, E finite root and tree path construction]
+    conjuncts: [all original components, input-generated roots, selected original names, actual SignedPath, empty path at each root, same generated forest]
+    undischarged_assumptions: [finite original tables and equality decisions; B2/C1/E end-to-end use and fixed examples still open]
+    acceptance_point: Terminating normalized rooted-path family whose paths lie in the input-generated named forest
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [finite-table selected roots and normalized selected root paths]
+    remaining: [B2/C1/E integration using selected rooted paths, fixed examples]
+  certificate_provenance:
+    discharged: [component representatives from finite vertex list; selected paths from bounded search and original edge scan; no supplied roots, tree, or path certificate]
+    unresolved: [end-to-end finite procedure and example evaluations]
+  proof_use:
+    used: [original component equality, generated selected reachability, finite selected path search, component restriction, RootedPaths.path_root]
+    unused: [no noncomputable forest.toRootedPaths choice]
+  structure_field_escape: none-found-for-rooted-path-family
+  route_integrity: pass-for-generated-forest-to-finite-root-paths
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, four #print axioms, namespace standard-axiom assertion, one #eval length-1 smoke to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
