@@ -16,7 +16,7 @@
 | A1: 適合性判定 | `Sufficient`, `exists_predicate_iff_sufficient` | 証明済み |
 | A2: 最小観測数 | `minObservations`, `minObservations_eq_top_iff`, `minObservations_attained`, `minObservations_eq_zero_iff`, `sufficient_bot_iff_injective` | 証明済み |
 | A: G-120 の同じ観測 | `singletonTableEquiv`, `singletonPredicateEquiv`, `hom_observe_one`, `hom_tableEquiv_observe`, `hom_predicate_apply`, `hom_pointStabilizer_one`, `hom_predicate_iff_original`, `hom_predicate_iff_kernel` | 証明済み |
-| B: 履歴依存手続きと恒等元での下限 | `QueryRun`, `QueryRun.deterministic`, `QueryRun.replay_identity`, `identity_queries_sufficient`, `minObservations_le_identity_queries`, `no_correct_procedure_of_minObservations_top` | 下限の証明済み。B1の上限・等号は未証明 |
+| B: 適応的問い合わせの最適値 | `QueryRun`, `QueryRun.deterministic`, `QueryRun.replay_identity`, `identity_queries_sufficient`, `worstQueries`, `worstQueries_attained`, `optimalQueries`, `finiteFixedProcedure`, `finiteFixedProcedure_executable_optimal`, `optimalQueries_eq_minObservations` | B1、有限群の最悪時最大値、有限表の固定集合による達成を証明済み |
 | C: 指定観測表の延長 | `FiniteExtension.findExtension`, `findExtension_some`, `findExtension_none_iff`, `findCompatibleExtension`, `findCompatibleExtension_some`, `findCompatibleExtension_none_iff`, `classify_correct` | 証明済み |
 | C: 最小集合・判定不能・greedy | — | 未実装 |
 | D: 独立系の合成・単調性 | — | 未証明 |
@@ -48,7 +48,17 @@ Bの `QueryRun` は履歴だけから次の点または結果を選ぶ手続き�
 十分であることを示し、`minObservations_le_identity_queries` が最小数の
 問い合わせ回数下限を与える。`no_correct_procedure_of_minObservations_top` は
 最小数が∞なら停止して正答する手続きが存在しないことを示す。
-各手続きの最悪時最大値、固定観測集合からの上限手続き、B1の等号は未構成。
+`worstQueries` は全実行の回数の上限、`optimalQueries` は全正答手続きの最小値である。
+`worstQueries_attained` は有限な `G` と全変更での停止を使い、上限が実際の実行の
+最大値であることを示す。`fixedProcedure` は有限集合の各点を一回ずつ質問し、
+得た履歴と一致する適合変更が存在するかで判定する。
+`finiteFixedProcedure` は同じ終端判定を入力の `ExplicitEnumeration G` に対する
+停止する `scan` で計算し、`finiteFixedProcedure_eq_fixed` が両者の完全一致を示す。
+`finitePoints` は入力の `ExplicitEnumeration X` から最小集合の点を重複なしで列挙し、
+長さが集合の濃度と一致する。`finiteFixedProcedure_executable_optimal` はこの
+点列と変更列挙を使う全変更で停止・正答する手続きが `b_Γ` 回を達成することを示す。
+`optimalQueries_eq_minObservations` はB1の両方向を結ぶ。最小集合自体を入力表から
+全探索で計算する構成はCの残課題である。
 
 ## 指定した有限例
 
@@ -224,4 +234,61 @@ audits:
   validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
   blocking_findings: []
   next_obligation: 最悪時最大値と固定観測集合からの上限手続き
+```
+
+## Cycle 4 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-128-aat-minimal-compatibility-observations
+cycle: 4
+goal_blob_sha: e50d778b5b0592a79c1b12506a6c04fe71a6c147
+base_oid: c01539c1e98ba0af7000803a82d1ecdca9dd1dbb
+tracking_issue: 5075
+report_path: research/reports/G-128-aat-minimal-compatibility-observations.md
+selection:
+  proof_state_ref: Issue #5075 cycle 3 accepted state
+  proof_dag_predecessors: [AdaptiveLowerBound.minObservations_le_identity_queries, PointObservation.minObservations_attained]
+  milestone: B1の最悪時最適性と固定集合による達成
+  proof_obligations: [最悪時回数, 正答手続きの最適値, 固定質問手続きの停止・正答・回数, B1の等号]
+  exit_criteria: [B1の同じ群作用での等号, 有限値を達成する固定集合と手続き, focused checkと公理監査]
+  selection_reason: cycle 3で証明した適応下限に固定集合からの上界を接続する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/MinimalCompatibilityObservations/QueryOptimum.lean]
+  risks: [全変更に対する正答, 重複質問の回数, 有限表での計算可能性, 最悪時最大値]
+  unchecked: [C最小集合・判定不能・greedy, D, E, 指定例]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 全決定的手続きの最悪時回数と最適値を定義し、有限群での最大値と有限表の固定質問手続きの停止・正答からB1と達成を証明
+  exit_criteria_status: [B1と達成の宣言を追加, focused checkと公理監査成功]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [QueryOptimum.lean]
+  evidence: [minObservations_le_optimalQueries, worstQueries_attained, fixedProcedure_run, fixedAnswer_correct, fixedProcedure_correct, finiteFixedProcedure_eq_fixed, finitePoints_length, finiteFixedProcedure_executable_optimal, optimalQueries_eq_minObservations]
+  claim_mapping:
+    theorem_names: [worstQueries_attained, finiteFixedProcedure_executable_optimal, optimalQueries_eq_minObservations]
+    source_labels: [B1, B 有限値での達成]
+    conjuncts: [全変更の停止・正答, 重複を数える最悪時回数, 下限, 上界, 等号, 固定集合での達成]
+    undischarged_assumptions: []
+    acceptance_point: 一般の作用のままB1を証明し、有限値の固定集合が最適値を達成
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [全手続きの最悪時下限, 固定手続きの停止・正答・上界, B1]
+    remaining: [Cの残り, D, E, 指定例]
+  certificate_provenance:
+    discharged: [達成集合はAのminObservations_attainedから選択]
+    unresolved: []
+  proof_use:
+    used: [cycle 3のidentity下限, Aの十分集合と最小値達成, QueryRun.deterministic]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
+  blocking_findings: []
+  next_obligation: Cの有限表からの最小集合・判定不能の元・greedy構成
 ```
