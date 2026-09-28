@@ -3097,6 +3097,57 @@ audits:
   validation_refs: [focused Lean check, two #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 82 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 82
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: d3aa74ed7
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 81 H_lift=H
+  proof_dag_predecessors: [twoVertexSwapFiberEquivPermBool, ReversibleData.liftEquivStateChangeOver, twoVertexCycleChange_sq, twoVertexSecondCycleChange_sq]
+  proof_obligation: Prove the actual visible projection for the second fixed example has no group-homomorphic section
+  selection_reason: Both original swap lifts have order four while the visible swap has order two
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/TwoVertexNoSection.lean]
+  risks: [classifying an abstract rather than original lift fiber, only ruling out a chosen lift, wrong section orientation]
+  unchecked: [projection quotient compatibility, E and torsor]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Original A1 swap lifts are exactly the two constructed solutions; the original A1-to-A2 equivalence classifies every actual change over the swap; no multiplicative section of the actual projection exists
+  completion_candidate: no
+  lean_artifacts: [twoVertexVisibleSwap]
+  evidence: [twoVertex_swap_lift_cases, twoVertex_swap_change_cases, twoVertexVisibleSwap_sq, twoVertex_no_group_section]
+  claim_mapping:
+    theorem_names: [twoVertex_no_group_section]
+    source_labels: [completion condition 3 nonsplitting]
+    conjuncts: [specified visible H, original actual A2 projection, every original swap lift, visible involution, no group section]
+    undischarged_assumptions: [projection quotient compatibility, E and torsor]
+    acceptance_point: The specified actual extension admits no multiplicative section
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [second-example nonsplitting]
+    remaining: [projection quotient, E and torsor]
+  certificate_provenance:
+    discharged: [original A1 two-point fiber, actual A1-to-A2 equivalence, two explicit order-four squares]
+    unresolved: [quotient compatibility]
+  proof_use:
+    used: [actual change projection, exhaustive original swap lifts, visible order two, nontrivial vertical square]
+    unused: [no supplied nonsplitting certificate]
+  structure_field_escape: none-found-for-nonsplitting
+  route_integrity: pass-for-second-example-no-section
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, four #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
