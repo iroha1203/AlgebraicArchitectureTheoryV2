@@ -2230,6 +2230,57 @@ audits:
   validation_refs: [focused Lean check, four #print axioms, namespace standard-axiom assertion, one #eval length-1 smoke to be recorded in PR]
 ```
 
+## Cycle 65 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 65
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 4bd57d077
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 64 finite-table forest roots and selected paths, with B2 list still using the older rooted family
+  proof_dag_predecessors: [finiteSelectedRootedPaths, finiteRootCentralizers, centralizer_mem_finiteRootCentralizers, finiteComponentEnumeration, reconstructVertical_evaluation]
+  proof_obligation: Enumerate exact B2 centralizer tuples and every original vertical A1 lift using the input-generated selected forest root paths
+  selection_reason: Connects the newly constructed B/E forest directly to B2 and the vertical kernel of C/E
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteSelectedVerticalLifts.lean]
+  risks: [centralizer tested for a different root family, incomplete component enumeration, supplied B2 certificate, claiming visible-lift search before C1 integration]
+  unchecked: [C1 and full E visible-lift/all-lift integration with selected forest, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Dependent products of exact finite B2 root-centralizer lists over every original component, using the selected forest rooted paths, reconstruct every actual original vertical A1 lift and include each such lift
+  completion_candidate: no
+  lean_artifacts: [ReversibleData.finiteSelectedRootCentralizerFamilies]
+  evidence: [ReversibleData.finiteSelectedVerticalLifts]
+  claim_mapping:
+    theorem_names: [ReversibleData.finiteSelectedRootCentralizerFamilies, ReversibleData.finiteSelectedVerticalLifts]
+    source_labels: [B2 component holonomy centralizers, C vertical kernel, E finite B2 enumeration]
+    conjuncts: [same generated selected root paths, all original components, every named-edge generator in the centralizer test, exact vertical lift enumeration]
+    undischarged_assumptions: [GOAL E explicit finite tables and equality decisions; C1 visible branch and fixed examples still open]
+    acceptance_point: Exact B2 tuple and original vertical A1 lists tied to the input-generated named forest
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [selected-forest-root B2 enumeration and vertical kernel reconstruction]
+    remaining: [selected-root C1 and all visible lift integration, fixed examples]
+  certificate_provenance:
+    discharged: [component values from original vertex list, root fiber tables from explicit input, B2 tests every original named edge, no supplied centralizer tuple]
+    unresolved: [visible change search and full E result]
+  proof_use:
+    used: [same finiteSelectedRootedPaths in B2 list and reconstruction, finite component completeness, centralizer list completeness, vertical evaluation equivalence]
+    unused: [no supplied forest or centralizer certificate]
+  structure_field_escape: none-found-for-B2-vertical-list
+  route_integrity: pass-for-selected-forest-to-original-vertical-kernel
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, two #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
