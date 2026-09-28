@@ -3148,6 +3148,57 @@ audits:
   validation_refs: [focused Lean check, four #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 83 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 83
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: d019e5dbe
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 82 nonsplitting
+  proof_dag_predecessors: [ReversibleData.findSelectedRootLift_isSome_iff, ReversibleData.mem_finiteSelectedAllLifts, twoVertex_swap_lift_cases]
+  proof_obligation: Run the E finite-table procedures on the specified two-vertex input and identify their original A1 output
+  selection_reason: Fixed condition 3 requires a returned lift and C/B2 recovery of both lifts from actual tables
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/TwoVertexFiniteOutput.lean]
+  risks: [existence theorem without supplied tables, all-lifts list missing a solution, non-original lift output]
+  unchecked: [projection quotient compatibility, explicit C torsor]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Explicit Bool vertex, edge, and fiber tables make the selected-tree E search return one of the two original A1 swap lifts; the C1/B2/C3 all-lifts list contains exactly those two solutions by membership
+  completion_candidate: no
+  lean_artifacts: [twoVertexVertices, twoVertexEdges, twoVertexFibers]
+  evidence: [twoVertex_finite_selected_some, twoVertex_mem_finite_all_lifts, twoVertex_first_mem_finite_all_lifts, twoVertex_second_mem_finite_all_lifts]
+  claim_mapping:
+    theorem_names: [twoVertex_finite_selected_some, twoVertex_mem_finite_all_lifts]
+    source_labels: [completion condition 3 E returns one and all lifts recoverable]
+    conjuncts: [actual supplied finite tables, original selected-tree E procedure, returned original A1 lift, both original solutions in C1/B2/C3 enumeration]
+    undischarged_assumptions: [projection quotient compatibility, explicit C torsor]
+    acceptance_point: The E procedure succeeds on the specified fixed input and exhausts its two swap lifts
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [second-example E output]
+    remaining: [projection quotient, explicit C torsor]
+  certificate_provenance:
+    discharged: [supplied Bool tables, exact generic E procedure, original A1 lift classification]
+    unresolved: [quotient compatibility]
+  proof_use:
+    used: [selected-tree E correctness, C1/B2/C3 all-lifts completeness, original swap fiber cases]
+    unused: [no supplied E result certificate]
+  structure_field_escape: none-found-for-finite-output
+  route_integrity: pass-for-second-example-E
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, five #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
