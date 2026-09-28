@@ -1,0 +1,5 @@
+{"kind": "imports", "subject": "shop.payment.service", "object": "shop.payment.repository", "at": "shop/payment/service.py:1", "by": "tool:fixture-python"}
+{"kind": "defines", "subject": "shop.payment.service.reset_authorization", "value": "operation", "params": {"order_id": "str"}, "at": "shop/payment/service.py:4", "by": "tool:fixture-python"}
+{"kind": "calls", "subject": "shop.payment.service.reset_authorization", "object": "shop.payment.repository.load", "at": "shop/payment/service.py:5", "by": "tool:fixture-python"}
+{"kind": "passes", "subject": "shop.payment.service.reset_authorization->shop.payment.repository.load", "object": "shop.payment.repository.load.$order_id", "value": "$order_id", "at": "shop/payment/service.py:5", "by": "tool:fixture-python"}
+{"kind": "writes", "subject": "shop.payment.service.reset_authorization", "object": "shop.payment.model.OrderPayment.ref", "value": "None", "at": "shop/payment/service.py:6", "by": "tool:fixture-python"}

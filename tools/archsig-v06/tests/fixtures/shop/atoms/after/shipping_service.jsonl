@@ -1,0 +1,10 @@
+{"kind": "imports", "subject": "shop.shipping.service", "object": "shop.payment.service", "at": "shop/shipping/service.py:1", "by": "tool:fixture-python"}
+{"kind": "imports", "subject": "shop.shipping.service", "object": "shop.shipping.address", "at": "shop/shipping/service.py:2", "by": "tool:fixture-python"}
+{"kind": "imports", "subject": "shop.shipping.service", "object": "shop.shipping.model", "at": "shop/shipping/service.py:3", "by": "tool:fixture-python"}
+{"kind": "defines", "subject": "shop.shipping.service.update_shipping", "value": "operation", "params": {"shipping": "shop.shipping.model.OrderShipping", "new": "shop.shipping.address.Address"}, "at": "shop/shipping/service.py:6", "by": "tool:fixture-python"}
+{"kind": "reads", "subject": "shop.shipping.service.update_shipping", "object": "shop.shipping.model.OrderShipping.address", "at": "shop/shipping/service.py:7", "by": "tool:fixture-python"}
+{"kind": "calls", "subject": "shop.shipping.service.update_shipping", "object": "shop.payment.service.reset_authorization", "when": "$new.country != $shipping.address.country", "at": "shop/shipping/service.py:8", "by": "tool:fixture-python"}
+{"kind": "passes", "subject": "shop.shipping.service.update_shipping->shop.payment.service.reset_authorization", "object": "shop.payment.service.reset_authorization.$order_id", "value": "$shipping.order_id", "at": "shop/shipping/service.py:8", "by": "tool:fixture-python"}
+{"kind": "calls", "subject": "shop.shipping.service.update_shipping", "object": "shop.shipping.address.normalize_address", "at": "shop/shipping/service.py:9", "by": "tool:fixture-python"}
+{"kind": "passes", "subject": "shop.shipping.service.update_shipping->shop.shipping.address.normalize_address", "object": "shop.shipping.address.normalize_address.$addr", "value": "$new", "at": "shop/shipping/service.py:9", "by": "tool:fixture-python"}
+{"kind": "writes", "subject": "shop.shipping.service.update_shipping", "object": "shop.shipping.model.OrderShipping.address", "value": "shop.shipping.address.normalize_address($new)", "at": "shop/shipping/service.py:9", "by": "tool:fixture-python"}

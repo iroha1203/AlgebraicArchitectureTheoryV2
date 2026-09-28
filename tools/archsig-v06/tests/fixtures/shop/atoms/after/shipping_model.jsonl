@@ -1,0 +1,4 @@
+{"kind": "imports", "subject": "shop.shipping.model", "object": "shop.shipping.address", "at": "shop/shipping/model.py:3", "by": "tool:fixture-python"}
+{"kind": "defines", "subject": "shop.shipping.model.OrderShipping", "value": "type", "at": "shop/shipping/model.py:7", "by": "tool:fixture-python"}
+{"kind": "defines", "subject": "shop.shipping.model.OrderShipping.order_id", "value": "field", "type": "str", "at": "shop/shipping/model.py:8", "by": "tool:fixture-python"}
+{"kind": "defines", "subject": "shop.shipping.model.OrderShipping.address", "value": "field", "type": "shop.shipping.address.Address", "at": "shop/shipping/model.py:9", "by": "tool:fixture-python"}

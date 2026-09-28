@@ -1,0 +1,9 @@
+{"kind": "imports", "subject": "shop.shipping.service", "object": "shop.order.model", "at": "shop/shipping/service.py:1", "by": "tool:fixture-python"}
+{"kind": "imports", "subject": "shop.shipping.service", "object": "shop.shipping.address", "at": "shop/shipping/service.py:2", "by": "tool:fixture-python"}
+{"kind": "defines", "subject": "shop.shipping.service.update_shipping", "value": "operation", "params": {"order": "shop.order.model.Order", "new": "shop.shipping.address.Address"}, "at": "shop/shipping/service.py:5", "by": "tool:fixture-python"}
+{"kind": "reads", "subject": "shop.shipping.service.update_shipping", "object": "shop.order.model.Order.shipping_address", "at": "shop/shipping/service.py:6", "by": "tool:fixture-python"}
+{"kind": "writes", "subject": "shop.shipping.service.update_shipping", "object": "shop.order.model.Order.payment_ref", "value": "None", "when": "$new.country != $order.shipping_address.country", "at": "shop/shipping/service.py:7", "by": "tool:fixture-python"}
+{"kind": "calls", "subject": "shop.shipping.service.update_shipping", "object": "shop.shipping.address.normalize_address", "at": "shop/shipping/service.py:8", "by": "tool:fixture-python"}
+{"kind": "passes", "subject": "shop.shipping.service.update_shipping->shop.shipping.address.normalize_address", "object": "shop.shipping.address.normalize_address.$addr", "value": "$new", "at": "shop/shipping/service.py:8", "by": "tool:fixture-python"}
+{"kind": "writes", "subject": "shop.shipping.service.update_shipping", "object": "shop.order.model.Order.shipping_address", "value": "shop.shipping.address.normalize_address($new)", "at": "shop/shipping/service.py:8", "by": "tool:fixture-python"}
+{"kind": "observed", "subject": "shop/shipping/service.py", "scope": "meaning:payment-info", "at": "shop/shipping/service.py", "by": "model:claude-sonnet-5"}

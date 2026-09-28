@@ -1,0 +1,6 @@
+{"kind": "imports", "subject": "shop.order.model", "object": "shop.shipping.address", "at": "shop/order/model.py:3", "by": "tool:fixture-python"}
+{"kind": "defines", "subject": "shop.order.model.Order", "value": "type", "at": "shop/order/model.py:7", "by": "tool:fixture-python"}
+{"kind": "defines", "subject": "shop.order.model.Order.order_id", "value": "field", "type": "str", "at": "shop/order/model.py:8", "by": "tool:fixture-python"}
+{"kind": "defines", "subject": "shop.order.model.Order.shipping_address", "value": "field", "type": "shop.shipping.address.Address", "at": "shop/order/model.py:9", "by": "tool:fixture-python"}
+{"kind": "defines", "subject": "shop.order.model.Order.payment_ref", "value": "field", "type": "str", "at": "shop/order/model.py:10", "by": "tool:fixture-python"}
+{"kind": "meaning", "subject": "shop.order.model.Order.payment_ref", "meaning": "payment-info", "uses": ["shop/payment/charge.py:6", "shop/shipping/service.py:7"], "at": "shop/order/model.py:10", "by": "model:claude-sonnet-5"}

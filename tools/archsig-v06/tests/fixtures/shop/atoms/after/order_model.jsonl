@@ -1,0 +1,3 @@
+{"kind": "imports", "subject": "shop.order.model", "object": "shop.payment.model", "at": "shop/order/model.py:1", "by": "tool:fixture-python"}
+{"kind": "imports", "subject": "shop.order.model", "object": "shop.shipping.model", "at": "shop/order/model.py:2", "by": "tool:fixture-python"}
+{"kind": "observed", "subject": "shop/order/model.py", "scope": "meaning:payment-info", "at": "shop/order/model.py", "by": "model:claude-sonnet-5"}

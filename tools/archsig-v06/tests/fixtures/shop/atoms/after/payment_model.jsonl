@@ -1,0 +1,4 @@
+{"kind": "defines", "subject": "shop.payment.model.OrderPayment", "value": "type", "at": "shop/payment/model.py:5", "by": "tool:fixture-python"}
+{"kind": "defines", "subject": "shop.payment.model.OrderPayment.order_id", "value": "field", "type": "str", "at": "shop/payment/model.py:6", "by": "tool:fixture-python"}
+{"kind": "defines", "subject": "shop.payment.model.OrderPayment.ref", "value": "field", "type": "str", "at": "shop/payment/model.py:7", "by": "tool:fixture-python"}
+{"kind": "meaning", "subject": "shop.payment.model.OrderPayment.ref", "meaning": "payment-info", "uses": ["shop/payment/charge.py:6", "shop/payment/service.py:6"], "at": "shop/payment/model.py:7", "by": "model:claude-sonnet-5"}

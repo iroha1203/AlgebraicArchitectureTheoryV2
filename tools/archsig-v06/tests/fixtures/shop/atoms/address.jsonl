@@ -1,0 +1,5 @@
+{"kind": "defines", "subject": "shop.shipping.address.Address", "value": "type", "at": "shop/shipping/address.py:5", "by": "tool:fixture-python"}
+{"kind": "defines", "subject": "shop.shipping.address.Address.country", "value": "field", "type": "str", "at": "shop/shipping/address.py:6", "by": "tool:fixture-python"}
+{"kind": "defines", "subject": "shop.shipping.address.Address.line", "value": "field", "type": "str", "at": "shop/shipping/address.py:7", "by": "tool:fixture-python"}
+{"kind": "defines", "subject": "shop.shipping.address.normalize_address", "value": "operation", "params": {"addr": "shop.shipping.address.Address"}, "at": "shop/shipping/address.py:10", "by": "tool:fixture-python"}
+{"kind": "returns", "subject": "shop.shipping.address.normalize_address", "value": "shop.shipping.address.Address(?, ?)", "at": "shop/shipping/address.py:11", "by": "tool:fixture-python"}

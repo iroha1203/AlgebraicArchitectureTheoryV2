@@ -1,0 +1,16 @@
+{"kind": "plan", "subject": "split-order", "base": "BASE"}
+{"kind": "defines", "subject": "shop.shipping.model.OrderShipping", "value": "type", "file": "shop/shipping/model.py", "at": "plan:split-order"}
+{"kind": "defines", "subject": "shop.payment.model.OrderPayment", "value": "type", "file": "shop/payment/model.py", "at": "plan:split-order"}
+{"kind": "defines", "subject": "shop.shipping.model.OrderShipping.address", "value": "field", "type": "shop.shipping.address.Address", "file": "shop/shipping/model.py", "at": "plan:split-order"}
+{"kind": "defines", "subject": "shop.shipping.model.OrderShipping.order_id", "value": "field", "type": "str", "file": "shop/shipping/model.py", "at": "plan:split-order"}
+{"kind": "defines", "subject": "shop.payment.model.OrderPayment.ref", "value": "field", "type": "str", "file": "shop/payment/model.py", "at": "plan:split-order"}
+{"kind": "defines", "subject": "shop.payment.model.OrderPayment.order_id", "value": "field", "type": "str", "file": "shop/payment/model.py", "at": "plan:split-order"}
+{"kind": "corresponds", "subject": "shop.order.model.Order.shipping_address", "object": "shop.shipping.model.OrderShipping.address", "at": "plan:split-order"}
+{"kind": "corresponds", "subject": "shop.order.model.Order.payment_ref", "object": "shop.payment.model.OrderPayment.ref", "at": "plan:split-order"}
+{"kind": "corresponds", "subject": "shop.order.model.Order.order_id", "object": "shop.shipping.model.OrderShipping.order_id", "at": "plan:split-order"}
+{"kind": "corresponds", "subject": "shop.shipping.service.update_shipping.$order", "object": "shop.shipping.service.update_shipping.$shipping", "at": "plan:split-order"}
+{"kind": "removes", "subject": "shop.order.model.Order", "at": "plan:split-order"}
+{"kind": "defines", "subject": "shop.shipping.service.update_shipping", "value": "operation", "params": {"shipping": "shop.shipping.model.OrderShipping", "new": "shop.shipping.address.Address"}, "file": "shop/shipping/service.py", "at": "plan:split-order"}
+{"kind": "calls", "subject": "shop.shipping.service.update_shipping", "object": "shop.shipping.address.normalize_address", "at": "plan:split-order"}
+{"kind": "passes", "subject": "shop.shipping.service.update_shipping->shop.shipping.address.normalize_address", "object": "shop.shipping.address.normalize_address.$addr", "value": "$new", "at": "plan:split-order"}
+{"kind": "writes", "subject": "shop.shipping.service.update_shipping", "object": "shop.shipping.model.OrderShipping.address", "value": "shop.shipping.address.normalize_address($new)", "at": "plan:split-order"}
