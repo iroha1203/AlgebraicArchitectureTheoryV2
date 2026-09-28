@@ -894,6 +894,7 @@ import ResearchLean.AG.ProtocolHolonomy.FiniteSelectionBridge
 import ResearchLean.AG.ProtocolHolonomy.SelectedNamedPaths
 import ResearchLean.AG.ProtocolHolonomy.FiniteNamedForest
 import ResearchLean.AG.ProtocolHolonomy.FiniteSelectedWalks
+import ResearchLean.AG.ProtocolHolonomy.FiniteSelectedPaths
 import ResearchLean.AG.ProtocolHolonomy.LiftRootCondition
 import ResearchLean.AG.ProtocolHolonomy.LiftRootReconstruction
 import ResearchLean.AG.ProtocolHolonomy.LiftableVisible

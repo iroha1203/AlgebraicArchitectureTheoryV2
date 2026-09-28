@@ -2128,6 +2128,57 @@ audits:
   validation_refs: [focused Lean check, five #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 63 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 63
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: dd5bf0e1e
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 62 executable selected-walk translation and open bounded selected walk search
+  proof_dag_predecessors: [selectedReachable_iff_named, selectedAdjDecidable, selectedSignedPathOfWalk, ExplicitEnumeration.toFintype]
+  proof_obligation: Compute a selected original named path for every selected-reachable pair from bounded finite graph-walk enumeration
+  selection_reason: Supplies executable selected path choice needed for component roots and E forest-root output
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteSelectedPaths.lean]
+  risks: [assuming unbounded search terminates, choosing a path by Classical.choice, returning a path outside selected original names, asserting root normalization prematurely]
+  unchecked: [input-generated normalized root paths and E integration, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Enumerate selected walks by length using explicit vertex values and decidable selected adjacency; every concrete walk occurs at its length; simple paths lie below the finite vertex count, so a reachable pair gives a nonempty bounded list whose head translates to an actual selected original named signed path
+  completion_candidate: no
+  lean_artifacts: [finiteSelectedWalksExact, mem_finiteSelectedWalksExact, finiteSelectedBoundedWalks]
+  evidence: [finiteSelectedNamedPathOfReachable]
+  claim_mapping:
+    theorem_names: [finiteSelectedNamedPathOfReachable]
+    source_labels: [E terminating original named selected-path construction]
+    conjuncts: [explicit finite vertex and edge tables, selected edge set, bounded walk enumeration, list-head choice, original selected SignedPath and name proof]
+    undischarged_assumptions: [selected reachability proof; finite root selection and normalized family of root paths still open]
+    acceptance_point: Terminating selected path computation conditional only on an established selected-reachable pair
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [bounded selected path generation and executable selected named path selection]
+    remaining: [normalized roots and selected root paths from finite tables, fixed examples]
+  certificate_provenance:
+    discharged: [walk list is generated from explicit vertex values and selected adjacency; original names resolved by explicit edge list; reachability proof only eliminates impossible empty list]
+    unresolved: [root-level combination with component equality and forest]
+  proof_use:
+    used: [simple path length bound, finite enumeration completeness, selected adjacency decision, Cycle 62 walk translator]
+    unused: [no unbounded search or noncomputable selected path choice]
+  structure_field_escape: none-found-for-selected-path-procedure
+  route_integrity: pass-for-bounded-selected-walk-to-original-named-path
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, four #print axioms, namespace standard-axiom assertion, one #eval length-1 smoke to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
