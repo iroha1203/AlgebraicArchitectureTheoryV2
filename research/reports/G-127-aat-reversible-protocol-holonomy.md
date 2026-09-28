@@ -1771,6 +1771,57 @@ audits:
   validation_refs: [focused Lean check and five-declaration standard axiom audit to be recorded in PR]
 ```
 
+## Cycle 56 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 56
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: b55e8d7e2ecd74606c70d83d8969fcef845fbc3b
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 55 full finite lift-fiber output and remaining genuine named-forest construction
+  proof_dag_predecessors: [finiteReachabilityGraph, finiteReachable_iff_original, ExplicitEnumeration.toFintype]
+  proof_obligation: For any finite subset of original named edges, compute exactly its undirected reachability relation and prove selecting the whole original edge table recovers the original component relation
+  selection_reason: Supplies an executable exact selected-edge connectivity predicate for finite forest search and bridge testing without replacing the original graph quotient
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteSelectedConnectivity.lean]
+  risks: [forgetting original edge names, identifying parallel edges in selection, loop or disconnected corner case, claiming a forest before bridge proof]
+  unchecked: [candidate search and minimal selected-edge proof, genuine forest/root paths, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Selected named-edge reachability is exactly the equivalence closure of selected original directed steps, decidable by bounded walks over explicit finite vertex and selected-edge tables; selecting every original name reproduces the original undirected component relation
+  completion_candidate: no
+  lean_artifacts: [selectedNamedStep, SelectedNamedReachable, selectedReachabilityGraph, selectedReachableDecidable, allNamedEdges]
+  evidence: [selectedReachable_iff_named, allNamedEdges_reachable_iff_original, selected-edge connected true/empty false evaluations]
+  claim_mapping:
+    theorem_names: [selectedReachable_iff_named, selectedReachableDecidable, allNamedEdges_reachable_iff_original]
+    source_labels: [E finite named forest selected-edge connectivity]
+    conjuncts: [original selected edge names, both orientations, loops, parallel edges, finite stopping decision, agreement with original components at full selection]
+    undischarged_assumptions: [E finite original vertex/edge tables and equality decisions only; no forest or bridge is claimed]
+    acceptance_point: Exact executable selected-edge connectivity test, not a completed spanning forest
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [finite exact connectivity decision for every selected original named-edge set]
+    remaining: [finite candidate search, selected-edge bridge and connectedness proof, actual named forest/tree paths, fixed examples]
+  certificate_provenance:
+    discharged: [selection is a Finset of original Q.Edge names; adjacency and bounded walk derive only from those names; complete edge table recovers the original relation]
+    unresolved: [forest selection and bridge proof]
+  proof_use:
+    used: [every selected original named edge in adjacency, finite vertex list for bounded reachability, original fixedFDirectedEdgeStep for full-set comparison]
+    unused: [no supplied forest or external connectivity certificate]
+  structure_field_escape: none-found-for-selected-reachability
+  route_integrity: pass-for-original-selected-edge-decision
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, eight-declaration standard axiom audit, selected true/empty false evaluations to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
