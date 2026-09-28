@@ -1975,6 +1975,57 @@ audits:
   validation_refs: [focused Lean check, three #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 60 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 60
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 7da80a72a
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 59 exact bridge property and open actual selected path construction
+  proof_dag_predecessors: [SelectedNamedReachable, UsesNamedEdges, signedComp, signedReverse, usesNamedEdges_selectedReachable]
+  proof_obligation: Show that selected original-name reachability produces an actual signed path all of whose edges retain those original names
+  selection_reason: Supplies the connected field of the finite generated named forest without assuming a selected path certificate
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/SelectedNamedPaths.lean]
+  risks: [only proving one direction, losing original names on path reversal, requiring an assumed tree or path]
+  unchecked: [componentwise forest fields, terminating selected root-path computation, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: A selected original edge step becomes a one-edge signed path; path concatenation and reversal preserve the exact original names; induction on the selected equivalence closure yields an actual selected signed path and the converse follows from the prior signed-path conversion
+  completion_candidate: no
+  lean_artifacts: [usesNamedEdges_single, usesNamedEdges_comp, usesNamedEdges_reverse]
+  evidence: [selectedNamedReachable_iff_usesNamedEdges]
+  claim_mapping:
+    theorem_names: [selectedNamedReachable_iff_usesNamedEdges]
+    source_labels: [E named spanning forest connectivity]
+    conjuncts: [selected original edge names, signed forward and reverse paths, reflexive symmetric transitive closure, both implications]
+    undischarged_assumptions: [forest packaging and executable selected path choice remain open]
+    acceptance_point: Existence of an actual selected signed path exactly when selected-name reachability holds
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [selected-reachability-to-actual-selected-path equivalence]
+    remaining: [componentwise named forest, terminating selected root paths, fixed examples]
+  certificate_provenance:
+    discharged: [path existence follows by induction on original selected-edge steps with no supplied forest or path certificate]
+    unresolved: [computable extraction of a selected path from finite tables]
+  proof_use:
+    used: [original typed edge names, reverse signed edge, concatenation, selected EqvGen induction]
+    unused: [no noncomputable tree choice or arbitrary graph-edge quotient]
+  structure_field_escape: none-found-for-path-existence
+  route_integrity: pass-for-selected-reachability-to-original-named-paths
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, four #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
