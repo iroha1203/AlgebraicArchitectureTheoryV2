@@ -23,7 +23,7 @@
 | C: greedyの選択・停止・正確性 | `newCoverage`, `greedyPick`, `greedyPick_spec`, `greedyAux`, `greedyAux_correct`, `greedyObservationSet`, `greedyObservationSet_correct`, `greedyObservation_empty` | 入力順の最大新規被覆点を選び、成功時の十分集合・失敗時の不適合全点固定元を証明済み |
 | C1: 調和数近似保証 | `harmonic_drop`, `greedy_step_card`, `greedyAux_harmonic`, `greedyObservationSet_harmonic_of_coverable` | 実際のgreedy出力について被覆可能なら点数が `H_|U| b_Γ` 以下と証明済み |
 | D: 独立系の合成・単調性 | `independentAction`, `pointStabilizer_independent`, `sufficient_independent_iff`, `minObservations_independent`, `independent_minimum_disjSum`, `minObservations_antitone` | `ℕ∞` での加法性、有限最小集合の合成、適合部分群の反単調性を証明済み |
-| E: 名前付き操作と固定例 | `ambientChange`, `compatibleChange`, `compatibleMulEquivChangeGroup`, `compatibleFiberEquiv`, `ambientStateAction`, `ambientFullAction`, `ambientFullAction_faithful`, `ambientFull_minObservations_ne_top` | 周囲群・適合部分群・元の変更群への対応・作用の中核を証明済み。原始入力からの有限表、G-124対応、固定例は未証明 |
+| E: 名前付き操作と固定例 | `ambientChange`, `compatibleChange`, `ambientMulEquivFiberPair`, `fiberPair_compatible_iff`, `fiberCompatibleMulEquivChangeGroup`, `compatibleFiberRootEquiv`, `compatibleVerticalRootMulEquiv`, `ambientFullAction_faithful` | 周囲群のfiber表示、E1、元の変更群・根解・垂直中心化群への対応、作用の中核を証明済み。原始入力からの有限表、G-124対応、固定例は未証明 |
 
 Aの `Group G`、`MulAction G X`、`Gamma : Subgroup G` は固定targetの入力である。
 `Sufficient` は結論ではなく点安定化群から定義し、`exists_predicate_iff_sufficient`
@@ -98,8 +98,14 @@ Eの `ambientChange` は選ばれた可視変更と、可視頂点写像に沿�
 `compatibleFiberEquiv` は各可視fiberを同じ `Lift` と対応させる。
 `ambientStateAction` と `ambientFullAction` は状態のみ、および頂点・辺名・状態への作用を
 同じ周囲群から構成する。後者は忠実であり、有限な対象では適合部分群の最小観測数が
-有限である。原始 `FiniteProtocolInput` からの周囲群有限表、根の条件と垂直核、G-124の
+有限である。原始 `FiniteProtocolInput` からの周囲群有限表、G-124の
 同じ代表の読取りと固定例への適用は後続のE義務である。
+`ambientMulEquivFiberPair` は周囲群の元を可視変更と各fiberの全単射族として
+双方向へ移し、`fiberPair_mul_fiber_apply` が元の(A2)と同じ合成順を示す。
+`fiberPair_compatible_iff` は操作保存の元の関係同値を(E1)の辺可換式と同値にし、
+`fiberCompatibleMulEquivChangeGroup` がその同じ適合元を元の変更群に送る。
+`compatibleFiberRootEquiv` と `compatibleVerticalRootMulEquiv` はそれぞれ元の
+G-127の根解と垂直の根中心化群表示に接続する。
 
 ## 指定した有限例
 
@@ -671,4 +677,60 @@ audits:
   validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
   blocking_findings: []
   next_obligation: Eの元のfiber全単射・根条件・垂直核の対応
+```
+
+## Cycle 11 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-128-aat-minimal-compatibility-observations
+cycle: 11
+goal_blob_sha: e50d778b5b0592a79c1b12506a6c04fe71a6c147
+base_oid: 8674bc6dd8e70c056c688d3c83457ae6d4d85878
+tracking_issue: 5075
+report_path: research/reports/G-128-aat-minimal-compatibility-observations.md
+selection:
+  proof_state_ref: Issue #5075 cycle 10 accepted state
+  proof_dag_predecessors: [ProtocolAmbient.ambientChange, ProtocolAmbient.compatibleChange, G-127.LiftRootReconstruction, G-127.VerticalCentralizer]
+  milestone: Eのfiber表示とE1、根解・垂直核への対応
+  proof_obligations: [周囲群と可視fiber全単射族の群同型, 元の合成式, E1辺可換式の同値, 適合群と元の変更群, 任意の可視fiberと根解, 垂直核と根中心化群]
+  exit_criteria: [同じ元・可視写像・状態写像を保つ構成と同型, focused checkと公理監査]
+  selection_reason: 原始有限表の列挙と既存G-127結果への入力型を固定する
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/MinimalCompatibilityObservations/ProtocolFiberDisplay.lean]
+  risks: [元の操作保存条件を周囲群に移す逃避, fiberの空の場合の排除, 根・垂直核の対応だけの抽象化]
+  unchecked: [Eの原始有限表生成とC適用, EのG-124対応, 指定例]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: 周囲群をGOALのfiberwise表示に同型化し、E1と根・垂直核を元のG-127へ接続
+  exit_criteria_status: [fiber表示・積の成分式を証明, E1の同値を証明, 根解・垂直中心化群への同型を証明, focused checkと公理監査成功]
+  completion_candidate: no
+  lean_artifacts: [ProtocolFiberDisplay.lean]
+  evidence: [ambientMulEquivFiberPair, fiberPair_mul_fiber_apply, fiberPair_compatible_iff, fiberCompatibleMulEquivChangeGroup, compatibleFiberRootEquiv, compatibleVerticalRootMulEquiv]
+  claim_mapping:
+    theorem_names: [ambientMulEquivFiberPair, fiberPair_mul_fiber_apply, fiberPair_compatible_iff, fiberCompatibleMulEquivChangeGroup, compatibleFiberRootEquiv, compatibleVerticalRootMulEquiv]
+    source_labels: [Eの周囲群・E1・根・垂直核]
+    conjuncts: [任意の可視fiber全単射族, 元の合成順, E1, 元の変更群との同型, 空fiberを含む根解, 垂直核と根中心化群]
+    undischarged_assumptions: [原始有限表生成, G-124対応, 指定例]
+    acceptance_point: 一般のReversibleDataと可視部分群上の同じfiberwise元
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [Eのfiber表示・E1・根条件・垂直核]
+    remaining: [Eの原始有限表とG-124対応, 指定例]
+  certificate_provenance:
+    discharged: [周囲fiberは元の状態置換から復元, E1は元のNamedExecutionとLift.edge_naturality, 根と垂直は元のG-127]
+    unresolved: []
+  proof_use:
+    used: [Equiv.sigmaCongr, G-127.LiftBridge, G-127.liftEquivRootSolutions, G-127.verticalRootMulEquiv]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
+  blocking_findings: []
+  next_obligation: 原始有限表から周囲群全元を生成しCの出力へ接続
 ```
