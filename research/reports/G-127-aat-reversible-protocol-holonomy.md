@@ -3250,6 +3250,57 @@ audits:
   validation_refs: [focused Lean check, four #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 85 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 85
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: d0db50e7f
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 84 explicit C torsor
+  proof_dag_predecessors: [twoVertexC4, twoVertex_H_isCyclic, twoVertex_H_card_two, twoVertex_projection_surjective]
+  proof_obligation: Identify the actual second-example A2 visible projection with standard C4-to-C2 quotient reduction
+  selection_reason: This is the remaining fixed-example condition before cumulative A-E completion audit
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/TwoVertexQuotient.lean]
+  risks: [noncanonical cyclic presentations, naming a composite quotient without proving standard reduction, wrong projection]
+  unchecked: [fresh cumulative A-E and two-example completion audit]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The actual A2 projection, transported through cyclic-four and cyclic-two group equivalences, is surjective and hence equals the unique surjective group homomorphism from multiplicative ZMod4 to multiplicative ZMod2, explicitly the ZMod.castHom modulo-two reduction
+  completion_candidate: no
+  lean_artifacts: [twoVertexModTwo, twoVertexC2, twoVertexActualProjection]
+  evidence: [twoVertex_surjective_C4_C2_unique, twoVertex_projection_is_mod_two]
+  claim_mapping:
+    theorem_names: [twoVertex_projection_is_mod_two]
+    source_labels: [completion condition 3 actual projection corresponds to C4-to-C2 quotient]
+    conjuncts: [actual original A2 projection, original selected visible H, actual A_F=C4 isomorphism, H=C2 isomorphism, literal modulo-two ZMod.castHom, commuting square]
+    undischarged_assumptions: [fresh cumulative completion audit]
+    acceptance_point: The specified actual visible projection is standard mod-two reduction under group isomorphisms
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [second-example projection quotient compatibility]
+    remaining: [fresh cumulative A-E and two-example completion audit]
+  certificate_provenance:
+    discharged: [actual A2 projection surjectivity, cyclic-four and cyclic-two isomorphisms, ZMod.castHom reduction]
+    unresolved: []
+  proof_use:
+    used: [actual projection, group isomorphisms, finite cyclic-group enumeration, surjective-hom uniqueness]
+    unused: [no supplied quotient-compatibility certificate]
+  structure_field_escape: none-found-for-quotient
+  route_integrity: pass-for-second-example-projection
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, five #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml

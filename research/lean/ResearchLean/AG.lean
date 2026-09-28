@@ -916,6 +916,7 @@ import ResearchLean.AG.ProtocolHolonomy.TwoVertexLiftableVisible
 import ResearchLean.AG.ProtocolHolonomy.TwoVertexNoSection
 import ResearchLean.AG.ProtocolHolonomy.TwoVertexFiniteOutput
 import ResearchLean.AG.ProtocolHolonomy.TwoVertexTorsor
+import ResearchLean.AG.ProtocolHolonomy.TwoVertexQuotient
 import ResearchLean.AG.ProtocolHolonomy.LiftRootCondition
 import ResearchLean.AG.ProtocolHolonomy.LiftRootReconstruction
 import ResearchLean.AG.ProtocolHolonomy.LiftableVisible

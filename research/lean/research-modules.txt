@@ -1487,6 +1487,7 @@ ResearchLean.AG.ProtocolHolonomy.TwoVertexLiftableVisible	ResearchLean/AG/Protoc
 ResearchLean.AG.ProtocolHolonomy.TwoVertexNoSection	ResearchLean/AG/ProtocolHolonomy/TwoVertexNoSection.lean
 ResearchLean.AG.ProtocolHolonomy.TwoVertexFiniteOutput	ResearchLean/AG/ProtocolHolonomy/TwoVertexFiniteOutput.lean
 ResearchLean.AG.ProtocolHolonomy.TwoVertexTorsor	ResearchLean/AG/ProtocolHolonomy/TwoVertexTorsor.lean
+ResearchLean.AG.ProtocolHolonomy.TwoVertexQuotient	ResearchLean/AG/ProtocolHolonomy/TwoVertexQuotient.lean
 ResearchLean.AG.ProtocolHolonomy.LiftRootCondition	ResearchLean/AG/ProtocolHolonomy/LiftRootCondition.lean
 ResearchLean.AG.ProtocolHolonomy.LiftRootReconstruction	ResearchLean/AG/ProtocolHolonomy/LiftRootReconstruction.lean
 ResearchLean.AG.ProtocolHolonomy.LiftableVisible	ResearchLean/AG/ProtocolHolonomy/LiftableVisible.lean
