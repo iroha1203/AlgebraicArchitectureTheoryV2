@@ -23,7 +23,7 @@
 | C: greedyの選択・停止・正確性 | `newCoverage`, `greedyPick`, `greedyPick_spec`, `greedyAux`, `greedyAux_correct`, `greedyObservationSet`, `greedyObservationSet_correct`, `greedyObservation_empty` | 入力順の最大新規被覆点を選び、成功時の十分集合・失敗時の不適合全点固定元を証明済み |
 | C1: 調和数近似保証 | `harmonic_drop`, `greedy_step_card`, `greedyAux_harmonic`, `greedyObservationSet_harmonic_of_coverable` | 実際のgreedy出力について被覆可能なら点数が `H_|U| b_Γ` 以下と証明済み |
 | D: 独立系の合成・単調性 | `independentAction`, `pointStabilizer_independent`, `sufficient_independent_iff`, `minObservations_independent`, `independent_minimum_disjSum`, `minObservations_antitone` | `ℕ∞` での加法性、有限最小集合の合成、適合部分群の反単調性を証明済み |
-| E: 名前付き操作と固定例 | — | 未実装 |
+| E: 名前付き操作と固定例 | `ambientChange`, `compatibleChange`, `compatibleMulEquivChangeGroup`, `compatibleFiberEquiv`, `ambientStateAction`, `ambientFullAction`, `ambientFullAction_faithful`, `ambientFull_minObservations_ne_top` | 周囲群・適合部分群・元の変更群への対応・作用の中核を証明済み。原始入力からの有限表、G-124対応、固定例は未証明 |
 
 Aの `Group G`、`MulAction G X`、`Gamma : Subgroup G` は固定targetの入力である。
 `Sufficient` は結論ではなく点安定化群から定義し、`exists_predicate_iff_sufficient`
@@ -90,6 +90,16 @@ Dの `independentAction` は積群の各因子を非交和の対応する側だ�
 `minObservations_independent` は一方または両方が無限の場合を含めて `ℕ∞` の加法性を示し、
 `independent_minimum_disjSum` は有限な各最小集合の非交和が実際の最小集合になることを示す。
 `minObservations_antitone` は同じ作用で適合部分群を広げたときの最小点数の反単調性を示す。
+
+Eの `ambientChange` は選ばれた可視変更と、可視頂点写像に沿う全状態置換の組を群として
+構成し、名前付き操作を保存しない元も含める。`compatibleChange` は元の
+`NamedExecution` の同値を満たす部分群である。`compatibleMulEquivChangeGroup` は
+元のG-127変更群へ可視成分と状態置換を保つ群同型を与え、
+`compatibleFiberEquiv` は各可視fiberを同じ `Lift` と対応させる。
+`ambientStateAction` と `ambientFullAction` は状態のみ、および頂点・辺名・状態への作用を
+同じ周囲群から構成する。後者は忠実であり、有限な対象では適合部分群の最小観測数が
+有限である。原始 `FiniteProtocolInput` からの周囲群有限表、根の条件と垂直核、G-124の
+同じ代表の読取りと固定例への適用は後続のE義務である。
 
 ## 指定した有限例
 
@@ -605,4 +615,60 @@ audits:
   validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
   blocking_findings: []
   next_obligation: Eの周囲群と名前付き操作からの作用
+```
+
+## Cycle 10 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-128-aat-minimal-compatibility-observations
+cycle: 10
+goal_blob_sha: e50d778b5b0592a79c1b12506a6c04fe71a6c147
+base_oid: cf4ceef11513f9511335478f8ebfb3e62345a503
+tracking_issue: 5075
+report_path: research/reports/G-128-aat-minimal-compatibility-observations.md
+selection:
+  proof_state_ref: Issue #5075 cycle 9 accepted state
+  proof_dag_predecessors: [G-127.ChangeGroup, G-127.LiftPair, PointObservation.minObservations]
+  milestone: Eの周囲群・適合部分群・全対象作用の中核
+  proof_obligations: [操作保存を含めない周囲群, 元のE1による適合部分群, 元の変更群との群同型, 可視fiber, 状態と全対象の作用, 全対象の忠実性と有限最小値]
+  exit_criteria: [同じ可視・状態成分を保つ構成と同型, focused checkと公理監査]
+  selection_reason: Eの後続有限表とG-124接続が使う周囲群を先に固定する
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/MinimalCompatibilityObservations/ProtocolAmbient.lean]
+  risks: [適合群を周囲群として使う逃避, 可視射影の全射性仮定, 状態のみの忠実性仮定]
+  unchecked: [Eのfiber自然性と垂直核, Eの有限表生成, EのG-124読取り延長, 指定例]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: 可視変更と全状態置換の周囲群から適合部分群と元の変更群・作用を構成
+  exit_criteria_status: [周囲群と適合部分群を構成, 変更群との群同型と各可視fiberを証明, 全対象作用の忠実性と有限最小値を証明, focused checkと公理監査成功]
+  completion_candidate: no
+  lean_artifacts: [ProtocolAmbient.lean]
+  evidence: [ambientChange, compatibleChange, compatibleMulEquivChangeGroup, compatibleMulEquivLiftPair, compatibleFiberEquiv, ambientStateAction, ambientFullAction, ambientFullAction_faithful, ambientFull_minObservations_ne_top]
+  claim_mapping:
+    theorem_names: [compatibleMulEquivChangeGroup, compatibleFiberEquiv, ambientFullAction_faithful, ambientFull_minObservations_ne_top]
+    source_labels: [Eの群と作用の中核]
+    conjuncts: [操作保存を課さない周囲群, E1適合部分群, 元のG-127変更群との同型, 空fiberを含む対応, 全対象作用の忠実性]
+    undischarged_assumptions: [有限表生成, 垂直核と根条件, G-124対応, 指定例]
+    acceptance_point: 一般のReversibleDataと可視部分群上の構成checkpoint
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [Eの周囲群と作用の中核]
+    remaining: [Eの有限表・根・G-124対応, 指定例]
+  certificate_provenance:
+    discharged: [適合判定は元のNamedExecution, 同型は元のStateChangeとLiftPair]
+    unresolved: []
+  proof_use:
+    used: [G-127.ChangeGroup, G-127.LiftPair, G-127.NamedExecution, PointObservation.minObservations]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
+  blocking_findings: []
+  next_obligation: Eの元のfiber全単射・根条件・垂直核の対応
 ```
