@@ -16,7 +16,7 @@
 | A1: 適合性判定 | `Sufficient`, `exists_predicate_iff_sufficient` | 証明済み |
 | A2: 最小観測数 | `minObservations`, `minObservations_eq_top_iff`, `minObservations_attained`, `minObservations_eq_zero_iff`, `sufficient_bot_iff_injective` | 証明済み |
 | A: G-120 の同じ観測 | `singletonTableEquiv`, `singletonPredicateEquiv`, `hom_observe_one`, `hom_tableEquiv_observe`, `hom_predicate_apply`, `hom_pointStabilizer_one`, `hom_predicate_iff_original`, `hom_predicate_iff_kernel` | 証明済み |
-| B: 履歴依存手続きと恒等元での下限 | `AdaptiveLowerBound.QueryRun`, `QueryRun.deterministic`, `QueryRun.replay_identity`, `identity_queries_sufficient`, `minObservations_le_identity_queries`, `no_correct_procedure_of_minObservations_top` | 下限の証明済み。B1の上限・等号は未証明 |
+| B: 履歴依存手続きと恒等元での下限 | `QueryRun`, `QueryRun.deterministic`, `QueryRun.replay_identity`, `identity_queries_sufficient`, `minObservations_le_identity_queries`, `no_correct_procedure_of_minObservations_top` | 下限の証明済み。B1の上限・等号は未証明 |
 | C: 指定観測表の延長 | `FiniteExtension.findExtension`, `findExtension_some`, `findExtension_none_iff`, `findCompatibleExtension`, `findCompatibleExtension_some`, `findCompatibleExtension_none_iff`, `classify_correct` | 証明済み |
 | C: 最小集合・判定不能・greedy | — | 未実装 |
 | D: 独立系の合成・単調性 | — | 未証明 |
