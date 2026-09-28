@@ -37,12 +37,28 @@ pub const STRUCTURE_KINDS: &[&str] = &[
     "defines", "calls", "reads", "writes", "passes", "sends", "receives", "returns", "imports", "resolves",
 ];
 
-/// `at` を分けたもの。`パス:行@版` または `plan:<名前>`。
+/// `at` を分けたもの。`パス:行@版`。
 #[derive(Clone, Debug, PartialEq)]
 pub struct Location {
     pub path: String,
-    pub line: Option<u32>,
+    /// 行。`10` か `10-14`。
+    pub lines: Option<String>,
     pub version: Option<String>,
+}
+
+impl Location {
+    pub fn to_at(&self) -> String {
+        let mut at = self.path.clone();
+        if let Some(l) = &self.lines {
+            at.push(':');
+            at.push_str(l);
+        }
+        if let Some(v) = &self.version {
+            at.push('@');
+            at.push_str(v);
+        }
+        at
+    }
 }
 
 impl Atom {
@@ -69,21 +85,15 @@ impl Atom {
 }
 
 pub fn parse_location(at: &str) -> Option<Location> {
-    if let Some(rest) = at.strip_prefix("plan:") {
-        return Some(Location { path: format!("plan:{rest}"), line: None, version: None });
-    }
     let (loc, version) = match at.rsplit_once('@') {
         Some((l, v)) if is_version(v) => (l, Some(v.to_string())),
         _ => (at, None),
     };
-    let (path, line) = match loc.rsplit_once(':') {
-        Some((p, l)) if !l.is_empty() && l.chars().all(|c| c.is_ascii_digit() || c == '-') => {
-            let start = l.split('-').next().and_then(|s| s.parse().ok());
-            (p.to_string(), start)
-        }
+    let (path, lines) = match loc.rsplit_once(':') {
+        Some((p, l)) if !l.is_empty() && l.chars().all(|c| c.is_ascii_digit() || c == '-') => (p.to_string(), Some(l.to_string())),
         _ => (loc.to_string(), None),
     };
-    Some(Location { path, line, version })
+    Some(Location { path, lines, version })
 }
 
 /// 版は `blob:<hex>` か `<hex>`(7文字以上)。パスの中の `@` と区別する。

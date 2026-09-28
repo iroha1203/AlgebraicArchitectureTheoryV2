@@ -3,7 +3,7 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use globset::{Glob, GlobSet, GlobSetBuilder};
+use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
 
 use crate::atom::{self, Atom};
 use crate::law::LawSet;
@@ -60,8 +60,13 @@ impl Store {
         Ok(out)
     }
 
-    fn map_file(&self, source: &str) -> PathBuf {
-        self.dir().join("map").join(format!("{source}.jsonl"))
+    /// ソースの ArchMap のファイル。局所ごとの意味 Atom は `local/<読み>/<局所>.jsonl`。
+    fn map_file(&self, key: &str) -> PathBuf {
+        let rel = match key.strip_prefix("local:") {
+            Some(rest) => format!("local/{}", rest.replacen(':', "/", 1)),
+            None => key.to_string(),
+        };
+        self.dir().join("map").join(format!("{rel}.jsonl"))
     }
 
     /// Law の `sources` に当たる、今のソースのファイル。
@@ -92,19 +97,20 @@ impl Store {
         Some(format!("blob:{}", blob_hash(&bytes)))
     }
 
-    /// 局所ごとの意味 Atom の `at` が指す、局所のディレクトリか。
-    fn is_dir(&self, path: &str) -> bool {
-        self.root.join(path).is_dir()
-    }
 
-    fn with_version(&self, at: &str, path: &str) -> Result<String, String> {
-        let v = self.version(path).ok_or(format!("ソースがない: {path}"))?;
-        Ok(format!("{at}@{v}"))
+    /// `at` の形の場所のパスをそろえ、版がなければ今のソースの版を補う。
+    fn versioned(&self, at: &str) -> Result<String, String> {
+        let mut loc = atom::parse_location(at).ok_or(format!("場所が読めない: {at}"))?;
+        loc.path = relative(&loc.path)?;
+        if loc.version.is_none() {
+            loc.version = Some(self.version(&loc.path).ok_or(format!("ソースがない: {}", loc.path))?);
+        }
+        Ok(loc.to_at())
     }
 
     /// 消えたソースを ArchMap から外す。
     pub fn drop_source(&self, source: &str) -> Result<bool, String> {
-        let file = self.map_file(source);
+        let file = self.map_file(&relative(source)?);
         if !file.exists() {
             return Ok(false);
         }
@@ -113,35 +119,33 @@ impl Store {
     }
 
     /// 取り出した Atom を ArchMap に書く。ソースと観測の範囲ごとに、元の Atom を置き換える。
+    /// 局所ごとの意味 Atom は、ソースの代わりに局所の名前ごとに置き換える。
     pub fn record(&self, atoms: Vec<Atom>) -> Result<Vec<(String, String, usize)>, String> {
         let mut groups: BTreeMap<(String, String), Vec<Atom>> = BTreeMap::new();
         for mut a in atoms {
             let scope = a.scope_name().ok_or(format!("{} は ArchMap に書けない: {}", a.kind, a.subject))?;
-            a.at = a.at.map(|at| at.trim_start_matches("./").to_string());
-            let mut loc = a.location().ok_or(format!("at がない: {}", a.subject))?;
-            loc.path = relative(&loc.path)?;
-            if loc.version.is_none() && !self.is_dir(&loc.path) {
-                a.at = Some(self.with_version(a.at.as_deref().unwrap(), &loc.path)?);
-            }
             if let Some(uses) = a.uses.take() {
-                let mut filled = Vec::new();
-                for u in uses {
-                    match atom::parse_location(&u) {
-                        Some(l) if l.version.is_none() => filled.push(self.with_version(&u, &l.path)?),
-                        _ => filled.push(u),
-                    }
-                }
-                a.uses = Some(filled);
+                a.uses = Some(uses.iter().map(|u| self.versioned(u)).collect::<Result<_, _>>()?);
             }
-            groups.entry((loc.path, scope)).or_default().push(a);
+            let key = if is_local(&a) {
+                a.subject.clone()
+            } else {
+                let at = a.at.as_deref().ok_or(format!("at がない: {}", a.subject))?;
+                a.at = Some(self.versioned(at)?);
+                if a.kind == "observed" {
+                    a.subject = relative(&a.subject)?;
+                }
+                a.location().unwrap().path
+            };
+            groups.entry((key, scope)).or_default().push(a);
         }
         let mut report = Vec::new();
         let mut by_file: BTreeMap<String, Vec<(String, Vec<Atom>)>> = BTreeMap::new();
-        for ((path, scope), atoms) in groups {
-            by_file.entry(path).or_default().push((scope, atoms));
+        for ((key, scope), atoms) in groups {
+            by_file.entry(key).or_default().push((scope, atoms));
         }
-        for (path, scopes) in by_file {
-            let file = self.map_file(&path);
+        for (key, scopes) in by_file {
+            let file = self.map_file(&key);
             let mut kept: Vec<Atom> = if file.exists() {
                 let text = std::fs::read_to_string(&file).map_err(|e| e.to_string())?;
                 atom::parse_jsonl(&text, &file.display().to_string())?
@@ -151,26 +155,23 @@ impl Store {
             for (scope, mut atoms) in scopes {
                 kept.retain(|a| a.scope_name().as_deref() != Some(scope.as_str()));
                 let n = atoms.iter().filter(|a| a.kind != "observed").count();
-                if !atoms.iter().any(|a| a.kind == "observed") {
+                if !key.starts_with("local:") && !atoms.iter().any(|a| a.kind == "observed") {
                     let first = &atoms[0];
-                    let at = match first.location().and_then(|l| l.version) {
-                        Some(v) => format!("{path}@{v}"),
-                        None => path.clone(),
-                    };
+                    let version = first.location().and_then(|l| l.version).unwrap_or_default();
                     atoms.insert(
                         0,
                         Atom {
                             kind: "observed".to_string(),
-                            subject: path.clone(),
+                            subject: key.clone(),
                             scope: Some(scope.clone()),
-                            at: Some(at),
+                            at: Some(format!("{key}@{version}")),
                             by: first.by.clone(),
                             ..Atom::default()
                         },
                     );
                 }
                 kept.extend(atoms);
-                report.push((path.clone(), scope, n));
+                report.push((key.clone(), scope, n));
             }
             std::fs::create_dir_all(file.parent().unwrap()).map_err(|e| e.to_string())?;
             std::fs::write(&file, atom::to_jsonl(&kept)).map_err(|e| e.to_string())?;
@@ -193,10 +194,6 @@ pub fn status(store: &Store) -> Result<serde_json::Value, String> {
     let current = |path: &str, version: &str| store.version(path).filter(|c| same_version(c, version));
     let mut stale = Vec::new();
     for ((path, scope), version) in &observed {
-        // 局所ごとの意味 Atom は版を持たない。古いかは uses で決まる。
-        if store.is_dir(path) {
-            continue;
-        }
         if current(path, version).is_none() {
             stale.push(json!({"source": path, "scope": scope, "observed": version, "current": store.version(path)}));
         }
@@ -206,13 +203,15 @@ pub fn status(store: &Store) -> Result<serde_json::Value, String> {
             let Some(loc) = atom::parse_location(u) else { continue };
             let Some(v) = loc.version else { continue };
             if current(&loc.path, &v).is_none() {
+                // 観測し直す範囲は、意味 Atom の範囲。版は、変わった使用箇所のソースのもの。
+                let source = if is_local(a) { a.subject.clone() } else { a.location().map(|l| l.path).unwrap_or_default() };
                 stale.push(json!({
-                    "source": loc.path,
+                    "source": source,
                     "scope": format!("meaning:{}", a.meaning.as_deref().unwrap_or("")),
-                    "observed": v,
-                    "current": store.version(&loc.path),
                     "element": a.subject,
                     "use": u,
+                    "observed": v,
+                    "current": store.version(&loc.path),
                 }));
             }
         }
@@ -233,19 +232,25 @@ pub fn status(store: &Store) -> Result<serde_json::Value, String> {
     Ok(json!({"stale": stale, "unread": unread}))
 }
 
-/// `at` のパスを、リポジトリの根からの相対パスにそろえる。
-fn relative(path: &str) -> Result<String, String> {
-    let p = path.trim_start_matches("./").trim_end_matches('/');
-    if p.is_empty() || p.starts_with('/') || p.split('/').any(|c| c == "..") {
-        return Err(format!("at のパスは、リポジトリの中の相対パスで書く: {path}"));
-    }
-    Ok(p.to_string())
+/// 局所ごとの意味 Atom か。
+fn is_local(a: &Atom) -> bool {
+    a.kind == "meaning" && a.subject.starts_with("local:")
 }
 
+/// パスを、リポジトリの根からの相対パスにそろえる。
+fn relative(path: &str) -> Result<String, String> {
+    let parts: Vec<&str> = path.split('/').filter(|c| !c.is_empty() && *c != ".").collect();
+    if path.starts_with('/') || parts.is_empty() || parts.contains(&"..") {
+        return Err(format!("パスは、リポジトリの中の相対パスで書く: {path}"));
+    }
+    Ok(parts.join("/"))
+}
+
+/// パスのパターン。`*` は `/` をまたがず、`**` はまたぐ。
 pub fn globs(patterns: &[String]) -> Result<GlobSet, String> {
     let mut b = GlobSetBuilder::new();
     for p in patterns {
-        b.add(Glob::new(p).map_err(|e| format!("{p}: {e}"))?);
+        b.add(GlobBuilder::new(p).literal_separator(true).build().map_err(|e| format!("{p}: {e}"))?);
     }
     b.build().map_err(|e| e.to_string())
 }
@@ -254,7 +259,7 @@ pub fn globs(patterns: &[String]) -> Result<GlobSet, String> {
 pub fn same_version(a: &str, b: &str) -> bool {
     let (a, b) = (a.trim_start_matches("blob:"), b.trim_start_matches("blob:"));
     let n = a.len().min(b.len());
-    n >= 7 && a.is_char_boundary(n) && b.is_char_boundary(n) && a[..n] == b[..n]
+    n >= 7 && a.as_bytes()[..n].eq_ignore_ascii_case(&b.as_bytes()[..n])
 }
 
 fn blob_hash(bytes: &[u8]) -> String {
@@ -313,5 +318,11 @@ mod tests {
         // `printf 'hello\n' | git hash-object --stdin`
         assert_eq!(super::blob_hash(b"hello\n"), "ce013625030ba8dba906f756967f9e9ca394464a");
         assert_eq!(super::blob_hash(b""), "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391");
+    }
+
+    #[test]
+    fn versions_compare_by_prefix_ignoring_case() {
+        assert!(super::same_version("blob:ce01362503", "CE01362"));
+        assert!(!super::same_version("blob:ce01362503", "ce0136"));
     }
 }

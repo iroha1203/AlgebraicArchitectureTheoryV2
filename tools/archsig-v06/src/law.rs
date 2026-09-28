@@ -31,6 +31,9 @@ impl LawSet {
         let text = read(&path)?;
         for (line, block) in blocks(&text) {
             let at = format!("{path}:{line}");
+            if !matches!(block[0].split_whitespace().next(), Some("sources" | "include" | "meaning")) {
+                continue;
+            }
             let head = lex(&block[0]).map_err(|e| format!("{at}: {e}"))?;
             match word_at(&head, 0).as_deref() {
                 Some("sources") => {
@@ -50,8 +53,7 @@ impl LawSet {
                         self.load_file(&target, read, seen)?;
                     }
                 }
-                Some("meaning") => self.meanings.push(word_at(&head, 1).ok_or(format!("{at}: meaning の名前がない"))?),
-                _ => {}
+                _ => self.meanings.push(word_at(&head, 1).ok_or(format!("{at}: meaning の名前がない"))?),
             }
         }
         Ok(())
