@@ -152,6 +152,7 @@ archsig plan check split-order
 
 `update_shipping` は `normalize_address` を呼ぶ。ArchSig は、呼び出し先の書き込みも展開して比べる。
 `normalize_address` のあるソースを読んでいないので、決済情報を書き換えるかどうかが分からない。ArchSig は結論を出さず、どこを読めば決まるかを返した。
+`service.py` の構造 Atom に、`normalize_address` が `shop/shipping/address.py` で定義されていることが `resolves` で記録されているので、ArchSig は読むソースを返せる。
 SKILL はそこだけを観測し、ArchMap に書き足す。
 読んだ範囲に書き込みの Atom がなければ、書き込みはないと分かる。読んでいない所は、分からないままだ。
 
