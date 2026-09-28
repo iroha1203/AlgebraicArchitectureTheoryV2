@@ -1457,6 +1457,7 @@ ResearchLean.AG.ProtocolHolonomy.FiniteNamedPaths	ResearchLean/AG/ProtocolHolono
 ResearchLean.AG.ProtocolHolonomy.FiniteRootedPaths	ResearchLean/AG/ProtocolHolonomy/FiniteRootedPaths.lean
 ResearchLean.AG.ProtocolHolonomy.FiniteLiftableVisible	ResearchLean/AG/ProtocolHolonomy/FiniteLiftableVisible.lean
 ResearchLean.AG.ProtocolHolonomy.FiniteVerticalLifts	ResearchLean/AG/ProtocolHolonomy/FiniteVerticalLifts.lean
+ResearchLean.AG.ProtocolHolonomy.FiniteAllLifts	ResearchLean/AG/ProtocolHolonomy/FiniteAllLifts.lean
 ResearchLean.AG.ProtocolHolonomy.LiftRootCondition	ResearchLean/AG/ProtocolHolonomy/LiftRootCondition.lean
 ResearchLean.AG.ProtocolHolonomy.LiftRootReconstruction	ResearchLean/AG/ProtocolHolonomy/LiftRootReconstruction.lean
 ResearchLean.AG.ProtocolHolonomy.LiftableVisible	ResearchLean/AG/ProtocolHolonomy/LiftableVisible.lean

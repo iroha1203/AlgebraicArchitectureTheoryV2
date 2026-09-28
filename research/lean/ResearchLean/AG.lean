@@ -886,6 +886,7 @@ import ResearchLean.AG.ProtocolHolonomy.FiniteNamedPaths
 import ResearchLean.AG.ProtocolHolonomy.FiniteRootedPaths
 import ResearchLean.AG.ProtocolHolonomy.FiniteLiftableVisible
 import ResearchLean.AG.ProtocolHolonomy.FiniteVerticalLifts
+import ResearchLean.AG.ProtocolHolonomy.FiniteAllLifts
 import ResearchLean.AG.ProtocolHolonomy.LiftRootCondition
 import ResearchLean.AG.ProtocolHolonomy.LiftRootReconstruction
 import ResearchLean.AG.ProtocolHolonomy.LiftableVisible
