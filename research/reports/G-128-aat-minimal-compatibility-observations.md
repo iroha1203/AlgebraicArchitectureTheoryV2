@@ -22,7 +22,7 @@
 | C: 集合被覆 | `incompatibleSet`, `detectedSet`, `sufficient_iff_cover` | 入力有限表の不適合元と点ごとの検出集合から、十分性と被覆の同値を証明済み |
 | C: greedyの選択・停止・正確性 | `newCoverage`, `greedyPick`, `greedyPick_spec`, `greedyAux`, `greedyAux_correct`, `greedyObservationSet`, `greedyObservationSet_correct`, `greedyObservation_empty` | 入力順の最大新規被覆点を選び、成功時の十分集合・失敗時の不適合全点固定元を証明済み |
 | C1: 調和数近似保証 | `harmonic_drop`, `greedy_step_card`, `greedyAux_harmonic`, `greedyObservationSet_harmonic_of_coverable` | 実際のgreedy出力について被覆可能なら点数が `H_|U| b_Γ` 以下と証明済み |
-| D: 独立系の合成・単調性 | — | 未証明 |
+| D: 独立系の合成・単調性 | `independentAction`, `pointStabilizer_independent`, `sufficient_independent_iff`, `minObservations_independent`, `independent_minimum_disjSum`, `minObservations_antitone` | `ℕ∞` での加法性、有限最小集合の合成、適合部分群の反単調性を証明済み |
 | E: 名前付き操作と固定例 | — | 未実装 |
 
 Aの `Group G`、`MulAction G X`、`Gamma : Subgroup G` は固定targetの入力である。
@@ -83,6 +83,13 @@ Cの `candidateSets` は入力点列の全 sublist を集合に変換する。�
 `greedyObservationSet_correct` は実際の出力集合が十分か、返した元が不適合で
 全点を固定し `b_Γ=D_Γ=∞` を証明する。`U=∅` の場合は空集合を返す。
 返す集合の濃度に対するC1は、最大新規被覆数、調和数差分、再帰実行の長さを順に評価し、達成された最小集合の点数と比較して証明する。最小集合はgreedyの選択関数へ渡さない。
+
+Dの `independentAction` は積群の各因子を非交和の対応する側だけに作用させる。
+`pointStabilizer_independent` は任意の有限点集合の点安定化群を積に分解する。
+`sufficient_independent_iff` により各因子の十分性と積系の十分性は同値である。
+`minObservations_independent` は一方または両方が無限の場合を含めて `ℕ∞` の加法性を示し、
+`independent_minimum_disjSum` は有限な各最小集合の非交和が実際の最小集合になることを示す。
+`minObservations_antitone` は同じ作用で適合部分群を広げたときの最小点数の反単調性を示す。
 
 ## 指定した有限例
 
@@ -542,4 +549,60 @@ audits:
   validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
   blocking_findings: []
   next_obligation: Dの直積・直和と適合条件変更
+```
+
+## Cycle 9 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-128-aat-minimal-compatibility-observations
+cycle: 9
+goal_blob_sha: e50d778b5b0592a79c1b12506a6c04fe71a6c147
+base_oid: a2d2d8dd2a0fac27966cb7af7d02be2fc673e4fe
+tracking_issue: 5075
+report_path: research/reports/G-128-aat-minimal-compatibility-observations.md
+selection:
+  proof_state_ref: Issue #5075 cycle 8 accepted state
+  proof_dag_predecessors: [PointObservation.pointStabilizer, PointObservation.minObservations, PointObservation.minObservations_attained]
+  milestone: Dの独立系加法性と適合条件の反単調性
+  proof_obligations: [積群の非交和作用, 点安定化群分解, 十分性分解, ℕ∞加法性, 有限最小集合, 適合条件変更]
+  exit_criteria: [D1と反単調性をLeanで証明, focused checkと公理監査]
+  selection_reason: 一般の群作用について固定Dを放電する
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/MinimalCompatibilityObservations/IndependentComposition.lean]
+  risks: [有限の場合だけの加法性, 別の作用や適合部分群へのすり替え]
+  unchecked: [E, 指定例]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: 独立系の最小数が無限値を含め加法的であり、各有限最小集合が合成される
+  exit_criteria_status: [D1, 有限最小集合, 反単調性を証明, focused checkと公理監査成功]
+  completion_candidate: no
+  lean_artifacts: [IndependentComposition.lean]
+  evidence: [independentAction, pointStabilizer_independent, sufficient_independent_iff, minObservations_independent, independent_minimum_disjSum, minObservations_antitone]
+  claim_mapping:
+    theorem_names: [minObservations_independent, independent_minimum_disjSum, minObservations_antitone]
+    source_labels: [D1, Dの有限最小集合, Dの適合条件変更]
+    conjuncts: [積群と非交和の同じ作用, ℕ∞加法性, 有限最小集合の合成, 部分群包含の反単調性]
+    undischarged_assumptions: []
+    acceptance_point: 任意の二つの群作用と適合部分群
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [D]
+    remaining: [E, 指定例]
+  certificate_provenance:
+    discharged: [最小集合はAの達成定理から取り、各因子の同じ作用で評価]
+    unresolved: []
+  proof_use:
+    used: [pointStabilizer, minObservations_attained, Finset.toLeft, Finset.toRight, Finset.disjSum]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
+  blocking_findings: []
+  next_obligation: Eの周囲群と名前付き操作からの作用
 ```
