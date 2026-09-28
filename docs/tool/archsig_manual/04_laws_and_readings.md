@@ -236,3 +236,15 @@ law payment-writes-are-audited
 
 `def` の中で別の `def` は使えない。定義は一段だけである。
 別の Law ファイルは `include "<パス>"` で取り込む。
+
+## 書けているかを確かめる
+
+`archsig law check` は、Law ファイルを読んで解いた結果を返す。
+
+- `files`:読んだ Law ファイル。`include` で取り込んだものも入る。
+- `readings`、`meanings`、`defs`、`laws`:解いた宣言。`laws` の規則は、`def` を展開した形で返す。
+- `errors`:誤りの一覧。一つ一つが、宣言の場所(`at`、`ファイル:行`)と理由(`message`)を持つ。
+
+誤りには、字句や文法で解けない宣言と、名前の解決の誤りがある。
+解決の誤りは、宣言されていない意味や読みを使う、`about` の要る規則に `about` がない、`has` や `convert` の値が語彙の `values` にない、`def` の中で `def` を使う、のどれかである。
+誤りのある宣言だけを外して、残りを読む。

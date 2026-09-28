@@ -21,6 +21,11 @@ struct Cli {
 enum Cmd {
     /// 古い範囲と、読んでいない範囲を返す。
     Status,
+    /// Law ファイル。
+    Law {
+        #[command(subcommand)]
+        command: LawCmd,
+    },
     /// 取り出した Atom を ArchMap に書く。
     Record {
         files: Vec<PathBuf>,
@@ -28,6 +33,12 @@ enum Cmd {
         #[arg(long = "drop", value_name = "ソース")]
         drop: Vec<String>,
     },
+}
+
+#[derive(Subcommand)]
+enum LawCmd {
+    /// Law ファイルが正しく書けているかを確かめる。
+    Check,
 }
 
 fn main() -> ExitCode {
@@ -47,6 +58,17 @@ fn run(cli: Cli) -> Result<Value, String> {
     let store = Store::open(Path::new("."))?;
     match cli.command {
         Cmd::Status => archmap::status(&store),
+        Cmd::Law { command: LawCmd::Check } => {
+            let laws = store.laws()?;
+            Ok(json!({
+                "files": laws.files,
+                "readings": laws.readings,
+                "meanings": laws.meanings,
+                "defs": laws.defs,
+                "laws": laws.laws,
+                "errors": laws.errors,
+            }))
+        }
         Cmd::Record { files, drop } => {
             let mut atoms = Vec::new();
             for f in &files {

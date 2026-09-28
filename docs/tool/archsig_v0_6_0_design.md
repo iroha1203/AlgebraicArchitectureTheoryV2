@@ -194,12 +194,14 @@ rel         := "writes" | "reads" | "calls" | "sends" | "receives" | "reaches"
 
 Law ファイルを読んだら、名前を解決して、計算に使う形にする。解決で失敗したら、`law check` が理由と行を返す。
 
-- `about`、`has`、`base` の意味の名前が、語彙にある。`has` の値が、その語彙の `values` にある。
+- `about`、`has`、`base` の意味の名前が、語彙にある。`has` の値が、その語彙の `values` にある。`values` のない語彙の `has` には値を書かない。
+- `convert` の二つの値が、`about` の語彙の `values` にある。
 - `on` の読みが宣言されている。Law が `on` を省けば、最初に宣言した読みを使う。
 - `agrees`、`changes`、`roundtrips` の規則は `about` を持つ。
 - `def` を展開する。
 - `include` は、取り込む側のファイルの場所から読み、一つのファイルを二度読まない。
 - `sources` と `fresh` は、読んだファイルすべての和をとる。
+- 字句や文法で解けない宣言は、ファイルと行とともに誤りとして返し、その宣言だけを外して残りを読む。解決の誤りも同じく返す。`status` は、誤りがあっても `sources` と意味の語彙を使って動く。
 
 ### 4.4 選択の意味
 
