@@ -960,3 +960,4 @@ import ResearchLean.AG.MinimalCompatibilityObservations.FiniteCover
 import ResearchLean.AG.MinimalCompatibilityObservations.GreedySelection
 import ResearchLean.AG.MinimalCompatibilityObservations.GreedyBound
 import ResearchLean.AG.MinimalCompatibilityObservations.IndependentComposition
+import ResearchLean.AG.MinimalCompatibilityObservations.ProtocolAmbient
