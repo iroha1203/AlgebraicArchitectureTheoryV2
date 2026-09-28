@@ -20,7 +20,8 @@
 | C: 指定観測表の延長 | `FiniteExtension.findExtension`, `findExtension_some`, `findExtension_none_iff`, `findCompatibleExtension`, `findCompatibleExtension_some`, `findCompatibleExtension_none_iff`, `classify_correct` | 証明済み |
 | C: 最小集合と判定不能の証拠 | `candidateSets`, `minimumObservation`, `minimumObservation_card`, `findIncompatibleFixer`, `minimumOrWitness`, `minimumOrWitness_correct`, `minimumOrWitness_invisible`, `minimumOrWitness_optimalProcedure` | 入力列挙からの全探索、実際の最小集合または不適合な全点固定元、A・Bとの対応を証明済み |
 | C: 集合被覆 | `incompatibleSet`, `detectedSet`, `sufficient_iff_cover` | 入力有限表の不適合元と点ごとの検出集合から、十分性と被覆の同値を証明済み |
-| C: greedy・C1 | — | 未実装 |
+| C: greedyの選択・停止・正確性 | `newCoverage`, `greedyPick`, `greedyPick_spec`, `greedyAux`, `greedyAux_correct`, `greedyObservationSet`, `greedyObservationSet_correct`, `greedyObservation_empty` | 入力順の最大新規被覆点を選び、成功時の十分集合・失敗時の不適合全点固定元を証明済み |
+| C1: 調和数近似保証 | — | 未証明 |
 | D: 独立系の合成・単調性 | — | 未証明 |
 | E: 名前付き操作と固定例 | — | 未実装 |
 
@@ -71,11 +72,17 @@ Cの `candidateSets` は入力点列の全 sublist を集合に変換する。�
 `findIncompatibleFixer` は全点を固定する不適合な元を変更列挙から走査し、
 `minimumOrWitness` の失敗枝で実際にその元を返す。恒等元と同じ全点観測で
 適合性が異なること、`b_Γ=D_Γ=∞` を同じ出力に対して証明する。
-greedy法・調和数保証は後続のC義務である。
+調和数保証は後続のC義務である。
 `incompatibleSet` は不適合変更全体、`detectedSet x` は点 `x` で動く不適合変更を
 入力変更表から構成する。`sufficient_iff_cover` は任意の有限 `B` について、
 元の `Sufficient Gamma B` と `B` の検出集合の和集合が全不適合変更に等しいことを
 双方向に証明する。greedy法とC1はこの同じ被覆族を使う。
+`greedyPick` は残る不適合元の新規被覆数を最大にする点を入力の点列から選び、
+同数ならその列で最初に現れた点を保つ。`greedyAux` は正の新規被覆のたびに
+残集合を真に縮める有限再帰であり、十分な燃料を初期 `U.card` から与える。
+`greedyObservationSet_correct` は実際の出力集合が十分か、返した元が不適合で
+全点を固定し `b_Γ=D_Γ=∞` を証明する。`U=∅` の場合は空集合を返す。
+返す集合の濃度に対する調和数上界C1は残る。
 
 ## 指定した有限例
 
@@ -422,4 +429,61 @@ audits:
   validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
   blocking_findings: []
   next_obligation: Cのgreedy実行関数と調和数近似保証
+```
+
+## Cycle 7 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-128-aat-minimal-compatibility-observations
+cycle: 7
+goal_blob_sha: e50d778b5b0592a79c1b12506a6c04fe71a6c147
+base_oid: b5711070186a0822e3e00a8590e6cc44fd8e5135
+tracking_issue: 5075
+report_path: research/reports/G-128-aat-minimal-compatibility-observations.md
+selection:
+  proof_state_ref: Issue #5075 cycle 6 accepted state
+  proof_dag_predecessors: [FiniteCover.incompatibleSet, FiniteCover.detectedSet, FiniteCover.sufficient_iff_cover, FiniteMinimum.findIncompatibleFixer]
+  milestone: Cの入力順greedy実行関数と成功・失敗の正確性
+  proof_obligations: [最大新規被覆と同数時入力順, 停止, 成功時の十分集合, 失敗時の全点固定不適合元, U空の場合]
+  exit_criteria: [実行可能なgreedy関数, 実際の同じ出力の正確性, focused checkと公理監査]
+  selection_reason: C1の調和数点数保証を適用する対象の実行関数と選択規則を先に固定する
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/MinimalCompatibilityObservations/GreedySelection.lean]
+  risks: [燃料不足への逃避, 零利得で不正なfallback, 全探索をgreedyから呼ぶ逃避, 同数処理]
+  unchecked: [C1, D, E, 指定例]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: 入力点列の最大新規被覆選択と有界再帰を構成し、出力集合の十分性または実際の不適合全点固定元を証明
+  exit_criteria_status: [選択規則と同数時入力順を証明, 初期U.card燃料で成功・失敗の正確性を証明, focused checkと公理監査成功]
+  split_reason: C1の量的保証は同じgreedy関数の点数に対する別の帰納証明であり、実行関数と正確性を固定してから監査する
+  completion_candidate: no
+  lean_artifacts: [GreedySelection.lean]
+  evidence: [greedyPick_spec, greedyPick_zero_fixer, greedyFallback_correct, greedyAux_correct, greedyObservationSet_correct, greedyObservation_empty]
+  claim_mapping:
+    theorem_names: [greedyPick_spec, greedyAux_correct, greedyObservationSet_correct]
+    source_labels: [C greedy選択・停止・正確性]
+    conjuncts: [最大新規被覆, 入力順tie, 残集合の減少, 成功時被覆, 失敗時元, U空で空集合]
+    undischarged_assumptions: [C1調和数近似保証]
+    acceptance_point: 元の有限表から実行する同じgreedy出力をCの判定条件へ結ぶcheckpoint
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [C greedyの実行と正確性]
+    remaining: [C1, D, E, 指定例]
+  certificate_provenance:
+    discharged: [最大利得点は入力点列からargmax, 失敗元は入力変更列からscan]
+    unresolved: []
+  proof_use:
+    used: [FiniteCoverのUとS_x, sufficient_iff_cover, FiniteMinimum.findIncompatibleFixer, List.argmaxの最大・tie定理]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
+  blocking_findings: []
+  next_obligation: 同じgreedyObservationSet出力のC1調和数近似保証
 ```
