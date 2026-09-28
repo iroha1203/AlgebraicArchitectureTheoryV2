@@ -962,3 +962,4 @@ import ResearchLean.AG.MinimalCompatibilityObservations.GreedyBound
 import ResearchLean.AG.MinimalCompatibilityObservations.IndependentComposition
 import ResearchLean.AG.MinimalCompatibilityObservations.ProtocolAmbient
 import ResearchLean.AG.MinimalCompatibilityObservations.ProtocolFiberDisplay
+import ResearchLean.AG.MinimalCompatibilityObservations.FiniteAmbientTable

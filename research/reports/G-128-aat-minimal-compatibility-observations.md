@@ -23,7 +23,7 @@
 | C: greedyの選択・停止・正確性 | `newCoverage`, `greedyPick`, `greedyPick_spec`, `greedyAux`, `greedyAux_correct`, `greedyObservationSet`, `greedyObservationSet_correct`, `greedyObservation_empty` | 入力順の最大新規被覆点を選び、成功時の十分集合・失敗時の不適合全点固定元を証明済み |
 | C1: 調和数近似保証 | `harmonic_drop`, `greedy_step_card`, `greedyAux_harmonic`, `greedyObservationSet_harmonic_of_coverable` | 実際のgreedy出力について被覆可能なら点数が `H_|U| b_Γ` 以下と証明済み |
 | D: 独立系の合成・単調性 | `independentAction`, `pointStabilizer_independent`, `sufficient_independent_iff`, `minObservations_independent`, `independent_minimum_disjSum`, `minObservations_antitone` | `ℕ∞` での加法性、有限最小集合の合成、適合部分群の反単調性を証明済み |
-| E: 名前付き操作と固定例 | `ambientChange`, `compatibleChange`, `ambientMulEquivFiberPair`, `fiberPair_compatible_iff`, `fiberCompatibleMulEquivChangeGroup`, `compatibleFiberRootEquiv`, `compatibleVerticalRootMulEquiv`, `ambientFullAction_faithful` | 周囲群のfiber表示、E1、元の変更群・根解・垂直中心化群への対応、作用の中核を証明済み。原始入力からの有限表、G-124対応、固定例は未証明 |
+| E: 名前付き操作と固定例 | `ambientChange`, `compatibleChange`, `ambientMulEquivFiberPair`, `fiberPair_compatible_iff`, `fiberCompatibleMulEquivChangeGroup`, `compatibleFiberRootEquiv`, `compatibleVerticalRootMulEquiv`, `ambientFullAction_faithful`, `allAmbientChanges`, `compatibleDecidablePred`, `mem_allSelectedCompatibleChanges_iff` | 周囲群のfiber表示、E1、元の変更群・根解・垂直中心化群、原始表からの全元生成と適合列の一致を証明済み。Cの具体的出力接続、G-124対応、固定例は未証明 |
 
 Aの `Group G`、`MulAction G X`、`Gamma : Subgroup G` は固定targetの入力である。
 `Sufficient` は結論ではなく点安定化群から定義し、`exists_predicate_iff_sufficient`
@@ -98,14 +98,21 @@ Eの `ambientChange` は選ばれた可視変更と、可視頂点写像に沿�
 `compatibleFiberEquiv` は各可視fiberを同じ `Lift` と対応させる。
 `ambientStateAction` と `ambientFullAction` は状態のみ、および頂点・辺名・状態への作用を
 同じ周囲群から構成する。後者は忠実であり、有限な対象では適合部分群の最小観測数が
-有限である。原始 `FiniteProtocolInput` からの周囲群有限表、G-124の
-同じ代表の読取りと固定例への適用は後続のE義務である。
+有限である。原始 `FiniteProtocolInput` からの周囲群有限表は後述の構成で得る。
+G-124の同じ代表の読取りと固定例への適用は後続のE義務である。
 `ambientMulEquivFiberPair` は周囲群の元を可視変更と各fiberの全単射族として
 双方向へ移し、`fiberPair_mul_fiber_apply` が元の(A2)と同じ合成順を示す。
 `fiberPair_compatible_iff` は操作保存の元の関係同値を(E1)の辺可換式と同値にし、
 `fiberCompatibleMulEquivChangeGroup` がその同じ適合元を元の変更群に送る。
 `compatibleFiberRootEquiv` と `compatibleVerticalRootMulEquiv` はそれぞれ元の
 G-127の根解と垂直の根中心化群表示に接続する。
+`allAmbientChanges` は入力された可視変更、頂点、fiberの完全列挙から
+前向き・逆向き表の二つの逆写像条件だけを検査して全周囲元を返す。
+`compatibleDecidablePred` は別に元の名前付き実行関係を全有限点で判定する。
+`allSelectedCompatibleChanges` はG-127の同じ selected-forest による
+`finiteSelectedAllLifts` を全可視元で連結し、
+`mem_allSelectedCompatibleChanges_iff` が新しいE1部分群との所属同値を示す。
+`FiniteProtocolInput.ambientTable` は同じ原始入力の `data,H` と実行用の明示列を使う。
 
 ## 指定した有限例
 
@@ -733,4 +740,60 @@ audits:
   validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
   blocking_findings: []
   next_obligation: 原始有限表から周囲群全元を生成しCの出力へ接続
+```
+
+## Cycle 12 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-128-aat-minimal-compatibility-observations
+cycle: 12
+goal_blob_sha: e50d778b5b0592a79c1b12506a6c04fe71a6c147
+base_oid: 56a8166f17b35dac2d0dc5c7fec7f9876eba0c4e
+tracking_issue: 5075
+report_path: research/reports/G-128-aat-minimal-compatibility-observations.md
+selection:
+  proof_state_ref: Issue #5075 cycle 11 accepted state
+  proof_dag_predecessors: [ProtocolFiberDisplay.ambientEquivFiberPair, G-127.allCandidateMaps, G-127.finiteSelectedAllLifts]
+  milestone: 原始有限表から周囲群の全元とE1適合元を生成
+  proof_obligations: [逆写像条件だけによる全ambient fiber候補, 周囲群全元の完全列挙, 元のNamedExecutionによる決定可能な適合性, G-127のselected lift列とE1の所属同値]
+  exit_criteria: [同じ原始入力と明示列からの実行可能な列挙, 全元と適合元の両方向証明, focused checkと公理監査]
+  selection_reason: Cの既存探索に周囲群の実際の元と所属判定を供給する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/MinimalCompatibilityObservations/FiniteAmbientTable.lean]
+  risks: [G-127.ValidCandidateの辺条件を周囲群生成に混入, 非計算的な列挙, selected lift列との同一性不足]
+  unchecked: [Cへの具体的入力と出力の読戻し, G-124対応, 指定例]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 原始表の逆写像候補を周囲群に送り、元のselected lift列との適合所属同値を証明
+  exit_criteria_status: [全周囲元の完全列挙, E1決定手続き, selected lift列との同値, focused checkと公理監査成功]
+  completion_candidate: no
+  lean_artifacts: [FiniteAmbientTable.lean]
+  evidence: [mem_candidateFiberPairs, allAmbientChanges, compatibleDecidablePred, mem_selectedCompatibleChanges_iff, mem_allSelectedCompatibleChanges_iff, FiniteProtocolInput.ambientTable]
+  claim_mapping:
+    theorem_names: [mem_candidateFiberPairs, mem_selectedCompatibleChanges_iff, mem_allSelectedCompatibleChanges_iff]
+    source_labels: [E 原始有限表, E1 適合部分群]
+    conjuncts: [逆写像だけの候補完全性, 同じ有限入力での周囲群全元, 名前付き辺の適合検査, G-127原始列との両方向一致]
+    undischarged_assumptions: [Cへの出力接続, G-124対応, 指定例]
+    acceptance_point: 同じFiniteProtocolInputのdataとHおよび供給された列挙から新しい周囲群と適合元を生成
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [周囲群全元の列挙, E1適合性判定, selected forest全liftとの一致]
+    remaining: [Cへの具体的入力と出力の読戻し, G-124対応, 指定例]
+  certificate_provenance:
+    discharged: [G-127.allCandidateMapsとfiniteSelectedAllLiftsから実際に生成]
+    unresolved: []
+  proof_use:
+    used: [allCandidateMaps.complete in mem_candidateFiberPairs, mem_finiteSelectedAllLifts in mem_selectedCompatibleChanges_iff, fiberPair_compatible_iff in E1判定]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
+  blocking_findings: []
+  next_obligation: Cの探索関数へ生成表を渡して元の可視成分とfiber作用を読戻す
 ```
