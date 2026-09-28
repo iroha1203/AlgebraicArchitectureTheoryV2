@@ -258,7 +258,8 @@ pub fn status(store: &Store) -> Result<serde_json::Value, String> {
             unread.push(json!({"source": s, "scopes": scopes}));
         }
     }
-    Ok(json!({"stale": stale, "unread": unread}))
+    // Law の誤りで sources や意味の語彙が欠けると、unread が少なく出る。理由として誤りも返す。
+    Ok(json!({"stale": stale, "unread": unread, "law_errors": laws.errors}))
 }
 
 /// ArchMap の中の置き場所。ソースと局所は別の名前の空間にある。

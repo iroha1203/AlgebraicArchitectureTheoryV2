@@ -59,15 +59,17 @@ fn law_check_reads_the_manual_chapter_4_example() {
     assert_eq!(
         forms,
         vec![
-            ("payment-follows-order", "changes_commute"),
+            ("payment-follows-order", "changes commute"),
             ("identity-mail-from-auth", "no"),
             ("payment-writes-are-audited", "each"),
-            ("amount-units-agree", "agrees"),
-            ("transaction-id-kept", "agrees"),
-            ("payment-info-kept", "changes_keep"),
+            ("amount-units-agree", "agrees along"),
+            ("transaction-id-kept", "agrees along"),
+            ("payment-info-kept", "changes keep"),
             ("order-view-sync", "roundtrips"),
         ]
     );
+    assert_eq!(v["laws"][0]["on"], "module", "on を省くと最初の読み");
+    assert_eq!(v["laws"][5]["on"], "service");
     let each = &v["laws"][2]["rule"];
     assert_eq!(each["select"]["kind"], "operation", "def は展開される");
     assert_eq!(each["select"]["that"][0]["rel"], "writes");
@@ -136,6 +138,79 @@ law l6
     assert!(e.contains(&(at(29), "意味 `color` が宣言されていない".to_string())), "{e:?}");
     assert!(e.contains(&(at(33), "convert の `yen` は意味 `unit` の values にない".to_string())), "{e:?}");
     assert_eq!(e.len(), 6, "{e:?}");
+    let names: Vec<&str> = v["laws"].as_array().unwrap().iter().map(|l| l["name"].as_str().unwrap()).collect();
+    assert!(names.is_empty(), "誤りのある law は外す: {names:?}");
+}
+
+#[test]
+fn duplicates_broken_defs_and_syntax_rules() {
+    let repo = Repo::new("dup");
+    repo.law(
+        "a.law",
+        r#"reading r = file
+
+meaning unit on field
+  values minor | major
+  "単位"
+
+meaning unit on field
+  values x
+  "二度目"
+
+def w = operation that writes unit
+def bad = operation that writes nope
+def nested = operation that calls w
+
+law uses-bad
+  "誤りのある def"
+  each bad
+    calls "audit.record"
+
+law ok
+  "正しい law"
+  about unit
+  agrees along flows
+  convert major -> minor by * 100
+
+law ok
+  "二度目"
+  about unit
+  changes keep
+
+law factor
+  "倍率"
+  about unit
+  agrees along flows
+  convert major -> minor by * 7
+
+law twice
+  "on を二度"
+  on r
+  on r
+  changes keep
+
+law multi
+  "no を二行"
+  no call
+    that has unit minor
+"#,
+    );
+    let v = repo.run(&["law", "check"]);
+    let e = errors(&v);
+    let has = |line: usize, msg: &str| e.contains(&(format!(".archsig/law/a.law:{line}"), msg.to_string()));
+    assert!(has(7, "意味 `unit` が二度宣言されている"), "{e:?}");
+    assert!(has(12, "`nope` は意味の語彙にも def にもない"), "{e:?}");
+    assert!(has(13, "def の中で def `w` は使えない"), "{e:?}");
+    assert!(has(15, "def `bad` は誤りがあるので使えない"), "{e:?}");
+    assert!(has(26, "law `ok` が二度宣言されている"), "{e:?}");
+    assert!(has(31, "convert の倍率は 10 の冪(10、100、1000 …)で書く"), "{e:?}");
+    assert!(has(37, "on は一度だけ書く"), "{e:?}");
+    assert!(has(43, "no の規則は一行で書く"), "{e:?}");
+    assert_eq!(e.len(), 8, "{e:?}");
+    let names: Vec<&str> = v["laws"].as_array().unwrap().iter().map(|l| l["name"].as_str().unwrap()).collect();
+    assert_eq!(names, vec!["ok"], "誤りのある宣言は外し、二度目は最初を残す");
+    let defs: Vec<&str> = v["defs"].as_array().unwrap().iter().map(|d| d["name"].as_str().unwrap()).collect();
+    assert_eq!(defs, vec!["w"]);
 }
 
 #[test]
@@ -154,4 +229,10 @@ fn a_broken_declaration_is_reported_and_the_rest_is_read() {
     assert_eq!(v["meanings"][0]["name"], "m", "誤りのある宣言のほかは読む");
     let s = repo.run(&["status"]);
     assert_eq!(s["unread"][0]["scopes"], serde_json::json!(["structure", "meaning:m"]), "status は Law の誤りがあっても動く");
+    assert_eq!(s["law_errors"].as_array().unwrap().len(), 2, "status は Law の誤りを理由として返す");
+
+    repo.law("a.law", "sources \"shop/**\" \"x/**\"\n");
+    let s = repo.run(&["status"]);
+    assert_eq!(s["unread"].as_array().unwrap().len(), 0);
+    assert_eq!(s["law_errors"][0]["at"], ".archsig/law/a.law:1", "sources が外れて空になるときも、理由が付く");
 }

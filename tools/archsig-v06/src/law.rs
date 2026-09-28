@@ -67,14 +67,21 @@ pub struct Law {
     pub at: String,
 }
 
+/// 規則の五つの形。`form` の値はマニュアル第4章の呼び方。
 #[derive(Clone, Debug, Serialize)]
-#[serde(tag = "form", rename_all = "snake_case")]
+#[serde(tag = "form")]
 pub enum Rule {
+    #[serde(rename = "no")]
     No { select: Selector },
+    #[serde(rename = "each")]
     Each { select: Selector, require: Vec<Cond> },
+    #[serde(rename = "agrees along")]
     Agrees { convert: Vec<Convert> },
+    #[serde(rename = "changes commute")]
     ChangesCommute,
+    #[serde(rename = "changes keep")]
     ChangesKeep,
+    #[serde(rename = "roundtrips")]
     Roundtrips { read: String, update: String },
 }
 
@@ -199,11 +206,10 @@ impl LawSet {
                 if head.get(2) != Some(&Tok::Sym("=")) {
                     return Err("def には `=` が要る".to_string());
                 }
-                let mut toks = head[3..].to_vec();
-                for r in &rest {
-                    toks.extend(r.iter().cloned());
+                if !rest.is_empty() {
+                    return Err("def は一行で書く".to_string());
                 }
-                let mut c = Cursor { t: &toks, i: 0 };
+                let mut c = Cursor { t: &head[3..], i: 0 };
                 let selector = c.selector()?;
                 c.end()?;
                 self.defs.push(Def { name, selector, at: at.to_string() });
@@ -214,42 +220,55 @@ impl LawSet {
         Ok(())
     }
 
-    /// 設計 §4.3 の名前の解決。`def` を展開し、誤りを `errors` に集める。
+    /// 設計 §4.3 の名前の解決。`def` を展開し、`on` を補う。
+    /// 誤りのある宣言は外し、誤りを `errors` に集める。
     fn resolve(&mut self) {
+        let mut errors = Vec::new();
+        dedupe(&mut self.readings, |r| (&r.name, &r.at), "読み", &mut errors);
+        dedupe(&mut self.meanings, |m| (&m.name, &m.at), "意味", &mut errors);
+        dedupe(&mut self.defs, |d| (&d.name, &d.at), "def", &mut errors);
+        dedupe(&mut self.laws, |l| (&l.name, &l.at), "law", &mut errors);
         let meanings: BTreeMap<String, Meaning> = self.meanings.iter().map(|m| (m.name.clone(), m.clone())).collect();
         let readings: BTreeSet<String> = self.readings.iter().map(|r| r.name.clone()).collect();
-        let mut errors = Vec::new();
+        let first_reading = self.readings.first().map(|r| r.name.clone());
         let def_names: BTreeSet<String> = self.defs.iter().map(|d| d.name.clone()).collect();
+        let no_defs = BTreeMap::new();
         let mut defs = BTreeMap::new();
-        for d in &self.defs {
-            let mut ctx = Resolve { meanings: &meanings, defs: &BTreeMap::new(), def_names: &def_names, errors: Vec::new(), at: &d.at };
-            let mut sel = d.selector.clone();
-            ctx.selector(&mut sel, true);
-            errors.extend(ctx.errors);
-            defs.insert(d.name.clone(), sel);
+        let mut broken = BTreeSet::new();
+        let mut kept_defs = Vec::new();
+        for mut d in std::mem::take(&mut self.defs) {
+            let mut ctx = Resolve { meanings: &meanings, defs: &no_defs, broken: &broken, def_names: &def_names, in_def: true, errors: Vec::new(), at: &d.at };
+            ctx.selector(&mut d.selector);
+            if ctx.errors.is_empty() {
+                defs.insert(d.name.clone(), d.selector.clone());
+                kept_defs.push(d);
+            } else {
+                errors.extend(ctx.errors);
+                broken.insert(d.name.clone());
+            }
         }
-        for law in &mut self.laws {
+        self.defs = kept_defs;
+        let mut kept_laws = Vec::new();
+        for mut law in std::mem::take(&mut self.laws) {
             let at = law.at.clone();
-            if let Some(r) = &law.on {
-                if !readings.contains(r) {
-                    errors.push(LawError { at: at.clone(), message: format!("読み `{r}` が宣言されていない") });
-                }
+            let mut ctx = Resolve { meanings: &meanings, defs: &defs, broken: &broken, def_names: &def_names, in_def: false, errors: Vec::new(), at: &at };
+            match &law.on {
+                Some(r) if !readings.contains(r) => ctx.error(format!("読み `{r}` が宣言されていない")),
+                Some(_) => {}
+                None => law.on = first_reading.clone(),
             }
             let about = law.about.as_ref().and_then(|m| meanings.get(m));
-            if let Some(m) = &law.about {
-                if about.is_none() {
-                    errors.push(LawError { at: at.clone(), message: format!("意味 `{m}` が宣言されていない") });
-                }
+            if let (Some(m), None) = (&law.about, about) {
+                ctx.error(format!("意味 `{m}` が宣言されていない"));
             }
             let needs_about = matches!(law.rule, Rule::Agrees { .. } | Rule::ChangesCommute | Rule::ChangesKeep | Rule::Roundtrips { .. });
             if needs_about && law.about.is_none() {
-                errors.push(LawError { at: at.clone(), message: format!("{} の規則には about が要る", law.rule.form()) });
+                ctx.error(format!("{} の規則には about が要る", law.rule.form()));
             }
-            let mut ctx = Resolve { meanings: &meanings, defs: &defs, def_names: &def_names, errors: Vec::new(), at: &at };
             match &mut law.rule {
-                Rule::No { select } => ctx.selector(select, false),
+                Rule::No { select } => ctx.selector(select),
                 Rule::Each { select, require } => {
-                    ctx.selector(select, false);
+                    ctx.selector(select);
                     for c in require {
                         ctx.cond(c);
                     }
@@ -267,16 +286,39 @@ impl LawSet {
                 }
                 _ => {}
             }
-            errors.extend(ctx.errors);
+            if ctx.errors.is_empty() {
+                kept_laws.push(law);
+            } else {
+                errors.extend(ctx.errors);
+            }
         }
+        self.laws = kept_laws;
         self.errors.extend(errors);
     }
 }
 
+/// 同じ名前の宣言は最初のものを残し、後のものを誤りとして外す。
+fn dedupe<T>(items: &mut Vec<T>, key: impl Fn(&T) -> (&String, &String), what: &str, errors: &mut Vec<LawError>) {
+    let mut seen = BTreeSet::new();
+    items.retain(|x| {
+        let (name, at) = key(x);
+        if seen.insert(name.clone()) {
+            return true;
+        }
+        errors.push(LawError { at: at.clone(), message: format!("{what} `{name}` が二度宣言されている") });
+        false
+    });
+}
+
 struct Resolve<'a> {
     meanings: &'a BTreeMap<String, Meaning>,
+    /// 誤りなく解けた `def`。
     defs: &'a BTreeMap<String, Selector>,
+    /// 誤りのある `def`。
+    broken: &'a BTreeSet<String>,
     def_names: &'a BTreeSet<String>,
+    /// `def` の右辺を解いているか。`def` の中では `def` を使えない。
+    in_def: bool,
     errors: Vec<LawError>,
     at: &'a str,
 }
@@ -286,15 +328,22 @@ impl Resolve<'_> {
         self.errors.push(LawError { at: self.at.to_string(), message });
     }
 
-    /// 名前を確かめ、`def` の名前なら展開する。`in_def` のときは `def` を使えない。
-    fn selector(&mut self, sel: &mut Selector, in_def: bool) {
+    /// 名前を確かめ、`def` の名前なら展開する。
+    fn selector(&mut self, sel: &mut Selector) {
         if let Some(n) = sel.name.clone() {
-            if let Some(d) = self.defs.get(&n) {
+            if self.in_def && self.def_names.contains(&n) {
+                self.error(format!("def の中で def `{n}` は使えない"));
+            } else if let Some(d) = self.defs.get(&n) {
                 let mut that = d.that.clone();
                 that.append(&mut sel.that);
-                *sel = Selector { that, ..d.clone() };
-            } else if in_def && self.def_names.contains(&n) {
-                self.error(format!("def の中で def `{n}` は使えない"));
+                *sel = Selector { that: Vec::new(), ..d.clone() };
+                for mut c in that.drain(..) {
+                    self.cond(&mut c);
+                    sel.that.push(c);
+                }
+                return;
+            } else if self.broken.contains(&n) {
+                self.error(format!("def `{n}` は誤りがあるので使えない"));
             } else if !self.meanings.contains_key(&n) {
                 self.error(format!("`{n}` は意味の語彙にも def にもない"));
             }
@@ -306,7 +355,7 @@ impl Resolve<'_> {
 
     fn cond(&mut self, c: &mut Cond) {
         match c {
-            Cond::Rel { target, .. } => self.selector(target, false),
+            Cond::Rel { target, .. } => self.selector(target),
             Cond::Has { meaning, value } => match self.meanings.get(meaning.as_str()) {
                 None => self.error(format!("意味 `{meaning}` が宣言されていない")),
                 Some(m) => match value {
@@ -425,8 +474,16 @@ fn parse_law(head: &[Tok], rest: &[Vec<Tok>], at: &str) -> Result<Law, String> {
     for r in rest {
         match r.first() {
             Some(Tok::Str(s)) if r.len() == 1 && rule_lines.is_empty() => description = Some(s.clone()),
-            Some(Tok::Word(w)) if w == "on" && r.len() == 2 && rule_lines.is_empty() => on = word_at(r, 1),
-            Some(Tok::Word(w)) if w == "about" && r.len() == 2 && rule_lines.is_empty() => about = word_at(r, 1),
+            Some(Tok::Word(w)) if w == "on" && r.len() == 2 && rule_lines.is_empty() => {
+                if on.replace(word_at(r, 1).unwrap()).is_some() {
+                    return Err("on は一度だけ書く".to_string());
+                }
+            }
+            Some(Tok::Word(w)) if w == "about" && r.len() == 2 && rule_lines.is_empty() => {
+                if about.replace(word_at(r, 1).unwrap()).is_some() {
+                    return Err("about は一度だけ書く".to_string());
+                }
+            }
             _ => rule_lines.push(r),
         }
     }
@@ -434,11 +491,10 @@ fn parse_law(head: &[Tok], rest: &[Vec<Tok>], at: &str) -> Result<Law, String> {
     let first = rule_lines.first().ok_or("law に規則がない")?;
     let rule = match word_at(first, 0).as_deref() {
         Some("no") => {
-            let mut toks = first[1..].to_vec();
-            for r in &rule_lines[1..] {
-                toks.extend(r.iter().cloned());
+            if rule_lines.len() > 1 {
+                return Err("no の規則は一行で書く".to_string());
             }
-            let mut c = Cursor { t: &toks, i: 0 };
+            let mut c = Cursor { t: &first[1..], i: 0 };
             let select = c.selector()?;
             c.end()?;
             Rule::No { select }
@@ -468,6 +524,9 @@ fn parse_law(head: &[Tok], rest: &[Vec<Tok>], at: &str) -> Result<Law, String> {
                     [Tok::Word(c), Tok::Word(from), Tok::Sym("->"), Tok::Word(to), Tok::Word(by), Tok::Sym(op), Tok::Word(f)]
                         if c == "convert" && by == "by" && (*op == "*" || *op == "/") =>
                     {
+                        if !(f.len() >= 2 && f.starts_with('1') && f[1..].chars().all(|c| c == '0')) {
+                            return Err("convert の倍率は 10 の冪(10、100、1000 …)で書く".to_string());
+                        }
                         convert.push(Convert { from: from.clone(), to: to.clone(), op: op.to_string(), factor: f.clone() })
                     }
                     _ => return Err("convert は `convert a -> b by * 100` と書く".to_string()),
