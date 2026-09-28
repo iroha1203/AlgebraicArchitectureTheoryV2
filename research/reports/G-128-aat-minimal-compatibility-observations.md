@@ -648,7 +648,7 @@ result:
   claim_mapping:
     theorem_names: [compatibleMulEquivChangeGroup, compatibleFiberEquiv, ambientFullAction_faithful, ambientFull_minObservations_ne_top]
     source_labels: [Eの群と作用の中核]
-    conjuncts: [操作不保存元を含む周囲群, E1適合部分群, 元のG-127変更群との同型, 空fiberを含む対応, 全対象作用の忠実性]
+    conjuncts: [操作保存を課さない周囲群, E1適合部分群, 元のG-127変更群との同型, 空fiberを含む対応, 全対象作用の忠実性]
     undischarged_assumptions: [有限表生成, 垂直核と根条件, G-124対応, 指定例]
     acceptance_point: 一般のReversibleDataと可視部分群上の構成checkpoint
     port_status: unported

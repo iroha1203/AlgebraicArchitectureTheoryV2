@@ -25,7 +25,7 @@ variable (H : Subgroup (FixedFGraphAutomorphism Q))
 abbrev ProtocolStates := Σ x, D.Fiber x
 
 /-- Visible changes in `H`, paired with all state permutations following the
-visible vertex map. This group includes operation-incompatible changes. -/
+visible vertex map. No named-operation condition is imposed. -/
 def ambientChange : Subgroup (H × Equiv.Perm (ProtocolStates D)) where
   carrier := {a | ∀ p : ProtocolStates D, (a.2 p).1 = a.1.1.vertex p.1}
   one_mem' := by
