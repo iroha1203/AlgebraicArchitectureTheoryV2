@@ -259,6 +259,25 @@ fn manual_chapter_3_local_meaning_and_observed() {
 }
 
 #[test]
+fn observed_is_placed_by_its_subject_and_mixed_versions_are_stale() {
+    let repo = Repo::new("observed-subject");
+    repo.record(r#"{"kind": "observed", "subject": "src/a.py", "scope": "structure", "at": "src/b.py"}"#);
+    let atoms = repo.map("src/a.py");
+    assert_eq!(atoms[0]["at"], format!("src/a.py@{}", blob("a = 1\n")), "observed は subject のソースに、その版で置く");
+    assert!(!repo.dir.join(".archsig/map/src/b.py.jsonl").exists());
+
+    for order in [["@blob:0000000", ""], ["", "@blob:0000000"]] {
+        repo.record(&format!(
+            "{}\n{}\n",
+            format!(r#"{{"kind": "defines", "subject": "src.b.X", "value": "type", "at": "src/b.py:1{}"}}"#, order[0]),
+            format!(r#"{{"kind": "defines", "subject": "src.b.Y", "value": "type", "at": "src/b.py:1{}"}}"#, order[1]),
+        ));
+        let v = repo.ok(&["status"]);
+        assert!(v["stale"].as_array().unwrap().iter().any(|s| s["source"] == "src/b.py"), "版の混ざった組は、入力の順によらず古い: {order:?}");
+    }
+}
+
+#[test]
 fn record_rejects_an_unknown_kind() {
     let repo = Repo::new("unknown");
     let f = repo.dir.join("in.jsonl");

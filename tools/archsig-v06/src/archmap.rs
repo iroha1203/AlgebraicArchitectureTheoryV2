@@ -140,10 +140,17 @@ impl Store {
                 }
                 Place::Local { reading, local }
             } else {
-                let at = a.at.as_deref().ok_or(format!("at がない: {}", a.subject))?;
-                a.at = Some(self.versioned(at)?);
                 if a.kind == "observed" {
+                    // 読んだ範囲はソースそのものについての Atom なので、置き場所も版も subject で決める。
                     a.subject = relative(&a.subject)?;
+                    let version = a.location().and_then(|l| l.version);
+                    a.at = Some(match version {
+                        Some(v) => format!("{}@{v}", a.subject),
+                        None => self.versioned(&a.subject)?,
+                    });
+                } else {
+                    let at = a.at.as_deref().ok_or(format!("at がない: {}", a.subject))?;
+                    a.at = Some(self.versioned(at)?);
                 }
                 Place::Source(a.location().unwrap().path)
             };
@@ -167,7 +174,15 @@ impl Store {
                 let n = atoms.iter().filter(|a| a.kind != "observed").count();
                 if let (Place::Source(path), false) = (&place, atoms.iter().any(|a| a.kind == "observed")) {
                     let first = &atoms[0];
-                    let version = first.location().and_then(|l| l.version).unwrap_or_default();
+                    // 組の Atom の版がそろっていればその版。そろっていなければ、今の版と違う版で補い、古い範囲として返す。
+                    let versions: std::collections::BTreeSet<String> = atoms.iter().filter_map(|a| a.location().and_then(|l| l.version)).collect();
+                    let current = self.version(path);
+                    let version = versions
+                        .iter()
+                        .find(|v| !current.as_deref().is_some_and(|c| same_version(c, v)))
+                        .or(versions.iter().next())
+                        .cloned()
+                        .unwrap_or_default();
                     atoms.insert(
                         0,
                         Atom {
