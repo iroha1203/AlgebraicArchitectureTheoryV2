@@ -23,7 +23,7 @@
 | C: greedyの選択・停止・正確性 | `newCoverage`, `greedyPick`, `greedyPick_spec`, `greedyAux`, `greedyAux_correct`, `greedyObservationSet`, `greedyObservationSet_correct`, `greedyObservation_empty` | 入力順の最大新規被覆点を選び、成功時の十分集合・失敗時の不適合全点固定元を証明済み |
 | C1: 調和数近似保証 | `harmonic_drop`, `greedy_step_card`, `greedyAux_harmonic`, `greedyObservationSet_harmonic_of_coverable` | 実際のgreedy出力について被覆可能なら点数が `H_|U| b_Γ` 以下と証明済み |
 | D: 独立系の合成・単調性 | `independentAction`, `pointStabilizer_independent`, `sufficient_independent_iff`, `minObservations_independent`, `independent_minimum_disjSum`, `minObservations_antitone` | `ℕ∞` での加法性、有限最小集合の合成、適合部分群の反単調性を証明済み |
-| E: 名前付き操作・G-124対応・固定例 | `ambientChange`, `compatibleChange`, `ambientMulEquivFiberPair`, `fiberPair_compatible_iff`, `fiberCompatibleMulEquivChangeGroup`, `compatibleFiberRootEquiv`, `compatibleVerticalRootMulEquiv`, `ambientFullAction_faithful`, `allAmbientChanges`, `compatibleDecidablePred`, `mem_allSelectedCompatibleChanges_iff`, `protocolFullMinimum_card`, `protocolStateMinimum_none_witness`, `protocolFullMinimum_classifier`, `protocolStateMinimum_classifier`, `protocolFullGreedy_harmonic`, `protocolStateGreedy_harmonic`, `protocolFullCompatibleExtension_readback`, `protocolStateCompatibleExtension_readback`, `identityAmbientOfLift_readAt`, `identityCompatibleSearch_iff_edgeCoherent`, `identityCompatibleSearch_unique`, `identityCompatibleSearch_C2` | 周囲群のfiber表示、E1、元の変更群・根解・垂直中心化群、原始表からの全元生成、Cの二作用への探索接続と値・判定・失敗証拠・近似保証、G-124の同じ代表集合の点観測・整合延長・一意性とG-127 C2全頂点一致を証明済み。固定例は未証明 |
+| E: 名前付き操作・G-124対応・固定例 | `ambientChange`, `compatibleChange`, `ambientMulEquivFiberPair`, `fiberPair_compatible_iff`, `fiberCompatibleMulEquivChangeGroup`, `compatibleFiberRootEquiv`, `compatibleVerticalRootMulEquiv`, `ambientFullAction_faithful`, `allAmbientChanges`, `compatibleDecidablePred`, `mem_allSelectedCompatibleChanges_iff`, `protocolFullMinimum_card`, `protocolStateMinimum_none_witness`, `protocolFullMinimum_classifier`, `protocolStateMinimum_classifier`, `protocolFullGreedy_harmonic`, `protocolStateGreedy_harmonic`, `protocolFullCompatibleExtension_readback`, `protocolStateCompatibleExtension_readback`, `identityAmbientOfLift_readAt`, `identityCompatibleSearch_iff_edgeCoherent`, `identityCompatibleSearch_unique`, `identityCompatibleSearch_C2`, `oneLoopAmbientEquiv`, `oneLoop_compatible_iff_first_one`, `oneLoop_state_search_infinite`, `oneLoop_full_compatible_search_one`, `oneLoop_full_bot_search_two`, `oneLoop_state_C_outputs`, `oneLoop_full_compatible_C_exact`, `oneLoop_full_bot_C_exact` | 周囲群のfiber表示、E1、元の変更群・根解・垂直中心化群、原始表からの全元生成、Cの二作用への探索接続と値・判定・失敗証拠・近似保証、G-124の同じ代表集合の点観測・整合延長・一意性とG-127 C2全頂点一致、同じ一頂点二ループ入力の群同型・適合部分群・∞/1/2・実際の探索出力を証明済み |
 
 Aの `Group G`、`MulAction G X`、`Gamma : Subgroup G` は固定targetの入力である。
 `Sufficient` は結論ではなく点安定化群から定義し、`exists_predicate_iff_sufficient`
@@ -146,8 +146,41 @@ G-128状態作用の点評価を一致させる。`identityPointTable` は代表
 
 ## 指定した有限例
 
-G-127完了条件2の一頂点・二ループ例からの群同型、二つの作用と
-`∞`・`1`・`2` の最小値、B・Cの手続き出力は未構成。
+原始入力は `oneLoopInput`、可視群と頂点・辺・fiber の列挙は元の
+`oneLoopHEquivPermBool`、`oneLoopVertices`、`oneLoopEdges`、`oneLoopFibers` を使う。
+`oneLoopVisible` は元の可視群を恒等元・辺名交換の順に列挙する。
+`oneLoopFiberPairMulEquiv` と `oneLoopAmbientEquiv` は元の周囲群を
+`Equiv.Perm Bool × Equiv.Perm Bool` に群同型で移す。第一因子は辺名、第二因子は
+唯一の頂点の状態置換である。`oneLoop_compatible_iff_first_one` は
+`oneLoop_H_lift_eq_bot` と Bool 置換の可換性を使い、元の E1 適合部分群を
+第一因子が恒等元の部分群と同定する。
+
+状態のみの作用では `oneLoopEdgeSwapAmbient` が全状態を固定するが E1 に反する。
+`oneLoop_state_search_infinite` は実際の `protocolStateMinimum` の `none`、
+C の `protocolStateIncompatibleFixer` の返却元、A の `b_Γ=∞` と B の
+`D_Γ=∞` を同じ入力で証明する。`oneLoop_state_invisible_unique` はその条件を
+満たす元が元の辺名交換に限ることを示し、`oneLoop_state_C_outputs` は
+`protocolStateMinimumOrWitness` と greedy の双方の実際の返却値がこの元で
+あることを証明する。
+
+全観測では `oneLoop_edge_sufficient` が辺 `a`（Lean の `false`）一点の
+十分性を証明する。空集合が不十分であることと合わせ、
+`oneLoop_full_compatible_search_one` は A の `b_Γ=1`、B の `D_Γ=1` と
+C の実際の `protocolFullMinimum` 返却集合の濃度1を証明する。
+`oneLoop_full_compatible_C_exact` と `oneLoop_full_compatible_greedy_exact` は
+頂点、辺 `a,b`、状態 `0,1` の列挙順に対し、両探索が辺 `a` 一点を選ぶ
+計算証明である。
+
+同じ全観測で全変更を区別するとき、
+`oneLoop_edge_state_sufficient_bot` は辺 `a` と状態 `0` の二点を与える。
+`oneLoop_full_bot_two_le_card` は任意の十分集合が辺名交換と状態交換の双方を
+検出するため二点以上と示す。`oneLoop_full_bot_search_two` は A の
+`b_{1}=2`、B の `D_{1}=2` と、元の原始周囲群表・全観測点表を用いる C の
+`oneLoopFullBotMinimum` の返却濃度2を結ぶ。
+`oneLoop_full_bot_C_exact` と `oneLoop_full_bot_greedy_exact` は実際の出力が
+辺 `a` と状態 `0` であることを入力順どおりに計算証明する。
+これらの `decide` は元の有限表と C の実関数を展開する閉じた命題の核検証であり、
+別の四元群の手計算を実装の代用にしていない。
 
 ## Cycle 1 selection / proposed result
 
@@ -938,4 +971,60 @@ audits:
   validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
   blocking_findings: []
   next_obligation: G-127の一頂点二ループ固定例を同じ原始入力・Cの実際の出力に接続
+```
+
+## Cycle 15 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-128-aat-minimal-compatibility-observations
+cycle: 15
+goal_blob_sha: e50d778b5b0592a79c1b12506a6c04fe71a6c147
+base_oid: 4ecb934590ee2b2b8d3b62f5589c0e19544d5317
+tracking_issue: 5075
+report_path: research/reports/G-128-aat-minimal-compatibility-observations.md
+selection:
+  proof_state_ref: Issue #5075 cycle 14 accepted state
+  proof_dag_predecessors: [G-127.oneLoopInput, G-127.oneLoopHEquivPermBool, G-127.oneLoop_H_lift_eq_bot, G-128.ambientMulEquivFiberPair, G-128.protocolFullMinimum, G-128.protocolStateMinimumOrWitness, G-128.optimalQueries_eq_minObservations]
+  milestone: 元の一頂点二ループ入力で適合性判定・全変更識別・状態のみの判定不能を分離
+  proof_obligations: [周囲群C2×C2の元の二因子への同型, 適合群が第一因子恒等元, 状態のみ∞と同じ不適合元のC返却, 全観測適合性1と辺a出力, 全観測全変更2と辺a・状態0出力, A/B/Cの同じ入力上の一致]
+  exit_criteria: [固定GOAL完了条件2の全結論, 原始入力と列挙の保持, 実際のC関数の出力, focused checkと全報告宣言の公理監査]
+  selection_reason: A–Eの残る唯一の固定有限例を証明する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/MinimalCompatibilityObservations/OneVertexTwoLoopsGroup.lean, ResearchLean/AG/MinimalCompatibilityObservations/OneVertexTwoLoopsSearch.lean]
+  risks: [元の操作を忘れた四元群への置換, 第二因子の状態作用との不一致, Cの別関数化, 列挙順の同数選択]
+  unchecked: []
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 固定例のEの実群・実作用・適合群からA/B/Cの∞・1・2と実際の探索返却値まで証明
+  exit_criteria_status: [二因子を保つ群同型と適合群同定, 状態のみの不適合全点固定元とC返却, 辺a一点と辺a・状態0二点の最小性, 最小探索とgreedyの返却値, focused checkと公理監査]
+  completion_candidate: yes
+  lean_artifacts: [OneVertexTwoLoopsGroup.lean, OneVertexTwoLoopsSearch.lean]
+  evidence: [oneLoopAmbientEquiv, oneLoop_compatible_iff_first_one, oneLoop_state_search_infinite, oneLoop_state_invisible_unique, oneLoop_state_C_outputs, oneLoop_full_compatible_search_one, oneLoop_full_compatible_C_exact, oneLoop_full_compatible_greedy_exact, oneLoop_full_bot_search_two, oneLoop_full_bot_C_exact, oneLoop_full_bot_greedy_exact]
+  claim_mapping:
+    theorem_names: [oneLoopAmbientEquiv, oneLoop_compatible_iff_first_one, oneLoop_state_search_infinite, oneLoop_full_compatible_search_one, oneLoop_full_bot_search_two, oneLoop_state_C_outputs, oneLoop_full_compatible_C_exact, oneLoop_full_bot_C_exact]
+    source_labels: [E 原始群と適合部分群, 完了条件2の状態のみ・全観測適合性・全観測全変更, A 最小観測, B 最適問い合わせ, C 最小集合・判定不能]
+    conjuncts: [辺名と状態の二因子, 元のE1部分群, 同じ状態作用と全作用, ∞・1・2の三値と問い合わせ値, 実際の有限探索・greedyの出力]
+    undischarged_assumptions: []
+    acceptance_point: 一頂点二ループの原始入力と完全列挙から生成した同じ周囲群表を三場合に使用
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [固定例の群同型, E1適合群同定, 二つの作用上の三つの最小値, 実際のC出力]
+    remaining: []
+  certificate_provenance:
+    discharged: [oneLoopInputと元のG-127列挙, oneLoop_H_lift_eq_bot, ProtocolFiniteSearchの原始表生成, decideによるC関数の閉じた計算証明]
+    unresolved: []
+  proof_use:
+    used: [ambientMulEquivFiberPair, oneLoopHEquivPermBool, oneLoop_H_lift_eq_bot, oneLoopEdgeSwapAmbient, oneLoopFiberSwapAmbient, minObservations_le, minObservations_attained, minimumObservation_card, protocolStateMinimum_none_witness, optimalQueries_eq_minObservations]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [単一file focused checkと全報告宣言の公理監査をPRに記録]
+  blocking_findings: []
+  next_obligation: 固定headでの標準PR監査と独立completion査読
 ```
