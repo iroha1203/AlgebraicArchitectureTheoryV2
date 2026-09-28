@@ -2740,6 +2740,57 @@ audits:
   validation_refs: [focused Lean check, eight #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 75 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 75
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 8b64c529f
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 74 second fixed input and original swap lift
+  proof_dag_predecessors: [twoVertexGraph, twoVertexSwap, twoVertexInput, FixedFGraphAutomorphism.ext]
+  proof_obligation: Identify the actual full visible group H of the second fixed example as C2
+  selection_reason: The specified C4 extension and projection require exactly the visible simultaneous vertex/name exchange
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/TwoVertexVisibleGroup.lean]
+  risks: [showing only one order-two element, omitting additional graph automorphisms, treating vertex and edge permutations independently, invented multiplication]
+  unchecked: [Aut_Q(F)=C2, A_F=C4, quotient projection, two order-four swap lifts, no section, E and torsor]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Every actual graph automorphism has identical vertex and original edge-name permutations; these are identity or simultaneous swap; H is group-isomorphic to permutations of Bool, has cardinality two, and is cyclic
+  completion_candidate: no
+  lean_artifacts: [twoVertexGraphAutOfPerm, twoVertexHEquivPermBool]
+  evidence: [twoVertex_vertex_eq_edge, twoVertex_visible_eq_one_or_swap, twoVertexSwap_ne_one, twoVertex_H_exact, twoVertex_H_card_two, twoVertex_H_isCyclic]
+  claim_mapping:
+    theorem_names: [twoVertexHEquivPermBool, twoVertex_H_card_two, twoVertex_H_isCyclic]
+    source_labels: [completion condition 3 H=C2]
+    conjuncts: [actual full graph automorphism group, simultaneous vertex and edge action, two elements, cyclic group]
+    undischarged_assumptions: [vertical and total group classifications, quotient and section, E and torsor]
+    acceptance_point: Second-example H is the actual simultaneous exchange group C2
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [second-example H=C2]
+    remaining: [second-example C4 extension and decision/torsor output]
+  certificate_provenance:
+    discharged: [original source labels force vertex=edge permutation, Bool permutation exhaustion, actual graph group law]
+    unresolved: [vertical and total group calculations]
+  proof_use:
+    used: [source_rename for all original edge names, graph automorphism extensionality, genuine multiplication]
+    unused: [no assumed H enumeration]
+  structure_field_escape: none-found-for-visible-H
+  route_integrity: pass-for-second-example-visible-group
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, eight #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
