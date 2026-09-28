@@ -908,6 +908,7 @@ import ResearchLean.AG.ProtocolHolonomy.OneVertexTwoLoopsLiftable
 import ResearchLean.AG.ProtocolHolonomy.TwoVertexOppositeEdges
 import ResearchLean.AG.ProtocolHolonomy.TwoVertexVisibleGroup
 import ResearchLean.AG.ProtocolHolonomy.TwoVertexVerticalGroup
+import ResearchLean.AG.ProtocolHolonomy.TwoVertexCycle
 import ResearchLean.AG.ProtocolHolonomy.LiftRootCondition
 import ResearchLean.AG.ProtocolHolonomy.LiftRootReconstruction
 import ResearchLean.AG.ProtocolHolonomy.LiftableVisible
