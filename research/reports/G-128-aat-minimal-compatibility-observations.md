@@ -23,7 +23,7 @@
 | C: greedyの選択・停止・正確性 | `newCoverage`, `greedyPick`, `greedyPick_spec`, `greedyAux`, `greedyAux_correct`, `greedyObservationSet`, `greedyObservationSet_correct`, `greedyObservation_empty` | 入力順の最大新規被覆点を選び、成功時の十分集合・失敗時の不適合全点固定元を証明済み |
 | C1: 調和数近似保証 | `harmonic_drop`, `greedy_step_card`, `greedyAux_harmonic`, `greedyObservationSet_harmonic_of_coverable` | 実際のgreedy出力について被覆可能なら点数が `H_|U| b_Γ` 以下と証明済み |
 | D: 独立系の合成・単調性 | `independentAction`, `pointStabilizer_independent`, `sufficient_independent_iff`, `minObservations_independent`, `independent_minimum_disjSum`, `minObservations_antitone` | `ℕ∞` での加法性、有限最小集合の合成、適合部分群の反単調性を証明済み |
-| E: 名前付き操作と固定例 | `ambientChange`, `compatibleChange`, `ambientMulEquivFiberPair`, `fiberPair_compatible_iff`, `fiberCompatibleMulEquivChangeGroup`, `compatibleFiberRootEquiv`, `compatibleVerticalRootMulEquiv`, `ambientFullAction_faithful`, `allAmbientChanges`, `compatibleDecidablePred`, `mem_allSelectedCompatibleChanges_iff` | 周囲群のfiber表示、E1、元の変更群・根解・垂直中心化群、原始表からの全元生成と適合列の一致を証明済み。Cの具体的出力接続、G-124対応、固定例は未証明 |
+| E: 名前付き操作と固定例 | `ambientChange`, `compatibleChange`, `ambientMulEquivFiberPair`, `fiberPair_compatible_iff`, `fiberCompatibleMulEquivChangeGroup`, `compatibleFiberRootEquiv`, `compatibleVerticalRootMulEquiv`, `ambientFullAction_faithful`, `allAmbientChanges`, `compatibleDecidablePred`, `mem_allSelectedCompatibleChanges_iff`, `protocolFullMinimum_card`, `protocolStateMinimum_none_witness`, `protocolFullMinimum_classifier`, `protocolStateMinimum_classifier`, `protocolFullGreedy_harmonic`, `protocolStateGreedy_harmonic`, `protocolFullCompatibleExtension_readback`, `protocolStateCompatibleExtension_readback` | 周囲群のfiber表示、E1、元の変更群・根解・垂直中心化群、原始表からの全元生成、Cの二作用への探索接続と値・判定・失敗証拠・近似保証を証明済み。G-124対応、固定例は未証明 |
 
 Aの `Group G`、`MulAction G X`、`Gamma : Subgroup G` は固定targetの入力である。
 `Sufficient` は結論ではなく点安定化群から定義し、`exists_predicate_iff_sufficient`
@@ -113,6 +113,24 @@ G-127の根解と垂直の根中心化群表示に接続する。
 `finiteSelectedAllLifts` を全可視元で連結し、
 `mem_allSelectedCompatibleChanges_iff` が新しいE1部分群との所属同値を示す。
 `FiniteProtocolInput.ambientTable` は同じ原始入力の `data,H` と実行用の明示列を使う。
+`ProtocolFiniteSearch` はこの表をCの最小集合探索、greedy、二種の観測表延長に
+同じ `Xall` と `Xst` の作用で渡す。`protocolFullMinimum_some` と
+`protocolStateMinimum_some` は返却集合の十分性・最小性、両greedyの
+`_correct` は十分集合または不適合な全点固定元を示す。
+`protocolFullCompatibleExtension_readback` は返された実際の周囲群元を
+元の可視変更とfiber全単射族として読み、E1の辺可換式と指定表の一致を示す。
+状態版の `protocolStateCompatibleExtension_readback` も同じ読戻しを行う。
+両最小探索の `_card` と `_none_iff` は返却濃度と `b_Γ` の一致および失敗時の
+不存在を示す。全観測では `protocolFullMinimum_success` が必ず成功を示し、
+状態のみでは `protocolStateMinimum_none_witness` が同じ表の実行可能なscanから
+不適合な全状態固定元を返し、`b_Γ=D_Γ=∞` を証明する。返却最小集合の
+`_classifier` は元のE1所属を全周囲変更に対して正確に判定する。
+`protocolStateMinimumOrWitness` はこの成功・失敗を一つの実行可能な出力へまとめ、
+`_correct` と `_classifier` がその同じ返却値を検証する。
+両greedyの `_harmonic` は実際の出力点数にC1を適用し、`_empty` は
+不適合元集合が空なら空集合を返す。
+通常・適合の双方の延長について `some` の正確性と `none` の全候補不存在を
+全観測・状態観測で証明する。
 
 ## 指定した有限例
 
@@ -796,4 +814,60 @@ audits:
   validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
   blocking_findings: []
   next_obligation: Cの探索関数へ生成表を渡して元の可視成分とfiber作用を読戻す
+```
+
+## Cycle 13 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-128-aat-minimal-compatibility-observations
+cycle: 13
+goal_blob_sha: e50d778b5b0592a79c1b12506a6c04fe71a6c147
+base_oid: 8796fadcd9c3305f9df0c57d6c4121cf5abdc64a
+tracking_issue: 5075
+report_path: research/reports/G-128-aat-minimal-compatibility-observations.md
+selection:
+  proof_state_ref: Issue #5075 cycle 12 accepted state
+  proof_dag_predecessors: [FiniteAmbientTable.allAmbientChanges, FiniteAmbientTable.compatibleDecidablePred, FiniteMinimum.minimumObservation, GreedySelection.greedyObservationSet, FiniteExtension.findCompatibleExtension]
+  milestone: 同じ原始有限表からCの実際の二作用探索を実行し結果を読戻す
+  proof_obligations: [全観測と状態観測の最小集合探索と値・判定・失敗証拠, 両作用のgreedyと調和上界・空集合, 両作用で通常と適合の指定表延長, 返却元の元のE1への読戻し]
+  exit_criteria: [原始FiniteProtocolInputと明示列に依存する関数, someとnoneと最小値・判定器・greedy保証の正確性, E1辺可換式を返却元について証明, focused checkと公理監査]
+  selection_reason: Eの原始表をCの一般手続きに実際に供給する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/MinimalCompatibilityObservations/ProtocolFiniteSearch.lean]
+  risks: [一般C定理の名前だけの再包装, 実際の周囲群表・所属判定との切断, 結果の抽象元への置換]
+  unchecked: [G-124対応, 指定例]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 元のFiniteProtocolInputからの周囲群表をCの最小集合・greedy・二種延長へ渡し、実際の出力を元の作用とE1に接続
+  exit_criteria_status: [二作用の各関数を構成, 最小値・判定器・不能証拠・greedy調和上界・空集合・延長some/noneを証明, E1辺可換式へ読戻し, focused checkと公理監査成功]
+  completion_candidate: no
+  lean_artifacts: [ProtocolFiniteSearch.lean]
+  evidence: [protocolFullMinimum_some, protocolFullMinimum_card, protocolFullMinimum_none_iff, protocolFullMinimum_success, protocolFullMinimum_classifier, protocolFullGreedy_correct, protocolFullGreedy_harmonic, protocolFullGreedy_empty, protocolStateMinimum_some, protocolStateMinimum_card, protocolStateMinimum_none_iff, protocolStateMinimum_none_witness, protocolStateMinimumOrWitness_correct, protocolStateMinimumOrWitness_classifier, protocolStateMinimum_classifier, protocolStateGreedy_correct, protocolStateGreedy_harmonic, protocolStateGreedy_empty, protocolFullCompatibleExtension_readback, protocolStateCompatibleExtension_readback, protocolFullCompatibleExtension_none_iff, protocolStateCompatibleExtension_none_iff, protocolFullExtension_some, protocolFullExtension_none_iff, protocolStateExtension_some, protocolStateExtension_none_iff]
+  claim_mapping:
+    theorem_names: [protocolFullMinimum_card, protocolFullMinimum_success, protocolStateMinimumOrWitness_correct, protocolStateMinimumOrWitness_classifier, protocolFullMinimum_classifier, protocolStateMinimum_classifier, protocolFullGreedy_harmonic, protocolStateGreedy_harmonic, protocolFullCompatibleExtension_readback, protocolStateCompatibleExtension_readback]
+    source_labels: [E 有限表からCへの入力, C 最小集合・greedy・指定表延長]
+    conjuncts: [原始周囲群の全元とE1判定, 全観測と状態観測の最小値と正確な判定, 不能時の不適合全点固定元と無限値, greedyの調和上界と空集合, 通常・適合表のsome/none, 元の可視成分とfiber E1]
+    undischarged_assumptions: [G-124対応, 指定例]
+    acceptance_point: 原始P.dataとP.Hから生成した同一列挙をCの各関数へ渡す
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [Cの操作系への入力生成と最小値・判定・不能証拠・greedy保証・E1出力の読戻し]
+    remaining: [G-124対応, 指定例]
+  certificate_provenance:
+    discharged: [元のFiniteProtocolInputからG-127候補表を経て生成した全周囲元を使用]
+    unresolved: []
+  proof_use:
+    used: [FiniteProtocolInput.ambientTable, compatibleDecidablePred, minimumObservation_some, minimumObservation_card, minimumObservation_none_iff, findIncompatibleFixer_some, classify_correct, greedyObservationSet_correct, greedyObservationSet_harmonic_of_coverable, greedyObservation_empty, findCompatibleExtension_some, fiberPair_compatible_iff]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
+  blocking_findings: []
+  next_obligation: G-124の同じ成分代表の読取りと延長をCの出力に接続
 ```

@@ -963,3 +963,4 @@ import ResearchLean.AG.MinimalCompatibilityObservations.IndependentComposition
 import ResearchLean.AG.MinimalCompatibilityObservations.ProtocolAmbient
 import ResearchLean.AG.MinimalCompatibilityObservations.ProtocolFiberDisplay
 import ResearchLean.AG.MinimalCompatibilityObservations.FiniteAmbientTable
+import ResearchLean.AG.MinimalCompatibilityObservations.ProtocolFiniteSearch
