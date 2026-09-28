@@ -2485,6 +2485,57 @@ audits:
   validation_refs: [focused Lean check, four #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 70 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 70
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 3ea25f23e
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 69 first fixed primitive input and empty Pi
+  proof_dag_predecessors: [oneLoopInput, oneLoopSwap, FixedFGraphAutomorphism.ext]
+  proof_obligation: Identify the first fixed example's actual visible H as C2
+  selection_reason: Its later H_lift and projection claims require the exact visible group
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/OneVertexTwoLoopsVisibleGroup.lean]
+  risks: [merely exhibiting an order-two element, omitting other graph automorphisms, confusing graph automorphism multiplication with an invented group]
+  unchecked: [both holonomy groups C2, B2 centralizer, H_lift trivial, second fixed example]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Every actual visible graph automorphism is identity or the named-loop swap; its full H is group-isomorphic to permutations of Bool, has cardinality two, and is cyclic
+  completion_candidate: no
+  lean_artifacts: [oneLoopGraphAutOfPerm, oneLoopHEquivPermBool]
+  evidence: [oneLoop_visible_eq_one_or_swap, oneLoopSwap_ne_one, oneLoop_H_exact, oneLoop_H_card_two, oneLoop_H_isCyclic]
+  claim_mapping:
+    theorem_names: [oneLoopHEquivPermBool, oneLoop_H_card_two, oneLoop_H_isCyclic]
+    source_labels: [completion condition 2 H=C2]
+    conjuncts: [actual full graph automorphism group, two elements, cyclic group structure]
+    undischarged_assumptions: [both holonomy groups, B2, H_lift, second fixed example]
+    acceptance_point: Same first-example input H is a cyclic group of order two with explicit graph-action classification
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [first-example visible H=C2]
+    remaining: [first-example holonomy and vertical/liftable classification, second fixed example]
+  certificate_provenance:
+    discharged: [PUnit vertex extensionality, two-valued edge equivalence injectivity, actual group multiplication]
+    unresolved: [holonomy and H_lift calculations]
+  proof_use:
+    used: [graph automorphism extensionality, actual edge-equivalence multiplication, explicit Bool permutation group equivalence]
+    unused: [no H-cardinality axiom or supplied enumeration certificate]
+  structure_field_escape: none-found-for-visible-group
+  route_integrity: pass-for-first-example-H
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, seven #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
