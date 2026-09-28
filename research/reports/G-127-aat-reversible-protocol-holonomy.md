@@ -2842,6 +2842,57 @@ audits:
   validation_refs: [focused Lean check, six #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 77 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 77
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 6eeaf01ea
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 76 actual vertical Aut_Q(F)=C2
+  proof_dag_predecessors: [twoVertexSwapLift, twoVertexVerticalSwap, ReversibleData.ChangeGroup, ReversibleData.Lift.toStateChange]
+  proof_obligation: Calculate the order of an actual A2 change lying above the second example's visible swap
+  selection_reason: A fourth-order swap lift is the structural generator required for the C4 extension and non-splitting proof
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/TwoVertexCycle.lean]
+  risks: [calculating only a fiberwise candidate, ignoring actual A2 multiplication, asserting order four from a smoke, failing to distinguish square from identity]
+  unchecked: [entire A_F=C4, quotient projection, second swap lift order four, no section, E and torsor]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Embed the original swap lift and nontrivial vertical lift in the actual ChangeGroup; the swap lift's square is the nontrivial vertical change, whose square is identity; the swap lift is not identity and has exact order four
+  completion_candidate: no
+  lean_artifacts: [twoVertexCycleChange, twoVertexVerticalChange]
+  evidence: [twoVertexCycleChange_sq, twoVertexVerticalChange_sq, twoVertexCycleChange_ne_one, twoVertexVerticalChange_ne_one, twoVertexCycleChange_pow_four, twoVertexCycleChange_order_four]
+  claim_mapping:
+    theorem_names: [twoVertexCycleChange_sq, twoVertexCycleChange_order_four]
+    source_labels: [completion condition 3 one order-four swap lift]
+    conjuncts: [actual original swap A1 lift, actual A2 ChangeGroup multiplication, nontrivial square, exact order four]
+    undischarged_assumptions: [total group exhaustiveness and C4, second swap lift order four, quotient and no section, E and torsor]
+    acceptance_point: The explicit original swap lift has exact order four in the actual A2 change group
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [one actual swap lift has order four]
+    remaining: [total C4 classification, second lift, projection/section, E and torsor]
+  certificate_provenance:
+    discharged: [actual StateChange fields and multiplication, state equivalence evaluated on every Bool vertex/state, original A1 lift]
+    unresolved: [group exhaustiveness]
+  proof_use:
+    used: [actual ChangeGroup subtype, StateChange.ext, state permutation on all four states, orderOf_eq_iff]
+    unused: [no supplied order certificate]
+  structure_field_escape: none-found-for-order-four-generator
+  route_integrity: pass-for-second-example-generator
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, five #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
