@@ -93,6 +93,19 @@ private def smokeEdges : AAT.AG.ProtocolHolonomy.ExplicitEnumeration smokeQ.Edge
   values := [false, true]
   complete := by intro x; cases x <;> simp
 
+private def smokeLastPassage {a b : smokeQ.Vertex}
+    (p : AAT.AG.ProtocolHolonomy.SignedPath smokeQ a b) :
+    Option (Bool × smokeQ.Edge) := by
+  letI : Quiver smokeQ.Vertex := AAT.AG.ProtocolHolonomy.typedQuiver smokeQ
+  letI : Quiver (Quiver.Symmetrify smokeQ.Vertex) :=
+    Quiver.symmetrifyQuiver smokeQ.Vertex
+  cases p with
+  | nil => exact none
+  | cons _ e =>
+      cases e with
+      | inl f => exact some (true, f.1)
+      | inr f => exact some (false, f.1)
+
 #eval (letI : DecidableEq smokeQ.Vertex := inferInstanceAs (DecidableEq Bool)
   letI : Quiver smokeQ.Vertex := AAT.AG.ProtocolHolonomy.typedQuiver smokeQ
   letI : Quiver (Quiver.Symmetrify smokeQ.Vertex) :=
@@ -102,11 +115,21 @@ private def smokeEdges : AAT.AG.ProtocolHolonomy.ExplicitEnumeration smokeQ.Edge
   (AAT.AG.ProtocolHolonomy.signedEdgeOfAdj smokeQ smokeEdges h).length)
 
 #eval (letI : DecidableEq smokeQ.Vertex := inferInstanceAs (DecidableEq Bool)
+  let h : (AAT.AG.ProtocolHolonomy.finiteReachabilityGraph smokeQ).Adj false true :=
+    ⟨Bool.false_ne_true, Or.inl ⟨false, rfl, rfl⟩⟩
+  smokeLastPassage (AAT.AG.ProtocolHolonomy.signedEdgeOfAdj smokeQ smokeEdges h))
+
+#eval (letI : DecidableEq smokeQ.Vertex := inferInstanceAs (DecidableEq Bool)
   letI : Quiver smokeQ.Vertex := AAT.AG.ProtocolHolonomy.typedQuiver smokeQ
   letI : Quiver (Quiver.Symmetrify smokeQ.Vertex) :=
     Quiver.symmetrifyQuiver smokeQ.Vertex
   let h : (AAT.AG.ProtocolHolonomy.finiteReachabilityGraph smokeQ).Adj true false :=
     ⟨by decide, Or.inr ⟨false, rfl, rfl⟩⟩
   (AAT.AG.ProtocolHolonomy.signedEdgeOfAdj smokeQ smokeEdges h).length)
+
+#eval (letI : DecidableEq smokeQ.Vertex := inferInstanceAs (DecidableEq Bool)
+  let h : (AAT.AG.ProtocolHolonomy.finiteReachabilityGraph smokeQ).Adj true false :=
+    ⟨by decide, Or.inr ⟨false, rfl, rfl⟩⟩
+  smokeLastPassage (AAT.AG.ProtocolHolonomy.signedEdgeOfAdj smokeQ smokeEdges h))
 
 #assert_standard_axioms_only AAT.AG.ProtocolHolonomy

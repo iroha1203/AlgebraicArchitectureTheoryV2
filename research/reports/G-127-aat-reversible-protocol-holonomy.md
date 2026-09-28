@@ -1513,7 +1513,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [focused Lean check and five-declaration standard axiom audit to be recorded in PR; #eval forward length one and reverse length one]
+  validation_refs: [focused Lean check and five-declaration standard axiom audit to be recorded in PR; #eval forward and reverse length one, plus selected original edge false with forward and reverse tags]
 ```
 
 ## Cycle 27 selection / proposed result
