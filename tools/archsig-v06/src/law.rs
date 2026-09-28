@@ -5,10 +5,16 @@ use std::collections::BTreeSet;
 /// Law ファイルの宣言のうち、今の計算が使うもの。
 #[derive(Clone, Debug, Default)]
 pub struct LawSet {
-    pub sources: Vec<String>,
-    pub except: Vec<String>,
+    /// `sources` の宣言。`except` はその宣言にだけ効く。
+    pub sources: Vec<Sources>,
     /// 意味の語彙の名前。
     pub meanings: Vec<String>,
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct Sources {
+    pub include: Vec<String>,
+    pub except: Vec<String>,
 }
 
 impl LawSet {
@@ -37,14 +43,15 @@ impl LawSet {
             let head = lex(&block[0]).map_err(|e| format!("{at}: {e}"))?;
             match word_at(&head, 0).as_deref() {
                 Some("sources") => {
-                    self.sources.extend(strings(&head[1..]).map_err(|e| format!("{at}: {e}"))?);
+                    let mut decl = Sources { include: strings(&head[1..]).map_err(|e| format!("{at}: {e}"))?, except: Vec::new() };
                     for l in &block[1..] {
                         let r = lex(l).map_err(|e| format!("{at}: {e}"))?;
                         if word_at(&r, 0).as_deref() != Some("except") {
                             return Err(format!("{at}: sources の下には except だけを書く"));
                         }
-                        self.except.extend(strings(&r[1..]).map_err(|e| format!("{at}: {e}"))?);
+                        decl.except.extend(strings(&r[1..]).map_err(|e| format!("{at}: {e}"))?);
                     }
+                    self.sources.push(decl);
                 }
                 Some("include") => {
                     let dir = path.rsplit_once('/').map(|(d, _)| d).unwrap_or("");
@@ -196,8 +203,9 @@ mod tests {
             }
         };
         let set = LawSet::load(&[".archsig/law/a.law".to_string()], &files).unwrap();
-        assert_eq!(set.sources, vec!["shop/**"]);
-        assert_eq!(set.except, vec!["**/tests/**"]);
+        assert_eq!(set.sources.len(), 1);
+        assert_eq!(set.sources[0].include, vec!["shop/**"]);
+        assert_eq!(set.sources[0].except, vec!["**/tests/**"]);
         assert_eq!(set.meanings, vec!["m", "n"]);
     }
 }

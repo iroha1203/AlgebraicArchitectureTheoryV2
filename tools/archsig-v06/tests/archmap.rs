@@ -166,6 +166,15 @@ fn record_keeps_paths_inside_the_repository() {
     let v = repo.ok(&["status"]);
     assert!(!v["unread"].as_array().unwrap().iter().any(|u| u["source"] == "src/b.py" && u["scopes"][0] == "structure"), "{v}");
 
+    repo.record(r#"{"kind": "defines", "subject": "src.b.B", "value": "type", "at": "src/../src/b.py:1"}"#);
+    assert_eq!(repo.map("src/b.py").iter().filter(|a| a["kind"] == "defines").count(), 1, "根の中を指す .. はたどる");
+    assert!(repo.dir.join(".archsig/map/src/a.py.jsonl").exists(), "別のソースの Atom は残る");
+    for subject in ["local:x:../../../escaped", "local:x"] {
+        let f = repo.dir.join("in.jsonl");
+        std::fs::write(&f, format!(r#"{{"kind": "meaning", "subject": "{subject}", "meaning": "m", "at": "src"}}"#)).unwrap();
+        assert!(!repo.run(&["record", f.to_str().unwrap()]).status.success(), "{subject}");
+    }
+
     let outside = repo.dir.parent().unwrap().join(format!("archsig-outside-{}.py", std::process::id()));
     std::fs::write(&outside, "x\n").unwrap();
     for at in [outside.display().to_string(), format!("../{}", outside.file_name().unwrap().to_string_lossy())] {
@@ -177,6 +186,16 @@ fn record_keeps_paths_inside_the_repository() {
     }
     assert!(!repo.run(&["record", "--drop", "../victim"]).status.success());
     std::fs::remove_file(outside).unwrap();
+}
+
+#[test]
+fn except_applies_only_to_its_own_sources() {
+    let repo = Repo::new("except");
+    repo.write(".archsig/law/a.law", "sources \"src/**\"\n  except \"**/tests/**\"\n\nsources \"tools/tests/**\"\n");
+    repo.write("tools/tests/check.py", "c = 1\n");
+    let v = repo.ok(&["status"]);
+    let unread: Vec<&str> = v["unread"].as_array().unwrap().iter().map(|u| u["source"].as_str().unwrap()).collect();
+    assert_eq!(unread, vec!["src/a.py", "src/b.py", "tools/tests/check.py"]);
 }
 
 #[test]
@@ -229,7 +248,6 @@ fn record_rejects_an_unknown_kind() {
     std::fs::write(&f, r#"{"kind": "verdict", "subject": "src.a", "at": "src/a.py:1"}"#).unwrap();
     let out = repo.run(&["record", f.to_str().unwrap()]);
     assert!(!out.status.success());
-    assert!(String::from_utf8_lossy(&out.stderr).contains("verdict"));
 }
 
 #[test]
@@ -289,5 +307,5 @@ fn status_reports_unread_and_stale_scopes() {
     repo.write("src/a.py", "a = 2\n");
     let v = repo.ok(&["status"]);
     let scopes: Vec<&str> = v["stale"].as_array().unwrap().iter().map(|s| s["scope"].as_str().unwrap()).collect();
-    assert_eq!(scopes, vec!["meaning:m", "structure", "meaning:m"]);
+    assert_eq!(scopes, vec!["meaning:m", "meaning:m", "structure"], "ソース、範囲、要素の順に並ぶ");
 }

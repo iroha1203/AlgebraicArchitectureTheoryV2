@@ -71,8 +71,11 @@ impl Store {
 
     /// Law の `sources` に当たる、今のソースのファイル。
     pub fn sources(&self, laws: &LawSet) -> Result<Vec<String>, String> {
-        let include = globs(&laws.sources)?;
-        let exclude = globs(&laws.except)?;
+        let decls = laws
+            .sources
+            .iter()
+            .map(|d| Ok((globs(&d.include)?, globs(&d.except)?)))
+            .collect::<Result<Vec<_>, String>>()?;
         let mut out = Vec::new();
         for e in walkdir::WalkDir::new(&self.root)
             .into_iter()
@@ -83,7 +86,7 @@ impl Store {
                 continue;
             }
             let rel = e.path().strip_prefix(&self.root).unwrap().to_string_lossy().replace('\\', "/");
-            if include.is_match(&rel) && !exclude.is_match(&rel) {
+            if decls.iter().any(|(include, exclude)| include.is_match(&rel) && !exclude.is_match(&rel)) {
                 out.push(rel);
             }
         }
@@ -128,6 +131,12 @@ impl Store {
                 a.uses = Some(uses.iter().map(|u| self.versioned(u)).collect::<Result<_, _>>()?);
             }
             let key = if is_local(&a) {
+                a.subject = local_name(&a.subject)?;
+                if let Some(at) = a.at.take() {
+                    let mut loc = atom::parse_location(&at).ok_or(format!("場所が読めない: {at}"))?;
+                    loc.path = relative(&loc.path)?;
+                    a.at = Some(loc.to_at());
+                }
                 a.subject.clone()
             } else {
                 let at = a.at.as_deref().ok_or(format!("at がない: {}", a.subject))?;
@@ -216,10 +225,13 @@ pub fn status(store: &Store) -> Result<serde_json::Value, String> {
             }
         }
     }
+    let key = |v: &serde_json::Value| ["source", "scope", "element", "use"].map(|k| v[k].as_str().unwrap_or("").to_string());
+    stale.sort_by_key(key);
+    let meanings: std::collections::BTreeSet<&String> = laws.meanings.iter().collect();
     let mut unread = Vec::new();
     for s in &sources {
         let mut scopes = Vec::new();
-        let wanted = std::iter::once("structure".to_string()).chain(laws.meanings.iter().map(|m| format!("meaning:{m}")));
+        let wanted = std::iter::once("structure".to_string()).chain(meanings.iter().map(|m| format!("meaning:{m}")));
         for sc in wanted {
             if !observed.contains_key(&(s.clone(), sc.clone())) {
                 scopes.push(sc);
@@ -237,13 +249,35 @@ fn is_local(a: &Atom) -> bool {
     a.kind == "meaning" && a.subject.starts_with("local:")
 }
 
-/// パスを、リポジトリの根からの相対パスにそろえる。
+/// パスを、リポジトリの根からの相対パスにそろえる。`./` と空の区切りを落とし、`..` をたどる。
 fn relative(path: &str) -> Result<String, String> {
-    let parts: Vec<&str> = path.split('/').filter(|c| !c.is_empty() && *c != ".").collect();
-    if path.starts_with('/') || parts.is_empty() || parts.contains(&"..") {
-        return Err(format!("パスは、リポジトリの中の相対パスで書く: {path}"));
+    let outside = || format!("パスは、リポジトリの中の相対パスで書く: {path}");
+    if path.starts_with('/') {
+        return Err(outside());
+    }
+    let mut parts: Vec<&str> = Vec::new();
+    for c in path.split('/') {
+        match c {
+            "" | "." => {}
+            ".." => {
+                parts.pop().ok_or_else(outside)?;
+            }
+            _ => parts.push(c),
+        }
+    }
+    if parts.is_empty() {
+        return Err(outside());
     }
     Ok(parts.join("/"))
+}
+
+/// 局所ごとの意味 Atom の名前 `local:<読み>:<局所>` をそろえる。局所の名前はパスと同じくそろえる。
+fn local_name(subject: &str) -> Result<String, String> {
+    let rest = subject.strip_prefix("local:").unwrap_or(subject);
+    match rest.split_once(':') {
+        Some((reading, local)) if !reading.is_empty() && !reading.contains('/') => Ok(format!("local:{reading}:{}", relative(local)?)),
+        _ => Err(format!("局所ごとの意味 Atom は local:<読み>:<局所> と書く: {subject}")),
+    }
 }
 
 /// パスのパターン。`*` は `/` をまたがず、`**` はまたぐ。
