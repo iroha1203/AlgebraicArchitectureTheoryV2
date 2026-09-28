@@ -21,7 +21,7 @@
 | C: 最小集合と判定不能の証拠 | `candidateSets`, `minimumObservation`, `minimumObservation_card`, `findIncompatibleFixer`, `minimumOrWitness`, `minimumOrWitness_correct`, `minimumOrWitness_invisible`, `minimumOrWitness_optimalProcedure` | 入力列挙からの全探索、実際の最小集合または不適合な全点固定元、A・Bとの対応を証明済み |
 | C: 集合被覆 | `incompatibleSet`, `detectedSet`, `sufficient_iff_cover` | 入力有限表の不適合元と点ごとの検出集合から、十分性と被覆の同値を証明済み |
 | C: greedyの選択・停止・正確性 | `newCoverage`, `greedyPick`, `greedyPick_spec`, `greedyAux`, `greedyAux_correct`, `greedyObservationSet`, `greedyObservationSet_correct`, `greedyObservation_empty` | 入力順の最大新規被覆点を選び、成功時の十分集合・失敗時の不適合全点固定元を証明済み |
-| C1: 調和数近似保証 | — | 未証明 |
+| C1: 調和数近似保証 | `harmonic_drop`, `greedy_step_card`, `greedyAux_harmonic`, `greedyObservationSet_harmonic_of_coverable` | 実際のgreedy出力について被覆可能なら点数が `H_|U| b_Γ` 以下と証明済み |
 | D: 独立系の合成・単調性 | — | 未証明 |
 | E: 名前付き操作と固定例 | — | 未実装 |
 
@@ -72,7 +72,7 @@ Cの `candidateSets` は入力点列の全 sublist を集合に変換する。�
 `findIncompatibleFixer` は全点を固定する不適合な元を変更列挙から走査し、
 `minimumOrWitness` の失敗枝で実際にその元を返す。恒等元と同じ全点観測で
 適合性が異なること、`b_Γ=D_Γ=∞` を同じ出力に対して証明する。
-調和数保証は後続のC義務である。
+調和数保証は `greedyObservationSet_harmonic_of_coverable` で実際のgreedy出力に対して証明する。
 `incompatibleSet` は不適合変更全体、`detectedSet x` は点 `x` で動く不適合変更を
 入力変更表から構成する。`sufficient_iff_cover` は任意の有限 `B` について、
 元の `Sufficient Gamma B` と `B` の検出集合の和集合が全不適合変更に等しいことを
@@ -82,7 +82,7 @@ Cの `candidateSets` は入力点列の全 sublist を集合に変換する。�
 残集合を真に縮める有限再帰であり、十分な燃料を初期 `U.card` から与える。
 `greedyObservationSet_correct` は実際の出力集合が十分か、返した元が不適合で
 全点を固定し `b_Γ=D_Γ=∞` を証明する。`U=∅` の場合は空集合を返す。
-返す集合の濃度に対する調和数上界C1は残る。
+返す集合の濃度に対するC1は、最大新規被覆数、調和数差分、再帰実行の長さを順に評価し、達成された最小集合の点数と比較して証明する。最小集合はgreedyの選択関数へ渡さない。
 
 ## 指定した有限例
 
