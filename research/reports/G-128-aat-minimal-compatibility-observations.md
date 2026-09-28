@@ -23,7 +23,7 @@
 | C: greedyの選択・停止・正確性 | `newCoverage`, `greedyPick`, `greedyPick_spec`, `greedyAux`, `greedyAux_correct`, `greedyObservationSet`, `greedyObservationSet_correct`, `greedyObservation_empty` | 入力順の最大新規被覆点を選び、成功時の十分集合・失敗時の不適合全点固定元を証明済み |
 | C1: 調和数近似保証 | `harmonic_drop`, `greedy_step_card`, `greedyAux_harmonic`, `greedyObservationSet_harmonic_of_coverable` | 実際のgreedy出力について被覆可能なら点数が `H_|U| b_Γ` 以下と証明済み |
 | D: 独立系の合成・単調性 | `independentAction`, `pointStabilizer_independent`, `sufficient_independent_iff`, `minObservations_independent`, `independent_minimum_disjSum`, `minObservations_antitone` | `ℕ∞` での加法性、有限最小集合の合成、適合部分群の反単調性を証明済み |
-| E: 名前付き操作と固定例 | `ambientChange`, `compatibleChange`, `ambientMulEquivFiberPair`, `fiberPair_compatible_iff`, `fiberCompatibleMulEquivChangeGroup`, `compatibleFiberRootEquiv`, `compatibleVerticalRootMulEquiv`, `ambientFullAction_faithful`, `allAmbientChanges`, `compatibleDecidablePred`, `mem_allSelectedCompatibleChanges_iff`, `protocolFullMinimum_card`, `protocolStateMinimum_none_witness`, `protocolFullMinimum_classifier`, `protocolStateMinimum_classifier`, `protocolFullGreedy_harmonic`, `protocolStateGreedy_harmonic`, `protocolFullCompatibleExtension_readback`, `protocolStateCompatibleExtension_readback` | 周囲群のfiber表示、E1、元の変更群・根解・垂直中心化群、原始表からの全元生成、Cの二作用への探索接続と値・判定・失敗証拠・近似保証を証明済み。G-124対応、固定例は未証明 |
+| E: 名前付き操作・G-124対応・固定例 | `ambientChange`, `compatibleChange`, `ambientMulEquivFiberPair`, `fiberPair_compatible_iff`, `fiberCompatibleMulEquivChangeGroup`, `compatibleFiberRootEquiv`, `compatibleVerticalRootMulEquiv`, `ambientFullAction_faithful`, `allAmbientChanges`, `compatibleDecidablePred`, `mem_allSelectedCompatibleChanges_iff`, `protocolFullMinimum_card`, `protocolStateMinimum_none_witness`, `protocolFullMinimum_classifier`, `protocolStateMinimum_classifier`, `protocolFullGreedy_harmonic`, `protocolStateGreedy_harmonic`, `protocolFullCompatibleExtension_readback`, `protocolStateCompatibleExtension_readback`, `identityAmbientOfLift_readAt`, `identityCompatibleSearch_iff_edgeCoherent`, `identityCompatibleSearch_unique`, `identityCompatibleSearch_C2` | 周囲群のfiber表示、E1、元の変更群・根解・垂直中心化群、原始表からの全元生成、Cの二作用への探索接続と値・判定・失敗証拠・近似保証、G-124の同じ代表集合の点観測・整合延長・一意性とG-127 C2全頂点一致を証明済み。固定例は未証明 |
 
 Aの `Group G`、`MulAction G X`、`Gamma : Subgroup G` は固定targetの入力である。
 `Sufficient` は結論ではなく点安定化群から定義し、`exists_predicate_iff_sufficient`
@@ -99,13 +99,25 @@ Eの `ambientChange` は選ばれた可視変更と、可視頂点写像に沿�
 `ambientStateAction` と `ambientFullAction` は状態のみ、および頂点・辺名・状態への作用を
 同じ周囲群から構成する。後者は忠実であり、有限な対象では適合部分群の最小観測数が
 有限である。原始 `FiniteProtocolInput` からの周囲群有限表は後述の構成で得る。
-G-124の同じ代表の読取りと固定例への適用は後続のE義務である。
+固定例への適用は後続のE義務である。
 `ambientMulEquivFiberPair` は周囲群の元を可視変更と各fiberの全単射族として
 双方向へ移し、`fiberPair_mul_fiber_apply` が元の(A2)と同じ合成順を示す。
 `fiberPair_compatible_iff` は操作保存の元の関係同値を(E1)の辺可換式と同値にし、
 `fiberCompatibleMulEquivChangeGroup` がその同じ適合元を元の変更群に送る。
 `compatibleFiberRootEquiv` と `compatibleVerticalRootMulEquiv` はそれぞれ元の
 G-127の根解と垂直の根中心化群表示に接続する。
+
+恒等操作・空の経路方程式・自明な可視群では `identityG128Input` が元の有限入力を
+特殊化する。`identityRepresentativeStates` はG-124の
+`CSFixedFDetermining.protocolRepresentativeSet` をそのまま使い、各代表と有限fiberの
+全点を組み合わせる。`identityAmbientOfLift_readAt` は元のG-124置換読取りと
+G-128状態作用の点評価を一致させる。`identityPointTable` は代表ごとの置換表を
+同じ観測点の表へ変換する。`identityCompatibleSearch_iff_edgeCoherent` はG-124の
+元の `EdgeCoherent` とCの実際の適合延長探索の成功を両方向で結ぶ。
+`identityCompatibleSearch_unique` は返却元のfiber写像がG-124の一意な延長と
+一致することを同じ代表での分離から示し、`identityCompatibleSearch_C2` は
+元のG-127 (C2)根復元との全頂点・全fiber点での一致を示す。代表集合と根は
+既存の選択を保つ非計算的特殊化であり、Cの探索は与えられた有限表で実行する。
 `allAmbientChanges` は入力された可視変更、頂点、fiberの完全列挙から
 前向き・逆向き表の二つの逆写像条件だけを検査して全周囲元を返す。
 `compatibleDecidablePred` は別に元の名前付き実行関係を全有限点で判定する。
@@ -870,4 +882,60 @@ audits:
   validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
   blocking_findings: []
   next_obligation: G-124の同じ成分代表の読取りと延長をCの出力に接続
+```
+
+## Cycle 14 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-128-aat-minimal-compatibility-observations
+cycle: 14
+goal_blob_sha: e50d778b5b0592a79c1b12506a6c04fe71a6c147
+base_oid: daf2b7998d1ff917c89e6ce2c3043869a25686ef
+tracking_issue: 5075
+report_path: research/reports/G-128-aat-minimal-compatibility-observations.md
+selection:
+  proof_state_ref: Issue #5075 cycle 13 accepted state
+  proof_dag_predecessors: [G-124.protocolRepresentativeSet, G-127.identityLiftEquivG124Preserving, G-127.identityLift_representatives_determining, G-127.identity_G124_C2_extension_agree, ProtocolFiniteSearch.protocolStateCompatibleExtension]
+  milestone: 同じG-124代表と置換表をCの実際の探索・G-127 C2へ接続
+  proof_obligations: [空方程式と自明可視群の原始入力, 同じ代表と全fiber点の観測, 元の置換読取りと状態作用の点評価, EdgeCoherentとC成功の両方向, 返却元の一意性と全頂点C2一致]
+  exit_criteria: [原始identity入力と同じ代表を保持, 実際のC関数への入力と返却元の読み戻し, G-124とC2の元の変更を保つ等式, focused checkと公理監査]
+  selection_reason: Eの残るG-124対応を固定targetの同一対象上で証明する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/MinimalCompatibilityObservations/IdentityReading.lean]
+  risks: [別代表への置換, 読取りとC探索の切断, 整合条件の片方向化, C2との全頂点一致不足]
+  unchecked: [指定例]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: G-124の同じ代表での読取りと整合延長をCの実際の状態観測表探索へ移し返却元をG-127 C2へ戻す
+  exit_criteria_status: [原始入力と同じ代表, 点評価の一致, EdgeCoherentと探索成功の同値, 返却元とG-124延長の一意性, 全頂点C2一致, focused checkと公理監査成功]
+  completion_candidate: no
+  lean_artifacts: [IdentityReading.lean]
+  evidence: [identityG128Input, identityRepresentativeStates, identityAmbientOfLift_readAt, identity_observe_eq_pointTable, identityCompatibleSearch_exists, identityCompatibleSearch_readAt, identityCompatibleSearch_unique, identityCompatibleSearch_C2, identityCompatibleSearch_iff_edgeCoherent]
+  claim_mapping:
+    theorem_names: [identityAmbientOfLift_readAt, identityCompatibleSearch_iff_edgeCoherent, identityCompatibleSearch_unique, identityCompatibleSearch_C2]
+    source_labels: [E 恒等操作G-124特殊化, C 適合する変更への延長, G-127 C2]
+    conjuncts: [同じ成分代表と全fiber点, 保存変更の点観測との同一性, 同じEdgeCoherentの下でのC探索成功と返却元, G-124の区別による一意性, C2での全頂点写像]
+    undischarged_assumptions: [指定例]
+    acceptance_point: 非計算的な元の代表は数学的特殊化のみでC関数には明示有限表を供給
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [G-124代表の読取りと区別, 整合表の延長と逆向き, C出力のG-124延長・G-127 C2との一致]
+    remaining: [指定例]
+  certificate_provenance:
+    discharged: [G-124.protocolRepresentativeSetとidentityLift_representatives_determining, G-127.identity_G124_C2_extension_agree, 実際のC探索返却元]
+    unresolved: []
+  proof_use:
+    used: [protocolStateCompatibleExtension_some, protocolStateCompatibleExtension_none_iff, fiberPair_compatible_iff, identityG124_readAt, identityLift_representatives_determining, identity_G124_C2_extension_agree]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
+  blocking_findings: []
+  next_obligation: G-127の一頂点二ループ固定例を同じ原始入力・Cの実際の出力に接続
 ```
