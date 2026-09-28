@@ -5,7 +5,7 @@ description: "research/goals/GOAL-ID.mdのactiveなtarget-theorem GOALで、固�
 
 # Target Theorem Loop
 
-`research mode: target-theorem`のactive GOALだけを扱う。[カードの読み取り手順](references/target-goal-contract.md)で特定したGOALと参照先の共通基準を固定入力とし、進捗を一つのproof obligation deltaで管理する。
+`research mode: target-theorem`のactive GOALだけを扱う。[カードの読み取り手順](references/target-goal-contract.md)で特定したGOALと参照先の共通基準を固定入力とし、進捗を数学的な到達点ごとのproof obligation群のdeltaで管理する。
 
 GOALまたは指定一次仕様を弱める必要が生じたら、改訂案をtracking Issueへ記録して`goal defect`で止まる。ループ中に正本を書き換えない。
 
@@ -36,10 +36,10 @@ Research packageの全体buildは実行しない。`cd research/lean && lake bui
 1. `git status --short --branch`と未追跡fileを確認し、base/headを固定する。mainから開始する場合はmainを最新化する。
 2. [カードの読み取り手順](references/target-goal-contract.md)に従って新規・既存と適用版を特定し、起動資格と内容を確認する。開始時・以後の各段階で読む共通基準も、その適用版で解決する。欠陥時はIssueを新設せず停止理由を返す。
 3. tracking Issueを特定し、なければ一本だけ作る。GOALのtarget節、Issueの直近state、reportの現proof obligation節、proof DAG、対象Lean宣言から現在状態を復元する。
-4. rootが[cycle ledger](references/cycle-ledger.md)のselectionを埋め、大定理までのproof distanceを最も直接縮めるproof obligationを一つ選ぶ。
+4. rootが[cycle ledger](references/cycle-ledger.md)のselectionを埋め、大定理までのproof distanceを最も直接縮める数学的な到達点と、それを支えるproof obligation群・終了条件を固定する。Cycleの粒度と途中分割は同referenceに従う。
 5. rootがLean theorem/package、input-generated witness/certificate、またはblocker/refutationを固定する。Lean証拠は`research/lean/ResearchLean/AG/<goal-area>/`に置き、`Formal/AG`は参照/importだけに使う。受理spineとcycle scaffoldを命名またはfileで分け、spine declaration listをreportに固定する。
-6. rootが対象fileのfocused check、報告対象全宣言の`#print axioms`、placeholder、hidden/BiDi、privacy、import方向を検査する。中心項目の未確認はpacketへ残す。
-7. `git diff --check`、staged diff、未追跡file、保護領域の変更有無を確認し、実装、report、cycle ledgerを同じPRへ収録する。PR本文は原則`Refs #<tracking-issue>`とする。
+6. rootは終了条件を満たすまで同じcycle内で構成・補題・接続の実装と検証を反復する。各段階で対象fileのfocused check、報告対象全宣言の`#print axioms`、placeholder、hidden/BiDi、privacy、import方向を検査する。中心項目の未確認はpacketへ残す。
+7. 到達点の終了条件を満たした時点、またはcycle ledgerに途中分割の理由を記録した時点でPRへ進む。`git diff --check`、staged diff、未追跡file、保護領域の変更有無を確認し、実装、report、cycle ledgerを同じPRへ収録する。PR本文は原則`Refs #<tracking-issue>`とする。
 8. PR headを固定し、標準`$review-pr <PR番号> tracking Issue #<N>`でそのPRのexact diffと変更責務を監査する。`Refs`だけにIssue関連付けを委ねない。監査コメントでAAT/Lean数学claimとして`$math-lean-review`へ委譲されたことを確認し、未委譲なら`Blocked / cannot determine`としてmergeしない。標準レビュー後、rootが[acceptance contract](references/acceptance-contract.md)をreview evidenceと差分実体へ適用し、結果をPRコメントへ置く。completion candidateでは両方の合格後に[completion ledger](references/completion-ledger.md)のfinal packetを同じ固定headから生成し、独立`$math-lean-review research/goals/<goal-id>.md <goal-id>`でGOALカードと累積証拠全体を照合する。必要な全判定とCIが通った場合だけmergeし、merge commit、CI、PR review、completion review、次obligationをtracking Issueへコメントする。
 
 PR作成まではroot一体で完結する。最初の独立subagent起動点はPRレビューである。PRレビュー、修正後確認、completion candidateの最終4本のsubagentは監査ごとに新規に起動し、ループの会話履歴や前の監査に使ったsubagentを引き継がせない(正本は共有review protocolの「Subagent入力」)。
@@ -48,7 +48,7 @@ cycleの書込範囲は、対象ResearchLean証拠、同じPRのreport/ledger、
 
 ## Cycle result
 
-- `proof-obligation-discharged`: 選んだobligationを、入力dataからのLean theorem/construction、finite witness、またはreview済みpredecessor theoremで閉じた。
+- `proof-obligation-discharged`: 選んだ到達点の終了条件とproof obligation群をすべて、入力dataからのLean theorem/construction、finite witness、またはreview済みpredecessor theoremで閉じた。
 - `blocker-fixed`: 反例、必要条件、仮説不足、proof blockerを再利用可能な証拠として固定した。
 - `proof-checkpoint`: 証拠はあるが、未放電premise、provenance、proof-use、route、coverage、reviewのいずれかが残る。
 - `rejected`: statement不一致、hidden premise、証拠不足、claim越境、target-fitting routeがある。
