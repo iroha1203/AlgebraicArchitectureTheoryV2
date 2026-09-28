@@ -1,9 +1,9 @@
 # G-129-aat-abelian-lifting-obstruction — 可換核による整合持ち上げの障害と解の分類
 
 - `id`: `G-129-aat-abelian-lifting-obstruction`
-- `status`: `draft`
+- `status`: `active`
 - `research mode`: `target-theorem`
-- `tracking issue`: 未作成（active化時に設定）
+- `tracking issue`: [#5082](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5082)
 - `source note`: [n1016 §2.4・候補04](../../docs/note/n1016_rising_sea_v2_paper_plan.md)
 - `design`: [構成・証明方針と再利用対応](../designs/G-129-aat-abelian-lifting-obstruction/README.md)
 
