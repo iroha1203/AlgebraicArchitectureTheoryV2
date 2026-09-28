@@ -487,3 +487,59 @@ audits:
   blocking_findings: []
   next_obligation: 同じgreedyObservationSet出力のC1調和数近似保証
 ```
+
+## Cycle 8 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-128-aat-minimal-compatibility-observations
+cycle: 8
+goal_blob_sha: e50d778b5b0592a79c1b12506a6c04fe71a6c147
+base_oid: 294ebbb61a5ecc4ca70d483a204350c10b5b03cc
+tracking_issue: 5075
+report_path: research/reports/G-128-aat-minimal-compatibility-observations.md
+selection:
+  proof_state_ref: Issue #5075 cycle 7 accepted state
+  proof_dag_predecessors: [GreedySelection.greedyObservationSet, GreedySelection.greedyPick_spec, FiniteMinimum.minimumObservation_card, FiniteCover.sufficient_iff_cover]
+  milestone: C1の実際のgreedy出力の調和数近似保証
+  proof_obligations: [一回の最大新規被覆数, 調和数差分, 再帰実行の点数上界, 達成された最小点数との一致]
+  exit_criteria: [実際のgreedyObservationSetへのC1適用, focused checkと公理監査]
+  selection_reason: Cの量的未証明部分を固定済みgreedy関数に対して放電する
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/MinimalCompatibilityObservations/GreedyBound.lean]
+  risks: [抽象greedy列だけの評価, 最小集合をgreedy選択に使用, 無限値の無条件toNat]
+  unchecked: [D, E, 指定例]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: 実行したgreedyの出力集合についてC1を証明
+  exit_criteria_status: [実行出力とC1上界を接続, focused checkと公理監査成功]
+  completion_candidate: no
+  lean_artifacts: [GreedyBound.lean]
+  evidence: [harmonic_drop, greedy_step_card, greedy_step_harmonic, greedyAux_harmonic, greedyObservationSet_harmonic_of_coverable]
+  claim_mapping:
+    theorem_names: [greedyObservationSet_harmonic_of_coverable]
+    source_labels: [C1]
+    conjuncts: [被覆可能なら実際のgreedy出力が十分, 点数はH_|U|倍の最小点数以下]
+    undischarged_assumptions: []
+    acceptance_point: C1の固定された群作用と有限表からのgreedy実行結果
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [C1]
+    remaining: [D, E, 指定例]
+  certificate_provenance:
+    discharged: [greedy選択は元の作用表, 最小集合は証明中の比較対象のみ]
+    unresolved: []
+  proof_use:
+    used: [Finset.card_biUnion_le_card_mul, harmonic_succ, GreedySelection.greedyAux, FiniteMinimum.minimumObservation_card]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
+  blocking_findings: []
+  next_obligation: Dの直積・直和と適合条件変更
+```
