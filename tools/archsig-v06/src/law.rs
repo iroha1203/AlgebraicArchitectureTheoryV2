@@ -6,7 +6,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde::Serialize;
 
 /// 読んだ Law ファイルすべて。解けなかった宣言と解決の誤りは `errors` に集める。
-#[derive(Clone, Debug, Default, Serialize)]
+#[derive(Clone, Debug, Default)]
 pub struct LawSet {
     pub files: Vec<String>,
     /// `sources` の宣言。`except` はその宣言にだけ効く。
@@ -17,9 +17,11 @@ pub struct LawSet {
     pub defs: Vec<Def>,
     pub laws: Vec<Law>,
     pub errors: Vec<LawError>,
+    /// 宣言した読みの名前と、誤りなく解けたかを、宣言の順に。
+    reading_order: Vec<(String, bool)>,
 }
 
-#[derive(Clone, Debug, Default, Serialize)]
+#[derive(Clone, Debug, Default)]
 pub struct Sources {
     pub include: Vec<String>,
     pub except: Vec<String>,
@@ -188,17 +190,40 @@ impl LawSet {
                     }
                     decl.except.extend(strings(&r[1..])?);
                 }
+                for p in decl.include.iter().chain(&decl.except) {
+                    check_pattern(p)?;
+                }
                 self.sources.push(decl);
             }
             Some("include") => {
+                no_body(&rest, "include")?;
                 let dir = path.rsplit_once('/').map(|(d, _)| d).unwrap_or("");
                 for inc in strings(&head[1..])? {
                     let target = if dir.is_empty() { inc } else { format!("{dir}/{inc}") };
                     self.load_file(&target, at, read, seen);
                 }
             }
-            Some("fresh") => self.fresh.extend(strings(&head[1..])?),
-            Some("reading") => self.readings.push(parse_reading(&head, &rest, at)?),
+            Some("fresh") => {
+                no_body(&rest, "fresh")?;
+                let patterns = strings(&head[1..])?;
+                for p in &patterns {
+                    check_pattern(p)?;
+                }
+                self.fresh.extend(patterns);
+            }
+            Some("reading") => {
+                let name = word_at(&head, 1);
+                match parse_reading(&head, &rest, at) {
+                    Ok(r) => {
+                        self.reading_order.push((r.name.clone(), true));
+                        self.readings.push(r);
+                    }
+                    Err(e) => {
+                        self.reading_order.extend(name.map(|n| (n, false)));
+                        return Err(e);
+                    }
+                }
+            }
             Some("meaning") => self.meanings.push(parse_meaning(&head, &rest, at)?),
             Some("law") => self.laws.push(parse_law(&head, &rest, at)?),
             Some("def") => {
@@ -230,7 +255,16 @@ impl LawSet {
         dedupe(&mut self.laws, |l| (&l.name, &l.at), "law", &mut errors);
         let meanings: BTreeMap<String, Meaning> = self.meanings.iter().map(|m| (m.name.clone(), m.clone())).collect();
         let readings: BTreeSet<String> = self.readings.iter().map(|r| r.name.clone()).collect();
-        let first_reading = self.readings.first().map(|r| r.name.clone());
+        // on を省いた Law は、最初に宣言した読みを使う。その読みに誤りがあれば、Law も誤りとする。
+        let first_reading = self.reading_order.first().cloned();
+        let broken_readings: BTreeSet<String> = self.reading_order.iter().filter(|(_, ok)| !ok).map(|(n, _)| n.clone()).collect();
+        self.defs.retain(|d| {
+            if meanings.contains_key(&d.name) {
+                errors.push(LawError { at: d.at.clone(), message: format!("`{}` は意味の語彙にもある。def には別の名前を付ける", d.name) });
+                return false;
+            }
+            true
+        });
         let def_names: BTreeSet<String> = self.defs.iter().map(|d| d.name.clone()).collect();
         let no_defs = BTreeMap::new();
         let mut defs = BTreeMap::new();
@@ -252,10 +286,13 @@ impl LawSet {
         for mut law in std::mem::take(&mut self.laws) {
             let at = law.at.clone();
             let mut ctx = Resolve { meanings: &meanings, defs: &defs, broken: &broken, def_names: &def_names, in_def: false, errors: Vec::new(), at: &at };
-            match &law.on {
-                Some(r) if !readings.contains(r) => ctx.error(format!("読み `{r}` が宣言されていない")),
-                Some(_) => {}
-                None => law.on = first_reading.clone(),
+            match (&law.on, &first_reading) {
+                (Some(r), _) if broken_readings.contains(r) => ctx.error(format!("読み `{r}` に誤りがある")),
+                (Some(r), _) if !readings.contains(r) => ctx.error(format!("読み `{r}` が宣言されていない")),
+                (Some(_), _) => {}
+                (None, Some((r, true))) => law.on = Some(r.clone()),
+                (None, Some((r, false))) => ctx.error(format!("on を省いた Law が使う最初の読み `{r}` に誤りがある")),
+                (None, None) => ctx.error("on を省いた Law が使う読みが、一つも宣言されていない".to_string()),
             }
             let about = law.about.as_ref().and_then(|m| meanings.get(m));
             if let (Some(m), None) = (&law.about, about) {
@@ -369,6 +406,16 @@ impl Resolve<'_> {
     }
 }
 
+/// 字下げした続きの行を持たない宣言。
+fn no_body(rest: &[Vec<Tok>], what: &str) -> Result<(), String> {
+    if rest.is_empty() { Ok(()) } else { Err(format!("{what} の下には何も書かない")) }
+}
+
+/// パスや名前のパターンが読めるか。`*` は `/` をまたがず、`**` はまたぐ。
+fn check_pattern(p: &str) -> Result<(), String> {
+    globset::GlobBuilder::new(p).literal_separator(true).build().map(|_| ()).map_err(|e| format!("パターン `{p}` が読めない: {e}"))
+}
+
 /// `a/./b/../c` を `a/c` にそろえる。
 fn normalize(path: &str) -> String {
     let mut parts: Vec<&str> = Vec::new();
@@ -449,6 +496,12 @@ fn parse_meaning(head: &[Tok], rest: &[Vec<Tok>], at: &str) -> Result<Meaning, S
     for r in rest {
         match r.first() {
             Some(Tok::Word(w)) if w == "values" => {
+                if !values.is_empty() {
+                    return Err("values は一度だけ書く".to_string());
+                }
+                if r.len() % 2 != 0 {
+                    return Err("values は `a | b` と書く".to_string());
+                }
                 for (k, t) in r[1..].iter().enumerate() {
                     match t {
                         Tok::Word(v) if k % 2 == 0 => values.push(v.clone()),
@@ -457,7 +510,11 @@ fn parse_meaning(head: &[Tok], rest: &[Vec<Tok>], at: &str) -> Result<Meaning, S
                     }
                 }
             }
-            Some(Tok::Str(s)) if r.len() == 1 => hint = Some(s.clone()),
+            Some(Tok::Str(s)) if r.len() == 1 => {
+                if hint.replace(s.clone()).is_some() {
+                    return Err("観測の手がかりは一つだけ書く".to_string());
+                }
+            }
             _ => return Err("meaning の下には values と観測の手がかりを書く".to_string()),
         }
     }
@@ -473,15 +530,19 @@ fn parse_law(head: &[Tok], rest: &[Vec<Tok>], at: &str) -> Result<Law, String> {
     let mut rule_lines: Vec<&Vec<Tok>> = Vec::new();
     for r in rest {
         match r.first() {
-            Some(Tok::Str(s)) if r.len() == 1 && rule_lines.is_empty() => description = Some(s.clone()),
-            Some(Tok::Word(w)) if w == "on" && r.len() == 2 && rule_lines.is_empty() => {
-                if on.replace(word_at(r, 1).unwrap()).is_some() {
-                    return Err("on は一度だけ書く".to_string());
+            Some(Tok::Str(s)) if r.len() == 1 && rule_lines.is_empty() => {
+                if description.replace(s.clone()).is_some() {
+                    return Err("law の説明は一つだけ書く".to_string());
                 }
             }
-            Some(Tok::Word(w)) if w == "about" && r.len() == 2 && rule_lines.is_empty() => {
-                if about.replace(word_at(r, 1).unwrap()).is_some() {
-                    return Err("about は一度だけ書く".to_string());
+            Some(Tok::Word(w)) if (w == "on" || w == "about") && rule_lines.is_empty() => {
+                let name = match r.as_slice() {
+                    [_, Tok::Word(n)] => n.clone(),
+                    _ => return Err(format!("{w} の後には名前を一つ書く")),
+                };
+                let slot = if w == "on" { &mut on } else { &mut about };
+                if slot.replace(name).is_some() {
+                    return Err(format!("{w} は一度だけ書く"));
                 }
             }
             _ => rule_lines.push(r),

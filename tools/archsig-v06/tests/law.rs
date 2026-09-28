@@ -126,6 +126,8 @@ law l6
   about unit
   agrees along flows
   convert yen -> minor by * 100
+
+reading r = file
 "#,
     );
     let v = repo.run(&["law", "check"]);
@@ -214,6 +216,70 @@ law multi
 }
 
 #[test]
+fn readings_patterns_and_grammar_are_checked() {
+    let repo = Repo::new("grammar");
+    repo.law(
+        "a.law",
+        r#"sources "shop/**", "shop/[x"
+
+reading first = dir(depth: two)
+reading second = file
+
+meaning m on field
+  values a |
+  "m"
+
+meaning n on field
+  "n"
+  "二つ目の手がかり"
+
+meaning d on field
+  "d"
+
+def d = operation
+
+fresh "x.*"
+  "y.*"
+
+law implicit
+  "on を省く"
+  about d
+  changes keep
+
+law quoted
+  "on に文字列"
+  on "second"
+  about d
+  changes keep
+
+law explicit
+  "誤りのある読みを明示する"
+  on first
+  about d
+  changes keep
+"#,
+    );
+    let v = repo.run(&["law", "check"]);
+    let e = errors(&v);
+    let has = |line: usize, msg: &str| e.iter().any(|(at, m)| at == &format!(".archsig/law/a.law:{line}") && m.starts_with(msg));
+    assert!(has(1, "パターン `shop/[x` が読めない"), "{e:?}");
+    assert!(has(3, "depth は整数で書く"), "{e:?}");
+    assert!(has(6, "values は `a | b` と書く"), "{e:?}");
+    assert!(has(10, "観測の手がかりは一つだけ書く"), "{e:?}");
+    assert!(has(17, "`d` は意味の語彙にもある"), "{e:?}");
+    assert!(has(19, "fresh の下には何も書かない"), "{e:?}");
+    assert!(has(22, "on を省いた Law が使う最初の読み `first` に誤りがある"), "{e:?}");
+    assert!(has(27, "on の後には名前を一つ書く"), "{e:?}");
+    assert!(has(33, "読み `first` に誤りがある"), "{e:?}");
+    assert_eq!(e.len(), 9, "{e:?}");
+    assert_eq!(v["laws"].as_array().unwrap().len(), 0);
+
+    repo.law("a.law", "sources \"shop/**\"\n\nmeaning m on field\n  \"m\"\n\nlaw l\n  \"読みがない\"\n  about m\n  changes keep\n");
+    let v = repo.run(&["law", "check"]);
+    assert_eq!(errors(&v), vec![(".archsig/law/a.law:6".to_string(), "on を省いた Law が使う読みが、一つも宣言されていない".to_string())]);
+}
+
+#[test]
 fn a_broken_declaration_is_reported_and_the_rest_is_read() {
     let repo = Repo::new("broken");
     repo.law(
@@ -231,8 +297,9 @@ fn a_broken_declaration_is_reported_and_the_rest_is_read() {
     assert_eq!(s["unread"][0]["scopes"], serde_json::json!(["structure", "meaning:m"]), "status は Law の誤りがあっても動く");
     assert_eq!(s["law_errors"].as_array().unwrap().len(), 2, "status は Law の誤りを理由として返す");
 
-    repo.law("a.law", "sources \"shop/**\" \"x/**\"\n");
+    repo.law("a.law", "sources \"shop/**\" \"x/**\"\n\nsources \"shop/[x\"\n");
     let s = repo.run(&["status"]);
-    assert_eq!(s["unread"].as_array().unwrap().len(), 0);
+    assert_eq!(s["unread"].as_array().unwrap().len(), 0, "読めないパターンの宣言は外れ、status は止まらない");
+    assert_eq!(s["law_errors"].as_array().unwrap().len(), 2);
     assert_eq!(s["law_errors"][0]["at"], ".archsig/law/a.law:1", "sources が外れて空になるときも、理由が付く");
 }
