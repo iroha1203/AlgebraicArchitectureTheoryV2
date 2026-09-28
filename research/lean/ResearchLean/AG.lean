@@ -900,6 +900,7 @@ import ResearchLean.AG.ProtocolHolonomy.FiniteSelectedVerticalLifts
 import ResearchLean.AG.ProtocolHolonomy.FiniteSelectedLiftability
 import ResearchLean.AG.ProtocolHolonomy.FiniteSelectedAllLifts
 import ResearchLean.AG.ProtocolHolonomy.OneVertexTwoLoops
+import ResearchLean.AG.ProtocolHolonomy.OneVertexTwoLoopsInput
 import ResearchLean.AG.ProtocolHolonomy.LiftRootCondition
 import ResearchLean.AG.ProtocolHolonomy.LiftRootReconstruction
 import ResearchLean.AG.ProtocolHolonomy.LiftableVisible

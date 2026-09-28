@@ -2434,6 +2434,57 @@ audits:
   validation_refs: [focused Lean check, five #print axioms, namespace standard-axiom assertion, #eval false to be recorded in PR]
 ```
 
+## Cycle 69 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 69
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 7452526b6
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 68 original nonliftability and E negative result
+  proof_dag_predecessors: [oneLoopGraph, oneLoopData, oneLoopSwap, PathEquations, FiniteProtocolInput]
+  proof_obligation: Fix the first example's empty Pi and full finite primitive input with the original edge actions and visible group
+  selection_reason: The remaining B through E example claims must refer to one actual A-side input
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/OneVertexTwoLoopsInput.lean]
+  risks: [vacuous Pi confused with absent input, changing the original fiber actions, asserting H=C2 without proof]
+  unchecked: [H=C2, both holonomy groups C2, B2 centralizer, H_lift trivial, second fixed example]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Instantiate empty authored equations and finite vertex edge fiber witnesses; use the exact original one-loop data and the full visible graph automorphism subgroup with vacuous equation preservation
+  completion_candidate: no
+  lean_artifacts: [oneLoopEmptyEquations, oneLoopInput]
+  evidence: [oneLoopSwap_mem_H, oneLoopInput_no_equations]
+  claim_mapping:
+    theorem_names: [oneLoopSwap_mem_H, oneLoopInput_no_equations]
+    source_labels: [completion condition 2 primitive input and empty Pi]
+    conjuncts: [same original Q and edge actions, no authored path equations, finite fibers, swap in H]
+    undischarged_assumptions: [H=C2, holonomy, B2, H_lift, second fixed example]
+    acceptance_point: First example is an actual FiniteProtocolInput with the original data and empty path equations
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [first-example finite primitive input and empty Pi]
+    remaining: [first-example group and holonomy classification, second fixed example]
+  certificate_provenance:
+    discharged: [finite instances reduce definitionally to PUnit and Bool; empty equation type reduces to PEmpty]
+    unresolved: [H=C2 and holonomy classification]
+  proof_use:
+    used: [PathEquations and FiniteProtocolInput original fields]
+    unused: [no external finite or congruence certificate]
+  structure_field_escape: none-found-for-first-example-A-input
+  route_integrity: pass-for-first-example-primitive-input
+  target_fitting: none-found
+  vacuity: only-the-specified-empty-Pi
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, four #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
