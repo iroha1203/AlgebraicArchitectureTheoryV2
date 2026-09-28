@@ -2791,6 +2791,57 @@ audits:
   validation_refs: [focused Lean check, eight #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 76 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 76
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: e65d454b0
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 75 second-example actual visible H=C2
+  proof_dag_predecessors: [twoVertexData, ReversibleData.Lift, ReversibleData.vertical_mul_fiber_apply]
+  proof_obligation: Identify the actual identity-visible A1 group Aut_Q(F) of the second fixed example as C2
+  selection_reason: The specified C4 extension's kernel must be the actual A2 vertical group
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/TwoVertexVerticalGroup.lean]
+  risks: [classifying merely one fiber without naturality, defining a replacement group, unproved commutation with the transposition edge, assumed cardinality]
+  unchecked: [A_F=C4, projection quotient, both swap lifts order four, no section, E and torsor]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The original identity edge forces equal fiber permutations at vertices 0 and 1 for every vertical A1 lift; every Bool permutation gives an original vertical A1 lift; evaluation at vertex 0 is a group isomorphism using actual A2 multiplication; the group has cardinality two and is cyclic
+  completion_candidate: no
+  lean_artifacts: [twoVertexVerticalOfPerm, twoVertexVerticalEquivPermBool, twoVertexVerticalSwap]
+  evidence: [twoVertex_vertical_fibers_eq, twoVertex_vertical_card_two, twoVertex_vertical_isCyclic]
+  claim_mapping:
+    theorem_names: [twoVertexVerticalEquivPermBool, twoVertex_vertical_card_two, twoVertex_vertical_isCyclic]
+    source_labels: [completion condition 3 Aut_Q(F)=C2]
+    conjuncts: [original A1 vertical lifts, both vertex fiber maps, actual A2 law, group isomorphism to Bool permutations, cyclic order two]
+    undischarged_assumptions: [total group C4 and quotient, both swap lifts order four, no section, E and torsor]
+    acceptance_point: Actual second-example vertical A1 group is C2 with its A2-derived multiplication
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [second-example Aut_Q(F)=C2]
+    remaining: [second-example total extension and finite/torsor output]
+  certificate_provenance:
+    discharged: [original identity edge square, direct Bool permutation commutation with the transposition edge, generic A2 vertical product formula]
+    unresolved: [total group]
+  proof_use:
+    used: [original edge naturality for both edge names, A2 vertical product theorem]
+    unused: [no supplied vertical classification premise]
+  structure_field_escape: none-found-for-vertical-group
+  route_integrity: pass-for-second-example-kernel
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, six #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
