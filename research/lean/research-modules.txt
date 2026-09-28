@@ -1480,6 +1480,7 @@ ResearchLean.AG.ProtocolHolonomy.TwoVertexOppositeEdges	ResearchLean/AG/Protocol
 ResearchLean.AG.ProtocolHolonomy.TwoVertexVisibleGroup	ResearchLean/AG/ProtocolHolonomy/TwoVertexVisibleGroup.lean
 ResearchLean.AG.ProtocolHolonomy.TwoVertexVerticalGroup	ResearchLean/AG/ProtocolHolonomy/TwoVertexVerticalGroup.lean
 ResearchLean.AG.ProtocolHolonomy.TwoVertexCycle	ResearchLean/AG/ProtocolHolonomy/TwoVertexCycle.lean
+ResearchLean.AG.ProtocolHolonomy.TwoVertexSwapFiber	ResearchLean/AG/ProtocolHolonomy/TwoVertexSwapFiber.lean
 ResearchLean.AG.ProtocolHolonomy.LiftRootCondition	ResearchLean/AG/ProtocolHolonomy/LiftRootCondition.lean
 ResearchLean.AG.ProtocolHolonomy.LiftRootReconstruction	ResearchLean/AG/ProtocolHolonomy/LiftRootReconstruction.lean
 ResearchLean.AG.ProtocolHolonomy.LiftableVisible	ResearchLean/AG/ProtocolHolonomy/LiftableVisible.lean
