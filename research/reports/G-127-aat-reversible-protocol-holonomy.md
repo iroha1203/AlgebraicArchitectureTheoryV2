@@ -1669,6 +1669,57 @@ audits:
   validation_refs: [focused Lean check and three-declaration standard axiom audit to be recorded in PR]
 ```
 
+## Cycle 54 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 54
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 88404f86ae7d4e50de3f6c338c51d81356e8e753
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 48 per-component finite B2 centralizer list, Cycle 49 component decision, Cycle 52 generated roots
+  proof_dag_predecessors: [finiteRootCentralizers, centralizer_mem_finiteRootCentralizers, finiteComponentDecidableEq, finiteRootedPaths, verticalRootEquiv]
+  proof_obligation: From original finite graph/fiber tables, enumerate all original components, take the exhaustive B2 centralizer list at each root, and reconstruct every actual vertical A1 lift from the dependent product
+  selection_reason: Closes the all-component assembly and connects finite B2 centralizers with original vertical changes rather than leaving separate component lists
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteVerticalLifts.lean]
+  risks: [assuming a supplied component enumeration, omitting disconnected or empty components, mapping centralizer tuples without original A1 reconstruction, claiming all nonvertical lifts]
+  unchecked: [genuine named spanning forest, all-lifts torsor output, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The complete vertex list maps onto the original component quotient; componentwise finite B2 centralizers form a complete dependent-product enumeration, and B2 reconstruction maps that list onto every original A1 vertical lift
+  completion_candidate: no
+  lean_artifacts: [finiteComponentEnumeration, ReversibleData.finiteRootCentralizerFamilies, ReversibleData.finiteVerticalLifts]
+  evidence: [finiteComponentEnumeration.complete, ReversibleData.finiteRootCentralizerFamilies.complete, ReversibleData.finiteVerticalLifts.complete]
+  claim_mapping:
+    theorem_names: [finiteComponentEnumeration, ReversibleData.finiteRootCentralizerFamilies, ReversibleData.finiteVerticalLifts]
+    source_labels: [B2 all-component centralizer product and E finite vertical reconstruction]
+    conjuncts: [original component quotient, every component including disconnected and empty graph, each named-edge B1 centralizer condition, actual B2 inverse, complete original vertical A1 lift list]
+    undischarged_assumptions: [E explicit finite tables/equality decisions are inputs; generated root paths are not yet proven to form a named forest]
+    acceptance_point: Complete finite B2 tuple and original vertical-lift enumeration from finite tables, without claiming the full nonvertical fiber or all E
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [all-component assembly of finite B2 centralizers and vertical A1 lift output]
+    remaining: [genuine finite named spanning forest, all-lifts torsor output, fixed examples]
+  certificate_provenance:
+    discharged: [component indices generated from complete original vertex list; each centralizer generated from original named edge/fiber tables; RootedPaths generated from same graph tables; original Lift reconstructed through reviewed B2 equivalence]
+    unresolved: [tree structure of generated root paths]
+  proof_use:
+    used: [Quotient.out only in list-completeness proof, finiteComponentDecidableEq at runtime, complete componentwise centralizer lists, verticalRootEvaluation/reconstructVertical inverse]
+    unused: [noncomputable verticalRootMulEquiv group structure is not used to generate the list]
+  structure_field_escape: none-found-for-vertical-list
+  route_integrity: pass-for-B2-to-original-vertical-lifts
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check and three-declaration standard axiom audit to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
