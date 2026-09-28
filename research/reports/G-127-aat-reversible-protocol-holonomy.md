@@ -2893,6 +2893,57 @@ audits:
   validation_refs: [focused Lean check, five #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 78 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 78
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 0dce93d3d
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 77 one actual order-four swap lift
+  proof_dag_predecessors: [twoVertexSwapLift, twoVertexData.Lift.edge_naturality, twoVertex_H_exact]
+  proof_obligation: Exhaust the original A1 lift fiber above the second example's visible swap
+  selection_reason: The fixed target requires both swap lifts and their subsequent order and E/torsor classification
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/TwoVertexSwapFiber.lean]
+  risks: [finding a second candidate without exhaustiveness, assuming commutation for arbitrary fiber maps, using a changed edge table]
+  unchecked: [A_F=C4, second swap lift order four, quotient projection, no section, E and torsor]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: The original false-edge A1 square uniquely determines the vertex-1 fiber map from any Bool permutation at vertex 0; both Bool choices satisfy the true-edge square; the actual Lift fiber is equivalent to Bool permutations, has cardinality two, and its explicit second lift differs from the first
+  completion_candidate: no
+  lean_artifacts: [twoVertexSwapLiftOfPerm, twoVertexSwapFiberEquivPermBool, twoVertexSecondSwapLift]
+  evidence: [twoVertex_swap_fiber_true, twoVertex_swap_fiber_card_two, twoVertex_second_swap_ne_first]
+  claim_mapping:
+    theorem_names: [twoVertexSwapFiberEquivPermBool, twoVertex_swap_fiber_card_two, twoVertex_second_swap_ne_first]
+    source_labels: [completion condition 3 the two original lifts above the visible swap]
+    conjuncts: [same original A1 fiber, complete two-element classification, concrete distinct second lift]
+    undischarged_assumptions: [total C4 and quotient, second lift order four, no section, E and torsor]
+    acceptance_point: Exactly two original A1 lifts exist over the visible swap
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [two original swap lifts and exhaustiveness]
+    remaining: [their full group/quotient and E/torsor claims]
+  certificate_provenance:
+    discharged: [original false and true edge A1 equations, exhaustive Bool permutation classification]
+    unresolved: [total group and second lift order]
+  proof_use:
+    used: [original A1 edge_naturality at false, direct true-edge naturality, Lift.ext]
+    unused: [no supplied two-element fiber certificate]
+  structure_field_escape: none-found-for-swap-fiber
+  route_integrity: pass-for-second-example-C1-fiber
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, six #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
