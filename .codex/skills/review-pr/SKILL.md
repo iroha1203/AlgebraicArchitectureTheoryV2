@@ -83,16 +83,15 @@ fail-closed、反証試行、証拠資格、統合出力を適用する。
 
 5. 統合判定する。
    - **委譲先判定の写像(合格の定義)**:
-     - `math-lean-review`: 合格 = `No major findings`、または
-       `Minor issues` かつ全 finding が中心 claim に触れない場合
-       (その finding は監査コメントに残し、対応要否を明記する)。
-       `Major revisions` / `Reject` / `Blocked` は不合格。
+     - `math-lean-review`: 合格 = `No major findings`。
+       `Minor issues` / `Major revisions` / `Reject` / `Blocked` は不合格。
      - `tool-review` / `website-review` / `docs-review`:
        合格 = `No major findings` のみ。`Needs changes` / `Blocked` は不合格。
-     - いずれの分野も、初回正式レビューがfindingを出した場合は、全findingの解消と
-       共有契約に従う有資格な修正後確認(直接対応)が監査記録に揃った状態を
-       合格と同等に扱う。資格喪失時は、該当分野の正式レビュー再実行の結果だけを
-       合格判定に使う。
+     - findingがある場合の修正後確認は、共有review protocolの
+       「レビューバッチと修正後確認」に従う。非中心findingだけの修正では、
+       全findingの解消と有資格な直接対応の確認が監査記録に揃った状態を
+       合格と同等に扱う。中心findingの修正または直接対応の資格喪失時は、
+       該当分野の正式レビュー再実行の結果で合格を判定する。
    - **Mergeable**: 委譲した全分野レビューが上記の意味で合格
      (Lean 系は math-lean-review の合格を含む)、Issue受け入れ要件を満たし、
      必要なローカル検証が通り、重大な未対応がない。CI 状態は判定対象外
