@@ -1,4 +1,5 @@
 import ResearchLean.AG.MinimalCompatibilityObservations.AdaptiveLowerBound
+import ResearchLean.AG.MinimalCompatibilityObservations.FiniteExtension
 import Formal.Util.AssertStandardAxioms
 
 /-!
@@ -48,7 +49,45 @@ theorem minObservations_le_optimalQueries (Gamma : Subgroup G) :
   refine le_iInf fun next => ?_
   exact minObservations_le_worst Gamma next.1 next.2
 
+section FiniteMaximum
+
+/-- The unique questions on the selected terminating run. -/
+noncomputable def chosenQueries (Gamma : Subgroup G) (next : QueryProcedure X)
+    (correct : CorrectQueryProcedure Gamma next) (g : G) : List X :=
+  Classical.choose (Classical.choose_spec (correct.1 g))
+
+private theorem chosenQueries_run (Gamma : Subgroup G) (next : QueryProcedure X)
+    (correct : CorrectQueryProcedure Gamma next) (g : G) :
+    ∃ result : Bool, QueryRun next g [] result (chosenQueries Gamma next correct g) := by
+  let result := Classical.choose (correct.1 g)
+  exact ⟨result, Classical.choose_spec (Classical.choose_spec (correct.1 g))⟩
+
+/-- On finite `G`, the supremum defining worstQueries is the actual maximum
+of run lengths and is attained by an unknown change. -/
+theorem worstQueries_attained [Finite G] (Gamma : Subgroup G)
+    (next : QueryProcedure X) (correct : CorrectQueryProcedure Gamma next) :
+    ∃ g : G, ∃ result : Bool, ∃ qs : List X,
+      QueryRun next g [] result qs ∧ worstQueries (G := G) next = (qs.length : ℕ∞) := by
+  letI : Nonempty G := ⟨1⟩
+  obtain ⟨gmax, hmax⟩ := Finite.exists_max
+    (fun g : G => (chosenQueries Gamma next correct g).length)
+  obtain ⟨result, run⟩ := chosenQueries_run Gamma next correct gmax
+  refine ⟨gmax, result, chosenQueries Gamma next correct gmax, run, ?_⟩
+  apply le_antisymm
+  · unfold worstQueries
+    refine iSup_le fun g => iSup_le fun result' => iSup_le fun qs => iSup_le fun run' => ?_
+    obtain ⟨_, hqs⟩ :=
+      (Classical.choose_spec (chosenQueries_run Gamma next correct g)).deterministic
+        next g run'
+    subst qs
+    exact_mod_cast hmax g
+  · exact run_count_le_worst next gmax result _ run
+
+end FiniteMaximum
+
 section FixedProcedure
+
+open AAT.AG.ProtocolHolonomy
 
 /-- A fixed-query procedure asks each point in order, then checks whether any
 compatible change agrees with the recorded answers. -/
@@ -93,6 +132,56 @@ theorem fixedProcedure_run (Gamma : Subgroup G) (points : List X) (g : G) :
     QueryRun (fixedProcedure Gamma points) g [] (fixedAnswer Gamma points g) points := by
   simpa using fixedProcedure_run_aux Gamma points g [] points (by simp)
 
+/-- Finite-table search for a compatible change matching a query history. -/
+def findHistoryCompatible (Gamma : Subgroup G) [DecidablePred (· ∈ Gamma)]
+    (EG : ExplicitEnumeration G) (hist : QueryHistory X) : Option G :=
+  scan (fun h => decide (h ∈ Gamma ∧
+    ∀ pair ∈ hist, h • pair.1 = pair.2)) EG.values
+
+theorem findHistoryCompatible_isSome_iff (Gamma : Subgroup G)
+    [DecidablePred (· ∈ Gamma)] (EG : ExplicitEnumeration G)
+    (hist : QueryHistory X) :
+    (findHistoryCompatible Gamma EG hist).isSome = true ↔
+      ∃ h : G, h ∈ Gamma ∧ ∀ pair ∈ hist, h • pair.1 = pair.2 := by
+  cases hscan : findHistoryCompatible Gamma EG hist with
+  | none =>
+      simp only [Option.isSome_none, Bool.false_eq_true, false_iff]
+      intro ⟨h, hh⟩
+      have hf := (scan_none_iff _ EG.values).mp hscan h (EG.complete h)
+      have ht : decide (h ∈ Gamma ∧
+          ∀ pair ∈ hist, h • pair.1 = pair.2) = true := by
+        exact decide_eq_true hh
+      exact Bool.false_ne_true (hf.symm.trans ht)
+  | some h =>
+      simp only [Option.isSome_some, true_iff]
+      have hp := (scan_some _ EG.values h hscan).1
+      exact ⟨h, of_decide_eq_true hp⟩
+
+/-- The finite table supplies the terminal Boolean by a terminating scan. -/
+def finiteFixedProcedure (Gamma : Subgroup G) [DecidablePred (· ∈ Gamma)]
+    (EG : ExplicitEnumeration G) (points : List X) : QueryProcedure X :=
+  fun hist =>
+    match points.drop hist.length with
+    | [] => Sum.inl ((findHistoryCompatible Gamma EG hist).isSome)
+    | x :: _ => Sum.inr x
+
+theorem finiteFixedProcedure_eq_fixed (Gamma : Subgroup G)
+    [DecidablePred (· ∈ Gamma)] (EG : ExplicitEnumeration G) (points : List X) :
+    finiteFixedProcedure Gamma EG points = fixedProcedure Gamma points := by
+  funext hist
+  classical
+  cases hdrop : points.drop hist.length with
+  | nil =>
+      have hiff := findHistoryCompatible_isSome_iff Gamma EG hist
+      have hbool : (findHistoryCompatible Gamma EG hist).isSome =
+          decide (∃ h : G, h ∈ Gamma ∧
+            ∀ pair ∈ hist, h • pair.1 = pair.2) := by
+        cases hb : (findHistoryCompatible Gamma EG hist).isSome <;>
+          simp_all [decide_eq_true_eq]
+      simp [finiteFixedProcedure, fixedProcedure, hdrop, hbool]
+  | cons x xs =>
+      simp [finiteFixedProcedure, fixedProcedure, hdrop]
+
 /-- Sufficient observations make the terminal compatibility search exact. -/
 theorem fixedAnswer_correct (Gamma : Subgroup G) (B : Finset X)
     (hB : Sufficient Gamma B) (g : G) :
@@ -104,6 +193,26 @@ theorem fixedAnswer_correct (Gamma : Subgroup G) (B : Finset X)
     have hfix : h⁻¹ * g ∈ pointStabilizer B := by
       intro x hx
       have hpoint : h • x = g • x := heq x (Finset.mem_toList.mpr hx)
+      have := congrArg (fun y => h⁻¹ • y) hpoint
+      simpa [mul_smul] using this.symm
+    have hk : h⁻¹ * g ∈ Gamma := hB hfix
+    have hg : g = h * (h⁻¹ * g) := by simp
+    rw [hg]
+    exact Gamma.mul_mem hgamma hk
+  · intro hg
+    exact ⟨g, hg, by intro x hx; rfl⟩
+
+theorem fixedAnswer_correct_of_list (Gamma : Subgroup G) (B : Finset X)
+    (hB : Sufficient Gamma B) (points : List X) (hpoints : points.toFinset = B)
+    (g : G) : fixedAnswer Gamma points g = true ↔ g ∈ Gamma := by
+  classical
+  simp only [fixedAnswer, decide_eq_true_eq]
+  constructor
+  · rintro ⟨h, hgamma, heq⟩
+    have hfix : h⁻¹ * g ∈ pointStabilizer B := by
+      intro x hx
+      have hmem : x ∈ points := List.mem_toFinset.mp (hpoints.symm ▸ hx)
+      have hpoint : h • x = g • x := heq x hmem
       have := congrArg (fun y => h⁻¹ • y) hpoint
       simpa [mul_smul] using this.symm
     have hk : h⁻¹ * g ∈ Gamma := hB hfix
@@ -127,6 +236,73 @@ theorem fixedProcedure_correct (Gamma : Subgroup G) (B : Finset X)
       (fixedProcedure_run Gamma B.toList g).deterministic _ _ run
     subst result
     exact fixedAnswer_correct Gamma B hB g
+
+theorem finiteFixedProcedure_correct (Gamma : Subgroup G)
+    [DecidablePred (· ∈ Gamma)] (EG : ExplicitEnumeration G)
+    (B : Finset X) (hB : Sufficient Gamma B) :
+    CorrectQueryProcedure Gamma (finiteFixedProcedure Gamma EG B.toList) := by
+  rw [finiteFixedProcedure_eq_fixed]
+  exact fixedProcedure_correct Gamma B hB
+
+theorem finiteFixedProcedure_correct_of_list (Gamma : Subgroup G)
+    [DecidablePred (· ∈ Gamma)] (EG : ExplicitEnumeration G)
+    (B : Finset X) (hB : Sufficient Gamma B)
+    (points : List X) (hpoints : points.toFinset = B) :
+    CorrectQueryProcedure Gamma (finiteFixedProcedure Gamma EG points) := by
+  rw [finiteFixedProcedure_eq_fixed]
+  constructor
+  · intro g
+    exact ⟨fixedAnswer Gamma points g, points, fixedProcedure_run Gamma points g⟩
+  · intro g result qs run
+    obtain ⟨hresult, _⟩ :=
+      (fixedProcedure_run Gamma points g).deterministic _ _ run
+    subst result
+    exact fixedAnswer_correct_of_list Gamma B hB points hpoints g
+
+/-- An executable duplicate-free list of the supplied finite observation
+set, using the input enumeration rather than `Finset.toList`. -/
+def finitePoints (EX : ExplicitEnumeration X) (B : Finset X) : List X :=
+  (EX.values.filter fun x => decide (x ∈ B)).dedup
+
+theorem finitePoints_toFinset (EX : ExplicitEnumeration X) (B : Finset X) :
+    (finitePoints EX B).toFinset = B := by
+  ext x
+  simp [finitePoints, List.mem_dedup, List.mem_filter, EX.complete]
+
+theorem finitePoints_length (EX : ExplicitEnumeration X) (B : Finset X) :
+    (finitePoints EX B).length = B.card := by
+  have hnodup : (finitePoints EX B).Nodup := List.nodup_dedup _
+  have hcard := List.toFinset_card_of_nodup hnodup
+  rw [finitePoints_toFinset] at hcard
+  exact hcard.symm
+
+theorem finiteFixedProcedure_executable_optimal (Gamma : Subgroup G)
+    [DecidablePred (· ∈ Gamma)] (EG : ExplicitEnumeration G)
+    (EX : ExplicitEnumeration X) (hfinite : minObservations (X := X) Gamma ≠ ⊤) :
+    ∃ B : Finset X, Sufficient Gamma B ∧
+      (B.card : ℕ∞) = minObservations (X := X) Gamma ∧
+      CorrectQueryProcedure Gamma
+        (finiteFixedProcedure Gamma EG (finitePoints EX B)) ∧
+      worstQueries (G := G) (finiteFixedProcedure Gamma EG (finitePoints EX B)) =
+        minObservations (X := X) Gamma := by
+  obtain ⟨B, hB, hcard⟩ := minObservations_attained (X := X) Gamma hfinite
+  let points := finitePoints EX B
+  have hcorrect := finiteFixedProcedure_correct_of_list Gamma EG B hB points
+    (finitePoints_toFinset EX B)
+  refine ⟨B, hB, hcard, hcorrect, ?_⟩
+  apply le_antisymm
+  · rw [finiteFixedProcedure_eq_fixed]
+    have hupper : worstQueries (G := G) (fixedProcedure Gamma points) ≤
+        (points.length : ℕ∞) := by
+      unfold worstQueries
+      refine iSup_le fun g => iSup_le fun result => iSup_le fun qs => iSup_le fun run => ?_
+      obtain ⟨_, hqs⟩ := (fixedProcedure_run Gamma points g).deterministic _ _ run
+      subst qs
+      rfl
+    have hlen : (points.length : ℕ∞) = minObservations (X := X) Gamma := by
+      simpa only [points, finitePoints_length] using hcard
+    exact hupper.trans_eq hlen
+  · exact (minObservations_le_worst Gamma _ hcorrect)
 
 theorem worst_fixedProcedure_le (Gamma : Subgroup G) (B : Finset X) :
     worstQueries (G := G) (fixedProcedure Gamma B.toList) ≤ (B.card : ℕ∞) := by

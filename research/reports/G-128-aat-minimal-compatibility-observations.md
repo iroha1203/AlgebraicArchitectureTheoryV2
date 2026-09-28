@@ -16,7 +16,7 @@
 | A1: 適合性判定 | `Sufficient`, `exists_predicate_iff_sufficient` | 証明済み |
 | A2: 最小観測数 | `minObservations`, `minObservations_eq_top_iff`, `minObservations_attained`, `minObservations_eq_zero_iff`, `sufficient_bot_iff_injective` | 証明済み |
 | A: G-120 の同じ観測 | `singletonTableEquiv`, `singletonPredicateEquiv`, `hom_observe_one`, `hom_tableEquiv_observe`, `hom_predicate_apply`, `hom_pointStabilizer_one`, `hom_predicate_iff_original`, `hom_predicate_iff_kernel` | 証明済み |
-| B: 適応的問い合わせの最適値 | `QueryRun`, `QueryRun.deterministic`, `QueryRun.replay_identity`, `identity_queries_sufficient`, `worstQueries`, `optimalQueries`, `fixedProcedure`, `fixedProcedure_correct`, `optimalQueries_eq_minObservations`, `exists_optimal_fixed_procedure` | B1と固定集合による達成を証明済み。有限表での実行可能な判定手続き・最大値の明示的証明は未構成 |
+| B: 適応的問い合わせの最適値 | `QueryRun`, `QueryRun.deterministic`, `QueryRun.replay_identity`, `identity_queries_sufficient`, `worstQueries`, `worstQueries_attained`, `optimalQueries`, `finiteFixedProcedure`, `finiteFixedProcedure_executable_optimal`, `optimalQueries_eq_minObservations` | B1、有限群の最悪時最大値、有限表の固定集合による達成を証明済み |
 | C: 指定観測表の延長 | `FiniteExtension.findExtension`, `findExtension_some`, `findExtension_none_iff`, `findCompatibleExtension`, `findCompatibleExtension_some`, `findCompatibleExtension_none_iff`, `classify_correct` | 証明済み |
 | C: 最小集合・判定不能・greedy | — | 未実装 |
 | D: 独立系の合成・単調性 | — | 未証明 |
@@ -49,11 +49,16 @@ Bの `QueryRun` は履歴だけから次の点または結果を選ぶ手続き�
 問い合わせ回数下限を与える。`no_correct_procedure_of_minObservations_top` は
 最小数が∞なら停止して正答する手続きが存在しないことを示す。
 `worstQueries` は全実行の回数の上限、`optimalQueries` は全正答手続きの最小値である。
-`fixedProcedure` は有限集合の各点を一回ずつ質問し、得た履歴と一致する適合変更が
-存在するかで判定する。`fixedProcedure_run` と `fixedProcedure_correct` が全変更での
-停止・正答を示す。`optimalQueries_eq_minObservations` はB1の両方向を結び、
-`exists_optimal_fixed_procedure` は有限値での達成を与える。終端の存在判定はここでは
-古典的に定義しており、有限表からの実行可能な置換はCの構成に残す。
+`worstQueries_attained` は有限な `G` と全変更での停止を使い、上限が実際の実行の
+最大値であることを示す。`fixedProcedure` は有限集合の各点を一回ずつ質問し、
+得た履歴と一致する適合変更が存在するかで判定する。
+`finiteFixedProcedure` は同じ終端判定を入力の `ExplicitEnumeration G` に対する
+停止する `scan` で計算し、`finiteFixedProcedure_eq_fixed` が両者の完全一致を示す。
+`finitePoints` は入力の `ExplicitEnumeration X` から最小集合の点を重複なしで列挙し、
+長さが集合の濃度と一致する。`finiteFixedProcedure_executable_optimal` はこの
+点列と変更列挙を使う全変更で停止・正答する手続きが `b_Γ` 回を達成することを示す。
+`optimalQueries_eq_minObservations` はB1の両方向を結ぶ。最小集合自体を入力表から
+全探索で計算する構成はCの残課題である。
 
 ## 指定した有限例
 
@@ -250,30 +255,30 @@ selection:
   selection_reason: cycle 3で証明した適応下限に固定集合からの上界を接続する
   expected_result_type: proof-obligation-discharged
   lean_targets: [ResearchLean/AG/MinimalCompatibilityObservations/QueryOptimum.lean]
-  risks: [全変更に対する正答, 重複質問の回数, 古典的終端判定と有限表での計算可能性]
-  unchecked: [C最小集合・判定不能・greedy, D, E, 指定例, 有限表での終端判定の実行可能な実装]
+  risks: [全変更に対する正答, 重複質問の回数, 有限表での計算可能性, 最悪時最大値]
+  unchecked: [C最小集合・判定不能・greedy, D, E, 指定例]
 result:
   proposed_result_type: proof-obligation-discharged
-  proof_obligation_delta: 全決定的手続きの最悪時回数と最適値を定義し、固定質問手続きの停止・正答からB1と達成を証明
+  proof_obligation_delta: 全決定的手続きの最悪時回数と最適値を定義し、有限群での最大値と有限表の固定質問手続きの停止・正答からB1と達成を証明
   exit_criteria_status: [B1と達成の宣言を追加, focused checkと公理監査成功]
   split_reason: none
   completion_candidate: no
   lean_artifacts: [QueryOptimum.lean]
-  evidence: [minObservations_le_optimalQueries, fixedProcedure_run, fixedAnswer_correct, fixedProcedure_correct, worst_fixedProcedure_le, optimalQueries_eq_minObservations, exists_optimal_fixed_procedure]
+  evidence: [minObservations_le_optimalQueries, worstQueries_attained, fixedProcedure_run, fixedAnswer_correct, fixedProcedure_correct, finiteFixedProcedure_eq_fixed, finitePoints_length, finiteFixedProcedure_executable_optimal, optimalQueries_eq_minObservations]
   claim_mapping:
-    theorem_names: [optimalQueries_eq_minObservations, exists_optimal_fixed_procedure]
+    theorem_names: [worstQueries_attained, finiteFixedProcedure_executable_optimal, optimalQueries_eq_minObservations]
     source_labels: [B1, B 有限値での達成]
     conjuncts: [全変更の停止・正答, 重複を数える最悪時回数, 下限, 上界, 等号, 固定集合での達成]
-    undischarged_assumptions: [有限表での終端判定の実行可能な実装]
+    undischarged_assumptions: []
     acceptance_point: 一般の作用のままB1を証明し、有限値の固定集合が最適値を達成
     port_status: unported
 audits:
   premise_delta:
     discharged: [全手続きの最悪時下限, 固定手続きの停止・正答・上界, B1]
-    remaining: [Cの残り, D, E, 指定例, 有限表での終端判定の実行可能な実装]
+    remaining: [Cの残り, D, E, 指定例]
   certificate_provenance:
     discharged: [達成集合はAのminObservations_attainedから選択]
-    unresolved: [有限表での終端判定は古典的]
+    unresolved: []
   proof_use:
     used: [cycle 3のidentity下限, Aの十分集合と最小値達成, QueryRun.deterministic]
     unused: []
