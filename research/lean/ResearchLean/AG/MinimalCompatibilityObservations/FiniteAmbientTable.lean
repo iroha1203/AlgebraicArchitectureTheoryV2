@@ -27,6 +27,8 @@ def InverseCandidate (g : FixedFGraphAutomorphism Q)
   (∀ (v : Q.Vertex) (x : D.Fiber v), f.2 v (f.1 v x) = x) ∧
   (∀ (v : Q.Vertex) (y : D.Fiber (g.vertex v)), f.1 v (f.2 v y) = y)
 
+/-- Turn mutually inverse fiber tables into the corresponding ambient
+fiberwise pair, without imposing any named-edge equation. -/
 def fiberPairOfInverseCandidate (g : H) (f : D.CandidateMaps g.1)
     (hf : InverseCandidate D g.1 f) : AmbientFiberPair D H :=
   ⟨g, fun v =>

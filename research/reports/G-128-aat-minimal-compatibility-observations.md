@@ -98,8 +98,8 @@ Eの `ambientChange` は選ばれた可視変更と、可視頂点写像に沿�
 `compatibleFiberEquiv` は各可視fiberを同じ `Lift` と対応させる。
 `ambientStateAction` と `ambientFullAction` は状態のみ、および頂点・辺名・状態への作用を
 同じ周囲群から構成する。後者は忠実であり、有限な対象では適合部分群の最小観測数が
-有限である。原始 `FiniteProtocolInput` からの周囲群有限表、G-124の
-同じ代表の読取りと固定例への適用は後続のE義務である。
+有限である。原始 `FiniteProtocolInput` からの周囲群有限表は後述の構成で得る。
+G-124の同じ代表の読取りと固定例への適用は後続のE義務である。
 `ambientMulEquivFiberPair` は周囲群の元を可視変更と各fiberの全単射族として
 双方向へ移し、`fiberPair_mul_fiber_apply` が元の(A2)と同じ合成順を示す。
 `fiberPair_compatible_iff` は操作保存の元の関係同値を(E1)の辺可換式と同値にし、
