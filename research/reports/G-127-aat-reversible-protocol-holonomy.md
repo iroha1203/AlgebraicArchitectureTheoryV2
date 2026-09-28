@@ -1873,6 +1873,57 @@ audits:
   validation_refs: [focused Lean check, ten explicit #print axioms and namespace standard-axiom assertion to be recorded in PR; parallel-edge-plus-loop #eval card one and loop false]
 ```
 
+## Cycle 58 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 58
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 76819256b39ec04c59e9e33832e9a0eaf1d50d07
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 57 input-generated spanning named-edge selection and open retained-edge irredundancy
+  proof_dag_predecessors: [selectedNamedStep, SelectedNamedReachable, SpansOriginalComponents, pruneNamedEdges_subset, finiteSpanningEdgeSelection_subset]
+  proof_obligation: Prove that every original edge name retained by the finite deletion algorithm is individually necessary for spanning every original component
+  selection_reason: Supplies the edge-minimality proof needed to derive the literal undirected named-tree bridge property
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteIrredundantSelection.lean]
+  risks: [assuming monotonicity without proof, losing a retained edge when handling duplicates, proving only local-stage failure rather than final failure, claiming bridge before rerouting proof]
+  unchecked: [selected-edge endpoint bridge implication, selected named-path connectivity and actual forest/root paths, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Selected reachability and all-component spanning are monotone in the selected original-name set; induction over the deletion algorithm shows that if a processed name survives to the final set, removing it from that final set cannot span the original components
+  completion_candidate: no
+  lean_artifacts: [selectedNamedReachable_mono, spansOriginalComponents_mono, pruneNamedEdges_irredundant]
+  evidence: [finiteSpanningEdgeSelection_irredundant]
+  claim_mapping:
+    theorem_names: [pruneNamedEdges_irredundant, finiteSpanningEdgeSelection_irredundant]
+    source_labels: [E finite named-forest edge-minimality]
+    conjuncts: [every retained original name, duplicate name-list entries, final output rather than temporary stage, deletion of exact name, loss of original all-component spanning]
+    undischarged_assumptions: [GOAL E finite original tables and equality decisions only; no bridge or tree path is claimed]
+    acceptance_point: Every retained edge is essential to spanning, with literal bridge conversion still open
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [final retained-edge irredundancy of actual finite output]
+    remaining: [endpoint bridge condition, actual named forest and selected tree paths, fixed examples]
+  certificate_provenance:
+    discharged: [all reachability and spanning conditions derive from original selected names and the Cycle 56 decision; no supplied minimality certificate]
+    unresolved: [conversion from failure of all-component spanning to failure of an endpoint path after removing the edge]
+  proof_use:
+    used: [EqvGen monotonicity, Finset erase subset, Cycle 57 pruning branch decision, complete original edge-name list]
+    unused: [no noncomputable forest object or bridge premise]
+  structure_field_escape: none-found-for-irredundancy
+  route_integrity: pass-for-pruning-to-final-edge-necessity
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, four #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
