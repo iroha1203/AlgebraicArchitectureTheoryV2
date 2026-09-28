@@ -207,8 +207,10 @@ pub fn status(store: &Store) -> Result<serde_json::Value, String> {
             let Some(v) = loc.version else { continue };
             if current(&loc.path, &v).is_none() {
                 stale.push(json!({
-                    "source": a.location().map(|l| l.path),
+                    "source": loc.path,
                     "scope": format!("meaning:{}", a.meaning.as_deref().unwrap_or("")),
+                    "observed": v,
+                    "current": store.version(&loc.path),
                     "element": a.subject,
                     "use": u,
                 }));
@@ -233,7 +235,7 @@ pub fn status(store: &Store) -> Result<serde_json::Value, String> {
 
 /// `at` のパスを、リポジトリの根からの相対パスにそろえる。
 fn relative(path: &str) -> Result<String, String> {
-    let p = path.trim_start_matches("./");
+    let p = path.trim_start_matches("./").trim_end_matches('/');
     if p.is_empty() || p.starts_with('/') || p.split('/').any(|c| c == "..") {
         return Err(format!("at のパスは、リポジトリの中の相対パスで書く: {path}"));
     }

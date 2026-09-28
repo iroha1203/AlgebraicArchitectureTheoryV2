@@ -172,7 +172,7 @@ fn manual_chapter_3_local_meaning_and_observed() {
     repo.write("shop/payment/charge.py", "def charge(): pass\n");
     repo.write("shop/shipping/address.py", "def normalize_address(a): return a\n");
     repo.record(concat!(
-        r#"{"kind": "meaning", "subject": "local:service:money", "meaning": "unit", "value": "minor", "uses": ["shop/payment/charge.py:1"], "at": "shop/payment", "by": "model:claude-sonnet-5"}"#, "\n",
+        r#"{"kind": "meaning", "subject": "local:service:money", "meaning": "unit", "value": "minor", "uses": ["shop/payment/charge.py:1"], "at": "shop/payment/", "by": "model:claude-sonnet-5"}"#, "\n",
         r#"{"kind": "observed", "subject": "shop/shipping/address.py", "scope": "structure", "at": "shop/shipping/address.py", "by": "tool:tree-sitter-python@0.23"}"#, "\n",
     ));
     let local = repo.map("shop/payment");
@@ -240,8 +240,17 @@ fn status_reports_unread_and_stale_scopes() {
     let v = repo.ok(&["status"]);
     let stale = v["stale"].as_array().unwrap();
     assert_eq!(stale.len(), 1, "a.py は変わっていないが、uses の b.py が変わった");
+    assert_eq!(stale[0]["source"], "src/b.py");
     assert_eq!(stale[0]["scope"], "meaning:m");
+    assert_eq!(stale[0]["observed"], blob("b = 2\n"));
+    assert_eq!(stale[0]["current"], blob("b = 3\n"));
     assert_eq!(stale[0]["element"], "src.a.A.x");
+    assert_eq!(stale[0]["use"], format!("src/b.py:1@{}", blob("b = 2\n")));
+
+    std::fs::remove_file(repo.dir.join("src/b.py")).unwrap();
+    let v = repo.ok(&["status"]);
+    assert!(v["stale"][0]["current"].is_null(), "使用箇所のソースが消えれば、今の版は null");
+    repo.write("src/b.py", "b = 3\n");
 
     repo.write("src/a.py", "a = 2\n");
     let v = repo.ok(&["status"]);
