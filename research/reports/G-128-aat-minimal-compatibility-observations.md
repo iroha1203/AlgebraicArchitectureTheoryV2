@@ -16,7 +16,7 @@
 | A1: 適合性判定 | `Sufficient`, `exists_predicate_iff_sufficient` | 証明済み |
 | A2: 最小観測数 | `minObservations`, `minObservations_eq_top_iff`, `minObservations_attained`, `minObservations_eq_zero_iff`, `sufficient_bot_iff_injective` | 証明済み |
 | A: G-120 の同じ観測 | `singletonTableEquiv`, `singletonPredicateEquiv`, `hom_observe_one`, `hom_tableEquiv_observe`, `hom_predicate_apply`, `hom_pointStabilizer_one`, `hom_predicate_iff_original`, `hom_predicate_iff_kernel` | 証明済み |
-| B: 適応的問い合わせ | — | 未証明 |
+| B: 履歴依存手続きと恒等元での下限 | `QueryRun`, `QueryRun.deterministic`, `QueryRun.replay_identity`, `identity_queries_sufficient`, `minObservations_le_identity_queries`, `no_correct_procedure_of_minObservations_top` | 下限の証明済み。B1の上限・等号は未証明 |
 | C: 指定観測表の延長 | `FiniteExtension.findExtension`, `findExtension_some`, `findExtension_none_iff`, `findCompatibleExtension`, `findCompatibleExtension_some`, `findCompatibleExtension_none_iff`, `classify_correct` | 証明済み |
 | C: 最小集合・判定不能・greedy | — | 未実装 |
 | D: 独立系の合成・単調性 | — | 未証明 |
@@ -38,6 +38,17 @@ Cの指定観測表の延長は、G-127の `ExplicitEnumeration G` と元の作�
 `none` の場合は全候補の不存在を示す。`classify_correct` は十分な `B` について
 未知の変更の観測表だけから適合性を判定する。`B` の有限性、変更の完全列挙、
 `X` の等号判定、`Gamma` の所属判定は有限表の入力条件である。
+
+Bの `QueryRun` は履歴だけから次の点または結果を選ぶ手続きに対し、
+未知の変更が入力される箇所を回答 `g • x` に限定する。再問い合わせも
+`ask` の適用と質問列の一要素として数える。`QueryRun.deterministic` は
+同じ手続き・変更・履歴から終了結果と質問列が一意であることを示す。
+`QueryRun.replay_identity` は恒等元実行の質問をすべて固定する変更について
+同じ実行を構成する。`identity_queries_sufficient` は正答性からこの質問集合が
+十分であることを示し、`minObservations_le_identity_queries` が最小数の
+問い合わせ回数下限を与える。`no_correct_procedure_of_minObservations_top` は
+最小数が∞なら停止して正答する手続きが存在しないことを示す。
+各手続きの最悪時最大値、固定観測集合からの上限手続き、B1の等号は未構成。
 
 ## 指定した有限例
 
@@ -156,4 +167,61 @@ audits:
   validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
   blocking_findings: []
   next_obligation: Bの決定的手続きと最悪時問い合わせ数
+```
+
+## Cycle 3 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-128-aat-minimal-compatibility-observations
+cycle: 3
+goal_blob_sha: e50d778b5b0592a79c1b12506a6c04fe71a6c147
+base_oid: 89018f656b4ff55a3babfd1a2ad646500f2ca23b
+tracking_issue: 5075
+report_path: research/reports/G-128-aat-minimal-compatibility-observations.md
+selection:
+  proof_state_ref: Issue #5075 cycle 2 accepted state
+  proof_dag_predecessors: [PointObservation.minObservations, PointObservation.observe_eq_iff, FiniteExtension.classify_correct]
+  milestone: B1の適応的問い合わせ最適性
+  proof_obligations: [履歴依存手続きの定義, 実行の決定性, 恒等元実行の再現, 全正答手続きの下限, 最悪時最大値, 固定集合からの上限, B1の等号]
+  exit_criteria: [全Gについて停止する手続きの最悪時回数を定義, 下限と上限の同じ最小数への接続, 固定最小集合による達成]
+  selection_reason: Aの最小数とCのclassifierをB1へ接続する
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/MinimalCompatibilityObservations/AdaptiveLowerBound.lean]
+  risks: [適応性を固定質問へ弱める危険, 恒等元実行の再現, 重複質問の費用, 上限手続きの計算可能性]
+  unchecked: [最悪時最大値, B1上限・等号, C最小集合・判定不能・greedy, D, E, 指定例]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: 決定的な履歴手続きと実行の一意性を定義・証明し、恒等元実行から全適応手続きの下限と∞時の不存在を証明
+  exit_criteria_status: [履歴モデルと下限は証明済み, 最悪時最大値と上限・等号は未証明]
+  split_reason: 恒等元実行からの下限と∞時の不存在は独立に再利用できる定理であり、固定質問手続きの構成前に査読する
+  completion_candidate: no
+  lean_artifacts: [AdaptiveLowerBound.lean]
+  evidence: [QueryRun.deterministic, QueryRun.replay_identity, identity_queries_sufficient, minObservations_le_identity_queries, no_correct_procedure_of_minObservations_top]
+  claim_mapping:
+    theorem_names: [QueryRun.replay_identity, identity_queries_sufficient, minObservations_le_identity_queries, no_correct_procedure_of_minObservations_top]
+    source_labels: [B 恒等元での実行による下限]
+    conjuncts: [同じ履歴と結果の再現, 質問点集合の十分性, minObservations≤質問回数, ∞なら正答手続きなし]
+    undischarged_assumptions: [B1の上限・最悪時最大値]
+    acceptance_point: Bの下限部分を全決定的履歴手続きについて証明したcheckpoint
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [恒等元質問の再現, 全正答手続きの下限, ∞の場合の不存在]
+    remaining: [最悪時最大値, 固定集合の上限, B1の等号, Cの残り, D, E, 指定例]
+  certificate_provenance:
+    discharged: [質問集合は恒等元の実行から生成]
+    unresolved: []
+  proof_use:
+    used: [正答性 in identity_queries_sufficient, 再現補題 in identity_queries_sufficient, Aの最小値 in minObservations_le_identity_queries]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [単一file focused checkとnamespace公理監査をPRに記録]
+  blocking_findings: []
+  next_obligation: 最悪時最大値と固定観測集合からの上限手続き
 ```
