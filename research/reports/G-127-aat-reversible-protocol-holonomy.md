@@ -2077,6 +2077,57 @@ audits:
   validation_refs: [focused Lean check, three #print axioms and namespace standard-axiom assertion to be recorded in PR]
 ```
 
+## Cycle 62 selection / proposed result
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-127-aat-reversible-protocol-holonomy
+cycle: 62
+goal_blob_sha: 86ed6948771755a19db802e01e42dbd00a8f9abf
+base_oid: 6c7e65545
+tracking_issue: 4981
+report_path: research/reports/G-127-aat-reversible-protocol-holonomy.md
+selection:
+  proof_state_ref: Issue #4981 Cycle 61 actual generated forest and open executable selected root paths
+  proof_dag_predecessors: [selectedReachabilityGraph, signedToPath, UsesNamedEdges, usesNamedEdges_single, usesNamedEdges_comp]
+  proof_obligation: Resolve each finite selected-graph adjacency and walk into an executable original named signed passage with selection proof
+  selection_reason: Gives the computational edge and walk conversion needed before bounded selected path search
+  expected_result_type: proof-checkpoint
+  lean_targets: [ResearchLean/AG/ProtocolHolonomy/FiniteSelectedWalks.lean]
+  risks: [using noncomputable Finset.toList, accepting unselected original edge, losing edge name or reverse orientation, treating walk conversion as complete root algorithm]
+  unchecked: [bounded selected path search, terminating selected root-path construction, fixed examples]
+result:
+  proposed_result_type: proof-checkpoint
+  proof_obligation_delta: Scan the explicit original edge list with a selected-membership test to compute a typed forward or reverse signed passage for each selected adjacency; recursively concatenate these passages for a finite graph walk while retaining a UsesNamedEdges proof
+  completion_candidate: no
+  lean_artifacts: [selectedSignedStepCandidate, selectedSignedStepCandidate_ne_none_of_pos, selectedSignedStepCandidate_ne_none_of_neg, selectedSignedEdgeOfAdj]
+  evidence: [selectedSignedPathOfWalk]
+  claim_mapping:
+    theorem_names: [selectedSignedEdgeOfAdj, selectedSignedPathOfWalk]
+    source_labels: [E selected original named path computation]
+    conjuncts: [explicit original edge list, actual selected names, positive and negative passage, terminating list scan and walk recursion, selected-edge proof]
+    undischarged_assumptions: [selected adjacency or finite walk is supplied; bounded generation and root-level selection remain open]
+    acceptance_point: Computable translation of a finite selected graph walk to an actual original signed path with selected-name certificate
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [computable selected adjacency and walk translation]
+    remaining: [bounded selected path generation, executable selected root paths, fixed examples]
+  certificate_provenance:
+    discharged: [selected membership tested against computed original-name set; scan uses explicit original edge values and adjacency proof only to eliminate impossible empty result]
+    unresolved: [production of the selected walk from finite tables]
+  proof_use:
+    used: [original edge list completeness, selected adjacency witness, forward and reverse typed edges, signed path composition]
+    unused: [no noncomputable Finset.toList or supplied tree-path certificate]
+  structure_field_escape: none-found-for-walk-translation
+  route_integrity: pass-for-selected-adjacency-to-original-named-walk
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused Lean check, five #print axioms and namespace standard-axiom assertion to be recorded in PR]
+```
+
 ## Cycle 27 selection / proposed result
 
 ```yaml
