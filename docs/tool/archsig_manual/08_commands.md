@@ -9,7 +9,7 @@ archsig <コマンド> [引数]
 | コマンド | すること |
 | --- | --- |
 | `archsig status` | 古い範囲と、読んでいない範囲を返す。 |
-| `archsig record <Atom のファイル>…` | 取り出した Atom を ArchMap に書く。 |
+| `archsig record <Atom のファイル>…` | 取り出した Atom を ArchMap に書く。`--drop <ソース>` で消えたソースを外す。 |
 | `archsig law check` | Law ファイルが正しく書けているかを確かめる。 |
 
 ## 問い

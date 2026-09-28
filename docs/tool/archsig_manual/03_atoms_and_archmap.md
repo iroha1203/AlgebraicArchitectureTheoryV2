@@ -18,6 +18,7 @@ Atom は JSON の一行で書く。どの Atom も次の欄を持つ。
 | `defines` | `value`(要素の種類)、`params`(操作の引数と型)、`type`(フィールドの型)、`file`(候補の中だけ) |
 | `calls`、`reads` | `object`、`when` |
 | `imports` | `object` |
+| `resolves` | `object` |
 | `writes`、`passes`、`sends` | `object`、`value`、`when` |
 | `receives` | `object`、`value` |
 | `returns` | `value`、`when` |
@@ -29,6 +30,8 @@ Atom は JSON の一行で書く。どの Atom も次の欄を持つ。
 
 Atom の同一性は、`kind`、`subject`、`object`、`value`、`when`、`meaning`、`scope` で決まる。
 `at` と `by` は同一性に入らない。行がずれても、同じ事実は同じ Atom である。
+同一性は、二つの ArchMap や、候補と実装の Atom を比べるときに使う。
+一つの操作の中で同じ Atom が二度出れば、二つの手順である。同じ操作を二度呼べば、`calls` が二つ並ぶ。
 
 ## 要素の名前
 
@@ -52,7 +55,7 @@ Atom の同一性は、`kind`、`subject`、`object`、`value`、`when`、`meani
 
 ## 構造 Atom
 
-構造 Atom は、構文から決まる事実だ。エージェントが言語に合う解析器を選んで取り出す(第7章)。種類は次の九つで、言語によらず同じである。
+構造 Atom は、構文から決まる事実だ。エージェントが言語に合う解析器を選んで取り出す(第7章)。種類は次の十で、言語によらず同じである。
 
 - `defines`:要素を定義する。`value` は `operation`、`type`、`field` のどれか。
   操作は `params` に引数の名前と型を持つ(`{"order": "shop.order.model.Order", "new": "shop.shipping.model.Address"}`)。フィールドは `type` に型を持つ。
@@ -64,6 +67,7 @@ Atom の同一性は、`kind`、`subject`、`object`、`value`、`when`、`meani
 - `receives`:操作がチャネルの項目を受け取る。`object` は項目、`value` は受け取った値を操作の中で表す式である。
 - `returns`:操作が値を返す。`value` は返す値である。
 - `imports`:モジュールが別のモジュールを取り込む。
+- `resolves`:名前が、どこで定義されているか。`object` は、定義したソースのパスか、リポジトリの外なら `external:<パッケージ>` である。解析器が名前を解決できたときに書く。
 
 `calls`、`reads`、`writes`、`passes`、`sends`、`returns` は `when` を持てる。`if` の中の書き込みなら、その条件を `when` に書く。
 
@@ -79,6 +83,8 @@ Atom の同一性は、`kind`、`subject`、`object`、`value`、`when`、`meani
 
 局所変数は、解析器が代入した式で置き換えて書く。置き換えられなければ `?` と書く。
 `$order.total` は、引数 `order` の型と、フィールドの型をたどって、フィールド `shop.order.model.Order.total` として読む。
+`$order.shipping_address.country` は、フィールド `Order.shipping_address` の値の、フィールド `Address.country` として読む。
+引数は、その型のただ一つの実体を指す。`$new.country` は、型 `Address` のフィールド `Address.country` の値である。
 
 ArchSig は、操作の呼び出しの結果を、同じ操作に同じ値を渡せば同じ結果が返るものとして扱う。
 ただし、Law で `fresh` と宣言した操作は、呼ぶたびに新しい値を返すものとして扱う(第4章)。
@@ -132,6 +138,12 @@ ArchMap は、Atom のほかに、どこを読んだかを記録する。
 読んだ範囲に Atom がなければ、その事実はない。読んでいない所の事実は、分からない。
 ArchSig はこの二つを区別する。分からない所が結論に関わるとき、ArchSig は沈黙し、そこを次に読む場所として返す。
 
+定義を読んでいない要素については、`resolves` で次に読む場所を決める。
+
+- `resolves` がソースを指していれば、そのソースを返す。
+- `resolves` が外部を指していれば、観測した要素へ書き込まない呼び出しとして扱い、結果の `conditions` にそう書く。
+- `resolves` がなければ、要素の名前を返す。どのソースを読むかは、観測する SKILL が決める。
+
 ソースが今の内容と違えば、その範囲は古い。意味 Atom は使われ方で決まるので、`uses` のソースが変わったときも古い。
 
 ## ArchMap のファイル
@@ -145,6 +157,10 @@ ArchMap は、ソースのファイルごとに一つの JSON Lines ファイル
 ```
 
 一つのファイルには、そのソースについての `observed` と、そこで観測した Atom が入る。ソースが変わったら、そのファイルだけを観測し直す。
+
+`archsig record` は、ソースと観測の範囲(構造か、どの意味か)ごとに、元の Atom を置き換える。
+`at` に版がなければ今のソースの版を補い、`observed` がなければ補う。読んだが Atom がなかった範囲は、`observed` だけを書く。
+消えたソースは、`archsig record --drop <ソース>` で ArchMap から外す。
 
 ArchMap に書くのは Atom だけである。局所の分け方や局所どうしの重なりは、ArchSig が Atom と Law の読みから導く。
 
@@ -163,6 +179,7 @@ ArchMap と同じ形をとり、`.archsig/plans/<候補の名前>/` に置く。
 候補の中の Atom は行を持たないので、一つの操作の中の書き込みと呼び出しの順は、ファイルに書いた Atom の順とする。呼び出しの `#2`、`#3` もこの順で付ける。
 
 - 候補の中で `subject` に Atom を書いた要素は、その要素についての元の Atom がすべて置き換わる。要素から出る呼び出し(`<要素>->…`)の Atom も置き換わる。
+  ただし `resolves` は、名前の解決を加えるだけで、置き換えは起こさない。
 - それ以外の要素は、元のコードのまま扱う。
 - 新しく定義する要素の `defines` は、`file` に、変更後にその要素を置くソースのパスを書く。局所はこのパスで決まる。
 
