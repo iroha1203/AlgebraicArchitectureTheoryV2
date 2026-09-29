@@ -3,6 +3,106 @@
 一次仕様は [固定GOAL](../goals/G-129-aat-abelian-lifting-obstruction.md)、
 実行・査読・mergeの記録は [tracking Issue #5082](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5082) を参照する。
 
+## 第3Cycleの選定（進行中）
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-129-aat-abelian-lifting-obstruction
+cycle: 3
+goal_blob_sha: 9f93a9a1c2ebd9ccd53362e878363144a934b4b8
+base_oid: d77a15490774f949013a28014b8125a0050e4d2d
+tracking_issue: 5082
+report_path: research/reports/G-129-aat-abelian-lifting-obstruction.md
+selection:
+  proof_state_ref: "Issue #5082 第2Cycle merge 後のproof state"
+  proof_dag_predecessors:
+    - TowerPresentation.localCoefficients
+    - faceKernelDefect
+    - rawDefect_cocycle_of_authoredSyzygy
+    - d2Hom
+  milestone: "元の指定比較と標準比較の実際の核差を同じC2へ置き、条件4からd2δ=0を証明する"
+  proof_obligations:
+    - "A2から元のu*m^-1を実際の核へ制限し、既存raw defectと同一視する"
+    - "核の道輸送をwhiskerと一致させ、向きと後続道を保ってpastingRawDefectと加法的評価を接続する"
+    - "指定比較の3-cell syzygy条件から同じd2でδがcocycleとなることを証明する"
+  exit_criteria:
+    - "defectがAと同じ実際の核のC2であり、元のu*m^-1を包含で復元する"
+    - "各向き・各貼り合わせでraw defectの値と加法的総和の一致を証明する"
+    - "A条件4を使用してd2δ=0を証明する"
+    - "focused check・公理監査・共通scan・独立PRレビューが合格する"
+  selection_reason: "Bの補正・障害類・実際の解同値が使うdefect cocycleを固定する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/AbelianLiftingObstruction/Defect.lean
+  risks:
+    - "既存のraw defectと別の補正方程式を定義しない"
+    - "条件4をd2d1=0へ混入しない"
+    - "3-cellの二つの型付き貼り合わせを同じ始終道で評価する"
+  unchecked:
+    - "実装と独立PRレビュー前"
+```
+
+### 第3Cycleの証拠対応
+
+`TowerPresentation.toTransportData` は第2Cycleで構成した選択済みの元の辺・底の面一致・
+指定比較を既存の任意関手上のデータへ移す。`faceDefect` はA2から作った実際の核の元であり、
+`faceDefect_eq_raw` は既存の `rawFaceDefect` と包含後の値が同一であることを示す。
+その加法化 `defect` は第2Cycleの `localCoefficients` と同じ `C2` に属する。
+
+| 固定target | Lean宣言 | 放電の内容 |
+| --- | --- | --- |
+| B1の元のdefect | `faceDefect`, `faceDefect_inclusion`, `faceDefect_eq_raw`, `defect` | 元の `u*m⁻¹` を実際の核へ制限し、同じC²へ置く |
+| 道・向き付き面 | `whisker_kernel`, `whisker_centralizes`, `reverseFaceDefect`, `orientedFaceDefect_inclusion` | 既存whiskerとAの核輸送の値を一致させ、逆向きを符号反転として評価 |
+| 型付き貼り合わせ | `pastingAuthored_centralizes`, `pastingRawDefect_inclusion` | 後続比較による非可換な共役を条件3と道輸送全射性から消し、元のraw defectを同じ符号付き総和へ移す |
+| 条件4の使用 | `defect_cocycle` | 指定された二つの3-cell貼り合わせの元の比較等式から、同じ複体の `d²δ=0` を証明 |
+
+条件1の核可換性はAの輸送一致と選択独立性を通じて使用し、条件2の全単射性は
+`whisker_centralizes` で終点の核全体への移行に使用する。条件3は指定比較とその
+向き付き・全貼り合わせが核を中心化する証明に使用する。条件4は
+`AuthoredSyzygy T.toTransportData 1` として、既存の元の比較の貼り合わせ等式を
+そのまま保持し、`rawDefect_cocycle_of_authoredSyzygy` を経由して使用する。
+複体恒等式 `d²d¹=0` への条件4の混入はない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    - "元の指定比較と標準比較の核差を、同じC2のdefectとして構成"
+    - "向き・後続道・貼り合わせを保持してraw defectと加法的評価を一致"
+    - "元の3-cell syzygyから同じd2でdefectのコサイクル性を証明"
+  exit_criteria_status:
+    - "B1の包含・raw値一致: faceDefect_inclusion、faceDefect_eq_raw"
+    - "向き付き面・全貼り合わせ: orientedFaceDefect_inclusion、pastingRawDefect_inclusion"
+    - "条件4からd2δ=0: defect_cocycle"
+    - "個別focused check・公理guard・共通scan・独立PRレビューは最終headで確認"
+  completion_candidate: no
+  lean_artifacts:
+    - AbelianLiftingObstruction/Defect.lean
+  claim_mapping:
+    theorem_names: [faceDefect_eq_raw, pastingRawDefect_inclusion, defect_cocycle]
+    source_labels: [B1, "A条件4", "Bのcocycle"]
+    undischarged_assumptions: ["A条件1–3は一般定理の明示仮定", "A条件4は元の比較のsyzygyとして明示仮定"]
+    acceptance_point: "同じ実際の核とC2にある元のdefectが、条件4の下でcocycle"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["B1の実際の核所属", "raw defectと加法的貼り合わせの同値", "条件4からコサイクル"]
+    remaining: ["任意の辺補正での元のdefectの変換則", "障害類の基準選択独立性", "実際の解との双方向対応", "指定三例の条件1–4"]
+  certificate_provenance:
+    discharged: ["A2による実際の核所属", "既存raw defectの値の保持", "型付き貼り合わせでの条件4"]
+    unresolved: []
+  proof_use:
+    used: ["条件2の全射性で終点核の中心化", "条件3で各指定比較の共役を消去", "条件4で元のraw defectの二経路を一致"]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: []
+  next_obligation: "任意の核補正の元の再選択からδ^h=δ+d1hを証明し、障害零性と実際の解の同値へ進む"
+```
+
 ## 第2Cycleの選定
 
 ```yaml
