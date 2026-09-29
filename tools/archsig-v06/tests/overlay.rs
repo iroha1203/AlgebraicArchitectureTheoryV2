@@ -93,5 +93,43 @@ fn params_of_linked_operations_correspond_by_name() {
     );
     let o = overlay(&before, &plan);
     assert!(o.corresponds.contains(&pair("m.f.$x", "n.f2.$x")), "書いた対応で結んだ操作の、同じ名前の引数");
-    assert_eq!(o.undecided["m.f.$y"], vec!["n.f2.$x", "n.f2.$z"], "| の対応は決めていない対応として別に持つ");
+    assert_eq!(o.undecided, vec![("m.f.$y".to_string(), vec!["n.f2.$x".to_string(), "n.f2.$z".to_string()])], "| の対応は決めていない対応として別に持つ");
+}
+
+#[test]
+fn two_undecided_correspondences_of_one_element_are_both_kept() {
+    let before = atoms(r#"{"kind": "defines", "subject": "m.T.x", "value": "field", "type": "int", "at": "m.py:1"}"#);
+    let plan = atoms(
+        r#"{"kind": "removes", "subject": "m.T.x", "at": "plan:p"}
+{"kind": "corresponds", "subject": "m.T.x", "object": "a.A.x | b.B.x", "at": "plan:p"}
+{"kind": "corresponds", "subject": "m.T.x", "object": "c.C.x | d.D.x", "at": "plan:p"}
+"#,
+    );
+    assert_eq!(overlay(&before, &plan).undecided.len(), 2, "一つの要素を二つに分けるなら、対応を二つ書く");
+}
+
+#[test]
+fn meanings_of_untouched_elements_stay() {
+    // 構造をまだ読んでいない要素の意味 Atom も、候補が触れなければ残る。
+    let before = atoms(
+        r#"{"kind": "meaning", "subject": "z.Z.f", "meaning": "unit", "value": "minor", "uses": ["z.py:3"], "at": "z.py:3"}
+{"kind": "defines", "subject": "m.T.v", "value": "field", "type": "int", "at": "m.py:1"}
+{"kind": "meaning", "subject": "m.T.v", "meaning": "unit", "value": "yen", "uses": ["m.py:5"], "at": "m.py:1"}
+"#,
+    );
+    let plan = atoms(r#"{"kind": "defines", "subject": "n.h", "value": "operation", "params": {}, "file": "n.py", "at": "plan:p"}"#);
+    let s = Structure::new(overlay(&before, &plan).after);
+    assert_eq!(s.meanings["z.Z.f"].len(), 1);
+    assert_eq!(s.meanings["m.T.v"].len(), 1, "触れていない要素の意味は重ならない");
+}
+
+#[test]
+fn a_removed_element_defined_again_does_not_correspond_to_itself() {
+    let before = atoms(r#"{"kind": "defines", "subject": "m.T.x", "value": "field", "type": "int", "at": "m.py:1"}"#);
+    let plan = atoms(
+        r#"{"kind": "removes", "subject": "m.T.x", "at": "plan:p"}
+{"kind": "defines", "subject": "m.T.x", "value": "field", "type": "str", "file": "m.py", "at": "plan:p"}
+"#,
+    );
+    assert!(overlay(&before, &plan).corresponds.is_empty());
 }

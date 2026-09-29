@@ -344,29 +344,23 @@ pub struct Overlay {
     pub after: Vec<Atom>,
     /// 変更前の要素から変更後の要素への対応。行き先が一つとは限らない。
     pub corresponds: BTreeSet<(String, String)>,
-    /// 行き先を決めていない対応(`a.X | b.Y`)。変更前の要素と、行き先の候補。
-    pub undecided: BTreeMap<String, Vec<String>>,
+    /// 行き先を決めていない対応(`a.X | b.Y`)。変更前の要素と、行き先の候補。書いた行ごとに一つ。
+    pub undecided: Vec<(String, Vec<String>)>,
     /// 候補が書き直していない操作のうち、`removes` した要素を使うもの。操作と、使う要素。
     pub missing: BTreeMap<String, BTreeSet<String>>,
 }
 
 /// ArchMap の Atom の列 `before` に、候補の Atom の列 `plan` を重ねる。
 pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
-    let is_change = |a: &Atom| matches!(a.kind.as_str(), "plan" | "corresponds" | "removes");
     // 候補が構造 Atom を書いた要素は、元の Atom をすべて外す。`resolves` は置き換えを起こさない。
     let rewritten: BTreeSet<&str> = plan.iter().filter(|a| a.is_structure() && a.kind != "resolves").map(|a| a.subject.as_str()).collect();
     let removed: BTreeSet<&str> = plan.iter().filter(|a| a.kind == "removes").map(|a| a.subject.as_str()).collect();
     let under = |name: &str, x: &str| name == x || name.starts_with(&format!("{x}.")) || name.starts_with(&format!("{x}->"));
     let replaced = |name: &str| rewritten.iter().any(|x| name == *x || name.starts_with(&format!("{x}->")));
     let gone = |name: &str| removed.iter().any(|x| under(name, x));
-    // 意味 Atom は、対応に沿って移し直す(下の4)。局所ごとの意味 Atom はそのまま残す。
-    let is_element_meaning = |a: &Atom| a.kind == "meaning" && !a.subject.starts_with("local:");
-    let mut after: Vec<Atom> = before
-        .iter()
-        .filter(|a| !is_element_meaning(a) && !replaced(&a.subject) && !gone(&a.subject))
-        .cloned()
-        .collect();
-    after.extend(plan.iter().filter(|a| !is_change(a)).cloned());
+    // 書き直した要素と消える要素の Atom(意味 Atom を含む)を外し、候補の構造 Atom を加える。
+    let mut after: Vec<Atom> = before.iter().filter(|a| !replaced(&a.subject) && !gone(&a.subject)).cloned().collect();
+    after.extend(plan.iter().filter(|a| a.is_structure()).cloned());
 
     let old = Structure::new(before.to_vec());
     let new = Structure::new(after.clone());
@@ -376,7 +370,7 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
     for a in plan.iter().filter(|a| a.kind == "corresponds") {
         let to: Vec<String> = a.object.as_deref().unwrap_or("").split('|').map(|t| t.trim().to_string()).collect();
         if to.len() > 1 {
-            out.undecided.insert(a.subject.clone(), to);
+            out.undecided.push((a.subject.clone(), to));
         } else {
             out.corresponds.insert((a.subject.clone(), to[0].clone()));
             linked_ops.push((a.subject.clone(), to[0].clone()));
@@ -393,8 +387,11 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
     for name in old.elements.keys().filter(|n| new.elements.contains_key(*n) && !gone(n)) {
         out.corresponds.insert((name.clone(), name.clone()));
     }
-    // 4. 対応の行き先へ、元の要素の意味 Atom を移す。
+    // 4. 対応の行き先へ、元の要素の意味 Atom を移す。触れていない要素の自分自身への対応では、意味 Atom は残っている。
     for (from, to) in &out.corresponds {
+        if from == to && !replaced(from) && !gone(from) {
+            continue;
+        }
         for m in old.meanings.get(from).into_iter().flatten() {
             out.after.push(Atom { subject: to.clone(), ..m.clone() });
         }
@@ -406,7 +403,7 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
         for t in e.params.values().filter(|t| gone(t)) {
             uses.insert(t.clone());
         }
-        for a in before.iter().filter(|a| a.subject == *op || a.subject.starts_with(&format!("{op}->"))) {
+        for a in before.iter().filter(|a| a.kind != "resolves" && (a.subject == *op || a.subject.starts_with(&format!("{op}->")))) {
             if let Some(o) = a.object.as_deref().filter(|o| gone(o)) {
                 uses.insert(o.to_string());
             }
