@@ -30,6 +30,7 @@ noncomputable abbrev originalLift (data : TwoLayerLiftData.{u, v} K U) :
     letI := data.edgeCoreStrong e
     exact geometryHom_isCompositeStronglyCocartesian (data.edgeLift e)
 
+/-- The composite lift keeps the original full geometry path arrow. -/
 theorem originalLift_path (data : TwoLayerLiftData.{u, v} K U)
     {i j : K.Vertex} (w : K.Path i j) :
     (originalLift data).pathLift w = data.pathLift w := by
@@ -37,6 +38,7 @@ theorem originalLift_path (data : TwoLayerLiftData.{u, v} K U)
   | nil _ => rfl
   | cons e w ih => exact congrArg (fun x => data.edgeLift e ≫ x) ih
 
+/-- Its bottom path is the bottom projection of the original geometry path. -/
 theorem originalLift_base (data : TwoLayerLiftData.{u, v} K U)
     {i j : K.Vertex} (w : K.Path i j) :
     (originalLift data).pathBase w = (data.pathLift w).base.base := by
@@ -164,12 +166,14 @@ noncomputable def correction (g : StrictEdgeReselection data.lift) :
     C1 (T).toTower.localCoefficients :=
   fun e => Additive.ofMul (innerKernelEquiv _ (g e.1 e.2.1 e.2.2))
 
+/-- Converting a strict coordinate to a cochain and back preserves every edge. -/
 @[simp] theorem strictGauge_correction (g : StrictEdgeReselection data.lift) :
     strictGauge data s alignment comm bijective central
       (correction data s alignment comm bijective central g) = g := by
   funext i j e
   exact (innerKernelEquiv _).symm_apply_apply _
 
+/-- Converting an actual-kernel cochain to strict coordinates and back is identity. -/
 @[simp] theorem correction_strictGauge (h : C1 (T).toTower.localCoefficients) :
     correction data s alignment comm bijective central
       (strictGauge data s alignment comm bijective central h) = h := by

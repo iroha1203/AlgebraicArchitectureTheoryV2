@@ -12,6 +12,7 @@ cycle: 11
 goal_blob_sha: 9f93a9a1c2ebd9ccd53362e878363144a934b4b8
 base_oid: d98cda0ba87ba1f1f223241fb5efcd2ec969af7c
 tracking_issue: 5082
+report_path: research/reports/G-129-aat-abelian-lifting-obstruction.md
 selection:
   proof_state_ref: "第10Cycle受理済みのA–C、Dの核・輸送接続"
   proof_dag_predecessors: [innerKernelEquiv, OriginalTowerPresentation.obstructionClass_eq_zero_iff_solution, OriginalTowerPresentation.vertexGauge_edge_arrow]
@@ -68,27 +69,29 @@ result:
   claim_mapping:
     source_labels: ["D: 幾何からcoreへの射影"]
     conjuncts: ["一般A–Cを第4章の同じ入力・核・全射・defect・解に適用"]
+    theorem_names: [CrossStage.presentation, CrossStage.faceDefect_eq, CrossStage.relativeDefect_add, CrossStage.syzygy, CrossStage.obstructionClass_zero_iff, CrossStage.solutionEquiv, CrossStage.solutionAction_edge, CrossStage.vertexGauge_edge]
     undischarged_assumptions: ["A条件1–4は一般定理の仮定。指定例での放電は後続義務"]
     acceptance_point: "構成と元の値の一致を証明し、結論を入力として受け取らない"
     port_status: unported
-  audits:
-    premise_delta:
-      discharged: ["Chapter 4原始入力から一般入力・核・比較・補正・実解の対応"]
-      remaining: ["Dの群拡大・G-127接続", "指定三例", "統合完了監査"]
-    certificate_provenance:
-      discharged: ["presentationの強い性質・射影・A2は元のTwoLayer入力から生成"]
-      unresolved: []
-    proof_use:
-      used: ["両段の強い性質: comparison uniqueness", "A2: faceDefectの核所属", "可換性・全単射・中心化: 一般A–C", "条件4: authoredPasting_eqからdefectのcocycleとB3"]
-      unused: []
-    structure_field_escape: none-found
-    route_integrity: pass
-    target_fitting: none-found
-    vacuity: none-found
-    one_way_as_equivalence: none-found
-    goal_or_report_reinterpretation: none-found
-    blocking_findings: []
-    next_obligation: "任意の可換核群拡大とG-127の同じ変更群・射影への適用"
+audits:
+  premise_delta:
+    discharged: ["Chapter 4原始入力から一般入力・核・比較・補正・実解の対応"]
+    remaining: ["Dの群拡大・G-127接続", "指定三例", "統合完了監査"]
+  certificate_provenance:
+    discharged: ["presentationの強い性質・射影・A2は元のTwoLayer入力から生成"]
+    unresolved: []
+  proof_use:
+    used: ["両段の強い性質: comparison uniqueness", "A2: faceDefectの核所属", "可換性・全単射・中心化: 一般A–C", "条件4: authoredPasting_eqからdefectのcocycleとB3"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: []
+  validation_refs: ["CrossStage.lean focused check", "28宣言のstandard axiom audit", "共通scan・import方向scan"]
+  next_obligation: "任意の可換核群拡大とG-127の同じ変更群・射影への適用"
 ```
 
 ## 第10Cycleの選定と証拠対応
