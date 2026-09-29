@@ -153,7 +153,7 @@ ArchSig はこの二つを区別する。分からない所が結論に関わる
 `uses` が変わった意味 Atom では、`source` と `scope` はその意味 Atom の範囲(局所ごとの意味 Atom なら `source` はその `subject`)で、要素(`element`)と、変わった使用箇所(`use`)も持つ。`observed` と `current` は、変わった使用箇所のソースの版である。
 `stale` は `source`、`scope`、`element`、`use` の順に並ぶ。
 `unread` の一つ一つは、`sources` のソース(`source`)と、構造と Law が宣言した意味のうち読んでいない範囲(`scopes`)を持つ。
-Law ファイルに誤りがあると、その宣言は外れ、`sources` や意味の語彙が欠けることがある。`status` は、その誤りを `law_errors` に返す(第4章「書けているかを確かめる」の `errors` と同じ形)。
+Law ファイルに誤りがあれば、`status` は `stale` も `unread` も計算せず、Law の誤りだけを `law_errors` に返す(第4章「書けているかを確かめる」の `errors` と同じ形)。
 
 ## ArchMap のファイル
 

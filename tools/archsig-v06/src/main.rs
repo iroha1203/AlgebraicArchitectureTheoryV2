@@ -60,6 +60,9 @@ fn run(cli: Cli) -> Result<Value, String> {
         Cmd::Status => archmap::status(&store),
         Cmd::Law { command: LawCmd::Check } => {
             let laws = store.laws()?;
+            if !laws.errors.is_empty() {
+                return Ok(json!({"files": laws.files, "errors": laws.errors}));
+            }
             Ok(json!({
                 "files": laws.files,
                 "readings": laws.readings,

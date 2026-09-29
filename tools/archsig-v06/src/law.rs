@@ -6,6 +6,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde::Serialize;
 
 /// 読んだ Law ファイルすべて。解けなかった宣言と解決の誤りは `errors` に集める。
+/// 誤りが一つでもあれば、この Law は使えない(設計 §4.3)。
 #[derive(Clone, Debug, Default)]
 pub struct LawSet {
     pub files: Vec<String>,
@@ -17,8 +18,6 @@ pub struct LawSet {
     pub defs: Vec<Def>,
     pub laws: Vec<Law>,
     pub errors: Vec<LawError>,
-    /// 宣言した読みの名前と、誤りなく解けたかを、宣言の順に。
-    reading_order: Vec<(String, bool)>,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -211,19 +210,7 @@ impl LawSet {
                 }
                 self.fresh.extend(patterns);
             }
-            Some("reading") => {
-                let name = word_at(&head, 1);
-                match parse_reading(&head, &rest, at) {
-                    Ok(r) => {
-                        self.reading_order.push((r.name.clone(), true));
-                        self.readings.push(r);
-                    }
-                    Err(e) => {
-                        self.reading_order.extend(name.map(|n| (n, false)));
-                        return Err(e);
-                    }
-                }
-            }
+            Some("reading") => self.readings.push(parse_reading(&head, &rest, at)?),
             Some("meaning") => self.meanings.push(parse_meaning(&head, &rest, at)?),
             Some("law") => self.laws.push(parse_law(&head, &rest, at)?),
             Some("def") => {
@@ -245,54 +232,43 @@ impl LawSet {
         Ok(())
     }
 
-    /// 設計 §4.3 の名前の解決。`def` を展開し、`on` を補う。
-    /// 誤りのある宣言は外し、誤りを `errors` に集める。
+    /// 設計 §4.3 の名前の解決。`def` を展開し、`on` を補い、誤りを `errors` に集める。
     fn resolve(&mut self) {
         let mut errors = Vec::new();
-        dedupe(&mut self.readings, |r| (&r.name, &r.at), "読み", &mut errors);
-        dedupe(&mut self.meanings, |m| (&m.name, &m.at), "意味", &mut errors);
-        dedupe(&mut self.defs, |d| (&d.name, &d.at), "def", &mut errors);
-        dedupe(&mut self.laws, |l| (&l.name, &l.at), "law", &mut errors);
-        let meanings: BTreeMap<String, Meaning> = self.meanings.iter().map(|m| (m.name.clone(), m.clone())).collect();
+        duplicates(self.readings.iter().map(|r| (&r.name, &r.at)), "読み", &mut errors);
+        duplicates(self.meanings.iter().map(|m| (&m.name, &m.at)), "意味", &mut errors);
+        duplicates(self.defs.iter().map(|d| (&d.name, &d.at)), "def", &mut errors);
+        duplicates(self.laws.iter().map(|l| (&l.name, &l.at)), "law", &mut errors);
+        let mut meanings: BTreeMap<String, Meaning> = BTreeMap::new();
+        for m in &self.meanings {
+            meanings.entry(m.name.clone()).or_insert_with(|| m.clone());
+        }
         let readings: BTreeSet<String> = self.readings.iter().map(|r| r.name.clone()).collect();
-        // on を省いた Law は、最初に宣言した読みを使う。その読みに誤りがあれば、Law も誤りとする。
-        let first_reading = self.reading_order.first().cloned();
-        let broken_readings: BTreeSet<String> = self.reading_order.iter().filter(|(_, ok)| !ok).map(|(n, _)| n.clone()).collect();
-        self.defs.retain(|d| {
-            if meanings.contains_key(&d.name) {
-                errors.push(LawError { at: d.at.clone(), message: format!("`{}` は意味の語彙にもある。def には別の名前を付ける", d.name) });
-                return false;
-            }
-            true
-        });
+        let first_reading = self.readings.first().map(|r| r.name.clone());
         let def_names: BTreeSet<String> = self.defs.iter().map(|d| d.name.clone()).collect();
         let no_defs = BTreeMap::new();
         let mut defs = BTreeMap::new();
-        let mut broken = BTreeSet::new();
-        let mut kept_defs = Vec::new();
-        for mut d in std::mem::take(&mut self.defs) {
-            let mut ctx = Resolve { meanings: &meanings, defs: &no_defs, broken: &broken, def_names: &def_names, in_def: true, errors: Vec::new(), at: &d.at };
+        for d in &mut self.defs {
+            if meanings.contains_key(&d.name) {
+                errors.push(LawError { at: d.at.clone(), message: format!("`{}` は意味の語彙にもある。def には別の名前を付ける", d.name) });
+            }
+            let mut ctx = Resolve { meanings: &meanings, defs: &no_defs, def_names: &def_names, in_def: true, errors: Vec::new(), at: &d.at };
             ctx.selector(&mut d.selector);
             if ctx.errors.is_empty() {
                 defs.insert(d.name.clone(), d.selector.clone());
-                kept_defs.push(d);
-            } else {
-                errors.extend(ctx.errors);
-                broken.insert(d.name.clone());
             }
+            errors.extend(ctx.errors);
         }
-        self.defs = kept_defs;
-        let mut kept_laws = Vec::new();
-        for mut law in std::mem::take(&mut self.laws) {
+        for law in &mut self.laws {
             let at = law.at.clone();
-            let mut ctx = Resolve { meanings: &meanings, defs: &defs, broken: &broken, def_names: &def_names, in_def: false, errors: Vec::new(), at: &at };
-            match (&law.on, &first_reading) {
-                (Some(r), _) if broken_readings.contains(r) => ctx.error(format!("読み `{r}` に誤りがある")),
-                (Some(r), _) if !readings.contains(r) => ctx.error(format!("読み `{r}` が宣言されていない")),
-                (Some(_), _) => {}
-                (None, Some((r, true))) => law.on = Some(r.clone()),
-                (None, Some((r, false))) => ctx.error(format!("on を省いた Law が使う最初の読み `{r}` に誤りがある")),
-                (None, None) => ctx.error("on を省いた Law が使う読みが、一つも宣言されていない".to_string()),
+            let mut ctx = Resolve { meanings: &meanings, defs: &defs, def_names: &def_names, in_def: false, errors: Vec::new(), at: &at };
+            match &law.on {
+                Some(r) if !readings.contains(r) => ctx.error(format!("読み `{r}` が宣言されていない")),
+                Some(_) => {}
+                None => match &first_reading {
+                    Some(r) => law.on = Some(r.clone()),
+                    None => ctx.error("on を省いた Law が使う読みが、一つも宣言されていない".to_string()),
+                },
             }
             let about = law.about.as_ref().and_then(|m| meanings.get(m));
             if let (Some(m), None) = (&law.about, about) {
@@ -323,36 +299,26 @@ impl LawSet {
                 }
                 _ => {}
             }
-            if ctx.errors.is_empty() {
-                kept_laws.push(law);
-            } else {
-                errors.extend(ctx.errors);
-            }
+            errors.extend(ctx.errors);
         }
-        self.laws = kept_laws;
         self.errors.extend(errors);
     }
 }
 
-/// 同じ名前の宣言は最初のものを残し、後のものを誤りとして外す。
-fn dedupe<T>(items: &mut Vec<T>, key: impl Fn(&T) -> (&String, &String), what: &str, errors: &mut Vec<LawError>) {
+/// 同じ名前の二度目からの宣言を誤りとする。
+fn duplicates<'a>(items: impl Iterator<Item = (&'a String, &'a String)>, what: &str, errors: &mut Vec<LawError>) {
     let mut seen = BTreeSet::new();
-    items.retain(|x| {
-        let (name, at) = key(x);
-        if seen.insert(name.clone()) {
-            return true;
+    for (name, at) in items {
+        if !seen.insert(name) {
+            errors.push(LawError { at: at.clone(), message: format!("{what} `{name}` が二度宣言されている") });
         }
-        errors.push(LawError { at: at.clone(), message: format!("{what} `{name}` が二度宣言されている") });
-        false
-    });
+    }
 }
 
 struct Resolve<'a> {
     meanings: &'a BTreeMap<String, Meaning>,
     /// 誤りなく解けた `def`。
     defs: &'a BTreeMap<String, Selector>,
-    /// 誤りのある `def`。
-    broken: &'a BTreeSet<String>,
     def_names: &'a BTreeSet<String>,
     /// `def` の右辺を解いているか。`def` の中では `def` を使えない。
     in_def: bool,
@@ -379,9 +345,7 @@ impl Resolve<'_> {
                     sel.that.push(c);
                 }
                 return;
-            } else if self.broken.contains(&n) {
-                self.error(format!("def `{n}` は誤りがあるので使えない"));
-            } else if !self.meanings.contains_key(&n) {
+            } else if !self.meanings.contains_key(&n) && !self.def_names.contains(&n) {
                 self.error(format!("`{n}` は意味の語彙にも def にもない"));
             }
         }
