@@ -42,7 +42,7 @@ def requirements : Site.CoverageRequirements core.object
   axisReadableOn := fun _ axis => axis = (0 : Fin 4) ∨ axis = (1 : Fin 4)
   boundaryVisibleOn := fun _ _ => True
 
-/-- Selected finite geometry on the unchanged finite context preorder. -/
+/-- Geometry on the finite Atom carrier, with the full context preorder and product meets. -/
 noncomputable def selectedGeometry : Site.SelectedGeometryReading core where
   requirements := requirements
   overlap := Site.meetOverlapPullback core.contextPreorder

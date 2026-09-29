@@ -89,7 +89,7 @@ siteの非空性、実際の被覆、係数の非自明性、raw関係式の非�
 | 条項・選定義務 | 宣言・構成 | 保持する対象と結論 |
 | --- | --- | --- |
 | A1の実際の射影と核 | `Tower.lean`: `fiberPushforward`, `Kernel`, `kernelInclusion`, `fiberPushforward_eq_one_iff`, `kernelEquivFiberAut` | 任意の圏の塔で、関手の元の自己同型への作用とそのkernelを使用。核所属は実際の `p.map` が恒等であることと同値 |
-| A条件2の輸送写像の生成 | `StrongTransport.lean`: `fiberTransportHom`, `fiberTransportHom_fac`, `fiberTransportHom_unique` | 強いopcartesian射から生成し、因子分解の一意性と準同型性を証明 |
+| A条件2の輸送写像の生成 | `StrongTransport.lean`: `fiberTransportHom`, `fiberTransportHom_fac`, `fiberTransport_unique` | 強いopcartesian射から生成し、因子分解の一意性と準同型性を証明 |
 | 射影と輸送の整合、核所属 | `KernelTransport.lean`: `fiberPushforward_transport`, `kernelTransportHom`, `kernelTransportHom_fac`, `kernelTransportHom_unique` | 上下の強いopcartesian性から射影可換性を導き、生成済み輸送を実際の核へ制限 |
 | A条件2の同型・加法化 | `kernelTransportEquiv`, `KernelTransportLaws.lean`: `KernelCoefficient`, `kernelTransportAddEquiv` | 同じ生成済み写像の全単射性をGOALの仮定として保持。`Additive` 型タグは核元と包含を保つ |
 | 同じcoreを持ち上げる選択からの独立性 | `KernelTransportLaws.lean`: `kernelTransport_independent_lift` | 同じ元の辺への二つの補正の射影が等しいとき、差は核に属し、核の可換性で輸送が一致 |
