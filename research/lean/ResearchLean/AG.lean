@@ -988,4 +988,5 @@ import ResearchLean.AG.AbelianLiftingObstruction.Defect
 import ResearchLean.AG.AbelianLiftingObstruction.Correction
 import ResearchLean.AG.AbelianLiftingObstruction.ObstructionClass
 import ResearchLean.AG.AbelianLiftingObstruction.Solutions
+import ResearchLean.AG.AbelianLiftingObstruction.SolutionTorsor
 import ResearchLean.AG.AbelianLiftingObstruction.SquarePresentation

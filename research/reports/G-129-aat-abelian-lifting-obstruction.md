@@ -3,6 +3,65 @@
 一次仕様は [固定GOAL](../goals/G-129-aat-abelian-lifting-obstruction.md)、
 実行・査読・mergeの記録は [tracking Issue #5082](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5082) を参照する。
 
+## 第7Cycleの選定（進行中）
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-129-aat-abelian-lifting-obstruction
+cycle: 7
+goal_blob_sha: 9f93a9a1c2ebd9ccd53362e878363144a934b4b8
+base_oid: b986920dd2d0eef6e85f49d6ab59cbafa3831cf7
+tracking_issue: 5082
+report_path: research/reports/G-129-aat-abelian-lifting-obstruction.md
+selection:
+  proof_state_ref: "Issue #5082 第6Cycle merge 後のproof state"
+  proof_dag_predecessors:
+    - OriginalTowerPresentation.solutionOfCorrection
+    - OriginalTowerPresentation.solutionCorrection
+    - OriginalTowerPresentation.solutionCorrection_solutionOfCorrection
+    - OriginalTowerPresentation.solutionOfCorrection_solutionCorrection
+    - Z1
+  milestone: "実際のSol(a)へのZ1自由推移作用と、任意の二解の一意な差を構成する"
+  proof_obligations:
+    - "同じ元の辺の核補正からZ1の各元の実際の解への作用を作る"
+    - "作用の零元・加法法則、自由性、推移性を証明する"
+    - "任意の二つの実際の解の差を一意なZ1の元として抽出し、基準解からの全単射を構成する"
+  exit_criteria:
+    - "作用は抽象cochain解だけでなく元の辺の実際のSolutionに作用する"
+    - "差の抽出が同じ元の辺の核に由来し、自由・推移・一意である"
+    - "非空なときのZ1 torsorと基準解との全単射をLeanで証明する"
+    - "focused check・公理監査・共通scan・独立PRレビュー合格"
+  selection_reason: "Cの第一段階を実際の解で閉じ、頂点再同定とH1商の入力を作る"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/AbelianLiftingObstruction/SolutionTorsor.lean
+  risks:
+    - "補正方程式の解だけのtorsorをSol(a)のtorsorと呼ばない"
+    - "基準解なしに非空性を仮定せずtorsorを構成しない"
+  unchecked:
+    - "独立PRレビュー前"
+```
+
+### 第7Cycleの証拠対応
+
+`solutionAction` は実際の `Solution` の元の辺持ち上げから核補正を取り出し、
+`Z1` の元を足して実際の `Solution` へ戻す。`solutionAction_correction` は
+この操作が同じ `C¹` で加算になっていることを示す。`solutionAction_edge` は
+各元の辺の持ち上げが核の包含値の左乗で変わることを直接示す。`solutionDifference` は任意の
+二解の実際の核補正の差から `Z1` を構成し、`solutionDifference_action` と
+`solutionDifference_solutionAction` が自由性・推移性・差の一意性を証明する。
+`solutionAddTorsor` は実際の `Solution` 上の `AddTorsor` instance であり、
+非空性のみを条件として持つ。`solutionEquivZ1` は基準解を選んだときの全単射である。
+
+| 固定target | Lean宣言 | 放電の内容 |
+| --- | --- | --- |
+| `Z¹` の実際の解への作用 | `solutionAction`, `solutionAction_correction`, `solutionAction_edge`, `solutionAction_zero`, `solutionAction_add` | 元の辺の核補正による作用と群法則 |
+| 二解の一意な差 | `solutionDifference`, `solutionDifference_action`, `solutionDifference_solutionAction`, `solutionAction_existsUnique` | 同じ `Z¹` の元の抽出、自由性、推移性 |
+| 非空な解の torsor | `solutionAddTorsor`, `solutionEquivZ1` | `Solution` 上の `AddTorsor` と基準解からの全単射 |
+
+focused check と単一モジュール targeted build は成功し、
+`#assert_standard_axioms_only` はこのnamespace内の12宣言で標準公理のみと報告した。
+
 ## 第6Cycleの選定
 
 ```yaml
