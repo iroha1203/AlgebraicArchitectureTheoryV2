@@ -3,6 +3,102 @@
 一次仕様は [固定GOAL](../goals/G-129-aat-abelian-lifting-obstruction.md)、
 実行・査読・mergeの記録は [tracking Issue #5082](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5082) を参照する。
 
+## 第5Cycleの選定（進行中）
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-129-aat-abelian-lifting-obstruction
+cycle: 5
+goal_blob_sha: 9f93a9a1c2ebd9ccd53362e878363144a934b4b8
+base_oid: 623864ed33bfd045177d3c15fafae9d878d3d8cd
+tracking_issue: 5082
+report_path: research/reports/G-129-aat-abelian-lifting-obstruction.md
+selection:
+  proof_state_ref: "Issue #5082 第4Cycle merge 後のproof state"
+  proof_dag_predecessors:
+    - OriginalTowerPresentation.toTower
+    - liftDifference
+    - TowerPresentation.correctedDefect_eq
+    - TowerPresentation.authoredSyzygy_correction_invariant
+    - h2_eq_zero_iff
+  milestone: "同じ固定coreの任意の別基準持ち上げを実際の核補正へ戻し、H2障害類の基準独立性を証明する"
+  proof_obligations:
+    - "任意の別持ち上げotherの元の辺と、基準持ち上げへの核補正後の元の辺が同じであることを証明する"
+    - "otherから再構成したdefectとCycle4のcorrectedDefectが一致することを証明する"
+    - "同じ核・係数・3-cell条件でのH2類を定義し、全otherについて不変であることを証明する"
+  exit_criteria:
+    - "全otherの元の辺の値と実際の核差の対応がある"
+    - "otherの元のdefectとcorrectedDefectの値が一致する"
+    - "全otherについて同じH2の障害類が等しい"
+    - "focused check・公理監査・共通scan・独立PRレビュー合格"
+  selection_reason: "Bの選択によらない障害を、後続B3で実際の解と比較できる形にする"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/AbelianLiftingObstruction/ObstructionClass.lean
+  risks:
+    - "別の選択をC1の方程式だけで置き換えず、元のLとliftから得る辺を保持する"
+    - "H2類を異なる係数や仮定付き証明に移さない"
+  unchecked:
+    - "実装と独立PRレビュー前"
+```
+
+### 第5Cycleの証拠対応
+
+`alternativeCorrection` は同じ固定coreに射影する任意の別持ち上げ `other` と
+基準持ち上げの差を、実際の射影の核 `liftDifference` から各辺で取り出す。
+`alternativeEdge_eq` と `alternativePath_eq` は、元の `L` と `other` から得る
+実際の辺・道が、この核補正を基準持ち上げへ実行して得る射と同じであることを示す。
+`alternativeTransportData` は `other` の元の辺と元の指定比較を保持する。
+`alternativeRawDefect_eq` と `alternativeDefect_eq_raw` は、この別選択で再構成した
+raw defect と同じ実際の核の `C²` の値が一致することを示す。
+
+| 固定target | Lean宣言 | 放電の内容 |
+| --- | --- | --- |
+| 同じcoreの任意の別持ち上げ | `alternativeCorrection`, `alternativeEdge_eq`, `alternativePath_eq` | 全 `other` の元の辺・道を実際の核補正と同定 |
+| 別選択のdefect | `alternativeTransportData`, `alternativeCanonical_eq`, `alternativeRawDefect_eq`, `alternativeDefect_eq_raw` | 元の比較と別選択の元の道から生じるraw defectを同じC²の核値へ接続 |
+| 条件4・係数 | `alternativeAuthoredSyzygy`, `localCoefficients_path_independent_lift` | 元の指定比較の3-cell条件と、同じ固定coreの道輸送が別選択でも成立 |
+| H²障害類 | `obstructionCocycle`, `obstructionClass`, `correctedObstructionClass_eq`, `alternativeObstructionClass_eq` | 同じ有限表示と同じC²・d¹・d²のH²類が全 `other` で等しい |
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    - "全otherの元の辺・道を実際の核補正と値で同定"
+    - "別選択の元のraw defectを、同じ実際の核にあるcorrectedDefectと同一視"
+    - "同じC2,d1,d2,H2の障害類が全otherで不変"
+  exit_criteria_status:
+    - "全otherの元の辺と核差: alternativeEdge_eq、alternativePath_eq"
+    - "別選択の元のdefectとcorrectedDefect: alternativeRawDefect_eq、alternativeDefect_eq_raw"
+    - "同じH2の類: alternativeObstructionClass_eq"
+    - "focused check・公理guard・共通scan・独立PRレビューは最終headで確認"
+  completion_candidate: no
+  lean_artifacts:
+    - AbelianLiftingObstruction/ObstructionClass.lean
+  claim_mapping:
+    theorem_names: [alternativeEdge_eq, alternativePath_eq, alternativeDefect_eq_raw, alternativeObstructionClass_eq]
+    source_labels: ["Bの基準持ち上げ独立性"]
+    undischarged_assumptions: ["A条件1–3は一般定理の明示仮定", "条件4は元の比較のsyzygyとして明示仮定", "otherの固定coreへの射影等式"]
+    acceptance_point: "同じcoreの任意の元の別持ち上げから計算した障害類が等しい"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["元の別持ち上げの核差", "元の別選択のraw defect一致", "同じH2類の全選択独立"]
+    remaining: ["実際のSol(a)と障害零性の双方向対応", "CとD", "指定三例の条件1–4"]
+  certificate_provenance:
+    discharged: ["fiberPushforwardのkerからのliftDifference", "元のL・other辺射との同一性", "実際のraw defectの核包含", "B2とd2d1からの同じH2類"]
+    unresolved: []
+  proof_use:
+    used: ["全otherの射影等式で核差を生成", "B2をH2の同値へ適用", "元の条件4を別選択のtyped pastingへ移す"]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: []
+  next_obligation: "元の辺の全持ち上げからSol(a)を独立に定義し、障害零性との双方向を証明する"
+```
+
 ## 第4Cycleの選定（進行中）
 
 ```yaml
