@@ -1,14 +1,11 @@
-mod archmap;
-mod atom;
-mod law;
-
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand};
 use serde_json::{Value, json};
 
-use archmap::Store;
+use archsig::archmap::{self, Store};
+use archsig::atom;
 
 #[derive(Parser)]
 #[command(name = "archsig", version, about = "コードから観測した Atom と Law の上で、アーキテクチャを計算する")]
