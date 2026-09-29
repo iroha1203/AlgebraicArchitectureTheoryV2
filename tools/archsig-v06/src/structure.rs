@@ -257,8 +257,9 @@ impl Structure {
                     let external = match self.kind(&object) {
                         Ok("operation") => None,
                         Ok(_) => return Err(Silence::new(Reason::Unresolved)),
+                        // 外部として扱うのは、定義を読んでいない要素だけ。曖昧な要素は沈黙する。
                         Err(s) => match self.resolves.get(&object) {
-                            Some(Resolution::External(pkg)) => Some(pkg.clone()),
+                            Some(Resolution::External(pkg)) if s.reason == Reason::Unread => Some(pkg.clone()),
                             _ => return Err(s),
                         },
                     };

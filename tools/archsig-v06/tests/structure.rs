@@ -110,6 +110,21 @@ fn an_element_with_two_kinds_of_defines_is_unresolved() {
     );
     assert_eq!(s.unfold("m.f").unwrap_err().reason, Reason::Unresolved, "値の中の呼び出し先が曖昧");
     assert_eq!(s.unfold("m.k").unwrap_err().reason, Reason::Unresolved, "引数の型が曖昧");
+
+    // 曖昧な呼び出し先と `?` の呼び出し先は、外部の resolves があっても外部として扱わない。
+    let s = structure(
+        r#"{"kind": "defines", "subject": "m.h", "value": "operation", "params": {}, "at": "m.py:1"}
+{"kind": "defines", "subject": "m.h", "value": "field", "type": "int", "at": "n.py:1"}
+{"kind": "resolves", "subject": "m.h", "object": "external:pkg", "at": "m.py:1"}
+{"kind": "resolves", "subject": "?mail.send", "object": "external:mail", "at": "m.py:1"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "at": "m.py:3"}
+{"kind": "calls", "subject": "m.f", "object": "m.h", "at": "m.py:4"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:6"}
+{"kind": "calls", "subject": "m.g", "object": "?mail.send", "at": "m.py:7"}
+"#,
+    );
+    assert_eq!(s.unfold("m.f").unwrap_err().reason, Reason::Unresolved);
+    assert_eq!(s.unfold("m.g").unwrap_err().reason, Reason::Unresolved);
 }
 
 #[test]
