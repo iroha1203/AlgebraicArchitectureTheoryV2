@@ -990,4 +990,5 @@ import ResearchLean.AG.AbelianLiftingObstruction.ObstructionClass
 import ResearchLean.AG.AbelianLiftingObstruction.Solutions
 import ResearchLean.AG.AbelianLiftingObstruction.SolutionTorsor
 import ResearchLean.AG.AbelianLiftingObstruction.VertexGauge
+import ResearchLean.AG.AbelianLiftingObstruction.H1Classification
 import ResearchLean.AG.AbelianLiftingObstruction.SquarePresentation

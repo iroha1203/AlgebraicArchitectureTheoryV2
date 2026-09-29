@@ -3,6 +3,65 @@
 一次仕様は [固定GOAL](../goals/G-129-aat-abelian-lifting-obstruction.md)、
 実行・査読・mergeの記録は [tracking Issue #5082](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5082) を参照する。
 
+## 第9Cycleの選定と証拠対応
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-129-aat-abelian-lifting-obstruction
+cycle: 9
+goal_blob_sha: 9f93a9a1c2ebd9ccd53362e878363144a934b4b8
+base_oid: 2593e53e8ada79fd9c182165ba49db0cf6bcc363
+tracking_issue: 5082
+report_path: research/reports/G-129-aat-abelian-lifting-obstruction.md
+selection:
+  proof_state_ref: "Issue #5082 第8Cycle merge 後のproof state"
+  proof_dag_predecessors:
+    - OriginalTowerPresentation.solutionAddTorsor
+    - OriginalTowerPresentation.solutionDifference
+    - OriginalTowerPresentation.vertexGauge
+    - d0ToZ1
+    - H1
+  milestone: "実際の解を頂点再同定で割った同値類を作り、同じH1のtorsorとして分類する"
+  proof_obligations:
+    - "C0の実際の頂点作用の軌道関係と解の商を構成する"
+    - "二つの商類の差を同じZ1の差のH1類としてwell-definedに降ろす"
+    - "H1の作用と差を商に降ろし、非空なとき自由・推移的なtorsorを作る"
+    - "基準解の商類からH1との全単射を構成する"
+  exit_criteria:
+    - "商の関係がC1の元の辺の頂点作用そのものである"
+    - "H1が別の係数や抽象補正集合ではなく同じ実解の商へ作用する"
+    - "作用・差の消去則と基準商類との全単射をLeanで証明する"
+    - "focused check・公理監査・共通scan・独立PRレビュー合格"
+  selection_reason: "Cの商分類を閉じ、基準持ち上げ変更とDの解対応の受け皿を作る"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/AbelianLiftingObstruction/H1Classification.lean
+  risks:
+    - "H1を定義するだけで実際の解の軌道との関係を示さない"
+    - "商への作用の代表独立性を暗黙にしない"
+  unchecked:
+    - "独立PRレビュー前"
+```
+
+`SolutionOrbit` は元の `Solution` に対する `C⁰` 頂点作用の
+`AddAction.orbitRel` による商である。`solutionOrbit_mk_eq_iff` は商類の等号を
+実際の頂点再同定に戻す。`solutionOrbit_mk_eq_iff_difference_zero` はその等号と
+同じ局所係数の `H¹` における実解の差の零性を同一視する。
+
+任意の基準実解に対する `solutionOrbitEquivH1` は、実解の差から座標を取り、
+`H¹` 類の代表コサイクルで元の実解へ作用する相互逆写像である。
+`solutionOrbitAddTorsor` の作用と差は `solutionOrbit_vadd_mk` と
+`solutionOrbit_vsub_mk` により、各代表上で元の `Solution` の作用・差と一致する。
+`solutionOrbit_action_well_defined` と `solutionOrbit_difference_well_defined` は
+コサイクル代表と実解代表の変更に対する独立性を明示する。
+
+| 固定target | Lean宣言 | 放電の内容 |
+| --- | --- | --- |
+| 頂点作用の軌道 | `vertexAddAction`, `SolutionOrbit`, `solutionOrbit_mk_eq_iff` | C1の実際の頂点作用で元の解集合を割る |
+| H¹との一致 | `solutionOrbit_mk_eq_iff_difference_zero`, `solutionOrbitEquivH1` | 差の零性と基準解からの全単射 |
+| H¹ torsor | `solutionOrbitAddTorsor`, `solutionOrbit_vadd_mk`, `solutionOrbit_vsub_mk` | 同じ実解の商への自由・推移的作用と差 |
+| 代表独立性 | `solutionOrbit_action_well_defined`, `solutionOrbit_difference_well_defined` | コサイクルと実解の両代表を変更しても値が一致 |
+
 ## 第8Cycleの選定（進行中）
 
 ```yaml
