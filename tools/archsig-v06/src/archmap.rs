@@ -27,6 +27,7 @@ impl Store {
 
     /// `.archsig/law/` の `.law` ファイルを名前順に読む。
     pub fn laws(&self) -> Result<LawSet, String> {
+        // Law の解決の誤りは LawSet の errors に集まる。ここで失敗するのは law/ を読めないときだけ。
         let dir = self.dir().join("law");
         let mut entries: Vec<String> = std::fs::read_dir(&dir)
             .map_err(|e| format!("{}: {e}", dir.display()))?
@@ -36,7 +37,7 @@ impl Store {
             .collect();
         entries.sort();
         let read = |p: &str| std::fs::read_to_string(self.root.join(p)).map_err(|e| format!("{p}: {e}"));
-        LawSet::load(&entries, &read)
+        Ok(LawSet::load(&entries, &read))
     }
 
     /// ArchMap。ソースのファイルごとの JSON Lines をすべて読む。
@@ -243,7 +244,7 @@ pub fn status(store: &Store) -> Result<serde_json::Value, String> {
     }
     let key = |v: &serde_json::Value| ["source", "scope", "element", "use"].map(|k| v[k].as_str().unwrap_or("").to_string());
     stale.sort_by_key(key);
-    let meanings: std::collections::BTreeSet<&String> = laws.meanings.iter().collect();
+    let meanings: std::collections::BTreeSet<&String> = laws.meanings.iter().map(|m| &m.name).collect();
     let mut unread = Vec::new();
     for s in &sources {
         let mut scopes = Vec::new();
@@ -257,7 +258,7 @@ pub fn status(store: &Store) -> Result<serde_json::Value, String> {
             unread.push(json!({"source": s, "scopes": scopes}));
         }
     }
-    Ok(json!({"stale": stale, "unread": unread}))
+    Ok(json!({"stale": stale, "unread": unread, "law_errors": laws.errors}))
 }
 
 /// ArchMap の中の置き場所。ソースと局所は別の名前の空間にある。

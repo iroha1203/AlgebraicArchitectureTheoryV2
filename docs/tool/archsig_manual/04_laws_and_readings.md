@@ -236,3 +236,23 @@ law payment-writes-are-audited
 
 `def` の中で別の `def` は使えない。定義は一段だけである。
 別の Law ファイルは `include "<パス>"` で取り込む。
+
+## 書けているかを確かめる
+
+`archsig law check` は、Law ファイルを読んで解いた結果を返す。
+
+- `files`:読んだ Law ファイル。`include` で取り込んだものも入る。
+- `readings`、`meanings`、`defs`、`laws`:解けた宣言。誤りがないときだけ返す。`laws` の規則は、`def` を展開し、`on` を省いた Law には最初の読みを補った形で返す。規則の形(`rule.form`)は `no`、`each`、`agrees along`、`changes commute`、`changes keep`、`roundtrips` のどれかで、残りの欄は文法の各部に当たる。
+- `errors`:誤りの一覧。一つ一つが、宣言の場所(`at`、`ファイル:行`)と理由(`message`)を持つ。ファイルそのものが読めないときは、`at` はそのファイルのパスである。
+
+誤りには、字句や文法で解けない宣言と、名前の解決の誤りがある。
+解決の誤りは、次のどれかである。
+
+- 宣言されていない意味や読みを使う。`on` を省いた Law で、読みが一つも宣言されていない。
+- `about` の要る規則に `about` がない。
+- `has` や `convert` の値が、語彙の `values` にない。
+- `def` の中で `def` を使う。
+- 同じ名前を二度宣言する。`def` に意味の語彙と同じ名前を付ける。
+- パターンが読めない。
+
+誤りが一つでもあれば、その Law は計算に使えない。`law check` は `files` と `errors` だけを返し、計算する問いは、計算せずに Law の誤りを返す。`status` は動き続け、Law の誤りを `law_errors` に返す(第3章)。
