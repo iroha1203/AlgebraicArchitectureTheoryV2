@@ -983,4 +983,5 @@ import ResearchLean.AG.AbelianLiftingObstruction.Cochains
 import ResearchLean.AG.AbelianLiftingObstruction.Cohomology
 import ResearchLean.AG.AbelianLiftingObstruction.PathKernelTransport
 import ResearchLean.AG.AbelianLiftingObstruction.TowerPresentation
+import ResearchLean.AG.AbelianLiftingObstruction.OriginalTowerPresentation
 import ResearchLean.AG.AbelianLiftingObstruction.SquarePresentation

@@ -1,5 +1,6 @@
 import ResearchLean.AG.AbelianLiftingObstruction.Cochains
 import Mathlib.Algebra.Homology.ShortComplex.Ab
+import Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex
 import Mathlib.Algebra.Homology.HomologicalComplex
 
 /-!
@@ -128,6 +129,38 @@ noncomputable def firstHomologyIso :
 noncomputable def secondHomologyIso :
     (secondShortComplex M).homology ≅ AddCommGrpCat.of (H2 M) := by
   exact (secondShortComplex M).abHomologyIso
+
+/-- The degree-one segment of the four-term complex is the constructed short complex. -/
+theorem firstShortComplex_eq_sc :
+    firstShortComplex M = (cochainComplex M).sc 1 := by
+  have hprev : (ComplexShape.up ℕ).prev 1 = 0 := by
+    simp
+  simp [HomologicalComplex.sc, HomologicalComplex.shortComplexFunctor,
+    HomologicalComplex.shortComplexFunctor', cochainComplex, cochainObject,
+    cochainDifferential, CochainComplex.of, firstShortComplex, hprev]
+  rw [hprev]
+
+/-- The degree-two segment of the four-term complex is the constructed short complex. -/
+theorem secondShortComplex_eq_sc :
+    secondShortComplex M = (cochainComplex M).sc 2 := by
+  have hprev : (ComplexShape.up ℕ).prev 2 = 1 := by
+    simp
+  simp [HomologicalComplex.sc, HomologicalComplex.shortComplexFunctor,
+    HomologicalComplex.shortComplexFunctor', cochainComplex, cochainObject,
+    cochainDifferential, CochainComplex.of, secondShortComplex, hprev]
+  rw [hprev]
+
+/-- Explicit first cohomology is degree-one homology of the four-term native complex. -/
+noncomputable def firstCochainHomologyIso :
+    (cochainComplex M).homology 1 ≅ AddCommGrpCat.of (H1 M) := by
+  change ((cochainComplex M).sc 1).homology ≅ AddCommGrpCat.of (H1 M)
+  simpa only [← firstShortComplex_eq_sc M] using firstHomologyIso M
+
+/-- Explicit second cohomology is degree-two homology of the four-term native complex. -/
+noncomputable def secondCochainHomologyIso :
+    (cochainComplex M).homology 2 ≅ AddCommGrpCat.of (H2 M) := by
+  change ((cochainComplex M).sc 2).homology ≅ AddCommGrpCat.of (H2 M)
+  simpa only [← secondShortComplex_eq_sc M] using secondHomologyIso M
 
 end AAT.AG.AbelianLiftingObstruction
 
