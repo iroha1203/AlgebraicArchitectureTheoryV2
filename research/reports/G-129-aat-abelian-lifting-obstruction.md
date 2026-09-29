@@ -3,6 +3,68 @@
 一次仕様は [固定GOAL](../goals/G-129-aat-abelian-lifting-obstruction.md)、
 実行・査読・mergeの記録は [tracking Issue #5082](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5082) を参照する。
 
+## 第10Cycleの選定と証拠対応
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-129-aat-abelian-lifting-obstruction
+cycle: 10
+goal_blob_sha: 9f93a9a1c2ebd9ccd53362e878363144a934b4b8
+base_oid: c9900436447859bb2027f114bc5831b3178ff0fe
+tracking_issue: 5082
+report_path: research/reports/G-129-aat-abelian-lifting-obstruction.md
+selection:
+  proof_state_ref: "Issue #5082 第9Cycle merge 後のproof state"
+  proof_dag_predecessors:
+    - OriginalTowerPresentation.alternativeCorrection
+    - OriginalTowerPresentation.edgeTransport_independent_lift
+    - OriginalTowerPresentation.alternativeObstructionClass_eq
+    - OriginalTowerPresentation.Solution
+    - OriginalTowerPresentation.solutionOrbitAddTorsor
+  milestone: "同じcoreの基準辺持ち上げを変えても、実解・頂点商・H1作用が同じことを示す"
+  proof_obligations:
+    - "任意の代替持ち上げから一般入力を構成し、Aの同じ条件を保存する"
+    - "核輸送・局所係数・H1を同じ対象として対応させる"
+    - "同じ元の辺と指定比較の実解を恒等に対応させる"
+    - "頂点商と作用・差がこの対応で一致する"
+  exit_criteria:
+    - "同じ実際の持ち上げと頂点再同定を経由してB・Cを対応させる"
+    - "focused check・公理監査・共通scan・独立PRレビュー合格"
+  selection_reason: "Cの基準選択不変性を閉じ、Dへの入力を固定する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/AbelianLiftingObstruction/ReferenceLiftInvariant.lean
+  risks:
+    - "係数や解を別の定義済み対象に取り替えて同一性を主張する"
+    - "代替持ち上げのA2・核輸送全単射性を入力として受け取る"
+  unchecked:
+    - "独立PRレビュー前"
+```
+
+`withAlternativeLift` は同じ固定core値への任意の代替辺持ち上げから
+`OriginalTowerPresentation` を作り直す。core整合は既存の補正道の定理から、
+核輸送の全単射は持ち上げ独立性から導く。`localCoefficients_changeReference` は
+構成した辺輸送の等号を使い、二つの局所係数そのものを等置する。
+
+`solutionChangeReference` は元の全辺で同じ `choice` を保つ全単射である。
+`solutionAction_changeReference`、`vertexGauge_changeReference`、
+`solutionOrbitChangeReference` は、同じ実解・同じ頂点再同定から商を対応させる。
+`h1ChangeReference`、`solutionOrbitChangeReference_vadd` と `_vsub`、
+`solutionOrbitEquivH1_changeReference` は、その商の作用・差・基準解からの座標を
+同じ `H¹` の下で比較する。
+
+`defect_changeReference` は代替基準で実際に作り直したface defectと
+補正後の元のdefectの一致を示す。`syzygy_changeReference` は同じ3-cell条件を
+保存し、`obstructionClass_changeReference` は既存のB2と代替障害類の等号を使って
+`H²` の障害類を一致させる。二つのdefect cochainが文字通り等しいとは
+主張せず、差が `d¹` の像であることを経由する。
+
+| 固定target | Lean宣言 | 放電の内容 |
+| --- | --- | --- |
+| 代替基準の一般入力 | `withAlternativeLift`, `localCoefficients_changeReference` | 同じcoreの代替実辺と同じ核輸送・局所係数 |
+| 実解とCの対応 | `solutionChangeReference`, `vertexGauge_changeReference`, `solutionOrbitChangeReference`, `solutionOrbitChangeReference_vadd`, `solutionOrbitChangeReference_vsub`, `solutionOrbitEquivH1_changeReference` | 同じ元の辺の解、頂点商、作用・差・基準座標 |
+| Bの対応 | `defect_changeReference`, `syzygy_changeReference`, `obstructionClass_changeReference`, `obstructionClass_zero_changeReference` | 実際の代替defectと同じ障害類・零性 |
+
 ## 第9Cycleの選定と証拠対応
 
 ```yaml
