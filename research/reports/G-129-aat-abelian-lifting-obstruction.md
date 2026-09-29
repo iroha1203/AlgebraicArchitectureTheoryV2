@@ -3,6 +3,65 @@
 一次仕様は [固定GOAL](../goals/G-129-aat-abelian-lifting-obstruction.md)、
 実行・査読・mergeの記録は [tracking Issue #5082](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5082) を参照する。
 
+## 第8Cycleの選定（進行中）
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-129-aat-abelian-lifting-obstruction
+cycle: 8
+goal_blob_sha: 9f93a9a1c2ebd9ccd53362e878363144a934b4b8
+base_oid: cfc4a3c233f17208ac7e08293d77c27dbe52c738
+tracking_issue: 5082
+report_path: research/reports/G-129-aat-abelian-lifting-obstruction.md
+selection:
+  proof_state_ref: "Issue #5082 第7Cycle merge 後のproof state"
+  proof_dag_predecessors:
+    - OriginalTowerPresentation.solutionAction_edge
+    - OriginalTowerPresentation.solutionAddTorsor
+    - d0ToZ1
+    - kernelTransportHom_fac
+  milestone: "頂点での再同定の実際の辺の射の式と、同じcore・比較を保つd0b作用を証明する"
+  proof_obligations:
+    - "任意のb:C0から実際のSolution上の頂点作用を構成する"
+    - "各元の辺の射について指定C1式、すなわち終点左乗と始点右逆乗を証明する"
+    - "同じcore・全指定比較の面等式を保ち、補正ではd0bの加算になることを示す"
+    - "C0の零元・加法作用を証明する"
+  exit_criteria:
+    - "C1式が抽象cochainではなく元の辺の実際の射の等式で成立する"
+    - "始点の核輸送は選ばれた実際の辺の強い性質から導出される"
+    - "core・全face指定比較を同じSolutionで保持する"
+    - "focused check・公理監査・共通scan・独立PRレビュー合格"
+  selection_reason: "頂点再同定を実際の射の作用として固定し、次のH1商の関係を構成できるようにする"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/AbelianLiftingObstruction/VertexGauge.lean
+  risks:
+    - "d0bを単に定義として作用させるだけでC1式を示さない"
+    - "元の比較を選び直した比較に替えない"
+  unchecked:
+    - "独立PRレビュー前"
+```
+
+### 第8Cycleの証拠対応
+
+`vertexGauge` は任意の頂点cochain `b` を同じ局所係数の `d0ToZ1` で
+`Z¹` に送り、第7Cycleの実際の `Solution` 作用を実行する。
+`vertexGauge_correction` は同じ `C¹` の補正が `d⁰b` だけ加算されることを示す。
+`selectedEdge_kernel_fac` は同じcoreへの任意の実際の解の元の辺について、
+先行する強い持ち上げから実際の核輸送を導き、基準持ち上げと輸送が等しいことを使う。
+`vertexGauge_edge_arrow` はGOAL (C1)の始点・終点の射の式をこの元の辺で示す。
+作用の値域は `Solution` であり、固定coreと元の指定比較に対する全ての面の等式を
+保つ。`vertexGauge_zero` と `vertexGauge_add` は `C⁰` の群法則に対応する。
+
+| 固定target | Lean宣言 | 放電の内容 |
+| --- | --- | --- |
+| 頂点作用と補正 | `vertexGauge`, `vertexGauge_correction` | 任意の頂点cochainによる実解の再同定と `d⁰b` の加算 |
+| 元の辺のC1式 | `selectedEdge_kernel_fac`, `vertexGauge_edge_arrow` | 実際の辺の強い性質から核輸送を使い、両端の核自己同型による射の等式 |
+| 頂点作用の群法則 | `vertexGauge_zero`, `vertexGauge_add` | 零元・加法と同じ固定core・比較の解集合への作用 |
+
+focused check は成功し、`#assert_standard_axioms_only` はこのnamespace内の
+6宣言で標準公理のみと報告した。
+
 ## 第7Cycleの選定（進行中）
 
 ```yaml
