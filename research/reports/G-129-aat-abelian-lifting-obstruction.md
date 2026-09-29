@@ -3,6 +3,97 @@
 一次仕様は [固定GOAL](../goals/G-129-aat-abelian-lifting-obstruction.md)、
 実行・査読・mergeの記録は [tracking Issue #5082](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5082) を参照する。
 
+## 第11Cycleの選定
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-129-aat-abelian-lifting-obstruction
+cycle: 11
+goal_blob_sha: 9f93a9a1c2ebd9ccd53362e878363144a934b4b8
+base_oid: d98cda0ba87ba1f1f223241fb5efcd2ec969af7c
+tracking_issue: 5082
+report_path: research/reports/G-129-aat-abelian-lifting-obstruction.md
+selection:
+  proof_state_ref: "第10Cycle受理済みのA–C、Dの核・輸送接続"
+  proof_dag_predecessors: [innerKernelEquiv, OriginalTowerPresentation.obstructionClass_eq_zero_iff_solution, OriginalTowerPresentation.vertexGauge_edge_arrow]
+  milestone: "Dの第4章特殊化を同じ入力・defect・補正・解・頂点作用で閉じる"
+  proof_obligations:
+    - "TwoLayerTransportData・EdgeSectionFamily・CoreAlignmentAtから一般入力を作る"
+    - "標準比較・sectionInnerObstruction・任意のrelativeInnerDefectCochainの実際の値を一致させる"
+    - "B3とSectionRelativeCoherentizableを同じ辺で対応させる"
+    - "Cの核補正と頂点再同定を元の全幾何射へ戻す"
+    - "指定比較の3-cell条件を同じAuthoredSyzygyへ接続する"
+  exit_criteria: ["各対応をLeanで証明", "focused check・公理監査・共通scan・独立PRレビュー合格"]
+  selection_reason: "指定幾何例が一般A–Cを適用するためのD接続を完成する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/AbelianLiftingObstruction/CrossStage.lean]
+  risks: ["元の幾何射を忘却して対応としない", "コサイクル性や比較一致を入力fieldで受け取らない"]
+  unchecked: ["実装・検証・独立レビュー前"]
+```
+
+### 第11Cycleの証拠対応
+
+`CrossStage.presentation` は同じ `TwoLayerTransportData`、`EdgeSectionFamily`、
+`CoreAlignmentAt` から `OriginalTowerPresentation` を構成する。
+元の両段の強い性質から合成の強い性質を導き、同じcoreへの射影を
+`compositeFiberEquiv_pushforward` で回復する。一般定理の条件1–3は
+実際の核の可換性、構成済み核輸送の全単射性、指定比較の中心化として保持する。
+条件4は元の `UpperSyzygyCompatible` を `syzygy` で同じ `AuthoredSyzygy` へ移す。
+
+| Dの対象 | `CrossStage` の宣言 | 値・射を保つ対応 |
+| --- | --- | --- |
+| 元の辺と道・射影 | `originalLift`, `originalLift_path`, `originalLift_base`, `selected_path`, `selected_path_core`, `presentation` | 元の全幾何射とcoreの道 |
+| B1 | `canonicalFace_eq`, `faceDefect_eq` | 標準比較と `sectionInnerObstruction` が同じ元の自己同型 |
+| 全補正とB2 | `strictGauge`, `correction`, `strictGauge_correction`, `correction_strictGauge`, `correctionChoice_eq`, `correctedFaceDefect_eq`, `relativeDefect_add` | 任意の `StrictEdgeReselection` と実際の核cochainが相互逆、補正後の元のdefectが一致 |
+| B3 | `correction_coherent_iff`, `solution_nonempty_iff`, `obstructionClass_zero_iff` | 同じ全face射等式を `SectionRelativeCoherentizable` と障害零性へ結ぶ |
+| 条件4 | `whisker_eq`, `authoredPasting_eq`, `syzygy` | 元の全自己同型、向き、後続道、型付き貼り合わせを保持 |
+| Cの実解・作用 | `ChapterSolution`, `solutionEquiv`, `solutionEquiv_edge`, `solutionAction_edge`, `vertexGauge_edge` | 固定core上の全geometry辺族、核補正、両端の頂点自己同型の射を保持 |
+
+`ChapterSolution` は元の上段辺族のうち、射影が固定coreと一致し、元の指定比較と
+全faceで整合するものの部分型である。`solutionEquiv` はこの集合と一般側の実解を
+各辺の全自己同型を保って相互に変換する。一般側の `Z¹` torsor、頂点作用、
+`SolutionOrbit` の `H¹` torsorはこの同じ実解に対して適用され、
+`solutionAction_edge` と `vertexGauge_edge` が第4章の元の射上で作用を評価する。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Dの第4章入力・標準比較・defect・全補正・B3・3-cell・Cの実射作用を接続"
+  exit_criteria_status:
+    - "各値・射の対応: CrossStage.lean の28宣言"
+    - "focused check・公理監査・共通scan成功。独立PRレビューはPR監査記録で判定"
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [ResearchLean/AG/AbelianLiftingObstruction/CrossStage.lean]
+  evidence: [presentation, faceDefect_eq, relativeDefect_add, syzygy, obstructionClass_zero_iff, solutionEquiv, solutionAction_edge, vertexGauge_edge]
+  claim_mapping:
+    source_labels: ["D: 幾何からcoreへの射影"]
+    conjuncts: ["一般A–Cを第4章の同じ入力・核・全射・defect・解に適用"]
+    theorem_names: [CrossStage.presentation, CrossStage.faceDefect_eq, CrossStage.relativeDefect_add, CrossStage.syzygy, CrossStage.obstructionClass_zero_iff, CrossStage.solutionEquiv, CrossStage.solutionAction_edge, CrossStage.vertexGauge_edge]
+    undischarged_assumptions: ["A条件1–4は一般定理の仮定。指定例での放電は後続義務"]
+    acceptance_point: "構成と元の値の一致を証明し、結論を入力として受け取らない"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["Chapter 4原始入力から一般入力・核・比較・補正・実解の対応"]
+    remaining: ["Dの群拡大・G-127接続", "指定三例", "統合完了監査"]
+  certificate_provenance:
+    discharged: ["presentationの強い性質・射影・A2は元のTwoLayer入力から生成"]
+    unresolved: []
+  proof_use:
+    used: ["両段の強い性質: comparison uniqueness", "A2: faceDefectの核所属", "可換性・全単射・中心化: 一般A–C", "条件4: authoredPasting_eqからdefectのcocycleとB3"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: []
+  validation_refs: ["CrossStage.lean focused check", "28宣言のstandard axiom audit", "共通scan・import方向scan"]
+  next_obligation: "任意の可換核群拡大とG-127の同じ変更群・射影への適用"
+```
+
 ## 第10Cycleの選定と証拠対応
 
 ```yaml
