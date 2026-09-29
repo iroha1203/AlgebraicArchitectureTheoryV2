@@ -352,3 +352,65 @@ fn missing_does_not_count_atoms_the_plan_replaced() {
     );
     assert!(!overlay(&before, &plan).missing.contains_key("m.f"));
 }
+
+#[test]
+fn an_operation_only_called_and_not_read_is_silent() {
+    let before = atoms(
+        r#"{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1"}
+{"kind": "defines", "subject": "m.T.v", "value": "field", "type": "int", "at": "m.py:2"}
+{"kind": "defines", "subject": "m.x", "value": "operation", "params": {}, "at": "m.py:4"}
+{"kind": "calls", "subject": "m.x", "object": "m.g", "at": "m.py:5"}
+{"kind": "resolves", "subject": "m.g", "object": "g.py", "at": "m.py:1"}
+{"kind": "writes", "subject": "m.x", "object": "m.T.v", "value": "m.h(1)", "at": "m.py:6"}
+{"kind": "calls", "subject": "m.x", "object": "requests.post", "at": "m.py:7"}
+{"kind": "resolves", "subject": "requests.post", "object": "external:requests", "at": "m.py:1"}
+{"kind": "meaning", "subject": "m.x", "meaning": "status", "value": "2xx", "uses": ["m.py:5"], "at": "m.py:4"}
+"#,
+    );
+    let plan = atoms(r#"{"kind": "removes", "subject": "m.A", "at": "plan:p"}"#);
+    let o = overlay(&before, &plan);
+    let g = &o.silent["m.g"];
+    assert_eq!((g.reason.clone(), g.read.as_deref()), (Reason::Unread, Some("g.py")), "呼ばれるだけで読んでいない操作は、そのソースを次に読む");
+    let h = &o.silent["m.h"];
+    assert_eq!((h.reason.clone(), h.element.as_deref()), (Reason::Unread, Some("m.h")), "式の中でだけ呼ぶ操作も同じ");
+    assert!(!o.silent.contains_key("requests.post"), "外部の要素は観測した要素を使わない");
+    assert!(!o.silent.contains_key("m.x"), "意味 Atom の値(2xx)は式として読まない");
+}
+
+#[test]
+fn a_correspondence_whose_ends_are_not_known_is_silent() {
+    let before = atoms(
+        r#"{"kind": "calls", "subject": "k.caller", "object": "m.f", "at": "k.py:2"}
+{"kind": "resolves", "subject": "m.f", "object": "m.py", "at": "k.py:1"}
+{"kind": "defines", "subject": "m.e", "value": "operation", "params": {"x": "int"}, "at": "e.py:1"}
+"#,
+    );
+    let plan = atoms(
+        r#"{"kind": "defines", "subject": "n.g", "value": "operation", "params": {"x": "int"}, "file": "n.py", "at": "plan:p"}
+{"kind": "corresponds", "subject": "m.f", "object": "n.g", "at": "plan:p"}
+{"kind": "corresponds", "subject": "?m.q", "object": "n.g", "at": "plan:p"}
+{"kind": "corresponds", "subject": "m.e", "object": "nowhere.g", "at": "plan:p"}
+{"kind": "corresponds", "subject": "m.e.$x", "object": "|", "at": "plan:p"}
+"#,
+    );
+    let o = overlay(&before, &plan);
+    let f = &o.silent["m.f"];
+    assert_eq!((f.reason.clone(), f.read.as_deref()), (Reason::Unread, Some("m.py")), "定義を読んでいない操作を結ぶ");
+    assert_eq!(o.silent["?m.q"].reason, Reason::Unresolved, "? の名前を結ぶ");
+    assert_eq!(o.silent["m.e"].element.as_deref(), Some("nowhere.g"), "変更後にない行き先を結ぶ");
+    assert!(o.undecided.is_empty(), "行き先のない | は対応を作らない");
+}
+
+#[test]
+fn a_rewritten_operation_whose_definition_was_not_read_keeps_its_meaning() {
+    let before = atoms(
+        r#"{"kind": "defines", "subject": "m.T.v", "value": "field", "type": "int", "at": "m.py:1"}
+{"kind": "writes", "subject": "m.f", "object": "m.T.v", "value": "1", "at": "f.py:2"}
+{"kind": "meaning", "subject": "m.f", "meaning": "role", "value": "writer", "uses": ["f.py:2"], "at": "f.py:1"}
+"#,
+    );
+    let plan = atoms(r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "file": "f.py", "at": "plan:p"}"#);
+    let o = overlay(&before, &plan);
+    assert!(o.corresponds.contains(&pair("m.f", "m.f")), "Atom のある名前は変更前にある要素");
+    assert_eq!(Structure::new(o.after).meanings["m.f"].len(), 1);
+}
