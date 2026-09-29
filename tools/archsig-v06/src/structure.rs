@@ -6,8 +6,9 @@ use std::collections::{BTreeMap, BTreeSet};
 use crate::atom::{Atom, parse_location};
 use crate::expr::{self, BinOp, Expr};
 
-/// 呼び出しの展開の深さの上限。超えたら `limit` で沈黙する。
+/// 呼び出しの展開の深さと、展開した手順の数の上限。超えたら `limit` で沈黙する。
 pub const DEPTH_LIMIT: usize = 32;
+pub const STEP_LIMIT: usize = 10_000;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Reason {
@@ -35,7 +36,8 @@ impl Silence {
 
 #[derive(Clone, Debug, Default)]
 pub struct Element {
-    /// `defines` の `value`。二つ以上あれば曖昧である。
+    /// `defines` の `value`(`operation`、`type`、`field`)か、構造 Atom から作る種類(`param`、`call`、`channel`)。
+    /// 二つ以上あれば曖昧である。
     pub kinds: BTreeSet<String>,
     pub params: BTreeMap<String, String>,
     pub ty: Option<String>,
@@ -49,7 +51,7 @@ pub enum Resolution {
 
 /// 値。式を名前と場所に解いたもの。
 /// `Read` は手順の時点でその場所を読むこと、`Input` は場所の入力の値である。
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Value {
     Const(String),
     /// 渡されていない引数の記号(`<操作>.$<引数>`)。
@@ -93,6 +95,8 @@ pub struct Structure {
     pub observed: BTreeSet<(String, String)>,
     /// 操作ごとの手順の Atom(`atoms` の添字)。手順の順に並ぶ。
     bodies: BTreeMap<String, Vec<usize>>,
+    /// `calls` の Atom(`atoms` の添字)ごとの、呼び出しの要素の名前。
+    call_names: BTreeMap<usize, String>,
     /// 呼び出しの要素の名前と、その `passes`(受け取る引数 → 式)。
     passes: BTreeMap<String, BTreeMap<String, Expr>>,
 }
@@ -113,6 +117,18 @@ impl Structure {
                     }
                 }
                 "writes" | "calls" | "sends" | "returns" => s.bodies.entry(a.subject.clone()).or_default().push(i),
+                _ => {}
+            }
+            // チャネルとその項目は、`sends` と `receives` に現れた名前から要素になる。
+            if a.kind == "sends" || a.kind == "receives" {
+                let item = a.object.clone().unwrap_or_default();
+                let parts: Vec<&str> = item.split(':').collect();
+                if parts.len() >= 4 {
+                    s.elements.entry(parts[..parts.len() - 1].join(":")).or_default().kinds.insert("channel".to_string());
+                }
+                s.elements.entry(item).or_default().kinds.insert("channel".to_string());
+            }
+            match a.kind.as_str() {
                 "resolves" => {
                     let o = a.object.clone().unwrap_or_default();
                     let r = match o.strip_prefix("external:") {
@@ -128,6 +144,14 @@ impl Structure {
                 _ => {}
             }
         }
+        // 引数は、操作の `params` から要素になる。
+        let params: Vec<(String, String)> =
+            s.elements.iter().flat_map(|(op, e)| e.params.iter().map(move |(p, t)| (format!("{op}.${p}"), t.clone()))).collect();
+        for (name, ty) in params {
+            let e = s.elements.entry(name).or_default();
+            e.kinds.insert("param".to_string());
+            e.ty = Some(ty);
+        }
         // 手順は `at` の行の順、同じ行では Atom の順。行のない Atom があれば(候補の中)、Atom の順のまま。
         let atoms = &s.atoms;
         for steps in s.bodies.values_mut() {
@@ -139,6 +163,18 @@ impl Structure {
             }
         }
         // 呼び出しの要素は、同じ組の `calls` を手順の順に並べて `#2`、`#3` を付ける。
+        for (op, steps) in &s.bodies {
+            let mut seen: BTreeMap<&str, usize> = BTreeMap::new();
+            for &i in steps.iter().filter(|&&i| atoms[i].kind == "calls") {
+                let callee = atoms[i].object.as_deref().unwrap_or("");
+                let n = seen.entry(callee).or_insert(0);
+                *n += 1;
+                s.call_names.insert(i, Structure::call_name(op, callee, *n));
+            }
+        }
+        for name in s.call_names.values() {
+            s.elements.entry(name.clone()).or_default().kinds.insert("call".to_string());
+        }
         let mut passes: BTreeMap<String, BTreeMap<String, Expr>> = BTreeMap::new();
         for a in s.atoms.iter().filter(|a| a.kind == "passes") {
             let value = a.value.as_deref().map(parse_expr).unwrap_or(Expr::Unknown);
@@ -166,11 +202,9 @@ impl Structure {
     }
 
     /// 定義を読んでいない要素。`resolves` がソースを指し、そのソースを読んでいなければ、そのソースを返す。
-    /// `resolves` がなければ、要素の名前を返す。フィールドと引数は、持ち主の型や操作の `resolves` も見る。
+    /// `resolves` がなければ、要素の名前を返す(設計 §3.3)。
     fn undefined(&self, name: &str) -> Silence {
-        let owner = name.rsplit_once('.').map(|(o, _)| o);
-        let resolution = self.resolves.get(name).or_else(|| owner.and_then(|o| self.resolves.get(o)));
-        match resolution {
+        match self.resolves.get(name) {
             Some(Resolution::Source(path)) if !self.observed.contains(&(path.clone(), "structure".to_string())) => {
                 Silence { reason: Reason::Unread, read: Some(path.clone()), element: None }
             }
@@ -187,6 +221,11 @@ impl Structure {
         Ok(out)
     }
 
+    /// 種類の違う `defines` を持つ要素。
+    fn ambiguous(&self, name: &str) -> bool {
+        self.elements.get(name).is_some_and(|e| e.kinds.len() > 1)
+    }
+
     fn expect(&self, name: &str, kind: &str) -> Result<(), Silence> {
         match self.kind(name)? {
             k if k == kind => Ok(()),
@@ -195,10 +234,9 @@ impl Structure {
     }
 
     fn unfold_into(&self, op: &str, env: &BTreeMap<String, Value>, outer: &[Value], depth: usize, out: &mut Vec<Step>) -> Result<(), Silence> {
-        if depth > DEPTH_LIMIT {
+        if depth > DEPTH_LIMIT || out.len() > STEP_LIMIT {
             return Err(Silence::new(Reason::Limit));
         }
-        let mut seen: BTreeMap<&str, usize> = BTreeMap::new();
         for &i in self.bodies.get(op).map(|v| v.as_slice()).unwrap_or(&[]) {
             let a = &self.atoms[i];
             let mut when = outer.to_vec();
@@ -215,9 +253,7 @@ impl Structure {
                 "sends" => StepKind::Send { item: object, value: value(self)? },
                 "returns" => StepKind::Return { value: value(self)? },
                 _ => {
-                    let n = seen.entry(a.object.as_deref().unwrap_or("")).or_insert(0);
-                    *n += 1;
-                    let call = Structure::call_name(op, &object, *n);
+                    let call = self.call_names[&i].clone();
                     let external = match self.kind(&object) {
                         Ok("operation") => None,
                         Ok(_) => return Err(Silence::new(Reason::Unresolved)),
@@ -242,7 +278,8 @@ impl Structure {
         Ok(())
     }
 
-    /// 操作 `op` の中の式を値に解く。`env` は、呼び出しで渡された引数の値(設計 §3.5)。
+    /// 操作 `op` の中の式を値に解く(設計 §3.5)。`env` は、呼び出しで渡された引数の値。
+    /// `$p.f` は引数の型のフィールドの場所を読み、引数そのもの `$p` は渡された値に置き換える。
     pub fn resolve(&self, op: &str, env: &BTreeMap<String, Value>, e: &Expr) -> Result<Value, Silence> {
         let r = |x: &Expr| self.resolve(op, env, x);
         Ok(match e {
@@ -255,19 +292,21 @@ impl Structure {
             }
             Expr::Path(p, fields) => {
                 let arg = format!("{op}.${p}");
-                let ty = self.elements.get(op).and_then(|o| o.params.get(p)).ok_or_else(|| Silence::new(Reason::Unresolved))?;
-                let place = self.fields(ty, fields)?;
-                match (env.get(&arg), place.is_empty()) {
-                    (Some(v), true) => v.clone(),
-                    (None, true) => Value::Arg(arg),
-                    // 引数は、その型のただ一つの実体を指す。
-                    (Some(Value::Arg(_)) | None, false) => Value::Read(place),
-                    (Some(Value::Read(head)), false) => Value::Read(head.iter().cloned().chain(place).collect()),
-                    (Some(v), false) => Value::Proj(Box::new(v.clone()), place),
+                if self.ambiguous(op) || self.ambiguous(&arg) {
+                    return Err(Silence::new(Reason::Unresolved));
                 }
+                let ty = self.elements.get(op).and_then(|o| o.params.get(p)).ok_or_else(|| Silence::new(Reason::Unresolved))?;
+                if self.ambiguous(ty) {
+                    return Err(Silence::new(Reason::Unresolved));
+                }
+                if fields.is_empty() {
+                    return Ok(env.get(&arg).cloned().unwrap_or(Value::Arg(arg)));
+                }
+                // 引数は、その型のただ一つの実体を指す。
+                Value::Read(self.fields(ty, fields)?)
             }
             Expr::Call(name, args) => {
-                if name.starts_with('?') {
+                if name.starts_with('?') || self.ambiguous(name) {
                     return Err(Silence::new(Reason::Unresolved));
                 }
                 Value::Call(name.clone(), args.iter().map(r).collect::<Result<_, _>>()?)
@@ -283,6 +322,9 @@ impl Structure {
         let mut place = Vec::new();
         let mut ty = ty.to_string();
         for (i, n) in names.iter().enumerate() {
+            if self.ambiguous(&ty) {
+                return Err(Silence::new(Reason::Unresolved));
+            }
             let field = format!("{ty}.{n}");
             self.expect(&field, "field")?;
             place.push(field.clone());
@@ -308,15 +350,15 @@ impl State {
     }
 
     /// 場所を読む。頭の部分に書き込みがあれば、書き込んだ値からの残りの射影を返す。なければ入力の値である。
-    /// 場所の先の一部にだけ書き込みがあるときは、決めていないので `unchecked` で沈黙する。
+    /// 場所の先に書き込みがあるときは、決めていないので `unchecked` で沈黙する。
     pub fn read(&self, place: &[String]) -> Result<Value, Silence> {
+        if self.places.keys().any(|p| p.len() > place.len() && p.starts_with(place)) {
+            return Err(Silence::new(Reason::Unchecked));
+        }
         for k in (1..=place.len()).rev() {
             if let Some(v) = self.places.get(&place[..k]) {
                 return Ok(if k == place.len() { v.clone() } else { Value::Proj(Box::new(v.clone()), place[k..].to_vec()) });
             }
-        }
-        if self.places.keys().any(|p| p.starts_with(place)) {
-            return Err(Silence::new(Reason::Unchecked));
         }
         Ok(Value::Input(place.to_vec()))
     }

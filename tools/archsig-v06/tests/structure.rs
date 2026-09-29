@@ -93,6 +93,62 @@ fn an_element_with_two_kinds_of_defines_is_unresolved() {
     assert_eq!(s.unfold("m.f").unwrap_err().reason, Reason::Unresolved, "呼び出し先が曖昧");
     assert_eq!(s.unfold("m.k").unwrap_err().reason, Reason::Unresolved, "書き込む先が曖昧");
     assert_eq!(s.unfold("m.h").unwrap_err().reason, Reason::Unresolved, "曖昧な操作そのもの");
+
+    // 式の中の呼び出し先と、引数の型が曖昧なときも沈黙する。
+    let s = structure(
+        r#"{"kind": "defines", "subject": "m.h", "value": "operation", "params": {}, "at": "m.py:1"}
+{"kind": "defines", "subject": "m.h", "value": "field", "type": "int", "at": "n.py:1"}
+{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:2"}
+{"kind": "defines", "subject": "m.T", "value": "operation", "params": {}, "at": "n.py:2"}
+{"kind": "defines", "subject": "m.T.v", "value": "field", "type": "int", "at": "m.py:3"}
+{"kind": "defines", "subject": "m.U.v", "value": "field", "type": "int", "at": "m.py:4"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "at": "m.py:6"}
+{"kind": "writes", "subject": "m.f", "object": "m.U.v", "value": "m.h(0)", "at": "m.py:7"}
+{"kind": "defines", "subject": "m.k", "value": "operation", "params": {"t": "m.T"}, "at": "m.py:9"}
+{"kind": "writes", "subject": "m.k", "object": "m.U.v", "value": "$t.v", "at": "m.py:10"}
+"#,
+    );
+    assert_eq!(s.unfold("m.f").unwrap_err().reason, Reason::Unresolved, "値の中の呼び出し先が曖昧");
+    assert_eq!(s.unfold("m.k").unwrap_err().reason, Reason::Unresolved, "引数の型が曖昧");
+}
+
+#[test]
+fn params_calls_and_channels_are_elements() {
+    let s = structure(
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.T"}, "at": "m.py:1"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:2"}
+{"kind": "sends", "subject": "m.f", "object": "channel:queue:placed:amount", "value": "1", "at": "m.py:3"}
+{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py"}
+"#,
+    );
+    assert_eq!(s.kind("m.f.$o").unwrap(), "param");
+    assert_eq!(s.kind("m.f->m.g").unwrap(), "call");
+    assert_eq!(s.kind("channel:queue:placed:amount").unwrap(), "channel");
+    assert_eq!(s.kind("channel:queue:placed").unwrap(), "channel");
+}
+
+#[test]
+fn unfolding_has_a_limit_on_its_size() {
+    // 各段が次の段を二度呼ぶ。再帰はないが、展開すると 2^20 の手順になる。
+    let mut jsonl = String::from("{\"kind\": \"defines\", \"subject\": \"m.T.v\", \"value\": \"field\", \"type\": \"int\", \"at\": \"m.py:1\"}\n");
+    for d in 0..20 {
+        jsonl.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.f{d}\", \"value\": \"operation\", \"params\": {{}}, \"at\": \"m.py:{}\"}}\n", 10 + d * 3));
+        for k in 1..=2 {
+            jsonl.push_str(&format!("{{\"kind\": \"calls\", \"subject\": \"m.f{d}\", \"object\": \"m.f{}\", \"at\": \"m.py:{}\"}}\n", d + 1, 10 + d * 3 + k));
+        }
+    }
+    jsonl.push_str("{\"kind\": \"defines\", \"subject\": \"m.f20\", \"value\": \"operation\", \"params\": {}, \"at\": \"m.py:100\"}\n");
+    jsonl.push_str("{\"kind\": \"writes\", \"subject\": \"m.f20\", \"object\": \"m.T.v\", \"value\": \"1\", \"at\": \"m.py:101\"}\n");
+    assert_eq!(structure(&jsonl).unfold("m.f0").unwrap_err().reason, Reason::Limit);
+}
+
+#[test]
+fn reading_a_place_with_a_later_write_below_it_is_unchecked() {
+    let mut state = State::default();
+    state.write(place(&["A"]), c("1"));
+    state.write(place(&["A", "B"]), c("2"));
+    assert_eq!(state.read(&place(&["A", "B"])).unwrap(), c("2"));
+    assert_eq!(state.read(&place(&["A"])).unwrap_err().reason, Reason::Unchecked);
 }
 
 const SHOP: &str = r#"{"kind": "defines", "subject": "shop.order.model.Order", "value": "type", "at": "shop/order/model.py:7"}
@@ -143,9 +199,10 @@ fn a_passed_path_is_read_through_the_callee() {
         write.when,
         vec![Value::Bin(
             archsig::expr::BinOp::Ne,
-            Box::new(Value::Read(place(&["shop.order.model.Order.shipping_address", "shop.shipping.address.Address.country"]))),
+            Box::new(Value::Read(place(&["shop.shipping.address.Address.country"]))),
             Box::new(c("\"JP\""))
-        )]
+        )],
+        "呼び出し先の `$addr.country` は、引数の型のフィールドの場所 [Address.country] を読む"
     );
 }
 
@@ -165,4 +222,9 @@ fn an_unread_callee_returns_what_to_read() {
     assert_eq!((e.reason, e.read.as_deref()), (Reason::Unread, Some("shop/shipping/address.py")));
     let e = s.unfold("shop.shipping.service.notify").unwrap_err();
     assert_eq!((e.reason, e.element.as_deref()), (Reason::Unread, Some("shop.mail.format")), "resolves がなければ要素の名前");
+
+    // 名前の前の部分の resolves は使わない。
+    let s = structure(r#"{"kind": "resolves", "subject": "shop.mail", "object": "shop/mail.py", "at": "shop/a.py:1"}"#);
+    let e = s.kind("shop.mail.format").unwrap_err();
+    assert_eq!((e.reason, e.read, e.element.as_deref()), (Reason::Unread, None, Some("shop.mail.format")));
 }

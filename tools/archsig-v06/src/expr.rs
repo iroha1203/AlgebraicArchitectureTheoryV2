@@ -1,8 +1,6 @@
 //! 第3章「値と条件の書き方」の小さな式。
 
-use std::fmt;
-
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Expr {
     /// 定数。`None`、`0`、`"JPY"` など、書かれたとおりの字句。
     Const(String),
@@ -19,7 +17,7 @@ pub enum Expr {
     Bin(BinOp, Box<Expr>, Box<Expr>),
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BinOp {
     Or,
     And,
@@ -33,100 +31,6 @@ pub enum BinOp {
     Sub,
     Mul,
     Div,
-}
-
-impl BinOp {
-    fn text(self) -> &'static str {
-        match self {
-            BinOp::Or => "or",
-            BinOp::And => "and",
-            BinOp::Eq => "==",
-            BinOp::Ne => "!=",
-            BinOp::Lt => "<",
-            BinOp::Le => "<=",
-            BinOp::Gt => ">",
-            BinOp::Ge => ">=",
-            BinOp::Add => "+",
-            BinOp::Sub => "-",
-            BinOp::Mul => "*",
-            BinOp::Div => "/",
-        }
-    }
-
-    fn prec(self) -> u8 {
-        match self {
-            BinOp::Or => 1,
-            BinOp::And => 2,
-            BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge => 4,
-            BinOp::Add | BinOp::Sub => 5,
-            BinOp::Mul | BinOp::Div => 6,
-        }
-    }
-}
-
-impl Expr {
-    fn prec(&self) -> u8 {
-        match self {
-            Expr::Bin(op, _, _) => op.prec(),
-            Expr::Not(_) => 3,
-            _ => 9,
-        }
-    }
-}
-
-impl fmt::Display for Expr {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Expr::Const(c) => write!(f, "{c}"),
-            Expr::Unknown => write!(f, "?"),
-            Expr::Path(p, fields) => {
-                write!(f, "${p}")?;
-                for x in fields {
-                    write!(f, ".{x}")?;
-                }
-                Ok(())
-            }
-            Expr::Call(n, args) => {
-                write!(f, "{n}(")?;
-                for (i, a) in args.iter().enumerate() {
-                    if i > 0 {
-                        write!(f, ", ")?;
-                    }
-                    write!(f, "{a}")?;
-                }
-                write!(f, ")")
-            }
-            Expr::Name(n) => write!(f, "{n}"),
-            Expr::Not(e) => {
-                if e.prec() < 3 {
-                    write!(f, "not ({e})")
-                } else {
-                    write!(f, "not {e}")
-                }
-            }
-            Expr::Neg(e) => {
-                if e.prec() < 9 {
-                    write!(f, "-({e})")
-                } else {
-                    write!(f, "-{e}")
-                }
-            }
-            Expr::Bin(op, a, b) => {
-                let p = op.prec();
-                if a.prec() < p {
-                    write!(f, "({a})")?;
-                } else {
-                    write!(f, "{a}")?;
-                }
-                write!(f, " {} ", op.text())?;
-                if b.prec() <= p {
-                    write!(f, "({b})")
-                } else {
-                    write!(f, "{b}")
-                }
-            }
-        }
-    }
 }
 
 pub fn parse(text: &str) -> Result<Expr, String> {
@@ -170,7 +74,7 @@ fn lex(text: &str) -> Result<Vec<Tok>, String> {
                 i += 1;
             }
             out.push(Tok::Num(chars[s..i].iter().collect()));
-        } else if c == '"' || c == '\'' {
+        } else if c == '"' {
             let s = i;
             i += 1;
             while i < chars.len() && chars[i] != c {
@@ -212,8 +116,6 @@ fn lex(text: &str) -> Result<Vec<Tok>, String> {
                 "!=" => Some("!="),
                 "<=" => Some("<="),
                 ">=" => Some(">="),
-                "&&" => Some("and"),
-                "||" => Some("or"),
                 _ => None,
             };
             if let Some(op) = op {
@@ -232,7 +134,6 @@ fn lex(text: &str) -> Result<Vec<Tok>, String> {
                 '-' => Tok::Op("-"),
                 '*' => Tok::Op("*"),
                 '/' => Tok::Op("/"),
-                '!' => Tok::Op("not"),
                 _ => return Err(format!("読めない文字 `{c}`: {text}")),
             };
             out.push(t);
@@ -370,9 +271,6 @@ impl Parser {
                 if w == "?" {
                     return Ok(Expr::Unknown);
                 }
-                if w == "None" || w == "True" || w == "False" || w == "null" || w == "true" || w == "false" {
-                    return Ok(Expr::Const(w));
-                }
                 let mut name = w;
                 while self.peek() == Some(&Tok::Dot) {
                     self.pos += 1;
@@ -417,19 +315,20 @@ mod tests {
     use super::*;
 
     #[test]
-    fn round_trip() {
-        for s in [
-            "$new.country != $order.shipping_address.country",
-            "shop.shipping.address.normalize_address($new)",
-            "$order.total * 100",
-            "not $order.paid",
-            "None",
-            "?",
-            "(a + b) * 2",
-        ] {
-            assert_eq!(parse(s).unwrap().to_string(), s);
-        }
-        assert_eq!(parse("$a.b!=$c").unwrap().to_string(), "$a.b != $c");
+    fn reads_the_forms_of_chapter_3() {
+        let path = |p: &str, f: &[&str]| Expr::Path(p.into(), f.iter().map(|x| x.to_string()).collect());
+        assert_eq!(
+            parse("$new.country != $order.shipping_address.country").unwrap(),
+            Expr::Bin(BinOp::Ne, Box::new(path("new", &["country"])), Box::new(path("order", &["shipping_address", "country"])))
+        );
+        assert_eq!(parse("shop.a.f($new)").unwrap(), Expr::Call("shop.a.f".into(), vec![path("new", &[])]));
+        assert_eq!(
+            parse("$order.total * 100").unwrap(),
+            Expr::Bin(BinOp::Mul, Box::new(path("order", &["total"])), Box::new(Expr::Const("100".into())))
+        );
+        assert_eq!(parse("not $order.paid").unwrap(), Expr::Not(Box::new(path("order", &["paid"]))));
+        assert_eq!(parse("None").unwrap(), Expr::Name("None".into()));
+        assert_eq!(parse("?").unwrap(), Expr::Unknown);
     }
 
     #[test]
