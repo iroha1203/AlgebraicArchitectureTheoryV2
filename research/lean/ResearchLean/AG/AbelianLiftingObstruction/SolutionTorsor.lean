@@ -113,7 +113,6 @@ theorem solutionAction_add (z w : Z1 T.toTower.localCoefficients)
     change T.solutionCorrection S + (z.1 + w.1) =
       (T.solutionCorrection S + w.1) + z.1
     abel
-  have hedge := congrFun hcochain ⟨i, j, e⟩
   have hchoice := congrArg (fun h => T.correctionChoice h e) hcochain
   simpa only [T.correctionChoice_solutionCorrection] using hchoice
 
@@ -129,7 +128,7 @@ noncomputable instance solutionAddTorsor [Nonempty (Solution T)] :
   vadd_vsub' := T.solutionDifference_solutionAction
 
 /-- The difference of any two actual solutions is the unique first cocycle joining them. -/
-theorem solutionAction_existsUnique [Nonempty (Solution T)]
+theorem solutionAction_existsUnique
     (base target : Solution T) :
     ∃! z : Z1 T.toTower.localCoefficients, T.solutionAction z base = target := by
   refine ⟨T.solutionDifference target base, T.solutionDifference_action target base, ?_⟩
@@ -137,9 +136,10 @@ theorem solutionAction_existsUnique [Nonempty (Solution T)]
   rw [← hz, T.solutionDifference_solutionAction]
 
 /-- A chosen actual solution identifies all first cocycles with all actual solutions. -/
-noncomputable def solutionEquivZ1 [Nonempty (Solution T)] (origin : Solution T) :
-    Z1 T.toTower.localCoefficients ≃ Solution T :=
-  Equiv.vaddConst origin
+noncomputable def solutionEquivZ1 (origin : Solution T) :
+    Z1 T.toTower.localCoefficients ≃ Solution T := by
+  letI : Nonempty (Solution T) := ⟨origin⟩
+  exact Equiv.vaddConst origin
 
 end OriginalTowerPresentation
 
