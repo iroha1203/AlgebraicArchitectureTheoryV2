@@ -350,36 +350,39 @@ pub struct Overlay {
     pub missing: BTreeMap<String, BTreeSet<String>>,
 }
 
-/// ArchMap の Atom の列 `before` に、候補の Atom の列 `plan` を重ねる。
+/// ArchMap の Atom の列 `before` に、候補の Atom の列 `plan` を重ねる(設計 §3.6)。
 pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
     // 候補が構造 Atom を書いた要素は、元の Atom をすべて外す。`resolves` は置き換えを起こさない。
     let rewritten: BTreeSet<&str> = plan.iter().filter(|a| a.is_structure() && a.kind != "resolves").map(|a| a.subject.as_str()).collect();
     let removed: BTreeSet<&str> = plan.iter().filter(|a| a.kind == "removes").map(|a| a.subject.as_str()).collect();
-    let under = |name: &str, x: &str| name == x || name.starts_with(&format!("{x}.")) || name.starts_with(&format!("{x}->"));
     let replaced = |name: &str| rewritten.iter().any(|x| name == *x || name.starts_with(&format!("{x}->")));
-    let gone = |name: &str| removed.iter().any(|x| under(name, x));
-    // 書き直した要素と消える要素の Atom(意味 Atom を含む)を外し、候補の構造 Atom を加える。
-    let mut after: Vec<Atom> = before.iter().filter(|a| !replaced(&a.subject) && !gone(&a.subject)).cloned().collect();
+    // `X.…` は `X.$…` を含む。
+    let gone = |name: &str| removed.iter().any(|x| name == *x || name.starts_with(&format!("{x}.")) || name.starts_with(&format!("{x}->")));
+    // 外すのは要素の Atom だけ。`observed` の `subject` はソースのパスで、要素の名前ではない。
+    let dropped = |a: &Atom| a.kind != "observed" && (replaced(&a.subject) || gone(&a.subject));
+    let mut after: Vec<Atom> = before.iter().filter(|a| !dropped(a)).cloned().collect();
     after.extend(plan.iter().filter(|a| a.is_structure()).cloned());
 
     let old = Structure::new(before.to_vec());
     let new = Structure::new(after.clone());
     let mut out = Overlay::default();
     // 1. 書いた対応。行き先に `|` があれば、決めていない対応として別に持つ。
-    let mut linked_ops = Vec::new();
+    let mut linked = Vec::new();
     for a in plan.iter().filter(|a| a.kind == "corresponds") {
-        let to: Vec<String> = a.object.as_deref().unwrap_or("").split('|').map(|t| t.trim().to_string()).collect();
-        if to.len() > 1 {
-            out.undecided.push((a.subject.clone(), to));
-        } else {
-            out.corresponds.insert((a.subject.clone(), to[0].clone()));
-            linked_ops.push((a.subject.clone(), to[0].clone()));
+        let to: Vec<String> = a.object.as_deref().unwrap_or("").split('|').map(|t| t.trim().to_string()).filter(|t| !t.is_empty()).collect();
+        match to.len() {
+            0 => {}
+            1 => {
+                out.corresponds.insert((a.subject.clone(), to[0].clone()));
+                linked.push((a.subject.clone(), to[0].clone()));
+            }
+            _ => out.undecided.push((a.subject.clone(), to)),
         }
     }
     // 2. 書いた対応で結んだ操作どうしの、同じ名前の引数。
-    for (from, to) in &linked_ops {
-        let (Some(f), Some(t)) = (old.elements.get(from), new.elements.get(to)) else { continue };
-        for p in f.params.keys().filter(|p| t.params.contains_key(*p)) {
+    let is_op = |s: &Structure, n: &str| s.kind(n) == Ok("operation");
+    for (from, to) in linked.iter().filter(|(f, t)| is_op(&old, f) && is_op(&new, t)) {
+        for p in old.elements[from].params.keys().filter(|p| new.elements[to].params.contains_key(*p)) {
             out.corresponds.insert((format!("{from}.${p}"), format!("{to}.${p}")));
         }
     }
@@ -387,32 +390,77 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
     for name in old.elements.keys().filter(|n| new.elements.contains_key(*n) && !gone(n)) {
         out.corresponds.insert((name.clone(), name.clone()));
     }
-    // 4. 対応の行き先へ、元の要素の意味 Atom を移す。触れていない要素の自分自身への対応では、意味 Atom は残っている。
+    // 4. 対応の行き先へ、元の要素の意味 Atom を移す。
+    //    触れていない要素の自分自身への対応では、意味 Atom はもう残っている。
+    //    候補でなくなった要素(名前の変わった引数など)の意味 Atom は、移した後に元から外す。
+    after.retain(|a| a.kind != "meaning" || !old.elements.contains_key(&a.subject) || new.elements.contains_key(&a.subject));
     for (from, to) in &out.corresponds {
         if from == to && !replaced(from) && !gone(from) {
             continue;
         }
         for m in old.meanings.get(from).into_iter().flatten() {
-            out.after.push(Atom { subject: to.clone(), ..m.clone() });
+            after.push(Atom { subject: to.clone(), ..m.clone() });
         }
     }
-    out.after.splice(0..0, after);
-    // 書き直していない操作が、消える要素を使っていれば `missing`。
-    for (op, e) in old.elements.iter().filter(|(n, e)| e.kinds.contains("operation") && !replaced(n) && !gone(n)) {
-        let mut uses: BTreeSet<String> = BTreeSet::new();
-        for t in e.params.values().filter(|t| gone(t)) {
-            uses.insert(t.clone());
+    out.after = after;
+    // 候補が書き直していない操作が、消える要素を使っていれば `missing`。
+    // 使うとは、引数の型、Atom の `object`、`value`・`when` の式の中の `$p.f` と呼び出しで名指すこと。
+    let ops: BTreeSet<&str> = before
+        .iter()
+        .filter(|a| matches!(a.kind.as_str(), "writes" | "reads" | "calls" | "sends" | "receives" | "returns"))
+        .map(|a| a.subject.as_str())
+        .chain(old.elements.keys().map(|n| n.as_str()))
+        .filter(|n| matches!(old.kind(n), Ok("operation") | Err(Silence { reason: Reason::Unread, .. })))
+        .filter(|n| !replaced(n) && !gone(n))
+        .collect();
+    for op in ops {
+        let mut named = BTreeSet::new();
+        if let Some(e) = old.elements.get(op) {
+            named.extend(e.params.values().cloned());
         }
-        for a in before.iter().filter(|a| a.kind != "resolves" && (a.subject == *op || a.subject.starts_with(&format!("{op}->")))) {
-            if let Some(o) = a.object.as_deref().filter(|o| gone(o)) {
-                uses.insert(o.to_string());
+        for a in before.iter().filter(|a| a.kind != "resolves" && (a.subject == op || a.subject.starts_with(&format!("{op}->")))) {
+            named.extend(a.object.clone());
+            for text in [&a.value, &a.when].into_iter().flatten() {
+                if let Ok(e) = expr::parse(text) {
+                    old.named(op, &e, &mut named);
+                }
             }
         }
+        let uses: BTreeSet<String> = named.into_iter().filter(|n| gone(n)).collect();
         if !uses.is_empty() {
-            out.missing.insert(op.clone(), uses);
+            out.missing.insert(op.to_string(), uses);
         }
     }
     out
+}
+
+impl Structure {
+    /// 式の中で名指す要素。`$p.f.g` がたどるフィールドと、呼び出す操作。
+    fn named(&self, op: &str, e: &Expr, out: &mut BTreeSet<String>) {
+        match e {
+            Expr::Path(p, fields) => {
+                let mut ty = self.elements.get(op).and_then(|o| o.params.get(p)).cloned();
+                for f in fields {
+                    let Some(t) = ty else { break };
+                    let field = format!("{t}.{f}");
+                    ty = self.elements.get(&field).and_then(|e| e.ty.clone());
+                    out.insert(field);
+                }
+            }
+            Expr::Call(name, args) => {
+                out.insert(name.clone());
+                for a in args {
+                    self.named(op, a, out);
+                }
+            }
+            Expr::Not(x) | Expr::Neg(x) => self.named(op, x, out),
+            Expr::Bin(_, a, b) => {
+                self.named(op, a, out);
+                self.named(op, b, out);
+            }
+            _ => {}
+        }
+    }
 }
 
 /// 場所から値への写像。書き込みと、場所を読むこと(設計 §3.5)。

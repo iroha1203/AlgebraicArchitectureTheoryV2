@@ -133,3 +133,134 @@ fn a_removed_element_defined_again_does_not_correspond_to_itself() {
     );
     assert!(overlay(&before, &plan).corresponds.is_empty());
 }
+
+// 以下は、設計 §3.6 とマニュアル第3章「変更の候補」の文ごとの確認。
+
+#[test]
+fn rewriting_an_element_drops_its_calls_and_removing_drops_names_below_it() {
+    let before = atoms(
+        r#"{"kind": "defines", "subject": "m.T.v", "value": "field", "type": "int", "at": "m.py:1"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"p": "int"}, "at": "m.py:3"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:4"}
+{"kind": "passes", "subject": "m.f->m.g", "object": "m.g.$x", "value": "1", "at": "m.py:4"}
+{"kind": "meaning", "subject": "m.f.$p", "meaning": "unit", "uses": ["m.py:3"], "at": "m.py:3"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"x": "int"}, "at": "m.py:6"}
+{"kind": "calls", "subject": "m.g", "object": "m.k", "at": "m.py:7"}
+{"kind": "passes", "subject": "m.g->m.k", "object": "m.k.$y", "value": "2", "at": "m.py:7"}
+{"kind": "meaning", "subject": "m.g.$x", "meaning": "unit", "uses": ["m.py:6"], "at": "m.py:6"}
+{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py"}
+"#,
+    );
+    let plan = atoms(
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"p": "int"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.T.v", "value": "$p", "at": "plan:p"}
+{"kind": "removes", "subject": "m.g", "at": "plan:p"}
+"#,
+    );
+    let after = overlay(&before, &plan).after;
+    assert!(!after.iter().any(|a| a.subject == "m.f->m.g"), "書き直した要素から出る呼び出しの Atom も外す");
+    assert!(!after.iter().any(|a| a.subject == "m.g->m.k"), "removes した X の X->… を外す");
+    assert!(!after.iter().any(|a| a.subject == "m.g.$x"), "removes した X の X.$… を外す");
+    assert_eq!(after.iter().filter(|a| a.subject == "m.f.$p").count(), 1, "書き直した操作の同じ名前の引数の意味は、自分自身に移る");
+}
+
+#[test]
+fn removing_an_element_does_not_drop_a_source_with_a_similar_path() {
+    // 要素 `setup` とソース `setup.c` は別の名前の空間にある。
+    let before = atoms(
+        r#"{"kind": "defines", "subject": "setup", "value": "operation", "params": {}, "at": "setup.c:1"}
+{"kind": "observed", "subject": "setup.c", "scope": "structure", "at": "setup.c"}
+"#,
+    );
+    let plan = atoms(r#"{"kind": "removes", "subject": "setup", "at": "plan:p"}"#);
+    let s = Structure::new(overlay(&before, &plan).after);
+    assert!(s.observed.contains(&("setup.c".to_string(), "structure".to_string())));
+}
+
+#[test]
+fn a_rewritten_operation_follows_the_order_of_the_plan() {
+    // 候補の中の Atom は行を持たないので、手順と #2 はファイルに書いた Atom の順。
+    let before = atoms(
+        r#"{"kind": "defines", "subject": "m.T.v", "value": "field", "type": "int", "at": "m.py:1"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"x": "int"}, "at": "m.py:3"}
+{"kind": "writes", "subject": "m.g", "object": "m.T.v", "value": "$x", "at": "m.py:4"}
+"#,
+    );
+    let plan = atoms(
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "plan:p"}
+{"kind": "passes", "subject": "m.f->m.g", "object": "m.g.$x", "value": "1", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.T.v", "value": "5", "at": "plan:p"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "plan:p"}
+{"kind": "passes", "subject": "m.f->m.g#2", "object": "m.g.$x", "value": "2", "at": "plan:p"}
+"#,
+    );
+    let s = Structure::new(overlay(&before, &plan).after);
+    let steps: Vec<String> = s.unfold("m.f").unwrap().into_iter().map(|st| format!("{:?}", st.kind)).collect();
+    assert_eq!(steps.len(), 5);
+    assert!(steps[0].contains("m.f->m.g\""), "{steps:?}");
+    assert!(steps[1].contains("Const(\"1\")"), "{steps:?}");
+    assert!(steps[2].contains("Const(\"5\")"), "{steps:?}");
+    assert!(steps[3].contains("m.f->m.g#2"), "{steps:?}");
+    assert!(steps[4].contains("Const(\"2\")"), "{steps:?}");
+}
+
+#[test]
+fn missing_counts_every_way_an_operation_uses_a_removed_element() {
+    let before = atoms(
+        r#"{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1"}
+{"kind": "defines", "subject": "m.A.flag", "value": "field", "type": "bool", "at": "m.py:2"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:3"}
+{"kind": "defines", "subject": "m.O.a", "value": "field", "type": "m.A", "at": "m.py:4"}
+{"kind": "defines", "subject": "m.O.n", "value": "field", "type": "int", "at": "m.py:5"}
+{"kind": "defines", "subject": "m.old", "value": "operation", "params": {}, "at": "m.py:6"}
+{"kind": "defines", "subject": "m.by_type", "value": "operation", "params": {"a": "m.A"}, "at": "m.py:10"}
+{"kind": "defines", "subject": "m.by_when", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:12"}
+{"kind": "writes", "subject": "m.by_when", "object": "m.O.n", "value": "1", "when": "$o.a.flag", "at": "m.py:13"}
+{"kind": "defines", "subject": "m.by_value", "value": "operation", "params": {}, "at": "m.py:15"}
+{"kind": "writes", "subject": "m.by_value", "object": "m.O.n", "value": "m.old()", "at": "m.py:16"}
+{"kind": "defines", "subject": "m.by_passes", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:18"}
+{"kind": "calls", "subject": "m.by_passes", "object": "m.k", "at": "m.py:19"}
+{"kind": "passes", "subject": "m.by_passes->m.k", "object": "m.k.$x", "value": "$o.a.flag", "at": "m.py:19"}
+{"kind": "reads", "subject": "m.undefined", "object": "m.A.flag", "at": "x.py:3"}
+{"kind": "defines", "subject": "m.amb", "value": "operation", "params": {}, "at": "m.py:21"}
+{"kind": "defines", "subject": "m.amb", "value": "field", "type": "int", "at": "n.py:1"}
+{"kind": "reads", "subject": "m.amb", "object": "m.A.flag", "at": "m.py:22"}
+{"kind": "defines", "subject": "m.unrelated", "value": "operation", "params": {}, "at": "m.py:24"}
+{"kind": "resolves", "subject": "m.unrelated", "object": "m.A.py", "at": "m.py:24"}
+"#,
+    );
+    let plan = atoms(
+        r#"{"kind": "removes", "subject": "m.A", "at": "plan:p"}
+{"kind": "removes", "subject": "m.old", "at": "plan:p"}
+"#,
+    );
+    let missing = overlay(&before, &plan).missing;
+    assert_eq!(missing["m.by_type"].iter().collect::<Vec<_>>(), vec!["m.A"], "引数の型");
+    assert_eq!(missing["m.by_when"].iter().collect::<Vec<_>>(), vec!["m.A.flag"], "when の中の $o.a.flag");
+    assert_eq!(missing["m.by_value"].iter().collect::<Vec<_>>(), vec!["m.old"], "value の中の呼び出し");
+    assert_eq!(missing["m.by_passes"].iter().collect::<Vec<_>>(), vec!["m.A.flag"], "呼び出しの passes の式");
+    assert_eq!(missing["m.undefined"].iter().collect::<Vec<_>>(), vec!["m.A.flag"], "定義を読んでいない操作も、書き直していなければ挙がる");
+    assert!(!missing.contains_key("m.amb"), "曖昧な要素は操作と決めない");
+    assert!(!missing.contains_key("m.unrelated"), "resolves の object はソースのパスで、要素の名前ではない");
+}
+
+#[test]
+fn the_meaning_of_a_renamed_param_moves_away_from_the_old_name() {
+    let before = atoms(
+        r#"{"kind": "defines", "subject": "s.f", "value": "operation", "params": {"order": "s.O"}, "at": "s.py:1"}
+{"kind": "meaning", "subject": "s.f.$order", "meaning": "payment-info", "uses": ["s.py:2"], "at": "s.py:1"}
+"#,
+    );
+    let plan = atoms(
+        r#"{"kind": "defines", "subject": "s.f", "value": "operation", "params": {"payment": "s.P"}, "file": "s.py", "at": "plan:p"}
+{"kind": "corresponds", "subject": "s.f.$order", "object": "s.f.$payment", "at": "plan:p"}
+{"kind": "corresponds", "subject": "s.f.$gone", "at": "plan:p"}
+"#,
+    );
+    let o = overlay(&before, &plan);
+    let s = Structure::new(o.after);
+    assert!(s.meanings.contains_key("s.f.$payment"));
+    assert!(!s.meanings.contains_key("s.f.$order"), "移した意味は、なくなった元の要素に残らない");
+    assert!(!o.corresponds.iter().any(|(a, _)| a == "s.f.$gone"), "行き先のない corresponds は対応を作らない");
+}
