@@ -360,7 +360,6 @@ impl Resolve<'_> {
             Cond::Has { meaning, value } => match self.meanings.get(meaning.as_str()) {
                 None => self.error(format!("意味 `{meaning}` が宣言されていない")),
                 Some(m) => match value {
-                    Some(v) if m.values.is_empty() => self.error(format!("意味 `{meaning}` は values を持たないので、値 `{v}` を書けない")),
                     Some(v) if !m.values.contains(v) => self.error(format!("値 `{v}` は意味 `{meaning}` の values にない")),
                     _ => {}
                 },
@@ -412,7 +411,11 @@ fn parse_reading(head: &[Tok], rest: &[Vec<Tok>], at: &str) -> Result<Reading, S
             let mut groups = Vec::new();
             for r in rest {
                 let g = word_at(r, 0).filter(|_| r.get(1) == Some(&Tok::Sym(":"))).ok_or("groups の各行は `名前: \"パターン\"` と書く")?;
-                groups.push((g, strings(&r[2..])?));
+                let patterns = strings(&r[2..])?;
+                for p in &patterns {
+                    check_pattern(p)?;
+                }
+                groups.push((g, patterns));
             }
             if groups.is_empty() {
                 return Err("groups に局所がない".to_string());

@@ -272,7 +272,7 @@ law explicit
 }
 
 #[test]
-fn law_errors_stop_the_questions_that_use_the_law() {
+fn law_errors_are_returned_and_status_keeps_working() {
     let repo = Repo::new("broken");
     repo.law(
         "a.law",
@@ -285,10 +285,10 @@ fn law_errors_stop_the_questions_that_use_the_law() {
     assert_eq!(v["files"], serde_json::json!([".archsig/law/a.law"]));
     assert!(v.get("laws").is_none() && v.get("meanings").is_none(), "誤りがあれば宣言を返さない: {v}");
     let s = repo.run(&["status"]);
-    assert_eq!(s, serde_json::json!({"law_errors": v["errors"]}), "status は計算せず、Law の誤りだけを返す");
+    assert_eq!(s["law_errors"], v["errors"], "status は Law の誤りを返す");
+    assert_eq!(s["unread"][0]["scopes"], serde_json::json!(["structure", "meaning:m"]), "status は解けた sources と意味の語彙で動く");
 
-    repo.law("a.law", "sources \"shop/**\"\n\nreading s = file\n\nmeaning m on field\n  \"m\"\n");
-    let s = repo.run(&["status"]);
-    assert!(s.get("law_errors").is_none(), "{s}");
-    assert_eq!(s["unread"][0]["scopes"], serde_json::json!(["structure", "meaning:m"]), "Law を直せば status は動く");
+    repo.law("a.law", "reading g = groups\n  a: \"shop/[x\"\n");
+    let v = repo.run(&["law", "check"]);
+    assert!(errors(&v)[0].1.starts_with("パターン `shop/[x` が読めない"), "{:?}", errors(&v));
 }

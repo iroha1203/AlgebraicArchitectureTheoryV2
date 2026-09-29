@@ -206,13 +206,10 @@ impl Store {
     }
 }
 
-/// 古い範囲と、読んでいない範囲。Law に誤りがあれば、計算せずに誤りを返す。
+/// 古い範囲と、読んでいない範囲。
 pub fn status(store: &Store) -> Result<serde_json::Value, String> {
     use serde_json::json;
     let laws = store.laws()?;
-    if !laws.errors.is_empty() {
-        return Ok(json!({"law_errors": laws.errors}));
-    }
     let sources = store.sources(&laws)?;
     let map = store.map()?;
     let mut observed: BTreeMap<(String, String), String> = BTreeMap::new();
@@ -261,7 +258,7 @@ pub fn status(store: &Store) -> Result<serde_json::Value, String> {
             unread.push(json!({"source": s, "scopes": scopes}));
         }
     }
-    Ok(json!({"stale": stale, "unread": unread}))
+    Ok(json!({"stale": stale, "unread": unread, "law_errors": laws.errors}))
 }
 
 /// ArchMap の中の置き場所。ソースと局所は別の名前の空間にある。

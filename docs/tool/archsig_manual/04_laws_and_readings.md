@@ -243,7 +243,7 @@ law payment-writes-are-audited
 
 - `files`:読んだ Law ファイル。`include` で取り込んだものも入る。
 - `readings`、`meanings`、`defs`、`laws`:解けた宣言。誤りがないときだけ返す。`laws` の規則は、`def` を展開し、`on` を省いた Law には最初の読みを補った形で返す。規則の形(`rule.form`)は `no`、`each`、`agrees along`、`changes commute`、`changes keep`、`roundtrips` のどれかで、残りの欄は文法の各部に当たる。
-- `errors`:誤りの一覧。一つ一つが、宣言の場所(`at`、`ファイル:行`)と理由(`message`)を持つ。
+- `errors`:誤りの一覧。一つ一つが、宣言の場所(`at`、`ファイル:行`)と理由(`message`)を持つ。ファイルそのものが読めないときは、`at` はそのファイルのパスである。
 
 誤りには、字句や文法で解けない宣言と、名前の解決の誤りがある。
 解決の誤りは、次のどれかである。
@@ -255,4 +255,4 @@ law payment-writes-are-audited
 - 同じ名前を二度宣言する。`def` に意味の語彙と同じ名前を付ける。
 - パターンが読めない。
 
-誤りが一つでもあれば、その Law は使えない。`law check` は `files` と `errors` だけを返す。`status` と計算する問いも、計算せずに Law の誤りを返す。Law を直してから、もう一度問う。
+誤りが一つでもあれば、その Law は計算に使えない。`law check` は `files` と `errors` だけを返し、計算する問いは、計算せずに Law の誤りを返す。`status` は動き続け、Law の誤りを `law_errors` に返す(第3章)。
