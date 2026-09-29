@@ -994,3 +994,4 @@ import ResearchLean.AG.AbelianLiftingObstruction.H1Classification
 import ResearchLean.AG.AbelianLiftingObstruction.ReferenceLiftInvariant
 import ResearchLean.AG.AbelianLiftingObstruction.SquarePresentation
 import ResearchLean.AG.AbelianLiftingObstruction.CrossStage
+import ResearchLean.AG.AbelianLiftingObstruction.GeometryWitness
