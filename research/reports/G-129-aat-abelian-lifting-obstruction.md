@@ -50,17 +50,20 @@ selection:
 作った元の辺・道の射が、既存の実際の補正済み辺・道と等しいことを示す。
 `solutionCorrection_zero` は逆に任意の整合する元の持ち上げの raw defect を同じ核で
 零とし、`solution_nonempty_iff_correction` は両方向の構成を与える。
+`solutionCorrection_solutionOfCorrection` は補正側での合成が恒等であることを、
+`solutionOfCorrection_solutionCorrection` は解側の構造全体で合成が恒等であることを示す。
+後者は `correctionChoice_solutionCorrection` による各元の辺の復元から従う。
 `obstructionClass_eq_zero_iff_solution` は同じ `H2` の商群の零判定をこの実際の
 解集合の非空性へ結ぶ。条件4は `obstructionCocycle` の引数として保持される。
 
 | 固定target | Lean宣言 | 放電の内容 |
 | --- | --- | --- |
 | 独立した `Sol(a)` | `Solution` | 元の辺持ち上げ、固定core、全ての指定面の射の等式 |
-| 補正解との対応 | `solutionCorrection_d1`, `solutionOfCorrection`, `solution_nonempty_iff_correction` | 同じ辺・道の射を通じた両方向の構成 |
+| 補正解との対応 | `solutionCorrection_d1`, `solutionOfCorrection`, `solution_nonempty_iff_correction`, `solutionCorrection_solutionOfCorrection`, `solutionOfCorrection_solutionCorrection` | 同じ辺・道の射を通じた両方向の構成と合成の恒等性 |
 | B3 | `obstructionClass_eq_zero_iff_correction`, `obstructionClass_eq_zero_iff_solution` | 同じ実際の核、`C¹`、`C²`、`H²` による零性と非空性の同値 |
 
 focused check と単一モジュール targeted build は成功し、
-`#assert_standard_axioms_only` はこのnamespace内の28宣言で標準公理のみと報告した。
+`#assert_standard_axioms_only` はこのnamespace内の33宣言で標準公理のみと報告した。
 
 ## 第5Cycleの選定（進行中）
 

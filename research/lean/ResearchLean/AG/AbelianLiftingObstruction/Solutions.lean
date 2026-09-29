@@ -76,6 +76,29 @@ structure Solution {K : FiniteTransportPresentation.{uG}}
       FiberAut.hom (T.comparator f) =
     (selectedUpper K p q T.original choice).pathLift (K.twoRight f)
 
+namespace Solution
+
+variable {K : FiniteTransportPresentation.{uG}}
+variable {E : Type uE} {B : Type uB} {D : Type uD}
+variable [Category.{vE} E] [Category.{vB} B] [Category.{vD} D]
+variable {p : E ⥤ B} {q : B ⥤ D}
+variable {T : OriginalTowerPresentation K p q}
+
+theorem ext {S R : Solution T}
+    (h : ∀ {i j : K.Vertex} (e : K.Edge i j), S.choice e = R.choice e) :
+    S = R := by
+  cases S with
+  | mk c hc hf =>
+    cases R with
+    | mk d hd hg =>
+      have hchoice : @c = @d := by
+        funext i j e
+        exact h e
+      cases hchoice
+      rfl
+
+end Solution
+
 namespace OriginalTowerPresentation
 
 variable {K : FiniteTransportPresentation.{uG}}
@@ -166,6 +189,52 @@ theorem solutionCorrection_d1 (S : Solution T) :
       -T.toTower.defect :=
   (T.toTower.correctedDefect_eq_zero_iff_d1 (T.solutionCorrection S)).mp
     (T.solutionCorrection_zero S)
+
+/-- Taking the actual kernel difference after a correction recovers that cochain. -/
+theorem solutionCorrection_correctionChoice
+    (h : C1 T.toTower.localCoefficients) :
+    T.alternativeCorrection (T.correctionChoice h) (T.correctionChoice_core h) = h := by
+  funext edge
+  rcases edge with ⟨i, j, e⟩
+  change Additive.ofMul
+      (liftDifference p q (T.original.object j) (T.correctionChoice h e) (T.lift e)
+        ((T.correctionChoice_core h e).trans (T.lift_core e).symm)) = h ⟨i, j, e⟩
+  apply Additive.toMul.injective
+  change liftDifference p q (T.original.object j) (T.correctionChoice h e) (T.lift e)
+      ((T.correctionChoice_core h e).trans (T.lift_core e).symm) =
+    (Additive.toMul (h ⟨i, j, e⟩) : Kernel p q (T.original.object j))
+  apply kernelInclusion_injective p q (T.original.object j)
+  change T.correctionChoice h e * (T.lift e)⁻¹ =
+    kernelInclusion p q (T.original.object j)
+      (Additive.toMul (h ⟨i, j, e⟩) : Kernel p q (T.original.object j))
+  change (kernelInclusion p q (T.original.object j)
+      (Additive.toMul (h ⟨i, j, e⟩) : Kernel p q (T.original.object j)) * T.lift e) *
+        (T.lift e)⁻¹ = _
+  exact mul_inv_cancel_right _ _
+
+/-- Applying the recovered correction restores every original edge choice. -/
+theorem correctionChoice_solutionCorrection (S : Solution T)
+    {i j : K.Vertex} (e : K.Edge i j) :
+    T.correctionChoice (T.solutionCorrection S) e = S.choice e := by
+  change kernelInclusion p q (T.original.object j)
+      (liftDifference p q (T.original.object j) (S.choice e) (T.lift e)
+        ((S.choice_core e).trans (T.lift_core e).symm)) * T.lift e = S.choice e
+  exact liftDifference_mul p q (T.original.object j) (S.choice e) (T.lift e)
+    ((S.choice_core e).trans (T.lift_core e).symm)
+
+/-- The two constructions compose to the identity on correction solutions. -/
+theorem solutionCorrection_solutionOfCorrection
+    (h : C1 T.toTower.localCoefficients)
+    (hh : d1 T.toTower.localCoefficients h = -T.toTower.defect) :
+    T.solutionCorrection (T.solutionOfCorrection h hh) = h :=
+  T.solutionCorrection_correctionChoice h
+
+/-- The two constructions compose to the identity on actual coherent lifts. -/
+theorem solutionOfCorrection_solutionCorrection (S : Solution T) :
+    T.solutionOfCorrection (T.solutionCorrection S) (T.solutionCorrection_d1 S) = S := by
+  apply Solution.ext
+  intro i j e
+  exact T.correctionChoice_solutionCorrection S e
 
 /-- B3: actual coherent lifts exist exactly when the fixed correction equation is solvable. -/
 theorem solution_nonempty_iff_correction :
