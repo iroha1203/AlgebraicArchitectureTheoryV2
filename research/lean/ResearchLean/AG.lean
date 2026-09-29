@@ -985,4 +985,5 @@ import ResearchLean.AG.AbelianLiftingObstruction.PathKernelTransport
 import ResearchLean.AG.AbelianLiftingObstruction.TowerPresentation
 import ResearchLean.AG.AbelianLiftingObstruction.OriginalTowerPresentation
 import ResearchLean.AG.AbelianLiftingObstruction.Defect
+import ResearchLean.AG.AbelianLiftingObstruction.Correction
 import ResearchLean.AG.AbelianLiftingObstruction.SquarePresentation

@@ -3,6 +3,101 @@
 一次仕様は [固定GOAL](../goals/G-129-aat-abelian-lifting-obstruction.md)、
 実行・査読・mergeの記録は [tracking Issue #5082](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5082) を参照する。
 
+## 第4Cycleの選定（進行中）
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-129-aat-abelian-lifting-obstruction
+cycle: 4
+goal_blob_sha: 9f93a9a1c2ebd9ccd53362e878363144a934b4b8
+base_oid: a4c4269d0a961d9b654d43a6efc2e88b0fcfee7e
+tracking_issue: 5082
+report_path: research/reports/G-129-aat-abelian-lifting-obstruction.md
+selection:
+  proof_state_ref: "Issue #5082 第3Cycle merge 後のproof state"
+  proof_dag_predecessors:
+    - TowerPresentation.defect
+    - pathReselectionTransition_fac
+    - rawFaceDefect_transition
+    - pathCorrection
+    - d1
+  milestone: "任意の実際の核補正で元の辺を再選択し、そのdefectが同じd1だけ変わることを証明する"
+  proof_obligations:
+    - "核補正の辺再選択を元の辺の射として構成し、道のendpoint transitionがT_w(h)の核包含に等しいと証明する"
+    - "再選択した元の指定比較と標準比較のraw defectを実際の核へ制限する"
+    - "条件3と実際の核の可換性を用い、全hについてδ^h=δ+d1hを同じC2で証明する"
+    - "再選択後も同じ係数輸送と元の3-cell syzygy条件を使えることを証明する"
+  exit_criteria:
+    - "元の辺への全核補正の実行とendpoint transitionの値が一致"
+    - "元のraw defectと再構成した核defectが一致"
+    - "同じd1で全補正の変換則を証明"
+    - "係数・3-cell条件の再選択独立、focused check・公理監査・共通scan・独立PRレビュー合格"
+  selection_reason: "B2と障害類の基準選択独立を先に確立し、実際の解の同値へ接続する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/AbelianLiftingObstruction/Correction.lean
+  risks:
+    - "抽象的な補正方程式だけに置き換えず、元の辺と元の比較の再選択を保持する"
+    - "結論を仮定へ移さず、任意の核補正を量化する"
+  unchecked:
+    - "実装と独立PRレビュー前"
+```
+
+### 第4Cycleの証拠対応
+
+`correctionReselection` は任意の同じ `C¹` の値を実際の核から元の選択済み辺へ掛ける。
+`correctedPath_fac` と `pathTransition_eq_correction` は、この辺の実行から作った
+endpoint transition が各辺の出現を数える `T_w(h)` の核包含に等しいことを示す。
+`correctedFaceDefect` は再選択後の二つの元の道と指定比較からA2を使って実際の核へ
+制限した元であり、`correctedFaceDefect_eq_raw` が既存raw defectとの値の一致を固定する。
+
+| 固定target | Lean宣言 | 放電の内容 |
+| --- | --- | --- |
+| 全核補正の実行 | `correctionReselection`, `correctedEdge_eq`, `correctedPath_fac`, `pathTransition_eq_correction` | 元の選択済み辺への任意の補正と、道全体の総補正を同じ値で結ぶ |
+| 再構成したdefect | `correctedCoreAlignment`, `correctedFaceDefect`, `correctedFaceDefect_eq_raw`, `correctedDefect` | 再選択した道の元の指定比較から実際の核defectを作り直し、同じC²に置く |
+| B2変換則 | `correctedFaceDefect_eq`, `correctedDefect_eq` | 既存の非可換raw遷移則を条件3で簡約し、可換核の演算で全hについてδ^h=δ+d¹hを証明 |
+| 係数・条件4 | `correctedPathKernelTransport_eq`, `correctedPath_localCoefficients`, `authoredSyzygy_correction_invariant` | 同じ道輸送と元の指定比較の3-cell条件を補正後も保持 |
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    - "任意の実際の核補正を元の選択済み辺に実行し、道の遷移をT_w(h)と同一視"
+    - "再選択した元の比較からdefectを再構成し、既存raw defectとの値の一致を証明"
+    - "同じC2とd1でδ^h=δ+d1hを証明し、道の核輸送と条件4の基準独立性を確認"
+  exit_criteria_status:
+    - "全核補正とendpoint transition: correctedEdge_eq、pathTransition_eq_correction"
+    - "実際の再構成defect: correctedFaceDefect_eq_raw"
+    - "全hの同じd1変換則: correctedDefect_eq"
+    - "係数・3-cell・focused check・公理guard・共通scan・独立PRレビューは最終headで確認"
+  completion_candidate: no
+  lean_artifacts:
+    - AbelianLiftingObstruction/Correction.lean
+  claim_mapping:
+    theorem_names: [pathTransition_eq_correction, correctedFaceDefect_eq_raw, correctedDefect_eq, correctedPathKernelTransport_eq, authoredSyzygy_correction_invariant]
+    source_labels: [B2, "A条件2–4"]
+    undischarged_assumptions: ["A条件1–3はTowerPresentationの一般定理の明示仮定", "条件4は元の比較のsyzygyとして明示仮定"]
+    acceptance_point: "任意の元の辺の核補正に対する実際のdefect変換則と係数・syzygy独立性"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["全核補正の実行", "元のraw defectとの再選択値一致", "B2変換則", "係数と元の3-cell条件の不変性"]
+    remaining: ["同じcoreの任意の基準持ち上げ差とH2障害類", "実際の解との双方向対応", "CとD", "指定三例の条件1–4"]
+  certificate_provenance:
+    discharged: ["元の辺の射からのT_w(h)", "強い持ち上げの一意性でのendpoint transition", "A2から再構成した核defect"]
+    unresolved: []
+  proof_use:
+    used: ["条件1で道の核補正の積順を交換", "条件2で指定比較のwhisker後の全核中心化", "条件3でraw遷移の共役を消去し、指定比較の貼り合わせを保持"]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: []
+  next_obligation: "同じcoreの基準持ち上げの全差を核補正として表し、H2障害類と実際のSol(a)との同値を構成する"
+```
+
 ## 第3Cycleの選定（進行中）
 
 ```yaml
