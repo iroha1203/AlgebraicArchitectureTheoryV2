@@ -3,6 +3,68 @@
 一次仕様は [固定GOAL](../goals/G-129-aat-abelian-lifting-obstruction.md)、
 実行・査読・mergeの記録は [tracking Issue #5082](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5082) を参照する。
 
+## 第6Cycleの選定
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-129-aat-abelian-lifting-obstruction
+cycle: 6
+goal_blob_sha: 9f93a9a1c2ebd9ccd53362e878363144a934b4b8
+base_oid: d185e3db4451f27a5549c76a5ec35b2c9b252a97
+tracking_issue: 5082
+report_path: research/reports/G-129-aat-abelian-lifting-obstruction.md
+selection:
+  proof_state_ref: "Issue #5082 第5Cycle merge 後のproof state"
+  proof_dag_predecessors:
+    - OriginalTowerPresentation.alternativeCorrection
+    - OriginalTowerPresentation.alternativeDefect_eq_raw
+    - TowerPresentation.correctedDefect_eq
+    - TowerPresentation.obstructionClass
+    - h2_eq_zero_iff
+  milestone: "元の辺持ち上げからSol(a)を独立に定義し、同じH2障害零性と非空性の双方向を証明する"
+  proof_obligations:
+    - "元の各辺のc_e、固定coreへの射影、指定比較の元の面の射の等式でSol(a)を定義する"
+    - "任意のSol(a)とd1h=-δの解を相互に構成し、元の辺の射を保持する"
+    - "同じH2の障害類が零であることとSol(a)非空を両向きで証明する"
+  exit_criteria:
+    - "Sol(a)の定義にdefect方程式を条件として埋め込まない"
+    - "実際の辺・面の等式と同じ補正方程式の双方向対応がある"
+    - "同じH2でo(a)=0 iff Sol(a)非空"
+    - "focused check・公理監査・共通scan・独立PRレビュー合格"
+  selection_reason: "B3を完結し、次のCの実際の解集合への作用を可能にする"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/AbelianLiftingObstruction/Solutions.lean
+  risks:
+    - "CoherentAt等の抽象的な再選択をSol(a)と取り違えない"
+    - "片方向だけやdefect消滅を入力条件とする解を作らない"
+  unchecked:
+    - "独立PRレビュー前"
+```
+
+### 第6Cycleの証拠対応
+
+`Solution` は元の辺ごとの fiber 自己同型、固定 core への射影、および元の道の
+指定比較に関する面の射の等式で定義する。障害類や補正方程式はこの定義のフィールドに
+含めない。`correctionChoice_edge` と `correctionChoice_path` は、任意の核補正から
+作った元の辺・道の射が、既存の実際の補正済み辺・道と等しいことを示す。
+`solutionCorrection_zero` は逆に任意の整合する元の持ち上げの raw defect を同じ核で
+零とし、`solution_nonempty_iff_correction` は両方向の構成を与える。
+`solutionCorrection_solutionOfCorrection` は補正側での合成が恒等であることを、
+`solutionOfCorrection_solutionCorrection` は解側の構造全体で合成が恒等であることを示す。
+後者は `correctionChoice_solutionCorrection` による各元の辺の復元から従う。
+`obstructionClass_eq_zero_iff_solution` は同じ `H2` の商群の零判定をこの実際の
+解集合の非空性へ結ぶ。条件4は `obstructionCocycle` の引数として保持される。
+
+| 固定target | Lean宣言 | 放電の内容 |
+| --- | --- | --- |
+| 独立した `Sol(a)` | `Solution` | 元の辺持ち上げ、固定core、全ての指定面の射の等式 |
+| 補正解との対応 | `solutionCorrection_d1`, `solutionOfCorrection`, `solution_nonempty_iff_correction`, `solutionCorrection_solutionOfCorrection`, `solutionOfCorrection_solutionCorrection` | 同じ辺・道の射を通じた両方向の構成と合成の恒等性 |
+| B3 | `obstructionClass_eq_zero_iff_correction`, `obstructionClass_eq_zero_iff_solution` | 同じ実際の核、`C¹`、`C²`、`H²` による零性と非空性の同値 |
+
+focused check と単一モジュール targeted build は成功し、
+`#assert_standard_axioms_only` はこのnamespace内の33宣言で標準公理のみと報告した。
+
 ## 第5Cycleの選定（進行中）
 
 ```yaml

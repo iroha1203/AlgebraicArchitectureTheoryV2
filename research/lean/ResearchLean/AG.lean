@@ -987,4 +987,5 @@ import ResearchLean.AG.AbelianLiftingObstruction.OriginalTowerPresentation
 import ResearchLean.AG.AbelianLiftingObstruction.Defect
 import ResearchLean.AG.AbelianLiftingObstruction.Correction
 import ResearchLean.AG.AbelianLiftingObstruction.ObstructionClass
+import ResearchLean.AG.AbelianLiftingObstruction.Solutions
 import ResearchLean.AG.AbelianLiftingObstruction.SquarePresentation
