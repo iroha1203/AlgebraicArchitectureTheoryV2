@@ -3,6 +3,139 @@
 一次仕様は [固定GOAL](../goals/G-129-aat-abelian-lifting-obstruction.md)、
 実行・査読・mergeの記録は [tracking Issue #5082](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5082) を参照する。
 
+## 第2Cycleの選定
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-129-aat-abelian-lifting-obstruction
+cycle: 2
+goal_blob_sha: 9f93a9a1c2ebd9ccd53362e878363144a934b4b8
+base_oid: 158e2024fe1e85c11aa8680542e29269d3488ba5
+tracking_issue: 5082
+report_path: research/reports/G-129-aat-abelian-lifting-obstruction.md
+selection:
+  proof_state_ref: "Issue #5082 第1Cycle merge 後のproof state"
+  proof_dag_predecessors:
+    - kernelTransportHom
+    - kernelTransportAddEquiv
+    - centralizes_iff_kernelTransport_eq
+    - FiniteTransportPresentation
+  milestone: "Aの同じ有限表示における局所係数、道・面・3-cellの複体とH1/H2を実際の核輸送から構成する"
+  proof_obligations:
+    - "元の辺の核輸送を道に合成し、同じcoreの持ち上げから独立にする"
+    - "A2と面比較の中心化から道の関係への降下を証明する"
+    - "全出現を数える道の総補正、d0・d1・d2と二つの複体等式を証明する"
+    - "同じ複体のZ1・H1・H2とnative homologyへの対応を構成する"
+  exit_criteria:
+    - "実際の塔の原始辺から各係数群・辺輸送を生成し、面関係を放電する"
+    - "空道・繰返し・向き・接頭辞・接尾辞を含む式からd1d0=0とd2d1=0を証明する"
+    - "H1/H2が上の微分の核と像の商であり、同じnative複体へ対応する"
+    - "focused check・全追加宣言の公理監査・共通scan・独立PRレビューが合格する"
+  selection_reason: "第1Cycleの実際の核輸送を、BのdefectとCの解分類が共用する同じ複体へつなぐ"
+  expected_result_type: proof-obligation-discharged
+  lean_targets:
+    - ResearchLean/AG/AbelianLiftingObstruction/LocalCoefficients.lean
+    - ResearchLean/AG/AbelianLiftingObstruction/Cochains.lean
+    - ResearchLean/AG/AbelianLiftingObstruction/Cohomology.lean
+  risks:
+    - "face_transportを構造体fieldのまま未放電で受理しない"
+    - "係数群の有限性を追加しない"
+    - "3-cell条件をd2d1=0の仮定へ紛れ込ませない"
+    - "元の核・辺・面と同じ対象を保つ"
+  unchecked:
+    - "固定headの独立PRレビューはPR作成後に実行"
+```
+
+### 第2Cycleの証拠対応
+
+`OriginalTowerPresentation` は元の辺 `L`、core の `a`、その lift `ã` と
+射影等式を保持する。`selectedUpper` と `selectedLowerStrong` は選択済みの辺と二つの
+強い性質を元の入力から構成する。`pathTransport_independent_lift` は同じ core の
+任意の二つの lift に対して全道の核輸送を一致させ、
+`localCoefficients_path_independent_lift` は降下した局所係数の道輸送へ接続する。
+
+`TowerPresentation` は第1Cycleの実際の `p ⋙ q` 上で選択済みの辺を保持し、同じ辺の
+`p.map` が `q` について強いこと、底の道の一致、元の指定比較と(A2)を入力にする。
+可換性・核輸送の全単射性・指定比較の中心化は固定target Aの条件1–3であり、
+`pathLowerStrong`、`pathKernelTransportBijective`、`edgeCoefficients_face` で
+道・面に沿う帰結を証明する。`localCoefficients` はその証明から構成した同じ実際の核である。
+`LocalCoefficients.asFunctor` は同じ辺と面の生成関係で割った道の圏から
+可換群の圏への関手であり、`descendedTransport_mk` は元の道輸送を返す。
+
+| 固定target | このCycleの主なLean宣言 | 放電の内容 |
+| --- | --- | --- |
+| Aの原始辺と道 | `kernelTransportHom_comp`, `TowerPresentation.pathLowerStrong`, `pathKernelTransportBijective`, `edgeCoefficients_pathTransport` | 元の射の合成に沿う核輸送、空道、辺ごとの全単射性から全道の全単射性 |
+| 元の辺・core・liftとの接続 | `OriginalTowerPresentation.toTower`, `edgeTransport_independent_lift`, `pathTransport_independent_lift`, `localCoefficients_path_independent_lift` | 元の `L/a/ã` から選択済み辺の強い性質と局所係数を構成し、同じcoreの別liftに対する全道の輸送一致を証明 |
+| Aの面と局所係数 | `TowerPresentation.edgeCoefficients_face`, `localCoefficients`, `LocalCoefficients.asFunctor` | (A2)・核可換性・指定比較の中心化・道の全射性から面輸送を一致させ、生成関係へ降下 |
+| A3の微分 | `pathCorrection`, `d0Hom`, `d1Hom`, `d2Hom`, `pathCorrection_d0`, `faceCorrection_d1`, `pastingCorrection_d1` | 終点の核へ各出現を輸送し、向きと接尾辞を保存して評価 |
+| A3の複体 | `d1_d0`, `d2_d1`, `cochainComplex` | 同じ有限表示で二つの合成を零と証明。3-cellの貼り合わせは型付きであり、指定比較のsyzygyを仮定しない |
+| A3のコホモロジー | `Z1`, `Z2`, `H1`, `H2`, `h1_eq_zero_iff`, `h2_eq_zero_iff`, `firstCochainHomologyIso`, `secondCochainHomologyIso` | 同じ微分の核・像による商と四項native複体の次数1・2のhomologyへの一致。係数群の有限性は不要 |
+| 完了条件2–4の共通表示 | `squarePresentation`, `square_d0`, `square_d1`, `square_d2` | 一頂点・一ループ・面 `e²⇒∅`・先頭/末尾消去の3-cellから `1−ρ`,`1+ρ`,`ρ−1` を計算 |
+
+前提の出所と使用は次の通り。`upper.edgeStrong` と `lowerStrong` はAの
+原始辺条件で、道の強さ、射影に沿う輸送、比較の一意性に使用する。
+`faceBase` と `coreAlignment` は底の道の一致と(A2)で、元の指定比較と
+標準比較の射影一致に使用する。`kernelComm`、`edgeBijective`、
+`comparatorCentralizes` はA条件1–3をそのまま保持し、選択独立性・道の
+同型性・面輸送の一致に使用する。条件4はBのdefectのコサイクル性で
+初めて必要となり、このCycleの `d²d¹=0` の仮定には入れていない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    - "元のL/a/ãから選択済み辺とその強い性質を構成し、同じcoreの全道輸送独立性を証明"
+    - "元の辺の核輸送から全道の同型と合成則を証明"
+    - "A2と指定比較の中心化から面関係を放電し、同じ生成関係への関手を構成"
+    - "C0からC3、三つの微分、二つの複体等式、H1とH2を構成"
+    - "指定の3-cell表示から三つの微分の符号を評価"
+  exit_criteria_status:
+    - "元のL/a/ãから選択済み辺を構成し、同じcoreの全道輸送独立性を証明: OriginalTowerPresentation"
+    - "選択済み辺の実際の塔から面関係を放電: TowerPresentation.edgeCoefficients_face"
+    - "d1d0とd2d1: Cochains.lean の直接証明"
+    - "H1/H2と同じ四項native複体: firstCochainHomologyIso、secondCochainHomologyIso"
+    - "個別focused check・axiom監査を最終差分で実施。独立PRレビューは最終headで再実施"
+  completion_candidate: no
+  lean_artifacts:
+    - AbelianLiftingObstruction/LocalCoefficients.lean
+    - AbelianLiftingObstruction/Cochains.lean
+    - AbelianLiftingObstruction/Cohomology.lean
+    - AbelianLiftingObstruction/PathKernelTransport.lean
+    - AbelianLiftingObstruction/TowerPresentation.lean
+    - AbelianLiftingObstruction/OriginalTowerPresentation.lean
+    - AbelianLiftingObstruction/SquarePresentation.lean
+  evidence:
+    - "同じ有限表示の実際の核輸送・道の商・微分・コホモロジーのLean宣言"
+    - "七つの非aggregate fileの個別focused check、各file末尾のstandard axiom guard"
+    - "主要26宣言の #print axioms: propext, Classical.choice, Quot.sound のみ"
+  claim_mapping:
+    theorem_names: ["OriginalTowerPresentation.localCoefficients_path_independent_lift", "TowerPresentation.localCoefficients", "LocalCoefficients.asFunctor", d1_d0, d2_d1, cochainComplex, firstCochainHomologyIso, secondCochainHomologyIso, square_d0, square_d1, square_d2]
+    source_labels: ["Aの局所係数", A3, "完了条件2–4の共通有限表示"]
+    conjuncts: ["上の固定target対応表に記載"]
+    undischarged_assumptions: ["A条件1–3は一般定理の明示仮定。具体例では後続Cycleで放電"]
+    acceptance_point: "元のL/a/ãから同じ実際の核の係数複体を構成し、同じcoreの別liftに対する全道の係数輸送一致を証明。全G-129のcompletion candidateではない"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["道の強さ", "道の核輸送の全単射性", "面関係", "二つの複体等式"]
+    remaining: ["A条件4を用いる実際のdefectコサイクル", "指定三例のA条件1–4の個別放電"]
+  certificate_provenance:
+    discharged: ["強い原始辺の合成", "生成された核輸送", "元の指定比較からの面関係", "型付き3-cellの二つの貼り合わせ"]
+    unresolved: []
+  proof_use:
+    used: ["核可換性で面比較", "道の全射性で中心化同値の逆方向", "面輸送一致でd1d0", "型付き貼り合わせでd2d1"]
+    unused: ["A条件4はこのCycleのclaimに含めない"]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["七つのfocused check", "全追加宣言のstandard axiom guard", "Research full/aggregate/all-file buildなし"]
+  blocking_findings: []
+  next_obligation: "元の標準比較と指定比較の差を同じC2へ移し、A条件4からコサイクルを証明する"
+```
+
 ## 固定参照と第1Cycleの選定
 
 GOALと共通受入基準の適用版は `ed8f19fc6095b61fe0a40d5984af62c5acabd1ba`。
