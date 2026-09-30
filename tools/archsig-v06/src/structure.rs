@@ -346,10 +346,9 @@ pub struct Overlay {
     pub corresponds: BTreeSet<(String, String)>,
     /// 行き先を決めていない対応(`a.X | b.Y`)。変更前の要素と、行き先の候補。書いた行ごとに一つ。
     pub undecided: Vec<(String, Vec<String>)>,
-    /// 候補が書き直していない操作のうち、`removes` した要素を使うもの。操作と、使う要素。
+    /// 書き直していない Atom が `removes` した要素を名指す操作と、名指す要素(`missing` の元)。
+    /// Atom から決まる事実で、`missing` と結論するか沈黙するかはエンジンが決める(設計 §3.6)。
     pub missing: BTreeMap<String, BTreeSet<String>>,
-    /// 消える要素を使うか、引数の対応を作れるかが、入力から決まらない要素。理由と次に読む所を持つ。
-    pub silent: BTreeMap<String, Silence>,
 }
 
 /// ArchMap の Atom の列 `before` に、候補の Atom の列 `plan` を重ねる(設計 §3.6)。
@@ -382,19 +381,12 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
             linked.push((a.subject.clone(), t.clone()));
         }
     }
-    // 2. 書いた対応で結んだ操作どうしの、同じ名前の引数。
-    //    端の種類が構造から決まらなければ(読んでいない、曖昧、`?`)、引数の対応を作れるかも決まらない。
+    // 2. 書いた対応で結んだ操作どうしの、同じ名前の引数。両端が操作と決まるときに作る。
     for (from, to) in &linked {
-        match (old.kind(from), new.kind(to)) {
-            (Err(s), _) | (_, Err(s)) => {
-                out.silent.insert(from.clone(), s);
+        if old.kind(from) == Ok("operation") && new.kind(to) == Ok("operation") {
+            for p in old.elements[from].params.keys().filter(|p| new.elements[to].params.contains_key(*p)) {
+                out.corresponds.insert((format!("{from}.${p}"), format!("{to}.${p}")));
             }
-            (Ok("operation"), Ok("operation")) => {
-                for p in old.elements[from].params.keys().filter(|p| new.elements[to].params.contains_key(*p)) {
-                    out.corresponds.insert((format!("{from}.${p}"), format!("{to}.${p}")));
-                }
-            }
-            _ => {}
         }
     }
     // 3. 変更前と変更後の両方にある同じ名前の要素は、自分自身に対応する。`removes` した要素は除く。
@@ -422,151 +414,58 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
         }
     }
     out.after = after;
-    // 候補が書き直していない操作が、消える要素を使っていれば `missing`。
-    // 使うとは、引数の型、構造 Atom の `object`、`value`・`when` の式の中の `$p.f` と呼び出しで名指すこと。
-    // 決まらないときは `silent` に理由を持つ。決まらないのは、次の二つの場合である。
-    // - 操作かどうか、何を使うかが構造から決まらない: `Structure::kind` の沈黙をそのまま返す。
-    // - 名指す名前が決まらない: `?`、読めない式、読んでいない型を通る道。
-    if removed.is_empty() {
-        return out;
+    // 書き直していない Atom が `removes` した要素を名指せば、その操作を `missing` の元に挙げる。
+    // 名指すとは、引数の型、構造 Atom の `object`、`value`・`when` の式の中の `$p.f` と呼び出しで名を出すこと。
+    // 候補が置き換えた Atom(書き直した呼び出しの `passes` など)は見ない。意味 Atom の `value` は式として読まない。
+    let body = |k: &str| matches!(k, "writes" | "reads" | "calls" | "sends" | "receives" | "returns" | "passes");
+    let kept: Vec<&Atom> = before.iter().filter(|a| !dropped(a) && body(&a.kind)).collect();
+    let mut named: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    for (op, e) in old.elements.iter().filter(|(n, e)| e.kinds.contains("operation") && !replaced(n) && !gone(n)) {
+        named.entry(op.clone()).or_default().extend(e.params.values().cloned());
     }
-    // 候補が置き換えた Atom(書き直した呼び出しの `passes` など)は、もう使わない。
-    let body = |k: &str| matches!(k, "writes" | "reads" | "calls" | "sends" | "receives" | "returns");
-    let kept: Vec<&Atom> = before.iter().filter(|a| !dropped(a) && (body(&a.kind) || a.kind == "passes")).collect();
-    let has_body: BTreeSet<&str> = kept.iter().filter(|a| body(&a.kind)).map(|a| a.subject.as_str()).collect();
-    // 操作かもしれない名前: 定義した操作、本体の Atom の `subject`(第3章で操作)、呼び出し先。
-    let mut names: BTreeSet<String> = has_body.iter().map(|n| n.to_string()).collect();
-    names.extend(old.elements.iter().filter(|(_, e)| e.kinds.contains("operation")).map(|(n, _)| n.clone()));
     for a in &kept {
-        if a.kind == "calls" {
-            names.extend(a.object.clone());
-        }
+        // `passes` の `subject` は呼び出しの要素 `<操作>->…` なので、呼び出し元の操作に数える。
+        let op = a.subject.split("->").next().unwrap_or("").to_string();
+        let names = named.entry(op.clone()).or_default();
+        names.extend(a.object.clone());
         for text in [&a.value, &a.when].into_iter().flatten() {
             if let Ok(e) = expr::parse(text) {
-                callees(&e, &mut names);
+                old.named(&op, &e, names);
             }
         }
     }
-    for op in names.iter().filter(|n| !replaced(n) && !gone(n)) {
-        let kind = old.kind(op);
-        // 外部の要素は、観測した要素を使わない呼び出しとして扱う(設計 §3.4)。
-        let external = !old.elements.contains_key(op) && matches!(old.resolves.get(op), Some(Resolution::External(_)));
-        if external || matches!(kind, Ok(k) if k != "operation") {
-            continue;
-        }
-        let kind_silence = kind.err();
-        // 本体を読んでいない名前は、何を使うかが決まらない。
-        if let (false, Some(s)) = (has_body.contains(op.as_str()), &kind_silence) {
-            out.silent.insert(op.clone(), s.clone());
-            continue;
-        }
-        let mut named = BTreeSet::new();
-        let mut unknown = None;
-        if let Some(e) = old.elements.get(op) {
-            named.extend(e.params.values().cloned());
-        }
-        for a in kept.iter().filter(|a| a.subject == *op || a.subject.starts_with(&format!("{op}->"))) {
-            if let Some(o) = &a.object {
-                if o.starts_with('?') {
-                    unknown = Some(Silence::new(Reason::Unresolved));
-                }
-                named.insert(o.clone());
-            }
-            for text in [&a.value, &a.when].into_iter().flatten() {
-                match expr::parse(text) {
-                    Ok(e) => old.named(op, &e, &mut named, &mut unknown),
-                    Err(_) => unknown = Some(Silence::new(Reason::Unresolved)),
-                }
-            }
-        }
-        let uses: BTreeSet<String> = named.into_iter().filter(|n| gone(n)).collect();
-        // 本体の Atom の `subject` は操作である(第3章)。定義を読んでいなくても操作として結論する。
-        // 曖昧な要素と `?` の名前は、操作と決まらないので、使っていれば沈黙する。
-        let decided = !matches!(&kind_silence, Some(s) if s.reason != Reason::Unread);
-        match (decided, uses.is_empty(), unknown) {
-            (false, false, _) | (false, true, Some(_)) => {
-                out.silent.insert(op.clone(), kind_silence.unwrap());
-            }
-            (true, false, _) => {
-                out.missing.insert(op.clone(), uses);
-            }
-            (true, true, Some(s)) => {
-                out.silent.insert(op.clone(), s);
-            }
-            _ => {}
+    for (op, names) in named {
+        let uses: BTreeSet<String> = names.into_iter().filter(|n| gone(n)).collect();
+        if !uses.is_empty() {
+            out.missing.insert(op, uses);
         }
     }
     out
 }
 
-/// 式の中で呼び出す操作の名前。
-fn callees(e: &Expr, out: &mut BTreeSet<String>) {
-    match e {
-        Expr::Call(name, args) => {
-            out.insert(name.clone());
-            for a in args {
-                callees(a, out);
-            }
-        }
-        Expr::Not(x) | Expr::Neg(x) => callees(x, out),
-        Expr::Bin(_, a, b) => {
-            callees(a, out);
-            callees(b, out);
-        }
-        _ => {}
-    }
-}
-
 impl Structure {
-    /// 式の中で名指す要素。`$p.f.g` がたどるフィールドと、呼び出す操作。
-    /// たどれない道や `?` があれば、その理由を `unknown` に入れる。
-    fn named(&self, op: &str, e: &Expr, out: &mut BTreeSet<String>, unknown: &mut Option<Silence>) {
+    /// 式の中で名指す要素。`$p.f.g` がたどれる所までのフィールドと、呼び出す操作。
+    fn named(&self, op: &str, e: &Expr, out: &mut BTreeSet<String>) {
         match e {
-            Expr::Path(p, fields) if !fields.is_empty() => {
-                let Some(mut ty) = self.elements.get(op).and_then(|o| o.params.get(p)).cloned() else {
-                    *unknown = Some(self.kind(op).err().unwrap_or(Silence::new(Reason::Unresolved)));
-                    return;
-                };
-                for (i, f) in fields.iter().enumerate() {
-                    let field = format!("{ty}.{f}");
-                    out.insert(field.clone());
-                    if i + 1 == fields.len() {
-                        break;
-                    }
-                    match self.kind(&field) {
-                        Ok("field") => match self.elements[&field].ty.clone() {
-                            Some(t) => ty = t,
-                            None => {
-                                *unknown = Some(Silence::new(Reason::Unresolved));
-                                break;
-                            }
-                        },
-                        Ok(_) => {
-                            *unknown = Some(Silence::new(Reason::Unresolved));
-                            break;
-                        }
-                        Err(s) => {
-                            *unknown = Some(s);
-                            break;
-                        }
-                    }
+            Expr::Path(p, fields) => {
+                let mut ty = self.elements.get(op).and_then(|o| o.params.get(p)).cloned();
+                for f in fields {
+                    let Some(t) = ty else { break };
+                    let field = format!("{t}.{f}");
+                    ty = self.elements.get(&field).and_then(|e| e.ty.clone());
+                    out.insert(field);
                 }
             }
             Expr::Call(name, args) => {
-                if name.starts_with('?') {
-                    *unknown = Some(Silence::new(Reason::Unresolved));
-                }
                 out.insert(name.clone());
                 for a in args {
-                    self.named(op, a, out, unknown);
+                    self.named(op, a, out);
                 }
             }
-            Expr::Unknown => *unknown = Some(Silence::new(Reason::Unresolved)),
-            Expr::Name(n) if n.starts_with('?') => *unknown = Some(Silence::new(Reason::Unresolved)),
-            Expr::Not(x) | Expr::Neg(x) => self.named(op, x, out, unknown),
+            Expr::Not(x) | Expr::Neg(x) => self.named(op, x, out),
             Expr::Bin(_, a, b) => {
-                self.named(op, a, out, unknown);
-                self.named(op, b, out, unknown);
+                self.named(op, a, out);
+                self.named(op, b, out);
             }
             _ => {}
         }

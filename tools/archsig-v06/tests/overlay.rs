@@ -1,7 +1,7 @@
 //! AC4: 候補を重ねる(設計 §3.6)の回帰例。
 
 use archsig::atom::{Atom, parse_jsonl};
-use archsig::structure::{Reason, Structure, overlay};
+use archsig::structure::{Structure, overlay};
 
 fn atoms(jsonl: &str) -> Vec<Atom> {
     parse_jsonl(jsonl, "test").unwrap()
@@ -241,8 +241,7 @@ fn missing_counts_every_way_an_operation_uses_a_removed_element() {
     assert_eq!(missing["m.by_value"].iter().collect::<Vec<_>>(), vec!["m.old"], "value の中の呼び出し");
     assert_eq!(missing["m.by_passes"].iter().collect::<Vec<_>>(), vec!["m.A.flag"], "呼び出しの passes の式");
     assert_eq!(missing["m.undefined"].iter().collect::<Vec<_>>(), vec!["m.A.flag"], "定義を読んでいない操作も、書き直していなければ挙がる");
-    assert!(!missing.contains_key("m.amb"), "曖昧な要素は操作と決めない");
-    assert_eq!(overlay(&before, &plan).silent["m.amb"].reason, Reason::Unresolved, "消える要素を使うかは決まらないので沈黙する");
+    assert!(missing.contains_key("m.amb"), "曖昧な要素でも、名指す事実は返す。結論はエンジンが決める");
     assert!(!missing.contains_key("m.unrelated"), "resolves の object はソースのパスで、要素の名前ではない");
 }
 
@@ -264,34 +263,6 @@ fn the_meaning_of_a_renamed_param_moves_away_from_the_old_name() {
     assert!(s.meanings.contains_key("s.f.$payment"));
     assert!(!s.meanings.contains_key("s.f.$order"), "移した意味は、なくなった元の要素に残らない");
     assert!(!o.corresponds.iter().any(|(a, _)| a == "s.f.$gone"), "行き先のない corresponds は対応を作らない");
-}
-
-#[test]
-fn missing_is_silent_when_the_input_does_not_decide_it() {
-    let before = atoms(
-        r#"{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1"}
-{"kind": "defines", "subject": "m.A.f", "value": "field", "type": "int", "at": "m.py:2"}
-{"kind": "defines", "subject": "m.T.v", "value": "field", "type": "int", "at": "m.py:3"}
-{"kind": "reads", "subject": "?x.op", "object": "m.A.f", "at": "q.py:1"}
-{"kind": "defines", "subject": "m.unknown_value", "value": "operation", "params": {}, "at": "m.py:5"}
-{"kind": "writes", "subject": "m.unknown_value", "object": "m.T.v", "value": "?", "at": "m.py:6"}
-{"kind": "defines", "subject": "m.through_unread", "value": "operation", "params": {"o": "x.O"}, "at": "m.py:8"}
-{"kind": "writes", "subject": "m.through_unread", "object": "m.T.v", "value": "1", "when": "$o.a.f", "at": "m.py:9"}
-{"kind": "resolves", "subject": "x.O.a", "object": "x.py", "at": "m.py:8"}
-{"kind": "defines", "subject": "m.both", "value": "operation", "params": {}, "at": "m.py:11"}
-{"kind": "reads", "subject": "m.both", "object": "m.A.f", "at": "m.py:12"}
-{"kind": "writes", "subject": "m.both", "object": "m.T.v", "value": "?", "at": "m.py:13"}
-"#,
-    );
-    let plan = atoms(r#"{"kind": "removes", "subject": "m.A", "at": "plan:p"}"#);
-    let o = overlay(&before, &plan);
-    assert_eq!(o.silent["?x.op"].reason, Reason::Unresolved, "? の名前は操作と決まらない");
-    assert_eq!(o.silent["m.unknown_value"].reason, Reason::Unresolved, "? の値が何を使うかは決まらない");
-    let s = &o.silent["m.through_unread"];
-    assert_eq!((s.reason.clone(), s.read.as_deref()), (Reason::Unread, Some("x.py")), "読んでいない型を通る道は、そのソースを次に読む所として返す");
-    assert!(o.missing.contains_key("m.both") && !o.silent.contains_key("m.both"), "使うと決まる所があれば missing");
-    assert!(!o.missing.contains_key("?x.op") && !o.missing.contains_key("m.through_unread"));
-    assert!(overlay(&before, &[]).silent.is_empty(), "消える要素がなければ、決めることがない");
 }
 
 #[test]
@@ -318,23 +289,6 @@ fn a_bar_makes_an_undecided_correspondence_even_with_one_target() {
 }
 
 #[test]
-fn linking_an_ambiguous_operation_is_silent() {
-    let before = atoms(
-        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"x": "int"}, "at": "m.py:1"}
-{"kind": "defines", "subject": "m.f", "value": "type", "at": "n.py:1"}
-"#,
-    );
-    let plan = atoms(
-        r#"{"kind": "defines", "subject": "n.g", "value": "operation", "params": {"x": "int"}, "file": "n.py", "at": "plan:p"}
-{"kind": "corresponds", "subject": "m.f", "object": "n.g", "at": "plan:p"}
-"#,
-    );
-    let o = overlay(&before, &plan);
-    assert_eq!(o.silent["m.f"].reason, Reason::Unresolved);
-    assert!(!o.corresponds.contains(&pair("m.f.$x", "n.g.$x")));
-}
-
-#[test]
 fn missing_does_not_count_atoms_the_plan_replaced() {
     // 候補が呼び出しの passes だけを書き直した。置き換わった古い passes は、もう消える要素を使わない。
     let before = atoms(
@@ -354,54 +308,6 @@ fn missing_does_not_count_atoms_the_plan_replaced() {
 }
 
 #[test]
-fn an_operation_only_called_and_not_read_is_silent() {
-    let before = atoms(
-        r#"{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1"}
-{"kind": "defines", "subject": "m.T.v", "value": "field", "type": "int", "at": "m.py:2"}
-{"kind": "defines", "subject": "m.x", "value": "operation", "params": {}, "at": "m.py:4"}
-{"kind": "calls", "subject": "m.x", "object": "m.g", "at": "m.py:5"}
-{"kind": "resolves", "subject": "m.g", "object": "g.py", "at": "m.py:1"}
-{"kind": "writes", "subject": "m.x", "object": "m.T.v", "value": "m.h(1)", "at": "m.py:6"}
-{"kind": "calls", "subject": "m.x", "object": "requests.post", "at": "m.py:7"}
-{"kind": "resolves", "subject": "requests.post", "object": "external:requests", "at": "m.py:1"}
-{"kind": "meaning", "subject": "m.x", "meaning": "status", "value": "2xx", "uses": ["m.py:5"], "at": "m.py:4"}
-"#,
-    );
-    let plan = atoms(r#"{"kind": "removes", "subject": "m.A", "at": "plan:p"}"#);
-    let o = overlay(&before, &plan);
-    let g = &o.silent["m.g"];
-    assert_eq!((g.reason.clone(), g.read.as_deref()), (Reason::Unread, Some("g.py")), "呼ばれるだけで読んでいない操作は、そのソースを次に読む");
-    let h = &o.silent["m.h"];
-    assert_eq!((h.reason.clone(), h.element.as_deref()), (Reason::Unread, Some("m.h")), "式の中でだけ呼ぶ操作も同じ");
-    assert!(!o.silent.contains_key("requests.post"), "外部の要素は観測した要素を使わない");
-    assert!(!o.silent.contains_key("m.x"), "意味 Atom の値(2xx)は式として読まない");
-}
-
-#[test]
-fn a_correspondence_whose_ends_are_not_known_is_silent() {
-    let before = atoms(
-        r#"{"kind": "calls", "subject": "k.caller", "object": "m.f", "at": "k.py:2"}
-{"kind": "resolves", "subject": "m.f", "object": "m.py", "at": "k.py:1"}
-{"kind": "defines", "subject": "m.e", "value": "operation", "params": {"x": "int"}, "at": "e.py:1"}
-"#,
-    );
-    let plan = atoms(
-        r#"{"kind": "defines", "subject": "n.g", "value": "operation", "params": {"x": "int"}, "file": "n.py", "at": "plan:p"}
-{"kind": "corresponds", "subject": "m.f", "object": "n.g", "at": "plan:p"}
-{"kind": "corresponds", "subject": "?m.q", "object": "n.g", "at": "plan:p"}
-{"kind": "corresponds", "subject": "m.e", "object": "nowhere.g", "at": "plan:p"}
-{"kind": "corresponds", "subject": "m.e.$x", "object": "|", "at": "plan:p"}
-"#,
-    );
-    let o = overlay(&before, &plan);
-    let f = &o.silent["m.f"];
-    assert_eq!((f.reason.clone(), f.read.as_deref()), (Reason::Unread, Some("m.py")), "定義を読んでいない操作を結ぶ");
-    assert_eq!(o.silent["?m.q"].reason, Reason::Unresolved, "? の名前を結ぶ");
-    assert_eq!(o.silent["m.e"].element.as_deref(), Some("nowhere.g"), "変更後にない行き先を結ぶ");
-    assert!(o.undecided.is_empty(), "行き先のない | は対応を作らない");
-}
-
-#[test]
 fn a_rewritten_operation_whose_definition_was_not_read_keeps_its_meaning() {
     let before = atoms(
         r#"{"kind": "defines", "subject": "m.T.v", "value": "field", "type": "int", "at": "m.py:1"}
@@ -413,4 +319,13 @@ fn a_rewritten_operation_whose_definition_was_not_read_keeps_its_meaning() {
     let o = overlay(&before, &plan);
     assert!(o.corresponds.contains(&pair("m.f", "m.f")), "Atom のある名前は変更前にある要素");
     assert_eq!(Structure::new(o.after).meanings["m.f"].len(), 1);
+}
+
+#[test]
+fn a_bar_without_targets_makes_no_correspondence() {
+    let before = atoms(r#"{"kind": "defines", "subject": "m.e", "value": "operation", "params": {"x": "int"}, "at": "m.py:6"}"#);
+    let plan = atoms(r#"{"kind": "corresponds", "subject": "m.e.$x", "object": "|", "at": "plan:p"}"#);
+    let o = overlay(&before, &plan);
+    assert!(o.undecided.is_empty(), "行き先のない | は、決めていない対応を作らない");
+    assert!(o.corresponds.iter().all(|(_, t)| !t.is_empty()), "行き先が空の対応も作らない");
 }
