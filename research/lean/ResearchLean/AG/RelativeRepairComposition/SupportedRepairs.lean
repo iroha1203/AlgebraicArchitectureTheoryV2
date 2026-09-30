@@ -151,6 +151,23 @@ def supportedC0 (vertices : Set K.Vertex) (fixed : Set (EdgeName (K := K))) :
     · change (d0Hom T.toTower.localCoefficients) (-b) ∈ supportedC1 T fixed
       rw [map_neg]; exact (supportedC1 T fixed).neg_mem hb.2
 
+/-- Membership API: an allowed vertex label fixes the vertices and its d0 fixes the arrows. -/
+theorem mem_supportedC0 (vertices : Set K.Vertex) (fixed : Set (EdgeName (K := K)))
+    (b : C0 T.toTower.localCoefficients) :
+    b ∈ supportedC0 T vertices fixed ↔ (∀ v ∈ vertices, b v = 0) ∧
+      d0 T.toTower.localCoefficients b ∈ supportedC1 T fixed := Iff.rfl
+
+/-- Destructor API: every allowed label is zero at each specified fixed vertex. -/
+theorem supportedC0_vertex_zero (vertices : Set K.Vertex) (fixed : Set (EdgeName (K := K)))
+    (b : supportedC0 T vertices fixed) (v : K.Vertex) (hv : v ∈ vertices) : b.1 v = 0 :=
+  ((mem_supportedC0 T vertices fixed b.1).mp b.2).1 v hv
+
+/-- Destructor API: each allowed label has its coboundary in the fixed-edge subgroup. -/
+theorem supportedC0_d0_mem (vertices : Set K.Vertex) (fixed : Set (EdgeName (K := K)))
+    (b : supportedC0 T vertices fixed) :
+    d0 T.toTower.localCoefficients b.1 ∈ supportedC1 T fixed :=
+  ((mem_supportedC0 T vertices fixed b.1).mp b.2).2
+
 /-- Apply an allowed original vertex reidentification to an actual repair. -/
 noncomputable def repairGauge (vertices : Set K.Vertex)
     (fixed : Set (EdgeName (K := K)))
@@ -162,7 +179,8 @@ noncomputable def repairGauge (vertices : Set K.Vertex)
     rw [T.vertexGauge_correction]
     change T.solutionCorrection R.1 e + d0 T.toTower.localCoefficients b.1 e = 0
     have hr : T.solutionCorrection R.1 e = 0 := (repairCoord T fixed R).1.2 e he
-    rw [hr, b.2.2 e he, add_zero]⟩
+    rw [hr, (mem_supportedC1 T fixed _).mp
+      (supportedC0_d0_mem T vertices fixed b) e he, add_zero]⟩
 
 /-- The coordinate of an actual gauge action is addition of the same coboundary. -/
 theorem repairGauge_coord (vertices : Set K.Vertex) (fixed : Set (EdgeName (K := K)))
@@ -227,7 +245,7 @@ noncomputable def originalHomEquiv (vertices : Set K.Vertex)
     {b : supportedC0 T vertices fixed // repairGauge T vertices fixed b R = Q} where
   toFun b := ⟨⟨b.1, gauge_between_supported T vertices fixed b.1 b.2.1 R Q b.2.2⟩,
     Subtype.ext b.2.2⟩
-  invFun b := ⟨b.1.1, b.1.2.1, congrArg Subtype.val b.2⟩
+  invFun b := ⟨b.1.1, supportedC0_vertex_zero T vertices fixed b.1, congrArg Subtype.val b.2⟩
   left_inv _ := Subtype.ext rfl
   right_inv _ := Subtype.ext (Subtype.ext rfl)
 
@@ -236,7 +254,7 @@ noncomputable def correctionGauge (vertices : Set K.Vertex) (fixed : Set (EdgeNa
     (b : supportedC0 T vertices fixed) (h : SupportedCorrection T fixed) :
     SupportedCorrection T fixed :=
   ⟨⟨h.1.1 + d0 T.toTower.localCoefficients b.1,
-    (supportedC1 T fixed).add_mem h.1.2 b.2.2⟩, by
+    (supportedC1 T fixed).add_mem h.1.2 (supportedC0_d0_mem T vertices fixed b)⟩, by
       rw [d1_add, h.2, d1_d0, add_zero]⟩
 
 /-- Coordinate action intertwines the independent actual vertex action. -/
@@ -350,7 +368,9 @@ theorem rec_inclusion {fixed larger : Set (EdgeName (K := K))}
 /-- Relaxation includes each original gauge label as an additive homomorphism. -/
 def gaugeInclusion (vertices : Set K.Vertex) {fixed larger : Set (EdgeName (K := K))}
     (h : fixed ⊆ larger) : supportedC0 T vertices larger →+ supportedC0 T vertices fixed where
-  toFun b := ⟨b.1, b.2.1, fun e he => b.2.2 e (h he)⟩
+  toFun b := ⟨b.1, supportedC0_vertex_zero T vertices larger b,
+    fun e he => (mem_supportedC1 T larger _).mp
+      (supportedC0_d0_mem T vertices larger b) e (h he)⟩
   map_zero' := Subtype.ext rfl
   map_add' _ _ := Subtype.ext rfl
 
