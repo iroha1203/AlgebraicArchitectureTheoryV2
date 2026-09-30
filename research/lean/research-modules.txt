@@ -1573,3 +1573,5 @@ ResearchLean.AG.AbelianLiftingObstruction.S3Witness	ResearchLean/AG/AbelianLifti
 
 ResearchLean.AG.RelativeRepairComposition.SupportedRepairs	ResearchLean/AG/RelativeRepairComposition/SupportedRepairs.lean
 ResearchLean.AG.RelativeRepairComposition.LabeledAction	ResearchLean/AG/RelativeRepairComposition/LabeledAction.lean
+ResearchLean.AG.RelativeRepairComposition.ClosedRegions	ResearchLean/AG/RelativeRepairComposition/ClosedRegions.lean
+ResearchLean.AG.RelativeRepairComposition.RelativeComplex	ResearchLean/AG/RelativeRepairComposition/RelativeComplex.lean
