@@ -168,8 +168,11 @@ theorem d2_zero (choice : Bool) (c : C2 (M choice)) : d2 (M choice) c = 0 := by
   exact sub_eq_zero.mpr (edge_identity choice (c ()))
 
 /-- G-129 completion criterion 2: A4: the two specified authored pastings are equal for either original lift. -/
-noncomputable abbrev syzygy (choice : Bool) := GroupExtension.syzygy squarePresentation π
-  kernel_comm core (reference choice) (projects choice) relations
+theorem syzygy (choice : Bool) : ∀ cell : squarePresentation.ThreeCell,
+    TransportCoherence.Arbitrary.AuthoredSyzygy (input choice).toTower.toTransportData 1
+      (squarePresentation.threeLeft cell) (squarePresentation.threeRight cell) :=
+  GroupExtension.syzygy squarePresentation π kernel_comm core
+    (reference choice) (projects choice) relations
 
 /-- G-129 completion criterion 2: B1 evaluation: the actual defect is the original nonidentity vertical change. -/
 theorem defect_value (choice : Bool) :
