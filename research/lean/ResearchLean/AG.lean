@@ -995,3 +995,5 @@ import ResearchLean.AG.AbelianLiftingObstruction.ReferenceLiftInvariant
 import ResearchLean.AG.AbelianLiftingObstruction.SquarePresentation
 import ResearchLean.AG.AbelianLiftingObstruction.CrossStage
 import ResearchLean.AG.AbelianLiftingObstruction.GeometryWitness
+import ResearchLean.AG.AbelianLiftingObstruction.GroupExtension
+import ResearchLean.AG.AbelianLiftingObstruction.ProtocolExtension

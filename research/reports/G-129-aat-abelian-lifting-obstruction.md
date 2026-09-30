@@ -3,6 +3,102 @@
 一次仕様は [固定GOAL](../goals/G-129-aat-abelian-lifting-obstruction.md)、
 実行・査読・mergeの記録は [tracking Issue #5082](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5082) を参照する。
 
+## 第13Cycleの選定
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-129-aat-abelian-lifting-obstruction
+cycle: 13
+goal_blob_sha: 9f93a9a1c2ebd9ccd53362e878363144a934b4b8
+base_oid: 6c639f7e2d37e8ca01d5c76dc6f1342284148572
+tracking_issue: 5082
+report_path: research/reports/G-129-aat-abelian-lifting-obstruction.md
+selection:
+  proof_state_ref: "一般A–C・D第4章と完了条件4受理済み、D群拡大/G-127接続が未完"
+  proof_dag_predecessors: [OriginalTowerPresentation, Solution, SolutionOrbit, ReversibleData.projectionToLiftable, ReversibleData.verticalLiftEquivLiftableKernel]
+  milestone: "Dの任意可換核群拡大とG-127の同じ元の写像への特殊化を閉じる"
+  proof_obligations: ["BE→BH→1で同じE/Hと実核を対応", "生成核輸送を元liftの共役と下降H作用へ一致", "固定H辺の全関係保持E持ち上げと実解を両方向対応", "核補正・頂点共役と分類を元E/Hへ評価", "同じChangeGroup/可視射影/verticalLiftInclusionへ接続"]
+  exit_criteria: ["D群拡大/G-127の全対応をLeanで証明", "全対象宣言focused/axiom/scanと独立PRレビュー合格"]
+  selection_reason: "指定C4/S3例が同じ一般B/Cを使うための群拡大適用義務を放電する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/AbelianLiftingObstruction/GroupExtension.lean, ResearchLean/AG/AbelianLiftingObstruction/ProtocolExtension.lean]
+  risks: ["全群・実核を別群へ置換しない", "補正方程式でE値実解を定義しない", "可視変更とfiber写像の値を保つ"]
+  unchecked: ["実装・検証・独立レビュー前"]
+```
+
+### 第13Cycleの証拠対応
+
+`GroupExtension` は原始群準同型 `π : E →* H` のまま `BE→BH→1` を作る。
+群や核に有限性を課さない。全射性は短完全列からの `H` 作用の下降に使い、
+原始辺と指定比較を恒等、固定coreを `H` 値、基準liftを `E` 値として与える。
+coreの全word関係と辺ごとの射影等式は固定入力であり、Eでの関係成立は仮定しない。
+
+| D要求 | `GroupExtension` の宣言 | 元の値を保つ証拠 |
+| --- | --- | --- |
+| 同じE・H・π・実際の核 | `projection`, `terminal`, `upperEquiv`, `lowerEquiv`, `pushforward_eq`, `kernelEquiv`, `kernelEquiv_hom` | 全E/H元、実核の両方向同型、原始包含 |
+| 生成核輸送とH作用 | `transport_hom`, `conjugation`, `transport_kernelEquiv`, `transport_bijective`, `conjugation_independent`, `visibleAction`, `visibleAction_at_projection`, `edge_transport` | 同じliftの共役、全核の可換性からlift独立、π全射からH作用を生成 |
+| 同じ表示と原始入力 | `pathValue`, `pathValue_map`, `selected_path_value`, `input`, `input_path_value`, `input_edge_value`, `authored_face_one`, `authored_pasting_one`, `syzygy` | 空道・反復・順序・逆向き・前後道を保持、A条件を生成 |
+| 同じB1 | `canonical_hom`, `defect_hom`, `coefficientEquiv`, `coefficientEquiv_defect` | 標準比較はright*left⁻¹、実defectはleft*right⁻¹、全実核を加法化 |
+| B3と全実E持ち上げ | `GroupSolution`, `solutionEquiv`, `solutionEquiv_edge`, `obstruction_zero_iff` | 固定H値と全word関係から独立に定義した全E辺族の両方向対応 |
+| Cの元E作用・分類 | `groupAction`, `groupAction_edge`, `groupVertex`, `groupVertex_edge`, `groupAction_existsUnique`, `groupAddTorsor`, `orbit_eq_iff_groupVertex`, `groupOrbitEquivH1` | 全実E辺上の核乗法・両端共役、native AddTorsor構造、同じH1と元の頂点共役classes |
+
+`groupAddTorsor` は原始E解集合が非空ならnative `AddTorsor` 構造を返す。
+E解集合は基準liftに依存せず、作用群はその基準から構成する同じ複体であるため、
+構造は基準入力を明示した値として提供する。
+H1分類の対象は一般側の同じnative `SolutionOrbit` であり、
+`orbit_eq_iff_groupVertex` と辺公式がその関係を元の全E辺族の核頂点共役と一致させる。
+
+`ProtocolExtension` はG-127の同じ `ChangeGroup`、`projectionToLiftable`、
+`verticalLiftInclusion` に適用する。全垂直lift群の可換性をdirection hypothesisとして保持し、
+全射性は `projectionToLiftable_surjective`、実核同型は
+`verticalLiftEquivLiftableKernel` から生成する。
+`kernelEquiv_inclusion` は同じ元の包含を保ち、`kernelEquiv_state` は全元の状態値、
+`projection_visible` は元の可視graph変更、`solutionEquiv_state/visible` は全解の元の
+fiber/可視写像を保つ。`input`、`solutionEquiv`、`obstruction_zero_iff` はこの同じ群・
+射影・原始写像に一般B/Cを適用する。
+
+G-127の参照版はPR #5068 head `916b7f523bb45978add1f0fad8de598f17abccc1`、
+[完了監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5068#issuecomment-5863225600)。
+今回使用する `LiftableVisible`・`ChangeGroup` のsourceはその受理版から無変更。
+使用statement・定義・適用引数と今回proof-useを追跡し、受理済み内部の再認定はしない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "D任意可換核群拡大・生成H作用・全E実解/B3/Cと同じG-127原始写像を接続"
+  exit_criteria_status: ["GroupExtension64/ProtocolExtension11宣言で全対応を証明", "2単一focused/全75個別公理/targeted build/scan成功、独立レビューはPR監査で判定"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [ResearchLean/AG/AbelianLiftingObstruction/GroupExtension.lean, ResearchLean/AG/AbelianLiftingObstruction/ProtocolExtension.lean]
+  evidence: [kernelEquiv, transport_kernelEquiv, visibleAction, edge_transport, solutionEquiv, obstruction_zero_iff, groupVertex_edge, groupAddTorsor, groupOrbitEquivH1, ProtocolExtension.kernelEquiv_inclusion, ProtocolExtension.solutionEquiv_state]
+  claim_mapping:
+    theorem_names: [GroupExtension.pushforward_eq, GroupExtension.transport_kernelEquiv, GroupExtension.edge_transport, GroupExtension.solutionEquiv, GroupExtension.obstruction_zero_iff, GroupExtension.groupVertex_edge, GroupExtension.orbit_eq_iff_groupVertex, ProtocolExtension.kernelEquiv_inclusion, ProtocolExtension.obstruction_zero_iff, ProtocolExtension.solutionEquiv_state]
+    source_labels: ["D: 群拡大と可視変更", "B1–B3", "C"]
+    conjuncts: ["任意可換核拡大の同じ群と核の対応", "元E辺の全実解と核/頂点作用の対応", "同じG-127可視/fiber/包含への読み戻し"]
+    undischarged_assumptions: ["全実核可換性は一般拡大の仮定、G-127では全垂直lift群可換性", "固定H辺の関係と各基準E liftの射影等式", "H作用の下降にはπ全射性"]
+    acceptance_point: "一般Dの許された入力/方向仮定だけを保持し、全射の値と全実解を対応させる"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["実際のBE/BH/核対応", "strong性/輸送/全単射/恒等比較中心化/syzygy", "全E実解/B3/Cの元の値", "G-127実核・元可視/fiber/包含接続"]
+    remaining: ["指定C4/S3例の全仮定と評価", "最終累積完了監査"]
+  certificate_provenance:
+    discharged: ["kernelEquivは原始πの核所属から生成", "輸送はstrong factorizationの共役", "H作用はπ全射と全核可換性から下降", "G-127射影全射と全核同型は受理済み原始構成"]
+    unresolved: []
+  proof_use:
+    used: ["実核可換性:lift共役独立と一般係数/B2/C", "π全射:元H作用の選択と下降", "core関係:原始A2", "strong性:標準比較の群値", "原始authored恒等:元3-cell syzygy", "全実解同値:B3/native torsor/H1元共役分類"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["GroupExtension単一focused", "ProtocolExtension単一focused", "全75宣言個別#print axioms/namespace guard", "対象2module targeted build", "共通scan"]
+  blocking_findings: []
+  next_obligation: "同じG-127 C4非分裂例とS3 sign例の全仮定放電・同じ複体/解/作用の計算"
+```
+
 ## 第12Cycleの選定
 
 ```yaml
