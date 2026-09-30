@@ -139,10 +139,13 @@ fn an_unread_callee_is_silent_and_returns_the_source_to_read() {
     let address = next.iter().find(|n| n["read"] == "shop/shipping/address.py").unwrap_or_else(|| panic!("{s}"));
     assert_eq!(address["scope"], "structure");
     // 読む所ごとにまとめる(AC8)。候補が Order を消すので、normalize_address が消える要素を使うかも、同じソースで決まる。
+    // 変更の前後にある normalize_address は自分自身に対応し、その組も同じソースで決まる。
     let removes = result(&s, "removes")["id"].clone();
+    let normalize = result(&s, "shop.shipping.address.normalize_address");
+    assert_eq!((normalize["outcome"].as_str(), normalize["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     let mut decides: Vec<&str> = address["decides"].as_array().unwrap().iter().map(|d| d.as_str().unwrap()).collect();
     decides.sort();
-    let mut expected = vec![r["id"].as_str().unwrap(), removes.as_str().unwrap()];
+    let mut expected = vec![r["id"].as_str().unwrap(), removes.as_str().unwrap(), normalize["id"].as_str().unwrap()];
     expected.sort();
     assert_eq!(decides, expected);
     // fix_address は引数の型に消える Order を使うので、比べる組ではなく missing として挙がる。
@@ -766,8 +769,9 @@ fn an_unread_source_is_listed_even_when_pairs_exist() {
 }
 
 #[test]
-fn a_condition_between_constants_does_not_branch() {
-    // 変更前の f は a = 1 を書いた後、a == 0 のときだけ p = None を書く。書いた後の条件は 1 == 0 で、偽と決まる。
+fn a_condition_between_constants_branches() {
+    // 変更前の f は a = 1 を書いた後、a == 0 のときだけ p = None を書く。書いた後の条件 1 == 0 も、
+    // 未割り当ての原子として二つに分ける(設計 §5.4)。定数の字句から真偽を決めない。
     let before = SPLITTING
         .replace(r#""object": "m.T.p", "value": "$o.a", "at": "m.py:7@blob:ccccccc"}"#, r#""object": "m.T.a", "value": "1", "at": "m.py:7@blob:ccccccc"}
 {"kind": "writes", "subject": "m.f", "object": "m.T.p", "value": "None", "when": "$o.a == 0", "at": "m.py:8@blob:ccccccc"}"#);
@@ -781,7 +785,7 @@ fn a_condition_between_constants_does_not_branch() {
 "#,
     );
     let s = repo.run(&["plan", "check", "p"]);
-    assert_eq!(result(&s, "m.f")["outcome"], "holds", "{s}");
+    assert_eq!(result(&s, "m.f")["kind"], "counterexample", "{s}");
 }
 
 #[test]
@@ -812,9 +816,8 @@ fn a_call_in_a_condition_puts_the_same_call_condition() {
     repo.write(
         ".archsig/plans/p/plan.jsonl",
         &format!(
-            "{}\n{}\n",
+            "{}\n{{\"kind\": \"writes\", \"subject\": \"m.f\", {when}, \"at\": \"plan:p\"}}\n",
             r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.T"}, "file": "m.py", "at": "plan:p"}"#,
-            format!(r#"{{"kind": "writes", "subject": "m.f", {when}, "at": "plan:p"}}"#),
         ),
     );
     let s = repo.run(&["plan", "check", "p"]);
@@ -823,4 +826,74 @@ fn a_call_in_a_condition_puts_the_same_call_condition() {
     let detail = repo.run(&["show", r["id"].as_str().unwrap()]);
     let same_call = detail["conditions"].as_array().unwrap().iter().any(|c| c.as_str().unwrap().starts_with("操作の呼び出しの結果は"));
     assert!(same_call, "分岐の組は条件の中の呼び出しを同じ項とみなして作る: {detail}");
+}
+
+#[test]
+fn an_operation_rewritten_without_its_definition_is_not_passed_over() {
+    // 候補は m.f の本体だけを書き直し、定義を書かない。m.f は変更前にも変更後にもある名前なので、自分自身に対応する。
+    let s = splitting_summary(
+        "rewritten-without-defines",
+        r#"{"kind": "writes", "subject": "m.f", "object": "m.T.p", "value": "2", "at": "plan:p"}
+"#,
+    );
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.f"), "{s}");
+}
+
+fn splitting_summary(name: &str, plan: &str) -> Value {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", SPLITTING);
+    repo.write(".archsig/plans/p/plan.jsonl", plan);
+    repo.run(&["plan", "check", "p"])
+}
+
+/// 変更前: m.h は読んでいない型 lib.O の引数からたどる。m.k は `?` の呼び出しを、m.j は読めない式を書く。
+const UNTRACED: &str = r#"{"kind": "defines", "subject": "m.U", "value": "type", "at": "m.py:10@blob:ccccccc"}
+{"kind": "defines", "subject": "m.U.a", "value": "field", "type": "int", "at": "m.py:11@blob:ccccccc"}
+{"kind": "resolves", "subject": "lib.O", "object": "lib.py", "at": "m.py:12@blob:ccccccc"}
+{"kind": "defines", "subject": "m.h", "value": "operation", "params": {"o": "lib.O"}, "at": "m.py:13@blob:ccccccc"}
+{"kind": "writes", "subject": "m.h", "object": "m.T.b", "value": "$o.q.a", "at": "m.py:14@blob:ccccccc"}
+{"kind": "defines", "subject": "m.k", "value": "operation", "params": {"o": "m.T"}, "at": "m.py:15@blob:ccccccc"}
+{"kind": "writes", "subject": "m.k", "object": "m.T.b", "value": "?u($o)", "at": "m.py:16@blob:ccccccc"}
+{"kind": "defines", "subject": "m.j", "value": "operation", "params": {"o": "m.T"}, "at": "m.py:17@blob:ccccccc"}
+{"kind": "writes", "subject": "m.j", "object": "m.T.b", "value": "m.u($o", "at": "m.py:18@blob:ccccccc"}
+"#;
+
+#[test]
+fn an_operation_whose_names_cannot_be_traced_is_silent_on_removes() {
+    let repo = Repo::new("untraced");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", &format!("{SPLITTING}{UNTRACED}"));
+    repo.write(".archsig/plans/p/plan.jsonl", r#"{"kind": "removes", "subject": "m.U.a", "at": "plan:p"}
+"#);
+    let s = repo.run(&["plan", "check", "p"]);
+    let unlawed = |subject: &str| -> &Value {
+        s["results"].as_array().unwrap().iter().find(|r| r["subject"] == subject && r["law"].is_null()).unwrap_or_else(|| panic!("{subject}: {s}"))
+    };
+    // 読んでいない型を通る道は、その型を定義するソースを返す。
+    let h = unlawed("m.h");
+    assert_eq!((h["outcome"].as_str(), h["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    let detail = repo.run(&["show", h["id"].as_str().unwrap()]);
+    assert!(detail["next"].as_array().unwrap().iter().any(|n| n["read"] == "lib.py"), "{detail}");
+    // `?` の呼び出しと読めない式は、その Atom の場所を返す(マニュアル第5章 問い8)。
+    for op in ["m.k", "m.j"] {
+        let r = unlawed(op);
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+        let detail = repo.run(&["show", r["id"].as_str().unwrap()]);
+        assert!(detail["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py"), "{detail}");
+    }
+}
+
+#[test]
+fn a_question_mark_in_a_correspondence_returns_the_element() {
+    let s = splitting_summary(
+        "question-correspondence",
+        r#"{"kind": "corresponds", "subject": "m.f", "object": "?m.g", "at": "plan:p"}
+"#,
+    );
+    let r = result(&s, "?m.g");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.f" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
 }

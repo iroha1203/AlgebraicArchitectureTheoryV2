@@ -8,7 +8,7 @@ use serde_json::{Value as Json, json};
 use crate::atom::parse_location;
 use crate::expr::BinOp;
 use crate::law::{LawSet, Rule};
-use crate::structure::{Overlay, Reason, Silence, State, StepKind, Structure, Value};
+use crate::structure::{Overlay, Reason, Silence, State, StepKind, Structure, Value, question_at};
 
 /// 分岐の数の上限。超えたら `limit` で沈黙する。
 pub const BRANCH_LIMIT: usize = 256;
@@ -139,7 +139,7 @@ pub fn execute(s: &Structure, op: &str, fresh: &dyn Fn(&str) -> bool) -> Result<
                                 more.push((x, false));
                                 continue;
                             }
-                            match x.truth_of(&atom).or_else(|| constant(&atom)) {
+                            match x.truth_of(&atom) {
                                 Some(t) => more.push((x, t == truth)),
                                 None => {
                                     let mut yes = x.clone();
@@ -244,17 +244,6 @@ pub fn normalize(v: Value) -> Value {
 
 fn ordered(op: BinOp, a: Value, b: Value) -> Value {
     if format!("{a:?}") <= format!("{b:?}") { Value::Bin(op, Box::new(a), Box::new(b)) } else { Value::Bin(op, Box::new(b), Box::new(a)) }
-}
-
-/// 定数どうしの等しさは、入力によらず真偽が決まる。原子として分岐させない。
-fn constant(atom: &Value) -> Option<bool> {
-    match atom {
-        Value::Bin(BinOp::Eq, a, b) => match (&**a, &**b) {
-            (Value::Const(x), Value::Const(y)) => Some(x == y),
-            _ => None,
-        },
-        _ => None,
-    }
 }
 
 /// 条件を、原子と真偽の組の「かつ」に直す。条件どうしの関係は見ない。
@@ -378,7 +367,7 @@ pub fn plan_check(before: &Structure, after: &Structure, overlay: &Overlay, laws
         }
         let found = match law.rule {
             Rule::ChangesCommute => commute(before, after, overlay, &mapping, &law.name, meaning, &fresh),
-            _ => keep(before, after, &mapping, &law.name, meaning, sources),
+            _ => keep(before, after, overlay, &mapping, &law.name, meaning, sources),
         };
         // 対応する操作の組がない。操作がないことは、構造の範囲を読んでいるときだけ言える(設計 §5.1)。
         // `changes commute` は、対応する操作の組ごとに比べる。構造を読んでいないソースにある操作は、組に挙がらない。
@@ -459,7 +448,7 @@ fn commute(
             }
             continue;
         }
-        let (ka, kb) = (before.kind(a), after.kind(b));
+        let (ka, kb) = (before.kind(a), target_kind(after, overlay, b));
         // 片方の端が操作でないと決まっていれば、比べる組ではない。
         if matches!(ka, Ok(k) if k != "operation") || matches!(kb, Ok(k) if k != "operation") {
             continue;
@@ -482,6 +471,14 @@ fn commute(
         out.push(f);
     }
     out
+}
+
+/// 対応の行き先の種類。候補の対応に書いた `?` の名前なら、その対応の場所を返す(マニュアル第5章 問い8)。
+fn target_kind<'a>(after: &'a Structure, overlay: &Overlay, name: &str) -> Result<&'a str, Silence> {
+    match overlay.questions.get(name) {
+        Some(a) => Err(question_at(a)),
+        None => after.kind(name),
+    }
 }
 
 fn compare(
@@ -639,7 +636,15 @@ fn writes_json(ws: &[Written]) -> Json {
 }
 
 /// `changes keep`(マニュアル第5章 問い3)。意味を持つ変更前の要素が、対応で変更後の要素を持つか。
-fn keep(before: &Structure, after: &Structure, mapping: &Mapping, law: &str, meaning: &str, sources: &[String]) -> Vec<Finding> {
+fn keep(
+    before: &Structure,
+    after: &Structure,
+    overlay: &Overlay,
+    mapping: &Mapping,
+    law: &str,
+    meaning: &str,
+    sources: &[String],
+) -> Vec<Finding> {
     let finding = |subject: &str, outcome, kind, check: Json| Finding {
         question: "change".to_string(),
         law: Some(law.to_string()),
@@ -667,7 +672,7 @@ fn keep(before: &Structure, after: &Structure, mapping: &Mapping, law: &str, mea
         let mut targets = Vec::new();
         let mut unknown = None;
         for t in mapping.to.get(e.as_str()).into_iter().flatten() {
-            match after.kind(t) {
+            match target_kind(after, overlay, t) {
                 Ok(_) => targets.push(*t),
                 Err(s) => unknown = unknown.or(Some(s)),
             }
@@ -738,6 +743,33 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
     }
     for (op, uses) in &overlay.missing {
         out.extend(missing(before, op, uses));
+    }
+    // 名指す要素をたどれなかった操作は、消える要素を使うかが決まらない。
+    // 使うと決まった操作(`missing`)と、定義を読んでいない操作(上の沈黙)は除く。
+    for (op, gaps) in overlay.untraced.iter().filter(|_| !overlay.removes.is_empty()) {
+        match before.kind(op) {
+            _ if overlay.missing.contains_key(op) => continue,
+            Ok("operation") => {}
+            Ok(_) | Err(Silence { reason: Reason::Unread, .. }) => continue,
+            Err(_) => {}
+        }
+        let mut next: Vec<Silence> = Vec::new();
+        for (name, a) in gaps {
+            let s = before.untraced(name.as_deref(), a);
+            if !next.contains(&s) {
+                next.push(s);
+            }
+        }
+        out.push(Finding {
+            question: "change".to_string(),
+            subject: op.clone(),
+            outcome: "silent",
+            reason: Some(reason_name(&next[0].reason)),
+            at: defined_at(before, op).into_iter().collect(),
+            theory: Some(THEORY_CHANGES.to_string()),
+            next: next.into_iter().filter(|s| s.read.is_some() || s.element.is_some()).collect(),
+            ..Finding::default()
+        });
     }
     out
 }
