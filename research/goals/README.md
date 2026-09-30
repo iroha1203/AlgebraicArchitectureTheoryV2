@@ -23,6 +23,10 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## draft（人間の確認待ち）
 
+- [G-130-aat-relative-repair-composition](G-130-aat-relative-repair-composition.md)
+  (固定部分と全変更範囲を保つ実修復の局所合成、全修復・不能証拠・極小範囲の分類、内部辺分割)
+- [G-131-aat-repair-observation-duality](G-131-aat-repair-observation-duality.md)
+  (同じ実修復方程式からの観測十分性、既知情報の下での判定・数値補正の最適問い合わせ数)
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
