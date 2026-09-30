@@ -337,6 +337,141 @@ impl Structure {
     }
 }
 
+/// 候補を重ねた結果(設計 §3.6)。
+#[derive(Clone, Debug, Default)]
+pub struct Overlay {
+    /// 変更後の Atom の列。
+    pub after: Vec<Atom>,
+    /// 変更前の要素から変更後の要素への対応。行き先が一つとは限らない。
+    pub corresponds: BTreeSet<(String, String)>,
+    /// 行き先を決めていない対応(`a.X | b.Y`)。変更前の要素と、行き先の候補。書いた行ごとに一つ。
+    pub undecided: Vec<(String, Vec<String>)>,
+    /// 書き直していない Atom が `removes` した要素を名指す操作と、名指す要素(`missing` の元)。
+    /// Atom から決まる事実で、`missing` と結論するか沈黙するかはエンジンが決める(設計 §3.6)。
+    pub missing: BTreeMap<String, BTreeSet<String>>,
+}
+
+/// ArchMap の Atom の列 `before` に、候補の Atom の列 `plan` を重ねる(設計 §3.6)。
+pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
+    // 候補が構造 Atom を書いた要素は、元の Atom をすべて外す。`resolves` は置き換えを起こさない。
+    let rewritten: BTreeSet<&str> = plan.iter().filter(|a| a.is_structure() && a.kind != "resolves").map(|a| a.subject.as_str()).collect();
+    let removed: BTreeSet<&str> = plan.iter().filter(|a| a.kind == "removes").map(|a| a.subject.as_str()).collect();
+    let replaced = |name: &str| rewritten.iter().any(|x| name == *x || name.starts_with(&format!("{x}->")));
+    // `X.…` は `X.$…` を含む。
+    let gone = |name: &str| removed.iter().any(|x| name == *x || name.starts_with(&format!("{x}.")) || name.starts_with(&format!("{x}->")));
+    // 外すのは要素の Atom だけ。`observed` の `subject` はソースのパスで、要素の名前ではない。
+    let dropped = |a: &Atom| a.kind != "observed" && (replaced(&a.subject) || gone(&a.subject));
+    let mut after: Vec<Atom> = before.iter().filter(|a| !dropped(a)).cloned().collect();
+    after.extend(plan.iter().filter(|a| a.is_structure()).cloned());
+
+    let old = Structure::new(before.to_vec());
+    let new = Structure::new(after.clone());
+    let mut out = Overlay::default();
+    // 1. 書いた対応。行き先に `|` があれば、決めていない対応として別に持つ。
+    let mut linked = Vec::new();
+    for a in plan.iter().filter(|a| a.kind == "corresponds") {
+        let object = a.object.as_deref().unwrap_or("");
+        let to: Vec<String> = object.split('|').map(|t| t.trim().to_string()).filter(|t| !t.is_empty()).collect();
+        if object.contains('|') {
+            if !to.is_empty() {
+                out.undecided.push((a.subject.clone(), to));
+            }
+        } else if let Some(t) = to.first() {
+            out.corresponds.insert((a.subject.clone(), t.clone()));
+            linked.push((a.subject.clone(), t.clone()));
+        }
+    }
+    // 2. 書いた対応で結んだ操作どうしの、同じ名前の引数。両端が操作と決まるときに作る。
+    for (from, to) in &linked {
+        if old.kind(from) == Ok("operation") && new.kind(to) == Ok("operation") {
+            for p in old.elements[from].params.keys().filter(|p| new.elements[to].params.contains_key(*p)) {
+                out.corresponds.insert((format!("{from}.${p}"), format!("{to}.${p}")));
+            }
+        }
+    }
+    // 3. 変更前と変更後の両方にある同じ名前の要素は、自分自身に対応する。`removes` した要素は除く。
+    //    変更前の要素は、定義した要素と、定義を読んでいなくても Atom の `subject` に現れる名前である。
+    let before_names: BTreeSet<&str> = old
+        .elements
+        .keys()
+        .map(|n| n.as_str())
+        .chain(before.iter().filter(|a| a.kind != "observed" && !a.subject.starts_with("local:")).map(|a| a.subject.as_str()))
+        .collect();
+    for name in before_names.into_iter().filter(|n| new.elements.contains_key(*n) && !gone(n)) {
+        out.corresponds.insert((name.to_string(), name.to_string()));
+    }
+    // 4. 対応の行き先へ、元の要素の意味 Atom を移す。
+    //    触れていない要素の自分自身への対応では、意味 Atom はもう残っている。
+    //    書き直した操作の引数は、候補の `params` で置き換わる。なくなった引数の意味 Atom は、移した後に元から外す。
+    let replaced_param = |n: &str| rewritten.iter().any(|x| n.starts_with(&format!("{x}.$")));
+    after.retain(|a| a.kind != "meaning" || !replaced_param(&a.subject) || new.elements.contains_key(&a.subject));
+    for (from, to) in &out.corresponds {
+        if from == to && !replaced(from) && !gone(from) {
+            continue;
+        }
+        for m in old.meanings.get(from).into_iter().flatten() {
+            after.push(Atom { subject: to.clone(), ..m.clone() });
+        }
+    }
+    out.after = after;
+    // 書き直していない Atom が `removes` した要素を名指せば、その操作を `missing` の元に挙げる。
+    // 名指すとは、引数の型、構造 Atom の `object`、`value`・`when` の式の中の `$p.f` と呼び出しで名を出すこと。
+    // 候補が置き換えた Atom(書き直した呼び出しの `passes` など)は見ない。意味 Atom の `value` は式として読まない。
+    let body = |k: &str| matches!(k, "writes" | "reads" | "calls" | "sends" | "receives" | "returns" | "passes");
+    let kept: Vec<&Atom> = before.iter().filter(|a| !dropped(a) && body(&a.kind)).collect();
+    let mut named: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    for (op, e) in old.elements.iter().filter(|(n, e)| e.kinds.contains("operation") && !replaced(n) && !gone(n)) {
+        named.entry(op.clone()).or_default().extend(e.params.values().cloned());
+    }
+    for a in &kept {
+        // `passes` の `subject` は呼び出しの要素 `<操作>->…` なので、呼び出し元の操作に数える。
+        let op = a.subject.split("->").next().unwrap_or("").to_string();
+        let names = named.entry(op.clone()).or_default();
+        names.extend(a.object.clone());
+        for text in [&a.value, &a.when].into_iter().flatten() {
+            if let Ok(e) = expr::parse(text) {
+                old.named(&op, &e, names);
+            }
+        }
+    }
+    for (op, names) in named {
+        let uses: BTreeSet<String> = names.into_iter().filter(|n| gone(n)).collect();
+        if !uses.is_empty() {
+            out.missing.insert(op, uses);
+        }
+    }
+    out
+}
+
+impl Structure {
+    /// 式の中で名指す要素。`$p.f.g` がたどれる所までのフィールドと、呼び出す操作。
+    fn named(&self, op: &str, e: &Expr, out: &mut BTreeSet<String>) {
+        match e {
+            Expr::Path(p, fields) => {
+                let mut ty = self.elements.get(op).and_then(|o| o.params.get(p)).cloned();
+                for f in fields {
+                    let Some(t) = ty else { break };
+                    let field = format!("{t}.{f}");
+                    ty = self.elements.get(&field).and_then(|e| e.ty.clone());
+                    out.insert(field);
+                }
+            }
+            Expr::Call(name, args) => {
+                out.insert(name.clone());
+                for a in args {
+                    self.named(op, a, out);
+                }
+            }
+            Expr::Not(x) | Expr::Neg(x) => self.named(op, x, out),
+            Expr::Bin(_, a, b) => {
+                self.named(op, a, out);
+                self.named(op, b, out);
+            }
+            _ => {}
+        }
+    }
+}
+
 /// 場所から値への写像。書き込みと、場所を読むこと(設計 §3.5)。
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct State {
