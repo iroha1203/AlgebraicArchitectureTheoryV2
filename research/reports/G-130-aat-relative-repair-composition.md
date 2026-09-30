@@ -566,3 +566,101 @@ audits:
 209宣言を個別に公理監査した。生成式には参照した先行pasting定義の式も含む。
 `inter_left` / `inter_right` / `to_all` / `cover_all_left` を正規の証明名とし、旧名の互換theorem aliasをdeprecatedとして保持する。
 rootの自己監査は受理候補であり、標準PRレビューの独立判定と区別する。
+
+
+## Cycle 7：元の実修復と全再同定の閉二領域descent
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 7
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 63140a52534b480dcb3a07425787bb1d84a281dc
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "Cycle 6の相対閉被覆短完全列とCycle 5の同じ実塔/修復制限"
+  proof_dag_predecessors: [degree0_exact, difference0_surjective, diagonal0_injective, degree1_exact, diagonal1_injective, diagonal2_injective, nativeSupported0, nativeSupported1, native_supported_d0, native_supported_d1, originalSupported0, originalSupported1, restrict_defect, repairGroupoidEquivalence]
+  milestone: "Bの閉二領域被覆について元Kの独立実修復groupoidを、局所実修復と重なりでの同型のnative homotopy pullbackへ同値として貼り合わせる"
+  proof_obligations: ["元添字の全相対方程式/作用groupoidと全ラベルの包含制限", "元Kとnative局所実修復への全辺/全ラベルを保つ同値", "制限関手が同じ実辺と全再同定を制限すること", "native commaの対角制限関手", "degree0全射/degree1完全/degree2単射からseam厳密化とglobal修復復元", "degree0完全/単射から全射の復元とfaithful", "元Kの実修復と局所native groupoid間の全同値と比較自然同型"]
+  exit_criteria: ["元の独立実修復・全元辺/全vertex labelsを保持", "本文以外のdescent/effectivity/gluing certificateを入力しない", "重なりの再同定と全可換な局所射を扱うnative同値", "制限の値と全inverse/unit/counitを比較", "focusedと全宣言の個別公理監査・scan"]
+  selection_reason: "受理済の元値短完全性を、pi0だけでは失われるseamと全安定化群を保つ実修復descentへ直接接続する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/RelativeRepairComposition/AffineEquation.lean, ResearchLean/AG/RelativeRepairComposition/CoverEquation.lean, ResearchLean/AG/RelativeRepairComposition/CommaCoordinates.lean, ResearchLean/AG/RelativeRepairComposition/NativeEquationBridge.lean, ResearchLean/AG/RelativeRepairComposition/NativeDescent.lean]
+  risks: ["元Kをall-subtypeのみに置換しない", "native局所のnested型をsilent同一視しない", "全labelsをpi0へ落とさない", "seamと差写像の符号", "degreewise延長をchain mapと扱わない", "exactness/descent結果のfield逃げをしない"]
+  unchecked: ["実装・検証・独立PR査読前"]
+```
+
+有限被覆の三重cocycleと組立て比較、統合障害/連結写像は、この二領域native実修復同値に続く独立の到達点である。今回を全GOALの完了候補としない。
+
+### Cycle 7 の実装結果
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "元Kの独立実修復groupoidを、同じ実修復制限によるnative局所comma groupoidへ同値として復元。全元辺choices、全vertex labels、恒等seam、元の制限への比較自然同型を構成"
+  exit_criteria_status: ["元K実修復・全choices/labels: original/nativeRepairEquationEquivalenceとequivalence_*値API", "結論certificateなし: degreewise短完全性からglue_solution/full/faithful/ess_surjを生成", "全重なり射と可換な局所射: native Commaとis_groupoid", "全inverse/unit/counit: native EquivalenceとglobalRestrictionComparisonIso", "5登録source focusedと全135明示宣言の個別公理監査を確認"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [AffineEquation.lean, CoverEquation.lean, CommaCoordinates.lean, NativeEquationBridge.lean, NativeDescent.lean]
+  evidence: [CoverEquation.glue_solution, CoverEquation.diagonal_full, CoverEquation.diagonal_faithful, CoverEquation.diagonal_ess_surj, CommaCoordinates.equivalence, ActualEquation.originalRepairEquationEquivalence, ActualEquation.nativeRepairEquationEquivalence, NativeDescent.equivalence, NativeDescent.globalRestrictionComparison]
+  claim_mapping:
+    theorem_names: [NativeDescent.equivalence, NativeDescent.equivalence_left_choice, NativeDescent.equivalence_right_choice, NativeDescent.equivalence_left_map_value, NativeDescent.equivalence_right_map_value, NativeDescent.equivalence_seam_label, NativeDescent.globalRestrictionComparison]
+    source_labels: ["固定GOAL B: 二領域native実修復homotopy pullback", "n1017 §2.3(E)"]
+    conjuncts: ["大域側は元KそのもののRepairGroupoid", "各局所は同じ実塔の閉部分表示とnative P∩U", "重なりに全実再同定を保持", "全edge choicesとvertex labelsを保つ制限", "完全なnative同値のinverse/unit/counit", "受理済実修復制限への自然同型と恒等seam"]
+    undischarged_assumptions: []
+    acceptance_point: "今回の二領域descentの全exit criteriaを入力から構成。判定は固定headの独立PR監査へ渡す"
+    port_status: unported (Research-proved)
+audits:
+  premise_delta:
+    discharged: ["d1∘d0零: RelativeCover.d1_d0", "実δのP零: ActualRelative.defect_mem_relative", "元/native全coords: Cycle6原値同型", "seam吸収: difference0_surjective", "global対象復元: degree1_exact/diagonal2_injective", "全射復元: degree0_exact/diagonal1_injective", "faithful: diagonal0_injective", "全comma比較: 生成済equivalenceのunit/counit", "同じ実辺制限: correctionChoice_solutionCorrection"]
+    remaining: ["有限被覆の三重cocycleと細分化/組立て比較", "指定局所案H1条件・Ω/connecting/kernel比較", "C–F、W1–W5"]
+  certificate_provenance:
+    discharged: ["全affine action: 元d0からAddAction", "全native座標同値: 受理済actual repair/correctionと原値群同型", "Fully faithful/EssSurj: 閉被覆degreewise完全性から対象/全射を構成", "comma比較とnative同値: 生成済座標同値の全unit/counit", "制限比較: 同じ実辺のchoice復元から全対象同一性と恒等ラベルの両方向の射"]
+    unresolved: []
+  proof_use:
+    used: ["hfixedから実δのP零", "Cover全0–3-cell条件の先行完全性", "difference0全射によるseam吸収", "degree1完全/degree2単射による大域equation", "degree0完全/単射による全morphism復元", "original/native支持群同型とd0/d1交換", "actual solutionCorrection/correctionChoice両逆"]
+    unused: ["d2δ零はこの二領域effectivityの証明では不要。後続Ω/connectingには別途用いる"]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: []
+  next_obligation: "Bの有限被覆cocycle・細分化/組立て、統合障害と連結写像"
+```
+
+今回のmaterial premiseは、元の`OriginalTowerPresentation`の許された実塔・全核入力、固定閉領域P/U/V、P上の元の実lift/comparatorの面整合、全cell被覆である。全核係数Mと実δは同じTから生成する。generic `Equation` APIのd1∘d0零はnative適用時に先行`RelativeCover.d1_d0`で放電し、affine RHSを自由な外部certificateから供給しない。Coverには元集合の被覆だけを持たせ、完全性、effectivity、同値を入力へ移さない。元Kのgroupoidからall-cellの方程式への原値同型を明示し、大域実修復をall-cell subtypeの実塔へ置換しない。
+
+重なりの再同定を持つ全comma対象に対し、`glue_solution`が全局所補正とdegree0差のsectionから大域補正を構成する。degree0完全性が全compatible局所射を復元する。`Equivalence`のinverse/unit/counitを含む全native構造を用い、pi0だけの対応へ落とさない。恒等ラベルの実際の比較射と逆射から`globalRestrictionComparisonIso`を構成し、既存の同じ実修復制限関手と自然に比較する。
+
+正負の回帰は、零RHSの全affine equationの零解と、非零RHS/零d1の解不存在、全被覆の先行非空性/空被覆失敗、全原値のobject/map/inverse/unit/counitのAPI、seam恒等性を対象にする。W1–W5の実有限体入力は今回のgeneric回帰から放電済みと数えない。
+
+### Cycle 7 の受理spineと検証
+
+受理spineは次の5fileの明示135宣言である。仮のcycle足場をproductionへ収録せず、全宣言にdocstringを持たせる。
+
+`AffineEquation.lean` (23宣言):
+
+`Equation.Solution`, `Equation.solution_zero_nonempty`, `Equation.not_solution_zero_differential`, `Equation.gauge`, `Equation.addAction`, `Equation.Groupoid`, `Equation.hom_condition`, `Equation.homOfLabel`, `Equation.homOfLabel_label`, `actionLabelFunctor`, `changedLabelFunctor`, `changed_label_inverse_equivariant`, `changedLabelInverse`, `changed_label_functor_label`, `changed_label_left_obj`, `changed_label_right_obj`, `changedLabelUnit`, `changedLabelCounit`, `changedLabelEquivalence`, `changed_label_unit_label`, `changed_label_unit_inv_label`, `changed_label_counit_label`, `changed_label_counit_inv_label`。
+
+`CoverEquation.lean` (20宣言):
+
+`CoverEquation.defect`, `CoverEquation.defect_all`, `CoverEquation.restrict_defect`, `CoverEquation.Solution`, `CoverEquation.Groupoid`, `CoverEquation.restrictSolution`, `CoverEquation.restrict_gauge`, `CoverEquation.restrictionFunctor`, `CoverEquation.restriction_obj_value`, `CoverEquation.restriction_map_value`, `CoverEquation.Descent`, `CoverEquation.diagonalObj`, `CoverEquation.diagonalFunctor`, `CoverEquation.diagonal_seam_label`, `CoverEquation.diagonal_faithful`, `CoverEquation.diagonal_full`, `CoverEquation.glue_solution`, `CoverEquation.diagonal_ess_surj`, `CoverEquation.diagonal_is_equivalence`, `CoverEquation.descentEquivalence`。
+
+`CommaCoordinates.lean` (15宣言):
+
+`CommaCoordinates.leftRestriction`, `CommaCoordinates.rightRestriction`, `CommaCoordinates.leftComparison`, `CommaCoordinates.rightComparison`, `CommaCoordinates.left_comparison_hom`, `CommaCoordinates.right_comparison_hom`, `CommaCoordinates.restoreFunctor`, `CommaCoordinates.restore_seam`, `CommaCoordinates.restore_left_obj`, `CommaCoordinates.restore_right_obj`, `CommaCoordinates.restore_left_map`, `CommaCoordinates.restore_right_map`, `CommaCoordinates.restore_is_equivalence`, `CommaCoordinates.equivalence`, `CommaCoordinates.comma_is_groupoid`。
+
+`NativeEquationBridge.lean` (55宣言):
+
+`ActualEquation.defectFamily`, `ActualEquation.native_defect_value`, `ActualEquation.fixed_edges_all`, `ActualEquation.native_supportedC0_eq`, `ActualEquation.native_supportedC1_eq`, `ActualEquation.nativeGaugeEquiv`, `ActualEquation.nativeEdgeEquiv`, `ActualEquation.native_gauge_value`, `ActualEquation.native_gauge_inverse_value`, `ActualEquation.native_edge_value`, `ActualEquation.native_edge_inverse_value`, `ActualEquation.native_d0`, `ActualEquation.nativeEquationEquiv`, `ActualEquation.native_equation_value`, `ActualEquation.native_equation_inverse_value`, `ActualEquation.native_equation_equivariant`, `ActualEquation.nativeCorrectionEquationEquivalence`, `ActualEquation.nativeRepairEquiv`, `ActualEquation.native_repair_equivariant`, `ActualEquation.nativeRepairEquationEquivalence`, `ActualEquation.native_repair_obj_value`, `ActualEquation.native_repair_map_value`, `ActualEquation.native_repair_inverse_map_value`, `ActualEquation.native_repair_inverse_choice`, `ActualEquation.native_repair_unit_label`, `ActualEquation.native_repair_counit_label`, `ActualEquation.native_repair_counit_inv_label`, `ActualEquation.original_supportedC0_eq`, `ActualEquation.original_supportedC1_eq`, `ActualEquation.originalGaugeEquiv`, `ActualEquation.originalEdgeEquiv`, `ActualEquation.original_gauge_value`, `ActualEquation.original_gauge_inverse_value`, `ActualEquation.original_edge_value`, `ActualEquation.original_d0`, `ActualEquation.original_defect_value`, `ActualEquation.originalEquationEquiv`, `ActualEquation.original_equation_equivariant`, `ActualEquation.originalRepairEquiv`, `ActualEquation.original_repair_equivariant`, `ActualEquation.originalRepairEquationEquivalence`, `ActualEquation.original_repair_obj_value`, `ActualEquation.original_repair_inverse_choice`, `ActualEquation.original_repair_map_value`, `ActualEquation.original_repair_inverse_map_value`, `ActualEquation.original_repair_unit_label`, `ActualEquation.original_repair_counit_label`, `ActualEquation.native_repair_inverse_obj_value`, `ActualEquation.native_repair_left_obj`, `ActualEquation.native_repair_right_obj`, `ActualEquation.original_equation_value`, `ActualEquation.original_equation_inverse_value`, `ActualEquation.original_repair_inverse_obj_value`, `ActualEquation.original_repair_left_obj`, `ActualEquation.original_repair_right_obj`。
+
+`NativeDescent.lean` (22宣言):
+
+`NativeDescent.LocalGroupoid`, `NativeDescent.restrictionFunctor`, `NativeDescent.restriction_map_value`, `NativeDescent.restriction_obj_choice`, `NativeDescent.globalRestrictionFunctor`, `NativeDescent.global_restriction_obj_choice`, `NativeDescent.global_restriction_map_value`, `NativeDescent.originalRestrictionFunctor`, `NativeDescent.global_restriction_obj_eq`, `NativeDescent.globalRestrictionComparisonHom`, `NativeDescent.globalRestrictionComparisonIso`, `NativeDescent.globalRestrictionComparison`, `NativeDescent.global_restriction_comparison_label`, `NativeDescent.Descent`, `NativeDescent.commaEquivalence`, `NativeDescent.equivalence`, `NativeDescent.equivalence_left_choice`, `NativeDescent.equivalence_right_choice`, `NativeDescent.equivalence_left_map_value`, `NativeDescent.equivalence_right_map_value`, `NativeDescent.is_groupoid`, `NativeDescent.equivalence_seam_label`。
+
+5登録sourceに個別の`research/lean/check_research_modules.sh --focused ResearchLean/AG/RelativeRepairComposition/<file>.lean`を実行し、全exit0。正確な全5source本体からimport行だけを除いた単一のCycle7Auditで全135明示宣言と生成された先行`RelativeCover.r0.congr_simp`、計136宣言を個別`#print axioms`し、標準公理のみを確認。監査log SHA256 `3c577ac430971c990a153ffa9e28f4dd7197aec309f5f215867f4ce918b09630`。必要なsingle targeted dependency checkはrootのみで実施。Research全体/aggregate/全file loop、subagent lake buildは実行しない。比較自然同型とseam値APIの局所elaborationには最大1,000,000 heartbeatsの有限上限を用い、statementとkernel条件を変更しない。
+
+placeholder/hidden-BiDi/privacy/import方向とdiff checkを確認。PR正式査読と同一head CIは、この実装結果の独立判定として後続する。有限被覆・Ω/connecting・C–F・W1–W5の未達を維持し、今回を全GOAL完了候補としない。
