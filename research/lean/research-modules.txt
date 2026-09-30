@@ -1569,3 +1569,4 @@ ResearchLean.AG.AbelianLiftingObstruction.GeometryWitness	ResearchLean/AG/Abelia
 ResearchLean.AG.AbelianLiftingObstruction.GroupExtension	ResearchLean/AG/AbelianLiftingObstruction/GroupExtension.lean
 ResearchLean.AG.AbelianLiftingObstruction.ProtocolExtension	ResearchLean/AG/AbelianLiftingObstruction/ProtocolExtension.lean
 ResearchLean.AG.AbelianLiftingObstruction.C4Witness	ResearchLean/AG/AbelianLiftingObstruction/C4Witness.lean
+ResearchLean.AG.AbelianLiftingObstruction.S3Witness	ResearchLean/AG/AbelianLiftingObstruction/S3Witness.lean

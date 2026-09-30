@@ -3,6 +3,113 @@
 一次仕様は [固定GOAL](../goals/G-129-aat-abelian-lifting-obstruction.md)、
 実行・査読・mergeの記録は [tracking Issue #5082](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5082) を参照する。
 
+## 第15Cycleの選定
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-129-aat-abelian-lifting-obstruction
+cycle: 15
+goal_blob_sha: 9f93a9a1c2ebd9ccd53362e878363144a934b4b8
+base_oid: 94137a1c118911505ed337155c3081a3a2c76d43
+tracking_issue: 5082
+report_path: research/reports/G-129-aat-abelian-lifting-obstruction.md
+selection:
+  proof_state_ref: "一般A–D・G127元写像・指定C4/幾何例受理済み、指定S3例が最後の構成義務"
+  proof_dag_predecessors: [GroupExtension.input, GroupExtension.coefficientEquiv, GroupExtension.groupAddTorsor, GroupExtension.orbit_eq_iff_groupVertex, squarePresentation, Equiv.Perm.sign]
+  milestone: "完了条件3の同じS3 sign拡大の非自明輸送、三つの実解、H1/H2と核頂点共役まで閉じ、累積完了候補を固定する"
+  proof_obligations: ["元Sym(Fin3)/sign/全核と(012)生成元のC3を構成", "同じsquare/C2非自明core/基準(01)で全A条件を放電", "生成rho=-1/d0=2/d1=0/d2=-2=id/δ=0/3-cell/nativeH2=0を評価", "全三つの元互換実解とZ1≃C3自由推移作用を証明", "nativeH1=0と元核頂点共役で一つの同値類を証明", "A–Dと指定三例の累積対応・全前提・証拠を完了監査へ渡す"]
+  exit_criteria: ["完了条件3の全構成・評価をLeanで証明", "累積全target対応をreport/packetへ固定", "標準独立4査読と別の最終累積4査読、CI合格"]
+  selection_reason: "残る唯一の具体適用義務を同じ一般B/Cに接続し、固定target全体の監査候補へ進む"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/AbelianLiftingObstruction/S3Witness.lean]
+  risks: ["signの全実核と元S3を保持", "(012)の向きとrhoの逆元を評価", "H1/H2を答えから定義しない", "実解/頂点作用の元の群値を分類と接続"]
+  unchecked: ["実装・検証・独立標準/累積レビュー前"]
+```
+
+### 第15Cycleの証拠対応
+
+`S3Witness.E` は元の `Equiv.Perm (Fin 3)`、`π` は元の符号準同型である。
+元の全codomain `ℤˣ` は `visibleC2` によりC2と同型で、その生成元を元の符号値 `-1` へ評価する。
+元の六つの置換を分類し、符号核の全元を `1,(012),(012)²` へ同定する。
+`kernelC3` の生成元と全値を元の(012)の冪として評価し、都合のよい部分核へ縮小しない。
+
+| 固定要求 | `S3Witness` の一次証拠 | 同じ元の値への対応 |
+| --- | --- | --- |
+| 元S3/sign/全核C3/元C2 | `permutations`, `π_surjective`, `kernel_cases`, `kernelC3`, `kernelC3_generator`, `kernelC3_inclusion`, `visibleC2`, `visibleC2_generator` | 全Sym(Fin3)、元sign、全実核、生成元(012)、元符号値-1 |
+| 同じsquare/core/基準(01)・全条件 | `core_c2_coordinate`, `core_nonidentity`, `reference`, `projects`, `relations`, `kernel_comm`, `input` | 同じC2非自明元と同じsquare/3-cell。原始πからstrong性/A2/全核輸送全単射/中心化を生成 |
+| 非自明な生成係数輸送 | `conjugation_inverts`, `coefficient`, `edge_neg` | 元(01)共役を全実核で評価してrho=-1。回答の輸送をfieldへ供給しない |
+| 同じ生成微分と実defect | `d0_value`, `d1_zero`, `negative_double`, `d2_value`, `reference_sq`, `defect_zero` | d0=2、d1=1+rho=0、d2=rho-1=-2=id、δ=0を構成後に評価 |
+| 同じ3-cell/cocycle | `first_pasting_value`, `last_pasting_value`, `syzygy`, `defect_cocycle` | 先頭/末尾e²削除の元authored比較が各1、同じd2δ=0 |
+| nativeH2=0とB3 | `z2_zero`, `h2_zero`, `h2Trivial`, `obstruction_zero`, `b3_nonempty` | 実d2の単射性で実cycle subgroupが零、native quotientの全classが零、同じB3に接続 |
+| 全三つの実解 | `transpositionSolution`, `origin`, `solutions_nonempty`, `solution_cases`, `solutions_distinct`, `solutionEquivC3`, `solution_card_three` | 全原始S3辺値実解が元の三つの互換であり、各射影と平方関係を証明 |
+| Z1≃C3の自由推移作用 | `z1Coordinate`, `originalSolutionTorsor`, `c3Action`, `c3Action_value`, `c3Action_free_transitive` | native Z1 AddTorsorを元全解へ適用し、C3座標の作用を元のkernel乗法へ評価 |
+| nativeH1=0と元頂点共役の一class | `h1_zero`, `h1Trivial`, `vertexConjugation_value`, `vertex_transitive` | 生成d0の全射性を実boundary rangeに使用、同じnative orbit等号を元核共役へ読み戻す |
+
+具体入力の核可換性、sign全射性、射影整列、coreの面関係、全A条件、syzygyは放電済み。
+解集合は独立の元S3辺・射影・word関係から定義され、H1/H2は同じ生成複体のnative quotientである。
+C3作用と頂点共役はその元の辺値を評価し、抽象的な解のcardinalityだけで作用を代替しない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "指定S3 sign例の全実核/全条件/生成微分/H1/H2/実解/作用/元頂点共役と累積全target対応を閉じる"
+  exit_criteria_status: ["S3Witness67宣言で指定例の全要求を証明", "単一focused/全67個別公理/対象module targeted build/scan、標準・最終累積独立査読は固定PRで判定"]
+  split_reason: none
+  completion_candidate: yes
+  lean_artifacts: [ResearchLean/AG/AbelianLiftingObstruction/S3Witness.lean]
+  evidence: [kernelC3, edge_neg, d0_value, d1_zero, d2_value, defect_zero, syzygy, h2_zero, h1_zero, solution_cases, originalSolutionTorsor, c3Action_value, vertex_transitive]
+  claim_mapping:
+    theorem_names: [S3Witness.kernelC3_generator, S3Witness.kernel_comm, S3Witness.edge_neg, S3Witness.d0_value, S3Witness.d1_zero, S3Witness.d2_value, S3Witness.defect_zero, S3Witness.h2_zero, S3Witness.h1_zero, S3Witness.solution_cases, S3Witness.c3Action_free_transitive, S3Witness.vertex_transitive]
+    source_labels: ["完了条件3", "A–Dの同じ具体適用", "完了条件1–6の累積対応"]
+    conjuncts: ["元S3/sign/全実核C3と指定生成元", "非自明生成輸送/微分/実H1/H2", "全三つの原始実解と同じ核作用/頂点class"]
+    undischarged_assumptions: []
+    acceptance_point: "全具体条件を原始入力から生成し、同じ一般B/Cに戻した固定target全体の完了候補"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["全sign核可換性/C3同型/π全射", "元(01)射影とsquare関係", "全生成輸送/strong性/比較中心化/syzygy", "実H1/H2/全実解/作用/共役class"]
+    remaining: ["標準PRと別の最終累積独立完了監査・CI"]
+  certificate_provenance:
+    discharged: ["六つの元置換とsign所属から全核生成", "第13Cycle原始πのinput生成", "生成微分から実cycle/boundary/native quotient零性", "元互換から独立実解生成"]
+    unresolved: []
+  proof_use:
+    used: ["全核分類:可換性/C3同型/共役評価", "生成共役:rhoと微分", "原始(01)平方:実defect", "d2単射/d0全射:実H2/H1", "全実解同値:native torsor/作用/頂点class"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["S3Witness単一focused", "全67個別#print axiomsとnamespace guard", "S3Witness targeted build", "全target個別公理監査", "共通scan"]
+  blocking_findings: []
+  next_obligation: "固定head標準PR監査、別の最終累積completion、CI・merge・Issue/GOAL lifecycle同期"
+```
+
+### 完了条件1–6の累積一次証拠対応
+
+この表は固定targetの構成・証明の対応を示す。完了verdictは固定headのPR最終packetと独立監査に置く。
+一般Aの条件1–4は固定targetが許す方向仮定として保持し、指定三例ではすべて放電する。
+任意の核に有限性を追加しない。GOALのclaim boundary・固定本文・設計は不変。
+
+| 固定要求 | 累積の一次Lean宣言・元の対象 |
+| --- | --- |
+| A1・A2の実核と生成準同型 | `fiberPushforward`, `kernelInclusion`, `StrongTransport`, `kernelTransportHom`, `KernelTransportLaws`, `KernelComparison`, `innerKernelEquiv` |
+| A3の下降局所係数 | `PathKernelTransport`, `TowerPresentation.edgeCoefficients_face`, `TowerPresentation.localCoefficients`, `LocalCoefficients`。任意道の元の輸送、全面関係、持ち上げ独立性 |
+| 同じC0→C1→C2→C3/native H1/H2 | `d1_d0`, `d2_d1`, `cochainComplex`, `firstCochainHomologyIso`, `secondCochainHomologyIso`。実cycle subgroupと実boundary rangeのquotient |
+| B1の元cmp/標準cmp/実defect/cocycle | `TowerPresentation.faceDefect`, `faceDefect_inclusion`, `defect_cocycle`。元のstrong factorizationと指定3-cell |
+| B2の全補正/障害不変 | `TowerPresentation.correctedDefect_eq`, `TowerPresentation.correctedObstructionClass_eq`, `OriginalTowerPresentation.obstructionClass_changeReference` |
+| B3の独立実解・両方向 | `OriginalTowerPresentation.obstructionClass_eq_zero_iff_solution`, `OriginalTowerPresentation.obstructionClass_eq_zero_iff_correction`。元の辺選択・射影・全face等式 |
+| Cの全Z1実解torsor/C1頂点作用/H1軌道torsor | `OriginalTowerPresentation.solutionAction_existsUnique`, native `solutionAddTorsor`, `OriginalTowerPresentation.vertexGauge_edge_arrow`, `OriginalTowerPresentation.solutionOrbitAddTorsor`, `solutionOrbit_vadd_mk`, `solutionOrbit_vsub_mk` |
+| Cの基準選択との整合 | `OriginalTowerPresentation.solutionAction_changeReference`, `vertexGauge_changeReference`, `solutionOrbitChangeReference_vadd/vsub`, `solutionOrbitEquivH1_changeReference` |
+| Dの同じ第4章全幾何射 | `CrossStage.originalLift_path`, `presentation`, `faceDefect_eq`, `correctedFaceDefect_eq`, `relativeDefect_add`, `solutionEquiv`, `solutionAction_edge`, `vertexGauge_edge`, `obstructionClass_zero_iff` |
+| D任意群拡大/元G127写像 | `GroupExtension.kernelEquiv`, `transport_kernelEquiv`, `edge_transport`, `solutionEquiv`, `obstruction_zero_iff`, `groupVertex_edge`, `groupAddTorsor`, `groupOrbitEquivH1`、`ProtocolExtension.kernelEquiv_inclusion/state`, `solutionEquiv_state/visible` |
+| 完了条件2同じG127 C4例 | 第14Cycle表、`C4Witness` の両元lift・全実核・実微分/H2/障害1/元section不存在 |
+| 完了条件3同じS3 sign例 | 第15Cycle表、`S3Witness` の指定(012)/(01)、全実核・生成rho=-1・実H1/H2・全実解/作用/頂点class |
+| 完了条件4同じ有限Atom幾何例 | 第12Cycle表、`GeometryInput/GeometryKernel/GeometryWitness` の非空site/cover/非零raw/全核非自明可換性、非恒等cmp、全A条件、元section defect/H2/原始coherentizability |
+| 完了条件5成果配置・前提出所/使用・対応 | 本reportの第1–15Cycle各対応表、Research登録、上記sourceの全証明・instance/import chain |
+| 完了条件6共通検査基準・適用版・最終状態 | 固定GOAL blobとIssue #5082の適用版。標準監査後の同じ固定head final packet、別の累積独立4査読で判定 |
+
 ## 第14Cycleの選定
 
 ```yaml
