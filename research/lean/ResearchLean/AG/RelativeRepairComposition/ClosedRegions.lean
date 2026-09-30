@@ -7,6 +7,20 @@ Incidence includes both face paths and every face, prefix and suffix of the
 three-cell rewriting sequences. Coefficients retain their original indices and
 transports. Zero extension is only a degreewise auxiliary map; the chain-map
 statements are proved for restriction using the closure conditions.
+
+This constructs the cochain restriction in G-130 A and n1017 §2.1–2.2.
+The full restriction of the original categorical tower is a separate obligation.
+
+## Implementation notes
+
+The original cell indices keep every coefficient and transport identical to its
+source. Restriction to subtype families and its degreewise zero-extension section
+make the kernel and restricted differential available before constructing the
+entire restricted tower. Reindexing through a new tower first would introduce
+dependent path comparisons into these cochain proofs; that construction remains
+a later obligation. Zero extension across a boundary need not commute with the
+differential, so it is used only degreewise, while closed incidence proves that
+restriction is a chain map.
 -/
 
 namespace AAT.AG.RelativeRepairComposition

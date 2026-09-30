@@ -7,6 +7,19 @@ Every group is a subgroup of the original coefficient family. The differential
 is the original differential with its codomain restricted by closed incidence.
 In degree zero we retain the entire inverse image of the supported group inside
 the kernel of restriction to the fixed vertices.
+
+This constructs the relative/support complex and its actual existence obstruction
+in G-130 A and n1017 §2.2・2.5.
+
+## Implementation notes
+
+Subgroups of the original cochains retain their original values and identify the
+complex directly with the actual-repair coordinates. Supplying an abstract complex
+instead would leave its correspondence to the original differential unproved.
+Degree zero is the inverse image inside the fixed-vertex kernel: fixing each
+endpoint of every forbidden edge would discard permitted reidentifications with
+zero coboundary on that edge. Native Mathlib homology is connected to the same
+kernel/image quotient, so no separate analogue of cohomology is introduced.
 -/
 
 namespace AAT.AG.RelativeRepairComposition
@@ -71,6 +84,10 @@ theorem mem_C0Group (b : AbelianLiftingObstruction.C0 M) :
 /-- Each allowed label has supported coboundary. -/
 theorem C0Group_d0_mem (b : C0Group M P candidates allowed) :
     d0 M b.1 ∈ C1Group M P candidates allowed := b.2.2
+
+/-- Destructor API: every permitted vertex label vanishes on the fixed part. -/
+theorem C0Group_le_relativeC0 : C0Group M P candidates allowed ≤ relativeC0 M P :=
+  fun _ hb => hb.1
 
 /-- Closure makes the original d0 preserve the relative kernel. -/
 theorem d0_mem_relative (b : relativeC0 M P) : d0 M b.1 ∈ relativeC1 M P := by
@@ -271,6 +288,10 @@ noncomputable def secondCochainHomologyIso :
 def relativeH0 : AddSubgroup (AbelianLiftingObstruction.C0 M) :=
   relativeC0 M P ⊓ (d0Hom M).ker
 
+/-- Membership API for original relative zero-cocycles. -/
+theorem mem_relativeH0 (b : AbelianLiftingObstruction.C0 M) :
+    b ∈ relativeH0 M P ↔ b ∈ relativeC0 M P ∧ d0 M b = 0 := Iff.rfl
+
 /-- A supported zero-cocycle is precisely an original relative zero-cocycle. -/
 theorem mem_H0_iff (b : C0Group M P candidates allowed) :
     b ∈ H0 M P candidates allowed ↔ d0 M b.1 = 0 := by
@@ -281,12 +302,14 @@ theorem mem_H0_iff (b : C0Group M P candidates allowed) :
 
 /-- H0 is independent of the range, preserving the original vertex label exactly. -/
 def h0Equiv : H0 M P candidates allowed ≃+ relativeH0 M P where
-  toFun b := ⟨b.1.1, b.1.2.1, (mem_H0_iff M P candidates allowed b.1).mp b.2⟩
-  invFun b := ⟨⟨b.1, b.2.1, by
+  toFun b := ⟨b.1.1, (mem_relativeH0 M P _).mpr
+    ⟨C0Group_le_relativeC0 M P candidates allowed b.1.2,
+      (mem_H0_iff M P candidates allowed b.1).mp b.2⟩⟩
+  invFun b := ⟨⟨b.1, ((mem_relativeH0 M P b.1).mp b.2).1, by
     change d0 M b.1 ∈ C1Group M P candidates allowed
-    rw [show d0 M b.1 = 0 from b.2.2]
+    rw [show d0 M b.1 = 0 from ((mem_relativeH0 M P b.1).mp b.2).2]
     exact (C1Group M P candidates allowed).zero_mem⟩,
-    (mem_H0_iff M P candidates allowed _).mpr b.2.2⟩
+    (mem_H0_iff M P candidates allowed _).mpr ((mem_relativeH0 M P b.1).mp b.2).2⟩
   left_inv _ := Subtype.ext (Subtype.ext rfl)
   right_inv _ := Subtype.ext rfl
   map_add' _ _ := Subtype.ext rfl
