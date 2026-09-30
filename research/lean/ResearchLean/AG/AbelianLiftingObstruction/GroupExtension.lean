@@ -5,6 +5,26 @@ import Mathlib.CategoryTheory.SingleObj
 
 G-129 D: every arrow and coefficient is induced by the given group homomorphism.
 The API below preserves the elements of E, H and the actual kernel.
+
+## Implementation notes
+
+`GroupSolution` records original E edge values, their projections and their
+word relations. Defining solutions by the correction equation instead would
+make the obstruction criterion a reformulation of membership, rather than a
+criterion for these independently specified lifts.
+
+`groupAddTorsor` returns a native torsor with the reference input explicit.
+A global instance cannot recover that reference from `GroupSolution`, whose
+type intentionally depends only on K, π and core. Keeping the structure as a
+value allows every reference lift to provide the same original solution type
+with its corresponding first-cocycle action.
+
+`groupOrbitEquivH1` reuses the native `SolutionOrbit` through the edge-preserving
+solution equivalence. A second quotient on `GroupSolution` would duplicate the
+same equivalence relation and its torsor laws. The original meaning of the
+reused quotient is retained by `orbit_eq_iff_groupVertex` and
+`groupVertex_edge`, which characterize its equality by actual kernel vertex
+conjugations of all original E edges.
 -/
 namespace AAT.AG.AbelianLiftingObstruction.GroupExtension
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary
