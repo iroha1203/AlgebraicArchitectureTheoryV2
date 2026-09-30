@@ -3,6 +3,98 @@
 一次仕様は [固定GOAL](../goals/G-129-aat-abelian-lifting-obstruction.md)、
 実行・査読・mergeの記録は [tracking Issue #5082](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5082) を参照する。
 
+## 第12Cycleの選定
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-129-aat-abelian-lifting-obstruction
+cycle: 12
+goal_blob_sha: 9f93a9a1c2ebd9ccd53362e878363144a934b4b8
+base_oid: cbecf09769054441b36ee73b1de2be0f42d01266
+tracking_issue: 5082
+report_path: research/reports/G-129-aat-abelian-lifting-obstruction.md
+selection:
+  proof_state_ref: "第11Cycleで受理したD第4章特殊化と既存の実幾何核・square"
+  proof_dag_predecessors: [GeometryInput.package, CrossStageKernel.innerKernelEquiv, squarePresentation, CrossStage.presentation, CrossStage.obstructionClass_zero_iff]
+  milestone: "完了条件4の同じ幾何例を全仮定放電と非零障害・元のcoherent lift不存在まで閉じる"
+  proof_obligations:
+    - "既存有限Atom・非空site・実cover・非零raw式を同じpackageとして使う"
+    - "恒等原始辺と固定core/lift、非恒等comparatorから同じsquare入力を構成する"
+    - "A2とA条件1–4を原始入力から証明し、追加の証拠引数を残さない"
+    - "同じ生成済み輸送・標準比較・sectionInnerObstructionとd0/d1/d2を評価する"
+    - "実際の非零H2障害と元のSectionRelativeCoherentizable不成立をB3/Dで結ぶ"
+  exit_criteria: ["完了条件4の全構成・評価をLeanで証明", "全宣言focused/axiom/scanと独立PRレビュー合格"]
+  selection_reason: "一般D接続の直後に指定幾何例の具体的適用義務を放電する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/AbelianLiftingObstruction/GeometryWitness.lean]
+  risks: ["全InnerFiberAutを小さな部分群で代替しない", "コサイクル性・障害零性を入力にしない", "元の幾何射と指定比較を保持する"]
+  unchecked: ["独立PRレビュー前"]
+```
+
+### 第12Cycleの証拠対応
+
+完了条件4には第1Cycleで構成・受理した `GeometryInput.package` を使う。
+有限Atom carrier、非空site、実cover、非零raw関係式はそれぞれ
+`FiniteModel.carrier`、`site_nonempty`、`has_actual_cover`、`raw_relation_nonzero`。
+全 `InnerFiberAut` の可換性と各元の平方が恒等になることは
+`GeometryKernel.inner_mul_comm`、`inner_square` で証明済みであり、
+`innerKernelEquiv` が同じ全幾何自己同型を実際の射影核へ保つ。
+
+`GeometryWitness` は共通の `squarePresentation` 上で元の辺とcore/liftを恒等、
+指定比較を元の非恒等 `innerSwap` とする。
+
+| 固定要求 | 宣言 | 構成・評価 |
+| --- | --- | --- |
+| 元の辺・固定core・lift・比較 | `liftData`, `data`, `sectionFamily`, `path_identity`, `selected_path_identity` | 同じ全幾何射と非恒等swap |
+| A2と条件1–3 | `alignment`, `kernel_comm`, `transport_identity`, `transport_bijective`, `comparator_central` | 実際の核所属、全核可換性、生成輸送が恒等、全核との中心化 |
+| 条件4 | `whisker_identity`, `authored_syzygy`, `syzygy` | e³の先頭・末尾の異なるe²消去が同じ元のswapを与える |
+| 同じD入力とB1 | `input`, `canonical_one`, `section_defect`, `defect_value` | 元の標準比較は恒等、sectionInnerObstructionはinnerSwap、実際のδはauthoredKernelElement |
+| 同じ複体の評価 | `edge_transport`, `coefficient_double`, `d0_zero`, `d1_zero`, `d2_zero`, `defect_cocycle` | rho=id、d0=0、d1=2=0、d2=rho-id=0。繰り返し辺の両寄与を保持 |
+| 障害・存在判定 | `defect_nonzero`, `obstruction_nonzero`, `no_solution`, `not_coherentizable` | δ非零かつd1=0から同じH2障害非零、B3/Dにより元の整合liftなし |
+
+全A条件は新しい証拠引数を受け取らず、同じ原始package・辺・比較から証明する。
+`input` は第11Cycleの `CrossStage.presentation` をこれらの証明へ適用する。
+障害零性や実解の非空性を原始fieldとして供給しない。
+同じ `SectionRelativeCoherentizable data sectionFamily` の不成立まで閉じるため、
+全核や元の射を忘却した小さなtoy例への置換ではない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "完了条件4の全原始入力・A条件1–4・同じ複体の値・非零障害・元のlift不存在"
+  exit_criteria_status: ["GeometryWitnessの27宣言で全構成・評価を証明", "focused/個別公理/scan成功、独立PRレビューはPR監査記録で判定"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [ResearchLean/AG/AbelianLiftingObstruction/GeometryWitness.lean]
+  evidence: [alignment, transport_bijective, comparator_central, authored_syzygy, section_defect, defect_value, d0_zero, d1_zero, d2_zero, obstruction_nonzero, not_coherentizable]
+  claim_mapping:
+    theorem_names: [GeometryWitness.alignment, GeometryWitness.transport_bijective, GeometryWitness.comparator_central, GeometryWitness.syzygy, GeometryWitness.section_defect, GeometryWitness.defect_value, GeometryWitness.obstruction_nonzero, GeometryWitness.not_coherentizable]
+    source_labels: ["完了条件4", "A条件1–4", "B1–B3", "D第4章特殊化"]
+    conjuncts: ["指定幾何packageの全仮定を放電", "同じ原始比較の障害と元の整合lift存在判定を計算"]
+    undischarged_assumptions: []
+    acceptance_point: "全条件を入力から生成し、非零障害・原始射の存在判定を証明"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["同じ有限Atom/site/cover/raw式", "全実InnerFiberAut非自明・可換", "strong性/A2/核輸送全単射/全核中心化/A4", "実際のsectiondefect・H2障害・lift判定"]
+    remaining: ["D群拡大/G-127接続", "完了条件2–3", "最終統合監査"]
+  certificate_provenance:
+    discharged: ["原始辺・比較からalignment/transport/syzygyを生成", "canonical比較はstrong一意性", "複体と障害は同じinputから生成"]
+    unresolved: []
+  proof_use:
+    used: ["全核可換性:一般係数と平方消去", "生成輸送の恒等性:全単射とd0/d1/d2", "中心化:Aの面降下/B2", "元syzygy:obstructionClassのcocycle", "B3/D:原始coherentizability不成立"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["GeometryWitness単一focused check", "27宣言個別#print axiomsとnamespace guard", "targeted module build", "diff/placeholder/Unicode/privacy/import方向scan"]
+  blocking_findings: []
+  next_obligation: "任意可換核群拡大とG-127の同じ射影・元の写像への適用、指定C4/S3例"
+```
+
 ## 第11Cycleの選定
 
 ```yaml
