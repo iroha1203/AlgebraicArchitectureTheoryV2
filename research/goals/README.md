@@ -15,8 +15,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## active
 
-- [G-129-aat-abelian-lifting-obstruction](G-129-aat-abelian-lifting-obstruction.md)
-  (可換核からの局所係数・持ち上げ障害、整合する解と頂点での再同定による分類)
 - [G-128-aat-minimal-compatibility-observations](G-128-aat-minimal-compatibility-observations.md)
   (適合性を決定する最小観測集合、適応的問い合わせの最悪時回数、有限構成と名前付き操作への適用)
 - [G-126-aat-operation-preserving-repair-quotients](G-126-aat-operation-preserving-repair-quotients.md)
@@ -32,6 +30,8 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## completed
 
+- [G-129-aat-abelian-lifting-obstruction](G-129-aat-abelian-lifting-obstruction.md)
+  (`target-theorem-proved`。可換核からの局所係数・持ち上げ障害、全解と頂点での再同定による分類、指定三例を確定)
 - [G-127-aat-reversible-protocol-holonomy](G-127-aat-reversible-protocol-holonomy.md)
   (`target-theorem-proved`。可逆な名前付き操作のholonomy、変更群、持ち上げと有限判定、二つの指定例を確定)
 - [G-124-aat-local-semantic-reconstruction](G-124-aat-local-semantic-reconstruction.md)
