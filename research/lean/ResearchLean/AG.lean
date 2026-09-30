@@ -998,3 +998,4 @@ import ResearchLean.AG.AbelianLiftingObstruction.GeometryWitness
 import ResearchLean.AG.AbelianLiftingObstruction.GroupExtension
 import ResearchLean.AG.AbelianLiftingObstruction.ProtocolExtension
 import ResearchLean.AG.AbelianLiftingObstruction.C4Witness
+import ResearchLean.AG.AbelianLiftingObstruction.S3Witness
