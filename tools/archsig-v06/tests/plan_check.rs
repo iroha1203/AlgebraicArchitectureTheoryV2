@@ -783,3 +783,44 @@ fn a_condition_between_constants_does_not_branch() {
     let s = repo.run(&["plan", "check", "p"]);
     assert_eq!(result(&s, "m.f")["outcome"], "holds", "{s}");
 }
+
+#[test]
+fn an_ambiguous_operation_that_uses_a_removed_element_is_silent_under_the_law() {
+    // m.f は操作とフィールドの二つに定義され、曖昧である。候補は m.f が書く m.T.p を消す。
+    let before = format!("{SPLITTING}{}", r#"{"kind": "defines", "subject": "m.f", "value": "field", "type": "int", "at": "m.py:9@blob:ccccccc"}
+"#);
+    let repo = Repo::new("ambiguous-missing");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", &before);
+    repo.write(".archsig/plans/p/plan.jsonl", r#"{"kind": "removes", "subject": "m.T.p", "at": "plan:p"}
+"#);
+    let s = repo.run(&["plan", "check", "p"]);
+    let rows: Vec<&Value> = s["results"].as_array().unwrap().iter().filter(|r| r["subject"] == "m.f").collect();
+    assert!(!rows.is_empty(), "{s}");
+    for r in rows {
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    }
+}
+
+#[test]
+fn a_call_in_a_condition_puts_the_same_call_condition() {
+    let when = r#""object": "m.T.p", "value": "None", "when": "m.check($o.a) == 1""#;
+    let before = SPLITTING.replace(r#""object": "m.T.p", "value": "$o.a""#, when);
+    let repo = Repo::new("call-in-condition");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", &before);
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        &format!(
+            "{}\n{}\n",
+            r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.T"}, "file": "m.py", "at": "plan:p"}"#,
+            format!(r#"{{"kind": "writes", "subject": "m.f", {when}, "at": "plan:p"}}"#),
+        ),
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!(r["outcome"], "holds", "{s}");
+    let detail = repo.run(&["show", r["id"].as_str().unwrap()]);
+    let same_call = detail["conditions"].as_array().unwrap().iter().any(|c| c.as_str().unwrap().starts_with("操作の呼び出しの結果は"));
+    assert!(same_call, "分岐の組は条件の中の呼び出しを同じ項とみなして作る: {detail}");
+}

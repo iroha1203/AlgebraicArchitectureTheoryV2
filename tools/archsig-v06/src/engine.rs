@@ -452,21 +452,11 @@ fn commute(
 ) -> Vec<Finding> {
     let mut out = Vec::new();
     for (a, b) in &overlay.corresponds {
-        // 消える要素を使う操作は `missing` として挙がる。比べると、消えた要素を読む所として返してしまう。
         // 消える要素を使う操作は、比べられない。この Law でも `missing` として挙げる。
         if let Some(uses) = overlay.missing.get(b) {
-            out.push(Finding {
-                question: "change".to_string(),
-                law: Some(law.to_string()),
-                subject: b.clone(),
-                outcome: "fails",
-                kind: Some("missing"),
-                at: defined_at(before, a).into_iter().collect(),
-                basis: json!({"operation": b, "uses": uses}),
-                check: json!({"operation": b, "uses": uses}),
-                theory: Some(THEORY_CHANGES.to_string()),
-                ..Finding::default()
-            });
+            if let Some(f) = missing(before, b, uses) {
+                out.push(Finding { law: Some(law.to_string()), ..f });
+            }
             continue;
         }
         let (ka, kb) = (before.kind(a), after.kind(b));
@@ -544,6 +534,8 @@ fn compare(
             if b1.literals.iter().any(|l| lits2.iter().any(|(x, t)| x == &l.atom && *t != l.truth)) {
                 continue;
             }
+            // 分岐の組は、両側の条件の中の呼び出しを同じ項とみなして作る。
+            calls |= b1.literals.iter().any(|l| has_call(&l.atom)) || lits2.iter().any(|(x, _)| has_call(x));
             let mut values = Vec::new();
             let mut diverging = Vec::new();
             for q in &places {
@@ -745,22 +737,28 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
         }
     }
     for (op, uses) in &overlay.missing {
-        let f = match before.kind(op) {
-            // 構造 Atom の `subject` は操作である(マニュアル第3章)。
-            Ok("operation") | Err(Silence { reason: Reason::Unread, .. }) => Finding {
-                outcome: "fails",
-                kind: Some("missing"),
-                at: defined_at(before, op).into_iter().collect(),
-                basis: json!({"operation": op, "uses": uses}),
-                check: json!({"operation": op, "uses": uses}),
-                ..Finding::default()
-            },
-            Ok(_) => continue,
-            Err(s) => Finding::silent("change", None, op, s),
-        };
-        out.push(Finding { question: "change".to_string(), subject: op.clone(), theory: Some(THEORY_CHANGES.to_string()), ..f });
+        out.extend(missing(before, op, uses));
     }
     out
+}
+
+/// 消える要素を名指す事実から、`missing` の結論を決める。操作と決まらない名前(曖昧、`?`)は沈黙し、
+/// 操作でないと決まった名前は結論にしない。
+fn missing(before: &Structure, op: &str, uses: &BTreeSet<String>) -> Option<Finding> {
+    let f = match before.kind(op) {
+        // 構造 Atom の `subject` は操作である(マニュアル第3章)。
+        Ok("operation") | Err(Silence { reason: Reason::Unread, .. }) => Finding {
+            outcome: "fails",
+            kind: Some("missing"),
+            at: defined_at(before, op).into_iter().collect(),
+            basis: json!({"operation": op, "uses": uses}),
+            check: json!({"operation": op, "uses": uses}),
+            ..Finding::default()
+        },
+        Ok(_) => return None,
+        Err(s) => Finding::silent("change", None, op, s),
+    };
+    Some(Finding { question: "change".to_string(), subject: op.to_string(), theory: Some(THEORY_CHANGES.to_string()), ..f })
 }
 
 /// 項を読める字句にする。場所の入力は `in(<フィールド> / …)`。
