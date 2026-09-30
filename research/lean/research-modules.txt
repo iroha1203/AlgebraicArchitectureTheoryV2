@@ -1570,3 +1570,6 @@ ResearchLean.AG.AbelianLiftingObstruction.GroupExtension	ResearchLean/AG/Abelian
 ResearchLean.AG.AbelianLiftingObstruction.ProtocolExtension	ResearchLean/AG/AbelianLiftingObstruction/ProtocolExtension.lean
 ResearchLean.AG.AbelianLiftingObstruction.C4Witness	ResearchLean/AG/AbelianLiftingObstruction/C4Witness.lean
 ResearchLean.AG.AbelianLiftingObstruction.S3Witness	ResearchLean/AG/AbelianLiftingObstruction/S3Witness.lean
+
+ResearchLean.AG.RelativeRepairComposition.SupportedRepairs	ResearchLean/AG/RelativeRepairComposition/SupportedRepairs.lean
+ResearchLean.AG.RelativeRepairComposition.LabeledAction	ResearchLean/AG/RelativeRepairComposition/LabeledAction.lean
