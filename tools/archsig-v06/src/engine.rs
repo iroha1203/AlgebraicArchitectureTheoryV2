@@ -139,7 +139,7 @@ pub fn execute(s: &Structure, op: &str, fresh: &dyn Fn(&str) -> bool) -> Result<
                                 more.push((x, false));
                                 continue;
                             }
-                            match x.truth_of(&atom) {
+                            match x.truth_of(&atom).or_else(|| constant(&atom)) {
                                 Some(t) => more.push((x, t == truth)),
                                 None => {
                                     let mut yes = x.clone();
@@ -246,6 +246,17 @@ fn ordered(op: BinOp, a: Value, b: Value) -> Value {
     if format!("{a:?}") <= format!("{b:?}") { Value::Bin(op, Box::new(a), Box::new(b)) } else { Value::Bin(op, Box::new(b), Box::new(a)) }
 }
 
+/// 定数どうしの等しさは、入力によらず真偽が決まる。原子として分岐させない。
+fn constant(atom: &Value) -> Option<bool> {
+    match atom {
+        Value::Bin(BinOp::Eq, a, b) => match (&**a, &**b) {
+            (Value::Const(x), Value::Const(y)) => Some(x == y),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
 /// 条件を、原子と真偽の組の「かつ」に直す。条件どうしの関係は見ない。
 fn literals(v: Value) -> Vec<(Value, bool)> {
     match v {
@@ -259,21 +270,51 @@ fn literals(v: Value) -> Vec<(Value, bool)> {
     }
 }
 
-/// 変更前の名前から変更後の名前への対応(設計 §3.6)。
+/// 変更前の名前と変更後の名前の対応(設計 §3.6)。
+/// 比べるときは、変更後の名前を対応の元へさかのぼり、変更前の名前にそろえる(設計 §5.4)。
+/// 表示では、行き先が一つの名前を変更後の名前に読み替える(マニュアル第5章 問い3)。
 struct Mapping<'a> {
     to: BTreeMap<&'a str, Vec<&'a str>>,
+    from: BTreeMap<&'a str, Vec<&'a str>>,
 }
 
 impl<'a> Mapping<'a> {
     fn new(overlay: &'a Overlay) -> Mapping<'a> {
         let mut to: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+        let mut from: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
         for (a, b) in &overlay.corresponds {
             to.entry(a.as_str()).or_default().push(b.as_str());
+            from.entry(b.as_str()).or_default().push(a.as_str());
         }
-        Mapping { to }
+        Mapping { to, from }
     }
 
-    /// 行き先が一つなら、その名前。なければ、または二つ以上なら、元の名前のまま。
+    /// 変更後の名前を、対応の元の変更前の名前へさかのぼる。元がなければ、その名前のまま(候補で新しく足した要素)。
+    /// 元が二つ以上あれば(多対一)、変更前の名前で置けないので、決まらない。
+    fn back(&self, n: &str) -> Result<String, Silence> {
+        match self.from.get(n).map(|v| v.as_slice()) {
+            None | Some([]) => Ok(n.to_string()),
+            Some([one]) => Ok(one.to_string()),
+            Some(_) => Err(Silence::new(Reason::Unresolved)),
+        }
+    }
+
+    fn back_value(&self, v: &Value) -> Result<Value, Silence> {
+        let names = |p: &[String]| p.iter().map(|f| self.back(f)).collect::<Result<Vec<_>, _>>();
+        Ok(match v {
+            Value::Input(p) => Value::Input(names(p)?),
+            Value::Read(p) => Value::Read(names(p)?),
+            Value::Arg(n) => Value::Arg(self.back(n)?),
+            Value::Proj(x, p) => Value::Proj(Box::new(self.back_value(x)?), names(p)?),
+            Value::Call(n, args) => Value::Call(self.back(n)?, args.iter().map(|a| self.back_value(a)).collect::<Result<_, _>>()?),
+            Value::Not(x) => Value::Not(Box::new(self.back_value(x)?)),
+            Value::Neg(x) => Value::Neg(Box::new(self.back_value(x)?)),
+            Value::Bin(op, a, b) => Value::Bin(*op, Box::new(self.back_value(a)?), Box::new(self.back_value(b)?)),
+            Value::Const(c) => Value::Const(c.clone()),
+        })
+    }
+
+    /// 表示のための読み替え。行き先が一つなら、その名前。なければ、または二つ以上なら、元の名前のまま。
     fn name(&self, n: &str) -> String {
         match self.to.get(n).map(|v| v.as_slice()) {
             Some([one]) => one.to_string(),
@@ -302,22 +343,6 @@ impl<'a> Mapping<'a> {
             Value::Neg(x) => Value::Neg(Box::new(self.value(x))),
             Value::Bin(op, a, b) => Value::Bin(*op, Box::new(self.value(a)), Box::new(self.value(b))),
             Value::Const(c) => Value::Const(c.clone()),
-        }
-    }
-
-    /// 変更前の分岐を、変更後の名前に写す。状態は、対応に従って変更前のフィールドの値を変更後のフィールドへ写したもの。
-    fn branch(&self, b: &Branch) -> Branch {
-        let mut state = State::default();
-        for (p, v) in &b.state.places {
-            for q in self.places(p) {
-                state.write(q, normalize(self.value(v)));
-            }
-        }
-        Branch {
-            literals: b.literals.iter().map(|l| Literal { atom: normalize(self.value(&l.atom)), ..l.clone() }).collect(),
-            state,
-            writes: b.writes.clone(),
-            calls: b.calls.clone(),
         }
     }
 }
@@ -356,13 +381,16 @@ pub fn plan_check(before: &Structure, after: &Structure, overlay: &Overlay, laws
             _ => keep(before, after, &mapping, &law.name, meaning, sources),
         };
         // 対応する操作の組がない。操作がないことは、構造の範囲を読んでいるときだけ言える(設計 §5.1)。
-        let unread = unread_sources(before, sources, "structure");
-        if found.is_empty() && !unread.is_empty() {
+        // `changes commute` は、対応する操作の組ごとに比べる。構造を読んでいないソースにある操作は、組に挙がらない。
+        // その操作が変わるかは決まらないので、読む所として沈黙を足す。読んでいれば、組がないことは言える(設計 §5.1)。
+        let commute = matches!(law.rule, Rule::ChangesCommute);
+        let unread = if commute { unread_sources(before, sources, "structure") } else { Vec::new() };
+        if !unread.is_empty() {
             let mut f = Finding::silent("change", Some(&law.name), meaning, Silence::new(Reason::Unread));
             f.next = unread;
             f.theory = Some(THEORY_CHANGES.to_string());
             out.push(f);
-        } else if found.is_empty() {
+        } else if commute && found.is_empty() {
             // 比べるものがないので成り立つ。
             out.push(Finding {
                 question: "change".to_string(),
@@ -378,7 +406,7 @@ pub fn plan_check(before: &Structure, after: &Structure, overlay: &Overlay, laws
         }
         out.extend(found);
     }
-    out.extend(removed_uses(before, after, overlay));
+    out.extend(removed_uses(before, after, overlay, sources));
     out
 }
 
@@ -425,7 +453,20 @@ fn commute(
     let mut out = Vec::new();
     for (a, b) in &overlay.corresponds {
         // 消える要素を使う操作は `missing` として挙がる。比べると、消えた要素を読む所として返してしまう。
-        if overlay.missing.contains_key(b) {
+        // 消える要素を使う操作は、比べられない。この Law でも `missing` として挙げる。
+        if let Some(uses) = overlay.missing.get(b) {
+            out.push(Finding {
+                question: "change".to_string(),
+                law: Some(law.to_string()),
+                subject: b.clone(),
+                outcome: "fails",
+                kind: Some("missing"),
+                at: defined_at(before, a).into_iter().collect(),
+                basis: json!({"operation": b, "uses": uses}),
+                check: json!({"operation": b, "uses": uses}),
+                theory: Some(THEORY_CHANGES.to_string()),
+                ..Finding::default()
+            });
             continue;
         }
         let (ka, kb) = (before.kind(a), after.kind(b));
@@ -463,57 +504,69 @@ fn compare(
     fresh: &dyn Fn(&str) -> bool,
 ) -> Result<Finding, Silence> {
     // 変更前の操作をしてから移す / 移してから変更後の操作をする。
+    // 比べるときは、変更後の実行の値と条件を、変更前の名前にそろえる(設計 §5.4)。
     let (run1, ext1) = execute(before, a, fresh)?;
     let (run2, ext2) = execute(after, b, fresh)?;
-    let run1: Vec<(Branch, Branch)> = run1.into_iter().map(|br| (mapping.branch(&br), br)).collect();
-    // 比べる場所: 意味を持つフィールドと、書き込まれた場所のうち最後のフィールドが意味を持つもの。
-    // 書き込まれたフィールドが意味を持つかが読んだ範囲から決まらなければ沈黙する。
+    // 比べる場所(変更後の名前): 意味を持つフィールドと、書き込まれた場所のうち最後のフィールドが意味を持つもの。
+    // 書き込まれたフィールドとその行き先が意味を持つかが、読んだ範囲から決まらなければ沈黙する。
     let mut places: BTreeSet<Vec<String>> = after
         .meanings
         .iter()
         .filter(|(f, _)| after.kind(f) == Ok("field") && has_meaning(after, f, meaning))
         .map(|(f, _)| vec![f.clone()])
         .collect();
-    for (moved, orig) in &run1 {
-        for w in &orig.writes {
+    for br in &run1 {
+        for w in &br.writes {
             meaning_known(before, w.place.last().unwrap(), meaning)?;
+            for q in mapping.places(&w.place) {
+                meaning_known(after, q.last().unwrap(), meaning)?;
+                if has_meaning(after, q.last().unwrap(), meaning) {
+                    places.insert(q);
+                }
+            }
         }
-        places.extend(moved.state.places.keys().filter(|p| has_meaning(after, p.last().unwrap(), meaning)).cloned());
     }
     for br in &run2 {
         for w in &br.writes {
             meaning_known(after, w.place.last().unwrap(), meaning)?;
+            if has_meaning(after, w.place.last().unwrap(), meaning) {
+                places.insert(w.place.clone());
+            }
         }
-        places.extend(br.state.places.keys().filter(|p| has_meaning(after, p.last().unwrap(), meaning)).cloned());
     }
     let mut compared = Vec::new();
     let mut calls = false;
-    for (moved, orig) in &run1 {
-        for br in &run2 {
-            // 割り当てが矛盾しない組を、一つの分岐とみなす。
-            if moved.literals.iter().any(|l| br.truth_of(&l.atom).is_some_and(|t| t != l.truth)) {
+    for b1 in &run1 {
+        for b2 in &run2 {
+            // 割り当てが矛盾しない組を、一つの分岐とみなす。変更後の原子は変更前の名前にそろえる。
+            let lits2: Vec<(Value, bool)> =
+                b2.literals.iter().map(|l| Ok((normalize(mapping.back_value(&l.atom)?), l.truth))).collect::<Result<_, Silence>>()?;
+            if b1.literals.iter().any(|l| lits2.iter().any(|(x, t)| x == &l.atom && *t != l.truth)) {
                 continue;
             }
             let mut values = Vec::new();
             let mut diverging = Vec::new();
-            for p in &places {
-                let v1 = normalize(moved.state.read(p)?);
-                let v2 = normalize(br.state.read(p)?);
+            for q in &places {
+                // 移すと、変更後の場所 q には、その元の変更前の場所の値が入る。
+                let p: Vec<String> = q.iter().map(|f| mapping.back(f)).collect::<Result<_, _>>()?;
+                let v1 = normalize(b1.state.read(&p)?);
+                let v2 = normalize(mapping.back_value(&b2.state.read(q)?)?);
                 calls |= has_call(&v1) || has_call(&v2);
-                values.push(json!({"place": p, "before_then_move": show(&v1), "move_then_after": show(&v2)}));
+                let (s1, s2) = (show(&normalize(mapping.value(&v1))), show(&normalize(mapping.value(&v2))));
+                values.push(json!({"place": q, "before_then_move": s1, "move_then_after": s2}));
                 if v1 != v2 {
                     diverging.push(json!({
-                        "place": p,
-                        "before_then_move": show(&v1),
-                        "move_then_after": show(&v2),
+                        "place": q,
+                        "before_then_move": s1,
+                        "move_then_after": s2,
                         "writes": {
-                            "before": last_write(orig, |w| mapping.places(w).iter().any(|q| q == p)),
-                            "after": last_write(br, |w| w == p),
+                            "before": last_write(b1, |w| w == p.as_slice()),
+                            "after": last_write(b2, |w| w == q.as_slice()),
                         },
                     }));
                 }
             }
-            let branch = branch_json(moved, br);
+            let branch = branch_json(b1, &lits2, b2, mapping);
             if !diverging.is_empty() {
                 let mut at: Vec<String> = Vec::new();
                 for d in &diverging {
@@ -530,8 +583,8 @@ fn compare(
                     basis: json!({"before": a, "after": b, "meaning": meaning}),
                     check: json!({
                         "branch": branch,
-                        "before_then_move": {"writes": writes_json(&orig.writes), "values": values},
-                        "move_then_after": {"writes": writes_json(&br.writes)},
+                        "before_then_move": {"writes": writes_json(&b1.writes), "values": values},
+                        "move_then_after": {"writes": writes_json(&b2.writes)},
                         "diverging": diverging,
                     }),
                     conditions: conditions(&ext1, &ext2, calls),
@@ -575,13 +628,15 @@ fn last_write(b: &Branch, hits: impl Fn(&[String]) -> bool) -> Json {
     b.writes.iter().rev().find(|w| hits(&w.place)).map(|w| json!({"at": w.at, "object": w.object, "value": w.text})).unwrap_or(Json::Null)
 }
 
-fn branch_json(moved: &Branch, after: &Branch) -> Json {
-    let mut seen = BTreeSet::new();
+/// 分岐の条件。変更前の名前にそろえた原子を、表示のために変更後の名前へ読み替える。
+fn branch_json(b1: &Branch, lits2: &[(Value, bool)], b2: &Branch, mapping: &Mapping) -> Json {
+    let mut seen: Vec<Value> = Vec::new();
     let mut out = Vec::new();
-    for l in moved.literals.iter().chain(&after.literals) {
-        let key = format!("{:?}", l.atom);
-        if seen.insert(key) {
-            out.push(json!({"condition": show(&l.atom), "truth": l.truth, "when": l.text, "at": l.at}));
+    let pairs = b1.literals.iter().map(|l| (&l.atom, l)).chain(lits2.iter().map(|(a, _)| a).zip(&b2.literals));
+    for (atom, l) in pairs {
+        if !seen.contains(atom) {
+            seen.push(atom.clone());
+            out.push(json!({"condition": show(&normalize(mapping.value(atom))), "truth": l.truth, "when": l.text, "at": l.at}));
         }
     }
     Json::Array(out)
@@ -614,7 +669,7 @@ fn keep(before: &Structure, after: &Structure, mapping: &Mapping, law: &str, mea
     for (e, _) in before.meanings.iter().filter(|(e, _)| !e.starts_with("local:") && has_meaning(before, e, meaning)) {
         // 変更前の要素の定義を読んでいなければ、それが何で、どこへ対応するかが決まらない。
         if let Err(s) = before.kind(e) {
-            out.push(Finding::silent("change", Some(law), e, s));
+            out.push(Finding { theory: Some(THEORY_CHANGES.to_string()), ..Finding::silent("change", Some(law), e, s) });
             continue;
         }
         let mut targets = Vec::new();
@@ -628,7 +683,7 @@ fn keep(before: &Structure, after: &Structure, mapping: &Mapping, law: &str, mea
         if !targets.is_empty() {
             kept.push(json!({"element": e, "targets": targets}));
         } else if let Some(s) = unknown {
-            out.push(Finding::silent("change", Some(law), e, s));
+            out.push(Finding { theory: Some(THEORY_CHANGES.to_string()), ..Finding::silent("change", Some(law), e, s) });
         } else {
             let mut f = finding(e, "fails", Some("missing"), json!({"element": e, "targets": []}));
             f.at = defined_at(before, e).into_iter().collect();
@@ -653,7 +708,7 @@ fn unread_sources(s: &Structure, sources: &[String], scope: &str) -> Vec<Silence
 /// 候補が書き直していない操作が `removes` した要素を使えば `missing`(マニュアル第5章 問い3)。
 /// 名指す事実は候補を重ねる処理が返す。操作と決まらない名前(曖昧、`?`)は沈黙する。
 /// 定義を読んでいない操作は、消える要素を使うかが決まらない。それらは一つの沈黙にまとめ、読む所を返す。
-fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay) -> Vec<Finding> {
+fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, sources: &[String]) -> Vec<Finding> {
     let mut out = Vec::new();
     if !overlay.removes.is_empty() {
         // 変更後にも残る呼び出し先と本体の Atom の `subject` のうち、定義を読んでいないもの。
@@ -671,6 +726,10 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay) -> Vec
                     unknown.entry(n.to_string()).or_insert(s);
                 }
             }
+        }
+        // 構造を読んでいないソースにある操作も、消える要素を使うかが決まらない。
+        for s in unread_sources(before, sources, "structure") {
+            unknown.entry(s.read.clone().unwrap_or_default()).or_insert(s);
         }
         if !unknown.is_empty() {
             out.push(Finding {

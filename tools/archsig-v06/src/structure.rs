@@ -208,7 +208,12 @@ impl Structure {
     /// 要素の種類。曖昧なら `unresolved`、定義を読んでいなければ設計 §3.3 のとおりに沈黙する。
     pub fn kind(&self, name: &str) -> Result<&str, Silence> {
         if name.starts_with('?') {
-            return Err(question(name));
+            // その名前が現れる Atom の場所を返す(マニュアル第5章 問い8)。
+            let s = question();
+            return Err(match self.atoms.iter().find(|a| a.subject == name || a.object.as_deref() == Some(name)) {
+                Some(a) => locate(s, a),
+                None => s,
+            });
         }
         match self.elements.get(name) {
             Some(e) if e.kinds.len() == 1 => Ok(e.kinds.iter().next().unwrap()),
@@ -258,12 +263,12 @@ impl Structure {
             let mut when = Vec::new();
             if let Some(w) = &a.when {
                 let e = parse_expr(w);
-                let value = self.resolve(op, env, &e).map_err(|s| unknown_at(s, &e, a))?;
+                let value = self.resolve(op, env, &e).map_err(|s| locate(s, a))?;
                 when.push(Cond { value, text: w.clone(), at: a.at.clone() });
             }
             let value = |s: &Self| -> Result<Value, Silence> {
                 let e = a.value.as_deref().map(parse_expr).unwrap_or(Expr::Unknown);
-                s.resolve(op, env, &e).map_err(|x| unknown_at(x, &e, a))
+                s.resolve(op, env, &e).map_err(|x| locate(x, a))
             };
             let object = a.object.clone().unwrap_or_default();
             let kind = match a.kind.as_str() {
@@ -291,7 +296,7 @@ impl Structure {
                     if external.is_none() {
                         for (param, e) in self.passes.get(&call).into_iter().flatten() {
                             let symbol = format!("{param}@{index}");
-                            binds.push((symbol.clone(), self.resolve(op, env, e).map_err(|x| unknown_at(x, e, a))?));
+                            binds.push((symbol.clone(), self.resolve(op, env, e).map_err(|x| locate(x, a))?));
                             inner.insert(param.clone(), Value::Arg(symbol));
                         }
                     }
@@ -312,10 +317,10 @@ impl Structure {
     pub fn resolve(&self, op: &str, env: &BTreeMap<String, Value>, e: &Expr) -> Result<Value, Silence> {
         let r = |x: &Expr| self.resolve(op, env, x);
         Ok(match e {
-            Expr::Unknown => return Err(Silence::new(Reason::Unresolved)),
+            Expr::Unknown => return Err(question()),
             Expr::Const(c) | Expr::Name(c) => {
                 if c.starts_with('?') {
-                    return Err(question(c));
+                    return Err(question());
                 }
                 Value::Const(c.clone())
             }
@@ -336,7 +341,7 @@ impl Structure {
             }
             Expr::Call(name, args) => {
                 if name.starts_with('?') {
-                    return Err(question(name));
+                    return Err(question());
                 }
                 if self.ambiguous(name) {
                     return Err(Silence::new(Reason::Unresolved));
@@ -550,27 +555,20 @@ impl State {
     }
 }
 
-/// `?` の名前が関わる沈黙。何を読めば決まるかとして、その名前の定義を返す(マニュアル第6章)。
-fn question(name: &str) -> Silence {
-    Silence { reason: Reason::Unresolved, read: None, element: Some(name.trim_start_matches('?').to_string()), scope: None }
+/// `?` の名前や値が関わる沈黙。どの Atom の `?` かは、`locate` で場所を付ける。
+fn question() -> Silence {
+    Silence { reason: Reason::Unresolved, read: None, element: None, scope: Some("?".to_string()) }
 }
 
-/// 値そのものが `?` のときは、その Atom のソースを読み直せば決まる。
-fn unknown_at(s: Silence, e: &Expr, a: &Atom) -> Silence {
-    if s.reason != Reason::Unresolved || s.read.is_some() || s.element.is_some() || !has_unknown(e) {
+/// `?` の沈黙に、その Atom の場所を、何を読めば決まるかとして付ける(マニュアル第5章 問い8、第6章)。
+/// 場所がソースでなければ(候補の中の Atom)、その Atom の要素の名前を返す。
+fn locate(s: Silence, a: &Atom) -> Silence {
+    if s.scope.as_deref() != Some("?") {
         return s;
     }
-    let path = a.at.as_deref().and_then(parse_location).map(|l| l.path);
-    Silence { read: path, scope: Some("structure".to_string()), ..s }
-}
-
-fn has_unknown(e: &Expr) -> bool {
-    match e {
-        Expr::Unknown => true,
-        Expr::Call(_, args) => args.iter().any(has_unknown),
-        Expr::Not(x) | Expr::Neg(x) => has_unknown(x),
-        Expr::Bin(_, a, b) => has_unknown(a) || has_unknown(b),
-        _ => false,
+    match a.at.as_deref().and_then(parse_location).map(|l| l.path).filter(|p| !p.starts_with("plan:")) {
+        Some(path) => Silence { read: Some(path), scope: Some("structure".to_string()), ..s },
+        None => Silence { element: Some(a.subject.clone()), scope: None, ..s },
     }
 }
 
