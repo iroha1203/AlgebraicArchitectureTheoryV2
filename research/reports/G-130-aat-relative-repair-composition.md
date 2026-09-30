@@ -291,6 +291,99 @@ audits:
   next_obligation: "範囲・参照の全比較、部分塔の完全な制限、その後B–F・W1–W5"
 ```
 
+## Cycle 4：範囲包含と同じ物理的固定条件の参照移送
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 4
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 7136aee01c1be8aa75c4de4843e9696e415789df
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "Cycle 1–3の同じ支持実修復、複体、存在障害、H1 torsor、全Aut/H0"
+  proof_dag_predecessors: [repairEquiv, gauge_inclusion, repairOrbitEquivH1, autH0Equiv, obstructionClass, solutionChangeReference, localCoefficients_changeReference, vertexGauge_changeReference]
+  milestone: "Aの範囲包含と参照座標変更を同じ実修復・全ラベル・障害へ接続する"
+  proof_obligations: ["範囲包含の支持複体/H1/H2とnative実関手・orbitの構成", "identity/compositionとH1座標・torsor・Aut/H0・障害の可換性", "同じ物理的固定辺を保つ参照移送とh'=h-a・固定値h'=-aの両方向", "参照移送のnative groupoid同値と全元ラベル、支持座標・障害の同じ往復"]
+  exit_criteria: ["任意S⊆Uについて元の実対象・全射の包含を構成し分類・障害と交換", "任意の同じcoreの参照liftで固定物理辺と移送方程式の全往復", "新旧実作用・全ラベルのnative groupoid同値", "登録focusedと報告対象全宣言axiom監査"]
+  selection_reason: "Aの分類を個別範囲・個別参照から全包含と同じ物理操作の移送へ進める"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/RelativeRepairComposition/RangeMaps.lean, ResearchLean/AG/RelativeRepairComposition/ReferenceShift.lean]
+  risks: ["参照変更後にh'=0を再課して物理固定辺を変更しない", "新δそのものの相対性を仮定せずアンカーのアフィン項を移す", "full部分塔制限とB–F/W1–W5は後続義務"]
+  unchecked: ["実装・検証・独立査読前"]
+```
+
+### 同じ実対象・全ラベル・支持障害の比較
+
+`RangeMaps.lean` は、同じ局所係数と閉Pについて任意の候補許可集合S⊆Uを扱う。
+`ReferenceShift.lean` は、同じ原始表示・core・比較を保つ任意の代替参照liftを扱う。
+
+| Aの要求 | 受理spine候補 | 同じ実操作との対応 |
+| --- | --- | --- |
+| 支持複体の包含 | `RelativeComplex.c0Inclusion`, `c1Inclusion`, `cochainInclusion_comm`, `cochainMap`, `cochainMap_comp` | 元の0/1-cochain値を保ち、2/3-cochainは恒等。元の全微分と可換なnative chain map |
+| H1/H2包含と障害 | `h1_boundaries_inclusion`, `h2_boundaries_inclusion`, `h1Inclusion`, `h2Inclusion`, `obstruction_inclusion` | 同じboundaryを大きい支持のboundaryへ送り、同じ実defect cocycleの類を保つ |
+| 実包含と分類 | `ActualRelative.rangeFunctor`, `rangeFunctor_map_label`, `rangeFunctor_comp`, `rangeOrbitCoord_inclusion`, `rangeOrbitInclusion_vadd`, `rangeOrbitInclusion_vsub`, `rangeAut_h0` | 全元の実辺選択と全頂点ラベルを保つnative関手。H1座標・torsor作用/差・同じ相対H0と可換 |
+| 同じ物理的な固定条件 | `AnchoredRepair`, `referenceRepairEquiv`, `solutionCorrection_changeReference`, `anchored_correction_iff_edge` | 新参照の独立実Solutionに旧物理辺の等式を課す。元の実修復と両逆、h'=h-a、固定物理辺とh'=-aの双方向 |
+| 移送方程式の全修復 | `AnchoredCorrection`, `anchoredEquiv`, `referenceCorrectionEquiv`, `referenceCorrectionEquiv_val`, `referenceCorrectionEquiv_symm_val`, `anchoredRec_choice` | 新参照の実d1と実defectを使用。移送した固定値から全元の実辺へ戻し、両逆と全候補名を保持 |
+| 参照移送の全射 | `anchoredGauge_solution`, `anchoredOriginalHomEquiv`, `referenceGroupoidEquiv`, `referenceGroupoidEquiv_map_label`, `referenceGroupoid_inclusion` | 任意の元頂点再同定から同じ支持labelを導く。native同値の両関手は同じ全ラベル。範囲包含と関手自体の等式で交換 |
+| 参照移送の分類 | `referenceOrbitEquiv`, `anchoredOrbitEquivH1`, `anchoredOrbitAddTorsor`, `referenceOrbitEquiv_vadd`, `referenceOrbitEquiv_vsub`, `referenceAutEquiv`, `anchoredAutH0Equiv`, `anchoredAutH0Equiv_label` | 新参照の独立実修復のorbit、native torsor・Autを同じH1/H0へ接続。非空時だけtorsor |
+| 同じ係数と障害 | `referenceDefect_value`, `anchoredDefect_eq`, `referenceCochainComplex_eq`, `anchoredObstructionCocycle_eq`, `anchoredObstructionClass_eq`, `anchored_repair_nonempty_iff_obstruction_zero` | 実新defectからアンカー項d1(-a)を加えた相対cocycleを生成して旧defectに同定。全範囲の存在障害を保持 |
+
+APIの`*_val`・`*_mk`・`*_label`・`*_choice`は元の座標・実辺・頂点ラベルの
+計算を公開する。包含の恒等・合成はcochain/H1/H2/orbitとnative関手で同じ写像を使う。
+参照変更後のdefectの相対性を追加仮定せず、移送された物理固定値のアフィン項を使う。
+
+| premise・certificate | 分類 | 使用・放電 |
+| --- | --- | --- |
+| 原始T、閉P、候補名・S⊆U | ambient-boundary・本文由来 | 元の固定集合の反単調性から支持包含を構成。係数や候補名を変更しない |
+| other、hother | direction-hypothesis・本文由来 | 同じcoreの代替liftという入力。G-129の`withAlternativeLift`が全核・輸送・比較条件を再構成 |
+| 固定物理面の整合、原始3-cell整合 | direction-hypothesis・本文由来 | 元の相対cocycleと移送したアンカー付き相対障害を生成 |
+| 個々の実修復・補正・ラベル・Aut・base | 定理の量化対象 | 全対象と全射の往復。存在判定の仮定にしない |
+| 修復型の非空性 | direction-hypothesis・本文由来 | 非空時のnative torsorだけ。新旧非空性は実修復同値から移送 |
+| 包含、全射、商写像、両逆、native構造、アンカー付き障害 | discharge-required・構成済み | 元の実修復往復・元d0/d1/d2・同じboundary商から生成。結果を入力fieldに受け取らない |
+
+受理依存はCycle 1–3とG-129の参照不変構成。参照変更の新しい固定物理条件、
+支持方程式・全射・native群oidと分類への接続は今回の宣言で証明する。
+完全な部分塔の制限、B–F・W1–W5は後続義務である。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "全範囲包含のnative複体/実関手/H1/H2/torsor/Aut/障害比較と、任意参照liftで同じ物理固定条件を移送した全対象・全射・分類・障害の往復"
+  exit_criteria_status: ["任意S⊆Uで元の対象・全射を保持する包含と全分類・障害の交換", "h'=h-a、h'fixed=-aの全修復往復", "新旧実作用と任意の元ラベル・native群oid同値", "focused check・全宣言axiom監査はPRへ固定"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [RangeMaps.lean, ReferenceShift.lean]
+  evidence: [cochainMap_comp, rangeOrbitInclusion_vadd, rangeAut_h0, referenceCorrectionEquiv, referenceGroupoidEquiv, anchoredOriginalHomEquiv, referenceGroupoid_inclusion, anchoredAutH0Equiv, anchored_repair_nonempty_iff_obstruction_zero]
+  claim_mapping:
+    theorem_names: [cochainMap, h1Inclusion, h2Inclusion, rangeFunctor_comp, rangeOrbitEquivH1, referenceRepairEquiv, anchoredEquiv, referenceCorrectionEquiv_val, anchoredOriginalHomEquiv, referenceGroupoid_inclusion, anchoredObstructionClass_eq]
+    source_labels: ["G-130 AのS⊆Tとの対応・同じ物理操作の参照座標移送", "n1017 §2.2・2.5"]
+    conjuncts: ["同じ支持複体・実対象/射と分類・障害の包含", "同じ物理固定辺と全ラベルの参照変更", "アンカーを反映した同じ相対障害"]
+    undischarged_assumptions: []
+    acceptance_point: "Aの包含と参照比較。部分塔の完全な制限、B–F/W1–W5は後続義務"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["範囲包含と全分類・障害の比較", "同じ物理固定条件の全参照移送・全射・分類・障害"]
+    remaining: ["部分塔の完全な制限", "B–F・W1–W5"]
+  certificate_provenance:
+    discharged: ["元の全実核の支持部分群と同じ実微分から包含を生成", "同じcoreの代替liftから実修復・新実defectと移送アンカーを生成"]
+    unresolved: []
+  proof_use:
+    used: ["支持包含→boundary包含→native商写像", "同じ実包含→torsor/Aut/H0/障害の交換", "実solution参照変更→固定物理辺とアフィン固定値の双方向", "元の全vertexGauge→新native全射同値", "新実defect+移送アンカー→同じ相対cocycle/障害"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["登録2fileのfocused check・全宣言#print axiomsはPRへ固定"]
+  blocking_findings: []
+  next_obligation: "元の全typed経路・面・3-cellと塔の部分表示制限、その後B–F・W1–W5"
+```
+
 ## 後続の構成義務
 
 Aの部分表示と全次数の制限、相対複体・H0/H1/H2分類、参照座標変更、Bのdescentと
