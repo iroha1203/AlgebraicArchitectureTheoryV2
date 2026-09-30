@@ -384,6 +384,93 @@ audits:
   next_obligation: "元の全typed経路・面・3-cellと塔の部分表示制限、その後B–F・W1–W5"
 ```
 
+## Cycle 5：閉領域の全表示・元実塔・同じ補正と再同定の制限
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 5
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: f0d77f93036353dd47c0fc3961da1151c8ac7c63
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "Cycle 1–4の支持実修復・相対複体・分類・包含/参照比較と、ClosedRegionsの原始セル制限"
+  proof_dag_predecessors: [ClosedRegion, r_d0, r_d1, r_d2, OriginalTowerPresentation, solutionCorrection, vertexGauge_correction, repairEquiv]
+  milestone: "Aの閉領域に全typed表示と元実塔を構成し、全核・輸送・微分・実defect・補正・全再同定の制限を同じ値で接続する"
+  proof_obligations: ["閉辺/面/3-cellの経路・全書換え列を部分型へ制限し元幾何へ戻す", "元対象/強い辺・core・lift・比較を保つOriginalTowerPresentationの制限", "実全核の同じ輸送と元0–3cochain制限の対応・全微分交換", "実defect・修復/補正・全元再同定の制限とnative関手", "原始実3-cell整合の制限・固定条件と範囲包含の交換"]
+  exit_criteria: ["全typedセル/書換えの元幾何を保持する制限", "新追加仮定なく同じ実塔/全核/輸送を生成", "元全微分・実defect・実補正・全再同定との可換性", "固定条件/全ラベルのnative制限と範囲包含比較", "登録focusedと全対象宣言axiom監査"]
+  selection_reason: "相対複体の原始添字制限を完全な実部分塔へ接続し、B/Cの実局所合成の入力を生成する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/RelativeRepairComposition/RestrictedPresentation.lean, ResearchLean/AG/RelativeRepairComposition/TowerRestriction.lean]
+  risks: ["3-cellを面の集合だけへ忘れず全typed順序・orientation・prefix/suffixを保持", "係数/射を自分の像や供給certificateへ縮めない", "原始実syzygyを仮定から適切に制限し実defectへ接続"]
+  unchecked: ["構成・登録検証・独立査読前"]
+```
+
+### 元の表示・実操作と制限先の対応
+
+| Aの要求 | 受理spine候補 | 保持する対象・計算 |
+| --- | --- | --- |
+| 全typed部分表示 | `ClosedRegion.presentation`, `restrictPasting`, `forget_restrict_pasting`, `forget_three_left`, `forget_three_right` | 元の部分型セル、全経路、各faceの向き・prefix/suffix、隣接middle path、両3-cellの完全なtyped列。bookend輸送後の列そのものの等号 |
+| 同じ係数と元制限複体 | `restrictCoefficients`, `nativeR0`–`nativeR3`, `nativeC1Equiv`, `native_d0_eq`, `native_d1_eq`, `native_d2_eq` | 元の端点係数・各edge輸送と全0–3微分。先行`ClosedRegions`の原始添字複体と同じ値へreindex |
+| 元実塔と全核 | `restrictLiftData`, `restrictTower`, `restrict_tower_coefficients`, `restrict_selected_path_lift` | 元対象・実辺と両strong性・core・lift・比較を制限。生成される全実核・輸送は同じ係数系の制限そのもの |
+| 元実defectと3-cell整合 | `restrict_canonical_face`, `restrict_face_defect`, `restrict_defect`, `restrict_whisker`, `restrict_authored_pasting`, `restrict_authored_syzygy` | strong一意性で同じcanonical比較/全fiber輸送を同定。実比較をtemporal順に合成して両3-cellの整合を制限し、元kernel defectを保持 |
+| 独立実修復・補正・再同定 | `restrictSolution`, `restrict_solution_correction`, `restrict_vertex_gauge`, `restrictRepair`, `restrictCorrection`, `restrict_coord`, `restrict_rec` | 各実choiceと固定実辺を保持し、独立方程式の制限を元d1/defectから構成。全補正と復元・元vertex gaugeは同じ値で可換 |
+| nativeな対象と全射の制限 | `repairRestrictionFunctor`, `correctionRestrictionFunctor`, `repair_restriction_map_label`, `coord_restriction_functors`, `rec_restriction_functors` | 選択した各元vertex labelを保持するnative関手。座標化/復元の比較は対象写像だけでなく関手そのものの等号 |
+| 固定名・全範囲包含 | `restricted_fixed_range`, `repairRelaxationFunctor`, `repair_restriction_relaxation` | 固定部分/候補/許可集合を同じ元edge名で選択。任意の固定集合包含について、制限と範囲relaxationが対象・全射で交換 |
+
+全順序付きface contextのtraceは内部の幾何比較APIであり、
+`pasting_trace_injective`によって同じbookendを持つ全typed列を復元できる。
+最終APIはtraceの等号だけでなく、bookend transport後の元列そのものの等号を示す。
+零延長は次数ごとの比較sectionにだけ使い、chain mapとする追加主張はない。
+
+| premise・構成条件 | 分類 | 出所・使用/放電 |
+| --- | --- | --- |
+| 原始K、閉領域Uの0–3セルと全閉包 | ambient-boundary・本文由来(G-130 A) | 元の部分型、両face経路、全context・step・3-cellを生成。閉包から全中間経路の所属を導く |
+| 元の一般T、圏p/q、原始対象/辺/core/lift/比較 | ambient-boundary・本文由来(G-130 A) | 同じ実対象/辺/比較を`restrictTower`へ制限。原始入力の特別化なし |
+| 元strong・全核可換・transport bijective・底/core整合・中央化 | direction-hypothesis・本文由来(G-130 A) | 新fieldは元の同じfieldの適用と経路評価保存から生成。新repair/cohomology/defect結論をfieldへ受け取らない。F/Wでの具体的放電は後続 |
+| 原始実3-cell整合 | direction-hypothesis・本文由来(G-130 A) | `restrict_whisker`と`restrict_authored_pasting`の同じ実経路比較から制限先の整合を証明 |
+| 抽象Mの群・edge同型・face輸送整合 | direction-hypothesis・本文由来(一般複体) | 同じMを制限して全微分交換。実適用でMはTから生成した全実kernel系そのもの |
+| 固定vertex/edge名・範囲包含、個々の実修復/補正/label | 本文由来の入力条件・定理の量化対象 | 任意の元固定条件・全作用元を選択部分へ制限。修復可否を事前に仮定しない |
+| 制限先の全表示/実塔・係数/微分・defect・独立解/方程式・全関手 | discharge-required・構成済み | 上表のconstructor/比較APIから生成し、結論相当certificateを入力にしない |
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "全typed閉部分表示・同じ原始実塔/全核・全微分/実defect/補正/再同定の制限と全ラベルnative関手、範囲包含の交換"
+  exit_criteria_status: ["全typed経路/面context/両3-cellの列そのものを保持", "同じ実塔条件と全kernel輸送を元入力から生成", "原始実syzygy/defect/補正/全gaugeの制限可換性", "固定条件・全ラベルnative関手とrelaxationの全成分等号", "登録2file個別focused・全対象axiom監査はPRへ固定"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [RestrictedPresentation.lean, TowerRestriction.lean]
+  evidence: [forget_restrict_pasting, forget_three_left, forget_three_right, native_d0_eq, native_d1_eq, native_d2_eq, restrict_tower_coefficients, restrict_defect, restrict_authored_syzygy, restrict_coord, restrict_rec, coord_restriction_functors, rec_restriction_functors, repair_restriction_relaxation]
+  claim_mapping:
+    theorem_names: [presentation, restrictTower, restrict_tower_coefficients, native_r_d0, native_r_d1, native_r_d2, restrict_authored_syzygy, restrict_defect, restrict_vertex_gauge, repairRestrictionFunctor, correctionRestrictionFunctor, coord_restriction_functors, rec_restriction_functors, repair_restriction_relaxation]
+    source_labels: ["G-130 Aの閉じた部分表示・同じ実対象/射/比較/係数の制限と可換性", "n1017 §2.1–2.2"]
+    conjuncts: ["全typed元幾何の保存", "同じ元実塔/全kernel系/全微分/実defect", "実修復/補正と全labelのnative制限・同じ往復", "固定候補名/範囲包含との交換"]
+    undischarged_assumptions: []
+    acceptance_point: "単一閉領域への全原始実データと修復の制限。閉領域同士の交差/被覆descent・有限局所合成とB–F/W1–W5は後続義務"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["全typed部分表示/経路/面/3-cell生成と元幾何保存", "元実塔/全kernel/輸送/微分/実defect/実syzygyの制限", "固定実修復/独立方程式の制限と全gaugeのnative関手・範囲比較"]
+    remaining: ["閉領域同士の交差・被覆の全比較とdescent", "B–F・W1–W5"]
+  certificate_provenance:
+    discharged: ["元セルのincidence閉包から全typed部分表示を生成", "元実辺と同じfieldから全塔/係数系を生成", "同じstrong一意性/実経路比較からdefect・syzygyを制限", "元独立解/方程式・d0から対象と全射の関手を生成"]
+    unresolved: []
+  proof_use:
+    used: ["閉context→全中間path/typed書換えの生成", "元strong/経路評価→canonical/全fiber輸送の同一性", "同じ実比較のtemporal合成→syzygyの制限", "元d1/defect→独立方程式制限→座標/復元の全関手比較", "元d0/固定名→全gauge制限→範囲relaxation比較"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["登録2fileのfocused・全新規宣言/自動equation宣言#print axiomsはPRへ固定"]
+  blocking_findings: []
+  next_obligation: "閉領域の交差・被覆と同じ相対複体の完全列、全修復descent、その後B–F・W1–W5"
+```
+
 ## 後続の構成義務
 
 Aの部分表示と全次数の制限、相対複体・H0/H1/H2分類、参照座標変更、Bのdescentと
