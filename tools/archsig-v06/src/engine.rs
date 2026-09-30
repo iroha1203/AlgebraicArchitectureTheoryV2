@@ -84,6 +84,8 @@ pub struct Branch {
     pub literals: Vec<Literal>,
     pub state: State,
     pub writes: Vec<Written>,
+    /// この分岐で行われた呼び出しの手順(列の添字)。
+    pub calls: BTreeSet<usize>,
 }
 
 impl Branch {
@@ -98,13 +100,27 @@ pub fn execute(s: &Structure, op: &str, fresh: &dyn Fn(&str) -> bool) -> Result<
     let steps = s.unfold(op)?;
     let mut branches = vec![Branch::default()];
     let mut externals = BTreeSet::new();
-    for step in &steps {
+    for (index, step) in steps.iter().enumerate() {
         if let StepKind::Call { callee, external: Some(_), .. } = &step.kind {
             externals.insert(callee.clone());
         }
-        let site = format!("{}#{}", step.at.clone().unwrap_or_default(), step.atom);
+        // 呼び出しの場所は、手順の元の Atom の場所と中身で決める。構造が変わっても、同じ Atom なら同じ場所である。
+        let atom = &s.atoms[step.atom];
+        let site = format!(
+            "{}|{}|{}|{}|{}",
+            atom.at.clone().unwrap_or_default(),
+            atom.subject,
+            atom.object.clone().unwrap_or_default(),
+            atom.value.clone().unwrap_or_default(),
+            atom.when.clone().unwrap_or_default()
+        );
         let mut next = Vec::new();
         for b in branches {
+            // 呼び出し先の手順は、その呼び出しが行われた分岐でだけ行う。
+            if step.within.is_some_and(|c| !b.calls.contains(&c)) {
+                next.push(b);
+                continue;
+            }
             // 条件は、この分岐の今の状態で読む。未割り当ての原子に出会うたびに、真と偽に分ける。
             let mut forks = vec![(b, true)];
             for c in &step.when {
@@ -114,7 +130,7 @@ pub fn execute(s: &Structure, op: &str, fresh: &dyn Fn(&str) -> bool) -> Result<
                         split.push((br, false));
                         continue;
                     }
-                    let v = normalize(freshen(br.state.eval(&c.value)?, &site, fresh));
+                    let v = normalize(br.state.eval(&freshen(c.value.clone(), &site, fresh))?);
                     let mut here = vec![(br, true)];
                     for (atom, truth) in literals(v) {
                         let mut more = Vec::new();
@@ -142,9 +158,16 @@ pub fn execute(s: &Structure, op: &str, fresh: &dyn Fn(&str) -> bool) -> Result<
                 forks = split;
             }
             for (mut br, active) in forks {
+                // 呼び出しでは、渡す値を呼び出しの時点で読んで束ねる。
+                if let (true, StepKind::Call { binds, .. }) = (active, &step.kind) {
+                    for (symbol, v) in binds {
+                        let v = normalize(br.state.eval(&freshen(v.clone(), &site, fresh))?);
+                        br.state.args.insert(symbol.clone(), v);
+                    }
+                    br.calls.insert(index);
+                }
                 if let (true, StepKind::Write { place, value }) = (active, &step.kind) {
-                    let v = normalize(freshen(br.state.eval(value)?, &site, fresh));
-                    let atom = &s.atoms[step.atom];
+                    let v = normalize(br.state.eval(&freshen(value.clone(), &site, fresh))?);
                     br.writes.push(Written {
                         place: place.clone(),
                         value: v.clone(),
@@ -294,12 +317,14 @@ impl<'a> Mapping<'a> {
             literals: b.literals.iter().map(|l| Literal { atom: normalize(self.value(&l.atom)), ..l.clone() }).collect(),
             state,
             writes: b.writes.clone(),
+            calls: b.calls.clone(),
         }
     }
 }
 
 /// `plan check`(マニュアル第5章 問い3)。`changes` の規則を計算し、`missing` を結論する。
-pub fn plan_check(before: &Structure, after: &Structure, overlay: &Overlay, laws: &LawSet) -> Vec<Finding> {
+/// `sources` は、Law の `sources` に当たる今のソースのファイル。
+pub fn plan_check(before: &Structure, after: &Structure, overlay: &Overlay, laws: &LawSet, sources: &[String]) -> Vec<Finding> {
     let fresh_patterns: Vec<globset::GlobMatcher> =
         laws.fresh.iter().filter_map(|p| globset::Glob::new(p).ok()).map(|g| g.compile_matcher()).collect();
     let fresh = |n: &str| fresh_patterns.iter().any(|m| m.is_match(n));
@@ -328,10 +353,17 @@ pub fn plan_check(before: &Structure, after: &Structure, overlay: &Overlay, laws
         }
         let found = match law.rule {
             Rule::ChangesCommute => commute(before, after, overlay, &mapping, &law.name, meaning, &fresh),
-            _ => keep(before, after, &mapping, &law.name, meaning),
+            _ => keep(before, after, &mapping, &law.name, meaning, sources),
         };
-        if found.is_empty() {
-            // 対応する操作の組がない。比べるものがないので成り立つ。
+        // 対応する操作の組がない。操作がないことは、構造の範囲を読んでいるときだけ言える(設計 §5.1)。
+        let unread = unread_sources(before, sources, "structure");
+        if found.is_empty() && !unread.is_empty() {
+            let mut f = Finding::silent("change", Some(&law.name), meaning, Silence::new(Reason::Unread));
+            f.next = unread;
+            f.theory = Some(THEORY_CHANGES.to_string());
+            out.push(f);
+        } else if found.is_empty() {
+            // 比べるものがないので成り立つ。
             out.push(Finding {
                 question: "change".to_string(),
                 law: Some(law.name.clone()),
@@ -392,6 +424,10 @@ fn commute(
 ) -> Vec<Finding> {
     let mut out = Vec::new();
     for (a, b) in &overlay.corresponds {
+        // 消える要素を使う操作は `missing` として挙がる。比べると、消えた要素を読む所として返してしまう。
+        if overlay.missing.contains_key(b) {
+            continue;
+        }
         let (ka, kb) = (before.kind(a), after.kind(b));
         // 片方の端が操作でないと決まっていれば、比べる組ではない。
         if matches!(ka, Ok(k) if k != "operation") || matches!(kb, Ok(k) if k != "operation") {
@@ -479,12 +515,14 @@ fn compare(
             }
             let branch = branch_json(moved, br);
             if !diverging.is_empty() {
-                let at: Vec<String> = diverging
-                    .iter()
-                    .flat_map(|d| [d["writes"]["before"]["at"].as_str(), d["writes"]["after"]["at"].as_str()])
-                    .flatten()
-                    .map(|s| s.to_string())
-                    .collect();
+                let mut at: Vec<String> = Vec::new();
+                for d in &diverging {
+                    for x in [d["writes"]["before"]["at"].as_str(), d["writes"]["after"]["at"].as_str()].into_iter().flatten() {
+                        if !at.iter().any(|y| y == x) {
+                            at.push(x.to_string());
+                        }
+                    }
+                }
                 return Ok(Finding {
                     outcome: "fails",
                     kind: Some("counterexample"),
@@ -554,41 +592,62 @@ fn writes_json(ws: &[Written]) -> Json {
 }
 
 /// `changes keep`(マニュアル第5章 問い3)。意味を持つ変更前の要素が、対応で変更後の要素を持つか。
-fn keep(before: &Structure, after: &Structure, mapping: &Mapping, law: &str, meaning: &str) -> Vec<Finding> {
+fn keep(before: &Structure, after: &Structure, mapping: &Mapping, law: &str, meaning: &str, sources: &[String]) -> Vec<Finding> {
+    let finding = |subject: &str, outcome, kind, check: Json| Finding {
+        question: "change".to_string(),
+        law: Some(law.to_string()),
+        subject: subject.to_string(),
+        outcome,
+        kind,
+        basis: json!({"meaning": meaning}),
+        check,
+        theory: Some(THEORY_CHANGES.to_string()),
+        ..Finding::default()
+    };
     let mut out = Vec::new();
+    // 意味を持つ要素がないことは、その意味の範囲を読んでいるときだけ言える(設計 §5.1)。
+    let unread = unread_sources(before, sources, &format!("meaning:{meaning}"));
+    if !unread.is_empty() {
+        out.push(Finding { reason: Some("unread"), next: unread, ..finding(meaning, "silent", None, Json::Null) });
+    }
     let mut kept = Vec::new();
-    for (e, _) in before.meanings.iter().filter(|(e, _)| has_meaning(before, e, meaning)) {
-        let targets: Vec<&str> = mapping.to.get(e.as_str()).map(|v| v.iter().copied().filter(|t| after.elements.contains_key(*t)).collect()).unwrap_or_default();
-        if targets.is_empty() {
-            out.push(Finding {
-                question: "change".to_string(),
-                law: Some(law.to_string()),
-                subject: e.clone(),
-                outcome: "fails",
-                kind: Some("missing"),
-                at: defined_at(before, e).into_iter().collect(),
-                basis: json!({"element": e, "meaning": meaning}),
-                check: json!({"element": e, "targets": []}),
-                theory: Some(THEORY_CHANGES.to_string()),
-                ..Finding::default()
-            });
-        } else {
+    for (e, _) in before.meanings.iter().filter(|(e, _)| !e.starts_with("local:") && has_meaning(before, e, meaning)) {
+        // 変更前の要素の定義を読んでいなければ、それが何で、どこへ対応するかが決まらない。
+        if let Err(s) = before.kind(e) {
+            out.push(Finding::silent("change", Some(law), e, s));
+            continue;
+        }
+        let mut targets = Vec::new();
+        let mut unknown = None;
+        for t in mapping.to.get(e.as_str()).into_iter().flatten() {
+            match after.kind(t) {
+                Ok(_) => targets.push(*t),
+                Err(s) => unknown = unknown.or(Some(s)),
+            }
+        }
+        if !targets.is_empty() {
             kept.push(json!({"element": e, "targets": targets}));
+        } else if let Some(s) = unknown {
+            out.push(Finding::silent("change", Some(law), e, s));
+        } else {
+            let mut f = finding(e, "fails", Some("missing"), json!({"element": e, "targets": []}));
+            f.at = defined_at(before, e).into_iter().collect();
+            out.push(f);
         }
     }
     if out.is_empty() {
-        out.push(Finding {
-            question: "change".to_string(),
-            law: Some(law.to_string()),
-            subject: meaning.to_string(),
-            outcome: "holds",
-            basis: json!({"meaning": meaning}),
-            check: json!({"kept": kept}),
-            theory: Some(THEORY_CHANGES.to_string()),
-            ..Finding::default()
-        });
+        out.push(finding(meaning, "holds", None, json!({"kept": kept})));
     }
     out
+}
+
+/// `sources` のソースのうち、範囲 `scope` を読んでいないもの。読む所として返す。
+fn unread_sources(s: &Structure, sources: &[String], scope: &str) -> Vec<Silence> {
+    sources
+        .iter()
+        .filter(|src| !s.observed.contains(&((*src).clone(), scope.to_string())))
+        .map(|src| Silence { reason: Reason::Unread, read: Some(src.clone()), element: None, scope: Some(scope.to_string()) })
+        .collect()
 }
 
 /// 候補が書き直していない操作が `removes` した要素を使えば `missing`(マニュアル第5章 問い3)。
@@ -606,10 +665,10 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay) -> Vec
                 _ => continue,
             };
             for n in names.into_iter().filter(|n| !n.is_empty() && !overlay.missing.contains_key(*n)) {
-                if let Err(s) = after.kind(n) {
-                    if s.reason == Reason::Unread {
-                        unknown.entry(n.to_string()).or_insert(s);
-                    }
+                if let Err(s) = after.kind(n)
+                    && s.reason == Reason::Unread
+                {
+                    unknown.entry(n.to_string()).or_insert(s);
                 }
             }
         }

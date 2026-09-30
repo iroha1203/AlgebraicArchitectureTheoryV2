@@ -60,8 +60,6 @@ impl Store {
         Ok(out)
     }
 
-    /// ソースの ArchMap のファイルは `.archsig/map/<ソース>.jsonl`。
-    /// 局所ごとの意味 Atom は、ソースとぶつからないように `.archsig/local/<読み>/<局所>.jsonl` に置く。
     /// 候補 `name` の Atom の列。`.archsig/plans/<name>/` の直下の `.jsonl` を名前の順に読む。
     pub fn plan(&self, name: &str) -> Result<Vec<Atom>, String> {
         let dir = self.dir().join("plans").join(name);
@@ -106,6 +104,8 @@ impl Store {
         serde_json::from_str(&text).map_err(|e| format!("{id}: {e}"))
     }
 
+    /// ソースの ArchMap のファイルは `.archsig/map/<ソース>.jsonl`。
+    /// 局所ごとの意味 Atom は、ソースとぶつからないように `.archsig/local/<読み>/<局所>.jsonl` に置く。
     fn map_file(&self, place: &Place) -> PathBuf {
         match place {
             Place::Source(path) => self.dir().join("map").join(format!("{path}.jsonl")),

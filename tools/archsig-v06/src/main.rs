@@ -85,7 +85,8 @@ fn run(cli: Cli) -> Result<Value, String> {
             let before = with_base(&store, store.map()?, &plan, &mut Vec::new())?;
             let o = overlay(&before, &store.plan(&plan)?);
             let (b, a) = (Structure::new(before), Structure::new(o.after.clone()));
-            let findings = engine::plan_check(&b, &a, &o, &laws);
+            let sources = store.sources(&laws)?;
+            let findings = engine::plan_check(&b, &a, &o, &laws, &sources);
             let not_computed = engine::not_computed(&laws);
             store.save_run(|run| result::summarize(run, "plan check", &findings, &not_computed))
         }

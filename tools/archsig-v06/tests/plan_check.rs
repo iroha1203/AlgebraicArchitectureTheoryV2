@@ -138,15 +138,16 @@ fn an_unread_callee_is_silent_and_returns_the_source_to_read() {
     let next = s["next"].as_array().unwrap();
     let address = next.iter().find(|n| n["read"] == "shop/shipping/address.py").unwrap_or_else(|| panic!("{s}"));
     assert_eq!(address["scope"], "structure");
-    // 読む所ごとにまとめる。fix_address も同じソースで決まる(AC8)。
-    let fix = result(&s, "shop.shipping.service.fix_address")["id"].clone();
-    // 候補が Order を消すので、normalize_address が消える要素を使うかも、同じソースで決まる。
+    // 読む所ごとにまとめる(AC8)。候補が Order を消すので、normalize_address が消える要素を使うかも、同じソースで決まる。
     let removes = result(&s, "removes")["id"].clone();
     let mut decides: Vec<&str> = address["decides"].as_array().unwrap().iter().map(|d| d.as_str().unwrap()).collect();
     decides.sort();
-    let mut expected = vec![r["id"].as_str().unwrap(), fix.as_str().unwrap(), removes.as_str().unwrap()];
+    let mut expected = vec![r["id"].as_str().unwrap(), removes.as_str().unwrap()];
     expected.sort();
     assert_eq!(decides, expected);
+    // fix_address は引数の型に消える Order を使うので、比べる組ではなく missing として挙がる。
+    let fix = result(&s, "shop.shipping.service.fix_address");
+    assert_eq!((fix["outcome"].as_str(), fix["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
 }
 
 #[test]
@@ -388,4 +389,243 @@ fn local_meaning_atoms_are_unchecked() {
     let s = repo.run(&["plan", "check", "split-order"]);
     let r = result(&s, "payment-info");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "局所ごとの意味 Atom を配る幾何はまだない: {s}");
+}
+
+impl Repo {
+    fn fail(&self, args: &[&str]) -> String {
+        let out = Command::new(env!("CARGO_BIN_EXE_archsig")).current_dir(&self.dir).args(args).output().unwrap();
+        assert!(!out.status.success(), "archsig {args:?} は失敗するはず");
+        String::from_utf8_lossy(&out.stderr).to_string()
+    }
+}
+
+const KEEP: &str = r#"sources "shop/**"
+
+reading module = dir(depth: 2)
+
+meaning payment-info on field
+  "注文の支払いを特定する値。"
+
+law payment-info-kept
+  "決済情報は変更の後も残る。"
+  about payment-info
+  changes keep
+"#;
+
+fn keep_repo(name: &str) -> Repo {
+    let repo = shop(name);
+    repo.write(".archsig/law/shop.law", KEEP);
+    repo.write("shop/order/model.py", "class Order: ...\n");
+    repo
+}
+
+#[test]
+fn changes_keep_holds_when_the_meaning_has_a_correspondence() {
+    let repo = keep_repo("keep-holds");
+    repo.write(".archsig/plans/split-order/plan.jsonl", SPLIT);
+    let s = repo.run(&["plan", "check", "split-order"]);
+    let r = result(&s, "payment-info");
+    assert_eq!(r["outcome"], "holds", "{s}");
+    let d = repo.run(&["show", r["id"].as_str().unwrap()]);
+    assert_eq!(d["check"]["kept"][0]["targets"], serde_json::json!(["shop.payment.model.OrderPayment.ref"]));
+}
+
+#[test]
+fn changes_keep_reports_an_element_without_a_correspondence_as_missing() {
+    let repo = keep_repo("keep-missing");
+    repo.write(".archsig/plans/split-order/plan.jsonl", &SPLIT.replace(
+        r#"{"kind": "corresponds", "subject": "shop.order.model.Order.payment_ref", "object": "shop.payment.model.OrderPayment.ref", "at": "plan:split-order"}
+"#,
+        "",
+    ));
+    let s = repo.run(&["plan", "check", "split-order"]);
+    let r = result(&s, "shop.order.model.Order.payment_ref");
+    assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
+}
+
+#[test]
+fn changes_keep_is_silent_where_the_meaning_or_the_definition_was_not_read() {
+    let repo = keep_repo("keep-unread");
+    // 意味を読んでいないソースがある。
+    repo.write("shop/payment/charge.py", "def charge(): ...\n");
+    repo.write(".archsig/plans/split-order/plan.jsonl", SPLIT);
+    let s = repo.run(&["plan", "check", "split-order"]);
+    let r = result(&s, "payment-info");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "shop/payment/charge.py" && n["scope"] == "meaning:payment-info"), "{s}");
+
+    // 意味 Atom はあるが、その要素の定義を読んでいない。何も変えない候補でも missing とは言えない。
+    let repo = keep_repo("keep-undefined");
+    repo.map("shop/order/model.py", r#"{"kind": "observed", "subject": "shop/order/model.py", "scope": "meaning:payment-info", "at": "shop/order/model.py@blob:1d9e3b4"}
+{"kind": "meaning", "subject": "shop.order.model.Order.payment_ref", "meaning": "payment-info", "uses": ["shop/payment/charge.py:22@blob:8b41d07"], "at": "shop/order/model.py:10@blob:1d9e3b4"}
+"#);
+    repo.write(".archsig/plans/nothing/plan.jsonl", r#"{"kind": "plan", "subject": "nothing", "base": "a1b2c3d"}
+"#);
+    let s = repo.run(&["plan", "check", "nothing"]);
+    let r = result(&s, "shop.order.model.Order.payment_ref");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+}
+
+#[test]
+fn a_law_without_pairs_is_silent_where_the_structure_was_not_read() {
+    let repo = Repo::new("nopairs-unread");
+    repo.write(".archsig/law/shop.law", LAW);
+    repo.map("shop/order/model.py", ORDER);
+    repo.write("shop/order/model.py", "class Order: ...\n");
+    repo.write("shop/order/confirm.py", "def confirm(): ...\n");
+    repo.write(".archsig/plans/add-type/plan.jsonl", r#"{"kind": "defines", "subject": "shop.gift.model.Gift", "value": "type", "file": "shop/gift/model.py", "at": "plan:add-type"}
+"#);
+    let s = repo.run(&["plan", "check", "add-type"]);
+    let r = result(&s, "payment-info");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "操作がないとは言えない: {s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "shop/order/confirm.py" && n["scope"] == "structure"), "{s}");
+}
+
+/// 変更前: f(o) は g(x=$o.a) を呼び、g は T.a = 1 のあとで T.p = $x を書く。p は呼び出しの時点の a。
+const CALL_TIME: &str = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T.a", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T.p", "value": "field", "type": "int", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.T.p", "meaning": "payment-info", "uses": ["m.py:9@blob:aaaaaaa"], "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.T"}, "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "passes", "subject": "m.f->m.g", "object": "m.g.$x", "value": "$o.a", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"x": "int"}, "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.T.a", "value": "1", "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.T.p", "value": "$x", "at": "m.py:10@blob:aaaaaaa"}
+"#;
+
+fn call_time(name: &str, plan: &str) -> Value {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", CALL_TIME);
+    repo.write(".archsig/plans/p/plan.jsonl", plan);
+    let s = repo.run(&["plan", "check", "p"]);
+    result(&s, "m.f").clone()
+}
+
+#[test]
+fn a_passed_value_is_read_when_the_call_is_made() {
+    // 候補は、同じ振る舞いを展開して書く(p = a を先に、a = 1 を後に)。
+    let same = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.T"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.T.p", "value": "$o.a", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.T.a", "value": "1", "at": "plan:p"}
+"#;
+    assert_eq!(call_time("call-same", same)["outcome"], "holds");
+    // a = 1 を先に書いてから p = a とすると、p は 1 になり、振る舞いが変わる。
+    let changed = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.T"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.T.a", "value": "1", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.T.p", "value": "$o.a", "at": "plan:p"}
+"#;
+    assert_eq!(call_time("call-changed", changed)["kind"], "counterexample");
+}
+
+#[test]
+fn a_call_condition_is_read_when_the_call_is_made() {
+    // 変更前: f は a == 0 のときだけ g を呼ぶ。g は a = 5 のあとで p = None を書く。
+    let before = CALL_TIME
+        .replace(r#""object": "m.g", "at": "m.py:6@blob:aaaaaaa"}"#, r#""object": "m.g", "when": "$o.a == 0", "at": "m.py:6@blob:aaaaaaa"}"#)
+        .replace(r#""object": "m.T.a", "value": "1""#, r#""object": "m.T.a", "value": "5""#)
+        .replace(r#""object": "m.T.p", "value": "$x""#, r#""object": "m.T.p", "value": "None""#);
+    let repo = Repo::new("call-when");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", &before);
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.T"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.T.p", "value": "None", "when": "$o.a == 0", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.T.a", "value": "5", "when": "$o.a == 0", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    assert_eq!(result(&s, "m.f")["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn a_fresh_value_in_an_untouched_operation_is_the_same_before_and_after() {
+    let repo = Repo::new("fresh");
+    repo.write(".archsig/law/m.law", &format!("{}\nfresh \"ids.new*\"\n", LAW.replace("\"shop/**\"", "\"m.py\"")));
+    // 候補が消す要素の Atom が先に読まれ、Atom の並びがずれる形にする。
+    repo.map("a.py", r#"{"kind": "observed", "subject": "a.py", "scope": "structure", "at": "a.py@blob:bbbbbbb"}
+{"kind": "defines", "subject": "a.Old", "value": "type", "at": "a.py:1@blob:bbbbbbb"}
+{"kind": "defines", "subject": "a.Old.x", "value": "field", "type": "int", "at": "a.py:2@blob:bbbbbbb"}
+"#);
+    repo.map("m.py", &format!("{CALL_TIME}{}", r#"{"kind": "writes", "subject": "m.f", "object": "m.T.p", "value": "ids.new_token()", "at": "m.py:7@blob:aaaaaaa"}
+"#));
+    repo.write(".archsig/plans/p/plan.jsonl", r#"{"kind": "removes", "subject": "a.Old", "at": "plan:p"}
+"#);
+    let s = repo.run(&["plan", "check", "p"]);
+    assert_eq!(result(&s, "m.f")["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn recursion_is_silent_with_limit() {
+    let repo = Repo::new("recursion");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", &format!("{CALL_TIME}{}", r#"{"kind": "calls", "subject": "m.g", "object": "m.g", "at": "m.py:11@blob:aaaaaaa"}
+"#));
+    repo.write(".archsig/plans/p/plan.jsonl", r#"{"kind": "plan", "subject": "p", "base": "a1b2c3d"}
+"#);
+    let s = repo.run(&["plan", "check", "p"]);
+    assert_eq!(result(&s, "m.f")["reason"], "limit", "{s}");
+}
+
+#[test]
+fn a_plan_on_a_plan_is_checked_against_the_base_plan() {
+    let repo = shop("base");
+    repo.map("shop/shipping/address.py", ADDRESS);
+    repo.write(".archsig/plans/split-order/plan.jsonl", SPLIT);
+    // 元の候補の上で、国が変わるとき決済情報を消す。元の候補の update_shipping は消さないので、振る舞いが変わる。
+    repo.write(
+        ".archsig/plans/fix/plan.jsonl",
+        &format!(
+            "{}\n{}{}",
+            r#"{"kind": "plan", "subject": "fix", "base": "plan:split-order"}"#,
+            RESET.replace("plan:split-order", "plan:fix"),
+            SPLIT.lines().filter(|l| l.contains(r#""subject": "shop.shipping.service.update_shipping""#) || l.contains("update_shipping->")).map(|l| format!("{}\n", l.replace("plan:split-order", "plan:fix"))).collect::<String>()
+        ),
+    );
+    let s = repo.run(&["plan", "check", "fix"]);
+    assert_eq!(result(&s, UPDATE)["kind"], "counterexample", "元の候補を先に重ねて比べる: {s}");
+
+    repo.write(".archsig/plans/a/plan.jsonl", r#"{"kind": "plan", "subject": "a", "base": "plan:b"}
+"#);
+    repo.write(".archsig/plans/b/plan.jsonl", r#"{"kind": "plan", "subject": "b", "base": "plan:a"}
+"#);
+    assert!(repo.fail(&["plan", "check", "a"]).contains("めぐっている"));
+}
+
+#[test]
+fn each_result_is_listed_once_for_a_place_to_read() {
+    let repo = shop("dedupe");
+    // 同じソースの、読んでいない呼び出し先が二つある。
+    repo.map("shop/shipping/service.py", &format!("{SERVICE}{}", r#"{"kind": "calls", "subject": "shop.shipping.service.fix_address", "object": "shop.shipping.address.validate", "at": "shop/shipping/service.py:10@blob:3f2a9c1"}
+{"kind": "resolves", "subject": "shop.shipping.address.validate", "object": "shop/shipping/address.py", "at": "shop/shipping/service.py:1@blob:3f2a9c1"}
+"#));
+    repo.write(".archsig/plans/split-order/plan.jsonl", SPLIT);
+    let s = repo.run(&["plan", "check", "split-order"]);
+    for n in s["next"].as_array().unwrap() {
+        let ids: Vec<&str> = n["decides"].as_array().unwrap().iter().map(|d| d.as_str().unwrap()).collect();
+        let mut unique = ids.clone();
+        unique.dedup();
+        assert_eq!(ids, unique, "{s}");
+    }
+    let removes = result(&s, "removes");
+    let d = repo.run(&["show", removes["id"].as_str().unwrap()]);
+    assert_eq!(d["next"].as_array().unwrap().len(), 1, "同じ読む所は一度だけ: {d}");
+}
+
+#[test]
+fn changes_keep_is_silent_when_the_target_was_not_read() {
+    let repo = keep_repo("keep-target");
+    // 行き先 shop.billing.model.Bill.ref は、候補にも ArchMap にも定義がない。
+    repo.write(".archsig/plans/split-order/plan.jsonl", &SPLIT.replace(
+        r#""object": "shop.payment.model.OrderPayment.ref""#,
+        r#""object": "shop.billing.model.Bill.ref""#,
+    ));
+    let s = repo.run(&["plan", "check", "split-order"]);
+    let r = result(&s, "shop.order.model.Order.payment_ref");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "shop.billing.model.Bill.ref"), "{s}");
 }

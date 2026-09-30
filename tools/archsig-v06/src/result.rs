@@ -29,10 +29,18 @@ pub fn summarize(run: &str, command: &str, findings: &[Finding], not_computed: &
         detail["check"] = f.check.clone();
         detail["conditions"] = json!(f.conditions);
         detail["theory"] = json!(f.theory);
-        detail["next"] = Json::Array(f.next.iter().map(next_json).collect());
+        let mut own: Vec<Json> = Vec::new();
         for n in &f.next {
-            next.entry((n.read.clone(), n.scope.clone(), n.element.clone())).or_default().push(id.clone());
+            let j = next_json(n);
+            if !own.contains(&j) {
+                own.push(j);
+            }
+            let decides = next.entry((n.read.clone(), n.scope.clone(), n.element.clone())).or_default();
+            if !decides.contains(&id) {
+                decides.push(id.clone());
+            }
         }
+        detail["next"] = Json::Array(own);
         results.push(row);
         details.push(detail);
     }

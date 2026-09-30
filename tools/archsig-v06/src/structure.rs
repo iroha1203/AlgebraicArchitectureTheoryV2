@@ -73,7 +73,8 @@ pub enum StepKind {
     /// 場所に値を置く。
     Write { place: Vec<String>, value: Value },
     /// 呼び出し。観測した操作なら、この後に呼び出し先の手順が続く。外部なら `external` にパッケージを持つ。
-    Call { call: String, callee: String, external: Option<String> },
+    /// `binds` は、呼び出しの時点で読む `passes` の値。呼び出し先では、その記号(`Value::Arg`)で引数を指す。
+    Call { call: String, callee: String, external: Option<String>, binds: Vec<(String, Value)> },
     Send { item: String, value: Value },
     Return { value: Value },
 }
@@ -86,7 +87,9 @@ pub struct Cond {
     pub at: Option<String>,
 }
 
-/// 展開した手順。`when` は、この手順と、たどった呼び出しの条件すべての「かつ」。
+/// 展開した手順。`when` は、この手順の条件。
+/// `within` は、この手順を展開した呼び出しの手順(列の添字)。その呼び出しが行われた分岐でだけ、この手順も行う。
+/// 呼び出しの条件は、呼び出しの時点で一度だけ読む。
 /// `atom` は、手順の元の Atom(`Structure::atoms` の添字)。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Step {
@@ -94,6 +97,7 @@ pub struct Step {
     pub when: Vec<Cond>,
     pub at: Option<String>,
     pub atom: usize,
+    pub within: Option<usize>,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -229,7 +233,7 @@ impl Structure {
     pub fn unfold(&self, op: &str) -> Result<Vec<Step>, Silence> {
         self.expect(op, "operation")?;
         let mut out = Vec::new();
-        self.unfold_into(op, &BTreeMap::new(), &[], 0, &mut out)?;
+        self.unfold_into(op, &BTreeMap::new(), None, 0, &mut out)?;
         Ok(out)
     }
 
@@ -245,13 +249,13 @@ impl Structure {
         }
     }
 
-    fn unfold_into(&self, op: &str, env: &BTreeMap<String, Value>, outer: &[Cond], depth: usize, out: &mut Vec<Step>) -> Result<(), Silence> {
+    fn unfold_into(&self, op: &str, env: &BTreeMap<String, Value>, within: Option<usize>, depth: usize, out: &mut Vec<Step>) -> Result<(), Silence> {
         if depth > DEPTH_LIMIT || out.len() > STEP_LIMIT {
             return Err(Silence::new(Reason::Limit));
         }
         for &i in self.bodies.get(op).map(|v| v.as_slice()).unwrap_or(&[]) {
             let a = &self.atoms[i];
-            let mut when = outer.to_vec();
+            let mut when = Vec::new();
             if let Some(w) = &a.when {
                 let e = parse_expr(w);
                 let value = self.resolve(op, env, &e).map_err(|s| unknown_at(s, &e, a))?;
@@ -280,18 +284,25 @@ impl Structure {
                             _ => return Err(s),
                         },
                     };
-                    out.push(Step { kind: StepKind::Call { call: call.clone(), callee: object.clone(), external: external.clone() }, when: when.clone(), at: a.at.clone(), atom: i });
+                    // 渡す値は呼び出しの時点で読む。呼び出し先では、呼び出しごとの記号で引数を指す(設計 §3.5)。
+                    let index = out.len();
+                    let mut binds = Vec::new();
+                    let mut inner = BTreeMap::new();
                     if external.is_none() {
-                        let mut inner = BTreeMap::new();
                         for (param, e) in self.passes.get(&call).into_iter().flatten() {
-                            inner.insert(param.clone(), self.resolve(op, env, e).map_err(|x| unknown_at(x, e, a))?);
+                            let symbol = format!("{param}@{index}");
+                            binds.push((symbol.clone(), self.resolve(op, env, e).map_err(|x| unknown_at(x, e, a))?));
+                            inner.insert(param.clone(), Value::Arg(symbol));
                         }
-                        self.unfold_into(&object, &inner, &when, depth + 1, out)?;
+                    }
+                    out.push(Step { kind: StepKind::Call { call, callee: object.clone(), external: external.clone(), binds }, when, at: a.at.clone(), atom: i, within });
+                    if external.is_none() {
+                        self.unfold_into(&object, &inner, Some(index), depth + 1, out)?;
                     }
                     continue;
                 }
             };
-            out.push(Step { kind, when, at: a.at.clone(), atom: i });
+            out.push(Step { kind, when, at: a.at.clone(), atom: i, within });
         }
         Ok(())
     }
@@ -498,6 +509,8 @@ impl Structure {
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct State {
     pub places: BTreeMap<Vec<String>, Value>,
+    /// 呼び出しで渡した値。呼び出しの時点で読んだもの。
+    pub args: BTreeMap<String, Value>,
 }
 
 impl State {
@@ -526,6 +539,7 @@ impl State {
         let e = |x: &Value| self.eval(x).map(Box::new);
         Ok(match v {
             Value::Read(p) => self.read(p)?,
+            Value::Arg(n) => self.args.get(n).cloned().unwrap_or_else(|| Value::Arg(n.clone())),
             Value::Proj(x, f) => Value::Proj(e(x)?, f.clone()),
             Value::Call(n, args) => Value::Call(n.clone(), args.iter().map(|a| self.eval(a)).collect::<Result<_, _>>()?),
             Value::Not(x) => Value::Not(e(x)?),

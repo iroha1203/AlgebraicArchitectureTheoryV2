@@ -12,17 +12,10 @@ fn structure(jsonl: &str) -> Structure {
 
 /// 条件のない手順を順に実行した状態と、書き込みの記録。
 fn run(s: &Structure, op: &str) -> (State, Vec<(Vec<String>, Value)>) {
-    let mut state = State::default();
-    let mut writes = Vec::new();
-    for step in s.unfold(op).unwrap() {
-        assert!(step.when.is_empty());
-        if let StepKind::Write { place, value } = step.kind {
-            let v = state.eval(&value).unwrap();
-            writes.push((place.clone(), v.clone()));
-            state.write(place, v);
-        }
-    }
-    (state, writes)
+    let (mut branches, _) = archsig::engine::execute(s, op, &|_| false).unwrap();
+    assert_eq!(branches.len(), 1, "条件のない操作");
+    let b = branches.remove(0);
+    (b.state, b.writes.into_iter().map(|w| (w.place, w.value)).collect())
 }
 
 fn place(names: &[&str]) -> Vec<String> {
