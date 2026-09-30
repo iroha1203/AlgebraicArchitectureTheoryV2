@@ -23,19 +23,43 @@ B・Cの線形代数と問い合わせ一般論はその入力型を用いて構
 
 Research pathは `research/lean/ResearchLean/AG/` からの相対である。
 G-130の宣言は同GOALの成果から参照し、宣言名と参照版を実装時のreport・Issueに記録する。
+有限列挙・行列・実核の共通基盤は[G-130設計 §2](../G-130-aat-relative-repair-composition/README.md#2-既存宣言の再利用と新しい対応)に対応させる。
 
-| 既存path・宣言 | 再利用する結論 | 新しく構成・証明するもの |
+### 2.1 同じ観測・述語・問い合わせ手続き
+
+| 既存path・宣言 | 再利用する結論と入力条件 | 新しく構成・証明するもの |
 | --- | --- | --- |
-| `MinimalCompatibilityObservations/PointObservation.lean` の `observe`、`pointStabilizer`、`exists_predicate_iff_sufficient` | 同じ観測による部分群所属判定と安定化群包含 | 加法群の作用、原始評価との一致、同じ実修復述語、線形双対への対応 |
-| 同ファイルの `minObservations`、`minObservations_attained`、`minObservations_eq_top_iff` | 最小十分集合と無限大の場合 | 問い合わせindex集合との濃度の対応、既知情報の核への制限 |
-| `MinimalCompatibilityObservations/AdaptiveLowerBound.lean` の `QueryProcedure`、`QueryRun.replay_identity`、`identity_queries_sufficient` | 応答列の再現と判定下限 | アフィンfiberの基準点からの平行移動、数値出力を持つ手続きの再現 |
-| `MinimalCompatibilityObservations/QueryOptimum.lean` の `optimalQueries_eq_minObservations`、`finiteFixedProcedure_executable_optimal` | 適応的最悪時最適値と固定観測の達成 | 原始問い合わせと点観測の相互シミュレーション、数値補正の達成手続き |
-| `MinimalCompatibilityObservations/FiniteMinimum.lean` の `minimumObservation`、`minimumOrWitness_correct`、`minimumOrWitness_invisible` | 明示列挙から最小集合または識別不能証拠を得る | 線形核条件の有限判定、不能証拠を元の実入力へ戻す対応 |
-| G-130 A・C–F | 同じ実修復・候補・defect・記号的行列・復元 | 未知値を全実現する族、既知情報と原始観測の取得経路 |
+| `MinimalCompatibilityObservations/PointObservation.lean` の `observe`、`pointStabilizer`、`exists_predicate_iff_sufficient` | 任意の群作用と部分群に対する、同じ点観測による所属判定と安定化群包含 | B：加法群の作用、原始評価との一致、同じ実修復述語、線形双対への対応 |
+| 同ファイルの `minObservations`、`minObservations_attained`、`minObservations_eq_top_iff` | 最小十分集合と無限大の場合 | B・C：問い合わせindex集合との濃度の対応、既知情報の核への制限 |
+| `ComparisonInformationLoss/ObservationKernel.lean` の `exists_observation_predicate_iff_ker_le`、`PointObservation.lean` の `hom_predicate_iff_original`、`hom_predicate_apply` | 群準同型の観測と部分群述語の因子化、実際の述語と各入力での評価の移送 | B：$`O_J`$ を加法群準同型として適用する。各原始問い合わせの回数は別途点作用へ対応させ、ベクトル観測全体を一回と数えない |
+| `MinimalCompatibilityObservations/AdaptiveLowerBound.lean` の `QueryProcedure`、`QueryRun.replay_identity`、`identity_queries_sufficient` | Boolを返す判定手続きの応答列再現と下限 | B・C：アフィンfiberの成功基準点からの平行移動、原始問い合わせとの同一応答・回数、数値出力側の再現 |
+| `MinimalCompatibilityObservations/QueryOptimum.lean` の `optimalQueries_eq_minObservations`、`finiteFixedProcedure_executable_optimal` | 判定の適応的最悪時最適値と、明示した群・点の列挙を用いる固定観測手続き | B・C：点 $`(j,a)`$ と原始問い合わせの相互シミュレーション、固定集合でのindex重複の除去 |
+| G-130 A・C–F | 同じ実修復・候補・defect・記号的行列・復元 | A・D・E：未知値を全実現する族、既知情報と原始観測の取得経路 |
 
 数値出力ではG-128のBool出力の判定定理だけで終えず、返された補正値が同じ右辺を
 決定することを用いた下限を作る。G-128の既存の手続き型と対応させるのは判定側とし、
 数値側は同じ質問・応答規則と補正または不能という出力を持つ型を構成する。
+
+### 2.2 有限探索・双対・数値復元
+
+| 既存path・宣言 | 再利用する部分と残る接続 |
+| --- | --- |
+| `ProtocolHolonomy/FiniteDirectDecision.lean` の `ExplicitEnumeration.toFintype`、`pi`、`product`、`MinimalCompatibilityObservations/FiniteAmbientTable.lean` の `ExplicitEnumeration.sigma`、`sum` | 有限体・基底・原始indexから $`\operatorname{Multiplicative}N`$ と点の直和の完全な列挙を作る。等値判定と、$`\ker((q_SB)\vert_N)`$ または $`\ker(B\vert_N)`$ への所属判定を明示する |
+| `MinimalCompatibilityObservations/FiniteMinimum.lean` の `candidateSets`、`mem_candidateSets`、`minimumObservation`、`minimumOrWitness_correct` | 入力表から候補集合を生成して最小十分集合を選ぶ。線形核条件との対応と、点集合から原始index集合への変換を証明する |
+| 同ファイルの `minimumOrWitness_optimalProcedure`、`minimumOrWitness_invisible` | 探索が実際に返した集合を最適な判定手続きへ渡す経路と、失敗時の識別不能証拠を使う。後者を成功基準点とAの全実現で元の二つの実入力へ戻す |
+| Mathlib `LinearAlgebra/Dual/Lemmas.lean` の `Submodule.dualQuotEquivDualAnnihilator`、`LinearMap.range_dualMap_eq_dualAnnihilator_ker`、`mem_span_of_iInf_ker_le_ker` | B・D：商の双対、核包含と評価spanの対応。$`N=\ker L`$ 上へ制限し、同じ不能証拠の値を取得する線形結合へ戻す |
+| Mathlib `LinearAlgebra/Isomorphisms.lean` の `LinearMap.quotKerEquivRange`、`Submodule.quotientQuotientEquivQuotient` | A・B：$`\operatorname{coker}D_S\cong\mathsf O/\mathsf R_S`$、$`\mathsf V/\ker(q_SB)\cong\operatorname{im}(q_SB)`$。同じ $`D_S,q_S,B`$ を代入し、代表元での評価一致を示す |
+| `Formal/AG/Measurement/FiniteRegime.lean` の `FiniteLinearSystemSolver.ofFiniteField` | C・D：既知情報と修復条件の連立、観測取得後の求解に使える有限探索の定義。`solve_isSome_iff` だけでは返却値が解であることは得られないため、具体的な探索の返却値の正確性と明示入力での実行可能性を追加検証する |
+
+判定側では $`\Gamma=\ker((q_SB)\vert_N)`$ に最小集合探索を適用する。
+数値側の十分集合の探索には $`\ker(B\vert_N)`$ を使えるが、そこで得るBool手続きは
+修復の数値出力そのものではない。同じ最小集合から右辺を復元し、正しい補正を求めて、
+G-130の同じ復元へ渡す手続きを構成する。これはCの数値出力の達成証明である。
+
+`LocalSemanticReconstruction/CSFiniteValueQueryBridge.lean` は有限値表によるHomの識別を
+扱うため、この数値修復出力の最適値には入力・出力の対応が別途必要になる。
+`ObstructionDiagnosticBridge` のČech障害と診断の比較も、今回の同じ実defect・候補列・
+原始問い合わせへの対応を自動的に与えない。AはG-130の実操作への往復から構成する。
 
 ## 3. 原始入力からのアフィン方程式
 
