@@ -43,7 +43,12 @@ noncomputable def repairDifference (Q R : SupportedRepair T F) :
       rw [map_sub, show (d1Hom M) (repairCoord T F Q).1.1 = -T.toTower.defect
         from (repairCoord T F Q).2,
         show (d1Hom M) (repairCoord T F R).1.1 = -T.toTower.defect
-        from (repairCoord T F R).2, sub_self]⟩
+      from (repairCoord T F R).2, sub_self]⟩
+
+/-- Coordinate API for the entire supported difference. -/
+theorem repairDifference_coord (Q R : SupportedRepair T F) :
+    (repairDifference T P candidates allowed Q R).1.1 =
+      (repairCoord T F Q).1.1 - (repairCoord T F R).1.1 := rfl
 
 /-- Add any supported cocycle and restore the same original actual edge choices. -/
 noncomputable def repairCocycleAction (z : RelativeComplex.Z1 M P candidates allowed)
@@ -66,8 +71,8 @@ theorem repairDifference_action (z : RelativeComplex.Z1 M P candidates allowed)
     (R : SupportedRepair T F) :
     repairDifference T P candidates allowed (repairCocycleAction T P candidates allowed z R) R = z := by
   apply Subtype.ext; apply Subtype.ext
-  change (repairCoord T F _).1.1 - (repairCoord T F R).1.1 = z.1.1
-  rw [repairCocycleAction_coord, add_sub_cancel_right]
+  change (repairDifference T P candidates allowed _ R).1.1 = z.1.1
+  rw [repairDifference_coord, repairCocycleAction_coord, add_sub_cancel_right]
 
 /-- Acting by the difference recovers the entire independent actual repair. -/
 theorem repairCocycleAction_difference (Q R : SupportedRepair T F) :
@@ -76,8 +81,7 @@ theorem repairCocycleAction_difference (Q R : SupportedRepair T F) :
   apply Subtype.ext; apply Subtype.ext
   change (repairCoord T F _).1.1 = (repairCoord T F Q).1.1
   rw [repairCocycleAction_coord]
-  change ((repairCoord T F Q).1.1 - (repairCoord T F R).1.1) +
-    (repairCoord T F R).1.1 = (repairCoord T F Q).1.1
+  rw [repairDifference_coord]
   exact sub_add_cancel _ _
 
 /-- The actual difference obeys the torsor subtraction identity. -/
@@ -85,7 +89,10 @@ theorem repairDifference_sub (Q R U : SupportedRepair T F) :
     repairDifference T P candidates allowed Q R =
       repairDifference T P candidates allowed Q U - repairDifference T P candidates allowed R U := by
   apply Subtype.ext; apply Subtype.ext
-  change _ - _ = (_ - _) - (_ - _)
+  change (repairDifference T P candidates allowed Q R).1.1 =
+    (repairDifference T P candidates allowed Q U).1.1 -
+      (repairDifference T P candidates allowed R U).1.1
+  rw [repairDifference_coord, repairDifference_coord, repairDifference_coord]
   abel
 
 /-- Isomorphism classes of the original repairs under all permitted vertex labels. -/
@@ -109,16 +116,17 @@ theorem repairOrbit_mk_eq_iff_difference_zero (Q R : SupportedRepair T F) :
   · rintro ⟨b, hb⟩
     refine ⟨⟨b.1, by rw [← supportedC0_eq]; exact b.2⟩, ?_⟩
     apply Subtype.ext; apply Subtype.ext
-    change d0 M b.1 = (repairCoord T F Q).1.1 - (repairCoord T F R).1.1
-    rw [← hb, repairGauge_coord, add_sub_cancel_left]
+    change d0 M b.1 = (repairDifference T P candidates allowed Q R).1.1
+    rw [repairDifference_coord, ← hb, repairGauge_coord, add_sub_cancel_left]
   · rintro ⟨b, hb⟩
     refine ⟨⟨b.1, by rw [supportedC0_eq]; exact b.2⟩, ?_⟩
     apply (repairEquiv T F).injective
     apply Subtype.ext; apply Subtype.ext
     change (repairCoord T F _).1.1 = (repairCoord T F Q).1.1
     rw [repairGauge_coord]
-    have hh : d0 M b.1 = (repairCoord T F Q).1.1 - (repairCoord T F R).1.1 :=
+    have hh : d0 M b.1 = (repairDifference T P candidates allowed Q R).1.1 :=
       congrArg (fun z => z.1.1) hb
+    rw [repairDifference_coord] at hh
     rw [hh]
     abel
 
@@ -145,6 +153,12 @@ noncomputable def repairOrbitCoord (base : SupportedRepair T F) :
       intro R Q h
       exact (repairOrbit_mk_eq_iff_coord T P candidates allowed base R Q).mp (Quotient.sound h))
 
+/-- Evaluate orbit coordinates on an original repair representative. -/
+theorem repairOrbitCoord_mk (base Q : SupportedRepair T F) :
+    repairOrbitCoord T P candidates allowed base (⟦Q⟧ : RepairOrbit T P candidates allowed) =
+      (QuotientAddGroup.mk (repairDifference T P candidates allowed Q base) :
+        RelativeComplex.H1 M P candidates allowed) := rfl
+
 /-- Restore every isomorphism class from a supported H1 class. -/
 noncomputable def repairOrbitFromH1 (base : SupportedRepair T F) :
     RelativeComplex.H1 M P candidates allowed → RepairOrbit T P candidates allowed :=
@@ -155,6 +169,13 @@ noncomputable def repairOrbitFromH1 (base : SupportedRepair T F) :
       simpa only [repairDifference_action] using (Quotient.sound h :
         (QuotientAddGroup.mk z : RelativeComplex.H1 M P candidates allowed) = QuotientAddGroup.mk w))
 
+/-- Evaluate orbit restoration on a cocycle representative of an H1 class. -/
+theorem repairOrbitFromH1_mk (base : SupportedRepair T F)
+    (z : RelativeComplex.Z1 M P candidates allowed) :
+    repairOrbitFromH1 T P candidates allowed base
+      (QuotientAddGroup.mk z : RelativeComplex.H1 M P candidates allowed) =
+      (⟦repairCocycleAction T P candidates allowed z base⟧ : RepairOrbit T P candidates allowed) := rfl
+
 /-- An actual base repair identifies all its isomorphism classes with the same H1. -/
 noncomputable def repairOrbitEquivH1 (base : SupportedRepair T F) :
     RelativeComplex.H1 M P candidates allowed ≃ RepairOrbit T P candidates allowed where
@@ -164,17 +185,43 @@ noncomputable def repairOrbitEquivH1 (base : SupportedRepair T F) :
     intro c
     induction c using Quotient.inductionOn' with
     | _ z =>
-      change (QuotientAddGroup.mk (repairDifference T P candidates allowed
-        (repairCocycleAction T P candidates allowed z base) base) :
-        RelativeComplex.H1 M P candidates allowed) = QuotientAddGroup.mk z
-      rw [repairDifference_action]
+      change repairOrbitCoord T P candidates allowed base
+        (repairOrbitFromH1 T P candidates allowed base (QuotientAddGroup.mk z)) = QuotientAddGroup.mk z
+      rw [repairOrbitFromH1_mk, repairOrbitCoord_mk, repairDifference_action]
   right_inv := by
     intro Q
     induction Q using Quotient.inductionOn' with
     | _ R =>
-      change (⟦repairCocycleAction T P candidates allowed
-        (repairDifference T P candidates allowed R base) base⟧ : RepairOrbit T P candidates allowed) = ⟦R⟧
-      rw [repairCocycleAction_difference]
+      change repairOrbitFromH1 T P candidates allowed base
+        (repairOrbitCoord T P candidates allowed base ⟦R⟧) = ⟦R⟧
+      rw [repairOrbitCoord_mk, repairOrbitFromH1_mk, repairCocycleAction_difference]
+
+/-- The H1 equivalence uses the public orbit restoration map. -/
+theorem repairOrbitEquivH1_apply (base : SupportedRepair T F)
+    (c : RelativeComplex.H1 M P candidates allowed) :
+    repairOrbitEquivH1 T P candidates allowed base c =
+      repairOrbitFromH1 T P candidates allowed base c := rfl
+
+/-- The inverse H1 equivalence uses the public orbit coordinate map. -/
+theorem repairOrbitEquivH1_symm_apply (base : SupportedRepair T F)
+    (Q : RepairOrbit T P candidates allowed) :
+    (repairOrbitEquivH1 T P candidates allowed base).symm Q =
+      repairOrbitCoord T P candidates allowed base Q := rfl
+
+/-- Evaluate the H1 equivalence on a cocycle class. -/
+theorem repairOrbitEquivH1_apply_mk (base : SupportedRepair T F)
+    (z : RelativeComplex.Z1 M P candidates allowed) :
+    repairOrbitEquivH1 T P candidates allowed base
+      (QuotientAddGroup.mk z : RelativeComplex.H1 M P candidates allowed) =
+      (⟦repairCocycleAction T P candidates allowed z base⟧ : RepairOrbit T P candidates allowed) :=
+  repairOrbitFromH1_mk T P candidates allowed base z
+
+/-- Evaluate inverse H1 coordinates on an original repair representative. -/
+theorem repairOrbitEquivH1_symm_mk (base Q : SupportedRepair T F) :
+    (repairOrbitEquivH1 T P candidates allowed base).symm
+      (⟦Q⟧ : RepairOrbit T P candidates allowed) =
+      (QuotientAddGroup.mk (repairDifference T P candidates allowed Q base) :
+        RelativeComplex.H1 M P candidates allowed) := repairOrbitCoord_mk T P candidates allowed base Q
 
 /-- An internal choice used only to transport the standard torsor structure. -/
 private noncomputable def orbitBase [Nonempty (SupportedRepair T F)] : SupportedRepair T F :=
@@ -210,9 +257,9 @@ theorem repairDifference_action_base (z : RelativeComplex.Z1 M P candidates allo
     repairDifference T P candidates allowed (repairCocycleAction T P candidates allowed z Q) base =
       z + repairDifference T P candidates allowed Q base := by
   apply Subtype.ext; apply Subtype.ext
-  change (repairCoord T F _).1.1 - (repairCoord T F base).1.1 =
-    z.1.1 + ((repairCoord T F Q).1.1 - (repairCoord T F base).1.1)
-  rw [repairCocycleAction_coord]
+  change (repairDifference T P candidates allowed _ base).1.1 =
+    z.1.1 + (repairDifference T P candidates allowed Q base).1.1
+  rw [repairDifference_coord, repairDifference_coord, repairCocycleAction_coord]
   abel
 
 /-- The native H1 torsor action is the actual cocycle action on representatives. -/
@@ -227,10 +274,10 @@ theorem repairOrbit_vadd_mk [Nonempty (SupportedRepair T F)]
   apply e.symm.injective
   rw [e.symm_apply_apply]
   change (QuotientAddGroup.mk z : RelativeComplex.H1 M P candidates allowed) +
-    QuotientAddGroup.mk (repairDifference T P candidates allowed Q base) =
-    QuotientAddGroup.mk (repairDifference T P candidates allowed
-      (repairCocycleAction T P candidates allowed z Q) base)
-  rw [repairDifference_action_base]
+    (repairOrbitEquivH1 T P candidates allowed base).symm ⟦Q⟧ =
+    (repairOrbitEquivH1 T P candidates allowed base).symm
+      ⟦repairCocycleAction T P candidates allowed z Q⟧
+  rw [repairOrbitEquivH1_symm_mk, repairOrbitEquivH1_symm_mk, repairDifference_action_base]
   exact ((QuotientAddGroup.mk' (RelativeComplex.d0ToZ1 M P candidates allowed).range).map_add _ _).symm
 
 /-- The native torsor difference is the same actual difference mapped to H1. -/
@@ -238,10 +285,10 @@ theorem repairOrbit_vsub_mk [Nonempty (SupportedRepair T F)] (Q R : SupportedRep
     ((⟦Q⟧ : RepairOrbit T P candidates allowed) -ᵥ ⟦R⟧ : RelativeComplex.H1 M P candidates allowed) =
       QuotientAddGroup.mk (repairDifference T P candidates allowed Q R) := by
   let base := orbitBase T P candidates allowed
-  change (QuotientAddGroup.mk (repairDifference T P candidates allowed Q base) :
-    RelativeComplex.H1 M P candidates allowed) -
-      QuotientAddGroup.mk (repairDifference T P candidates allowed R base) =
+  change (repairOrbitEquivH1 T P candidates allowed base).symm ⟦Q⟧ -
+      (repairOrbitEquivH1 T P candidates allowed base).symm ⟦R⟧ =
         QuotientAddGroup.mk (repairDifference T P candidates allowed Q R)
+  rw [repairOrbitEquivH1_symm_mk, repairOrbitEquivH1_symm_mk]
   have hmap := (QuotientAddGroup.mk' (RelativeComplex.d0ToZ1 M P candidates allowed).range).map_sub
     (repairDifference T P candidates allowed Q base) (repairDifference T P candidates allowed R base)
   exact hmap.symm.trans (congrArg QuotientAddGroup.mk (repairDifference_sub T P candidates allowed Q R base).symm)
@@ -256,16 +303,27 @@ noncomputable def relativeLabel (b : RelativeComplex.relativeH0 M P) :
     rw [show d0 M b.1 = 0 from hb.2]
     exact (RelativeComplex.C1Group M P candidates allowed).zero_mem⟩
 
+/-- Value API: a permitted relative label has exactly the original vertex cochain. -/
+theorem relativeLabel_val (b : RelativeComplex.relativeH0 M P) :
+    (relativeLabel T P candidates allowed b).1 = b.1 := rfl
+
+/-- Label API for inclusion of each relative zero-cocycle into the permitted labels. -/
+theorem relativeLabel_label (b : RelativeComplex.relativeH0 M P) :
+    (relativeLabel T P candidates allowed b).1 = b.1 := relativeLabel_val T P candidates allowed b
+
 /-- Construct a native actual automorphism and its inverse from each H0 label. -/
 noncomputable def labelAut (R : RepairGroupoid T P.vertices F)
     (b : RelativeComplex.relativeH0 M P) : Aut R where
   hom := ⟨Multiplicative.ofAdd (relativeLabel T P candidates allowed b),
-    (repairGauge_eq_self_iff T P.vertices F _ R.back).mpr
-      ((RelativeComplex.mem_relativeH0 M P b.1).mp b.2).2⟩
+    by
+      apply (repairGauge_eq_self_iff T P.vertices F _ R.back).mpr
+      change d0 M (relativeLabel T P candidates allowed b).1 = 0
+      rw [relativeLabel_val]
+      exact ((RelativeComplex.mem_relativeH0 M P b.1).mp b.2).2⟩
   inv := ⟨Multiplicative.ofAdd (-relativeLabel T P candidates allowed b), by
     apply (repairGauge_eq_self_iff T P.vertices F _ R.back).mpr
-    change (d0Hom M) (-b.1) = 0
-    rw [map_neg, show (d0Hom M) b.1 = 0 from
+    change (d0Hom M) (-(relativeLabel T P candidates allowed b).1) = 0
+    rw [relativeLabel_val, map_neg, show (d0Hom M) b.1 = 0 from
       ((RelativeComplex.mem_relativeH0 M P b.1).mp b.2).2, neg_zero]⟩
   hom_inv_id := by
     apply Subtype.ext
