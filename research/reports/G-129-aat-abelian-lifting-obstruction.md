@@ -3,6 +3,96 @@
 一次仕様は [固定GOAL](../goals/G-129-aat-abelian-lifting-obstruction.md)、
 実行・査読・mergeの記録は [tracking Issue #5082](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5082) を参照する。
 
+## 第14Cycleの選定
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-129-aat-abelian-lifting-obstruction
+cycle: 14
+goal_blob_sha: 9f93a9a1c2ebd9ccd53362e878363144a934b4b8
+base_oid: b30e65f6a0f7e04e531bb020f13a6f2fc3ad358b
+tracking_issue: 5082
+report_path: research/reports/G-129-aat-abelian-lifting-obstruction.md
+selection:
+  proof_state_ref: "一般A–D・G-127原始写像接続・指定幾何例受理済み、指定C4/S3計算が残る"
+  proof_dag_predecessors: [GroupExtension.input, GroupExtension.coefficientEquiv, GroupExtension.solutionEquiv, GroupExtension.obstruction_zero_iff, squarePresentation, twoVertexC4, twoVertex_no_group_section]
+  milestone: "完了条件2の同じG-127非分裂C4例を両liftの非零障害と元section不存在まで閉じる"
+  proof_obligations: ["元ChangeGroup/projectionToLiftableの全核C2と全条件を証明", "同じ非自明visible値の二つの元liftを選ぶ", "rho=id、d0/d1/d2と実H2≃C2を計算", "実defect=1と同じ3-cell syzygy/cocycleを両liftで評価", "非零障害から元実解不存在と同じ群section不存在へ接続"]
+  exit_criteria: ["完了条件2の全構成・評価をLeanで証明", "全対象宣言focused/axiom/scanと独立PRレビュー合格"]
+  selection_reason: "一般Dの元の写像を受理した直後に指定非分裂例の実際の障害を評価する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/AbelianLiftingObstruction/C4Witness.lean]
+  risks: ["抽象C4で元状態群を置換しない", "実核・生成微分・障害を回答式から定義しない", "二つの元visible liftと元sectionの結論を同じ射影で接続"]
+  unchecked: ["実装・検証・独立レビュー前"]
+```
+
+### 第14Cycleの証拠対応
+
+完了条件2の二頂点操作グラフ、Bool fiber、元の `twoVertexData` と選択可視群をそのまま使う。
+`E` は元の `ChangeGroup`、`π` は元の `projectionToLiftable`、`H` は元のliftable subgroup。
+`liftable_visible_full` と `same_projection` により元の選択可視C2全体と元の射影値を保つ。
+`original_projection_mod_two` は受理済みC4/C2表示下の同じ原始射影を評価する。
+この操作グラフと、可視群の関係を表す一頂点の `squarePresentation` は別の入力である。
+
+| 固定要求 | `C4Witness` の一次証拠 | 同じ元の値への対応 |
+| --- | --- | --- |
+| 元のC4拡大・全核C2 | `ambient_comm`, `kernel_comm`, `verticalC2`, `kernelC2`, `coefficient`, `kernel_generator_value`, `original_projection_mod_two` | 元の全ChangeGroupと全射影核、C2生成元は元のverticalChange |
+| 非自明coreと二つのlift | `core`, `core_nonidentity`, `reference`, `projects`, `reference_sq`, `reference_distinct`, `reference_exhaustive` | 元first/secondSwapLift由来の全二つの状態変更、同じvisible exchange、同じ非自明平方 |
+| 全原始条件 | `input`, `relations`, `kernel_comm`, `syzygy` | 第13Cycle一般Dのstrong性・A2・全核輸送全単射性・恒等比較中心化の生成を同じ値に適用、具体核可換性を放電 |
+| A条件4の同じ3-cell | `first_pasting_value`, `last_pasting_value`, `syzygy` | 同じsquareの先頭/末尾削除をそれぞれ恒等comparatorへ評価、両liftで一致 |
+| 生成輸送・微分 | `edge_identity`, `coefficient_double`, `d0_zero`, `d1_zero`, `d2_zero` | rho=id、d0=1-rho=0、d1=rho+1=2=0、d2=rho-1=0。答えの微分を入力しない |
+| 実際のH2≃C2 | `cycleCoordinate`, `boundary_bot`, `h2Coordinate`, `h2Coordinate_mk` | 生成複体の全Z2と実boundary rangeからnative quotient同型を構成 |
+| 同じdefect/障害/コサイクル | `defect_value`, `defect_coordinate`, `defect_cocycle`, `obstruction_coordinate`, `obstruction_nonzero`, `referenceH2Equiv`, `reference_obstruction_same` | 元verticalChange、係数座標1、同じd2でcycle、実H2 classも1、二つの基準で同じ非零障害 |
+| B3と元section不存在 | `no_solution`, `no_group_solution`, `solutionOfSection`, `no_group_section_from_obstruction`, `agrees_with_original_no_section` | 任意の元sectionから独立E値square実解を作り、非零障害によるB3の不存在へ矛盾。元 `twoVertex_no_group_section` と同じproposition |
+
+前提は具体原始入力とBoolean reference選択だけであり、可換性、各liftの射影・平方、
+coreの面関係、生成輸送、全A条件とsyzygyは全て証明する。
+解存在、障害消滅、面defect消滅、別群への置換は入力にない。
+H2は答えのZModを定義したものではなく、同じ複体のnative quotientからのAddEquivである。
+
+依存は第13Cycleの `GroupExtension/ProtocolExtension` と、G-127受理版
+PR #5068 head `916b7f523bb45978add1f0fad8de598f17abccc1` の
+`TwoVertexTotalGroup/TwoVertexQuotient/TwoVertexNoSection/TwoVertexVerticalGroup`。
+[受理review ref](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5068#issuecomment-5863225600)
+と、現在の必要statement・定義・適用引数・proof-useを確認する。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "指定同じG-127 C4例、二つの元liftの生成複体・native H2・非零障害・3-cellと元section不存在を評価"
+  exit_criteria_status: ["C4Witness49宣言で全要求を証明", "単一focused/全49個別公理/対象module targeted build/scan、独立査読はPR監査で判定"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [ResearchLean/AG/AbelianLiftingObstruction/C4Witness.lean]
+  evidence: [kernelC2, coefficient, kernel_generator_value, edge_identity, h2Coordinate, obstruction_coordinate, first_pasting_value, last_pasting_value, no_group_section_from_obstruction]
+  claim_mapping:
+    theorem_names: [C4Witness.kernel_comm, C4Witness.projects, C4Witness.relations, C4Witness.edge_identity, C4Witness.d1_zero, C4Witness.d2_zero, C4Witness.defect_coordinate, C4Witness.defect_cocycle, C4Witness.obstruction_coordinate, C4Witness.reference_obstruction_same, C4Witness.no_group_section_from_obstruction]
+    source_labels: ["完了条件2", "A–Dの同じ具体適用"]
+    conjuncts: ["元G-127の全群/核/可視/fiber保持", "同じsquare/3-cell/両基準lift", "実微分/H2/defect/非零障害", "元section不存在へB3適用"]
+    undischarged_assumptions: []
+    acceptance_point: "同じ原始入力から全具体条件と値を証明し、元の全sectionへの結論を障害から導出する"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["全具体核可換性/C2同型", "両元lift/core整列/面関係", "生成輸送/強い輸送/比較中心化/syzygy", "実微分/native H2/defect/障害評価"]
+    remaining: ["指定S3例の全仮定放電・作用/解/H1/H2計算", "最終累積completion"]
+  certificate_provenance:
+    discharged: ["元G-127 group/kernel equivalences", "第13Cycle原始πからのinput生成", "生成微分からnative quotient同型", "元sectionから独立E実解生成"]
+    unresolved: []
+  proof_use:
+    used: ["C4同型:全群可換性", "全核可換性:一般D入力", "元lift平方:実defect値", "生成輸送:微分評価", "実d1/d2零:native H2", "非零障害:B3と元section不存在"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["C4Witness単一focused", "全49個別#print axiomsとnamespace guard", "C4Witness targeted build", "共通scan"]
+  blocking_findings: []
+  next_obligation: "指定S3 sign例、最終累積completion"
+```
+
 ## 第13Cycleの選定
 
 ```yaml

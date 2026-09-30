@@ -997,3 +997,4 @@ import ResearchLean.AG.AbelianLiftingObstruction.CrossStage
 import ResearchLean.AG.AbelianLiftingObstruction.GeometryWitness
 import ResearchLean.AG.AbelianLiftingObstruction.GroupExtension
 import ResearchLean.AG.AbelianLiftingObstruction.ProtocolExtension
+import ResearchLean.AG.AbelianLiftingObstruction.C4Witness
