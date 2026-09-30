@@ -321,14 +321,14 @@ selection:
 
 | Aの要求 | 受理spine候補 | 同じ実操作との対応 |
 | --- | --- | --- |
-| 支持複体の包含 | `RelativeComplex.c0Inclusion`, `c1Inclusion`, `cochainInclusion_comm`, `cochainMap`, `cochainMap_comp` | 元の0/1-cochain値を保ち、2/3-cochainは恒等。元の全微分と可換なnative chain map |
+| 支持複体の包含 | `RelativeComplex.c0Inclusion`, `c1Inclusion`, `cochain_inclusion_comm`, `cochainMap`, `cochain_map_comp` | 元の0/1-cochain値を保ち、2/3-cochainは恒等。元の全微分と可換なnative chain map |
 | H1/H2包含と障害 | `h1_boundaries_inclusion`, `h2_boundaries_inclusion`, `h1Inclusion`, `h2Inclusion`, `obstruction_inclusion` | 同じboundaryを大きい支持のboundaryへ送り、同じ実defect cocycleの類を保つ |
-| 実包含と分類 | `ActualRelative.rangeFunctor`, `rangeFunctor_map_label`, `rangeFunctor_comp`, `rangeOrbitCoord_inclusion`, `rangeOrbitInclusion_vadd`, `rangeOrbitInclusion_vsub`, `rangeAut_h0` | 全元の実辺選択と全頂点ラベルを保つnative関手。H1座標・torsor作用/差・同じ相対H0と可換 |
-| 同じ物理的な固定条件 | `AnchoredRepair`, `referenceRepairEquiv`, `solutionCorrection_changeReference`, `anchored_correction_iff_edge` | 新参照の独立実Solutionに旧物理辺の等式を課す。元の実修復と両逆、h'=h-a、固定物理辺とh'=-aの双方向 |
-| 移送方程式の全修復 | `AnchoredCorrection`, `anchoredEquiv`, `referenceCorrectionEquiv`, `referenceCorrectionEquiv_val`, `referenceCorrectionEquiv_symm_val`, `anchoredRec_choice` | 新参照の実d1と実defectを使用。移送した固定値から全元の実辺へ戻し、両逆と全候補名を保持 |
-| 参照移送の全射 | `anchoredGauge_solution`, `anchoredOriginalHomEquiv`, `referenceGroupoidEquiv`, `referenceGroupoidEquiv_map_label`, `referenceGroupoid_inclusion` | 任意の元頂点再同定から同じ支持labelを導く。native同値の両関手は同じ全ラベル。範囲包含と関手自体の等式で交換 |
-| 参照移送の分類 | `referenceOrbitEquiv`, `anchoredOrbitEquivH1`, `anchoredOrbitAddTorsor`, `referenceOrbitEquiv_vadd`, `referenceOrbitEquiv_vsub`, `referenceAutEquiv`, `anchoredAutH0Equiv`, `anchoredAutH0Equiv_label` | 新参照の独立実修復のorbit、native torsor・Autを同じH1/H0へ接続。非空時だけtorsor |
-| 同じ係数と障害 | `referenceDefect_value`, `anchoredDefect_eq`, `referenceCochainComplex_eq`, `anchoredObstructionCocycle_eq`, `anchoredObstructionClass_eq`, `anchored_repair_nonempty_iff_obstruction_zero` | 実新defectからアンカー項d1(-a)を加えた相対cocycleを生成して旧defectに同定。全範囲の存在障害を保持 |
+| 実包含と分類 | `ActualRelative.rangeFunctor`, `range_functor_map_label`, `range_functor_comp`, `range_orbit_coord_inclusion`, `range_orbit_inclusion_vadd`, `range_orbit_inclusion_vsub`, `range_aut_h0` | 全元の実辺選択と全頂点ラベルを保つnative関手。H1座標・torsor作用/差・同じ相対H0と可換 |
+| 同じ物理的な固定条件 | `AnchoredRepair`, `referenceRepairEquiv`, `solution_correction_change_reference`, `anchored_correction_iff_edge` | 新参照の独立実Solutionに旧物理辺の等式を課す。元の実修復と両逆、h'=h-a、固定物理辺とh'=-aの双方向 |
+| 移送方程式の全修復 | `AnchoredCorrection`, `anchoredEquiv`, `referenceCorrectionEquiv`, `reference_correction_equiv_val`, `reference_correction_equiv_symm_val`, `anchored_rec_choice` | 新参照の実d1と実defectを使用。移送した固定値から全元の実辺へ戻し、両逆と全候補名を保持 |
+| 参照移送の全射 | `anchored_gauge_solution`, `anchoredOriginalHomEquiv`, `referenceGroupoidEquiv`, `reference_groupoid_equiv_map_label`, `reference_groupoid_inclusion` | 任意の元頂点再同定から同じ支持labelを導く。native同値の両関手は同じ全ラベル。範囲包含と関手自体の等式で交換 |
+| 参照移送の分類 | `referenceOrbitEquiv`, `anchoredOrbitEquivH1`, `anchoredOrbitAddTorsor`, `reference_orbit_equiv_vadd`, `reference_orbit_equiv_vsub`, `referenceAutEquiv`, `anchoredAutH0Equiv`, `anchored_aut_h0_equiv_label` | 新参照の独立実修復のorbit、native torsor・Autを同じH1/H0へ接続。非空時だけtorsor |
+| 同じ係数と障害 | `reference_defect_value`, `anchored_defect_eq`, `reference_cochain_complex_eq`, `anchored_obstruction_cocycle_eq`, `anchored_obstruction_class_eq`, `anchored_repair_nonempty_iff_obstruction_zero` | 実新defectからアンカー項d1(-a)を加えた相対cocycleを生成して旧defectに同定。全範囲の存在障害を保持 |
 
 APIの`*_val`・`*_mk`・`*_label`・`*_choice`は元の座標・実辺・頂点ラベルの
 計算を公開する。包含の恒等・合成はcochain/H1/H2/orbitとnative関手で同じ写像を使う。
@@ -355,9 +355,9 @@ result:
   split_reason: none
   completion_candidate: no
   lean_artifacts: [RangeMaps.lean, ReferenceShift.lean]
-  evidence: [cochainMap_comp, rangeOrbitInclusion_vadd, rangeAut_h0, referenceCorrectionEquiv, referenceGroupoidEquiv, anchoredOriginalHomEquiv, referenceGroupoid_inclusion, anchoredAutH0Equiv, anchored_repair_nonempty_iff_obstruction_zero]
+  evidence: [cochain_map_comp, range_orbit_inclusion_vadd, range_aut_h0, referenceCorrectionEquiv, referenceGroupoidEquiv, anchoredOriginalHomEquiv, reference_groupoid_inclusion, anchoredAutH0Equiv, anchored_repair_nonempty_iff_obstruction_zero]
   claim_mapping:
-    theorem_names: [cochainMap, h1Inclusion, h2Inclusion, rangeFunctor_comp, rangeOrbitEquivH1, referenceRepairEquiv, anchoredEquiv, referenceCorrectionEquiv_val, anchoredOriginalHomEquiv, referenceGroupoid_inclusion, anchoredObstructionClass_eq]
+    theorem_names: [cochainMap, h1Inclusion, h2Inclusion, range_functor_comp, range_orbit_equiv_h1, referenceRepairEquiv, anchoredEquiv, reference_correction_equiv_val, anchoredOriginalHomEquiv, reference_groupoid_inclusion, anchored_obstruction_class_eq]
     source_labels: ["G-130 AのS⊆Tとの対応・同じ物理操作の参照座標移送", "n1017 §2.2・2.5"]
     conjuncts: ["同じ支持複体・実対象/射と分類・障害の包含", "同じ物理固定辺と全ラベルの参照変更", "アンカーを反映した同じ相対障害"]
     undischarged_assumptions: []
