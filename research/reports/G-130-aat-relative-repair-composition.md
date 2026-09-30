@@ -477,3 +477,91 @@ Aの部分表示と全次数の制限、相対複体・H0/H1/H2分類、参照�
 統合障害、Cの有限生成と局所厳密合成、Dの双対分類、Eの更新・文脈同値・分割、
 Fの全アフィン実現、W1–W5の全要求と一般定理への接続が必要である。
 G-130全体の判定には固定GOALの全完了条件と独立最終査読を用いる。
+
+
+## Cycle 6：同じ固定部分を保つ閉被覆の相対短完全列
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 6
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 0ee7be5084c9382489c8d5772d7ddc663b5f0d79
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "Cycle 5の全typed実塔制限とCycle 2の相対kernel複体"
+  proof_dag_predecessors: [ClosedRegion.presentation, forget_three_left, forget_three_right, nativeC1Equiv, native_d0_eq, native_d1_eq, native_d2_eq, relativeC0, relativeC1, relativeC2, relativeC3]
+  milestone: "Bの閉二領域被覆に、同じ元全係数と固定Pを保つ相対cochain次数0–3短完全列を構成する"
+  proof_obligations: ["交差・合併の全typed閉包と元セル包含", "制限表示内のnative P∩Uを全閉包から構成", "相対原始添字族とnative restriction kernelを同定", "対角制限・差写像の全次数の単射/完全性/全射", "元微分との交換とnative複体の短完全列"]
+  exit_criteria: ["同じ元0–3セル、固定P、full coefficientを使用", "短完全性をexactness certificateなしで各元値から証明", "同じ全微分と制限/差が交換", "native相対複体へ群/微分を接続", "登録focusedと全宣言公理監査"]
+  selection_reason: "全typed局所実塔を受理済み相対複体へ接続し、修復descentとH1/H2連結写像の入力短完全列を生成する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/RelativeRepairComposition/ClosedCovers.lean, ResearchLean/AG/RelativeRepairComposition/RelativeFamilies.lean, ResearchLean/AG/RelativeRepairComposition/NativeFixedRegions.lean, ResearchLean/AG/RelativeRepairComposition/RelativeCoverComplex.lean]
+  risks: ["同じPを別固定条件へ置換しない", "typed三セルの全文脈を保持", "依存係数の元添字を保持", "degreewise零延長をchain mapと扱わない", "exactness/descentの結論certificateを受け取らない"]
+  unchecked: ["実装・検証・独立査読前"]
+```
+
+
+### 同じ元の固定部分・係数・全微分への対応
+
+| Bの短完全列に必要な条項 | 宣言 | 入力からの構成と保持する値 |
+| --- | --- | --- |
+| 閉交差・閉合併、全0–3セルを覆う被覆 | `ClosedRegion.inter`, `union`, `Inclusion`, `Cover` | 元端点、両面path、両三セルの全face/context/bookend閉包を各領域の閉包から生成。Coverは元セル集合の和が全体であるという入力条件だけ |
+| 制限先の同じ固定部分 | `nativeIntersection`, `path_edge_mem_forget`, `pasting_face_mem_forget`, `pasting_context_edge_mem_forget` | 全元セル名のP所属の逆像。完全typed三セル列とbookend輸送の保存から全閉包fieldを生成。別の固定部分や追加closure証書を供給しない |
+| 相対族とnative kernel | `Family.relative`, `univRelativeEquiv`, `native0`–`native3`, `nativeComplexIso`, `originalComplexIso` | 各元係数群を保持し、P∩Uで零という条件をnative restriction kernelと同定。各局所複体と元Kの大域複体へ、全次数・同じ微分を含むnative同型を構成 |
+| 任意領域包含の制限と全微分 | `r0Between`–`r3Between`, `inclusion_d0`–`inclusion_d2`, `RelativeCover.r_d0`–`r_d2` | 同じ端点・両面path・両三セルrouteから微分交換を導出。零延長は各次数のsectionだけとして使用 |
+| 対角制限・固定targetの差写像 | `diagonal0`–`diagonal3`, `difference0`–`difference3`, `diagonalMap`, `differenceMap` | 全元値を保持。差は固定targetと同じr_U−r_V。局所修復差z=h_V−h_Uは後続義務として区別 |
+| 次数ごとの単射・完全性・全射 | `Family.cover_diagonal_injective`, `cover_glue`, `cover_difference_surjective`, `degree0_exact`–`degree3_exact` | 共有値の一致から全元familyを復元し、零延長で任意の重なりの値を差の像として構成。exactnessをfieldや仮定で受け取らない |
+| native全複体の短完全列 | `cover_short_exact`, `originalCoverIso`, `original_cover_short_exact` | 各次数の具体的完全性からnative ShortComplex.ShortExactを生成。大域側は元Kの受理済相対複体そのものへ同型で戻し、両native写像も含めて比較 |
+| 新述語の成立・不成立 | `coverAllLeft`, `not_cover_empty`, `Inclusion.refl`, `not_inclusion_all_empty`, `zero_mem_relative`, `not_relative_single` | 被覆・包含は全領域で成立し、非空の元頂点をもつ空領域で不成立。相対族は零族で成立し、含まれる固定セルで非零な実係数値を置いた族で不成立 |
+
+### Material premise と生成経路
+
+| 入力・前提 | 分類 | 生成・使用・放電 |
+| --- | --- | --- |
+| 元有限typed表示K、閉P/U/V、元セル集合 | ambient-boundary | GOAL A/Bの同じ入力。交差/合併、部分表示内のnative P∩Uを全incidenceから生成 |
+| 同じLocalCoefficients M、全係数群・元edge transportとface relation | 一般複体定理のdirection-hypothesis | 実適用のMはCycle 5で同定したT.toTower.localCoefficientsとその制限。今回は全核生成の条件を変更せず、元の全微分を使う |
+| U/Vの全0–3セル被覆 | ambient-boundary | GOAL Bの閉被覆。元値のgluingと対角単射に使用。修復存在/整合/完全性を入力fieldに含まない |
+| 相対群、native kernel同定、微分保存、対角単射/差全射/完全性、native短完全性 | discharge-required、今回放電済み | 同じ元値、元閉包と微分、degreewise sectionと値のgluing、受理済相対kernel API、native homological-complex APIから構成 |
+| 原始実tower条件、具体的有限体/全核/指定W1–W5 | 全GOALの後続義務 | 今回の一般相対短完全列の完成からF/Wの具体入力放電を推論しない |
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "閉交差/合併とnative固定部分、全相対族/複体同型、元微分制限交換、次数0–3と全native複体の短完全列を構成"
+  exit_criteria_status: ["同じ元全係数/セル/Pを保持", "全typed閉包を生成", "各元値の完全性を生成", "全微分とnative複体の同型/短完全列", "登録focusedと205個別宣言公理監査"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [ClosedCovers.lean, RelativeFamilies.lean, NativeFixedRegions.lean, RelativeCoverComplex.lean]
+  claim_mapping:
+    theorem_names: [nativeComplexIso, originalComplexIso, cover_short_exact, original_cover_short_exact]
+    source_labels: ["GOAL Bの相対cochain短完全列", "n1017 §3.1"]
+    conjuncts: ["全閉領域/P∩U", "同じ元係数/全微分", "元Kの相対複体と各局所native複体", "対角制限とr_U−r_V", "次数ごとと全native複体の短完全性"]
+    undischarged_assumptions: ["一般Mの群/輸送/face relationと本文の閉領域/被覆条件は定理入力", "G-130 Bのdescent/統合障害とC–F/Wは後続"]
+    acceptance_point: "独立に再利用する同じ元相対複体の閉被覆短完全列"
+    port_status: not-applicable
+audits:
+  premise_delta:
+    discharged: ["交差/合併/native P∩Uの全閉包", "相対membershipと全複体の同型", "各元値の完全性とnative短完全性"]
+    remaining: ["本文の一般入力条件", "後続descent/統合障害とC–F/W"]
+  certificate_provenance:
+    discharged: ["ShortExactをdegreewise元値gluingから生成", "全局所微分は元d0–d2と一致"]
+    unresolved: []
+  proof_use:
+    used: ["元全incidence閉包", "両typed三セルの完全忘却等式", "元全微分と閉制限", "同じPのkernel条件", "元全セルのcover条件"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["4登録source個別focused exit0", "同じ本体の単一audit205宣言標準公理、SHA256 490b92878cb7abe2c2e65384460c4ea6a3bd1d1000c8ae839e03671407efcfa7"]
+  blocking_findings: []
+  next_obligation: "同じ実修復の制限関手によるnative homotopy pullback、有限被覆のcocycle整合と統合障害/連結写像"
+```
+
+新規明示宣言は187件。elaborationで現れたconstructor/accessor/生成式等18件を含め、
+205宣言を個別に公理監査した。生成式には参照した先行pasting定義の式も含む。
+rootの自己監査は受理候補であり、標準PRレビューの独立判定と区別する。
