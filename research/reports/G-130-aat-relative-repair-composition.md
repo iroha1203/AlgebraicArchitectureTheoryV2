@@ -530,13 +530,13 @@ selection:
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: "閉交差/合併とnative固定部分、全相対族/複体同型、元微分制限交換、次数0–3と全native複体の短完全列を構成"
-  exit_criteria_status: ["同じ元全係数/セル/Pを保持", "全typed閉包を生成", "各元値の完全性を生成", "全微分とnative複体の同型/短完全列", "登録focusedと205個別宣言公理監査"]
+  exit_criteria_status: ["同じ元全係数/セル/Pを保持", "全typed閉包を生成", "各元値の完全性を生成", "全微分とnative複体の同型/短完全列", "登録focusedと209個別宣言公理監査"]
   split_reason: none
   completion_candidate: no
   lean_artifacts: [ClosedCovers.lean, RelativeFamilies.lean, NativeFixedRegions.lean, RelativeCoverComplex.lean]
   claim_mapping:
     theorem_names: [nativeComplexIso, originalComplexIso, cover_short_exact, original_cover_short_exact]
-    source_labels: ["GOAL Bの相対cochain短完全列", "n1017 §3.1"]
+    source_labels: ["GOAL Bの相対cochain短完全列", "n1017 §2.3（短完全列(E)）"]
     conjuncts: ["全閉領域/P∩U", "同じ元係数/全微分", "元Kの相対複体と各局所native複体", "対角制限とr_U−r_V", "次数ごとと全native複体の短完全性"]
     undischarged_assumptions: ["一般Mの群/輸送/face relationと本文の閉領域/被覆条件は定理入力", "G-130 Bのdescent/統合障害とC–F/Wは後続"]
     acceptance_point: "独立に再利用する同じ元相対複体の閉被覆短完全列"
@@ -557,11 +557,12 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: ["4登録source個別focused exit0", "同じ本体の単一audit205宣言標準公理、SHA256 490b92878cb7abe2c2e65384460c4ea6a3bd1d1000c8ae839e03671407efcfa7"]
+  validation_refs: ["4登録source個別focused exit0", "同じ本体の単一audit209宣言標準公理、SHA256 98b8b022351023ad41f12e64d16ee4d50cc0dfb59b00cdba3d8b6a1fbd049909"]
   blocking_findings: []
   next_obligation: "同じ実修復の制限関手によるnative homotopy pullback、有限被覆のcocycle整合と統合障害/連結写像"
 ```
 
-新規明示宣言は187件。elaborationで現れたconstructor/accessor/生成式等18件を含め、
-205宣言を個別に公理監査した。生成式には参照した先行pasting定義の式も含む。
+新規明示宣言は191件。elaborationで現れたconstructor/accessor/生成式等18件を含め、
+209宣言を個別に公理監査した。生成式には参照した先行pasting定義の式も含む。
+`inter_left` / `inter_right` / `to_all` / `cover_all_left` を正規の証明名とし、旧名の互換theorem aliasをdeprecatedとして保持する。
 rootの自己監査は受理候補であり、標準PRレビューの独立判定と区別する。

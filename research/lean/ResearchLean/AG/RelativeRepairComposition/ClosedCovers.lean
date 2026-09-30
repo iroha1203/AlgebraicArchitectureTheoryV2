@@ -89,24 +89,36 @@ structure Inclusion (U V : ClosedRegion K) : Prop where
   triples : U.triples ⊆ V.triples
 
 /-- Identity inclusion on all original cells. -/
-def Inclusion.refl (U : ClosedRegion K) : Inclusion U U :=
+theorem Inclusion.refl (U : ClosedRegion K) : Inclusion U U :=
   ⟨Set.Subset.refl _,Set.Subset.refl _,Set.Subset.refl _,Set.Subset.refl _⟩
 
 /-- Compose inclusions without changing original names. -/
-def Inclusion.trans {U V W : ClosedRegion K} (h : Inclusion U V) (k : Inclusion V W) : Inclusion U W :=
+theorem Inclusion.trans {U V W : ClosedRegion K} (h : Inclusion U V) (k : Inclusion V W) : Inclusion U W :=
   ⟨h.vertices.trans k.vertices,h.edges.trans k.edges,h.faces.trans k.faces,h.triples.trans k.triples⟩
 
 /-- The common intersection includes into the first region. -/
-def interLeft (U V : ClosedRegion K) : Inclusion (inter U V) U :=
+theorem inter_left (U V : ClosedRegion K) : Inclusion (inter U V) U :=
   ⟨Set.inter_subset_left,Set.inter_subset_left,Set.inter_subset_left,Set.inter_subset_left⟩
 
+/-- Deprecated compatibility name for `inter_left`. -/
+@[deprecated inter_left (since := "2026-10-01")]
+alias interLeft := inter_left
+
 /-- The common intersection includes into the second region. -/
-def interRight (U V : ClosedRegion K) : Inclusion (inter U V) V :=
+theorem inter_right (U V : ClosedRegion K) : Inclusion (inter U V) V :=
   ⟨Set.inter_subset_right,Set.inter_subset_right,Set.inter_subset_right,Set.inter_subset_right⟩
 
+/-- Deprecated compatibility name for `inter_right`. -/
+@[deprecated inter_right (since := "2026-10-01")]
+alias interRight := inter_right
+
 /-- Every original region includes into the complete original cell region. -/
-def toAll (U : ClosedRegion K) : Inclusion U all :=
+theorem to_all (U : ClosedRegion K) : Inclusion U all :=
   ⟨Set.subset_univ _,Set.subset_univ _,Set.subset_univ _,Set.subset_univ _⟩
+
+/-- Deprecated compatibility name for `to_all`. -/
+@[deprecated to_all (since := "2026-10-01")]
+alias toAll := to_all
 
 /-- Two regions cover every original 0–3-cell. -/
 structure Cover (U V : ClosedRegion K) : Prop where
@@ -116,8 +128,12 @@ structure Cover (U V : ClosedRegion K) : Prop where
   triples : U.triples ∪ V.triples = Set.univ
 
 /-- A complete original region together with any region is a genuine cover. -/
-def coverAllLeft (U : ClosedRegion K) : Cover all U :=
+theorem cover_all_left (U : ClosedRegion K) : Cover all U :=
   ⟨Set.univ_union _,Set.univ_union _,Set.univ_union _,Set.univ_union _⟩
+
+/-- Deprecated compatibility name for `cover_all_left`. -/
+@[deprecated cover_all_left (since := "2026-10-01")]
+alias coverAllLeft := cover_all_left
 
 /-- On any nonempty original vertex set, two empty regions fail the cover condition. -/
 theorem not_cover_empty [Nonempty K.Vertex] : ¬ Cover (empty (K := K)) empty := by
