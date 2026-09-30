@@ -211,7 +211,7 @@ fn a_passed_path_is_read_through_the_callee() {
     let steps = s.unfold("shop.shipping.service.update_shipping").unwrap();
     let write = steps.iter().find(|st| matches!(st.kind, StepKind::Write { .. })).unwrap();
     assert_eq!(
-        write.when,
+        write.when.iter().map(|c| c.value.clone()).collect::<Vec<_>>(),
         vec![Value::Bin(
             archsig::expr::BinOp::Ne,
             Box::new(Value::Read(place(&["shop.shipping.address.Address.country"]))),

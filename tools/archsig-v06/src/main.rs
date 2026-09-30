@@ -5,7 +5,10 @@ use clap::{Parser, Subcommand};
 use serde_json::{Value, json};
 
 use archsig::archmap::{self, Store};
-use archsig::atom;
+use archsig::atom::{self, Atom};
+use archsig::engine;
+use archsig::result;
+use archsig::structure::{Structure, overlay};
 
 #[derive(Parser)]
 #[command(name = "archsig", version, about = "コードから観測した Atom と Law の上で、アーキテクチャを計算する")]
@@ -29,6 +32,25 @@ enum Cmd {
         /// 消えたソースを ArchMap から外す。
         #[arg(long = "drop", value_name = "ソース")]
         drop: Vec<String>,
+    },
+    /// 変更の候補。
+    Plan {
+        #[command(subcommand)]
+        command: PlanCmd,
+    },
+    /// 一つの結果の詳細を返す。
+    Show {
+        /// `<実行>/<番号>`
+        id: String,
+    },
+}
+
+#[derive(Subcommand)]
+enum PlanCmd {
+    /// 変更の後も Law が保たれるかを確かめる。
+    Check {
+        /// 候補の名前
+        plan: String,
     },
 }
 
@@ -54,6 +76,20 @@ fn main() -> ExitCode {
 fn run(cli: Cli) -> Result<Value, String> {
     let store = Store::open(Path::new("."))?;
     match cli.command {
+        Cmd::Plan { command: PlanCmd::Check { plan } } => {
+            // Law に誤りがあれば、計算せずに誤りを返す(設計 §4.3)。
+            let laws = store.laws()?;
+            if !laws.errors.is_empty() {
+                return Ok(json!({"law_errors": laws.errors}));
+            }
+            let before = with_base(&store, store.map()?, &plan, &mut Vec::new())?;
+            let o = overlay(&before, &store.plan(&plan)?);
+            let (b, a) = (Structure::new(before), Structure::new(o.after.clone()));
+            let findings = engine::plan_check(&b, &a, &o, &laws);
+            let not_computed = engine::not_computed(&laws);
+            store.save_run(|run| result::summarize(run, "plan check", &findings, &not_computed))
+        }
+        Cmd::Show { id } => store.show(&id),
         Cmd::Status => archmap::status(&store),
         Cmd::Law { command: LawCmd::Check } => {
             let laws = store.laws()?;
@@ -87,5 +123,21 @@ fn run(cli: Cli) -> Result<Value, String> {
                 "dropped": dropped,
             }))
         }
+    }
+}
+
+/// 候補 `plan` の元が別の候補(`plan:<名前>`)なら、その候補を先に重ねた Atom の列を返す。
+fn with_base(store: &Store, map: Vec<Atom>, plan: &str, seen: &mut Vec<String>) -> Result<Vec<Atom>, String> {
+    if seen.iter().any(|p| p == plan) {
+        return Err(format!("候補の元がめぐっている: {}", seen.join(" -> ")));
+    }
+    seen.push(plan.to_string());
+    let atoms = store.plan(plan)?;
+    match atoms.iter().find(|a| a.kind == "plan").and_then(|a| a.base.as_deref()).and_then(|b| b.strip_prefix("plan:")) {
+        Some(base) => {
+            let under = with_base(store, map, base, seen)?;
+            Ok(overlay(&under, &store.plan(base)?).after)
+        }
+        None => Ok(map),
     }
 }

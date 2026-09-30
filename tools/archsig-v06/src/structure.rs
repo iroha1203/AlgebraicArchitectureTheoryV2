@@ -26,11 +26,13 @@ pub struct Silence {
     pub read: Option<String>,
     /// 次に読む要素。どのソースを読むかは SKILL が決める。
     pub element: Option<String>,
+    /// 読む範囲(`structure` か `meaning:<名前>`)。`read` があるときに付ける。
+    pub scope: Option<String>,
 }
 
 impl Silence {
-    fn new(reason: Reason) -> Silence {
-        Silence { reason, read: None, element: None }
+    pub fn new(reason: Reason) -> Silence {
+        Silence { reason, read: None, element: None, scope: None }
     }
 }
 
@@ -76,12 +78,22 @@ pub enum StepKind {
     Return { value: Value },
 }
 
+/// 条件。値と、元の `when` の字句と場所。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Cond {
+    pub value: Value,
+    pub text: String,
+    pub at: Option<String>,
+}
+
 /// 展開した手順。`when` は、この手順と、たどった呼び出しの条件すべての「かつ」。
+/// `atom` は、手順の元の Atom(`Structure::atoms` の添字)。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Step {
     pub kind: StepKind,
-    pub when: Vec<Value>,
+    pub when: Vec<Cond>,
     pub at: Option<String>,
+    pub atom: usize,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -192,7 +204,7 @@ impl Structure {
     /// 要素の種類。曖昧なら `unresolved`、定義を読んでいなければ設計 §3.3 のとおりに沈黙する。
     pub fn kind(&self, name: &str) -> Result<&str, Silence> {
         if name.starts_with('?') {
-            return Err(Silence::new(Reason::Unresolved));
+            return Err(question(name));
         }
         match self.elements.get(name) {
             Some(e) if e.kinds.len() == 1 => Ok(e.kinds.iter().next().unwrap()),
@@ -206,10 +218,10 @@ impl Structure {
     fn undefined(&self, name: &str) -> Silence {
         match self.resolves.get(name) {
             Some(Resolution::Source(path)) if !self.observed.contains(&(path.clone(), "structure".to_string())) => {
-                Silence { reason: Reason::Unread, read: Some(path.clone()), element: None }
+                Silence { reason: Reason::Unread, read: Some(path.clone()), element: None, scope: Some("structure".to_string()) }
             }
             Some(_) => Silence::new(Reason::Unresolved),
-            None => Silence { reason: Reason::Unread, read: None, element: Some(name.to_string()) },
+            None => Silence { reason: Reason::Unread, read: None, element: Some(name.to_string()), scope: None },
         }
     }
 
@@ -233,7 +245,7 @@ impl Structure {
         }
     }
 
-    fn unfold_into(&self, op: &str, env: &BTreeMap<String, Value>, outer: &[Value], depth: usize, out: &mut Vec<Step>) -> Result<(), Silence> {
+    fn unfold_into(&self, op: &str, env: &BTreeMap<String, Value>, outer: &[Cond], depth: usize, out: &mut Vec<Step>) -> Result<(), Silence> {
         if depth > DEPTH_LIMIT || out.len() > STEP_LIMIT {
             return Err(Silence::new(Reason::Limit));
         }
@@ -241,9 +253,14 @@ impl Structure {
             let a = &self.atoms[i];
             let mut when = outer.to_vec();
             if let Some(w) = &a.when {
-                when.push(self.resolve(op, env, &parse_expr(w))?);
+                let e = parse_expr(w);
+                let value = self.resolve(op, env, &e).map_err(|s| unknown_at(s, &e, a))?;
+                when.push(Cond { value, text: w.clone(), at: a.at.clone() });
             }
-            let value = |s: &Self| -> Result<Value, Silence> { s.resolve(op, env, &a.value.as_deref().map(parse_expr).unwrap_or(Expr::Unknown)) };
+            let value = |s: &Self| -> Result<Value, Silence> {
+                let e = a.value.as_deref().map(parse_expr).unwrap_or(Expr::Unknown);
+                s.resolve(op, env, &e).map_err(|x| unknown_at(x, &e, a))
+            };
             let object = a.object.clone().unwrap_or_default();
             let kind = match a.kind.as_str() {
                 "writes" => {
@@ -263,18 +280,18 @@ impl Structure {
                             _ => return Err(s),
                         },
                     };
-                    out.push(Step { kind: StepKind::Call { call: call.clone(), callee: object.clone(), external: external.clone() }, when: when.clone(), at: a.at.clone() });
+                    out.push(Step { kind: StepKind::Call { call: call.clone(), callee: object.clone(), external: external.clone() }, when: when.clone(), at: a.at.clone(), atom: i });
                     if external.is_none() {
                         let mut inner = BTreeMap::new();
                         for (param, e) in self.passes.get(&call).into_iter().flatten() {
-                            inner.insert(param.clone(), self.resolve(op, env, e)?);
+                            inner.insert(param.clone(), self.resolve(op, env, e).map_err(|x| unknown_at(x, e, a))?);
                         }
                         self.unfold_into(&object, &inner, &when, depth + 1, out)?;
                     }
                     continue;
                 }
             };
-            out.push(Step { kind, when, at: a.at.clone() });
+            out.push(Step { kind, when, at: a.at.clone(), atom: i });
         }
         Ok(())
     }
@@ -287,7 +304,7 @@ impl Structure {
             Expr::Unknown => return Err(Silence::new(Reason::Unresolved)),
             Expr::Const(c) | Expr::Name(c) => {
                 if c.starts_with('?') {
-                    return Err(Silence::new(Reason::Unresolved));
+                    return Err(question(c));
                 }
                 Value::Const(c.clone())
             }
@@ -307,7 +324,10 @@ impl Structure {
                 Value::Read(self.fields(ty, fields)?)
             }
             Expr::Call(name, args) => {
-                if name.starts_with('?') || self.ambiguous(name) {
+                if name.starts_with('?') {
+                    return Err(question(name));
+                }
+                if self.ambiguous(name) {
                     return Err(Silence::new(Reason::Unresolved));
                 }
                 Value::Call(name.clone(), args.iter().map(r).collect::<Result<_, _>>()?)
@@ -346,6 +366,8 @@ pub struct Overlay {
     pub corresponds: BTreeSet<(String, String)>,
     /// 行き先を決めていない対応(`a.X | b.Y`)。変更前の要素と、行き先の候補。書いた行ごとに一つ。
     pub undecided: Vec<(String, Vec<String>)>,
+    /// 候補が `removes` した要素。
+    pub removes: BTreeSet<String>,
     /// 書き直していない Atom が `removes` した要素を名指す操作と、名指す要素(`missing` の元)。
     /// Atom から決まる事実で、`missing` と結論するか沈黙するかはエンジンが決める(設計 §3.6)。
     pub missing: BTreeMap<String, BTreeSet<String>>,
@@ -366,7 +388,7 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
 
     let old = Structure::new(before.to_vec());
     let new = Structure::new(after.clone());
-    let mut out = Overlay::default();
+    let mut out = Overlay { removes: removed.iter().map(|r| r.to_string()).collect(), ..Overlay::default() };
     // 1. 書いた対応。行き先に `|` があれば、決めていない対応として別に持つ。
     let mut linked = Vec::new();
     for a in plan.iter().filter(|a| a.kind == "corresponds") {
@@ -511,6 +533,30 @@ impl State {
             Value::Bin(op, a, b) => Value::Bin(*op, e(a)?, e(b)?),
             other => other.clone(),
         })
+    }
+}
+
+/// `?` の名前が関わる沈黙。何を読めば決まるかとして、その名前の定義を返す(マニュアル第6章)。
+fn question(name: &str) -> Silence {
+    Silence { reason: Reason::Unresolved, read: None, element: Some(name.trim_start_matches('?').to_string()), scope: None }
+}
+
+/// 値そのものが `?` のときは、その Atom のソースを読み直せば決まる。
+fn unknown_at(s: Silence, e: &Expr, a: &Atom) -> Silence {
+    if s.reason != Reason::Unresolved || s.read.is_some() || s.element.is_some() || !has_unknown(e) {
+        return s;
+    }
+    let path = a.at.as_deref().and_then(parse_location).map(|l| l.path);
+    Silence { read: path, scope: Some("structure".to_string()), ..s }
+}
+
+fn has_unknown(e: &Expr) -> bool {
+    match e {
+        Expr::Unknown => true,
+        Expr::Call(_, args) => args.iter().any(has_unknown),
+        Expr::Not(x) | Expr::Neg(x) => has_unknown(x),
+        Expr::Bin(_, a, b) => has_unknown(a) || has_unknown(b),
+        _ => false,
     }
 }
 

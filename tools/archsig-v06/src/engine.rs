@@ -1,0 +1,677 @@
+//! エンジン(設計 §5)。この周は、操作の実行のエンジン(§5.4)と、`changes` の規則を計算する。
+//! 候補を重ねる処理は事実だけを返す(§3.6)。`missing` と結論するか沈黙するかは、ここで決める。
+
+use std::collections::{BTreeMap, BTreeSet};
+
+use serde_json::{Value as Json, json};
+
+use crate::atom::parse_location;
+use crate::expr::BinOp;
+use crate::law::{LawSet, Rule};
+use crate::structure::{Overlay, Reason, Silence, State, StepKind, Structure, Value};
+
+/// 分岐の数の上限。超えたら `limit` で沈黙する。
+pub const BRANCH_LIMIT: usize = 256;
+
+const THEORY_CHANGES: &str = "Rising Sea §1.8〜1.9、§4.10〜4.11";
+const SAME_TYPE: &str = "フィールドは型ごとに一つの値として扱い、同じ型の別々の実体は区別しない";
+const NO_RELATION: &str = "条件どうしの関係は見ない";
+const SAME_CALL: &str = "操作の呼び出しの結果は、fresh を除き、同じ操作に同じ値を渡せば同じ結果が返るとみなす";
+
+/// 結論の一つ(マニュアル第6章)。
+#[derive(Clone, Debug, Default)]
+pub struct Finding {
+    pub question: String,
+    pub law: Option<String>,
+    pub subject: String,
+    pub outcome: &'static str,
+    pub kind: Option<&'static str>,
+    pub reason: Option<&'static str>,
+    pub at: Vec<String>,
+    pub basis: Json,
+    pub check: Json,
+    pub conditions: Vec<String>,
+    pub theory: Option<String>,
+    pub next: Vec<Silence>,
+}
+
+impl Finding {
+    fn silent(question: &str, law: Option<&str>, subject: &str, s: Silence) -> Finding {
+        Finding {
+            question: question.to_string(),
+            law: law.map(|l| l.to_string()),
+            subject: subject.to_string(),
+            outcome: "silent",
+            reason: Some(reason_name(&s.reason)),
+            next: if s.read.is_some() || s.element.is_some() { vec![s] } else { Vec::new() },
+            ..Finding::default()
+        }
+    }
+}
+
+pub fn reason_name(r: &Reason) -> &'static str {
+    match r {
+        Reason::Unread => "unread",
+        Reason::Unresolved => "unresolved",
+        Reason::Unchecked => "unchecked",
+        Reason::Limit => "limit",
+    }
+}
+
+/// 条件の原子と真偽。原子は形をそろえた値で、元の `when` の字句と場所を持つ。
+#[derive(Clone, Debug)]
+pub struct Literal {
+    pub atom: Value,
+    pub truth: bool,
+    pub text: String,
+    pub at: Option<String>,
+}
+
+/// 書き込みの記録。
+#[derive(Clone, Debug)]
+pub struct Written {
+    pub place: Vec<String>,
+    pub value: Value,
+    pub at: Option<String>,
+    /// 元の Atom の `object` と `value` の字句。
+    pub object: String,
+    pub text: String,
+}
+
+/// 実行の分岐。原子への真偽の割り当て、状態、書き込みの記録を持つ。
+#[derive(Clone, Debug, Default)]
+pub struct Branch {
+    pub literals: Vec<Literal>,
+    pub state: State,
+    pub writes: Vec<Written>,
+}
+
+impl Branch {
+    fn truth_of(&self, atom: &Value) -> Option<bool> {
+        self.literals.iter().find(|l| &l.atom == atom).map(|l| l.truth)
+    }
+}
+
+/// 操作を書き込みの列として記号的に実行する(設計 §5.4)。
+/// `fresh` は、呼ぶたびに新しい値を返す操作か。外部の要素の呼び出しは `externals` に集める。
+pub fn execute(s: &Structure, op: &str, fresh: &dyn Fn(&str) -> bool) -> Result<(Vec<Branch>, BTreeSet<String>), Silence> {
+    let steps = s.unfold(op)?;
+    let mut branches = vec![Branch::default()];
+    let mut externals = BTreeSet::new();
+    for step in &steps {
+        if let StepKind::Call { callee, external: Some(_), .. } = &step.kind {
+            externals.insert(callee.clone());
+        }
+        let site = format!("{}#{}", step.at.clone().unwrap_or_default(), step.atom);
+        let mut next = Vec::new();
+        for b in branches {
+            // 条件は、この分岐の今の状態で読む。未割り当ての原子に出会うたびに、真と偽に分ける。
+            let mut forks = vec![(b, true)];
+            for c in &step.when {
+                let mut split = Vec::new();
+                for (br, active) in forks {
+                    if !active {
+                        split.push((br, false));
+                        continue;
+                    }
+                    let v = normalize(freshen(br.state.eval(&c.value)?, &site, fresh));
+                    let mut here = vec![(br, true)];
+                    for (atom, truth) in literals(v) {
+                        let mut more = Vec::new();
+                        for (x, on) in here {
+                            if !on {
+                                more.push((x, false));
+                                continue;
+                            }
+                            match x.truth_of(&atom) {
+                                Some(t) => more.push((x, t == truth)),
+                                None => {
+                                    let mut yes = x.clone();
+                                    yes.literals.push(Literal { atom: atom.clone(), truth, text: c.text.clone(), at: c.at.clone() });
+                                    let mut no = x;
+                                    no.literals.push(Literal { atom: atom.clone(), truth: !truth, text: c.text.clone(), at: c.at.clone() });
+                                    more.push((yes, true));
+                                    more.push((no, false));
+                                }
+                            }
+                        }
+                        here = more;
+                    }
+                    split.extend(here);
+                }
+                forks = split;
+            }
+            for (mut br, active) in forks {
+                if let (true, StepKind::Write { place, value }) = (active, &step.kind) {
+                    let v = normalize(freshen(br.state.eval(value)?, &site, fresh));
+                    let atom = &s.atoms[step.atom];
+                    br.writes.push(Written {
+                        place: place.clone(),
+                        value: v.clone(),
+                        at: step.at.clone(),
+                        object: atom.object.clone().unwrap_or_default(),
+                        text: atom.value.clone().unwrap_or_default(),
+                    });
+                    br.state.write(place.clone(), v);
+                }
+                next.push(br);
+            }
+            if next.len() > BRANCH_LIMIT {
+                return Err(Silence::new(Reason::Limit));
+            }
+        }
+        branches = next;
+    }
+    Ok((branches, externals))
+}
+
+/// `fresh` の操作の呼び出しは、呼び出しの場所ごとに別の項にする。
+fn freshen(v: Value, site: &str, fresh: &dyn Fn(&str) -> bool) -> Value {
+    let f = |x: Value| freshen(x, site, fresh);
+    match v {
+        Value::Call(n, args) => {
+            let mut args: Vec<Value> = args.into_iter().map(f).collect();
+            if fresh(&n) {
+                args.push(Value::Const(format!("fresh@{site}")));
+            }
+            Value::Call(n, args)
+        }
+        Value::Proj(x, p) => Value::Proj(Box::new(f(*x)), p),
+        Value::Not(x) => Value::Not(Box::new(f(*x))),
+        Value::Neg(x) => Value::Neg(Box::new(f(*x))),
+        Value::Bin(op, a, b) => Value::Bin(op, Box::new(f(*a)), Box::new(f(*b))),
+        other => other,
+    }
+}
+
+/// 項の形をそろえる。可換な演算は項を並べ替え、場所の入力の射影は長い場所の入力にまとめる。
+/// `a != b` は `a == b` の否定に、`a > b` は `b < a` に直す。
+pub fn normalize(v: Value) -> Value {
+    match v {
+        Value::Proj(x, p) => match normalize(*x) {
+            Value::Input(mut q) => {
+                q.extend(p);
+                Value::Input(q)
+            }
+            Value::Proj(y, mut q) => {
+                q.extend(p);
+                Value::Proj(y, q)
+            }
+            y => Value::Proj(Box::new(y), p),
+        },
+        Value::Call(n, args) => Value::Call(n, args.into_iter().map(normalize).collect()),
+        Value::Not(x) => match normalize(*x) {
+            Value::Not(y) => *y,
+            y => Value::Not(Box::new(y)),
+        },
+        Value::Neg(x) => Value::Neg(Box::new(normalize(*x))),
+        Value::Bin(op, a, b) => {
+            let (a, b) = (normalize(*a), normalize(*b));
+            match op {
+                BinOp::Ne => Value::Not(Box::new(ordered(BinOp::Eq, a, b))),
+                BinOp::Gt => Value::Bin(BinOp::Lt, Box::new(b), Box::new(a)),
+                BinOp::Ge => Value::Bin(BinOp::Le, Box::new(b), Box::new(a)),
+                BinOp::Add | BinOp::Mul | BinOp::Eq | BinOp::And | BinOp::Or => ordered(op, a, b),
+                _ => Value::Bin(op, Box::new(a), Box::new(b)),
+            }
+        }
+        other => other,
+    }
+}
+
+fn ordered(op: BinOp, a: Value, b: Value) -> Value {
+    if format!("{a:?}") <= format!("{b:?}") { Value::Bin(op, Box::new(a), Box::new(b)) } else { Value::Bin(op, Box::new(b), Box::new(a)) }
+}
+
+/// 条件を、原子と真偽の組の「かつ」に直す。条件どうしの関係は見ない。
+fn literals(v: Value) -> Vec<(Value, bool)> {
+    match v {
+        Value::Bin(BinOp::And, a, b) => {
+            let mut out = literals(*a);
+            out.extend(literals(*b));
+            out
+        }
+        Value::Not(x) => vec![(*x, false)],
+        other => vec![(other, true)],
+    }
+}
+
+/// 変更前の名前から変更後の名前への対応(設計 §3.6)。
+struct Mapping<'a> {
+    to: BTreeMap<&'a str, Vec<&'a str>>,
+}
+
+impl<'a> Mapping<'a> {
+    fn new(overlay: &'a Overlay) -> Mapping<'a> {
+        let mut to: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+        for (a, b) in &overlay.corresponds {
+            to.entry(a.as_str()).or_default().push(b.as_str());
+        }
+        Mapping { to }
+    }
+
+    /// 行き先が一つなら、その名前。なければ、または二つ以上なら、元の名前のまま。
+    fn name(&self, n: &str) -> String {
+        match self.to.get(n).map(|v| v.as_slice()) {
+            Some([one]) => one.to_string(),
+            _ => n.to_string(),
+        }
+    }
+
+    /// 場所を写す。行き先のないフィールドを含む場所は写らない。行き先が二つあれば両方へ写す。
+    fn places(&self, p: &[String]) -> Vec<Vec<String>> {
+        let mut out: Vec<Vec<String>> = vec![Vec::new()];
+        for f in p {
+            let Some(targets) = self.to.get(f.as_str()) else { return Vec::new() };
+            out = out.iter().flat_map(|q| targets.iter().map(move |t| q.iter().cloned().chain([t.to_string()]).collect())).collect();
+        }
+        out
+    }
+
+    fn value(&self, v: &Value) -> Value {
+        match v {
+            Value::Input(p) => Value::Input(p.iter().map(|f| self.name(f)).collect()),
+            Value::Read(p) => Value::Read(p.iter().map(|f| self.name(f)).collect()),
+            Value::Arg(n) => Value::Arg(self.name(n)),
+            Value::Proj(x, p) => Value::Proj(Box::new(self.value(x)), p.iter().map(|f| self.name(f)).collect()),
+            Value::Call(n, args) => Value::Call(self.name(n), args.iter().map(|a| self.value(a)).collect()),
+            Value::Not(x) => Value::Not(Box::new(self.value(x))),
+            Value::Neg(x) => Value::Neg(Box::new(self.value(x))),
+            Value::Bin(op, a, b) => Value::Bin(*op, Box::new(self.value(a)), Box::new(self.value(b))),
+            Value::Const(c) => Value::Const(c.clone()),
+        }
+    }
+
+    /// 変更前の分岐を、変更後の名前に写す。状態は、対応に従って変更前のフィールドの値を変更後のフィールドへ写したもの。
+    fn branch(&self, b: &Branch) -> Branch {
+        let mut state = State::default();
+        for (p, v) in &b.state.places {
+            for q in self.places(p) {
+                state.write(q, normalize(self.value(v)));
+            }
+        }
+        Branch {
+            literals: b.literals.iter().map(|l| Literal { atom: normalize(self.value(&l.atom)), ..l.clone() }).collect(),
+            state,
+            writes: b.writes.clone(),
+        }
+    }
+}
+
+/// `plan check`(マニュアル第5章 問い3)。`changes` の規則を計算し、`missing` を結論する。
+pub fn plan_check(before: &Structure, after: &Structure, overlay: &Overlay, laws: &LawSet) -> Vec<Finding> {
+    let fresh_patterns: Vec<globset::GlobMatcher> =
+        laws.fresh.iter().filter_map(|p| globset::Glob::new(p).ok()).map(|g| g.compile_matcher()).collect();
+    let fresh = |n: &str| fresh_patterns.iter().any(|m| m.is_match(n));
+    let mapping = Mapping::new(overlay);
+    let mut out = Vec::new();
+    for law in &laws.laws {
+        let Some(meaning) = law.about.as_deref() else { continue };
+        if !matches!(law.rule, Rule::ChangesCommute | Rule::ChangesKeep) {
+            continue;
+        }
+        // 局所ごとの意味 Atom を要素へ配るには読みの幾何が要る(設計 §3.2、§6)。この PRD では配らないので、確かめられない。
+        let local = before.meanings.iter().any(|(e, ms)| e.starts_with("local:") && ms.iter().any(|m| m.meaning.as_deref() == Some(meaning)));
+        if local {
+            let mut f = Finding::silent("change", Some(&law.name), meaning, Silence::new(Reason::Unchecked));
+            f.theory = Some(THEORY_CHANGES.to_string());
+            out.push(f);
+            continue;
+        }
+        // 行き先を決めていない対応(`|`)があると、移し方が決まらない。決め方は `plan choices`(問い6)が数え上げる。
+        if !overlay.undecided.is_empty() {
+            let mut f = Finding::silent("change", Some(&law.name), meaning, Silence::new(Reason::Unresolved));
+            f.basis = json!({"undecided": overlay.undecided});
+            f.theory = Some(THEORY_CHANGES.to_string());
+            out.push(f);
+            continue;
+        }
+        let found = match law.rule {
+            Rule::ChangesCommute => commute(before, after, overlay, &mapping, &law.name, meaning, &fresh),
+            _ => keep(before, after, &mapping, &law.name, meaning),
+        };
+        if found.is_empty() {
+            // 対応する操作の組がない。比べるものがないので成り立つ。
+            out.push(Finding {
+                question: "change".to_string(),
+                law: Some(law.name.clone()),
+                subject: meaning.to_string(),
+                outcome: "holds",
+                basis: json!({"meaning": meaning}),
+                check: json!({"pairs": []}),
+                conditions: vec![SAME_TYPE.to_string(), NO_RELATION.to_string()],
+                theory: Some(THEORY_CHANGES.to_string()),
+                ..Finding::default()
+            });
+        }
+        out.extend(found);
+    }
+    out.extend(removed_uses(before, after, overlay));
+    out
+}
+
+/// `changes` 以外の規則の Law。この PRD では計算しない。
+pub fn not_computed(laws: &LawSet) -> Vec<String> {
+    laws.laws.iter().filter(|l| !matches!(l.rule, Rule::ChangesCommute | Rule::ChangesKeep)).map(|l| l.name.clone()).collect()
+}
+
+/// 要素を定義した Atom の場所。
+fn defined_at(s: &Structure, name: &str) -> Option<String> {
+    s.atoms.iter().find(|a| a.kind == "defines" && a.subject == name).and_then(|a| a.at.clone())
+}
+
+/// フィールドが意味 `meaning` を持つかが、読んだ範囲から決まるか。
+/// 候補の中で定義したフィールドの意味は、対応で移したものなので決まっている。
+fn meaning_known(s: &Structure, field: &str, meaning: &str) -> Result<(), Silence> {
+    let Some(at) = defined_at(s, field) else { return s.kind(field).map(|_| ()) };
+    if at.starts_with("plan:") {
+        return Ok(());
+    }
+    let path = parse_location(&at).map(|l| l.path).unwrap_or(at);
+    let scope = format!("meaning:{meaning}");
+    if s.observed.contains(&(path.clone(), scope.clone())) {
+        Ok(())
+    } else {
+        Err(Silence { reason: Reason::Unread, read: Some(path), element: None, scope: Some(scope) })
+    }
+}
+
+fn has_meaning(s: &Structure, field: &str, meaning: &str) -> bool {
+    s.meanings.get(field).is_some_and(|ms| ms.iter().any(|m| m.meaning.as_deref() == Some(meaning)))
+}
+
+/// `changes commute with operations`(設計 §5.4)。対応する操作の組ごとに、二つの順番を比べる。
+fn commute(
+    before: &Structure,
+    after: &Structure,
+    overlay: &Overlay,
+    mapping: &Mapping,
+    law: &str,
+    meaning: &str,
+    fresh: &dyn Fn(&str) -> bool,
+) -> Vec<Finding> {
+    let mut out = Vec::new();
+    for (a, b) in &overlay.corresponds {
+        let (ka, kb) = (before.kind(a), after.kind(b));
+        // 片方の端が操作でないと決まっていれば、比べる組ではない。
+        if matches!(ka, Ok(k) if k != "operation") || matches!(kb, Ok(k) if k != "operation") {
+            continue;
+        }
+        let pair = match (ka, kb) {
+            (Err(s), _) | (_, Err(s)) => Err(s),
+            _ => compare(before, after, mapping, a, b, meaning, fresh),
+        };
+        let mut f = match pair {
+            Ok(f) => f,
+            Err(s) => Finding::silent("change", Some(law), b, s),
+        };
+        f.question = "change".to_string();
+        f.law = Some(law.to_string());
+        f.subject = b.clone();
+        f.theory = Some(THEORY_CHANGES.to_string());
+        if f.at.is_empty() {
+            f.at.extend(defined_at(after, b).or_else(|| defined_at(before, a)));
+        }
+        out.push(f);
+    }
+    out
+}
+
+fn compare(
+    before: &Structure,
+    after: &Structure,
+    mapping: &Mapping,
+    a: &str,
+    b: &str,
+    meaning: &str,
+    fresh: &dyn Fn(&str) -> bool,
+) -> Result<Finding, Silence> {
+    // 変更前の操作をしてから移す / 移してから変更後の操作をする。
+    let (run1, ext1) = execute(before, a, fresh)?;
+    let (run2, ext2) = execute(after, b, fresh)?;
+    let run1: Vec<(Branch, Branch)> = run1.into_iter().map(|br| (mapping.branch(&br), br)).collect();
+    // 比べる場所: 意味を持つフィールドと、書き込まれた場所のうち最後のフィールドが意味を持つもの。
+    // 書き込まれたフィールドが意味を持つかが読んだ範囲から決まらなければ沈黙する。
+    let mut places: BTreeSet<Vec<String>> = after
+        .meanings
+        .iter()
+        .filter(|(f, _)| after.kind(f) == Ok("field") && has_meaning(after, f, meaning))
+        .map(|(f, _)| vec![f.clone()])
+        .collect();
+    for (moved, orig) in &run1 {
+        for w in &orig.writes {
+            meaning_known(before, w.place.last().unwrap(), meaning)?;
+        }
+        places.extend(moved.state.places.keys().filter(|p| has_meaning(after, p.last().unwrap(), meaning)).cloned());
+    }
+    for br in &run2 {
+        for w in &br.writes {
+            meaning_known(after, w.place.last().unwrap(), meaning)?;
+        }
+        places.extend(br.state.places.keys().filter(|p| has_meaning(after, p.last().unwrap(), meaning)).cloned());
+    }
+    let mut compared = Vec::new();
+    let mut calls = false;
+    for (moved, orig) in &run1 {
+        for br in &run2 {
+            // 割り当てが矛盾しない組を、一つの分岐とみなす。
+            if moved.literals.iter().any(|l| br.truth_of(&l.atom).is_some_and(|t| t != l.truth)) {
+                continue;
+            }
+            let mut values = Vec::new();
+            let mut diverging = Vec::new();
+            for p in &places {
+                let v1 = normalize(moved.state.read(p)?);
+                let v2 = normalize(br.state.read(p)?);
+                calls |= has_call(&v1) || has_call(&v2);
+                values.push(json!({"place": p, "before_then_move": show(&v1), "move_then_after": show(&v2)}));
+                if v1 != v2 {
+                    diverging.push(json!({
+                        "place": p,
+                        "before_then_move": show(&v1),
+                        "move_then_after": show(&v2),
+                        "writes": {
+                            "before": last_write(orig, |w| mapping.places(w).iter().any(|q| q == p)),
+                            "after": last_write(br, |w| w == p),
+                        },
+                    }));
+                }
+            }
+            let branch = branch_json(moved, br);
+            if !diverging.is_empty() {
+                let at: Vec<String> = diverging
+                    .iter()
+                    .flat_map(|d| [d["writes"]["before"]["at"].as_str(), d["writes"]["after"]["at"].as_str()])
+                    .flatten()
+                    .map(|s| s.to_string())
+                    .collect();
+                return Ok(Finding {
+                    outcome: "fails",
+                    kind: Some("counterexample"),
+                    at,
+                    basis: json!({"before": a, "after": b, "meaning": meaning}),
+                    check: json!({
+                        "branch": branch,
+                        "before_then_move": {"writes": writes_json(&orig.writes), "values": values},
+                        "move_then_after": {"writes": writes_json(&br.writes)},
+                        "diverging": diverging,
+                    }),
+                    conditions: conditions(&ext1, &ext2, calls),
+                    ..Finding::default()
+                });
+            }
+            compared.push(json!({"branch": branch, "values": values}));
+        }
+    }
+    Ok(Finding {
+        outcome: "holds",
+        basis: json!({"before": a, "after": b, "meaning": meaning}),
+        check: json!({"branches": compared}),
+        conditions: conditions(&ext1, &ext2, calls),
+        ..Finding::default()
+    })
+}
+
+fn has_call(v: &Value) -> bool {
+    match v {
+        Value::Call(..) => true,
+        Value::Proj(x, _) | Value::Not(x) | Value::Neg(x) => has_call(x),
+        Value::Bin(_, a, b) => has_call(a) || has_call(b),
+        _ => false,
+    }
+}
+
+fn conditions(e1: &BTreeSet<String>, e2: &BTreeSet<String>, calls: bool) -> Vec<String> {
+    let mut out = vec![SAME_TYPE.to_string(), NO_RELATION.to_string()];
+    if calls {
+        out.push(SAME_CALL.to_string());
+    }
+    for e in e1.union(e2) {
+        out.push(format!("外部の要素 {e} の呼び出しは、観測した要素へ書き込まないとみなす"));
+    }
+    out
+}
+
+/// 比べた場所に最後に書いた書き込み(食い違いの元)。`hits` は、書き込みの場所が比べた場所に当たるか。
+fn last_write(b: &Branch, hits: impl Fn(&[String]) -> bool) -> Json {
+    b.writes.iter().rev().find(|w| hits(&w.place)).map(|w| json!({"at": w.at, "object": w.object, "value": w.text})).unwrap_or(Json::Null)
+}
+
+fn branch_json(moved: &Branch, after: &Branch) -> Json {
+    let mut seen = BTreeSet::new();
+    let mut out = Vec::new();
+    for l in moved.literals.iter().chain(&after.literals) {
+        let key = format!("{:?}", l.atom);
+        if seen.insert(key) {
+            out.push(json!({"condition": show(&l.atom), "truth": l.truth, "when": l.text, "at": l.at}));
+        }
+    }
+    Json::Array(out)
+}
+
+fn writes_json(ws: &[Written]) -> Json {
+    Json::Array(ws.iter().map(|w| json!({"at": w.at, "object": w.object, "value": w.text, "place": w.place, "term": show(&w.value)})).collect())
+}
+
+/// `changes keep`(マニュアル第5章 問い3)。意味を持つ変更前の要素が、対応で変更後の要素を持つか。
+fn keep(before: &Structure, after: &Structure, mapping: &Mapping, law: &str, meaning: &str) -> Vec<Finding> {
+    let mut out = Vec::new();
+    let mut kept = Vec::new();
+    for (e, _) in before.meanings.iter().filter(|(e, _)| has_meaning(before, e, meaning)) {
+        let targets: Vec<&str> = mapping.to.get(e.as_str()).map(|v| v.iter().copied().filter(|t| after.elements.contains_key(*t)).collect()).unwrap_or_default();
+        if targets.is_empty() {
+            out.push(Finding {
+                question: "change".to_string(),
+                law: Some(law.to_string()),
+                subject: e.clone(),
+                outcome: "fails",
+                kind: Some("missing"),
+                at: defined_at(before, e).into_iter().collect(),
+                basis: json!({"element": e, "meaning": meaning}),
+                check: json!({"element": e, "targets": []}),
+                theory: Some(THEORY_CHANGES.to_string()),
+                ..Finding::default()
+            });
+        } else {
+            kept.push(json!({"element": e, "targets": targets}));
+        }
+    }
+    if out.is_empty() {
+        out.push(Finding {
+            question: "change".to_string(),
+            law: Some(law.to_string()),
+            subject: meaning.to_string(),
+            outcome: "holds",
+            basis: json!({"meaning": meaning}),
+            check: json!({"kept": kept}),
+            theory: Some(THEORY_CHANGES.to_string()),
+            ..Finding::default()
+        });
+    }
+    out
+}
+
+/// 候補が書き直していない操作が `removes` した要素を使えば `missing`(マニュアル第5章 問い3)。
+/// 名指す事実は候補を重ねる処理が返す。操作と決まらない名前(曖昧、`?`)は沈黙する。
+/// 定義を読んでいない操作は、消える要素を使うかが決まらない。それらは一つの沈黙にまとめ、読む所を返す。
+fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay) -> Vec<Finding> {
+    let mut out = Vec::new();
+    if !overlay.removes.is_empty() {
+        // 変更後にも残る呼び出し先と本体の Atom の `subject` のうち、定義を読んでいないもの。
+        let mut unknown: BTreeMap<String, Silence> = BTreeMap::new();
+        for a in &after.atoms {
+            let names: Vec<&str> = match a.kind.as_str() {
+                "calls" => vec![a.subject.as_str(), a.object.as_deref().unwrap_or("")],
+                "writes" | "reads" | "sends" | "receives" | "returns" => vec![a.subject.as_str()],
+                _ => continue,
+            };
+            for n in names.into_iter().filter(|n| !n.is_empty() && !overlay.missing.contains_key(*n)) {
+                if let Err(s) = after.kind(n) {
+                    if s.reason == Reason::Unread {
+                        unknown.entry(n.to_string()).or_insert(s);
+                    }
+                }
+            }
+        }
+        if !unknown.is_empty() {
+            out.push(Finding {
+                question: "change".to_string(),
+                subject: "removes".to_string(),
+                outcome: "silent",
+                reason: Some("unread"),
+                basis: json!({"operations": unknown.keys().collect::<Vec<_>>()}),
+                theory: Some(THEORY_CHANGES.to_string()),
+                next: unknown.into_values().collect(),
+                ..Finding::default()
+            });
+        }
+    }
+    for (op, uses) in &overlay.missing {
+        let f = match before.kind(op) {
+            // 構造 Atom の `subject` は操作である(マニュアル第3章)。
+            Ok("operation") | Err(Silence { reason: Reason::Unread, .. }) => Finding {
+                outcome: "fails",
+                kind: Some("missing"),
+                at: defined_at(before, op).into_iter().collect(),
+                basis: json!({"operation": op, "uses": uses}),
+                check: json!({"operation": op, "uses": uses}),
+                ..Finding::default()
+            },
+            Ok(_) => continue,
+            Err(s) => Finding::silent("change", None, op, s),
+        };
+        out.push(Finding { question: "change".to_string(), subject: op.clone(), theory: Some(THEORY_CHANGES.to_string()), ..f });
+    }
+    out
+}
+
+/// 項を読める字句にする。場所の入力は `in(<フィールド> / …)`。
+pub fn show(v: &Value) -> String {
+    match v {
+        Value::Const(c) => c.clone(),
+        Value::Arg(n) => n.clone(),
+        Value::Read(p) | Value::Input(p) => format!("in({})", p.join(" / ")),
+        Value::Proj(x, p) => format!("{}.{}", show(x), p.join(" / ")),
+        Value::Call(n, args) => format!("{n}({})", args.iter().map(show).collect::<Vec<_>>().join(", ")),
+        Value::Not(x) => format!("not {}", show(x)),
+        Value::Neg(x) => format!("-{}", show(x)),
+        Value::Bin(op, a, b) => format!("({} {} {})", show(a), op_text(*op), show(b)),
+    }
+}
+
+fn op_text(op: BinOp) -> &'static str {
+    match op {
+        BinOp::Or => "or",
+        BinOp::And => "and",
+        BinOp::Eq => "==",
+        BinOp::Ne => "!=",
+        BinOp::Lt => "<",
+        BinOp::Le => "<=",
+        BinOp::Gt => ">",
+        BinOp::Ge => ">=",
+        BinOp::Add => "+",
+        BinOp::Sub => "-",
+        BinOp::Mul => "*",
+        BinOp::Div => "/",
+    }
+}
