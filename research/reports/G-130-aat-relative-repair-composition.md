@@ -911,3 +911,165 @@ audits:
 全154明示宣言と生成APIを含む全155宣言の個別公理監査、対象sourceのfocused検査、placeholder/hidden-BiDi/privacy/import方向/diff checkを用いる。Research全体/aggregate/全file loopおよびsubagent lake buildは実行しない。最終PR headの正式査読とCIは独立の受理証拠とする。C–FとW1–W5は未達であり、全GOAL completion candidateとはしない。
 
 9登録sourceのfocused elaborationと必要な単一module依存確認はexit0。正確な全9source本体のimport行だけを除いた単一auditで全155宣言を個別`#print axioms`し、標準公理のみ。公理log SHA256 `30c96f33c1b7613006effbe3c875c0cce21330e908cb26af6609286625f7d42d`。
+
+
+## Cycle 10：実相対微分からの一回の有限局所生成
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 10
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 84515a192f065b8a3f68a9f9a4b75a7b4707ab80
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "受理済A/Bの元相対cochain・実修復/全label対応、GOAL C・n1017 §3.1・design §4"
+  proof_dag_predecessors: [RelativeComplex, RelativeCover.original1, RelativeCover.original2, ActualEquation.nativeRepairEquiv, ActualEquation.nativeGaugeEquiv]
+  milestone: "Cの有限入力から、共有辺と全候補を保持する局所公開関係・全内部自由度・線形section・全label作用・元実修復への両逆を一回生成する"
+  proof_obligations: ["実全核の有限体基底と元cellを保存する全座標化", "非共有常時許容辺だけをX、全共有/候補をZとする分解", "同じ実d1/d0/defectからD,F,r,a,cとDa+Fc=0を生成", "有限初等行列の行/列消去から商・像基底・線形sectionを生成", "有限計算の停止・正確性とrhs/S非依存", "R×kerDと全局所解の相互逆coord/rec", "元0-cochain全labelを保持する作用と相互逆native関手", "共有原値制限はZのみで決まる", "非空公開関係の高々dimZ独立方程式"]
+  exit_criteria: ["有限体/有限添字/全核基底/実輸送座標だけが入力", "求める修復・section・商/像/核の正確性certificateを入力しない", "実際の有限計算出力から線形sectionと全両逆を生成", "全rhs・全candidate名/値・全内部自由度・全gauge labels", "元の独立actual repairsと同じdifferentialsへ接続", "全宣言focused/公理/scanと独立PR監査"]
+  selection_reason: "Bの非計算descentからCの入力生成手続きと全修復局所座標へ進む"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [FiniteElimination, LinearInterface, FiniteNativeCoordinates, NativeLocalInterface]
+  risks: ["有限解列挙や非計算sectionで生成済み表現を代替しない", "初等行/列操作の有限探索はDだけを消去しrhs/Sを使わない", "共有/候補を消去しない", "basis入力は実全核全体の同型", "orbit/pi0で全射を代替しない", "全S大域strictglue/比較は後続到達点で未達を保持"]
+  unchecked: ["実装・検証・PR査読前"]
+```
+
+実装経路：有限状態の飽和探索で初等行列積とその逆を生成し、正方拡張した実Dを対角化する行/列操作を探索する。Mathlibの全行列対角化定理からその探索の成功を証明する。出力を元の長方形Dへ戻し、像・核・商・線形sectionを計算する。これは局所修復やrhsの先行探索ではなく、同じDの一回の有限消去である。各局所関係・作用・復元はn1017の式(C)/(A)に従う。全S strict大域glueと表示変更、D–F、W1–W5はこのselectionの完了に含めず、固定GOALの後続要求として保持する。終了条件は実装の難しさに合わせて縮めない。
+
+### 同じ原始入力からの局所生成
+
+`FiniteFamily.Bases`は各元vertexの**実全核全体**と有限座標空間との線形同型であり、選択した部分核ではない。`Index0`–`Index3`、`coordinate0`–`coordinate3`、`enum0`–`enum3`は元のcell名とそのtargetの全基底を保つ。元輸送の線形性から全typed pathの線形性、元のd0/d1の線形性を証明し、閉領域上で計算する同じ微分と受理済相対微分との原値等号を与える。
+
+`privateAlwaysEdges`は領域内・P外・候補外・他領域との非共有という四条件で計算する。`edgeSplit`はこの集合と完全な補集合との両逆である。候補と共有辺は全て補集合に残り、parallelな元辺も別の添字を保つ。`D`/`F`は同じ元d1のprivate/public columns、`a`/`c`は同じ元d0の両成分、`rhs`は同じ元実defectの負の制限である。`D_a_add_F_c`は元零合成から生成する。
+
+`FiniteSaturation.saturate`は実List上の有限飽和で、補集合のcardinalityを停止量にする。初等行列と逆を同時に生成し、全出力の両逆条件を証明する。`diagonal_exists`は全行列のMathlib対角化定理の全transvection wordを同じ生成Listへ埋め、`diagonalize`の有限探索成功を放電する。`reduce`のrow/column/inverse/pivotと全正確性fieldはその探索結果から生成される。rhs・candidate subset・修復は探索入力にない。
+
+`generatedElimination`は同じ元private matrixの正方拡張を一回消去したデータである。`generatedSection`と`generatedPrivateImageCoordinates`/`generatedPrivateImageBasisValue`はこの同じデータを読む。正方拡張の像は元長方形行列の全像と両逆で同一視する。像基底の原値は計算可能で、native Basis packagingの値・独立性・全像のspanを証明する。sectionの全像上の右逆条件は同じ行列から生成され、一般APIのsection lawを実適用で放電する。
+
+完全cokerは元`range D`によるnative module quotientである。実行可能な`projection=id-Dσ`の等号とnative class等号の同値、projection像と全native cokerとのLinearEquivを示す。`kernelProjection=id-σD`の像は元`ker D`全体と等しい。したがって商・核を選択済み部分像や零空間へ縮小していない。
+
+公開関係は`qFz=qr`と同じ`projection(Fz)=projection(r)`である。`rec`/`coord`はn1017式の全R×kerDと独立な元方程式を相互に復元する。元全zero-cochain labelから`gamma=a-σDa`を生成し、`(z,k)↦(z+cb,k+gamma b)`が同じ元微分と交換することを示す。labelの効果が同じでも異なる射を残す。
+
+`NativeRepairInterface.repairEquiv`と`equivalence`は同じoriginal Tの制限に対する独立なactual repair全体を始域とする。元実defectはTから生成し、全対象の両合成、全頂点label値、全元辺のactual morphismの復元を証明する。`native_functor_inverse`/`native_inverse_functor`は全射を含む両関手合成そのものが恒等関手である等号である。`public_value`は各非private元辺の全基底座標を保つ。
+
+`FiniteCoverInterfaces.localEquivalence`は上のactual correspondenceを正確な`privateAlwaysEdges`へ適用する。共有部分上の原値制限はpublic zだけで決まり、全private vector、したがって全内部kernel自由度に依存しない。`candidate_retained`と`shared_restriction_public_only`は同じ元cover/候補集合でこの条件を放電する。
+
+公開条件の圧縮では全`projection∘F`像の計算されたpivot座標を使う。`publicRow`はその座標functionalを元zへ合成した計算可能なrowである。元zから全像座標への全射性からrowsの線形独立性を示し、全像のfinrank boundから本数≤dimZを得る。非空公開関係の各z0に対し同じrowsのaffine右辺を更新するだけで元公開関係と同値になる。z0はこの**条件付き表示定理の量化対象**であり、局所generatorや修復存在判定への先行修復入力ではない。
+
+### Material premise と生成経路
+
+| premise/data | 分類 | 生成・使用 |
+| --- | --- | --- |
+| 一般original tower、全実核、元辺/core/comparatorと生成輸送 | 本文由来 | 同じTからactual/native coefficient/repair/gauge対応を使用 |
+| 同一有限体、有限cell添字の列挙、実全核の有限基底、輸送線形性 | Cの本文由来の有限入力 | 全0–3-cell座標、元d0/d1行列、初等操作の有限計算 |
+| 閉P/各領域とP上の実face coherence | 本文由来 | 同じ実defectの相対所属、同じ元微分との交換 |
+| 同じ全候補集合と元領域family | 本文由来 | private判定、候補保持、共有原値制限 |
+| 一般APIのsection law | 実適用で放電済み | generatedElimination/sectionMatrix_regular/同じDmatrix_correct |
+| reduction validity/対角化成功・商/像/核の正確性・零合成 | 放電済み | 有限飽和の停止/全word所属、Mathlib全行列対角化、same-row逆条件、元d1d0=0 |
+| full image Basis packaging / quotient LinearEquiv | 出力の構造化 | 計算済みimage coordinate/原値vectorsと全両逆から生成。計算出力を外部choiceで選ばない |
+| arbitrary local repair、interface value、full gauge label | 定理の量化対象 | 全対象/全内部自由度/全labelの両逆・原値保存 |
+| nonempty relationのz0 | 表示定理の条件付き量化対象 | 同じ独立rowsのaffine右辺。generator/existenceへの入力にしない |
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Cの有限全核/元cell座標から一回のprivate消去、完全商/像/核/section、全局所actual repair/labelのstrict両逆、共有public制限、独立公開方程式boundを構成"
+  exit_criteria_status: ["有限入力だけから生成", "修復/section/正確性certificateの外部入力なし", "全rhsと全元public名前/値/内部自由度/label", "同じoriginal towerのactual repairsと元微分へ接続", "focused/公理/scansおよびPR独立監査で受理する"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [FiniteElimination.reduce, FiniteNative.generatedElimination, FiniteNative.generatedSection_regular, NativeRepairInterface.equivalence, NativeRepairInterface.native_functor_inverse, NativeRepairInterface.native_inverse_functor, FiniteCoverInterfaces.shared_restriction_public_only, FiniteNative.generated_public_row_count, FiniteNative.generated_public_affine_relation]
+  claim_mapping:
+    source_labels: ["GOAL Cの局所有限生成/作用/両逆/制限/方程式bound", "n1017 §3.1", "design §4"]
+    undischarged_assumptions: []
+    acceptance_point: "選定した全局所到達点のみ。全S strict大域glue・表示比較は後続要求"
+    port_status: not-applicable
+  next_obligation: "全Sの候補零条件と共有辺/頂点のstrict合成、全大域actual修復/全射の両逆、各表示比較。D–F/W1–W5と別全GOAL completion reviewも未達"
+```
+
+### 全宣言の監査対象
+
+`FiniteSaturation.lean` (8明示宣言):
+
+`FiniteElimination.expand`, `FiniteElimination.mem_expand`, `FiniteElimination.subset_expand`, `FiniteElimination.saturate`, `FiniteElimination.subset_saturate`, `FiniteElimination.saturate_closed`, `FiniteElimination.saturate_invariant`, `FiniteElimination.foldr_mem_saturate`。
+
+`FiniteElimination.lean` (28明示宣言):
+
+`FiniteElimination.Enumeration`, `FiniteElimination.Operation`, `FiniteElimination.compose`, `FiniteElimination.identity`, `FiniteElimination.elementary`, `FiniteElimination.generators`, `FiniteElimination.transvection_mem`, `FiniteElimination.Valid`, `FiniteElimination.valid_identity`, `FiniteElimination.valid_elementary`, `FiniteElimination.valid_compose`, `FiniteElimination.operations`, `FiniteElimination.operations_valid`, `FiniteElimination.foldr_matrix`, `FiniteElimination.word_mem_operations`, `FiniteElimination.diagonal_exists`, `FiniteElimination.diagonalize`, `FiniteElimination.Reduction`, `FiniteElimination.reduce`, `FiniteElimination.diagonal_regular`, `FiniteElimination.sectionMatrix`, `FiniteElimination.sectionMatrix_regular`, `FiniteElimination.mem_valid`, `FiniteElimination.not_valid_zero`, `FiniteElimination.sumEnumeration`, `FiniteElimination.squareExtension`, `FiniteElimination.rectangularSection`, `FiniteElimination.rectangularSection_regular`。
+
+`LinearInterface.lean` (22明示宣言):
+
+`LinearInterface.projection`, `LinearInterface.projection_D`, `LinearInterface.projection_eq_zero_iff`, `LinearInterface.q`, `LinearInterface.q_eq_iff_projection_eq`, `LinearInterface.kernelProjection`, `LinearInterface.kernel_projection_mem`, `LinearInterface.kernel_projection_fixed`, `LinearInterface.kernel_projection_range`, `LinearInterface.Relation`, `LinearInterface.mem_relation`, `LinearInterface.Solution`, `LinearInterface.Coordinates`, `LinearInterface.section_residual`, `LinearInterface.rec`, `LinearInterface.coord`, `LinearInterface.rec_coord`, `LinearInterface.coord_rec`, `LinearInterface.coordinateEquiv`, `LinearInterface.solution_nonempty_iff`, `LinearInterface.relation_zero_nonempty`, `LinearInterface.relation_empty`。
+
+`InterfaceQuotient.lean` (5明示宣言):
+
+`LinearInterface.quotientProjection`, `LinearInterface.quotient_projection_mk`, `LinearInterface.quotient_projection_injective`, `LinearInterface.quotient_projection_surjective`, `LinearInterface.quotientEquivalence`。
+
+`LinearInterfaceAction.lean` (16明示宣言):
+
+`LinearInterface.gamma`, `LinearInterface.projection_c`, `LinearInterface.Objects`, `LinearInterface.gauge`, `LinearInterface.interfaceAddAction`, `LinearInterface.rec_gauge`, `LinearInterface.Groupoid`, `LinearInterface.differential`, `LinearInterface.coboundary`, `LinearInterface.differential_coboundary`, `LinearInterface.EquationObjects`, `LinearInterface.equationCoordinateEquiv`, `LinearInterface.equation_coordinate_equivariant`, `LinearInterface.equationEquivalence`, `LinearInterface.equation_functor_label`, `LinearInterface.equation_inverse_label`。
+
+`FiniteMatrixInterface.lean` (2明示宣言):
+
+`FiniteMatrixInterface.linearSection`, `FiniteMatrixInterface.section_regular`。
+
+`FiniteFamilyCoordinates.lean` (12明示宣言):
+
+`FiniteFamily.Bases`, `FiniteFamily.Bases.comap`, `FiniteFamily.Index`, `FiniteFamily.relativeSMul`, `FiniteFamily.relativeModule`, `FiniteFamily.coordinate`, `FiniteFamily.restore`, `FiniteFamily.restore_coordinate`, `FiniteFamily.coordinate_restore`, `FiniteFamily.equivalence`, `FiniteFamily.coordinate_value`, `FiniteFamily.restore_value`。
+
+`FiniteCoefficientDifferentials.lean` (19明示宣言):
+
+`FiniteFamily.extend`, `FiniteFamily.restrict_extend`, `FiniteCoefficients.edgeModules`, `FiniteCoefficients.faceModules`, `FiniteCoefficients.pathTransport_smul`, `FiniteCoefficients.pathCorrection_smul`, `FiniteCoefficients.d0_smul`, `FiniteCoefficients.d1_smul`, `FiniteCoefficients.relative0Module`, `FiniteCoefficients.relative1Module`, `FiniteCoefficients.relative2Module`, `FiniteCoefficients.relative3Module`, `FiniteCoefficients.restrict_extend0`, `FiniteCoefficients.restrict_extend1`, `FiniteCoefficients.differential0`, `FiniteCoefficients.differential1`, `FiniteCoefficients.differential0_eq`, `FiniteCoefficients.differential1_eq`, `FiniteCoefficients.differential1_differential0`。
+
+`FiniteCoordinatePartition.lean` (18明示宣言):
+
+`FinitePartition.split`, `FinitePartition.join`, `FinitePartition.join_split`, `FinitePartition.split_join`, `FinitePartition.equivalence`, `FinitePartition.join_public`, `ClosedRegion.sharedEdges`, `ClosedRegion.privateAlwaysEdges`, `ClosedRegion.sharedEdgesDecidable`, `ClosedRegion.privateAlwaysEdgesDecidable`, `ClosedRegion.mem_sharedEdges`, `ClosedRegion.shared_of_other`, `ClosedRegion.not_shared_subsingleton`, `ClosedRegion.mem_privateAlwaysEdges`, `ClosedRegion.candidate_not_private`, `ClosedRegion.shared_not_private`, `ClosedRegion.private_of_nonshared`, `ClosedRegion.overlap_not_private`。
+
+`FiniteNativeCoordinates.lean` (23明示宣言):
+
+`FiniteNative.Index0`, `FiniteNative.Index1`, `FiniteNative.Index2`, `FiniteNative.Index3`, `FiniteNative.coordinate0`, `FiniteNative.coordinate1`, `FiniteNative.coordinate2`, `FiniteNative.coordinate3`, `FiniteNative.privateIndex`, `FiniteNative.privateIndexDecidable`, `FiniteNative.XIndex`, `FiniteNative.ZIndex`, `FiniteNative.edgeSplit`, `FiniteNative.public_edge_value`, `FiniteNative.public_edge_private_independent`, `FiniteNative.faceMap`, `FiniteNative.D`, `FiniteNative.F`, `FiniteNative.labelMap`, `FiniteNative.a`, `FiniteNative.c`, `FiniteNative.D_add_F`, `FiniteNative.D_a_add_F_c`。
+
+`FiniteCoordinateEnumerations.lean` (3明示宣言):
+
+`FiniteElimination.Enumeration.fintype`, `FiniteElimination.Enumeration.subtype`, `FiniteFamily.indexEnumeration`。
+
+`FiniteNativeMatrices.lean` (13明示宣言):
+
+`FiniteNative.enum0`, `FiniteNative.enum3`, `FiniteNative.enum1`, `FiniteNative.enum2`, `FiniteNative.enumX`, `FiniteNative.enumZ`, `FiniteNative.Dmatrix`, `FiniteNative.Fmatrix`, `FiniteNative.Dmatrix_correct`, `FiniteNative.Fmatrix_correct`, `FiniteNative.generatedElimination`, `FiniteNative.generatedSection`, `FiniteNative.generatedSection_regular`。
+
+`FiniteImageBasis.lean` (15明示宣言):
+
+`FiniteElimination.Active`, `FiniteElimination.activeExtend`, `FiniteElimination.matrix_factor`, `FiniteElimination.row_factor`, `FiniteElimination.imageCoordinate`, `FiniteElimination.inactive_image_zero`, `FiniteElimination.imageRestore`, `FiniteElimination.image_coordinate_restore`, `FiniteElimination.image_restore_coordinate`, `FiniteElimination.imageEquivalence`, `FiniteElimination.imageBasisValue`, `FiniteElimination.imageBasis`, `FiniteElimination.image_basis_value`, `FiniteElimination.image_basis_independent`, `FiniteElimination.image_basis_span`。
+
+`FiniteRectangularImage.lean` (10明示宣言):
+
+`FiniteElimination.squareExtension_mulVec`, `FiniteElimination.rectangleImageToSquare`, `FiniteElimination.squareImageToRectangle`, `FiniteElimination.rectangleImageEquivalence`, `FiniteElimination.rectangularReduction`, `FiniteElimination.RectangularActive`, `FiniteElimination.rectangularImageEquivalence`, `FiniteElimination.rectangularBasisValue`, `FiniteElimination.rectangularBasis`, `FiniteElimination.rectangular_basis_value`。
+
+`GeneratedRelationRows.lean` (8明示宣言):
+
+`FiniteElimination.publicImageCoordinates`, `FiniteElimination.public_image_coordinates_surjective`, `FiniteElimination.public_image_coordinates_eq_iff`, `FiniteElimination.publicRow`, `FiniteElimination.public_rows_independent`, `FiniteElimination.public_row_value`, `FiniteElimination.public_row_count`, `FiniteElimination.public_affine_relation`。
+
+`GeneratedNativeRelation.lean` (10明示宣言):
+
+`FiniteNative.generatedPrivateImageCoordinates`, `FiniteNative.generatedPrivateImageBasisValue`, `FiniteNative.generatedQuotientEquivalence`, `FiniteNative.generated_kernel_projection_range`, `FiniteNative.publicMatrix`, `FiniteNative.public_matrix_correct`, `FiniteNative.generatedPublicRows`, `FiniteNative.generated_public_rows_independent`, `FiniteNative.generated_public_row_count`, `FiniteNative.generated_public_affine_relation`。
+
+`NativeLocalInterface.lean` (16明示宣言):
+
+`FiniteNative.rhs`, `FiniteNative.CoordinateEquation`, `FiniteNative.solutionCoordinateEquiv`, `FiniteNative.solution_coordinate_equivariant`, `FiniteNative.coordinateEquationEquivalence`, `FiniteNative.publicRestriction`, `FiniteNative.restriction_public_only`, `FiniteNative.GeneratedObjects`, `FiniteNative.generatedSolutionEquiv`, `FiniteNative.generated_solution_equivariant`, `FiniteNative.GeneratedGroupoid`, `FiniteNative.generatedEquationEquivalence`, `FiniteNative.generated_functor_label`, `FiniteNative.generated_inverse_label`, `FiniteNative.generated_left_obj`, `FiniteNative.generated_right_obj`。
+
+`NativeRepairInterface.lean` (10明示宣言):
+
+`NativeRepairInterface.Objects`, `NativeRepairInterface.repairEquiv`, `NativeRepairInterface.repair_equivariant`, `NativeRepairInterface.equivalence`, `NativeRepairInterface.left_obj`, `NativeRepairInterface.right_obj`, `NativeRepairInterface.functor_label_value`, `NativeRepairInterface.inverse_label_value`, `NativeRepairInterface.inverse_choice`, `NativeRepairInterface.public_value`。
+
+`InterfaceFunctorInverses.lean` (4明示宣言):
+
+`changed_label_functor_inverse`, `changed_label_inverse_functor`, `NativeRepairInterface.native_functor_inverse`, `NativeRepairInterface.native_inverse_functor`。
+
+`FiniteCoverInterfaces.lean` (3明示宣言):
+
+`FiniteCoverInterfaces.localEquivalence`, `FiniteCoverInterfaces.shared_restriction_public_only`, `FiniteCoverInterfaces.candidate_retained`。
+
+全245明示宣言と生成APIを含む全sourceの個別公理監査を用いる。各監査対象sourceのimport行だけを除いた単一のexact-source focused auditはこのcycleの依存した到達点だけを検査し、Research全体/aggregate/全file loopをelaborateしない。全GOAL completion candidateではない。
+
+20 sourceのfocused exact-source監査と必要な単一 concrete module確認はexit0。245明示宣言と生成APIを含む全300宣言を個別 `#print axioms`し標準公理のみ。axiom log SHA256 `94fcc96b2a17ea8ecae70f06669c0ed1037d67e62848154beaab591636183245`。全20 sourceの末尾にstandard axiom gateを置く。小さいF₂の非零/零行列で公開rows `[1]` / `[]` とsection値 `1` / `0` を実評価した。公開artifact/placeholder/hidden-BiDi/privacy/import方向/diff scanを確認する。
