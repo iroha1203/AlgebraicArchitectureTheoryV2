@@ -1956,3 +1956,488 @@ audits:
   blocking_findings: []
   next_obligation: "C14固定headの標準review-pr/math-lean-reviewとroot受理後、Eの同じ原generatorの記号的値更新へ進む"
 ```
+
+
+### Cycle 15 selection — 原始値から同じ全S生成器へ記号的更新を接続
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 15
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 134ed790586c12f03313eab9dfe94f370946c97d
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "Issue #5132 C14受理5931648237 / PR5150 root acceptance5931624166 / report Cycle14"
+  proof_dag_predecessors: ["C10–12 同じ原full有限座標/一回生成/strict全S復元/表示比較", "C13 同じ原D/全範囲/dual/finite決定", "C14 任意全native affine原始実現/元typed微分・defect/独立real repair全射"]
+  milestone: "固定GOAL E記号生成・値更新とFの同じ実適用。固定typed K/full kernel/linear輸送/基底/閉被覆/候補名の実入力族から全parameterの原始操作とr0+Bvを生成し、取得前の記号public/fullprivate復元・全labelsと取得後の同じ生成器による全S判定/復元/実操作対応を交換させる"
+  proof_obligations:
+    - "任意元L0・reference R0と線形parameterから辺translation θL/θR、comparison変化Cを作り全vのL(v)/R(v)/c(v)をreal Operationsとして実現。全typed wordの翻訳項、linear輸送不変、元実δ(v)=δ0+C(v)+d1_vector θR(v)を実合成から導く"
+    - "baseと全parameterの線形条件から元full3-route equalityと固定P face整合を全vで生成。全parameter実現と入力族の法則を別に示し、原0–3/任意L/候補名/full kernelを保持、一般cohomology/成功certificateに置換しない"
+    - "同じ全native coefficients/原d0–d2/full matrices D/F/public/private coordinatesと基底の固定を証明し、生成elimination/kernel/image/section/public rows/full-label作用の線形部分をv/rhs/Sに依存しない同じdataから作る"
+    - "固定D/F/生成σと生成B/r0から(z,v)の記号的関係q(Fz−Bv)=q r0とfull internal kernel復元を取得前に作る。各v評価fiberと具体relation/solution/full coordinatesの両逆、rec=σ(r0+Bv−Fz)+kの評価交換を証明。異なるvのfiber非空同値を主張しない"
+    - "同じ各local原RHS/bases/generatorへ適用し、strictshared edges/fullvertices/glue、候補零条件/全S、fullprivate kernel/全labelsの復元を評価と交換。値差時のrhs/affine復元項だけの更新・同じ消去/作用再利用を証明、受理C11と独立実affine対象・全射の元値へ接続"
+    - "値代入で成功/失敗が変わる非零finite族とfull kernel自由度/full labels/候補零条件の具体回帰を一般APIへ接続。全宣言focused/個別公理/登録/scans、root実装終了後の標準新規4lane PR gate/root受理/CIを固定"
+  exit_criteria:
+    - "全parameterの元原始実操作・全typed word/defect評価・入力族face/3-cell法則を構成"
+    - "同じ原native M/bases/D/F/generator/full label作用の保持を証明"
+    - "記号relation/fullrecの評価fiber両逆、rhs/affine項の値差更新を構成"
+    - "strictcover/allS/独立real objects/full arrowsの元値への評価交換を接続"
+    - "非自明成功失敗・full自由度回帰と全集合証拠/標準PR gateを固定"
+  selection_reason: "C14の全primitive実現を受理。Eの第一条項を原始値から同じ生成器/全Sまで閉じ、後続のsingleton環境とsplitに使う値再利用の証明距離を直接縮める"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [AffinePrimitiveFamily, SymbolicInterface, SymbolicCover, NativeSymbolicRestoration, C15SymbolicRegression]
+  risks: ["r0+Bvを結論fieldにしない", "全parameter実現/3-cell条件を省かない", "異なるv間の無条件解同値に弱めない", "同じfull kernel/σ/labels/shared候補値/allSを保持", "一般式だけで実元操作との接続を消さない"]
+  unchecked: ["C15構成/全接続/回帰/査読はこれから実装", "E文脈同値/全typed内部split/Fへの適用、W1–W5、累積completionは後続"]
+```
+
+このselectionは実装前の固定提案。上の終了条件に必要な構成と補題、具体例、全S接続を同じcycle内で反復する。全E/全F/全GOAL完成とは表示しない。
+
+### C15 — 原始実操作から記号的右辺と同じ全範囲復元へ
+
+固定GOAL E「記号的生成と値更新」、Fの同じ実入力への適用、n1017 §3.5とdesign §5に対応する。
+`AffinePrimitiveFamily` は任意元Lとreference Rを保ち、各辺へのtranslation θL(v)/θR(v)、比較c+η(v)を全vで実Operationsとして構成する。
+元typed pathの全出現の翻訳項を実合成から評価し、全linear輸送は同じで、実defectはδ0+η(v)+d1_vector(θR(v))となる。
+`AffineComparisonWords` / `AffineFamilyLaws` は完全な両pastingについて、baseline実3-route整合とvector d2η=0から全vの実3-route整合を生成する。
+閉P上のbaseline実face整合と生成parameter項の零条件から、全vの同じ物理固定face整合を導く。成功修復やH2零性は供給しない。
+
+`AffineConstantCoefficients` は全native実核・演算・edge equivalenceを含む同じbundled Mを同定する。
+`AffineFamilyFiniteInput` は全standard核のdimension、coordinate、inverseを各元頂点で同定し、元d0/d1/d2の全matrixを同じtyped列と全pastingで同定する。
+`AffineFamilyDifferentials` は相対全d0/d1を同定する。`AffineFamilyLabels` と `AffineFamilyEquationCoordinates` は全実頂点ラベルと全supportedラベル部分群を同定する。
+この同じM/bases/列と有限完全enumerationから受理C10–11のD/F、像basis、full kernel、生成section、public rowと作用を一度作る。
+それらの入力にv、rhs、Sは入らず、vは生成した原始defectの右辺だけへ入り、Sは候補零述語へ入る。
+
+`SymbolicInterface` は固定D/F/B/r0と既に入力から生成されたσから、取得前の関係q(Fz−Bv)=q(r0)と全kerD座標を構成する。
+各vのevaluation fibreとr0+Bvの関係、全solution/public/private座標に両逆を構成し、復元はσ(r0+Bv−Fz)+kである。
+`SymbolicInterfaceUpdates` は右辺の差B(w−v)、復元のアフィン差σB(w−v)、元gauge増分のv非依存を証明する。
+異なるvでの可否は、`C15SymbolicAffineRegression.empty_range_iff` がv≠0で失敗する同じ実入力を含めて扱う。
+
+`SymbolicNativeLocal` は生成Bを原relative defectの同じlocal制限・basisによる負座標から作り、同じD/F/σのlocal復元へ接続する。
+`SymbolicStrictCover` / `SymbolicCoverAction` は全Sの候補零、元共有edge値、共有full vertex labelsの厳密適合を保持し、取得前の全kerD自由度を各vの元cochainへ復元する。
+`SymbolicGlobalRestoration` / `SymbolicGlobalValues` は独立に定義された大域supported方程式との全対象・全射のstrict両逆を構成し、local評価、元edge補正、全vertex label値を交換させる。
+`SymbolicCoverRanges` は全S⊆Tの同じpublic/private/full-label値を保持する包含と評価を交換させる。
+
+`AffineFamilyRelativeDefect` はprimitive実δ(v)をbase Mの全relative kernelへ運んだδ0+Δvと全faceで同定する。
+`AffineFamilyEquationCoordinates` / `AffineFamilyEquationBridge` は同じ全cochain/全gaugeでnative parameter方程式をbase方程式へ同定する。
+`AffineFamilyNativeEquation` / `AffineFamilySymbolicCover` は独立real Repair、native SupportedRepair、base supported equation、記号的strictcoverの間に全arrowを含む両逆関手を構成する。
+元実choice/全edge補正、全labelを保存し、`AffineFamilySymbolicRanges.family_symbolic_range_square` は独立actual range包含関手との全関手可換を証明する。
+`AffineFamilyDualClassification` は同じ原always D/cokerと原candidate列B_eについて、全v・全Sの実修復可否iff span iff dual hitting、failed dual、minimal hittingを接続する。
+同じ商の値はo(v)=q(-δ0)-q(Δv)で、candidate列とそのsupportは共用する。
+
+### C15 — material premiseと受理依存の使用
+
+| premise | 分類・生成元 | 使用先 |
+| --- | --- | --- |
+| Field/Module、有限typed K、任意元L/reference R/c、θL/θR/η | GOALの実入力・値更新の入力条件。translationと実word評価はAffinePrimitiveFamilyから生成 | 全parameter実原始操作/linear不変/δ(v) |
+| 元reference両face pathのlinear alignment hf | 原始入力のface線形条件、parameterでもtranslated_linear/translated_vector_pathで保持 | same core/familyTower/原defect/全cochain |
+| baseline実3-route整合、vector d2η=0 | 入力族が全3-cell lawを保つためのdirection-hypothesis | family_three_lawで全vの実3-route整合を生成、受理Fのnative syzygyへ |
+| 閉P、baseline実fixed face、生成ΔvのP零 hB | GOALの閉固定部分と値更新族の条件 | family_fixed_face/familyRelativeLinear/relativeδと全S復元 |
+| 閉finite cover、原候補名、全核basis/完全finite enumeration | GOAL C–Fの同じ入力条件 | 同じ原D/F、有限section/kernel/strict共有/glue/全S |
+| finite elimination、σ/right inverse、public/private/action | 構成・放電済みpredecessor C10–11の同じ元M/bases/enumから生成 | SymbolicNativeLocal、SymbolicCoverAction、元全復元 |
+| equation/action/strict compatibility/native-real equivalence | 今回の構成または受理C11/C14。成功certificateは入力にしない | evaluation fibre両逆、原全ラベル、actual包含可換 |
+| original quotient/full-dual classification | 受理C13の現在のstatementを同じM/P/原候補/linear/δ(v)へ適用 | 全v・全S iff、不能証拠、極小範囲 |
+
+受理C10–12はPR5146–5148のreport/受理コメント、C13はPR5149 root #issuecomment-5929751165、C14はPR5150 root #issuecomment-5931624166で固定する。
+現在の使用宣言・必要な定義・同じ適用引数・proof-useを確認した受理依存は、共通acceptance contractの追跡完了条件で止める。
+Repair/Solution/Coordinatesのfieldは独立に分類する対象と座標の条件であり、入力から成功を供給するfieldではない。
+一般のσ/right inverse/action equalityを引数で扱う補題は、適用箇所で同じ有限入力から生成し、単なるcertificate転送を成功証拠にしない。
+
+### C15 — 同じ実入力の非零回帰
+
+`C15AffineFamilyRegression` は受理C14のF3²全実核、異なる元L/reference R、非恒等shear、非零comparisonを保つ。
+全原始値vに対し、実defect=v、全matrix固定、全loop固定時の独立real可否iff v=0、元true候補の許可では全vで実修復を構成する。
+同じ物理固定shear edgeで非零x gaugeが全vで許可され、非零y gaugeは全vで拒否される。
+`C15SymbolicAffineRegression.correspondence` は同じ実K/L/R/θ族・全元finite列を一般familyRealSymbolicEquivalenceへ渡す。
+その取得前に固定された同じgenerated fibreは、空許可で可否iff v=0、元true候補を許可した範囲では全vで可解となる。
+`C15SymbolicKernelRegression` は実finite matrix[1,0]の同じgenerated section/full unused-column kernelを保持する。
+非零のprivate核値、effectを持つ非零full labelと非零stabilizer label、parameter1の非恒等native arrowを検査する。
+これらは今回の値更新・全自由度・full labelsの発火証拠。指定W1–W5の全要求は同じ固定GOALで後続とする。
+
+### C15 — 受理spine declaration list
+
+全名の共通prefixは `AAT.AG.RelativeRepairComposition.`。各sourceの明示宣言を以下で固定する。
+
+`AffineTranslationWords.lean` (8明示宣言、source SHA256 `45b54882210424b002121adfcc6a85d4dbd99c3d8d96117d7337caa81a9b8619`):
+
+- `NativeAffine.translation_mul`
+- `NativeAffine.translation_zero`
+- `NativeAffine.translation_inv`
+- `NativeAffine.operation_mul_translation`
+- `NativeAffine.translatedOperations`
+- `NativeAffine.translated_linear`
+- `NativeAffine.translated_word_linear`
+- `NativeAffine.translated_word`
+
+`AffinePrimitiveDefect.lean` (5明示宣言、source SHA256 `07a9417b55f3fc6d1213879d19c6d5044986e4353312ab1944df83a881b9bfdf`):
+
+- `NativeAffine.realDefectVector`
+- `NativeAffine.reference_word_quotient`
+- `NativeAffine.real_defect_residual`
+- `NativeAffine.translated_defect`
+- `NativeAffine.real_defect_native`
+
+`AffineVectorLinear.lean` (7明示宣言、source SHA256 `7c028cd899abcbddc1a01f7a5b92486e2b22a3531eec85b6ec9953e176a65a0b`):
+
+- `NativeAffine.vectorPathLinear`
+- `NativeAffine.vectorFaceDifferential`
+- `NativeAffine.vectorFaceLinear`
+- `NativeAffine.vector_face_linear_value`
+- `NativeAffine.vectorPastingLinear`
+- `NativeAffine.vector_pasting_linear_value`
+- `NativeAffine.vectorPastingDifferential`
+
+`AffinePrimitiveFamily.lean` (14明示宣言、source SHA256 `f4040f631098f438b546b200438d06486d42ab0345fc770247ce5d6866f82b02`):
+
+- `NativeAffine.familyOriginal`
+- `NativeAffine.familyReference`
+- `NativeAffine.familyComparisons`
+- `NativeAffine.family_original_zero`
+- `NativeAffine.family_reference_zero`
+- `NativeAffine.family_comparisons_zero`
+- `NativeAffine.family_aligned`
+- `NativeAffine.familyTower`
+- `NativeAffine.family_tower_original`
+- `NativeAffine.family_tower_reference`
+- `NativeAffine.family_core`
+- `NativeAffine.familyDefectLinear`
+- `NativeAffine.family_defect_affine`
+- `NativeAffine.family_defect_native`
+
+`AffineComparisonWords.lean` (7明示宣言、source SHA256 `18855ae2773c04f98df2b62b88cfb54eca7bb730cc1b25d5c5d1d848af354169`):
+
+- `NativeAffine.translated_vector_path`
+- `NativeAffine.face_operation_translation`
+- `NativeAffine.pasting_operation_translation`
+- `NativeAffine.three_operation_iff`
+- `NativeAffine.translated_vector_face`
+- `NativeAffine.translated_vector_pasting`
+- `NativeAffine.translated_pasting_differential`
+
+`AffineFamilyLaws.lean` (4明示宣言、source SHA256 `f40c5486a2f566e758f19951350c8d81984a565db54084d519d27ff061591d89`):
+
+- `NativeAffine.face_residual_translation`
+- `NativeAffine.face_coherent_iff_defect_zero`
+- `NativeAffine.family_three_law`
+- `NativeAffine.family_fixed_face`
+
+`AffineConstantCoefficients.lean` (3明示宣言、source SHA256 `a15ace9cf8257cf277278e93fb9436ac7b92807ca99feb604becd2ac7ba04c5b`):
+
+- `NativeAffine.same_linear_edge`
+- `NativeAffine.same_linear_coefficients`
+- `NativeAffine.family_local_coefficients`
+
+`AffineFamilyLabels.lean` (1明示宣言、source SHA256 `3617b16b27a8e0c3dee1e5117db87583244c2857a1ac89af5bbac5723e4dfc43`):
+
+- `NativeAffine.translated_gauge_labels`
+
+`AffineFamilyFiniteInput.lean` (8明示宣言、source SHA256 `7b1b3029f1627ce4510203944442fcd1636f5f1041d3b886dab4343ccdb7af56`):
+
+- `NativeAffine.family_coefficients`
+- `NativeAffine.family_standard_dimension`
+- `NativeAffine.family_standard_coordinate`
+- `NativeAffine.family_standard_inverse`
+- `NativeAffine.family_vertex_matrix`
+- `NativeAffine.family_edge_matrix`
+- `NativeAffine.family_face_matrix`
+- `NativeAffine.family_defect_coordinates`
+
+`SymbolicInterface.lean` (11明示宣言、source SHA256 `2c50b3dad2721b882397c20fd2b262819ab3d6520262f7f929b3cdc327c088dd`):
+
+- `SymbolicInterface.publicMap`
+- `SymbolicInterface.rhs`
+- `SymbolicInterface.relation_evaluation`
+- `SymbolicInterface.RelationFiber`
+- `SymbolicInterface.relationFiberEquiv`
+- `SymbolicInterface.coordinateFiberEquiv`
+- `SymbolicInterface.SolutionFiber`
+- `SymbolicInterface.solutionFiberEquiv`
+- `SymbolicInterface.section_residual_evaluation`
+- `SymbolicInterface.reconstruction_evaluation`
+- `SymbolicInterface.kernel_coordinate_evaluation`
+
+`SymbolicInterfaceAction.lean` (12明示宣言、source SHA256 `ba8e3bcc02399de81932b4f08830a5e5aa5cae0623cbe6e635032bc97de2d9f3`):
+
+- `SymbolicInterface.publicCoboundary`
+- `SymbolicInterface.symbolic_coboundary_zero`
+- `SymbolicInterface.FiberObjects`
+- `SymbolicInterface.fiberGauge`
+- `SymbolicInterface.fiberAddAction`
+- `SymbolicInterface.fiber_evaluation_equivariant`
+- `SymbolicInterface.FiberGroupoid`
+- `SymbolicInterface.fiberEquivalence`
+- `SymbolicInterface.fiber_functor_inverse`
+- `SymbolicInterface.fiber_inverse_functor`
+- `SymbolicInterface.fiber_functor_label`
+- `SymbolicInterface.fiber_inverse_label`
+
+`SymbolicInterfaceUpdates.lean` (5明示宣言、source SHA256 `489e2be434c6a66632dff44a7e0d7c77fa9f5c129f0893fbe5cd279caae10549`):
+
+- `SymbolicInterface.rhs_difference`
+- `SymbolicInterface.section_update`
+- `SymbolicInterface.reconstruction_update`
+- `SymbolicInterface.gauge_public_increment`
+- `SymbolicInterface.gauge_kernel_increment`
+
+`SymbolicNativeLocal.lean` (9明示宣言、source SHA256 `2d28b0818d16772b6ac2c90a227d82c04153319eb8dd9a6218b48dcaf8de2126`):
+
+- `SymbolicNativeLocal.defectFamily`
+- `SymbolicNativeLocal.rhsMap`
+- `SymbolicNativeLocal.rhsLinear`
+- `SymbolicNativeLocal.rhs_affine`
+- `SymbolicNativeLocal.Fiber`
+- `SymbolicNativeLocal.fiberEquiv`
+- `SymbolicNativeLocal.originalEquationEquiv`
+- `SymbolicNativeLocal.fiber_public`
+- `SymbolicNativeLocal.fiber_private`
+
+`SymbolicStrictCover.lean` (8明示宣言、source SHA256 `dca8bec8c7b6d02d68b3bf476f3f7e3d1bb14c4f5d59dab44911d8c45c7e945c`):
+
+- `SymbolicStrictCover.LocalFiber`
+- `SymbolicStrictCover.PublicCompatible`
+- `SymbolicStrictCover.Objects`
+- `SymbolicStrictCover.compatibility_evaluation`
+- `SymbolicStrictCover.objectEquiv`
+- `SymbolicStrictCover.originalObjectEquiv`
+- `SymbolicStrictCover.evaluated_public_value`
+- `SymbolicStrictCover.evaluated_private_value`
+
+`AffineFamilyRelativeDefect.lean` (3明示宣言、source SHA256 `d7a0a42571b0fff76060e6726dcd75fa22031d06e1200a78977116d77ddaa138`):
+
+- `NativeAffine.familyRelativeLinear`
+- `NativeAffine.family_relative_linear_value`
+- `NativeAffine.family_native_relative_defect`
+
+`SymbolicCoverAction.lean` (13明示宣言、source SHA256 `d87d4bef9fb5793d7076324632e495e75e7f04dfbafd26c0f9a287e34396984b`):
+
+- `SymbolicCoverAction.gauge`
+- `SymbolicCoverAction.gauge_component`
+- `SymbolicCoverAction.evaluation_gauge`
+- `SymbolicCoverAction.gauge_zero`
+- `SymbolicCoverAction.gauge_add`
+- `SymbolicCoverAction.addAction`
+- `SymbolicCoverAction.Groupoid`
+- `SymbolicCoverAction.evaluation_equivariant`
+- `SymbolicCoverAction.equivalence`
+- `SymbolicCoverAction.functor_inverse`
+- `SymbolicCoverAction.inverse_functor`
+- `SymbolicCoverAction.functor_label`
+- `SymbolicCoverAction.inverse_label`
+
+`SymbolicCoverRanges.lean` (6明示宣言、source SHA256 `e87fe855f7c3176f787c05e9d9bf220e6fd3ba04d74ea4843b28f6b1df688924`):
+
+- `SymbolicCoverRanges.functor`
+- `SymbolicCoverRanges.evaluation_range`
+- `SymbolicCoverRanges.public_value`
+- `SymbolicCoverRanges.private_value`
+- `SymbolicCoverRanges.label_value`
+- `SymbolicCoverRanges.functor_comp`
+
+`SymbolicGlobalRestoration.lean` (5明示宣言、source SHA256 `2b74ed688b2661b8ea8d05ea8a9890468823813ab8df3838c43d8e37a5decdf5`):
+
+- `SymbolicGlobalRestoration.objectEquiv`
+- `SymbolicGlobalRestoration.equivalence`
+- `SymbolicGlobalRestoration.functor_inverse`
+- `SymbolicGlobalRestoration.inverse_functor`
+- `SymbolicGlobalRestoration.evaluation_global`
+
+`SymbolicGlobalValues.lean` (5明示宣言、source SHA256 `19217b2c4376cad95c586ad8edd2249634412ea261151623ddb17d05336b0ed1`):
+
+- `SymbolicGlobalRestoration.original_local_evaluation`
+- `SymbolicGlobalRestoration.forward_edge_value`
+- `SymbolicGlobalRestoration.inverse_edge_value`
+- `SymbolicGlobalRestoration.forward_label_value`
+- `SymbolicGlobalRestoration.inverse_label_value`
+
+`C15AffineFamilyRegression.lean` (21明示宣言、source SHA256 `9304eb6e28f829ff6db29bf839e7b19a7ac58ac4e35403301f0244d255e446bb`):
+
+- `C15AffineFamilyRegression.originalTranslations`
+- `C15AffineFamilyRegression.referenceTranslations`
+- `C15AffineFamilyRegression.baseComparison`
+- `C15AffineFamilyRegression.input`
+- `C15AffineFamilyRegression.refs`
+- `C15AffineFamilyRegression.reference_false`
+- `C15AffineFamilyRegression.reference_true`
+- `C15AffineFamilyRegression.original_false_parameter`
+- `C15AffineFamilyRegression.base_coherent`
+- `C15AffineFamilyRegression.base_defect_zero`
+- `C15AffineFamilyRegression.generated_parameter_value`
+- `C15AffineFamilyRegression.actual_parameter_defect`
+- `C15AffineFamilyRegression.matrix_reused`
+- `C15AffineFamilyRegression.all_fixed_iff`
+- `C15AffineFamilyRegression.nonzero_all_fixed_failure`
+- `C15AffineFamilyRegression.allowedRepair`
+- `C15AffineFamilyRegression.nonzero_allowed_success`
+- `C15AffineFamilyRegression.positive_native`
+- `C15AffineFamilyRegression.full_gauge_labels_reused`
+- `C15AffineFamilyRegression.gauge_x_allowed_every_value`
+- `C15AffineFamilyRegression.gauge_y_forbidden_every_value`
+
+`C15SymbolicKernelRegression.lean` (28明示宣言、source SHA256 `d1ea0b81694b4ba58df165e650beea01d6705362f8af8ce76ed3a2e778c415e8`):
+
+- `C15SymbolicKernelRegression.k`
+- `C15SymbolicKernelRegression.fieldValues`
+- `C15SymbolicKernelRegression.rows`
+- `C15SymbolicKernelRegression.columns`
+- `C15SymbolicKernelRegression.matrix`
+- `C15SymbolicKernelRegression.D`
+- `C15SymbolicKernelRegression.generatedSection`
+- `C15SymbolicKernelRegression.regular`
+- `C15SymbolicKernelRegression.kernelVector`
+- `C15SymbolicKernelRegression.kernel_mem`
+- `C15SymbolicKernelRegression.kernel_nonzero`
+- `C15SymbolicKernelRegression.F`
+- `C15SymbolicKernelRegression.B`
+- `C15SymbolicKernelRegression.a`
+- `C15SymbolicKernelRegression.c`
+- `C15SymbolicKernelRegression.label_zero`
+- `C15SymbolicKernelRegression.nonzeroObject`
+- `C15SymbolicKernelRegression.zeroObject`
+- `C15SymbolicKernelRegression.nonzero_evaluation`
+- `C15SymbolicKernelRegression.nonzero_reconstruction`
+- `C15SymbolicKernelRegression.nonzero_stabilizer`
+- `C15SymbolicKernelRegression.nonzero_effect`
+- `C15SymbolicKernelRegression.NativeGroupoid`
+- `C15SymbolicKernelRegression.nativeCategory`
+- `C15SymbolicKernelRegression.zeroNative`
+- `C15SymbolicKernelRegression.stabilizerArrow`
+- `C15SymbolicKernelRegression.evaluated_stabilizer_label`
+- `C15SymbolicKernelRegression.stabilizer_not_identity`
+
+`AffineFamilyDifferentials.lean` (2明示宣言、source SHA256 `ef5d3fe0c35b4d77f30e7461bcf8a661a53126ca1cfbfc4604dbe822f087e53f`):
+
+- `NativeAffine.family_relative_d0`
+- `NativeAffine.family_relative_d1`
+
+`AffineFamilyEquationCoordinates.lean` (7明示宣言、source SHA256 `819d0f3591bdbf0969435a46da5da47d97b4a4ab31d3dce38c7ab1c808a4f1ad`):
+
+- `NativeAffine.family_equation_iff`
+- `NativeAffine.familyEquationSolutions`
+- `NativeAffine.familyEquationObjects`
+- `NativeAffine.family_equation_labels_eq`
+- `NativeAffine.familyEquationLabels`
+- `NativeAffine.family_equation_edge_value`
+- `NativeAffine.family_equation_label_value`
+
+`AffineFamilyEquationBridge.lean` (2明示宣言、source SHA256 `7739433d86fd31dc802771aa01d25d064537cbd9fc06cbf7cff6c4e0982c1654`):
+
+- `NativeAffine.family_equation_equivariant`
+- `NativeAffine.familyEquationEquivalence`
+
+`AffineFamilyNativeEquation.lean` (7明示宣言、source SHA256 `c8c035732c75656822226c89aec711e6b18f6e3c327902ac19e1680cf3af727e`):
+
+- `NativeAffine.family_equation_functor_inverse`
+- `NativeAffine.family_equation_inverse_functor`
+- `NativeAffine.familyNativeEquationEquivalence`
+- `NativeAffine.family_native_equation_functor_inverse`
+- `NativeAffine.family_native_equation_inverse_functor`
+- `NativeAffine.family_native_equation_edge_value`
+- `NativeAffine.family_native_equation_label_value`
+
+`AffineFamilySymbolicCover.lean` (10明示宣言、source SHA256 `c80d3f00b96da33f70c8b57aa7ac38abea8e89d13414a0b0c7ff3d3f1d918241`):
+
+- `NativeAffine.familyNativeSymbolicEquivalence`
+- `NativeAffine.family_native_symbolic_functor_inverse`
+- `NativeAffine.family_native_symbolic_inverse_functor`
+- `NativeAffine.familyRealSymbolicEquivalence`
+- `NativeAffine.family_real_symbolic_functor_inverse`
+- `NativeAffine.family_real_symbolic_inverse_functor`
+- `NativeAffine.familySymbolicObjects`
+- `NativeAffine.family_symbolic_forward_edge_value`
+- `NativeAffine.family_symbolic_inverse_edge_value`
+- `NativeAffine.family_symbolic_forward_label_value`
+
+`AffineFamilySymbolicRanges.lean` (3明示宣言、source SHA256 `51ee0ecdd22940b69c9a33876a3f0fb0ed7f830ae590725146213318e833e4c7`):
+
+- `strict_inverse_evaluation_square`
+- `NativeAffine.family_generated_range_square`
+- `NativeAffine.family_symbolic_range_square`
+
+`C15SymbolicAffineRegression.lean` (21明示宣言、source SHA256 `ef95fe1df562bc6a3c468965abe1e5af2dcdba802c31dae857425e4e299a9e9b`):
+
+- `C15SymbolicAffineRegression.candidates`
+- `C15SymbolicAffineRegression.allowed`
+- `C15SymbolicAffineRegression.P`
+- `C15SymbolicAffineRegression.U`
+- `C15SymbolicAffineRegression.edges`
+- `C15SymbolicAffineRegression.units`
+- `C15SymbolicAffineRegression.faceEquality`
+- `C15SymbolicAffineRegression.candidateDecidable`
+- `C15SymbolicAffineRegression.emptyEdgesDecidable`
+- `C15SymbolicAffineRegression.emptyFacesDecidable`
+- `C15SymbolicAffineRegression.regionVerticesDecidable`
+- `C15SymbolicAffineRegression.regionEdgesDecidable`
+- `C15SymbolicAffineRegression.regionFacesDecidable`
+- `C15SymbolicAffineRegression.fixed_parameter`
+- `C15SymbolicAffineRegression.fixed_face`
+- `C15SymbolicAffineRegression.correspondence`
+- `C15SymbolicAffineRegression.Fibre`
+- `C15SymbolicAffineRegression.fixed_empty`
+- `C15SymbolicAffineRegression.fixed_allowed`
+- `C15SymbolicAffineRegression.empty_range_iff`
+- `C15SymbolicAffineRegression.allowed_range_success`
+
+`AffineFamilyDualClassification.lean` (5明示宣言、source SHA256 `5ffdbd443367b044db0feee0117eb62ba0ce12e3d9afe67722d353f534f3cd95`):
+
+- `NativeAffine.family_obstruction_affine`
+- `NativeAffine.family_repair_nonempty_iff_range`
+- `NativeAffine.family_repair_nonempty_iff_hits`
+- `NativeAffine.family_failed_repair_dual`
+- `NativeAffine.family_minimal_repair_iff`
+
+### C15 — 到達点と検証
+
+29選定sourceの同じ実行本体を再現した単一のnamed milestone focused確認はexit0/errors0/warnings0。
+240明示宣言に対する個別 `#print axioms` は欠落0、標準公理のみ。
+今回の新生成補助は `NativeAffine.familyRelativeLinear.congr_simp` / `NativeAffine.familyTower.congr_simp` の2件。
+受理依存の使用先で生成された補助は `ClosedRegion.mk.congr_simp`、`NativeAffine.tower.congr_simp`、`NativeAffine.vectorPath.eq_def`、`NativeAffine.vectorPasting.eq_def`、`StrictCoverRestoration.objectEquiv.congr_simp` の5件。
+したがって新API242、使用先の補助込み247件の全個別公理を監査した。log SHA256 `87a975074140d40f932e7f8cd48912ab7b57d8ed95ede56e48071549c5006bac`。
+各production sourceも必要な依存順でrootの単一file focused確認を行い、最終実内容で全29が通過した。
+全29source/hash/一意registry行が一致、placeholder/hidden-BiDi/privacy/語彙/import方向/保護領域/diff scanはclean。
+Research全体、aggregate root、全file/module loopのelaborationは実行していない。
+固定GOAL、数学本文、Formal、共通基準、CI設定は変更しない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    - "任意元L/reference Rから全vのprimitive実操作、全typedword/linear保持/実δ0+Δvを構成"
+    - "完全pastingのbaseline3 law+linear annihilator、baseline固定face+生成P零から全vのlawを生成"
+    - "同じ全native M/standard kernel coordinate/inverse/原d0–d2全matrix/full label部分群を同定、同じ原D/F/kernel/生成σを共用"
+    - "取得前q(Fz−Bv)=qr0とfullker座標、各v評価fibre/solution/coordinatesの両逆とaffine項の更新を構成"
+    - "strictcover/全S/原候補零/full private/全labels、独立native/real修復strict両逆・元値・actual範囲包含との評価交換を接続"
+    - "同じ原quotient/candidate列の全v全S span/dual/minimalとactual可否、非零実primitive族/ker自由度/fulllabel/stabilizer回帰を接続"
+  exit_criteria_status: ["全parameter実操作/全typed評価/入力law: AffinePrimitiveFamily/ComparisonWords/FamilyLaws", "同じ全M/bases/matrices/labelsと一回生成: ConstantCoefficients/FiniteInput/FamilyLabels/SymbolicNativeLocal", "記号的fullrec/両逆/更新: SymbolicInterface/Action/Updates", "strict全S/実復元/全arrows/元値/包含交換: SymbolicGlobalRestoration/Values/FamilySymbolicCover/Ranges", "非零実success/failure/full自由度: C15AffineFamilyRegression/SymbolicKernelRegression/SymbolicAffineRegression; 標準PR gateはPR作成後に判定"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: ["上記29source/全240明示spine/2新生成補助/5受理使用先補助"]
+  evidence: ["全247個別標準公理/29source focused", "全S actual/native/real/symbolic strict両逆とvalue/range APIs", "同じF3²原実入力のempty iff v=0/allowed全v成功", "fullprivate非零/非恒等効果label/非零stabilizer"]
+  claim_mapping:
+    theorem_names: [family_defect_affine, family_three_law, family_fixed_face, family_local_coefficients, family_vertex_matrix, family_edge_matrix, family_face_matrix, familyNativeSymbolicEquivalence, familyRealSymbolicEquivalence, family_symbolic_range_square, family_repair_nonempty_iff_hits, family_minimal_repair_iff]
+    source_labels: ["GOAL E記号的生成と値更新", "GOAL Fの同じ全実affine値更新への適用", "n1017 3.5", "design5"]
+    conjuncts: ["上記対応・premise表・spineの全S/同じ元操作/fullkernels/fulllabels/両逆/値差更新"]
+    undischarged_assumptions: []
+    acceptance_point: "原始実評価から同じgenerator/全S/fullrecまで六義務の構成・接続を閉じた候補。正式PRレビュー/root受理/CIは外部記録で判定"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["原始からδ0+Δ/全linear保持/全3lawとP整合", "同じM/bases/full matrices/labels/生成σ", "全evaluation fibre/strictcover/allS/actual objects/full arrows/元値/包含可換", "samequotient/dual/minimalとactual値回帰"]
+    remaining: ["固定GOAL E実一点環境/全許容外部文脈iffと内部split、Fの残るE適用、W1–W5、全target別completion gate"]
+  certificate_provenance:
+    discharged: ["θ族→primitive操作/word実評価→δ0+Δ", "全原M/bases/complete列→受理C11同じgenerated D/F/kernel/σ", "独立real/native repairs→同じbase equation→symbolic全復元", "same original quotient→受理C13 dual/minimal"]
+    unresolved: []
+  proof_use:
+    used: ["hf→family core/alignment/tower", "hthreeとd2η→全parameter実3law", "baselinefixedと生成P零→relative defect", "same original linear transport/basis/finite enums→generator/strict allS/fullrec", "full native value/action laws→strictinverse/range square/real regression"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["29選定exact-source focused exit0/errors0/warnings0", "240明示+2新生成=242新API/5使用補助込み247個別標準公理/欠落0", "axiom log SHA256 87a975074140d40f932e7f8cd48912ab7b57d8ed95ede56e48071549c5006bac", "29原source/hash/registry/placeholder/Unicode/privacy/語彙/import方向/保護/diff整合"]
+  blocking_findings: []
+  next_obligation: "C15固定headの標準review-pr/math-lean-review/root受理/CI後、Eの実singleton試験と全許容環境の文脈同値へ進む"
+```
+
+全GOALの累積完了判定とtracking Issueの全完了checkboxは未達のまま保持し、次の固定義務へ進む。
