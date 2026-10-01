@@ -1812,15 +1812,15 @@ face入力はreference wordのlinear一致だけであり、実修復face equali
 
 以下の14 sourceを登録し、明示宣言および同じsourceの生成APIを個別公理監査の対象とする。
 
-`NativeAffineKernel.lean` (15明示宣言、source SHA256 `268cc2e80ac6a29ddf09b5f87c076923bbea65b6956d3046496bc1a87a958b91`):
+`NativeAffineKernel.lean` (15明示宣言、source SHA256 `dbc8336db27b30ad9f49c8651692e5fe23b0d32ef04a487a0484024495bde686`):
 
 `NativeAffine.Operations`、`NativeAffine.projection`、`NativeAffine.projection_surjective`、`NativeAffine.translation`、`NativeAffine.translation_apply`、`NativeAffine.projection_translation`、`NativeAffine.operation_apply`、`NativeAffine.projection_eq_one_iff`、`NativeAffine.translationKernel`、`NativeAffine.kernelEquiv`、`NativeAffine.kernelEquiv_symm_val`、`NativeAffine.kernel_comm`、`NativeAffine.conjugation_translation`、`NativeAffine.centralizes_translations_iff`、`NativeAffine.centralizes_kernel_iff`。
 
-`NativeAffineTower.lean` (14明示宣言、source SHA256 `274a7779318dee3689f0553e679fc3f949182b2b56b479a2dd3d55e989d49b22`):
+`NativeAffineTower.lean` (14明示宣言、source SHA256 `747d4a8f68c7957b5675bbe4a054a1499c34755efec6d12d58e0a0a4610d44ad`):
 
 `NativeAffine.original`、`NativeAffine.original_path_value`、`NativeAffine.referenceLift`、`NativeAffine.core`、`NativeAffine.referenceLift_core`、`NativeAffine.selected_edge_value`、`NativeAffine.selected_path_value`、`NativeAffine.original_lower_strong`、`NativeAffine.comparator`、`NativeAffine.comparator_centralizes`、`NativeAffine.core_alignment`、`NativeAffine.tower`、`NativeAffine.tower_original_edge`、`NativeAffine.tower_reference_edge`。
 
-`NativeAffineCoefficients.lean` (7明示宣言、source SHA256 `71204b66d809928b374fc7dd287ec53f262c8b8efee4491451b43d3d743dd857`):
+`NativeAffineCoefficients.lean` (7明示宣言、source SHA256 `1e35973c81534691a223ff1a785f5ca10d2ee421d387a901b8521203cd287c04`):
 
 `NativeAffine.coefficient`、`NativeAffine.coefficientModule`、`NativeAffine.linearCoefficient`、`NativeAffine.coefficient_inverse_value`、`NativeAffine.coefficient_inclusion`、`NativeAffine.edge_coefficient`、`NativeAffine.edge_linear`。
 
@@ -1828,7 +1828,7 @@ face入力はreference wordのlinear一致だけであり、実修復face equali
 
 `NativeAffine.tower_path_value`、`NativeAffine.faceOperation`、`NativeAffine.pastingOperation`、`NativeAffine.whisker_value`、`NativeAffine.authored_face_value`、`NativeAffine.authored_pasting_value`、`NativeAffine.authored_syzygy`、`NativeAffine.canonical_face_value`、`NativeAffine.defect_value`。
 
-`NativeAffineRepairs.lean` (10明示宣言、source SHA256 `5a06322ae7a3b01e62c09f9a057a1053c55d47b1cde8c541a479a87ebe4d4c20`):
+`NativeAffineRepairs.lean` (10明示宣言、source SHA256 `5f1356b80428dcab8695340a5a0e73b5d6cf598aa35f70f75ace451cc8fc2510`):
 
 `NativeAffine.Repair`、`NativeAffine.Repair.ext`、`NativeAffine.chosenOperation`、`NativeAffine.chosen_edge_value`、`NativeAffine.chosen_path_value`、`NativeAffine.toRepair`、`NativeAffine.fromRepair`、`NativeAffine.repairEquivalence`、`NativeAffine.repairEquivalence_value`、`NativeAffine.repairEquivalence_inverse_value`。
 
@@ -1836,7 +1836,7 @@ face入力はreference wordのlinear一致だけであり、実修復face equali
 
 `NativeAffine.gaugeLabels`、`NativeAffine.gauge_label_conditions`、`NativeAffine.gaugeLabelEquivalence`、`NativeAffine.gaugeLabelEquivalence_value`、`NativeAffine.gaugeLabelEquivalence_inverse_value`。
 
-`NativeAffineGroupoid.lean` (14明示宣言、source SHA256 `d66da6aa214831c6694bcd87b6b47c6ed7127d7ed9def3802ae64fc7e694e546`):
+`NativeAffineGroupoid.lean` (14明示宣言、source SHA256 `994a5800d3fc012d758a8db696ae35260339f4b0560d7a27d3f03b31007ea148`):
 
 `NativeAffine.native_gauge_value`、`NativeAffine.gauge`、`NativeAffine.gauge_value`、`NativeAffine.gaugeAddAction`、`NativeAffine.Arrow`、`NativeAffine.gauge_eq_iff`、`NativeAffine.Groupoid`、`NativeAffine.repair_equivariant`、`NativeAffine.groupoidEquivalence`、`NativeAffine.arrowEquivalence`、`NativeAffine.groupoid_forward_label`、`NativeAffine.groupoid_inverse_label`、`NativeAffine.groupoid_functor_inverse`、`NativeAffine.groupoid_inverse_functor`。
 
@@ -1848,7 +1848,7 @@ face入力はreference wordのlinear一致だけであり、実修復face equali
 
 `NativeAffine.fixed_native`、`NativeAffine.repairInclude`、`NativeAffine.repair_include_value`、`NativeAffine.repair_include_native`、`NativeAffine.labelInclude`、`NativeAffine.repair_include_gauge`、`NativeAffine.affineRangeFunctor`、`NativeAffine.affine_repair_iff_obstruction_zero`、`NativeAffine.affine_repair_iff_range`、`NativeAffine.affine_repair_iff_hits`、`NativeAffine.affine_minimal_repair_iff`。
 
-`NativeAffineFiniteInput.lean` (14明示宣言、source SHA256 `6d0f251aeac8f1f82c6b787b6f967bf77bda07eaf070a676ce7f4afbcc5b85e3`):
+`NativeAffineFiniteInput.lean` (14明示宣言、source SHA256 `9c8f07bfec1b7d4204eba70bf6ea8ecb2e9c18a5803f153b367bfd451f94231f`):
 
 `NativeAffine.standardBases`、`NativeAffine.standard_basis_value`、`NativeAffine.standard_basis_inverse`、`NativeAffine.vertexColumn`、`NativeAffine.edgeColumn`、`NativeAffine.faceColumn`、`NativeAffine.vertexMatrix`、`NativeAffine.edgeMatrix`、`NativeAffine.faceMatrix`、`NativeAffine.defectCoordinates`、`NativeAffine.vertex_matrix_value`、`NativeAffine.edge_matrix_value`、`NativeAffine.face_matrix_value`、`NativeAffine.defect_coordinate_value`。
 
@@ -1860,13 +1860,13 @@ face入力はreference wordのlinear一致だけであり、実修復face equali
 
 `NativeAffine.restrictOperations`、`NativeAffine.restricted_path_value`、`NativeAffine.restricted_faces`、`NativeAffine.restricted_tower_eq`、`NativeAffine.restrictAffineRepair`、`NativeAffine.affine_restriction_value`、`NativeAffine.affine_restriction_native`、`NativeAffine.restrictAffineLabels`、`NativeAffine.affine_label_restriction_native`、`NativeAffine.affine_restriction_gauge`、`NativeAffine.affineRestrictionFunctor`、`NativeAffine.affine_restriction_functors`。
 
-`NativeAffineFiniteCover.lean` (10明示宣言、source SHA256 `656602bbf0719c711b04034acf0f837138ca02afdf7893dba223fa87da4bac42`):
+`NativeAffineFiniteCover.lean` (10明示宣言、source SHA256 `fc83929d67a921180caaa0f59b08d0c6380c6a800a9ad15f6f9ad6e1191858c0`):
 
 `NativeAffine.finiteObjectEquivalence`、`NativeAffine.finiteLabelEquivalence`、`NativeAffine.finite_equivariant`、`NativeAffine.finiteGroupoidEquivalence`、`NativeAffine.finite_functor_inverse`、`NativeAffine.finite_inverse_functor`、`NativeAffine.affine_repair_iff_public`、`NativeAffine.finite_forward_edge_value`、`NativeAffine.finite_inverse_edge_value`、`NativeAffine.finite_forward_label_value`。
 
-`C14AffineRegression.lean` (28明示宣言、source SHA256 `b6e51a2cef27b4a3a0131f31dbe5c96f3a6ba8decc62540be021f60692c772da`):
+`C14AffineRegression.lean` (30明示宣言、source SHA256 `6691c81d081e71e7cf0c4a243630291bcdf0996a2f7730238eaf2156ede32fda`):
 
-`C14AffineRegression.V`、`C14AffineRegression.K`、`C14AffineRegression.edgeNameEquality`、`C14AffineRegression.x`、`C14AffineRegression.y`、`C14AffineRegression.shear`、`C14AffineRegression.reference`、`C14AffineRegression.original`、`C14AffineRegression.comparisons`、`C14AffineRegression.aligned`、`C14AffineRegression.actualTower`、`C14AffineRegression.authored_three`、`C14AffineRegression.original_false_value`、`C14AffineRegression.tower_original_false`、`C14AffineRegression.original_reference_distinct`、`C14AffineRegression.native_transport_nonidentity`、`C14AffineRegression.full_kernel_vector`、`C14AffineRegression.comparator_full_centralizer`、`C14AffineRegression.shear_not_full_centralizer`、`C14AffineRegression.repaired`、`C14AffineRegression.positive`、`C14AffineRegression.positive_native`、`C14AffineRegression.all_fixed_impossible`、`C14AffineRegression.all_fixed_native_impossible`、`C14AffineRegression.actual_matrix_positive`、`C14AffineRegression.actual_matrix_negative`、`C14AffineRegression.actual_defect_first`、`C14AffineRegression.actual_defect_second`。
+`C14AffineRegression.V`、`C14AffineRegression.K`、`C14AffineRegression.edgeNameEquality`、`C14AffineRegression.x`、`C14AffineRegression.y`、`C14AffineRegression.shear`、`C14AffineRegression.reference`、`C14AffineRegression.original`、`C14AffineRegression.comparisons`、`C14AffineRegression.aligned`、`C14AffineRegression.actualTower`、`C14AffineRegression.authored_three`、`C14AffineRegression.original_false_value`、`C14AffineRegression.tower_original_false`、`C14AffineRegression.original_reference_distinct`、`C14AffineRegression.native_transport_nonidentity`、`C14AffineRegression.gauge_label_x_allowed`、`C14AffineRegression.gauge_label_y_forbidden`、`C14AffineRegression.full_kernel_vector`、`C14AffineRegression.comparator_full_centralizer`、`C14AffineRegression.shear_not_full_centralizer`、`C14AffineRegression.repaired`、`C14AffineRegression.positive`、`C14AffineRegression.positive_native`、`C14AffineRegression.all_fixed_impossible`、`C14AffineRegression.all_fixed_native_impossible`、`C14AffineRegression.actual_matrix_positive`、`C14AffineRegression.actual_matrix_negative`、`C14AffineRegression.actual_defect_first`、`C14AffineRegression.actual_defect_second`。
 
 ### C14 — material premiseとproof-use
 
@@ -1892,6 +1892,7 @@ face入力はreference wordのlinear一致だけであり、実修復face equali
 `original_false_value` / `original_reference_distinct` と `tower_original_false` が元操作の独立値と保持を確認する。
 `native_transport_nonidentity` は第二標準vectorが両標準vectorの和へ輸送されることを全actual核で確認する。
 `comparator_full_centralizer` / `shear_not_full_centralizer` は同じwhole native射影核に対する正負の中央化。
+`gauge_label_x_allowed` / `gauge_label_y_forbidden` は空固定頂点集合と同じ固定false shear loopで、非零の定数xが許可され、定数yが拒否されることを証明する。
 `positive` はfalse原loopを物理固定し、true候補を指定comparisonに一致させた独立実修復を構成する。
 `positive_native` は同じ元入力へ戻す。
 `all_fixed_impossible` は両元referenceの実値と元face equalityから1=0を導き、`all_fixed_native_impossible` は同じ独立native対象の不能へ運ぶ。
@@ -1903,7 +1904,7 @@ E固有の一般保存定理とその実affine適用、指定W1–W5、別累積
 ### C14 — 到達点と検証
 
 rootの固定選定14 exact-source bodyのfocused確認はexit0/errors0/warnings0。
-163明示+22生成=185新APIと、使用先で生成された受理dependency補助1宣言の計186件を個別に `#print axioms` で検査し、欠落0・標準公理のみ。
+最初の163明示+22生成=185新APIと、使用先で生成された受理dependency補助1宣言の計186件を個別に `#print axioms` で検査し、欠落0・標準公理のみ。既存のstatement/実行本文は同じで、source内設計説明と名指しgauge正負補助定理2件を含む現在の明示集合は165、新API187、依存補助を含む総監査集合は188。追加2件の個別公理log SHA256 `9cd81039ac5c6d113edffd97b203531e4af24c04662c576958812e1e465b8c7f`、単一production回帰focusedは30宣言guard/exit0/errors0/warnings0。
 公理log SHA256 `8925040604ccb45d52b6bcb046a0c4a92490c4f3b40265e068a892ba39470c56`。全14 sourceのSHA256と一意登録を照合する。
 原実F3²の非恒等輸送、元/referenceの独立値、全核中央化正負、実修復正負、元full matrix正負係数と実defect両座標を検査する。
 placeholder/hidden-BiDi/privacy/diff/import方向scanはclean。Research全体/aggregate/全file loopを実行しない。
@@ -1923,7 +1924,7 @@ result:
     - "任意有限体・任意d包括零次元のfull native groups/projection/whole kernel/centralizer両方向: 一般field/moduleの証明を全標準vectorへ適用"
     - "同じ元L/R/core/comparator/full0–3を保持、strong/全核可換/輸送全同型を生成、実3cell原始条件から一般syzygyを導出"
     - "独立real対象/全labels/pointwise実射とnative full gauge groupoidの両逆、全S/同じfixed名前/元実値/closed制限と関手比較"
-    - "全standard basis/実微分・defect評価/C同じfull復元/D全候補分類/A障害、非自明回帰と全185新API+受理依存補助1公理/登録/scan"
+    - "全standard basis/実微分・defect評価/C同じfull復元/D全候補分類/A障害、非自明回帰と全187新API+受理依存補助1公理/登録/scan"
     - "標準独立4lane PR監査とroot受理/CIはこの固定到達点のPR headで判定"
   split_reason: none
   completion_candidate: no
@@ -1951,7 +1952,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: ["選定14 exact-body focused exit0/errors0/warnings0", "163明示+22生成=185新APIと受理依存補助1の186全個別公理標準のみ/欠落0", "axiom log SHA256 8925040604ccb45d52b6bcb046a0c4a92490c4f3b40265e068a892ba39470c56", "原F3²全核・非恒等輸送/元L-reference独立/実修復正負/元finite列正負・defect両座標", "14source exact hashes/14一意登録/placeholder/Unicode/privacy/import方向/diff scan"]
+  validation_refs: ["選定14 exact-body focused exit0/errors0/warnings0", "165明示+22生成=187新APIと受理依存補助1の188全個別公理標準のみ/欠落0", "axiom log SHA256 8925040604ccb45d52b6bcb046a0c4a92490c4f3b40265e068a892ba39470c56", "原F3²全核・非恒等輸送/元L-reference独立/実修復正負/元finite列正負・defect両座標", "14source exact hashes/14一意登録/placeholder/Unicode/privacy/import方向/diff scan"]
   blocking_findings: []
   next_obligation: "C14固定headの標準review-pr/math-lean-reviewとroot受理後、Eの同じ原generatorの記号的値更新へ進む"
 ```

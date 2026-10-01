@@ -1,7 +1,17 @@
 import ResearchLean.AG.RelativeRepairComposition.NativeAffineTower
 import Mathlib.Algebra.Module.TransferInstance
 
-/-! # Whole native kernel coordinates and the original linear transport -/
+/-! # Whole native kernel coordinates and the original linear transport
+
+## Implementation notes
+
+The additive equivalence to vectors runs through the entire categorical kernel
+and the entire native projection kernel. Scalar multiplication is transported
+along it to retain the existing categorical carrier and inclusion. Replacing that
+carrier with vectors directly would require separate identifications at every
+native differential and gauge API. The transported module instead supports the
+same APIs, with inclusion and actual edge-transport value laws proved below.
+-/
 namespace AAT.AG.RelativeRepairComposition.NativeAffine
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction
 universe uk uA uG

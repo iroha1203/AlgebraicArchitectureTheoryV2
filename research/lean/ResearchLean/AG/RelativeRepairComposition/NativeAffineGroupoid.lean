@@ -1,7 +1,17 @@
 import ResearchLean.AG.RelativeRepairComposition.NativeAffineGaugeLabels
 import ResearchLean.AG.RelativeRepairComposition.InterfaceFunctorInverses
 
-/-! # Full affine repair arrows on the original vertices and edges -/
+/-! # Full affine repair arrows on the original vertices and edges
+
+## Implementation notes
+
+The gauge action is transported through the full object and label equivalences
+so that the established native action laws apply on the same labels. Defining a
+second action directly by pointwise conjugation would duplicate those laws and
+their correspondence proofs. The independent Arrow predicate and gauge_value
+still compare the transported action with the actual affine conjugation formula;
+labels that act trivially remain distinct morphisms in ActionCategory.
+-/
 namespace AAT.AG.RelativeRepairComposition.NativeAffine
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction
 universe uk uA uG

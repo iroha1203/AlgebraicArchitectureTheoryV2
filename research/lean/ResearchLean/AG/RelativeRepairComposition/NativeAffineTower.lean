@@ -6,6 +6,13 @@ import ResearchLean.AG.AbelianLiftingObstruction.GroupExtension
 
 The original edge is arbitrary. Its reference lift is the actual operation
 R times inverse L, so core reselection recovers R while retaining L.
+
+## Implementation notes
+
+Original operations L and reference operations R remain separate inputs. The
+lift R L⁻¹ preserves the original edge while selecting R for word evaluation and
+transport. Using the identity-edge convenience input would discard arbitrary L;
+constructing the tower fields from the native group projection avoids that loss.
 -/
 namespace AAT.AG.RelativeRepairComposition.NativeAffine
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction

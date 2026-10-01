@@ -6,6 +6,14 @@ import ResearchLean.AG.RelativeRepairComposition.SupportedRepairs
 
 The operations below are the actual repaired affine edges. Their projections,
 word equalities and physical fixed values are specified before coordinates.
+
+## Implementation notes
+
+Repair uses real affine operations and authored word equalities before any
+correction equation. Defining it as the native cochain solution would make the
+claimed correspondence part of the object definition. The inverse instead
+forms each native choice as operation L⁻¹, retaining arbitrary original L and
+proving physical edge and face conditions in both directions.
 -/
 namespace AAT.AG.RelativeRepairComposition.NativeAffine
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction

@@ -6,6 +6,14 @@ import Mathlib.LinearAlgebra.AffineSpace.AffineEquiv
 
 Every operation is a native affine equivalence. The kernel and centralizer
 are computed from this full projection, including zero-dimensional modules.
+
+## Implementation notes
+
+The projection is the native linear homomorphism on all affine equivalences. Its
+kernel equivalence is constructed from that entire kernel, so later categorical
+coefficients inherit the original inclusion. Starting with a selected translation
+subgroup would leave the whole-kernel and centralizer converse to be supplied
+separately; the native projection makes both statements about the same group.
 -/
 namespace AAT.AG.RelativeRepairComposition.NativeAffine
 

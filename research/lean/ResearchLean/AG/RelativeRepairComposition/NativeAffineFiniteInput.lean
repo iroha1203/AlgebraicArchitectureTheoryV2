@@ -1,7 +1,16 @@
 import ResearchLean.AG.RelativeRepairComposition.NativeAffineDifferentials
 import ResearchLean.AG.RelativeRepairComposition.GeneratedNativeRelation
 
-/-! # Full finite-coordinate input from original affine evaluations -/
+/-! # Full finite-coordinate input from original affine evaluations
+
+## Implementation notes
+
+Every vertex uses all d coordinates of the whole native kernel equivalence.
+Matrices are evaluated on the corresponding original standard columns, with
+separate value laws identifying the native differentials. An image basis or a
+chosen effective action space would discard kernel directions and stabilizers;
+full standard coordinates feed the existing finite generator without that loss.
+-/
 namespace AAT.AG.RelativeRepairComposition.NativeAffine
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction
 universe uk uG

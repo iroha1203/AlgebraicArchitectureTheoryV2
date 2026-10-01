@@ -92,6 +92,27 @@ theorem native_transport_nonidentity :
   ext j
   fin_cases j <;> norm_num [reference, shear, x, y]
 
+/-- The nonzero first-coordinate label preserves the original fixed shear loop. -/
+theorem gauge_label_x_allowed :
+    (fun _ : K.Vertex => x) ∈ gaugeLabels K reference ∅ C13RangeInput.fixed.edges := by
+  constructor
+  · intro v hv; exact False.elim hv
+  · intro e he
+    change e.2.2 = false at he
+    rw [he]
+    change x = shear x
+    ext j
+    fin_cases j <;> norm_num [shear, x]
+
+/-- The second-coordinate label fails to preserve the same original fixed shear loop. -/
+theorem gauge_label_y_forbidden :
+    (fun _ : K.Vertex => y) ∉ gaugeLabels K reference ∅ C13RangeInput.fixed.edges := by
+  intro h
+  have he := h.2 (⟨(),(),false⟩ : EdgeName (K := K)) rfl
+  change y = shear y at he
+  have hj := congrArg (fun v : V => v 0) he
+  norm_num [shear, y] at hj
+
 /-- Every original full native kernel coordinate reconstructs the actual second translation. -/
 theorem full_kernel_vector :
     FiberAut.hom (kernelInclusion (GroupExtension.projection (projection (k := ZMod 3) (A := V)))

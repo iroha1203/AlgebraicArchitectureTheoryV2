@@ -4,7 +4,17 @@ import ResearchLean.AG.RelativeRepairComposition.NativeAffineGroupoid
 import ResearchLean.AG.RelativeRepairComposition.NativeAffineCorrection
 import ResearchLean.AG.RelativeRepairComposition.GeneratedCoverRestoration
 
-/-! # Full finite cover coordinates and reconstruction of original affine repairs -/
+/-! # Full finite cover coordinates and reconstruction of original affine repairs
+
+## Implementation notes
+
+The real object and full-label equivalences are composed with the established
+strict finite-cover reconstruction using the same full bases, original geometry
+and complete enumerations. Constructing a second elimination or cover category
+here would duplicate the generator and its support laws. This composition keeps
+all public values, private kernel directions and compatible labels, while the
+edge and label value theorems recover the actual original operations explicitly.
+-/
 namespace AAT.AG.RelativeRepairComposition.NativeAffine
 set_option maxHeartbeats 4000000
 set_option synthInstance.maxHeartbeats 100000
