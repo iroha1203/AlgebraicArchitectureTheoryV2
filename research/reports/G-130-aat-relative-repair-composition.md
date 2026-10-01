@@ -2962,25 +2962,25 @@ result:
     undischarged_assumptions: []
     acceptance_point: "C16六義務と五終了条件の構成・接続を閉じた候補。正式PRレビュー/root受理/CIは外部記録で判定"
     port_status: unported
-  audits:
-    premise_delta:
-      discharged: ["原始pin追加から全実入力lawとactual singleton", "全0–3共有/実制限/全label値", "same generated C候補零/内部消去/fullactualrange", "全actualenv/原始許容族/全S iffと非零・内部候補回帰"]
-      remaining: ["固定GOAL E内部splitの全一般可換核/categorical/fullcomplex/holonomy/public-dual保存", "Fの残る内部split適用", "指定W1–W5", "全target累積completion packetと別四本監査"]
-    certificate_provenance:
-      discharged: ["元typedcell/原L,R→pin操作/全law", "元actual修復→新全actual修復とsingleton評価", "same original wholematrix/section→candidatezero→sharedprojection", "fulltyped embedding→whole actual制限と共有laws", "actualsingleton→任意外部存在逆方向"]
-      unresolved: []
-    proof_use:
-      used: ["元hf/hthree→pin全law", "P閉性とfixedlaw→新元P/actualrange", "同じgenσ/complete kernel→boundary restoration", "全Wreference/cmp/incidence→actual restriction/operation equality", "原始pin許容→constructed actualEnv membership→Ctx逆方向"]
-      unused: []
-    structure_field_escape: none-found
-    route_integrity: pass
-    target_fitting: none-found
-    vacuity: none-found
-    one_way_as_equivalence: none-found
-    goal_or_report_reinterpretation: none-found
-    validation_refs: ["28production/同じnamed milestone focused exit0/errors0/warnings0", "全312個別標準公理/欠落0", "axiom log SHA256 9299df97be1fcf2f0b48c65ff8aee87fd99d1280957747b0cf32ec925a6080b6", "全source/hash/registry/static scans"]
-    blocking_findings: []
-    next_obligation: "C16固定headの標準review-pr/math-lean-review/root受理/CI後、Eの内部always辺分割を元一般可換核/全geometry/実補正から構成"
+audits:
+  premise_delta:
+    discharged: ["原始pin追加から全実入力lawとactual singleton", "全0–3共有/実制限/全label値", "same generated C候補零/内部消去/fullactualrange", "全actualenv/原始許容族/全S iffと非零・内部候補回帰"]
+    remaining: ["固定GOAL E内部splitの全一般可換核/categorical/fullcomplex/holonomy/public-dual保存", "Fの残る内部split適用", "指定W1–W5", "全target累積completion packetと別四本監査"]
+  certificate_provenance:
+    discharged: ["元typedcell/原L,R→pin操作/全law", "元actual修復→新全actual修復とsingleton評価", "same original wholematrix/section→candidatezero→sharedprojection", "fulltyped embedding→whole actual制限と共有laws", "actualsingleton→任意外部存在逆方向"]
+    unresolved: []
+  proof_use:
+    used: ["元hf/hthree→pin全law", "P閉性とfixedlaw→新元P/actualrange", "同じgenσ/complete kernel→boundary restoration", "全Wreference/cmp/incidence→actual restriction/operation equality", "原始pin許容→constructed actualEnv membership→Ctx逆方向"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["28production/同じnamed milestone focused exit0/errors0/warnings0", "全312個別標準公理/欠落0", "axiom log SHA256 9299df97be1fcf2f0b48c65ff8aee87fd99d1280957747b0cf32ec925a6080b6", "全source/hash/registry/static scans"]
+  blocking_findings: []
+  next_obligation: "C16固定headの標準review-pr/math-lean-review/root受理/CI後、Eの内部always辺分割を元一般可換核/全geometry/実補正から構成"
 ```
 
 全GOALの累積完了判定とtracking Issueの全完了checkboxは未達のまま保持し、固定義務の続きを扱う。
