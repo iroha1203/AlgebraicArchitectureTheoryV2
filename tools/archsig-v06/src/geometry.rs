@@ -80,7 +80,7 @@ impl<'a> Geometry<'a> {
     }
 
     /// 要素が属する局所。要素は、それを定義したソースの局所に属する。
-    /// 引数 `X.$p` は操作 `X` の、呼び出しの要素 `A->B` は呼び出し元 `A` のソースで定義される(設計 §3.3)。
+    /// 引数 `X.$p` は操作 `X` の、呼び出しの要素 `A->B` は呼び出し元 `A` のソースで定義される(設計 §4.4)。
     /// 定義を観測していない要素は、どの局所にも属さない。
     pub fn element_locals(&self, name: &str) -> BTreeSet<String> {
         if let Some(locals) = self.channels.get(name) {
@@ -104,6 +104,10 @@ impl<'a> Geometry<'a> {
     pub fn split(&self, plan: &[Atom]) -> Split {
         let mut out = Split::default();
         for a in plan.iter().filter(|a| a.kind != "plan") {
+            if let Some(q) = named(a).into_iter().find(|n| n.starts_with('?')) {
+                out.questions.push((q.to_string(), a.clone()));
+                continue;
+            }
             let locals = self.atom_locals(a);
             match locals.len() {
                 1 => out.locals.entry(locals.into_iter().next().unwrap()).or_default().push(a.clone()),
@@ -115,10 +119,12 @@ impl<'a> Geometry<'a> {
 }
 
 /// 候補を局所ごとに分けたもの。
-#[derive(Clone, Debug, Default)]
+#[derive(Default)]
 pub struct Split {
     /// 局所の名前と、その局所だけに属する Atom。
     pub locals: BTreeMap<String, Vec<Atom>>,
     /// 共有の条件。二つ以上の局所に属する Atom と、どの局所にも属さない Atom。
     pub shared: Vec<Atom>,
+    /// `?` の名前と、それを名指す Atom。どの局所に属するかが決まらない。
+    pub questions: Vec<(String, Atom)>,
 }

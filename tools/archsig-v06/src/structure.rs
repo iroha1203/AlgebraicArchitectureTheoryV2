@@ -393,6 +393,8 @@ pub struct Overlay {
     pub untraced: BTreeMap<String, Vec<(Option<String>, Atom)>>,
     /// 対応の元か行き先に書いた `?` の名前と、その対応の Atom。
     pub questions: BTreeMap<String, Atom>,
+    /// 書いた対応の元の要素と、その対応の Atom の場所。
+    pub corresponds_at: BTreeMap<String, Vec<String>>,
 }
 
 /// ArchMap の Atom の列 `before` に、候補の Atom の列 `plan` を重ねる(設計 §3.6)。
@@ -417,6 +419,7 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
         if a.subject.starts_with('?') {
             out.questions.entry(a.subject.clone()).or_insert_with(|| a.clone());
         }
+        out.corresponds_at.entry(a.subject.clone()).or_default().extend(a.at.clone());
         let object = a.object.as_deref().unwrap_or("");
         let to: Vec<String> = object.split('|').map(|t| t.trim().to_string()).filter(|t| !t.is_empty()).collect();
         if object.contains('|') {

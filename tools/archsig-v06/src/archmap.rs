@@ -83,11 +83,11 @@ impl Store {
     pub fn write_split(&self, plan: &str, base: Option<&str>, split: &Split) -> Result<(), String> {
         let line = |a: &Atom| serde_json::to_string(a).unwrap() + "\n";
         let shared: String = split.shared.iter().map(line).collect();
+        // 局所の候補が、元の候補やその外に重ならないように書く。書き出す前に、すべての局所を確かめる。
+        if let Some(local) = split.locals.keys().find(|l| l.split('/').any(|c| matches!(c, "" | "." | ".."))) {
+            return Err(format!("局所 {local} は、候補の下に書き出せない"));
+        }
         for (local, atoms) in &split.locals {
-            // 局所の候補が、元の候補やその外に重ならないように書く。
-            if local.split('/').any(|c| matches!(c, "" | "." | "..")) {
-                return Err(format!("局所 {local} は、候補の下に書き出せない"));
-            }
             let name = format!("{plan}/{local}");
             let dir = self.dir().join("plans").join(&name);
             std::fs::create_dir_all(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;

@@ -131,3 +131,9 @@ pub fn shop(name: &str) -> Repo {
 pub fn result<'a>(summary: &'a Value, subject: &str) -> &'a Value {
     summary["results"].as_array().unwrap().iter().find(|r| r["subject"] == subject).unwrap_or_else(|| panic!("{subject} がない: {summary}"))
 }
+
+/// 第2章 5. の直した候補。`reset_authorization` の呼び出しを、配送先の書き込みより前に置く。
+pub fn fixed_plan() -> String {
+    let normalize = r#"{"kind": "calls", "subject": "shop.shipping.service.update_shipping", "object": "shop.shipping.address.normalize_address", "at": "plan:split-order"}"#;
+    SPLIT.replace(normalize, &format!("{}\n{normalize}", RESET.trim_end()))
+}
