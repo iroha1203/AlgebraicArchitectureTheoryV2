@@ -9,10 +9,13 @@ universe uk uG uE uB uD vE vB vD
 namespace OriginalRangeObstruction
 variable {k : Type uk} [Field k]
 variable {K : FiniteTransportPresentation.{uG}}
+/-- Decide membership in the full original edge region by its universal predicate. -/
 local instance allEdgesDecidable : DecidablePred (· ∈ (ClosedRegion.all (K := K)).edges) :=
   fun _ => isTrue trivial
+/-- Decide membership in the full original vertex region by its universal predicate. -/
 local instance allVerticesDecidable : DecidablePred (· ∈ (ClosedRegion.all (K := K)).vertices) :=
   fun _ => isTrue trivial
+/-- Decide membership in the full original face region by its universal predicate. -/
 local instance allFacesDecidable : DecidablePred (· ∈ (ClosedRegion.all (K := K)).faces) :=
   fun _ => isTrue trivial
 variable {E : Type uE} {B : Type uB} {D : Type uD}

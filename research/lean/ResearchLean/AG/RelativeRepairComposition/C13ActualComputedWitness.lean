@@ -4,6 +4,7 @@ import ResearchLean.AG.RelativeRepairComposition.C13FiniteDualRegression
 /-! # Finite witness construction applied to the independent nonzero actual tower -/
 namespace AAT.AG.RelativeRepairComposition.C13ActualComputedWitness
 open TransportCoherence AbelianLiftingObstruction C13RangeInput C13ActualRangeRegression
+/-- Decide equality on the original single face index. -/
 instance originalFaceEquality : DecidableEq geometry.TwoCell :=
   inferInstanceAs (DecidableEq Unit)
 

@@ -4,6 +4,7 @@ import Mathlib.Data.ZMod.Basic
 /-! # Nonzero finite failed-row and full-column tests, including empty candidates -/
 namespace AAT.AG.RelativeRepairComposition.C13FiniteDualRegression
 open FiniteElimination
+/-- The field with two elements used for finite row and column tests. -/
 abbrev k := ZMod 2
 
 /-- The complete finite field input list contains both elements. -/
@@ -19,6 +20,7 @@ def C (e : Bool) : (Unit → k) →ₗ[k] (Unit → k) :=
 def rhs : Unit → k := fun _ => 1
 /-- Only the zero-column candidate is allowed in this failed input. -/
 def forbidden : Set Bool := {e | e = true}
+/-- Decide the named zero-column selection predicate by the original Boolean index. -/
 instance forbiddenDecidable : DecidablePred (· ∈ forbidden) := fun e => inferInstanceAs (Decidable (e = true))
 
 /-- The explicit nonzero row directly passes every full allowed-column and rhs test. -/

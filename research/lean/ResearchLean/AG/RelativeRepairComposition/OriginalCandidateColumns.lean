@@ -18,8 +18,10 @@ variable {K : FiniteTransportPresentation.{uG}} (M : LocalCoefficients.{uG,uA} K
 variable [∀ v, Module k (M.A v)]
 variable (P : ClosedRegion K) (candidates : Set (EdgeName (K := K)))
 variable [DecidablePred (· ∈ candidates)]
+/-- Decide membership in the full original edge region by its universal predicate. -/
 local instance allEdgesDecidable : DecidablePred (· ∈ (ClosedRegion.all (K := K)).edges) :=
   fun _ => isTrue trivial
+/-- Decide membership in the full original vertex region by its universal predicate. -/
 local instance allVerticesDecidable : DecidablePred (· ∈ (ClosedRegion.all (K := K)).vertices) :=
   fun _ => isTrue trivial
 local notation "C1P" => RelativeCover.C1 M ClosedRegion.all P

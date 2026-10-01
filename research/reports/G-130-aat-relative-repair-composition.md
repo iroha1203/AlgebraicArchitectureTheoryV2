@@ -1562,7 +1562,7 @@ field双対の存在は完全性証明だけに使い、出力functionalは有�
 
 `NamedDual.sumSelected`、`NamedDual.sumSelected_apply`、`NamedDual.sumSelected_single`、`NamedDual.range_sumSelected`、`NamedDual.mem_ranges_iff_sum`、`NamedDual.extendSelected`、`NamedDual.extend_value`、`NamedDual.extend_zero`、`NamedDual.extend_single`、`NamedDual.extend_read`、`NamedDual.sum_extend`、`NamedDual.map_sumSelected`。
 
-`OriginalCandidateColumns.lean` (17明示宣言、source SHA256 `4efa87942568eaf76d744e6b53c71ed3ee54a93d4271a481c7bb077af759cdc4`):
+`OriginalCandidateColumns.lean` (17明示宣言、source SHA256 `bdbae82998a588405f948b6e9d15c05092d9485316c12e2871ae1a60aae1d3f3`):
 
 `OriginalColumns.allEdgesDecidable`、`OriginalColumns.allVerticesDecidable`、`OriginalColumns.CandidateValues`、`OriginalColumns.alwaysSpace`、`OriginalColumns.candidateRead`、`OriginalColumns.candidateCochain`、`OriginalColumns.candidate_value`、`OriginalColumns.noncandidate_value`、`OriginalColumns.read_candidate`、`OriginalColumns.alwaysRead`、`OriginalColumns.decompose`、`OriginalColumns.D`、`OriginalColumns.candidateMap`、`OriginalColumns.differential_decompose`、`OriginalColumns.column`、`OriginalColumns.sum_columns`、`OriginalColumns.differential_named_sum`。
 
@@ -1574,7 +1574,7 @@ field双対の存在は完全性証明だけに使い、出力functionalは有�
 
 `CokernelNamed.column`、`CokernelNamed.quotient_sum`、`CokernelNamed.mem_iff_equation`、`CokernelNamed.equation_iff_hits`。
 
-`OriginalRangeEquations.lean` (13明示宣言、source SHA256 `ba8830ae0a0ca55450a2ff42a6d4b5890e9d386b5170847a9d7100b54262dec0`):
+`OriginalRangeEquations.lean` (13明示宣言、source SHA256 `71b0eef9873529b95f62c3a652ce6efe89e711f3992a919991797c2c94db8b1d`):
 
 `OriginalRanges.allEdgesDecidable`、`OriginalRanges.allVerticesDecidable`、`OriginalRanges.ObstructionSpace`、`OriginalRanges.column`、`OriginalRanges.allowed`、`OriginalRanges.allowed_iff`、`OriginalRanges.selectedCorrection`、`OriginalRanges.selected_differential`、`OriginalRanges.selected_zero`、`OriginalRanges.restore`、`OriginalRanges.objects_nonempty_iff_equation`、`OriginalRanges.objects_nonempty_iff_range`、`OriginalRanges.objects_nonempty_iff_hits`。
 
@@ -1598,27 +1598,27 @@ field双対の存在は完全性証明だけに使い、出力functionalは有�
 
 `CokernelNamed.fullMap`、`CokernelNamed.sum_univ`、`CokernelNamed.all_ranges_eq`、`CokernelNamed.secondQuotient`、`CokernelNamed.secondQuotient_value`。
 
-`OriginalRangeQuotient.lean` (10明示宣言、source SHA256 `2479e0137e5f1371348574ae6499ca12ba15ec35cc76e4a6ab778309f99692ad`):
+`OriginalRangeQuotient.lean` (10明示宣言、source SHA256 `32dea7c5fe1d088d7176cfe0d3e5956db82007cd44700d6071b7d8c2e23e6183`):
 
 `OriginalRangeQuotient.allEdgesDecidable`、`OriginalRangeQuotient.allVerticesDecidable`、`OriginalRangeQuotient.allFacesDecidable`、`OriginalRangeQuotient.full_candidates_eq`、`OriginalRangeQuotient.range_differential`、`OriginalRangeQuotient.equivalence`、`OriginalRangeQuotient.equivalence_value`、`OriginalRangeQuotient.inducedD2`、`OriginalRangeQuotient.inducedD2_value`、`OriginalRangeQuotient.obstruction_image_cycle`。
 
-`OriginalRangeCohomology.lean` (11明示宣言、source SHA256 `9364e9ee38619a1f54a6985b98540230ceb2678d14846e4bcb950f5b237b99f9`):
+`OriginalRangeCohomology.lean` (11明示宣言、source SHA256 `31b417cf56593c47896f39ccca10bc3af35225d9e5ef30fb3349a8df2aceb53d`):
 
 `OriginalRangeCohomology.allEdgesDecidable`、`OriginalRangeCohomology.allVerticesDecidable`、`OriginalRangeCohomology.allFacesDecidable`、`OriginalRangeCohomology.cycleMap`、`OriginalRangeCohomology.cycleMap_boundary`、`OriginalRangeCohomology.classMap`、`OriginalRangeCohomology.classMap_value`、`OriginalRangeCohomology.classMap_injective`、`OriginalRangeCohomology.classMap_surjective`、`OriginalRangeCohomology.equivalence`、`OriginalRangeCohomology.equivalence_value`。
 
-`OriginalFiniteDual.lean` (18明示宣言、source SHA256 `3f723d11d6f3c65a819532d8eff7ba774754aee957cb0eac1c49d6f008b3c204`):
+`OriginalFiniteDual.lean` (18明示宣言、source SHA256 `3e839e668ff393cbbaaf53b055f51bd809254582079678e23516fec5f766a2b8`):
 
 `OriginalFiniteDual.allEdgesDecidable`、`OriginalFiniteDual.allVerticesDecidable`、`OriginalFiniteDual.allFacesDecidable`、`OriginalFiniteDual.alwaysMatrixMap`、`OriginalFiniteDual.candidateMatrixMap`、`OriginalFiniteDual.mask_always`、`OriginalFiniteDual.always_value`、`OriginalFiniteDual.candidate_value`、`OriginalFiniteDual.find`、`OriginalFiniteDual.valid_of_failure`、`OriginalFiniteDual.find_isSome`、`OriginalFiniteDual.rowWitness`、`OriginalFiniteDual.quotientDual`、`OriginalFiniteDual.quotientDual_value`、`OriginalFiniteDual.quotientDual_spec`、`OriginalFiniteDual.valid_excludes_range`、`OriginalFiniteDual.find_isSome_iff`、`OriginalFiniteDual.computedDual`。
 
-`OriginalNativeRangeCohomology.lean` (9明示宣言、source SHA256 `252f25b10097b4ada93a55781caa1b7e454efea48a8195c187babaea46daebfc`):
+`OriginalNativeRangeCohomology.lean` (9明示宣言、source SHA256 `de33d5e1360dbd22115db643f56e46352dbd94a7b1e510e16cb960b3e12c5f25`):
 
 `OriginalNativeRangeCohomology.allEdgesDecidable`、`OriginalNativeRangeCohomology.allVerticesDecidable`、`OriginalNativeRangeCohomology.allFacesDecidable`、`OriginalNativeRangeCohomology.classMap`、`OriginalNativeRangeCohomology.familyCycle`、`OriginalNativeRangeCohomology.familyCycle_eq`、`OriginalNativeRangeCohomology.classMap_value`、`OriginalNativeRangeCohomology.classMap_bijective`、`OriginalNativeRangeCohomology.equivalence`。
 
-`OriginalRangeObstruction.lean` (5明示宣言、source SHA256 `89035665f44bb88387c718593d1dc9c8a1be637aad6038850d6bbd47a2e17e17`):
+`OriginalRangeObstruction.lean` (5明示宣言、source SHA256 `f9110a93e200058c5d151ad233db922e6e3f3401234da8b0a7a1cee3e0372f5a`):
 
 `OriginalRangeObstruction.allEdgesDecidable`、`OriginalRangeObstruction.allVerticesDecidable`、`OriginalRangeObstruction.allFacesDecidable`、`OriginalRangeObstruction.obstruction_H2`、`OriginalRangeObstruction.obstruction_image_cycle`。
 
-`OriginalFiniteCorrection.lean` (14明示宣言、source SHA256 `f7baa3f45326ed0ebb1904603ccfca00aadbc6bcd6af0ad1f1bb91cb5cda02c1`):
+`OriginalFiniteCorrection.lean` (14明示宣言、source SHA256 `565e1104aba802b1f21c66d89ae24027dfe80c5526aad6fc18efd4c1f392ae98`):
 
 `OriginalFiniteCorrection.allEdgesDecidable`、`OriginalFiniteCorrection.allVerticesDecidable`、`OriginalFiniteCorrection.allFacesDecidable`、`OriginalFiniteCorrection.Valid`、`OriginalFiniteCorrection.validDecidable`、`OriginalFiniteCorrection.coordinates`、`OriginalFiniteCorrection.find`、`OriginalFiniteCorrection.valid_of_object`、`OriginalFiniteCorrection.restore`、`OriginalFiniteCorrection.find_isSome`、`OriginalFiniteCorrection.restoreFound`、`OriginalFiniteCorrection.find_isSome_iff`、`OriginalFiniteCorrection.computedObject`、`OriginalFiniteCorrection.restore_value`。
 
@@ -1630,15 +1630,15 @@ field双対の存在は完全性証明だけに使い、出力functionalは有�
 
 `C13RangeInput.geometry`、`C13RangeInput.edgeEquality`、`C13RangeInput.E`、`C13RangeInput.projection`、`C13RangeInput.kernel_comm`、`C13RangeInput.core`、`C13RangeInput.reference`、`C13RangeInput.projects`、`C13RangeInput.relations`、`C13RangeInput.tower`、`C13RangeInput.fullKernel`、`C13RangeInput.coefficient`、`C13RangeInput.originalModule`、`C13RangeInput.edge_identity`、`C13RangeInput.linear`、`C13RangeInput.fixed`、`C13RangeInput.candidates`、`C13RangeInput.outside`、`C13RangeInput.fixed_coherent`。
 
-`C13FiniteDualRegression.lean` (22明示宣言、source SHA256 `a235b35b5449f87bb8b42598b912d0c9f9494d8dec7bf7de8e6e3d0647db6ff0`):
+`C13FiniteDualRegression.lean` (22明示宣言、source SHA256 `6cb9b3bbd4d97151558633ad5c16d3144d9a4e5bb50b4725e4b286616784d140`):
 
 `C13FiniteDualRegression.k`、`C13FiniteDualRegression.fieldValues`、`C13FiniteDualRegression.faceValues`、`C13FiniteDualRegression.D`、`C13FiniteDualRegression.C`、`C13FiniteDualRegression.rhs`、`C13FiniteDualRegression.forbidden`、`C13FiniteDualRegression.forbiddenDecidable`、`C13FiniteDualRegression.valid_nonzero`、`C13FiniteDualRegression.invalid_zero`、`C13FiniteDualRegression.no_failure_all`、`C13FiniteDualRegression.find_failed`、`C13FiniteDualRegression.find_success`、`C13FiniteDualRegression.find_zero_rhs`、`C13FiniteDualRegression.noCandidates`、`C13FiniteDualRegression.find_empty_candidates`、`C13FiniteDualRegression.dual_nonzero`、`C13FiniteDualRegression.dual_allowed_zero`、`C13FiniteDualRegression.zero_minimal_iff`、`C13FiniteDualRegression.emptyDual`、`C13FiniteDualRegression.empty_dual_support`、`C13FiniteDualRegression.empty_no_transversal`。
 
-`C13ActualRangeRegression.lean` (26明示宣言、source SHA256 `78ef8fe8e7cc1f1959541b7b2027bca0914322ef16a3300ba8117fe3d44f353f`):
+`C13ActualRangeRegression.lean` (26明示宣言、source SHA256 `27f9f96da9a7da9e2fb70e50b45de16a7fc6b63c5248cc44404f28165663a49b`):
 
 `C13ActualRangeRegression.k`、`C13ActualRangeRegression.M`、`C13ActualRangeRegression.originalEdgeEquality`、`C13ActualRangeRegression.candidatesDecidable`、`C13ActualRangeRegression.fixedEdgesDecidable`、`C13ActualRangeRegression.fixedFacesDecidable`、`C13ActualRangeRegression.linearCoefficient`、`C13ActualRangeRegression.scalarCoordinate`、`C13ActualRangeRegression.basis`、`C13ActualRangeRegression.groupSolution`、`C13ActualRangeRegression.solution`、`C13ActualRangeRegression.Repair`、`C13ActualRangeRegression.allRepair`、`C13ActualRangeRegression.empty_no_repair`、`C13ActualRangeRegression.obstruction_nonzero`、`C13ActualRangeRegression.all_range_member`、`C13ActualRangeRegression.empty_range_reject`、`C13ActualRangeRegression.all_hits`、`C13ActualRangeRegression.empty_hits_reject`、`C13ActualRangeRegression.allFixed`、`C13ActualRangeRegression.noCandidates`、`C13ActualRangeRegression.noCandidatesDecidable`、`C13ActualRangeRegression.noCandidates_outside`、`C13ActualRangeRegression.allFixed_coherent`、`C13ActualRangeRegression.allFixed_no_repair`、`C13ActualRangeRegression.impossible_empty_support`。
 
-`C13ActualComputedWitness.lean` (7明示宣言、source SHA256 `788a73d84c9b1587ad7086df93d292eedf4d63d457455fc5a7010f417bd762f8`):
+`C13ActualComputedWitness.lean` (7明示宣言、source SHA256 `7b183280ab602e2fd9cba721f96736428263b5731769fb5c0bbfc123c061c64f`):
 
 `C13ActualComputedWitness.originalFaceEquality`、`C13ActualComputedWitness.edgeValues`、`C13ActualComputedWitness.faceValues`、`C13ActualComputedWitness.failedDual`、`C13ActualComputedWitness.failed_dual_nonzero`、`C13ActualComputedWitness.successfulRepair`、`C13ActualComputedWitness.successful_fixed`。
 

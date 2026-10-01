@@ -11,10 +11,13 @@ variable {K : FiniteTransportPresentation.{uG}} (M : LocalCoefficients.{uG,uA} K
 variable [∀ v, Module k (M.A v)] (P : ClosedRegion K)
 variable (hlinear : ∀ {i j : K.Vertex} (e : K.Edge i j) (t : k) (x : M.A i),
   M.edge e (t • x) = t • M.edge e x)
+/-- Decide membership in the full original edge region by its universal predicate. -/
 local instance allEdgesDecidable : DecidablePred (· ∈ (ClosedRegion.all (K := K)).edges) :=
   fun _ => isTrue trivial
+/-- Decide membership in the full original vertex region by its universal predicate. -/
 local instance allVerticesDecidable : DecidablePred (· ∈ (ClosedRegion.all (K := K)).vertices) :=
   fun _ => isTrue trivial
+/-- Decide membership in the full original face region by its universal predicate. -/
 local instance allFacesDecidable : DecidablePred (· ∈ (ClosedRegion.all (K := K)).faces) :=
   fun _ => isTrue trivial
 
