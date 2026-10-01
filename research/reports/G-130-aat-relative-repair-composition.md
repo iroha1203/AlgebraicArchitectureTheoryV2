@@ -820,7 +820,7 @@ result:
   lean_artifacts: [CoverCohomology, CoverConnecting, CoverObstruction, CoverPairCohomology, CoverNativeCohomology, CoverCohomologyMaps, CoverObstructionKernel, CoverPlanConnecting, NativeCoverObstruction]
   evidence: [NativeCoverObstruction.specified_plans_glue_iff, NativeCoverObstruction.omega_independent, NativeCoverObstruction.omega_eq_zero_iff_original_repair, CoverObstructionKernel.omegaKernelEquiv, CoverObstructionKernel.restriction_original_class, NativeCoverObstruction.connecting_actual_difference, NativeCoverObstruction.omega_kernel_actual_class]
   claim_mapping:
-    source_labels: ["GOAL B", "n1017 §2.3(M)"]
+    source_labels: ["GOAL B", "n1017 §2.3(E)", "n1017 §2.4"]
     conjuncts: ["[z]=0 iff全specified overlap gauge", "ωは全局所案に非依存", "ω=0 iff元Kの全実修復存在", "native ∂[z]=[δ]", "Ω≃ker(H2元K→H2U×H2V)"]
     undischarged_assumptions: []
     acceptance_point: "Bの統合条件を同じactual/native descentとoriginal CPcomplexへ接続"

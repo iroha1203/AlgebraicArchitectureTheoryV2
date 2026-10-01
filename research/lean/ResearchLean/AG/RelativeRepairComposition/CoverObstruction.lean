@@ -35,7 +35,7 @@ theorem difference_cycle_value (hU : CoverEquation.Solution M P δ U)
     (differenceCycle M P δ U V hU hV).1.1 e =
       hV.1.1 ⟨e.1,e.2.2⟩ - hU.1.1 ⟨e.1,e.2.1⟩ := rfl
 
-/-- The two specified plans admit an overlap gauge exactly when their H1 difference is zero. -/
+/-- The two specified plans have an overlap gauge exactly when their H1 difference is zero. -/
 theorem seam_exists_iff (hU : CoverEquation.Solution M P δ U)
     (hV : CoverEquation.Solution M P δ V) :
     (∃ b : RelativeCover.C0 M (ClosedRegion.inter U V) P,
