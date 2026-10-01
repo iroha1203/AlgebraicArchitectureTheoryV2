@@ -88,6 +88,21 @@ theorem public_edge_value (x : XIndex M B U P internalEdges → k)
     ⟨⟨⟨e.1,e.2,hp⟩,j⟩,hi⟩
 
 omit [DecidablePred (· ∈ P.vertices)] [DecidablePred (· ∈ P.faces)] in
+/-- A private original edge value reads its full original kernel basis from private coordinates. -/
+theorem private_edge_value (x : XIndex M B U P internalEdges → k)
+    (z : ZIndex M B U P internalEdges → k) (e : U.edges)
+    (hp : e.1 ∉ P.edges) (hi : e.1 ∈ internalEdges) :
+    ((edgeSplit M B U P internalEdges).symm (x,z)).1 e =
+      (B.coordinate e.1.2.1).symm
+        (fun j => x ⟨⟨⟨e.1,e.2,hp⟩,j⟩,hi⟩) := by
+  rw [edgeSplit,LinearEquiv.trans_symm,LinearEquiv.trans_apply]
+  rw [coordinate1,FiniteFamily.restore_value _ _ _ _ _ e hp]
+  congr 1
+  funext j
+  exact FinitePartition.join_private (privateIndex M B U P internalEdges) (x,z)
+    ⟨⟨⟨e.1,e.2,hp⟩,j⟩,hi⟩
+
+omit [DecidablePred (· ∈ P.vertices)] [DecidablePred (· ∈ P.faces)] in
 /-- Every public original edge value is independent of every internal kernel choice. -/
 theorem public_edge_private_independent (x x' : XIndex M B U P internalEdges → k)
     (z : ZIndex M B U P internalEdges → k) (e : U.edges)

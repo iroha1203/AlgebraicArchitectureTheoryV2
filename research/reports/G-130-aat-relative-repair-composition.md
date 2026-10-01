@@ -1292,17 +1292,17 @@ result:
     - "GeneratedDisplayComparisonは原actual source経由で任意原有限被覆表示のcoord/rec、全両逆/三比較、原辺値・全actual choice/full vertex label/allSを保存"
     - "StrictBinary/StrictFiniteAssemblyは全shared原edge/vertex条件を保持した独立nested tuplesのflatten/unflattenを構成。GeneratedFiniteAssemblyは同じ一回生成へ接続し全順序/括弧/allSの全functor可換性を証明"
     - "AnchoredLocal/AnchoredFinite/AnchoredActualは実alternative liftのa/shifted defectと独立raw固定条件を構成し、h′+aで原有限glueへ正規化。AnchoredDisplayComparisonはlift・原cover・全基底の同時変更、三比較/全両逆/allSを同じphysical actual repairへ戻す"
-    - "全15 sourceの238明示宣言と50生成宣言を個別公理監査。非零核section/全basis/3葉括弧/empty familyの実計算とshared原edge/full labelの正負入力を検証。標準PR監査による受理はPR/Issueに固定"
+    - "16新sourceと所有2 sourceの新API2件、全266明示宣言と50生成宣言を個別公理監査。非零核section/全basis/3葉括弧/empty familyの実計算とshared原edge/full labelの正負入力を検証。標準PR監査による受理はPR/Issueに固定"
   exit_criteria_status:
     - "全選定表示変更・複合: explicit section式、原basis/private-public値式、raw h′+a−a′、actual source経由の全native functor比較/rec/三合成"
     - "全実核/0–3cell/候補/固定/射/allS: full coordinate conjugacy、privateに共有辺/候補を入れない同じ原generator、full label群と値保存、物理anchor−a、全range functor等式"
     - "全両逆: 各object/labelの全逆とfunctor_inverse/inverse_functor。flattenは全cross条件を利用。stabilizerを含む元labelを保持"
     - "任意参照: aのP/candidates上零を追加せず、独立raw Objectsの固定値を−aと定義しactual defect_shiftから正規化の補正方程式を導く"
-    - "検証/登録/台帳: 全明示・生成宣言focused公理監査、有限実計算・原型negative predicate、15件登録、機械scan。標準独立PR gate/root受理は固定PR headのコメントへ記録"
+    - "検証/登録/台帳: 全明示・生成宣言focused公理監査、有限実計算・原型negative predicate、16新module登録、機械scan。標準独立PR gate/root受理は固定PR headのコメントへ記録"
   split_reason: none
   completion_candidate: no
-  lean_artifacts: [SectionComparison, FullBasisComparison, StrictFunctorComparison, FiniteCoverDisplay, GeneratedSectionComparison, GeneratedLocalComparison, GeneratedDisplayComparison, StrictBinaryAssembly, FiniteBinaryTuples, StrictFiniteAssembly, GeneratedFiniteAssembly, AnchoredLocalEquation, AnchoredFiniteCover, AnchoredActualCover, AnchoredDisplayComparison]
-  evidence: ["下記15 source/238明示宣言と各full inverse/value/range theorem", "先行C4/C10/C11の実入力・生成・全復元への直接適用"]
+  lean_artifacts: [C12AnchoredRegression, FinitePartition.join_private, FiniteNative.private_edge_value, SectionComparison, FullBasisComparison, StrictFunctorComparison, FiniteCoverDisplay, GeneratedSectionComparison, GeneratedLocalComparison, GeneratedDisplayComparison, StrictBinaryAssembly, FiniteBinaryTuples, StrictFiniteAssembly, GeneratedFiniteAssembly, AnchoredLocalEquation, AnchoredFiniteCover, AnchoredActualCover, AnchoredDisplayComparison]
+  evidence: ["下記18 source対応/266明示宣言と各full inverse/value/range theorem", "先行C4/C10/C11の実入力・生成・全復元への直接適用"]
   claim_mapping:
     theorem_names: ["LinearInterface.section_comparison_kernel", "FiniteFamily.restore_basis_comparison", "GeneratedDisplay.comparison_rec", "GeneratedDisplay.comparison_comp", "GeneratedFiniteAssembly.comparison_generated", "AnchoredDisplay.comparison_value", "AnchoredDisplay.comparison_range"]
     source_labels: ["GOAL C末段の全表示比較", "GOAL A物理的な参照座標変更", "GOAL C全範囲/full actual objects/full arrows"]
@@ -1327,7 +1327,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: ["15 exact-source bodiesの単一milestone focused監査exit0/errors0/warnings0", "238明示+50生成=288全個別標準公理", "axiom log SHA256 eef07ebf777def416abc3e1d1cf5d91bd7661eb01c6c0a3bc68867e8b727a415", "有限原値section/basis/bracket/emptyと共有拒否/零受理の検証", "単一concrete endpoint AnchoredDisplayComparisonのtargeted module確認"]
+  validation_refs: ["16 exact-source bodiesと新API2件の単一milestone focused監査exit0/errors0/warnings0", "266明示+50生成=316全個別標準公理", "axiom log SHA256 2bfeca8532c0acd125d64ac19313b73bcb556acfabe8c212259dcbf7df4fc848", "有限原値section/basis/bracket/emptyと共有拒否/零受理、actual非零anchorのraw受理/拒否の検証", "単一concrete endpoint AnchoredDisplayComparisonのtargeted module確認"]
   blocking_findings: []
   next_obligation: "C12固定headの標準review-pr/math-lean-review受理後、Dの同じ原大域微分/局所公開関係/双対証拠/全S極小分類へ進む"
 ```
@@ -1362,7 +1362,7 @@ raw対象だけでなく全functorの両逆、元choice、全vertex labels、三
 
 `LinearInterface.relation_section_iff`、`LinearInterface.sectionComparison`、`LinearInterface.section_comparison_public`、`LinearInterface.section_comparison_kernel`、`LinearInterface.section_difference_mem`、`LinearInterface.rec_section_comparison`、`LinearInterface.coord_section_comparison`、`LinearInterface.section_comparison_inverse`、`LinearInterface.section_comparison_comp`、`LinearInterface.section_comparison_self`、`LinearInterface.section_comparison_gauge`、`LinearInterface.sectionEquivalence`、`LinearInterface.section_functor_label`、`LinearInterface.section_inverse_label`、`LinearInterface.section_functor_inverse`、`LinearInterface.section_inverse_functor`。
 
-`FullBasisComparison.lean` (21明示宣言、source SHA256 `1a478b659163a21b030101cb8eb545671b18573052e22ac82e2bff47a02c93e5`):
+`FullBasisComparison.lean` (21明示宣言、source SHA256 `6f507d8e82d38d8c58e7f322779ef9ed694cafe33810471452eeb67a84f33b20`):
 
 `FiniteFamily.basisComparison`、`FiniteFamily.restore_basis_comparison`、`FiniteFamily.basis_comparison_value`、`FiniteFamily.basis_comparison_inverse`、`FiniteFamily.basis_comparison_comp`、`FiniteFamily.basis_comparison_self`、`FiniteNative.basisComparison0`、`FiniteNative.basisComparison1`、`FiniteNative.basisComparison2`、`FiniteNative.basisComparison3`、`FiniteNative.restore_basis0`、`FiniteNative.restore_basis1`、`FiniteNative.restore_basis2`、`FiniteNative.restore_basis3`、`FiniteNative.basis_comparison_d0`、`FiniteNative.basis_comparison_d1`、`FiniteNative.basis_comparison_d2`、`FiniteNative.splitBasisComparison`、`FiniteNative.restore_split_basis`、`FiniteNative.split_basis_public`、`FiniteNative.split_basis_private`。
 
@@ -1418,12 +1418,24 @@ raw対象だけでなく全functorの両逆、元choice、全vertex labels、三
 
 `AnchoredDisplay.generatedEquivalence`、`AnchoredDisplay.sourceEquivalence`、`AnchoredDisplay.source_functor_inverse`、`AnchoredDisplay.source_inverse_functor`、`AnchoredDisplay.source_value`、`AnchoredDisplay.source_inverse_value`、`AnchoredDisplay.comparison`、`AnchoredDisplay.comparison_rec`、`AnchoredDisplay.comparison_comp`、`AnchoredDisplay.comparison_inverse`、`AnchoredDisplay.comparison_value`、`AnchoredDisplay.refinement_value`、`AnchoredDisplay.inverse_comparison`、`AnchoredDisplay.comparison_choice`、`AnchoredDisplay.source_label_value`、`AnchoredDisplay.source_inverse_label_value`、`AnchoredDisplay.comparison_label_value`、`AnchoredDisplay.refinement_label_value`、`AnchoredDisplay.source_range`、`AnchoredDisplay.source_inverse_range`、`AnchoredDisplay.comparison_range`。
 
+`C12AnchoredRegression.lean` (26明示宣言、source SHA256 `c636b3f1b6fd4de4b024eca1aad09d1f4036f2bb54126582224e36239849595e`):
+
+`C12AnchoredRegression.geometry`、`C12AnchoredRegression.edgeEquality`、`C12AnchoredRegression.E`、`C12AnchoredRegression.projection`、`C12AnchoredRegression.kernel_comm`、`C12AnchoredRegression.core`、`C12AnchoredRegression.reference`、`C12AnchoredRegression.projects`、`C12AnchoredRegression.relations`、`C12AnchoredRegression.tower`、`C12AnchoredRegression.other`、`C12AnchoredRegression.other_projects`、`C12AnchoredRegression.fixed`、`C12AnchoredRegression.region`、`C12AnchoredRegression.regions`、`C12AnchoredRegression.fixedEdge`、`C12AnchoredRegression.freeEdge`、`C12AnchoredRegression.shift`、`C12AnchoredRegression.shift_fixed_nonzero`、`C12AnchoredRegression.raw`、`C12AnchoredRegression.raw_valid`、`C12AnchoredRegression.rawLocal`、`C12AnchoredRegression.raw_fixed_accept`、`C12AnchoredRegression.raw_fixed_reject`、`C12AnchoredRegression.raw_shared_accept`、`C12AnchoredRegression.raw_shared_reject`。
+
+`FiniteCoordinatePartition.lean` (新API1宣言。所有sourceの既存宣言はC10受理依存として保持、source SHA256 `6d456c045716381d407a3acbbfbda216b1bea7e4105241794f1d09e3a94e3b39`):
+
+`FinitePartition.join_private`。
+
+`FiniteNativeCoordinates.lean` (新API1宣言。所有sourceの既存宣言はC10受理依存として保持、source SHA256 `80c7b8164d1dbdf288926659e419855dc11f6ccfea9276ba92b81f9a6f07216d`):
+
+`FiniteNative.private_edge_value`。
+
 ### C12 — focused実行証拠
 
-対象15 sourceの正確なbodyを対象にした単一milestone focused checkはexit0/errors0/warnings0。
-238明示宣言と50生成宣言の全288を個別に公理監査し、対象集合をsourceの全宣言と機械突合した。
+対象16新sourceの正確なbodyと所有sourceの新API2件を対象にした単一milestone focused checkはexit0/errors0/warnings0。
+266明示宣言と50生成宣言の全316を個別に公理監査し、対象集合を16新sourceの全宣言と所有sourceの新API2件へ機械突合した。
 全件が標準公理のみであり、source hashが監査時と一致する。
-axiom log SHA256 `eef07ebf777def416abc3e1d1cf5d91bd7661eb01c6c0a3bc68867e8b727a415`。
+axiom log SHA256 `2bfeca8532c0acd125d64ac19313b73bcb556acfabe8c212259dcbf7df4fc848`。
 必要な単一concrete endpoint `ResearchLean.AG.RelativeRepairComposition.AnchoredDisplayComparison` のtargeted checkはexit0。
 
 F₂のD=第1成分、F=恒等、σ(r)=(r,0)、τ(r)=(r,r)を実計算した。
@@ -1437,6 +1449,17 @@ C11の2頂点・4原辺・F₂全係数を用い、0と1の独立local補正が�
 0と1のfull vertex labelは局所の作用が同じでもbinary共有label条件に反する。
 同じ原型に零のsupported correctionを与えるbinary/nested入力は実際に構成できる。
 これら5 predicate証拠の個別公理も全て標準公理のみ。
+
+`C12AnchoredRegression` はF₂の全translation kernelを持つ実塔と同一coreのalternative liftを構成する。
+1頂点・2原loop・空のfaces/triplesを保ち、固定原loopで実shift≠0を証明する。
+`raw_valid` はraw固定値−aと実new defect方程式を直接証明する。
+`raw_fixed_accept` / `raw_fixed_reject` は同じ非零anchorの受理とraw零の拒否を示す。
+`raw_shared_accept` / `raw_shared_reject` は各局所raw方程式が成立する族を使い、共有原free loopの一致/不一致を判定する。
+この原型はC12新述語の正負証拠であり、指定W/Fの完了へ数えない。
+
+所有API `FinitePartition.join_private` / `FiniteNative.private_edge_value` は同じ元private値を読む。
+`split_basis_private` はその公開APIを使い、所有join定義の再展開を避ける。
+所有2 sourceの既存43宣言はC10受理依存であり、今回の新266明示宣言には数えない。
 指定W1–W5の実アフィン例と各完了条件は後続obligationとして保持する。
 
 regression log SHA256 `1997c9feabc5dcb9d98fe98c02bc98347fbc31adc9364ac23442d315dc1bc71d`、targeted endpoint log SHA256 `66b2f54b80b2b0daff9d2f8d06e3e92c9002738f86327855fbd90360bc63350b`。
@@ -1448,3 +1471,9 @@ regression log SHA256 `1997c9feabc5dcb9d98fe98c02bc98347fbc31adc9364ac23442d315d
 - `c12-generated-section-build.log`: `fb15f7f8dd09f684e8e3f07f28d059e280ddf39a4b05b4698d4e481557f5da5a`
 - `c12-anchored-actual-focused.log`: `36e94019e810abf11794cb5dfd2a7afcf382a511b007848a73cede1ffd1cb00d`
 - `c12-strict-binary-focused.log`: `4c4da063b55af963778a045bd5d7de8824a757d6d47c4c1f92fca8f0735757c6`
+
+単一target `FullBasisComparison` の所有APIを含むproduction確認はexit0。
+単一source `C12AnchoredRegression.lean` のfocused確認はexit0/errors0/warnings0、26宣言のstandard axiom gateが通る。
+この2 source所有APIは現在production bodyを検査し、個別公理結果を同じmilestone監査へ収載する。
+- `c12r1-private-api-build.log` SHA256 `941ad0c9fcfbad64e82ce30f21d485e160a2d612ea9565a6e89df0ddca2dda49`。
+- `c12r1-raw-focused.log` SHA256 `f81812c9c6bb7b7f32b994e9128e757315d1df441a0cc4dfdf63373c1c8aef91`。

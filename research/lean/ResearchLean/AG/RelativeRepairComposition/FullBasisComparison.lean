@@ -166,17 +166,8 @@ theorem split_basis_private (xz : (XIndex M B U P internalEdges → k) ×
         ((B.coordinate j.1.1.1.2.1).symm (fun l => xz.1 ⟨⟨j.1.1,l⟩,j.2⟩)) j.1.2 := by
   change B'.coordinate j.1.1.1.2.1
     (((edgeSplit M B U P internalEdges).symm xz).1 ⟨j.1.1.1,j.1.1.2.1⟩) j.1.2 = _
-  rw [edgeSplit,LinearEquiv.trans_symm,LinearEquiv.trans_apply]
-  rw [coordinate1,FiniteFamily.restore_value _ _ _ _ _ ⟨j.1.1.1,j.1.1.2.1⟩ j.1.1.2.2]
-  apply congrArg (fun v => B'.coordinate j.1.1.1.2.1 v j.1.2)
-  change (B.coordinate j.1.1.1.2.1).symm
-      (fun l => FinitePartition.join (privateIndex M B U P internalEdges) xz ⟨j.1.1,l⟩) = _
-  apply congrArg (B.coordinate j.1.1.1.2.1).symm
-  funext l
-  change FinitePartition.join (privateIndex M B U P internalEdges) xz
-    (⟨j.1.1,l⟩ : Index1 M B U P) = xz.1 ⟨⟨j.1.1,l⟩,j.2⟩
-  unfold FinitePartition.join
-  rw [dif_pos (show (⟨j.1.1,l⟩ : Index1 M B U P) ∈ privateIndex M B U P internalEdges from j.2)]
+  rw [private_edge_value M B U P internalEdges xz.1 xz.2
+    ⟨j.1.1.1,j.1.1.2.1⟩ j.1.1.2.2 j.2]
 
 end FiniteNative
 end AAT.AG.RelativeRepairComposition

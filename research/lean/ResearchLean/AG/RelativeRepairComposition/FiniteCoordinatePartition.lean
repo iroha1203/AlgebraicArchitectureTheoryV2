@@ -60,6 +60,13 @@ theorem join_public (v : (internal → k) × (↥(internalᶜ) → k)) (i : ↥(
   change (if hi : i.1 ∈ internal then _ else _) = _
   simp only [dif_neg i.2]
 
+omit [Field k] in
+/-- Private reconstruction reads the same original value independently of the public component. -/
+theorem join_private (v : (internal → k) × (↥(internalᶜ) → k)) (i : internal) :
+    join internal v i.1 = v.1 i := by
+  change (if hi : i.1 ∈ internal then _ else _) = _
+  simp only [dif_pos i.2]
+
 end FinitePartition
 namespace ClosedRegion
 variable {K : FiniteTransportPresentation.{uG}}
