@@ -47,10 +47,8 @@ def publicValue (i : I)
 /-- The inverse retains exactly the public component of the generated relation. -/
 theorem restored_public (i : I) (y : LocalObject M bases P U candidates hlinear δ enumK enumEdges enumFaces i) :
     (FiniteNative.edgeSplit M bases (U i) P (private i) ((E i).symm y).1).2 = y.1.1 := by
-  change (FiniteNative.edgeSplit M bases (U i) P (private i)
-    ((FiniteNative.edgeSplit M bases (U i) P (private i)).symm _)).2 = y.1.1
-  rw [LinearEquiv.apply_symm_apply]
-  rfl
+  exact FiniteNative.generated_solution_inverse_public M bases (U i) P (private i)
+    hlinear δ enumK enumEdges enumFaces y
 
 /-- Every retained original edge value is independent of the entire private kernel. -/
 theorem restored_value_public (i : I)

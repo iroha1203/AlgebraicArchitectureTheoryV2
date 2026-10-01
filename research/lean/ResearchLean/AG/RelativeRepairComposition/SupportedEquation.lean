@@ -1,5 +1,5 @@
 import Formal.Util.AssertStandardAxioms
-import ResearchLean.AG.RelativeRepairComposition.CoverEquation
+import ResearchLean.AG.RelativeRepairComposition.StrictCoverSupportAPIs
 
 /-!
 # Original affine equations with every forbidden candidate fixed
@@ -119,7 +119,7 @@ theorem gauge_value (b : Labels M P U candidates allowed)
 def zeroObject : Objects M P U candidates allowed 0 :=
   ⟨⟨0,by
     change RelativeCover.d1 M U P 0 = -CoverEquation.defect M P 0 U
-    simp only [map_zero,CoverEquation.defect,map_zero,neg_zero]⟩,by intro e he; rfl⟩
+    simp only [map_zero,CoverEquation.defect_zero,neg_zero]⟩,by intro e he; rfl⟩
 
 end SupportedEquation
 end AAT.AG.RelativeRepairComposition

@@ -1126,7 +1126,9 @@ selection:
 
 `GeneratedRangeInclusion`ではSを広げたとき候補条件だけを緩め、同じrelation/section/kernel・全原値/labelを保持する。`GeneratedCoverRanges.coordinate_functor_inclusion`/`reconstruction_functor_inclusion`は、受理済みの元actual rangeFunctorと、全object/arrowを含む関手そのものの等号で交換を証明する。Sごとに修復や消去を先行選択しない。
 
-正の適合例は`SupportedEquation.zeroObject`から`StrictCoverZeroCases`の全rangeの元zero corrections・全generated/public objectを構成し、全public座標零を証明する。負の方向は非零禁止候補・不一致共有辺・不一致共有vertex labelを具体的な原値の不等号から排除する。これはW1–W5の代替ではなく、各新述語の正負の構成である。固定指定例の実アフィン入力・評価は後続要求に残す。
+正の適合例は`SupportedEquation.zeroObject`から`StrictCoverZeroCases`の全rangeの元zero corrections・全generated/public objectを構成し、全public座標零を証明する。`StrictCoverNegativeCases`は2原頂点・4本の名前付き原辺・全1次元F₂係数・空の面/3-cellから入力を作る。`forbidden_correction`/`forbidden_label`は非零補正と非零d0を、`shared_edge`/`shared_label`は共有原辺/原頂点上の実際の不一致を構成する。`generated_forbidden_public`/`generated_shared_public`は同じ局所解を一回生成済みの関係へ送り、全generated適合とpublic関係の可解対象の双方から排除する。`zero_accepted`は同じ非自明な原表示で正の実例を構成する。実評価では原補正、原ラベル、同じgenerated public値がそれぞれ `[0,1]`。これはW1–W5の代替ではなく、各新述語の正負の入力である。固定指定例の実アフィン入力・評価は後続要求に残す。
+
+`StrictCoverSupportAPIs`は元defectの零保存、元/相対d0の端点評価、既存の全生成同値の逆のpublic保存を公開する。`zeroObject`と`restored_public`はこのAPIを用い、foreign定義の下流展開に依存しない。既存の査読済みstatementと全計算値を保持する。
 
 ### Material premise とproof-use
 
@@ -1233,4 +1235,13 @@ audits:
 
 `StrictCoverZeroCases.originalZero`, `StrictCoverZeroCases.generatedZero`, `StrictCoverZeroCases.publicZero`, `StrictCoverZeroCases.public_zero_values`。
 
-13 source全150明示宣言と、Leanが既存の不変なr2から遅延生成した`RelativeCover.r2.congr_simp`の1 APIを含む全151宣言を個別に`#print axioms`し、標準公理だけであることを確認した。全13 source末尾にstandard axiom gateを置く。exact-source focused監査はこの依存した到達点のbodyだけを一回検査し、Research全体/aggregate/全file loopをelaborateしない。axiom log SHA256 `58379693452d7e7b57da6c32068ab3bea10506d65584518799e0524e64da3ab0`、exit0/errors0/warnings0。必要な単一concrete module確認はexit0。2セル・2領域の有限被覆をF₃値で実評価し、selector `[0,1]`、元全値 `[1,2]`、逆順Listでの元全値 `[1,2]` を得た（W1–W5の代替ではない）。placeholder/hidden-BiDi/privacy/import方向/diff scanはclean。PR内容の受理・CI・merge evidenceはPR/Issueへ置く。
+
+`StrictCoverSupportAPIs.lean` (4明示宣言):
+
+`CoverEquation.defect_zero`, `ClosedRegion.d0Hom_edge_value`, `RelativeCover.d0_edge_value`, `FiniteNative.generated_solution_inverse_public`。
+
+`StrictCoverNegativeCases.lean` (32明示宣言):
+
+`StrictCoverNegativeCases.geometry`, `StrictCoverNegativeCases.coefficients`, `StrictCoverNegativeCases.coefficientModule`, `StrictCoverNegativeCases.bases`, `StrictCoverNegativeCases.regions`, `StrictCoverNegativeCases.edge`, `StrictCoverNegativeCases.vertexDecidable`, `StrictCoverNegativeCases.edgeDecidable`, `StrictCoverNegativeCases.pEdgesDecidable`, `StrictCoverNegativeCases.pFacesDecidable`, `StrictCoverNegativeCases.regionVerticesDecidable`, `StrictCoverNegativeCases.regionEdgesDecidable`, `StrictCoverNegativeCases.regionFacesDecidable`, `StrictCoverNegativeCases.faceDecidable`, `StrictCoverNegativeCases.linear`, `StrictCoverNegativeCases.fieldEnum`, `StrictCoverNegativeCases.edgeEnum`, `StrictCoverNegativeCases.faceEnum`, `StrictCoverNegativeCases.solution`, `StrictCoverNegativeCases.label`, `StrictCoverNegativeCases.label_d0`, `StrictCoverNegativeCases.forbidden_correction`, `StrictCoverNegativeCases.forbidden_label`, `StrictCoverNegativeCases.localObjects`, `StrictCoverNegativeCases.shared_edge`, `StrictCoverNegativeCases.localLabels`, `StrictCoverNegativeCases.shared_label`, `StrictCoverNegativeCases.generated`, `StrictCoverNegativeCases.generated_value`, `StrictCoverNegativeCases.generated_forbidden_public`, `StrictCoverNegativeCases.generated_shared_public`, `StrictCoverNegativeCases.zero_accepted`。
+
+15 source全186明示宣言を個別に`#print axioms`し、標準公理だけであることを確認した。初回の遅延生成r2 APIは零保存APIの使用で発生しなくなり、最終logの対象集合は全186明示宣言と完全一致する。全15 source末尾にstandard axiom gateを置く。exact-source focused監査はこの依存した到達点のbodyだけを一回検査し、Research全体/aggregate/全file loopをelaborateしない。axiom log SHA256 `6f406d1f1e974a6b10b51a5d33840182dec8343a93e48e81450ecd4dbf8543b6`、exit0/errors0/warnings0。必要な単一concrete module `StrictCoverNegativeCases` の確認はexit0。2セル・2領域の有限被覆をF₃値で実評価し、selector `[0,1]`、元全値 `[1,2]`、逆順Listでの元全値 `[1,2]` を得た。上記F₂原表示の原補正/原ラベル/generated public実評価は全て `[0,1]`（W1–W5の代替ではない）。placeholder/hidden-BiDi/privacy/import方向/diff scanはclean。PR内容の受理・CI・merge evidenceはPR/Issueへ置く。
