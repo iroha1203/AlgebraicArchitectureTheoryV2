@@ -99,6 +99,7 @@ theorem nonzero_effect (v : k) :
 /-- The nonzero parameter uses the whole original native fibre groupoid. -/
 abbrev NativeGroupoid := FiberGroupoid D F generatedSection regular B 0 a c label_zero (1 : k)
 
+/-- The existing full-label ActionCategory supplies the category on this same native parameter fibre. -/
 local instance nativeCategory : Category NativeGroupoid :=
   inferInstanceAs (Category (ActionCategory (Multiplicative (k × k))
     (FiberObjects D F generatedSection B 0 regular a c label_zero (1 : k))))

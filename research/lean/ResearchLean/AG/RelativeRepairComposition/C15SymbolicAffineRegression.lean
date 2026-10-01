@@ -41,11 +41,17 @@ def units : FiniteElimination.Enumeration Unit := ⟨[()],by intro a; cases a; s
 /-- The original authored face names use the concrete Unit equality. -/
 instance faceEquality : DecidableEq K.TwoCell := inferInstanceAs (DecidableEq Unit)
 
+/-- The complete original candidate set gives a decision without a supplied repair. -/
 instance candidateDecidable : DecidablePred (· ∈ candidates) := fun _ => isTrue trivial
+/-- The original empty fixed part has no fixed edge, so its membership is decidable. -/
 instance emptyEdgesDecidable : DecidablePred (· ∈ P.edges) := fun _ => isFalse (fun h => h)
+/-- The original empty fixed part has no fixed face, so its membership is decidable. -/
 instance emptyFacesDecidable : DecidablePred (· ∈ P.faces) := fun _ => isFalse (fun h => h)
+/-- The full original region includes every original vertex at every region index. -/
 instance regionVerticesDecidable : ∀ i, DecidablePred (· ∈ (U i).vertices) := fun _ _ => isTrue trivial
+/-- The full original region includes every original named edge at every region index. -/
 instance regionEdgesDecidable : ∀ i, DecidablePred (· ∈ (U i).edges) := fun _ _ => isTrue trivial
+/-- The full original region includes every authored face at every region index. -/
 instance regionFacesDecidable : ∀ i, DecidablePred (· ∈ (U i).faces) := fun _ _ => isTrue trivial
 
 /-- The empty original fixed part makes the generated parameter term relative for every value. -/

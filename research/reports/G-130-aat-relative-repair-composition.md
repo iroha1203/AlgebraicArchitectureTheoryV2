@@ -2273,7 +2273,7 @@ Repair/Solution/Coordinatesのfieldは独立に分類する対象と座標の条
 - `C15AffineFamilyRegression.gauge_x_allowed_every_value`
 - `C15AffineFamilyRegression.gauge_y_forbidden_every_value`
 
-`C15SymbolicKernelRegression.lean` (28明示宣言、source SHA256 `d1ea0b81694b4ba58df165e650beea01d6705362f8af8ce76ed3a2e778c415e8`):
+`C15SymbolicKernelRegression.lean` (28明示宣言、source SHA256 `6039322e8322a93d9a7af9f29f1d0fa419eda170f5cc9a1647e047c61de4f983`):
 
 - `C15SymbolicKernelRegression.k`
 - `C15SymbolicKernelRegression.fieldValues`
@@ -2353,7 +2353,7 @@ Repair/Solution/Coordinatesのfieldは独立に分類する対象と座標の条
 - `NativeAffine.family_generated_range_square`
 - `NativeAffine.family_symbolic_range_square`
 
-`C15SymbolicAffineRegression.lean` (21明示宣言、source SHA256 `ef95fe1df562bc6a3c468965abe1e5af2dcdba802c31dae857425e4e299a9e9b`):
+`C15SymbolicAffineRegression.lean` (21明示宣言、source SHA256 `4eee6b56504cf26aa78d8d3ac2a5f35ffbeb77ba97d47fdb538073816eb98258`):
 
 - `C15SymbolicAffineRegression.candidates`
 - `C15SymbolicAffineRegression.allowed`
@@ -2393,6 +2393,7 @@ Repair/Solution/Coordinatesのfieldは独立に分類する対象と座標の条
 受理依存の使用先で生成された補助は `ClosedRegion.mk.congr_simp`、`NativeAffine.tower.congr_simp`、`NativeAffine.vectorPath.eq_def`、`NativeAffine.vectorPasting.eq_def`、`StrictCoverRestoration.objectEquiv.congr_simp` の5件。
 したがって新API242、使用先の補助込み247件の全個別公理を監査した。log SHA256 `87a975074140d40f932e7f8cd48912ab7b57d8ed95ede56e48071549c5006bac`。
 各production sourceも必要な依存順でrootの単一file focused確認を行い、最終実内容で全29が通過した。
+査読で名指しされた回帰instance7件のdocstringを追加した。変更は2sourceのコメントと上の2hashだけで、全statement/value/proof/import/guard/宣言集合と台帳statusは不変。元exact-source監査の数学的実行本体を保ち、247個別結果の対応も同じである。
 全29source/hash/一意registry行が一致、placeholder/hidden-BiDi/privacy/語彙/import方向/保護領域/diff scanはclean。
 Research全体、aggregate root、全file/module loopのelaborationは実行していない。
 固定GOAL、数学本文、Formal、共通基準、CI設定は変更しない。
