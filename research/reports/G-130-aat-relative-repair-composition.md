@@ -1735,3 +1735,223 @@ audits:
   blocking_findings: []
   next_obligation: "C13固定headの標準review-pr/math-lean-reviewとroot受理を経て、Eの同じ原generatorの記号的rhs更新へ進む"
 ```
+
+### Cycle 14 selection — 全アフィン実操作から元辺を保つ実修復と有限座標へ
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 14
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 8fbeaa309abbc51764c6605980d99b1d975036ce
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "Issue #5132 C13受理5929767836 / PR5149 root acceptance5929751165 / report Cycle13"
+  proof_dag_predecessors: ["C1–5 原実塔/独立supported repair/full gauge/元部分表示制限", "C10–12 全finite座標/一回local生成/strict全S復元/表示比較", "C13 原全candidate範囲/dual分類/finite修復と障害"]
+  milestone: "GOAL Fの任意有限体kとA=k^dのnative全Aff→GL→1を原始実操作から構成し、任意の元辺と基準辺/指定translation比較/実3-cell整合を保持したAの入力、独立実アフィン修復・全射との両方向、A–Dの同じ原計算と有限座標への接続を閉じる"
+  proof_obligations:
+    - "native AffineEquivの全可逆アフィン操作とLinearEquiv射影、全実核≃translations A、全射影の全射性、全核を中央化する比較 iff translationを構成。proper subgroup/選択済みactionを入力にしない"
+    - "任意の元実アフィン辺L_eと基準辺R_eを保持し、原lift=R_e L_e^-1/core射影からOriginalTowerPresentationを生成。strong/lower strong/full核可換/核輸送全同型/指定translation比較中央化を実群射から放電。全原0–3 geometryとtyped paths/whiskering/pastingsを保持"
+    - "実合成から原path値、核輸送=M_e、defectとd0/d1/d2座標、指定実3-cell比較からauthored syzygyを導く。core alignmentだけを許す入力と実3-cell条件を区別し、一般結論相当のcertificateへ置換しない"
+    - "独立に定義した原実アフィン修復と全translation vertex gaugesを、元塔のsupported objects/full arrowsへ相互に運ぶ。全S/元固定条件/候補名/元実辺値/部分表示制限を保つ両逆関手と値法則を構成"
+    - "A–Dの同じ原入力/相対障害/strict finite public全復元/range-dual分類へ一般接続を固定。全kernelの標準k^d基底と有限実写像評価・合成からCのcoordinate入力/微分/defectを生成する手順を構成"
+    - "非恒等linear輸送、任意の非恒等元辺と別の基準辺、translation比較、全核の正負中央化、独立actual正負修復のconcrete回帰を一般構成へ適用し、対象全decl focused/個別公理/scans/登録/標準PR gateを固定"
+  exit_criteria:
+    - "任意有限体/任意d（零次元を含む）の全native affine group・実射影全核を保ち、全射/全核比較/中央化の全方向を証明"
+    - "元辺恒等の特殊inputに縮めず同じL/R/core/comparator/元全typed0–3を保持、Aの条件と実核輸送/defect/全微分を原始操作から生成"
+    - "独立actual affine objects/full gaugesとnative supported repairに全Sで両逆、元値/固定/候補/制限の保持、同じ受理A–Dへの接続"
+    - "全標準基底と有限field/cell入力から実評価によるcoordinate生成、非自明な正負回帰と全宣言/axioms/登録/scan整合"
+    - "root実装の全終了条件を満たしてからPRを固定し、新規独立4lane標準review-pr→math-lean-review、root受理とCI"
+  selection_reason: "Dを受理済み。Eの実singleton環境とW1–W5は全アフィンprimitive入力を必要とするため、全F実現とA–D接続を先に原辺非恒等のまま作る。E固有保存定理へのF適用はその一般構成の後に閉じる"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [NativeAffineKernel, NativeAffineTower, NativeAffineRepair, NativeAffineCoordinates, NativeAffineRegression]
+  risks: ["native全affineをcustom有効部分群へ縮めない", "GroupExtension.inputの恒等元辺で任意L_eを失わない", "centralizerの逆向き/全核/零次元を落とさない", "実3cell条件を一般authored certificateとして供給するだけにしない", "full arrows/全S/同じ制限とfinite入力生成を落とさない"]
+  unchecked: ["C14構成/証明/有限入力接続/回帰/独立監査はこれから実装", "E固有の記号更新/文脈tester/内部splitとFへの適用、指定W1–W5、別累積completion gateは後続"]
+```
+
+このselectionは実装前の固定提案。Fの実現と受理済みA–Dへの接続を一つの数学的到達点とし、E固有の一般構成・その実アフィン適用とW1–W5は後続に保持する。全F/全GOAL完成とはまだ表示しない。途中分割が必要なら元終了条件と具体的split_reason・達成済み部分・未完obligationを保持する。
+
+### C14 — 構成と受理spine
+
+全native `AffineEquiv` を操作群とし、実 `linearHom` を full `LinearEquiv` への射影とする。
+`projection_surjective` は任意の線形同型のnative affine liftを構成する。
+`kernelEquiv` はこの射影の核全体と全translation vectorの乗法群の両逆であり、
+`centralizes_kernel_iff` は全核を中央化する実操作がtranslationであることを両方向で証明する。
+一般のfield/moduleで証明し、有限体と `Fin d → k` は零次元を含めてそのまま適用する。
+
+元の実操作 `L_e` と別のreference `R_e` は任意のまま保持する。
+`original` は同じ元typed Kの `L_e` を持つLiftData、`referenceLift` は `R_e L_e^-1` のactual upper lift、coreはその実linear射影。
+`selected_edge_value` / `selected_path_value` はreselectionが同じ `R_e` とordered wordを保つことを証明する。
+`comparator` は指定translationであり、strong/lower strong/full kernel可換/輸送全同型/全核中央化を同じ実群射から構成する。
+face入力はreference wordのlinear一致だけであり、実修復face equalityを仮定しない。
+
+`coefficient` / `linearCoefficient` は全actual categorical kernelを全実vectorへ同定する。
+`edge_coefficient` / `path_coefficient` は核輸送を同じreferenceのlinear componentへ運ぶ。
+`faceOperation` / `pastingOperation` は元orientation、outgoing word、すべてのtyped pasting occurrenceの実合成を独立に評価する。
+`authored_syzygy` はこの実3-cell route operationの一致からAの条件を導く。
+`defect_value` は指定translationとleft/right reference word quotientの実値、
+`d0_value` / `d1_value` / `d2_value` は元辺・元face両word・元3-cell両pastingの全occurrenceを保つ実vector評価。
+
+`Repair` は全実affine辺、同じreference linear component、指定translationを含む実face equality、物理fixed辺の実値から独立定義する。
+`repairEquivalence` は同じ任意の元辺Lを保持した `SupportedRepair` との両逆。
+`gaugeLabels` は元fixed vertexで零かつ元fixed edge上でreference linear transportを保つ全vector labelである。
+`gaugeLabelEquivalence`、各実辺上の `native_gauge_value` / `gauge_value`、独立pointwise `Arrow` と `arrowEquivalence` により、full labelを作用結果で同一視しない。
+`groupoid_functor_inverse` / `groupoid_inverse_functor` は同じ元実操作・全射上で両functor合成が恒等であることを証明する。
+全Sは `fixedEdgesForRange` を同じ原名前で代入する。`affineRangeFunctor` はその範囲緩和の全対象・全射を保持する。
+`restricted_tower_eq`、独立実修復/全label制限、`affine_restriction_functors` はclosed presentationの同じ元全0–3 geometry上で両経路を一致させる。
+
+`standardBases` は同じ元全kernelのd標準座標であり、proper subgroup基底ではない。
+`vertexMatrix` / `edgeMatrix` / `faceMatrix` / `defectCoordinates` は原実referenceのlinear評価・全word・全typed pasting・実defect値から直接構成し、native元微分/defectへの値法則を持つ。
+`finiteObjectEquivalence` はこの全基底、元完全列挙、同じ元linear輸送/実defectをC11の一回local生成へ渡し、全public値とfull private kernel積を持つstrict生成対象へ運ぶ。
+`finiteGroupoidEquivalence` と両functor逆はfull compatible gauge labelsを保持する。
+`finite_forward_edge_value` / `finite_inverse_edge_value` は元同じedgeの実correctionと実operationを保持し、`finite_forward_label_value` は各元vertexの全vectorを保持する。
+`affine_repair_iff_public` はこの同じ生成public関係への全S判定。
+`affine_repair_iff_obstruction_zero` は実3-cell整合から得た元relative H2障害、
+`affine_repair_iff_range` / `affine_repair_iff_hits` / `affine_minimal_repair_iff` はDの同じalways quotient/全候補列のrange・dual・極小transversalへ接続する。
+
+以下の14 sourceを登録し、明示宣言および同じsourceの生成APIを個別公理監査の対象とする。
+
+`NativeAffineKernel.lean` (15明示宣言、source SHA256 `268cc2e80ac6a29ddf09b5f87c076923bbea65b6956d3046496bc1a87a958b91`):
+
+`NativeAffine.Operations`、`NativeAffine.projection`、`NativeAffine.projection_surjective`、`NativeAffine.translation`、`NativeAffine.translation_apply`、`NativeAffine.projection_translation`、`NativeAffine.operation_apply`、`NativeAffine.projection_eq_one_iff`、`NativeAffine.translationKernel`、`NativeAffine.kernelEquiv`、`NativeAffine.kernelEquiv_symm_val`、`NativeAffine.kernel_comm`、`NativeAffine.conjugation_translation`、`NativeAffine.centralizes_translations_iff`、`NativeAffine.centralizes_kernel_iff`。
+
+`NativeAffineTower.lean` (14明示宣言、source SHA256 `274a7779318dee3689f0553e679fc3f949182b2b56b479a2dd3d55e989d49b22`):
+
+`NativeAffine.original`、`NativeAffine.original_path_value`、`NativeAffine.referenceLift`、`NativeAffine.core`、`NativeAffine.referenceLift_core`、`NativeAffine.selected_edge_value`、`NativeAffine.selected_path_value`、`NativeAffine.original_lower_strong`、`NativeAffine.comparator`、`NativeAffine.comparator_centralizes`、`NativeAffine.core_alignment`、`NativeAffine.tower`、`NativeAffine.tower_original_edge`、`NativeAffine.tower_reference_edge`。
+
+`NativeAffineCoefficients.lean` (7明示宣言、source SHA256 `71204b66d809928b374fc7dd287ec53f262c8b8efee4491451b43d3d743dd857`):
+
+`NativeAffine.coefficient`、`NativeAffine.coefficientModule`、`NativeAffine.linearCoefficient`、`NativeAffine.coefficient_inverse_value`、`NativeAffine.coefficient_inclusion`、`NativeAffine.edge_coefficient`、`NativeAffine.edge_linear`。
+
+`NativeAffineEvaluation.lean` (9明示宣言、source SHA256 `103438be05a0d2e40b0918fb89d0c67d562ade333a5898b842364544fcdd05e1`):
+
+`NativeAffine.tower_path_value`、`NativeAffine.faceOperation`、`NativeAffine.pastingOperation`、`NativeAffine.whisker_value`、`NativeAffine.authored_face_value`、`NativeAffine.authored_pasting_value`、`NativeAffine.authored_syzygy`、`NativeAffine.canonical_face_value`、`NativeAffine.defect_value`。
+
+`NativeAffineRepairs.lean` (10明示宣言、source SHA256 `5a06322ae7a3b01e62c09f9a057a1053c55d47b1cde8c541a479a87ebe4d4c20`):
+
+`NativeAffine.Repair`、`NativeAffine.Repair.ext`、`NativeAffine.chosenOperation`、`NativeAffine.chosen_edge_value`、`NativeAffine.chosen_path_value`、`NativeAffine.toRepair`、`NativeAffine.fromRepair`、`NativeAffine.repairEquivalence`、`NativeAffine.repairEquivalence_value`、`NativeAffine.repairEquivalence_inverse_value`。
+
+`NativeAffineGaugeLabels.lean` (5明示宣言、source SHA256 `889bf96928d11b4819edc2492a032e0b5aa3ae4c5416736b3550661392078b03`):
+
+`NativeAffine.gaugeLabels`、`NativeAffine.gauge_label_conditions`、`NativeAffine.gaugeLabelEquivalence`、`NativeAffine.gaugeLabelEquivalence_value`、`NativeAffine.gaugeLabelEquivalence_inverse_value`。
+
+`NativeAffineGroupoid.lean` (14明示宣言、source SHA256 `d66da6aa214831c6694bcd87b6b47c6ed7127d7ed9def3802ae64fc7e694e546`):
+
+`NativeAffine.native_gauge_value`、`NativeAffine.gauge`、`NativeAffine.gauge_value`、`NativeAffine.gaugeAddAction`、`NativeAffine.Arrow`、`NativeAffine.gauge_eq_iff`、`NativeAffine.Groupoid`、`NativeAffine.repair_equivariant`、`NativeAffine.groupoidEquivalence`、`NativeAffine.arrowEquivalence`、`NativeAffine.groupoid_forward_label`、`NativeAffine.groupoid_inverse_label`、`NativeAffine.groupoid_functor_inverse`、`NativeAffine.groupoid_inverse_functor`。
+
+`NativeAffineDifferentials.lean` (10明示宣言、source SHA256 `8838d39a6eeef0ccbce9e099f2dc17abb6777a152ec9af471012bc6572d62c9a`):
+
+`NativeAffine.path_coefficient`、`NativeAffine.vectorPath`、`NativeAffine.path_correction_value`、`NativeAffine.d0_value`、`NativeAffine.d1_value`、`NativeAffine.vectorFace`、`NativeAffine.vectorPasting`、`NativeAffine.face_correction_value`、`NativeAffine.pasting_correction_value`、`NativeAffine.d2_value`。
+
+`NativeAffineRanges.lean` (11明示宣言、source SHA256 `1529d2b9aed05da545fdb01f2bf52d6a42e72e50ee3d70b5f5c7c9242f7329cb`):
+
+`NativeAffine.fixed_native`、`NativeAffine.repairInclude`、`NativeAffine.repair_include_value`、`NativeAffine.repair_include_native`、`NativeAffine.labelInclude`、`NativeAffine.repair_include_gauge`、`NativeAffine.affineRangeFunctor`、`NativeAffine.affine_repair_iff_obstruction_zero`、`NativeAffine.affine_repair_iff_range`、`NativeAffine.affine_repair_iff_hits`、`NativeAffine.affine_minimal_repair_iff`。
+
+`NativeAffineFiniteInput.lean` (14明示宣言、source SHA256 `6d0f251aeac8f1f82c6b787b6f967bf77bda07eaf070a676ce7f4afbcc5b85e3`):
+
+`NativeAffine.standardBases`、`NativeAffine.standard_basis_value`、`NativeAffine.standard_basis_inverse`、`NativeAffine.vertexColumn`、`NativeAffine.edgeColumn`、`NativeAffine.faceColumn`、`NativeAffine.vertexMatrix`、`NativeAffine.edgeMatrix`、`NativeAffine.faceMatrix`、`NativeAffine.defectCoordinates`、`NativeAffine.vertex_matrix_value`、`NativeAffine.edge_matrix_value`、`NativeAffine.face_matrix_value`、`NativeAffine.defect_coordinate_value`。
+
+`NativeAffineCorrection.lean` (4明示宣言、source SHA256 `c6329349c601d9c7784bd33c2a8a34233396182a84af4b941f5c964eebacd62c`):
+
+`NativeAffine.native_repair_correction_value`、`NativeAffine.realCorrection`、`NativeAffine.real_correction_native`、`NativeAffine.real_correction_restore`。
+
+`NativeAffineRestriction.lean` (12明示宣言、source SHA256 `7b97ba55b365233d72fd8a9b052c2bb8ac57b9989a0ddb77703cdb741db66138`):
+
+`NativeAffine.restrictOperations`、`NativeAffine.restricted_path_value`、`NativeAffine.restricted_faces`、`NativeAffine.restricted_tower_eq`、`NativeAffine.restrictAffineRepair`、`NativeAffine.affine_restriction_value`、`NativeAffine.affine_restriction_native`、`NativeAffine.restrictAffineLabels`、`NativeAffine.affine_label_restriction_native`、`NativeAffine.affine_restriction_gauge`、`NativeAffine.affineRestrictionFunctor`、`NativeAffine.affine_restriction_functors`。
+
+`NativeAffineFiniteCover.lean` (10明示宣言、source SHA256 `656602bbf0719c711b04034acf0f837138ca02afdf7893dba223fa87da4bac42`):
+
+`NativeAffine.finiteObjectEquivalence`、`NativeAffine.finiteLabelEquivalence`、`NativeAffine.finite_equivariant`、`NativeAffine.finiteGroupoidEquivalence`、`NativeAffine.finite_functor_inverse`、`NativeAffine.finite_inverse_functor`、`NativeAffine.affine_repair_iff_public`、`NativeAffine.finite_forward_edge_value`、`NativeAffine.finite_inverse_edge_value`、`NativeAffine.finite_forward_label_value`。
+
+`C14AffineRegression.lean` (28明示宣言、source SHA256 `b6e51a2cef27b4a3a0131f31dbe5c96f3a6ba8decc62540be021f60692c772da`):
+
+`C14AffineRegression.V`、`C14AffineRegression.K`、`C14AffineRegression.edgeNameEquality`、`C14AffineRegression.x`、`C14AffineRegression.y`、`C14AffineRegression.shear`、`C14AffineRegression.reference`、`C14AffineRegression.original`、`C14AffineRegression.comparisons`、`C14AffineRegression.aligned`、`C14AffineRegression.actualTower`、`C14AffineRegression.authored_three`、`C14AffineRegression.original_false_value`、`C14AffineRegression.tower_original_false`、`C14AffineRegression.original_reference_distinct`、`C14AffineRegression.native_transport_nonidentity`、`C14AffineRegression.full_kernel_vector`、`C14AffineRegression.comparator_full_centralizer`、`C14AffineRegression.shear_not_full_centralizer`、`C14AffineRegression.repaired`、`C14AffineRegression.positive`、`C14AffineRegression.positive_native`、`C14AffineRegression.all_fixed_impossible`、`C14AffineRegression.all_fixed_native_impossible`、`C14AffineRegression.actual_matrix_positive`、`C14AffineRegression.actual_matrix_negative`、`C14AffineRegression.actual_defect_first`、`C14AffineRegression.actual_defect_second`。
+
+### C14 — material premiseとproof-use
+
+| material premise | 原始出所・放電 | proof-use |
+| --- | --- | --- |
+| full affine operation/linear projection | native AffineEquiv/LinearEquiv、全射と全核両逆を構成 | 全強辺/full核/centralizer/whole translation module |
+| 任意の元L・reference R | 原実辺入力、referenceLift=R L^-1 | 元実choice保持、selected辺/path、実修復両逆 |
+| 指定comparison translations | 元vector c、whole-kernel中央化を実射影から証明 | facecore整合/元defect/全核輸送 |
+| reference face linear一致 | 許された原core alignment、実wordのlinear一致 | 同じtyped KのOriginalTowerPresentation |
+| 元実3-cell route一致 | orientation/outgoing word/full pasting実操作一致 | authored syzygyと相対障害cocycle |
+| P閉包・実固定face整合 | 元closed regionと原実word equality | 同じfixed native条件、全Sの相対obstruction/range |
+| field/d/full有限座標・完全列挙 | native full kernel standardBases、元cell/fieldリスト | 0–3実微分/defect値、Cの一回local生成/full復元 |
+| C/D一般受理API | C11の同じ元生成full public/private/full labels、C13の全元quotient/dual | 全実affine修復へのstrict両逆と全S/極小判定 |
+
+実修復・dual・public復元・H2消滅・全射対応を入力certificate fieldにしない。
+実3-cell仮定は元typed primitive operationの等号に固定し、それからAの一般条件を生成する。
+`NativeAffineFiniteCover` の検証上限はそのfull generated型の展開に対してmaxHeartbeats4000000、synthInstance100000であり、数学の仮定・対象・結論を変更しない。
+
+### C14 — concrete回帰
+
+`C14AffineRegression` はF3²の全native affine group、元Bool二loop、一つの元face、元Empty triplesを使う。
+実referenceは非恒等shearと別のterminal translations、元Lはtranslationとshearの逆/二重合成であり、元Lを恒等へ固定しない。
+`original_false_value` / `original_reference_distinct` と `tower_original_false` が元操作の独立値と保持を確認する。
+`native_transport_nonidentity` は第二標準vectorが両標準vectorの和へ輸送されることを全actual核で確認する。
+`comparator_full_centralizer` / `shear_not_full_centralizer` は同じwhole native射影核に対する正負の中央化。
+`positive` はfalse原loopを物理固定し、true候補を指定comparisonに一致させた独立実修復を構成する。
+`positive_native` は同じ元入力へ戻す。
+`all_fixed_impossible` は両元referenceの実値と元face equalityから1=0を導き、`all_fixed_native_impossible` は同じ独立native対象の不能へ運ぶ。
+これらはC14の非自明なprimitive実現の回帰であり、指定W1–W5の全条件を代替しない。
+E固有の一般保存定理とその実affine適用、指定W1–W5、別累積completion gateは後続に保持する。
+
+`actual_matrix_positive` / `actual_matrix_negative` は同じ実入力の元full edge列の正負係数、`actual_defect_first` / `actual_defect_second` は元実defectの両標準座標(1,-1)を直接評価する。
+
+### C14 — 到達点と検証
+
+rootの固定選定14 exact-source bodyのfocused確認はexit0/errors0/warnings0。
+163明示+22生成=185新APIと、使用先で生成された受理dependency補助1宣言の計186件を個別に `#print axioms` で検査し、欠落0・標準公理のみ。
+公理log SHA256 `8925040604ccb45d52b6bcb046a0c4a92490c4f3b40265e068a892ba39470c56`。全14 sourceのSHA256と一意登録を照合する。
+原実F3²の非恒等輸送、元/referenceの独立値、全核中央化正負、実修復正負、元full matrix正負係数と実defect両座標を検査する。
+placeholder/hidden-BiDi/privacy/diff/import方向scanはclean。Research全体/aggregate/全file loopを実行しない。
+C14の標準独立PR gateとroot受理・CIは固定headの監査コメントで行う。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    - "全native affine operation/linear射影全射/全actual核≃全translations/whole kernel centralizer iffを構成"
+    - "任意の元Lを保ち、同じreference R/core/指定translation comparator/full原typed0–3の実塔を原始群射から生成"
+    - "実輸送/path/defect/d0/d1/d2評価とfull typed実3route equality→authored syzygyを構成"
+    - "独立実affine repairs/full vertex labels/独立pointwise arrowsとnative actual repairs/full arrowsの両逆関手、全S緩和とclosed原部分表示の同じ値・関手比較を構成"
+    - "全d標準kernel basesと元実評価から有限0–3微分/defect座標を生成。同じCのstrict全public/private/full label復元とD全range/dual/minimal、A相対H2障害へ接続"
+    - "F3²非恒等linear/任意非恒等元辺・別reference/comparator/full centralizer正負/独立actual正負/full列・defect実値を確認"
+  exit_criteria_status:
+    - "任意有限体・任意d包括零次元のfull native groups/projection/whole kernel/centralizer両方向: 一般field/moduleの証明を全標準vectorへ適用"
+    - "同じ元L/R/core/comparator/full0–3を保持、strong/全核可換/輸送全同型を生成、実3cell原始条件から一般syzygyを導出"
+    - "独立real対象/全labels/pointwise実射とnative full gauge groupoidの両逆、全S/同じfixed名前/元実値/closed制限と関手比較"
+    - "全standard basis/実微分・defect評価/C同じfull復元/D全候補分類/A障害、非自明回帰と全185新API+受理依存補助1公理/登録/scan"
+    - "標準独立4lane PR監査とroot受理/CIはこの固定到達点のPR headで判定"
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [NativeAffineKernel, NativeAffineTower, NativeAffineCoefficients, NativeAffineEvaluation, NativeAffineRepairs, NativeAffineGaugeLabels, NativeAffineGroupoid, NativeAffineDifferentials, NativeAffineRanges, NativeAffineFiniteInput, NativeAffineCorrection, NativeAffineRestriction, NativeAffineFiniteCover, C14AffineRegression]
+  claim_mapping:
+    source_labels: ["GOAL F full Aff→GL→1の原始実現/元辺保持/A–D接続", "GOAL A–Dの同じ受理原入力と全S/full復元"]
+    theorem_names: ["NativeAffine.kernelEquiv", "NativeAffine.centralizes_kernel_iff", "NativeAffine.tower", "NativeAffine.authored_syzygy", "NativeAffine.d0_value", "NativeAffine.d1_value", "NativeAffine.d2_value", "NativeAffine.groupoidEquivalence", "NativeAffine.affine_restriction_functors", "NativeAffine.finiteGroupoidEquivalence", "NativeAffine.finite_inverse_edge_value", "NativeAffine.affine_repair_iff_hits"]
+    undischarged_assumptions: []
+    acceptance_point: "全F primitive実現と受理A–Dへの接続の候補。E固有の一般構成とその全affine適用は後続。全F/全GOAL completionを表示しない"
+    port_status: unported
+  remaining_goal_obligations: ["E記号的同じgenerator/rhs値更新/全S再利用", "E実singleton文脈試験と全許容external環境iff", "E全typed内部辺分割/full groupoid・複体・障害・holonomy・公開/双対保存とFへの適用", "W1–W5全指定実affine構成/対応/決定", "別累積completion packetとfresh Math2/Lean2全target最終監査"]
+audits:
+  premise_delta:
+    discharged: ["native full射影の全射/全核/中央化 iff", "任意元L/Rからのstrong/full kernel可換/全核輸送同型/comparator中央化", "実3-cell route equalityから原authored syzygy", "全native kernel standard d coordinates/原実微分・defect評価", "独立実修復/全label・射と元supported repairsの全方向"]
+    remaining: ["上記remaining_goal_obligations"]
+  certificate_provenance:
+    discharged: ["full kernelは実linearHomの核全体", "元実辺L/referenceRのquotientから同じ元lift/coreを生成", "comparatorは指定translation、full centralizerから実中央化を放電", "実operation routeからsyzygy生成", "全標準basesと実微分/defectから同じC11生成入力を作り全復元へ接続"]
+    unresolved: []
+  proof_use:
+    used: ["全射影/全translations→元実塔/full核/中央化", "任意Lの保持→native実choices/独立修復両逆", "reference R linear→全輸送/各元微分", "orientation/outgoing/full occurrence→実pastingとauthored syzygy", "全original fixed名前/vertex条件→全S actual/full labels/制限", "全kernel d basisと元完全列挙→C public/private/full labels", "実fixedfaceと実3route→同じ相対障害", "同じ元D/全候補→dual/range/minimal"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["選定14 exact-body focused exit0/errors0/warnings0", "163明示+22生成=185新APIと受理依存補助1の186全個別公理標準のみ/欠落0", "axiom log SHA256 8925040604ccb45d52b6bcb046a0c4a92490c4f3b40265e068a892ba39470c56", "原F3²全核・非恒等輸送/元L-reference独立/実修復正負/元finite列正負・defect両座標", "14source exact hashes/14一意登録/placeholder/Unicode/privacy/import方向/diff scan"]
+  blocking_findings: []
+  next_obligation: "C14固定headの標準review-pr/math-lean-reviewとroot受理後、Eの同じ原generatorの記号的値更新へ進む"
+```
