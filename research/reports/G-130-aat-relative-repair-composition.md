@@ -2442,3 +2442,561 @@ audits:
 ```
 
 全GOALの累積完了判定とtracking Issueの全完了checkboxは未達のまま保持し、次の固定義務へ進む。
+
+### Cycle 16 selection — 実一点試験から全許容外部文脈の存在同値へ
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 16
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: eecc4443f7b018cf00f6629f43304332dcd2e1ce
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "C15 symbolic strict全S復元とC14の独立actual affine修復、Issue5132のC15受理"
+  proof_dag_predecessors: ["C11 actual/full-label strict復元", "C14 whole affine primitive/full核座標", "C15 同じ生成器/全S symbolic actual評価", "C13 全候補零と成功復元"]
+  milestone: "GOAL E文脈同値とFへの適用: 元Wの全0–3-cellと実操作を保つ禁止平行候補の実一点環境を生成し、Cの候補零/内部候補消去後共有関係の等号 iff 全許容外部環境でのactual修復存在一致を構成"
+  proof_obligations:
+    - "元有限Wの全typed paths/faces/3-cell contextsを保つ平行辺/恒等face追加と元P embedding、名前・禁止条件を構成"
+    - "任意original Lとreference Rから新pin reference τ_t R/core/実transportを生成し、原3 law・全入力条件を保持"
+    - "actual affine操作の新face等式とpin禁止から共有補正=tを双方向に証明し、全label/stabilizerを残す"
+    - "Cの同じ生成公開関係に候補零を先に課し内部候補を消去した共有関係と独立actual region修復のrangeを同定"
+    - "全許容actual外部環境にstrict共有値で貼る存在iffを構成し、actual一点環境の閉包からCtx逆方向を導く"
+    - "非零実tester/不能入力と共有label非自明性、内部候補消去の回帰を同じ一般定理へ接続"
+  exit_criteria: ["全元0–3 geometry/実L,R/P保持と新禁止pinの由来", "actual singleton共有relationの両方向/fulllabelsを保持", "generated Cとactual range同一・候補零/内部消去の順序", "全S/all actual許容envのCtx iff、閉包を結論certificateとして受け取らない", "具体非零success/failureと標準focused/axiom/PR audit"]
+  selection_reason: "記号的実復元の次に固定Eの外部置換判定を閉じる。入力をactual有限affine族に保ち、任意集合testersの仮定で実現義務を消さない"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ParallelPinGeometry, AffineSingletonEnvironment, GeneratedBoundaryRelation, AffineContextEquivalence, C16AffineContextRegression]
+  risks: ["全3-cell文脈の脱落", "任意relation testerを仮定するfield逃避", "共有labelの固定/削減", "内部候補値の直接観測", "全許容環境をsingleton族へ縮小", "generic statementだけでnative生成との接続を省略"]
+  unchecked: ["C16構成・接続・回帰・レビューはこれから実装", "元internal split/full categorical/complex/holonomy/public-dual保存、指定W1–W5、累積completionは後続"]
+```
+
+### C16 — 全元表示の実一点環境と候補消去後の文脈同値
+
+C16の対象は固定GOAL Eの文脈同値とFの有限アフィン族への適用である。
+元の全0–3-cell、typed wordの全出現と順序、両pastingの全prefix/suffix/方向/bookends、任意の元Lと基準Rを保持する。
+`ParallelPinGeometry`は各元edgeに平行な新candidateと恒等比較のfaceを加え、新しい頂点・3-cellは加えない。
+新candidateは全試験で禁止する。旧Pは全cellの埋め込みで保持し、共有頂点を追加で固定しない。
+`AffinePinOperations`は元Lを新pinでも用い、基準をτ_tR、linear transportを同じR.linear、coreをπ(RL⁻¹)として実操作から生成する。
+元の全face alignmentと完全な3-cell lawから新入力のlawを導く。
+
+`AffineSingletonEnvironment`は独立に指定された元の実修復tから全pin修復を作る。
+任意の新環境の実修復では、禁止pinの実値と恒等比較の新face等式から元edgeの実操作がτ_tRに等しくなる。
+したがって共有補正rangeは正確に{t}であり、逆向きの実修復も明示する。
+`AffinePinLabels`の全label部分群は、旧共有辺の全zero-coboundary条件を満たす元の全頂点vectorである。
+非零で効果のないlabelも区別したまま、実conjugation arrowを構成する。
+
+`FinitePresentationEmbedding`は全元cellと全typed word/step/routeの幾何的incidenceを保持する。
+`AffineContextInput`は任意の有限な実領域、任意original/reference affine操作、authored比較、元P、全candidate、全共有0–3-cellの厳密な埋め込みを指定する。
+そのfieldに修復、relation、singleton、gluing、vanishingを受け取らない。
+`AffineSharedLaws`は共有Wのalignment、完全3 law、物理固定face lawを実入力の元word/routeから導く。
+従って文脈同値の逆方向で一点環境を生成する際に、それらを追加certificateとして仮定しない。
+全環境を表す`Environments S`は任意のこの実領域と全ての整合したwhole候補許可条件の組であり、singleton族への限定ではない。
+
+`GeneratedBoundaryRelation` / `AffineGeneratedBoundary`は受理済みCの同じ生成D/F/kernel/sectionに接続する。
+privateは非共有かつ非物理固定かつ非candidateの常時補正辺だけであり、内部candidateも公開座標に保持する。
+全candidate零条件を先に課してから、共有座標への射影で内部candidateを消去する。
+`AffineSharedCoordinates.sharedEdgeEquiv` / `pull_shared_bijective`により、共有native辺subtypeから元Wの全edge名・全translation方向への引き戻しは全単射である。
+`generated_shared_actual`は同じ生成Cが独立actual修復の全共有rangeに正確に等しいことを全許可条件で示す。
+生成器と列挙はSの前に固定されている。
+
+`StrictRepairs`は両元領域の独立した全実修復と、全共有edgeの実affine操作の文字通りの等号である。
+`boundary_eq_iff` / `strictRepairEquiv`はこの実等号と全共有補正の等号を保存・反映する。
+`contextual_generated_strict`は全actual外部環境に対するそのstrict修復存在一致 iff 同じ生成Cの等号を証明する。
+`AdmitsPins`は明示した実pin入力とその候補許可条件が環境族に属するという原始追加の許容条件であり、singleton relationの存在はfieldに入れない。
+`pin_environment_range`で実singletonを導き、`contextual_generated_family_all`はこの原始追加を許す各族の全実環境と全Sに同じ判定を適用する。
+C16の文脈claimは共有補正の実現可能集合による存在判定である。
+
+| Material premise | 種類・生成元 | 実使用と到達先 |
+| --- | --- | --- |
+| 任意finite全元表示/実L,R/全translation核/全W共有 | ambient-boundary、既存Fとfull typed embedding | 元word実評価、実修復制限、whole環境量化とfull pullback |
+| authored全face alignment/完全3 law/元P-fixed law | 元入力の条件。共有lawはAffineSharedLawsで導出 | primitive pin referenceのlaw、元W修復、一点環境の全入力成立 |
+| actual一点環境/共有relation={t} | discharge-required、ParallelPinsの実新操作と恒等faceから構成 | contextual_rangesの逆方向。任意Setのtesterを仮定しない |
+| 新pin禁止/元candidate名/全候補零 | primitive許可条件と元incidenceから導出 | actual強制等式、same generatorのBoundaryPublicZero、内部candidate消去 |
+| 同じ生成Cとactual共有rangeの一致 | discharge-required、受理Cの生成section/全kernelとwhole actual equation equivalence | generated_boundary_actual→generated_shared_actual→全Ctx |
+| strict共有実操作の等号 | 実貼り合わせの定義。correctionとの対応はboundary_eq_iffで証明 | strictRepairEquiv、strict存在とrange交差、全外部存在iff |
+| 環境族の原始有限pin追加許容 | direction-hypothesis、AdmitsPinsは明示inputの所属だけ | hfは構成したpinEnvironmentの所属に使用、range lawは別証明 |
+| 全labels/stabilizersの保持 | discharge-required、pinLabelEquivalence/wholeLabelArrow | 各元vertex値・実conjugation。共有頂点を追加固定しない |
+
+C16の具体入力は二系統である。
+`C16AffinePinRegression` / `C16AffineContextRegression`は元F3²の非恒等shear、異なる元L/R、非零共有値x、元faceの正・逆両出現を含む非空3-cellを保持する。
+実whole環境の非零修復、零共有値の不能、非零full stabilizer arrowを示し、全actual環境型と一般Ctx定理へ接続する。
+`C16CandidateGeometry` / `Repairs` / `ContextRegression` / `Generated`はF3の元共有辺zと内部candidate yにz=yまたはz=2yという異なる実wordを指定する。
+candidate禁止後は両共有関係が{0}、解禁後は全共有vectorとなる。内部値1を保持すると共有値1と2で異なることも証明する。
+同じ原生成器によるCの一致と、全actual外部環境のstrict存在一致を一般定理へ接続する。
+これらは指定W1–W5の代替ではない。
+
+### C16 — 受理spine declaration list
+
+全名の共通prefixは `AAT.AG.RelativeRepairComposition.`。各sourceの明示宣言と元source hashを固定する。
+
+`ParallelPinGeometry.lean` (15明示宣言、source SHA256 `cc03f9a9c9669bfe62805ec04439bc6fbf8e7a4e796ff89ff21823142685daa9`):
+
+- `ParallelPinGeometry.Edge`
+- `ParallelPinGeometry.includePath`
+- `ParallelPinGeometry.include_append`
+- `ParallelPinGeometry.skeleton`
+- `ParallelPinGeometry.includeFace`
+- `ParallelPinGeometry.include_local_before`
+- `ParallelPinGeometry.include_local_after`
+- `ParallelPinGeometry.include_before`
+- `ParallelPinGeometry.include_after`
+- `ParallelPinGeometry.includeStep`
+- `ParallelPinGeometry.includePasting`
+- `ParallelPinGeometry.presentation`
+- `ParallelPinGeometry.oldEdgeName`
+- `ParallelPinGeometry.pinEdgeName`
+- `ParallelPinGeometry.old_ne_pin`
+
+`ParallelPinIncidence.lean` (6明示宣言、source SHA256 `1bcf874c71de12aa2071c9c9bfdbe2f8f72b85a96c4cec2f6c9a780a18aefe65`):
+
+- `ParallelPinGeometry.included_path_edges`
+- `ParallelPinGeometry.included_pasting_faces`
+- `ParallelPinGeometry.included_pasting_context`
+- `ParallelPinGeometry.oldRegion`
+- `ParallelPinGeometry.pin_not_fixed`
+- `ParallelPinGeometry.old_fixed_vertices`
+
+`AffinePinOperations.lean` (12明示宣言、source SHA256 `74e6ed5f9ae5f945f1aba478a498090ce10f72a5d5e912a9281ed25b2d1b76f4`):
+
+- `NativeAffine.ParallelPins.extendOperation`
+- `NativeAffine.ParallelPins.oldOperation`
+- `NativeAffine.ParallelPins.included_word_value`
+- `NativeAffine.ParallelPins.comparison`
+- `NativeAffine.ParallelPins.reference`
+- `NativeAffine.ParallelPins.original`
+- `NativeAffine.ParallelPins.pin_linear`
+- `NativeAffine.ParallelPins.pin_core_projection`
+- `NativeAffine.ParallelPins.reference_faces`
+- `NativeAffine.ParallelPins.included_face_value`
+- `NativeAffine.ParallelPins.included_pasting_value`
+- `NativeAffine.ParallelPins.reference_three_law`
+
+`AffineSingletonEnvironment.lean` (7明示宣言、source SHA256 `e103183eae99782b5a73da7884554f0a0bd8c72467f81a6ee3d5d9d0bc79675b`):
+
+- `NativeAffine.ParallelPins.forbidden`
+- `NativeAffine.ParallelPins.restrictRepair`
+- `NativeAffine.ParallelPins.singletonRepair`
+- `NativeAffine.ParallelPins.forced_old_operation`
+- `NativeAffine.ParallelPins.singleton_correction`
+- `NativeAffine.ParallelPins.singleton_boundary`
+- `NativeAffine.ParallelPins.restrict_singleton`
+
+`AffinePinLabels.lean` (7明示宣言、source SHA256 `bdc9902d4fc2ff93fbf38d1c497507c762736e683a46ffe7787c512990a47ccf`):
+
+- `NativeAffine.ParallelPins.pin_label_conditions`
+- `NativeAffine.ParallelPins.pin_label_subgroup`
+- `NativeAffine.ParallelPins.pinLabelEquivalence`
+- `NativeAffine.ParallelPins.pin_label_value`
+- `NativeAffine.ParallelPins.whole_label_stabilizes`
+- `NativeAffine.ParallelPins.wholeLabelArrow`
+- `NativeAffine.ParallelPins.whole_label_arrow_value`
+
+`GeneratedBoundaryRelation.lean` (7明示宣言、source SHA256 `7a1fedaa0db10a87c44c3285fdb79a8ea2d9f6a07370ca63823445e3ba6f9153`):
+
+- `FiniteNative.boundaryPublicValue`
+- `FiniteNative.restored_boundary_value`
+- `FiniteNative.BoundaryPublicZero`
+- `FiniteNative.BoundaryRelation`
+- `FiniteNative.supportedBoundary`
+- `FiniteNative.boundary_relation_range`
+
+`AffinePinCandidates.lean` (6明示宣言、source SHA256 `1e15bf11928c6141a8cf5df68302155948b29c261bad873e1e730566e2ed2449`):
+
+- `NativeAffine.ParallelPins.candidates`
+- `NativeAffine.ParallelPins.allowed`
+- `NativeAffine.ParallelPins.old_name_injective`
+- `NativeAffine.ParallelPins.pin_never_allowed`
+- `NativeAffine.ParallelPins.fixed_range_eq`
+- `NativeAffine.ParallelPins.allowed_mono`
+
+`AffineGeneratedBoundary.lean` (12明示宣言、source SHA256 `c5b3a6d9e954e6d38520b88395751e0ee36fe1f828c8bf52e5912aef7c1a6fe7`):
+
+- `NativeAffine.privateNonshared`
+- `NativeAffine.allVerticesDecidable`
+- `NativeAffine.allEdgesDecidable`
+- `NativeAffine.allFacesDecidable`
+- `NativeAffine.privateEdgesDecidable`
+- `NativeAffine.boundaryVector`
+- `NativeAffine.generatedBoundary`
+- `NativeAffine.boundaryEquationEquiv`
+- `NativeAffine.boundary_equation_value`
+- `NativeAffine.boundary_equation_inverse_value`
+- `NativeAffine.actualBoundary`
+- `NativeAffine.generated_boundary_actual`
+
+`C16AffinePinRegression.lean` (23明示宣言、source SHA256 `93a17ff92dc6d8087e6cec76265b3571ebf9d7702ca844b158336efbd4c61383`):
+
+- `C16AffinePinRegression.forwardFace`
+- `C16AffinePinRegression.backwardFace`
+- `C16AffinePinRegression.geometry`
+- `C16AffinePinRegression.references`
+- `C16AffinePinRegression.originals`
+- `C16AffinePinRegression.comparisons`
+- `C16AffinePinRegression.fixed`
+- `C16AffinePinRegression.sharedRepair`
+- `C16AffinePinRegression.original_three`
+- `C16AffinePinRegression.aligned`
+- `C16AffinePinRegression.false_correction`
+- `C16AffinePinRegression.true_repaired_value`
+- `C16AffinePinRegression.true_correction`
+- `C16AffinePinRegression.testRepair`
+- `C16AffinePinRegression.test_three`
+- `C16AffinePinRegression.every_test_true`
+- `C16AffinePinRegression.zero_boundary_failure`
+- `C16AffinePinRegression.whole_label_x`
+- `C16AffinePinRegression.nonzeroTestLabel`
+- `C16AffinePinRegression.test_label_not_zero`
+- `C16AffinePinRegression.test_label_y_forbidden`
+- `C16AffinePinRegression.nonzeroSharedArrow`
+- `C16AffinePinRegression.shared_arrow_not_zero`
+
+`ContextRelations.lean` (5明示宣言、source SHA256 `d8e1a3d058730dd1e7ee852d949e85e0795006c674edbb7986098598abecb628`):
+
+- `ContextRelations.StrictJoin`
+- `ContextRelations.strict_join_nonempty`
+- `ContextRelations.equal_relations_context`
+- `ContextRelations.contextual_iff_equal`
+- `ContextRelations.contextual_ranges`
+
+`FinitePresentationEmbedding.lean` (5明示宣言、source SHA256 `4dc3625c65c7f3450df1be3557d8b69981884673b2fb8a853c22d52c0d0276bf`):
+
+- `embeddedPath`
+- `FinitePresentationEmbedding`
+- `FinitePresentationEmbedding.edgeName`
+- `FinitePresentationEmbedding.path_computed`
+- `FinitePresentationEmbedding.path_map_append`
+
+`ParallelPinEmbedding.lean` (1明示宣言、source SHA256 `c8355a9601532c1cbaabbeba373c96019abbd6ef0a2f1d045591363acd41fe36`):
+
+- `ParallelPinGeometry.embedding`
+
+`AffineEmbeddedValues.lean` (5明示宣言、source SHA256 `3687f4b6b27d35015f13c94d04313c5b71a5e18d44641a8220da81e8415cabf1`):
+
+- `NativeAffine.embeddedOperation`
+- `NativeAffine.embedded_word_value`
+- `NativeAffine.word_value_heq`
+- `NativeAffine.restrictEmbeddedRepair`
+- `NativeAffine.embedded_correction_value`
+
+`AffineContextInput.lean` (7明示宣言、source SHA256 `2c9c3a2af458f12516990735f328d2b295538517ff2b11e957ddb4291d21b2d6`):
+
+- `NativeAffine.AffineContextInput`
+- `NativeAffine.AffineContextInput.Range`
+- `NativeAffine.AffineContextInput.Repairs`
+- `NativeAffine.AffineContextInput.shared_forbidden`
+- `NativeAffine.AffineContextInput.sharedRepair`
+- `NativeAffine.AffineContextInput.boundary`
+- `NativeAffine.AffineContextInput.boundary_value`
+
+`AffineEmbeddedPastings.lean` (6明示宣言、source SHA256 `cf10f05b9843e83180c8d7317b98a06ca2efed24152ead59edc16ce8f7f16649`):
+
+- `NativeAffine.embedded_reference_family`
+- `NativeAffine.embedded_reference_word`
+- `NativeAffine.embedded_step_comparison`
+- `NativeAffine.embedded_pasting_value`
+- `NativeAffine.pasting_value_heq`
+- `NativeAffine.embedded_three_law`
+
+`AffinePinContextInput.lean` (8明示宣言、source SHA256 `7c0ffc008ff881f5da6950d396ecb1cf6705d02bb59704b6e7d51a2905d5a7cc`):
+
+- `NativeAffine.ParallelPins.contextInput`
+- `NativeAffine.ParallelPins.contextRange`
+- `NativeAffine.ParallelPins.context_fixed_set`
+- `NativeAffine.ParallelPins.rawContextRepair`
+- `NativeAffine.ParallelPins.contextRepair`
+- `NativeAffine.ParallelPins.context_shared_operation`
+- `NativeAffine.ParallelPins.context_shared_repair`
+- `NativeAffine.ParallelPins.context_singleton_range`
+
+`AffineSharedLaws.lean` (3明示宣言、source SHA256 `9ac9d6868aa9ae052eab8603d09bd5a158655138434c07fa0bf4648b3844acc4`):
+
+- `NativeAffine.AffineContextInput.shared_aligned`
+- `NativeAffine.AffineContextInput.shared_three_law`
+- `NativeAffine.AffineContextInput.shared_fixed_law`
+
+`AffineContextEquivalence.lean` (4明示宣言、source SHA256 `df3b5f305321f05f1bddc866ddb02d29e3f5abcf0bdc350ee47da667a6c3d246`):
+
+- `NativeAffine.AffineContextInput.Environments`
+- `NativeAffine.AffineContextInput.actual_singleton_context`
+- `NativeAffine.AffineContextInput.contextual_actual_ranges`
+- `NativeAffine.AffineContextInput.contextual_all_ranges`
+
+`AffineSharedCoordinates.lean` (4明示宣言、source SHA256 `2a95a7cbafd828bf6c15d336d8a1467b5705753773a60ea20572c4c12815ddd2`):
+
+- `FinitePresentationEmbedding.edge_name_injective`
+- `NativeAffine.AffineContextInput.sharedEdgeEquiv`
+- `NativeAffine.AffineContextInput.pullShared`
+- `NativeAffine.AffineContextInput.pull_shared_bijective`
+
+`AffineContextGenerated.lean` (4明示宣言、source SHA256 `415b49b77daead19cfc4aaae4e9ca59b7d030fc268c64b4b8136f77e9a098035`):
+
+- `NativeAffine.AffineContextInput.generatedShared`
+- `NativeAffine.AffineContextInput.generated_shared_actual`
+- `NativeAffine.AffineContextInput.contextual_generated`
+- `NativeAffine.AffineContextInput.contextual_generated_all`
+
+`AffineStrictContexts.lean` (5明示宣言、source SHA256 `ead4df72973f44fb5016c1d74cb9a54df7b938f62d132b41c64b2cfe5d1e2618`):
+
+- `NativeAffine.AffineContextInput.StrictRepairs`
+- `NativeAffine.AffineContextInput.boundary_eq_iff`
+- `NativeAffine.AffineContextInput.strictRepairEquiv`
+- `NativeAffine.AffineContextInput.strict_repairs_nonempty`
+- `NativeAffine.AffineContextInput.contextual_strict_actual`
+
+`AffineContextFamilies.lean` (7明示宣言、source SHA256 `f9b47955921e2d7d98ab269173f08498d0e7630a4b1dbe5b8d25952c92cf2f4e`):
+
+- `NativeAffine.AffineContextInput.pinEnvironment`
+- `NativeAffine.AffineContextInput.pin_environment_range`
+- `NativeAffine.AffineContextInput.AdmitsPins`
+- `NativeAffine.AffineContextInput.all_admits_pins`
+- `NativeAffine.AffineContextInput.contextual_family_ranges`
+- `NativeAffine.AffineContextInput.contextual_family_strict`
+
+`C16CandidateGeometry.lean` (14明示宣言、source SHA256 `a4ab330f2b42b8c0920aae39f718bba9bfe0a33e4a013f5cc6a1f051333522ba`):
+
+- `C16CandidateGeometry.boundaryGeometry`
+- `C16CandidateGeometry.geometry`
+- `C16CandidateGeometry.edgeEquality`
+- `C16CandidateGeometry.includePath`
+- `C16CandidateGeometry.includeRoute`
+- `C16CandidateGeometry.embedding`
+- `C16CandidateGeometry.shared`
+- `C16CandidateGeometry.candidates`
+- `C16CandidateGeometry.V`
+- `C16CandidateGeometry.boundaryReference`
+- `C16CandidateGeometry.reference`
+- `C16CandidateGeometry.aligned`
+- `C16CandidateGeometry.input`
+- `C16CandidateGeometry.permissions`
+
+`C16CandidateRepairs.lean` (8明示宣言、source SHA256 `85f3bf490f70df62adab1217443c2f95920c7cb5acb5f2a2fc1a394e055aeb44`):
+
+- `C16CandidateRepairs.scale`
+- `C16CandidateRepairs.scaled`
+- `C16CandidateRepairs.scaled_inverse`
+- `C16CandidateRepairs.operations`
+- `C16CandidateRepairs.forbidden`
+- `C16CandidateRepairs.repair`
+- `C16CandidateRepairs.repair_internal`
+- `C16CandidateRepairs.repair_boundary`
+
+`C16CandidateContextRegression.lean` (8明示宣言、source SHA256 `cab10937f0e388178c0b29a75c3209ec66d064658b99b509bd223cdc368d0e43`):
+
+- `C16CandidateContextRegression.forbidden_shared_operation`
+- `C16CandidateContextRegression.forbidden_boundary`
+- `C16CandidateContextRegression.forbidden_range`
+- `C16CandidateContextRegression.allowed_range`
+- `C16CandidateContextRegression.boundary_ranges_equal`
+- `C16CandidateContextRegression.every_actual_context`
+- `C16CandidateContextRegression.internal_one_retained`
+- `C16CandidateContextRegression.internal_relations_different`
+
+`C16AffineContextRegression.lean` (17明示宣言、source SHA256 `2b334cb368634da76e8478dd7cf790f5109231bd2da602c190b1dabb915cdfeb`):
+
+- `C16AffineContextRegression.allowed`
+- `C16AffineContextRegression.fixed_condition`
+- `C16AffineContextRegression.baseRepair`
+- `C16AffineContextRegression.fixed_law`
+- `C16AffineContextRegression.input`
+- `C16AffineContextRegression.permissions`
+- `C16AffineContextRegression.actualRepair`
+- `C16AffineContextRegression.actual_true`
+- `C16AffineContextRegression.actual_zero_failure`
+- `C16AffineContextRegression.actual_label_conditions`
+- `C16AffineContextRegression.actualLabel`
+- `C16AffineContextRegression.actual_label_nonzero`
+- `C16AffineContextRegression.actualArrow`
+- `C16AffineContextRegression.actual_arrow_nonzero`
+- `C16AffineContextRegression.environment`
+- `C16AffineContextRegression.actual_contextual`
+
+`AffineContextConclusion.lean` (3明示宣言、source SHA256 `2ec675e509cf120d31e9bf676707266d5122e202bfb9195a8d9825b827bc6be8`):
+
+- `NativeAffine.AffineContextInput.contextual_generated_strict`
+- `NativeAffine.AffineContextInput.contextual_generated_family`
+- `NativeAffine.AffineContextInput.contextual_generated_family_all`
+
+`C16CandidateGenerated.lean` (15明示宣言、source SHA256 `09b7bce08fddac7bd045e6ff0a787620c7e8bca6e41952562fe6a80f8c00d8f2`):
+
+- `C16CandidateGenerated.edgeEquality`
+- `C16CandidateGenerated.faceEquality`
+- `C16CandidateGenerated.fixedEdgesDecidable`
+- `C16CandidateGenerated.fixedFacesDecidable`
+- `C16CandidateGenerated.sharedDecidable`
+- `C16CandidateGenerated.candidateDecidable`
+- `C16CandidateGenerated.fieldValues`
+- `C16CandidateGenerated.edges`
+- `C16CandidateGenerated.faces`
+- `C16CandidateGenerated.relation`
+- `C16CandidateGenerated.relation_actual`
+- `C16CandidateGenerated.relations_equal`
+- `C16CandidateGenerated.generated_contextual`
+
+査読で名指しされた公開API・正負例として、次の6補助宣言を追加する。
+
+- `NativeAffine.real_correction_value`
+- `FiniteNative.boundary_public_zero_zero`
+- `NativeAffine.AffineContextInput.not_admits_pins_empty_of_repair`
+- `C16AffineContextRegression.not_admits_pins_empty`
+- `C16CandidateGenerated.boundary_public_zero_zero`
+- `C16CandidateGenerated.boundary_public_zero_rejects_internal_one`
+
+既存所有source `NativeAffineCorrection.lean` (5明示宣言、source SHA256 `4bd3a03107254b859a6586aeafbd3bf2d929fa0ae499fb49c8fc5eb4dab9430a`) では、raw評価APIを追加し、C16の三箇所は同じ評価APIを使用する。元4受理宣言も同じ選定監査本体に含める。
+
+- `NativeAffine.native_repair_correction_value`
+- `NativeAffine.realCorrection`
+- `NativeAffine.real_correction_native`
+- `NativeAffine.real_correction_restore`
+
+追加の個別公理対象は次の93件である。型付きembedding/actual入力/permissionの全structure生成APIと新word再帰補助91件、受理依存の使用先補助2件を含む。
+
+- `ClosedRegion.mk.congr_simp`
+- `FinitePresentationEmbedding.casesOn`
+- `FinitePresentationEmbedding.ctorIdx`
+- `FinitePresentationEmbedding.edge`
+- `FinitePresentationEmbedding.edge_injective`
+- `FinitePresentationEmbedding.face`
+- `FinitePresentationEmbedding.face_injective`
+- `FinitePresentationEmbedding.face_left`
+- `FinitePresentationEmbedding.face_right`
+- `FinitePresentationEmbedding.face_source`
+- `FinitePresentationEmbedding.face_target`
+- `FinitePresentationEmbedding.mk`
+- `FinitePresentationEmbedding.mk.inj`
+- `FinitePresentationEmbedding.mk.injEq`
+- `FinitePresentationEmbedding.mk.noConfusion`
+- `FinitePresentationEmbedding.mk.sizeOf_spec`
+- `FinitePresentationEmbedding.noConfusion`
+- `FinitePresentationEmbedding.noConfusionType`
+- `FinitePresentationEmbedding.path`
+- `FinitePresentationEmbedding.path_cons`
+- `FinitePresentationEmbedding.path_nil`
+- `FinitePresentationEmbedding.rec`
+- `FinitePresentationEmbedding.recOn`
+- `FinitePresentationEmbedding.route`
+- `FinitePresentationEmbedding.route_cons`
+- `FinitePresentationEmbedding.route_nil`
+- `FinitePresentationEmbedding.step`
+- `FinitePresentationEmbedding.step_face`
+- `FinitePresentationEmbedding.step_incoming`
+- `FinitePresentationEmbedding.step_orientation`
+- `FinitePresentationEmbedding.step_outgoing`
+- `FinitePresentationEmbedding.triple`
+- `FinitePresentationEmbedding.triple_finish`
+- `FinitePresentationEmbedding.triple_injective`
+- `FinitePresentationEmbedding.triple_left`
+- `FinitePresentationEmbedding.triple_right`
+- `FinitePresentationEmbedding.triple_source`
+- `FinitePresentationEmbedding.triple_start`
+- `FinitePresentationEmbedding.triple_target`
+- `FinitePresentationEmbedding.vertex`
+- `FinitePresentationEmbedding.vertex_injective`
+- `NativeAffine.AffineContextInput.Range.allowed`
+- `NativeAffine.AffineContextInput.Range.casesOn`
+- `NativeAffine.AffineContextInput.Range.ctorIdx`
+- `NativeAffine.AffineContextInput.Range.mk`
+- `NativeAffine.AffineContextInput.Range.mk.congr_simp`
+- `NativeAffine.AffineContextInput.Range.mk.inj`
+- `NativeAffine.AffineContextInput.Range.mk.injEq`
+- `NativeAffine.AffineContextInput.Range.mk.noConfusion`
+- `NativeAffine.AffineContextInput.Range.mk.sizeOf_spec`
+- `NativeAffine.AffineContextInput.Range.noConfusion`
+- `NativeAffine.AffineContextInput.Range.noConfusionType`
+- `NativeAffine.AffineContextInput.Range.rec`
+- `NativeAffine.AffineContextInput.Range.recOn`
+- `NativeAffine.AffineContextInput.Range.shared_allowed`
+- `NativeAffine.AffineContextInput.aligned`
+- `NativeAffine.AffineContextInput.candidates`
+- `NativeAffine.AffineContextInput.casesOn`
+- `NativeAffine.AffineContextInput.comparisons`
+- `NativeAffine.AffineContextInput.ctorIdx`
+- `NativeAffine.AffineContextInput.embedding`
+- `NativeAffine.AffineContextInput.fixed`
+- `NativeAffine.AffineContextInput.fixed_faces`
+- `NativeAffine.AffineContextInput.geometry`
+- `NativeAffine.AffineContextInput.mk`
+- `NativeAffine.AffineContextInput.mk.inj`
+- `NativeAffine.AffineContextInput.mk.injEq`
+- `NativeAffine.AffineContextInput.mk.noConfusion`
+- `NativeAffine.AffineContextInput.mk.sizeOf_spec`
+- `NativeAffine.AffineContextInput.noConfusion`
+- `NativeAffine.AffineContextInput.noConfusionType`
+- `NativeAffine.AffineContextInput.originals`
+- `NativeAffine.AffineContextInput.rec`
+- `NativeAffine.AffineContextInput.recOn`
+- `NativeAffine.AffineContextInput.references`
+- `NativeAffine.AffineContextInput.shared`
+- `NativeAffine.AffineContextInput.shared_candidates`
+- `NativeAffine.AffineContextInput.shared_comparison`
+- `NativeAffine.AffineContextInput.shared_core`
+- `NativeAffine.AffineContextInput.shared_edges`
+- `NativeAffine.AffineContextInput.shared_faces`
+- `NativeAffine.AffineContextInput.shared_fixed_edges`
+- `NativeAffine.AffineContextInput.shared_fixed_faces`
+- `NativeAffine.AffineContextInput.shared_fixed_triples`
+- `NativeAffine.AffineContextInput.shared_fixed_vertices`
+- `NativeAffine.AffineContextInput.shared_reference`
+- `NativeAffine.AffineContextInput.shared_triples`
+- `NativeAffine.AffineContextInput.shared_vertices`
+- `NativeAffine.AffineContextInput.three_law`
+- `ParallelPinGeometry.includePasting.eq_def`
+- `ParallelPinGeometry.includePath.eq_def`
+- `embeddedPath.eq_def`
+- `pathEdges.eq_def`
+
+### C16 — 到達点と検証
+
+28新productionと評価APIの既存所有sourceのroot単一file focused確認は、現在のsource hashで全29がexit0/errors0/warnings0。
+それらの同じ元実行本体を再現した単一named milestone focused確認もexit0/errors0/warnings0。
+225新明示宣言と91新生成API、既存所有sourceの4受理宣言と2使用先補助の計322件の個別 `#print axioms` は欠落0・標準公理のみ。
+公理log SHA256 `f7fdf0022da13b82c481aec8e1b02502c728ffa70d3cf1df36707e9eb945bd27`、再現source SHA256 `c0d437e4e7fd63d4eb4b2be26193ad5e932c134be453010eb5301bedba37a805`。
+29原source/hash/一意registry行、placeholder/hidden-BiDi/privacy/語彙(imported identifierと数学座標語を区別し、新規地の文のAAT hard ruleも含む)/import方向/保護領域/diff scanは一致・clean。
+Research全体、aggregate root、全file/module loopのelaborationは実行していない。
+固定GOAL、数学本文、Formal、共通基準、CI設定は変更しない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    - "全元0–3-cell/typed word/両完全route/P/nameを保つ原始parallel pin追加を構成"
+    - "任意元L/Rから新reference τ_tR/同じcore/fulltransportと全新入力lawを導出"
+    - "actual恒等face/pin禁止からsingleton range両方向を構成、元full labels/実stabilizerを保持"
+    - "同じ生成D/F/kernel/sectionで全候補零→内部候補消去→full共有C=独立actual rangeを全Sで証明"
+    - "全actual env/whole compatible permissionsの元実操作strict存在一致 iff C等号、原始pin追加許容族/全Sへ接続"
+    - "F3²非零shear/非空3-cell/実不能/full stabilizer、F3内部candidate関係差と生成C/全Ctx回帰を構成"
+  exit_criteria_status: ["元全geometry/任意L,R/P/name/新pin由来: ParallelPinGeometry/Incidence/Operations", "actual singleton両方向/全labels: AffineSingletonEnvironment/PinContextInput/PinLabels", "同じ生成C/候補零と内部消去: GeneratedBoundaryRelation/AffineGeneratedBoundary/ContextGenerated", "全S/全actual env iffとprimitive許容族: AffineContextEquivalence/Families/StrictContexts/Conclusion", "非零success/failure/非空3/full stabilizer/内部消去: C16の両actual回帰、29focused/322個別公理; 正式PR gateはPR作成後に判定"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: ["28新sourceと既存所有source/225新明示/91新生成/6受理宣言・使用先補助"]
+  evidence: ["全322個別標準公理/29source focused", "原新pin実operation/restoration/alllabels", "same generator candidatezero-before-projection/full shared actualrange", "全actual envとprimitive追加許容族の全S strict existence iff", "F3²非零shear/full3/stabilizerとF3 candidate elimination"]
+  claim_mapping:
+    theorem_names: [reference_three_law, singleton_correction, pinLabelEquivalence, context_singleton_range, shared_three_law, generated_boundary_actual, generated_shared_actual, pull_shared_bijective, boundary_eq_iff, strictRepairEquiv, contextual_generated_strict, contextual_generated_family_all, every_actual_context, generated_contextual]
+    source_labels: ["固定GOAL E文脈同値", "固定GOAL Fの同じ有限affine族へのE文脈適用", "n1017 3.2", "design5"]
+    conjuncts: ["全元実操作/全cell/名前/元P/全S/候補零先行/内部消去/全環境/実singleton/原始許容閉包/全labels"]
+    undischarged_assumptions: []
+    acceptance_point: "C16六義務と五終了条件の構成・接続を閉じた候補。正式PRレビュー/root受理/CIは外部記録で判定"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["原始pin追加から全実入力lawとactual singleton", "全0–3共有/実制限/全label値", "same generated C候補零/内部消去/fullactualrange", "全actualenv/原始許容族/全S iffと非零・内部候補回帰"]
+    remaining: ["固定GOAL E内部splitの全一般可換核/categorical/fullcomplex/holonomy/public-dual保存", "Fの残る内部split適用", "指定W1–W5", "全target累積completion packetと別四本監査"]
+  certificate_provenance:
+    discharged: ["元typedcell/原L,R→pin操作/全law", "元actual修復→新全actual修復とsingleton評価", "same original wholematrix/section→candidatezero→sharedprojection", "fulltyped embedding→whole actual制限と共有laws", "actualsingleton→任意外部存在逆方向"]
+    unresolved: []
+  proof_use:
+    used: ["元hf/hthree→pin全law", "P閉性とfixedlaw→新元P/actualrange", "同じgenσ/complete kernel→boundary restoration", "全Wreference/cmp/incidence→actual restriction/operation equality", "原始pin許容→constructed actualEnv membership→Ctx逆方向"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["29選定production/同じnamed milestone focused exit0/errors0/warnings0", "全322個別標準公理/欠落0", "axiom log SHA256 f7fdf0022da13b82c481aec8e1b02502c728ffa70d3cf1df36707e9eb945bd27", "全source/hash/registry/static scans"]
+  blocking_findings: []
+  next_obligation: "C16固定headの標準review-pr/math-lean-review/root受理/CI後、Eの内部always辺分割を元一般可換核/全geometry/実補正から構成"
+```
+
+全GOALの累積完了判定とtracking Issueの全完了checkboxは未達のまま保持し、固定義務の続きを扱う。
