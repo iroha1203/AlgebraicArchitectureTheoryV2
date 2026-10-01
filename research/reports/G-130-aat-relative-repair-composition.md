@@ -1245,3 +1245,206 @@ audits:
 `StrictCoverNegativeCases.geometry`, `StrictCoverNegativeCases.coefficients`, `StrictCoverNegativeCases.coefficientModule`, `StrictCoverNegativeCases.bases`, `StrictCoverNegativeCases.regions`, `StrictCoverNegativeCases.edge`, `StrictCoverNegativeCases.vertexDecidable`, `StrictCoverNegativeCases.edgeDecidable`, `StrictCoverNegativeCases.pEdgesDecidable`, `StrictCoverNegativeCases.pFacesDecidable`, `StrictCoverNegativeCases.regionVerticesDecidable`, `StrictCoverNegativeCases.regionEdgesDecidable`, `StrictCoverNegativeCases.regionFacesDecidable`, `StrictCoverNegativeCases.faceDecidable`, `StrictCoverNegativeCases.linear`, `StrictCoverNegativeCases.fieldEnum`, `StrictCoverNegativeCases.edgeEnum`, `StrictCoverNegativeCases.faceEnum`, `StrictCoverNegativeCases.solution`, `StrictCoverNegativeCases.label`, `StrictCoverNegativeCases.label_d0`, `StrictCoverNegativeCases.forbidden_correction`, `StrictCoverNegativeCases.forbidden_label`, `StrictCoverNegativeCases.localObjects`, `StrictCoverNegativeCases.shared_edge`, `StrictCoverNegativeCases.localLabels`, `StrictCoverNegativeCases.shared_label`, `StrictCoverNegativeCases.generated`, `StrictCoverNegativeCases.generated_value`, `StrictCoverNegativeCases.generated_forbidden_public`, `StrictCoverNegativeCases.generated_shared_public`, `StrictCoverNegativeCases.zero_accepted`。
 
 15 source全186明示宣言を個別に`#print axioms`し、標準公理だけであることを確認した。初回の遅延生成r2 APIは零保存APIの使用で発生しなくなり、最終logの対象集合は全186明示宣言と完全一致する。全15 source末尾にstandard axiom gateを置く。exact-source focused監査はこの依存した到達点のbodyだけを一回検査し、Research全体/aggregate/全file loopをelaborateしない。axiom log SHA256 `6f406d1f1e974a6b10b51a5d33840182dec8343a93e48e81450ecd4dbf8543b6`、exit0/errors0/warnings0。必要な単一concrete module `StrictCoverNegativeCases` の確認はexit0。2セル・2領域の有限被覆をF₃値で実評価し、selector `[0,1]`、元全値 `[1,2]`、逆順Listでの元全値 `[1,2]` を得た。上記F₂原表示の原補正/原ラベル/generated public実評価は全て `[0,1]`（W1–W5の代替ではない）。placeholder/hidden-BiDi/privacy/import方向/diff scanはclean。PR内容の受理・CI・merge evidenceはPR/Issueへ置く。
+
+
+## Cycle 12 — 表示変更と同じ実復元の比較
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 12
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 593a04203d84c23a90d525fd95193fa3302f2ebb
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "Issue #5132 Cycle11受理5925586476 / PR5147 acceptance5925577749 / report Cycle11"
+  proof_dag_predecessors: ["C4 元physical anchorを保つ参照変更/全範囲包含", "C5–8 全原cell restriction/finite cover/assembly geometry", "C10 全実核の一回局所generator/full inverse", "C11 全S strict有限glue/元actual全functor両逆"]
+  milestone: "GOAL Cの全表示変更（有限被覆細分化・組立て順/括弧・全基底・section・実参照lift）について元Kの全実修復/全射へ同じ復元を与える具体比較を構成し、比較合成・全S包含・元候補名/値/full vertex labelsの保存を証明する"
+  proof_obligations:
+    - "同じD/F/rの任意regular sections間の(z,n)↦(z,n+(σ−σ′)(r−Fz))、全ker所属/両逆/三比較合成/rec交換/full gaugeを証明。原finite generatorの各sectionへ適用し法則を放電"
+    - "元全0–3cellの任意full基底間の線形座標比較、原値/differential/private-public/全kernel/全labelの輸送と同じ局所generated rec交換を証明"
+    - "原入力有限表示からcover coord′recの全objects/labels/native functorsを構成。全両逆/三被覆比較合成/同じ元actual choice復元/allS包含交換を証明"
+    - "細分比較をfinite原値glue→元region restriction→生成coordsとして明示。有限二項組立てのflatten/unflattenは全shared原edgeとvertex label条件を保ち、全順序/括弧で同じ全原値を復元。中間再消去を行う場合は全候補/未組立領域共有辺を保持"
+    - "任意実alternative liftからa/shifted actual defectを構成。独立raw anchored equationsはh′=-aの固定条件を保持、h′+aの正規化で同じfinite生成/全glueへ接続。h′=h−a/δ′=δ+d1a、全actual choices/full gauge/native比較/合成とallS交換を証明"
+    - "一般比較の全向きと原入力への適用、構成法則/原名・物理値/全射・自由度保持をfocused全宣言axioms/scans・到達点独立PR監査で固定"
+  exit_criteria:
+    - "上記全表示変更とその複合を扱い、比較/rec法則をcertificate fieldやglobal repair列挙へ移さない"
+    - "元K/full kernels/全0–3cells/all actual choices/full labels/全候補名・物理固定条件/allSを保つ"
+    - "比較の相互逆・合成・同じ実復元/全arrowとの可換性を構成し、忘却後object equalityだけへ弱めない"
+    - "参照aはP/candidates上で零と仮定せず、物理anchorを−aへ運ぶ"
+    - "対象全宣言focused/個別axioms/scans、登録/台帳、標準独立PR gateとroot受理を閉じる"
+  selection_reason: "C11でstrict全S復元が閉じた。全表示比較を同じ復元軸に統合しCを閉じ、D/Eの再利用と指定Wの基盤を直接作る"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [SectionComparison, FullBasisComparison, FiniteCoverDisplay, GeneratedDisplayComparison, StrictBinaryAssembly, AnchoredFiniteDisplay]
+  risks: ["generic Equiv改名だけで具体比較を代替しない", "section法則/cover同値を入力certificateにしない", "full kernel/labelsを縮めない", "組立てのshared original条件を全保持", "shiftでP上δ零を仮定しない", "native totalFunctor/transportとallS交換"]
+  unchecked: ["本到達点全実装・接続はこれから構成", "D–F/W1–W5と別全GOAL completionは後続要求"]
+```
+
+実装前の固定selection。終了条件前の分割は元条件と具体的split_reason・未完obligationを保持する。Cだけの受理を全GOAL completionとは呼ばない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    - "SectionComparisonは任意regular sectionの具体的な全核座標式/両逆/三比較/full gaugeを証明し、GeneratedSectionComparisonが原生成sectionのregular法則を放電して適用"
+    - "FullBasisComparisonは原全0–3cell/d0–d2とprivate-public座標を全基底間で輸送し、GeneratedLocalComparisonが同じ原局所補正/全射への生成比較を構成"
+    - "GeneratedDisplayComparisonは原actual source経由で任意原有限被覆表示のcoord/rec、全両逆/三比較、原辺値・全actual choice/full vertex label/allSを保存"
+    - "StrictBinary/StrictFiniteAssemblyは全shared原edge/vertex条件を保持した独立nested tuplesのflatten/unflattenを構成。GeneratedFiniteAssemblyは同じ一回生成へ接続し全順序/括弧/allSの全functor可換性を証明"
+    - "AnchoredLocal/AnchoredFinite/AnchoredActualは実alternative liftのa/shifted defectと独立raw固定条件を構成し、h′+aで原有限glueへ正規化。AnchoredDisplayComparisonはlift・原cover・全基底の同時変更、三比較/全両逆/allSを同じphysical actual repairへ戻す"
+    - "全15 sourceの238明示宣言と50生成宣言を個別公理監査。非零核section/全basis/3葉括弧/empty familyの実計算とshared原edge/full labelの正負入力を検証。標準PR監査による受理はPR/Issueに固定"
+  exit_criteria_status:
+    - "全選定表示変更・複合: explicit section式、原basis/private-public値式、raw h′+a−a′、actual source経由の全native functor比較/rec/三合成"
+    - "全実核/0–3cell/候補/固定/射/allS: full coordinate conjugacy、privateに共有辺/候補を入れない同じ原generator、full label群と値保存、物理anchor−a、全range functor等式"
+    - "全両逆: 各object/labelの全逆とfunctor_inverse/inverse_functor。flattenは全cross条件を利用。stabilizerを含む元labelを保持"
+    - "任意参照: aのP/candidates上零を追加せず、独立raw Objectsの固定値を−aと定義しactual defect_shiftから正規化の補正方程式を導く"
+    - "検証/登録/台帳: 全明示・生成宣言focused公理監査、有限実計算・原型negative predicate、15件登録、機械scan。標準独立PR gate/root受理は固定PR headのコメントへ記録"
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [SectionComparison, FullBasisComparison, StrictFunctorComparison, FiniteCoverDisplay, GeneratedSectionComparison, GeneratedLocalComparison, GeneratedDisplayComparison, StrictBinaryAssembly, FiniteBinaryTuples, StrictFiniteAssembly, GeneratedFiniteAssembly, AnchoredLocalEquation, AnchoredFiniteCover, AnchoredActualCover, AnchoredDisplayComparison]
+  evidence: ["下記15 source/238明示宣言と各full inverse/value/range theorem", "先行C4/C10/C11の実入力・生成・全復元への直接適用"]
+  claim_mapping:
+    theorem_names: ["LinearInterface.section_comparison_kernel", "FiniteFamily.restore_basis_comparison", "GeneratedDisplay.comparison_rec", "GeneratedDisplay.comparison_comp", "GeneratedFiniteAssembly.comparison_generated", "AnchoredDisplay.comparison_value", "AnchoredDisplay.comparison_range"]
+    source_labels: ["GOAL C末段の全表示比較", "GOAL A物理的な参照座標変更", "GOAL C全範囲/full actual objects/full arrows"]
+    conjuncts: ["section/basis: 原局所generatedSolutionEquivへ接続", "finite refinement/order/bracket: 原0–3cell/glue/full labelsへ接続", "actual lift shift: raw equation/actual repair/full arrow/allSへ接続"]
+    undischarged_assumptions: []
+    acceptance_point: "選定した全表示比較の具体構成を同じ原actual復元へ接続したproposal。標準独立監査とroot受理は固定PR headで行う"
+    port_status: unported
+  remaining_goal_obligations: ["D全変更範囲/双対不能証拠/極小分類", "E記号的更新/実一点環境/全原表示内部分割", "F任意有限体の全実アフィン塔と各仮定放電", "W1–W5原指定実例の全要求", "別全GOAL completion packet/独立4本最終監査"]
+audits:
+  premise_delta:
+    discharged: ["σ/τのregular性を原finite generatorのgeneratedSection_regularで放電", "native object/label比較はC11生成された全actual両逆を利用", "raw δ′=δ+d1aを実alternative liftから導く", "nested/共有edge/full vertex compatibilityは独立objects/labelsをflattenして実構成", "全comparison法則は構成されたfull functor inverseから導く"]
+    remaining: ["上記remaining_goal_obligations。C12を全G-130 completionとして昇格しない"]
+  certificate_provenance:
+    discharged: ["FiniteCoverDisplayのfieldは原有限入力/0–3cell closed cover/full bases/全列挙のみ。比較・復元・零障害をfieldへ供給しない", "原生成section/full image/full kernelはC10実消去の出力", "shiftは実other liftのsolutionCorrection、defectは同じ実辺の合成", "treeとleaf bijectionは入力assembly shape/order。共有補正/全label/作用/比較は構成する"]
+    unresolved: []
+  proof_use:
+    used: ["regular性→section差のker所属/rec/作用", "full原basis逆→元値/private-public/differential輸送", "全actual/kernel逆→有限表示比較の全obj/arrow/choice保存", "原edge closure/全cross compatibility→binary/finite flatten", "実correctedDefect/closed r_d1→raw補正方程式", "同一actual aと原full labels→raw共有値/作用/allS交換"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["15 exact-source bodiesの単一milestone focused監査exit0/errors0/warnings0", "238明示+50生成=288全個別標準公理", "axiom log SHA256 eef07ebf777def416abc3e1d1cf5d91bd7661eb01c6c0a3bc68867e8b727a415", "有限原値section/basis/bracket/emptyと共有拒否/零受理の検証", "単一concrete endpoint AnchoredDisplayComparisonのtargeted module確認"]
+  blocking_findings: []
+  next_obligation: "C12固定headの標準review-pr/math-lean-review受理後、Dの同じ原大域微分/局所公開関係/双対証拠/全S極小分類へ進む"
+```
+
+### C12 — 構成と受理spine
+
+全宣言のnamespace prefixは `AAT.AG.RelativeRepairComposition.`。各sourceは同名Research moduleとして登録する。
+当初selectionの `AnchoredFiniteDisplay` は、独立raw局所方程式・有限strict族・actual接続・全表示比較の4 source (`AnchoredLocalEquation` / `AnchoredFiniteCover` / `AnchoredActualCover` / `AnchoredDisplayComparison`) で構成する。終了条件は固定selectionのままである。
+
+| proof obligation | 構成・直接の原入力適用 | 全実対象・射の確認 |
+| --- | --- | --- |
+| 任意regular section | `LinearInterface.sectionComparison` の $(z,n+(σ−τ)(r−Fz))$、`FiniteNative.generated_section_*` | full kernel差、原rec、全gauge、全native両逆・三比較 |
+| full basis | `FiniteFamily.basisComparison` / `FiniteNative.splitBasisComparison`、`FiniteNative.basis_comparison_d0` / `basis_comparison_d1` / `basis_comparison_d2` / `local_object_value` | 原全0–3cellの値・微分・private/public・元頂点全label |
+| finite display | `GeneratedDisplay.objectComparison` / `comparison` / `refinement_*_value` | 原actual全choices・元辺値・全射・両逆・合成・allS |
+| binary/finite order・bracket | `StrictBinary.objectEquiv` / `labelEquiv`、`StrictFiniteAssembly.objectEquiv`、`GeneratedFiniteAssembly.*` | 全shared原edgeと原vertex label、各独立leaf補正、全kernel・full functor/allS |
+| actual lift / 物理anchor | `AnchoredLocal.defect_shift` / `objectEquiv`、`AnchoredFinite.equivalence`、`AnchoredActualCover.equivalence`、`AnchoredDisplay.*` | raw h′=-a固定、元choice/全label、同時cover/basis/reference比較と三合成、allS |
+
+同じD/F/rについてsectionだけを変えると、公開zは固定で内部全核成分だけが差だけ動く。
+全原basis変更は原cell値を復元して新basisで読み直し、各実微分と輸送される。
+有限表示比較は旧表示の元actual repairを復元して新表示へcoordinateする。
+細分された原cell値と原vertex labelは、その親領域の同じ原cellへのliteral restrictionと一致する。
+二項・有限組立ては全独立leafの補正をnested productに保持し、内部・crossの全shared条件を利用してflatten/unflattenする。
+同じ全leaf領域から一度生成されたinterfaceへ接続するため、途中の新たな消去でshared候補や残りの共有辺を落とさない。
+
+raw参照表示は、other liftの実defectを使い、固定原辺でh′=-aを満たす独立方程式である。
+P上のaの零性を仮定せず、h′+aによる正規化を元相対補正へ戻す。
+全full labelsのraw gaugeは直接の元d0作用として定義する。
+複数の参照・basis・coverの同時比較は同じ元actual repairの復元を介し、raw値がh′+a−a′となる。
+raw対象だけでなく全functorの両逆、元choice、全vertex labels、三比較、allS包含との交換を証明する。
+
+`SectionComparison.lean` (16明示宣言、source SHA256 `25318bccbff93a4f913c05deb3b1daf97b7bdc04e03aac083a1bda47605fc868`):
+
+`LinearInterface.relation_section_iff`、`LinearInterface.sectionComparison`、`LinearInterface.section_comparison_public`、`LinearInterface.section_comparison_kernel`、`LinearInterface.section_difference_mem`、`LinearInterface.rec_section_comparison`、`LinearInterface.coord_section_comparison`、`LinearInterface.section_comparison_inverse`、`LinearInterface.section_comparison_comp`、`LinearInterface.section_comparison_self`、`LinearInterface.section_comparison_gauge`、`LinearInterface.sectionEquivalence`、`LinearInterface.section_functor_label`、`LinearInterface.section_inverse_label`、`LinearInterface.section_functor_inverse`、`LinearInterface.section_inverse_functor`。
+
+`FullBasisComparison.lean` (21明示宣言、source SHA256 `1a478b659163a21b030101cb8eb545671b18573052e22ac82e2bff47a02c93e5`):
+
+`FiniteFamily.basisComparison`、`FiniteFamily.restore_basis_comparison`、`FiniteFamily.basis_comparison_value`、`FiniteFamily.basis_comparison_inverse`、`FiniteFamily.basis_comparison_comp`、`FiniteFamily.basis_comparison_self`、`FiniteNative.basisComparison0`、`FiniteNative.basisComparison1`、`FiniteNative.basisComparison2`、`FiniteNative.basisComparison3`、`FiniteNative.restore_basis0`、`FiniteNative.restore_basis1`、`FiniteNative.restore_basis2`、`FiniteNative.restore_basis3`、`FiniteNative.basis_comparison_d0`、`FiniteNative.basis_comparison_d1`、`FiniteNative.basis_comparison_d2`、`FiniteNative.splitBasisComparison`、`FiniteNative.restore_split_basis`、`FiniteNative.split_basis_public`、`FiniteNative.split_basis_private`。
+
+`StrictFunctorComparison.lean` (8明示宣言、source SHA256 `e815e4f243c0103a717b27560537000925dd43574752ff5cb9b56d4161721d46`):
+
+`strictComparison`、`strict_comparison_rec`、`strict_comparison_coord`、`strict_comparison_comp`、`strict_comparison_inverse`、`strict_inverse_comparison`、`strict_trans_functor_inverse`、`strict_trans_inverse_functor`。
+
+`FiniteCoverDisplay.lean` (9明示宣言、source SHA256 `f053a4a65d11ed83cf46c6daf2b7bccdcb4a9d7f3c8c6e3f91c574c86462a37f`):
+
+`FiniteCoverDisplay`、`FiniteCoverDisplay.indexFinite`、`FiniteCoverDisplay.indexEquality`、`FiniteCoverDisplay.regionVertexDecision`、`FiniteCoverDisplay.regionEdgeDecision`、`FiniteCoverDisplay.regionFaceDecision`、`FiniteCoverDisplay.Objects`、`FiniteCoverDisplay.Labels`、`FiniteCoverDisplay.Groupoid`。
+
+`GeneratedSectionComparison.lean` (11明示宣言、source SHA256 `4113a5f411d512f74880a712d4af8decfa5d4be0a89c49d6442dc08ac6545854`):
+
+`FiniteNative.generatedSectionComparison`、`FiniteNative.generated_section_public`、`FiniteNative.generated_section_kernel`、`FiniteNative.generated_section_difference_mem`、`FiniteNative.generated_section_coord`、`FiniteNative.generated_section_rec`、`FiniteNative.generated_section_edge`、`FiniteNative.generated_section_gauge`、`FiniteNative.generatedSectionEquivalence`、`FiniteNative.generated_section_functor_inverse`、`FiniteNative.generated_section_inverse_functor`。
+
+`GeneratedLocalComparison.lean` (11明示宣言、source SHA256 `85f5b9bf19f821cec743f5e8af682d2023cac6fb7fb9d05a1db681044396fc64`):
+
+`FiniteNative.generated_equation_functor_inverse`、`FiniteNative.generated_equation_inverse_functor`、`FiniteNative.localObjectComparison`、`FiniteNative.local_object_rec`、`FiniteNative.local_object_value`、`FiniteNative.localComparison`、`FiniteNative.local_comparison_rec`、`FiniteNative.local_comparison_comp`、`FiniteNative.local_comparison_inverse`、`FiniteNative.local_inverse_comparison`、`FiniteNative.local_comparison_label`。
+
+`GeneratedDisplayComparison.lean` (23明示宣言、source SHA256 `ce32c72410fa6ef51a3ecee044977e062e357ed26f70b0dbae61c9cb0f44d13b`):
+
+`GeneratedDisplay.objectEquiv`、`GeneratedDisplay.labelEquiv`、`GeneratedDisplay.equivalence`、`GeneratedDisplay.functor_inverse`、`GeneratedDisplay.inverse_functor`、`GeneratedDisplay.objectComparison`、`GeneratedDisplay.labelComparison`、`GeneratedDisplay.comparison`、`GeneratedDisplay.comparison_obj`、`GeneratedDisplay.comparison_rec`、`GeneratedDisplay.comparison_coord`、`GeneratedDisplay.comparison_comp`、`GeneratedDisplay.comparison_inverse`、`GeneratedDisplay.inverse_comparison`、`GeneratedDisplay.comparison_edge_value`、`GeneratedDisplay.object_comparison_rec`、`GeneratedDisplay.comparison_choice`、`GeneratedDisplay.comparison_label_value`、`GeneratedDisplay.comparison_map_label`、`GeneratedDisplay.refinement_edge_value`、`GeneratedDisplay.refinement_label_value`、`GeneratedDisplay.rangeFunctor`、`GeneratedDisplay.comparison_range`。
+
+`StrictBinaryAssembly.lean` (20明示宣言、source SHA256 `971ca2068b2847da2bc603cb57986adbaa997c2e1ebf316a7d1cb0725c30fd8a`):
+
+`StrictBinary.regions`、`StrictBinary.Labels`、`StrictBinary.flattenLabels`、`StrictBinary.unflattenLabels`、`StrictBinary.labelEquiv`、`StrictBinary.Objects`、`StrictBinary.flattenObjects`、`StrictBinary.unflattenObjects`、`StrictBinary.objectEquiv`、`StrictBinary.gauge`、`StrictBinary.gauge_left`、`StrictBinary.gauge_right`、`StrictBinary.gauge_zero`、`StrictBinary.gauge_add`、`StrictBinary.addAction`、`StrictBinary.Groupoid`、`StrictBinary.equivariant`、`StrictBinary.equivalence`、`StrictBinary.functor_inverse`、`StrictBinary.inverse_functor`。
+
+`FiniteBinaryTuples.lean` (10明示宣言、source SHA256 `77bc7165a30a2b789a797248a11c4834b15ede4c650f1515156bd79571c1071b`):
+
+`FiniteBinary.Tree`、`FiniteBinary.Leaves`、`FiniteBinary.leafFintype`、`FiniteBinary.leafEquality`、`FiniteBinary.Tuple`、`FiniteBinary.tupleEquiv`、`FiniteBinary.tuple_restore`、`FiniteBinary.tuple_read`、`FiniteBinary.tuple_left`、`FiniteBinary.tuple_right`。
+
+`StrictFiniteAssembly.lean` (22明示宣言、source SHA256 `a917525e83db1a113cc0b6904c502291fc59e4188dea68819feb342568fc4578`):
+
+`StrictFiniteAssembly.Nested`、`StrictFiniteAssembly.leafEquiv`、`StrictFiniteAssembly.tupleEquiv`、`StrictFiniteAssembly.tuple_leaf`、`StrictFiniteAssembly.Objects`、`StrictFiniteAssembly.flatten`、`StrictFiniteAssembly.unflatten`、`StrictFiniteAssembly.objectEquiv`、`StrictFiniteAssembly.gauge`、`StrictFiniteAssembly.gauge_flatten`、`StrictFiniteAssembly.gauge_leaf`、`StrictFiniteAssembly.gauge_zero`、`StrictFiniteAssembly.gauge_add`、`StrictFiniteAssembly.addAction`、`StrictFiniteAssembly.Groupoid`、`StrictFiniteAssembly.equivariant`、`StrictFiniteAssembly.equivalence`、`StrictFiniteAssembly.functor_inverse`、`StrictFiniteAssembly.inverse_functor`、`StrictFiniteAssembly.comparison`、`StrictFiniteAssembly.comparison_rec`、`StrictFiniteAssembly.comparison_comp`。
+
+`GeneratedFiniteAssembly.lean` (15明示宣言、source SHA256 `0f978d9e456573ac1adb07f8bc1e9c9dd8c004c159401b609efbee3f92d7617f`):
+
+`GeneratedFiniteAssembly.objectEquiv`、`GeneratedFiniteAssembly.restore_objects`、`GeneratedFiniteAssembly.restore_leaf_value`、`GeneratedFiniteAssembly.equivalence`、`GeneratedFiniteAssembly.functor_inverse`、`GeneratedFiniteAssembly.inverse_functor`、`GeneratedFiniteAssembly.reconstruction_functor`、`GeneratedFiniteAssembly.functor_label`、`GeneratedFiniteAssembly.comparison_generation`、`GeneratedFiniteAssembly.rangeFunctor`、`GeneratedFiniteAssembly.range_generation`、`GeneratedFiniteAssembly.range_leaf_value`、`GeneratedFiniteAssembly.range_label_value`、`GeneratedFiniteAssembly.comparison_generated`、`GeneratedFiniteAssembly.comparison_range`。
+
+`AnchoredLocalEquation.lean` (19明示宣言、source SHA256 `96385b005c999d6fb080619991f9881a2185cba98a881c9ceb16588a0d931a64`):
+
+`AnchoredLocal.shift`、`AnchoredLocal.defect`、`AnchoredLocal.defect_shift`、`AnchoredLocal.Objects`、`AnchoredLocal.normalize`、`AnchoredLocal.denormalize`、`AnchoredLocal.objectEquiv`、`AnchoredLocal.normalize_value`、`AnchoredLocal.denormalize_value`、`AnchoredLocal.fixed_value`、`AnchoredLocal.gauge`、`AnchoredLocal.gauge_zero`、`AnchoredLocal.gauge_add`、`AnchoredLocal.addAction`、`AnchoredLocal.Groupoid`、`AnchoredLocal.equivariant`、`AnchoredLocal.equivalence`、`AnchoredLocal.functor_inverse`、`AnchoredLocal.inverse_functor`。
+
+`AnchoredFiniteCover.lean` (22明示宣言、source SHA256 `f8549f24ed96d272d8b55b7e385ca8145f6a8b56d5a404297221b01feaf48f0c`):
+
+`AnchoredFinite.Objects`、`AnchoredFinite.normalize`、`AnchoredFinite.denormalize`、`AnchoredFinite.objectEquiv`、`AnchoredFinite.gauge`、`AnchoredFinite.gauge_normalize`、`AnchoredFinite.gauge_local`、`AnchoredFinite.addAction`、`AnchoredFinite.vadd_eq`、`AnchoredFinite.Groupoid`、`AnchoredFinite.equivalence`、`AnchoredFinite.functor_inverse`、`AnchoredFinite.inverse_functor`、`AnchoredFinite.generatedEquivalence`、`AnchoredFinite.generated_inverse_value`、`AnchoredFinite.generated_functor_inverse`、`AnchoredFinite.generated_inverse_functor`、`AnchoredFinite.objectsInclusion`、`AnchoredFinite.inclusion_equivariant`、`AnchoredFinite.rangeFunctor`、`AnchoredFinite.generated_range`、`AnchoredFinite.generated_inverse_range`。
+
+`AnchoredActualCover.lean` (10明示宣言、source SHA256 `55f0cd7755c938ba787e1818ba2344d19a276ad7677b672ba17a018cf5927d6f`):
+
+`AnchoredActualCover.reference_functor_inverse`、`AnchoredActualCover.reference_inverse_functor`、`AnchoredActualCover.originalEquivalence`、`AnchoredActualCover.original_functor_inverse`、`AnchoredActualCover.original_inverse_functor`、`AnchoredActualCover.equivalence`、`AnchoredActualCover.functor_inverse`、`AnchoredActualCover.inverse_functor`、`AnchoredActualCover.forward_value`、`AnchoredActualCover.inverse_value`。
+
+`AnchoredDisplayComparison.lean` (21明示宣言、source SHA256 `7315002ab6415bc43c5a7d14ec4bb1b85d759f35762f70a7244a162327e84346`):
+
+`AnchoredDisplay.generatedEquivalence`、`AnchoredDisplay.sourceEquivalence`、`AnchoredDisplay.source_functor_inverse`、`AnchoredDisplay.source_inverse_functor`、`AnchoredDisplay.source_value`、`AnchoredDisplay.source_inverse_value`、`AnchoredDisplay.comparison`、`AnchoredDisplay.comparison_rec`、`AnchoredDisplay.comparison_comp`、`AnchoredDisplay.comparison_inverse`、`AnchoredDisplay.comparison_value`、`AnchoredDisplay.refinement_value`、`AnchoredDisplay.inverse_comparison`、`AnchoredDisplay.comparison_choice`、`AnchoredDisplay.source_label_value`、`AnchoredDisplay.source_inverse_label_value`、`AnchoredDisplay.comparison_label_value`、`AnchoredDisplay.refinement_label_value`、`AnchoredDisplay.source_range`、`AnchoredDisplay.source_inverse_range`、`AnchoredDisplay.comparison_range`。
+
+### C12 — focused実行証拠
+
+対象15 sourceの正確なbodyを対象にした単一milestone focused checkはexit0/errors0/warnings0。
+238明示宣言と50生成宣言の全288を個別に公理監査し、対象集合をsourceの全宣言と機械突合した。
+全件が標準公理のみであり、source hashが監査時と一致する。
+axiom log SHA256 `eef07ebf777def416abc3e1d1cf5d91bd7661eb01c6c0a3bc68867e8b727a415`。
+必要な単一concrete endpoint `ResearchLean.AG.RelativeRepairComposition.AnchoredDisplayComparison` のtargeted checkはexit0。
+
+F₂のD=第1成分、F=恒等、σ(r)=(r,0)、τ(r)=(r,r)を実計算した。
+同じoriginal solution ((1,1),0)の核座標は旧(0,1)から新(0,0)へ変わり、両方のrecは((1,1),0)へ戻る。
+非零labelによるgauge後もsection比較の両経路が同じ全核値(0,1)を返す。
+3葉の左右の括弧は全leaf値[1,0,1]を保持し、逆構成は((1,0),1)へ戻る。
+full二次元basisの入替えは座標[1,0]を[0,1]へ写し、元cell値[1,0]へ復元する。
+empty familyのinverseはPUnit.unitを返し、有限被覆に空のindexも許す。
+
+C11の2頂点・4原辺・F₂全係数を用い、0と1の独立local補正が共有原edgeで異なるbinary/nested組を拒否する。
+0と1のfull vertex labelは局所の作用が同じでもbinary共有label条件に反する。
+同じ原型に零のsupported correctionを与えるbinary/nested入力は実際に構成できる。
+これら5 predicate証拠の個別公理も全て標準公理のみ。
+指定W1–W5の実アフィン例と各完了条件は後続obligationとして保持する。
+
+regression log SHA256 `1997c9feabc5dcb9d98fe98c02bc98347fbc31adc9364ac23442d315dc1bc71d`、targeted endpoint log SHA256 `66b2f54b80b2b0daff9d2f8d06e3e92c9002738f86327855fbd90360bc63350b`。
+
+独立import経路の確認として、`GeneratedLocalComparison` / `GeneratedFiniteAssembly` / `GeneratedSectionComparison` の各単一concrete endpointを順にtargeted checkし、いずれもexit0。`AnchoredActualCover.lean` / `StrictBinaryAssembly.lean` の各単一source focused checkもexit0。targeted logには既存依存のreplayed warning（本体Coreのsimpa、受理済みRelativeCoverComplexの旧API）が含まれる。C12新sourceにwarningはない。各log SHA256:
+
+- `c12-generated-local-build.log`: `982561cc0f8ec420b2da3690cbe4d5414ced1ecb1ce3608122ff29d2f4e87fa7`
+- `c12-generated-finite-build.log`: `74ea36bd1fc1fcc4b74d312653ee3d5ebd50300737fe233900ecef905dc5e944`
+- `c12-generated-section-build.log`: `fb15f7f8dd09f684e8e3f07f28d059e280ddf39a4b05b4698d4e481557f5da5a`
+- `c12-anchored-actual-focused.log`: `36e94019e810abf11794cb5dfd2a7afcf382a511b007848a73cede1ffd1cb00d`
+- `c12-strict-binary-focused.log`: `4c4da063b55af963778a045bd5d7de8824a757d6d47c4c1f92fca8f0735757c6`
