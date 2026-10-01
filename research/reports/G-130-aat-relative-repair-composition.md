@@ -1176,7 +1176,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: ["13 exact-source単一focused監査exit0/errors0/warnings0", "150明示+1自動生成=151個別公理は標準のみ", "axiom log SHA25658379693452d7e7b57da6c32068ab3bea10506d65584518799e0524e64da3ab0"]
+  validation_refs: ["15 exact-source単一focused監査exit0/errors0/warnings0", "186明示宣言の全個別公理は標準のみ", "axiom log SHA2566f406d1f1e974a6b10b51a5d33840182dec8343a93e48e81450ecd4dbf8543b6"]
   blocking_findings: []
   next_obligation: "Cの各表示比較とD–F/W1–W5。PR査読・root受理・CI・merge/Issue同期を経て次到達点へ進む"
 ```

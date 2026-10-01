@@ -42,6 +42,7 @@ def coefficients : LocalCoefficients geometry where
   commGroup _ := inferInstance
   edge _ := AddEquiv.refl _
   face_transport := fun f => f.elim
+/-- The canonical F₂ module on the full original coefficient space at each vertex. -/
 instance coefficientModule (v : geometry.Vertex) : Module (ZMod 2) (coefficients.A v) :=
   inferInstanceAs (Module (ZMod 2) (Fin 1 → ZMod 2))
 /-- Full original one-dimensional bases. -/
@@ -52,14 +53,22 @@ def bases : FiniteFamily.Bases (k := ZMod 2) coefficients.A where
 def regions (_ : Bool) : ClosedRegion geometry := ClosedRegion.all
 /-- A specified original edge joining the two distinct vertices. -/
 def edge : EdgeName (K := geometry) := ⟨false,true,()⟩
+/-- Equality of the two original Boolean vertices is decidable. -/
 instance vertexDecidable : DecidableEq geometry.Vertex := inferInstanceAs (DecidableEq Bool)
+/-- Equality retains both original endpoints and the named Unit edge. -/
 instance edgeDecidable : DecidableEq (EdgeName (K := geometry)) := inferInstanceAs
   (DecidableEq (Sigma fun _ : Bool => Sigma fun _ : Bool => Unit))
+/-- The empty fixed region contains no original edges. -/
 instance pEdgesDecidable : DecidablePred (· ∈ (ClosedRegion.empty (K := geometry)).edges) := fun _ => isFalse id
+/-- The empty fixed region contains no original faces. -/
 instance pFacesDecidable : DecidablePred (· ∈ (ClosedRegion.empty (K := geometry)).faces) := fun _ => isFalse id
+/-- Each complete local region contains every original vertex. -/
 instance regionVerticesDecidable : ∀ i, DecidablePred (· ∈ (regions i).vertices) := fun _ _ => isTrue trivial
+/-- Each complete local region contains every original edge. -/
 instance regionEdgesDecidable : ∀ i, DecidablePred (· ∈ (regions i).edges) := fun _ _ => isTrue trivial
+/-- Each complete local region contains every original face. -/
 instance regionFacesDecidable : ∀ i, DecidablePred (· ∈ (regions i).faces) := fun _ _ => isTrue trivial
+/-- Equality on the empty original face type is decidable. -/
 instance faceDecidable : DecidableEq geometry.TwoCell := inferInstanceAs (DecidableEq Empty)
 /-- The original transport is linear on the complete coefficient space. -/
 theorem linear {i j : geometry.Vertex} (e : geometry.Edge i j) (t : ZMod 2) (x : coefficients.A i) :
