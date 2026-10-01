@@ -15,6 +15,10 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## active
 
+- [G-130-aat-relative-repair-composition](G-130-aat-relative-repair-composition.md)
+  (固定部分と全変更範囲を保つ実修復の局所合成、全修復・不能証拠・極小範囲の分類、内部辺分割)
+- [G-131-aat-repair-observation-duality](G-131-aat-repair-observation-duality.md)
+  (同じ実修復方程式からの観測十分性、既知情報の下での判定・数値補正の最適問い合わせ数)
 - [G-128-aat-minimal-compatibility-observations](G-128-aat-minimal-compatibility-observations.md)
   (適合性を決定する最小観測集合、適応的問い合わせの最悪時回数、有限構成と名前付き操作への適用)
 - [G-126-aat-operation-preserving-repair-quotients](G-126-aat-operation-preserving-repair-quotients.md)
