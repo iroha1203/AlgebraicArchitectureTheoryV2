@@ -899,3 +899,40 @@ fn a_question_mark_in_a_correspondence_returns_the_element() {
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.f" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
 }
+
+#[test]
+fn a_question_mark_on_the_source_side_of_a_correspondence_returns_the_element() {
+    let s = splitting_summary(
+        "question-source",
+        r#"{"kind": "corresponds", "subject": "?m.old", "object": "m.f", "at": "plan:p"}
+"#,
+    );
+    let silent = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.f" && r["outcome"] == "silent").unwrap_or_else(|| panic!("{s}"));
+    assert_eq!(silent["reason"], "unresolved", "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "?m.old" && n["decides"].as_array().unwrap().contains(&silent["id"])), "{s}");
+}
+
+#[test]
+fn too_many_pairs_of_branches_are_silent_with_limit() {
+    // 変更前と変更後が、互いに関係のない条件で 2^8 通りずつに分かれる。矛盾しない組は 2^16 通りある。
+    // 書くのは意味のない m.T.b なので、どの組でも食い違わない。
+    let writes = |field: &str, at: &str| -> String {
+        (0..8)
+            .map(|i| format!(r#"{{"kind": "writes", "subject": "m.f", "object": "m.T.b", "value": "{i}", "when": "$o.{field} == {i}", "at": "{at}"}}"#) + "\n")
+            .collect()
+    };
+    let repo = Repo::new("pair-limit");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", &format!("{SPLITTING}{}", writes("a", "m.py:8@blob:ccccccc")));
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        &format!(
+            "{}\n{}\n{}",
+            r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.T"}, "file": "m.py", "at": "plan:p"}"#,
+            r#"{"kind": "writes", "subject": "m.f", "object": "m.T.p", "value": "$o.a", "at": "plan:p"}"#,
+            writes("b", "plan:p")
+        ),
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    assert_eq!(result(&s, "m.f")["reason"], "limit", "{s}");
+}

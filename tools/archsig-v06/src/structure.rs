@@ -391,7 +391,7 @@ pub struct Overlay {
     /// 要素は、`?` の名前、型の分からないフィールドの持ち主の型など。式を読めなければ `None`。
     /// そこで `removes` した要素を名指すかは、Atom からは決まらない(設計 §5.1)。
     pub untraced: BTreeMap<String, Vec<(Option<String>, Atom)>>,
-    /// 対応の行き先に書いた `?` の名前と、その対応の Atom。
+    /// 対応の元か行き先に書いた `?` の名前と、その対応の Atom。
     pub questions: BTreeMap<String, Atom>,
 }
 
@@ -414,6 +414,9 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
     // 1. 書いた対応。行き先に `|` があれば、決めていない対応として別に持つ。
     let mut linked = Vec::new();
     for a in plan.iter().filter(|a| a.kind == "corresponds") {
+        if a.subject.starts_with('?') {
+            out.questions.entry(a.subject.clone()).or_insert_with(|| a.clone());
+        }
         let object = a.object.as_deref().unwrap_or("");
         let to: Vec<String> = object.split('|').map(|t| t.trim().to_string()).filter(|t| !t.is_empty()).collect();
         if object.contains('|') {

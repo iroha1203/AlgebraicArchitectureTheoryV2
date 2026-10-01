@@ -453,7 +453,7 @@ fn commute(
             }
             continue;
         }
-        let (ka, kb) = (before.kind(a), target_kind(after, overlay, b));
+        let (ka, kb) = (corresponds_kind(before, overlay, a), corresponds_kind(after, overlay, b));
         // 片方の端が操作でないと決まっていれば、比べる組ではない。
         if matches!(ka, Ok(k) if k != "operation") || matches!(kb, Ok(k) if k != "operation") {
             continue;
@@ -478,8 +478,8 @@ fn commute(
     out
 }
 
-/// 対応の行き先の種類。候補の対応に書いた `?` の名前なら、その対応の場所を返す(マニュアル第5章 問い8)。
-fn target_kind<'a>(after: &'a Structure, overlay: &Overlay, name: &str) -> Result<&'a str, Silence> {
+/// 対応の端の種類。候補の対応に書いた `?` の名前なら、その対応の場所を返す(マニュアル第5章 問い8)。
+fn corresponds_kind<'a>(after: &'a Structure, overlay: &Overlay, name: &str) -> Result<&'a str, Silence> {
     match overlay.questions.get(name) {
         Some(a) => Err(question_at(a)),
         None => after.kind(name),
@@ -528,6 +528,7 @@ fn compare(
     }
     let mut compared = Vec::new();
     let mut calls = false;
+    let mut pairs = 0;
     for b1 in &run1 {
         for b2 in &run2 {
             // 割り当てが矛盾しない組を、一つの分岐とみなす。変更後の原子は変更前の名前にそろえる。
@@ -535,6 +536,11 @@ fn compare(
                 b2.literals.iter().map(|l| Ok((normalize(mapping.back_value(&l.atom)?), l.truth))).collect::<Result<_, Silence>>()?;
             if b1.literals.iter().any(|l| lits2.iter().any(|(x, t)| x == &l.atom && *t != l.truth)) {
                 continue;
+            }
+            // 組も分岐なので、同じ上限で数える。
+            pairs += 1;
+            if pairs > BRANCH_LIMIT {
+                return Err(Silence::new(Reason::Limit));
             }
             // 分岐の組は、両側の条件の中の呼び出しを同じ項とみなして作る。
             calls |= b1.literals.iter().any(|l| has_call(&l.atom)) || lits2.iter().any(|(x, _)| has_call(x));
@@ -677,7 +683,7 @@ fn keep(
         let mut targets = Vec::new();
         let mut unknown = None;
         for t in mapping.to.get(e.as_str()).into_iter().flatten() {
-            match target_kind(after, overlay, t) {
+            match corresponds_kind(after, overlay, t) {
                 Ok(_) => targets.push(*t),
                 Err(s) => unknown = unknown.or(Some(s)),
             }
