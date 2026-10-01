@@ -781,3 +781,133 @@ raw refinementはindex mapと全0–3-cell inclusionから、全局所対象・�
 6登録sourceの個別focused checkは全exit0。正確な6source本体からimport行だけを除いた単一Cycle8Auditにより、全165明示宣言とstructure生成宣言等を含む全212宣言を個別`#print axioms`し、全件標準公理のみ。公理log SHA256 `03abf403b7bf940b16c6560246839c246f1b373f331cf5794ab442b742547be4`。rootのみ必要single targeted dependencyを確認し、Research全体/aggregate/全file loopとsubagent lake buildは実行しない。局所elaborationの有限heartbeats上限でstatement/仮定を変更しない。
 
 placeholder/hidden-BiDi/privacy/import方向/diff checkを確認。正式PR査読と同一head CIはこの実装結果の独立判定として後続する。指定局所案H1条件、Ω/connecting/kernel、C–F、W1–W5は未達であり、全GOAL completion candidateとはしない。
+
+## Cycle 9：局所修復の統合障害と元相対複体の接続写像
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 9
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 97ec5ac9468febbdf95416f82c4dfcfbde0c1d8f
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "Cycle6の元相対複体のcover SES、Cycle7の元K/native二領域descent、Cycle8の有限閉被覆effectivity"
+  proof_dag_predecessors: [RelativeCover.original_cover_short_exact, RelativeCover.originalComplexIso, RelativeCover.nativeComplexIso, CoverEquation.glue_solution, ActualEquation.originalRepairEquiv, ActualEquation.nativeRepairEquiv, ActualRelative.obstructionCocycle]
+  milestone: "Bの指定局所案H1条件と統合障害Ωを、同じ元相対複体のnative接続写像およびH2制限kernelへ構成する"
+  proof_obligations: ["全局所H1/H2とoriginal/native原値class・制限比較", "z=hV|−hU|のcocycleと全overlap gauge存在iff H1零", "両local H1 imageの和による商Ωと局所案変更非依存", "ω零iff元Kの独立実修復存在", "pair native homologyの全product比較とdifference image=両local image和", "元CPcomplexのShortExact.δに対し(-hU,-hV)から∂[z]=[δ]", "同じH2制限kernelへのΩの全AddEquivとclass値保持"]
+  exit_criteria: ["同じ全核・閉固定P・全局所案を量化", "追加global修復/障害零/LES certificateなし", "native適用の実δとd2零を同じactual3cell条件から生成", "差分rU−rVとzの符号を原値で検証", "商の分母は両local H1 imageの和そのもの", "同じ元K実修復と全seam射に接続", "全同型・class値保存・focused・個別公理・scanとPR監査"]
+  selection_reason: "Bの残る一般統合条件を実修復の復元と元CP複体のcohomologyへ閉じる"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/RelativeRepairComposition/CoverCohomology.lean, ResearchLean/AG/RelativeRepairComposition/CoverObstruction.lean, ResearchLean/AG/RelativeRepairComposition/CoverConnecting.lean, ResearchLean/AG/RelativeRepairComposition/CoverPairCohomology.lean, ResearchLean/AG/RelativeRepairComposition/CoverNativeCohomology.lean, ResearchLean/AG/RelativeRepairComposition/CoverCohomologyMaps.lean, ResearchLean/AG/RelativeRepairComposition/CoverObstructionKernel.lean, ResearchLean/AG/RelativeRepairComposition/CoverPlanConnecting.lean, ResearchLean/AG/RelativeRepairComposition/NativeCoverObstruction.lean]
+  risks: ["zはsecond−first、SES差分はfirst−second", "片方だけのimage商にしない", "元K/全核をall-subtypeモデルに置換しない", "native LES存在だけで符号を済ませない", "d2δ零certificateを独立入力にしない", "Bの非計算構成をCのアルゴリズムへ転用しない", "範囲付きordinarydescentに適用しない"]
+  unchecked: ["実装・検証・PR独立査読前"]
+```
+
+局所cohomologyは同じ全相対複体のnative homologyを用い、classを元cochain値から生成する。元Kの複体とnative部分表示の全比較を保持する。Ωの分母と接続写像を同じcover SESへ接続し、符号と実δを実修復から検証する。C–FとW1–W5は未完のまま保持する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 9
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "全局所H1/H2のnative quotient比較、全原値restriction/pair difference/diagonal、全specified overlap gauge、Ωのplan非依存と元K実修復存在iff、native接続符号、Ωと元H2制限kernelの全同型"
+  exit_criteria_status: ["任意の一般塔・全実核・同じ閉P・全局所案", "native original cover SESを既存元cell exactnessから生成", "同じ実3cell条件からActualRelative.obstructionCocycleを生成", "(-hU,-hV)の実liftと微分による正符号", "分母は両local H1 imageの和そのもの", "全overlap arrowsと全vertex labelsの両逆", "元Kの全独立実修復へ存在同値", "全native class/isomorphism/原値比較"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [CoverCohomology, CoverConnecting, CoverObstruction, CoverPairCohomology, CoverNativeCohomology, CoverCohomologyMaps, CoverObstructionKernel, CoverPlanConnecting, NativeCoverObstruction]
+  evidence: [NativeCoverObstruction.specified_plans_glue_iff, NativeCoverObstruction.omega_independent, NativeCoverObstruction.omega_eq_zero_iff_original_repair, CoverObstructionKernel.omegaKernelEquiv, CoverObstructionKernel.restriction_original_class, NativeCoverObstruction.connecting_actual_difference, NativeCoverObstruction.omega_kernel_actual_class]
+  claim_mapping:
+    source_labels: ["GOAL B", "n1017 §2.3(E)", "n1017 §2.4"]
+    conjuncts: ["[z]=0 iff全specified overlap gauge", "ωは全局所案に非依存", "ω=0 iff元Kの全実修復存在", "native ∂[z]=[δ]", "Ω≃ker(H2元K→H2U×H2V)"]
+    undischarged_assumptions: []
+    acceptance_point: "Bの統合条件を同じactual/native descentとoriginal CPcomplexへ接続"
+    port_status: unported (Research-proved)
+audits:
+  premise_delta:
+    discharged: ["全原値cycles/boundaries/native classes", "full local pair product", "両H1 imageの和", "native connecting kernel/range", "actual authored defect class", "全overlap arrowsと全labels"]
+    remaining: ["C–FとW1–W5の指定要求"]
+  certificate_provenance:
+    discharged: ["ShortExactはRelativeCover.original_cover_short_exactから生成", "native δの原値はCoverConnecting.connecting_classから計算", "実defect cocycleは同じActualRelative.obstructionCocycleから生成"]
+    unresolved: []
+  proof_use:
+    used: ["cover exactness→LES→両kernel/range", "hfixed→実δ相対所属", "authored3cell→実δcycle→∂actual class", "全local equations→negative plan differential", "original/native full object equivalence→元K修復存在", "full faithful inverse→全overlap label bijection"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: []
+  next_obligation: "Cの有限体上の全核座標と候補/共有変数を保持する一回の局所消去"
+```
+
+### 構成と元値の対応
+
+全cochain群は元Kの同じ全相対係数群である。`firstHomologyIso` / `secondHomologyIso` はmathlibのnative homologyと全cycle/boundary商の同型であり、middle cochainが恒等なsegment isomorphismを通す。各`native_h1_class` / `native_h2_class`は元値classをそのまま保存し、`restriction_h1` / `restriction_h2`は全classに対して同じ元値制限になる。元Kとnative部分表示の全複体同型から局所および元のH1/H2比較を得る。局所対の`componentEquiv` / `secondComponentEquiv`は両local groups全体との相互逆であり、像だけを比較対象にしない。
+
+`CoverObstruction.differenceCycle`は`z=hV|−hU|`を同じd1のcycleとして構成する。全overlap gaugeの存在はそのH1 class零と同値である。`localImages`は両local H1 restriction rangeの和そのものであり、`Omega`はその商である。全局所案変更の差cycleから`omega_independent`を証明する。ω零から両local classの代表を取り、局所案を補正してseamを作り、既存のfull closed-cover gluingから元Kの解を復元する。逆方向は任意の大域解の同じ制限から得る。
+
+`connecting`は元KのCPcomplexを始点とする`originalCoverShortComplex`のmathlib `ShortExact.δ`である。`native_difference_h1`は同じfirst−second差分を全原値classで検証し、そのrangeが両local image和と一致する。native LESのexactnessから接続kernelとH2制限kernelへの全rangeを得る。`omegaKernelEquiv`はこの同じΩから全kernelへのAddEquivで、両逆を持つ。`restriction_original_class`は元のH2制限が全classに対して同じU/V制限に一致することを証明する。
+
+`negative_plan_lift`は`(-hU,-hV)`がzの実liftであること、`negative_plan_differential`はその微分が同じ元δであることを全cochainで証明する。`connecting_class`はfree cyclic groupの原値評価からnative δの値を導く。`connecting_plan_class`はこれを同じcover SESへ適用し、正符号の`∂[z]=[δ]`を得る。
+
+`NativeCoverObstruction`の局所対象は制限された実towerの独立修復である。`overlapArrowEquiv`は同じ二局所対象間の全overlap gauge arrowsの双方向対応で、両方向の全vertex label値を保存する。`specified_plans_glue_iff`、`omega_eq_zero_iff_original_repair`は元K実修復の存在と同じ対象・射へ接続する。実defect cycleは元のauthored3cell条件を`ActualRelative.obstructionCocycle`へ適用して生成し、`connecting_actual_difference`と`omega_kernel_actual_class`が同じ元実δの正のclass値を与える。
+
+### Material premise と使用
+
+| premise | 分類 | 生成・使用 |
+| --- | --- | --- |
+| 一般original towerと全実核/生成輸送/元comparators | 本文由来 | GOAL A/Bの同じTを既存の全actual/native座標対応へ適用 |
+| 同じ閉P/U/Vと全0–3-cell cover | 本文由来 | 元制限/d交換、cover SES生成、native exactness |
+| P上の元基準実面整合 | 本文由来 | 同じ実δの相対所属を生成 |
+| 同じ元authored3cell conditions | 本文由来 | 同じ実δのcocycle生成、native H2 classと正符号へ |
+| 全local修復R/Qと全overlap arrows | 定理の量化対象 | 全対象・全labelを保つ対応、全案非依存 |
+| 一般cycle c / 一般ShortExact S | 一般APIの方向仮定、実適用で放電済み | 実cはActualRelative.obstructionCocycle、実Sはoriginal_cover_short_exactが生成 |
+| differential零合成・全native class比較・pair product・接続kernel/range | 放電済み | 同じ原値d/既存complex、class_naturality、native LESから構成 |
+| Ωの零性・元K修復の存在・全H2 kernel同型 | 結論 | 両方向gluing、native exactness、全商AddEquiv |
+
+### 全宣言と検証
+
+`CoverCohomology.lean` (30明示宣言):
+
+`CohomologyClass.classHom`, `CohomologyClass.class_quotient`, `CohomologyClass.class_eq_zero_iff`, `CohomologyClass.class_surjective`, `CoverCohomology.Z1`, `CoverCohomology.Z2`, `CoverCohomology.boundary1`, `CoverCohomology.boundary2`, `CoverCohomology.H1`, `CoverCohomology.H2`, `CoverCohomology.h1_eq_zero_iff`, `CoverCohomology.h2_eq_zero_iff`, `CoverCohomology.firstShortComplex`, `CoverCohomology.secondShortComplex`, `CoverCohomology.first_eq_sc`, `CoverCohomology.second_eq_sc`, `CoverCohomology.firstNormalizedIso`, `CoverCohomology.firstShortIso`, `CoverCohomology.firstHomologyIso`, `CoverCohomology.secondNormalizedIso`, `CoverCohomology.secondShortIso`, `CoverCohomology.secondHomologyIso`, `CoverCohomology.restrictZ1`, `CoverCohomology.restrict_boundary1`, `CoverCohomology.restrictH1`, `CoverCohomology.restrict_h1_mk`, `CoverCohomology.restrictZ2`, `CoverCohomology.restrict_boundary2`, `CoverCohomology.restrictH2`, `CoverCohomology.restrict_h2_mk`。
+
+`CoverConnecting.lean` (12明示宣言):
+
+`CohomologyClass.point`, `CohomologyClass.point_one`, `CohomologyClass.point_comp`, `CohomologyClass.point_zero`, `CohomologyClass.point_cycle`, `CohomologyClass.lift_point_value`, `CohomologyClass.class_point_value`, `CohomologyClass.cycleMap`, `CohomologyClass.cycles_map_value`, `CohomologyClass.class_naturality`, `CohomologyClass.complex_class_point`, `CoverConnecting.connecting_class`。
+
+`CoverObstruction.lean` (12明示宣言):
+
+`CoverObstruction.differenceCycle`, `CoverObstruction.difference_cycle_value`, `CoverObstruction.seam_exists_iff`, `CoverObstruction.localImages`, `CoverObstruction.Omega`, `CoverObstruction.omega`, `CoverObstruction.shiftSolution`, `CoverObstruction.planChange`, `CoverObstruction.shift_plan_change`, `CoverObstruction.difference_cycle_change`, `CoverObstruction.omega_independent`, `CoverObstruction.omega_eq_zero_iff_global`。
+
+`CoverPairCohomology.lean` (38明示宣言):
+
+`CoverPairCohomology.Z1`, `CoverPairCohomology.boundary1`, `CoverPairCohomology.H1`, `CoverPairCohomology.cycleLeft`, `CoverPairCohomology.cycleRight`, `CoverPairCohomology.cycleClasses`, `CoverPairCohomology.cycle_classes_boundary`, `CoverPairCohomology.componentH1`, `CoverPairCohomology.component_h1_mk`, `CoverPairCohomology.component_h1_surjective`, `CoverPairCohomology.component_h1_kernel`, `CoverPairCohomology.component_h1_injective`, `CoverPairCohomology.componentEquiv`, `CoverPairCohomology.firstShortComplex`, `CoverPairCohomology.first_eq_sc`, `CoverPairCohomology.firstNormalizedIso`, `CoverPairCohomology.firstShortIso`, `CoverPairCohomology.firstHomologyIso`, `CoverPairCohomology.nativeFirstProductIso`, `CoverPairCohomology.Z2`, `CoverPairCohomology.boundary2`, `CoverPairCohomology.H2`, `CoverPairCohomology.cycleLeft2`, `CoverPairCohomology.cycleRight2`, `CoverPairCohomology.cycleClasses2`, `CoverPairCohomology.cycle_classes_boundary2`, `CoverPairCohomology.componentH2`, `CoverPairCohomology.component_h2_mk`, `CoverPairCohomology.component_h2_surjective`, `CoverPairCohomology.component_h2_kernel`, `CoverPairCohomology.component_h2_injective`, `CoverPairCohomology.secondComponentEquiv`, `CoverPairCohomology.secondShortComplex`, `CoverPairCohomology.second_eq_sc`, `CoverPairCohomology.secondNormalizedIso`, `CoverPairCohomology.secondShortIso`, `CoverPairCohomology.secondHomologyIso`, `CoverPairCohomology.nativeSecondProductIso`。
+
+`CoverNativeCohomology.lean` (22明示宣言):
+
+`CoverCohomology.nativeCycle1`, `CoverCohomology.native_cycle1_value`, `CoverCohomology.native_h1_class`, `CoverCohomology.nativeCycle2`, `CoverCohomology.native_cycle2_value`, `CoverCohomology.native_h2_class`, `CoverCohomology.nativeFirstIso`, `CoverCohomology.nativeSecondIso`, `CoverCohomology.originalFirstIso`, `CoverCohomology.originalSecondIso`, `CoverPairCohomology.nativeCycle1`, `CoverPairCohomology.native_h1_class`, `CoverPairCohomology.nativeCycle2`, `CoverPairCohomology.native_h2_class`, `OriginalCohomology.secondNormalizedIso`, `OriginalCohomology.secondShortIso`, `OriginalCohomology.secondHomologyIso`, `OriginalCohomology.nativeCycle2`, `OriginalCohomology.native_h2_class`, `OriginalCohomology.familyCycle2`, `OriginalCohomology.familySecondIso`, `OriginalCohomology.family_h2_class`。
+
+`CoverCohomologyMaps.lean` (13明示宣言):
+
+`CoverCohomology.restrictionComponent`, `CoverCohomology.restriction_component_comm`, `CoverCohomology.restrictionMap`, `CoverCohomology.native_h1_inverse_class`, `CoverCohomology.native_h2_inverse_class`, `CoverCohomology.restriction_h1_class`, `CoverCohomology.restriction_h2_class`, `CoverCohomology.restriction_h1`, `CoverCohomology.restriction_h2`, `CoverCohomologyMaps.differenceH1`, `CoverCohomologyMaps.native_difference_h1`, `CoverCohomologyMaps.diagonalH2`, `CoverCohomologyMaps.native_diagonal_h2`。
+
+`CoverObstructionKernel.lean` (10明示宣言):
+
+`CoverObstructionKernel.difference_range`, `CoverObstructionKernel.connecting`, `CoverObstructionKernel.restriction`, `CoverObstructionKernel.connecting_difference`, `CoverObstructionKernel.connecting_kernel`, `CoverObstructionKernel.restriction_connecting`, `CoverObstructionKernel.connecting_range`, `CoverObstructionKernel.omegaKernelEquiv`, `CoverObstructionKernel.omega_kernel_value`, `CoverObstructionKernel.restriction_original_class`。
+
+`CoverPlanConnecting.lean` (4明示宣言):
+
+`CoverPlanConnecting.defectFamily`, `CoverPlanConnecting.negative_plan_lift`, `CoverPlanConnecting.negative_plan_differential`, `CoverPlanConnecting.connecting_plan_class`。
+
+`NativeCoverObstruction.lean` (13明示宣言):
+
+`NativeCoverObstruction.localCoordinate`, `NativeCoverObstruction.differenceCycle`, `NativeCoverObstruction.differenceClass`, `NativeCoverObstruction.omega`, `NativeCoverObstruction.overlapArrowEquiv`, `NativeCoverObstruction.overlap_arrow_inverse_value`, `NativeCoverObstruction.overlap_arrow_value`, `NativeCoverObstruction.specified_plans_glue_iff`, `NativeCoverObstruction.omega_independent`, `NativeCoverObstruction.omega_eq_zero_iff_original_repair`, `NativeCoverObstruction.authored_defect_family`, `NativeCoverObstruction.connecting_actual_difference`, `NativeCoverObstruction.omega_kernel_actual_class`。
+
+全154明示宣言と生成APIを含む全155宣言の個別公理監査、対象sourceのfocused検査、placeholder/hidden-BiDi/privacy/import方向/diff checkを用いる。Research全体/aggregate/全file loopおよびsubagent lake buildは実行しない。最終PR headの正式査読とCIは独立の受理証拠とする。C–FとW1–W5は未達であり、全GOAL completion candidateとはしない。
+
+9登録sourceのfocused elaborationと必要な単一module依存確認はexit0。正確な全9source本体のimport行だけを除いた単一auditで全155宣言を個別`#print axioms`し、標準公理のみ。公理log SHA256 `30c96f33c1b7613006effbe3c875c0cce21330e908cb26af6609286625f7d42d`。
