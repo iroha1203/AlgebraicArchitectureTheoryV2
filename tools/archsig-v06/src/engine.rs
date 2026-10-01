@@ -401,7 +401,7 @@ pub fn plan_check(before: &Structure, after: &Structure, overlay: &Overlay, laws
     out
 }
 
-/// `compare`(マニュアル第5章 問い3の「実装後に比べる」)。変更前は元のコミットの ArchMap、変更後は観測し直した ArchMap で、
+/// `compare`(マニュアル第5章 問い3の「実装後に比べる」)。与えた変更前の ArchMap と、観測し直した変更後の ArchMap で、
 /// `plan check` と同じ計算をする。候補の構造 Atom が観測されていないものと、候補にない書き込みを `mismatch` として返す。
 /// `before_sources` と `after_sources` は、Law の `sources` に当たる、変更前と変更後のソースのファイル。
 pub fn implemented(
