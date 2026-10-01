@@ -61,26 +61,6 @@ impl Store {
         Ok(out)
     }
 
-    /// コミット `commit` の時点の ArchMap。git の木から `.archsig/map/` と `.archsig/local/` の JSON Lines を読む。
-    pub fn map_at(&self, commit: &str) -> Result<Vec<Atom>, String> {
-        let git = |args: &[&str]| -> Result<String, String> {
-            let out = std::process::Command::new("git").arg("-C").arg(&self.root).args(args).output().map_err(|e| format!("git: {e}"))?;
-            if !out.status.success() {
-                return Err(format!("git {}: {}", args.join(" "), String::from_utf8_lossy(&out.stderr).trim()));
-            }
-            Ok(String::from_utf8_lossy(&out.stdout).to_string())
-        };
-        let listed = git(&["ls-tree", "-r", "-z", "--name-only", commit, "--", ".archsig/map", ".archsig/local"])?;
-        let mut files: Vec<&str> = listed.split('\0').filter(|f| f.ends_with(".jsonl")).collect();
-        files.sort();
-        let mut out = Vec::new();
-        for f in files {
-            let text = git(&["show", &format!("{commit}:./{f}")])?;
-            out.extend(atom::parse_jsonl(&text, &format!("{commit}:{f}"))?);
-        }
-        Ok(out)
-    }
-
     /// 候補 `name` の Atom の列。`.archsig/plans/<name>/` の直下の `.jsonl` を名前の順に読む。
     pub fn plan(&self, name: &str) -> Result<Vec<Atom>, String> {
         let dir = self.dir().join("plans").join(name);
@@ -155,27 +135,13 @@ impl Store {
         }
     }
 
-    /// Law の `sources` に当たる、コミット `commit` の時点のソースのファイル。
-    pub fn sources_at(&self, laws: &LawSet, commit: &str) -> Result<Vec<String>, String> {
-        let out = std::process::Command::new("git")
-            .arg("-C")
-            .arg(&self.root)
-            .args(["ls-tree", "-r", "-z", "--name-only", commit])
-            .output()
-            .map_err(|e| format!("git: {e}"))?;
-        if !out.status.success() {
-            return Err(format!("git ls-tree {commit}: {}", String::from_utf8_lossy(&out.stderr).trim()));
-        }
-        let listed = String::from_utf8_lossy(&out.stdout).to_string();
-        let matches = source_matcher(laws)?;
-        let mut files: Vec<String> = listed.split('\0').filter(|f| !f.is_empty() && !f.starts_with(".archsig/") && matches(f)).map(str::to_string).collect();
-        files.sort();
-        Ok(files)
-    }
-
     /// Law の `sources` に当たる、今のソースのファイル。
     pub fn sources(&self, laws: &LawSet) -> Result<Vec<String>, String> {
-        let matches = source_matcher(laws)?;
+        let decls = laws
+            .sources
+            .iter()
+            .map(|d| Ok((globs(&d.include)?, globs(&d.except)?)))
+            .collect::<Result<Vec<_>, String>>()?;
         let mut out = Vec::new();
         for e in walkdir::WalkDir::new(&self.root)
             .into_iter()
@@ -186,7 +152,7 @@ impl Store {
                 continue;
             }
             let rel = e.path().strip_prefix(&self.root).unwrap().to_string_lossy().replace('\\', "/");
-            if matches(&rel) {
+            if decls.iter().any(|(include, exclude)| include.is_match(&rel) && !exclude.is_match(&rel)) {
                 out.push(rel);
             }
         }
@@ -417,16 +383,6 @@ fn local_name(subject: &str) -> Result<(String, String), String> {
 }
 
 /// パスのパターン。`*` は `/` をまたがず、`**` はまたぐ。
-/// パスが Law の `sources` に当たるか。
-fn source_matcher(laws: &LawSet) -> Result<impl Fn(&str) -> bool, String> {
-    let decls = laws
-        .sources
-        .iter()
-        .map(|d| Ok((globs(&d.include)?, globs(&d.except)?)))
-        .collect::<Result<Vec<_>, String>>()?;
-    Ok(move |p: &str| decls.iter().any(|(include, exclude)| include.is_match(p) && !exclude.is_match(p)))
-}
-
 pub fn globs(patterns: &[String]) -> Result<GlobSet, String> {
     let mut b = GlobSetBuilder::new();
     for p in patterns {

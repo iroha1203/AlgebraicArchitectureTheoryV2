@@ -1,7 +1,7 @@
 //! AC7: `archsig compare`(マニュアル第2章 7.、第5章 問い3の「実装後に比べる」)。
 
 use std::collections::BTreeMap;
-use std::process::Command;
+use std::path::Path;
 
 use serde_json::Value;
 
@@ -9,25 +9,38 @@ mod common;
 
 use common::*;
 
-fn git(repo: &Repo, args: &[&str]) -> String {
-    let out = Command::new("git").current_dir(&repo.dir).args(args).output().unwrap();
-    assert!(out.status.success(), "git {args:?}: {}", String::from_utf8_lossy(&out.stderr));
-    String::from_utf8_lossy(&out.stdout).trim().to_string()
+/// 第2章の変更前のリポジトリと、それを写した変更後のリポジトリ。変更後のほうで実装する。
+/// Law の `sources` に当たるソースのファイルも置く。読んだ範囲は、これと突き合わせる。
+fn prepared(name: &str) -> (Repo, Repo) {
+    let before = shop(&format!("{name}-before"));
+    before.map("shop/shipping/address.py", ADDRESS);
+    for f in ["shop/shipping/service.py", "shop/shipping/address.py", "shop/shipping/model.py", "shop/order/model.py"] {
+        before.write(f, "# source\n");
+    }
+    let after = Repo::new(name);
+    copy(&before.dir, &after.dir);
+    (before, after)
 }
 
-/// 第2章の変更前の ArchMap をコミットし、そのコミットを返す。
-fn committed(name: &str) -> (Repo, String) {
-    let repo = shop(name);
-    repo.map("shop/shipping/address.py", ADDRESS);
-    // Law の `sources` に当たるソースのファイルも置く。読んだ範囲は、これと突き合わせる。
-    for f in ["shop/shipping/service.py", "shop/shipping/address.py", "shop/shipping/model.py", "shop/order/model.py"] {
-        repo.write(f, "# source\n");
+fn copy(from: &Path, to: &Path) {
+    for e in std::fs::read_dir(from).unwrap().map(|e| e.unwrap().path()) {
+        let target = to.join(e.file_name().unwrap());
+        if e.is_dir() {
+            std::fs::create_dir_all(&target).unwrap();
+            copy(&e, &target);
+        } else {
+            std::fs::copy(&e, &target).unwrap();
+        }
     }
-    git(&repo, &["init", "-q"]);
-    git(&repo, &["-c", "user.name=t", "-c", "user.email=t@example.com", "add", "-A"]);
-    git(&repo, &["-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-q", "-m", "base"]);
-    let sha = git(&repo, &["rev-parse", "HEAD"]);
-    (repo, sha)
+}
+
+fn compare(repo: &Repo, before: &Repo, plan: Option<&str>) -> Value {
+    let before = before.dir.to_string_lossy().to_string();
+    let mut args = vec!["compare", "--before", before.as_str()];
+    if let Some(p) = plan {
+        args.extend(["--plan", p]);
+    }
+    repo.run(&args)
 }
 
 /// 候補の構造 Atom を実装したときの観測。候補の Atom に、ソースの場所を付ける。
@@ -81,17 +94,17 @@ fn implement(repo: &Repo, plan: &str, edit: impl Fn(&str) -> String) {
     }
 }
 
-fn planned(repo: &Repo, sha: &str, plan: &str) {
-    repo.write(".archsig/plans/split-order/plan.jsonl", &plan.replace("\"base\": \"a1b2c3d\"", &format!("\"base\": \"{sha}\"")));
+fn planned(repo: &Repo, plan: &str) {
+    repo.write(".archsig/plans/split-order/plan.jsonl", plan);
 }
 
 #[test]
 fn the_implementation_of_chapter_2_holds_and_matches_the_plan() {
-    let (repo, sha) = committed("ch2");
+    let (before, repo) = prepared("ch2");
     let plan = fixed_plan();
-    planned(&repo, &sha, &plan);
+    planned(&repo, &plan);
     implement(&repo, &plan, |l| l.to_string());
-    let s = repo.run(&["compare", "--plan", "split-order"]);
+    let s = compare(&repo, &before, Some("split-order"));
     assert_eq!(s["command"], "compare");
     let results = s["results"].as_array().unwrap();
     assert!(results.iter().any(|r| r["subject"] == "shop.shipping.service.update_shipping"), "{s}");
@@ -108,9 +121,9 @@ fn the_implementation_of_chapter_2_holds_and_matches_the_plan() {
 
 #[test]
 fn an_empty_string_in_place_of_none_is_a_counterexample_and_a_mismatch() {
-    let (repo, sha) = committed("empty-string");
+    let (before, repo) = prepared("empty-string");
     let plan = fixed_plan();
-    planned(&repo, &sha, &plan);
+    planned(&repo, &plan);
     // 決済側が OrderPayment.ref を None ではなく空文字にした。
     implement(&repo, &plan, |l| {
         if l.contains("\"kind\":\"writes\"") && l.contains("\"subject\":\"shop.payment.service.reset_authorization\"") {
@@ -119,7 +132,7 @@ fn an_empty_string_in_place_of_none_is_a_counterexample_and_a_mismatch() {
             l.to_string()
         }
     });
-    let s = repo.run(&["compare", "--plan", "split-order"]);
+    let s = compare(&repo, &before, Some("split-order"));
     let results = s["results"].as_array().unwrap();
     let update = result(&s, "shop.shipping.service.update_shipping");
     assert_eq!(update["kind"], "counterexample", "{s}");
@@ -133,20 +146,20 @@ fn an_empty_string_in_place_of_none_is_a_counterexample_and_a_mismatch() {
 
 #[test]
 fn an_atom_planned_twice_must_be_observed_twice() {
-    let (repo, sha) = committed("twice");
+    let (before, repo) = prepared("twice");
     let plan = fixed_plan();
     let reset_write = plan.lines().find(|l| l.contains("\"writes\"") && l.contains("reset_authorization")).unwrap().to_string();
-    planned(&repo, &sha, &format!("{plan}{reset_write}\n"));
+    planned(&repo, &format!("{plan}{reset_write}\n"));
     implement(&repo, &plan, |l| l.to_string());
-    let s = repo.run(&["compare", "--plan", "split-order"]);
+    let s = compare(&repo, &before, Some("split-order"));
     let mismatches: Vec<&Value> = s["results"].as_array().unwrap().iter().filter(|r| r["kind"] == "mismatch").collect();
     assert_eq!(mismatches.len(), 1, "{s}");
     assert_eq!(mismatches[0]["subject"], "shop.payment.service.reset_authorization");
 }
 
 #[test]
-fn compare_with_a_base_computes_without_a_plan() {
-    let (repo, sha) = committed("base");
+fn compare_without_a_plan_computes_the_laws() {
+    let (before, repo) = prepared("base");
     // 名前を変えない変更:fix_address が決済情報を空文字にするようになった。
     repo.map(
         "shop/shipping/service.py",
@@ -156,7 +169,7 @@ fn compare_with_a_base_computes_without_a_plan() {
 "#
         ),
     );
-    let s = repo.run(&["compare", "--base", &sha]);
+    let s = compare(&repo, &before, None);
     assert_eq!(s["command"], "compare");
     assert_eq!(result(&s, "shop.shipping.service.fix_address")["kind"], "counterexample", "{s}");
     assert_eq!(result(&s, "shop.shipping.service.update_shipping")["outcome"], "holds", "{s}");
@@ -164,14 +177,14 @@ fn compare_with_a_base_computes_without_a_plan() {
 
 #[test]
 fn a_target_without_the_meaning_after_reobservation_is_missing() {
-    let (repo, sha) = committed("meaning");
+    let (before, repo) = prepared("meaning");
     let plan = fixed_plan();
-    planned(&repo, &sha, &plan);
+    planned(&repo, &plan);
     implement(&repo, &plan, |l| l.to_string());
     // 観測し直すと、OrderPayment.ref は決済情報として使われていなかった。
     let payment = std::fs::read_to_string(repo.dir.join(".archsig/map/shop/payment/model.py.jsonl")).unwrap();
     repo.map("shop/payment/model.py", &payment.replace(PAYMENT_MEANING, ""));
-    let s = repo.run(&["compare", "--plan", "split-order"]);
+    let s = compare(&repo, &before, Some("split-order"));
     let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "shop.payment.model.OrderPayment.ref").unwrap_or_else(|| panic!("{s}"));
     assert_eq!((r["kind"].as_str(), r["law"].as_str()), (Some("missing"), Some("payment-follows-order")), "{s}");
 }
@@ -180,45 +193,52 @@ fn a_target_without_the_meaning_after_reobservation_is_missing() {
 #[test]
 fn atoms_are_compared_by_the_identity_of_chapter_3() {
     // 同一性は kind、subject、object、value、when、meaning、scope で決まる。型の表記の違いは食い違いではない。
-    let (repo, sha) = committed("identity");
+    let (before, repo) = prepared("identity");
     let plan = fixed_plan();
-    planned(&repo, &sha, &plan);
+    planned(&repo, &plan);
     implement(&repo, &plan, |l| l.replace("\"type\":\"str\"", "\"type\":\"builtins.str\"").replace("\"order_id\":\"str\"", "\"order_id\":\"builtins.str\""));
-    let s = repo.run(&["compare", "--plan", "split-order"]);
+    let s = compare(&repo, &before, Some("split-order"));
     assert!(s["results"].as_array().unwrap().iter().all(|r| r["kind"] != "mismatch"), "{s}");
 }
 
 #[test]
 fn a_planned_atom_in_a_source_not_read_again_is_silent() {
-    let (repo, sha) = committed("not-read-again");
+    let (before, repo) = prepared("not-read-again");
     let plan = fixed_plan();
-    planned(&repo, &sha, &plan);
+    planned(&repo, &plan);
     implement(&repo, &plan, |l| l.to_string());
     // 決済のサービスを観測し直していない。
     std::fs::remove_file(repo.dir.join(".archsig/map/shop/payment/service.py.jsonl")).unwrap();
-    let s = repo.run(&["compare", "--plan", "split-order"]);
+    let s = compare(&repo, &before, Some("split-order"));
     let reset: Vec<&Value> = s["results"].as_array().unwrap().iter().filter(|r| r["subject"] == "shop.payment.service.reset_authorization").collect();
     assert!(!reset.is_empty() && reset.iter().all(|r| r["outcome"] == "silent" && r["reason"] == "unread"), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "shop/payment/service.py" && n["scope"] == "structure"), "{s}");
 }
 
 #[test]
-fn an_archmap_under_a_non_ascii_path_is_read_from_the_commit() {
-    let (repo, sha) = committed("non-ascii");
-    let clear = |value: &str| {
-        format!(
-            "{{\"kind\": \"observed\", \"subject\": \"shop/注文/model.py\", \"scope\": \"structure\", \"at\": \"shop/注文/model.py@blob:7a7a7a7\"}}\n{{\"kind\": \"defines\", \"subject\": \"shop.注文.clear\", \"value\": \"operation\", \"params\": {{}}, \"at\": \"shop/注文/model.py:1@blob:7a7a7a7\"}}\n{{\"kind\": \"writes\", \"subject\": \"shop.注文.clear\", \"object\": \"shop.order.model.Order.payment_ref\", \"value\": \"{value}\", \"at\": \"shop/注文/model.py:2@blob:7a7a7a7\"}}\n"
-        )
-    };
-    repo.map("shop/注文/model.py", &clear("None"));
-    repo.write("shop/注文/model.py", "# source\n");
-    git(&repo, &["-c", "user.name=t", "-c", "user.email=t@example.com", "add", "-A"]);
-    git(&repo, &["-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-q", "-m", "clear"]);
-    let base = git(&repo, &["rev-parse", "HEAD"]);
-    assert_ne!(base, sha);
-    // clear が決済情報を None ではなく空文字にするようになった。
-    repo.map("shop/注文/model.py", &clear("\\\"\\\""));
-    let s = repo.run(&["compare", "--base", &base]);
-    assert_eq!(result(&s, "shop.注文.clear")["kind"], "counterexample", "{s}");
+fn a_source_not_read_after_the_change_is_silent() {
+    let (before, repo) = prepared("not-read-after");
+    let plan = fixed_plan();
+    planned(&repo, &plan);
+    implement(&repo, &plan, |l| l.to_string());
+    // 実装で足したソースを、観測していない。
+    repo.write("shop/shipping/legacy.py", "# source\n");
+    let s = compare(&repo, &before, Some("split-order"));
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "payment-info" && r["outcome"] == "silent").unwrap_or_else(|| panic!("{s}"));
+    assert_eq!(r["reason"], "unread", "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "shop/shipping/legacy.py"), "{s}");
 }
 
+
+#[test]
+fn a_planned_resolves_not_observed_is_silent() {
+    // `resolves` の `subject` は参照先の名前で、参照したソースは Atom から決まらない。
+    let (before, repo) = prepared("resolves");
+    let resolves = r#"{"kind": "resolves", "subject": "shop.payment.service.reset_authorization", "object": "shop/payment/service.py", "at": "plan:split-order"}"#;
+    let plan = format!("{}{resolves}\n", fixed_plan());
+    planned(&repo, &plan);
+    implement(&repo, &plan, |l| if l.contains("\"kind\":\"resolves\"") { String::new() } else { l.to_string() });
+    let s = compare(&repo, &before, Some("split-order"));
+    let rows: Vec<&Value> = s["results"].as_array().unwrap().iter().filter(|r| r["subject"] == "shop.payment.service.reset_authorization").collect();
+    assert!(!rows.is_empty() && rows.iter().all(|r| r["outcome"] == "silent"), "{s}");
+}

@@ -41,12 +41,12 @@ enum Cmd {
     },
     /// 実装した後のコードを観測し直した ArchMap で、変更の後も保たれ、候補どおりかを確かめる。
     Compare {
-        /// 比べる候補。変更前は、候補の元のコミットの ArchMap とする。
-        #[arg(long, conflicts_with = "base", required_unless_present = "base")]
-        plan: Option<String>,
-        /// 候補なしで、このコミットの ArchMap を変更前として比べる。
+        /// 変更前のリポジトリの根。その `.archsig/` の ArchMap とソースを変更前とする。
         #[arg(long)]
-        base: Option<String>,
+        before: PathBuf,
+        /// 比べる候補。あれば、候補の対応で比べ、候補の構造 Atom と照合する。
+        #[arg(long)]
+        plan: Option<String>,
     },
     /// 一つの結果の詳細を返す。
     Show {
@@ -129,7 +129,7 @@ fn run(cli: Cli) -> Result<Value, String> {
             let not_computed = engine::not_computed(&laws);
             store.save_run(|run| result::summarize(run, "plan split", &findings, &not_computed))
         }
-        Cmd::Compare { plan, base } => {
+        Cmd::Compare { before, plan } => {
             let laws = store.laws()?;
             if !laws.errors.is_empty() {
                 return Ok(json!({"law_errors": laws.errors}));
@@ -138,23 +138,10 @@ fn run(cli: Cli) -> Result<Value, String> {
                 Some(p) => store.plan(p)?,
                 None => Vec::new(),
             };
-            let base = match (&plan, base) {
-                (_, Some(b)) => b,
-                (Some(p), None) => {
-                    let base = atoms.iter().find(|a| a.kind == "plan").and_then(|a| a.base.clone());
-                    match base {
-                        Some(b) if !b.starts_with("plan:") => b,
-                        _ => return Err(format!("候補 {p} の元がコミットでない")),
-                    }
-                }
-                (None, None) => unreachable!(),
-            };
-            let (before, after) = (store.map_at(&base)?, store.map()?);
-            let o = archsig::structure::observed_overlay(&before, &after, &atoms);
-            let (b, a) = (Structure::new(before), Structure::new(after));
-            // 読んでいない範囲は、変更前の側で数える。変更前のソースは、元のコミットの時点のものである。
-            let sources = store.sources_at(&laws, &base)?;
-            let findings = engine::implemented(&b, &a, &o, &laws, &sources);
+            let old = Store::open(&before)?;
+            let o = archsig::structure::observed_overlay(&old.map()?, &store.map()?, &atoms);
+            let (b, a) = (Structure::new(old.map()?), Structure::new(o.after.clone()));
+            let findings = engine::implemented(&b, &a, &o, &laws, &old.sources(&laws)?, &store.sources(&laws)?);
             let not_computed = engine::not_computed(&laws);
             store.save_run(|run| result::summarize(run, "compare", &findings, &not_computed))
         }

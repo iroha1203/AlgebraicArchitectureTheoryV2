@@ -473,30 +473,25 @@ fn removed(plan: &[Atom]) -> impl Fn(&str) -> bool + '_ {
 }
 
 /// 候補の Atom `p` と観測した Atom `o` が同じか。Atom の同一性(マニュアル第3章)で比べる。
-/// `value` と `when` は、どちらも式として読めれば読んだ形で比べる。
 fn same_atom(p: &Atom, o: &Atom) -> bool {
-    let expr = |a: &Option<String>, b: &Option<String>| match (a, b) {
-        (Some(x), Some(y)) => match (expr::parse(x), expr::parse(y)) {
-            (Ok(x), Ok(y)) => x == y,
-            _ => x.trim() == y.trim(),
-        },
-        (None, None) => true,
-        _ => false,
-    };
     p.kind == o.kind
         && p.subject == o.subject
         && p.object == o.object
-        && expr(&p.value, &o.value)
-        && expr(&p.when, &o.when)
+        && p.value == o.value
+        && p.when == o.when
         && p.meaning == o.meaning
         && p.scope == o.scope
 }
 
 /// 候補の Atom が観測されるはずのソース。`defines` は `file`、それ以外は、`subject` の持ち主の要素を定義したソース
 /// (候補の `defines` の `file` か、観測した `defines` の `at`)。決まらなければ None。
+/// `resolves` の `subject` は参照先の名前で、参照したソースは Atom から決まらない。
 fn planned_source(plan: &[Atom], after: &Structure, a: &Atom) -> Option<String> {
     if let Some(f) = &a.file {
         return Some(f.clone());
+    }
+    if a.kind == "resolves" {
+        return None;
     }
     let owner = match (a.subject.split_once("->"), a.subject.split_once(".$")) {
         (Some((caller, _)), _) => caller,

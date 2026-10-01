@@ -403,9 +403,25 @@ pub fn plan_check(before: &Structure, after: &Structure, overlay: &Overlay, laws
 
 /// `compare`(マニュアル第5章 問い3の「実装後に比べる」)。変更前は元のコミットの ArchMap、変更後は観測し直した ArchMap で、
 /// `plan check` と同じ計算をする。候補の構造 Atom が観測されていないものと、候補にない書き込みを `mismatch` として返す。
-/// `sources` は、Law の `sources` に当たる、変更前のコミットのソースのファイル。
-pub fn implemented(before: &Structure, after: &Structure, overlay: &Overlay, laws: &LawSet, sources: &[String]) -> Vec<Finding> {
-    let mut out = plan_check(before, after, overlay, laws, sources);
+/// `before_sources` と `after_sources` は、Law の `sources` に当たる、変更前と変更後のソースのファイル。
+pub fn implemented(
+    before: &Structure,
+    after: &Structure,
+    overlay: &Overlay,
+    laws: &LawSet,
+    before_sources: &[String],
+    after_sources: &[String],
+) -> Vec<Finding> {
+    let mut out = plan_check(before, after, overlay, laws, before_sources);
+    // 変更後は観測し直したものなので、変更後の側にも読んでいない範囲がある。
+    // 構造を読んでいないソースにある操作は、対応する操作の組に挙がらない(設計 §5.1)。
+    let unread = unread_sources(after, after_sources, "structure");
+    for law in laws.laws.iter().filter(|l| matches!(l.rule, Rule::ChangesCommute) && l.about.is_some() && !unread.is_empty()) {
+        let mut f = Finding::silent("change", Some(&law.name), law.about.as_deref().unwrap_or_default(), Silence::new(Reason::Unread));
+        f.next = unread.clone();
+        f.theory = Some(THEORY_CHANGES.to_string());
+        out.push(f);
+    }
     // 変更後の要素が同じ意味を持つかは、観測し直した意味 Atom で確かめる(マニュアル第5章 問い3)。
     let mapping = Mapping::new(overlay);
     for law in laws.laws.iter().filter(|l| matches!(l.rule, Rule::ChangesCommute | Rule::ChangesKeep)) {
