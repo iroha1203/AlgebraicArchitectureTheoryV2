@@ -199,10 +199,11 @@ fn a_rewritten_operation_follows_the_order_of_the_plan() {
     let steps: Vec<String> = s.unfold("m.f").unwrap().into_iter().map(|st| format!("{:?}", st.kind)).collect();
     assert_eq!(steps.len(), 5);
     assert!(steps[0].contains("m.f->m.g\""), "{steps:?}");
-    assert!(steps[1].contains("Const(\"1\")"), "{steps:?}");
-    assert!(steps[2].contains("Const(\"5\")"), "{steps:?}");
     assert!(steps[3].contains("m.f->m.g#2"), "{steps:?}");
-    assert!(steps[4].contains("Const(\"2\")"), "{steps:?}");
+    // 書き込みの値は、呼び出しで渡した値で決まる。
+    let (branches, _) = archsig::engine::execute(&s, "m.f", &|_| false).unwrap();
+    let values: Vec<String> = branches[0].writes.iter().map(|w| archsig::engine::show(&w.value)).collect();
+    assert_eq!(values, vec!["1", "5", "2"]);
 }
 
 #[test]

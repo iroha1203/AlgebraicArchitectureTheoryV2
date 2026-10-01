@@ -26,11 +26,13 @@ pub struct Silence {
     pub read: Option<String>,
     /// 次に読む要素。どのソースを読むかは SKILL が決める。
     pub element: Option<String>,
+    /// 読む範囲(`structure` か `meaning:<名前>`)。`read` があるときに付ける。
+    pub scope: Option<String>,
 }
 
 impl Silence {
-    fn new(reason: Reason) -> Silence {
-        Silence { reason, read: None, element: None }
+    pub fn new(reason: Reason) -> Silence {
+        Silence { reason, read: None, element: None, scope: None }
     }
 }
 
@@ -71,17 +73,31 @@ pub enum StepKind {
     /// 場所に値を置く。
     Write { place: Vec<String>, value: Value },
     /// 呼び出し。観測した操作なら、この後に呼び出し先の手順が続く。外部なら `external` にパッケージを持つ。
-    Call { call: String, callee: String, external: Option<String> },
+    /// `binds` は、呼び出しの時点で読む `passes` の値。呼び出し先では、その記号(`Value::Arg`)で引数を指す。
+    Call { call: String, callee: String, external: Option<String>, binds: Vec<(String, Value)> },
     Send { item: String, value: Value },
     Return { value: Value },
 }
 
-/// 展開した手順。`when` は、この手順と、たどった呼び出しの条件すべての「かつ」。
+/// 条件。値と、元の `when` の字句と場所。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Cond {
+    pub value: Value,
+    pub text: String,
+    pub at: Option<String>,
+}
+
+/// 展開した手順。`when` は、この手順の条件。
+/// `within` は、この手順を展開した呼び出しの手順(列の添字)。その呼び出しが行われた分岐でだけ、この手順も行う。
+/// 呼び出しの条件は、呼び出しの時点で一度だけ読む。
+/// `atom` は、手順の元の Atom(`Structure::atoms` の添字)。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Step {
     pub kind: StepKind,
-    pub when: Vec<Value>,
+    pub when: Vec<Cond>,
     pub at: Option<String>,
+    pub atom: usize,
+    pub within: Option<usize>,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -192,7 +208,12 @@ impl Structure {
     /// 要素の種類。曖昧なら `unresolved`、定義を読んでいなければ設計 §3.3 のとおりに沈黙する。
     pub fn kind(&self, name: &str) -> Result<&str, Silence> {
         if name.starts_with('?') {
-            return Err(Silence::new(Reason::Unresolved));
+            // その名前が現れる Atom の場所を返す(マニュアル第5章 問い8)。
+            let s = question();
+            return Err(match self.atoms.iter().find(|a| a.subject == name || a.object.as_deref() == Some(name)) {
+                Some(a) => locate(s, a),
+                None => s,
+            });
         }
         match self.elements.get(name) {
             Some(e) if e.kinds.len() == 1 => Ok(e.kinds.iter().next().unwrap()),
@@ -206,10 +227,10 @@ impl Structure {
     fn undefined(&self, name: &str) -> Silence {
         match self.resolves.get(name) {
             Some(Resolution::Source(path)) if !self.observed.contains(&(path.clone(), "structure".to_string())) => {
-                Silence { reason: Reason::Unread, read: Some(path.clone()), element: None }
+                Silence { reason: Reason::Unread, read: Some(path.clone()), element: None, scope: Some("structure".to_string()) }
             }
             Some(_) => Silence::new(Reason::Unresolved),
-            None => Silence { reason: Reason::Unread, read: None, element: Some(name.to_string()) },
+            None => Silence { reason: Reason::Unread, read: None, element: Some(name.to_string()), scope: None },
         }
     }
 
@@ -217,7 +238,7 @@ impl Structure {
     pub fn unfold(&self, op: &str) -> Result<Vec<Step>, Silence> {
         self.expect(op, "operation")?;
         let mut out = Vec::new();
-        self.unfold_into(op, &BTreeMap::new(), &[], 0, &mut out)?;
+        self.unfold_into(op, &BTreeMap::new(), None, 0, &mut out)?;
         Ok(out)
     }
 
@@ -233,17 +254,22 @@ impl Structure {
         }
     }
 
-    fn unfold_into(&self, op: &str, env: &BTreeMap<String, Value>, outer: &[Value], depth: usize, out: &mut Vec<Step>) -> Result<(), Silence> {
+    fn unfold_into(&self, op: &str, env: &BTreeMap<String, Value>, within: Option<usize>, depth: usize, out: &mut Vec<Step>) -> Result<(), Silence> {
         if depth > DEPTH_LIMIT || out.len() > STEP_LIMIT {
             return Err(Silence::new(Reason::Limit));
         }
         for &i in self.bodies.get(op).map(|v| v.as_slice()).unwrap_or(&[]) {
             let a = &self.atoms[i];
-            let mut when = outer.to_vec();
+            let mut when = Vec::new();
             if let Some(w) = &a.when {
-                when.push(self.resolve(op, env, &parse_expr(w))?);
+                let e = parse_expr(w);
+                let value = self.resolve(op, env, &e).map_err(|s| locate(s, a))?;
+                when.push(Cond { value, text: w.clone(), at: a.at.clone() });
             }
-            let value = |s: &Self| -> Result<Value, Silence> { s.resolve(op, env, &a.value.as_deref().map(parse_expr).unwrap_or(Expr::Unknown)) };
+            let value = |s: &Self| -> Result<Value, Silence> {
+                let e = a.value.as_deref().map(parse_expr).unwrap_or(Expr::Unknown);
+                s.resolve(op, env, &e).map_err(|x| locate(x, a))
+            };
             let object = a.object.clone().unwrap_or_default();
             let kind = match a.kind.as_str() {
                 "writes" => {
@@ -263,18 +289,25 @@ impl Structure {
                             _ => return Err(s),
                         },
                     };
-                    out.push(Step { kind: StepKind::Call { call: call.clone(), callee: object.clone(), external: external.clone() }, when: when.clone(), at: a.at.clone() });
+                    // 渡す値は呼び出しの時点で読む。呼び出し先では、呼び出しごとの記号で引数を指す(設計 §3.5)。
+                    let index = out.len();
+                    let mut binds = Vec::new();
+                    let mut inner = BTreeMap::new();
                     if external.is_none() {
-                        let mut inner = BTreeMap::new();
                         for (param, e) in self.passes.get(&call).into_iter().flatten() {
-                            inner.insert(param.clone(), self.resolve(op, env, e)?);
+                            let symbol = format!("{param}@{index}");
+                            binds.push((symbol.clone(), self.resolve(op, env, e).map_err(|x| locate(x, a))?));
+                            inner.insert(param.clone(), Value::Arg(symbol));
                         }
-                        self.unfold_into(&object, &inner, &when, depth + 1, out)?;
+                    }
+                    out.push(Step { kind: StepKind::Call { call, callee: object.clone(), external: external.clone(), binds }, when, at: a.at.clone(), atom: i, within });
+                    if external.is_none() {
+                        self.unfold_into(&object, &inner, Some(index), depth + 1, out)?;
                     }
                     continue;
                 }
             };
-            out.push(Step { kind, when, at: a.at.clone() });
+            out.push(Step { kind, when, at: a.at.clone(), atom: i, within });
         }
         Ok(())
     }
@@ -284,10 +317,10 @@ impl Structure {
     pub fn resolve(&self, op: &str, env: &BTreeMap<String, Value>, e: &Expr) -> Result<Value, Silence> {
         let r = |x: &Expr| self.resolve(op, env, x);
         Ok(match e {
-            Expr::Unknown => return Err(Silence::new(Reason::Unresolved)),
+            Expr::Unknown => return Err(question()),
             Expr::Const(c) | Expr::Name(c) => {
                 if c.starts_with('?') {
-                    return Err(Silence::new(Reason::Unresolved));
+                    return Err(question());
                 }
                 Value::Const(c.clone())
             }
@@ -307,7 +340,10 @@ impl Structure {
                 Value::Read(self.fields(ty, fields)?)
             }
             Expr::Call(name, args) => {
-                if name.starts_with('?') || self.ambiguous(name) {
+                if name.starts_with('?') {
+                    return Err(question());
+                }
+                if self.ambiguous(name) {
                     return Err(Silence::new(Reason::Unresolved));
                 }
                 Value::Call(name.clone(), args.iter().map(r).collect::<Result<_, _>>()?)
@@ -346,9 +382,17 @@ pub struct Overlay {
     pub corresponds: BTreeSet<(String, String)>,
     /// 行き先を決めていない対応(`a.X | b.Y`)。変更前の要素と、行き先の候補。書いた行ごとに一つ。
     pub undecided: Vec<(String, Vec<String>)>,
+    /// 候補が `removes` した要素。
+    pub removes: BTreeSet<String>,
     /// 書き直していない Atom が `removes` した要素を名指す操作と、名指す要素(`missing` の元)。
     /// Atom から決まる事実で、`missing` と結論するか沈黙するかはエンジンが決める(設計 §3.6)。
     pub missing: BTreeMap<String, BTreeSet<String>>,
+    /// 書き直していない Atom のうち、名指す要素を最後までたどれなかった所。操作ごとに、たどれなかった要素と Atom。
+    /// 要素は、`?` の名前、型の分からないフィールドの持ち主の型など。式を読めなければ `None`。
+    /// そこで `removes` した要素を名指すかは、Atom からは決まらない(設計 §5.1)。
+    pub untraced: BTreeMap<String, Vec<(Option<String>, Atom)>>,
+    /// 対応の元か行き先に書いた `?` の名前と、その対応の Atom。
+    pub questions: BTreeMap<String, Atom>,
 }
 
 /// ArchMap の Atom の列 `before` に、候補の Atom の列 `plan` を重ねる(設計 §3.6)。
@@ -366,10 +410,13 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
 
     let old = Structure::new(before.to_vec());
     let new = Structure::new(after.clone());
-    let mut out = Overlay::default();
+    let mut out = Overlay { removes: removed.iter().map(|r| r.to_string()).collect(), ..Overlay::default() };
     // 1. 書いた対応。行き先に `|` があれば、決めていない対応として別に持つ。
     let mut linked = Vec::new();
     for a in plan.iter().filter(|a| a.kind == "corresponds") {
+        if a.subject.starts_with('?') {
+            out.questions.entry(a.subject.clone()).or_insert_with(|| a.clone());
+        }
         let object = a.object.as_deref().unwrap_or("");
         let to: Vec<String> = object.split('|').map(|t| t.trim().to_string()).filter(|t| !t.is_empty()).collect();
         if object.contains('|') {
@@ -377,6 +424,9 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
                 out.undecided.push((a.subject.clone(), to));
             }
         } else if let Some(t) = to.first() {
+            if t.starts_with('?') {
+                out.questions.entry(t.clone()).or_insert_with(|| a.clone());
+            }
             out.corresponds.insert((a.subject.clone(), t.clone()));
             linked.push((a.subject.clone(), t.clone()));
         }
@@ -390,14 +440,16 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
         }
     }
     // 3. 変更前と変更後の両方にある同じ名前の要素は、自分自身に対応する。`removes` した要素は除く。
-    //    変更前の要素は、定義した要素と、定義を読んでいなくても Atom の `subject` に現れる名前である。
-    let before_names: BTreeSet<&str> = old
-        .elements
-        .keys()
-        .map(|n| n.as_str())
-        .chain(before.iter().filter(|a| a.kind != "observed" && !a.subject.starts_with("local:")).map(|a| a.subject.as_str()))
-        .collect();
-    for name in before_names.into_iter().filter(|n| new.elements.contains_key(*n) && !gone(n)) {
+    //    どちらの側でも、要素は、定義した要素と、定義を読んでいなくても Atom の `subject` に現れる名前である。
+    let names = |s: &Structure, atoms: &[Atom]| -> BTreeSet<String> {
+        s.elements
+            .keys()
+            .cloned()
+            .chain(atoms.iter().filter(|a| a.kind != "observed" && !a.subject.starts_with("local:")).map(|a| a.subject.clone()))
+            .collect()
+    };
+    let after_names = names(&new, &after);
+    for name in names(&old, before).into_iter().filter(|n| after_names.contains(n) && !gone(n)) {
         out.corresponds.insert((name.to_string(), name.to_string()));
     }
     // 4. 対応の行き先へ、元の要素の意味 Atom を移す。
@@ -427,11 +479,19 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
         // `passes` の `subject` は呼び出しの要素 `<操作>->…` なので、呼び出し元の操作に数える。
         let op = a.subject.split("->").next().unwrap_or("").to_string();
         let names = named.entry(op.clone()).or_default();
-        names.extend(a.object.clone());
+        let mut gaps: Vec<Option<String>> = Vec::new();
+        match a.object.as_deref() {
+            Some(o) if o.starts_with('?') => gaps.push(Some(o.to_string())),
+            _ => names.extend(a.object.clone()),
+        }
         for text in [&a.value, &a.when].into_iter().flatten() {
-            if let Ok(e) = expr::parse(text) {
-                old.named(&op, &e, names);
+            match expr::parse(text) {
+                Ok(e) => old.named(&op, &e, names, &mut gaps),
+                Err(_) => gaps.push(None),
             }
+        }
+        if !gaps.is_empty() {
+            out.untraced.entry(op).or_default().extend(gaps.into_iter().map(|g| (g, (*a).clone())));
         }
     }
     for (op, names) in named {
@@ -445,29 +505,51 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
 
 impl Structure {
     /// 式の中で名指す要素。`$p.f.g` がたどれる所までのフィールドと、呼び出す操作。
-    fn named(&self, op: &str, e: &Expr, out: &mut BTreeSet<String>) {
+    /// たどれなかった所は `gaps` に積む。その先で何を名指すかは決まらない。
+    fn named(&self, op: &str, e: &Expr, out: &mut BTreeSet<String>, gaps: &mut Vec<Option<String>>) {
         match e {
             Expr::Path(p, fields) => {
                 let mut ty = self.elements.get(op).and_then(|o| o.params.get(p)).cloned();
+                // 型が分からなければ、その型を決める要素: 引数なら操作、フィールドなら、定義がなければ持ち主の型。
+                let mut owner = op.to_string();
                 for f in fields {
-                    let Some(t) = ty else { break };
+                    let Some(t) = ty else {
+                        gaps.push(Some(owner));
+                        break;
+                    };
                     let field = format!("{t}.{f}");
                     ty = self.elements.get(&field).and_then(|e| e.ty.clone());
+                    owner = if self.elements.contains_key(&field) { field.clone() } else { t };
                     out.insert(field);
                 }
             }
             Expr::Call(name, args) => {
-                out.insert(name.clone());
+                if name.starts_with('?') {
+                    gaps.push(Some(name.clone()));
+                } else {
+                    out.insert(name.clone());
+                }
                 for a in args {
-                    self.named(op, a, out);
+                    self.named(op, a, out, gaps);
                 }
             }
-            Expr::Not(x) | Expr::Neg(x) => self.named(op, x, out),
+            Expr::Name(n) if n.starts_with('?') => gaps.push(Some(n.clone())),
+            Expr::Unknown => gaps.push(None),
+            Expr::Not(x) | Expr::Neg(x) => self.named(op, x, out, gaps),
             Expr::Bin(_, a, b) => {
-                self.named(op, a, out);
-                self.named(op, b, out);
+                self.named(op, a, out, gaps);
+                self.named(op, b, out, gaps);
             }
             _ => {}
+        }
+    }
+
+    /// 名指す要素をたどれなかった所の沈黙。要素があれば、その種類の問い合わせの沈黙を返す。
+    /// 要素が決まらないか、種類が決まっても先をたどれなければ、その Atom の場所を返す(マニュアル第5章 問い8)。
+    pub fn untraced(&self, name: Option<&str>, a: &Atom) -> Silence {
+        match name.map(|n| self.kind(n)) {
+            Some(Err(s)) if s.scope.as_deref() != Some("?") || s.read.is_some() || s.element.is_some() => s,
+            _ => locate(question(), a),
         }
     }
 }
@@ -476,6 +558,8 @@ impl Structure {
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct State {
     pub places: BTreeMap<Vec<String>, Value>,
+    /// 呼び出しで渡した値。呼び出しの時点で読んだもの。
+    pub args: BTreeMap<String, Value>,
 }
 
 impl State {
@@ -504,6 +588,7 @@ impl State {
         let e = |x: &Value| self.eval(x).map(Box::new);
         Ok(match v {
             Value::Read(p) => self.read(p)?,
+            Value::Arg(n) => self.args.get(n).cloned().unwrap_or_else(|| Value::Arg(n.clone())),
             Value::Proj(x, f) => Value::Proj(e(x)?, f.clone()),
             Value::Call(n, args) => Value::Call(n.clone(), args.iter().map(|a| self.eval(a)).collect::<Result<_, _>>()?),
             Value::Not(x) => Value::Not(e(x)?),
@@ -511,6 +596,28 @@ impl State {
             Value::Bin(op, a, b) => Value::Bin(*op, e(a)?, e(b)?),
             other => other.clone(),
         })
+    }
+}
+
+/// `?` の名前や値が関わる沈黙。どの Atom の `?` かは、`locate` で場所を付ける。
+/// 候補の Atom に書いた `?` の名前の沈黙。その Atom の場所を返す。
+pub fn question_at(a: &Atom) -> Silence {
+    locate(question(), a)
+}
+
+fn question() -> Silence {
+    Silence { reason: Reason::Unresolved, read: None, element: None, scope: Some("?".to_string()) }
+}
+
+/// `?` の沈黙に、その Atom の場所を、何を読めば決まるかとして付ける(マニュアル第5章 問い8、第6章)。
+/// 場所がソースでなければ(候補の中の Atom)、その Atom の要素の名前を返す。
+fn locate(s: Silence, a: &Atom) -> Silence {
+    if s.scope.as_deref() != Some("?") {
+        return s;
+    }
+    match a.at.as_deref().and_then(parse_location).map(|l| l.path).filter(|p| !p.starts_with("plan:")) {
+        Some(path) => Silence { read: Some(path), scope: Some("structure".to_string()), ..s },
+        None => Silence { element: Some(a.subject.clone()), scope: None, ..s },
     }
 }
 

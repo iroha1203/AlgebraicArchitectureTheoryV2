@@ -60,6 +60,50 @@ impl Store {
         Ok(out)
     }
 
+    /// 候補 `name` の Atom の列。`.archsig/plans/<name>/` の直下の `.jsonl` を名前の順に読む。
+    pub fn plan(&self, name: &str) -> Result<Vec<Atom>, String> {
+        let dir = self.dir().join("plans").join(name);
+        let mut files: Vec<PathBuf> = std::fs::read_dir(&dir)
+            .map_err(|e| format!("候補 {name}: {e}"))?
+            .filter_map(|e| e.ok().map(|e| e.path()))
+            .filter(|p| p.is_file() && p.extension().is_some_and(|x| x == "jsonl"))
+            .collect();
+        files.sort();
+        let mut out = Vec::new();
+        for f in files {
+            let text = std::fs::read_to_string(&f).map_err(|e| format!("{}: {e}", f.display()))?;
+            out.extend(atom::parse_jsonl(&text, &f.display().to_string())?);
+        }
+        Ok(out)
+    }
+
+    /// 実行を `.archsig/runs/r-<番号>/` に、サマリ `summary.json` と結論ごとの詳細 `<番号>.json` として残す。
+    /// `build` は実行の名前からサマリと詳細を作る。
+    pub fn save_run(&self, build: impl FnOnce(&str) -> (serde_json::Value, Vec<serde_json::Value>)) -> Result<serde_json::Value, String> {
+        let runs = self.dir().join("runs");
+        let last = std::fs::read_dir(&runs)
+            .map(|d| d.filter_map(|e| e.ok()?.file_name().to_str()?.strip_prefix("r-")?.parse::<u64>().ok()).max().unwrap_or(0))
+            .unwrap_or(0);
+        let run = format!("r-{:04}", last + 1);
+        let (summary, details) = build(&run);
+        let dir = runs.join(&run);
+        std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+        let pretty = |v: &serde_json::Value| serde_json::to_string_pretty(v).unwrap();
+        std::fs::write(dir.join("summary.json"), pretty(&summary)).map_err(|e| e.to_string())?;
+        for (i, d) in details.iter().enumerate() {
+            std::fs::write(dir.join(format!("{}.json", i + 1)), pretty(d)).map_err(|e| e.to_string())?;
+        }
+        Ok(summary)
+    }
+
+    /// 結論 `<実行>/<番号>` の詳細。
+    pub fn show(&self, id: &str) -> Result<serde_json::Value, String> {
+        let (run, n) = id.split_once('/').ok_or_else(|| format!("結果は <実行>/<番号> で指す: {id}"))?;
+        let file = self.dir().join("runs").join(run).join(format!("{n}.json"));
+        let text = std::fs::read_to_string(&file).map_err(|e| format!("{id}: {e}"))?;
+        serde_json::from_str(&text).map_err(|e| format!("{id}: {e}"))
+    }
+
     /// ソースの ArchMap のファイルは `.archsig/map/<ソース>.jsonl`。
     /// 局所ごとの意味 Atom は、ソースとぶつからないように `.archsig/local/<読み>/<局所>.jsonl` に置く。
     fn map_file(&self, place: &Place) -> PathBuf {
