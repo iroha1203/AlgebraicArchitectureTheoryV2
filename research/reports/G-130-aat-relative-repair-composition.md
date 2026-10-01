@@ -1477,3 +1477,261 @@ regression log SHA256 `1997c9feabc5dcb9d98fe98c02bc98347fbc31adc9364ac23442d315d
 この2 source所有APIは現在production bodyを検査し、個別公理結果を同じmilestone監査へ収載する。
 - `c12r1-private-api-build.log` SHA256 `941ad0c9fcfbad64e82ce30f21d485e160a2d612ea9565a6e89df0ddca2dda49`。
 - `c12r1-raw-focused.log` SHA256 `f81812c9c6bb7b7f32b994e9128e757315d1df441a0cc4dfdf63373c1c8aef91`。
+### Cycle 13 selection — 原always商と全変更範囲の双対分類
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 13
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 16d982ddc96084afbdfddfc21d63d58040d2c2d2
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "Issue #5132 C12受理5927913126 / PR5148 root acceptance5927896427 / report Cycle12"
+  proof_dag_predecessors: ["C1–4 原実修復/全補正/全label/相対障害", "C10 原全0–3 full有限座標/一回generator/全kernel復元", "C11 strict finite全S public復元", "C12 全表示変更/同じactual復元比較"]
+  milestone: "GOAL Dを同じ原大域微分から構成したalways D/coker O/o/全元candidate B_eに適用し、全Sの実修復/public条件/membership/双対hittingと極小範囲、失敗証拠/成功全復元、原相対障害への商対応を閉じる"
+  proof_obligations:
+    - "一般の名前付き全columnについてR_SとE_lambdaを独立定義し、range annihilator/双対分離からmembership iff全dual hittingを証明。包含極小性、o零唯一empty、全候補不能のempty dual supportを同一定義で導く"
+    - "同じ原全kernel/module/full基底/固定P/元候補分割からglobal always D、q、o=q(-delta)、元candidate full核column E_e/B_eを生成。元微分はDx+sumE_e y_eであることを全原値で証明"
+    - "全Sの独立actual supported repairの非空とo in R_Sを全方向で接続し、C11の独立全finite public relationと同じ判定へ対応させる。生成dataはS/rhs非依存"
+    - "失敗Sには具体的有限列挙からquotient dual排除証拠、成功Sには同じ原辺への全補正/kernel自由度/full labelsの復元を構成。純choice存在でfinite constructionを代替しない"
+    - "原global d1 range=always range+全candidate rangeを証明しO/R_allを同じCP2/range原d1へ全同型で運ぶ。元d2の線形性/zero compositionと誘導d2、同じoと原[-delta]/relative obstructionの値対応を構成"
+    - "一般定理の各方向を原入力へ適用し、空候補/空族/o零/不能/非零dualの正負例、対象全宣言focused/個別公理/scans/登録/独立PR監査を固定"
+  exit_criteria:
+    - "原K/T/p/q/core/lifts/full kernels/全0–3 cellと元candidate名/全S/full labelsを保持"
+    - "exactness/dual completeness/repair/range separation/quotient iso/復元法則を結論certificateとして受け取らず原入力または標準field APIから放電"
+    - "独立actual repairsとCの同じ一回local public生成に接続、全成功自由度/射と失敗dualを構成"
+    - "極小分類の両方向・o零/全候補不能・原d2と同じ障害classまで全向き/値を証明"
+    - "対象全decl focused/axioms/scans、登録/台帳と標準4独立PR gate/root受理"
+  selection_reason: "Cの一回生成/全S復元/表示比較が受理済み。Dの商は同じ原座標微分の次nodeであり、Eの記号的再利用と指定Wの全範囲分類へ直接接続する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [NamedDualRanges, OriginalCandidateColumns, OriginalRangeClassification, FiniteDualWitness, OriginalRangeObstruction]
+  risks: ["candidate名をeffective subsetへ付替えない", "actual/public↔rangeの橋を一般補題名だけで済ませない", "finite dual証拠をchoiceへ縮めない", "成功の全kernel/full labelsを存在一件へ縮めない", "CP2 quotientとnative H2を混同しない"]
+  unchecked: ["C13全実装/接続/検証/独立監査はこれから構成", "E/F/W1–W5/別全GOAL completionは後続"]
+```
+
+実装前に固定したCycle13の全終了条件。分割する場合はこの元条件と具体的理由・未完obligationを保持する。D受理も全GOAL completionとは呼ばない。
+
+### C13 — 構成と受理spine
+
+GOAL Dの原always商・全候補範囲・双対支持・極小分類を、同じ原実修復とCの公開関係へ接続する。
+`OriginalColumns.alwaysSpace` は相対原辺の全係数族のうち、全候補で零のものそのもの。
+`D` はこの源の元d1制限であり、各 `column e` は同じ元候補名の全target kernelからの元d1列。
+`decompose` / `differential_named_sum` は元の全辺値でalways成分と全候補成分の分解を証明する。
+商Oとo=q(-delta)はこの同じDと実defectから構成する。
+
+`NamedDual.ranges` は全選択列の像の和、`support` は全列との双対合成が非零となる名前の集合。
+`annihilates_iff` とfieldの `Subspace.forall_mem_dualAnnihilator_apply_eq_zero_iff` が全Sのmembership iff Hitsを証明する。
+`minimal_iff` は両向きの包含極小性、`minimal_zero_iff` は零で空集合だけ、`impossible_empty_support` / `no_transversal_of_empty_support` は全候補でも不能な場合を扱う。
+
+`OriginalRanges.objects_nonempty_iff_equation` は独立 `SupportedEquation.Objects` の禁止候補零条件と元微分方程式から、分解・選択・復元を構成する。
+`OriginalRangeClassification` が同じ実塔の独立 `SupportedRepair` へ全Sのrange/dual/minimal判定を運ぶ。
+`OriginalPublicRanges.public_nonempty_iff_range` はC11の独立public relationと同じ障害判定を接続する。
+`publicKernelEquiv` は任意の成功public入力と全local ker Dの積から全actual修復を相互に対応させる。
+`restore_edge_value` は同じ原辺の全kernel値を保つ。C11の `GeneratedCoverRestoration.equivalence`、両functor逆、full label値保存を受理依存として使い、成功一件だけに全自由度・再同定を縮めない。
+
+`FiniteDual.find` は完全な有限field/face列挙から全行ベクトルを生成し、原always基底の全列・許可候補の全kernel基底列・同じrhsへの非零値を直接検査する。
+`OriginalFiniteDual.alwaysMatrixMap` は元全CP1座標をalways maskへ戻して同じDを評価する。`mask_always` が全always入力を取り落とさないことを証明する。
+`candidateMatrixMap` は各元候補の全kernel basisの逆から元columnを評価する。
+`quotientDual` は実際にfindが返した行を原全face座標に引き戻して元Oへ降ろす。
+`valid_excludes_range` / `find_isSome_iff` は検査のsoundness/completenessを両向きに証明する。
+field双対の存在は完全性証明だけに使い、出力functionalは有限find行から構成する。
+
+成功側 `OriginalFiniteCorrection.find` は元全CP1の有限座標族を列挙し、同じ元face方程式と全禁止候補値を独立に検査する。
+`restoreFound` はfind=someという計算結果から全方程式・零条件を生成する。
+`find_isSome_iff`、実塔の `OriginalFiniteRepair.success_decision_iff` / `failure_decision_iff` により、いずれの判定も修復・分離証拠を入力に取らず有限探索の結果と独立actual述語を対応させる。
+`computedObject` / `computedRepair` / `computedDual` の成功・失敗仮定はfind.getの全域性証明だけに使う。探索はこれらの証明項からanswerを取り出さない。
+有限リストは生成された完全入力列挙からのList.piとList.find?で停止し、空index族でも同じ構成を使う。
+成功後の全kernel自由度・全射は上記publicKernelEquivとC11のfull native equivalenceで保持する。
+
+`OriginalRangeQuotient.range_differential` は元d1の全像がalways像と全候補像の和であることを、元cochainの分解から証明する。
+`CokernelAllColumns.secondQuotient` と同じ元像の等式が O/R_all ≃ CP2/im d1 を構成し、`equivalence_value` は同じ全face代表を保持する。
+`FiniteCoefficients.differential2` は元の全typed whiskering/pastingに対するスカラー法則から線形化し、元d2d1=0により `inducedD2` を構成する。
+`OriginalRangeCohomology.equivalence` / `OriginalNativeRangeCohomology.equivalence` は誘導d2の核と同じ原Kのfull H2を相互に同定する。
+`OriginalRangeObstruction.obstruction_H2` は同じ o の像を元actual [-delta] に運ぶ。
+実3-cellの authored syzygy から作った元obstructionCocycleを使用し、CP2/im d1全体をH2と呼ばない。
+
+全宣言のprefixは `AAT.AG.RelativeRepairComposition.`。以下の22 sourceと明示宣言を登録する。各sourceの生成宣言も個別公理監査の対象。
+
+`NamedDualRanges.lean` (11明示宣言、source SHA256 `6f3a2bbadcd3fb3598583f0f5bbe670876d3aec782263f3e06e710efa9c8ac4d`):
+
+`NamedDual.ranges`、`NamedDual.support`、`NamedDual.range_le`、`NamedDual.annihilates_iff`、`NamedDual.Hits`、`NamedDual.mem_ranges_iff_hits`、`NamedDual.failure_witness`、`NamedDual.minimal_iff`、`NamedDual.minimal_zero_iff`、`NamedDual.impossible_empty_support`、`NamedDual.no_transversal_of_empty_support`。
+
+`NamedColumnSum.lean` (12明示宣言、source SHA256 `1a0dc4ee811b254584990fd65f4a12640e92679f42bebbae5da49cbfbd891ae0`):
+
+`NamedDual.sumSelected`、`NamedDual.sumSelected_apply`、`NamedDual.sumSelected_single`、`NamedDual.range_sumSelected`、`NamedDual.mem_ranges_iff_sum`、`NamedDual.extendSelected`、`NamedDual.extend_value`、`NamedDual.extend_zero`、`NamedDual.extend_single`、`NamedDual.extend_read`、`NamedDual.sum_extend`、`NamedDual.map_sumSelected`。
+
+`OriginalCandidateColumns.lean` (17明示宣言、source SHA256 `bdbae82998a588405f948b6e9d15c05092d9485316c12e2871ae1a60aae1d3f3`):
+
+`OriginalColumns.allEdgesDecidable`、`OriginalColumns.allVerticesDecidable`、`OriginalColumns.CandidateValues`、`OriginalColumns.alwaysSpace`、`OriginalColumns.candidateRead`、`OriginalColumns.candidateCochain`、`OriginalColumns.candidate_value`、`OriginalColumns.noncandidate_value`、`OriginalColumns.read_candidate`、`OriginalColumns.alwaysRead`、`OriginalColumns.decompose`、`OriginalColumns.D`、`OriginalColumns.candidateMap`、`OriginalColumns.differential_decompose`、`OriginalColumns.column`、`OriginalColumns.sum_columns`、`OriginalColumns.differential_named_sum`。
+
+`FiniteCoefficientSecondDifferential.lean` (7明示宣言、source SHA256 `361c7ede1e280295e6172556494272545418dcd0fbc6cf3a54d3622d845527fc`):
+
+`FiniteCoefficients.faceCorrection_smul`、`FiniteCoefficients.pastingCorrection_smul`、`FiniteCoefficients.d2_smul`、`FiniteCoefficients.restrict_extend2`、`FiniteCoefficients.differential2`、`FiniteCoefficients.differential2_eq`、`FiniteCoefficients.differential2_differential1`。
+
+`CokernelNamedRanges.lean` (4明示宣言、source SHA256 `180324960e7ef25e94496bb9a9179682df2f81da63730c34e1763fa4a085008d`):
+
+`CokernelNamed.column`、`CokernelNamed.quotient_sum`、`CokernelNamed.mem_iff_equation`、`CokernelNamed.equation_iff_hits`。
+
+`OriginalRangeEquations.lean` (13明示宣言、source SHA256 `71b0eef9873529b95f62c3a652ce6efe89e711f3992a919991797c2c94db8b1d`):
+
+`OriginalRanges.allEdgesDecidable`、`OriginalRanges.allVerticesDecidable`、`OriginalRanges.ObstructionSpace`、`OriginalRanges.column`、`OriginalRanges.allowed`、`OriginalRanges.allowed_iff`、`OriginalRanges.selectedCorrection`、`OriginalRanges.selected_differential`、`OriginalRanges.selected_zero`、`OriginalRanges.restore`、`OriginalRanges.objects_nonempty_iff_equation`、`OriginalRanges.objects_nonempty_iff_range`、`OriginalRanges.objects_nonempty_iff_hits`。
+
+`OriginalRangeClassification.lean` (9明示宣言、source SHA256 `1dad72e637d30de7f65cd60210cbb866aa3b12d0dd36eca19f773526f0930725`):
+
+`OriginalRangeClassification.obstruction`、`OriginalRangeClassification.repair_nonempty_iff_range`、`OriginalRangeClassification.repair_nonempty_iff_hits`、`OriginalRangeClassification.minimal_repair_iff`、`OriginalRangeClassification.minimal_repair_iff_range`、`OriginalRangeClassification.minimal_zero_iff`、`OriginalRangeClassification.failed_repair_dual`、`OriginalRangeClassification.impossible_dual_empty`、`OriginalRangeClassification.impossible_no_transversal`。
+
+`FiniteFunctionEnumeration.lean` (1明示宣言、source SHA256 `ac5790b80a7ebc59ca39a9c460e4ebbd502457f28a81ce7056ec7485288ca312`):
+
+`FiniteElimination.Enumeration.pi`。
+
+`FiniteDualWitness.lean` (13明示宣言、source SHA256 `725f47ae7358224657ec438061de317252e623f54be0a3e5bad8af0b1982aeb1`):
+
+`FiniteDual.row`、`FiniteDual.annihilates_iff`、`FiniteDual.Valid`、`FiniteDual.validDecidable`、`FiniteDual.rows`、`FiniteDual.find`、`FiniteDual.valid_of_failure`、`FiniteDual.find_isSome`、`FiniteDual.rowWitness`、`FiniteDual.quotientDual`、`FiniteDual.quotientDual_value`、`FiniteDual.quotientDual_spec`、`FiniteDual.computedDual`。
+
+`OriginalPublicRanges.lean` (3明示宣言、source SHA256 `d34d9cc95982374efc4e3d2349f0d82d0806b14183eb26ce5293a828df18c86e`):
+
+`OriginalPublicRanges.public_nonempty_iff_range`、`OriginalPublicRanges.publicKernelEquiv`、`OriginalPublicRanges.restore_edge_value`。
+
+`CokernelAllColumns.lean` (5明示宣言、source SHA256 `8f9b8e124a3243be2f95ac79a71487feca5a618260caa50a9c6d19e99f5a5b7a`):
+
+`CokernelNamed.fullMap`、`CokernelNamed.sum_univ`、`CokernelNamed.all_ranges_eq`、`CokernelNamed.secondQuotient`、`CokernelNamed.secondQuotient_value`。
+
+`OriginalRangeQuotient.lean` (10明示宣言、source SHA256 `32dea7c5fe1d088d7176cfe0d3e5956db82007cd44700d6071b7d8c2e23e6183`):
+
+`OriginalRangeQuotient.allEdgesDecidable`、`OriginalRangeQuotient.allVerticesDecidable`、`OriginalRangeQuotient.allFacesDecidable`、`OriginalRangeQuotient.full_candidates_eq`、`OriginalRangeQuotient.range_differential`、`OriginalRangeQuotient.equivalence`、`OriginalRangeQuotient.equivalence_value`、`OriginalRangeQuotient.inducedD2`、`OriginalRangeQuotient.inducedD2_value`、`OriginalRangeQuotient.obstruction_image_cycle`。
+
+`OriginalRangeCohomology.lean` (11明示宣言、source SHA256 `31b417cf56593c47896f39ccca10bc3af35225d9e5ef30fb3349a8df2aceb53d`):
+
+`OriginalRangeCohomology.allEdgesDecidable`、`OriginalRangeCohomology.allVerticesDecidable`、`OriginalRangeCohomology.allFacesDecidable`、`OriginalRangeCohomology.cycleMap`、`OriginalRangeCohomology.cycleMap_boundary`、`OriginalRangeCohomology.classMap`、`OriginalRangeCohomology.classMap_value`、`OriginalRangeCohomology.classMap_injective`、`OriginalRangeCohomology.classMap_surjective`、`OriginalRangeCohomology.equivalence`、`OriginalRangeCohomology.equivalence_value`。
+
+`OriginalFiniteDual.lean` (18明示宣言、source SHA256 `3e839e668ff393cbbaaf53b055f51bd809254582079678e23516fec5f766a2b8`):
+
+`OriginalFiniteDual.allEdgesDecidable`、`OriginalFiniteDual.allVerticesDecidable`、`OriginalFiniteDual.allFacesDecidable`、`OriginalFiniteDual.alwaysMatrixMap`、`OriginalFiniteDual.candidateMatrixMap`、`OriginalFiniteDual.mask_always`、`OriginalFiniteDual.always_value`、`OriginalFiniteDual.candidate_value`、`OriginalFiniteDual.find`、`OriginalFiniteDual.valid_of_failure`、`OriginalFiniteDual.find_isSome`、`OriginalFiniteDual.rowWitness`、`OriginalFiniteDual.quotientDual`、`OriginalFiniteDual.quotientDual_value`、`OriginalFiniteDual.quotientDual_spec`、`OriginalFiniteDual.valid_excludes_range`、`OriginalFiniteDual.find_isSome_iff`、`OriginalFiniteDual.computedDual`。
+
+`OriginalNativeRangeCohomology.lean` (9明示宣言、source SHA256 `de33d5e1360dbd22115db643f56e46352dbd94a7b1e510e16cb960b3e12c5f25`):
+
+`OriginalNativeRangeCohomology.allEdgesDecidable`、`OriginalNativeRangeCohomology.allVerticesDecidable`、`OriginalNativeRangeCohomology.allFacesDecidable`、`OriginalNativeRangeCohomology.classMap`、`OriginalNativeRangeCohomology.familyCycle`、`OriginalNativeRangeCohomology.familyCycle_eq`、`OriginalNativeRangeCohomology.classMap_value`、`OriginalNativeRangeCohomology.classMap_bijective`、`OriginalNativeRangeCohomology.equivalence`。
+
+`OriginalRangeObstruction.lean` (5明示宣言、source SHA256 `f9110a93e200058c5d151ad233db922e6e3f3401234da8b0a7a1cee3e0372f5a`):
+
+`OriginalRangeObstruction.allEdgesDecidable`、`OriginalRangeObstruction.allVerticesDecidable`、`OriginalRangeObstruction.allFacesDecidable`、`OriginalRangeObstruction.obstruction_H2`、`OriginalRangeObstruction.obstruction_image_cycle`。
+
+`OriginalFiniteCorrection.lean` (14明示宣言、source SHA256 `565e1104aba802b1f21c66d89ae24027dfe80c5526aad6fc18efd4c1f392ae98`):
+
+`OriginalFiniteCorrection.allEdgesDecidable`、`OriginalFiniteCorrection.allVerticesDecidable`、`OriginalFiniteCorrection.allFacesDecidable`、`OriginalFiniteCorrection.Valid`、`OriginalFiniteCorrection.validDecidable`、`OriginalFiniteCorrection.coordinates`、`OriginalFiniteCorrection.find`、`OriginalFiniteCorrection.valid_of_object`、`OriginalFiniteCorrection.restore`、`OriginalFiniteCorrection.find_isSome`、`OriginalFiniteCorrection.restoreFound`、`OriginalFiniteCorrection.find_isSome_iff`、`OriginalFiniteCorrection.computedObject`、`OriginalFiniteCorrection.restore_value`。
+
+`OriginalFiniteRepair.lean` (5明示宣言、source SHA256 `04ce511d62257c987359199f5195f991a5393381b4873218cea4fa9139a95762`):
+
+`OriginalFiniteRepair.success_decision_iff`、`OriginalFiniteRepair.failure_decision_iff`、`OriginalFiniteRepair.restoreFound`、`OriginalFiniteRepair.computedDual`、`OriginalFiniteRepair.computedRepair`。
+
+`C13RangeInput.lean` (19明示宣言、source SHA256 `b51c24eda0dbf6600cf124db787c07a6c81c087d6d99bf8572b5e6b13afa6f79`):
+
+`C13RangeInput.geometry`、`C13RangeInput.edgeEquality`、`C13RangeInput.E`、`C13RangeInput.projection`、`C13RangeInput.kernel_comm`、`C13RangeInput.core`、`C13RangeInput.reference`、`C13RangeInput.projects`、`C13RangeInput.relations`、`C13RangeInput.tower`、`C13RangeInput.fullKernel`、`C13RangeInput.coefficient`、`C13RangeInput.originalModule`、`C13RangeInput.edge_identity`、`C13RangeInput.linear`、`C13RangeInput.fixed`、`C13RangeInput.candidates`、`C13RangeInput.outside`、`C13RangeInput.fixed_coherent`。
+
+`C13FiniteDualRegression.lean` (22明示宣言、source SHA256 `6cb9b3bbd4d97151558633ad5c16d3144d9a4e5bb50b4725e4b286616784d140`):
+
+`C13FiniteDualRegression.k`、`C13FiniteDualRegression.fieldValues`、`C13FiniteDualRegression.faceValues`、`C13FiniteDualRegression.D`、`C13FiniteDualRegression.C`、`C13FiniteDualRegression.rhs`、`C13FiniteDualRegression.forbidden`、`C13FiniteDualRegression.forbiddenDecidable`、`C13FiniteDualRegression.valid_nonzero`、`C13FiniteDualRegression.invalid_zero`、`C13FiniteDualRegression.no_failure_all`、`C13FiniteDualRegression.find_failed`、`C13FiniteDualRegression.find_success`、`C13FiniteDualRegression.find_zero_rhs`、`C13FiniteDualRegression.noCandidates`、`C13FiniteDualRegression.find_empty_candidates`、`C13FiniteDualRegression.dual_nonzero`、`C13FiniteDualRegression.dual_allowed_zero`、`C13FiniteDualRegression.zero_minimal_iff`、`C13FiniteDualRegression.emptyDual`、`C13FiniteDualRegression.empty_dual_support`、`C13FiniteDualRegression.empty_no_transversal`。
+
+`C13ActualRangeRegression.lean` (26明示宣言、source SHA256 `27f9f96da9a7da9e2fb70e50b45de16a7fc6b63c5248cc44404f28165663a49b`):
+
+`C13ActualRangeRegression.k`、`C13ActualRangeRegression.M`、`C13ActualRangeRegression.originalEdgeEquality`、`C13ActualRangeRegression.candidatesDecidable`、`C13ActualRangeRegression.fixedEdgesDecidable`、`C13ActualRangeRegression.fixedFacesDecidable`、`C13ActualRangeRegression.linearCoefficient`、`C13ActualRangeRegression.scalarCoordinate`、`C13ActualRangeRegression.basis`、`C13ActualRangeRegression.groupSolution`、`C13ActualRangeRegression.solution`、`C13ActualRangeRegression.Repair`、`C13ActualRangeRegression.allRepair`、`C13ActualRangeRegression.empty_no_repair`、`C13ActualRangeRegression.obstruction_nonzero`、`C13ActualRangeRegression.all_range_member`、`C13ActualRangeRegression.empty_range_reject`、`C13ActualRangeRegression.all_hits`、`C13ActualRangeRegression.empty_hits_reject`、`C13ActualRangeRegression.allFixed`、`C13ActualRangeRegression.noCandidates`、`C13ActualRangeRegression.noCandidatesDecidable`、`C13ActualRangeRegression.noCandidates_outside`、`C13ActualRangeRegression.allFixed_coherent`、`C13ActualRangeRegression.allFixed_no_repair`、`C13ActualRangeRegression.impossible_empty_support`。
+
+`C13ActualComputedWitness.lean` (7明示宣言、source SHA256 `7b183280ab602e2fd9cba721f96736428263b5731769fb5c0bbfc123c061c64f`):
+
+`C13ActualComputedWitness.originalFaceEquality`、`C13ActualComputedWitness.edgeValues`、`C13ActualComputedWitness.faceValues`、`C13ActualComputedWitness.failedDual`、`C13ActualComputedWitness.failed_dual_nonzero`、`C13ActualComputedWitness.successfulRepair`、`C13ActualComputedWitness.successful_fixed`。
+
+### C13 — premise / proof-use / scope
+
+| material premise | 出所・放電 | proof-use |
+| --- | --- | --- |
+| 元K/T/p/q/core/lifts/全kernel/輸送 | Aの原入力、C1–4受理API | 実delta、原支持方程式、actual往復 |
+| P閉包・候補がP外 | 原入力、C13RangeInput.outsideでconcrete放電 | candidateCochainのP零、全support往復 |
+| field/full有限kernel bases/完全列挙 | Cの許された原入力。concreteはF2/fullKernel/coefficient/basisと全原edge/faceリスト | 全列線形性、双対分離、全行/全補正の有限生成 |
+| 双対分離・完全性 | field dual annihilatorの標準theorem。有限出力は完全行列挙のfind | 全S iff/hittingとfind完全性 |
+| 成功・失敗判定 | 無条件findと独立元述語の両向きiff | raw find結果から全原補正/元O双対を構成 |
+| 原d1の全像分解・商同型 | 全元cochainのalways/candidate分解と第三同型定理 | O/R_all、代表値、原誘導d2 |
+| 元d2線形性・zero composition | full authored typed pastingのscalar帰納、受理原d2d1 | H2核へのfull同値 |
+| relative actual cocycle | Aの原authored syzygy + Pの実固定整合 | 同じ[-delta]の商/H2対応 |
+| Cの公開関係・full自由度・full gauge | C11のinput-generated local dataとnative all-S両逆 | public非空判定/全local kerの復元/元label保存 |
+
+結論のexactness、repair、分離dual、比較同型、復元法則をstructureの入力fieldへ追加しない。
+有限生成のS/rhs非依存データは全kernel bases/元列と行・全補正の列挙。S/rhsは検査述語と復元のaffine項にだけ入る。
+C13はGOAL Dの到達点候補であり、E/F/W1–W5および全GOALの別completion gateを後続とする。
+
+### C13 — 回帰scenarioと検証
+
+`C13RangeInput` はF2の全translation kernelを持つ実塔、二つの元loop、一つの非零defect face、空のtriplesを構成する。
+false loopの基準translationは1、true loopは0。false loopを物理固定し、true loopを候補とする。
+`C13ActualRangeRegression.empty_no_repair` は独立actual face方程式と両fixed実射から1=0を導き拒否する。
+`allRepair` は同じ元loop双方をtranslation1とするactual修復を直接構成する。
+その同じ入力で `obstruction_nonzero`、rangeの正負、全dual hittingの正負を検査する。
+原全native kernelのModuleは完全なkernel equivalenceでF2から輸送し、`edge_identity` / `linear` は原translationの可換性から導く。
+`basis` はその全kernelの一次元basisであり、`C13ActualComputedWitness` が同じ非零actual入力に有限failedDualとsuccessfulRepairを適用する。
+`successful_fixed` は有限復元が同じ元fixed実射を保持することを検査する。
+
+`C13FiniteDualRegression` は全二元fieldリストと一面座標、空always列、二つの元candidate列(identity/zero)、非零rhsを直接評価する。
+零columnだけの許可でfindは行1を返し、identityを含む許可と零rhsではnone。
+行0は同じ失敗入力を排除できず、全候補を許可した入力は全行のfailure testを拒否する。
+返したdualは同じquotient rhsで非零、全許可columnで零。空候補族でも非零rhsに行1を返し、empty supportにより全横断集合を拒否する。
+zero obstructionの極小範囲がemptyだけである同じ述語を適用する。
+これらはC13の述語・有限生成の回帰証拠であり、指定Wの実アフィン全要求は後続に保持する。
+
+`allFixed_no_repair` は同じ原非零faceを持つ実塔で全原loopを固定し、空候補族の全候補許可でも不能であることを直接示す。
+`impossible_empty_support` はこの独立actual不能入力を一般の空支持定理へ適用する。
+
+単一の選定milestone exact-source focused検証はexit0/errors0/warnings0。
+22 sourceの全241明示宣言と5生成APIの全246を個別に `#print axioms` し、対象明示集合と機械突合して欠落0。全件が標準公理のみ。
+axiom log SHA256 `c619fb67a7e822f228d7fa2c39344da21198539d0e65d77b9304c4706fb4b8e8`。
+個々の登録sourceも直接必要な順に単一file focusedで確認した。Research全体/aggregate/全fileloopは実行していない。
+全22登録行はそれぞれ一意でsource hashが監査時と一致する。Lean placeholder/hidden-BiDi/privacy scanとdiff checkはclean。
+productionの単一endpoint `C13ActualComputedWitness` のfocused確認を行い、実塔の有限構成を検査する。
+選定milestoneのscratch検証は同じsource bodyを再現し、型class探索の上限100000を使用する。productionの一般数学宣言の条件・証明は変更しない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    - "全named ranges/dual支持を独立定義し、field dual annihilatorから全S iff、極小両向き、零empty唯一、全候補不能empty支持を構成"
+    - "原always source/full candidate target kernelからD/q/o/B_eと全元cochainの分解、原微分Dx+sumEを構成"
+    - "全Sの独立actual修復と原支持方程式、原商membership/dual hitting、C11独立public関係を同じ全原値で接続"
+    - "完全有限行/全補正列挙のfindから、失敗dualと成功full原補正を構成。無条件findのsoundness/completenessを独立actual述語へ全方向で接続。全成功自由度/full labelsは同じC11全復元で保持"
+    - "原全d1像分解と第三同型からO/R_all≃CP2/im d1、原typed d2線形化/誘導、原K full H2≃kernelと同じoの[-delta]対応を構成"
+    - "原実塔の非零actual修復/不能/range/hitting、all-fixed空候補不能、有限行正負/empty/零/全候補成功を検査。全22source/241明示+5生成APIの個別標準公理、登録/機械scanを確認"
+  exit_criteria_status:
+    - "元K/T/p/q/core/reference/full kernel/full0–3/candidate名/allS/full labels: 原differentialと支持群、全値逆、C11全native functor受理依存を保持"
+    - "結論certificate不使用: 分解・双対完全性・同型・復元の法則はinputとfield標準APIから構成。findは修復/dualを入力に取らず、返した計算結果からtest法則を生成"
+    - "C/全成功/不能: publicKernelEquivは全local kerの全積、full gaugesはC11の同じlabel群。有限findは正確な独立actual存在/不能と同値"
+    - "極小/零/不能/原障害: 全方向のMinimal/Hits、空支持、原d2核のH2同値、同じ[-actual defect]代表の値対応"
+    - "検証/登録/台帳: 全22 exact bodies focused/246全公理/正負原入力/22登録/scans。標準独立4本PR gateとroot受理は固定PR headの監査コメントへ記録"
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [NamedDualRanges, NamedColumnSum, OriginalCandidateColumns, OriginalRangeEquations, OriginalRangeClassification, FiniteDualWitness, OriginalFiniteDual, OriginalFiniteCorrection, OriginalFiniteRepair, OriginalPublicRanges, CokernelAllColumns, OriginalRangeQuotient, OriginalRangeCohomology, OriginalNativeRangeCohomology, OriginalRangeObstruction, C13RangeInput, C13ActualRangeRegression, C13FiniteDualRegression, C13ActualComputedWitness]
+  claim_mapping:
+    source_labels: ["GOAL D全文", "C11の同じ生成public関係/full native復元"]
+    theorem_names: ["NamedDual.mem_ranges_iff_hits", "OriginalColumns.differential_named_sum", "OriginalRangeClassification.minimal_repair_iff", "OriginalPublicRanges.public_nonempty_iff_range", "OriginalFiniteRepair.success_decision_iff", "OriginalFiniteRepair.failure_decision_iff", "OriginalRangeObstruction.obstruction_H2"]
+    undischarged_assumptions: []
+    acceptance_point: "固定C13選定の原always商/全S双対分類/有限出力/原障害対応の到達点候補。独立PR監査とroot受理は固定headのコメントで行う"
+    port_status: unported
+  remaining_goal_obligations: ["E記号的生成/値更新/実一点試験環境/全typed内部分割と全復元", "F任意有限体の全実アフィン塔・全核・中央化・輸送・原始仮定放電", "W1–W5の全指定実アフィン構成と各対応・決定", "別の全GOAL completion packetと独立4本最終監査"]
+audits:
+  premise_delta:
+    discharged: ["全always/candidate像分解は元cochain maskの両向きから生成", "全S双対完全性はfield標準dual annihilatorから証明", "有限test/出力は完全原field/coordinate列挙から構成", "原誘導d2/同じH2代表は元typed微分とaccepted原complex比較から構成", "actual非零正負とall-fixed空候補不能は原実group値から直接証明"]
+    remaining: ["上記remaining_goal_obligations"]
+  certificate_provenance:
+    discharged: ["find入力は原有限列挙/full basis/実微分/rhs/Sのみ", "出力rowはList.find?結果、原Odualはrow引戻し/liftQ", "成功find=someから全方程式/禁止零を生成して原actual repairへ戻す", "全success fiberと全labelsは同じC11 input-generated public復元", "原H2同型は代表を保持したcycles/boundaries quotient比較"]
+    unresolved: []
+  proof_use:
+    used: ["P閉包とoutside→原full candidate cochain", "元分解→全支持方程式/同じDの商と全像", "full basis逆と全列評価→有限dualのsoundness/completeness", "完全列挙→有限原補正のsoundness/completeness", "元typed scalar法則/zero composition→誘導d2/H2核", "原authored syzygy/P固定→actual obstructionCocycleと[-delta]値", "C11全local kernel/full native inverse→全success freedom/full arrow保持"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["単一選定22 exact-source bodies focused exit0/errors0/warnings0", "241明示+5生成API=246全個別公理標準のみ/集合欠落0", "axiom log SHA256 c619fb67a7e822f228d7fa2c39344da21198539d0e65d77b9304c4706fb4b8e8", "原実F2非零face正負/全fixed空候補不能、有限行正負/empty/零/全候補成功", "22一意module登録/placeholder/Unicode/privacy/diff確認"]
+  blocking_findings: []
+  next_obligation: "C13固定headの標準review-pr/math-lean-reviewとroot受理を経て、Eの同じ原generatorの記号的rhs更新へ進む"
+```
