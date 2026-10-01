@@ -61,6 +61,26 @@ impl Store {
         Ok(out)
     }
 
+    /// コミット `commit` の時点の ArchMap。git の木から `.archsig/map/` と `.archsig/local/` の JSON Lines を読む。
+    pub fn map_at(&self, commit: &str) -> Result<Vec<Atom>, String> {
+        let git = |args: &[&str]| -> Result<String, String> {
+            let out = std::process::Command::new("git").arg("-C").arg(&self.root).args(args).output().map_err(|e| format!("git: {e}"))?;
+            if !out.status.success() {
+                return Err(format!("git {}: {}", args.join(" "), String::from_utf8_lossy(&out.stderr).trim()));
+            }
+            Ok(String::from_utf8_lossy(&out.stdout).to_string())
+        };
+        let listed = git(&["ls-tree", "-r", "--name-only", commit, "--", ".archsig/map", ".archsig/local"])?;
+        let mut files: Vec<&str> = listed.lines().filter(|f| f.ends_with(".jsonl")).collect();
+        files.sort();
+        let mut out = Vec::new();
+        for f in files {
+            let text = git(&["show", &format!("{commit}:./{f}")])?;
+            out.extend(atom::parse_jsonl(&text, &format!("{commit}:{f}"))?);
+        }
+        Ok(out)
+    }
+
     /// 候補 `name` の Atom の列。`.archsig/plans/<name>/` の直下の `.jsonl` を名前の順に読む。
     pub fn plan(&self, name: &str) -> Result<Vec<Atom>, String> {
         let dir = self.dir().join("plans").join(name);

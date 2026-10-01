@@ -39,6 +39,15 @@ enum Cmd {
         #[command(subcommand)]
         command: PlanCmd,
     },
+    /// 実装した後のコードを観測し直した ArchMap で、変更の後も保たれ、候補どおりかを確かめる。
+    Compare {
+        /// 比べる候補。変更前は、候補の元のコミットの ArchMap とする。
+        #[arg(long, conflicts_with = "base", required_unless_present = "base")]
+        plan: Option<String>,
+        /// 候補なしで、このコミットの ArchMap を変更前として比べる。
+        #[arg(long)]
+        base: Option<String>,
+    },
     /// 一つの結果の詳細を返す。
     Show {
         /// `<実行>/<番号>`
@@ -119,6 +128,34 @@ fn run(cli: Cli) -> Result<Value, String> {
             }
             let not_computed = engine::not_computed(&laws);
             store.save_run(|run| result::summarize(run, "plan split", &findings, &not_computed))
+        }
+        Cmd::Compare { plan, base } => {
+            let laws = store.laws()?;
+            if !laws.errors.is_empty() {
+                return Ok(json!({"law_errors": laws.errors}));
+            }
+            let atoms = match &plan {
+                Some(p) => store.plan(p)?,
+                None => Vec::new(),
+            };
+            let base = match (&plan, base) {
+                (_, Some(b)) => b,
+                (Some(p), None) => {
+                    let base = atoms.iter().find(|a| a.kind == "plan").and_then(|a| a.base.clone());
+                    match base {
+                        Some(b) if !b.starts_with("plan:") => b,
+                        _ => return Err(format!("候補 {p} の元がコミットでない")),
+                    }
+                }
+                (None, None) => unreachable!(),
+            };
+            let (before, after) = (store.map_at(&base)?, store.map()?);
+            let o = archsig::structure::observed_overlay(&before, &after, &atoms);
+            let (b, a) = (Structure::new(before), Structure::new(after));
+            let sources = store.sources(&laws)?;
+            let findings = engine::implemented(&b, &a, &o, &laws, &sources);
+            let not_computed = engine::not_computed(&laws);
+            store.save_run(|run| result::summarize(run, "compare", &findings, &not_computed))
         }
         Cmd::Show { id } => store.show(&id),
         Cmd::Status => archmap::status(&store),

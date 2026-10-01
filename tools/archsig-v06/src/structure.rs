@@ -395,16 +395,18 @@ pub struct Overlay {
     pub questions: BTreeMap<String, Atom>,
     /// 書いた対応の元の要素と、その対応の Atom の場所。
     pub corresponds_at: BTreeMap<String, Vec<String>>,
+    /// 実装した後に比べるとき、観測されていない候補の構造 Atom。出現の数だけ足りないものを一つずつ持つ。
+    pub unobserved: Vec<Atom>,
+    /// 実装した後に比べるとき、候補に書いた要素への、候補にない書き込み。
+    pub unplanned: Vec<Atom>,
 }
 
 /// ArchMap の Atom の列 `before` に、候補の Atom の列 `plan` を重ねる(設計 §3.6)。
 pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
     // 候補が構造 Atom を書いた要素は、元の Atom をすべて外す。`resolves` は置き換えを起こさない。
     let rewritten: BTreeSet<&str> = plan.iter().filter(|a| a.is_structure() && a.kind != "resolves").map(|a| a.subject.as_str()).collect();
-    let removed: BTreeSet<&str> = plan.iter().filter(|a| a.kind == "removes").map(|a| a.subject.as_str()).collect();
     let replaced = |name: &str| rewritten.iter().any(|x| name == *x || name.starts_with(&format!("{x}->")));
-    // `X.…` は `X.$…` を含む。
-    let gone = |name: &str| removed.iter().any(|x| name == *x || name.starts_with(&format!("{x}.")) || name.starts_with(&format!("{x}->")));
+    let gone = removed(plan);
     // 外すのは要素の Atom だけ。`observed` の `subject` はソースのパスで、要素の名前ではない。
     let dropped = |a: &Atom| a.kind != "observed" && (replaced(&a.subject) || gone(&a.subject));
     let mut after: Vec<Atom> = before.iter().filter(|a| !dropped(a)).cloned().collect();
@@ -412,7 +414,88 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
 
     let old = Structure::new(before.to_vec());
     let new = Structure::new(after.clone());
-    let mut out = Overlay { removes: removed.iter().map(|r| r.to_string()).collect(), ..Overlay::default() };
+    let mut out = relate(&old, &new, before, &after, plan);
+    // 4. 対応の行き先へ、元の要素の意味 Atom を移す。
+    //    触れていない要素の自分自身への対応では、意味 Atom はもう残っている。
+    //    書き直した操作の引数は、候補の `params` で置き換わる。なくなった引数の意味 Atom は、移した後に元から外す。
+    let replaced_param = |n: &str| rewritten.iter().any(|x| n.starts_with(&format!("{x}.$")));
+    after.retain(|a| a.kind != "meaning" || !replaced_param(&a.subject) || new.elements.contains_key(&a.subject));
+    for (from, to) in &out.corresponds {
+        if from == to && !replaced(from) && !gone(from) {
+            continue;
+        }
+        for m in old.meanings.get(from).into_iter().flatten() {
+            after.push(Atom { subject: to.clone(), ..m.clone() });
+        }
+    }
+    out.after = after;
+    // 書き直していない Atom が `removes` した要素を名指せば、その操作を `missing` の元に挙げる。
+    // 候補が置き換えた Atom(書き直した呼び出しの `passes` など)は見ない。
+    let kept: Vec<&Atom> = before.iter().filter(|a| !dropped(a)).collect();
+    trace(&old, &kept, &|n: &str| replaced(n) || gone(n), &gone, &mut out);
+    out
+}
+
+/// 実装した後の ArchMap `after` と、変更前の ArchMap `before` を、候補 `plan` の対応で結ぶ(マニュアル第5章 問い3の「実装後に比べる」)。
+/// 変更後の Atom は観測し直したものなので、意味 Atom は移さない。候補がなければ、対応は自分自身への対応だけである。
+/// 候補の構造 Atom が観測されているかと、候補が書いた要素の候補にない書き込みを、事実として返す。
+pub fn observed_overlay(before: &[Atom], after: &[Atom], plan: &[Atom]) -> Overlay {
+    let old = Structure::new(before.to_vec());
+    let new = Structure::new(after.to_vec());
+    let gone = removed(plan);
+    let mut out = relate(&old, &new, before, after, plan);
+    out.after = after.to_vec();
+    let all: Vec<&Atom> = after.iter().collect();
+    trace(&new, &all, &|n: &str| gone(n), &gone, &mut out);
+    // 候補の構造 Atom は、同じ Atom が出現の数だけ観測されている。観測の一つは、候補の Atom の一つにしか当てない。
+    let mut used = vec![false; after.len()];
+    for p in plan.iter().filter(|a| a.is_structure()) {
+        match after.iter().enumerate().find(|(i, o)| !used[*i] && same_atom(p, o)) {
+            Some((i, _)) => used[i] = true,
+            None => out.unobserved.push(p.clone()),
+        }
+    }
+    // 候補に書いた要素への、候補にない書き込み。
+    let written: BTreeSet<&str> = plan.iter().filter(|a| a.is_structure() && a.kind != "resolves").map(|a| a.subject.as_str()).collect();
+    out.unplanned = after.iter().enumerate().filter(|(i, a)| !used[*i] && a.kind == "writes" && written.contains(a.subject.as_str())).map(|(_, a)| a.clone()).collect();
+    out
+}
+
+/// 候補が `removes` した要素か。`X.…` は `X.$…` を含む。
+fn removed(plan: &[Atom]) -> impl Fn(&str) -> bool + '_ {
+    let removed: BTreeSet<&str> = plan.iter().filter(|a| a.kind == "removes").map(|a| a.subject.as_str()).collect();
+    move |name: &str| removed.iter().any(|x| name == *x || name.starts_with(&format!("{x}.")) || name.starts_with(&format!("{x}->")))
+}
+
+/// 候補の Atom `p` と観測した Atom `o` が同じか。場所は比べない。候補の `defines` の `file` は、観測の `at` のパスと比べる。
+/// 式は、どちらも読めれば読んだ形で比べる。
+fn same_atom(p: &Atom, o: &Atom) -> bool {
+    let expr = |a: &Option<String>, b: &Option<String>| match (a, b) {
+        (Some(x), Some(y)) => match (expr::parse(x), expr::parse(y)) {
+            (Ok(x), Ok(y)) => x == y,
+            _ => x.trim() == y.trim(),
+        },
+        (None, None) => true,
+        _ => false,
+    };
+    let file = match &p.file {
+        Some(f) => o.at.as_deref().and_then(parse_location).is_some_and(|l| &l.path == f),
+        None => true,
+    };
+    p.kind == o.kind
+        && p.subject == o.subject
+        && p.object == o.object
+        && p.params == o.params
+        && p.ty == o.ty
+        && expr(&p.value, &o.value)
+        && expr(&p.when, &o.when)
+        && file
+}
+
+/// 対応を作る(設計 §3.6 の1〜3)。
+fn relate(old: &Structure, new: &Structure, before: &[Atom], after: &[Atom], plan: &[Atom]) -> Overlay {
+    let gone = removed(plan);
+    let mut out = Overlay { removes: plan.iter().filter(|a| a.kind == "removes").map(|a| a.subject.clone()).collect(), ..Overlay::default() };
     // 1. 書いた対応。行き先に `|` があれば、決めていない対応として別に持つ。
     let mut linked = Vec::new();
     for a in plan.iter().filter(|a| a.kind == "corresponds") {
@@ -451,34 +534,24 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
             .chain(atoms.iter().filter(|a| a.kind != "observed" && !a.subject.starts_with("local:")).map(|a| a.subject.clone()))
             .collect()
     };
-    let after_names = names(&new, &after);
-    for name in names(&old, before).into_iter().filter(|n| after_names.contains(n) && !gone(n)) {
+    let after_names = names(new, after);
+    for name in names(old, before).into_iter().filter(|n| after_names.contains(n) && !gone(n)) {
         out.corresponds.insert((name.to_string(), name.to_string()));
     }
-    // 4. 対応の行き先へ、元の要素の意味 Atom を移す。
-    //    触れていない要素の自分自身への対応では、意味 Atom はもう残っている。
-    //    書き直した操作の引数は、候補の `params` で置き換わる。なくなった引数の意味 Atom は、移した後に元から外す。
-    let replaced_param = |n: &str| rewritten.iter().any(|x| n.starts_with(&format!("{x}.$")));
-    after.retain(|a| a.kind != "meaning" || !replaced_param(&a.subject) || new.elements.contains_key(&a.subject));
-    for (from, to) in &out.corresponds {
-        if from == to && !replaced(from) && !gone(from) {
-            continue;
-        }
-        for m in old.meanings.get(from).into_iter().flatten() {
-            after.push(Atom { subject: to.clone(), ..m.clone() });
-        }
-    }
-    out.after = after;
-    // 書き直していない Atom が `removes` した要素を名指せば、その操作を `missing` の元に挙げる。
-    // 名指すとは、引数の型、構造 Atom の `object`、`value`・`when` の式の中の `$p.f` と呼び出しで名を出すこと。
-    // 候補が置き換えた Atom(書き直した呼び出しの `passes` など)は見ない。意味 Atom の `value` は式として読まない。
+    out
+}
+
+/// 操作の本体の Atom `atoms` が `removes` した要素を名指せば、その操作を `missing` の元に挙げる。
+/// 名指すとは、引数の型、構造 Atom の `object`、`value`・`when` の式の中の `$p.f` と呼び出しで名を出すこと。
+/// 意味 Atom の `value` は式として読まない。名指す要素をたどれなかった所は `untraced` に積む。
+/// `skip` は数えない操作(書き直した操作や消える操作)。
+fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn Fn(&str) -> bool, out: &mut Overlay) {
     let body = |k: &str| matches!(k, "writes" | "reads" | "calls" | "sends" | "receives" | "returns" | "passes");
-    let kept: Vec<&Atom> = before.iter().filter(|a| !dropped(a) && body(&a.kind)).collect();
     let mut named: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
-    for (op, e) in old.elements.iter().filter(|(n, e)| e.kinds.contains("operation") && !replaced(n) && !gone(n)) {
+    for (op, e) in s.elements.iter().filter(|(n, e)| e.kinds.contains("operation") && !skip(n)) {
         named.entry(op.clone()).or_default().extend(e.params.values().cloned());
     }
-    for a in &kept {
+    for a in atoms.iter().filter(|a| body(&a.kind)) {
         // `passes` の `subject` は呼び出しの要素 `<操作>->…` なので、呼び出し元の操作に数える。
         let op = a.subject.split("->").next().unwrap_or("").to_string();
         let names = named.entry(op.clone()).or_default();
@@ -489,7 +562,7 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
         }
         for text in [&a.value, &a.when].into_iter().flatten() {
             match expr::parse(text) {
-                Ok(e) => old.named(&op, &e, names, &mut gaps),
+                Ok(e) => s.named(&op, &e, names, &mut gaps),
                 Err(_) => gaps.push(None),
             }
         }
@@ -503,7 +576,6 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
             out.missing.insert(op, uses);
         }
     }
-    out
 }
 
 impl Structure {

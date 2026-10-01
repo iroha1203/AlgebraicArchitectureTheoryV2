@@ -5,7 +5,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{Value as Json, json};
 
-use crate::atom::parse_location;
+use crate::atom::{Atom, parse_location};
 use crate::expr::BinOp;
 use crate::geometry::Split;
 use crate::law::{LawSet, Rule};
@@ -398,6 +398,54 @@ pub fn plan_check(before: &Structure, after: &Structure, overlay: &Overlay, laws
         out.extend(found);
     }
     out.extend(removed_uses(before, after, overlay, sources));
+    out
+}
+
+/// `compare`(マニュアル第5章 問い3の「実装後に比べる」)。変更前は元のコミットの ArchMap、変更後は観測し直した ArchMap で、
+/// `plan check` と同じ計算をする。候補の構造 Atom が観測されていないものと、候補にない書き込みを `mismatch` として返す。
+pub fn implemented(before: &Structure, after: &Structure, overlay: &Overlay, laws: &LawSet, sources: &[String]) -> Vec<Finding> {
+    let mut out = plan_check(before, after, overlay, laws, sources);
+    // 変更後の要素が同じ意味を持つかは、観測し直した意味 Atom で確かめる(マニュアル第5章 問い3)。
+    let mapping = Mapping::new(overlay);
+    for law in laws.laws.iter().filter(|l| matches!(l.rule, Rule::ChangesCommute | Rule::ChangesKeep)) {
+        let Some(meaning) = law.about.as_deref() else { continue };
+        for (e, _) in before.meanings.iter().filter(|(e, _)| !e.starts_with("local:") && has_meaning(before, e, meaning)) {
+            for t in mapping.to.get(e.as_str()).into_iter().flatten().filter(|t| after.kind(t).is_ok()) {
+                let f = match meaning_known(after, t, meaning) {
+                    Err(s) => Finding::silent("change", Some(&law.name), t, s),
+                    Ok(()) if has_meaning(after, t, meaning) => continue,
+                    Ok(()) => Finding {
+                        question: "change".to_string(),
+                        law: Some(law.name.clone()),
+                        subject: t.to_string(),
+                        outcome: "fails",
+                        kind: Some("missing"),
+                        at: defined_at(after, t).into_iter().collect(),
+                        basis: json!({"meaning": meaning}),
+                        check: json!({"element": e, "target": t, "meaning": meaning, "observed": false}),
+                        ..Finding::default()
+                    },
+                };
+                out.push(Finding { theory: Some(THEORY_CHANGES.to_string()), ..f });
+            }
+        }
+    }
+    let mismatch = |a: &Atom, check: Json| Finding {
+        question: "change".to_string(),
+        subject: a.subject.clone(),
+        outcome: "fails",
+        kind: Some("mismatch"),
+        at: a.at.clone().into_iter().collect(),
+        check,
+        theory: Some(THEORY_CHANGES.to_string()),
+        ..Finding::default()
+    };
+    for a in &overlay.unobserved {
+        out.push(mismatch(a, json!({"planned": a, "observed": null})));
+    }
+    for a in &overlay.unplanned {
+        out.push(mismatch(a, json!({"planned": null, "observed": a})));
+    }
     out
 }
 
