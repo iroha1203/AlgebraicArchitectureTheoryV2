@@ -81,7 +81,7 @@ theorem singleton_correction (t : EdgeName (K := K) → A)
     (s : Repair J (reference K R t) (comparison K c) (forbidden K fixed)) :
     realCorrection K R c fixed (restrictRepair K R c fixed t s) = t := by
   funext e
-  unfold realCorrection
+  rw [real_correction_value]
   change (s.operation (.inl e.2.2) * (R e.2.2)⁻¹) 0 = t e
   rw [forced_old_operation, mul_assoc, mul_inv_cancel, mul_one]
   simp

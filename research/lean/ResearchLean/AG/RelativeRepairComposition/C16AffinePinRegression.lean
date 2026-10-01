@@ -87,7 +87,7 @@ theorem true_repaired_value : sharedRepair.operation (i := ()) (j := ()) true =
 
 /-- The same full actual correction evaluates to x on the original true edge. -/
 theorem true_correction : realCorrection geometry references comparisons fixed sharedRepair ⟨(),(),true⟩ = x := by
-  unfold realCorrection
+  rw [real_correction_value]
   rw [true_repaired_value, mul_assoc, mul_inv_cancel, mul_one]
   simp
 

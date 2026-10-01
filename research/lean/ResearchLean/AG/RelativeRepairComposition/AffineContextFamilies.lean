@@ -38,6 +38,11 @@ def AdmitsPins (family : Set Env) : Prop :=
 /-- The complete actual input universe admits the specified finite additions. -/
 theorem all_admits_pins : I.AdmitsPins S Set.univ := fun _ => trivial
 
+/-- A genuine shared repair makes the empty family reject the specified primitive pin addition. -/
+theorem not_admits_pins_empty_of_repair
+    (t : Repair W RW cW (fixedEdgesForRange PW.edges CW S)) :
+    ¬ I.AdmitsPins S ∅ := fun h => h t
+
 variable (J : AffineContextInput W LW RW cW PW CW)
 variable (a : I.Range S) (b : J.Range S)
 

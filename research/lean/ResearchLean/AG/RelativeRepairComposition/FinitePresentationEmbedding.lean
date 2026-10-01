@@ -6,6 +6,15 @@ import ResearchLean.AG.RelativeRepairComposition.ParallelPinGeometry
 Sharing a presentation means sharing its actual cells, words and both complete
 three-cell routes. The data below are geometric incidence maps and their exact
 compatibilities; they contain no repair, coherence or existence conclusion.
+
+## Implementation notes
+
+The path/step/route fields retain their native dependent endpoint types and all
+contexts; nil/cons and HEq laws identify them with the computed geometric map.
+Storing only vertex/edge images was rejected: faces and both authored routes
+also need endpoint/bookend transports, and a computed path alone does not keep
+those native typed data definitionally aligned. These are incidence fields,
+so the record supplies no repair or contextual-equivalence certificate.
 -/
 namespace AAT.AG.RelativeRepairComposition
 open TransportCoherence

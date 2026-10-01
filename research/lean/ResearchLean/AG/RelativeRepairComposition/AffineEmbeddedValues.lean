@@ -69,7 +69,7 @@ def restrictEmbeddedRepair (s : Repair H RH cH fixedH) : Repair G RG cG fixedG w
 theorem embedded_correction_value (s : Repair H RH cH fixedH) (e : EdgeName (K := G)) :
     realCorrection G RG cG fixedG (restrictEmbeddedRepair m RG RH cG cH fixedG fixedH href hcomparison hfixed s) e =
       realCorrection H RH cH fixedH s (m.edgeName e) := by
-  unfold realCorrection
+  rw [real_correction_value, real_correction_value]
   change (s.operation (m.edge e.2.2) * (RG e.2.2)⁻¹) 0 =
     (s.operation (m.edge e.2.2) * (RH (m.edge e.2.2))⁻¹) 0
   rw [href]

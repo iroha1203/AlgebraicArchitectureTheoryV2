@@ -9,6 +9,14 @@ These are primitive finite affine input data and exact geometric sharing data.
 No repair, boundary range, singleton relation, gluing conclusion or vanishing
 certificate is a field. A compatible range fixes only the shared candidate
 permission; every other candidate in the external region is still quantified.
+
+## Implementation notes
+
+The record stores the whole actual affine input and the exact images of all
+shared cells, with primitive word/route laws. A record containing just the
+realized relation was rejected: it would assume the realization required by
+GOAL E and n1017 §3.2 and lose the full external-input quantifier. Exact images
+also distinguish original parallel names and preserve every shared vector.
 -/
 namespace AAT.AG.RelativeRepairComposition.NativeAffine
 open TransportCoherence AbelianLiftingObstruction

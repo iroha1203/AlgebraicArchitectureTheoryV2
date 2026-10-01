@@ -37,6 +37,10 @@ theorem native_repair_correction_value (s : SupportedRepair (T) fixed)
 def realCorrection (s : Repair K R c fixed) (e : EdgeName (K := K)) : A :=
   (s.operation e.2.2 * (R e.2.2)⁻¹) 0
 
+/-- Evaluate the actual correction at its original named edge using the same inverse reference. -/
+theorem real_correction_value (s : Repair K R c fixed) (e : EdgeName (K := K)) :
+    realCorrection K R c fixed s e = (s.operation e.2.2 * (R e.2.2)⁻¹) 0 := rfl
+
 /-- The full native original correction and independent real evaluation are the same vector at the same edge name. -/
 theorem real_correction_native (s : SupportedRepair (T) fixed) (e : EdgeName (K := K)) :
     realCorrection K R c fixed ((Q) s) e =

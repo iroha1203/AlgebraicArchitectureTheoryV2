@@ -62,5 +62,61 @@ theorem generated_contextual (permit : Bool) (S : Set (EdgeName (K := boundaryGe
   (input false).contextual_generated_strict (input true) fieldValues (edges false) (faces false)
     (edges true) (faces true) (permissions false permit S) (permissions true permit S)
 
+attribute [local instance] Classical.propDecidable
+local notation "K₀" => geometry false
+local notation "L₀" => reference false
+local notation "R₀" => reference false
+local notation "c₀" => (fun _ => (0 : V))
+local notation "hf₀" => aligned false
+local notation "P₀" => ClosedRegion.empty (K := geometry false)
+local notation "W₀" => shared false
+local notation "C₀" => candidates false
+local notation "M₀" => TowerPresentation.localCoefficients
+  (OriginalTowerPresentation.toTower (tower K₀ L₀ R₀ c₀ hf₀))
+local notation "B₀" => standardBases 1 K₀ L₀ R₀ c₀ hf₀
+local notation "private₀" => privateNonshared K₀ P₀ W₀ C₀
+local notation "lin₀" => edge_linear K₀ L₀ R₀ c₀ hf₀
+local notation "δ₀" => ActualEquation.defectFamily (tower K₀ L₀ R₀ c₀ hf₀) P₀
+  (fixed_native K₀ L₀ R₀ c₀ hf₀ P₀ (fun _ h => False.elim h))
+
+/-- The same full candidate coordinate system accepts its zero public vector when the internal candidate is forbidden. -/
+theorem boundary_public_zero_zero :
+    FiniteNative.BoundaryPublicZero M₀ B₀ ClosedRegion.all P₀ private₀ C₀ ∅ 0 :=
+  FiniteNative.boundary_public_zero_zero M₀ B₀ ClosedRegion.all P₀ private₀ C₀ ∅
+
+/-- The same generated public coordinate retains actual internal value one and rejects its prohibition. -/
+theorem boundary_public_zero_rejects_internal_one (S : Set (EdgeName (K := boundaryGeometry))) :
+    let s := repair false true S (fun _ => 1) (fun h => Bool.noConfusion h)
+    let h := boundaryEquationEquiv 1 K₀ L₀ R₀ c₀ hf₀ P₀ C₀ (input false).fixed_faces
+      (permissions false true S).allowed s
+    let y := FiniteNative.generatedSolutionEquiv M₀ B₀ ClosedRegion.all P₀ private₀ lin₀ δ₀
+      fieldValues (edges false) (faces false) h.1
+    ¬ FiniteNative.BoundaryPublicZero M₀ B₀ ClosedRegion.all P₀ private₀ C₀ ∅ y.1.1 := by
+  dsimp only
+  let s := repair false true S (fun _ => 1) (fun h => Bool.noConfusion h)
+  let h := boundaryEquationEquiv 1 K₀ L₀ R₀ c₀ hf₀ P₀ C₀ (input false).fixed_faces
+    (permissions false true S).allowed s
+  let E := FiniteNative.generatedSolutionEquiv M₀ B₀ ClosedRegion.all P₀ private₀ lin₀ δ₀
+    fieldValues (edges false) (faces false)
+  let y := E h.1
+  intro hz
+  let e : EdgeName (K := K₀) := ⟨(),(),true⟩
+  have hp : e ∉ private₀ := fun h => h.2.2 rfl
+  have hv := FiniteNative.restored_boundary_value M₀ B₀ ClosedRegion.all P₀ private₀ lin₀ δ₀
+    fieldValues (edges false) (faces false) y ⟨e,trivial⟩ hp
+  have hy : E.symm y = h.1 := E.symm_apply_apply h.1
+  rw [hy] at hv
+  have hz' := hz ⟨e,trivial⟩ (show e ∈ C₀ \ ∅ from ⟨rfl,fun h => h⟩)
+  have heval := boundary_equation_value 1 K₀ L₀ R₀ c₀ hf₀ P₀ C₀ (input false).fixed_faces
+    (permissions false true S).allowed s e
+  change coefficient K₀ L₀ R₀ c₀ hf₀ e.2.1 (h.1.1.1 ⟨e,trivial⟩) = _ at heval
+  rw [hv,hz',map_zero] at heval
+  have hs := internal_one_retained false S
+  change realCorrection K₀ R₀ c₀
+    (fixedEdgesForRange (P₀).edges C₀ (permissions false true S).allowed) s e = (fun _ => 1) at hs
+  rw [hs] at heval
+  have h01 := congrArg (fun v : V => v 0) heval
+  exact (by decide : (0 : ZMod 3) ≠ 1) h01
+
 end AAT.AG.RelativeRepairComposition.C16CandidateGenerated
 #assert_standard_axioms_only AAT.AG.RelativeRepairComposition.C16CandidateGenerated

@@ -2506,7 +2506,7 @@ privateは非共有かつ非物理固定かつ非candidateの常時補正辺だ�
 `contextual_generated_strict`は全actual外部環境に対するそのstrict修復存在一致 iff 同じ生成Cの等号を証明する。
 `AdmitsPins`は明示した実pin入力とその候補許可条件が環境族に属するという原始追加の許容条件であり、singleton relationの存在はfieldに入れない。
 `pin_environment_range`で実singletonを導き、`contextual_generated_family_all`はこの原始追加を許す各族の全実環境と全Sに同じ判定を適用する。
-C16の文脈claimは存在判定であり、境界rangeから全内部groupoidを回復するclaimではない。
+C16の文脈claimは共有補正の実現可能集合による存在判定である。
 
 | Material premise | 種類・生成元 | 実使用と到達先 |
 | --- | --- | --- |
@@ -2573,7 +2573,7 @@ candidate禁止後は両共有関係が{0}、解禁後は全共有vectorとな�
 - `NativeAffine.ParallelPins.included_pasting_value`
 - `NativeAffine.ParallelPins.reference_three_law`
 
-`AffineSingletonEnvironment.lean` (7明示宣言、source SHA256 `3c15f0989c34ced7db375cb97dc907876ab9ec1c49303be84776723413f36518`):
+`AffineSingletonEnvironment.lean` (7明示宣言、source SHA256 `e103183eae99782b5a73da7884554f0a0bd8c72467f81a6ee3d5d9d0bc79675b`):
 
 - `NativeAffine.ParallelPins.forbidden`
 - `NativeAffine.ParallelPins.restrictRepair`
@@ -2593,7 +2593,7 @@ candidate禁止後は両共有関係が{0}、解禁後は全共有vectorとな�
 - `NativeAffine.ParallelPins.wholeLabelArrow`
 - `NativeAffine.ParallelPins.whole_label_arrow_value`
 
-`GeneratedBoundaryRelation.lean` (6明示宣言、source SHA256 `017c25429a0d264aec29cd05eebe854e068ba4a3660cfc0718311192aa918cc2`):
+`GeneratedBoundaryRelation.lean` (7明示宣言、source SHA256 `7a1fedaa0db10a87c44c3285fdb79a8ea2d9f6a07370ca63823445e3ba6f9153`):
 
 - `FiniteNative.boundaryPublicValue`
 - `FiniteNative.restored_boundary_value`
@@ -2626,7 +2626,7 @@ candidate禁止後は両共有関係が{0}、解禁後は全共有vectorとな�
 - `NativeAffine.actualBoundary`
 - `NativeAffine.generated_boundary_actual`
 
-`C16AffinePinRegression.lean` (23明示宣言、source SHA256 `c2bf368944e3fc5e527daf1d174e5309fbd34b112447db1a1246344594b2dc23`):
+`C16AffinePinRegression.lean` (23明示宣言、source SHA256 `93a17ff92dc6d8087e6cec76265b3571ebf9d7702ca844b158336efbd4c61383`):
 
 - `C16AffinePinRegression.forwardFace`
 - `C16AffinePinRegression.backwardFace`
@@ -2660,7 +2660,7 @@ candidate禁止後は両共有関係が{0}、解禁後は全共有vectorとな�
 - `ContextRelations.contextual_iff_equal`
 - `ContextRelations.contextual_ranges`
 
-`FinitePresentationEmbedding.lean` (5明示宣言、source SHA256 `7f8d0bc0488cb63f4bc2ef0ebae3a443ae029fc1a962eec5d82bea4444efefa5`):
+`FinitePresentationEmbedding.lean` (5明示宣言、source SHA256 `4dc3625c65c7f3450df1be3557d8b69981884673b2fb8a853c22d52c0d0276bf`):
 
 - `embeddedPath`
 - `FinitePresentationEmbedding`
@@ -2672,7 +2672,7 @@ candidate禁止後は両共有関係が{0}、解禁後は全共有vectorとな�
 
 - `ParallelPinGeometry.embedding`
 
-`AffineEmbeddedValues.lean` (5明示宣言、source SHA256 `bfa3065934d2de307692f911067cc9bbe0ab42fd701d84e80cbee88704b96d8a`):
+`AffineEmbeddedValues.lean` (5明示宣言、source SHA256 `3687f4b6b27d35015f13c94d04313c5b71a5e18d44641a8220da81e8415cabf1`):
 
 - `NativeAffine.embeddedOperation`
 - `NativeAffine.embedded_word_value`
@@ -2680,7 +2680,7 @@ candidate禁止後は両共有関係が{0}、解禁後は全共有vectorとな�
 - `NativeAffine.restrictEmbeddedRepair`
 - `NativeAffine.embedded_correction_value`
 
-`AffineContextInput.lean` (7明示宣言、source SHA256 `194ccc3ae7b04c3b335d93b5365b5e02657a55df269ef8324c84e95cea1f2086`):
+`AffineContextInput.lean` (7明示宣言、source SHA256 `2c9c3a2af458f12516990735f328d2b295538517ff2b11e957ddb4291d21b2d6`):
 
 - `NativeAffine.AffineContextInput`
 - `NativeAffine.AffineContextInput.Range`
@@ -2745,7 +2745,7 @@ candidate禁止後は両共有関係が{0}、解禁後は全共有vectorとな�
 - `NativeAffine.AffineContextInput.strict_repairs_nonempty`
 - `NativeAffine.AffineContextInput.contextual_strict_actual`
 
-`AffineContextFamilies.lean` (6明示宣言、source SHA256 `8e3795c4bdede7970bc0c584d7ab057e9c14c2f7d53c3cf64c60ee219e21e337`):
+`AffineContextFamilies.lean` (7明示宣言、source SHA256 `f9b47955921e2d7d98ab269173f08498d0e7630a4b1dbe5b8d25952c92cf2f4e`):
 
 - `NativeAffine.AffineContextInput.pinEnvironment`
 - `NativeAffine.AffineContextInput.pin_environment_range`
@@ -2793,7 +2793,7 @@ candidate禁止後は両共有関係が{0}、解禁後は全共有vectorとな�
 - `C16CandidateContextRegression.internal_one_retained`
 - `C16CandidateContextRegression.internal_relations_different`
 
-`C16AffineContextRegression.lean` (16明示宣言、source SHA256 `76cfeb30c4bfbc59499a5771d19bd850f2a2b798d0f9dfc0deda6b6db7c8a3e9`):
+`C16AffineContextRegression.lean` (17明示宣言、source SHA256 `2b334cb368634da76e8478dd7cf790f5109231bd2da602c190b1dabb915cdfeb`):
 
 - `C16AffineContextRegression.allowed`
 - `C16AffineContextRegression.fixed_condition`
@@ -2818,7 +2818,7 @@ candidate禁止後は両共有関係が{0}、解禁後は全共有vectorとな�
 - `NativeAffine.AffineContextInput.contextual_generated_family`
 - `NativeAffine.AffineContextInput.contextual_generated_family_all`
 
-`C16CandidateGenerated.lean` (13明示宣言、source SHA256 `92ba73237aab584f4e127eba32a60c4fc28e1940eae92b819e2a8ed76dffd340`):
+`C16CandidateGenerated.lean` (15明示宣言、source SHA256 `09b7bce08fddac7bd045e6ff0a787620c7e8bca6e41952562fe6a80f8c00d8f2`):
 
 - `C16CandidateGenerated.edgeEquality`
 - `C16CandidateGenerated.faceEquality`
@@ -2833,6 +2833,22 @@ candidate禁止後は両共有関係が{0}、解禁後は全共有vectorとな�
 - `C16CandidateGenerated.relation_actual`
 - `C16CandidateGenerated.relations_equal`
 - `C16CandidateGenerated.generated_contextual`
+
+査読で名指しされた公開API・正負例として、次の6補助宣言を追加する。
+
+- `NativeAffine.real_correction_value`
+- `FiniteNative.boundary_public_zero_zero`
+- `NativeAffine.AffineContextInput.not_admits_pins_empty_of_repair`
+- `C16AffineContextRegression.not_admits_pins_empty`
+- `C16CandidateGenerated.boundary_public_zero_zero`
+- `C16CandidateGenerated.boundary_public_zero_rejects_internal_one`
+
+既存所有source `NativeAffineCorrection.lean` (5明示宣言、source SHA256 `4bd3a03107254b859a6586aeafbd3bf2d929fa0ae499fb49c8fc5eb4dab9430a`) では、raw評価APIを追加し、C16の三箇所は同じ評価APIを使用する。元4受理宣言も同じ選定監査本体に含める。
+
+- `NativeAffine.native_repair_correction_value`
+- `NativeAffine.realCorrection`
+- `NativeAffine.real_correction_native`
+- `NativeAffine.real_correction_restore`
 
 追加の個別公理対象は次の93件である。型付きembedding/actual入力/permissionの全structure生成APIと新word再帰補助91件、受理依存の使用先補助2件を含む。
 
@@ -2932,11 +2948,11 @@ candidate禁止後は両共有関係が{0}、解禁後は全共有vectorとな�
 
 ### C16 — 到達点と検証
 
-28選定production sourceのroot単一file focused確認は、最終内容で全28がexit0/errors0/warnings0。
+28新productionと評価APIの既存所有sourceのroot単一file focused確認は、現在のsource hashで全29がexit0/errors0/warnings0。
 それらの同じ元実行本体を再現した単一named milestone focused確認もexit0/errors0/warnings0。
-全219明示宣言と91新生成API、および2受理使用先補助の計312件の個別 `#print axioms` は欠落0・標準公理のみ。
-公理log SHA256 `9299df97be1fcf2f0b48c65ff8aee87fd99d1280957747b0cf32ec925a6080b6`、再現source SHA256 `4e55d10a0901d73b3a0e56e89b944853ad3896603177be446030003c3136ed89`。
-28原source/hash/一意registry行、placeholder/hidden-BiDi/privacy/語彙/import方向/保護領域/diff scanは一致・clean。
+225新明示宣言と91新生成API、既存所有sourceの4受理宣言と2使用先補助の計322件の個別 `#print axioms` は欠落0・標準公理のみ。
+公理log SHA256 `f7fdf0022da13b82c481aec8e1b02502c728ffa70d3cf1df36707e9eb945bd27`、再現source SHA256 `c0d437e4e7fd63d4eb4b2be26193ad5e932c134be453010eb5301bedba37a805`。
+29原source/hash/一意registry行、placeholder/hidden-BiDi/privacy/語彙(imported identifierと数学座標語を区別し、新規地の文のAAT hard ruleも含む)/import方向/保護領域/diff scanは一致・clean。
 Research全体、aggregate root、全file/module loopのelaborationは実行していない。
 固定GOAL、数学本文、Formal、共通基準、CI設定は変更しない。
 
@@ -2950,11 +2966,11 @@ result:
     - "同じ生成D/F/kernel/sectionで全候補零→内部候補消去→full共有C=独立actual rangeを全Sで証明"
     - "全actual env/whole compatible permissionsの元実操作strict存在一致 iff C等号、原始pin追加許容族/全Sへ接続"
     - "F3²非零shear/非空3-cell/実不能/full stabilizer、F3内部candidate関係差と生成C/全Ctx回帰を構成"
-  exit_criteria_status: ["元全geometry/任意L,R/P/name/新pin由来: ParallelPinGeometry/Incidence/Operations", "actual singleton両方向/全labels: AffineSingletonEnvironment/PinContextInput/PinLabels", "同じ生成C/候補零と内部消去: GeneratedBoundaryRelation/AffineGeneratedBoundary/ContextGenerated", "全S/全actual env iffとprimitive許容族: AffineContextEquivalence/Families/StrictContexts/Conclusion", "非零success/failure/非空3/full stabilizer/内部消去: C16の両actual回帰、28focused/312個別公理; 正式PR gateはPR作成後に判定"]
+  exit_criteria_status: ["元全geometry/任意L,R/P/name/新pin由来: ParallelPinGeometry/Incidence/Operations", "actual singleton両方向/全labels: AffineSingletonEnvironment/PinContextInput/PinLabels", "同じ生成C/候補零と内部消去: GeneratedBoundaryRelation/AffineGeneratedBoundary/ContextGenerated", "全S/全actual env iffとprimitive許容族: AffineContextEquivalence/Families/StrictContexts/Conclusion", "非零success/failure/非空3/full stabilizer/内部消去: C16の両actual回帰、29focused/322個別公理; 正式PR gateはPR作成後に判定"]
   split_reason: none
   completion_candidate: no
-  lean_artifacts: ["上記28source/219明示spine/91新生成API/2受理使用先補助"]
-  evidence: ["全312個別標準公理/28source focused", "原新pin実operation/restoration/alllabels", "same generator candidatezero-before-projection/full shared actualrange", "全actual envとprimitive追加許容族の全S strict existence iff", "F3²非零shear/full3/stabilizerとF3 candidate elimination"]
+  lean_artifacts: ["28新sourceと既存所有source/225新明示/91新生成/6受理宣言・使用先補助"]
+  evidence: ["全322個別標準公理/29source focused", "原新pin実operation/restoration/alllabels", "same generator candidatezero-before-projection/full shared actualrange", "全actual envとprimitive追加許容族の全S strict existence iff", "F3²非零shear/full3/stabilizerとF3 candidate elimination"]
   claim_mapping:
     theorem_names: [reference_three_law, singleton_correction, pinLabelEquivalence, context_singleton_range, shared_three_law, generated_boundary_actual, generated_shared_actual, pull_shared_bijective, boundary_eq_iff, strictRepairEquiv, contextual_generated_strict, contextual_generated_family_all, every_actual_context, generated_contextual]
     source_labels: ["固定GOAL E文脈同値", "固定GOAL Fの同じ有限affine族へのE文脈適用", "n1017 3.2", "design5"]
@@ -2978,7 +2994,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: ["28production/同じnamed milestone focused exit0/errors0/warnings0", "全312個別標準公理/欠落0", "axiom log SHA256 9299df97be1fcf2f0b48c65ff8aee87fd99d1280957747b0cf32ec925a6080b6", "全source/hash/registry/static scans"]
+  validation_refs: ["29選定production/同じnamed milestone focused exit0/errors0/warnings0", "全322個別標準公理/欠落0", "axiom log SHA256 f7fdf0022da13b82c481aec8e1b02502c728ffa70d3cf1df36707e9eb945bd27", "全source/hash/registry/static scans"]
   blocking_findings: []
   next_obligation: "C16固定headの標準review-pr/math-lean-review/root受理/CI後、Eの内部always辺分割を元一般可換核/全geometry/実補正から構成"
 ```

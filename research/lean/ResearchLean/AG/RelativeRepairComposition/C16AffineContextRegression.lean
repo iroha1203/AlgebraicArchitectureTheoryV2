@@ -60,6 +60,10 @@ theorem actual_zero_failure : ¬ ∃ s : input.Repairs permissions, input.bounda
   have hv := congrArg (fun v : V => v 0) ht
   norm_num [x] at hv
 
+/-- The nonzero actual shared repair witnesses failure of the primitive-pin predicate for the empty family. -/
+theorem not_admits_pins_empty : ¬ input.AdmitsPins allowed ∅ :=
+  input.not_admits_pins_empty_of_repair allowed baseRepair
+
 /-- Exact actual permitted labels are the full original zero-coboundary vectors. -/
 theorem actual_label_conditions (b : geometry.Vertex → V) :
     b ∈ gaugeLabels input.geometry input.references input.fixed.vertices
