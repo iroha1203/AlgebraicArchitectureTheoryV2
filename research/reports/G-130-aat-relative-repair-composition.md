@@ -664,3 +664,120 @@ audits:
 5登録sourceに個別の`research/lean/check_research_modules.sh --focused ResearchLean/AG/RelativeRepairComposition/<file>.lean`を実行し、全exit0。正確な全5source本体からimport行だけを除いた単一のCycle7Auditで全135明示宣言と生成された先行`RelativeCover.r0.congr_simp`、計136宣言を個別`#print axioms`し、標準公理のみを確認。監査log SHA256 `3c577ac430971c990a153ffa9e28f4dd7197aec309f5f215867f4ce918b09630`。必要なsingle targeted dependency checkはrootのみで実施。Research全体/aggregate/全file loop、subagent lake buildは実行しない。比較自然同型とseam値APIの局所elaborationには最大1,000,000 heartbeatsの有限上限を用い、statementとkernel条件を変更しない。
 
 placeholder/hidden-BiDi/privacy/import方向とdiff checkを確認。PR正式査読と同一head CIは、この実装結果の独立判定として後続する。有限被覆・Ω/connecting・C–F・W1–W5の未達を維持し、今回を全GOAL完了候補としない。
+
+## Cycle 8：有限閉被覆の全cocycleとnative実修復の復元比較
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 8
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: d7d56e80eded4095000ce7f15320ead051338e3a
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "Cycle7の二領域全native実修復同値とCycle6の元セル族・全微分"
+  proof_dag_predecessors: [RelativeCover.r0, RelativeCover.r1, RelativeCover.r_d0, RelativeCover.r_d1, NativeDescent.restrictionFunctor, NativeDescent.restriction_obj_choice, NativeDescent.restriction_map_value, ActualEquation.originalRepairEquationEquivalence, ActualEquation.nativeRepairEquationEquivalence]
+  milestone: "Bの有限閉被覆について、三重交差の全再同定cocycleを保持する全native descent groupoidから元Kの独立実修復を復元し、細分化・組立て比較を同じ大域復元と整合させる"
+  proof_obligations: ["元0–3-cellの領域族被覆と相対原値族の全貼り合わせ", "全局所解・全overlap labels・三重cocycleと全compatible局所射のnative groupoid", "頂点別の所属領域と全seamから生成する厳密化と全大域修復復元", "全射復元とfaithful・全inverse/unit/counit", "同じ実辺・全再同定・全seamのnative局所実修復との対応", "包含制限の合成/恒等比較と全typed三重cocycle", "原値細分化関手と大域復元比較", "閉合併による組立て/並べ替え比較と同じ大域復元"]
+  exit_criteria: ["任意有限被覆・全descent対象/全compatible射を量化", "実修復は元Kとnative局所の独立定義", "全choice/vertex labels/overlap arrowsと三重cocycleを保持", "結論のgluing/effectivity/同値certificateを入力にしない", "refinement/assemblyの全native比較を大域復元へ接続", "focused・全宣言個別公理・scanとPR監査"]
+  selection_reason: "二領域の全実修復descentを有限被覆の三重再同定と組立てへ接続し、Bの復元・比較の未放電義務を消す"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/RelativeRepairComposition/IndexedFamilies.lean, ResearchLean/AG/RelativeRepairComposition/IndexedClosedCovers.lean, ResearchLean/AG/RelativeRepairComposition/IndexedEquationDescent.lean, ResearchLean/AG/RelativeRepairComposition/NativeRestrictionCoherence.lean, ResearchLean/AG/RelativeRepairComposition/IndexedNativeDescent.lean, ResearchLean/AG/RelativeRepairComposition/DescentRefinement.lean]
+  risks: ["cocycleをpi0に落とさない", "同じ元Kと全kernelを保持", "全gauge actionのinstanceとeffectivityを入力から生成", "三重交差の型/比較/全文脈を省かない", "degreewise延長をchain mapと扱わない", "general BのchoiceをCの有限計算sectionへ転用しない", "refinement/assemblyを裸の同型存在へ縮小しない"]
+  unchecked: ["実装・検証・独立PR監査前"]
+```
+
+相対原値族と頂点別厳密化は一般の領域族で構成し、有限被覆をその同じ対象・射に適用する。Cの有限生成アルゴリズムや停止を今回の非計算的構成から推論しない。指定局所案H1条件とΩ/connecting/kernel比較、C–F、W1–W5は別の未完義務として保持する。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "全元0–3-cell被覆、全局所実修復と全overlap gauge/triple cocycleから元Kへのeffectivityを生成。全compatible射、制限の合成/恒等、refinement/assembly/reorder/bracketの全native比較を同じ元K復元へ接続"
+  exit_criteria_status: ["全有限被覆を含む一般index族: IndexedCoverとdegree0–3 familyEquiv", "独立実修復・全seam射: IndexedNative.Datum/overlapArrow", "全対象復元: strictification_difference/restore_equation/restoreActual/canonicalRestorationIso", "全射・inverse/unit/counit: diagonal_full/faithful/essSurjとnative Equivalence", "制限合成/恒等と全typed重なり: restrictionComposition/Identityとtriple_gauge_cocycle", "全refinement/assembly/order/bracketと元K復元: 各restoration*Comparison", "6登録source focused、162明示宣言を含む209宣言の個別公理監査"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [IndexedFamilies.lean, IndexedClosedCovers.lean, IndexedEquationDescent.lean, NativeRestrictionCoherence.lean, IndexedNativeDescent.lean, DescentRefinement.lean]
+  evidence: [IndexedEquation.strictification_difference, IndexedEquation.restore_equation, IndexedEquation.diagonal_full, IndexedEquation.diagonal_faithful, IndexedEquation.diagonal_essSurj, IndexedNative.actual_coordinates, IndexedNative.coordinates_actual, IndexedNative.arrowOfLabels, IndexedNative.equivalence, IndexedNative.global_choice, IndexedNative.global_map_value, IndexedNative.canonicalRestorationIso, IndexedNative.triple_gauge_cocycle, IndexedNative.restorationRefinementComparison, IndexedNative.restorationAssemblyComparison, IndexedNative.restorationReorderComparison, IndexedNative.restorationAssemblyBracketComparison]
+  claim_mapping:
+    theorem_names: [IndexedNative.equivalence, IndexedNative.canonicalRestorationIso, IndexedNative.restorationRefinementComparison, IndexedNative.restorationAssemblyComparison, IndexedNative.restorationReorderComparison, IndexedNative.restorationAssemblyBracketComparison]
+    source_labels: ["固定GOAL B: 有限閉被覆のcocycleと全native復元・細分化・組立て比較", "n1017 §2.3(E)"]
+    conjuncts: ["同じ元Kの全独立実修復", "全局所実修復と全overlap arrows", "全元vertexの三重cocycle", "全compatible局所gauge射", "全元edge choices/vertex labels/seamの保存", "native inverse/unit/counitと生成済canonical restoration", "全refinement/assembly/order/bracketから同じ元K復元への自然同型"]
+    undischarged_assumptions: []
+    acceptance_point: "今回の有限被覆descent到達点の全exit criteriaを構成。独立受理判定は固定headのPR監査へ渡す"
+    port_status: unported (Research-proved)
+audits:
+  premise_delta:
+    discharged: ["全次数の元セル復元: Family.indexedEquiv", "三重cocycleからseam厳密化: strictification_difference", "大域face方程式: 全face被覆とr_d1/局所解条件", "全射復元/faithful: 全元vertex/edge被覆", "全実修復/全native labels: actual_coordinates/coordinates_actualとlabelEquiv", "実辺制限合成: 全choice値からrestriction_comp_obj", "full refinement/effectivity: common global diagonal comparison", "assembly/order/bracket: 元cell inclusionと全cover保存"]
+    remaining: ["指定局所案H1条件・Ω/connecting/kernel比較", "C–F、W1–W5"]
+  certificate_provenance:
+    discharged: ["IndexedCoverは元集合の被覆だけ", "全indexed action: 局所gauge equationと全seam/cocycleから生成", "native action: 独立実修復/実seam datumの全往復と全label同型から生成", "effectivity: 頂点別seam厳密化と元edge/faceの全gluing", "全逆関手/比較: 生成済full/faithful/essSurjとnative Equivalence", "同じ大域復元比較: raw refinementと両global diagonalの全自然同型から生成"]
+    unresolved: []
+  proof_use:
+    used: ["hfixedは実δのP零", "各閉領域の元incidenceはd0/d1 restriction交換", "全vertex被覆は全seam厳密化とgauge injectivity", "全edge被覆は大域edge gluingと全射条件", "全face被覆は大域affine equation", "全triple被覆はdegree3全原値族同型", "全overlap gauge/cocycleはstrictification difference", "原始solutionCorrection/correctionChoice両逆は全physical choicesの保存"]
+    unused: ["d2δ零はeffectivityには不要。後続Ω/connectingで別途使用", "非計算的coveringIndexをCの有限消去/停止/計算sectionへ転用しない"]
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: []
+  next_obligation: "Bの指定局所案H1条件、Ω/connecting/kernel比較"
+```
+
+### 構成と元値保存
+
+`IndexedCover`は元Kの0–3-cellを各々含む領域があるという条件だけを持つ。元cell別の所属領域を選び、全互換局所族から元値を復元する`familyEquiv0`–`familyEquiv3`を構成した。非空index/非空修復/有限carrierは追加しない。空indexの場合も元cell被覆という同じ条件で扱う。
+
+全局所解`hᵢ`と全overlap labels`bᵢⱼ`は`hⱼ|=hᵢ|+d0 bᵢⱼ`、対角零、元vertex上の`bᵢⱼ+bⱼₖ=bᵢₖ`を満たす。元vertex別に`r(v)`を選び、`aᵢ(v)=bᵣ₍ᵥ₎,ᵢ(v)`を生成する。三重cocycleから`bᵢⱼ=aⱼ−aᵢ`、補正局所解`hᵢ−d0 aᵢ`の全共有edge値の等値を得る。全edge gluingと全face検出から、元Kの大域解を復元する。全compatible局所gauge射も、元vertex gluingと全edge検出で生成し、全射・faithful・essSurjを証明する。
+
+`IndexedNative.Datum`は各native閉領域の独立`SupportedRepair`と全native vertex labelsを持ち、seam fieldには実際のgauge action equationを要求する。`overlapArrow`はその全実射であり、`triple_gauge_cocycle`は固定bracketの三重原値族における全文のcocycleである。制限の合成/恒等比較は元の全physical choicesから対象等式を生成し、identity labelsを持つ両方向の射と全raw labelsのnaturalityを備える。全datum/labelsの往復から生成するnative actionが各独立局所gaugeに一致すること、全compatible射を生成する`arrowOfLabels`、全seam値の条件を証明した。
+
+大域sourceは元Kの`RepairGroupoid T P.vertices P.edges`である。全局所physical choices、全元vertex label、全zero seamsを保存し、`restoreActual`は全native datumから元Kの独立実修復を生成する。`canonicalRestorationIso`はその大域修復の全局所制限から入力datumへの具体的な全gauge isomorphismであり、各labelは同じ元vertexで生成した`aᵢ(v)`そのものである。逆方向には全inverse labelsを持つ。単なるorbit対応へ縮小しない。
+
+raw refinementはindex mapと全0–3-cell inclusionから、全局所対象・射・seamを元値制限するfunctorとして構成した。粗細の独立vertex choiceにより復元objectは一般には等号にならないため、両方の元K復元functorの全自然同型`restorationRefinementComparison`を構成した。閉合併assembly、順序変更、nested assemblyのbracket変更も、全元cell inclusion・cover保存を証明して同じnative比較へ接続した。
+
+### Material premise と一次生成経路
+
+| premise・条件 | 分類 | 使用・放電 |
+| --- | --- | --- |
+| 元`OriginalTowerPresentation`の実塔、全核、strong edge lifts、comparators | 許された数学入力 | 先行元/native座標同型のcurrent statementと同じargsを使用 |
+| 固定閉Pと全閉領域族 | 幾何入力 | 元incidence、P零、restrictionとd0/d1交換 |
+| P上の実lift面整合 | 固定条件 | 同じ実δの相対所属を生成 |
+| 全元0–3-cell被覆 | 集合被覆 | 各次数の全原値gluing、全射の元値検出 |
+| 全local actual repairs/seams/cocycle | descent入力 | 独立実修復と全実再同定を保持しstrictificationを生成 |
+| full/faithful/essSurj/effectivity | 結論 | 元cell gluingと局所equation/cocycleから証明 |
+| 全native gauge action | 構成 | 独立actual datum往復、全label同型から生成し全局所gaugeと全seam値に照合 |
+| 全refinement/assembly比較 | 結論 | raw原値functorと両global diagonalsから生成 |
+| 非計算的coveringIndex | general Bの構成 | Cの有限計算・停止・sectionではない |
+
+### 全宣言と検証
+
+`IndexedFamilies.lean` (16明示宣言):
+
+`Family.indexedCompatible`, `Family.mem_indexedCompatible`, `Family.indexedRestriction`, `Family.indexed_restriction_val`, `Family.coveringIndex`, `Family.covering_index_mem`, `Family.indexedGlue`, `Family.indexed_glue_on`, `Family.indexed_glue_restriction`, `Family.indexed_restriction_glue`, `Family.indexed_restriction_injective`, `Family.indexedEquiv`, `Family.indexedRefinement`, `Family.indexed_refinement_val`, `Family.indexed_refinement_restriction`, `Family.indexed_glue_refinement`。
+
+`IndexedClosedCovers.lean` (35明示宣言):
+
+`ClosedRegion.IndexedCover`, `ClosedRegion.indexedUnion`, `ClosedRegion.to_indexed_union`, `ClosedRegion.triple`, `ClosedRegion.triple_first_pair`, `ClosedRegion.triple_second_pair`, `ClosedRegion.triple_outer_pair`, `IndexedCover.Compatible0`, `IndexedCover.restriction0`, `IndexedCover.glue0`, `IndexedCover.familyEquiv0`, `IndexedCover.restriction0_injective`, `IndexedCover.glue0_value`, `IndexedCover.restrict_glue0`, `IndexedCover.Compatible1`, `IndexedCover.restriction1`, `IndexedCover.glue1`, `IndexedCover.familyEquiv1`, `IndexedCover.restriction1_injective`, `IndexedCover.glue1_value`, `IndexedCover.restrict_glue1`, `IndexedCover.Compatible2`, `IndexedCover.restriction2`, `IndexedCover.glue2`, `IndexedCover.familyEquiv2`, `IndexedCover.restriction2_injective`, `IndexedCover.glue2_value`, `IndexedCover.restrict_glue2`, `IndexedCover.Compatible3`, `IndexedCover.restriction3`, `IndexedCover.glue3`, `IndexedCover.familyEquiv3`, `IndexedCover.restriction3_injective`, `IndexedCover.glue3_value`, `IndexedCover.restrict_glue3`。
+
+`IndexedEquationDescent.lean` (26明示宣言):
+
+`IndexedEquation.Datum`, `IndexedEquation.Labels`, `IndexedEquation.gauge`, `IndexedEquation.gauge_zero`, `IndexedEquation.gauge_add`, `IndexedEquation.addAction`, `IndexedEquation.Groupoid`, `IndexedEquation.diagonalDatum`, `IndexedEquation.diagonalLabels`, `IndexedEquation.diagonal_gauge`, `IndexedEquation.diagonalFunctor`, `IndexedEquation.strictificationLabels`, `IndexedEquation.strictification_difference`, `IndexedEquation.strictification_seam_zero`, `IndexedEquation.strictCompatible`, `IndexedEquation.restoreEdges`, `IndexedEquation.restore_restriction`, `IndexedEquation.restore_equation`, `IndexedEquation.restoreSolution`, `IndexedEquation.diagonal_restore`, `IndexedEquation.gauge_diagonal_restore`, `IndexedEquation.diagonal_faithful`, `IndexedEquation.diagonal_full`, `IndexedEquation.diagonal_essSurj`, `IndexedEquation.diagonal_is_equivalence`, `IndexedEquation.equivalence`。
+
+`NativeRestrictionCoherence.lean` (14明示宣言):
+
+`actionLabelIso`, `action_label_iso_label`, `action_label_iso_inverse_label`, `identityLabelIso`, `identityLabelComparison`, `identity_comparison_label`, `NativeDescent.restriction_comp_obj`, `NativeDescent.restriction_comp_map`, `NativeDescent.restriction_id_obj`, `NativeDescent.restriction_id_map`, `NativeDescent.restrictionComposition`, `NativeDescent.restrictionIdentity`, `NativeDescent.restriction_composition_label`, `NativeDescent.restriction_identity_label`。
+
+`IndexedNativeDescent.lean` (37明示宣言):
+
+`IndexedNative.LocalRepair`, `IndexedNative.LocalLabels`, `IndexedNative.labelValue`, `IndexedNative.label_value_native`, `IndexedNative.restrictRepair`, `IndexedNative.restriction_coordinates`, `IndexedNative.Datum`, `IndexedNative.coordinates`, `IndexedNative.actual`, `IndexedNative.actual_coordinates`, `IndexedNative.coordinates_actual`, `IndexedNative.datumEquiv`, `IndexedNative.Labels`, `IndexedNative.labelEquiv`, `IndexedNative.addAction`, `IndexedNative.Groupoid`, `IndexedNative.coordinates_gauge`, `IndexedNative.coordinateEquivalence`, `IndexedNative.equivalence`, `IndexedNative.gauge_local`, `IndexedNative.gauge_seam_value`, `IndexedNative.arrow_local`, `IndexedNative.arrow_seam_value`, `IndexedNative.arrowOfLabels`, `IndexedNative.arrow_of_labels_label`, `IndexedNative.global_choice`, `IndexedNative.global_map_value`, `IndexedNative.global_seam`, `IndexedNative.restoreActual`, `IndexedNative.restore_actual_choice`, `IndexedNative.overlapArrow`, `IndexedNative.overlap_arrow_label`, `IndexedNative.triple_gauge_cocycle`, `IndexedNative.restored_coordinates`, `IndexedNative.gauge_global_restore`, `IndexedNative.canonicalRestorationIso`, `IndexedNative.canonical_restoration_label_value`。
+
+`DescentRefinement.lean` (34明示宣言):
+
+`ClosedRegion.inter_inclusion`, `IndexedEquation.refineDatum`, `IndexedEquation.refineLabels`, `IndexedEquation.refine_gauge`, `IndexedEquation.refinementFunctor`, `IndexedEquation.refinement_obj_value`, `IndexedEquation.refinement_map_value`, `IndexedEquation.refinement_seam_value`, `IndexedEquation.refine_diagonal`, `IndexedEquation.diagonalRefinementComparison`, `IndexedEquation.diagonal_refinement_comparison_label`, `IndexedEquation.refinement_is_equivalence`, `IndexedEquation.refinementEquivalence`, `IndexedEquation.restorationRefinementComparison`, `ClosedRegion.assembly`, `ClosedRegion.to_assembly`, `ClosedRegion.assembly_cover`, `ClosedRegion.assembly_flatten`, `ClosedRegion.assembly_unflatten`, `ClosedRegion.reindex_cover`, `IndexedNative.refinementFunctor`, `IndexedNative.refinement_local_choice`, `IndexedNative.refinement_map_value`, `IndexedNative.refinement_seam_value`, `IndexedNative.diagonalRefinementComparison`, `IndexedNative.refinement_is_equivalence`, `IndexedNative.refinementEquivalence`, `IndexedNative.restorationRefinementComparison`, `IndexedNative.assemblyEquivalence`, `IndexedNative.restorationAssemblyComparison`, `IndexedNative.reorderEquivalence`, `IndexedNative.restorationReorderComparison`, `IndexedNative.assemblyBracketEquivalence`, `IndexedNative.restorationAssemblyBracketComparison`。
+
+6登録sourceの個別focused checkは全exit0。正確な6source本体からimport行だけを除いた単一Cycle8Auditにより、全162明示宣言とstructure生成宣言等を含む全209宣言を個別`#print axioms`し、全件標準公理のみ。公理log SHA256 `578a87faf8e21d3b11479ba8ce074376d1e5c340faaec867f0bfb8f7c4ea154f`。rootのみ必要single targeted dependencyを確認し、Research全体/aggregate/全file loopとsubagent lake buildは実行しない。局所elaborationの有限heartbeats上限でstatement/仮定を変更しない。
+
+placeholder/hidden-BiDi/privacy/import方向/diff checkを確認。正式PR査読と同一head CIはこの実装結果の独立判定として後続する。指定局所案H1条件、Ω/connecting/kernel、C–F、W1–W5は未達であり、全GOAL completion candidateとはしない。
