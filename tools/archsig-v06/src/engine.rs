@@ -403,6 +403,7 @@ pub fn plan_check(before: &Structure, after: &Structure, overlay: &Overlay, laws
 
 /// `compare`(マニュアル第5章 問い3の「実装後に比べる」)。変更前は元のコミットの ArchMap、変更後は観測し直した ArchMap で、
 /// `plan check` と同じ計算をする。候補の構造 Atom が観測されていないものと、候補にない書き込みを `mismatch` として返す。
+/// `sources` は、Law の `sources` に当たる、変更前のコミットのソースのファイル。
 pub fn implemented(before: &Structure, after: &Structure, overlay: &Overlay, laws: &LawSet, sources: &[String]) -> Vec<Finding> {
     let mut out = plan_check(before, after, overlay, laws, sources);
     // 変更後の要素が同じ意味を持つかは、観測し直した意味 Atom で確かめる(マニュアル第5章 問い3)。
@@ -440,11 +441,32 @@ pub fn implemented(before: &Structure, after: &Structure, overlay: &Overlay, law
         theory: Some(THEORY_CHANGES.to_string()),
         ..Finding::default()
     };
-    for a in &overlay.unobserved {
-        out.push(mismatch(a, json!({"planned": a, "observed": null})));
+    // 観測されていないと言えるのは、それが観測されるはずのソースの構造を読んでいるときだけである(設計 §5.1)。
+    for (a, source) in &overlay.unobserved {
+        let f = match source {
+            Some(p) if after.observed.contains(&(p.clone(), "structure".to_string())) => mismatch(a, json!({"planned": a, "observed": null})),
+            Some(p) => Finding::silent("change", None, &a.subject, Silence { reason: Reason::Unread, read: Some(p.clone()), element: None, scope: Some("structure".to_string()) }),
+            None => Finding::silent("change", None, &a.subject, Silence { reason: Reason::Unread, read: None, element: Some(a.subject.clone()), scope: None }),
+        };
+        out.push(Finding { theory: Some(THEORY_CHANGES.to_string()), ..f });
     }
     for a in &overlay.unplanned {
         out.push(mismatch(a, json!({"planned": null, "observed": a})));
+    }
+    // 候補の構造 Atom がすべて観測され、候補にない書き込みもない(マニュアル第2章 7.)。
+    if let Some((plan, n)) = &overlay.planned
+        && overlay.unobserved.is_empty()
+        && overlay.unplanned.is_empty()
+    {
+        out.push(Finding {
+            question: "change".to_string(),
+            subject: plan.clone(),
+            outcome: "holds",
+            basis: json!({"plan": plan}),
+            check: json!({"planned": n, "observed": n}),
+            theory: Some(THEORY_CHANGES.to_string()),
+            ..Finding::default()
+        });
     }
     out
 }

@@ -395,10 +395,13 @@ pub struct Overlay {
     pub questions: BTreeMap<String, Atom>,
     /// 書いた対応の元の要素と、その対応の Atom の場所。
     pub corresponds_at: BTreeMap<String, Vec<String>>,
-    /// 実装した後に比べるとき、観測されていない候補の構造 Atom。出現の数だけ足りないものを一つずつ持つ。
-    pub unobserved: Vec<Atom>,
+    /// 実装した後に比べるとき、観測されていない候補の構造 Atom と、それが観測されるはずのソース。
+    /// 出現の数だけ足りないものを一つずつ持つ。
+    pub unobserved: Vec<(Atom, Option<String>)>,
     /// 実装した後に比べるとき、候補に書いた要素への、候補にない書き込み。
     pub unplanned: Vec<Atom>,
+    /// 実装した後に比べるとき、候補の名前と、候補の構造 Atom の数。候補がなければ None。
+    pub planned: Option<(String, usize)>,
 }
 
 /// ArchMap の Atom の列 `before` に、候補の Atom の列 `plan` を重ねる(設計 §3.6)。
@@ -447,12 +450,14 @@ pub fn observed_overlay(before: &[Atom], after: &[Atom], plan: &[Atom]) -> Overl
     out.after = after.to_vec();
     let all: Vec<&Atom> = after.iter().collect();
     trace(&new, &all, &|n: &str| gone(n), &gone, &mut out);
+    let name = plan.iter().find(|a| a.kind == "plan").map(|a| a.subject.clone()).unwrap_or_default();
+    out.planned = Some((name, plan.iter().filter(|a| a.is_structure()).count())).filter(|_| !plan.is_empty());
     // 候補の構造 Atom は、同じ Atom が出現の数だけ観測されている。観測の一つは、候補の Atom の一つにしか当てない。
     let mut used = vec![false; after.len()];
     for p in plan.iter().filter(|a| a.is_structure()) {
         match after.iter().enumerate().find(|(i, o)| !used[*i] && same_atom(p, o)) {
             Some((i, _)) => used[i] = true,
-            None => out.unobserved.push(p.clone()),
+            None => out.unobserved.push((p.clone(), planned_source(plan, &new, p))),
         }
     }
     // 候補に書いた要素への、候補にない書き込み。
@@ -467,8 +472,8 @@ fn removed(plan: &[Atom]) -> impl Fn(&str) -> bool + '_ {
     move |name: &str| removed.iter().any(|x| name == *x || name.starts_with(&format!("{x}.")) || name.starts_with(&format!("{x}->")))
 }
 
-/// 候補の Atom `p` と観測した Atom `o` が同じか。場所は比べない。候補の `defines` の `file` は、観測の `at` のパスと比べる。
-/// 式は、どちらも読めれば読んだ形で比べる。
+/// 候補の Atom `p` と観測した Atom `o` が同じか。Atom の同一性(マニュアル第3章)で比べる。
+/// `value` と `when` は、どちらも式として読めれば読んだ形で比べる。
 fn same_atom(p: &Atom, o: &Atom) -> bool {
     let expr = |a: &Option<String>, b: &Option<String>| match (a, b) {
         (Some(x), Some(y)) => match (expr::parse(x), expr::parse(y)) {
@@ -478,18 +483,32 @@ fn same_atom(p: &Atom, o: &Atom) -> bool {
         (None, None) => true,
         _ => false,
     };
-    let file = match &p.file {
-        Some(f) => o.at.as_deref().and_then(parse_location).is_some_and(|l| &l.path == f),
-        None => true,
-    };
     p.kind == o.kind
         && p.subject == o.subject
         && p.object == o.object
-        && p.params == o.params
-        && p.ty == o.ty
         && expr(&p.value, &o.value)
         && expr(&p.when, &o.when)
-        && file
+        && p.meaning == o.meaning
+        && p.scope == o.scope
+}
+
+/// 候補の Atom が観測されるはずのソース。`defines` は `file`、それ以外は、`subject` の持ち主の要素を定義したソース
+/// (候補の `defines` の `file` か、観測した `defines` の `at`)。決まらなければ None。
+fn planned_source(plan: &[Atom], after: &Structure, a: &Atom) -> Option<String> {
+    if let Some(f) = &a.file {
+        return Some(f.clone());
+    }
+    let owner = match (a.subject.split_once("->"), a.subject.split_once(".$")) {
+        (Some((caller, _)), _) => caller,
+        (None, Some((op, _))) => op,
+        _ => a.subject.as_str(),
+    };
+    plan.iter()
+        .find(|d| d.kind == "defines" && d.subject == owner && d.file.is_some())
+        .and_then(|d| d.file.clone())
+        .or_else(|| {
+            after.atoms.iter().find(|d| d.kind == "defines" && d.subject == owner).and_then(|d| d.at.as_deref()).and_then(parse_location).map(|l| l.path)
+        })
 }
 
 /// 対応を作る(設計 §3.6 の1〜3)。

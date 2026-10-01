@@ -19,6 +19,10 @@ fn git(repo: &Repo, args: &[&str]) -> String {
 fn committed(name: &str) -> (Repo, String) {
     let repo = shop(name);
     repo.map("shop/shipping/address.py", ADDRESS);
+    // Law の `sources` に当たるソースのファイルも置く。読んだ範囲は、これと突き合わせる。
+    for f in ["shop/shipping/service.py", "shop/shipping/address.py", "shop/shipping/model.py", "shop/order/model.py"] {
+        repo.write(f, "# source\n");
+    }
     git(&repo, &["init", "-q"]);
     git(&repo, &["-c", "user.name=t", "-c", "user.email=t@example.com", "add", "-A"]);
     git(&repo, &["-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-q", "-m", "base"]);
@@ -59,7 +63,9 @@ const PAYMENT_MEANING: &str = r#"{"kind": "meaning", "subject": "shop.payment.mo
 /// 実装した後の ArchMap に置き換える。注文の型を消し、配送と決済の新しい型と操作を観測し直した。
 fn implement(repo: &Repo, plan: &str, edit: impl Fn(&str) -> String) {
     std::fs::remove_file(repo.dir.join(".archsig/map/shop/order/model.py.jsonl")).unwrap();
+    std::fs::remove_file(repo.dir.join("shop/order/model.py")).unwrap();
     for (file, mut text) in implemented(plan, edit) {
+        repo.write(&file, "# source\n");
         if file == "shop/shipping/model.py" {
             // Address の型は変わらない。
             text.push_str(ADDRESS_MODEL.lines().filter(|l| l.contains("\"defines\"")).collect::<Vec<_>>().join("\n").as_str());
@@ -90,6 +96,9 @@ fn the_implementation_of_chapter_2_holds_and_matches_the_plan() {
     let results = s["results"].as_array().unwrap();
     assert!(results.iter().any(|r| r["subject"] == "shop.shipping.service.update_shipping"), "{s}");
     assert!(results.iter().all(|r| r["outcome"] == "holds"), "すべて成り立つ: {s}");
+    // 候補の構造 Atom 13 件すべてに、対応する観測がある(第2章 7.)。
+    let matched = repo.run(&["show", result(&s, "split-order")["id"].as_str().unwrap()]);
+    assert_eq!((matched["check"]["planned"].as_u64(), matched["check"]["observed"].as_u64()), (Some(13), Some(13)), "{matched}");
     // 国が変わる / 変わらないの2分岐で、二つの順番の決済情報の値を比べている。
     let d = repo.run(&["show", result(&s, "shop.shipping.service.update_shipping")["id"].as_str().unwrap()]);
     let branches = d["check"]["branches"].as_array().unwrap();
@@ -165,5 +174,51 @@ fn a_target_without_the_meaning_after_reobservation_is_missing() {
     let s = repo.run(&["compare", "--plan", "split-order"]);
     let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "shop.payment.model.OrderPayment.ref").unwrap_or_else(|| panic!("{s}"));
     assert_eq!((r["kind"].as_str(), r["law"].as_str()), (Some("missing"), Some("payment-follows-order")), "{s}");
+}
+
+
+#[test]
+fn atoms_are_compared_by_the_identity_of_chapter_3() {
+    // 同一性は kind、subject、object、value、when、meaning、scope で決まる。型の表記の違いは食い違いではない。
+    let (repo, sha) = committed("identity");
+    let plan = fixed_plan();
+    planned(&repo, &sha, &plan);
+    implement(&repo, &plan, |l| l.replace("\"type\":\"str\"", "\"type\":\"builtins.str\"").replace("\"order_id\":\"str\"", "\"order_id\":\"builtins.str\""));
+    let s = repo.run(&["compare", "--plan", "split-order"]);
+    assert!(s["results"].as_array().unwrap().iter().all(|r| r["kind"] != "mismatch"), "{s}");
+}
+
+#[test]
+fn a_planned_atom_in_a_source_not_read_again_is_silent() {
+    let (repo, sha) = committed("not-read-again");
+    let plan = fixed_plan();
+    planned(&repo, &sha, &plan);
+    implement(&repo, &plan, |l| l.to_string());
+    // 決済のサービスを観測し直していない。
+    std::fs::remove_file(repo.dir.join(".archsig/map/shop/payment/service.py.jsonl")).unwrap();
+    let s = repo.run(&["compare", "--plan", "split-order"]);
+    let reset: Vec<&Value> = s["results"].as_array().unwrap().iter().filter(|r| r["subject"] == "shop.payment.service.reset_authorization").collect();
+    assert!(!reset.is_empty() && reset.iter().all(|r| r["outcome"] == "silent" && r["reason"] == "unread"), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "shop/payment/service.py" && n["scope"] == "structure"), "{s}");
+}
+
+#[test]
+fn an_archmap_under_a_non_ascii_path_is_read_from_the_commit() {
+    let (repo, sha) = committed("non-ascii");
+    let clear = |value: &str| {
+        format!(
+            "{{\"kind\": \"observed\", \"subject\": \"shop/注文/model.py\", \"scope\": \"structure\", \"at\": \"shop/注文/model.py@blob:7a7a7a7\"}}\n{{\"kind\": \"defines\", \"subject\": \"shop.注文.clear\", \"value\": \"operation\", \"params\": {{}}, \"at\": \"shop/注文/model.py:1@blob:7a7a7a7\"}}\n{{\"kind\": \"writes\", \"subject\": \"shop.注文.clear\", \"object\": \"shop.order.model.Order.payment_ref\", \"value\": \"{value}\", \"at\": \"shop/注文/model.py:2@blob:7a7a7a7\"}}\n"
+        )
+    };
+    repo.map("shop/注文/model.py", &clear("None"));
+    repo.write("shop/注文/model.py", "# source\n");
+    git(&repo, &["-c", "user.name=t", "-c", "user.email=t@example.com", "add", "-A"]);
+    git(&repo, &["-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-q", "-m", "clear"]);
+    let base = git(&repo, &["rev-parse", "HEAD"]);
+    assert_ne!(base, sha);
+    // clear が決済情報を None ではなく空文字にするようになった。
+    repo.map("shop/注文/model.py", &clear("\\\"\\\""));
+    let s = repo.run(&["compare", "--base", &base]);
+    assert_eq!(result(&s, "shop.注文.clear")["kind"], "counterexample", "{s}");
 }
 

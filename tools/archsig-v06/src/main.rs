@@ -152,7 +152,8 @@ fn run(cli: Cli) -> Result<Value, String> {
             let (before, after) = (store.map_at(&base)?, store.map()?);
             let o = archsig::structure::observed_overlay(&before, &after, &atoms);
             let (b, a) = (Structure::new(before), Structure::new(after));
-            let sources = store.sources(&laws)?;
+            // 読んでいない範囲は、変更前の側で数える。変更前のソースは、元のコミットの時点のものである。
+            let sources = store.sources_at(&laws, &base)?;
             let findings = engine::implemented(&b, &a, &o, &laws, &sources);
             let not_computed = engine::not_computed(&laws);
             store.save_run(|run| result::summarize(run, "compare", &findings, &not_computed))
