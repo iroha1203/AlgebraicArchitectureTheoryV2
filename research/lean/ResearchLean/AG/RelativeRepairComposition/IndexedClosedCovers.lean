@@ -20,6 +20,21 @@ structure IndexedCover (U : J → ClosedRegion K) : Prop where
   faces : ∀ f, ∃ j, f ∈ (U j).faces
   triples : ∀ t, ∃ j, t ∈ (U j).triples
 
+/-- A nonempty family of full regions covers every original cell. -/
+theorem indexed_cover_all [Nonempty J] :
+    IndexedCover (fun (_ : J) => (all : ClosedRegion K)) := by
+  obtain ⟨j⟩ := ‹Nonempty J›
+  exact ⟨fun _ => ⟨j,Set.mem_univ _⟩,fun _ => ⟨j,Set.mem_univ _⟩,
+    fun _ => ⟨j,Set.mem_univ _⟩,fun _ => ⟨j,Set.mem_univ _⟩⟩
+
+/-- Empty regions cannot cover an existing original vertex. -/
+theorem not_indexed_cover_empty [Nonempty K.Vertex] :
+    ¬ IndexedCover (fun (_ : J) => (empty : ClosedRegion K)) := by
+  obtain ⟨v⟩ := ‹Nonempty K.Vertex›
+  intro hc
+  obtain ⟨j,hj⟩ := hc.vertices v
+  exact hj
+
 /-- A union retains the original complete incidence of every member. -/
 def indexedUnion (U : J → ClosedRegion K) : ClosedRegion K where
   vertices := {v | ∃ j, v ∈ (U j).vertices}

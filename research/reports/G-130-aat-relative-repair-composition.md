@@ -694,7 +694,7 @@ selection:
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: "全元0–3-cell被覆、全局所実修復と全overlap gauge/triple cocycleから元Kへのeffectivityを生成。全compatible射、制限の合成/恒等、refinement/assembly/reorder/bracketの全native比較を同じ元K復元へ接続"
-  exit_criteria_status: ["全有限被覆を含む一般index族: IndexedCoverとdegree0–3 familyEquiv", "独立実修復・全seam射: IndexedNative.Datum/overlapArrow", "全対象復元: strictification_difference/restore_equation/restoreActual/canonicalRestorationIso", "全射・inverse/unit/counit: diagonal_full/faithful/essSurjとnative Equivalence", "制限合成/恒等と全typed重なり: restrictionComposition/Identityとtriple_gauge_cocycle", "全refinement/assembly/order/bracketと元K復元: 各restoration*Comparison", "6登録source focused、162明示宣言を含む209宣言の個別公理監査"]
+  exit_criteria_status: ["全有限被覆を含む一般index族: IndexedCoverとdegree0–3 familyEquiv", "独立実修復・全seam射: IndexedNative.Datum/overlapArrow", "全対象復元: strictification_difference/restore_equation/restoreActual/canonicalRestorationIso", "全射・inverse/unit/counit: diagonal_full/faithful/essSurjとnative Equivalence", "制限合成/恒等と全typed重なり: restrictionComposition/Identityとtriple_gauge_cocycle", "全refinement/assembly/order/bracketと元K復元: 各restoration*Comparison", "6登録source focused、165明示宣言を含む212宣言の個別公理監査"]
   split_reason: none
   completion_candidate: no
   lean_artifacts: [IndexedFamilies.lean, IndexedClosedCovers.lean, IndexedEquationDescent.lean, NativeRestrictionCoherence.lean, IndexedNativeDescent.lean, DescentRefinement.lean]
@@ -728,7 +728,7 @@ audits:
 
 ### 構成と元値保存
 
-`IndexedCover`は元Kの0–3-cellを各々含む領域があるという条件だけを持つ。元cell別の所属領域を選び、全互換局所族から元値を復元する`familyEquiv0`–`familyEquiv3`を構成した。非空index/非空修復/有限carrierは追加しない。空indexの場合も元cell被覆という同じ条件で扱う。
+`IndexedCover`は元Kの0–3-cellを各々含む領域があるという条件だけを持つ。元cell別の所属領域を選び、全互換局所族から元値を復元する`familyEquiv0`–`familyEquiv3`を構成した。非空index/非空修復/有限carrierは追加しない。空indexの場合も元cell被覆という同じ条件で扱う。非空indexの全領域族の被覆と、元vertexを持つ空領域族の不被覆を補助補題で提供する。共有元cellの二値が異なる局所族は`not_mem_indexedCompatible_of_ne`で不適合を証明し、零族の適合と正負を揃える。
 
 全局所解`hᵢ`と全overlap labels`bᵢⱼ`は`hⱼ|=hᵢ|+d0 bᵢⱼ`、対角零、元vertex上の`bᵢⱼ+bⱼₖ=bᵢₖ`を満たす。元vertex別に`r(v)`を選び、`aᵢ(v)=bᵣ₍ᵥ₎,ᵢ(v)`を生成する。三重cocycleから`bᵢⱼ=aⱼ−aᵢ`、補正局所解`hᵢ−d0 aᵢ`の全共有edge値の等値を得る。全edge gluingと全face検出から、元Kの大域解を復元する。全compatible局所gauge射も、元vertex gluingと全edge検出で生成し、全射・faithful・essSurjを証明する。
 
@@ -754,13 +754,13 @@ raw refinementはindex mapと全0–3-cell inclusionから、全局所対象・�
 
 ### 全宣言と検証
 
-`IndexedFamilies.lean` (16明示宣言):
+`IndexedFamilies.lean` (17明示宣言):
 
-`Family.indexedCompatible`, `Family.mem_indexedCompatible`, `Family.indexedRestriction`, `Family.indexed_restriction_val`, `Family.coveringIndex`, `Family.covering_index_mem`, `Family.indexedGlue`, `Family.indexed_glue_on`, `Family.indexed_glue_restriction`, `Family.indexed_restriction_glue`, `Family.indexed_restriction_injective`, `Family.indexedEquiv`, `Family.indexedRefinement`, `Family.indexed_refinement_val`, `Family.indexed_refinement_restriction`, `Family.indexed_glue_refinement`。
+`Family.indexedCompatible`, `Family.mem_indexedCompatible`, `Family.not_mem_indexedCompatible_of_ne`, `Family.indexedRestriction`, `Family.indexed_restriction_val`, `Family.coveringIndex`, `Family.covering_index_mem`, `Family.indexedGlue`, `Family.indexed_glue_on`, `Family.indexed_glue_restriction`, `Family.indexed_restriction_glue`, `Family.indexed_restriction_injective`, `Family.indexedEquiv`, `Family.indexedRefinement`, `Family.indexed_refinement_val`, `Family.indexed_refinement_restriction`, `Family.indexed_glue_refinement`。
 
-`IndexedClosedCovers.lean` (35明示宣言):
+`IndexedClosedCovers.lean` (37明示宣言):
 
-`ClosedRegion.IndexedCover`, `ClosedRegion.indexedUnion`, `ClosedRegion.to_indexed_union`, `ClosedRegion.triple`, `ClosedRegion.triple_first_pair`, `ClosedRegion.triple_second_pair`, `ClosedRegion.triple_outer_pair`, `IndexedCover.Compatible0`, `IndexedCover.restriction0`, `IndexedCover.glue0`, `IndexedCover.familyEquiv0`, `IndexedCover.restriction0_injective`, `IndexedCover.glue0_value`, `IndexedCover.restrict_glue0`, `IndexedCover.Compatible1`, `IndexedCover.restriction1`, `IndexedCover.glue1`, `IndexedCover.familyEquiv1`, `IndexedCover.restriction1_injective`, `IndexedCover.glue1_value`, `IndexedCover.restrict_glue1`, `IndexedCover.Compatible2`, `IndexedCover.restriction2`, `IndexedCover.glue2`, `IndexedCover.familyEquiv2`, `IndexedCover.restriction2_injective`, `IndexedCover.glue2_value`, `IndexedCover.restrict_glue2`, `IndexedCover.Compatible3`, `IndexedCover.restriction3`, `IndexedCover.glue3`, `IndexedCover.familyEquiv3`, `IndexedCover.restriction3_injective`, `IndexedCover.glue3_value`, `IndexedCover.restrict_glue3`。
+`ClosedRegion.IndexedCover`, `ClosedRegion.indexed_cover_all`, `ClosedRegion.not_indexed_cover_empty`, `ClosedRegion.indexedUnion`, `ClosedRegion.to_indexed_union`, `ClosedRegion.triple`, `ClosedRegion.triple_first_pair`, `ClosedRegion.triple_second_pair`, `ClosedRegion.triple_outer_pair`, `IndexedCover.Compatible0`, `IndexedCover.restriction0`, `IndexedCover.glue0`, `IndexedCover.familyEquiv0`, `IndexedCover.restriction0_injective`, `IndexedCover.glue0_value`, `IndexedCover.restrict_glue0`, `IndexedCover.Compatible1`, `IndexedCover.restriction1`, `IndexedCover.glue1`, `IndexedCover.familyEquiv1`, `IndexedCover.restriction1_injective`, `IndexedCover.glue1_value`, `IndexedCover.restrict_glue1`, `IndexedCover.Compatible2`, `IndexedCover.restriction2`, `IndexedCover.glue2`, `IndexedCover.familyEquiv2`, `IndexedCover.restriction2_injective`, `IndexedCover.glue2_value`, `IndexedCover.restrict_glue2`, `IndexedCover.Compatible3`, `IndexedCover.restriction3`, `IndexedCover.glue3`, `IndexedCover.familyEquiv3`, `IndexedCover.restriction3_injective`, `IndexedCover.glue3_value`, `IndexedCover.restrict_glue3`。
 
 `IndexedEquationDescent.lean` (26明示宣言):
 
@@ -778,6 +778,6 @@ raw refinementはindex mapと全0–3-cell inclusionから、全局所対象・�
 
 `ClosedRegion.inter_inclusion`, `IndexedEquation.refineDatum`, `IndexedEquation.refineLabels`, `IndexedEquation.refine_gauge`, `IndexedEquation.refinementFunctor`, `IndexedEquation.refinement_obj_value`, `IndexedEquation.refinement_map_value`, `IndexedEquation.refinement_seam_value`, `IndexedEquation.refine_diagonal`, `IndexedEquation.diagonalRefinementComparison`, `IndexedEquation.diagonal_refinement_comparison_label`, `IndexedEquation.refinement_is_equivalence`, `IndexedEquation.refinementEquivalence`, `IndexedEquation.restorationRefinementComparison`, `ClosedRegion.assembly`, `ClosedRegion.to_assembly`, `ClosedRegion.assembly_cover`, `ClosedRegion.assembly_flatten`, `ClosedRegion.assembly_unflatten`, `ClosedRegion.reindex_cover`, `IndexedNative.refinementFunctor`, `IndexedNative.refinement_local_choice`, `IndexedNative.refinement_map_value`, `IndexedNative.refinement_seam_value`, `IndexedNative.diagonalRefinementComparison`, `IndexedNative.refinement_is_equivalence`, `IndexedNative.refinementEquivalence`, `IndexedNative.restorationRefinementComparison`, `IndexedNative.assemblyEquivalence`, `IndexedNative.restorationAssemblyComparison`, `IndexedNative.reorderEquivalence`, `IndexedNative.restorationReorderComparison`, `IndexedNative.assemblyBracketEquivalence`, `IndexedNative.restorationAssemblyBracketComparison`。
 
-6登録sourceの個別focused checkは全exit0。正確な6source本体からimport行だけを除いた単一Cycle8Auditにより、全162明示宣言とstructure生成宣言等を含む全209宣言を個別`#print axioms`し、全件標準公理のみ。公理log SHA256 `578a87faf8e21d3b11479ba8ce074376d1e5c340faaec867f0bfb8f7c4ea154f`。rootのみ必要single targeted dependencyを確認し、Research全体/aggregate/全file loopとsubagent lake buildは実行しない。局所elaborationの有限heartbeats上限でstatement/仮定を変更しない。
+6登録sourceの個別focused checkは全exit0。正確な6source本体からimport行だけを除いた単一Cycle8Auditにより、全165明示宣言とstructure生成宣言等を含む全212宣言を個別`#print axioms`し、全件標準公理のみ。公理log SHA256 `03abf403b7bf940b16c6560246839c246f1b373f331cf5794ab442b742547be4`。rootのみ必要single targeted dependencyを確認し、Research全体/aggregate/全file loopとsubagent lake buildは実行しない。局所elaborationの有限heartbeats上限でstatement/仮定を変更しない。
 
 placeholder/hidden-BiDi/privacy/import方向/diff checkを確認。正式PR査読と同一head CIはこの実装結果の独立判定として後続する。指定局所案H1条件、Ω/connecting/kernel、C–F、W1–W5は未達であり、全GOAL completion candidateとはしない。

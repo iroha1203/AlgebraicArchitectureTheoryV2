@@ -43,6 +43,13 @@ theorem mem_indexedCompatible (b : ∀ j, relative A (s j) p) :
     b ∈ indexedCompatible A s p ↔
       ∀ j k i (hj : i ∈ s j) (hk : i ∈ s k), (b j).1 ⟨i,hj⟩ = (b k).1 ⟨i,hk⟩ := Iff.rfl
 
+/-- Unequal values at a shared original cell give an incompatible local family. -/
+theorem not_mem_indexedCompatible_of_ne (b : ∀ j, relative A (s j) p)
+    (j k : J) (i : I) (hj : i ∈ s j) (hk : i ∈ s k)
+    (hne : (b j).1 ⟨i,hj⟩ ≠ (b k).1 ⟨i,hk⟩) :
+    b ∉ indexedCompatible A s p :=
+  fun hb => hne (hb j k i hj hk)
+
 /-- The complete original family restricts to all regions with their full values. -/
 def indexedRestriction : relative A Set.univ p →+ indexedCompatible A s p where
   toFun b := ⟨fun j => relativeRestrict A p (Set.subset_univ (s j)) b, by
