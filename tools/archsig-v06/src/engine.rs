@@ -5,8 +5,9 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{Value as Json, json};
 
-use crate::atom::parse_location;
+use crate::atom::{Atom, parse_location};
 use crate::expr::BinOp;
+use crate::geometry::{self, Split};
 use crate::law::{LawSet, Rule};
 use crate::structure::{Overlay, Reason, Silence, State, StepKind, Structure, Value, question_at};
 
@@ -14,6 +15,7 @@ use crate::structure::{Overlay, Reason, Silence, State, StepKind, Structure, Val
 pub const BRANCH_LIMIT: usize = 256;
 
 const THEORY_CHANGES: &str = "Rising Sea §1.8〜1.9、§4.10〜4.11";
+const THEORY_SPLIT: &str = "Rising Sea §2.5、§5.1、§8.6";
 const SAME_TYPE: &str = "フィールドは型ごとに一つの値として扱い、同じ型の別々の実体は区別しない";
 const NO_RELATION: &str = "条件どうしの関係は見ない";
 const SAME_CALL: &str = "操作の呼び出しの結果は、fresh を除き、同じ操作に同じ値を渡せば同じ結果が返るとみなす";
@@ -400,6 +402,58 @@ pub fn plan_check(before: &Structure, after: &Structure, overlay: &Overlay, laws
 }
 
 /// `changes` 以外の規則の Law。この PRD では計算しない。
+/// `plan split`(マニュアル第5章 問い7の「分ける」)。幾何で分けた候補 `split` を確かめる。
+/// `changes` の規則があれば、`corresponds` が全体で一つの対応になる(各要素の行き先がちょうど一つ)ことを確かめる。
+/// 一つに決まらない対応があれば、局所に閉じない条件として `conflict` を返し、分けたものは返さない。
+pub fn plan_split(name: &str, plan: &[Atom], split: Split, laws: &LawSet) -> (Vec<Finding>, Option<Split>) {
+    // `?` の名前がどの局所に属するかは決まらない。その Atom の場所を返して沈黙する(マニュアル第3章、第5章 問い8)。
+    let questions: Vec<Finding> = plan
+        .iter()
+        .filter_map(|a| geometry::named(a).into_iter().find(|n| n.starts_with('?')).map(|n| (n, a)))
+        .map(|(n, a)| Finding { theory: Some(THEORY_SPLIT.to_string()), ..Finding::silent("split", None, n, question_at(a)) })
+        .collect();
+    if !questions.is_empty() {
+        return (questions, None);
+    }
+    let changes = laws.laws.iter().any(|l| matches!(l.rule, Rule::ChangesCommute | Rule::ChangesKeep));
+    let mut targets: BTreeMap<&str, (BTreeSet<&str>, Vec<String>)> = BTreeMap::new();
+    for a in plan.iter().filter(|a| changes && a.kind == "corresponds") {
+        let (to, at) = targets.entry(a.subject.as_str()).or_default();
+        to.extend(a.object.as_deref().unwrap_or("").split('|').map(str::trim).filter(|t| !t.is_empty()));
+        at.extend(a.at.clone());
+    }
+    let conflicts: Vec<Finding> = targets
+        .into_iter()
+        .filter(|(_, (to, _))| to.len() != 1)
+        .map(|(element, (to, at))| Finding {
+            question: "split".to_string(),
+            subject: element.to_string(),
+            outcome: "fails",
+            kind: Some("conflict"),
+            at,
+            basis: json!({"plan": name}),
+            check: json!({"element": element, "targets": to}),
+            theory: Some(THEORY_SPLIT.to_string()),
+            ..Finding::default()
+        })
+        .collect();
+    if !conflicts.is_empty() {
+        return (conflicts, None);
+    }
+    let locals: Vec<Json> =
+        split.locals.iter().map(|(local, atoms)| json!({"local": local, "plan": format!("{name}/{local}"), "atoms": atoms})).collect();
+    let holds = Finding {
+        question: "split".to_string(),
+        subject: name.to_string(),
+        outcome: "holds",
+        basis: json!({"plan": name}),
+        check: json!({"locals": locals, "shared": split.shared}),
+        theory: Some(THEORY_SPLIT.to_string()),
+        ..Finding::default()
+    };
+    (vec![holds], Some(split))
+}
+
 pub fn not_computed(laws: &LawSet) -> Vec<String> {
     laws.laws.iter().filter(|l| !matches!(l.rule, Rule::ChangesCommute | Rule::ChangesKeep)).map(|l| l.name.clone()).collect()
 }

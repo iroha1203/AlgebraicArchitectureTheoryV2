@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
 
 use crate::atom::{self, Atom};
+use crate::geometry::Split;
 use crate::law::LawSet;
 
 pub struct Store {
@@ -75,6 +76,27 @@ impl Store {
             out.extend(atom::parse_jsonl(&text, &f.display().to_string())?);
         }
         Ok(out)
+    }
+
+    /// 分けた候補を、局所ごとに `.archsig/plans/<候補>/<局所>/` に書き出す(マニュアル第5章 問い7)。
+    /// 中身は、局所の候補の見出しとその局所の Atom(`plan.jsonl`)と、共有の条件(`shared.jsonl`)である。
+    pub fn write_split(&self, plan: &str, base: Option<&str>, split: &Split) -> Result<(), String> {
+        let line = |a: &Atom| serde_json::to_string(a).unwrap() + "\n";
+        let shared: String = split.shared.iter().map(line).collect();
+        for (local, atoms) in &split.locals {
+            // 局所の候補が、元の候補やその外に重ならないように書く。
+            if local.split('/').any(|c| matches!(c, "" | "." | "..")) {
+                return Err(format!("局所 {local} は、候補の下に書き出せない"));
+            }
+            let name = format!("{plan}/{local}");
+            let dir = self.dir().join("plans").join(&name);
+            std::fs::create_dir_all(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;
+            let head = Atom { kind: "plan".to_string(), subject: name, base: base.map(str::to_string), ..Atom::default() };
+            let text: String = std::iter::once(&head).chain(atoms).map(line).collect();
+            std::fs::write(dir.join("plan.jsonl"), text).map_err(|e| e.to_string())?;
+            std::fs::write(dir.join("shared.jsonl"), &shared).map_err(|e| e.to_string())?;
+        }
+        Ok(())
     }
 
     /// 実行を `.archsig/runs/r-<番号>/` に、サマリ `summary.json` と結論ごとの詳細 `<番号>.json` として残す。
