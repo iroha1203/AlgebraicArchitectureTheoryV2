@@ -107,6 +107,13 @@ def faceMap :
   (coordinate2 M B U P).toLinearMap.comp
     ((differential1 M hlinear U P).comp (edgeSplit M B U P internalEdges).symm.toLinearMap)
 
+omit [DecidablePred (· ∈ P.vertices)] [DecidablePred (· ∈ U.vertices)] in
+/-- The split face map evaluates the same original differential in full coordinates. -/
+theorem faceMap_apply (xz : (XIndex M B U P internalEdges → k) ×
+    (ZIndex M B U P internalEdges → k)) :
+    faceMap M B U P internalEdges hlinear xz = coordinate2 M B U P
+      (differential1 M hlinear U P ((edgeSplit M B U P internalEdges).symm xz)) := rfl
+
 /-- Only the selected private columns form the internal differential. -/
 def D : (XIndex M B U P internalEdges → k) →ₗ[k] (Index2 M B U P → k) :=
   (faceMap M B U P internalEdges hlinear).comp (LinearMap.inl k _ _)
@@ -128,6 +135,13 @@ def a : RelativeCover.C0 M U P →ₗ[k] (XIndex M B U P internalEdges → k) :=
 def c : RelativeCover.C0 M U P →ₗ[k] (ZIndex M B U P internalEdges → k) :=
   (LinearMap.snd k _ _).comp (labelMap M B U P internalEdges hlinear)
 
+omit [DecidablePred (· ∈ P.vertices)] [DecidablePred (· ∈ P.faces)]
+  [DecidablePred (· ∈ U.edges)] in
+/-- Both full label components are the coordinates of the same original vertex differential. -/
+theorem a_c_eq_edgeSplit_differential0 (b : RelativeCover.C0 M U P) :
+    (a M B U P internalEdges hlinear b,c M B U P internalEdges hlinear b) =
+      edgeSplit M B U P internalEdges (differential0 M hlinear U P b) := rfl
+
 omit [DecidablePred (· ∈ P.vertices)] [DecidablePred (· ∈ U.vertices)] in
 /-- Private and public columns together are the complete original differential. -/
 theorem D_add_F (x : XIndex M B U P internalEdges → k) (z : ZIndex M B U P internalEdges → k) :
@@ -143,11 +157,8 @@ omit [DecidablePred (· ∈ P.vertices)] in
 theorem D_a_add_F_c (b : RelativeCover.C0 M U P) :
     D M B U P internalEdges hlinear (a M B U P internalEdges hlinear b) +
       F M B U P internalEdges hlinear (c M B U P internalEdges hlinear b) = 0 := by
-  rw [D_add_F]
-  change coordinate2 M B U P
-    (differential1 M hlinear U P ((edgeSplit M B U P internalEdges).symm
-      ((edgeSplit M B U P internalEdges) (differential0 M hlinear U P b)))) = 0
-  rw [LinearEquiv.symm_apply_apply,differential1_differential0,map_zero]
+  rw [D_add_F,faceMap_apply,a_c_eq_edgeSplit_differential0,
+    LinearEquiv.symm_apply_apply,differential1_differential0,map_zero]
 
 end FiniteNative
 end AAT.AG.RelativeRepairComposition

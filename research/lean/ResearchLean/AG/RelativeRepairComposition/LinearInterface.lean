@@ -82,6 +82,10 @@ theorem kernel_projection_range : LinearMap.range (kernelProjection D σ) = Line
 /-- Public coordinates obey the computed affine relation. -/
 def Relation : Set Z := {z | projection D σ (F z) = projection D σ r}
 
+/-- Membership in the public relation uses the computed projection equality. -/
+theorem mem_relation_projection (z : Z) :
+    z ∈ Relation D F σ r ↔ projection D σ (F z) = projection D σ r := Iff.rfl
+
 include hσ in
 /-- The public relation is exactly the stated cokernel equation. -/
 theorem mem_relation (z : Z) : z ∈ Relation D F σ r ↔ q D (F z) = q D r :=

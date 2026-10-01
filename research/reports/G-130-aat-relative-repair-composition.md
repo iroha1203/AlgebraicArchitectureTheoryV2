@@ -944,7 +944,7 @@ selection:
 
 `privateAlwaysEdges`は領域内・P外・候補外・他領域との非共有という四条件で計算する。`edgeSplit`はこの集合と完全な補集合との両逆である。候補と共有辺は全て補集合に残り、parallelな元辺も別の添字を保つ。`D`/`F`は同じ元d1のprivate/public columns、`a`/`c`は同じ元d0の両成分、`rhs`は同じ元実defectの負の制限である。`D_a_add_F_c`は元零合成から生成する。
 
-`FiniteSaturation.saturate`は実List上の有限飽和で、補集合のcardinalityを停止量にする。初等行列と逆を同時に生成し、全出力の両逆条件を証明する。`diagonal_exists`は全行列のMathlib対角化定理の全transvection wordを同じ生成Listへ埋め、`diagonalize`の有限探索成功を放電する。`reduce`のrow/column/inverse/pivotと全正確性fieldはその探索結果から生成される。rhs・candidate subset・修復は探索入力にない。
+`FiniteElimination.saturate`は実List上の有限飽和で、補集合のcardinalityを停止量にする。初等行列と逆を同時に生成し、全出力の両逆条件を証明する。`diagonal_exists`は全行列のMathlib対角化定理の全transvection wordを同じ生成Listへ埋め、`diagonalize`の有限探索成功を放電する。`reduce`のrow/column/inverse/pivotと全正確性fieldはその探索結果から生成される。rhs・candidate subset・修復は探索入力にない。
 
 `generatedElimination`は同じ元private matrixの正方拡張を一回消去したデータである。`generatedSection`と`generatedPrivateImageCoordinates`/`generatedPrivateImageBasisValue`はこの同じデータを読む。正方拡張の像は元長方形行列の全像と両逆で同一視する。像基底の原値は計算可能で、native Basis packagingの値・独立性・全像のspanを証明する。sectionの全像上の右逆条件は同じ行列から生成され、一般APIのsection lawを実適用で放電する。
 
@@ -998,9 +998,9 @@ result:
 
 `FiniteElimination.Enumeration`, `FiniteElimination.Operation`, `FiniteElimination.compose`, `FiniteElimination.identity`, `FiniteElimination.elementary`, `FiniteElimination.generators`, `FiniteElimination.transvection_mem`, `FiniteElimination.Valid`, `FiniteElimination.valid_identity`, `FiniteElimination.valid_elementary`, `FiniteElimination.valid_compose`, `FiniteElimination.operations`, `FiniteElimination.operations_valid`, `FiniteElimination.foldr_matrix`, `FiniteElimination.word_mem_operations`, `FiniteElimination.diagonal_exists`, `FiniteElimination.diagonalize`, `FiniteElimination.Reduction`, `FiniteElimination.reduce`, `FiniteElimination.diagonal_regular`, `FiniteElimination.sectionMatrix`, `FiniteElimination.sectionMatrix_regular`, `FiniteElimination.mem_valid`, `FiniteElimination.not_valid_zero`, `FiniteElimination.sumEnumeration`, `FiniteElimination.squareExtension`, `FiniteElimination.rectangularSection`, `FiniteElimination.rectangularSection_regular`。
 
-`LinearInterface.lean` (22明示宣言):
+`LinearInterface.lean` (23明示宣言):
 
-`LinearInterface.projection`, `LinearInterface.projection_D`, `LinearInterface.projection_eq_zero_iff`, `LinearInterface.q`, `LinearInterface.q_eq_iff_projection_eq`, `LinearInterface.kernelProjection`, `LinearInterface.kernel_projection_mem`, `LinearInterface.kernel_projection_fixed`, `LinearInterface.kernel_projection_range`, `LinearInterface.Relation`, `LinearInterface.mem_relation`, `LinearInterface.Solution`, `LinearInterface.Coordinates`, `LinearInterface.section_residual`, `LinearInterface.rec`, `LinearInterface.coord`, `LinearInterface.rec_coord`, `LinearInterface.coord_rec`, `LinearInterface.coordinateEquiv`, `LinearInterface.solution_nonempty_iff`, `LinearInterface.relation_zero_nonempty`, `LinearInterface.relation_empty`。
+`LinearInterface.projection`, `LinearInterface.projection_D`, `LinearInterface.projection_eq_zero_iff`, `LinearInterface.q`, `LinearInterface.q_eq_iff_projection_eq`, `LinearInterface.kernelProjection`, `LinearInterface.kernel_projection_mem`, `LinearInterface.kernel_projection_fixed`, `LinearInterface.kernel_projection_range`, `LinearInterface.Relation`, `LinearInterface.mem_relation_projection`, `LinearInterface.mem_relation`, `LinearInterface.Solution`, `LinearInterface.Coordinates`, `LinearInterface.section_residual`, `LinearInterface.rec`, `LinearInterface.coord`, `LinearInterface.rec_coord`, `LinearInterface.coord_rec`, `LinearInterface.coordinateEquiv`, `LinearInterface.solution_nonempty_iff`, `LinearInterface.relation_zero_nonempty`, `LinearInterface.relation_empty`。
 
 `InterfaceQuotient.lean` (5明示宣言):
 
@@ -1026,9 +1026,9 @@ result:
 
 `FinitePartition.split`, `FinitePartition.join`, `FinitePartition.join_split`, `FinitePartition.split_join`, `FinitePartition.equivalence`, `FinitePartition.join_public`, `ClosedRegion.sharedEdges`, `ClosedRegion.privateAlwaysEdges`, `ClosedRegion.sharedEdgesDecidable`, `ClosedRegion.privateAlwaysEdgesDecidable`, `ClosedRegion.mem_sharedEdges`, `ClosedRegion.shared_of_other`, `ClosedRegion.not_shared_subsingleton`, `ClosedRegion.mem_privateAlwaysEdges`, `ClosedRegion.candidate_not_private`, `ClosedRegion.shared_not_private`, `ClosedRegion.private_of_nonshared`, `ClosedRegion.overlap_not_private`。
 
-`FiniteNativeCoordinates.lean` (23明示宣言):
+`FiniteNativeCoordinates.lean` (25明示宣言):
 
-`FiniteNative.Index0`, `FiniteNative.Index1`, `FiniteNative.Index2`, `FiniteNative.Index3`, `FiniteNative.coordinate0`, `FiniteNative.coordinate1`, `FiniteNative.coordinate2`, `FiniteNative.coordinate3`, `FiniteNative.privateIndex`, `FiniteNative.privateIndexDecidable`, `FiniteNative.XIndex`, `FiniteNative.ZIndex`, `FiniteNative.edgeSplit`, `FiniteNative.public_edge_value`, `FiniteNative.public_edge_private_independent`, `FiniteNative.faceMap`, `FiniteNative.D`, `FiniteNative.F`, `FiniteNative.labelMap`, `FiniteNative.a`, `FiniteNative.c`, `FiniteNative.D_add_F`, `FiniteNative.D_a_add_F_c`。
+`FiniteNative.Index0`, `FiniteNative.Index1`, `FiniteNative.Index2`, `FiniteNative.Index3`, `FiniteNative.coordinate0`, `FiniteNative.coordinate1`, `FiniteNative.coordinate2`, `FiniteNative.coordinate3`, `FiniteNative.privateIndex`, `FiniteNative.privateIndexDecidable`, `FiniteNative.XIndex`, `FiniteNative.ZIndex`, `FiniteNative.edgeSplit`, `FiniteNative.public_edge_value`, `FiniteNative.public_edge_private_independent`, `FiniteNative.faceMap`, `FiniteNative.faceMap_apply`, `FiniteNative.D`, `FiniteNative.F`, `FiniteNative.labelMap`, `FiniteNative.a`, `FiniteNative.c`, `FiniteNative.a_c_eq_edgeSplit_differential0`, `FiniteNative.D_add_F`, `FiniteNative.D_a_add_F_c`。
 
 `FiniteCoordinateEnumerations.lean` (3明示宣言):
 
@@ -1070,6 +1070,6 @@ result:
 
 `FiniteCoverInterfaces.localEquivalence`, `FiniteCoverInterfaces.shared_restriction_public_only`, `FiniteCoverInterfaces.candidate_retained`。
 
-全245明示宣言と生成APIを含む全sourceの個別公理監査を用いる。各監査対象sourceのimport行だけを除いた単一のexact-source focused auditはこのcycleの依存した到達点だけを検査し、Research全体/aggregate/全file loopをelaborateしない。全GOAL completion candidateではない。
+全248明示宣言と生成APIを含む全sourceの個別公理監査を用いる。各監査対象sourceのimport行だけを除いた単一のexact-source focused auditはこのcycleの依存した到達点だけを検査し、Research全体/aggregate/全file loopをelaborateしない。全GOAL completion candidateではない。
 
-20 sourceのfocused exact-source監査と必要な単一 concrete module確認はexit0。245明示宣言と生成APIを含む全300宣言を個別 `#print axioms`し標準公理のみ。axiom log SHA256 `94fcc96b2a17ea8ecae70f06669c0ed1037d67e62848154beaab591636183245`。全20 sourceの末尾にstandard axiom gateを置く。小さいF₂の非零/零行列で公開rows `[1]` / `[]` とsection値 `1` / `0` を実評価した。公開artifact/placeholder/hidden-BiDi/privacy/import方向/diff scanを確認する。
+20 sourceのfocused exact-source監査と必要な単一 concrete module確認はexit0。248明示宣言と生成APIを含む全305宣言を個別 `#print axioms`し標準公理のみ。axiom log SHA256 `a626f904823383199ef1bc59c42cab27346ccecc71224144f874c0e3ab912ac7`。全20 sourceの末尾にstandard axiom gateを置く。小さいF₂の非零/零行列で公開rows `[1]` / `[]` とsection値 `1` / `0` を実評価した。公開artifact/placeholder/hidden-BiDi/privacy/import方向/diff scanを確認する。

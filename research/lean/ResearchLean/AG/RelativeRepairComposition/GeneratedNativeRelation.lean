@@ -91,7 +91,7 @@ theorem generated_public_affine_relation (r : Index2 M B U P → k)
   have hh := FiniteElimination.public_affine_relation (publicMatrix M B U P internalEdges hlinear enumK enumEdges enumFaces) enumK (enum2 M B U P enumFaces) (enumZ M B U P internalEdges enumEdges)
     (LinearInterface.projection (D M B U P internalEdges hlinear) (generatedSection M B U P internalEdges hlinear enumK enumEdges enumFaces) r) z₀.1
     ((public_matrix_correct M B U P internalEdges hlinear enumK enumEdges enumFaces z₀.1).trans z₀.2) z
-  simpa only [public_matrix_correct,generatedPublicRows,LinearInterface.Relation,Set.mem_setOf_eq] using hh
+  simpa only [public_matrix_correct,generatedPublicRows,LinearInterface.mem_relation_projection] using hh
 
 end FiniteNative
 end AAT.AG.RelativeRepairComposition

@@ -40,17 +40,14 @@ def solutionCoordinateEquiv : CoverEquation.Solution M P δ U ≃
     CoordinateEquation M B U P internalEdges hlinear δ where
   toFun h := ⟨edgeSplit M B U P internalEdges h.1,by
     change D M B U P internalEdges hlinear _ + F M B U P internalEdges hlinear _ = _
-    rw [D_add_F]
-    change coordinate2 M B U P
-      (differential1 M hlinear U P ((edgeSplit M B U P internalEdges).symm
-        ((edgeSplit M B U P internalEdges) h.1))) = _
+    rw [D_add_F,faceMap_apply]
+    simp only [LinearMap.fst_apply,LinearMap.snd_apply,Prod.mk.eta]
     rw [LinearEquiv.symm_apply_apply,differential1_eq,h.2]
     rfl⟩
   invFun h := ⟨(edgeSplit M B U P internalEdges).symm h.1,by
     apply (coordinate2 M B U P).injective
     rw [← differential1_eq M hlinear U P]
-    change faceMap M B U P internalEdges hlinear h.1 = rhs M B U P δ
-    rw [← D_add_F]
+    rw [← faceMap_apply,← D_add_F]
     exact h.2⟩
   left_inv h := Subtype.ext ((edgeSplit M B U P internalEdges).symm_apply_apply h.1)
   right_inv h := Subtype.ext ((edgeSplit M B U P internalEdges).apply_symm_apply h.1)
@@ -65,8 +62,7 @@ theorem solution_coordinate_equivariant (b : Multiplicative (RelativeCover.C0 M 
   change edgeSplit M B U P internalEdges (h.1 + RelativeCover.d0 M U P b.toAdd) =
     edgeSplit M B U P internalEdges h.1 +
       (a M B U P internalEdges hlinear b.toAdd,c M B U P internalEdges hlinear b.toAdd)
-  rw [map_add,← differential0_eq M hlinear U P]
-  rfl
+  rw [map_add,← differential0_eq M hlinear U P,a_c_eq_edgeSplit_differential0]
 
 /-- Full local equation coordinates preserve every original gauge arrow. -/
 def coordinateEquationEquivalence : CoverEquation.Groupoid M P δ U ≌
