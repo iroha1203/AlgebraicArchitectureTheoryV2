@@ -7,6 +7,7 @@ use serde_json::{Value, json};
 use archsig::archmap::{self, Store};
 use archsig::atom::{self, Atom};
 use archsig::engine;
+use archsig::geometry::Geometry;
 use archsig::result;
 use archsig::structure::{Structure, overlay};
 
@@ -52,6 +53,14 @@ enum PlanCmd {
         /// 候補の名前
         plan: String,
     },
+    /// 候補を、読みの局所ごとの候補に分ける。
+    Split {
+        /// 候補の名前
+        plan: String,
+        /// 局所を作る読み。省くと、最初に宣言した読み。
+        #[arg(long)]
+        reading: Option<String>,
+    },
 }
 
 #[derive(Subcommand)]
@@ -89,6 +98,27 @@ fn run(cli: Cli) -> Result<Value, String> {
             let findings = engine::plan_check(&b, &a, &o, &laws, &sources);
             let not_computed = engine::not_computed(&laws);
             store.save_run(|run| result::summarize(run, "plan check", &findings, &not_computed))
+        }
+        Cmd::Plan { command: PlanCmd::Split { plan, reading } } => {
+            let laws = store.laws()?;
+            if !laws.errors.is_empty() {
+                return Ok(json!({"law_errors": laws.errors}));
+            }
+            let reading = match &reading {
+                Some(r) => laws.readings.iter().find(|x| &x.name == r).ok_or_else(|| format!("読み {r} が宣言されていない"))?,
+                None => laws.readings.first().ok_or("読みが一つも宣言されていない")?,
+            };
+            let before = with_base(&store, store.map()?, &plan, &mut Vec::new())?;
+            let atoms = store.plan(&plan)?;
+            let o = overlay(&before, &atoms);
+            let split = Geometry::new(reading, &[before, atoms.clone()].concat(), &o.after).split(&atoms);
+            let (findings, split) = engine::plan_split(&plan, &o, split, &laws);
+            if let Some(split) = split {
+                let base = atoms.iter().find(|a| a.kind == "plan").and_then(|a| a.base.as_deref());
+                store.write_split(&plan, base, &split)?;
+            }
+            let not_computed = engine::not_computed(&laws);
+            store.save_run(|run| result::summarize(run, "plan split", &findings, &not_computed))
         }
         Cmd::Show { id } => store.show(&id),
         Cmd::Status => archmap::status(&store),
