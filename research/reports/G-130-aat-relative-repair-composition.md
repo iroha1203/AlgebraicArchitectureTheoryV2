@@ -1073,3 +1073,175 @@ result:
 全248明示宣言と生成APIを含む全sourceの個別公理監査を用いる。各監査対象sourceのimport行だけを除いた単一のexact-source focused auditはこのcycleの依存した到達点だけを検査し、Research全体/aggregate/全file loopをelaborateしない。全GOAL completion candidateではない。
 
 20 sourceのfocused exact-source監査と必要な単一 concrete module確認はexit0。248明示宣言と生成APIを含む全305宣言を個別 `#print axioms`し標準公理のみ。axiom log SHA256 `a626f904823383199ef1bc59c42cab27346ccecc71224144f874c0e3ab912ac7`。全20 sourceの末尾にstandard axiom gateを置く。小さいF₂の非零/零行列で公開rows `[1]` / `[]` とsection値 `1` / `0` を実評価した。公開artifact/placeholder/hidden-BiDi/privacy/import方向/diff scanを確認する。
+
+## Cycle 11 — 全変更範囲の厳密な有限被覆復元
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 11
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: a9f21e8a4eb434d35e7f8c4691cefc2cbfeb51fa
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "Issue #5132 Cycle10受理 comment5924491180 / report Cycle10 / PR5146 acceptance5924477748"
+  proof_dag_predecessors: ["C1/A supported原実修復・全labels", "C4/A 全範囲包含", "C6/C8 同じ元cell相対族・全被覆/微分制限", "C7 元K actual/原値方程式bridge", "C10 原始有限入力の一回局所生成・全解/全labels strict両逆・public制限"]
+  milestone: "GOAL Cの全Sに共通なstrict Glue_Sを、同じ候補零条件と共有元辺値/元頂点labelsから定め、有限原値glueと局所復元で元Kの独立全actual修復・全射へstrict相互逆functorsを構成。存在をpublic関係/共有/候補零だけで判定し、全内部自由度・全候補名/値・範囲包含を保つ"
+  proof_obligations:
+    - "全元0–3cellのfinite cover selectorをList.find?から生成し、適合族glueの停止・全原値・両逆を証明。既存非計算glueとの原値比較"
+    - "原始supported actual repairsと独立supported原値方程式、全allowed元vertex gauge subgroupの同型/作用交換"
+    - "元edge strict適合+全forbidden候補零の全局所objectsと、元vertex strict適合+forbidden coboundary零の全labelsからstrict groupoid生成"
+    - "同じC10生成R_i×全kerD_iへ候補零/共有public条件を移し、full局所gaugeと共有vertex labelを保持するGlue_S"
+    - "全global coord/recと全gauge labelsの相互逆、元actual辺choice/候補全値の復元、両functor合成そのもののidentity等号"
+    - "存在iff public関係+shared値+forbidden候補零、任意内部自由度による全repair/arrow復元、全S⊆T functorsと同じcoord/recの交換"
+  exit_criteria:
+    - "同じ有限入力だけから構成し、S別のrepair先行列挙/消去/section/compatibility certificateを入力にしない"
+    - "共有辺と共有頂点を別のstrict原値条件として全量化し、seam gauge/orbit/π0で置換しない"
+    - "独立な元K actual修復とfull gauge arrowsを始域/終域にして全計算成分・原値・labelsの両逆を証明"
+    - "候補名/禁止候補零条件、allS存在条件とrange relaxationが同じ生成データで成立"
+    - "対象focused/個別全宣言axioms/scansと到達点全体の独立PR査読で受理"
+  selection_reason: "C10で一回局所生成が閉じた。未達Cの実大域復元へ最短で接続し、Dの全範囲分類・Eの比較更新・W2のstrict性の共通前提を作る"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [FiniteIndexedGluing, SupportedEquation, SupportedNativeEquation, StrictSupportedCover, StrictCoverAction, GeneratedStrictCover, GeneratedCoverRestoration, GeneratedCoverRanges]
+  risks: ["全labelsを効果商へ縮小しない", "共有値が全内部自由度から独立であること", "P/禁止候補と物理原辺固定の同一性", "label subgroupを結論fieldで供給しない", "zero extensionをchain-mapとして仮定しない", "computed selectorとnoncomputable actual bridgeの責務区別"]
+  unchecked: ["本到達点の全実装・接続はこれから構成", "Cの表示比較とD–F/W1–W5/最終別completionは後続要求"]
+```
+
+このselectionは実装前の固定提案。全Cの表示比較（細分化、組立て/括弧づけ、基底/section/参照）は後続の独立到達点として残す。固定GOAL/終了条件の変更・縮小は行わない。終了条件前に分割が必要なら元条件と具体的split_reasonを保持する。
+
+### 元の全cochainと全実修復の厳密復元
+
+`FiniteFamilyGlue.selector`は完全な有限領域Listの`find?`から元cellを含む領域を選ぶ。被覆条件から検索成功を示し、`glue`はその元の値を読む。全原値、restrictionとの両逆、既存一般glueとの等号、領域List変更からの独立性を証明する。`FiniteCoverGlue.glue0`–`glue3`は同じ元0–3-cellの相対族へ適用する。zero extensionをchain mapと仮定しない。
+
+`SupportedEquation.Objects`は独立な元face方程式の全解に禁止候補補正零を課したもの、`Labels`は元relative zero-cochainの全ラベルのうち禁止候補上のd0が零な全群である。`SupportedNativeEquation.repairEquiv`/`gaugeEquiv`は、同じ元Tの独立実修復と全supportedラベルへ双方向に対応させる。元辺の物理的固定と補正零の同値、同じ元d0との等号を受理済みの実対応から適用する。全元actual choices、全vertex labels、両functor合成そのもののidentity等号を保持する。
+
+`StrictSupportedCover.Objects`は局所補正の**元共有辺の値**を全て比較する。`Labels`はこれとは別に全局所ラベルの**元共有頂点の値**を比較する。ラベルを辺への効果やorbitに置き換えない。`StrictCoverRestoration`は同じ有限selectorで全global元cochainを組み立て、face-coverのinjectivityと元restriction/d1交換から大域face方程式を、edge-coverから禁止候補零を導く。全labelsについても元d0交換と同じcandidate条件を導く。全object/labelの両逆・作用交換とstrict両逆functorを構成する。
+
+`GeneratedStrictCover.LocalObject`はCycle10で同じprivate setから生成した`R_i × ker D_i`そのものである。`restored_value_public`は全非private元辺値がpublic zだけで決まることを示し、候補・共有辺についてprivate排除条件を元の定義から放電する。`PublicCompatible`はpublic上の禁止候補零と全共有元辺値一致だけを課す。全内部kernelを保持した`Objects`と独立なstrict局所方程式の間のcoord/recの両逆を証明する。公開条件の適合を外部certificateとして受け取って存在を仮定せず、この適合条件そのものを全量化対象と存在判定の右辺にする。
+
+`GeneratedCoverAction.gauge`はCycle10の同じ元zero-cochainによる局所作用を各componentに適用する。strict元vertex labelsの全群を射に使い、作用後の適合・零/加法則・同じ原値復元との交換を証明する。全labelsを保つnative equivalenceと両functor恒等等号を与える。
+
+`GeneratedPublicRelations.publicKernelEquiv`はstrict全objectを、可解なpublic関係族と各領域の**全**kernel族との積へ同型にする。任意のkernel値から全objectを構成し、零kernelで存在の逆方向を作る。`GeneratedCoverRestoration.objectEquiv`/`labelEquiv`はこの同じ構成を元Tの独立実修復と全ラベルへ接続する。`repair_nonempty_iff_public`は全Sについて元実修復の存在と、R_i所属・共有元値一致・禁止候補零の条件だけの可解性を同値にする。全元edge correctionとactual morphism choice、全元vertex labelの値、全射を含む両functor合成を証明する。
+
+`GeneratedRangeInclusion`ではSを広げたとき候補条件だけを緩め、同じrelation/section/kernel・全原値/labelを保持する。`GeneratedCoverRanges.coordinate_functor_inclusion`/`reconstruction_functor_inclusion`は、受理済みの元actual rangeFunctorと、全object/arrowを含む関手そのものの等号で交換を証明する。Sごとに修復や消去を先行選択しない。
+
+正の適合例は`SupportedEquation.zeroObject`から`StrictCoverZeroCases`の全rangeの元zero corrections・全generated/public objectを構成し、全public座標零を証明する。`StrictCoverNegativeCases`は2原頂点・4本の名前付き原辺・全1次元F₂係数・空の面/3-cellから入力を作る。`forbidden_correction`/`forbidden_label`は非零補正と非零d0を、`shared_edge`/`shared_label`は共有原辺/原頂点上の実際の不一致を構成する。`generated_forbidden_public`/`generated_shared_public`は同じ局所解を一回生成済みの関係へ送り、全generated適合とpublic関係の可解対象の双方から排除する。`zero_accepted`は同じ非自明な原表示で正の実例を構成する。実評価では原補正、原ラベル、同じgenerated public値がそれぞれ `[0,1]`。これはW1–W5の代替ではなく、各新述語の正負の入力である。固定指定例の実アフィン入力・評価は後続要求に残す。
+
+`StrictCoverSupportAPIs`は元defectの零保存、元/相対d0の端点評価、既存の全生成同値の逆のpublic保存を公開する。`zeroObject`と`restored_public`はこのAPIを用い、foreign定義の下流展開に依存しない。既存の査読済みstatementと全計算値を保持する。
+
+### Material premise とproof-use
+
+| premise/data | 分類・状態 | 同じ原始入力からの生成・使用 |
+| --- | --- | --- |
+| 一般元T、実全核、strong opcartesian性、元core/lift/comparatorと生成輸送 | ambient-boundary / 本文由来 | 元actual equation correspondenceの現在のstatementと同じTへの適用。旧修復groupoidの全objects/labelsを始域にする |
+| 閉Pと各U、P上の実face coherence、全元0–3-cell閉被覆 | ambient-boundary / 本文由来 | 元defectのrelative所属、有限selector成功、face-cover injectivity、全0–3原値glueと元restriction交換 |
+| 同一有限体、実全核全体の有限基底、線形輸送、有限元edge/face/領域の完全列挙と所属判定 | ambient-boundary / Cの有限入力 | Cycle10の同じD/F/section/全kernelを使用。有限selectorとprivate判定。allowed Sを生成入力にしない |
+| 全候補集合と全allowed S、全S⊆T | ambient-boundary / 本文の量化対象 | 同じcandidate名前の零条件だけを全量化し、full functor inclusion交換 |
+| 一般glue・restrictionの両逆、global face equation、forbidden edge条件 | discharge-required / 放電済み | finite search、全元値比較、元r_d1とcover injectivity、元r_d0と局所labels条件から構成 |
+| 局所generated全解・full gauge作用・section law・非private原値復元 | discharge-required / 受理済みpredecessorを同じ入力で使用 | Cycle10 PR #5146 final head0617f3b65b0c374d73153da495c5f7cc8e1f5fd3 / acceptance5924477748。現在のGeneratedObjects、generatedSolutionEquiv、generated_solution_equivariant、private/public APIsへ適用 |
+| actual辺固定↔元補正零、全actual↔原値equation/全label | discharge-required / 受理済みpredecessorを同じ入力で使用 | Cycle1/7の現在のsolution_correction_zero_iff_edge、originalRepairEquiv/originalGaugeEquiv、original_d0と原値/actual choice APIs |
+| public適合、独立actual repair、全private vector、全compatible label | 定理の全量化対象 / 存在判定の右辺 | object/labelの構成と両逆を証明し、Nonemptyを入力にしてglobal存在を仮定しない |
+| zero defect | direction-hypothesis / 正の構成例だけ | 元zero correctionsから全rangeの適合objectを具体的に作る。一般復元・存在同値には追加しない |
+
+一般actual/native category bridgeは非計算的な数学対応である。有限selectorとcochain assembly、生成済み有限座標のrec/gaugeの計算内容とは区別する。Fの実アフィン演算の評価証拠、Cの表示比較、D–F、W1–W5はこのcycleの完了申告に含めない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "全Sに共通なstrict公開適合・全内部自由度・全共有vertex labelsから、元Kの独立actual修復/全射へのstrict相互逆functors、存在iff public条件、全範囲包含交換を構成"
+  exit_criteria_status: ["同じ有限入力からselectorと一回生成済み局所表現を使用", "共有元辺値と全元vertex labelsを別々にstrict比較", "独立actual groupoidへの全値/choice/labels両逆と恒等関手等号", "全Sのpublic存在条件とrangeFunctor交換", "focused全宣言公理/scans。PR独立査読の最終受理はPR監査へ置く"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [FiniteFamilyGlue.equivalence, FiniteCoverGlue.glue0, FiniteCoverGlue.glue3, SupportedNativeEquation.equivalence, StrictCoverRestoration.equivalence, GeneratedStrictCover.objectEquiv, GeneratedPublicRelations.publicKernelEquiv, GeneratedCoverRestoration.equivalence, GeneratedCoverRestoration.functor_inverse, GeneratedCoverRestoration.inverse_functor, GeneratedCoverRestoration.repair_nonempty_iff_public, GeneratedCoverRanges.coordinate_functor_inclusion, GeneratedCoverRanges.reconstruction_functor_inclusion]
+  claim_mapping:
+    source_labels: ["GOAL Cの全S strict Glueと元全actual修復/全射の相互逆・全内部自由度・public存在条件・range包含", "n1017 §3.1", "design §4"]
+    undischarged_assumptions: []
+    acceptance_point: "選定したstrict全範囲復元の到達点。全GOAL completion candidateではない"
+    port_status: not-applicable
+  next_obligation: "Cの細分化/順序/括弧づけ/基底/section/参照の比較、D–F、W1–W5と別全GOAL completion review"
+audits:
+  premise_delta:
+    discharged: ["finite selector検索成功と全元glue", "global face/support条件", "full strict labels作用と復元", "private自由度からのpublic独立性", "actualとの全functor両逆とallS包含交換"]
+    remaining: []
+  certificate_provenance:
+    discharged: ["同じ元閉被覆/有限リストからglue", "同じ元d0/d1/defectと受理済み局所generatorから全対象/射復元"]
+    unresolved: []
+  proof_use:
+    used: ["cover各次数の全原値復元/face injectivity", "元r_d0/r_d1と同じactual correction唯一性", "同じgeneratedSolutionEquiv/full label action/public不変性", "同じ原始range inclusion"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["15 exact-source単一focused監査exit0/errors0/warnings0", "186明示宣言の全個別公理は標準のみ", "axiom log SHA2566f406d1f1e974a6b10b51a5d33840182dec8343a93e48e81450ecd4dbf8543b6"]
+  blocking_findings: []
+  next_obligation: "Cの各表示比較とD–F/W1–W5。PR査読・root受理・CI・merge/Issue同期を経て次到達点へ進む"
+```
+
+### 全宣言の監査対象
+
+`FiniteIndexedGluing.lean` (9明示宣言):
+
+`FiniteFamilyGlue.selector`, `FiniteFamilyGlue.selector_mem`, `FiniteFamilyGlue.glue`, `FiniteFamilyGlue.glue_value`, `FiniteFamilyGlue.glue_restriction`, `FiniteFamilyGlue.restriction_glue`, `FiniteFamilyGlue.equivalence`, `FiniteFamilyGlue.glue_eq_general`, `FiniteFamilyGlue.glue_enum_independent`。
+
+`FiniteCoverGluing.lean` (20明示宣言):
+
+`FiniteCoverGlue.glue0`, `FiniteCoverGlue.glue0_value`, `FiniteCoverGlue.glue_restriction0`, `FiniteCoverGlue.restrict_glue0`, `FiniteCoverGlue.glue0_eq_general`, `FiniteCoverGlue.glue1`, `FiniteCoverGlue.glue1_value`, `FiniteCoverGlue.glue_restriction1`, `FiniteCoverGlue.restrict_glue1`, `FiniteCoverGlue.glue1_eq_general`, `FiniteCoverGlue.glue2`, `FiniteCoverGlue.glue2_value`, `FiniteCoverGlue.glue_restriction2`, `FiniteCoverGlue.restrict_glue2`, `FiniteCoverGlue.glue2_eq_general`, `FiniteCoverGlue.glue3`, `FiniteCoverGlue.glue3_value`, `FiniteCoverGlue.glue_restriction3`, `FiniteCoverGlue.restrict_glue3`, `FiniteCoverGlue.glue3_eq_general`。
+
+`SupportedEquation.lean` (14明示宣言):
+
+`SupportedEquation.Labels`, `SupportedEquation.mem_labels`, `SupportedEquation.not_mem_labels_of_ne`, `SupportedEquation.labels_all`, `SupportedEquation.Objects`, `SupportedEquation.object_zero`, `SupportedEquation.not_supported_of_ne`, `SupportedEquation.gauge`, `SupportedEquation.gauge_zero`, `SupportedEquation.gauge_add`, `SupportedEquation.addAction`, `SupportedEquation.Groupoid`, `SupportedEquation.gauge_value`, `SupportedEquation.zeroObject`。
+
+`SupportedNativeEquation.lean` (15明示宣言):
+
+`SupportedNativeEquation.baseRepair`, `SupportedNativeEquation.baseGauge`, `SupportedNativeEquation.gaugeEquiv`, `SupportedNativeEquation.gauge_value`, `SupportedNativeEquation.gauge_inverse_value`, `SupportedNativeEquation.repairEquiv`, `SupportedNativeEquation.repair_equivariant`, `SupportedNativeEquation.equivalence`, `SupportedNativeEquation.repair_value`, `SupportedNativeEquation.repair_inverse_value`, `SupportedNativeEquation.inverse_choice`, `SupportedNativeEquation.functor_inverse`, `SupportedNativeEquation.inverse_functor`, `SupportedNativeEquation.functor_label_value`, `SupportedNativeEquation.inverse_label_value`。
+
+`StrictSupportedCover.lean` (13明示宣言):
+
+`StrictSupportedCover.Labels`, `StrictSupportedCover.mem_labels`, `StrictSupportedCover.not_mem_labels_of_ne`, `StrictSupportedCover.localLabels`, `StrictSupportedCover.label_overlap`, `StrictSupportedCover.Objects`, `StrictSupportedCover.localEdges`, `StrictSupportedCover.not_strict_of_ne`, `StrictSupportedCover.gauge`, `StrictSupportedCover.gauge_zero`, `StrictSupportedCover.gauge_add`, `StrictSupportedCover.addAction`, `StrictSupportedCover.Groupoid`。
+
+`StrictCoverRestoration.lean` (14明示宣言):
+
+`StrictCoverRestoration.restrictLabels`, `StrictCoverRestoration.restrictObjects`, `StrictCoverRestoration.glueLabels`, `StrictCoverRestoration.restrict_glue_labels`, `StrictCoverRestoration.glue_restrict_labels`, `StrictCoverRestoration.labelEquiv`, `StrictCoverRestoration.glueObjects`, `StrictCoverRestoration.restrict_glue_objects`, `StrictCoverRestoration.glue_restrict_objects`, `StrictCoverRestoration.objectEquiv`, `StrictCoverRestoration.restrict_equivariant`, `StrictCoverRestoration.equivalence`, `StrictCoverRestoration.functor_inverse`, `StrictCoverRestoration.inverse_functor`。
+
+`GeneratedStrictCover.lean` (12明示宣言):
+
+`GeneratedStrictCover.LocalObject`, `GeneratedStrictCover.publicValue`, `GeneratedStrictCover.restored_public`, `GeneratedStrictCover.restored_value_public`, `GeneratedStrictCover.PublicCompatible`, `GeneratedStrictCover.Objects`, `GeneratedStrictCover.coordinate`, `GeneratedStrictCover.coordinate_public`, `GeneratedStrictCover.restore`, `GeneratedStrictCover.restore_coordinate`, `GeneratedStrictCover.coordinate_restore`, `GeneratedStrictCover.objectEquiv`。
+
+`GeneratedPublicRelations.lean` (8明示宣言):
+
+`GeneratedPublicRelations.LocalRelation`, `GeneratedPublicRelations.Objects`, `GeneratedPublicRelations.publicCoordinates`, `GeneratedPublicRelations.assemble`, `GeneratedPublicRelations.publicKernelEquiv`, `GeneratedPublicRelations.nonempty_iff_public`, `GeneratedPublicRelations.not_supported_of_ne`, `GeneratedPublicRelations.not_shared_of_ne`。
+
+`GeneratedCoverAction.lean` (12明示宣言):
+
+`GeneratedCoverAction.coordinate_equivariant`, `GeneratedCoverAction.gauge`, `GeneratedCoverAction.gauge_zero`, `GeneratedCoverAction.gauge_add`, `GeneratedCoverAction.addAction`, `GeneratedCoverAction.Groupoid`, `GeneratedCoverAction.equivariant`, `GeneratedCoverAction.equivalence`, `GeneratedCoverAction.functor_inverse`, `GeneratedCoverAction.inverse_functor`, `GeneratedCoverAction.functor_label`, `GeneratedCoverAction.inverse_label`。
+
+`GeneratedRangeInclusion.lean` (9明示宣言):
+
+`GeneratedRangeInclusion.labelsInclusion`, `GeneratedRangeInclusion.objectsInclusion`, `GeneratedRangeInclusion.publicInclusion`, `GeneratedRangeInclusion.equivariant`, `GeneratedRangeInclusion.functor`, `GeneratedRangeInclusion.functor_obj_values`, `GeneratedRangeInclusion.functor_label_value`, `GeneratedRangeInclusion.functor_comp`, `GeneratedRangeInclusion.public_inclusion_comm`。
+
+`GeneratedCoverRestoration.lean` (14明示宣言):
+
+`GeneratedCoverRestoration.labelEquiv`, `GeneratedCoverRestoration.objectEquiv`, `GeneratedCoverRestoration.equivariant`, `GeneratedCoverRestoration.equivalence`, `GeneratedCoverRestoration.functor_inverse`, `GeneratedCoverRestoration.inverse_functor`, `GeneratedCoverRestoration.inverse_edge_value`, `GeneratedCoverRestoration.forward_edge_value`, `GeneratedCoverRestoration.inverse_choice`, `GeneratedCoverRestoration.label_value`, `GeneratedCoverRestoration.label_inverse_value`, `GeneratedCoverRestoration.functor_label_value`, `GeneratedCoverRestoration.inverse_label_value`, `GeneratedCoverRestoration.repair_nonempty_iff_public`。
+
+`GeneratedCoverRanges.lean` (6明示宣言):
+
+`GeneratedCoverRanges.coordinate_inclusion`, `GeneratedCoverRanges.reconstruction_inclusion`, `GeneratedCoverRanges.label_inclusion`, `GeneratedCoverRanges.label_reconstruction_inclusion`, `GeneratedCoverRanges.coordinate_functor_inclusion`, `GeneratedCoverRanges.reconstruction_functor_inclusion`。
+
+`StrictCoverZeroCases.lean` (4明示宣言):
+
+`StrictCoverZeroCases.originalZero`, `StrictCoverZeroCases.generatedZero`, `StrictCoverZeroCases.publicZero`, `StrictCoverZeroCases.public_zero_values`。
+
+
+`StrictCoverSupportAPIs.lean` (4明示宣言):
+
+`CoverEquation.defect_zero`, `ClosedRegion.d0Hom_edge_value`, `RelativeCover.d0_edge_value`, `FiniteNative.generated_solution_inverse_public`。
+
+`StrictCoverNegativeCases.lean` (32明示宣言):
+
+`StrictCoverNegativeCases.geometry`, `StrictCoverNegativeCases.coefficients`, `StrictCoverNegativeCases.coefficientModule`, `StrictCoverNegativeCases.bases`, `StrictCoverNegativeCases.regions`, `StrictCoverNegativeCases.edge`, `StrictCoverNegativeCases.vertexDecidable`, `StrictCoverNegativeCases.edgeDecidable`, `StrictCoverNegativeCases.pEdgesDecidable`, `StrictCoverNegativeCases.pFacesDecidable`, `StrictCoverNegativeCases.regionVerticesDecidable`, `StrictCoverNegativeCases.regionEdgesDecidable`, `StrictCoverNegativeCases.regionFacesDecidable`, `StrictCoverNegativeCases.faceDecidable`, `StrictCoverNegativeCases.linear`, `StrictCoverNegativeCases.fieldEnum`, `StrictCoverNegativeCases.edgeEnum`, `StrictCoverNegativeCases.faceEnum`, `StrictCoverNegativeCases.solution`, `StrictCoverNegativeCases.label`, `StrictCoverNegativeCases.label_d0`, `StrictCoverNegativeCases.forbidden_correction`, `StrictCoverNegativeCases.forbidden_label`, `StrictCoverNegativeCases.localObjects`, `StrictCoverNegativeCases.shared_edge`, `StrictCoverNegativeCases.localLabels`, `StrictCoverNegativeCases.shared_label`, `StrictCoverNegativeCases.generated`, `StrictCoverNegativeCases.generated_value`, `StrictCoverNegativeCases.generated_forbidden_public`, `StrictCoverNegativeCases.generated_shared_public`, `StrictCoverNegativeCases.zero_accepted`。
+
+15 source全186明示宣言を個別に`#print axioms`し、標準公理だけであることを確認した。初回の遅延生成r2 APIは零保存APIの使用で発生しなくなり、最終logの対象集合は全186明示宣言と完全一致する。全15 source末尾にstandard axiom gateを置く。exact-source focused監査はこの依存した到達点のbodyだけを一回検査し、Research全体/aggregate/全file loopをelaborateしない。axiom log SHA256 `6f406d1f1e974a6b10b51a5d33840182dec8343a93e48e81450ecd4dbf8543b6`、exit0/errors0/warnings0。必要な単一concrete module `StrictCoverNegativeCases` の確認はexit0。2セル・2領域の有限被覆をF₃値で実評価し、selector `[0,1]`、元全値 `[1,2]`、逆順Listでの元全値 `[1,2]` を得た。上記F₂原表示の原補正/原ラベル/generated public実評価は全て `[0,1]`（W1–W5の代替ではない）。placeholder/hidden-BiDi/privacy/import方向/diff scanはclean。PR内容の受理・CI・merge evidenceはPR/Issueへ置く。
