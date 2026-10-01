@@ -247,6 +247,8 @@ fn an_external_call_is_a_condition() {
     assert!(d["conditions"].as_array().unwrap().iter().any(|c| c.as_str().unwrap().contains("外部の要素 requests.post")), "{d}");
     let writes = d["check"]["before_then_move"]["writes"].as_array().unwrap();
     assert!(writes.iter().all(|w| !w["object"].as_str().unwrap().starts_with("requests")), "外部の呼び出しは書き込みなし: {d}");
+    // 外部の要素そのものは、比べる組にならない。
+    assert!(s["results"].as_array().unwrap().iter().all(|r| r["subject"] != "requests.post"), "{s}");
 }
 
 #[test]

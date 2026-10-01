@@ -8,7 +8,7 @@ use serde_json::{Value as Json, json};
 use crate::atom::parse_location;
 use crate::expr::BinOp;
 use crate::law::{LawSet, Rule};
-use crate::structure::{Overlay, Reason, Silence, State, StepKind, Structure, Value, question_at};
+use crate::structure::{Overlay, Reason, Resolution, Silence, State, StepKind, Structure, Value, question_at};
 
 /// 分岐の数の上限。超えたら `limit` で沈黙する。
 pub const BRANCH_LIMIT: usize = 256;
@@ -441,6 +441,11 @@ fn commute(
 ) -> Vec<Finding> {
     let mut out = Vec::new();
     for (a, b) in &overlay.corresponds {
+        // 外部の要素は、観測した要素へ書き込まない呼び出し先として扱う(設計 §3.3)。比べる組ではない。
+        let external = |s: &Structure, n: &str| matches!(s.resolves.get(n), Some(Resolution::External(_)));
+        if external(before, a) || external(after, b) {
+            continue;
+        }
         // 消える要素を使う操作は、比べられない。この Law でも `missing` として挙げる。
         if let Some(uses) = overlay.missing.get(b) {
             if let Some(f) = missing(before, b, uses) {
