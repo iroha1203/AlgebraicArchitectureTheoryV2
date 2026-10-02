@@ -13,6 +13,23 @@ use common::*;
 const UPDATE: &str = "shop.shipping.service.update_shipping";
 const RESET_OP: &str = "shop.payment.service.reset_authorization";
 
+/// 第2章の service.py の観測。題材の `SERVICE` から、第2章にない `fix_address` を外す。
+fn chapter2_service() -> String {
+    SERVICE.lines().filter(|l| !l.contains("fix_address")).map(|l| format!("{l}\n")).collect()
+}
+
+fn outcomes(summary: &Value) -> Vec<(String, String, String)> {
+    summary["results"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|r| {
+            let s = |k: &str| r[k].as_str().unwrap_or("").to_string();
+            (s("subject"), s("outcome"), if r["outcome"] == "silent" { s("reason") } else { s("kind") })
+        })
+        .collect()
+}
+
 /// 題材の観測から、ソースの版を外す。`record` が今のソースの版を補う。
 fn unversioned(atoms: &str) -> String {
     ["@blob:3f2a9c1", "@blob:1d9e3b4", "@blob:6a1b2c3", "@blob:9f2c4e7"].iter().fold(atoms.to_string(), |s, v| s.replace(v, ""))
@@ -63,7 +80,7 @@ fn implementation(plan: &str, edit: impl Fn(&str) -> String) -> BTreeMap<String,
 
 /// 第2章の一周を 4. まで進め、変更前を用意し、実装して `compare --plan` を返す。
 /// 実装は、候補の構造 Atom を `edit` で書き換えたものになる。
-fn walk(name: &str, edit: impl Fn(&str) -> String) -> (Vec<Value>, Value) {
+fn walk(name: &str, edit: impl Fn(&str) -> String) -> (Repo, Vec<Value>, Value) {
     let repo = Repo::new(name);
     repo.write(".archsig/law/shop.law", LAW);
     for f in ["shop/shipping/service.py", "shop/order/model.py", "shop/shipping/model.py", "shop/shipping/address.py"] {
@@ -72,7 +89,7 @@ fn walk(name: &str, edit: impl Fn(&str) -> String) -> (Vec<Value>, Value) {
     let mut steps = Vec::new();
 
     // 4. 候補を書いて検査する。ArchMap には、まだ address.py の構造がない。
-    record(&repo, &unversioned(&format!("{SERVICE}{ORDER}{ADDRESS_MODEL}")));
+    record(&repo, &unversioned(&format!("{}{ORDER}{ADDRESS_MODEL}", chapter2_service())));
     repo.write(".archsig/plans/split-order/plan.jsonl", SPLIT);
     steps.push(repo.run(&["plan", "check", "split-order"]));
 
@@ -126,38 +143,48 @@ fn walk(name: &str, edit: impl Fn(&str) -> String) -> (Vec<Value>, Value) {
     // 結果の詳細も一緒に返す。
     let details: Vec<Value> = compared["results"].as_array().unwrap().iter().map(|r| repo.run(&["show", r["id"].as_str().unwrap()])).collect();
     steps.push(compared);
-    (steps, Value::Array(details))
+    (repo, steps, Value::Array(details))
 }
 
 #[test]
 fn the_change_of_chapter_2_goes_around() {
-    let (steps, details) = walk("ch2", |l| l.to_string());
+    let (repo, steps, details) = walk("ch2", |l| l.to_string());
+    let show = |summary: &Value, subject: &str| repo.run(&["show", result(summary, subject)["id"].as_str().unwrap()]);
 
-    // 1. 最初の plan check は unread で沈黙し、address.py を返す。
+    // 1. 最初の plan check は沈黙だけを返し、update_shipping は address.py を読めと言う。
     let first = &steps[0];
+    assert!(outcomes(first).iter().all(|(_, o, _)| o == "silent"), "沈黙だけ: {first}");
     let r = result(first, UPDATE);
-    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{first}");
-    assert!(first["next"].as_array().unwrap().iter().any(|n| n["read"] == "shop/shipping/address.py" && n["scope"] == "structure"), "{first}");
+    assert_eq!(r["reason"], "unread", "{first}");
+    let next = first["next"].as_array().unwrap().iter().find(|n| n["read"] == "shop/shipping/address.py").unwrap_or_else(|| panic!("{first}"));
+    assert_eq!(next["scope"], "structure");
+    assert!(next["decides"].as_array().unwrap().contains(&r["id"]), "{first}");
 
-    // 2. 読み足すと、国をまたぐ分岐で反例が出る。
+    // 2. 読み足すと、国をまたぐ分岐で反例が出る。食い違いの元は、変更前の service.py:4 の書き込みである。
     let second = &steps[1];
     assert_eq!(result(second, UPDATE)["kind"], "counterexample", "{second}");
+    let d = show(second, UPDATE);
+    let branch = d["check"]["branch"].as_array().unwrap();
+    assert!(branch.iter().any(|b| b["when"] == "$new.country != $order.shipping_address.country" && b["truth"] == false), "国が変わる分岐: {d}");
+    assert!(d["check"]["diverging"].as_array().unwrap().iter().any(|v| v["writes"]["before"]["at"].as_str().is_some_and(|a| a.starts_with("shop/shipping/service.py:4"))), "{d}");
 
-    // 3. reset_authorization を呼ぶ候補では、2分岐とも成り立つ。
+    // 3. reset_authorization を呼ぶ候補では、どの結果も成り立ち、update_shipping は2分岐とも一致する。
     let third = &steps[2];
-    assert_eq!(result(third, UPDATE)["outcome"], "holds", "{third}");
+    assert!(outcomes(third).iter().all(|(_, o, _)| o == "holds"), "この候補は Law を保つ: {third}");
+    assert_eq!(show(third, UPDATE)["check"]["branches"].as_array().unwrap().len(), 2);
 
-    // 4. plan split が三つの局所に分け、呼び出しと引数渡しが共有に入る。
+    // 4. plan split は、ちょうど三つの局所に分け、呼び出しと引数渡しを共有に入れる。
     let split = &steps[3];
     assert_eq!(result(split, "split-order")["outcome"], "holds", "{split}");
+    let locals: Vec<String> = show(split, "split-order")["check"]["locals"].as_array().unwrap().iter().map(|l| l["local"].as_str().unwrap().to_string()).collect();
+    assert_eq!(locals, ["shop/order", "shop/payment", "shop/shipping"]);
     let shared = steps[4].as_array().unwrap()[3].as_array().unwrap().clone();
     assert!(shared.iter().any(|a| a["kind"] == "calls" && a["subject"] == UPDATE && a["object"] == RESET_OP), "{shared:?}");
     assert!(shared.iter().any(|a| a["kind"] == "passes" && a["subject"] == format!("{UPDATE}->{RESET_OP}")), "{shared:?}");
 
-    // 5. 実装後の compare --plan がすべて成り立つ。
+    // 5. 実装後の compare --plan は、すべて成り立つ。
     let compared = &steps[5];
-    let results = compared["results"].as_array().unwrap();
-    assert!(!results.is_empty() && results.iter().all(|r| r["outcome"] == "holds"), "{compared}");
+    assert!(outcomes(compared).iter().all(|(_, o, _)| o == "holds"), "{compared}");
     let matched = details.as_array().unwrap().iter().find(|d| d["subject"] == "split-order").unwrap_or_else(|| panic!("{compared}"));
     assert_eq!((matched["check"]["planned"].as_u64(), matched["check"]["observed"].as_u64()), (Some(13), Some(13)));
     let update = details.as_array().unwrap().iter().find(|d| d["subject"] == UPDATE).unwrap();
@@ -167,7 +194,7 @@ fn the_change_of_chapter_2_goes_around() {
 #[test]
 fn an_empty_string_in_the_payment_implementation_is_caught() {
     // 6. 決済側が OrderPayment.ref を None ではなく空文字にした。
-    let (steps, details) = walk("ch2-empty", |l| {
+    let (_repo, steps, details) = walk("ch2-empty", |l| {
         if l.contains("\"kind\":\"writes\"") && l.contains(&format!("\"subject\":\"{RESET_OP}\"")) {
             l.replace("\"value\":\"None\"", "\"value\":\"\\\"\\\"\"")
         } else {
@@ -178,6 +205,7 @@ fn an_empty_string_in_the_payment_implementation_is_caught() {
     assert_eq!(result(compared, UPDATE)["kind"], "counterexample", "{compared}");
     let mismatches: Vec<&Value> = details.as_array().unwrap().iter().filter(|d| d["kind"] == "mismatch").collect();
     assert_eq!(mismatches.len(), 2, "{compared}");
-    // 食い違いの場所は、決済のサービスの書き込みである。
-    assert!(mismatches.iter().any(|d| d["check"]["observed"]["at"].as_str().is_some_and(|a| a.starts_with("shop/payment/service.py"))), "{mismatches:?}");
+    // 候補の None が観測されず、決済のサービスに候補にない空文字の書き込みがある。
+    assert!(mismatches.iter().any(|d| d["check"]["planned"]["value"] == "None" && d["check"]["observed"].is_null()), "{mismatches:?}");
+    assert!(mismatches.iter().any(|d| d["check"]["observed"]["value"] == "\"\"" && d["check"]["observed"]["at"].as_str().is_some_and(|a| a.starts_with("shop/payment/service.py"))), "{mismatches:?}");
 }
