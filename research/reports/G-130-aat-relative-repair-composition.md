@@ -3384,9 +3384,9 @@ selection:
 
 領域包含、交差、合併、indexed assembly、全領域を同じcell集合で比較し、任意0–3 indexed coverを新presentationの全coverへ構成した。選択辺がprivateである元条件から所属leafの一意性を導き、異なるleafの全overlapは元retained regionそのものとなる。新cover/overlap保存certificateを入力として受け取っていない。
 
-生成されたnew regionsに既存 `sharedEdges/privateAlwaysEdges` を適用した独立集合は、元集合の `edgeOrigin` 逆像と一致する。両factorは元chosenのprivate条件と同値、retained edgeは同じ原名の条件と同値である。各leafの全nonfixed・nonprivate補集合をpublic名として定め、その独立new補集合と旧補集合の両逆な全名同値を構成した。全public原名に付随する実射影の全核の族も相互逆に対応し、任意full値の前後の読み取りAPIを持つ。候補集合だけや列像へ縮小していない。
+生成されたnew regionsに既存 `sharedEdges/privateAlwaysEdges` を適用した独立集合は、元集合の `edgeOrigin` 逆像と一致する。両factorは元chosenのprivate条件と同値、retained edgeは同じ原名の条件と同値である。各leafの全nonfixed・nonprivate補集合をpublic名として定め、その独立new補集合と旧補集合の両逆な全名同値を構成した。全public原名に付随する実射影の全核の族も相互逆に対応し、任意full値の前後の読み取りAPIを持つ。候補集合だけや列像へ縮小していない。さらに各leafの全nonprivate辺を `CompletePublic.publicEdges` として独立に生成し、全fixed・shared・candidate原名を含む族の全単射と各名の全actual kernel族の両逆を構成した。固定辺の実補正を零とする新旧の独立 `fixedZero` 条件を同値で比較し、その条件を満たす全physical public族を `physicalFamilyEquiv` で相互逆に対応させる。元の相対局所補正から `relativePublic` が同じ全原名・全核値を読み、固定零条件を放電する。既存の自由public座標は全public族のnonfixed部分に正確に一致し、fixed原名を自由変数として追加しない。
 
-同じ指定W4の原geometry/whole affine towerと実因子を使用し、全領域と固定vertex regionの二member coverへ適用した。元faceのtyped語b,a,aをb,e1,e2,e1,e2の同じ順で置換し、両factorがprivate、candidate bがpublic、その全実核値・任意Sの禁止maskが同じ値で保存されることを確認した。freshは固定overlapに含まれない。
+同じ指定W4の原geometry/whole affine towerと実因子を使用し、全領域と固定vertex regionの二member coverへ適用した。元faceのtyped語b,a,aをb,e1,e2,e1,e2の同じ順で置換し、両factorがprivate、candidate bがpublic、その全実核値・任意Sの禁止maskが同じ値で保存されることを確認した。freshは固定overlapに含まれない。追加の入力では同じ原geometry・full affine塔・actual因子のままbを固定し候補集合を空にした。全public b原名と零補正を保持し、零族は新旧のfixed条件を満たす一方、whole kernelのtranslation by one族は新旧とも拒否される。追加入力の法則を満たす修復の存在は主張していない。
 
 ```yaml
 ledger_type: target_cycle_result
@@ -3402,14 +3402,14 @@ result:
   exit_criteria_status:
     - "任意領域と全typed incidence: edgeWord_edges/expanded_path_edges/expanded_pasting_context/expandedRegion。全face/全triple closureを入力から生成"
     - "全0–3 coverと包含/交差/assembly: expanded_indexed_cover/expanded_inclusion/expanded_inter/expanded_indexed_union。private_chosen_uniqueからexpanded_overlap_retainedを適用"
-    - "独立private/shared/publicと全名/全核値/mask: expanded_private_edges/expanded_shared_edges/expanded_public_edges/publicNameEquiv/PublicKernels.familyEquiv/public_forbidden_mask"
+    - "独立private/shared/publicと全名/全核値/mask: expanded_private_edges/expanded_shared_edges/expanded_public_edges/publicNameEquiv/PublicKernels.familyEquiv/public_forbidden_mask、CompletePublic.fixed_public/candidate_public/shared_public/nonfixed_public/publicNameEquiv/PublicKernels.fixedZero_iff/physicalFamilyEquiv/relativePublic、C20FixedPublicRegressionの零/非零両方向"
     - "same actual W4: C20SubdivisionCoverRegressionのregions_cover/split_regions_cover/first_private/second_private/full_face_word/candidate_name_value/candidate_coefficient_value/candidate_mask/actual_factor_origin。正式PR gateはPR作成後に判定"
   split_reason: none
   completion_candidate: no
-  lean_artifacts: ["SubdivisionRegionIncidence", "SubdivisionClosedCovers", "SubdivisionPrivatePartition", "SubdivisionPublicNames", "C20SubdivisionCoverRegression"]
+  lean_artifacts: ["SubdivisionRegionIncidence", "SubdivisionClosedCovers", "SubdivisionPrivatePartition", "SubdivisionPublicNames", "C20SubdivisionCoverRegression", "SubdivisionFixedPublicValues", "C20FixedPublicRegression"]
   evidence: ["元complete名の逆像から新閉領域とcoverを独立構成", "既存private/shared定義からの全membership比較", "全public実核族の両逆・任意値・全S原candidate mask", "same W4 full authored wordと実whole affine factors"]
   claim_mapping:
-    theorem_names: ["expanded_path_edges", "expanded_pasting_context", "expandedRegion", "expanded_indexed_cover", "expanded_overlap_retained", "expanded_private_edges", "private_chosen_unique", "publicNameEquiv", "PublicKernels.familyEquiv", "public_forbidden_mask", "C20SubdivisionCoverRegression.full_face_word", "C20SubdivisionCoverRegression.candidate_coefficient_value"]
+    theorem_names: ["expanded_path_edges", "expanded_pasting_context", "expandedRegion", "expanded_indexed_cover", "expanded_overlap_retained", "expanded_private_edges", "private_chosen_unique", "publicNameEquiv", "PublicKernels.familyEquiv", "CompletePublic.publicNameEquiv", "CompletePublic.PublicKernels.physicalFamilyEquiv", "CompletePublic.PublicKernels.relativePublic", "C20FixedPublicRegression.nonzero_not_physical", "C20FixedPublicRegression.split_nonzero_not_physical", "public_forbidden_mask", "C20SubdivisionCoverRegression.full_face_word", "C20SubdivisionCoverRegression.candidate_coefficient_value"]
     source_labels: ["GOAL E有限体C保存の同じ閉被覆/原private public入力比較", "GOAL Cの元private/shared/candidate定義", "GOAL F/W4同じ実操作と指定幾何"]
     conjuncts: ["選定四終了条件と上記原値/全集合/両逆APIを対応", "生成済みR_i・N_i・section・作用/strict glue復元の比較は後続。全C保存完了へ昇格しない"]
     undischarged_assumptions: []
@@ -3417,7 +3417,7 @@ result:
     port_status: unported
 audits:
   premise_delta:
-    discharged: ["全新閉包/cover: 元全incidence・original coverから生成", "選択leaf唯一性: 原privateAlwaysEdgesの非共有条件から導出", "public名の両逆: 選択辺が全leafで非publicなことから生成", "全public実核族: retained targetの同じ実投影核から構成", "W4条件: accepted C17/C18の元実geometry/factorsへ適用し、private/cover/public/maskを今回評価"]
+    discharged: ["全新閉包/cover: 元全incidence・original coverから生成", "選択leaf唯一性: 原privateAlwaysEdgesの非共有条件から導出", "public名の両逆: 選択辺が全leafで非publicなことから生成", "全public実核族: retained targetの同じ実投影核から構成。全fixed名を含むphysical族と固定零条件の両方向/actual相対局所補正の読み取りも構成", "W4条件: accepted C17/C18の元実geometry/factorsへ適用し、private/cover/public/maskを今回評価"]
     remaining: ["同じ新旧local D/F/R_i/N_i/生成section/全label・strict glue復元比較", "残W1–W3/W5", "累積final packetと別fresh全target最終査読"]
   certificate_provenance:
     discharged: ["expandedRegionの全fieldsは元ClosedRegionのclosureと全path/route置換から生成", "expanded_indexed_coverは元IndexedCoverから生成。新被覆fieldを供給しない", "新private/shared/public集合は既存の各定義で独立に作成してから比較", "public kernel comparisonは同じretained actual target/kernel。像への全射や選択basisで代替しない"]
@@ -3431,7 +3431,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: ["74明示＋生成2=76個別標準公理・欠落0・errors0/warnings0", "選定5 current production単一focusedと同じ5 exact-body named milestone focused", "audit sha256=62e9601c7abcf023822af6a47cd1bcc9a73a0ed7fde4287c22b86c9423c4868e / log sha256=a926de4900e859fa679d7657e4620d13aa1bd005e8ca9ef6218b46990af2b63b", "current hash/registry/placeholder/hidden-BiDi/privacy/import方向/保護領域/diff scan整合。Research全体/aggregate/全file/module elaborationなし"]
+  validation_refs: ["116明示＋生成3=119個別標準公理・欠落0・errors0/warnings0", "選定義務を実装する7 current production単一focusedと同じ7 exact-body named milestone focused", "audit sha256=fec0e21b7abf23d5bb9285ceb61d745738c2c308725df6197c1588326f0aaefc / log sha256=09a61b9bde82849b334eca3e7ebde6512370d10fb49f4f8249d7c63485b054c8", "current hash/registry/placeholder/hidden-BiDi/privacy/import方向/保護領域/diff scan整合。Research全体/aggregate/全file/module elaborationなし"]
   blocking_findings: []
   next_obligation: "今回生成した同じ閉被覆/private public全名・全核値から、独立新旧local D/F/rhs/一回生成R_i/N_i/section/元全labelsを比較し、全S strict glueとsame actual復元へ接続する。その後残W1–W3/W5と累積completionを進める"
 ```
