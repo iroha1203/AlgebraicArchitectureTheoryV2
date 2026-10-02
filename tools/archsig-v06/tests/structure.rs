@@ -236,3 +236,32 @@ fn an_unread_callee_returns_what_to_read() {
     let e = s.kind("shop.mail.format").unwrap_err();
     assert_eq!((e.reason, e.read, e.element.as_deref()), (Reason::Unread, None, Some("shop.mail.format")));
 }
+
+#[test]
+fn a_write_with_via_writes_the_place_of_the_field_chain() {
+    let s = structure(&format!(
+        "{SHOP}{}",
+        r#"{"kind": "writes", "subject": "shop.shipping.service.update_shipping", "via": ["shop.order.model.Order.shipping_address"], "object": "shop.shipping.address.Address.country", "value": "\"JP\"", "at": "shop/shipping/service.py:6"}
+{"kind": "writes", "subject": "shop.shipping.service.update_shipping", "object": "shop.order.model.Order.payment_ref", "value": "$order.shipping_address.country", "at": "shop/shipping/service.py:7"}
+{"kind": "writes", "subject": "shop.shipping.service.update_shipping", "object": "shop.order.model.Order.payment_ref", "value": "$new.country", "at": "shop/shipping/service.py:8"}
+"#
+    ));
+    let (_, writes) = run(&s, "shop.shipping.service.update_shipping");
+    let nested = place(&["shop.order.model.Order.shipping_address", "shop.shipping.address.Address.country"]);
+    assert_eq!(writes[0], (nested, c("\"JP\"")), "場所は [via…, object]");
+    assert_eq!(writes[1].1, c("\"JP\""), "注文の住所の country は、書いた値を読む");
+    assert_eq!(writes[2].1, Value::Input(place(&["shop.shipping.address.Address.country"])), "$new.country は入力のまま");
+}
+
+#[test]
+fn a_via_field_that_was_not_read_is_silent() {
+    let s = structure(
+        r#"{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:1"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"t": "m.T"}, "at": "m.py:4"}
+{"kind": "writes", "subject": "m.f", "via": ["m.T.u"], "object": "m.U.v", "value": "0", "at": "m.py:5"}
+{"kind": "defines", "subject": "m.U.v", "value": "field", "type": "int", "at": "m.py:9"}
+"#,
+    );
+    let e = archsig::engine::execute(&s, "m.f", &|_| false).unwrap_err();
+    assert_eq!((e.reason, e.element.as_deref()), (Reason::Unread, Some("m.T.u")), "via のフィールドの定義を読んでいなければ沈黙する");
+}

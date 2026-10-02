@@ -810,3 +810,50 @@ fn too_many_pairs_of_branches_are_silent_with_limit() {
     let s = repo.run(&["plan", "check", "p"]);
     assert_eq!(result(&s, "m.f")["reason"], "limit", "{s}");
 }
+
+/// 変更前: f(o) は、o.s.p(注文の中の S の p)に 1 を書く。p は payment-info を持つ。
+const NESTED: &str = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.S.p", "meaning": "payment-info", "uses": ["m.py:7@blob:aaaaaaa"], "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O", "t": "m.S"}, "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "via": ["m.O.s"], "object": "m.S.p", "value": "1", "at": "m.py:7@blob:aaaaaaa"}
+"#;
+
+fn nested(name: &str, write: &str) -> Value {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", NESTED);
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        &format!(
+            "{}\n{write}\n",
+            r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O", "t": "m.S"}, "file": "m.py", "at": "plan:p"}"#
+        ),
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    result(&s, "m.f").clone()
+}
+
+#[test]
+fn a_nested_write_is_compared_at_the_place_of_the_field_chain() {
+    let same = nested("nested-same", r#"{"kind": "writes", "subject": "m.f", "via": ["m.O.s"], "object": "m.S.p", "value": "1", "at": "plan:p"}"#);
+    assert_eq!(same["outcome"], "holds", "{same}");
+    // 候補は、注文の中の S ではなく、引数 t の S に書く。注文の中の p は 1 にならない。
+    let moved = nested("nested-moved", r#"{"kind": "writes", "subject": "m.f", "object": "m.S.p", "value": "1", "at": "plan:p"}"#);
+    assert_eq!(moved["kind"], "counterexample", "{moved}");
+}
+
+#[test]
+fn a_write_through_a_removed_field_is_missing() {
+    let repo = Repo::new("nested-removes");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", NESTED);
+    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.O.s\", \"at\": \"plan:p\"}\n");
+    let s = repo.run(&["plan", "check", "p"]);
+    let missing: Vec<&Value> = s["results"].as_array().unwrap().iter().filter(|r| r["subject"] == "m.f" && r["kind"] == "missing").collect();
+    assert!(!missing.is_empty(), "via に消えるフィールドを持つ書き込みは、その操作を missing に挙げる: {s}");
+}

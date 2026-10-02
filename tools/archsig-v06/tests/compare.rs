@@ -202,6 +202,17 @@ fn atoms_are_compared_by_the_identity_of_chapter_3() {
 }
 
 #[test]
+fn a_write_with_another_via_is_another_atom() {
+    // 書き込み先の列(`via`)は同一性に入る。候補と違う列を通った書き込みは、候補の書き込みに当たらない。
+    let (before, repo) = prepared("via");
+    let plan = fixed_plan();
+    planned(&repo, &plan);
+    implement(&repo, &plan, |l| if l.contains("\"kind\":\"writes\"") { l.replacen('{', "{\"via\":[\"shop.order.model.Order.shipping_address\"],", 1) } else { l.to_string() });
+    let s = compare(&repo, &before, Some("split-order"));
+    assert!(s["results"].as_array().unwrap().iter().any(|r| r["kind"] == "mismatch"), "{s}");
+}
+
+#[test]
 fn a_planned_atom_in_a_source_not_read_again_is_silent() {
     let (before, repo) = prepared("not-read-again");
     let plan = fixed_plan();

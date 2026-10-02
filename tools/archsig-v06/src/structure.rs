@@ -273,8 +273,11 @@ impl Structure {
             let object = a.object.clone().unwrap_or_default();
             let kind = match a.kind.as_str() {
                 "writes" => {
-                    self.expect(&object, "field")?;
-                    StepKind::Write { place: vec![object], value: value(self)? }
+                    let place: Vec<String> = a.via.iter().flatten().cloned().chain(std::iter::once(object)).collect();
+                    for f in &place {
+                        self.expect(f, "field")?;
+                    }
+                    StepKind::Write { place, value: value(self)? }
                 }
                 "sends" => StepKind::Send { item: object, value: value(self)? },
                 "returns" => StepKind::Return { value: value(self)? },
@@ -477,6 +480,7 @@ fn same_atom(p: &Atom, o: &Atom) -> bool {
     p.kind == o.kind
         && p.subject == o.subject
         && p.object == o.object
+        && p.via == o.via
         && p.value == o.value
         && p.when == o.when
         && p.meaning == o.meaning
@@ -556,7 +560,7 @@ fn relate(old: &Structure, new: &Structure, before: &[Atom], after: &[Atom], pla
 }
 
 /// 操作の本体の Atom `atoms` が `removes` した要素を名指せば、その操作を `missing` の元に挙げる。
-/// 名指すとは、引数の型、構造 Atom の `object`、`value`・`when` の式の中の `$p.f` と呼び出しで名を出すこと。
+/// 名指すとは、引数の型、構造 Atom の `object` と `via`、`value`・`when` の式の中の `$p.f` と呼び出しで名を出すこと。
 /// 意味 Atom の `value` は式として読まない。名指す要素をたどれなかった所は `untraced` に積む。
 /// `skip` は数えない操作(書き直した操作や消える操作)。
 fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn Fn(&str) -> bool, out: &mut Overlay) {
@@ -570,9 +574,12 @@ fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn
         let op = a.subject.split("->").next().unwrap_or("").to_string();
         let names = named.entry(op.clone()).or_default();
         let mut gaps: Vec<Option<String>> = Vec::new();
-        match a.object.as_deref() {
-            Some(o) if o.starts_with('?') => gaps.push(Some(o.to_string())),
-            _ => names.extend(a.object.clone()),
+        for o in a.via.iter().flatten().chain(a.object.as_ref()) {
+            if o.starts_with('?') {
+                gaps.push(Some(o.to_string()));
+            } else {
+                names.insert(o.clone());
+            }
         }
         for text in [&a.value, &a.when].into_iter().flatten() {
             match expr::parse(text) {

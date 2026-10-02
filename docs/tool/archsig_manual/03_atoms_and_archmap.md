@@ -19,7 +19,8 @@ Atom は JSON の一行で書く。どの Atom も次の欄を持つ。
 | `calls`、`reads` | `object`、`when` |
 | `imports` | `object` |
 | `resolves` | `object` |
-| `writes`、`passes`、`sends` | `object`、`value`、`when` |
+| `writes` | `object`、`via`、`value`、`when` |
+| `passes`、`sends` | `object`、`value`、`when` |
 | `receives` | `object`、`value` |
 | `returns` | `value`、`when` |
 | `meaning` | `meaning`、`value`、`uses` |
@@ -28,7 +29,7 @@ Atom は JSON の一行で書く。どの Atom も次の欄を持つ。
 | `corresponds` | `object` |
 | `removes` | なし |
 
-Atom の同一性は、`kind`、`subject`、`object`、`value`、`when`、`meaning`、`scope` で決まる。
+Atom の同一性は、`kind`、`subject`、`object`、`via`、`value`、`when`、`meaning`、`scope` で決まる。
 `at` と `by` は同一性に入らない。行がずれても、同じ事実は同じ Atom である。
 同一性は、二つの ArchMap や、候補と実装の Atom を比べるときに使う。
 一つの操作の中で同じ Atom が二度出れば、二つの手順である。同じ操作を二度呼べば、`calls` が二つ並ぶ。
@@ -62,6 +63,9 @@ Atom の同一性は、`kind`、`subject`、`object`、`value`、`when`、`meani
 - `calls`:操作が別の操作を呼ぶ。
 - `reads`:操作がフィールドを読む。
 - `writes`:操作がフィールドに書く。`value` に書く値を持つ。
+  `object` は書いたフィールドである。フィールドの値の中のフィールドに書くときは、そこまでにたどるフィールドを `via` に順に並べる。
+  注文の配送先の国に書くなら、`via` は `["shop.order.model.Order.shipping_address"]`、`object` は `shop.shipping.model.Address.country` である。
+  この書き込み先は、`$order.shipping_address.country` で読む値と同じ所である。`via` がなければ、引数が指す実体のフィールドに書く(`$new.country` で読む値と同じ所)。
 - `passes`:呼び出しが引数に値を渡す。`subject` は呼び出しの名前、`object` は受け取る引数である。
 - `sends`:操作がチャネルの項目へ値を送る。`object` は項目、`value` は送る値である。
 - `receives`:操作がチャネルの項目を受け取る。`object` は項目、`value` は受け取った値を操作の中で表す式である。

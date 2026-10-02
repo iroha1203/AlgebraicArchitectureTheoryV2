@@ -34,9 +34,10 @@ pub fn local(reading: &Reading, path: &str) -> Option<String> {
     }
 }
 
-/// Atom が名指す要素。`subject` と `object`。`object` に `|` で並べた行き先は、それぞれを名指す。
+/// Atom が名指す要素。`subject`、`via`、`object`。`object` に `|` で並べた行き先は、それぞれを名指す。
 pub fn named(a: &Atom) -> Vec<&str> {
     let mut out = vec![a.subject.as_str()];
+    out.extend(a.via.iter().flatten().map(String::as_str));
     if let Some(o) = &a.object {
         out.extend(o.split('|').map(str::trim).filter(|t| !t.is_empty()));
     }

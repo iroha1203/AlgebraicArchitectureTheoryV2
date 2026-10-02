@@ -9,6 +9,9 @@ pub struct Atom {
     pub subject: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub object: Option<String>,
+    /// `writes` の書き込み先までにたどるフィールドの列。場所は `[via…, object]`(設計 §3.5)。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub via: Option<Vec<String>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub value: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

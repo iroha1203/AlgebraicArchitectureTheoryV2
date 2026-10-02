@@ -109,9 +109,10 @@ pub fn execute(s: &Structure, op: &str, fresh: &dyn Fn(&str) -> bool) -> Result<
         // 呼び出しの場所は、手順の元の Atom の場所と中身で決める。構造が変わっても、同じ Atom なら同じ場所である。
         let atom = &s.atoms[step.atom];
         let site = format!(
-            "{}|{}|{}|{}|{}",
+            "{}|{}|{}|{}|{}|{}",
             atom.at.clone().unwrap_or_default(),
             atom.subject,
+            atom.via.iter().flatten().cloned().collect::<Vec<_>>().join(" "),
             atom.object.clone().unwrap_or_default(),
             atom.value.clone().unwrap_or_default(),
             atom.when.clone().unwrap_or_default()
@@ -766,7 +767,7 @@ fn conditions(e1: &BTreeSet<String>, e2: &BTreeSet<String>, calls: bool) -> Vec<
 
 /// 比べた場所に最後に書いた書き込み(食い違いの元)。`hits` は、書き込みの場所が比べた場所に当たるか。
 fn last_write(b: &Branch, hits: impl Fn(&[String]) -> bool) -> Json {
-    b.writes.iter().rev().find(|w| hits(&w.place)).map(|w| json!({"at": w.at, "object": w.object, "value": w.text})).unwrap_or(Json::Null)
+    b.writes.iter().rev().find(|w| hits(&w.place)).map(|w| json!({"at": w.at, "object": w.object, "value": w.text, "place": w.place})).unwrap_or(Json::Null)
 }
 
 /// 分岐の条件。変更前の名前にそろえた原子を、表示のために変更後の名前へ読み替える。
