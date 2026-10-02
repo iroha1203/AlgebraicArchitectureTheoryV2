@@ -242,8 +242,16 @@ law payment-writes-are-audited
 `archsig law check` は、Law ファイルを読んで解いた結果を返す。
 
 - `files`:読んだ Law ファイル。`include` で取り込んだものも入る。
-- `readings`、`meanings`、`defs`、`laws`:解けた宣言。誤りがないときだけ返す。`laws` の規則は、`def` を展開し、`on` を省いた Law には最初の読みを補った形で返す。規則の形(`rule.form`)は `no`、`each`、`agrees along`、`changes commute`、`changes keep`、`roundtrips` のどれかで、残りの欄は文法の各部に当たる。
-- `errors`:誤りの一覧。一つ一つが、宣言の場所(`at`、`ファイル:行`)と理由(`message`)を持つ。ファイルそのものが読めないときは、`at` はそのファイルのパスである。
+- `readings`、`meanings`、`defs`、`laws`:解けた宣言。誤りがないときだけ返す。どの宣言も、名前(`name`)と場所(`at`)を持つ。
+  - `readings` の分け方(`form`)は、`{"dir": {"depth": 2}}`、`"file"`、`{"groups": {"groups": [["<局所>", ["<パターン>", …]], …]}}` のどれかである。
+  - `defs` は、書いたままの選び方(`selector`)を返す。
+  - `laws` の規則は、`def` を展開し、`on` を省いた Law には最初の読みを補った形で返す。規則の形(`rule.form`)は `no`、`each`、`agrees along`、`changes commute`、`changes keep`、`roundtrips` のどれかで、残りの欄は文法の各部に当たる。
+- `errors`:誤りの一覧。誤りがなければ空の一覧である。一つ一つが、宣言の場所(`at`、`ファイル:行`)と理由(`message`)を持つ。
+  - `.archsig/law/` の直下のファイルが読めないときは、`at` はそのファイルのパスである。
+  - `include` 先が読めないとき、リポジトリの外を指すときは、`at` は `include` を書いた行で、`message` が取り込もうとしたパスを持つ。
+  - 並びは、まずファイルを読む中で見つけた誤り(字句や文法で解けない宣言、読めない `include`)を読んだ順に並べ、その後に解決の誤りを並べる。
+
+Law ファイルは、`.archsig/law/` の直下の `.law` をファイル名の順に読み、`include` はその場で展開する。「最初に宣言した読み」は、この順で最初に現れる読みである。
 
 誤りには、字句や文法で解けない宣言と、名前の解決の誤りがある。
 解決の誤りは、次のどれかである。
@@ -255,4 +263,4 @@ law payment-writes-are-audited
 - 同じ名前を二度宣言する。`def` に意味の語彙と同じ名前を付ける。
 - パターンが読めない。
 
-誤りが一つでもあれば、その Law は計算に使えない。`law check` は `files` と `errors` だけを返し、計算する問いは、計算せずに Law の誤りを返す。`status` は動き続け、Law の誤りを `law_errors` に返す(第3章)。
+誤りが一つでもあれば、その Law は計算に使えない。`law check` は `files` と `errors` だけを返す。計算する問い(`plan check`、`plan split`、`compare`)は、計算も実行の記録もせずに、`{"law_errors": [<誤り>, …]}` だけを返す。`status` は動き続け、Law の誤りを `law_errors` に返す(第3章)。

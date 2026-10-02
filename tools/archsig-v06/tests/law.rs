@@ -292,3 +292,25 @@ fn law_errors_are_returned_and_status_keeps_working() {
     let v = repo.run(&["law", "check"]);
     assert!(errors(&v)[0].1.starts_with("パターン `shop/[x` が読めない"), "{:?}", errors(&v));
 }
+
+#[test]
+fn an_include_that_cannot_be_read_is_an_error_at_the_include_line() {
+    let repo = Repo::new("include");
+    repo.law("a.law", "include \"missing.law\"\n\ninclude \"../../../outside.law\"\n");
+    let e = errors(&repo.run(&["law", "check"]));
+    assert_eq!(e.len(), 2, "{e:?}");
+    assert_eq!(e[0].0, ".archsig/law/a.law:1");
+    assert!(e[0].1.starts_with(".archsig/law/missing.law: "), "{e:?}");
+    assert_eq!(e[1], (".archsig/law/a.law:3".to_string(), ".archsig/law/../../../outside.law: リポジトリの外を指している".to_string()));
+}
+
+#[test]
+fn questions_return_law_errors_without_computing() {
+    let repo = Repo::new("questions");
+    repo.law("a.law", "reading r = dir\n");
+    for args in [&["plan", "check", "p"][..], &["plan", "split", "p"][..], &["compare", "--before", "."][..]] {
+        let v = repo.run(args);
+        assert_eq!(v, serde_json::json!({"law_errors": [{"at": ".archsig/law/a.law:1", "message": "dir は dir(depth: n) と書く"}]}), "{args:?}");
+    }
+    assert!(!repo.dir.join(".archsig/runs").exists(), "実行を残さない");
+}

@@ -153,7 +153,9 @@ impl LawSet {
     }
 
     fn load_file(&mut self, path: &str, from: &str, read: &dyn Fn(&str) -> Result<String, String>, seen: &mut BTreeSet<String>) {
-        let path = normalize(path);
+        let Some(path) = normalize(path) else {
+            return self.error(from, format!("{path}: リポジトリの外を指している"));
+        };
         if !seen.insert(path.clone()) {
             return;
         }
@@ -379,19 +381,19 @@ fn check_pattern(p: &str) -> Result<(), String> {
     globset::GlobBuilder::new(p).literal_separator(true).build().map(|_| ()).map_err(|e| format!("パターン `{p}` が読めない: {e}"))
 }
 
-/// `a/./b/../c` を `a/c` にそろえる。
-fn normalize(path: &str) -> String {
+/// `a/./b/../c` を `a/c` にそろえる。`..` がリポジトリの根を越えれば `None`。
+fn normalize(path: &str) -> Option<String> {
     let mut parts: Vec<&str> = Vec::new();
     for p in path.split('/') {
         match p {
             "" | "." => {}
             ".." => {
-                parts.pop();
+                parts.pop()?;
             }
             _ => parts.push(p),
         }
     }
-    parts.join("/")
+    Some(parts.join("/"))
 }
 
 fn parse_reading(head: &[Tok], rest: &[Vec<Tok>], at: &str) -> Result<Reading, String> {
