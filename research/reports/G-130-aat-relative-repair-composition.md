@@ -3437,3 +3437,96 @@ audits:
 ```
 
 受理済predecessorはC17 PR #5157/root #5943284656、C18 PR #5158/root #5944039699、C10–12 PR #5146–5148の受理記録とcurrent必要statement/definition/適用引数/proof-useで追跡を完了する。今回の全public actual kernelはC17のoriginalTower/Factorizationを直接使用し、内部DAGの再帰再認証は行わない。Lean 4.28/mathlib `8f9d9cff6bd728b17a24e163c9402775d9e6a365`、固定GOAL blobと適用基準 `dbed043cb514e8c964589d2e12e982750c87ae83` は不変。
+
+### Cycle 21 selection — 任意局所領域の元相対複体と全補足核
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 21
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 35f32cf4d3861a1482fcb45fe1e60cf6fa8c67b7
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "Issue5132/C20受理PR5160/root5945772253、C18全actual cochain分解、C11原RelativeCover複体"
+  proof_dag_predecessors: ["C20任意expandedRegion/全private public名", "C18同じactual collapse/d0/d1/d2", "C11独立原RelativeCover C0–C3/微分", "C17/C18 whole affine W4"]
+  milestone: "GOAL EのC局所生成保存を支える、任意閉領域Uの独立new/old相対C0–C3複体の全値比較。chosenを含む領域には全fresh核のidentity二項複体、含まない領域には零補足を構成し、全labels・補正・微分・実RHSを保持する"
+  proof_obligations:
+    - "任意U・chosenを避ける元Pに対して、new RelativeCover C0/C1をold C0/C1×補足群へ相互逆に構成。補足群はchosen∉U.edgesなら零、所属ならfull実fresh核。new局所族を旧像で定義しない"
+    - "全旧vertex labels/retained辺値、fresh label displacementと両factor補正を同じactual rho1/rho2で読み/任意値から復元。C0はchosenを含まないleafのglobal零延長による偽fresh自由度を作らない"
+    - "独立new/old C2/C3の全original名・核値を保持し、d0=old d0×identity、d1=old d1∘projection、d2=old d2を証明。閉領域の元全incidenceを使用し、零延長をchain mapとして仮定しない"
+    - "同じactual faceDefect/記号的rhsを全所属faceで保存し、任意local方程式の全解がold全解×補足群に対応する両逆を構成。解存在だけへ弱化しない"
+    - "任意元相対vertex labelのd0作用が同じ座標でold作用×補足加法となることを全値で証明し、全local自由度/labelsを後続独立生成器へ渡せる形に固定"
+    - "同じW4元全領域とchosenを含まない固定vertex領域の双方に適用し、full任意first correction/old値/全label displacement・微分・実rhsと零補足条件を評価"
+  exit_criteria:
+    - "各任意領域で独立new C0/C1の両逆と全計算値API、chosen所属/非所属双方の補足空間が入力から生成される"
+    - "全0–3の同じ名前/値と三微分の比較が成立。領域内のfactor/path閉条件から証明し、global extensionをchain mapと扱わない"
+    - "任意全rhsに対するlocal全解の両逆および全label d0作用の全成分等号。同じactual defectのrhs比較へ接続"
+    - "same W4 actualT/Fを変更せず全領域と固定vertex領域で非零自由値と零補足の両方を検証"
+  selection_reason: "C20入力保存から独立生成器比較へ進む際、任意領域に局所化したactual複体分解が必要。全局所方程式/全labelを比較する再利用可能な一般到達点を固定する。独立一回elimination/R_i/N_i/section/全S strict glueの比較はこの定理を使用する次到達点"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["LocalizedRelativeFamilies", "SubdivisionLocalCorrections", "SubdivisionLocalLabels", "SubdivisionLocalDifferentials", "SubdivisionLocalEquations", "C21LocalSubdivisionRegression"]
+  risks: ["global零延長をchain mapと誤認", "chosen非所属でfresh displacementを残す", "全核をzero-first sectionへ縮小", "local複体を旧像として定義", "微分/RHS比較fieldを入力化", "局所解だけでR_i/strict glue保存まで完了表示"]
+  unchecked: ["C21の実装とfocused監査をこれから実行", "独立new/old R_i/N_i/生成sectionと全S strict glue/actual復元比較は後続", "W1–W3/W5・全targetcompletionは後続"]
+```
+
+### Cycle 21 result — 全局所相対値と三微分・全解・全label作用
+
+各元閉領域Uに独立に定義された新旧RelativeCover C0–C3を比較する。局所族のdegreewise零延長と元support/fixed条件を持つ全global族の同値を構成し、C1は同じactual collapseと全first値を読み取る。選択辺を含まない領域では両factorの零条件から補足群が零、含む領域ではfull実fresh核の任意値を保持する。C0は全旧labelsと、選択辺が属する領域でだけfresh値から実rho1(source label)を引くdisplacementを読む。逆写像は任意旧label/補足値から全新labelを復元し、元固定条件も保持する。
+
+C0からC1への局所微分は元端点閉包と実rho2∘rho1からold d0×identityへ比較する。C1の旧零延長は新零延長のactual collapseと同じ全族であるため、独立local d1はold d1を読む。C2/C3の全名前とwhole核はliteralに同じで、両routeのactual d2比較を同じ局所face族へ適用する。零延長をchain mapとして仮定していない。元actual defectとsigned rhsは全所属faceで同じ値を保つ。
+
+任意relative rhsに対する独立new equationの全解はold全解×全補足群と相互逆に対応する。全relative vertex labelのd0作用は、同じ全cochain座標でold label作用と補足加法に等しい。これは各側の生成section/R_i/N_iをcopy定義する構成ではなく、後続の独立生成器比較へ渡す元全方程式・全labelの定理である。
+
+同じW4のindependent whole affine旧repairから実correctionを取り、任意旧h・任意rを全local方程式へ接続した。復元される両factorは(r,h+r)、retained各旧補正は同じ実値、全新local解は元actual signed defectを満たす。actual rhs座標は1である。固定旧vertex labelsは元入力通り零、fresh labelの任意displacement rは同じfirst coboundary値rとなる。元固定vertex領域ではC0/C1とも補足が零で、同じ実freshOneは補足条件を満たさないことを評価した。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 21
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 35f32cf4d3861a1482fcb45fe1e60cf6fa8c67b7
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "任意独立局所relative複体の全0–3値、d0/d1/d2、actual defect/rhs、任意rhs全解と全label作用を元actual分割から比較。chosen所属時full supplement/非所属時zeroを両逆で生成"
+  exit_criteria_status:
+    - "全独立local C0/C1両逆: Family.localizedEquiv、localSupplement、local0Equiv/local1Equiv。retained全値/fresh displacement/両factor/任意inverse値API"
+    - "同じ全0–3名・値と三微分: local2Equiv/local3Equiv、local_d0/local_d1/local_d2。端点閉包、actual rho2∘rho1、local1Equiv_extend、full route d2を実使用"
+    - "任意rhs全解/全label成分: local_equation_iff/localEquationEquivの両逆、local_label_action、local_actual_equation_iff/local_defect/local_rhs"
+    - "same W4: oldLocal_equationは独立actual repairのsolutionCorrection_d1へ接続、newLocal_first/second_coordinate/retained/actual_equation、localFreshLabel_d0/first_coordinate、excluded_label/correction_supplement/excluded_nonzero_rejected"
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: ["LocalizedRelativeFamilies", "SubdivisionLocalCorrections", "SubdivisionLocalLabels", "SubdivisionLocalDifferentials", "SubdivisionLocalEquations", "C21LocalSubdivisionRegression"]
+  evidence: ["独立RelativeCover族/微分からの構成", "全actual原核/実輸送/complete辺名と両逆", "同じW4 actual修復・全任意パラメータと零補足の正負"]
+  claim_mapping:
+    theorem_names: ["Family.localizedEquiv", "localSupplement", "local0Equiv", "local1Equiv", "local1Equiv_extend", "local1Equiv_inverse_first", "local1Equiv_inverse_second", "local_d0", "local_d1", "local_d2", "localEquationEquiv", "local_label_action", "local_actual_equation_iff", "C21LocalSubdivisionRegression.newLocal_second_coordinate", "C21LocalSubdivisionRegression.excluded_nonzero_rejected"]
+    source_labels: ["GOAL E有限体C保存の元局所複体/全label/全方程式比較", "GOAL C独立生成器へ渡す全local入力", "GOAL F/W4同じwhole affine原操作"]
+    conjuncts: ["任意領域の独立局所複体と全解/全label作用を同じ実分割で比較", "独立一回生成R_i/N_i/sectionと全S strict glue/actual復元保存は後続。全C/E保存完了へ昇格しない"]
+    undischarged_assumptions: []
+    acceptance_point: "固定四終了条件の元dataからのconstruction/一般定理/具体適用とfocused監査を揃えたproposal。受理は固定head標準PR gateとroot acceptance検査"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["full/zero supplementはchosen原所属のみから生成", "局所固定値は元Pと新expandedPの独立relative条件から導出", "d0比較は原閉包とC17実factor輸送、d1/d2はC18現actual微分比較から生成", "任意方程式比較fieldを受け取らず同じlocal_d1から全解の両逆を構成", "具体oldLocalは同じW4 independent OldRepairsからactual correctionと式を生成"]
+    remaining: ["独立new/old有限local D/F/R_i/N_i/生成sectionと全S strict glue/actual復元比較", "残W1–W3/W5", "累積final packetと別fresh全target最終査読"]
+  certificate_provenance:
+    discharged: ["new local C0–C3は受理C11 RelativeCover定義をC20 expandedRegionへ独立適用", "localSupplementは原chosen所属predicateのみで保存結論fieldなし", "old/new solution subtypeは独立d1と指定rhs。全逆を実actual mapから生成"]
+    unresolved: []
+  proof_use:
+    used: ["原edge閉包→fresh所属source label→displacement/d0", "chosen∉P→全局所fixed零値→C0/C1逆復元", "actual rho2∘rho1→両factord0cancel", "原full cochain collapse+d1→同じ局所d1/全解", "全route d2→局所triples", "actual W4 independent repair→旧correction式→新任意(h,r)解", "原fixedRegion chosen非所属→零補足/非零拒否"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["6 production単一focused＋6 exact-current-body named milestone focused exit0/errors0/warnings0", "71明示＋生成1=72個別標準公理/欠落0", "audit sha256=e23154f6b7e953de70356e2cec058eee5056eee21e2feaa13c9df06db4c80611 / log sha256=f93df8a147d88f368eeb9279b66abc688cf9cf363bbd8f2acc1e79aa00a5cc3d", "一意registry6/current hash/placeholder/Unicode/privacy/import方向/保護領域/diff整合。Research full/aggregate/allfile/allmoduleなし"]
+  blocking_findings: []
+  next_obligation: "同じ任意局所複体/全label方程式比較から、独立new/old一回生成D/F/R_i/N_i/sectionと全kernel復元を比較。全S strict generated glue/actual復元、W1–W3/W5、累積completionを続行"
+```
+
+受理済C20 PR #5160/root #5945772253、C18 PR #5158/root #5944039699、C17 PR #5157/root #5943284656、C11 PR #5147/root #5925577749は、current必要statement/defs/引数/proof-useと受理refまで追跡する。今回局所構成の全premiseと全補足自由度は今回sourceで監査し、受理済内部DAGの再帰再認証は行わない。Lean4.28/mathlib `8f9d9cff6bd728b17a24e163c9402775d9e6a365`、固定GOAL blob/基準 `dbed043cb514e8c964589d2e12e982750c87ae83` は不変。
