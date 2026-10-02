@@ -3122,3 +3122,131 @@ audits:
 各source/hashと一意registry、保護領域、placeholder/hidden-BiDi/privacy/語彙/import方向/diff scanはclean。
 Research全体・aggregate root・全file/module loopのelaborationは実行していない。
 全GOALの完了判定とtracking Issueの全完了checkboxは未達のまま保持する。
+
+### Cycle 18 selection — 同じ実分割の相対複体・障害・全コホモロジー
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 18
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 9b6a5282099933b531df05b6c8bdb4a46f5e5923
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "C17原始実二因子からの全修復/全Hom/全S/strictW/実W4、受理PR5157/root5943284656/Issue5943297968"
+  proof_dag_predecessors: ["C17 originalTower/collapseCorrection/collapseVertex/全実語/全label同値", "C1–C3 actual support/相対複体/実障害", "C4–C6 全閉geometry/制限/relative complex", "G129 full local coefficients/経路補正/実defect", "C14 whole affine tower/kernel/translation/実修復"]
+  milestone: "固定GOAL Eの同じ元実分割から全Sの元相対支持複体をnative旧複体と全新対象核の恒等二項複体へ分解し、同じ縮約/零第一補正sectionで全次数H、H0/H1/H2原代表、実障害と旧閉路holonomyを保存する。任意whole affine実因子へのF適用と同じ指定W4へ接続する"
+  proof_obligations:
+    - "全元typed wordで実全核輸送/経路補正の置換等式を生成し、全faceと全三cell両routeのd1/d2および同じ実defectを比較"
+    - "元Pを保持しchosenをP/candidateから除いた全SのC0/C1とrelativeC2/C3で、同じcollapseにより新複体≅旧複体⊕[fullAw→idfullAw]をnative Mathlib complexとして構成"
+    - "全supplement identityの実chain contractionと同じcollapse/zero-firstsectionのnative chain homotopy equivalenceから全nのnative homology isomorphismを構成し、H0全label/H1全cycle/H2全cycle quotientへの原代表値を証明"
+    - "元actual reference paths/comparator/fullkernelから実defect等式とrelative obstruction cocycle/classの対応を導き、独立new actual修復の全旧閉路holonomyを同じcollapseで保持"
+    - "任意finitefield全affine元L/Rの二実factor条件をGroupExtensionから放電して同じ構成へ適用し、指定W4の非零fullAw/identity differential/非零comparisonと原実補正への接続を検証"
+  exit_criteria: ["全word/fullkernel/d0–d2/actualdefect比較", "全S元native supported-relative complexのfullAw二項biprod分解", "native contraction/同じmaps/allnH/H0–H2原代表値", "実obstruction cocycle/classと全旧閉路actual holonomy保存", "whole affine原始因子生成と指定W4同じmapsへの非零接続/focused/全個別axiom/PR gate"]
+  selection_reason: "C17で同じ分割の全実修復・射と全新核復元を受理した。残るEの原微分と障害・全Hへの距離を直接閉じる。有限体C公開関係/D全商・双対支持/極小保存は、この同じ微分比較と復元を用いる後続到達点に残す"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [SubdivisionCoefficientPaths, SubdivisionComplexIso, SubdivisionHomotopy, SubdivisionObstruction, NativeAffineSubdivision, C18SubdivisionRegression]
+  risks: ["係数targetを定数群へ縮小", "d2の完全route/符号を省略", "defect保存を入力fieldにする", "単なるobject分解をnativecomplex同型とする", "新頂点変位bFresh-rho1bSourceの欠落", "全nをH0–H2だけに縮小", "nativeHomology名だけで原代表対応を代替", "修復存在を複体比較の前提に加える"]
+  unchecked: ["C18構成と監査はこれから実装", "有限体C公開関係/DのO,o,Be,H_o/極小範囲保存、残W1–W3/W5と累積whole-target completionは後続"]
+```
+
+### Cycle 18 result proposal — 同じ実分割のnative全複体と原代表
+
+全Sで、元のC0/C1を同じ実collapseで旧群と新対象の全核へ分解する。
+C0の新座標は `bFresh-rho1(bSource)`、C1の新座標は全第一補正である。
+元d0は旧d0と全核の恒等写像、元d1は旧collapseの微分、元d2は同じ完全な両routeとなる。
+この分解をnative Mathlib complexのbiproductへ接続し、全核のchain contractionを構成する。
+同じcollapseとzero-first sectionによるhomotopy equivalenceは全自然数次数のnative homologyを保つ。
+H0の全label、H1/H2の全cycle quotientに原代表値を与え、実deltaとその符号付きクラスを保つ。
+
+| 固定条項と構成責務 | 一次宣言と使用先 |
+| --- | --- |
+| E全typed word/全実核輸送/全補正/完全3-cell両route | `kernel_path_substitute`, `coefficient_path_substitute`, `pathCorrection_substitute`, `faceCorrection_substitute`, `pastingCorrection_substitute`, `d1_collapse`, `d2_substitute` |
+| E実canonical比較と全核defectの生成比較 | `canonical_face_fac`, `canonical_face_substitute`, `faceDefect_substitute`, `defect_substitute` |
+| E元P/candidatesを保持する全Sの同じ相対複体 | `cochain0Equiv`, `cochain1Equiv`, `relative0Equiv`, `relative1Equiv`, `relative_d0`, `relative_d1`, `relative_d2`, `relativeProductIso`, `relativeBiprodIso` |
+| E全新対象核の恒等二項複体と同じchain maps | `NativeIdentityComplex.contraction`, `freshContraction`, `NativeProductComplex.contractionEquiv`, `relativeHomotopyEquiv`, `relativeCollapse_zero/one/two/three`, `relativeSection_zero/one` |
+| E全次数HとH0/H1/H2原代表 | `relativeHomologyIso`, `relativeHomologyIso_hom`, `relativeH0Equiv`, `relativeH0Equiv_label`, `relativeH0Equiv_inverse_label`, `relativeH1Iso_class`, `relativeH2Iso_class`。native class比較の中間cochainを `RelativeCohomologyValues` で固定 |
+| E元実障害と旧閉路holonomy | `obstruction_cocycle_collapse`, `obstruction_class_collapse`, `signed_obstruction_class_collapse`, `old_closed_holonomy` |
+| F任意whole affine元L/Rからの実因子生成 | `NativeAffine.subdivisionFactors` が全strong/lowerStrong/fullBijectiveを生成。任意field/moduleに成立し、任意有限体のk^dを含む |
+| 指定W4の同じ一般構成・非零fullAw・実delta・実補正 | `C18SubdivisionRegression.factors_generated`, `freshOne_ne_zero`, `fresh_identity_value`, `fresh_contraction_value`, `fresh_label_d0_nonzero`, `old_defect_coordinate`, `new_defect_coordinate`, `native_collapse_coordinate`, `native_section_first`, `allHomologyIso` |
+
+新しい全核は、cochain族と同じuniverseに置くためだけに `ULift` する。
+そのdown値は元の全実核の値であり、恒等微分とcontractionは全元に作用する。
+指定W4ではcoordinate oneの全実核元が非零で、実d0の第一値も同じ非零元になる。
+実deltaの座標は元・分割後ともminus one、native collapseの元a値は全独立補正に対してv-uである。
+指定W4の空ThreeCellを、一般の完全route比較の代替として用いない。
+
+| Material premise | 分類・一次生成・使用 |
+| --- | --- |
+| 元有限typed表示、同じp/q、元originalL/reference/core/指定比較、全核可換性とstrong/fullBijective | 本文由来 `ambient-boundary`。受理C17/G129の現在の型と適用引数から全輸送・微分・実defect比較へ使用 |
+| 原始中間対象・二実因子・実積・strong/lowerStrong/fullBijective | 本文由来 `ambient-boundary`。一般Eは同じ `Factorization`、F適用はwhole affine primitive operationsから `subdivisionFactors` で放電 |
+| 閉じた元P、chosen外P/candidates、全allowed S | 本文由来 `direction-hypothesis`。retained元群と同じ全labelsへ使用。W4ではempty fixed edgesと異なるBool候補から放電 |
+| old fixed reference face lawsとold authored three-cell laws | 本文由来 `direction-hypothesis`。`fixed_face_laws` / `three_laws` でnew lawsを生成し、同じactual cocycle/classへ使用 |
+| 同じ新微分・canonical/defect比較・全複体分解・contractibility・H同型・原代表対応 | `discharge-required` 放電済み。新sourceの入力からの構成・全称証明。結論fieldをFactorizationへ追加していない |
+| 一般product補題のsecond native contraction | 一般補題では `direction-hypothesis`、実分割適用では `NativeIdentityComplex.contraction` / `freshContraction` で放電。任意のsupplied equivalenceで置き換えていない |
+| 指定W4のwhole kernel非零・実identity微分・非零delta・元実補正との同じmap | `discharge-required` 放電済み。元C17実入力と全kernel equivalence、現在のactual cochain/defect値から構成 |
+
+受理spineは次の15sourceに固定する。全宣言のfull namespaceは各sourceのnamespaceと以下の名前の連結である。
+
+- `SubdivisionCoefficientPaths.lean` (`AAT.AG.RelativeRepairComposition.Subdivision`): `kernel_path_substitute`, `coefficient_path_substitute`, `correction_edge_word`, `pathCorrection_substitute`, `d1_collapse`, `faceCorrection_substitute`, `pastingCorrection_substitute`, `d2_substitute`。
+- `SubdivisionActualDefect.lean` (`AAT.AG.RelativeRepairComposition.Subdivision`): `canonical_face_fac`, `canonical_face_substitute`, `faceDefect_substitute`, `defect_substitute`。
+- `SubdivisionCochainDecomposition.lean` (`AAT.AG.RelativeRepairComposition.Subdivision`): `collapseC1Hom`, `collapseC1Hom_apply`, `cochain1Equiv`, `cochain1Equiv_collapse`, `cochain1Equiv_first`, `cochain1Equiv_inverse`, `cochain0Equiv`, `cochain0Equiv_old`, `cochain0Equiv_fresh`, `cochain0Equiv_inverse`, `d0_first`, `cochain1Equiv_d0`, `cochain1Equiv_d1`。
+- `SubdivisionSupportedCochains.lean` (`AAT.AG.RelativeRepairComposition.Subdivision`): `supported1Equiv`, `supported0Equiv`, `chosen_not_fixed_range`, `retained_supported1_eq`, `retained_supported0_eq`, `relative1Equiv`, `relative0Equiv`, `relative0Equiv_values`, `relative1Equiv_values`, `relative_d0`, `relative_d1`, `relative_d2`。
+- `NativeProductComplex.lean` (`AAT.AG.RelativeRepairComposition.NativeProductComplex`): `complex`, `complex_d`, `fst`, `snd`, `inl`, `inr`, `iso`, `iso_fst`, `iso_snd`。
+- `NativeIdentityComplex.lean` (`AAT.AG.RelativeRepairComposition.NativeIdentityComplex`): `object`, `differential`, `complex`, `complex_d_zero`, `d_zero_one`, `contractionComponent`, `contraction_shape`, `contraction`, `contraction_value`。
+- `SubdivisionComplexIso.lean` (`AAT.AG.RelativeRepairComposition.Subdivision`): `freshComplex`, `freshContraction`, `splitComplex`, `zeroProductEquiv`, `relativeComponentIso`, `relative_component_comm`, `relativeProductIso`, `relativeBiprodIso`。
+- `NativeProductContraction.lean` (`AAT.AG.RelativeRepairComposition.NativeProductComplex`): `inl_fst`, `projector_sum`, `contractionEquiv`, `homologyIso`, `homologyIso_hom`。
+- `SubdivisionHomotopy.lean` (`AAT.AG.RelativeRepairComposition.Subdivision`): `relativeHomotopyEquiv`, `relativeCollapse`, `relativeSection`, `relativeCollapse_zero`, `relativeCollapse_one`, `relativeCollapse_two`, `relativeCollapse_three`, `relativeSection_zero`, `relativeSection_one`, `relativeHomologyIso`, `relativeHomologyIso_hom`。
+- `RelativeCohomologyValues.lean` (`AAT.AG.RelativeRepairComposition.RelativeCohomologyValues`): `firstNormalizedIso`, `firstShortIso`, `firstHomologyIso`, `secondNormalizedIso`, `secondShortIso`, `secondHomologyIso`, `nativeCycle1`, `native_cycle1_value`, `native_h1_class`, `nativeCycle2`, `native_cycle2_value`, `native_h2_class`, `native_h1_inverse_class`, `native_h2_inverse_class`。
+- `SubdivisionZeroCohomology.lean` (`AAT.AG.RelativeRepairComposition.Subdivision`): `h0_fresh_zero`, `relativeH0Equiv`, `relativeH0Equiv_label`, `relativeH0Equiv_inverse_label`。
+- `SubdivisionCohomologyClasses.lean` (`AAT.AG.RelativeRepairComposition.Subdivision`): `collapseZ1`, `collapseZ2`, `collapseZ1_value`, `collapseZ2_value`, `relativeH1Iso`, `relativeH2Iso`, `relativeH1Iso_class`, `relativeH2Iso_class`。
+- `SubdivisionObstruction.lean` (`AAT.AG.RelativeRepairComposition.Subdivision`): `obstruction_cocycle_collapse`, `obstruction_class_collapse`, `signed_obstruction_class_collapse`, `old_closed_holonomy`。
+- `NativeAffineSubdivision.lean` (`AAT.AG.RelativeRepairComposition.NativeAffine`): `subdivisionFactors`, `subdivisionFactors_first`, `subdivisionFactors_second`, `subdivisionFactors_product`。
+- `C18SubdivisionRegression.lean` (`AAT.AG.RelativeRepairComposition.C18SubdivisionRegression`): `chosen_not_candidate`, `factors_generated`, `freshOne`, `freshOne_ne_zero`, `fresh_identity_value`, `fresh_contraction_value`, `freshLabel`, `fresh_label_d0`, `fresh_label_d0_nonzero`, `reference_face_word`, `old_defect_coordinate`, `new_defect_coordinate`, `relativeComplexIso`, `allHomologyIso`, `native_collapse_coordinate`, `native_section_first`。
+
+`RelativeComplex.lean` の基本API `ActualRelative.obstructionClass_eq_mk` は、同じactual相対cocycleの商代表を公開する。
+このAPIを障害クラス比較へ、`NativeProductComplex.complex_d` を複体の微分比較へ、
+`NativeIdentityComplex.d_zero_one` を指定W4の実恒等微分へ使用する。
+既存の定義値・定理statement・元群は同じである。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: ["全typed wordの全核輸送/補正、d0–d2全比較、実defect等式", "全Sの元supported-relative native複体とfullAw恒等summandのbiprod同型", "生成contraction/同じcollapseとsection/allnH/H0–H2原代表", "同じactual obstruction cocycle/classと[-delta]/全旧閉語holonomy", "whole affine primitive factors生成と同じW4の非零fullkernel/actuald0/defect/原補正接続"]
+  exit_criteria_status: ["全word/fullkernel/d0–d2/defect: CoefficientPaths/ActualDefect", "全S/native分解: SupportedCochains/ComplexIso/NativeProductComplex", "contractibility/allnH/原代表: IdentityComplex/ProductContraction/Homotopy/ZeroCohomology/CohomologyValues/CohomologyClasses", "actual obstruction/holonomy: SubdivisionObstruction", "whole affine/W4: NativeAffineSubdivision/C18SubdivisionRegression。正式PR gateはPR作成後に判定"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: ["15新source/129明示宣言、既存RelativeComplexの1基本API、4生成API"]
+  evidence: ["fullAw identityのnative chain contraction", "同じactual d0–d2からのnative decomposition", "native homology mapの全cycle代表値", "実deltaと[-delta]classの対応", "same W4非零fullkernelと実微分/defect/補正"]
+  claim_mapping:
+    source_labels: ["固定GOAL E内部辺分割の全相対複体/H/障害/holonomy", "固定GOAL F whole affine族への同じE適用", "指定W4の同じ実分割", "n1017内部分割", "design6"]
+    undischarged_assumptions: []
+    acceptance_point: "C18固定五義務と五終了条件の候補。正式PR review/root受理/CIは外部監査記録で判定"
+    port_status: unported
+    theorem_names: [relativeBiprodIso, relativeHomotopyEquiv, relativeHomologyIso, relativeH0Equiv, relativeH1Iso_class, relativeH2Iso_class, obstruction_cocycle_collapse, obstruction_class_collapse, signed_obstruction_class_collapse, old_closed_holonomy, subdivisionFactors, fresh_identity_value, fresh_label_d0_nonzero, new_defect_coordinate, native_collapse_coordinate]
+audits:
+  premise_delta:
+    discharged: ["全実語→全核係数/補正→d1/d2", "actual strong uniqueness→canonical/defect", "元P/candidate保持→full support groups", "同じ微分→native full kernel contraction/全H/原代表", "原law生成→actual signed class", "whole affine originalL/referenceR/factors→全primitive条件", "same W4full Aw/非零実微分/実delta/元補正"]
+    remaining: ["有限体C公開関係とDのO,o,Be,全双対支持/極小範囲の同じ分割での保存", "指定W1–W3/W5の残構成・一般定理への接続", "累積全target final packetと別四本completion査読"]
+  certificate_provenance:
+    discharged: ["same actual coefficients/full paths→native decomposition", "whole fresh identity→native contraction", "same maps→alln native H and all cycle classes", "actual canonical/defect→signed obstruction class", "primitive whole affine operation→factor fields"]
+    unresolved: []
+  proof_use:
+    used: ["actual path factorization/strong uniqueness/full kernel inclusion", "same actual d0/d1/d2 and old support names", "native full contraction and class naturality", "same actual reference/fixed and three-cell laws", "same W4 primitive operations/full kernel inverse/actual defect and collapse"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: []
+  next_obligation: "C18最終headの標準PR review/root受理/CI後、同じ全元分割のC公開関係/D商・双対支持/極小保存、指定W1–W3/W5と累積completion"
+```
+
+15productionと既存定義元の単一file focused、現在の同じ15実行本体と基本APIのnamed milestone focusedはexit0/errors0/warnings0。
+15新sourceの129明示宣言、既存定義元の1基本APIと4生成宣言、全134件の個別 `#print axioms` は標準公理のみ・欠落0。
+公理log SHA256 `8fdf9ec2ac948a5bd90a2ab000c767d13ce85b736979268b82002f24137459d1`、再現source SHA256 `89ebeac41f9d889ad5fc6ad1207fceedc28d5364cd1b09c6ed76ca2e495cf57d`。
+全15sourceと既存定義元のhash/一意registry、placeholder/hidden-BiDi/privacy/語彙/import方向/保護領域/diff scanを照合する。Research全体・aggregate root・全file/module loopのelaborationは実行していない。
+全GOALの完了判定とtracking Issueの全完了checkboxは未達のまま保持する。
