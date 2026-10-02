@@ -3000,3 +3000,125 @@ audits:
 ```
 
 全GOALの累積完了判定とtracking Issueの全完了checkboxは未達のまま保持し、固定義務の続きを扱う。
+
+### Cycle 17 selection — 元の実分割から全範囲の修復同値とW4へ
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 17
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: ba04a598195b5d85f11a19938a7e8be14ed0b4c0
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "C16全actual文脈とC1–C15の原全核/全label修復、Issue5132のC16受理"
+  proof_dag_predecessors: ["C1–C3 原修復/候補/相対分類", "C4–C5 全元閉表示とstrict制限", "C11 全label原実復元", "C14–C16 whole affine実現/原始環境", "G129 原塔と実核輸送合成"]
+  milestone: "固定GOAL Eの可換群入力で、常時補正可能な元内部辺の実二因子からK'を生成し、全Sで元全label実修復の関手・逆・自然同型と全復元を構成する。厳密W/包含/外部strict合成を保持し、指定W4の自由新頂点と固定新頂点の差へ接続する"
+  proof_obligations:
+    - "元全typed path/face/3-cell上下文・両routeの全出現を置換し、名前/P/W/candidate保持を生成"
+    - "同じ実塔の中間対象/二因子と許された原始strong/bijective条件から新original塔を生成し、実核輸送rho=rho2rho1/新核可換性/全入力lawを導出"
+    - "実合成からhe=h2+rho2h1、全置換語と修復条件の双方向、旧original Lに対する実choice復元と任意h1による全分割補正を構成"
+    - "全object/全arrowのcollapseと逆、newlabel=h1の自然同型、Homの一意liftを生成し、全Sで同じ式/厳密W/範囲包含/外部strict合成を証明"
+    - "指定F3 W4へ適用し実修復3→9、同型類3/自明Aut、全(u,v)復元と新頂点固定時の別入力9同型類を構成"
+  exit_criteria: ["元全0–3 geometry/P/W/candidateの計算構成", "実因子から全新核/transport/原lawの生成", "原全label categorical同値/逆/自然性/Hom両方向", "全S/厳密W/包含/外部strict/全分割復元", "同じ一般定理へのW4実値・個数・再同定接続とfocused/個別axiom/PR gate"]
+  selection_reason: "C16の外部置換判定を受理したので、Eのもう一つの原構造置換を閉じる。complex/全H/障害/旧holonomy/公開双対/極小範囲の保存はこの同じ構成を入力とする後続到達点に残す"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [SubdivisionGeometry, SubdivisionOriginalTower, SubdivisionRepairEquivalence, C17SplitRegression]
+  risks: ["端点付き名前の脱落", "任意oldLをreferenceと同一視", "原3-cell上下文の欠落", "新核可換性の追加仮定", "Homを自分の像へ縮小", "新頂点の固定", "同値結論のinput field化"]
+  unchecked: ["C17構成/接続/回帰/監査はこれから実装", "同じ分割の複体/障害/全H/旧holonomy/公開双対/極小保存、残F適用と指定W1–W5、累積completionは後続"]
+```
+
+### C17 — 元の実二因子から全修復・全再同定を構成
+
+`Subdivision.Factorization` は同じ元塔の中間対象・二実射・実積と、GOAL Eが課すstrong条件・全核輸送の全単射性だけを受け取る。
+第一輸送の全射性から新対象の全核の可換性を導き、実transport squareの一意性から `transport_comp` を証明した。
+`presentation` は元の完全な辺名を新しい型付き辺へ保持し、選んだ辺の全出現を二辺へ置換する。
+全2-cell名・全経路、全3-cell名・両route・各faceのincoming/outgoing wordを保持する。
+閉じた元P/Wは `oldRegion` へ移し、新頂点も両因子も固定部分・候補集合へ追加しない。
+任意の元original Lとreference Rを区別したまま、新原塔の全fieldを実射から構成する。
+
+| 固定義務 | 構成・両方向の証拠 | 対象・量化 |
+| --- | --- | --- |
+| 元全geometry/実核輸送/新入力law | `presentation`, `oldRegion`, `middle_kernel_comm`, `transport_comp`, `originalTower`, `three_laws`, `fixed_face_laws` | 任意元可換全核、同じ実塔、全型付き経路と全0–3-cell |
+| 実補正縮約と任意第一補正の全復元 | `corrected_factor_product`, `collapseCorrection_chosen`, `correctionEquiv`, `solutionEquiv`, `supportedSolutionEquiv`, `solution_path_substitute` | 全新独立actual修復、全旧actual修復、全新対象核値、任意original L |
+| 全label圏同値/逆/自然同型 | `collapseHomEquiv`, `expandFunctor`, `collapseFunctor`, `unitIso`, `counitIso`, `equivalence` | 全actual objectsと全actual morphisms、全old labels、forced fresh labelの一意lift |
+| 全S/包含/共有W/外部strict合成 | `rangeEquivalence`, `collapse_supported_inclusion`, `expand_supported_inclusion`, `collapse_label_inclusion`, `zero_section_inclusion`, `shared_collapse`, `shared_expand`, `externalObjectEquiv`, `externalHomEquiv`, `native_external_counit_shared`, `native_external_unit_shared` | 同じ全Sの式、全元W実choice、任意外部objects/arrowsと全共有label一致 |
+| 同じ一般定理への指定W4接続 | `C17SubdivisionInput.splitRepairEquiv`, `restore_pair_coordinates`, `old_repair_card`, `new_repair_card`, `old_class_card`, `new_class_card`, `old_aut_identity`, `new_aut_identity`, `closed_fixed_new_class_card` | F3の指定flip辺/比較−1/二指定因子、全独立修復、全同型類、全Aut |
+
+共有値 `sharedNew` は新actual修復から保持された元辺のchoiceを直接読む。
+縮約による共有値の定義で結論を埋めず、両方向のliteral equalityを証明する。
+外部objectsのstrict貼合せは元strict objectsと新対象の全核との積に相互に対応し、全compatible arrowsの一意liftは外部arrowをそのまま保つ。
+unit/counitの全旧vertex labelは零であり、任意native external identityのlabel零を実群oidから導く。
+
+W4の元full affine operationは `a(x)=-x+h, b(x)=x+1` と独立に定義・分類した。
+元修復3件、新修復9件、両方の全同型類3件、全Autが恒等である。
+同じ実核輸送で縮約は `h=v-u`、全復元は任意 `h,r` に対し `(u,v)=(r,h+r)` となる。
+同じ元候補bを禁止した範囲は元・新とも不能である。
+新頂点も固定する別入力は `fixedBothRegion` の全閉包条件から定義し、同じ9件の修復が9同型類となる。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    - "任意元全geometry/全上下文から実K'と元P/W/candidate保持を構成"
+    - "原始二実因子から新全核可換性/合成輸送/全新原塔field/実3-law/固定lawを生成"
+    - "実he=h2+rho2h1と任意full h1の全actual修復/元L choice/全語の相互復元"
+    - "全native labels/Hom一意liftから両関手・unit/counit自然性・圏同値を構成"
+    - "全S同じ式/全包含/共有W literal一致/全actual external strict objectとarrowを保持"
+    - "同じ一般構成でW4の3→9修復/3同型類/恒等Aut/全(r,h+r)復元、別closed固定新頂点入力9同型類"
+  exit_criteria_status: ["全0–3 geometry/P/W/candidates: SubdivisionGeometry/Incidence", "実因子→全核/transport/原law: Factors/OriginalTower/ThreeLaws/FixedLaws", "全label圏同値/逆/naturality/wholeHom: HomLift/CollapseFunctor/ExpandFunctor/Unit/Counit/Equivalence", "全S/strictW/includes/external/全復元: Permissions/RetainedChoices/SolutionWords/SharedValues/ExternalRestoration", "W4値/修復/全同型類/Aut/固定新頂点別入力: C17七source、focused/個別axiom; 正式PR gateはPR作成後に判定"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: ["39新production source、327明示宣言、24新生成API、4受理使用先補助"]
+  evidence: ["実primitive factors→same tower/full kernel/typed K'", "全actual supported repair≃旧修復×full Aw", "full native categorical equivalence/whole Hom", "allS/includes/strictW/actual external objects and arrows", "指定W4 actual counts/classes/Aut/full correction coordinates"]
+  claim_mapping:
+    theorem_names: [transport_comp, originalTower, three_laws, fixed_face_laws, correctionEquiv, supportedSolutionEquiv, collapseHomEquiv, equivalence, rangeEquivalence, solution_path_substitute, externalObjectEquiv, externalHomEquiv, splitRepairEquiv, restore_pair_coordinates, old_repair_card, new_repair_card, old_class_card, new_class_card, old_aut_identity, new_aut_identity, closed_fixed_new_class_card]
+    source_labels: ["固定GOAL E内部辺分割の実修復/圏/全S/strictW/外部合成/全復元", "固定GOAL Fの同じwhole affine族への分割適用", "指定W4", "n1017内部辺分割", "design6"]
+    conjuncts: ["任意元可換全核/全0–3型付き構造/任意oldL/R", "実因子由来/newfullkernel/actual rho2rho1", "同じhe式/全独立actualrepair/whole freshkernel復元", "全nativeHom/oldlabel保持/逆/unit/counit", "全S/候補/strictW/includes/external", "W4 all repairs/classes/Aut/全(r,h+r)/固定newvertex別closed入力"]
+    undischarged_assumptions: []
+    acceptance_point: "C17選定五義務と五終了条件の候補。正式PR review/root受理/CIは外部記録で判定"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["実Factorizationから新核可換性とactualtransportcomp", "全新LiftData/reference/core/comparatorと全2/3 law", "actualfaceiff→全修復逆/fullHomforcedfresh→categoricalequivalence", "chosen外P/W/candidate→allS/includes/strict共有保持", "W4全primitive条件・実核座標・実修復/全同型類/Aut"]
+    remaining: ["同じE分割の全相対複体分解/全H/障害/旧holonomy保存", "同じ有限体C公開関係/DのO,o,Be,証拠支持/極小範囲保存", "指定W1–W3/W5の残構成・接続", "累積全target final packetと別四本completion査読"]
+  certificate_provenance:
+    discharged: ["旧originalT+二実factor→新originalT全field", "実輸送square→rhocomp→全補正逆", "元fullgauge→forcedfresh全Hom逆→自然同型", "独立新actualchoice→strictW一致→全externalobjects/arrows", "独立W4realrepair→同じ一般定理→actualclasses/Aut/全coords"]
+    unresolved: []
+  proof_use:
+    used: ["oldkernelcomm+firstBijective→freshkernelcomm", "actualstrong/lower/primitivecomposite→rhocomp", "oldreference/core/comparison→全path/face/3law", "P/W閉包/chosen非所属→retainedclosedpart/fixedlaw/strictshared", "fullsupportlabel/gauge→forcedfreshunique/unit/counit", "W4actualface/flip/translation/fullnativekernel→counts/coords/全Aut"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["39productionの初回単一focused、変更6sourceの再focused、現在39本体named milestone focused", "全355個別標準公理/欠落0", "公理log SHA256 caa605954f46379bd52936de0f840a458e3afdf2d3fb803064be80d75adb5271", "再現source SHA256 bd2b4f3c86ea7281b2ac90a73706936b487a4bc47abaf5b6b3156a6cda5b8240", "39source/hash/registry/placeholder/Unicode/privacy/語彙/import方向/保護領域/diff"]
+  blocking_findings: []
+  next_obligation: "C17最終headの標準PR review/root受理/CI後、同じ原分割の全相対複体・全H・障害・旧holonomy・公開双対/極小保存"
+```
+
+前提の申告は次の通り。一般条件と指定W4での放電を区別する。
+
+| 前提 | 三分類と固定条項 | 構成・使用先 |
+| --- | --- | --- |
+| 任意元有限表示/同じp,q/元L,R/core/指定比較/元全核可換性とstrong・全単射輸送 | 本文由来、GOAL A・E | 元 `OriginalTowerPresentation`、新原塔の各fieldとtransport/actual修復 |
+| 中間対象と二実因子/実積/両因子strong・lowerStrong・fullBijective | 本文由来、GOAL E内部分割 | `Factorization`、`middle_kernel_comm`・`transport_comp`・`originalTower` |
+| chosenが固定部分/W/candidateに属さないこと、閉じたP/W | 本文由来、GOAL E | `oldRegion`、全S保持、`fixed_face_laws`、shared literal equality |
+| 旧3-lawと旧固定face law | 本文由来、GOAL A・E、指定実現では放電済み | `three_laws`・`fixed_face_laws`で新lawを構成。W4のUnit face/空ThreeCellでは実affine値から証明 |
+| new核可換性/新transportcomp/新LiftData/core/全labelsの逆とnaturality | 放電済み | `middle_kernel_comm`, `transport_comp`, `originalTower`, `collapseHomEquiv`, `unitIso`, `counitIso` |
+| 汎用外部labelのidentity零 | 一般補題の方向仮定、actual native external適用で放電済み | `native_external_identity_zero` が任意actual external identityから導く。実適用は `native_external_counit_shared`・`native_external_unit_shared` |
+| W4 whole affine/actual factorsの全primitive条件と指定比較 | 放電済み | `C17SubdivisionInput.originalTower`・`factors`・`factor_product`・`linear_faces`、実flip/translation評価とaccepted whole native kernel |
+| W4全修復/全同型類/全Aut/任意新補正復元 | 放電済みの結論 | 独立RealRepairsから `realRepairEquiv`・`oldRepairEquiv`、同じ一般定理から `splitRepairEquiv`、actual isIsomorphicSetoidからclasses、actual fullHomからAut |
+
+未放電の追加前提はC17選定五義務には残さない。固定GOALの後続条項は上記remainingとして未達のまま扱う。
+
+39新productionの初回単一file focused、APIと証明内部を修正した6sourceの再focused、現在の39実行本体のnamed milestone focusedはexit0/errors0/warnings0。
+327明示宣言・24新生成API・4受理使用先補助、全355件の個別 `#print axioms` は標準公理のみ・欠落0。
+公理log SHA256 `caa605954f46379bd52936de0f840a458e3afdf2d3fb803064be80d75adb5271`、再現source SHA256 `bd2b4f3c86ea7281b2ac90a73706936b487a4bc47abaf5b6b3156a6cda5b8240`。
+現在の39ソースと検証した実行本体は一致する。9個の辺値APIを含む全宣言を個別に監査した。
+各source/hashと一意registry、保護領域、placeholder/hidden-BiDi/privacy/語彙/import方向/diff scanはclean。
+Research全体・aggregate root・全file/module loopのelaborationは実行していない。
+全GOALの完了判定とtracking Issueの全完了checkboxは未達のまま保持する。
