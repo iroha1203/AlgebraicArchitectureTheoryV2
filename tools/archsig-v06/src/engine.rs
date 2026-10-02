@@ -203,7 +203,6 @@ fn freshen(v: Value, site: &str, fresh: &dyn Fn(&str) -> bool) -> Value {
             Value::Call(n, args)
         }
         Value::Proj(x, p) => Value::Proj(Box::new(f(*x)), p),
-        Value::Update(x, ups) => Value::Update(Box::new(f(*x)), ups.into_iter().map(|(p, v)| (p, f(v))).collect()),
         Value::Not(x) => Value::Not(Box::new(f(*x))),
         Value::Neg(x) => Value::Neg(Box::new(f(*x))),
         Value::Bin(op, a, b) => Value::Bin(op, Box::new(f(*a)), Box::new(f(*b))),
@@ -224,24 +223,8 @@ pub fn normalize(v: Value) -> Value {
                 q.extend(p);
                 Value::Proj(y, q)
             }
-            // 書き換えた値の射影。射影の頭を書き換えていれば、その値からの残り。射影の先だけを書き換えていれば、書き換えを残す。
-            Value::Update(y, ups) => {
-                if let Some((u, v)) = ups.iter().rev().find(|(u, _)| p.starts_with(u)) {
-                    normalize(if u.len() == p.len() { v.clone() } else { Value::Proj(Box::new(v.clone()), p[u.len()..].to_vec()) })
-                } else {
-                    let inner: Vec<(Vec<String>, Value)> = ups.into_iter().filter(|(u, _)| u.starts_with(&p)).map(|(u, v)| (u[p.len()..].to_vec(), v)).collect();
-                    normalize(if inner.is_empty() { Value::Proj(y, p) } else { Value::Update(Box::new(Value::Proj(y, p)), inner) })
-                }
-            }
             y => Value::Proj(Box::new(y), p),
         },
-        Value::Update(x, ups) => {
-            let ups: Vec<(Vec<String>, Value)> = ups.into_iter().map(|(p, v)| (p, normalize(v))).collect();
-            match normalize(*x) {
-                y if ups.is_empty() => y,
-                y => Value::Update(Box::new(y), ups),
-            }
-        }
         Value::Call(n, args) => Value::Call(n, args.into_iter().map(normalize).collect()),
         Value::Not(x) => match normalize(*x) {
             Value::Not(y) => *y,
@@ -315,9 +298,6 @@ impl<'a> Mapping<'a> {
             Value::Read(p) => Value::Read(names(p)?),
             Value::Arg(n) => Value::Arg(self.back(n)?),
             Value::Proj(x, p) => Value::Proj(Box::new(self.back_value(x)?), names(p)?),
-            Value::Update(x, ups) => {
-                Value::Update(Box::new(self.back_value(x)?), ups.iter().map(|(p, v)| Ok((names(p)?, self.back_value(v)?))).collect::<Result<_, Silence>>()?)
-            }
             Value::Call(n, args) => Value::Call(self.back(n)?, args.iter().map(|a| self.back_value(a)).collect::<Result<_, _>>()?),
             Value::Not(x) => Value::Not(Box::new(self.back_value(x)?)),
             Value::Neg(x) => Value::Neg(Box::new(self.back_value(x)?)),
@@ -350,9 +330,6 @@ impl<'a> Mapping<'a> {
             Value::Read(p) => Value::Read(p.iter().map(|f| self.name(f)).collect()),
             Value::Arg(n) => Value::Arg(self.name(n)),
             Value::Proj(x, p) => Value::Proj(Box::new(self.value(x)), p.iter().map(|f| self.name(f)).collect()),
-            Value::Update(x, ups) => {
-                Value::Update(Box::new(self.value(x)), ups.iter().map(|(p, v)| (p.iter().map(|f| self.name(f)).collect(), self.value(v))).collect())
-            }
             Value::Call(n, args) => Value::Call(self.name(n), args.iter().map(|a| self.value(a)).collect()),
             Value::Not(x) => Value::Not(Box::new(self.value(x))),
             Value::Neg(x) => Value::Neg(Box::new(self.value(x))),
@@ -664,7 +641,7 @@ fn compare(
     // 比べるときは、変更後の実行の値と条件を、変更前の名前にそろえる(設計 §5.4)。
     let (run1, ext1) = execute(before, a, fresh)?;
     let (run2, ext2) = execute(after, b, fresh)?;
-    // 比べる場所(変更後の名前): 意味を持つフィールドと、書き込みで値が変わる場所のうち最後のフィールドが意味を持つもの。
+    // 比べる場所(変更後の名前): 意味を持つフィールドと、書き込みの場所とその頭の部分の場所のうち最後のフィールドが意味を持つもの。
     // 書き込みは、その場所の頭の部分(`via` のフィールドまでの場所)の値も変える。
     // 書き込まれたフィールドとその行き先が意味を持つかが、読んだ範囲から決まらなければ沈黙する。
     let mut places: BTreeSet<Vec<String>> = after
@@ -732,8 +709,8 @@ fn compare(
                         "before_then_move": s1,
                         "move_then_after": s2,
                         "writes": {
-                            "before": last_write(b1, |w| p.starts_with(w) || w.starts_with(&p)),
-                            "after": last_write(b2, |w| q.starts_with(w) || w.starts_with(q)),
+                            "before": last_write(b1, |w| p.starts_with(w)),
+                            "after": last_write(b2, |w| q.starts_with(w)),
                         },
                     }));
                 }
@@ -779,7 +756,6 @@ fn has_call(v: &Value) -> bool {
     match v {
         Value::Call(..) => true,
         Value::Proj(x, _) | Value::Not(x) | Value::Neg(x) => has_call(x),
-        Value::Update(x, ups) => has_call(x) || ups.iter().any(|(_, v)| has_call(v)),
         Value::Bin(_, a, b) => has_call(a) || has_call(b),
         _ => false,
     }
@@ -796,8 +772,7 @@ fn conditions(e1: &BTreeSet<String>, e2: &BTreeSet<String>, calls: bool) -> Vec<
     out
 }
 
-/// 比べた場所に最後に書いた書き込み(食い違いの元)。`hits` は、書き込みの場所が比べた場所に当たるか。
-/// 比べた場所の頭の部分への書き込みも、先への書き込みも、その場所の値を変える。
+/// 比べた場所に最後に書いた書き込み(食い違いの元)。`hits` は、書き込みの場所が比べた場所かその頭の部分か。
 fn last_write(b: &Branch, hits: impl Fn(&[String]) -> bool) -> Json {
     b.writes.iter().rev().find(|w| hits(&w.place)).map(|w| json!({"at": w.at, "object": w.object, "value": w.text})).unwrap_or(Json::Null)
 }
@@ -985,9 +960,6 @@ pub fn show(v: &Value) -> String {
         Value::Arg(n) => n.clone(),
         Value::Read(p) | Value::Input(p) => format!("in({})", p.join(" / ")),
         Value::Proj(x, p) => format!("{}.{}", show(x), p.join(" / ")),
-        Value::Update(x, ups) => {
-            format!("{} with {{{}}}", show(x), ups.iter().map(|(p, v)| format!("{} = {}", p.join(" / "), show(v))).collect::<Vec<_>>().join(", "))
-        }
         Value::Call(n, args) => format!("{n}({})", args.iter().map(show).collect::<Vec<_>>().join(", ")),
         Value::Not(x) => format!("not {}", show(x)),
         Value::Neg(x) => format!("-{}", show(x)),

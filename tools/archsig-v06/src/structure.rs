@@ -62,8 +62,6 @@ pub enum Value {
     Input(Vec<String>),
     /// 値からフィールドの列をたどったもの。
     Proj(Box<Value>, Vec<String>),
-    /// 値の中のフィールドを書き換えたもの。書き換えたフィールドの列(値からの相対)と、書いた値。列の順に並ぶ。
-    Update(Box<Value>, Vec<(Vec<String>, Value)>),
     Call(String, Vec<Value>),
     Not(Box<Value>),
     Neg(Box<Value>),
@@ -482,7 +480,7 @@ fn same_atom(p: &Atom, o: &Atom) -> bool {
     p.kind == o.kind
         && p.subject == o.subject
         && p.object == o.object
-        && p.via.as_deref().unwrap_or_default() == o.via.as_deref().unwrap_or_default()
+        && p.via == o.via
         && p.value == o.value
         && p.when == o.when
         && p.meaning == o.meaning
@@ -668,19 +666,17 @@ impl State {
     }
 
     /// 場所を読む。頭の部分に書き込みがあれば、書き込んだ値からの残りの射影を返す。なければ入力の値である。
-    /// 場所の先(`via` を通った書き込み)に書き込みがあれば、その値の中のフィールドを書き換えた値を返す。
+    /// 場所の先に書き込みがあるときは、決めていないので `unchecked` で沈黙する。
     pub fn read(&self, place: &[String]) -> Result<Value, Silence> {
-        let mut base = Value::Input(place.to_vec());
+        if self.places.keys().any(|p| p.len() > place.len() && p.starts_with(place)) {
+            return Err(Silence::new(Reason::Unchecked));
+        }
         for k in (1..=place.len()).rev() {
             if let Some(v) = self.places.get(&place[..k]) {
-                base = if k == place.len() { v.clone() } else { Value::Proj(Box::new(v.clone()), place[k..].to_vec()) };
-                break;
+                return Ok(if k == place.len() { v.clone() } else { Value::Proj(Box::new(v.clone()), place[k..].to_vec()) });
             }
         }
-        // 先の書き込みは、頭の書き込みより後に行われている(頭に書くと先の書き込みは消える)。
-        let inner: Vec<(Vec<String>, Value)> =
-            self.places.iter().filter(|(p, _)| p.len() > place.len() && p.starts_with(place)).map(|(p, v)| (p[place.len()..].to_vec(), v.clone())).collect();
-        Ok(if inner.is_empty() { base } else { Value::Update(Box::new(base), inner) })
+        Ok(Value::Input(place.to_vec()))
     }
 
     /// 値の中の `Read` を、今の状態で読んだ値に置き換える。
@@ -690,7 +686,6 @@ impl State {
             Value::Read(p) => self.read(p)?,
             Value::Arg(n) => self.args.get(n).cloned().unwrap_or_else(|| Value::Arg(n.clone())),
             Value::Proj(x, f) => Value::Proj(e(x)?, f.clone()),
-            Value::Update(x, ups) => Value::Update(e(x)?, ups.iter().map(|(p, v)| Ok((p.clone(), self.eval(v)?))).collect::<Result<_, Silence>>()?),
             Value::Call(n, args) => Value::Call(n.clone(), args.iter().map(|a| self.eval(a)).collect::<Result<_, _>>()?),
             Value::Not(x) => Value::Not(e(x)?),
             Value::Neg(x) => Value::Neg(e(x)?),

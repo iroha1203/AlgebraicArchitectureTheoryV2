@@ -162,3 +162,23 @@ fn a_local_that_cannot_be_a_directory_writes_nothing() {
     assert!(!repo.dir.join(".archsig/plans/split-order/shop").exists());
 }
 
+
+#[test]
+fn a_write_through_a_field_of_another_local_is_shared() {
+    // via のフィールドも、その Atom が名指す要素である(設計 §6)。Order.shipping_address は shop/order の局所にある。
+    let repo = shop("via");
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        &format!(
+            "{}\n{}\n",
+            r#"{"kind": "defines", "subject": "shop.shipping.service.update_shipping", "value": "operation", "params": {"order": "shop.order.model.Order", "new": "shop.shipping.model.Address"}, "file": "shop/shipping/service.py", "at": "plan:p"}"#,
+            r#"{"kind": "writes", "subject": "shop.shipping.service.update_shipping", "via": ["shop.order.model.Order.shipping_address"], "object": "shop.shipping.model.Address.country", "value": "\"JP\"", "at": "plan:p"}"#
+        ),
+    );
+    let s = repo.run(&["plan", "split", "p"]);
+    assert_eq!(result(&s, "p")["outcome"], "holds", "{s}");
+    let shared = lines(&repo, ".archsig/plans/p/shop/shipping/shared.jsonl");
+    assert!(has(&shared, "writes", UPDATE, Some("shop.shipping.model.Address.country")), "{shared:?}");
+    let local = lines(&repo, ".archsig/plans/p/shop/shipping/plan.jsonl");
+    assert!(!has(&local, "writes", UPDATE, None), "via が別の局所を名指す書き込みは、局所の候補に入らない: {local:?}");
+}

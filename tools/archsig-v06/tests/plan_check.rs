@@ -893,8 +893,9 @@ fn a_question_mark_in_via_returns_the_atom() {
 }
 
 #[test]
-fn a_nested_write_under_a_field_with_the_meaning_compares_the_updated_value() {
-    // 意味は via のフィールド m.O.s(S の値)にある。その中の p に書くと、[m.O.s] の値は書き換えた値になる。
+fn a_nested_write_under_a_field_with_the_meaning_is_unchecked() {
+    // 意味は via のフィールド m.O.s(S の値)にある。その中の p に書くと、[m.O.s] の値が変わる。
+    // 先に書き込みのある場所の値は決めていないので、unchecked で沈黙する(設計 §3.5)。
     let with_meaning = |name: &str, write: &str| {
         let repo = Repo::new(name);
         repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
@@ -907,7 +908,5 @@ fn a_nested_write_under_a_field_with_the_meaning_compares_the_updated_value() {
         result(&s, "m.f").clone()
     };
     let same = with_meaning("nested-head-same", r#"{"kind": "writes", "subject": "m.f", "via": ["m.O.s"], "object": "m.S.p", "value": "1", "at": "plan:p"}"#);
-    assert_eq!(same["outcome"], "holds", "{same}");
-    let changed = with_meaning("nested-head-changed", r#"{"kind": "writes", "subject": "m.f", "via": ["m.O.s"], "object": "m.S.p", "value": "2", "at": "plan:p"}"#);
-    assert_eq!(changed["kind"], "counterexample", "{changed}");
+    assert_eq!((same["outcome"].as_str(), same["reason"].as_str()), (Some("silent"), Some("unchecked")), "{same}");
 }

@@ -151,21 +151,12 @@ fn unfolding_has_a_limit_on_its_size() {
 }
 
 #[test]
-fn reading_a_place_with_a_later_write_below_it_is_the_updated_value() {
+fn reading_a_place_with_a_later_write_below_it_is_unchecked() {
     let mut state = State::default();
     state.write(place(&["A"]), c("1"));
     state.write(place(&["A", "B"]), c("2"));
     assert_eq!(state.read(&place(&["A", "B"])).unwrap(), c("2"));
-    assert_eq!(state.read(&place(&["A"])).unwrap(), Value::Update(Box::new(c("1")), vec![(place(&["B"]), c("2"))]));
-    // 頭に書かれていなければ、入力の値の中のフィールドを書き換えた値である。
-    let mut state = State::default();
-    state.write(place(&["A", "B"]), c("2"));
-    assert_eq!(state.read(&place(&["A"])).unwrap(), Value::Update(Box::new(Value::Input(place(&["A"]))), vec![(place(&["B"]), c("2"))]));
-    assert_eq!(state.read(&place(&["A", "C"])).unwrap(), Value::Input(place(&["A", "C"])));
-    // 書き換えた値の射影は、書いた値か、書き換えていないフィールドの入力の値になる。
-    let updated = state.read(&place(&["A"])).unwrap();
-    assert_eq!(archsig::engine::normalize(Value::Proj(Box::new(updated.clone()), place(&["B"]))), c("2"));
-    assert_eq!(archsig::engine::normalize(Value::Proj(Box::new(updated), place(&["C"]))), Value::Input(place(&["A", "C"])));
+    assert_eq!(state.read(&place(&["A"])).unwrap_err().reason, Reason::Unchecked);
 }
 
 const SHOP: &str = r#"{"kind": "defines", "subject": "shop.order.model.Order", "value": "type", "at": "shop/order/model.py:7"}
