@@ -153,14 +153,17 @@ impl LawSet {
     }
 
     fn load_file(&mut self, path: &str, from: &str, read: &dyn Fn(&str) -> Result<String, String>, seen: &mut BTreeSet<String>) {
-        let path = normalize(path);
-        if !seen.insert(path.clone()) {
+        let Some(path) = normalize(path) else {
+            return self.error(from, format!("{path}: リポジトリの中のファイルを指していない"));
+        };
+        if seen.contains(&path) {
             return;
         }
         let text = match read(&path) {
             Ok(t) => t,
             Err(e) => return self.error(from, e),
         };
+        seen.insert(path.clone());
         self.files.push(path.clone());
         for (line, block) in blocks(&text) {
             let at = format!("{path}:{line}");
@@ -379,19 +382,19 @@ fn check_pattern(p: &str) -> Result<(), String> {
     globset::GlobBuilder::new(p).literal_separator(true).build().map(|_| ()).map_err(|e| format!("パターン `{p}` が読めない: {e}"))
 }
 
-/// `a/./b/../c` を `a/c` にそろえる。
-fn normalize(path: &str) -> String {
+/// `a/./b/../c` を `a/c` にそろえる。`..` がリポジトリの根を越えるか、根そのものになれば `None`。
+fn normalize(path: &str) -> Option<String> {
     let mut parts: Vec<&str> = Vec::new();
     for p in path.split('/') {
         match p {
             "" | "." => {}
             ".." => {
-                parts.pop();
+                parts.pop()?;
             }
             _ => parts.push(p),
         }
     }
-    parts.join("/")
+    if parts.is_empty() { None } else { Some(parts.join("/")) }
 }
 
 fn parse_reading(head: &[Tok], rest: &[Vec<Tok>], at: &str) -> Result<Reading, String> {

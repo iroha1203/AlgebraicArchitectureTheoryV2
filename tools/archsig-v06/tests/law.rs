@@ -292,3 +292,39 @@ fn law_errors_are_returned_and_status_keeps_working() {
     let v = repo.run(&["law", "check"]);
     assert!(errors(&v)[0].1.starts_with("パターン `shop/[x` が読めない"), "{:?}", errors(&v));
 }
+
+#[test]
+fn an_include_that_cannot_be_read_is_an_error_at_the_include_line() {
+    let repo = Repo::new("include");
+    repo.law("a.law", "include \"missing.law\"\n\ninclude \"../../../outside.law\"\n\ninclude \"../..\"\n");
+    repo.law("b.law", "include \"missing.law\"\n");
+    let e = errors(&repo.run(&["law", "check"]));
+    assert_eq!(e.len(), 4, "{e:?}");
+    assert_eq!(e[0].0, ".archsig/law/a.law:1");
+    assert!(e[0].1.starts_with(".archsig/law/missing.law: "), "{e:?}");
+    assert_eq!(e[1], (".archsig/law/a.law:3".to_string(), ".archsig/law/../../../outside.law: リポジトリの中のファイルを指していない".to_string()));
+    assert_eq!(e[2], (".archsig/law/a.law:5".to_string(), ".archsig/law/../..: リポジトリの中のファイルを指していない".to_string()));
+    assert_eq!(e[3].0, ".archsig/law/b.law:1", "読めなかったファイルは、取り込む行ごとに誤りになる: {e:?}");
+}
+
+#[test]
+fn questions_return_law_errors_without_computing() {
+    let repo = Repo::new("questions");
+    repo.law("a.law", "reading r = dir\n");
+    for args in [&["plan", "check", "p"][..], &["plan", "split", "p"][..], &["compare", "--before", "."][..]] {
+        let v = repo.run(args);
+        assert_eq!(v, serde_json::json!({"law_errors": [{"at": ".archsig/law/a.law:1", "message": "dir は dir(depth: n) と書く"}]}), "{args:?}");
+    }
+    assert!(!repo.dir.join(".archsig/runs").exists(), "実行を残さない");
+}
+
+#[test]
+fn a_convert_factor_is_a_power_of_ten_from_ten() {
+    let repo = Repo::new("factor");
+    let law = |f: &str| format!("reading r = file\n\nmeaning unit on field\n  values major | minor\n  \"u\"\n\nlaw l\n  \"倍率\"\n  about unit\n  agrees along flows\n  convert major -> minor by {f}\n");
+    for (f, ok) in [("* 1", false), ("/ 1", false), ("* 010", false), ("* 10", true), ("/ 1000", true)] {
+        repo.law("a.law", &law(f));
+        let e = errors(&repo.run(&["law", "check"]));
+        assert_eq!(e.is_empty(), ok, "{f}: {e:?}");
+    }
+}
