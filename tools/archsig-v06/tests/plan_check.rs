@@ -968,3 +968,25 @@ fn the_heads_of_a_long_via_are_compared() {
     let r = result(&s, "m.f");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
 }
+
+#[test]
+fn reading_a_head_place_after_a_nested_write_is_unchecked() {
+    // 意味は m.S.p だけにある。入れ子に書いた後の手順が、途中の場所 [m.O.s] を丸ごと読む(when)。その値は決めていない。
+    let repo = Repo::new("nested-head-read");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        &format!("{NESTED}{}", r#"{"kind": "writes", "subject": "m.f", "object": "m.S.p", "value": "3", "when": "$o.s == None", "at": "m.py:8@blob:aaaaaaa"}
+"#),
+    );
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O", "t": "m.S"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "via": ["m.O.s"], "object": "m.S.p", "value": "1", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.S.p", "value": "3", "when": "$o.s == None", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
+}
