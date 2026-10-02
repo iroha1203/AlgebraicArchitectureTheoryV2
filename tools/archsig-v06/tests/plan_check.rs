@@ -885,7 +885,13 @@ fn a_question_mark_in_via_returns_the_atom() {
     let repo = Repo::new("nested-via-question");
     repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
     repo.map("m.py", &NESTED.replace(r#""via": ["m.O.s"]"#, r#""via": ["?o.s"]"#));
-    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.X\", \"at\": \"plan:p\"}\n");
+    // 候補は m.f を書き直す。変更前の m.f を実行する所で、via の ? の名前に出会う。
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O", "t": "m.S"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.S.p", "value": "1", "at": "plan:p"}
+"#,
+    );
     let s = repo.run(&["plan", "check", "p"]);
     let r = result(&s, "m.f");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
@@ -909,4 +915,56 @@ fn a_nested_write_under_a_field_with_the_meaning_is_unchecked() {
     };
     let same = with_meaning("nested-head-same", r#"{"kind": "writes", "subject": "m.f", "via": ["m.O.s"], "object": "m.S.p", "value": "1", "at": "plan:p"}"#);
     assert_eq!((same["outcome"].as_str(), same["reason"].as_str()), (Some("silent"), Some("unchecked")), "{same}");
+}
+
+#[test]
+fn the_write_at_the_head_of_a_compared_place_is_the_origin_of_the_divergence() {
+    // 変更前は [m.O.s, m.S.p] に 1 を書く。候補は [m.O.s] に $t を丸ごと書く。比べる場所 [m.O.s, m.S.p] の値は、候補の頭の書き込みで決まる。
+    let repo = Repo::new("nested-origin");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", NESTED);
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O", "t": "m.S"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "$t", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    let d = repo.run(&["show", r["id"].as_str().unwrap()]);
+    let diverging = d["check"]["diverging"].as_array().unwrap();
+    assert!(diverging.iter().any(|x| x["writes"]["after"]["object"] == "m.O.s" && x["writes"]["after"]["at"] == "plan:p"), "{d}");
+}
+
+#[test]
+fn the_heads_of_a_long_via_are_compared() {
+    // via は [m.A.o, m.O.s]。意味は途中のフィールド m.O.s にある。[m.O.s] だけの場所は書かれないので、
+    // 頭の部分の場所 [m.A.o, m.O.s] を比べる場所に入れなければ、意味を持つ値の変化を見落とす。
+    let repo = Repo::new("nested-long-via");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A.o", "value": "field", "type": "m.O", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.s", "meaning": "payment-info", "uses": ["m.py:9@blob:aaaaaaa"], "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"a": "m.A"}, "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "via": ["m.A.o", "m.O.s"], "object": "m.S.p", "value": "1", "at": "m.py:9@blob:aaaaaaa"}
+"#,
+    );
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"a": "m.A"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "via": ["m.A.o", "m.O.s"], "object": "m.S.p", "value": "2", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
 }

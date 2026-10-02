@@ -109,10 +109,9 @@ pub fn execute(s: &Structure, op: &str, fresh: &dyn Fn(&str) -> bool) -> Result<
         // 呼び出しの場所は、手順の元の Atom の場所と中身で決める。構造が変わっても、同じ Atom なら同じ場所である。
         let atom = &s.atoms[step.atom];
         let site = format!(
-            "{}|{}|{}|{}|{}|{}",
+            "{}|{}|{}|{}|{}",
             atom.at.clone().unwrap_or_default(),
             atom.subject,
-            atom.via.iter().flatten().cloned().collect::<Vec<_>>().join(" "),
             atom.object.clone().unwrap_or_default(),
             atom.value.clone().unwrap_or_default(),
             atom.when.clone().unwrap_or_default()
