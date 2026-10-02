@@ -125,6 +125,23 @@ variable (hlinear : ∀ {i j : K.Vertex} (e : K.Edge i j) (t : k) (x : M.A i),
 def D : alwaysSpace (k := k) M P candidates →ₗ[k] C2P :=
   (differential1 M hlinear ClosedRegion.all P).comp (alwaysSpace (k := k) M P candidates).subtype
 
+omit [DecidablePred (· ∈ candidates)] in
+/-- The always map applies the original full differential to the original always family. -/
+theorem D_apply (h : alwaysSpace (k := k) M P candidates) :
+    D (k := k) M P candidates hlinear h = differential1 M hlinear ClosedRegion.all P h.1 := rfl
+
+omit [DecidablePred (· ∈ candidates)] in
+/-- Every always face value is the same original differential on the complete named correction. -/
+theorem D_value (h : alwaysSpace (k := k) M P candidates) (f : K.TwoCell) :
+    (D (k := k) M P candidates hlinear h).1 ⟨f,Set.mem_univ f⟩ =
+      d1 M (fun e => h.1.1 ⟨e,Set.mem_univ e⟩) f := by
+  rw [D_apply,differential1_eq]
+  have hr := congrFun (RelativeCover.original2_restrict M P (RelativeCover.d1 M ClosedRegion.all P h.1))
+    ⟨f,Set.mem_univ f⟩
+  have hd := congrArg (fun c : RelativeComplex.relativeC2 M P => c.1 f)
+    (RelativeCover.original_d1 M P h.1)
+  exact hr.symm.trans hd
+
 /-- The complete candidate differential uses the same original face paths. -/
 def candidateMap : CandidateValues M candidates →ₗ[k] C2P :=
   (differential1 M hlinear ClosedRegion.all P).comp

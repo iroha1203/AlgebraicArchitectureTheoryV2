@@ -3250,3 +3250,99 @@ audits:
 公理log SHA256 `8fdf9ec2ac948a5bd90a2ab000c767d13ce85b736979268b82002f24137459d1`、再現source SHA256 `89ebeac41f9d889ad5fc6ad1207fceedc28d5364cd1b09c6ed76ca2e495cf57d`。
 全15sourceと既存定義元のhash/一意registry、placeholder/hidden-BiDi/privacy/語彙/import方向/保護領域/diff scanを照合する。Research全体・aggregate root・全file/module loopのelaborationは実行していない。
 全GOALの完了判定とtracking Issueの全完了checkboxは未達のまま保持する。
+
+### Cycle 19 selection — 同じ実内部分割の原always商と全双対支持
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 19
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 1a051892c1d505e7b9f92a14f75f4216a497ce83
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "Issue5132/C18受理PR5158・root5944039699/current SubdivisionCochainDecomposition/SupportedCochains/Obstruction、C13原always商と全双対分類"
+  proof_dag_predecessors: ["C17同じ原実分割・全修復/全Hom/全S", "C18原微分/defect/全相対複体/全H/原代表", "C13 original D/O/o/B_e/全dual/極小分類/原H2接続", "C14 whole affine native全核/線形座標"]
+  milestone: "GOAL E有限体分割のD保存。原始実因子と同じactual collapseから線形商比較を生成し、全候補名・全核列・実障害・全双対支持・全変更範囲の極小分類を保存する"
+  proof_obligations:
+    - "元全核の線形構造をfull actual rho1で新全核へ移し、元頂点と原射を保持する全new modules・全rho線形性、同じcollapse/expandの線形性を生成する"
+    - "独立に定義したnew/old OriginalColumns.alwaysSpaceと全relative face群を同じ実値で比較し、new always sourceをold always source×fullAwへ分解。両方向の実d1値と全range Dの一致を証明する"
+    - "独立new coker Dとold coker Dの線形同値を生成し、全face商代表q、actual o=q(-delta)、元名の各full B_eと全Sの列rangeを同じmapで保存する"
+    - "全商双対の往復、全nonzero-obstruction dual支持族、全S hitting・包含極小・零/全候補不能条件を元候補名で保存し、同じactual修復の分類へ接続する"
+    - "同じ商比較を全候補後のCP2/range d1・原d2/相対H2障害の値対応へ接続し、受理済same whole affine W4で非零o・full候補列・dual支持と極小範囲を実評価する"
+  exit_criteria:
+    - "full新核上のmodule/全実核輸送の線形性と同じcochain collapse/expandの線形原値APIを入力から生成。線形保存/商同値をFactorization fieldや別certificateとして受け取らない"
+    - "new alwaysの全自由度をold always×fullAwへ両逆で保持し、任意new alwaysからのd1と任意old alwaysの復元d1を同じ原face値で比較。全range Dが同じface比較で一致"
+    - "Oの両逆線形同値が任意q代表・同じactual signed defect・各original候補whole kernel column・任意Sのrangeを保存。存在/零性だけの同値で代替しない"
+    - "任意dualを往復し、支持集合/支持族を全原候補名で比較。全S hitting/極小、zero空範囲、全候補不能空支持をsame actual全範囲分類へ接続"
+    - "全候補商と原CP2/range d1/誘導d2・same相対signed obstructionの比較が商代表で交換。same W4のactual oと候補B、非零dual支持、極小範囲を同じ一般構成に接続"
+  selection_reason: "C18が固定した同じactual d1 collapseとdefect等式を、Dの独立全商・全候補列・全dualへの保存へ伸ばす。Cの領域別private/public分割比較に先立つ再利用可能な線形不変量の到達点であり、全target completionへは昇格しない"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["SubdivisionLinearCoefficients", "SubdivisionLinearCochains", "SubdivisionAlwaysSpace", "SubdivisionAlwaysDifferential", "SubdivisionRangeQuotient", "SubdivisionCandidateColumns", "SubdivisionDualSupports", "SubdivisionMinimalRanges", "SubdivisionRangeCohomology", "C19SubdivisionRangeRegression"]
+  risks: ["new fullkernelをvector carrierへ取り替える", "linear iso/defect保存を入力にする", "new alwaysの全fresh自由度を除去", "O比較をfeasibility iffだけで代替", "candidateの全kernel列を有限生成像へ狭める", "全dualを選択basisだけにする", "全S/原候補名の比較を落とす", "Cの各local公開関係保存まで済んだと過大表示"]
+  unchecked: ["C19構成・検証はこれから実装", "Cの同じlocal private/public関係と全復元の分割比較、残W1–W3/W5、累積completionは後続"]
+```
+
+### Cycle 19 result proposal — 原always商と全候補・全双対の同じ実値
+
+原始の実因子を保った同じ分割について、新しい全実核のmoduleを `rho1AddEquiv` から生成し、元全核のmoduleを保持した。`rho2` と全新辺の線形性は元辺との実合成から導出する。元の実collapse/expandを全degree 0/1に線形化し、独立に定義した `OriginalColumns.alwaysSpace` を元always空間と新頂点の全核へ両逆で分解した。新しいalways空間を元空間の像として定義していない。
+
+独立な新旧 `D` は全face値で交換し、任意new alwaysからのcollapseと任意old always・任意full新核値からの復元の両方向が同じ原d1値を持つ。全range Dの等号から独立coker Dの線形同値を生成し、すべてのface代表qとactual `o=q(-δ)` を保存した。元候補名の全単射、各候補の全原核の線形同値、独立の候補maskに対する実collapse、同じ原d1と商によるfull `B_e` の値比較を接続する。
+
+全候補部分集合のrange、商の全双対の往復、各whole-column支持、actual障害に非零な全支持族、hittingと包含極小を同じmapで比較した。同じ独立actual repairの全範囲と全新核自由度にも接続し、zeroでの唯一の空極小範囲、全候補許容時のactual repair存在、非零障害dualの空支持族、transversal皆無条件を比較する。双対basisや標本への制限はない。
+
+全候補後の商比較は、独立に定義した `OriginalRangeQuotient.equivalence` の新旧両側を通る。任意全face代表を保存し、全range d1の等号と全誘導d2の交換を導出する。空候補indexの等号transportは同じC18 native H2 isoに施し、すべてのnative cycle classと全face商のsquareを証明した。C18のactual signed obstruction class比較と、本cycleの `defectFamily_eq` / `obstruction_eq` / 全商代表保存を同じ原classへ適用できる。
+
+同じ指定W4の独立always空間では、全原d1が実b値を読むためalways像は零になる。実商は全F3核と線形同値で、原actual signed障害と独立split障害はいずれも座標1で非零。原candidate全核列と同じsplit列は商全体へ全射である。非零商dualのfull支持は全singleton bで、全独立actual repairの極小範囲は新旧とも同じbである。C17の実因子、全修復と全label、C18のactual defectを保持して適用した。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 19
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 1a051892c1d505e7b9f92a14f75f4216a497ce83
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "選定した五義務を同じ実因子/full kernelsから放電。一般named列transportと全候補不能の直接比較は同じ終了条件を支える追加依存sourceとして収録"
+  exit_criteria_status:
+    - "full modules/全rho線形/同じcollapseとexpand: LinearCoefficients/LinearCochains。W4 original_linearはwhole affine原入力から生成"
+    - "独立always/両逆/full新核/両方向d1/全range D: AlwaysSpace.linearEquiv、AlwaysDifferential.D_collapse/D_restore/range_D"
+    - "独立O/任意q/actual o/元候補fullkernel列/全S: RangeQuotient.equivalence/equivalence_q/obstruction_eq、CandidateColumns.candidate_collapse/column_collapse/quotient_column、DualSupports.range_map"
+    - "全dual/full支持族/hits/極小/actual全範囲/zero空/全候補不能: NamedColumnEquivalence、DualSupports、MinimalRanges、ImpossibleRangesの全API"
+    - "全候補商/CP2/range d1/原d2/native H2原classと同じW4非零障害/全列/dual支持/actual極小: RangeCohomology、C19SubdivisionRangeRegression。正式PR gateはPR作成後に判定"
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: ["SubdivisionLinearCoefficients", "SubdivisionLinearCochains", "SubdivisionAlwaysSpace", "SubdivisionAlwaysDifferential", "SubdivisionRangeQuotient", "SubdivisionCandidateColumns", "NamedColumnEquivalence", "SubdivisionDualSupports", "SubdivisionMinimalRanges", "SubdivisionImpossibleRanges", "SubdivisionRangeCohomology", "C19SubdivisionRangeRegression", "OriginalColumns.D_apply/D_valueの定義元基本API"]
+  claim_mapping:
+    theorem_names: ["AlwaysDifferential.range_D", "RangeQuotient.obstruction_eq", "CandidateColumns.quotient_column", "DualSupports.obstruction_support_family", "MinimalRanges.minimal_actual_repair_iff", "ImpossibleRanges.empty_support_duals_iff", "RangeCohomology.faceQuotientEquiv_value", "RangeCohomology.inducedD2_commute", "RangeCohomology.nativeH2_commute", "C19SubdivisionRangeRegression.split_obstruction_coordinate", "C19SubdivisionRangeRegression.split_column_surjective", "C19SubdivisionRangeRegression.split_minimal_actual_repair_iff"]
+    source_labels: ["GOAL Eの同じ実分割によるD商・全dual・全変更範囲保存", "GOAL Dの全原商/全候補後のH2接続", "GOAL Fの同じwhole affine適用", "W4の同じ指定実入力"]
+    conjuncts: ["選定五終了条件を上記各値APIと両逆構成に対応", "全A–F/W1–W5の完了に昇格しない"]
+    undischarged_assumptions: []
+    acceptance_point: "五終了条件の一次Lean構成・同じW4適用・現source検証を揃えたproposal。受理判定は固定headの標準PR reviewとroot契約適用に置く"
+    port_status: unported
+  evidence: ["現12 productionの各単一focused＋定義元OriginalCandidateColumns単一focused", "同じ選定12 exact bodyを持つnamed milestone focused、errors0/warnings0", "132新明示＋定義元API2＋生成6=140個別公理出力、標準のみ・欠落0"]
+audits:
+  premise_delta:
+    discharged: ["新全核module: full実rho1AddEquivのmodule transport", "rho2/new辺の線形性: 実factor compositeと原hlinear", "always・O・全S保存: 独立空間からの同じcollapse/expandと全d1値", "generic whole列条件hcolumns: CandidateColumns.quotient_columnで放電", "index transportのclass条件hi: C18 relativeH2Iso_classの同じ全cycle値で放電", "W4原module/linearity: NativeAffine.coefficientModule/edge_linear、actual fixed lawは指定Pの空faceから放電"]
+    remaining: ["GOAL EのC local private/public関係・全公開Ri/全復元の同じ分割保存", "指定W1–W3/W5の残接続", "累積completion packetと別fresh Math2/Lean2最終判定"]
+  certificate_provenance:
+    discharged: ["Factorizationにはprimitive actual因子と受理C17/C18由来full transportのみ。線形同値/商/支持保存fieldなし", "Submodule商同値は両方向range Dから、全列/双対比較は原mask/d1/qから生成", "全候補商は新旧C13原bridgeを同じ代表で比較し、native H2はC18同じcollapseを使用"]
+    unresolved: []
+  proof_use:
+    used: ["rho1全核surjectivity/module transfer→rho2 scalar/全new辺→実collapse線形", "chosen除外/P閉条件→same always/full新核の両逆→実d1/全range D→実q/o", "原候補fullmaskとwholekernel/namebijection→全B_e→全S range/dual family/極小/不能条件", "C13全候補bridgeの原代表→全d1商/誘導d2→C18同じnative classのsquare", "同じW4の原whole affine d1/δ=-1→actual o=1/full B surj/非零dual/actual極小"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["132新明示＋API2＋生成6=140個別公理が標準のみ", "named source sha256=9b16de9e906234765d37de4cc2cd0271539cf85f6db2e15dba35ce6bd25ced3e / log sha256=9ed48e3ff83657993d986b8a81027844b291fadfb30feb8036c6d791988e8967", "一意registry12/現source hash/placeholder/hidden-BiDi/privacy/import方向/保護領域/diff clean。Research full/aggregate/allfile/allmoduleなし"]
+  blocking_findings: []
+  next_obligation: "同じ実内部分割についてCの独立各local private/public Ri、全public family、全内部自由度、全actual復元とstrict full labelsを比較する。残W1–W3/W5と累積completionはその後に接続"
+```
+
+受理predecessorの追跡は、C18 PR #5158/root #5944039699、C17 PR #5157/root #5943284656、C13 PR #5149/root #5929751165、C14 PR #5150/root #5931624166の現在の必要statement・定義・適用引数・proof-useで完了する。原入力と今回の追加二つの定義元APIを確認し、受理済み内部DAGを再帰的に再認証しない。toolchainはLean 4.28と固定mathlib `8f9d9cff6bd728b17a24e163c9402775d9e6a365`。共通監査基準 `dbed043cb514e8c964589d2e12e982750c87ae83` と固定GOAL blobは不変である。
