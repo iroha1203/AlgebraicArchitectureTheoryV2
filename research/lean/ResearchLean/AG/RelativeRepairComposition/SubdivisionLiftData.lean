@@ -60,6 +60,29 @@ def liftData
     · rw [edgeAssignment_second]
       exact hsecond
 
+/-- Read the arbitrary original arrow at any retained complete edge name. -/
+theorem liftData_edge_old
+    (hfirst : (p ⋙ q).IsStronglyCocartesian ((p ⋙ q).map first) first)
+    (hsecond : (p ⋙ q).IsStronglyCocartesian ((p ⋙ q).map second) second)
+    (e : EdgeName (K := K)) (he : e ≠ chosen) :
+    (liftData chosen L middle first second hfirst hsecond).edgeLift (oldEdge K chosen e he) =
+      L.edgeLift e.2.2 :=
+  edgeAssignment_old K chosen L.object middle L.edgeLift first second e he
+
+/-- Read the actual first factor from the full strong-arrow assignment. -/
+theorem liftData_edge_first
+    (hfirst : (p ⋙ q).IsStronglyCocartesian ((p ⋙ q).map first) first)
+    (hsecond : (p ⋙ q).IsStronglyCocartesian ((p ⋙ q).map second) second) :
+    (liftData chosen L middle first second hfirst hsecond).edgeLift (firstEdge K chosen) = first :=
+  edgeAssignment_first K chosen L.object middle L.edgeLift first second
+
+/-- Read the actual second factor from the full strong-arrow assignment. -/
+theorem liftData_edge_second
+    (hfirst : (p ⋙ q).IsStronglyCocartesian ((p ⋙ q).map first) first)
+    (hsecond : (p ⋙ q).IsStronglyCocartesian ((p ⋙ q).map second) second) :
+    (liftData chosen L middle first second hfirst hsecond).edgeLift (secondEdge K chosen) = second :=
+  edgeAssignment_second K chosen L.object middle L.edgeLift first second
+
 /-- Both lower strong factors and all original lower strong arrows supply the full lower strong family. -/
 theorem liftData_lowerStrong
     (hfirst : (p ⋙ q).IsStronglyCocartesian ((p ⋙ q).map first) first)
@@ -93,6 +116,36 @@ def originalLiftData : LiftData (presentation K chosen).toFiniteTransportTwoPres
 /-- The new reference retains the original selected references and the same two specified actual factors. -/
 def referenceLiftData : LiftData (presentation K chosen).toFiniteTransportTwoPresentation (p ⋙ q) :=
   liftData chosen T.toTower.upper F.middle F.first F.second F.firstStrong F.secondStrong
+
+/-- The original family retains its own full original arrow at every retained name. -/
+theorem originalLiftData_edge_old (e : EdgeName (K := K)) (he : e ≠ chosen) :
+    (originalLiftData chosen T F).edgeLift (oldEdge K chosen e he) = T.original.edgeLift e.2.2 :=
+  liftData_edge_old chosen T.original F.middle F.first F.second F.firstStrong F.secondStrong e he
+
+/-- The original family reads the supplied actual first factor. -/
+theorem originalLiftData_edge_first :
+    (originalLiftData chosen T F).edgeLift (firstEdge K chosen) = F.first :=
+  liftData_edge_first chosen T.original F.middle F.first F.second F.firstStrong F.secondStrong
+
+/-- The original family reads the supplied actual second factor. -/
+theorem originalLiftData_edge_second :
+    (originalLiftData chosen T F).edgeLift (secondEdge K chosen) = F.second :=
+  liftData_edge_second chosen T.original F.middle F.first F.second F.firstStrong F.secondStrong
+
+/-- The reference family retains its own full original arrow at every retained name. -/
+theorem referenceLiftData_edge_old (e : EdgeName (K := K)) (he : e ≠ chosen) :
+    (referenceLiftData chosen T F).edgeLift (oldEdge K chosen e he) = T.toTower.upper.edgeLift e.2.2 :=
+  liftData_edge_old chosen T.toTower.upper F.middle F.first F.second F.firstStrong F.secondStrong e he
+
+/-- The reference family reads the supplied actual first factor. -/
+theorem referenceLiftData_edge_first :
+    (referenceLiftData chosen T F).edgeLift (firstEdge K chosen) = F.first :=
+  liftData_edge_first chosen T.toTower.upper F.middle F.first F.second F.firstStrong F.secondStrong
+
+/-- The reference family reads the supplied actual second factor. -/
+theorem referenceLiftData_edge_second :
+    (referenceLiftData chosen T F).edgeLift (secondEdge K chosen) = F.second :=
+  liftData_edge_second chosen T.toTower.upper F.middle F.first F.second F.firstStrong F.secondStrong
 
 end AAT.AG.RelativeRepairComposition.Subdivision
 #assert_standard_axioms_only AAT.AG.RelativeRepairComposition.Subdivision

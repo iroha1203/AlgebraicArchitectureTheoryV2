@@ -45,9 +45,9 @@ theorem reference_edge_bijective {i j : (presentation K chosen).Vertex}
       ((referenceLiftData chosen T F).edgeStrong e) (reference_lower_strong T chosen F e)) := by
   apply edge_induction chosen _ _ _ _ e
   · intro e he
-    simpa only [referenceLiftData,liftData,edgeAssignment_old] using T.edgeBijective e.2.2
-  · simpa only [referenceLiftData,liftData,edgeAssignment_first] using F.firstBijective
-  · simpa only [referenceLiftData,liftData,edgeAssignment_second] using F.secondBijective
+    simpa only [referenceLiftData_edge_old] using T.edgeBijective e.2.2
+  · simpa only [referenceLiftData_edge_first] using F.firstBijective
+  · simpa only [referenceLiftData_edge_second] using F.secondBijective
 
 /-- The selected new edge transport is exactly the transport of the corresponding actual reference. -/
 theorem selected_edge_transport {i j : (presentation K chosen).Vertex}

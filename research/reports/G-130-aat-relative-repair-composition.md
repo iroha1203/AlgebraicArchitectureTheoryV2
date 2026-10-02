@@ -3040,7 +3040,7 @@ selection:
 
 | 固定義務 | 構成・両方向の証拠 | 対象・量化 |
 | --- | --- | --- |
-| 元全geometry/実核輸送/新入力law | `presentation`, `oldRegion`, `middle_kernel_comm`, `transport_comp`, `originalTower`, `three_laws`, `fixed_laws` | 任意元可換全核、同じ実塔、全型付き経路と全0–3-cell |
+| 元全geometry/実核輸送/新入力law | `presentation`, `oldRegion`, `middle_kernel_comm`, `transport_comp`, `originalTower`, `three_laws`, `fixed_face_laws` | 任意元可換全核、同じ実塔、全型付き経路と全0–3-cell |
 | 実補正縮約と任意第一補正の全復元 | `corrected_factor_product`, `collapseCorrection_chosen`, `correctionEquiv`, `solutionEquiv`, `supportedSolutionEquiv`, `solution_path_substitute` | 全新独立actual修復、全旧actual修復、全新対象核値、任意original L |
 | 全label圏同値/逆/自然同型 | `collapseHomEquiv`, `expandFunctor`, `collapseFunctor`, `unitIso`, `counitIso`, `equivalence` | 全actual objectsと全actual morphisms、全old labels、forced fresh labelの一意lift |
 | 全S/包含/共有W/外部strict合成 | `rangeEquivalence`, `collapse_supported_inclusion`, `expand_supported_inclusion`, `collapse_label_inclusion`, `zero_section_inclusion`, `shared_collapse`, `shared_expand`, `externalObjectEquiv`, `externalHomEquiv`, `native_external_counit_shared`, `native_external_unit_shared` | 同じ全Sの式、全元W実choice、任意外部objects/arrowsと全共有label一致 |
@@ -3070,11 +3070,11 @@ result:
   exit_criteria_status: ["全0–3 geometry/P/W/candidates: SubdivisionGeometry/Incidence", "実因子→全核/transport/原law: Factors/OriginalTower/ThreeLaws/FixedLaws", "全label圏同値/逆/naturality/wholeHom: HomLift/CollapseFunctor/ExpandFunctor/Unit/Counit/Equivalence", "全S/strictW/includes/external/全復元: Permissions/RetainedChoices/SolutionWords/SharedValues/ExternalRestoration", "W4値/修復/全同型類/Aut/固定新頂点別入力: C17七source、focused/個別axiom; 正式PR gateはPR作成後に判定"]
   split_reason: none
   completion_candidate: no
-  lean_artifacts: ["39新production source、318明示宣言、24新生成API、4受理使用先補助"]
+  lean_artifacts: ["39新production source、327明示宣言、24新生成API、4受理使用先補助"]
   evidence: ["実primitive factors→same tower/full kernel/typed K'", "全actual supported repair≃旧修復×full Aw", "full native categorical equivalence/whole Hom", "allS/includes/strictW/actual external objects and arrows", "指定W4 actual counts/classes/Aut/full correction coordinates"]
   claim_mapping:
-    theorem_names: [transport_comp, originalTower, three_laws, fixed_laws, correctionEquiv, supportedSolutionEquiv, collapseHomEquiv, equivalence, rangeEquivalence, solution_path_substitute, externalObjectEquiv, externalHomEquiv, splitRepairEquiv, restore_pair_coordinates, old_repair_card, new_repair_card, old_class_card, new_class_card, old_aut_identity, new_aut_identity, closed_fixed_new_class_card]
-    source_labels: ["固定GOAL E内部辺分割の実修復/圏/全S/strictW/外部合成/全復元", "固定GOAL Fの同じwhole affine族への分割適用", "指定W4", "n1017内部辺分割", "design5"]
+    theorem_names: [transport_comp, originalTower, three_laws, fixed_face_laws, correctionEquiv, supportedSolutionEquiv, collapseHomEquiv, equivalence, rangeEquivalence, solution_path_substitute, externalObjectEquiv, externalHomEquiv, splitRepairEquiv, restore_pair_coordinates, old_repair_card, new_repair_card, old_class_card, new_class_card, old_aut_identity, new_aut_identity, closed_fixed_new_class_card]
+    source_labels: ["固定GOAL E内部辺分割の実修復/圏/全S/strictW/外部合成/全復元", "固定GOAL Fの同じwhole affine族への分割適用", "指定W4", "n1017内部辺分割", "design6"]
     conjuncts: ["任意元可換全核/全0–3型付き構造/任意oldL/R", "実因子由来/newfullkernel/actual rho2rho1", "同じhe式/全独立actualrepair/whole freshkernel復元", "全nativeHom/oldlabel保持/逆/unit/counit", "全S/候補/strictW/includes/external", "W4 all repairs/classes/Aut/全(r,h+r)/固定newvertex別closed入力"]
     undischarged_assumptions: []
     acceptance_point: "C17選定五義務と五終了条件の候補。正式PR review/root受理/CIは外部記録で判定"
@@ -3095,7 +3095,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: ["39production単一focusedと同じ39本体named milestone focused", "全346個別標準公理/欠落0", "公理log SHA256 5273a8c0f494d77b4d30bafa3dfa7fef9282b1f33999507bccf4cccba56a1773", "再現source SHA256 26b26f278301f0f05aa6f59777e720b906560337fa8e143e388b20caa67d0652", "39source/hash/registry/placeholder/Unicode/privacy/語彙/import方向/保護領域/diff"]
+  validation_refs: ["39productionの初回単一focused、変更6sourceの再focused、現在39本体named milestone focused", "全355個別標準公理/欠落0", "公理log SHA256 caa605954f46379bd52936de0f840a458e3afdf2d3fb803064be80d75adb5271", "再現source SHA256 bd2b4f3c86ea7281b2ac90a73706936b487a4bc47abaf5b6b3156a6cda5b8240", "39source/hash/registry/placeholder/Unicode/privacy/語彙/import方向/保護領域/diff"]
   blocking_findings: []
   next_obligation: "C17最終headの標準PR review/root受理/CI後、同じ原分割の全相対複体・全H・障害・旧holonomy・公開双対/極小保存"
 ```
@@ -3106,8 +3106,8 @@ audits:
 | --- | --- | --- |
 | 任意元有限表示/同じp,q/元L,R/core/指定比較/元全核可換性とstrong・全単射輸送 | 本文由来、GOAL A・E | 元 `OriginalTowerPresentation`、新原塔の各fieldとtransport/actual修復 |
 | 中間対象と二実因子/実積/両因子strong・lowerStrong・fullBijective | 本文由来、GOAL E内部分割 | `Factorization`、`middle_kernel_comm`・`transport_comp`・`originalTower` |
-| chosenが固定部分/W/candidateに属さないこと、閉じたP/W | 本文由来、GOAL E | `oldRegion`、全S保持、`fixed_laws`、shared literal equality |
-| 旧3-lawと旧固定face law | 本文由来、GOAL A・E、指定実現では放電済み | `three_laws`・`fixed_laws`で新lawを構成。W4のUnit face/空ThreeCellでは実affine値から証明 |
+| chosenが固定部分/W/candidateに属さないこと、閉じたP/W | 本文由来、GOAL E | `oldRegion`、全S保持、`fixed_face_laws`、shared literal equality |
+| 旧3-lawと旧固定face law | 本文由来、GOAL A・E、指定実現では放電済み | `three_laws`・`fixed_face_laws`で新lawを構成。W4のUnit face/空ThreeCellでは実affine値から証明 |
 | new核可換性/新transportcomp/新LiftData/core/全labelsの逆とnaturality | 放電済み | `middle_kernel_comm`, `transport_comp`, `originalTower`, `collapseHomEquiv`, `unitIso`, `counitIso` |
 | 汎用外部labelのidentity零 | 一般補題の方向仮定、actual native external適用で放電済み | `native_external_identity_zero` が任意actual external identityから導く。実適用は `native_external_counit_shared`・`native_external_unit_shared` |
 | W4 whole affine/actual factorsの全primitive条件と指定比較 | 放電済み | `C17SubdivisionInput.originalTower`・`factors`・`factor_product`・`linear_faces`、実flip/translation評価とaccepted whole native kernel |
@@ -3115,10 +3115,10 @@ audits:
 
 未放電の追加前提はC17選定五義務には残さない。固定GOALの後続条項は上記remainingとして未達のまま扱う。
 
-39新productionの単一file focused確認と、同じ39実行本体のnamed milestone focused確認はexit0/errors0/warnings0。
-318明示宣言・24新生成API・4受理使用先補助、全346件の個別 `#print axioms` は標準公理のみ・欠落0。
-公理log SHA256 `5273a8c0f494d77b4d30bafa3dfa7fef9282b1f33999507bccf4cccba56a1773`、再現source SHA256 `26b26f278301f0f05aa6f59777e720b906560337fa8e143e388b20caa67d0652`。
-設計説明のみの追加後、現在の39ソースと検証した実行本体はコメントを除いて一致する。
+39新productionの初回単一file focused、APIと証明内部を修正した6sourceの再focused、現在の39実行本体のnamed milestone focusedはexit0/errors0/warnings0。
+327明示宣言・24新生成API・4受理使用先補助、全355件の個別 `#print axioms` は標準公理のみ・欠落0。
+公理log SHA256 `caa605954f46379bd52936de0f840a458e3afdf2d3fb803064be80d75adb5271`、再現source SHA256 `bd2b4f3c86ea7281b2ac90a73706936b487a4bc47abaf5b6b3156a6cda5b8240`。
+現在の39ソースと検証した実行本体は一致する。9個の辺値APIを含む全宣言を個別に監査した。
 各source/hashと一意registry、保護領域、placeholder/hidden-BiDi/privacy/語彙/import方向/diff scanはclean。
 Research全体・aggregate root・全file/module loopのelaborationは実行していない。
 全GOALの完了判定とtracking Issueの全完了checkboxは未達のまま保持する。

@@ -7,6 +7,10 @@ import ResearchLean.AG.RelativeRepairComposition.SubdivisionZeroSection
 Every object restores the same original actual choices with zero first-factor
 correction. Every original morphism keeps all original labels and has the full
 actual transported source label at the fresh vertex.
+
+## Implementation notes
+
+The inverse functor uses zero first correction together with the full transported fresh label from zeroSectionLabel. This makes identity and composition follow from its additive hom while preserving all old labels. An arbitrary restoration parameter at each object would require parameter differences in the arrow map; using zero without the transported label would fail the actual gauge equation.
 -/
 namespace AAT.AG.RelativeRepairComposition.Subdivision
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction

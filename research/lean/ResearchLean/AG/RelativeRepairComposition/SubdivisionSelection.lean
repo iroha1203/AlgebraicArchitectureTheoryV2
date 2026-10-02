@@ -8,6 +8,10 @@ Retained original arrows keep their specified core values and lifts. Both new
 factor arrows have identity core choice and identity lift. Their selected arrows
 are therefore the given actual factors; retained selected arrows remain the old
 selected references.
+
+## Implementation notes
+
+Retained edges keep the arbitrary original core and chosen lift; the two primitive factors use identity core and lift because they already are the selected actual factors. Replacing every original arrow by its reference would erase the old choices and prevent their literal reconstruction. Keeping these selections separate gives the same original input on retained edges.
 -/
 namespace AAT.AG.RelativeRepairComposition.Subdivision
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction
@@ -53,14 +57,14 @@ theorem selected_edge {i j : (presentation K chosen).Vertex}
   change (originalLiftData chosen T F).edgeLift e ≫ FiberAut.hom (liftSelection T chosen F e) = _
   apply edge_induction chosen _ _ _ _ e
   · intro e he
-    simp only [originalLiftData,referenceLiftData,liftData,edgeAssignment_old,
+    simp only [originalLiftData_edge_old,referenceLiftData_edge_old,
       liftSelection,edgeValue_old]
     rfl
-  · simp only [originalLiftData,referenceLiftData,liftData,edgeAssignment_first,
+  · simp only [originalLiftData_edge_first,referenceLiftData_edge_first,
       liftSelection,edgeValue_first]
     change F.first ≫ 𝟙 F.middle = F.first
     exact Category.comp_id _
-  · simp only [originalLiftData,referenceLiftData,liftData,edgeAssignment_second,
+  · simp only [originalLiftData_edge_second,referenceLiftData_edge_second,
       liftSelection,edgeValue_second]
     change F.second ≫ 𝟙 (T.original.object chosen.2.1) = F.second
     exact Category.comp_id _

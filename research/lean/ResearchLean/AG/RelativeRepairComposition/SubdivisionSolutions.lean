@@ -7,6 +7,10 @@ The actual face equations are transported first. The correction equation then
 follows from the accepted original-tower coherence API. Thus every old actual
 solution and every full first-factor kernel value restores a new actual
 solution, with both original choice fields recovered by the inverse laws.
+
+## Implementation notes
+
+The face iff is proved for independent actual corrections before using the accepted solutionOfCorrection API. This reconstructs every actual choice and gives inverse laws against independently defined Solution. Directly gluing new arrows would duplicate the original correction/coherence correspondence and obscure the required retention of arbitrary old L; defining solutions as a chosen section image would also discard arbitrary first-factor values.
 -/
 namespace AAT.AG.RelativeRepairComposition.Subdivision
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction

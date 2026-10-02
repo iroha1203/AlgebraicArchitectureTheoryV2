@@ -7,6 +7,10 @@ import ResearchLean.AG.RelativeRepairComposition.SubdivisionIncidence
 A set of fixed names excludes the selected internal always edge. Its retained
 image contains exactly those same fixed actual arrows and neither factor.
 Collapse and restoration use the already constructed actual solution maps.
+
+## Implementation notes
+
+Support is imposed on the independent actual solutions through equality of their original arrows at retained complete names. The existing actual solution maps then preserve that condition by the physical equality iff zero-correction API. Defining the supported new set as the image of restoration would hide surjectivity and lose arbitrary new repairs, so both inverse laws are proved on the original subtype.
 -/
 namespace AAT.AG.RelativeRepairComposition.Subdivision
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction

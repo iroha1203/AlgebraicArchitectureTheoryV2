@@ -51,7 +51,7 @@ theorem corrected_edge_word
       ((selectedUpper (presentation K chosen) p q (originalTower T chosen F).original
         ((originalTower T chosen F).correctionChoice h)).edgeLift (secondEdge K chosen) ≫ 𝟙 _) = _
     rw [Category.comp_id,corrected_new_edge,corrected_new_edge]
-    simp only [referenceLiftData,liftData,edgeAssignment_first,edgeAssignment_second]
+    simp only [referenceLiftData_edge_first,referenceLiftData_edge_second]
     rw [collapseCorrection_chosen]
     exact corrected_factor_product T chosen F
       (Additive.toMul (h (firstEdgeName K chosen)))
@@ -59,7 +59,7 @@ theorem corrected_edge_word
   · rw [edgeWord_old K chosen e he]
     simp only [LiftData.pathLift,Category.comp_id]
     rw [corrected_new_edge,collapseCorrection_old T chosen F h e he]
-    simp only [referenceLiftData,liftData,edgeAssignment_old]
+    simp only [referenceLiftData_edge_old]
     rfl
 
 /-- Every full corrected original path equals its corrected substituted actual path after collapse. -/

@@ -6,6 +6,10 @@ import ResearchLean.AG.RelativeRepairComposition.SubdivisionHomLift
 The functor acts on independent supported actual repairs and restricts each
 full original vertex label. Every arrow between arbitrary new repairs has a
 unique preimage above each old arrow, by the full fresh-label formula.
+
+## Implementation notes
+
+The native action category keeps every allowed vertex label, including ineffective stabilizers. Collapse restricts that full label; its inverse Hom map adds the uniquely forced fresh value between arbitrary new objects. A quotient of labels or a restriction to restored objects would drop original morphisms and would not give the required full native Hom equivalence.
 -/
 namespace AAT.AG.RelativeRepairComposition.Subdivision
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction

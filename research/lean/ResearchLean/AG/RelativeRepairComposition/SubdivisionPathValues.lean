@@ -27,10 +27,10 @@ theorem reference_edge_word (e : EdgeName (K := K)) :
     rw [edgeWord_chosen]
     change (referenceLiftData chosen T F).edgeLift (firstEdge K chosen) ≫
       ((referenceLiftData chosen T F).edgeLift (secondEdge K chosen) ≫ 𝟙 _) = _
-    simp only [referenceLiftData,liftData,edgeAssignment_first,edgeAssignment_second,Category.comp_id]
+    simp only [referenceLiftData_edge_first,referenceLiftData_edge_second,Category.comp_id]
     exact F.composite
   · rw [edgeWord_old K chosen e he]
-    simp only [LiftData.pathLift,Category.comp_id,referenceLiftData,liftData,edgeAssignment_old]
+    simp only [LiftData.pathLift,Category.comp_id,referenceLiftData_edge_old]
 
 /-- The substituted full reference word is the original full selected word for every typed path. -/
 theorem reference_path_substitute {i j : K.Vertex} (w : K.Path i j) :

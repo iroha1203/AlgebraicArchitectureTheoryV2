@@ -39,7 +39,7 @@ theorem coefficient_edge_old (e : EdgeName (K := K)) (he : e ≠ chosen) :
   intro a
   have h := selected_edge_transport T chosen F (oldEdge K chosen e he)
   have hv := congrArg (fun rho => Additive.ofMul (rho (Additive.toMul a))) h
-  simpa only [referenceLiftData,liftData,edgeAssignment_old] using hv
+  simpa only [referenceLiftData_edge_old] using hv
 
 /-- The first named factor uses the generated whole actual first-factor equivalence. -/
 theorem coefficient_edge_first :
@@ -49,7 +49,7 @@ theorem coefficient_edge_first :
   intro a
   have h := selected_edge_transport T chosen F (firstEdge K chosen)
   have hv := congrArg (fun rho => Additive.ofMul (rho (Additive.toMul a))) h
-  simpa only [referenceLiftData,liftData,edgeAssignment_first] using hv
+  simpa only [referenceLiftData_edge_first] using hv
 
 /-- The second named factor uses the generated whole actual second-factor equivalence. -/
 theorem coefficient_edge_second :
@@ -59,7 +59,7 @@ theorem coefficient_edge_second :
   intro a
   have h := selected_edge_transport T chosen F (secondEdge K chosen)
   have hv := congrArg (fun rho => Additive.ofMul (rho (Additive.toMul a))) h
-  simpa only [referenceLiftData,liftData,edgeAssignment_second] using hv
+  simpa only [referenceLiftData_edge_second] using hv
 
 /-- Full original selected-edge transport is exactly the actual first-factor then second-factor transport. -/
 theorem coefficient_transport_comp (a : T.toTower.localCoefficients.A chosen.1) :

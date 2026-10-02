@@ -6,6 +6,10 @@ import ResearchLean.AG.RelativeRepairComposition.SubdivisionHomLift
 The canonical restored object has zero first correction. Its original label
 extends with the full actual first-factor transport of its old source value,
 which preserves zero first correction under every old gauge.
+
+## Implementation notes
+
+Zero first correction chooses an object section. Gauge preservation forces its fresh label to be the actual first-factor transport of the old source label. Setting the fresh label to zero for every arrow would not preserve that first correction for arbitrary old labels. Other fixed first corrections could choose object sections, but zero gives the additive label section used by the inverse functor.
 -/
 namespace AAT.AG.RelativeRepairComposition.Subdivision
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction

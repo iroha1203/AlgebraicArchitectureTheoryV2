@@ -5,6 +5,10 @@ import ResearchLean.AG.RelativeRepairComposition.SubdivisionGeometry
 
 Assignments use every complete retained name and both factor names. The indexed
 endpoint equality transports each value to the target of its actual edge.
+
+## Implementation notes
+
+The family remains indexed by each actual target. Eq.mp uses only the supplied incidence equality to carry the value to that target. A nondependent assignment on source-target pairs would lose the coefficient type and complete names of parallel edges, so it cannot implement the original full family.
 -/
 namespace AAT.AG.RelativeRepairComposition.Subdivision
 open TransportCoherence
