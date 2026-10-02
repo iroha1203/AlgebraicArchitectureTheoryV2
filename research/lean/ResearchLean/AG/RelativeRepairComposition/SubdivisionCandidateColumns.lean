@@ -7,6 +7,13 @@ import ResearchLean.AG.RelativeRepairComposition.OriginalRangeEquations
 The actual factor edge is always allowed. Every original candidate keeps its
 complete name and entire original target kernel, with its independent masked
 correction, full original differential and always quotient.
+
+## Implementation notes
+
+The complete original candidate names are reindexed by a bijection, and their
+actual target kernels are retained literally. Renaming only image generators
+would lose independent named permissions; replacing a kernel by its column
+image would lose values needed for the whole-column and dual comparisons.
 -/
 namespace AAT.AG.RelativeRepairComposition.Subdivision.CandidateColumns
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction
@@ -176,7 +183,7 @@ theorem column_collapse (e : candidates) (x : T.toTower.localCoefficients.A e.1.
         (nameEquiv candidates chosen hc e) (kernelEquiv (k := k) T candidates chosen F hc e x)) =
       OriginalColumns.column (k := k) M P candidates houtside hlinear e x := by
   classical
-  simp only [OriginalColumns.column,OriginalColumns.candidateMap,LinearMap.comp_apply]
+  rw [OriginalColumns.column_apply,OriginalColumns.column_apply]
   simpa only [FiniteCoefficients.differential1_eq] using
     (differential_collapse T P chosen F hp hlinear _ _
     (candidate_collapse (k := k) T P candidates chosen F hp hc houtside e x))
@@ -189,12 +196,7 @@ theorem quotient_column (e : candidates) (x : T.toTower.localCoefficients.A e.1.
         (nameEquiv candidates chosen hc e) (kernelEquiv (k := k) T candidates chosen F hc e x)) =
       OriginalRanges.column (k := k) M P candidates houtside hlinear e x := by
   classical
-  change RangeQuotient.equivalence T P candidates chosen F hp hc hlinear
-    (LinearInterface.q (OriginalColumns.D (k := k)
-      (originalTower T chosen F).toTower.localCoefficients newP newCandidates newLinear)
-      (OriginalColumns.column (k := k) (originalTower T chosen F).toTower.localCoefficients
-        newP newCandidates (retained_outside P candidates chosen hp houtside) newLinear
-        (nameEquiv candidates chosen hc e) (kernelEquiv (k := k) T candidates chosen F hc e x))) = _
+  rw [OriginalRanges.column_apply,OriginalRanges.column_apply]
   rw [RangeQuotient.equivalence_q]
   exact congrArg (LinearInterface.q (OriginalColumns.D (k := k) M P candidates hlinear))
     (column_collapse T P candidates chosen F hp hc hlinear houtside e x)

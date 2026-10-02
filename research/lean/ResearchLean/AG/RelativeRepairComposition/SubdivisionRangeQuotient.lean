@@ -9,6 +9,13 @@ import ResearchLean.AG.RelativeRepairComposition.LinearInterface
 The full quotient comparison comes from equality of the independently defined
 always images. It preserves every original representative and the negative
 actual defect, with the original fixed laws generating the new ones.
+
+## Implementation notes
+
+Equality of the independently generated always images permits a quotient
+comparison that reads every unchanged face representative. Comparing only
+vanishing or repair existence would not preserve the actual quotient point
+and every whole candidate column, so those weaker comparisons were rejected.
 -/
 namespace AAT.AG.RelativeRepairComposition.Subdivision.RangeQuotient
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction

@@ -3315,15 +3315,15 @@ result:
     - "全候補商/CP2/range d1/原d2/native H2原classと同じW4非零障害/全列/dual支持/actual極小: RangeCohomology、C19SubdivisionRangeRegression。正式PR gateはPR作成後に判定"
   split_reason: none
   completion_candidate: no
-  lean_artifacts: ["SubdivisionLinearCoefficients", "SubdivisionLinearCochains", "SubdivisionAlwaysSpace", "SubdivisionAlwaysDifferential", "SubdivisionRangeQuotient", "SubdivisionCandidateColumns", "NamedColumnEquivalence", "SubdivisionDualSupports", "SubdivisionMinimalRanges", "SubdivisionImpossibleRanges", "SubdivisionRangeCohomology", "C19SubdivisionRangeRegression", "OriginalColumns.D_apply/D_valueの定義元基本API"]
+  lean_artifacts: ["SubdivisionLinearCoefficients", "SubdivisionLinearCochains", "SubdivisionAlwaysSpace", "SubdivisionAlwaysDifferential", "SubdivisionRangeQuotient", "SubdivisionCandidateColumns", "NamedColumnEquivalence", "SubdivisionDualSupports", "SubdivisionMinimalRanges", "SubdivisionImpossibleRanges", "SubdivisionRangeCohomology", "C19SubdivisionRangeRegression", "OriginalColumns.D_apply/D_value/column_applyとOriginalRanges.column_applyの定義元基本API"]
   claim_mapping:
     theorem_names: ["AlwaysDifferential.range_D", "RangeQuotient.obstruction_eq", "CandidateColumns.quotient_column", "DualSupports.obstruction_support_family", "MinimalRanges.minimal_actual_repair_iff", "ImpossibleRanges.empty_support_duals_iff", "RangeCohomology.faceQuotientEquiv_value", "RangeCohomology.inducedD2_commute", "RangeCohomology.nativeH2_commute", "C19SubdivisionRangeRegression.split_obstruction_coordinate", "C19SubdivisionRangeRegression.split_column_surjective", "C19SubdivisionRangeRegression.split_minimal_actual_repair_iff"]
     source_labels: ["GOAL Eの同じ実分割によるD商・全dual・全変更範囲保存", "GOAL Dの全原商/全候補後のH2接続", "GOAL Fの同じwhole affine適用", "W4の同じ指定実入力"]
     conjuncts: ["選定五終了条件を上記各値APIと両逆構成に対応", "全A–F/W1–W5の完了に昇格しない"]
     undischarged_assumptions: []
-    acceptance_point: "五終了条件の一次Lean構成・同じW4適用・現source検証を揃えたproposal。受理判定は固定headの標準PR reviewとroot契約適用に置く"
+    acceptance_point: "五終了条件の一次Lean構成・同じW4適用・現source検証を揃えたproposal。受理判定は固定headの標準PR reviewとrootによる検査基準の適用に置く"
     port_status: unported
-  evidence: ["現12 productionの各単一focused＋定義元OriginalCandidateColumns単一focused", "同じ選定12 exact bodyを持つnamed milestone focused、errors0/warnings0", "132新明示＋定義元API2＋生成6=140個別公理出力、標準のみ・欠落0"]
+  evidence: ["現12 productionの各単一focused＋定義元OriginalCandidateColumns/OriginalRangeEquationsの各単一focused", "同じ選定12 exact bodyを持つnamed milestone focused、errors0/warnings0", "132新明示＋定義元API4＋生成6=142個別公理出力、標準のみ・欠落0"]
 audits:
   premise_delta:
     discharged: ["新全核module: full実rho1AddEquivのmodule transport", "rho2/new辺の線形性: 実factor compositeと原hlinear", "always・O・全S保存: 独立空間からの同じcollapse/expandと全d1値", "generic whole列条件hcolumns: CandidateColumns.quotient_columnで放電", "index transportのclass条件hi: C18 relativeH2Iso_classの同じ全cycle値で放電", "W4原module/linearity: NativeAffine.coefficientModule/edge_linear、actual fixed lawは指定Pの空faceから放電"]
@@ -3340,9 +3340,9 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: ["132新明示＋API2＋生成6=140個別公理が標準のみ", "named source sha256=9b16de9e906234765d37de4cc2cd0271539cf85f6db2e15dba35ce6bd25ced3e / log sha256=9ed48e3ff83657993d986b8a81027844b291fadfb30feb8036c6d791988e8967", "一意registry12/現source hash/placeholder/hidden-BiDi/privacy/import方向/保護領域/diff clean。Research full/aggregate/allfile/allmoduleなし"]
+  validation_refs: ["132新明示＋API4＋生成6=142個別公理が標準のみ", "named source sha256=a2dfa5c71a8192821ef2e8df78d1f5f30d8ccc15538b42e5b426ebc66391b2a6 / log sha256=a247f0817b23cb9005d3763d3ce5aab0c96a34760bc01353ade8a943aabd4fe7", "一意registry12/現source hash/placeholder/hidden-BiDi/privacy/import方向/保護領域/diff clean。Research full/aggregate/allfile/allmoduleなし"]
   blocking_findings: []
   next_obligation: "同じ実内部分割についてCの独立各local private/public Ri、全public family、全内部自由度、全actual復元とstrict full labelsを比較する。残W1–W3/W5と累積completionはその後に接続"
 ```
 
-受理predecessorの追跡は、C18 PR #5158/root #5944039699、C17 PR #5157/root #5943284656、C13 PR #5149/root #5929751165、C14 PR #5150/root #5931624166の現在の必要statement・定義・適用引数・proof-useで完了する。原入力と今回の追加二つの定義元APIを確認し、受理済み内部DAGを再帰的に再認証しない。toolchainはLean 4.28と固定mathlib `8f9d9cff6bd728b17a24e163c9402775d9e6a365`。共通監査基準 `dbed043cb514e8c964589d2e12e982750c87ae83` と固定GOAL blobは不変である。
+受理predecessorの追跡は、C18 PR #5158/root #5944039699、C17 PR #5157/root #5943284656、C13 PR #5149/root #5929751165、C14 PR #5150/root #5931624166の現在の必要statement・定義・適用引数・proof-useで完了する。原入力と今回の追加四つの定義元APIを確認し、受理済み内部DAGを再帰的に再認証しない。toolchainはLean 4.28と固定mathlib `8f9d9cff6bd728b17a24e163c9402775d9e6a365`。共通監査基準 `dbed043cb514e8c964589d2e12e982750c87ae83` と固定GOAL blobは不変である。

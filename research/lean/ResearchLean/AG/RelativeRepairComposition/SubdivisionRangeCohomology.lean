@@ -8,6 +8,14 @@ import ResearchLean.AG.RelativeRepairComposition.SubdivisionObstruction
 The quotient by every candidate range is compared through the independently
 defined original all-column bridges. Every face representative is preserved;
 the actual native H2 comparison is the same previously constructed collapse.
+
+## Implementation notes
+
+The new and old independent all-column bridges surround the same quotient
+comparison, keeping every face representative in the resulting square. A
+separately defined H2 isomorphism could obscure which collapse preserves the
+signed actual obstruction. The existing native collapse is therefore retained,
+with only the proved empty-index equality transported in its type.
 -/
 namespace AAT.AG.RelativeRepairComposition.Subdivision.RangeCohomology
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction
@@ -36,12 +44,16 @@ local notation "newLinear" => LinearCoefficients.edge_linear T chosen F hlinear
 
 attribute [local instance] Classical.propDecidable
 variable (houtside : ∀ e ∈ candidates, e ∉ P.edges)
+/-- Universal old-edge membership decides the domain of the original full differential. -/
 local instance allEdgesDecidable : DecidablePred (· ∈ (ClosedRegion.all (K := K)).edges) :=
   fun _ => isTrue trivial
+/-- Universal new-edge membership decides the domain of the subdivided full differential. -/
 local instance newAllEdgesDecidable : DecidablePred (· ∈ (ClosedRegion.all (K := presentation K chosen)).edges) :=
   fun _ => isTrue trivial
+/-- Universal original-vertex membership decides the full relative-label coordinate domain. -/
 local instance allVerticesDecidable : DecidablePred (· ∈ (ClosedRegion.all (K := K)).vertices) :=
   fun _ => isTrue trivial
+/-- Universal original-face membership decides the unchanged full face quotient domain. -/
 local instance allFacesDecidable : DecidablePred (· ∈ (ClosedRegion.all (K := K)).faces) :=
   fun _ => isTrue trivial
 /-- The independent sum of all full candidate ranges is transported to the entire original sum. -/

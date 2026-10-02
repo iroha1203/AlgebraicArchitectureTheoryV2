@@ -165,6 +165,13 @@ def column (e : candidates) : M.A e.1.2.1 →ₗ[k] C2P :=
   (candidateMap (k := k) M P candidates houtside hlinear).comp
     (LinearMap.single k (fun e : candidates => M.A e.1.2.1) e)
 
+/-- A whole named kernel column applies the original differential to its single candidate mask. -/
+theorem column_apply (e : candidates) (x : M.A e.1.2.1) :
+    column (k := k) M P candidates houtside hlinear e x =
+      differential1 M hlinear ClosedRegion.all P
+        (candidateCochain (k := k) M P candidates houtside
+          (LinearMap.single k (fun a : candidates => M.A a.1.2.1) e x)) := rfl
+
 variable [Fintype (EdgeName (K := K))]
 
 /-- The literal finite sum of named full columns equals the complete candidate map. -/

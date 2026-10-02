@@ -10,6 +10,14 @@ import ResearchLean.AG.RelativeRepairComposition.NativeAffineDifferentials
 The full native always source has zero original differential. Its original
 obstruction quotient is the entire face kernel, with the actual negative defect
 at coordinate one. The actual subdivision transports these whole values.
+
+## Implementation notes
+
+The full quotient coordinate is derived from the independently defined always
+differential and its proved zero image. A supplied obstruction point or a
+coordinate chosen only on the candidate image would not test the actual
+signed defect and surjectivity onto the whole quotient. The same complete face
+kernel coordinate supplies both the quotient comparison and its full dual.
 -/
 namespace AAT.AG.RelativeRepairComposition.C19SubdivisionRangeRegression
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction
@@ -18,6 +26,7 @@ set_option maxHeartbeats 2000000
 set_option synthInstance.maxHeartbeats 200000
 attribute [local instance] Classical.propDecidable
 attribute [local instance] Subdivision.LinearCoefficients.coefficientModules
+/-- Universal old-edge membership supplies the decision used by the full W4 differential APIs. -/
 local instance allEdgesDecidable : DecidablePred (· ∈ (ClosedRegion.all (K := geometry)).edges) :=
   fun _ => isTrue trivial
 
@@ -139,9 +148,9 @@ theorem relative_differential_coordinate
 theorem column_coordinate (x : originalTower.toTower.localCoefficients.A candidate.2.1) :
     obstructionCoordinate (OriginalRanges.column (k := ZMod 3) originalTower.toTower.localCoefficients
       fixedRegion candidates candidates_outside original_linear candidateName x) = middleCoefficient x := by
-  simp only [OriginalRanges.column,CokernelNamed.column,LinearMap.comp_apply]
+  rw [OriginalRanges.column_apply]
   rw [obstructionCoordinate_q]
-  simp only [OriginalColumns.column,OriginalColumns.candidateMap,LinearMap.comp_apply]
+  rw [OriginalColumns.column_apply]
   rw [relative_differential_coordinate]
   have hv := OriginalColumns.candidate_value (k := ZMod 3) originalTower.toTower.localCoefficients
     fixedRegion candidates candidates_outside

@@ -8,6 +8,13 @@ import ResearchLean.AG.RelativeRepairComposition.OriginalRangeClassification
 Name transport includes every original candidate subset. The independently
 defined actual repairs, signed defect quotient and all quotient duals are used
 in the same comparisons, including empty ranges and impossible full ranges.
+
+## Implementation notes
+
+Actual repair objects retain the unrestricted first-factor kernel as a product
+coordinate. An object bijection with old repairs alone would discard distinct
+factor corrections; choosing a zero first factor is only a section, so it is
+not used as a description of all repairs or of their minimal allowed ranges.
 -/
 namespace AAT.AG.RelativeRepairComposition.Subdivision.MinimalRanges
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction
