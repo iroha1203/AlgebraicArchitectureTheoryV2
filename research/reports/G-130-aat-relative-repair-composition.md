@@ -3346,3 +3346,94 @@ audits:
 ```
 
 受理predecessorの追跡は、C18 PR #5158/root #5944039699、C17 PR #5157/root #5943284656、C13 PR #5149/root #5929751165、C14 PR #5150/root #5931624166の現在の必要statement・定義・適用引数・proof-useで完了する。原入力と今回の追加四つの定義元APIを確認し、受理済み内部DAGを再帰的に再認証しない。toolchainはLean 4.28と固定mathlib `8f9d9cff6bd728b17a24e163c9402775d9e6a365`。共通監査基準 `dbed043cb514e8c964589d2e12e982750c87ae83` と固定GOAL blobは不変である。
+
+### Cycle 20 selection — 全閉被覆の実分割とprivate/public原名の保存
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 20
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 5ab51676dd7299667d83aaf0928703b0f8bb24bd
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "Issue5132/C19受理PR5159・root5945142965、C17実分割全geometry/C18同じ微分/C19線形全核、C10–12有限local interface"
+  proof_dag_predecessors: ["C17 actual全typed分割/元W厳密", "C18原actual微分", "C19同じfull核線形構造", "C10–12元閉有限被覆/private public定義"]
+  milestone: "GOAL E有限体C保存へ接続する入力側の全閉被覆輸送。分割辺を含む領域も元0–3全incidenceから生成し、元被覆/共有部分/全private public原名と候補maskを同じ置換で保持する"
+  proof_obligations:
+    - "任意原edge setの全出現を置換し、選択辺を含む任意閉領域を同じ原vertices/faces/triplesと必要なfresh vertex/両factorから独立生成。全面両path・全3cell両route/prefix/suffixを閉じる"
+    - "任意領域包含/交差と全0–3 indexed coverを輸送。選択辺の唯一leaf所属から異なるleaf overlapにfresh vertex/factorが無いことと元retained overlapを証明"
+    - "元定義から再生成したsharedEdges/privateAlwaysEdgesの全original名・両factor membershipを比較。選択private辺の両factorは同じleafでprivate、全候補/全共有/全fixed edgeをpublicに保持し、public edge subtypeを全単射で比較"
+    - "同じ指定whole affine W4のactual chosen a・candidate b・全face wordに一般構成を適用し、両factor private/public b保持、選択辺含有面の全typed閉包と全S禁止candidate mask保存を実評価"
+  exit_criteria:
+    - "任意領域の新ClosedRegionを入力から生成し、全path/route contextの置換edge set等号と全0–3 membership APIを証明。選択辺を避ける旧oldRegionだけで代替しない"
+    - "任意indexed coverの全0–3 coverage、包含と交差の同じcell比較が成立。唯一leaf条件は原chosen非共有性の入力で、overlap保存を別certificateで受け取らない"
+    - "独立new private/shared定義の全名を比較し、旧private chosen一名が両factorへ移る。public全単射は全旧public名を含み両inverse/元candidate値・maskに接続する"
+    - "same W4原actual幾何を変更せず一般定理に接続。非自明face wordのa置換/両factor private/whole candidate b保持と任意Sの禁止条件を同じmapで確認"
+  selection_reason: "C19で原商/全双対保存を受理済み。Cの独立局所生成を同じK'へ適用するため、全閉被覆とprivate/public入力の輸送を独立の再利用可能な一般定理として先に固定する。生成R_i/全kernel section復元比較はこの入力比較を使用する次到達点で、今回終了条件へ含めない"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["SubdivisionRegionIncidence", "SubdivisionClosedCovers", "SubdivisionPrivatePartition", "SubdivisionPublicNames", "C20SubdivisionCoverRegression"]
+  risks: ["選択辺を含む領域を除外", "3cell全文脈を省略", "freshを共有/fixedへ追加", "private分類を新規fieldから受取る", "public原名を候補だけへ縮小", "Cの全生成R_i/全復元まで完了と表示"]
+  unchecked: ["C20の構成・検証はこれから実装", "同じ新旧local D/F/R_i/N_i/生成section/全label・strict glue復元比較は後続", "残W1–W3/W5・累積whole completionは後続"]
+```
+
+### Cycle 20 result — 全閉被覆と原private/public名の分割比較
+
+任意の元complete edge name集合を、retained edgeは自身、両factorはchosenへ読む `edgeOrigin` の逆像で置換した。各typed pathの全出現と、3-cellの両routeの全prefix/suffixに対して、この置換集合との等号を証明した。選択辺を含む閉領域も独立に生成し、元vertices/faces/triplesと、選択辺が属する場合だけfresh vertex/両factorを保持する。
+
+領域包含、交差、合併、indexed assembly、全領域を同じcell集合で比較し、任意0–3 indexed coverを新presentationの全coverへ構成した。選択辺がprivateである元条件から所属leafの一意性を導き、異なるleafの全overlapは元retained regionそのものとなる。新cover/overlap保存certificateを入力として受け取っていない。
+
+生成されたnew regionsに既存 `sharedEdges/privateAlwaysEdges` を適用した独立集合は、元集合の `edgeOrigin` 逆像と一致する。両factorは元chosenのprivate条件と同値、retained edgeは同じ原名の条件と同値である。各leafの全nonfixed・nonprivate補集合をpublic名として定め、その独立new補集合と旧補集合の両逆な全名同値を構成した。全public原名に付随する実射影の全核の族も相互逆に対応し、任意full値の前後の読み取りAPIを持つ。候補集合だけや列像へ縮小していない。さらに各leafの全nonprivate辺を `CompletePublic.publicEdges` として独立に生成し、全fixed・shared・candidate原名を含む族の全単射と各名の全actual kernel族の両逆を構成した。固定辺の実補正を零とする新旧の独立 `fixedZero` 条件を同値で比較し、その条件を満たす全physical public族を `physicalFamilyEquiv` で相互逆に対応させる。元の相対局所補正から `relativePublic` が同じ全原名・全核値を読み、固定零条件を放電する。既存の自由public座標は全public族のnonfixed部分に正確に一致し、fixed原名を自由変数として追加しない。
+
+同じ指定W4の原geometry/whole affine towerと実因子を使用し、全領域と固定vertex regionの二member coverへ適用した。元faceのtyped語b,a,aをb,e1,e2,e1,e2の同じ順で置換し、両factorがprivate、candidate bがpublic、その全実核値・任意Sの禁止maskが同じ値で保存されることを確認した。freshは固定overlapに含まれない。追加の入力では同じ原geometry・full affine塔・actual因子のままbを固定し候補集合を空にした。全public b原名と零補正を保持し、零族は新旧のfixed条件を満たす一方、whole kernelのtranslation by one族は新旧とも拒否される。追加入力の法則を満たす修復の存在は主張していない。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 20
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 5ab51676dd7299667d83aaf0928703b0f8bb24bd
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "選定四義務を元全geometry/既存private定義/同じ実塔から構成。全public名だけでなく各名の全actual kernel familyも両逆で保持"
+  exit_criteria_status:
+    - "任意領域と全typed incidence: edgeWord_edges/expanded_path_edges/expanded_pasting_context/expandedRegion。全face/全triple closureを入力から生成"
+    - "全0–3 coverと包含/交差/assembly: expanded_indexed_cover/expanded_inclusion/expanded_inter/expanded_indexed_union。private_chosen_uniqueからexpanded_overlap_retainedを適用"
+    - "独立private/shared/publicと全名/全核値/mask: expanded_private_edges/expanded_shared_edges/expanded_public_edges/publicNameEquiv/PublicKernels.familyEquiv/public_forbidden_mask、CompletePublic.fixed_public/candidate_public/shared_public/nonfixed_public/publicNameEquiv/PublicKernels.fixedZero_iff/physicalFamilyEquiv/relativePublic、C20FixedPublicRegressionの零/非零両方向"
+    - "same actual W4: C20SubdivisionCoverRegressionのregions_cover/split_regions_cover/first_private/second_private/full_face_word/candidate_name_value/candidate_coefficient_value/candidate_mask/actual_factor_origin。正式PR gateはPR作成後に判定"
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: ["SubdivisionRegionIncidence", "SubdivisionClosedCovers", "SubdivisionPrivatePartition", "SubdivisionPublicNames", "C20SubdivisionCoverRegression", "SubdivisionFixedPublicValues", "C20FixedPublicRegression"]
+  evidence: ["元complete名の逆像から新閉領域とcoverを独立構成", "既存private/shared定義からの全membership比較", "全public実核族の両逆・任意値・全S原candidate mask", "same W4 full authored wordと実whole affine factors"]
+  claim_mapping:
+    theorem_names: ["expanded_path_edges", "expanded_pasting_context", "expandedRegion", "expanded_indexed_cover", "expanded_overlap_retained", "expanded_private_edges", "private_chosen_unique", "publicNameEquiv", "PublicKernels.familyEquiv", "CompletePublic.publicNameEquiv", "CompletePublic.PublicKernels.physicalFamilyEquiv", "CompletePublic.PublicKernels.relativePublic", "C20FixedPublicRegression.nonzero_not_physical", "C20FixedPublicRegression.split_nonzero_not_physical", "public_forbidden_mask", "C20SubdivisionCoverRegression.full_face_word", "C20SubdivisionCoverRegression.candidate_coefficient_value"]
+    source_labels: ["GOAL E有限体C保存の同じ閉被覆/原private public入力比較", "GOAL Cの元private/shared/candidate定義", "GOAL F/W4同じ実操作と指定幾何"]
+    conjuncts: ["選定四終了条件と上記原値/全集合/両逆APIを対応", "生成済みR_i・N_i・section・作用/strict glue復元の比較は後続。全C保存完了へ昇格しない"]
+    undischarged_assumptions: []
+    acceptance_point: "四終了条件の構成とsame W4適用・検証を揃えたproposal。受理は固定headの標準PRレビューとrootによる検査基準の適用で判定"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["全新閉包/cover: 元全incidence・original coverから生成", "選択leaf唯一性: 原privateAlwaysEdgesの非共有条件から導出", "public名の両逆: 選択辺が全leafで非publicなことから生成", "全public実核族: retained targetの同じ実投影核から構成。全fixed名を含むphysical族と固定零条件の両方向/actual相対局所補正の読み取りも構成", "W4条件: accepted C17/C18の元実geometry/factorsへ適用し、private/cover/public/maskを今回評価"]
+    remaining: ["同じ新旧local D/F/R_i/N_i/生成section/全label・strict glue復元比較", "残W1–W3/W5", "累積final packetと別fresh全target最終査読"]
+  certificate_provenance:
+    discharged: ["expandedRegionの全fieldsは元ClosedRegionのclosureと全path/route置換から生成", "expanded_indexed_coverは元IndexedCoverから生成。新被覆fieldを供給しない", "新private/shared/public集合は既存の各定義で独立に作成してから比較", "public kernel comparisonは同じretained actual target/kernel。像への全射や選択basisで代替しない"]
+    unresolved: []
+  proof_use:
+    used: ["元edge closure→new factor endpoints/fresh membership", "元face/full3cell closure→full substituted incidence", "元coverage全0–3→fresh/chosen/retained全coverage", "原private非共有→唯一leaf/retained overlaps/全public名からchosen排除", "chosen非candidate→独立new private/publicと全S mask", "actualT/Fの元target→whole public coefficient types/全値", "same W4原faceとactual factors→全typed置換/原値とmask"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["116明示＋生成3=119個別標準公理・欠落0・errors0/warnings0", "選定義務を実装する7 current production単一focusedと同じ7 exact-body named milestone focused", "audit sha256=fec0e21b7abf23d5bb9285ceb61d745738c2c308725df6197c1588326f0aaefc / log sha256=09a61b9bde82849b334eca3e7ebde6512370d10fb49f4f8249d7c63485b054c8", "current hash/registry/placeholder/hidden-BiDi/privacy/import方向/保護領域/diff scan整合。Research全体/aggregate/全file/module elaborationなし"]
+  blocking_findings: []
+  next_obligation: "今回生成した同じ閉被覆/private public全名・全核値から、独立新旧local D/F/rhs/一回生成R_i/N_i/section/元全labelsを比較し、全S strict glueとsame actual復元へ接続する。その後残W1–W3/W5と累積completionを進める"
+```
+
+受理済predecessorはC17 PR #5157/root #5943284656、C18 PR #5158/root #5944039699、C10–12 PR #5146–5148の受理記録とcurrent必要statement/definition/適用引数/proof-useで追跡を完了する。今回の全public actual kernelはC17のoriginalTower/Factorizationを直接使用し、内部DAGの再帰再認証は行わない。Lean 4.28/mathlib `8f9d9cff6bd728b17a24e163c9402775d9e6a365`、固定GOAL blobと適用基準 `dbed043cb514e8c964589d2e12e982750c87ae83` は不変。
