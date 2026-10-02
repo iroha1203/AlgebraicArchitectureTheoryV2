@@ -42,6 +42,12 @@ abbrev ObstructionSpace := C2P ⧸ LinearMap.range D0
 def column (e : candidates) : M.A e.1.2.1 →ₗ[k] ObstructionSpace (k := k) M P candidates hlinear :=
   CokernelNamed.column D0 Ecol e
 
+omit [Fintype (EdgeName (K := K))] in
+/-- Each full named quotient column is the same original differential column followed by q. -/
+theorem column_apply (e : candidates) (x : M.A e.1.2.1) :
+    column (k := k) M P candidates houtside hlinear e x =
+      LinearInterface.q D0 (OriginalColumns.column (k := k) M P candidates houtside hlinear e x) := rfl
+
 /-- Restore an allowed set to the original candidate names without deleting any name. -/
 def allowed (S : Set candidates) : Set (EdgeName (K := K)) :=
   {e | ∃ he : e ∈ candidates, (⟨e,he⟩ : candidates) ∈ S}
