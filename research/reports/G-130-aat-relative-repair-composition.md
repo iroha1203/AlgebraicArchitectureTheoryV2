@@ -3530,3 +3530,349 @@ audits:
 ```
 
 受理済C20 PR #5160/root #5945772253、C18 PR #5158/root #5944039699、C17 PR #5157/root #5943284656、C11 PR #5147/root #5925577749は、current必要statement/defs/引数/proof-useと受理refまで追跡する。今回局所構成の全premiseと全補足自由度は今回sourceで監査し、受理済内部DAGの再帰再認証は行わない。Lean4.28/mathlib `8f9d9cff6bd728b17a24e163c9402775d9e6a365`、固定GOAL blob/基準 `dbed043cb514e8c964589d2e12e982750c87ae83` は不変。
+
+### Cycle 22 selection — 独立有限局所生成器の全公開関係・全内部自由度・全復元
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 22
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 7e69ad26663a68fef08a2b8f206c1d32c02f7dad
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "Issue5132/C21受理PR5161/root5946287875、C20全public名/固定実値、C19実full kernel線形構造、C10/C11有限生成・全label"
+  proof_dag_predecessors: ["C21独立全local C0–C3/微分/全rhs解/全label作用", "C20独立private/public名とphysical固定値", "C19同じactual fresh module/rho線形性", "C10/C11一回生成section/全R_i/N_i/復元と全labels", "C17/C18/C21 same W4"]
+  milestone: "GOAL EのC保存: 各側の元全実微分から独立に一回生成する局所公開関係R_i・全私的核N_i・生成sectionの全復元を比較。全原公開名・基底成分・固定実値と全labelsを保持し、chosen所属時の全補足を落とさない"
+  proof_obligations:
+    - "原全実核の基底から新全基底を生成し、fresh基底はactual rho1の逆で原source基底へ接続。local C0/C1比較を同じactual scalar構造で線形化し、所属時full/非所属時zero補足を保持"
+    - "任意indexed閉領域族とprivate chosenから独立new/oldの全public座標indexを相互逆に比較。元全辺名と各全核基底index、physical固定零値を保持。candidate名だけ/列像だけへ縮小しない"
+    - "各側の独立FiniteNative D/Fから全private空間、実d1・range D・N_i=ker Dを同じlocal collapseで比較。新private自由度は旧全private自由度×補足であり、全核を零sectionに置換しない"
+    - "各側で独立に生成section/elimination/公開関係を得て、任意rhsと任意全public値についてR_i membershipの双方を同じ元全局所解で比較。新R_i/sectionを旧出力からcopy定義せず、sectionが異なっていても全復元を比較"
+    - "独立generated局所objectsの全両逆を旧generated全objects×補足と構成し、全public値、元retained補正、両factor全値、全生成private自由度を復元。全相対vertex labelsの作用を同じlocal0比較で全成分について証明し、native action groupoidの全label射へ接続"
+    - "同じwhole affine W4で独立new/old生成器を適用。actual rhs、全public b、任意旧/補足値、両factor(r,h+r)、全fresh labelsを評価し、chosen非所属の固定vertex領域ではzero補足を確認"
+  exit_criteria:
+    - "元全基底・whole actual輸送から新基底/線形local比較/全public座標両逆を構成し、全名・全基底・physical固定値を保持"
+    - "独立private Dのwhole rangeと全N_iを比較。両所属枝と全補足を保持し、独立一回生成出力のR_i membership双方が任意rhs/全public値で一致"
+    - "独立generated objectsの全両逆、同じ全public値・実補正復元・全private自由度、および全元labels作用/native射比較を構成。sectionの同一性を仮定しない"
+    - "same W4 full actual inputsから独立生成器へ接続し、任意全値と非所属zero補足の双方を評価"
+  selection_reason: "C21全局所方程式の比較から、Eが要求するCの一回生成R_i/N_i/section保存へ直接進む。比較対象を各側で独立生成し、全S strict glue/actual復元との比較はこの一般局所到達点を使用する次到達点に残す"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["SubdivisionLocalLinearCoordinates", "SubdivisionFiniteBases", "FiniteNativePublicCoordinates", "FiniteNativeArbitraryEquation", "SubdivisionGeneratedPrivate", "SubdivisionGeneratedRelations", "SubdivisionGeneratedInterfaces", "C22GeneratedSubdivisionRegression"]
+  risks: ["生成出力copyから同一性を作る", "fresh基底/実核を座標に置換", "全public基底成分/固定値を失う", "section同一性を追加前提化", "全Nをzero-firstへ縮小", "全labelsを効果商へ置換", "局所保存だけで全S strict glue/completion完了表示"]
+  unchecked: ["C22実装とfocused/全個別公理監査をこれから実行", "全S strict generated glue/actual復元・外部/包含比較は後続", "残W1–W3/W5と累積completion gateは後続"]
+```
+
+### Cycle 22 result — 独立局所生成出力の全関係・全核・全復元・全label射
+
+旧全実核の各基底をretained vertexでそのまま保ち、fresh vertexの全基底はactual rho1の逆と原source基底から構成する。独立new/oldのlocal C0/C1比較を同じactual scalar構造で線形化し、選択辺に属するleafにはfull実fresh核、属さないleafには零補足を保持する。有限辺列挙は原complete辺列挙から選択辺以外と両factorの和として生成し、全new complete辺を覆うことを証明する。
+
+新旧のprivate/public集合を既存定義で別々に作る。各nonfixed public名と全target-kernel基底成分の両逆を構成し、全public座標の読み取りがactual local collapseと可換であることを証明する。固定public名を含む全physical familyも別に比較し、指定された固定零値を保持する。固定名を除いた有限行列座標と、固定名を含む実値の族を区別して対応させる。
+
+各側のFiniteNative D/Fは、その側の独立actual differential、full bases、private/public分解から生成する。全private空間の両逆はactual collapseから構成し、new D = old D ∘ private collapseを全private値で証明する。whole range Dは同じ原face座標で一致し、new ker Dはold全ker D×全補足群と線形同値になる。一般restriction/kernel APIが受け取る方向仮定は、今回の適用ではpublic reading identityと実d1比較から証明し、結論fieldとして供給しない。
+
+有限体上の各側のsection/elimination/R_iは、独立入力へ同じ有限生成器を適用して得る。任意rhsと全public値について、R_i membershipが同じactual local equationの全解を介して双方向に一致する。逆方向の存在証明で零補足を使う場合も、generated objectの比較はold全object×全補足の両逆であり、private kernelやfresh自由度を零へ縮小しない。new sectionとold sectionが同じであるという仮定はない。
+
+generated objectsの全復元は、new generated restoration → actual local cochain comparison → old independent extractionで構成する。任意old generated objectと任意補足から全new補正が復元されること、全public値が保持されることを証明する。全相対vertex labelsと全fresh displacementの比較で作用を保存し、native action groupoidの全label射と逆射へ接続する。
+
+同じwhole affine W4へ独立生成器を適用する。actual signed rhsの座標は1、独立new/old R_iは全public b座標が1である条件と同値で、全零public vectorを拒否する。任意h,rから新生成対象を取り、完全なactual local solution、両factor(r,h+r)、各retained原補正、old生成対象と全補足rを復元する。任意fresh labelと全new生成対象についてnative作用を評価する。選択辺が属さない固定vertex領域の全生成対象では補足が零で、同じ実freshOneは拒否される。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 22
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 7e69ad26663a68fef08a2b8f206c1d32c02f7dad
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "各側の独立finite D/F、full基底、private/public分解、一回生成section/R_i/ker Dから、任意rhs/全public membershipと全generated objects/全native labelsの対応をactual local比較で構成"
+  exit_criteria_status:
+    - "全基底/linear local/public両逆とphysical固定値: LocalLinear.local0LinearEquiv/local1LinearEquiv、FiniteBases.expandedBases、GeneratedPublic.publicIndexEquiv/publicCoordinateEquiv、GeneratedPublicReadings.physical_reading_collapse"
+    - "独立全private D/range/N_iと全R_i: GeneratedPrivate.privateEquiv、PrivateDifferential.private_differential/private_range/privateKernelEquiv、GeneratedRelations.newRelation/relation_iff。任意rhs/全public値とchosen所属/非所属の全補足"
+    - "全generated objects/actual復元と全labels/native射: GeneratedInterfaces.objectsEquiv/objectsEquiv_inverse_correction/objectsEquiv_public/objects_equivariant/groupoidEquivalence/groupoid_functor_label/groupoid_inverse_label"
+    - "same whole W4: actual_rhs_coordinate、old/new_relation_iff、old/new_zero_public_rejected、generated_coordinates/first_coordinate/second_coordinate/retained/label_action、excluded_generated_supplement/nonzero_rejected。current production focused exit0で全50宣言を確認"
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: ["SubdivisionLocalLinearCoordinates", "SubdivisionFiniteBases", "FiniteNativeArbitraryEquation", "FiniteNativePublicCoordinates", "SubdivisionFiniteIncidence", "SubdivisionGeneratedPublicReadings", "LinearPrivateComparison", "SubdivisionGeneratedPrivate", "LinearPrivateKernel", "SubdivisionPrivateDifferential", "SubdivisionFiniteEnumerations", "SubdivisionGeneratedRelations", "SupplementalAction", "SubdivisionGeneratedInterfaces", "C22GeneratedSubdivisionRegression"]
+  evidence: ["同じ元actual全核・実rho1/rho2からfull基底とlocal線形両逆", "各側の独立全private/public分解とactual D/Fから一回有限生成", "任意rhs/全public関係の双方と全kernel自由度", "同じwhole W4 actual入力から全生成修復・全復元・native作用と非所属zero補足"]
+  claim_mapping:
+    theorem_names: ["LocalLinear.local0LinearEquiv", "LocalLinear.local1LinearEquiv", "FiniteBases.expandedBases", "FiniteBases.expanded_coordinate_fresh_inverse", "GeneratedPublic.publicIndexEquiv", "GeneratedPublic.publicCoordinateEquiv", "GeneratedPublicReadings.public_reading_collapse", "GeneratedPublicReadings.physical_reading_collapse", "GeneratedPrivate.privateEquiv", "GeneratedPrivate.private_cochain_collapse", "PrivateDifferential.private_differential", "PrivateDifferential.private_range", "PrivateDifferential.privateKernelEquiv", "FiniteEnumerations.edgeEnumeration", "FiniteEnumerations.edgeEnumeration_complete", "FiniteNative.generatedRelativeEquiv", "FiniteNative.generated_relation_iff_relative", "GeneratedRelations.newGeneratedEquiv", "GeneratedRelations.relation_iff", "GeneratedInterfaces.objectsEquiv", "GeneratedInterfaces.objectsEquiv_inverse_correction", "GeneratedInterfaces.objectsEquiv_public", "GeneratedInterfaces.objects_equivariant", "GeneratedInterfaces.groupoidEquivalence", "GeneratedInterfaces.groupoid_functor_label", "GeneratedInterfaces.groupoid_inverse_label", "C22GeneratedSubdivisionRegression.new_relation_iff", "C22GeneratedSubdivisionRegression.generated_coordinates", "C22GeneratedSubdivisionRegression.generated_second_coordinate", "C22GeneratedSubdivisionRegression.generated_label_action", "C22GeneratedSubdivisionRegression.excluded_generated_nonzero_rejected"]
+    source_labels: ["GOAL E内部辺分割の有限体C保存", "GOAL C同じ全private/shared/candidate・一回生成R_i/N_i/section/全復元", "GOAL F/W4同じ原whole affine geometry・実操作・指定factors"]
+    conjuncts: ["選定六義務/四終了条件の一般構成と同じW4への適用", "全S strict generated glue/actual復元・包含・外部比較は後続。局所保存を全C/Eまたは全target完了へ昇格しない"]
+    undischarged_assumptions: []
+    acceptance_point: "固定六義務・四終了条件の一般構成/具体適用とcurrent production・個別公理監査を揃えたproposal。受理は固定head標準PR gateとroot acceptance検査"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["新full基底/Module: actual rho1の全核同型と元full基底から構成", "有限new complete辺列挙/判定: 原complete列挙と元membershipから生成", "全private comparison law: 原全public読み取りidentityから証明", "whole private D comparison: independent実d1とactual local collapseから証明", "独立new/old R_i/section: 各側の実行列と原有限生成器から生成。section等号fieldなし", "全label equivariance: 実local d0比較と各独立native extraction作用から証明", "W4全入力条件: accepted同じwhole affine原操作/geometry/factorsに今回生成器を適用"]
+    remaining: ["全S strict generated glue/actual復元と同じ包含・外部比較", "残W1–W3/W5", "累積final packetと別fresh全target最終査読"]
+  certificate_provenance:
+    discharged: ["FiniteBases.expandedBasesのfresh座標はactual rho1 inverse、retainedは元基底", "new D/F/section/R_i/kernelは独立new full微分と座標分解から生成。old出力copyなし", "general private comparison/kernel direction hypothesesは今回actual public/d1 identityで放電", "W4のold/newExtractionは同じactual全入力へ各側の生成器を具体化。全parameter/全inverse/全labelsを保持"]
+    unresolved: []
+  proof_use:
+    used: ["元全basis/actual rho1→新全basis/補足scalar", "原private非共有/chosen非candidate→全public名/全基底対応/独立new membership", "actual全local C1両逆とpublic law→whole private線形両逆", "actual local_d1とwhole private collapse→独立D/range/kerD", "各側complete列挙/actual D/F→独立section/R_i→任意全rhs/local解の双方", "全local0/d0比較→native作用/全label射の両方向", "同じactual W4 signed defect/全修復→public b=1/零拒否/任意(h,r)全復元", "原固定leaf chosen非所属→全生成対象の零補足/同じ非零fresh拒否"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["15 current production単一非aggregate focused exit0/errors0/warnings0・source/log hash一致。W4同じ全50宣言/native作用も確認", "167明示＋生成1=168個別#print axioms・欠落0/非標準公理0/errors0/warnings0。実本体elaborationは各production focused、個別公理はcurrent compiled moduleから別に確認。audit sha256=a8db1b5882777fb5e023abe1a50b66b4faaecd0af601a16ef120ba1cbfef8fb8 / log sha256=d50aad4f1f2cb62445f4468cfc4faa665a822ec86b2bd6b50389aae88917e709", "registry/current hash/placeholder/Unicode/privacy/import方向/保護領域/diff整合。Research full/aggregate/allfile/allmodule elaborationなし"]
+  blocking_findings: []
+  next_obligation: "今回の独立全local R_i/N_i/section/全label/actual復元比較から、全S strict generated glueと同じactual全修復・包含・外部比較へ接続する。その後残W1–W3/W5と累積completion gateを続行"
+```
+
+受理済C21 PR #5161/root #5946287875、C20 PR #5160/root #5945772253、C19 PR #5159/root #5945142965、C11 PR #5147/root #5925577749は、current必要statement/defs/適用引数/proof-useと各受理source版まで追跡する。今回構成する全new生成器・全private comparison・全label actionとsame W4適用は今回の監査対象であり、受理済内部DAGの再帰再認証は行わない。Lean4.28/mathlib `8f9d9cff6bd728b17a24e163c9402775d9e6a365`、固定GOAL blob/基準 `dbed043cb514e8c964589d2e12e982750c87ae83` は不変。
+
+<details>
+<summary>C22の固定宣言spine（167明示宣言）</summary>
+
+`SubdivisionLocalLinearCoordinates.lean`（10）：
+
+```text
+AAT.AG.RelativeRepairComposition.Family.extend_smul
+AAT.AG.RelativeRepairComposition.Subdivision.LocalLinear.supplementSMul
+AAT.AG.RelativeRepairComposition.Subdivision.LocalLinear.supplementModule
+AAT.AG.RelativeRepairComposition.Subdivision.LocalLinear.supplement_smul_value
+AAT.AG.RelativeRepairComposition.Subdivision.LocalLinear.local1_smul
+AAT.AG.RelativeRepairComposition.Subdivision.LocalLinear.local1LinearEquiv
+AAT.AG.RelativeRepairComposition.Subdivision.LocalLinear.local1LinearEquiv_value
+AAT.AG.RelativeRepairComposition.Subdivision.LocalLinear.local0_smul
+AAT.AG.RelativeRepairComposition.Subdivision.LocalLinear.local0LinearEquiv
+AAT.AG.RelativeRepairComposition.Subdivision.LocalLinear.local0LinearEquiv_value
+```
+
+`SubdivisionFiniteBases.lean`（7）：
+
+```text
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteBases.expandedBases
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteBases.expanded_dimension_old
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteBases.expanded_dimension_fresh
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteBases.expanded_coordinate_old
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteBases.expanded_coordinate_fresh
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteBases.expanded_coordinate_fresh_inverse
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteBases.expanded_fresh_roundtrip
+```
+
+`FiniteNativeArbitraryEquation.lean`（14）：
+
+```text
+AAT.AG.RelativeRepairComposition.FiniteNative.RelativeEquation
+AAT.AG.RelativeRepairComposition.FiniteNative.ArbitraryMatrixEquation
+AAT.AG.RelativeRepairComposition.FiniteNative.relativeEquationCoordinates
+AAT.AG.RelativeRepairComposition.FiniteNative.relativeEquationCoordinates_value
+AAT.AG.RelativeRepairComposition.FiniteNative.relative_equation_coordinates_equivariant
+AAT.AG.RelativeRepairComposition.FiniteNative.GeneratedRelativeObjects
+AAT.AG.RelativeRepairComposition.FiniteNative.generatedRelativeEquiv
+AAT.AG.RelativeRepairComposition.FiniteNative.generatedRelativeEquiv_public
+AAT.AG.RelativeRepairComposition.FiniteNative.generatedRelativeEquiv_inverse_public
+AAT.AG.RelativeRepairComposition.FiniteNative.generated_relative_equivariant
+AAT.AG.RelativeRepairComposition.FiniteNative.generatedRelation
+AAT.AG.RelativeRepairComposition.FiniteNative.generated_relation_iff_relative
+AAT.AG.RelativeRepairComposition.FiniteNative.GeneratedRelativeGroupoid
+AAT.AG.RelativeRepairComposition.FiniteNative.generatedRelativeEquationEquivalence
+```
+
+`FiniteNativePublicCoordinates.lean`（10）：
+
+```text
+AAT.AG.RelativeRepairComposition.FiniteNative.publicIndexEquiv
+AAT.AG.RelativeRepairComposition.FiniteNative.publicIndexEquiv_name
+AAT.AG.RelativeRepairComposition.FiniteNative.publicIndexEquiv_basis
+AAT.AG.RelativeRepairComposition.FiniteNative.publicIndexEquiv_inverse
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPublic.publicIndexEquiv
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPublic.publicIndexEquiv_name
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPublic.publicIndexEquiv_inverse_basis
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPublic.publicCoordinateEquiv
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPublic.publicCoordinateEquiv_value
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPublic.publicCoordinateEquiv_inverse_value
+```
+
+`SubdivisionFiniteIncidence.lean`（6）：
+
+```text
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteIncidence.expandedVerticesDecidable
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteIncidence.expandedEdgesDecidable
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteIncidence.expandedFacesDecidable
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteIncidence.expandedTriplesDecidable
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteIncidence.retainedSetDecidable
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteIncidence.retained_set_test
+```
+
+`SubdivisionGeneratedPublicReadings.lean`（5）：
+
+```text
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPublicReadings.retainedCandidatesDecidable
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPublicReadings.oldPublic
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPublicReadings.newPublic
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPublicReadings.public_reading_collapse
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPublicReadings.physical_reading_collapse
+```
+
+`LinearPrivateComparison.lean`（11）：
+
+```text
+AAT.AG.RelativeRepairComposition.LinearPrivateComparison.forward_public_zero
+AAT.AG.RelativeRepairComposition.LinearPrivateComparison.inverse_public_zero
+AAT.AG.RelativeRepairComposition.LinearPrivateComparison.forward
+AAT.AG.RelativeRepairComposition.LinearPrivateComparison.restore
+AAT.AG.RelativeRepairComposition.LinearPrivateComparison.forward_value
+AAT.AG.RelativeRepairComposition.LinearPrivateComparison.restore_value
+AAT.AG.RelativeRepairComposition.LinearPrivateComparison.forward_insert
+AAT.AG.RelativeRepairComposition.LinearPrivateComparison.restore_insert
+AAT.AG.RelativeRepairComposition.LinearPrivateComparison.equivalence
+AAT.AG.RelativeRepairComposition.LinearPrivateComparison.equivalence_value
+AAT.AG.RelativeRepairComposition.LinearPrivateComparison.equivalence_inverse_value
+```
+
+`SubdivisionGeneratedPrivate.lean`（9）：
+
+```text
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPrivate.newSplit
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPrivate.newSplit_public
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPrivate.fullComparison
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPrivate.fullComparison_value
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPrivate.fullComparison_public
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPrivate.privateEquiv
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPrivate.privateEquiv_value
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPrivate.privateEquiv_inverse_value
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedPrivate.private_cochain_collapse
+```
+
+`LinearPrivateKernel.lean`（4）：
+
+```text
+AAT.AG.RelativeRepairComposition.LinearPrivateKernel.range_eq
+AAT.AG.RelativeRepairComposition.LinearPrivateKernel.equivalence
+AAT.AG.RelativeRepairComposition.LinearPrivateKernel.equivalence_value
+AAT.AG.RelativeRepairComposition.LinearPrivateKernel.equivalence_inverse_value
+```
+
+`SubdivisionPrivateDifferential.lean`（9）：
+
+```text
+AAT.AG.RelativeRepairComposition.FiniteNative.D_value
+AAT.AG.RelativeRepairComposition.Subdivision.PrivateDifferential.newD
+AAT.AG.RelativeRepairComposition.Subdivision.PrivateDifferential.newD_value
+AAT.AG.RelativeRepairComposition.Subdivision.PrivateDifferential.face_coordinates
+AAT.AG.RelativeRepairComposition.Subdivision.PrivateDifferential.private_differential
+AAT.AG.RelativeRepairComposition.Subdivision.PrivateDifferential.private_range
+AAT.AG.RelativeRepairComposition.Subdivision.PrivateDifferential.privateKernelEquiv
+AAT.AG.RelativeRepairComposition.Subdivision.PrivateDifferential.privateKernelEquiv_value
+AAT.AG.RelativeRepairComposition.Subdivision.PrivateDifferential.privateKernelEquiv_inverse_value
+```
+
+`SubdivisionFiniteEnumerations.lean`（8）：
+
+```text
+AAT.AG.RelativeRepairComposition.FiniteElimination.Enumeration.mapEquiv
+AAT.AG.RelativeRepairComposition.FiniteElimination.Enumeration.mapEquiv_values
+AAT.AG.RelativeRepairComposition.FiniteElimination.Enumeration.sum
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteEnumerations.factorEnumeration
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteEnumerations.edgeDecidableEq
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteEnumerations.edgeEnumeration
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteEnumerations.edgeEnumeration_complete
+AAT.AG.RelativeRepairComposition.Subdivision.FiniteEnumerations.edgeFintype
+```
+
+`SubdivisionGeneratedRelations.lean`（8）：
+
+```text
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedRelations.newGeneratedObjects
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedRelations.newRelation
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedRelations.newGeneratedEquiv
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedRelations.newGeneratedEquiv_inverse_apply
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedRelations.newGeneratedEquiv_public
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedRelations.newGeneratedEquiv_inverse_public
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedRelations.new_relation_iff_relative
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedRelations.relation_iff
+```
+
+`SupplementalAction.lean`（2）：
+
+```text
+AAT.AG.RelativeRepairComposition.SupplementalAction.productAddAction
+AAT.AG.RelativeRepairComposition.SupplementalAction.product_action_value
+```
+
+`SubdivisionGeneratedInterfaces.lean`（14）：
+
+```text
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedInterfaces.labelsEquiv
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedInterfaces.labelsEquiv_value
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedInterfaces.newGeneratedAddAction
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedInterfaces.new_generated_equivariant
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedInterfaces.objectsEquiv
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedInterfaces.objectsEquiv_value
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedInterfaces.objectsEquiv_coordinates
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedInterfaces.objectsEquiv_inverse_coordinates
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedInterfaces.objects_equivariant
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedInterfaces.groupoidEquivalence
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedInterfaces.groupoid_functor_label
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedInterfaces.groupoid_inverse_label
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedInterfaces.objectsEquiv_public
+AAT.AG.RelativeRepairComposition.Subdivision.GeneratedInterfaces.objectsEquiv_inverse_correction
+```
+
+`C22GeneratedSubdivisionRegression.lean`（50）：
+
+```text
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.edgeDecidableEq
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.faceDecidableEq
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.allVerticesDecidable
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.allEdgesDecidable
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.allFacesDecidable
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.regionsVerticesDecidable
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.regionsEdgesDecidable
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.regionsFacesDecidable
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.fixedEdgesDecidable
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.fixedFacesDecidable
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.bases
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.enumK
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.enumEdges
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.enumFaces
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.basisIndex
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.basis_value
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.OldPublicIndex
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.publicIndex
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.publicIndex_unique
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.actual_rhs_coordinate
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.old_solution_candidate
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.old_solution_public
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.old_relation_iff
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.NewPublicIndex
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.newPublicIndex
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.new_relation_iff
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.old_zero_public_rejected
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.new_zero_public_rejected
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.oldExtraction
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.newExtraction
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.interfaceComparison
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.interfaceComparison_value
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.oldGenerated
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.newGenerated
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.old_generated_public
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.new_generated_public
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.newGenerated_restore
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.generated_coordinates
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.generated_first_coordinate
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.generated_second_coordinate
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.generated_retained
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.labelsComparison
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.generated_label_coordinates
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.labelsComparison_fresh
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.newInterfaceAction
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.oldInterfaceAction
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.productInterfaceAction
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.generated_label_action
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.excluded_generated_supplement
+AAT.AG.RelativeRepairComposition.C22GeneratedSubdivisionRegression.excluded_generated_nonzero_rejected
+```
+
+</details>
+
+生成された `FiniteCoefficients.differential1.congr_simp` も、今回のproduction module所属から選定して個別公理監査に含めた。上記全明示宣言と合わせて168件である。
