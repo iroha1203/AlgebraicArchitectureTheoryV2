@@ -317,3 +317,14 @@ fn questions_return_law_errors_without_computing() {
     }
     assert!(!repo.dir.join(".archsig/runs").exists(), "実行を残さない");
 }
+
+#[test]
+fn a_convert_factor_is_a_power_of_ten_from_ten() {
+    let repo = Repo::new("factor");
+    let law = |f: &str| format!("reading r = file\n\nmeaning unit on field\n  values major | minor\n  \"u\"\n\nlaw l\n  \"倍率\"\n  about unit\n  agrees along flows\n  convert major -> minor by {f}\n");
+    for (f, ok) in [("* 1", false), ("/ 1", false), ("* 010", false), ("* 10", true), ("/ 1000", true)] {
+        repo.law("a.law", &law(f));
+        let e = errors(&repo.run(&["law", "check"]));
+        assert_eq!(e.is_empty(), ok, "{f}: {e:?}");
+    }
+}
