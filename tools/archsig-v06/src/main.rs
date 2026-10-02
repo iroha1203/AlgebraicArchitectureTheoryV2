@@ -39,6 +39,15 @@ enum Cmd {
         #[command(subcommand)]
         command: PlanCmd,
     },
+    /// 実装した後のコードを観測し直した ArchMap で、変更の後も保たれ、候補どおりかを確かめる。
+    Compare {
+        /// 変更前のリポジトリの根。その `.archsig/` の ArchMap とソースを変更前とする。
+        #[arg(long)]
+        before: PathBuf,
+        /// 比べる候補。あれば、候補の対応で比べ、候補の構造 Atom と照合する。
+        #[arg(long)]
+        plan: Option<String>,
+    },
     /// 一つの結果の詳細を返す。
     Show {
         /// `<実行>/<番号>`
@@ -119,6 +128,22 @@ fn run(cli: Cli) -> Result<Value, String> {
             }
             let not_computed = engine::not_computed(&laws);
             store.save_run(|run| result::summarize(run, "plan split", &findings, &not_computed))
+        }
+        Cmd::Compare { before, plan } => {
+            let laws = store.laws()?;
+            if !laws.errors.is_empty() {
+                return Ok(json!({"law_errors": laws.errors}));
+            }
+            let atoms = match &plan {
+                Some(p) => store.plan(p)?,
+                None => Vec::new(),
+            };
+            let old = Store::open(&before)?;
+            let o = archsig::structure::observed_overlay(&old.map()?, &store.map()?, &atoms);
+            let (b, a) = (Structure::new(old.map()?), Structure::new(o.after.clone()));
+            let findings = engine::implemented(&b, &a, &o, &laws, &old.sources(&laws)?, &store.sources(&laws)?);
+            let not_computed = engine::not_computed(&laws);
+            store.save_run(|run| result::summarize(run, "compare", &findings, &not_computed))
         }
         Cmd::Show { id } => store.show(&id),
         Cmd::Status => archmap::status(&store),

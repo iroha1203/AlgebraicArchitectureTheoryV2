@@ -5,7 +5,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{Value as Json, json};
 
-use crate::atom::parse_location;
+use crate::atom::{Atom, parse_location};
 use crate::expr::BinOp;
 use crate::geometry::Split;
 use crate::law::{LawSet, Rule};
@@ -398,6 +398,92 @@ pub fn plan_check(before: &Structure, after: &Structure, overlay: &Overlay, laws
         out.extend(found);
     }
     out.extend(removed_uses(before, after, overlay, sources));
+    out
+}
+
+/// `compare`(マニュアル第5章 問い3の「実装後に比べる」)。与えた変更前の ArchMap と、観測し直した変更後の ArchMap で、
+/// `plan check` と同じ計算をする。候補の構造 Atom が観測されていないものと、候補にない書き込みを `mismatch` として返す。
+/// `before_sources` と `after_sources` は、Law の `sources` に当たる、変更前と変更後のソースのファイル。
+pub fn implemented(
+    before: &Structure,
+    after: &Structure,
+    overlay: &Overlay,
+    laws: &LawSet,
+    before_sources: &[String],
+    after_sources: &[String],
+) -> Vec<Finding> {
+    let mut out = plan_check(before, after, overlay, laws, before_sources);
+    // 変更後は観測し直したものなので、変更後の側にも読んでいない範囲がある。
+    // 構造を読んでいないソースにある操作は、対応する操作の組に挙がらない(設計 §5.1)。
+    let unread = unread_sources(after, after_sources, "structure");
+    for law in laws.laws.iter().filter(|l| matches!(l.rule, Rule::ChangesCommute) && l.about.is_some() && !unread.is_empty()) {
+        let mut f = Finding::silent("change", Some(&law.name), law.about.as_deref().unwrap_or_default(), Silence::new(Reason::Unread));
+        f.next = unread.clone();
+        f.theory = Some(THEORY_CHANGES.to_string());
+        out.push(f);
+    }
+    // 変更後の要素が同じ意味を持つかは、観測し直した意味 Atom で確かめる(マニュアル第5章 問い3)。
+    let mapping = Mapping::new(overlay);
+    for law in laws.laws.iter().filter(|l| matches!(l.rule, Rule::ChangesCommute | Rule::ChangesKeep)) {
+        let Some(meaning) = law.about.as_deref() else { continue };
+        for (e, _) in before.meanings.iter().filter(|(e, _)| !e.starts_with("local:") && has_meaning(before, e, meaning)) {
+            for t in mapping.to.get(e.as_str()).into_iter().flatten().filter(|t| after.kind(t).is_ok()) {
+                let f = match meaning_known(after, t, meaning) {
+                    Err(s) => Finding::silent("change", Some(&law.name), t, s),
+                    Ok(()) if has_meaning(after, t, meaning) => continue,
+                    Ok(()) => Finding {
+                        question: "change".to_string(),
+                        law: Some(law.name.clone()),
+                        subject: t.to_string(),
+                        outcome: "fails",
+                        kind: Some("missing"),
+                        at: defined_at(after, t).into_iter().collect(),
+                        basis: json!({"meaning": meaning}),
+                        check: json!({"element": e, "target": t, "meaning": meaning, "observed": false}),
+                        ..Finding::default()
+                    },
+                };
+                out.push(Finding { theory: Some(THEORY_CHANGES.to_string()), ..f });
+            }
+        }
+    }
+    let mismatch = |a: &Atom, check: Json| Finding {
+        question: "change".to_string(),
+        subject: a.subject.clone(),
+        outcome: "fails",
+        kind: Some("mismatch"),
+        at: a.at.clone().into_iter().collect(),
+        check,
+        theory: Some(THEORY_CHANGES.to_string()),
+        ..Finding::default()
+    };
+    // 観測されていないと言えるのは、それが観測されるはずのソースの構造を読んでいるときだけである(設計 §5.1)。
+    for (a, source) in &overlay.unobserved {
+        let f = match source {
+            Some(p) if after.observed.contains(&(p.clone(), "structure".to_string())) => mismatch(a, json!({"planned": a, "observed": null})),
+            Some(p) => Finding::silent("change", None, &a.subject, Silence { reason: Reason::Unread, read: Some(p.clone()), element: None, scope: Some("structure".to_string()) }),
+            None => Finding::silent("change", None, &a.subject, Silence { reason: Reason::Unread, read: None, element: Some(a.subject.clone()), scope: None }),
+        };
+        out.push(Finding { theory: Some(THEORY_CHANGES.to_string()), ..f });
+    }
+    for a in &overlay.unplanned {
+        out.push(mismatch(a, json!({"planned": null, "observed": a})));
+    }
+    // 候補の構造 Atom がすべて観測され、候補にない書き込みもない(マニュアル第2章 7.)。
+    if let Some((plan, n)) = &overlay.planned
+        && overlay.unobserved.is_empty()
+        && overlay.unplanned.is_empty()
+    {
+        out.push(Finding {
+            question: "change".to_string(),
+            subject: plan.clone(),
+            outcome: "holds",
+            basis: json!({"plan": plan}),
+            check: json!({"planned": n, "observed": n}),
+            theory: Some(THEORY_CHANGES.to_string()),
+            ..Finding::default()
+        });
+    }
     out
 }
 
