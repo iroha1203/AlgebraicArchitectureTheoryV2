@@ -384,6 +384,17 @@ noncomputable def obstructionClass
     RelativeComplex.H2 T.toTower.localCoefficients P candidates allowed :=
   QuotientAddGroup.mk (obstructionCocycle T P hfixed hsyzygy)
 
+/-- The actual obstruction class is represented by its complete actual relative defect cocycle. -/
+theorem obstructionClass_eq_mk
+    (hfixed : ∀ f ∈ P.faces,
+      T.toTower.upper.pathLift (K.twoLeft f) ≫ FiberAut.hom (T.comparator f) =
+        T.toTower.upper.pathLift (K.twoRight f))
+    (hsyzygy : ∀ s : K.ThreeCell, AuthoredSyzygy T.toTower.toTransportData 1
+      (K.threeLeft s) (K.threeRight s)) :
+    obstructionClass T P candidates allowed hfixed hsyzygy =
+      (QuotientAddGroup.mk (obstructionCocycle T P hfixed hsyzygy) :
+        RelativeComplex.H2 T.toTower.localCoefficients P candidates allowed) := rfl
+
 /-- The actual supported repairs exist exactly when their relative obstruction vanishes. -/
 theorem repair_nonempty_iff_obstruction_zero
     (hfixed : ∀ f ∈ P.faces,
