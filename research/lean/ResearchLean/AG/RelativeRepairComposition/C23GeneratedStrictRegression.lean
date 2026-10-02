@@ -28,7 +28,13 @@ attribute [local instance] C22GeneratedSubdivisionRegression.bases._proof_1
 attribute [local instance] C22GeneratedSubdivisionRegression.oldExtraction._proof_1
 
 /-- The complete local correction bridge supplies the equality at its own independently generated types. -/
-noncomputable def generated_owner_equality (S : Set (EdgeName (K := geometry))) (hs : candidate ∈ S) (h r : ZMod 3) :=
+theorem generated_owner_equality (S : Set (EdgeName (K := geometry))) (hs : candidate ∈ S) (h r : ZMod 3) :
+    (GeneratedCoverRestoration.newObjectEquiv originalTower chosen factors bases regions fixedRegion {candidate}
+      false chosen_private C19SubdivisionRangeRegression.original_linear enumK enumEdges enumFaces
+      C19SubdivisionRangeRegression.fixed_faces enumRegions regions_cover S (newActual S hs h r)).1 false =
+      GeneratedRelations.newGeneratedEquiv originalTower chosen factors bases regions fixedRegion {candidate}
+        false chosen_private false C19SubdivisionRangeRegression.original_linear enumK enumEdges enumFaces
+        (value := actualRHS) (newLocalSolution h r) :=
   eq_of_heq (GeneratedLocalCorrectionBridge.component_heq_of_rhs_eq originalTower chosen factors bases regions fixedRegion {candidate}
     false chosen_private C19SubdivisionRangeRegression.original_linear enumK enumEdges enumFaces
     C19SubdivisionRangeRegression.fixed_faces enumRegions regions_cover S (newActual S hs h r) false

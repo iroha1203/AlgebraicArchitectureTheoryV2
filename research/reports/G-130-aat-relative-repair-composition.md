@@ -4020,7 +4020,7 @@ native回帰の全ラベル対応は、fresh displacement tによる(h,r)↦(h,r
 | `SubdivisionGeneratedActualComparison.lean` | `42944c801f0c019e5908fa7563f9ca5610ab50dc55bbeea41011e4d28cd96e0c` | `5a94787c04240bd4c873b8c4c8642745ae4c28bdd2daefe52bf53dae56a2fee3` | 10 | 10 |
 | `SubdivisionGeneratedActualNative.lean` | `155623000064651c29562f7ba45237fad76a9961eaf21f1af52a6f50aa154dee` | `e18e59745c7ff6ff870a7e76f5ae520c571370b8b97a6da6eb5040cf9b252f6b` | 7 | 7 |
 | `SubdivisionGeneratedActualRanges.lean` | `3bf0b0322466c5df0b0bc3a48dfefd9add355292ae50fdd8c1253207f33f60e9` | `25a60c506c5aab8d59527965c1ac0af370810c607f1a763f012e358e4eb60dae` | 7 | 7 |
-| `SubdivisionGeneratedCoverAction.lean` | `0a3ba2bc8938cb0260a5d6e55abdc260a69e41e30d6625dd0678d4abc75afa4d` | `f238baf8e30b70cbfeca0927b9e95837480dcd9e26021104ff8b1584b3705943` | 12 | 12 |
+| `SubdivisionGeneratedCoverAction.lean` | `a4f9bdb69c07b736caca0adf0250539b022480bfce9d21a2e7012c369b0651c8` | `f238baf8e30b70cbfeca0927b9e95837480dcd9e26021104ff8b1584b3705943` | 12 | 12 |
 | `SubdivisionGeneratedCoverLabels.lean` | `409a32e17b1b164ac5c995a1c9b48bcb491b8a7862b475a79aeb43baafb40706` | `f1e0580eddf22312e2b778ab2e7790a14f6ad2bfbb7965c3ff2a9547cbc8b30d` | 7 | 8 |
 | `SubdivisionGeneratedCoverRanges.lean` | `c80e6f1b492801f3d2e84ff5bd4470073d60198a57f3d3d889e867843c1014e4` | `aa930a83bf171582d1d3fdf53444b70bfa140c84136e5b70e121fa4c3766426b` | 5 | 5 |
 | `SubdivisionGeneratedCoverRestoration.lean` | `4382d0d55cc4837203a32ef9401bf4829a611c3a1fd87d6af12a46e933dc03bb` | `79546befa0414972c2daf244a50772db69a403531ec93c513923fd6553cf9e83` | 7 | 7 |
@@ -4045,7 +4045,7 @@ native回帰の全ラベル対応は、fresh displacement tによる(h,r)↦(h,r
 | `C23GeneratedStrictParameters.lean` | `4ae2ac3b92c7314ab4494e007b229ccbdc68e77ff2c269988e99a0193e4ba620` | `b6b24d59828b19422e19defd51ce737e80d44340f59cf50c933418589023765b` | 20 | 20 |
 | `C23ActualLocalCorrection.lean` | `b21419644c632910c10e58f8225aafd2d2791e2116a114f589f4961345234ab0` | `317fbfd203b89bcbfad0a581b30a9a3b77b0ddcd92c9c0f232a55d6341e339fc` | 1 | 1 |
 | `SubdivisionGeneratedLocalCorrectionBridge.lean` | `b22779fb23b1fe631fe2ca5338b4f03763afcc758306fb3d429b0947df515eb3` | `dbcd925205760b0d9951c7033caa3e927afbb452d54234d3336c42a059071a7a` | 2 | 2 |
-| `C23GeneratedStrictRegression.lean` | `bd4a2e2d964bc56858f1457fce8cffe6886838291de331157e1b5e42900ffe7d` | `248132ded3fdba4451866a3aaf22a46378bc9acfc86dddb374989a75ec141d4b` | 6 | 6 |
+| `C23GeneratedStrictRegression.lean` | `726c1a74782ecd1fc530a6c12df3d813ee638aa34837b64686c18ff36b0d49d9` | `248132ded3fdba4451866a3aaf22a46378bc9acfc86dddb374989a75ec141d4b` | 6 | 6 |
 | `C23GeneratedStrictNativeRegression.lean` | `4ce59a372f33b1c33affe2f3966adbc2ff7a5c3718a658e421b4d627f165128e` | `a2954b5b021874efebd44ee93196e08921a04866969d933f07ddfe55c56f0365` | 14 | 14 |
 
 <details>

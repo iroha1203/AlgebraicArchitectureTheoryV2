@@ -50,6 +50,8 @@ local notation "Pn" => expandedRegion K chosen P
 local notation "Cn" => oldEdgeSet K chosen candidates
 local notation "en" => FiniteEnumerations.edgeEnumeration K chosen ee
 local notation "Aw" => Additive (Kernel p q factor.middle)
+/-- API support for GOAL E: the whole fresh kernel uses the additive commutative
+coefficient instance of the same expanded actual tower. -/
 noncomputable def freshComm : AddCommGroup (Aw) :=
   inferInstanceAs (AddCommGroup ((originalTower T chosen factor).toTower.localCoefficients.A (.inr ())))
 attribute [local instance] freshComm
