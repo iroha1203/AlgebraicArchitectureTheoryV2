@@ -2808,7 +2808,6 @@ fn a_passed_value_that_depends_on_a_condition_other_than_the_call_is_unresolved(
 #[test]
 fn a_write_after_a_return_on_the_same_line_is_not_done() {
     // `if o.n == 1: return 1; o.t = 1` を、同じ行の returns と writes として観測する。戻り値の後に並ぶ書き込みは、戻った分岐では行わない。
-    // 戻り値の式が呼ばない手順なので、同じ行でも戻り値の後の手順である。
     let body = r#"{"kind": "returns", "subject": "m.f", "value": "1", "when": "$o.n == 1", "at": "m.py:10@blob:aaaaaaa"}
 {"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "1", "when": "$o.n == 1", "at": "m.py:10@blob:aaaaaaa"}
 "#;
