@@ -149,6 +149,8 @@ selection:
 `numerical_optimum_attained`, `no_decision_procedure`, `no_numerical_procedure`,
 `all_impossible_optima_zero`。他の宣言は上表の同じ構成・基本API・例であり、
 cycle scaffoldはない。最適値の主証明は手続き内部を展開せず基本APIを用いる。
+`valid_decision_decide_iff` はBoolean値と独立な可解性を結ぶ基本APIであり、
+`decision_fixed_correct` は同補題を使って判定validator内部の展開を避ける。
 
 | material premise | 分類と放電 | 出所・使用先 |
 | --- | --- | --- |

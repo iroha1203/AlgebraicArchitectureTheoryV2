@@ -98,6 +98,15 @@ variable (D : H →ₗ[k] W) (B : V →ₗ[k] W) (b₀ : W) (L : V →ₗ[k] I) 
 def ValidDecision (v : V) (a : Bool) : Prop :=
   a = true ↔ Solvable D (affineRhs B b₀) v
 
+omit [DecidableEq J] in
+/-- The basic Boolean API identifies a decided proposition with the independent
+correction equation, without unfolding the validator in downstream proofs. -/
+theorem valid_decision_decide_iff (v : V) (p : Prop) [Decidable p] :
+    ValidDecision D B b₀ v (decide p) ↔
+      (p ↔ Solvable D (affineRhs B b₀) v) := by
+  change (decide p = true ↔ Solvable D (affineRhs B b₀) v) ↔ _
+  simp only [decide_eq_true_eq]
+
 /-- A success-run's distinct primitive indices must satisfy the decision kernel bound. -/
 theorem decision_run_sufficient (next : Procedure J k Bool)
     (hn : Correct (fun v j => lam j v) (informationFiber L s) (ValidDecision D B b₀) next)
@@ -165,8 +174,7 @@ theorem decision_fixed_correct (points : Finset J)
   intro z hz he
   have ho : observation lam points z = observation lam points v :=
     (observation_eq_iff lam points z v).mpr (fun j hj => he j (Finset.mem_toList.mpr hj))
-  change decide (p (observation lam points v)) = true ↔ _
-  simp only [decide_eq_true_eq]
+  rw [valid_decision_decide_iff]
   rw [← ho]
   exact hp z hz
 
