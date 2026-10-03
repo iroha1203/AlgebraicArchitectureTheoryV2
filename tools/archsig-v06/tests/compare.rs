@@ -504,3 +504,45 @@ fn a_moved_field_defined_in_two_places_after_reobservation_is_unresolved() {
         assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
     }
 }
+
+#[test]
+fn removes_after_reobservation_traces_paths_in_the_structure_after_the_change() {
+    // 実装後に観測し直した構造で、m.O.a の型が `?m.B` なら、m.g の $o.a.x が何を名指すかは決まらない。読んでいない c.py の m.C なら、読む所は c.py。
+    let law = LAW.replace("\"shop/**\"", "\"*.py\"");
+    let base = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A.x", "value": "field", "type": "m.A", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.B", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.B.x", "value": "field", "type": "int", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "$o.a.x.y", "at": "m.py:11@blob:aaaaaaa"}
+"#;
+    let run = |name: &str, field: &str, removes: &str| {
+        let before = Repo::new(&format!("{name}-before"));
+        before.write(".archsig/law/m.law", &law);
+        before.write("m.py", "# source\n");
+        before.map("m.py", &format!("{base}{{\"kind\": \"defines\", \"subject\": \"m.O.a\", \"value\": \"field\", \"type\": \"m.A\", \"at\": \"m.py:2@blob:aaaaaaa\"}}\n"));
+        let after = Repo::new(name);
+        after.write(".archsig/law/m.law", &law);
+        after.write("m.py", "# source\n");
+        after.map("m.py", &format!("{base}{field}"));
+        after.write(".archsig/plans/p/plan.jsonl", &format!("{{\"kind\": \"removes\", \"subject\": \"{removes}\", \"at\": \"plan:p\"}}\n"));
+        let s = compare(&after, &before, Some("p"));
+        let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.g" && r["law"].is_null()).cloned().unwrap_or_default();
+        (r, s)
+    };
+    let (r, s) = run("reobserved-q-type", "{\"kind\": \"defines\", \"subject\": \"m.O.a\", \"value\": \"field\", \"type\": \"?m.B\", \"at\": \"m.py:2@blob:aaaaaaa\"}\n", "m.B.x");
+    assert_eq!(r["outcome"], "silent", "{s}");
+    // 読む所は、`?m.B` を書いたフィールドの定義のソースである。
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+    let (r, s) = run(
+        "reobserved-unread-type",
+        "{\"kind\": \"defines\", \"subject\": \"m.O.a\", \"value\": \"field\", \"type\": \"m.C\", \"at\": \"m.py:2@blob:aaaaaaa\"}\n{\"kind\": \"resolves\", \"subject\": \"m.C\", \"object\": \"c.py\", \"at\": \"m.py:7@blob:aaaaaaa\"}\n",
+        "m.A.x",
+    );
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}

@@ -537,9 +537,9 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
     // 候補が置き換えた Atom(書き直した呼び出しの `passes` など)は見ない。
     // 書き直していない Atom は変更後にも残るので、道は変更後の構造(候補が書き直した型)でたどる。
     let kept: Vec<&Atom> = before.iter().filter(|a| !dropped(a)).collect();
-    // 候補が定義し直した型で、変更前が名指していて定義を読んでいなかったものは、その先をたどらない(§5.4 と同じ)。
+    // 候補が定義し直した型で、変更前が名指していて定義を読んでいなかったもの(外部を指していた型を除く)は、その先をたどらない(§5.4 と同じ)。
     let old_names = old.mentioned();
-    trace(&new, &kept, &|n: &str| replaced(n) || gone(n), &gone, &|t: &str| new.redefines_unread(&old, &old_names, t), &mut out);
+    trace(&new, &kept, &|n: &str| replaced(n) || gone(n), &gone, &|t: &str| new.redefines_unread_source(&old, &old_names, t), &mut out);
     out
 }
 
@@ -734,6 +734,12 @@ impl Structure {
             && prior_names.contains(ty)
     }
 
+    /// `redefines_unread` のうち、変更前に `resolves` が外部を指していなかった型。外部を指していた型は、外部の型として扱う(マニュアル第5章 問い3)。
+    /// 消える要素を使うかでは、この型の先をたどらず、変更前の構造で問い合わせる。
+    pub fn redefines_unread_source(&self, prior: &Structure, prior_names: &BTreeSet<String>, ty: &str) -> bool {
+        self.redefines_unread(prior, prior_names, ty) && !matches!(prior.resolves.get(ty), Some(Resolution::External(_)))
+    }
+
     /// 構造 Atom の `value` と `when` の式の中で名指す要素(`$p.f.g` でたどるフィールドと、呼び出す操作)。
     /// 定義を読んでいないフィールドも、たどれる所まで `<型>.<名前>` として含む。
     pub fn expression_names(&self) -> BTreeSet<String> {
@@ -763,8 +769,14 @@ impl Structure {
                         gaps.push(Gap::Name(owner));
                         break;
                     };
-                    // `?` の型の先と、`stop` の型の先は、何を名指すかが決まらない。
-                    if t.starts_with('?') || stop(&t) {
+                    // `?` の型の先は、何を名指すかが決まらない。
+                    if t.starts_with('?') {
+                        gaps.push(Gap::Name(t));
+                        break;
+                    }
+                    // `stop` の型は、直下のフィールドの名前(`<型>.<名前>`)は決まるが、その先は決まらない。
+                    if stop(&t) {
+                        out.insert(format!("{t}.{f}"));
                         gaps.push(Gap::Name(t));
                         break;
                     }
@@ -808,6 +820,11 @@ impl Structure {
     pub fn untraced(&self, gap: &Gap, a: &Atom) -> Silence {
         match gap {
             Gap::Limit => Silence::new(Reason::Limit),
+            // `?` の型は、その型を書いた定義(フィールドの型か引数の型)の場所を返す(マニュアル第5章 問い3)。
+            Gap::Name(n) if n.starts_with('?') => {
+                let by = self.atoms.iter().find(|d| d.kind == "defines" && (d.ty.as_deref() == Some(n) || d.params.iter().flatten().any(|(_, t)| t == n)));
+                locate(question(), by.unwrap_or(a))
+            }
             Gap::Name(n) => match self.kind(n) {
                 Err(s) if s.scope.as_deref() != Some("?") || s.read.is_some() || s.element.is_some() => s,
                 _ => locate(question(), a),
