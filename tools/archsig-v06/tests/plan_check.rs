@@ -3795,7 +3795,7 @@ fn the_field_right_under_a_redefined_unread_type_is_still_named() {
 
 #[test]
 fn a_question_mark_value_on_removes_returns_the_atom_that_has_it() {
-    // m.g は `?m.B` の値を返す。ほかに `?m.B` を型に書いた n.py のフィールドがあっても、読む所はその値を持つ Atom の場所 m.py である(マニュアル第5章 問い8)。
+    // m.g は `?m.B` の値を返す。n.py に `?m.B` を型に書いたフィールドと、`?m.B` を呼ぶ Atom があっても、読む所はその値を持つ Atom の場所 m.py である(マニュアル第5章 問い8)。
     let repo = Repo::new("q-value-removes");
     repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
     repo.map(
@@ -3803,6 +3803,8 @@ fn a_question_mark_value_on_removes_returns_the_atom_that_has_it() {
         r#"{"kind": "observed", "subject": "n.py", "scope": "structure", "at": "n.py@blob:bbbbbbb"}
 {"kind": "defines", "subject": "n.P", "value": "type", "at": "n.py:1@blob:bbbbbbb"}
 {"kind": "defines", "subject": "n.P.z", "value": "field", "type": "?m.B", "at": "n.py:2@blob:bbbbbbb"}
+{"kind": "defines", "subject": "n.k", "value": "operation", "params": {}, "at": "n.py:3@blob:bbbbbbb"}
+{"kind": "calls", "subject": "n.k", "object": "?m.B", "at": "n.py:4@blob:bbbbbbb"}
 "#,
     );
     repo.map(
@@ -3819,7 +3821,7 @@ fn a_question_mark_value_on_removes_returns_the_atom_that_has_it() {
     let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.g" && r["law"].is_null()).cloned().unwrap_or_default();
     assert_eq!(r["outcome"], "silent", "{s}");
     let next: Vec<&Value> = s["next"].as_array().unwrap().iter().filter(|n| n["decides"].as_array().unwrap().contains(&r["id"])).collect();
-    assert!(next.iter().all(|n| n["read"] == "m.py"), "{s}");
+    assert!(!next.is_empty() && next.iter().all(|n| n["read"] == "m.py"), "{s}");
 }
 
 #[test]
@@ -3879,4 +3881,36 @@ fn a_question_mark_name_on_removes_returns_the_atom_that_has_it_even_if_the_plan
     assert_eq!(r["outcome"], "silent", "{s}");
     let next: Vec<&Value> = s["next"].as_array().unwrap().iter().filter(|n| n["decides"].as_array().unwrap().contains(&r["id"])).collect();
     assert!(!next.is_empty() && next.iter().all(|n| n["read"] == "m.py"), "{s}");
+}
+
+#[test]
+fn a_path_through_a_question_mark_parameter_type_returns_the_operation_definition() {
+    // m.g の引数 o の型が `?m.O` なので、$o.a が何を名指すかは決まらない。読む所は、その型を書いた m.g の定義のソース g.py である。
+    let repo = Repo::new("q-param-type-removes");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
+    repo.map(
+        "m.py",
+        r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.D", "value": "type", "at": "m.py:4@blob:aaaaaaa"}
+"#,
+    );
+    repo.map(
+        "g.py",
+        r#"{"kind": "observed", "subject": "g.py", "scope": "structure", "at": "g.py@blob:ccccccc"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "?m.O"}, "at": "g.py:10@blob:ccccccc"}
+"#,
+    );
+    repo.map(
+        "h.py",
+        r#"{"kind": "observed", "subject": "h.py", "scope": "structure", "at": "h.py@blob:ddddddd"}
+{"kind": "returns", "subject": "m.g", "value": "$o.a", "at": "h.py:11@blob:ddddddd"}
+"#,
+    );
+    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.D\", \"at\": \"plan:p\"}\n");
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.g" && r["law"].is_null()).cloned().unwrap_or_default();
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    let next: Vec<&Value> = s["next"].as_array().unwrap().iter().filter(|n| n["decides"].as_array().unwrap().contains(&r["id"])).collect();
+    assert!(!next.is_empty() && next.iter().all(|n| n["read"] == "g.py"), "{s}");
 }
