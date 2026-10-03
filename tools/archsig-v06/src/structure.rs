@@ -269,7 +269,7 @@ impl Structure {
 
     /// 定義を読んでいない要素。`resolves` がソースを指し、そのソースを読んでいなければ、そのソースを返す。
     /// `resolves` がなければ、要素の名前を返す(設計 §3.3)。
-    fn undefined(&self, name: &str) -> Silence {
+    pub fn undefined(&self, name: &str) -> Silence {
         match self.resolves.get(name) {
             Some(Resolution::Source(path)) if !self.observed.contains(&(path.clone(), "structure".to_string())) => {
                 Silence { reason: Reason::Unread, read: Some(path.clone()), element: None, scope: Some("structure".to_string()) }

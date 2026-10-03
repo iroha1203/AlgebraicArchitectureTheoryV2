@@ -209,6 +209,18 @@ reading module = dir(depth: 1)
         repo.run(&["plan", "split", "p"])
     };
     let s = run("split-unread-resolves", "b/g.py", false);
+    // 引数の要素 b.g.$x は、持ち主の操作 b.g で見る。
+    let repo = Repo::new("split-unread-argument");
+    repo.write(".archsig/law/m.law", law);
+    repo.write("a/f.py", "# source\n");
+    repo.write("b/g.py", "# source\n");
+    repo.map(
+        "a/f.py",
+        "{\"kind\": \"observed\", \"subject\": \"a/f.py\", \"scope\": \"structure\", \"at\": \"a/f.py@blob:aaaaaaa\"}\n{\"kind\": \"defines\", \"subject\": \"a.f\", \"value\": \"operation\", \"params\": {}, \"at\": \"a/f.py:1@blob:aaaaaaa\"}\n{\"kind\": \"resolves\", \"subject\": \"b.g\", \"object\": \"b/g.py\", \"at\": \"a/f.py:2@blob:aaaaaaa\"}\n",
+    );
+    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"passes\", \"subject\": \"a.f->a.f\", \"object\": \"b.g.$x\", \"value\": \"1\", \"at\": \"plan:p\"}\n");
+    let t = repo.run(&["plan", "split", "p"]);
+    assert_eq!((result(&t, "b.g.$x")["outcome"].as_str(), result(&t, "b.g.$x")["reason"].as_str()), (Some("silent"), Some("unread")), "{t}");
     let r = result(&s, "b.g");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "b/g.py" && n["scope"] == "structure" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
@@ -219,4 +231,22 @@ reading module = dir(depth: 1)
     // 外部を指す要素は、これまでどおりどの局所にも属さず、呼び出しは a の局所に入る。
     let s = run("split-external-resolves", "external:lib", false);
     assert_eq!(result(&s, "p")["outcome"], "holds", "{s}");
+    // 指す先の違う `resolves` が二つ以上あれば、解決が決まらないので `unresolved` で沈黙する(外部を含んでも)。
+    for (name, second) in [("split-two-resolves", "c/h.py"), ("split-external-and-source", "external:lib"), ("split-two-externals", "external:other")] {
+        let first = if second == "external:other" { "external:lib" } else { "b/g.py" };
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", law);
+        repo.write("a/f.py", "# source\n");
+        repo.write("b/g.py", "# source\n");
+        repo.map(
+            "a/f.py",
+            &format!(
+                "{{\"kind\": \"observed\", \"subject\": \"a/f.py\", \"scope\": \"structure\", \"at\": \"a/f.py@blob:aaaaaaa\"}}\n{{\"kind\": \"defines\", \"subject\": \"a.f\", \"value\": \"operation\", \"params\": {{}}, \"at\": \"a/f.py:1@blob:aaaaaaa\"}}\n{{\"kind\": \"resolves\", \"subject\": \"b.g\", \"object\": \"{first}\", \"at\": \"a/f.py:2@blob:aaaaaaa\"}}\n{{\"kind\": \"resolves\", \"subject\": \"b.g\", \"object\": \"{second}\", \"at\": \"a/f.py:3@blob:aaaaaaa\"}}\n"
+            ),
+        );
+        repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"calls\", \"subject\": \"a.f\", \"object\": \"b.g\", \"at\": \"plan:p\"}\n");
+        let s = repo.run(&["plan", "split", "p"]);
+        let r = result(&s, "b.g");
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
+    }
 }

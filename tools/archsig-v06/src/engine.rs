@@ -534,15 +534,9 @@ pub fn plan_split(name: &str, overlay: &Overlay, split: Split, laws: &LawSet) ->
         .iter()
         .map(|(n, a)| Finding { theory: Some(THEORY_SPLIT.to_string()), ..Finding::silent("split", None, n, question_at(a)) })
         .collect();
-    // 定義がなく `resolves` がソースを指す要素は、そのソースを読むまで局所が決まらない(設計 §3.3)。
-    // 読んでいなければ `unread` でそのソースを返し、読んだのに定義がなければ `unresolved` で沈黙する。
-    for (n, path, observed, _) in &split.unknown {
-        let s = if *observed {
-            Silence::new(Reason::Unresolved)
-        } else {
-            Silence { reason: Reason::Unread, read: Some(path.clone()), element: None, scope: Some("structure".to_string()) }
-        };
-        silent.push(Finding { theory: Some(THEORY_SPLIT.to_string()), ..Finding::silent("split", None, n, s) });
+    // 定義がなく `resolves` がソースを指す要素は、局所が決まらない。構造の解決のとおりに沈黙する(設計 §3.3)。
+    for (n, s) in &split.unknown {
+        silent.push(Finding { theory: Some(THEORY_SPLIT.to_string()), ..Finding::silent("split", None, n, s.clone()) });
     }
     if !silent.is_empty() {
         return (silent, None);
