@@ -621,10 +621,12 @@ impl Below<'_> {
             });
         }
         if s.elements.contains_key(ty) {
-            // 候補が定義し直した型でも、変更前にその型の resolves が読んでいないソースを指していれば、
-            // 元のフィールドは分からない(設計 §5.1)。変更前の構造で、定義を読んでいない要素として沈黙する。
+            // 候補が定義し直した型でも、変更前にその型を名指していて定義を読んでいなければ、元のフィールドは分からない(設計 §5.1)。
+            // 変更前の構造で、定義を読んでいない要素として沈黙する(3.3)。変更前が名指さない型は、候補が新しく定義した型である。
             if let (Some(at), Some(prior)) = (defined_at(s, ty), self.before) {
-                if at.starts_with("plan:") && !prior.elements.contains_key(ty) && matches!(prior.resolves.get(ty), Some(Resolution::Source(_))) {
+                let named_before = prior.resolves.contains_key(ty)
+                    || prior.elements.values().any(|e| e.ty.as_deref() == Some(ty) || e.params.values().any(|p| p == ty));
+                if at.starts_with("plan:") && !prior.elements.contains_key(ty) && named_before && !matches!(prior.resolves.get(ty), Some(Resolution::External(_))) {
                     return Err(prior.kind(ty).err().unwrap_or_else(|| Silence::new(Reason::Unread)));
                 }
             }

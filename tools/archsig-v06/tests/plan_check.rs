@@ -1445,3 +1445,20 @@ fn a_field_below_whose_meaning_range_was_not_read_is_unread() {
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py" && n["scope"] == "meaning:payment-info"), "{s}");
 }
+
+#[test]
+fn an_existing_type_without_resolves_that_the_plan_redefines_is_still_unread() {
+    // 変更前は m.O.s の型として m.S を名指すが、m.S の定義も resolves もない。変更前の m.f は o.s に書かない。
+    // 候補は m.S を定義し直して o.s に書く。元の m.S のフィールドは分からない(設計 §3.3)。
+    let atoms = format!(
+        "{O_S}{}",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+"#
+    );
+    let plan = format!("{PLAN_WRITES_B}{}", r#"{"kind": "defines", "subject": "m.S", "value": "type", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S.q", "value": "field", "type": "int", "file": "m.py", "at": "plan:p"}
+"#);
+    let (s, r) = below_case("below-plan-redefines-unresolved-type", &atoms, &plan);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.S"), "{s}");
+}
