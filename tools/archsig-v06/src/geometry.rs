@@ -142,7 +142,7 @@ pub struct Split {
     pub unknown: Vec<(String, Silence)>,
 }
 
-/// 要素を定義するソースを持つ要素。引数 `X.$p` は操作 `X`、呼び出しの要素 `A->B` は呼び出し元 `A`(設計 §4.4)。
+/// 要素を定義するソースを持つ要素。引数 `X.$p` は操作 `X`(マニュアル第4章)、呼び出しの要素 `A->B` は呼び出し元 `A`(設計 §4.4)。
 fn owner(name: &str) -> &str {
     match (name.split_once("->"), name.split_once(".$")) {
         (Some((caller, _)), _) => caller,
