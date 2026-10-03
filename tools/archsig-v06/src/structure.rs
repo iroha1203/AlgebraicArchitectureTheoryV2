@@ -330,6 +330,8 @@ impl Structure {
         let r = |x: &Expr| self.resolve(op, env, x);
         Ok(match e {
             Expr::Unknown => return Err(question()),
+            // 字句の数が上限を超えた式は、値を求めない(設計 §5.1)。
+            Expr::TooLong(_) => return Err(Silence::new(Reason::Limit)),
             Expr::Const(c) | Expr::Name(c) => {
                 if c.starts_with('?') {
                     return Err(question());
@@ -658,6 +660,11 @@ impl Structure {
             Expr::Name(n) if n.starts_with('?') => gaps.push(Some(n.clone())),
             Expr::Unknown => gaps.push(None),
             Expr::Not(x) | Expr::Neg(x) => self.named(op, x, out, gaps),
+            Expr::TooLong(items) => {
+                for x in items {
+                    self.named(op, x, out, gaps);
+                }
+            }
             Expr::Bin(_, a, b) => {
                 self.named(op, a, out, gaps);
                 self.named(op, b, out, gaps);

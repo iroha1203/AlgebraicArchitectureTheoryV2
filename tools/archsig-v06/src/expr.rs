@@ -15,6 +15,8 @@ pub enum Expr {
     Not(Box<Expr>),
     Neg(Box<Expr>),
     Bin(BinOp, Box<Expr>, Box<Expr>),
+    /// 字句の数が上限を超えた式。値は求めない。中で名指す道と名前と呼び出しを、字句から拾って持つ。
+    TooLong(Vec<Expr>),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -39,7 +41,7 @@ pub const TOKEN_LIMIT: usize = 1_000;
 pub fn parse(text: &str) -> Result<Expr, String> {
     let tokens = lex(text)?;
     if tokens.len() > TOKEN_LIMIT {
-        return Err(format!("式の字句の数が上限({TOKEN_LIMIT})を超える"));
+        return Ok(Expr::TooLong(mentions(&tokens)));
     }
     let mut p = Parser { tokens, pos: 0 };
     let e = p.or()?;
@@ -47,6 +49,47 @@ pub fn parse(text: &str) -> Result<Expr, String> {
         return Err(format!("式の末尾が読めない: {text}"));
     }
     Ok(e)
+}
+
+/// 字句の列から、名指す道(`$p.f`)、名前(`a.b`、`?x`)、呼び出し(`f(`)を、再帰せずに拾う。式の読みと同じ形で拾う。
+fn mentions(tokens: &[Tok]) -> Vec<Expr> {
+    let mut out = Vec::new();
+    let mut i = 0;
+    // `.` でつないだ名前を読み、続く位置を返す。
+    let dotted = |mut i: usize, mut parts: Vec<String>| {
+        while tokens.get(i) == Some(&Tok::Dot) {
+            match tokens.get(i + 1) {
+                Some(Tok::Ident(f)) => {
+                    parts.push(f.clone());
+                    i += 2;
+                }
+                _ => break,
+            }
+        }
+        (parts, i)
+    };
+    while i < tokens.len() {
+        match &tokens[i] {
+            Tok::Dollar(p) => {
+                let (fields, next) = dotted(i + 1, Vec::new());
+                out.push(Expr::Path(p.clone(), fields));
+                i = next;
+            }
+            Tok::Ident(w) if w == "?" => {
+                out.push(Expr::Unknown);
+                i += 1;
+            }
+            Tok::Ident(w) if matches!(w.as_str(), "and" | "or" | "not") => i += 1,
+            Tok::Ident(w) => {
+                let (parts, next) = dotted(i + 1, vec![w.clone()]);
+                let name = parts.join(".");
+                out.push(if tokens.get(next) == Some(&Tok::LParen) { Expr::Call(name, Vec::new()) } else { Expr::Name(name) });
+                i = next;
+            }
+            _ => i += 1,
+        }
+    }
+    out
 }
 
 #[derive(Clone, Debug, PartialEq)]

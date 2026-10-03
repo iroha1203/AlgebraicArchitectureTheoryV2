@@ -211,8 +211,6 @@ fn freshen(v: Value, site: &str, fresh: &dyn Fn(&str) -> bool) -> Value {
     }
 }
 
-/// 項の形をそろえる。可換な演算は項を並べ替え、場所の入力の射影は長い場所の入力にまとめる。
-/// `a != b` は `a == b` の否定に、`a > b` は `b < a` に直す。
 /// 値の項の節の数が上限を超えれば `limit` で沈黙する。再帰せずに数え、上限に達したら数えるのをやめる。
 fn bounded(v: Value) -> Result<Value, Silence> {
     let mut stack = vec![&v];
@@ -232,6 +230,8 @@ fn bounded(v: Value) -> Result<Value, Silence> {
     Ok(v)
 }
 
+/// 項の形をそろえる。可換な演算は項を並べ替え、場所の入力の射影は長い場所の入力にまとめる。
+/// `a != b` は `a == b` の否定に、`a > b` は `b < a` に直す。
 pub fn normalize(v: Value) -> Value {
     match v {
         Value::Proj(x, p) => match normalize(*x) {

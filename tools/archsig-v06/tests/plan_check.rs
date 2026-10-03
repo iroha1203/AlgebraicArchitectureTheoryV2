@@ -2168,15 +2168,16 @@ law payment-info-kept
 }
 
 #[test]
-fn a_long_expression_is_read_as_an_unreadable_expression() {
-    // 字句の数が上限を超える式は読まず、? と同じに扱う。深い入れ子でもプロセスは落ちない。
+fn a_long_expression_is_limit() {
+    // 字句の数が上限を超える式は値を求めず、limit で沈黙する。深い入れ子でもプロセスは落ちない。
+    // 上限は ArchSig の側の限界なので、ソースを読み直す所は返さない。
     let nested = format!("{}1{}", "(".repeat(10_000), ")".repeat(10_000));
     let negated = format!("{}1", "-".repeat(10_000));
     let long_sum = vec!["1"; 10_000].join(" + ");
     for (name, v) in [("long-nested", nested.as_str()), ("long-negated", negated.as_str()), ("long-sum", long_sum.as_str())] {
         let (s, r) = t_case(name, &[("writes", "m.O.t", v, "")], &[("writes", "m.O.t", "1", "")], "");
-        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
-        assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py" && n["scope"] == "structure"), "{name}: {s}");
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{name}: {s}");
+        assert!(!s["next"].as_array().unwrap().iter().any(|n| n["decides"].as_array().unwrap().contains(&r["id"])), "{name}: {s}");
     }
     // 上限より短い式は読む。上限の近くまで入れ子にしても落ちない。
     let deep = format!("{}1{}", "(".repeat(499), ")".repeat(499));
@@ -2199,4 +2200,57 @@ fn a_value_that_grows_beyond_the_term_limit_is_limit() {
     assert_eq!(o.as_deref(), Some("holds"), "{s}");
     let (o, reason, s) = run("grow-large", 5_000);
     assert_eq!((o.as_deref(), reason.as_deref()), (Some("silent"), Some("limit")), "{s}");
+}
+
+#[test]
+fn a_long_expression_still_names_what_it_mentions() {
+    // 別の操作 m.h の長い式が、定義を読んでいない m.S.zz を名指す。名指しは字句から拾うので、
+    // 型 m.S をたどる所は m.S.zz が分からないとして沈黙する(短い式と同じ)。
+    let mention = |v: &str| {
+        format!(
+            "{O_S}{S_P}{}{{\"kind\": \"writes\", \"subject\": \"m.h\", \"object\": \"m.O.t\", \"value\": \"{v}\", \"at\": \"m.py:8@blob:aaaaaaa\"}}\n{F_WRITES_A}",
+            r#"{"kind": "defines", "subject": "m.O.t", "value": "field", "type": "int", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.h", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:7@blob:aaaaaaa"}
+"#
+        )
+    };
+    let long = format!("$o.s.zz{}", " + 1".repeat(600));
+    for (name, v) in [("mention-short", "$o.s.zz + 1".to_string()), ("mention-long", long)] {
+        let (s, r) = below_case(name, &mention(&v), &PLAN_WRITES_B.replace("m.b()", "m.a()"));
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{name}: {s}");
+        assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.S.zz"), "{name}: {s}");
+    }
+}
+
+#[test]
+fn a_condition_or_a_passed_value_that_grows_beyond_the_term_limit_is_limit() {
+    // 書き込みは小さいまま、条件と渡す値の項だけが上限を超える。
+    // $x + $x を渡し続けると、渡す値の項は呼び出しの段ごとに倍になる。
+    let mut extra = String::new();
+    for i in 1..=12 {
+        extra.push_str(&format!(
+            "{{\"kind\": \"defines\", \"subject\": \"m.g{i}\", \"value\": \"operation\", \"params\": {{\"x\": \"int\"}}, \"at\": \"m.py:{}@blob:aaaaaaa\"}}\n",
+            100 + i
+        ));
+        if i < 12 {
+            extra.push_str(&format!(
+                "{{\"kind\": \"calls\", \"subject\": \"m.g{i}\", \"object\": \"m.g{}\", \"at\": \"m.py:{}@blob:aaaaaaa\"}}\n{{\"kind\": \"passes\", \"subject\": \"m.g{i}->m.g{}\", \"object\": \"m.g{}.$x\", \"value\": \"$x + $x\", \"at\": \"m.py:{}@blob:aaaaaaa\"}}\n",
+                i + 1, 200 + i, i + 1, i + 1, 200 + i
+            ));
+        }
+    }
+    extra.push_str("{\"kind\": \"passes\", \"subject\": \"m.f->m.g1\", \"object\": \"m.g1.$x\", \"value\": \"$o.n\", \"at\": \"m.py:10@blob:aaaaaaa\"}\n");
+    let steps = [("calls", "m.g1", "", ""), ("writes", "m.O.t", "1", "")];
+    let (s, r) = t_case("passes-grow", &steps, &steps, &extra);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
+    // 条件: $o.n を $o.n + $o.n で 8 回重ねると、値の項は 511 節で上限の内側。
+    // 条件 $o.n == $o.n で二つ並べると 1,023 節になり、条件で初めて上限を超える。
+    let mut steps: Vec<(&str, &str, &str, &str)> = vec![("writes", "m.O.n", "$o.n + $o.n", ""); 8];
+    steps.push(("writes", "m.O.t", "1", ""));
+    let (s, r) = t_case("when-within", &steps, &steps, "");
+    assert_eq!(r["outcome"], "holds", "書き込みは上限の内側: {s}");
+    steps.pop();
+    steps.push(("writes", "m.O.t", "1", "$o.n == $o.n"));
+    let (s, r) = t_case("when-grow", &steps, &steps, "");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
 }
