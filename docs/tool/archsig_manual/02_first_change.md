@@ -142,26 +142,31 @@ ArchMap に記録される Atom は、たとえば次の形をしている。
 archsig plan check split-order
 ```
 
-最初の結果は沈黙だった。
+最初の結果は、四つとも沈黙だった。
 
 ```text
 … 沈黙  payment-follows-order  update_shipping
+… 沈黙  payment-follows-order  normalize_address
+… 沈黙  payment-follows-order  payment-info
+… 沈黙  removes
   理由      unread
-  次に読む  shop/shipping/address.py  構造
+  次に読む  shop/shipping/address.py  構造(四つの結果を決める)
 ```
 
 `update_shipping` は `normalize_address` を呼ぶ。ArchSig は、呼び出し先の書き込みも展開して比べる。
 `normalize_address` のあるソースを読んでいないので、決済情報を書き換えるかどうかが分からない。ArchSig は結論を出さず、どこを読めば決まるかを返した。
+同じソースを読んでいないので、`normalize_address` 自身の結果、Law の対象の操作の組がそろっているかの結果(`payment-info`)、消した `Order` を使う操作がほかにないかの結果(`removes`)も決まらない。四つとも、読む所は同じ `address.py` だ。
 `service.py` の構造 Atom に、`normalize_address` が `shop/shipping/address.py` で定義されていることが `resolves` で記録されているので、ArchSig は読むソースを返せる。
 SKILL はそこだけを観測し、ArchMap に書き足す。
 読んだ範囲に書き込みの Atom がなければ、書き込みはないと分かる。読んでいない所は、分からないままだ。
 
-もう一度検査すると、反例が返った。
+もう一度検査すると、`update_shipping` に反例が返った(`normalize_address` は成り立つ)。
 
 ```text
 ✘ 反例  payment-follows-order  update_shipping
   入力              注文: payment_ref = p
-                    新しい配送先 new: $new.country != $shipping.address.country
+                    条件 $new.country != $order.shipping_address.country が成り立つ
+                    (shop/shipping/service.py:4。値は Address.country と OrderShipping.address / Address.country で比べる)
   更新してから移す  OrderPayment.ref = None
   移してから更新    OrderPayment.ref = p
   食い違いの元      shop/shipping/service.py:4  order.payment_ref = None
@@ -170,7 +175,7 @@ SKILL はそこだけを観測し、ArchMap に書き足す。
 
 今の `update_shipping` は、国が変わると決済情報を消す。候補の新しい `update_shipping` は配送先しか書かない。
 だから、国をまたぐ配送先の変更では、移行と更新の順番で決済情報が変わる。
-変更前の条件 `$order.shipping_address.country` は、対応に従って `$shipping.address.country` に読み替えてある。
+条件は変更前の `service.py:4` に書いたとおりに示し、比べる値は対応に従って変更後の名前(`OrderShipping.address`)に読み替えてある。
 反例は、入力が満たす条件、二つの順番の結果、食い違いの元になった書き込みを持つ。誰でもたどって確かめられる。
 
 ## 5. 人が判断する
@@ -181,11 +186,26 @@ SKILL はそこだけを観測し、ArchMap に書き足す。
 
 これは仕様の判断だ。人は「続ける」と答える。
 エージェントは候補を直す。新しい `update_shipping` は、国が変わるときに決済側の `reset_authorization` を呼ぶ。
-`reset_authorization` は `OrderPayment.ref` を `None` にする。その Atom を候補に足して、もう一度検査する。
+`reset_authorization` は `OrderPayment.ref` を `None` にする。次の Atom を、候補の `normalize_address` の呼び出しより前に足す。候補の中の手順の順は Atom の順なので(第3章)、呼び出しは配送先の書き込みより前に行われる。
+
+```json
+{"kind": "defines", "subject": "shop.payment.service.reset_authorization", "value": "operation",
+ "params": {"order_id": "str"}, "file": "shop/payment/service.py", "at": "plan:split-order"}
+{"kind": "writes", "subject": "shop.payment.service.reset_authorization",
+ "object": "shop.payment.model.OrderPayment.ref", "value": "None", "at": "plan:split-order"}
+{"kind": "calls", "subject": "shop.shipping.service.update_shipping",
+ "object": "shop.payment.service.reset_authorization",
+ "when": "$new.country != $shipping.address.country", "at": "plan:split-order"}
+{"kind": "passes", "subject": "shop.shipping.service.update_shipping->shop.payment.service.reset_authorization",
+ "object": "shop.payment.service.reset_authorization.$order_id", "value": "$shipping.order_id", "at": "plan:split-order"}
+```
+
+もう一度検査する。
 
 ```text
 ✔ 成り立つ  payment-follows-order  update_shipping
   条件の分岐 2 通り(国が変わる / 変わらない)で、二つの順番の結果が一致
+✔ 成り立つ  payment-follows-order  normalize_address
 ```
 
 ArchSig は、条件で分かれるすべての分岐について、二つの順番の結果を比べる。
@@ -194,7 +214,7 @@ ArchSig は、条件で分かれるすべての分岐について、二つの順
 
 ## 6. 仕事を分ける
 
-変更は、配送と決済の二つの局所にまたがる。SKILL は仕事を分ける。
+変更は、注文、配送、決済の三つの局所にまたがる。SKILL は仕事を分ける。
 
 ```text
 archsig plan split split-order
@@ -203,14 +223,17 @@ archsig plan split split-order
 ArchSig は、局所ごとに、担当が満たす条件と、局所の間でそろえる条件を返す。
 
 ```text
-shop/shipping   候補 split-order/shop/shipping
-                update_shipping は OrderShipping.address だけを書き換える
-                国が変わるとき payment.service.reset_authorization を呼ぶ
+shop/order      候補 split-order/shop/order
+                Order を消す
 shop/payment    候補 split-order/shop/payment
+                OrderPayment と OrderPayment.ref を定義する
                 reset_authorization は OrderPayment.ref を None にする
-共有            update_shipping から reset_authorization への呼び出しと、渡す $shipping.order_id
-                Order.shipping_address → OrderShipping.address(shop/order と shop/shipping)
+shop/shipping   候補 split-order/shop/shipping
+                OrderShipping を定義する
+                update_shipping は OrderShipping.address だけを書き換える(normalize_address を呼ぶ)
+共有            Order.shipping_address → OrderShipping.address(shop/order と shop/shipping)
                 Order.payment_ref → OrderPayment.ref(shop/order と shop/payment)
+                国が変わるとき update_shipping から reset_authorization を呼び、$shipping.order_id を渡す
 ```
 
 エージェントは、局所ごとの条件をそれぞれの担当(別のエージェントでもよい)に渡す。
@@ -219,16 +242,18 @@ shop/payment    候補 split-order/shop/payment
 ## 7. 実装して比べる
 
 実装が終わったら、SKILL は変わったソースを観測し直し、候補と比べる。
+変更前として、候補を書いたときのコミットを別の作業ツリーに取り出し、その根を渡す(第7章)。
 
 ```text
-archsig compare --plan split-order
+archsig compare --before ../shop-before --plan split-order
 ```
 
 ```text
 ✔ 候補の構造 Atom 13 件すべてに、対応する観測がある
-✔ payment-follows-order は実装後のコードで成り立つ
+✔ payment-follows-order は実装後のコードで成り立つ(update_shipping、normalize_address)
 ```
 
 候補と違う実装があれば、ここで分かる。
-たとえば決済側が `OrderPayment.ref` を `None` ではなく空文字にしていたら、ArchSig はその書き込みの場所と、候補の値との違いを返す。
+たとえば決済側が `OrderPayment.ref` を `None` ではなく空文字にしていたら、ArchSig は `update_shipping` の反例と、候補と観測の食い違い(`mismatch`)を二つ返す。
+候補の `None` の書き込みが観測にないことと、候補にない空文字の書き込みが決済のサービスにあることだ。
 新しい `OrderPayment.ref` が決済情報として使われているかも、観測し直した意味 Atom で確かめる。
