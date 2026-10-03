@@ -136,6 +136,22 @@ fn params_calls_and_channels_are_elements() {
 }
 
 #[test]
+fn a_channel_name_is_split_at_its_last_colon_from_four_parts() {
+    // 三つに分かれる名前は項目を持たない。四つ以上なら、最後を項目とし、残りをチャネルとする。
+    let s = structure(
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "at": "m.py:1"}
+{"kind": "sends", "subject": "m.f", "object": "channel:event:shipped", "value": "1", "at": "m.py:2"}
+{"kind": "sends", "subject": "m.f", "object": "channel:queue:a:b:c", "value": "1", "at": "m.py:3"}
+{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py"}
+"#,
+    );
+    assert_eq!(s.kind("channel:event:shipped").unwrap(), "channel");
+    assert!(s.kind("channel:event").is_err());
+    assert_eq!(s.kind("channel:queue:a:b").unwrap(), "channel");
+    assert!(s.kind("channel:queue:a").is_err());
+}
+
+#[test]
 fn unfolding_has_a_limit_on_its_size() {
     // 各段が次の段を二度呼ぶ。再帰はないが、展開すると 2^20 の手順になる。
     let mut jsonl = String::from("{\"kind\": \"defines\", \"subject\": \"m.T.v\", \"value\": \"field\", \"type\": \"int\", \"at\": \"m.py:1\"}\n");

@@ -1,5 +1,6 @@
 //! AC5・AC8: `archsig plan check` と `archsig show`(マニュアル第2章の題材、第5章 問い3、第6章)。
 
+use archsig::structure::STEP_LIMIT;
 use serde_json::Value;
 
 mod common;
@@ -1791,4 +1792,186 @@ fn a_field_the_plan_defines_again_and_writes_directly_is_unread() {
     let (s, r) = two_sources_case("direct-redefined-field", REDEFINE_M, REDEFINE_S, plan);
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py" && n["scope"] == "meaning:payment-info"), "{s}");
+}
+
+/// 構造の書き戻し(#5174)の入力。m.O.t は payment-info を持つ。m.O.n は意味を持たない。
+const T_ATOMS: &str = r#"{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.t", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.t", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.n", "value": "field", "type": "int", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+"#;
+
+/// 変更前の m.f の手順(行 10 から)と、候補の m.f の手順で `plan check` する。手順は (種類, object, value, when) の列。
+fn t_case(name: &str, before: &[(&str, &str, &str, &str)], plan: &[(&str, &str, &str, &str)], extra: &str) -> (Value, Value) {
+    let atom = |k: &str, o: &str, v: &str, w: &str, at: &str| {
+        let mut a = serde_json::json!({"kind": k, "subject": "m.f", "object": o, "at": at});
+        if !v.is_empty() {
+            a["value"] = Value::String(v.to_string());
+        }
+        if k == "returns" {
+            a.as_object_mut().unwrap().remove("object");
+        }
+        if !w.is_empty() {
+            a["when"] = Value::String(w.to_string());
+        }
+        a.to_string() + "\n"
+    };
+    let mut m = format!("{T_ATOMS}{extra}");
+    for (i, (k, o, v, w)) in before.iter().enumerate() {
+        m.push_str(&atom(k, o, v, w, &format!("m.py:{}@blob:aaaaaaa", 10 + i)));
+    }
+    let mut p = String::from(r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+"#);
+    for (k, o, v, w) in plan {
+        p.push_str(&atom(k, o, v, w, "plan:p"));
+    }
+    below_case(name, &m, &p)
+}
+
+#[test]
+fn a_name_without_dollar_is_read_as_a_constant() {
+    let w = |v| [("writes", "m.O.t", v, "")];
+    let (s, r) = t_case("const-same", &w("JP_CODE"), &w("JP_CODE"), "");
+    assert_eq!(r["outcome"], "holds", "{s}");
+    let (s, r) = t_case("const-dotted", &w("cfg.RATE"), &w("cfg.RATE"), "");
+    assert_eq!(r["outcome"], "holds", "{s}");
+    let (s, r) = t_case("const-string", &w("\"JP\""), &w("\"JP\""), "");
+    assert_eq!(r["outcome"], "holds", "{s}");
+    let (s, r) = t_case("const-negative", &w("-$o.n"), &w("-$o.n"), "");
+    assert_eq!(r["outcome"], "holds", "{s}");
+    let (s, r) = t_case("const-negative-differs", &w("-$o.n"), &w("$o.n"), "");
+    assert_eq!(r["kind"], "counterexample", "{s}");
+}
+
+#[test]
+fn a_callee_resolved_to_a_read_source_without_its_definition_is_unresolved() {
+    let extra = r#"{"kind": "resolves", "subject": "m.g", "object": "m.py", "at": "m.py:1@blob:aaaaaaa"}
+"#;
+    let steps = [("calls", "m.g", "", ""), ("writes", "m.O.t", "1", "")];
+    let (s, r) = t_case("resolved-undefined", &steps, &steps, extra);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    assert!(!s["next"].as_array().unwrap().iter().any(|n| n["decides"].as_array().unwrap().contains(&r["id"])), "次に読む所は付かない: {s}");
+}
+
+#[test]
+fn an_unreadable_value_is_like_a_question_mark() {
+    let (s, r) = t_case("unreadable-value", &[("writes", "m.O.t", "a ?? b", "")], &[("writes", "m.O.t", "1", "")], "");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py" && n["scope"] == "structure"), "{s}");
+}
+
+#[test]
+fn a_return_does_not_end_the_steps() {
+    let (s, r) = t_case(
+        "return-not-end",
+        &[("returns", "", "1", ""), ("writes", "m.O.t", "1", "")],
+        &[("returns", "", "1", ""), ("writes", "m.O.t", "2", "")],
+        "",
+    );
+    assert_eq!(r["kind"], "counterexample", "{s}");
+}
+
+#[test]
+fn a_question_mark_anywhere_in_the_operation_is_silent() {
+    // 意味を持たない m.O.n に ? を書く。m.O.t は 1 と 2 で食い違うが、操作の列を作らずに沈黙する。
+    let (s, r) = t_case(
+        "question-anywhere",
+        &[("writes", "m.O.n", "?", ""), ("writes", "m.O.t", "1", "")],
+        &[("writes", "m.O.n", "?", ""), ("writes", "m.O.t", "2", "")],
+        "",
+    );
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
+
+#[test]
+fn the_step_limit_is_counted_before_a_call_is_unfolded() {
+    // 手順の数は、呼び出しを展開する前に、それまでに並べた手順(呼び出しの手順を含む)で数える。
+    let callee = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.O.n", "value": "1", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.O.n", "value": "2", "at": "m.py:7@blob:aaaaaaa"}
+"#;
+    let run = |name: &str, n: usize, call: bool| {
+        let mut steps: Vec<(&str, &str, &str, &str)> = vec![("writes", "m.O.n", "1", ""); n];
+        if call {
+            steps.push(("calls", "m.g", "", ""));
+        }
+        steps.push(("writes", "m.O.t", "1", ""));
+        let (s, r) = t_case(name, &steps, &steps, callee);
+        (r["outcome"].as_str().map(str::to_string), r["reason"].as_str().map(str::to_string), s)
+    };
+    // 呼び出しのない本体は、手順の数にかかわらず上限にかからない。
+    let (o, _, s) = run("steps-flat", STEP_LIMIT + 1, false);
+    assert_eq!(o.as_deref(), Some("holds"), "{s}");
+    // 上限より一つ少ない手順と呼び出しで、ちょうど上限。呼び出し先の 2 手順は、展開した後には数えない。
+    let (o, _, s) = run("steps-call-at-limit", STEP_LIMIT - 1, true);
+    assert_eq!(o.as_deref(), Some("holds"), "{s}");
+    let (o, reason, s) = run("steps-call-over", STEP_LIMIT, true);
+    assert_eq!((o.as_deref(), reason.as_deref()), (Some("silent"), Some("limit")), "{s}");
+}
+
+#[test]
+fn and_splits_a_condition_and_or_and_not_and_do_not() {
+    // 反例の分岐が持つ条件の数で確かめる。`and` は二つに分け、`or` と `not` の中の `and` は一つの条件にする。
+    let branch = |name: &str, when: &'static str| {
+        let w = |v| [("writes", "m.O.t", v, when)];
+        let (s, r) = t_case(name, &w("1"), &w("2"), "");
+        assert_eq!(r["kind"], "counterexample", "{s}");
+        r["check"]["branch"].as_array().unwrap().len()
+    };
+    assert_eq!(branch("cond-and", "$o.n == 1 and $o.t == 2"), 2);
+    assert_eq!(branch("cond-or", "$o.n == 1 or $o.n == 2"), 1);
+    assert_eq!(branch("cond-not-and", "not ($o.n == 1 and $o.t == 2)"), 1);
+    // 二重の `not` は外してから分ける。
+    assert_eq!(branch("cond-not-not-and", "not not ($o.n == 1 and $o.t == 2)"), 2);
+}
+
+#[test]
+fn a_return_value_is_not_compared() {
+    let (s, r) = t_case(
+        "return-not-compared",
+        &[("returns", "", "1", ""), ("writes", "m.O.t", "1", "")],
+        &[("returns", "", "2", ""), ("writes", "m.O.t", "1", "")],
+        "",
+    );
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn a_return_in_the_callee_does_not_end_the_callers_steps() {
+    let callee = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "1", "at": "m.py:6@blob:aaaaaaa"}
+"#;
+    let (s, r) = t_case(
+        "callee-return",
+        &[("calls", "m.g", "", ""), ("writes", "m.O.t", "1", "")],
+        &[("calls", "m.g", "", ""), ("writes", "m.O.t", "2", "")],
+        callee,
+    );
+    assert_eq!(r["kind"], "counterexample", "{s}");
+}
+
+#[test]
+fn a_question_mark_or_an_unreadable_expression_anywhere_in_the_steps_is_silent() {
+    let silent = |name: &str, steps: &[(&str, &str, &str, &str)], extra: &str| {
+        let mut before = steps.to_vec();
+        before.push(("writes", "m.O.t", "1", ""));
+        let mut plan = steps.to_vec();
+        plan.push(("writes", "m.O.t", "2", ""));
+        let (s, r) = t_case(name, &before, &plan, extra);
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
+        s
+    };
+    silent("q-when", &[("writes", "m.O.n", "1", "?")], "");
+    silent("q-sends-when", &[("sends", "channel:queue:q:item", "1", "?")], "");
+    silent("q-returns-when", &[("returns", "", "1", "?")], "");
+    let s = silent("unreadable-when", &[("writes", "m.O.n", "1", "$o.n ~ 1")], "");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py" && n["scope"] == "structure"), "{s}");
+    silent("q-sends", &[("sends", "channel:queue:q:item", "?", "")], "");
+    silent("q-returns", &[("returns", "", "?", "")], "");
+    let callee = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.O.n", "value": "?", "at": "m.py:6@blob:aaaaaaa"}
+"#;
+    silent("q-callee", &[("calls", "m.g", "", "")], callee);
+    silent("q-call-when", &[("calls", "m.g", "", "?")], &callee.replace("\"?\"", "\"1\""));
 }
