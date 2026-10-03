@@ -335,7 +335,13 @@ impl Structure {
             };
             let object = a.object.clone().unwrap_or_default();
             let kind = match a.kind.as_str() {
-                "writes" => StepKind::Write { place: self.written_place(a).map_err(|x| locate(x, a))?, value: value(self)? },
+                "writes" => {
+                    let place: Vec<String> = a.via.iter().flatten().cloned().chain(std::iter::once(object)).collect();
+                    for f in &place {
+                        self.expect(f, "field")?;
+                    }
+                    StepKind::Write { place, value: value(self)? }
+                }
                 "sends" => StepKind::Send { item: object, value: value(self)? },
                 "returns" => StepKind::Return { value: value(self)? },
                 _ => {
@@ -437,26 +443,6 @@ impl Structure {
             Expr::Neg(x) => Value::Neg(Box::new(r(x)?)),
             Expr::Bin(op, a, b) => Value::Bin(*op, Box::new(r(a)?), Box::new(r(b)?)),
         })
-    }
-
-    /// 書き込みの場所(設計 §3.5)。`via` の最初のフィールド(なければ `object`)`T.f` から、残りの `via` と `object` の
-    /// フィールドの名前(最後の `.` の後)を、`$p.f.g` と同じに型でたどる。道の上の `?` の名前は、そこまでをたどってから、その名前の沈黙を返す。
-    fn written_place(&self, a: &Atom) -> Result<Vec<String>, Silence> {
-        let written: Vec<&String> = a.via.iter().flatten().chain(a.object.as_ref()).collect();
-        let known = written.iter().take_while(|f| !f.starts_with('?')).count();
-        let mut place = match written.first().and_then(|f| f.rsplit_once('.')) {
-            Some((ty, _)) if known > 0 => self.fields(ty, &field_names(&written[..known]))?,
-            _ => Vec::new(),
-        };
-        // `<型>.<名前>` の形でない名前は、字句どおりの要素として確かめる。
-        if known > 0 && place.is_empty() {
-            self.expect(written[0], "field")?;
-            place.push(written[0].clone());
-        }
-        match written.get(known) {
-            Some(q) => Err(self.expect(q, "field").err().unwrap_or_else(question)),
-            None => Ok(place),
-        }
     }
 
     /// 型 `ty` から、フィールドの名前の列をたどった場所。`$p.f.g` は `[T.f, U.g]`。
@@ -703,14 +689,15 @@ fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn
         let fields: Vec<&String> = a.via.iter().flatten().chain(a.object.as_ref()).collect();
         let known = fields.iter().take_while(|o| !o.starts_with('?')).count();
         match fields.first().and_then(|f| f.rsplit_once('.')) {
-            // 書き込みの場所は、道と同じに型でたどる(設計 §3.5)。書き直していない書き込みは、変更後の型のフィールドを名指す。
-            // 道の上の `?` の名前の先は、名指す要素が決まらない。
-            Some((ty, _)) if a.kind == "writes" && known > 0 => {
+            // 書き込みの `via` と `object` は、最初のフィールドから型でたどった道のフィールドを名指す(設計 §3.6)。
+            // 書き直していない書き込みは、変更後の型のフィールドを名指す。道の上の `?` の名前の先は、名指す要素が決まらない。
+            Some((ty, _)) if a.kind == "writes" && !fields[0].starts_with('?') => {
                 s.named_path(Some(ty.to_string()), ty.to_string(), &field_names(&fields[..known]), stop, names, &mut gaps);
                 if let Some(q) = fields.get(known) {
                     gaps.push(Gap::Name(q.to_string()));
                 }
             }
+            _ if a.kind == "writes" && fields.first().is_some_and(|f| f.starts_with('?')) => gaps.push(Gap::Name(fields[0].to_string())),
             _ => {
                 for o in fields {
                     if o.starts_with('?') {
