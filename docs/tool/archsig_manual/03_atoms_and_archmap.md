@@ -40,6 +40,8 @@ Atom の同一性は、`kind`、`subject`、`object`、`via`、`value`、`when`�
 
 - 操作と型は、その言語の完全修飾名で書く。Python ならモジュールのパスと名前(`shop.shipping.service.update_shipping`)、Java ならパッケージとクラスと名前である。
 - フィールドは `<型の名前>.<フィールドの名前>` と書く(`shop.order.model.Order.payment_ref`)。
+  型が親の型からフィールドを受け継ぐときは、受け継いだフィールドも子の型の名前で `defines` を書き、意味 Atom も子の名前で書く。
+  ArchSig は型の継承を知らず、子の型の値のフィールドを `<子の型>.<フィールド>` の名前でたどる。
 - 引数は `<操作の名前>.$<引数の名前>` と書く(`shop.shipping.service.update_shipping.$new`)。
 - チャネルというのは、キューのトピック、HTTP のルート、イベントのように、プロセスやサービスをまたいで操作をつなぐ名前のこと。形は次の三つに決める。
   - `channel:http:<メソッド> <パスのテンプレート>`(`channel:http:POST /orders`)

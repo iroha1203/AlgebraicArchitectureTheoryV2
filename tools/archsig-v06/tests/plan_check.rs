@@ -3952,3 +3952,37 @@ law payment-info-kept
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "g.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
 }
+
+#[test]
+fn an_inherited_field_below_a_written_field_is_compared_under_the_child_type() {
+    // m.C は m.P を継ぎ、payment-info を持つフィールド t を受け継ぐ。f(o) は o.s(m.C の値)を丸ごと書き、候補は書く値を変える。
+    // 受け継いだフィールドを子の型の名前で定義し、意味 Atom も子の名前で書けば(第3章の約束)、場所 [m.O.s, m.C.t] の違いが反例になる。
+    let repo = Repo::new("inherited-below");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.P", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.P.t", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.P.t", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.C", "value": "type", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.C.t", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.C.t", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.C", "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "m.py:10@blob:aaaaaaa"}
+"#);
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.b()", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    let shown = repo.run(&["show", r["id"].as_str().unwrap()]);
+    let places: Vec<&Value> = shown["check"]["diverging"].as_array().unwrap().iter().map(|d| &d["place"]).collect();
+    assert!(places.contains(&&serde_json::json!(["m.O.s", "m.C.t"])), "{shown}");
+}
