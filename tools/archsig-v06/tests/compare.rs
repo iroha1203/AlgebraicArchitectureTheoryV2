@@ -766,17 +766,24 @@ fn an_operation_added_by_the_implementation_with_a_question_mark_is_silent() {
 {"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:2@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.O.u", "value": "field", "type": "m.O", "at": "m.py:3@blob:aaaaaaa"}
 "#;
-    let before = Repo::new("added-question-before");
-    before.write(".archsig/law/m.law", &law);
-    before.write("m.py", "# source\n");
-    before.map("m.py", &format!("{base}{}\n", r#"{"kind": "defines", "subject": "m.A.x", "value": "field", "type": "m.O", "at": "m.py:4@blob:aaaaaaa"}"#));
-    let after = Repo::new("added-question");
-    after.write(".archsig/law/m.law", &law);
-    after.write("m.py", "# source\n");
-    after.map("m.py", &format!("{base}{}", r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:6@blob:aaaaaaa"}
+    // 実装で二か所に定義した(種類が決まらない)m.g と、変更前は型だった m.g も同じ。
+    let g = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:6@blob:aaaaaaa"}
 {"kind": "writes", "subject": "m.g", "object": "m.O.u", "value": "?", "at": "m.py:7@blob:aaaaaaa"}
-"#));
-    after.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.A.x\", \"at\": \"plan:p\"}\n");
-    let s = compare(&after, &before, Some("p"));
-    assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.g" && r["outcome"] == "silent"), "{s}");
+"#;
+    let twice = format!("{g}{}\n", r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:8@blob:aaaaaaa"}"#);
+    let was_type = r#"{"kind": "defines", "subject": "m.g", "value": "type", "at": "m.py:6@blob:aaaaaaa"}
+"#;
+    for (name, old, new) in [("added-question", "", g.to_string()), ("added-twice", "", twice), ("type-to-operation", was_type, g.to_string())] {
+        let before = Repo::new(&format!("{name}-before"));
+        before.write(".archsig/law/m.law", &law);
+        before.write("m.py", "# source\n");
+        before.map("m.py", &format!("{base}{old}{}\n", r#"{"kind": "defines", "subject": "m.A.x", "value": "field", "type": "m.O", "at": "m.py:4@blob:aaaaaaa"}"#));
+        let after = Repo::new(name);
+        after.write(".archsig/law/m.law", &law);
+        after.write("m.py", "# source\n");
+        after.map("m.py", &format!("{base}{new}"));
+        after.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.A.x\", \"at\": \"plan:p\"}\n");
+        let s = compare(&after, &before, Some("p"));
+        assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.g" && r["outcome"] == "silent"), "{name}: {s}");
+    }
 }

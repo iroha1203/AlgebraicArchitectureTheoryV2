@@ -806,7 +806,7 @@ fn commute(
     for (a, b) in &overlay.corresponds {
         // 外部の要素は、観測した要素へ書き込まない呼び出し先として扱う(設計 §3.4)。両端が外部なら比べるものがなく、組ではない。
         // 片方だけが外部なら、その端の種類の問い合わせが沈黙する(下)。
-        let external = |s: &Structure, n: &str| matches!(s.resolves.get(n), Some(Resolution::External(_)));
+        let external = |s: &Structure, n: &str| !s.elements.contains_key(n) && matches!(s.resolves.get(n), Some(Resolution::External(_)));
         if external(before, a) && external(after, b) {
             continue;
         }
@@ -1331,15 +1331,14 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
         out.extend(missing(before, after, op, uses));
     }
     // 名指す要素をたどれなかった操作は、消える要素を使うかが決まらない。
-    // 使うと決まった操作(`missing`)と、定義を読んでいない操作(上の沈黙)は除く。
+    // 使うと決まった操作(`missing`)、変更後で操作でないと決まった要素、変更後で定義を読んでいない操作(上の沈黙)は除く。
+    // 変更前か変更後で操作と決まる操作と、変更後で種類が決まらない操作(実装が足した操作を含む)は沈黙する。
     for (op, gaps) in overlay.untraced.iter().filter(|_| !overlay.removes.is_empty()) {
-        match before.kind(op) {
+        match (before.kind(op), after.kind(op)) {
             _ if overlay.missing.contains_key(op) => continue,
-            Ok("operation") => {}
-            Ok(_) => continue,
-            // 変更前に定義のない操作は、変更後で操作と決まれば(実装が足した操作)、たどれなかった所で沈黙する。
-            Err(Silence { reason: Reason::Unread, .. }) if !matches!(after.kind(op), Ok("operation")) => continue,
-            Err(_) => {}
+            (Ok("operation"), _) | (_, Ok("operation")) => {}
+            (_, Ok(_)) | (_, Err(Silence { reason: Reason::Unread, .. })) => continue,
+            _ => {}
         }
         let mut next: Vec<Silence> = Vec::new();
         for (gap, a) in gaps {
@@ -1357,7 +1356,7 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
             subject: op.clone(),
             outcome: "silent",
             reason: Some(reason_name(&next[0].reason)),
-            at: defined_at(before, op).into_iter().collect(),
+            at: defined_at(before, op).or_else(|| defined_at(after, op)).into_iter().collect(),
             theory: Some(THEORY_CHANGES.to_string()),
             next: next.into_iter().filter(|s| s.read.is_some() || s.element.is_some()).collect(),
             ..Finding::default()

@@ -4105,11 +4105,11 @@ fn a_write_path_that_begins_with_a_question_mark_names_nothing_after_it() {
 fn a_correspondence_with_one_external_end_is_silent() {
     // m.clear は m.O.pay(payment-info)に 0 を書く。候補は m.clear を外部の lib.clear に対応させて消す。
     // 片方だけが外部の組は、外部の端の種類が決まらないので沈黙する。両端が外部なら組にしない。
-    let run = |name: &str, from_external: bool| {
+    let run = |name: &str, from_external: bool, extra: &str| {
         let repo = Repo::new(name);
         repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
         let ext = if from_external { "{\"kind\": \"resolves\", \"subject\": \"lib.old\", \"object\": \"external:lib\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n" } else { "" };
-        repo.map("m.py", &format!("{}{ext}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+        repo.map("m.py", &format!("{}{ext}{extra}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
 {"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:2@blob:aaaaaaa"}
@@ -4122,9 +4122,12 @@ fn a_correspondence_with_one_external_end_is_silent() {
         repo.write(".archsig/plans/p/plan.jsonl", &format!("{{\"kind\": \"resolves\", \"subject\": \"lib.clear\", \"object\": \"external:lib\", \"at\": \"plan:p\"}}\n{{\"kind\": \"corresponds\", \"subject\": \"{from}\", \"object\": \"lib.clear\", \"at\": \"plan:p\"}}\n{}", if from_external { "" } else { "{\"kind\": \"removes\", \"subject\": \"m.clear\", \"at\": \"plan:p\"}\n" }));
         repo.run(&["plan", "check", "p"])
     };
-    let s = run("one-external-end", false);
-    let law = s["results"].as_array().unwrap().iter().filter(|r| r["law"] == "payment-follows-order").collect::<Vec<_>>();
-    assert!(law.iter().any(|r| r["outcome"] == "silent" && r["reason"] == "unresolved") && !law.iter().any(|r| r["outcome"] == "holds"), "{s}");
-    let s = run("two-external-ends", true);
-    assert!(!s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "lib.old"), "{s}");
+    // 定義のある m.clear に外部を指す `resolves` があっても、m.clear は外部の要素ではない(設計 §3.3)。
+    for (name, extra) in [("one-external-end", ""), ("defined-with-external-resolves", "{\"kind\": \"resolves\", \"subject\": \"m.clear\", \"object\": \"external:lib\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n")] {
+        let s = run(name, false, extra);
+        let law = s["results"].as_array().unwrap().iter().filter(|r| r["law"] == "payment-follows-order").collect::<Vec<_>>();
+        assert!(law.iter().any(|r| r["outcome"] == "silent" && r["reason"] == "unresolved") && !law.iter().any(|r| r["outcome"] == "holds"), "{name}: {s}");
+    }
+    let s = run("two-external-ends", true, "");
+    assert!(!s["results"].as_array().unwrap().iter().any(|r| r["outcome"] == "silent" || r["subject"] == "lib.old" || r["subject"] == "lib.clear"), "{s}");
 }
