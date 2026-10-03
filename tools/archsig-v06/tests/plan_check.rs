@@ -3914,3 +3914,41 @@ fn a_path_through_a_question_mark_parameter_type_returns_the_operation_definitio
     let next: Vec<&Value> = s["next"].as_array().unwrap().iter().filter(|n| n["decides"].as_array().unwrap().contains(&r["id"])).collect();
     assert!(!next.is_empty() && next.iter().all(|n| n["read"] == "g.py"), "{s}");
 }
+
+#[test]
+fn changes_keep_of_an_argument_whose_owner_maps_to_an_unread_operation_is_unread() {
+    // 意味を持つ引数 m.f.$x。候補は m.f を消し、定義を読んでいない g.py の m.g へ対応させる。
+    // m.g に同じ名前の引数があるかは決まらないので、引数の対応があるかも決まらない。`unread` で沈黙し、g.py を返す(設計 §5.1)。
+    let law = r#"sources "*.py"
+
+reading module = dir(depth: 1)
+
+meaning payment-info on field
+  "注文の支払いを特定する値。"
+
+law payment-info-kept
+  "決済情報は変更の後も残る。"
+  about payment-info
+  changes keep
+"#;
+    let repo = Repo::new("keep-unread-owner");
+    repo.write(".archsig/law/m.law", law);
+    repo.map(
+        "m.py",
+        r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"x": "int"}, "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.f.$x", "meaning": "payment-info", "uses": ["m.py:3@blob:aaaaaaa"], "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.g", "object": "g.py", "at": "m.py:4@blob:aaaaaaa"}
+"#,
+    );
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        "{\"kind\": \"removes\", \"subject\": \"m.f\", \"at\": \"plan:p\"}\n{\"kind\": \"corresponds\", \"subject\": \"m.f\", \"object\": \"m.g\", \"at\": \"plan:p\"}\n",
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f.$x");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "g.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}

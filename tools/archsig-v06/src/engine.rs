@@ -1247,14 +1247,11 @@ fn keep(
 }
 
 /// 引数 `e`(`<操作>.$<名前>`)の対応は、操作どうしの対応から作る(設計 §3.6 の対応の2)。
-/// 持ち主の操作か、その行き先の種類が決まらなければ(曖昧、`value` のない `defines`)、引数の対応があるかも決まらない。
+/// 持ち主の操作か、その行き先の種類が決まらなければ(曖昧、`value` のない `defines`、定義を読んでいない)、
+/// 同じ名前の引数があるかも決まらない。その沈黙を返す(定義を読んでいなければ、その読む所を持つ)。
 fn owner_undecided(before: &Structure, after: &Structure, overlay: &Overlay, mapping: &Mapping, e: &str) -> Option<Silence> {
     let (op, _) = e.split_once(".$")?;
-    let undecided = |k: Result<&str, Silence>| match k {
-        Err(s) if matches!(s.reason, Reason::Unresolved) => Some(s),
-        _ => None,
-    };
-    undecided(before.kind(op)).or_else(|| mapping.to.get(op).into_iter().flatten().find_map(|t| undecided(corresponds_kind(after, overlay, t))))
+    before.kind(op).err().or_else(|| mapping.to.get(op).into_iter().flatten().find_map(|t| corresponds_kind(after, overlay, t).err()))
 }
 
 /// `sources` のソースのうち、範囲 `scope` を読んでいないもの。読む所として返す。
