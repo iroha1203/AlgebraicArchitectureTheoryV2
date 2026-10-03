@@ -33,8 +33,14 @@ pub enum BinOp {
     Div,
 }
 
+/// 式の字句の数の上限。読みは再帰で下るので、これを超える式は読まない(設計 §3.5)。
+pub const TOKEN_LIMIT: usize = 1_000;
+
 pub fn parse(text: &str) -> Result<Expr, String> {
     let tokens = lex(text)?;
+    if tokens.len() > TOKEN_LIMIT {
+        return Err(format!("式の字句の数が上限({TOKEN_LIMIT})を超える"));
+    }
     let mut p = Parser { tokens, pos: 0 };
     let e = p.or()?;
     if p.pos != p.tokens.len() {

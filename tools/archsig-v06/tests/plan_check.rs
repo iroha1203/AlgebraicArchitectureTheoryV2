@@ -2166,3 +2166,37 @@ law payment-info-kept
     let s = run_with("keep-owner-valueless", "", r#""value": "operation", "#);
     assert_eq!((result(&s, "m.f.$x")["outcome"].as_str(), result(&s, "m.f.$x")["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
 }
+
+#[test]
+fn a_long_expression_is_read_as_an_unreadable_expression() {
+    // 字句の数が上限を超える式は読まず、? と同じに扱う。深い入れ子でもプロセスは落ちない。
+    let nested = format!("{}1{}", "(".repeat(10_000), ")".repeat(10_000));
+    let negated = format!("{}1", "-".repeat(10_000));
+    let long_sum = vec!["1"; 10_000].join(" + ");
+    for (name, v) in [("long-nested", nested.as_str()), ("long-negated", negated.as_str()), ("long-sum", long_sum.as_str())] {
+        let (s, r) = t_case(name, &[("writes", "m.O.t", v, "")], &[("writes", "m.O.t", "1", "")], "");
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
+        assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py" && n["scope"] == "structure"), "{name}: {s}");
+    }
+    // 上限より短い式は読む。上限の近くまで入れ子にしても落ちない。
+    let deep = format!("{}1{}", "(".repeat(499), ")".repeat(499));
+    let (s, r) = t_case("deep-within", &[("writes", "m.O.t", deep.as_str(), "")], &[("writes", "m.O.t", "1", "")], "");
+    assert_eq!(r["outcome"], "holds", "{s}");
+    let short_sum = vec!["1"; 400].join(" + ");
+    let (s, r) = t_case("short-sum", &[("writes", "m.O.t", short_sum.as_str(), "")], &[("writes", "m.O.t", short_sum.as_str(), "")], "");
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn a_value_that_grows_beyond_the_term_limit_is_limit() {
+    // $o.t + 1 を重ねて書くと、値の項が書き込みのたびに大きくなる。上限を超えれば limit。
+    let run = |name: &str, n: usize| {
+        let steps: Vec<(&str, &str, &str, &str)> = vec![("writes", "m.O.t", "$o.t + 1", ""); n];
+        let (s, r) = t_case(name, &steps, &steps, "");
+        (r["outcome"].as_str().map(str::to_string), r["reason"].as_str().map(str::to_string), s)
+    };
+    let (o, _, s) = run("grow-small", 100);
+    assert_eq!(o.as_deref(), Some("holds"), "{s}");
+    let (o, reason, s) = run("grow-large", 5_000);
+    assert_eq!((o.as_deref(), reason.as_deref()), (Some("silent"), Some("limit")), "{s}");
+}
