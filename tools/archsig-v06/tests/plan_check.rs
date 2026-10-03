@@ -1238,3 +1238,55 @@ fn a_type_name_that_is_not_a_type_is_unresolved_below() {
     let (s, r) = below_case("below-not-a-type", &atoms, PLAN_WRITES_B);
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
 }
+
+#[test]
+fn the_limit_below_counts_one_written_place_not_the_branches() {
+    // 型 m.S はフィールドを 40 個と p を持つ。o.s を、条件の違う二つの分岐で同じ値に書く。たどる場所は分岐によらず同じである。
+    let mut atoms = format!("{O_S}{S_P}");
+    for i in 0..40 {
+        atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.S.f{i}\", \"value\": \"field\", \"type\": \"int\", \"at\": \"m.py:5@blob:aaaaaaa\"}}\n"));
+    }
+    let f = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "when": "m.c1()", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "when": "m.c2()", "at": "m.py:11@blob:aaaaaaa"}
+"#;
+    let plan = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "when": "m.c1()", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "when": "m.c2()", "at": "plan:p"}
+"#;
+    let (s, r) = below_case("below-limit-per-place", &format!("{atoms}{f}"), plan);
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn the_fields_of_a_type_whose_definition_was_not_read_are_followed_when_read() {
+    // 型 m.S の defines はないが、フィールド m.S.p の定義と意味は読んである。
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.S.p", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:4@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-fields-without-type", &atoms, PLAN_WRITES_B);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+}
+
+#[test]
+fn the_limit_below_counts_each_written_place_on_its_own() {
+    // o.s と o.t はどちらも型 m.S(フィールド 140 個と p)。一つの場所からたどるのは 141 個で、上限の 256 を超えない。
+    let mut atoms = format!("{O_S}{S_P}{}", r#"{"kind": "defines", "subject": "m.O.t", "value": "field", "type": "m.S", "at": "m.py:2@blob:aaaaaaa"}
+"#);
+    for i in 0..140 {
+        atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.S.f{i}\", \"value\": \"field\", \"type\": \"int\", \"at\": \"m.py:5@blob:aaaaaaa\"}}\n"));
+    }
+    let f = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.a()", "at": "m.py:11@blob:aaaaaaa"}
+"#;
+    let plan = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.a()", "at": "plan:p"}
+"#;
+    let (s, r) = below_case("below-limit-each-place", &format!("{atoms}{f}"), plan);
+    assert_eq!(r["outcome"], "holds", "{s}");
+}

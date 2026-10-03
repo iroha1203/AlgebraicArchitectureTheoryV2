@@ -573,7 +573,10 @@ fn has_meaning(s: &Structure, field: &str, meaning: &str) -> bool {
 /// 書き込みの場所より先の場所をたどる(設計 §5.4)。たどったフィールドの数と、フィールドを観測していない型を持つ。
 #[derive(Default)]
 struct Below {
+    /// 一つの書き込みの場所からたどったフィールドの数。
     count: usize,
+    /// 書き込みの場所ごとの結果。分岐や書き込みが同じ場所を何度書いても、たどるのは一度だけである。
+    done: BTreeMap<Vec<String>, Vec<Vec<String>>>,
     /// 定義を読んでいない型のうち、`resolves` がないか外部を指すもの。意味を持つフィールドを持たないとみなす。
     unobserved: BTreeSet<String>,
 }
@@ -582,6 +585,10 @@ impl Below {
     /// 書いた場所 `place` より先の場所のうち、最後のフィールドが意味 `meaning` を持つもの。
     /// 書いた値が変われば、その値からたどる場所の値も変わる。`place` の最後のフィールドの型から、型のフィールドをたどる。
     fn places(&mut self, s: &Structure, place: &[String], meaning: &str) -> Result<Vec<Vec<String>>, Silence> {
+        if let Some(done) = self.done.get(place) {
+            return Ok(done.clone());
+        }
+        self.count = 0;
         let mut out = Vec::new();
         let Some(field) = place.last() else { return Ok(out) };
         if let Some(ty) = s.elements.get(field).and_then(|e| e.ty.clone()) {
@@ -589,6 +596,7 @@ impl Below {
                 self.walk(s, &ty, meaning, &mut place.to_vec(), &mut vec![ty.clone()], &mut out)?;
             }
         }
+        self.done.insert(place.to_vec(), out.clone());
         Ok(out)
     }
 
@@ -602,6 +610,11 @@ impl Below {
                 Some(a) => question_at(a),
                 None => Silence::new(Reason::Unresolved),
             });
+        }
+        let prefix = format!("{ty}.");
+        if !s.elements.contains_key(ty) && s.elements.range(prefix.clone()..).next().is_some_and(|(n, _)| n.starts_with(&prefix)) {
+            // 型の定義は読んでいないが、そのフィールドの定義は読んでいる。読んだフィールドをたどる。
+            return Ok(true);
         }
         if s.elements.contains_key(ty) {
             return match s.kind(ty)? {
