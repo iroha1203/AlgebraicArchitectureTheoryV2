@@ -1874,6 +1874,11 @@ fn a_name_without_dollar_is_read_as_a_constant() {
     assert_eq!(r["outcome"], "holds", "{s}");
     let (s, r) = t_case("const-negative-differs", &w("-$o.n"), &w("$o.n"), "");
     assert_eq!(r["kind"], "counterexample", "{s}");
+    // 定数は字句で比べる。名前の定数の値も、数の書き方の違いも知らないので、字句が違えば違う値である(第3章)。
+    for (name, a, b) in [("const-name-and-value", "JP_CODE", "\"JP\""), ("const-number-forms", "1", "1.0")] {
+        let (s, r) = t_case(name, &w(a), &w(b), "");
+        assert_eq!(r["kind"], "counterexample", "{name}: {s}");
+    }
 }
 
 #[test]
