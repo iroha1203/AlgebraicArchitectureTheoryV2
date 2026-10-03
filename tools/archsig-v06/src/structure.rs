@@ -126,6 +126,9 @@ pub struct Structure {
     call_names: BTreeMap<usize, String>,
     /// 呼び出しの要素の名前と、その `passes`(受け取る引数 → 式)。
     passes: BTreeMap<String, BTreeMap<String, Expr>>,
+    /// 渡す値が一つに決まらない呼び出しの要素。`passes` の `when` が呼び出しの `when` と違うか、
+    /// 一つの引数に値の違う `passes` が二つ以上ある。
+    undecided_passes: BTreeSet<String>,
 }
 
 impl Structure {
@@ -211,12 +214,31 @@ impl Structure {
         for name in s.call_names.values() {
             s.elements.entry(name.clone()).or_default().kinds.insert("call".to_string());
         }
+        // 呼び出しの要素ごとの、`calls` の `when`。
+        let call_when: BTreeMap<&str, Option<&str>> =
+            s.call_names.iter().map(|(&i, name)| (name.as_str(), atoms[i].when.as_deref().map(str::trim))).collect();
         let mut passes: BTreeMap<String, BTreeMap<String, Expr>> = BTreeMap::new();
+        let mut undecided = BTreeSet::new();
         for a in s.atoms.iter().filter(|a| a.kind == "passes") {
             let value = a.value.as_deref().map(parse_expr).unwrap_or(Expr::Unknown);
-            passes.entry(a.subject.clone()).or_default().insert(a.object.clone().unwrap_or_default(), value);
+            // 呼び出しと違う条件で渡す値は、条件で変わるので一つに決まらない。`when` のない `passes` は、呼び出しの条件で渡す。
+            if a.when.is_some() && a.when.as_deref().map(str::trim) != call_when.get(a.subject.as_str()).copied().flatten() {
+                undecided.insert(a.subject.clone());
+            }
+            let params = passes.entry(a.subject.clone()).or_default();
+            let object = a.object.clone().unwrap_or_default();
+            match params.get(&object) {
+                Some(v) if *v != value => {
+                    undecided.insert(a.subject.clone());
+                }
+                Some(_) => {}
+                None => {
+                    params.insert(object, value);
+                }
+            }
         }
         s.passes = passes;
+        s.undecided_passes = undecided;
         s
     }
 
@@ -327,6 +349,10 @@ impl Structure {
                     let mut binds = Vec::new();
                     let mut inner = BTreeMap::new();
                     if external.is_none() {
+                        // 渡す値が一つに決まらなければ、呼び出し先の引数の値が決まらない。
+                        if self.undecided_passes.contains(&call) {
+                            return Err(Silence::new(Reason::Unresolved));
+                        }
                         // 受け取る引数が呼び出し先の引数でなければ、渡す値の行き先が決まらない。
                         let params = self.elements.get(&object).map(|e| &e.params);
                         let prefix = format!("{object}.$");

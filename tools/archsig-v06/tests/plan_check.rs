@@ -2678,3 +2678,67 @@ fn a_type_whose_resolution_is_undecided_is_unresolved_when_traced() {
         assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
     }
 }
+
+#[test]
+fn a_passed_value_that_depends_on_a_condition_other_than_the_call_is_unresolved() {
+    // m.f は m.g を呼び、m.g は渡された x を意味を持つ m.O.t に書く。候補は m.f を同じ形で書き直す。
+    // passes が呼び出しと違う when を持つか、一つの引数に値の違う passes が二つあれば、渡す値が一つに決まらない。
+    let callee = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"x": "int"}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.O.t", "value": "$x", "at": "m.py:21@blob:aaaaaaa"}
+"#;
+    let run = |name: &str, call_when: &str, passes: &[(&str, &str)]| {
+        let atoms = |at: &str| {
+            let mut out = String::new();
+            let when = if call_when.is_empty() { String::new() } else { format!(", \"when\": \"{call_when}\"") };
+            out.push_str(&format!("{{\"kind\": \"calls\", \"subject\": \"m.f\", \"object\": \"m.g\"{when}, \"at\": \"{at}\"}}\n"));
+            for (value, w) in passes {
+                let w = if w.is_empty() { String::new() } else { format!(", \"when\": \"{w}\"") };
+                out.push_str(&format!("{{\"kind\": \"passes\", \"subject\": \"m.f->m.g\", \"object\": \"m.g.$x\", \"value\": \"{value}\"{w}, \"at\": \"{at}\"}}\n"));
+            }
+            out
+        };
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map(
+            "m.py",
+            &format!(
+                "{}{T_ATOMS}{callee}{}",
+                r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#,
+                atoms("m.py:10@blob:aaaaaaa")
+            ),
+        );
+        repo.write(
+            ".archsig/plans/p/plan.jsonl",
+            &format!(
+                "{}{}",
+                r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+"#,
+                atoms("plan:p")
+            ),
+        );
+        let s = repo.run(&["plan", "check", "p"]);
+        (result(&s, "m.f").clone(), s)
+    };
+    // 呼び出しと違う when、一つの引数に値の違う二つの passes は、渡す値が決まらない。
+    for (name, call_when, passes) in [
+        ("passes-other-when", "", vec![("1", "$o.n == 1")]),
+        ("passes-two-values", "", vec![("1", ""), ("2", "")]),
+        ("passes-two-conditions", "", vec![("1", "$o.n == 1"), ("2", "$o.n != 1")]),
+    ] {
+        let (r, s) = run(name, call_when, &passes);
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
+    }
+    // 呼び出しと同じ when の passes と、when のない passes(条件付きの呼び出しを含む)は、計算する(対照)。
+    for (name, call_when, passes) in [
+        ("passes-plain", "", vec![("1", "")]),
+        ("passes-same-when", "$o.n == 1", vec![("1", "$o.n == 1")]),
+        ("passes-conditional-call", "$o.n == 1", vec![("1", "")]),
+        ("passes-same-twice", "", vec![("1", ""), ("1", "")]),
+    ] {
+        let (r, s) = run(name, call_when, &passes);
+        assert_eq!(r["outcome"], "holds", "{name}: {s}");
+    }
+}
