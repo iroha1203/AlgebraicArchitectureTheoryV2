@@ -1179,14 +1179,14 @@ fn an_ambiguous_type_is_unresolved_below() {
 
 #[test]
 fn too_many_places_below_are_limit() {
-    // T0..T9 の各型が、次の型のフィールド a と b を持つ。たどる場所は 2^9 を超える。
+    // T0..T13 の各型が、次の型のフィールド a と b を持つ。たどるフィールドは上限(STEP_LIMIT)を超える。
     let mut atoms = String::from(
         r#"{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.T0", "at": "m.py:2@blob:aaaaaaa"}
 "#,
     );
-    atoms.push_str("{\"kind\": \"defines\", \"subject\": \"m.T10\", \"value\": \"type\", \"at\": \"m.py:3@blob:aaaaaaa\"}\n");
-    for i in 0..10 {
+    atoms.push_str("{\"kind\": \"defines\", \"subject\": \"m.T14\", \"value\": \"type\", \"at\": \"m.py:3@blob:aaaaaaa\"}\n");
+    for i in 0..14 {
         atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.T{i}\", \"value\": \"type\", \"at\": \"m.py:3@blob:aaaaaaa\"}}\n"));
         for f in ["a", "b"] {
             atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.T{i}.{f}\", \"value\": \"field\", \"type\": \"m.T{}\", \"at\": \"m.py:4@blob:aaaaaaa\"}}\n", i + 1));
@@ -1461,4 +1461,80 @@ fn an_existing_type_without_resolves_that_the_plan_redefines_is_still_unread() {
     let (s, r) = below_case("below-plan-redefines-unresolved-type", &atoms, &plan);
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.S"), "{s}");
+}
+
+#[test]
+fn a_large_type_without_the_meaning_is_not_limit() {
+    // m.S は int のフィールドを 300 個持ち、意味を持つフィールドはない。
+    let mut atoms = format!("{O_S}{}", r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+"#);
+    for i in 0..300 {
+        atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.S.f{i}\", \"value\": \"field\", \"type\": \"int\", \"at\": \"m.py:4@blob:aaaaaaa\"}}\n"));
+    }
+    let (s, r) = below_case("below-large-type", &format!("{atoms}{F_WRITES_A}"), PLAN_WRITES_B);
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn a_field_named_but_not_defined_is_unread_below() {
+    // m.S の定義と m.S.q は読んである。m.S.p は resolves で b.py を指して名指されているが、定義を読んでいない。
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.q", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.S.p", "object": "b.py", "at": "m.py:5@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-named-field", &atoms, PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "b.py"), "{s}");
+}
+
+#[test]
+fn a_type_named_by_a_call_that_the_plan_redefines_is_still_unread() {
+    // 変更前は、操作 m.g の呼び出しで m.S を名指すだけで、m.S の定義も resolves もない。o.s の型は m.R。
+    // 候補は m.S を定義し、o.s の型を m.S に書き直して書く。元の m.S のフィールドは分からない。
+    let atoms = format!(
+        "{}{}",
+        O_S.replace("\"type\": \"m.S\"", "\"type\": \"m.R\""),
+        r#"{"kind": "defines", "subject": "m.R", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.g", "object": "m.S", "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+"#
+    );
+    let plan = format!("{PLAN_WRITES_B}{}", r#"{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S", "value": "type", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S.q", "value": "field", "type": "int", "file": "m.py", "at": "plan:p"}
+"#);
+    let (s, r) = below_case("below-call-named-type", &atoms, &plan);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.S"), "{s}");
+}
+
+#[test]
+fn an_external_type_the_plan_redefines_stays_external() {
+    // 変更前の m.S は resolves で外部を指す。候補が m.S を定義し直しても、外部の型としてたどらず、条件に並べる。
+    let repo = Repo::new("below-external-redefined");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        &format!(
+            "{}{O_S}{{\"kind\": \"resolves\", \"subject\": \"m.S\", \"object\": \"external:lib\", \"at\": \"m.py:1@blob:aaaaaaa\"}}\n{F_WRITES_A}",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+"#
+        ),
+    );
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        &format!("{PLAN_WRITES_B}{}", r#"{"kind": "defines", "subject": "m.S", "value": "type", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S.q", "value": "field", "type": "int", "file": "m.py", "at": "plan:p"}
+"#),
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!(r["outcome"], "holds", "{s}");
+    let d = repo.run(&["show", r["id"].as_str().unwrap()]);
+    assert!(d["conditions"].as_array().unwrap().iter().any(|c| c == "外部の型 m.S は、意味を持つフィールドを持たないとみなす"), "{d}");
 }

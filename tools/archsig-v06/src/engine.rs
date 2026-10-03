@@ -9,7 +9,7 @@ use crate::atom::{Atom, parse_location};
 use crate::expr::BinOp;
 use crate::geometry::Split;
 use crate::law::{LawSet, Rule};
-use crate::structure::{Overlay, Reason, Resolution, Silence, State, StepKind, Structure, Value, question_at};
+use crate::structure::{Overlay, Reason, Resolution, STEP_LIMIT, Silence, State, StepKind, Structure, Value, question_at};
 
 /// 分岐の数の上限。超えたら `limit` で沈黙する。
 pub const BRANCH_LIMIT: usize = 256;
@@ -570,12 +570,27 @@ fn has_meaning(s: &Structure, field: &str, meaning: &str) -> bool {
     s.meanings.get(field).is_some_and(|ms| ms.iter().any(|m| m.meaning.as_deref() == Some(meaning)))
 }
 
-/// 型 `ty` のフィールド。フィールドの名前は `<型>.<フィールド>` である(マニュアル第3章)。定義を読んだものだけを返す。
+/// 構造が名指す名前。Atom の `subject`、`object`、`via`、要素の型と引数の型、`resolves` の名前。
+fn mentioned(s: &Structure) -> impl Iterator<Item = &str> {
+    s.atoms
+        .iter()
+        .flat_map(|a| std::iter::once(a.subject.as_str()).chain(a.object.as_deref()).chain(a.via.iter().flatten().map(String::as_str)))
+        .chain(s.elements.values().flat_map(|e| e.ty.as_deref().into_iter().chain(e.params.values().map(String::as_str))))
+        .chain(s.resolves.keys().map(String::as_str))
+}
+
+/// 型 `ty` のフィールド。フィールドの名前は `<型>.<フィールド>` である(マニュアル第3章)。定義を読んだものを返す。
+/// 構造が `<型>.<名前>` を名指しているのに定義を読んでいなければ、そのフィールドは分からないので、
+/// 定義を読んでいない要素として沈黙する(設計 §3.3、§5.1)。
 fn fields_of(s: &Structure, ty: &str) -> Result<Vec<String>, Silence> {
     let prefix = format!("{ty}.");
+    let member = |n: &str| n.strip_prefix(&prefix).is_some_and(|rest| !rest.is_empty() && !rest.contains('.') && !rest.starts_with('$') && !rest.contains("->"));
+    if let Some(n) = mentioned(s).find(|n| member(n) && !s.elements.contains_key(*n)) {
+        return Err(s.kind(n).err().unwrap_or_else(|| Silence::new(Reason::Unread)));
+    }
     let mut out = Vec::new();
     for (name, e) in s.elements.range(prefix.clone()..).take_while(|(n, _)| n.starts_with(&prefix)) {
-        if name[prefix.len()..].contains('.') || !e.kinds.contains("field") {
+        if !member(name) || !e.kinds.contains("field") {
             continue;
         }
         s.kind(name)?;
@@ -624,9 +639,12 @@ impl Below<'_> {
             // 候補が定義し直した型でも、変更前にその型を名指していて定義を読んでいなければ、元のフィールドは分からない(設計 §5.1)。
             // 変更前の構造で、定義を読んでいない要素として沈黙する(3.3)。変更前が名指さない型は、候補が新しく定義した型である。
             if let (Some(at), Some(prior)) = (defined_at(s, ty), self.before) {
-                let named_before = prior.resolves.contains_key(ty)
-                    || prior.elements.values().any(|e| e.ty.as_deref() == Some(ty) || e.params.values().any(|p| p == ty));
-                if at.starts_with("plan:") && !prior.elements.contains_key(ty) && named_before && !matches!(prior.resolves.get(ty), Some(Resolution::External(_))) {
+                if at.starts_with("plan:") && !prior.elements.contains_key(ty) && mentioned(prior).any(|n| n == ty) {
+                    if let Some(Resolution::External(_)) = prior.resolves.get(ty) {
+                        // 変更前に外部を指していた型は、外部の型としてたどらない。
+                        self.external.insert(ty.to_string());
+                        return Ok(false);
+                    }
                     return Err(prior.kind(ty).err().unwrap_or_else(|| Silence::new(Reason::Unread)));
                 }
             }
@@ -648,7 +666,7 @@ impl Below<'_> {
     fn fields(&mut self, s: &Structure, ty: &str) -> Result<Vec<String>, Silence> {
         let out = fields_of(s, ty)?;
         self.count += out.len();
-        if self.count > BRANCH_LIMIT {
+        if self.count > STEP_LIMIT {
             return Err(Silence::new(Reason::Limit));
         }
         Ok(out)
@@ -664,16 +682,14 @@ impl Below<'_> {
                 out.push(prefix.clone());
             }
             let t = s.elements[&f].ty.clone().ok_or_else(|| Silence::new(Reason::Unresolved))?;
-            {
-                if types.contains(&t) {
-                    if self.reaches(s, &f, &t, meaning, &mut BTreeSet::new())? {
-                        return Err(Silence::new(Reason::Limit));
-                    }
-                } else if self.known(s, &f, &t)? {
-                    types.push(t.clone());
-                    self.walk(s, &t, meaning, prefix, types, out)?;
-                    types.pop();
+            if types.contains(&t) {
+                if self.reaches(s, &f, &t, meaning, &mut BTreeSet::new())? {
+                    return Err(Silence::new(Reason::Limit));
                 }
+            } else if self.known(s, &f, &t)? {
+                types.push(t.clone());
+                self.walk(s, &t, meaning, prefix, types, out)?;
+                types.pop();
             }
             prefix.pop();
         }
