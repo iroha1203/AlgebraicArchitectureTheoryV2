@@ -5987,7 +5987,7 @@ result:
     - "原全Aff/全核/三辺二面/P/always/空候補/全閉cover、全actual/local/全labels/元制限/同じB/Fを構成"
     - "原全相対cochains/d1/d2/actualδ、whole relative H2/local H1,H2/overlap H1/Ω/positive connectingを両逆と元微分から導出"
     - "全(b1,b2)のlocal常時可解、global iff/実障害 iff、全四値/実修復/非零不能、同じ原absolute全H2零を証明"
-    - "単一本体15と全所有個別公理208/hash/登録/common scanを対応。標準四本PR査読/root受理/同head CIはPR監査記録へ固定"
+    - "単一本体15と全所有個別公理211/hash/登録/common scanを対応。標準四本PR査読/root受理/同head CIはPR監査記録へ固定"
   split_reason: none
   completion_candidate: yes
   lean_artifacts: ["W5AffineInput/Regions/AuthoredOperations/ActualRepairs/LocalRepairs/ActualArrows", "W5OriginalDifferentials/RelativeCoefficients/RelativeObstruction/LocalCohomology/OverlapCohomology", "W5NativeDescent/IntegrationObstruction/AbsoluteCohomology/ActualSolvability"]
@@ -6023,7 +6023,7 @@ audits:
 ### C27 productionと個別公理の一次検証対応
 
 全15単一production本体のactual exitは0、error/warningは各0。
-namespaceの202宣言と、所有moduleで生成されたnamespace外helper6を含む全208宣言を個別 `#print axioms` で被覆する。
+namespaceの205宣言と、所有moduleで生成されたnamespace外helper6を含む全211宣言を個別 `#print axioms` で被覆する。
 本体elaborationと、既検証本体をimportする個別公理監査を分け、source/helper/raw logのSHA256を対応させる。
 標準公理はpropext、Classical.choice、Quot.sound。
 本体コマンドは `cd research/lean && lake env lean -s4096 -D Elab.async=false -o .lake/build/lib/lean/<module path>.olean <source path>`。
@@ -6034,13 +6034,13 @@ Research全体・aggregate・全module/file loopのelaborationは実行しない
 | --- | ---: | --- | --- |
 | W5AbsoluteCohomology | 8 | `231b0402293aedf9bab0c516daf9c145138fdc9a70d7645db3e59e15a2813b92` | `1388335446af4d46a4ab938edd1febe5acd4880d032904c4a8d10991aaa3026c` |
 | W5ActualArrows | 9 | `96d44ad63d93ac1448feda8eecca45e014c108a0ced3e29b6fef225f247843a1` | `d55ed42a10710dbe81a4d83416e522337c3d4584d3721ec2d0f519ace67ccc0e` |
-| W5ActualRepairs | 15 | `5f0c8e687a6009003288946ecbbebd6d20bb1e435b923ac5e84c4643697f6645` | `dcccee0f9f638931349b51aaf971d674c3718ada37f341607607b14eca2f76dc` |
+| W5ActualRepairs | 15 | `79008d5e35f503080ff1c4046529c6f2880cf65b32e471d97d43978339cf2be3` | `dcccee0f9f638931349b51aaf971d674c3718ada37f341607607b14eca2f76dc` |
 | W5ActualSolvability | 19 | `39e3a7d46bcbec77f564290c7dfa54862dcfa8d06c3207d793686ca9f7d61887` | `166bd4ba4fcd976c83059f2649a6015f87233a00a6180cd124a5ef2057510dc1` |
-| W5AffineInput | 19 | `de8f0c11a8099a36ac552e087e699627b8a6e7de0d6820410e6c86d3effa271c` | `5a5fbaf16645b42e7821db0216e9f3757a94cb6d8f5b243ee94e37e12acc329b` |
+| W5AffineInput | 22 | `840dc9da388f1ab61c7df8b8803ce9abd5b7e46de5933076afe1aa164d0f847f` | `701c3dbebde42f9808cba8a2264aa0f3565921d3a17041d7fb63f14878494471` |
 | W5AuthoredOperations | 12 | `22d5261ca73f4ca2849b8b6f16f65b5ff9285f9e636e722392b2bb8cde0a7a44` | `fbcd12b6e44a2cab88a4fe3eabb48d5a580149451892b67b6d564bcf74088c98` |
 | W5IntegrationObstruction | 9 | `254e5fa07608d34b6b59fb2b409267ca8ba3bbe39ece28f67238bd985061328b` | `8d5f988930c6486ada7193feb4ac6e175952862588771665f52722d7d7714b8e` |
 | W5LocalCohomology | 6 | `c8bd565554fd6da9ffbb403036923c54f147a9372a1dd2c45e92795d1b73df36` | `8af2904d95d2a4547adbab95ea8c11c00b379da527473e5fd987d377e385c574` |
-| W5LocalRepairs | 24 | `a7a44ea30a8eb2a267b6ada7493b18d7ec00c5ca559bc023b4f05f073ec07317` | `c5d2abcb5daf66e3c5b1be44445852876ee0c9b24677f3c9d031bcfdc03eea83` |
+| W5LocalRepairs | 24 | `900d6a11011912e43f1376a593ce5d98e7f66c0b52d718b7366a064bf2410cf9` | `c5d2abcb5daf66e3c5b1be44445852876ee0c9b24677f3c9d031bcfdc03eea83` |
 | W5NativeDescent | 14 | `95b4e6749a5ff9a85c08a3779267f0594eaea9708b65ed96955e197d610c3049` | `e3ef4d103411fb7309ec1ac90cd9402cb2be6abbb928ecdb8dbcd3114eeb54ad` |
 | W5OriginalDifferentials | 9 | `b610140feebf26b42f1a038a9a5970705ccf2e5173c0defc7a3375e45ef236f3` | `06a612a3ee8cdbb731dd7a465880264c60c1478382e01fd46486faa5e4534bc6` |
 | W5OverlapCohomology | 12 | `f917e74be1aa67f953e14817237c1d3e9873859fd676b4d29fd3fe67c850d148` | `854fc4e89662d62932ff59f1f2eee245e9a15d84c695269e92f8f0c56bf9ae0f` |
@@ -6050,13 +6050,13 @@ Research全体・aggregate・全module/file loopのelaborationは実行しない
 
 | 個別公理audit module群 | 所有宣言数 | helper SHA256 | raw log SHA256 |
 | --- | ---: | --- | --- |
-| W5AffineInput, W5Regions, W5AuthoredOperations | 52 | `6107051298401cb8fee1469ca99edbd034ea7870c8c430d7147a5394538b7b97` | `9ff9545391a47e23949baa6d3706668d7eebc3d5fbf765634adc3080aab6caad` |
+| W5AffineInput, W5Regions, W5AuthoredOperations | 55 | `6107051298401cb8fee1469ca99edbd034ea7870c8c430d7147a5394538b7b97` | `48dec17c3f7d191b61a5dea2b91662d810a57cc5497a1ddaef8a1ccc200b9e2e` |
 | W5ActualRepairs, W5LocalRepairs, W5ActualArrows | 48 | `8e4e825e17c9841f029b38fe0537e2651c66c716fa27e9344c2708edffe8d80a` | `2d811bf12bbaef87000f6c0c4e37c003e686f2fbef51602f5a6ae1fa149a2251` |
 | W5OriginalDifferentials, W5RelativeCoefficients, W5RelativeObstruction, W5LocalCohomology, W5OverlapCohomology | 56 | `ee5753b2e86503eebd7d0ea3ea16937e21f365e26e71c86edbb27fb82d9e11bc` | `7d09811a92c2b923f636fb886279d1ab62a7bdbc8ca1eee6d788b8cab7c6aa05` |
 | W5NativeDescent, W5IntegrationObstruction, W5AbsoluteCohomology, W5ActualSolvability | 52 | `823e9c0aca12cb9b981340dafa0b632a3794dd04c4e687c1258fbd4467ee7d59` | `2bab19c02b65818b38f879944bdde714c267765bf156e5693821bc173e6a4cd0` |
 
 <details>
-<summary>C27 全所有宣言208</summary>
+<summary>C27 全所有宣言211</summary>
 
 ```text
 AAT.AG.AbelianLiftingObstruction.GroupExtension.pathValue.eq_def
@@ -6130,6 +6130,9 @@ AAT.AG.RelativeRepairComposition.W5AffineInput.name_edge
 AAT.AG.RelativeRepairComposition.W5AffineInput.originalTower
 AAT.AG.RelativeRepairComposition.W5AffineInput.primeTwo
 AAT.AG.RelativeRepairComposition.W5AffineInput.reference
+AAT.AG.RelativeRepairComposition.W5AffineInput.reference_a_apply
+AAT.AG.RelativeRepairComposition.W5AffineInput.reference_b_apply
+AAT.AG.RelativeRepairComposition.W5AffineInput.reference_e_apply
 AAT.AG.RelativeRepairComposition.W5AffineInput.reference_left_path
 AAT.AG.RelativeRepairComposition.W5AffineInput.reference_right_path
 AAT.AG.RelativeRepairComposition.W5AffineInput.vertexS

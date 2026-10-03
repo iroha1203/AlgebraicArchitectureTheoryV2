@@ -90,15 +90,13 @@ theorem localValue_operations (U : ClosedRegion geometry) (he : name edgeE ∈ U
     apply AffineEquiv.ext
     intro x
     change operation b₁ b₂ (localValue U he R) (name edgeA).2.2 x = reference b₁ b₂ (name edgeA).2.2 x
-    rw [operation_a_apply]
-    simp [reference,name,edgeA,add_comm]
+    rw [operation_a_apply, reference_a_apply]
   · change operation b₁ b₂ (localValue U he R) (name edgeB).2.2 = R.operation (localName U edgeB hu).2.2
     rw [local_fixed_map U R (localName U edgeB hu).2.2 (Or.inr rfl)]
     apply AffineEquiv.ext
     intro x
     change operation b₁ b₂ (localValue U he R) (name edgeB).2.2 x = reference b₁ b₂ (name edgeB).2.2 x
-    rw [operation_b_apply]
-    simp [reference,name,edgeA,edgeB,add_comm]
+    rw [operation_b_apply, reference_b_apply]
 /-- Every independent selected actual face imposes its original scalar equation. -/
 theorem localValue_face (U : ClosedRegion geometry) (he : name edgeE ∈ U.edges)
     {b₁ b₂ : ZMod 2} (R : LocalRepairs b₁ b₂ U) (f : U.faces) :

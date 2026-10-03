@@ -80,6 +80,19 @@ noncomputable def reference (b₁ b₂ : ZMod 2) :
   fun e => if e.1 = edgeA then translation (k := ZMod 2) b₁
     else if e.1 = edgeB then translation (k := ZMod 2) b₂ else 1
 
+/-- The shared original reference edge is the identity on every input. -/
+theorem reference_e_apply (b₁ b₂ x : ZMod 2) :
+    reference b₁ b₂ (name edgeE).2.2 x = x := by
+  simp [reference, name, edgeE, edgeA, edgeB]
+/-- The physical a reference edge retains the first original input translation. -/
+theorem reference_a_apply (b₁ b₂ x : ZMod 2) :
+    reference b₁ b₂ (name edgeA).2.2 x = x + b₁ := by
+  simp [reference, name, edgeA, add_comm]
+/-- The physical b reference edge retains the second original input translation. -/
+theorem reference_b_apply (b₁ b₂ x : ZMod 2) :
+    reference b₁ b₂ (name edgeB).2.2 x = x + b₂ := by
+  simp [reference, name, edgeA, edgeB, add_comm]
+
 /-- Both original face comparisons are identity translations. -/
 def comparison : geometry.TwoCell → ZMod 2 := fun _ => 0
 

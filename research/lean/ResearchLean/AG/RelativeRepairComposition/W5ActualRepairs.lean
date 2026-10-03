@@ -52,14 +52,12 @@ theorem value_operations {b₁ b₂ : ZMod 2} (R : RealRepairs b₁ b₂) :
     rw [ha]
     apply AffineEquiv.ext
     intro x
-    rw [operation_a_apply]
-    simp [reference,name,edgeA,add_comm]
+    rw [operation_a_apply, reference_a_apply]
   · change operation b₁ b₂ (value R) (name edgeB).2.2 = R.operation (name edgeB).2.2
     rw [hb]
     apply AffineEquiv.ext
     intro x
-    rw [operation_b_apply]
-    simp [reference,name,edgeA,edgeB,add_comm]
+    rw [operation_b_apply, reference_b_apply]
 
 /-- Every original actual face derives its relevant shared-value equation. -/
 theorem value_face {b₁ b₂ : ZMod 2} (R : RealRepairs b₁ b₂) (f : Bool) :
@@ -77,12 +75,10 @@ theorem operation_fixed (b₁ b₂ u : ZMod 2) (e : EdgeName (K := geometry))
   rcases he with he | he <;> subst e
   · apply AffineEquiv.ext
     intro x
-    rw [operation_a_apply]
-    simp [reference,name,edgeA,add_comm]
+    rw [operation_a_apply, reference_a_apply]
   · apply AffineEquiv.ext
     intro x
-    rw [operation_b_apply]
-    simp [reference,name,edgeA,edgeB,add_comm]
+    rw [operation_b_apply, reference_b_apply]
 /-- Both derived input equations construct an independent whole original repair. -/
 noncomputable def fromValue (b₁ b₂ u : ZMod 2) (h₁ : u = b₁) (h₂ : u = b₂) :
     RealRepairs b₁ b₂ where
