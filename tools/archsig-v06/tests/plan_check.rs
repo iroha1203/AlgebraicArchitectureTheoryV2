@@ -2287,13 +2287,20 @@ fn a_long_expression_does_not_decide_whether_a_removed_element_is_used() {
         repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.U.a\", \"at\": \"plan:p\"}\n");
         repo.run(&["plan", "check", "p"])
     };
-    // 消える要素を使うかの結論は、Law なしの行に出る(changes commute の行とは別)。
-    let silent_j = |s: &Value| s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.j" && r["law"].is_null() && r["outcome"] == "silent");
-    // 短い式も読めないので沈黙する(対照)。
+    // 消える要素を使うかの結論は、Law なしの行に出る(changes commute の行とは別)。その行の理由と、それを決める次に読む所を返す。
+    let removes_row = |s: &Value| {
+        let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.j" && r["law"].is_null()).cloned().unwrap_or(Value::Null);
+        let read = s["next"].as_array().unwrap().iter().any(|n| n["decides"].as_array().unwrap().contains(&r["id"]));
+        (r["outcome"].as_str().map(str::to_string), r["reason"].as_str().map(str::to_string), read)
+    };
+    // 短い読めない式は ? と同じに沈黙し、ソースを読む所として返す(対照)。
     let s = run("removes-short-unreadable", "$o.q(1).a + 1");
-    assert!(silent_j(&s), "{s}");
-    let s = run("removes-long-unreadable", &format!("$o.q(1).a{}", " + 1".repeat(600)));
-    assert!(silent_j(&s), "{s}");
+    assert_eq!(removes_row(&s), (Some("silent".into()), Some("unresolved".into()), true), "{s}");
+    // 字句の数が上限を超える式は、構文として読めても読めなくても、limit で沈黙し、読む所は付けない。
+    for (name, v) in [("removes-long-unreadable", format!("$o.q(1).a{}", " + 1".repeat(600))), ("removes-long-readable", format!("$o.b{}", " + 1".repeat(600)))] {
+        let s = run(name, &v);
+        assert_eq!(removes_row(&s), (Some("silent".into()), Some("limit".into()), false), "{name}: {s}");
+    }
 }
 
 #[test]
