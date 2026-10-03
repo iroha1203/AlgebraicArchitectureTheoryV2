@@ -1142,6 +1142,12 @@ fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
                 return None;
             }
             out.push(key(a));
+            // 読み書きのフィールドは、受け継ぎで解いた先も比べる(字句が同じでも、受け継ぎが変われば違う所を読み書きする)。
+            if matches!(a.kind.as_str(), "writes" | "reads") {
+                for x in a.object.iter().chain(a.via.iter().flatten()) {
+                    out.push(format!("access|{:?}", s.access(x)));
+                }
+            }
             if a.kind == "calls"
                 && let Some(c) = &a.object
             {
@@ -1156,6 +1162,13 @@ fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
                         if !expr_calls(&e, &mut called) {
                             return None;
                         }
+                        // 式の中の道も、受け継ぎで解いた場所を比べる。
+                        let mut paths = Vec::new();
+                        expr_paths(&e, &mut paths);
+                        for (p, fields) in paths {
+                            let ty = s.elements.get(&o).and_then(|e| e.params.get(p));
+                            out.push(format!("path|{:?}", ty.map(|t| s.fields(t, fields))));
+                        }
                     }
                 }
             }
@@ -1163,6 +1176,21 @@ fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
         }
     }
     Some(out)
+}
+
+/// 式の中の道(`$p.f.g` の引数の名前とフィールドの名前の列)を集める。
+fn expr_paths<'a>(e: &'a crate::expr::Expr, out: &mut Vec<(&'a String, &'a [String])>) {
+    use crate::expr::Expr;
+    match e {
+        Expr::Path(p, fields) => out.push((p, fields)),
+        Expr::Call(_, args) => args.iter().for_each(|a| expr_paths(a, out)),
+        Expr::Not(x) | Expr::Neg(x) => expr_paths(x, out),
+        Expr::Bin(_, a, b) => {
+            expr_paths(a, out);
+            expr_paths(b, out);
+        }
+        _ => {}
+    }
 }
 
 /// 式が呼ぶ操作の名前を集める。式に `?` が関われば(`?` の値、`?` で始まる名前と道のフィールド)、偽を返す。
