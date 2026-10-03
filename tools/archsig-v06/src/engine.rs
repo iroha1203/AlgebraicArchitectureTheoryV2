@@ -640,7 +640,8 @@ fn compare(
     // 比べるときは、変更後の実行の値と条件を、変更前の名前にそろえる(設計 §5.4)。
     let (run1, ext1) = execute(before, a, fresh)?;
     let (run2, ext2) = execute(after, b, fresh)?;
-    // 比べる場所(変更後の名前): 意味を持つフィールドと、書き込まれた場所のうち最後のフィールドが意味を持つもの。
+    // 比べる場所(変更後の名前): 意味を持つフィールドと、書き込みの場所とその頭の部分の場所のうち最後のフィールドが意味を持つもの。
+    // 書き込みは、その場所の頭の部分(`via` のフィールドまでの場所)の値も変える。
     // 書き込まれたフィールドとその行き先が意味を持つかが、読んだ範囲から決まらなければ沈黙する。
     let mut places: BTreeSet<Vec<String>> = after
         .meanings
@@ -650,20 +651,26 @@ fn compare(
         .collect();
     for br in &run1 {
         for w in &br.writes {
-            meaning_known(before, w.place.last().unwrap(), meaning)?;
-            for q in mapping.places(&w.place) {
-                meaning_known(after, q.last().unwrap(), meaning)?;
-                if has_meaning(after, q.last().unwrap(), meaning) {
-                    places.insert(q);
+            for k in 1..=w.place.len() {
+                let head = &w.place[..k];
+                meaning_known(before, head.last().unwrap(), meaning)?;
+                for q in mapping.places(head) {
+                    meaning_known(after, q.last().unwrap(), meaning)?;
+                    if has_meaning(after, q.last().unwrap(), meaning) {
+                        places.insert(q);
+                    }
                 }
             }
         }
     }
     for br in &run2 {
         for w in &br.writes {
-            meaning_known(after, w.place.last().unwrap(), meaning)?;
-            if has_meaning(after, w.place.last().unwrap(), meaning) {
-                places.insert(w.place.clone());
+            for k in 1..=w.place.len() {
+                let head = &w.place[..k];
+                meaning_known(after, head.last().unwrap(), meaning)?;
+                if has_meaning(after, head.last().unwrap(), meaning) {
+                    places.insert(head.to_vec());
+                }
             }
         }
     }
@@ -701,8 +708,8 @@ fn compare(
                         "before_then_move": s1,
                         "move_then_after": s2,
                         "writes": {
-                            "before": last_write(b1, |w| w == p.as_slice()),
-                            "after": last_write(b2, |w| w == q.as_slice()),
+                            "before": last_write(b1, |w| p.starts_with(w)),
+                            "after": last_write(b2, |w| q.starts_with(w)),
                         },
                     }));
                 }
@@ -764,7 +771,7 @@ fn conditions(e1: &BTreeSet<String>, e2: &BTreeSet<String>, calls: bool) -> Vec<
     out
 }
 
-/// 比べた場所に最後に書いた書き込み(食い違いの元)。`hits` は、書き込みの場所が比べた場所に当たるか。
+/// 比べた場所に最後に書いた書き込み(食い違いの元)。`hits` は、書き込みの場所が比べた場所かその頭の部分か。
 fn last_write(b: &Branch, hits: impl Fn(&[String]) -> bool) -> Json {
     b.writes.iter().rev().find(|w| hits(&w.place)).map(|w| json!({"at": w.at, "object": w.object, "value": w.text})).unwrap_or(Json::Null)
 }

@@ -810,3 +810,183 @@ fn too_many_pairs_of_branches_are_silent_with_limit() {
     let s = repo.run(&["plan", "check", "p"]);
     assert_eq!(result(&s, "m.f")["reason"], "limit", "{s}");
 }
+
+/// 変更前: f(o) は、o.s.p(注文の中の S の p)に 1 を書く。p は payment-info を持つ。
+const NESTED: &str = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.S.p", "meaning": "payment-info", "uses": ["m.py:7@blob:aaaaaaa"], "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O", "t": "m.S"}, "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "via": ["m.O.s"], "object": "m.S.p", "value": "1", "at": "m.py:7@blob:aaaaaaa"}
+"#;
+
+fn nested(name: &str, write: &str) -> Value {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", NESTED);
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        &format!(
+            "{}\n{write}\n",
+            r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O", "t": "m.S"}, "file": "m.py", "at": "plan:p"}"#
+        ),
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    result(&s, "m.f").clone()
+}
+
+#[test]
+fn a_nested_write_is_compared_at_the_place_of_the_field_chain() {
+    let same = nested("nested-same", r#"{"kind": "writes", "subject": "m.f", "via": ["m.O.s"], "object": "m.S.p", "value": "1", "at": "plan:p"}"#);
+    assert_eq!(same["outcome"], "holds", "{same}");
+    // 候補は、注文の中の S ではなく、引数 t の S に書く。注文の中の p は 1 にならない。
+    let moved = nested("nested-moved", r#"{"kind": "writes", "subject": "m.f", "object": "m.S.p", "value": "1", "at": "plan:p"}"#);
+    assert_eq!(moved["kind"], "counterexample", "{moved}");
+}
+
+#[test]
+fn a_write_through_a_removed_field_is_missing() {
+    let repo = Repo::new("nested-removes");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", NESTED);
+    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.O.s\", \"at\": \"plan:p\"}\n");
+    let s = repo.run(&["plan", "check", "p"]);
+    let missing: Vec<&Value> = s["results"].as_array().unwrap().iter().filter(|r| r["subject"] == "m.f" && r["kind"] == "missing").collect();
+    assert!(!missing.is_empty(), "via に消えるフィールドを持つ書き込みは、その操作を missing に挙げる: {s}");
+}
+
+#[test]
+fn a_via_field_whose_meaning_was_not_read_is_silent() {
+    // 書き込みは via のフィールドの場所 [m.O.s] の値も変える。m.O.s を定義した a.py の payment-info を読んでいなければ、決まらない。
+    let repo = Repo::new("nested-via-meaning");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
+    repo.map("a.py", r#"{"kind": "observed", "subject": "a.py", "scope": "structure", "at": "a.py@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "a.py:1@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "a.py:2@blob:bbbbbbb"}
+"#);
+    repo.map("m.py", &NESTED.lines().filter(|l| !l.contains("\"subject\": \"m.O")).map(|l| format!("{l}\n")).collect::<String>());
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O", "t": "m.S"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "via": ["m.O.s"], "object": "m.S.p", "value": "2", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "a.py" && n["scope"] == "meaning:payment-info"), "{s}");
+}
+
+#[test]
+fn a_question_mark_in_via_returns_the_atom() {
+    let repo = Repo::new("nested-via-question");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", &NESTED.replace(r#""via": ["m.O.s"]"#, r#""via": ["?o.s"]"#));
+    // 候補は m.f を書き直す。変更前の m.f を実行する所で、via の ? の名前に出会う。
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O", "t": "m.S"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.S.p", "value": "1", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py"), "via の ? の名前の沈黙は、その Atom の場所を返す: {s}");
+}
+
+#[test]
+fn a_nested_write_under_a_field_with_the_meaning_is_unchecked() {
+    // 意味は via のフィールド m.O.s(S の値)にある。その中の p に書くと、[m.O.s] の値が変わる。
+    // 先に書き込みのある場所の値は決めていないので、unchecked で沈黙する(設計 §3.5)。
+    let with_meaning = |name: &str, write: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map("m.py", &NESTED.replace(r#""subject": "m.S.p", "meaning""#, r#""subject": "m.O.s", "meaning""#));
+        repo.write(
+            ".archsig/plans/p/plan.jsonl",
+            &format!("{}\n{write}\n", r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O", "t": "m.S"}, "file": "m.py", "at": "plan:p"}"#),
+        );
+        let s = repo.run(&["plan", "check", "p"]);
+        result(&s, "m.f").clone()
+    };
+    let same = with_meaning("nested-head-same", r#"{"kind": "writes", "subject": "m.f", "via": ["m.O.s"], "object": "m.S.p", "value": "1", "at": "plan:p"}"#);
+    assert_eq!((same["outcome"].as_str(), same["reason"].as_str()), (Some("silent"), Some("unchecked")), "{same}");
+}
+
+#[test]
+fn the_write_at_the_head_of_a_compared_place_is_the_origin_of_the_divergence() {
+    // 変更前は [m.O.s, m.S.p] に 1 を書く。候補は [m.O.s] に $t を丸ごと書く。比べる場所 [m.O.s, m.S.p] の値は、候補の頭の書き込みで決まる。
+    let repo = Repo::new("nested-origin");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", NESTED);
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O", "t": "m.S"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "$t", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    let d = repo.run(&["show", r["id"].as_str().unwrap()]);
+    let diverging = d["check"]["diverging"].as_array().unwrap();
+    assert!(diverging.iter().any(|x| x["writes"]["after"]["object"] == "m.O.s" && x["writes"]["after"]["at"] == "plan:p"), "{d}");
+}
+
+#[test]
+fn the_heads_of_a_long_via_are_compared() {
+    // via は [m.A.o, m.O.s]。意味は途中のフィールド m.O.s にある。[m.O.s] だけの場所は書かれないので、
+    // 頭の部分の場所 [m.A.o, m.O.s] を比べる場所に入れなければ、意味を持つ値の変化を見落とす。
+    let repo = Repo::new("nested-long-via");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A.o", "value": "field", "type": "m.O", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.s", "meaning": "payment-info", "uses": ["m.py:9@blob:aaaaaaa"], "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"a": "m.A"}, "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "via": ["m.A.o", "m.O.s"], "object": "m.S.p", "value": "1", "at": "m.py:9@blob:aaaaaaa"}
+"#,
+    );
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"a": "m.A"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "via": ["m.A.o", "m.O.s"], "object": "m.S.p", "value": "2", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
+}
+
+#[test]
+fn reading_a_head_place_after_a_nested_write_is_unchecked() {
+    // 意味は m.S.p だけにある。入れ子に書いた後の手順が、途中の場所 [m.O.s] を丸ごと読む(when)。その値は決めていない。
+    let repo = Repo::new("nested-head-read");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        &format!("{NESTED}{}", r#"{"kind": "writes", "subject": "m.f", "object": "m.S.p", "value": "3", "when": "$o.s == None", "at": "m.py:8@blob:aaaaaaa"}
+"#),
+    );
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O", "t": "m.S"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "via": ["m.O.s"], "object": "m.S.p", "value": "1", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.S.p", "value": "3", "when": "$o.s == None", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
+}
