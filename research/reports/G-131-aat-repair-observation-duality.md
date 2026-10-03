@@ -831,3 +831,195 @@ audits:
 ```
 
 全体は `target-proof-checkpoint`。Dの有限手続きとE、最終A–E統合は未完了。独立査読前のCycle結果はproposal。
+
+
+## Cycle 9：有限最小計画・数値求解と同じ元修復への復元
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-131-aat-repair-observation-duality
+cycle: 9
+goal_blob_sha: 054fea81b916c4d4a470b74af3e13c6cc5dde01c
+base_oid: 7e45cecd592f4831613ee0e851a61dab41bd0268
+tracking_issue: 5133
+report_path: research/reports/G-131-aat-repair-observation-duality.md
+selection:
+  proof_state_ref: "C8 PR #5219受理・merge 7e45cecd592f4831613ee0e851a61dab41bd0268。selectionは初期3c6963454上に固定、受理後baseを同期"
+  proof_dag_predecessors: [minimum, decision_optimum_eq, numerical_optimum_eq, PrimitiveQueries.Run.deterministic, FiniteElimination.Enumeration, FiniteMatrixInterface.linearSection, FiniteMatrixInterface.section_regular, ActualFamilyCoordinates.restore, KnownValueUpdates.information_ker]
+  milestone: "Dのknown有限dataから値取得前に最小計画を生成し、停止する原始問い合わせ/判定/全数値求解/元修復への復元・更新最適値を接続"
+  proof_obligations: ["完全な原始index/parameter列挙から核十分性と最小固定集合を有限探索", "G-130 finite sectionを同じ全DS行列からRHS非依存で生成", "既知情報とvisible返信だけを使う有限応答fiber/値回収", "生成した数値求解と判定を全入力正答/停止/最適値へ", "成功base/全不能/十分集合なしの分岐と識別不能実入力", "同じ元修復・全数値補正の復元と更新後未知核の最適値"]
+  exit_criteria: ["有限計画が供給された十分集合/正答を受け取らず生成", "最小固定集合の十分性/最小費用/不能証拠", "全実行の停止/正答/重複を含む費用", "同じDS/B/b₀で元操作への復元", "未通知値を使わず更新最適値へ", "focused/全宣言公理/scan/独立査読"]
+  selection_reason: "Cの自由計算での存在とDの取得条件を、同じ有限symbolic dataと元実出力へ接続"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [FiniteMinimumPlan.lean, FiniteMatrixSolver.lean, FinitePrimitiveProcedure.lean, FiniteObservedValues.lean, FinitePlanningFailures.lean, FiniteRepairPlanning.lean, FinitePlanningBranches.lean, FiniteFullCoordinates.lean, PrimitiveOutputEquivalence.lean, FiniteCoordinatePlanning.lean, ActualFinitePlanning.lean, UpdatedPlanning.lean, FiniteDualAcquisition.lean, FiniteModelEnumerations.lean, QueryOptimum.sufficientSet_iff, QueryOptimum.valid_decision_iff, QueryOptimum.le_minimum, PrimitiveQueries.transcript_nil, PrimitiveQueries.transcript_length, PrimitiveQueries.transcript_append, PrimitiveQueries.transcript_singleton, FiberSufficiency.validOutput_some_iff, FiberSufficiency.validOutput_none_iff, FiberSufficiency.affineRhs_apply]
+  risks: ["未知v/rhsを実行手続きへ追加しない", "choice存在を実行finite searchと混同しない", "判定はqB、数値はBの核", "全数値を確定して元操作へ復元", "全不能零と十分集合なしを区別", "同じstructure行列/核輸送を再生成せず更新値だけを変える"]
+  unchecked: ["実装・検証・査読前"]
+```
+
+### C9の宣言・生成経路
+
+固定target D / n1017 §6.3–6.5、C / n1017 §6.1–6.2の有限構成を接続する。
+新規14 moduleと既存基本API10宣言、明示宣言計132件を今回のspineとする。
+名前は下表のnamespaceを補い、先行C1–C8の宣言を今回のdeltaに数えない。
+
+| file・namespace | 今回の明示宣言 |
+| --- | --- |
+| `FiberSufficiency.lean` / `AAT.AG.RepairObservationDuality` | `validOutput_some_iff`, `validOutput_none_iff`, `affineRhs_apply` |
+| `QueryOptimum.lean` / `AAT.AG.RepairObservationDuality` | `sufficientSet_iff`, `valid_decision_iff`, `le_minimum` |
+| `PrimitiveQueries.lean` / `AAT.AG.RepairObservationDuality.PrimitiveQueries` | `transcript_nil`, `transcript_length`, `transcript_append`, `transcript_singleton` |
+| `FiniteMinimumPlan.lean` / `AAT.AG.RepairObservationDuality.FiniteMinimumPlan` | `questions`, `mem_questions`, `questions_nodup`, `questions_toFinset`, `questions_length`, `sets`, `mem_sets`, `test`, `test_iff`, `sufficientSets`, `mem_sufficientSets`, `plan`, `plan_spec`, `plan_none_iff`, `plan_card` |
+| `FiniteMatrixSolver.lean` / `AAT.AG.RepairObservationDuality.FiniteMatrixSolver` | `differential`, `differential_apply`, `generatedSection`, `section_regular`, `solve`, `solve_some_iff`, `solve_none_iff`, `solve_valid`, `residual`, `residual_zero_iff`, `residual_comp_ker` |
+| `FinitePrimitiveProcedure.lean` / `AAT.AG.RepairObservationDuality.FinitePrimitiveProcedure` | `procedure`, `procedure_apply`, `run_aux`, `run`, `run_iff`, `correct`, `worst_le`, `worst_eq` |
+| `FiniteObservedValues.lean` / `AAT.AG.RepairObservationDuality.FiniteObservedValues` | `findInput`, `findInput_spec`, `findInput_isSome`, `findInput_transcript`, `difference_ker`, `recovered_value`, `readAffine`, `readAffine_of_some`, `readAffine_transcript` |
+| `FinitePlanningFailures.lean` / `AAT.AG.RepairObservationDuality.FinitePlanningFailures` | `findDirection`, `findDirection_spec`, `findDirection_isSome_iff`, `indistinguishable` |
+| `FiniteRepairPlanning.lean` / `AAT.AG.RepairObservationDuality.FiniteRepairPlanning` | `findSuccess`, `findSuccess_spec`, `findSuccess_isSome_iff`, `findSuccess_none_iff`, `numericalFinish`, `numericalFinish_transcript`, `numericalProcedure`, `numericalProcedure_apply`, `numerical_correct`, `numerical_minimum`, `decisionFinish`, `decisionFinish_transcript`, `decisionProcedure`, `decisionProcedure_apply`, `decision_correct`, `decision_minimum` |
+| `FinitePlanningBranches.lean` / `AAT.AG.RepairObservationDuality.FinitePlanningBranches` | `plan`, `plan_spec`, `ready_spec`, `impossible_spec`, `failure_spec`, `numerical_ready`, `decision_ready`, `numerical_failure`, `decision_failure`, `impossible_zero` |
+| `FiniteFullCoordinates.lean` / `AAT.AG.RepairObservationDuality.FiniteFullCoordinates` | `Index`, `flatten`, `flatten_always`, `flatten_selected`, `inverse_always`, `inverse_selected` |
+| `PrimitiveOutputEquivalence.lean` / `AAT.AG.RepairObservationDuality.PrimitiveOutputEquivalence` | `transport`, `transport_apply`, `run_forward`, `run_backward`, `run_iff`, `correct_iff`, `worst_eq`, `transport_symm`, `optimum_eq` |
+| `FiniteCoordinatePlanning.lean` / `AAT.AG.RepairObservationDuality.FiniteCoordinatePlanning` | `valid_iff`, `optimum_eq`, `correct_iff`, `ready` |
+| `ActualFinitePlanning.lean` / `AAT.AG.RepairObservationDuality.ActualFinitePlanning` | `matrix`, `matrix_differential`, `solve_some_original`, `restore`, `restore_forbidden_zero`, `restore_fixed_arrow`, `restore_value`, `matrix_actual_equation_iff`, `numericalProcedure`, `numericalProcedure_apply`, `numerical_ready`, `actual_failure_pair`, `no_actual_numerical_procedure`, `decision_ready`, `decision_failure_pair`, `no_actual_decision_procedure`, `actual_impossible_zero` |
+| `UpdatedPlanning.lean` / `AAT.AG.RepairObservationDuality.UpdatedPlanning` | `sufficient_after_update_iff`, `numerical_ready`, `decision_ready` |
+| `FiniteDualAcquisition.lean` / `AAT.AG.RepairObservationDuality.FiniteDualAcquisition` | `minimum_value`, `value_of_span` |
+| `FiniteModelEnumerations.lean` / `AAT.AG.RepairObservationDuality.FiniteModelEnumerations` | `finEnumeration`, `finEnumeration_mem`, `parameterEnumeration`, `parameterEnumeration_mem`, `finiteDimensionalParameters`, `finiteDimensionalParameters_mem`, `fullSourceEnumeration`, `fullSourceEnumeration_mem` |
+
+依存DAGは、完全列挙→全原始集合の十分性test/argmin→成功基準点・不能分岐→
+visible履歴の有限parameter復元→同じRHSまたは残存値→G-130生成sectionで全数値求解→
+全補正座標の両逆→同じ元実修復、の順。
+
+- `FiniteMinimumPlan.plan` は全indexのdedup/sublistsと全parameterの核testを有限にfoldする。
+  `plan_spec/plan_card/plan_none_iff` が同じC2の十分性・最小値・不存在へ接続する。
+- `FiniteRepairPlanning.findSuccess` は、同じDS行列の生成残差を全known-fiber parameterへ試す。
+  成功点、空fiberを含む全不能、十分集合なしを `FinitePlanningBranches.plan_spec` が分類する。
+  非零方向を `findDirection` から返す。default零は到達しない分岐であり、そのことを有限探索の
+  `isSome` と実返却値の検査から証明する。
+- 各 `numericalFinish/decisionFinish` はknown symbolic model、L/sとvisible履歴だけを受け取る。
+  未取得のv、物理defect、成功修復、取得済みRHSは実行引数にない。
+  matching parameterは有限findで生成し、十分性により同じ全RHSまたは残存値を得る。
+  判定は生成projection∘B、数値はBを使用し、商核との一致は `residual_comp_ker`。
+- `FiniteMatrixSolver.generatedSection` はG-130 `FiniteMatrixInterface.linearSection` の同じDSを
+  値取得前に使用する。全vectorを返し、`solve_some_iff/solve_none_iff/solve_valid` が原方程式に照合。
+- `FinitePrimitiveProcedure` は実際のlist/history controllerで有限停止を構成し、全runの返却値・
+  全問い合わせlistを一意にする。最悪時回数は全list長であり重複も数える。
+  実際の最小listは原index名を保持し重複を除き、C2の全適応手順最適値を達成する。
+- `FiniteFullCoordinates.flatten` はMathlibの `piCurry` と `sumArrowLequivProdArrow` を使用し、
+  C6の全always/selected核基底座標を並べ替える。像や残存商への縮約をしない。
+  `PrimitiveOutputEquivalence` と `FiniteCoordinatePlanning` が任意の全出力手順を往復し、
+  正しさ・重複を含む費用・全手順最適値を保持する。
+- `ActualFinitePlanning.matrix_differential` は同じC6の元DSを全basisに評価した行列との一致。
+  `numerical_ready/decision_ready` はν/realizeと実評価から全実入力fiberの正答・停止・最適値へ接続。
+  `restore/restore_value/restore_forbidden_zero/restore_fixed_arrow` は同じG-130/C6の実復元を使う。
+  `actual_failure_pair/decision_failure_pair/no_actual_numerical_procedure` は生成pairの同じ実入力、
+  全原始返信、異なる可否/数値目標、全正答手順不存在を保持する。`no_actual_decision_procedure` は元実修復述語の全判定手順不存在、
+  `actual_impossible_zero` は全不能実fiberでの両最適値零を証明する。
+- `FiniteDualAcquisition.minimum_value/value_of_span` は指定した同じell qS(b₀+Bv)をvisible履歴から
+  有限に計算する。constantを落とさず、C8のrestricted span条件に接続する。
+- 更新はC8のretained/notified productを同じplannerへ渡す。`UpdatedPlanning` は新未知核と
+  更新後の実最小追加回数をC2に同定し、structure行列/生成sectionは同じDのまま使う。
+
+### C9 material premise・既存証拠の使用
+
+| material premise・構成 | 分類 | 出所・生成・proof-use |
+| --- | --- | --- |
+| 有限体k、有限次元V、有限原始J、same D/B/b₀/L/s | 本文由来・ambient-boundary | 固定GOAL A–Dのknown model。全matrix列挙・比較・核testへ使用 |
+| 原セル/field/indexの完全列挙・等値/所属判定 | 本文由来・known有限data | G-130の既知列挙contract。`Enumeration.fintype` が明示リストから有限instanceを作る |
+| 全parameter列挙 | 放電済み | `parameterEnumeration` はfull V基底とfield列挙から全値を生成。`finiteDimensionalParameters` は有限次元性からMathlib full basisを準備する。これはonline未知値や正答のchoiceではない |
+| 全original source/face座標 | 放電済み | `fullSourceEnumeration` とG-130 `FiniteFamily.indexEnumeration`。元celllistと全頂点核基底/元Sの所属から生成。flatは全値の線形同型 |
+| 十分な集合/有限minimum | 放電済み | 全subsetのfinite testとargminから `plan_spec/plan_card`。十分集合は手続きのinputでなく結果分岐のdirection-hypothesis |
+| 修復可能な基準点・全不能・不能方向 | 放電済み | `findSuccess_spec/none_iff`、`findDirection_spec/isSome_iff` と `FinitePlanningBranches.plan_spec`。入力データから全分岐を判定・実pairを構成 |
+| matching parameter・RHS/残存値 | 放電済み | finite findでknown/history consistencyを検査し、完全列挙と実transcriptの存在から取得。全runでの値一致はsufficient核から得る |
+| image section・solver正確性 | 放電済み | 同じG-130生成 `linearSection/section_regular`、matrix multiplication検査からsuccess/noneを分類 |
+| 元実族、全実現、実評価、P面整合、全核/線形輸送 | 本文由来・Aの入力条件 | C5/C6と同じ実入力/共通係数を使用。Eでの具体的全放電は次到達点 |
+| 原DSと全finite matrixの同一性 | 放電済み | `matrix_differential` が同じC6 DSとinverse flattenを評価して生成。`FiniteCoordinatePlanning.hD` はこの証明から供給し、solverや答えの仮定を追加しない |
+| 更新後保持/通知値 | 本文由来・ambient-boundary | C8のspecified retained/notified product、`sufficient_after_update_iff` の新未知核とupdated minimum。古い未通知値は入力なし |
+
+依存資格はC2 [PR #5195](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5195#issuecomment-5969338956)、
+C5 [PR #5204](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5204#issuecomment-5970294260)、
+C6 [PR #5209](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5209#issuecomment-5970703374)、
+C8 [PR #5219](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5219#issuecomment-5971628449)、
+G-130 final accepted `549b7e3ccab1c9686a108530e1b0a4b4f38eee86` の
+[監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5179#issuecomment-5966982329)。
+今回の追加10基本API以外の先行本文・Lean signature/定義を変更しない。
+
+### C9検証記録
+
+rootで今回の17対象sourceのみをfocused checkし、各exact source-prefixの後に今回の全明示宣言の
+`#print axioms` を追加した監査も実行した。計132件、全17source-prefixがexit 0・warningなし。
+標準公理 `propext/Classical.choice/Quot.sound` のみ。
+各行は source SHA-256 / 個別公理raw出力log SHA-256。実装者の結果申告は独立査読の代替ではない。
+
+| source | source SHA-256 | raw audit log SHA-256 |
+| --- | --- | --- |
+| `FiberSufficiency.lean` | `4027b5c0be6a156e31a409b4fd001a6998d5bdba15aabc4cc88cdb867670c069` | `e5cc7a9f8a129716c585ddbca5e35f4ec045c0753fbf8dd92c893000f916c664` |
+| `QueryOptimum.lean` | `5e4e0d22f38c6d737f243d2508e6b7ff342aa5210feab60532f7eb68ced4dbf3` | `e5576845c40de2aab1974f89600d8213945454f15fc9e821b5b69b185ed32f54` |
+| `FiniteMinimumPlan.lean` | `8a4a1d60df2e3d2e65c857014f828fe931822ed706b98dd62d9a733454d6c7c8` | `3a1fbdd016db375c39a1b095f8dbe7dc4ae36d9df77592c26ce1afa1b5e4e04f` |
+| `FiniteMatrixSolver.lean` | `094f0f87058b1d46a27ef51abe7a98a37f0bb46d07b7e40ce0a7a2b22111c504` | `cc10ed2d18fa23e3e1fe35cd374f61e8c42edcabc643f9dd2e3a6117c1422a29` |
+| `FinitePrimitiveProcedure.lean` | `3e8243697ecb675f2a0e521f34ceed632dd7f0dc1d38567cf15f26e84eab763c` | `baeed31925531d3d908ae0d602378fb5cf9f91fa4093824648db80896b5c0acd` |
+| `FiniteObservedValues.lean` | `5799c77f0811b1f1bf82d1cc78d8c9b2185cbe30767b6e277d7718aa0519e58b` | `0452d0432a0cb7702b58b99f6e8988ec5215017ccf41f98d31c373b4cee5ef50` |
+| `FinitePlanningFailures.lean` | `a25ee7c1e19be2d170b26d54b10411641cd96e2b7f42d8e9b14f7d22e2127e44` | `992ab31ec6e990702ddb8649e5680d3609c82e968724851b30484b0b72ae6df6` |
+| `FiniteRepairPlanning.lean` | `a1212ed76fcb183bc44e18ea90e44f8c1438aab424a6e6954109dc5438185f9a` | `d4cdcbad11eabe341f301dc3a245a60c6ae445948a16503ed99b0a47828c6115` |
+| `FinitePlanningBranches.lean` | `3fb8bd4b4de03f3d4a549584c99c89bd909f9fde34b3045bb044bf76f37efe59` | `e4d0067a78468470739b90668c8ed0da0a4ff44e92ca249b6cdff5ba59ca7c33` |
+| `FiniteFullCoordinates.lean` | `b44f0eb86e2db4717e60cf16837e9e10e1a7a4a0800a57ce00e4203fb6418fe6` | `0d6a27e13165405f7f642bd8b091822385818f00034d0c077f2bfc61fc81467a` |
+| `PrimitiveOutputEquivalence.lean` | `86567433f8fd12f62c0113e2f1a550b747e5053fd9b9006db8b2af5f1a504683` | `bc3537533755fd018b90fac7e89a51d574d6e4ad89bb56a5bdebfa29f7c38363` |
+| `FiniteCoordinatePlanning.lean` | `0b48e46c6ee162531aca73fe71db73b35e9e38c063e9fe8359b75b3d641b8bcd` | `a37dfb8947947ea0ff70fd0c73b9cd51e4e2c521d91a4db58ffccc47e1641a26` |
+| `ActualFinitePlanning.lean` | `a19ae6090902fb2af9704582fb34187241a8657c16cb7ff16dd86996e0e2dd5e` | `75b6f4aec9ff0a08b15c3d4d761373c1ed2fe73e522a438d1da2e357db51cd39` |
+| `UpdatedPlanning.lean` | `fa59fa761ebec9271f716f3968f690b461e6af0ea50de57125aa20f7ec6989b9` | `74685c46ab0890466acea8bf7d96b85b860dd217af6d6fb540092381c3a0c900` |
+| `FiniteDualAcquisition.lean` | `8b14dccaf72e20a2c0464ee85694741bbb3b9cac37f930ac7d4d06582972a3fe` | `d8065e323dc18c07f97c301efaf0e9b080151a085e0db66a9ad4907edc2f5501` |
+| `FiniteModelEnumerations.lean` | `6bb66d655174e71f8fca6281e821888c1d8dd22a272f8493ad80660302d6d70e` | `53bf25bb2a1af52b5085620687dd20eec3c5739f09922756c26226febbf9e0d3` |
+| `PrimitiveQueries.lean` | `0de8fbb4d70aa189703965ac93c81eb2240ad7c88ae5075aea21f5d7ab842eaa` | `bbb38d74522f1acdfe8ee22469faf35e7a5de48d1aa685f5de9ea5b1538c1513` |
+
+有限実行probeはsource-prefix監査とは別の観測として実行し、`some 1`（全数値の最小card）、
+`some 0`（identity行列の判定最小card）、`failure base=0,direction=1`（零微分と問い合わせなし）、
+`all impossible`（零微分/既知値1）、`some 1`（visible返信1から全solver値1）を返した。
+exit 0、raw出力SHA-256 `78c9441ec6bda259515fd2e0a08fe91f852eab1fc9e6f43e35d49b15102fc5e2`。
+これはEの指定族・最適値表の代替ではない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "finite最小計画/known fiber分岐/visible返信取得/同じG-130section/判定・全数値/全実入力最適値/元修復/更新最適値を接続"
+  exit_criteria_status: ["入力から全有限計画と最小cardを生成", "全不能/実pair/不存在を分類", "全controller runの停止/正答/費用", "全元数値/修復/固定辺保持", "同じsectionと保持/通知新kernel", "今回132宣言のfocused/個別公理、共通scan、独立査読はPRで固定"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: ["上記14新moduleと10基本API、132明示宣言"]
+  evidence: [plan_spec, plan_card, findSuccess_none_iff, readAffine_transcript, solve_valid, numerical_ready, decision_ready, restore_value, decision_failure_pair, no_actual_numerical_procedure, minimum_value, sufficient_after_update_iff]
+  claim_mapping:
+    theorem_names: [FinitePlanningBranches.plan_spec, ActualFinitePlanning.numerical_ready, ActualFinitePlanning.decision_ready, ActualFinitePlanning.restore_value, ActualFinitePlanning.decision_failure_pair, UpdatedPlanning.numerical_ready, UpdatedPlanning.decision_ready, FiniteDualAcquisition.minimum_value]
+    source_labels: ["G-131 C/D", "n1017 §6.1–6.5・§3.5"]
+    conjuncts: ["finite known-data plan", "visible history acquired same RHS", "same G-130 generated section", "full numerical/decision minimum over all procedures", "original repair and indistinguishable actual failure", "retained/notified updated minima"]
+    undischarged_assumptions: []
+    acceptance_point: "Dの有限構成とC2/C6の同じ実最適値への接続。Eの指定例と最終累積判定を残す"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["全parameter/source list生成", "finite sufficient argmin", "成功base/不能direction", "finite matching replies", "same matrix section", "whole coordinates and original repair", "actual minima", "updated unknown kernel/additional minima"]
+    remaining: ["E全指定族/実評価/表/具体的局所関係/更新/分割/F2参照式", "最終A–E累積統合"]
+  certificate_provenance:
+    discharged: ["known finite modelからの全分岐と実failure pair", "same whole matrixからのG-130 section", "visible historyだけの実値", "same inverse full basesと元実修復"]
+    unresolved: []
+  proof_use:
+    used: ["完全field/index/parameter list", "same structural D/B/b₀", "known L/s and original primitive lambda", "same RHS", "全source/face basis", "元族のν/realize/実評価/整合", "retained/notified値"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["17 exact-source prefix、132個別公理、上記SHA", "共通scanと独立査読はPR auditで固定"]
+  blocking_findings: []
+  next_obligation: "Eの同じW1全族/primitive評価/全表/具体的関係/更新/分割、およびF2四辺K+"
+```
+
+全体は `target-proof-checkpoint`。Eと最終A–E累積判定は未完了。
+今回Cycle結果は独立査読前のproposalであり、CI greenやmergeだけで全体完了とはしない。
+
+### C9非中心findingへの直接対応
+
+初回4本の査読は中心finding 0、非中心finding 2種類（重複1）を報告した。
+`transcript_nil/length/append/singleton` と `le_minimum` を指摘された既存namespaceへ追加し、
+`FinitePrimitiveProcedure.run_aux/run` と `FiniteMinimumPlan.plan_card` を基本API呼出しに置換した。
+既存statement/def値/import方向/statusは不変。追加5補題は全てfindingで名指しされたAPIである。
+修正4fileのexact-source個別公理監査はexit 0・warningなし・標準公理のみ。
+rootは依存APIを同期する必要から `PrimitiveQueries` / `QueryOptimum` だけtargeted module checkを実行した。
+一度の補題証明elaboration失敗は修正後の再検証で解消した。Research全体buildは未実行。
+新規1本のfinding限定確認と最終head CI・統合受理はPR監査コメントへ固定する。
