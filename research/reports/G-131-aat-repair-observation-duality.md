@@ -415,3 +415,90 @@ audits:
 ```
 
 G-131全体は `target-proof-checkpoint`。A全体・B・D・Eは未完了。
+
+## Cycle 5：元の原始入力族と生成された同じ実修復方程式
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-131-aat-repair-observation-duality
+cycle: 5
+goal_blob_sha: 054fea81b916c4d4a470b74af3e13c6cc5dde01c
+base_oid: abaa758fa5e87f49c3c80cc1662d27b3d402bdb5
+tracking_issue: 5133
+report_path: research/reports/G-131-aat-repair-observation-duality.md
+selection:
+  proof_state_ref: "Cycle 3/4受理済み。Cycle 4 PR #5203のmerge abaa758faへ同期済み。選定時は独立worktreeで固定head査読を待ち、その受理後に実装接続を継続"
+  proof_dag_predecessors: [NativeCorrectionEquation.actual_equation_iff, PrimitiveAffineDefect.affine_inclusion, RelativeAffineDefect.negative_defect_affine]
+  milestone: "Aの原始族の実基準辺/比較から、同じ全実核・微分・負defect・任意Sの方程式・独立実修復の往復へ接続"
+  proof_obligations: ["原始変更モデルからstrong/core/核輸送/比較条件を満たす実塔生成", "同じ全核・輸送・微分の保存", "元原始族の実辺/比較との同定", "同じ原始実defectと相対アフィン右辺の一致", "任意Sで元の独立実修復との同値と全実辺復元"]
+  exit_criteria: ["生成実塔の原始条件と全係数保存", "外部の元OriginalTowerの実操作とモデル対応", "同じb₀/B/D_Sから全S/Xの修復可否・商零", "禁止補正と元実辺の復元", "focused・全宣言公理・scan"]
+  selection_reason: "Cycle 4の実合成をCycle 3の元独立実修復へ接続し、一般族をcommon-module模型に縮めるgapを閉じる"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [PrimitiveAffineTower.lean, CoefficientTransport.lean, ActualAffineFamily.lean]
+  risks: ["結論相当のdefect式/修復/同値をfamily fieldへ移さない", "元のoriginal/selected辺の相違と固定規則を保持", "元全核と同じ輸送を証明", "基底数値座標/局所公開可否/実評価への接続は残る義務"]
+  unchecked: ["構成・検証・独立査読前"]
+```
+
+Cycle 5実装時のAPI選定: 同じ全係数の等式でmodule・相対面・全split sourceと微分を運ぶ基本constructor APIを `CoefficientTransport.lean` に分離する。到達点と終了条件は維持する。
+
+### Cycle 5の実装・前提・証拠対応
+
+固定GOAL A / n1017 §3.5・§6.1の原始辺・比較のアフィン変更から、任意圏・頂点ごとの全実核で実塔を生成する。外部の各OriginalTowerの元操作・core lift・参照規則はその入力に保持する。`hdata`はその基準実辺と比較操作が同じ原始アフィン変更であるという入力表現等式であり、defect式・微分・可解性・修復同値は含まない。全係数の同定は`input_coefficients`で実操作から導出し、等式の入力として受け取らない。
+
+全パラメータの実現`realize`とν∘realize=id、および各入力のP上の実経路等号から`model_fixed`を生成する。元defectを全相対面へ運んだ`commonDefect`は、実核値を保ち、同じb₀+Bν(X)へ等しい。有限性・非空性はこの線形生成へ追加せず、任意Sの実修復同値と復元で元辺の有限族を用いる。元操作のP固定は入力間の値の同一性ではなく、その入力の修復中の実操作の保持である。
+
+宣言一覧（全39、namespaceはAAT.AG.RepairObservationDuality.<file名>）:
+
+- `PrimitiveAffineTower.lean`: `lower_strong`, `edge_transport`, `core_alignment`, `centralizes`, `tower`, `tower_data`, `edge_coefficients`, `local_coefficients`, `tower_defect`, `tower_eq_of_data_eq`。
+- `CoefficientTransport.lean`: `modules`, `faces`, `faces_value`, `faces_symm`, `linearity`, `values`, `values_always_value`, `values_selected_value`, `differential`, `equation_iff`。
+- `ActualAffineFamily.lean`: `input_tower`, `input_coefficients`, `model_fixed`, `original_defect_coordinate`, `commonDefect`, `common_defect_value`, `common_defect_eq`, `negative_defect_affine`, `inputModules`, `input_linearity`, `actual_equation_iff`, `actual_affine_equation_iff`, `common_defect_inverse`, `solution_transport`, `actual_affine_cokernel_iff`, `restore`, `restore_value`, `restore_forbidden_zero`, `restore_fixed_arrow`。
+
+主spineは `PrimitiveAffineTower.edge_transport` / `local_coefficients` / `tower_defect`、`CoefficientTransport.differential` / `equation_iff`、`ActualAffineFamily.input_coefficients` / `model_fixed` / `common_defect_value` / `negative_defect_affine` / `actual_affine_equation_iff` / `actual_affine_cokernel_iff` / `solution_transport` / `restore` / `restore_value` / `restore_forbidden_zero` / `restore_fixed_arrow`。全source・face・candidate値のcast APIは補助constructor APIである。新規Prop述語・certificate構造・instanceはない。
+
+material premise ledger:
+
+- `ambient-boundary / 本文由来`: 任意圏のTと全実核、G-129のtower入力条件、各全核のmoduleと輸送線形性、辺・比較の原始線形変化θ/η、外部OriginalTower族とν、原始実操作のアフィン表示等式hdata、全パラメータの実現とν値、閉Pでの各実入力の面整合、元候補名・P外所属。
+- `discharge-required / 放電済み`: 変更後のstrong/core/全単射輸送/比較中央化、同じ全係数・輸送・微分、全元面のactual defectと同じ相対b₀/B、全S/Xの独立実修復⇔同じ全方程式⇔同じ商零、全数値成分を運ぶ復元・禁止補正零・固定実辺保持。
+- `direction-hypothesis`: restoreのhhは取得済み全係数数値が同じ方程式を満たすという出力の正答条件。修復存在を仮定する可否定理はない。
+- `conclusion-equivalent-risk`: hdataはprimitive reference transport dataだけ。係数の等式・defect式・微分等式・可解性・商零・修復証拠をfamily fieldに移していない。
+
+受理済み先行成果の資格: G-129 head `cbe70c4dc734a851a90c5030a736141f4352fcba` [最終監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5125#issuecomment-5902401268)、G-130 head `549b7e3ccab1c9686a108530e1b0a4b4f38eee86` [最終監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5179#issuecomment-5966982329)、Cycle 3 head `0db94dc67b43ff24696c2f3664a8cf6797dbbc6b` [最終監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5200#issuecomment-5969565903)、Cycle 4 head `9937ee378ee26d75c798633c8d544fd4602ff9fe` [最終監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5203#issuecomment-5970002097)。現在のsignature・primitive値・G-130同じ元塔/P/candidates/S/hへの適用とproof-useを照合し、使用sourceをPR監査記録に固定する。先行成果の内部査読履歴は再帰的に再認定しない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "原始族の同じ実辺/比較から全係数/微分/負defectと全S/Xの実修復方程式・商零・全成分復元を接続"
+  exit_criteria_status: ["生成塔の全native条件", "実原始表示から元OriginalTowerの同定", "同じ全係数/輸送/微分", "全S/Xの同じb₀+Bνと実修復可否/商零", "全元辺の復元/禁止零/固定実辺", "3 focused・39個別公理監査・scan"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [PrimitiveAffineTower.lean, CoefficientTransport.lean, ActualAffineFamily.lean]
+  evidence: [input_coefficients, model_fixed, negative_defect_affine, actual_affine_equation_iff, actual_affine_cokernel_iff, solution_transport, restore_value, restore_forbidden_zero, restore_fixed_arrow]
+  claim_mapping:
+    theorem_names: [input_coefficients, negative_defect_affine, actual_affine_equation_iff, actual_affine_cokernel_iff, restore_value]
+    source_labels: ["G-131 A", "n1017 §3.5/6.1"]
+    conjuncts: ["同じ原始実辺/比較から元塔", "同じ全係数・実微分", "同じ負defect=b₀+Bν", "全S/Xの実修復⇔全方程式⇔商零", "全元名と固定実操作を保持する復元"]
+    undischarged_assumptions: []
+    acceptance_point: "原始アフィン実表示の全OriginalTower族をCycle 3/4の同じ全方程式へ接続する到達点"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["原始実表示から元族との同定", "全実核/輸送/微分保存", "元族の同じ負defect", "全S/Xの実修復・商零", "全成分の元実操作復元"]
+    remaining: ["全核基底の数値座標・局所公開可否・実観測との接続", "B・D・E"]
+  certificate_provenance:
+    discharged: ["原始変更からnative tower条件", "実辺/比較から全係数等式", "全実現/Pの実等号から相対family", "G-130から同じ元修復の復元"]
+    unresolved: ["基底数値/局所公開可否/原始評価の後続接続"]
+  proof_use:
+    used: ["元strong/core/可換核/全単射/中央化", "原始θ/η・hdata・輸送線形性", "全実現のν値", "入力ごとのP実等号", "G-130 supported repairEquivと全成分restore"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["3 focused・39個別#print axioms・scanのraw記録をPRへ固定"]
+  blocking_findings: []
+  next_obligation: "Aの基底数値・局所公開可否・原始評価をCの同じ問い合わせへ接続、B/D/E"
+```
+
+全体は `target-proof-checkpoint`。A全体・B・D・Eは未完了。独立査読前のCycle結果はproposalである。
