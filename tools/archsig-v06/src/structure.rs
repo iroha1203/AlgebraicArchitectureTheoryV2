@@ -650,11 +650,12 @@ fn relate(old: &Structure, new: &Structure, before: &[Atom], after: &[Atom], pla
     }
     // 3. 変更前と変更後の両方にある同じ名前の要素は、自分自身に対応する。`removes` した要素は除く。
     //    どちらの側でも、要素は、定義した要素と、定義を読んでいなくても Atom の `subject` に現れる名前である。
+    //    `imports` の `subject` はモジュールで、要素ではない(マニュアル第3章)。
     let names = |s: &Structure, atoms: &[Atom]| -> BTreeSet<String> {
         s.elements
             .keys()
             .cloned()
-            .chain(atoms.iter().filter(|a| a.kind != "observed" && !a.subject.starts_with("local:")).map(|a| a.subject.clone()))
+            .chain(atoms.iter().filter(|a| !matches!(a.kind.as_str(), "observed" | "imports") && !a.subject.starts_with("local:")).map(|a| a.subject.clone()))
             .collect()
     };
     let after_names = names(new, after);
