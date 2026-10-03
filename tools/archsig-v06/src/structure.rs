@@ -339,7 +339,8 @@ impl Structure {
             let object = a.object.clone().unwrap_or_default();
             let kind = match a.kind.as_str() {
                 "writes" => {
-                    let place: Vec<String> = a.via.iter().flatten().cloned().chain(std::iter::once(object)).collect();
+                    let place: Vec<String> =
+                        a.via.iter().flatten().chain(std::iter::once(&object)).map(|f| self.access(f).map_err(|x| locate(x, a))).collect::<Result<_, _>>()?;
                     for f in &place {
                         self.expect(f, "field")?;
                     }
@@ -463,13 +464,13 @@ impl Structure {
             if !seen.insert(b.clone()) {
                 continue;
             }
+            if self.kind(&b)? != "type" {
+                return Err(Silence::new(Reason::Unresolved));
+            }
             let field = format!("{b}.{name}");
             if self.elements.contains_key(&field) {
                 found.insert(field);
                 continue;
-            }
-            if self.kind(&b)? != "type" {
-                return Err(Silence::new(Reason::Unresolved));
             }
             todo.extend(self.bases.get(&b).into_iter().flatten().cloned());
         }
@@ -477,6 +478,15 @@ impl Structure {
             0 => Ok(own),
             1 => Ok(found.pop_first().unwrap_or(own)),
             _ => Err(Silence::new(Reason::Unresolved)),
+        }
+    }
+
+    /// 読み書きの `object` と `via` に書いたフィールドの名前 `<型>.<フィールド>` の要素(設計 §3.5)。
+    /// 型がそのフィールドを定義していなければ、`inherits` の型から探す(`member`)。
+    pub fn access(&self, name: &str) -> Result<String, Silence> {
+        match name.rsplit_once('.') {
+            Some((ty, field)) if !name.starts_with('?') => self.member(ty, field),
+            _ => Ok(name.to_string()),
         }
     }
 
@@ -726,8 +736,19 @@ fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn
         for o in a.via.iter().flatten().chain(a.object.as_ref()) {
             if o.starts_with('?') {
                 gaps.push(Gap::Name(o.to_string()));
-            } else {
-                names.insert(o.clone());
+                continue;
+            }
+            // 読み書きのフィールドは、受け継いだフィールドなら、それを定義した型のフィールドを名指す。
+            match (matches!(a.kind.as_str(), "writes" | "reads"), o.rsplit_once('.')) {
+                (true, Some((t, f))) => match s.member(t, f) {
+                    Ok(x) => {
+                        names.insert(x);
+                    }
+                    Err(_) => gaps.push(Gap::Member(t.to_string(), f.to_string())),
+                },
+                _ => {
+                    names.insert(o.clone());
+                }
             }
         }
         for text in [&a.value, &a.when].into_iter().flatten() {

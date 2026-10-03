@@ -4035,11 +4035,97 @@ fn a_path_through_the_child_type_reads_the_inherited_field() {
     repo.write(
         ".archsig/plans/p/plan.jsonl",
         r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"c": "m.C", "o": "m.O"}, "file": "m.py", "at": "plan:p"}
-{"kind": "writes", "subject": "m.f", "object": "m.P.t", "value": "1", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.C.t", "value": "1", "at": "plan:p"}
 {"kind": "writes", "subject": "m.f", "object": "m.O.u", "value": "$c.t", "at": "plan:p"}
 "#,
     );
     let s = repo.run(&["plan", "check", "p"]);
     let r = result(&s, "m.f");
     assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("counterexample")), "{s}");
+}
+
+/// 変更前: m.C は m.P を受け継ぎ、t は m.P が定義する。f(c, o) は c.t に 1 を書いてから、o.u に $c.t を書く。
+/// 書き込みの `object` は値の型の名前 `m.C.t` で書く(第3章)。`parent` は m.P とそのフィールドの Atom。
+fn written_through_child(name: &str, parent: &str, child: &str, plan: &str) -> Value {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
+    repo.map("p.py", &format!("{}{parent}", r#"{"kind": "observed", "subject": "p.py", "scope": "structure", "at": "p.py@blob:bbbbbbb"}
+{"kind": "observed", "subject": "p.py", "scope": "meaning:payment-info", "at": "p.py@blob:bbbbbbb"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "p.py:1@blob:bbbbbbb"}
+"#));
+    repo.map("m.py", &format!("{}{child}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.C", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "inherits", "subject": "m.C", "object": "m.P", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.u", "value": "field", "type": "int", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.u", "meaning": "payment-info", "uses": ["m.py:9@blob:aaaaaaa"], "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"c": "m.C", "o": "m.O"}, "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.C.t", "value": "1", "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.u", "value": "$c.t", "at": "m.py:9@blob:aaaaaaa"}
+"#));
+    repo.write(".archsig/plans/p/plan.jsonl", plan);
+    let s = repo.run(&["plan", "check", "p"]);
+    result(&s, "m.f").clone()
+}
+
+const P_T: &str = r#"{"kind": "defines", "subject": "m.P", "value": "type", "at": "p.py:1@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.P.t", "value": "field", "type": "int", "at": "p.py:2@blob:bbbbbbb"}
+"#;
+
+#[test]
+fn a_write_to_the_child_name_and_a_read_through_the_child_meet_at_the_inherited_field() {
+    // m.C.t への書き込みと $c.t は、どちらも m.P.t の場所である。候補が書き込みを消すと、o.u に書く値が 1 から m.P.t の入力に変わる。
+    let r = written_through_child(
+        "inherited-write-read",
+        P_T,
+        "",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"c": "m.C", "o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.u", "value": "$c.t", "at": "plan:p"}
+"#,
+    );
+    assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("counterexample")), "{r}");
+}
+
+#[test]
+fn a_field_the_child_comes_to_define_takes_both_the_write_and_the_read() {
+    // 候補が m.C に t を定義すると、書き直していない m.f の書き込みと読みは、どちらも m.C.t になる。o.u に書く値は 1 のまま。
+    let r = written_through_child(
+        "inherited-override",
+        P_T,
+        "",
+        r#"{"kind": "defines", "subject": "m.C.t", "value": "field", "type": "int", "file": "m.py", "at": "plan:p"}
+"#,
+    );
+    assert_eq!(r["outcome"], "holds", "{r}");
+}
+
+#[test]
+fn an_inherited_field_of_an_ambiguous_parent_is_unresolved() {
+    // m.P を二か所で定義すると、どちらの定義かが決まらないので、m.P.t をたどる計算は沈黙する。
+    let ambiguous = format!("{P_T}{}", r#"{"kind": "defines", "subject": "m.P", "value": "type", "at": "p.py:5@blob:bbbbbbb"}
+"#);
+    let r = written_through_child(
+        "inherited-ambiguous",
+        &ambiguous,
+        "",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"c": "m.C", "o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.u", "value": "$c.t", "at": "plan:p"}
+"#,
+    );
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{r}");
+}
+
+#[test]
+fn removing_the_field_the_child_defines_again_is_not_missing() {
+    // m.C が t を定義し直していて、候補がそれを消す。書き直していない m.f の書き込みと読みは m.P.t に移り、o.u に書く値は 1 のまま。
+    let r = written_through_child(
+        "inherited-override-removed",
+        P_T,
+        r#"{"kind": "defines", "subject": "m.C.t", "value": "field", "type": "int", "at": "m.py:3@blob:aaaaaaa"}
+"#,
+        r#"{"kind": "removes", "subject": "m.C.t", "at": "plan:p"}
+"#,
+    );
+    assert_eq!(r["outcome"], "holds", "{r}");
 }
