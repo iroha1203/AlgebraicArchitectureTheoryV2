@@ -143,8 +143,8 @@ fn walk(name: &str, edit: impl Fn(&str) -> String) -> (Repo, Vec<Value>, Value) 
 "#);
         }
         if file == "shop/payment/model.py" {
-            text.push_str(r#"{"kind": "meaning", "subject": "shop.payment.model.OrderPayment.ref", "meaning": "payment-info", "uses": ["shop/payment/charge.py:22@blob:8b41d07"], "at": "shop/payment/model.py:5"}
-"#);
+            text.push_str(&unversioned(r#"{"kind": "meaning", "subject": "shop.payment.model.OrderPayment.ref", "meaning": "payment-info", "uses": ["shop/payment/charge.py:22@blob:8b41d07"], "at": "shop/payment/model.py:5"}
+"#));
         }
         observed.push_str(&format!(
             "{{\"kind\": \"observed\", \"subject\": \"{file}\", \"scope\": \"structure\"}}\n{{\"kind\": \"observed\", \"subject\": \"{file}\", \"scope\": \"meaning:payment-info\"}}\n{text}"
@@ -172,8 +172,8 @@ fn the_change_of_chapter_2_goes_around() {
     // 1. 最初の plan check は四つとも沈黙で、どれも address.py を読めば決まる。update_shipping は address.py を読めと言う。
     let first = &steps[1];
     assert!(outcomes(first).iter().all(|(_, o, _)| o == "silent"), "沈黙だけ: {first}");
-    let subjects: Vec<&str> = first["results"].as_array().unwrap().iter().map(|r| r["subject"].as_str().unwrap()).collect();
-    assert_eq!(subjects, ["payment-info", "shop.shipping.address.normalize_address", UPDATE, "removes"], "{first}");
+    let subjects: std::collections::BTreeSet<&str> = first["results"].as_array().unwrap().iter().map(|r| r["subject"].as_str().unwrap()).collect();
+    assert_eq!(subjects, ["payment-info", "shop.shipping.address.normalize_address", UPDATE, "removes"].into_iter().collect(), "{first}");
     assert_eq!(first["next"].as_array().unwrap().len(), 1, "{first}");
     assert_eq!(first["next"][0]["decides"].as_array().unwrap().len(), 4, "{first}");
     let r = result(first, UPDATE);

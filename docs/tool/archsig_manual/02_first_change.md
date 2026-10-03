@@ -145,9 +145,9 @@ archsig plan check split-order
 最初の結果は、四つとも沈黙だった。
 
 ```text
-… 沈黙  payment-follows-order  update_shipping
-… 沈黙  payment-follows-order  normalize_address
 … 沈黙  payment-follows-order  payment-info
+… 沈黙  payment-follows-order  normalize_address
+… 沈黙  payment-follows-order  update_shipping
 … 沈黙  removes
   理由      unread
   次に読む  shop/shipping/address.py  構造(四つの結果を決める)
