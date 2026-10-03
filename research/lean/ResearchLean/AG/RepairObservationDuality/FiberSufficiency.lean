@@ -36,6 +36,11 @@ def DecisionSufficient (F : Set V) (obs : V → T) : Prop :=
 def NumericalSufficient (F : Set V) (obs : V → T) : Prop :=
   ∃ out : T → Option H, ∀ v ∈ F, ValidOutput D rhs v (out (obs v))
 
+/-- Basic transport API for C: equal equation RHSs have equal solvability. -/
+theorem solvable_congr_rhs {v w : V} (he : rhs v = rhs w) :
+    Solvable D rhs v ↔ Solvable D rhs w := by
+  simp only [Solvable, he]
+
 /-- General information fibers support a decision precisely when observationally
 equal inputs have equal solvability. No linearity of the information is assumed. -/
 theorem decision_sufficient_iff (F : Set V) (obs : V → T) :
@@ -107,6 +112,22 @@ def affineRhs (v : V) : W := b₀ + B v
 def obstruction : V → W ⧸ LinearMap.range D :=
   fun v => (LinearMap.range D).mkQ (affineRhs B b₀ v)
 
+/-- A's affine constant cancels in an input difference; downstream uses this API. -/
+theorem affineRhs_sub (v w : V) :
+    affineRhs B b₀ v - affineRhs B b₀ w = B (v - w) := by
+  simp [affineRhs, map_sub]
+
+/-- Equality of complete RHSs is equality of the linear parameter contributions. -/
+theorem affineRhs_eq_iff (v w : V) :
+    affineRhs B b₀ v = affineRhs B b₀ w ↔ B v = B w := by
+  simp only [affineRhs, add_left_cancel_iff]
+
+/-- The native obstruction difference is the image of the same input difference. -/
+theorem obstruction_sub (v w : V) :
+    obstruction D B b₀ v - obstruction D B b₀ w =
+      (LinearMap.range D).mkQ (B (v - w)) := by
+  rw [obstruction, obstruction, ← map_sub, affineRhs_sub]
+
 /-- A's equation is solvable exactly at zero of this same cokernel class. -/
 theorem solvable_iff_obstruction_zero (v : V) :
     Solvable D (affineRhs B b₀) v ↔ obstruction D B b₀ v = 0 := by
@@ -161,7 +182,8 @@ theorem decision_sufficient_linear_iff (L : V →ₗ[k] I) (s : I) (O : V →ₗ
       have hnq := hk hn
       change (LinearMap.range D).mkQ (B (v - z)) = 0 at hnq
       apply sub_eq_zero.mp
-      simpa [obstruction, affineRhs, map_sub, map_add] using hnq
+      rw [obstruction_sub]
+      exact hnq
     rw [solvable_iff_obstruction_zero, solvable_iff_obstruction_zero, heq]
 
 /-- C's full numerical correction needs ker B, even when the obstruction vanishes
@@ -178,20 +200,55 @@ theorem numerical_sufficient_linear_iff (L : V →ₗ[k] I) (s : I) (O : V →�
     have he : O w = O (w + n) := by rw [map_add, hn.2, add_zero]
     have hr := (hf w hw (w + n) hfn he).2 hs
     change B n = 0
-    simp only [affineRhs, map_add] at hr
-    have heq : B w = B w + B n := add_left_cancel hr
+    have heq : B w = B w + B n := by
+      simpa only [map_add] using (affineRhs_eq_iff B b₀ w (w + n)).mp hr
     exact (add_left_cancel (heq.symm.trans (add_zero (B w)).symm))
   · intro hk v hv z hz he
     have hn : v - z ∈ LinearMap.ker L ⊓ LinearMap.ker O :=
       ⟨mem_fiber_sub L s hv hz, by change O (v - z) = 0; rw [map_sub, he, sub_self]⟩
     have hb : B v = B z := sub_eq_zero.mp (by simpa [map_sub] using hk hn)
-    have hr : affineRhs B b₀ v = affineRhs B b₀ z := by simp only [affineRhs, hb]
-    exact ⟨by simp only [Solvable, hr], fun _ => hr⟩
+    have hr : affineRhs B b₀ v = affineRhs B b₀ z :=
+      (affineRhs_eq_iff B b₀ v z).mpr hb
+    exact ⟨solvable_congr_rhs D (affineRhs B b₀) hr, fun _ => hr⟩
 
 end Linear
 
 section Nonvacuity
 variable (k : Type*) [Field k]
+
+/-- The independently defined equation has both solvable and impossible inputs
+on every nonzero field, using the zero correction map and RHS equal to the input. -/
+theorem solvable_zero_not_one :
+    Solvable (fun _ : k => (0 : k)) id 0 ∧
+      ¬ Solvable (fun _ : k => (0 : k)) id 1 := by
+  exact ⟨⟨0, rfl⟩, fun ⟨_, he⟩ => zero_ne_one he⟩
+
+/-- Each numerical answer constructor has an explicit valid and invalid instance
+for the same correction equation, without an observational assumption. -/
+theorem valid_output_examples :
+    ValidOutput (fun _ : k => (0 : k)) id 0 (some 0) ∧
+    ¬ ValidOutput (fun _ : k => (0 : k)) id 1 (some 0) ∧
+    ValidOutput (fun _ : k => (0 : k)) id 1 none ∧
+    ¬ ValidOutput (fun _ : k => (0 : k)) id 0 none := by
+  exact ⟨rfl, zero_ne_one, (solvable_zero_not_one k).2,
+    fun hn => hn (solvable_zero_not_one k).1⟩
+
+/-- Constant observation fails decision sufficiency when zero and one inputs have
+different solvability, providing the negative instance of C's decision predicate. -/
+theorem decision_sufficient_fails :
+    ¬ DecisionSufficient (fun _ : k => (0 : k)) id Set.univ (fun _ : k => ()) := by
+  intro hs
+  have hf := (decision_sufficient_iff (fun _ : k => (0 : k)) id Set.univ
+    (fun _ : k => ())).mp hs
+  exact (solvable_zero_not_one k).2
+    ((hf 0 (Set.mem_univ _) 1 (Set.mem_univ _) rfl).mp (solvable_zero_not_one k).1)
+
+/-- Observing the whole input numerically gives the positive instance of C's
+numerical predicate, with every complete correction value returned directly. -/
+omit [Field k] in
+theorem numerical_sufficient_identity :
+    NumericalSufficient (id : k → k) id Set.univ id :=
+  ⟨some, fun _ _ => rfl⟩
 
 /-- A nonzero field supplies a same-equation example: all inputs are solvable
 without observation, while a constant observation cannot determine numerical output. -/

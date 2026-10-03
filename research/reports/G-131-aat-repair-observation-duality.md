@@ -44,11 +44,13 @@ Dの有限計画と不能証拠取得、Eの全指定例は後続義務である
 | Cの線形情報と成功基準点 | `informationFiber`, `mem_fiber_sub`, `add_mem_fiber`, `solvable_add_iff`。全fiberと核方向の双方向を同じL・B・Dで扱う |
 | Cの判定十分性の核条件 | `decision_sufficient_linear_iff`。成功基準点の可否と応答一致、逆は差の障害零 |
 | Cの数値十分性の核条件 | `numerical_sufficient_linear_iff`。同じ補正の右辺一致からBn=0、逆は全右辺の一致 |
-| 出力条件の非空虚性 | `decision_numerical_differ`。任意の体でD=B=id、全fiber・定数観測について、判定十分性と数値不十分性が同時成立 |
+| 出力条件の非空虚性とinstanceペア | `decision_numerical_differ`。任意の体でD=B=id、全fiber・定数観測について、判定十分性と数値不十分性が同時成立。`decision_sufficient_fails`, `numerical_sufficient_identity`, `solvable_zero_not_one`, `valid_output_examples` で全新規述語の成立・不成立を提供 |
 
 受理spine候補は `decision_sufficient_iff`, `numerical_sufficient_iff`,
 `decision_sufficient_linear_iff`, `numerical_sufficient_linear_iff`。
 残る宣言は上表の入力定義・API・発火例であり、cycle scaffoldはない。
+`solvable_congr_rhs`, `affineRhs_sub`, `affineRhs_eq_iff`, `obstruction_sub` は
+等号・差の基本APIであり、線形主定理は定義内部を展開せずこれらを用いる。
 
 | material premise | 役割 | 出所・使用先 |
 | --- | --- | --- |
@@ -68,7 +70,7 @@ G-130・G-128のResearch宣言への依存はこのcycleにない。実操作と
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: "Cの一般観測fiberの両出力条件と、成功基準点のある線形fiberの2種類の核条件を双方向証明"
-  exit_criteria_status: ["一般判定・数値条件を双方向証明", "同じD/B/L/Oによる線形核条件を双方向証明", "16宣言のfocused checkと標準公理監査・scanを実行"]
+  exit_criteria_status: ["一般判定・数値条件を双方向証明", "同じD/B/L/Oによる線形核条件を双方向証明", "24宣言のfocused checkと標準公理監査・scanを実行"]
   split_reason: none
   completion_candidate: no
   lean_artifacts: [FiberSufficiency.lean]
@@ -96,7 +98,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: ["focused checkと16宣言#print axiomsのコマンド・出力hashをPRコメントへ固定"]
+  validation_refs: ["focused checkと24宣言#print axiomsのコマンド・出力hashをPRコメントへ固定"]
   blocking_findings: []
   next_obligation: "原始線形問い合わせ手続きの応答列再現、成功点実行からの2種類の下限、最小固定集合からの達成"
 ```
