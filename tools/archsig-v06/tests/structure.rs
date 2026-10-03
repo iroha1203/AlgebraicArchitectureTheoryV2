@@ -126,8 +126,6 @@ fn params_calls_and_channels_are_elements() {
         r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.T"}, "at": "m.py:1"}
 {"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:2"}
 {"kind": "sends", "subject": "m.f", "object": "channel:queue:placed:amount", "value": "1", "at": "m.py:3"}
-{"kind": "sends", "subject": "m.f", "object": "channel:event:shipped", "value": "1", "at": "m.py:4"}
-{"kind": "sends", "subject": "m.f", "object": "channel:queue:a:b:c", "value": "1", "at": "m.py:5"}
 {"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py"}
 "#,
     );
@@ -135,7 +133,18 @@ fn params_calls_and_channels_are_elements() {
     assert_eq!(s.kind("m.f->m.g").unwrap(), "call");
     assert_eq!(s.kind("channel:queue:placed:amount").unwrap(), "channel");
     assert_eq!(s.kind("channel:queue:placed").unwrap(), "channel");
+}
+
+#[test]
+fn a_channel_name_is_split_at_its_last_colon_from_four_parts() {
     // 三つに分かれる名前は項目を持たない。四つ以上なら、最後を項目とし、残りをチャネルとする。
+    let s = structure(
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "at": "m.py:1"}
+{"kind": "sends", "subject": "m.f", "object": "channel:event:shipped", "value": "1", "at": "m.py:2"}
+{"kind": "sends", "subject": "m.f", "object": "channel:queue:a:b:c", "value": "1", "at": "m.py:3"}
+{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py"}
+"#,
+    );
     assert_eq!(s.kind("channel:event:shipped").unwrap(), "channel");
     assert!(s.kind("channel:event").is_err());
     assert_eq!(s.kind("channel:queue:a:b").unwrap(), "channel");

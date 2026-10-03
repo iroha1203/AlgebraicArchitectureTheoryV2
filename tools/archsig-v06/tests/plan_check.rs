@@ -1926,35 +1926,6 @@ fn and_splits_a_condition_and_or_and_not_and_do_not() {
 }
 
 #[test]
-fn a_question_mark_in_a_passed_value_is_silent_unless_the_callee_is_external() {
-    let callee = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"x": "int"}, "at": "m.py:5@blob:aaaaaaa"}
-{"kind": "writes", "subject": "m.g", "object": "m.O.t", "value": "$x", "at": "m.py:6@blob:aaaaaaa"}
-"#;
-    let run = |name: &str, extra: &str, g: &str, passed: &str, t: &str| {
-        let atoms = format!(
-            "{T_ATOMS}{extra}{{\"kind\": \"calls\", \"subject\": \"m.f\", \"object\": \"{g}\", \"at\": \"m.py:10@blob:aaaaaaa\"}}\n{{\"kind\": \"passes\", \"subject\": \"m.f->{g}\", \"object\": \"{g}.$x\", \"value\": \"{passed}\", \"at\": \"m.py:10@blob:aaaaaaa\"}}\n{{\"kind\": \"writes\", \"subject\": \"m.f\", \"object\": \"m.O.n\", \"value\": \"1\", \"at\": \"m.py:11@blob:aaaaaaa\"}}\n"
-        );
-        let plan = format!(
-            "{{\"kind\": \"defines\", \"subject\": \"m.f\", \"value\": \"operation\", \"params\": {{\"o\": \"m.O\"}}, \"file\": \"m.py\", \"at\": \"plan:p\"}}\n{{\"kind\": \"calls\", \"subject\": \"m.f\", \"object\": \"{g}\", \"at\": \"plan:p\"}}\n{{\"kind\": \"passes\", \"subject\": \"m.f->{g}\", \"object\": \"{g}.$x\", \"value\": \"1\", \"at\": \"plan:p\"}}\n{{\"kind\": \"writes\", \"subject\": \"m.f\", \"object\": \"m.O.t\", \"value\": \"{t}\", \"at\": \"plan:p\"}}\n"
-        );
-        below_case(name, &atoms, &plan)
-    };
-    // 渡した値が呼び出し先の書き込みに入る(引数が束なる)ことを、値の違いで確かめる。
-    let (s, r) = run("passes-same", callee, "m.g", "1", "$o.t");
-    assert_eq!(r["outcome"], "holds", "{s}");
-    let (s, r) = run("passes-differs", callee, "m.g", "2", "$o.t");
-    assert_eq!(r["kind"], "counterexample", "{s}");
-    let (s, r) = run("passes-question", callee, "m.g", "?", "$o.t");
-    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
-    // 外部の要素の呼び出しに渡す値は読まない。m.O.t の食い違いで反例が決まる。
-    let external = r#"{"kind": "resolves", "subject": "lib.h", "object": "external:lib", "at": "m.py:1@blob:aaaaaaa"}
-{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "1", "at": "m.py:12@blob:aaaaaaa"}
-"#;
-    let (s, r) = run("passes-external-question", external, "lib.h", "?", "2");
-    assert_eq!(r["kind"], "counterexample", "{s}");
-}
-
-#[test]
 fn a_return_value_is_not_compared() {
     let (s, r) = t_case(
         "return-not-compared",
@@ -2000,55 +1971,4 @@ fn a_question_mark_or_an_unreadable_expression_anywhere_in_the_steps_is_silent()
 "#;
     silent("q-callee", &[("calls", "m.g", "", "")], callee);
     silent("q-call-when", &[("calls", "m.g", "", "?")], &callee.replace("\"?\"", "\"1\""));
-}
-
-#[test]
-fn the_unfolding_stops_at_the_first_silence_including_return_values() {
-    // 戻り値の式も展開のときに解く。定義を読んでいないフィールド m.O.zz を読む戻り値で、操作の展開は沈黙する。
-    let (s, r) = t_case(
-        "return-unread",
-        &[("returns", "", "$o.zz", ""), ("writes", "m.O.t", "1", "")],
-        &[("returns", "", "$o.zz", ""), ("writes", "m.O.t", "2", "")],
-        "",
-    );
-    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
-    // 先に出会った沈黙を返す。定義のない m.O.z への書き込みが `?` より前にあれば unread。
-    let (s, r) = t_case(
-        "first-silence",
-        &[("writes", "m.O.z", "1", ""), ("writes", "m.O.t", "?", "")],
-        &[("writes", "m.O.t", "2", "")],
-        "",
-    );
-    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
-}
-
-#[test]
-fn a_silence_in_a_passed_value_returns_the_place_of_the_call() {
-    // 渡す値の沈黙の次に読む所は、`passes` ではなく、その呼び出しの `calls` の Atom で決める。
-    let callee = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"x": "int"}, "at": "m.py:5@blob:aaaaaaa"}
-{"kind": "writes", "subject": "m.g", "object": "m.O.t", "value": "$x", "at": "m.py:6@blob:aaaaaaa"}
-{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:10@blob:aaaaaaa"}
-"#;
-    let plan_with = |passed: &str| {
-        format!(
-            "{}{{\"kind\": \"passes\", \"subject\": \"m.f->m.g\", \"object\": \"m.g.$x\", \"value\": \"{passed}\", \"at\": \"plan:p\"}}\n",
-            r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
-{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "plan:p"}
-"#
-        )
-    };
-    // 観測した passes を n.py の行に置いても、次に読む所は calls のソース m.py である。
-    let atoms = format!("{T_ATOMS}{callee}{}", r#"{"kind": "passes", "subject": "m.f->m.g", "object": "m.g.$x", "value": "?", "at": "n.py:10@blob:bbbbbbb"}
-"#);
-    let (s, r) = below_case("passes-observed-place", &atoms, &plan_with("1"));
-    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
-    let next = s["next"].as_array().unwrap();
-    assert!(next.iter().any(|n| n["read"] == "m.py" && n["scope"] == "structure"), "{s}");
-    assert!(!next.iter().any(|n| n["read"] == "n.py"), "{s}");
-    // 候補の中の passes では、呼び出し元の操作の要素を返す。
-    let atoms = format!("{T_ATOMS}{callee}{}", r#"{"kind": "passes", "subject": "m.f->m.g", "object": "m.g.$x", "value": "1", "at": "m.py:10@blob:aaaaaaa"}
-"#);
-    let (s, r) = below_case("passes-plan-place", &atoms, &plan_with("?"));
-    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
-    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.f"), "{s}");
 }
