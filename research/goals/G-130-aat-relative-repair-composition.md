@@ -1,7 +1,7 @@
 # G-130-aat-relative-repair-composition — 全変更範囲を保つ相対修復の合成と分類
 
 - `id`: `G-130-aat-relative-repair-composition`
-- `status`: `active`
+- `status`: `completed`
 - `research mode`: `target-theorem`
 - `tracking issue`: [#5132](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5132)
 - `source note`: [n1017 §2–3・§5](../../docs/note/n1017_aat_relative_boundary_repair_and_observation.md)
