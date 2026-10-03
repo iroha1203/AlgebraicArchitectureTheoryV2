@@ -1963,6 +1963,8 @@ fn a_question_mark_or_an_unreadable_expression_anywhere_in_the_steps_is_silent()
         s
     };
     silent("q-when", &[("writes", "m.O.n", "1", "?")], "");
+    silent("q-sends-when", &[("sends", "channel:queue:q:item", "1", "?")], "");
+    silent("q-returns-when", &[("returns", "", "1", "?")], "");
     let s = silent("unreadable-when", &[("writes", "m.O.n", "1", "$o.n ~ 1")], "");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py" && n["scope"] == "structure"), "{s}");
     silent("q-sends", &[("sends", "channel:queue:q:item", "?", "")], "");
