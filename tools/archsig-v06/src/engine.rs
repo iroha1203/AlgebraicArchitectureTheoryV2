@@ -633,7 +633,7 @@ fn fields_of(s: &Structure, names: &BTreeSet<String>, removes: &BTreeSet<String>
     let mut silence = names
         .range(prefix.clone()..)
         .take_while(|n| n.starts_with(&prefix))
-        // 受け継ぐ型の名前で、受け継ぎで別の型のフィールドに解けるか、解く途中で決まらない名前は、受け継がれる型の側で問い合わせる(マニュアル第3章)。
+        // 受け継ぐ型の名前で、受け継ぎで別の型のフィールドに解けるか、解く途中で決まらない名前は、受け継がれる型の側で問い合わせる(設計 §5.4)。
         .find(|n| member(n) && !s.elements.contains_key(*n) && !removed(n) && (!s.bases.contains_key(ty) || s.access(n).is_ok_and(|x| x == **n)))
         .map(|n| s.kind(n).err().unwrap_or_else(|| Silence::new(Reason::Unread)));
     let mut out = Vec::new();

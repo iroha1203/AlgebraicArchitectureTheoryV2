@@ -459,8 +459,8 @@ impl Structure {
         let own = format!("{ty}.{name}");
         let defined = self.elements.contains_key(&own);
         // `ty` の定義を読んでいなければ、受け継ぎ(`ty` のソースの `inherits`)が分からない。外部の型はリポジトリの型を受け継がない。
-        // `ty.name` を定義したソース(`ty` を定義したソース)を読んでいれば、受け継ぎも読んでいる。
-        if !defined && !self.elements.contains_key(ty) && !self.external(ty) {
+        // `ty.name` に定義があって `ty` にないとき、`ty` は `resolves` があれば要素で、なければモジュールかもしれない(受け継ぎを持たない)。
+        if !self.elements.contains_key(ty) && !self.external(ty) && (!defined || self.resolves.contains_key(ty)) {
             self.kind(ty)?;
         }
         if !self.bases.contains_key(ty) {
@@ -808,10 +808,13 @@ fn trace(s: &Structure, prior: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) 
                         }
                         names.insert(x);
                     }
-                    // 変更後に決まらなければ、字句どおりの名前だけを数える(型ごと消えていれば `missing` が先に決まる)。
+                    // 変更後に決まらなければ、受け継ぎのない型の字句どおりの名前だけを数える(型ごと消えていれば `missing` が先に決まる)。
+                    // 受け継ぎを解けない型の字句どおりの名前は、受け継がれる型のフィールドかもしれない。
                     Err(_) => {
                         gaps.push(Gap::Member(t.to_string(), f.to_string()));
-                        names.insert(o.clone());
+                        if !s.bases.contains_key(t) {
+                            names.insert(o.clone());
+                        }
                     }
                 },
                 _ => {
@@ -912,7 +915,9 @@ impl Structure {
                     }
                     // 受け継いだフィールドは、それを定義した型の名前を名指す。探す途中で決まらなければ、その先は決まらない。
                     let Ok(field) = self.member(&t, f) else {
-                        out.insert(format!("{t}.{f}"));
+                        if !self.bases.contains_key(&t) {
+                            out.insert(format!("{t}.{f}"));
+                        }
                         gaps.push(Gap::Member(t, f.clone()));
                         break;
                     };
