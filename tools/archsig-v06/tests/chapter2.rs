@@ -107,12 +107,16 @@ fn walk(name: &str, edit: impl Fn(&str) -> String) -> (Repo, Vec<Value>, Value) 
     steps.push(repo.run(&["plan", "check", "split-order"]));
 
     // 6. 仕事を分ける。
-    steps.push(repo.run(&["plan", "split", "split-order"]));
+    let split = repo.run(&["plan", "split", "split-order"]);
+    // 共有の条件は、結果の詳細に並ぶ(局所の候補には、その局所の Atom と共有の条件が元の順で入る)。
+    let id = split["results"][0]["id"].as_str().unwrap_or_default().to_string();
+    let shared = repo.run(&["show", &id])["check"]["shared"].clone();
+    steps.push(split);
     steps.push(Value::Array(
         ["shop/order", "shop/payment", "shop/shipping"]
             .iter()
             .map(|l| Value::Array(lines(&repo, &format!(".archsig/plans/split-order/{l}/plan.jsonl"))))
-            .chain([Value::Array(lines(&repo, ".archsig/plans/split-order/shop/payment/shared.jsonl"))])
+            .chain([shared])
             .collect(),
     ));
 

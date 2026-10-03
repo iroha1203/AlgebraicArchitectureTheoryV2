@@ -143,8 +143,15 @@ impl<'a> Geometry<'a> {
             }
             let locals = self.atom_locals(a);
             match locals.len() {
-                1 => out.locals.entry(locals.into_iter().next().unwrap()).or_default().push(a.clone()),
-                _ => out.shared.push(a.clone()),
+                1 => {
+                    let local = locals.into_iter().next().unwrap();
+                    out.sequence.push((Some(local.clone()), a.clone()));
+                    out.locals.entry(local).or_default().push(a.clone());
+                }
+                _ => {
+                    out.sequence.push((None, a.clone()));
+                    out.shared.push(a.clone());
+                }
             }
         }
         out
@@ -158,6 +165,8 @@ pub struct Split {
     pub locals: BTreeMap<String, Vec<Atom>>,
     /// 共有の条件。二つ以上の局所に属する Atom と、どの局所にも属さない Atom。
     pub shared: Vec<Atom>,
+    /// 候補の Atom を、候補に書いた順のまま、属する局所(共有の条件は None)と並べたもの。局所の候補を書き出すときに順を保つ。
+    pub sequence: Vec<(Option<String>, Atom)>,
     /// `?` の名前と、それを名指す Atom。どの局所に属するかが決まらない。
     pub questions: Vec<(String, Atom)>,
     /// 定義がなく `resolves` が外部でないソースを指す要素と、その沈黙(設計 §3.3)。どの局所に属するかが決まらない。
