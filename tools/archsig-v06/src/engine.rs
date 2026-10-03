@@ -13,6 +13,8 @@ use crate::structure::{Overlay, Reason, Resolution, STEP_LIMIT, Silence, State, 
 
 /// 分岐の数の上限。超えたら `limit` で沈黙する。
 pub const BRANCH_LIMIT: usize = 256;
+/// 書き込みや条件で作る値の項の、節の数の上限(設計 §5.4)。
+pub const TERM_LIMIT: usize = 1_000;
 
 const THEORY_CHANGES: &str = "Rising Sea §1.8〜1.9、§4.10〜4.11";
 const THEORY_SPLIT: &str = "Rising Sea §2.5、§5.1、§8.6";
@@ -132,7 +134,7 @@ pub fn execute(s: &Structure, op: &str, fresh: &dyn Fn(&str) -> bool) -> Result<
                         split.push((br, false));
                         continue;
                     }
-                    let v = normalize(br.state.eval(&freshen(c.value.clone(), &site, fresh))?);
+                    let v = bounded(normalize(bounded(br.state.eval(&freshen(c.value.clone(), &site, fresh))?)?))?;
                     let mut here = vec![(br, true)];
                     for (atom, truth) in literals(v) {
                         let mut more = Vec::new();
@@ -163,13 +165,13 @@ pub fn execute(s: &Structure, op: &str, fresh: &dyn Fn(&str) -> bool) -> Result<
                 // 呼び出しでは、渡す値を呼び出しの時点で読んで束ねる。
                 if let (true, StepKind::Call { binds, .. }) = (active, &step.kind) {
                     for (symbol, v) in binds {
-                        let v = normalize(br.state.eval(&freshen(v.clone(), &site, fresh))?);
+                        let v = bounded(normalize(bounded(br.state.eval(&freshen(v.clone(), &site, fresh))?)?))?;
                         br.state.args.insert(symbol.clone(), v);
                     }
                     br.calls.insert(index);
                 }
                 if let (true, StepKind::Write { place, value }) = (active, &step.kind) {
-                    let v = normalize(br.state.eval(&freshen(value.clone(), &site, fresh))?);
+                    let v = bounded(normalize(bounded(br.state.eval(&freshen(value.clone(), &site, fresh))?)?))?;
                     br.writes.push(Written {
                         place: place.clone(),
                         value: v.clone(),
@@ -207,6 +209,26 @@ fn freshen(v: Value, site: &str, fresh: &dyn Fn(&str) -> bool) -> Value {
         Value::Bin(op, a, b) => Value::Bin(op, Box::new(f(*a)), Box::new(f(*b))),
         other => other,
     }
+}
+
+/// 値の項の節の数が上限を超えれば `limit` で沈黙する。再帰せずに数え、上限に達したら数えるのをやめる。
+/// 形をそろえる前(そろえる処理の再帰を抑える)と、そろえた後(そろえて増えた節も数える)の両方で数える。
+fn bounded(v: Value) -> Result<Value, Silence> {
+    let mut stack = vec![&v];
+    let mut count = 0;
+    while let Some(x) = stack.pop() {
+        count += 1;
+        if count > TERM_LIMIT {
+            return Err(Silence::new(Reason::Limit));
+        }
+        match x {
+            Value::Proj(a, _) | Value::Not(a) | Value::Neg(a) => stack.push(a),
+            Value::Bin(_, a, b) => stack.extend([a.as_ref(), b.as_ref()]),
+            Value::Call(_, args) => stack.extend(args.iter()),
+            _ => {}
+        }
+    }
+    Ok(v)
 }
 
 /// 項の形をそろえる。可換な演算は項を並べ替え、場所の入力の射影は長い場所の入力にまとめる。
@@ -1151,8 +1173,8 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
             Err(_) => {}
         }
         let mut next: Vec<Silence> = Vec::new();
-        for (name, a) in gaps {
-            let s = before.untraced(name.as_deref(), a);
+        for (gap, a) in gaps {
+            let s = before.untraced(gap, a);
             if !next.contains(&s) {
                 next.push(s);
             }

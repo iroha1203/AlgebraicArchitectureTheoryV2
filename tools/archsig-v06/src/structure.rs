@@ -330,6 +330,8 @@ impl Structure {
         let r = |x: &Expr| self.resolve(op, env, x);
         Ok(match e {
             Expr::Unknown => return Err(question()),
+            // 字句の数が上限を超えた式は、値を求めない(設計 §5.1)。
+            Expr::TooLong(_) => return Err(Silence::new(Reason::Limit)),
             Expr::Const(c) | Expr::Name(c) => {
                 if c.starts_with('?') {
                     return Err(question());
@@ -399,10 +401,9 @@ pub struct Overlay {
     /// 書き直していない Atom が `removes` した要素を名指す操作と、名指す要素(`missing` の元)。
     /// Atom から決まる事実で、`missing` と結論するか沈黙するかはエンジンが決める(設計 §3.6)。
     pub missing: BTreeMap<String, BTreeSet<String>>,
-    /// 書き直していない Atom のうち、名指す要素を最後までたどれなかった所。操作ごとに、たどれなかった要素と Atom。
-    /// 要素は、`?` の名前、型の分からないフィールドの持ち主の型など。式を読めなければ `None`。
+    /// 書き直していない Atom のうち、名指す要素を最後までたどれなかった所。操作ごとに、たどれなかった所と Atom。
     /// そこで `removes` した要素を名指すかは、Atom からは決まらない(設計 §5.1)。
-    pub untraced: BTreeMap<String, Vec<(Option<String>, Atom)>>,
+    pub untraced: BTreeMap<String, Vec<(Gap, Atom)>>,
     /// 対応の元か行き先に書いた `?` の名前と、その対応の Atom。
     pub questions: BTreeMap<String, Atom>,
     /// 書いた対応の元の要素と、その対応の Atom の場所。
@@ -414,6 +415,17 @@ pub struct Overlay {
     pub unplanned: Vec<Atom>,
     /// 実装した後に比べるとき、候補の名前と、候補の構造 Atom の数。候補がなければ None。
     pub planned: Option<(String, usize)>,
+}
+
+/// 名指す要素をたどれなかった所。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Gap {
+    /// たどれなかった要素。`?` の名前、型の分からないフィールドの持ち主の型など。
+    Name(String),
+    /// 式を読めなかった。
+    Unreadable,
+    /// 式の字句の数が上限を超えた。ArchSig の側の限界なので、読み直しても決まらない。
+    Limit,
 }
 
 /// ArchMap の Atom の列 `before` に、候補の Atom の列 `plan` を重ねる(設計 §3.6)。
@@ -583,18 +595,20 @@ fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn
         // `passes` の `subject` は呼び出しの要素 `<操作>->…` なので、呼び出し元の操作に数える。
         let op = a.subject.split("->").next().unwrap_or("").to_string();
         let names = named.entry(op.clone()).or_default();
-        let mut gaps: Vec<Option<String>> = Vec::new();
+        let mut gaps: Vec<Gap> = Vec::new();
         for o in a.via.iter().flatten().chain(a.object.as_ref()) {
             if o.starts_with('?') {
-                gaps.push(Some(o.to_string()));
+                gaps.push(Gap::Name(o.to_string()));
             } else {
                 names.insert(o.clone());
             }
         }
         for text in [&a.value, &a.when].into_iter().flatten() {
             match expr::parse(text) {
+                // 字句の数が上限を超えた式は、構文として読めるかを確かめていないので、消える要素を使うかを決めない。
+                Ok(Expr::TooLong(_)) => gaps.push(Gap::Limit),
                 Ok(e) => s.named(&op, &e, names, &mut gaps),
-                Err(_) => gaps.push(None),
+                Err(_) => gaps.push(Gap::Unreadable),
             }
         }
         if !gaps.is_empty() {
@@ -628,7 +642,7 @@ impl Structure {
 
     /// 式の中で名指す要素。`$p.f.g` がたどれる所までのフィールドと、呼び出す操作。
     /// たどれなかった所は `gaps` に積む。その先で何を名指すかは決まらない。
-    fn named(&self, op: &str, e: &Expr, out: &mut BTreeSet<String>, gaps: &mut Vec<Option<String>>) {
+    fn named(&self, op: &str, e: &Expr, out: &mut BTreeSet<String>, gaps: &mut Vec<Gap>) {
         match e {
             Expr::Path(p, fields) => {
                 let mut ty = self.elements.get(op).and_then(|o| o.params.get(p)).cloned();
@@ -636,7 +650,7 @@ impl Structure {
                 let mut owner = op.to_string();
                 for f in fields {
                     let Some(t) = ty else {
-                        gaps.push(Some(owner));
+                        gaps.push(Gap::Name(owner));
                         break;
                     };
                     let field = format!("{t}.{f}");
@@ -647,7 +661,7 @@ impl Structure {
             }
             Expr::Call(name, args) => {
                 if name.starts_with('?') {
-                    gaps.push(Some(name.clone()));
+                    gaps.push(Gap::Name(name.clone()));
                 } else {
                     out.insert(name.clone());
                 }
@@ -655,9 +669,15 @@ impl Structure {
                     self.named(op, a, out, gaps);
                 }
             }
-            Expr::Name(n) if n.starts_with('?') => gaps.push(Some(n.clone())),
-            Expr::Unknown => gaps.push(None),
+            Expr::Name(n) if n.starts_with('?') => gaps.push(Gap::Name(n.clone())),
+            Expr::Unknown => gaps.push(Gap::Unreadable),
             Expr::Not(x) | Expr::Neg(x) => self.named(op, x, out, gaps),
+            // 字句の数が上限を超えた式は、字句から拾った名前を数える。
+            Expr::TooLong(items) => {
+                for x in items {
+                    self.named(op, x, out, gaps);
+                }
+            }
             Expr::Bin(_, a, b) => {
                 self.named(op, a, out, gaps);
                 self.named(op, b, out, gaps);
@@ -668,10 +688,15 @@ impl Structure {
 
     /// 名指す要素をたどれなかった所の沈黙。要素があれば、その種類の問い合わせの沈黙を返す。
     /// 要素が決まらないか、種類が決まっても先をたどれなければ、その Atom の場所を返す(マニュアル第5章 問い8)。
-    pub fn untraced(&self, name: Option<&str>, a: &Atom) -> Silence {
-        match name.map(|n| self.kind(n)) {
-            Some(Err(s)) if s.scope.as_deref() != Some("?") || s.read.is_some() || s.element.is_some() => s,
-            _ => locate(question(), a),
+    /// 式の字句の数が上限を超えたなら、`limit` で沈黙する。読む所は付けない。
+    pub fn untraced(&self, gap: &Gap, a: &Atom) -> Silence {
+        match gap {
+            Gap::Limit => Silence::new(Reason::Limit),
+            Gap::Name(n) => match self.kind(n) {
+                Err(s) if s.scope.as_deref() != Some("?") || s.read.is_some() || s.element.is_some() => s,
+                _ => locate(question(), a),
+            },
+            Gap::Unreadable => locate(question(), a),
         }
     }
 }

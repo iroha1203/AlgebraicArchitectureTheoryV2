@@ -2166,3 +2166,189 @@ law payment-info-kept
     let s = run_with("keep-owner-valueless", "", r#""value": "operation", "#);
     assert_eq!((result(&s, "m.f.$x")["outcome"].as_str(), result(&s, "m.f.$x")["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
 }
+
+#[test]
+fn a_long_expression_is_limit() {
+    // 字句の数が上限を超える式は値を求めず、limit で沈黙する。深い入れ子でもプロセスは落ちない。
+    // 上限は ArchSig の側の限界なので、ソースを読み直す所は返さない。
+    let nested = format!("{}1{}", "(".repeat(10_000), ")".repeat(10_000));
+    let negated = format!("{}1", "-".repeat(10_000));
+    let long_sum = vec!["1"; 10_000].join(" + ");
+    for (name, v) in [("long-nested", nested.as_str()), ("long-negated", negated.as_str()), ("long-sum", long_sum.as_str())] {
+        // value に書いても、when に書いても同じ。
+        for (at, steps) in [("value", [("writes", "m.O.t", v, "")]), ("when", [("writes", "m.O.t", "1", v)])] {
+            let (s, r) = t_case(&format!("{name}-{at}"), &steps, &[("writes", "m.O.t", "1", "")], "");
+            assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{name} {at}: {s}");
+            assert!(!s["next"].as_array().unwrap().iter().any(|n| n["decides"].as_array().unwrap().contains(&r["id"])), "{name} {at}: {s}");
+        }
+    }
+    // 上限より短い式は読む。上限の近くまで入れ子にしても落ちない。
+    let deep = format!("{}1{}", "(".repeat(499), ")".repeat(499));
+    let (s, r) = t_case("deep-within", &[("writes", "m.O.t", deep.as_str(), "")], &[("writes", "m.O.t", "1", "")], "");
+    assert_eq!(r["outcome"], "holds", "{s}");
+    let short_sum = vec!["1"; 400].join(" + ");
+    let (s, r) = t_case("short-sum", &[("writes", "m.O.t", short_sum.as_str(), "")], &[("writes", "m.O.t", short_sum.as_str(), "")], "");
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn a_value_that_grows_beyond_the_term_limit_is_limit() {
+    // $o.t + 1 を重ねて書くと、値の項が書き込みのたびに大きくなる。上限を超えれば limit。
+    let run = |name: &str, n: usize| {
+        let steps: Vec<(&str, &str, &str, &str)> = vec![("writes", "m.O.t", "$o.t + 1", ""); n];
+        let (s, r) = t_case(name, &steps, &steps, "");
+        (r["outcome"].as_str().map(str::to_string), r["reason"].as_str().map(str::to_string), s)
+    };
+    let (o, _, s) = run("grow-small", 100);
+    assert_eq!(o.as_deref(), Some("holds"), "{s}");
+    let (o, reason, s) = run("grow-large", 5_000);
+    assert_eq!((o.as_deref(), reason.as_deref()), (Some("silent"), Some("limit")), "{s}");
+    // 形をそろえると節が増える。1 != 1 を and で 250 個つなぐと、そろえる前は 999 節、そろえた後は 1,249 節。
+    let ne = vec!["1 != 1"; 250].join(" and ");
+    let (s, r) = t_case("grow-normalized", &[("writes", "m.O.t", ne.as_str(), "")], &[("writes", "m.O.t", ne.as_str(), "")], "");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
+    // 形をそろえる前にも数える。not を 996 個重ねた値は、そろえる前は 1,005 節で上限を超え、そろえると 9 節に縮む。
+    let nots = format!("{}$o.t", "not ".repeat(996));
+    let steps = [("writes", "m.O.t", "1 + 1 + 1 + 1 + 1", ""), ("writes", "m.O.t", nots.as_str(), "")];
+    let (s, r) = t_case("shrink-normalized", &steps, &steps, "");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
+}
+
+#[test]
+fn a_long_expression_still_names_what_it_mentions() {
+    // 別の操作 m.h の長い式が、定義を読んでいない m.S.zz を名指す。名指しは字句から拾うので、
+    // 型 m.S をたどる所は m.S.zz が分からないとして沈黙する(短い式と同じ)。
+    let mention = |v: &str| {
+        format!(
+            "{O_S}{S_P}{}{{\"kind\": \"writes\", \"subject\": \"m.h\", \"object\": \"m.O.t\", \"value\": \"{v}\", \"at\": \"m.py:8@blob:aaaaaaa\"}}\n{F_WRITES_A}",
+            r#"{"kind": "defines", "subject": "m.O.t", "value": "field", "type": "int", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.h", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:7@blob:aaaaaaa"}
+"#
+        )
+    };
+    let long = format!("$o.s.zz{}", " + 1".repeat(600));
+    for (name, v) in [("mention-short", "$o.s.zz + 1".to_string()), ("mention-long", long)] {
+        let (s, r) = below_case(name, &mention(&v), &PLAN_WRITES_B.replace("m.b()", "m.a()"));
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{name}: {s}");
+        assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.S.zz"), "{name}: {s}");
+    }
+}
+
+#[test]
+fn a_condition_or_a_passed_value_that_grows_beyond_the_term_limit_is_limit() {
+    // 書き込みは小さいまま、条件と渡す値の項だけが上限を超える。
+    // $x + $x を渡し続けると、渡す値の項は呼び出しの段ごとに倍になる。
+    let mut extra = String::new();
+    for i in 1..=12 {
+        extra.push_str(&format!(
+            "{{\"kind\": \"defines\", \"subject\": \"m.g{i}\", \"value\": \"operation\", \"params\": {{\"x\": \"int\"}}, \"at\": \"m.py:{}@blob:aaaaaaa\"}}\n",
+            100 + i
+        ));
+        if i < 12 {
+            extra.push_str(&format!(
+                "{{\"kind\": \"calls\", \"subject\": \"m.g{i}\", \"object\": \"m.g{}\", \"at\": \"m.py:{}@blob:aaaaaaa\"}}\n{{\"kind\": \"passes\", \"subject\": \"m.g{i}->m.g{}\", \"object\": \"m.g{}.$x\", \"value\": \"$x + $x\", \"at\": \"m.py:{}@blob:aaaaaaa\"}}\n",
+                i + 1, 200 + i, i + 1, i + 1, 200 + i
+            ));
+        }
+    }
+    extra.push_str("{\"kind\": \"passes\", \"subject\": \"m.f->m.g1\", \"object\": \"m.g1.$x\", \"value\": \"$o.n\", \"at\": \"m.py:10@blob:aaaaaaa\"}\n");
+    let steps = [("calls", "m.g1", "", ""), ("writes", "m.O.t", "1", "")];
+    let (s, r) = t_case("passes-grow", &steps, &steps, &extra);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
+    // 条件: $o.n を $o.n + $o.n で 8 回重ねると、値の項は 511 節で上限の内側。
+    // 条件 $o.n == $o.n で二つ並べると 1,023 節になり、条件で初めて上限を超える。
+    let mut steps: Vec<(&str, &str, &str, &str)> = vec![("writes", "m.O.n", "$o.n + $o.n", ""); 8];
+    steps.push(("writes", "m.O.t", "1", ""));
+    let (s, r) = t_case("when-within", &steps, &steps, "");
+    assert_eq!(r["outcome"], "holds", "書き込みは上限の内側: {s}");
+    steps.pop();
+    steps.push(("writes", "m.O.t", "1", "$o.n == $o.n"));
+    let (s, r) = t_case("when-grow", &steps, &steps, "");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
+    // 条件と渡す値も、形をそろえた後に数える。1 != 1 を and で 250 個つなぐと、そろえた後に 1,249 節になる。
+    let ne = vec!["1 != 1"; 250].join(" and ");
+    let steps = [("writes", "m.O.t", "1", ne.as_str())];
+    let (s, r) = t_case("when-grow-normalized", &steps, &steps, "");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
+    let extra = format!(
+        "{{\"kind\": \"defines\", \"subject\": \"m.g1\", \"value\": \"operation\", \"params\": {{\"x\": \"int\"}}, \"at\": \"m.py:101@blob:aaaaaaa\"}}\n{{\"kind\": \"passes\", \"subject\": \"m.f->m.g1\", \"object\": \"m.g1.$x\", \"value\": \"{ne}\", \"at\": \"m.py:10@blob:aaaaaaa\"}}\n"
+    );
+    let steps = [("calls", "m.g1", "", ""), ("writes", "m.O.t", "1", "")];
+    let (s, r) = t_case("passes-grow-normalized", &steps, &steps, &extra);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
+}
+
+#[test]
+fn a_long_expression_does_not_decide_whether_a_removed_element_is_used() {
+    // m.j の式が長いと、構文として読めるかを確かめていないので、消える m.U.a を使うかは決まらない。
+    // 字句から拾う名前が m.U.a に届いても届かなくても、結論を落とさず limit で沈黙する。
+    let atoms = r#"{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T.q", "value": "field", "type": "m.U", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T.b", "value": "field", "type": "int", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U", "value": "type", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U.a", "value": "field", "type": "int", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.j", "value": "operation", "params": {"o": "m.T"}, "at": "m.py:6@blob:aaaaaaa"}
+"#;
+    let run = |name: &str, v: &str| {
+        let m = format!("{atoms}{{\"kind\": \"writes\", \"subject\": \"m.j\", \"object\": \"m.T.b\", \"value\": \"{v}\", \"at\": \"m.py:7@blob:aaaaaaa\"}}\n");
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map(
+            "m.py",
+            &format!(
+                "{}{m}",
+                r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+"#
+            ),
+        );
+        repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.U.a\", \"at\": \"plan:p\"}\n");
+        repo.run(&["plan", "check", "p"])
+    };
+    // 消える要素を使うかの結論は、Law なしの行に出る(changes commute の行とは別)。その行の理由と、それを決める次に読む所を返す。
+    let removes_row = |s: &Value| {
+        let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.j" && r["law"].is_null()).cloned().unwrap_or(Value::Null);
+        let read = s["next"].as_array().unwrap().iter().any(|n| n["decides"].as_array().unwrap().contains(&r["id"]));
+        (r["outcome"].as_str().map(str::to_string), r["reason"].as_str().map(str::to_string), read)
+    };
+    // 短い読めない式は ? と同じに沈黙し、ソースを読む所として返す(対照)。
+    let s = run("removes-short-unreadable", "$o.q(1).a + 1");
+    assert_eq!(removes_row(&s), (Some("silent".into()), Some("unresolved".into()), true), "{s}");
+    let s = run("removes-short-names-unreadable", "$o.q.a ?? 1");
+    assert_eq!(removes_row(&s), (Some("silent".into()), Some("unresolved".into()), true), "{s}");
+    // 短い読める式が m.U.a を名指せば missing(対照)。
+    let s = run("removes-short-names", "$o.q.a + 1");
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.j" && r["law"].is_null()).cloned().unwrap();
+    assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
+    // 字句の数が上限を超える式は、構文として読めても読めなくても、limit で沈黙し、読む所は付けない。
+    // 上限を超えた式の中の ? や引数にない道も、読み直しても決まらないので limit にそろえる。
+    // m.U.a を名指す長い式も、読めない(??)と短い式では沈黙するので、拾った名前で missing と決めない。
+    let tail = " + 1".repeat(600);
+    for (name, v) in [
+        ("removes-long-unreadable", format!("$o.q(1).a{tail}")),
+        ("removes-long-readable", format!("$o.b{tail}")),
+        ("removes-long-question", format!("$o.b + ?{tail}")),
+        ("removes-long-question-name", format!("$o.b + ?m.g(1){tail}")),
+        ("removes-long-unknown-arg", format!("$zz.b{tail}")),
+        ("removes-long-unknown-field", format!("$o.q.zz.w{tail}")),
+        ("removes-long-names-readable", format!("$o.q.a{tail}")),
+        ("removes-long-names-unreadable", format!("$o.q.a ?? 1{tail}")),
+        ("removes-deep-question", format!("{}?{}", "(".repeat(600), ")".repeat(600))),
+    ] {
+        let s = run(name, &v);
+        assert_eq!(removes_row(&s), (Some("silent".into()), Some("limit".into()), false), "{name}: {s}");
+    }
+}
+
+#[test]
+fn a_value_that_grows_through_calls_or_negation_is_limit() {
+    // 値の項は、呼び出しや否定を重ねても大きくなる。上限を超えれば limit。
+    let extra = r#"{"kind": "resolves", "subject": "m.g", "object": "external:lib", "at": "m.py:1@blob:aaaaaaa"}
+"#;
+    for (name, v) in [("grow-call", "m.g($o.t)"), ("grow-neg", "-$o.t")] {
+        let steps: Vec<(&str, &str, &str, &str)> = vec![("writes", "m.O.t", v, ""); 3_000];
+        let (s, r) = t_case(name, &steps, &steps, extra);
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{name}: {s}");
+    }
+}
