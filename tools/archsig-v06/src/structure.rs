@@ -906,11 +906,9 @@ impl Structure {
             // `?` の型は、その型を書いた定義(フィールドか、引数を持つ操作)の場所を返す(マニュアル第5章 問い3)。
             Gap::Redefined(t) => self.untraced(&Gap::Name(t.clone()), a),
             Gap::QuestionType(owner) => locate(question(), self.atoms.iter().find(|d| d.kind == "defines" && d.subject == *owner).unwrap_or(a)),
+            // 受け継ぎをたどる途中の沈黙を返す。
+            Gap::Member(t, f) => self.member(t, f).err().unwrap_or_else(|| Silence::new(Reason::Unresolved)),
             // `?` の名前は、名前で探さず、その名前を持つ Atom の場所を返す(マニュアル第5章 問い8)。
-            Gap::Member(t, f) => match self.member(t, f) {
-                Err(s) if s.scope.as_deref() != Some("?") || s.read.is_some() || s.element.is_some() => s,
-                _ => locate(question(), a),
-            },
             Gap::Name(n) if n.starts_with('?') => locate(question(), a),
             Gap::Name(n) => match self.kind(n) {
                 Err(s) if s.scope.as_deref() != Some("?") || s.read.is_some() || s.element.is_some() => s,
