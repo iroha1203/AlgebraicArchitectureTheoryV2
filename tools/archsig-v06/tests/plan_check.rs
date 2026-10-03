@@ -1894,12 +1894,65 @@ fn an_unreadable_value_is_like_a_question_mark() {
 }
 
 #[test]
-fn a_return_does_not_end_the_steps() {
+fn the_steps_after_a_return_are_done_only_where_it_did_not_return() {
+    // 条件のない戻り値の後の書き込みは、どの分岐でも行わない。食い違う書き込みでも成り立つ。
     let (s, r) = t_case(
-        "return-not-end",
+        "return-unconditional",
         &[("returns", "", "1", ""), ("writes", "m.O.t", "1", "")],
         &[("returns", "", "1", ""), ("writes", "m.O.t", "2", "")],
         "",
+    );
+    assert_eq!(r["outcome"], "holds", "{s}");
+    // 条件付きの戻り値の後の書き込みは、戻らなかった分岐で行う。その分岐で食い違う。
+    let (s, r) = t_case(
+        "return-conditional",
+        &[("returns", "", "1", "$o.n == 1"), ("writes", "m.O.t", "1", "")],
+        &[("returns", "", "1", "$o.n == 1"), ("writes", "m.O.t", "2", "")],
+        "",
+    );
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    // 戻り値の条件は、戻り値の時点の状態で読む。後で m.O.n を 1 に書いても、n が 1 でなかった分岐では戻らない。
+    let (s, r) = t_case(
+        "return-condition-at-return",
+        &[("returns", "", "1", "$o.n == 1"), ("writes", "m.O.n", "1", ""), ("writes", "m.O.t", "5", "")],
+        &[("returns", "", "1", "$o.n == 1"), ("writes", "m.O.n", "1", ""), ("writes", "m.O.t", "6", "")],
+        "",
+    );
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    // 戻り値の条件を後の手順の時点で読み直すと、m.O.n を書き換えた後では答えが変わる。戻り値の時点で一度だけ読むので、
+    // 戻らなかった分岐でだけ書く候補と同じになる。
+    let (s, r) = t_case(
+        "return-condition-read-once",
+        &[("returns", "", "1", "$o.n == 1"), ("writes", "m.O.n", "$o.t", ""), ("writes", "m.O.t", "5", "")],
+        &[("writes", "m.O.t", "5", "$o.n != 1"), ("writes", "m.O.n", "$o.t", "$o.n != 1")],
+        "",
+    );
+    assert_eq!(r["outcome"], "holds", "{s}");
+    // 戻った分岐では、後の書き込みを行わない。戻らなかった分岐でだけ書く候補と同じになる。
+    let (s, r) = t_case(
+        "return-conditional-same",
+        &[("returns", "", "1", "$o.n == 1"), ("writes", "m.O.t", "1", "")],
+        &[("writes", "m.O.t", "1", "$o.n != 1")],
+        "",
+    );
+    assert_eq!(r["outcome"], "holds", "{s}");
+    // 無条件に書く候補とは、戻った分岐(n が 1)で食い違う。
+    let (s, r) = t_case(
+        "return-conditional-returned-branch",
+        &[("returns", "", "1", "$o.n == 1"), ("writes", "m.O.t", "1", "")],
+        &[("writes", "m.O.t", "1", "")],
+        "",
+    );
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    // 呼び出し先の戻り値は、呼び出し先の本体だけを終える。呼び出し元の後の書き込みは行う。
+    let callee = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "1", "at": "m.py:21@blob:aaaaaaa"}
+"#;
+    let (s, r) = t_case(
+        "return-in-callee",
+        &[("calls", "m.g", "", ""), ("writes", "m.O.t", "1", "")],
+        &[("calls", "m.g", "", ""), ("writes", "m.O.t", "2", "")],
+        callee,
     );
     assert_eq!(r["kind"], "counterexample", "{s}");
 }
@@ -2750,4 +2803,32 @@ fn a_passed_value_that_depends_on_a_condition_other_than_the_call_is_unresolved(
         let (r, s) = run(name, call_when, &before, &plan);
         assert_eq!(r["kind"], "counterexample", "{name}: {s}");
     }
+}
+
+#[test]
+fn a_write_after_a_return_on_the_same_line_is_not_done() {
+    // `if o.n == 1: return 1; o.t = 1` を、同じ行の returns と writes として観測する。戻り値の後に並ぶ書き込みは、戻った分岐では行わない。
+    let body = r#"{"kind": "returns", "subject": "m.f", "value": "1", "when": "$o.n == 1", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "1", "when": "$o.n == 1", "at": "m.py:10@blob:aaaaaaa"}
+"#;
+    let repo = Repo::new("return-write-same-line");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        &format!(
+            "{}{T_ATOMS}{body}",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#
+        ),
+    );
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "returns", "subject": "m.f", "value": "1", "when": "$o.n == 1", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    assert_eq!(result(&s, "m.f")["outcome"], "holds", "{s}");
 }

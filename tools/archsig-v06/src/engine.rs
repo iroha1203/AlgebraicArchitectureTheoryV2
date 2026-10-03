@@ -90,6 +90,8 @@ pub struct Branch {
     pub writes: Vec<Written>,
     /// この分岐で行われた呼び出しの手順(列の添字)。
     pub calls: BTreeSet<usize>,
+    /// この分岐で行われた戻り値の手順(列の添字)。
+    pub returned: BTreeSet<usize>,
 }
 
 impl Branch {
@@ -122,6 +124,11 @@ pub fn execute(s: &Structure, op: &str, fresh: &dyn Fn(&str) -> bool) -> Result<
         for b in branches {
             // 呼び出し先の手順は、その呼び出しが行われた分岐でだけ行う。
             if step.within.is_some_and(|c| !b.calls.contains(&c)) {
+                next.push(b);
+                continue;
+            }
+            // 戻り値の手順を行った分岐では、同じ本体の後の手順を行わない(設計 §3.4)。
+            if step.after.iter().any(|r| b.returned.contains(r)) {
                 next.push(b);
                 continue;
             }
@@ -169,6 +176,9 @@ pub fn execute(s: &Structure, op: &str, fresh: &dyn Fn(&str) -> bool) -> Result<
                         br.state.args.insert(symbol.clone(), v);
                     }
                     br.calls.insert(index);
+                }
+                if let (true, StepKind::Return { .. }) = (active, &step.kind) {
+                    br.returned.insert(index);
                 }
                 if let (true, StepKind::Write { place, value }) = (active, &step.kind) {
                     let v = bounded(normalize(bounded(br.state.eval(&freshen(value.clone(), &site, fresh))?)?))?;
