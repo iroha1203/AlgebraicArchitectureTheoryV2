@@ -1392,3 +1392,56 @@ fn a_write_before_is_also_followed_through_the_type_after() {
     let places: Vec<&Value> = r["check"]["diverging"].as_array().unwrap().iter().map(|d| &d["place"]).collect();
     assert!(places.contains(&&serde_json::json!(["m.O.s", "m.S2.r", "m.T.p"])), "{r}");
 }
+
+#[test]
+fn a_type_the_plan_redefines_is_still_unread_where_its_source_was_not_read() {
+    // m.S の resolves は s.py を指し、s.py は読んでいない。変更前の m.f は o.s に書かない。
+    // 候補は m.S の defines を書き直して o.s に書くが、s.py にある元のフィールドは分からない。
+    let atoms = format!(
+        "{O_S}{{\"kind\": \"resolves\", \"subject\": \"m.S\", \"object\": \"s.py\", \"at\": \"m.py:1@blob:aaaaaaa\"}}\n{}",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+"#
+    );
+    let plan = format!("{PLAN_WRITES_B}{}", r#"{"kind": "defines", "subject": "m.S", "value": "type", "file": "s.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S.q", "value": "field", "type": "int", "file": "s.py", "at": "plan:p"}
+"#);
+    let (s, r) = below_case("below-plan-redefines-type", &atoms, &plan);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py"), "{s}");
+}
+
+#[test]
+fn a_field_without_a_type_is_unresolved_below() {
+    // 書いたフィールド m.O.s に type がない。その先に意味を持つフィールドがあるかは決まらない。
+    let (s, r) = below_case("below-no-type", &format!("{}{F_WRITES_A}", O_S.replace(", \"type\": \"m.S\"", "")), PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    // たどった先のフィールド m.S.t に type がないときも同じ。
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.t", "value": "field", "at": "m.py:4@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-no-type-inside", &atoms, PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
+
+#[test]
+fn a_field_below_whose_meaning_range_was_not_read_is_unread() {
+    // m.S は s.py にある。s.py は構造だけを読み、payment-info の範囲は読んでいない(意味 Atom もない)。
+    let repo = Repo::new("below-meaning-range");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
+    repo.map("m.py", &format!("{}{O_S}{F_WRITES_A}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#));
+    repo.map("s.py", r#"{"kind": "observed", "subject": "s.py", "scope": "structure", "at": "s.py@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.S", "value": "type", "at": "s.py:1@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "s.py:2@blob:bbbbbbb"}
+"#);
+    repo.write(".archsig/plans/p/plan.jsonl", PLAN_WRITES_B);
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py" && n["scope"] == "meaning:payment-info"), "{s}");
+}

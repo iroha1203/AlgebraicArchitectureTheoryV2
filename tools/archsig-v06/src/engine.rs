@@ -586,24 +586,26 @@ fn fields_of(s: &Structure, ty: &str) -> Result<Vec<String>, Silence> {
 
 /// 書き込みの場所より先の場所をたどる(設計 §5.4)。たどったフィールドの数と、フィールドを観測していない型を持つ。
 #[derive(Default)]
-struct Below {
+struct Below<'a> {
+    /// 変更前の構造。候補が定義し直した型の、元の解決を見るのに使う。
+    before: Option<&'a Structure>,
     /// 一つの書き込みの場所からたどったフィールドの数。
     count: usize,
     /// `resolves` が外部を指す型。意味を持つフィールドを持たないとみなす。
     external: BTreeSet<String>,
 }
 
-impl Below {
+impl Below<'_> {
     /// 書いた場所 `place` より先の場所のうち、最後のフィールドが意味 `meaning` を持つもの。
     /// 書いた値が変われば、その値からたどる場所の値も変わる。`place` の最後のフィールドの型から、型のフィールドをたどる。
     fn places(&mut self, s: &Structure, place: &[String], meaning: &str) -> Result<Vec<Vec<String>>, Silence> {
         self.count = 0;
         let mut out = Vec::new();
         let Some(field) = place.last() else { return Ok(out) };
-        if let Some(ty) = s.elements.get(field).and_then(|e| e.ty.clone()) {
-            if self.known(s, field, &ty)? {
-                self.walk(s, &ty, meaning, &mut place.to_vec(), &mut vec![ty.clone()], &mut out)?;
-            }
+        // 型のないフィールドは、その先が決まらない(道を読むときと同じく unresolved)。
+        let ty = s.elements.get(field).and_then(|e| e.ty.clone()).ok_or_else(|| Silence::new(Reason::Unresolved))?;
+        if self.known(s, field, &ty)? {
+            self.walk(s, &ty, meaning, &mut place.to_vec(), &mut vec![ty.clone()], &mut out)?;
         }
         Ok(out)
     }
@@ -619,6 +621,13 @@ impl Below {
             });
         }
         if s.elements.contains_key(ty) {
+            // 候補が定義し直した型でも、変更前にその型の resolves が読んでいないソースを指していれば、
+            // 元のフィールドは分からない(設計 §5.1)。変更前の構造で、定義を読んでいない要素として沈黙する。
+            if let (Some(at), Some(prior)) = (defined_at(s, ty), self.before) {
+                if at.starts_with("plan:") && !prior.elements.contains_key(ty) && matches!(prior.resolves.get(ty), Some(Resolution::Source(_))) {
+                    return Err(prior.kind(ty).err().unwrap_or_else(|| Silence::new(Reason::Unread)));
+                }
+            }
             return match s.kind(ty)? {
                 "type" => Ok(true),
                 _ => Err(Silence::new(Reason::Unresolved)),
@@ -652,7 +661,8 @@ impl Below {
             if has_meaning(s, &f, meaning) {
                 out.push(prefix.clone());
             }
-            if let Some(t) = s.elements[&f].ty.clone() {
+            let t = s.elements[&f].ty.clone().ok_or_else(|| Silence::new(Reason::Unresolved))?;
+            {
                 if types.contains(&t) {
                     if self.reaches(s, &f, &t, meaning, &mut BTreeSet::new())? {
                         return Err(Silence::new(Reason::Limit));
@@ -681,9 +691,8 @@ impl Below {
                 if has_meaning(s, &f, meaning) {
                     return Ok(true);
                 }
-                if let Some(t) = s.elements[&f].ty.clone() {
-                    todo.push((f, t));
-                }
+                let t = s.elements[&f].ty.clone().ok_or_else(|| Silence::new(Reason::Unresolved))?;
+                todo.push((f, t));
             }
         }
         Ok(false)
@@ -770,7 +779,7 @@ fn compare(
         .filter(|(f, _)| after.kind(f) == Ok("field") && has_meaning(after, f, meaning))
         .map(|(f, _)| vec![f.clone()])
         .collect();
-    let mut below = Below::default();
+    let mut below = Below { before: Some(before), ..Below::default() };
     for br in &run1 {
         for w in &br.writes {
             for k in 1..=w.place.len() {
