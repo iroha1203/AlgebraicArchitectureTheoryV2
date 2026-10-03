@@ -4297,3 +4297,679 @@ AAT.AG.RelativeRepairComposition.SupplementalGroupoidContraction.unitIso
 - audit SHA256 `87f9a2803f983e3b53ee01e3370da186f5ac11dbafa810cc39c104912cf0a914` / log SHA256 `41217b9c0f7ba09d0cd6865a00f3f218205001eac6bd47a20459425aafdbc868`: 185 declarations, standard axioms only.
 - audit SHA256 `955f95e71be7d141cbc051e8a9dc40b1f90b857fe0f5d7845d5900a2ec9389fa` / log SHA256 `600053d380d3b6c495b7d6e62c4020c1fd2e04dfc0a26dd47d6ab596671cec25`: 8 declarations, standard axioms only.
 - audit SHA256 `98867fdc99116ff6ba9c327d773ddfeb1e6c5bb3a907899340c9ccc4b7d38c8d` / log SHA256 `143887c72a309a93eb129a34dcf1757a23226a68ab8444b4cd3a54315759661e`: 43 declarations, standard axioms only.
+
+### Cycle 24 selection — W1の同じ全アフィン変換網と全要求
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 24
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: a0949e737797b35ad3cfa1145abcffdb8f49d0de
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "C23 PR #5169/root #5961945784、Issue #5132/comment #5961971718、固定W1/n1017 §5.8"
+  proof_dag_predecessors: ["C23 strict独立生成・全actual/native比較", "C22 独立局所生成と全補足", "C17–C21 実分割・相対複体・全範囲商保存", "C1–C16 A–Fの受理済み一般API"]
+  milestone: "W1の同じ六原辺・二指定面・固定p/rx/ry・全Aff(F3)から、全入力値/全範囲の全実修復・全native射・独立局所生成・双対極小分類・値更新・指定内部分割を接続する"
+  proof_obligations:
+    - "原geometryの一頂点・六名前付きloop・二指定Law・3-cellなし、同じP/E0/候補/U/V/W、全(x,y)、a=-Iとa=I、whole affine原射/core/比較/全核とtower条件・閉包・被覆を構成"
+    - "実関数合成から指定方程式を導出し、全Sの独立actual修復を全(u,h,z,v)へ両逆で対応。元六操作・固定値・全頂点核labelsを保持し、一般Aと同じ複体/signed defectへ接続"
+    - "同じU/Vの実微分/defectから一回ずつ全局所関係・section・private h・shared u,z/候補z,vを独立生成し、全S strict合成と全actual/native復元を一般Cから構成"
+    - "同じ実大域D/coker/候補列からq(r1,r2)=r2-r1、o=y-x、Bb=Bc=1を導き、局所消去/H2と接続。全4範囲の全修復数/同型類/自己同型、不能双対証拠、d=0/非零の極小範囲、a=Iの同条件で空極小を証明"
+    - "全(x,y)に同じ構造行列・生成器/sectionと元実復元を共用して値更新を比較。(0,0)から(0,1)の指定両単独候補修復と非零不能評価を元実操作で評価。観測回数は本GOALへ追加しない"
+    - "private aを自由新頂点のt+1と-t+1へ実分割し、第二Lawの二出現とも一般置換で保持。全分割補正(r,h+r)、全fresh作用、三倍の全修復数と全同型類/自己同型保存、独立C/実復元/全S D/H2/極小/Wの比較を同じ入力に接続"
+  exit_criteria:
+    - "指定原入力の全条件を構成し、全入力値/全Sで独立actual修復の全パラメータ・元操作・数・全labelsを一般A/Fと双方向接続"
+    - "独立局所生成・同じ商/双対/極小・identity holonomy比較を元入力と一般C/Dへ双方向接続"
+    - "同じ値更新と指定内部分割の全actual/local/native復元・全S分類・共有値保存を構成し、全自由度と全射を保持"
+    - "選定productionの単一focused本体・全個別公理・scans・source/hash対応を固定し、標準PR reviewとroot受入を通す"
+  selection_reason: "一般A–Fと同じ非退化指定例との残る接続を、W1の全要求を一到達点として閉じる。fileや補題単位でcycleを閉じない"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["W1AffineInput", "W1ActualRepairs", "W1PermissionClassification", "W1NativeLabels", "W1FiniteCoefficients", "W1LocalInterfaces", "W1StrictGeneratedCover", "W1OriginalObstruction", "W1DualMinimalRanges", "W1SymbolicUpdates", "W1InternalSubdivision"]
+  risks: ["右から適用する二Lawの元経路/符号/候補名の保持", "全private h/共有値/全native labelsを捨てない", "旧像からの出力定義を避け各側の実D/Fから独立生成", "方向仮定を具体入力で放電", "a=I比較の同じ許可条件", "二箇所のa置換と全factor復元", "現行source版/受理済み依存の追跡"]
+  unchecked: ["上記六義務のW1全構成と全接続は未実装。C23受理をW1の証明としない", "全GOAL completionは残W2/W3/W5と別最終四本gateを要する"]
+```
+
+### Cycle 24 — W1の全アフィン修復・独立生成・範囲分類・再利用
+
+W1の原表示は一頂点、六loop `e,a,b,c,rx,ry`、二面、3-cellなしである。
+第一面の原経路は `b,e` 対 `rx`、第二面は `c,a,b,a,e` 対 `ry`。
+操作の合成は右から適用する。物理的固定部分は頂点と `rx,ry`、
+常時辺は `e,a`、候補は原名 `b,c`。係数は全 `Aff(F3)` の実射影の全平行移動核である。
+
+| 固定義務 | 入力からの構成と同じ元実操作への使用先 |
+| --- | --- |
+| 原表示・全条件 | `W1AffineInput` / `W1AuthoredOperations` が全実アフィン原射・core・比較・全核・強さ・輸送を構成する。`W1Regions` / `W1IndexedCover` が原0〜3セルの閉包・固定部分・二領域被覆とprivate/public分割を構成する。|
+| 全実修復・全射 | `W1ActualRepairs` が実合成から全六操作を読む両逆を構成し、`W1PermissionClassification.negativeActualEquiv` と `negativeNativeEquiv` が全Sの全パラメータを保持する。`W1NativeLabels.wholeAffineEquivalence` は全nativeラベルと実アフィンgroupoidを対応させる。|
+| 一度生成・厳密合成 | `W1FiniteCoefficients` / `W1RelativeCoefficients` が全実微分と符号付きdefectを計算する。`W1LocalInterfaces` の各D/F・消去・section・relationは各領域の実入力から生成され、Sを引数に持たない。`W1PrivateMatrixZero` / `W1LocalPrivateFreedom` はprivate全hを保持する。`W1GeneratedRelations` と `W1StrictGeneratedCover.actualEquivalence` / `actualObjectEquiv` が全公開関係・共有値・禁止候補・全射から元修復へ両逆で復元する。|
+| 商・証拠・極小範囲 | `W1OriginalObstruction` / `W1CandidateColumns` は同じ大域Dから商座標q、実o、全原候補列を計算する。`W1DualMinimalRanges.actual_range_iff` / `actual_dual_iff` / `minimal_actual_iff_dual` は全named範囲を実修復へ接続する。`W1GlobalCohomology` は同じ元相対複体の障害商と接続する。`W1IdentityClassification` / `W1IdentityMinimal` は同じ固定・候補条件でa=Iの比較を与える。|
+| 全値更新 | `W1SymbolicPublicStructure` / `W1SymbolicPublicMatrices` / `W1SymbolicLocalStructure` / `W1SymbolicGeneratedRows` は元の全名前付き座標・全基底成分・全列挙・実D/F・消去・section・独立公開行を共用する。`W1SymbolicActualUpdates` は実defectと全元操作への復元、および(0,0)→(0,1)の両単独候補修復と空範囲不能評価を与える。|
+| 内部分割の全自由度 | `W1SubdivisionInput` / `W1SubdivisionWords` が実因子t+1,−t+1と第二面の両a出現を保持する。`W1SubdivisionRepairs` / `W1SubdivisionCoordinates` は全(r,h+r)を復元する。`W1SubdivisionSupportedGauge.labels_complete` / `first_supported_shift` / `second_supported_shift` は任意の全Sで全freshラベルと両補正の(s,s)作用を保持する。`W1SubdivisionClasses` / `W1SubdivisionPreservation` は全同型類・Aut・全相対コホモロジー・障害・旧holonomyとfresh恒等収縮を比較する。独立新旧局所生成・全actual復元は `W1SubdivisionGeneratedInterfaces` / `W1SubdivisionGeneratedRestoration`、全候補商・双対・極小は `W1SubdivisionRanges` / `W1SubdivisionMinimalRanges`、同じWと任意外部環境は `W1SubdivisionSharedBoundary` で接続する。|
+
+全(x,y)において、a=−Iの二式は `u+z=x`、`u−z+v=y`。
+`d=y−x` とすると、空範囲の全修復数と同型類数はd=0で3、非零で0、
+単独b・単独cは各3、全候補は9。物理的頂点が固定されるため全元自己同型は恒等。
+同じ大域Dは(u,h)↦(u,u)、q(r1,r2)=r2−r1、o=d、全原候補列の像はBb=Bc=1。
+非零dの双対支持は両原候補であり、極小範囲は{b}と{c}。d=0では空集合が唯一の極小範囲。
+a=Iでは第二式が `u+2h+z+v=y` となり、全値で空範囲が可解で唯一の極小範囲となる。
+分割後は自由fresh値の分だけ全修復数が三倍となり、同型類数とAutを保つ。
+
+生成データの比較は、元セル名と全 `Fin 1` 基底添字を明示した同じ座標型上で行う。
+この座標型は元全核の基底座標と定義的に同じである。行列、有限列挙、消去、sectionの
+各比較には実入力側の生成データそのものを使用する。消去の型は入力行列に依存するため、
+同じ行列の等式に沿った全Reductionの一致はHEqとして保持する。
+
+受理依存はC1〜C23の対応する一般APIに接続する。受理済み証拠はその原始入力、
+必要仮定、結論、実際の使用箇所を照合して追跡完了とする。
+W1の到達点を全GOALの完了としない。W2・W3・W5の指定実例と別最終completion gateを要する。
+
+### C24 前提の出所と使用
+
+| 前提 | 分類・入力からの放電 | 使用先 |
+| --- | --- | --- |
+| 全Aff(F3)、全実射影、原表示・core・原六辺と比較、全(x,y)/S | 本文由来: 固定W1/F、n1017 §5.8。全実射影の核を用いる | 独立RealRepairsと全native/kernel座標の往復 |
+| 強さ・可換全核・全単射輸送・線形性・固定面整合 | 一般A/C/Eではdirection-hypothesis、W1では放電済み: W1AffineInput / W1AuthoredOperations / W1FiniteCoefficients / W1RelativeCoefficients | 実方程式・生成・全射・相対障害 |
+| 原0〜3セルの閉包・全被覆・候補全public・private a・W外・新頂点自由 | 放電済み: W1Regions / W1IndexedCover / W1SubdivisionInput | strict全S合成、任意private/fresh復元と外部比較 |
+| 有限体・全実核の全基底・全セル列挙 | 本文由来のF3と放電済みのW1FiniteCoefficients.bases、W1AffineInputの原有限列挙 | actual D/F、停止する有限生成、全座標への復元 |
+| 消去・section・公開relation/rows・private kernel・strict復元 | 放電済み: W1LocalInterfaces / W1GeneratedRelations / W1PrivateMatrixZero / W1LocalPrivateFreedom / W1StrictGeneratedCover | 全Sで同じ局所生成器から全actual/native修復へ両逆 |
+| 値更新比較の行列・全列挙の一致 | 放電済み: W1SymbolicLocalStructure.private_matrix_same / enumeration_same、W1SymbolicPublicMatrices.public_matrix_same、W1SymbolicGeneratedRows.projected_matrix_same / public_enumeration_same | reduction_congr / section_congr / rows_congrの等式入力を放電し、実際の全生成結果の一致へ使用 |
+| 分割因子・全新旧補正・全fresh作用と全射 | 放電済み: W1SubdivisionInput / W1SubdivisionCoordinates / W1SubdivisionSupportedGauge / W1SubdivisionGeneratedRestoration | 新旧実修復・独立局所生成・商・障害・全外部環境の比較 |
+| d=0/非零、指定修復や失敗双対 | 本文由来の判定枝。W1PermissionClassification / W1DualMinimalRanges / W1SymbolicActualUpdates が同じ元実操作で構成・評価 | 四範囲の全数、成功復元、非零失敗、極小範囲 |
+
+前提申告は査読対象であり、標準PRレビューが実際のstatementとproof-useを独立に照合する。
+一般補題の入力等式を全W1の結論仮定に残さず、同じ実入力の行列・列挙の一致から放電する。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 24
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "固定六義務の同じW1全入力・全S・元全操作・全射・全独立生成・商/双対/極小・identity比較・値更新・指定分割を構成"
+  exit_criteria_status:
+    - "原全入力・独立actual両逆・全パラメータ/数/labels: Lean構成と全個別公理確認済み"
+    - "独立Cと同じD/dual/minimal/identity: Lean構成と全個別公理確認済み"
+    - "全値更新・全指定分割・全自由度/射・同じW: Lean構成と全個別公理確認済み"
+    - "43単一production本体と456所有宣言の個別公理確認済み。標準PRレビューとroot受入はPRで判定"
+  split_reason: none
+  completion_candidate: no
+  claim_mapping:
+    source_labels: ["固定GOAL W1", "A/C/D/E/F", "n1017 §5.8"]
+    undischarged_assumptions: []
+    acceptance_point: "六義務・四終了条件の同じ到達点。標準レビューとroot受入を要する"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["上表の同じ実入力からのW1全条件・両逆・独立生成・全範囲分類・全再利用比較"]
+    remaining: ["全GOALの残W2/W3/W5と別最終完了判定"]
+  certificate_provenance:
+    discharged: ["原全Aff入力/実D/F/defect/全基底/列挙からの生成", "同じ原入力からの全分割条件・実復元"]
+    unresolved: []
+  proof_use:
+    used: ["実合成→全方程式/微分", "実D/F/全列挙→有限生成→strict/actual両逆", "同じ大域D/coker→dual/minimal", "実因子/全fresh→全補正/全射/全障害比較"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: []
+  next_obligation: "W2、W3、W5の固定実例・全指定判定と一般A–F接続、その後別全target最終四本レビュー"
+```
+
+### C24 productionと個別公理の一次検証対応
+
+43単一fileの本体を各々focused checkし、所有moduleを選択した個別`#print axioms`は
+全456宣言を被覆する。namespace監査は448宣言、namespace外の自動生成helperは8宣言。
+本体検証とimport後の個別公理検査は別の証拠である。各本体・個別公理のactual exitは0、
+現行sourceとlogのSHA256を対応させた。標準公理はpropext、Classical.choice、Quot.sound。
+単一fileのコマンドは `cd research/lean && lake env lean -s4096 -D Elab.async=false -o .lake/build/lib/lean/<module path>.olean <source path>`。
+Research全体、aggregate、全module/file loopのelaborationは実行しない。
+
+| Production module | namespace宣言数 | source SHA256 | 本体log SHA256 |
+| --- | ---: | --- | --- |
+| W1ActualCorrections | 4 | `806f123456be93c1242ce2a2d36bca81e326adb78d0f7df469e613cfe163a457` | `e97e93281e0db9f4f0a1205ee01b74634b2f19e8f7aa85555092e195f6277e3c` |
+| W1ActualRepairs | 35 | `593285de275df236cbf4614f5ff176905ff0a46c4f3877ecc4549d833f06a29a` | `fdff78d98120e524bb2185b5039cd7d2668346386546e70ede1218e6793ddb1c` |
+| W1AffineInput | 22 | `6a715b939e4bc07cf798b18fdec679b2c9558bfa32a4fa0525ab88b027d4218e` | `8d07f55856d62f3a9931d45ada99472946751b0786311a005e6260273204b59a` |
+| W1AuthoredOperations | 16 | `f946d9d9f476ea2480991b4669834c2f71ce3daf16b7f6dc37a62042809b2038` | `489aa8d7bb06951c58a18bfb49062bdd3d8058f8e0df12a07fef042fef7ddad3` |
+| W1CandidateColumns | 12 | `f3d633669f7e7f5dff32fdc3d94ac779d2967e29732be5a715e799faa461f004` | `2e38db8bc158350a920e2e6a57fdfdc7cc85ba0e507fa80064b394ab124acb6f` |
+| W1DualMinimalRanges | 17 | `4097f04d6309711d7b544cc516881cf4971ea563de88a2dcd819d55f5ca69294` | `414d32c3798491833e6f5f998e2cf1b654895c147cc32ea048c204c3a70d8d42` |
+| W1FiniteCoefficients | 18 | `baec4afc9dbf0b6a012ed1266ab251b492158ff8b0c7a828739268558cb97f8b` | `ea751c655bd4e5eaca15978ea0e1cb72ceb55411d423beb0bb9da7eba8109e80` |
+| W1GeneratedRelations | 5 | `a34273e9c883d09a6648116afb9501dd26857f3a420a6294d419a621c041cb6d` | `f633ef29c4a98846814a2b3068f701aa0aeaf55345df9dbc30ebc19f9c638971` |
+| W1GlobalCohomology | 7 | `23fd796e19438105b095654176c8917667caf5b21d44fc95757094d4dbfa0d2a` | `050a7246963ee659378735e29f0087e5d8f216b299f9e8f7dab937710a941a23` |
+| W1IdentityClassification | 14 | `190e2b9524cb1f8323418adea0d1cd17bed21cc6a7fdd337d0a83cad4ed74a46` | `eef244271d774c426004a6cd7e080db923be57508523cfeaeb9266414525c578` |
+| W1IdentityMinimal | 3 | `a55474c9856f5d332e736fc66cfc11c5f1909c5ee9a4cf63dd4abfa1401ea6fd` | `9b41607060e0174e3800433c9e3df7898e53ed6b10a2dc424b7cadcc8df19c1d` |
+| W1IndexedCover | 7 | `93db604422c562ca8eb2ab7353bc5084a9839ed687708ff6e6599718741e2e87` | `06ffafbd046d740bac140f6d5802ecd36b643a2637b4ca46c107073b46ccd83e` |
+| W1LocalDifferentials | 6 | `b1bf5f652ca158ee3be662b3796dd546b61a8edc4bf11c009367572fbdad7284` | `a02f2a2b6b9f47186d8ac572d5d7d782b44e398d857896625c853c08624c7966` |
+| W1LocalEquationCriteria | 4 | `79e962534e7c12ff20ca38044360e57ab1c1ce2f36546311b11dd8027207cabb` | `c3d18759283d82bebdfbc2daee1f7cd23cae426750997e99819932bbb327dca3` |
+| W1LocalInterfaces | 10 | `c00c799aa0750abd17f57096bb262e02b1f880778f27710c6731e2ebb5542ec3` | `ed1c43ad1346f831b571ba81a0e03c7951c951f0e5f7e807ed25e2837ab92949` |
+| W1LocalPrivateFreedom | 6 | `ec4bf2941652f6698a611cf846d74eaf877aa47d530f677d05f300b6d90ce244` | `8b99070a4003aa572ae0265bdbf0c1ceef3e083fe87ea39d38c8f1fc706b31fe` |
+| W1LocalPublicValues | 3 | `0d29d995c81c666ae16124abf1f7c45898610468a4830edd836b16da5a22518a` | `b12332639527315fe30164a5e231b4f82760b929b2b94239541540c585e4dd48` |
+| W1NativeLabels | 10 | `0e46cabf1ec5ac5c591e7a90099b0a018b48aa09ed7e1c8eaaded39003600e60` | `1f890420610b56f9e3826cdd76992cab9a2ce2f9e0809331b8cd29a36da21dcf` |
+| W1OriginalObstruction | 16 | `2370498b609e9ade2b5102e055641c835e8d51fc2612de503bc970d7e779f0a5` | `3b433f78cd505fd04f930f85a6a299b37cfd76267dd05b7d5c23c4c7ff26c8dc` |
+| W1PermissionClassification | 14 | `38fd89e51818418b33119e270bd80e72803a3653aaec92a19ed565c01e929902` | `6cf674de358915e5b556305dcc79494e5baab6696eb2b44e73fb6b0b45f04332` |
+| W1PrivateMatrixZero | 4 | `26828bec71b28ed6116c1ac10d904a9badd6ca6bbbb60f98f4c4fa98681a0730` | `ba34ec352a1221724bd27bb630dfab1424dff5541fa525af6f82c7a82cfad9c1` |
+| W1Regions | 16 | `93c4128dfddf5e4a6bd30c6cb60af5625e6a75ea490a44e19d6822d27b932373` | `0ee415a3c651d561021c16733f13affe9d2858e852587ed1514303f2aea91ebe` |
+| W1RelativeCoefficients | 15 | `06f8b847f1e917ff51c91adc02be82cc3d0e55df01260b31ba92becc3631d74e` | `824bcb80adbb4cf7ccff0316bf7acb9eda82b4fe5e027c982cbb5df0dc910124` |
+| W1RepairCounts | 14 | `ebd0c09178fb18953e28048af492c5faca6b71334dd0c3cc45ab3567e355aaaa` | `732140201a69b3eb3a3fd2f479fadb60f9bb49395a53b30acc96d4beb5076af0` |
+| W1StrictGeneratedCover | 9 | `c08389ac60677f6aea266c93d9308ec00975bdf843f48349f9aed7cb66849e29` | `9e42e615ceee15f9e0c48a75bb966979f2dab61b52feeea53aa723cf15a4ebee` |
+| W1SubdivisionClasses | 6 | `312e73fb5c43e83e866493e793ecd0b6ae6358bac171ae6507f6c39fbf78d548` | `2fb894f969146a0f61060b130c4b83176044ab1ff7245285f7eeaa4bddc609fd` |
+| W1SubdivisionCoordinates | 8 | `1c784525db3e61568de90c7bf336567f5ff6d4289ad1569ee961032f999a56a9` | `2579805e5e2223ee174b91cc0f267add018fb4e6dbf54f6aecbdcb95d301c381` |
+| W1SubdivisionFreshGauge | 5 | `7102ff8b69b364e79fa1047278abfe2921ae29440e956e52a104a3177cac63f7` | `270a0ba047321745fd65468d29a264708a452b3bd92d30a79e1f696ebca10893` |
+| W1SubdivisionGeneratedInterfaces | 8 | `5566d20a17fbbe3e463bb9accd54e51d05b2f5667231af26ca41db064aef7b43` | `b3883b9b16def26d5aaad8280ea1f4f2ae18830dcd5191075c6665773f23b27d` |
+| W1SubdivisionGeneratedRestoration | 4 | `9199aae7d17293c6178fc5a5a41cf2fc7aa86e51e9f62f472bc5375bd56b071b` | `e8371053a35fbbae6e9a1e8a6f99a08f1c8b481619b14db87f47d08a41c6ffab` |
+| W1SubdivisionInput | 19 | `d74b6df04b72b11b71177f8db086019bc3dc5c98ba0e004d8fae994ddd7bb515` | `3465a0d9c932a13b8550f25a1f5c6fb18fbaad450f48ee8233df563f61f688d0` |
+| W1SubdivisionMinimalRanges | 4 | `99d16724dac3b576eae4ce6e002accdc380b8176ccccd0d7259e3dab22e2a0b8` | `699d0cd6e36bc237bf8084c94a7ba749f016786a844d3eea8bbdd4ed22cfd125` |
+| W1SubdivisionPreservation | 9 | `4b42fba193656143c6bb6110ef088df08ac1ca6e8e499b6ba25e41c000d239ac` | `37d541dec58e3bb95baae621b037ad24ec932e53f15e179034f7a5b54f85cbb9` |
+| W1SubdivisionRanges | 10 | `fa79b58772468186fbc6ab87d36f69be00875afa38b1f86723f60e75e3fdb190` | `52c82627e4c87c3ed0d1fe752e96d6d8377f60ebee54b6a22d300a7433cf3038` |
+| W1SubdivisionRepairs | 13 | `126653257357afe1c3e0a0350db30046a64dfa76606d52567f5b7135a3c3ede3` | `732ba2a15ff0ab9b6355e6949cfbe422fada36ca282066432c295280712414fe` |
+| W1SubdivisionSharedBoundary | 4 | `e58b4c118ba8942ba637bb5391e8f99ef58abce691e48d7220bbf1391122c8fe` | `3012dd395afbfdac09ce04f117c04aed497c2a0851f2256b33304dfa79e229b1` |
+| W1SubdivisionSupportedGauge | 5 | `1d0dc06a5b75cc2a2d27043afe2fbe0311dc4a7d947c409d1297dc1c0da43b65` | `ad3ae721063decdeb84b4d87c3d7a13598583a5a9cae0f2965267a5141bd2930` |
+| W1SubdivisionWords | 6 | `46a92d4c6c2d16b1be470b84fd3fef30f8e3af4fdbad33537d08d03ac3ee2512` | `31111b5afff166974ceacd04c4d8fb29372ae04bd5e6af322538091e9c4e78da` |
+| W1SymbolicActualUpdates | 11 | `af10b71f6209677699751b71568eb11af4e188f4672c668de1ef07896ac7cbed` | `33f807bed627d75226d52bf1e9dd164b4d6c8df523055ee894a28dbbe13638cf` |
+| W1SymbolicGeneratedRows | 8 | `39136f226ba71b1acb847c97de170cc1d0ca98e57beded05c7ced9b5a800fbd2` | `b087127c8ab9682b25283c3f09021bc07d223fa3ba59ad82c4965f462a048735` |
+| W1SymbolicLocalStructure | 25 | `da07cb86c5b12a240dac69e45cd4e7d926b177410bafa6cb824f8209494cdd05` | `7a6e5125dac013b12e7510921b5de1e89504b3e5e07e795f26b4e1f3fbe0803e` |
+| W1SymbolicPublicMatrices | 11 | `0aba4d1ee6e450535d8b0d4edb49888a7072d44cc9dd8b9c23f20dd274aa74ec` | `103fa6a3b76b9f29290ba61d2a90c8dfb1695c92b5af10ed09486b5afd9cab49` |
+| W1SymbolicPublicStructure | 5 | `cb7fbe643a9544240925e9b3230103074c56f2abfa606900a359afde045db620` | `e3eb442bc8cf50bab646cdbc931d759fd1570bec5ae3932aa4b8002c808cd9b2` |
+
+| 個別公理audit module群 | 所有宣言数 | audit SHA256 | log SHA256 |
+| --- | ---: | --- | --- |
+| W1ActualCorrections | 4 | `0505d635c5684882a781a032f11fe1b27b47c05beab277eb90e217fc8e5b2797` | `9c3b41ca925032b9676d389345e303b53f5fec3db9ce8b180bc0eb9823920979` |
+| W1ActualRepairs | 36 | `ac2743dd2dc96cf59f3f171f8ade47963c33453ecd27f7f464b58dc26d8fc7c0` | `8b5b7d39d7456e6c75a2d97a5dc00c79fb497f961afc7feb78b839e7f935d9b2` |
+| W1AuthoredOperations | 17 | `2ef58d1cafa7db38f2c716482ce03d3e17510a0b5c8f282dd0ea670eccfe3e0a` | `ca07fedce98105e9c97183190a890489a5d03df3941d97022605686c4f1f3320` |
+| W1CandidateColumns | 12 | `9729eaa8f8b6f77f7e5588625e60cebe4a887e01331b32b4738008cf5eee9045` | `e90ab40d5afcff3c4beb94d8b97c2ed161dd9250cce937219bfd44f641050012` |
+| W1PermissionClassification, W1NativeLabels | 24 | `6fec2b5faa56cce3aebbb8903d6034a9e4627e2fcdc8b0a7343a681390720b84` | `4a8dfb7b8dc855adfb6099eab178d40a9b0780c334da7f8c5b2cf80a61f9bc13` |
+| W1RepairCounts, W1IdentityClassification | 28 | `608efc94a4b81342c49b6bc38d811897e8086622c9c739aad21f9f2228b5327f` | `acd30b1c01c6eede4a686b52cabda001d37a043875d74f3f0fe64b006cc0a258` |
+| W1DualMinimalRanges, W1IdentityMinimal | 20 | `444054ed2b234826f6b4b8c6e69e9ee4f263d72e3af21a3fe78ead02cbfefe13` | `8af416ca22841662e9fe29d00b02cfdc636ffc050f25d8f5069a6d90f6f2b3a3` |
+| W1FiniteCoefficients | 19 | `e1df5d81ed8cf488b2c83cbef46275ff93bc3263a3e01dde24bc54379d953b0a` | `62f22e879091f272314c73d6edca42e86f2311f830cf671a07c3c30c9ba047b1` |
+| W1GeneratedRelations | 5 | `286dde78f8f67ed832ca11c870d4273464ddb25983a9f1158d21f6b9a63cabc9` | `90b202a69aeb9b5f960c6b964ed3363973f607435e921f508799666044ee7bfb` |
+| W1GlobalCohomology, W1IndexedCover | 14 | `76de26243c450f59247281844e25d610cf870d1cbc3fa5947fb6d7d106638f5f` | `fd9455bba787038f1c58b639e907d16450b8f92182de1b42fc1466cd81bb2405` |
+| W1AffineInput | 23 | `858a97b1a0bdb33587e1968aae783ff9b08d18ffd0b6de114b9c71823d8af924` | `aac55f02cf9f03591f00ace17cb9a63f8eb845c1df63845b1d258342e4d40ebd` |
+| W1LocalDifferentials | 6 | `e03722098479137343e7fb55ed1e21c4ecb272c3af50387263f5e1bae6dcb40d` | `2071c894a917b666259e70974602042102584b52190bd10531fb93cbeac49d69` |
+| W1LocalEquationCriteria | 5 | `27ebf19e2563dcd95dc408845ae91da348fa947cdb24c0f6ea38930f29d75ddc` | `7a68c232fa887557399c7ddc74797d0082f1c8c7ddb6a8dfa5474b360c67c552` |
+| W1LocalInterfaces | 10 | `baab18c5d0736d6ae93bfba49107bcad1a8c2bf8fc7846b0699f69930a0c62d6` | `c910ea5329db31a5a4a4e971c1c470a433dd384f48fdf5b499085147134d32c5` |
+| W1LocalPublicValues | 3 | `4478da51ee1ca2e2f57afc55031d634e82d6be28febbc3927520257804a2645b` | `e352bac8b05405154cf956398d6aa1e0cceeba53a552a8529f8953636e6c94f5` |
+| W1OriginalObstruction | 16 | `7105d8f1d42027aad71f221998e28bf3238e6248981b011d5a751e52fbb8c88a` | `1509dd7dd84b65bb06d835e2a78d39be18c6bc701112c2a8112df0027ac283d8` |
+| W1PrivateMatrixZero | 4 | `551546340c862055526584f536934c521e955f19500446ef39dadb660e06168f` | `1d2e88e5446b06788225d62223977b292ee488bd1d13a3940a739e2654cc4bbb` |
+| W1LocalPrivateFreedom, W1SubdivisionSupportedGauge | 11 | `d57a6bdfee697f203764230df459e15e5cb646569dd62c35673e581a5ff5f9b0` | `31eb833e555854c451ccaeace7d1af62ab3d0310092f669bf4e6b02e5fa29d44` |
+| W1SymbolicPublicStructure, W1SubdivisionGeneratedRestoration | 9 | `11eb2b530e882b695fb308de296b0dde1789fb1a6ac764527dbcf3ba472f9280` | `846feedcbc7bf413d6a9a5e170f19edc9974fc9c3fde23cc41b9d0aa1a835e37` |
+| W1SubdivisionRanges, W1SubdivisionMinimalRanges | 14 | `c15da2843a10653e7094cbdd8a480e4f15cdefeb4e90b9754527fa484373fe1d` | `eda9f380ddec39c5c4b88cad2e2e467c4589f0bb0ee61fa02831ac0b68b1b3b4` |
+| W1Regions | 18 | `2f2b7215ad91e73df942f0b111750f3fb0ef105fca726f581a174e49b9d53d66` | `7e5ca4089c55b9c06c369fa1109acd0bb7bff1fb981e833e6fc14ef6438f6508` |
+| W1RelativeCoefficients | 15 | `04ef03d0d478ca76198546461a0c9ee0bcdfd54829720ab34ed7d586aeeb6650` | `504d34c0b4ef16e3ebc88fb8e0e0ff91ecb775ae9c77161fdbcbdcb52812fb5a` |
+| W1SubdivisionSharedBoundary, W1SubdivisionFreshGauge | 9 | `addb856e665af4fb67c432e60ad121d0c59e5d1542872c35b018e642a5e0f537` | `bb94ac96cd74bff1116c070759d5dc2498f19cf4d8ac998be92f8e909dd7cd3d` |
+| W1StrictGeneratedCover | 9 | `9692e5cb18c7637fd080faea5f91ecbcd1bede970dae1b1a2bb101d28b65b526` | `3417675dd392f915c3526e3ad6b6c31d4372c15df209d24176a9f47df4ceb8f8` |
+| W1SubdivisionClasses | 6 | `7efd1f379265a63154cad406fbf8926e1538624068b26a6aed8279b16336c1c0` | `b7c237e03ef031e206514c4e380d15edf6afe67d8379a56b99a5050cebc4880e` |
+| W1SubdivisionCoordinates | 8 | `a8345f04faf5765221a6ead1ef3cf3875fef4f7328b0610d2e942a8c8c6f3fb3` | `3b70992970ae86305d5f4e1022e9356bff3634803df14d64ef99a13ddb61312f` |
+| W1SubdivisionGeneratedInterfaces | 8 | `0b929c80ba02fccbda14c6d0369511c6475d4d4614f466b07baf883285d6e018` | `d311da9cdfc0f68f396094ba1e771b0ae39543b41eff944f0945d1a004d176e7` |
+| W1SubdivisionInput | 19 | `d9ee1e5c82250c1d8e201b4c9e81492b8a9871eab127f26e123c54bab7186322` | `c21213c1660d2e675c4f6836e2441a4b498ea4b80cb16a8eda473f2f9ed136e9` |
+| W1SubdivisionPreservation | 9 | `4518c60f137a50caf11be36df5e4c92f86fd94ab6ab97b3c8fe440a2b43fbe3d` | `460989bbb6f894f9a3f27c03c054a17ca03f3c8187225e12b871949337d8b439` |
+| W1SubdivisionRepairs | 13 | `84000a53cd78f1ebd9398dbf35206afd15d6cc7469681b55661cec9e7e57655a` | `2a8dbba0dc8c9cccc8ddda36351828ea6424f5eeec852e9317a29ab7a9bf143b` |
+| W1SubdivisionWords | 6 | `64f27687d0a7491762abeb57a4190e01f812586bbb8cf3d84ef2a66a8a85bfd2` | `a3195dfabe9410b48556d75e4d9d9fdc9441baaf93302a9d2ccf5882610db608` |
+| W1SymbolicActualUpdates | 11 | `be951f01c27e31fa60dd8e1d85f7ce51f217c781ae3b2ad4ce8ffe348e06d13e` | `6e2af498338f058df6e9416f24b1e44e47ce10365a79342a363057212020bc10` |
+| W1SymbolicLocalStructure, W1SymbolicPublicMatrices, W1SymbolicGeneratedRows | 45 | `547400d5d1e78a40948e03acfea4029e6be387214b7387515f4819e822d14809` | `9820e99d94aab706604bcb4eba16915a5b183672467fdc0b8e852ae0df093829` |
+
+<details>
+<summary>C24 所有moduleで選択した全456宣言</summary>
+
+```text
+AAT.AG.AbelianLiftingObstruction.GroupExtension.pathValue.eq_def
+AAT.AG.RelativeRepairComposition.ClosedRegion.mk.congr_simp
+AAT.AG.RelativeRepairComposition.FiniteElimination.Enumeration.mk.congr_simp
+AAT.AG.RelativeRepairComposition.NativeAffine.Repair.mk.congr_simp
+AAT.AG.RelativeRepairComposition.NativeAffine.vectorPath.eq_def
+AAT.AG.RelativeRepairComposition.RelativeCover.r2.congr_simp
+AAT.AG.RelativeRepairComposition.W1ActualCorrections.actualRepair_real_correction
+AAT.AG.RelativeRepairComposition.W1ActualCorrections.native_correction_parameters
+AAT.AG.RelativeRepairComposition.W1ActualCorrections.native_inverse_correction
+AAT.AG.RelativeRepairComposition.W1ActualCorrections.parameters_real_correction
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Allowed
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Equations
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Parameters
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Parameters.casesOn
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Parameters.ctorIdx
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Parameters.h
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Parameters.mk
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Parameters.mk.inj
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Parameters.mk.injEq
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Parameters.mk.noConfusion
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Parameters.mk.sizeOf_spec
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Parameters.noConfusion
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Parameters.noConfusionType
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Parameters.rec
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Parameters.recOn
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Parameters.u
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Parameters.v
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.Parameters.z
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.RealRepairs
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.actualParametersEquiv
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.actualRepair
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.actualRepair_parameters
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.actual_operation_apply
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.instDecidableEqParameters
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.instDecidableEqParameters.decEq
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.nativeParametersEquiv
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.operation_faces
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.operation_fixed
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.operation_linear
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.parameters
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.parameters_actualRepair
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.parameters_allowed
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.parameters_equations
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.parameters_operations
+AAT.AG.RelativeRepairComposition.W1ActualRepairs.zero_translation
+AAT.AG.RelativeRepairComposition.W1AffineInput.Op
+AAT.AG.RelativeRepairComposition.W1AffineInput.comparison
+AAT.AG.RelativeRepairComposition.W1AffineInput.edgeA
+AAT.AG.RelativeRepairComposition.W1AffineInput.edgeB
+AAT.AG.RelativeRepairComposition.W1AffineInput.edgeC
+AAT.AG.RelativeRepairComposition.W1AffineInput.edgeDecidableEq
+AAT.AG.RelativeRepairComposition.W1AffineInput.edgeE
+AAT.AG.RelativeRepairComposition.W1AffineInput.edgeRx
+AAT.AG.RelativeRepairComposition.W1AffineInput.edgeRy
+AAT.AG.RelativeRepairComposition.W1AffineInput.faceDecidableEq
+AAT.AG.RelativeRepairComposition.W1AffineInput.flip
+AAT.AG.RelativeRepairComposition.W1AffineInput.flip_apply
+AAT.AG.RelativeRepairComposition.W1AffineInput.flip_square
+AAT.AG.RelativeRepairComposition.W1AffineInput.geometry
+AAT.AG.RelativeRepairComposition.W1AffineInput.linearA
+AAT.AG.RelativeRepairComposition.W1AffineInput.linearA_square
+AAT.AG.RelativeRepairComposition.W1AffineInput.linear_faces
+AAT.AG.RelativeRepairComposition.W1AffineInput.originalTower
+AAT.AG.RelativeRepairComposition.W1AffineInput.primeThree
+AAT.AG.RelativeRepairComposition.W1AffineInput.reference
+AAT.AG.RelativeRepairComposition.W1AffineInput.reference_left_path
+AAT.AG.RelativeRepairComposition.W1AffineInput.reference_right_path
+AAT.AG.RelativeRepairComposition.W1AuthoredOperations.correctionValue
+AAT.AG.RelativeRepairComposition.W1AuthoredOperations.first_law_iff
+AAT.AG.RelativeRepairComposition.W1AuthoredOperations.first_left_apply
+AAT.AG.RelativeRepairComposition.W1AuthoredOperations.linearA_apply
+AAT.AG.RelativeRepairComposition.W1AuthoredOperations.operation
+AAT.AG.RelativeRepairComposition.W1AuthoredOperations.operation_a_apply
+AAT.AG.RelativeRepairComposition.W1AuthoredOperations.operation_b_apply
+AAT.AG.RelativeRepairComposition.W1AuthoredOperations.operation_c_apply
+AAT.AG.RelativeRepairComposition.W1AuthoredOperations.operation_e_apply
+AAT.AG.RelativeRepairComposition.W1AuthoredOperations.operation_rx_apply
+AAT.AG.RelativeRepairComposition.W1AuthoredOperations.operation_ry_apply
+AAT.AG.RelativeRepairComposition.W1AuthoredOperations.right_apply
+AAT.AG.RelativeRepairComposition.W1AuthoredOperations.second_identity_apply
+AAT.AG.RelativeRepairComposition.W1AuthoredOperations.second_identity_law_iff
+AAT.AG.RelativeRepairComposition.W1AuthoredOperations.second_negative_apply
+AAT.AG.RelativeRepairComposition.W1AuthoredOperations.second_negative_law_iff
+AAT.AG.RelativeRepairComposition.W1CandidateColumns.b_column_coordinate
+AAT.AG.RelativeRepairComposition.W1CandidateColumns.b_column_surjective
+AAT.AG.RelativeRepairComposition.W1CandidateColumns.c_column_coordinate
+AAT.AG.RelativeRepairComposition.W1CandidateColumns.c_column_surjective
+AAT.AG.RelativeRepairComposition.W1CandidateColumns.candidateB
+AAT.AG.RelativeRepairComposition.W1CandidateColumns.candidateB_ne_candidateC
+AAT.AG.RelativeRepairComposition.W1CandidateColumns.candidateC
+AAT.AG.RelativeRepairComposition.W1CandidateColumns.candidate_coordinate
+AAT.AG.RelativeRepairComposition.W1CandidateColumns.candidate_d1_first
+AAT.AG.RelativeRepairComposition.W1CandidateColumns.candidate_d1_second
+AAT.AG.RelativeRepairComposition.W1CandidateColumns.column_reading
+AAT.AG.RelativeRepairComposition.W1CandidateColumns.noncandidate_coordinate
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.actual_dual_iff
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.actual_range_iff
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.candidate_cases
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.column_surjective
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.dualCoordinate
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.dualCoordinate_obstruction
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.empty_failure_dual
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.empty_range_zero
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.minimal_actual_iff_dual
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.minimal_actual_iff_range
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.minimal_nonempty_iff_singleton
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.minimal_nonzero_iff
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.minimal_zero_iff
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.native_range_iff
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.nonempty_range_top
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.nonzero_dual_support
+AAT.AG.RelativeRepairComposition.W1DualMinimalRanges.range_contains_iff
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.bases
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.basisIndex
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.basis_value
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.d1_first
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.d1_second_identity
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.d1_second_negative
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.d2_zero
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.defect_coordinate
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.enumEdges
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.enumFaces
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.enumK
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.kernelCoordinate
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.kernel_inverse_value
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.original_linear
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.reference_a
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.reference_b
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.reference_e
+AAT.AG.RelativeRepairComposition.W1FiniteCoefficients.translation_inverse_apply
+AAT.AG.RelativeRepairComposition.W1GeneratedRelations.left_relation
+AAT.AG.RelativeRepairComposition.W1GeneratedRelations.projection_identity
+AAT.AG.RelativeRepairComposition.W1GeneratedRelations.publicCochain
+AAT.AG.RelativeRepairComposition.W1GeneratedRelations.relation_iff_equation
+AAT.AG.RelativeRepairComposition.W1GeneratedRelations.right_relation
+AAT.AG.RelativeRepairComposition.W1GlobalCohomology.all_candidate_face_class_zero
+AAT.AG.RelativeRepairComposition.W1GlobalCohomology.differential_range_top
+AAT.AG.RelativeRepairComposition.W1GlobalCohomology.differential_surjective
+AAT.AG.RelativeRepairComposition.W1GlobalCohomology.h2_zero
+AAT.AG.RelativeRepairComposition.W1GlobalCohomology.original_h2_zero
+AAT.AG.RelativeRepairComposition.W1GlobalCohomology.secondQuotientEquivalence
+AAT.AG.RelativeRepairComposition.W1GlobalCohomology.secondQuotient_value
+AAT.AG.RelativeRepairComposition.W1IdentityClassification.IdentityChoices
+AAT.AG.RelativeRepairComposition.W1IdentityClassification.identityActualEquiv
+AAT.AG.RelativeRepairComposition.W1IdentityClassification.identityBChoiceEquiv
+AAT.AG.RelativeRepairComposition.W1IdentityClassification.identityCChoiceEquiv
+AAT.AG.RelativeRepairComposition.W1IdentityClassification.identityEmptyChoiceEquiv
+AAT.AG.RelativeRepairComposition.W1IdentityClassification.identityFullChoiceEquiv
+AAT.AG.RelativeRepairComposition.W1IdentityClassification.identityParametersEquiv
+AAT.AG.RelativeRepairComposition.W1IdentityClassification.identity_b_card
+AAT.AG.RelativeRepairComposition.W1IdentityClassification.identity_c_card
+AAT.AG.RelativeRepairComposition.W1IdentityClassification.identity_class_counts
+AAT.AG.RelativeRepairComposition.W1IdentityClassification.identity_empty_card
+AAT.AG.RelativeRepairComposition.W1IdentityClassification.identity_full_card
+AAT.AG.RelativeRepairComposition.W1IdentityClassification.twice_eq_iff
+AAT.AG.RelativeRepairComposition.W1IdentityClassification.twice_twice
+AAT.AG.RelativeRepairComposition.W1IdentityMinimal.actual_exists
+AAT.AG.RelativeRepairComposition.W1IdentityMinimal.minimal_iff_empty
+AAT.AG.RelativeRepairComposition.W1IdentityMinimal.named_minimal_iff_empty
+AAT.AG.RelativeRepairComposition.W1IndexedCover.candidates_public
+AAT.AG.RelativeRepairComposition.W1IndexedCover.enumRegions
+AAT.AG.RelativeRepairComposition.W1IndexedCover.indexed_cover
+AAT.AG.RelativeRepairComposition.W1IndexedCover.private_left
+AAT.AG.RelativeRepairComposition.W1IndexedCover.private_right
+AAT.AG.RelativeRepairComposition.W1IndexedCover.regions
+AAT.AG.RelativeRepairComposition.W1IndexedCover.shared_e_public
+AAT.AG.RelativeRepairComposition.W1LocalDifferentials.extension_named
+AAT.AG.RelativeRepairComposition.W1LocalDifferentials.extension_value
+AAT.AG.RelativeRepairComposition.W1LocalDifferentials.fixed_value
+AAT.AG.RelativeRepairComposition.W1LocalDifferentials.left_differential
+AAT.AG.RelativeRepairComposition.W1LocalDifferentials.right_differential
+AAT.AG.RelativeRepairComposition.W1LocalDifferentials.value
+AAT.AG.RelativeRepairComposition.W1LocalEquationCriteria.left_equation_iff
+AAT.AG.RelativeRepairComposition.W1LocalEquationCriteria.left_rhs
+AAT.AG.RelativeRepairComposition.W1LocalEquationCriteria.right_equation_iff
+AAT.AG.RelativeRepairComposition.W1LocalEquationCriteria.right_rhs
+AAT.AG.RelativeRepairComposition.W1LocalInterfaces.elimination
+AAT.AG.RelativeRepairComposition.W1LocalInterfaces.equationEquiv
+AAT.AG.RelativeRepairComposition.W1LocalInterfaces.generatedSection
+AAT.AG.RelativeRepairComposition.W1LocalInterfaces.nativeEquivalence
+AAT.AG.RelativeRepairComposition.W1LocalInterfaces.privateMatrix
+AAT.AG.RelativeRepairComposition.W1LocalInterfaces.publicMatrix
+AAT.AG.RelativeRepairComposition.W1LocalInterfaces.public_row_count
+AAT.AG.RelativeRepairComposition.W1LocalInterfaces.public_rows_independent
+AAT.AG.RelativeRepairComposition.W1LocalInterfaces.relation
+AAT.AG.RelativeRepairComposition.W1LocalInterfaces.section_regular
+AAT.AG.RelativeRepairComposition.W1LocalPrivateFreedom.aIndex
+AAT.AG.RelativeRepairComposition.W1LocalPrivateFreedom.aIndex_unique
+AAT.AG.RelativeRepairComposition.W1LocalPrivateFreedom.left_private_empty
+AAT.AG.RelativeRepairComposition.W1LocalPrivateFreedom.private_h_mem
+AAT.AG.RelativeRepairComposition.W1LocalPrivateFreedom.private_vector_complete
+AAT.AG.RelativeRepairComposition.W1LocalPrivateFreedom.restored_a_value
+AAT.AG.RelativeRepairComposition.W1LocalPublicValues.face_coordinate
+AAT.AG.RelativeRepairComposition.W1LocalPublicValues.publicIndex
+AAT.AG.RelativeRepairComposition.W1LocalPublicValues.public_value
+AAT.AG.RelativeRepairComposition.W1NativeLabels.NativeCategory
+AAT.AG.RelativeRepairComposition.W1NativeLabels.aut_identity
+AAT.AG.RelativeRepairComposition.W1NativeLabels.classParametersEquiv
+AAT.AG.RelativeRepairComposition.W1NativeLabels.class_card_eq_actual_card
+AAT.AG.RelativeRepairComposition.W1NativeLabels.hom_iff
+AAT.AG.RelativeRepairComposition.W1NativeLabels.hom_label_zero
+AAT.AG.RelativeRepairComposition.W1NativeLabels.hom_unique
+AAT.AG.RelativeRepairComposition.W1NativeLabels.label_zero
+AAT.AG.RelativeRepairComposition.W1NativeLabels.objectParametersEquiv
+AAT.AG.RelativeRepairComposition.W1NativeLabels.wholeAffineEquivalence
+AAT.AG.RelativeRepairComposition.W1OriginalObstruction.allEdgesDecidable
+AAT.AG.RelativeRepairComposition.W1OriginalObstruction.alwaysCochain
+AAT.AG.RelativeRepairComposition.W1OriginalObstruction.alwaysCochain_first
+AAT.AG.RelativeRepairComposition.W1OriginalObstruction.alwaysCochain_second
+AAT.AG.RelativeRepairComposition.W1OriginalObstruction.always_first_value
+AAT.AG.RelativeRepairComposition.W1OriginalObstruction.always_range_eq_kernel
+AAT.AG.RelativeRepairComposition.W1OriginalObstruction.always_second_value
+AAT.AG.RelativeRepairComposition.W1OriginalObstruction.edgeNameDecidableEq
+AAT.AG.RelativeRepairComposition.W1OriginalObstruction.obstruction
+AAT.AG.RelativeRepairComposition.W1OriginalObstruction.obstructionCoordinate
+AAT.AG.RelativeRepairComposition.W1OriginalObstruction.obstructionCoordinate_q
+AAT.AG.RelativeRepairComposition.W1OriginalObstruction.obstructionReading
+AAT.AG.RelativeRepairComposition.W1OriginalObstruction.obstructionReading_surjective
+AAT.AG.RelativeRepairComposition.W1OriginalObstruction.obstructionReading_value
+AAT.AG.RelativeRepairComposition.W1OriginalObstruction.obstruction_coordinate
+AAT.AG.RelativeRepairComposition.W1OriginalObstruction.obstruction_eq_zero_iff
+AAT.AG.RelativeRepairComposition.W1PermissionClassification.NegativeChoices
+AAT.AG.RelativeRepairComposition.W1PermissionClassification.forbidden_b_fail
+AAT.AG.RelativeRepairComposition.W1PermissionClassification.identity_empty_exists
+AAT.AG.RelativeRepairComposition.W1PermissionClassification.identity_equations_iff
+AAT.AG.RelativeRepairComposition.W1PermissionClassification.negativeActualEquiv
+AAT.AG.RelativeRepairComposition.W1PermissionClassification.negativeFullEquiv
+AAT.AG.RelativeRepairComposition.W1PermissionClassification.negativeNativeEquiv
+AAT.AG.RelativeRepairComposition.W1PermissionClassification.negativeParametersEquiv
+AAT.AG.RelativeRepairComposition.W1PermissionClassification.negative_b_exists
+AAT.AG.RelativeRepairComposition.W1PermissionClassification.negative_c_exists
+AAT.AG.RelativeRepairComposition.W1PermissionClassification.negative_empty_exists_iff
+AAT.AG.RelativeRepairComposition.W1PermissionClassification.negative_equations_iff
+AAT.AG.RelativeRepairComposition.W1PermissionClassification.nonzero_equations_fail
+AAT.AG.RelativeRepairComposition.W1PermissionClassification.zero_instance
+AAT.AG.RelativeRepairComposition.W1PrivateMatrixZero.private_d_zero
+AAT.AG.RelativeRepairComposition.W1PrivateMatrixZero.private_kernel_top
+AAT.AG.RelativeRepairComposition.W1PrivateMatrixZero.private_matrix_zero
+AAT.AG.RelativeRepairComposition.W1PrivateMatrixZero.zero_public_value
+AAT.AG.RelativeRepairComposition.W1Regions.always_not_fixed
+AAT.AG.RelativeRepairComposition.W1Regions.b_fixed_iff
+AAT.AG.RelativeRepairComposition.W1Regions.c_fixed_iff
+AAT.AG.RelativeRepairComposition.W1Regions.candidates
+AAT.AG.RelativeRepairComposition.W1Regions.fixedEdges
+AAT.AG.RelativeRepairComposition.W1Regions.fixedRegion
+AAT.AG.RelativeRepairComposition.W1Regions.leftRegion
+AAT.AG.RelativeRepairComposition.W1Regions.name
+AAT.AG.RelativeRepairComposition.W1Regions.name_edge
+AAT.AG.RelativeRepairComposition.W1Regions.overlap
+AAT.AG.RelativeRepairComposition.W1Regions.overlap_edges
+AAT.AG.RelativeRepairComposition.W1Regions.overlap_vertices
+AAT.AG.RelativeRepairComposition.W1Regions.regions_cover
+AAT.AG.RelativeRepairComposition.W1Regions.rightRegion
+AAT.AG.RelativeRepairComposition.W1Regions.rx_fixed
+AAT.AG.RelativeRepairComposition.W1Regions.ry_fixed
+AAT.AG.RelativeRepairComposition.W1RelativeCoefficients.actualDefect
+AAT.AG.RelativeRepairComposition.W1RelativeCoefficients.actualDefect_coordinates
+AAT.AG.RelativeRepairComposition.W1RelativeCoefficients.candidates_outside
+AAT.AG.RelativeRepairComposition.W1RelativeCoefficients.edgeCoordinate
+AAT.AG.RelativeRepairComposition.W1RelativeCoefficients.faceCoordinates
+AAT.AG.RelativeRepairComposition.W1RelativeCoefficients.faceCoordinates_value
+AAT.AG.RelativeRepairComposition.W1RelativeCoefficients.fixed_edge_coordinate
+AAT.AG.RelativeRepairComposition.W1RelativeCoefficients.fixed_faces
+AAT.AG.RelativeRepairComposition.W1RelativeCoefficients.relativeCochain
+AAT.AG.RelativeRepairComposition.W1RelativeCoefficients.relativeCochain_value
+AAT.AG.RelativeRepairComposition.W1RelativeCoefficients.relative_d1_first
+AAT.AG.RelativeRepairComposition.W1RelativeCoefficients.relative_d1_second_identity
+AAT.AG.RelativeRepairComposition.W1RelativeCoefficients.relative_d1_second_negative
+AAT.AG.RelativeRepairComposition.W1RelativeCoefficients.relative_differential_value
+AAT.AG.RelativeRepairComposition.W1RelativeCoefficients.signedDefect_coordinates
+AAT.AG.RelativeRepairComposition.W1RepairCounts.negativeBActualEquiv
+AAT.AG.RelativeRepairComposition.W1RepairCounts.negativeBChoiceEquiv
+AAT.AG.RelativeRepairComposition.W1RepairCounts.negativeCActualEquiv
+AAT.AG.RelativeRepairComposition.W1RepairCounts.negativeCChoiceEquiv
+AAT.AG.RelativeRepairComposition.W1RepairCounts.negativeEmptyActualEquiv
+AAT.AG.RelativeRepairComposition.W1RepairCounts.negativeEmptyChoiceEquiv
+AAT.AG.RelativeRepairComposition.W1RepairCounts.negative_b_card
+AAT.AG.RelativeRepairComposition.W1RepairCounts.negative_b_class_card
+AAT.AG.RelativeRepairComposition.W1RepairCounts.negative_c_card
+AAT.AG.RelativeRepairComposition.W1RepairCounts.negative_c_class_card
+AAT.AG.RelativeRepairComposition.W1RepairCounts.negative_empty_card
+AAT.AG.RelativeRepairComposition.W1RepairCounts.negative_empty_class_card
+AAT.AG.RelativeRepairComposition.W1RepairCounts.negative_full_card
+AAT.AG.RelativeRepairComposition.W1RepairCounts.negative_full_class_card
+AAT.AG.RelativeRepairComposition.W1StrictGeneratedCover.Groupoid
+AAT.AG.RelativeRepairComposition.W1StrictGeneratedCover.Objects
+AAT.AG.RelativeRepairComposition.W1StrictGeneratedCover.actualEquivalence
+AAT.AG.RelativeRepairComposition.W1StrictGeneratedCover.actualObjectEquiv
+AAT.AG.RelativeRepairComposition.W1StrictGeneratedCover.extract_restore
+AAT.AG.RelativeRepairComposition.W1StrictGeneratedCover.generated_feasible_iff
+AAT.AG.RelativeRepairComposition.W1StrictGeneratedCover.nativeEquivalence
+AAT.AG.RelativeRepairComposition.W1StrictGeneratedCover.restore_extract
+AAT.AG.RelativeRepairComposition.W1StrictGeneratedCover.restore_operation
+AAT.AG.RelativeRepairComposition.W1SubdivisionClasses.b_class_card
+AAT.AG.RelativeRepairComposition.W1SubdivisionClasses.c_class_card
+AAT.AG.RelativeRepairComposition.W1SubdivisionClasses.classEquiv
+AAT.AG.RelativeRepairComposition.W1SubdivisionClasses.class_card
+AAT.AG.RelativeRepairComposition.W1SubdivisionClasses.empty_class_card
+AAT.AG.RelativeRepairComposition.W1SubdivisionClasses.full_class_card
+AAT.AG.RelativeRepairComposition.W1SubdivisionCoordinates.all_pairs
+AAT.AG.RelativeRepairComposition.W1SubdivisionCoordinates.collapse_coordinate
+AAT.AG.RelativeRepairComposition.W1SubdivisionCoordinates.middle_inclusion
+AAT.AG.RelativeRepairComposition.W1SubdivisionCoordinates.old_a_coordinate
+AAT.AG.RelativeRepairComposition.W1SubdivisionCoordinates.restore_first
+AAT.AG.RelativeRepairComposition.W1SubdivisionCoordinates.restore_second
+AAT.AG.RelativeRepairComposition.W1SubdivisionCoordinates.rho2_coordinate
+AAT.AG.RelativeRepairComposition.W1SubdivisionCoordinates.second_linear
+AAT.AG.RelativeRepairComposition.W1SubdivisionFreshGauge.first_d0
+AAT.AG.RelativeRepairComposition.W1SubdivisionFreshGauge.first_shift
+AAT.AG.RelativeRepairComposition.W1SubdivisionFreshGauge.freshLabel
+AAT.AG.RelativeRepairComposition.W1SubdivisionFreshGauge.second_d0
+AAT.AG.RelativeRepairComposition.W1SubdivisionFreshGauge.second_shift
+AAT.AG.RelativeRepairComposition.W1SubdivisionGeneratedInterfaces.actualObjectEquiv
+AAT.AG.RelativeRepairComposition.W1SubdivisionGeneratedInterfaces.comparison
+AAT.AG.RelativeRepairComposition.W1SubdivisionGeneratedInterfaces.local_restore
+AAT.AG.RelativeRepairComposition.W1SubdivisionGeneratedInterfaces.newExtraction
+AAT.AG.RelativeRepairComposition.W1SubdivisionGeneratedInterfaces.oldExtraction
+AAT.AG.RelativeRepairComposition.W1SubdivisionGeneratedInterfaces.public_relation_iff
+AAT.AG.RelativeRepairComposition.W1SubdivisionGeneratedInterfaces.strictEquivalence
+AAT.AG.RelativeRepairComposition.W1SubdivisionGeneratedInterfaces.values
+AAT.AG.RelativeRepairComposition.W1SubdivisionGeneratedRestoration.actualNativeEquivalence
+AAT.AG.RelativeRepairComposition.W1SubdivisionGeneratedRestoration.actual_restore
+AAT.AG.RelativeRepairComposition.W1SubdivisionGeneratedRestoration.extracted_correction
+AAT.AG.RelativeRepairComposition.W1SubdivisionGeneratedRestoration.generated_restore
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.chosen
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.chosen_not_P
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.chosen_not_W
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.chosen_not_candidate
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.chosen_not_fixed
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.chosen_private
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.factor_product
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.factor_reference
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.factors
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.first
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.first_apply
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.first_private
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.fresh_not_P
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.fresh_not_W
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.second
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.second_apply
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.second_private
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.splitTower
+AAT.AG.RelativeRepairComposition.W1SubdivisionInput.split_cover
+AAT.AG.RelativeRepairComposition.W1SubdivisionMinimalRanges.feasibility
+AAT.AG.RelativeRepairComposition.W1SubdivisionMinimalRanges.minimal_iff_old_actual
+AAT.AG.RelativeRepairComposition.W1SubdivisionMinimalRanges.minimal_nonzero
+AAT.AG.RelativeRepairComposition.W1SubdivisionMinimalRanges.minimal_zero
+AAT.AG.RelativeRepairComposition.W1SubdivisionPreservation.allHomologyIso
+AAT.AG.RelativeRepairComposition.W1SubdivisionPreservation.complexIso
+AAT.AG.RelativeRepairComposition.W1SubdivisionPreservation.defect_value
+AAT.AG.RelativeRepairComposition.W1SubdivisionPreservation.fresh_contraction
+AAT.AG.RelativeRepairComposition.W1SubdivisionPreservation.fresh_identity
+AAT.AG.RelativeRepairComposition.W1SubdivisionPreservation.h0Equiv
+AAT.AG.RelativeRepairComposition.W1SubdivisionPreservation.obstruction_class
+AAT.AG.RelativeRepairComposition.W1SubdivisionPreservation.old_holonomy
+AAT.AG.RelativeRepairComposition.W1SubdivisionPreservation.original_syzygy
+AAT.AG.RelativeRepairComposition.W1SubdivisionRanges.candidateNames
+AAT.AG.RelativeRepairComposition.W1SubdivisionRanges.candidate_column
+AAT.AG.RelativeRepairComposition.W1SubdivisionRanges.newDual
+AAT.AG.RelativeRepairComposition.W1SubdivisionRanges.newObstruction
+AAT.AG.RelativeRepairComposition.W1SubdivisionRanges.new_column_surjective
+AAT.AG.RelativeRepairComposition.W1SubdivisionRanges.new_dual_value
+AAT.AG.RelativeRepairComposition.W1SubdivisionRanges.new_empty_failure_dual
+AAT.AG.RelativeRepairComposition.W1SubdivisionRanges.new_nonzero_dual_support
+AAT.AG.RelativeRepairComposition.W1SubdivisionRanges.new_obstruction_coordinate
+AAT.AG.RelativeRepairComposition.W1SubdivisionRanges.quotientCoordinate
+AAT.AG.RelativeRepairComposition.W1SubdivisionRepairs.NewCategory
+AAT.AG.RelativeRepairComposition.W1SubdivisionRepairs.NewRepairs
+AAT.AG.RelativeRepairComposition.W1SubdivisionRepairs.aut_identity
+AAT.AG.RelativeRepairComposition.W1SubdivisionRepairs.b_card
+AAT.AG.RelativeRepairComposition.W1SubdivisionRepairs.c_card
+AAT.AG.RelativeRepairComposition.W1SubdivisionRepairs.counit_full_label
+AAT.AG.RelativeRepairComposition.W1SubdivisionRepairs.empty_card
+AAT.AG.RelativeRepairComposition.W1SubdivisionRepairs.full_card
+AAT.AG.RelativeRepairComposition.W1SubdivisionRepairs.hom_unique
+AAT.AG.RelativeRepairComposition.W1SubdivisionRepairs.middleCoefficient
+AAT.AG.RelativeRepairComposition.W1SubdivisionRepairs.nativeEquivalence
+AAT.AG.RelativeRepairComposition.W1SubdivisionRepairs.repairEquiv
+AAT.AG.RelativeRepairComposition.W1SubdivisionRepairs.repair_card
+AAT.AG.RelativeRepairComposition.W1SubdivisionSharedBoundary.collapse_shared
+AAT.AG.RelativeRepairComposition.W1SubdivisionSharedBoundary.external_join
+AAT.AG.RelativeRepairComposition.W1SubdivisionSharedBoundary.restore_shared
+AAT.AG.RelativeRepairComposition.W1SubdivisionSharedBoundary.shared_relation
+AAT.AG.RelativeRepairComposition.W1SubdivisionSupportedGauge.first_supported_shift
+AAT.AG.RelativeRepairComposition.W1SubdivisionSupportedGauge.fullLabel
+AAT.AG.RelativeRepairComposition.W1SubdivisionSupportedGauge.fullLabel_value
+AAT.AG.RelativeRepairComposition.W1SubdivisionSupportedGauge.labels_complete
+AAT.AG.RelativeRepairComposition.W1SubdivisionSupportedGauge.second_supported_shift
+AAT.AG.RelativeRepairComposition.W1SubdivisionWords.first_word
+AAT.AG.RelativeRepairComposition.W1SubdivisionWords.name_ne_chosen
+AAT.AG.RelativeRepairComposition.W1SubdivisionWords.retainedB
+AAT.AG.RelativeRepairComposition.W1SubdivisionWords.retainedC
+AAT.AG.RelativeRepairComposition.W1SubdivisionWords.retainedE
+AAT.AG.RelativeRepairComposition.W1SubdivisionWords.second_word
+AAT.AG.RelativeRepairComposition.W1SymbolicActualUpdates.bUpdated
+AAT.AG.RelativeRepairComposition.W1SymbolicActualUpdates.b_corrections
+AAT.AG.RelativeRepairComposition.W1SymbolicActualUpdates.b_operations
+AAT.AG.RelativeRepairComposition.W1SymbolicActualUpdates.b_parameters
+AAT.AG.RelativeRepairComposition.W1SymbolicActualUpdates.cUpdated
+AAT.AG.RelativeRepairComposition.W1SymbolicActualUpdates.c_corrections
+AAT.AG.RelativeRepairComposition.W1SymbolicActualUpdates.c_operations
+AAT.AG.RelativeRepairComposition.W1SymbolicActualUpdates.c_parameters
+AAT.AG.RelativeRepairComposition.W1SymbolicActualUpdates.symbolic_signed_rhs
+AAT.AG.RelativeRepairComposition.W1SymbolicActualUpdates.updated_failure_dual
+AAT.AG.RelativeRepairComposition.W1SymbolicActualUpdates.zero_to_nonzero_empty
+AAT.AG.RelativeRepairComposition.W1SymbolicGeneratedRows.actualPublic
+AAT.AG.RelativeRepairComposition.W1SymbolicGeneratedRows.generated_rows_same
+AAT.AG.RelativeRepairComposition.W1SymbolicGeneratedRows.projected_eq_public
+AAT.AG.RelativeRepairComposition.W1SymbolicGeneratedRows.projected_matrix_same
+AAT.AG.RelativeRepairComposition.W1SymbolicGeneratedRows.public_enumeration_same
+AAT.AG.RelativeRepairComposition.W1SymbolicGeneratedRows.rowsFor
+AAT.AG.RelativeRepairComposition.W1SymbolicGeneratedRows.rows_congr
+AAT.AG.RelativeRepairComposition.W1SymbolicGeneratedRows.structuralProjectedMatrix
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.actualEdges
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.actualEnum
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.actualFaces
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.actualPrivate
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.basis_dimension_same
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.edgeIndex
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.edges_same
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.elimination_same
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.enumeration_same
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.enumeration_subtype_congr
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.faceIndex
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.faces_same
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.privateIndex
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.private_matrix_same
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.private_same
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.publicIndex
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.reduction_congr
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.sectionFor
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.section_congr
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.section_same
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.structuralEdges
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.structuralFaces
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.structuralPrivateMatrix
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.structuralSection
+AAT.AG.RelativeRepairComposition.W1SymbolicLocalStructure.structural_private_matrix_zero
+AAT.AG.RelativeRepairComposition.W1SymbolicPublicMatrices.commonPublicMatrix
+AAT.AG.RelativeRepairComposition.W1SymbolicPublicMatrices.edgeIndex
+AAT.AG.RelativeRepairComposition.W1SymbolicPublicMatrices.faceIndex
+AAT.AG.RelativeRepairComposition.W1SymbolicPublicMatrices.namedPublicIndex
+AAT.AG.RelativeRepairComposition.W1SymbolicPublicMatrices.publicIndex
+AAT.AG.RelativeRepairComposition.W1SymbolicPublicMatrices.public_matrix_eq_common
+AAT.AG.RelativeRepairComposition.W1SymbolicPublicMatrices.public_matrix_same
+AAT.AG.RelativeRepairComposition.W1SymbolicPublicMatrices.structuralB
+AAT.AG.RelativeRepairComposition.W1SymbolicPublicMatrices.structuralC
+AAT.AG.RelativeRepairComposition.W1SymbolicPublicMatrices.structuralE
+AAT.AG.RelativeRepairComposition.W1SymbolicPublicMatrices.structuralPublicMatrix
+AAT.AG.RelativeRepairComposition.W1SymbolicPublicStructure.bIndex
+AAT.AG.RelativeRepairComposition.W1SymbolicPublicStructure.cIndex
+AAT.AG.RelativeRepairComposition.W1SymbolicPublicStructure.eIndex
+AAT.AG.RelativeRepairComposition.W1SymbolicPublicStructure.left_public
+AAT.AG.RelativeRepairComposition.W1SymbolicPublicStructure.right_public
+AAT.AG.RelativeRepairComposition.pathEdges.eq_def
+ZMod.instField.congr_simp
+```
+
+</details>
