@@ -734,3 +734,100 @@ audits:
 ```
 
 全体は `target-proof-checkpoint`。D/Eおよび最終A–E統合は未完了。独立査読前のCycle結果はproposal。
+
+## Cycle 8：同じ不能証拠の残存双対値と取得条件
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-131-aat-repair-observation-duality
+cycle: 8
+goal_blob_sha: 054fea81b916c4d4a470b74af3e13c6cc5dde01c
+base_oid: 37da48dce125ac1b495d04b43fc622a44a5bc551
+tracking_issue: 5133
+report_path: research/reports/G-131-aat-repair-observation-duality.md
+selection:
+  proof_state_ref: "Cycle 7 PR #5216受理・merge 37da48dce125ac1b495d04b43fc622a44a5bc551。初期selectionは261284a3c上に固定し、C7受理後にbaseを同期した"
+  proof_dag_predecessors: [SelectedCokernel.nativeToResidual_value, NamedDual.annihilates_iff, NamedDual.failure_witness, LinearObservationDuality.span_coannihilator, LinearObservationDuality.observation_annihilator, informationFiber, ActualAffineFamily.actual_affine_equation_iff]
+  milestone: "Dの同じ元不能証拠を残存障害双対へ値を保って移し、既知fiber上の値取得条件を原始評価spanとして全方向証明"
+  proof_obligations: ["元全候補支持E_phiと任意Sの残存商への下降", "元実修復失敗から同じ非零残存双対値", "追加候補方向が同じ値を変える条件と元support", "ell q_S(b₀+Bv)の取得とN上の原始spanを全方向", "既知定数と更新後既知/通知値のfiberを保持"]
+  exit_criteria: ["同じS/候補名/元RHSで下降と評価保存", "失敗実入力の非零検出値と追加候補支持の同値", "全非空known fiberの値取得⇔restricted spanと同じ評価式", "既知値/通知値の情報核を保持して値取得条件へ再適用", "focused/全宣言公理/scan/独立査読"]
+  selection_reason: "不能証拠の代数的存在を指定原始観測の取得へ接続し、有限最小計画・更新計画に必要な条件を閉じる"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResidualDualWitness.lean, DualValueAcquisition.lean, ActualDualWitness.lean, KnownValueUpdates.lean, FiberSufficiency.mem_informationFiber, NamedDual.mem_support]
+  risks: ["代数的φの存在と実問い合わせからの取得を混同しない", "全候補商を任意Sへ代用しない", "既知情報fiberは元全入力に対応", "更新で未受信値を既知へ入れない", "有限計画/solver/元修復出力は次の到達点へ残す"]
+  unchecked: ["実装・検証・査読前"]
+```
+
+### Cycle 8 の宣言と前提
+
+受理spine候補は22追加宣言（4新規module、既存2moduleの基本API各1本）。
+
+- `ResidualDualWitness`: `residual`, `residual_value`, `native`, `native_value`, `candidate_changes_iff`, `candidate_change_value_iff`, `failure`。
+- `DualValueAcquisition`: `acquisition_iff`, `restriction_iff`, `acquisition_iff_span`, `residual_value_affine`, `residual_acquisition_iff`。
+- `KnownValueUpdates`: `information`, `information_apply`, `information_ker`, `fiber_iff`, `acquisition_after_update_iff`。
+- `ActualDualWitness`: `actual_failure`, `actual_value`, `actual_acquisition_iff`。
+- `AAT.AG.RepairObservationDuality.mem_informationFiber` と `AAT.AG.RelativeRepairComposition.NamedDual.mem_support` は既存構成の基本membership API。既存definition/signatureを変えず下流の定義展開を避ける。
+
+最初の4namespaceは `AAT.AG.RepairObservationDuality.` を補う。新規述語/certificate構造は導入しない。
+
+| 固定条項 | 宣言と同じ入力・値の対応 |
+| --- | --- |
+| DのG-130不能証拠と残存商 | `residual` は選択列を消す同じphiを商へ下降。`residual_value` と `native_value` は元RHSの評価を保存し、任意Sのselected native cokernelと同じ面を使用 |
+| Dの候補名と証拠支持 | `candidate_changes_iff` は元全列compositeの非零と同じcandidate方向の検出値を同値化。`candidate_change_value_iff` は任意の元RHSで追加前後の値差へ対応 |
+| Dの不能実入力 | `failure` は独立selected方程式の不能からG-130の `NamedDual.failure_witness` を生成。`actual_failure` は元SupportedRepairの不能から生成し、同じ物理負defectを非零検出。`actual_value` は元always商の同じphiの値を保存 |
+| Dの任意known fiberと原始取得 | `acquisition_iff` は非空fiberの全等観測入力を使い核交差と同値化。`restriction_iff` とC7のannihilator/span同定から `acquisition_iff_span`。`residual_acquisition_iff` は指定ell q_S(b₀+Bv)そのものとrestricted spanを全方向対応 |
+| Dの元全実入力での取得 | `actual_acquisition_iff` は全パラメータrealizeの正逆と同じ物理負defect式を使い、元入力のLν=s全体で指定した同じphiの評価取得を同値化 |
+| Dの保持済み/通知済み値 | `information` は保持値と実通知のproduct。`information_ker` は両核の交差、`fiber_iff` は両指定値の全入力fiber。`acquisition_after_update_iff` はこの更新後未知核上の同じ取得条件へ再適用。追加問い合わせ最適値/有限計画への適用はC9の義務 |
+
+| material premise・構成 | 分類 | 出所とproof-use |
+| --- | --- | --- |
+| 体k、線形D₀/C/B/L/λ、候補名、全列、b₀、有限候補 | ambient-boundary | G-131 A/Dの同じ元構造。一般補題は有限体より広い体を許す。native比較は既存SelectedCokernelのfinite sumを使用 |
+| 有限次元V | ambient-boundary | C7のdouble annihilatorによる同じrestricted評価spanへ使用 |
+| 元実入力族、全実現、共通係数、P面整合、線形核輸送 | ambient-boundary、Aの入力条件 | 受理C5の元実修復と方程式・負defect式に適用。realizeの右逆を全実入力取得同値の必要方向へ使用 |
+| phiがSの全列を消す | direction-hypothesis（下降API）、`actual_failure`ではdischarge-required・生成済み | 一般下降では定義域条件、失敗生成ではNamedDual.failure_witnessの返却証明から得る。消滅証明だけを入力して不能を仮定しない |
+| 原方程式/元修復の不能 | direction-hypothesis | Dの失敗時の分岐。`failure`で同じG-130phiと非零値を生成。有限分岐選択はC9で構成 |
+| 非空known fiberのbaseとLνbase=s | direction-hypothesis | 任意fiber全入力の値取得条件で使用。空fiber/全不能判定/基準点探索はC9で生成 |
+| 取得するf | discharge-required・両方向存在証明済み | 核交差条件から同じ観測fiber代表元を選び、指定アフィン値を作る。原入力を問い合わせ返信として追加しない。choice存在構成を有限実行計画とは扱わない |
+| 商双対下降、元candidate支持、同じ実dual評価 | discharge-required・証明済み | canonical quotient dual、代表元保存native比較、NamedDual全列、C5実方程式から生成 |
+| 更新後保持値/通知値 | ambient-boundary | 実際に保持/通知された線形値を指定し、両値のproduct情報と未知kernelを構成。古い未通知値をknownに追加しない |
+
+依存資格：C3 [PR #5200](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5200#issuecomment-5969565903)、C5 [PR #5204](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5204#issuecomment-5970294260)、C7 head `e584b5c485ba09a92f8f48e8da32bb2e56672901` の [受理監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5216#issuecomment-5971319879)、G-130 final accepted head `549b7e3ccab1c9686a108530e1b0a4b4f38eee86` の [全体監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5179#issuecomment-5966982329)を照合する。G-130のNamedDualRangesの既存内容は同版と同じで、今回基本APIのみを追加。使用するstatement・入力・本proofへの適用をsourceで読む。標準線形代数は固定Mathlib `8f9d9cff6bd728b17a24e163c9402775d9e6a365` のquotient dualとlinear map/kernel API。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "同じG-130不能証拠の残存商下降/値/候補支持と、元全実入力known fiberでの指定評価取得⇔restricted primitive spanを証明"
+  exit_criteria_status: ["元RHS/候補支持/任意Sを保持", "元不能入力の同じ非零値", "非空known fiberの取得⇔spanを全方向", "更新後保持/通知fiberと取得条件", "対象22宣言のfocused/個別公理とscan/独立査読をPRに固定"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [ResidualDualWitness.lean, DualValueAcquisition.lean, ActualDualWitness.lean, KnownValueUpdates.lean, mem_informationFiber, NamedDual.mem_support]
+  evidence: [residual_value, native_value, candidate_change_value_iff, actual_failure, actual_value, residual_acquisition_iff, actual_acquisition_iff, acquisition_after_update_iff]
+  claim_mapping:
+    theorem_names: [actual_failure, candidate_change_value_iff, actual_acquisition_iff, acquisition_after_update_iff]
+    source_labels: ["G-131 D", "n1017 §6.5・§6.7"]
+    conjuncts: ["同じ不能証拠の非零残存値", "元追加候補名の同じ支持", "ell q_S(b₀+Bv)取得とrestricted span", "保持済み/通知済みの未知核"]
+    undischarged_assumptions: []
+    acceptance_point: "Dの同じ双対値取得条件。有限計画と更新最適値適用は次到達点"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["同じ不能証拠/任意Sの残存双対", "同じ値と候補支持", "原実入力取得⇔restricted span", "保持/通知更新fiber"]
+    remaining: ["Dの有限最小集合生成/値取得/solver/元修復/更新最適値", "E全指定入力/実評価/表/分割/参照式", "最終A–E統合"]
+  certificate_provenance:
+    discharged: ["NamedDual.failure_witnessとcanonical dual下降", "C5同じ負defect/元修復", "全realizeから原入力fiber", "保持/通知product"]
+    unresolved: ["有限停止する計画の生成は次到達点"]
+  proof_use:
+    used: ["同じD₀/C/S/RHS", "元candidate support", "失敗時非零G-130phi", "L/O差の核", "有限次元restricted span", "全実現と物理負defect", "保持/通知の両情報値"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["対象22宣言のexact source-prefix focused/個別公理raw記録、scan、独立査読をPRへ固定"]
+  blocking_findings: []
+  next_obligation: "Dの有限最小計画/solver/元修復と更新後最適値"
+```
+
+全体は `target-proof-checkpoint`。Dの有限手続きとE、最終A–E統合は未完了。独立査読前のCycle結果はproposal。

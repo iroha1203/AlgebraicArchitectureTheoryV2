@@ -23,6 +23,10 @@ def ranges (S : Set E) : Submodule k O := ⨆ e ∈ S, LinearMap.range (B e)
 /-- A dual support retains exactly the names with nonzero whole column composite. -/
 def support (phi : Module.Dual k O) : Set E := {e | phi.comp (B e) ≠ 0}
 
+/-- A named candidate belongs to the dual support exactly when its full column composite is nonzero. -/
+theorem mem_support (phi : Module.Dual k O) (e : E) :
+    e ∈ support B phi ↔ phi.comp (B e) ≠ 0 := Iff.rfl
+
 /-- Every selected full column is contained in the selected sum. -/
 theorem range_le (S : Set E) (e : E) (he : e ∈ S) :
     LinearMap.range (B e) ≤ ranges B S :=
