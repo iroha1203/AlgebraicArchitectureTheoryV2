@@ -5,6 +5,11 @@ import ResearchLean.AG.RepairObservationDuality.PrimitiveAffineDefect
 
 ## Implementation notes
 
+G-131 A / n1017 §3.5 and §6.1. Primitive tower and affine-change conditions
+are the input assumptions. The main results derive the same physical defect
+from accepted G-129 correction and G-130 linear-differential APIs. Fixed-part
+assumptions in the relative module are actual face equalities, not defect laws.
+
 The fixed-face input is an equality of actual paths and authored comparisons
 for every parameter. It implies native vanishing through the generated raw
 defect theorem. The constant and linear right-hand-side terms are constructed
@@ -39,20 +44,32 @@ variable (hfixed : ∀ v : V, ∀ f ∈ P.faces,
 attribute [local instance] Classical.propDecidable
 include hfixed
 
-/-- Fixed actual face equalities imply vanishing of every generated native value. -/
+/-- Fixed actual face equalities imply vanishing of every generated native value.
+
+G-131 A / n1017 §3.5, §6.1. API lemma/constructor for the named primitive or relative construction.
+Input assumptions and predecessor use are specified in the module notes.
+-/
 theorem fixed_defect_zero (v : V) (f : K.TwoCell) (hf : f ∈ P.faces) :
     defect T (edgeChange v) (comparisonChange v) f = 0 :=
   (defect_zero_iff T (edgeChange v) (comparisonChange v) f).mpr (hfixed v f hf)
 
 include hlinear in
-/-- The same zero parameter's original defect vanishes on the original fixed faces. -/
+/-- The same zero parameter's original defect vanishes on the original fixed faces.
+
+G-131 A / n1017 §3.5, §6.1. API lemma/constructor for the named primitive or relative construction.
+Input assumptions and predecessor use are specified in the module notes.
+-/
 theorem base_defect_zero (f : K.TwoCell) (hf : f ∈ P.faces) : T.defect f = 0 := by
   have hz := fixed_defect_zero T edgeChange comparisonChange P hfixed 0 f hf
   rw [affine_defect T hlinear edgeChange comparisonChange 0,map_zero,add_zero] at hz
   exact hz
 
 /-- Physical fixed-face coherence forces the generated linear term to vanish
-there; this condition is not supplied as a separate certificate. -/
+there; this condition is not supplied as a separate certificate.
+
+G-131 A / n1017 §3.5, §6.1. Main construction/theorem.
+Input assumptions and predecessor use are specified in the module notes.
+-/
 theorem linear_term_zero (v : V) (f : K.TwoCell) (hf : f ∈ P.faces) :
     linearTerm T hlinear edgeChange comparisonChange v f = 0 := by
   have hz := fixed_defect_zero T edgeChange comparisonChange P hfixed v f hf
@@ -61,17 +78,29 @@ theorem linear_term_zero (v : V) (f : K.TwoCell) (hf : f ∈ P.faces) :
   rw [base_defect_zero T hlinear edgeChange comparisonChange P hfixed f hf,zero_add] at hz
   exact hz
 
-/-- The actual native defect, on all original faces with fixed-face zeros. -/
+/-- The actual native defect, on all original faces with fixed-face zeros.
+
+G-131 A / n1017 §3.5, §6.1. Main construction/theorem.
+Input assumptions and predecessor use are specified in the module notes.
+-/
 noncomputable def relativeDefect (v : V) : RelativeCover.C2 M ClosedRegion.all P :=
   ⟨fun f => defect T (edgeChange v) (comparisonChange v) f.1,
     fun f hf => fixed_defect_zero T edgeChange comparisonChange P hfixed v f.1 hf⟩
 
-/-- Relative coordinates preserve each physical face's complete native value. -/
+/-- Relative coordinates preserve each physical face's complete native value.
+
+G-131 A / n1017 §3.5, §6.1. API lemma/constructor for the named primitive or relative construction.
+Input assumptions and predecessor use are specified in the module notes.
+-/
 theorem relativeDefect_value (v : V) (f : K.TwoCell) :
     (relativeDefect T edgeChange comparisonChange P hfixed v).1 ⟨f,Set.mem_univ f⟩ =
       defect T (edgeChange v) (comparisonChange v) f := rfl
 
-/-- The generated relative linear term retains all original face values. -/
+/-- The generated relative linear term retains all original face values.
+
+G-131 A / n1017 §3.5, §6.1. Main construction/theorem.
+Input assumptions and predecessor use are specified in the module notes.
+-/
 noncomputable def relativeLinear : V →ₗ[k] RelativeCover.C2 M ClosedRegion.all P where
   toFun v := ⟨fun f => linearTerm T hlinear edgeChange comparisonChange v f.1,
     fun f hf => linear_term_zero T hlinear edgeChange comparisonChange P hfixed v f.1 hf⟩
@@ -84,50 +113,81 @@ noncomputable def relativeLinear : V →ₗ[k] RelativeCover.C2 M ClosedRegion.a
     funext f
     exact congrArg (fun h : C2 M => h f.1) ((linearTerm T hlinear edgeChange comparisonChange).map_smul t v)
 
-/-- Each relative linear coordinate is the generated original face value. -/
+/-- Each relative linear coordinate is the generated original face value.
+
+G-131 A / n1017 §3.5, §6.1. API lemma/constructor for the named primitive or relative construction.
+Input assumptions and predecessor use are specified in the module notes.
+-/
 theorem relativeLinear_value (v : V) (f : K.TwoCell) :
     (relativeLinear T hlinear edgeChange comparisonChange P hfixed v).1
       ⟨f,Set.mem_univ f⟩ = linearTerm T hlinear edgeChange comparisonChange v f := rfl
 
-/-- The zero input determines A's constant negative relative defect. -/
+/-- The zero input determines A's constant negative relative defect.
+
+G-131 A / n1017 §3.5, §6.1. Main construction/theorem.
+Input assumptions and predecessor use are specified in the module notes.
+-/
 noncomputable def baseRhs : RelativeCover.C2 M ClosedRegion.all P :=
   -relativeDefect T edgeChange comparisonChange P hfixed 0
 
-/-- A's B is the negative of the primitive-generated relative linear term. -/
+/-- A's B is the negative of the primitive-generated relative linear term.
+
+G-131 A / n1017 §3.5, §6.1. Main construction/theorem.
+Input assumptions and predecessor use are specified in the module notes.
+-/
 noncomputable def rhsLinear : V →ₗ[k] RelativeCover.C2 M ClosedRegion.all P :=
   -relativeLinear T hlinear edgeChange comparisonChange P hfixed
 
-/-- The constant coordinate is the same original zero-parameter negative defect. -/
+/-- The constant coordinate is the same original zero-parameter negative defect.
+
+G-131 A / n1017 §3.5, §6.1. API lemma/constructor for the named primitive or relative construction.
+Input assumptions and predecessor use are specified in the module notes.
+-/
 theorem baseRhs_value (f : K.TwoCell) :
     (baseRhs T edgeChange comparisonChange P hfixed).1 ⟨f,Set.mem_univ f⟩ =
       -defect T (edgeChange 0) (comparisonChange 0) f := rfl
 
-/-- The negative linear coordinate has the required sign of the physical update. -/
+/-- The negative linear coordinate has the required sign of the physical update.
+
+G-131 A / n1017 §3.5, §6.1. API lemma/constructor for the named primitive or relative construction.
+Input assumptions and predecessor use are specified in the module notes.
+-/
 theorem rhsLinear_value (v : V) (f : K.TwoCell) :
     (rhsLinear T hlinear edgeChange comparisonChange P hfixed v).1 ⟨f,Set.mem_univ f⟩ =
       -linearTerm T hlinear edgeChange comparisonChange v f := rfl
 
-/-- The same actual relative negative defect is exactly b0+Bv. -/
+/-- The same actual relative negative defect is exactly b0+Bv.
+
+G-131 A / n1017 §3.5, §6.1. Main construction/theorem.
+Input assumptions and predecessor use are specified in the module notes.
+-/
 theorem negative_defect_affine (v : V) :
     -relativeDefect T edgeChange comparisonChange P hfixed v =
       baseRhs T edgeChange comparisonChange P hfixed + rhsLinear T hlinear edgeChange comparisonChange P hfixed v := by
   apply Subtype.ext
   funext f
-  change -(defect T (edgeChange v) (comparisonChange v) f.1) =
-    -(defect T (edgeChange 0) (comparisonChange 0) f.1) + -(linearTerm T hlinear edgeChange comparisonChange v f.1)
+  change -((relativeDefect T edgeChange comparisonChange P hfixed v).1 f) =
+    (baseRhs T edgeChange comparisonChange P hfixed).1 f +
+      (rhsLinear T hlinear edgeChange comparisonChange P hfixed v).1 f
+  rw [relativeDefect_value,baseRhs_value,rhsLinear_value]
   rw [affine_defect T hlinear edgeChange comparisonChange v,affine_defect T hlinear edgeChange comparisonChange 0,map_zero,add_zero]
   exact neg_add _ _
 
 /-- The affine right-hand side's negative includes to the physical raw defect
-of the same reference paths and comparisons. -/
+of the same reference paths and comparisons.
+
+G-131 A / n1017 §3.5, §6.1. Main construction/theorem.
+Input assumptions and predecessor use are specified in the module notes.
+-/
 theorem rhs_physical_value (v : V) (f : K.TwoCell) :
     kernelInclusion p q _ (Additive.toMul
       (-((baseRhs T edgeChange comparisonChange P hfixed + rhsLinear T hlinear edgeChange comparisonChange P hfixed v).1
         ⟨f,Set.mem_univ f⟩))) =
       rawFaceDefect (data T (edgeChange v) (comparisonChange v)) 1 f := by
   rw [← negative_defect_affine]
-  change kernelInclusion p q _ (Additive.toMul (-(-defect T (edgeChange v) (comparisonChange v) f))) = _
-  rw [neg_neg]
+  change kernelInclusion p q _ (Additive.toMul
+    (-(-((relativeDefect T edgeChange comparisonChange P hfixed v).1 ⟨f,Set.mem_univ f⟩)))) = _
+  rw [neg_neg,relativeDefect_value]
   exact defect_inclusion T (edgeChange v) (comparisonChange v) f
 
 end AAT.AG.RepairObservationDuality.RelativeAffineDefect
