@@ -5322,3 +5322,547 @@ AAT.AG.RelativeRepairComposition.W2UnrestrictedDescent.unrestricted_fixed
 ```
 
 </details>
+
+
+### C26 selection — W3の同じ全修復span・同型類と自己同型・元descentの比較
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 26
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 15e0169e3a6f2c4487dbf265c06c235e1b2a6dac
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "C25 PR5173/root5965160198/Issue5965170441; fixed GOAL W3/A/B/C/F; n1017 §5.6; current accepted full-affine/kernel/actual groupoid/descent/generated strict APIs"
+  proof_dag_predecessors: ["C1-C7 full supported actual repairs/labels/classification/B", "C10-C11 finite generated interfaces and strict whole restoration", "C14 full native affine input/kernel/operation/label correspondence", "C25 actual ordinary comma/full quotient/singleton label helper and exact composite inverse helper"]
+  milestone: "固定W3の元二辺閉路で、shearと恒等の同じ全実修復spanに対する全同型類・自己同型を分類し、π0先行と候補禁止後の通常descentの不一致、同じ独立生成strict Cの全回復を証明する。"
+  proof_obligations:
+    - "元 s,t と逆向き e:s→t,f:t→s、面/3-cell 空、P空、E0空、両辺候補、A=F3²、全 Aff(A)→GL(A)→1 を保持する。f の実線形成分は shear または恒等、e は恒等。同じ full categorical kernel/transport を構成し、全条件を入力から放電する。"
+    - "全 independent actual repairs を全 (u,v)∈A² と両逆対応させ、全81組を保持する。全 actual gauge labels を全 (bs,bt)∈A² と対応させ、実操作への作用を (u+bt−bs,v+bs−Tbt)、元 loop を w=v+Tu、その作用を w+(I−T)bs と評価する。shear と恒等で同じ solution span を用いる。"
+    - "元 actual category の全 isomorphism quotient を shear の F3、恒等の A と両逆対応させ、類数3/9を求める。任意 actual repair の全 Aut を shear の F3、恒等の A と群同型で対応させ、各 stabilizer 3/9と元全labelsを保持する。全81操作と全射の範囲を保持する。"
+    - "元 U={e,s,t},V={f,s,t},W={s,t} の全閉被覆と実制限関手を構成する。無制限局所類各1、全 Aut A、Wの全 Aut A² と元 (s,t) の境界写像 b↦(b,b)、b↦(Tb,b) を評価する。無制限 B の同値を同じ actual tower/cover へ接続し、先に局所 π0 を取ると一点になり、大域3/9類とAutを失うことを示す。"
+    - "S空では独立 actual global/local object 各1、global Aut は F3/A、local全AutはA。元 restricted restriction comma 全体が3/9類と各F3/AのAutを持つことを全対象/全射から導き、restricted global1類との非同値を示す。restricted local inclusion の全圏同値・Comma.map を用いる場合も元制限との自然な可換性と全ラベルを保持する。"
+    - "全実核basesと完全列挙から各局所 D/F/elimination/section/relation を Sより前に一度生成する。任意Sで independent actual全体とgenerated strict全体の関手両逆を接続し、S空の唯一対象と full Aut F3/A、元e/f操作・全元頂点labels・厳密共有一致を回復する。"
+  exit_criteria:
+    - "同じ全affine入力・81全操作/全labels・作用/閉路評価・full quotient3/9・全Aut F3/Aが放電されている。"
+    - "元局所制限とboundary map、π0先行の情報損失、無制限Bとrestricted通常descent不一致を全対象/全射で証明している。"
+    - "全有限構成がS前で、任意Sのstrict C両逆とS空の同じ元値/全Aut回復を接続している。"
+    - "必要なcurrent body/owned axiom/hash/registry/common scan、固定GOAL/適用基準、標準独立四査読とroot受理、exact-final-head CIが揃う。"
+  selection_reason: "残る固定witnessの一つを閉じ、同じ全実解spanでも閉路輸送が類と全Autを変え、元制限ではfull arrows/strict共有値が必要なことを直接検査する。"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["W3LinearAction", "W3AffineInput", "W3Regions", "W3ActualRepairs", "W3GaugeAction", "W3Classes", "W3Automorphisms", "W3LocalRestrictions", "W3OrdinaryDescent", "W3FiniteCoefficients", "W3LocalInterfaces", "W3StrictGeneratedCover"]
+  risks: ["全Aff(F3²)と全categorical kernel", "同じ81実修復span/全gauge labels", "原loopの実合成とshear非恒等", "全isomorphism quotientと全Aut", "元(s,t)境界写像と全comma square", "π0先行と候補禁止の別条件", "S前の有限生成と全関手両逆"]
+  unchecked: ["六W3義務は実装前", "W5と累積全target completion gateは残る"]
+```
+
+### C26 W3: 同じ全実修復spanと閉路輸送、全射を保つ局所合成
+
+元の二頂点s,t、逆向きのe:s→t、f:t→s、空の面と3-cell、P空、E0空、
+両辺候補、A=F3²、全Aff(A)→GL(A)→1を保持する。eの参照実操作は恒等、
+fはTであり、Tをshear (x,y)↦(x+y,y)と恒等の両方で評価する。
+独立に定義した全実修復の元実操作を(u,v)∈A²と両逆に対応させる。
+両入力とも全81修復、全81頂点ラベル(bs,bt)を持つ。同じ元閉路e,fの合成は
+Tx+w、w=v+Tuであり、実ゲージは(u+bt−bs,v+bs−Tbt)、閉路は
+w+(I−T)bsへ変わる。元全圏の同型類はshearでF3、恒等でAと両逆に対応し、
+類数は3/9となる。任意の実修復の全Autをker(I−T)と群同型に対応させ、
+shearでF3、恒等でA、全原頂点ラベルの定数値を回復する。
+
+元のU={e,s,t}、V={f,s,t}、W={s,t}を全閉被覆として用いる。
+無制限の独立局所全圏はU/VでBA、WでBA²と同値となる。
+各同型類は一点だが、全局所自己同型はA/A/A²を保持する。
+元の実制限の全頂点値を評価し、参照対象の境界写像はb↦(b,b)、b↦(Tb,b)となる。
+同じ元tower/coverを無制限のNativeDescent.equivalenceへ接続し、Bの全対象・全射を得る。
+実制限から誘導した全isomorphism quotientの写像で局所π₀のpullbackを構成すると一点になる。
+この一点の離散圏では大域の3/9同型類と各3/9自己同型を失う。
+
+S空では独立の大域/U/V/W実操作は各一つになる。全大域AutはF3/A、
+全局所AutはA/A/A²であり、元実制限の通常commaは3/9同型類と各F3/AのAutを持つ。
+通常commaの全81対象と全squareを直接解析し、無制限の大域全圏から通常comma全体へ
+充満・忠実・本質的全射な関手を構成する。全射の元bs,btは元U/Vラベル−bs,−btへ対応する。
+この通常commaはS空の大域一同型類と同値にならない。
+
+全実核の二次元基底、元typed cell、F3と被覆の完全列挙から、局所D/F、消去、section、
+公開relationをSに先立って一度生成する。同じ独立実修復から生成strict全圏への関手を
+任意Sで構成し、全対象・全射の関手合成を両方向で恒等と証明する。
+元e/f操作と全原頂点ラベルを復元し、共有s,tで実核値と全座標が厳密に一致する。
+S空のstrict全対象は一つ、全AutはF3/Aとなり、同じ大域の値と射を回復する。
+
+| 固定W3の要求 | 構成・全方向 | 一般定理への接続と使用 |
+| --- | --- | --- |
+| 元二辺閉路、同じ全Aff入力・全核・輸送 | W3LinearAction.shear / shear_ne_one、W3AffineInput.geometry / originalTower / reference_e / reference_f、W3FiniteCoefficients.kernelCoordinate / kernel_inverse_value / original_linear | NativeAffine.towerの全実射影と可換核、原型付き操作を実修復と元D/Fへ使用 |
+| P空、全候補、元全閉被覆 | W3Regions.fixedRegion / candidates_all / regions_cover / indexed_cover / overlap_vertices / overlap_edges / private_empty | 全条件を入力から放電し、同じ元制限と有限生成へ渡す |
+| 同じ81実修復と81全ラベル・閉路評価 | W3ActualRepairs.actualParametersEquiv / unrestrictedParametersEquiv / unrestricted_repair_card、W3GaugeLabels.unrestrictedLabelEquiv、W3AuthoredOperations.loop_apply、W3GaugeAction.gauge_first / gauge_second / gauge_loop | 独立NativeAffine.Repairと全許可ゲージを用い、全ベクトル上の実Affine操作を比較 |
+| 全同型類3/9と任意対象の全Aut3/9 | W3LoopIsomorphisms.isomorphic_iff_loop / shear_isomorphic_iff / identity_isomorphic_iff、W3Classes.shearClassEquiv / identityClassEquiv、W3Automorphisms.autFixedEquiv / autFixedEquiv_label / shearAutEquiv / identityAutEquiv | 元isIsomorphicSetoidの全商・元全ゲージ射から両逆と群演算を構成 |
+| 無制限局所一類、全Aut A/A/A²、原境界 | W3UnrestrictedLocalEquivalences.leftEquivalence / rightEquivalence、W3UnrestrictedLocalClasses.overlapEquivalence / leftClassEquiv / rightClassEquiv / overlapClassEquiv / leftAutEquiv / rightAutEquiv / overlapAutEquiv、W3UnrestrictedRestrictions.left_map_value / right_map_value | 任意独立局所repairへの実ゲージを構成し、全元頂点ラベルを保持 |
+| 同じ無制限Bとπ₀先行の情報損失 | W3UnrestrictedDescent.actualEquivalence / left_choice / right_choice / left_label / right_label、W3Pi0Loss.leftClassRestriction / rightClassRestriction / pullbackEquiv / global_class_count_lost / global_aut_count_lost | NativeDescent.equivalenceへ同じfixed_facesとregions_cover、π₀は同じ実制限からQuotient.mapで誘導 |
+| S空の全実操作一対象・大域全Aut F3/A・局所全Aut A | W3ActualRepairs.emptyObjectEquiv、W3LocalRepairs.localEmptyObjectEquiv、W3EmptyGroupoids.globalEquivalence / leftEquivalence / rightEquivalence / overlapEquivalence、W3LocalLabels.left_relation / right_relation | 独立全修復・全許可ラベルの両逆からfull singleton groupoidを導く |
+| 元restricted制限の通常comma全体3/9類と各F3/A Aut、1類との非同値 | W3RestrictionDiagram.leftRestriction / rightRestriction / left_original_value / right_original_value、W3OrdinarySeams.objectEquiv / square_iff、W3OrdinaryComparison.comparisonEquivalence / comparison_source / comparison_target、W3OrdinaryClasses.restricted_global_not_equivalent | 元全seamと全comma squareから全関手を構成。W2OrdinaryClasses.equivalenceClassesで全商を移す |
+| S前の独立全生成、全Sのstrict両逆 | W3FiniteCoefficients.bases / enumK / enumEdges / enumFaces / enumRegions、W3LocalInterfaces.equationEquiv / nativeEquivalence、W3StrictGeneratedCover.actualEquivalence、W3StrictInverseChecks.actual_forward_inverse / actual_inverse_forward | 同じ全実D/F/defectからFiniteNative→SupportedNativeEquation→StrictCoverRestoration→GeneratedCoverActionへ接続 |
+| 空Sの同じ元操作・全Aut回復、s,tの厳密共有値 | W3StrictGeneratedCover.empty_restored_operation、W3StrictLabels.restore_original_vertex / shared_s_value / shared_t_value / forward_patch_value / actual_forward_label、W3StrictConsequences.actual_inverse_label / emptyObjectEquiv / autFixedEquiv / shearAutEquiv / identityAutEquiv | 全元labelsの両逆を実関手のmapへ接続し、全S・任意strict対象のAutを分類 |
+
+### C26 前提の出所と使用
+
+| 前提 | 分類と入力からの放電 | 使用先 |
+| --- | --- | --- |
+| 元s,t,e/f、F3²、全Aff、P空・全候補、Tの二入力 | 本文由来: 固定GOAL W3/F、n1017 §5.6。W3LinearAction / W3AffineInput / W3Regionsで構成 | 同じ全実操作span、閉路の元輸送、非恒等shear、指定類とAut |
+| 全実核・強さ・可換性・原core/比較・核輸送/線形性 | 一般A/B/Cではdirection-hypothesis、W3では放電済み: 全NativeAffine.towerとkernelCoordinate / kernel_inverse_value / original_linear | 実修復/全ラベル対応、元微分・全基底・有限生成 |
+| 閉包・全被覆・固定面整合・候補分割 | 放電済み: W3Regionsの各全fieldと全cover、W3FiniteCoefficients.fixed_faces / W3Regions.private_empty | 原実制限、無制限B、S前の局所生成 |
+| 完全な修復/ラベル/全局所射/全comma square | 放電済み: independent Repairと元gauge条件から全座標を両逆構成。W3ActualArrows / W3LocalGauge / W3OrdinarySeams / W3OrdinaryComparison | 全商と全Aut、元制限の情報損失とrestricted非同値 |
+| 完全有限基底・原セルと係数と被覆の全列挙 | 放電済み: W3FiniteCoefficientsの二次元全実核と各Enumeration | 同じ全D/Fからelimination/section/relationをS前に生成 |
+| strict section/relation・復元の完全性 | 放電済み: W3LocalInterfaces、W3StrictGeneratedCover / W3StrictInverseChecksの実入力による一般構成と全関手恒等 | 全S・全対象・全射の元操作/全頂点値の復元 |
+| 全原頂点の厳密共有・空S全ラベル | 放電済み: W3StrictLabelsの全許可ラベル両逆とshared_s/t、W3StrictConsequencesの全Aut同型 | 同じ元s,tの実核値を比較し、大域F3/Aを回復 |
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 26
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "六固定W3義務: 元全入力、同じ81実修復/全ラベルと実閉路作用、全商3/9と全Aut、原局所制限/無制限B/π0損失、空S通常commaの不一致、S前生成/全Sstrict両逆"
+  exit_criteria_status:
+    - "同じ全入力・81全修復/ラベル・閉路評価・全商/全Aut: Lean構成と個別公理確認"
+    - "原全制限/境界・無制限B・π0損失・restricted通常comma非同値: Lean構成と個別公理確認"
+    - "S前独立生成・全Sstrict全関手両逆・原全操作/全labels/空S回復: Lean構成と個別公理確認"
+    - "現行単一production本体/全所有宣言/registry/hash/common scan。標準PR査読・root受入・exact-head CIはPRで判定"
+  split_reason: none
+  completion_candidate: no
+  claim_mapping:
+    source_labels: ["固定GOAL W3", "A/B/C/F", "n1017 §5.6"]
+    undischarged_assumptions: []
+    acceptance_point: "六義務と四終了条件。標準レビューとroot受入を要する"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["上表の同じ全実入力・全修復/全射・全局所制限・独立生成と全S両逆"]
+    remaining: ["W5と別の累積全target最終完了判定"]
+  certificate_provenance:
+    discharged: ["元全Aff/全実核と同じD/F/defect/全基底/全列挙から生成", "独立全実修復・全gauge条件から商/Aut/全comma/全局所圏を構成"]
+    unresolved: []
+  proof_use:
+    used: ["元全操作/ラベル→実閉路作用→全商/全Aut", "元全局所制限→π0損失とrestricted全comma非同値", "同じ全tower/cover→無制限B", "同じD/F/defect/全列挙→S前生成→全Sstrict関手両逆", "全原s,tラベル→厳密共有値と空S全Aut回復"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: []
+  next_obligation: "固定W5の全指定判定と一般A–F接続、その後別の累積全target最終四本査読"
+```
+
+### C26 productionと個別公理の一次検証対応
+
+全33単一production本体のactual exitは0、error/warningは各0。
+namespaceの351宣言に対し、所有moduleから選択した個別 `#print axioms` は全353宣言を被覆する。
+namespace外の自動生成helperはClosedRegion.mk.congr_simpとZMod.instField.congr_simpの二つである。
+本体検証とimport-onlyの個別公理確認は別の証拠で、各source/logの現行SHA256を対応させる。
+標準公理はpropext、Classical.choice、Quot.sound。
+単一fileコマンドは `cd research/lean && lake env lean -s4096 -D Elab.async=false -o .lake/build/lib/lean/<module path>.olean <source path>`。
+Research全体、aggregate、全module/file loopのelaborationは実行しない。
+
+| Production module | namespace宣言数 | source SHA256 | 本体log SHA256 |
+| --- | ---: | --- | --- |
+| W3ActualArrows | 6 | `8146a40b9482c1831d8bbc5fdcbc1748a8361544b5ddc5cb62a418f3c0dfb72f` | `22f03f3974bf7614bd7b3b371ec25f50e094a24bef81f8d7cbc2380979e4812b` |
+| W3ActualRepairs | 19 | `28ba5e90f14b99d11f4e3c19dd04fdbbb4e7b6626187aa02e329c88ccf4243fb` | `857768ef5bec8e76cba5cae600dd5fac86cd6da381aa714d90a9157d2d455e10` |
+| W3AffineInput | 21 | `a2b2af9f1cbc7272818f8f51d101287e602d9bcadecaef20c161a56711693fe4` | `13fa2cab99987ad5b14cb52a0036f4f9ea6779b4b99664ce64af418d688767dd` |
+| W3AuthoredOperations | 11 | `291602b7cd4b688fd7d29eaa194df1c592f17adb2da7c1720d0bf1c622f9ebc8` | `9d71a34e609ac29ab8f1475c8df6b657e32ef0f27e64983fe6178b38e9e1e9ac` |
+| W3Automorphisms | 12 | `c26d4bc0734eda297795ebe156a54195f9a32f447881bba85e280805c4c8ef9c` | `fcd39516e596ef080a29f8faac722635cef6b2bec278664f88f4adb254d349ac` |
+| W3Classes | 12 | `f2667dbe8332391a338e59f36b791178a7db9abe7b0e0e208d53d6c3312d451e` | `39dad4548421a6d4de8866ee29325547381636ba43a09e8fc4440d9e1d22fb0a` |
+| W3EmptyGroupoids | 14 | `89da0dfa0de51947f752d7b3096434fcb1d6e142d56de3c76339b0b6a3410e6d` | `847a556fde7fb349dc82f256e585dcd906bbc628ee4803ec98121d7c553f559c` |
+| W3FiniteCoefficients | 13 | `b7bce61b26b49470a98ba26e50f31d3e840d9a2c61ae3c01ba2c3ab8f48dc576` | `ebda8f9398759594f385c5017f76227f20b60f64a20a036b1627c400fe340df3` |
+| W3GaugeAction | 4 | `42c6bd9e6c6807a186ece76347467574003828552c0ca31c2ba40ffc3e450cd0` | `b7c587943ca8fa8cabb72d95b3c2632111274e853fb60836061f03db88e2f0ce` |
+| W3GaugeLabels | 13 | `d46e0e1aba3210eec8e852da2c0f9018d42e28a8aca38ac48ab5b39dba7cb84d` | `be33ca5616f743e45b633bd1012e784984e8cd3acd302b02e70e5e084da344e6` |
+| W3LinearAction | 11 | `d47d1caf10dd99c677fb026d13e03dd9583d70a656d8b9b9576483ee2c75b602` | `f3eed85ab4329efaa435f6e313f459f6d15c41475f4548ed981df272454c9c4c` |
+| W3LocalFullLabels | 9 | `ebd84d2085f9959dbefda0da6824c7117713837810b900e236ab4b2360b9c59e` | `fd06b2a51cb4aacf65eee7440b96d2dec62d3e322637fc1c94e122fec9d3d552` |
+| W3LocalGauge | 5 | `efb0f3d384887dcf8bffea205a39889a712cef20c001ac41cb7dc78ac5e873eb` | `9170bc3bffa2bcf6752c64c10d077c791872d1b8d01a846daf76a33ae7c96f43` |
+| W3LocalInterfaces | 10 | `57e6d6284384cb48c2a0ff6670bf688aafbd5a00810af40d57245876bc59ab9d` | `f1e4d30711269dd4e04df2e849c3680394aa63c44dfc30579478da5b054dcf49` |
+| W3LocalLabels | 17 | `56f6b14f77382c0860c08b596adae0e0f70c94e2e3c3d0323a81b3a4cdb13acc` | `f4a0d4df00ef92f49a7c3f16e63b245aa2a1bd67ed3130983fe5dda4c875a2c3` |
+| W3LocalOperationCoordinates | 8 | `b6732866a9f9fad2aafc018ca160bb511c0a81ebeec1823aacd4b04e93dc964d` | `38e10b3b481998b705846dfbde78f0ec97296dc678931a95ccaae74344df2b4e` |
+| W3LocalRepairs | 12 | `747383a5f65edee941063f4658236eb9eeb19320f7e7032baf668819efaadc63` | `9a9acf57def63c73d39c95844d044bad4fedd4d1396235ed82046ed3a94530ee` |
+| W3LoopIsomorphisms | 5 | `bb6c089dd0b5540a2604a72f4e9ad6063f4a24dfbf18e0f019310090743e92b7` | `9dd0c1eaf53c374806a54e65138fe10cba662ff4b2e6897729ce45bb4e911e1e` |
+| W3OrdinaryClasses | 9 | `811fd45b5f56549f51ded98e8f497c02a4dec513c9b0f28d300c6c28a9ff1cc6` | `b52ce9fdf5842aaa4efee14737188db6b6ee1816007380d82fb6905eea38177f` |
+| W3OrdinaryComparison | 8 | `cd77df068624f82317acbd0142113f049cee2d1ba60303b5e84bb47d997c4b1f` | `f80c6515ce2709f14a131a4c5c51e392d2b66e40c2d86494949cb352fe3864cd` |
+| W3OrdinarySeams | 14 | `170fdc2d2f00230b17abddb342f544610989e6ae47a83e39965af84ca9649db2` | `86bf809a62756aa3ea8a4ef8248360fc07437132a395be88c392eed213b1612e` |
+| W3Pi0Loss | 12 | `e0ea1c59fbacd60fdee2d74816154e43f436fadccc2cf91d2a067f6659ac9b23` | `ee43334020bb6b7b307577f3d402221171d1f75179ad202d2f477ab80e7333a7` |
+| W3Regions | 16 | `32469d6a4dd39bb9ab42cfbbc258b6adf7b65d40751630606e3c6fcb458ff806` | `a35332c3595f351873cb44f581b87ea7ca4ee0e73ec493112a7cb68108a96f03` |
+| W3RestrictionDiagram | 12 | `eb88b06c4be48ef79fe862658b3cfc6e58efeea372ef44fb251426337da21dd4` | `a06bf865d4eb6d21f32d417c76784116674d8730d51bdd2d70d1d47258e00ce2` |
+| W3StrictConsequences | 10 | `a392c62d202bf5ee30bda29008795f4d02ef924ada03e4864fb3897647739083` | `01fbaac812b4ebb50d9a9ff85c4b54a9bae9672c3eb67d3243c01e5beb4d838e` |
+| W3StrictGeneratedCover | 10 | `1168bd6f61e3a190e57c378ec8b47d2ec54c970f232713a49dfd99ec17c2d284` | `6876cd4935f28151593467daa7db3641d65028cbf35fa5649c74feedebff77a6` |
+| W3StrictInverseChecks | 4 | `53c264a9b34883d77c3f91c30aa61a681a7b7ba35791bc45334cb0454255849e` | `dd15c7ac32c42d9adb6257aaf5c820089bfb2d3c513dbae8396f2aad8f795e49` |
+| W3StrictLabels | 14 | `d91280a27850844e520a327406fdacdde9aebfa6c81e433696ff183d31e8d2ed` | `4b295f429263c6eea89b8dbd10cabc96c1f805c2dff2339483c0ad8e47a8e155` |
+| W3UnrestrictedDescent | 10 | `1c491a111cbecb17d70cd93bada37f73eb1fa5b399637cf57da896c2d6c8136b` | `ffda4bcfe5a52e466ad9ef602d2e57ec480698f961ab71bcf9d557b2ecf93d23` |
+| W3UnrestrictedLocalClasses | 12 | `029e5175cb4d58f540c3d6924dbc3c53b20d6e14bc91377eda3d053df6aa2e90` | `ecc986bd684ef0798998a9b2fc6bac5ce640809958676e8402a0d764ef661ea2` |
+| W3UnrestrictedLocalEquivalences | 2 | `18834087465ddcdc2d6d0ab9317e42a3ec0f6a42f3ef941c58986f9c7c2df328` | `29c493256141ee20020292ace5f7a269497a594d8049a96d9647a6b0a795c6e0` |
+| W3UnrestrictedLocalFunctors | 8 | `4f45978e37ff2030e7a5b4851c2be5d8675d82f7d87139eeade3792b7197b8c8` | `33edb2888aa195748b1d4053e99158ddedcf3e2be0610245584298c6c8cd4a13` |
+| W3UnrestrictedRestrictions | 8 | `fde29b075fcdaeba502c47c92e5f8f2765d6a31ba2429d3fedbfa594bb6ef621` | `ee0b934d002d99a2221a9767ca7979235446ecd9af41c88f23ea3fedf77cc10f` |
+
+| 個別公理audit module群 | 所有宣言数 | audit SHA256 | log SHA256 |
+| --- | ---: | --- | --- |
+| W3LinearAction, W3AffineInput, W3Regions | 50 | `cfb4e5d30f539ff56d2ef5e7cc9b068aa8f4b180a10b5fa57d9ea01b4fbd58ac` | `d5e9f330ffc90ab77e9452548acaf1303cae37721b1fc2ba97fe97d98ed33633` |
+| W3AuthoredOperations, W3ActualRepairs, W3GaugeLabels, W3GaugeAction, W3ActualArrows, W3LoopIsomorphisms, W3Classes, W3Automorphisms | 82 | `3b852d2df60622b2947bbc2cb65a0a7eabe08b102d6cc5f38367e2c104e07723` | `8473c19c5c680cb157142c11614282d9e855a3610a526f6bd3cf615a05ea3bdd` |
+| W3LocalRepairs, W3LocalLabels, W3EmptyGroupoids, W3RestrictionDiagram, W3OrdinarySeams, W3OrdinaryComparison, W3OrdinaryClasses, W3FiniteCoefficients, W3LocalInterfaces, W3StrictGeneratedCover, W3StrictInverseChecks, W3UnrestrictedDescent | 133 | `b808ad88ced6b169c8cfe9d0b38e7b690f8a3e4dbae767aefbb0faa24ee3ff5c` | `3b330aa9bebd68ef0f780cf4682d5a63d8b98ac47c86c71a8184657d4318b682` |
+| W3StrictLabels, W3StrictConsequences, W3LocalOperationCoordinates, W3LocalFullLabels, W3LocalGauge, W3UnrestrictedLocalFunctors, W3UnrestrictedLocalEquivalences, W3UnrestrictedRestrictions, W3UnrestrictedLocalClasses, W3Pi0Loss | 88 | `b5689a91267edc5fff67d705862d1a008f529a2a3879a85f849e629490caa7bc` | `74b2edf5f4151aa2273b5a94f367a9798dfedcb8c744226d49a44de6523d01de` |
+
+<details>
+<summary>C26 所有moduleで選択した全353宣言</summary>
+
+```text
+AAT.AG.RelativeRepairComposition.ClosedRegion.mk.congr_simp
+AAT.AG.RelativeRepairComposition.W3ActualArrows.actualAction
+AAT.AG.RelativeRepairComposition.W3ActualArrows.gauge_eq_iff_parameters
+AAT.AG.RelativeRepairComposition.W3ActualArrows.hom_first
+AAT.AG.RelativeRepairComposition.W3ActualArrows.hom_loop
+AAT.AG.RelativeRepairComposition.W3ActualArrows.hom_second
+AAT.AG.RelativeRepairComposition.W3ActualArrows.parameters_injective
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.ActualCategory
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.Allowed
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.NativeCategory
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.Parameters
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.RealRepairs
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.actualParametersEquiv
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.actual_operation_apply
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.correction_fixed
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.emptyObjectEquiv
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.empty_unique
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.fromParameters
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.parameters
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.parameters_allowed
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.parameters_from
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.parameters_operations
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.referenceRepair
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.unrestrictedParametersEquiv
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.unrestricted_repair_card
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.wholeAffineEquivalence
+AAT.AG.RelativeRepairComposition.W3AffineInput.Op
+AAT.AG.RelativeRepairComposition.W3AffineInput.comparison
+AAT.AG.RelativeRepairComposition.W3AffineInput.edgeDecidableEq
+AAT.AG.RelativeRepairComposition.W3AffineInput.edgeE
+AAT.AG.RelativeRepairComposition.W3AffineInput.edgeF
+AAT.AG.RelativeRepairComposition.W3AffineInput.edgeNameEquiv
+AAT.AG.RelativeRepairComposition.W3AffineInput.edgeSource
+AAT.AG.RelativeRepairComposition.W3AffineInput.edgeTarget
+AAT.AG.RelativeRepairComposition.W3AffineInput.faceDecidableEq
+AAT.AG.RelativeRepairComposition.W3AffineInput.geometry
+AAT.AG.RelativeRepairComposition.W3AffineInput.linear_faces
+AAT.AG.RelativeRepairComposition.W3AffineInput.name
+AAT.AG.RelativeRepairComposition.W3AffineInput.name_edge
+AAT.AG.RelativeRepairComposition.W3AffineInput.originalTower
+AAT.AG.RelativeRepairComposition.W3AffineInput.reference
+AAT.AG.RelativeRepairComposition.W3AffineInput.reference_e
+AAT.AG.RelativeRepairComposition.W3AffineInput.reference_f
+AAT.AG.RelativeRepairComposition.W3AffineInput.returnLinear
+AAT.AG.RelativeRepairComposition.W3AffineInput.return_apply
+AAT.AG.RelativeRepairComposition.W3AffineInput.vertexS
+AAT.AG.RelativeRepairComposition.W3AffineInput.vertexT
+AAT.AG.RelativeRepairComposition.W3AuthoredOperations.correctionValue
+AAT.AG.RelativeRepairComposition.W3AuthoredOperations.loopPath
+AAT.AG.RelativeRepairComposition.W3AuthoredOperations.loopValue
+AAT.AG.RelativeRepairComposition.W3AuthoredOperations.loop_apply
+AAT.AG.RelativeRepairComposition.W3AuthoredOperations.operation
+AAT.AG.RelativeRepairComposition.W3AuthoredOperations.operation_e_apply
+AAT.AG.RelativeRepairComposition.W3AuthoredOperations.operation_f_apply
+AAT.AG.RelativeRepairComposition.W3AuthoredOperations.operation_linear
+AAT.AG.RelativeRepairComposition.W3AuthoredOperations.operation_zero
+AAT.AG.RelativeRepairComposition.W3AuthoredOperations.reference_apply
+AAT.AG.RelativeRepairComposition.W3AuthoredOperations.reference_zero
+AAT.AG.RelativeRepairComposition.W3Automorphisms.autFixedEquiv
+AAT.AG.RelativeRepairComposition.W3Automorphisms.autFixedEquiv_label
+AAT.AG.RelativeRepairComposition.W3Automorphisms.aut_labels
+AAT.AG.RelativeRepairComposition.W3Automorphisms.constantLabel
+AAT.AG.RelativeRepairComposition.W3Automorphisms.constant_fixes
+AAT.AG.RelativeRepairComposition.W3Automorphisms.gauge_self_iff
+AAT.AG.RelativeRepairComposition.W3Automorphisms.identityAutEquiv
+AAT.AG.RelativeRepairComposition.W3Automorphisms.identity_aut_card
+AAT.AG.RelativeRepairComposition.W3Automorphisms.shearAutEquiv
+AAT.AG.RelativeRepairComposition.W3Automorphisms.shear_aut_card
+AAT.AG.RelativeRepairComposition.W3Automorphisms.unrestricted_label_card
+AAT.AG.RelativeRepairComposition.W3Automorphisms.vectorAut
+AAT.AG.RelativeRepairComposition.W3Classes.emptyClassEquiv
+AAT.AG.RelativeRepairComposition.W3Classes.emptyObject
+AAT.AG.RelativeRepairComposition.W3Classes.empty_class_card
+AAT.AG.RelativeRepairComposition.W3Classes.empty_object_eq
+AAT.AG.RelativeRepairComposition.W3Classes.identityClassEquiv
+AAT.AG.RelativeRepairComposition.W3Classes.identity_class_card
+AAT.AG.RelativeRepairComposition.W3Classes.loop_normal
+AAT.AG.RelativeRepairComposition.W3Classes.normalObject
+AAT.AG.RelativeRepairComposition.W3Classes.shearClassEquiv
+AAT.AG.RelativeRepairComposition.W3Classes.shearObject
+AAT.AG.RelativeRepairComposition.W3Classes.shear_class_card
+AAT.AG.RelativeRepairComposition.W3Classes.shear_object
+AAT.AG.RelativeRepairComposition.W3EmptyGroupoids.BA
+AAT.AG.RelativeRepairComposition.W3EmptyGroupoids.BA2
+AAT.AG.RelativeRepairComposition.W3EmptyGroupoids.BFixed
+AAT.AG.RelativeRepairComposition.W3EmptyGroupoids.globalEquivalence
+AAT.AG.RelativeRepairComposition.W3EmptyGroupoids.leftAutEquiv
+AAT.AG.RelativeRepairComposition.W3EmptyGroupoids.leftAutEquiv_label
+AAT.AG.RelativeRepairComposition.W3EmptyGroupoids.leftEquivalence
+AAT.AG.RelativeRepairComposition.W3EmptyGroupoids.overlapAutEquiv
+AAT.AG.RelativeRepairComposition.W3EmptyGroupoids.overlapAutEquiv_label
+AAT.AG.RelativeRepairComposition.W3EmptyGroupoids.overlapEquivalence
+AAT.AG.RelativeRepairComposition.W3EmptyGroupoids.rightAutEquiv
+AAT.AG.RelativeRepairComposition.W3EmptyGroupoids.rightAutEquiv_label
+AAT.AG.RelativeRepairComposition.W3EmptyGroupoids.rightEquivalence
+AAT.AG.RelativeRepairComposition.W3EmptyGroupoids.singletonAutEquiv
+AAT.AG.RelativeRepairComposition.W3FiniteCoefficients.actualDefect
+AAT.AG.RelativeRepairComposition.W3FiniteCoefficients.actual_defect_zero
+AAT.AG.RelativeRepairComposition.W3FiniteCoefficients.bases
+AAT.AG.RelativeRepairComposition.W3FiniteCoefficients.basisIndex
+AAT.AG.RelativeRepairComposition.W3FiniteCoefficients.basis_value
+AAT.AG.RelativeRepairComposition.W3FiniteCoefficients.enumEdges
+AAT.AG.RelativeRepairComposition.W3FiniteCoefficients.enumFaces
+AAT.AG.RelativeRepairComposition.W3FiniteCoefficients.enumK
+AAT.AG.RelativeRepairComposition.W3FiniteCoefficients.enumRegions
+AAT.AG.RelativeRepairComposition.W3FiniteCoefficients.fixed_faces
+AAT.AG.RelativeRepairComposition.W3FiniteCoefficients.kernelCoordinate
+AAT.AG.RelativeRepairComposition.W3FiniteCoefficients.kernel_inverse_value
+AAT.AG.RelativeRepairComposition.W3FiniteCoefficients.original_linear
+AAT.AG.RelativeRepairComposition.W3GaugeAction.gauge_first
+AAT.AG.RelativeRepairComposition.W3GaugeAction.gauge_loop
+AAT.AG.RelativeRepairComposition.W3GaugeAction.gauge_second
+AAT.AG.RelativeRepairComposition.W3GaugeAction.unrestricted_normal_parameters
+AAT.AG.RelativeRepairComposition.W3GaugeLabels.FixedVectors
+AAT.AG.RelativeRepairComposition.W3GaugeLabels.GlobalLabels
+AAT.AG.RelativeRepairComposition.W3GaugeLabels.emptyLabel
+AAT.AG.RelativeRepairComposition.W3GaugeLabels.emptyLabelEquiv
+AAT.AG.RelativeRepairComposition.W3GaugeLabels.emptyLabelEquiv_inverse_value
+AAT.AG.RelativeRepairComposition.W3GaugeLabels.empty_forward
+AAT.AG.RelativeRepairComposition.W3GaugeLabels.empty_return
+AAT.AG.RelativeRepairComposition.W3GaugeLabels.identityFixedEquiv
+AAT.AG.RelativeRepairComposition.W3GaugeLabels.shearFixedEquiv
+AAT.AG.RelativeRepairComposition.W3GaugeLabels.unrestrictedLabel
+AAT.AG.RelativeRepairComposition.W3GaugeLabels.unrestrictedLabelEquiv
+AAT.AG.RelativeRepairComposition.W3GaugeLabels.unrestricted_source
+AAT.AG.RelativeRepairComposition.W3GaugeLabels.unrestricted_target
+AAT.AG.RelativeRepairComposition.W3LinearAction.A
+AAT.AG.RelativeRepairComposition.W3LinearAction.identity_apply
+AAT.AG.RelativeRepairComposition.W3LinearAction.identity_minus_shear
+AAT.AG.RelativeRepairComposition.W3LinearAction.linearAction
+AAT.AG.RelativeRepairComposition.W3LinearAction.primeThree
+AAT.AG.RelativeRepairComposition.W3LinearAction.shear
+AAT.AG.RelativeRepairComposition.W3LinearAction.shear_apply
+AAT.AG.RelativeRepairComposition.W3LinearAction.shear_first
+AAT.AG.RelativeRepairComposition.W3LinearAction.shear_fixed_iff
+AAT.AG.RelativeRepairComposition.W3LinearAction.shear_ne_one
+AAT.AG.RelativeRepairComposition.W3LinearAction.shear_second
+AAT.AG.RelativeRepairComposition.W3LocalFullLabels.freeLabel
+AAT.AG.RelativeRepairComposition.W3LocalFullLabels.leftFullLabelEquiv
+AAT.AG.RelativeRepairComposition.W3LocalFullLabels.left_label_card
+AAT.AG.RelativeRepairComposition.W3LocalFullLabels.left_source
+AAT.AG.RelativeRepairComposition.W3LocalFullLabels.left_target
+AAT.AG.RelativeRepairComposition.W3LocalFullLabels.rightFullLabelEquiv
+AAT.AG.RelativeRepairComposition.W3LocalFullLabels.right_label_card
+AAT.AG.RelativeRepairComposition.W3LocalFullLabels.right_source
+AAT.AG.RelativeRepairComposition.W3LocalFullLabels.right_target
+AAT.AG.RelativeRepairComposition.W3LocalGauge.left_gauge_eq
+AAT.AG.RelativeRepairComposition.W3LocalGauge.left_gauge_zero
+AAT.AG.RelativeRepairComposition.W3LocalGauge.local_reference_zero
+AAT.AG.RelativeRepairComposition.W3LocalGauge.right_gauge_eq
+AAT.AG.RelativeRepairComposition.W3LocalGauge.right_gauge_zero
+AAT.AG.RelativeRepairComposition.W3LocalInterfaces.elimination
+AAT.AG.RelativeRepairComposition.W3LocalInterfaces.equationEquiv
+AAT.AG.RelativeRepairComposition.W3LocalInterfaces.generatedSection
+AAT.AG.RelativeRepairComposition.W3LocalInterfaces.nativeEquivalence
+AAT.AG.RelativeRepairComposition.W3LocalInterfaces.privateMatrix
+AAT.AG.RelativeRepairComposition.W3LocalInterfaces.publicMatrix
+AAT.AG.RelativeRepairComposition.W3LocalInterfaces.public_row_count
+AAT.AG.RelativeRepairComposition.W3LocalInterfaces.public_rows_independent
+AAT.AG.RelativeRepairComposition.W3LocalInterfaces.relation
+AAT.AG.RelativeRepairComposition.W3LocalInterfaces.section_regular
+AAT.AG.RelativeRepairComposition.W3LocalLabels.leftEdge
+AAT.AG.RelativeRepairComposition.W3LocalLabels.leftLabel
+AAT.AG.RelativeRepairComposition.W3LocalLabels.leftLabelEquiv
+AAT.AG.RelativeRepairComposition.W3LocalLabels.leftS
+AAT.AG.RelativeRepairComposition.W3LocalLabels.leftT
+AAT.AG.RelativeRepairComposition.W3LocalLabels.left_relation
+AAT.AG.RelativeRepairComposition.W3LocalLabels.overlapLabel
+AAT.AG.RelativeRepairComposition.W3LocalLabels.overlapLabelEquiv
+AAT.AG.RelativeRepairComposition.W3LocalLabels.overlapS
+AAT.AG.RelativeRepairComposition.W3LocalLabels.overlapT
+AAT.AG.RelativeRepairComposition.W3LocalLabels.overlap_no_edge
+AAT.AG.RelativeRepairComposition.W3LocalLabels.rightEdge
+AAT.AG.RelativeRepairComposition.W3LocalLabels.rightLabel
+AAT.AG.RelativeRepairComposition.W3LocalLabels.rightLabelEquiv
+AAT.AG.RelativeRepairComposition.W3LocalLabels.rightS
+AAT.AG.RelativeRepairComposition.W3LocalLabels.rightT
+AAT.AG.RelativeRepairComposition.W3LocalLabels.right_relation
+AAT.AG.RelativeRepairComposition.W3LocalOperationCoordinates.left_name
+AAT.AG.RelativeRepairComposition.W3LocalOperationCoordinates.left_operation_apply
+AAT.AG.RelativeRepairComposition.W3LocalOperationCoordinates.left_typed_name
+AAT.AG.RelativeRepairComposition.W3LocalOperationCoordinates.overlapObjectEquiv
+AAT.AG.RelativeRepairComposition.W3LocalOperationCoordinates.overlap_unique
+AAT.AG.RelativeRepairComposition.W3LocalOperationCoordinates.right_name
+AAT.AG.RelativeRepairComposition.W3LocalOperationCoordinates.right_operation_apply
+AAT.AG.RelativeRepairComposition.W3LocalOperationCoordinates.right_typed_name
+AAT.AG.RelativeRepairComposition.W3LocalRepairs.LocalCategory
+AAT.AG.RelativeRepairComposition.W3LocalRepairs.LocalLabels
+AAT.AG.RelativeRepairComposition.W3LocalRepairs.LocalRepairs
+AAT.AG.RelativeRepairComposition.W3LocalRepairs.actualRestriction
+AAT.AG.RelativeRepairComposition.W3LocalRepairs.localAction
+AAT.AG.RelativeRepairComposition.W3LocalRepairs.localEmptyObjectEquiv
+AAT.AG.RelativeRepairComposition.W3LocalRepairs.localReferenceRepair
+AAT.AG.RelativeRepairComposition.W3LocalRepairs.local_empty_operation
+AAT.AG.RelativeRepairComposition.W3LocalRepairs.local_empty_unique
+AAT.AG.RelativeRepairComposition.W3LocalRepairs.local_fixed_all
+AAT.AG.RelativeRepairComposition.W3LocalRepairs.restriction_label
+AAT.AG.RelativeRepairComposition.W3LocalRepairs.restriction_operation
+AAT.AG.RelativeRepairComposition.W3LoopIsomorphisms.identity_isomorphic_iff
+AAT.AG.RelativeRepairComposition.W3LoopIsomorphisms.isomorphic_iff_loop
+AAT.AG.RelativeRepairComposition.W3LoopIsomorphisms.loopCoordinate
+AAT.AG.RelativeRepairComposition.W3LoopIsomorphisms.shearInvariant
+AAT.AG.RelativeRepairComposition.W3LoopIsomorphisms.shear_isomorphic_iff
+AAT.AG.RelativeRepairComposition.W3OrdinaryClasses.identityOrdinaryAutEquiv
+AAT.AG.RelativeRepairComposition.W3OrdinaryClasses.identityOrdinaryClassEquiv
+AAT.AG.RelativeRepairComposition.W3OrdinaryClasses.ordinary_identity_aut_card
+AAT.AG.RelativeRepairComposition.W3OrdinaryClasses.ordinary_identity_class_card
+AAT.AG.RelativeRepairComposition.W3OrdinaryClasses.ordinary_shear_aut_card
+AAT.AG.RelativeRepairComposition.W3OrdinaryClasses.ordinary_shear_class_card
+AAT.AG.RelativeRepairComposition.W3OrdinaryClasses.restricted_global_not_equivalent
+AAT.AG.RelativeRepairComposition.W3OrdinaryClasses.shearOrdinaryAutEquiv
+AAT.AG.RelativeRepairComposition.W3OrdinaryClasses.shearOrdinaryClassEquiv
+AAT.AG.RelativeRepairComposition.W3OrdinaryComparison.comparisonEquivalence
+AAT.AG.RelativeRepairComposition.W3OrdinaryComparison.comparisonFunctor
+AAT.AG.RelativeRepairComposition.W3OrdinaryComparison.comparisonMap
+AAT.AG.RelativeRepairComposition.W3OrdinaryComparison.comparisonObject
+AAT.AG.RelativeRepairComposition.W3OrdinaryComparison.comparison_faithful
+AAT.AG.RelativeRepairComposition.W3OrdinaryComparison.comparison_full
+AAT.AG.RelativeRepairComposition.W3OrdinaryComparison.comparison_source
+AAT.AG.RelativeRepairComposition.W3OrdinaryComparison.comparison_target
+AAT.AG.RelativeRepairComposition.W3OrdinarySeams.hom_square
+AAT.AG.RelativeRepairComposition.W3OrdinarySeams.leftArrow
+AAT.AG.RelativeRepairComposition.W3OrdinarySeams.leftObject
+AAT.AG.RelativeRepairComposition.W3OrdinarySeams.left_object_eq
+AAT.AG.RelativeRepairComposition.W3OrdinarySeams.objectEquiv
+AAT.AG.RelativeRepairComposition.W3OrdinarySeams.ordinary_object_card
+AAT.AG.RelativeRepairComposition.W3OrdinarySeams.rightArrow
+AAT.AG.RelativeRepairComposition.W3OrdinarySeams.rightObject
+AAT.AG.RelativeRepairComposition.W3OrdinarySeams.right_object_eq
+AAT.AG.RelativeRepairComposition.W3OrdinarySeams.seam
+AAT.AG.RelativeRepairComposition.W3OrdinarySeams.seamObject
+AAT.AG.RelativeRepairComposition.W3OrdinarySeams.seam_object
+AAT.AG.RelativeRepairComposition.W3OrdinarySeams.seam_restore
+AAT.AG.RelativeRepairComposition.W3OrdinarySeams.square_iff
+AAT.AG.RelativeRepairComposition.W3Pi0Loss.LeftClasses
+AAT.AG.RelativeRepairComposition.W3Pi0Loss.OverlapClasses
+AAT.AG.RelativeRepairComposition.W3Pi0Loss.Pi0Pullback
+AAT.AG.RelativeRepairComposition.W3Pi0Loss.RightClasses
+AAT.AG.RelativeRepairComposition.W3Pi0Loss.global_aut_count_lost
+AAT.AG.RelativeRepairComposition.W3Pi0Loss.global_class_count_lost
+AAT.AG.RelativeRepairComposition.W3Pi0Loss.leftClassRestriction
+AAT.AG.RelativeRepairComposition.W3Pi0Loss.pi0_aut_card
+AAT.AG.RelativeRepairComposition.W3Pi0Loss.pullbackEquiv
+AAT.AG.RelativeRepairComposition.W3Pi0Loss.pullback_card
+AAT.AG.RelativeRepairComposition.W3Pi0Loss.referencePair
+AAT.AG.RelativeRepairComposition.W3Pi0Loss.rightClassRestriction
+AAT.AG.RelativeRepairComposition.W3Regions.candidates
+AAT.AG.RelativeRepairComposition.W3Regions.candidates_all
+AAT.AG.RelativeRepairComposition.W3Regions.candidates_outside
+AAT.AG.RelativeRepairComposition.W3Regions.fixedEdges
+AAT.AG.RelativeRepairComposition.W3Regions.fixedRegion
+AAT.AG.RelativeRepairComposition.W3Regions.fixed_all
+AAT.AG.RelativeRepairComposition.W3Regions.fixed_empty
+AAT.AG.RelativeRepairComposition.W3Regions.indexed_cover
+AAT.AG.RelativeRepairComposition.W3Regions.leftRegion
+AAT.AG.RelativeRepairComposition.W3Regions.overlap
+AAT.AG.RelativeRepairComposition.W3Regions.overlap_edges
+AAT.AG.RelativeRepairComposition.W3Regions.overlap_vertices
+AAT.AG.RelativeRepairComposition.W3Regions.private_empty
+AAT.AG.RelativeRepairComposition.W3Regions.regions
+AAT.AG.RelativeRepairComposition.W3Regions.regions_cover
+AAT.AG.RelativeRepairComposition.W3Regions.rightRegion
+AAT.AG.RelativeRepairComposition.W3RestrictionDiagram.Ordinary
+AAT.AG.RelativeRepairComposition.W3RestrictionDiagram.leftLabelRestriction
+AAT.AG.RelativeRepairComposition.W3RestrictionDiagram.leftRestriction
+AAT.AG.RelativeRepairComposition.W3RestrictionDiagram.left_boundary
+AAT.AG.RelativeRepairComposition.W3RestrictionDiagram.left_map_value
+AAT.AG.RelativeRepairComposition.W3RestrictionDiagram.left_original_value
+AAT.AG.RelativeRepairComposition.W3RestrictionDiagram.ordinary_is_groupoid
+AAT.AG.RelativeRepairComposition.W3RestrictionDiagram.rightLabelRestriction
+AAT.AG.RelativeRepairComposition.W3RestrictionDiagram.rightRestriction
+AAT.AG.RelativeRepairComposition.W3RestrictionDiagram.right_boundary
+AAT.AG.RelativeRepairComposition.W3RestrictionDiagram.right_map_value
+AAT.AG.RelativeRepairComposition.W3RestrictionDiagram.right_original_value
+AAT.AG.RelativeRepairComposition.W3StrictConsequences.actual_inverse_label
+AAT.AG.RelativeRepairComposition.W3StrictConsequences.autFixedEquiv
+AAT.AG.RelativeRepairComposition.W3StrictConsequences.emptyClassEquiv
+AAT.AG.RelativeRepairComposition.W3StrictConsequences.emptyObjectEquiv
+AAT.AG.RelativeRepairComposition.W3StrictConsequences.empty_class_card
+AAT.AG.RelativeRepairComposition.W3StrictConsequences.empty_object_card
+AAT.AG.RelativeRepairComposition.W3StrictConsequences.identityAutEquiv
+AAT.AG.RelativeRepairComposition.W3StrictConsequences.identity_aut_card
+AAT.AG.RelativeRepairComposition.W3StrictConsequences.shearAutEquiv
+AAT.AG.RelativeRepairComposition.W3StrictConsequences.shear_aut_card
+AAT.AG.RelativeRepairComposition.W3StrictGeneratedCover.Groupoid
+AAT.AG.RelativeRepairComposition.W3StrictGeneratedCover.Objects
+AAT.AG.RelativeRepairComposition.W3StrictGeneratedCover.actualEquivalence
+AAT.AG.RelativeRepairComposition.W3StrictGeneratedCover.actualObjectEquiv
+AAT.AG.RelativeRepairComposition.W3StrictGeneratedCover.emptyEquivalence
+AAT.AG.RelativeRepairComposition.W3StrictGeneratedCover.empty_restored_operation
+AAT.AG.RelativeRepairComposition.W3StrictGeneratedCover.extract_restore
+AAT.AG.RelativeRepairComposition.W3StrictGeneratedCover.nativeEquivalence
+AAT.AG.RelativeRepairComposition.W3StrictGeneratedCover.restore_extract
+AAT.AG.RelativeRepairComposition.W3StrictGeneratedCover.restore_operation
+AAT.AG.RelativeRepairComposition.W3StrictInverseChecks.actual_forward_inverse
+AAT.AG.RelativeRepairComposition.W3StrictInverseChecks.actual_inverse_forward
+AAT.AG.RelativeRepairComposition.W3StrictInverseChecks.native_forward_inverse
+AAT.AG.RelativeRepairComposition.W3StrictInverseChecks.native_inverse_forward
+AAT.AG.RelativeRepairComposition.W3StrictLabels.Labels
+AAT.AG.RelativeRepairComposition.W3StrictLabels.actualLabelEquiv
+AAT.AG.RelativeRepairComposition.W3StrictLabels.actual_forward_label
+AAT.AG.RelativeRepairComposition.W3StrictLabels.emptyLabelsEquiv
+AAT.AG.RelativeRepairComposition.W3StrictLabels.empty_label_vector
+AAT.AG.RelativeRepairComposition.W3StrictLabels.extract_restored_label
+AAT.AG.RelativeRepairComposition.W3StrictLabels.forward_patch_value
+AAT.AG.RelativeRepairComposition.W3StrictLabels.identityLabelsEquiv
+AAT.AG.RelativeRepairComposition.W3StrictLabels.restore_original_vertex
+AAT.AG.RelativeRepairComposition.W3StrictLabels.shared_s_coordinate
+AAT.AG.RelativeRepairComposition.W3StrictLabels.shared_s_value
+AAT.AG.RelativeRepairComposition.W3StrictLabels.shared_t_coordinate
+AAT.AG.RelativeRepairComposition.W3StrictLabels.shared_t_value
+AAT.AG.RelativeRepairComposition.W3StrictLabels.shearLabelsEquiv
+AAT.AG.RelativeRepairComposition.W3UnrestrictedDescent.Descent
+AAT.AG.RelativeRepairComposition.W3UnrestrictedDescent.actualEquivalence
+AAT.AG.RelativeRepairComposition.W3UnrestrictedDescent.descent_is_groupoid
+AAT.AG.RelativeRepairComposition.W3UnrestrictedDescent.left_choice
+AAT.AG.RelativeRepairComposition.W3UnrestrictedDescent.left_label
+AAT.AG.RelativeRepairComposition.W3UnrestrictedDescent.nativeEquivalence
+AAT.AG.RelativeRepairComposition.W3UnrestrictedDescent.right_choice
+AAT.AG.RelativeRepairComposition.W3UnrestrictedDescent.right_label
+AAT.AG.RelativeRepairComposition.W3UnrestrictedDescent.seam_label
+AAT.AG.RelativeRepairComposition.W3UnrestrictedDescent.unrestricted_fixed
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalClasses.leftAutEquiv
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalClasses.leftClassEquiv
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalClasses.left_class_card
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalClasses.overlapAutEquiv
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalClasses.overlapClassEquiv
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalClasses.overlapEquivalence
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalClasses.overlap_class_card
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalClasses.rightAutEquiv
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalClasses.rightClassEquiv
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalClasses.right_class_card
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalClasses.singleAutEquiv
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalClasses.singleClassEquiv
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalEquivalences.leftEquivalence
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalEquivalences.rightEquivalence
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalFunctors.leftFunctor
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalFunctors.leftReference
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalFunctors.leftReferenceArrow
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalFunctors.left_reference_labels
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalFunctors.rightFunctor
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalFunctors.rightReference
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalFunctors.rightReferenceArrow
+AAT.AG.RelativeRepairComposition.W3UnrestrictedLocalFunctors.right_reference_labels
+AAT.AG.RelativeRepairComposition.W3UnrestrictedRestrictions.leftLabelRestriction
+AAT.AG.RelativeRepairComposition.W3UnrestrictedRestrictions.leftRestriction
+AAT.AG.RelativeRepairComposition.W3UnrestrictedRestrictions.left_map_value
+AAT.AG.RelativeRepairComposition.W3UnrestrictedRestrictions.left_original_value
+AAT.AG.RelativeRepairComposition.W3UnrestrictedRestrictions.rightLabelRestriction
+AAT.AG.RelativeRepairComposition.W3UnrestrictedRestrictions.rightRestriction
+AAT.AG.RelativeRepairComposition.W3UnrestrictedRestrictions.right_map_value
+AAT.AG.RelativeRepairComposition.W3UnrestrictedRestrictions.right_original_value
+ZMod.instField.congr_simp
+```
+
+</details>
