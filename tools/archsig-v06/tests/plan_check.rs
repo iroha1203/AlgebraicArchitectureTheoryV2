@@ -1779,3 +1779,16 @@ fn a_source_path_is_not_a_field_below() {
     let (s, r) = below_case("below-source-path", &atoms, &PLAN_WRITES_B.replace("m.b()", "m.a()"));
     assert_eq!(r["outcome"], "holds", "{s}");
 }
+
+#[test]
+fn a_field_the_plan_defines_again_and_writes_directly_is_unread() {
+    // 候補は s.S.p を定義し直し、via [m.O.s] で s.S.p に直接書く。s.py の payment-info は読んでいない。
+    // 書き込みの場所の最後のフィールドの意味は、元の s.S.p の意味を移したものなので決まらない。
+    let plan = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "s.S.p", "value": "field", "type": "int", "file": "s.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "via": ["m.O.s"], "object": "s.S.p", "value": "m.b()", "at": "plan:p"}
+"#;
+    let (s, r) = two_sources_case("direct-redefined-field", REDEFINE_M, REDEFINE_S, plan);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py" && n["scope"] == "meaning:payment-info"), "{s}");
+}

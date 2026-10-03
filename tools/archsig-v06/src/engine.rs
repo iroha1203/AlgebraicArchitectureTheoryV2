@@ -577,7 +577,7 @@ fn has_meaning(s: &Structure, field: &str, meaning: &str) -> bool {
 }
 
 /// 構造が名指す名前。Atom の `subject`、`object`、`via`、`value` と `when` の式の中でたどるフィールドと呼び出す操作、
-/// 要素の型と引数の型、`resolves` の名前。`observed` の `subject` はソースのパスで、要素の名前ではない。
+/// 要素の型と引数の型。`resolves` の名前は、その Atom の `subject` である。`observed` の `subject` はソースのパスで、要素の名前ではない。
 fn mentioned(s: &Structure) -> BTreeSet<String> {
     let mut out = s.expression_names();
     for a in s.atoms.iter().filter(|a| a.kind != "observed") {
@@ -589,7 +589,6 @@ fn mentioned(s: &Structure) -> BTreeSet<String> {
         out.extend(e.ty.iter().cloned());
         out.extend(e.params.values().cloned());
     }
-    out.extend(s.resolves.keys().cloned());
     out
 }
 
@@ -597,16 +596,15 @@ fn mentioned(s: &Structure) -> BTreeSet<String> {
 /// 構造が `<型>.<名前>` を名指しているのに定義を読んでいなければ、そのフィールドは分からないので、
 /// 定義を読んでいない要素として沈黙する(設計 §3.3、§5.1)。曖昧なフィールドも沈黙する。`names` は `mentioned(s)`。
 /// 沈黙はそのフィールドだけのもので、ほかのフィールドは返す。最初の沈黙を一緒に返す。
-/// 候補が `removes` した要素と、`resolves` が外部を指す名前は、型のフィールドに数えない。
+/// 候補が `removes` した要素は、名指されていても沈黙しない。
 fn fields_of(s: &Structure, names: &BTreeSet<String>, removes: &BTreeSet<String>, ty: &str) -> (Vec<String>, Option<Silence>) {
     let prefix = format!("{ty}.");
     let member = |n: &str| n.strip_prefix(&prefix).is_some_and(|rest| !rest.is_empty() && !rest.contains('.') && !rest.starts_with('$') && !rest.contains("->"));
     let removed = |n: &str| removes.iter().any(|x| n == x || n.starts_with(&format!("{x}.")) || n.starts_with(&format!("{x}->")));
-    let external = |n: &str| matches!(s.resolves.get(n), Some(Resolution::External(_)));
     let mut silence = names
         .range(prefix.clone()..)
         .take_while(|n| n.starts_with(&prefix))
-        .find(|n| member(n) && !s.elements.contains_key(*n) && !removed(n) && !external(n))
+        .find(|n| member(n) && !s.elements.contains_key(*n) && !removed(n))
         .map(|n| s.kind(n).err().unwrap_or_else(|| Silence::new(Reason::Unread)));
     let mut out = Vec::new();
     for (name, e) in s.elements.range(prefix.clone()..).take_while(|(n, _)| n.starts_with(&prefix)) {
