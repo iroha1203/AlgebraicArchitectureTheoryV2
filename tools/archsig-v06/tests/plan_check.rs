@@ -4566,8 +4566,17 @@ fn a_field_of_a_type_whose_source_is_unread_does_not_settle_the_inheritance() {
 fn a_callee_in_an_expression_whose_inherited_field_changes_is_not_compared_as_the_same_term() {
     // m.C は m.P を受け継ぎ、t は m.P が定義する。k(c) は $c.t を返し、f(c, o) は o.u に m.k($c) を書く。
     // 候補が m.C.t を定義し直すと、k の Atom は字句として同じでも、$c.t がどのフィールドかは決まらない。
-    let types = [ty("m.P", 3), field("m.P.t", 4, false), ty("m.C", 5), inherits("m.C", "m.P")].concat();
-    let repo = Repo::new("callee-inherited-field");
+    let s = callee_through_child("callee-inherited-field", &[ty("m.P", 3), field("m.P.t", 4, false)].concat());
+    assert_eq!(result(&s, "m.f")["outcome"], "silent", "{s}");
+    // m.P を読んでいなければ、変更前も変更後も $c.t がどのフィールドかは決まらないので、本体は決まらない。
+    let s = callee_through_child("callee-unread-parent", "{\"kind\": \"resolves\", \"subject\": \"m.P\", \"object\": \"p.py\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n");
+    assert_eq!(result(&s, "m.f")["outcome"], "silent", "{s}");
+}
+
+/// `a_callee_in_an_expression_whose_inherited_field_changes_is_not_compared_as_the_same_term` の題材。`parent` は m.P の Atom。
+fn callee_through_child(name: &str, parent: &str) -> Value {
+    let types = [parent.to_string(), ty("m.C", 5), inherits("m.C", "m.P")].concat();
+    let repo = Repo::new(name);
     repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
     repo.map("m.py", &format!("{}{types}{}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
@@ -4581,8 +4590,44 @@ fn a_callee_in_an_expression_whose_inherited_field_changes_is_not_compared_as_th
 {"kind": "returns", "subject": "m.k", "value": "$c.t", "at": "m.py:16@blob:aaaaaaa"}
 "#));
     repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"defines\", \"subject\": \"m.C.t\", \"value\": \"field\", \"type\": \"int\", \"file\": \"m.py\", \"at\": \"plan:p\"}\n");
+    repo.run(&["plan", "check", "p"])
+}
+
+#[test]
+fn a_callee_whose_field_type_changes_without_inheritance_is_compared() {
+    // 受け継ぎのない型で、候補が m.X.a の型を m.A から m.B に書き換える。k(x) は $x.a.b を返し、f(x, o) は o.u に m.k($x) を書く。
+    // 本体の比べは字句で、受け継ぎを持たない型の書き換えは本体の違いに数えない。
+    let repo = Repo::new("callee-field-type");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A.b", "value": "field", "type": "int", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.B", "value": "type", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.B.b", "value": "field", "type": "int", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.X", "value": "type", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.X.a", "value": "field", "type": "m.A", "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.u", "value": "field", "type": "int", "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.u", "meaning": "payment-info", "uses": ["m.py:13@blob:aaaaaaa"], "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"x": "m.X", "o": "m.O"}, "at": "m.py:11@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.u", "value": "m.k($x)", "at": "m.py:13@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.k", "value": "operation", "params": {"x": "m.X"}, "at": "m.py:15@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.k", "value": "$x.a.b", "at": "m.py:16@blob:aaaaaaa"}
+"#);
+    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"defines\", \"subject\": \"m.X.a\", \"value\": \"field\", \"type\": \"m.B\", \"file\": \"m.py\", \"at\": \"plan:p\"}\n");
     let s = repo.run(&["plan", "check", "p"]);
-    assert_eq!(result(&s, "m.f")["outcome"], "silent", "{s}");
+    assert_eq!(result(&s, "m.f")["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn a_field_name_resolved_to_a_source_does_not_settle_the_inheritance() {
+    // m.C.t に `resolves` が p.py を指すが、m.C の定義(c.py)は読んでいない。m.C が m.P を受け継ぐかは c.py で決まる。
+    let types = ["{\"kind\": \"resolves\", \"subject\": \"m.C\", \"object\": \"c.py\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n{\"kind\": \"resolves\", \"subject\": \"m.C.t\", \"object\": \"m.py\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n".to_string(), ty("m.P", 3), field("m.P.t", 4, false)].concat();
+    let (r, s) = removed_through("field-name-resolved", &types, "");
+    assert_eq!(r["outcome"], "silent", "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
 }
 
 #[test]

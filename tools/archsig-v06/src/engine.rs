@@ -1101,7 +1101,8 @@ fn call_names(v: &Value, out: &mut BTreeSet<String>) {
 /// 手順(書き込み、呼び出し、送信、戻り値)は手順の順のまま並べる(戻り値の後の手順のように、順に意味がある)。ほかの Atom は順によらない。
 /// そこから呼ぶ操作は、`calls` の `object` と、`value`・`when` の式の中の呼び出しである。たどった先がさらに呼ぶ操作も含む。
 /// 定義のない操作は、その解決(`resolves` の指す先。重なりは一つ)も並べる。
-/// `?` が関わる Atom(`?` の値、`?` で始まる名前)、構文として読めない式、字句の数が上限を超えた式、決まらない解決があれば、
+/// `inherits` を持つ型の読み書きのフィールドと式の中の道の段は、受け継ぎで解いた先も並べる。
+/// `?` が関わる Atom(`?` の値、`?` で始まる名前)、構文として読めない式、字句の数が上限を超えた式、決まらない解決、決まらない受け継ぎがあれば、
 /// 入力から本体が決まらないので、比べられない(None)。
 fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
     let mut seen = BTreeSet::new();
@@ -1142,10 +1143,15 @@ fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
                 return None;
             }
             out.push(key(a));
-            // 読み書きのフィールドは、受け継ぎで解いた先も比べる(字句が同じでも、受け継ぎが変われば違う所を読み書きする)。
+            // 読み書きのフィールドは、受け継ぎを持つ型なら、受け継ぎで解いた先も比べる(字句が同じでも、受け継ぎが変われば違う所を読み書きする)。
+            // 受け継ぎが決まらなければ、入力から本体が決まらない。
             if matches!(a.kind.as_str(), "writes" | "reads") {
                 for x in a.object.iter().chain(a.via.iter().flatten()) {
-                    out.push(format!("access|{:?}", s.access(x)));
+                    if let Some((t, f)) = x.rsplit_once('.')
+                        && s.bases.contains_key(t)
+                    {
+                        out.push(format!("access|{x}|{}", s.member(t, f).ok()?));
+                    }
                 }
             }
             if a.kind == "calls"
@@ -1162,12 +1168,23 @@ fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
                         if !expr_calls(&e, &mut called) {
                             return None;
                         }
-                        // 式の中の道も、受け継ぎで解いた場所を比べる。
+                        // 式の中の道も、受け継ぎを持つ型の段は、受け継ぎで解いた先を比べる。
                         let mut paths = Vec::new();
                         expr_paths(&e, &mut paths);
                         for (p, fields) in paths {
-                            let ty = s.elements.get(&o).and_then(|e| e.params.get(p));
-                            out.push(format!("path|{:?}", ty.map(|t| s.fields(t, fields))));
+                            let mut ty = s.elements.get(&o).and_then(|e| e.params.get(p)).cloned();
+                            for f in fields {
+                                let Some(t) = ty else { break };
+                                let field = match s.member(&t, f) {
+                                    Ok(x) => x,
+                                    Err(_) if s.bases.contains_key(&t) => return None,
+                                    Err(_) => break,
+                                };
+                                if s.bases.contains_key(&t) {
+                                    out.push(format!("path|{t}.{f}|{field}"));
+                                }
+                                ty = s.elements.get(&field).and_then(|e| e.ty.clone());
+                            }
                         }
                     }
                 }
