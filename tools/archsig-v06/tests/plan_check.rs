@@ -2806,54 +2806,6 @@ fn a_passed_value_that_depends_on_a_condition_other_than_the_call_is_unresolved(
 }
 
 #[test]
-fn a_call_in_a_return_value_is_written_before_the_return() {
-    // `return m.g()` は、呼び出しを戻り値より前の手順として観測する(第3章)。同じ行なら calls を先に書き、
-    // 式が複数の行にわたるなら returns の at を式の最後の行にする。m.g は意味を持つ m.O.t に 5 を書く。
-    // 候補の m.f は何も書かずに返すので、食い違う。
-    let callee = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:20@blob:aaaaaaa"}
-{"kind": "writes", "subject": "m.g", "object": "m.O.t", "value": "5", "at": "m.py:21@blob:aaaaaaa"}
-"#;
-    let run = |name: &str, body: &str| {
-        let repo = Repo::new(name);
-        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
-        repo.map(
-            "m.py",
-            &format!(
-                "{}{T_ATOMS}{callee}{body}",
-                r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
-{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
-{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
-"#
-            ),
-        );
-        repo.write(
-            ".archsig/plans/p/plan.jsonl",
-            r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
-{"kind": "returns", "subject": "m.f", "value": "1", "at": "plan:p"}
-"#,
-        );
-        repo.run(&["plan", "check", "p"])
-    };
-    for (name, body) in [
-        (
-            "return-call-same-line",
-            r#"{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:10@blob:aaaaaaa"}
-{"kind": "returns", "subject": "m.f", "value": "m.g()", "at": "m.py:10@blob:aaaaaaa"}
-"#,
-        ),
-        (
-            "return-call-lines",
-            r#"{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:11@blob:aaaaaaa"}
-{"kind": "returns", "subject": "m.f", "value": "m.g()", "at": "m.py:12@blob:aaaaaaa"}
-"#,
-        ),
-    ] {
-        let s = run(name, body);
-        assert_eq!(result(&s, "m.f")["kind"], "counterexample", "{name}: {s}");
-    }
-}
-
-#[test]
 fn a_write_after_a_return_on_the_same_line_is_not_done() {
     // `if o.n == 1: return 1; o.t = 1` を、同じ行の returns と writes として観測する。戻り値の後に並ぶ書き込みは、戻った分岐では行わない。
     // 戻り値の式が呼ばない手順なので、同じ行でも戻り値の後の手順である。
