@@ -116,9 +116,8 @@ theorem plan_card {points : Finset J} (hp : plan enumJ enumV lam L Q = some poin
     (points.card : ℕ∞) = minimum lam L (LinearMap.ker Q) := by
   obtain ⟨hs,hm⟩ := plan_spec enumJ enumV lam L Q hp
   apply le_antisymm
-  · change (points.card : ℕ∞) ≤ ⨅ q : {q : Finset J // SufficientSet lam L (LinearMap.ker Q) q},
-      (q.1.card : ℕ∞)
-    exact le_iInf fun q => ENat.coe_le_coe.mpr (hm q.1 q.2)
+  · exact le_minimum lam L (LinearMap.ker Q) (points.card : ℕ∞)
+      fun q hq => ENat.coe_le_coe.mpr (hm q hq)
   · exact minimum_le_card lam L (LinearMap.ker Q) points hs
 
 end AAT.AG.RepairObservationDuality.FiniteMinimumPlan

@@ -69,6 +69,13 @@ theorem sufficientSet_zero_iff (R : Submodule k V) (points : Finset J) :
 noncomputable def minimum (L : V →ₗ[k] I) (R : Submodule k V) : ℕ∞ :=
   ⨅ p : {p : Finset J // SufficientSet lam L R p}, (p.1.card : ℕ∞)
 
+/-- A common lower bound for all sufficient primitive sets bounds the minimum. -/
+theorem le_minimum (L : V →ₗ[k] I) (R : Submodule k V) (n : ℕ∞)
+    (hn : ∀ points, SufficientSet lam L R points → n ≤ (points.card : ℕ∞)) :
+    n ≤ minimum lam L R := by
+  change n ≤ ⨅ p : {p : Finset J // SufficientSet lam L R p}, (p.1.card : ℕ∞)
+  exact le_iInf fun p => hn p.1 p.2
+
 /-- Every sufficient primitive set bounds the exact minimum from above. -/
 theorem minimum_le_card (L : V →ₗ[k] I) (R : Submodule k V) (points : Finset J)
     (hp : SufficientSet lam L R points) : minimum lam L R ≤ (points.card : ℕ∞) := by

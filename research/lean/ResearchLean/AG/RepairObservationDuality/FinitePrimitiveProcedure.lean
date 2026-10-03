@@ -34,16 +34,16 @@ theorem run_aux (v : V) (pre remaining : List J) (hp : points = pre ++ remaining
   | nil =>
     apply Run.halt
     rw [procedure_apply]
-    simp only [hp, List.append_nil, transcript, List.length_map, List.drop_length]
+    simp only [hp, List.append_nil, transcript_length, List.drop_length]
   | cons j js ih =>
     have ht : points = (pre ++ [j]) ++ js := by simpa only [List.append_assoc,List.singleton_append] using hp
-    apply Run.ask (by rw [procedure_apply]; simp [transcript, hp])
-    simpa only [transcript, List.map_append, List.map_singleton] using ih (pre ++ [j]) ht
+    apply Run.ask (by rw [procedure_apply, transcript_length, hp, List.drop_left])
+    simpa only [transcript_append, transcript_singleton] using ih (pre ++ [j]) ht
 
 /-- D's generated controller always terminates after exactly its original question list. -/
 theorem run (v : V) :
     Run eval (procedure points finish) v [] (finish (transcript eval points v)) points := by
-  simpa only [transcript, List.map_nil] using run_aux eval points finish v [] points rfl
+  simpa only [transcript_nil] using run_aux eval points finish v [] points rfl
 
 /-- Every run of the finite controller has its computed full value and its complete question list. -/
 theorem run_iff (v : V) (a : A) (qs : List J) :

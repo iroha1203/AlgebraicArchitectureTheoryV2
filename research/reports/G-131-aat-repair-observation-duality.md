@@ -851,7 +851,7 @@ selection:
   exit_criteria: ["有限計画が供給された十分集合/正答を受け取らず生成", "最小固定集合の十分性/最小費用/不能証拠", "全実行の停止/正答/重複を含む費用", "同じDS/B/b₀で元操作への復元", "未通知値を使わず更新最適値へ", "focused/全宣言公理/scan/独立査読"]
   selection_reason: "Cの自由計算での存在とDの取得条件を、同じ有限symbolic dataと元実出力へ接続"
   expected_result_type: proof-obligation-discharged
-  lean_targets: [FiniteMinimumPlan.lean, FiniteMatrixSolver.lean, FinitePrimitiveProcedure.lean, FiniteObservedValues.lean, FinitePlanningFailures.lean, FiniteRepairPlanning.lean, FinitePlanningBranches.lean, FiniteFullCoordinates.lean, PrimitiveOutputEquivalence.lean, FiniteCoordinatePlanning.lean, ActualFinitePlanning.lean, UpdatedPlanning.lean, FiniteDualAcquisition.lean, FiniteModelEnumerations.lean, QueryOptimum.sufficientSet_iff, QueryOptimum.valid_decision_iff, FiberSufficiency.validOutput_some_iff, FiberSufficiency.validOutput_none_iff, FiberSufficiency.affineRhs_apply]
+  lean_targets: [FiniteMinimumPlan.lean, FiniteMatrixSolver.lean, FinitePrimitiveProcedure.lean, FiniteObservedValues.lean, FinitePlanningFailures.lean, FiniteRepairPlanning.lean, FinitePlanningBranches.lean, FiniteFullCoordinates.lean, PrimitiveOutputEquivalence.lean, FiniteCoordinatePlanning.lean, ActualFinitePlanning.lean, UpdatedPlanning.lean, FiniteDualAcquisition.lean, FiniteModelEnumerations.lean, QueryOptimum.sufficientSet_iff, QueryOptimum.valid_decision_iff, QueryOptimum.le_minimum, PrimitiveQueries.transcript_nil, PrimitiveQueries.transcript_length, PrimitiveQueries.transcript_append, PrimitiveQueries.transcript_singleton, FiberSufficiency.validOutput_some_iff, FiberSufficiency.validOutput_none_iff, FiberSufficiency.affineRhs_apply]
   risks: ["未知v/rhsを実行手続きへ追加しない", "choice存在を実行finite searchと混同しない", "判定はqB、数値はBの核", "全数値を確定して元操作へ復元", "全不能零と十分集合なしを区別", "同じstructure行列/核輸送を再生成せず更新値だけを変える"]
   unchecked: ["実装・検証・査読前"]
 ```
@@ -859,13 +859,14 @@ selection:
 ### C9の宣言・生成経路
 
 固定target D / n1017 §6.3–6.5、C / n1017 §6.1–6.2の有限構成を接続する。
-新規14 moduleと既存基本API5宣言、明示宣言計127件を今回のspineとする。
+新規14 moduleと既存基本API10宣言、明示宣言計132件を今回のspineとする。
 名前は下表のnamespaceを補い、先行C1–C8の宣言を今回のdeltaに数えない。
 
 | file・namespace | 今回の明示宣言 |
 | --- | --- |
 | `FiberSufficiency.lean` / `AAT.AG.RepairObservationDuality` | `validOutput_some_iff`, `validOutput_none_iff`, `affineRhs_apply` |
-| `QueryOptimum.lean` / `AAT.AG.RepairObservationDuality` | `sufficientSet_iff`, `valid_decision_iff` |
+| `QueryOptimum.lean` / `AAT.AG.RepairObservationDuality` | `sufficientSet_iff`, `valid_decision_iff`, `le_minimum` |
+| `PrimitiveQueries.lean` / `AAT.AG.RepairObservationDuality.PrimitiveQueries` | `transcript_nil`, `transcript_length`, `transcript_append`, `transcript_singleton` |
 | `FiniteMinimumPlan.lean` / `AAT.AG.RepairObservationDuality.FiniteMinimumPlan` | `questions`, `mem_questions`, `questions_nodup`, `questions_toFinset`, `questions_length`, `sets`, `mem_sets`, `test`, `test_iff`, `sufficientSets`, `mem_sufficientSets`, `plan`, `plan_spec`, `plan_none_iff`, `plan_card` |
 | `FiniteMatrixSolver.lean` / `AAT.AG.RepairObservationDuality.FiniteMatrixSolver` | `differential`, `differential_apply`, `generatedSection`, `section_regular`, `solve`, `solve_some_iff`, `solve_none_iff`, `solve_valid`, `residual`, `residual_zero_iff`, `residual_comp_ker` |
 | `FinitePrimitiveProcedure.lean` / `AAT.AG.RepairObservationDuality.FinitePrimitiveProcedure` | `procedure`, `procedure_apply`, `run_aux`, `run`, `run_iff`, `correct`, `worst_le`, `worst_eq` |
@@ -937,22 +938,22 @@ C6 [PR #5209](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/52
 C8 [PR #5219](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5219#issuecomment-5971628449)、
 G-130 final accepted `549b7e3ccab1c9686a108530e1b0a4b4f38eee86` の
 [監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5179#issuecomment-5966982329)。
-今回の追加5基本API以外の先行本文・Lean signature/定義を変更しない。
+今回の追加10基本API以外の先行本文・Lean signature/定義を変更しない。
 
 ### C9検証記録
 
-rootで今回の16対象sourceのみをfocused checkし、各exact source-prefixの後に今回の全明示宣言の
-`#print axioms` を追加した監査も実行した。計127件、全16source-prefixがexit 0・warningなし。
+rootで今回の17対象sourceのみをfocused checkし、各exact source-prefixの後に今回の全明示宣言の
+`#print axioms` を追加した監査も実行した。計132件、全17source-prefixがexit 0・warningなし。
 標準公理 `propext/Classical.choice/Quot.sound` のみ。
 各行は source SHA-256 / 個別公理raw出力log SHA-256。実装者の結果申告は独立査読の代替ではない。
 
 | source | source SHA-256 | raw audit log SHA-256 |
 | --- | --- | --- |
 | `FiberSufficiency.lean` | `4027b5c0be6a156e31a409b4fd001a6998d5bdba15aabc4cc88cdb867670c069` | `e5cc7a9f8a129716c585ddbca5e35f4ec045c0753fbf8dd92c893000f916c664` |
-| `QueryOptimum.lean` | `4ec503d2e66756f4920685eb63f526558d0290a5b8b947483e6c2459f336bf9b` | `6fb51a558554809e8c7b00acd91766a66138a60ae2bbc45e406f10334e1f665a` |
-| `FiniteMinimumPlan.lean` | `8409dbffebfb4562b20715c9b2d206c86ecc71992f60b7734bff58de2bb7fe5a` | `3a1fbdd016db375c39a1b095f8dbe7dc4ae36d9df77592c26ce1afa1b5e4e04f` |
+| `QueryOptimum.lean` | `5e4e0d22f38c6d737f243d2508e6b7ff342aa5210feab60532f7eb68ced4dbf3` | `e5576845c40de2aab1974f89600d8213945454f15fc9e821b5b69b185ed32f54` |
+| `FiniteMinimumPlan.lean` | `8a4a1d60df2e3d2e65c857014f828fe931822ed706b98dd62d9a733454d6c7c8` | `3a1fbdd016db375c39a1b095f8dbe7dc4ae36d9df77592c26ce1afa1b5e4e04f` |
 | `FiniteMatrixSolver.lean` | `094f0f87058b1d46a27ef51abe7a98a37f0bb46d07b7e40ce0a7a2b22111c504` | `cc10ed2d18fa23e3e1fe35cd374f61e8c42edcabc643f9dd2e3a6117c1422a29` |
-| `FinitePrimitiveProcedure.lean` | `d1ccd6c27e1fcec4bbcc23bd573146a6fc95d13ac21d8b59d63f15e050dd5c7f` | `baeed31925531d3d908ae0d602378fb5cf9f91fa4093824648db80896b5c0acd` |
+| `FinitePrimitiveProcedure.lean` | `3e8243697ecb675f2a0e521f34ceed632dd7f0dc1d38567cf15f26e84eab763c` | `baeed31925531d3d908ae0d602378fb5cf9f91fa4093824648db80896b5c0acd` |
 | `FiniteObservedValues.lean` | `5799c77f0811b1f1bf82d1cc78d8c9b2185cbe30767b6e277d7718aa0519e58b` | `0452d0432a0cb7702b58b99f6e8988ec5215017ccf41f98d31c373b4cee5ef50` |
 | `FinitePlanningFailures.lean` | `a25ee7c1e19be2d170b26d54b10411641cd96e2b7f42d8e9b14f7d22e2127e44` | `992ab31ec6e990702ddb8649e5680d3609c82e968724851b30484b0b72ae6df6` |
 | `FiniteRepairPlanning.lean` | `a1212ed76fcb183bc44e18ea90e44f8c1438aab424a6e6954109dc5438185f9a` | `d4cdcbad11eabe341f301dc3a245a60c6ae445948a16503ed99b0a47828c6115` |
@@ -964,6 +965,7 @@ rootで今回の16対象sourceのみをfocused checkし、各exact source-prefix
 | `UpdatedPlanning.lean` | `fa59fa761ebec9271f716f3968f690b461e6af0ea50de57125aa20f7ec6989b9` | `74685c46ab0890466acea8bf7d96b85b860dd217af6d6fb540092381c3a0c900` |
 | `FiniteDualAcquisition.lean` | `8b14dccaf72e20a2c0464ee85694741bbb3b9cac37f930ac7d4d06582972a3fe` | `d8065e323dc18c07f97c301efaf0e9b080151a085e0db66a9ad4907edc2f5501` |
 | `FiniteModelEnumerations.lean` | `6bb66d655174e71f8fca6281e821888c1d8dd22a272f8493ad80660302d6d70e` | `53bf25bb2a1af52b5085620687dd20eec3c5739f09922756c26226febbf9e0d3` |
+| `PrimitiveQueries.lean` | `0de8fbb4d70aa189703965ac93c81eb2240ad7c88ae5075aea21f5d7ab842eaa` | `bbb38d74522f1acdfe8ee22469faf35e7a5de48d1aa685f5de9ea5b1538c1513` |
 
 有限実行probeはsource-prefix監査とは別の観測として実行し、`some 1`（全数値の最小card）、
 `some 0`（identity行列の判定最小card）、`failure base=0,direction=1`（零微分と問い合わせなし）、
@@ -975,10 +977,10 @@ exit 0、raw出力SHA-256 `78c9441ec6bda259515fd2e0a08fe91f852eab1fc9e6f43e35d49
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: "finite最小計画/known fiber分岐/visible返信取得/同じG-130section/判定・全数値/全実入力最適値/元修復/更新最適値を接続"
-  exit_criteria_status: ["入力から全有限計画と最小cardを生成", "全不能/実pair/不存在を分類", "全controller runの停止/正答/費用", "全元数値/修復/固定辺保持", "同じsectionと保持/通知新kernel", "今回127宣言のfocused/個別公理、共通scan、独立査読はPRで固定"]
+  exit_criteria_status: ["入力から全有限計画と最小cardを生成", "全不能/実pair/不存在を分類", "全controller runの停止/正答/費用", "全元数値/修復/固定辺保持", "同じsectionと保持/通知新kernel", "今回132宣言のfocused/個別公理、共通scan、独立査読はPRで固定"]
   split_reason: none
   completion_candidate: no
-  lean_artifacts: ["上記14新moduleと5基本API、127明示宣言"]
+  lean_artifacts: ["上記14新moduleと10基本API、132明示宣言"]
   evidence: [plan_spec, plan_card, findSuccess_none_iff, readAffine_transcript, solve_valid, numerical_ready, decision_ready, restore_value, decision_failure_pair, no_actual_numerical_procedure, minimum_value, sufficient_after_update_iff]
   claim_mapping:
     theorem_names: [FinitePlanningBranches.plan_spec, ActualFinitePlanning.numerical_ready, ActualFinitePlanning.decision_ready, ActualFinitePlanning.restore_value, ActualFinitePlanning.decision_failure_pair, UpdatedPlanning.numerical_ready, UpdatedPlanning.decision_ready, FiniteDualAcquisition.minimum_value]
@@ -1003,10 +1005,21 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: ["16 exact-source prefix、127個別公理、上記SHA", "共通scanと独立査読はPR auditで固定"]
+  validation_refs: ["17 exact-source prefix、132個別公理、上記SHA", "共通scanと独立査読はPR auditで固定"]
   blocking_findings: []
   next_obligation: "Eの同じW1全族/primitive評価/全表/具体的関係/更新/分割、およびF2四辺K+"
 ```
 
 全体は `target-proof-checkpoint`。Eと最終A–E累積判定は未完了。
 今回Cycle結果は独立査読前のproposalであり、CI greenやmergeだけで全体完了とはしない。
+
+### C9非中心findingへの直接対応
+
+初回4本の査読は中心finding 0、非中心finding 2種類（重複1）を報告した。
+`transcript_nil/length/append/singleton` と `le_minimum` を指摘された既存namespaceへ追加し、
+`FinitePrimitiveProcedure.run_aux/run` と `FiniteMinimumPlan.plan_card` を基本API呼出しに置換した。
+既存statement/def値/import方向/statusは不変。追加5補題は全てfindingで名指しされたAPIである。
+修正4fileのexact-source個別公理監査はexit 0・warningなし・標準公理のみ。
+rootは依存APIを同期する必要から `PrimitiveQueries` / `QueryOptimum` だけtargeted module checkを実行した。
+一度の補題証明elaboration失敗は修正後の再検証で解消した。Research全体buildは未実行。
+新規1本のfinding限定確認と最終head CI・統合受理はPR監査コメントへ固定する。
