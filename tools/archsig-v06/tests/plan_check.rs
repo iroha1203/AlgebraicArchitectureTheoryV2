@@ -2021,3 +2021,34 @@ fn the_unfolding_stops_at_the_first_silence_including_return_values() {
     );
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
 }
+
+#[test]
+fn a_silence_in_a_passed_value_returns_the_place_of_the_call() {
+    // 渡す値の沈黙の次に読む所は、`passes` ではなく、その呼び出しの `calls` の Atom で決める。
+    let callee = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"x": "int"}, "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.O.t", "value": "$x", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:10@blob:aaaaaaa"}
+"#;
+    let plan_with = |passed: &str| {
+        format!(
+            "{}{{\"kind\": \"passes\", \"subject\": \"m.f->m.g\", \"object\": \"m.g.$x\", \"value\": \"{passed}\", \"at\": \"plan:p\"}}\n",
+            r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "plan:p"}
+"#
+        )
+    };
+    // 観測した passes を n.py の行に置いても、次に読む所は calls のソース m.py である。
+    let atoms = format!("{T_ATOMS}{callee}{}", r#"{"kind": "passes", "subject": "m.f->m.g", "object": "m.g.$x", "value": "?", "at": "n.py:10@blob:bbbbbbb"}
+"#);
+    let (s, r) = below_case("passes-observed-place", &atoms, &plan_with("1"));
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    let next = s["next"].as_array().unwrap();
+    assert!(next.iter().any(|n| n["read"] == "m.py" && n["scope"] == "structure"), "{s}");
+    assert!(!next.iter().any(|n| n["read"] == "n.py"), "{s}");
+    // 候補の中の passes では、呼び出し元の操作の要素を返す。
+    let atoms = format!("{T_ATOMS}{callee}{}", r#"{"kind": "passes", "subject": "m.f->m.g", "object": "m.g.$x", "value": "1", "at": "m.py:10@blob:aaaaaaa"}
+"#);
+    let (s, r) = below_case("passes-plan-place", &atoms, &plan_with("?"));
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.f"), "{s}");
+}
