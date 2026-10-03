@@ -754,3 +754,29 @@ fn changes_keep_after_reobservation_of_a_deleted_source_call_or_removed_owner() 
     );
     assert_eq!((result(&s, "m.f->m.g")["outcome"].as_str(), result(&s, "m.f->m.g")["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
 }
+
+#[test]
+fn an_operation_added_by_the_implementation_with_a_question_mark_is_silent() {
+    // 変更前に m.g はない。実装で足した m.g は ? の値を書く。候補は m.A.x を消す。
+    // m.g が消える要素を使うかは決まらないので、m.g は沈黙する。
+    let law = LAW.replace("\"shop/**\"", "\"*.py\"");
+    let base = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.u", "value": "field", "type": "m.O", "at": "m.py:3@blob:aaaaaaa"}
+"#;
+    let before = Repo::new("added-question-before");
+    before.write(".archsig/law/m.law", &law);
+    before.write("m.py", "# source\n");
+    before.map("m.py", &format!("{base}{}\n", r#"{"kind": "defines", "subject": "m.A.x", "value": "field", "type": "m.O", "at": "m.py:4@blob:aaaaaaa"}"#));
+    let after = Repo::new("added-question");
+    after.write(".archsig/law/m.law", &law);
+    after.write("m.py", "# source\n");
+    after.map("m.py", &format!("{base}{}", r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.O.u", "value": "?", "at": "m.py:7@blob:aaaaaaa"}
+"#));
+    after.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.A.x\", \"at\": \"plan:p\"}\n");
+    let s = compare(&after, &before, Some("p"));
+    assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.g" && r["outcome"] == "silent"), "{s}");
+}

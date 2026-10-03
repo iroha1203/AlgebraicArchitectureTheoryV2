@@ -4100,3 +4100,31 @@ fn a_write_path_that_begins_with_a_question_mark_names_nothing_after_it() {
     assert!(s["results"].as_array().unwrap().iter().all(|r| r["kind"] != "missing"), "{s}");
     assert!(s["results"].as_array().unwrap().iter().any(|r| r["outcome"] == "silent"), "{s}");
 }
+
+#[test]
+fn a_correspondence_with_one_external_end_is_silent() {
+    // m.clear は m.O.pay(payment-info)に 0 を書く。候補は m.clear を外部の lib.clear に対応させて消す。
+    // 片方だけが外部の組は、外部の端の種類が決まらないので沈黙する。両端が外部なら組にしない。
+    let run = |name: &str, from_external: bool| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        let ext = if from_external { "{\"kind\": \"resolves\", \"subject\": \"lib.old\", \"object\": \"external:lib\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n" } else { "" };
+        repo.map("m.py", &format!("{}{ext}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.pay", "value": "field", "type": "int", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.pay", "meaning": "payment-info", "uses": ["m.py:6@blob:aaaaaaa"], "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.clear", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.clear", "object": "m.O.pay", "value": "0", "at": "m.py:6@blob:aaaaaaa"}
+"#));
+        let from = if from_external { "lib.old" } else { "m.clear" };
+        repo.write(".archsig/plans/p/plan.jsonl", &format!("{{\"kind\": \"resolves\", \"subject\": \"lib.clear\", \"object\": \"external:lib\", \"at\": \"plan:p\"}}\n{{\"kind\": \"corresponds\", \"subject\": \"{from}\", \"object\": \"lib.clear\", \"at\": \"plan:p\"}}\n{}", if from_external { "" } else { "{\"kind\": \"removes\", \"subject\": \"m.clear\", \"at\": \"plan:p\"}\n" }));
+        repo.run(&["plan", "check", "p"])
+    };
+    let s = run("one-external-end", false);
+    let law = s["results"].as_array().unwrap().iter().filter(|r| r["law"] == "payment-follows-order").collect::<Vec<_>>();
+    assert!(law.iter().any(|r| r["outcome"] == "silent" && r["reason"] == "unresolved") && !law.iter().any(|r| r["outcome"] == "holds"), "{s}");
+    let s = run("two-external-ends", true);
+    assert!(!s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "lib.old"), "{s}");
+}

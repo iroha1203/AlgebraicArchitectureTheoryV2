@@ -804,9 +804,10 @@ fn commute(
 ) -> Vec<Finding> {
     let mut out = Vec::new();
     for (a, b) in &overlay.corresponds {
-        // 外部の要素は、観測した要素へ書き込まない呼び出し先として扱う(設計 §3.3)。比べる組ではない。
+        // 外部の要素は、観測した要素へ書き込まない呼び出し先として扱う(設計 §3.4)。両端が外部なら比べるものがなく、組ではない。
+        // 片方だけが外部なら、その端の種類の問い合わせが沈黙する(下)。
         let external = |s: &Structure, n: &str| matches!(s.resolves.get(n), Some(Resolution::External(_)));
-        if external(before, a) || external(after, b) {
+        if external(before, a) && external(after, b) {
             continue;
         }
         // 消える要素を使う操作は、比べられない。この Law でも `missing` として挙げる。
@@ -1335,7 +1336,9 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
         match before.kind(op) {
             _ if overlay.missing.contains_key(op) => continue,
             Ok("operation") => {}
-            Ok(_) | Err(Silence { reason: Reason::Unread, .. }) => continue,
+            Ok(_) => continue,
+            // 変更前に定義のない操作は、変更後で操作と決まれば(実装が足した操作)、たどれなかった所で沈黙する。
+            Err(Silence { reason: Reason::Unread, .. }) if !matches!(after.kind(op), Ok("operation")) => continue,
             Err(_) => {}
         }
         let mut next: Vec<Silence> = Vec::new();
