@@ -876,9 +876,8 @@ fn compare(
         .collect();
     let prior = Some((before, mapping));
     // 意味 Atom があっても、意味を持つかを読んでいないフィールド(候補が定義したフィールドで、元を読んでいないものを含む)は、
-    // 意味が決まらない。その場所で値が食い違っても反例にせず、沈黙を最後まで持つ。
-    let unsure: BTreeMap<Vec<String>, Silence> =
-        places.iter().filter_map(|q| meaning_known(prior, after, &q[0], meaning).err().map(|e| (q.clone(), e))).collect();
+    // 意味が決まらないので比べない。その値が二つの順番で食い違うのは書き込みがあるときで、その沈黙は下で持つ。
+    places.retain(|q| meaning_known(prior, after, &q[0], meaning).is_ok());
     let mut below = Below { prior, removes: removes.clone(), ..Below::default() };
     for br in &run1 {
         for w in &br.writes {
@@ -964,9 +963,7 @@ fn compare(
                 calls |= has_call(&v1) || has_call(&v2);
                 let (s1, s2) = (show(&normalize(mapping.value(&v1))), show(&normalize(mapping.value(&v2))));
                 values.push(json!({"place": q, "before_then_move": s1, "move_then_after": s2}));
-                if v1 != v2 && let Some(e) = unsure.get(q) {
-                    below.hold(Err(e.clone()));
-                } else if v1 != v2 {
+                if v1 != v2 {
                     diverging.push(json!({
                         "place": q,
                         "before_then_move": s1,

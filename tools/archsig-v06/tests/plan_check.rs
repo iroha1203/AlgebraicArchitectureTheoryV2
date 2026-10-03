@@ -2416,7 +2416,7 @@ fn a_moved_write_place_whose_kind_is_not_known_does_not_hide_a_counterexample() 
 }
 
 #[test]
-fn a_field_whose_meaning_was_not_read_is_silent_only_where_the_values_diverge() {
+fn a_field_whose_meaning_was_not_read_and_is_not_written_does_not_silence() {
     // a.py の m.O.z は意味 Atom を持つが、a.py の payment-info は読んでいない。どちらの順番も m.O.z に書かないので、
     // 二つの順番の値は食い違わない。意味が決まらなくても結論に関わらないので、成り立つ。
     let repo = Repo::new("unsure-unwritten");
@@ -2435,4 +2435,43 @@ fn a_field_whose_meaning_was_not_read_is_silent_only_where_the_values_diverge() 
     );
     let s = repo.run(&["plan", "check", "p"]);
     assert_eq!(result(&s, "m.f")["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn a_write_place_only_before_whose_meaning_was_not_read_is_silent() {
+    // 変更前の m.f は m.O.x と m.O.k に書く。m.O.x を定義した a.py の payment-info は読んでいない。
+    // 候補は m.O.x を m.O.y へ移し、m.f は m.O.k にだけ書く。変更前の書き込みの場所 m.O.x の意味が決まらない。
+    let run = |name: &str, k: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
+        repo.map("a.py", r#"{"kind": "observed", "subject": "a.py", "scope": "structure", "at": "a.py@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "a.py:1@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.O.x", "value": "field", "type": "int", "at": "a.py:2@blob:bbbbbbb"}
+"#);
+        repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.k", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.k", "meaning": "payment-info", "uses": ["m.py:6@blob:aaaaaaa"], "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.x", "value": "1", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.k", "value": "1", "at": "m.py:6@blob:aaaaaaa"}
+"#);
+        repo.write(
+            ".archsig/plans/p/plan.jsonl",
+            &format!(
+                "{}\n{{\"kind\": \"writes\", \"subject\": \"m.f\", \"object\": \"m.O.k\", \"value\": \"{k}\", \"at\": \"plan:p\"}}\n",
+                r#"{"kind": "defines", "subject": "m.O.y", "value": "field", "type": "int", "file": "a.py", "at": "plan:p"}
+{"kind": "corresponds", "subject": "m.O.x", "object": "m.O.y", "at": "plan:p"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}"#
+            ),
+        );
+        repo.run(&["plan", "check", "p"])
+    };
+    let s = run("before-place-same", "1");
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "a.py" && n["scope"] == "meaning:payment-info"), "{s}");
+    let s = run("before-place-diverging", "2");
+    assert_eq!(result(&s, "m.f")["kind"], "counterexample", "{s}");
 }
