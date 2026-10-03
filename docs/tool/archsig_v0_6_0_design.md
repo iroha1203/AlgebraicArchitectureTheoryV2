@@ -69,7 +69,7 @@ ArchMap(.archsig/map, local)  候補(.archsig/plans)  Law ファイル(.archsig/
 | 構造 | 中身 | 元の Atom |
 | --- | --- | --- |
 | 要素 | 名前、種類、操作の引数と型、フィールドの型 | `defines` と、`params` から作る引数 |
-| 継承 | 型と、それが受け継ぐ型 | `inherits` |
+| 継承 | 受け継ぐ型と、受け継がれる型 | `inherits` |
 | 関係 | 呼び出し、読み、書き込み、引数渡し、送受信、戻り値、取り込み | 同名の構造 Atom |
 | 操作の本体 | 操作ごとの手順の列(3.4) | `writes`、`calls`、`sends`、`returns` |
 | 解決 | 名前と、それを定義したソースか外部 | `resolves` |
