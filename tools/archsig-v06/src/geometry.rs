@@ -51,13 +51,17 @@ pub struct Geometry<'a> {
     sources: BTreeMap<String, String>,
     /// チャネルとその項目が属する局所。
     channels: BTreeMap<String, BTreeSet<String>>,
+    /// 定義がなく、`resolves` が外部でないソースを指す要素と、そのソース。属する局所は、そのソースを読むまで決まらない。
+    resolved: BTreeMap<String, String>,
+    /// 構造を読んだソース。
+    observed: BTreeSet<String>,
 }
 
 impl<'a> Geometry<'a> {
     /// `defined` は要素の定義を探す Atom の列、`body` はチャネルを送り受けする操作を探す Atom の列。
     /// 候補の中で定義した要素は `file`、それ以外は `defines` の `at` のパスで定義される。
     pub fn new(reading: &'a Reading, defined: &[Atom], body: &[Atom]) -> Geometry<'a> {
-        let mut g = Geometry { reading, sources: BTreeMap::new(), channels: BTreeMap::new() };
+        let mut g = Geometry { reading, sources: BTreeMap::new(), channels: BTreeMap::new(), resolved: BTreeMap::new(), observed: BTreeSet::new() };
         for a in defined.iter().filter(|a| a.kind == "defines") {
             let path = match &a.file {
                 Some(f) => Some(f.clone()),
@@ -67,6 +71,20 @@ impl<'a> Geometry<'a> {
                 g.sources.insert(a.subject.clone(), p);
             }
         }
+        for a in defined {
+            match a.kind.as_str() {
+                "observed" if a.scope.as_deref() == Some("structure") => {
+                    g.observed.insert(a.subject.clone());
+                }
+                "resolves" => {
+                    if let Some(o) = a.object.as_deref().filter(|o| !o.starts_with("external:")) {
+                        g.resolved.entry(a.subject.clone()).or_insert_with(|| o.to_string());
+                    }
+                }
+                _ => {}
+            }
+        }
+        g.resolved.retain(|n, _| !g.sources.contains_key(n));
         // チャネルとその項目は、そこへ送る操作と、そこから受け取る操作の局所すべてに属する。
         for a in body.iter().filter(|a| a.kind == "sends" || a.kind == "receives") {
             let item = a.object.clone().unwrap_or_default();
@@ -87,12 +105,7 @@ impl<'a> Geometry<'a> {
         if let Some(locals) = self.channels.get(name) {
             return locals.clone();
         }
-        let owner = match (name.split_once("->"), name.split_once(".$")) {
-            (Some((caller, _)), _) => caller,
-            (None, Some((op, _))) => op,
-            _ => name,
-        };
-        self.sources.get(owner).and_then(|p| local(self.reading, p)).into_iter().collect()
+        self.sources.get(owner(name)).and_then(|p| local(self.reading, p)).into_iter().collect()
     }
 
     /// Atom が属する局所。名指す要素が属する局所すべて(マニュアル第4章)。
@@ -107,6 +120,11 @@ impl<'a> Geometry<'a> {
         for a in plan.iter().filter(|a| a.kind != "plan") {
             if let Some(q) = named(a).into_iter().find(|n| n.starts_with('?')) {
                 out.questions.push((q.to_string(), a.clone()));
+                continue;
+            }
+            // 定義がなく、`resolves` が外部でないソースを指す要素は、属する局所が決まらない(設計 §3.3)。
+            if let Some((n, path)) = named(a).into_iter().find_map(|n| self.resolved.get(owner(n)).map(|p| (n, p))) {
+                out.unknown.push((n.to_string(), path.clone(), self.observed.contains(path), a.clone()));
                 continue;
             }
             let locals = self.atom_locals(a);
@@ -128,4 +146,16 @@ pub struct Split {
     pub shared: Vec<Atom>,
     /// `?` の名前と、それを名指す Atom。どの局所に属するかが決まらない。
     pub questions: Vec<(String, Atom)>,
+    /// 定義がなく `resolves` が外部でないソースを指す要素、そのソース、そのソースの構造を読んだか、それを名指す Atom。
+    /// どの局所に属するかは、そのソースを読むまで決まらない。
+    pub unknown: Vec<(String, String, bool, Atom)>,
+}
+
+/// 要素を定義するソースを持つ要素。引数 `X.$p` は操作 `X`、呼び出しの要素 `A->B` は呼び出し元 `A`(設計 §4.4)。
+fn owner(name: &str) -> &str {
+    match (name.split_once("->"), name.split_once(".$")) {
+        (Some((caller, _)), _) => caller,
+        (None, Some((op, _))) => op,
+        _ => name,
+    }
 }

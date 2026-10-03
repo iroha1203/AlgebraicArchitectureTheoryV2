@@ -182,3 +182,41 @@ fn a_write_through_a_field_of_another_local_is_shared() {
     let local = lines(&repo, ".archsig/plans/p/shop/shipping/plan.jsonl");
     assert!(!has(&local, "writes", UPDATE, None), "via が別の局所を名指す書き込みは、局所の候補に入らない: {local:?}");
 }
+
+#[test]
+fn a_call_to_an_element_resolved_to_an_unread_source_has_no_decided_local() {
+    // a.f は b.g を呼ぶ候補を書く。b.g の定義はなく、`resolves` が b/g.py を指す。
+    // b.g の局所は b/g.py を読むまで決まらないので、局所をまたぐかが決まらない。`unread` で沈黙し、b/g.py を返す(設計 §3.3)。
+    let law = r#"sources "**/*.py"
+
+reading module = dir(depth: 1)
+"#;
+    let run = |name: &str, resolves: &str, observed_b: bool| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", law);
+        repo.write("a/f.py", "# source\n");
+        repo.write("b/g.py", "# source\n");
+        repo.map(
+            "a/f.py",
+            &format!(
+                "{{\"kind\": \"observed\", \"subject\": \"a/f.py\", \"scope\": \"structure\", \"at\": \"a/f.py@blob:aaaaaaa\"}}\n{{\"kind\": \"defines\", \"subject\": \"a.f\", \"value\": \"operation\", \"params\": {{}}, \"at\": \"a/f.py:1@blob:aaaaaaa\"}}\n{{\"kind\": \"resolves\", \"subject\": \"b.g\", \"object\": \"{resolves}\", \"at\": \"a/f.py:2@blob:aaaaaaa\"}}\n"
+            ),
+        );
+        if observed_b {
+            repo.map("b/g.py", "{\"kind\": \"observed\", \"subject\": \"b/g.py\", \"scope\": \"structure\", \"at\": \"b/g.py@blob:bbbbbbb\"}\n");
+        }
+        repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"calls\", \"subject\": \"a.f\", \"object\": \"b.g\", \"at\": \"plan:p\"}\n");
+        repo.run(&["plan", "split", "p"])
+    };
+    let s = run("split-unread-resolves", "b/g.py", false);
+    let r = result(&s, "b.g");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "b/g.py" && n["scope"] == "structure" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+    // b/g.py の構造を読んだのに b.g の定義がなければ、`unresolved` で沈黙する。
+    let s = run("split-read-resolves", "b/g.py", true);
+    let r = result(&s, "b.g");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    // 外部を指す要素は、これまでどおりどの局所にも属さず、呼び出しは a の局所に入る。
+    let s = run("split-external-resolves", "external:lib", false);
+    assert_eq!(result(&s, "p")["outcome"], "holds", "{s}");
+}
