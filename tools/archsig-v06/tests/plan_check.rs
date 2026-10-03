@@ -4481,3 +4481,29 @@ fn removing_the_field_the_child_defines_again_leaves_the_inherited_one() {
     assert!(!s["results"].as_array().unwrap().iter().any(|r| r["kind"] == "missing"), "{s}");
     assert_eq!(result(&s, "m.h")["outcome"], "holds", "{s}");
 }
+
+#[test]
+fn removing_a_field_the_child_inherited_before_is_not_missing_when_the_new_inheritance_is_unknown() {
+    // 変更前の m.C は m.P を受け継ぎ、m.P が t を定義する。候補は m.C を定義し直して、m.P のほかに読んでいない(または外部の)m.X も受け継ぎ、m.P.t を消す。
+    // 変更後の m.C.t は m.X.t かもしれないので、m.h が消える要素を使うかは決まらない。
+    for (name, x) in [
+        ("removed-after-unread-sibling", "{\"kind\": \"resolves\", \"subject\": \"m.X\", \"object\": \"x.py\", \"at\": \"plan:p\"}\n"),
+        ("removed-after-external-sibling", "{\"kind\": \"resolves\", \"subject\": \"m.X\", \"object\": \"external:lib\", \"at\": \"plan:p\"}\n"),
+    ] {
+        let types = [ty("m.P", 3), field("m.P.t", 4, false), ty("m.C", 5), inherits("m.C", "m.P")].concat();
+        let plan = format!("{}{x}", r#"{"kind": "defines", "subject": "m.C", "value": "type", "file": "m.py", "at": "plan:p"}
+{"kind": "inherits", "subject": "m.C", "object": "m.X", "at": "plan:p"}
+{"kind": "inherits", "subject": "m.C", "object": "m.P", "at": "plan:p"}
+"#);
+        let (r, s) = removed_through(name, &types, &plan);
+        assert_eq!(r["outcome"], "silent", "{name}: {s}");
+    }
+}
+
+#[test]
+fn a_type_the_plan_gives_only_an_inheritance_is_unread() {
+    // 候補が m.C に `inherits` だけを書くと、m.C の元の定義は外れる。m.C の定義のない受け継ぎは計算せず、m.C を読む所として沈黙する。
+    let types = [ty("m.P", 3), field("m.P.t", 4, false), ty("m.C", 5), inherits("m.C", "m.P")].concat();
+    let (r, s) = removed_through("inherits-only", &types, "{\"kind\": \"inherits\", \"subject\": \"m.C\", \"object\": \"m.P\", \"at\": \"plan:p\"}\n");
+    assert_eq!(r["outcome"], "silent", "{s}");
+}
