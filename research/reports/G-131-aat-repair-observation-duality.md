@@ -205,3 +205,112 @@ audits:
 
 全体判定は `target-proof-checkpoint`。A、B、D、EおよびCの実入力への接続は未完了。
 `target-theorem-proved` としていない。
+
+## Cycle 3：任意の元候補範囲の商と実修復方程式
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-131-aat-repair-observation-duality
+cycle: 3
+goal_blob_sha: 054fea81b916c4d4a470b74af3e13c6cc5dde01c
+base_oid: 68565e9c8156fc3e15f4546b6cef11785efb3010
+tracking_issue: 5133
+report_path: research/reports/G-131-aat-repair-observation-duality.md
+selection:
+  proof_state_ref: "Cycle 2受理・merge、Issue #5133 comment 5969349037。限定確認中に別worktreeで選定後、受理mergeへfast-forward同期。今回の証明依存は受理済みG-130"
+  proof_dag_predecessors: [OriginalRanges.objects_nonempty_iff_equation, SupportedNativeEquation.repairEquiv, NamedDual.sumSelected, CokernelNamed.quotient_sum]
+  milestone: "Aの任意Sに対するD_S・native cokernelと同じ面代表元の残存商を構成し、G-130の同じ実修復方程式と往復を接続"
+  proof_obligations: ["常時列とSの元名全列の線形D_S", "range D_Sと元列像和の一致", "coker D_S≃O/R_Sと同じ面代表元の保存", "独立な実修復可否↔同じD_S方程式↔商零", "同じ実辺値と禁止候補零を保つ復元"]
+  exit_criteria: ["全Sで代表元保存を含む商同型", "一般のG-130原始塔と同じ係数で実可否の両方向", "全元辺値の復元と禁止値零", "focused checkと全明示宣言の公理・scan"]
+  selection_reason: "再利用mapの全候補商と任意Sの差を閉じ、Cの同じDに実修復を接続する"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [SelectedCokernel.lean, NativeCorrectionEquation.lean]
+  risks: ["全候補のsecondQuotientだけで任意Sを済ませない", "元名を別のeffective列へ改名しない", "係数は任意の頂点module", "一般族のアフィンdefect生成・基底座標・局所公開関係・全実現は別の未完義務として保持"]
+  unchecked: ["構成・検証・独立査読前"]
+```
+
+### Cycle 3の同じ元座標・実操作への対応
+
+| 固定Aの部分 | 宣言・構成と使用経路 |
+| --- | --- |
+| 全Sの元候補列のD_S | `SelectedCokernel.differential` はD₀と`NamedDual.sumSelected C S`のcoprod。domainはX×全selected係数。`differential_apply`, `range_differential`, `equation_iff` が元split equationと全像を同定 |
+| 任意Sの商と同じ面代表元 | `selected_ranges_eq` がSの元列の像をalways quotientへ写す。`residualToNative`はこのSの像へthird isomorphismを適用し、`nativeToResidual`が指定方向。両`*_value`が同じrを保つ。全候補`secondQuotient`を任意Sへ読み替えていない |
+| 一般の原始塔と同じ微分・商 | `NativeCorrectionEquation.Values`, `differential`, `cokernelEquiv`, `cokernelEquiv_value`。Tの各頂点の実核moduleを使う。共通moduleのアフィン自己同型だけに対象を縮小しない |
+| 独立実修復↔同じD_S方程式↔商零 | `actual_equation_iff`, `actual_cokernel_iff`。G-130の独立なSupportedRepairとsupported原始方程式のequivから、元負defectで両方向を証明 |
+| 全辺補正と元実操作へ復元 | `restore`, `restore_value`, `restore_forbidden_zero`, `restore_fixed_arrow`。常時cochainと元候補値をG-130のrestoreへ渡し、native repairEquivの逆で実操作へ戻す。全元辺で同じ補正、禁止候補零、P/禁止候補の実射等号を保つ |
+| emptyとallを混同しない発火例 | `SelectedCokernel.empty_full_differ`。同じ非零体・同じ恒等元列で、空Sのq_S(1)≠0、全Sのq_S(1)=0を同時に証明 |
+
+全新規宣言は名前空間 `AAT.AG.RepairObservationDuality.SelectedCokernel` と
+`AAT.AG.RepairObservationDuality.NativeCorrectionEquation`、同名の2 sourceにある。
+受理spine候補は `selected_ranges_eq`, `nativeToResidual_value`,
+`cokernelEquiv_value`, `actual_equation_iff`, `actual_cokernel_iff`, `restore_value`,
+`restore_forbidden_zero`, `restore_fixed_arrow`。他は同じ構成・基本API・発火例で、
+cycle scaffoldなし。商比較は全クラスの線形同型であり、零判定だけの対応ではない。
+
+| material premise | 役割・出所・proof-use |
+| --- | --- |
+| D₀、元名E、全係数Y_e、有限E、C_e（商の一般部） | ambient-boundary。Aの同じ常時列・元候補列。Sをdomainで制限し、像とquotientを構成 |
+| 原始塔Tのcore/実射/強い辺/可換核/全単射輸送/比較中央化 | ambient-boundary。固定G-130の同じOriginalTowerPresentation入力。repairEquivによる元実射と独立方程式の接続に使用 |
+| 全核module、線形核輸送、P外候補、有限元辺、P面整合 | ambient-boundary。Aの同じ線形化条件と固定部分。OriginalColumns、OriginalRangesとnative復元の適用に使用 |
+| D_Sと任意Sの商同型 | discharge-required、構成済み。coprod/selected sum→像等式→第三同型→同じr保存を証明。結論相当fieldなし |
+| 実修復可否と方程式の接続 | discharge-required、証明済み。G-130 repairEquiv→元split equation→同じD_S→range商零 |
+| hが同じ方程式を満たすhh | direction-hypothesis（復元APIの入力）。h.1/h.2でsupported元方程式を構成後、同じ実修復へ復元。未知入力の正答が原始query引数になったものではない |
+| 一般原始族のアフィン負defect、共通係数・基底座標、全実現/原始実評価、局所公開関係 | discharge-required、後続。今回のpointwise塔の方程式だけではA全体を完了にしない |
+
+受理済みpredecessorはG-130最終head `549b7e3ccab1c9686a108530e1b0a4b4f38eee86`
+（[最終監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5179#issuecomment-5966982329)）。
+今回使用する同じsignature・条件・適用引数・proof-useをsourceで読み、以下のsourceは
+その受理版から変更なしであることを確認した。
+
+| source / 主な使用API | blob SHA |
+| --- | --- |
+| OriginalRangeEquations / objects_nonempty_iff_equation、restore、selected_zero | `6c5e76f679602d39361c1006014d6df6dbf48781` |
+| SupportedNativeEquation / repairEquiv、repair_inverse_value | `36799438b8ada7112e94a6ef86ad188e965ee78a` |
+| OriginalCandidateColumns / alwaysSpace、D、column | `a5e1175924288dad89b5c5bc63866f2b48022c8a` |
+| CokernelNamedRanges / quotient_sum、column、mem_iff_equation | `8d1ee72b0bbb421cb0e4c2a67bde3972b44bdb74` |
+| NamedColumnSum / sumSelected、mem_ranges_iff_sum | `42f243b3be690b2363bd0d81b112a29b5a2655f2` |
+
+Mathlibは固定pin `8f9d9cff6bd728b17a24e163c9402775d9e6a365`。
+`LinearMap.range_coprod`, `Submodule.quotEquivOfEq`,
+`Submodule.quotientQuotientEquivQuotientSup`, `Submodule.Quotient.mk_eq_zero` を
+同じmodule・像・分母に適用する。先行G-130の内部を再認定することではなく、
+今回の同じ元名・原始係数・実復元への適用を確認した。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Aの任意SのD_S・full native cokernelと元O/R_Sの同じ面代表元の同型を構成し、一般原始塔の実可否・全辺復元・禁止値零・固定実射へ接続"
+  exit_criteria_status: ["全SでD_Sと全像を構成", "両向き商同型・同じr保存", "同じ原始塔の実可否↔方程式↔商零", "全元辺補正・禁止値零・固定実射を復元", "2filefocused・全明示宣言公理・scanをPRへ固定"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [SelectedCokernel.lean, NativeCorrectionEquation.lean]
+  evidence: [nativeToResidual_value, actual_equation_iff, actual_cokernel_iff, restore_value, restore_forbidden_zero, restore_fixed_arrow, empty_full_differ]
+  claim_mapping:
+    theorem_names: [selected_ranges_eq, nativeToResidual_value, cokernelEquiv_value, actual_equation_iff, actual_cokernel_iff, restore_value, restore_forbidden_zero, restore_fixed_arrow]
+    source_labels: ["G-131 Aの任意Sの商と元実修復方程式", "n1017 §3.5・§6.1"]
+    conjuncts: ["同じ原始列のD_S", "coker D_S≃O/R_S、同じ面代表元", "全Sの独立実修復↔同じ負defectの方程式↔商零", "全辺値と禁止候補・固定射の復元"]
+    undischarged_assumptions: []
+    acceptance_point: "Aのpointwise原始塔から任意Sの同じ方程式・商・復元への接続という到達点。Aの一般入力族全体は後続"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["任意Sの商・同じ面代表元", "一般原始塔の同じ実修復可否", "全元辺補正・禁止候補・固定射の復元"]
+    remaining: ["一般原始族のアフィン負defectと共通係数・基底座標", "全実現・原始実評価・局所公開関係", "Bの作用・双対・G-128手続き", "Dの有限計画・証拠取得", "Eの全指定例"]
+  certificate_provenance:
+    discharged: ["選択domainのcoprodからD_S生成", "selected元列像から第三商生成", "同じ元方程式からG-130実修復復元"]
+    unresolved: ["有限計画からの観測取得済み数値h生成は後続"]
+  proof_use:
+    used: ["全元係数と候補名", "原始塔と線形条件", "P面整合", "同じhhから元split equation", "h.1/h.2から全元辺値"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["focused・全明示#print axiomsとhash・scanをPRコメントへ固定"]
+  blocking_findings: []
+  next_obligation: "一般原始族の共通係数と実経路からのアフィン負defect、同じ基底座標・局所公開可否、Cへの入力接続"
+```
+
+全体は `target-proof-checkpoint`。Aの一般族と数値座標・局所関係、B、D、Eは未完了。
