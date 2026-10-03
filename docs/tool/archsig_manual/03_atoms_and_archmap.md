@@ -71,6 +71,7 @@ Atom の同一性は、`kind`、`subject`、`object`、`via`、`value`、`when`�
 - `sends`:操作がチャネルの項目へ値を送る。`object` は項目、`value` は送る値である。
 - `receives`:操作がチャネルの項目を受け取る。`object` は項目、`value` は受け取った値を操作の中で表す式である。
 - `returns`:操作が値を返す。`value` は返す値である。`returns` の後の手順は、その `returns` を行わなかった分岐でだけ行う(`if c: return` の後の手順は、`c` が成り立たない分岐で行う)。`returns` の `when` は、`returns` の時点で一度だけ読む。`when` のない `returns` の後の手順は行わない。呼び出し先の `returns` は、呼び出し元の手順を止めない。
+  観測した Atom の手順は、`at` の行の順(行の範囲は最初の行)、同じ行では Atom の順に並ぶ。戻り値の式の中の呼び出し(`return g(x)`)は、その `calls` と `passes` を `returns` より前の Atom に書き、`returns` の `at` は return 文の最後の行の一行で書く。そうしないと、呼び出しが `returns` の後の手順になり、行われない。
 - `imports`:モジュールが別のモジュールを取り込む。
 - `resolves`:名前が、どこで定義されているか。`object` は、定義したソースのパスか、リポジトリの外なら `external:<パッケージ>` である。解析器が名前を解決できたときに書く。言語の組み込みの型(Python の `str` など)も、リポジトリの外の名前として書く。
 
