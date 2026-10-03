@@ -2926,3 +2926,171 @@ fn a_call_to_a_callee_that_calls_a_changed_body_is_unchecked() {
     let r = result(&s, "m.f");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
 }
+
+#[test]
+fn a_call_to_an_external_callee_whose_resolution_changed_is_unchecked() {
+    // m.f は外部の m.g() の戻り値を m.O.t に書く。候補は m.g の解決を別の外部へ書き換える。呼び出し先の本体(解決)が変わる。
+    let run = |name: &str, plan: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map(
+            "m.py",
+            &format!(
+                "{}{T_ATOMS}{}",
+                r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#,
+                r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.g()", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.g", "object": "external:lib", "at": "m.py:10@blob:aaaaaaa"}
+"#
+            ),
+        );
+        repo.write(".archsig/plans/p/plan.jsonl", plan);
+        let s = repo.run(&["plan", "check", "p"]);
+        (result(&s, "m.f").clone(), s)
+    };
+    let (r, s) = run("changed-external-callee", "{\"kind\": \"resolves\", \"subject\": \"m.g\", \"object\": \"external:lib2\", \"at\": \"plan:p\"}\n");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
+    // 解決を書き換えない候補では、これまでどおり同じ項として計算する(対照)。
+    let (r, s) = run("same-external-callee", "{\"kind\": \"removes\", \"subject\": \"m.O.n\", \"at\": \"plan:p\"}\n");
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn reordering_or_splitting_a_callee_is_a_changed_body() {
+    // m.f は m.g() を m.O.t に書く。m.g は条件付きの戻り値を二つ持つ。
+    let base = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#;
+    let run = |name: &str, map: &str, plan: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map("m.py", &format!("{base}{T_ATOMS}{map}"));
+        repo.write(".archsig/plans/p/plan.jsonl", plan);
+        let s = repo.run(&["plan", "check", "p"]);
+        (result(&s, "m.f").clone(), s)
+    };
+    let g = r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.g()", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "1", "when": "X == 2", "at": "m.py:21@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "2", "at": "m.py:22@blob:aaaaaaa"}
+"#;
+    // 戻り値の順を入れ替えると、戻り値が変わる。Atom の集まりは同じでも、本体が違う。
+    let reordered = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+{"kind": "returns", "subject": "m.g", "value": "2", "at": "plan:p"}
+{"kind": "returns", "subject": "m.g", "value": "1", "when": "X == 2", "at": "plan:p"}
+"#;
+    let (r, s) = run("reordered-callee", g, reordered);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
+    // 同じ順で書き直すなら、本体は同じ(対照)。
+    let same = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+{"kind": "returns", "subject": "m.g", "value": "1", "when": "X == 2", "at": "plan:p"}
+{"kind": "returns", "subject": "m.g", "value": "2", "at": "plan:p"}
+"#;
+    let (r, s) = run("same-order-callee", g, same);
+    assert_eq!(r["outcome"], "holds", "{s}");
+    // m.g を m.g と m.g2 に分け、m.g2 の戻り値を変える。行き先のどれかの本体が違えば、本体が違う。
+    let split = r#"{"kind": "corresponds", "subject": "m.g", "object": "m.g2", "at": "plan:p"}
+{"kind": "defines", "subject": "m.g2", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+{"kind": "returns", "subject": "m.g2", "value": "3", "at": "plan:p"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.g2()", "at": "plan:p"}
+"#;
+    let (r, s) = run("split-callee", g, split);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
+    // m.g が calls の Atom なしに式の中で m.h を呼ぶ。候補が m.h を書き直せば、m.g の本体も違う。
+    let nested = r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.g()", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "m.h()", "at": "m.py:21@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.h", "value": "operation", "params": {}, "at": "m.py:30@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.h", "value": "1", "at": "m.py:31@blob:aaaaaaa"}
+"#;
+    let h2 = r#"{"kind": "defines", "subject": "m.h", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+{"kind": "returns", "subject": "m.h", "value": "2", "at": "plan:p"}
+"#;
+    let (r, s) = run("value-call-callee", nested, h2);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
+}
+
+#[test]
+fn the_body_of_a_callee_is_compared_in_every_part() {
+    let base = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#;
+    let run = |name: &str, map: &str, plan: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map("m.py", &format!("{base}{T_ATOMS}{map}"));
+        repo.write(".archsig/plans/p/plan.jsonl", plan);
+        let s = repo.run(&["plan", "check", "p"]);
+        (result(&s, "m.f").clone(), s)
+    };
+    let unchecked = |name: &str, map: &str, plan: &str| {
+        let (r, s) = run(name, map, plan);
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{name}: {s}");
+    };
+    let f_g = r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.g()", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:20@blob:aaaaaaa"}
+"#;
+    let g_def = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+"#;
+    // 本体の手順の when だけを変える。
+    unchecked(
+        "callee-when",
+        &format!("{f_g}{}", r#"{"kind": "returns", "subject": "m.g", "value": "1", "when": "X == 2", "at": "m.py:21@blob:aaaaaaa"}
+"#),
+        &format!("{g_def}{}", r#"{"kind": "returns", "subject": "m.g", "value": "1", "when": "X == 3", "at": "plan:p"}
+"#),
+    );
+    // 呼び出し先の中の呼び出しに渡す値(passes)だけを変える。
+    let h = r#"{"kind": "defines", "subject": "m.h", "value": "operation", "params": {"x": "int"}, "at": "m.py:30@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.h", "value": "$x", "at": "m.py:31@blob:aaaaaaa"}
+"#;
+    unchecked(
+        "callee-passes",
+        &format!("{f_g}{h}{}", r#"{"kind": "calls", "subject": "m.g", "object": "m.h", "at": "m.py:21@blob:aaaaaaa"}
+{"kind": "passes", "subject": "m.g->m.h", "object": "m.h.$x", "value": "1", "at": "m.py:21@blob:aaaaaaa"}
+"#),
+        &format!("{g_def}{}", r#"{"kind": "calls", "subject": "m.g", "object": "m.h", "at": "plan:p"}
+{"kind": "passes", "subject": "m.g->m.h", "object": "m.h.$x", "value": "2", "at": "plan:p"}
+"#),
+    );
+    // 変更後の値にだけ、新しい操作の呼び出しが現れる。
+    let f_plain = r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "1", "at": "m.py:10@blob:aaaaaaa"}
+"#;
+    let k = r#"{"kind": "defines", "subject": "m.k", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+{"kind": "returns", "subject": "m.k", "value": "1", "at": "plan:p"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+"#;
+    unchecked(
+        "new-callee-value",
+        f_plain,
+        &format!("{k}{}", r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.k()", "at": "plan:p"}
+"#),
+    );
+    // 変更後の条件にだけ、新しい操作の呼び出しが現れる。
+    unchecked(
+        "new-callee-condition",
+        f_plain,
+        &format!("{k}{}", r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "1", "when": "m.k() == 1", "at": "plan:p"}
+"#),
+    );
+    // 呼び出し先の名前を変え(行き先は一つ)、本体は同じ。行き先の本体と比べるので、同じ項である。
+    let renamed = r#"{"kind": "corresponds", "subject": "m.g", "object": "m.g2", "at": "plan:p"}
+{"kind": "removes", "subject": "m.g", "at": "plan:p"}
+{"kind": "defines", "subject": "m.g2", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+{"kind": "returns", "subject": "m.g2", "value": "1", "at": "plan:p"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.g2()", "at": "plan:p"}
+"#;
+    let (r, s) = run(
+        "renamed-callee",
+        &format!("{f_g}{}", r#"{"kind": "returns", "subject": "m.g", "value": "1", "at": "m.py:21@blob:aaaaaaa"}
+"#),
+        renamed,
+    );
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
