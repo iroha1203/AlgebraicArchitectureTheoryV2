@@ -1,0 +1,4 @@
+interface:
+  display_name: "Refactoring Loop"
+  short_description: "確認済み計画に沿う改善・回帰検証・PRマージと記録同期を進める"
+  default_prompt: "$refactoring-loopで指定範囲を点検し、短い計画を人間確認後、改善・回帰検証・条件を満たしたPRのマージと記録同期まで進めてください。"
