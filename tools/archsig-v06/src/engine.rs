@@ -1258,7 +1258,7 @@ fn owner_undecided(before: &Structure, after: &Structure, overlay: &Overlay, map
 
 /// 対応のない要素 `e` が変更後にないと言えるのは、それを定義した変更前のソースの構造を、変更後でも読んでいるときだけである(設計 §5.1)。
 /// 実装後に観測し直した変更後でそのソースの構造を読んでいなければ、`unread` で沈黙し、そのソースを返す。
-/// そのソースが変更後のリポジトリにない(`after_sources` にない)なら、読む所にならず、要素がないことは決まるので沈黙しない。
+/// そのソースが変更後の Law の `sources` にない(`after_sources` にない。変更後で消した)なら、読む所にならないので、これまでどおり沈黙しない。
 /// 候補が `removes` した要素は、消えることが候補で決まっているので沈黙しない。
 /// 引数(`<操作>.$<名前>`)と呼び出し(`<操作>-><呼び出し先>`)は、持ち主の操作の定義のソースで見る。
 fn unobserved_after(before: &Structure, after: &Structure, overlay: &Overlay, after_sources: &[String], e: &str) -> Option<Silence> {
