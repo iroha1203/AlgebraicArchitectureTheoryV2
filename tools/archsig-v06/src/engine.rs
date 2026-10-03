@@ -570,6 +570,75 @@ fn has_meaning(s: &Structure, field: &str, meaning: &str) -> bool {
     s.meanings.get(field).is_some_and(|ms| ms.iter().any(|m| m.meaning.as_deref() == Some(meaning)))
 }
 
+/// 型 `ty` のフィールド。フィールドの名前は `<型>.<フィールド>` である(マニュアル第3章)。定義を読んだものだけを返す。
+fn fields_of(s: &Structure, ty: &str) -> Result<Vec<String>, Silence> {
+    let prefix = format!("{ty}.");
+    let mut out = Vec::new();
+    for (name, e) in s.elements.range(prefix.clone()..).take_while(|(n, _)| n.starts_with(&prefix)) {
+        let rest = &name[prefix.len()..];
+        if rest.contains('.') || rest.contains("->") || !e.kinds.contains("field") {
+            continue;
+        }
+        s.kind(name)?;
+        out.push(name.clone());
+    }
+    Ok(out)
+}
+
+/// 書いた場所 `place` より先の場所のうち、最後のフィールドが意味 `meaning` を持つもの(設計 §5.4)。
+/// 書いた値が変われば、その値からたどる場所の値も変わる。`place` の最後のフィールドの型から、定義を読んだ型のフィールドをたどる。
+/// たどったフィールドが意味を持つかが読んだ範囲から決まらなければ沈黙する。
+/// 型がめぐり、その先に意味を持つフィールドがあれば、場所が限りなく伸びるので `limit` で沈黙する。
+fn below(s: &Structure, place: &[String], meaning: &str) -> Result<Vec<Vec<String>>, Silence> {
+    let mut out = Vec::new();
+    if let Some(ty) = place.last().and_then(|f| s.elements.get(f)).and_then(|e| e.ty.clone()) {
+        walk(s, &ty, meaning, &mut place.to_vec(), &mut vec![ty.clone()], &mut out)?;
+    }
+    Ok(out)
+}
+
+fn walk(s: &Structure, ty: &str, meaning: &str, prefix: &mut Vec<String>, types: &mut Vec<String>, out: &mut Vec<Vec<String>>) -> Result<(), Silence> {
+    for f in fields_of(s, ty)? {
+        meaning_known(s, &f, meaning)?;
+        prefix.push(f.clone());
+        if has_meaning(s, &f, meaning) {
+            out.push(prefix.clone());
+        }
+        if let Some(t) = s.elements[&f].ty.clone() {
+            if types.contains(&t) {
+                if reaches(s, &t, meaning, &mut BTreeSet::new())? {
+                    return Err(Silence::new(Reason::Limit));
+                }
+            } else {
+                types.push(t.clone());
+                walk(s, &t, meaning, prefix, types, out)?;
+                types.pop();
+            }
+        }
+        prefix.pop();
+    }
+    Ok(())
+}
+
+/// 型 `ty` から、フィールドの型をたどって、意味 `meaning` を持つフィールドに着くか。
+fn reaches(s: &Structure, ty: &str, meaning: &str, seen: &mut BTreeSet<String>) -> Result<bool, Silence> {
+    if !seen.insert(ty.to_string()) {
+        return Ok(false);
+    }
+    for f in fields_of(s, ty)? {
+        meaning_known(s, &f, meaning)?;
+        if has_meaning(s, &f, meaning) {
+            return Ok(true);
+        }
+        if let Some(t) = s.elements[&f].ty.clone() {
+            if reaches(s, &t, meaning, seen)? {
+                return Ok(true);
+            }
+        }
+    }
+    Ok(false)
+}
+
 /// `changes commute with operations`(設計 §5.4)。対応する操作の組ごとに、二つの順番を比べる。
 fn commute(
     before: &Structure,
@@ -640,8 +709,9 @@ fn compare(
     // 比べるときは、変更後の実行の値と条件を、変更前の名前にそろえる(設計 §5.4)。
     let (run1, ext1) = execute(before, a, fresh)?;
     let (run2, ext2) = execute(after, b, fresh)?;
-    // 比べる場所(変更後の名前): 意味を持つフィールドと、書き込みの場所とその頭の部分の場所のうち最後のフィールドが意味を持つもの。
-    // 書き込みは、その場所の頭の部分(`via` のフィールドまでの場所)の値も変える。
+    // 比べる場所(変更後の名前): 意味を持つフィールドと、書き込みの場所とその頭の部分の場所のうち最後のフィールドが意味を持つもの、
+    // 書き込みの場所より先の場所のうち最後のフィールドが意味を持つもの。
+    // 書き込みは、その場所の頭の部分(`via` のフィールドまでの場所)と、その場所からたどる場所の値も変える。
     // 書き込まれたフィールドとその行き先が意味を持つかが、読んだ範囲から決まらなければ沈黙する。
     let mut places: BTreeSet<Vec<String>> = after
         .meanings
@@ -661,6 +731,9 @@ fn compare(
                     }
                 }
             }
+            for q in mapping.places(&w.place) {
+                places.extend(below(after, &q, meaning)?);
+            }
         }
     }
     for br in &run2 {
@@ -672,6 +745,7 @@ fn compare(
                     places.insert(head.to_vec());
                 }
             }
+            places.extend(below(after, &w.place, meaning)?);
         }
     }
     let mut compared = Vec::new();

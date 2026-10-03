@@ -990,3 +990,116 @@ fn reading_a_head_place_after_a_nested_write_is_unchecked() {
     let r = result(&s, "m.f");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
 }
+
+/// 変更前: f(o) は o.s(S の値)を丸ごと書く。payment-info は S.p にある。a.py は O、m.py は S と f を定義する。
+fn whole(name: &str, plan_value: &str, read_meaning_of_s: bool) -> Value {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
+    repo.map("a.py", r#"{"kind": "observed", "subject": "a.py", "scope": "structure", "at": "a.py@blob:bbbbbbb"}
+{"kind": "observed", "subject": "a.py", "scope": "meaning:payment-info", "at": "a.py@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "a.py:1@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "a.py:2@blob:bbbbbbb"}
+"#);
+    let meaning_range = if read_meaning_of_s { "{\"kind\": \"observed\", \"subject\": \"m.py\", \"scope\": \"meaning:payment-info\", \"at\": \"m.py@blob:aaaaaaa\"}\n" } else { "" };
+    repo.map("m.py", &format!("{}{meaning_range}{}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+"#, r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.S.p", "meaning": "payment-info", "uses": ["m.py:7@blob:aaaaaaa"], "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "m.py:7@blob:aaaaaaa"}
+"#));
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        &format!(
+            "{}\n{{\"kind\": \"writes\", \"subject\": \"m.f\", \"object\": \"m.O.s\", \"value\": \"{plan_value}\", \"at\": \"plan:p\"}}\n",
+            r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}"#
+        ),
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f").clone();
+    if r["outcome"] == "fails" {
+        return repo.run(&["show", r["id"].as_str().unwrap()]);
+    }
+    serde_json::json!({"summary": s, "result": r})
+}
+
+#[test]
+fn a_place_below_a_written_field_with_the_meaning_is_compared() {
+    // o.s を丸ごと書くと、場所 [m.O.s, m.S.p] の値も変わる。m.S.p は payment-info を持つ。
+    let same = whole("below-same", "m.a()", true);
+    assert_eq!(same["result"]["outcome"], "holds", "{same}");
+    let changed = whole("below-changed", "m.b()", true);
+    assert_eq!(changed["kind"], "counterexample", "{changed}");
+    let places: Vec<&Value> = changed["check"]["diverging"].as_array().unwrap().iter().map(|d| &d["place"]).collect();
+    assert!(places.contains(&&serde_json::json!(["m.O.s", "m.S.p"])), "{changed}");
+}
+
+#[test]
+fn a_place_below_whose_meaning_was_not_read_is_silent() {
+    let r = whole("below-unread", "m.b()", false);
+    assert_eq!((r["result"]["outcome"].as_str(), r["result"]["reason"].as_str()), (Some("silent"), Some("unread")), "{r}");
+    assert!(r["summary"]["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py" && n["scope"] == "meaning:payment-info"), "{r}");
+}
+
+#[test]
+fn places_below_a_recursive_type_with_the_meaning_are_limit() {
+    // N.next の型は N。payment-info は N.v にある。[m.O.n] を書くと、[m.O.n, m.N.next, …, m.N.v] が限りなく変わる。
+    let repo = Repo::new("below-recursive");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.n", "value": "field", "type": "m.N", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.N", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.N.next", "value": "field", "type": "m.N", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.N.v", "value": "field", "type": "int", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.N.v", "meaning": "payment-info", "uses": ["m.py:8@blob:aaaaaaa"], "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.n", "value": "m.a()", "at": "m.py:8@blob:aaaaaaa"}
+"#);
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.n", "value": "m.a()", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
+}
+
+#[test]
+fn a_place_below_a_via_write_with_the_meaning_is_compared() {
+    // via: [m.A.o]、object: m.O.s に書く。payment-info は m.O.s の型 m.S のフィールド m.S.p にある。
+    let run = |name: &str, value: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map("m.py", MAP);
+        repo.write(
+            ".archsig/plans/p/plan.jsonl",
+            &format!(
+                "{}\n{{\"kind\": \"writes\", \"subject\": \"m.f\", \"via\": [\"m.A.o\"], \"object\": \"m.O.s\", \"value\": \"{value}\", \"at\": \"plan:p\"}}\n",
+                r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"a": "m.A"}, "file": "m.py", "at": "plan:p"}"#
+            ),
+        );
+        let s = repo.run(&["plan", "check", "p"]);
+        let r = result(&s, "m.f").clone();
+        if r["outcome"] == "fails" { repo.run(&["show", r["id"].as_str().unwrap()]) } else { r }
+    };
+    const MAP: &str = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A.o", "value": "field", "type": "m.O", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.S.p", "meaning": "payment-info", "uses": ["m.py:9@blob:aaaaaaa"], "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"a": "m.A"}, "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "via": ["m.A.o"], "object": "m.O.s", "value": "m.a()", "at": "m.py:9@blob:aaaaaaa"}
+"#;
+    assert_eq!(run("below-via-same", "m.a()")["outcome"], "holds");
+    let d = run("below-via-changed", "m.b()");
+    let places: Vec<&Value> = d["check"]["diverging"].as_array().unwrap().iter().map(|x| &x["place"]).collect();
+    assert_eq!(places, vec![&serde_json::json!(["m.A.o", "m.O.s", "m.S.p"])], "{d}");
+}
