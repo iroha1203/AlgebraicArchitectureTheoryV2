@@ -279,12 +279,12 @@ impl Structure {
         }
     }
 
-    /// 操作の本体を、呼び出しを展開した手順の列にする(設計 §3.4)。
     /// 操作 `op` の手順の Atom(書き込み、呼び出し、送信、戻り値)を、手順の順に返す。
     pub fn steps(&self, op: &str) -> Vec<&Atom> {
         self.bodies.get(op).map(|v| v.iter().map(|&i| &self.atoms[i]).collect()).unwrap_or_default()
     }
 
+    /// 操作の本体を、呼び出しを展開した手順の列にする(設計 §3.4)。
     pub fn unfold(&self, op: &str) -> Result<Vec<Step>, Silence> {
         self.expect(op, "operation")?;
         let mut out = Vec::new();

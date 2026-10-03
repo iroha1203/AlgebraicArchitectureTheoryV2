@@ -3012,6 +3012,20 @@ fn reordering_or_splitting_a_callee_is_a_changed_body() {
 "#;
     let (r, s) = run("value-call-callee", nested, h2);
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
+    // m.g が m.h を、m.h が m.k を呼ぶ。候補が二段先の m.k を書き直しても、m.g の本体は違う。
+    let two_levels = r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.g()", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "m.h()", "at": "m.py:21@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.h", "value": "operation", "params": {}, "at": "m.py:30@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.h", "value": "m.k()", "at": "m.py:31@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.k", "value": "operation", "params": {}, "at": "m.py:40@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.k", "value": "1", "at": "m.py:41@blob:aaaaaaa"}
+"#;
+    let k2 = r#"{"kind": "defines", "subject": "m.k", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+{"kind": "returns", "subject": "m.k", "value": "2", "at": "plan:p"}
+"#;
+    let (r, s) = run("two-level-callee", two_levels, k2);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
 }
 
 #[test]
@@ -3093,4 +3107,79 @@ fn the_body_of_a_callee_is_compared_in_every_part() {
         renamed,
     );
     assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn the_body_of_a_callee_is_compared_without_noise_and_with_care() {
+    let base = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#;
+    let run = |name: &str, map: &str, plan: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map("m.py", &format!("{base}{T_ATOMS}{map}"));
+        repo.write(".archsig/plans/p/plan.jsonl", plan);
+        let s = repo.run(&["plan", "check", "p"]);
+        (result(&s, "m.f").clone(), s)
+    };
+    let outcome = |name: &str, map: &str, plan: &str| {
+        let (r, s) = run(name, map, plan);
+        (r["outcome"].as_str().map(str::to_string), r["reason"].as_str().map(str::to_string), s)
+    };
+    let f_g = r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.g()", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.g", "object": "m.py", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "1", "at": "m.py:21@blob:aaaaaaa"}
+"#;
+    let z = r#"{"kind": "defines", "subject": "m.z", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+"#;
+    // 同じ指す先の resolves が一つ増えるだけなら、本体は同じ(重なりは一つと同じ)。
+    let (o, _, s) = outcome("same-resolves-again", f_g, &format!("{z}{}", r#"{"kind": "resolves", "subject": "m.g", "object": "m.py", "at": "plan:p"}
+"#));
+    assert_eq!(o.as_deref(), Some("holds"), "{s}");
+    // 解決を持つ呼び出し先を、同じ内容で書き直す。定義のある操作の本体に解決は入らない。
+    let (o, _, s) = outcome("same-rewrite-with-resolves", f_g, r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+{"kind": "returns", "subject": "m.g", "value": "1", "at": "plan:p"}
+"#);
+    assert_eq!(o.as_deref(), Some("holds"), "{s}");
+    let g_def = r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.g()", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.h", "value": "operation", "params": {}, "at": "m.py:30@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.h", "value": "1", "at": "m.py:31@blob:aaaaaaa"}
+"#;
+    let h2 = r#"{"kind": "defines", "subject": "m.h", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+{"kind": "returns", "subject": "m.h", "value": "2", "at": "plan:p"}
+"#;
+    // 読めない式の中の呼び出しはたどれないので、本体を比べられない。違うとして沈黙する。
+    let (o, r, s) = outcome("unreadable-callee", &format!("{g_def}{}", r#"{"kind": "returns", "subject": "m.g", "value": "m.h() +", "at": "m.py:21@blob:aaaaaaa"}
+"#), h2);
+    assert_eq!((o.as_deref(), r.as_deref()), (Some("silent"), Some("unchecked")), "{s}");
+    // 式に現れず calls の Atom だけで呼ぶ操作もたどる。
+    let (o, r, s) = outcome("calls-only-callee", &format!("{g_def}{}", r#"{"kind": "calls", "subject": "m.g", "object": "m.h", "at": "m.py:21@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "1", "at": "m.py:22@blob:aaaaaaa"}
+"#), h2);
+    assert_eq!((o.as_deref(), r.as_deref()), (Some("silent"), Some("unchecked")), "{s}");
+    // 手順の via だけを変える。
+    let (o, r, s) = outcome(
+        "callee-via",
+        &format!("{g_def}{}", r#"{"kind": "writes", "subject": "m.g", "via": ["m.O.s"], "object": "m.S.p", "value": "1", "at": "m.py:21@blob:aaaaaaa"}
+"#),
+        r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.g", "object": "m.S.p", "value": "1", "at": "plan:p"}
+"#,
+    );
+    assert_eq!((o.as_deref(), r.as_deref()), (Some("silent"), Some("unchecked")), "{s}");
+    // 変更前の値にだけ、本体の変わった呼び出しが現れる。
+    let (o, r, s) = outcome(
+        "changed-callee-before-only",
+        &format!("{g_def}{}", r#"{"kind": "returns", "subject": "m.g", "value": "1", "at": "m.py:21@blob:aaaaaaa"}
+"#),
+        r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+{"kind": "returns", "subject": "m.g", "value": "2", "at": "plan:p"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "1", "at": "plan:p"}
+"#,
+    );
+    assert_eq!((o.as_deref(), r.as_deref()), (Some("silent"), Some("unchecked")), "{s}");
 }

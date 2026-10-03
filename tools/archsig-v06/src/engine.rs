@@ -1048,10 +1048,12 @@ fn changed_call(before: &Structure, after: &Structure, mapping: &Mapping, v: &Va
     call_names(v, &mut names);
     names.into_iter().any(|n| {
         *bodies.entry(n.clone()).or_insert_with(|| {
-            let old = body(before, &n);
+            // 読めない式があって本体を比べられなければ、違うとする。
+            let Some(old) = body(before, &n) else { return true };
+            let differs = |t: &str| body(after, t).is_none_or(|b| b != old);
             match mapping.to.get(n.as_str()).filter(|t| !t.is_empty()) {
-                Some(targets) => targets.iter().any(|t| body(after, t) != old),
-                None => body(after, &n) != old,
+                Some(targets) => targets.iter().any(|t| differs(t)),
+                None => differs(&n),
             }
         })
     })
@@ -1072,10 +1074,12 @@ fn call_names(v: &Value, out: &mut BTreeSet<String>) {
     }
 }
 
-/// 操作 `op` の本体。`op` とそこから呼ぶ操作の構造 Atom(定義を除く)を、種類、`object`、`via`、`value`、`when` の字句で並べたもの。
+/// 操作 `op` の本体。`op` とそこから呼ぶ操作の構造 Atom(定義と解決を除く)を、種類、`object`、`via`、`value`、`when` の字句で並べたもの。
 /// 手順(書き込み、呼び出し、送信、戻り値)は手順の順のまま並べる(戻り値の後の手順のように、順に意味がある)。ほかの Atom は順によらない。
-/// そこから呼ぶ操作は、`calls` の `object` と、`value`・`when` の式の中の呼び出しである。
-fn body(s: &Structure, op: &str) -> Vec<String> {
+/// そこから呼ぶ操作は、`calls` の `object` と、`value`・`when` の式の中の呼び出しである。たどった先がさらに呼ぶ操作も含む。
+/// 定義のない操作は、その解決(`resolves` の指す先。重なりは一つ、指す先が違えば決まらない)も並べる。
+/// 構文として読めない式があれば、その先の呼び出しをたどれないので、比べられない(None)。
+fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
     let key = |a: &Atom| format!("{}|{:?}|{:?}|{:?}|{:?}", a.kind, a.object, a.via, a.value, a.when);
     let mut seen = BTreeSet::new();
     let mut todo = vec![op.to_string()];
@@ -1089,12 +1093,15 @@ fn body(s: &Structure, op: &str) -> Vec<String> {
         let mut rest: Vec<&Atom> = s
             .atoms
             .iter()
-            .filter(|a| a.is_structure() && a.kind != "defines" && (a.subject == o || a.subject.starts_with(&call)))
+            .filter(|a| a.is_structure() && !matches!(a.kind.as_str(), "defines" | "resolves") && (a.subject == o || a.subject.starts_with(&call)))
             .filter(|a| !steps.iter().any(|x| std::ptr::eq(*x, *a)))
             .collect();
         rest.sort_by_key(|a| key(a));
         // 操作の区切り。名前は入れない(呼び出し先の名前の違いは見ない)。
         out.push("op".to_string());
+        if !s.elements.get(&o).is_some_and(|e| e.kinds.contains("operation")) {
+            out.push(format!("resolves|{:?}", s.resolves.get(&o)));
+        }
         for a in steps.iter().copied().chain(rest) {
             out.push(key(a));
             if a.kind == "calls"
@@ -1104,14 +1111,15 @@ fn body(s: &Structure, op: &str) -> Vec<String> {
             }
             let mut called = BTreeSet::new();
             for text in [&a.value, &a.when].into_iter().flatten() {
-                if let Ok(e) = crate::expr::parse(text) {
-                    expr_calls(&e, &mut called);
+                match crate::expr::parse(text) {
+                    Ok(e) => expr_calls(&e, &mut called),
+                    Err(_) => return None,
                 }
             }
             todo.extend(called);
         }
     }
-    out
+    Some(out)
 }
 
 /// 式が呼ぶ操作の名前。
