@@ -2837,3 +2837,92 @@ fn a_write_after_a_return_on_the_same_line_is_not_done() {
     let s = repo.run(&["plan", "check", "p"]);
     assert_eq!(result(&s, "m.f")["outcome"], "holds", "{s}");
 }
+
+#[test]
+fn a_call_to_a_callee_whose_body_changed_is_unchecked() {
+    // m.f は m.g() の戻り値を意味を持つ m.O.t に書く。候補は m.g の戻り値を書き直し、m.f は書き直さない。
+    // 呼び出しの値を同じ項とみなす前提が、入力の上で確かめられない。
+    let run = |name: &str, f_body: &str, g_plan: &str, plan_f: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map(
+            "m.py",
+            &format!(
+                "{}{T_ATOMS}{f_body}{}",
+                r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#,
+                r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "1", "at": "m.py:21@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.n", "meaning": "payment-info", "uses": ["m.py:11@blob:aaaaaaa"], "at": "m.py:3@blob:aaaaaaa"}
+"#
+            ),
+        );
+        repo.write(
+            ".archsig/plans/p/plan.jsonl",
+            &format!(
+                "{}{{\"kind\": \"returns\", \"subject\": \"m.g\", \"value\": \"{g_plan}\", \"at\": \"plan:p\"}}\n{plan_f}",
+                r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+"#
+            ),
+        );
+        let s = repo.run(&["plan", "check", "p"]);
+        (result(&s, "m.f").clone(), s)
+    };
+    let writes_g = r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.g()", "at": "m.py:10@blob:aaaaaaa"}
+"#;
+    // 戻り値を書き直すと、値に m.g() を含む場所は比べられない。
+    let (r, s) = run("changed-callee-value", writes_g, "2", "");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
+    // 条件に m.g() を含むと、分岐の組み方が決まらない。
+    let when_g = r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "1", "when": "m.g() == 1", "at": "m.py:10@blob:aaaaaaa"}
+"#;
+    let (r, s) = run("changed-callee-condition", when_g, "2", "");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
+    // 本体が同じなら、これまでどおり同じ項として計算する(対照)。
+    let (r, s) = run("same-callee-value", writes_g, "1", "");
+    assert_eq!(r["outcome"], "holds", "{s}");
+    // m.g() を含む場所は比べないが、意味を持つ m.O.n で食い違えば反例になる。
+    let f_two = format!("{writes_g}{}", r#"{"kind": "writes", "subject": "m.f", "object": "m.O.n", "value": "1", "at": "m.py:11@blob:aaaaaaa"}
+"#);
+    let plan_f = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.g()", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.n", "value": "2", "at": "plan:p"}
+"#;
+    let (r, s) = run("changed-callee-other-place", &f_two, "2", plan_f);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+}
+
+#[test]
+fn a_call_to_a_callee_that_calls_a_changed_body_is_unchecked() {
+    // m.f は m.g() を m.O.t に書き、m.g は m.h を呼んで返す。候補は m.h だけを書き直す。m.g の結果も変わりうる。
+    let repo = Repo::new("changed-callee-nested");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        &format!(
+            "{}{T_ATOMS}{}",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#,
+            r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.g()", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.g", "object": "m.h", "at": "m.py:21@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "m.h()", "at": "m.py:22@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.h", "value": "operation", "params": {}, "at": "m.py:30@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.h", "value": "1", "at": "m.py:31@blob:aaaaaaa"}
+"#
+        ),
+    );
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.h", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+{"kind": "returns", "subject": "m.h", "value": "2", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
+}
