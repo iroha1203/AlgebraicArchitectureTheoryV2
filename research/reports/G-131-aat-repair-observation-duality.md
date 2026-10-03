@@ -1078,6 +1078,7 @@ G-130 の元二面の obstruction quotient と同一視しない。元二面の�
 `success_or_both_known` は未既知方向がある各 fiber の成功実入力を入力から構成する。
 有限 controller は選択済み成功修復を入力に取らず、構造・permission・L/s と visible 返信のみを読む。
 全 private h は `private_values` と native 全座標の対応で保持される。
+新しい `ValidSplit` は `valid_examples` で同じ入力の正しい private-h 全値と誤った u の全値を受理/拒否する。
 追加の conclusion field、結論を含む structure、未放電 certificate はない。
 
 ### C10 material premise と predecessor
@@ -1102,7 +1103,7 @@ C2/C8/C9 の署名と必要な本文を同じ適用引数で照合した。
 
 ### C10 明示 spine と検証
 
-全12 source の exact source-prefix に、以下の全144公開宣言の `#print axioms` を付けて
+全12 source の exact source-prefix に、以下の全145公開宣言の `#print axioms` を付けて
 root が focused check した。全12件 exit 0、warning なし、通常の
 `propext/Classical.choice/Quot.sound` のみ。各行の名前は
 `AAT.AG.RepairObservationDuality.<source stem>.` を補う。
@@ -1118,7 +1119,7 @@ root が focused check した。全12件 exit 0、warning なし、通常の
 | `W1RestrictedQueries.lean` | `primitiveRx`, `evaluateRx`, `evaluateRx_values`, `invisible`, `actual_pair`, `no_numerical_set`, `no_decision_set`, `no_actual_numerical`, `no_actual_decision` | `de151220515943f9c27c0bfc293dcb606a446defcc72d6afd12bb1babb0894c7` | `77e5daf4254113b28657b286429825ea3450053e3fecf3736886742f470ee078` |
 | `PrimitiveOutputMap.lean` | `transport`, `transport_apply`, `run_forward`, `run_backward`, `correct`, `worst_eq`, `optimum_le` | `7c8831789408322b1b33682db74dc80c881566ea17814cb1d6e8c2a2db1bb880` | `c4d296b0125058fc471ef6218d2bd645dc8a8eade75e25ae026a888276c3631f` |
 | `W1UpdatedQueries.lean` | `updated`, `retained_same`, `original_section_same`, `original_rows_same`, `unreceived`, `notified` | `618a965dfa9272bd15110aa6f6f9884716b2978fbd4a5d4921a4de9e46914540` | `0366ae19986e032cd7362d015c177e405261820ab959b1ec4f9004a802eebd1d` |
-| `W1SubdivisionQueries.lean` | `SplitCorrections`, `collapse`, `extend`, `collapse_extend`, `extend_collapse`, `ValidSplit`, `validSplit_iff`, `valid_extend_iff`, `restore`, `restore_factors`, `restore_old`, `original_rx`, `original_ry`, `actual_solvable_iff`, `decision_valid_iff`, `decision_optimum`, `extendProcedure`, `collapseProcedure`, `optimum_eq`, `extend_run`, `collapse_run`, `generated_correct`, `generated_optimal` | `48820d910098fed5a81ff0e7461173fd29a473d46fce2b37ac88be786dcc3457` | `245cb63338aa44fb0a8351537a93c35472817dcd7c4fb82d06b1f936eb20f52a` |
+| `W1SubdivisionQueries.lean` | `SplitCorrections`, `collapse`, `extend`, `collapse_extend`, `extend_collapse`, `ValidSplit`, `validSplit_iff`, `valid_extend_iff`, `valid_examples`, `restore`, `restore_factors`, `restore_old`, `original_rx`, `original_ry`, `actual_solvable_iff`, `decision_valid_iff`, `decision_optimum`, `extendProcedure`, `collapseProcedure`, `optimum_eq`, `extend_run`, `collapse_run`, `generated_correct`, `generated_optimal` | `75c9ff91712481cad319a8b5c854f54f22082e43834e206e10c81185bca64f40` | `396ec46b788b2aa0b78cb3a87f7e2db269d4ee72f5ef5c8d92026ea1b4d8caa4` |
 | `W1SubdivisionValues.lean` | `oldValues`, `old_parameters`, `old_valid`, `splitValues`, `collapse_values`, `split_valid`, `restore_values`, `actual_some_iff`, `actual_none_iff` | `9f9d5fffc9fdf031801721fdc455d05707d24c74f8f6bb5181bd268c0aadc607` | `f27a4822ccab92bfbb61ef3dc6352ea3360e408a006db1aeb43f0cedb73a522a` |
 | `W1DualQueries.lean` | `pullback`, `pullback_apply`, `actual_value`, `acquisition_iff`, `sufficient`, `read_actual` | `490d6b106e484c9671aa75027390427169b2b76ea39b6c06726587d41a1e5db3` | `e6e70c628ab9d451319ab840fca2a3b17ac782ceccaf3d2f4596b9f6fbe92c36` |
 
@@ -1133,10 +1134,10 @@ Research import / package direction は PASS。差分 public artifact / legacy /
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: "同じ W1 の全物理入力・評価・元全補正/微分/defect・全表・finite actual controllers・関係受領・dual取得・更新・分割全数値/費用・rx-only不能を放電"
-  exit_criteria_status: ["全原始操作/実現/評価", "全S・private h・元二面と全禁止mask", "全 regime の判定/数値表と全adaptive下限", "finite全出力/元実修復/停止/費用", "非空生成関係から両値", "更新1/0と元section/rows", "任意既知rの全split出力と両向きtrace/cost/全actual同定", "全144公開宣言個別公理clean"]
+  exit_criteria_status: ["全原始操作/実現/評価", "全S・private h・元二面と全禁止mask", "全 regime の判定/数値表と全adaptive下限", "finite全出力/元実修復/停止/費用", "非空生成関係から両値", "更新1/0と元section/rows", "任意既知rの全split出力と両向きtrace/cost/全actual同定", "全145公開宣言個別公理clean"]
   split_reason: none
   completion_candidate: no
-  lean_artifacts: ["上記12 source / 144明示公開宣言"]
+  lean_artifacts: ["上記12 source / 145明示公開宣言"]
   evidence: [actual_iff, numerical_table, empty_decision_table, optimal, physical_fiber, unreceived, notified, generated_optimal, actual_some_iff, actual_none_iff, actual_pair, no_actual_numerical, no_actual_decision]
   claim_mapping:
     theorem_names: [W1NumericalEquation.original_differential, W1PhysicalInputs.values_realize, W1GeneratedNumericalPlan.optimal, W1GeneratedDecisionPlan.optimal, W1ReceivedRelations.received_numerical, W1UpdatedQueries.unreceived, W1UpdatedQueries.notified, W1SubdivisionQueries.generated_optimal, W1SubdivisionValues.actual_some_iff, W1RestrictedQueries.no_actual_decision]
@@ -1161,7 +1162,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: ["上記12 exact source-prefix/144個別公理/各SHA", "共通scanと標準独立査読・CI は PR audit に固定"]
+  validation_refs: ["上記12 exact source-prefix/145個別公理/各SHA", "共通scanと標準独立査読・CI は PR audit に固定"]
   blocking_findings: []
   next_obligation: "E の F2 四辺 K+ 候補 c / 全数値2回 / e:=a,c:=b∘a⁻¹ の零回参照式 / 最終累積 A–E 判定"
 ```

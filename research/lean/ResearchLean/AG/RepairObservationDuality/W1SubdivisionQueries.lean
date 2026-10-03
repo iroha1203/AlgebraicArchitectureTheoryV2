@@ -60,6 +60,21 @@ theorem valid_extend_iff (p : Permissions) (v : Values) (r : ZMod 3) (out : Opti
   | none => rfl
   | some a => simp only [Option.map_some,collapse_extend]
 
+/-- The whole split validator admits a complete private-h value and rejects a wrong original u on the same actual input. -/
+theorem valid_examples (p : Permissions) :
+    ValidSplit p (0 : Values) (some (extend 0 ![0,1,0,0])) ∧
+      ¬ ValidSplit p (0 : Values) (some (extend 0 ![1,0,0,0])) := by
+  constructor
+  · exact (valid_extend_iff p 0 0 (some ![0,1,0,0])).mpr
+      ((validOutput_some_iff _ _ _ _).mpr (private_values p 1))
+  · intro hb
+    have he := (validOutput_some_iff _ _ _ _).mp
+      ((valid_extend_iff p 0 0 (some ![1,0,0,0])).mp hb)
+    have h0 := congrFun he 0
+    rw [differential_apply] at h0
+    exact (one_ne_zero : (1 : ZMod 3) ≠ 0) (by simpa only [affineRhs,zero_add,rhsLinear_apply,
+      Matrix.cons_val_zero,Matrix.cons_val_one,Matrix.cons_val_two,Pi.zero_apply,add_zero] using h0)
+
 /-- Every valid full split tuple constructs an independent actual supported repair of the original split tower. -/
 noncomputable def restore (p : Permissions) (v : Values) (b : SplitCorrections)
     (hb : ValidSplit p v (some b)) : W1SubdivisionRepairs.NewRepairs (v false) (v true) (allowed p) :=
