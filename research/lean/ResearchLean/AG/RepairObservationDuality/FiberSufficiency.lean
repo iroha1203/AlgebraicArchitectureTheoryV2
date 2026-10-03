@@ -23,6 +23,10 @@ variable {V H W T : Type*} (D : H → W) (rhs : V → W)
 /-- C's independent solvability predicate for the specified correction equation. -/
 def Solvable (v : V) : Prop := ∃ h, D h = rhs v
 
+/-- Solvability is existence of a full correction satisfying the same RHS. -/
+theorem solvable_iff_exists (v : V) :
+    Solvable D rhs v ↔ ∃ h, D h = rhs v := Iff.rfl
+
 /-- C's output fixes all coordinates of a correction or certifies impossibility. -/
 def ValidOutput (v : V) : Option H → Prop
   | none => ¬ Solvable D rhs v

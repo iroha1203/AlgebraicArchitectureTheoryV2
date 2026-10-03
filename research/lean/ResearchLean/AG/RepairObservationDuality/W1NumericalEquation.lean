@@ -130,14 +130,14 @@ theorem original_rhs (v : Values) (f : Bool) :
     faceCoordinates true (v false) (v true) (-actualDefect true (v false) (v true)) f =
       affineRhs rhsLinear 0 v (if f then 1 else 0) := by
   rw [signedDefect_coordinates]
-  cases f <;> simp [affineRhs,rhsLinear]
+  cases f <;> simp [affineRhs_apply,rhsLinear]
 
 /-- The complete equation is precisely both original authored Laws and both original candidate masks. -/
 theorem equation_iff (p : Permissions) (v : Values) (a : Corrections) :
     differential p a = affineRhs rhsLinear 0 v ↔
       Equations true (v false) (v true) (parameters a) ∧ Allowed (allowed p) (parameters a) := by
   rw [differential_apply]
-  simp only [affineRhs,zero_add,rhsLinear_apply]
+  simp only [affineRhs_apply,zero_add,rhsLinear_apply]
   constructor
   · intro h
     have h0 := congrFun h 0
@@ -187,21 +187,21 @@ theorem solvable_iff (p : Permissions) (v : Values) :
     · refine ⟨![v false,0,0,0],?_⟩
       rw [differential_apply]
       ext i
-      fin_cases i <;> simp [affineRhs,rhsLinear_apply,he]
+      fin_cases i <;> simp [affineRhs_apply,rhsLinear_apply,he]
     · let u := 2 * (v false + v true)
       have hchar : ∀ x y : ZMod 3, 2 * (x + y) - (x - 2 * (x + y)) = y := by decide
       refine ⟨![u,0,v false - u,0],?_⟩
       rw [differential_apply]
       ext i
       fin_cases i
-      · simp [affineRhs,rhsLinear_apply]
-      · simpa [affineRhs,rhsLinear_apply,u] using hchar (v false) (v true)
-      · simp [hb,affineRhs,rhsLinear_apply]
-      · simp [affineRhs,rhsLinear_apply]
+      · simp [affineRhs_apply,rhsLinear_apply]
+      · simpa [affineRhs_apply,rhsLinear_apply,u] using hchar (v false) (v true)
+      · simp [hb,affineRhs_apply,rhsLinear_apply]
+      · simp [affineRhs_apply,rhsLinear_apply]
     · refine ⟨![v false,0,0,v true - v false],?_⟩
       rw [differential_apply]
       ext i
-      fin_cases i <;> simp [hc,affineRhs,rhsLinear_apply]
+      fin_cases i <;> simp [hc,affineRhs_apply,rhsLinear_apply]
 
 /-- The residual native cokernel detects exactly the same full original feasibility. -/
 theorem residual_kernel_iff (p : Permissions) (v : Values) :
@@ -209,7 +209,8 @@ theorem residual_kernel_iff (p : Permissions) (v : Values) :
       v true = v false ∨ p false = true ∨ p true = true := by
   change (LinearMap.range (differential p)).mkQ (rhsLinear v) = 0 ↔ _
   have h : (∃ a, differential p a = rhsLinear v) ↔
-      Solvable (differential p) (affineRhs rhsLinear 0) v := by simp only [Solvable,affineRhs,zero_add]
+      Solvable (differential p) (affineRhs rhsLinear 0) v := by
+    simp only [solvable_iff_exists,affineRhs_apply,zero_add]
   exact (Submodule.Quotient.mk_eq_zero (LinearMap.range (differential p))).trans
     (h.trans (solvable_iff p v))
 
@@ -244,7 +245,7 @@ theorem private_values (p : Permissions) (r : ZMod 3) :
     differential p ![0,r,0,0] = affineRhs rhsLinear 0 (0 : Values) := by
   rw [differential_apply]
   ext i
-  fin_cases i <;> simp [affineRhs,rhsLinear_apply]
+  fin_cases i <;> simp [affineRhs_apply,rhsLinear_apply]
 
 /-- The original empty mask rejects the actual nonzero ry input, but either original single candidate permits it. -/
 theorem permission_examples :

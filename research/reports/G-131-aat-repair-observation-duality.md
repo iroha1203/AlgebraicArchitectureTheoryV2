@@ -1339,7 +1339,7 @@ audits:
 
 C1–C10 の受理結果は実装者の全体完了申告として採用しない。
 最終査読は固定 GOAL と**現在の累積 source / declaration / 各 raw 公理記録**を直接読む。
-現在55 source の746明示公開宣言すべてに個別公理出力を対応させた。
+現在55 source の747明示公開宣言すべてに個別公理出力を対応させた。
 C11 AST の65生成公開宣言も追加で全個別出力を保持する。
 初期 C3 の raw が local scratch に残っていなかった二 source と、後で API が追加された
 `FiberSufficiency/PrimitiveQueries/QueryOptimum` の三 source は、全 current exact-prefix 個別 audit で
@@ -1352,3 +1352,31 @@ Research上の目標証明と本体への蒸留は区別する。今回の固定
 `Formal/`への移植は実行していない。G-130とG-131の本体移植状態は引き続き `unported`。
 ``/goal``用の専用実行機構はこの環境に公開されていないため、同じskillの実装・査読・完了・停止規則を
 直接実行している。この制限を未実行の専用機構として記録し、GOALの数学targetは変更しない。
+
+
+## C11 最終累積 gate 初回の品質指摘と修正
+
+固定 head `5a98d617e84f71350dce6251c7b41f18f2b8d3c4` の最終累積査読は、数学A/B・LeanBが
+`No major findings`、LeanAが非中心の no-unfold 指摘一件により `Minor issues`。
+全四本の結果を集め、[初回最終監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5974043959)
+へ記録した。中心未確認・未放電・弱化は検出されなかったが、最終判定は `target-proof-checkpoint`。
+停止条件には該当していない。
+
+指摘対象の `W1NumericalEquation/QueryOptimum/W1SubdivisionQueries` の下流証明を
+既存 `affineRhs_apply` に接続し、`FiberSufficiency.solvable_iff_exists` を定義直後の
+存在特徴づけ API として追加して同じ可解性の証明に用いる。
+既存 statement、def/instance の値、対象入力、最適値、宣言の削除、import は変更しない。
+新規 API は `Solvable D rhs v ↔ ∃ h, D h = rhs v` の基本正規化のみで、数学的な仮定を加えない。
+現在の累積は55 source・747明示公開名とK+ AST生成65名で812個別名となる。
+旧 cycle の hash・判定はその固定版の履歴として保持し、current prefix/hash/rawは新しい最終packetで固定する。
+修正四 source と新規APIのfocused check・個別公理出力・scan、修正headの標準PR再監査・必要CIを通し、
+その後に別の新規四本で全A–E最終gateを再実行する。最終gateの指摘に直接対応を適用しない。
+
+変更四 source の actual/prefix focused checks はすべて exit0、warning/errorなし。
+
+| source | 個別名 | current source SHA256 | raw SHA256 |
+| --- | --- | --- | --- |
+| `FiberSufficiency.lean` | 29 | `3dbd8fe494245c8575ca97a2553fd28141120cf49ba707ae273315672a5f75cb` | `9e7ac62b15a1088a33b184f5ae541a8cbfd97a31c280f6ca0788d1a25f0fa5be` |
+| `QueryOptimum.lean` | 29 | `e113e114454ffabde5c151491ef81b5a2d2596ff84d0b5834bf272cf15c50ad9` | `635833d276afd2b2a2530fdcce6873006df6d4cb75dd5753103c4b630c6b0d32` |
+| `W1NumericalEquation.lean` | 29 | `9056d8268ccebcca66bba4b379198ff8c31c9c086747c39d66594e8f8bc61c21` | `d3a0fb07a6220c27fe799e5e210e322b4397a26fa09c7571b38e6dccc754ab55` |
+| `W1SubdivisionQueries.lean` | 28 | `e3270fbb87cefdc06f9e92df3e10b5c466257951e8946463446ea0ac9de96357` | `3a32a8fd82a34e09459b96a4ce02c035c7f39a0f1d9ebaaade378e61167821eb` |

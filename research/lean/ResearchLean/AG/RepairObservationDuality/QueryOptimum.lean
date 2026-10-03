@@ -382,10 +382,10 @@ theorem valid_decision_examples :
     ¬ ValidDecision (0 : k →ₗ[k] k) LinearMap.id 0 0 false ∧
     ValidDecision (0 : k →ₗ[k] k) LinearMap.id 0 1 false ∧
     ¬ ValidDecision (0 : k →ₗ[k] k) LinearMap.id 0 1 true := by
-  have hzero : Solvable (0 : k →ₗ[k] k) (affineRhs (LinearMap.id (R := k) (M := k)) 0) 0 := ⟨0, by simp [affineRhs]⟩
+  have hzero : Solvable (0 : k →ₗ[k] k) (affineRhs (LinearMap.id (R := k) (M := k)) 0) 0 := ⟨0, by simp [affineRhs_apply]⟩
   have hone : ¬ Solvable (0 : k →ₗ[k] k) (affineRhs (LinearMap.id (R := k) (M := k)) 0) 1 := by
     rintro ⟨h, he⟩
-    simp only [affineRhs, LinearMap.zero_apply, LinearMap.id_apply, zero_add] at he
+    simp only [affineRhs_apply, LinearMap.zero_apply, LinearMap.id_apply, zero_add] at he
     exact (zero_ne_one : (0 : k) ≠ 1) he
   exact ⟨iff_of_true rfl hzero, fun h => Bool.false_ne_true (h.mpr hzero),
     iff_of_false Bool.false_ne_true hone, fun h => hone (h.mp rfl)⟩
