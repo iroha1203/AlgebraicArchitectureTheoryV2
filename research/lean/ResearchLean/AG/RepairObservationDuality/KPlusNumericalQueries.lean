@@ -20,7 +20,7 @@ def known : Values →ₗ[ZMod 2] Values := 0
 /-- With no initial value, the known fiber is the entire original parameter space. -/
 theorem known_fiber : informationFiber known 0 = Set.univ := by
   ext v
-  simp [informationFiber,known]
+  simp [mem_informationFiber,known]
 /-- The numerical and reference controllers both range over every same original physical input. -/
 theorem physical_fiber : values ⁻¹' informationFiber known 0 = Set.univ := by
   rw [known_fiber]

@@ -1242,7 +1242,7 @@ controller に渡すのは既知の構造と履歴だけで、有限 visible rea
 入力値によらず `e:=a,c:=b∘a⁻¹` の AST を構成し、同じ物理 a/b を解釈に用いる。
 独立な `ValidProgram` は元二面の全操作等号そのもので、`program_valid` は全物理入力で両面を証明する。
 `restore` は同じ元四操作・元線形部・固定 a/b の actual repair を返す。
-`correct/run/worst_zero/optimum_zero` は全 physical controller に対する停止・正答・空 trace・最適零回を証明する。
+構成した controller は全 physical input で停止・正答し空 trace を持ち、その worst と全正答 adaptive controller の optimum が零であることを `correct/run/worst_zero/optimum_zero` が証明する。
 数値と参照の fiber は同じ全入力 (`physical_fiber`) で、`same_faces` と `optimum_difference` によって
 同じ二面の実等号と出力言語別の二回／零回を対応させた。
 
@@ -1274,8 +1274,8 @@ Research 全体 build、全 file elaboration loop、ローカル Formal フル b
 | --- | --- | --- | --- |
 | `KPlusInput.lean` | 47 | `2c51fb3a4a3f44dc038a51da023a9c632a6795d1d31d65a1429c37e40805445d` | `a7f13a7754db9707849ff4dd80c4f655d6704f06395b2395aa244279c516409b` |
 | `KPlusActualRepairs.lean` | 32 | `10bead39d757b4a2add273894fe025b494cc5f4460e1c6e9fce994b49b1ebc93` | `c70f91f7ad696ca97c8df870674f6059bc32d12af1432eb1d31d523fa85adfb6` |
-| `KPlusNativeEquation.lean` | 28 | `40e2b2300a1b4487df53bb1a7016c9289b67dcd7b2a5953eda88a067895d792c` | `4455de0a204fc5336d3559cbd668935d6467e7a2db0402a0cc8fcc14ecbda035` |
-| `KPlusNumericalQueries.lean` | 22 | `f1bd16b82be289274d8968c6a2cfd2a8f2f70237263f1dc613ab5255a817c3d1` | `5c51ce15beab029c1ba5ab016b4f3d3c90760f6f82f19164d441c1feed816ff1` |
+| `KPlusNativeEquation.lean` | 28 | `a1f96652efe05730a036237b509c91108f71e06ed3ff0f467b4c12a62251f053` | `4455de0a204fc5336d3559cbd668935d6467e7a2db0402a0cc8fcc14ecbda035` |
+| `KPlusNumericalQueries.lean` | 22 | `ec6497fa0ddd5ed4522d18fb2c16fbe6f6cdebcff5a25e408fe50bd69b1e40c7` | `5c51ce15beab029c1ba5ab016b4f3d3c90760f6f82f19164d441c1feed816ff1` |
 | `KPlusReferencePrograms.lean` | 96 | `e6e3cd0394214aa591f2137be17dac759de92ac34b38df91e06c1d30a77a687d` | `87f27097397f1e2cb93c8da5417656a3cb058687f43dae660dd47aef6f1d5181` |
 
 共通 scan は `git diff --check`、変更七 artifact の hidden/bidi、placeholder、privacy/local path、
@@ -1317,7 +1317,7 @@ audits:
 固定 target は active commit `dbed043cb514e8c964589d2e12e982750c87ae83` の GOAL blob
 `054fea81b916c4d4a470b74af3e13c6cc5dde01c`。現在カード blob
 `61ba46c3af2266cbaafcc2a1f00137b9b08299c9` の変更は設計リンクだけで、target A–E は同じ。
-同じ fixed commit の target theorem loop / acceptance / completion ledger / math-lean-review / 共有契約を
+同じ fixed commit の target theorem loop / acceptance / completion ledger / math-lean-review / 共有検査基準を
 読み、現行適用版が同内容であることを照合する。n1017 の SHA256 は
 `5eb80b86b932abc5ca923166f879e29473dcbe38c172b57e55326a134841b996`。
 

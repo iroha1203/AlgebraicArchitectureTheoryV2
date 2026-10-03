@@ -137,11 +137,11 @@ theorem equation_iff (h : Values) :
   rw [equations_iff]
   constructor
   · intro he
-    exact ⟨by simpa [differential_apply,affineRhs,rhsLinear_apply] using congrFun he false,
-      by simpa [differential_apply,affineRhs,rhsLinear_apply] using congrFun he true⟩
+    exact ⟨by simpa [differential_apply,affineRhs_apply,rhsLinear_apply] using congrFun he false,
+      by simpa [differential_apply,affineRhs_apply,rhsLinear_apply] using congrFun he true⟩
   · rintro ⟨h0,h1⟩
     ext f
-    cases f <;> simpa [differential_apply,affineRhs,rhsLinear_apply] using (by assumption)
+    cases f <;> simpa [differential_apply,affineRhs_apply,rhsLinear_apply] using (by assumption)
 /-- Every original input has a full numeric solution when its c candidate is permitted. -/
 theorem solvable : Solvable differential (affineRhs rhsLinear 0) v := by
   refine ⟨fun j => if j then v true - v false else v false,?_⟩
