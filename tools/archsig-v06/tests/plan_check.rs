@@ -1368,3 +1368,27 @@ fn a_place_two_fields_below_is_compared() {
     let places: Vec<&Value> = r["check"]["diverging"].as_array().unwrap().iter().map(|d| &d["place"]).collect();
     assert_eq!(places, vec![&serde_json::json!(["m.O.s", "m.S.t", "m.T.p"])], "{r}");
 }
+
+#[test]
+fn a_write_before_is_also_followed_through_the_type_after() {
+    // 変更前は o.s(型 m.S、意味を持つフィールドなし)を書く。候補は o.s の型を m.S2 に変え、m.S2.r: m.T を足し、o.s に書かない。
+    // m.T.p は payment-info を持つ。変更前に書いた値から、変更後の型でたどる場所 [m.O.s, m.S2.r, m.T.p] の値が変わる。
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.q", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T.p", "value": "field", "type": "int", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.T.p", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:6@blob:aaaaaaa"}
+"#
+    );
+    let plan = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S2", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S2", "value": "type", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S2.r", "value": "field", "type": "m.T", "file": "m.py", "at": "plan:p"}
+"#;
+    let (s, r) = below_case("below-before-after-type", &atoms, plan);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    let places: Vec<&Value> = r["check"]["diverging"].as_array().unwrap().iter().map(|d| &d["place"]).collect();
+    assert!(places.contains(&&serde_json::json!(["m.O.s", "m.S2.r", "m.T.p"])), "{r}");
+}

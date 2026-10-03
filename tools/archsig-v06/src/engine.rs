@@ -783,7 +783,8 @@ fn compare(
                     }
                 }
             }
-            // 変更前の書き込みは、変更前の型でたどり、対応で変更後の名前に写す。
+            // 変更前の書き込みは、変更前の型でたどって対応で変更後の名前に写した場所と、
+            // 写した書き込みの場所から変更後の型でたどった場所の、両方を比べる。
             for p in below.places(before, &w.place, meaning)? {
                 for q in mapping.places(&p) {
                     meaning_known(after, q.last().unwrap(), meaning)?;
@@ -791,6 +792,9 @@ fn compare(
                         places.insert(q);
                     }
                 }
+            }
+            for q in mapping.places(&w.place) {
+                places.extend(below.places(after, &q, meaning)?);
             }
         }
     }
