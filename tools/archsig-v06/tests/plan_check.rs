@@ -2604,6 +2604,8 @@ fn a_callee_whose_resolution_is_undecided_does_not_decide_whether_a_removed_elem
         let s = run(name, second);
         let r = row(&s).unwrap_or_else(|| panic!("{name}: {s}"));
         assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
+        // 解決が決まらない呼び出し先には読む所がないので、読む所のない項目を next に出さない。
+        assert!(s["next"].as_array().unwrap().iter().all(|n| n.get("read").is_some() || n.get("element").is_some()), "{name}: {s}");
     }
 }
 
@@ -2640,6 +2642,39 @@ fn an_operation_defined_in_two_places_does_not_decide_whether_a_removed_element_
         let s = run(name, body);
         let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.j" && r["law"].is_null()).cloned();
         let r = r.unwrap_or_else(|| panic!("{name}: {s}"));
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
+    }
+}
+
+#[test]
+fn an_operation_with_one_valueless_defines_still_decides_what_it_names() {
+    // m.k の defines は一つで value がない。種類は決まらないが、引数の型は決まっているので、名指す要素も決まる。
+    // m.k は消える m.T.b を名指さないので、消える要素を使うかの行は出さない。
+    let (_, s) = splitting_with(
+        "valueless-op-names",
+        r#"{"kind": "defines", "subject": "m.k", "params": {"o": "m.T"}, "at": "m.py:9@blob:ccccccc"}
+"#,
+        "{\"kind\": \"removes\", \"subject\": \"m.T.b\", \"at\": \"plan:p\"}\n",
+    );
+    assert!(!s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.k" && r["law"].is_null()), "{s}");
+}
+
+#[test]
+fn a_type_whose_resolution_is_undecided_is_unresolved_when_traced() {
+    // m.T.q の型 x.Resp の resolves が二つあり、指す先が違う。m.T.q に書くと、その型のフィールドをたどる所で、
+    // 外部の型(意味を持つフィールドを持たない)とみなせないので、unresolved で沈黙する。
+    let extra = r#"{"kind": "defines", "subject": "m.T.q", "value": "field", "type": "x.Resp", "at": "m.py:9@blob:ccccccc"}
+{"kind": "resolves", "subject": "x.Resp", "object": "external:x", "at": "m.py:9@blob:ccccccc"}
+{"kind": "resolves", "subject": "x.Resp", "object": "external:y", "at": "m.py:10@blob:ccccccc"}
+"#;
+    // 書くのは候補だけ。変更前の操作は m.T.q に書かないので、型をたどるのは変更後の側だけである。
+    let write = r#"{"kind": "writes", "subject": "m.f", "object": "m.T.q", "value": "1", "at": "plan:p"}
+"#;
+    // 候補が x.Resp を定義し直しても、変更前の解決が決まらないので、元のフィールドは分からない。
+    let redefine = r#"{"kind": "defines", "subject": "x.Resp", "value": "type", "file": "m.py", "at": "plan:p"}
+"#;
+    for (name, plan) in [("undecided-type-traced", format!("{REWRITE_F}{write}")), ("undecided-type-redefined", format!("{REWRITE_F}{write}{redefine}"))] {
+        let (r, s) = splitting_with(name, extra, &plan);
         assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
     }
 }

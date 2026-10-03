@@ -619,8 +619,8 @@ fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn
     // 種類の決まらない要素(`value` のない `defines`)も、操作かもしれないので数える。`missing` の結論で沈黙する。
     for (op, e) in s.elements.iter().filter(|(n, e)| (e.kinds.contains("operation") || e.kinds.contains("")) && !skip(n)) {
         named.entry(op.clone()).or_default().extend(e.params.values().cloned());
-        // 種類の決まらない操作(二か所の `defines` など)は、引数の型が決まらないので、名指す要素も決まらない。
-        if e.undecided()
+        // 二か所以上に定義した操作は、引数の型が決まらないので、名指す要素も決まらない。
+        if e.defined.len() > 1
             && let Some(a) = s.atoms.iter().find(|a| a.kind == "defines" && a.subject == *op)
         {
             out.untraced.entry(op.clone()).or_default().push((Gap::Name(op.clone()), a.clone()));

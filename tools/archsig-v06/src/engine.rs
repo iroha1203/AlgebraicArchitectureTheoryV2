@@ -1146,7 +1146,8 @@ fn unread_sources(s: &Structure, sources: &[String], scope: &str) -> Vec<Silence
 
 /// 候補が書き直していない操作が `removes` した要素を使えば `missing`(マニュアル第5章 問い3)。
 /// 名指す事実は候補を重ねる処理が返す。操作と決まらない名前(曖昧、`?`)は沈黙する。
-/// 定義を読んでいない操作は、消える要素を使うかが決まらない。それらは一つの沈黙にまとめ、読む所を返す。
+/// 定義を読んでいない操作と、定義がなく解決が決まらない呼び出し先は、消える要素を使うかが決まらない。
+/// それらは一つの沈黙にまとめ、読む所があれば返す。
 fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, sources: &[String]) -> Vec<Finding> {
     let mut out = Vec::new();
     if !overlay.removes.is_empty() {

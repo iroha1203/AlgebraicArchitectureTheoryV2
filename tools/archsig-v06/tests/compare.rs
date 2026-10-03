@@ -477,15 +477,12 @@ fn a_moved_field_defined_in_two_places_after_reobservation_is_unresolved() {
         after.map(
             "m.py",
             &format!(
-                "{common}{{\"kind\": \"defines\", \"subject\": \"m.T.r\", \"value\": \"field\", \"type\": \"{}\", \"at\": \"m.py:2@blob:aaaaaaa\"}}\n{{\"kind\": \"defines\", \"subject\": \"m.T.r\", \"value\": \"field\", \"type\": \"{}\", \"at\": \"m.py:8@blob:aaaaaaa\"}}\n{}",
+                "{common}{{\"kind\": \"defines\", \"subject\": \"m.T.r\", \"value\": \"field\", \"type\": \"{}\", \"at\": \"m.py:2@blob:aaaaaaa\"}}\n{{\"kind\": \"defines\", \"subject\": \"m.T.r\", \"value\": \"field\", \"type\": \"{}\", \"at\": \"m.py:8@blob:aaaaaaa\"}}\n{}{}",
                 types[0],
                 types[1],
-                format!(
-                    "{}{}",
-                    if meaning_on_r { "{\"kind\": \"meaning\", \"subject\": \"m.T.r\", \"meaning\": \"payment-info\", \"uses\": [\"m.py:2@blob:aaaaaaa\"], \"at\": \"m.py:2@blob:aaaaaaa\"}\n" } else { "" },
-                    r#"{"kind": "writes", "subject": "m.f", "object": "m.T.k", "value": "1", "at": "m.py:10@blob:aaaaaaa"}
+                if meaning_on_r { "{\"kind\": \"meaning\", \"subject\": \"m.T.r\", \"meaning\": \"payment-info\", \"uses\": [\"m.py:2@blob:aaaaaaa\"], \"at\": \"m.py:2@blob:aaaaaaa\"}\n" } else { "" },
+                r#"{"kind": "writes", "subject": "m.f", "object": "m.T.k", "value": "1", "at": "m.py:10@blob:aaaaaaa"}
 "#
-                )
             ),
         );
         after.write(
