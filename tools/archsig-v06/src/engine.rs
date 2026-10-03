@@ -1104,7 +1104,7 @@ fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
         out.push("op".to_string());
         if let Some(e) = s.elements.get(&o).filter(|e| e.kinds.contains("operation")) {
             // 定義からは、引数の名前と型を比べる。
-            if e.params.values().any(|t| t.starts_with('?')) {
+            if e.params.iter().any(|(n, t)| n.starts_with('?') || t.starts_with('?')) {
                 return None;
             }
             out.push(format!("params|{:?}", e.params));
@@ -1143,12 +1143,13 @@ fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
     Some(out)
 }
 
-/// 式が呼ぶ操作の名前を集める。式に `?` が関われば(`?` の値、`?` で始まる名前)、偽を返す。
+/// 式が呼ぶ操作の名前を集める。式に `?` が関われば(`?` の値、`?` で始まる名前と道のフィールド)、偽を返す。
 fn expr_calls(e: &crate::expr::Expr, out: &mut BTreeSet<String>) -> bool {
     use crate::expr::Expr;
     match e {
         Expr::Unknown => false,
         Expr::Name(n) => !n.starts_with('?'),
+        Expr::Path(_, fields) => !fields.iter().any(|f| f.starts_with('?')),
         Expr::Call(n, args) => {
             out.insert(n.clone());
             !n.starts_with('?') && args.iter().all(|a| expr_calls(a, out))

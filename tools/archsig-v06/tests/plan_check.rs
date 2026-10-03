@@ -3364,10 +3364,56 @@ fn swapping_the_arguments_of_two_calls_in_a_callee_is_a_changed_body() {
         let s = repo.run(&["plan", "check", "p"]);
         (result(&s, "m.f")["outcome"].as_str().map(String::from), s)
     };
+    let run_reordered = |name: &str| {
+        let (first, second) = ("1", "2");
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map(
+            "m.py",
+            &format!(
+                "{}{T_ATOMS}{}",
+                r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#,
+                r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.g($o)", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.g", "object": "m.h", "at": "m.py:21@blob:aaaaaaa"}
+{"kind": "passes", "subject": "m.g->m.h", "object": "m.h.$o", "value": "$o", "at": "m.py:21@blob:aaaaaaa"}
+{"kind": "passes", "subject": "m.g->m.h", "object": "m.h.$x", "value": "1", "at": "m.py:21@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.g", "object": "m.h", "at": "m.py:22@blob:aaaaaaa"}
+{"kind": "passes", "subject": "m.g->m.h#2", "object": "m.h.$o", "value": "$o", "at": "m.py:22@blob:aaaaaaa"}
+{"kind": "passes", "subject": "m.g->m.h#2", "object": "m.h.$x", "value": "2", "at": "m.py:22@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "$o.n", "at": "m.py:23@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.h", "value": "operation", "params": {"o": "m.O", "x": "int"}, "at": "m.py:30@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.h", "object": "$o.n", "value": "$x", "at": "m.py:31@blob:aaaaaaa"}
+"#
+            ),
+        );
+        repo.write(
+            ".archsig/plans/p/plan.jsonl",
+            &format!(
+                r#"{{"kind": "defines", "subject": "m.g", "value": "operation", "params": {{"o": "m.O"}}, "file": "m.py", "at": "plan:p"}}
+{{"kind": "calls", "subject": "m.g", "object": "m.h", "at": "plan:p"}}
+{{"kind": "passes", "subject": "m.g->m.h", "object": "m.h.$x", "value": "{first}", "at": "plan:p"}}
+{{"kind": "passes", "subject": "m.g->m.h", "object": "m.h.$o", "value": "$o", "at": "plan:p"}}
+{{"kind": "calls", "subject": "m.g", "object": "m.h", "at": "plan:p"}}
+{{"kind": "passes", "subject": "m.g->m.h#2", "object": "m.h.$o", "value": "$o", "at": "plan:p"}}
+{{"kind": "passes", "subject": "m.g->m.h#2", "object": "m.h.$x", "value": "{second}", "at": "plan:p"}}
+{{"kind": "returns", "subject": "m.g", "value": "$o.n", "at": "plan:p"}}
+"#
+            ),
+        );
+        let s = repo.run(&["plan", "check", "p"]);
+        (result(&s, "m.f")["outcome"].as_str().map(String::from), s)
+    };
     let (o, s) = run("swapped-calls", "2", "1");
     assert_ne!(o.as_deref(), Some("holds"), "{s}");
     // 同じ値で書き直せば、本体は同じである(対照)。
     let (o, s) = run("same-calls", "1", "2");
+    assert_eq!(o.as_deref(), Some("holds"), "{s}");
+    // 手順でない Atom(`passes`)の並びだけが違っても、本体は同じである。
+    let (o, s) = run_reordered("reordered-passes");
     assert_eq!(o.as_deref(), Some("holds"), "{s}");
 }
 
@@ -3435,4 +3481,114 @@ fn changing_the_parameter_types_of_a_callee_is_a_changed_body() {
     // 同じ型で書き直せば、本体は同じである(対照)。
     let (o, s) = run("param-type-same", "m.O");
     assert_eq!(o.as_deref(), Some("holds"), "{s}");
+}
+
+#[test]
+fn the_resolution_of_a_callee_without_a_definition_is_part_of_its_body() {
+    // m.f は定義のない m.g() の戻り値を m.O.t に書く。m.g の解決が本体である。
+    let run = |name: &str, resolves: &str, plan: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map(
+            "m.py",
+            &format!(
+                "{}{T_ATOMS}{}{resolves}",
+                r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#,
+                r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.g()", "at": "m.py:10@blob:aaaaaaa"}
+"#
+            ),
+        );
+        repo.write(".archsig/plans/p/plan.jsonl", plan);
+        let s = repo.run(&["plan", "check", "p"]);
+        (result(&s, "m.f")["outcome"].as_str().map(String::from), s)
+    };
+    let unrelated = "{\"kind\": \"removes\", \"subject\": \"m.O.n\", \"at\": \"plan:p\"}\n";
+    // 解決の指す先が `?` なら、入力から本体が決まらない。
+    let (o, s) = run("q-resolution", "{\"kind\": \"resolves\", \"subject\": \"m.g\", \"object\": \"?lib\", \"at\": \"m.py:2@blob:aaaaaaa\"}\n", unrelated);
+    assert_ne!(o.as_deref(), Some("holds"), "{s}");
+    // 変更前に解決がなく、候補が解決を足せば、本体が違う。
+    let (o, s) = run("added-resolution", "", "{\"kind\": \"resolves\", \"subject\": \"m.g\", \"object\": \"external:lib2\", \"at\": \"plan:p\"}\n");
+    assert_ne!(o.as_deref(), Some("holds"), "{s}");
+}
+
+#[test]
+fn a_callee_body_with_a_question_mark_field_or_parameter_name_is_a_changed_body() {
+    // 道のフィールドが `?` で始まる式は、前後で同じ字句でも、入力から決まらない。
+    assert_eq!(rewritten_callee("q-field", "$o.?x"), (Some("silent".into()), Some("unchecked".into())));
+    // `?` で始まる引数の名前も、入力から決まらない。
+    let repo = Repo::new("q-param-name");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        &format!(
+            "{}{T_ATOMS}{}",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#,
+            r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.g()", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"?p": "int"}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "1", "at": "m.py:21@blob:aaaaaaa"}
+"#
+        ),
+    );
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"?p": "int"}, "file": "m.py", "at": "plan:p"}
+{"kind": "returns", "subject": "m.g", "value": "1", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    assert_ne!(result(&s, "m.f")["outcome"], "holds", "{s}");
+}
+
+/// m.f は m.g() を m.O.t に書く。変更前の m.g の Atom を `before`、候補が書き直した m.g の Atom を `after` としたときの、m.f の結果。
+fn callee_rewritten_as(name: &str, before: &str, after: &str) -> String {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        &format!(
+            "{}{T_ATOMS}{}{before}",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#,
+            r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.g()", "at": "m.py:10@blob:aaaaaaa"}
+"#
+        ),
+    );
+    repo.write(".archsig/plans/p/plan.jsonl", after);
+    let s = repo.run(&["plan", "check", "p"]);
+    result(&s, "m.f")["outcome"].as_str().unwrap_or_default().to_string()
+}
+
+#[test]
+fn the_body_of_a_callee_compares_kinds_and_parameter_names() {
+    // Atom の種類だけが違う。
+    let before = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "reads", "subject": "m.g", "object": "m.O.n", "at": "m.py:21@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "1", "at": "m.py:22@blob:aaaaaaa"}
+"#;
+    let after = |kind: &str| {
+        format!(
+            "{{\"kind\": \"defines\", \"subject\": \"m.g\", \"value\": \"operation\", \"params\": {{}}, \"file\": \"m.py\", \"at\": \"plan:p\"}}\n{{\"kind\": \"{kind}\", \"subject\": \"m.g\", \"object\": \"m.O.n\", \"at\": \"plan:p\"}}\n{{\"kind\": \"returns\", \"subject\": \"m.g\", \"value\": \"1\", \"at\": \"plan:p\"}}\n"
+        )
+    };
+    assert_ne!(callee_rewritten_as("kind-changed", before, &after("receives")), "holds");
+    assert_eq!(callee_rewritten_as("kind-same", before, &after("reads")), "holds");
+    // 引数の名前だけが違う。
+    let before = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"x": "int"}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "1", "at": "m.py:21@blob:aaaaaaa"}
+"#;
+    let after = |p: &str| {
+        format!(
+            "{{\"kind\": \"defines\", \"subject\": \"m.g\", \"value\": \"operation\", \"params\": {{\"{p}\": \"int\"}}, \"file\": \"m.py\", \"at\": \"plan:p\"}}\n{{\"kind\": \"returns\", \"subject\": \"m.g\", \"value\": \"1\", \"at\": \"plan:p\"}}\n"
+        )
+    };
+    assert_ne!(callee_rewritten_as("param-renamed", before, &after("y")), "holds");
+    assert_eq!(callee_rewritten_as("param-same", before, &after("x")), "holds");
 }
