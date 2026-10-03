@@ -427,20 +427,25 @@ pub fn implemented(
     for law in laws.laws.iter().filter(|l| matches!(l.rule, Rule::ChangesCommute | Rule::ChangesKeep)) {
         let Some(meaning) = law.about.as_deref() else { continue };
         for (e, _) in before.meanings.iter().filter(|(e, _)| !e.starts_with("local:") && has_meaning(before, e, meaning)) {
-            for t in mapping.to.get(e.as_str()).into_iter().flatten().filter(|t| after.kind(t).is_ok()) {
-                let f = match meaning_known(None, after, t, meaning) {
-                    Err(s) => Finding::silent("change", Some(&law.name), t, s),
-                    Ok(()) if has_meaning(after, t, meaning) => continue,
-                    Ok(()) => Finding {
-                        question: "change".to_string(),
-                        law: Some(law.name.clone()),
-                        subject: t.to_string(),
-                        outcome: "fails",
-                        kind: Some("missing"),
-                        at: defined_at(after, t).into_iter().collect(),
-                        basis: json!({"meaning": meaning}),
-                        check: json!({"element": e, "target": t, "meaning": meaning, "observed": false}),
-                        ..Finding::default()
+            for t in mapping.to.get(e.as_str()).into_iter().flatten() {
+                // 行き先の種類が決まらなければ(曖昧、`value` のない `defines`)、意味を持つかも決まらない(設計 §3.2)。
+                let f = match after.kind(t) {
+                    Err(s) if matches!(s.reason, Reason::Unresolved) => Finding::silent("change", Some(&law.name), t, s),
+                    Err(_) => continue,
+                    Ok(_) => match meaning_known(None, after, t, meaning) {
+                        Err(s) => Finding::silent("change", Some(&law.name), t, s),
+                        Ok(()) if has_meaning(after, t, meaning) => continue,
+                        Ok(()) => Finding {
+                            question: "change".to_string(),
+                            law: Some(law.name.clone()),
+                            subject: t.to_string(),
+                            outcome: "fails",
+                            kind: Some("missing"),
+                            at: defined_at(after, t).into_iter().collect(),
+                            basis: json!({"meaning": meaning}),
+                            check: json!({"element": e, "target": t, "meaning": meaning, "observed": false}),
+                            ..Finding::default()
+                        },
                     },
                 };
                 out.push(Finding { theory: Some(THEORY_CHANGES.to_string()), ..f });

@@ -315,3 +315,40 @@ fn a_counterexample_is_not_hidden_by_a_mapped_place_whose_meaning_was_not_read()
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py" && n["scope"] == "meaning:payment-info"), "{s}");
 }
+
+#[test]
+fn a_target_whose_kind_is_not_decided_after_reobservation_is_unresolved() {
+    // 変更前は m.O.t が payment-info を持つ。観測し直した m.O.t の defines に value がなければ、種類が決まらず、
+    // 意味を持つかも決まらない(設計 §3.2)。value が field なら、意味を持たないので missing。
+    let law = LAW.replace("\"shop/**\"", "\"*.py\"");
+    let m = |t_defines: &str, meaning: bool| {
+        format!(
+            r#"{{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}}
+{{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}}
+{{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}}
+{{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}}
+{t_defines}
+{}{{"kind": "defines", "subject": "m.f", "value": "operation", "params": {{"o": "m.O"}}, "at": "m.py:9@blob:aaaaaaa"}}
+{{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "1", "at": "m.py:10@blob:aaaaaaa"}}
+"#,
+            if meaning { "{\"kind\": \"meaning\", \"subject\": \"m.O.t\", \"meaning\": \"payment-info\", \"uses\": [\"m.py:10@blob:aaaaaaa\"], \"at\": \"m.py:2@blob:aaaaaaa\"}\n" } else { "" }
+        )
+    };
+    let run = |name: &str, after_t: &str| {
+        let before = Repo::new(&format!("{name}-before"));
+        before.write(".archsig/law/m.law", &law);
+        before.write("m.py", "# source\n");
+        before.map("m.py", &m(r#"{"kind": "defines", "subject": "m.O.t", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}"#, true));
+        let after = Repo::new(name);
+        after.write(".archsig/law/m.law", &law);
+        after.write("m.py", "# source\n");
+        after.map("m.py", &m(after_t, false));
+        compare(&after, &before, None)
+    };
+    let s = run("target-field", r#"{"kind": "defines", "subject": "m.O.t", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}"#);
+    let r = result(&s, "m.O.t");
+    assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("missing")), "対照: {s}");
+    let s = run("target-valueless", r#"{"kind": "defines", "subject": "m.O.t", "type": "int", "at": "m.py:2@blob:aaaaaaa"}"#);
+    let r = result(&s, "m.O.t");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}

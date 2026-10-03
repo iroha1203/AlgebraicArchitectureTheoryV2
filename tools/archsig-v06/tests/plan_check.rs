@@ -2090,3 +2090,30 @@ fn a_resolves_recorded_with_dot_slash_is_read_once_its_source_is_read() {
     let r = result(&s, "m.f");
     assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("counterexample")), "{s}");
 }
+
+#[test]
+fn an_operation_defined_without_a_kind_that_names_a_removed_type_is_unresolved() {
+    // m.x は引数の型に m.T を持つ。候補が m.T を消す。changes keep の Law では、対応の組を比べないので、
+    // 消える要素を名指す操作の結論だけが出る。value のない m.x は、種類の違う defines を持つ要素と同じく沈黙する。
+    let run = |name: &str, defines: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &KEEP.replace("\"shop/**\"", "\"m.py\""));
+        repo.map(
+            "m.py",
+            &format!(
+                "{}{defines}\n",
+                r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+"#
+            ),
+        );
+        repo.write(".archsig/plans/p/plan.jsonl", r#"{"kind": "removes", "subject": "m.T", "at": "plan:p"}
+"#);
+        repo.run(&["plan", "check", "p"])
+    };
+    let s = run("removed-param-op", r#"{"kind": "defines", "subject": "m.x", "value": "operation", "params": {"q": "m.T"}, "at": "m.py:2@blob:aaaaaaa"}"#);
+    assert_eq!((result(&s, "m.x")["outcome"].as_str(), result(&s, "m.x")["kind"].as_str()), (Some("fails"), Some("missing")), "対照: {s}");
+    let s = run("removed-param-valueless", r#"{"kind": "defines", "subject": "m.x", "params": {"q": "m.T"}, "at": "m.py:2@blob:aaaaaaa"}"#);
+    assert_eq!((result(&s, "m.x")["outcome"].as_str(), result(&s, "m.x")["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}

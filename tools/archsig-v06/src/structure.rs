@@ -575,7 +575,8 @@ fn relate(old: &Structure, new: &Structure, before: &[Atom], after: &[Atom], pla
 fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn Fn(&str) -> bool, out: &mut Overlay) {
     let body = |k: &str| matches!(k, "writes" | "reads" | "calls" | "sends" | "receives" | "returns" | "passes");
     let mut named: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
-    for (op, e) in s.elements.iter().filter(|(n, e)| e.kinds.contains("operation") && !skip(n)) {
+    // 種類の決まらない要素(`value` のない `defines`)も、操作かもしれないので数える。`missing` の結論で沈黙する。
+    for (op, e) in s.elements.iter().filter(|(n, e)| (e.kinds.contains("operation") || e.kinds.contains("")) && !skip(n)) {
         named.entry(op.clone()).or_default().extend(e.params.values().cloned());
     }
     for a in atoms.iter().filter(|a| body(&a.kind)) {
