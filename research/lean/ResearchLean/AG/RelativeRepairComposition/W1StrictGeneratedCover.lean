@@ -70,7 +70,7 @@ theorem restore_operation (R : RealRepairs true x y S) {i j : geometry.Vertex} (
     ((actualObjectEquiv x y S).symm (actualObjectEquiv x y S R)).operation e = R.operation e := by
   rw [restore_extract]
 
-/-- The independently generated strict predicate is feasible exactly when the original actual laws and permission masks admit full parameters. -/
+/-- The independently generated strict predicate is feasible exactly when the original actual laws and permission masks allow full parameters. -/
 theorem generated_feasible_iff : Nonempty (Objects x y S) ↔
     Nonempty {p : Parameters // Equations true x y p ∧ Allowed S p} :=
   (actualObjectEquiv x y S).nonempty_congr.symm.trans (actualParametersEquiv true x y S).nonempty_congr
