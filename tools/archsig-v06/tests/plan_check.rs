@@ -267,18 +267,17 @@ fn a_written_field_whose_meaning_was_not_read_is_silent() {
         repo.write(".archsig/plans/split-order/plan.jsonl", SPLIT);
         repo.run(&["plan", "check", "split-order"])
     };
-    // 意味 Atom もなければ、書いたフィールドが意味を持つかは、そのソースの意味を読めば決まる。
-    let s = run("meaning", false);
-    let r = result(&s, UPDATE);
-    assert_eq!(r["reason"], "unread", "{s}");
-    assert!(
-        s["next"].as_array().unwrap().iter().any(|n| n["read"] == "shop/order/model.py" && n["scope"] == "meaning:payment-info"),
-        "書いたフィールドが意味を持つかは、そのソースの意味を読めば決まる: {s}"
-    );
-    // 意味 Atom があれば、移した先の OrderPayment.ref は意味を持つ。そこで二つの順番が食い違うので、
-    // 書き込みの場所の沈黙は結論に関わらず、反例を返す(設計 §5.4)。
-    let s = run("meaning-atom", true);
-    assert_eq!(result(&s, UPDATE)["kind"], "counterexample", "{s}");
+    // 意味 Atom があってもなくても、書いたフィールドが意味を持つかは、そのソースの意味を読めば決まる。
+    // 意味 Atom があるとき、移した先の OrderPayment.ref で二つの順番の値が食い違うが、その場所の意味が決まらないので反例にしない。
+    for (name, meaning_atom) in [("meaning", false), ("meaning-atom", true)] {
+        let s = run(name, meaning_atom);
+        let r = result(&s, UPDATE);
+        assert_eq!(r["reason"], "unread", "{name}: {s}");
+        assert!(
+            s["next"].as_array().unwrap().iter().any(|n| n["read"] == "shop/order/model.py" && n["scope"] == "meaning:payment-info"),
+            "書いたフィールドが意味を持つかは、そのソースの意味を読めば決まる: {name}: {s}"
+        );
+    }
 }
 
 #[test]
@@ -2414,4 +2413,26 @@ fn a_moved_write_place_whose_kind_is_not_known_does_not_hide_a_counterexample() 
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.Z.a"), "{s}");
     let s = run("moved-place-diverging", "2");
     assert_eq!(result(&s, "m.f")["kind"], "counterexample", "{s}");
+}
+
+#[test]
+fn a_field_whose_meaning_was_not_read_is_silent_only_where_the_values_diverge() {
+    // a.py の m.O.z は意味 Atom を持つが、a.py の payment-info は読んでいない。どちらの順番も m.O.z に書かないので、
+    // 二つの順番の値は食い違わない。意味が決まらなくても結論に関わらないので、成り立つ。
+    let repo = Repo::new("unsure-unwritten");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
+    repo.map("a.py", r#"{"kind": "observed", "subject": "a.py", "scope": "structure", "at": "a.py@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "a.py:1@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.O.z", "value": "field", "type": "int", "at": "a.py:2@blob:bbbbbbb"}
+{"kind": "meaning", "subject": "m.O.z", "meaning": "payment-info", "uses": ["a.py:2@blob:bbbbbbb"], "at": "a.py:2@blob:bbbbbbb"}
+"#);
+    repo.map("m.py", SPLITTING);
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.T"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.T.p", "value": "$o.a", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    assert_eq!(result(&s, "m.f")["outcome"], "holds", "{s}");
 }
