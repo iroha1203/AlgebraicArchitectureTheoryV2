@@ -102,3 +102,104 @@ audits:
   blocking_findings: []
   next_obligation: "原始線形問い合わせ手続きの応答列再現、成功点実行からの2種類の下限、最小固定集合からの達成"
 ```
+
+## Cycle 2：原始問い合わせの適応的下限と固定集合による最適値
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-131-aat-repair-observation-duality
+cycle: 2
+goal_blob_sha: 054fea81b916c4d4a470b74af3e13c6cc5dde01c
+base_oid: e0da0c6cfc5b2761946de0cf945a27d00846b3c7
+tracking_issue: 5133
+report_path: research/reports/G-131-aat-repair-observation-duality.md
+selection:
+  proof_state_ref: "Cycle 1受理、Issue #5133 comment 5969041587"
+  proof_dag_predecessors: [solvable_add_iff, decision_sufficient_linear_iff, numerical_sufficient_linear_iff]
+  milestone: "Cの原始問い合わせモデルで、成功点の応答列再現と最小固定集合による判定/数値最悪時最適値"
+  proof_obligations: ["履歴だけから次質問または完全出力を選ぶ決定的実行", "同じ応答列の再現と繰り返しを含む回数", "成功点実行から両核条件の下限", "十分固定集合から常時停止・正答・濃度回数の達成", "最悪時最適値と最小十分集合濃度の一致・無限大・全不能零回"]
+  exit_criteria: ["同じ質問/応答/出力で下限・達成を証明", "2種類の線形核包含と正しいOptimumの同値", "十分集合がない場合の不存在と全不能の零回", "単一file focused checkと全宣言公理・scan"]
+  selection_reason: "Cの十分性を適応的手続き全体の最適値へ進める"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/RepairObservationDuality/PrimitiveQueries.lean, ResearchLean/AG/RepairObservationDuality/QueryOptimum.lean]
+  risks: ["質問以外で未知値を読まない", "数値出力の全hが確定する", "一般の存在最適値とDの有限計画生成の構成性を区別", "成功点を有限に探すDと実入力の全実現A/Eは後続"]
+  unchecked: ["実装・検証・独立査読前"]
+```
+
+### Cycle 2の宣言・前提・構成経路
+
+`PrimitiveQueries.lean` の名前空間は
+`AAT.AG.RepairObservationDuality.PrimitiveQueries`、`QueryOptimum.lean` は
+`AAT.AG.RepairObservationDuality`。
+
+| 要求 | 宣言・証明経路 |
+| --- | --- |
+| Cの決定的な履歴だけの手続き | `History`, `Procedure`, `Run`, `Correct`。nextの入力は履歴だけ。出力型は判定ではBool、数値ではOption H。`Run.deterministic` が全出力と全質問列の一意性を証明 |
+| 成功入力の応答列を再現する下限 | `Run.replay`, `decision_run_sufficient`, `numerical_run_sufficient`。w+nを同じL-fiberに構成し、全質問の応答一致から同じ完全出力を再現。前者は成功の一致、後者は同じD hの右辺一致を使う |
+| 原始索引の十分性と最小値 | `observation`, `mem_ker_observation`, `observation_eq_iff`, `SufficientSet`, `minimum`。索引はJの有限部分集合であり、作用対象の点ではない |
+| 繰り返しを含む全適応手続きの下限 | `run_le_worst`, `minimum_le_run`。distinct索引のcard≤実質問listのlength≤worst。totalnessから成功点の実行を取り出す |
+| 最小固定集合と完全出力の生成・達成 | `finish_valid`, `fixed_run`, `fixed_correct`, `worst_fixed_le`, `decision_fixed_correct`, `numerical_fixed_correct`, `minimum_attained`, `decision_optimum_attained`, `numerical_optimum_attained`。応答fiber全体に正しい共通値を既知のモデルから選び、固定listのちょうどlength回で返す |
+| Cの二種類の正確な最適値 | `decision_optimum`, `numerical_optimum`。独立定義した全correct procedureのworstのinfimumと、核包含を満たすFinsetのcardのinfimumの両方向を証明 |
+| 十分集合がない場合 | `minimum_eq_top_iff`, `no_decision_procedure`, `no_numerical_procedure`。空infimum=∞と、total correct adaptive procedureそのものの不存在を証明。具体的な実操作の識別不能対はA・D・Eの後続接続 |
+| 全不能fiber | `constant_run`, `constant_correct`, `worst_constant`, `optimum_zero_of_constant`, `all_impossible_optima_zero`。false/noneを完全出力として零回で返す |
+| 新規述語の成立・不成立 | `run_examples`, `correct_examples`, `sufficient_set_examples`, `valid_decision_examples`。同じ非空入力集合で正答/誤答を区別し、恒等primitiveを持つ同じ体で全集合/空集合を区別 |
+
+受理spine候補は `Run.replay`, `decision_run_sufficient`, `numerical_run_sufficient`,
+`decision_optimum`, `numerical_optimum`, `decision_optimum_attained`,
+`numerical_optimum_attained`, `no_decision_procedure`, `no_numerical_procedure`,
+`all_impossible_optima_zero`。他の宣言は上表の同じ構成・基本API・例であり、
+cycle scaffoldはない。最適値の主証明は手続き内部を展開せず基本APIを用いる。
+
+| material premise | 分類と放電 | 出所・使用先 |
+| --- | --- | --- |
+| k/module/同じD,B,b₀,L,sと原始評価lam | ambient-boundary | Cの既知構造。有限体・有限次元・有限Jより一般的に証明。未知入力vはnextへの引数ではない |
+| w∈F_sと同じ方程式の可解性 | direction-hypothesis | Cの成功入力がある場合。w+nの可否または全RHS一致へ。有限な成功点探索はDの後続義務 |
+| 手続きの全入力停止・常時正答 | ambient-boundary（手続き全体を定義するモデル） | `optimum` の範囲。下限では成功点のrunと両入力の出力正答、上限では生成したfixedのcorrectnessを証明して範囲に入れる |
+| 成功点の実行再現と核下限 | discharge-required、証明済み | 同じlamの線形性、Lの核、Cycle 1の`solvable_add_iff`、同じhからのRHS一致 |
+| 最小固定集合と完全出力 | discharge-required、存在構成済み | ENatの非空infimum達成とCycle 1の両十分性。`finish`は既知モデル上の共通出力をchoiceで選ぶ存在手続き。有限データからの実行可能な列挙はDの後続義務 |
+| 全実入力の実現・原始操作での実評価・修復復元 | discharge-required、未接続 | A・D・Eの後続義務。このcycleでは同じ線形方程式と原始線形評価上のquery modelを扱う |
+
+G-128の最適値定理を単に呼ぶのではなく、Cの既知fiber・完全な数値出力を対象に
+応答列再現を証明した。G-128への作用・観測手続き対応はBの後続義務である。
+G-130の実微分・実現・復元への依存はまだない。標準基盤は固定Mathlibの
+`Mathlib/Data/ENat/Lattice.lean` の `ENat.exists_eq_iInf` とcomplete lattice API。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "Cの同じ線形方程式・原始線形評価で、全適応手続きの両下限、最小固定集合からの達成、両最適値、∞と手続き不存在、全不能零回を証明"
+  exit_criteria_status: ["成功点の同じ応答・全出力を再現", "distinct濃度とrepeatを含むlengthの下限", "最小固定集合・correct procedure・正確なworstの達成", "空計画族の∞とcorrect procedure不存在", "全不能false/noneの零回", "focused check・公理監査・scanをPRコメントへ固定"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [PrimitiveQueries.lean, QueryOptimum.lean]
+  evidence: [Run.replay, decision_optimum, numerical_optimum, decision_optimum_attained, numerical_optimum_attained, no_decision_procedure, no_numerical_procedure, all_impossible_optima_zero]
+  claim_mapping:
+    theorem_names: [decision_run_sufficient, numerical_run_sufficient, decision_optimum, numerical_optimum, decision_optimum_attained, numerical_optimum_attained, no_decision_procedure, no_numerical_procedure, all_impossible_optima_zero]
+    source_labels: ["G-131 Cの線形既知情報下の最悪時最適値", "n1017 §6.4・§6.5"]
+    conjuncts: ["判定最適値=min N∩ker O≤ker(qB)", "数値最適値=min N∩ker O≤ker B", "有限値で最小固定集合が正確な最悪時回数を達成", "十分集合なしでは∞かつcorrect procedure不存在", "全不能なら両出力零回"]
+    undischarged_assumptions: []
+    acceptance_point: "線形query modelでのCの最適値という到達点。実操作の実現・Dの有限生成は後続"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["応答再現と両下限", "最小集合からの同じprimitiveの達成手続き", "∞と手続き不存在", "全不能零回"]
+    remaining: ["Aの実入力と任意Sの商・同じG-130への接続", "Bの作用・双対・G-128の手続き対応", "Dの有限列挙・不能証拠の値取得・復元", "Eの全指定例と実操作への適用"]
+  certificate_provenance:
+    discharged: ["fixedの共通全出力はCycle 1の独立十分性から生成", "下限では外部certificateでなくwの実行を再現", "最小集合はcardのinfimum達成から生成"]
+    unresolved: ["Dの実行可能な有限計画生成は後続義務"]
+  proof_use:
+    used: ["成功基準点", "同じlam応答", "全入力停止と正答", "同じ数値hが両方のD hを確定", "全repeatのlength"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["コマンド・全明示宣言の#print axiomsと出力hashをPRコメントへ固定"]
+  blocking_findings: []
+  next_obligation: "Aの一般原始入力から同じD_S・負defect・修復の往復と任意Sの商同型"
+```
+
+全体判定は `target-proof-checkpoint`。A、B、D、EおよびCの実入力への接続は未完了。
+`target-theorem-proved` としていない。
