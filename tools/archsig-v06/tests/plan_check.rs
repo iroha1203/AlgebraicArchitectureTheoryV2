@@ -1620,3 +1620,117 @@ fn an_external_name_under_a_type_is_not_a_field_below() {
     let (s, r) = below_case("below-external-member", &atoms, PLAN_WRITES_B);
     assert_eq!(r["kind"], "counterexample", "{s}");
 }
+
+#[test]
+fn a_counterexample_below_is_not_hidden_by_a_sibling_field_not_read() {
+    // m.S は a(型 m.Z、定義も resolves もない)と p(payment-info)を持つ。o.s の値が違えば、[o.s, S.p] で反例は決まる。
+    let atoms = format!(
+        "{O_S}{S_P}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S.a", "value": "field", "type": "m.Z", "at": "m.py:5@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-sibling-differs", &atoms, PLAN_WRITES_B);
+    let places: Vec<Value> = r["check"]["diverging"].as_array().into_iter().flatten().map(|x| x["place"].clone()).collect();
+    assert_eq!(places, vec![serde_json::json!(["m.O.s", "m.S.p"])], "{s}\n{r}");
+    let (s, r) = below_case("below-sibling-same", &atoms, &PLAN_WRITES_B.replace("m.b()", "m.a()"));
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.Z"), "{s}");
+}
+
+#[test]
+fn a_counterexample_below_is_not_hidden_by_a_recursive_type() {
+    // N.next の型は N。N.v は payment-info を持つ。o.n の値が違えば、[o.n, N.v] で反例は決まる。
+    let atoms = r#"{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.n", "value": "field", "type": "m.N", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.N", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.N.next", "value": "field", "type": "m.N", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.N.v", "value": "field", "type": "int", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.N.v", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:5@blob:aaaaaaa"}
+"#;
+    let f = F_WRITES_A.replace("m.O.s", "m.O.n");
+    let (s, r) = below_case("below-recursive-differs", &format!("{atoms}{f}"), &PLAN_WRITES_B.replace("m.O.s", "m.O.n"));
+    let places: Vec<Value> = r["check"]["diverging"].as_array().into_iter().flatten().map(|x| x["place"].clone()).collect();
+    assert!(places.contains(&serde_json::json!(["m.O.n", "m.N.v"])), "{s}\n{r}");
+}
+
+/// m.py(構造と payment-info を読んだ)と s.py(構造だけを読んだ)の観測と候補で `plan check` し、サマリと m.f の結果(反例なら詳細)を返す。
+fn two_sources_case(name: &str, m: &str, s_py: &str, plan: &str) -> (Value, Value) {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
+    repo.map(
+        "m.py",
+        &format!(
+            "{}{m}",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+"#
+        ),
+    );
+    repo.map(
+        "s.py",
+        &format!(
+            "{}{s_py}",
+            r#"{"kind": "observed", "subject": "s.py", "scope": "structure", "at": "s.py@blob:bbbbbbb"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "s.py:1@blob:bbbbbbb"}
+"#
+        ),
+    );
+    repo.write(".archsig/plans/p/plan.jsonl", plan);
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f").clone();
+    let r = if r["outcome"] == "fails" { repo.run(&["show", r["id"].as_str().unwrap()]) } else { r };
+    (s, r)
+}
+
+/// m.py の観測。m.O.s の型 s.S は s.py にある。
+const REDEFINE_M: &str = r#"{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "s.S", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "s.S", "object": "s.py", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+"#;
+
+/// s.py の観測(構造だけ)。
+const REDEFINE_S: &str = r#"{"kind": "defines", "subject": "s.S", "value": "type", "at": "s.py:2@blob:bbbbbbb"}
+{"kind": "defines", "subject": "s.S.p", "value": "field", "type": "int", "at": "s.py:3@blob:bbbbbbb"}
+"#;
+
+#[test]
+fn a_field_the_plan_defines_again_is_unread_when_its_meaning_before_was_not_read() {
+    // m.S.p は s.py にあり、s.py の payment-info は読んでいない。候補は m.S.p を同じ形で定義し直し、o.s に書く。
+    // 候補のフィールドの意味は、元の m.S.p の意味を移したものなので決まらない(設計 §3.6 の4、§5.1)。
+    let (m, s_py) = (REDEFINE_M, REDEFINE_S);
+    let plan = |redefine: &str| {
+        format!(
+            "{}{redefine}",
+            r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.b()", "at": "plan:p"}
+"#
+        )
+    };
+    let redefine = r#"{"kind": "defines", "subject": "s.S.p", "value": "field", "type": "int", "file": "s.py", "at": "plan:p"}
+"#;
+    let (s, r) = two_sources_case("below-redefined-field", m, s_py, &plan(redefine));
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py" && n["scope"] == "meaning:payment-info"), "{s}");
+    // 定義し直さなくても同じく決まらない。
+    let (s, r) = two_sources_case("below-plain-field", m, s_py, &plan(""));
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+}
+
+#[test]
+fn a_field_the_plan_splits_into_a_new_type_is_unread_when_its_meaning_before_was_not_read() {
+    let (m, s_py) = (REDEFINE_M, REDEFINE_S);
+    // 新しい型 m.N に分けて、m.N.p を s.S.p の対応の行き先にしても、m.N.p の意味は決まらない。
+    let split = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.N", "value": "type", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.N.p", "value": "field", "type": "int", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.O.n", "value": "field", "type": "m.N", "file": "m.py", "at": "plan:p"}
+{"kind": "corresponds", "subject": "s.S.p", "object": "m.N.p", "at": "plan:p"}
+{"kind": "removes", "subject": "s.S.p", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.n", "value": "m.b()", "at": "plan:p"}
+"#;
+    let (s, r) = two_sources_case("below-split-field", m, s_py, split);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py" && n["scope"] == "meaning:payment-info"), "{s}");
+}
