@@ -1103,3 +1103,138 @@ fn a_place_below_a_via_write_with_the_meaning_is_compared() {
     let places: Vec<&Value> = d["check"]["diverging"].as_array().unwrap().iter().map(|x| &x["place"]).collect();
     assert_eq!(places, vec![&serde_json::json!(["m.A.o", "m.O.s", "m.S.p"])], "{d}");
 }
+
+/// m.py の観測(構造と payment-info を読んだ)と候補で `plan check` し、サマリと m.f の結果(反例なら詳細)を返す。
+fn below_case(name: &str, atoms: &str, plan: &str) -> (Value, Value) {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        &format!(
+            "{}{atoms}",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+"#
+        ),
+    );
+    repo.write(".archsig/plans/p/plan.jsonl", plan);
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f").clone();
+    let r = if r["outcome"] == "fails" { repo.run(&["show", r["id"].as_str().unwrap()]) } else { r };
+    (s, r)
+}
+
+const F_WRITES_A: &str = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "m.py:10@blob:aaaaaaa"}
+"#;
+
+const PLAN_WRITES_B: &str = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.b()", "at": "plan:p"}
+"#;
+
+const O_S: &str = r#"{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "m.py:2@blob:aaaaaaa"}
+"#;
+
+#[test]
+fn a_type_whose_definition_was_not_read_is_silent_below() {
+    // m.S の resolves は s.py を指すが、s.py を読んでいない(設計 §3.3)。
+    let (s, r) = below_case(
+        "below-unread-type",
+        &format!("{O_S}{{\"kind\": \"resolves\", \"subject\": \"m.S\", \"object\": \"s.py\", \"at\": \"m.py:1@blob:aaaaaaa\"}}\n{F_WRITES_A}"),
+        PLAN_WRITES_B,
+    );
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}
+
+#[test]
+fn a_question_mark_type_is_silent_below() {
+    let (s, r) = below_case("below-question-type", &format!("{}{F_WRITES_A}", O_S.replace("\"type\": \"m.S\"", "\"type\": \"?m.S\"")), PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py"), "その型を書いたフィールドの定義の場所を返す: {s}");
+}
+
+#[test]
+fn an_ambiguous_type_is_unresolved_below() {
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S", "value": "operation", "params": {}, "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.S.p", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:5@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-ambiguous-type", &atoms, PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
+
+#[test]
+fn too_many_places_below_are_limit() {
+    // T0..T9 の各型が、次の型のフィールド a と b を持つ。たどる場所は 2^9 を超える。
+    let mut atoms = String::from(
+        r#"{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.T0", "at": "m.py:2@blob:aaaaaaa"}
+"#,
+    );
+    for i in 0..10 {
+        atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.T{i}\", \"value\": \"type\", \"at\": \"m.py:3@blob:aaaaaaa\"}}\n"));
+        for f in ["a", "b"] {
+            atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.T{i}.{f}\", \"value\": \"field\", \"type\": \"m.T{}\", \"at\": \"m.py:4@blob:aaaaaaa\"}}\n", i + 1));
+        }
+    }
+    let (s, r) = below_case("below-limit", &format!("{atoms}{F_WRITES_A}"), PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
+}
+
+const S_P: &str = r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.S.p", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:4@blob:aaaaaaa"}
+"#;
+
+#[test]
+fn a_type_without_its_fields_observed_is_a_condition() {
+    // m.S.p の型 int は定義も resolves もない。意味を持つフィールドを持たないとみなし、成り立つ条件に並べる。
+    let (s, r) = below_case("below-condition", &format!("{O_S}{S_P}{F_WRITES_A}"), PLAN_WRITES_B);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    assert!(r["conditions"].as_array().unwrap().iter().any(|c| c.as_str().unwrap().starts_with("型 int はフィールドを観測していない")), "{r}");
+}
+
+#[test]
+fn a_place_below_is_compared_when_only_one_order_writes() {
+    let plan_other = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+"#;
+    // 変更前だけが o.s を書く。
+    let (s, r) = below_case("below-before-only", &format!("{O_S}{S_P}{F_WRITES_A}"), plan_other);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    // 変更後だけが o.s を書く。
+    let (s, r) = below_case("below-after-only", &format!("{O_S}{S_P}{}", r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+"#), PLAN_WRITES_B);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+}
+
+#[test]
+fn a_recursive_type_without_the_meaning_below_is_not_limit() {
+    // S.back の型は S だが、S から意味を持つフィールドには着かない。
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.back", "value": "field", "type": "m.S", "at": "m.py:4@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-cycle-no-meaning", &atoms, PLAN_WRITES_B);
+    assert_ne!(r["reason"], "limit", "{s}");
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn a_type_name_that_is_not_a_type_is_unresolved_below() {
+    // m.O.s の型 m.S は、操作として定義されている。
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S", "value": "operation", "params": {}, "at": "m.py:3@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-not-a-type", &atoms, PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
