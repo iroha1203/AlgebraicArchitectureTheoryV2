@@ -1065,7 +1065,7 @@ fn keep(
         }
         if !targets.is_empty() {
             kept.push(json!({"element": e, "targets": targets}));
-        } else if let Some(s) = unknown.or_else(|| owner_undecided(after, overlay, mapping, e)) {
+        } else if let Some(s) = unknown.or_else(|| owner_undecided(before, after, overlay, mapping, e)) {
             out.push(Finding { theory: Some(THEORY_CHANGES.to_string()), ..Finding::silent("change", Some(law), e, s) });
         } else {
             let mut f = finding(e, "fails", Some("missing"), json!({"element": e, "targets": []}));
@@ -1080,13 +1080,14 @@ fn keep(
 }
 
 /// 引数 `e`(`<操作>.$<名前>`)の対応は、操作どうしの対応から作る(設計 §3.6 の対応の2)。
-/// 持ち主の操作の行き先の種類が決まらなければ(曖昧、`value` のない `defines`)、引数の対応があるかも決まらない。
-fn owner_undecided(after: &Structure, overlay: &Overlay, mapping: &Mapping, e: &str) -> Option<Silence> {
+/// 持ち主の操作か、その行き先の種類が決まらなければ(曖昧、`value` のない `defines`)、引数の対応があるかも決まらない。
+fn owner_undecided(before: &Structure, after: &Structure, overlay: &Overlay, mapping: &Mapping, e: &str) -> Option<Silence> {
     let (op, _) = e.split_once(".$")?;
-    mapping.to.get(op).into_iter().flatten().find_map(|t| match corresponds_kind(after, overlay, t) {
+    let undecided = |k: Result<&str, Silence>| match k {
         Err(s) if matches!(s.reason, Reason::Unresolved) => Some(s),
         _ => None,
-    })
+    };
+    undecided(before.kind(op)).or_else(|| mapping.to.get(op).into_iter().flatten().find_map(|t| undecided(corresponds_kind(after, overlay, t))))
 }
 
 /// `sources` のソースのうち、範囲 `scope` を読んでいないもの。読む所として返す。
@@ -1172,10 +1173,13 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
 
 /// 消える要素を名指す事実から、`missing` の結論を決める。操作と決まらない名前(曖昧、`?`)は沈黙し、
 /// 操作でないと決まった名前は結論にしない。
-/// 種類は、名指しをたどった側の構造で問い合わせる。変更後に定義があれば変更後(候補を重ねた構造か、実装した後に観測し直した構造)、
-/// なければ変更前で問い合わせる。
+/// 変更前か変更後のどちらかで種類が決まらなければ(曖昧、`value` のない `defines`)、沈黙する。それ以外は変更前で問い合わせる。
 fn missing(before: &Structure, after: &Structure, op: &str, uses: &BTreeSet<String>) -> Option<Finding> {
-    let kind = if after.elements.contains_key(op) { after.kind(op) } else { before.kind(op) };
+    let undecided = after.elements.contains_key(op).then(|| after.kind(op)).and_then(|k| k.err()).filter(|s| matches!(s.reason, Reason::Unresolved));
+    let kind = match undecided {
+        Some(s) => Err(s),
+        None => before.kind(op),
+    };
     let f = match kind {
         // 構造 Atom の `subject` は操作である(マニュアル第3章)。
         Ok("operation") | Err(Silence { reason: Reason::Unread, .. }) => Finding {

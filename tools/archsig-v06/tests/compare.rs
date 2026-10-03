@@ -403,6 +403,16 @@ fn an_operation_that_loses_its_kind_after_the_change_and_names_a_removed_type_is
     assert!(!s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.x" && r["outcome"] == "fails"), "{s}");
     let r = result(&s, "m.x");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    // 変更後で種類が決まっていれば(型)、種類は変更前で問い合わせる。変更前は操作なので missing。
+    // 名指しは、消える型 m.T のフィールドへの書き込みで作る(引数の型の名指しは、操作と種類の決まらない要素だけが持つ)。
+    let writes = r#"{"kind": "defines", "subject": "m.T.f", "value": "field", "type": "m.T", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.x", "object": "m.T.f", "value": "1", "at": "m.py:3@blob:aaaaaaa"}
+"#;
+    before.map("m.py", &format!("{base}{writes}{}\n", r#"{"kind": "defines", "subject": "m.x", "value": "operation", "params": {}, "at": "m.py:2@blob:aaaaaaa"}"#));
+    after.map("m.py", &format!("{base}{writes}{}\n", r#"{"kind": "defines", "subject": "m.x", "value": "type", "at": "m.py:2@blob:aaaaaaa"}"#));
+    let s = compare(&after, &before, Some("p"));
+    let r = result(&s, "m.x");
+    assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
 }
 
 #[test]

@@ -2134,18 +2134,19 @@ law payment-info-kept
   about payment-info
   changes keep
 "#;
-    let run = |name: &str, g_value: &str| {
+    let run_with = |name: &str, f_value: &str, g_value: &str| {
         let repo = Repo::new(name);
         repo.write(".archsig/law/m.law", law);
-        repo.map(
-            "m.py",
-            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+        let map = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
 {"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
-{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"x": "int"}, "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "#
+            .to_string()
+            + f_value
+            + r#""params": {"x": "int"}, "at": "m.py:2@blob:aaaaaaa"}
 {"kind": "meaning", "subject": "m.f.$x", "meaning": "payment-info", "uses": ["m.py:3@blob:aaaaaaa"], "at": "m.py:2@blob:aaaaaaa"}
-"#,
-        );
+"#;
+        repo.map("m.py", &map);
         repo.write(
             ".archsig/plans/p/plan.jsonl",
             &format!(
@@ -2154,10 +2155,14 @@ law payment-info-kept
         );
         repo.run(&["plan", "check", "p"])
     };
+    let run = |name: &str, g_value: &str| run_with(name, r#""value": "operation", "#, g_value);
     let s = run("keep-op", r#""value": "operation", "#);
     assert_eq!(result(&s, "payment-info")["outcome"], "holds", "{s}");
     let s = run("keep-type", r#""value": "type", "#);
     assert_eq!((result(&s, "m.f.$x")["outcome"].as_str(), result(&s, "m.f.$x")["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
     let s = run("keep-valueless", "");
+    assert_eq!((result(&s, "m.f.$x")["outcome"].as_str(), result(&s, "m.f.$x")["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    // 変更前の持ち主 m.f の種類が決まらなくても、引数の対応があるかは決まらない。
+    let s = run_with("keep-owner-valueless", "", r#""value": "operation", "#);
     assert_eq!((result(&s, "m.f.$x")["outcome"].as_str(), result(&s, "m.f.$x")["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
 }
