@@ -660,7 +660,7 @@ struct Below<'a> {
     external: BTreeSet<String>,
     /// 候補が `removes` した要素。
     removes: BTreeSet<String>,
-    /// たどる途中の沈黙。ほかの場所で反例が決まれば結論に関わらないので、最初の一つを最後まで持つ(設計 §5.4)。
+    /// 比べる場所を決める所と、比べる場所の値を読む所の沈黙。ほかの場所で反例が決まれば結論に関わらないので、最初の一つを最後まで持つ(設計 §5.4)。
     pending: Option<Silence>,
 }
 
@@ -867,7 +867,7 @@ fn compare(
     // 比べる場所(変更後の名前): 意味を持つフィールドと、書き込みの場所とその頭の部分の場所のうち最後のフィールドが意味を持つもの、
     // 書き込みの場所より先の場所のうち最後のフィールドが意味を持つもの。
     // 書き込みは、その場所の頭の部分(`via` のフィールドまでの場所)と、その場所からたどる場所の値も変える。
-    // 書き込まれたフィールドとその行き先が意味を持つかが、読んだ範囲から決まらなければ沈黙する。
+    // 書き込まれたフィールドとその行き先が意味を持つかが、読んだ範囲から決まらなければ、その場所は比べず、沈黙を最後まで持つ(設計 §5.4)。
     let mut places: BTreeSet<Vec<String>> = after
         .meanings
         .iter()
@@ -880,12 +880,16 @@ fn compare(
         for w in &br.writes {
             for k in 1..=w.place.len() {
                 let head = &w.place[..k];
-                meaning_known(None, before, head.last().unwrap(), meaning)?;
+                if let Err(e) = meaning_known(None, before, head.last().unwrap(), meaning) {
+                    below.hold(Err(e));
+                    continue;
+                }
                 for q in mapping.places(head) {
-                    meaning_known(prior, after, q.last().unwrap(), meaning)?;
-                    if has_meaning(after, q.last().unwrap(), meaning) {
+                    let known = meaning_known(prior, after, q.last().unwrap(), meaning);
+                    if known.is_ok() && has_meaning(after, q.last().unwrap(), meaning) {
                         places.insert(q);
                     }
+                    below.hold(known);
                 }
             }
             // 変更前の書き込みは、変更前の型でたどって対応で変更後の名前に写した場所と、
@@ -908,10 +912,11 @@ fn compare(
         for w in &br.writes {
             for k in 1..=w.place.len() {
                 let head = &w.place[..k];
-                meaning_known(prior, after, head.last().unwrap(), meaning)?;
-                if has_meaning(after, head.last().unwrap(), meaning) {
+                let known = meaning_known(prior, after, head.last().unwrap(), meaning);
+                if known.is_ok() && has_meaning(after, head.last().unwrap(), meaning) {
                     places.insert(head.to_vec());
                 }
+                below.hold(known);
             }
             places.extend(below.places(after, &w.place, meaning));
         }
@@ -938,9 +943,20 @@ fn compare(
             let mut diverging = Vec::new();
             for q in &places {
                 // 移すと、変更後の場所 q には、その元の変更前の場所の値が入る。
-                let p: Vec<String> = q.iter().map(|f| mapping.back(f)).collect::<Result<_, _>>()?;
-                let v1 = normalize(b1.state.read(&p)?);
-                let v2 = normalize(mapping.back_value(&b2.state.read(q)?)?);
+                // 値を読めない場所(先に書き込みがあって値を決めていない場所など)は比べず、沈黙を最後まで持つ。
+                let read = || -> Result<_, Silence> {
+                    let p: Vec<String> = q.iter().map(|f| mapping.back(f)).collect::<Result<_, _>>()?;
+                    let v1 = normalize(b1.state.read(&p)?);
+                    let v2 = normalize(mapping.back_value(&b2.state.read(q)?)?);
+                    Ok((p, v1, v2))
+                };
+                let (p, v1, v2) = match read() {
+                    Ok(x) => x,
+                    Err(e) => {
+                        below.hold(Err(e));
+                        continue;
+                    }
+                };
                 calls |= has_call(&v1) || has_call(&v2);
                 let (s1, s2) = (show(&normalize(mapping.value(&v1))), show(&normalize(mapping.value(&v2))));
                 values.push(json!({"place": q, "before_then_move": s1, "move_then_after": s2}));
@@ -984,7 +1000,7 @@ fn compare(
             compared.push(json!({"branch": branch, "values": values}));
         }
     }
-    // 反例が出なければ、型をたどる所の沈黙が結論に関わる。
+    // 反例が出なければ、持っていた沈黙が結論に関わる。
     if let Some(silence) = below.pending {
         return Err(silence);
     }

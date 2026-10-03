@@ -251,22 +251,34 @@ fn a_law_without_operation_pairs_holds() {
 
 #[test]
 fn a_written_field_whose_meaning_was_not_read_is_silent() {
-    let repo = shop("meaning");
-    repo.map("shop/shipping/address.py", ADDRESS);
     // Order.payment_ref のソースで、payment-info の意味を読んでいない。
-    repo.map("shop/order/model.py", &ORDER.replace(
-        r#"{"kind": "observed", "subject": "shop/order/model.py", "scope": "meaning:payment-info", "at": "shop/order/model.py@blob:1d9e3b4"}
+    let run = |name: &str, meaning_atom: bool| {
+        let repo = shop(name);
+        repo.map("shop/shipping/address.py", ADDRESS);
+        let mut order = ORDER.replace(
+            r#"{"kind": "observed", "subject": "shop/order/model.py", "scope": "meaning:payment-info", "at": "shop/order/model.py@blob:1d9e3b4"}
 "#,
-        "",
-    ));
-    repo.write(".archsig/plans/split-order/plan.jsonl", SPLIT);
-    let s = repo.run(&["plan", "check", "split-order"]);
+            "",
+        );
+        if !meaning_atom {
+            order = order.lines().filter(|l| !(l.contains(r#""kind": "meaning""#) && l.contains("Order.payment_ref"))).map(|l| format!("{l}\n")).collect();
+        }
+        repo.map("shop/order/model.py", &order);
+        repo.write(".archsig/plans/split-order/plan.jsonl", SPLIT);
+        repo.run(&["plan", "check", "split-order"])
+    };
+    // 意味 Atom もなければ、書いたフィールドが意味を持つかは、そのソースの意味を読めば決まる。
+    let s = run("meaning", false);
     let r = result(&s, UPDATE);
     assert_eq!(r["reason"], "unread", "{s}");
     assert!(
         s["next"].as_array().unwrap().iter().any(|n| n["read"] == "shop/order/model.py" && n["scope"] == "meaning:payment-info"),
         "書いたフィールドが意味を持つかは、そのソースの意味を読めば決まる: {s}"
     );
+    // 意味 Atom があれば、移した先の OrderPayment.ref は意味を持つ。そこで二つの順番が食い違うので、
+    // 書き込みの場所の沈黙は結論に関わらず、反例を返す(設計 §5.4)。
+    let s = run("meaning-atom", true);
+    assert_eq!(result(&s, UPDATE)["kind"], "counterexample", "{s}");
 }
 
 #[test]
@@ -865,23 +877,31 @@ fn a_write_through_a_removed_field_is_missing() {
 #[test]
 fn a_via_field_whose_meaning_was_not_read_is_silent() {
     // 書き込みは via のフィールドの場所 [m.O.s] の値も変える。m.O.s を定義した a.py の payment-info を読んでいなければ、決まらない。
-    let repo = Repo::new("nested-via-meaning");
-    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
-    repo.map("a.py", r#"{"kind": "observed", "subject": "a.py", "scope": "structure", "at": "a.py@blob:bbbbbbb"}
+    let run = |name: &str, value: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
+        repo.map("a.py", r#"{"kind": "observed", "subject": "a.py", "scope": "structure", "at": "a.py@blob:bbbbbbb"}
 {"kind": "defines", "subject": "m.O", "value": "type", "at": "a.py:1@blob:bbbbbbb"}
 {"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "a.py:2@blob:bbbbbbb"}
 "#);
-    repo.map("m.py", &NESTED.lines().filter(|l| !l.contains("\"subject\": \"m.O")).map(|l| format!("{l}\n")).collect::<String>());
-    repo.write(
-        ".archsig/plans/p/plan.jsonl",
-        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O", "t": "m.S"}, "file": "m.py", "at": "plan:p"}
-{"kind": "writes", "subject": "m.f", "via": ["m.O.s"], "object": "m.S.p", "value": "2", "at": "plan:p"}
-"#,
-    );
-    let s = repo.run(&["plan", "check", "p"]);
+        repo.map("m.py", &NESTED.lines().filter(|l| !l.contains("\"subject\": \"m.O")).map(|l| format!("{l}\n")).collect::<String>());
+        repo.write(
+            ".archsig/plans/p/plan.jsonl",
+            &format!(
+                "{}\n{{\"kind\": \"writes\", \"subject\": \"m.f\", \"via\": [\"m.O.s\"], \"object\": \"m.S.p\", \"value\": \"{value}\", \"at\": \"plan:p\"}}\n",
+                r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O", "t": "m.S"}, "file": "m.py", "at": "plan:p"}"#
+            ),
+        );
+        repo.run(&["plan", "check", "p"])
+    };
+    // 書き込む値が同じなら、ほかの場所で食い違わないので、[m.O.s] の沈黙が結論に関わる。
+    let s = run("nested-via-meaning", "1");
     let r = result(&s, "m.f");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "a.py" && n["scope"] == "meaning:payment-info"), "{s}");
+    // 値が違えば、意味を持つ場所 [m.O.s, m.S.p] で食い違うので、頭の部分の場所の沈黙は結論に関わらず、反例を返す(設計 §5.4)。
+    let s = run("nested-via-meaning-diverging", "2");
+    assert_eq!(result(&s, "m.f")["kind"], "counterexample", "{s}");
 }
 
 #[test]
@@ -945,15 +965,20 @@ fn the_write_at_the_head_of_a_compared_place_is_the_origin_of_the_divergence() {
 fn the_heads_of_a_long_via_are_compared() {
     // via は [m.A.o, m.O.s]。意味は途中のフィールド m.O.s にある。[m.O.s] だけの場所は書かれないので、
     // 頭の部分の場所 [m.A.o, m.O.s] を比べる場所に入れなければ、意味を持つ値の変化を見落とす。
-    let repo = Repo::new("nested-long-via");
-    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
-    repo.map(
-        "m.py",
-        r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+    // その場所の先に書き込みがあるので、値は決めていない(unchecked)。
+    // 別の意味を持つフィールド m.A.k で二つの順番が食い違えば、その沈黙は結論に関わらず、反例を返す(設計 §5.4)。
+    let run = |name: &str, k: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map(
+            "m.py",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
 {"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.A.o", "value": "field", "type": "m.O", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A.k", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.A.k", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:2@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "m.py:4@blob:aaaaaaa"}
 {"kind": "meaning", "subject": "m.O.s", "meaning": "payment-info", "uses": ["m.py:9@blob:aaaaaaa"], "at": "m.py:4@blob:aaaaaaa"}
@@ -961,17 +986,25 @@ fn the_heads_of_a_long_via_are_compared() {
 {"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:6@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.f", "value": "operation", "params": {"a": "m.A"}, "at": "m.py:8@blob:aaaaaaa"}
 {"kind": "writes", "subject": "m.f", "via": ["m.A.o", "m.O.s"], "object": "m.S.p", "value": "1", "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.A.k", "value": "1", "at": "m.py:10@blob:aaaaaaa"}
 "#,
-    );
-    repo.write(
-        ".archsig/plans/p/plan.jsonl",
-        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"a": "m.A"}, "file": "m.py", "at": "plan:p"}
-{"kind": "writes", "subject": "m.f", "via": ["m.A.o", "m.O.s"], "object": "m.S.p", "value": "2", "at": "plan:p"}
-"#,
-    );
-    let s = repo.run(&["plan", "check", "p"]);
+        );
+        repo.write(
+            ".archsig/plans/p/plan.jsonl",
+            &format!(
+                "{}\n{{\"kind\": \"writes\", \"subject\": \"m.f\", \"object\": \"m.A.k\", \"value\": \"{k}\", \"at\": \"plan:p\"}}\n",
+                r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"a": "m.A"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "via": ["m.A.o", "m.O.s"], "object": "m.S.p", "value": "2", "at": "plan:p"}"#
+            ),
+        );
+        repo.run(&["plan", "check", "p"])
+    };
+    let s = run("nested-long-via", "1");
     let r = result(&s, "m.f");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
+    let s = run("nested-long-via-diverging", "2");
+    let r = result(&s, "m.f");
+    assert_eq!(r["kind"], "counterexample", "{s}");
 }
 
 #[test]
@@ -2351,4 +2384,34 @@ fn a_value_that_grows_through_calls_or_negation_is_limit() {
         let (s, r) = t_case(name, &steps, &steps, extra);
         assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{name}: {s}");
     }
+}
+
+#[test]
+fn a_moved_write_place_whose_kind_is_not_known_does_not_hide_a_counterexample() {
+    // 候補は書き込みの場所 m.T.a を、定義のない m.Z.a へ移す。移した場所が意味を持つかは決まらない(m.Z.a を読めば決まる)。
+    // 意味を持つ m.T.k で二つの順番が食い違えば、その沈黙は結論に関わらず、反例を返す(設計 §5.4)。
+    let run = |name: &str, k: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T.a", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T.k", "value": "field", "type": "int", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.T.k", "meaning": "payment-info", "uses": ["m.py:7@blob:aaaaaaa"], "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.T"}, "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.T.a", "value": "1", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.T.k", "value": "1", "at": "m.py:7@blob:aaaaaaa"}
+"#);
+        repo.write(".archsig/plans/p/plan.jsonl", &format!("{}\n{{\"kind\": \"writes\", \"subject\": \"m.f\", \"object\": \"m.T.k\", \"value\": \"{k}\", \"at\": \"plan:p\"}}\n", r#"{"kind": "corresponds", "subject": "m.T.a", "object": "m.Z.a", "at": "plan:p"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.T"}, "file": "m.py", "at": "plan:p"}"#));
+        repo.run(&["plan", "check", "p"])
+    };
+    let s = run("moved-place-same", "1");
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.Z.a"), "{s}");
+    let s = run("moved-place-diverging", "2");
+    assert_eq!(result(&s, "m.f")["kind"], "counterexample", "{s}");
 }
