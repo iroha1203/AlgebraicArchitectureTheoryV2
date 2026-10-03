@@ -615,3 +615,122 @@ audits:
 ```
 
 全体は `target-proof-checkpoint`。B/D/Eと最終A–E統合は未完了。独立査読前のCycle結果はproposalである。
+
+## Cycle 7：同じ観測の双対・加法群作用・G-128点手続きへの接続
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-131-aat-repair-observation-duality
+cycle: 7
+goal_blob_sha: 054fea81b916c4d4a470b74af3e13c6cc5dde01c
+base_oid: 2cef6cbecba6f7958c69032bc8cb81275b524413
+tracking_issue: 5133
+report_path: research/reports/G-131-aat-repair-observation-duality.md
+selection:
+  proof_state_ref: "Cycle 6 PR #5209の受理済みmerge 2cef6cbecba6f7958c69032bc8cb81275b524413"
+  proof_dag_predecessors: [Solvable, solvable_add_iff, observation, mem_ker_observation, PrimitiveQueries.Run, MinimalCompatibilityObservations.observe, MinimalCompatibilityObservations.QueryRun]
+  milestone: "Bの観測因子化・双対/商/残存像・加法群作用とG-128観測述語/実行/最適回数を同じ元修復入力へ接続"
+  proof_obligations: ["同じ観測核の消滅空間と原始評価span・商双対を構成", "q_SBの商と残存障害像/包含を全値で対応", "加法群の全(j,a)への作用と点安定化群/観測表/元修復述語", "原始手続きと全点手続きの双方向応答/正答/重複回数対応", "重複原始indexを除く十分集合の最小値とG-128最適値/無限/零を接続"]
+  exit_criteria: ["観測因子化/核包含/双対spanを全方向", "商双対と残存像の代表元保存", "全点作用の評価/安定化群と同じ元修復述語", "両history-only手続きの全run/正答/費用を往復", "G-128の最小点集合と原始最小集合を両方向・同じ最適値", "focused/全宣言公理/scan/独立査読"]
+  selection_reason: "A/Cで同定した同じ元修復をG-128と双対へ移し、Dの評価取得に必要なspan条件を準備"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [LinearObservationDuality.lean, AdditiveObservationAction.lean, PointQuerySimulation.lean, PrimitiveReplyTranslation.lean, ActualObservationPredicate.lean, QueryOptimum.sufficientSet_zero_iff]
+  risks: ["success shiftと元入力の定数応答を混同しない", "任意(j,a)は既知平行移動であり新しい原始方向を作らない", "同じjの複数点を一回として勝手に実行費用から消さない", "商の代表元と残存空間への包含を保持", "G-128の同じ観測/述語/全手続きを使用"]
+  unchecked: ["実装・検証・査読前"]
+```
+
+### Cycle 7 の宣言と前提
+
+Bの同じ原始観測表について、因子化をPropおよびBoolで構成し、観測核の消滅空間を
+原始評価の線形包へ対応させる。商双対の正逆と商から残存障害像への正逆は全代表元の値を保存する。
+加法群は `Multiplicative V` と表記してG-128の既存Group作用へ直接接続する。
+全点 `(j,a)` を含め、応答の第2成分から既知 `a` を引いて元評価を回収する。
+点安定化群・観測表・十分性は元primitive indexの表の核と同じである。
+最小固定集合を比較するときにだけ重複indexを除き、実行列では重複を全て数える。
+
+点手続きから原始手続きへの変換は、見える原始履歴を点手続き自身で再生して
+次点の既知offsetを回収する。元入力も未来の応答も参照せず、全runを両方向へ対応させる。
+zero-offset側と任意offset側の双方で、全出力・応答・各回数・常時停止と正答・worstを保存し、
+正しい手続き全体のinfを比較する。G-128の既存最適値定理を同じ作用と述語へ適用する。
+
+実入力との接続では、成功した元入力 `base` の `ν base` を引き、
+元実修復の存在を同じ `ker(q_SB)` へ対応させる。
+実評価の既知定数 `λ_j(ν base)` を履歴ごと変換する手続きと、全パラメータの実現を用い、
+任意の元実入力に対する最適回数をG-128と最小原始集合へ対応させる。
+十分集合がない場合は無限、全元入力が修復不能ならfalseを返す零回手続きを構成する。
+成功点を有限に探すことはDの後続義務であり、Bでは指定の条件分けの仮定として使用する。
+
+受理spineは次の69宣言（5新規moduleと既存観測moduleの基本API1本）。
+
+`AAT.AG.RepairObservationDuality.LinearObservationDuality`: `predicate_iff`, `decision_iff`, `evaluationSpan`, `span_coannihilator`, `observation_annihilator`, `kernel_iff_dual`, `predicate_iff_dual`, `quotientDual`, `quotientDual_apply`, `quotientDual_symm_apply`, `quotientImage`, `quotientImage_apply`, `quotientImage_symm_apply`。
+
+`AAT.AG.RepairObservationDuality.AdditiveObservationAction`: `action`, `action_apply`, `fixed_iff`, `compatible`, `mem_compatible`, `indices`, `stabilizer_iff`, `sufficient_iff`, `predicate_iff`, `observe_decode`, `zeroPoints`, `indices_zeroPoints`, `card_zeroPoints`, `card_indices_le`, `minimum_eq`。
+
+`AAT.AG.RepairObservationDuality.PointQuerySimulation`: `evaluation`, `evaluation_apply`, `decode`, `toPoint`, `primitive_to_point`, `point_to_primitive`, `inflateStep`, `inflate`, `fromPoint`, `inflate_append`, `arbitrary_point_to_primitive`, `primitive_to_arbitrary_point`, `toPoint_correct_iff`, `fromPoint_correct_iff`, `toPoint_worst_eq`, `fromPoint_worst_eq`, `optimum_eq`, `optimum_eq_minimum`。
+
+`AAT.AG.RepairObservationDuality.PrimitiveReplyTranslation`: `history`, `procedure`, `run_iff`, `correct_iff`, `worst_eq`, `optimum_le`, `optimum_eq`。
+
+`AAT.AG.RepairObservationDuality.ActualObservationPredicate`: `repair_shift`, `repair_realize_shift`, `observation_predicate_iff`, `observation_decision_iff`, `observation_predicate_dual_iff`, `point_predicate_iff`, `repairQuotientDual`, `repairQuotientDual_apply`, `repairQuotientImage`, `repairQuotientImage_apply`, `repair_difference`, `actual_optimum_eq_point`, `actual_optimum_eq_minimum`, `actual_optimum_eq_top_iff`, `actual_optimum_zero`。
+
+`AAT.AG.RepairObservationDuality.sufficientSet_zero_iff`: 同じSufficientSetの全入力用基本API。
+
+| 前提・構成 | 分類 | 出所・証明での使用 |
+| --- | --- | --- |
+| 体、線形空間、元primitive indexとλ、有限次元V | ambient-boundary | G-131の係数と評価。一般補題は有限体を要求せず、双対のdouble annihilatorに有限次元を使用 |
+| 同じ物理実入力族、共通核・候補・固定領域・全実現 | ambient-boundary、Aの入力条件 | 受理Cycle 5のactual affine equationへ適用。全実現を原始/点の全入力最適値の逆方向へ使用 |
+| 成功した元入力base | direction-hypothesis | Bの指定条件分け。元実修復から同じDSの成功点を得てshift。成功判定・選択はDの後続義務 |
+| 観測核とλの線形包、同じ商双対/残存像 | discharge-required、証明済み | 固定Mathlibのspan/double annihilator・quotient dual・first isomorphismから構成、全代表元評価の正逆 |
+| 加法作用、全点の応答、点安定化群・十分性 | discharge-required、証明済み | λの加法性から作用を構成し、元jでの零条件へ同定。G-128の既存表/安定化群を直接使用 |
+| point/primitiveの全手続きとvisible history | ambient-boundary | G-128/C2の同じ次stepと実行。任意offsetをvisible historyから回収し、反復回数を全保持 |
+| 応答/正答/常時停止/worst/optimumの両方向 | discharge-required、証明済み | 両Run変換、両Correct、両worstを証明して全正答手続きのinfを比較。supplied solverを仮定せず |
+| 同じ元実修復述語と実原始評価 | discharge-required、証明済み | C5の元実方程式、C1のsolvable_add_iff、C6の全実現/実評価橋と既知応答定数変換を使用 |
+| 一般族の原始実評価=λν | ambient-boundary、Aの入力条件 | 実応答のshift/run、全入力のworst/optimumへ使用。Eで元操作から構成する追加義務を維持 |
+| 無限/全不能零 | discharge-required、証明済み | 十分集合不存在⇔minimum=∞、実原始最適値同定、および実不能述語を満たすfalse常時停止手続き |
+
+再利用資格：Cycle 1/2/5/6の受理済みsourceとPR記録を照合する。
+Cycle 6 head `8ebd24ad893aac6f44cdcd76639dbabc83386389`、
+[最終監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5209#issuecomment-5970703374)。
+G-128 final head `313a6c9788238f0a6fc576b65ce253cd538cbf10`、
+[全体完了監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5103#issuecomment-5880926353)、
+[Issue #5075](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5075)。
+G-128の現在のPointObservation/AdaptiveLowerBound/QueryOptimumのstatementと同じ作用への適用を実読する。
+標準線形代数は固定Mathlib `8f9d9cff6bd728b17a24e163c9402775d9e6a365`。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "同じ実修復を線形観測双対・商双対/残存像・G-128の全点作用/全手続き/最適回数へ接続"
+  exit_criteria_status: ["因子化/核/双対spanを全方向・Bool実出力", "商双対/残存像の正逆と代表元値", "全点作用/安定化群/表と元実述語", "両visible-history手続き/実応答/正答/重複回数", "最小原始集合/G-128最適値/∞/全不能零", "対象宣言focused/個別公理/scan/独立査読はPRへ固定"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [LinearObservationDuality.lean, AdditiveObservationAction.lean, PointQuerySimulation.lean, PrimitiveReplyTranslation.lean, ActualObservationPredicate.lean, QueryOptimum.sufficientSet_zero_iff]
+  evidence: [kernel_iff_dual, quotientDual_apply, quotientImage_apply, stabilizer_iff, minimum_eq, primitive_to_point, arbitrary_point_to_primitive, primitive_to_arbitrary_point, fromPoint_worst_eq, actual_optimum_eq_point, actual_optimum_eq_minimum, actual_optimum_eq_top_iff, actual_optimum_zero]
+  claim_mapping:
+    theorem_names: [observation_predicate_dual_iff, point_predicate_iff, repairQuotientImage_apply, actual_optimum_eq_minimum, actual_optimum_eq_top_iff, actual_optimum_zero]
+    source_labels: ["G-131 B", "n1017 §6"]
+    conjuncts: ["因子化/核包含/原始span", "同じ実族の商双対/残存像/包含", "同じ実修復述語と全点応答", "全手続きと繰返し費用", "実primitive最適値/∞/不能零"]
+    undischarged_assumptions: []
+    acceptance_point: "Bの観測双対性とG-128への同じ実入力接続。D/Eと最終統合は後続義務"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["観測核の双対span", "同じ商双対と残存像", "全点作用/安定化群/観測表", "全手続き/応答/正答/費用", "元実入力の最適回数/∞/全不能零"]
+    remaining: ["Dの双対値取得/有限最小計画/未知更新", "Eの全実現/実評価/全指定表/細分化/参照式", "最終A–E統合"]
+  certificate_provenance:
+    discharged: ["λの線形性から実作用", "spanとcanonical quotient maps", "visible historyから両手続き", "受理済み同じ元実方程式"]
+    unresolved: ["Eの具体族の原始入力条件構成"]
+  proof_use:
+    used: ["原始λの線形性", "有限次元V", "同じDS/b₀/B", "成功元入力", "実評価", "全実現", "実history/反復質問", "G-128の同じ作用/表/述語/全手続きの最適値"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["対象fileと69追加宣言のfocused/個別公理raw記録、scan、独立査読をPRへ固定"]
+  blocking_findings: []
+  next_obligation: "Dの同じ双対値取得・有限計画/solver/実復元と更新"
+```
+
+全体は `target-proof-checkpoint`。D/Eおよび最終A–E統合は未完了。独立査読前のCycle結果はproposal。

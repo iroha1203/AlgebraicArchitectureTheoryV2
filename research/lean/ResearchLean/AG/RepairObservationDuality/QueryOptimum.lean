@@ -54,6 +54,12 @@ theorem observation_eq_iff (points : Finset J) (v w : V) :
 def SufficientSet (L : V →ₗ[k] I) (R : Submodule k V) (points : Finset J) : Prop :=
   LinearMap.ker L ⊓ LinearMap.ker (observation lam points) ≤ R
 
+/-- B's full-input sufficient-set API removes the zero known-information map. -/
+theorem sufficientSet_zero_iff (R : Submodule k V) (points : Finset J) :
+    SufficientSet lam (0 : V →ₗ[k] k) R points ↔
+      LinearMap.ker (observation lam points) ≤ R := by
+  simp only [SufficientSet, LinearMap.ker_zero, top_inf_eq]
+
 /-- C's minimum sufficient primitive cardinal, with infinity for an empty set of plans. -/
 noncomputable def minimum (L : V →ₗ[k] I) (R : Submodule k V) : ℕ∞ :=
   ⨅ p : {p : Finset J // SufficientSet lam L R p}, (p.1.card : ℕ∞)
