@@ -216,13 +216,13 @@ impl Structure {
         }
         // 呼び出しの要素ごとの、`calls` の `when`。
         let call_when: BTreeMap<&str, Option<&str>> =
-            s.call_names.iter().map(|(&i, name)| (name.as_str(), atoms[i].when.as_deref().map(str::trim))).collect();
+            s.call_names.iter().map(|(&i, name)| (name.as_str(), atoms[i].when.as_deref())).collect();
         let mut passes: BTreeMap<String, BTreeMap<String, Expr>> = BTreeMap::new();
         let mut undecided = BTreeSet::new();
         for a in s.atoms.iter().filter(|a| a.kind == "passes") {
             let value = a.value.as_deref().map(parse_expr).unwrap_or(Expr::Unknown);
             // 呼び出しと違う条件で渡す値は、条件で変わるので一つに決まらない。`when` のない `passes` は、呼び出しの条件で渡す。
-            if a.when.is_some() && a.when.as_deref().map(str::trim) != call_when.get(a.subject.as_str()).copied().flatten() {
+            if a.when.is_some() && a.when.as_deref() != call_when.get(a.subject.as_str()).copied().flatten() {
                 undecided.insert(a.subject.clone());
             }
             let params = passes.entry(a.subject.clone()).or_default();

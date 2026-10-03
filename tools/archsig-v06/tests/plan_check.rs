@@ -2686,8 +2686,8 @@ fn a_passed_value_that_depends_on_a_condition_other_than_the_call_is_unresolved(
     let callee = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"x": "int"}, "at": "m.py:20@blob:aaaaaaa"}
 {"kind": "writes", "subject": "m.g", "object": "m.O.t", "value": "$x", "at": "m.py:21@blob:aaaaaaa"}
 "#;
-    let run = |name: &str, call_when: &str, passes: &[(&str, &str)]| {
-        let atoms = |at: &str| {
+    let run = |name: &str, call_when: &str, passes: &[(&str, &str)], plan_passes: &[(&str, &str)]| {
+        let atoms = |at: &str, passes: &[(&str, &str)]| {
             let mut out = String::new();
             let when = if call_when.is_empty() { String::new() } else { format!(", \"when\": \"{call_when}\"") };
             out.push_str(&format!("{{\"kind\": \"calls\", \"subject\": \"m.f\", \"object\": \"m.g\"{when}, \"at\": \"{at}\"}}\n"));
@@ -2707,7 +2707,7 @@ fn a_passed_value_that_depends_on_a_condition_other_than_the_call_is_unresolved(
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
 {"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
 "#,
-                atoms("m.py:10@blob:aaaaaaa")
+                atoms("m.py:10@blob:aaaaaaa", passes)
             ),
         );
         repo.write(
@@ -2716,7 +2716,7 @@ fn a_passed_value_that_depends_on_a_condition_other_than_the_call_is_unresolved(
                 "{}{}",
                 r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
 "#,
-                atoms("plan:p")
+                atoms("plan:p", plan_passes)
             ),
         );
         let s = repo.run(&["plan", "check", "p"]);
@@ -2728,7 +2728,7 @@ fn a_passed_value_that_depends_on_a_condition_other_than_the_call_is_unresolved(
         ("passes-two-values", "", vec![("1", ""), ("2", "")]),
         ("passes-two-conditions", "", vec![("1", "$o.n == 1"), ("2", "$o.n != 1")]),
     ] {
-        let (r, s) = run(name, call_when, &passes);
+        let (r, s) = run(name, call_when, &passes, &passes);
         assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
     }
     // 呼び出しと同じ when の passes と、when のない passes(条件付きの呼び出しを含む)は、計算する(対照)。
@@ -2738,7 +2738,16 @@ fn a_passed_value_that_depends_on_a_condition_other_than_the_call_is_unresolved(
         ("passes-conditional-call", "$o.n == 1", vec![("1", "")]),
         ("passes-same-twice", "", vec![("1", ""), ("1", "")]),
     ] {
-        let (r, s) = run(name, call_when, &passes);
+        let (r, s) = run(name, call_when, &passes, &passes);
         assert_eq!(r["outcome"], "holds", "{name}: {s}");
+    }
+    // 渡す値は計算に使う。候補が渡す値を変えれば、反例になる(対照)。
+    for (name, call_when, before, plan) in [
+        ("passes-plain-changed", "", vec![("1", "")], vec![("2", "")]),
+        ("passes-same-when-changed", "$o.n == 1", vec![("1", "$o.n == 1")], vec![("2", "$o.n == 1")]),
+        ("passes-conditional-call-changed", "$o.n == 1", vec![("1", "")], vec![("2", "")]),
+    ] {
+        let (r, s) = run(name, call_when, &before, &plan);
+        assert_eq!(r["kind"], "counterexample", "{name}: {s}");
     }
 }
