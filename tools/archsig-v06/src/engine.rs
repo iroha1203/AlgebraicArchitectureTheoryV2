@@ -1051,7 +1051,7 @@ fn changed_call(before: &Structure, after: &Structure, mapping: &Mapping, v: &Va
             // 読めない式があって本体を比べられなければ、違うとする。
             let Some(old) = body(before, &n) else { return true };
             let differs = |t: &str| body(after, t).is_none_or(|b| b != old);
-            match mapping.to.get(n.as_str()).filter(|t| !t.is_empty()) {
+            match mapping.to.get(n.as_str()) {
                 Some(targets) => targets.iter().any(|t| differs(t)),
                 None => differs(&n),
             }
@@ -1074,13 +1074,14 @@ fn call_names(v: &Value, out: &mut BTreeSet<String>) {
     }
 }
 
-/// 操作 `op` の本体。`op` とそこから呼ぶ操作の構造 Atom(定義と解決を除く)を、種類、`object`、`via`、`value`、`when` の字句で並べたもの。
+/// 操作 `op` の本体。`op` とそこから呼ぶ操作の構造 Atom(定義と解決を除く)を、種類、呼び出しの名前、`object`、`via`、`value`、`when` の字句で並べたもの。
+/// 定義からは、引数の名前と型を並べる。
 /// 手順(書き込み、呼び出し、送信、戻り値)は手順の順のまま並べる(戻り値の後の手順のように、順に意味がある)。ほかの Atom は順によらない。
 /// そこから呼ぶ操作は、`calls` の `object` と、`value`・`when` の式の中の呼び出しである。たどった先がさらに呼ぶ操作も含む。
-/// 定義のない操作は、その解決(`resolves` の指す先。重なりは一つ、指す先が違えば決まらない)も並べる。
-/// 構文として読めない式があれば、その先の呼び出しをたどれないので、比べられない(None)。
+/// 定義のない操作は、その解決(`resolves` の指す先。重なりは一つ)も並べる。
+/// `?` が関わる Atom(`?` の値、`?` で始まる名前)、構文として読めない式、字句の数が上限を超えた式、決まらない解決があれば、
+/// 入力から本体が決まらないので、比べられない(None)。
 fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
-    let key = |a: &Atom| format!("{}|{:?}|{:?}|{:?}|{:?}", a.kind, a.object, a.via, a.value, a.when);
     let mut seen = BTreeSet::new();
     let mut todo = vec![op.to_string()];
     let mut out = Vec::new();
@@ -1089,6 +1090,8 @@ fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
             continue;
         }
         let call = format!("{o}->");
+        // 呼び出しの Atom は、どの呼び出しか(`->` から後の名前)も比べる。
+        let key = |a: &Atom| format!("{}|{}|{:?}|{:?}|{:?}|{:?}", a.kind, &a.subject[o.len()..], a.object, a.via, a.value, a.when);
         let steps = s.steps(&o);
         let mut rest: Vec<&Atom> = s
             .atoms
@@ -1099,10 +1102,23 @@ fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
         rest.sort_by_key(|a| key(a));
         // 操作の区切り。名前は入れない(呼び出し先の名前の違いは見ない)。
         out.push("op".to_string());
-        if !s.elements.get(&o).is_some_and(|e| e.kinds.contains("operation")) {
-            out.push(format!("resolves|{:?}", s.resolves.get(&o)));
+        if let Some(e) = s.elements.get(&o).filter(|e| e.kinds.contains("operation")) {
+            // 定義からは、引数の名前と型を比べる。
+            if e.params.values().any(|t| t.starts_with('?')) {
+                return None;
+            }
+            out.push(format!("params|{:?}", e.params));
+        } else {
+            let r = s.resolves.get(&o);
+            if matches!(r, Some(Resolution::Undecided)) || matches!(r, Some(Resolution::Source(x)) if x.starts_with('?')) {
+                return None;
+            }
+            out.push(format!("resolves|{r:?}"));
         }
         for a in steps.iter().copied().chain(rest) {
+            if a.object.iter().chain(a.via.iter().flatten()).any(|x| x.starts_with('?')) {
+                return None;
+            }
             out.push(key(a));
             if a.kind == "calls"
                 && let Some(c) = &a.object
@@ -1112,8 +1128,13 @@ fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
             let mut called = BTreeSet::new();
             for text in [&a.value, &a.when].into_iter().flatten() {
                 match crate::expr::parse(text) {
-                    Ok(e) => expr_calls(&e, &mut called),
-                    Err(_) => return None,
+                    // 字句の数が上限を超えた式は、構文として読めるかを確かめていないので、読めない式と同じに扱う。
+                    Ok(crate::expr::Expr::TooLong(_)) | Err(_) => return None,
+                    Ok(e) => {
+                        if !expr_calls(&e, &mut called) {
+                            return None;
+                        }
+                    }
                 }
             }
             todo.extend(called);
@@ -1122,21 +1143,19 @@ fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
     Some(out)
 }
 
-/// 式が呼ぶ操作の名前。
-fn expr_calls(e: &crate::expr::Expr, out: &mut BTreeSet<String>) {
+/// 式が呼ぶ操作の名前を集める。式に `?` が関われば(`?` の値、`?` で始まる名前)、偽を返す。
+fn expr_calls(e: &crate::expr::Expr, out: &mut BTreeSet<String>) -> bool {
     use crate::expr::Expr;
     match e {
+        Expr::Unknown => false,
+        Expr::Name(n) => !n.starts_with('?'),
         Expr::Call(n, args) => {
             out.insert(n.clone());
-            args.iter().for_each(|a| expr_calls(a, out));
+            !n.starts_with('?') && args.iter().all(|a| expr_calls(a, out))
         }
         Expr::Not(x) | Expr::Neg(x) => expr_calls(x, out),
-        Expr::Bin(_, a, b) => {
-            expr_calls(a, out);
-            expr_calls(b, out);
-        }
-        Expr::TooLong(items) => items.iter().for_each(|x| expr_calls(x, out)),
-        _ => {}
+        Expr::Bin(_, a, b) => expr_calls(a, out) && expr_calls(b, out),
+        _ => true,
     }
 }
 
