@@ -529,12 +529,16 @@ pub fn implemented(
 /// 一つに決まらない対応があれば、局所に閉じない条件として `conflict` を返し、分けたものは返さない。
 pub fn plan_split(name: &str, overlay: &Overlay, split: Split, laws: &LawSet) -> (Vec<Finding>, Option<Split>) {
     // `?` の名前がどの局所に属するかは決まらない。その Atom の場所を返して沈黙する(マニュアル第3章、第5章 問い8)。
-    if !split.questions.is_empty() {
-        let silent = split
-            .questions
-            .iter()
-            .map(|(n, a)| Finding { theory: Some(THEORY_SPLIT.to_string()), ..Finding::silent("split", None, n, question_at(a)) })
-            .collect();
+    let mut silent: Vec<Finding> = split
+        .questions
+        .iter()
+        .map(|(n, a)| Finding { theory: Some(THEORY_SPLIT.to_string()), ..Finding::silent("split", None, n, question_at(a)) })
+        .collect();
+    // 定義がなく `resolves` がソースを指す要素は、局所が決まらない。構造の解決のとおりに沈黙する(設計 §3.3)。
+    for (n, s) in &split.unknown {
+        silent.push(Finding { theory: Some(THEORY_SPLIT.to_string()), ..Finding::silent("split", None, n, s.clone()) });
+    }
+    if !silent.is_empty() {
         return (silent, None);
     }
     let changes = laws.laws.iter().any(|l| matches!(l.rule, Rule::ChangesCommute | Rule::ChangesKeep));
