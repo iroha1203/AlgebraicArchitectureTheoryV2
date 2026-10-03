@@ -302,8 +302,7 @@ reading module = dir(depth: 1)
         assert!(has(&shared, kind, "a.f", Some(object)), "{name}: {detail}");
     }
     // 要素自身の定義を観測していれば、頭と別のソースでも、定義したソースの局所に属する。ここでは b.M.x を a/f.py で定義したので、書き込みは a の局所に入る。
-    let own = format!("{b}{{\"kind\": \"defines\", \"subject\": \"b.M.y\", \"value\": \"field\", \"at\": \"b/m.py:2@blob:bbbbbbb\"}}\n");
-    let (repo, s) = run("field-defined-in-a", Some(&own), "{\"kind\": \"defines\", \"subject\": \"b.M.x\", \"value\": \"field\", \"file\": \"a/f.py\", \"at\": \"plan:p\"}\n{\"kind\": \"writes\", \"subject\": \"a.f\", \"object\": \"b.M.x\", \"value\": \"1\", \"at\": \"plan:p\"}\n");
+    let (repo, s) = run("field-defined-in-a", Some(b), "{\"kind\": \"defines\", \"subject\": \"b.M.x\", \"value\": \"field\", \"file\": \"a/f.py\", \"at\": \"plan:p\"}\n{\"kind\": \"writes\", \"subject\": \"a.f\", \"object\": \"b.M.x\", \"value\": \"1\", \"at\": \"plan:p\"}\n");
     assert_eq!(result(&s, "p")["outcome"], "holds", "{s}");
     let local = lines(&repo, ".archsig/plans/p/a/plan.jsonl");
     assert!(has(&local, "writes", "a.f", Some("b.M.x")), "{local:?}");
