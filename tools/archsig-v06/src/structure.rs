@@ -215,8 +215,9 @@ impl Structure {
                 None => s,
             });
         }
+        // 種類の違う `defines` を持つ要素と、`value` のない `defines` を持つ要素は、種類が決まらない。
         match self.elements.get(name) {
-            Some(e) if e.kinds.len() == 1 => Ok(e.kinds.iter().next().unwrap()),
+            Some(e) if e.kinds.len() == 1 && !e.kinds.contains("") => Ok(e.kinds.iter().next().unwrap()),
             Some(_) => Err(Silence::new(Reason::Unresolved)),
             None => Err(self.undefined(name)),
         }
@@ -242,9 +243,9 @@ impl Structure {
         Ok(out)
     }
 
-    /// 種類の違う `defines` を持つ要素。
+    /// 種類の違う `defines` か、`value` のない `defines` を持つ要素。種類が決まらない。
     fn ambiguous(&self, name: &str) -> bool {
-        self.elements.get(name).is_some_and(|e| e.kinds.len() > 1)
+        self.elements.get(name).is_some_and(|e| e.kinds.len() > 1 || e.kinds.contains(""))
     }
 
     fn expect(&self, name: &str, kind: &str) -> Result<(), Silence> {
@@ -297,6 +298,14 @@ impl Structure {
                     let mut binds = Vec::new();
                     let mut inner = BTreeMap::new();
                     if external.is_none() {
+                        // 受け取る引数が呼び出し先の引数でなければ、渡す値の行き先が決まらない。
+                        let params = self.elements.get(&object).map(|e| &e.params);
+                        let prefix = format!("{object}.$");
+                        for param in self.passes.get(&call).into_iter().flat_map(|p| p.keys()) {
+                            if !param.strip_prefix(&prefix).is_some_and(|n| params.is_some_and(|ps| ps.contains_key(n))) {
+                                return Err(locate(question(), a));
+                            }
+                        }
                         for (param, e) in self.passes.get(&call).into_iter().flatten() {
                             let symbol = format!("{param}@{index}");
                             binds.push((symbol.clone(), self.resolve(op, env, e).map_err(|x| locate(x, a))?));
@@ -566,7 +575,8 @@ fn relate(old: &Structure, new: &Structure, before: &[Atom], after: &[Atom], pla
 fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn Fn(&str) -> bool, out: &mut Overlay) {
     let body = |k: &str| matches!(k, "writes" | "reads" | "calls" | "sends" | "receives" | "returns" | "passes");
     let mut named: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
-    for (op, e) in s.elements.iter().filter(|(n, e)| e.kinds.contains("operation") && !skip(n)) {
+    // 種類の決まらない要素(`value` のない `defines`)も、操作かもしれないので数える。`missing` の結論で沈黙する。
+    for (op, e) in s.elements.iter().filter(|(n, e)| (e.kinds.contains("operation") || e.kinds.contains("")) && !skip(n)) {
         named.entry(op.clone()).or_default().extend(e.params.values().cloned());
     }
     for a in atoms.iter().filter(|a| body(&a.kind)) {

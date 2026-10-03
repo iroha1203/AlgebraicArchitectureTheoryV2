@@ -218,6 +218,12 @@ impl Store {
                 } else {
                     let at = a.at.as_deref().ok_or(format!("at がない: {}", a.subject))?;
                     a.at = Some(self.versioned(at)?);
+                    // 外部を指さない `resolves` の `object` は、定義したソースのパスである。
+                    if a.kind == "resolves"
+                        && let Some(o) = a.object.as_deref().filter(|o| !o.starts_with("external:"))
+                    {
+                        a.object = Some(relative(o)?);
+                    }
                 }
                 Place::Source(a.location().unwrap().path)
             };

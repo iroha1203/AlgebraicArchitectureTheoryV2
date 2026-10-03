@@ -1975,3 +1975,194 @@ fn a_question_mark_or_an_unreadable_expression_anywhere_in_the_steps_is_silent()
     silent("q-callee", &[("calls", "m.g", "", "")], callee);
     silent("q-call-when", &[("calls", "m.g", "", "?")], &callee.replace("\"?\"", "\"1\""));
 }
+
+#[test]
+fn a_pass_to_an_argument_the_callee_does_not_have_is_unresolved() {
+    let callee = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"x": "int"}, "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.O.t", "value": "$x", "at": "m.py:6@blob:aaaaaaa"}
+"#;
+    let run = |name: &str, to: &str, before: &str, after: &str| {
+        let atoms = format!(
+            "{T_ATOMS}{callee}{{\"kind\": \"calls\", \"subject\": \"m.f\", \"object\": \"m.g\", \"at\": \"m.py:10@blob:aaaaaaa\"}}\n{{\"kind\": \"passes\", \"subject\": \"m.f->m.g\", \"object\": \"{to}\", \"value\": \"{before}\", \"at\": \"m.py:10@blob:aaaaaaa\"}}\n"
+        );
+        let plan = format!(
+            "{}{{\"kind\": \"passes\", \"subject\": \"m.f->m.g\", \"object\": \"m.g.$x\", \"value\": \"{after}\", \"at\": \"plan:p\"}}\n",
+            r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "plan:p"}
+"#
+        );
+        below_case(name, &atoms, &plan)
+    };
+    // 呼び出し先の引数に渡せば束なる。渡す値が違えば反例。
+    let (s, r) = run("pass-right", "m.g.$x", "1", "2");
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    // 呼び出し先の引数にない受け取り先(m.g.$y、名前だけの x)は、渡す値の行き先が決まらない。
+    for to in ["m.g.$y", "x"] {
+        let (s, r) = run(&format!("pass-wrong-{}", to.len()), to, "2", "2");
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{to}: {s}");
+        assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py" && n["scope"] == "structure"), "{to}: {s}");
+    }
+}
+
+#[test]
+fn an_element_defined_without_a_kind_is_unresolved() {
+    // 変更前の m.f の defines に value がない。書き込みは 1 から 2 に変わる。
+    let atoms = r#"{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.t", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.t", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "1", "at": "m.py:10@blob:aaaaaaa"}
+"#;
+    let plan = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "2", "at": "plan:p"}
+"#;
+    let (s, r) = below_case("defines-without-value", atoms, plan);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    // 引数の型 m.O の defines に value がなければ、$o.n の場所は決まらない。
+    let (s, r) = t_case(
+        "type-without-value",
+        &[("writes", "m.O.t", "$o.n", "")],
+        &[("writes", "m.O.t", "$o.n", "")],
+        "",
+    );
+    assert_eq!(r["outcome"], "holds", "対照: {s}");
+    let typeless = T_ATOMS.replace(r#"{"kind": "defines", "subject": "m.O", "value": "type","#, r#"{"kind": "defines", "subject": "m.O","#);
+    let (s, r) = below_case(
+        "type-without-value-q",
+        &format!("{typeless}{}", r#"{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "$o.n", "at": "m.py:10@blob:aaaaaaa"}
+"#),
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "$o.n", "at": "plan:p"}
+"#,
+    );
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    // 書いたフィールドの型 m.S の、value のないフィールド m.S.p(payment-info)は、型をたどるときも決まらない。
+    let fieldless = format!("{O_S}{}{F_WRITES_A}", S_P.replace(r#""subject": "m.S.p", "value": "field","#, r#""subject": "m.S.p","#));
+    let (s, r) = below_case("field-without-value-below", &fieldless, PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
+
+#[test]
+fn a_resolves_recorded_with_dot_slash_is_read_once_its_source_is_read() {
+    // record が resolves の object を m/b.py にそろえるので、m/b.py を読めば呼び出し先の定義が読める。
+    let repo = Repo::new("resolves-path");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m/*.py\""));
+    repo.write("m/a.py", "# a\n");
+    repo.write("m/b.py", "# b\n");
+    repo.write(
+        "in.jsonl",
+        r#"{"kind": "observed", "subject": "m/a.py", "scope": "structure", "at": "m/a.py"}
+{"kind": "observed", "subject": "m/a.py", "scope": "meaning:payment-info", "at": "m/a.py"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m/a.py:1"}
+{"kind": "resolves", "subject": "m.g", "object": "./m/b.py", "at": "m/a.py:1"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m/a.py:2"}
+{"kind": "defines", "subject": "m.O.t", "value": "field", "type": "int", "at": "m/a.py:3"}
+{"kind": "meaning", "subject": "m.O.t", "meaning": "payment-info", "uses": ["m/a.py:10"], "at": "m/a.py:3"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m/a.py:9"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m/a.py:10"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "1", "at": "m/a.py:11"}
+{"kind": "observed", "subject": "m/b.py", "scope": "structure", "at": "m/b.py"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m/b.py:1"}
+"#,
+    );
+    let observed_b = r#"{"kind": "observed", "subject": "m/b.py", "scope": "structure", "at": "m/b.py"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m/b.py:1"}
+"#;
+    // m/b.py を読む前は、次に読む所はそろえたパスの m/b.py である。
+    repo.write("in.jsonl", &std::fs::read_to_string(repo.dir.join("in.jsonl")).unwrap().replace(observed_b, ""));
+    repo.run(&["record", "in.jsonl"]);
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m/a.py", "at": "plan:p"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "2", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m/b.py"), "{s}");
+    assert!(!s["next"].as_array().unwrap().iter().any(|n| n["read"] == "./m/b.py"), "{s}");
+    // m/b.py を読めば、呼び出し先の定義が読め、反例が決まる。
+    repo.write("in.jsonl", observed_b);
+    repo.run(&["record", "in.jsonl"]);
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("counterexample")), "{s}");
+}
+
+#[test]
+fn an_operation_defined_without_a_kind_that_names_a_removed_type_is_unresolved() {
+    // m.x は引数の型に m.T を持つ。候補が m.T を消す。changes keep の Law では、対応の組を比べないので、
+    // 消える要素を名指す操作の結論だけが出る。value のない m.x は、種類の違う defines を持つ要素と同じく沈黙する。
+    let run = |name: &str, defines: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &KEEP.replace("\"shop/**\"", "\"m.py\""));
+        repo.map(
+            "m.py",
+            &format!(
+                "{}{defines}\n",
+                r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+"#
+            ),
+        );
+        repo.write(".archsig/plans/p/plan.jsonl", r#"{"kind": "removes", "subject": "m.T", "at": "plan:p"}
+"#);
+        repo.run(&["plan", "check", "p"])
+    };
+    let s = run("removed-param-op", r#"{"kind": "defines", "subject": "m.x", "value": "operation", "params": {"q": "m.T"}, "at": "m.py:2@blob:aaaaaaa"}"#);
+    assert_eq!((result(&s, "m.x")["outcome"].as_str(), result(&s, "m.x")["kind"].as_str()), (Some("fails"), Some("missing")), "対照: {s}");
+    let s = run("removed-param-valueless", r#"{"kind": "defines", "subject": "m.x", "params": {"q": "m.T"}, "at": "m.py:2@blob:aaaaaaa"}"#);
+    assert_eq!((result(&s, "m.x")["outcome"].as_str(), result(&s, "m.x")["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
+
+#[test]
+fn an_argument_kept_through_an_operation_without_a_kind_is_unresolved() {
+    // m.f の引数 x は payment-info を持つ。候補は m.f を消して m.g に対応させる。引数の対応は、操作どうしの対応から作る。
+    // m.g が操作なら x の対応ができて holds。種類が決まらなければ(value がない)、対応があるかも決まらない。型なら missing。
+    let law = r#"sources "m.py"
+
+reading module = dir(depth: 2)
+
+meaning payment-info on param
+  "注文の支払いを特定する値。"
+
+law payment-info-kept
+  "決済情報は変更の後も残る。"
+  about payment-info
+  changes keep
+"#;
+    let run_with = |name: &str, f_value: &str, g_value: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", law);
+        let map = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "#
+            .to_string()
+            + f_value
+            + r#""params": {"x": "int"}, "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.f.$x", "meaning": "payment-info", "uses": ["m.py:3@blob:aaaaaaa"], "at": "m.py:2@blob:aaaaaaa"}
+"#;
+        repo.map("m.py", &map);
+        repo.write(
+            ".archsig/plans/p/plan.jsonl",
+            &format!(
+                "{{\"kind\": \"removes\", \"subject\": \"m.f\", \"at\": \"plan:p\"}}\n{{\"kind\": \"defines\", \"subject\": \"m.g\", {g_value}\"params\": {{\"x\": \"int\"}}, \"file\": \"m.py\", \"at\": \"plan:p\"}}\n{{\"kind\": \"corresponds\", \"subject\": \"m.f\", \"object\": \"m.g\", \"at\": \"plan:p\"}}\n"
+            ),
+        );
+        repo.run(&["plan", "check", "p"])
+    };
+    let run = |name: &str, g_value: &str| run_with(name, r#""value": "operation", "#, g_value);
+    let s = run("keep-op", r#""value": "operation", "#);
+    assert_eq!(result(&s, "payment-info")["outcome"], "holds", "{s}");
+    let s = run("keep-type", r#""value": "type", "#);
+    assert_eq!((result(&s, "m.f.$x")["outcome"].as_str(), result(&s, "m.f.$x")["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
+    let s = run("keep-valueless", "");
+    assert_eq!((result(&s, "m.f.$x")["outcome"].as_str(), result(&s, "m.f.$x")["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    // 変更前の持ち主 m.f の種類が決まらなくても、引数の対応があるかは決まらない。
+    let s = run_with("keep-owner-valueless", "", r#""value": "operation", "#);
+    assert_eq!((result(&s, "m.f.$x")["outcome"].as_str(), result(&s, "m.f.$x")["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}

@@ -427,20 +427,25 @@ pub fn implemented(
     for law in laws.laws.iter().filter(|l| matches!(l.rule, Rule::ChangesCommute | Rule::ChangesKeep)) {
         let Some(meaning) = law.about.as_deref() else { continue };
         for (e, _) in before.meanings.iter().filter(|(e, _)| !e.starts_with("local:") && has_meaning(before, e, meaning)) {
-            for t in mapping.to.get(e.as_str()).into_iter().flatten().filter(|t| after.kind(t).is_ok()) {
-                let f = match meaning_known(None, after, t, meaning) {
-                    Err(s) => Finding::silent("change", Some(&law.name), t, s),
-                    Ok(()) if has_meaning(after, t, meaning) => continue,
-                    Ok(()) => Finding {
-                        question: "change".to_string(),
-                        law: Some(law.name.clone()),
-                        subject: t.to_string(),
-                        outcome: "fails",
-                        kind: Some("missing"),
-                        at: defined_at(after, t).into_iter().collect(),
-                        basis: json!({"meaning": meaning}),
-                        check: json!({"element": e, "target": t, "meaning": meaning, "observed": false}),
-                        ..Finding::default()
+            for t in mapping.to.get(e.as_str()).into_iter().flatten() {
+                // 行き先の種類が決まらなければ(曖昧、`value` のない `defines`)、意味を持つかも決まらない(設計 §3.2)。
+                let f = match corresponds_kind(after, overlay, t) {
+                    Err(s) if matches!(s.reason, Reason::Unresolved) => Finding::silent("change", Some(&law.name), t, s),
+                    Err(_) => continue,
+                    Ok(_) => match meaning_known(None, after, t, meaning) {
+                        Err(s) => Finding::silent("change", Some(&law.name), t, s),
+                        Ok(()) if has_meaning(after, t, meaning) => continue,
+                        Ok(()) => Finding {
+                            question: "change".to_string(),
+                            law: Some(law.name.clone()),
+                            subject: t.to_string(),
+                            outcome: "fails",
+                            kind: Some("missing"),
+                            at: defined_at(after, t).into_iter().collect(),
+                            basis: json!({"meaning": meaning}),
+                            check: json!({"element": e, "target": t, "meaning": meaning, "observed": false}),
+                            ..Finding::default()
+                        },
                     },
                 };
                 out.push(Finding { theory: Some(THEORY_CHANGES.to_string()), ..f });
@@ -608,7 +613,8 @@ fn fields_of(s: &Structure, names: &BTreeSet<String>, removes: &BTreeSet<String>
         .map(|n| s.kind(n).err().unwrap_or_else(|| Silence::new(Reason::Unread)));
     let mut out = Vec::new();
     for (name, e) in s.elements.range(prefix.clone()..).take_while(|(n, _)| n.starts_with(&prefix)) {
-        if !member(name) || !e.kinds.contains("field") {
+        // 種類の決まらない要素(`value` のない `defines`)も、フィールドかもしれないので問い合わせる。
+        if !member(name) || !(e.kinds.contains("field") || e.kinds.contains("")) {
             continue;
         }
         match s.kind(name) {
@@ -783,7 +789,7 @@ fn commute(
         }
         // 消える要素を使う操作は、比べられない。この Law でも `missing` として挙げる。
         if let Some(uses) = overlay.missing.get(b) {
-            if let Some(f) = missing(before, b, uses) {
+            if let Some(f) = missing(before, after, b, uses) {
                 out.push(Finding { law: Some(law.to_string()), ..f });
             }
             continue;
@@ -1059,7 +1065,7 @@ fn keep(
         }
         if !targets.is_empty() {
             kept.push(json!({"element": e, "targets": targets}));
-        } else if let Some(s) = unknown {
+        } else if let Some(s) = unknown.or_else(|| owner_undecided(before, after, overlay, mapping, e)) {
             out.push(Finding { theory: Some(THEORY_CHANGES.to_string()), ..Finding::silent("change", Some(law), e, s) });
         } else {
             let mut f = finding(e, "fails", Some("missing"), json!({"element": e, "targets": []}));
@@ -1071,6 +1077,17 @@ fn keep(
         out.push(finding(meaning, "holds", None, json!({"kept": kept})));
     }
     out
+}
+
+/// 引数 `e`(`<操作>.$<名前>`)の対応は、操作どうしの対応から作る(設計 §3.6 の対応の2)。
+/// 持ち主の操作か、その行き先の種類が決まらなければ(曖昧、`value` のない `defines`)、引数の対応があるかも決まらない。
+fn owner_undecided(before: &Structure, after: &Structure, overlay: &Overlay, mapping: &Mapping, e: &str) -> Option<Silence> {
+    let (op, _) = e.split_once(".$")?;
+    let undecided = |k: Result<&str, Silence>| match k {
+        Err(s) if matches!(s.reason, Reason::Unresolved) => Some(s),
+        _ => None,
+    };
+    undecided(before.kind(op)).or_else(|| mapping.to.get(op).into_iter().flatten().find_map(|t| undecided(corresponds_kind(after, overlay, t))))
 }
 
 /// `sources` のソースのうち、範囲 `scope` を読んでいないもの。読む所として返す。
@@ -1122,7 +1139,7 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
         }
     }
     for (op, uses) in &overlay.missing {
-        out.extend(missing(before, op, uses));
+        out.extend(missing(before, after, op, uses));
     }
     // 名指す要素をたどれなかった操作は、消える要素を使うかが決まらない。
     // 使うと決まった操作(`missing`)と、定義を読んでいない操作(上の沈黙)は除く。
@@ -1156,8 +1173,14 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
 
 /// 消える要素を名指す事実から、`missing` の結論を決める。操作と決まらない名前(曖昧、`?`)は沈黙し、
 /// 操作でないと決まった名前は結論にしない。
-fn missing(before: &Structure, op: &str, uses: &BTreeSet<String>) -> Option<Finding> {
-    let f = match before.kind(op) {
+/// 変更前か変更後のどちらかで種類が決まらなければ(曖昧、`value` のない `defines`)、沈黙する。それ以外は変更前で問い合わせる。
+fn missing(before: &Structure, after: &Structure, op: &str, uses: &BTreeSet<String>) -> Option<Finding> {
+    let undecided = after.elements.contains_key(op).then(|| after.kind(op)).and_then(|k| k.err()).filter(|s| matches!(s.reason, Reason::Unresolved));
+    let kind = match undecided {
+        Some(s) => Err(s),
+        None => before.kind(op),
+    };
+    let f = match kind {
         // 構造 Atom の `subject` は操作である(マニュアル第3章)。
         Ok("operation") | Err(Silence { reason: Reason::Unread, .. }) => Finding {
             outcome: "fails",

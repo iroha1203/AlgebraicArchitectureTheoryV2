@@ -59,7 +59,7 @@ Atom の同一性は、`kind`、`subject`、`object`、`via`、`value`、`when`�
 
 構造 Atom は、構文から決まる事実だ。エージェントが言語に合う解析器を選んで取り出す(第7章)。種類は次の十で、言語によらず同じである。
 
-- `defines`:要素を定義する。`value` は `operation`、`type`、`field` のどれか。
+- `defines`:要素を定義する。`value` は `operation`、`type`、`field` のどれか。`value` のない `defines` を持つ要素は、種類の違う `defines` を持つ要素と同じく、種類の決まらない要素として扱う。
   操作は `params` に引数の名前と型を持つ(`{"order": "shop.order.model.Order", "new": "shop.shipping.model.Address"}`)。フィールドは `type` に型を持つ。
 - `calls`:操作が別の操作を呼ぶ。
 - `reads`:操作がフィールドを読む。
@@ -67,7 +67,7 @@ Atom の同一性は、`kind`、`subject`、`object`、`via`、`value`、`when`�
   `object` は書いたフィールドである。フィールドの値の中のフィールドに書くときは、そこまでにたどるフィールドを `via` に順に並べる。
   注文の配送先の国に書くなら、`via` は `["shop.order.model.Order.shipping_address"]`、`object` は `shop.shipping.model.Address.country` である。
   この書き込み先は、`$order.shipping_address.country` で読む値と同じ所である。`via` がなければ、引数が指す実体のフィールドに書く(`$new.country` で読む値と同じ所)。
-- `passes`:呼び出しが引数に値を渡す。`subject` は呼び出しの名前、`object` は受け取る引数である。
+- `passes`:呼び出しが引数に値を渡す。`subject` は呼び出しの名前、`object` は受け取る引数(`<呼び出し先>.$<引数の名前>`)である。外部でない呼び出しで、受け取る引数が呼び出し先の引数になければ、渡す値の行き先が決まらないので、その呼び出しを展開する操作は `unresolved` で沈黙し、呼び出しの場所を返す。
 - `sends`:操作がチャネルの項目へ値を送る。`object` は項目、`value` は送る値である。
 - `receives`:操作がチャネルの項目を受け取る。`object` は項目、`value` は受け取った値を操作の中で表す式である。
 - `returns`:操作が値を返す。`value` は返す値である。`returns` の後の手順も、続けて行う。
@@ -184,7 +184,7 @@ ArchMap は、ソースのファイルごとに一つの JSON Lines ファイル
 `at` と `uses` に版がなければ今のソースの版を補い、`observed` がなければ補う。一つの範囲の Atom に古い版が混ざっていれば、その範囲は古い。`observed` は `subject` のソースに置く。読んだが Atom がなかった範囲は、`observed` だけを書く。
 消えたソースは、`archsig record --drop <ソース>` で ArchMap から外す。
 `record` は、書いたソースと範囲ごとの Atom の数を `recorded`(`source`、`scope`、`atoms`)に、外したソースをそろえたパスで `dropped` に返す。局所ごとの意味 Atom では、`source` はその Atom の `subject`(`local:<読み>:<局所>`)である。
-`uses` のパスも、`at` と同じくリポジトリの根からの相対パスにそろえる。根の外を指すパスは書かない。
+`uses` のパスと、外部を指さない `resolves` の `object` も、`at` と同じくリポジトリの根からの相対パスにそろえる。根の外を指すパスは書かない。
 
 ArchMap に書くのは Atom だけである。局所の分け方や局所どうしの重なりは、ArchSig が Atom と Law の読みから導く。
 
