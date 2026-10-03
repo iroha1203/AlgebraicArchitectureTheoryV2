@@ -343,19 +343,19 @@ fn a_write_to_an_inherited_field_belongs_to_the_local_of_the_type_that_defines_i
 
 reading module = dir(depth: 1)
 "#;
-    let run = |name: &str, b_map: Option<&str>| {
+    let run = |name: &str, b_map: Option<&str>, own: &str| {
         let repo = Repo::new(name);
         repo.write(".archsig/law/m.law", law);
         repo.write("a/f.py", "# source\n");
         repo.write("b/m.py", "# source\n");
         repo.map(
             "a/f.py",
-            r#"{"kind": "observed", "subject": "a/f.py", "scope": "structure", "at": "a/f.py@blob:aaaaaaa"}
+            &format!("{}{own}", r#"{"kind": "observed", "subject": "a/f.py", "scope": "structure", "at": "a/f.py@blob:aaaaaaa"}
 {"kind": "defines", "subject": "a.f", "value": "operation", "params": {"c": "a.C"}, "at": "a/f.py:1@blob:aaaaaaa"}
 {"kind": "defines", "subject": "a.C", "value": "type", "at": "a/f.py:2@blob:aaaaaaa"}
 {"kind": "inherits", "subject": "a.C", "object": "b.P", "at": "a/f.py:2@blob:aaaaaaa"}
 {"kind": "resolves", "subject": "b.P", "object": "b/m.py", "at": "a/f.py:3@blob:aaaaaaa"}
-"#,
+"#),
         );
         if let Some(m) = b_map {
             repo.map("b/m.py", m);
@@ -368,15 +368,20 @@ reading module = dir(depth: 1)
 {"kind": "defines", "subject": "b.P", "value": "type", "at": "b/m.py:1@blob:bbbbbbb"}
 {"kind": "defines", "subject": "b.P.t", "value": "field", "type": "int", "at": "b/m.py:2@blob:bbbbbbb"}
 "#;
-    let (repo, s) = run("inherited-field-shared", Some(b));
+    let (repo, s) = run("inherited-field-shared", Some(b), "");
     let r = result(&s, "p");
     assert_eq!(r["outcome"], "holds", "{s}");
     let detail = repo.run(&["show", r["id"].as_str().unwrap()]);
     let shared: Vec<Value> = detail["check"]["shared"].as_array().unwrap().clone();
     assert!(has(&shared, "writes", "a.f", Some("a.C.t")), "{detail}");
     // b.P の定義を読んでいなければ、a.C.t がどの型のフィールドかが決まらないので、b/m.py を読むまで局所が決まらない。
-    let (_, s) = run("inherited-field-unread", None);
+    let (_, s) = run("inherited-field-unread", None, "");
     let r = result(&s, "a.C.t");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "b/m.py"), "{s}");
+    // a.C が t を定義していても、b.P かその先が t を定義する(定義し直し)かは b/m.py を読むまで分からない。
+    let own = "{\"kind\": \"defines\", \"subject\": \"a.C.t\", \"value\": \"field\", \"type\": \"int\", \"at\": \"a/f.py:4@blob:aaaaaaa\"}\n";
+    let (_, s) = run("own-field-unread-parent", None, own);
+    let r = result(&s, "a.C.t");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
 }

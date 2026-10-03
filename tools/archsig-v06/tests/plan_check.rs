@@ -4387,3 +4387,97 @@ fn removing_a_parent_field_read_through_an_unread_child_type_is_not_passed_over(
     assert_eq!(r["outcome"], "silent", "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
 }
+
+/// 一つの m.py の題材。m.h は m.C.t を読み、候補は m.P.t を消す(`plan` を足す)。`types` は型と受け継ぎの Atom。
+/// 消える要素を使うかの、m.h の結果を返す。
+fn removed_through(name: &str, types: &str, plan: &str) -> (Value, Value) {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", &format!("{}{types}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.h", "value": "operation", "params": {"c": "m.C"}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "reads", "subject": "m.h", "object": "m.C.t", "at": "m.py:21@blob:aaaaaaa"}
+"#));
+    repo.write(".archsig/plans/p/plan.jsonl", &format!("{{\"kind\": \"removes\", \"subject\": \"m.P.t\", \"at\": \"plan:p\"}}\n{plan}"));
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.h" && r["law"].is_null()).unwrap_or_else(|| panic!("{s}")).clone();
+    (r, s)
+}
+
+#[test]
+fn removing_a_parent_field_read_through_a_child_type_without_a_source_is_not_passed_over() {
+    // m.C の定義を読んでおらず、`resolves` もない(または二つある)。m.C が m.P を受け継ぐかは分からないので、m.h は消える要素を使うかが決まらない。
+    for (name, c) in [
+        ("removed-child-no-resolves", String::new()),
+        ("removed-child-two-resolves", "{\"kind\": \"resolves\", \"subject\": \"m.C\", \"object\": \"c.py\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n{\"kind\": \"resolves\", \"subject\": \"m.C\", \"object\": \"d.py\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n".to_string()),
+    ] {
+        let (r, s) = removed_through(name, &[c, ty("m.P", 3), field("m.P.t", 4, false)].concat(), "");
+        assert_eq!(r["outcome"], "silent", "{name}: {s}");
+    }
+}
+
+#[test]
+fn removing_a_field_the_child_inherited_before_is_not_passed_over_when_the_old_inheritance_is_unknown() {
+    // 変更前の m.C は m.P1 と m.P を受け継ぎ、m.P が t を定義する。m.P1 を読んでいない(または外部)。候補は m.C を受け継ぎなしで定義し直し、m.P.t を消す。
+    // 変更前の m.C.t がどのフィールドだったかが決まらないので、m.h は消える要素を使うかが決まらない。
+    for (name, p1) in [
+        ("removed-before-unread-sibling", "{\"kind\": \"resolves\", \"subject\": \"m.P1\", \"object\": \"q.py\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n"),
+        ("removed-before-external-sibling", "{\"kind\": \"resolves\", \"subject\": \"m.P1\", \"object\": \"external:lib\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n"),
+    ] {
+        let types = [p1.to_string(), ty("m.P", 3), field("m.P.t", 4, false), ty("m.C", 5), inherits("m.C", "m.P1"), inherits("m.C", "m.P")].concat();
+        let (r, s) = removed_through(name, &types, "{\"kind\": \"defines\", \"subject\": \"m.C\", \"value\": \"type\", \"file\": \"m.py\", \"at\": \"plan:p\"}\n");
+        assert_eq!(r["outcome"], "silent", "{name}: {s}");
+    }
+}
+
+#[test]
+fn a_field_the_child_defines_again_over_an_unread_base_is_silent() {
+    // m.C は t を定義し、m.A を受け継ぐ。g(p: m.P) は m.P.t に 1 を書き、f(c, o) は g($c) を呼んでから o.u に $c.t を書く。候補は二つの順を入れ替える。
+    // m.A を読んでいないので、m.A が m.P を受け継ぐか(m.C.t が m.P.t と同じ所か)が分からない。m.A が外部なら、m.P を受け継がない。
+    let run = |name: &str, a: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map("m.py", &format!("{}{}{}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#, [ty("m.P", 3), field("m.P.t", 4, false), ty("m.C", 5), field("m.C.t", 6, false), inherits("m.C", "m.A"), a.to_string()].concat(), r#"{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.u", "value": "field", "type": "int", "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.u", "meaning": "payment-info", "uses": ["m.py:13@blob:aaaaaaa"], "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"c": "m.C", "o": "m.O"}, "at": "m.py:11@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:12@blob:aaaaaaa"}
+{"kind": "passes", "subject": "m.f->m.g", "object": "m.g.$p", "value": "$c", "at": "m.py:12@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.u", "value": "$c.t", "at": "m.py:13@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"p": "m.P"}, "at": "m.py:15@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.P.t", "value": "1", "at": "m.py:16@blob:aaaaaaa"}
+"#));
+        repo.write(".archsig/plans/p/plan.jsonl", r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"c": "m.C", "o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.u", "value": "$c.t", "at": "plan:p"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "plan:p"}
+{"kind": "passes", "subject": "m.f->m.g", "object": "m.g.$p", "value": "$c", "at": "plan:p"}
+"#);
+        let s = repo.run(&["plan", "check", "p"]);
+        let r = result(&s, "m.f").clone();
+        (r, s)
+    };
+    let (r, s) = run("own-field-unread-base", "{\"kind\": \"resolves\", \"subject\": \"m.A\", \"object\": \"a.py\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "a.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+    let (r, s) = run("own-field-external-base", "{\"kind\": \"resolves\", \"subject\": \"m.A\", \"object\": \"external:lib\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n");
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn removing_the_field_the_child_defines_again_leaves_the_inherited_one() {
+    // m.C は m.P を受け継ぎ、t を定義し直す。候補が m.C.t を消すと、m.h の m.C.t は m.P.t を読むので、消えた要素を使わない。
+    let repo = Repo::new("removed-override");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", &format!("{}{}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.h", "value": "operation", "params": {"c": "m.C"}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "reads", "subject": "m.h", "object": "m.C.t", "at": "m.py:21@blob:aaaaaaa"}
+"#, [ty("m.P", 3), field("m.P.t", 4, false), ty("m.C", 5), field("m.C.t", 6, false), inherits("m.C", "m.P")].concat()));
+    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.C.t\", \"at\": \"plan:p\"}\n");
+    let s = repo.run(&["plan", "check", "p"]);
+    assert!(!s["results"].as_array().unwrap().iter().any(|r| r["kind"] == "missing"), "{s}");
+    assert_eq!(result(&s, "m.h")["outcome"], "holds", "{s}");
+}

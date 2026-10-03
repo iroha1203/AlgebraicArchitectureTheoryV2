@@ -770,8 +770,7 @@ impl Below<'_> {
         }
         for n in inherited {
             match s.member(ty, &n) {
-                Ok(f) if !s.elements.contains_key(&format!("{ty}.{n}")) => out.push(f),
-                Ok(_) => {}
+                Ok(f) => out.push(f),
                 Err(e) => {
                     silence.get_or_insert(e);
                 }
@@ -1379,7 +1378,7 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
         for (gap, a) in gaps {
             // 候補が定義し直した型で、変更前が名指していて定義を読んでいなかったものは、変更前の構造で問い合わせる(§5.4 と同じ)。
             let s = match gap {
-                Gap::Redefined(_) => before.untraced(gap, a),
+                Gap::Redefined(_) | Gap::Before(..) => before.untraced(gap, a),
                 _ => after.untraced(gap, a),
             };
             if !next.contains(&s) {

@@ -458,17 +458,21 @@ impl Structure {
     pub fn member(&self, ty: &str, name: &str) -> Result<String, Silence> {
         let own = format!("{ty}.{name}");
         let defined = self.elements.contains_key(&own);
-        // `ty` の定義のソースを読んでいなければ、受け継ぎ(そのソースの `inherits`)が分からない。
-        if !defined && !self.elements.contains_key(ty) && matches!(self.resolves.get(ty), Some(Resolution::Source(_))) {
-            return Err(self.undefined(ty));
+        // `ty` の定義を読んでいなければ、受け継ぎ(`ty` のソースの `inherits`)が分からない。外部の型はリポジトリの型を受け継がない。
+        if !defined && !self.elements.contains_key(ty) && !self.bases.contains_key(ty) && !self.external(ty) {
+            self.kind(ty)?;
         }
         if !self.bases.contains_key(ty) {
             return Ok(own);
         }
-        let (found, blocked) = self.inherited(ty, name);
+        let (found, blocked, internal) = self.inherited(ty, name);
         if defined {
-            // 受け継がれる型を読んでいなければ、その型の名前でこのフィールドを名指す計算は沈黙するので、読んだ型の定義だけを見る。
-            return if found.is_empty() { Ok(own) } else { Err(Silence::new(Reason::Unresolved)) };
+            // 受け継がれる型のどれかも定義していれば定義し直し。読んでいない受け継がれる型は、その先で定義しているかもしれない。
+            // 外部の型はリポジトリの型を受け継がず、その名前で名指す計算は沈黙するので見ない。
+            if !found.is_empty() {
+                return Err(Silence::new(Reason::Unresolved));
+            }
+            return internal.map_or(Ok(own), Err);
         }
         // 型が曖昧なら、どの定義の受け継ぎかが決まらない。
         if self.ambiguous(ty) {
@@ -486,10 +490,11 @@ impl Structure {
     }
 
     /// 型 `ty` の `inherits` の型をすべてたどり、`name` を定義した型のフィールドを集める(定義した型の先もたどる)。
-    /// たどった型の種類が決まらなければ(読んでいない、外部、曖昧、型でない)、最初のその沈黙を一緒に返す。
-    fn inherited(&self, ty: &str, name: &str) -> (BTreeSet<String>, Option<Silence>) {
+    /// たどった型の種類が決まらなければ(読んでいない、外部、曖昧、型でない)、最初のその沈黙と、外部の型を除いた最初のその沈黙を一緒に返す。
+    fn inherited(&self, ty: &str, name: &str) -> (BTreeSet<String>, Option<Silence>, Option<Silence>) {
         let mut found = BTreeSet::new();
         let mut blocked = None;
+        let mut internal = None;
         let mut seen = BTreeSet::new();
         let mut todo: Vec<String> = self.bases.get(ty).cloned().unwrap_or_default();
         while let Some(b) = todo.pop() {
@@ -500,8 +505,12 @@ impl Structure {
                 Ok("type") => {}
                 Ok(_) => {
                     blocked.get_or_insert(Silence::new(Reason::Unresolved));
+                    internal.get_or_insert(Silence::new(Reason::Unresolved));
                 }
                 Err(e) => {
+                    if !self.external(&b) {
+                        internal.get_or_insert(e.clone());
+                    }
                     blocked.get_or_insert(e);
                 }
             }
@@ -511,16 +520,22 @@ impl Structure {
             }
             todo.extend(self.bases.get(&b).into_iter().flatten().cloned());
         }
-        (found, blocked)
+        (found, blocked, internal)
+    }
+
+    /// `resolves` が外部だけを指し、定義のない要素。
+    fn external(&self, name: &str) -> bool {
+        !self.elements.contains_key(name) && matches!(self.resolves.get(name), Some(Resolution::External(_)))
     }
 
     /// 型 `ty` のフィールド `name` が、この構造では受け継ぎで見つからず(`field` は定義のない `<ty>.<name>`)、
     /// 変更前の構造 `prior` では別の型のフィールドだったなら、その名前。候補がそのフィールドを消したかを、変更前の名前で確かめる(設計 §3.6)。
-    fn inherited_before(&self, prior: &Structure, ty: &str, name: &str, field: &str) -> Option<String> {
+    /// 変更前の構造で決まらなければ、その沈黙を返す。
+    fn inherited_before(&self, prior: &Structure, ty: &str, name: &str, field: &str) -> Result<Option<String>, Silence> {
         if self.elements.contains_key(field) {
-            return None;
+            return Ok(None);
         }
-        prior.member(ty, name).ok().filter(|x| x != field)
+        Ok(Some(prior.member(ty, name)?).filter(|x| x != field))
     }
 
     /// 読み書きの `object` と `via` に書いたフィールドの名前 `<型>.<フィールド>` の要素(設計 §3.5)。
@@ -592,6 +607,8 @@ pub enum Gap {
     Redefined(String),
     /// 型(左)のフィールドの名前(右)を、`inherits` の型から探す途中で決まらなかった。
     Member(String, String),
+    /// 型(左)のフィールドの名前(右)が、変更前の構造で受け継ぎから決まらなかった。変更前の構造で問い合わせる。
+    Before(String, String),
     /// 式を読めなかった。
     Unreadable,
     /// 式の字句の数が上限を超えた。ArchSig の側の限界なので、読み直しても決まらない。
@@ -784,10 +801,17 @@ fn trace(s: &Structure, prior: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) 
             match (matches!(a.kind.as_str(), "writes" | "reads"), o.rsplit_once('.')) {
                 (true, Some((t, f))) => match s.member(t, f) {
                     Ok(x) => {
-                        names.extend(s.inherited_before(prior, t, f, &x));
+                        match s.inherited_before(prior, t, f, &x) {
+                            Ok(y) => names.extend(y),
+                            Err(_) => gaps.push(Gap::Before(t.to_string(), f.to_string())),
+                        }
                         names.insert(x);
                     }
-                    Err(_) => gaps.push(Gap::Member(t.to_string(), f.to_string())),
+                    // 変更後に決まらなくても、変更前に名指していた消える要素は数える(`missing` が先に決まる)。
+                    Err(_) => {
+                        gaps.push(Gap::Member(t.to_string(), f.to_string()));
+                        names.extend(prior.member(t, f).ok());
+                    }
                 },
                 _ => {
                     names.insert(o.clone());
@@ -887,11 +911,15 @@ impl Structure {
                     }
                     // 受け継いだフィールドは、それを定義した型の名前を名指す。探す途中で決まらなければ、その先は決まらない。
                     let Ok(field) = self.member(&t, f) else {
+                        out.extend(prior.and_then(|p| p.member(&t, f).ok()));
                         gaps.push(Gap::Member(t, f.clone()));
                         break;
                     };
                     if let Some(p) = prior {
-                        out.extend(self.inherited_before(p, &t, f, &field));
+                        match self.inherited_before(p, &t, f, &field) {
+                            Ok(y) => out.extend(y),
+                            Err(_) => gaps.push(Gap::Before(t.clone(), f.clone())),
+                        }
                     }
                     // 種類の決まらないフィールドの型は、決まらない。
                     ty = self.elements.get(&field).filter(|e| !e.undecided()).and_then(|e| e.ty.clone());
@@ -936,7 +964,7 @@ impl Structure {
             Gap::Redefined(t) => self.untraced(&Gap::Name(t.clone()), a),
             Gap::QuestionType(owner) => locate(question(), self.atoms.iter().find(|d| d.kind == "defines" && d.subject == *owner).unwrap_or(a)),
             // 受け継ぎをたどる途中の沈黙を返す。
-            Gap::Member(t, f) => self.member(t, f).err().unwrap_or_else(|| Silence::new(Reason::Unresolved)),
+            Gap::Member(t, f) | Gap::Before(t, f) => self.member(t, f).err().unwrap_or_else(|| Silence::new(Reason::Unresolved)),
             // `?` の名前は、名前で探さず、その名前を持つ Atom の場所を返す(マニュアル第5章 問い8)。
             Gap::Name(n) if n.starts_with('?') => locate(question(), a),
             Gap::Name(n) => match self.kind(n) {
