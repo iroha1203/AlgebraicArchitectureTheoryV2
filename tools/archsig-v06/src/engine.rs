@@ -1339,7 +1339,7 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
         }
         let mut next: Vec<Silence> = Vec::new();
         for (gap, a) in gaps {
-            let s = before.untraced(gap, a);
+            let s = after.untraced(gap, a);
             if !next.contains(&s) {
                 next.push(s);
             }

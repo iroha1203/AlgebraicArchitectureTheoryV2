@@ -535,8 +535,9 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
     out.after = after;
     // 書き直していない Atom が `removes` した要素を名指せば、その操作を `missing` の元に挙げる。
     // 候補が置き換えた Atom(書き直した呼び出しの `passes` など)は見ない。
+    // 書き直していない Atom は変更後にも残るので、道は変更後の構造(候補が書き直した型)でたどる。
     let kept: Vec<&Atom> = before.iter().filter(|a| !dropped(a)).collect();
-    trace(&old, &kept, &|n: &str| replaced(n) || gone(n), &gone, &mut out);
+    trace(&new, &kept, &|n: &str| replaced(n) || gone(n), &gone, &mut out);
     out
 }
 
