@@ -428,7 +428,7 @@ pub fn implemented(
         let Some(meaning) = law.about.as_deref() else { continue };
         for (e, _) in before.meanings.iter().filter(|(e, _)| !e.starts_with("local:") && has_meaning(before, e, meaning)) {
             for t in mapping.to.get(e.as_str()).into_iter().flatten().filter(|t| after.kind(t).is_ok()) {
-                let f = match meaning_known(Some((before, &mapping)), after, t, meaning) {
+                let f = match meaning_known(None, after, t, meaning) {
                     Err(s) => Finding::silent("change", Some(&law.name), t, s),
                     Ok(()) if has_meaning(after, t, meaning) => continue,
                     Ok(()) => Finding {
@@ -577,10 +577,10 @@ fn has_meaning(s: &Structure, field: &str, meaning: &str) -> bool {
 }
 
 /// 構造が名指す名前。Atom の `subject`、`object`、`via`、`value` と `when` の式の中でたどるフィールドと呼び出す操作、
-/// 要素の型と引数の型、`resolves` の名前。
+/// 要素の型と引数の型、`resolves` の名前。`observed` の `subject` はソースのパスで、要素の名前ではない。
 fn mentioned(s: &Structure) -> BTreeSet<String> {
     let mut out = s.expression_names();
-    for a in &s.atoms {
+    for a in s.atoms.iter().filter(|a| a.kind != "observed") {
         out.insert(a.subject.clone());
         out.extend(a.object.iter().cloned());
         out.extend(a.via.iter().flatten().cloned());
@@ -595,29 +595,32 @@ fn mentioned(s: &Structure) -> BTreeSet<String> {
 
 /// 型 `ty` のフィールド。フィールドの名前は `<型>.<フィールド>` である(マニュアル第3章)。定義を読んだものを返す。
 /// 構造が `<型>.<名前>` を名指しているのに定義を読んでいなければ、そのフィールドは分からないので、
-/// 定義を読んでいない要素として沈黙する(設計 §3.3、§5.1)。`names` は `mentioned(s)`。
+/// 定義を読んでいない要素として沈黙する(設計 §3.3、§5.1)。曖昧なフィールドも沈黙する。`names` は `mentioned(s)`。
+/// 沈黙はそのフィールドだけのもので、ほかのフィールドは返す。最初の沈黙を一緒に返す。
 /// 候補が `removes` した要素と、`resolves` が外部を指す名前は、型のフィールドに数えない。
-fn fields_of(s: &Structure, names: &BTreeSet<String>, removes: &BTreeSet<String>, ty: &str) -> Result<Vec<String>, Silence> {
+fn fields_of(s: &Structure, names: &BTreeSet<String>, removes: &BTreeSet<String>, ty: &str) -> (Vec<String>, Option<Silence>) {
     let prefix = format!("{ty}.");
     let member = |n: &str| n.strip_prefix(&prefix).is_some_and(|rest| !rest.is_empty() && !rest.contains('.') && !rest.starts_with('$') && !rest.contains("->"));
     let removed = |n: &str| removes.iter().any(|x| n == x || n.starts_with(&format!("{x}.")) || n.starts_with(&format!("{x}->")));
     let external = |n: &str| matches!(s.resolves.get(n), Some(Resolution::External(_)));
-    if let Some(n) = names
+    let mut silence = names
         .range(prefix.clone()..)
         .take_while(|n| n.starts_with(&prefix))
         .find(|n| member(n) && !s.elements.contains_key(*n) && !removed(n) && !external(n))
-    {
-        return Err(s.kind(n).err().unwrap_or_else(|| Silence::new(Reason::Unread)));
-    }
+        .map(|n| s.kind(n).err().unwrap_or_else(|| Silence::new(Reason::Unread)));
     let mut out = Vec::new();
     for (name, e) in s.elements.range(prefix.clone()..).take_while(|(n, _)| n.starts_with(&prefix)) {
         if !member(name) || !e.kinds.contains("field") {
             continue;
         }
-        s.kind(name)?;
-        out.push(name.clone());
+        match s.kind(name) {
+            Ok(_) => out.push(name.clone()),
+            Err(e) => {
+                silence.get_or_insert(e);
+            }
+        }
     }
-    Ok(out)
+    (out, silence)
 }
 
 /// 書き込みの場所より先の場所をたどる(設計 §5.4)。たどったフィールドの数と、フィールドを観測していない型を持つ。
@@ -715,7 +718,8 @@ impl Below<'_> {
 
     /// たどる型 `ty` のフィールド。たどったフィールドが上限を超えたら `limit` で沈黙する(設計 §5.1)。
     fn fields(&mut self, s: &Structure, ty: &str) -> Result<Vec<String>, Silence> {
-        let out = fields_of(s, &mentioned(s), &self.removes, ty)?;
+        let (out, silence) = fields_of(s, &mentioned(s), &self.removes, ty);
+        self.hold(silence.map_or(Ok(()), Err));
         self.count += out.len();
         if self.count > STEP_LIMIT {
             return Err(Silence::new(Reason::Limit));
@@ -747,7 +751,9 @@ impl Below<'_> {
             if !seen.insert(ty.clone()) || !self.known(s, &field, &ty)? {
                 continue;
             }
-            for f in fields_of(s, &mentioned(s), &self.removes, &ty)? {
+            // 分からないフィールドの沈黙は、`walk` がこの型をたどるときに積んでいる。
+            let (fs, _) = fields_of(s, &mentioned(s), &self.removes, &ty);
+            for f in fs {
                 meaning_known(self.prior, s, &f, meaning)?;
                 if has_meaning(s, &f, meaning) {
                     return Ok(true);

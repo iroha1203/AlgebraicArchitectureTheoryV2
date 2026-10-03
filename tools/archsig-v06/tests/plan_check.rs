@@ -1734,3 +1734,48 @@ fn a_field_the_plan_splits_into_a_new_type_is_unread_when_its_meaning_before_was
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py" && n["scope"] == "meaning:payment-info"), "{s}");
 }
+
+#[test]
+fn a_counterexample_below_is_not_hidden_by_a_field_named_but_not_read() {
+    // m.S.p は payment-info を持つ。m.S.q は resolves で b.py を指して名指されているが、定義を読んでいない。
+    // 沈黙は m.S.q の場所だけのもので、o.s の値が違えば [o.s, S.p] で反例は決まる。
+    let atoms = format!(
+        "{O_S}{S_P}{}{F_WRITES_A}",
+        r#"{"kind": "resolves", "subject": "m.S.q", "object": "b.py", "at": "m.py:5@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-named-differs", &atoms, PLAN_WRITES_B);
+    let places: Vec<Value> = r["check"]["diverging"].as_array().into_iter().flatten().map(|x| x["place"].clone()).collect();
+    assert_eq!(places, vec![serde_json::json!(["m.O.s", "m.S.p"])], "{s}\n{r}");
+    let (s, r) = below_case("below-named-same", &atoms, &PLAN_WRITES_B.replace("m.b()", "m.a()"));
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "b.py"), "{s}");
+}
+
+#[test]
+fn a_counterexample_below_is_not_hidden_by_an_ambiguous_field() {
+    // m.S.a は field と operation の二つの defines を持つ(曖昧)。m.S.p は payment-info を持つ。
+    let atoms = format!(
+        "{O_S}{S_P}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S.a", "value": "field", "type": "int", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.a", "value": "operation", "params": {}, "at": "m.py:6@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-ambiguous-differs", &atoms, PLAN_WRITES_B);
+    let places: Vec<Value> = r["check"]["diverging"].as_array().into_iter().flatten().map(|x| x["place"].clone()).collect();
+    assert_eq!(places, vec![serde_json::json!(["m.O.s", "m.S.p"])], "{s}\n{r}");
+    let (s, r) = below_case("below-ambiguous-same", &atoms, &PLAN_WRITES_B.replace("m.b()", "m.a()"));
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
+
+#[test]
+fn a_source_path_is_not_a_field_below() {
+    // ソース m.S.py の観測の subject は、型 m.S のフィールドの名前ではない。
+    let atoms = format!(
+        "{}{O_S}{S_P}{F_WRITES_A}",
+        r#"{"kind": "observed", "subject": "m.S.py", "scope": "structure", "at": "m.S.py@blob:ccccccc"}
+"#
+    );
+    let (s, r) = below_case("below-source-path", &atoms, &PLAN_WRITES_B.replace("m.b()", "m.a()"));
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
