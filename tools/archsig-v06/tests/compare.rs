@@ -65,6 +65,10 @@ fn implemented(plan: &str, edit: impl Fn(&str) -> String) -> BTreeMap<String, St
             "{{\"kind\": \"observed\", \"subject\": \"{file}\", \"scope\": \"structure\", \"at\": \"{file}@blob:5e5e5e5\"}}\n{{\"kind\": \"observed\", \"subject\": \"{file}\", \"scope\": \"meaning:payment-info\", \"at\": \"{file}@blob:5e5e5e5\"}}\n{text}"
         );
     }
+    // 実装したソースを観測する解析器は、そこで使う組み込みの型 str の解決も書く(第3章)。
+    for (file, text) in out.iter_mut().filter(|(_, t)| t.contains("\"str\"")) {
+        text.push_str(&format!("{{\"kind\": \"resolves\", \"subject\": \"str\", \"object\": \"external:builtins\", \"at\": \"{file}:1@blob:5e5e5e5\"}}\n"));
+    }
     out
 }
 
@@ -252,4 +256,62 @@ fn a_planned_resolves_not_observed_is_silent() {
     let s = compare(&repo, &before, Some("split-order"));
     let rows: Vec<&Value> = s["results"].as_array().unwrap().iter().filter(|r| r["subject"] == "shop.payment.service.reset_authorization").collect();
     assert!(!rows.is_empty() && rows.iter().all(|r| r["outcome"] == "silent"), "{s}");
+}
+
+#[test]
+fn a_counterexample_is_not_hidden_by_a_mapped_place_whose_meaning_was_not_read() {
+    // 変更前は m.S が m.py にある。実装した後は m.S を s.py に移し、s.py は構造だけを読み直した(payment-info は読んでいない)。
+    // 変更前の型でたどった [o.s, S.p] を写した場所は決まらないが、o.t の値が違えば反例は決まる(設計 §5.4)。
+    let law = LAW.replace("\"shop/**\"", "\"*.py\"");
+    let m = |t: &str, with_s: bool| {
+        let s = if with_s {
+            r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.S.p", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:4@blob:aaaaaaa"}
+"#
+        } else {
+            r#"{"kind": "resolves", "subject": "m.S", "object": "s.py", "at": "m.py:1@blob:aaaaaaa"}
+"#
+        };
+        format!(
+            r#"{{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}}
+{{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}}
+{{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}}
+{{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}}
+{{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "m.py:2@blob:aaaaaaa"}}
+{{"kind": "defines", "subject": "m.O.t", "value": "field", "type": "int", "at": "m.py:5@blob:aaaaaaa"}}
+{{"kind": "meaning", "subject": "m.O.t", "meaning": "payment-info", "uses": ["m.py:11@blob:aaaaaaa"], "at": "m.py:5@blob:aaaaaaa"}}
+{s}{{"kind": "defines", "subject": "m.f", "value": "operation", "params": {{"o": "m.O"}}, "at": "m.py:9@blob:aaaaaaa"}}
+{{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "m.py:10@blob:aaaaaaa"}}
+{{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "{t}", "at": "m.py:11@blob:aaaaaaa"}}
+"#
+        )
+    };
+    let run = |name: &str, t: &str| {
+        let before = Repo::new(&format!("{name}-before"));
+        before.write(".archsig/law/m.law", &law);
+        before.write("m.py", "# source\n");
+        before.map("m.py", &m("1", true));
+        let after = Repo::new(name);
+        after.write(".archsig/law/m.law", &law);
+        after.write("m.py", "# source\n");
+        after.write("s.py", "# source\n");
+        after.map("m.py", &m(t, false));
+        after.map(
+            "s.py",
+            r#"{"kind": "observed", "subject": "s.py", "scope": "structure", "at": "s.py@blob:bbbbbbb"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "s.py:1@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.S", "value": "type", "at": "s.py:2@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "s.py:3@blob:bbbbbbb"}
+"#,
+        );
+        compare(&after, &before, None)
+    };
+    let s = run("mapped-unread-differs", "2");
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("counterexample")), "{s}");
+    let s = run("mapped-unread-same", "1");
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py" && n["scope"] == "meaning:payment-info"), "{s}");
 }

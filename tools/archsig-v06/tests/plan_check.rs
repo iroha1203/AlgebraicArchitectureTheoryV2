@@ -386,6 +386,7 @@ fn a_law_without_pairs_is_silent_where_the_structure_was_not_read() {
 
 /// 変更前: f(o) は g(x=$o.a) を呼び、g は T.a = 1 のあとで T.p = $x を書く。p は呼び出しの時点の a。
 const CALL_TIME: &str = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.T.a", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
@@ -535,6 +536,7 @@ fn changes_keep_is_silent_when_the_target_was_not_read() {
 
 /// 変更前: f(o: T) が T.p = $o.a を書く。T.p が payment-info。
 const SPLITTING: &str = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:ccccccc"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:ccccccc"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:ccccccc"}
 {"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:1@blob:ccccccc"}
 {"kind": "defines", "subject": "m.T.a", "value": "field", "type": "int", "at": "m.py:2@blob:ccccccc"}
@@ -813,6 +815,7 @@ fn too_many_pairs_of_branches_are_silent_with_limit() {
 
 /// 変更前: f(o) は、o.s.p(注文の中の S の p)に 1 を書く。p は payment-info を持つ。
 const NESTED: &str = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "m.py:2@blob:aaaaaaa"}
@@ -946,6 +949,7 @@ fn the_heads_of_a_long_via_are_compared() {
     repo.map(
         "m.py",
         r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.A.o", "value": "field", "type": "m.O", "at": "m.py:2@blob:aaaaaaa"}
@@ -989,4 +993,802 @@ fn reading_a_head_place_after_a_nested_write_is_unchecked() {
     let s = repo.run(&["plan", "check", "p"]);
     let r = result(&s, "m.f");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unchecked")), "{s}");
+}
+
+/// 変更前: f(o) は o.s(S の値)を丸ごと書く。payment-info は S.p にある。a.py は O、m.py は S と f を定義する。
+fn whole(name: &str, plan_value: &str, read_meaning_of_s: bool) -> Value {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
+    repo.map("a.py", r#"{"kind": "observed", "subject": "a.py", "scope": "structure", "at": "a.py@blob:bbbbbbb"}
+{"kind": "observed", "subject": "a.py", "scope": "meaning:payment-info", "at": "a.py@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "a.py:1@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "a.py:2@blob:bbbbbbb"}
+"#);
+    let meaning_range = if read_meaning_of_s { "{\"kind\": \"observed\", \"subject\": \"m.py\", \"scope\": \"meaning:payment-info\", \"at\": \"m.py@blob:aaaaaaa\"}\n" } else { "" };
+    repo.map("m.py", &format!("{}{meaning_range}{}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#, r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.S.p", "meaning": "payment-info", "uses": ["m.py:7@blob:aaaaaaa"], "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "m.py:7@blob:aaaaaaa"}
+"#));
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        &format!(
+            "{}\n{{\"kind\": \"writes\", \"subject\": \"m.f\", \"object\": \"m.O.s\", \"value\": \"{plan_value}\", \"at\": \"plan:p\"}}\n",
+            r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}"#
+        ),
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f").clone();
+    if r["outcome"] == "fails" {
+        return repo.run(&["show", r["id"].as_str().unwrap()]);
+    }
+    serde_json::json!({"summary": s, "result": r})
+}
+
+#[test]
+fn a_place_below_a_written_field_with_the_meaning_is_compared() {
+    // o.s を丸ごと書くと、場所 [m.O.s, m.S.p] の値も変わる。m.S.p は payment-info を持つ。
+    let same = whole("below-same", "m.a()", true);
+    assert_eq!(same["result"]["outcome"], "holds", "{same}");
+    let changed = whole("below-changed", "m.b()", true);
+    assert_eq!(changed["kind"], "counterexample", "{changed}");
+    let places: Vec<&Value> = changed["check"]["diverging"].as_array().unwrap().iter().map(|d| &d["place"]).collect();
+    assert!(places.contains(&&serde_json::json!(["m.O.s", "m.S.p"])), "{changed}");
+}
+
+#[test]
+fn a_place_below_whose_meaning_was_not_read_is_silent() {
+    let r = whole("below-unread", "m.b()", false);
+    assert_eq!((r["result"]["outcome"].as_str(), r["result"]["reason"].as_str()), (Some("silent"), Some("unread")), "{r}");
+    assert!(r["summary"]["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py" && n["scope"] == "meaning:payment-info"), "{r}");
+}
+
+#[test]
+fn places_below_a_recursive_type_with_the_meaning_are_limit() {
+    // N.next の型は N。payment-info は N.v にある。[m.O.n] を書くと、[m.O.n, m.N.next, …, m.N.v] が限りなく変わる。
+    let repo = Repo::new("below-recursive");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.n", "value": "field", "type": "m.N", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.N", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.N.next", "value": "field", "type": "m.N", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.N.v", "value": "field", "type": "int", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.N.v", "meaning": "payment-info", "uses": ["m.py:8@blob:aaaaaaa"], "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.n", "value": "m.a()", "at": "m.py:8@blob:aaaaaaa"}
+"#);
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.n", "value": "m.a()", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
+}
+
+#[test]
+fn a_place_below_a_via_write_with_the_meaning_is_compared() {
+    // via: [m.A.o]、object: m.O.s に書く。payment-info は m.O.s の型 m.S のフィールド m.S.p にある。
+    let run = |name: &str, value: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map("m.py", MAP);
+        repo.write(
+            ".archsig/plans/p/plan.jsonl",
+            &format!(
+                "{}\n{{\"kind\": \"writes\", \"subject\": \"m.f\", \"via\": [\"m.A.o\"], \"object\": \"m.O.s\", \"value\": \"{value}\", \"at\": \"plan:p\"}}\n",
+                r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"a": "m.A"}, "file": "m.py", "at": "plan:p"}"#
+            ),
+        );
+        let s = repo.run(&["plan", "check", "p"]);
+        let r = result(&s, "m.f").clone();
+        if r["outcome"] == "fails" { repo.run(&["show", r["id"].as_str().unwrap()]) } else { r }
+    };
+    const MAP: &str = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A.o", "value": "field", "type": "m.O", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.S.p", "meaning": "payment-info", "uses": ["m.py:9@blob:aaaaaaa"], "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"a": "m.A"}, "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "via": ["m.A.o"], "object": "m.O.s", "value": "m.a()", "at": "m.py:9@blob:aaaaaaa"}
+"#;
+    assert_eq!(run("below-via-same", "m.a()")["outcome"], "holds");
+    let d = run("below-via-changed", "m.b()");
+    let places: Vec<&Value> = d["check"]["diverging"].as_array().unwrap().iter().map(|x| &x["place"]).collect();
+    assert_eq!(places, vec![&serde_json::json!(["m.A.o", "m.O.s", "m.S.p"])], "{d}");
+}
+
+/// m.py の観測(構造と payment-info を読んだ)と候補で `plan check` し、サマリと m.f の結果(反例なら詳細)を返す。
+fn below_case(name: &str, atoms: &str, plan: &str) -> (Value, Value) {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        &format!(
+            "{}{atoms}",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+"#
+        ),
+    );
+    repo.write(".archsig/plans/p/plan.jsonl", plan);
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f").clone();
+    let r = if r["outcome"] == "fails" { repo.run(&["show", r["id"].as_str().unwrap()]) } else { r };
+    (s, r)
+}
+
+const F_WRITES_A: &str = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "m.py:10@blob:aaaaaaa"}
+"#;
+
+const PLAN_WRITES_B: &str = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.b()", "at": "plan:p"}
+"#;
+
+const O_S: &str = r#"{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "m.py:2@blob:aaaaaaa"}
+"#;
+
+#[test]
+fn a_type_whose_definition_was_not_read_is_silent_below() {
+    // m.S の resolves は s.py を指すが、s.py を読んでいない(設計 §3.3)。
+    let (s, r) = below_case(
+        "below-unread-type",
+        &format!("{O_S}{{\"kind\": \"resolves\", \"subject\": \"m.S\", \"object\": \"s.py\", \"at\": \"m.py:1@blob:aaaaaaa\"}}\n{F_WRITES_A}"),
+        PLAN_WRITES_B,
+    );
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}
+
+#[test]
+fn a_question_mark_type_is_silent_below() {
+    let (s, r) = below_case("below-question-type", &format!("{}{F_WRITES_A}", O_S.replace("\"type\": \"m.S\"", "\"type\": \"?m.S\"")), PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py"), "その型を書いたフィールドの定義の場所を返す: {s}");
+}
+
+#[test]
+fn an_ambiguous_type_is_unresolved_below() {
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S", "value": "operation", "params": {}, "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.S.p", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:5@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-ambiguous-type", &atoms, PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
+
+#[test]
+fn too_many_places_below_are_limit() {
+    // T0..T13 の各型が、次の型のフィールド a と b を持つ。たどるフィールドは上限(STEP_LIMIT)を超える。
+    let mut atoms = String::from(
+        r#"{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.T0", "at": "m.py:2@blob:aaaaaaa"}
+"#,
+    );
+    atoms.push_str("{\"kind\": \"defines\", \"subject\": \"m.T14\", \"value\": \"type\", \"at\": \"m.py:3@blob:aaaaaaa\"}\n");
+    for i in 0..14 {
+        atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.T{i}\", \"value\": \"type\", \"at\": \"m.py:3@blob:aaaaaaa\"}}\n"));
+        for f in ["a", "b"] {
+            atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.T{i}.{f}\", \"value\": \"field\", \"type\": \"m.T{}\", \"at\": \"m.py:4@blob:aaaaaaa\"}}\n", i + 1));
+        }
+    }
+    let (s, r) = below_case("below-limit", &format!("{atoms}{F_WRITES_A}"), PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
+}
+
+const S_P: &str = r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.S.p", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:4@blob:aaaaaaa"}
+"#;
+
+#[test]
+fn an_external_type_is_a_condition() {
+    // m.S.p の型 int は、resolves が外部を指す(below_case の観測に入っている)。意味を持つフィールドを持たないとみなし、成り立つ条件に並べる。
+    let (s, r) = below_case("below-condition", &format!("{O_S}{S_P}{F_WRITES_A}"), PLAN_WRITES_B);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    assert!(r["conditions"].as_array().unwrap().iter().any(|c| c == "外部の型 int は、意味を持つフィールドを持たないとみなす"), "{r}");
+}
+
+#[test]
+fn a_type_without_resolves_is_unread_below() {
+    // m.O.s の型 m.Z は、定義も resolves もない(設計 §3.3)。要素の名前を次に読む所として返す。
+    let (s, r) = below_case("below-no-resolves", &format!("{}{F_WRITES_A}", O_S.replace("\"type\": \"m.S\"", "\"type\": \"m.Z\"")), PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.Z"), "{s}");
+}
+
+#[test]
+fn a_place_below_is_compared_when_only_one_order_writes() {
+    let plan_other = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+"#;
+    // 変更前だけが o.s を書く。
+    let (s, r) = below_case("below-before-only", &format!("{O_S}{S_P}{F_WRITES_A}"), plan_other);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    // 変更後だけが o.s を書く。
+    let (s, r) = below_case("below-after-only", &format!("{O_S}{S_P}{}", r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+"#), PLAN_WRITES_B);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+}
+
+#[test]
+fn a_recursive_type_without_the_meaning_below_is_not_limit() {
+    // S.back の型は S だが、S から意味を持つフィールドには着かない。
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.back", "value": "field", "type": "m.S", "at": "m.py:4@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-cycle-no-meaning", &atoms, PLAN_WRITES_B);
+    assert_ne!(r["reason"], "limit", "{s}");
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn a_type_name_that_is_not_a_type_is_unresolved_below() {
+    // m.O.s の型 m.S は、操作として定義されている。
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S", "value": "operation", "params": {}, "at": "m.py:3@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-not-a-type", &atoms, PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
+
+#[test]
+fn the_limit_below_counts_one_written_place_not_the_branches() {
+    // 型 m.S はフィールドを 3000 個と p を持つ。o.s を、条件の違う二つの分岐で同じ値に書く。たどる場所は分岐によらず同じである。
+    // 分岐と書き込みをまたいで数えると上限(STEP_LIMIT)を超えるが、一つの書き込みの場所から数えれば超えない。
+    let mut atoms = format!("{O_S}{S_P}");
+    for i in 0..3000 {
+        atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.S.f{i}\", \"value\": \"field\", \"type\": \"int\", \"at\": \"m.py:5@blob:aaaaaaa\"}}\n"));
+    }
+    let f = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "when": "m.c1()", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "when": "m.c2()", "at": "m.py:11@blob:aaaaaaa"}
+"#;
+    let plan = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "when": "m.c1()", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "when": "m.c2()", "at": "plan:p"}
+"#;
+    let (s, r) = below_case("below-limit-per-place", &format!("{atoms}{f}"), plan);
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn a_type_whose_definition_was_not_read_is_unread_even_if_some_fields_were_read() {
+    // 型 m.S の defines も resolves もない。フィールド m.S.p の定義と意味は読んであるが、m.S のほかのフィールドは分からない(設計 §3.3)。
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.S.p", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:4@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-fields-without-type", &atoms, PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.S"), "{s}");
+}
+
+#[test]
+fn a_plan_that_adds_a_field_to_an_unread_type_is_still_unread() {
+    // m.S の resolves は s.py を指し、s.py は読んでいない。候補が m.S にフィールドを足しても、s.py にあるほかのフィールドは分からない。
+    let atoms = format!("{O_S}{{\"kind\": \"resolves\", \"subject\": \"m.S\", \"object\": \"s.py\", \"at\": \"m.py:1@blob:aaaaaaa\"}}\n{F_WRITES_A}");
+    let plan = format!("{PLAN_WRITES_B}{}", r#"{"kind": "defines", "subject": "m.S.q", "value": "field", "type": "int", "file": "s.py", "at": "plan:p"}
+"#);
+    let (s, r) = below_case("below-plan-adds-field", &atoms, &plan);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py"), "{s}");
+}
+
+#[test]
+fn a_cycle_without_the_meaning_does_not_count_toward_the_limit() {
+    // m.S は int のフィールド 6000 個と、型 m.S のフィールド 3 個を持つ。意味を持つフィールドはない。たどる場所は 6003 個である。
+    // めぐりの確かめのたどりも数えると、上限(STEP_LIMIT)を超える。
+    let mut atoms = format!("{O_S}{}", r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+"#);
+    for i in 0..6000 {
+        atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.S.f{i}\", \"value\": \"field\", \"type\": \"int\", \"at\": \"m.py:4@blob:aaaaaaa\"}}\n"));
+    }
+    for i in 0..3 {
+        atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.S.back{i}\", \"value\": \"field\", \"type\": \"m.S\", \"at\": \"m.py:5@blob:aaaaaaa\"}}\n"));
+    }
+    let (s, r) = below_case("below-cycle-count", &format!("{atoms}{F_WRITES_A}"), PLAN_WRITES_B);
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn the_limit_below_counts_each_written_place_on_its_own() {
+    // o.s と o.t はどちらも型 m.S(フィールド 6000 個と p)。一つの場所からたどるのは 6001 個で、上限(STEP_LIMIT)を超えない。
+    let mut atoms = format!("{O_S}{S_P}{}", r#"{"kind": "defines", "subject": "m.O.t", "value": "field", "type": "m.S", "at": "m.py:2@blob:aaaaaaa"}
+"#);
+    for i in 0..6000 {
+        atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.S.f{i}\", \"value\": \"field\", \"type\": \"int\", \"at\": \"m.py:5@blob:aaaaaaa\"}}\n"));
+    }
+    let f = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.a()", "at": "m.py:11@blob:aaaaaaa"}
+"#;
+    let plan = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "m.a()", "at": "plan:p"}
+"#;
+    let (s, r) = below_case("below-limit-each-place", &format!("{atoms}{f}"), plan);
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn a_write_before_is_followed_through_the_type_before() {
+    // 変更前の o.s の型は m.S(m.S.p が payment-info)。候補は o.s の型を m.S2 に書き直し、別の値を書く。
+    let atoms = format!("{O_S}{S_P}{F_WRITES_A}");
+    let plan = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.b()", "at": "plan:p"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S2", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S2", "value": "type", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S2.q", "value": "field", "type": "int", "file": "m.py", "at": "plan:p"}
+"#;
+    let (s, r) = below_case("below-type-changed", &atoms, plan);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    let places: Vec<&Value> = r["check"]["diverging"].as_array().unwrap().iter().map(|d| &d["place"]).collect();
+    assert!(places.contains(&&serde_json::json!(["m.O.s", "m.S.p"])), "{r}");
+}
+
+#[test]
+fn a_place_two_fields_below_is_compared() {
+    // o.s: m.S、m.S.t: m.T、m.T.p が payment-info。
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.t", "value": "field", "type": "m.T", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T.p", "value": "field", "type": "int", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.T.p", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:6@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-two-fields", &atoms, PLAN_WRITES_B);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    let places: Vec<&Value> = r["check"]["diverging"].as_array().unwrap().iter().map(|d| &d["place"]).collect();
+    assert_eq!(places, vec![&serde_json::json!(["m.O.s", "m.S.t", "m.T.p"])], "{r}");
+}
+
+#[test]
+fn a_write_before_is_also_followed_through_the_type_after() {
+    // 変更前は o.s(型 m.S、意味を持つフィールドなし)を書く。候補は o.s の型を m.S2 に変え、m.S2.r: m.T を足し、o.s に書かない。
+    // m.T.p は payment-info を持つ。変更前に書いた値から、変更後の型でたどる場所 [m.O.s, m.S2.r, m.T.p] の値が変わる。
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.q", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T.p", "value": "field", "type": "int", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.T.p", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:6@blob:aaaaaaa"}
+"#
+    );
+    let plan = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S2", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S2", "value": "type", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S2.r", "value": "field", "type": "m.T", "file": "m.py", "at": "plan:p"}
+"#;
+    let (s, r) = below_case("below-before-after-type", &atoms, plan);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    let places: Vec<&Value> = r["check"]["diverging"].as_array().unwrap().iter().map(|d| &d["place"]).collect();
+    assert!(places.contains(&&serde_json::json!(["m.O.s", "m.S2.r", "m.T.p"])), "{r}");
+}
+
+#[test]
+fn a_type_the_plan_redefines_is_still_unread_where_its_source_was_not_read() {
+    // m.S の resolves は s.py を指し、s.py は読んでいない。変更前の m.f は o.s に書かない。
+    // 候補は m.S の defines を書き直して o.s に書くが、s.py にある元のフィールドは分からない。
+    let atoms = format!(
+        "{O_S}{{\"kind\": \"resolves\", \"subject\": \"m.S\", \"object\": \"s.py\", \"at\": \"m.py:1@blob:aaaaaaa\"}}\n{}",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+"#
+    );
+    let plan = format!("{PLAN_WRITES_B}{}", r#"{"kind": "defines", "subject": "m.S", "value": "type", "file": "s.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S.q", "value": "field", "type": "int", "file": "s.py", "at": "plan:p"}
+"#);
+    let (s, r) = below_case("below-plan-redefines-type", &atoms, &plan);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py"), "{s}");
+}
+
+#[test]
+fn a_field_without_a_type_is_unresolved_below() {
+    // 書いたフィールド m.O.s に type がない。その先に意味を持つフィールドがあるかは決まらない。
+    let (s, r) = below_case("below-no-type", &format!("{}{F_WRITES_A}", O_S.replace(", \"type\": \"m.S\"", "")), PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    // たどった先のフィールド m.S.t に type がないときも同じ。
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.t", "value": "field", "at": "m.py:4@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-no-type-inside", &atoms, PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
+
+#[test]
+fn a_field_below_whose_meaning_range_was_not_read_is_unread() {
+    // m.S は s.py にある。s.py は構造だけを読み、payment-info の範囲は読んでいない(意味 Atom もない)。
+    let repo = Repo::new("below-meaning-range");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
+    repo.map("m.py", &format!("{}{O_S}{F_WRITES_A}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#));
+    repo.map("s.py", r#"{"kind": "observed", "subject": "s.py", "scope": "structure", "at": "s.py@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.S", "value": "type", "at": "s.py:1@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "s.py:2@blob:bbbbbbb"}
+"#);
+    repo.write(".archsig/plans/p/plan.jsonl", PLAN_WRITES_B);
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py" && n["scope"] == "meaning:payment-info"), "{s}");
+}
+
+#[test]
+fn an_existing_type_without_resolves_that_the_plan_redefines_is_still_unread() {
+    // 変更前は m.O.s の型として m.S を名指すが、m.S の定義も resolves もない。変更前の m.f は o.s に書かない。
+    // 候補は m.S を定義し直して o.s に書く。元の m.S のフィールドは分からない(設計 §3.3)。
+    let atoms = format!(
+        "{O_S}{}",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+"#
+    );
+    let plan = format!("{PLAN_WRITES_B}{}", r#"{"kind": "defines", "subject": "m.S", "value": "type", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S.q", "value": "field", "type": "int", "file": "m.py", "at": "plan:p"}
+"#);
+    let (s, r) = below_case("below-plan-redefines-unresolved-type", &atoms, &plan);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.S"), "{s}");
+}
+
+#[test]
+fn a_large_type_without_the_meaning_is_not_limit() {
+    // m.S は int のフィールドを 300 個持ち、意味を持つフィールドはない。
+    let mut atoms = format!("{O_S}{}", r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+"#);
+    for i in 0..300 {
+        atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.S.f{i}\", \"value\": \"field\", \"type\": \"int\", \"at\": \"m.py:4@blob:aaaaaaa\"}}\n"));
+    }
+    let (s, r) = below_case("below-large-type", &format!("{atoms}{F_WRITES_A}"), PLAN_WRITES_B);
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn a_field_named_but_not_defined_is_unread_below() {
+    // m.S の定義と m.S.q は読んである。m.S.p は resolves で b.py を指して名指されているが、定義を読んでいない。
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.q", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.S.p", "object": "b.py", "at": "m.py:5@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-named-field", &atoms, PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "b.py"), "{s}");
+}
+
+#[test]
+fn a_type_named_by_a_call_that_the_plan_redefines_is_still_unread() {
+    // 変更前は、操作 m.g の呼び出しで m.S を名指すだけで、m.S の定義も resolves もない。o.s の型は m.R。
+    // 候補は m.S を定義し、o.s の型を m.S に書き直して書く。元の m.S のフィールドは分からない。
+    let atoms = format!(
+        "{}{}",
+        O_S.replace("\"type\": \"m.S\"", "\"type\": \"m.R\""),
+        r#"{"kind": "defines", "subject": "m.R", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.g", "object": "m.S", "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+"#
+    );
+    let plan = format!("{PLAN_WRITES_B}{}", r#"{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S", "value": "type", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S.q", "value": "field", "type": "int", "file": "m.py", "at": "plan:p"}
+"#);
+    let (s, r) = below_case("below-call-named-type", &atoms, &plan);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.S"), "{s}");
+}
+
+#[test]
+fn an_external_type_the_plan_redefines_stays_external() {
+    // 変更前の m.S は resolves で外部を指す。候補が m.S を定義し直しても、外部の型としてたどらず、条件に並べる。
+    let repo = Repo::new("below-external-redefined");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        &format!(
+            "{}{O_S}{{\"kind\": \"resolves\", \"subject\": \"m.S\", \"object\": \"external:lib\", \"at\": \"m.py:1@blob:aaaaaaa\"}}\n{F_WRITES_A}",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+"#
+        ),
+    );
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        &format!("{PLAN_WRITES_B}{}", r#"{"kind": "defines", "subject": "m.S", "value": "type", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S.q", "value": "field", "type": "int", "file": "m.py", "at": "plan:p"}
+"#),
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!(r["outcome"], "holds", "{s}");
+    let d = repo.run(&["show", r["id"].as_str().unwrap()]);
+    assert!(d["conditions"].as_array().unwrap().iter().any(|c| c == "外部の型 m.S は、意味を持つフィールドを持たないとみなす"), "{d}");
+}
+
+#[test]
+fn a_field_named_only_in_an_expression_is_unread_below() {
+    // m.S の定義と m.S.p は読んである。別の操作 m.g の条件が $o.s.q で m.S.q を名指すが、m.S.q の定義を読んでいない。
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.S.p", "value": "1", "when": "$o.s.q == 1", "at": "m.py:7@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-expression-named", &atoms, PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.S.q"), "{s}");
+}
+
+#[test]
+fn a_counterexample_is_not_hidden_by_a_type_not_read_below() {
+    // o.p(payment-info)と o.s(型 m.Z、定義も resolves もない)を書く。o.p の値が違えば、m.Z の先が分からなくても反例は決まる。
+    let atoms = |p: &str| {
+        format!(
+            "{}{}\n{p}\n",
+            O_S.replace("\"type\": \"m.S\"", "\"type\": \"m.Z\""),
+            r#"{"kind": "defines", "subject": "m.O.p", "value": "field", "type": "int", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.p", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "m.py:10@blob:aaaaaaa"}"#
+        )
+    };
+    let plan = |p: &str| {
+        format!(
+            "{}{p}\n",
+            r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "plan:p"}
+"#
+        )
+    };
+    let before_p = r#"{"kind": "writes", "subject": "m.f", "object": "m.O.p", "value": "1", "at": "m.py:11@blob:aaaaaaa"}"#;
+    let (s, r) = below_case("below-hidden-differs", &atoms(before_p), &plan(r#"{"kind": "writes", "subject": "m.f", "object": "m.O.p", "value": "2", "at": "plan:p"}"#));
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    let (s, r) = below_case("below-hidden-same", &atoms(before_p), &plan(r#"{"kind": "writes", "subject": "m.f", "object": "m.O.p", "value": "1", "at": "plan:p"}"#));
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+}
+
+#[test]
+fn a_removed_field_still_named_elsewhere_is_not_unread_below() {
+    // 候補は m.S.p を消して m.S.p2 に移す。書き直していない m.h は m.S.p を読んだまま(missing)。
+    let atoms = format!(
+        "{O_S}{S_P}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.h", "value": "operation", "params": {}, "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "reads", "subject": "m.h", "object": "m.S.p", "at": "m.py:8@blob:aaaaaaa"}
+"#
+    );
+    let plan = format!("{PLAN_WRITES_B}{}", r#"{"kind": "removes", "subject": "m.S.p", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S.p2", "value": "field", "type": "int", "file": "m.py", "at": "plan:p"}
+{"kind": "corresponds", "subject": "m.S.p", "object": "m.S.p2", "at": "plan:p"}
+"#);
+    let (s, r) = below_case("below-removed-named", &atoms, &plan);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    let places: Vec<&Value> = r["check"]["diverging"].as_array().unwrap().iter().map(|d| &d["place"]).collect();
+    assert!(places.contains(&&serde_json::json!(["m.O.s", "m.S.p2"])), "{r}");
+    // 同じ値を書けば成り立つ。消した m.S.p を、読んでいない名前として沈黙しない。
+    let (s, r) = below_case("below-removed-named-same", &atoms, &plan.replace("m.b()", "m.a()"));
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn an_external_name_under_a_type_is_not_a_field_below() {
+    // m.S を読んであり、m.S.p が payment-info。別の操作が m.S.save(resolves が外部を指す)を呼ぶ。
+    let atoms = format!(
+        "{O_S}{S_P}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.g", "object": "m.S.save", "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.S.save", "object": "external:django", "at": "m.py:1@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-external-member", &atoms, PLAN_WRITES_B);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+}
+
+#[test]
+fn a_counterexample_below_is_not_hidden_by_a_sibling_field_not_read() {
+    // m.S は a(型 m.Z、定義も resolves もない)と p(payment-info)を持つ。o.s の値が違えば、[o.s, S.p] で反例は決まる。
+    let atoms = format!(
+        "{O_S}{S_P}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S.a", "value": "field", "type": "m.Z", "at": "m.py:5@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-sibling-differs", &atoms, PLAN_WRITES_B);
+    let places: Vec<Value> = r["check"]["diverging"].as_array().into_iter().flatten().map(|x| x["place"].clone()).collect();
+    assert_eq!(places, vec![serde_json::json!(["m.O.s", "m.S.p"])], "{s}\n{r}");
+    let (s, r) = below_case("below-sibling-same", &atoms, &PLAN_WRITES_B.replace("m.b()", "m.a()"));
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.Z"), "{s}");
+}
+
+#[test]
+fn a_counterexample_below_is_not_hidden_by_a_recursive_type() {
+    // N.next の型は N。N.v は payment-info を持つ。o.n の値が違えば、[o.n, N.v] で反例は決まる。
+    let atoms = r#"{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.n", "value": "field", "type": "m.N", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.N", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.N.next", "value": "field", "type": "m.N", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.N.v", "value": "field", "type": "int", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.N.v", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:5@blob:aaaaaaa"}
+"#;
+    let f = F_WRITES_A.replace("m.O.s", "m.O.n");
+    let (s, r) = below_case("below-recursive-differs", &format!("{atoms}{f}"), &PLAN_WRITES_B.replace("m.O.s", "m.O.n"));
+    let places: Vec<Value> = r["check"]["diverging"].as_array().into_iter().flatten().map(|x| x["place"].clone()).collect();
+    assert!(places.contains(&serde_json::json!(["m.O.n", "m.N.v"])), "{s}\n{r}");
+}
+
+/// m.py(構造と payment-info を読んだ)と s.py(構造だけを読んだ)の観測と候補で `plan check` し、サマリと m.f の結果(反例なら詳細)を返す。
+fn two_sources_case(name: &str, m: &str, s_py: &str, plan: &str) -> (Value, Value) {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
+    repo.map(
+        "m.py",
+        &format!(
+            "{}{m}",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+"#
+        ),
+    );
+    repo.map(
+        "s.py",
+        &format!(
+            "{}{s_py}",
+            r#"{"kind": "observed", "subject": "s.py", "scope": "structure", "at": "s.py@blob:bbbbbbb"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "s.py:1@blob:bbbbbbb"}
+"#
+        ),
+    );
+    repo.write(".archsig/plans/p/plan.jsonl", plan);
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f").clone();
+    let r = if r["outcome"] == "fails" { repo.run(&["show", r["id"].as_str().unwrap()]) } else { r };
+    (s, r)
+}
+
+/// m.py の観測。m.O.s の型 s.S は s.py にある。
+const REDEFINE_M: &str = r#"{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "s.S", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "s.S", "object": "s.py", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+"#;
+
+/// s.py の観測(構造だけ)。
+const REDEFINE_S: &str = r#"{"kind": "defines", "subject": "s.S", "value": "type", "at": "s.py:2@blob:bbbbbbb"}
+{"kind": "defines", "subject": "s.S.p", "value": "field", "type": "int", "at": "s.py:3@blob:bbbbbbb"}
+"#;
+
+#[test]
+fn a_field_the_plan_defines_again_is_unread_when_its_meaning_before_was_not_read() {
+    // m.S.p は s.py にあり、s.py の payment-info は読んでいない。候補は m.S.p を同じ形で定義し直し、o.s に書く。
+    // 候補のフィールドの意味は、元の m.S.p の意味を移したものなので決まらない(設計 §3.6 の4、§5.1)。
+    let (m, s_py) = (REDEFINE_M, REDEFINE_S);
+    let plan = |redefine: &str| {
+        format!(
+            "{}{redefine}",
+            r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.b()", "at": "plan:p"}
+"#
+        )
+    };
+    let redefine = r#"{"kind": "defines", "subject": "s.S.p", "value": "field", "type": "int", "file": "s.py", "at": "plan:p"}
+"#;
+    let (s, r) = two_sources_case("below-redefined-field", m, s_py, &plan(redefine));
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py" && n["scope"] == "meaning:payment-info"), "{s}");
+    // 定義し直さなくても同じく決まらない。
+    let (s, r) = two_sources_case("below-plain-field", m, s_py, &plan(""));
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+}
+
+#[test]
+fn a_field_the_plan_splits_into_a_new_type_is_unread_when_its_meaning_before_was_not_read() {
+    let (m, s_py) = (REDEFINE_M, REDEFINE_S);
+    // 新しい型 m.N に分けて、m.N.p を s.S.p の対応の行き先にしても、m.N.p の意味は決まらない。
+    let split = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.N", "value": "type", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.N.p", "value": "field", "type": "int", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.O.n", "value": "field", "type": "m.N", "file": "m.py", "at": "plan:p"}
+{"kind": "corresponds", "subject": "s.S.p", "object": "m.N.p", "at": "plan:p"}
+{"kind": "removes", "subject": "s.S.p", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.n", "value": "m.b()", "at": "plan:p"}
+"#;
+    let (s, r) = two_sources_case("below-split-field", m, s_py, split);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py" && n["scope"] == "meaning:payment-info"), "{s}");
+}
+
+#[test]
+fn a_counterexample_below_is_not_hidden_by_a_field_named_but_not_read() {
+    // m.S.p は payment-info を持つ。m.S.q は resolves で b.py を指して名指されているが、定義を読んでいない。
+    // 沈黙は m.S.q の場所だけのもので、o.s の値が違えば [o.s, S.p] で反例は決まる。
+    let atoms = format!(
+        "{O_S}{S_P}{}{F_WRITES_A}",
+        r#"{"kind": "resolves", "subject": "m.S.q", "object": "b.py", "at": "m.py:5@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-named-differs", &atoms, PLAN_WRITES_B);
+    let places: Vec<Value> = r["check"]["diverging"].as_array().into_iter().flatten().map(|x| x["place"].clone()).collect();
+    assert_eq!(places, vec![serde_json::json!(["m.O.s", "m.S.p"])], "{s}\n{r}");
+    let (s, r) = below_case("below-named-same", &atoms, &PLAN_WRITES_B.replace("m.b()", "m.a()"));
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "b.py"), "{s}");
+}
+
+#[test]
+fn a_counterexample_below_is_not_hidden_by_an_ambiguous_field() {
+    // m.S.a は field と operation の二つの defines を持つ(曖昧)。m.S.p は payment-info を持つ。
+    let atoms = format!(
+        "{O_S}{S_P}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S.a", "value": "field", "type": "int", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.a", "value": "operation", "params": {}, "at": "m.py:6@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-ambiguous-differs", &atoms, PLAN_WRITES_B);
+    let places: Vec<Value> = r["check"]["diverging"].as_array().into_iter().flatten().map(|x| x["place"].clone()).collect();
+    assert_eq!(places, vec![serde_json::json!(["m.O.s", "m.S.p"])], "{s}\n{r}");
+    let (s, r) = below_case("below-ambiguous-same", &atoms, &PLAN_WRITES_B.replace("m.b()", "m.a()"));
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
+
+#[test]
+fn a_source_path_is_not_a_field_below() {
+    // ソース m.S.py の観測の subject は、型 m.S のフィールドの名前ではない。
+    let atoms = format!(
+        "{}{O_S}{S_P}{F_WRITES_A}",
+        r#"{"kind": "observed", "subject": "m.S.py", "scope": "structure", "at": "m.S.py@blob:ccccccc"}
+"#
+    );
+    let (s, r) = below_case("below-source-path", &atoms, &PLAN_WRITES_B.replace("m.b()", "m.a()"));
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn a_field_the_plan_defines_again_and_writes_directly_is_unread() {
+    // 候補は s.S.p を定義し直し、via [m.O.s] で s.S.p に直接書く。s.py の payment-info は読んでいない。
+    // 書き込みの場所の最後のフィールドの意味は、元の s.S.p の意味を移したものなので決まらない。
+    let plan = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "s.S.p", "value": "field", "type": "int", "file": "s.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "via": ["m.O.s"], "object": "s.S.p", "value": "m.b()", "at": "plan:p"}
+"#;
+    let (s, r) = two_sources_case("direct-redefined-field", REDEFINE_M, REDEFINE_S, plan);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py" && n["scope"] == "meaning:payment-info"), "{s}");
 }

@@ -77,6 +77,7 @@ pub const SERVICE: &str = r#"{"kind": "observed", "subject": "shop/shipping/serv
 pub const ORDER: &str = r#"{"kind": "observed", "subject": "shop/order/model.py", "scope": "structure", "at": "shop/order/model.py@blob:1d9e3b4"}
 {"kind": "observed", "subject": "shop/order/model.py", "scope": "meaning:payment-info", "at": "shop/order/model.py@blob:1d9e3b4"}
 {"kind": "defines", "subject": "shop.order.model.Order", "value": "type", "at": "shop/order/model.py:7@blob:1d9e3b4"}
+{"kind": "resolves", "subject": "str", "object": "external:builtins", "at": "shop/order/model.py:8@blob:1d9e3b4"}
 {"kind": "defines", "subject": "shop.order.model.Order.order_id", "value": "field", "type": "str", "at": "shop/order/model.py:8@blob:1d9e3b4"}
 {"kind": "defines", "subject": "shop.order.model.Order.shipping_address", "value": "field", "type": "shop.shipping.model.Address", "at": "shop/order/model.py:9@blob:1d9e3b4"}
 {"kind": "defines", "subject": "shop.order.model.Order.payment_ref", "value": "field", "type": "str", "at": "shop/order/model.py:10@blob:1d9e3b4"}
@@ -86,6 +87,7 @@ pub const ORDER: &str = r#"{"kind": "observed", "subject": "shop/order/model.py"
 pub const ADDRESS_MODEL: &str = r#"{"kind": "observed", "subject": "shop/shipping/model.py", "scope": "structure", "at": "shop/shipping/model.py@blob:6a1b2c3"}
 {"kind": "observed", "subject": "shop/shipping/model.py", "scope": "meaning:payment-info", "at": "shop/shipping/model.py@blob:6a1b2c3"}
 {"kind": "defines", "subject": "shop.shipping.model.Address", "value": "type", "at": "shop/shipping/model.py:3@blob:6a1b2c3"}
+{"kind": "resolves", "subject": "str", "object": "external:builtins", "at": "shop/shipping/model.py:4@blob:6a1b2c3"}
 {"kind": "defines", "subject": "shop.shipping.model.Address.country", "value": "field", "type": "str", "at": "shop/shipping/model.py:4@blob:6a1b2c3"}
 "#;
 
