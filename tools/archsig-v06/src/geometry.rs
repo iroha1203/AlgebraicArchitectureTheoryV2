@@ -54,14 +54,19 @@ pub struct Geometry<'a> {
     channels: BTreeMap<String, BTreeSet<String>>,
     /// 定義がなく、`resolves` が外部でないソースを指す要素と、その沈黙(設計 §3.3)。属する局所が決まらない。
     unknown: BTreeMap<String, Silence>,
+    /// 型と定義した要素。定義を観測していないフィールドは、その型で見る。
+    types: BTreeSet<String>,
 }
 
 impl<'a> Geometry<'a> {
     /// `defined` は要素の定義を探す Atom の列、`body` はチャネルを送り受けする操作を探す Atom の列。
     /// 候補の中で定義した要素は `file`、それ以外は `defines` の `at` のパスで定義される。
     pub fn new(reading: &'a Reading, defined: &[Atom], body: &[Atom]) -> Geometry<'a> {
-        let mut g = Geometry { reading, sources: BTreeMap::new(), channels: BTreeMap::new(), unknown: BTreeMap::new() };
+        let mut g = Geometry { reading, sources: BTreeMap::new(), channels: BTreeMap::new(), unknown: BTreeMap::new(), types: BTreeSet::new() };
         for a in defined.iter().filter(|a| a.kind == "defines") {
+            if a.value.as_deref() == Some("type") {
+                g.types.insert(a.subject.clone());
+            }
             let path = match &a.file {
                 Some(f) => Some(f.clone()),
                 None => a.at.as_deref().filter(|at| !at.starts_with("plan:")).and_then(parse_location).map(|l| l.path),
@@ -90,14 +95,26 @@ impl<'a> Geometry<'a> {
         g
     }
 
-    /// 要素が属する局所。要素は、それを定義したソースの局所に属する。
-    /// 引数 `X.$p` は操作 `X` の、呼び出しの要素 `A->B` は呼び出し元 `A` のソースで定義される(設計 §4.4)。
+    /// 要素が属する局所。要素は、それを定義したソースの局所に属する(`holder` で見る)。
     /// 定義を観測していない要素は、どの局所にも属さない。
     pub fn element_locals(&self, name: &str) -> BTreeSet<String> {
         if let Some(locals) = self.channels.get(name) {
             return locals.clone();
         }
-        self.sources.get(owner(name)).and_then(|p| local(self.reading, p)).into_iter().collect()
+        self.sources.get(self.holder(name)).and_then(|p| local(self.reading, p)).into_iter().collect()
+    }
+
+    /// 要素の局所を見る名前。引数と呼び出しの要素は持ち主の操作(`owner`)。
+    /// 定義を観測していないフィールド `<型>.<名前>` は、その型で見る(型の定義があるか、型の局所が決まらないとき)。
+    fn holder<'n>(&self, name: &'n str) -> &'n str {
+        let o = owner(name);
+        if self.sources.contains_key(o) || self.unknown.contains_key(o) {
+            return o;
+        }
+        match o.rsplit_once('.') {
+            Some((t, _)) if self.types.contains(t) || self.unknown.contains_key(t) => t,
+            _ => o,
+        }
     }
 
     /// Atom が属する局所。名指す要素が属する局所すべて(マニュアル第4章)。
@@ -115,7 +132,7 @@ impl<'a> Geometry<'a> {
                 continue;
             }
             // 定義がなく、`resolves` が外部でないソースを指す要素は、属する局所が決まらない(設計 §3.3)。
-            if let Some((n, s)) = named(a).into_iter().find_map(|n| self.unknown.get(owner(n)).map(|s| (n, s))) {
+            if let Some((n, s)) = named(a).into_iter().find_map(|n| self.unknown.get(self.holder(n)).map(|s| (n, s))) {
                 out.unknown.push((n.to_string(), s.clone()));
                 continue;
             }
