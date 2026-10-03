@@ -804,7 +804,7 @@ result:
   evidence: [residual_value, native_value, candidate_change_value_iff, actual_failure, actual_value, residual_acquisition_iff, actual_acquisition_iff, acquisition_after_update_iff]
   claim_mapping:
     theorem_names: [actual_failure, candidate_change_value_iff, actual_acquisition_iff, acquisition_after_update_iff]
-    source_labels: ["G-131 D", "n1017 §6.5・§6.7"]
+    source_labels: ["G-131 D", "n1017 §6.3–6.5・§3.5"]
     conjuncts: ["同じ不能証拠の非零残存値", "元追加候補名の同じ支持", "ell q_S(b₀+Bv)取得とrestricted span", "保持済み/通知済みの未知核"]
     undischarged_assumptions: []
     acceptance_point: "Dの同じ双対値取得条件。有限計画と更新最適値適用は次到達点"
