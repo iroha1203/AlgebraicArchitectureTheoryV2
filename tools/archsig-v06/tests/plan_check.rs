@@ -1334,3 +1334,37 @@ fn the_limit_below_counts_each_written_place_on_its_own() {
     let (s, r) = below_case("below-limit-each-place", &format!("{atoms}{f}"), plan);
     assert_eq!(r["outcome"], "holds", "{s}");
 }
+
+#[test]
+fn a_write_before_is_followed_through_the_type_before() {
+    // 変更前の o.s の型は m.S(m.S.p が payment-info)。候補は o.s の型を m.S2 に書き直し、別の値を書く。
+    let atoms = format!("{O_S}{S_P}{F_WRITES_A}");
+    let plan = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.b()", "at": "plan:p"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S2", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S2", "value": "type", "file": "m.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S2.q", "value": "field", "type": "int", "file": "m.py", "at": "plan:p"}
+"#;
+    let (s, r) = below_case("below-type-changed", &atoms, plan);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    let places: Vec<&Value> = r["check"]["diverging"].as_array().unwrap().iter().map(|d| &d["place"]).collect();
+    assert!(places.contains(&&serde_json::json!(["m.O.s", "m.S.p"])), "{r}");
+}
+
+#[test]
+fn a_place_two_fields_below_is_compared() {
+    // o.s: m.S、m.S.t: m.T、m.T.p が payment-info。
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.t", "value": "field", "type": "m.T", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T.p", "value": "field", "type": "int", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.T.p", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:6@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-two-fields", &atoms, PLAN_WRITES_B);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    let places: Vec<&Value> = r["check"]["diverging"].as_array().unwrap().iter().map(|d| &d["place"]).collect();
+    assert_eq!(places, vec![&serde_json::json!(["m.O.s", "m.S.t", "m.T.p"])], "{r}");
+}

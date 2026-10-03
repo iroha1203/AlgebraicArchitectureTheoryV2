@@ -670,17 +670,19 @@ impl Below {
 
     /// フィールド `field` の型 `ty` から、フィールドの型をたどって、意味 `meaning` を持つフィールドに着くか。めぐりを確かめるためのたどりで、上限には数えない。
     fn reaches(&mut self, s: &Structure, field: &str, ty: &str, meaning: &str, seen: &mut BTreeSet<String>) -> Result<bool, Silence> {
-        if !seen.insert(ty.to_string()) || !self.known(s, field, ty)? {
-            return Ok(false);
-        }
-        for f in fields_of(s, ty)? {
-            meaning_known(s, &f, meaning)?;
-            if has_meaning(s, &f, meaning) {
-                return Ok(true);
+        // 再帰せず、たどる型の列を持って順に見る。型は一度だけ見るので、型の数で終わる。
+        let mut todo = vec![(field.to_string(), ty.to_string())];
+        while let Some((field, ty)) = todo.pop() {
+            if !seen.insert(ty.clone()) || !self.known(s, &field, &ty)? {
+                continue;
             }
-            if let Some(t) = s.elements[&f].ty.clone() {
-                if self.reaches(s, &f, &t, meaning, seen)? {
+            for f in fields_of(s, &ty)? {
+                meaning_known(s, &f, meaning)?;
+                if has_meaning(s, &f, meaning) {
                     return Ok(true);
+                }
+                if let Some(t) = s.elements[&f].ty.clone() {
+                    todo.push((f, t));
                 }
             }
         }
@@ -781,8 +783,14 @@ fn compare(
                     }
                 }
             }
-            for q in mapping.places(&w.place) {
-                places.extend(below.places(after, &q, meaning)?);
+            // 変更前の書き込みは、変更前の型でたどり、対応で変更後の名前に写す。
+            for p in below.places(before, &w.place, meaning)? {
+                for q in mapping.places(&p) {
+                    meaning_known(after, q.last().unwrap(), meaning)?;
+                    if has_meaning(after, q.last().unwrap(), meaning) {
+                        places.insert(q);
+                    }
+                }
             }
         }
     }
