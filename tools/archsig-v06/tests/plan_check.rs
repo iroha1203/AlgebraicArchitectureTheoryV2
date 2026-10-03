@@ -2175,9 +2175,12 @@ fn a_long_expression_is_limit() {
     let negated = format!("{}1", "-".repeat(10_000));
     let long_sum = vec!["1"; 10_000].join(" + ");
     for (name, v) in [("long-nested", nested.as_str()), ("long-negated", negated.as_str()), ("long-sum", long_sum.as_str())] {
-        let (s, r) = t_case(name, &[("writes", "m.O.t", v, "")], &[("writes", "m.O.t", "1", "")], "");
-        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{name}: {s}");
-        assert!(!s["next"].as_array().unwrap().iter().any(|n| n["decides"].as_array().unwrap().contains(&r["id"])), "{name}: {s}");
+        // value に書いても、when に書いても同じ。
+        for (at, steps) in [("value", [("writes", "m.O.t", v, "")]), ("when", [("writes", "m.O.t", "1", v)])] {
+            let (s, r) = t_case(&format!("{name}-{at}"), &steps, &[("writes", "m.O.t", "1", "")], "");
+            assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{name} {at}: {s}");
+            assert!(!s["next"].as_array().unwrap().iter().any(|n| n["decides"].as_array().unwrap().contains(&r["id"])), "{name} {at}: {s}");
+        }
     }
     // 上限より短い式は読む。上限の近くまで入れ子にしても落ちない。
     let deep = format!("{}1{}", "(".repeat(499), ")".repeat(499));

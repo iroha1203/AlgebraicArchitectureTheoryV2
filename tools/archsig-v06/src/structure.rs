@@ -672,10 +672,10 @@ impl Structure {
             Expr::Name(n) if n.starts_with('?') => gaps.push(Gap::Name(n.clone())),
             Expr::Unknown => gaps.push(Gap::Unreadable),
             Expr::Not(x) | Expr::Neg(x) => self.named(op, x, out, gaps),
-            // 字句の数が上限を超えた式は、字句から拾った名前を数える。たどれなかった所は積まない。
+            // 字句の数が上限を超えた式は、字句から拾った名前を数える。
             Expr::TooLong(items) => {
                 for x in items {
-                    self.named(op, x, out, &mut Vec::new());
+                    self.named(op, x, out, gaps);
                 }
             }
             Expr::Bin(_, a, b) => {
