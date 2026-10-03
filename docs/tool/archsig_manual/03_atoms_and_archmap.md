@@ -67,6 +67,7 @@ Atom の同一性は、`kind`、`subject`、`object`、`via`、`value`、`when`�
   `object` は書いたフィールドである。フィールドの値の中のフィールドに書くときは、そこまでにたどるフィールドを `via` に順に並べる。
   注文の配送先の国に書くなら、`via` は `["shop.order.model.Order.shipping_address"]`、`object` は `shop.shipping.model.Address.country` である。
   この書き込み先は、`$order.shipping_address.country` で読む値と同じ所である。`via` がなければ、引数が指す実体のフィールドに書く(`$new.country` で読む値と同じ所)。
+  ArchSig は、二つ目から後のフィールドを、名前(最後の `.` の後)と前のフィールドの型でたどる。候補が `shipping_address` の型を書き換えれば、書き直していない書き込みも、書き換えた型の `country` に書く。
 - `passes`:呼び出しが引数に値を渡す。`subject` は呼び出しの名前、`object` は受け取る引数(`<呼び出し先>.$<引数の名前>`)である。外部でない呼び出しで、受け取る引数が呼び出し先の引数になければ、渡す値の行き先が決まらないので、その呼び出しを展開する操作は `unresolved` で沈黙し、呼び出しの場所を返す。`when` のない `passes` は、呼び出しの条件で渡す。`passes` に呼び出しと違う `when` があるか、一つの引数に値の違う `passes` が二つ以上あれば、渡す値が一つに決まらないので、その呼び出しを展開する操作は `unresolved` で沈黙する。
 - `sends`:操作がチャネルの項目へ値を送る。`object` は項目、`value` は送る値である。
 - `receives`:操作がチャネルの項目を受け取る。`object` は項目、`value` は受け取った値を操作の中で表す式である。

@@ -3952,3 +3952,48 @@ law payment-info-kept
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "g.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
 }
+
+/// 変更前: m.O.a の型は m.A。f(o) は o.a.x に 1 を書き(`via [m.O.a]`、`object m.A.x`)、o.u に $o.a.x を書く。
+/// 候補は m.O.a の型を m.B に書き換え、f は書き直さない。`plan` は候補に足す Atom。
+fn retyped_via(name: &str, plan: &str) -> Value {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A.x", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.B", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.B.x", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.a", "value": "field", "type": "m.A", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.u", "value": "field", "type": "int", "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.u", "meaning": "payment-info", "uses": ["m.py:11@blob:aaaaaaa"], "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "via": ["m.O.a"], "object": "m.A.x", "value": "1", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.u", "value": "$o.a.x", "at": "m.py:11@blob:aaaaaaa"}
+"#);
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        &format!("{}{plan}", r#"{"kind": "defines", "subject": "m.O.a", "value": "field", "type": "m.B", "file": "m.py", "at": "plan:p"}
+"#),
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    result(&s, "m.f").clone()
+}
+
+#[test]
+fn a_write_through_a_retyped_field_follows_the_new_type() {
+    // 書き直していない f の書き込みは、書き換えた型の o.a.x(m.B.x)に書く。$o.a.x も m.B.x を読むので、o.u は 1 のまま。
+    let r = retyped_via("retyped-via", "");
+    assert_eq!(r["outcome"], "holds", "{r}");
+}
+
+#[test]
+fn removing_the_field_of_the_old_type_is_not_missing_and_the_new_one_is() {
+    // 書き換えた後の f の書き込みは m.B.x を名指し、m.A.x はもう名指さない。
+    let r = retyped_via("retyped-via-remove-old", "{\"kind\": \"removes\", \"subject\": \"m.A.x\", \"at\": \"plan:p\"}\n");
+    assert_eq!(r["outcome"], "holds", "{r}");
+    let r = retyped_via("retyped-via-remove-new", "{\"kind\": \"removes\", \"subject\": \"m.B.x\", \"at\": \"plan:p\"}\n");
+    assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("missing")), "{r}");
+}
