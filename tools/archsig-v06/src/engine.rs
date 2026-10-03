@@ -742,10 +742,45 @@ impl Below<'_> {
         }
     }
 
+    /// 型 `ty` のフィールドと、`inherits` の型から受け継いだフィールド(設計 §5.4)。受け継いだフィールドは、それを定義した型の名前で返す。
+    /// 受け継ぐ型は、たどる型と同じに扱う。分からないフィールドと、決まらない受け継ぎの沈黙は積み、ほかのフィールドを返す。
+    fn members(&mut self, s: &Structure, ty: &str) -> Vec<String> {
+        let names = s.mentioned();
+        let (mut out, silence) = fields_of(s, &names, &self.removes, ty);
+        self.hold(silence.map_or(Ok(()), Err));
+        let mut inherited = BTreeSet::new();
+        let mut seen = BTreeSet::new();
+        let mut todo: Vec<String> = s.bases.get(ty).cloned().unwrap_or_default();
+        while let Some(b) = todo.pop() {
+            if !seen.insert(b.clone()) {
+                continue;
+            }
+            match self.known(s, ty, &b) {
+                Ok(true) => {}
+                Ok(false) => continue,
+                Err(e) => {
+                    self.hold(Err(e));
+                    continue;
+                }
+            }
+            let (fs, silence) = fields_of(s, &names, &self.removes, &b);
+            self.hold(silence.map_or(Ok(()), Err));
+            inherited.extend(fs.iter().map(|f| f[b.len() + 1..].to_string()));
+            todo.extend(s.bases.get(&b).into_iter().flatten().cloned());
+        }
+        for n in inherited {
+            match s.member(ty, &n) {
+                Ok(f) if !out.contains(&f) && !s.elements.contains_key(&format!("{ty}.{n}")) => out.push(f),
+                Ok(_) => {}
+                Err(e) => self.hold(Err(e)),
+            }
+        }
+        out
+    }
+
     /// たどる型 `ty` のフィールド。たどったフィールドが上限を超えたら `limit` で沈黙する(設計 §5.1)。
     fn fields(&mut self, s: &Structure, ty: &str) -> Result<Vec<String>, Silence> {
-        let (out, silence) = fields_of(s, &s.mentioned(), &self.removes, ty);
-        self.hold(silence.map_or(Ok(()), Err));
+        let out = self.members(s, ty);
         self.count += out.len();
         if self.count > STEP_LIMIT {
             return Err(Silence::new(Reason::Limit));
@@ -777,9 +812,8 @@ impl Below<'_> {
             if !seen.insert(ty.clone()) || !self.known(s, &field, &ty)? {
                 continue;
             }
-            // 分からないフィールドの沈黙は、`walk` がこの型をたどるときに積んでいる。
-            let (fs, _) = fields_of(s, &s.mentioned(), &self.removes, &ty);
-            for f in fs {
+            // 分からないフィールドの沈黙は、`walk` がこの型をたどるときにも積む。
+            for f in self.members(s, &ty) {
                 meaning_known(self.prior, s, &f, meaning)?;
                 if has_meaning(s, &f, meaning) {
                     return Ok(true);

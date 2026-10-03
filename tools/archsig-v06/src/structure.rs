@@ -120,6 +120,8 @@ pub struct Structure {
     pub elements: BTreeMap<String, Element>,
     pub resolves: BTreeMap<String, Resolution>,
     pub meanings: BTreeMap<String, Vec<Atom>>,
+    /// 型ごとの、`inherits` で受け継ぐ型。
+    pub bases: BTreeMap<String, Vec<String>>,
     /// 読んだ範囲(ソース、範囲)。
     pub observed: BTreeSet<(String, String)>,
     /// 操作ごとの手順の Atom(`atoms` の添字)。手順の順に並ぶ。
@@ -150,6 +152,7 @@ impl Structure {
                     }
                 }
                 "writes" | "calls" | "sends" | "returns" => s.bodies.entry(a.subject.clone()).or_default().push(i),
+                "inherits" => s.bases.entry(a.subject.clone()).or_default().push(a.object.clone().unwrap_or_default()),
                 _ => {}
             }
             // チャネルとその項目は、`sends` と `receives` に現れた名前から要素になる。
@@ -445,6 +448,38 @@ impl Structure {
         })
     }
 
+    /// 型 `ty` のフィールド `name` の要素。`ty` が定義していなければ、`inherits` の型から順に探し、それを定義した型のフィールドを返す(設計 §3.5)。
+    /// 探す途中の型の定義を読んでいなければ 3.3 のとおりに沈黙し、違う型のフィールドが二つ以上見つかれば `unresolved` で沈黙する。
+    /// どこにもなければ `<ty>.<name>` を返す。
+    pub fn member(&self, ty: &str, name: &str) -> Result<String, Silence> {
+        let own = format!("{ty}.{name}");
+        if self.elements.contains_key(&own) {
+            return Ok(own);
+        }
+        let mut found = BTreeSet::new();
+        let mut seen = BTreeSet::new();
+        let mut todo: Vec<String> = self.bases.get(ty).cloned().unwrap_or_default();
+        while let Some(b) = todo.pop() {
+            if !seen.insert(b.clone()) {
+                continue;
+            }
+            let field = format!("{b}.{name}");
+            if self.elements.contains_key(&field) {
+                found.insert(field);
+                continue;
+            }
+            if self.kind(&b)? != "type" {
+                return Err(Silence::new(Reason::Unresolved));
+            }
+            todo.extend(self.bases.get(&b).into_iter().flatten().cloned());
+        }
+        match found.len() {
+            0 => Ok(own),
+            1 => Ok(found.pop_first().unwrap_or(own)),
+            _ => Err(Silence::new(Reason::Unresolved)),
+        }
+    }
+
     /// 型 `ty` から、フィールドの名前の列をたどった場所。`$p.f.g` は `[T.f, U.g]`。
     pub fn fields(&self, ty: &str, names: &[String]) -> Result<Vec<String>, Silence> {
         let mut place = Vec::new();
@@ -453,7 +488,7 @@ impl Structure {
             if self.ambiguous(&ty) {
                 return Err(Silence::new(Reason::Unresolved));
             }
-            let field = format!("{ty}.{n}");
+            let field = self.member(&ty, n)?;
             self.expect(&field, "field")?;
             place.push(field.clone());
             if i + 1 < names.len() {
@@ -503,6 +538,8 @@ pub enum Gap {
     QuestionType(String),
     /// 候補が定義し直した型で、変更前が名指していて定義を読んでいなかったもの。変更前の構造で問い合わせる。
     Redefined(String),
+    /// 型(左)のフィールドの名前(右)を、`inherits` の型から探す途中で決まらなかった。
+    Member(String, String),
     /// 式を読めなかった。
     Unreadable,
     /// 式の字句の数が上限を超えた。ArchSig の側の限界なので、読み直しても決まらない。
@@ -784,7 +821,11 @@ impl Structure {
                         gaps.push(Gap::Redefined(t));
                         break;
                     }
-                    let field = format!("{t}.{f}");
+                    // 受け継いだフィールドは、それを定義した型の名前を名指す。探す途中で決まらなければ、その先は決まらない。
+                    let Ok(field) = self.member(&t, f) else {
+                        gaps.push(Gap::Member(t, f.clone()));
+                        break;
+                    };
                     // 種類の決まらないフィールドの型は、決まらない。
                     ty = self.elements.get(&field).filter(|e| !e.undecided()).and_then(|e| e.ty.clone());
                     owner = if self.elements.contains_key(&field) { field.clone() } else { t };
@@ -828,6 +869,10 @@ impl Structure {
             Gap::Redefined(t) => self.untraced(&Gap::Name(t.clone()), a),
             Gap::QuestionType(owner) => locate(question(), self.atoms.iter().find(|d| d.kind == "defines" && d.subject == *owner).unwrap_or(a)),
             // `?` の名前は、名前で探さず、その名前を持つ Atom の場所を返す(マニュアル第5章 問い8)。
+            Gap::Member(t, f) => match self.member(t, f) {
+                Err(s) if s.scope.as_deref() != Some("?") || s.read.is_some() || s.element.is_some() => s,
+                _ => locate(question(), a),
+            },
             Gap::Name(n) if n.starts_with('?') => locate(question(), a),
             Gap::Name(n) => match self.kind(n) {
                 Err(s) if s.scope.as_deref() != Some("?") || s.read.is_some() || s.element.is_some() => s,
