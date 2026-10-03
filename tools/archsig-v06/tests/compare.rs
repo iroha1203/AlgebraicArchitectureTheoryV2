@@ -440,3 +440,70 @@ fn a_question_mark_target_after_reobservation_says_what_to_read() {
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
 }
+
+#[test]
+fn a_moved_field_defined_in_two_places_after_reobservation_is_unresolved() {
+    // 候補は m.T.s を m.T.r へ移す。観測し直した m.T.r の defines が二か所にあり、型が m.U1 と m.U2 で違う。
+    // m.U2.g だけが payment-info を持つ。m.T.r の型が決まらないので、その先の場所も決まらない(並びによらない)。
+    let law = LAW.replace("\"shop/**\"", "\"*.py\"");
+    let common = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T.k", "value": "field", "type": "int", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U1", "value": "type", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U1.g", "value": "field", "type": "int", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U2", "value": "type", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U2.g", "value": "field", "type": "int", "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.U2.g", "meaning": "payment-info", "uses": ["m.py:7@blob:aaaaaaa"], "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.T"}, "at": "m.py:9@blob:aaaaaaa"}
+"#;
+    let run = |name: &str, types: [&str; 2], meaning_on_r: bool| {
+        let before = Repo::new(&format!("{name}-before"));
+        before.write(".archsig/law/m.law", &law);
+        before.write("m.py", "# source\n");
+        before.map(
+            "m.py",
+            &format!(
+                "{common}{}",
+                r#"{"kind": "defines", "subject": "m.T.s", "value": "field", "type": "m.U1", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.T.s", "value": "1", "at": "m.py:10@blob:aaaaaaa"}
+"#
+            ),
+        );
+        let after = Repo::new(name);
+        after.write(".archsig/law/m.law", &law);
+        after.write("m.py", "# source\n");
+        after.map(
+            "m.py",
+            &format!(
+                "{common}{{\"kind\": \"defines\", \"subject\": \"m.T.r\", \"value\": \"field\", \"type\": \"{}\", \"at\": \"m.py:2@blob:aaaaaaa\"}}\n{{\"kind\": \"defines\", \"subject\": \"m.T.r\", \"value\": \"field\", \"type\": \"{}\", \"at\": \"m.py:8@blob:aaaaaaa\"}}\n{}",
+                types[0],
+                types[1],
+                format!(
+                    "{}{}",
+                    if meaning_on_r { "{\"kind\": \"meaning\", \"subject\": \"m.T.r\", \"meaning\": \"payment-info\", \"uses\": [\"m.py:2@blob:aaaaaaa\"], \"at\": \"m.py:2@blob:aaaaaaa\"}\n" } else { "" },
+                    r#"{"kind": "writes", "subject": "m.f", "object": "m.T.k", "value": "1", "at": "m.py:10@blob:aaaaaaa"}
+"#
+                )
+            ),
+        );
+        after.write(
+            ".archsig/plans/p/plan.jsonl",
+            r#"{"kind": "corresponds", "subject": "m.T.s", "object": "m.T.r", "at": "plan:p"}
+{"kind": "removes", "subject": "m.T.s", "at": "plan:p"}
+"#,
+        );
+        compare(&after, &before, Some("p"))
+    };
+    // 型が同じでも、m.T.r そのものが意味を持つかは、どちらの定義のソースで読むかが決まらない。
+    for (name, types, meaning_on_r) in [
+        ("twice-defined-target-u1-u2", ["m.U1", "m.U2"], false),
+        ("twice-defined-target-u2-u1", ["m.U2", "m.U1"], false),
+        ("twice-defined-target-with-meaning", ["int", "int"], true),
+    ] {
+        let s = run(name, types, meaning_on_r);
+        let r = result(&s, "m.f");
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
+    }
+}

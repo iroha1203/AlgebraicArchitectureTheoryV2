@@ -49,7 +49,7 @@ pub struct Element {
 
 impl Element {
     /// 種類が決まらない。種類の違う `defines`、`value` のない `defines`、二か所以上の `defines` を持つ。
-    fn undecided(&self) -> bool {
+    pub fn undecided(&self) -> bool {
         self.kinds.len() > 1 || self.kinds.contains("") || self.defined.len() > 1
     }
 }
@@ -270,9 +270,11 @@ impl Structure {
 
     fn expect(&self, name: &str, kind: &str) -> Result<(), Silence> {
         // 外部の型(`resolves` が外部を指し、定義のない型)のフィールドは分からない。外部には読むソースがない。
+        // 型の解決が決まらないときも、そのフィールドは分からない。
         if kind == "field"
-            && !self.elements.contains_key(name)
-            && name.rsplit_once('.').is_some_and(|(ty, _)| !self.elements.contains_key(ty) && matches!(self.resolves.get(ty), Some(Resolution::External(_))))
+            && name.rsplit_once('.').is_some_and(|(ty, _)| {
+                !self.elements.contains_key(ty) && matches!(self.resolves.get(ty), Some(Resolution::External(_) | Resolution::Undecided))
+            })
         {
             return Err(Silence::new(Reason::Unresolved));
         }
@@ -617,6 +619,12 @@ fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn
     // 種類の決まらない要素(`value` のない `defines`)も、操作かもしれないので数える。`missing` の結論で沈黙する。
     for (op, e) in s.elements.iter().filter(|(n, e)| (e.kinds.contains("operation") || e.kinds.contains("")) && !skip(n)) {
         named.entry(op.clone()).or_default().extend(e.params.values().cloned());
+        // 種類の決まらない操作(二か所の `defines` など)は、引数の型が決まらないので、名指す要素も決まらない。
+        if e.undecided()
+            && let Some(a) = s.atoms.iter().find(|a| a.kind == "defines" && a.subject == *op)
+        {
+            out.untraced.entry(op.clone()).or_default().push((Gap::Name(op.clone()), a.clone()));
+        }
     }
     for a in atoms.iter().filter(|a| body(&a.kind)) {
         // `passes` の `subject` は呼び出しの要素 `<操作>->…` なので、呼び出し元の操作に数える。

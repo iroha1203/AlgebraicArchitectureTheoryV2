@@ -2524,17 +2524,26 @@ fn an_element_defined_in_two_places_is_unresolved() {
 #[test]
 fn a_field_of_an_external_type_is_unresolved_without_a_place_to_read() {
     // m.T.q の型 x.Resp は外部の型。そのフィールド x.Resp.code に書くか、$o.q.code で読むと、フィールドが分からない。
-    // 外部には読むソースがないので、読む所は返さない。
-    let extra = r#"{"kind": "defines", "subject": "m.T.q", "value": "field", "type": "x.Resp", "at": "m.py:9@blob:ccccccc"}
-{"kind": "resolves", "subject": "x.Resp", "object": "external:x", "at": "m.py:9@blob:ccccccc"}
+    // 外部には読むソースがないので、読む所は返さない。x.Resp の解決が決まらないとき(resolves が二つ)も同じ。
+    let resolves = |object: &str, line: u32| {
+        format!("{{\"kind\": \"resolves\", \"subject\": \"x.Resp\", \"object\": \"{object}\", \"at\": \"m.py:{line}@blob:ccccccc\"}}\n")
+    };
+    let field = r#"{"kind": "defines", "subject": "m.T.q", "value": "field", "type": "x.Resp", "at": "m.py:9@blob:ccccccc"}
 "#;
-    for (name, step) in [
-        ("external-field-write", r#"{"kind": "writes", "subject": "m.f", "via": ["m.T.q"], "object": "x.Resp.code", "value": "1", "at": "plan:p"}"#),
-        ("external-field-read", r#"{"kind": "writes", "subject": "m.f", "object": "m.T.b", "value": "$o.q.code", "at": "plan:p"}"#),
+    for (types, extra) in [
+        ("external", format!("{field}{}", resolves("external:x", 9))),
+        ("two-externals", format!("{field}{}{}", resolves("external:x", 9), resolves("external:y", 10))),
+        ("external-and-source", format!("{field}{}{}", resolves("external:x", 9), resolves("x/resp.py", 10))),
     ] {
-        let (r, s) = splitting_with(name, extra, &format!("{REWRITE_F}{step}\n"));
-        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
-        assert!(!s["next"].as_array().unwrap().iter().any(|n| n["decides"].as_array().unwrap().contains(&r["id"])), "{name}: {s}");
+        for (name, step) in [
+            ("write", r#"{"kind": "writes", "subject": "m.f", "via": ["m.T.q"], "object": "x.Resp.code", "value": "1", "at": "plan:p"}"#),
+            ("read", r#"{"kind": "writes", "subject": "m.f", "object": "m.T.b", "value": "$o.q.code", "at": "plan:p"}"#),
+        ] {
+            let name = format!("{types}-field-{name}");
+            let (r, s) = splitting_with(&name, &extra, &format!("{REWRITE_F}{step}\n"));
+            assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
+            assert!(!s["next"].as_array().unwrap().iter().any(|n| n["decides"].as_array().unwrap().contains(&r["id"])), "{name}: {s}");
+        }
     }
 }
 
@@ -2566,4 +2575,71 @@ fn a_path_through_a_field_defined_in_two_places_does_not_decide_whether_a_remove
     let rows: Vec<&Value> = s["results"].as_array().unwrap().iter().filter(|r| r["subject"] == "m.j").collect();
     assert!(!rows.is_empty(), "{s}");
     assert!(rows.iter().all(|r| r["outcome"] == "silent"), "{s}");
+}
+
+#[test]
+fn a_callee_whose_resolution_is_undecided_does_not_decide_whether_a_removed_element_is_used() {
+    // m.h は定義のない m.g を呼ぶ。m.g の resolves が二つあり指す先が違うと、m.g が外部か(消える要素を使わないか)は決まらない。
+    let run = |name: &str, second: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map(
+            "m.py",
+            &format!(
+                "{SPLITTING}{}{{\"kind\": \"resolves\", \"subject\": \"m.g\", \"object\": \"{second}\", \"at\": \"m.py:11@blob:ccccccc\"}}\n",
+                r#"{"kind": "defines", "subject": "m.h", "value": "operation", "params": {"o": "m.T"}, "at": "m.py:9@blob:ccccccc"}
+{"kind": "calls", "subject": "m.h", "object": "m.g", "at": "m.py:10@blob:ccccccc"}
+{"kind": "resolves", "subject": "m.g", "object": "external:a", "at": "m.py:10@blob:ccccccc"}
+"#
+            ),
+        );
+        repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.T.b\", \"at\": \"plan:p\"}\n");
+        repo.run(&["plan", "check", "p"])
+    };
+    let row = |s: &Value| s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "removes").cloned();
+    // 外部を指す resolves だけなら、外部の呼び出しとして扱う(対照)。
+    let s = run("callee-external", "external:a");
+    assert_eq!(row(&s), None, "{s}");
+    for (name, second) in [("callee-two-externals", "external:b"), ("callee-external-and-source", "m2.py")] {
+        let s = run(name, second);
+        let r = row(&s).unwrap_or_else(|| panic!("{name}: {s}"));
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
+    }
+}
+
+#[test]
+fn an_operation_defined_in_two_places_does_not_decide_whether_a_removed_element_is_used() {
+    // m.j の defines が二か所にあり、引数 o の型が m.U1 と m.U2 で違う。m.j が m.U1 を使うかは決まらない。
+    let run = |name: &str, body: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map(
+            "m.py",
+            &format!(
+                "{}{body}",
+                r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U1", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U1.g", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U2", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U2.g", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.j", "value": "operation", "params": {"o": "m.U1"}, "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.j", "value": "operation", "params": {"o": "m.U2"}, "at": "m.py:7@blob:aaaaaaa"}
+"#
+            ),
+        );
+        repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.U1\", \"at\": \"plan:p\"}\n");
+        repo.run(&["plan", "check", "p"])
+    };
+    for (name, body) in [
+        ("twice-defined-op-body", r#"{"kind": "writes", "subject": "m.j", "object": "m.U2.g", "value": "$o.g", "at": "m.py:8@blob:aaaaaaa"}
+"#),
+        ("twice-defined-op-no-body", ""),
+    ] {
+        let s = run(name, body);
+        let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.j" && r["law"].is_null()).cloned();
+        let r = r.unwrap_or_else(|| panic!("{name}: {s}"));
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
+    }
 }
