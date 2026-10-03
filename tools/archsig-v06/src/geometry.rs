@@ -54,19 +54,16 @@ pub struct Geometry<'a> {
     channels: BTreeMap<String, BTreeSet<String>>,
     /// 定義がなく、`resolves` が外部でないソースを指す要素と、その沈黙(設計 §3.3)。属する局所が決まらない。
     unknown: BTreeMap<String, Silence>,
-    /// 型と定義した要素。定義を観測していないフィールドは、その型で見る。
-    types: BTreeSet<String>,
+    /// `resolves` が外部だけを指す要素。外部の要素として、どの局所にも属さない。
+    external: BTreeSet<String>,
 }
 
 impl<'a> Geometry<'a> {
     /// `defined` は要素の定義を探す Atom の列、`body` はチャネルを送り受けする操作を探す Atom の列。
     /// 候補の中で定義した要素は `file`、それ以外は `defines` の `at` のパスで定義される。
     pub fn new(reading: &'a Reading, defined: &[Atom], body: &[Atom]) -> Geometry<'a> {
-        let mut g = Geometry { reading, sources: BTreeMap::new(), channels: BTreeMap::new(), unknown: BTreeMap::new(), types: BTreeSet::new() };
+        let mut g = Geometry { reading, sources: BTreeMap::new(), channels: BTreeMap::new(), unknown: BTreeMap::new(), external: BTreeSet::new() };
         for a in defined.iter().filter(|a| a.kind == "defines") {
-            if a.value.as_deref() == Some("type") {
-                g.types.insert(a.subject.clone());
-            }
             let path = match &a.file {
                 Some(f) => Some(f.clone()),
                 None => a.at.as_deref().filter(|at| !at.starts_with("plan:")).and_then(parse_location).map(|l| l.path),
@@ -78,8 +75,16 @@ impl<'a> Geometry<'a> {
         // 定義がなく、`resolves` が外部だけを指すのでない要素は、構造の解決のとおりに沈黙する(設計 §3.3)。
         let s = Structure::new(defined.iter().filter(|a| a.kind == "resolves" || a.kind == "observed").cloned().collect());
         for (n, r) in &s.resolves {
-            if !g.sources.contains_key(n) && !matches!(r, Resolution::External(_)) {
-                g.unknown.insert(n.clone(), s.undefined(n));
+            if g.sources.contains_key(n) {
+                continue;
+            }
+            match r {
+                Resolution::External(_) => {
+                    g.external.insert(n.clone());
+                }
+                _ => {
+                    g.unknown.insert(n.clone(), s.undefined(n));
+                }
             }
         }
         // チャネルとその項目は、そこへ送る操作と、そこから受け取る操作の局所すべてに属する。
@@ -105,14 +110,14 @@ impl<'a> Geometry<'a> {
     }
 
     /// 要素の局所を見る名前。引数と呼び出しの要素は持ち主の操作(`owner`)。
-    /// 定義を観測していないフィールド `<型>.<名前>` は、その型で見る(型の定義があるか、型の局所が決まらないとき)。
+    /// 定義も `resolves` も持たない要素 `<頭>.<名前>`(型のフィールドやメソッド)は、頭の定義を観測しているか、頭の局所が決まらないとき、頭で見る。
     fn holder<'n>(&self, name: &'n str) -> &'n str {
         let o = owner(name);
-        if self.sources.contains_key(o) || self.unknown.contains_key(o) {
+        if self.sources.contains_key(o) || self.unknown.contains_key(o) || self.external.contains(o) {
             return o;
         }
         match o.rsplit_once('.') {
-            Some((t, _)) if self.types.contains(t) || self.unknown.contains_key(t) => t,
+            Some((t, _)) if self.sources.contains_key(t) || self.unknown.contains_key(t) => t,
             _ => o,
         }
     }

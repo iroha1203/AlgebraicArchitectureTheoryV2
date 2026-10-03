@@ -285,10 +285,39 @@ reading module = dir(depth: 1)
     }
     // 型 b.M を b/m.py で読んでいれば、b.M.x は b の局所に属し、a.f の書き込みは局所をまたぐので共有に入る。
     let b = "{\"kind\": \"observed\", \"subject\": \"b/m.py\", \"scope\": \"structure\", \"at\": \"b/m.py@blob:bbbbbbb\"}\n{\"kind\": \"defines\", \"subject\": \"b.M\", \"value\": \"type\", \"at\": \"b/m.py:1@blob:bbbbbbb\"}\n";
-    let (repo, s) = run("field-read-type", Some(b), object);
-    let r = result(&s, "p");
-    assert_eq!(r["outcome"], "holds", "{s}");
-    let detail = repo.run(&["show", r["id"].as_str().unwrap()]);
-    let shared: Vec<Value> = detail["check"]["shared"].as_array().unwrap().clone();
-    assert!(has(&shared, "writes", "a.f", Some("b.M.x")), "{detail}");
+    // 型の種類が決まらない(`value` のない `defines`)ときも、頭の定義を観測していれば頭の局所で見る。
+    // 型のメソッドの呼び出し(定義のない b.M.run)も同じ。
+    let b_valueless = b.replace(", \"value\": \"type\"", "");
+    let call = "{\"kind\": \"calls\", \"subject\": \"a.f\", \"object\": \"b.M.run\", \"at\": \"plan:p\"}\n";
+    for (name, m, write, kind, object) in [
+        ("field-read-type", b.to_string(), object, "writes", "b.M.x"),
+        ("field-read-valueless-type", b_valueless, object, "writes", "b.M.x"),
+        ("method-read-type", b.to_string(), call, "calls", "b.M.run"),
+    ] {
+        let (repo, s) = run(name, Some(&m), write);
+        let r = result(&s, "p");
+        assert_eq!(r["outcome"], "holds", "{name}: {s}");
+        let detail = repo.run(&["show", r["id"].as_str().unwrap()]);
+        let shared: Vec<Value> = detail["check"]["shared"].as_array().unwrap().clone();
+        assert!(has(&shared, kind, "a.f", Some(object)), "{name}: {detail}");
+    }
+    // 要素自身の定義を観測していれば、頭と別のソースでも、定義したソースの局所に属する。ここでは b.M.x を a/f.py で定義したので、書き込みは a の局所に入る。
+    let own = format!("{b}{{\"kind\": \"defines\", \"subject\": \"b.M.y\", \"value\": \"field\", \"at\": \"b/m.py:2@blob:bbbbbbb\"}}\n");
+    let (repo, s) = run("field-defined-in-a", Some(&own), "{\"kind\": \"defines\", \"subject\": \"b.M.x\", \"value\": \"field\", \"file\": \"a/f.py\", \"at\": \"plan:p\"}\n{\"kind\": \"writes\", \"subject\": \"a.f\", \"object\": \"b.M.x\", \"value\": \"1\", \"at\": \"plan:p\"}\n");
+    assert_eq!(result(&s, "p")["outcome"], "holds", "{s}");
+    let local = lines(&repo, ".archsig/plans/p/a/plan.jsonl");
+    assert!(has(&local, "writes", "a.f", Some("b.M.x")), "{local:?}");
+    // 要素自身の `resolves` が外部を指せば、外部の要素として、頭を読んでいてもいなくても、どの局所にも属さない(書き込みは a の局所)。
+    let ext = "{\"kind\": \"resolves\", \"subject\": \"b.M.run\", \"object\": \"external:lib\", \"at\": \"plan:p\"}\n{\"kind\": \"calls\", \"subject\": \"a.f\", \"object\": \"b.M.run\", \"at\": \"plan:p\"}\n";
+    for (name, m) in [("method-external-read-type", Some(b)), ("method-external-unread-type", None)] {
+        let (repo, s) = run(name, m, ext);
+        assert_eq!(result(&s, "p")["outcome"], "holds", "{name}: {s}");
+        let local = lines(&repo, ".archsig/plans/p/a/plan.jsonl");
+        assert!(has(&local, "calls", "a.f", Some("b.M.run")), "{name}: {local:?}");
+    }
+    // 要素自身に局所の決まらない解決があれば、それを先に見る(頭を読んでいても沈黙する)。
+    let (_, s) = run("field-own-resolves", Some(b), "{\"kind\": \"resolves\", \"subject\": \"b.M.x\", \"object\": \"c/x.py\", \"at\": \"plan:p\"}\n{\"kind\": \"writes\", \"subject\": \"a.f\", \"object\": \"b.M.x\", \"value\": \"1\", \"at\": \"plan:p\"}\n");
+    let r = result(&s, "b.M.x");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c/x.py"), "{s}");
 }
