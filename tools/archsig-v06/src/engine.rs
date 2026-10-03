@@ -608,7 +608,8 @@ fn fields_of(s: &Structure, names: &BTreeSet<String>, removes: &BTreeSet<String>
         .map(|n| s.kind(n).err().unwrap_or_else(|| Silence::new(Reason::Unread)));
     let mut out = Vec::new();
     for (name, e) in s.elements.range(prefix.clone()..).take_while(|(n, _)| n.starts_with(&prefix)) {
-        if !member(name) || !e.kinds.contains("field") {
+        // 種類の決まらない要素(`value` のない `defines`)も、フィールドかもしれないので問い合わせる。
+        if !member(name) || !(e.kinds.contains("field") || e.kinds.contains("")) {
             continue;
         }
         match s.kind(name) {

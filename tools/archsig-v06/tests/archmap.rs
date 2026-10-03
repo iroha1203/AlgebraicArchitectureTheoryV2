@@ -166,6 +166,13 @@ fn record_keeps_paths_inside_the_repository() {
     let v = repo.ok(&["status"]);
     assert!(!v["unread"].as_array().unwrap().iter().any(|u| u["source"] == "src/b.py" && u["scopes"][0] == "structure"), "{v}");
 
+    // 外部を指さない `resolves` の `object` も、根からの相対パスにそろえる。外部はそのまま。
+    repo.record(concat!(
+        r#"{"kind": "resolves", "subject": "src.b.g", "object": "./src//b.py", "at": "src/a.py:1"}"#, "\n",
+        r#"{"kind": "resolves", "subject": "requests.post", "object": "external:requests", "at": "src/a.py:2"}"#, "\n",
+    ));
+    let objects: Vec<Value> = repo.map("src/a.py").into_iter().filter(|a| a["kind"] == "resolves").map(|a| a["object"].clone()).collect();
+    assert_eq!(objects, vec![Value::from("src/b.py"), Value::from("external:requests")]);
     repo.record(r#"{"kind": "defines", "subject": "src.b.B", "value": "type", "at": "src/../src/b.py:1"}"#);
     assert_eq!(repo.map("src/b.py").iter().filter(|a| a["kind"] == "defines").count(), 1, "根の中を指す .. はたどる");
     assert!(repo.dir.join(".archsig/map/src/a.py.jsonl").exists(), "別のソースの Atom は残る");
@@ -183,6 +190,8 @@ fn record_keeps_paths_inside_the_repository() {
         assert!(!repo.run(&["record", f.to_str().unwrap()]).status.success(), "{at}");
         std::fs::write(&f, format!(r#"{{"kind": "meaning", "subject": "x", "meaning": "m", "uses": ["{at}:1"], "at": "src/a.py:1"}}"#)).unwrap();
         assert!(!repo.run(&["record", f.to_str().unwrap()]).status.success(), "uses {at}");
+        std::fs::write(&f, format!(r#"{{"kind": "resolves", "subject": "x", "object": "{at}", "at": "src/a.py:1"}}"#)).unwrap();
+        assert!(!repo.run(&["record", f.to_str().unwrap()]).status.success(), "resolves {at}");
     }
     assert!(!repo.run(&["record", "--drop", "../victim"]).status.success());
     let v = repo.ok(&["record", "--drop", "local:..:map/src/a.py"]);
