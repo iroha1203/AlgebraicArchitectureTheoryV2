@@ -570,22 +570,37 @@ fn has_meaning(s: &Structure, field: &str, meaning: &str) -> bool {
     s.meanings.get(field).is_some_and(|ms| ms.iter().any(|m| m.meaning.as_deref() == Some(meaning)))
 }
 
-/// 構造が名指す名前。Atom の `subject`、`object`、`via`、要素の型と引数の型、`resolves` の名前。
-fn mentioned(s: &Structure) -> impl Iterator<Item = &str> {
-    s.atoms
-        .iter()
-        .flat_map(|a| std::iter::once(a.subject.as_str()).chain(a.object.as_deref()).chain(a.via.iter().flatten().map(String::as_str)))
-        .chain(s.elements.values().flat_map(|e| e.ty.as_deref().into_iter().chain(e.params.values().map(String::as_str))))
-        .chain(s.resolves.keys().map(String::as_str))
+/// 構造が名指す名前。Atom の `subject`、`object`、`via`、`value` と `when` の式の中でたどるフィールドと呼び出す操作、
+/// 要素の型と引数の型、`resolves` の名前。
+fn mentioned(s: &Structure) -> BTreeSet<String> {
+    let mut out = s.expression_names();
+    for a in &s.atoms {
+        out.insert(a.subject.clone());
+        out.extend(a.object.iter().cloned());
+        out.extend(a.via.iter().flatten().cloned());
+    }
+    for e in s.elements.values() {
+        out.extend(e.ty.iter().cloned());
+        out.extend(e.params.values().cloned());
+    }
+    out.extend(s.resolves.keys().cloned());
+    out
 }
 
 /// 型 `ty` のフィールド。フィールドの名前は `<型>.<フィールド>` である(マニュアル第3章)。定義を読んだものを返す。
 /// 構造が `<型>.<名前>` を名指しているのに定義を読んでいなければ、そのフィールドは分からないので、
-/// 定義を読んでいない要素として沈黙する(設計 §3.3、§5.1)。
-fn fields_of(s: &Structure, ty: &str) -> Result<Vec<String>, Silence> {
+/// 定義を読んでいない要素として沈黙する(設計 §3.3、§5.1)。`names` は `mentioned(s)`。
+/// 候補が `removes` した要素と、`resolves` が外部を指す名前は、型のフィールドに数えない。
+fn fields_of(s: &Structure, names: &BTreeSet<String>, removes: &BTreeSet<String>, ty: &str) -> Result<Vec<String>, Silence> {
     let prefix = format!("{ty}.");
     let member = |n: &str| n.strip_prefix(&prefix).is_some_and(|rest| !rest.is_empty() && !rest.contains('.') && !rest.starts_with('$') && !rest.contains("->"));
-    if let Some(n) = mentioned(s).find(|n| member(n) && !s.elements.contains_key(*n)) {
+    let removed = |n: &str| removes.iter().any(|x| n == x || n.starts_with(&format!("{x}.")) || n.starts_with(&format!("{x}->")));
+    let external = |n: &str| matches!(s.resolves.get(n), Some(Resolution::External(_)));
+    if let Some(n) = names
+        .range(prefix.clone()..)
+        .take_while(|n| n.starts_with(&prefix))
+        .find(|n| member(n) && !s.elements.contains_key(*n) && !removed(n) && !external(n))
+    {
         return Err(s.kind(n).err().unwrap_or_else(|| Silence::new(Reason::Unread)));
     }
     let mut out = Vec::new();
@@ -608,6 +623,10 @@ struct Below<'a> {
     count: usize,
     /// `resolves` が外部を指す型。意味を持つフィールドを持たないとみなす。
     external: BTreeSet<String>,
+    /// 候補が `removes` した要素。
+    removes: BTreeSet<String>,
+    /// 構造ごとの、名指す名前(`mentioned`)。構造の場所で引く。
+    names: BTreeMap<usize, std::rc::Rc<BTreeSet<String>>>,
 }
 
 impl Below<'_> {
@@ -639,7 +658,7 @@ impl Below<'_> {
             // 候補が定義し直した型でも、変更前にその型を名指していて定義を読んでいなければ、元のフィールドは分からない(設計 §5.1)。
             // 変更前の構造で、定義を読んでいない要素として沈黙する(3.3)。変更前が名指さない型は、候補が新しく定義した型である。
             if let (Some(at), Some(prior)) = (defined_at(s, ty), self.before) {
-                if at.starts_with("plan:") && !prior.elements.contains_key(ty) && mentioned(prior).any(|n| n == ty) {
+                if at.starts_with("plan:") && !prior.elements.contains_key(ty) && self.names(prior).contains(ty) {
                     if let Some(Resolution::External(_)) = prior.resolves.get(ty) {
                         // 変更前に外部を指していた型は、外部の型としてたどらない。
                         self.external.insert(ty.to_string());
@@ -663,8 +682,14 @@ impl Below<'_> {
     }
 
     /// たどる型 `ty` のフィールド。たどったフィールドが上限を超えたら `limit` で沈黙する(設計 §5.1)。
+    /// 構造 `s` が名指す名前。構造ごとに一度だけ集める。
+    fn names(&mut self, s: &Structure) -> std::rc::Rc<BTreeSet<String>> {
+        self.names.entry(s as *const Structure as usize).or_insert_with(|| std::rc::Rc::new(mentioned(s))).clone()
+    }
+
     fn fields(&mut self, s: &Structure, ty: &str) -> Result<Vec<String>, Silence> {
-        let out = fields_of(s, ty)?;
+        let names = self.names(s);
+        let out = fields_of(s, &names, &self.removes, ty)?;
         self.count += out.len();
         if self.count > STEP_LIMIT {
             return Err(Silence::new(Reason::Limit));
@@ -704,7 +729,8 @@ impl Below<'_> {
             if !seen.insert(ty.clone()) || !self.known(s, &field, &ty)? {
                 continue;
             }
-            for f in fields_of(s, &ty)? {
+            let names = self.names(s);
+            for f in fields_of(s, &names, &self.removes, &ty)? {
                 meaning_known(s, &f, meaning)?;
                 if has_meaning(s, &f, meaning) {
                     return Ok(true);
@@ -748,7 +774,7 @@ fn commute(
         }
         let pair = match (ka, kb) {
             (Err(s), _) | (_, Err(s)) => Err(s),
-            _ => compare(before, after, mapping, a, b, meaning, fresh),
+            _ => compare(before, after, mapping, &overlay.removes, a, b, meaning, fresh),
         };
         let mut f = match pair {
             Ok(f) => f,
@@ -774,10 +800,12 @@ fn corresponds_kind<'a>(after: &'a Structure, overlay: &Overlay, name: &str) -> 
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn compare(
     before: &Structure,
     after: &Structure,
     mapping: &Mapping,
+    removes: &BTreeSet<String>,
     a: &str,
     b: &str,
     meaning: &str,
@@ -797,7 +825,9 @@ fn compare(
         .filter(|(f, _)| after.kind(f) == Ok("field") && has_meaning(after, f, meaning))
         .map(|(f, _)| vec![f.clone()])
         .collect();
-    let mut below = Below { before: Some(before), ..Below::default() };
+    let mut below = Below { before: Some(before), removes: removes.clone(), ..Below::default() };
+    // 型をたどる所の沈黙は、ほかの場所で反例が決まれば結論に関わらないので、最後まで持つ(設計 §5.1)。
+    let mut pending: Option<Silence> = None;
     for br in &run1 {
         for w in &br.writes {
             for k in 1..=w.place.len() {
@@ -812,7 +842,7 @@ fn compare(
             }
             // 変更前の書き込みは、変更前の型でたどって対応で変更後の名前に写した場所と、
             // 写した書き込みの場所から変更後の型でたどった場所の、両方を比べる。
-            for p in below.places(before, &w.place, meaning)? {
+            for p in below.places(before, &w.place, meaning).unwrap_or_else(|e| { pending.get_or_insert(e); Vec::new() }) {
                 for q in mapping.places(&p) {
                     meaning_known(after, q.last().unwrap(), meaning)?;
                     if has_meaning(after, q.last().unwrap(), meaning) {
@@ -821,7 +851,7 @@ fn compare(
                 }
             }
             for q in mapping.places(&w.place) {
-                places.extend(below.places(after, &q, meaning)?);
+                places.extend(below.places(after, &q, meaning).unwrap_or_else(|e| { pending.get_or_insert(e); Vec::new() }));
             }
         }
     }
@@ -834,7 +864,7 @@ fn compare(
                     places.insert(head.to_vec());
                 }
             }
-            places.extend(below.places(after, &w.place, meaning)?);
+            places.extend(below.places(after, &w.place, meaning).unwrap_or_else(|e| { pending.get_or_insert(e); Vec::new() }));
         }
     }
     let mut compared = Vec::new();
@@ -904,6 +934,10 @@ fn compare(
             }
             compared.push(json!({"branch": branch, "values": values}));
         }
+    }
+    // 反例が出なければ、型をたどる所の沈黙が結論に関わる。
+    if let Some(silence) = pending {
+        return Err(silence);
     }
     Ok(Finding {
         outcome: "holds",

@@ -1258,9 +1258,10 @@ fn a_type_name_that_is_not_a_type_is_unresolved_below() {
 
 #[test]
 fn the_limit_below_counts_one_written_place_not_the_branches() {
-    // 型 m.S はフィールドを 40 個と p を持つ。o.s を、条件の違う二つの分岐で同じ値に書く。たどる場所は分岐によらず同じである。
+    // 型 m.S はフィールドを 3000 個と p を持つ。o.s を、条件の違う二つの分岐で同じ値に書く。たどる場所は分岐によらず同じである。
+    // 分岐と書き込みをまたいで数えると上限(STEP_LIMIT)を超えるが、一つの書き込みの場所から数えれば超えない。
     let mut atoms = format!("{O_S}{S_P}");
-    for i in 0..40 {
+    for i in 0..3000 {
         atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.S.f{i}\", \"value\": \"field\", \"type\": \"int\", \"at\": \"m.py:5@blob:aaaaaaa\"}}\n"));
     }
     let f = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
@@ -1302,10 +1303,11 @@ fn a_plan_that_adds_a_field_to_an_unread_type_is_still_unread() {
 
 #[test]
 fn a_cycle_without_the_meaning_does_not_count_toward_the_limit() {
-    // m.S は int のフィールド 100 個と、型 m.S のフィールド 3 個を持つ。意味を持つフィールドはない。たどる場所は 103 個である。
+    // m.S は int のフィールド 6000 個と、型 m.S のフィールド 3 個を持つ。意味を持つフィールドはない。たどる場所は 6003 個である。
+    // めぐりの確かめのたどりも数えると、上限(STEP_LIMIT)を超える。
     let mut atoms = format!("{O_S}{}", r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
 "#);
-    for i in 0..100 {
+    for i in 0..6000 {
         atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.S.f{i}\", \"value\": \"field\", \"type\": \"int\", \"at\": \"m.py:4@blob:aaaaaaa\"}}\n"));
     }
     for i in 0..3 {
@@ -1317,10 +1319,10 @@ fn a_cycle_without_the_meaning_does_not_count_toward_the_limit() {
 
 #[test]
 fn the_limit_below_counts_each_written_place_on_its_own() {
-    // o.s と o.t はどちらも型 m.S(フィールド 140 個と p)。一つの場所からたどるのは 141 個で、上限の 256 を超えない。
+    // o.s と o.t はどちらも型 m.S(フィールド 6000 個と p)。一つの場所からたどるのは 6001 個で、上限(STEP_LIMIT)を超えない。
     let mut atoms = format!("{O_S}{S_P}{}", r#"{"kind": "defines", "subject": "m.O.t", "value": "field", "type": "m.S", "at": "m.py:2@blob:aaaaaaa"}
 "#);
-    for i in 0..140 {
+    for i in 0..6000 {
         atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.S.f{i}\", \"value\": \"field\", \"type\": \"int\", \"at\": \"m.py:5@blob:aaaaaaa\"}}\n"));
     }
     let f = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
@@ -1537,4 +1539,84 @@ fn an_external_type_the_plan_redefines_stays_external() {
     assert_eq!(r["outcome"], "holds", "{s}");
     let d = repo.run(&["show", r["id"].as_str().unwrap()]);
     assert!(d["conditions"].as_array().unwrap().iter().any(|c| c == "外部の型 m.S は、意味を持つフィールドを持たないとみなす"), "{d}");
+}
+
+#[test]
+fn a_field_named_only_in_an_expression_is_unread_below() {
+    // m.S の定義と m.S.p は読んである。別の操作 m.g の条件が $o.s.q で m.S.q を名指すが、m.S.q の定義を読んでいない。
+    let atoms = format!(
+        "{O_S}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.S.p", "value": "1", "when": "$o.s.q == 1", "at": "m.py:7@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-expression-named", &atoms, PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.S.q"), "{s}");
+}
+
+#[test]
+fn a_counterexample_is_not_hidden_by_a_type_not_read_below() {
+    // o.p(payment-info)と o.s(型 m.Z、定義も resolves もない)を書く。o.p の値が違えば、m.Z の先が分からなくても反例は決まる。
+    let atoms = |p: &str| {
+        format!(
+            "{}{}\n{p}\n",
+            O_S.replace("\"type\": \"m.S\"", "\"type\": \"m.Z\""),
+            r#"{"kind": "defines", "subject": "m.O.p", "value": "field", "type": "int", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.p", "meaning": "payment-info", "uses": ["m.py:10@blob:aaaaaaa"], "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "m.py:10@blob:aaaaaaa"}"#
+        )
+    };
+    let plan = |p: &str| {
+        format!(
+            "{}{p}\n",
+            r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "plan:p"}
+"#
+        )
+    };
+    let before_p = r#"{"kind": "writes", "subject": "m.f", "object": "m.O.p", "value": "1", "at": "m.py:11@blob:aaaaaaa"}"#;
+    let (s, r) = below_case("below-hidden-differs", &atoms(before_p), &plan(r#"{"kind": "writes", "subject": "m.f", "object": "m.O.p", "value": "2", "at": "plan:p"}"#));
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    let (s, r) = below_case("below-hidden-same", &atoms(before_p), &plan(r#"{"kind": "writes", "subject": "m.f", "object": "m.O.p", "value": "1", "at": "plan:p"}"#));
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+}
+
+#[test]
+fn a_removed_field_still_named_elsewhere_is_not_unread_below() {
+    // 候補は m.S.p を消して m.S.p2 に移す。書き直していない m.h は m.S.p を読んだまま(missing)。
+    let atoms = format!(
+        "{O_S}{S_P}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.h", "value": "operation", "params": {}, "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "reads", "subject": "m.h", "object": "m.S.p", "at": "m.py:8@blob:aaaaaaa"}
+"#
+    );
+    let plan = format!("{PLAN_WRITES_B}{}", r#"{"kind": "removes", "subject": "m.S.p", "at": "plan:p"}
+{"kind": "defines", "subject": "m.S.p2", "value": "field", "type": "int", "file": "m.py", "at": "plan:p"}
+{"kind": "corresponds", "subject": "m.S.p", "object": "m.S.p2", "at": "plan:p"}
+"#);
+    let (s, r) = below_case("below-removed-named", &atoms, &plan);
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    let places: Vec<&Value> = r["check"]["diverging"].as_array().unwrap().iter().map(|d| &d["place"]).collect();
+    assert!(places.contains(&&serde_json::json!(["m.O.s", "m.S.p2"])), "{r}");
+    // 同じ値を書けば成り立つ。消した m.S.p を、読んでいない名前として沈黙しない。
+    let (s, r) = below_case("below-removed-named-same", &atoms, &plan.replace("m.b()", "m.a()"));
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn an_external_name_under_a_type_is_not_a_field_below() {
+    // m.S を読んであり、m.S.p が payment-info。別の操作が m.S.save(resolves が外部を指す)を呼ぶ。
+    let atoms = format!(
+        "{O_S}{S_P}{}{F_WRITES_A}",
+        r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.g", "object": "m.S.save", "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.S.save", "object": "external:django", "at": "m.py:1@blob:aaaaaaa"}
+"#
+    );
+    let (s, r) = below_case("below-external-member", &atoms, PLAN_WRITES_B);
+    assert_eq!(r["kind"], "counterexample", "{s}");
 }

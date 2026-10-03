@@ -600,6 +600,22 @@ fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn
 }
 
 impl Structure {
+    /// 構造 Atom の `value` と `when` の式の中で名指す要素(`$p.f.g` でたどるフィールドと、呼び出す操作)。
+    /// 定義を読んでいないフィールドも、たどれる所まで `<型>.<名前>` として含む。
+    pub fn expression_names(&self) -> BTreeSet<String> {
+        let mut out = BTreeSet::new();
+        let mut gaps = Vec::new();
+        for a in self.atoms.iter().filter(|a| a.is_structure()) {
+            let op = a.subject.split("->").next().unwrap_or("");
+            for text in [&a.value, &a.when].into_iter().flatten() {
+                if let Ok(e) = expr::parse(text) {
+                    self.named(op, &e, &mut out, &mut gaps);
+                }
+            }
+        }
+        out
+    }
+
     /// 式の中で名指す要素。`$p.f.g` がたどれる所までのフィールドと、呼び出す操作。
     /// たどれなかった所は `gaps` に積む。その先で何を名指すかは決まらない。
     fn named(&self, op: &str, e: &Expr, out: &mut BTreeSet<String>, gaps: &mut Vec<Option<String>>) {
