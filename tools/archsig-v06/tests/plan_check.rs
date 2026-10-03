@@ -2117,3 +2117,47 @@ fn an_operation_defined_without_a_kind_that_names_a_removed_type_is_unresolved()
     let s = run("removed-param-valueless", r#"{"kind": "defines", "subject": "m.x", "params": {"q": "m.T"}, "at": "m.py:2@blob:aaaaaaa"}"#);
     assert_eq!((result(&s, "m.x")["outcome"].as_str(), result(&s, "m.x")["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
 }
+
+#[test]
+fn an_argument_kept_through_an_operation_without_a_kind_is_unresolved() {
+    // m.f の引数 x は payment-info を持つ。候補は m.f を消して m.g に対応させる。引数の対応は、操作どうしの対応から作る。
+    // m.g が操作なら x の対応ができて holds。種類が決まらなければ(value がない)、対応があるかも決まらない。型なら missing。
+    let law = r#"sources "m.py"
+
+reading module = dir(depth: 2)
+
+meaning payment-info on param
+  "注文の支払いを特定する値。"
+
+law payment-info-kept
+  "決済情報は変更の後も残る。"
+  about payment-info
+  changes keep
+"#;
+    let run = |name: &str, g_value: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", law);
+        repo.map(
+            "m.py",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"x": "int"}, "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.f.$x", "meaning": "payment-info", "uses": ["m.py:3@blob:aaaaaaa"], "at": "m.py:2@blob:aaaaaaa"}
+"#,
+        );
+        repo.write(
+            ".archsig/plans/p/plan.jsonl",
+            &format!(
+                "{{\"kind\": \"removes\", \"subject\": \"m.f\", \"at\": \"plan:p\"}}\n{{\"kind\": \"defines\", \"subject\": \"m.g\", {g_value}\"params\": {{\"x\": \"int\"}}, \"file\": \"m.py\", \"at\": \"plan:p\"}}\n{{\"kind\": \"corresponds\", \"subject\": \"m.f\", \"object\": \"m.g\", \"at\": \"plan:p\"}}\n"
+            ),
+        );
+        repo.run(&["plan", "check", "p"])
+    };
+    let s = run("keep-op", r#""value": "operation", "#);
+    assert_eq!(result(&s, "payment-info")["outcome"], "holds", "{s}");
+    let s = run("keep-type", r#""value": "type", "#);
+    assert_eq!((result(&s, "m.f.$x")["outcome"].as_str(), result(&s, "m.f.$x")["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
+    let s = run("keep-valueless", "");
+    assert_eq!((result(&s, "m.f.$x")["outcome"].as_str(), result(&s, "m.f.$x")["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}

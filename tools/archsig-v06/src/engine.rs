@@ -429,7 +429,7 @@ pub fn implemented(
         for (e, _) in before.meanings.iter().filter(|(e, _)| !e.starts_with("local:") && has_meaning(before, e, meaning)) {
             for t in mapping.to.get(e.as_str()).into_iter().flatten() {
                 // 行き先の種類が決まらなければ(曖昧、`value` のない `defines`)、意味を持つかも決まらない(設計 §3.2)。
-                let f = match after.kind(t) {
+                let f = match corresponds_kind(after, overlay, t) {
                     Err(s) if matches!(s.reason, Reason::Unresolved) => Finding::silent("change", Some(&law.name), t, s),
                     Err(_) => continue,
                     Ok(_) => match meaning_known(None, after, t, meaning) {
@@ -789,7 +789,7 @@ fn commute(
         }
         // 消える要素を使う操作は、比べられない。この Law でも `missing` として挙げる。
         if let Some(uses) = overlay.missing.get(b) {
-            if let Some(f) = missing(before, b, uses) {
+            if let Some(f) = missing(before, after, b, uses) {
                 out.push(Finding { law: Some(law.to_string()), ..f });
             }
             continue;
@@ -1065,7 +1065,7 @@ fn keep(
         }
         if !targets.is_empty() {
             kept.push(json!({"element": e, "targets": targets}));
-        } else if let Some(s) = unknown {
+        } else if let Some(s) = unknown.or_else(|| owner_undecided(after, overlay, mapping, e)) {
             out.push(Finding { theory: Some(THEORY_CHANGES.to_string()), ..Finding::silent("change", Some(law), e, s) });
         } else {
             let mut f = finding(e, "fails", Some("missing"), json!({"element": e, "targets": []}));
@@ -1077,6 +1077,16 @@ fn keep(
         out.push(finding(meaning, "holds", None, json!({"kept": kept})));
     }
     out
+}
+
+/// 引数 `e`(`<操作>.$<名前>`)の対応は、操作どうしの対応から作る(設計 §3.6 の対応の2)。
+/// 持ち主の操作の行き先の種類が決まらなければ(曖昧、`value` のない `defines`)、引数の対応があるかも決まらない。
+fn owner_undecided(after: &Structure, overlay: &Overlay, mapping: &Mapping, e: &str) -> Option<Silence> {
+    let (op, _) = e.split_once(".$")?;
+    mapping.to.get(op).into_iter().flatten().find_map(|t| match corresponds_kind(after, overlay, t) {
+        Err(s) if matches!(s.reason, Reason::Unresolved) => Some(s),
+        _ => None,
+    })
 }
 
 /// `sources` のソースのうち、範囲 `scope` を読んでいないもの。読む所として返す。
@@ -1128,7 +1138,7 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
         }
     }
     for (op, uses) in &overlay.missing {
-        out.extend(missing(before, op, uses));
+        out.extend(missing(before, after, op, uses));
     }
     // 名指す要素をたどれなかった操作は、消える要素を使うかが決まらない。
     // 使うと決まった操作(`missing`)と、定義を読んでいない操作(上の沈黙)は除く。
@@ -1162,8 +1172,11 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
 
 /// 消える要素を名指す事実から、`missing` の結論を決める。操作と決まらない名前(曖昧、`?`)は沈黙し、
 /// 操作でないと決まった名前は結論にしない。
-fn missing(before: &Structure, op: &str, uses: &BTreeSet<String>) -> Option<Finding> {
-    let f = match before.kind(op) {
+/// 種類は、名指しをたどった側の構造で問い合わせる。変更後に定義があれば変更後(候補を重ねた構造か、実装した後に観測し直した構造)、
+/// なければ変更前で問い合わせる。
+fn missing(before: &Structure, after: &Structure, op: &str, uses: &BTreeSet<String>) -> Option<Finding> {
+    let kind = if after.elements.contains_key(op) { after.kind(op) } else { before.kind(op) };
+    let f = match kind {
         // 構造 Atom の `subject` は操作である(マニュアル第3章)。
         Ok("operation") | Err(Silence { reason: Reason::Unread, .. }) => Finding {
             outcome: "fails",

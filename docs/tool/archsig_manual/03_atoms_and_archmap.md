@@ -59,7 +59,7 @@ Atom の同一性は、`kind`、`subject`、`object`、`via`、`value`、`when`�
 
 構造 Atom は、構文から決まる事実だ。エージェントが言語に合う解析器を選んで取り出す(第7章)。種類は次の十で、言語によらず同じである。
 
-- `defines`:要素を定義する。`value` は `operation`、`type`、`field` のどれか。`value` のない `defines` を持つ要素は種類が決まらないので、それが関わる計算は `unresolved` で沈黙する。
+- `defines`:要素を定義する。`value` は `operation`、`type`、`field` のどれか。`value` のない `defines` を持つ要素は、種類の違う `defines` を持つ要素と同じく、種類の決まらない要素として扱う。
   操作は `params` に引数の名前と型を持つ(`{"order": "shop.order.model.Order", "new": "shop.shipping.model.Address"}`)。フィールドは `type` に型を持つ。
 - `calls`:操作が別の操作を呼ぶ。
 - `reads`:操作がフィールドを読む。

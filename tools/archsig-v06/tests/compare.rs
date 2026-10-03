@@ -352,3 +352,81 @@ fn a_target_whose_kind_is_not_decided_after_reobservation_is_unresolved() {
     let r = result(&s, "m.O.t");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
 }
+
+#[test]
+fn an_operation_without_a_kind_only_after_the_change_that_names_a_removed_type_is_unresolved() {
+    // 変更前は型 m.T だけ。観測し直した変更後に、m.T を引数の型に持つ m.x がある。候補は m.T を消す。
+    // m.x の種類は変更後の構造で問い合わせる。value がなければ種類が決まらないので沈黙する。
+    let law = LAW.replace("\"shop/**\"", "\"*.py\"");
+    let base = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+"#;
+    let run = |name: &str, x: &str| {
+        let before = Repo::new(&format!("{name}-before"));
+        before.write(".archsig/law/m.law", &law);
+        before.write("m.py", "# source\n");
+        before.map("m.py", base);
+        let after = Repo::new(name);
+        after.write(".archsig/law/m.law", &law);
+        after.write("m.py", "# source\n");
+        after.map("m.py", &format!("{base}{x}\n"));
+        after.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.T\", \"at\": \"plan:p\"}\n");
+        compare(&after, &before, Some("p"))
+    };
+    let s = run("after-only-op", r#"{"kind": "defines", "subject": "m.x", "value": "operation", "params": {"q": "m.T"}, "at": "m.py:2@blob:aaaaaaa"}"#);
+    let r = result(&s, "m.x");
+    assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("missing")), "対照: {s}");
+    let s = run("after-only-valueless", r#"{"kind": "defines", "subject": "m.x", "params": {"q": "m.T"}, "at": "m.py:2@blob:aaaaaaa"}"#);
+    let r = result(&s, "m.x");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
+
+#[test]
+fn an_operation_that_loses_its_kind_after_the_change_and_names_a_removed_type_is_unresolved() {
+    // 変更前の m.x は操作。観測し直した変更後の m.x には value がない。種類は変更後の構造で問い合わせる。
+    let law = LAW.replace("\"shop/**\"", "\"*.py\"");
+    let base = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+"#;
+    let before = Repo::new("loses-kind-before");
+    before.write(".archsig/law/m.law", &law);
+    before.write("m.py", "# source\n");
+    before.map("m.py", &format!("{base}{}\n", r#"{"kind": "defines", "subject": "m.x", "value": "operation", "params": {"q": "m.T"}, "at": "m.py:2@blob:aaaaaaa"}"#));
+    let after = Repo::new("loses-kind");
+    after.write(".archsig/law/m.law", &law);
+    after.write("m.py", "# source\n");
+    after.map("m.py", &format!("{base}{}\n", r#"{"kind": "defines", "subject": "m.x", "params": {"q": "m.T"}, "at": "m.py:2@blob:aaaaaaa"}"#));
+    after.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.T\", \"at\": \"plan:p\"}\n");
+    let s = compare(&after, &before, Some("p"));
+    assert!(!s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.x" && r["outcome"] == "fails"), "{s}");
+    let r = result(&s, "m.x");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
+
+#[test]
+fn a_question_mark_target_after_reobservation_says_what_to_read() {
+    // 候補の対応の行き先が ? の名前なら、意味を持つかは決まらない。候補の Atom の場所を次に読む所として返す。
+    let law = LAW.replace("\"shop/**\"", "\"*.py\"");
+    let m = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.t", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.t", "meaning": "payment-info", "uses": ["m.py:2@blob:aaaaaaa"], "at": "m.py:2@blob:aaaaaaa"}
+"#;
+    let before = Repo::new("q-target-before");
+    before.write(".archsig/law/m.law", &law);
+    before.write("m.py", "# source\n");
+    before.map("m.py", m);
+    let after = Repo::new("q-target");
+    after.write(".archsig/law/m.law", &law);
+    after.write("m.py", "# source\n");
+    after.map("m.py", m);
+    after.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"corresponds\", \"subject\": \"m.O.t\", \"object\": \"?x\", \"at\": \"plan:p\"}\n");
+    let s = compare(&after, &before, Some("p"));
+    let r = result(&s, "?x");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}
