@@ -595,3 +595,162 @@ law payment-info-kept
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
 }
+
+#[test]
+fn changes_keep_after_reobservation_is_unread_where_the_structure_was_not_read_again() {
+    // 変更後の ArchMap は m.py の構造を読んでいない(意味の範囲だけ読んだ)。m.O.t が変更後にもあるかは決まらないので、
+    // `missing` にせず、`unread` で沈黙し、m.py の構造を返す(設計 §5.1)。
+    let law = r#"sources "*.py"
+
+reading module = dir(depth: 1)
+
+meaning payment-info on field
+  "注文の支払いを特定する値。"
+
+law payment-info-kept
+  "決済情報は変更の後も残る。"
+  about payment-info
+  changes keep
+"#;
+    let m = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.t", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.t", "meaning": "payment-info", "uses": ["m.py:2@blob:aaaaaaa"], "at": "m.py:2@blob:aaaaaaa"}
+"#;
+    let before = Repo::new("keep-unobserved-before");
+    before.write(".archsig/law/m.law", law);
+    before.write("m.py", "# source\n");
+    before.map("m.py", m);
+    let after = Repo::new("keep-unobserved");
+    after.write(".archsig/law/m.law", law);
+    after.write("m.py", "# source\n");
+    after.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:bbbbbbb"}
+"#);
+    // 候補が m.O.t を消すなら、消えることは候補で決まっているので `missing` である。
+    after.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.O.t\", \"at\": \"plan:p\"}\n");
+    let s = compare(&after, &before, Some("p"));
+    assert_eq!((result(&s, "m.O.t")["outcome"].as_str(), result(&s, "m.O.t")["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
+    let s = compare(&after, &before, None);
+    assert!(!s["results"].as_array().unwrap().iter().any(|r| r["kind"] == "missing"), "{s}");
+    let r = result(&s, "m.O.t");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py" && n["scope"] == "structure" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}
+
+#[test]
+fn changes_keep_of_an_argument_after_reobservation_is_unread_where_the_structure_was_not_read_again() {
+    // 意味を持つ引数 m.f.$x。変更後は m.py の構造を読んでいないので、m.f とその引数が変更後にもあるかは決まらない。
+    // 引数は持ち主の操作 m.f の定義のソースで見て、`unread` で沈黙し、m.py の構造を返す。
+    let law = r#"sources "*.py"
+
+reading module = dir(depth: 1)
+
+meaning payment-info on param
+  "注文の支払いを特定する値。"
+
+law payment-info-kept
+  "決済情報は変更の後も残る。"
+  about payment-info
+  changes keep
+"#;
+    let m = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"x": "int"}, "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.f.$x", "meaning": "payment-info", "uses": ["m.py:3@blob:aaaaaaa"], "at": "m.py:2@blob:aaaaaaa"}
+"#;
+    let before = Repo::new("keep-arg-unobserved-before");
+    before.write(".archsig/law/m.law", law);
+    before.write("m.py", "# source\n");
+    before.map("m.py", m);
+    let after = Repo::new("keep-arg-unobserved");
+    after.write(".archsig/law/m.law", law);
+    after.write("m.py", "# source\n");
+    after.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:bbbbbbb"}
+"#);
+    let s = compare(&after, &before, None);
+    let r = result(&s, "m.f.$x");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py" && n["scope"] == "structure" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}
+
+/// 変更前の m.py の ArchMap(`meaning` の付いた要素を `extra` で足す)と、`law` の `changes keep` で、変更後を `after_map` にしたときの compare。
+fn keep_after(name: &str, law: &str, extra: &str, after_files: &[(&str, &str)], plan: Option<&str>) -> Value {
+    let m = format!(
+        "{}{extra}",
+        r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#
+    );
+    let before = Repo::new(&format!("{name}-before"));
+    before.write(".archsig/law/m.law", law);
+    before.write("m.py", "# source\n");
+    before.map("m.py", &m);
+    let after = Repo::new(name);
+    after.write(".archsig/law/m.law", law);
+    for (file, map) in after_files {
+        after.write(file, "# source\n");
+        after.map(file, map);
+    }
+    if let Some(p) = plan {
+        after.write(".archsig/plans/p/plan.jsonl", p);
+    }
+    compare(&after, &before, plan.map(|_| "p"))
+}
+
+#[test]
+fn changes_keep_after_reobservation_of_a_deleted_source_call_or_removed_owner() {
+    let keep_law = |on: &str| {
+        format!(
+            "sources \"*.py\"\n\nreading module = dir(depth: 1)\n\nmeaning payment-info on {on}\n  \"注文の支払いを特定する値。\"\n\nlaw payment-info-kept\n  \"決済情報は変更の後も残る。\"\n  about payment-info\n  changes keep\n"
+        )
+    };
+    let field = r#"{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.t", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.t", "meaning": "payment-info", "uses": ["m.py:2@blob:aaaaaaa"], "at": "m.py:2@blob:aaaaaaa"}
+"#;
+    let n = r#"{"kind": "observed", "subject": "n.py", "scope": "structure", "at": "n.py@blob:ccccccc"}
+{"kind": "observed", "subject": "n.py", "scope": "meaning:payment-info", "at": "n.py@blob:ccccccc"}
+"#;
+    // m.py を観測し直し、m.O.t の定義がなくなった。読んだ範囲に m.O.t がないので `missing` である(対照)。
+    let reread = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:bbbbbbb"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:bbbbbbb"}
+"#;
+    let s = keep_after("keep-reread-gone", &keep_law("field"), field, &[("m.py", reread)], None);
+    assert_eq!((result(&s, "m.O.t")["outcome"].as_str(), result(&s, "m.O.t")["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
+    // 実装で m.py を消した。m.py は変更後の `sources` にないので、読む所にならず `missing` である。
+    let s = keep_after("keep-deleted-source", &keep_law("field"), field, &[("n.py", n)], None);
+    assert_eq!((result(&s, "m.O.t")["outcome"].as_str(), result(&s, "m.O.t")["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
+    // 候補が持ち主の型 m.O を消すなら、m.O.t が消えることも候補で決まっている。
+    let meaning_only = r#"{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:bbbbbbb"}
+"#;
+    let s = keep_after(
+        "keep-removed-owner",
+        &keep_law("field"),
+        field,
+        &[("m.py", meaning_only)],
+        Some("{\"kind\": \"removes\", \"subject\": \"m.O\", \"at\": \"plan:p\"}\n"),
+    );
+    assert_eq!((result(&s, "m.O.t")["outcome"].as_str(), result(&s, "m.O.t")["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
+    // 意味を持つ呼び出し m.f->m.g は、持ち主の操作 m.f の定義のソースで見る。m.py の構造を読み直していなければ決まらない。
+    let call = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.f->m.g", "meaning": "payment-info", "uses": ["m.py:3@blob:aaaaaaa"], "at": "m.py:3@blob:aaaaaaa"}
+"#;
+    let s = keep_after("keep-call-unobserved", &keep_law("call"), call, &[("m.py", meaning_only)], None);
+    let r = result(&s, "m.f->m.g");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py" && n["scope"] == "structure" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+    // 候補が持ち主の操作 m.f を消すなら、呼び出しが消えることも候補で決まっている。
+    let s = keep_after(
+        "keep-call-removed-owner",
+        &keep_law("call"),
+        call,
+        &[("m.py", meaning_only)],
+        Some("{\"kind\": \"removes\", \"subject\": \"m.f\", \"at\": \"plan:p\"}\n"),
+    );
+    assert_eq!((result(&s, "m.f->m.g")["outcome"].as_str(), result(&s, "m.f->m.g")["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
+}

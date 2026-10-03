@@ -104,7 +104,7 @@ fn run(cli: Cli) -> Result<Value, String> {
             let o = overlay(&before, &store.plan(&plan)?);
             let (b, a) = (Structure::new(before), Structure::new(o.after.clone()));
             let sources = store.sources(&laws)?;
-            let findings = engine::plan_check(&b, &a, &o, &laws, &sources);
+            let findings = engine::plan_check(&b, &a, &o, &laws, &sources, &sources);
             let not_computed = engine::not_computed(&laws);
             store.save_run(|run| result::summarize(run, "plan check", &findings, &not_computed))
         }
