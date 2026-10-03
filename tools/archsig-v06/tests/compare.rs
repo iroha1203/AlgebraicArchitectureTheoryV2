@@ -715,7 +715,13 @@ fn changes_keep_after_reobservation_of_a_deleted_source_call_or_removed_owner() 
     let n = r#"{"kind": "observed", "subject": "n.py", "scope": "structure", "at": "n.py@blob:ccccccc"}
 {"kind": "observed", "subject": "n.py", "scope": "meaning:payment-info", "at": "n.py@blob:ccccccc"}
 "#;
-    // 実装で m.py を消した。変更後のソースはすべて構造を読んでいるので、m.O.t がないことは決まる。
+    // m.py を観測し直し、m.O.t の定義がなくなった。読んだ範囲に m.O.t がないので `missing` である(対照)。
+    let reread = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:bbbbbbb"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:bbbbbbb"}
+"#;
+    let s = keep_after("keep-reread-gone", &keep_law("field"), field, &[("m.py", reread)], None);
+    assert_eq!((result(&s, "m.O.t")["outcome"].as_str(), result(&s, "m.O.t")["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
+    // 実装で m.py を消した。m.py は変更後の `sources` にないので、読む所にならず `missing` である。
     let s = keep_after("keep-deleted-source", &keep_law("field"), field, &[("n.py", n)], None);
     assert_eq!((result(&s, "m.O.t")["outcome"].as_str(), result(&s, "m.O.t")["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
     // 候補が持ち主の型 m.O を消すなら、m.O.t が消えることも候補で決まっている。
