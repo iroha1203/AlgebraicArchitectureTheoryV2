@@ -1894,12 +1894,40 @@ fn an_unreadable_value_is_like_a_question_mark() {
 }
 
 #[test]
-fn a_return_does_not_end_the_steps() {
+fn the_steps_after_a_return_are_done_only_where_it_did_not_return() {
+    // 条件のない戻り値の後の書き込みは、どの分岐でも行わない。食い違う書き込みでも成り立つ。
     let (s, r) = t_case(
-        "return-not-end",
+        "return-unconditional",
         &[("returns", "", "1", ""), ("writes", "m.O.t", "1", "")],
         &[("returns", "", "1", ""), ("writes", "m.O.t", "2", "")],
         "",
+    );
+    assert_eq!(r["outcome"], "holds", "{s}");
+    // 条件付きの戻り値の後の書き込みは、戻らなかった分岐で行う。その分岐で食い違う。
+    let (s, r) = t_case(
+        "return-conditional",
+        &[("returns", "", "1", "$o.n == 1"), ("writes", "m.O.t", "1", "")],
+        &[("returns", "", "1", "$o.n == 1"), ("writes", "m.O.t", "2", "")],
+        "",
+    );
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    // 戻り値の条件は、戻り値の時点の状態で読む。後で m.O.n を 1 に書いても、n が 1 でなかった分岐では戻らない。
+    let (s, r) = t_case(
+        "return-condition-at-return",
+        &[("returns", "", "1", "$o.n == 1"), ("writes", "m.O.n", "1", ""), ("writes", "m.O.t", "5", "")],
+        &[("returns", "", "1", "$o.n == 1"), ("writes", "m.O.n", "1", ""), ("writes", "m.O.t", "6", "")],
+        "",
+    );
+    assert_eq!(r["kind"], "counterexample", "{s}");
+    // 呼び出し先の戻り値は、呼び出し先の本体だけを終える。呼び出し元の後の書き込みは行う。
+    let callee = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "1", "at": "m.py:21@blob:aaaaaaa"}
+"#;
+    let (s, r) = t_case(
+        "return-in-callee",
+        &[("calls", "m.g", "", ""), ("writes", "m.O.t", "1", "")],
+        &[("calls", "m.g", "", ""), ("writes", "m.O.t", "2", "")],
+        callee,
     );
     assert_eq!(r["kind"], "counterexample", "{s}");
 }

@@ -109,6 +109,8 @@ pub struct Step {
     pub at: Option<String>,
     pub atom: usize,
     pub within: Option<usize>,
+    /// この手順より前に、同じ本体に並ぶ戻り値の手順(列の添字)。そのどれかを行った分岐では、この手順を行わない。
+    pub after: Vec<usize>,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -310,6 +312,8 @@ impl Structure {
         if depth > DEPTH_LIMIT || out.len() > STEP_LIMIT {
             return Err(Silence::new(Reason::Limit));
         }
+        // この本体の戻り値の手順。戻り値は、その手順を持つ本体だけを終える。
+        let mut returns: Vec<usize> = Vec::new();
         for &i in self.bodies.get(op).map(|v| v.as_slice()).unwrap_or(&[]) {
             let a = &self.atoms[i];
             let mut when = Vec::new();
@@ -367,14 +371,25 @@ impl Structure {
                             inner.insert(param.clone(), Value::Arg(symbol));
                         }
                     }
-                    out.push(Step { kind: StepKind::Call { call, callee: object.clone(), external: external.clone(), binds }, when, at: a.at.clone(), atom: i, within });
+                    out.push(Step {
+                        kind: StepKind::Call { call, callee: object.clone(), external: external.clone(), binds },
+                        when,
+                        at: a.at.clone(),
+                        atom: i,
+                        within,
+                        after: returns.clone(),
+                    });
                     if external.is_none() {
                         self.unfold_into(&object, &inner, Some(index), depth + 1, out)?;
                     }
                     continue;
                 }
             };
-            out.push(Step { kind, when, at: a.at.clone(), atom: i, within });
+            let ret = matches!(kind, StepKind::Return { .. });
+            out.push(Step { kind, when, at: a.at.clone(), atom: i, within, after: returns.clone() });
+            if ret {
+                returns.push(out.len() - 1);
+            }
         }
         Ok(())
     }
