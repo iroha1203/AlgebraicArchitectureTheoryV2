@@ -5867,3 +5867,406 @@ ZMod.instField.congr_simp
 ```
 
 </details>
+
+### Cycle 27 selection — W5の同じ実入力・相対障害・局所案の統合
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 27
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: d547cba2c2a9c11416f053851a5908ad186d3356
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "Issue5132 C26受理、PR5176 root受理、report C1–C26"
+  proof_dag_predecessors: ["C2/C3/C5 相対actual repair", "C6/C7/C9 全relative cover/Bと正符号接続写像", "C14 全NativeAffine実核と実操作", "C24 original cochain/defect評価API", "C26 W3受理はW5開始状態"]
+  milestone: "固定W5の全(b1,b2): 同じ原全Aff(F2)の相対H2とBの商Ωでb2−b1を計算し、全独立局所修復・大域可解性・原絶対H2=0を接続する"
+  proof_obligations:
+    - "元s,t、三平行e,a,b:s→t、原二面e⇒a/e⇒b、空3cells、原全Aff→GL→1/全実核、refe=I/refa=τb1/refb=τb2、恒等core/比較、P両頂点とa,b、always共有e、候補空、元閉U/V/Wと全coverを構成し全方向条件を放電"
+    - "独立whole実global/local repairsと全元labelsからu=b1/u=b2を両方向で導き、全局所構成・元制限/arrow・同じNativeDescent Bを接続。固定頂点labelsを全保持し、重なりの実修復値をF2へ両逆対応"
+    - "同じ元全核/輸送/ordered face wordsから全相対C0=0/C1=F2/C2=F2²/d1u=(u,u)/d2=0/actualδ=(-b1,-b2)を同定。whole相対H2=F2²/diagF2をF2へ両逆、原actual obstruction classをb2−b1へ送る"
+    - "全localH1/H2=0、全overlapH1=F2、元restriction-induced local images=0からwholeΩ=F2を同定。任意独立actual局所案のdifference class/ωをb2−b1と評価し、選び直し独立性、正符号∂[z]=actual[δ]、原H2kernel同型を同じ一般Bから接続"
+    - "全(b1,b2)でlocalは常時可解、actualglobal可解iff b1=b2 iff相対障害/ω零を原操作/一般A/Bに接続。全四指定入力の修復値と非対角二入力の局所可解・相対/商障害非零・大域不能を明示"
+    - "固定を外した同じ原全辺/二面微分d1(u,a,b)=(u−a,u−b)の全射性を元cochainsから構成し、whole絶対nativeH2=0を証明。同じ原表示/全係数/defectとP相対障害の非零性を比較し、F実現への同じ原入力対応を保つ"
+  exit_criteria:
+    - "全指定入力/元geometry/全kernels/固定条件/閉coverと全独立actualglobal/local/元全labels/重なり/一般A/B/Fの対応を同じ入力で構成"
+    - "元whole相対complex/actualδ/wholeH2とwholelocal/overlapH1,H2/Ω/actualω/正符号接続を同じ元制限から両方向に同定"
+    - "全入力local常時可解/globaliff同値と全四指定値/非零例、同じ原absolutewholeH2零を証明し相対との比較を閉じる"
+    - "各変更単一production本体/報告全所有宣言個別公理/hash/登録/common scan/固定targetと適用版、標準四本PR査読とroot受理、exact-head CIを確認"
+  selection_reason: "残る指定例W5の全要求を一到達点で閉じ、既受理一般A–FとW1–W4に対する累積全target完了判定へ進む。file単位でcycleを分割しない"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["W5AffineInput/Regions/ActualRepairs/LocalRepairs", "W5OriginalDifferentials/RelativeCoefficients/RelativeObstruction", "W5LocalCohomology/OverlapCohomology/IntegrationObstruction", "W5NativeDescent/ActualSolvability/AbsoluteCohomology"]
+  risks: ["relativezeroを供給fieldにしない", "独立actual対象/全arrowを座標の像へ縮めない", "δとlocaldifferenceの符号", "whole商/原nativeH2をchosenimageで代替しない", "元P固定を重なりの自由頂点へ変えない", "原absolutecomplexを別行列で代替しない"]
+  unchecked: ["上記六義務は実装前。達成は結果packetで個別対応", "累積A–F/W1–W5の最終完了判定は別fresh四本gate"]
+```
+
+### C27 W5の元実操作と全相対障害
+
+元表示は頂点s,t、三平行辺e,a,b:s→t、二面e⇒aとe⇒b、空の3-cellを持つ。
+係数はF2で、操作群は全Aff(F2)、線形射影は全GL(F2)への元の射影である。
+入力(b1,b2)は全F2²を動き、元参照操作はe=I、a=τb1、b=τb2、比較は恒等である。
+物理的固定部分Pは両頂点とa,bを持つ。共有eはalwaysで、候補集合は空である。
+UとVは各元の面とその全辺を保持し、重なりWは両頂点とeを保持する。
+
+独立実修復の型は元の全アフィン操作・元線形成分・元二面等号・元P固定条件から定義する。
+共有操作の零での値uを読むと、全三辺操作がuから復元される。
+元の実写像の面等号はu=b1、u=b2とそれぞれ同値で、双方から全実修復を構成する。
+局所では元の一面からそれぞれu=b1、u=b2となり、全入力で独立局所案が存在する。
+重なりでは二つの面がないため全u∈F2を保持するが、全頂点ラベルは元Pの固定条件から零となる。
+元の全対象・全射と離散F2の対応、元の制限の辺値・ラベル値、同じNativeDescent Bとの同値を対応させる。
+
+元の全核を各頂点のF2へ両逆に座標化し、元の輸送は恒等となる。
+元のordered face wordsから全d1(u,a,b)=(u-a,u-b)を導く。
+同じP相対複体ではC0=0、C1=F2、C2=F2²、d1(u)=(u,u)、d2=0である。
+元の実欠陥δ=(-b1,-b2)は実参照操作の逆合成から生成する。
+全相対H2=F2²/diag(F2)を、第一面から第二面を引く読みでF2へ両逆に同定する。
+この読みの核は元の全d1境界像と一致し、元KのH2との比較は同じ全コチェイン値を保持する。
+元のactual obstruction classはb2-b1へ送られる。
+
+各局所の全d1は全一面係数への同型となり、全局所H1とH2は零である。
+重なりの全C0とd1は零で、全H1は同じ共有辺F2となる。
+元のrestriction-induced H1像の両方は零であり、Bで指定された和を分母とする全ΩもF2へ両逆に同定する。
+任意の独立実局所案の差は同じ元e上で第二案から第一案を引き、その全H1類と全Ω類はb2-b1となる。
+局所案の選び直し独立性、正符号∂[z]=[δ]、全Ωから元H2制限核への同型は同じ一般Bに接続する。
+両局所H2が零なので、その核は元の全相対H2である。
+
+全入力で大域実修復の存在はb1=b2と同値であり、同じAの元相対障害零・Bの元Ω零と一致する。
+(0,0)と(1,1)の修復はそれぞれ元eの値0と1を保持する。
+(0,1)と(1,0)では両局所案が存在し、両方の実障害類の値は1で、大域実修復は存在しない。
+固定を外した同じ元表示の全微分は、u=0、a=-r1、b=-r2という全辺補正で任意の二面値を復元する。
+したがって同じ元の全絶対H2は零である。物理的Pを保つ相対障害との比較でも、二面・全核・実欠陥の元の値を保持する。
+
+### C27 前提の生成と使用
+
+| Premise/structure | role on W5 | input construction | actual proof use |
+| --- | --- | --- | --- |
+| 全F2の体構造、全Aff/GL射影と全実核 | discharge-required | primeTwo、Op、originalTower；同じC14 NativeAffine.tower/linearCoefficient | 実線形条件、全核cochainの相互逆、actual/native対象と全labels |
+| 元Fin2頂点、元Fin3三平行辺、元Bool二面、全(b1,b2) | justified ambient-boundary | geometry、name/edgeNameEquiv、reference、comparison | 全実面等号、全cochain値、各入力修復と不能 |
+| 元辺・射影像の強さ、全核可換、輸送全単射、比較中央化 | discharge-required for this input | 同じC14 tower(original=reference, reference=reference, comparison=0, linear_faces)の生成field、現在の全kernels | Native actual repairs/補正/gauge、全微分/実defect/一般A/B |
+| 原参照core整合、指定3cell条件 | discharge-required | linear_facesで原実wordの射影一致、original_syzygyで原Empty 3cells | originalTowerとactual original obstructionCocycle/positive connecting |
+| 物理Pの閉包とP上面整合、always/candidate分割 | discharge-required | fixedRegion、fixed_faces、edge_partition、shared_not_fixed、candidates=empty | 独立全修復fixed_value、全相対C0/C1、全ラベル零、一般A |
+| 元閉U/V/W、full cells coverと原制限 | discharge-required | leftRegion/rightRegion/overlap、regions_cover、region_edges、overlap_edges/faces/vertices | 共通native repair restriction、一般B、元relative short exact/cohomology maps |
+| 全独立global/local actual repairsと全labels | construction, conclusion-equivalent-risk audit | NativeAffine.Repair/Groupoidを原全操作・面・Pで独立定義；fromValue/localFromValueは元値条件から全実操作を生成 | value_operations/from_value、localValue_operations/local_unique、overlapValueEquiv、全Discrete/groupoid同値 |
+| 元全相対cochains/実delta | construction, discharge-required | 元全kernelCoordinate、whole cochain/faceCoordinates両逆、原d1/d2、actualDefect原生成 | 原wholeH2のboundary range=reading kernel、actualCycle_originalとactual_class_comparison |
+| 全H2/全local images/Ω/正符号 | construction, discharge-required | h2Coordinate、local_d1_surjective/local_cycles、overlap wholeH1、両画像和零、元generic B kernel | 任意actual localCoordinateとdifferenceCycle、omega_value、connecting_actual_difference、omega_original_class |
+| actual global/obstruction zero condition | conclusion, never supplied as premise | 元修復分類と全商の読み、general_a/general_b | 全(b1,b2)のiff、全4入力の実構成と非対角非零/不能 |
+| 同じ原absolute全cochainsとH2 | construction, discharge-required | 原全d1のabsoluteCochain全逆像、original native absolute supported d1 onto | whole absolute_h2_zero、forgetPhysicalFace/actualDefect値、相対非零との同入力比較 |
+
+一般A/Bの条件は本文由来のdirection-hypothesisであり、W5での適用条件は同じ入力から放電する。上表の構成は放電済みの申告であり、独立査読がsourceと使用を照合する。未放電の追加仮定は置かない。成果の位置づけは `unported (Research-proved)`。
+
+### C27 使用する先行宣言の版
+
+受理版と現在のsourceは一致する。表の各moduleでは使用するstatement・必要な定義・同じ原入力の適用引数を確認する。受理記録は再利用の資格、現在のsourceは適用の数学的な証拠である。
+
+| Module | source SHA256 | 受理source commit | root review comment ID |
+| --- | --- | --- | --- |
+| NativeAffineTower | `747d4a8f68c7957b5675bbe4a054a1499c34755efec6d12d58e0a0a4610d44ad` | `a185e8d0a505999f24cb540bc28cbd26ff69162e` | 5931624166 |
+| NativeAffineCoefficients | `1e35973c81534691a223ff1a785f5ca10d2ee421d387a901b8521203cd287c04` | `a185e8d0a505999f24cb540bc28cbd26ff69162e` | 5931624166 |
+| NativeAffineDifferentials | `8838d39a6eeef0ccbce9e099f2dc17abb6777a152ec9af471012bc6572d62c9a` | `a185e8d0a505999f24cb540bc28cbd26ff69162e` | 5931624166 |
+| NativeAffineRestriction | `7b97ba55b365233d72fd8a9b052c2bb8ac57b9989a0ddb77703cdb741db66138` | `a185e8d0a505999f24cb540bc28cbd26ff69162e` | 5931624166 |
+| NativeAffineGroupoid | `994a5800d3fc012d758a8db696ae35260339f4b0560d7a27d3f03b31007ea148` | `a185e8d0a505999f24cb540bc28cbd26ff69162e` | 5931624166 |
+| NativeAffineCorrection | `4bd3a03107254b859a6586aeafbd3bf2d929fa0ae499fb49c8fc5eb4dab9430a` | `f55004f3a83a16ad7b741e9980ac307c6e9712e9` | 5940657055 |
+| CoverCohomology | `545e02b2fb76bae9731546f1aa5f1b3fb5b488a6a34821149f8e40d849206d4e` | `13e1c0d8f9221ba65025431ad5ec6b32ebe61829` | 5923198060 |
+| CoverNativeCohomology | `b524527bb821a2a056d02f42ec8b268df0b308872e59eb9f2dd75f9c22cc5d82` | `13e1c0d8f9221ba65025431ad5ec6b32ebe61829` | 5923198060 |
+| CoverObstructionKernel | `2b36c08868e4539232f898e7dc95877df2ac0d288ebb2b03058e83f033e60db3` | `13e1c0d8f9221ba65025431ad5ec6b32ebe61829` | 5923198060 |
+| NativeCoverObstruction | `8d06c6846f1aad4a50e2dc51d064fcfd42f51affd9e2c9200be82f978e449051` | `13e1c0d8f9221ba65025431ad5ec6b32ebe61829` | 5923198060 |
+| NativeDescent | `96f50a9f9315809de40321f62b8a7110d1ce9f812e18878c81a62b5ba1a0fd99` | `c38f8f6150e4e8643b1d0547feb1580f9c3dc0a7` | 5921438709 |
+| NativeEquationBridge | `5ebf7fb1c1283cda059ea23477fdd573f31d332b0cbb4ce77805cd544c7b3874` | `c38f8f6150e4e8643b1d0547feb1580f9c3dc0a7` | 5921438709 |
+
+### Cycle 27 result proposal
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 27
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "固定六義務の全入力・独立全実修復/全射・元相対複体/実delta・全H2/Ω・任意局所案/正符号・全四値・元絶対H2比較を構成"
+  exit_criteria_status:
+    - "原全Aff/全核/三辺二面/P/always/空候補/全閉cover、全actual/local/全labels/元制限/同じB/Fを構成"
+    - "原全相対cochains/d1/d2/actualδ、whole relative H2/local H1,H2/overlap H1/Ω/positive connectingを両逆と元微分から導出"
+    - "全(b1,b2)のlocal常時可解、global iff/実障害 iff、全四値/実修復/非零不能、同じ原absolute全H2零を証明"
+    - "単一本体15と全所有個別公理208/hash/登録/common scanを対応。標準四本PR査読/root受理/同head CIはPR監査記録へ固定"
+  split_reason: none
+  completion_candidate: yes
+  lean_artifacts: ["W5AffineInput/Regions/AuthoredOperations/ActualRepairs/LocalRepairs/ActualArrows", "W5OriginalDifferentials/RelativeCoefficients/RelativeObstruction/LocalCohomology/OverlapCohomology", "W5NativeDescent/IntegrationObstruction/AbsoluteCohomology/ActualSolvability"]
+  evidence: ["actualValueEquiv/from_value", "overlapDiscreteEquivalence/nativeEquivalence/actualEquivalence", "originalH2Coordinate/actual_obstruction_value", "omegaCoordinate/omega_value/connecting_actual_difference/omega_original_class", "global_iff/general_a/general_b/four_relative_values/four_integration_values", "absolute_h2_zero/absolute_relative_comparison"]
+  claim_mapping:
+    theorem_names: ["W5ActualSolvability.global_iff/general_a/general_b", "W5IntegrationObstruction.omega_value/connecting_actual_difference", "W5AbsoluteCohomology.absolute_h2_zero"]
+    source_labels: ["固定G-130 W5/A/B/F", "n1017 §5.2"]
+    conjuncts: ["原全対象/全射/制限", "whole相対障害とwholeΩ=b2−b1", "全局所可解/global iff b1=b2/全四値", "同じ原絶対H2零と相対非零"]
+    undischarged_assumptions: []
+    acceptance_point: "同じ原入力上のW5六義務。累積全GOALは固定headの別四本completion gateで照合する"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["原whole affine towerの全条件", "P/cover/原制限/原syzygy", "独立全修復/元labels/元native B", "全原cochains/wholequotients/actualclasses/全指定値/absolute比較"]
+    remaining: []
+  certificate_provenance:
+    discharged: ["元typed geometry/reference/comparison→originalTower", "原fullkernel/differential→cochains/actualδ/wholeH2", "任意独立actual localCoordinate→difference/wholeΩ", "原全絶対cochains→d1 onto/H2 zero"]
+    unresolved: []
+  proof_use:
+    used: ["原全実Affine equality→u=b1/u=b2→whole実修復", "物理P全頂点/固定辺→全label零/relative C0=0", "original ordered words/full kernel transport→d1/delta/whole boundary range", "原fullcover/generic B→all descent/omega independent/positive connecting", "wholequotient both inverses→actual zero iff/非対角", "原全d1の全逆像→absolute H2 zero"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["下記15 current source/body logsと4 selected-owned individual audits", "全所有宣言リスト", "PRのraw command/hash/common scan evidence"]
+  blocking_findings: []
+  next_obligation: "同固定headの標準PR review/root受理後、累積A–F/W1–W5と全material premiseのfinal packetをPRコメントへ置き、別fresh Math2/Lean2の全target completion gate"
+```
+
+### C27 productionと個別公理の一次検証対応
+
+全15単一production本体のactual exitは0、error/warningは各0。
+namespaceの202宣言と、所有moduleで生成されたnamespace外helper6を含む全208宣言を個別 `#print axioms` で被覆する。
+本体elaborationと、既検証本体をimportする個別公理監査を分け、source/helper/raw logのSHA256を対応させる。
+標準公理はpropext、Classical.choice、Quot.sound。
+本体コマンドは `cd research/lean && lake env lean -s4096 -D Elab.async=false -o .lake/build/lib/lean/<module path>.olean <source path>`。
+個別公理コマンドは `cd research/lean && lake env lean -s4096 -D Elab.async=false ../../.tmp/g130/<selected-owned helper>.lean`。
+Research全体・aggregate・全module/file loopのelaborationは実行しない。
+
+| Production module | namespace宣言数 | source SHA256 | 本体log SHA256 |
+| --- | ---: | --- | --- |
+| W5AbsoluteCohomology | 8 | `231b0402293aedf9bab0c516daf9c145138fdc9a70d7645db3e59e15a2813b92` | `1388335446af4d46a4ab938edd1febe5acd4880d032904c4a8d10991aaa3026c` |
+| W5ActualArrows | 9 | `96d44ad63d93ac1448feda8eecca45e014c108a0ced3e29b6fef225f247843a1` | `d55ed42a10710dbe81a4d83416e522337c3d4584d3721ec2d0f519ace67ccc0e` |
+| W5ActualRepairs | 15 | `5f0c8e687a6009003288946ecbbebd6d20bb1e435b923ac5e84c4643697f6645` | `dcccee0f9f638931349b51aaf971d674c3718ada37f341607607b14eca2f76dc` |
+| W5ActualSolvability | 19 | `39e3a7d46bcbec77f564290c7dfa54862dcfa8d06c3207d793686ca9f7d61887` | `166bd4ba4fcd976c83059f2649a6015f87233a00a6180cd124a5ef2057510dc1` |
+| W5AffineInput | 19 | `de8f0c11a8099a36ac552e087e699627b8a6e7de0d6820410e6c86d3effa271c` | `5a5fbaf16645b42e7821db0216e9f3757a94cb6d8f5b243ee94e37e12acc329b` |
+| W5AuthoredOperations | 12 | `22d5261ca73f4ca2849b8b6f16f65b5ff9285f9e636e722392b2bb8cde0a7a44` | `fbcd12b6e44a2cab88a4fe3eabb48d5a580149451892b67b6d564bcf74088c98` |
+| W5IntegrationObstruction | 9 | `254e5fa07608d34b6b59fb2b409267ca8ba3bbe39ece28f67238bd985061328b` | `8d5f988930c6486ada7193feb4ac6e175952862588771665f52722d7d7714b8e` |
+| W5LocalCohomology | 6 | `c8bd565554fd6da9ffbb403036923c54f147a9372a1dd2c45e92795d1b73df36` | `8af2904d95d2a4547adbab95ea8c11c00b379da527473e5fd987d377e385c574` |
+| W5LocalRepairs | 24 | `a7a44ea30a8eb2a267b6ada7493b18d7ec00c5ca559bc023b4f05f073ec07317` | `c5d2abcb5daf66e3c5b1be44445852876ee0c9b24677f3c9d031bcfdc03eea83` |
+| W5NativeDescent | 14 | `95b4e6749a5ff9a85c08a3779267f0594eaea9708b65ed96955e197d610c3049` | `e3ef4d103411fb7309ec1ac90cd9402cb2be6abbb928ecdb8dbcd3114eeb54ad` |
+| W5OriginalDifferentials | 9 | `b610140feebf26b42f1a038a9a5970705ccf2e5173c0defc7a3375e45ef236f3` | `06a612a3ee8cdbb731dd7a465880264c60c1478382e01fd46486faa5e4534bc6` |
+| W5OverlapCohomology | 12 | `f917e74be1aa67f953e14817237c1d3e9873859fd676b4d29fd3fe67c850d148` | `854fc4e89662d62932ff59f1f2eee245e9a15d84c695269e92f8f0c56bf9ae0f` |
+| W5Regions | 18 | `eae5e67497e6ca48ce7cc2746cff025059fe7eeed445292d1d7d0671de4a4980` | `457fb85b0a9fe41f357d5382a142be2cdbcef4913573b28881e6d69a24fc6665` |
+| W5RelativeCoefficients | 15 | `c3bf01ad93c4d94e7116ed028487c0f86f959d38560fd7fa10b9e33118761ed3` | `e325894d90d916fbd9b5f5f222721e06f9f8f1be21ea8e92123e382dd0a897e6` |
+| W5RelativeObstruction | 13 | `50be3c18b85362dcd9a53dbac0052008493df2175bac6489d80337ea3c9dc2dc` | `44b96377c873e154b2e17f192750bf1e17b1417d96dde08b53beff6bbc33110a` |
+
+| 個別公理audit module群 | 所有宣言数 | helper SHA256 | raw log SHA256 |
+| --- | ---: | --- | --- |
+| W5AffineInput, W5Regions, W5AuthoredOperations | 52 | `6107051298401cb8fee1469ca99edbd034ea7870c8c430d7147a5394538b7b97` | `9ff9545391a47e23949baa6d3706668d7eebc3d5fbf765634adc3080aab6caad` |
+| W5ActualRepairs, W5LocalRepairs, W5ActualArrows | 48 | `8e4e825e17c9841f029b38fe0537e2651c66c716fa27e9344c2708edffe8d80a` | `2d811bf12bbaef87000f6c0c4e37c003e686f2fbef51602f5a6ae1fa149a2251` |
+| W5OriginalDifferentials, W5RelativeCoefficients, W5RelativeObstruction, W5LocalCohomology, W5OverlapCohomology | 56 | `ee5753b2e86503eebd7d0ea3ea16937e21f365e26e71c86edbb27fb82d9e11bc` | `7d09811a92c2b923f636fb886279d1ab62a7bdbc8ca1eee6d788b8cab7c6aa05` |
+| W5NativeDescent, W5IntegrationObstruction, W5AbsoluteCohomology, W5ActualSolvability | 52 | `823e9c0aca12cb9b981340dafa0b632a3794dd04c4e687c1258fbd4467ee7d59` | `2bab19c02b65818b38f879944bdde714c267765bf156e5693821bc173e6a4cd0` |
+
+<details>
+<summary>C27 全所有宣言208</summary>
+
+```text
+AAT.AG.AbelianLiftingObstruction.GroupExtension.pathValue.eq_def
+AAT.AG.RelativeRepairComposition.ActualRelative.obstructionClass.congr_simp
+AAT.AG.RelativeRepairComposition.ClosedRegion.mk.congr_simp
+AAT.AG.RelativeRepairComposition.NativeAffine.vectorPath.eq_def
+AAT.AG.RelativeRepairComposition.NativeCoverObstruction.omega.congr_simp
+AAT.AG.RelativeRepairComposition.W5AbsoluteCohomology.absoluteCochain
+AAT.AG.RelativeRepairComposition.W5AbsoluteCohomology.absoluteSupported
+AAT.AG.RelativeRepairComposition.W5AbsoluteCohomology.absolute_d1_surjective
+AAT.AG.RelativeRepairComposition.W5AbsoluteCohomology.absolute_d1_value
+AAT.AG.RelativeRepairComposition.W5AbsoluteCohomology.absolute_h2_zero
+AAT.AG.RelativeRepairComposition.W5AbsoluteCohomology.absolute_supported_surjective
+AAT.AG.RelativeRepairComposition.W5AbsoluteCohomology.forgetPhysicalFace
+AAT.AG.RelativeRepairComposition.W5AbsoluteCohomology.forget_actual_defect
+AAT.AG.RelativeRepairComposition.W5ActualArrows.discreteValueFunctor
+AAT.AG.RelativeRepairComposition.W5ActualArrows.global_label_zero
+AAT.AG.RelativeRepairComposition.W5ActualArrows.local_arrow_label
+AAT.AG.RelativeRepairComposition.W5ActualArrows.local_hom_unique
+AAT.AG.RelativeRepairComposition.W5ActualArrows.local_object_eq
+AAT.AG.RelativeRepairComposition.W5ActualArrows.overlapDiscreteEquivalence
+AAT.AG.RelativeRepairComposition.W5ActualArrows.overlapFunctor
+AAT.AG.RelativeRepairComposition.W5ActualArrows.overlapObjectEquiv
+AAT.AG.RelativeRepairComposition.W5ActualArrows.overlap_hom_iff
+AAT.AG.RelativeRepairComposition.W5ActualRepairs.ActualCategory
+AAT.AG.RelativeRepairComposition.W5ActualRepairs.NativeCategory
+AAT.AG.RelativeRepairComposition.W5ActualRepairs.RealRepairs
+AAT.AG.RelativeRepairComposition.W5ActualRepairs.actualValueEquiv
+AAT.AG.RelativeRepairComposition.W5ActualRepairs.actual_operation_apply
+AAT.AG.RelativeRepairComposition.W5ActualRepairs.fromValue
+AAT.AG.RelativeRepairComposition.W5ActualRepairs.from_value
+AAT.AG.RelativeRepairComposition.W5ActualRepairs.nativeValueEquiv
+AAT.AG.RelativeRepairComposition.W5ActualRepairs.operation_fixed
+AAT.AG.RelativeRepairComposition.W5ActualRepairs.value
+AAT.AG.RelativeRepairComposition.W5ActualRepairs.value_face
+AAT.AG.RelativeRepairComposition.W5ActualRepairs.value_from
+AAT.AG.RelativeRepairComposition.W5ActualRepairs.value_inputs
+AAT.AG.RelativeRepairComposition.W5ActualRepairs.value_operations
+AAT.AG.RelativeRepairComposition.W5ActualRepairs.wholeAffineEquivalence
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.absolute_relative_comparison
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.diagonal_values
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.four_integration_values
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.four_relative_values
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.general_a
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.general_b
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.global_iff
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.integrationObstruction
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.integration_off_diagonal
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.local_always
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.native_global_iff
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.off_diagonal01
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.off_diagonal10
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.omega_zero_iff
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.relativeObstruction
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.relative_off_diagonal
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.relative_zero_iff
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.repair00
+AAT.AG.RelativeRepairComposition.W5ActualSolvability.repair11
+AAT.AG.RelativeRepairComposition.W5AffineInput.Op
+AAT.AG.RelativeRepairComposition.W5AffineInput.comparison
+AAT.AG.RelativeRepairComposition.W5AffineInput.edgeA
+AAT.AG.RelativeRepairComposition.W5AffineInput.edgeB
+AAT.AG.RelativeRepairComposition.W5AffineInput.edgeDecidableEq
+AAT.AG.RelativeRepairComposition.W5AffineInput.edgeE
+AAT.AG.RelativeRepairComposition.W5AffineInput.edgeNameEquiv
+AAT.AG.RelativeRepairComposition.W5AffineInput.faceDecidableEq
+AAT.AG.RelativeRepairComposition.W5AffineInput.geometry
+AAT.AG.RelativeRepairComposition.W5AffineInput.linear_faces
+AAT.AG.RelativeRepairComposition.W5AffineInput.name
+AAT.AG.RelativeRepairComposition.W5AffineInput.name_edge
+AAT.AG.RelativeRepairComposition.W5AffineInput.originalTower
+AAT.AG.RelativeRepairComposition.W5AffineInput.primeTwo
+AAT.AG.RelativeRepairComposition.W5AffineInput.reference
+AAT.AG.RelativeRepairComposition.W5AffineInput.reference_left_path
+AAT.AG.RelativeRepairComposition.W5AffineInput.reference_right_path
+AAT.AG.RelativeRepairComposition.W5AffineInput.vertexS
+AAT.AG.RelativeRepairComposition.W5AffineInput.vertexT
+AAT.AG.RelativeRepairComposition.W5AuthoredOperations.correctionValue
+AAT.AG.RelativeRepairComposition.W5AuthoredOperations.face_iff
+AAT.AG.RelativeRepairComposition.W5AuthoredOperations.inputValue
+AAT.AG.RelativeRepairComposition.W5AuthoredOperations.left_apply
+AAT.AG.RelativeRepairComposition.W5AuthoredOperations.operation
+AAT.AG.RelativeRepairComposition.W5AuthoredOperations.operation_a_apply
+AAT.AG.RelativeRepairComposition.W5AuthoredOperations.operation_b_apply
+AAT.AG.RelativeRepairComposition.W5AuthoredOperations.operation_e_apply
+AAT.AG.RelativeRepairComposition.W5AuthoredOperations.operation_linear
+AAT.AG.RelativeRepairComposition.W5AuthoredOperations.reference_linear
+AAT.AG.RelativeRepairComposition.W5AuthoredOperations.right_apply
+AAT.AG.RelativeRepairComposition.W5AuthoredOperations.zero_translation
+AAT.AG.RelativeRepairComposition.W5IntegrationObstruction.connecting_actual_difference
+AAT.AG.RelativeRepairComposition.W5IntegrationObstruction.difference_class_value
+AAT.AG.RelativeRepairComposition.W5IntegrationObstruction.difference_cycle_value
+AAT.AG.RelativeRepairComposition.W5IntegrationObstruction.omega_independent
+AAT.AG.RelativeRepairComposition.W5IntegrationObstruction.omega_original_class
+AAT.AG.RelativeRepairComposition.W5IntegrationObstruction.omega_value
+AAT.AG.RelativeRepairComposition.W5IntegrationObstruction.planValue
+AAT.AG.RelativeRepairComposition.W5IntegrationObstruction.planValue_actual
+AAT.AG.RelativeRepairComposition.W5IntegrationObstruction.planValue_input
+AAT.AG.RelativeRepairComposition.W5LocalCohomology.local_cycle_zero
+AAT.AG.RelativeRepairComposition.W5LocalCohomology.local_d1_surjective
+AAT.AG.RelativeRepairComposition.W5LocalCohomology.local_h1_zero
+AAT.AG.RelativeRepairComposition.W5LocalCohomology.local_h2_zero
+AAT.AG.RelativeRepairComposition.W5LocalCohomology.region_face
+AAT.AG.RelativeRepairComposition.W5LocalCohomology.region_shared
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.LocalCategory
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.LocalLabels
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.LocalRepairs
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.actualRestriction
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.globalAction
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.labels_zero
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.localAction
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.localFromValue
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.localName
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.localPlan
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.localValue
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.localValue_face
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.localValue_from
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.localValue_input
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.localValue_operations
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.local_fixed_map
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.local_operation_apply
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.local_unique
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.overlapValueEquiv
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.overlap_has_shared
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.overlap_no_face
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.patch_shared
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.restriction_label
+AAT.AG.RelativeRepairComposition.W5LocalRepairs.restriction_operation
+AAT.AG.RelativeRepairComposition.W5NativeDescent.Descent
+AAT.AG.RelativeRepairComposition.W5NativeDescent.actualEquivalence
+AAT.AG.RelativeRepairComposition.W5NativeDescent.descent_is_groupoid
+AAT.AG.RelativeRepairComposition.W5NativeDescent.left_choice
+AAT.AG.RelativeRepairComposition.W5NativeDescent.left_label
+AAT.AG.RelativeRepairComposition.W5NativeDescent.localAffineEquivalence
+AAT.AG.RelativeRepairComposition.W5NativeDescent.localObjectEquiv
+AAT.AG.RelativeRepairComposition.W5NativeDescent.nativeEquivalence
+AAT.AG.RelativeRepairComposition.W5NativeDescent.nativeLocalPlan
+AAT.AG.RelativeRepairComposition.W5NativeDescent.nativeOverlapDiscreteEquivalence
+AAT.AG.RelativeRepairComposition.W5NativeDescent.native_local_label_zero
+AAT.AG.RelativeRepairComposition.W5NativeDescent.right_choice
+AAT.AG.RelativeRepairComposition.W5NativeDescent.right_label
+AAT.AG.RelativeRepairComposition.W5NativeDescent.seam_label
+AAT.AG.RelativeRepairComposition.W5OriginalDifferentials.d0_value
+AAT.AG.RelativeRepairComposition.W5OriginalDifferentials.d1_value
+AAT.AG.RelativeRepairComposition.W5OriginalDifferentials.d2_zero
+AAT.AG.RelativeRepairComposition.W5OriginalDifferentials.defect_coordinate
+AAT.AG.RelativeRepairComposition.W5OriginalDifferentials.kernelCoordinate
+AAT.AG.RelativeRepairComposition.W5OriginalDifferentials.kernel_inverse_value
+AAT.AG.RelativeRepairComposition.W5OriginalDifferentials.original_linear
+AAT.AG.RelativeRepairComposition.W5OriginalDifferentials.original_transport
+AAT.AG.RelativeRepairComposition.W5OriginalDifferentials.translation_inverse_apply
+AAT.AG.RelativeRepairComposition.W5OverlapCohomology.boundary_range_bot
+AAT.AG.RelativeRepairComposition.W5OverlapCohomology.cycleCoordinate
+AAT.AG.RelativeRepairComposition.W5OverlapCohomology.h1Coordinate
+AAT.AG.RelativeRepairComposition.W5OverlapCohomology.h1Coordinate_class
+AAT.AG.RelativeRepairComposition.W5OverlapCohomology.localImages_bot
+AAT.AG.RelativeRepairComposition.W5OverlapCohomology.omegaCoordinate
+AAT.AG.RelativeRepairComposition.W5OverlapCohomology.omegaCoordinate_class
+AAT.AG.RelativeRepairComposition.W5OverlapCohomology.omegaOriginalH2Equiv
+AAT.AG.RelativeRepairComposition.W5OverlapCohomology.overlap_d1_zero
+AAT.AG.RelativeRepairComposition.W5OverlapCohomology.overlap_shared
+AAT.AG.RelativeRepairComposition.W5OverlapCohomology.restrictionKernelEquiv
+AAT.AG.RelativeRepairComposition.W5OverlapCohomology.restriction_zero
+AAT.AG.RelativeRepairComposition.W5Regions.alwaysEdges
+AAT.AG.RelativeRepairComposition.W5Regions.candidates
+AAT.AG.RelativeRepairComposition.W5Regions.edge_partition
+AAT.AG.RelativeRepairComposition.W5Regions.face_in_region
+AAT.AG.RelativeRepairComposition.W5Regions.fixedRegion
+AAT.AG.RelativeRepairComposition.W5Regions.inputEdge
+AAT.AG.RelativeRepairComposition.W5Regions.leftRegion
+AAT.AG.RelativeRepairComposition.W5Regions.overlap
+AAT.AG.RelativeRepairComposition.W5Regions.overlap_edges
+AAT.AG.RelativeRepairComposition.W5Regions.overlap_faces
+AAT.AG.RelativeRepairComposition.W5Regions.overlap_vertices
+AAT.AG.RelativeRepairComposition.W5Regions.region
+AAT.AG.RelativeRepairComposition.W5Regions.region_edges
+AAT.AG.RelativeRepairComposition.W5Regions.region_vertices
+AAT.AG.RelativeRepairComposition.W5Regions.regions_cover
+AAT.AG.RelativeRepairComposition.W5Regions.rightRegion
+AAT.AG.RelativeRepairComposition.W5Regions.shared_in_both
+AAT.AG.RelativeRepairComposition.W5Regions.shared_not_fixed
+AAT.AG.RelativeRepairComposition.W5RelativeCoefficients.actualDefect
+AAT.AG.RelativeRepairComposition.W5RelativeCoefficients.actualDefect_value
+AAT.AG.RelativeRepairComposition.W5RelativeCoefficients.cochain
+AAT.AG.RelativeRepairComposition.W5RelativeCoefficients.cochain_d1_value
+AAT.AG.RelativeRepairComposition.W5RelativeCoefficients.cochain_reconstruct
+AAT.AG.RelativeRepairComposition.W5RelativeCoefficients.cochain_value
+AAT.AG.RelativeRepairComposition.W5RelativeCoefficients.d1_value
+AAT.AG.RelativeRepairComposition.W5RelativeCoefficients.d2_zero
+AAT.AG.RelativeRepairComposition.W5RelativeCoefficients.edgeCoordinate
+AAT.AG.RelativeRepairComposition.W5RelativeCoefficients.edgeCoordinates
+AAT.AG.RelativeRepairComposition.W5RelativeCoefficients.faceCoordinates
+AAT.AG.RelativeRepairComposition.W5RelativeCoefficients.fixed_coordinate
+AAT.AG.RelativeRepairComposition.W5RelativeCoefficients.fixed_faces
+AAT.AG.RelativeRepairComposition.W5RelativeCoefficients.fullCochain
+AAT.AG.RelativeRepairComposition.W5RelativeCoefficients.vertex_zero
+AAT.AG.RelativeRepairComposition.W5RelativeObstruction.actualCycle
+AAT.AG.RelativeRepairComposition.W5RelativeObstruction.actualCycle_original
+AAT.AG.RelativeRepairComposition.W5RelativeObstruction.actual_class_comparison
+AAT.AG.RelativeRepairComposition.W5RelativeObstruction.actual_obstruction_value
+AAT.AG.RelativeRepairComposition.W5RelativeObstruction.boundary_range_eq_kernel
+AAT.AG.RelativeRepairComposition.W5RelativeObstruction.cycleOfFace
+AAT.AG.RelativeRepairComposition.W5RelativeObstruction.h2Coordinate
+AAT.AG.RelativeRepairComposition.W5RelativeObstruction.h2Coordinate_class
+AAT.AG.RelativeRepairComposition.W5RelativeObstruction.originalH2Coordinate
+AAT.AG.RelativeRepairComposition.W5RelativeObstruction.original_syzygy
+AAT.AG.RelativeRepairComposition.W5RelativeObstruction.reading
+AAT.AG.RelativeRepairComposition.W5RelativeObstruction.reading_surjective
+AAT.AG.RelativeRepairComposition.W5RelativeObstruction.reading_value
+AAT.AG.RelativeRepairComposition.pathEdges.eq_def
+```
+
+</details>
