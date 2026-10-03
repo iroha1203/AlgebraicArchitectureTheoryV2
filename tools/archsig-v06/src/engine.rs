@@ -577,8 +577,8 @@ struct Below {
     count: usize,
     /// 書き込みの場所ごとの結果。分岐や書き込みが同じ場所を何度書いても、たどるのは一度だけである。
     done: BTreeMap<Vec<String>, Vec<Vec<String>>>,
-    /// 定義を読んでいない型のうち、`resolves` がないか外部を指すもの。意味を持つフィールドを持たないとみなす。
-    unobserved: BTreeSet<String>,
+    /// `resolves` が外部を指す型。意味を持つフィールドを持たないとみなす。
+    external: BTreeSet<String>,
 }
 
 impl Below {
@@ -602,8 +602,7 @@ impl Below {
 
     /// フィールド `field` の型 `ty` をたどれるか。定義を読んだ型ならたどる。
     /// `?` の型、曖昧な型、型でない要素は沈黙する(マニュアル第3章、設計 §3.2)。
-    /// 定義を読んでいない型は、`resolves` がソースを指せば `unread` で沈黙する(設計 §3.3)。
-    /// `resolves` がないか外部を指す型は、フィールドを観測していない型としてたどらず、`unobserved` に積む。
+    /// 定義を読んでいない型は、設計 §3.3 のとおりに沈黙する。`resolves` が外部を指す型はたどらず、`external` に積む。
     fn known(&mut self, s: &Structure, field: &str, ty: &str) -> Result<bool, Silence> {
         if ty.starts_with('?') {
             return Err(match s.atoms.iter().find(|a| a.kind == "defines" && a.subject == field) {
@@ -623,11 +622,11 @@ impl Below {
             };
         }
         match s.resolves.get(ty) {
-            Some(Resolution::Source(_)) => Err(s.kind(ty).err().unwrap_or_else(|| Silence::new(Reason::Unread))),
-            _ => {
-                self.unobserved.insert(ty.to_string());
+            Some(Resolution::External(_)) => {
+                self.external.insert(ty.to_string());
                 Ok(false)
             }
+            _ => Err(s.kind(ty).err().unwrap_or_else(|| Silence::new(Reason::Unread))),
         }
     }
 
@@ -866,7 +865,7 @@ fn compare(
                         "move_then_after": {"writes": writes_json(&b2.writes)},
                         "diverging": diverging,
                     }),
-                    conditions: conditions(&ext1, &ext2, calls, &below.unobserved),
+                    conditions: conditions(&ext1, &ext2, calls, &below.external),
                     ..Finding::default()
                 });
             }
@@ -877,7 +876,7 @@ fn compare(
         outcome: "holds",
         basis: json!({"before": a, "after": b, "meaning": meaning}),
         check: json!({"branches": compared}),
-        conditions: conditions(&ext1, &ext2, calls, &below.unobserved),
+        conditions: conditions(&ext1, &ext2, calls, &below.external),
         ..Finding::default()
     })
 }
@@ -891,7 +890,7 @@ fn has_call(v: &Value) -> bool {
     }
 }
 
-fn conditions(e1: &BTreeSet<String>, e2: &BTreeSet<String>, calls: bool, unobserved: &BTreeSet<String>) -> Vec<String> {
+fn conditions(e1: &BTreeSet<String>, e2: &BTreeSet<String>, calls: bool, types: &BTreeSet<String>) -> Vec<String> {
     let mut out = vec![SAME_TYPE.to_string(), NO_RELATION.to_string()];
     if calls {
         out.push(SAME_CALL.to_string());
@@ -899,8 +898,8 @@ fn conditions(e1: &BTreeSet<String>, e2: &BTreeSet<String>, calls: bool, unobser
     for e in e1.union(e2) {
         out.push(format!("外部の要素 {e} の呼び出しは、観測した要素へ書き込まないとみなす"));
     }
-    for t in unobserved {
-        out.push(format!("型 {t} はフィールドを観測していないので、意味を持つフィールドを持たないとみなす"));
+    for t in types {
+        out.push(format!("外部の型 {t} は、意味を持つフィールドを持たないとみなす"));
     }
     out
 }

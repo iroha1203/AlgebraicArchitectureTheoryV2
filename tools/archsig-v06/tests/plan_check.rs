@@ -386,6 +386,7 @@ fn a_law_without_pairs_is_silent_where_the_structure_was_not_read() {
 
 /// 変更前: f(o) は g(x=$o.a) を呼び、g は T.a = 1 のあとで T.p = $x を書く。p は呼び出しの時点の a。
 const CALL_TIME: &str = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.T.a", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
@@ -535,6 +536,7 @@ fn changes_keep_is_silent_when_the_target_was_not_read() {
 
 /// 変更前: f(o: T) が T.p = $o.a を書く。T.p が payment-info。
 const SPLITTING: &str = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:ccccccc"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:ccccccc"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:ccccccc"}
 {"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:1@blob:ccccccc"}
 {"kind": "defines", "subject": "m.T.a", "value": "field", "type": "int", "at": "m.py:2@blob:ccccccc"}
@@ -813,6 +815,7 @@ fn too_many_pairs_of_branches_are_silent_with_limit() {
 
 /// 変更前: f(o) は、o.s.p(注文の中の S の p)に 1 を書く。p は payment-info を持つ。
 const NESTED: &str = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.S", "at": "m.py:2@blob:aaaaaaa"}
@@ -946,6 +949,7 @@ fn the_heads_of_a_long_via_are_compared() {
     repo.map(
         "m.py",
         r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.A.o", "value": "field", "type": "m.O", "at": "m.py:2@blob:aaaaaaa"}
@@ -1002,6 +1006,7 @@ fn whole(name: &str, plan_value: &str, read_meaning_of_s: bool) -> Value {
 "#);
     let meaning_range = if read_meaning_of_s { "{\"kind\": \"observed\", \"subject\": \"m.py\", \"scope\": \"meaning:payment-info\", \"at\": \"m.py@blob:aaaaaaa\"}\n" } else { "" };
     repo.map("m.py", &format!("{}{meaning_range}{}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
 "#, r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
 {"kind": "meaning", "subject": "m.S.p", "meaning": "payment-info", "uses": ["m.py:7@blob:aaaaaaa"], "at": "m.py:4@blob:aaaaaaa"}
@@ -1047,6 +1052,7 @@ fn places_below_a_recursive_type_with_the_meaning_are_limit() {
     let repo = Repo::new("below-recursive");
     repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
     repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.O.n", "value": "field", "type": "m.N", "at": "m.py:2@blob:aaaaaaa"}
@@ -1087,6 +1093,7 @@ fn a_place_below_a_via_write_with_the_meaning_is_compared() {
         if r["outcome"] == "fails" { repo.run(&["show", r["id"].as_str().unwrap()]) } else { r }
     };
     const MAP: &str = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.A.o", "value": "field", "type": "m.O", "at": "m.py:2@blob:aaaaaaa"}
@@ -1113,6 +1120,7 @@ fn below_case(name: &str, atoms: &str, plan: &str) -> (Value, Value) {
         &format!(
             "{}{atoms}",
             r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
 "#
         ),
@@ -1177,6 +1185,7 @@ fn too_many_places_below_are_limit() {
 {"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.T0", "at": "m.py:2@blob:aaaaaaa"}
 "#,
     );
+    atoms.push_str("{\"kind\": \"defines\", \"subject\": \"m.T10\", \"value\": \"type\", \"at\": \"m.py:3@blob:aaaaaaa\"}\n");
     for i in 0..10 {
         atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.T{i}\", \"value\": \"type\", \"at\": \"m.py:3@blob:aaaaaaa\"}}\n"));
         for f in ["a", "b"] {
@@ -1193,11 +1202,19 @@ const S_P: &str = r#"{"kind": "defines", "subject": "m.S", "value": "type", "at"
 "#;
 
 #[test]
-fn a_type_without_its_fields_observed_is_a_condition() {
-    // m.S.p の型 int は定義も resolves もない。意味を持つフィールドを持たないとみなし、成り立つ条件に並べる。
+fn an_external_type_is_a_condition() {
+    // m.S.p の型 int は、resolves が外部を指す(below_case の観測に入っている)。意味を持つフィールドを持たないとみなし、成り立つ条件に並べる。
     let (s, r) = below_case("below-condition", &format!("{O_S}{S_P}{F_WRITES_A}"), PLAN_WRITES_B);
     assert_eq!(r["kind"], "counterexample", "{s}");
-    assert!(r["conditions"].as_array().unwrap().iter().any(|c| c.as_str().unwrap().starts_with("型 int はフィールドを観測していない")), "{r}");
+    assert!(r["conditions"].as_array().unwrap().iter().any(|c| c == "外部の型 int は、意味を持つフィールドを持たないとみなす"), "{r}");
+}
+
+#[test]
+fn a_type_without_resolves_is_unread_below() {
+    // m.O.s の型 m.Z は、定義も resolves もない(設計 §3.3)。要素の名前を次に読む所として返す。
+    let (s, r) = below_case("below-no-resolves", &format!("{}{F_WRITES_A}", O_S.replace("\"type\": \"m.S\"", "\"type\": \"m.Z\"")), PLAN_WRITES_B);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.Z"), "{s}");
 }
 
 #[test]

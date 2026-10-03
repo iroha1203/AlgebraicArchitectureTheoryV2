@@ -75,6 +75,10 @@ fn implementation(plan: &str, edit: impl Fn(&str) -> String) -> BTreeMap<String,
         a["at"] = Value::String(format!("{file}:{}", i + 1));
         out.entry(file).or_default().push_str(&edit(&(a.to_string() + "\n")));
     }
+    // 実装したソースを観測する解析器は、そこで使う組み込みの型 str の解決も書く(第3章)。
+    for (file, text) in out.iter_mut().filter(|(_, t)| t.contains("\"str\"")) {
+        text.push_str(&format!("{{\"kind\": \"resolves\", \"subject\": \"str\", \"object\": \"external:builtins\", \"at\": \"{file}:1\"}}\n"));
+    }
     out
 }
 
