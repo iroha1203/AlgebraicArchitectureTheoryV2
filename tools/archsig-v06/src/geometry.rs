@@ -56,13 +56,17 @@ pub struct Geometry<'a> {
     unknown: BTreeMap<String, Silence>,
     /// `resolves` が外部だけを指す要素。外部の要素として、どの局所にも属さない。
     external: BTreeSet<String>,
+    /// 型と受け継ぎ。読み書きのフィールドの名前を、受け継ぎで定義した型のフィールドに解く(設計 §3.5)。
+    inherited: Structure,
 }
 
 impl<'a> Geometry<'a> {
     /// `defined` は要素の定義を探す Atom の列、`body` はチャネルを送り受けする操作を探す Atom の列。
     /// 候補の中で定義した要素は `file`、それ以外は `defines` の `at` のパスで定義される。
     pub fn new(reading: &'a Reading, defined: &[Atom], body: &[Atom]) -> Geometry<'a> {
-        let mut g = Geometry { reading, sources: BTreeMap::new(), channels: BTreeMap::new(), unknown: BTreeMap::new(), external: BTreeSet::new() };
+        let kinds = |a: &&Atom| matches!(a.kind.as_str(), "defines" | "inherits" | "resolves" | "observed");
+        let inherited = Structure::new(body.iter().filter(kinds).cloned().collect());
+        let mut g = Geometry { reading, sources: BTreeMap::new(), channels: BTreeMap::new(), unknown: BTreeMap::new(), external: BTreeSet::new(), inherited };
         for a in defined.iter().filter(|a| a.kind == "defines") {
             let path = match &a.file {
                 Some(f) => Some(f.clone()),
@@ -123,8 +127,23 @@ impl<'a> Geometry<'a> {
     }
 
     /// Atom が属する局所。名指す要素が属する局所すべて(マニュアル第4章)。
+    /// 読み書きのフィールドは、受け継ぎで解いたフィールドも名指す。
     pub fn atom_locals(&self, a: &Atom) -> BTreeSet<String> {
-        named(a).into_iter().flat_map(|n| self.element_locals(n)).collect()
+        let mut out: BTreeSet<String> = named(a).into_iter().flat_map(|n| self.element_locals(n)).collect();
+        for n in self.accessed(a) {
+            if let Ok(x) = self.inherited.access(n) {
+                out.extend(self.element_locals(&x));
+            }
+        }
+        out
+    }
+
+    /// 読み書きの Atom の `via` と `object` のフィールド。
+    fn accessed<'x>(&self, a: &'x Atom) -> Vec<&'x str> {
+        if !matches!(a.kind.as_str(), "writes" | "reads") {
+            return Vec::new();
+        }
+        a.via.iter().flatten().chain(a.object.as_ref()).map(String::as_str).collect()
     }
 
     /// 候補の Atom `plan` を局所ごとに分ける(マニュアル第5章 問い7)。
@@ -139,6 +158,11 @@ impl<'a> Geometry<'a> {
             // 定義がなく、`resolves` が外部でないソースを指す要素は、属する局所が決まらない(設計 §3.3)。
             if let Some((n, s)) = named(a).into_iter().find_map(|n| self.unknown.get(self.holder(n)).map(|s| (n, s))) {
                 out.unknown.push((n.to_string(), s.clone()));
+                continue;
+            }
+            // 読み書きのフィールドを受け継ぎで解けなければ、名指す要素が決まらない。
+            if let Some((n, s)) = self.accessed(a).into_iter().find_map(|n| self.inherited.access(n).err().map(|s| (n, s))) {
+                out.unknown.push((n.to_string(), s));
                 continue;
             }
             let locals = self.atom_locals(a);

@@ -633,7 +633,8 @@ fn fields_of(s: &Structure, names: &BTreeSet<String>, removes: &BTreeSet<String>
     let mut silence = names
         .range(prefix.clone()..)
         .take_while(|n| n.starts_with(&prefix))
-        .find(|n| member(n) && !s.elements.contains_key(*n) && !removed(n))
+        // 読み書きの名前が受け継ぎで別のフィールドに解けるなら、その名前の定義はない(マニュアル第3章)。
+        .find(|n| member(n) && !s.elements.contains_key(*n) && !removed(n) && !s.access(n).is_ok_and(|x| x != **n))
         .map(|n| s.kind(n).err().unwrap_or_else(|| Silence::new(Reason::Unread)));
     let mut out = Vec::new();
     for (name, e) in s.elements.range(prefix.clone()..).take_while(|(n, _)| n.starts_with(&prefix)) {
@@ -743,11 +744,10 @@ impl Below<'_> {
     }
 
     /// 型 `ty` のフィールドと、`inherits` の型から受け継いだフィールド(設計 §5.4)。受け継いだフィールドは、それを定義した型の名前で返す。
-    /// 受け継ぐ型は、たどる型と同じに扱う。分からないフィールドと、決まらない受け継ぎの沈黙は積み、ほかのフィールドを返す。
-    fn members(&mut self, s: &Structure, ty: &str) -> Vec<String> {
+    /// 受け継がれる型は、たどる型と同じに扱う。分からないフィールドと、決まらない受け継ぎの最初の沈黙を一緒に返す。
+    fn members(&mut self, s: &Structure, ty: &str) -> (Vec<String>, Option<Silence>) {
         let names = s.mentioned();
-        let (mut out, silence) = fields_of(s, &names, &self.removes, ty);
-        self.hold(silence.map_or(Ok(()), Err));
+        let (mut out, mut silence) = fields_of(s, &names, &self.removes, ty);
         let mut inherited = BTreeSet::new();
         let mut seen = BTreeSet::new();
         let mut todo: Vec<String> = s.bases.get(ty).cloned().unwrap_or_default();
@@ -759,28 +759,31 @@ impl Below<'_> {
                 Ok(true) => {}
                 Ok(false) => continue,
                 Err(e) => {
-                    self.hold(Err(e));
+                    silence.get_or_insert(e);
                     continue;
                 }
             }
-            let (fs, silence) = fields_of(s, &names, &self.removes, &b);
-            self.hold(silence.map_or(Ok(()), Err));
+            let (fs, unknown) = fields_of(s, &names, &self.removes, &b);
+            silence = silence.or(unknown);
             inherited.extend(fs.iter().map(|f| f[b.len() + 1..].to_string()));
             todo.extend(s.bases.get(&b).into_iter().flatten().cloned());
         }
         for n in inherited {
             match s.member(ty, &n) {
-                Ok(f) if !out.contains(&f) && !s.elements.contains_key(&format!("{ty}.{n}")) => out.push(f),
+                Ok(f) if !s.elements.contains_key(&format!("{ty}.{n}")) => out.push(f),
                 Ok(_) => {}
-                Err(e) => self.hold(Err(e)),
+                Err(e) => {
+                    silence.get_or_insert(e);
+                }
             }
         }
-        out
+        (out, silence)
     }
 
     /// たどる型 `ty` のフィールド。たどったフィールドが上限を超えたら `limit` で沈黙する(設計 §5.1)。
     fn fields(&mut self, s: &Structure, ty: &str) -> Result<Vec<String>, Silence> {
-        let out = self.members(s, ty);
+        let (out, silence) = self.members(s, ty);
+        self.hold(silence.map_or(Ok(()), Err));
         self.count += out.len();
         if self.count > STEP_LIMIT {
             return Err(Silence::new(Reason::Limit));
@@ -812,8 +815,8 @@ impl Below<'_> {
             if !seen.insert(ty.clone()) || !self.known(s, &field, &ty)? {
                 continue;
             }
-            // 分からないフィールドの沈黙は、`walk` がこの型をたどるときにも積む。
-            for f in self.members(s, &ty) {
+            // 分からないフィールドの沈黙は、`walk` がこの型をたどるときに積んでいる。
+            for f in self.members(s, &ty).0 {
                 meaning_known(self.prior, s, &f, meaning)?;
                 if has_meaning(s, &f, meaning) {
                     return Ok(true);

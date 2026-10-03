@@ -454,8 +454,12 @@ impl Structure {
     /// どこにもなければ `<ty>.<name>` を返す。
     pub fn member(&self, ty: &str, name: &str) -> Result<String, Silence> {
         let own = format!("{ty}.{name}");
-        if self.elements.contains_key(&own) {
+        if self.elements.contains_key(&own) || !self.bases.contains_key(ty) {
             return Ok(own);
+        }
+        // 型が曖昧なら、どの定義の受け継ぎかが決まらない。
+        if self.ambiguous(ty) {
+            return Err(Silence::new(Reason::Unresolved));
         }
         let mut found = BTreeSet::new();
         let mut seen = BTreeSet::new();
@@ -485,7 +489,7 @@ impl Structure {
     /// 型がそのフィールドを定義していなければ、`inherits` の型から探す(`member`)。
     pub fn access(&self, name: &str) -> Result<String, Silence> {
         match name.rsplit_once('.') {
-            Some((ty, field)) if !name.starts_with('?') => self.member(ty, field),
+            Some((ty, field)) => self.member(ty, field),
             _ => Ok(name.to_string()),
         }
     }
