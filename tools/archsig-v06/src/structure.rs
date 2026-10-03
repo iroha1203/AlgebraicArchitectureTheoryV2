@@ -689,9 +689,9 @@ fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn
         let fields: Vec<&String> = a.via.iter().flatten().chain(a.object.as_ref()).collect();
         let known = fields.iter().take_while(|o| !o.starts_with('?')).count();
         match fields.first().and_then(|f| f.rsplit_once('.')) {
-            // 書き込みの `via` と `object` は、最初のフィールドから型でたどった道のフィールドを名指す(設計 §3.6)。
+            // `via` を通る書き込みの `via` と `object` は、最初のフィールドから型でたどった道のフィールドを名指す(設計 §3.6)。
             // 書き直していない書き込みは、変更後の型のフィールドを名指す。道の上の `?` の名前の先は、名指す要素が決まらない。
-            Some((ty, _)) if a.kind == "writes" && !fields[0].starts_with('?') => {
+            Some((ty, _)) if a.kind == "writes" && fields.len() > 1 && !fields[0].starts_with('?') => {
                 s.named_path(Some(ty.to_string()), ty.to_string(), &field_names(&fields[..known]), stop, names, &mut gaps);
                 if let Some(q) = fields.get(known) {
                     gaps.push(Gap::Name(q.to_string()));

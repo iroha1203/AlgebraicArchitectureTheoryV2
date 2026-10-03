@@ -3999,6 +3999,11 @@ fn a_call_in_a_returned_expression_is_made_when_observed_before_the_return() {
 /// 変更前: m.O.a の型は m.A。f(o) は o.a.x に 1 を書く(`via [m.O.a]`、`object m.A.x`)。
 /// 候補は m.O.a の型を m.B に書き換え、f は書き直さない。`plan` は候補に足す Atom。
 fn retyped_via(name: &str, plan: &str) -> Value {
+    result(&retyped_via_all(name, plan), "m.f").clone()
+}
+
+/// `retyped_via` の実行の結果の全体。
+fn retyped_via_all(name: &str, plan: &str) -> Value {
     let repo = Repo::new(name);
     repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
     repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
@@ -4020,16 +4025,15 @@ fn retyped_via(name: &str, plan: &str) -> Value {
         &format!("{}{plan}", r#"{"kind": "defines", "subject": "m.O.a", "value": "field", "type": "m.B", "file": "m.py", "at": "plan:p"}
 "#),
     );
-    let s = repo.run(&["plan", "check", "p"]);
-    result(&s, "m.f").clone()
+    repo.run(&["plan", "check", "p"])
 }
 
 
 #[test]
 fn removing_the_field_of_the_old_type_is_not_missing_and_the_new_one_is() {
     // 書き換えた後の f の書き込みは m.B.x を名指し、m.A.x はもう名指さない(f は書き込みだけを持つ)。
-    let r = retyped_via("retyped-via-remove-old", "{\"kind\": \"removes\", \"subject\": \"m.A.x\", \"at\": \"plan:p\"}\n");
-    assert_ne!(r["kind"], "missing", "{r}");
+    let s = retyped_via_all("retyped-via-remove-old", "{\"kind\": \"removes\", \"subject\": \"m.A.x\", \"at\": \"plan:p\"}\n");
+    assert!(s["results"].as_array().unwrap().iter().all(|r| r["subject"] != "m.f" || r["kind"] != "missing"), "{s}");
     let r = retyped_via("retyped-via-remove-new", "{\"kind\": \"removes\", \"subject\": \"m.B.x\", \"at\": \"plan:p\"}\n");
     assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("missing")), "{r}");
 }
