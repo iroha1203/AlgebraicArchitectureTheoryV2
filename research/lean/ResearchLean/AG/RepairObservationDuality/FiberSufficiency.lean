@@ -243,9 +243,9 @@ theorem decision_sufficient_fails :
   exact (solvable_zero_not_one k).2
     ((hf 0 (Set.mem_univ _) 1 (Set.mem_univ _) rfl).mp (solvable_zero_not_one k).1)
 
+omit [Field k] in
 /-- Observing the whole input numerically gives the positive instance of C's
 numerical predicate, with every complete correction value returned directly. -/
-omit [Field k] in
 theorem numerical_sufficient_identity :
     NumericalSufficient (id : k → k) id Set.univ id :=
   ⟨some, fun _ _ => rfl⟩
