@@ -130,7 +130,7 @@ theorem original_rhs (v : Values) (f : Bool) :
     faceCoordinates true (v false) (v true) (-actualDefect true (v false) (v true)) f =
       affineRhs rhsLinear 0 v (if f then 1 else 0) := by
   rw [signedDefect_coordinates]
-  cases f <;> simp [affineRhs_apply,rhsLinear]
+  cases f <;> simp [affineRhs_apply,rhsLinear_apply]
 
 /-- The complete equation is precisely both original authored Laws and both original candidate masks. -/
 theorem equation_iff (p : Permissions) (v : Values) (a : Corrections) :

@@ -5,9 +5,16 @@ import ResearchLean.AG.RepairObservationDuality.FiniteRepairPlanning
 /-!
 # G-131 E: the full original K+ native equation
 
+## Implementation notes
+
 The entire kernel at each original vertex is used. Both native authored face
 rows are evaluated before fixing a/b corrections. The numerical matrix and
 signed RHS come from those same words, not from W5's different presentation.
+The full kernel bases and fixed-edge cochain coordinates retain every native
+correction value required by GOAL E and n1017 §5.3. Coordinates restricted to
+the differential's image would lose output values, so that alternative is
+not used. Importing W5's three-edge equation would omit the original c-loop;
+the matrix is instead generated from this four-edge native differential.
 -/
 namespace AAT.AG.RepairObservationDuality.KPlusNativeEquation
 open CategoryTheory TransportCoherence TransportCoherence.Arbitrary AbelianLiftingObstruction

@@ -3,10 +3,20 @@ import ResearchLean.AG.RepairObservationDuality.KPlusNumericalQueries
 /-!
 # G-131 E: K+ reference programs and the same real faces
 
+## Implementation notes
+
 Outputs are finite syntax containing only original references, inverses and
 compositions. No numerical zero value or hidden query is stored in this AST.
 Its interpretation produces the same complete original four-edge map family;
 the two authored faces and original fixed maps define correctness independently.
+GOAL E and n1017 §5.3 permit reference expressions as a distinct output language.
+Expression records those permitted operations, and Program supplies expressions
+for the original e/c edges. Interpretation is separate so the same finite syntax
+is generated before its physical a/b inputs are known. Returning evaluated maps
+or a function of the unknown input would hide value acquisition in the output;
+storing correctness in Program would make validity part of its construction.
+These alternatives are replaced by a finite AST and an independent ValidProgram
+predicate, whose original whole-map face equations are proved after interpretation.
 -/
 namespace AAT.AG.RepairObservationDuality.KPlusReferencePrograms
 open TransportCoherence AbelianLiftingObstruction RelativeRepairComposition NativeAffine

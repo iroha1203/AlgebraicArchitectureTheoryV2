@@ -5,9 +5,17 @@ import ResearchLean.AG.RepairObservationDuality.PrimitiveInputQueries
 /-!
 # G-131 E: K+ numerical optimum and generated whole solver
 
+## Implementation notes
+
 The lower bound ranges over all total adaptive controllers on all physical
 inputs. The attaining controller generates its finite minimum plan and native
 matrix section before values are known and returns the complete u/z pair.
+The argmin uses the complete finite primitive-index and input-direction data,
+matching GOAL C/D's generation before acquisition. The controller reads visible
+history and then applies the section of the original native matrix. A hardcoded
+two-query plan would not provide the required finite generation from those data;
+passing the unknown input or RHS to the controller would bypass acquisition.
+Neither alternative is used to construct the attaining procedure.
 -/
 namespace AAT.AG.RepairObservationDuality.KPlusNumericalQueries
 open RelativeRepairComposition KPlusInput KPlusActualRepairs KPlusNativeEquation PrimitiveQueries

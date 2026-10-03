@@ -1380,3 +1380,30 @@ Research上の目標証明と本体への蒸留は区別する。今回の固定
 | `QueryOptimum.lean` | 29 | `e113e114454ffabde5c151491ef81b5a2d2596ff84d0b5834bf272cf15c50ad9` | `635833d276afd2b2a2530fdcce6873006df6d4cb75dd5753103c4b630c6b0d32` |
 | `W1NumericalEquation.lean` | 29 | `9056d8268ccebcca66bba4b379198ff8c31c9c086747c39d66594e8f8bc61c21` | `d3a0fb07a6220c27fe799e5e210e322b4397a26fa09c7571b38e6dccc754ab55` |
 | `W1SubdivisionQueries.lean` | 28 | `e3270fbb87cefdc06f9e92df3e10b5c466257951e8946463446ea0ac9de96357` | `3a32a8fd82a34e09459b96a4ce02c035c7f39a0f1d9ebaaade378e61167821eb` |
+
+
+## C11 標準PR第二ラウンドの非中心指摘と直接対応
+
+固定head `066286de41b040bcb0bc7a133f1aad33aa840503` の標準PR第二ラウンドは、数学A/Bが
+`No major findings`、LeanA/Bがそれぞれ非中心一件で `Minor issues`。
+全四本を収集し、[第二ラウンド監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5974251823)に
+中心0・非中心2として記録した。通常PRの品質指摘で、停止条件には該当していない。
+
+LeanAが名指しした `KPlusNativeEquation/KPlusNumericalQueries/KPlusReferencePrograms` の
+module docstringだけに Implementation notes と採用理由・退けた代案を補った。
+LeanBが名指しした `W1NumericalEquation.original_rhs` の proof 一行を既存 `rhsLinear_apply` へ接続した。
+宣言追加・削除、既存statement、def/instanceの本体・値、import方向、台帳statusは変更しない。
+この通常PRの非中心修正は共有protocolの直接対応で新規単一subagentに資格と実解消を確認させる。
+合格後、別の新規最終四本で全A–Eを再判定する。最終gateの指摘に直接対応は適用しない。
+
+四sourceのcurrent exact-prefix audit（`research/lean` cwd の
+`lake env lean .tmp/G131Cycle11/<Stem>Audit.lean`）を各一つずつ実行し、全exit0・warning/errorなし。
+Stemは KPlusNativeEquation/KPlusNumericalQueries/KPlusReferencePrograms/W1NumericalEquationFinalFix。
+175個別公開名に欠落なし・標準公理のみ。数学的な宣言・値は不変で、累積812個別名を保持する。
+
+| source | 個別名 | current source SHA256 | raw SHA256 |
+| --- | --- | --- | --- |
+| `KPlusNativeEquation.lean` | 28 | `4c039f4828f44b2e1ea7c3e46c15425a38c6a4e17c00792c7ebed27453cf65b2` | `4455de0a204fc5336d3559cbd668935d6467e7a2db0402a0cc8fcc14ecbda035` |
+| `KPlusNumericalQueries.lean` | 22 | `9b3fc762bf654a555a59f484e65f6bf261c0fa4731c9f3cb8091dc5601aa9f2f` | `5c51ce15beab029c1ba5ab016b4f3d3c90760f6f82f19164d441c1feed816ff1` |
+| `KPlusReferencePrograms.lean` | 96 | `ad20b1746a8911febee37bcbd9589d5c20157bb6df1c6dde2e5229093a951c14` | `87f27097397f1e2cb93c8da5417656a3cb058687f43dae660dd47aef6f1d5181` |
+| `W1NumericalEquation.lean` | 29 | `3e4a94803d6f69efcd5e761e083cb0d4eb4a66200d5dd5a9d9a7daf583c569bb` | `d3a0fb07a6220c27fe799e5e210e322b4397a26fa09c7571b38e6dccc754ab55` |
