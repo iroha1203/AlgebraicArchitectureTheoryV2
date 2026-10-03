@@ -79,22 +79,22 @@ impl Store {
     }
 
     /// 分けた候補を、局所ごとに `.archsig/plans/<候補>/<局所>/` に書き出す(マニュアル第5章 問い7)。
-    /// 中身は、局所の候補の見出しとその局所の Atom(`plan.jsonl`)と、共有の条件(`shared.jsonl`)である。
+    /// 中身は、局所の候補の見出しと、その局所の Atom と共有の条件を、元の候補に書いた順のまま並べたもの(`plan.jsonl`)である。
+    /// 候補の中の手順の順は Atom の順なので(マニュアル第3章)、局所の Atom と共有の条件を分けて書くと、手順の順が変わる。
     pub fn write_split(&self, plan: &str, base: Option<&str>, split: &Split) -> Result<(), String> {
         let line = |a: &Atom| serde_json::to_string(a).unwrap() + "\n";
-        let shared: String = split.shared.iter().map(line).collect();
         // 局所の候補が、元の候補やその外に重ならないように書く。書き出す前に、すべての局所を確かめる。
         if let Some(local) = split.locals.keys().find(|l| l.split('/').any(|c| matches!(c, "" | "." | ".."))) {
             return Err(format!("局所 {local} は、候補の下に書き出せない"));
         }
-        for (local, atoms) in &split.locals {
+        for local in split.locals.keys() {
             let name = format!("{plan}/{local}");
             let dir = self.dir().join("plans").join(&name);
             std::fs::create_dir_all(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;
             let head = Atom { kind: "plan".to_string(), subject: name, base: base.map(str::to_string), ..Atom::default() };
+            let atoms = split.sequence.iter().filter(|(l, _)| l.as_ref().is_none_or(|l| l == local)).map(|(_, a)| a);
             let text: String = std::iter::once(&head).chain(atoms).map(line).collect();
             std::fs::write(dir.join("plan.jsonl"), text).map_err(|e| e.to_string())?;
-            std::fs::write(dir.join("shared.jsonl"), &shared).map_err(|e| e.to_string())?;
         }
         Ok(())
     }

@@ -49,15 +49,25 @@ fn the_plan_of_chapter_2_is_split_into_three_locals() {
     locals.sort();
     assert_eq!(locals, ["shop/order", "shop/payment", "shop/shipping"]);
 
-    // 局所をまたぐ呼び出しと引数渡し、局所をまたぐ corresponds が共有に入る。
-    let shared = lines(&repo, ".archsig/plans/split-order/shop/payment/shared.jsonl");
+    // 局所をまたぐ呼び出しと引数渡し、局所をまたぐ corresponds が共有に入る。共有の条件は、結果の詳細に並ぶ。
+    let shared: Vec<Value> = repo.run(&["show", r["id"].as_str().unwrap()])["check"]["shared"].as_array().unwrap().clone();
     assert!(has(&shared, "calls", UPDATE, Some(RESET_OP)), "{shared:?}");
     assert!(has(&shared, "passes", &format!("{UPDATE}->{RESET_OP}"), None), "{shared:?}");
     assert!(has(&shared, "corresponds", "shop.order.model.Order.shipping_address", Some("shop.shipping.model.OrderShipping.address")));
     assert!(has(&shared, "corresponds", "shop.order.model.Order.payment_ref", Some("shop.payment.model.OrderPayment.ref")));
     // 引数の対応は配送の局所に閉じるので、共有に入らない。
     assert!(!has(&shared, "corresponds", &format!("{UPDATE}.$order"), None), "{shared:?}");
-    assert_eq!(shared, lines(&repo, ".archsig/plans/split-order/shop/shipping/shared.jsonl"));
+    // 局所の候補は、その局所の Atom と共有の条件を、元の候補に書いた順のまま持つ(手順の順は Atom の順。マニュアル第3章)。
+    // 配送の局所では、共有の reset_authorization の呼び出しが、局所の書き込みより前に並ぶ。
+    let original: Vec<Value> = fixed_plan().lines().map(|l| serde_json::from_str(l).unwrap()).collect();
+    for local in ["shop/payment", "shop/shipping", "shop/order"] {
+        let atoms = lines(&repo, &format!(".archsig/plans/split-order/{local}/plan.jsonl"));
+        for a in &shared {
+            assert!(atoms.contains(a), "{local}: {a}");
+        }
+        let positions: Vec<usize> = atoms[1..].iter().map(|a| original.iter().position(|o| o == a).unwrap()).collect();
+        assert!(positions.windows(2).all(|w| w[0] < w[1]), "{local}: {positions:?}");
+    }
 
     // 局所の候補は、見出しとその局所の Atom を持つ。元は候補全体と同じ。
     let payment = lines(&repo, ".archsig/plans/split-order/shop/payment/plan.jsonl");
@@ -177,10 +187,14 @@ fn a_write_through_a_field_of_another_local_is_shared() {
     );
     let s = repo.run(&["plan", "split", "p"]);
     assert_eq!(result(&s, "p")["outcome"], "holds", "{s}");
-    let shared = lines(&repo, ".archsig/plans/p/shop/shipping/shared.jsonl");
+    let detail = repo.run(&["show", result(&s, "p")["id"].as_str().unwrap()]);
+    let shared: Vec<Value> = detail["check"]["shared"].as_array().unwrap().clone();
     assert!(has(&shared, "writes", UPDATE, Some("shop.shipping.model.Address.country")), "{shared:?}");
-    let local = lines(&repo, ".archsig/plans/p/shop/shipping/plan.jsonl");
-    assert!(!has(&local, "writes", UPDATE, None), "via が別の局所を名指す書き込みは、局所の候補に入らない: {local:?}");
+    let locals = detail["check"]["locals"].as_array().unwrap();
+    assert!(
+        locals.iter().all(|l| !has(l["atoms"].as_array().unwrap(), "writes", UPDATE, None)),
+        "via が別の局所を名指す書き込みは、局所の Atom に入らない: {detail}"
+    );
 }
 
 #[test]
