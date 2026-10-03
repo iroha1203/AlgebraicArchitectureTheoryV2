@@ -2200,6 +2200,10 @@ fn a_value_that_grows_beyond_the_term_limit_is_limit() {
     assert_eq!(o.as_deref(), Some("holds"), "{s}");
     let (o, reason, s) = run("grow-large", 5_000);
     assert_eq!((o.as_deref(), reason.as_deref()), (Some("silent"), Some("limit")), "{s}");
+    // 形をそろえると節が増える。1 != 1 を and で 250 個つなぐと、そろえる前は 999 節、そろえた後は 1,249 節。
+    let ne = vec!["1 != 1"; 250].join(" and ");
+    let (s, r) = t_case("grow-normalized", &[("writes", "m.O.t", ne.as_str(), "")], &[("writes", "m.O.t", ne.as_str(), "")], "");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
 }
 
 #[test]
@@ -2253,4 +2257,53 @@ fn a_condition_or_a_passed_value_that_grows_beyond_the_term_limit_is_limit() {
     steps.push(("writes", "m.O.t", "1", "$o.n == $o.n"));
     let (s, r) = t_case("when-grow", &steps, &steps, "");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
+}
+
+#[test]
+fn a_long_expression_does_not_decide_whether_a_removed_element_is_used() {
+    // m.j の長い式は構文として読めない($o.q(1).a)。字句から拾う名前(m.T.q)は m.U.a に届かないが、
+    // 構文として読めるかを確かめていないので、消える m.U.a を使うかは決まらない。結論を落とさず沈黙する。
+    let atoms = r#"{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T.q", "value": "field", "type": "m.U", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T.b", "value": "field", "type": "int", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U", "value": "type", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U.a", "value": "field", "type": "int", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.j", "value": "operation", "params": {"o": "m.T"}, "at": "m.py:6@blob:aaaaaaa"}
+"#;
+    let run = |name: &str, v: &str| {
+        let m = format!("{atoms}{{\"kind\": \"writes\", \"subject\": \"m.j\", \"object\": \"m.T.b\", \"value\": \"{v}\", \"at\": \"m.py:7@blob:aaaaaaa\"}}\n");
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map(
+            "m.py",
+            &format!(
+                "{}{m}",
+                r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+"#
+            ),
+        );
+        repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.U.a\", \"at\": \"plan:p\"}\n");
+        repo.run(&["plan", "check", "p"])
+    };
+    // 消える要素を使うかの結論は、Law なしの行に出る(changes commute の行とは別)。
+    let silent_j = |s: &Value| s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.j" && r["law"].is_null() && r["outcome"] == "silent");
+    // 短い式も読めないので沈黙する(対照)。
+    let s = run("removes-short-unreadable", "$o.q(1).a + 1");
+    assert!(silent_j(&s), "{s}");
+    let s = run("removes-long-unreadable", &format!("$o.q(1).a{}", " + 1".repeat(600)));
+    assert!(silent_j(&s), "{s}");
+}
+
+#[test]
+fn a_value_that_grows_through_calls_or_negation_is_limit() {
+    // 値の項は、呼び出しや否定を重ねても大きくなる。上限を超えれば limit。
+    let extra = r#"{"kind": "resolves", "subject": "m.g", "object": "external:lib", "at": "m.py:1@blob:aaaaaaa"}
+"#;
+    for (name, v) in [("grow-call", "m.g($o.t)"), ("grow-neg", "-$o.t")] {
+        let steps: Vec<(&str, &str, &str, &str)> = vec![("writes", "m.O.t", v, ""); 3_000];
+        let (s, r) = t_case(name, &steps, &steps, extra);
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{name}: {s}");
+    }
 }

@@ -134,7 +134,7 @@ pub fn execute(s: &Structure, op: &str, fresh: &dyn Fn(&str) -> bool) -> Result<
                         split.push((br, false));
                         continue;
                     }
-                    let v = normalize(bounded(br.state.eval(&freshen(c.value.clone(), &site, fresh))?)?);
+                    let v = bounded(normalize(bounded(br.state.eval(&freshen(c.value.clone(), &site, fresh))?)?))?;
                     let mut here = vec![(br, true)];
                     for (atom, truth) in literals(v) {
                         let mut more = Vec::new();
@@ -165,13 +165,13 @@ pub fn execute(s: &Structure, op: &str, fresh: &dyn Fn(&str) -> bool) -> Result<
                 // 呼び出しでは、渡す値を呼び出しの時点で読んで束ねる。
                 if let (true, StepKind::Call { binds, .. }) = (active, &step.kind) {
                     for (symbol, v) in binds {
-                        let v = normalize(bounded(br.state.eval(&freshen(v.clone(), &site, fresh))?)?);
+                        let v = bounded(normalize(bounded(br.state.eval(&freshen(v.clone(), &site, fresh))?)?))?;
                         br.state.args.insert(symbol.clone(), v);
                     }
                     br.calls.insert(index);
                 }
                 if let (true, StepKind::Write { place, value }) = (active, &step.kind) {
-                    let v = normalize(bounded(br.state.eval(&freshen(value.clone(), &site, fresh))?)?);
+                    let v = bounded(normalize(bounded(br.state.eval(&freshen(value.clone(), &site, fresh))?)?))?;
                     br.writes.push(Written {
                         place: place.clone(),
                         value: v.clone(),
@@ -212,6 +212,7 @@ fn freshen(v: Value, site: &str, fresh: &dyn Fn(&str) -> bool) -> Value {
 }
 
 /// 値の項の節の数が上限を超えれば `limit` で沈黙する。再帰せずに数え、上限に達したら数えるのをやめる。
+/// 形をそろえる前(そろえる処理の再帰を抑える)と、そろえた後(そろえて増えた節も数える)の両方で数える。
 fn bounded(v: Value) -> Result<Value, Silence> {
     let mut stack = vec![&v];
     let mut count = 0;

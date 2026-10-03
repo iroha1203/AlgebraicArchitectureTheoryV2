@@ -660,10 +660,13 @@ impl Structure {
             Expr::Name(n) if n.starts_with('?') => gaps.push(Some(n.clone())),
             Expr::Unknown => gaps.push(None),
             Expr::Not(x) | Expr::Neg(x) => self.named(op, x, out, gaps),
+            // 字句の数が上限を超えた式は、構文として読めるかを確かめていない。字句から拾った名前を数え、
+            // そのうえでたどれなかった所としても積む。消える要素を使うかを、拾った名前だけで決めない。
             Expr::TooLong(items) => {
                 for x in items {
                     self.named(op, x, out, gaps);
                 }
+                gaps.push(None);
             }
             Expr::Bin(_, a, b) => {
                 self.named(op, a, out, gaps);

@@ -79,7 +79,8 @@ fn mentions(tokens: &[Tok]) -> Vec<Expr> {
                 out.push(Expr::Unknown);
                 i += 1;
             }
-            Tok::Ident(w) if matches!(w.as_str(), "and" | "or" | "not") => i += 1,
+            // `and`・`or`・`not` は、`.` が続かなければ演算子である(`and.x` は名前)。
+            Tok::Ident(w) if matches!(w.as_str(), "and" | "or" | "not") && tokens.get(i + 1) != Some(&Tok::Dot) => i += 1,
             Tok::Ident(w) => {
                 let (parts, next) = dotted(i + 1, vec![w.clone()]);
                 let name = parts.join(".");
