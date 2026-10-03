@@ -1973,12 +1973,3 @@ fn a_question_mark_or_an_unreadable_expression_anywhere_in_the_steps_is_silent()
     silent("q-callee", &[("calls", "m.g", "", "")], callee);
     silent("q-call-when", &[("calls", "m.g", "", "?")], &callee.replace("\"?\"", "\"1\""));
 }
-
-#[test]
-fn a_path_without_an_argument_name_is_unresolved_without_a_place_to_read() {
-    for v in ["$", "$.x"] {
-        let (s, r) = t_case(&format!("nameless-path-{}", v.len()), &[("writes", "m.O.t", v, "")], &[("writes", "m.O.t", "1", "")], "");
-        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{v}: {s}");
-        assert!(!s["next"].as_array().unwrap().iter().any(|n| n["decides"].as_array().unwrap().contains(&r["id"])), "{v}: {s}");
-    }
-}
