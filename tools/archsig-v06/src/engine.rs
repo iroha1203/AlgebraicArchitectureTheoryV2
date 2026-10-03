@@ -9,7 +9,7 @@ use crate::atom::{Atom, parse_location};
 use crate::expr::BinOp;
 use crate::geometry::Split;
 use crate::law::{LawSet, Rule};
-use crate::structure::{Overlay, Reason, Resolution, STEP_LIMIT, Silence, State, StepKind, Structure, Value, question_at};
+use crate::structure::{Gap, Overlay, Reason, Resolution, STEP_LIMIT, Silence, State, StepKind, Structure, Value, question_at};
 
 /// 分岐の数の上限。超えたら `limit` で沈黙する。
 pub const BRANCH_LIMIT: usize = 256;
@@ -617,25 +617,9 @@ fn has_meaning(s: &Structure, field: &str, meaning: &str) -> bool {
     s.meanings.get(field).is_some_and(|ms| ms.iter().any(|m| m.meaning.as_deref() == Some(meaning)))
 }
 
-/// 構造が名指す名前。Atom の `subject`、`object`、`via`、`value` と `when` の式の中でたどるフィールドと呼び出す操作、
-/// 要素の型と引数の型。`resolves` の名前は、その Atom の `subject` である。`observed` の `subject` はソースのパスで、要素の名前ではない。
-fn mentioned(s: &Structure) -> BTreeSet<String> {
-    let mut out = s.expression_names();
-    for a in s.atoms.iter().filter(|a| a.kind != "observed") {
-        out.insert(a.subject.clone());
-        out.extend(a.object.iter().cloned());
-        out.extend(a.via.iter().flatten().cloned());
-    }
-    for e in s.elements.values() {
-        out.extend(e.ty.iter().cloned());
-        out.extend(e.params.values().cloned());
-    }
-    out
-}
-
 /// 型 `ty` のフィールド。フィールドの名前は `<型>.<フィールド>` である(マニュアル第3章)。定義を読んだものを返す。
 /// 構造が `<型>.<名前>` を名指しているのに定義を読んでいなければ、そのフィールドは分からないので、
-/// 定義を読んでいない要素として沈黙する(設計 §3.3、§5.1)。曖昧なフィールドも沈黙する。`names` は `mentioned(s)`。
+/// 定義を読んでいない要素として沈黙する(設計 §3.3、§5.1)。曖昧なフィールドも沈黙する。`names` は `s.mentioned()`。
 /// 沈黙はそのフィールドだけのもので、ほかのフィールドは返す。最初の沈黙を一緒に返す。
 /// 候補が `removes` した要素は、名指されていても沈黙しない。
 fn fields_of(s: &Structure, names: &BTreeSet<String>, removes: &BTreeSet<String>, ty: &str) -> (Vec<String>, Option<Silence>) {
@@ -730,10 +714,8 @@ impl Below<'_> {
         if s.elements.contains_key(ty) {
             // 候補が定義し直した型でも、変更前にその型を名指していて定義を読んでいなければ、元のフィールドは分からない(設計 §5.1)。
             // 変更前の構造で、定義を読んでいない要素として沈黙する(3.3)。変更前が名指さない型は、候補が新しく定義した型である。
-            if let (Some(at), Some((prior, _))) = (defined_at(s, ty), self.prior)
-                && at.starts_with("plan:")
-                && !prior.elements.contains_key(ty)
-                && mentioned(prior).contains(ty)
+            if let Some((prior, _)) = self.prior
+                && s.redefines_unread(prior, &prior.mentioned(), ty)
             {
                 if let Some(Resolution::External(_)) = prior.resolves.get(ty) {
                     // 変更前に外部を指していた型は、外部の型としてたどらない。
@@ -758,7 +740,7 @@ impl Below<'_> {
 
     /// たどる型 `ty` のフィールド。たどったフィールドが上限を超えたら `limit` で沈黙する(設計 §5.1)。
     fn fields(&mut self, s: &Structure, ty: &str) -> Result<Vec<String>, Silence> {
-        let (out, silence) = fields_of(s, &mentioned(s), &self.removes, ty);
+        let (out, silence) = fields_of(s, &s.mentioned(), &self.removes, ty);
         self.hold(silence.map_or(Ok(()), Err));
         self.count += out.len();
         if self.count > STEP_LIMIT {
@@ -792,7 +774,7 @@ impl Below<'_> {
                 continue;
             }
             // 分からないフィールドの沈黙は、`walk` がこの型をたどるときに積んでいる。
-            let (fs, _) = fields_of(s, &mentioned(s), &self.removes, &ty);
+            let (fs, _) = fields_of(s, &s.mentioned(), &self.removes, &ty);
             for f in fs {
                 meaning_known(self.prior, s, &f, meaning)?;
                 if has_meaning(s, &f, meaning) {
@@ -1330,6 +1312,7 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
     }
     // 名指す要素をたどれなかった操作は、消える要素を使うかが決まらない。
     // 使うと決まった操作(`missing`)と、定義を読んでいない操作(上の沈黙)は除く。
+    let before_names = before.mentioned();
     for (op, gaps) in overlay.untraced.iter().filter(|_| !overlay.removes.is_empty()) {
         match before.kind(op) {
             _ if overlay.missing.contains_key(op) => continue,
@@ -1339,7 +1322,11 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
         }
         let mut next: Vec<Silence> = Vec::new();
         for (gap, a) in gaps {
-            let s = after.untraced(gap, a);
+            // 候補が定義し直した型で、変更前が名指していて定義を読んでいなかったものは、変更前の構造で問い合わせる(§5.4 と同じ)。
+            let s = match gap {
+                Gap::Name(n) if after.redefines_unread(before, &before_names, n) => before.untraced(gap, a),
+                _ => after.untraced(gap, a),
+            };
             if !next.contains(&s) {
                 next.push(s);
             }

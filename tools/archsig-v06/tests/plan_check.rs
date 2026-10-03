@@ -3667,3 +3667,66 @@ fn a_path_through_a_rewritten_type_that_was_not_read_returns_the_source_to_read(
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
 }
+
+#[test]
+fn a_path_through_a_question_mark_type_is_silent_on_removes() {
+    // 候補は m.O.a の型を `?m.B` に書き換え、m.B.x を消す。m.g の $o.a.x が何を名指すかは決まらないので、消える要素を使うかで沈黙する。
+    let repo = Repo::new("q-type-removes");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.a", "value": "field", "type": "m.A", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A.x", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.B", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.B.x", "value": "field", "type": "int", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "$o.a.x", "at": "m.py:11@blob:aaaaaaa"}
+"#,
+    );
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.O.a", "value": "field", "type": "?m.B", "file": "m.py", "at": "plan:p"}
+{"kind": "removes", "subject": "m.B.x", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.g" && r["law"].is_null()).cloned().unwrap_or_default();
+    assert_eq!(r["outcome"], "silent", "{s}");
+}
+
+#[test]
+fn a_type_the_plan_redefines_that_was_not_read_before_is_unread_on_removes() {
+    // m.g の $o.c.x は、変更前は定義を読んでいない c.py の m.C を通る。候補は m.C を定義し直し、ほかの要素を消す。
+    // 元の m.C のフィールドは分からないので、消える要素を使うかは、変更前の構造で、c.py を読む所に持って沈黙する(マニュアル第5章 問い3)。
+    let repo = Repo::new("redefined-unread-type");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.c", "value": "field", "type": "m.C", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.C", "object": "c.py", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.D", "value": "type", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "$o.c.x", "at": "m.py:11@blob:aaaaaaa"}
+"#,
+    );
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.C", "value": "type", "file": "c.py", "at": "plan:p"}
+{"kind": "defines", "subject": "m.C.x", "value": "field", "type": "int", "file": "c.py", "at": "plan:p"}
+{"kind": "removes", "subject": "m.D", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.g" && r["law"].is_null()).cloned().unwrap_or_default();
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}

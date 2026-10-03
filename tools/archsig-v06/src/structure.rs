@@ -537,7 +537,9 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
     // 候補が置き換えた Atom(書き直した呼び出しの `passes` など)は見ない。
     // 書き直していない Atom は変更後にも残るので、道は変更後の構造(候補が書き直した型)でたどる。
     let kept: Vec<&Atom> = before.iter().filter(|a| !dropped(a)).collect();
-    trace(&new, &kept, &|n: &str| replaced(n) || gone(n), &gone, &mut out);
+    // 候補が定義し直した型で、変更前が名指していて定義を読んでいなかったものは、その先をたどらない(§5.4 と同じ)。
+    let old_names = old.mentioned();
+    trace(&new, &kept, &|n: &str| replaced(n) || gone(n), &gone, &|t: &str| new.redefines_unread(&old, &old_names, t), &mut out);
     out
 }
 
@@ -551,7 +553,7 @@ pub fn observed_overlay(before: &[Atom], after: &[Atom], plan: &[Atom]) -> Overl
     let mut out = relate(&old, &new, before, after, plan);
     out.after = after.to_vec();
     let all: Vec<&Atom> = after.iter().collect();
-    trace(&new, &all, &|n: &str| gone(n), &gone, &mut out);
+    trace(&new, &all, &|n: &str| gone(n), &gone, &|_| false, &mut out);
     let name = plan.iter().find(|a| a.kind == "plan").map(|a| a.subject.clone()).unwrap_or_default();
     out.planned = Some((name, plan.iter().filter(|a| a.is_structure()).count())).filter(|_| !plan.is_empty());
     // 候補の構造 Atom は、同じ Atom が出現の数だけ観測されている。観測の一つは、候補の Atom の一つにしか当てない。
@@ -662,7 +664,7 @@ fn relate(old: &Structure, new: &Structure, before: &[Atom], after: &[Atom], pla
 /// 名指すとは、引数の型、構造 Atom の `object` と `via`、`value`・`when` の式の中の `$p.f` と呼び出しで名を出すこと。
 /// 意味 Atom の `value` は式として読まない。名指す要素をたどれなかった所は `untraced` に積む。
 /// `skip` は数えない操作(書き直した操作や消える操作)。
-fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn Fn(&str) -> bool, out: &mut Overlay) {
+fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn Fn(&str) -> bool, stop: &dyn Fn(&str) -> bool, out: &mut Overlay) {
     let body = |k: &str| matches!(k, "writes" | "reads" | "calls" | "sends" | "receives" | "returns" | "passes");
     let mut named: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
     // 種類の決まらない要素(`value` のない `defines`)も、操作かもしれないので数える。`missing` の結論で沈黙する。
@@ -691,7 +693,7 @@ fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn
             match expr::parse(text) {
                 // 字句の数が上限を超えた式は、構文として読めるかを確かめていないので、消える要素を使うかを決めない。
                 Ok(Expr::TooLong(_)) => gaps.push(Gap::Limit),
-                Ok(e) => s.named(&op, &e, names, &mut gaps),
+                Ok(e) => s.named(&op, &e, stop, names, &mut gaps),
                 Err(_) => gaps.push(Gap::Unreadable),
             }
         }
@@ -708,6 +710,30 @@ fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn
 }
 
 impl Structure {
+    /// 構造が名指す名前。Atom の `subject`、`object`、`via`、`value` と `when` の式の中でたどるフィールドと呼び出す操作、
+    /// 要素の型と引数の型。`resolves` の名前は、その Atom の `subject` である。`observed` の `subject` はソースのパスで、要素の名前ではない。
+    pub fn mentioned(&self) -> BTreeSet<String> {
+        let mut out = self.expression_names();
+        for a in self.atoms.iter().filter(|a| a.kind != "observed") {
+            out.insert(a.subject.clone());
+            out.extend(a.object.iter().cloned());
+            out.extend(a.via.iter().flatten().cloned());
+        }
+        for e in self.elements.values() {
+            out.extend(e.ty.iter().cloned());
+            out.extend(e.params.values().cloned());
+        }
+        out
+    }
+
+    /// 候補が定義し直した型 `ty` で、変更前の構造 `prior` がその型を名指していて(`prior_names` は `prior.mentioned()`)、定義を読んでいなかったか。
+    /// 元のフィールドは分からないので、変更前の構造で、定義を読んでいない要素として沈黙する(設計 §5.1、§5.4)。
+    pub fn redefines_unread(&self, prior: &Structure, prior_names: &BTreeSet<String>, ty: &str) -> bool {
+        self.atoms.iter().find(|a| a.kind == "defines" && a.subject == ty).and_then(|a| a.at.as_deref()).is_some_and(|at| at.starts_with("plan:"))
+            && !prior.elements.contains_key(ty)
+            && prior_names.contains(ty)
+    }
+
     /// 構造 Atom の `value` と `when` の式の中で名指す要素(`$p.f.g` でたどるフィールドと、呼び出す操作)。
     /// 定義を読んでいないフィールドも、たどれる所まで `<型>.<名前>` として含む。
     pub fn expression_names(&self) -> BTreeSet<String> {
@@ -717,7 +743,7 @@ impl Structure {
             let op = a.subject.split("->").next().unwrap_or("");
             for text in [&a.value, &a.when].into_iter().flatten() {
                 if let Ok(e) = expr::parse(text) {
-                    self.named(op, &e, &mut out, &mut gaps);
+                    self.named(op, &e, &|_| false, &mut out, &mut gaps);
                 }
             }
         }
@@ -726,7 +752,7 @@ impl Structure {
 
     /// 式の中で名指す要素。`$p.f.g` がたどれる所までのフィールドと、呼び出す操作。
     /// たどれなかった所は `gaps` に積む。その先で何を名指すかは決まらない。
-    fn named(&self, op: &str, e: &Expr, out: &mut BTreeSet<String>, gaps: &mut Vec<Gap>) {
+    fn named(&self, op: &str, e: &Expr, stop: &dyn Fn(&str) -> bool, out: &mut BTreeSet<String>, gaps: &mut Vec<Gap>) {
         match e {
             Expr::Path(p, fields) => {
                 let mut ty = self.elements.get(op).and_then(|o| o.params.get(p)).cloned();
@@ -737,6 +763,11 @@ impl Structure {
                         gaps.push(Gap::Name(owner));
                         break;
                     };
+                    // `?` の型の先と、`stop` の型の先は、何を名指すかが決まらない。
+                    if t.starts_with('?') || stop(&t) {
+                        gaps.push(Gap::Name(t));
+                        break;
+                    }
                     let field = format!("{t}.{f}");
                     // 種類の決まらないフィールドの型は、決まらない。
                     ty = self.elements.get(&field).filter(|e| !e.undecided()).and_then(|e| e.ty.clone());
@@ -751,21 +782,21 @@ impl Structure {
                     out.insert(name.clone());
                 }
                 for a in args {
-                    self.named(op, a, out, gaps);
+                    self.named(op, a, stop, out, gaps);
                 }
             }
             Expr::Name(n) if n.starts_with('?') => gaps.push(Gap::Name(n.clone())),
             Expr::Unknown => gaps.push(Gap::Unreadable),
-            Expr::Not(x) | Expr::Neg(x) => self.named(op, x, out, gaps),
+            Expr::Not(x) | Expr::Neg(x) => self.named(op, x, stop, out, gaps),
             // 字句の数が上限を超えた式は、字句から拾った名前を数える。
             Expr::TooLong(items) => {
                 for x in items {
-                    self.named(op, x, out, gaps);
+                    self.named(op, x, stop, out, gaps);
                 }
             }
             Expr::Bin(_, a, b) => {
-                self.named(op, a, out, gaps);
-                self.named(op, b, out, gaps);
+                self.named(op, a, stop, out, gaps);
+                self.named(op, b, stop, out, gaps);
             }
             _ => {}
         }
