@@ -581,6 +581,10 @@ fn defined_at(s: &Structure, name: &str) -> Option<String> {
 /// 候補の中で定義したフィールドの意味は、対応の元の意味 Atom を移したものである(設計 §3.6 の4)。
 /// 元のフィールドの意味が変更前の読んだ範囲から決まるときに決まる。`prior` は変更前の構造と対応。
 fn meaning_known(prior: Option<(&Structure, &Mapping)>, s: &Structure, field: &str, meaning: &str) -> Result<(), Silence> {
+    // 種類の決まらないフィールド(二か所の `defines` など)は、どの定義のソースで意味を読むかが決まらない。
+    if s.elements.get(field).is_some_and(|e| e.undecided()) {
+        return Err(Silence::new(Reason::Unresolved));
+    }
     let Some(at) = defined_at(s, field) else { return s.kind(field).map(|_| ()) };
     if at.starts_with("plan:") {
         if let Some((before, mapping)) = prior {
@@ -687,8 +691,8 @@ impl Below<'_> {
 
     /// フィールド `field` の型をたどる。`prefix` は `field` までの場所、`types` はたどってきた型の列。
     fn descend(&mut self, s: &Structure, field: &str, meaning: &str, prefix: &mut Vec<String>, types: &mut Vec<String>, out: &mut Vec<Vec<String>>) -> Result<(), Silence> {
-        // 型のないフィールドは、その先が決まらない(道を読むときと同じく unresolved)。
-        let ty = s.elements.get(field).and_then(|e| e.ty.clone()).ok_or_else(|| Silence::new(Reason::Unresolved))?;
+        // 型のないフィールドと、種類の決まらないフィールド(二か所の `defines` など)は、その先が決まらない。
+        let ty = s.elements.get(field).filter(|e| !e.undecided()).and_then(|e| e.ty.clone()).ok_or_else(|| Silence::new(Reason::Unresolved))?;
         if types.contains(&ty) {
             // 型がめぐり、その先に意味を持つフィールドがあれば、場所が限りなく伸びるので `limit` で沈黙する。
             if self.reaches(s, field, &ty, meaning, &mut BTreeSet::new())? {
@@ -1142,11 +1146,12 @@ fn unread_sources(s: &Structure, sources: &[String], scope: &str) -> Vec<Silence
 
 /// 候補が書き直していない操作が `removes` した要素を使えば `missing`(マニュアル第5章 問い3)。
 /// 名指す事実は候補を重ねる処理が返す。操作と決まらない名前(曖昧、`?`)は沈黙する。
-/// 定義を読んでいない操作は、消える要素を使うかが決まらない。それらは一つの沈黙にまとめ、読む所を返す。
+/// 定義を読んでいない操作と、定義がなく解決が決まらない呼び出し先は、消える要素を使うかが決まらない。
+/// それらは一つの沈黙にまとめ、読む所があれば返す。
 fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, sources: &[String]) -> Vec<Finding> {
     let mut out = Vec::new();
     if !overlay.removes.is_empty() {
-        // 変更後にも残る呼び出し先と本体の Atom の `subject` のうち、定義を読んでいないもの。
+        // 変更後にも残る呼び出し先と本体の Atom の `subject` のうち、定義を読んでいないものと、定義がなく解決が決まらないもの。
         let mut unknown: BTreeMap<String, Silence> = BTreeMap::new();
         for a in &after.atoms {
             let names: Vec<&str> = match a.kind.as_str() {
@@ -1155,8 +1160,9 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
                 _ => continue,
             };
             for n in names.into_iter().filter(|n| !n.is_empty() && !overlay.missing.contains_key(*n)) {
+                let undecided = !after.elements.contains_key(n) && matches!(after.resolves.get(n), Some(Resolution::Undecided));
                 if let Err(s) = after.kind(n)
-                    && s.reason == Reason::Unread
+                    && (s.reason == Reason::Unread || undecided)
                 {
                     unknown.entry(n.to_string()).or_insert(s);
                 }
@@ -1166,15 +1172,15 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
         for s in unread_sources(before, sources, "structure") {
             unknown.entry(s.read.clone().unwrap_or_default()).or_insert(s);
         }
-        if !unknown.is_empty() {
+        if let Some(first) = unknown.values().next() {
             out.push(Finding {
                 question: "change".to_string(),
                 subject: "removes".to_string(),
                 outcome: "silent",
-                reason: Some("unread"),
+                reason: Some(reason_name(&first.reason)),
                 basis: json!({"operations": unknown.keys().collect::<Vec<_>>()}),
                 theory: Some(THEORY_CHANGES.to_string()),
-                next: unknown.into_values().collect(),
+                next: unknown.into_values().filter(|s| s.read.is_some() || s.element.is_some()).collect(),
                 ..Finding::default()
             });
         }

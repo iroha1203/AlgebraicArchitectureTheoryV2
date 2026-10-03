@@ -43,12 +43,23 @@ pub struct Element {
     pub kinds: BTreeSet<String>,
     pub params: BTreeMap<String, String>,
     pub ty: Option<String>,
+    /// `defines` を書いた場所。二か所以上あれば、どちらの定義かが決まらない。
+    pub defined: BTreeSet<String>,
+}
+
+impl Element {
+    /// 種類が決まらない。種類の違う `defines`、`value` のない `defines`、二か所以上の `defines` を持つ。
+    pub fn undecided(&self) -> bool {
+        self.kinds.len() > 1 || self.kinds.contains("") || self.defined.len() > 1
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Resolution {
     Source(String),
     External(String),
+    /// 指す先の違う `resolves` が二つ以上ある。解決が決まらない。
+    Undecided,
 }
 
 /// 値。式を名前と場所に解いたもの。
@@ -125,6 +136,7 @@ impl Structure {
                 "defines" => {
                     let e = s.elements.entry(a.subject.clone()).or_default();
                     e.kinds.insert(a.value.clone().unwrap_or_default());
+                    e.defined.insert(a.at.clone().unwrap_or_default());
                     if let Some(p) = &a.params {
                         e.params.extend(p.clone());
                     }
@@ -151,7 +163,15 @@ impl Structure {
                         Some(pkg) => Resolution::External(pkg.to_string()),
                         None => Resolution::Source(o),
                     };
-                    s.resolves.insert(a.subject.clone(), r);
+                    match s.resolves.get(&a.subject) {
+                        Some(x) if *x != r => {
+                            s.resolves.insert(a.subject.clone(), Resolution::Undecided);
+                        }
+                        Some(_) => {}
+                        None => {
+                            s.resolves.insert(a.subject.clone(), r);
+                        }
+                    }
                 }
                 "meaning" => s.meanings.entry(a.subject.clone()).or_default().push(a.clone()),
                 "observed" => {
@@ -215,9 +235,9 @@ impl Structure {
                 None => s,
             });
         }
-        // 種類の違う `defines` を持つ要素と、`value` のない `defines` を持つ要素は、種類が決まらない。
+        // 種類の違う `defines`、`value` のない `defines`、二か所以上の `defines` を持つ要素は、種類が決まらない。
         match self.elements.get(name) {
-            Some(e) if e.kinds.len() == 1 && !e.kinds.contains("") => Ok(e.kinds.iter().next().unwrap()),
+            Some(e) if !e.undecided() => Ok(e.kinds.iter().next().unwrap()),
             Some(_) => Err(Silence::new(Reason::Unresolved)),
             None => Err(self.undefined(name)),
         }
@@ -243,12 +263,21 @@ impl Structure {
         Ok(out)
     }
 
-    /// 種類の違う `defines` か、`value` のない `defines` を持つ要素。種類が決まらない。
+    /// 種類の違う `defines`、`value` のない `defines`、二か所以上の `defines` を持つ要素。種類が決まらない。
     fn ambiguous(&self, name: &str) -> bool {
-        self.elements.get(name).is_some_and(|e| e.kinds.len() > 1 || e.kinds.contains(""))
+        self.elements.get(name).is_some_and(Element::undecided)
     }
 
     fn expect(&self, name: &str, kind: &str) -> Result<(), Silence> {
+        // 外部の型(`resolves` が外部を指し、定義のない型)のフィールドは分からない。外部には読むソースがない。
+        // 型の解決が決まらないときも、そのフィールドは分からない。
+        if kind == "field"
+            && name.rsplit_once('.').is_some_and(|(ty, _)| {
+                !self.elements.contains_key(ty) && matches!(self.resolves.get(ty), Some(Resolution::External(_) | Resolution::Undecided))
+            })
+        {
+            return Err(Silence::new(Reason::Unresolved));
+        }
         match self.kind(name)? {
             k if k == kind => Ok(()),
             _ => Err(Silence::new(Reason::Unresolved)),
@@ -590,6 +619,12 @@ fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn
     // 種類の決まらない要素(`value` のない `defines`)も、操作かもしれないので数える。`missing` の結論で沈黙する。
     for (op, e) in s.elements.iter().filter(|(n, e)| (e.kinds.contains("operation") || e.kinds.contains("")) && !skip(n)) {
         named.entry(op.clone()).or_default().extend(e.params.values().cloned());
+        // 二か所以上に定義した操作は、引数の型が決まらないので、名指す要素も決まらない。
+        if e.defined.len() > 1
+            && let Some(a) = s.atoms.iter().find(|a| a.kind == "defines" && a.subject == *op)
+        {
+            out.untraced.entry(op.clone()).or_default().push((Gap::Name(op.clone()), a.clone()));
+        }
     }
     for a in atoms.iter().filter(|a| body(&a.kind)) {
         // `passes` の `subject` は呼び出しの要素 `<操作>->…` なので、呼び出し元の操作に数える。
@@ -654,7 +689,8 @@ impl Structure {
                         break;
                     };
                     let field = format!("{t}.{f}");
-                    ty = self.elements.get(&field).and_then(|e| e.ty.clone());
+                    // 種類の決まらないフィールドの型は、決まらない。
+                    ty = self.elements.get(&field).filter(|e| !e.undecided()).and_then(|e| e.ty.clone());
                     owner = if self.elements.contains_key(&field) { field.clone() } else { t };
                     out.insert(field);
                 }
