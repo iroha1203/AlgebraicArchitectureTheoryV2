@@ -5456,7 +5456,7 @@ audits:
 ### C26 productionと個別公理の一次検証対応
 
 全33単一production本体のactual exitは0、error/warningは各0。
-namespaceの351宣言に対し、所有moduleから選択した個別 `#print axioms` は全353宣言を被覆する。
+namespaceの352宣言に対し、所有moduleから選択した個別 `#print axioms` は全354宣言を被覆する。
 namespace外の自動生成helperはClosedRegion.mk.congr_simpとZMod.instField.congr_simpの二つである。
 本体検証とimport-onlyの個別公理確認は別の証拠で、各source/logの現行SHA256を対応させる。
 標準公理はpropext、Classical.choice、Quot.sound。
@@ -5466,7 +5466,7 @@ Research全体、aggregate、全module/file loopのelaborationは実行しない
 | Production module | namespace宣言数 | source SHA256 | 本体log SHA256 |
 | --- | ---: | --- | --- |
 | W3ActualArrows | 6 | `8146a40b9482c1831d8bbc5fdcbc1748a8361544b5ddc5cb62a418f3c0dfb72f` | `22f03f3974bf7614bd7b3b371ec25f50e094a24bef81f8d7cbc2380979e4812b` |
-| W3ActualRepairs | 19 | `28ba5e90f14b99d11f4e3c19dd04fdbbb4e7b6626187aa02e329c88ccf4243fb` | `857768ef5bec8e76cba5cae600dd5fac86cd6da381aa714d90a9157d2d455e10` |
+| W3ActualRepairs | 20 | `473f07d2de79b853331b272509771dda0d2bfd3ef2634e894b68e6a856e433b0` | `8f9b99f590b492e81dbeae811a38cbd21e82703ad843387468cfa8fb4f59f44c` |
 | W3AffineInput | 21 | `a2b2af9f1cbc7272818f8f51d101287e602d9bcadecaef20c161a56711693fe4` | `13fa2cab99987ad5b14cb52a0036f4f9ea6779b4b99664ce64af418d688767dd` |
 | W3AuthoredOperations | 11 | `291602b7cd4b688fd7d29eaa194df1c592f17adb2da7c1720d0bf1c622f9ebc8` | `9d71a34e609ac29ab8f1475c8df6b657e32ef0f27e64983fe6178b38e9e1e9ac` |
 | W3Automorphisms | 12 | `c26d4bc0734eda297795ebe156a54195f9a32f447881bba85e280805c4c8ef9c` | `fcd39516e596ef080a29f8faac722635cef6b2bec278664f88f4adb254d349ac` |
@@ -5502,12 +5502,12 @@ Research全体、aggregate、全module/file loopのelaborationは実行しない
 | 個別公理audit module群 | 所有宣言数 | audit SHA256 | log SHA256 |
 | --- | ---: | --- | --- |
 | W3LinearAction, W3AffineInput, W3Regions | 50 | `cfb4e5d30f539ff56d2ef5e7cc9b068aa8f4b180a10b5fa57d9ea01b4fbd58ac` | `d5e9f330ffc90ab77e9452548acaf1303cae37721b1fc2ba97fe97d98ed33633` |
-| W3AuthoredOperations, W3ActualRepairs, W3GaugeLabels, W3GaugeAction, W3ActualArrows, W3LoopIsomorphisms, W3Classes, W3Automorphisms | 82 | `3b852d2df60622b2947bbc2cb65a0a7eabe08b102d6cc5f38367e2c104e07723` | `8473c19c5c680cb157142c11614282d9e855a3610a526f6bd3cf615a05ea3bdd` |
+| W3AuthoredOperations, W3ActualRepairs, W3GaugeLabels, W3GaugeAction, W3ActualArrows, W3LoopIsomorphisms, W3Classes, W3Automorphisms | 83 | `3b852d2df60622b2947bbc2cb65a0a7eabe08b102d6cc5f38367e2c104e07723` | `1b3b408aba82da042b9b7f0c16073aed1c900eca048bf6fdd02ff5e80e018829` |
 | W3LocalRepairs, W3LocalLabels, W3EmptyGroupoids, W3RestrictionDiagram, W3OrdinarySeams, W3OrdinaryComparison, W3OrdinaryClasses, W3FiniteCoefficients, W3LocalInterfaces, W3StrictGeneratedCover, W3StrictInverseChecks, W3UnrestrictedDescent | 133 | `b808ad88ced6b169c8cfe9d0b38e7b690f8a3e4dbae767aefbb0faa24ee3ff5c` | `3b330aa9bebd68ef0f780cf4682d5a63d8b98ac47c86c71a8184657d4318b682` |
 | W3StrictLabels, W3StrictConsequences, W3LocalOperationCoordinates, W3LocalFullLabels, W3LocalGauge, W3UnrestrictedLocalFunctors, W3UnrestrictedLocalEquivalences, W3UnrestrictedRestrictions, W3UnrestrictedLocalClasses, W3Pi0Loss | 88 | `b5689a91267edc5fff67d705862d1a008f529a2a3879a85f849e629490caa7bc` | `74b2edf5f4151aa2273b5a94f367a9798dfedcb8c744226d49a44de6523d01de` |
 
 <details>
-<summary>C26 所有moduleで選択した全353宣言</summary>
+<summary>C26 所有moduleで選択した全354宣言</summary>
 
 ```text
 AAT.AG.RelativeRepairComposition.ClosedRegion.mk.congr_simp
@@ -5528,6 +5528,7 @@ AAT.AG.RelativeRepairComposition.W3ActualRepairs.correction_fixed
 AAT.AG.RelativeRepairComposition.W3ActualRepairs.emptyObjectEquiv
 AAT.AG.RelativeRepairComposition.W3ActualRepairs.empty_unique
 AAT.AG.RelativeRepairComposition.W3ActualRepairs.fromParameters
+AAT.AG.RelativeRepairComposition.W3ActualRepairs.nonzero_forward_not_allowed
 AAT.AG.RelativeRepairComposition.W3ActualRepairs.parameters
 AAT.AG.RelativeRepairComposition.W3ActualRepairs.parameters_allowed
 AAT.AG.RelativeRepairComposition.W3ActualRepairs.parameters_from

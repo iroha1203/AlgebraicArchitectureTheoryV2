@@ -172,5 +172,12 @@ noncomputable def wholeAffineEquivalence (sheared : Bool) (S : Set (EdgeName (K 
   NativeAffine.groupoidEquivalence geometry (reference sheared) (reference sheared) comparison
     (linear_faces sheared) fixedRegion.vertices (fixedEdges S)
 
+/-- Empty permission excludes a nonzero correction on the original forward edge. -/
+theorem nonzero_forward_not_allowed :
+    ¬ Allowed ∅ ((fun _ : Fin 2 => (1 : ZMod 3)), 0) := by
+  intro h
+  have hz := congrFun (h.1 (by simp)) (0 : Fin 2)
+  norm_num at hz
+
 end AAT.AG.RelativeRepairComposition.W3ActualRepairs
 #assert_standard_axioms_only AAT.AG.RelativeRepairComposition.W3ActualRepairs
