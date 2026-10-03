@@ -31,6 +31,18 @@ abbrev SplitCorrections := Fin 5 → ZMod 3
 /-- Numeric collapse keeps u,z,v and the entire old h=beta-alpha. -/
 def collapse (b : SplitCorrections) : Corrections := ![b 0,b 4 - b 3,b 1,b 2]
 
+/-- Basic API: numeric collapse keeps the entire original u coordinate. -/
+theorem collapse_zero (b : SplitCorrections) : collapse b 0 = b 0 := rfl
+
+/-- Basic API: numeric collapse reads the entire old h from both factor values. -/
+theorem collapse_one (b : SplitCorrections) : collapse b 1 = b 4 - b 3 := rfl
+
+/-- Basic API: numeric collapse keeps the original candidate b coordinate. -/
+theorem collapse_two (b : SplitCorrections) : collapse b 2 = b 1 := rfl
+
+/-- Basic API: numeric collapse keeps the original candidate c coordinate. -/
+theorem collapse_three (b : SplitCorrections) : collapse b 3 = b 2 := rfl
+
 /-- Any known full first-factor value extends every whole old numerical answer. -/
 def extend (r : ZMod 3) (a : Corrections) : SplitCorrections := ![a 0,a 2,a 3,r,a 1 + r]
 
@@ -96,7 +108,7 @@ theorem restore_factors (p : Permissions) (v : Values) (b : SplitCorrections)
   have h := (equation_iff p v (collapse b)).mp ((validOutput_some_iff _ _ _ _).mp hb)
   have he := W1SubdivisionCoordinates.all_pairs (v false) (v true) (allowed p)
     ⟨parameters (collapse b),h⟩ (b 3)
-  simpa only [W1NumericalEquation.parameters,collapse,Matrix.cons_val_one,Matrix.cons_val_zero,sub_add_cancel] using he
+  simpa only [parameters_h,collapse_one,sub_add_cancel] using he
 
 /-- Every restored surviving original name keeps its entire old correction; both physical inputs remain fixed. -/
 theorem restore_old (p : Permissions) (v : Values) (b : SplitCorrections)

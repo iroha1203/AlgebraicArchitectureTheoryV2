@@ -74,6 +74,18 @@ abbrev Corrections := Fin 4 → ZMod 3
 /-- Recover the whole original authored operation parameters from all coordinates. -/
 def parameters (a : Corrections) : W1ActualRepairs.Parameters := ⟨a 0,a 1,a 2,a 3⟩
 
+/-- Basic API: the full original u field is the first acquired coordinate. -/
+theorem parameters_u (a : Corrections) : (parameters a).u = a 0 := rfl
+
+/-- Basic API: the full private h field is the second acquired coordinate. -/
+theorem parameters_h (a : Corrections) : (parameters a).h = a 1 := rfl
+
+/-- Basic API: the original candidate b field is the third acquired coordinate. -/
+theorem parameters_z (a : Corrections) : (parameters a).z = a 2 := rfl
+
+/-- Basic API: the original candidate c field is the fourth acquired coordinate. -/
+theorem parameters_v (a : Corrections) : (parameters a).v = a 3 := rfl
+
 /-- The full constrained native differential, with support encoded by two zero rows. -/
 def differential (p : Permissions) : Corrections →ₗ[ZMod 3] Corrections where
   toFun a := ![a 0 + a 2, a 0 - a 2 + a 3,

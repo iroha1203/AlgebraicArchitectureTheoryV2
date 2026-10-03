@@ -1103,7 +1103,7 @@ C2/C8/C9 の署名と必要な本文を同じ適用引数で照合した。
 
 ### C10 明示 spine と検証
 
-全12 source の exact source-prefix に、以下の全145公開宣言の `#print axioms` を付けて
+全12 source の exact source-prefix に、以下の全153公開宣言の `#print axioms` を付けて
 root が focused check した。全12件 exit 0、warning なし、通常の
 `propext/Classical.choice/Quot.sound` のみ。各行の名前は
 `AAT.AG.RepairObservationDuality.<source stem>.` を補う。
@@ -1111,7 +1111,7 @@ root が focused check した。全12件 exit 0、warning なし、通常の
 | source | 明示 spine declarations | source SHA-256 | raw audit SHA-256 |
 | --- | --- | --- | --- |
 | `W1PhysicalInputs.lean` | `Inputs`, `Values`, `values`, `realize`, `values_realize`, `realize_values`, `tower`, `reference_rx`, `reference_ry`, `primitive`, `evaluate`, `evaluate_values`, `original_evaluation`, `run_iff` | `4f16b20763ca0c58eacaa3b72387a322c242e84b3c630c61840ac77be452771b` | `7b469e68d1813ae62ca5f4d4a0887106d7206ce531a47abbe07865307d96f87c` |
-| `W1NumericalEquation.lean` | `Permissions`, `allowed`, `b_mem`, `c_mem`, `allowed_subset`, `allowed_nonempty_iff`, `all_subsets`, `Corrections`, `parameters`, `differential`, `rhsLinear`, `differential_apply`, `rhsLinear_apply`, `original_differential`, `original_rhs`, `equation_iff`, `solvable_iff`, `residual_kernel_iff`, `actual_iff`, `restore`, `restore_parameters`, `private_values`, `permission_examples`, `matrix`, `matrix_differential` | `77f1f32299037c97090894ad124e5ed321aea8ba8151bd99f16bd392223f70f1` | `9fa8fa1955d977324b4f621935fb0733d40c44f66fb47fcc3da9cc5f23ac1542` |
+| `W1NumericalEquation.lean` | `Permissions`, `allowed`, `b_mem`, `c_mem`, `allowed_subset`, `allowed_nonempty_iff`, `all_subsets`, `Corrections`, `parameters`, `parameters_u`, `parameters_h`, `parameters_z`, `parameters_v`, `differential`, `rhsLinear`, `differential_apply`, `rhsLinear_apply`, `original_differential`, `original_rhs`, `equation_iff`, `solvable_iff`, `residual_kernel_iff`, `actual_iff`, `restore`, `restore_parameters`, `private_values`, `permission_examples`, `matrix`, `matrix_differential` | `1c87722229d424d3ac0199dfb7264bb2b90d2e2492480eeae9c1643a15dd2192` | `d3a0fb07a6220c27fe799e5e210e322b4397a26fa09c7571b38e6dccc754ab55` |
 | `W1ObservationCosts.lean` | `known`, `known_apply`, `sufficient_numeric`, `sufficient_numeric_card`, `numerical_minimum`, `numerical_cost`, `actual_numerical_cost`, `sufficient_decision`, `empty_decision_minimum`, `nonempty_decision_minimum`, `empty_decision_cost`, `nonempty_decision_cost`, `success_or_both_known`, `numerical_table`, `empty_decision_table` | `4bbb30bbd33bde934be1bd2baad69b5d5b8a00609ce4d80dbdacaee2e4f3da9f` | `ea34233aeeebe0c05b3999ecbb257c30d72035f82975f2644b3fd1f141297b57` |
 | `W1GeneratedNumericalPlan.lean` | `indices`, `inputs`, `coordinates`, `plan`, `points`, `plan_points`, `points_card`, `procedure`, `correct`, `run`, `optimal`, `restoreAnswer` | `a9e4f34e260d40e3292b2e7b76e7c0799f0ab37fdcdb35ce5ea991da0816d4d0` | `a551b1cedd756e9b4258fe3b3d41dd5a53c24d52c986705e5d63abfcc26b003e` |
 | `W1GeneratedDecisionPlan.lean` | `points`, `points_apply`, `sufficient`, `points_card`, `procedure`, `correct`, `table`, `optimal` | `875f5ea8eea7d3cf005ecd05ae6561cd86cb5a089f929d2a366dac0395749dfa` | `74eb12266cfa6ef429ab686dc9a376f940328f55e59b794ef41d8bcc832a0868` |
@@ -1119,8 +1119,8 @@ root が focused check した。全12件 exit 0、warning なし、通常の
 | `W1RestrictedQueries.lean` | `primitiveRx`, `evaluateRx`, `evaluateRx_values`, `invisible`, `actual_pair`, `no_numerical_set`, `no_decision_set`, `no_actual_numerical`, `no_actual_decision` | `de151220515943f9c27c0bfc293dcb606a446defcc72d6afd12bb1babb0894c7` | `77e5daf4254113b28657b286429825ea3450053e3fecf3736886742f470ee078` |
 | `PrimitiveOutputMap.lean` | `transport`, `transport_apply`, `run_forward`, `run_backward`, `correct`, `worst_eq`, `optimum_le` | `7c8831789408322b1b33682db74dc80c881566ea17814cb1d6e8c2a2db1bb880` | `c4d296b0125058fc471ef6218d2bd645dc8a8eade75e25ae026a888276c3631f` |
 | `W1UpdatedQueries.lean` | `updated`, `retained_same`, `original_section_same`, `original_rows_same`, `unreceived`, `notified` | `618a965dfa9272bd15110aa6f6f9884716b2978fbd4a5d4921a4de9e46914540` | `0366ae19986e032cd7362d015c177e405261820ab959b1ec4f9004a802eebd1d` |
-| `W1SubdivisionQueries.lean` | `SplitCorrections`, `collapse`, `extend`, `collapse_extend`, `extend_collapse`, `ValidSplit`, `validSplit_iff`, `valid_extend_iff`, `valid_examples`, `restore`, `restore_factors`, `restore_old`, `original_rx`, `original_ry`, `actual_solvable_iff`, `decision_valid_iff`, `decision_optimum`, `extendProcedure`, `collapseProcedure`, `optimum_eq`, `extend_run`, `collapse_run`, `generated_correct`, `generated_optimal` | `75c9ff91712481cad319a8b5c854f54f22082e43834e206e10c81185bca64f40` | `396ec46b788b2aa0b78cb3a87f7e2db269d4ee72f5ef5c8d92026ea1b4d8caa4` |
-| `W1SubdivisionValues.lean` | `oldValues`, `old_parameters`, `old_valid`, `splitValues`, `collapse_values`, `split_valid`, `restore_values`, `actual_some_iff`, `actual_none_iff` | `9f9d5fffc9fdf031801721fdc455d05707d24c74f8f6bb5181bd268c0aadc607` | `f27a4822ccab92bfbb61ef3dc6352ea3360e408a006db1aeb43f0cedb73a522a` |
+| `W1SubdivisionQueries.lean` | `SplitCorrections`, `collapse`, `collapse_zero`, `collapse_one`, `collapse_two`, `collapse_three`, `extend`, `collapse_extend`, `extend_collapse`, `ValidSplit`, `validSplit_iff`, `valid_extend_iff`, `valid_examples`, `restore`, `restore_factors`, `restore_old`, `original_rx`, `original_ry`, `actual_solvable_iff`, `decision_valid_iff`, `decision_optimum`, `extendProcedure`, `collapseProcedure`, `optimum_eq`, `extend_run`, `collapse_run`, `generated_correct`, `generated_optimal` | `b383f56a7bdc9fa9a8f716cae882d51368426bc686e782caba99af729fbe407c` | `3a32a8fd82a34e09459b96a4ce02c035c7f39a0f1d9ebaaade378e61167821eb` |
+| `W1SubdivisionValues.lean` | `oldValues`, `old_parameters`, `old_valid`, `splitValues`, `collapse_values`, `split_valid`, `restore_values`, `actual_some_iff`, `actual_none_iff` | `f499e8b0e8158c9ce26858d945897b4891be7c30fd6a12c4e122dbc0bbe97f1a` | `f27a4822ccab92bfbb61ef3dc6352ea3360e408a006db1aeb43f0cedb73a522a` |
 | `W1DualQueries.lean` | `pullback`, `pullback_apply`, `actual_value`, `acquisition_iff`, `sufficient`, `read_actual` | `490d6b106e484c9671aa75027390427169b2b76ea39b6c06726587d41a1e5db3` | `e6e70c628ab9d451319ab840fca2a3b17ac782ceccaf3d2f4596b9f6fbe92c36` |
 
 個別 focused check では初期の型同定・API適用・有限証明の elaboration error と一度の
@@ -1134,10 +1134,10 @@ Research import / package direction は PASS。差分 public artifact / legacy /
 result:
   proposed_result_type: proof-obligation-discharged
   proof_obligation_delta: "同じ W1 の全物理入力・評価・元全補正/微分/defect・全表・finite actual controllers・関係受領・dual取得・更新・分割全数値/費用・rx-only不能を放電"
-  exit_criteria_status: ["全原始操作/実現/評価", "全S・private h・元二面と全禁止mask", "全 regime の判定/数値表と全adaptive下限", "finite全出力/元実修復/停止/費用", "非空生成関係から両値", "更新1/0と元section/rows", "任意既知rの全split出力と両向きtrace/cost/全actual同定", "全145公開宣言個別公理clean"]
+  exit_criteria_status: ["全原始操作/実現/評価", "全S・private h・元二面と全禁止mask", "全 regime の判定/数値表と全adaptive下限", "finite全出力/元実修復/停止/費用", "非空生成関係から両値", "更新1/0と元section/rows", "任意既知rの全split出力と両向きtrace/cost/全actual同定", "全153公開宣言個別公理clean"]
   split_reason: none
   completion_candidate: no
-  lean_artifacts: ["上記12 source / 145明示公開宣言"]
+  lean_artifacts: ["上記12 source / 153明示公開宣言"]
   evidence: [actual_iff, numerical_table, empty_decision_table, optimal, physical_fiber, unreceived, notified, generated_optimal, actual_some_iff, actual_none_iff, actual_pair, no_actual_numerical, no_actual_decision]
   claim_mapping:
     theorem_names: [W1NumericalEquation.original_differential, W1PhysicalInputs.values_realize, W1GeneratedNumericalPlan.optimal, W1GeneratedDecisionPlan.optimal, W1ReceivedRelations.received_numerical, W1UpdatedQueries.unreceived, W1UpdatedQueries.notified, W1SubdivisionQueries.generated_optimal, W1SubdivisionValues.actual_some_iff, W1RestrictedQueries.no_actual_decision]
@@ -1162,9 +1162,24 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: ["上記12 exact source-prefix/145個別公理/各SHA", "共通scanと標準独立査読・CI は PR audit に固定"]
+  validation_refs: ["上記12 exact source-prefix/153個別公理/各SHA", "共通scanと標準独立査読・CI は PR audit に固定"]
   blocking_findings: []
   next_obligation: "E の F2 四辺 K+ 候補 c / 全数値2回 / e:=a,c:=b∘a⁻¹ の零回参照式 / 最終累積 A–E 判定"
 ```
 
 全体は引き続き `target-proof-checkpoint`。C10 の査読前 proposal を全体完了としない。
+
+### C10 非中心 API finding の直接対応
+
+固定 head `92602915ed8efc2ec683e68b28a31064608be181` の正式四本査読では、
+数学 A が `No major findings`、数学 B・Lean A/B が `Minor issues`。
+中心 finding はなく、三レーンの同じ no-unfold API 指摘を一件へ統合した。
+[初回監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5227#issuecomment-5973153286)
+に claim / premise / 反証試行 / coverage を記録した。
+
+名指しされた `parameters_u/h/z/v` と `collapse_zero/one/two/three` の八公開補題を追加し、
+`restore_factors/restore_values` の proof 内部を成分 API に置き換えた。
+既存 theorem/def の signature、def/instance 本体、import、台帳 status は変更していない。
+変更した三 source の exact prefix だけを再検証し、全153公開宣言の個別公理記録を更新した。
+追加八補題と変更箇所は exit 0、warning なし、標準公理のみ。残る九 source/raw は同一 bytes。
+直接対応の資格・finding 解消と新 head の CI は PR 監査に固定し、今回の差分だけで全体完了としない。
