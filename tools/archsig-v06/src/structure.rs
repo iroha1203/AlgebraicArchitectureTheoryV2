@@ -452,15 +452,34 @@ impl Structure {
     /// 型 `ty` のフィールド `name` の要素。`ty` が定義していなければ、`inherits` の型から順に探し、それを定義した型のフィールドを返す(設計 §3.5)。
     /// 探す途中の型の定義を読んでいなければ 3.3 のとおりに沈黙し、違う型のフィールドが二つ以上見つかれば `unresolved` で沈黙する。
     /// どこにもなければ `<ty>.<name>` を返す。
+    /// `ty` が定義し、受け継がれる型も定義していれば(定義し直し)、同じ所か別の所かは言語で決まるので、`unresolved` で沈黙する。
     pub fn member(&self, ty: &str, name: &str) -> Result<String, Silence> {
         let own = format!("{ty}.{name}");
-        if self.elements.contains_key(&own) || !self.bases.contains_key(ty) {
+        if !self.bases.contains_key(ty) {
             return Ok(own);
+        }
+        if self.elements.contains_key(&own) {
+            // 受け継がれる型を読んでいなければ、その型の名前でこのフィールドを名指す計算は沈黙するので、ここでは見ない。
+            return match self.inherited(ty, name) {
+                Ok(found) if !found.is_empty() => Err(Silence::new(Reason::Unresolved)),
+                _ => Ok(own),
+            };
         }
         // 型が曖昧なら、どの定義の受け継ぎかが決まらない。
         if self.ambiguous(ty) {
             return Err(Silence::new(Reason::Unresolved));
         }
+        let mut found = self.inherited(ty, name)?;
+        match found.len() {
+            0 => Ok(own),
+            1 => Ok(found.pop_first().unwrap_or(own)),
+            _ => Err(Silence::new(Reason::Unresolved)),
+        }
+    }
+
+    /// 型 `ty` の `inherits` の型を順にたどり、`name` を定義した型で止まって、そのフィールドを集める。
+    /// たどった型(止まった型を含む)の種類が決まらなければ、その沈黙を返す。
+    fn inherited(&self, ty: &str, name: &str) -> Result<BTreeSet<String>, Silence> {
         let mut found = BTreeSet::new();
         let mut seen = BTreeSet::new();
         let mut todo: Vec<String> = self.bases.get(ty).cloned().unwrap_or_default();
@@ -478,17 +497,13 @@ impl Structure {
             }
             todo.extend(self.bases.get(&b).into_iter().flatten().cloned());
         }
-        match found.len() {
-            0 => Ok(own),
-            1 => Ok(found.pop_first().unwrap_or(own)),
-            _ => Err(Silence::new(Reason::Unresolved)),
-        }
+        Ok(found)
     }
 
     /// 型 `ty` のフィールド `name` が、この構造では受け継ぎで見つからず(`field` は定義のない `<ty>.<name>`)、
     /// 変更前の構造 `prior` では別の型のフィールドだったなら、その名前。候補がそのフィールドを消したかを、変更前の名前で確かめる(設計 §3.6)。
     fn inherited_before(&self, prior: &Structure, ty: &str, name: &str, field: &str) -> Option<String> {
-        if self.elements.contains_key(field) || !self.bases.contains_key(ty) {
+        if self.elements.contains_key(field) {
             return None;
         }
         prior.member(ty, name).ok().filter(|x| x != field)

@@ -4096,8 +4096,9 @@ fn a_write_to_the_child_name_and_a_read_through_the_child_meet_at_the_inherited_
 }
 
 #[test]
-fn a_field_the_child_comes_to_define_takes_both_the_write_and_the_read() {
-    // 候補が m.C に t を定義すると、書き直していない m.f の書き込みと読みは、どちらも m.C.t になる。o.u に書く値は 1 のまま。
+fn a_field_the_child_defines_again_is_unresolved() {
+    // 候補が m.C に t を定義し直す。m.P も t を定義するので、二つが同じ所か別の所かは言語で決まる(Python なら同じ属性、Java なら別のフィールド)。
+    // 書き直していない m.f の m.C.t への書き込みと $c.t は、どの所かが決まらないので沈黙する。
     let r = written_through_child(
         "inherited-override",
         P_T,
@@ -4105,7 +4106,7 @@ fn a_field_the_child_comes_to_define_takes_both_the_write_and_the_read() {
         r#"{"kind": "defines", "subject": "m.C.t", "value": "field", "type": "int", "file": "m.py", "at": "plan:p"}
 "#,
     );
-    assert_eq!(r["outcome"], "holds", "{r}");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{r}");
 }
 
 #[test]
@@ -4124,19 +4125,6 @@ fn an_inherited_field_of_an_ambiguous_parent_is_unresolved() {
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{r}");
 }
 
-#[test]
-fn removing_the_field_the_child_defines_again_is_not_missing() {
-    // m.C が t を定義し直していて、候補がそれを消す。書き直していない m.f の書き込みと読みは m.P.t に移り、o.u に書く値は 1 のまま。
-    let r = written_through_child(
-        "inherited-override-removed",
-        P_T,
-        r#"{"kind": "defines", "subject": "m.C.t", "value": "field", "type": "int", "at": "m.py:3@blob:aaaaaaa"}
-"#,
-        r#"{"kind": "removes", "subject": "m.C.t", "at": "plan:p"}
-"#,
-    );
-    assert_eq!(r["outcome"], "holds", "{r}");
-}
 
 const G_WRITES_CHILD_NAME: &str = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"c": "m.C"}, "at": "m.py:7@blob:aaaaaaa"}
 {"kind": "writes", "subject": "m.g", "object": "m.C.t", "value": "1", "at": "m.py:8@blob:aaaaaaa"}
@@ -4226,4 +4214,42 @@ fn removing_an_inherited_field_is_missing_where_the_child_name_used_it() {
         let r = result(&s, op);
         assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("missing")), "{op}: {s}");
     }
+}
+
+#[test]
+fn a_child_name_that_no_type_defines_is_still_unread_below() {
+    // m.C は m.P を受け継ぐが、どちらも x を定義しない。g が m.C.x に書くので、m.C.x は名指されて定義を読んでいない要素である。
+    // m.C の値を丸ごと書く f は、m.C.x の値が分からないので沈黙する(受け継ぎのない型と同じ)。
+    let g = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"c": "m.C"}, "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.C.x", "value": "1", "at": "m.py:8@blob:aaaaaaa"}
+"#;
+    let r = inherited("inherited-undefined-name", PARENT, g, "m.a()");
+    assert_eq!((r["result"]["outcome"].as_str(), r["result"]["reason"].as_str()), (Some("silent"), Some("unread")), "{r}");
+    assert!(r["summary"]["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.C.x"), "{r}");
+}
+
+#[test]
+fn removing_an_inherited_field_with_the_inheritance_is_missing() {
+    // 候補が m.C を受け継ぎなしで定義し直し、m.P.t を消す。書き直していない m.h の m.C.t の読みは、変更前の m.P.t を使っていた。
+    let s = checked_through_child(
+        "inherited-removed-with-inheritance",
+        P_T,
+        r#"{"kind": "defines", "subject": "m.h", "value": "operation", "params": {"c": "m.C"}, "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "reads", "subject": "m.h", "object": "m.C.t", "at": "m.py:11@blob:aaaaaaa"}
+"#,
+        r#"{"kind": "defines", "subject": "m.C", "value": "type", "file": "m.py", "at": "plan:p"}
+{"kind": "removes", "subject": "m.P.t", "at": "plan:p"}
+"#,
+    );
+    let r = result(&s, "m.h");
+    assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
+}
+
+#[test]
+fn a_field_the_child_defines_again_is_unresolved_below() {
+    // m.C が t を定義し直し、m.P の t は payment-info を持つ。m.C の値を丸ごと書くと、m.C.t と m.P.t が同じ所かが決まらない。
+    let c_t = r#"{"kind": "defines", "subject": "m.C.t", "value": "field", "type": "int", "at": "m.py:3@blob:aaaaaaa"}
+"#;
+    let r = inherited("inherited-override-below", PARENT, c_t, "m.a()");
+    assert_eq!((r["result"]["outcome"].as_str(), r["result"]["reason"].as_str()), (Some("silent"), Some("unresolved")), "{r}");
 }
