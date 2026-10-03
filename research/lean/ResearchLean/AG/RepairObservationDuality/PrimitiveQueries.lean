@@ -166,6 +166,24 @@ noncomputable def fixed (eval : V → J → K) (F : Set V) (valid : V → A → 
 def transcript (eval : V → J → K) (points : List J) (v : V) : History J K :=
   points.map fun j => (j, eval v j)
 
+/-- The empty primitive plan produces the empty visible history. -/
+theorem transcript_nil (eval : V → J → K) (v : V) :
+    transcript eval [] v = [] := rfl
+
+/-- Each primitive question contributes exactly one visible reply, including repeats. -/
+theorem transcript_length (eval : V → J → K) (points : List J) (v : V) :
+    (transcript eval points v).length = points.length := by
+  simp only [transcript, List.length_map]
+
+/-- Concatenating question lists concatenates their actual reply histories. -/
+theorem transcript_append (eval : V → J → K) (pre remaining : List J) (v : V) :
+    transcript eval (pre ++ remaining) v =
+      transcript eval pre v ++ transcript eval remaining v := List.map_append
+
+/-- A single original primitive question retains its index and actual value. -/
+theorem transcript_singleton (eval : V → J → K) (j : J) (v : V) :
+    transcript eval [j] v = [(j, eval v j)] := rfl
+
 /-- Fixed execution asks exactly the prescribed list from any completed prefix. -/
 theorem fixed_run_aux (eval : V → J → K) (F : Set V) (valid : V → A → Prop)
     (points : List J) (v : V) (pre remaining : List J)

@@ -54,6 +54,11 @@ theorem observation_eq_iff (points : Finset J) (v w : V) :
 def SufficientSet (L : V →ₗ[k] I) (R : Submodule k V) (points : Finset J) : Prop :=
   LinearMap.ker L ⊓ LinearMap.ker (observation lam points) ≤ R
 
+/-- C's sufficient-set API reads exactly the known and observed kernel intersection. -/
+theorem sufficientSet_iff (L : V →ₗ[k] I) (R : Submodule k V) (points : Finset J) :
+    SufficientSet lam L R points ↔
+      LinearMap.ker L ⊓ LinearMap.ker (observation lam points) ≤ R := Iff.rfl
+
 /-- B's full-input sufficient-set API removes the zero known-information map. -/
 theorem sufficientSet_zero_iff (R : Submodule k V) (points : Finset J) :
     SufficientSet lam (0 : V →ₗ[k] k) R points ↔
@@ -63,6 +68,13 @@ theorem sufficientSet_zero_iff (R : Submodule k V) (points : Finset J) :
 /-- C's minimum sufficient primitive cardinal, with infinity for an empty set of plans. -/
 noncomputable def minimum (L : V →ₗ[k] I) (R : Submodule k V) : ℕ∞ :=
   ⨅ p : {p : Finset J // SufficientSet lam L R p}, (p.1.card : ℕ∞)
+
+/-- A common lower bound for all sufficient primitive sets bounds the minimum. -/
+theorem le_minimum (L : V →ₗ[k] I) (R : Submodule k V) (n : ℕ∞)
+    (hn : ∀ points, SufficientSet lam L R points → n ≤ (points.card : ℕ∞)) :
+    n ≤ minimum lam L R := by
+  change n ≤ ⨅ p : {p : Finset J // SufficientSet lam L R p}, (p.1.card : ℕ∞)
+  exact le_iInf fun p => hn p.1 p.2
 
 /-- Every sufficient primitive set bounds the exact minimum from above. -/
 theorem minimum_le_card (L : V →ₗ[k] I) (R : Submodule k V) (points : Finset J)
@@ -103,6 +115,11 @@ variable (D : H →ₗ[k] W) (B : V →ₗ[k] W) (b₀ : W) (L : V →ₗ[k] I) 
 /-- C's Boolean output reports exactly solvability of the same full correction equation. -/
 def ValidDecision (v : V) (a : Bool) : Prop :=
   a = true ↔ Solvable D (affineRhs B b₀) v
+
+omit [DecidableEq J] in
+/-- C's Boolean validator API keeps the same independently defined full equation for every Boolean. -/
+theorem valid_decision_iff (v : V) (a : Bool) :
+    ValidDecision D B b₀ v a ↔ (a = true ↔ Solvable D (affineRhs B b₀) v) := Iff.rfl
 
 omit [DecidableEq J] in
 /-- The basic Boolean API identifies a decided proposition with the independent

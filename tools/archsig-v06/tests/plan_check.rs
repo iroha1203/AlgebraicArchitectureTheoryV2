@@ -3953,6 +3953,49 @@ law payment-info-kept
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "g.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
 }
 
+/// f(o) は `return m.g()` で、g は o.u(payment-info)に書く。`calls` を `returns` より前に書き、`returns` の `at` は return 文の
+/// 最後の行にする(第3章の `returns`)。`calls_at` と `returns_at` は観測した行。候補は g の書く値を変える。
+fn return_call(name: &str, calls_at: &str, returns_at: &str) -> Value {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        &r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.u", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.u", "meaning": "payment-info", "uses": ["m.py:5@blob:aaaaaaa"], "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.O.u", "value": "1", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:CALLS@blob:aaaaaaa"}
+{"kind": "passes", "subject": "m.f->m.g", "object": "m.g.$o", "value": "$o", "at": "m.py:CALLS@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.f", "value": "m.g($o)", "at": "m.py:RETURNS@blob:aaaaaaa"}
+"#
+        .replace("CALLS", calls_at)
+        .replace("RETURNS", returns_at),
+    );
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.g", "object": "m.O.u", "value": "2", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    result(&s, "m.f").clone()
+}
+
+#[test]
+fn a_call_in_a_returned_expression_is_made_when_observed_before_the_return() {
+    // 一行の `return m.g(o)`: 同じ行で `calls` を `returns` より前に書けば、f は g を呼び、o.u に書く値が変わる。
+    let r = return_call("return-call-one-line", "10", "10");
+    assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("counterexample")), "{r}");
+    // 複数の行にわたる return 文: `returns` の `at` を最後の行にすれば、前の行の呼び出しが先に並ぶ。
+    let r = return_call("return-call-lines", "10", "12");
+    assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("counterexample")), "{r}");
+}
+
 /// 変更前: m.C は m.P を受け継ぐ(c.py の `inherits`)。payment-info を持つフィールド t は m.P が定義する(p.py)。
 /// f(o) は o.s(m.C の値)を丸ごと書く(m.py)。候補は書く値を `value` にする。`parent` は p.py の ArchMap(空なら読んでいない)。
 /// `other` は m.py に足す Atom。`parent` が `external` なら、m.P の `resolves` は外部を指す。

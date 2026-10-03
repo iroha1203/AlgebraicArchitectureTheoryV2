@@ -32,7 +32,7 @@ fn outcomes(summary: &Value) -> Vec<(String, String, String)> {
 
 /// 題材の観測から、ソースの版を外す。`record` が今のソースの版を補う。
 fn unversioned(atoms: &str) -> String {
-    ["@blob:3f2a9c1", "@blob:1d9e3b4", "@blob:6a1b2c3", "@blob:9f2c4e7"].iter().fold(atoms.to_string(), |s, v| s.replace(v, ""))
+    ["@blob:3f2a9c1", "@blob:1d9e3b4", "@blob:6a1b2c3", "@blob:9f2c4e7", "@blob:8b41d07"].iter().fold(atoms.to_string(), |s, v| s.replace(v, ""))
 }
 
 fn record(repo: &Repo, atoms: &str) {
@@ -87,13 +87,17 @@ fn implementation(plan: &str, edit: impl Fn(&str) -> String) -> BTreeMap<String,
 fn walk(name: &str, edit: impl Fn(&str) -> String) -> (Repo, Vec<Value>, Value) {
     let repo = Repo::new(name);
     repo.write(".archsig/law/shop.law", LAW);
-    for f in ["shop/shipping/service.py", "shop/order/model.py", "shop/shipping/model.py", "shop/shipping/address.py"] {
+    for f in ["shop/shipping/service.py", "shop/order/model.py", "shop/shipping/model.py", "shop/shipping/address.py", "shop/payment/charge.py"] {
         repo.write(f, "# before\n");
     }
     let mut steps = Vec::new();
 
+    // 3. 観測をそろえる。決済情報の意味 Atom の使用箇所 charge.py も観測してある(構造 Atom はない)。
+    let charge = "{\"kind\": \"observed\", \"subject\": \"shop/payment/charge.py\", \"scope\": \"structure\"}\n{\"kind\": \"observed\", \"subject\": \"shop/payment/charge.py\", \"scope\": \"meaning:payment-info\"}\n";
+    record(&repo, &unversioned(&format!("{}{ORDER}{ADDRESS_MODEL}{charge}", chapter2_service())));
+    steps.push(repo.run(&["status"]));
+
     // 4. 候補を書いて検査する。ArchMap には、まだ address.py の構造がない。
-    record(&repo, &unversioned(&format!("{}{ORDER}{ADDRESS_MODEL}", chapter2_service())));
     repo.write(".archsig/plans/split-order/plan.jsonl", SPLIT);
     steps.push(repo.run(&["plan", "check", "split-order"]));
 
@@ -139,8 +143,8 @@ fn walk(name: &str, edit: impl Fn(&str) -> String) -> (Repo, Vec<Value>, Value) 
 "#);
         }
         if file == "shop/payment/model.py" {
-            text.push_str(r#"{"kind": "meaning", "subject": "shop.payment.model.OrderPayment.ref", "meaning": "payment-info", "uses": ["shop/payment/charge.py:22@blob:8b41d07"], "at": "shop/payment/model.py:5"}
-"#);
+            text.push_str(&unversioned(r#"{"kind": "meaning", "subject": "shop.payment.model.OrderPayment.ref", "meaning": "payment-info", "uses": ["shop/payment/charge.py:22@blob:8b41d07"], "at": "shop/payment/model.py:5"}
+"#));
         }
         observed.push_str(&format!(
             "{{\"kind\": \"observed\", \"subject\": \"{file}\", \"scope\": \"structure\"}}\n{{\"kind\": \"observed\", \"subject\": \"{file}\", \"scope\": \"meaning:payment-info\"}}\n{text}"
@@ -159,9 +163,19 @@ fn the_change_of_chapter_2_goes_around() {
     let (repo, steps, details) = walk("ch2", |l| l.to_string());
     let show = |summary: &Value, subject: &str| repo.run(&["show", result(summary, subject)["id"].as_str().unwrap()]);
 
-    // 1. 最初の plan check は沈黙だけを返し、update_shipping は address.py を読めと言う。
-    let first = &steps[0];
+    // 0. 観測をそろえた後の status は、古い範囲を返さない。読んでいないのは address.py だけである。
+    let status = &steps[0];
+    assert_eq!(status["stale"], serde_json::json!([]), "{status}");
+    let unread: Vec<&Value> = status["unread"].as_array().unwrap().iter().map(|u| &u["source"]).collect();
+    assert_eq!(unread, [&Value::from("shop/shipping/address.py")], "{status}");
+
+    // 1. 最初の plan check は四つとも沈黙で、どれも address.py を読めば決まる。update_shipping は address.py を読めと言う。
+    let first = &steps[1];
     assert!(outcomes(first).iter().all(|(_, o, _)| o == "silent"), "沈黙だけ: {first}");
+    let subjects: std::collections::BTreeSet<&str> = first["results"].as_array().unwrap().iter().map(|r| r["subject"].as_str().unwrap()).collect();
+    assert_eq!(subjects, ["payment-info", "shop.shipping.address.normalize_address", UPDATE, "removes"].into_iter().collect(), "{first}");
+    assert_eq!(first["next"].as_array().unwrap().len(), 1, "{first}");
+    assert_eq!(first["next"][0]["decides"].as_array().unwrap().len(), 4, "{first}");
     let r = result(first, UPDATE);
     assert_eq!(r["reason"], "unread", "{first}");
     let next = first["next"].as_array().unwrap().iter().find(|n| n["read"] == "shop/shipping/address.py").unwrap_or_else(|| panic!("{first}"));
@@ -169,30 +183,34 @@ fn the_change_of_chapter_2_goes_around() {
     assert!(next["decides"].as_array().unwrap().contains(&r["id"]), "{first}");
 
     // 2. 読み足すと、国をまたぐ分岐で反例が出る。食い違いの元は、変更前の service.py:4 の書き込みである。
-    let second = &steps[1];
+    let second = &steps[2];
     assert_eq!(result(second, UPDATE)["kind"], "counterexample", "{second}");
+    assert_eq!(result(second, "shop.shipping.address.normalize_address")["outcome"], "holds", "{second}");
     let d = show(second, UPDATE);
     let branch = d["check"]["branch"].as_array().unwrap();
     assert!(branch.iter().any(|b| b["when"] == "$new.country != $order.shipping_address.country" && b["truth"] == false), "国が変わる分岐: {d}");
     assert!(d["check"]["diverging"].as_array().unwrap().iter().any(|v| v["writes"]["before"]["at"].as_str().is_some_and(|a| a.starts_with("shop/shipping/service.py:4"))), "{d}");
 
     // 3. reset_authorization を呼ぶ候補では、どの結果も成り立ち、update_shipping は2分岐とも一致する。
-    let third = &steps[2];
+    let third = &steps[3];
     assert!(outcomes(third).iter().all(|(_, o, _)| o == "holds"), "この候補は Law を保つ: {third}");
     assert_eq!(show(third, UPDATE)["check"]["branches"].as_array().unwrap().len(), 2);
 
     // 4. plan split は、ちょうど三つの局所に分け、呼び出しと引数渡しを共有に入れる。
-    let split = &steps[3];
+    let split = &steps[4];
     assert_eq!(result(split, "split-order")["outcome"], "holds", "{split}");
     let locals: Vec<String> = show(split, "split-order")["check"]["locals"].as_array().unwrap().iter().map(|l| l["local"].as_str().unwrap().to_string()).collect();
     assert_eq!(locals, ["shop/order", "shop/payment", "shop/shipping"]);
-    let shared = steps[4].as_array().unwrap()[3].as_array().unwrap().clone();
+    let order_local = steps[5].as_array().unwrap()[0].as_array().unwrap().clone();
+    assert!(order_local.iter().any(|a| a["kind"] == "removes" && a["subject"] == "shop.order.model.Order"), "{order_local:?}");
+    let shared = steps[5].as_array().unwrap()[3].as_array().unwrap().clone();
     assert!(shared.iter().any(|a| a["kind"] == "calls" && a["subject"] == UPDATE && a["object"] == RESET_OP), "{shared:?}");
     assert!(shared.iter().any(|a| a["kind"] == "passes" && a["subject"] == format!("{UPDATE}->{RESET_OP}")), "{shared:?}");
 
     // 5. 実装後の compare --plan は、すべて成り立つ。
-    let compared = &steps[5];
+    let compared = &steps[6];
     assert!(outcomes(compared).iter().all(|(_, o, _)| o == "holds"), "{compared}");
+    assert!(result(compared, "shop.shipping.address.normalize_address")["outcome"] == "holds", "{compared}");
     let matched = details.as_array().unwrap().iter().find(|d| d["subject"] == "split-order").unwrap_or_else(|| panic!("{compared}"));
     assert_eq!((matched["check"]["planned"].as_u64(), matched["check"]["observed"].as_u64()), (Some(13), Some(13)));
     let update = details.as_array().unwrap().iter().find(|d| d["subject"] == UPDATE).unwrap();
@@ -209,7 +227,7 @@ fn an_empty_string_in_the_payment_implementation_is_caught() {
             l.to_string()
         }
     });
-    let compared = &steps[5];
+    let compared = &steps[6];
     assert_eq!(result(compared, UPDATE)["kind"], "counterexample", "{compared}");
     let mismatches: Vec<&Value> = details.as_array().unwrap().iter().filter(|d| d["kind"] == "mismatch").collect();
     assert_eq!(mismatches.len(), 2, "{compared}");
