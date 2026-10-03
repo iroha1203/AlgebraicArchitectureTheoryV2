@@ -22,7 +22,7 @@ Law の誤り、沈黙、成り立たない結論も、結果として返す。
 | --- | --- |
 | `archsig check` | 1. Law を守っているか、2. 全体で貼り合うか |
 | `archsig plan check <候補>` | 3. 変更の後も保たれるか |
-| `archsig compare --plan <候補>`、`--base <コミット>` | 3. 実装の後も保たれ、候補どおりか |
+| `archsig compare --before <根> [--plan <候補>]` | 3. 実装の後も保たれ、候補どおりか |
 | `archsig paths <経路> <経路>` | 4. 経路や順序で結果が変わるか |
 | `archsig check --reading <読み> --against <読み>` | 5. 粒度を変えても診断は変わらないか |
 | `archsig view --reading <読み>` | 5. 粗い読みでまとめた構造 |
