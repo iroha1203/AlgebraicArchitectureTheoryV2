@@ -460,10 +460,9 @@ pub fn implemented(
         let Some(meaning) = law.about.as_deref() else { continue };
         for (e, _) in before.meanings.iter().filter(|(e, _)| !e.starts_with("local:") && has_meaning(before, e, meaning)) {
             for t in mapping.to.get(e.as_str()).into_iter().flatten() {
-                // 行き先の種類が決まらなければ(曖昧、`value` のない `defines`)、意味を持つかも決まらない(設計 §3.2)。
+                // 行き先の種類が決まらなければ(曖昧、`value` のない `defines`、定義を読んでいない)、意味を持つかも決まらない(設計 §3.2、§5.1)。
                 let f = match corresponds_kind(after, overlay, t) {
-                    Err(s) if matches!(s.reason, Reason::Unresolved) => Finding::silent("change", Some(&law.name), t, s),
-                    Err(_) => continue,
+                    Err(s) => Finding::silent("change", Some(&law.name), t, s),
                     Ok(_) => match meaning_known(None, after, t, meaning) {
                         Err(s) => Finding::silent("change", Some(&law.name), t, s),
                         Ok(()) if has_meaning(after, t, meaning) => continue,

@@ -554,3 +554,44 @@ fn removes_after_reobservation_traces_paths_in_the_structure_after_the_change() 
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
 }
+
+#[test]
+fn a_target_not_read_after_reobservation_is_unread_on_the_meaning_check() {
+    // 候補は m.O.t を m.O.t と m.P.u の二つへ分ける。観測し直した変更後で、m.P.u は定義を読んでいない p.py の型 m.P のフィールドである。
+    // m.P.u が意味を持つかは決まらないので、黙って外さず、`unread` で沈黙し、読む所を返す(設計 §5.1)。
+    let law = r#"sources "*.py"
+
+reading module = dir(depth: 1)
+
+meaning payment-info on field
+  "注文の支払いを特定する値。"
+
+law payment-info-kept
+  "決済情報は変更の後も残る。"
+  about payment-info
+  changes keep
+"#;
+    let m = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.t", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.t", "meaning": "payment-info", "uses": ["m.py:2@blob:aaaaaaa"], "at": "m.py:2@blob:aaaaaaa"}
+"#;
+    let before = Repo::new("split-unread-before");
+    before.write(".archsig/law/m.law", law);
+    before.write("m.py", "# source\n");
+    before.map("m.py", m);
+    let after = Repo::new("split-unread");
+    after.write(".archsig/law/m.law", law);
+    after.write("m.py", "# source\n");
+    after.map("m.py", &format!("{m}{{\"kind\": \"resolves\", \"subject\": \"m.P\", \"object\": \"p.py\", \"at\": \"m.py:3@blob:aaaaaaa\"}}\n"));
+    after.write(
+        ".archsig/plans/p/plan.jsonl",
+        "{\"kind\": \"corresponds\", \"subject\": \"m.O.t\", \"object\": \"m.O.t\", \"at\": \"plan:p\"}\n{\"kind\": \"corresponds\", \"subject\": \"m.O.t\", \"object\": \"m.P.u\", \"at\": \"plan:p\"}\n",
+    );
+    let s = compare(&after, &before, Some("p"));
+    let r = result(&s, "m.P.u");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}
