@@ -312,10 +312,14 @@ impl Structure {
         if depth > DEPTH_LIMIT || out.len() > STEP_LIMIT {
             return Err(Silence::new(Reason::Limit));
         }
-        // この本体の戻り値の手順。戻り値は、その手順を持つ本体だけを終える。
-        let mut returns: Vec<usize> = Vec::new();
+        // この本体の戻り値の手順と、その行。戻り値は、その手順を持つ本体だけを終える。
+        let mut returns: Vec<(usize, Option<u64>)> = Vec::new();
         for &i in self.bodies.get(op).map(|v| v.as_slice()).unwrap_or(&[]) {
             let a = &self.atoms[i];
+            // 戻り値の後の手順は、戻り値より後の行の手順である。同じ行の手順(`return g()` の呼び出し)は、戻り値の前に行う。
+            // 行のない Atom(候補の中)は、Atom の順である。
+            let here = line(a);
+            let after: Vec<usize> = returns.iter().filter(|(_, l)| !matches!((l, here), (Some(r), Some(h)) if *r >= h)).map(|(r, _)| *r).collect();
             let mut when = Vec::new();
             if let Some(w) = &a.when {
                 let e = parse_expr(w);
@@ -377,7 +381,7 @@ impl Structure {
                         at: a.at.clone(),
                         atom: i,
                         within,
-                        after: returns.clone(),
+                        after,
                     });
                     if external.is_none() {
                         self.unfold_into(&object, &inner, Some(index), depth + 1, out)?;
@@ -386,9 +390,9 @@ impl Structure {
                 }
             };
             let ret = matches!(kind, StepKind::Return { .. });
-            out.push(Step { kind, when, at: a.at.clone(), atom: i, within, after: returns.clone() });
+            out.push(Step { kind, when, at: a.at.clone(), atom: i, within, after });
             if ret {
-                returns.push(out.len() - 1);
+                returns.push((out.len() - 1, here));
             }
         }
         Ok(())

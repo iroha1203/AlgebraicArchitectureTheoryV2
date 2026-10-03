@@ -1919,6 +1919,22 @@ fn the_steps_after_a_return_are_done_only_where_it_did_not_return() {
         "",
     );
     assert_eq!(r["kind"], "counterexample", "{s}");
+    // 戻った分岐では、後の書き込みを行わない。戻らなかった分岐でだけ書く候補と同じになる。
+    let (s, r) = t_case(
+        "return-conditional-same",
+        &[("returns", "", "1", "$o.n == 1"), ("writes", "m.O.t", "1", "")],
+        &[("writes", "m.O.t", "1", "$o.n != 1")],
+        "",
+    );
+    assert_eq!(r["outcome"], "holds", "{s}");
+    // 無条件に書く候補とは、戻った分岐(n が 1)で食い違う。
+    let (s, r) = t_case(
+        "return-conditional-returned-branch",
+        &[("returns", "", "1", "$o.n == 1"), ("writes", "m.O.t", "1", "")],
+        &[("writes", "m.O.t", "1", "")],
+        "",
+    );
+    assert_eq!(r["kind"], "counterexample", "{s}");
     // 呼び出し先の戻り値は、呼び出し先の本体だけを終える。呼び出し元の後の書き込みは行う。
     let callee = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:20@blob:aaaaaaa"}
 {"kind": "returns", "subject": "m.g", "value": "1", "at": "m.py:21@blob:aaaaaaa"}
@@ -2777,5 +2793,40 @@ fn a_passed_value_that_depends_on_a_condition_other_than_the_call_is_unresolved(
     ] {
         let (r, s) = run(name, call_when, &before, &plan);
         assert_eq!(r["kind"], "counterexample", "{name}: {s}");
+    }
+}
+
+#[test]
+fn a_call_on_the_same_line_as_a_return_is_done() {
+    // `return m.g()` を、同じ行の returns と calls として観測する。どちらの順に書いても、呼び出しは戻る前に行う。
+    // m.g は意味を持つ m.O.t に 5 を書く。候補の m.f は何も書かずに返すので、食い違う。
+    let callee = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.O.t", "value": "5", "at": "m.py:21@blob:aaaaaaa"}
+"#;
+    let returns = r#"{"kind": "returns", "subject": "m.f", "value": "m.g()", "at": "m.py:10@blob:aaaaaaa"}
+"#;
+    let calls = r#"{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:10@blob:aaaaaaa"}
+"#;
+    for (name, body) in [("return-call-returns-first", format!("{returns}{calls}")), ("return-call-calls-first", format!("{calls}{returns}"))] {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map(
+            "m.py",
+            &format!(
+                "{}{T_ATOMS}{callee}{body}",
+                r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#
+            ),
+        );
+        repo.write(
+            ".archsig/plans/p/plan.jsonl",
+            r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "returns", "subject": "m.f", "value": "1", "at": "plan:p"}
+"#,
+        );
+        let s = repo.run(&["plan", "check", "p"]);
+        assert_eq!(result(&s, "m.f")["kind"], "counterexample", "{name}: {s}");
     }
 }
