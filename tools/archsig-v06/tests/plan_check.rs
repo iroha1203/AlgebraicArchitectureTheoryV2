@@ -1276,8 +1276,8 @@ fn the_limit_below_counts_one_written_place_not_the_branches() {
 }
 
 #[test]
-fn the_fields_of_a_type_whose_definition_was_not_read_are_followed_when_read() {
-    // 型 m.S の defines はないが、フィールド m.S.p の定義と意味は読んである。
+fn a_type_whose_definition_was_not_read_is_unread_even_if_some_fields_were_read() {
+    // 型 m.S の defines も resolves もない。フィールド m.S.p の定義と意味は読んであるが、m.S のほかのフィールドは分からない(設計 §3.3)。
     let atoms = format!(
         "{O_S}{}{F_WRITES_A}",
         r#"{"kind": "defines", "subject": "m.S.p", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
@@ -1285,7 +1285,34 @@ fn the_fields_of_a_type_whose_definition_was_not_read_are_followed_when_read() {
 "#
     );
     let (s, r) = below_case("below-fields-without-type", &atoms, PLAN_WRITES_B);
-    assert_eq!(r["kind"], "counterexample", "{s}");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.S"), "{s}");
+}
+
+#[test]
+fn a_plan_that_adds_a_field_to_an_unread_type_is_still_unread() {
+    // m.S の resolves は s.py を指し、s.py は読んでいない。候補が m.S にフィールドを足しても、s.py にあるほかのフィールドは分からない。
+    let atoms = format!("{O_S}{{\"kind\": \"resolves\", \"subject\": \"m.S\", \"object\": \"s.py\", \"at\": \"m.py:1@blob:aaaaaaa\"}}\n{F_WRITES_A}");
+    let plan = format!("{PLAN_WRITES_B}{}", r#"{"kind": "defines", "subject": "m.S.q", "value": "field", "type": "int", "file": "s.py", "at": "plan:p"}
+"#);
+    let (s, r) = below_case("below-plan-adds-field", &atoms, &plan);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "s.py"), "{s}");
+}
+
+#[test]
+fn a_cycle_without_the_meaning_does_not_count_toward_the_limit() {
+    // m.S は int のフィールド 100 個と、型 m.S のフィールド 3 個を持つ。意味を持つフィールドはない。たどる場所は 103 個である。
+    let mut atoms = format!("{O_S}{}", r#"{"kind": "defines", "subject": "m.S", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+"#);
+    for i in 0..100 {
+        atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.S.f{i}\", \"value\": \"field\", \"type\": \"int\", \"at\": \"m.py:4@blob:aaaaaaa\"}}\n"));
+    }
+    for i in 0..3 {
+        atoms.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"m.S.back{i}\", \"value\": \"field\", \"type\": \"m.S\", \"at\": \"m.py:5@blob:aaaaaaa\"}}\n"));
+    }
+    let (s, r) = below_case("below-cycle-count", &format!("{atoms}{F_WRITES_A}"), PLAN_WRITES_B);
+    assert_eq!(r["outcome"], "holds", "{s}");
 }
 
 #[test]

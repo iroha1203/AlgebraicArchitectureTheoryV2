@@ -570,13 +570,25 @@ fn has_meaning(s: &Structure, field: &str, meaning: &str) -> bool {
     s.meanings.get(field).is_some_and(|ms| ms.iter().any(|m| m.meaning.as_deref() == Some(meaning)))
 }
 
+/// 型 `ty` のフィールド。フィールドの名前は `<型>.<フィールド>` である(マニュアル第3章)。定義を読んだものだけを返す。
+fn fields_of(s: &Structure, ty: &str) -> Result<Vec<String>, Silence> {
+    let prefix = format!("{ty}.");
+    let mut out = Vec::new();
+    for (name, e) in s.elements.range(prefix.clone()..).take_while(|(n, _)| n.starts_with(&prefix)) {
+        if name[prefix.len()..].contains('.') || !e.kinds.contains("field") {
+            continue;
+        }
+        s.kind(name)?;
+        out.push(name.clone());
+    }
+    Ok(out)
+}
+
 /// 書き込みの場所より先の場所をたどる(設計 §5.4)。たどったフィールドの数と、フィールドを観測していない型を持つ。
 #[derive(Default)]
 struct Below {
     /// 一つの書き込みの場所からたどったフィールドの数。
     count: usize,
-    /// 書き込みの場所ごとの結果。分岐や書き込みが同じ場所を何度書いても、たどるのは一度だけである。
-    done: BTreeMap<Vec<String>, Vec<Vec<String>>>,
     /// `resolves` が外部を指す型。意味を持つフィールドを持たないとみなす。
     external: BTreeSet<String>,
 }
@@ -585,9 +597,6 @@ impl Below {
     /// 書いた場所 `place` より先の場所のうち、最後のフィールドが意味 `meaning` を持つもの。
     /// 書いた値が変われば、その値からたどる場所の値も変わる。`place` の最後のフィールドの型から、型のフィールドをたどる。
     fn places(&mut self, s: &Structure, place: &[String], meaning: &str) -> Result<Vec<Vec<String>>, Silence> {
-        if let Some(done) = self.done.get(place) {
-            return Ok(done.clone());
-        }
         self.count = 0;
         let mut out = Vec::new();
         let Some(field) = place.last() else { return Ok(out) };
@@ -596,7 +605,6 @@ impl Below {
                 self.walk(s, &ty, meaning, &mut place.to_vec(), &mut vec![ty.clone()], &mut out)?;
             }
         }
-        self.done.insert(place.to_vec(), out.clone());
         Ok(out)
     }
 
@@ -609,11 +617,6 @@ impl Below {
                 Some(a) => question_at(a),
                 None => Silence::new(Reason::Unresolved),
             });
-        }
-        let prefix = format!("{ty}.");
-        if !s.elements.contains_key(ty) && s.elements.range(prefix.clone()..).next().is_some_and(|(n, _)| n.starts_with(&prefix)) {
-            // 型の定義は読んでいないが、そのフィールドの定義は読んでいる。読んだフィールドをたどる。
-            return Ok(true);
         }
         if s.elements.contains_key(ty) {
             return match s.kind(ty)? {
@@ -630,21 +633,12 @@ impl Below {
         }
     }
 
-    /// 型 `ty` のフィールド。フィールドの名前は `<型>.<フィールド>` である(マニュアル第3章)。定義を読んだものだけを返す。
-    /// たどったフィールドが上限を超えたら `limit` で沈黙する(設計 §5.1)。
+    /// たどる型 `ty` のフィールド。たどったフィールドが上限を超えたら `limit` で沈黙する(設計 §5.1)。
     fn fields(&mut self, s: &Structure, ty: &str) -> Result<Vec<String>, Silence> {
-        let prefix = format!("{ty}.");
-        let mut out = Vec::new();
-        for (name, e) in s.elements.range(prefix.clone()..).take_while(|(n, _)| n.starts_with(&prefix)) {
-            if name[prefix.len()..].contains('.') || !e.kinds.contains("field") {
-                continue;
-            }
-            s.kind(name)?;
-            self.count += 1;
-            if self.count > BRANCH_LIMIT {
-                return Err(Silence::new(Reason::Limit));
-            }
-            out.push(name.clone());
+        let out = fields_of(s, ty)?;
+        self.count += out.len();
+        if self.count > BRANCH_LIMIT {
+            return Err(Silence::new(Reason::Limit));
         }
         Ok(out)
     }
@@ -674,12 +668,12 @@ impl Below {
         Ok(())
     }
 
-    /// フィールド `field` の型 `ty` から、フィールドの型をたどって、意味 `meaning` を持つフィールドに着くか。
+    /// フィールド `field` の型 `ty` から、フィールドの型をたどって、意味 `meaning` を持つフィールドに着くか。めぐりを確かめるためのたどりで、上限には数えない。
     fn reaches(&mut self, s: &Structure, field: &str, ty: &str, meaning: &str, seen: &mut BTreeSet<String>) -> Result<bool, Silence> {
         if !seen.insert(ty.to_string()) || !self.known(s, field, ty)? {
             return Ok(false);
         }
-        for f in self.fields(s, ty)? {
+        for f in fields_of(s, ty)? {
             meaning_known(s, &f, meaning)?;
             if has_meaning(s, &f, meaning) {
                 return Ok(true);
