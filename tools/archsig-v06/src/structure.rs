@@ -312,15 +312,12 @@ impl Structure {
         if depth > DEPTH_LIMIT || out.len() > STEP_LIMIT {
             return Err(Silence::new(Reason::Limit));
         }
-        // この本体の戻り値の手順と、その値の式が呼ぶ操作。戻り値は、その手順を持つ本体だけを終える。
-        let mut returns: Vec<(usize, BTreeSet<String>)> = Vec::new();
+        // この本体の戻り値の手順。戻り値は、その手順を持つ本体だけを終える。
+        let mut returns: Vec<usize> = Vec::new();
         for &i in self.bodies.get(op).map(|v| v.as_slice()).unwrap_or(&[]) {
             let a = &self.atoms[i];
-            // 戻り値の後に並ぶ手順は、戻り値の後の手順である。ただし、戻り値の値の式が呼ぶ操作への呼び出し(`return g()`)は、
-            // 戻り値を求めるために戻る前に行うので、後に並んでいても後の手順にしない。
-            let callee = (a.kind == "calls").then(|| a.object.clone().unwrap_or_default());
-            let after: Vec<usize> =
-                returns.iter().filter(|(_, called)| !callee.as_ref().is_some_and(|c| called.contains(c))).map(|(r, _)| *r).collect();
+            // 戻り値の後に並ぶ手順は、戻り値の後の手順である。
+            let after = returns.clone();
             let mut when = Vec::new();
             if let Some(w) = &a.when {
                 let e = parse_expr(w);
@@ -393,11 +390,7 @@ impl Structure {
             let ret = matches!(kind, StepKind::Return { .. });
             out.push(Step { kind, when, at: a.at.clone(), atom: i, within, after });
             if ret {
-                let mut called = BTreeSet::new();
-                if let Some(v) = &a.value {
-                    calls_in(&parse_expr(v), &mut called);
-                }
-                returns.push((out.len() - 1, called));
+                returns.push(out.len() - 1);
             }
         }
         Ok(())
@@ -856,25 +849,6 @@ fn locate(s: Silence, a: &Atom) -> Silence {
 
 fn parse_expr(text: &str) -> Expr {
     expr::parse(text).unwrap_or(Expr::Unknown)
-}
-
-/// 式が呼ぶ操作の名前。
-fn calls_in(e: &Expr, out: &mut BTreeSet<String>) {
-    match e {
-        Expr::Call(name, args) => {
-            out.insert(name.clone());
-            for x in args {
-                calls_in(x, out);
-            }
-        }
-        Expr::Not(x) | Expr::Neg(x) => calls_in(x, out),
-        Expr::Bin(_, a, b) => {
-            calls_in(a, out);
-            calls_in(b, out);
-        }
-        Expr::TooLong(items) => items.iter().for_each(|x| calls_in(x, out)),
-        _ => {}
-    }
 }
 
 fn line(a: &Atom) -> Option<u64> {

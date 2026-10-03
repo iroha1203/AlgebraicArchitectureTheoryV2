@@ -1919,6 +1919,15 @@ fn the_steps_after_a_return_are_done_only_where_it_did_not_return() {
         "",
     );
     assert_eq!(r["kind"], "counterexample", "{s}");
+    // 戻り値の条件を後の手順の時点で読み直すと、m.O.n を書き換えた後では答えが変わる。戻り値の時点で一度だけ読むので、
+    // 戻らなかった分岐でだけ書く候補と同じになる。
+    let (s, r) = t_case(
+        "return-condition-read-once",
+        &[("returns", "", "1", "$o.n == 1"), ("writes", "m.O.n", "$o.t", ""), ("writes", "m.O.t", "5", "")],
+        &[("writes", "m.O.t", "5", "$o.n != 1"), ("writes", "m.O.n", "$o.t", "$o.n != 1")],
+        "",
+    );
+    assert_eq!(r["outcome"], "holds", "{s}");
     // 戻った分岐では、後の書き込みを行わない。戻らなかった分岐でだけ書く候補と同じになる。
     let (s, r) = t_case(
         "return-conditional-same",
@@ -2797,23 +2806,14 @@ fn a_passed_value_that_depends_on_a_condition_other_than_the_call_is_unresolved(
 }
 
 #[test]
-fn a_call_on_the_same_line_as_a_return_is_done() {
-    // `return m.g()` を、同じ行の returns と calls として観測する。どちらの順に書いても、呼び出しは戻る前に行う。
-    // m.g は意味を持つ m.O.t に 5 を書く。候補の m.f は何も書かずに返すので、食い違う。
+fn a_call_in_a_return_value_is_written_before_the_return() {
+    // `return m.g()` は、呼び出しを戻り値より前の手順として観測する(第3章)。同じ行なら calls を先に書き、
+    // 式が複数の行にわたるなら returns の at を式の最後の行にする。m.g は意味を持つ m.O.t に 5 を書く。
+    // 候補の m.f は何も書かずに返すので、食い違う。
     let callee = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:20@blob:aaaaaaa"}
 {"kind": "writes", "subject": "m.g", "object": "m.O.t", "value": "5", "at": "m.py:21@blob:aaaaaaa"}
 "#;
-    let returns = r#"{"kind": "returns", "subject": "m.f", "value": "m.g()", "at": "m.py:10@blob:aaaaaaa"}
-"#;
-    let calls = r#"{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:10@blob:aaaaaaa"}
-"#;
-    // 戻り値の式を複数の行に分けて書き、呼び出しが後の行にあっても同じ。
-    let calls_next_line = calls.replace("m.py:10@", "m.py:11@");
-    for (name, body) in [
-        ("return-call-returns-first", format!("{returns}{calls}")),
-        ("return-call-calls-first", format!("{calls}{returns}")),
-        ("return-call-next-line", format!("{returns}{calls_next_line}")),
-    ] {
+    let run = |name: &str, body: &str| {
         let repo = Repo::new(name);
         repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
         repo.map(
@@ -2832,7 +2832,23 @@ fn a_call_on_the_same_line_as_a_return_is_done() {
 {"kind": "returns", "subject": "m.f", "value": "1", "at": "plan:p"}
 "#,
         );
-        let s = repo.run(&["plan", "check", "p"]);
+        repo.run(&["plan", "check", "p"])
+    };
+    for (name, body) in [
+        (
+            "return-call-same-line",
+            r#"{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.f", "value": "m.g()", "at": "m.py:10@blob:aaaaaaa"}
+"#,
+        ),
+        (
+            "return-call-lines",
+            r#"{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:11@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.f", "value": "m.g()", "at": "m.py:12@blob:aaaaaaa"}
+"#,
+        ),
+    ] {
+        let s = run(name, body);
         assert_eq!(result(&s, "m.f")["kind"], "counterexample", "{name}: {s}");
     }
 }

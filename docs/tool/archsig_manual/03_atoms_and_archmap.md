@@ -70,7 +70,7 @@ Atom の同一性は、`kind`、`subject`、`object`、`via`、`value`、`when`�
 - `passes`:呼び出しが引数に値を渡す。`subject` は呼び出しの名前、`object` は受け取る引数(`<呼び出し先>.$<引数の名前>`)である。外部でない呼び出しで、受け取る引数が呼び出し先の引数になければ、渡す値の行き先が決まらないので、その呼び出しを展開する操作は `unresolved` で沈黙し、呼び出しの場所を返す。`when` のない `passes` は、呼び出しの条件で渡す。`passes` に呼び出しと違う `when` があるか、一つの引数に値の違う `passes` が二つ以上あれば、渡す値が一つに決まらないので、その呼び出しを展開する操作は `unresolved` で沈黙する。
 - `sends`:操作がチャネルの項目へ値を送る。`object` は項目、`value` は送る値である。
 - `receives`:操作がチャネルの項目を受け取る。`object` は項目、`value` は受け取った値を操作の中で表す式である。
-- `returns`:操作が値を返す。`value` は返す値である。`returns` の後の手順は、その `returns` を行わなかった分岐でだけ行う(`if c: return` の後の手順は、`c` が成り立たない分岐で行う)。ただし、`returns` の `value` が呼ぶ操作への `calls`(`return g()` の呼び出し)は、戻り値を求めるために戻る前に行うので、`returns` の後に並んでいても行う。`returns` の `when` は、`returns` の時点で読む。`when` のない `returns` の後の手順は行わない。呼び出し先の `returns` は、呼び出し元の手順を止めない。
+- `returns`:操作が値を返す。`value` は返す値である。`returns` の後の手順は、その `returns` を行わなかった分岐でだけ行う(`if c: return` の後の手順は、`c` が成り立たない分岐で行う)。`return g()` のように `returns` の `value` が操作を呼ぶときは、その `calls` が `returns` より前に並ぶように書く。同じ行なら `calls` を先に書き、式が複数の行にわたるなら `returns` の `at` を式の最後の行にする。`returns` の `when` は、`returns` の時点で読む。`when` のない `returns` の後の手順は行わない。呼び出し先の `returns` は、呼び出し元の手順を止めない。
 - `imports`:モジュールが別のモジュールを取り込む。
 - `resolves`:名前が、どこで定義されているか。`object` は、定義したソースのパスか、リポジトリの外なら `external:<パッケージ>` である。解析器が名前を解決できたときに書く。言語の組み込みの型(Python の `str` など)も、リポジトリの外の名前として書く。
 
