@@ -2204,6 +2204,11 @@ fn a_value_that_grows_beyond_the_term_limit_is_limit() {
     let ne = vec!["1 != 1"; 250].join(" and ");
     let (s, r) = t_case("grow-normalized", &[("writes", "m.O.t", ne.as_str(), "")], &[("writes", "m.O.t", ne.as_str(), "")], "");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
+    // 形をそろえる前にも数える。not を 996 個重ねた値は、そろえる前は 1,005 節で上限を超え、そろえると 9 節に縮む。
+    let nots = format!("{}$o.t", "not ".repeat(996));
+    let steps = [("writes", "m.O.t", "1 + 1 + 1 + 1 + 1", ""), ("writes", "m.O.t", nots.as_str(), "")];
+    let (s, r) = t_case("shrink-normalized", &steps, &steps, "");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
 }
 
 #[test]
@@ -2257,6 +2262,17 @@ fn a_condition_or_a_passed_value_that_grows_beyond_the_term_limit_is_limit() {
     steps.push(("writes", "m.O.t", "1", "$o.n == $o.n"));
     let (s, r) = t_case("when-grow", &steps, &steps, "");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
+    // 条件と渡す値も、形をそろえた後に数える。1 != 1 を and で 250 個つなぐと、そろえた後に 1,249 節になる。
+    let ne = vec!["1 != 1"; 250].join(" and ");
+    let steps = [("writes", "m.O.t", "1", ne.as_str())];
+    let (s, r) = t_case("when-grow-normalized", &steps, &steps, "");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
+    let extra = format!(
+        "{{\"kind\": \"defines\", \"subject\": \"m.g1\", \"value\": \"operation\", \"params\": {{\"x\": \"int\"}}, \"at\": \"m.py:101@blob:aaaaaaa\"}}\n{{\"kind\": \"passes\", \"subject\": \"m.f->m.g1\", \"object\": \"m.g1.$x\", \"value\": \"{ne}\", \"at\": \"m.py:10@blob:aaaaaaa\"}}\n"
+    );
+    let steps = [("calls", "m.g1", "", ""), ("writes", "m.O.t", "1", "")];
+    let (s, r) = t_case("passes-grow-normalized", &steps, &steps, &extra);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("limit")), "{s}");
 }
 
 #[test]
@@ -2297,7 +2313,17 @@ fn a_long_expression_does_not_decide_whether_a_removed_element_is_used() {
     let s = run("removes-short-unreadable", "$o.q(1).a + 1");
     assert_eq!(removes_row(&s), (Some("silent".into()), Some("unresolved".into()), true), "{s}");
     // 字句の数が上限を超える式は、構文として読めても読めなくても、limit で沈黙し、読む所は付けない。
-    for (name, v) in [("removes-long-unreadable", format!("$o.q(1).a{}", " + 1".repeat(600))), ("removes-long-readable", format!("$o.b{}", " + 1".repeat(600)))] {
+    // 上限を超えた式の中の ? や引数にない道も、読み直しても決まらないので limit にそろえる。
+    let tail = " + 1".repeat(600);
+    for (name, v) in [
+        ("removes-long-unreadable", format!("$o.q(1).a{tail}")),
+        ("removes-long-readable", format!("$o.b{tail}")),
+        ("removes-long-question", format!("$o.b + ?{tail}")),
+        ("removes-long-question-name", format!("$o.b + ?m.g(1){tail}")),
+        ("removes-long-unknown-arg", format!("$zz.b{tail}")),
+        ("removes-long-unknown-field", format!("$o.q.zz.w{tail}")),
+        ("removes-deep-question", format!("{}?{}", "(".repeat(600), ")".repeat(600))),
+    ] {
         let s = run(name, &v);
         assert_eq!(removes_row(&s), (Some("silent".into()), Some("limit".into()), false), "{name}: {s}");
     }

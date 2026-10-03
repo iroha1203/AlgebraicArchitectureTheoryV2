@@ -75,10 +75,7 @@ fn mentions(tokens: &[Tok]) -> Vec<Expr> {
                 out.push(Expr::Path(p.clone(), fields));
                 i = next;
             }
-            Tok::Ident(w) if w == "?" => {
-                out.push(Expr::Unknown);
-                i += 1;
-            }
+            Tok::Ident(w) if w == "?" => i += 1,
             // `and`・`or`・`not` は、`.` が続かなければ演算子である(`and.x` は名前)。
             Tok::Ident(w) if matches!(w.as_str(), "and" | "or" | "not") && tokens.get(i + 1) != Some(&Tok::Dot) => i += 1,
             Tok::Ident(w) => {

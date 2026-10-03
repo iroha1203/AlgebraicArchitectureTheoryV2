@@ -671,10 +671,11 @@ impl Structure {
             Expr::Unknown => gaps.push(Gap::Unreadable),
             Expr::Not(x) | Expr::Neg(x) => self.named(op, x, out, gaps),
             // 字句の数が上限を超えた式は、構文として読めるかを確かめていない。字句から拾った名前を数え、
-            // そのうえで上限を超えた所としても積む。消える要素を使うかを、拾った名前だけで決めない。
+            // たどれなかった所は、上限を超えた所の一つとして積む(読み直しても決まらないので、読む所は付けない)。
             Expr::TooLong(items) => {
+                let mut ignored = Vec::new();
                 for x in items {
-                    self.named(op, x, out, gaps);
+                    self.named(op, x, out, &mut ignored);
                 }
                 gaps.push(Gap::Limit);
             }
