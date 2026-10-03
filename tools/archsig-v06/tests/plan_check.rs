@@ -2807,7 +2807,13 @@ fn a_call_on_the_same_line_as_a_return_is_done() {
 "#;
     let calls = r#"{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:10@blob:aaaaaaa"}
 "#;
-    for (name, body) in [("return-call-returns-first", format!("{returns}{calls}")), ("return-call-calls-first", format!("{calls}{returns}"))] {
+    // 戻り値の式を複数の行に分けて書き、呼び出しが後の行にあっても同じ。
+    let calls_next_line = calls.replace("m.py:10@", "m.py:11@");
+    for (name, body) in [
+        ("return-call-returns-first", format!("{returns}{calls}")),
+        ("return-call-calls-first", format!("{calls}{returns}")),
+        ("return-call-next-line", format!("{returns}{calls_next_line}")),
+    ] {
         let repo = Repo::new(name);
         repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
         repo.map(
@@ -2829,4 +2835,33 @@ fn a_call_on_the_same_line_as_a_return_is_done() {
         let s = repo.run(&["plan", "check", "p"]);
         assert_eq!(result(&s, "m.f")["kind"], "counterexample", "{name}: {s}");
     }
+}
+
+#[test]
+fn a_write_after_a_return_on_the_same_line_is_not_done() {
+    // `if o.n == 1: return 1; o.t = 1` を、同じ行の returns と writes として観測する。戻り値の後に並ぶ書き込みは、戻った分岐では行わない。
+    // 戻り値の式が呼ばない手順なので、同じ行でも戻り値の後の手順である。
+    let body = r#"{"kind": "returns", "subject": "m.f", "value": "1", "when": "$o.n == 1", "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.t", "value": "1", "when": "$o.n == 1", "at": "m.py:10@blob:aaaaaaa"}
+"#;
+    let repo = Repo::new("return-write-same-line");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        &format!(
+            "{}{T_ATOMS}{body}",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#
+        ),
+    );
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "returns", "subject": "m.f", "value": "1", "when": "$o.n == 1", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    assert_eq!(result(&s, "m.f")["outcome"], "holds", "{s}");
 }
