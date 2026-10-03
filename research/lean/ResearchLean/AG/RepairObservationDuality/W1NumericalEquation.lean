@@ -112,6 +112,21 @@ theorem differential_apply (p : Permissions) (a : Corrections) :
 /-- Basic API for the entire generated RHS. -/
 theorem rhsLinear_apply (v : Values) : rhsLinear v = ![v false,v true,0,0] := rfl
 
+/-- Basic scalar API for the original authored always edge e, used by the native differential comparison. -/
+theorem correctionValue_e (u h z v : ZMod 3) :
+    W1AuthoredOperations.correctionValue u h z v edgeE = u := by
+  simp [W1AuthoredOperations.correctionValue]
+
+/-- Basic scalar API for the original authored candidate b, used by the native differential comparison. -/
+theorem correctionValue_b (u h z v : ZMod 3) :
+    W1AuthoredOperations.correctionValue u h z v edgeB = z := by
+  simp [W1AuthoredOperations.correctionValue,edgeB,edgeE,edgeA]
+
+/-- Basic scalar API for the original authored candidate c, used by the native differential comparison. -/
+theorem correctionValue_c (u h z v : ZMod 3) :
+    W1AuthoredOperations.correctionValue u h z v edgeC = v := by
+  simp [W1AuthoredOperations.correctionValue,edgeC,edgeE,edgeA,edgeB]
+
 /-- The first two rows are exactly the same original full native differential on every correction. -/
 theorem original_differential (x y : ZMod 3) (a : Corrections) (f : Bool) :
     faceCoordinates true x y
@@ -121,9 +136,9 @@ theorem original_differential (x y : ZMod 3) (a : Corrections) (f : Bool) :
       differential (fun _ => true) a (if f then 1 else 0) := by
   cases f
   · rw [relative_d1_first,relativeCochain_value,relativeCochain_value]
-    simp [W1AuthoredOperations.correctionValue,name,edgeE,edgeA,edgeB,differential_apply,geometry]
+    simp [correctionValue_e,correctionValue_b,name,differential_apply,geometry]
   · rw [relative_d1_second_negative,relativeCochain_value,relativeCochain_value,relativeCochain_value]
-    simp [W1AuthoredOperations.correctionValue,name,edgeE,edgeA,edgeB,edgeC,differential_apply,geometry]
+    simp [correctionValue_e,correctionValue_b,correctionValue_c,name,differential_apply,geometry]
 
 /-- The same actual signed defect supplies both original face RHS values; b0 is zero. -/
 theorem original_rhs (v : Values) (f : Bool) :

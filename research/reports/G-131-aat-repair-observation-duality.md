@@ -1429,3 +1429,23 @@ current source SHA256は `506237d8085225eb8e27d05a35a77286d6f4f6e0540c7200cbfed9
 `lake env lean .tmp/G131Cycle11/W1NumericalEquationFinal4Audit.lean` の単一checksと全29個別公理。
 未実行や終了未回収を成功として記録しない。現在source/prefix/rawの対応と終了結果は
 固定headのPR監査と次のfinal packetで確定する。Research full buildは実行しない。
+
+### 行評価修正確認で記録された scalar API の整備
+
+head `79e9908ca5b736acb424a0411a28d941fcf8790c` の新規単一直接確認は、
+名指し行評価findingの解消と直接対応資格を確認した。
+[確認記録](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5974755114)には、
+対象外で気づいた imported `correctionValue` のscalar評価API不足を非中心事項として区別して残した。
+これは通常PRの元finding解消やmerge可否を覆す中心事項ではない。
+
+最終正式gate前に、確認者が名指しした `correctionValue_e/b/c` の基本評価APIを
+G-131の `W1NumericalEquation` に追加し、同じ元微分比較の二proofをこのAPIへ接続した。
+G-130の受理済みsourceを変更せず、既存statement、def/instance値、元操作、全核、
+全出力、import方向、台帳statusを保持する。追加三補題は原始scalar構成の基本正規化であり、
+追加仮定なし。現在W1NumericalEquationは32個別名、全累積は55source/750明示＋65生成＝815名。
+
+source SHA256は `678907dc35d3acc87f568fc25b174395169efa29f543924d6fe16e9cffbe1f45`。
+同source actual checkはexit0、32宣言の標準公理summaryのみ。
+現在全文prefixの `lake env lean .tmp/G131Cycle11/W1NumericalEquationScalarAudit.lean` と
+全32個別公理、対象限定の新規資格確認、必要CIを固定headのPR監査へ対応させる。
+同headの別packetと新規正式最終四本で全A–Eを判定するまで、全体はcheckpointを維持する。
