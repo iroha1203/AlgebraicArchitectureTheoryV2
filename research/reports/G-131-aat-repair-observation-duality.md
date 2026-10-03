@@ -314,3 +314,104 @@ audits:
 ```
 
 全体は `target-proof-checkpoint`。Aの一般族と数値座標・局所関係、B、D、Eは未完了。
+
+## Cycle 4：一般の実核における原始アフィンdefect生成
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-131-aat-repair-observation-duality
+cycle: 4
+goal_blob_sha: 054fea81b916c4d4a470b74af3e13c6cc5dde01c
+base_oid: 9de2ec4efe0eb737b73b54512a2807e1413f705c
+tracking_issue: 5133
+report_path: research/reports/G-131-aat-repair-observation-duality.md
+selection:
+  proof_state_ref: "Cycle 3受理・merge、Issue #5133 comment5969577603"
+  proof_dag_predecessors: [TowerPresentation.correctedDefect_eq, TowerPresentation.correctedFaceDefect_eq_raw, FiniteCoefficients.d1_smul]
+  milestone: "Aの一般圏・頂点ごとの実核について、基準辺と比較のアフィン原始変化から同じ実経路のraw defectと負defectの線形項を生成"
+  proof_obligations: ["同じ実基準辺を核で変化させる原始TransportData", "同じ比較の核変化", "実合成からdelta+eta+d1thetaの導出", "同じ全実核係数と線形輸送からB生成", "固定面での消失から同じ相対負defect生成", "実操作の元辺値・面値と生成cochainの対応"]
+  exit_criteria: ["任意圏の原始塔・頂点ごとの実核でraw defect評価等式", "生成Bの線形性と同じ相対値", "全元辺・面の実操作への対応", "focused check・全明示宣言公理・scan"]
+  selection_reason: "共通moduleのNativeAffineだけでは未放電だった一般実経路のアフィンdefect生成を閉じる"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [PrimitiveAffineDefect.lean, RelativeAffineDefect.lean]
+  risks: ["defectのアフィン性そのものを入力fieldへ移さない", "全実核を共通moduleへ置換しない", "元原始族と構成モデルの対応・基底座標・局所公開可否は別の接続義務として保持"]
+  unchecked: ["構成・検証・独立査読前"]
+```
+
+### Cycle 4の構成・証拠対応
+
+このcycleの証拠は `PrimitiveAffineDefect` と `RelativeAffineDefect`。
+任意圏の原始塔Tの各頂点にある全実核を使用する。原始変更θは元辺ごとの実核値、
+ηは元面ごとの実核値への線形パラメータ写像であり、defectのアフィン性そのものを
+fieldや仮定として受け取らない。物理的な基準辺の変化はTの選択実辺の後置核補正、
+比較の変化は同じ面核の左積として与える。この表示と外部の元原始族F・各OriginalTower
+の対応は後続接続義務であり、今回の構成モデルだけでA全体を完了としない。
+
+| 到達点 | 宣言と生成・使用経路 |
+| --- | --- |
+| 元辺と比較の実操作 | `data`, `edge_value`, `comparison_value`。同じ対象・元辺・面を保持し、strongな変更後の実辺を生成 |
+| 同じ実合成のraw defect | `canonical_eq` は変更後の実両経路のstrong一意性で同じcanonical比較を同定。`raw_defect`, `defect_inclusion` は同じraw値を全実核に戻す |
+| ネイティブアフィンdefect | `defect_eq`, `faceDifferential`, `linearTerm`, `affine_defect`, `affine_inclusion`。実補正微分からδ₀+η+d¹θを導出し線形項を生成 |
+| 固定面の消失 | `defect_zero_iff`, `fixed_defect_zero`, `base_defect_zero`, `linear_term_zero`。入力は各パラメータの実面等号。cochainの消失やBの相対所属を別certificateとして要求しない |
+| 同じ相対負defect | `relativeDefect`, `relativeLinear`, `baseRhs`, `rhsLinear`, `negative_defect_affine`, `rhs_physical_value`。全元面値と負符号を保持 |
+
+material premise ledger:
+
+- `ambient-boundary / 本文由来 (A, n1017 §3.5/6.1)`: 任意圏のT、元セルと対象、strong/core/可換全核/全単射輸送/比較中央化、各全核のmoduleと輸送線形性、パラメータ空間・原始辺/比較の線形変化、閉P、各入力の固定面での実整合。
+- `discharge-required / 放電済み`: 同じ実両経路のcanonical比較、raw defectの核値、アフィン式と線形B、原始実等号から相対所属、負defectの全元面対応。
+- `direction-hypothesis`: 基本APIのh/aは実辺・比較の任意変更値。具体パラメータではθv/ηvを代入して生成する。
+- `conclusion-equivalent-risk`: 固定面hfixedはP内の実整合という原始条件のみ。全面の修復存在・商零・defectのアフィン式・相対Bの所属はinput fieldにない。
+
+主spineは `raw_defect`, `defect_inclusion`, `affine_defect`, `affine_inclusion`,
+`defect_zero_iff`, `linear_term_zero`, `negative_defect_affine`, `rhs_physical_value`。
+一般線形・相対構成のために有限性を追加しておらず、固定GOALの有限入力も全て含む。
+新規Prop述語・certificate構造はない。新規dataは上表の既存API・実合成へ接続済み。
+
+G-129の受理head `cbe70c4dc734a851a90c5030a736141f4352fcba` と
+[最終受理](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5125#issuecomment-5902401268)、
+G-130の受理head `549b7e3ccab1c9686a108530e1b0a4b4f38eee86` と
+[最終受理](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5179#issuecomment-5966982329)
+を再利用資格とする。Correctionおよび使用するraw/comparison APIはG-129受理版から変更なし、
+FiniteCoefficientDifferentialsはG-130受理版から変更なし。現在のsignature・同じTと実核・
+proof-useを確認。Correction blob `10668815b01c88f1be4da453988e6f586db34e9a`、
+FiniteCoefficientDifferentials blob `66f7d6bf0822069e15bccfc7d054884bf2cd998d`。
+G-129内部の全履歴・依存の再帰的再認定は行わない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "一般の全実核で実経路のアフィンdefectを導出し、固定面の実等号から同じ相対負defectとBを生成"
+  exit_criteria_status: ["raw physical defectの全面評価", "原始θ/ηから線形B生成", "実固定面等号から相対所属", "全元辺/面の保持", "focused2file・28個別公理・scanの証拠をPRコメントへ固定"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [PrimitiveAffineDefect.lean, RelativeAffineDefect.lean]
+  evidence: [raw_defect, defect_inclusion, affine_defect, affine_inclusion, defect_zero_iff, linear_term_zero, negative_defect_affine, rhs_physical_value]
+  claim_mapping:
+    theorem_names: [raw_defect, affine_defect, affine_inclusion, negative_defect_affine, rhs_physical_value]
+    source_labels: ["Aの実経路からアフィン負defect生成", "n1017 §3.5/6.1"]
+    conjuncts: ["同じ原始実辺/比較を核でアフィンに変化", "同じ実合成からδ₀+η+d¹θ", "固定実面から相対cochain", "同じ負defect=b₀+Bv"]
+    undischarged_assumptions: []
+    acceptance_point: "一般実核の原始変更モデルから同じ実アフィンdefectを生成する到達点。外部原始族と各OriginalTowerへの対応は後続"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["一般実経路のアフィンdefect生成", "実固定面から相対B所属", "同じ元面値と負符号"]
+    remaining: ["元原始族/各OriginalTowerとの同定と同じ全係数・微分", "基底座標/局所公開可否/実観測への接続", "B・D・E"]
+  certificate_provenance:
+    discharged: ["原始辺・比較からraw値", "実d1からB", "hfixedから相対所属"]
+    unresolved: ["外部の全原始族との表示対応は後続"]
+  proof_use:
+    used: ["strong uniqueness", "G-129の実補正微分", "全実核と可換性・比較中央化", "原始θ/η・輸送線形性", "全パラメータのP実等号"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["focused・28個別#print axioms・scanをPRコメントへ固定"]
+  blocking_findings: []
+  next_obligation: "元原始族/各OriginalTowerと同じ実経路モデルの対応、同じ全係数・基底座標・局所公開可否、Cへの入力接続"
+```
+
+G-131全体は `target-proof-checkpoint`。A全体・B・D・Eは未完了。
