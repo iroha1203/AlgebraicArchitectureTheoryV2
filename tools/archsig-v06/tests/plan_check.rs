@@ -4296,3 +4296,94 @@ fn a_field_the_child_defines_again_is_unresolved_below() {
     let r = inherited("inherited-override-below", PARENT, c_t, "m.a()");
     assert_eq!((r["result"]["outcome"].as_str(), r["result"]["reason"].as_str()), (Some("silent"), Some("unresolved")), "{r}");
 }
+
+/// 一つの m.py の題材。`types` は型と受け継ぎと意味の Atom(行は `m.py:1`)。f(o) は o.s(m.C の値)を丸ごと書き、
+/// 候補は書く値を変えない。g(c) は c.t を読んで o.u(payment-info)に書く。候補は `plan` を足す。
+fn chain(name: &str, types: &str, plan: &str) -> Value {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
+    repo.map("m.py", &format!("{}{types}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.C", "at": "m.py:21@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:23@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "m.py:24@blob:aaaaaaa"}
+"#));
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        &format!("{}{plan}", r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "plan:p"}
+"#),
+    );
+    repo.run(&["plan", "check", "p"])
+}
+
+fn ty(name: &str, line: u32) -> String {
+    format!("{{\"kind\": \"defines\", \"subject\": \"{name}\", \"value\": \"type\", \"at\": \"m.py:{line}@blob:aaaaaaa\"}}\n")
+}
+
+fn field(name: &str, line: u32, meaning: bool) -> String {
+    let mut s = format!("{{\"kind\": \"defines\", \"subject\": \"{name}\", \"value\": \"field\", \"type\": \"int\", \"at\": \"m.py:{line}@blob:aaaaaaa\"}}\n");
+    if meaning {
+        s.push_str(&format!("{{\"kind\": \"meaning\", \"subject\": \"{name}\", \"meaning\": \"payment-info\", \"uses\": [\"m.py:24@blob:aaaaaaa\"], \"at\": \"m.py:{line}@blob:aaaaaaa\"}}\n"));
+    }
+    s
+}
+
+fn inherits(child: &str, parent: &str) -> String {
+    format!("{{\"kind\": \"inherits\", \"subject\": \"{child}\", \"object\": \"{parent}\", \"at\": \"m.py:2@blob:aaaaaaa\"}}\n")
+}
+
+#[test]
+fn a_field_defined_again_further_up_the_chain_is_unresolved_below() {
+    // m.C → m.A → m.P。m.A と m.P がどちらも t を定義する(途中の定義し直し)。m.C の値を丸ごと書くと、どの t かは言語で決まる。
+    let types = [ty("m.P", 3), field("m.P.t", 4, true), ty("m.A", 5), field("m.A.t", 6, false), inherits("m.A", "m.P"), ty("m.C", 7), inherits("m.C", "m.A")].concat();
+    let s = chain("chain-two-levels", &types, "");
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
+
+#[test]
+fn a_field_the_child_defines_again_is_unresolved_whatever_the_other_parents_are() {
+    // m.C は t を定義し直し、m.P2 も t を定義する。もう一つの親 m.P1 が曖昧でも、読んでいなくても、外部でも、定義し直しは決まらないので沈黙する
+    // (m.P1 を読んでいなければ、その読む所で沈黙する)。
+    for (name, p1) in [
+        ("override-ambiguous-sibling", [ty("m.P1", 8), ty("m.P1", 9)].concat()),
+        ("override-unread-sibling", "{\"kind\": \"resolves\", \"subject\": \"m.P1\", \"object\": \"q.py\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n".to_string()),
+        ("override-external-sibling", "{\"kind\": \"resolves\", \"subject\": \"m.P1\", \"object\": \"external:lib\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n".to_string()),
+    ] {
+        let types = [p1, ty("m.P2", 3), field("m.P2.t", 4, true), ty("m.C", 5), field("m.C.t", 6, false), inherits("m.C", "m.P1"), inherits("m.C", "m.P2")].concat();
+        let s = chain(name, &types, "");
+        assert_eq!(result(&s, "m.f")["outcome"], "silent", "{name}: {s}");
+    }
+}
+
+#[test]
+fn a_field_the_child_defines_again_over_an_ambiguous_parent_is_unresolved() {
+    // m.C は t を定義し直し、二か所で定義した m.P も t を定義する。
+    let types = [ty("m.P", 3), ty("m.P", 8), field("m.P.t", 4, true), ty("m.C", 5), field("m.C.t", 6, false), inherits("m.C", "m.P")].concat();
+    let s = chain("override-ambiguous-parent", &types, "");
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
+
+#[test]
+fn removing_a_parent_field_read_through_an_unread_child_type_is_not_passed_over() {
+    // m.h は m.C.t を読む。m.C の定義(c.py)を読んでいないので、m.C が m.P を受け継ぐかは分からない。
+    // 候補が m.P.t を消すと、m.h がそれを使うかは決まらないので、消える要素を使うかの結果は c.py を読む所として沈黙する。
+    let repo = Repo::new("unread-child-removed-parent-field");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.C", "object": "c.py", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.P", "value": "type", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.P.t", "value": "field", "type": "int", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.h", "value": "operation", "params": {"c": "m.C"}, "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "reads", "subject": "m.h", "object": "m.C.t", "at": "m.py:6@blob:aaaaaaa"}
+"#);
+    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.P.t\", \"at\": \"plan:p\"}\n");
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.h" && r["law"].is_null()).unwrap_or_else(|| panic!("{s}"));
+    assert_eq!(r["outcome"], "silent", "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}

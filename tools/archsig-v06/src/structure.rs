@@ -449,27 +449,35 @@ impl Structure {
         })
     }
 
-    /// 型 `ty` のフィールド `name` の要素。`ty` が定義していなければ、`inherits` の型から順に探し、それを定義した型のフィールドを返す(設計 §3.5)。
-    /// 探す途中の型の定義を読んでいなければ 3.3 のとおりに沈黙し、違う型のフィールドが二つ以上見つかれば `unresolved` で沈黙する。
-    /// どこにもなければ `<ty>.<name>` を返す。
-    /// `ty` が定義し、受け継がれる型も定義していれば(定義し直し)、同じ所か別の所かは言語で決まるので、`unresolved` で沈黙する。
+    /// 型 `ty` のフィールド `name` の要素(設計 §3.5)。`ty` が定義していなければ、`inherits` の型から探し、それを定義した型のフィールドを返す。
+    /// 受け継ぎは、どの言語でも同じに読めるときだけ計算し、ほかは沈黙する。
+    /// - `ty` の定義を読んでいなければ、受け継ぎが分からないので、`ty` の定義を読んでいない要素として沈黙する。
+    /// - `ty` が定義していれば、受け継がれる型のどれかも定義していると(定義し直し)、同じ所か別の所かは言語で決まるので `unresolved`。
+    /// - `ty` が定義していなければ、受け継がれる型をすべてたどり、定義した型が二つ以上か、たどった型の種類が決まらなければ沈黙する。
+    /// - どこにもなければ `<ty>.<name>` を返す。
     pub fn member(&self, ty: &str, name: &str) -> Result<String, Silence> {
         let own = format!("{ty}.{name}");
+        let defined = self.elements.contains_key(&own);
+        // `ty` の定義のソースを読んでいなければ、受け継ぎ(そのソースの `inherits`)が分からない。
+        if !defined && !self.elements.contains_key(ty) && matches!(self.resolves.get(ty), Some(Resolution::Source(_))) {
+            return Err(self.undefined(ty));
+        }
         if !self.bases.contains_key(ty) {
             return Ok(own);
         }
-        if self.elements.contains_key(&own) {
-            // 受け継がれる型を読んでいなければ、その型の名前でこのフィールドを名指す計算は沈黙するので、ここでは見ない。
-            return match self.inherited(ty, name) {
-                Ok(found) if !found.is_empty() => Err(Silence::new(Reason::Unresolved)),
-                _ => Ok(own),
-            };
+        let (found, blocked) = self.inherited(ty, name);
+        if defined {
+            // 受け継がれる型を読んでいなければ、その型の名前でこのフィールドを名指す計算は沈黙するので、読んだ型の定義だけを見る。
+            return if found.is_empty() { Ok(own) } else { Err(Silence::new(Reason::Unresolved)) };
         }
         // 型が曖昧なら、どの定義の受け継ぎかが決まらない。
         if self.ambiguous(ty) {
             return Err(Silence::new(Reason::Unresolved));
         }
-        let mut found = self.inherited(ty, name)?;
+        if let Some(s) = blocked {
+            return Err(s);
+        }
+        let mut found = found;
         match found.len() {
             0 => Ok(own),
             1 => Ok(found.pop_first().unwrap_or(own)),
@@ -477,27 +485,33 @@ impl Structure {
         }
     }
 
-    /// 型 `ty` の `inherits` の型を順にたどり、`name` を定義した型で止まって、そのフィールドを集める。
-    /// たどった型(止まった型を含む)の種類が決まらなければ、その沈黙を返す。
-    fn inherited(&self, ty: &str, name: &str) -> Result<BTreeSet<String>, Silence> {
+    /// 型 `ty` の `inherits` の型をすべてたどり、`name` を定義した型のフィールドを集める(定義した型の先もたどる)。
+    /// たどった型の種類が決まらなければ(読んでいない、外部、曖昧、型でない)、最初のその沈黙を一緒に返す。
+    fn inherited(&self, ty: &str, name: &str) -> (BTreeSet<String>, Option<Silence>) {
         let mut found = BTreeSet::new();
+        let mut blocked = None;
         let mut seen = BTreeSet::new();
         let mut todo: Vec<String> = self.bases.get(ty).cloned().unwrap_or_default();
         while let Some(b) = todo.pop() {
             if !seen.insert(b.clone()) {
                 continue;
             }
-            if self.kind(&b)? != "type" {
-                return Err(Silence::new(Reason::Unresolved));
+            match self.kind(&b) {
+                Ok("type") => {}
+                Ok(_) => {
+                    blocked.get_or_insert(Silence::new(Reason::Unresolved));
+                }
+                Err(e) => {
+                    blocked.get_or_insert(e);
+                }
             }
             let field = format!("{b}.{name}");
             if self.elements.contains_key(&field) {
                 found.insert(field);
-                continue;
             }
             todo.extend(self.bases.get(&b).into_iter().flatten().cloned());
         }
-        Ok(found)
+        (found, blocked)
     }
 
     /// 型 `ty` のフィールド `name` が、この構造では受け継ぎで見つからず(`field` は定義のない `<ty>.<name>`)、
