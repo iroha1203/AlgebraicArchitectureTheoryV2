@@ -189,7 +189,7 @@ theorem actual_optimum_eq_point (S : Set candidates) (base : F)
     simp only [shiftedν, shiftedRealize, hrealize, add_sub_cancel_left]
   have he : ∀ X j, shifted X j = PointQuerySimulation.evaluation lam (shiftedν X) j := by
     intro X j
-    simp only [shifted, shiftedν, heval, PointQuerySimulation.evaluation, map_sub]
+    simp only [shifted, shiftedν, heval, PointQuerySimulation.evaluation_apply, map_sub]
   have hv : (fun X a => a = true ↔ Nonempty (SupportedRepair (input X)
       (fixedEdgesForRange P.edges candidates (OriginalRanges.allowed candidates S)))) =
       (fun X a => a = true ↔ shiftedν X ∈ R[S]) := by

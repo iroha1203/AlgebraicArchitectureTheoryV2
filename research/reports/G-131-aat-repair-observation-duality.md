@@ -660,13 +660,13 @@ zero-offset側と任意offset側の双方で、全出力・応答・各回数・
 十分集合がない場合は無限、全元入力が修復不能ならfalseを返す零回手続きを構成する。
 成功点を有限に探すことはDの後続義務であり、Bでは指定の条件分けの仮定として使用する。
 
-受理spineは次の68宣言（5新規moduleと既存観測moduleの基本API1本）。
+受理spineは次の69宣言（5新規moduleと既存観測moduleの基本API1本）。
 
 `AAT.AG.RepairObservationDuality.LinearObservationDuality`: `predicate_iff`, `decision_iff`, `evaluationSpan`, `span_coannihilator`, `observation_annihilator`, `kernel_iff_dual`, `predicate_iff_dual`, `quotientDual`, `quotientDual_apply`, `quotientDual_symm_apply`, `quotientImage`, `quotientImage_apply`, `quotientImage_symm_apply`。
 
 `AAT.AG.RepairObservationDuality.AdditiveObservationAction`: `action`, `action_apply`, `fixed_iff`, `compatible`, `mem_compatible`, `indices`, `stabilizer_iff`, `sufficient_iff`, `predicate_iff`, `observe_decode`, `zeroPoints`, `indices_zeroPoints`, `card_zeroPoints`, `card_indices_le`, `minimum_eq`。
 
-`AAT.AG.RepairObservationDuality.PointQuerySimulation`: `evaluation`, `decode`, `toPoint`, `primitive_to_point`, `point_to_primitive`, `inflateStep`, `inflate`, `fromPoint`, `inflate_append`, `arbitrary_point_to_primitive`, `primitive_to_arbitrary_point`, `toPoint_correct_iff`, `fromPoint_correct_iff`, `toPoint_worst_eq`, `fromPoint_worst_eq`, `optimum_eq`, `optimum_eq_minimum`。
+`AAT.AG.RepairObservationDuality.PointQuerySimulation`: `evaluation`, `evaluation_apply`, `decode`, `toPoint`, `primitive_to_point`, `point_to_primitive`, `inflateStep`, `inflate`, `fromPoint`, `inflate_append`, `arbitrary_point_to_primitive`, `primitive_to_arbitrary_point`, `toPoint_correct_iff`, `fromPoint_correct_iff`, `toPoint_worst_eq`, `fromPoint_worst_eq`, `optimum_eq`, `optimum_eq_minimum`。
 
 `AAT.AG.RepairObservationDuality.PrimitiveReplyTranslation`: `history`, `procedure`, `run_iff`, `correct_iff`, `worst_eq`, `optimum_le`, `optimum_eq`。
 
@@ -728,7 +728,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: ["対象fileと68追加宣言のfocused/個別公理raw記録、scan、独立査読をPRへ固定"]
+  validation_refs: ["対象fileと69追加宣言のfocused/個別公理raw記録、scan、独立査読をPRへ固定"]
   blocking_findings: []
   next_obligation: "Dの同じ双対値取得・有限計画/solver/実復元と更新"
 ```

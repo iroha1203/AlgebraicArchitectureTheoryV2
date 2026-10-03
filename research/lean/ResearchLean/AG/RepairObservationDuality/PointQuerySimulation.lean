@@ -26,6 +26,9 @@ variable (lam : J → V →ₗ[k] k)
 /-- B's primitive response is the original linear evaluation at the unknown input. -/
 def evaluation (n : V) (j : J) : k := lam j n
 
+/-- B's primitive evaluation API reads the same original linear value without unfolding. -/
+theorem evaluation_apply (n : V) (j : J) : evaluation lam n j = lam j n := rfl
+
 /-- The visible point response is decoded using its own known query offset. -/
 def decode (hist : QueryHistory (J × k)) : History J k :=
   hist.map fun p => (p.1.1, p.2.2 - p.1.2)
