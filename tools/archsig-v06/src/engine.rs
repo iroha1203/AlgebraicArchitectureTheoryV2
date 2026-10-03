@@ -1231,7 +1231,7 @@ fn keep(
         }
         if !targets.is_empty() {
             kept.push(json!({"element": e, "targets": targets}));
-        } else if let Some(s) = unknown.or_else(|| owner_undecided(before, after, overlay, mapping, e)) {
+        } else if let Some(s) = unknown.or_else(|| owner_undecided(before, after, overlay, mapping, e)).or_else(|| unobserved_after(before, after, overlay, e)) {
             out.push(Finding { theory: Some(THEORY_CHANGES.to_string()), ..Finding::silent("change", Some(law), e, s) });
         } else {
             let mut f = finding(e, "fails", Some("missing"), json!({"element": e, "targets": []}));
@@ -1251,6 +1251,19 @@ fn keep(
 fn owner_undecided(before: &Structure, after: &Structure, overlay: &Overlay, mapping: &Mapping, e: &str) -> Option<Silence> {
     let (op, _) = e.split_once(".$")?;
     before.kind(op).err().or_else(|| mapping.to.get(op).into_iter().flatten().find_map(|t| corresponds_kind(after, overlay, t).err()))
+}
+
+/// 対応のない要素 `e` が変更後にないと言えるのは、それを定義した変更前のソースの構造を、変更後でも読んでいるときだけである(設計 §5.1)。
+/// 実装後に観測し直した変更後でそのソースの構造を読んでいなければ、`unread` で沈黙し、そのソースを返す。
+/// 候補が `removes` した要素は、消えることが候補で決まっているので沈黙しない。引数(`<操作>.$<名前>`)は持ち主の操作の定義のソースで見る。
+fn unobserved_after(before: &Structure, after: &Structure, overlay: &Overlay, e: &str) -> Option<Silence> {
+    if overlay.removes.iter().any(|x| e == x || e.starts_with(&format!("{x}.")) || e.starts_with(&format!("{x}->"))) {
+        return None;
+    }
+    let at = defined_at(before, e).or_else(|| e.split_once(".$").and_then(|(op, _)| defined_at(before, op)))?;
+    let path = parse_location(&at)?.path;
+    (!after.observed.contains(&(path.clone(), "structure".to_string())))
+        .then(|| Silence { reason: Reason::Unread, read: Some(path), element: None, scope: Some("structure".to_string()) })
 }
 
 /// `sources` のソースのうち、範囲 `scope` を読んでいないもの。読む所として返す。
