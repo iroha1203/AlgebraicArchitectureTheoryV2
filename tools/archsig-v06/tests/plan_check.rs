@@ -4022,3 +4022,81 @@ fn a_module_that_imports_is_not_an_element_to_correspond() {
     assert!(s["results"].as_array().unwrap().iter().all(|r| r["outcome"] == "holds"), "{s}");
     assert_eq!(s["next"], serde_json::json!([]), "{s}");
 }
+
+/// 変更前: m.O.a の型は m.A。f(o) は o.a.x に 1 を書く(`via [m.O.a]`、`object m.A.x`)。
+/// 候補は m.O.a の型を m.B に書き換え、f は書き直さない。`plan` は候補に足す Atom。
+fn retyped_via(name: &str, plan: &str) -> Value {
+    result(&retyped_via_all(name, plan), "m.f").clone()
+}
+
+/// `retyped_via` の実行の結果の全体。
+fn retyped_via_all(name: &str, plan: &str) -> Value {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A.x", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.B", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.B.x", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.a", "value": "field", "type": "m.A", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.u", "value": "field", "type": "int", "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.u", "meaning": "payment-info", "uses": ["m.py:11@blob:aaaaaaa"], "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "via": ["m.O.a"], "object": "m.A.x", "value": "1", "at": "m.py:10@blob:aaaaaaa"}
+"#);
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        &format!("{}{plan}", r#"{"kind": "defines", "subject": "m.O.a", "value": "field", "type": "m.B", "file": "m.py", "at": "plan:p"}
+"#),
+    );
+    repo.run(&["plan", "check", "p"])
+}
+
+
+#[test]
+fn removing_the_field_of_the_old_type_is_not_missing_and_the_new_one_is() {
+    // 書き換えた後の f の書き込みは m.B.x を名指し、m.A.x はもう名指さない(f は書き込みだけを持つ)。
+    let s = retyped_via_all("retyped-via-remove-old", "{\"kind\": \"removes\", \"subject\": \"m.A.x\", \"at\": \"plan:p\"}\n");
+    assert!(s["results"].as_array().unwrap().iter().all(|r| r["subject"] != "m.f" || r["kind"] != "missing"), "{s}");
+    let r = retyped_via("retyped-via-remove-new", "{\"kind\": \"removes\", \"subject\": \"m.B.x\", \"at\": \"plan:p\"}\n");
+    assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("missing")), "{r}");
+}
+
+#[test]
+fn a_write_path_names_the_fields_before_a_question_mark() {
+    // 書き込みの道の後ろに `?` の名前があっても、その前のフィールド m.O.a は名指す。候補が m.O.a を消すと missing。
+    let repo = Repo::new("write-path-question");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.a", "value": "field", "type": "m.A", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "via": ["m.O.a"], "object": "?x", "value": "1", "at": "m.py:6@blob:aaaaaaa"}
+"#);
+    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.O.a\", \"at\": \"plan:p\"}\n");
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
+}
+
+
+#[test]
+fn a_write_path_that_begins_with_a_question_mark_names_nothing_after_it() {
+    // 書き込みの道の最初が `?` の名前なら、その先は名指す要素が決まらない。後ろの m.A.x を字句で名指さない。
+    let repo = Repo::new("write-path-leading-question");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A.x", "value": "field", "type": "int", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "via": ["?m.O.a"], "object": "m.A.x", "value": "1", "at": "m.py:6@blob:aaaaaaa"}
+"#);
+    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.A.x\", \"at\": \"plan:p\"}\n");
+    let s = repo.run(&["plan", "check", "p"]);
+    assert!(s["results"].as_array().unwrap().iter().all(|r| r["kind"] != "missing"), "{s}");
+    assert!(s["results"].as_array().unwrap().iter().any(|r| r["outcome"] == "silent"), "{s}");
+}

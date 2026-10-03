@@ -687,11 +687,26 @@ fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn
         let op = a.subject.split("->").next().unwrap_or("").to_string();
         let names = named.entry(op.clone()).or_default();
         let mut gaps: Vec<Gap> = Vec::new();
-        for o in a.via.iter().flatten().chain(a.object.as_ref()) {
-            if o.starts_with('?') {
-                gaps.push(Gap::Name(o.to_string()));
-            } else {
-                names.insert(o.clone());
+        let fields: Vec<&String> = a.via.iter().flatten().chain(a.object.as_ref()).collect();
+        let known = fields.iter().take_while(|o| !o.starts_with('?')).count();
+        match fields.first().and_then(|f| f.rsplit_once('.')) {
+            // `via` を通る書き込みの `via` と `object` は、最初のフィールドから型でたどった道のフィールドを名指す(設計 §3.6)。
+            // 書き直していない書き込みは、変更後の型のフィールドを名指す。道の上の `?` の名前の先は、名指す要素が決まらない。
+            Some((ty, _)) if a.kind == "writes" && fields.len() > 1 && !fields[0].starts_with('?') => {
+                s.named_path(Some(ty.to_string()), ty.to_string(), &field_names(&fields[..known]), stop, names, &mut gaps);
+                if let Some(q) = fields.get(known) {
+                    gaps.push(Gap::Name(q.to_string()));
+                }
+            }
+            _ if a.kind == "writes" && fields.first().is_some_and(|f| f.starts_with('?')) => gaps.push(Gap::Name(fields[0].to_string())),
+            _ => {
+                for o in fields {
+                    if o.starts_with('?') {
+                        gaps.push(Gap::Name(o.to_string()));
+                    } else {
+                        names.insert(o.clone());
+                    }
+                }
             }
         }
         for text in [&a.value, &a.when].into_iter().flatten() {
@@ -761,36 +776,41 @@ impl Structure {
         out
     }
 
+    /// 型 `ty` から、フィールドの名前の列 `fields` でたどる道が名指す要素。たどれた所までのフィールドを `out` に入れ、
+    /// たどれなかった所を `gaps` に積む。`owner` は、型が分からないときにその型を決める要素(引数なら操作)。
+    fn named_path(&self, mut ty: Option<String>, mut owner: String, fields: &[String], stop: &dyn Fn(&str) -> bool, out: &mut BTreeSet<String>, gaps: &mut Vec<Gap>) {
+        for f in fields {
+            // 型が分からなければ、その型を決める要素: 引数なら操作、フィールドなら、定義がなければ持ち主の型。
+            let Some(t) = ty else {
+                gaps.push(Gap::Name(owner));
+                break;
+            };
+            // `?` の型の先は、何を名指すかが決まらない。
+            if t.starts_with('?') {
+                gaps.push(Gap::QuestionType(owner));
+                break;
+            }
+            // `stop` の型は、直下のフィールドの名前(`<型>.<名前>`)は決まるが、その先は決まらない。
+            if stop(&t) {
+                out.insert(format!("{t}.{f}"));
+                gaps.push(Gap::Redefined(t));
+                break;
+            }
+            let field = format!("{t}.{f}");
+            // 種類の決まらないフィールドの型は、決まらない。
+            ty = self.elements.get(&field).filter(|e| !e.undecided()).and_then(|e| e.ty.clone());
+            owner = if self.elements.contains_key(&field) { field.clone() } else { t };
+            out.insert(field);
+        }
+    }
+
     /// 式の中で名指す要素。`$p.f.g` がたどれる所までのフィールドと、呼び出す操作。
     /// たどれなかった所は `gaps` に積む。その先で何を名指すかは決まらない。
     fn named(&self, op: &str, e: &Expr, stop: &dyn Fn(&str) -> bool, out: &mut BTreeSet<String>, gaps: &mut Vec<Gap>) {
         match e {
             Expr::Path(p, fields) => {
-                let mut ty = self.elements.get(op).and_then(|o| o.params.get(p)).cloned();
-                // 型が分からなければ、その型を決める要素: 引数なら操作、フィールドなら、定義がなければ持ち主の型。
-                let mut owner = op.to_string();
-                for f in fields {
-                    let Some(t) = ty else {
-                        gaps.push(Gap::Name(owner));
-                        break;
-                    };
-                    // `?` の型の先は、何を名指すかが決まらない。
-                    if t.starts_with('?') {
-                        gaps.push(Gap::QuestionType(owner));
-                        break;
-                    }
-                    // `stop` の型は、直下のフィールドの名前(`<型>.<名前>`)は決まるが、その先は決まらない。
-                    if stop(&t) {
-                        out.insert(format!("{t}.{f}"));
-                        gaps.push(Gap::Redefined(t));
-                        break;
-                    }
-                    let field = format!("{t}.{f}");
-                    // 種類の決まらないフィールドの型は、決まらない。
-                    ty = self.elements.get(&field).filter(|e| !e.undecided()).and_then(|e| e.ty.clone());
-                    owner = if self.elements.contains_key(&field) { field.clone() } else { t };
-                    out.insert(field);
-                }
+                let ty = self.elements.get(op).and_then(|o| o.params.get(p)).cloned();
+                self.named_path(ty, op.to_string(), fields, stop, out, gaps);
             }
             Expr::Call(name, args) => {
                 if name.starts_with('?') {
@@ -913,4 +933,9 @@ fn parse_expr(text: &str) -> Expr {
 fn line(a: &Atom) -> Option<u64> {
     let loc = parse_location(a.at.as_deref()?)?;
     loc.lines?.split('-').next()?.parse().ok()
+}
+
+/// `via` と `object` のフィールドの名前(`<型>.<名前>` の最後の `.` の後)。
+fn field_names(fields: &[&String]) -> Vec<String> {
+    fields.iter().map(|f| f.rsplit_once('.').map_or(f.as_str(), |(_, n)| n).to_string()).collect()
 }
