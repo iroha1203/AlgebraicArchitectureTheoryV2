@@ -4973,3 +4973,352 @@ ZMod.instField.congr_simp
 ```
 
 </details>
+
+
+### C25 selection — W2の元二辺経路・通常descentの不一致と厳密回復
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 25
+goal_blob_sha: 8da0fb4eb75d1cb5c37a9d4ddf5e03c18c0bb8a2
+base_oid: 24da1df64adc8e6e04384b6f4b96fbb747d5061b
+tracking_issue: 5132
+report_path: research/reports/G-130-aat-relative-repair-composition.md
+selection:
+  proof_state_ref: "C24 PR5172/root5964429341/Issue5964441086; fixed GOAL W2/F/B/C; n1017 2.5; current accepted generic actual descent and strict generated APIs"
+  proof_dag_predecessors: ["C1-C4 original supported actual repairs/full labels/unrestricted B", "C5-C7 independent finite strict C", "C11-C15 whole affine input/actual restriction/generated restoration", "C24 W1 full-affine milestone"]
+  milestone: "Complete W2 on the original two-edge full-affine path: restricted global and local points, whole overlap BA, actual ordinary homotopy pullback discrete F3, mismatch and full strict generated recovery"
+  proof_obligations:
+    - "Construct original p→w→q typed finite geometry with exactly e1/e2, no faces/3cells, whole Aff(F3)→GL→1, identity references, full actual kernels/transports/core/comparisons. Construct original closed physical P={p,q}, U=e1/V=e2/W={w}, finite full cover, always empty/candidates both, and discharge all generic input conditions. Forbidden candidate fixing must not close P to include w."
+    - "Define independent original full affine repairs and full actual gauge arrows for S empty globally, both original restricted patches and overlap. Prove global/U/V each equivalent to point, all overlap objects unique and its full label group exactly F3, giving whole BA. Preserve every original operation, every physical endpoint and all actual label restrictions."
+    - "Use the actual full restriction functors to construct ordinary binary comma/homotopy pullback. Prove its equivalence to discrete F3 on seam labels and all compatible arrows, evaluate three isomorphism classes versus one global class and prove no equivalence. Connect accepted unrestricted B on this same original tower/P; restricted counterexample must remain the actual restriction diagram."
+    - "Construct full original finite coefficient bases and all cell enumerations. Generate each local D/F, elimination, section and relation once from actual input before S, with full public candidate values and no private always edge. Instantiate independent strict generated cover for all S and show full object/arrow equivalence with the original actual repairs, including both inverses and every original edge/vertex label."
+    - "Evaluate S empty strict generated recovery as point with exactly the original unchanged e1/e2 and zero full global label. Show strict shared vertex matching accounts for the lost ordinary seam freedom; preserve the original overlap and complete actual restriction data. No Nonempty-only replacement or objects-only gluing."
+  exit_criteria:
+    - "All original geometry/full affine/input/closed cover conditions and the global/U/V/overlap full groupoid comparisons are constructed from the original input."
+    - "The actual ordinary restriction diagram has full comma equivalence to discrete F3 and the explicit 3-versus-1 non-equivalence; unrestricted B is connected with all required conditions discharged."
+    - "Each actual local generator is independent of S and full strict C restores the same original actual objects/arrows, both inverses and all S; S empty evaluation recovers the global point."
+    - "Current root single-body focused checks, every owned individual axiom result, exact hashes/registry/scans, fixed GOAL/criteria and standard review-pr/math-lean-review plus root acceptance and exact final CI all pass."
+  selection_reason: "Closes one of the three remaining fixed witness obligations and directly validates why B remains unrestricted while C retains candidate coordinates and full shared labels."
+  expected_result_type: proof-obligation-discharged
+  lean_targets: ["W2AffineInput", "W2Regions", "W2ActualRepairs", "W2GaugeLabels", "W2RestrictionDiagram", "W2OrdinaryComma", "W2FiniteCoefficients", "W2LocalInterfaces", "W2StrictGeneratedCover"]
+  risks: ["original endpoints and full affine operations", "candidate fixed-edge support does not fix w", "full BA arrows and actual restriction functors", "whole comma seam not a chosen object", "S-before-generator order", "full original object/arrow restoration", "unrestricted B input discharge"]
+  unchecked: ["five W2 obligations not yet implemented", "whole-target W3/W5 and separate final completion audit remain"]
+```
+
+### Cycle 25 — 元二辺経路での通常descentの不一致と厳密回復
+
+**到達点:** 固定W2の元経路p→w→qを全Aff(F3)の実操作として構成した。
+物理的な固定頂点はp,qで、e1/e2の禁止はwを固定頂点へ追加しない。
+空の許可集合で大域・U・Vの全groupoidはpoint、元の重なりの全groupoidはBF3となる。
+同じ実制限関手の通常commaは全対象・全射について離散F3に同値であり、
+同型類は大域の1個に対して3個である。大域修復との非同値を証明した。
+候補全許可では同じ原表示・P・被覆に無制限Bを適用し、全実辺・全頂点ラベルを保持する。
+
+各パッチのD/F・消去・section・relationは元の全核基底、全原セル列挙、
+同じ実defectからSに先立って生成される。私有always辺は空で、全選択候補がpublicに残る。
+任意Sの独立全実修復と厳密生成groupoidに、全対象・全射で相互逆な関手を構成した。
+空Sの厳密生成はpointを回復し、復元e1/e2は元の参照実操作そのもの、全ラベルは零となる。
+厳密な共有頂点一致は同じ元wの全核値を比較する。通常commaで残る別の重なり同型を、
+厳密生成の対象へ追加しない。
+
+このcycleはW2の五義務と四終了条件に対応する。全GOALのW3/W5と別の全target最終判定は残る。
+
+| 固定W2の要求 | 今回の構成・全方向 | 一般定理への接続・使用 |
+| --- | --- | --- |
+| 原p,w,q、型付きe1/e2、全Aff(F3)→GL→1、原core/比較/全核・輸送 | W2AffineInput.geometry / originalTower / edgeNameEquiv、W2FiniteCoefficients.kernelCoordinate / kernel_inverse_value / original_linear | NativeAffine.towerと全実射影の核座標を、独立実修復とCの元微分へ使用 |
+| P={p,q}、U/Vの元閉被覆、W={w}、全候補、E0空 | W2Regions.fixedRegion / internal_not_fixed / overlap_vertices / overlap_edges / regions_cover / indexed_cover / candidates_all / private_empty | 閉包・全被覆・固定面・全候補public条件を入力から放電 |
+| S空で全大域/U/Vがpoint、重なり全BF3 | W2ActualRepairsの独立Repair/LocalRepairs・empty_unique / local_empty_unique、W2GaugeLabelsの全零/全F3両逆、W2EmptyGroupoidsの四全圏同値 | 全実操作と異なる全ラベルを保持したNativeAffine.groupoidEquivalence / W2SingletonCoordinates |
+| 実制限から通常hpb、離散F3、3対1非同値 | W2RestrictionDiagram.leftRestriction / rightRestrictionの元実辺と全wラベル、W2OrdinarySeams.seam_restore / hom_iff / hom_unique / discreteEquivalence、W2OrdinaryClasses.ordinaryClassEquiv / ordinary_class_card / global_class_card / global_not_equivalent | 実commaの全対象と全compatible射を解析し、実isomorphism setoidの全商を評価 |
+| 同じ原表示/Pの無制限B | W2UnrestrictedDescent.unrestricted_fixed / nativeEquivalence / actualEquivalence / left_choice / right_choice / left_label / right_label / seam_label | NativeDescent.equivalenceへ同じfixed_faces・regions_coverを渡し、原辺と全頂点の保持を評価 |
+| Sに先立つ全局所生成と候補保持 | W2FiniteCoefficients.basesと全列挙、W2LocalInterfaces.privateMatrix / publicMatrix / elimination / generatedSection / relation / equationEquiv / nativeEquivalence、W2LocalMatrixValues.private_matrix_zero / public_matrix_zero / generated_section_zero / publicIndex | 実D/F/defectからFiniteNative生成を実行する構成。section法則・公開row独立性・row数の条件を放電 |
+| 任意Sの全対象・全射・元値の厳密回復 | W2StrictGeneratedCover.actualObjectEquiv / nativeEquivalence / actualEquivalence / restore_extract / extract_restore / restore_operation、W2StrictInverseChecks.actual_forward_inverse / actual_inverse_forward | SupportedNativeEquation→StrictCoverRestoration→GeneratedCoverActionに全Affine対応を接続、関手合成そのものを両方向の恒等とする |
+| 空Sでpoint・同じe1/e2・全零label、共有w | W2StrictGeneratedCover.emptyPointEquivalence / empty_restored_operation、W2StrictLabels.actualLabelEquiv / restore_original_vertex / extract_restored_label / shared_w_value / shared_w_coordinate / empty_label_zero / empty_arrow_label | 全許可ラベル対応と元頂点値の厳密一致を通して、同じ実大域修復・全射を回復 |
+
+### C25 前提の出所と使用
+
+| 前提 | 分類・入力からの放電 | 使用先 |
+| --- | --- | --- |
+| 元二辺経路、F3、全Aff操作、物理両端・全候補・空S | 本文由来: 固定GOAL W2/F、n1017 §2.5。W2AffineInput / W2Regionsで同じ型付き入力を構成 | 全実修復・実制限・全F3重なり・指定の非同値 |
+| 強さ・全実可換核・核輸送・core/比較・線形性 | 一般A/B/Cではdirection-hypothesis、W2では放電済み: 全NativeAffine.tower、同じ実核のkernelCoordinate / kernel_inverse_value / original_linear | 全実修復/ラベル対応・元微分・生成 |
+| 閉包・固定面整合・有限全被覆・候補分割 | 放電済み: W2Regions全fieldとcover、W2FiniteCoefficients.fixed_faces、W2Regions.private_empty | 原制限、無制限B、Sより前の独立C生成 |
+| 全基底・完全原セル列挙・全有限体列挙 | 放電済み: W2FiniteCoefficients.bases / enumK / enumEdges / enumFaces / enumRegions | 同じ全実D/Fから有限消去・section・relationを生成 |
+| point/BF3と離散F3の全対応、同型類の保存 | 放電済み: 独立実operation/label条件からの全両逆、実comma squareと全ラベルからのseam/hom解析、equivalenceClasses | 3対1非同値の具体的評価。既製のpoint/離散F3を実図式の定義へ入れない |
+| section/公開relation/strict復元の完全性 | 放電済み: W2LocalInterfacesとW2StrictGeneratedCoverの実入力による一般構成、W2StrictInverseChecksの全関手恒等 | 全Sの同じ原実辺と全射への復元。結論certificateを受け取らない |
+| 全ラベルの共有元頂点一致・空S零性 | 放電済み: W2StrictLabels.actualLabelEquiv / shared_w_value / empty_label_zero、独立実gauge条件によるglobal_empty_zero | 対象だけの貼り合わせを排し、全原頂点ラベルと全射を保持 |
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-130-aat-relative-repair-composition
+cycle: 25
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "固定W2の同じ原二辺全Aff入力、実制限、point/BF3、通常comma離散F3と3対1非同値、同じ無制限B、独立全局所生成と全Sの厳密全対象/全射回復"
+  exit_criteria_status:
+    - "原全入力・閉被覆・point/BF3: Lean構成と個別公理確認"
+    - "実commaの離散F3・3対1非同値・無制限B: Lean構成と個別公理確認"
+    - "S前の独立生成・全S/全実辺/全頂点/全射の両逆・空S回復: Lean構成と個別公理確認"
+    - "単一production本体・全所有宣言の個別公理・現行hash/registry/scan対応。標準PRレビューとroot受入はPRで判定"
+  split_reason: none
+  completion_candidate: no
+  claim_mapping:
+    source_labels: ["固定GOAL W2", "A/B/C/F", "n1017 §2.5"]
+    undischarged_assumptions: []
+    acceptance_point: "五義務・四終了条件の同じ到達点。標準レビューとroot受入を要する"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["上表の同じ実入力からのW2全条件・実制限・全comma解析・独立生成・全S厳密両逆"]
+    remaining: ["全GOALの残W3/W5と別最終完了判定"]
+  certificate_provenance:
+    discharged: ["元全Aff入力・全実核・同じ実D/F/defect/全基底/全列挙からの生成", "独立実修復と全ラベルからのpoint/BF3/実comma解析"]
+    unresolved: []
+  proof_use:
+    used: ["元型付き入力→全実修復/制限", "実制限square/全wラベル→全comma離散F3→3対1非同値", "元全入力/被覆→無制限B", "実D/F/全列挙→生成→全S厳密両逆", "全原頂点labels→厳密共有w/空S全零"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  blocking_findings: []
+  next_obligation: "W3、W5の固定実例・全指定判定と一般A–F接続、その後別全target最終四本レビュー"
+```
+
+### C25 productionと個別公理の一次検証対応
+
+全16単一production本体を各々focused checkし、所有moduleの個別`#print axioms`は
+全195宣言を被覆する。namespace監査は194宣言、namespace外の自動生成helperは1宣言。
+本体検証とimport-onlyの個別公理確認は別の証拠である。各本体・個別公理のactual exitは0、
+現行sourceとlogのSHA256を対応させる。標準公理はpropext、Classical.choice、Quot.sound。
+単一fileコマンドは `cd research/lean && lake env lean -s4096 -D Elab.async=false -o .lake/build/lib/lean/<module path>.olean <source path>`。
+Research全体、aggregate、全module/file loopのelaborationは実行しない。
+
+| Production module | namespace宣言数 | source SHA256 | 本体log SHA256 |
+| --- | ---: | --- | --- |
+| W2ActualRepairs | 17 | `38aff6fe714c9c11bba9c427a7a2f53249be0f1796ac89aa3fabb46d21b50d25` | `4bbe7443c1249f3ed4b26a325acdf5fc0e7e691a886e20f5e95310765a1dc68b` |
+| W2AffineInput | 19 | `2ceca95e274b46c1c1d24776e4addca7e4144954f7dea770dc52321c5040d643` | `5007843230ed6abca8a19c77d1862698154fe6042d861a9bd6f161eba2f5e275` |
+| W2EmptyGroupoids | 9 | `6dbc544cbe30a08055e17e41d6ecf1dd8857bf723af6adfabcff7dbb2953f983` | `986ee8b35ed81c4afffec87fb5a5a5cbf99d0e9773f7c7a2ba7f8061fb6f1213` |
+| W2FiniteCoefficients | 13 | `de0a2d58e988c2f00c548baf08511cfb0604cd22e86f906c42676d72a1dc170c` | `a4c101426f8ef52287a1f916db0eb878423e2a68f18881d2e7401a1269a308b7` |
+| W2GaugeLabels | 26 | `2b0d1d8a40600a2efd7350bc8199cd296f6a8b2413cee2f5b1c000cdb25418af` | `cedfa906230e20732500c531a6e043482d55bedbad4bb671852181f9dac3317b` |
+| W2LocalInterfaces | 10 | `9d3451eec84c0121b674e0521abae3436cf2a56d34cae1de1ef3ac8903e9cd2f` | `1d73cabf5502070b63bf7300bcdbf8e2268bdab2ccb8d1f1efadffdd0acb9c07` |
+| W2LocalMatrixValues | 6 | `9a9f1e304c68d5845636cc4ab9810a080bc380c44d7defedec831224adac45ca` | `8ed8c8b361be802005f869fa7b42cbd6eca30f65aa8024f567addf34f6f633e2` |
+| W2OrdinaryClasses | 10 | `074be98a5d74a1165a06017df1a3af981d8fafbbe7264fc845105138860506eb` | `fb9ef0aff96b4a3bea8f96e53a5a6f0dc65ecdc31729910d8fe842fcaf931676` |
+| W2OrdinarySeams | 16 | `400dcd749313029a87a6be5c0cb21df052df0b7caf900b3118713904d2317af4` | `abd76104c926e1b8ca8b51c00bbf4b7181501a4029f5b6270bb708e0d10978b0` |
+| W2Regions | 16 | `e1421d1fb5cec0c95ee396da2f49a90eab6a4a07a84a3f0f2afe014d21bfd114` | `a9ed6ae6d3b4fdc57926ffd8dbf6ab757391f271c8b955c7af40f3d2421c8552` |
+| W2RestrictionDiagram | 15 | `e0f57a6eef147b001c42935debbb9429e0c9849fddf738c603507f471a12a748` | `8686bd0e091a469a1625fcb0e41f1fa71f714fbecabee31b4b100066b40c6a6b` |
+| W2SingletonCoordinates | 3 | `816cdddd9d587142ea62d7e5ea184fd1e1d0ee169d4ffb50d1f63851bcb43a8d` | `ca818801ab343d5a11fe0614740fef7709e2dac4e8bc113cdab762a82681978f` |
+| W2StrictGeneratedCover | 10 | `c00a17a3a6a682cda9e2f29b13429f4d421e33ca094cc4f370d57cad040ec93c` | `23af2900e9d5e14ba50dd7714a1a70063d5c8a23740669459b0ef8d7c5a9c77f` |
+| W2StrictInverseChecks | 6 | `9cd66d8d3913b2663063fd8cd11e256630390f3ddafbc5c0ec5726380dc54233` | `3371d19383a31bbd8cbcd0b053830090726c32a983bb995d526484d773274280` |
+| W2StrictLabels | 8 | `daa5d66867ffc90fb056ea44a40df1e7c2e551fffa37e41b775166bbf0610e21` | `df1f0614a9064712d3497e23111444e811fc08e61d9e5f4e918787b85dd96a53` |
+| W2UnrestrictedDescent | 10 | `c1495afaa19b92639f05262d6ec148483709a08d0da0e7ce58b4feaa692702b8` | `867a53be8fc79ab8ced981916219f931d20e67bbb920296d0c93440922a19ef5` |
+
+| 個別公理audit module群 | 所有宣言数 | audit SHA256 | log SHA256 |
+| --- | ---: | --- | --- |
+| W2AffineInput, W2Regions, W2ActualRepairs, W2GaugeLabels, W2SingletonCoordinates, W2EmptyGroupoids, W2RestrictionDiagram | 106 | `60540568c65f6c63bf7e524f7d27912e426b4fa6bb4258ccf1eb8834971696a6` | `96c69e367ff3bc75ef001521608ec5f88fc9b470ce3bdee4947b9a7ac8385880` |
+| W2OrdinarySeams, W2OrdinaryClasses, W2FiniteCoefficients, W2LocalInterfaces, W2LocalMatrixValues, W2UnrestrictedDescent, W2StrictGeneratedCover, W2StrictInverseChecks, W2StrictLabels | 89 | `81c1aaa0a6599551afdcbc48c8ccb5dbdaa9c49fe8919da44176a21186c3a584` | `6c2b939f6a4ab44abaf0c240b24073ead64e2bf2b84a995ef0e832d3b4cef32d` |
+
+<details>
+<summary>C25 所有moduleで選択した全195宣言</summary>
+
+```text
+AAT.AG.RelativeRepairComposition.ClosedRegion.mk.congr_simp
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.ActualCategory
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.LocalCategory
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.LocalRepairs
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.NativeCategory
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.RealRepairs
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.actualRestriction
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.emptyObjectEquiv
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.empty_operation
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.empty_unique
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.localEmptyObjectEquiv
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.localReferenceRepair
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.local_empty_operation
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.local_empty_unique
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.local_fixed_all
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.referenceRepair
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.restriction_operation
+AAT.AG.RelativeRepairComposition.W2ActualRepairs.wholeAffineEquivalence
+AAT.AG.RelativeRepairComposition.W2AffineInput.Op
+AAT.AG.RelativeRepairComposition.W2AffineInput.comparison
+AAT.AG.RelativeRepairComposition.W2AffineInput.edgeDecidableEq
+AAT.AG.RelativeRepairComposition.W2AffineInput.edgeNameEquiv
+AAT.AG.RelativeRepairComposition.W2AffineInput.edgeOne
+AAT.AG.RelativeRepairComposition.W2AffineInput.edgeSource
+AAT.AG.RelativeRepairComposition.W2AffineInput.edgeTarget
+AAT.AG.RelativeRepairComposition.W2AffineInput.edgeTwo
+AAT.AG.RelativeRepairComposition.W2AffineInput.faceDecidableEq
+AAT.AG.RelativeRepairComposition.W2AffineInput.geometry
+AAT.AG.RelativeRepairComposition.W2AffineInput.linear_faces
+AAT.AG.RelativeRepairComposition.W2AffineInput.name
+AAT.AG.RelativeRepairComposition.W2AffineInput.name_edge
+AAT.AG.RelativeRepairComposition.W2AffineInput.originalTower
+AAT.AG.RelativeRepairComposition.W2AffineInput.primeThree
+AAT.AG.RelativeRepairComposition.W2AffineInput.reference
+AAT.AG.RelativeRepairComposition.W2AffineInput.vertexP
+AAT.AG.RelativeRepairComposition.W2AffineInput.vertexQ
+AAT.AG.RelativeRepairComposition.W2AffineInput.vertexW
+AAT.AG.RelativeRepairComposition.W2EmptyGroupoids.BA
+AAT.AG.RelativeRepairComposition.W2EmptyGroupoids.Point
+AAT.AG.RelativeRepairComposition.W2EmptyGroupoids.globalPointEquivalence
+AAT.AG.RelativeRepairComposition.W2EmptyGroupoids.leftLabelEquiv
+AAT.AG.RelativeRepairComposition.W2EmptyGroupoids.leftPointEquivalence
+AAT.AG.RelativeRepairComposition.W2EmptyGroupoids.overlapBAEquivalence
+AAT.AG.RelativeRepairComposition.W2EmptyGroupoids.overlap_forward_label
+AAT.AG.RelativeRepairComposition.W2EmptyGroupoids.rightLabelEquiv
+AAT.AG.RelativeRepairComposition.W2EmptyGroupoids.rightPointEquivalence
+AAT.AG.RelativeRepairComposition.W2FiniteCoefficients.actualDefect
+AAT.AG.RelativeRepairComposition.W2FiniteCoefficients.actual_defect_zero
+AAT.AG.RelativeRepairComposition.W2FiniteCoefficients.bases
+AAT.AG.RelativeRepairComposition.W2FiniteCoefficients.basisIndex
+AAT.AG.RelativeRepairComposition.W2FiniteCoefficients.basis_value
+AAT.AG.RelativeRepairComposition.W2FiniteCoefficients.enumEdges
+AAT.AG.RelativeRepairComposition.W2FiniteCoefficients.enumFaces
+AAT.AG.RelativeRepairComposition.W2FiniteCoefficients.enumK
+AAT.AG.RelativeRepairComposition.W2FiniteCoefficients.enumRegions
+AAT.AG.RelativeRepairComposition.W2FiniteCoefficients.fixed_faces
+AAT.AG.RelativeRepairComposition.W2FiniteCoefficients.kernelCoordinate
+AAT.AG.RelativeRepairComposition.W2FiniteCoefficients.kernel_inverse_value
+AAT.AG.RelativeRepairComposition.W2FiniteCoefficients.original_linear
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.GlobalLabels
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.LocalLabels
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.globalEmptyLabelEquiv
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.global_edge
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.global_empty_w
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.global_empty_zero
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.global_fixed
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.leftEdge
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.leftP
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.leftW
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.left_empty_w
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.left_empty_zero
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.local_edge
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.local_fixed
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.overlapLabel
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.overlapLabelEquiv
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.overlapW
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.overlap_label_value
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.overlap_no_edge
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.overlap_not_fixed
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.overlap_vertex
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.rightEdge
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.rightQ
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.rightW
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.right_empty_w
+AAT.AG.RelativeRepairComposition.W2GaugeLabels.right_empty_zero
+AAT.AG.RelativeRepairComposition.W2LocalInterfaces.elimination
+AAT.AG.RelativeRepairComposition.W2LocalInterfaces.equationEquiv
+AAT.AG.RelativeRepairComposition.W2LocalInterfaces.generatedSection
+AAT.AG.RelativeRepairComposition.W2LocalInterfaces.nativeEquivalence
+AAT.AG.RelativeRepairComposition.W2LocalInterfaces.privateMatrix
+AAT.AG.RelativeRepairComposition.W2LocalInterfaces.publicMatrix
+AAT.AG.RelativeRepairComposition.W2LocalInterfaces.public_row_count
+AAT.AG.RelativeRepairComposition.W2LocalInterfaces.public_rows_independent
+AAT.AG.RelativeRepairComposition.W2LocalInterfaces.relation
+AAT.AG.RelativeRepairComposition.W2LocalInterfaces.section_regular
+AAT.AG.RelativeRepairComposition.W2LocalMatrixValues.generated_section_zero
+AAT.AG.RelativeRepairComposition.W2LocalMatrixValues.no_private_coordinate
+AAT.AG.RelativeRepairComposition.W2LocalMatrixValues.private_matrix_zero
+AAT.AG.RelativeRepairComposition.W2LocalMatrixValues.publicIndex
+AAT.AG.RelativeRepairComposition.W2LocalMatrixValues.public_matrix_zero
+AAT.AG.RelativeRepairComposition.W2LocalMatrixValues.public_original_edge
+AAT.AG.RelativeRepairComposition.W2OrdinaryClasses.equivalenceClasses
+AAT.AG.RelativeRepairComposition.W2OrdinaryClasses.globalClassEquiv
+AAT.AG.RelativeRepairComposition.W2OrdinaryClasses.globalObject
+AAT.AG.RelativeRepairComposition.W2OrdinaryClasses.global_class_card
+AAT.AG.RelativeRepairComposition.W2OrdinaryClasses.global_not_equivalent
+AAT.AG.RelativeRepairComposition.W2OrdinaryClasses.global_object_eq
+AAT.AG.RelativeRepairComposition.W2OrdinaryClasses.ordinaryClassEquiv
+AAT.AG.RelativeRepairComposition.W2OrdinaryClasses.ordinary_class_card
+AAT.AG.RelativeRepairComposition.W2OrdinaryClasses.ordinary_object_card
+AAT.AG.RelativeRepairComposition.W2OrdinaryClasses.zero_one_not_isomorphic
+AAT.AG.RelativeRepairComposition.W2OrdinarySeams.discreteEquivalence
+AAT.AG.RelativeRepairComposition.W2OrdinarySeams.hom_iff
+AAT.AG.RelativeRepairComposition.W2OrdinarySeams.hom_unique
+AAT.AG.RelativeRepairComposition.W2OrdinarySeams.leftObject
+AAT.AG.RelativeRepairComposition.W2OrdinarySeams.left_map_identity
+AAT.AG.RelativeRepairComposition.W2OrdinarySeams.left_object_eq
+AAT.AG.RelativeRepairComposition.W2OrdinarySeams.objectEquiv
+AAT.AG.RelativeRepairComposition.W2OrdinarySeams.rightObject
+AAT.AG.RelativeRepairComposition.W2OrdinarySeams.right_map_identity
+AAT.AG.RelativeRepairComposition.W2OrdinarySeams.right_object_eq
+AAT.AG.RelativeRepairComposition.W2OrdinarySeams.seam
+AAT.AG.RelativeRepairComposition.W2OrdinarySeams.seamFunctor
+AAT.AG.RelativeRepairComposition.W2OrdinarySeams.seamObject
+AAT.AG.RelativeRepairComposition.W2OrdinarySeams.seam_equal_of_hom
+AAT.AG.RelativeRepairComposition.W2OrdinarySeams.seam_object
+AAT.AG.RelativeRepairComposition.W2OrdinarySeams.seam_restore
+AAT.AG.RelativeRepairComposition.W2Regions.candidates
+AAT.AG.RelativeRepairComposition.W2Regions.candidates_all
+AAT.AG.RelativeRepairComposition.W2Regions.candidates_outside
+AAT.AG.RelativeRepairComposition.W2Regions.fixedEdges
+AAT.AG.RelativeRepairComposition.W2Regions.fixedRegion
+AAT.AG.RelativeRepairComposition.W2Regions.fixed_empty
+AAT.AG.RelativeRepairComposition.W2Regions.indexed_cover
+AAT.AG.RelativeRepairComposition.W2Regions.internal_not_fixed
+AAT.AG.RelativeRepairComposition.W2Regions.leftRegion
+AAT.AG.RelativeRepairComposition.W2Regions.overlap
+AAT.AG.RelativeRepairComposition.W2Regions.overlap_edges
+AAT.AG.RelativeRepairComposition.W2Regions.overlap_vertices
+AAT.AG.RelativeRepairComposition.W2Regions.private_empty
+AAT.AG.RelativeRepairComposition.W2Regions.regions
+AAT.AG.RelativeRepairComposition.W2Regions.regions_cover
+AAT.AG.RelativeRepairComposition.W2Regions.rightRegion
+AAT.AG.RelativeRepairComposition.W2RestrictionDiagram.Ordinary
+AAT.AG.RelativeRepairComposition.W2RestrictionDiagram.leftAction
+AAT.AG.RelativeRepairComposition.W2RestrictionDiagram.leftLabelRestriction
+AAT.AG.RelativeRepairComposition.W2RestrictionDiagram.leftRestriction
+AAT.AG.RelativeRepairComposition.W2RestrictionDiagram.left_label_value
+AAT.AG.RelativeRepairComposition.W2RestrictionDiagram.left_map_value
+AAT.AG.RelativeRepairComposition.W2RestrictionDiagram.left_operation_restriction
+AAT.AG.RelativeRepairComposition.W2RestrictionDiagram.ordinary_is_groupoid
+AAT.AG.RelativeRepairComposition.W2RestrictionDiagram.overlapAction
+AAT.AG.RelativeRepairComposition.W2RestrictionDiagram.rightAction
+AAT.AG.RelativeRepairComposition.W2RestrictionDiagram.rightLabelRestriction
+AAT.AG.RelativeRepairComposition.W2RestrictionDiagram.rightRestriction
+AAT.AG.RelativeRepairComposition.W2RestrictionDiagram.right_label_value
+AAT.AG.RelativeRepairComposition.W2RestrictionDiagram.right_map_value
+AAT.AG.RelativeRepairComposition.W2RestrictionDiagram.right_operation_restriction
+AAT.AG.RelativeRepairComposition.W2SingletonCoordinates.equivalence
+AAT.AG.RelativeRepairComposition.W2SingletonCoordinates.forward_label
+AAT.AG.RelativeRepairComposition.W2SingletonCoordinates.labelFunctor
+AAT.AG.RelativeRepairComposition.W2StrictGeneratedCover.Groupoid
+AAT.AG.RelativeRepairComposition.W2StrictGeneratedCover.Objects
+AAT.AG.RelativeRepairComposition.W2StrictGeneratedCover.actualEquivalence
+AAT.AG.RelativeRepairComposition.W2StrictGeneratedCover.actualObjectEquiv
+AAT.AG.RelativeRepairComposition.W2StrictGeneratedCover.emptyPointEquivalence
+AAT.AG.RelativeRepairComposition.W2StrictGeneratedCover.empty_restored_operation
+AAT.AG.RelativeRepairComposition.W2StrictGeneratedCover.extract_restore
+AAT.AG.RelativeRepairComposition.W2StrictGeneratedCover.nativeEquivalence
+AAT.AG.RelativeRepairComposition.W2StrictGeneratedCover.restore_extract
+AAT.AG.RelativeRepairComposition.W2StrictGeneratedCover.restore_operation
+AAT.AG.RelativeRepairComposition.W2StrictInverseChecks.actual_forward_inverse
+AAT.AG.RelativeRepairComposition.W2StrictInverseChecks.actual_inverse_forward
+AAT.AG.RelativeRepairComposition.W2StrictInverseChecks.native_forward_inverse
+AAT.AG.RelativeRepairComposition.W2StrictInverseChecks.native_inverse_forward
+AAT.AG.RelativeRepairComposition.W2StrictInverseChecks.trans_forward_inverse
+AAT.AG.RelativeRepairComposition.W2StrictInverseChecks.trans_inverse_forward
+AAT.AG.RelativeRepairComposition.W2StrictLabels.Labels
+AAT.AG.RelativeRepairComposition.W2StrictLabels.actualLabelEquiv
+AAT.AG.RelativeRepairComposition.W2StrictLabels.empty_arrow_label
+AAT.AG.RelativeRepairComposition.W2StrictLabels.empty_label_zero
+AAT.AG.RelativeRepairComposition.W2StrictLabels.extract_restored_label
+AAT.AG.RelativeRepairComposition.W2StrictLabels.restore_original_vertex
+AAT.AG.RelativeRepairComposition.W2StrictLabels.shared_w_coordinate
+AAT.AG.RelativeRepairComposition.W2StrictLabels.shared_w_value
+AAT.AG.RelativeRepairComposition.W2UnrestrictedDescent.Descent
+AAT.AG.RelativeRepairComposition.W2UnrestrictedDescent.actualEquivalence
+AAT.AG.RelativeRepairComposition.W2UnrestrictedDescent.descent_is_groupoid
+AAT.AG.RelativeRepairComposition.W2UnrestrictedDescent.left_choice
+AAT.AG.RelativeRepairComposition.W2UnrestrictedDescent.left_label
+AAT.AG.RelativeRepairComposition.W2UnrestrictedDescent.nativeEquivalence
+AAT.AG.RelativeRepairComposition.W2UnrestrictedDescent.right_choice
+AAT.AG.RelativeRepairComposition.W2UnrestrictedDescent.right_label
+AAT.AG.RelativeRepairComposition.W2UnrestrictedDescent.seam_label
+AAT.AG.RelativeRepairComposition.W2UnrestrictedDescent.unrestricted_fixed
+```
+
+</details>
