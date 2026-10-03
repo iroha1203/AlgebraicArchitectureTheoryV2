@@ -121,9 +121,9 @@ theorem original_differential (x y : ZMod 3) (a : Corrections) (f : Bool) :
       differential (fun _ => true) a (if f then 1 else 0) := by
   cases f
   · rw [relative_d1_first,relativeCochain_value,relativeCochain_value]
-    simp [W1AuthoredOperations.correctionValue,name,edgeE,edgeA,edgeB,differential,geometry]
+    simp [W1AuthoredOperations.correctionValue,name,edgeE,edgeA,edgeB,differential_apply,geometry]
   · rw [relative_d1_second_negative,relativeCochain_value,relativeCochain_value,relativeCochain_value]
-    simp [W1AuthoredOperations.correctionValue,name,edgeE,edgeA,edgeB,edgeC,differential,geometry]
+    simp [W1AuthoredOperations.correctionValue,name,edgeE,edgeA,edgeB,edgeC,differential_apply,geometry]
 
 /-- The same actual signed defect supplies both original face RHS values; b0 is zero. -/
 theorem original_rhs (v : Values) (f : Bool) :

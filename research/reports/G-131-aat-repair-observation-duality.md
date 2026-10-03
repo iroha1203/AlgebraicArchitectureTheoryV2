@@ -1407,3 +1407,25 @@ Stemは KPlusNativeEquation/KPlusNumericalQueries/KPlusReferencePrograms/W1Numer
 | `KPlusNumericalQueries.lean` | 22 | `9b3fc762bf654a555a59f484e65f6bf261c0fa4731c9f3cb8091dc5601aa9f2f` | `5c51ce15beab029c1ba5ab016b4f3d3c90760f6f82f19164d441c1feed816ff1` |
 | `KPlusReferencePrograms.lean` | 96 | `ad20b1746a8911febee37bcbd9589d5c20157bb6df1c6dde2e5229093a951c14` | `87f27097397f1e2cb93c8da5417656a3cb058687f43dae660dd47aef6f1d5181` |
 | `W1NumericalEquation.lean` | 29 | `3e4a94803d6f69efcd5e761e083cb0d4eb4a66200d5dd5a9d9a7daf583c569bb` | `d3a0fb07a6220c27fe799e5e210e322b4397a26fa09c7571b38e6dccc754ab55` |
+
+## C11 最終累積 gate 第三回の行評価 API 指摘と修正
+
+固定head `3aa3f4904fcebeb195e5eae6dec40ef574852510` の最終累積第三回は、数学A/B・LeanAが
+`No major findings`、LeanBが非中心一件により `Minor issues`。
+全四本を収集した [第三回監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5974698277)に
+全A–E・完了条件・全前提・個別公理・反証と実行制限を記録した。中心未放電は検出されなかったが、
+全体は `target-proof-checkpoint`。packetの747明示＋65生成＝812個別名の表示は同期済み。
+
+名指しされた `W1NumericalEquation.original_differential` の二proof箇所だけを、
+既存 `differential_apply` の行評価 API へ接続した。
+元座標の `correctionValue` 評価は同じ六辺の原始補正を読む比較 API の内部であり、
+元微分・二面・全補正値の statement、定義値、引数、宣言数、import、台帳statusは変更しない。
+通常PRの対象限定非中心修正として、新規単一の確認で資格と実解消を検査する。
+その合格・root acceptance・必要CIの後、修正headの別packetを用いて全A–Eを新規四本で
+正式最終査読する。最終gateの判定を直接対応だけで更新しない。
+
+current source SHA256は `506237d8085225eb8e27d05a35a77286d6f4f6e0540c7200cbfed9752f23e204`。
+必要検証は同source actual checkと現在全文prefixの
+`lake env lean .tmp/G131Cycle11/W1NumericalEquationFinal4Audit.lean` の単一checksと全29個別公理。
+未実行や終了未回収を成功として記録しない。現在source/prefix/rawの対応と終了結果は
+固定headのPR監査と次のfinal packetで確定する。Research full buildは実行しない。
