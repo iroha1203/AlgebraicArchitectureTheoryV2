@@ -4018,6 +4018,7 @@ fn a_module_that_imports_is_not_an_element_to_correspond() {
 "#,
     );
     let s = repo.run(&["plan", "check", "p"]);
+    assert_eq!(result(&s, "m.f")["outcome"], "holds", "{s}");
     assert!(s["results"].as_array().unwrap().iter().all(|r| r["outcome"] == "holds"), "{s}");
     assert_eq!(s["next"], serde_json::json!([]), "{s}");
 }
