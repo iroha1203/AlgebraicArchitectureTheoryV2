@@ -5,7 +5,7 @@
 - `research mode`: `target-theorem`
 - `tracking issue`: [#5133](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5133)
 - `source note`: [n1017 §3.5・§6](../../docs/note/n1017_aat_relative_boundary_repair_and_observation.md)
-- `design`: [構成・証明方針と再利用対応](../designs/G-131-aat-repair-observation-duality/README.md)
+- `design`: [構成・証明方針](../designs/G-131-aat-repair-observation-duality/README.md)、[G-130の宣言・仮定・接続対応](../designs/G-131-aat-repair-observation-duality/reuse-map.md)
 
 ## 研究目的
 

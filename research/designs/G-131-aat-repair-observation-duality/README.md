@@ -22,8 +22,9 @@ B・Cの線形代数と問い合わせ一般論はその入力型を用いて構
 ## 2. 既存宣言の再利用と新しい対応
 
 Research pathは `research/lean/ResearchLean/AG/` からの相対である。
-G-130の宣言は同GOALの成果から参照し、宣言名と参照版を実装時のreport・Issueに記録する。
-有限列挙・行列・実核の共通基盤は[G-130設計 §2](../G-130-aat-relative-repair-composition/README.md#2-既存宣言の再利用と新しい対応)に対応させる。
+完成済みG-130の宣言、参照版、仮定、入出力と残る接続は[再利用対応表](reuse-map.md)に記す。
+同表の直接適用はG-130の入力型に対する適用を意味し、G-131の全実現・原始評価・
+観測取得・問い合わせ最適性は対応する新規義務として証明する。
 
 ### 2.1 同じ観測・述語・問い合わせ手続き
 
@@ -34,7 +35,7 @@ G-130の宣言は同GOALの成果から参照し、宣言名と参照版を実�
 | `ComparisonInformationLoss/ObservationKernel.lean` の `exists_observation_predicate_iff_ker_le`、`PointObservation.lean` の `hom_predicate_iff_original`、`hom_predicate_apply` | 群準同型の観測と部分群述語の因子化、実際の述語と各入力での評価の移送 | B：$`O_J`$ を加法群準同型として適用する。各原始問い合わせの回数は別途点作用へ対応させ、ベクトル観測全体を一回と数えない |
 | `MinimalCompatibilityObservations/AdaptiveLowerBound.lean` の `QueryProcedure`、`QueryRun.replay_identity`、`identity_queries_sufficient` | Boolを返す判定手続きの応答列再現と下限 | B・C：アフィンfiberの成功基準点からの平行移動、原始問い合わせとの同一応答・回数、数値出力側の再現 |
 | `MinimalCompatibilityObservations/QueryOptimum.lean` の `optimalQueries_eq_minObservations`、`finiteFixedProcedure_executable_optimal` | 判定の適応的最悪時最適値と、明示した群・点の列挙を用いる固定観測手続き | B・C：点 $`(j,a)`$ と原始問い合わせの相互シミュレーション、固定集合でのindex重複の除去 |
-| G-130 A・C–F | 同じ実修復・候補・defect・記号的行列・復元 | A・D・E：未知値を全実現する族、既知情報と原始観測の取得経路 |
+| [G-130再利用対応表 §1–4](reuse-map.md) | 同じ実修復、元候補列と商、記号的更新、有限成功・不能出力、W1の全入力と分割復元 | A・D・E：一般族の係数・座標接続、全実現と原始評価、既知情報下の取得と最適値 |
 
 数値出力ではG-128のBool出力の判定定理だけで終えず、返された補正値が同じ右辺を
 決定することを用いた下限を作る。G-128の既存の手続き型と対応させるのは判定側とし、
@@ -48,8 +49,8 @@ G-130の宣言は同GOALの成果から参照し、宣言名と参照版を実�
 | `MinimalCompatibilityObservations/FiniteMinimum.lean` の `candidateSets`、`mem_candidateSets`、`minimumObservation`、`minimumOrWitness_correct` | 入力表から候補集合を生成して最小十分集合を選ぶ。線形核条件との対応と、点集合から原始index集合への変換を証明する |
 | 同ファイルの `minimumOrWitness_optimalProcedure`、`minimumOrWitness_invisible` | 探索が実際に返した集合を最適な判定手続きへ渡す経路と、失敗時の識別不能証拠を使う。後者を成功基準点とAの全実現で元の二つの実入力へ戻す |
 | Mathlib `LinearAlgebra/Dual/Lemmas.lean` の `Submodule.dualQuotEquivDualAnnihilator`、`LinearMap.range_dualMap_eq_dualAnnihilator_ker`、`mem_span_of_iInf_ker_le_ker` | B・D：商の双対、核包含と評価spanの対応。$`N=\ker L`$ 上へ制限し、同じ不能証拠の値を取得する線形結合へ戻す |
-| Mathlib `LinearAlgebra/Isomorphisms.lean` の `LinearMap.quotKerEquivRange`、`Submodule.quotientQuotientEquivQuotient` | A・B：$`\operatorname{coker}D_S\cong\mathsf O/\mathsf R_S`$、$`\mathsf V/\ker(q_SB)\cong\operatorname{im}(q_SB)`$。同じ $`D_S,q_S,B`$ を代入し、代表元での評価一致を示す |
-| `Formal/AG/Measurement/FiniteRegime.lean` の `FiniteLinearSystemSolver.ofFiniteField` | C・D：既知情報と修復条件の連立、観測取得後の求解に使える有限探索の定義。`solve_isSome_iff` だけでは返却値が解であることは得られないため、具体的な探索の返却値の正確性と明示入力での実行可能性を追加検証する |
+| Mathlib `LinearAlgebra/Isomorphisms.lean` の `LinearMap.quotKerEquivRange`、G-130 `CokernelAllColumns.lean` の `CokernelNamed.secondQuotient` | A・B：$`\mathsf V/\ker(q_SB)\cong\operatorname{im}(q_SB)`$ と、同じ面代表元を保つ残存商の対応。[再利用対応表 §2](reuse-map.md#2-全範囲の方程式商と不能証拠ad)に従い、全候補版を任意Sへ接続する |
+| `RelativeRepairComposition/OriginalFiniteCorrection.lean` の `find`、`restoreFound`、`find_isSome_iff`、`OriginalFiniteRepair.lean` の `restoreFound` | C・D：取得済みの同じ右辺と全核基底から、禁止候補を保つ数値補正を有限探索し実修復へ戻す。[再利用対応表 §3](reuse-map.md#3-有限構成と観測取得)の入力同定を行う。既知情報fiberと観測から右辺を復元する手続きはG-131で構成する |
 
 判定側では $`\Gamma=\ker((q_SB)\vert_N)`$ に最小集合探索を適用する。
 数値側の十分集合の探索には $`\ker(B\vert_N)`$ を使えるが、そこで得るBool手続きは
