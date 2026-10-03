@@ -2277,8 +2277,8 @@ fn a_condition_or_a_passed_value_that_grows_beyond_the_term_limit_is_limit() {
 
 #[test]
 fn a_long_expression_does_not_decide_whether_a_removed_element_is_used() {
-    // m.j の長い式は構文として読めない($o.q(1).a)。字句から拾う名前(m.T.q)は m.U.a に届かないが、
-    // 構文として読めるかを確かめていないので、消える m.U.a を使うかは決まらない。結論を落とさず沈黙する。
+    // m.j の式が長いと、構文として読めるかを確かめていないので、消える m.U.a を使うかは決まらない。
+    // 字句から拾う名前が m.U.a に届いても届かなくても、結論を落とさず limit で沈黙する。
     let atoms = r#"{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.T.q", "value": "field", "type": "m.U", "at": "m.py:2@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.T.b", "value": "field", "type": "int", "at": "m.py:3@blob:aaaaaaa"}
@@ -2312,8 +2312,15 @@ fn a_long_expression_does_not_decide_whether_a_removed_element_is_used() {
     // 短い読めない式は ? と同じに沈黙し、ソースを読む所として返す(対照)。
     let s = run("removes-short-unreadable", "$o.q(1).a + 1");
     assert_eq!(removes_row(&s), (Some("silent".into()), Some("unresolved".into()), true), "{s}");
+    let s = run("removes-short-names-unreadable", "$o.q.a ?? 1");
+    assert_eq!(removes_row(&s), (Some("silent".into()), Some("unresolved".into()), true), "{s}");
+    // 短い読める式が m.U.a を名指せば missing(対照)。
+    let s = run("removes-short-names", "$o.q.a + 1");
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.j" && r["law"].is_null()).cloned().unwrap();
+    assert_eq!((r["outcome"].as_str(), r["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
     // 字句の数が上限を超える式は、構文として読めても読めなくても、limit で沈黙し、読む所は付けない。
     // 上限を超えた式の中の ? や引数にない道も、読み直しても決まらないので limit にそろえる。
+    // m.U.a を名指す長い式も、読めない(??)と短い式では沈黙するので、拾った名前で missing と決めない。
     let tail = " + 1".repeat(600);
     for (name, v) in [
         ("removes-long-unreadable", format!("$o.q(1).a{tail}")),
@@ -2322,6 +2329,8 @@ fn a_long_expression_does_not_decide_whether_a_removed_element_is_used() {
         ("removes-long-question-name", format!("$o.b + ?m.g(1){tail}")),
         ("removes-long-unknown-arg", format!("$zz.b{tail}")),
         ("removes-long-unknown-field", format!("$o.q.zz.w{tail}")),
+        ("removes-long-names-readable", format!("$o.q.a{tail}")),
+        ("removes-long-names-unreadable", format!("$o.q.a ?? 1{tail}")),
         ("removes-deep-question", format!("{}?{}", "(".repeat(600), ")".repeat(600))),
     ] {
         let s = run(name, &v);

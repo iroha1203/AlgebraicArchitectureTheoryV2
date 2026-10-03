@@ -605,6 +605,8 @@ fn trace(s: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) -> bool, gone: &dyn
         }
         for text in [&a.value, &a.when].into_iter().flatten() {
             match expr::parse(text) {
+                // 字句の数が上限を超えた式は、構文として読めるかを確かめていないので、消える要素を使うかを決めない。
+                Ok(Expr::TooLong(_)) => gaps.push(Gap::Limit),
                 Ok(e) => s.named(&op, &e, names, &mut gaps),
                 Err(_) => gaps.push(Gap::Unreadable),
             }
@@ -670,14 +672,11 @@ impl Structure {
             Expr::Name(n) if n.starts_with('?') => gaps.push(Gap::Name(n.clone())),
             Expr::Unknown => gaps.push(Gap::Unreadable),
             Expr::Not(x) | Expr::Neg(x) => self.named(op, x, out, gaps),
-            // 字句の数が上限を超えた式は、構文として読めるかを確かめていない。字句から拾った名前を数え、
-            // たどれなかった所は、上限を超えた所の一つとして積む(読み直しても決まらないので、読む所は付けない)。
+            // 字句の数が上限を超えた式は、字句から拾った名前を数える。たどれなかった所は積まない。
             Expr::TooLong(items) => {
-                let mut ignored = Vec::new();
                 for x in items {
-                    self.named(op, x, out, &mut ignored);
+                    self.named(op, x, out, &mut Vec::new());
                 }
-                gaps.push(Gap::Limit);
             }
             Expr::Bin(_, a, b) => {
                 self.named(op, a, out, gaps);

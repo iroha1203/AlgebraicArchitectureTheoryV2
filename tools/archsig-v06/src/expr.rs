@@ -51,7 +51,7 @@ pub fn parse(text: &str) -> Result<Expr, String> {
     Ok(e)
 }
 
-/// 字句の列から、名指す道(`$p.f`)、名前(`a.b`、`?x`)、呼び出し(`f(`)を、再帰せずに拾う。式の読みと同じ形で拾う。
+/// 字句の列から、名指す道(`$p.f`)、名前(`a.b`、`?x`)、呼び出し(`f(`)を、再帰せずに拾う。
 fn mentions(tokens: &[Tok]) -> Vec<Expr> {
     let mut out = Vec::new();
     let mut i = 0;
@@ -75,9 +75,7 @@ fn mentions(tokens: &[Tok]) -> Vec<Expr> {
                 out.push(Expr::Path(p.clone(), fields));
                 i = next;
             }
-            Tok::Ident(w) if w == "?" => i += 1,
-            // `and`・`or`・`not` は、`.` が続かなければ演算子である(`and.x` は名前)。
-            Tok::Ident(w) if matches!(w.as_str(), "and" | "or" | "not") && tokens.get(i + 1) != Some(&Tok::Dot) => i += 1,
+            Tok::Ident(w) if matches!(w.as_str(), "and" | "or" | "not") => i += 1,
             Tok::Ident(w) => {
                 let (parts, next) = dotted(i + 1, vec![w.clone()]);
                 let name = parts.join(".");
