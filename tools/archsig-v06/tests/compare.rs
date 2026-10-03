@@ -517,17 +517,24 @@ fn removes_after_reobservation_traces_paths_in_the_structure_after_the_change() 
 {"kind": "defines", "subject": "m.A.x", "value": "field", "type": "m.A", "at": "m.py:4@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.B", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.B.x", "value": "field", "type": "int", "at": "m.py:6@blob:aaaaaaa"}
-{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:10@blob:aaaaaaa"}
-{"kind": "returns", "subject": "m.g", "value": "$o.a.x.y", "at": "m.py:11@blob:aaaaaaa"}
+"#;
+    // 使う側の m.g は別のソース g.py に置く。読む所が、使う側でなく型を書いた定義のソースであることを区別する。
+    let g = r#"{"kind": "observed", "subject": "g.py", "scope": "structure", "at": "g.py@blob:ccccccc"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "g.py:10@blob:ccccccc"}
+{"kind": "returns", "subject": "m.g", "value": "$o.a.x.y", "at": "g.py:11@blob:ccccccc"}
 "#;
     let run = |name: &str, field: &str, removes: &str| {
         let before = Repo::new(&format!("{name}-before"));
         before.write(".archsig/law/m.law", &law);
         before.write("m.py", "# source\n");
+        before.write("g.py", "# source\n");
+        before.map("g.py", g);
         before.map("m.py", &format!("{base}{{\"kind\": \"defines\", \"subject\": \"m.O.a\", \"value\": \"field\", \"type\": \"m.A\", \"at\": \"m.py:2@blob:aaaaaaa\"}}\n"));
         let after = Repo::new(name);
         after.write(".archsig/law/m.law", &law);
         after.write("m.py", "# source\n");
+        after.write("g.py", "# source\n");
+        after.map("g.py", g);
         after.map("m.py", &format!("{base}{field}"));
         after.write(".archsig/plans/p/plan.jsonl", &format!("{{\"kind\": \"removes\", \"subject\": \"{removes}\", \"at\": \"plan:p\"}}\n"));
         let s = compare(&after, &before, Some("p"));
@@ -536,8 +543,9 @@ fn removes_after_reobservation_traces_paths_in_the_structure_after_the_change() 
     };
     let (r, s) = run("reobserved-q-type", "{\"kind\": \"defines\", \"subject\": \"m.O.a\", \"value\": \"field\", \"type\": \"?m.B\", \"at\": \"m.py:2@blob:aaaaaaa\"}\n", "m.B.x");
     assert_eq!(r["outcome"], "silent", "{s}");
-    // 読む所は、`?m.B` を書いたフィールドの定義のソースである。
-    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+    // 読む所は、`?m.B` を書いたフィールドの定義のソース m.py である。使う側の g.py ではない。
+    let next: Vec<&Value> = s["next"].as_array().unwrap().iter().filter(|n| n["decides"].as_array().unwrap().contains(&r["id"])).collect();
+    assert!(!next.is_empty() && next.iter().all(|n| n["read"] == "m.py"), "{s}");
     let (r, s) = run(
         "reobserved-unread-type",
         "{\"kind\": \"defines\", \"subject\": \"m.O.a\", \"value\": \"field\", \"type\": \"m.C\", \"at\": \"m.py:2@blob:aaaaaaa\"}\n{\"kind\": \"resolves\", \"subject\": \"m.C\", \"object\": \"c.py\", \"at\": \"m.py:7@blob:aaaaaaa\"}\n",

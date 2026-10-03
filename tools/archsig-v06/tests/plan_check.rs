@@ -3677,6 +3677,8 @@ fn a_path_through_a_question_mark_type_is_silent_on_removes() {
         "m.py",
         r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
 {"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.P", "value": "type", "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.P.b", "value": "field", "type": "?m.B", "at": "m.py:8@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.O.a", "value": "field", "type": "m.A", "at": "m.py:2@blob:aaaaaaa"}
 {"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
@@ -3697,7 +3699,7 @@ fn a_path_through_a_question_mark_type_is_silent_on_removes() {
     let s = repo.run(&["plan", "check", "p"]);
     let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.g" && r["law"].is_null()).cloned().unwrap_or_default();
     assert_eq!(r["outcome"], "silent", "{s}");
-    // 読む所は、`?m.B` を書いた候補の定義(要素 m.O.a)である。
+    // 読む所は、道の上で `?m.B` を書いた候補の定義(要素 m.O.a)である。同じ型を書いた道の外の m.P.b ではない。
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.O.a" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
 }
 
@@ -3789,4 +3791,62 @@ fn the_field_right_under_a_redefined_unread_type_is_still_named() {
     );
     let s = repo.run(&["plan", "check", "p"]);
     assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.g" && r["kind"] == "missing"), "{s}");
+}
+
+#[test]
+fn a_question_mark_value_on_removes_returns_the_atom_that_has_it() {
+    // m.g は `?m.B` の値を返す。ほかに `?m.B` を型に書いた n.py のフィールドがあっても、読む所はその値を持つ Atom の場所 m.py である(マニュアル第5章 問い8)。
+    let repo = Repo::new("q-value-removes");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
+    repo.map(
+        "n.py",
+        r#"{"kind": "observed", "subject": "n.py", "scope": "structure", "at": "n.py@blob:bbbbbbb"}
+{"kind": "defines", "subject": "n.P", "value": "type", "at": "n.py:1@blob:bbbbbbb"}
+{"kind": "defines", "subject": "n.P.z", "value": "field", "type": "?m.B", "at": "n.py:2@blob:bbbbbbb"}
+"#,
+    );
+    repo.map(
+        "m.py",
+        r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.D", "value": "type", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "?m.B", "at": "m.py:11@blob:aaaaaaa"}
+"#,
+    );
+    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.D\", \"at\": \"plan:p\"}\n");
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.g" && r["law"].is_null()).cloned().unwrap_or_default();
+    assert_eq!(r["outcome"], "silent", "{s}");
+    let next: Vec<&Value> = s["next"].as_array().unwrap().iter().filter(|n| n["decides"].as_array().unwrap().contains(&r["id"])).collect();
+    assert!(next.iter().all(|n| n["read"] == "m.py"), "{s}");
+}
+
+#[test]
+fn a_field_the_plan_defines_without_a_type_is_unresolved_on_removes() {
+    // 変更前は m.C を定義し、m.C.x は名指すだけで定義を読んでいない。候補は m.C.x を型なしで定義する。
+    // 候補が定義したフィールドの型は変更後の構造で決まらないので、`unresolved` で沈黙する(定義し直した型の例外は型だけに効く)。
+    let repo = Repo::new("plan-untyped-field");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.c", "value": "field", "type": "m.C", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.C", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.D", "value": "type", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "$o.c.x.y", "at": "m.py:11@blob:aaaaaaa"}
+"#,
+    );
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.C.x", "value": "field", "file": "m.py", "at": "plan:p"}
+{"kind": "removes", "subject": "m.D", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.g" && r["law"].is_null()).cloned().unwrap_or_default();
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
 }

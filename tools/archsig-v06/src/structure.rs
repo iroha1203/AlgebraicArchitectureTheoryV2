@@ -499,6 +499,10 @@ pub struct Overlay {
 pub enum Gap {
     /// たどれなかった要素。`?` の名前、型の分からないフィールドの持ち主の型など。
     Name(String),
+    /// 型が `?` で始まる要素(引数なら操作、フィールドならそのフィールド)。その先は名指す要素が決まらない。
+    QuestionType(String),
+    /// 候補が定義し直した型で、変更前が名指していて定義を読んでいなかったもの。変更前の構造で問い合わせる。
+    Redefined(String),
     /// 式を読めなかった。
     Unreadable,
     /// 式の字句の数が上限を超えた。ArchSig の側の限界なので、読み直しても決まらない。
@@ -736,7 +740,7 @@ impl Structure {
 
     /// `redefines_unread` のうち、変更前に `resolves` が外部を指していなかった型。外部を指していた型は、外部の型として扱う(マニュアル第5章 問い3)。
     /// 消える要素を使うかでは、この型の先をたどらず、変更前の構造で問い合わせる。
-    pub fn redefines_unread_source(&self, prior: &Structure, prior_names: &BTreeSet<String>, ty: &str) -> bool {
+    fn redefines_unread_source(&self, prior: &Structure, prior_names: &BTreeSet<String>, ty: &str) -> bool {
         self.redefines_unread(prior, prior_names, ty) && !matches!(prior.resolves.get(ty), Some(Resolution::External(_)))
     }
 
@@ -771,13 +775,13 @@ impl Structure {
                     };
                     // `?` の型の先は、何を名指すかが決まらない。
                     if t.starts_with('?') {
-                        gaps.push(Gap::Name(t));
+                        gaps.push(Gap::QuestionType(owner));
                         break;
                     }
                     // `stop` の型は、直下のフィールドの名前(`<型>.<名前>`)は決まるが、その先は決まらない。
                     if stop(&t) {
                         out.insert(format!("{t}.{f}"));
-                        gaps.push(Gap::Name(t));
+                        gaps.push(Gap::Redefined(t));
                         break;
                     }
                     let field = format!("{t}.{f}");
@@ -820,11 +824,9 @@ impl Structure {
     pub fn untraced(&self, gap: &Gap, a: &Atom) -> Silence {
         match gap {
             Gap::Limit => Silence::new(Reason::Limit),
-            // `?` の型は、その型を書いた定義(フィールドの型か引数の型)の場所を返す(マニュアル第5章 問い3)。
-            Gap::Name(n) if n.starts_with('?') => {
-                let by = self.atoms.iter().find(|d| d.kind == "defines" && (d.ty.as_deref() == Some(n) || d.params.iter().flatten().any(|(_, t)| t == n)));
-                locate(question(), by.unwrap_or(a))
-            }
+            // `?` の型は、その型を書いた定義(フィールドか、引数を持つ操作)の場所を返す(マニュアル第5章 問い3)。
+            Gap::Redefined(t) => self.untraced(&Gap::Name(t.clone()), a),
+            Gap::QuestionType(owner) => locate(question(), self.atoms.iter().find(|d| d.kind == "defines" && d.subject == *owner).unwrap_or(a)),
             Gap::Name(n) => match self.kind(n) {
                 Err(s) if s.scope.as_deref() != Some("?") || s.read.is_some() || s.element.is_some() => s,
                 _ => locate(question(), a),

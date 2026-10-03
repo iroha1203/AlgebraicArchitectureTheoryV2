@@ -1312,7 +1312,6 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
     }
     // 名指す要素をたどれなかった操作は、消える要素を使うかが決まらない。
     // 使うと決まった操作(`missing`)と、定義を読んでいない操作(上の沈黙)は除く。
-    let before_names = before.mentioned();
     for (op, gaps) in overlay.untraced.iter().filter(|_| !overlay.removes.is_empty()) {
         match before.kind(op) {
             _ if overlay.missing.contains_key(op) => continue,
@@ -1324,7 +1323,7 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
         for (gap, a) in gaps {
             // 候補が定義し直した型で、変更前が名指していて定義を読んでいなかったものは、変更前の構造で問い合わせる(§5.4 と同じ)。
             let s = match gap {
-                Gap::Name(n) if after.redefines_unread(before, &before_names, n) => before.untraced(gap, a),
+                Gap::Redefined(_) => before.untraced(gap, a),
                 _ => after.untraced(gap, a),
             };
             if !next.contains(&s) {
