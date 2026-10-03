@@ -1,5 +1,6 @@
 //! AC5・AC8: `archsig plan check` と `archsig show`(マニュアル第2章の題材、第5章 問い3、第6章)。
 
+use archsig::structure::STEP_LIMIT;
 use serde_json::Value;
 
 mod common;
@@ -1835,7 +1836,7 @@ fn a_name_without_dollar_is_read_as_a_constant() {
     assert_eq!(r["outcome"], "holds", "{s}");
     let (s, r) = t_case("const-dotted", &w("cfg.RATE"), &w("cfg.RATE"), "");
     assert_eq!(r["outcome"], "holds", "{s}");
-    let (s, r) = t_case("const-string", &w("\"J\\\"P\""), &w("\"J\\\"P\""), "");
+    let (s, r) = t_case("const-string", &w("\"JP\""), &w("\"JP\""), "");
     assert_eq!(r["outcome"], "holds", "{s}");
     let (s, r) = t_case("const-negative", &w("-$o.n"), &w("-$o.n"), "");
     assert_eq!(r["outcome"], "holds", "{s}");
@@ -1885,7 +1886,7 @@ fn a_question_mark_anywhere_in_the_operation_is_silent() {
 
 #[test]
 fn the_step_limit_is_counted_before_a_call_is_unfolded() {
-    // 手順の数は、呼び出しを展開する前に、それまでに並べた手順(呼び出しの手順を含む)で数える。上限は 10,000。
+    // 手順の数は、呼び出しを展開する前に、それまでに並べた手順(呼び出しの手順を含む)で数える。
     let callee = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:5@blob:aaaaaaa"}
 {"kind": "writes", "subject": "m.g", "object": "m.O.n", "value": "1", "at": "m.py:6@blob:aaaaaaa"}
 {"kind": "writes", "subject": "m.g", "object": "m.O.n", "value": "2", "at": "m.py:7@blob:aaaaaaa"}
@@ -1900,12 +1901,12 @@ fn the_step_limit_is_counted_before_a_call_is_unfolded() {
         (r["outcome"].as_str().map(str::to_string), r["reason"].as_str().map(str::to_string), s)
     };
     // 呼び出しのない本体は、手順の数にかかわらず上限にかからない。
-    let (o, _, s) = run("steps-flat", 10_001, false);
+    let (o, _, s) = run("steps-flat", STEP_LIMIT + 1, false);
     assert_eq!(o.as_deref(), Some("holds"), "{s}");
-    // 9,999 手順と呼び出しで 10,000。呼び出し先の 2 手順は、展開した後には数えない。
-    let (o, _, s) = run("steps-call-at-limit", 9_999, true);
+    // 上限より一つ少ない手順と呼び出しで、ちょうど上限。呼び出し先の 2 手順は、展開した後には数えない。
+    let (o, _, s) = run("steps-call-at-limit", STEP_LIMIT - 1, true);
     assert_eq!(o.as_deref(), Some("holds"), "{s}");
-    let (o, reason, s) = run("steps-call-over", 10_000, true);
+    let (o, reason, s) = run("steps-call-over", STEP_LIMIT, true);
     assert_eq!((o.as_deref(), reason.as_deref()), (Some("silent"), Some("limit")), "{s}");
 }
 
@@ -1971,4 +1972,13 @@ fn a_question_mark_or_an_unreadable_expression_anywhere_in_the_steps_is_silent()
 "#;
     silent("q-callee", &[("calls", "m.g", "", "")], callee);
     silent("q-call-when", &[("calls", "m.g", "", "?")], &callee.replace("\"?\"", "\"1\""));
+}
+
+#[test]
+fn a_path_without_an_argument_name_is_unresolved_without_a_place_to_read() {
+    for v in ["$", "$.x"] {
+        let (s, r) = t_case(&format!("nameless-path-{}", v.len()), &[("writes", "m.O.t", v, "")], &[("writes", "m.O.t", "1", "")], "");
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{v}: {s}");
+        assert!(!s["next"].as_array().unwrap().iter().any(|n| n["decides"].as_array().unwrap().contains(&r["id"])), "{v}: {s}");
+    }
 }
