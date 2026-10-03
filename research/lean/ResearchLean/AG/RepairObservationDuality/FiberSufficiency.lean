@@ -136,6 +136,10 @@ theorem solvable_iff_obstruction_zero (v : V) :
 /-- C's known linear information fiber contains every input satisfying L v = s. -/
 def informationFiber (L : V →ₗ[k] I) (s : I) : Set V := {v | L v = s}
 
+/-- C's information fiber reads the specified linear information and value. -/
+theorem mem_informationFiber (L : V →ₗ[k] I) (s : I) (v : V) :
+    v ∈ informationFiber L s ↔ L v = s := Iff.rfl
+
 /-- Every input in a nonempty linear fiber differs from its base by a kernel vector. -/
 theorem mem_fiber_sub (L : V →ₗ[k] I) (s : I) {v w : V}
     (hv : v ∈ informationFiber L s) (hw : w ∈ informationFiber L s) :
