@@ -1,7 +1,7 @@
 # G-126-aat-operation-preserving-repair-quotients — 操作と観測を保つ修復商の分類と有限構成
 
 - `id`: `G-126-aat-operation-preserving-repair-quotients`
-- `status`: `active`
+- `status`: `completed`
 - `research mode`: `target-theorem`
 - `tracking issue`: [#4945](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4945)
 - `source note`: [n1016 §2.1・候補01](../../docs/note/n1016_rising_sea_v2_paper_plan.md)

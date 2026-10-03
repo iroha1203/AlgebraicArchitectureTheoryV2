@@ -17,10 +17,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 - [G-131-aat-repair-observation-duality](G-131-aat-repair-observation-duality.md)
   (同じ実修復方程式からの観測十分性、既知情報の下での判定・数値補正の最適問い合わせ数)
-- [G-128-aat-minimal-compatibility-observations](G-128-aat-minimal-compatibility-observations.md)
-  (適合性を決定する最小観測集合、適応的問い合わせの最悪時回数、有限構成と名前付き操作への適用)
-- [G-126-aat-operation-preserving-repair-quotients](G-126-aat-operation-preserving-repair-quotients.md)
-  (操作と観測を保つ修復商の分類、修復要求の合成、有限表からの判定と構成)
 - [G-sft-conway-01](G-sft-conway-01.md)
 
 ## draft（人間の確認待ち）
@@ -36,8 +32,12 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
   (固定部分と全変更範囲を保つ実修復の局所合成、全修復・不能証拠・極小範囲の分類、内部辺分割)
 - [G-129-aat-abelian-lifting-obstruction](G-129-aat-abelian-lifting-obstruction.md)
   (`target-theorem-proved`。可換核からの局所係数・持ち上げ障害、全解と頂点での再同定による分類、指定三例を確定)
+- [G-128-aat-minimal-compatibility-observations](G-128-aat-minimal-compatibility-observations.md)
+  (適合性を決定する最小観測集合、適応的問い合わせの最悪時回数、有限構成と名前付き操作への適用)
 - [G-127-aat-reversible-protocol-holonomy](G-127-aat-reversible-protocol-holonomy.md)
   (`target-theorem-proved`。可逆な名前付き操作のholonomy、変更群、持ち上げと有限判定、二つの指定例を確定)
+- [G-126-aat-operation-preserving-repair-quotients](G-126-aat-operation-preserving-repair-quotients.md)
+  (操作と観測を保つ修復商の分類、修復要求の合成、有限表からの判定と構成)
 - [G-124-aat-local-semantic-reconstruction](G-124-aat-local-semantic-reconstruction.md)
   (`target-theorem-proved`。同じ局所読み取りによる実現・許容射・比較の再構成、
   有限決定性の判定、タグ変更族と二つのCS意味論への適用を確定)

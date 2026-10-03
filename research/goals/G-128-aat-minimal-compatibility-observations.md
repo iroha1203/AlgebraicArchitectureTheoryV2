@@ -1,7 +1,7 @@
 # G-128-aat-minimal-compatibility-observations — 適合性を決定する最小観測集合
 
 - `id`: `G-128-aat-minimal-compatibility-observations`
-- `status`: `active`
+- `status`: `completed`
 - `research mode`: `target-theorem`
 - `tracking issue`: [#5075](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5075)
 - `source note`: [n1016 §5.2・候補05](../../docs/note/n1016_rising_sea_v2_paper_plan.md)
