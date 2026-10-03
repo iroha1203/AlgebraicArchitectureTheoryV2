@@ -2475,3 +2475,95 @@ fn a_write_place_only_before_whose_meaning_was_not_read_is_silent() {
     let s = run("before-place-diverging", "2");
     assert_eq!(result(&s, "m.f")["kind"], "counterexample", "{s}");
 }
+
+/// SPLITTING に `extra` の Atom を足し、候補 `plan` で plan check した m.f の結果と出力。
+fn splitting_with(name: &str, extra: &str, plan: &str) -> (Value, Value) {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", &format!("{SPLITTING}{extra}"));
+    repo.write(".archsig/plans/p/plan.jsonl", plan);
+    let s = repo.run(&["plan", "check", "p"]);
+    (result(&s, "m.f").clone(), s)
+}
+
+const REWRITE_F: &str = r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.T"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.T.p", "value": "$o.a", "at": "plan:p"}
+"#;
+
+#[test]
+fn resolves_that_point_to_different_places_are_unresolved() {
+    // m.f は外部の m.g を呼ぶ。m.g の resolves が二つあり、指す先が違えば、外部かどうかも決まらない。
+    let call = r#"{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:8@blob:ccccccc"}
+{"kind": "resolves", "subject": "m.g", "object": "external:a", "at": "m.py:1@blob:ccccccc"}
+"#;
+    let plan = format!("{REWRITE_F}{}", r#"{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "plan:p"}
+"#);
+    let second = |object: &str| format!("{call}{{\"kind\": \"resolves\", \"subject\": \"m.g\", \"object\": \"{object}\", \"at\": \"m.py:2@blob:ccccccc\"}}\n");
+    let (r, s) = splitting_with("resolves-different", &second("external:b"), &plan);
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    // 指す先が同じ resolves が重なるのは、一つと同じ。
+    let (r, s) = splitting_with("resolves-same", &second("external:a"), &plan);
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn an_element_defined_in_two_places_is_unresolved() {
+    // m.T.p の defines が二か所にあると、どちらの定義か(型)が決まらない。
+    let (r, s) = splitting_with(
+        "defines-twice",
+        r#"{"kind": "defines", "subject": "m.T.p", "value": "field", "type": "int", "at": "m.py:9@blob:ccccccc"}
+"#,
+        REWRITE_F,
+    );
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+    // 一か所なら計算する(対照)。
+    let (r, s) = splitting_with("defines-once", "", REWRITE_F);
+    assert_eq!(r["outcome"], "holds", "{s}");
+}
+
+#[test]
+fn a_field_of_an_external_type_is_unresolved_without_a_place_to_read() {
+    // m.T.q の型 x.Resp は外部の型。そのフィールド x.Resp.code に書くか、$o.q.code で読むと、フィールドが分からない。
+    // 外部には読むソースがないので、読む所は返さない。
+    let extra = r#"{"kind": "defines", "subject": "m.T.q", "value": "field", "type": "x.Resp", "at": "m.py:9@blob:ccccccc"}
+{"kind": "resolves", "subject": "x.Resp", "object": "external:x", "at": "m.py:9@blob:ccccccc"}
+"#;
+    for (name, step) in [
+        ("external-field-write", r#"{"kind": "writes", "subject": "m.f", "via": ["m.T.q"], "object": "x.Resp.code", "value": "1", "at": "plan:p"}"#),
+        ("external-field-read", r#"{"kind": "writes", "subject": "m.f", "object": "m.T.b", "value": "$o.q.code", "at": "plan:p"}"#),
+    ] {
+        let (r, s) = splitting_with(name, extra, &format!("{REWRITE_F}{step}\n"));
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
+        assert!(!s["next"].as_array().unwrap().iter().any(|n| n["decides"].as_array().unwrap().contains(&r["id"])), "{name}: {s}");
+    }
+}
+
+#[test]
+fn a_path_through_a_field_defined_in_two_places_does_not_decide_whether_a_removed_element_is_used() {
+    // m.T.q の defines が二か所にあり、型が m.U1 と m.U2 で違う。m.j の $o.q.g が m.U2.g を使うかは決まらない。
+    // 候補が m.U2.g を removes しても、m.j を missing と決めない。
+    let repo = Repo::new("removes-through-twice-defined");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T.q", "value": "field", "type": "m.U1", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T.q", "value": "field", "type": "m.U2", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T.b", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U1", "value": "type", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U1.g", "value": "field", "type": "int", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U2", "value": "type", "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.U2.g", "value": "field", "type": "int", "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.j", "value": "operation", "params": {"o": "m.T"}, "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.j", "object": "m.T.b", "value": "$o.q.g", "at": "m.py:10@blob:aaaaaaa"}
+"#,
+    );
+    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.U2.g\", \"at\": \"plan:p\"}\n");
+    let s = repo.run(&["plan", "check", "p"]);
+    let rows: Vec<&Value> = s["results"].as_array().unwrap().iter().filter(|r| r["subject"] == "m.j").collect();
+    assert!(!rows.is_empty(), "{s}");
+    assert!(rows.iter().all(|r| r["outcome"] == "silent"), "{s}");
+}

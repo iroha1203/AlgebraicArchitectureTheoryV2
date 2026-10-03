@@ -43,12 +43,23 @@ pub struct Element {
     pub kinds: BTreeSet<String>,
     pub params: BTreeMap<String, String>,
     pub ty: Option<String>,
+    /// `defines` を書いた場所。二か所以上あれば、どちらの定義かが決まらない。
+    pub defined: BTreeSet<String>,
+}
+
+impl Element {
+    /// 種類が決まらない。種類の違う `defines`、`value` のない `defines`、二か所以上の `defines` を持つ。
+    fn undecided(&self) -> bool {
+        self.kinds.len() > 1 || self.kinds.contains("") || self.defined.len() > 1
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Resolution {
     Source(String),
     External(String),
+    /// 指す先の違う `resolves` が二つ以上ある。解決が決まらない。
+    Undecided,
 }
 
 /// 値。式を名前と場所に解いたもの。
@@ -125,6 +136,7 @@ impl Structure {
                 "defines" => {
                     let e = s.elements.entry(a.subject.clone()).or_default();
                     e.kinds.insert(a.value.clone().unwrap_or_default());
+                    e.defined.insert(a.at.clone().unwrap_or_default());
                     if let Some(p) = &a.params {
                         e.params.extend(p.clone());
                     }
@@ -151,7 +163,15 @@ impl Structure {
                         Some(pkg) => Resolution::External(pkg.to_string()),
                         None => Resolution::Source(o),
                     };
-                    s.resolves.insert(a.subject.clone(), r);
+                    match s.resolves.get(&a.subject) {
+                        Some(x) if *x != r => {
+                            s.resolves.insert(a.subject.clone(), Resolution::Undecided);
+                        }
+                        Some(_) => {}
+                        None => {
+                            s.resolves.insert(a.subject.clone(), r);
+                        }
+                    }
                 }
                 "meaning" => s.meanings.entry(a.subject.clone()).or_default().push(a.clone()),
                 "observed" => {
@@ -215,9 +235,9 @@ impl Structure {
                 None => s,
             });
         }
-        // 種類の違う `defines` を持つ要素と、`value` のない `defines` を持つ要素は、種類が決まらない。
+        // 種類の違う `defines`、`value` のない `defines`、二か所以上の `defines` を持つ要素は、種類が決まらない。
         match self.elements.get(name) {
-            Some(e) if e.kinds.len() == 1 && !e.kinds.contains("") => Ok(e.kinds.iter().next().unwrap()),
+            Some(e) if !e.undecided() => Ok(e.kinds.iter().next().unwrap()),
             Some(_) => Err(Silence::new(Reason::Unresolved)),
             None => Err(self.undefined(name)),
         }
@@ -243,12 +263,19 @@ impl Structure {
         Ok(out)
     }
 
-    /// 種類の違う `defines` か、`value` のない `defines` を持つ要素。種類が決まらない。
+    /// 種類の違う `defines`、`value` のない `defines`、二か所以上の `defines` を持つ要素。種類が決まらない。
     fn ambiguous(&self, name: &str) -> bool {
-        self.elements.get(name).is_some_and(|e| e.kinds.len() > 1 || e.kinds.contains(""))
+        self.elements.get(name).is_some_and(Element::undecided)
     }
 
     fn expect(&self, name: &str, kind: &str) -> Result<(), Silence> {
+        // 外部の型(`resolves` が外部を指し、定義のない型)のフィールドは分からない。外部には読むソースがない。
+        if kind == "field"
+            && !self.elements.contains_key(name)
+            && name.rsplit_once('.').is_some_and(|(ty, _)| !self.elements.contains_key(ty) && matches!(self.resolves.get(ty), Some(Resolution::External(_))))
+        {
+            return Err(Silence::new(Reason::Unresolved));
+        }
         match self.kind(name)? {
             k if k == kind => Ok(()),
             _ => Err(Silence::new(Reason::Unresolved)),
@@ -654,7 +681,8 @@ impl Structure {
                         break;
                     };
                     let field = format!("{t}.{f}");
-                    ty = self.elements.get(&field).and_then(|e| e.ty.clone());
+                    // 種類の決まらないフィールドの型は、決まらない。
+                    ty = self.elements.get(&field).filter(|e| !e.undecided()).and_then(|e| e.ty.clone());
                     owner = if self.elements.contains_key(&field) { field.clone() } else { t };
                     out.insert(field);
                 }
