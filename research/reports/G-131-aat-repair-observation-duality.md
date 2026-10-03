@@ -502,3 +502,116 @@ audits:
 ```
 
 全体は `target-proof-checkpoint`。A全体・B・D・Eは未完了。独立査読前のCycle結果はproposalである。
+
+## Cycle 6：全基底座標・生成局所可否・原始問い合わせの同じ入力への接続
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-131-aat-repair-observation-duality
+cycle: 6
+goal_blob_sha: 054fea81b916c4d4a470b74af3e13c6cc5dde01c
+base_oid: ec23aefda427f94b29cb819cda0b3011619bd936
+tracking_issue: 5133
+report_path: research/reports/G-131-aat-repair-observation-duality.md
+selection:
+  proof_state_ref: "Cycle 5 PR #5204の4本No major findingsとCI successで受理・merge ec23aefdaへ同期済み。選定時は固定headの独立査読を待ち、別worktreeで準備"
+  proof_dag_predecessors: [ActualAffineFamily.actual_affine_equation_iff, ActualAffineFamily.restore_value, FiniteFamily.equivalence, GeneratedStrictCover.objectEquiv, PrimitiveQueries.Run, QueryOptimum.decision_optimum]
+  milestone: "Aの同じ全基底数値・局所記号的可否・原始評価を、元族の実修復とCの同じ問い合わせモデルへ接続"
+  proof_obligations: ["固定全核基底で全always/selected/faceの線形座標を構成", "同じ実D_S/b₀/Bの数値方程式と全成分復元", "生成された局所公開関係の可否と同じ元全方程式", "原始評価の入力一致と全実現から全run/応答列/出力/回数/正答/最適値を往復"]
+  exit_criteria: ["全元核基底の数値値と全sourceの両逆", "同じ実微分/負defectの座標式と禁止値/復元", "同じ元coverの生成局所可否と全方程式の同値", "全実入力の原始評価/全実現から同じrun列と費用を往復", "同じ実修復述語/全数値出力でCへ接続", "focused/全宣言公理/scan/独立査読"]
+  selection_reason: "Cycle 5のnative方程式を固定基底の完全数値と取得原始値へ接続し、Aの残る入力生成とCの実手続き対応を閉じる"
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [FullCorrectionCoordinates.lean, EquationCoordinates.lean, PrimitiveInputQueries.lean, ActualFamilyCoordinates.lean, ActualFamilyInterfaces.lean]
+  risks: ["像や商の基底へ全補正値を縮めない", "取得前に未知右辺を参照しない", "同じ元候補・共通coverで局所生成を照合", "評価一致と全実現は一般族の許された入力条件、Eの具体構成は後続義務", "実runの再実行を回数から消さない"]
+  unchecked: ["実装・検証・査読前"]
+```
+
+
+### 固定要求と証明経路
+
+| 固定要求の部分 | 宣言と同じ入力への接続 |
+| --- | --- |
+| A/Cの完全な数値補正 | `FullCorrectionCoordinates.alwaysFamily` は全元辺のfamilyをPと候補だけで零にする。`alwaysCoordinate`, `selectedCoordinate`, `coordinate` は入力の全頂点核基底を使う両逆。`always_value`, `selected_value`, `always_restore_value`, `always_restore_zero`, `selected_restore_value` は元名と全値を保存 |
+| 同じ全方程式と負defectの基底表示 | `EquationCoordinates.differential`, `parameter`, `affine_rhs`, `solution_iff`, `equation_iff`。`ActualFamilyCoordinates.actual_numerical_equation_iff` はCycle 5の同じ実族、全S、b₀/Bを完全数値へ接続 |
+| 数値解から元実操作への復元 | `ActualFamilyCoordinates.solution_restore`, `restore`, `restore_value`, `restore_forbidden_zero`, `restore_fixed_arrow`。全座標を逆変換し、Cycle 5の元OriginalTowerへの復元で全辺値・禁止零・固定実辺を保持 |
+| Cの同じ判定核・数値核 | `EquationCoordinates.parameter_ker`, `obstruction_ker` と `ActualFamilyCoordinates.numerical_parameter_ker`, `numerical_obstruction_ker`。完全基底変換の前後で同じBとq_SBの核を保存 |
+| Aの生成局所公開可否 | `ActualFamilyInterfaces.generatedObjects`, `globalToGenerated`, `generated_equation_iff`, `actual_generated_iff`。G-130の全private/public値の局所生成と実coverの全値復元を同じ負defectへ適用し、独立元修復と同値 |
+| A/Cの原始評価と全実行 | `PrimitiveInputQueries.run_iff`, `transcript_eq`, `correct_iff`, `worst_eq`, `optimum_eq`。νと全実現・原始評価一致から、同じ履歴のみの手続きについて全出力、応答列、重複質問列、正答・常時停止・最悪回数・最適値を往復 |
+| 元実修復述語と完全数値出力 | `ActualFamilyCoordinates.valid_none_actual_iff`, `primitive_correct_iff`, `primitive_optimum_eq`。noneは元実修復非存在、someの完全値は`solution_restore`から元実修復へ。取得後評価する式を数値出力の型に追加しない |
+
+受理spine候補は `actual_numerical_equation_iff`, `restore_value`, `actual_generated_iff`,
+`run_iff`, `correct_iff`, `worst_eq`, `optimum_eq`, `primitive_optimum_eq`。
+残る宣言は入力構成とその基本API。cycle scaffoldはない。新規Prop/certificateはなく、
+C1/C2の独立出力・正答述語、G-130の独立全方程式・生成対象をそのまま使用する。
+
+### 全対象宣言
+
+- `FullCorrectionCoordinates.lean`: `alwaysRelativeModule`, `alwaysFamily`, `AlwaysIndex`, `alwaysCoordinate`, `always_value`, `SelectedValues`, `selectedCoordinate`, `selected_value`, `NumericalValues`, `coordinate`, `always_restore_value`, `always_restore_zero`, `selected_restore_value`。
+- `EquationCoordinates.lean`: `differential`, `differential_apply`, `solution_iff`, `equation_iff`, `parameter`, `parameter_apply`, `affine_rhs`, `parameter_ker`, `obstruction_ker`, `valid_some`, `valid_none`, `valid_output_iff`。
+- `PrimitiveInputQueries.lean`: `run_iff`, `transcript_eq`, `correct_iff`, `worst_eq`, `optimum_eq`。
+- `ActualFamilyCoordinates.lean`: `numericalD`, `numericalB`, `numericalBase`, `numerical_parameter_ker`, `numerical_obstruction_ker`, `actual_numerical_equation_iff`, `solution_restore`, `restore`, `restore_value`, `restore_forbidden_zero`, `restore_fixed_arrow`, `valid_none_actual_iff`, `primitive_correct_iff`, `primitive_optimum_eq`。
+- `ActualFamilyInterfaces.lean`: `generatedObjects`, `globalToGenerated`, `generated_equation_iff`, `actual_generated_iff`。
+
+全48宣言を各sourceのnamespace公理監査と個別`#print axioms`の対象にする。
+
+### material premise・provenance・proof-use
+
+| material premise | 役割 | 構成と使用先 |
+| --- | --- | --- |
+| 元表示、native全係数/module、全頂点核基底、P、候補と全S | ambient-boundary | Aの固定入力。Pと候補の零条件からalways familyの両逆、全候補核からselected座標、全面の元核基底からface座標 |
+| 基底による完全なeH/eW | discharge-required、構成済み | `FullCorrectionCoordinates.coordinate` と受理済み `FiniteNative.coordinate2`。全両逆と元値APIを `EquationCoordinates` および元実修復復元へ使用 |
+| 原始θ/η、実reference表示hdata、全実現、Pの実等号、線形核輸送 | 一般族の入力条件と既存構成 | Cycle 5の同じprimitive実操作からb₀/B/Dと全実修復同値を導出。実現と評価一致は一般Aの明示条件、Eの全指定操作での生成は後続義務 |
+| finite cover U・cover証拠・全元辺/面/体/cover列挙 | ambient-boundary | AのG-130入力。`StrictCoverRestoration.objectEquiv` と `GeneratedStrictCover.objectEquiv` を同じ元候補/P/全値/負defectへ適用 |
+| 生成局所public compatibilityと全global解 | discharge-required、構成済み | 両既存全対象の両逆を `globalToGenerated` で合成。独立global方程式、全選択列式と元実修復を `generated_equation_iff` から接続 |
+| 原始インデックスと線形評価・実評価一致 | 一般Aの入力条件 | `heval` をRun.askの実応答へ使用、両方向実行・完全transcript一致。全実現を逆向きの常時停止/正答・worst・optimumへ使用 |
+| 履歴から次問/完全出力を選ぶ手続き、情報fiber | ambient-boundary | Cの同じモデル。元入力fiberはνの逆像、実行リストの全長を数える。任意手続きでworst同値、正しい手続き全体のinfを往復 |
+| 出力の正確性・常時停止・最適値一致 | discharge-required、証明済み | 実応答からRunを往復、各実入力をνへ、各パラメータをrealizeへ写す。正しい手続きを与える条件を追加せず、その集合を両方向同定 |
+| 不能出力と実修復非存在 | discharge-required、証明済み | 完全数値方程式と独立元実修復の同値を否定へ適用。不能判定を入力fieldに移さない |
+
+先行成果の再利用資格は Cycle 1 PR #5193、Cycle 2 PR #5195、Cycle 5 head
+`3e0423e1f590493d9d723b0af0e345b4700c7246`
+[最終監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5204#issuecomment-5970294260)、
+G-130 head `549b7e3ccab1c9686a108530e1b0a4b4f38eee86`
+[最終監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5179#issuecomment-5966982329)。
+現在のsource、signature、元名・全基底・全値・負defectの適用とproof-useを照合する。
+標準基盤は固定Mathlib `8f9d9cff6bd728b17a24e163c9402775d9e6a365` のLinearEquiv/Pi、
+native quotient零、ENatのiSup/iInf。同じ手続き全体のinfを比較し、入力族を像だけへ縮めない。
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: "同じ原始実族を全核基底の数値方程式・生成局所公開可否・全実runと最適値へ接続"
+  exit_criteria_status: ["完全基底両逆/全元値", "同じD_S/b₀/Bの数値式と元実修復復元", "同じ元cover局所可否", "実評価/全実現から全応答と重複回数", "元不能述語/完全数値出力のquery model接続", "focused/48個別公理/scan/独立査読はPR記録"]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [FullCorrectionCoordinates.lean, EquationCoordinates.lean, PrimitiveInputQueries.lean, ActualFamilyCoordinates.lean, ActualFamilyInterfaces.lean]
+  evidence: [actual_numerical_equation_iff, restore_value, numerical_parameter_ker, numerical_obstruction_ker, actual_generated_iff, run_iff, transcript_eq, correct_iff, worst_eq, primitive_optimum_eq]
+  claim_mapping:
+    theorem_names: [actual_numerical_equation_iff, restore_value, actual_generated_iff, primitive_correct_iff, primitive_optimum_eq]
+    source_labels: ["G-131 A/C", "n1017 §3.5/6"]
+    conjuncts: ["全核基底の同じ方程式", "全元名/禁止零/固定実操作の復元", "生成局所公開可否と元修復", "原始評価から全応答/出力/重複回数/常時正答/最適値"]
+    undischarged_assumptions: []
+    acceptance_point: "Aの全基底・局所可否・評価条件とCの同じ実query modelの到達点。B/D/Eの指定接続は後続義務"
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: ["全数値座標/同じDとRHS", "元実修復全値", "生成局所可否", "実run/応答列/正答/回数/最適値"]
+    remaining: ["BのG-128作用/観測/双対", "Dの有限最小計画/不能値取得/更新", "Eの全実現/実評価/全指定表/分割/参照式"]
+  certificate_provenance:
+    discharged: ["固定全基底の両逆", "G-130全局所生成/全cover復元", "元原始実評価/全実現から実行対応"]
+    unresolved: ["Eの元操作から全実現と実評価を構成"]
+  proof_use:
+    used: ["全核基底と元name", "原始負defectと同じD_S", "P/candidates/Sの全値復元", "同じ元cover生成", "実評価のRun.ask応答", "全実現のworst逆向き", "正しい手続き全体のinf"]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: ["5 scoped files・48個別#print axiomsのraw記録/scan/独立査読をPRへ固定"]
+  blocking_findings: []
+  next_obligation: "Bの加法群作用・G-128観測と述語・双対/商/点手続き回数の接続"
+```
+
+全体は `target-proof-checkpoint`。B/D/Eと最終A–E統合は未完了。独立査読前のCycle結果はproposalである。
