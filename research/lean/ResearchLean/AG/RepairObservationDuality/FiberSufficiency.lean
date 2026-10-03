@@ -28,6 +28,14 @@ def ValidOutput (v : V) : Option H → Prop
   | none => ¬ Solvable D rhs v
   | some h => D h = rhs v
 
+/-- C's complete successful output has exactly the specified correction equation. -/
+theorem validOutput_some_iff (v : V) (h : H) :
+    ValidOutput D rhs v (some h) ↔ D h = rhs v := Iff.rfl
+
+/-- C's definite failure output asserts precisely independent equation impossibility. -/
+theorem validOutput_none_iff (v : V) :
+    ValidOutput D rhs v none ↔ ¬ Solvable D rhs v := Iff.rfl
+
 /-- C's decision output factors the solvability predicate on the known input fiber. -/
 def DecisionSufficient (F : Set V) (obs : V → T) : Prop :=
   ∃ p : T → Prop, ∀ v ∈ F, p (obs v) ↔ Solvable D rhs v
@@ -107,6 +115,9 @@ variable (D : H →ₗ[k] W) (B : V →ₗ[k] W) (b₀ : W)
 
 /-- A's affine RHS retains the sign already generated from the actual defect. -/
 def affineRhs (v : V) : W := b₀ + B v
+
+/-- A's affine RHS evaluates its known constant and linear contribution. -/
+theorem affineRhs_apply (v : V) : affineRhs B b₀ v = b₀ + B v := rfl
 
 /-- A's obstruction is the native full cokernel of the permitted correction map. -/
 def obstruction : V → W ⧸ LinearMap.range D :=
