@@ -3850,3 +3850,33 @@ fn a_field_the_plan_defines_without_a_type_is_unresolved_on_removes() {
     let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.g" && r["law"].is_null()).cloned().unwrap_or_default();
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
 }
+
+#[test]
+fn a_question_mark_name_on_removes_returns_the_atom_that_has_it_even_if_the_plan_names_it() {
+    // m.g は `?m.B` を返す。候補も、定義し直した m.h の呼び出し先に同じ `?m.B` を書く。
+    // m.g の消える要素を使うかの沈黙は、`?m.B` を持つ m.g の Atom の場所 m.py を返す(マニュアル第5章 問い8)。候補の要素 m.h ではない。
+    let repo = Repo::new("q-name-plan-removes");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map(
+        "m.py",
+        r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.D", "value": "type", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.h", "value": "operation", "params": {}, "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {}, "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.g", "value": "?m.B", "at": "m.py:11@blob:aaaaaaa"}
+"#,
+    );
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        r#"{"kind": "defines", "subject": "m.h", "value": "operation", "params": {}, "file": "m.py", "at": "plan:p"}
+{"kind": "calls", "subject": "m.h", "object": "?m.B", "at": "plan:p"}
+{"kind": "removes", "subject": "m.D", "at": "plan:p"}
+"#,
+    );
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.g" && r["law"].is_null()).cloned().unwrap_or_default();
+    assert_eq!(r["outcome"], "silent", "{s}");
+    let next: Vec<&Value> = s["next"].as_array().unwrap().iter().filter(|n| n["decides"].as_array().unwrap().contains(&r["id"])).collect();
+    assert!(!next.is_empty() && next.iter().all(|n| n["read"] == "m.py"), "{s}");
+}

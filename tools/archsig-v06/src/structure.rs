@@ -827,6 +827,8 @@ impl Structure {
             // `?` の型は、その型を書いた定義(フィールドか、引数を持つ操作)の場所を返す(マニュアル第5章 問い3)。
             Gap::Redefined(t) => self.untraced(&Gap::Name(t.clone()), a),
             Gap::QuestionType(owner) => locate(question(), self.atoms.iter().find(|d| d.kind == "defines" && d.subject == *owner).unwrap_or(a)),
+            // `?` の名前は、名前で探さず、その名前を持つ Atom の場所を返す(マニュアル第5章 問い8)。
+            Gap::Name(n) if n.starts_with('?') => locate(question(), a),
             Gap::Name(n) => match self.kind(n) {
                 Err(s) if s.scope.as_deref() != Some("?") || s.read.is_some() || s.element.is_some() => s,
                 _ => locate(question(), a),
