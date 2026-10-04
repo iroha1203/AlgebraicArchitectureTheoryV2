@@ -4570,7 +4570,54 @@ fn a_callee_in_an_expression_whose_inherited_field_changes_is_not_compared_as_th
     assert_eq!(result(&s, "m.f")["outcome"], "silent", "{s}");
     // m.P を読んでいなければ、変更前も変更後も $c.t がどのフィールドかは決まらないので、本体は決まらない。
     let s = callee_through_child("callee-unread-parent", "{\"kind\": \"resolves\", \"subject\": \"m.P\", \"object\": \"p.py\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n");
-    assert_eq!(result(&s, "m.f")["outcome"], "silent", "{s}");
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "p.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}
+
+#[test]
+fn a_callee_through_a_type_whose_source_is_unread_is_silent() {
+    // m.C の定義は読んでいない c.py にある。k(c) は $c.t を返し、f(c, o) は o.u に m.k($c) を書く。候補は f を同じに書き直す。
+    // m.C が何かを受け継ぐかは c.py で決まるので、k の本体は決まらず、f は c.py を読む所として沈黙する。
+    let repo = Repo::new("callee-unread-child");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.C", "object": "c.py", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.u", "value": "field", "type": "int", "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.u", "meaning": "payment-info", "uses": ["m.py:13@blob:aaaaaaa"], "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"c": "m.C", "o": "m.O"}, "at": "m.py:11@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.u", "value": "m.k($c)", "at": "m.py:13@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.k", "value": "operation", "params": {"c": "m.C"}, "at": "m.py:15@blob:aaaaaaa"}
+{"kind": "returns", "subject": "m.k", "value": "$c.t", "at": "m.py:16@blob:aaaaaaa"}
+"#);
+    repo.write(".archsig/plans/p/plan.jsonl", r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"c": "m.C", "o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.u", "value": "m.k($c)", "at": "plan:p"}
+"#);
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!(r["outcome"], "silent", "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}
+
+#[test]
+fn a_module_variable_resolved_to_an_unread_source_asks_that_source() {
+    // m.f は q.g に書く。q.g は読んでいない q.py に解決し、頭の q には `resolves` がない(モジュール)。読む所は q.py である。
+    let repo = Repo::new("module-variable-unread");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "q.g", "object": "q.py", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.v", "value": "field", "type": "m.O", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "q.g", "value": "1", "at": "m.py:6@blob:aaaaaaa"}
+"#);
+    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.O.v\", \"at\": \"plan:p\"}\n");
+    let s = repo.run(&["plan", "check", "p"]);
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "q.py"), "{s}");
+    assert!(!s["next"].as_array().unwrap().iter().any(|n| n["element"] == "q"), "{s}");
 }
 
 /// `a_callee_in_an_expression_whose_inherited_field_changes_is_not_compared_as_the_same_term` の題材。`parent` は m.P の Atom。

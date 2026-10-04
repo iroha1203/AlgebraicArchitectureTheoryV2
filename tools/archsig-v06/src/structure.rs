@@ -461,7 +461,8 @@ impl Structure {
         // `ty` の定義を読んでいなければ、受け継ぎ(`ty` のソースの `inherits`)が分からない。外部の型はリポジトリの型を受け継がない。
         // `ty.name` に定義があって `ty` にないとき、`ty` は `resolves` があれば要素で、なければモジュールかもしれない(受け継ぎを持たない)。
         // `ty.name` の `resolves` が外部を指せば、`ty.name` は外部の要素(モジュールの変数など)で、3.3 のとおり `ty.name` で問い合わせる。
-        if !self.elements.contains_key(ty) && !self.external(ty) && !self.external(&own) && (!defined || self.resolves.contains_key(ty)) {
+        // `ty` に `resolves` がなく、`ty.name` に定義か `resolves` があれば、`ty` はモジュールかもしれない(受け継ぎを持たない)。
+        if !self.elements.contains_key(ty) && !self.external(ty) && !self.external(&own) && (self.resolves.contains_key(ty) || (!defined && !self.resolves.contains_key(&own))) {
             self.kind(ty)?;
         }
         if !self.bases.contains_key(ty) {

@@ -963,7 +963,7 @@ fn compare(
     let mut compared = Vec::new();
     let mut calls = false;
     // 呼び出し先(変更前の名前)ごとの、本体が変わったか。
-    let mut bodies: BTreeMap<String, bool> = BTreeMap::new();
+    let mut bodies: BTreeMap<String, Option<Silence>> = BTreeMap::new();
     let mut pairs = 0;
     for b1 in &run1 {
         for b2 in &run2 {
@@ -971,8 +971,8 @@ fn compare(
             let lits2: Vec<(Value, bool)> =
                 b2.literals.iter().map(|l| Ok((normalize(mapping.back_value(&l.atom)?), l.truth))).collect::<Result<_, Silence>>()?;
             // 本体の変わった呼び出し先の呼び出しを条件に含めば、同じ項とみなせないので、分岐の組み方が決まらない。
-            if b1.literals.iter().map(|l| &l.atom).chain(lits2.iter().map(|(x, _)| x)).any(|x| changed_call(before, after, mapping, x, &mut bodies)) {
-                return Err(Silence::new(Reason::Unchecked));
+            if let Some(e) = b1.literals.iter().map(|l| &l.atom).chain(lits2.iter().map(|(x, _)| x)).find_map(|x| changed_call(before, after, mapping, x, &mut bodies)) {
+                return Err(e);
             }
             if b1.literals.iter().any(|l| lits2.iter().any(|(x, t)| x == &l.atom && *t != l.truth)) {
                 continue;
@@ -1003,8 +1003,8 @@ fn compare(
                     }
                 };
                 // 本体の変わった呼び出し先の呼び出しを含む値は、同じ項とみなせないので比べず、沈黙を最後まで持つ。
-                if changed_call(before, after, mapping, &v1, &mut bodies) || changed_call(before, after, mapping, &v2, &mut bodies) {
-                    below.hold(Err(Silence::new(Reason::Unchecked)));
+                if let Some(e) = changed_call(before, after, mapping, &v1, &mut bodies).or_else(|| changed_call(before, after, mapping, &v2, &mut bodies)) {
+                    below.hold(Err(e));
                     continue;
                 }
                 calls |= has_call(&v1) || has_call(&v2);
@@ -1063,21 +1063,33 @@ fn compare(
     })
 }
 
-/// 値 `v`(変更前の名前)が、変更前と変更後で本体の違う呼び出し先を呼ぶか。
+/// 値 `v`(変更前の名前)が、変更前と変更後で本体の違う呼び出し先を呼ぶか。違えば、その沈黙を返す。
 /// 変更後の呼び出し先は、対応の行き先である。行き先が二つ以上なら、どれか一つでも本体が違えば違うとする。行き先がなければ同じ名前である。
-fn changed_call(before: &Structure, after: &Structure, mapping: &Mapping, v: &Value, bodies: &mut BTreeMap<String, bool>) -> bool {
+/// 本体が違えば `unchecked`。本体が決まらなければ、決まらない問い合わせの沈黙(読めば決まる所を持つ)か、`unchecked`。
+fn changed_call(before: &Structure, after: &Structure, mapping: &Mapping, v: &Value, bodies: &mut BTreeMap<String, Option<Silence>>) -> Option<Silence> {
     let mut names = BTreeSet::new();
     call_names(v, &mut names);
-    names.into_iter().any(|n| {
-        *bodies.entry(n.clone()).or_insert_with(|| {
-            // 読めない式があって本体を比べられなければ、違うとする。
-            let Some(old) = body(before, &n) else { return true };
-            let differs = |t: &str| body(after, t).is_none_or(|b| b != old);
-            match mapping.to.get(n.as_str()) {
-                Some(targets) => targets.iter().any(|t| differs(t)),
-                None => differs(&n),
-            }
-        })
+    names.into_iter().find_map(|n| {
+        bodies
+            .entry(n.clone())
+            .or_insert_with(|| {
+                // 字句の本体が違うか決まらなければ `unchecked`。字句が同じで、受け継ぎで解いた先が決まらなければその沈黙、違えば `unchecked`。
+                let unchecked = || Silence::new(Reason::Unchecked);
+                let Some((old, old_res)) = body(before, &n) else { return Some(unchecked()) };
+                let differs = |t: &str| match body(after, t) {
+                    Some((b, res)) if b == old => match (&old_res, &res) {
+                        (Ok(x), Ok(y)) if x == y => None,
+                        (Err(e), _) | (_, Err(e)) => Some(e.clone()),
+                        _ => Some(unchecked()),
+                    },
+                    _ => Some(unchecked()),
+                };
+                match mapping.to.get(n.as_str()) {
+                    Some(targets) => targets.iter().find_map(|t| differs(t)),
+                    None => differs(&n),
+                }
+            })
+            .clone()
     })
 }
 
@@ -1104,10 +1116,13 @@ fn call_names(v: &Value, out: &mut BTreeSet<String>) {
 /// `inherits` を持つ型の読み書きのフィールドと式の中の道の段は、受け継ぎで解いた先も並べる。
 /// `?` が関わる Atom(`?` の値、`?` で始まる名前)、構文として読めない式、字句の数が上限を超えた式、決まらない解決、決まらない受け継ぎがあれば、
 /// 入力から本体が決まらないので、比べられない(None)。
-fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
+fn body(s: &Structure, op: &str) -> Option<(Vec<String>, Result<Vec<String>, Silence>)> {
     let mut seen = BTreeSet::new();
     let mut todo = vec![op.to_string()];
     let mut out = Vec::new();
+    // 受け継ぎを持つ型の読み書きのフィールドと道の段を、受け継ぎで解いた先。最初に決まらなかった問い合わせの沈黙。
+    let mut res = Vec::new();
+    let mut unknown: Option<Silence> = None;
     while let Some(o) = todo.pop() {
         if !seen.insert(o.clone()) {
             continue;
@@ -1147,10 +1162,14 @@ fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
             // 受け継ぎが決まらなければ、入力から本体が決まらない。
             if matches!(a.kind.as_str(), "writes" | "reads") {
                 for x in a.object.iter().chain(a.via.iter().flatten()) {
-                    if let Some((t, f)) = x.rsplit_once('.')
-                        && s.bases.contains_key(t)
-                    {
-                        out.push(format!("access|{x}|{}", s.member(t, f).ok()?));
+                    if let Some((t, f)) = x.rsplit_once('.').filter(|_| !x.starts_with('$')) {
+                        match s.member(t, f) {
+                            Ok(field) if s.bases.contains_key(t) => res.push(format!("access|{x}|{field}")),
+                            Ok(_) => {}
+                            Err(e) => {
+                                unknown.get_or_insert(e);
+                            }
+                        }
                     }
                 }
             }
@@ -1175,13 +1194,16 @@ fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
                             let mut ty = s.elements.get(&o).and_then(|e| e.params.get(p)).cloned();
                             for f in fields {
                                 let Some(t) = ty else { break };
+                                // 段の型の定義を読んでいないなど、解いた先が決まらなければ、その沈黙を持つ。
                                 let field = match s.member(&t, f) {
                                     Ok(x) => x,
-                                    Err(_) if s.bases.contains_key(&t) => return None,
-                                    Err(_) => break,
+                                    Err(e) => {
+                                        unknown.get_or_insert(e);
+                                        break;
+                                    }
                                 };
                                 if s.bases.contains_key(&t) {
-                                    out.push(format!("path|{t}.{f}|{field}"));
+                                    res.push(format!("path|{t}.{f}|{field}"));
                                 }
                                 ty = s.elements.get(&field).and_then(|e| e.ty.clone());
                             }
@@ -1192,7 +1214,7 @@ fn body(s: &Structure, op: &str) -> Option<Vec<String>> {
             todo.extend(called);
         }
     }
-    Some(out)
+    Some((out, unknown.map_or(Ok(res), Err)))
 }
 
 /// 式の中の道(`$p.f.g` の引数の名前とフィールドの名前の列)を集める。
