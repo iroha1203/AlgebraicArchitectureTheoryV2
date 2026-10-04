@@ -1003,3 +1003,8 @@ import ResearchLean.AG.VisibleCycleReflection.AtomInput
 import ResearchLean.AG.VisibleCycleReflection.OpenSupport
 import ResearchLean.AG.VisibleCycleReflection.OpenSupportContinuity
 import ResearchLean.AG.VisibleCycleReflection.ActualCover
+
+import ResearchLean.AG.VisibleCycleReflection.IntegralLabelCoordinates
+import ResearchLean.AG.VisibleCycleReflection.VisibleCoordinates
+import ResearchLean.AG.VisibleCycleReflection.CechGraphComparison
+import ResearchLean.AG.VisibleCycleReflection.GraphH1Comparison

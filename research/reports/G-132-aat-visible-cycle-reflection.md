@@ -46,7 +46,7 @@ selection:
     - 未実装のA座標同定・B・C・W1–W3
 ```
 
-## 全targetの現proof obligation
+## Cycle 1 時点の全targetのproof obligation
 
 Aの座標同定、既存比較の成分計算、B三条件の全方向、整数補正、状態層と貼り合わせ、
 必要性の実入力、Cの停止探索と正確性、W1–W3は未証明。cycle 1 は全targetの完了判定ではない。
@@ -212,3 +212,220 @@ PR #5253 の初回固定head `0913eb1e9a91d9a10304cd29dadd4d457c81793b` を、
 既存宣言の型と構成dataは維持する。rootの非中心F2はresult/監査schemaの記録不足であり、
 上記のartifact・claim対応・auditsを追記した。proposalのstatusと選定範囲は変更しない。
 修正後の直接対応確認と最終受理は固定headのPR監査コメントに記録する。
+
+## Cycle 2 selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-132-aat-visible-cycle-reflection
+cycle: 2
+goal_blob_sha: 4fb28b116ddd9f9d98cc03834d03a0a68b1ba49d
+base_oid: 14c8b9447ffa91773204a3a933d14e9542d6bab2
+tracking_issue: 5250
+report_path: research/reports/G-132-aat-visible-cycle-reflection.md
+selection:
+  proof_state_ref: 'cycle 1 accepted PR #5253 / Issue comment 5978402926'
+  proof_dag_predecessors: [cycle 1の実被覆構成, G-125の係数商と実比較, G-104のlaw-value cochainとH1分解]
+  milestone: 'A: 整数ラベル座標と可視グラフ複体を同定し、既存実比較の各成分を係数変更と制限へ接続'
+  proof_obligations: [R_qから整数ラベル座標, 同じtargetの支持から可視cell生成, cochainと微分の同定, 商と代表元の同定, 既存指定類と独立診断の対応]
+  exit_criteria: [全T0構造と全局所データへの既存実比較を同定, cochainだけでなくH1と指定代表を接続, focusedと全宣言公理と機械scan成功]
+  selection_reason: 次のBの零性反映を実AAT入力へ接続する係数と比較の未接続部分を閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [IntegralLabelCoordinates.lean, VisibleCoordinates.lean, CechGraphComparison.lean, GraphH1Comparison.lean]
+  risks: [H1の単射性を係数単射から推論しない, 可視辺の同じtargetを保持, 診断を比較像として再定義しない, legacyとadditive H1を区別]
+  unchecked: [実装中のAの全接続, 未選定BとCとW1–W3]
+```
+
+## Cycle 2 の構成と対応
+
+R_qから原始presentationの関係blockをsource-generated labelへ同定し、自由アーベル群の
+有限座標を合成した `integralLabelEquiv` が整数ラベル座標を与える。
+`coefficientComparison_eq_cast` は既存係数比較の各値がこの整数座標の有理数埋め込みである
+ことを示す。`labelBasis` は原始係数商への逆写像から作り、非零性を証明する。
+
+`VisibleCell` は同じ台上のLaw値の発生を保持する。辺は既存K1のtarget交差台を使い、
+端点で別のtargetが同ラベルを持つ条件へ置き換えない。既存blockのcell射影の単射性と発生
+同値から `blockCellEquiv` を構成し、端点を保つこととcochainの微分対応を証明する。
+
+| Aの条項 | 新しい接続と使用する既存API |
+| --- | --- |
+| M_R と整数ラベル座標 | `integralLabelEquiv`、`coefficientComparison_eq_cast`。G-125のpresentationGroupEquivBlocks、blockLabelEquiv、block係数評価を合成 |
+| 可視頂点・同じtargetを要する可視辺 | `blockCellEquiv`、`visibleVertexEquiv`、`visibleEdgeEquiv`。G-104のblock_cell_injectiveとexists_block_coordinate_cell_iff |
+| cochain・微分・空の次数2 | `actualIntegralCochain0/1/2Equiv`、`actualIntegral_d0/d1`、`visibleCochain0/1/2Equiv`、`visibleD0/D1_intertwining` |
+| 整数障害の商と代表元 | `actualIntegral_range`、`actualIntegralH1Equiv_mk`、`existingDescent_graph_representative`、`actualMismatch_normalized` |
+| 診断の商と各可視成分 | `visibleBlock_range`、`visibleBlockH1Equiv_mk`、`diagnosticVisibleH1Equiv_mk_component`。既存lawGeneratedH1BlockEquivを合成 |
+| 既存比較の成分 | `actualCechDiagnosticH1Map_factorization` は全actual H1類の係数変更・制限の分解式 |
+| 原始AAT入力・全局所データへの接続 | `GeometricCover.input_local_data_factorization` はcycle 1の実生成被覆で全ξ,pを量化し、既存descent類と独立診断へ上の分解を適用 |
+
+既存診断の定義は変更していない。`existingDescent_comparison` は既存の独立した
+transition評価＋状態の診断微分と、同じ原始入力のexisting descent類を接続する。
+元の比較は加法準同型であり、有理線形同型やH1の単射性を主張しない。
+有理potential、反映、閉路条件、整数補正、状態層、有限判定、指定例はcycle 2の結論に含めない。
+
+### Material premise と proof-use
+
+| premise | role | provenance と使用先 |
+| --- | --- | --- |
+| 有限Source・有限Law、adequate reading、ラベル保存RとR_q | ambient-boundary | T0。R_qはblockLabelEquivと整数係数回収、有限Sourceは全ラベルのfinite sumと有限自由座標、adequacyとsurj readingは発生ラベルと既存比較に使用 |
+| 実被覆・非空連結chart/交差・三重交差空・非空target台 | ambient-boundary | cycle 1の生成構成を使用。実section正規化の条件は同じactual coverから得る。全face空性は次数2と全edge cochainのcocycle化へ使用 |
+| 整数ラベル座標と基底 | discharge-required / discharged | 原始presentation→自由block→R_qのlabel同値→有限整数座標。基底はその逆写像で生成 |
+| exact visible cell、端点、微分対応 | discharge-required / discharged | 台の発生とblockのcell射影。証人差は同一cell/labelの同値で消し、端点で同じtargetを保持 |
+| 実cochain・商・比較同定 | discharge-required / discharged | 実section正規化→整数座標、d0対応→coboundary rangeの両方向等式→quotient同値→代表元計算 |
+| 既存H1比較と独立診断の対応 | discharge-required / discharged | 既存actualCechDiagnosticH1Mapを代表元で追跡。整数castとvisible restrictionの独立な商写像を定義し等式を証明 |
+| H1反映・全グラフpotential | discharge-required / remaining | Bの次義務。係数の単射性や今回のH1成分式から反映を推論していない |
+
+再利用するG-104部分は同report cycle 11/14の `approve / proof-obligation-discharged` 記録と
+PR #3943の受理記録へ接続する。G-104の後続の別claimの反証を、この二つのcoordinate/H1分解へ
+取り違えない。参照版 `7547b0d1dc9d523e63c0e8596180dd61e6119529` のsource blobは
+LawValueCoordinateSubnerve `16bd6ee8b9788fbad092c45222a56c7992a120f0`、
+LawValueBlockCohomology `8dce9e67cc15ed46ebdbfa013306a1501596dd48`。
+現sourceのstatement・必要条件・今回の適用を照合し、関連変更なしを確認する。
+
+### Cycle 2 result（独立査読前のproposal）
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: Aの整数ラベル座標、exact visible cell、cochainと微分、H1商と代表、既存実比較の係数変更と制限への分解を構成
+  exit_criteria_status: [全T0構造の生成被覆と全局所データへ適用, 0–2 cochainと微分とH1商の同定, focusedと全82新宣言公理監査と機械scan]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [IntegralLabelCoordinates.lean, VisibleCoordinates.lean, CechGraphComparison.lean, GraphH1Comparison.lean]
+  evidence: [Cycle 2 spine declaration list, 実入力へのinput_local_data_factorization, 84宣言のprint axioms]
+  claim_mapping:
+    theorem_names: [integralLabelEquiv, blockCellEquiv, actualIntegral_d0, actualIntegralH1Equiv, visibleBlockH1Equiv, actualCechDiagnosticH1Map_factorization, GeometricCover.input_local_data_factorization]
+    source_labels: [T0のラベルと可視部分, A]
+    conjuncts: [係数同定と有理埋め込み, 全実cochainの正規化, 同じtargetの可視block, 微分と商の両方向対応, 全actualH1の比較成分式, 全ξとpの独立診断と既存descent類]
+    undischarged_assumptions: []
+    acceptance_point: 選定したAの比較同定。BとCとW1–W3は未完
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [原始関係から整数ラベル係数, 可視cellと端点, cochain微分, coboundary rangeの両方向対応, quotientとrepresentative, 既存比較の全類成分, 原始実入力への適用]
+    remaining: [B全方向とpotentialと整数補正と状態層, C, W1–W3]
+  certificate_provenance:
+    discharged: [原始係数商とR_q, 既存K1台の発生, 同じ実coverとrestriction, 商写像のrange保存から生成]
+    unresolved: [選定範囲にはなし]
+  proof_use:
+    used: [R_qのblock-label同値と係数回収, finiteSourceの座標とdirectsum, adequacyのLaw発生, 全face空性のcocycle化, 実d0正規化とvisible d0対応のrange等式, range等式のquotient同定, 元のactualCechDiagnosticH1Mapの代表元]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [対象4file focused elaboration, 全84宣言print axioms, 標準公理のみ, placeholderとUnicodeとprivacyとimport方向scan]
+  blocking_findings: []
+  next_obligation: Bの非橋辺とchain包含と零性反映の全方向、整数補正と状態層
+```
+
+全目標の現状態はAの構成・同定をcycle 2の受理proposalとして追加し、B・C・W1–W3を
+未完として保持する。Formal移植はunported。Research全体build/aggregate elaborationと
+ローカルFormal全体buildは実行しない。実入力適用定理は同じ構成への名前付き引数で接続し、標準の検証上限で確認する。
+
+### Cycle 2 spine declaration list
+
+```text
+AAT.AG.VisibleCycleReflection.integralLabelEquiv
+AAT.AG.VisibleCycleReflection.integralLabelEquiv_apply
+AAT.AG.VisibleCycleReflection.coefficientComparison_eq_cast
+AAT.AG.VisibleCycleReflection.labelBasis
+AAT.AG.VisibleCycleReflection.integralLabelEquiv_labelBasis
+AAT.AG.VisibleCycleReflection.labelBasis_ne_zero
+AAT.AG.VisibleCycleReflection.coefficientComparison_labelBasis
+AAT.AG.VisibleCycleReflection.VisibleCell
+AAT.AG.VisibleCycleReflection.blockCellEquiv
+AAT.AG.VisibleCycleReflection.blockCellEquiv_val
+AAT.AG.VisibleCycleReflection.blockCellEquiv_symm_cell
+AAT.AG.VisibleCycleReflection.VisibleVertex
+AAT.AG.VisibleCycleReflection.VisibleEdge
+AAT.AG.VisibleCycleReflection.visibleVertexEquiv
+AAT.AG.VisibleCycleReflection.visibleEdgeEquiv
+AAT.AG.VisibleCycleReflection.visibleVertexEquiv_symm_cell
+AAT.AG.VisibleCycleReflection.visibleEdgeEquiv_symm_cell
+AAT.AG.VisibleCycleReflection.visibleLeft
+AAT.AG.VisibleCycleReflection.visibleRight
+AAT.AG.VisibleCycleReflection.visibleLeft_val
+AAT.AG.VisibleCycleReflection.visibleRight_val
+AAT.AG.VisibleCycleReflection.visibleVertexEquiv_left
+AAT.AG.VisibleCycleReflection.visibleVertexEquiv_right
+AAT.AG.VisibleCycleReflection.visibleCochain0Equiv
+AAT.AG.VisibleCycleReflection.visibleCochain1Equiv
+AAT.AG.VisibleCycleReflection.visibleCochain0Equiv_apply
+AAT.AG.VisibleCycleReflection.visibleCochain1Equiv_apply
+AAT.AG.VisibleCycleReflection.visibleD0
+AAT.AG.VisibleCycleReflection.visibleD0_apply
+AAT.AG.VisibleCycleReflection.visibleD0_intertwining
+AAT.AG.VisibleCycleReflection.integralGraphD0
+AAT.AG.VisibleCycleReflection.integralGraphD0_apply
+AAT.AG.VisibleCycleReflection.actualIntegralCochain0Equiv
+AAT.AG.VisibleCycleReflection.actualIntegralCochain1Equiv
+AAT.AG.VisibleCycleReflection.actualIntegralCochain2Equiv
+AAT.AG.VisibleCycleReflection.actualIntegral_d1
+AAT.AG.VisibleCycleReflection.actualCoefficient2_eq_zero
+AAT.AG.VisibleCycleReflection.actualIntegralCochain0Equiv_apply
+AAT.AG.VisibleCycleReflection.actualIntegralCochain1Equiv_apply
+AAT.AG.VisibleCycleReflection.actualIntegral_d0
+AAT.AG.VisibleCycleReflection.actualCoefficient0_apply
+AAT.AG.VisibleCycleReflection.actualCoefficient1_apply
+AAT.AG.VisibleCycleReflection.actualCoefficient0_visible
+AAT.AG.VisibleCycleReflection.actualCoefficient1_visible
+AAT.AG.VisibleCycleReflection.actualMismatch_normalized
+AAT.AG.VisibleCycleReflection.existingDescent_comparison
+AAT.AG.VisibleCycleReflection.IntegralGraphH1
+AAT.AG.VisibleCycleReflection.actualIntegralCyclesEquiv
+AAT.AG.VisibleCycleReflection.actualIntegralCyclesEquiv_apply
+AAT.AG.VisibleCycleReflection.actualIntegral_range
+AAT.AG.VisibleCycleReflection.actualIntegralH1Equiv
+AAT.AG.VisibleCycleReflection.actualIntegralH1Equiv_mk
+AAT.AG.VisibleCycleReflection.existingDescent_graph_representative
+AAT.AG.VisibleCycleReflection.VisibleGraphH1
+AAT.AG.VisibleCycleReflection.visibleBlockFaceIsEmpty
+AAT.AG.VisibleCycleReflection.visibleBlockD1_eq_zero
+AAT.AG.VisibleCycleReflection.visibleCochain2Equiv
+AAT.AG.VisibleCycleReflection.visibleGraphComplex
+AAT.AG.VisibleCycleReflection.visibleD1_intertwining
+AAT.AG.VisibleCycleReflection.visibleBlockCyclesEquiv
+AAT.AG.VisibleCycleReflection.visibleBlockCyclesEquiv_apply
+AAT.AG.VisibleCycleReflection.visibleBlock_range
+AAT.AG.VisibleCycleReflection.visibleBlockH1Equiv
+AAT.AG.VisibleCycleReflection.visibleBlockH1Equiv_mk
+AAT.AG.VisibleCycleReflection.rationalGraphD0
+AAT.AG.VisibleCycleReflection.rationalGraphD0_apply
+AAT.AG.VisibleCycleReflection.RationalGraphH1
+AAT.AG.VisibleCycleReflection.graphCoefficientCast
+AAT.AG.VisibleCycleReflection.graphCoefficientCast_apply
+AAT.AG.VisibleCycleReflection.graphCoefficientCast_d0
+AAT.AG.VisibleCycleReflection.integerToRationalH1
+AAT.AG.VisibleCycleReflection.integerToRationalH1_mk
+AAT.AG.VisibleCycleReflection.rationalRestriction1
+AAT.AG.VisibleCycleReflection.rationalRestriction1_apply
+AAT.AG.VisibleCycleReflection.rationalRestriction_d0
+AAT.AG.VisibleCycleReflection.rationalRestrictionH1
+AAT.AG.VisibleCycleReflection.rationalRestrictionH1_mk
+AAT.AG.VisibleCycleReflection.diagnosticVisibleH1Equiv
+AAT.AG.VisibleCycleReflection.diagnosticVisibleH1Equiv_component
+AAT.AG.VisibleCycleReflection.diagnosticVisibleH1Equiv_mk_component
+AAT.AG.VisibleCycleReflection.actualCechDiagnosticH1Map_factorization
+AAT.AG.VisibleCycleReflection.GeometricCover.input_local_data_factorization
+AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueBlockD0_apply
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.ActualCechAffineLocalData.actualMismatch_eq
+```
+
+検証結果：対象4fileのfocused elaborationは成功（module標準公理監査は順に8・23・16・36宣言）。
+全84明示宣言の `#print axioms` を実行し、source/report/list/outputの一致を確認した。
+依存公理はpropext、Classical.choice、Quot.soundのみ。print出力SHA-256は
+`e0d48691ed64bab0ae589d2b41ca4047f09a2a5061ef34200620347d1174622b`。
+placeholder、hidden/BiDi、privacy、語彙、FormalからResearchへのimport方向、diff checkはclean。
+固定GOAL・設計・共通基準・再利用sourceの関連差分なし。正式査読とCIはPRの固定headで確認する。
+
+### Cycle 2 の非中心finding対応
+
+初回4 laneの判定はMinor issues、中心findingなし。
+[初回統合](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5254#issuecomment-5978705421)
+のF1に対し、既存比較と整数H1同値の公開代表元APIを使用した。
+既存block微分とaffine mismatchの公開評価／生成APIを2宣言補い、下流から使用する。
+F2に対し、新4moduleのImplementation notesへ定義形の理由と代替案を記した。
+査読済みsignature、def/instanceの値、import方向、ledger statusは変更していない。
+全84宣言の公理監査は標準公理のみ。修正後の直接対応資格と解消を別途固定headで確認する。
