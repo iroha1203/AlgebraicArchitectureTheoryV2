@@ -468,3 +468,20 @@ fn an_element_the_plan_defines_ambiguously_is_placed_by_the_plan() {
     );
     assert_eq!((result(&s, "m.T")["outcome"].as_str(), result(&s, "m.T")["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
 }
+
+#[test]
+fn an_element_the_plan_defines_twice_in_two_files_is_silent() {
+    // 候補が同じ種類の `defines` を二つの `file` に書けば、同じ種類の `defines` を二か所に持つ要素である(マニュアル第3章、設計 §3.2)。
+    // 定義した所が二つの局所に分かれるので、局所が決まらない(設計 §6)。
+    let repo = Repo::new("split-plan-two-files");
+    repo.write(".archsig/law/m.law", "sources \"**/*.py\"\n\nreading module = dir(depth: 1)\n");
+    repo.write("b/t.py", "# source\n");
+    repo.map("b/t.py", "{\"kind\": \"observed\", \"subject\": \"b/t.py\", \"scope\": \"structure\", \"at\": \"b/t.py@blob:aaaaaaa\"}\n");
+    repo.write(
+        ".archsig/plans/p/plan.jsonl",
+        "{\"kind\": \"defines\", \"subject\": \"m.T\", \"value\": \"type\", \"file\": \"a/z.py\", \"at\": \"plan:p\"}\n{\"kind\": \"defines\", \"subject\": \"m.T\", \"value\": \"type\", \"file\": \"c/y.py\", \"at\": \"plan:p\"}\n",
+    );
+    let s = repo.run(&["plan", "split", "p"]);
+    let r = result(&s, "m.T");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}

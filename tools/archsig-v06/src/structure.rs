@@ -9,7 +9,7 @@ use crate::expr::{self, BinOp, Expr};
 mod name;
 use name::Names;
 pub use name::{
-    Answer, Column, FieldList, Form, Found, Resolution, Resolved, Stage, Start, Unknown, Walk, Why, after_operation, below, call_name,
+    Answer, Column, FieldList, Form, Found, Naming, Place, Resolution, Resolved, Stage, Start, Unknown, Walk, Why, after_operation, below, call_name,
     form, from_operation, is_local, is_question, owner, param_name, param_of, targets,
 };
 
@@ -597,14 +597,7 @@ fn trace(after: &Structure, before: &Structure, atoms: &[&Atom], skip: &dyn Fn(&
     }
 }
 
-/// 名指す要素と、たどれなかった所の沈黙。
-#[derive(Default)]
-struct Named {
-    named: BTreeSet<String>,
-    gaps: Vec<Silence>,
-}
-
-/// 名指す要素をたどる。
+/// 名指す要素をたどる。名指しは、名前の解決のモジュールの答え(名前、列、道の名指し)だけで決める。
 struct Tracer<'a> {
     after: &'a Structure,
     before: &'a Structure,
@@ -612,127 +605,24 @@ struct Tracer<'a> {
 }
 
 impl Tracer<'_> {
-    /// Atom の名前 `n` を要素(名前)で解いた要素(設計 §3.6)。どの経路でも、名指しは要素(名前)の答えだけで決める。
-    /// 決まった要素はその名前を、名前だけの要素と、名前そのものの定義(`defines` か `resolves`)で決まらないだけの名前は、字句どおりの名前を名指す。
-    /// 頭か持ち主が消える要素かその下の名前なら、その名前を名指す。段の「なければ」で決まらない名前は、段の名前か、変更前の構造で同じ名前を解いた要素を名指す。
-    /// それ以外(`?` の名前と、頭、持ち主、段で決まらない名前)は、名指す要素が決まらない。
+    /// 名指しの答えを積む。たどれなかった所の `?` の沈黙には、その Atom の場所を付ける。
+    fn add(&self, naming: Naming, a: &Atom, found: &mut Named) {
+        found.named.extend(naming.gone);
+        found.gaps.extend(naming.gaps.into_iter().map(|s| gap(s, a)));
+    }
+
     fn name(&self, n: &str, a: &Atom, found: &mut Named) {
-        let u = match self.after.element(n) {
-            Ok(Answer::Element(e)) => {
-                if (self.gone)(&e.name) {
-                    found.named.insert(e.name);
-                }
-                return;
-            }
-            Ok(Answer::Bare(_)) => {
-                if (self.gone)(n) {
-                    found.named.insert(n.to_string());
-                }
-                return;
-            }
-            // 外部の要素は、その名前を名指す。
-            Ok(Answer::External(_)) => {
-                if (self.gone)(n) {
-                    found.named.insert(n.to_string());
-                }
-                return;
-            }
-            Err(u) => u,
-        };
-        if u.itself {
-            if (self.gone)(n) {
-                found.named.insert(n.to_string());
-            }
-            return;
-        }
-        if self.after.head_of(n).is_some_and(|h| (self.gone)(&h)) {
-            found.named.insert(n.to_string());
-            return;
-        }
-        if let Some(s) = u.stage.as_ref().filter(|s| s.absent) {
-            let stage = s.full_name();
-            if (self.gone)(&stage) {
-                found.named.insert(stage);
-                return;
-            }
-            match self.before.element(n) {
-                Ok(Answer::Element(e)) if (self.gone)(&e.name) => {
-                    found.named.insert(e.name);
-                    return;
-                }
-                Err(b) => {
-                    found.gaps.push(gap(b.silence, a));
-                    return;
-                }
-                _ => {}
-            }
-        }
-        found.gaps.push(gap(u.silence, a));
+        self.add(self.after.name_naming(self.before, self.gone, n), a, found);
     }
 
-    /// 道か列の答え `walk` が名指す要素。決まったフィールドと、消える型の段の名前(`<型>.<名前>`)。
-    /// 止まった段がどの型も定義しないために決まらなければ、変更前の構造の同じ道 `prior` のその段で、消える要素に着くかを見る。
-    fn walked(&self, walk: &Walk, prior: impl FnOnce() -> Walk, a: &Atom, found: &mut Named) {
-        for n in &walk.place {
-            if (self.gone)(n) {
-                found.named.insert(n.clone());
-            }
-        }
-        // 段の型が消える要素かその下の名前なら、その段の名前も消える要素の下の名前である。
-        for (n, t) in walk.stages.iter().zip(&walk.types) {
-            if (self.gone)(t) {
-                found.named.insert(n.clone());
-            }
-        }
-        let Some(u) = &walk.stop else { return };
-        let i = walk.place.len();
-        if u.stage.as_ref().is_some_and(|s| s.absent) {
-            // どの型も定義しない段では、名指すのはその段の名前そのものである。
-            if let Some(n) = walk.stages.get(i).filter(|n| (self.gone)(n)) {
-                found.named.insert(n.clone());
-                return;
-            }
-            let p = prior();
-            if p.stages.get(i).is_some() && p.stages.get(i) == walk.stages.get(i) {
-                match (p.place.get(i), &p.stop) {
-                    (Some(e), _) if (self.gone)(e) => {
-                        found.named.insert(e.clone());
-                        return;
-                    }
-                    (None, Some(b)) => {
-                        found.gaps.push(gap(b.silence.clone(), a));
-                        return;
-                    }
-                    _ => {}
-                }
-            }
-        }
-        found.gaps.push(gap(u.silence.clone(), a));
-    }
-
-    /// `reads`・`writes` の `via` と `object` の列を、列の読み方で解いた場所のフィールドとその頭。
-    /// 頭が消える要素かその下の名前なら、頭の下の最初の名前を名指す。二段目からの名前は、場所で決まる。
     fn column(&self, names: &[String], a: &Atom, found: &mut Named) {
-        let c = self.after.column(names);
-        if let (Some(h), Some(first)) = (&c.head, names.first())
-            && (self.gone)(h)
-        {
-            found.named.insert(first.clone());
-        }
-        self.walked(&c.walk, || self.before.column(names).walk, a, found);
+        self.add(self.after.column_naming(self.before, self.gone, names), a, found);
     }
 
     /// 式の中の道の場所のフィールドと、呼び出す操作。
     fn expr(&self, op: &str, e: &Expr, a: &Atom, found: &mut Named) {
         match e {
-            Expr::Path(p, fields) => {
-                let param = param_name(op, p);
-                if (self.gone)(&param) {
-                    found.named.insert(param.clone());
-                }
-                let walk = self.after.walk(Start::Param(&param), fields);
-                self.walked(&walk, || self.before.walk(Start::Param(&param), fields), a, found);
-            }
+            Expr::Path(p, fields) => self.add(self.after.path_naming(self.before, self.gone, &param_name(op, p), fields), a, found),
             Expr::Call(name, args) => {
                 self.name(name, a, found);
                 for x in args {
@@ -749,6 +639,13 @@ impl Tracer<'_> {
             _ => {}
         }
     }
+}
+
+/// 名指す要素と、たどれなかった所の沈黙。
+#[derive(Default)]
+struct Named {
+    named: BTreeSet<String>,
+    gaps: Vec<Silence>,
 }
 
 /// たどれなかった所の沈黙。`?` の沈黙は、その Atom の場所を読む所とする(マニュアル第5章 問い8)。

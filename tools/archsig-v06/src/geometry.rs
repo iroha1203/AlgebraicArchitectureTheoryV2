@@ -7,7 +7,7 @@ use globset::{GlobBuilder, GlobSetBuilder};
 
 use crate::atom::Atom;
 use crate::law::{Reading, ReadingForm};
-use crate::structure::{Answer, Found, Reason, Silence, Structure, Unknown, Why, is_question, targets};
+use crate::structure::{Place, Silence, Structure, is_question, targets};
 
 /// 読み `reading` が、ソースのパス `path` を写す局所の名前。`groups` のどれにも当たらなければ None。
 pub fn local(reading: &Reading, path: &str) -> Option<String> {
@@ -54,108 +54,44 @@ impl<'a> Geometry<'a> {
     }
 
     /// 要素が属する局所。決まらなければ、その沈黙。どの局所にも属さなければ空。
+    /// 局所の元は名前の解決のモジュールが返す(設計 §6)。ここでは、それを読みの局所に写すだけである。
     pub fn element_locals(&self, name: &str) -> Result<BTreeSet<String>, Silence> {
-        // チャネルとその項目は、送る操作と受け取る操作の局所すべてに属する。送り受けする操作は、候補を重ねた後の列から探す。
-        if let Some(ops) = self.after.channel_operations(name) {
-            if !self.busy.borrow_mut().insert(name.to_string()) {
-                return Ok(BTreeSet::new());
-            }
-            let r = ops.iter().try_fold(BTreeSet::new(), |mut out, op| {
-                out.extend(self.element_locals(op)?);
-                Ok(out)
-            });
-            self.busy.borrow_mut().remove(name);
-            return r;
-        }
-        match self.after.element(name) {
-            Ok(Answer::Element(f)) => return self.found(self.after, &f),
-            // 外部の要素は、どの局所にも属さない。
-            Ok(Answer::External(_)) => return Ok(BTreeSet::new()),
-            // 候補を重ねた列で曖昧なら、その定義した所で決める。
-            Err(u) if u.why == Why::Ambiguous => return self.undecided(self.after, name, u),
-            _ => {}
-        }
-        // 候補を重ねた列で決まらなければ(定義のない名前だけの要素を含む。`removes` した要素はこれに当たる)、変更前の構造で解いた定義した所。
-        let before = match self.before.element(name) {
-            Ok(Answer::Element(f)) => return self.found(self.before, &f),
-            Ok(Answer::External(_)) => return Ok(BTreeSet::new()),
-            Ok(Answer::Bare(_)) => Ok(BTreeSet::new()),
-            Err(u) => self.undecided(self.before, name, u),
-        };
-        // 変更前の構造でも決まらなければ、二つの答えで決める。どちらかで局所が決まらなければ、決まらない。
-        let after = match self.after.element(name) {
-            Err(u) => self.undecided(self.after, name, u),
-            _ => Ok(BTreeSet::new()),
-        };
-        match (after, before) {
-            (Err(e), _) | (_, Err(e)) => Err(e),
-            (Ok(a), Ok(b)) => Ok(if a.is_empty() { b } else { a }),
-        }
-    }
-
-    /// 決まった要素の局所。引数と呼び出しは持ち主の操作で見る。候補の中で定義し `file` のない要素は、変更前の構造で解いた定義した所。
-    /// チャネルとその項目は、候補を重ねた後の列の送り受けする操作で見るので、そこに操作がなければどの局所にも属さない。
-    fn found(&self, s: &Structure, f: &Found) -> Result<BTreeSet<String>, Silence> {
-        if matches!(f.kind.as_str(), "param" | "call")
-            && let Some(o) = &f.owner
-        {
-            return self.element_locals(o);
-        }
-        if f.kind == "channel" {
+        // チャネルの送り受けがめぐっても、一度だけたどる。
+        if !self.busy.borrow_mut().insert(name.to_string()) {
             return Ok(BTreeSet::new());
         }
-        if f.planned && f.defined.is_empty() {
-            // 変更前の構造そのものが候補の中で定義した要素(元の候補で `file` なしに定義した要素)は、たどる先がない。
-            if std::ptr::eq(s, self.before) {
-                return Ok(BTreeSet::new());
+        let r = self.locals(self.after.place(self.before, name));
+        self.busy.borrow_mut().remove(name);
+        r
+    }
+
+    /// 局所の元を、読みの局所に写す。
+    fn locals(&self, place: Place) -> Result<BTreeSet<String>, Silence> {
+        match place {
+            Place::Sources(sources) => Ok(sources.iter().filter_map(|p| local(self.reading, p)).collect()),
+            Place::Ambiguous(sources, silence) => {
+                let locals: BTreeSet<String> = sources.iter().filter_map(|p| local(self.reading, p)).collect();
+                if locals.len() == 1 { Ok(locals) } else { Err(silence) }
             }
-            return match self.before.element(&f.name) {
-                Ok(Answer::Element(g)) => self.found(self.before, &g),
-                Err(u) => self.undecided(self.before, &f.name, u),
-                Ok(_) => Ok(BTreeSet::new()),
-            };
+            Place::Via(n) => self.element_locals(&n),
+            Place::Operations(ops) => ops.iter().try_fold(BTreeSet::new(), |mut out, op| {
+                out.extend(self.element_locals(op)?);
+                Ok(out)
+            }),
+            Place::Nowhere => Ok(BTreeSet::new()),
+            Place::Unknown(silence) => Err(silence),
+            Place::Either(a, b) => match (self.locals(*a), self.locals(*b)) {
+                (Err(e), _) | (_, Err(e)) => Err(e),
+                (Ok(x), Ok(y)) => Ok(if x.is_empty() { y } else { x }),
+            },
         }
-        Ok(f.defined.iter().filter_map(|p| local(self.reading, p)).collect())
     }
 
-    /// 要素(名前)が決まらないときの局所(設計 §6)。`s` は答え `u` を返した構造。
-    fn undecided(&self, s: &Structure, name: &str, u: Unknown) -> Result<BTreeSet<String>, Silence> {
-        // 曖昧な要素は、定義した所がすべて一つの局所にあればその局所、なければ決まらない。
-        if u.why == Why::Ambiguous {
-            let locals: BTreeSet<String> = u.defined.iter().filter_map(|p| local(self.reading, p)).collect();
-            return if locals.len() == 1 { Ok(locals) } else { Err(u.silence) };
-        }
-        // `<T>.<f>` が段で決まらないか、頭 `T` が曖昧で決まらないなら、`T` の局所。
-        // `<T>.<f>` そのものの `resolves` で決まらなかったなら、その解決で見る(マニュアル第4章)。
-        if let Some(stage) = &u.stage
-            && !(stage.absent && (u.silence.read.is_some() || matches!(u.why, Why::Missing | Why::Undecided)))
-        {
-            return self.element_locals(&stage.ty);
-        }
-        // 名前そのものの定義で決まらないのでなければ(頭か持ち主で決まらない)、頭で見る。引数と呼び出しは持ち主の操作で見る(マニュアル第4章)。
-        if u.stage.is_none()
-            && !u.itself
-            && let Some(h) = s.head_of(name)
-        {
-            return self.element_locals(&h);
-        }
-        // `unread` でソースを返すか、それ以外の `unresolved` なら、決まらない。読む所が名前だけの `unread` は、どの局所にも属さない。
-        if u.silence.read.is_some() || u.silence.reason == Reason::Unresolved {
-            return Err(u.silence);
-        }
-        Ok(BTreeSet::new())
-    }
-
-    /// 列の読み方で解いた場所のフィールドとその頭の局所。
+    /// 列の読み方で解いた場所のフィールドとその頭の局所。決まらなければ、決まらない名前とその沈黙。
     fn column_locals(&self, names: &[String]) -> Result<BTreeSet<String>, (String, Silence)> {
-        let c = self.after.column(names);
         let mut out = BTreeSet::new();
-        for n in c.ty.iter().chain(&c.walk.place) {
-            out.extend(self.element_locals(n).map_err(|s| (n.clone(), s))?);
-        }
-        if let Some(u) = c.walk.stop {
-            let at = names.get(c.walk.place.len()).or(names.last()).cloned().unwrap_or_default();
-            out.extend(self.undecided(self.after, &at, u).map_err(|s| (at.clone(), s))?);
+        for (n, place) in self.after.column_places(names) {
+            out.extend(self.locals(place).map_err(|s| (n, s))?);
         }
         Ok(out)
     }

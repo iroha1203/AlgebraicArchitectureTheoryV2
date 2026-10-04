@@ -4274,3 +4274,30 @@ fn a_removed_name_that_resolves_to_an_external_element_is_still_named() {
     let s = repo.run(&["plan", "check", "p"]);
     assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.f" && r["kind"] == "missing"), "{s}");
 }
+
+#[test]
+fn a_removed_field_under_a_column_whose_head_is_unknown_is_missing() {
+    // 頭 m.O は引数の型として名指されるだけで定義を読んでいない。列 [m.O.c, m.C.x] は最初の名前 m.O.c の答え(フィールド)で決め、
+    // その型 m.C から残りを道で解く。候補が m.C.x を消せば、変更後のその段はどの型も定義しないので、段の名前 m.C.x を名指す(設計 §3.3、§3.6)。
+    // 頭 m.O の定義が名前だけの要素でも(型として名指されず定義もない)、m.C を消せば、列の名前 m.C.x は頭が消える要素なので名指す。
+    let run = |name: &str, params: &str, plan: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map("m.py", &format!(
+            "{}{{\"kind\": \"defines\", \"subject\": \"m.g\", \"value\": \"operation\", \"params\": {params}, \"at\": \"m.py:10@blob:aaaaaaa\"}}\n",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.c", "value": "field", "type": "m.C", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.C", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.C.x", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "via": ["m.O.c"], "object": "m.C.x", "value": "1", "at": "m.py:11@blob:aaaaaaa"}
+"#
+        ));
+        repo.write(".archsig/plans/p/plan.jsonl", plan);
+        let s = repo.run(&["plan", "check", "p"]);
+        assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.g" && r["kind"] == "missing"), "{name}: {s}");
+    };
+    run("column-unknown-head-field", r#"{"o": "m.O"}"#, "{\"kind\": \"removes\", \"subject\": \"m.C.x\", \"at\": \"plan:p\"}\n");
+    run("column-bare-head-type", "{}", "{\"kind\": \"removes\", \"subject\": \"m.C\", \"at\": \"plan:p\"}\n");
+}

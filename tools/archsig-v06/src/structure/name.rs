@@ -762,6 +762,7 @@ impl Structure {
             }
             // 頭が名前だけの要素なら、列は字句どおりの名前の列である。各名前の答えは要素(名前)のものである。
             Ok(Answer::Bare(_)) => {
+                c.bare = true;
                 for n in &names[..known] {
                     match self.element(n) {
                         Ok(Answer::Bare(_) | Answer::External(_)) => {}
@@ -779,23 +780,34 @@ impl Structure {
                 }
             }
             // 外部の型のフィールドと、型でない要素のフィールドは分からない。読む所なし。
-            Ok(_) => c.walk.stop = Some(Unknown::unresolved(Why::Other)),
+            // 頭が型に決まらないとき、最初の段は書いたとおりの頭と最初の名前である。
+            Ok(_) => {
+                c.walk = Walk { stages: vec![first.clone()], types: head.into_iter().map(str::to_string).collect(), ..Walk::default() };
+                c.walk.stop = Some(Unknown::unresolved(Why::Other));
+            }
             // 頭が分からなければ、最初の名前の答え(要素(名前))で決める。フィールドに決まれば、その型から残りを道で解く。
-            Err(_) => match self.element(first) {
-                Ok(Answer::Element(e)) if e.kind == "field" => {
-                    let rest = &fields[1..];
-                    let mut w = match (&e.ty, rest.is_empty()) {
-                        (_, true) => Walk::default(),
-                        (Some(t), false) if !is_question(t) => self.walk(Start::Type(t), rest),
-                        (Some(_), false) => Walk { stop: Some(self.question_type(&e.name)), ..Walk::default() },
-                        (None, false) => Walk { stop: Some(Unknown::unresolved(Why::Other)), ..Walk::default() },
-                    };
-                    w.place.insert(0, e.name);
-                    c.walk = w;
+            Err(_) => {
+                let mut w = Walk { stages: vec![first.clone()], types: head.into_iter().map(str::to_string).collect(), ..Walk::default() };
+                match self.element(first) {
+                    Ok(Answer::Element(e)) if e.kind == "field" => {
+                        let rest = &fields[1..];
+                        let more = match (&e.ty, rest.is_empty()) {
+                            (_, true) => Walk::default(),
+                            (Some(t), false) if !is_question(t) => self.walk(Start::Type(t), rest),
+                            (Some(_), false) => Walk { stop: Some(self.question_type(&e.name)), ..Walk::default() },
+                            (None, false) => Walk { stop: Some(Unknown::unresolved(Why::Other)), ..Walk::default() },
+                        };
+                        w.place.push(e.name);
+                        w.place.extend(more.place);
+                        w.stages.extend(more.stages);
+                        w.types.extend(more.types);
+                        w.stop = more.stop;
+                    }
+                    Ok(_) => w.stop = Some(Unknown::unresolved(Why::Other)),
+                    Err(u) => w.stop = Some(u),
                 }
-                Ok(_) => c.walk.stop = Some(Unknown::unresolved(Why::Other)),
-                Err(u) => c.walk.stop = Some(u),
-            },
+                c.walk = w;
+            }
         }
         question(c)
     }
@@ -937,6 +949,8 @@ pub struct Column {
     /// 頭が型に決まれば、その型の名前。
     pub ty: Option<String>,
     pub walk: Walk,
+    /// 頭が名前だけの要素で、場所が字句どおりの名前の列か。
+    bare: bool,
 }
 
 /// フィールド一覧の答え。
@@ -947,4 +961,246 @@ pub struct FieldList {
     pub silence: Option<Silence>,
     /// 外部の型で、フィールドを持たないとみなした。
     pub external: bool,
+}
+
+/// 名指しの答え(設計 §3.6)。消える要素を名指せば、その名前を `gone` に持つ。名指す要素をたどれなかった所は、その沈黙を `gaps` に持つ
+/// (`?` の沈黙の Atom の場所は、Atom を持つ側が付ける)。
+#[derive(Clone, Debug, Default)]
+pub struct Naming {
+    pub gone: BTreeSet<String>,
+    pub gaps: Vec<Silence>,
+}
+
+impl Naming {
+    pub fn extend(&mut self, other: Naming) {
+        self.gone.extend(other.gone);
+        self.gaps.extend(other.gaps);
+    }
+}
+
+/// 要素の局所の元(設計 §6)。幾何は、この答えを読みの局所に写すだけである。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Place {
+    /// 定義した所(ソースのパス)。
+    Sources(BTreeSet<String>),
+    /// 曖昧な要素の定義した所。すべて一つの局所にあればその局所、なければ決まらない。
+    Ambiguous(BTreeSet<String>, Silence),
+    /// この要素の局所で見る(持ち主の操作、頭、段の型)。
+    Via(String),
+    /// 送る操作と受け取る操作の局所すべて(チャネルとその項目)。
+    Operations(BTreeSet<String>),
+    /// どの局所にも属さない。
+    Nowhere,
+    /// 決まらない。
+    Unknown(Silence),
+    /// 候補を重ねた構造と変更前の構造のどちらでも決まらない。どちらかで局所が決まらなければ決まらず、決まれば前者の局所(なければ後者の)。
+    Either(Box<Place>, Box<Place>),
+}
+
+impl Structure {
+    /// Atom の名前 `n` の名指し。`self` は変更後の構造、`prior` は変更前の構造、`gone` は消える要素かその下の名前かの判定。
+    /// 決まった要素はその名前を、名前だけの要素、外部の要素、名前そのものの定義(`defines` か `resolves`)で決まらないだけの名前は、字句どおりの名前を名指す。
+    /// 頭か持ち主が消える要素かその下の名前なら、その名前を名指す。段の「なければ」で決まらない名前は、段の名前か、変更前の構造で同じ名前を解いた要素を名指す。
+    /// それ以外(`?` の名前と、頭、持ち主、段で決まらない名前)は、名指す要素が決まらない。
+    pub fn name_naming(&self, prior: &Structure, gone: &dyn Fn(&str) -> bool, n: &str) -> Naming {
+        let mut out = Naming::default();
+        let u = match self.element(n) {
+            Ok(Answer::Element(e)) => {
+                if gone(&e.name) {
+                    out.gone.insert(e.name);
+                }
+                return out;
+            }
+            Ok(Answer::Bare(_) | Answer::External(_)) => {
+                if gone(n) {
+                    out.gone.insert(n.to_string());
+                }
+                return out;
+            }
+            Err(u) => u,
+        };
+        if u.itself {
+            if gone(n) {
+                out.gone.insert(n.to_string());
+            }
+            return out;
+        }
+        if self.head_of(n).is_some_and(|h| gone(&h)) {
+            out.gone.insert(n.to_string());
+            return out;
+        }
+        if let Some(s) = u.stage.as_ref().filter(|s| s.absent) {
+            let stage = s.full_name();
+            if gone(&stage) {
+                out.gone.insert(stage);
+                return out;
+            }
+            match prior.element(n) {
+                Ok(Answer::Element(e)) if gone(&e.name) => {
+                    out.gone.insert(e.name);
+                    return out;
+                }
+                Err(b) => {
+                    out.gaps.push(b.silence);
+                    return out;
+                }
+                _ => {}
+            }
+        }
+        out.gaps.push(u.silence);
+        out
+    }
+
+    /// `reads`・`writes` の `via` と `object` の列 `names` の名指し。列の読み方で解いた場所のフィールドとその頭を名指す。
+    /// 頭が名前だけの要素の列では、各名前を名前の名指しで見る。
+    pub fn column_naming(&self, prior: &Structure, gone: &dyn Fn(&str) -> bool, names: &[String]) -> Naming {
+        let c = self.column(names);
+        if !c.bare {
+            return self.walked(&c.walk, || prior.column(names).walk, gone);
+        }
+        let mut out = Naming::default();
+        let upto = if c.walk.stop.is_some() { c.walk.place.len() + 1 } else { c.walk.place.len() };
+        for n in names.iter().take(upto) {
+            if is_question(n) {
+                out.gaps.push(question());
+                break;
+            }
+            out.extend(self.name_naming(prior, gone, n));
+        }
+        out
+    }
+
+    /// 式の中の道 `$p.f…`(引数 `param` からフィールドの名前 `fields`)の名指し。道の場所のフィールドを名指す。
+    pub fn path_naming(&self, prior: &Structure, gone: &dyn Fn(&str) -> bool, param: &str, fields: &[String]) -> Naming {
+        let mut out = self.walked(&self.walk(Start::Param(param), fields), || prior.walk(Start::Param(param), fields), gone);
+        if gone(param) {
+            out.gone.insert(param.to_string());
+        }
+        out
+    }
+
+    /// 道か列の答え `walk` が名指す要素。決まったフィールドと、消える型の段の名前(`<型>.<名前>`)。
+    /// 止まった段がどの型も定義しないために決まらなければ、その段の名前か、変更前の構造の同じ道 `prior` のその段の要素を名指す。
+    fn walked(&self, walk: &Walk, prior: impl FnOnce() -> Walk, gone: &dyn Fn(&str) -> bool) -> Naming {
+        let mut out = Naming::default();
+        out.gone.extend(walk.place.iter().filter(|n| gone(n)).cloned());
+        // 段の型が消える要素かその下の名前なら、その段の名前も消える要素の下の名前である。
+        out.gone.extend(walk.stages.iter().zip(&walk.types).filter(|(_, t)| gone(t)).map(|(n, _)| n.clone()));
+        let Some(u) = &walk.stop else { return out };
+        let i = walk.place.len();
+        if u.stage.as_ref().is_some_and(|s| s.absent) {
+            if let Some(n) = walk.stages.get(i).filter(|n| gone(n)) {
+                out.gone.insert(n.clone());
+                return out;
+            }
+            let p = prior();
+            if p.stages.get(i).is_some() && p.stages.get(i) == walk.stages.get(i) {
+                match (p.place.get(i), &p.stop) {
+                    (Some(e), _) if gone(e) => {
+                        out.gone.insert(e.clone());
+                        return out;
+                    }
+                    (None, Some(b)) => {
+                        out.gaps.push(b.silence.clone());
+                        return out;
+                    }
+                    _ => {}
+                }
+            }
+        }
+        out.gaps.push(u.silence.clone());
+        out
+    }
+
+    /// 要素の局所の元(設計 §6)。`self` は候補を重ねた構造、`prior` は変更前の構造(候補がなければ同じ構造)。
+    /// 候補を重ねた列で決まればその定義した所、曖昧ならその定義した所。決まらなければ(名前だけの要素を含む)変更前の構造で解いた定義した所。
+    /// 変更前でも決まらなければ、二つの答えで決める。
+    pub fn place(&self, prior: &Structure, n: &str) -> Place {
+        // チャネルとその項目は、候補を重ねた後の列の送り受けする操作の局所すべてに属する。
+        if let Some(ops) = self.channel_operations(n) {
+            return Place::Operations(ops.clone());
+        }
+        let after = self.element(n);
+        match &after {
+            Ok(Answer::Element(f)) => return self.found_place(prior, f),
+            // 外部の要素は、どの局所にも属さない。
+            Ok(Answer::External(_)) => return Place::Nowhere,
+            Err(u) if u.why == Why::Ambiguous => return self.unknown_place(n, u.clone()),
+            _ => {}
+        }
+        let here = match after {
+            Err(u) => self.unknown_place(n, u),
+            _ => Place::Nowhere,
+        };
+        match prior.element(n) {
+            Ok(Answer::Element(f)) => prior.found_place(prior, &f),
+            Ok(Answer::External(_)) => Place::Nowhere,
+            Ok(Answer::Bare(_)) => here,
+            Err(u) => Place::Either(Box::new(here), Box::new(prior.unknown_place(n, u))),
+        }
+    }
+
+    /// 決まった要素の局所の元。引数と呼び出しは持ち主の操作で見る。チャネルは送り受けする操作で見る(上)。
+    /// 候補の中で定義し `file` のない要素は、変更前の構造で解いた定義した所。
+    fn found_place(&self, prior: &Structure, f: &Found) -> Place {
+        if matches!(f.kind.as_str(), "param" | "call")
+            && let Some(o) = &f.owner
+        {
+            return Place::Via(o.clone());
+        }
+        if f.kind == "channel" {
+            return Place::Nowhere;
+        }
+        if f.planned && f.defined.is_empty() {
+            // 変更前の構造そのものが候補の中で定義した要素(元の候補で `file` なしに定義した要素)は、たどる先がない。
+            if std::ptr::eq(self, prior) {
+                return Place::Nowhere;
+            }
+            return match prior.element(&f.name) {
+                Ok(Answer::Element(g)) => prior.found_place(prior, &g),
+                Err(u) => prior.unknown_place(&f.name, u),
+                Ok(_) => Place::Nowhere,
+            };
+        }
+        Place::Sources(f.defined.clone())
+    }
+
+    /// 要素(名前)が決まらないときの局所の元(設計 §6)。
+    fn unknown_place(&self, n: &str, u: Unknown) -> Place {
+        if u.why == Why::Ambiguous {
+            return Place::Ambiguous(u.defined, u.silence);
+        }
+        // `<T>.<f>` が段で決まらないか、頭 `T` が曖昧で決まらないなら、`T` の局所。
+        // `<T>.<f>` そのものの `resolves` で決まらなかったなら、その解決で見る(マニュアル第4章)。
+        if let Some(stage) = &u.stage
+            && !(stage.absent && (u.silence.read.is_some() || matches!(u.why, Why::Missing | Why::Undecided)))
+        {
+            return Place::Via(stage.ty.clone());
+        }
+        // 名前そのものの定義でなく、頭か持ち主で決まらないなら、頭で見る。引数と呼び出しは持ち主の操作で見る(マニュアル第4章)。
+        if u.stage.is_none()
+            && !u.itself
+            && let Some(h) = self.head_of(n)
+        {
+            return Place::Via(h);
+        }
+        // `unread` でソースを返すか、それ以外の `unresolved` なら、決まらない。名前そのものの読む所が名前だけの `unread` は、どの局所にも属さない。
+        if u.silence.read.is_some() || u.silence.reason == Reason::Unresolved {
+            return Place::Unknown(u.silence);
+        }
+        Place::Nowhere
+    }
+
+    /// `reads`・`writes` の `via` と `object` の列を列の読み方で解いた場所のフィールドとその頭の、局所の元。
+    /// 列が止まれば、止まった名前とその局所の元。名前は、決まらないときに返す名前である。
+    pub fn column_places(&self, names: &[String]) -> Vec<(String, Place)> {
+        let c = self.column(names);
+        let mut out: Vec<(String, Place)> = c.ty.iter().chain(&c.walk.place).map(|n| (n.clone(), Place::Via(n.clone()))).collect();
+        if let Some(u) = c.walk.stop {
+            let at = names.get(c.walk.place.len()).or(names.last()).cloned().unwrap_or_default();
+            let p = self.unknown_place(&at, u);
+            out.push((at, p));
+        }
+        out
+    }
 }
