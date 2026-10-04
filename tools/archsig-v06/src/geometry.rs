@@ -63,9 +63,11 @@ pub struct Geometry<'a> {
 impl<'a> Geometry<'a> {
     /// `defined` は要素の定義を探す Atom の列、`body` はチャネルを送り受けする操作を探す Atom の列。
     /// 候補の中で定義した要素は `file`、それ以外は `defines` の `at` のパスで定義される。
-    pub fn new(reading: &'a Reading, defined: &[Atom], body: &[Atom]) -> Geometry<'a> {
+    /// `partial` は、候補が定義し直した型で変更前に定義を読んでいなかったもの(`Structure::partial`)。
+    pub fn new(reading: &'a Reading, defined: &[Atom], body: &[Atom], partial: &BTreeMap<String, Silence>) -> Geometry<'a> {
         let kinds = |a: &&Atom| matches!(a.kind.as_str(), "defines" | "inherits" | "resolves" | "observed");
-        let inherited = Structure::new(body.iter().filter(kinds).cloned().collect());
+        let mut inherited = Structure::new(body.iter().filter(kinds).cloned().collect());
+        inherited.partial = partial.clone();
         let mut g = Geometry { reading, sources: BTreeMap::new(), channels: BTreeMap::new(), unknown: BTreeMap::new(), external: BTreeSet::new(), inherited };
         for a in defined.iter().filter(|a| a.kind == "defines") {
             let path = match &a.file {

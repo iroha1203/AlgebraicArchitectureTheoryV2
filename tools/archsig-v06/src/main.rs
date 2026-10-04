@@ -102,7 +102,8 @@ fn run(cli: Cli) -> Result<Value, String> {
             }
             let before = with_base(&store, store.map()?, &plan, &mut Vec::new())?;
             let o = overlay(&before, &store.plan(&plan)?);
-            let (b, a) = (Structure::new(before), Structure::new(o.after.clone()));
+            let (b, mut a) = (Structure::new(before), Structure::new(o.after.clone()));
+            a.partial = o.partial.clone();
             let sources = store.sources(&laws)?;
             let findings = engine::plan_check(&b, &a, &o, &laws, &sources, &sources);
             let not_computed = engine::not_computed(&laws);
@@ -120,7 +121,7 @@ fn run(cli: Cli) -> Result<Value, String> {
             let before = with_base(&store, store.map()?, &plan, &mut Vec::new())?;
             let atoms = store.plan(&plan)?;
             let o = overlay(&before, &atoms);
-            let split = Geometry::new(reading, &[before, atoms.clone()].concat(), &o.after).split(&atoms);
+            let split = Geometry::new(reading, &[before, atoms.clone()].concat(), &o.after, &o.partial).split(&atoms);
             let (findings, split) = engine::plan_split(&plan, &o, split, &laws);
             if let Some(split) = split {
                 let base = atoms.iter().find(|a| a.kind == "plan").and_then(|a| a.base.as_deref());

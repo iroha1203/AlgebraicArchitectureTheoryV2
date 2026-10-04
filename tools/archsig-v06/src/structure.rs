@@ -124,6 +124,9 @@ pub struct Structure {
     pub bases: BTreeMap<String, Vec<String>>,
     /// 読んだ範囲(ソース、範囲)。
     pub observed: BTreeSet<(String, String)>,
+    /// 候補が定義し直した型で、変更前に名指していて定義を読んでいなかったもの(外部を指していた型を除く)と、その変更前の沈黙。
+    /// 元のフィールドと受け継ぎが分からないので、受け継ぎを解くときに沈黙する(設計 §3.5、§5.4)。
+    pub partial: BTreeMap<String, Silence>,
     /// 操作ごとの手順の Atom(`atoms` の添字)。手順の順に並ぶ。
     bodies: BTreeMap<String, Vec<usize>>,
     /// `calls` の Atom(`atoms` の添字)ごとの、呼び出しの要素の名前。
@@ -465,6 +468,14 @@ impl Structure {
         if !self.elements.contains_key(ty) && !self.external(ty) && !self.external(&own) && (self.resolves.contains_key(ty) || (!defined && !self.resolves.contains_key(&own))) {
             self.kind(ty)?;
         }
+        // `ty` がモジュールかもしれず、`ty.name` の `resolves` がソースを指せば、3.3 のとおり `ty.name` で問い合わせる。
+        if !defined && !self.elements.contains_key(ty) && !self.resolves.contains_key(ty) && self.resolves.contains_key(&own) && !self.external(&own) {
+            self.kind(&own)?;
+        }
+        // 候補が定義し直した型で、変更前に定義を読んでいなかったものは、元のフィールドが分からない。
+        if !defined && let Some(e) = self.partial.get(ty) {
+            return Err(e.clone());
+        }
         if !self.bases.contains_key(ty) {
             return Ok(own);
         }
@@ -503,6 +514,10 @@ impl Structure {
         while let Some(b) = todo.pop() {
             if !seen.insert(b.clone()) {
                 continue;
+            }
+            if let Some(e) = self.partial.get(&b) {
+                internal.get_or_insert(e.clone());
+                blocked.get_or_insert(e.clone());
             }
             match self.kind(&b) {
                 Ok("type") => {}
@@ -572,6 +587,8 @@ impl Structure {
 /// 候補を重ねた結果(設計 §3.6)。
 #[derive(Clone, Debug, Default)]
 pub struct Overlay {
+    /// 候補が定義し直した型で、変更前に定義を読んでいなかったものと、その沈黙(`Structure::partial`)。
+    pub partial: BTreeMap<String, Silence>,
     /// 変更後の Atom の列。
     pub after: Vec<Atom>,
     /// 変更前の要素から変更後の要素への対応。行き先が一つとは限らない。
@@ -630,8 +647,19 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
     after.extend(plan.iter().filter(|a| a.is_structure()).cloned());
 
     let old = Structure::new(before.to_vec());
-    let new = Structure::new(after.clone());
+    let mut new = Structure::new(after.clone());
+    let old_names = old.mentioned();
+    // 候補が定義し直した型で、変更前に定義を読んでいなかったもの。元のフィールドと受け継ぎは分からない。
+    let partial: BTreeMap<String, Silence> = new
+        .atoms
+        .iter()
+        .filter(|a| a.kind == "defines" && a.at.as_deref().is_some_and(|at| at.starts_with("plan:")))
+        .filter(|a| new.redefines_unread_source(&old, &old_names, &a.subject))
+        .map(|a| (a.subject.clone(), old.kind(&a.subject).err().unwrap_or_else(|| Silence::new(Reason::Unread))))
+        .collect();
+    new.partial = partial.clone();
     let mut out = relate(&old, &new, before, &after, plan);
+    out.partial = partial;
     // 4. 対応の行き先へ、元の要素の意味 Atom を移す。
     //    触れていない要素の自分自身への対応では、意味 Atom はもう残っている。
     //    書き直した操作の引数は、候補の `params` で置き換わる。なくなった引数の意味 Atom は、移した後に元から外す。
@@ -651,7 +679,6 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
     // 書き直していない Atom は変更後にも残るので、道は変更後の構造(候補が書き直した型)でたどる。
     let kept: Vec<&Atom> = before.iter().filter(|a| !dropped(a)).collect();
     // 候補が定義し直した型で、変更前が名指していて定義を読んでいなかったもの(外部を指していた型を除く)は、その先をたどらない(§5.4 と同じ)。
-    let old_names = old.mentioned();
     trace(&new, &old, &kept, &|n: &str| replaced(n) || gone(n), &gone, &|t: &str| new.redefines_unread_source(&old, &old_names, t), &mut out);
     out
 }
