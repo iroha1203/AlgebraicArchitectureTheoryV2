@@ -1008,3 +1008,11 @@ import ResearchLean.AG.VisibleCycleReflection.IntegralLabelCoordinates
 import ResearchLean.AG.VisibleCycleReflection.VisibleCoordinates
 import ResearchLean.AG.VisibleCycleReflection.CechGraphComparison
 import ResearchLean.AG.VisibleCycleReflection.GraphH1Comparison
+
+import ResearchLean.AG.VisibleCycleReflection.GraphChains
+import ResearchLean.AG.VisibleCycleReflection.GraphBridge
+import ResearchLean.AG.VisibleCycleReflection.VisibleCycleCriterion
+import ResearchLean.AG.VisibleCycleReflection.IntegralVisibleReflection
+import ResearchLean.AG.VisibleCycleReflection.GraphPeriods
+import ResearchLean.AG.VisibleCycleReflection.ActualReflection
+import ResearchLean.AG.VisibleCycleReflection.ActualCounterinput

@@ -3,8 +3,9 @@
 一次仕様は `dd4e86f56cc1b64db8dfaf7eb2b0ed8e8293198d` の
 [固定GOAL](../goals/G-132-aat-visible-cycle-reflection.md) T0・A–C・W1–W3。
 共通基準・設計は `75319c99f8732c1993142735460334dcaed2c170`、既存宣言は
-`7547b0d1dc9d523e63c0e8596180dd61e6119529` を参照する。現main
-`a6f239eea22be47f1adec5f7200b081ef8b23320` まで参照対象のsource差分はない。
+`7547b0d1dc9d523e63c0e8596180dd61e6119529` を参照する。開始時main
+`a6f239eea22be47f1adec5f7200b081ef8b23320` とcycle 3 base
+`cdf08763d6f024287c82f1cea272ce1ce4a7af35` で参照対象のsource差分はない。
 
 ## Cycle 1 selection
 
@@ -429,3 +430,286 @@ placeholder、hidden/BiDi、privacy、語彙、FormalからResearchへのimport�
 F2に対し、新4moduleのImplementation notesへ定義形の理由と代替案を記した。
 査読済みsignature、def/instanceの値、import方向、ledger statusは変更していない。
 全84宣言の公理監査は標準公理のみ。修正後の直接対応資格と解消を別途固定headで確認する。
+
+## Cycle 3 selection
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-132-aat-visible-cycle-reflection
+cycle: 3
+goal_blob_sha: 4fb28b116ddd9f9d98cc03834d03a0a68b1ba49d
+base_oid: cdf08763d6f024287c82f1cea272ce1ce4a7af35
+tracking_issue: 5250
+report_path: research/reports/G-132-aat-visible-cycle-reflection.md
+selection:
+  proof_state_ref: Issue cycle2受理 comment5978799427・PR5254最終監査comment5978791850
+  proof_dag_predecessors: [cycle1の完全実nerveと生成被覆, cycle2の全実H1比較cast+res同定, G125整数floor補正]
+  milestone: BのB1⇔B2⇔B3と同じ実入力の整数補正および任意不可視非橋辺の実失敗入力
+  proof_obligations:
+    - 完全な幾何nerveをMathlib SimpleGraphへ接続し順序付き辺を同定
+    - 向き付きchain微分と可視部分のchain包含を構成
+    - Mathlib IsBridgeと有限連結成分数増加による橋の一致
+    - 橋における閉路chain係数零と非橋辺を一度通る閉路chain
+    - H1 chain包含全射と全非橋辺可視の同値
+    - 可視有理potentialから全グラフpotentialと整数補正を構成
+    - 任意不可視非橋辺から零診断かつ非零既存障害の実切断データを構成
+    - 全実ξ,pの零性反映とB2/B3の全方向およびp変更不変性
+  exit_criteria:
+    - B1/B2/B3を同じK/P/targetの任意T0実入力に適用した三条件同値
+    - 仮定B2またはB3と診断零から実d0 n=ξ+d0 pを証明
+    - 任意不可視非橋辺とラベルの単一辺基底実データ・閉路period非零・診断零
+    - GOALの橋定義との一致と部分グラフchain写像を省かない
+    - 全新宣言のfocused確認・公理監査・scanおよび独立査読
+  selection_reason: Aの比較からBの全入力必要十分条件へ直接接続しpotentialを実整数補正へ戻す
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [GraphChains.lean, GraphBridge.lean, VisibleCycleCriterion.lean, IntegralVisibleReflection.lean, ActualReflection.lean]
+  risks: [橋と連結成分数の不一致, 同じtarget部分graph包含, 全実データ量化縮小, 有理potentialを全辺へ拡張せずfloor, 抽象graphだけで実入力省略]
+  unchecked: [Bの未実装義務, 状態層は後続独立構成義務, C/W1–W3/最終completion未完]
+```
+
+状態層・局所自明化・大域貼り合わせは本cycleの同値・整数補正を使う後続の構成義務として保持する。
+B全体やGOAL全体の完了は、この到達点だけでは認定しない。
+
+## Cycle 3 の構成と対応
+
+cycle 2は[最終監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5254#issuecomment-5978791850)
+後に通常mergeされ、[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5250#issuecomment-5978799427)
+で選定Aの受理を記録した。以下はcycle 3の新しい到達点である。
+
+| GOALの条項 | 入力からの構成・証拠 | 宣言／使用先 |
+| --- | --- | --- |
+| 完全nerveから単純グラフ | 異なるchartの実交差を隣接とし全順序付き辺へ同定 | `GeometricCover.graph`, `graphEdgeEquiv` と両端点API |
+| B2のchain写像 | 右端delta−左端deltaの有限線形incidence、部分集合のzero extension、次数0も可換 | `Graph.boundary`, `visibleBoundary_formula`, `boundary_zeroExtend_comm`, `h1Inclusion` |
+| 橋の定義一致 | 削除→原graphの連結成分写像は全射、橋で非単射、非橋で単射 | `Graph.isBridge_iff_component_count` |
+| B2⇔B3 | 橋cutのd0は単一辺delta、閉路係数は橋で零。非橋は削除後pathから一回閉路 | `cycle_bridge_coefficient`, `exists_once_cycle`, `h1Inclusion_surjective_iff_nonbridge_visible` |
+| 可視potential→全辺potential | 零延長の残差は橋だけに支持され、有限cut和で補う | `Graph.d0_bridgePrimitive`, `exists_full_potential` |
+| 整数補正 | 全辺差を証明してG125 floorを適用、整数座標と実切断同値の逆で戻す | `Graph.exists_integral_correction`, `GeometricCover.exists_actual_integral_correction` |
+| B1の十分性・必要性 | 実生成coverの全ξ,p。零診断のpotentialと任意不可視非橋辺の実失敗入力 | `input_reflection_iff_nonbridge_visible`, `input_reflection_iff_homology_surjective` |
+| 必要性の実入力 | 原始商基底を単一実辺の定数切断へ復元、p=0。独立診断cochain零・既存障害非零 | `singleEdgeData`, `singleEdgeData_transition_value`, `singleEdgeData_diagnostic_mismatch_zero`, `singleEdgeData_existing_nonzero` |
+| 原始係数のperiod | 実transitionの評価を向きに従って加算、係数比較で標準chain pairingと一致 | `Graph.walkPeriod`, `map_walkPeriod`, `singleEdgeData_period`, `exists_actual_counterinput` |
+| pのみの変更 | 任意二状態差を既存adjustLocalStateに戻し既存障害と独立診断の不変性 | `existingDescent_eq_of_transition_eq`, `diagnostic_eq_of_transition_eq` |
+
+`GraphChains`・`GraphBridge`・`VisibleCycleCriterion`・`IntegralVisibleReflection`は
+独立に再利用できる有限単純グラフの補題。`ActualReflection`と`ActualCounterinput`は
+同じ原始P、K、targetから生成した実AAT入力への接続を担う。原始値のperiodを
+有理観測だけで代替しないため、内部依存として`GraphPeriods`を追加した。
+選定milestone・終了条件・量化は変更していない。
+
+G125の`IntegralReflection.exists_integral_correction`は、指定predecessorからsource差分なし、
+blob `c862d40514cc988a878db98f4189b1c64dca6dc0`。実際の前提は全辺で整数差に等しい
+有理potentialであり、本cycleの全辺拡張の後で使用する。
+共通代表条件を要するG125の反映定理は使用しない。
+
+### Cycle 3 material premise と proof-use
+
+| premise | 分類・出所 | 使用・放電 |
+| --- | --- | --- |
+| Source/Lawの有限性・adequate reading・原始R・Rq | ambient-boundary / T0 | cycle2整数座標と原始basis、独立Law診断、全実入力に適用 |
+| I有限・順序と実被覆K、target台 | ambient-boundary / T0 | 全実隣接と向き・有限chain和・成分数比較。targetは先に固定 |
+| generic部分集合の端点閉性 | direction-hypothesis / subgraph入力 | 実適用では`visibleEdge_left/right`が同じedgeSupportのtargetから放電 |
+| B2/B3 | direction-hypothesis / GOAL B | 一般十分性だけで保持し、全実反映から任意単一辺反例でB3を導出 |
+| 可視有理potential | discharge-required | 診断quotient零からrange証人、既存比較factorizationで生成 |
+| 全有理potential・整数補正 | discharge-required | 橋のcut和→全辺式→既存floor→actual切断inverse |
+| 原始係数period・実失敗入力 | discharge-required | basis・actual section inverse・mathlib deleted-edge path→simple cycle→period非零 |
+| face空性・continuous support・実restriction | discharge-required / A | cycle1の同じ完全実coverから供給、cycle2の比較と正規化を使用 |
+
+### Cycle 3 result（独立査読前のproposal）
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: B2/B3の全方向と橋定義一致から同じ実入力のB1全量化・整数補正・任意単一辺失敗入力へ接続
+  exit_criteria_status:
+    - B1⇔B2⇔B3: input_reflection_iff_nonbridge_visible / input_reflection_iff_homology_surjective / input_homology_iff_nonbridge_visible
+    - 実整数補正: exists_actual_integral_correction
+    - 不可視非橋辺の実失敗入力と一回閉路period: exists_actual_counterinput
+    - 橋定義とchain写像: isBridge_iff_component_count / boundary_zeroExtend_comm
+    - 検証と査読: fixed headのfocused・全明示宣言print・scans、標準4laneはPR後
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [GraphChains.lean, GraphBridge.lean, VisibleCycleCriterion.lean, IntegralVisibleReflection.lean, GraphPeriods.lean, ActualReflection.lean, ActualCounterinput.lean]
+  evidence: [以下のcycle3 spine declaration listと上表の条項接続]
+  claim_mapping:
+    theorem_names: [input_reflection_iff_nonbridge_visible, input_reflection_iff_homology_surjective, exists_actual_integral_correction, exists_actual_counterinput]
+    source_labels: [T0, B1, B2, B3, B整数補正, B必要性実入力, B状態変更不変性]
+    conjuncts: [全actual ξ/pでの反映, chain包含全射, 非橋辺可視, actual整数補正, 単一辺actual基底と一回閉路, 独立診断零と既存障害非零]
+    undischarged_assumptions: []
+    acceptance_point: 選定到達点を全方向と同じ実入力への接続まで証明したproposal
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [端点閉性, 橋と成分数定義の一致, 全有理potential, actual整数補正, 任意単一辺actual入力とperiod, B1からB3必要性]
+    remaining: [B状態層と局所自明化・gluing, C有限表と探索, W1–W3]
+  certificate_provenance:
+    discharged: [Raw K/P/target→graph/visible subsets→chain inclusion, independent診断零→potential→floor→actual切断, basis→単一actual辺→deleted-edge path→period]
+    unresolved: []
+  proof_use:
+    used: [Rqとbasis/整数座標, adequacyと同じtarget発生, 有限Iとchain和/成分数, B3と橋残差, 完全face空性と全transition, 既存比較とdescent対応]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [対象7fileのfocused, 全123明示新宣言のprint axioms, scans, PR固定headのCI]
+  blocking_findings: []
+  next_obligation: Bのアフィン状態層・局所自明化・actual gluing、続いてCとW1–W3
+```
+
+Bの状態層・局所自明化・自由かつ推移的な作用・大域状態の非空性との同値は
+未完。C、W1–W3、Formal移植、独立全GOALcompletion判定も未完。
+本cycleの成功だけで全目標を完了としない。
+
+### Cycle 3 spine declaration list
+
+```text
+AAT.AG.VisibleCycleReflection.Graph.Edge
+AAT.AG.VisibleCycleReflection.Graph.edgeFintype
+AAT.AG.VisibleCycleReflection.Graph.left
+AAT.AG.VisibleCycleReflection.Graph.right
+AAT.AG.VisibleCycleReflection.Graph.unoriented
+AAT.AG.VisibleCycleReflection.Graph.left_lt_right
+AAT.AG.VisibleCycleReflection.Graph.adj
+AAT.AG.VisibleCycleReflection.Graph.edge_ext
+AAT.AG.VisibleCycleReflection.Graph.vertexUnit
+AAT.AG.VisibleCycleReflection.Graph.edgeUnit
+AAT.AG.VisibleCycleReflection.Graph.vertexUnit_apply
+AAT.AG.VisibleCycleReflection.Graph.edgeUnit_apply
+AAT.AG.VisibleCycleReflection.Graph.boundary
+AAT.AG.VisibleCycleReflection.Graph.boundary_apply
+AAT.AG.VisibleCycleReflection.Graph.boundary_edgeUnit
+AAT.AG.VisibleCycleReflection.Graph.H1
+AAT.AG.VisibleCycleReflection.Graph.d0
+AAT.AG.VisibleCycleReflection.Graph.d0_apply
+AAT.AG.VisibleCycleReflection.Graph.hopChain
+AAT.AG.VisibleCycleReflection.Graph.hopChain_of_lt
+AAT.AG.VisibleCycleReflection.Graph.hopChain_of_not_lt
+AAT.AG.VisibleCycleReflection.Graph.boundary_hopChain
+AAT.AG.VisibleCycleReflection.Graph.walkChain
+AAT.AG.VisibleCycleReflection.Graph.walkChain_nil
+AAT.AG.VisibleCycleReflection.Graph.walkChain_cons
+AAT.AG.VisibleCycleReflection.Graph.boundary_walkChain
+AAT.AG.VisibleCycleReflection.Graph.boundary_pairing
+AAT.AG.VisibleCycleReflection.Graph.cycle_pairing_d0
+AAT.AG.VisibleCycleReflection.Graph.hopChain_eq_zero
+AAT.AG.VisibleCycleReflection.Graph.walkChain_eq_zero
+AAT.AG.VisibleCycleReflection.Graph.closedWalkH1
+AAT.AG.VisibleCycleReflection.GeometricCover.graph
+AAT.AG.VisibleCycleReflection.GeometricCover.graph_adj
+AAT.AG.VisibleCycleReflection.GeometricCover.graphEdgeEquiv
+AAT.AG.VisibleCycleReflection.GeometricCover.graphEdgeEquiv_left
+AAT.AG.VisibleCycleReflection.GeometricCover.graphEdgeEquiv_right
+AAT.AG.VisibleCycleReflection.Graph.unoriented_injective
+AAT.AG.VisibleCycleReflection.Graph.withoutEdge
+AAT.AG.VisibleCycleReflection.Graph.withoutEdge_adj
+AAT.AG.VisibleCycleReflection.Graph.withoutEdge_le
+AAT.AG.VisibleCycleReflection.Graph.isBridge_iff_not_reachable
+AAT.AG.VisibleCycleReflection.Graph.other_edge_reachable
+AAT.AG.VisibleCycleReflection.Graph.cutPotential
+AAT.AG.VisibleCycleReflection.Graph.cutPotential_apply
+AAT.AG.VisibleCycleReflection.Graph.cutPotential_eq_of_reachable
+AAT.AG.VisibleCycleReflection.Graph.d0_cutPotential
+AAT.AG.VisibleCycleReflection.Graph.cycle_bridge_coefficient
+AAT.AG.VisibleCycleReflection.Graph.exists_once_cycle
+AAT.AG.VisibleCycleReflection.Graph.reachable_withoutEdge_of_endpoints
+AAT.AG.VisibleCycleReflection.Graph.componentMap
+AAT.AG.VisibleCycleReflection.Graph.componentMap_mk
+AAT.AG.VisibleCycleReflection.Graph.componentMap_surjective
+AAT.AG.VisibleCycleReflection.Graph.componentMap_injective_of_not_bridge
+AAT.AG.VisibleCycleReflection.Graph.componentMap_not_injective_of_bridge
+AAT.AG.VisibleCycleReflection.Graph.isBridge_iff_component_count
+AAT.AG.VisibleCycleReflection.zeroExtend
+AAT.AG.VisibleCycleReflection.zeroExtend_mem
+AAT.AG.VisibleCycleReflection.zeroExtend_not_mem
+AAT.AG.VisibleCycleReflection.sum_zeroExtend
+AAT.AG.VisibleCycleReflection.Graph.visibleBoundary
+AAT.AG.VisibleCycleReflection.Graph.visibleBoundary_apply
+AAT.AG.VisibleCycleReflection.Graph.visibleBoundary_formula
+AAT.AG.VisibleCycleReflection.Graph.boundary_zeroExtend_outside
+AAT.AG.VisibleCycleReflection.Graph.boundary_zeroExtend_comm
+AAT.AG.VisibleCycleReflection.Graph.VisibleH1
+AAT.AG.VisibleCycleReflection.Graph.h1Inclusion
+AAT.AG.VisibleCycleReflection.Graph.h1Inclusion_val
+AAT.AG.VisibleCycleReflection.Graph.h1Inclusion_outside
+AAT.AG.VisibleCycleReflection.Graph.h1Inclusion_surjective_iff
+AAT.AG.VisibleCycleReflection.Graph.h1Inclusion_surjective_iff_nonbridge_visible
+AAT.AG.VisibleCycleReflection.Graph.bridgePrimitive
+AAT.AG.VisibleCycleReflection.Graph.bridgePrimitive_apply
+AAT.AG.VisibleCycleReflection.Graph.d0_bridgePrimitive
+AAT.AG.VisibleCycleReflection.Graph.visibleD0
+AAT.AG.VisibleCycleReflection.Graph.visibleD0_apply
+AAT.AG.VisibleCycleReflection.Graph.d0_zeroExtend_visible
+AAT.AG.VisibleCycleReflection.Graph.exists_full_potential
+AAT.AG.VisibleCycleReflection.Graph.exists_integral_correction
+AAT.AG.VisibleCycleReflection.Graph.hopValue
+AAT.AG.VisibleCycleReflection.Graph.walkPeriod
+AAT.AG.VisibleCycleReflection.Graph.walkPeriod_nil
+AAT.AG.VisibleCycleReflection.Graph.walkPeriod_cons
+AAT.AG.VisibleCycleReflection.Graph.hopValue_vertex_difference
+AAT.AG.VisibleCycleReflection.Graph.walkPeriod_vertex_difference
+AAT.AG.VisibleCycleReflection.Graph.map_hopValue
+AAT.AG.VisibleCycleReflection.Graph.map_walkPeriod
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.ActualCechAffineLocalData.actualClass_generation
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.ActualCechAffineLocalData.actualCocycle_value
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.ActualCechAffineLocalData.adjustLocalState_generation
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.ActualCechAffineLocalData.existingDescent_zero_iff_correction
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.ActualCechAffineLocalData.existingDescent_eq_of_transition_eq
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.ActualCechAffineLocalData.diagnostic_eq_of_transition_eq
+AAT.AG.VisibleCycleReflection.GeometricCover.visibleVertexSet
+AAT.AG.VisibleCycleReflection.GeometricCover.visibleEdgeSet
+AAT.AG.VisibleCycleReflection.GeometricCover.visibleEdge_left
+AAT.AG.VisibleCycleReflection.GeometricCover.visibleEdge_right
+AAT.AG.VisibleCycleReflection.GeometricCover.actualVisibleEdgeEquiv
+AAT.AG.VisibleCycleReflection.GeometricCover.actualVisibleEdgeEquiv_val
+AAT.AG.VisibleCycleReflection.GeometricCover.visible_d0_actual
+AAT.AG.VisibleCycleReflection.GeometricCover.graphMismatch
+AAT.AG.VisibleCycleReflection.GeometricCover.graphMismatch_apply
+AAT.AG.VisibleCycleReflection.GeometricCover.visible_potentials_of_diagnostic_zero
+AAT.AG.VisibleCycleReflection.GeometricCover.exists_actual_integral_correction
+AAT.AG.VisibleCycleReflection.GeometricCover.input_reflection_of_nonbridge_visible
+AAT.AG.VisibleCycleReflection.GeometricCover.input_homology_iff_nonbridge_visible
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.ActualCechAffineLocalData.diagnosticClass_generation
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.ActualCechAffineLocalData.diagnosticCocycle_value
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.ActualCechAffineLocalData.diagnosticClass_zero_of_mismatch_zero
+AAT.AG.VisibleCycleReflection.GeometricCover.singleEdgeData
+AAT.AG.VisibleCycleReflection.GeometricCover.singleEdgeData_transition
+AAT.AG.VisibleCycleReflection.GeometricCover.singleEdgeData_localState
+AAT.AG.VisibleCycleReflection.GeometricCover.singleEdgeData_transition_value
+AAT.AG.VisibleCycleReflection.GeometricCover.singleEdgeData_mismatch
+AAT.AG.VisibleCycleReflection.GeometricCover.singleEdgeData_normalized
+AAT.AG.VisibleCycleReflection.GeometricCover.singleEdgeData_diagnostic_mismatch_zero
+AAT.AG.VisibleCycleReflection.GeometricCover.singleEdgeData_diagnostic_zero
+AAT.AG.VisibleCycleReflection.GeometricCover.actualTransitionPeriod
+AAT.AG.VisibleCycleReflection.GeometricCover.actualTransitionPeriod_apply
+AAT.AG.VisibleCycleReflection.GeometricCover.singleEdgeData_period
+AAT.AG.VisibleCycleReflection.GeometricCover.singleEdgeData_existing_nonzero
+AAT.AG.VisibleCycleReflection.GeometricCover.exists_actual_counterinput
+AAT.AG.VisibleCycleReflection.GeometricCover.input_reflection_iff_nonbridge_visible
+AAT.AG.VisibleCycleReflection.GeometricCover.input_reflection_iff_homology_surjective
+```
+
+Cycle 3検証：7対象fileのfocused elaborationは成功。namespace標準公理監査は
+GraphChains 36、GraphBridge 19、VisibleCycleCriterion 15、IntegralVisibleReflection 8、
+GraphPeriods 9、ActualReflection 13、ActualCounterinput 18。生成内部宣言と別owner namespaceの
+基本APIの扱いが異なるため、この件数は明示spine宣言の単純和ではない。
+明示123新宣言（元namespaceの9基本APIを含む）のsource/report/list/実print出力は全件一致し、
+標準3公理のみ。実print出力SHA256 `462689d218b6dda326675379479e067c948defd11cf2fb1b81d822d750e84750`。
+全7新moduleをmanifestとAG importに登録し、aggregateはelaborateしない。
+placeholder/hidden/BiDi/privacy/語彙/diff/import方向scanはclean。
+Research import gateは228modulesを静的に走査して成功。
+G125 IntegralReflectionのみのtargeted module check成功（3701jobs、全体buildではない）。
+Research full/aggregateおよびローカルFormal full buildは不実行。
+正式4laneとCIはPRの固定headで確認する。
+
+### Cycle 3 初回査読と非中心API修正
+
+[初回正式監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5255#issuecomment-5979282446)
+はhead `ae3ceee1b1fd26487a758c4f59ec2d817a540954` を4laneで確認した。
+数学BはNo major findings、数学A・LeanA/Bは同じ非中心F1のみでMinor issues。
+中心claimのstatement強度・全入力・premise放電・実入力provenanceにfindingはない。
+F1はGraphBridge/GraphPeriodsで他moduleの`hopChain`を展開するAPI欠落である。
+名指しされた順序別公開API `hopChain_of_lt` / `hopChain_of_not_lt` だけをGraphChainsへ追加し、
+指摘された2consumerを置換した。既存statementとdef/instance値・import・statusは維持する。
+修正対象3fileと実入力topのfocused確認は成功し、全123明示宣言の公理監査は標準3公理のみ。
+直接対応の資格・解消は新しい単一確認subagentが固定headで判定する。
