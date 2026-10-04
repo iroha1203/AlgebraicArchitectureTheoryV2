@@ -637,6 +637,12 @@ pub enum Gap {
 
 /// ArchMap の Atom の列 `before` に、候補の Atom の列 `plan` を重ねる(設計 §3.6)。
 pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
+    overlay_on(before, plan, &BTreeMap::new())
+}
+
+/// `overlay` の、元の候補を重ねた列の上で重ねるもの。`base_partial` は元の候補が定義し直した未読の型(`Structure::partial`)で、
+/// 変更前の構造にも変更後の構造にも持たせる。
+pub fn overlay_on(before: &[Atom], plan: &[Atom], base_partial: &BTreeMap<String, Silence>) -> Overlay {
     // 候補が構造 Atom を書いた要素は、元の Atom をすべて外す。`resolves` は置き換えを起こさない。
     let rewritten: BTreeSet<&str> = plan.iter().filter(|a| a.is_structure() && a.kind != "resolves").map(|a| a.subject.as_str()).collect();
     let replaced = |name: &str| rewritten.iter().any(|x| name == *x || name.starts_with(&format!("{x}->")));
@@ -646,7 +652,8 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
     let mut after: Vec<Atom> = before.iter().filter(|a| !dropped(a)).cloned().collect();
     after.extend(plan.iter().filter(|a| a.is_structure()).cloned());
 
-    let old = Structure::new(before.to_vec());
+    let mut old = Structure::new(before.to_vec());
+    old.partial = base_partial.clone();
     let mut new = Structure::new(after.clone());
     let old_names = old.mentioned();
     // 候補が定義し直した型で、変更前に定義を読んでいなかったもの。元のフィールドと受け継ぎは分からない。
@@ -656,6 +663,7 @@ pub fn overlay(before: &[Atom], plan: &[Atom]) -> Overlay {
         .filter(|a| a.kind == "defines" && a.at.as_deref().is_some_and(|at| at.starts_with("plan:")))
         .filter(|a| new.redefines_unread_source(&old, &old_names, &a.subject))
         .map(|a| (a.subject.clone(), old.kind(&a.subject).err().unwrap_or_else(|| Silence::new(Reason::Unread))))
+        .chain(base_partial.iter().map(|(k, v)| (k.clone(), v.clone())))
         .collect();
     new.partial = partial.clone();
     let mut out = relate(&old, &new, before, &after, plan);
@@ -937,7 +945,8 @@ impl Structure {
                         break;
                     }
                     // `stop` の型は、直下のフィールドの名前(`<型>.<名前>`)は決まるが、その先は決まらない。
-                    if stop(&t) {
+                    // 受け継ぎを持てば、直下の名前も受け継がれる型のフィールドかもしれないので、受け継ぎの解決(`partial` で沈黙する)に任せる。
+                    if stop(&t) && !self.bases.contains_key(&t) {
                         out.insert(format!("{t}.{f}"));
                         gaps.push(Gap::Redefined(t));
                         break;

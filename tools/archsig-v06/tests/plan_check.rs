@@ -4784,3 +4784,59 @@ fn a_field_name_resolved_to_a_source_with_a_type_without_resolves_is_asked_by_th
     assert_eq!(r["outcome"], "silent", "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
 }
+
+/// m.C の定義は読んでいない c.py にある。m.h(c: m.C) は `body` の Atom を持つ。候補 `redefine` は m.C を c.py に定義し直して m.P を受け継がせる。
+fn redefined_with_inheritance(name: &str, body: &str, plans: &[(&str, &str)]) -> Value {
+    let repo = Repo::new(name);
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", &format!("{}{body}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.C", "object": "c.py", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.P", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.P.t", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.P.t", "meaning": "payment-info", "uses": ["m.py:21@blob:aaaaaaa"], "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.u", "value": "field", "type": "int", "at": "m.py:9@blob:aaaaaaa"}
+"#));
+    for (plan, atoms) in plans {
+        repo.write(&format!(".archsig/plans/{plan}/plan.jsonl"), atoms);
+    }
+    repo.run(&["plan", "check", plans.last().unwrap().0])
+}
+
+const REDEFINE_WITH_INHERITANCE: &str = r#"{"kind": "defines", "subject": "m.C", "value": "type", "file": "c.py", "at": "plan:p"}
+{"kind": "inherits", "subject": "m.C", "object": "m.P", "at": "plan:p"}
+"#;
+
+#[test]
+fn a_path_through_a_type_redefined_with_inheritance_is_not_cut_at_the_literal_name() {
+    // 候補が m.C を受け継ぎ付きで定義し直し、m.C.t を消す。書き直していない m.h は o.u に $c.t を書く。
+    // $c.t は元の m.C の t か m.P.t かが決まらないので、`missing` と結論しない。
+    let body = r#"{"kind": "defines", "subject": "m.h", "value": "operation", "params": {"c": "m.C", "o": "m.O"}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.h", "object": "m.O.u", "value": "$c.t", "at": "m.py:21@blob:aaaaaaa"}
+"#;
+    let plan = format!("{REDEFINE_WITH_INHERITANCE}{{\"kind\": \"removes\", \"subject\": \"m.C.t\", \"at\": \"plan:p\"}}\n");
+    let s = redefined_with_inheritance("path-through-redefined-with-inheritance", body, &[("p", &plan)]);
+    assert!(!s["results"].as_array().unwrap().iter().any(|r| r["kind"] == "missing"), "{s}");
+    assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.h" && r["outcome"] == "silent"), "{s}");
+}
+
+#[test]
+fn a_type_redefined_in_a_base_plan_does_not_settle_the_inheritance() {
+    // 元の候補 b が m.C を受け継ぎ付きで定義し直す。上の候補 p(元は plan:b)が m.P.t を消す。書き直していない m.h は m.C.t を読む。
+    // 一つの候補と同じく、元の m.C が t を定義するかは c.py で決まるので、`missing` と結論しない。
+    let body = r#"{"kind": "defines", "subject": "m.h", "value": "operation", "params": {"c": "m.C"}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "reads", "subject": "m.h", "object": "m.C.t", "at": "m.py:21@blob:aaaaaaa"}
+"#;
+    let base = REDEFINE_WITH_INHERITANCE.replace("plan:p", "plan:b");
+    let s = redefined_with_inheritance(
+        "base-plan-redefined-with-inheritance",
+        body,
+        &[("b", &base), ("p", "{\"kind\": \"plan\", \"subject\": \"p\", \"base\": \"plan:b\"}\n{\"kind\": \"removes\", \"subject\": \"m.P.t\", \"at\": \"plan:p\"}\n")],
+    );
+    assert!(!s["results"].as_array().unwrap().iter().any(|r| r["kind"] == "missing"), "{s}");
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.h" && r["law"].is_null()).unwrap_or_else(|| panic!("{s}"));
+    assert_eq!(r["outcome"], "silent", "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c.py"), "{s}");
+}
