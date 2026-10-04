@@ -112,17 +112,17 @@ theorem restore_values (p : Permissions) (v : Values) (b : SplitCorrections)
     rw [he]
     have h := native_inverse_correction true (v false) (v true) (allowed p)
       ⟨W1NumericalEquation.parameters (collapse b),(equation_iff p v (collapse b)).mp ((validOutput_some_iff _ _ _ _).mp hb)⟩ (name edgeE)
-    simpa [parameters_u,collapse_zero,W1AuthoredOperations.correctionValue,name,edgeE,geometry] using h
+    simpa [parameters_u,collapse_zero,correctionValue_e,name_value] using h
   · change kernelCoordinate true (v false) (v true) () _ = b 1
     rw [hz]
     have h := native_inverse_correction true (v false) (v true) (allowed p)
       ⟨W1NumericalEquation.parameters (collapse b),(equation_iff p v (collapse b)).mp ((validOutput_some_iff _ _ _ _).mp hb)⟩ (name edgeB)
-    simpa [parameters_z,collapse_two,W1AuthoredOperations.correctionValue,name,edgeE,edgeA,edgeB,geometry] using h
+    simpa [parameters_z,collapse_two,correctionValue_b,name_value] using h
   · change kernelCoordinate true (v false) (v true) () _ = b 2
     rw [hv]
     have h := native_inverse_correction true (v false) (v true) (allowed p)
       ⟨W1NumericalEquation.parameters (collapse b),(equation_iff p v (collapse b)).mp ((validOutput_some_iff _ _ _ _).mp hb)⟩ (name edgeC)
-    simpa [parameters_v,collapse_three,W1AuthoredOperations.correctionValue,name,edgeE,edgeA,edgeB,edgeC,geometry] using h
+    simpa [parameters_v,collapse_three,correctionValue_c,name_value] using h
   · exact hf.1
   · exact hf.2
 

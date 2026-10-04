@@ -1467,3 +1467,30 @@ current source SHA256は `61e4ecc24c5062440b0e91ffe4890edda73e8038d24570e85c29ea
 `lake env lean .tmp/G131Cycle11/W1NumericalEquationProjectionAudit.lean`。
 終了結果・33個別公理・対象限定新規確認・必要CI・root acceptanceをPRで固定してから、
 別packetと新規正式最終四本へ進む。完了判定をこの直接確認だけで更新しない。
+
+## C11 最終累積 gate 第四回の API と代表監査の修正
+
+head `f57c744454ed695a62e068b806141652041aa381` の全四本を収集した
+[第四回監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5975060125)は、
+数学A/B・LeanAが `No major findings`、LeanBが非中心三件により `Minor issues`。
+全A–E・全前提・個別公理の中心未確認は空だが、正式完了判定はcheckpointを維持する。
+
+LB-1の `W1SubdivisionValues.restore_values` 三分岐を既存
+`correctionValue_e/b/c/name_value` へ接続し、LB-2の
+`W1NumericalEquation.solvable_iff` 二箇所を既存 `parameters_u/z/v` へ接続した。
+既存statement・全五分割値・全可解性・def/instance値・import・宣言数・台帳statusは不変。
+両sourceのactual checkと現在全文prefixの単一 `Final5Audit.lean` checksは各exit0、
+warning/errorなし、33名＋9名の個別公理は標準のみで前版rawとbyte同一。
+
+| source | current source SHA256 | current raw SHA256 |
+| --- | --- | --- |
+| `W1NumericalEquation.lean` | `a0e98868dbc579eaaf1179168ba475e598a982c1827ee45efff10c73776cc2c8` | `4223fb351585c1839c46526fbed367327f7c94a2751dc2666561903ae2ffb8fe` |
+| `W1SubdivisionValues.lean` | `c75c92579ec8144c859348a64f640dcb2acf10046f900c73035f205e85bd2323` | `f27a4822ccab92bfbb61ef3dc6352ea3360e408a006db1aeb43f0cedb73a522a` |
+
+LB-3の `PrimitiveQueries` 代表監査は、同じcurrent source全文prefixから全30qualified名を
+個別printした保存監査へ統一する。audit SHA256は
+`c8232c3742355e7787dbe0cab6a9d31070d5a96471cd940a16618b9d6a10f8ce`、raw SHA256は
+`164ffd7b7a8254c83cc919ecb3d3354ae71c43223965323b5d1d1509b529a411`。
+以前の個別manifestと公開rawにも全名は存在し、宣言の削除や公理監査の省略で解消していない。
+全55source/751明示＋AST65＝816個別名は不変。対象限定の新規資格確認・必要CI・root acceptance後、
+修正headの別packetから新規正式四本で全累積を再判定する。Research full buildは実行しない。

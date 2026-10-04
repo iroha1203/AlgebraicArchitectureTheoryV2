@@ -198,8 +198,8 @@ theorem solvable_iff (p : Permissions) (v : Values) :
     have hv := h.2.2 (by simpa [c_mem] using hc)
     change a 2 = 0 at hz
     change a 3 = 0 at hv
-    have hx : a 0 = v false := by simpa [parameters,hz] using h.1.1
-    have hy : a 0 = v true := by simpa [parameters,hz,hv] using h.1.2
+    have hx : a 0 = v false := by simpa [parameters_u,parameters_z,hz] using h.1.1
+    have hy : a 0 = v true := by simpa [parameters_u,parameters_z,parameters_v,hz,hv] using h.1.2
     exact Or.inl (hy.symm.trans hx)
   · rintro (he | hb | hc)
     · refine ⟨![v false,0,0,0],?_⟩
