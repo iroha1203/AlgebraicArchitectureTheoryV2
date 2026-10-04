@@ -4960,3 +4960,24 @@ fn a_path_through_a_parameter_type_without_a_definition_says_what_to_read_for_re
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.C" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
 }
+
+#[test]
+fn a_field_the_child_defines_again_is_not_compared_apart_from_the_parent_name() {
+    // m.C は m.P を受け継ぎ、t を定義し直す。意味は m.C.t にだけある。f(p: m.P) は m.P.t に書き、候補は書く値を変える。
+    // m.C.t と m.P.t が同じ所かは言語で決まるので、m.C.t の場所は比べずに沈黙する。
+    let types = [ty("m.P", 3), field("m.P.t", 4, false), ty("m.C", 5), field("m.C.t", 6, true), inherits("m.C", "m.P")].concat();
+    let repo = Repo::new("override-place-parent-write");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", &format!("{}{types}{}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#, r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"p": "m.P"}, "at": "m.py:23@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.P.t", "value": "1", "at": "m.py:24@blob:aaaaaaa"}
+"#));
+    repo.write(".archsig/plans/p/plan.jsonl", r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"p": "m.P"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.P.t", "value": "2", "at": "plan:p"}
+"#);
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}

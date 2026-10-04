@@ -920,6 +920,15 @@ fn compare(
     // 意味が決まらないので比べない。その値が二つの順番で食い違うのは書き込みがあるときで、その沈黙は下で持つ。
     places.retain(|q| meaning_known(prior, after, &q[0], meaning).is_ok());
     let mut below = Below { prior, removes: removes.clone(), ..Below::default() };
+    // 型が受け継いだフィールドを定義し直していれば(受け継ぎのどの段でも)、受け継がれる型の名前で書いた所と同じ所かは言語で決まる(設計 §3.5)。
+    // その場所は比べず、沈黙を最後まで持つ。
+    places.retain(|q| match after.access(&q[0]) {
+        Ok(_) => true,
+        Err(e) => {
+            below.hold(Err(e));
+            false
+        }
+    });
     for br in &run1 {
         for w in &br.writes {
             for k in 1..=w.place.len() {
