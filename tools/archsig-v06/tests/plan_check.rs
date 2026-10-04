@@ -4216,3 +4216,43 @@ fn a_removed_name_the_old_structure_only_names_is_not_unread_below() {
     let (s, r) = below_case("below-removed-only-named", &atoms, &plan);
     assert_eq!(r["outcome"], "holds", "{s}");
 }
+
+#[test]
+fn a_name_under_an_unsettled_type_is_silent_on_every_path_for_removes() {
+    // m.C は定義し直した読んでいない型、m.Svc は読んでいない型(引数の型として名指されるだけ)。候補はその直下の名前を消す。
+    // 直下の名前が何を指すかは型の受け継ぎで決まるので、道、列、呼び出し、式の中の呼び出しのどれで名指しても、`missing` にせず沈黙する(設計 §3.3、§3.6)。
+    let atoms = |h: &str| {
+        format!(
+            "{}{h}\n",
+            r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.c", "value": "field", "type": "m.C", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.C", "object": "c.py", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.Svc", "object": "svc.py", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O", "s": "m.Svc"}, "at": "m.py:10@blob:aaaaaaa"}
+"#
+        )
+    };
+    let plan = r#"{"kind": "defines", "subject": "m.C", "value": "type", "file": "c.py", "at": "plan:p"}
+{"kind": "removes", "subject": "m.C.x", "at": "plan:p"}
+{"kind": "removes", "subject": "m.Svc.run", "at": "plan:p"}
+"#;
+    for (name, h) in [
+        ("unsettled-path", r#"{"kind": "returns", "subject": "m.g", "value": "$o.c.x", "at": "m.py:11@blob:aaaaaaa"}"#),
+        ("unsettled-calls", r#"{"kind": "calls", "subject": "m.g", "object": "m.C.x", "at": "m.py:11@blob:aaaaaaa"}"#),
+        ("unsettled-expression-call", r#"{"kind": "returns", "subject": "m.g", "value": "m.C.x()", "at": "m.py:11@blob:aaaaaaa"}"#),
+        ("unsettled-unread-calls", r#"{"kind": "calls", "subject": "m.g", "object": "m.Svc.run", "at": "m.py:11@blob:aaaaaaa"}"#),
+        ("unsettled-unread-write", r#"{"kind": "writes", "subject": "m.g", "object": "m.Svc.run", "value": "1", "at": "m.py:11@blob:aaaaaaa"}"#),
+        ("unsettled-unread-path", r#"{"kind": "returns", "subject": "m.g", "value": "$s.run", "at": "m.py:11@blob:aaaaaaa"}"#),
+    ] {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map("m.py", &atoms(h));
+        repo.write(".archsig/plans/p/plan.jsonl", plan);
+        let s = repo.run(&["plan", "check", "p"]);
+        assert!(!s["results"].as_array().unwrap().iter().any(|r| r["kind"] == "missing"), "{name}: {s}");
+        assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.g" && r["outcome"] == "silent"), "{name}: {s}");
+    }
+}

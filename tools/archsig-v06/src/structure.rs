@@ -7,8 +7,9 @@ use crate::atom::{Atom, parse_location};
 use crate::expr::{self, BinOp, Expr};
 
 mod name;
+use name::Names;
 pub use name::{
-    Answer, Column, FieldList, Form, Found, Names, Resolution, Resolved, Stage, Start, Unknown, Walk, Why, after_operation, below, call_name, channel_of,
+    Answer, Column, FieldList, Form, Found, Resolution, Resolved, Stage, Start, Unknown, Walk, Why, after_operation, below, call_name,
     form, from_operation, is_local, is_question, owner, param_name, param_of, targets,
 };
 
@@ -611,39 +612,56 @@ struct Tracer<'a> {
 }
 
 impl Tracer<'_> {
-    /// Atom の名前 `n` を要素(名前)で解いた要素。名前だけの要素は、字句どおりの名前を名指す。
-    /// 名前そのものの定義(`defines` か `resolves`)で決まらないだけなら、名指す要素はその名前である。
-    /// `?` の名前と、頭、持ち主、段で決まらない名前は、名指す要素が決まらない。
+    /// Atom の名前 `n` を要素(名前)で解いた要素(設計 §3.6)。どの経路でも、名指しは要素(名前)の答えだけで決める。
+    /// 決まった要素はその名前を、名前だけの要素と、名前そのものの定義(`defines` か `resolves`)で決まらないだけの名前は、字句どおりの名前を名指す。
+    /// 頭か持ち主が消える要素かその下の名前なら、その名前を名指す。段の「なければ」で決まらない名前は、段の名前か、変更前の構造で同じ名前を解いた要素を名指す。
+    /// それ以外(`?` の名前と、頭、持ち主、段で決まらない名前)は、名指す要素が決まらない。
     fn name(&self, n: &str, a: &Atom, found: &mut Named) {
-        if is_question(n) {
-            found.gaps.push(locate(question(), a));
-            return;
-        }
-        if (self.gone)(n) {
-            found.named.insert(n.to_string());
-            return;
-        }
-        match self.after.element(n) {
+        let u = match self.after.element(n) {
             Ok(Answer::Element(e)) => {
                 if (self.gone)(&e.name) {
                     found.named.insert(e.name);
                 }
+                return;
             }
-            Ok(_) => {}
-            Err(u) => match &u.stage {
-                // どの型も定義しないために決まらない段は、変更前の構造で同じ名前を解き、消える要素に着くかを見る。
-                Some(s) if s.absent => match self.before.element(n) {
-                    Ok(Answer::Element(e)) if (self.gone)(&e.name) => {
-                        found.named.insert(e.name);
-                    }
-                    Err(b) => found.gaps.push(gap(b.silence, a)),
-                    _ => found.gaps.push(gap(u.silence, a)),
-                },
-                // 名前そのものの定義で決まらないだけなら、名指すのはその名前である。頭、持ち主、段で決まらなければ、名指す要素が決まらない。
-                None if u.itself => {}
-                _ => found.gaps.push(gap(u.silence, a)),
-            },
+            Ok(Answer::Bare(_)) => {
+                if (self.gone)(n) {
+                    found.named.insert(n.to_string());
+                }
+                return;
+            }
+            Ok(Answer::External(_)) => return,
+            Err(u) => u,
+        };
+        if u.itself {
+            if (self.gone)(n) {
+                found.named.insert(n.to_string());
+            }
+            return;
         }
+        if self.after.head_of(n).is_some_and(|h| (self.gone)(&h)) {
+            found.named.insert(n.to_string());
+            return;
+        }
+        if let Some(s) = u.stage.as_ref().filter(|s| s.absent) {
+            let stage = s.full_name();
+            if (self.gone)(&stage) {
+                found.named.insert(stage);
+                return;
+            }
+            match self.before.element(n) {
+                Ok(Answer::Element(e)) if (self.gone)(&e.name) => {
+                    found.named.insert(e.name);
+                    return;
+                }
+                Err(b) => {
+                    found.gaps.push(gap(b.silence, a));
+                    return;
+                }
+                _ => {}
+            }
+        }
+        found.gaps.push(gap(u.silence, a));
     }
 
     /// 道か列の答え `walk` が名指す要素。決まったフィールドと、消える型の段の名前(`<型>.<名前>`)。

@@ -351,3 +351,60 @@ fn channels_that_send_to_each_other_do_not_loop() {
     let s = repo.run(&["plan", "split", "p"]);
     assert!(s["results"].as_array().is_some(), "{s}");
 }
+
+#[test]
+fn an_element_whose_place_is_unknown_before_the_change_is_silent() {
+    // 変更後で決まらない要素は、変更前の構造で解いた定義した所の局所に属する。変更前でも分からなければ、局所は決まらない(設計 §6)。
+    let run = |name: &str, map: &str, plan: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", "sources \"**/*.py\"\n\nreading module = dir(depth: 1)\n");
+        repo.write("a/x.py", "# source\n");
+        repo.map("a/x.py", map);
+        repo.write(".archsig/plans/p/plan.jsonl", plan);
+        repo.run(&["plan", "split", "p"])
+    };
+    let observed = "{\"kind\": \"observed\", \"subject\": \"a/x.py\", \"scope\": \"structure\", \"at\": \"a/x.py@blob:aaaaaaa\"}\n";
+    // 消した要素 m.g の定義は、読んでいない c/y.py にある。
+    let s = run(
+        "split-removed-unread",
+        &format!("{observed}{}", r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "at": "a/x.py:1@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "a/x.py:2@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.g", "object": "c/y.py", "at": "a/x.py:1@blob:aaaaaaa"}
+"#),
+        "{\"kind\": \"removes\", \"subject\": \"m.g\", \"at\": \"plan:p\"}\n",
+    );
+    let r = result(&s, "m.g");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c/y.py"), "{s}");
+    // `file` なしに定義し直した m.T の元の定義は、読んでいない c/t.py にある。
+    let s = run(
+        "split-redefined-unread",
+        &format!("{observed}{}", r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"t": "m.T"}, "at": "a/x.py:1@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.T", "object": "c/t.py", "at": "a/x.py:1@blob:aaaaaaa"}
+"#),
+        "{\"kind\": \"defines\", \"subject\": \"m.T\", \"value\": \"type\", \"at\": \"plan:p\"}\n",
+    );
+    let r = result(&s, "m.T");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+}
+
+#[test]
+fn a_channel_belongs_to_the_locals_of_the_operations_after_the_change() {
+    // 項目を送る m.op1 を消し、受け取る m.r の定義は読んでいない。変更後の列にその項目の送り受けがないので、項目はどの局所にも属さない。
+    let repo = Repo::new("split-channel-after");
+    repo.write(".archsig/law/m.law", "sources \"**/*.py\"\n\nreading module = dir(depth: 1)\n");
+    repo.write("a/x.py", "# source\n");
+    repo.map("a/x.py", r#"{"kind": "observed", "subject": "a/x.py", "scope": "structure", "at": "a/x.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.op1", "value": "operation", "params": {}, "at": "a/x.py:1@blob:aaaaaaa"}
+{"kind": "sends", "subject": "m.op1", "object": "channel:queue:svc:item", "value": "1", "at": "a/x.py:2@blob:aaaaaaa"}
+"#);
+    repo.write(".archsig/plans/p/plan.jsonl", r#"{"kind": "removes", "subject": "m.op1", "at": "plan:p"}
+{"kind": "corresponds", "subject": "channel:queue:svc:item", "object": "channel:queue:svc:item2", "at": "plan:p"}
+"#);
+    let s = repo.run(&["plan", "split", "p"]);
+    let r = result(&s, "p");
+    assert_eq!(r["outcome"], "holds", "{s}");
+    let detail = repo.run(&["show", r["id"].as_str().unwrap()]);
+    let shared: Vec<Value> = detail["check"]["shared"].as_array().unwrap().clone();
+    assert!(has(&shared, "corresponds", "channel:queue:svc:item", None), "{detail}");
+}

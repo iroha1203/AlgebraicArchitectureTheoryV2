@@ -70,29 +70,39 @@ impl<'a> Geometry<'a> {
         let after = self.after.element(name);
         match &after {
             Ok(Answer::Element(f)) => return self.found(self.after, f),
-            _ => {
-                if let Ok(Answer::Element(f)) = self.before.element(name) {
-                    return self.found(self.before, &f);
-                }
-            }
+            // 外部の要素は、どの局所にも属さない。
+            Ok(Answer::External(_)) => return Ok(BTreeSet::new()),
+            _ => {}
         }
-        match after {
-            Ok(_) => Ok(BTreeSet::new()),
-            Err(u) => self.undecided(u),
+        // 候補を重ねた列で決まらなければ(定義のない名前だけの要素を含む。`removes` した要素はこれに当たる)、変更前の構造で解いた定義した所。
+        // どちらでも決まらなければ、その答えで決める。
+        match (after, self.before.element(name)) {
+            (_, Ok(Answer::Element(f))) => self.found(self.before, &f),
+            (Err(u), _) | (Ok(_), Err(u)) => self.undecided(u),
+            (Ok(_), Ok(_)) => Ok(BTreeSet::new()),
         }
     }
 
     /// 決まった要素の局所。引数と呼び出しは持ち主の操作で見る。候補の中で定義し `file` のない要素は、変更前の構造で解いた定義した所。
+    /// チャネルとその項目は、候補を重ねた後の列の送り受けする操作で見るので、そこに操作がなければどの局所にも属さない。
     fn found(&self, s: &Structure, f: &Found) -> Result<BTreeSet<String>, Silence> {
         if matches!(f.kind.as_str(), "param" | "call")
             && let Some(o) = &f.owner
         {
             return self.element_locals(o);
         }
+        if f.kind == "channel" {
+            return Ok(BTreeSet::new());
+        }
         if f.planned && f.defined.is_empty() {
+            // 変更前の構造そのものが候補の中で定義した要素(元の候補で `file` なしに定義した要素)は、たどる先がない。
+            if std::ptr::eq(s, self.before) {
+                return Ok(BTreeSet::new());
+            }
             return match self.before.element(&f.name) {
-                Ok(Answer::Element(g)) if !std::ptr::eq(s, self.before) => self.found(self.before, &g),
-                _ => Ok(BTreeSet::new()),
+                Ok(Answer::Element(g)) => self.found(self.before, &g),
+                Err(u) => self.undecided(u),
+                Ok(_) => Ok(BTreeSet::new()),
             };
         }
         Ok(f.defined.iter().filter_map(|p| local(self.reading, p)).collect())

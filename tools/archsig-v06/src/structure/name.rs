@@ -46,7 +46,7 @@ pub fn form(n: &str) -> Form<'_> {
 }
 
 /// `:` で四つ以上に分かれる名前の、最後の項目を除いた名前(設計 §3.2)。
-pub fn channel_of(item: &str) -> Option<&str> {
+fn channel_of(item: &str) -> Option<&str> {
     let parts = item.split(':').count();
     (parts >= 4).then(|| item.rsplit_once(':').map(|(c, _)| c)).flatten()
 }
@@ -165,6 +165,13 @@ pub struct Stage {
     pub absent: bool,
 }
 
+impl Stage {
+    /// 段の名前 `<型>.<名前>`。
+    pub fn full_name(&self) -> String {
+        format!("{}.{}", self.ty, self.name)
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Unknown {
     pub silence: Silence,
@@ -246,7 +253,7 @@ impl Element {
 
 /// 名前の解決が使う構造の中身。外からは問い合わせを通してだけ読む。
 #[derive(Clone, Debug, Default)]
-pub struct Names {
+pub(super) struct Names {
     elements: BTreeMap<String, Element>,
     resolves: BTreeMap<String, Resolution>,
     observed: BTreeSet<(String, String)>,
@@ -483,27 +490,31 @@ impl Structure {
                     other => Ok(other),
                 }
             }
-            // チャネルと項目は、`sends` か `receives` に現れていればそれ。定義した所は、送る操作と受け取る操作のそれすべて。
+            // チャネルと項目は、`sends` か `receives` に現れていればそれ。定義した所は、送る操作と受け取る操作のそれすべてで、
+            // `channel_operations` で引く。
             Form::Channel if self.names.channels.contains_key(n) => {
-                let mut defined = BTreeSet::new();
-                for op in &self.names.channels[n] {
-                    if let Ok(Answer::Element(f)) = self.element(op) {
-                        defined.extend(f.defined);
-                    }
-                }
                 Ok(Answer::Element(Found {
                     name: n.to_string(),
                     kind: "channel".to_string(),
-                    defined,
+                    defined: BTreeSet::new(),
                     planned: false,
                     ty: None,
                     owner: None,
                     params: BTreeMap::new(),
                 }))
             }
-            Form::Channel => self.by_resolves_or_head(n, None),
+            Form::Channel => self.by_resolves_or_head(n, None, None),
             Form::Local => Ok(Answer::Bare(n.to_string())),
             Form::Dotted => self.dotted(n),
+        }
+    }
+
+    /// 名前の頭か持ち主。引数と呼び出しは持ち主の操作、段の名前は規則 5 の頭である。
+    pub fn head_of(&self, n: &str) -> Option<String> {
+        match form(n) {
+            Form::Param { owner, .. } | Form::Call { caller: owner } => Some(owner.to_string()),
+            Form::Dotted => self.head(n).map(|(h, _)| h.to_string()),
+            _ => None,
         }
     }
 
@@ -522,15 +533,16 @@ impl Structure {
 
     fn dotted(&self, n: &str) -> Resolved {
         let head = self.head(n);
+        // 頭は一度だけ解く。
+        let answer = head.map(|(h, _)| self.element(h));
         // 5. 頭が型に決まれば、残りの最初の段を段(頭, 段)で解く。型に決まるときだけ、その型から続ける。
-        if let Some((h, rest)) = head
-            && let Ok(Answer::Element(t)) = self.element(h)
+        if let (Some((_, rest)), Some(Ok(Answer::Element(t)))) = (head, &answer)
             && t.kind == "type"
         {
             let segments: Vec<&str> = rest.split('.').collect();
-            let mut ty = t.name;
+            let mut ty = t.name.clone();
             for (i, seg) in segments.iter().enumerate() {
-                let a = self.stage(&ty, seg)?;
+                let a = self.stage_on(&ty, seg)?;
                 if i + 1 == segments.len() {
                     return Ok(a);
                 }
@@ -544,16 +556,16 @@ impl Structure {
         if let Some(e) = self.names.elements.get(n).filter(|e| e.declared) {
             return self.decide(n, e);
         }
-        self.by_resolves_or_head(n, head)
+        self.by_resolves_or_head(n, head, answer)
     }
 
-    /// 規則 7 と 8。名前そのものの `resolves` で決め、なければ頭で決める。
-    fn by_resolves_or_head(&self, n: &str, head: Option<(&str, &str)>) -> Resolved {
+    /// 規則 7 と 8。名前そのものの `resolves` で決め、なければ頭(とその答え `answer`)で決める。
+    fn by_resolves_or_head(&self, n: &str, head: Option<(&str, &str)>, answer: Option<Resolved>) -> Resolved {
         if let Some(r) = self.names.resolves.get(n) {
             return self.resolved(r);
         }
         match head {
-            Some((h, rest)) => match self.element(h) {
+            Some((h, rest)) => match answer.unwrap_or_else(|| self.element(h)) {
                 Ok(Answer::External(pkg)) => Ok(Answer::External(pkg)),
                 Ok(_) => Err(Unknown::unresolved(Why::Other)),
                 // 頭が曖昧なら、頭の局所で見る(設計 §6)。
@@ -600,28 +612,33 @@ impl Structure {
 
     /// 段(型, 名前)。型 `t` の値の中の名前 `f` が、どの型で定義したどの要素かを決める(設計 §3.3)。
     pub fn stage(&self, t: &str, f: &str) -> Resolved {
-        let key = format!("s {t} {f}");
+        let ty = self.typed_element(t).map_err(Unknown::derived)?;
+        self.stage_on(&ty, f)
+    }
+
+    /// 型に決まった `ty` の段。
+    fn stage_on(&self, ty: &str, f: &str) -> Resolved {
+        let key = format!("s {ty} {f}");
         if !self.names.busy.borrow_mut().insert(key.clone()) {
             return Err(Unknown::unresolved(Why::Other));
         }
-        let r = self.stage_of(t, f);
+        let r = self.stage_of(ty, f);
         self.names.busy.borrow_mut().remove(&key);
         r
     }
 
-    fn stage_of(&self, t: &str, f: &str) -> Resolved {
-        let ty = self.typed_element(t).map_err(Unknown::derived)?;
+    fn stage_of(&self, ty: &str, f: &str) -> Resolved {
         // 候補が定義し直した読んでいない型は、変更前の沈黙で沈黙する。候補が直下に書いた `<T>.<f>` も同じである。
-        if let Some(u) = self.names.redefined.get(&ty) {
-            return Err(u.clone().at(&ty, f, false));
+        if let Some(u) = self.names.redefined.get(ty) {
+            return Err(u.clone().at(ty, f, false));
         }
         let name = format!("{ty}.{f}");
         match self.names.elements.get(&name).filter(|e| e.declared) {
-            Some(e) => self.decide(&name, e).map_err(|u| u.at(&ty, f, false)),
+            Some(e) => self.decide(&name, e).map_err(|u| u.at(ty, f, false)),
             // どの型も `f` を定義しなければ、`<T>.<f>` そのものの `resolves` で決める。なければ `<T>.<f>` を読む。
             None => match self.names.resolves.get(&name) {
-                Some(r) => self.resolved(r).map_err(|u| u.at(&ty, f, true)),
-                None => Err(Unknown::unread(&name).at(&ty, f, true)),
+                Some(r) => self.resolved(r).map_err(|u| u.at(ty, f, true)),
+                None => Err(Unknown::unread(&name).at(ty, f, true)),
             },
         }
     }
@@ -850,7 +867,7 @@ impl Structure {
 
     /// 構造が名指す名前(設計 §3.3)。`observed` と `imports` を除く Atom の `subject`・`object`・`via`、要素の型と引数の型、
     /// `value`・`when` の式の中の道の各段(決まらなかった段を含む)と呼び出す操作。
-    pub fn mentioned(&self) -> BTreeSet<String> {
+    fn mentioned(&self) -> BTreeSet<String> {
         let mut out = BTreeSet::new();
         for a in self.atoms.iter().filter(|a| !matches!(a.kind.as_str(), "observed" | "imports")) {
             out.insert(a.subject.clone());

@@ -95,13 +95,28 @@ fn a_name_below_a_type_that_does_not_define_it_is_read_by_that_name() {
 #[test]
 fn a_name_whose_head_is_unknown_is_read_by_its_own_name() {
     // 頭 m.mod の resolves が読んでいないソースを指す。m.mod は型として名指されていないので、m.mod.var を読む。
-    let next = advances(
-        r#"{"kind": "resolves", "subject": "m.mod", "object": "mod.py", "at": "m.py:1"}"#,
-        "m.mod.var",
-        (None, Some("m.mod.var")),
-        r#"{"kind": "defines", "subject": "m.mod.var", "value": "field", "type": "int", "at": "x.py:1"}"#,
-    );
-    assert!(matches!(next, Ok(Answer::Element(e)) if e.kind == "field"));
+    // 読む所の名前を解析器が解決すれば(`resolves`)、その解決で決まるか、読むソースに進む。
+    let before = r#"{"kind": "resolves", "subject": "m.mod", "object": "mod.py", "at": "m.py:1"}"#;
+    let next = advances(before, "m.mod.var", (None, Some("m.mod.var")), r#"{"kind": "resolves", "subject": "m.mod.var", "object": "external:lib", "at": "m.py:2"}"#);
+    assert!(matches!(next, Ok(Answer::External(_))));
+    let next = advances(before, "m.mod.var", (None, Some("m.mod.var")), r#"{"kind": "resolves", "subject": "m.mod.var", "object": "mod.py", "at": "m.py:2"}"#);
+    assert_eq!(read_place(&next), Some((Some("mod.py".to_string()), None)));
+}
+
+#[test]
+fn a_deeply_nested_type_is_resolved_once_per_step() {
+    // 入れ子の型 m.T0.T1…T40 の各段が型である。頭は一度だけ解くので、段の数に比例して答えが出る。
+    let mut jsonl = String::new();
+    let mut name = "m.T0".to_string();
+    jsonl.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"{name}\", \"value\": \"type\", \"at\": \"m.py:1\"}}\n"));
+    for d in 1..=40 {
+        name = format!("{name}.T{d}");
+        jsonl.push_str(&format!("{{\"kind\": \"defines\", \"subject\": \"{name}\", \"value\": \"type\", \"at\": \"m.py:{}\"}}\n", d + 1));
+    }
+    let s = Structure::new(atoms(&jsonl));
+    let start = std::time::Instant::now();
+    assert!(matches!(s.element(&format!("{name}.x")), Err(u) if u.silence.element == Some(format!("{name}.x"))));
+    assert!(start.elapsed() < std::time::Duration::from_secs(5), "{:?}", start.elapsed());
 }
 
 #[test]
