@@ -2,7 +2,17 @@ import ResearchLean.AG.ObstructionDiagnosticBridge.CoefficientComparison
 import Mathlib.LinearAlgebra.Finsupp.Pi
 import Formal.Util.AssertStandardAxioms
 
-/-! # Integral label coordinates derived from the primitive presentation -/
+/-! # Integral label coordinates derived from the primitive presentation
+
+## Implementation notes
+
+The presentation quotient is transported through its relation blocks before using
+finite label functions. This retains the primitive relations and gives pointwise
+integer coordinates. Starting with a label group as input would lose that provenance.
+Finsupp is the intermediate free-group presentation; finiteness permits full functions
+without imposing a further support certificate. The basis is the inverse image of a
+delta function, so it belongs to the original presentation rather than a new group.
+-/
 
 noncomputable section
 

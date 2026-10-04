@@ -2,7 +2,20 @@ import ResearchLean.AG.VisibleCycleReflection.CechGraphComparison
 import ResearchLean.AG.ResolutionInvariance.LawValueBlockCohomology
 import Formal.Util.AssertStandardAxioms
 
-/-! # Quotient-level normalization of the actual integral and visible rational H1 -/
+/-! # Quotient-level normalization of the actual integral and visible rational H1
+
+## Implementation notes
+
+With the complete face index empty, graph H1 is all edge cochains modulo vertex
+differences. Using a supplied cycle or potential certificate instead would shrink the
+quantified input. PEmpty records the absent degree-two cells without adding fictitious
+faces. The actual integral quotient uses additive groups; coefficient change is additive,
+not a rational-linear map from integers. Visible rational quotients use submodules.
+Both quotient equivalences are transported through exact two-sided range identities,
+rather than inferred from coefficient injectivity. Finite direct sums are temporarily
+expressed as functions to apply component equivalences, then returned to the specified
+sum; keeping only a chosen component would omit part of the diagnostic.
+-/
 noncomputable section
 namespace AAT.AG.VisibleCycleReflection
 open CanonicalResolution ResolutionInvariance ObstructionDiagnosticBridge Cohomology TwoPhase DirectSum
@@ -330,15 +343,19 @@ theorem actualCechDiagnosticH1Map_factorization (hR : P.ReflectionCondition)
         (integerToRationalH1 D.nerve (LawValueLabel laws) (actualIntegralH1Equiv P C hR h)) := by
   induction h using QuotientAddGroup.induction_on with
   | H z =>
-    change _ = _
-    rw [show P.actualCechDiagnosticH1Map C hadequate (QuotientAddGroup.mk z) =
-      (LinearMap.range (D.lawGeneratedComplex laws hadequate).boundaryToCycles).mkQ
-        (P.actualCechDiagnosticCyclesMap C hadequate z) by rfl]
-    rw [diagnosticVisibleH1Equiv_mk_component]
+    let cocycle : (P.faceEmptyCechComplex C).CechCocycle 1 := ⟨z.1, z.2⟩
     change _ = rationalRestrictionH1 D hadequate label
       (integerToRationalH1 D.nerve (LawValueLabel laws)
-        (QuotientAddGroup.mk (actualIntegralCochain1Equiv P C hR z.1)))
-    rw [integerToRationalH1_mk, rationalRestrictionH1_mk]
+        (actualIntegralH1Equiv P C hR
+          ((P.faceEmptyCechComplex C).additiveH1Class cocycle)))
+    change (DirectSum.linearEquivFunOnFintype ℚ (LawValueLabel laws)
+      (fun l => VisibleGraphH1 D hadequate l)
+      (diagnosticVisibleH1Equiv D hadequate
+        (P.actualCechDiagnosticH1Map C hadequate
+          ((P.faceEmptyCechComplex C).additiveH1Class cocycle)))) label = _
+    rw [P.actual_cech_diagnostic_h1_map_additive_h1_class,
+      diagnosticVisibleH1Equiv_mk_component, actualIntegralH1Equiv_mk,
+      integerToRationalH1_mk, rationalRestrictionH1_mk]
     congr 1
     ext edge
     exact actualCoefficient1_visible P C hR hadequate label z.1 edge

@@ -4,7 +4,31 @@ import ResearchLean.AG.VisibleCycleReflection.VisibleCoordinates
 import ResearchLean.AG.ObstructionDiagnosticBridge.ExistingObstructionBridge
 import Formal.Util.AssertStandardAxioms
 
-/-! # Actual Cech cochains in integral graph coordinates and visible Law coordinates -/
+/-! # Actual Cech normalization and coefficient comparison
+
+## Implementation notes
+
+The actual locally constant sections are normalized first, then their primitive values
+are transported to integral label coordinates. Replacing actual sections by graph values
+at input would omit the restriction comparison. The right-minus-left differential is
+inherited from actual restrictions. The mismatch remains transition plus that differential;
+using only a vertex difference would force the obstruction to vanish. Degree two is empty
+because the complete actual face index is empty, not because faces are discarded.
+-/
+namespace AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.ActualCechAffineLocalData
+open CanonicalResolution ResolutionInvariance TwoPhase
+universe u
+/-- Public generation formula for the actual affine mismatch. -/
+theorem actualMismatch_eq {Source : Type u} [Fintype Source]
+    {q : Reading Source} {laws : FiniteLawFamily Source}
+    {U : AtomCarrier.{u}} {A : ArchitectureObject U} {S : Site.AATSite A}
+    {D : TargetSupportedNerve q} {G : ContextOpenSupport S}
+    [IsEmpty D.nerve.FaceComponent] {P : GeneratorPresentation laws}
+    {C : GeneratorPresentation.FaceEmptyAATCechCover D G}
+    (x : GeneratorPresentation.ActualCechAffineLocalData P C) :
+    x.actualMismatch = x.transition + (P.faceEmptyCechComplex C).d 0 x.localState := rfl
+end AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.ActualCechAffineLocalData
+
 noncomputable section
 namespace AAT.AG.VisibleCycleReflection
 open CanonicalResolution ResolutionInvariance ObstructionDiagnosticBridge Cohomology
@@ -141,9 +165,7 @@ theorem actualMismatch_normalized (hR : P.ReflectionCondition)
       actualIntegralCochain1Equiv P C hR x.transition +
         integralGraphD0 D.nerve (LawValueLabel laws)
           (actualIntegralCochain0Equiv P C hR x.localState) := by
-  change actualIntegralCochain1Equiv P C hR
-    (x.transition + (P.faceEmptyCechComplex C).d 0 x.localState) = _
-  rw [map_add, actualIntegral_d0]
+  rw [x.actualMismatch_eq, map_add, actualIntegral_d0]
 
 /-- A: the independent existing diagnostic is the comparison of the existing descent class. -/
 theorem existingDescent_comparison (hadequate : laws.Adequate q)

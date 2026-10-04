@@ -291,7 +291,7 @@ result:
   split_reason: none
   completion_candidate: no
   lean_artifacts: [IntegralLabelCoordinates.lean, VisibleCoordinates.lean, CechGraphComparison.lean, GraphH1Comparison.lean]
-  evidence: [Cycle 2 spine declaration list, 実入力へのinput_local_data_factorization, 82宣言のprint axioms]
+  evidence: [Cycle 2 spine declaration list, 実入力へのinput_local_data_factorization, 84宣言のprint axioms]
   claim_mapping:
     theorem_names: [integralLabelEquiv, blockCellEquiv, actualIntegral_d0, actualIntegralH1Equiv, visibleBlockH1Equiv, actualCechDiagnosticH1Map_factorization, GeometricCover.input_local_data_factorization]
     source_labels: [T0のラベルと可視部分, A]
@@ -315,7 +315,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [対象4file focused elaboration, 全82宣言print axioms, 標準公理のみ, placeholderとUnicodeとprivacyとimport方向scan]
+  validation_refs: [対象4file focused elaboration, 全84宣言print axioms, 標準公理のみ, placeholderとUnicodeとprivacyとimport方向scan]
   blocking_findings: []
   next_obligation: Bの非橋辺とchain包含と零性反映の全方向、整数補正と状態層
 ```
@@ -409,11 +409,23 @@ AAT.AG.VisibleCycleReflection.diagnosticVisibleH1Equiv_component
 AAT.AG.VisibleCycleReflection.diagnosticVisibleH1Equiv_mk_component
 AAT.AG.VisibleCycleReflection.actualCechDiagnosticH1Map_factorization
 AAT.AG.VisibleCycleReflection.GeometricCover.input_local_data_factorization
+AAT.AG.ResolutionInvariance.TargetSupportedNerve.lawValueBlockD0_apply
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.ActualCechAffineLocalData.actualMismatch_eq
 ```
 
 検証結果：対象4fileのfocused elaborationは成功（module標準公理監査は順に8・23・16・36宣言）。
-全82明示宣言の `#print axioms` を実行し、source/report/list/outputの一致を確認した。
+全84明示宣言の `#print axioms` を実行し、source/report/list/outputの一致を確認した。
 依存公理はpropext、Classical.choice、Quot.soundのみ。print出力SHA-256は
-`90b90ae7ba5bd6c7bcddcdeef943df5c66bbafc8be1cd66cfd58bfbdfd968ef2`。
+`e0d48691ed64bab0ae589d2b41ca4047f09a2a5061ef34200620347d1174622b`。
 placeholder、hidden/BiDi、privacy、語彙、FormalからResearchへのimport方向、diff checkはclean。
 固定GOAL・設計・共通基準・再利用sourceの関連差分なし。正式査読とCIはPRの固定headで確認する。
+
+### Cycle 2 の非中心finding対応
+
+初回4 laneの判定はMinor issues、中心findingなし。
+[初回統合](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5254#issuecomment-5978705421)
+のF1に対し、既存比較と整数H1同値の公開代表元APIを使用した。
+既存block微分とaffine mismatchの公開評価／生成APIを2宣言補い、下流から使用する。
+F2に対し、新4moduleのImplementation notesへ定義形の理由と代替案を記した。
+査読済みsignature、def/instanceの値、import方向、ledger statusは変更していない。
+全84宣言の公理監査は標準公理のみ。修正後の直接対応資格と解消を別途固定headで確認する。

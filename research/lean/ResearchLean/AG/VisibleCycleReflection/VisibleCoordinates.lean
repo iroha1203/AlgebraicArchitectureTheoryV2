@@ -1,7 +1,31 @@
 import ResearchLean.AG.ResolutionInvariance.LawValueCoordinateSubnerve
 import Formal.Util.AssertStandardAxioms
 
-/-! # Visible cells defined by actual same-target Law support -/
+/-! # Visible cells defined by actual same-target Law support
+
+## Implementation notes
+
+A cell carries an existential support occurrence in Prop, rather than a target as data.
+Thus several supporting targets do not create several vertices or edges. The block-cell
+bijection follows the accepted coordinate API. Requiring only separate endpoint targets
+would change edge visibility and is not the chosen presentation. Reindexing cochains by
+this bijection retains the existing block differential and its geometric endpoints.
+-/
+
+namespace AAT.AG.ResolutionInvariance.TargetSupportedNerve
+open CanonicalResolution
+universe u
+/-- Public evaluation of the existing block differential, for coordinate transport. -/
+@[simp]
+theorem lawValueBlockD0_apply {Source : Type u} {q : Reading Source}
+    (D : TargetSupportedNerve q) (laws : FiniteLawFamily Source)
+    (hadequate : laws.Adequate q) (label : LawValueLabel laws)
+    (c : D.ChartBlockCoordinate laws hadequate label → ℚ)
+    (edge : D.EdgeBlockCoordinate laws hadequate label) :
+    D.lawValueBlockD0 laws hadequate label c edge =
+      c (D.edgeRightBlockCoordinate laws hadequate label edge) -
+        c (D.edgeLeftBlockCoordinate laws hadequate label edge) := rfl
+end AAT.AG.ResolutionInvariance.TargetSupportedNerve
 
 noncomputable section
 namespace AAT.AG.VisibleCycleReflection
@@ -167,10 +191,7 @@ theorem visibleD0_intertwining (c : D.ChartBlockCoordinate laws hadequate label 
   rw [(visibleEdgeEquiv D hadequate label).apply_symm_apply] at hl hr
   have hl' := (visibleVertexEquiv D hadequate label).eq_symm_apply.mpr hl
   have hr' := (visibleVertexEquiv D hadequate label).eq_symm_apply.mpr hr
-  change c (D.edgeRightBlockCoordinate laws hadequate label
-    ((visibleEdgeEquiv D hadequate label).symm edge)) -
-    c (D.edgeLeftBlockCoordinate laws hadequate label
-      ((visibleEdgeEquiv D hadequate label).symm edge)) = _
+  rw [visibleCochain1Equiv_apply, D.lawValueBlockD0_apply]
   simp only [visibleD0_apply, visibleCochain0Equiv_apply]
   rw [hl', hr']
 
