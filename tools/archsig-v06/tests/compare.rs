@@ -793,4 +793,19 @@ fn an_operation_added_by_the_implementation_with_a_question_mark_is_silent() {
         let s = compare(&after, &before, Some("p"));
         assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.g" && r["outcome"] == "silent"), "{name}: {s}");
     }
+    // 変更前は型で、変更後に m.g の定義を読んでいなければ、消える要素を名指していても `missing` は決まらないので、`removes` の沈黙に入る。
+    let unread_after = r#"{"kind": "writes", "subject": "m.g", "object": "m.O.u", "value": "?", "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.A.x", "value": "1", "at": "m.py:8@blob:aaaaaaa"}
+"#;
+    let before = Repo::new("type-to-unread-before");
+    before.write(".archsig/law/m.law", &law);
+    before.write("m.py", "# source\n");
+    before.map("m.py", &format!("{base}{was_type}{}\n", r#"{"kind": "defines", "subject": "m.A.x", "value": "field", "type": "m.O", "at": "m.py:4@blob:aaaaaaa"}"#));
+    let after = Repo::new("type-to-unread");
+    after.write(".archsig/law/m.law", &law);
+    after.write("m.py", "# source\n");
+    after.map("m.py", &format!("{base}{unread_after}"));
+    after.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.A.x\", \"at\": \"plan:p\"}\n");
+    let s = compare(&after, &before, Some("p"));
+    assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "removes" && r["outcome"] == "silent"), "{s}");
 }

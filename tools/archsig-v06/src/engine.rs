@@ -1294,6 +1294,9 @@ fn unread_sources(s: &Structure, sources: &[String], scope: &str) -> Vec<Silence
 /// それらは一つの沈黙にまとめ、読む所があれば返す。
 fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, sources: &[String]) -> Vec<Finding> {
     let mut out = Vec::new();
+    // 消える要素を使うと決まった操作(`missing` の結果を返すもの)。
+    let found: Vec<Finding> = overlay.missing.iter().filter_map(|(op, uses)| missing(before, after, op, uses)).collect();
+    let decided: BTreeSet<&str> = overlay.missing.keys().filter(|op| found.iter().any(|f| &f.subject == *op)).map(String::as_str).collect();
     if !overlay.removes.is_empty() {
         // 変更後にも残る呼び出し先と本体の Atom の `subject` のうち、定義を読んでいないものと、定義がなく解決が決まらないもの。
         let mut unknown: BTreeMap<String, Silence> = BTreeMap::new();
@@ -1303,7 +1306,7 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
                 "writes" | "reads" | "sends" | "receives" | "returns" => vec![a.subject.as_str()],
                 _ => continue,
             };
-            for n in names.into_iter().filter(|n| !n.is_empty() && !overlay.missing.contains_key(*n)) {
+            for n in names.into_iter().filter(|n| !n.is_empty() && !decided.contains(*n)) {
                 let undecided = !after.elements.contains_key(n) && matches!(after.resolves.get(n), Some(Resolution::Undecided));
                 if let Err(s) = after.kind(n)
                     && (s.reason == Reason::Unread || undecided)
@@ -1329,20 +1332,14 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
             });
         }
     }
-    let mut decided = BTreeSet::new();
-    for (op, uses) in &overlay.missing {
-        if let Some(f) = missing(before, after, op, uses) {
-            decided.insert(op);
-            out.push(f);
-        }
-    }
+    out.extend(found);
     // 名指す要素をたどれなかった操作は、消える要素を使うかが決まらない。
     // 変更前か変更後で操作と決まる操作と、変更後で種類が決まらない操作(実装が足した操作を含む)は沈黙する。
     // 使うと決まった操作(`missing`)、変更後で操作でないと決まり変更前でも操作でないと決まるか定義を読んでいない要素、
     // 変更後で定義を読んでいない要素(上の沈黙)は除く。変更前で曖昧な要素は沈黙する。
     for (op, gaps) in overlay.untraced.iter().filter(|_| !overlay.removes.is_empty()) {
         match (before.kind(op), after.kind(op)) {
-            _ if decided.contains(op) => continue,
+            _ if decided.contains(op.as_str()) => continue,
             (Ok("operation"), _) | (_, Ok("operation")) => {}
             (Ok(_) | Err(Silence { reason: Reason::Unread, .. }), Ok(_)) | (_, Err(Silence { reason: Reason::Unread, .. })) => continue,
             _ => {}
