@@ -4131,3 +4131,23 @@ fn a_correspondence_with_one_external_end_is_silent() {
     let s = run("two-external-ends", true, "");
     assert!(!s["results"].as_array().unwrap().iter().any(|r| r["outcome"] == "silent" || r["subject"] == "lib.old" || r["subject"] == "lib.clear"), "{s}");
 }
+
+#[test]
+fn a_correspondence_from_an_external_end_returns_what_the_other_end_needs() {
+    // 変更前の lib.old は外部。候補は lib.old を、読んでいない n.py に解決する m.new に対応させる。
+    // 外部でない端 m.new の種類は n.py を読めば決まるので、n.py を読む所として返す。
+    let repo = Repo::new("external-from-end");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "lib.old", "object": "external:lib", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:2@blob:aaaaaaa"}
+"#);
+    repo.write(".archsig/plans/p/plan.jsonl", r#"{"kind": "resolves", "subject": "m.new", "object": "n.py", "at": "plan:p"}
+{"kind": "corresponds", "subject": "lib.old", "object": "m.new", "at": "plan:p"}
+"#);
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.new");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "n.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}

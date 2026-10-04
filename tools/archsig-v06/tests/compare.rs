@@ -773,7 +773,14 @@ fn an_operation_added_by_the_implementation_with_a_question_mark_is_silent() {
     let twice = format!("{g}{}\n", r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:8@blob:aaaaaaa"}"#);
     let was_type = r#"{"kind": "defines", "subject": "m.g", "value": "type", "at": "m.py:6@blob:aaaaaaa"}
 "#;
-    for (name, old, new) in [("added-question", "", g.to_string()), ("added-twice", "", twice), ("type-to-operation", was_type, g.to_string())] {
+    // 消える要素を名指す書き込みも持つと、`missing` は変更前の種類(型)で決まらないので、たどれなかった所で沈黙する。
+    let names_removed = format!("{g}{}\n", r#"{"kind": "writes", "subject": "m.g", "object": "m.A.x", "value": "?", "at": "m.py:8@blob:aaaaaaa"}"#);
+    for (name, old, new) in [
+        ("added-question", "", g.to_string()),
+        ("added-twice", "", twice),
+        ("type-to-operation", was_type, g.to_string()),
+        ("type-to-operation-naming-removed", was_type, names_removed),
+    ] {
         let before = Repo::new(&format!("{name}-before"));
         before.write(".archsig/law/m.law", &law);
         before.write("m.py", "# source\n");

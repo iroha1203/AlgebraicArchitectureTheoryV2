@@ -822,7 +822,9 @@ fn commute(
         if matches!(ka, Ok(k) if k != "operation") || matches!(kb, Ok(k) if k != "operation") {
             continue;
         }
+        // 片方だけが外部の組は、外部でない端の沈黙(読めば決まる所を持つ)を先に返す。
         let pair = match (ka, kb) {
+            (Err(s), Err(t)) if external(before, a) => Err(if external(after, b) { s } else { t }),
             (Err(s), _) | (_, Err(s)) => Err(s),
             _ => compare(before, after, mapping, &overlay.removes, a, b, meaning, fresh),
         };
@@ -1327,17 +1329,22 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
             });
         }
     }
+    let mut decided = BTreeSet::new();
     for (op, uses) in &overlay.missing {
-        out.extend(missing(before, after, op, uses));
+        if let Some(f) = missing(before, after, op, uses) {
+            decided.insert(op);
+            out.push(f);
+        }
     }
     // 名指す要素をたどれなかった操作は、消える要素を使うかが決まらない。
     // 変更前か変更後で操作と決まる操作と、変更後で種類が決まらない操作(実装が足した操作を含む)は沈黙する。
-    // 使うと決まった操作(`missing`)と、どちらでも操作と決まらず、変更後で操作でないと決まった要素か定義を読んでいない要素(上の沈黙)は除く。
+    // 使うと決まった操作(`missing`)、変更後で操作でないと決まり変更前でも操作でないと決まるか定義を読んでいない要素、
+    // 変更後で定義を読んでいない要素(上の沈黙)は除く。変更前で曖昧な要素は沈黙する。
     for (op, gaps) in overlay.untraced.iter().filter(|_| !overlay.removes.is_empty()) {
         match (before.kind(op), after.kind(op)) {
-            _ if overlay.missing.contains_key(op) => continue,
+            _ if decided.contains(op) => continue,
             (Ok("operation"), _) | (_, Ok("operation")) => {}
-            (_, Ok(_)) | (_, Err(Silence { reason: Reason::Unread, .. })) => continue,
+            (Ok(_) | Err(Silence { reason: Reason::Unread, .. }), Ok(_)) | (_, Err(Silence { reason: Reason::Unread, .. })) => continue,
             _ => {}
         }
         let mut next: Vec<Silence> = Vec::new();
