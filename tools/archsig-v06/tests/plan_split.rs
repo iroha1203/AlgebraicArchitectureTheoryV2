@@ -609,29 +609,27 @@ fn an_undecided_name_after_the_plan_is_undecided_even_if_it_was_external_before(
 }
 
 #[test]
-fn a_new_member_the_plan_defines_without_a_file_is_in_the_local_of_its_type() {
-    // 候補は b.N を a/m.py に、そのフィールド b.N.p を `file` なしに定義する。b.N.p に元の定義はないので、それを定義した型 b.N の局所に属する(設計 §6)。
-    // b.N を二か所に定義しても(曖昧)、定義した所が一つの局所にあれば、その局所である。
-    for (name, types) in [
-        ("split-new-member", "{\"kind\": \"defines\", \"subject\": \"b.N\", \"value\": \"type\", \"file\": \"a/m.py\", \"at\": \"plan:p\"}\n"),
+fn a_new_element_the_plan_defines_without_a_file_has_no_local() {
+    // 新しく定義する要素の局所は `file` で決まる(マニュアル第3章)。候補が `file` なしに定義した b.N.p と b.N には元の定義もないので、
+    // 局所は決まらない(どの局所にも属さないとしない。設計 §6)。b.N の `resolves` が別のソースを指しても同じである。
+    for (name, plan) in [
         (
-            "split-new-member-ambiguous-type",
-            "{\"kind\": \"defines\", \"subject\": \"b.N\", \"value\": \"type\", \"file\": \"a/m.py\", \"at\": \"plan:p\"}\n{\"kind\": \"defines\", \"subject\": \"b.N\", \"value\": \"type\", \"at\": \"plan:p\"}\n",
+            "split-new-member",
+            "{\"kind\": \"defines\", \"subject\": \"b.N\", \"value\": \"type\", \"file\": \"a/m.py\", \"at\": \"plan:p\"}\n{\"kind\": \"defines\", \"subject\": \"b.N.p\", \"value\": \"field\", \"type\": \"int\", \"at\": \"plan:p\"}\n",
+        ),
+        (
+            "split-new-type-resolves",
+            "{\"kind\": \"resolves\", \"subject\": \"b.N\", \"object\": \"c/m.py\", \"at\": \"plan:p\"}\n{\"kind\": \"defines\", \"subject\": \"b.N\", \"value\": \"type\", \"at\": \"plan:p\"}\n",
         ),
     ] {
-        let (s, repo) = split_repo(
+        let (s, _) = split_repo(
             name,
-            &[
-                ("a/m.py", "{\"kind\": \"defines\", \"subject\": \"a.f\", \"value\": \"operation\", \"params\": {}, \"at\": \"a/m.py:1@blob:aaaaaaa\"}\n"),
-                ("c/m.py", "{\"kind\": \"defines\", \"subject\": \"c.k\", \"value\": \"operation\", \"params\": {}, \"at\": \"c/m.py:1@blob:aaaaaaa\"}\n"),
-            ],
-            &format!("{types}{{\"kind\": \"defines\", \"subject\": \"b.N.p\", \"value\": \"field\", \"type\": \"int\", \"at\": \"plan:p\"}}\n"),
+            &[("a/m.py", "{\"kind\": \"defines\", \"subject\": \"a.f\", \"value\": \"operation\", \"params\": {}, \"at\": \"a/m.py:1@blob:aaaaaaa\"}\n")],
+            plan,
         );
-        let r = result(&s, "p");
-        assert_eq!(r["outcome"], "holds", "{name}: {s}");
-        let detail = repo.run(&["show", r["id"].as_str().unwrap()]);
-        assert!(!has(detail["check"]["shared"].as_array().unwrap(), "defines", "b.N.p", None), "{name}: {detail}");
-        assert!(in_local(&repo, "a", "defines", "b.N.p"), "{name}: {s}");
+        let subject = if name == "split-new-member" { "b.N.p" } else { "b.N" };
+        let r = result(&s, subject);
+        assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{name}: {s}");
     }
 }
 
@@ -696,20 +694,6 @@ fn a_name_under_a_redefined_unread_type_with_its_own_resolves_is_placed_by_the_r
 }
 
 #[test]
-fn an_element_the_plan_defines_without_a_file_is_placed_by_its_own_resolves() {
-    // 変更前の b.N は型として名指されるだけ。候補は b.N を `file` なしに定義し、その `resolves` は読んでいない c/m.py を指す。
-    // 元の定義した所が決まらないので、名前そのものの `resolves` の答えで決める(設計 §6)。
-    let (s, _) = split_repo(
-        "split-planned-own-resolves",
-        &[("b/m.py", "{\"kind\": \"defines\", \"subject\": \"b.h\", \"value\": \"operation\", \"params\": {\"o\": \"b.N\"}, \"at\": \"b/m.py:1@blob:aaaaaaa\"}\n")],
-        "{\"kind\": \"resolves\", \"subject\": \"b.N\", \"object\": \"c/m.py\", \"at\": \"plan:p\"}\n{\"kind\": \"defines\", \"subject\": \"b.N\", \"value\": \"type\", \"at\": \"plan:p\"}\n",
-    );
-    let r = result(&s, "b.N");
-    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
-    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c/m.py"), "{s}");
-}
-
-#[test]
 fn a_name_has_the_same_place_to_read_wherever_it_is_written_in_a_column() {
     // b.M.s の頭 b.M の `resolves` は読んでいない b/m.py を指す。b.M.s を `object` に書いても、後ろに名前の続く `via` に書いても、
     // 局所は b.M.s の答えから決め、同じ読む所(b/m.py)を返す(設計 §6)。
@@ -723,4 +707,36 @@ fn a_name_has_the_same_place_to_read_wherever_it_is_written_in_a_column() {
         assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{name}: {s}");
         assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "b/m.py"), "{name}: {s}");
     }
+}
+
+#[test]
+fn a_name_under_a_redefined_unread_type_has_one_answer_on_every_path() {
+    // m.C は引数の型として名指されるだけで、候補が b/c.py に定義し直す。m.C.x そのものの `resolves` は外部を指すので、
+    // 段は `resolves` の解決で外部の要素に決まる(§3.3)。外部の要素はフィールドでないので、書き込みの列は決まらず、局所も決まらない(§6)。
+    let (s, _) = split_repo(
+        "split-redefined-external-member",
+        &[(
+            "a/m.py",
+            "{\"kind\": \"defines\", \"subject\": \"m.f\", \"value\": \"operation\", \"params\": {\"c\": \"m.C\"}, \"at\": \"a/m.py:1@blob:aaaaaaa\"}\n{\"kind\": \"writes\", \"subject\": \"m.f\", \"object\": \"m.C.x\", \"value\": \"1\", \"at\": \"a/m.py:2@blob:aaaaaaa\"}\n{\"kind\": \"resolves\", \"subject\": \"m.C.x\", \"object\": \"external:lib\", \"at\": \"a/m.py:3@blob:aaaaaaa\"}\n",
+        )],
+        "{\"kind\": \"defines\", \"subject\": \"m.C\", \"value\": \"type\", \"file\": \"b/c.py\", \"at\": \"plan:p\"}\n{\"kind\": \"defines\", \"subject\": \"m.g\", \"value\": \"operation\", \"params\": {}, \"file\": \"b/c.py\", \"at\": \"plan:p\"}\n{\"kind\": \"writes\", \"subject\": \"m.g\", \"object\": \"m.C.x\", \"value\": \"1\", \"at\": \"plan:p\"}\n",
+    );
+    let r = result(&s, "m.C.x");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
+}
+
+#[test]
+fn a_member_of_a_redefined_nested_type_is_in_the_local_of_the_type() {
+    // 変更前の m.A.B.C は、途中の m.A.B を読んでいないので決まらない。候補は m.A.B.C を x/b.py に定義し直す。
+    // 変更後の m.A.B.C.v は、頭 m.A.B.C(候補の型)の直下の名前なので、m.A.B.C の局所 x に属する(§6)。
+    let (s, repo) = split_repo(
+        "split-redefined-nested",
+        &[("m/a.py", "{\"kind\": \"defines\", \"subject\": \"m.A\", \"value\": \"type\", \"at\": \"m/a.py:1@blob:aaaaaaa\"}\n{\"kind\": \"defines\", \"subject\": \"m.f\", \"value\": \"operation\", \"params\": {\"c\": \"m.A.B.C\"}, \"at\": \"m/a.py:2@blob:aaaaaaa\"}\n")],
+        "{\"kind\": \"defines\", \"subject\": \"m.A.B.C\", \"value\": \"type\", \"file\": \"x/b.py\", \"at\": \"plan:p\"}\n{\"kind\": \"defines\", \"subject\": \"x.g\", \"value\": \"operation\", \"params\": {}, \"file\": \"x/b.py\", \"at\": \"plan:p\"}\n{\"kind\": \"writes\", \"subject\": \"x.g\", \"object\": \"m.A.B.C.v\", \"value\": \"1\", \"at\": \"plan:p\"}\n",
+    );
+    let r = result(&s, "p");
+    assert_eq!(r["outcome"], "holds", "{s}");
+    let detail = repo.run(&["show", r["id"].as_str().unwrap()]);
+    assert!(!has(detail["check"]["shared"].as_array().unwrap(), "writes", "x.g", None), "{detail}");
+    assert!(in_local(&repo, "x", "writes", "x.g"), "{s}");
 }

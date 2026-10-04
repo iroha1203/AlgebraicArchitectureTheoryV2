@@ -1291,16 +1291,16 @@ fn unobserved_after(before: &Structure, after: &Structure, overlay: &Overlay, af
     if overlay.removes.iter().any(|x| below(x, e)) {
         return None;
     }
-    // 変更前に定義した所の決まらない要素は、変更後にないと言うソースもない。
-    let path = match before.element(e) {
-        Ok(Answer::Element(f)) => f.defined.into_iter().next(),
+    // 変更前に定義した所の決まらない要素は、変更後にないと言うソースもない。定義した所が二つ以上(曖昧)なら、そのどれかを読んでいなければ沈黙する。
+    let paths = match before.element(e) {
+        Ok(Answer::Element(f)) => f.defined,
         Ok(Answer::External(_) | Answer::Bare) | Err(_) => match before.element(owner(e)) {
-            Ok(Answer::Element(f)) => f.defined.into_iter().next(),
-            Ok(Answer::External(_) | Answer::Bare) | Err(_) => None,
+            Ok(Answer::Element(f)) => f.defined,
+            Ok(Answer::External(_) | Answer::Bare) | Err(_) => BTreeSet::new(),
         },
-    }?;
-    (after_sources.contains(&path) && !after.observed(&path, "structure"))
-        .then(|| Silence { reason: Reason::Unread, read: Some(path), element: None, scope: Some("structure".to_string()) })
+    };
+    let path = paths.into_iter().find(|p| after_sources.contains(p) && !after.observed(p, "structure"))?;
+    Some(Silence { reason: Reason::Unread, read: Some(path), element: None, scope: Some("structure".to_string()) })
 }
 
 /// `sources` のソースのうち、範囲 `scope` を読んでいないもの。読む所として返す。

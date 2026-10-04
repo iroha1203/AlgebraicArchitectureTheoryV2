@@ -840,3 +840,39 @@ fn a_correspondence_from_an_external_end_to_a_former_type_is_silent() {
     let s = compare(&after, &before, Some("p"));
     assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.T" && r["outcome"] == "silent"), "{s}");
 }
+
+#[test]
+fn a_call_under_an_ambiguous_caller_is_silent_where_its_source_was_not_read_after() {
+    // 変更前の m.f は m/a.py と m/b.py の二か所に定義した(曖昧)。m/a.py の呼び出し m.f->mail.send が意味 role を持つ。
+    // 呼び出しの定義した所は持ち主の曖昧な定義した所なので、変更後で m/a.py を読んでいなければ、ないとは言えず沈黙する(設計 §3.3 規則 3、§5.1)。
+    let law = "sources \"m/**\"\n\nreading module = dir(depth: 1)\n\nmeaning role on call\n  \"x\"\n\nlaw keep-role\n  \"y\"\n  about role\n  changes keep\n";
+    let before = Repo::new("ambiguous-caller-before");
+    before.write(".archsig/law/m.law", law);
+    before.write("m/a.py", "# source\n");
+    before.write("m/b.py", "# source\n");
+    before.map(
+        "m/a.py",
+        r#"{"kind": "observed", "subject": "m/a.py", "scope": "structure", "at": "m/a.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m/a.py", "scope": "meaning:role", "at": "m/a.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "at": "m/a.py:1@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.f", "object": "mail.send", "at": "m/a.py:2@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "mail.send", "object": "external:mail", "at": "m/a.py:2@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.f->mail.send", "meaning": "role", "at": "m/a.py:2@blob:aaaaaaa"}
+"#,
+    );
+    let b = r#"{"kind": "observed", "subject": "m/b.py", "scope": "structure", "at": "m/b.py@blob:bbbbbbb"}
+{"kind": "observed", "subject": "m/b.py", "scope": "meaning:role", "at": "m/b.py@blob:bbbbbbb"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {}, "at": "m/b.py:1@blob:bbbbbbb"}
+"#;
+    before.map("m/b.py", b);
+    // 変更後は m/b.py だけを観測し直した。
+    let after = Repo::new("ambiguous-caller");
+    after.write(".archsig/law/m.law", law);
+    after.write("m/a.py", "# source\n");
+    after.write("m/b.py", "# source\n");
+    after.map("m/b.py", b);
+    let s = compare(&after, &before, None);
+    let r = result(&s, "m.f->mail.send");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "m/a.py"), "{s}");
+}
