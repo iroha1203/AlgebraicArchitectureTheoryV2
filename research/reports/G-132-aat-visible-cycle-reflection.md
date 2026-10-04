@@ -1077,7 +1077,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [5対象focused成功, 155source/list/print入力/実print出力一致, standard3axiomsのみ, runtime bool評価とkernel decide witnesses, diff/placeholder/Unicode/privacy/語彙/import/package方向scan]
+  validation_refs: [5対象focused成功, 163source/list/print入力/実print出力一致, standard3axiomsのみ, runtime bool評価とkernel decide witnesses, diff/placeholder/Unicode/privacy/語彙/import/package方向scan]
   blocking_findings: []
   next_obligation: Cの有限bridge判定/反映成功同値と失敗時のラベル/辺/once-cycle/同表実ξ,pを探索から出力
 ```
