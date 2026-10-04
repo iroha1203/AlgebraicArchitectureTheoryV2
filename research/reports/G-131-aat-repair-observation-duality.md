@@ -1449,3 +1449,21 @@ source SHA256は `678907dc35d3acc87f568fc25b174395169efa29f543924d6fe16e9cffbe1f
 現在全文prefixの `lake env lean .tmp/G131Cycle11/W1NumericalEquationScalarAudit.lean` と
 全32個別公理、対象限定の新規資格確認、必要CIを固定headのPR監査へ対応させる。
 同headの別packetと新規正式最終四本で全A–Eを判定するまで、全体はcheckpointを維持する。
+
+### 同じ比較 proof の基本投影 API への接続
+
+head `40a9555e3ba64cbf562c3c450940ac88f3c424ce` の新規単一確認は scalar finding の解消と
+直接対応資格1–4を確認した。
+[確認記録](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5974814699)の
+対象外非中心事項は、同じ二proofの `name/geometry` 展開指定だった。
+指定だけの除去では `(name e).2.2 = e` の投影が残ったため、確認者が名指しした
+基本投影 API `name_value` を追加し、二箇所をこの API と既存
+`differential_apply/correctionValue_e/b/c` へ接続した。既存signature、def/instance値、
+import、台帳statusを保持する。追加補題は原始name構成の基本投影であり、追加仮定なし。
+現在W1NumericalEquationは33個別名、全累積は55source/751明示＋65生成＝816個別名。
+
+current source SHA256は `61e4ecc24c5062440b0e91ffe4890edda73e8038d24570e85c29ea38084bc199`。
+同source actual checkはexit0、33宣言の標準公理summaryのみ。必要prefix検証は
+`lake env lean .tmp/G131Cycle11/W1NumericalEquationProjectionAudit.lean`。
+終了結果・33個別公理・対象限定新規確認・必要CI・root acceptanceをPRで固定してから、
+別packetと新規正式最終四本へ進む。完了判定をこの直接確認だけで更新しない。

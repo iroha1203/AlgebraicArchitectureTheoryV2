@@ -127,6 +127,9 @@ theorem correctionValue_c (u h z v : ZMod 3) :
     W1AuthoredOperations.correctionValue u h z v edgeC = v := by
   simp [W1AuthoredOperations.correctionValue,edgeC,edgeE,edgeA,edgeB]
 
+/-- Basic projection API for the same original six edge names, used by the native differential comparison. -/
+theorem name_value (e : Fin 6) : (name e).2.2 = e := rfl
+
 /-- The first two rows are exactly the same original full native differential on every correction. -/
 theorem original_differential (x y : ZMod 3) (a : Corrections) (f : Bool) :
     faceCoordinates true x y
@@ -136,9 +139,9 @@ theorem original_differential (x y : ZMod 3) (a : Corrections) (f : Bool) :
       differential (fun _ => true) a (if f then 1 else 0) := by
   cases f
   · rw [relative_d1_first,relativeCochain_value,relativeCochain_value]
-    simp [correctionValue_e,correctionValue_b,name,differential_apply,geometry]
+    simp [name_value,correctionValue_e,correctionValue_b,differential_apply]
   · rw [relative_d1_second_negative,relativeCochain_value,relativeCochain_value,relativeCochain_value]
-    simp [correctionValue_e,correctionValue_b,correctionValue_c,name,differential_apply,geometry]
+    simp [name_value,correctionValue_e,correctionValue_b,correctionValue_c,differential_apply]
 
 /-- The same actual signed defect supplies both original face RHS values; b0 is zero. -/
 theorem original_rhs (v : Values) (f : Bool) :
