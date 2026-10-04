@@ -4410,3 +4410,26 @@ fn a_meaning_under_a_redefined_unread_type_makes_the_law_silent() {
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
     assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.T"), "{s}");
 }
+
+#[test]
+fn a_question_mark_name_is_read_where_each_atom_writes_it() {
+    // a.py の a.f と b.py の b.g が、どちらも解析器が解決できなかった呼び出し先 `?x` を呼ぶ。`?` の名前の読む所は、
+    // その名前を書いた Atom の場所なので、b.g の沈黙は b.py を返す(設計 §3.3 の表、マニュアル第5章 問い8)。
+    let repo = Repo::new("question-each-atom");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"*.py\""));
+    for (src, op, extra) in [("a.py", "a.f", "{\"kind\": \"defines\", \"subject\": \"a.U\", \"value\": \"type\", \"at\": \"a.py:3@blob:aaaaaaa\"}\n"), ("b.py", "b.g", "")] {
+        repo.map(
+            src,
+            &format!(
+                "{{\"kind\": \"observed\", \"subject\": \"{src}\", \"scope\": \"structure\", \"at\": \"{src}@blob:aaaaaaa\"}}\n{{\"kind\": \"observed\", \"subject\": \"{src}\", \"scope\": \"meaning:payment-info\", \"at\": \"{src}@blob:aaaaaaa\"}}\n{{\"kind\": \"defines\", \"subject\": \"{op}\", \"value\": \"operation\", \"params\": {{}}, \"at\": \"{src}:1@blob:aaaaaaa\"}}\n{{\"kind\": \"calls\", \"subject\": \"{op}\", \"object\": \"?x\", \"at\": \"{src}:2@blob:aaaaaaa\"}}\n{extra}"
+            ),
+        );
+    }
+    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"a.U\", \"at\": \"plan:p\"}\n");
+    let s = repo.run(&["plan", "check", "p"]);
+    let g: Vec<&Value> = s["results"].as_array().unwrap().iter().filter(|r| r["subject"] == "b.g" && r["outcome"] == "silent").collect();
+    assert!(!g.is_empty(), "{s}");
+    for r in g {
+        assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "b.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+    }
+}

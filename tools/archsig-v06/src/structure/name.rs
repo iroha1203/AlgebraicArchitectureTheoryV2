@@ -443,14 +443,8 @@ impl Structure {
 
     fn element_of(&self, n: &str) -> Resolved {
         match form(n) {
-            // `?` で始まる名前は決まらない。読む所は、その名前を書いた Atom の場所(マニュアル第5章 問い8)。
-            Form::Question => Err(Unknown::new(
-                match self.atoms.iter().find(|a| a.subject == n || a.object.as_deref() == Some(n) || a.via.iter().flatten().any(|v| v == n)) {
-                    Some(a) => locate(question(), a),
-                    None => question(),
-                },
-                Why::Question,
-            )),
+            // `?` で始まる名前は決まらない。読む所は、その名前を書いた Atom の場所(マニュアル第5章 問い8)で、Atom を持つ使う側が付ける。
+            Form::Question => Err(Unknown::new(question(), Why::Question)),
             Form::Param { owner, name } => match self.element(owner).map_err(Unknown::headed)? {
                 Answer::Element(op) if op.kind == "operation" => match op.params.get(name) {
                     Some(t) => Ok(Answer::Element(Found {
@@ -888,12 +882,16 @@ impl Structure {
     }
 
     /// 種類の問い合わせ。名前だけの要素は種類が決まらないので、その名前を読む所とする。
+    /// `?` で始まる名前は、Atom を持たないこの問い合わせでは、その名前が現れる最初の Atom の場所を読む所とする。
     pub fn kind(&self, n: &str) -> Result<String, Silence> {
         match self.element(n) {
             Ok(Answer::Element(e)) => Ok(e.kind),
             Ok(Answer::External(_)) => Err(Silence::new(Reason::Unresolved)),
             Ok(Answer::Bare) => Err(Unknown::unread(n).silence),
-            Err(u) => Err(u.silence),
+            Err(u) => Err(match self.atoms.iter().find(|a| a.subject == n || a.object.as_deref() == Some(n) || a.via.iter().flatten().any(|v| v == n)) {
+                Some(a) if form(n) == Form::Question => locate(u.silence, a),
+                Some(_) | None => u.silence,
+            }),
         }
     }
 

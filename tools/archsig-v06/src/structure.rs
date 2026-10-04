@@ -232,6 +232,8 @@ impl Structure {
                         Ok(Answer::Element(e)) if e.kind == "operation" => (e.name, None),
                         // 外部の要素は、観測した要素へ書き込まない呼び出しとして扱う。
                         Ok(Answer::External(pkg)) => (object.clone(), Some(pkg)),
+                        // `?` の呼び出し先の読む所は、この Atom の場所である。
+                        Err(u) if u.why == Why::Question => return Err(locate(u.silence, a)),
                         Ok(Answer::Element(_) | Answer::Bare) | Err(_) => {
                             return Err(self.operation(&object).err().unwrap_or_else(|| Silence::new(Reason::Unresolved)));
                         }
