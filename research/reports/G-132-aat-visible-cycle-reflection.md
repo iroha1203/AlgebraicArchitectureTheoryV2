@@ -713,3 +713,266 @@ F1はGraphBridge/GraphPeriodsで他moduleの`hopChain`を展開するAPI欠落�
 指摘された2consumerを置換した。既存statementとdef/instance値・import・statusは維持する。
 修正対象3fileと実入力topのfocused確認は成功し、全123明示宣言の公理監査は標準3公理のみ。
 直接対応の資格・解消は新しい単一確認subagentが固定headで判定する。
+
+## Cycle 4 selection
+
+Cycle 3は[最終acceptance](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5255#issuecomment-5979341521)
+を経て通常merge `12a84121c9489bfb467b769e586d567c7f08a136`、
+[Issue同期](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5250#issuecomment-5979351345)
+で選定B1/B2/B3・実整数補正・必要性を受理した。停止条件はない。
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-132-aat-visible-cycle-reflection
+cycle: 4
+goal_blob_sha: 4fb28b116ddd9f9d98cc03834d03a0a68b1ba49d
+base_oid: 12a84121c9489bfb467b769e586d567c7f08a136
+tracking_issue: 5250
+report_path: research/reports/G-132-aat-visible-cycle-reflection.md
+selection:
+  proof_state_ref: Issue cycle3受理 comment5979351345・PR5255最終監査comment5979341521
+  proof_dag_predecessors: [cycle1の生成siteとcontinuous support, cycle2の実切断正規化, cycle3のactual整数補正と既存障害零同値]
+  milestone: Bの原始アフィン遷移から状態層・局所自明化・自由推移作用と実一意gluingを構成し零障害/実補正/大域状態を同値にする
+  proof_obligations:
+    - 任意実整数遷移から自己0・逆向き負・空交差0の遷移を生成しT0からpointwise cocycleを証明
+    - 同じ原始PresentationGroupのアフィンfiberとrestriction付き状態presheafを構成
+    - 係数の局所定数性からsheaf条件を証明し全chartで局所自明化と両逆を構成
+    - 各chartの係数層作用が自由かつ推移的でrestrictionと可換することを証明
+    - 同じproved continuous supportから状態層をAAT siteへ引き戻す
+    - 実correction後のp-nが同じ遷移を通して一致し一意global stateへ貼り合うことを証明
+    - global stateから実chart状態rとn=p-rを回収しd0n=ξ+d0pを証明
+    - 既存障害零/actual correction存在/同じ状態層のglobal section非空の全方向を証明
+  exit_criteria:
+    - 状態層/sheaf条件/局所自明化/自由推移作用は原始ξとT0から生成し結論相当fieldを受け取らない
+    - topologyとAAT siteの同じsupport/restrictionに実gluingを接続
+    - 任意実ξ,pと各actual correctionのp-n localrepresentationを持つunique global state
+    - zero obstruction/correction/global stateの同値とcycle3診断反映条件の適用
+    - 全新宣言のfocused・print axioms・scans・独立PR査読
+  selection_reason: cycle3の実整数補正から残るB状態層と実貼り合わせを放電してB全体を閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [AffineTransition.lean, AffineFibers.lean, AffineStateSheaf.lean, ActualStateGluing.lean, AATStateSheaf.lean]
+  risks: [global nonemptyのfield escape, 通常係数restrictionとaffine transitionの混同, 原始係数をラベル観測で代替, 実p-nとglobalstateの未接続, T0cocycleの供給化]
+  unchecked: [B状態層の未実装義務, C有限表と探索, W1–W3, 全GOALcompletion]
+```
+
+固定GOAL・設計・共通基準を変更せず、CとW1–W3は本cycle後の義務として保持する。
+
+
+### Cycle 4 implementation and premise correspondence
+
+実際の任意整数遷移`ξ`から、幾何的交差が空なら零、自己は零、逆向きは負という
+`transitionValue`を生成する。T0の三重交差空性から、各点で三chartの少なくとも二つが
+一致することを証明し、pointwise cocycleを導く。一般`AffineAtlas`のcocycle fieldは
+この構成で放電する。遷移は元の実辺切断の任意点での値と一致する。
+
+各点のfiberは、その点を含む全chartの互換な原始`PresentationGroup`座標である。
+任意の一chartの任意係数からfiberを生成し、座標同値の両逆を証明する。
+各chartの局所定数座標というprelocal predicateをMathlibのsheafificationへ渡し、
+`TopCat.subsheafToTypes`からrestrictionを持つ状態層を構成する。各chart内でその
+sectionが局所定数係数に同値なことを証明し、係数の点ごとの加法作用が自由かつ
+推移的でrestrictionと可換する。大域stateの存在をrecord fieldへ入れていない。
+
+同じcycle 1のcontinuous supportで状態層を元のAAT siteへ引き戻す。
+`aatLocalTrivialization`のtargetは既存の原始係数層であり、その作用・局所自明化は
+元の係数restrictionおよび状態restrictionと可換する。実base/chartのsupport同値は
+fiber値とrestrictionを保存する明示transportとして実装する。
+
+任意の実補正`n`について`d0(p-n)=-ξ`を元のactual differentialから導き、各点で
+元の実sectionと一致するchart表示をMathlibの状態層の一意gluingへ渡す。
+`aat_corrected_gluing`は元のAAT chart inclusionを通る`p-n`表示を持つ大域切断の
+存在と一意性を証明する。逆方向では、大域状態のchart座標をconnectednessで定数化し、
+元の実cochain同値の逆から`r`を回収して`n=p-r`のactual mismatch式を証明する。
+この両方向により既存障害零・実補正存在・同じAAT大域状態非空を同値にする。
+cycle 3のB3からの整数補正を適用して、独立診断零から実補正と一意gluingを得る。
+
+当初5fileの到達点を維持し、実cochainへの逆接続を内部依存`ActualStateRepair.lean`
+へ分けた6fileとして実装した。終了条件の縮小・cycle途中分割は行っていない。
+
+| material premise | 分類 | 生成・使用と証拠 |
+| --- | --- | --- |
+| 任意のP、K、独立target台と全ξ,p | ambient-boundary | 固定T0、actualAffineAtlasと全actual local dataへの定理 |
+| 自己・逆向き・pointwise cocycle | discharge-required | transitionValue_self/reverse/cocycle、index_eq_of_mem_three、atlasFromCochain |
+| fiber非空と全chart座標の互換性 | discharge-required | fiberFromCoordinate/fiberEquiv、T0 coverからfiber_nonempty |
+| 状態sheaf条件と局所自明化の両逆 | discharge-required | statePrelocal/sheafify/subsheafToTypes、coordinates_locallyConstant、localTrivialization |
+| 既存係数sheafの自由推移作用とrestriction | discharge-required | existsUnique_translateSection、existsUnique_aatTranslateSection、aatTranslateSection_restriction、aatLocalTrivialization_restriction |
+| AAT状態sheaf条件 | discharge-required | 受理cycle 1のcontinuous supportへstateSheafを渡すaatStatePresheaf_isSheaf |
+| 実補正後のcompatibilityと一意gluing | discharge-required | actual_corrected_d0/compatibility、existsUnique_gluing_chart_coordinates、aat_corrected_gluing |
+| 大域状態からの実補正 | discharge-required | stateChartValue_eq/edge、actualStateFromGlobal_d0、actualCorrectionFromGlobal_d0 |
+| 元の障害/補正/大域状態同値 | discharge-required | existingDescent_zero_iff_correction受理APIとcorrection_iff_aat_global_state、existingDescent_zero_iff_aat_global_state |
+| B3と診断零 | direction-hypothesis | exists_actual_repair_and_aat_gluing、diagnostic_zero_iff_aat_global_stateがcycle 3のactual補正・反映を使用 |
+
+構成上の依存は、受理cycle 1 PR5253・cycle 2 PR5254・cycle 3 PR5255のsourceと
+受理refを上記cycle節で固定する。今回使用するstatementと入力は、原始係数、同じactual
+cover/support、`existingDescent_zero_iff_correction`、`exists_actual_integral_correction`、
+`input_reflection_of_nonbridge_visible`であり、全ξ,pへの型とproof-useを確認した。
+標準基盤は固定mathlib `8f9d9cff6bd728b17a24e163c9402775d9e6a365`の
+`TopCat.PrelocalPredicate.sheafify`、`TopCat.subsheafToTypes`、
+`Sheaf.existsUnique_gluing'`、局所定数・開集合のcontinuous embeddingのAPIである。
+それらの適用条件は本cycleのpredicate、patch covering、局所compatibilityから放電する。
+
+### Cycle 4 result（独立査読前のproposal）
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: Bの原始ξからの状態層/局所自明化/係数作用/実一意gluing/零障害と修復と大域状態の全同値を構成
+  exit_criteria_status: [全ξからcocycleと状態sheaf生成, 原始係数の自由推移作用とrestriction, 同じAAT supportからstate sheafと元inclusionの実gluing, 各actual修復のp-nの一意globalstate, globalstateから実修復と全同値, cycle3診断反映から修復gluing, focusedと全114新宣言print公理と機械scan]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [AffineTransition.lean, AffineFibers.lean, AffineStateSheaf.lean, ActualStateGluing.lean, ActualStateRepair.lean, AATStateSheaf.lean]
+  evidence: [Cycle 4 spine declaration list, aat_corrected_gluing, existingDescent_zero_iff_aat_global_state, exists_actual_repair_and_aat_gluing, diagnostic_zero_iff_aat_global_state]
+  claim_mapping:
+    theorem_names: [actualAffineAtlas, stateSheaf, localTrivialization, existsUnique_translateSection, aatStateSheaf, aatLocalTrivialization, existsUnique_aatTranslateSection, aat_corrected_gluing, correction_iff_aat_global_state, existingDescent_zero_iff_aat_global_state, exists_actual_repair_and_aat_gluing]
+    source_labels: [T0の全実局所データ, Bの状態層と実貼り合わせと存在同値]
+    conjuncts: [原始遷移からsheafと全chart局所自明化, 原始係数作用の自由推移性, 元AAT supportとrestrictionへ接続, 全actual補正のp-n一意gluing, 全actual大域stateから元整数修復, 障害零と修復とglobal非空の同値, cycle3診断から修復とgluing]
+    undischarged_assumptions: []
+    acceptance_point: 選定B状態層と実gluing。CとW1–W3と全GOAL独立completionは未完
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [入力からaffine cocycle, fiber構成とchart同値, 局所定数state sheaf, 係数層自由推移作用, AAT連続supportの引き戻し, p-n互換性と元AAT inclusionの一意gluing, globalstateからactual修復, 零障害/修復/global非空の全方向]
+    remaining: [C有限表と探索, W1–W3, 独立全GOALcompletion]
+  certificate_provenance:
+    discharged: [任意actualξとT0三重空性, 同じ原始PresentationGroup, locallyconstant predicate, 同じcycle1 actualsupport, 任意actual補正と元のd0, 任意globalstateとconnected chartから実cochain inverse]
+    unresolved: [選定範囲にはなし]
+  proof_use:
+    used: [tripleEmptyのpointwise cocycle, chart coveringのfiber生成とsheaf gluing, locallyconstant/preconnectedによる両方向chart表示, support.continuousのAAT sheaf, actuald0とmismatchのp-n互換性, globalstate chart値の元actual inverse, cycle3整数補正と障害零同値]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [新6file focused成功, 全114明示宣言print公理は標準3公理のみ, placeholder/Unicode/privacy/語彙/diff/import方向scan]
+  blocking_findings: []
+  next_obligation: Cの有限表T0検証/復号/停止探索/成功同値/同表の実失敗証拠、W1–W3、独立全GOALcompletion
+```
+
+### Cycle 4 spine declaration list
+
+```text
+AAT.AG.VisibleCycleReflection.AffineAtlas
+AAT.AG.VisibleCycleReflection.GeometricCover.transitionValue
+AAT.AG.VisibleCycleReflection.GeometricCover.transitionValue_forward
+AAT.AG.VisibleCycleReflection.GeometricCover.transitionValue_self
+AAT.AG.VisibleCycleReflection.GeometricCover.transitionValue_reverse
+AAT.AG.VisibleCycleReflection.GeometricCover.transitionValue_empty
+AAT.AG.VisibleCycleReflection.GeometricCover.not_mem_three
+AAT.AG.VisibleCycleReflection.GeometricCover.index_eq_of_mem_three
+AAT.AG.VisibleCycleReflection.GeometricCover.transitionValue_cocycle
+AAT.AG.VisibleCycleReflection.GeometricCover.atlasFromCochain
+AAT.AG.VisibleCycleReflection.GeometricCover.actualAffineAtlas
+AAT.AG.VisibleCycleReflection.GeometricCover.actualAffineAtlas_patch
+AAT.AG.VisibleCycleReflection.GeometricCover.actualAffineAtlas_transition
+AAT.AG.VisibleCycleReflection.AffineAtlas.Fiber
+AAT.AG.VisibleCycleReflection.AffineAtlas.coordinate
+AAT.AG.VisibleCycleReflection.AffineAtlas.coordinate_change
+AAT.AG.VisibleCycleReflection.AffineAtlas.fiberFromCoordinate
+AAT.AG.VisibleCycleReflection.AffineAtlas.coordinate_fiberFromCoordinate
+AAT.AG.VisibleCycleReflection.AffineAtlas.fiberEquiv
+AAT.AG.VisibleCycleReflection.AffineAtlas.fiberEquiv_apply
+AAT.AG.VisibleCycleReflection.AffineAtlas.fiberEquiv_symm_apply
+AAT.AG.VisibleCycleReflection.AffineAtlas.fiber_ext
+AAT.AG.VisibleCycleReflection.AffineAtlas.fiber_nonempty
+AAT.AG.VisibleCycleReflection.AffineAtlas.translateFiber
+AAT.AG.VisibleCycleReflection.AffineAtlas.coordinate_translateFiber
+AAT.AG.VisibleCycleReflection.AffineAtlas.translateFiber_zero
+AAT.AG.VisibleCycleReflection.AffineAtlas.translateFiber_add
+AAT.AG.VisibleCycleReflection.AffineAtlas.existsUnique_translateFiber
+AAT.AG.VisibleCycleReflection.AffineAtlas.coordinates
+AAT.AG.VisibleCycleReflection.AffineAtlas.coordinates_change
+AAT.AG.VisibleCycleReflection.AffineAtlas.statePrelocal
+AAT.AG.VisibleCycleReflection.AffineAtlas.stateLocal
+AAT.AG.VisibleCycleReflection.AffineAtlas.stateLocal_pred
+AAT.AG.VisibleCycleReflection.AffineAtlas.stateSheaf
+AAT.AG.VisibleCycleReflection.AffineAtlas.StateSection
+AAT.AG.VisibleCycleReflection.AffineAtlas.stateSheaf_obj
+AAT.AG.VisibleCycleReflection.AffineAtlas.stateSheaf_isSheaf
+AAT.AG.VisibleCycleReflection.AffineAtlas.restrict
+AAT.AG.VisibleCycleReflection.AffineAtlas.restrict_value
+AAT.AG.VisibleCycleReflection.AffineAtlas.stateSheaf_map
+AAT.AG.VisibleCycleReflection.AffineAtlas.sectionEquivOfEq
+AAT.AG.VisibleCycleReflection.AffineAtlas.sectionEquivOfEq_value
+AAT.AG.VisibleCycleReflection.AffineAtlas.sectionEquivOfEq_restrict
+AAT.AG.VisibleCycleReflection.AffineAtlas.coordinates_locallyConstant
+AAT.AG.VisibleCycleReflection.AffineAtlas.sectionFromCoordinates
+AAT.AG.VisibleCycleReflection.AffineAtlas.sectionFromCoordinates_value
+AAT.AG.VisibleCycleReflection.AffineAtlas.localTrivialization
+AAT.AG.VisibleCycleReflection.AffineAtlas.localTrivialization_apply
+AAT.AG.VisibleCycleReflection.AffineAtlas.localTrivialization_symm
+AAT.AG.VisibleCycleReflection.AffineAtlas.localTrivialization_change
+AAT.AG.VisibleCycleReflection.AffineAtlas.localTrivialization_restrict
+AAT.AG.VisibleCycleReflection.AffineAtlas.translateSection
+AAT.AG.VisibleCycleReflection.AffineAtlas.translateSection_value
+AAT.AG.VisibleCycleReflection.AffineAtlas.localTrivialization_translate
+AAT.AG.VisibleCycleReflection.AffineAtlas.translateSection_zero
+AAT.AG.VisibleCycleReflection.AffineAtlas.translateSection_add
+AAT.AG.VisibleCycleReflection.AffineAtlas.sectionAddAction
+AAT.AG.VisibleCycleReflection.AffineAtlas.section_vadd
+AAT.AG.VisibleCycleReflection.AffineAtlas.existsUnique_translateSection
+AAT.AG.VisibleCycleReflection.AffineAtlas.translateSection_restrict
+AAT.AG.VisibleCycleReflection.AffineAtlas.existsUnique_gluing_coordinates
+AAT.AG.VisibleCycleReflection.AffineAtlas.existsUnique_gluing_chart_coordinates
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.actualSectionEquiv
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.actualSectionEquiv_restriction
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.aatLocallyConstantObstructionSectionEquiv_value
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.presentationD0_apply
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.faceEmptyCechCochain0Equiv_value
+AAT.AG.ObstructionDiagnosticBridge.GeneratorPresentation.faceEmptyCechCochain1Equiv_value
+AAT.AG.VisibleCycleReflection.GeometricCover.actualChartSupport_eq
+AAT.AG.VisibleCycleReflection.GeometricCover.actualOverlapSupport_eq
+AAT.AG.VisibleCycleReflection.GeometricCover.actualChartPoint
+AAT.AG.VisibleCycleReflection.GeometricCover.actualOverlapPoint
+AAT.AG.VisibleCycleReflection.GeometricCover.actualChartCoordinates
+AAT.AG.VisibleCycleReflection.GeometricCover.actualChartCoordinates_apply
+AAT.AG.VisibleCycleReflection.GeometricCover.actualChartCoordinates_actual_value
+AAT.AG.VisibleCycleReflection.GeometricCover.actualAffineAtlas_actual_transition_value
+AAT.AG.VisibleCycleReflection.GeometricCover.actual_corrected_edge
+AAT.AG.VisibleCycleReflection.GeometricCover.actual_corrected_compatibility
+AAT.AG.VisibleCycleReflection.GeometricCover.stateChartCoordinates
+AAT.AG.VisibleCycleReflection.GeometricCover.stateChartCoordinates_value
+AAT.AG.VisibleCycleReflection.GeometricCover.stateChartValue
+AAT.AG.VisibleCycleReflection.GeometricCover.stateChartValue_eq
+AAT.AG.VisibleCycleReflection.GeometricCover.stateChartValue_edge
+AAT.AG.VisibleCycleReflection.GeometricCover.actualStateFromGlobal
+AAT.AG.VisibleCycleReflection.GeometricCover.actualStateFromGlobal_coordinates
+AAT.AG.VisibleCycleReflection.GeometricCover.actualStateFromGlobal_d0
+AAT.AG.VisibleCycleReflection.GeometricCover.actual_corrected_d0
+AAT.AG.VisibleCycleReflection.GeometricCover.actual_corrected_gluing
+AAT.AG.VisibleCycleReflection.GeometricCover.actualCorrectionFromGlobal
+AAT.AG.VisibleCycleReflection.GeometricCover.actualCorrectionFromGlobal_d0
+AAT.AG.VisibleCycleReflection.GeometricCover.correction_iff_global_state
+AAT.AG.VisibleCycleReflection.GeometricCover.existingDescent_zero_iff_global_state
+AAT.AG.VisibleCycleReflection.GeometricCover.aatStatePresheaf
+AAT.AG.VisibleCycleReflection.GeometricCover.aatStatePresheaf_isSheaf
+AAT.AG.VisibleCycleReflection.GeometricCover.aatStateSheaf
+AAT.AG.VisibleCycleReflection.GeometricCover.aatStateSheaf_obj
+AAT.AG.VisibleCycleReflection.GeometricCover.aatStateSheaf_map
+AAT.AG.VisibleCycleReflection.GeometricCover.aatLocalTrivialization
+AAT.AG.VisibleCycleReflection.GeometricCover.aatTranslateSection
+AAT.AG.VisibleCycleReflection.GeometricCover.aatTranslateSection_zero
+AAT.AG.VisibleCycleReflection.GeometricCover.aatTranslateSection_add
+AAT.AG.VisibleCycleReflection.GeometricCover.aatLocalTrivialization_translate
+AAT.AG.VisibleCycleReflection.GeometricCover.existsUnique_aatTranslateSection
+AAT.AG.VisibleCycleReflection.GeometricCover.aatTranslateSection_restriction
+AAT.AG.VisibleCycleReflection.GeometricCover.aatLocalTrivialization_restriction
+AAT.AG.VisibleCycleReflection.GeometricCover.actualBaseSupport_eq
+AAT.AG.VisibleCycleReflection.GeometricCover.aatGlobalStateEquiv
+AAT.AG.VisibleCycleReflection.GeometricCover.aatChartStateEquiv
+AAT.AG.VisibleCycleReflection.GeometricCover.aatGlobalStateEquiv_restriction
+AAT.AG.VisibleCycleReflection.GeometricCover.aat_corrected_gluing
+AAT.AG.VisibleCycleReflection.GeometricCover.existingDescent_zero_iff_aat_global_state
+AAT.AG.VisibleCycleReflection.GeometricCover.correction_iff_aat_global_state
+AAT.AG.VisibleCycleReflection.GeometricCover.exists_actual_repair_and_aat_gluing
+AAT.AG.VisibleCycleReflection.GeometricCover.diagnostic_zero_iff_aat_global_state
+```
+
+Cycle 4の新6fileのfocused checkは成功。namespace監査はAffineTransition 30、
+AffineFibers 15、AffineStateSheaf 34、ActualStateGluing 2と元係数ownerの6、
+ActualStateRepair 24、AATStateSheaf 22。明示114宣言のsource/list/実print出力が全件一致し、
+標準3公理のみ。実print出力SHA256 `192fac9c9f811e87c340c8d2b2ab487bb563f7c9cb475727fdccb2609efd4662`。
+6moduleをmanifestとAG importへ登録し、Research aggregateをelaborateせず静的import gateを通す。
+placeholder/hidden/BiDi/privacy/語彙/diff scanはclean。固定GOAL・設計・共通基準とFormalは不変。
+Researchのfull/aggregate build、ローカルFormal full buildは不実行。
+正式4laneとPR固定headのCIは続いて確認する。全GOALのcompletion candidateはnoである。
