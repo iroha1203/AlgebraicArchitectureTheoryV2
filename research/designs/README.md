@@ -11,6 +11,7 @@ GOALごとの構成・証明方針、依存関係、受入条件、既存宣言�
 
 | GOAL | 設計 | tracking Issue |
 | --- | --- | --- |
+| [G-132](../goals/G-132-aat-visible-cycle-reflection.md) | [可視閉路・実比較・有限判定](G-132-aat-visible-cycle-reflection/README.md)、[再利用対応表](G-132-aat-visible-cycle-reflection/reuse-map.md)、[実被覆と指定例](G-132-aat-visible-cycle-reflection/witnesses.md) | 未作成（draft） |
 | [G-130](../goals/G-130-aat-relative-repair-composition.md) | [相対修復・全範囲合成・分類と再利用](G-130-aat-relative-repair-composition/README.md) | [#5132](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5132) |
 | [G-131](../goals/G-131-aat-repair-observation-duality.md) | [実入力・観測・出力別最適値の対応](G-131-aat-repair-observation-duality/README.md) | [#5133](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5133) |
 | [G-124](../goals/G-124-aat-local-semantic-reconstruction.md) | [パートIII・IV：C–Eの実装設計](G-124-aat-local-semantic-reconstruction/README.md)、[再利用対応表](G-124-aat-local-semantic-reconstruction/reuse-map.md) | [#4711](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4711) |
