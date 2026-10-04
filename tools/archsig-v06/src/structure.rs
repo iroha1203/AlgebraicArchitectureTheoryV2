@@ -638,6 +638,8 @@ pub enum Gap {
     Member(String, String),
     /// 型(左)のフィールドの名前(右)が、変更前の構造で受け継ぎから決まらなかった。変更前の構造で問い合わせる。
     Before(String, String),
+    /// 式の中の道で、型(左、引数かフィールドの型)のフィールドの名前(右)が決まらなかった。型と分かっているので、`typed_member` で問い合わせる。
+    Path(String, String),
     /// 式を読めなかった。
     Unreadable,
     /// 式の字句の数が上限を超えた。ArchSig の側の限界なので、読み直しても決まらない。
@@ -854,11 +856,11 @@ fn trace(s: &Structure, prior: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) 
                         }
                         names.insert(x);
                     }
-                    // 変更後に決まらなければ、受け継ぎのない型の字句どおりの名前だけを数える(型ごと消えていれば `missing` が先に決まる)。
-                    // 受け継ぎを解けない型の字句どおりの名前は、受け継がれる型のフィールドかもしれない。
+                    // 変更後に決まらなければ、定義を読んだ受け継ぎのない型の字句どおりの名前だけを数える(型ごと消えていれば `missing` が先に決まる)。
+                    // 受け継ぎを解けない型や、定義を読んでいない型(受け継ぎが分からない)の字句どおりの名前は、受け継がれる型のフィールドかもしれない。
                     Err(_) => {
                         gaps.push(Gap::Member(t.to_string(), f.to_string()));
-                        if !s.bases.contains_key(t) {
+                        if !s.bases.contains_key(t) && (s.elements.contains_key(t) || prior.elements.contains_key(t)) {
                             names.insert(o.clone());
                         }
                     }
@@ -964,10 +966,10 @@ impl Structure {
                     }
                     // 受け継いだフィールドは、それを定義した型の名前を名指す。探す途中で決まらなければ、その先は決まらない。
                     let Ok(field) = self.typed_member(&t, f) else {
-                        if !self.bases.contains_key(&t) {
+                        if !self.bases.contains_key(&t) && (self.elements.contains_key(&t) || prior.is_some_and(|p| p.elements.contains_key(&t))) {
                             out.insert(format!("{t}.{f}"));
                         }
-                        gaps.push(Gap::Member(t, f.clone()));
+                        gaps.push(Gap::Path(t, f.clone()));
                         break;
                     };
                     if let Some(p) = prior {
@@ -1020,6 +1022,7 @@ impl Structure {
             Gap::QuestionType(owner) => locate(question(), self.atoms.iter().find(|d| d.kind == "defines" && d.subject == *owner).unwrap_or(a)),
             // 受け継ぎをたどる途中の沈黙を返す。
             Gap::Member(t, f) | Gap::Before(t, f) => self.member(t, f).err().unwrap_or_else(|| Silence::new(Reason::Unresolved)),
+            Gap::Path(t, f) => self.typed_member(t, f).err().unwrap_or_else(|| Silence::new(Reason::Unresolved)),
             // `?` の名前は、名前で探さず、その名前を持つ Atom の場所を返す(マニュアル第5章 問い8)。
             Gap::Name(n) if n.starts_with('?') => locate(question(), a),
             Gap::Name(n) => match self.kind(n) {

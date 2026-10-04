@@ -4913,3 +4913,50 @@ fn a_type_redefined_in_a_base_plan_is_silent_below_a_written_field() {
     let s = repo.run(&["plan", "check", "p"]);
     assert_eq!(result(&s, "m.f")["outcome"], "silent", "{s}");
 }
+
+#[test]
+fn removing_a_field_of_an_unread_type_is_not_missing_by_the_literal_name() {
+    // m.C の定義は読んでいない c.py にある。書き直していない m.h は m.C.t に書き(または o.u に $c.t を書き)、候補は m.C.t を消す。
+    // m.C が受け継ぐなら m.C.t は受け継がれる型のフィールドかもしれないので、字句どおりの名前で `missing` と結論しない。
+    for (name, h) in [
+        ("unread-type-write-removed", r#"{"kind": "writes", "subject": "m.h", "object": "m.C.t", "value": "1", "at": "m.py:21@blob:aaaaaaa"}"#),
+        ("unread-type-path-removed", r#"{"kind": "writes", "subject": "m.h", "object": "m.O.u", "value": "$c.t", "at": "m.py:21@blob:aaaaaaa"}"#),
+    ] {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        repo.map("m.py", &format!("{}{h}\n", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.C", "object": "c.py", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.u", "value": "field", "type": "int", "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.h", "value": "operation", "params": {"c": "m.C", "o": "m.O"}, "at": "m.py:20@blob:aaaaaaa"}
+"#));
+        repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.C.t\", \"at\": \"plan:p\"}\n");
+        let s = repo.run(&["plan", "check", "p"]);
+        assert!(!s["results"].as_array().unwrap().iter().any(|r| r["kind"] == "missing"), "{name}: {s}");
+        assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "c.py"), "{name}: {s}");
+    }
+}
+
+#[test]
+fn a_path_through_a_parameter_type_without_a_definition_says_what_to_read_for_removes() {
+    // m.C には定義も `resolves` もなく、m.C.t に定義がある。書き直していない m.h は o.u に $c.t を書き、候補は m.P.t を消す。
+    // 消える要素を使うかは m.C の受け継ぎで決まるので、m.C を読む所として沈黙する。
+    let repo = Repo::new("parameter-type-path-removes");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.P", "value": "type", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.P.t", "value": "field", "type": "int", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.C.t", "value": "field", "type": "int", "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.u", "value": "field", "type": "int", "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.h", "value": "operation", "params": {"c": "m.C", "o": "m.O"}, "at": "m.py:20@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.h", "object": "m.O.u", "value": "$c.t", "at": "m.py:21@blob:aaaaaaa"}
+"#);
+    repo.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.P.t\", \"at\": \"plan:p\"}\n");
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = s["results"].as_array().unwrap().iter().find(|r| r["subject"] == "m.h" && r["law"].is_null()).unwrap_or_else(|| panic!("{s}"));
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.C" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}
