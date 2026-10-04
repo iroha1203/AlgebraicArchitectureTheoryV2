@@ -754,3 +754,89 @@ fn changes_keep_after_reobservation_of_a_deleted_source_call_or_removed_owner() 
     );
     assert_eq!((result(&s, "m.f->m.g")["outcome"].as_str(), result(&s, "m.f->m.g")["kind"].as_str()), (Some("fails"), Some("missing")), "{s}");
 }
+
+#[test]
+fn an_operation_added_by_the_implementation_with_a_question_mark_is_silent() {
+    // 変更前に m.g はない。実装で足した m.g は ? の値を書く。候補は m.A.x を消す。
+    // m.g が消える要素を使うかは決まらないので、m.g は沈黙する。
+    let law = LAW.replace("\"shop/**\"", "\"*.py\"");
+    let base = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.u", "value": "field", "type": "m.O", "at": "m.py:3@blob:aaaaaaa"}
+"#;
+    // 実装で二か所に定義した(種類が決まらない)m.g と、変更前は型だった m.g も同じ。
+    let g = r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.O.u", "value": "?", "at": "m.py:7@blob:aaaaaaa"}
+"#;
+    let twice = format!("{g}{}\n", r#"{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:8@blob:aaaaaaa"}"#);
+    let was_type = r#"{"kind": "defines", "subject": "m.g", "value": "type", "at": "m.py:6@blob:aaaaaaa"}
+"#;
+    // 消える要素を名指す書き込みも持つと、`missing` は変更前の種類(型)で決まらないので、たどれなかった所で沈黙する。
+    let names_removed = format!("{g}{}\n", r#"{"kind": "writes", "subject": "m.g", "object": "m.A.x", "value": "?", "at": "m.py:8@blob:aaaaaaa"}"#);
+    for (name, old, new) in [
+        ("added-question", "", g.to_string()),
+        ("added-twice", "", twice),
+        ("type-to-operation", was_type, g.to_string()),
+        ("type-to-operation-naming-removed", was_type, names_removed),
+    ] {
+        let before = Repo::new(&format!("{name}-before"));
+        before.write(".archsig/law/m.law", &law);
+        before.write("m.py", "# source\n");
+        before.map("m.py", &format!("{base}{old}{}\n", r#"{"kind": "defines", "subject": "m.A.x", "value": "field", "type": "m.O", "at": "m.py:4@blob:aaaaaaa"}"#));
+        let after = Repo::new(name);
+        after.write(".archsig/law/m.law", &law);
+        after.write("m.py", "# source\n");
+        after.map("m.py", &format!("{base}{new}"));
+        after.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.A.x\", \"at\": \"plan:p\"}\n");
+        let s = compare(&after, &before, Some("p"));
+        assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.g" && r["outcome"] == "silent"), "{name}: {s}");
+    }
+    // 変更前は型で、変更後に m.g の定義を読んでいなければ、消える要素を名指していても `missing` は決まらないので、`removes` の沈黙に入る。
+    let unread_after = r#"{"kind": "writes", "subject": "m.g", "object": "m.O.u", "value": "?", "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.A.x", "value": "1", "at": "m.py:8@blob:aaaaaaa"}
+"#;
+    let before = Repo::new("type-to-unread-before");
+    before.write(".archsig/law/m.law", &law);
+    before.write("m.py", "# source\n");
+    before.map("m.py", &format!("{base}{was_type}{}\n", r#"{"kind": "defines", "subject": "m.A.x", "value": "field", "type": "m.O", "at": "m.py:4@blob:aaaaaaa"}"#));
+    let after = Repo::new("type-to-unread");
+    after.write(".archsig/law/m.law", &law);
+    after.write("m.py", "# source\n");
+    after.map("m.py", &format!("{base}{unread_after}"));
+    after.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"removes\", \"subject\": \"m.A.x\", \"at\": \"plan:p\"}\n");
+    let s = compare(&after, &before, Some("p"));
+    assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "removes" && r["outcome"] == "silent"), "{s}");
+}
+
+#[test]
+fn a_correspondence_from_an_external_end_to_a_former_type_is_silent() {
+    // 変更前の lib.old は外部、m.T は型。実装後の m.T は操作で、m.O.pay と、消える m.A.x に書く。候補は lib.old を m.T に対応させ、m.A.x を消す。
+    // m.T は変更前に型なので `missing` にならない。片方が外部の組として沈黙する。
+    let law = LAW.replace("\"shop/**\"", "\"*.py\"");
+    let base = r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "lib.old", "object": "external:lib", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.pay", "value": "field", "type": "m.O", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.pay", "meaning": "payment-info", "uses": ["m.py:7@blob:aaaaaaa"], "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.A", "value": "type", "at": "m.py:4@blob:aaaaaaa"}
+"#;
+    let before = Repo::new("external-to-former-type-before");
+    before.write(".archsig/law/m.law", &law);
+    before.write("m.py", "# source\n");
+    before.map("m.py", &format!("{base}{}", r#"{"kind": "defines", "subject": "m.A.x", "value": "field", "type": "m.O", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.T", "value": "type", "at": "m.py:6@blob:aaaaaaa"}
+"#));
+    let after = Repo::new("external-to-former-type");
+    after.write(".archsig/law/m.law", &law);
+    after.write("m.py", "# source\n");
+    after.map("m.py", &format!("{base}{}", r#"{"kind": "defines", "subject": "m.T", "value": "operation", "params": {"o": "m.O", "a": "m.A"}, "at": "m.py:6@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.T", "object": "m.O.pay", "value": "0", "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.T", "object": "m.A.x", "value": "1", "at": "m.py:8@blob:aaaaaaa"}
+"#));
+    after.write(".archsig/plans/p/plan.jsonl", "{\"kind\": \"corresponds\", \"subject\": \"lib.old\", \"object\": \"m.T\", \"at\": \"plan:p\"}\n{\"kind\": \"removes\", \"subject\": \"m.A.x\", \"at\": \"plan:p\"}\n");
+    let s = compare(&after, &before, Some("p"));
+    assert!(s["results"].as_array().unwrap().iter().any(|r| r["subject"] == "m.T" && r["outcome"] == "silent"), "{s}");
+}

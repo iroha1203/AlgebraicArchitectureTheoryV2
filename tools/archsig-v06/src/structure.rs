@@ -805,11 +805,12 @@ fn relate(old: &Structure, new: &Structure, before: &[Atom], after: &[Atom], pla
     }
     // 3. 変更前と変更後の両方にある同じ名前の要素は、自分自身に対応する。`removes` した要素は除く。
     //    どちらの側でも、要素は、定義した要素と、定義を読んでいなくても Atom の `subject` に現れる名前である。
+    //    `imports` の `subject` はモジュールで、要素ではない(マニュアル第3章)。
     let names = |s: &Structure, atoms: &[Atom]| -> BTreeSet<String> {
         s.elements
             .keys()
             .cloned()
-            .chain(atoms.iter().filter(|a| a.kind != "observed" && !a.subject.starts_with("local:")).map(|a| a.subject.clone()))
+            .chain(atoms.iter().filter(|a| !matches!(a.kind.as_str(), "observed" | "imports") && !a.subject.starts_with("local:")).map(|a| a.subject.clone()))
             .collect()
     };
     let after_names = names(new, after);
@@ -841,32 +842,48 @@ fn trace(s: &Structure, prior: &Structure, atoms: &[&Atom], skip: &dyn Fn(&str) 
         let op = a.subject.split("->").next().unwrap_or("").to_string();
         let names = named.entry(op.clone()).or_default();
         let mut gaps: Vec<Gap> = Vec::new();
-        for o in a.via.iter().flatten().chain(a.object.as_ref()) {
-            if o.starts_with('?') {
-                gaps.push(Gap::Name(o.to_string()));
-                continue;
+        let fields: Vec<&String> = a.via.iter().flatten().chain(a.object.as_ref()).collect();
+        let known = fields.iter().take_while(|o| !o.starts_with('?')).count();
+        match fields.first().and_then(|f| f.rsplit_once('.')) {
+            // `via` を通る書き込みの `via` と `object` は、最初のフィールドから型でたどった道のフィールドを名指す(設計 §3.6)。
+            // 書き直していない書き込みは、変更後の型のフィールドを名指す。道の上の `?` の名前の先は、名指す要素が決まらない。
+            // 道の各段は 3.5 の受け継ぎで解く。
+            Some((ty, _)) if a.kind == "writes" && fields.len() > 1 && !fields[0].starts_with('?') => {
+                s.named_path(Some(ty.to_string()), ty.to_string(), &field_names(&fields[..known]), Some(prior), stop, names, &mut gaps);
+                if let Some(q) = fields.get(known) {
+                    gaps.push(Gap::Name(q.to_string()));
+                }
             }
-            // 読み書きのフィールドは、受け継いだフィールドなら、それを定義した型のフィールドを名指す。
-            match (matches!(a.kind.as_str(), "writes" | "reads"), o.rsplit_once('.')) {
-                (true, Some((t, f))) => match s.member(t, f) {
-                    Ok(x) => {
-                        match s.inherited_before(prior, t, f, &x) {
-                            Ok(y) => names.extend(y),
-                            Err(_) => gaps.push(Gap::Before(t.to_string(), f.to_string())),
-                        }
-                        names.insert(x);
+            _ if a.kind == "writes" && fields.first().is_some_and(|f| f.starts_with('?')) => gaps.push(Gap::Name(fields[0].to_string())),
+            _ => {
+                for o in fields {
+                    if o.starts_with('?') {
+                        gaps.push(Gap::Name(o.to_string()));
+                        continue;
                     }
-                    // 変更後に決まらなければ、定義を読んだ受け継ぎのない型の字句どおりの名前だけを数える(型ごと消えていれば `missing` が先に決まる)。
-                    // 受け継ぎを解けない型や、定義を読んでいない型(受け継ぎが分からない)の字句どおりの名前は、受け継がれる型のフィールドかもしれない。
-                    Err(_) => {
-                        gaps.push(Gap::Member(t.to_string(), f.to_string()));
-                        if !s.bases.contains_key(t) && (s.elements.contains_key(t) || prior.elements.contains_key(t)) {
+                    // 読み書きのフィールドは、受け継いだフィールドなら、それを定義した型のフィールドを名指す。
+                    match (matches!(a.kind.as_str(), "writes" | "reads"), o.rsplit_once('.')) {
+                        (true, Some((t, f))) => match s.member(t, f) {
+                            Ok(x) => {
+                                match s.inherited_before(prior, t, f, &x) {
+                                    Ok(y) => names.extend(y),
+                                    Err(_) => gaps.push(Gap::Before(t.to_string(), f.to_string())),
+                                }
+                                names.insert(x);
+                            }
+                            // 変更後に決まらなければ、定義を読んだ受け継ぎのない型の字句どおりの名前だけを数える(型ごと消えていれば `missing` が先に決まる)。
+                            // 受け継ぎを解けない型や、定義を読んでいない型(受け継ぎが分からない)の字句どおりの名前は、受け継がれる型のフィールドかもしれない。
+                            Err(_) => {
+                                gaps.push(Gap::Member(t.to_string(), f.to_string()));
+                                if !s.bases.contains_key(t) && (s.elements.contains_key(t) || prior.elements.contains_key(t)) {
+                                    names.insert(o.clone());
+                                }
+                            }
+                        },
+                        _ => {
                             names.insert(o.clone());
                         }
                     }
-                },
-                _ => {
-                    names.insert(o.clone());
                 }
             }
         }
@@ -937,52 +954,58 @@ impl Structure {
         out
     }
 
+    /// 型 `ty` から、フィールドの名前の列 `fields` でたどる道が名指す要素。たどれた所までのフィールドを `out` に入れ、
+    /// たどれなかった所を `gaps` に積む。`owner` は、型が分からないときにその型を決める要素(引数なら操作)。
+    fn named_path(&self, mut ty: Option<String>, mut owner: String, fields: &[String], prior: Option<&Structure>, stop: &dyn Fn(&str) -> bool, out: &mut BTreeSet<String>, gaps: &mut Vec<Gap>) {
+        for f in fields {
+            // 型が分からなければ、その型を決める要素: 引数なら操作、フィールドなら、定義がなければ持ち主の型。
+            let Some(t) = ty else {
+                gaps.push(Gap::Name(owner));
+                break;
+            };
+            // `?` の型の先は、何を名指すかが決まらない。
+            if t.starts_with('?') {
+                gaps.push(Gap::QuestionType(owner));
+                break;
+            }
+            // `stop` の型は、直下のフィールドの名前(`<型>.<名前>`)は決まるが、その先は決まらない。
+            // 受け継ぎを持てば、直下の名前も受け継がれる型のフィールドかもしれないので、数えない。
+            if stop(&t) {
+                if !self.bases.contains_key(&t) {
+                    out.insert(format!("{t}.{f}"));
+                }
+                gaps.push(Gap::Redefined(t));
+                break;
+            }
+            // 受け継いだフィールドは、それを定義した型の名前を名指す(3.5)。探す途中で決まらなければ、その先は決まらない。
+            // 定義を読んだ受け継ぎのない型だけ、字句どおりの名前を数える。
+            let Ok(field) = self.typed_member(&t, f) else {
+                if !self.bases.contains_key(&t) && (self.elements.contains_key(&t) || prior.is_some_and(|p| p.elements.contains_key(&t))) {
+                    out.insert(format!("{t}.{f}"));
+                }
+                gaps.push(Gap::Path(t, f.clone()));
+                break;
+            };
+            if let Some(p) = prior {
+                match self.inherited_before(p, &t, f, &field) {
+                    Ok(y) => out.extend(y),
+                    Err(_) => gaps.push(Gap::Before(t.clone(), f.clone())),
+                }
+            }
+            // 種類の決まらないフィールドの型は、決まらない。
+            ty = self.elements.get(&field).filter(|e| !e.undecided()).and_then(|e| e.ty.clone());
+            owner = if self.elements.contains_key(&field) { field.clone() } else { t };
+            out.insert(field);
+        }
+    }
+
     /// 式の中で名指す要素。`$p.f.g` がたどれる所までのフィールドと、呼び出す操作。
     /// たどれなかった所は `gaps` に積む。その先で何を名指すかは決まらない。
     fn named(&self, op: &str, e: &Expr, prior: Option<&Structure>, stop: &dyn Fn(&str) -> bool, out: &mut BTreeSet<String>, gaps: &mut Vec<Gap>) {
         match e {
             Expr::Path(p, fields) => {
-                let mut ty = self.elements.get(op).and_then(|o| o.params.get(p)).cloned();
-                // 型が分からなければ、その型を決める要素: 引数なら操作、フィールドなら、定義がなければ持ち主の型。
-                let mut owner = op.to_string();
-                for f in fields {
-                    let Some(t) = ty else {
-                        gaps.push(Gap::Name(owner));
-                        break;
-                    };
-                    // `?` の型の先は、何を名指すかが決まらない。
-                    if t.starts_with('?') {
-                        gaps.push(Gap::QuestionType(owner));
-                        break;
-                    }
-                    // `stop` の型は、直下のフィールドの名前(`<型>.<名前>`)は決まるが、その先は決まらない。
-                    // 受け継ぎを持てば、直下の名前も受け継がれる型のフィールドかもしれないので、数えない。
-                    if stop(&t) {
-                        if !self.bases.contains_key(&t) {
-                            out.insert(format!("{t}.{f}"));
-                        }
-                        gaps.push(Gap::Redefined(t));
-                        break;
-                    }
-                    // 受け継いだフィールドは、それを定義した型の名前を名指す。探す途中で決まらなければ、その先は決まらない。
-                    let Ok(field) = self.typed_member(&t, f) else {
-                        if !self.bases.contains_key(&t) && (self.elements.contains_key(&t) || prior.is_some_and(|p| p.elements.contains_key(&t))) {
-                            out.insert(format!("{t}.{f}"));
-                        }
-                        gaps.push(Gap::Path(t, f.clone()));
-                        break;
-                    };
-                    if let Some(p) = prior {
-                        match self.inherited_before(p, &t, f, &field) {
-                            Ok(y) => out.extend(y),
-                            Err(_) => gaps.push(Gap::Before(t.clone(), f.clone())),
-                        }
-                    }
-                    // 種類の決まらないフィールドの型は、決まらない。
-                    ty = self.elements.get(&field).filter(|e| !e.undecided()).and_then(|e| e.ty.clone());
-                    owner = if self.elements.contains_key(&field) { field.clone() } else { t };
-                    out.insert(field);
-                }
+                let ty = self.elements.get(op).and_then(|o| o.params.get(p)).cloned();
+                self.named_path(ty, op.to_string(), fields, prior, stop, out, gaps);
             }
             Expr::Call(name, args) => {
                 if name.starts_with('?') {
@@ -1108,4 +1131,9 @@ fn parse_expr(text: &str) -> Expr {
 fn line(a: &Atom) -> Option<u64> {
     let loc = parse_location(a.at.as_deref()?)?;
     loc.lines?.split('-').next()?.parse().ok()
+}
+
+/// `via` と `object` のフィールドの名前(`<型>.<名前>` の最後の `.` の後)。
+fn field_names(fields: &[&String]) -> Vec<String> {
+    fields.iter().map(|f| f.rsplit_once('.').map_or(f.as_str(), |(_, n)| n).to_string()).collect()
 }
