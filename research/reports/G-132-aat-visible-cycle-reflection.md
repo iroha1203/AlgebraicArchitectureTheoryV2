@@ -1325,3 +1325,242 @@ F2の12instanceにはfinite検査上の役割をdocstringで記した。査読�
 新たに出れば当該headをmergeせず、規定のrejected/次選定へ進む。停止条件は現時点では成立しない。
 
 修正後の163明示宣言source/list/実print一致、標準公理のみ、SHA256 `fa50744e1034169cffa5f838e06d1a3b6f4e769173a2f429d86387debb71afb9`。
+
+### Cycle 5 acceptance sync
+
+最終head `85a99e2c5b76a9391967e87dda94b4ef5a17c30a`、merge `c3782b22f19868e43fd5aec8e7c3761eb3c60df0`。
+[最終内容・acceptance](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5257#issuecomment-5980642448)は正式再監査4laneと有資格単一直接確認を統合し、選定到達点を `proof-obligation-discharged` と受理した。
+最終CI8件SUCCESS、Formal/integrity37206494003・tools37206494018。Research focusedと全163公理print、Formal移植unported。C全体は未完、stop condition:none。
+
+## Cycle 6 selection — Cの有限反映探索と同表の実失敗出力
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-132-aat-visible-cycle-reflection
+cycle: 6
+goal_blob_sha: 4fb28b116ddd9f9d98cc03834d03a0a68b1ba49d
+base_oid: c3782b22f19868e43fd5aec8e7c3761eb3c60df0
+tracking_issue: 5250
+report_path: research/reports/G-132-aat-visible-cycle-reflection.md
+selection:
+  proof_state_ref: cycle5 accepted PR5257 and Issue5250
+  proof_dag_predecessors: [cycles1–5, ActualTableDecode, GraphBridge, ActualCounterinput]
+  milestone: Cの計算探索がB1–B3と同値で失敗時に同じ実入力の証拠を返す
+  proof_obligations: [有限道列挙と探索の停止・soundness/completeness, 削除道からonce-cycle構成, generated labelと全raw edge列の失敗探索, 成功とactual B1–B3の同値, serialized single-edge遷移と同表actual ξ・pの解釈, 零診断・非零原始period・既存障害, 有効正負表runtime]
+  exit_criteria: [選択公理でdataを選ばない有限探索, 成功iff B1/B2/B3, failure λ/e/γ/xが列挙から出力され同表actual入力へ復元, 全対象focusedと公理print・scan]
+  selection_reason: Cの未完構成を閉じて指定Wの同一手続き評価へ直接接続する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [FinitePathSearch.lean, FiniteReflectionSearch.lean, ActualSearchCounterinput.lean, FiniteSearchWitness.lean]
+  risks: [choice-onlyデータ出力, same-table actual入力未接続, 表示順による辺欠落, default Fin topology, 非橋と成分数増加の不一致]
+  unchecked: [Cの探索正確性と失敗データの全構成は本cycleで実装, W1–W3と全GOALcompletionは後続]
+```
+
+### Cycle 6 result proposal
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta:
+    path_enumeration: List.finRange/length recursion gives all walks; List.range chartCount gives every bounded path
+    bridge: deletedPath_none_iff and bridgeTest_true_iff identify the required connected-component increase
+    finite_scan: all source-generated labels × all actual raw edges; visibility decision plus computed deleted path
+    success: checkAndSearch_actual_success is iff B1/B2/B3 on the same validated actual input
+    failure: output λ/e/cycle support/full integer transition/state table; computed deleted-path provenance
+    actual_connection: output_actual_transition and actual_state_zero retain original primitive Cech sections; computed actual cycle and original period; diagnostic cochain/class zero and existing class nonzero
+  exit_criteria_status: [4 targeted files focused success, 97 explicit declarations source/list/print/output exact, runtime and kernel positive/negative/invalid outputs, scans clean]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [FinitePathSearch.lean, FiniteReflectionSearch.lean, ActualSearchCounterinput.lean, FiniteSearchWitness.lean]
+  evidence: [mem_walks, mem_boundedWalks, findPath_none_iff, cycleOfPath_isCycle, cycleOfPath_once, cycleOfPath_coefficient, bridgeTest_true_iff, searchFailure_none_iff, searchFailure_provenance, checkAndSearch_actual_success, SearchFailure.output_actual_transition, SearchFailure.actual_cycle_correct, SearchFailure.actual_period_ne_zero, checkAndSearch_actual_failure]
+  claim_mapping:
+    theorem_names: [checkAndSearch_actual_success, checkAndSearch_actual_failure]
+    source_labels: [C, B1–B3, Bの同表実失敗構成]
+    conjuncts: [computable T0 validation and finite reflection search, success iff all B conditions, failure λ/e/γ/x from enumeration with actual interpretation]
+    undischarged_assumptions: []
+    acceptance_point: C全体のproposal; W1–W3と全GOALcompletionは未完
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [finite enumeration termination and completeness, actual/raw B3 equivalence, actual B1/B2 comparison, raw/actual exact generated label and edge, failure output reconstruction and computed once-cycle]
+    remaining: [W1–W3全指定データと結論, 全GOAL独立completion]
+  certificate_provenance:
+    discharged: [raw T0 checked by cycle5 validator, failure label from rawLabels.attach, invisible proof from finite decision, path from bounded List search, actual input from same original Cech normalization]
+    unresolved: []
+  proof_use:
+    used: [source-generated code membership to actual label, actualGeometry_graph equality to transport computed edge/walk, accepted original basis transition and actual Cech inverse, computed chain coefficient -1 to original primitive period]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [4 selected file focused success, all97 source/list/print/output exact, standard3 axioms only, finite positive/negative/invalid kernel/runtime, diff/Unicode/privacy/placeholder/import/package scan]
+  blocking_findings: []
+  next_obligation: W1–W3の実Alexandrov幾何・原始入力・指定遷移・修復/gluing・同手続き評価
+```
+
+### Cycle 6 claim・前提・再利用・計算経路
+
+`walks` は頂点code順に全隣接点を走査してwalkを前置する。零長は等号でnilを返す。
+`mem_walks`は指定長の全walkと同値、`mem_boundedWalks`は長さが頂点数未満の全walkと同値である。
+`asPath`はsupportのNodupを直接有限検査し、成功した証明からMathlib IsPathを構成する。
+MathlibのIsPath Decidableを経るProp等号castがkernel評価を止めることを確認したため、このdata側の
+検査は直接Nodupとした。経路条件の弱化ではなく `Walk.isPath_def` により同じ条件である。
+`findPath_none_iff`は実Reachableの反証と双方向一致し、必要な探索上限は `IsPath.length_lt` で放電する。
+存在した道をchoiceで選ぶ構成や非計算的Finset.toListは用いない。
+
+削除道を `mapLe` で元graphへ戻し、逆向きの選定辺を前置する。削除graphの隣接性からその辺が
+道に現れないこと、生成閉路がIsCycleであること、辺count=1、符号付きchain成分=-1を証明する。
+`bridgeTest_true_iff`は受理cycle3の成分数同値へ接続する。連結graphに限定しない。
+
+`searchPairs`はrawLabels.attach×全rawEdgesの有限列で、表示順に欠落や重複を許さないcycle5列を使う。
+`failureAt`は同じtargetの可視性を検査して、不可視の場合だけ削除道を探索する。
+`searchFailure_provenance`は返したfのlabel/edgeが列に属し、そのf.pathがdeletedPathの実出力であることを保持する。
+`checkAndSearch`はT0不正表をinvalid、正表の反映条件をsuccess/failureとして分ける。
+
+`FailureOutput`のxは全実辺・全生成ラベルの整数遷移表と全chart状態表である。
+`output_transition_iff`・`output_state_iff`はすべてのrowとその値を特徴づけ、
+`actual_transition_table`・`output_actual_transition`は同じ原始PresentationGroupの実Čech切断へ接続する。
+`actualInput`はこの単一辺基底遷移を元のactual-section inverseで構成し、localStateは表と同じ零である。
+rawとactual graphの証明済み等号で **計算済みの閉路そのもの** をtransportし、別の閉路を選ばない。
+`actual_cycle_correct`は実cycle/once-count/signed-coefficientを保持する。
+`actual_period`は原始係数のperiod=-basisを、`actual_period_ne_zero`はその非零性を証明する。
+独立診断cochain零・類零・既存descent類非零は同じactualInputの定理である。
+
+| material premise | 分類・入力からの生成 | 実使用 |
+| --- | --- | --- |
+| raw finite data | ambient-boundary; T0の表 | List列挙・有限decision |
+| 全射/adequacy/Rq/geometry/target | discharge-required; cycle5 Valid↔有限check | actual P/q/K/target・labelBasis・actual比較と状態層 |
+| 非橋/不可視 | 判定対象・failure構成義務; computed deleted path + visible decision | 原始basis遷移・zero diagnostic・period非零 |
+| bounded completeness | 構成義務; mem_walks/IsPath.length_lt | success iff全label全edge条件 |
+| actual label/edge/walk | 構成義務; generated code + actualGeometry_graph | 同表actualInputとperiod |
+| ξ/p | 失敗時は計算表、成功条件は全actual ξ,p | B1全量化を維持 |
+
+受理predecessorはcycle3 PR5255（GraphBridge、ActualCounterinput）、cycle5 PR5257（表検査と実復号）。
+現在の型、必要定義、実適用引数を確認し、元係数商・独立診断・全ξ,p・same-target台を保持して適用した。
+Mathlib使用版は既存固定版、Walks.mapLe/Path.cons_isCycle/Walk.isPath_def/IsPath.length_ltを確認した。
+新規部分は有限List探索・成功同値・失敗データの計算provenance、接続部分はsame-table actual意味と生成閉路のtransportである。
+
+### Cycle 6 検証と具体的出力
+
+4対象fileのfocusedチェックが成功した。全97明示宣言をsourceから列挙し、print入力と実print出力の順序・件数・重複なしまで照合した。
+公理は `propext`・`Classical.choice`・`Quot.sound` のみ。全対象 `#print axioms` 実出力SHA256:
+`adced4835664153ae0b4f28bd01750e5c06e7dc42a6142cb91906941f579e354`。
+printは依存proofの標準公理を示すもので、有限dataをchoiceで選ぶ計算手続きではない。
+
+runtime: onePoint validate=true/reflection=true。valid nonreflectingTriangle validate=true/reflection=false。
+三辺01/02/12はいずれもbridge=false。失敗はλ=(0,1)、e=(0,1)、γ=[1,0,2,1]。
+遷移rowは01・λ1だけ1、他5rowは零、全6状態rowは零。
+`triangleFailure_codes`が同じ出力をkernel確認し、`triangle_actual_failure`が同じ実入力の零診断・非零既存障害を確認する。
+正例RawNonbridgeVisible/ActualHomologySurjectiveと、同じvalid負例の両否定を提供した。
+missingOpens・missingPrimitiveRelation・emptyTargetはvalidate=false、前二つのcombined invalidをkernel確認した。
+
+`git diff --check`、placeholder/hidden・bidi/privacy/語彙scan、Formal import方向（228modules）、package方向、
+4新moduleのsource/import/registry一対一が成功。固定GOAL・設計・基準に差分なし。
+Research full/aggregate/全file loopおよびlocal Formal full buildは未実行。Formalへの移植はunported。
+PR正式4laneと固定head CIは次段階。全GOAL完了はW1–W3と独立completion後に判定する。
+
+### Cycle 6 明示宣言spine
+
+以下は4新sourceの全97明示宣言である。structure/inductiveの生成field/accessorは各fileのnamespace監査にも含まれる。
+
+```text
+AAT.AG.VisibleCycleReflection.FinitePathSearch.walks
+AAT.AG.VisibleCycleReflection.FinitePathSearch.mem_walks
+AAT.AG.VisibleCycleReflection.FinitePathSearch.boundedWalks
+AAT.AG.VisibleCycleReflection.FinitePathSearch.mem_boundedWalks
+AAT.AG.VisibleCycleReflection.FinitePathSearch.asPath
+AAT.AG.VisibleCycleReflection.FinitePathSearch.asPath_none_iff
+AAT.AG.VisibleCycleReflection.FinitePathSearch.findPath
+AAT.AG.VisibleCycleReflection.FinitePathSearch.findPath_none_iff
+AAT.AG.VisibleCycleReflection.FinitePathSearch.findPath_sound
+AAT.AG.VisibleCycleReflection.Graph.withoutEdgeDecidable
+AAT.AG.VisibleCycleReflection.Graph.restoredPath
+AAT.AG.VisibleCycleReflection.Graph.restoredPath_avoids
+AAT.AG.VisibleCycleReflection.Graph.cycleOfPath
+AAT.AG.VisibleCycleReflection.Graph.cycleOfPath_isCycle
+AAT.AG.VisibleCycleReflection.Graph.cycleOfPath_once
+AAT.AG.VisibleCycleReflection.Graph.cycleOfPath_coefficient
+AAT.AG.VisibleCycleReflection.Graph.not_bridge_of_deleted_path
+AAT.AG.VisibleCycleReflection.FiniteInputTable.rawGraphEdge
+AAT.AG.VisibleCycleReflection.FiniteInputTable.rawGraphEdge_val
+AAT.AG.VisibleCycleReflection.FiniteInputTable.deletedPath
+AAT.AG.VisibleCycleReflection.FiniteInputTable.deletedPath_none_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.bridgeTest
+AAT.AG.VisibleCycleReflection.FiniteInputTable.bridgeTest_true_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.GeneratedRawLabel
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.cycle
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.transition
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.localState
+AAT.AG.VisibleCycleReflection.FiniteInputTable.FailureOutput
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.output
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.output_codes
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.output_transition_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.output_state_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.failureAt
+AAT.AG.VisibleCycleReflection.FiniteInputTable.failureAt_none_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.searchPairs
+AAT.AG.VisibleCycleReflection.FiniteInputTable.mem_searchPairs
+AAT.AG.VisibleCycleReflection.FiniteInputTable.searchFailure
+AAT.AG.VisibleCycleReflection.FiniteInputTable.RawNonbridgeVisible
+AAT.AG.VisibleCycleReflection.FiniteInputTable.searchFailure_none_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.reflectsTest
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.cycle_correct
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.not_bridge
+AAT.AG.VisibleCycleReflection.FiniteInputTable.failureAt_provenance
+AAT.AG.VisibleCycleReflection.FiniteInputTable.searchFailure_provenance
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchResult
+AAT.AG.VisibleCycleReflection.FiniteInputTable.checkAndSearch
+AAT.AG.VisibleCycleReflection.FiniteInputTable.checkAndSearch_invalid_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.checkAndSearch_success_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.checkAndSearch_failure_iff
+AAT.AG.VisibleCycleReflection.Graph.transportEdge
+AAT.AG.VisibleCycleReflection.Graph.transportEdge_val
+AAT.AG.VisibleCycleReflection.Graph.transportEdge_unoriented
+AAT.AG.VisibleCycleReflection.Graph.transportEdge_bridge
+AAT.AG.VisibleCycleReflection.Graph.transportWalk
+AAT.AG.VisibleCycleReflection.Graph.transportWalk_cycle
+AAT.AG.VisibleCycleReflection.Graph.transportWalk_edges
+AAT.AG.VisibleCycleReflection.Graph.transportWalk_coefficient
+AAT.AG.VisibleCycleReflection.FiniteInputTable.rawLabel_generated
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualLabel
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualLabel_code
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualEdge
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualEdge_raw
+AAT.AG.VisibleCycleReflection.FiniteInputTable.raw_nonbridge_iff_actual
+AAT.AG.VisibleCycleReflection.FiniteInputTable.reflectsTest_iff_actual_nonbridge
+AAT.AG.VisibleCycleReflection.FiniteInputTable.reflectsTest_iff_actual_reflection
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.actualInput
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.actualCycle
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.actual_invisible
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.actual_not_bridge
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.actual_cycle_correct
+AAT.AG.VisibleCycleReflection.FiniteInputTable.ActualHomologySurjective
+AAT.AG.VisibleCycleReflection.FiniteInputTable.reflectsTest_iff_actual_homology
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualLabel_eq_iff
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.actual_transition_table
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.actual_state_zero
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.actual_diagnostic_zero
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.actual_period
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.actual_period_ne_zero
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.actual_existing_nonzero
+AAT.AG.VisibleCycleReflection.FiniteInputTable.checkAndSearch_actual_success
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.output_actual_transition
+AAT.AG.VisibleCycleReflection.FiniteInputTable.checkAndSearch_actual_failure
+AAT.AG.VisibleCycleReflection.FiniteSearchWitness.onePoint_search_success
+AAT.AG.VisibleCycleReflection.FiniteSearchWitness.onePoint_raw_nonbridge
+AAT.AG.VisibleCycleReflection.FiniteSearchWitness.onePoint_actual_homology
+AAT.AG.VisibleCycleReflection.FiniteSearchWitness.onePoint_checked_success
+AAT.AG.VisibleCycleReflection.FiniteSearchWitness.triangle_failure_generated
+AAT.AG.VisibleCycleReflection.FiniteSearchWitness.triangleFailure
+AAT.AG.VisibleCycleReflection.FiniteSearchWitness.triangleFailure_search
+AAT.AG.VisibleCycleReflection.FiniteSearchWitness.triangleFailure_codes
+AAT.AG.VisibleCycleReflection.FiniteSearchWitness.triangle_not_raw_nonbridge
+AAT.AG.VisibleCycleReflection.FiniteSearchWitness.triangle_not_actual_homology
+AAT.AG.VisibleCycleReflection.FiniteSearchWitness.triangle_checked_failure
+AAT.AG.VisibleCycleReflection.FiniteSearchWitness.triangle_actual_failure
+AAT.AG.VisibleCycleReflection.FiniteSearchWitness.missingOpens_checked_invalid
+AAT.AG.VisibleCycleReflection.FiniteSearchWitness.missingRelation_checked_invalid
+```

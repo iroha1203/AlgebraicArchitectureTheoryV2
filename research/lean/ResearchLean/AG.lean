@@ -1029,3 +1029,7 @@ import ResearchLean.AG.VisibleCycleReflection.FiniteTopologyTable
 import ResearchLean.AG.VisibleCycleReflection.PrimitiveTableValidation
 import ResearchLean.AG.VisibleCycleReflection.ActualTableDecode
 import ResearchLean.AG.VisibleCycleReflection.FiniteValidationWitness
+import ResearchLean.AG.VisibleCycleReflection.FinitePathSearch
+import ResearchLean.AG.VisibleCycleReflection.FiniteReflectionSearch
+import ResearchLean.AG.VisibleCycleReflection.ActualSearchCounterinput
+import ResearchLean.AG.VisibleCycleReflection.FiniteSearchWitness
