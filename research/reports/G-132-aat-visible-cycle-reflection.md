@@ -1044,7 +1044,7 @@ result:
     - finite validator/validatedはcomputableな有限列挙と原始関係到達性、raw fieldにcertificateなし
     - validate_true_iff/false_iff/validated_some_iff、topologyValid_iff_exists、geometryValid_iff_exists、adequate_iff/reflectionCondition_iff
     - actualReading/actualPresentation/actualGeometry/actualTarget、actual_coverage_admissible、actual_input_factorization
-    - 全新5file focused/全155明示宣言print/scans成功、正式4laneとPR CIは次段階
+    - 全新5file focused/全163明示宣言print/scans成功、正式4laneとPR CIは次段階
   split_reason: none
   completion_candidate: no
   lean_artifacts: [FiniteInputTable.lean, FiniteTopologyTable.lean, PrimitiveTableValidation.lean, ActualTableDecode.lean, FiniteValidationWitness.lean]
@@ -1113,8 +1113,9 @@ G-125/G-104の既受理経路・固定sourceとreview refはcycle2/3の依存記
 非空正例`onePointTable`はT0検査とactual ξ=p=0の存在、全入力反映をkernel確認する。
 open不足・空chart・空target・未全射reading・不十分adequacy・ラベル横断原始R・
 同ラベル未到達・二点分離の否定例を実表で与える。各raw Propには正/負のinstanceがある。
-`ActualReflects`/`ActualNonbridgeVisible`の非自明失敗はaccepted cycle3の任意不可視非橋辺の
-同actual反例に接続しており、有限の指定負例は未完W2で閉じる。
+`ActualReflects`/`ActualNonbridgeVisible`の負instanceは、有効な3chart/6pointの
+`nonreflectingTriangle`上で不可視非橋辺を発火させた同表の両否定で閉じる。
+初回監査の不足F1を修正した証拠であり、未完W2の指定評価は引き続き別義務である。
 このone-chart正例はW1–W3を代替せず、Cの反映検索の成功/失敗とも区別する。
 
 ### Cycle 5 explicit declaration list
@@ -1202,6 +1203,7 @@ AAT.AG.VisibleCycleReflection.FiniteInputTable.presentation_relation
 AAT.AG.VisibleCycleReflection.FiniteInputTable.relationGraph_reachable_iff
 AAT.AG.VisibleCycleReflection.FiniteInputTable.presentation_related_iff
 AAT.AG.VisibleCycleReflection.FiniteInputTable.reflectionCondition_iff
+AAT.AG.VisibleCycleReflection.Graph.unoriented_val
 AAT.AG.VisibleCycleReflection.GeometricCover.graphEdgeEquiv_symm_val
 AAT.AG.VisibleCycleReflection.FiniteInputTable.validSurjective
 AAT.AG.VisibleCycleReflection.FiniteInputTable.validAdequate
@@ -1275,12 +1277,19 @@ AAT.AG.VisibleCycleReflection.FiniteValidationWitness.onePoint_nonbridge_visible
 AAT.AG.VisibleCycleReflection.FiniteValidationWitness.onePoint_reflects
 AAT.AG.VisibleCycleReflection.FiniteValidationWitness.ActualData
 AAT.AG.VisibleCycleReflection.FiniteValidationWitness.actualData_nonempty
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.nonreflectingTriangle
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.nonreflectingTriangle_valid
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.triangleLabel
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.triangleRawEdge
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.triangleRawEdge_not_bridge
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.nonreflectingTriangle_not_nonbridge_visible
+AAT.AG.VisibleCycleReflection.FiniteValidationWitness.nonreflectingTriangle_not_reflects
 ```
 
 5新file focused成功。namespace auditはFiniteInputTable 81、FiniteTopologyTable 15、
-PrimitiveTableValidation 12、ActualTableDecode 43、FiniteValidationWitness 30。
-明示155宣言のsource/list/print入力/実出力は一致し、標準3公理のみ（公理不要な宣言も含む）。
-実print SHA256 `cb95048711cd7fd7025263d6d2f6a34835d532df1b0a8eb21f4eeda4ab89fd35`。
+PrimitiveTableValidation 12、ActualTableDecode 44、FiniteValidationWitness 37。
+明示163宣言のsource/list/print入力/実出力は一致し、標準3公理のみ（公理不要な宣言も含む）。
+実print SHA256 `fa50744e1034169cffa5f838e06d1a3b6f4e769173a2f429d86387debb71afb9`。
 5moduleをmanifestとAG importへ登録する。root import方向gate（228module）とpackage方向、
 新moduleのimport source解決・登録一対一を確認した。Researchだけをscan rootにした同gateは
 依存Formal sourceをrootに含めないため未解決local importを報告し、この使用方法を合格根拠にはしない。
@@ -1290,3 +1299,29 @@ Formalは不変、Formal移植はunported。独立PR監査と固定head CIはこ
 Runtime評価は `[true,false,false,false,false,false,false,false,false]`（正例1、不正表8）。
 `validated.isSome`は正例true、Rq欠落表false。実generator/labelの有限列挙は各`[(0,0)]`、
 実edge列挙は空。この観測に加えてkernel `by decide`とgeneric sound/complete theoremを証拠とする。
+
+
+### Cycle 5 initial review and substantive repair
+
+初回head `aa2b68dd80bdac00cfe0b0133d414035e957e464`の独立4lane結果と全findingsを
+[初回監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5257#issuecomment-5980365570)
+と[Issue](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5250#issuecomment-5980365755)へ記録した。
+数学A/LeanA/LeanBはMinor issues、数学BはMajor revisions。全laneが新actual述語の
+有効有限表上の負instance不足F1を挙げ、数学A/LeanAは12判定instanceのdocstring不足F2も挙げた。
+F1の中心/非中心の分類は異なったが、rootは中心nonvacuity findingとして本筋修正と正式再実行を適用する。
+
+F1修正は`nonreflectingTriangle`、そのfinite validatorによる`Valid`、生成label1、
+実交差辺01の非橋性、同じactual入力の`¬ActualNonbridgeVisible`/`¬ActualReflects`である。
+辺01を除いても0–2–1が残り、label1のtarget台は全chartで空なので不可視。
+原始sourceは2、Lawは1、value0/1とreading恒等、Rは空（各同label生成子は一つ）。
+幾何は三頂点と三辺点の全上集合の表で、任意ξ,pの実AAT入力を復号する。
+LeanBの独立反証scratchもこの負instanceが構成可能であることを確認したが、
+repositoryの提供義務はrootのsource収録とfocused/kernel証拠で修正する。
+補助公開API`Graph.unoriented_val`を追加し、既存graph定義を下流で展開せず端点pairを評価する。
+F2の12instanceにはfinite検査上の役割をdocstringで記した。査読済み定理のsignature/既存def値は変更しない。
+
+中心findingへの本筋修正なので直接対応は使わず、同cycle内で新fixed headへfresh独立4laneを
+正式再実行する。正式レビューは初回と本筋修正後の2回まで。中心findingが再実行後に残るか
+新たに出れば当該headをmergeせず、規定のrejected/次選定へ進む。停止条件は現時点では成立しない。
+
+修正後の163明示宣言source/list/実print一致、標準公理のみ、SHA256 `fa50744e1034169cffa5f838e06d1a3b6f4e769173a2f429d86387debb71afb9`。

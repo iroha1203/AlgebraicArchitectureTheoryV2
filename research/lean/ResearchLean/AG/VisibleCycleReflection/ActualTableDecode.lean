@@ -18,6 +18,12 @@ validator; they are not extra fields of the raw input.
 
 noncomputable section
 open CategoryTheory TopologicalSpace Opposite
+namespace AAT.AG.VisibleCycleReflection.Graph
+universe u
+/-- Public unoriented-edge evaluation retains the sorted endpoint pair. -/
+@[simp] theorem unoriented_val {V : Type u} [LinearOrder V] (G : SimpleGraph V)
+    (e : Edge G) : unoriented G e = s(e.1.1,e.1.2) := rfl
+end AAT.AG.VisibleCycleReflection.Graph
 namespace AAT.AG.VisibleCycleReflection.GeometricCover
 universe u
 /-- Public graph/nerve inverse evaluation retains the original ordered pair. -/

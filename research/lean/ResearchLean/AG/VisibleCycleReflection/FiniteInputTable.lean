@@ -87,6 +87,7 @@ def rawGraph : SimpleGraph T.Chart where
 theorem rawGraph_adj (i j : T.Chart) :
     T.rawGraph.Adj i j ↔ i ≠ j ∧ (T.chart i ∩ T.chart j).Nonempty := Iff.rfl
 
+/-- Raw intersection adjacency is decided from the finite geometric columns. -/
 instance rawGraphDecidable : DecidableRel T.rawGraph.Adj :=
   fun i j => inferInstanceAs (Decidable (i ≠ j ∧ (T.chart i ∩ T.chart j).Nonempty))
 
@@ -155,8 +156,10 @@ def VertexVisible (r : T.RawLabel) (i : T.Chart) : Prop :=
 def EdgeVisible (r : T.RawLabel) (ij : T.Chart × T.Chart) : Prop :=
   ∃ t ∈ T.target ij.1 ∩ T.target ij.2, ∃ s : T.Source, T.read s = t ∧ T.eval r.1 s = r.2
 
+/-- Vertex visibility searches finite target and source indices. -/
 instance decidableVertexVisible (r : T.RawLabel) (i : T.Chart) : Decidable (T.VertexVisible r i) :=
   inferInstanceAs (Decidable (∃ t ∈ T.target i, ∃ s : T.Source, T.read s = t ∧ T.eval r.1 s = r.2))
+/-- Edge visibility searches one target in the finite intersection and its source preimages. -/
 instance decidableEdgeVisible (r : T.RawLabel) (ij : T.Chart × T.Chart) : Decidable (T.EdgeVisible r ij) :=
   inferInstanceAs (Decidable (∃ t ∈ T.target ij.1 ∩ T.target ij.2, ∃ s : T.Source,
     T.read s = t ∧ T.eval r.1 s = r.2))
@@ -206,31 +209,40 @@ def Valid : Prop :=
   T.SurjectiveReading ∧ T.AdequateReading ∧ T.LabelPreserving ∧ T.RelationReflecting ∧
     T.TopologyValid ∧ T.GeometryValid ∧ T.TargetValid
 
+/-- Reading surjectivity enumerates targets and all source indices. -/
 instance decidableSurjectiveReading : Decidable T.SurjectiveReading :=
   inferInstanceAs (Decidable (∀ t : Fin T.targetCount, ∃ s : T.Source, T.read s = t))
+/-- Adequacy compares every finite reading fiber and Law value. -/
 instance decidableAdequateReading : Decidable T.AdequateReading :=
   inferInstanceAs (Decidable (∀ (a b : T.Source), T.read a = T.read b →
     ∀ law, T.eval law a = T.eval law b))
+/-- Primitive label preservation checks each Boolean relation entry. -/
 instance decidableLabelPreserving : Decidable T.LabelPreserving :=
   inferInstanceAs (Decidable (∀ g h : T.Generator, T.relation g h = true → T.rawLabel g = T.rawLabel h))
+/-- Rq uses bounded finite walk search in the original relation graph. -/
 instance decidableRelationReflecting : Decidable T.RelationReflecting :=
   inferInstanceAs (Decidable (∀ g h : T.Generator, T.rawLabel g = T.rawLabel h →
     T.relationGraph.Reachable g h))
+/-- Topology validity checks finite open-family union and intersection tables. -/
 instance decidableTopologyValid : Decidable T.TopologyValid :=
   inferInstanceAs (Decidable (∅ ∈ T.opens ∧ Finset.univ ∈ T.opens ∧
     (∀ U : T.opens, ∀ V : T.opens, U.1 ∪ V.1 ∈ T.opens) ∧
     (∀ U : T.opens, ∀ V : T.opens, U.1 ∩ V.1 ∈ T.opens)))
+/-- Preconnectedness checks all finite open-pair separations. -/
 instance decidablePreconnected (S : Finset T.Point) : Decidable (T.Preconnected S) :=
   inferInstanceAs (Decidable (∀ U : T.opens, ∀ V : T.opens, S ⊆ U.1 ∪ V.1 →
     (S ∩ U.1).Nonempty → (S ∩ V.1).Nonempty → (S ∩ (U.1 ∩ V.1)).Nonempty))
+/-- The complete geometric T0 checks use finite point, chart, and open-pair decisions. -/
 instance decidableGeometryValid : Decidable T.GeometryValid :=
   inferInstanceAs (Decidable (0 < T.chartCount ∧
     (∀ i, T.chart i ∈ T.opens) ∧ (∀ i, (T.chart i).Nonempty) ∧
     (∀ x : T.Point, ∃ i, x ∈ T.chart i) ∧ (∀ i, T.Preconnected (T.chart i)) ∧
     (∀ i j, i < j → (T.chart i ∩ T.chart j).Nonempty → T.Preconnected (T.chart i ∩ T.chart j)) ∧
     (∀ i j k, i < j → j < k → T.chart i ∩ T.chart j ∩ T.chart k = ∅)))
+/-- Target nonemptiness checks every independent finite target column. -/
 instance decidableTargetValid : Decidable T.TargetValid :=
   inferInstanceAs (Decidable (∀ i, (T.target i).Nonempty))
+/-- The seven T0 decisions combine without a reflection or repair premise. -/
 instance decidableValid : Decidable T.Valid :=
   inferInstanceAs (Decidable (T.SurjectiveReading ∧ T.AdequateReading ∧ T.LabelPreserving ∧
     T.RelationReflecting ∧ T.TopologyValid ∧ T.GeometryValid ∧ T.TargetValid))
