@@ -1564,3 +1564,321 @@ AAT.AG.VisibleCycleReflection.FiniteSearchWitness.triangle_actual_failure
 AAT.AG.VisibleCycleReflection.FiniteSearchWitness.missingOpens_checked_invalid
 AAT.AG.VisibleCycleReflection.FiniteSearchWitness.missingRelation_checked_invalid
 ```
+
+### Cycle 6 acceptance sync
+
+最終head `9fe54e90b48ad1bca4ad11f895719a94f2967b58`、merge `3f95c920ed254a710b4c84a7f6e1f57052128c17`。
+[最終内容・acceptance](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5258#issuecomment-5981068154)は独立数学2・Lean2全No major findingsを統合しCをproof-obligation-dischargedと受理した。
+97明示宣言公理監査・focused、CI8SUCCESS Formal/integrity37208355205/tools37208355260。Formal unported、未完W1–W3と独立completion、stop condition:none。
+
+## Cycle 7 selection — 指定W1–W3の同じA–Cへの実接続
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-132-aat-visible-cycle-reflection
+cycle: 7
+goal_blob_sha: 4fb28b116ddd9f9d98cc03834d03a0a68b1ba49d
+base_oid: 3f95c920ed254a710b4c84a7f6e1f57052128c17
+tracking_issue: 5250
+report_path: research/reports/G-132-aat-visible-cycle-reflection.md
+selection:
+  proof_state_ref: accepted cycles1–6 and Issue5250
+  proof_dag_predecessors: [ActualTableDecode, FiniteReflectionSearch, ActualSearchCounterinput, AATStateSheaf, IntegralReflection]
+  milestone: W1–W3の固定表・実Alexandrov被覆・全原始条件と指定結論を同じA–Cへ接続する
+  proof_obligations: [頂点以下接続辺点の有限上集合位相とexact actual geometry, 指定source/law/reading/R/Rq/targetと全セル可視性, W1の全入力反映/common代表偽/H1非零/非零mismatch/指定有理potentialとfloor整数補正/実一意gluing, W2の指定34入力/零診断/固定0340period非零/既存障害非零/Cの最初λ1e34と同表actual出力, W3の空可視辺/全入力反映/非零12遷移/指定整数補正と実一意gluing/C成功, A実比較とC評価を各同表で明示接続]
+  exit_criteria: [GOALとwitness設計の固定graph/primitive/target/transitionデータを保存, 全指定結論を実原始係数・実切断・元AAT inclusionで証明, 同じ有限手続きのkernel/runtime結果, 全対象focused/全宣言print/scans]
+  selection_reason: 未完W群を同一incidence幾何構成と既受理A–Cで閉じ全GOALcompletion候補へ到達する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [FiniteIncidenceGeometry.lean, WitnessInputs.lean, WitnessOne.lean, WitnessTwo.lean, WitnessThree.lean]
+  risks: [default Fin topology, 有効表からactual構成の未接続, 共通代表条件への後退, 指定例の差し替え, 理解用graphだけの評価, 整数補正の実gluing未接続]
+  unchecked: [W1–W3の指定全義務は本cycleで実装, 独立全GOALcompletionは別gate]
+```
+
+## Cycle 7 の構成と全指定例の対応
+
+共通の `FiniteIncidenceGeometry` は頂点点を `Fin V`、辺点を `Fin E` として
+`Fin (V+E)` へ別々に埋め込む。`Below` は反射律と頂点点から接続辺点への順序だけを持ち、
+`order` は実PartialOrder、`upperTopology` はMathlibのupper-set topologyである。
+全上集合を列挙した `opens` からdecodeした実位相が `table_topology_eq_upper` により
+この位相に等しい。有限空間のAlexandrov性も確認する。
+
+chartは最小の頂点点と全接続辺点である。`chart_subset_of_vertex` と
+`table_chart_preconnected` は最小点から実連結性を導く。全点の被覆、単純な端点表の
+非空二重交差が単一辺点であること、相異なる三重交差の空性から
+`table_geometry_valid` が実被覆の全T0条件を構成する。幾何の証明をraw表のfieldに入れない。
+primitive列とtarget列は別に固定する。
+
+`WitnessInputs` のW1・W2はSource 0=c, 1=r01, 2=r02, 3=r12、恒等reading、
+Law index0、value0/1、原始関係1→2・2→3を保持する。W3はSource0=c/1=r0、
+恒等readingとvalue0/1、空関係を持つ。surjectivity・adequacy・label preservation・Rqを
+元の有限表からkernel計算で証明し、一般incidence構成と指定targetの非空性を合わせて
+`one_valid`・`two_valid`・`three_valid` を得る。開集合全対の具体表計算を放電証拠にせず、
+上の一般構成からTopologyValid/GeometryValidを証明する。有限validatorの値との同値は既存Cを使う。
+
+| 固定条項 | 同じ実入力での宣言と証拠 |
+| --- | --- |
+| 全Wの原始入力・8/11/5点の上集合位相・完全実被覆 | `WitnessInputs.one/two/three`、各`*_valid`、`*_topology`、`*_edges`。`actualGeometry`・`actualPresentation`・`actualNerve` はcycle5のdecodeを同じ表へ適用 |
+| 全Wの指定ラベル可視性・同じtargetの辺支持 | 各`*_visibility` は元target列で有限検査。`vertexVisible_iff_actual`・`edgeVisible_iff_actual` が同じ実K1へ接続 |
+| W1の全ξ,pに対するB1–B3・C成功 | `WitnessOne.finite_success`・`checked_success`・`all_input_reflection`。一つの零障害入力だけを量化対象にしない |
+| W1の共通代表条件の否定と非零の実H1 | `no_common_label` はchart3の台{c}と元Law評価から矛盾。`actual_h1_nonzero` は元三角形0120を実graphへtransportしたsigned chainの01係数1から証明 |
+| W1のh・xi=d0h・p=0・非零mismatch・既存類零 | `chartValues`・`input`・`state_zero`・`transition_values`・`mismatch_nonzero`・`correction_equation`・`correction_values`・`existing_zero`・`diagnostic_zero` |
+| W1の分数potentialと整数補正 | `rationalPotential` はλ1=(1/2,3/2,1/2,3/2)、他λ零。`rational_differences` は全実辺の元transitionとの整数cast差、`floor_coordinates` と `floor_restores_correction` はfloorを元実切断へ戻してhを回収 |
+| W2の元34遷移・零p・零診断・非零既存類 | `failure_codes`・`input`・`transition_values`・`state_zero`・`diagnostic_zero`・`existing_nonzero`。復元された入力の全実辺値は34だけ元u1、他零 |
+| W2の指定閉路0340と元非零period | `rawGamma`・`gamma`・`gamma_coefficient`・`prescribed_period`・`prescribed_period_nonzero`。periodは元presentationの+u1。`computed_period` は探索の逆向き閉路4304で−u1 |
+| W2の決定的C出力と同表actual意味 | `failure_generated`・`failure`・`failure_search`・`failure_codes`・`checked_failure`。λ1/e34、deleted path304、cycle4304。全serialized integer rowのactual意味はcycle6 `output_actual_transition`・`actual_state_zero` をこのfailureへ適用 |
+| W3の可視λ1辺なしと全入力反映・C成功 | `WitnessInputs.three_visibility`、`WitnessThree.bridges`・`finite_success`・`checked_success`・`all_input_reflection` |
+| W3のxi12=u1・p=0・n=(0,0,u1)・非零mismatch | `input_single_edge` はchart differenceから元実single-edge inputへの等式。`transition_values`・`mismatch_nonzero`・`correction_equation`・`correction_values` |
+| W3の診断cochain零・元既存類零 | `edge_invisible`・`diagnostic_cochain_zero`・`existing_zero`・`diagnostic_zero`。元の不可視辺と元Law診断へ適用 |
+| W1・W3の元AATでの一意貼り合わせ | 各`gluing` は `ActualCorrectedGluing` の全内容を証明。元状態層のbase上の∃!state、元inclusionでのrestriction、実局所自明化による元p−n切断との一致 |
+| 全WのA比較・元既存類と独立診断 | 各`comparison` は全source-generated labelについて同じ実入力の既存actualCechDiagnosticH1Map factorizationを明示適用 |
+
+`ActualCorrectedGluing` はProp定義で、実AAT state sheafのbase object、元inclusionと
+chart trivialization、元coefficient chart切断p−nの等式を展開する。証明・repair・global stateを
+保持するstructure fieldはない。`chartDifferenceInput_gluing` は既受理cycle4の
+`aat_corrected_gluing` を、元chart値から実切断を生成して得た `d0n=z` へ適用する。
+W1/W3の各gluingは指定されたh/nに特殊化する。型の具体展開に依存した長いstatementを
+消費側で繰り返さず、意味を保持した公開Propを使う。公理やsupplied gluingは追加しない。
+
+### 全material premiseと使用先
+
+| premise | role | 状態・生成・使用先 |
+| --- | --- | --- |
+| 一般T0のfinite Source/Law、surj adequate q、label-preserving RとRq | ambient-boundary | 固定GOAL入力。cycle1 Atom、cycle2整数係数とlabel基底、A比較、B全方向に使用。Wでは各原始表のkernel proofでdischarged |
+| 一般T0の位相・非空有限順序chart・被覆・連結chart/非空交差・三重交差空 | ambient-boundary | 固定GOAL入力。cycle1生成実被覆とcycle2実section normalizationに使用。Cでは有限validatorからdecode、Wではincidence構成でdischarged |
+| 独立非空target台と同じtargetの交差 | ambient-boundary | 一般T0の指定入力。cycle2visible coordinate、cycle3B2/B3、C検索に使用。Wでは指定有限列と非空proofでdischarged |
+| point/generator Atom、原始R、site/support/coverage/continuity、元係数層とČech複体 | discharge-required | cycle1と既受理G-125の実係数API。`atomCarrier`→`architectureObject`→`OpenSupport.site`→`contextOpenSupport`→`actualCechCover`。全Wのcomparisonはその同じ入力を使用 |
+| M_R≃Z^Λ、cochain/differential/quotient/representative、既存H1比較のcastとvisible restriction | discharge-required | cycle2の全同定とfactorization。全Wのcomparison、元labelBasis、floorの実cochain復元に使用 |
+| B2/B3 | direction-hypothesis | 十分性では固定GOALの方向仮定。cycle3の三条件同値で全方向を証明。Cのsuccess equivalenceでは判定結論。W1/3はfinite scanから全入力B1–B3を生成、W2は元反例から各否定 |
+| visibleから全graphへのrational potentialと整数補正 | discharge-required | cycle3のvisible cycle criterion/integral reflectionと既受理G-125 floor arithmetic。W1は具体full potentialとfloorの元実切断回収も証明 |
+| 実アフィン状態層・局所自明化・free transitive係数作用・元p−nの一意gluing・三条件同値 | discharge-required | cycle4。状態層のsheaf conditionは構成から証明し、元係数層の作用と制限へ接続。W1/3は具体correctionを元AAT gluingへ適用 |
+| 不可視非橋辺の元single-edge input、once cycleの元非零period、p-only不変性 | discharge-required | cycle3の実counterinputとp-only invariance。cycle6はcomputed path/cycleへ接続。W2は指定34/input/gamma、W3は元入力のsingle-edge等式を証明 |
+| finite T0 validation・生成graph/visibility/bridge・bounded scan・same-table actual出力 | discharge-required | cycle5のvalidatorとactual decode、cycle6の有限List探索と全row復元、success B1–B3 iff・failure actual意味。Wのruntime/kernelsで適用 |
+| W1–W3の全指定入力と必要結論 | discharge-required | 本cycleの上表、全153明示宣言。元入力はsource/eval/q/R/geometry/targetから作り、desired conclusionをraw fieldへ移さない |
+| 結論相当のgluing・vanishing・inclusion-surjectivity・共通代表・全H1実現可能性 | conclusion-equivalent-risk | 新たな入力slotなし。各必要結論は前掲構成・定理・指定例から生成。一般B1は任意の実xi,pを量化 |
+
+### Cycle 7 result（独立査読前のproposal）
+
+```yaml
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 指定W1–W3の原始表と実Alexandrov被覆を生成し全必要結論を同じA–Cへ接続
+  exit_criteria_status: [固定graph/primitive/target/transition保持, 全指定結論の元実入力接続, kernelとruntimeの同表C評価, focusedと全153明示宣言公理と機械scan]
+  split_reason: none
+  completion_candidate: yes
+  lean_artifacts: [FiniteIncidenceGeometry.lean, WitnessInputs.lean, WitnessRepair.lean, WitnessCycles.lean, WitnessOne.lean, WitnessTwo.lean, WitnessThree.lean]
+  evidence: [指定全例の元実比較と修復または非零障害, 全153明示宣言print axioms, finite runtime出力]
+  claim_mapping:
+    theorem_names: [table_topology_eq_upper, table_geometry_valid, one_valid, two_valid, three_valid, WitnessOne.all_input_reflection, WitnessOne.actual_h1_nonzero, WitnessOne.no_common_label, WitnessOne.floor_restores_correction, WitnessOne.gluing, WitnessTwo.prescribed_period, WitnessTwo.existing_nonzero, WitnessTwo.checked_failure, WitnessThree.all_input_reflection, WitnessThree.diagnostic_cochain_zero, WitnessThree.gluing]
+    source_labels: [W1, W2, W3, T0・A・B・Cの同じ実入力への適用]
+    conjuncts: [指定有限incidence上集合位相, 全原始条件と実完全被覆, same-target可視性, 全入力B1–B3, 共通代表偽と実H1非零, 指定整数補正と実gluing, 指定34障害と0340period, finite C出力と復元]
+    undischarged_assumptions: []
+    acceptance_point: 全指定W群の実接続。全GOALの完了判定は別の独立4lane completion gate
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [全Wのprimitive q/R/Rq, exact incidence位相と実被覆, 指定target台, 全指定局所入力, actual補正とgluing, same-table有限手続きの意味]
+    remaining: [独立全GOALcompletion判定と最終記録同期]
+  certificate_provenance:
+    discharged: [原始列と一般incidence構成からValid, 既受理decodeから実AAT入力, 元h/nの逆normalization, bounded deleted-path scanからW2failure]
+    unresolved: []
+  proof_use:
+    used: [Rqの元labelBasis, 実d0 normalization, finite C success equivalence, 元coefficient comparisonとwalk chain pairing, 元AAT state sheaf/inclusion/trivialization, Aの全label factorization]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [7新source focused, 153明示宣言print, namespace生成field公理監査, runtime-cycle7, import/package/registry/placeholder/Unicode/privacy/語彙scan]
+  blocking_findings: []
+  next_obligation: PR正式レビューと独立全GOALcompletion監査、CI、通常merge、Issue最終同期
+```
+
+### Cycle 7 検証
+
+対象7fileのfocused elaborationは成功した。追加で既受理G-125の
+`SpecifiedClassReflection.lean` だけをtargeted checkし、同じ `CommonLabelChartSupport` の
+実型をW1否定へ使用した。source/明示宣言list/全print実出力の順序・153件・重複なしを照合した。
+自動生成field/constructorも各moduleのnamespace auditで検査する。
+公理は `propext`・`Classical.choice`・`Quot.sound` のみ。
+全153明示宣言print stdout+stderr SHA256:
+`a5271a0f5a97a3b396709ce94d818ae7191904cf6be91ad03ac9b956ae46a84b`。
+
+runtime stdout+stderr SHA256:
+`b30c750156950ba24f178f24bb0afb9b115a0c9cf87ea5985c2f8c505a3b9f8b`。
+validateはW1/W2/W3=[true,true,true]、reflectsTest=[true,false,true]。
+W1橋Booleanは01/02/12=false・23=true、W2六辺はすべてfalse、W3二辺はtrue。
+W2出力はλ=(0,1)、e=(3,4)、cycle=[4,3,0,4]、12遷移rowの34/λ1だけ1、
+他11rowは零、10状態rowはすべて零。元実Inputのperiod/diag/existingは同じfailureで証明する。
+kernel proofは各指定scan結果と同じデータを使用し、runtime成功をLean証明の代替にしない。
+
+source/import/registryの一対一、Formal import方向228modules、package方向、
+placeholder・hidden/bidi・privacy・語彙scanと `git diff --check` が成功した。
+固定GOAL・設計・適用基準、Formal、ArchSig、outreachの内容は変更していない。
+Research full/aggregate/全file loopとローカルFormal full buildは実行していない。
+Formal移植はunported。CIのFormal全体buildとResearch証明・focused検証を区別する。
+
+累積cycle1–7の全target対応は上のmaterial premise表に固定した。
+本headはcompletion candidateであり、PR内容判定を使い回さず、別の新規数学2・Lean2による
+全固定GOAL照合、rootの再統合、最終記録同期が通るまで `target-theorem-proved` としない。
+
+### Cycle 7 明示宣言spine
+
+7新sourceの全153明示宣言を以下へ固定する。生成fieldもnamespace監査の対象である。
+
+```text
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.Vertex
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.EdgePoint
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.Point
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.vertexPoint
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.edgePoint
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.Incident
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.incidentDecidable
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.vertexPoint_injective
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.edgePoint_injective
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.vertexPoint_ne_edgePoint
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.Below
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.order
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.UpClosed
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.upClosedDecidable
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.opens
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.mem_opens
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.upperTopology
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.upClosed_iff_upper
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.chart
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.mem_chart
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.vertex_mem_chart
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.vertex_mem_chart_iff
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.edge_mem_chart_iff
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.chart_upClosed
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.table
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.table_topology_valid
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.chart_subset_of_vertex
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.table_chart_preconnected
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.charts_cover
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.mem_overlap_iff
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.overlap_eq_singleton
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.singleton_preconnected
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.triple_empty
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.table_geometry_valid
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.table_topology_eq_upper
+AAT.AG.VisibleCycleReflection.FiniteIncidenceGeometry.upperTopology_alexandrov
+AAT.AG.VisibleCycleReflection.WitnessInputs.relatedPrimitive
+AAT.AG.VisibleCycleReflection.WitnessInputs.relatedPrimitive_valid
+AAT.AG.VisibleCycleReflection.WitnessInputs.forestPrimitive
+AAT.AG.VisibleCycleReflection.WitnessInputs.forestPrimitive_valid
+AAT.AG.VisibleCycleReflection.WitnessInputs.geometryOne
+AAT.AG.VisibleCycleReflection.WitnessInputs.geometryTwo
+AAT.AG.VisibleCycleReflection.WitnessInputs.geometryThree
+AAT.AG.VisibleCycleReflection.WitnessInputs.targetOne
+AAT.AG.VisibleCycleReflection.WitnessInputs.targetTwo
+AAT.AG.VisibleCycleReflection.WitnessInputs.targetThree
+AAT.AG.VisibleCycleReflection.WitnessInputs.one
+AAT.AG.VisibleCycleReflection.WitnessInputs.two
+AAT.AG.VisibleCycleReflection.WitnessInputs.three
+AAT.AG.VisibleCycleReflection.WitnessInputs.one_valid
+AAT.AG.VisibleCycleReflection.WitnessInputs.two_valid
+AAT.AG.VisibleCycleReflection.WitnessInputs.three_valid
+AAT.AG.VisibleCycleReflection.WitnessInputs.one_validates
+AAT.AG.VisibleCycleReflection.WitnessInputs.two_validates
+AAT.AG.VisibleCycleReflection.WitnessInputs.three_validates
+AAT.AG.VisibleCycleReflection.WitnessInputs.one_topology
+AAT.AG.VisibleCycleReflection.WitnessInputs.two_topology
+AAT.AG.VisibleCycleReflection.WitnessInputs.three_topology
+AAT.AG.VisibleCycleReflection.WitnessInputs.one_edges
+AAT.AG.VisibleCycleReflection.WitnessInputs.two_edges
+AAT.AG.VisibleCycleReflection.WitnessInputs.three_edges
+AAT.AG.VisibleCycleReflection.WitnessInputs.one_visibility
+AAT.AG.VisibleCycleReflection.WitnessInputs.two_visibility
+AAT.AG.VisibleCycleReflection.WitnessInputs.three_visibility
+AAT.AG.VisibleCycleReflection.FiniteInputTable.chartCochain
+AAT.AG.VisibleCycleReflection.FiniteInputTable.chartCochain_values
+AAT.AG.VisibleCycleReflection.FiniteInputTable.chartDifferenceInput
+AAT.AG.VisibleCycleReflection.FiniteInputTable.chartDifferenceInput_mismatch
+AAT.AG.VisibleCycleReflection.FiniteInputTable.chartDifferenceInput_transition
+AAT.AG.VisibleCycleReflection.FiniteInputTable.chartDifferenceInput_correction
+AAT.AG.VisibleCycleReflection.FiniteInputTable.chartDifferenceInput_existing_zero
+AAT.AG.VisibleCycleReflection.FiniteInputTable.ActualCorrectedGluing
+AAT.AG.VisibleCycleReflection.FiniteInputTable.chartDifferenceInput_gluing
+AAT.AG.VisibleCycleReflection.FiniteInputTable.chartDifferenceInput_eq_singleEdgeData
+AAT.AG.VisibleCycleReflection.Graph.closedWalkH1_value
+AAT.AG.VisibleCycleReflection.GeometricCover.supportedNerve_chartSupport
+AAT.AG.VisibleCycleReflection.GeometricCover.singleEdgeData_period_one
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualEdge_transport
+AAT.AG.VisibleCycleReflection.FiniteInputTable.actualEdge_val
+AAT.AG.VisibleCycleReflection.FiniteInputTable.SearchFailure.actualInput_singleEdgeData
+AAT.AG.VisibleCycleReflection.WitnessOne.labelOne
+AAT.AG.VisibleCycleReflection.WitnessOne.u1
+AAT.AG.VisibleCycleReflection.WitnessOne.chartValues
+AAT.AG.VisibleCycleReflection.WitnessOne.correction
+AAT.AG.VisibleCycleReflection.WitnessOne.input
+AAT.AG.VisibleCycleReflection.WitnessOne.state_zero
+AAT.AG.VisibleCycleReflection.WitnessOne.correction_equation
+AAT.AG.VisibleCycleReflection.WitnessOne.finite_success
+AAT.AG.VisibleCycleReflection.WitnessOne.checked_success
+AAT.AG.VisibleCycleReflection.WitnessOne.all_input_reflection
+AAT.AG.VisibleCycleReflection.WitnessOne.correction_values
+AAT.AG.VisibleCycleReflection.WitnessOne.transition_values
+AAT.AG.VisibleCycleReflection.WitnessOne.edge01
+AAT.AG.VisibleCycleReflection.WitnessOne.mismatch_nonzero
+AAT.AG.VisibleCycleReflection.WitnessOne.existing_zero
+AAT.AG.VisibleCycleReflection.WitnessOne.diagnostic_zero
+AAT.AG.VisibleCycleReflection.WitnessOne.rationalPotential
+AAT.AG.VisibleCycleReflection.WitnessOne.chartValues_coordinates
+AAT.AG.VisibleCycleReflection.WitnessOne.floor_coordinates
+AAT.AG.VisibleCycleReflection.WitnessOne.rational_differences
+AAT.AG.VisibleCycleReflection.WitnessOne.floorSections
+AAT.AG.VisibleCycleReflection.WitnessOne.floor_restores_correction
+AAT.AG.VisibleCycleReflection.WitnessOne.no_common_label
+AAT.AG.VisibleCycleReflection.WitnessOne.rawTriangle
+AAT.AG.VisibleCycleReflection.WitnessOne.triangle_coefficient
+AAT.AG.VisibleCycleReflection.WitnessOne.actual_h1_nonzero
+AAT.AG.VisibleCycleReflection.WitnessOne.gluing
+AAT.AG.VisibleCycleReflection.WitnessOne.comparison
+AAT.AG.VisibleCycleReflection.WitnessTwo.failure_generated
+AAT.AG.VisibleCycleReflection.WitnessTwo.failure
+AAT.AG.VisibleCycleReflection.WitnessTwo.failure_search
+AAT.AG.VisibleCycleReflection.WitnessTwo.failure_codes
+AAT.AG.VisibleCycleReflection.WitnessTwo.checked_failure
+AAT.AG.VisibleCycleReflection.WitnessTwo.input
+AAT.AG.VisibleCycleReflection.WitnessTwo.u1
+AAT.AG.VisibleCycleReflection.WitnessTwo.state_zero
+AAT.AG.VisibleCycleReflection.WitnessTwo.transition_values
+AAT.AG.VisibleCycleReflection.WitnessTwo.diagnostic_zero
+AAT.AG.VisibleCycleReflection.WitnessTwo.existing_nonzero
+AAT.AG.VisibleCycleReflection.WitnessTwo.reflection_fails
+AAT.AG.VisibleCycleReflection.WitnessTwo.edge34
+AAT.AG.VisibleCycleReflection.WitnessTwo.failure_edge34
+AAT.AG.VisibleCycleReflection.WitnessTwo.rawGamma
+AAT.AG.VisibleCycleReflection.WitnessTwo.gamma_coefficient
+AAT.AG.VisibleCycleReflection.WitnessTwo.gamma
+AAT.AG.VisibleCycleReflection.WitnessTwo.prescribed_period
+AAT.AG.VisibleCycleReflection.WitnessTwo.prescribed_period_nonzero
+AAT.AG.VisibleCycleReflection.WitnessTwo.computed_period
+AAT.AG.VisibleCycleReflection.WitnessTwo.comparison
+AAT.AG.VisibleCycleReflection.WitnessThree.labelOne
+AAT.AG.VisibleCycleReflection.WitnessThree.u1
+AAT.AG.VisibleCycleReflection.WitnessThree.chartValues
+AAT.AG.VisibleCycleReflection.WitnessThree.correction
+AAT.AG.VisibleCycleReflection.WitnessThree.input
+AAT.AG.VisibleCycleReflection.WitnessThree.edge12
+AAT.AG.VisibleCycleReflection.WitnessThree.raw_edge_pairs
+AAT.AG.VisibleCycleReflection.WitnessThree.input_single_edge
+AAT.AG.VisibleCycleReflection.WitnessThree.transition_values
+AAT.AG.VisibleCycleReflection.WitnessThree.state_zero
+AAT.AG.VisibleCycleReflection.WitnessThree.bridges
+AAT.AG.VisibleCycleReflection.WitnessThree.finite_success
+AAT.AG.VisibleCycleReflection.WitnessThree.checked_success
+AAT.AG.VisibleCycleReflection.WitnessThree.all_input_reflection
+AAT.AG.VisibleCycleReflection.WitnessThree.correction_equation
+AAT.AG.VisibleCycleReflection.WitnessThree.correction_values
+AAT.AG.VisibleCycleReflection.WitnessThree.mismatch_nonzero
+AAT.AG.VisibleCycleReflection.WitnessThree.edge_invisible
+AAT.AG.VisibleCycleReflection.WitnessThree.diagnostic_cochain_zero
+AAT.AG.VisibleCycleReflection.WitnessThree.existing_zero
+AAT.AG.VisibleCycleReflection.WitnessThree.diagnostic_zero
+AAT.AG.VisibleCycleReflection.WitnessThree.gluing
+AAT.AG.VisibleCycleReflection.WitnessThree.comparison
+```
