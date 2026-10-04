@@ -1331,8 +1331,8 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
         out.extend(missing(before, after, op, uses));
     }
     // 名指す要素をたどれなかった操作は、消える要素を使うかが決まらない。
-    // 使うと決まった操作(`missing`)、変更後で操作でないと決まった要素、変更後で定義を読んでいない操作(上の沈黙)は除く。
     // 変更前か変更後で操作と決まる操作と、変更後で種類が決まらない操作(実装が足した操作を含む)は沈黙する。
+    // 使うと決まった操作(`missing`)と、どちらでも操作と決まらず、変更後で操作でないと決まった要素か定義を読んでいない要素(上の沈黙)は除く。
     for (op, gaps) in overlay.untraced.iter().filter(|_| !overlay.removes.is_empty()) {
         match (before.kind(op), after.kind(op)) {
             _ if overlay.missing.contains_key(op) => continue,
