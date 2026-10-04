@@ -804,16 +804,16 @@ fn commute(
 ) -> Vec<Finding> {
     let mut out = Vec::new();
     for (a, b) in &overlay.corresponds {
-        // 外部の要素は、観測した要素へ書き込まない呼び出し先として扱う(設計 §3.3)。比べる組ではない。
-        let external = |s: &Structure, n: &str| matches!(s.resolves.get(n), Some(Resolution::External(_)));
-        if external(before, a) || external(after, b) {
+        // 外部の要素は、観測した要素へ書き込まない呼び出し先として扱う(設計 §3.4)。両端が外部なら比べるものがなく、組ではない。
+        // 片方だけが外部なら、その端の種類の問い合わせが沈黙する(下)。
+        let external = |s: &Structure, n: &str| !s.elements.contains_key(n) && matches!(s.resolves.get(n), Some(Resolution::External(_)));
+        if external(before, a) && external(after, b) {
             continue;
         }
         // 消える要素を使う操作は、比べられない。この Law でも `missing` として挙げる。
-        if let Some(uses) = overlay.missing.get(b) {
-            if let Some(f) = missing(before, after, b, uses) {
-                out.push(Finding { law: Some(law.to_string()), ..f });
-            }
+        // `missing` の結果が出なければ(変更前に操作でないと決まる名前)、組として扱う。
+        if let Some(f) = overlay.missing.get(b).and_then(|uses| missing(before, after, b, uses)) {
+            out.push(Finding { law: Some(law.to_string()), ..f });
             continue;
         }
         let (ka, kb) = (corresponds_kind(before, overlay, a), corresponds_kind(after, overlay, b));
@@ -821,7 +821,9 @@ fn commute(
         if matches!(ka, Ok(k) if k != "operation") || matches!(kb, Ok(k) if k != "operation") {
             continue;
         }
+        // 片方だけが外部の組は、外部でない端の沈黙(読めば決まる所を持つ)を先に返す。
         let pair = match (ka, kb) {
+            (Err(_), Err(t)) if external(before, a) => Err(t),
             (Err(s), _) | (_, Err(s)) => Err(s),
             _ => compare(before, after, mapping, &overlay.removes, a, b, meaning, fresh),
         };
@@ -1291,6 +1293,9 @@ fn unread_sources(s: &Structure, sources: &[String], scope: &str) -> Vec<Silence
 /// それらは一つの沈黙にまとめ、読む所があれば返す。
 fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, sources: &[String]) -> Vec<Finding> {
     let mut out = Vec::new();
+    // 消える要素を使うと決まった操作(`missing` の結果を返すもの)。
+    let found: Vec<Finding> = overlay.missing.iter().filter_map(|(op, uses)| missing(before, after, op, uses)).collect();
+    let decided: BTreeSet<&str> = overlay.missing.keys().filter(|op| found.iter().any(|f| &f.subject == *op)).map(String::as_str).collect();
     if !overlay.removes.is_empty() {
         // 変更後にも残る呼び出し先と本体の Atom の `subject` のうち、定義を読んでいないものと、定義がなく解決が決まらないもの。
         let mut unknown: BTreeMap<String, Silence> = BTreeMap::new();
@@ -1300,7 +1305,7 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
                 "writes" | "reads" | "sends" | "receives" | "returns" => vec![a.subject.as_str()],
                 _ => continue,
             };
-            for n in names.into_iter().filter(|n| !n.is_empty() && !overlay.missing.contains_key(*n)) {
+            for n in names.into_iter().filter(|n| !n.is_empty() && !decided.contains(*n)) {
                 let undecided = !after.elements.contains_key(n) && matches!(after.resolves.get(n), Some(Resolution::Undecided));
                 if let Err(s) = after.kind(n)
                     && (s.reason == Reason::Unread || undecided)
@@ -1326,17 +1331,17 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
             });
         }
     }
-    for (op, uses) in &overlay.missing {
-        out.extend(missing(before, after, op, uses));
-    }
+    out.extend(found);
     // 名指す要素をたどれなかった操作は、消える要素を使うかが決まらない。
-    // 使うと決まった操作(`missing`)と、定義を読んでいない操作(上の沈黙)は除く。
+    // 変更前か変更後で操作と決まる操作と、変更後で種類が決まらない操作(実装が足した操作を含む)は沈黙する。
+    // 使うと決まった操作(`missing`)、変更後で操作でないと決まり変更前でも操作でないと決まるか定義を読んでいない要素、
+    // 変更後で定義を読んでいない要素(上の沈黙)は除く。変更前で曖昧な要素は沈黙する。
     for (op, gaps) in overlay.untraced.iter().filter(|_| !overlay.removes.is_empty()) {
-        match before.kind(op) {
-            _ if overlay.missing.contains_key(op) => continue,
-            Ok("operation") => {}
-            Ok(_) | Err(Silence { reason: Reason::Unread, .. }) => continue,
-            Err(_) => {}
+        match (before.kind(op), after.kind(op)) {
+            _ if decided.contains(op.as_str()) => continue,
+            (Ok("operation"), _) | (_, Ok("operation")) => {}
+            (Ok(_) | Err(Silence { reason: Reason::Unread, .. }), Ok(_)) | (_, Err(Silence { reason: Reason::Unread, .. })) => continue,
+            _ => {}
         }
         let mut next: Vec<Silence> = Vec::new();
         for (gap, a) in gaps {
@@ -1354,7 +1359,7 @@ fn removed_uses(before: &Structure, after: &Structure, overlay: &Overlay, source
             subject: op.clone(),
             outcome: "silent",
             reason: Some(reason_name(&next[0].reason)),
-            at: defined_at(before, op).into_iter().collect(),
+            at: defined_at(before, op).or_else(|| defined_at(after, op)).into_iter().collect(),
             theory: Some(THEORY_CHANGES.to_string()),
             next: next.into_iter().filter(|s| s.read.is_some() || s.element.is_some()).collect(),
             ..Finding::default()

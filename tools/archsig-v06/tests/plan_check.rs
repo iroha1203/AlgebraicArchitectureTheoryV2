@@ -4100,3 +4100,54 @@ fn a_write_path_that_begins_with_a_question_mark_names_nothing_after_it() {
     assert!(s["results"].as_array().unwrap().iter().all(|r| r["kind"] != "missing"), "{s}");
     assert!(s["results"].as_array().unwrap().iter().any(|r| r["outcome"] == "silent"), "{s}");
 }
+
+#[test]
+fn a_correspondence_with_one_external_end_is_silent() {
+    // m.clear は m.O.pay(payment-info)に 0 を書く。候補は m.clear を外部の lib.clear に対応させて消す。
+    // 片方だけが外部の組は、外部の端の種類が決まらないので沈黙する。両端が外部なら組にしない。
+    let run = |name: &str, from_external: bool, extra: &str| {
+        let repo = Repo::new(name);
+        repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+        let ext = if from_external { "{\"kind\": \"resolves\", \"subject\": \"lib.old\", \"object\": \"external:lib\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n" } else { "" };
+        repo.map("m.py", &format!("{}{ext}{extra}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.pay", "value": "field", "type": "int", "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.pay", "meaning": "payment-info", "uses": ["m.py:6@blob:aaaaaaa"], "at": "m.py:3@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.clear", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.clear", "object": "m.O.pay", "value": "0", "at": "m.py:6@blob:aaaaaaa"}
+"#));
+        let from = if from_external { "lib.old" } else { "m.clear" };
+        repo.write(".archsig/plans/p/plan.jsonl", &format!("{{\"kind\": \"resolves\", \"subject\": \"lib.clear\", \"object\": \"external:lib\", \"at\": \"plan:p\"}}\n{{\"kind\": \"corresponds\", \"subject\": \"{from}\", \"object\": \"lib.clear\", \"at\": \"plan:p\"}}\n{}", if from_external { "" } else { "{\"kind\": \"removes\", \"subject\": \"m.clear\", \"at\": \"plan:p\"}\n" }));
+        repo.run(&["plan", "check", "p"])
+    };
+    // 定義のある m.clear に外部を指す `resolves` があっても、m.clear は外部の要素ではない(設計 §3.3)。
+    for (name, extra) in [("one-external-end", ""), ("defined-with-external-resolves", "{\"kind\": \"resolves\", \"subject\": \"m.clear\", \"object\": \"external:lib\", \"at\": \"m.py:1@blob:aaaaaaa\"}\n")] {
+        let s = run(name, false, extra);
+        let law = s["results"].as_array().unwrap().iter().filter(|r| r["law"] == "payment-follows-order").collect::<Vec<_>>();
+        assert!(law.iter().any(|r| r["outcome"] == "silent" && r["reason"] == "unresolved") && !law.iter().any(|r| r["outcome"] == "holds"), "{name}: {s}");
+    }
+    let s = run("two-external-ends", true, "");
+    assert!(!s["results"].as_array().unwrap().iter().any(|r| r["outcome"] == "silent" || r["subject"] == "lib.old" || r["subject"] == "lib.clear"), "{s}");
+}
+
+#[test]
+fn a_correspondence_from_an_external_end_returns_what_the_other_end_needs() {
+    // 変更前の lib.old は外部。候補は lib.old を、読んでいない n.py に解決する m.new に対応させる。
+    // 外部でない端 m.new の種類は n.py を読めば決まるので、n.py を読む所として返す。
+    let repo = Repo::new("external-from-end");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "lib.old", "object": "external:lib", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:2@blob:aaaaaaa"}
+"#);
+    repo.write(".archsig/plans/p/plan.jsonl", r#"{"kind": "resolves", "subject": "m.new", "object": "n.py", "at": "plan:p"}
+{"kind": "corresponds", "subject": "lib.old", "object": "m.new", "at": "plan:p"}
+"#);
+    let s = repo.run(&["plan", "check", "p"]);
+    let r = result(&s, "m.new");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["read"] == "n.py" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}
