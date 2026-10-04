@@ -630,12 +630,21 @@ fn fields_of(s: &Structure, names: &BTreeSet<String>, removes: &BTreeSet<String>
     let prefix = format!("{ty}.");
     let member = |n: &str| n.strip_prefix(&prefix).is_some_and(|rest| !rest.is_empty() && !rest.contains('.') && !rest.starts_with('$') && !rest.contains("->"));
     let removed = |n: &str| removes.iter().any(|x| n == x || n.starts_with(&format!("{x}.")) || n.starts_with(&format!("{x}->")));
+    // 受け継がれる型(どの段でも)の同じ名前のフィールドを候補が消していれば、子の型の名前も消えた要素を名指す(設計 §3.6 の変更前の受け継ぎ)。
+    let mut ancestors = BTreeSet::new();
+    let mut todo: Vec<String> = s.bases.get(ty).cloned().unwrap_or_default();
+    while let Some(b) = todo.pop() {
+        if ancestors.insert(b.clone()) {
+            todo.extend(s.bases.get(&b).into_iter().flatten().cloned());
+        }
+    }
+    let removed_above = |n: &str| n.strip_prefix(&prefix).is_some_and(|f| ancestors.iter().any(|b| removed(&format!("{b}.{f}"))));
     let mut silence = names
         .range(prefix.clone()..)
         .take_while(|n| n.starts_with(&prefix))
         // 受け継ぐ型の名前で、受け継ぎで別の型のフィールドに解けるか、解く途中で決まらない名前は、受け継がれる型の側で問い合わせる(設計 §5.4)。
         // 型自身が定義し直した未読の型(`partial`)なら、受け継がれる型の側でも決まらないので除かない。
-        .find(|n| member(n) && !s.elements.contains_key(*n) && !removed(n) && (!s.bases.contains_key(ty) || s.partial.contains_key(ty) || s.access(n).is_ok_and(|x| x == **n)))
+        .find(|n| member(n) && !s.elements.contains_key(*n) && !removed(n) && !removed_above(n) && (!s.bases.contains_key(ty) || s.partial.contains_key(ty) || s.access(n).is_ok_and(|x| x == **n)))
         .map(|n| s.kind(n).err().unwrap_or_else(|| Silence::new(Reason::Unread)));
     let mut out = Vec::new();
     for (name, e) in s.elements.range(prefix.clone()..).take_while(|(n, _)| n.starts_with(&prefix)) {
