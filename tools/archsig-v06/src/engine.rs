@@ -716,6 +716,10 @@ impl Below<'_> {
                 None => Silence::new(Reason::Unresolved),
             });
         }
+        // 元の候補が定義し直した未読の型も、元のフィールドは分からない(`Structure::partial`)。
+        if let Some(e) = s.partial.get(ty) {
+            return Err(e.clone());
+        }
         if s.elements.contains_key(ty) {
             // 候補が定義し直した型でも、変更前にその型を名指していて定義を読んでいなければ、元のフィールドは分からない(設計 §5.1)。
             // 変更前の構造で、定義を読んでいない要素として沈黙する(3.3)。変更前が名指さない型は、候補が新しく定義した型である。

@@ -945,9 +945,11 @@ impl Structure {
                         break;
                     }
                     // `stop` の型は、直下のフィールドの名前(`<型>.<名前>`)は決まるが、その先は決まらない。
-                    // 受け継ぎを持てば、直下の名前も受け継がれる型のフィールドかもしれないので、受け継ぎの解決(`partial` で沈黙する)に任せる。
-                    if stop(&t) && !self.bases.contains_key(&t) {
-                        out.insert(format!("{t}.{f}"));
+                    // 受け継ぎを持てば、直下の名前も受け継がれる型のフィールドかもしれないので、数えない。
+                    if stop(&t) {
+                        if !self.bases.contains_key(&t) {
+                            out.insert(format!("{t}.{f}"));
+                        }
                         gaps.push(Gap::Redefined(t));
                         break;
                     }
