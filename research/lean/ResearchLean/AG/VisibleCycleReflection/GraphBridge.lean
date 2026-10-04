@@ -121,8 +121,7 @@ theorem exists_once_cycle (e : Edge G) (he : ¬G.IsBridge (unoriented G e)) :
     change (unoriented G e :: (p.toPath : G.Walk (left G e) (right G e)).edges).count (unoriented G e) = 1
     rw [List.count_cons_self, List.count_eq_zero.mpr hpath]
   · rw [walkChain_cons, Pi.add_apply, walkChain_eq_zero G _ e hpath, add_zero]
-    unfold hopChain
-    rw [dif_neg (not_lt_of_ge (le_of_lt (left_lt_right G e)))]
+    rw [hopChain_of_not_lt G _ (not_lt_of_ge (le_of_lt (left_lt_right G e)))]
     rw [Pi.neg_apply, edgeUnit_apply, if_pos]
     apply edge_ext G <;> rfl
 

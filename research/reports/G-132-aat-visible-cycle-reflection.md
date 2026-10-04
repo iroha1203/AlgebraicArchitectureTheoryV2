@@ -552,7 +552,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [対象7fileのfocused, 全121明示新宣言のprint axioms, scans, PR固定headのCI]
+  validation_refs: [対象7fileのfocused, 全123明示新宣言のprint axioms, scans, PR固定headのCI]
   blocking_findings: []
   next_obligation: Bのアフィン状態層・局所自明化・actual gluing、続いてCとW1–W3
 ```
@@ -583,6 +583,8 @@ AAT.AG.VisibleCycleReflection.Graph.H1
 AAT.AG.VisibleCycleReflection.Graph.d0
 AAT.AG.VisibleCycleReflection.Graph.d0_apply
 AAT.AG.VisibleCycleReflection.Graph.hopChain
+AAT.AG.VisibleCycleReflection.Graph.hopChain_of_lt
+AAT.AG.VisibleCycleReflection.Graph.hopChain_of_not_lt
 AAT.AG.VisibleCycleReflection.Graph.boundary_hopChain
 AAT.AG.VisibleCycleReflection.Graph.walkChain
 AAT.AG.VisibleCycleReflection.Graph.walkChain_nil
@@ -688,10 +690,10 @@ AAT.AG.VisibleCycleReflection.GeometricCover.input_reflection_iff_homology_surje
 ```
 
 Cycle 3検証：7対象fileのfocused elaborationは成功。namespace標準公理監査は
-GraphChains 34、GraphBridge 19、VisibleCycleCriterion 15、IntegralVisibleReflection 8、
+GraphChains 36、GraphBridge 19、VisibleCycleCriterion 15、IntegralVisibleReflection 8、
 GraphPeriods 9、ActualReflection 13、ActualCounterinput 18。生成内部宣言と別owner namespaceの
 基本APIの扱いが異なるため、この件数は明示spine宣言の単純和ではない。
-明示121新宣言（元namespaceの9基本APIを含む）のsource/report/list/実print出力は全件一致し、
+明示123新宣言（元namespaceの9基本APIを含む）のsource/report/list/実print出力は全件一致し、
 標準3公理のみ。実print出力SHA256 `9fdc27a4187594a636109b87ba3955f10b5e912d04ff47040c9b3293a0268175`。
 全7新moduleをmanifestとAG importに登録し、aggregateはelaborateしない。
 placeholder/hidden/BiDi/privacy/語彙/diff/import方向scanはclean。
@@ -699,3 +701,15 @@ Research import gateは228modulesを静的に走査して成功。
 G125 IntegralReflectionのみのtargeted module check成功（3701jobs、全体buildではない）。
 Research full/aggregateおよびローカルFormal full buildは不実行。
 正式4laneとCIはPRの固定headで確認する。
+
+### Cycle 3 初回査読と非中心API修正
+
+[初回正式監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5255#issuecomment-5979282446)
+はhead `ae3ceee1b1fd26487a758c4f59ec2d817a540954` を4laneで確認した。
+数学BはNo major findings、数学A・LeanA/Bは同じ非中心F1のみでMinor issues。
+中心claimのstatement強度・全入力・premise放電・実入力provenanceにfindingはない。
+F1はGraphBridge/GraphPeriodsで他moduleの`hopChain`を展開するAPI欠落である。
+名指しされた順序別公開API `hopChain_of_lt` / `hopChain_of_not_lt` だけをGraphChainsへ追加し、
+指摘された2consumerを置換した。既存statementとdef/instance値・import・statusは維持する。
+修正対象3fileと実入力topのfocused確認、全123明示宣言の公理監査を行う。
+直接対応の資格・解消は新しい単一確認subagentが固定headで判定する。

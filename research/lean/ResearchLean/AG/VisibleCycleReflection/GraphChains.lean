@@ -104,6 +104,19 @@ def hopChain {a b : V} (h : G.Adj a b) : Edge G → ℚ :=
   if hab : a < b then edgeUnit G ⟨(a,b), hab, h⟩
   else -edgeUnit G ⟨(b,a), lt_of_le_of_ne (le_of_not_gt hab) h.ne.symm, h.symm⟩
 
+omit [Fintype V] in
+/-- Public generation formula for a step in the sorted edge direction. -/
+theorem hopChain_of_lt {a b : V} (h : G.Adj a b) (hab : a < b) :
+    hopChain G h = edgeUnit G ⟨(a,b), hab, h⟩ := by
+  rw [hopChain, dif_pos hab]
+
+omit [Fintype V] in
+/-- Public generation formula for a step opposite to the sorted edge direction. -/
+theorem hopChain_of_not_lt {a b : V} (h : G.Adj a b) (hab : ¬a < b) :
+    hopChain G h =
+      -edgeUnit G ⟨(b,a), lt_of_le_of_ne (le_of_not_gt hab) h.ne.symm, h.symm⟩ := by
+  rw [hopChain, dif_neg hab]
+
 /-- The chain differential of a directed step is its endpoint difference. -/
 theorem boundary_hopChain {a b : V} (h : G.Adj a b) :
     boundary G (hopChain G h) = vertexUnit b - vertexUnit a := by

@@ -59,10 +59,11 @@ variable [Fintype V]
 /-- Rational observation of a step is its standard signed chain pairing. -/
 theorem map_hopValue (f : M →+ ℚ) (z : Edge G → M) {a b : V} (h : G.Adj a b) :
     f (hopValue G z h) = ∑ e, hopChain G h e * f (z e) := by
-  unfold hopValue hopChain
-  split_ifs
-  · simp [edgeUnit_apply]
-  · rw [map_neg]
+  unfold hopValue
+  split_ifs with hab
+  · rw [hopChain_of_lt G h hab]
+    simp [edgeUnit_apply]
+  · rw [hopChain_of_not_lt G h hab, map_neg]
     simp only [Pi.neg_apply,neg_mul,Finset.sum_neg_distrib]
     congr 1
     simp [edgeUnit_apply]
