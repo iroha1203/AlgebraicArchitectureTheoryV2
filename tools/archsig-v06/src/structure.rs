@@ -956,6 +956,7 @@ impl Structure {
 
     /// 型 `ty` から、フィールドの名前の列 `fields` でたどる道が名指す要素。たどれた所までのフィールドを `out` に入れ、
     /// たどれなかった所を `gaps` に積む。`owner` は、型が分からないときにその型を決める要素(引数なら操作)。
+    #[allow(clippy::too_many_arguments)]
     fn named_path(&self, mut ty: Option<String>, mut owner: String, fields: &[String], prior: Option<&Structure>, stop: &dyn Fn(&str) -> bool, out: &mut BTreeSet<String>, gaps: &mut Vec<Gap>) {
         for f in fields {
             // 型が分からなければ、その型を決める要素: 引数なら操作、フィールドなら、定義がなければ持ち主の型。
