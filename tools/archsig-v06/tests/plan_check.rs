@@ -4563,6 +4563,37 @@ fn a_field_of_a_type_whose_source_is_unread_does_not_settle_the_inheritance() {
 }
 
 #[test]
+fn a_parameter_type_without_a_definition_does_not_settle_the_inheritance() {
+    // m.py は m.C.t を定義するが、m.C の定義は読んでいない c.py にある(`resolves`)。m.C が m.P を受け継ぐかは c.py で決まる。
+    // g(p: m.P) は m.P.t に 1 を書き、f(c, o) は g($c) を呼んでから o.u に $c.t を書く。候補は二つの順を入れ替える。
+    let repo = Repo::new("parameter-type-without-definition");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", &format!("{}{}{}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#, [ty("m.P", 3), field("m.P.t", 4, false), field("m.C.t", 6, false)].concat(), r#"{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.u", "value": "field", "type": "int", "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "meaning", "subject": "m.O.u", "meaning": "payment-info", "uses": ["m.py:13@blob:aaaaaaa"], "at": "m.py:9@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"c": "m.C", "o": "m.O"}, "at": "m.py:11@blob:aaaaaaa"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "m.py:12@blob:aaaaaaa"}
+{"kind": "passes", "subject": "m.f->m.g", "object": "m.g.$p", "value": "$c", "at": "m.py:12@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.u", "value": "$c.t", "at": "m.py:13@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"p": "m.P"}, "at": "m.py:15@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.P.t", "value": "1", "at": "m.py:16@blob:aaaaaaa"}
+"#));
+    repo.write(".archsig/plans/p/plan.jsonl", r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"c": "m.C", "o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.u", "value": "$c.t", "at": "plan:p"}
+{"kind": "calls", "subject": "m.f", "object": "m.g", "at": "plan:p"}
+{"kind": "passes", "subject": "m.f->m.g", "object": "m.g.$p", "value": "$c", "at": "plan:p"}
+"#);
+    let s = repo.run(&["plan", "check", "p"]);
+    // m.C は f の引数の型なので型と分かる。定義も `resolves` もないので、受け継ぎが分からず沈黙する(読む所は m.C)。
+    let r = result(&s, "m.f");
+    assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unread")), "{s}");
+    assert!(s["next"].as_array().unwrap().iter().any(|n| n["element"] == "m.C" && n["decides"].as_array().unwrap().contains(&r["id"])), "{s}");
+}
+
+#[test]
 fn a_callee_in_an_expression_whose_inherited_field_changes_is_not_compared_as_the_same_term() {
     // m.C は m.P を受け継ぎ、t は m.P が定義する。k(c) は $c.t を返し、f(c, o) は o.u に m.k($c) を書く。
     // 候補が m.C.t を定義し直すと、k の Atom は字句として同じでも、$c.t がどのフィールドかは決まらない。

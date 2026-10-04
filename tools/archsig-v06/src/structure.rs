@@ -472,8 +472,8 @@ impl Structure {
         if !defined && !self.elements.contains_key(ty) && !self.resolves.contains_key(ty) && self.resolves.contains_key(&own) && !self.external(&own) {
             self.kind(&own)?;
         }
-        // 候補が定義し直した型で、変更前に定義を読んでいなかったものは、元のフィールドが分からない。
-        if !defined && let Some(e) = self.partial.get(ty) {
+        // 候補が定義し直した型で、変更前に定義を読んでいなかったものは、受け継ぎを持てば元のフィールドが分からない。
+        if !defined && self.bases.contains_key(ty) && let Some(e) = self.partial.get(ty) {
             return Err(e.clone());
         }
         if !self.bases.contains_key(ty) {
@@ -541,6 +541,15 @@ impl Structure {
         (found, blocked, internal)
     }
 
+    /// 型と分かっている `ty`(引数やフィールドの型)のフィールド `name`。`ty` の定義を読んでいなければ、
+    /// `ty.name` に定義があっても 3.3 のとおりに沈黙する(モジュールとみなさない)。外部の型は `member` のとおり。
+    pub fn typed_member(&self, ty: &str, name: &str) -> Result<String, Silence> {
+        if !self.elements.contains_key(ty) && !self.external(ty) {
+            self.kind(ty)?;
+        }
+        self.member(ty, name)
+    }
+
     /// `resolves` が外部だけを指し、定義のない要素。
     fn external(&self, name: &str) -> bool {
         !self.elements.contains_key(name) && matches!(self.resolves.get(name), Some(Resolution::External(_)))
@@ -573,7 +582,7 @@ impl Structure {
             if self.ambiguous(&ty) {
                 return Err(Silence::new(Reason::Unresolved));
             }
-            let field = self.member(&ty, n)?;
+            let field = self.typed_member(&ty, n)?;
             self.expect(&field, "field")?;
             place.push(field.clone());
             if i + 1 < names.len() {
@@ -954,7 +963,7 @@ impl Structure {
                         break;
                     }
                     // 受け継いだフィールドは、それを定義した型の名前を名指す。探す途中で決まらなければ、その先は決まらない。
-                    let Ok(field) = self.member(&t, f) else {
+                    let Ok(field) = self.typed_member(&t, f) else {
                         if !self.bases.contains_key(&t) {
                             out.insert(format!("{t}.{f}"));
                         }

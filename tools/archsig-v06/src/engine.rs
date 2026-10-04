@@ -716,10 +716,6 @@ impl Below<'_> {
                 None => Silence::new(Reason::Unresolved),
             });
         }
-        // 元の候補が定義し直した未読の型も、元のフィールドは分からない(`Structure::partial`)。
-        if let Some(e) = s.partial.get(ty) {
-            return Err(e.clone());
-        }
         if s.elements.contains_key(ty) {
             // 候補が定義し直した型でも、変更前にその型を名指していて定義を読んでいなければ、元のフィールドは分からない(設計 §5.1)。
             // 変更前の構造で、定義を読んでいない要素として沈黙する(3.3)。変更前が名指さない型は、候補が新しく定義した型である。
@@ -757,6 +753,11 @@ impl Below<'_> {
         let mut todo: Vec<String> = s.bases.get(ty).cloned().unwrap_or_default();
         while let Some(b) = todo.pop() {
             if !seen.insert(b.clone()) {
+                continue;
+            }
+            // 候補(元の候補を含む)が定義し直した未読の受け継がれる型は、元のフィールドが分からない(`Structure::partial`)。
+            if let Some(e) = s.partial.get(&b) {
+                silence.get_or_insert(e.clone());
                 continue;
             }
             match self.known(s, ty, &b) {
@@ -1202,7 +1203,7 @@ fn body(s: &Structure, op: &str) -> Option<Body> {
                             for f in fields {
                                 let Some(t) = ty else { break };
                                 // 段の型の定義を読んでいないなど、解いた先が決まらなければ、その沈黙を持つ。
-                                let field = match s.member(&t, f) {
+                                let field = match s.typed_member(&t, f) {
                                     Ok(x) => x,
                                     Err(e) => {
                                         unknown.get_or_insert(e);
