@@ -5137,3 +5137,49 @@ fn a_field_the_child_defines_again_is_not_compared_apart_from_the_parent_name() 
     let r = result(&s, "m.f");
     assert_eq!((r["outcome"].as_str(), r["reason"].as_str()), (Some("silent"), Some("unresolved")), "{s}");
 }
+
+#[test]
+fn a_place_mapped_onto_a_field_the_child_defines_again_is_not_compared() {
+    // m.C は m.P を受け継ぐ。f(p: m.P) は m.P.t(payment-info)に 1 を書く。候補は m.C.t を定義して t を定義し直し、m.P.t を m.C.t に対応させる。
+    // 写した場所 [m.C.t] が m.P.t と同じ所かは言語で決まるので、比べずに沈黙する。
+    let types = [ty("m.P", 3), field("m.P.t", 4, true), ty("m.C", 5), inherits("m.C", "m.P")].concat();
+    let repo = Repo::new("mapped-onto-override");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", &format!("{}{types}{}", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "int", "object": "external:builtins", "at": "m.py:1@blob:aaaaaaa"}
+"#, r#"{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"p": "m.P"}, "at": "m.py:23@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.P.t", "value": "1", "at": "m.py:24@blob:aaaaaaa"}
+"#));
+    repo.write(".archsig/plans/p/plan.jsonl", r#"{"kind": "defines", "subject": "m.C.t", "value": "field", "type": "int", "file": "m.py", "at": "plan:p"}
+{"kind": "corresponds", "subject": "m.P.t", "object": "m.C.t", "at": "plan:p"}
+"#);
+    let s = repo.run(&["plan", "check", "p"]);
+    assert!(!s["results"].as_array().unwrap().iter().any(|r| r["outcome"] == "fails"), "{s}");
+}
+
+#[test]
+fn a_name_below_a_type_redefined_in_a_base_plan_with_inheritance_is_silent() {
+    // m.C の定義は読んでいない c.py にある。g(c: m.C) は m.C.x に書く。f(o) は m.O.s(型 m.C)を丸ごと書く。
+    // 元の候補 b が m.C を m.P の受け継ぎ付きで定義し直す。上の候補 p は f の値を変える。m.C.x は元の m.C で決まるので、書いた場所より先は沈黙する。
+    let repo = Repo::new("base-plan-inheritance-name-below");
+    repo.write(".archsig/law/m.law", &LAW.replace("\"shop/**\"", "\"m.py\""));
+    repo.map("m.py", r#"{"kind": "observed", "subject": "m.py", "scope": "structure", "at": "m.py@blob:aaaaaaa"}
+{"kind": "observed", "subject": "m.py", "scope": "meaning:payment-info", "at": "m.py@blob:aaaaaaa"}
+{"kind": "resolves", "subject": "m.C", "object": "c.py", "at": "m.py:1@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.P", "value": "type", "at": "m.py:2@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O", "value": "type", "at": "m.py:4@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.O.s", "value": "field", "type": "m.C", "at": "m.py:5@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "at": "m.py:7@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.a()", "at": "m.py:8@blob:aaaaaaa"}
+{"kind": "defines", "subject": "m.g", "value": "operation", "params": {"c": "m.C"}, "at": "m.py:10@blob:aaaaaaa"}
+{"kind": "writes", "subject": "m.g", "object": "m.C.x", "value": "1", "at": "m.py:11@blob:aaaaaaa"}
+"#);
+    repo.write(".archsig/plans/b/plan.jsonl", "{\"kind\": \"defines\", \"subject\": \"m.C\", \"value\": \"type\", \"file\": \"c.py\", \"at\": \"plan:b\"}\n{\"kind\": \"inherits\", \"subject\": \"m.C\", \"object\": \"m.P\", \"at\": \"plan:b\"}\n");
+    repo.write(".archsig/plans/p/plan.jsonl", r#"{"kind": "plan", "subject": "p", "base": "plan:b"}
+{"kind": "defines", "subject": "m.f", "value": "operation", "params": {"o": "m.O"}, "file": "m.py", "at": "plan:p"}
+{"kind": "writes", "subject": "m.f", "object": "m.O.s", "value": "m.b()", "at": "plan:p"}
+"#);
+    let s = repo.run(&["plan", "check", "p"]);
+    assert_eq!(result(&s, "m.f")["outcome"], "silent", "{s}");
+}

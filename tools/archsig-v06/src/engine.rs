@@ -634,7 +634,8 @@ fn fields_of(s: &Structure, names: &BTreeSet<String>, removes: &BTreeSet<String>
         .range(prefix.clone()..)
         .take_while(|n| n.starts_with(&prefix))
         // 受け継ぐ型の名前で、受け継ぎで別の型のフィールドに解けるか、解く途中で決まらない名前は、受け継がれる型の側で問い合わせる(設計 §5.4)。
-        .find(|n| member(n) && !s.elements.contains_key(*n) && !removed(n) && (!s.bases.contains_key(ty) || s.access(n).is_ok_and(|x| x == **n)))
+        // 型自身が定義し直した未読の型(`partial`)なら、受け継がれる型の側でも決まらないので除かない。
+        .find(|n| member(n) && !s.elements.contains_key(*n) && !removed(n) && (!s.bases.contains_key(ty) || s.partial.contains_key(ty) || s.access(n).is_ok_and(|x| x == **n)))
         .map(|n| s.kind(n).err().unwrap_or_else(|| Silence::new(Reason::Unread)));
     let mut out = Vec::new();
     for (name, e) in s.elements.range(prefix.clone()..).take_while(|(n, _)| n.starts_with(&prefix)) {
@@ -922,15 +923,6 @@ fn compare(
     // 意味が決まらないので比べない。その値が二つの順番で食い違うのは書き込みがあるときで、その沈黙は下で持つ。
     places.retain(|q| meaning_known(prior, after, &q[0], meaning).is_ok());
     let mut below = Below { prior, removes: removes.clone(), ..Below::default() };
-    // 型が受け継いだフィールドを定義し直していれば(受け継ぎのどの段でも)、受け継がれる型の名前で書いた所と同じ所かは言語で決まる(設計 §3.5)。
-    // その場所は比べず、沈黙を最後まで持つ。
-    places.retain(|q| match after.access(&q[0]) {
-        Ok(_) => true,
-        Err(e) => {
-            below.hold(Err(e));
-            false
-        }
-    });
     for br in &run1 {
         for w in &br.writes {
             for k in 1..=w.place.len() {
@@ -976,6 +968,15 @@ fn compare(
             places.extend(below.places(after, &w.place, meaning));
         }
     }
+    // 比べる場所(意味 Atom から集めたものも、対応で写したものも)のフィールドを型が定義し直していれば(受け継ぎのどの段でも)、
+    // 受け継がれる型の名前で書いた所と同じ所かは言語で決まる(設計 §3.5)。その場所は比べず、沈黙を最後まで持つ。
+    places.retain(|q| match q.iter().find_map(|f| after.access(f).err()) {
+        None => true,
+        Some(e) => {
+            below.hold(Err(e));
+            false
+        }
+    });
     let mut compared = Vec::new();
     let mut calls = false;
     // 呼び出し先(変更前の名前)ごとの、本体が変わったか。
