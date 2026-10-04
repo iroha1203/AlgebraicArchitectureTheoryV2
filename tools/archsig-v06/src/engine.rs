@@ -811,10 +811,9 @@ fn commute(
             continue;
         }
         // 消える要素を使う操作は、比べられない。この Law でも `missing` として挙げる。
-        if let Some(uses) = overlay.missing.get(b) {
-            if let Some(f) = missing(before, after, b, uses) {
-                out.push(Finding { law: Some(law.to_string()), ..f });
-            }
+        // `missing` の結果が出なければ(変更前に操作でないと決まる名前)、組として扱う。
+        if let Some(f) = overlay.missing.get(b).and_then(|uses| missing(before, after, b, uses)) {
+            out.push(Finding { law: Some(law.to_string()), ..f });
             continue;
         }
         let (ka, kb) = (corresponds_kind(before, overlay, a), corresponds_kind(after, overlay, b));
@@ -824,7 +823,7 @@ fn commute(
         }
         // 片方だけが外部の組は、外部でない端の沈黙(読めば決まる所を持つ)を先に返す。
         let pair = match (ka, kb) {
-            (Err(s), Err(t)) if external(before, a) => Err(if external(after, b) { s } else { t }),
+            (Err(_), Err(t)) if external(before, a) => Err(t),
             (Err(s), _) | (_, Err(s)) => Err(s),
             _ => compare(before, after, mapping, &overlay.removes, a, b, meaning, fresh),
         };
