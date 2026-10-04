@@ -1494,3 +1494,19 @@ LB-3の `PrimitiveQueries` 代表監査は、同じcurrent source全文prefixか
 以前の個別manifestと公開rawにも全名は存在し、宣言の削除や公理監査の省略で解消していない。
 全55source/751明示＋AST65＝816個別名は不変。対象限定の新規資格確認・必要CI・root acceptance後、
 修正headの別packetから新規正式四本で全累積を再判定する。Research full buildは実行しない。
+
+## C11 最終累積 gate 第五回の C9 依存名補足
+
+固定 head `6a948d87122363e3ad47cc761e847f6cd072aefe` の
+[第五回統合監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5236#issuecomment-5975310963)は、
+数学 A/B・Lean A が `No major findings`、Lean B が非中心一件の `Minor issues`。
+C9 selection の `proof_dag_predecessors` に記した `decision_optimum_eq` と
+`numerical_optimum_eq` は、実在する exact declaration
+`AAT.AG.RepairObservationDuality.decision_optimum` と
+`AAT.AG.RepairObservationDuality.numerical_optimum` をそれぞれ指す。
+C9 base `7e45cecd592f4831613ee0e851a61dab41bd0268` と現在版の
+`QueryOptimum.lean` はこの exact 名を持ち、C2 の受理証拠、C9 の実証明、
+現在の宣言・公理 mapping も同じ名を使う。旧 selection は記録として保存する。
+修正はこの対応補足だけであり、Lean source・全751明示名と65生成名・
+固定 target・仮定・proof-use は不変。全体は新しい四本の正式最終査読前の
+`target-proof-checkpoint` とし、完了判定を直接確認一件で更新しない。
